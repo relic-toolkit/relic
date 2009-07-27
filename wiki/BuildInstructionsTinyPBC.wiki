@@ -35,11 +35,15 @@ tar xzvf TinyPBC.tar.gz
 
 To build a MICAz-compatible TinyOS image, run:
 {{{
+cd TinyPBC
 make micaz
 }}}
 
+==Simulation==
+
 To build a TOSSIM-compatible image, run:
 {{{
+cd TinyPBC
 make -f Makefile-tossim micaz sim
 }}}
 
