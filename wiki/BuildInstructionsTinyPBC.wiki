@@ -60,4 +60,4 @@ The simulation runs two mote instances with independently calculate a shared key
 
 Some directoties are hard-coded into TinyPBC Makefiles. Change them to your needs.
 
-In real deployments, the private keys of the nodes should be precomputed and loaded into each node. For illustration purposes, each node in this implementation receives a dummy master key and generates its own private key. *This is clearly not secure*.
+In real deployments, the private keys of the nodes should be precomputed and loaded into each node. In this implementation, each node receives a dummy master key and generates its own private key. *This is clearly not secure and is included here only for illustration purposes*.
