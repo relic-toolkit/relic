@@ -58,7 +58,7 @@ Now the simulation can be run as:
 python simulate.py
 }}}
 
-The simulation runs two mote instances with independently calculate a shared key. The output thus must show two identical shared keys.
+The simulation runs two mote instances which independently compute a shared key. The output thus must show two identical shared keys.
 
 ==Notes and limitations==
 
