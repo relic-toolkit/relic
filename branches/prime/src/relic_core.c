@@ -35,6 +35,7 @@
 #include "relic_rand.h"
 #include "relic_types.h"
 #include "relic_error.h"
+#include "relic_fp.h"
 #include "relic_fb.h"
 #include "relic_eb.h"
 #include "relic_cp.h"

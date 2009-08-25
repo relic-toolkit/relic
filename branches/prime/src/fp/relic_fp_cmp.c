@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2009 RELIC Project
+ * Copyright 2007 Project RELIC
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file.
@@ -21,28 +21,30 @@
 /**
  * @file
  *
- * Interface of the library visible to the programmer.
+ * Implementation of the prime field comparison functions.
  *
- * @version $Id: relic.h 45 2009-07-04 23:45:48Z dfaranha $
- * @ingroup relic
+ * @version $Id$
+ * @ingroup fp
  */
 
-#ifndef RELIC_H
-#define RELIC_H
-
-#include "relic_conf.h"
 #include "relic_core.h"
-#include "relic_types.h"
-#include "relic_bn.h"
-#include "relic_dv.h"
 #include "relic_fp.h"
-#include "relic_fb.h"
-#include "relic_eb.h"
-#include "relic_pb.h"
-#include "relic_cp.h"
-#include "relic_hf.h"
-#include "relic_error.h"
-#include "relic_rand.h"
-#include "relic_util.h"
+#include "relic_fp_low.h"
 
-#endif /* !RELIC_H */
+/*============================================================================*/
+/* Public definitions                                                         */
+/*============================================================================*/
+
+int fp_cmp_dig(fp_t a, dig_t b) {
+	for (int i = 0; i < FP_DIGS; i++) {
+		if (a[i] > 0) {
+			return RLC_GT;
+		}
+	}
+
+	return fp_cmp1_low(a[0], b);
+}
+
+int fp_cmp(fp_t a, fp_t b) {
+	return fp_cmpn_low(a, b);
+}
