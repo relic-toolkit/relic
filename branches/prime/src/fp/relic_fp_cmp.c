@@ -38,7 +38,7 @@
 int fp_cmp_dig(fp_t a, dig_t b) {
 	for (int i = 0; i < FP_DIGS; i++) {
 		if (a[i] > 0) {
-			return RLC_GT;
+			return CMP_GT;
 		}
 	}
 

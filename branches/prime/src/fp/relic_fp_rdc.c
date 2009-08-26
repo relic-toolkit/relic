@@ -58,7 +58,7 @@ void fp_rdc_monty_basic(fp_t c, dv_t a) {
 	}
 	fp_copy(c, a + FP_DIGS);
 
-	if (carry || fp_cmp(c, fp_prime_get()) != RLC_LT) {
+	if (carry || fp_cmp(c, fp_prime_get()) != CMP_LT) {
 		fp_subn_low(c, c, fp_prime_get());
 	}
 }
@@ -70,7 +70,7 @@ void fp_rdc_monty_comba(fp_t c, dv_t a) {
 
 	carry = fp_rdcn_low(c, a, fp_prime_get(), u0);
 
-	if (carry || fp_cmp(c, fp_prime_get()) != RLC_LT) {
+	if (carry || fp_cmp(c, fp_prime_get()) != CMP_LT) {
 		fp_subn_low(c, c, fp_prime_get());
 	}
 }

@@ -47,7 +47,7 @@ void fp_dbl(fp_t c, fp_t a) {
 	carry = fp_lsh1_low(c, a);
 
 	/* If there is an additional carry. */
-	if (carry || (fp_cmp(c, fp_prime_get()) != RLC_LT)) {
+	if (carry || (fp_cmp(c, fp_prime_get()) != CMP_LT)) {
 		carry = fp_subn_low(c, c, fp_prime_get());
 	}
 }

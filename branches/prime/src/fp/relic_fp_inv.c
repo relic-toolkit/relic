@@ -74,7 +74,7 @@ void fp_inv(fp_t c, fp_t a) {
 					bn_rsh(u, u, 1);
 					bn_lsh(x2, x2, 1);
 				} else {
-					if (bn_cmp(v, u) != RLC_LT) {
+					if (bn_cmp(v, u) != CMP_LT) {
 						bn_sub(v, v, u);
 						bn_rsh(v, v, 1);
 						bn_add(x2, x2, x1);
@@ -100,7 +100,7 @@ void fp_inv(fp_t c, fp_t a) {
 					x1->used - FP_DIGS);
 			bn_trim(x1);
 		}
-		if (fp_cmpn_low(x1->dp, fp_prime_get()) == RLC_GT) {
+		if (fp_cmpn_low(x1->dp, fp_prime_get()) == CMP_GT) {
 			fp_sub(x1->dp, x1->dp, fp_prime_get());
 		}
 

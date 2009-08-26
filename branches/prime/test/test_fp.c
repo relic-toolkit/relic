@@ -72,11 +72,11 @@ int util(void) {
 		TEST_BEGIN("comparison is consistent") {
 			fp_rand(a);
 			fp_rand(b);
-			if (fp_cmp(a, b) != RLC_EQ) {
-				if (fp_cmp(a, b) == RLC_GT) {
-					TEST_ASSERT(fp_cmp(b, a) == RLC_LT, end);
+			if (fp_cmp(a, b) != CMP_EQ) {
+				if (fp_cmp(a, b) == CMP_GT) {
+					TEST_ASSERT(fp_cmp(b, a) == CMP_LT, end);
 				} else {
-					TEST_ASSERT(fp_cmp(b, a) == RLC_GT, end);
+					TEST_ASSERT(fp_cmp(b, a) == CMP_GT, end);
 				}
 			}
 		}
@@ -86,13 +86,13 @@ int util(void) {
 			fp_rand(a);
 			fp_rand(c);
 			fp_rand(b);
-			if (fp_cmp(a, c) != RLC_EQ) {
+			if (fp_cmp(a, c) != CMP_EQ) {
 				fp_copy(c, a);
-				TEST_ASSERT(fp_cmp(c, a) == RLC_EQ, end);
+				TEST_ASSERT(fp_cmp(c, a) == CMP_EQ, end);
 			}
-			if (fp_cmp(b, c) != RLC_EQ) {
+			if (fp_cmp(b, c) != CMP_EQ) {
 				fp_copy(c, b);
-				TEST_ASSERT(fp_cmp(b, c) == RLC_EQ, end);
+				TEST_ASSERT(fp_cmp(b, c) == CMP_EQ, end);
 			}
 		}
 		TEST_END;
@@ -100,23 +100,23 @@ int util(void) {
 		TEST_BEGIN("negation is consistent") {
 			fp_rand(a);
 			fp_neg(b, a);
-			if (fp_cmp(a, b) != RLC_EQ) {
-				if (fp_cmp(a, b) == RLC_GT) {
-					TEST_ASSERT(fp_cmp(b, a) == RLC_LT, end);
+			if (fp_cmp(a, b) != CMP_EQ) {
+				if (fp_cmp(a, b) == CMP_GT) {
+					TEST_ASSERT(fp_cmp(b, a) == CMP_LT, end);
 				} else {
-					TEST_ASSERT(fp_cmp(b, a) == RLC_GT, end);
+					TEST_ASSERT(fp_cmp(b, a) == CMP_GT, end);
 				}
 			}
 			fp_neg(b, b);
-			TEST_ASSERT(fp_cmp(a, b) == RLC_EQ, end);
+			TEST_ASSERT(fp_cmp(a, b) == CMP_EQ, end);
 		}
 		TEST_END;
 
 		TEST_BEGIN("assignment to zero and comparison are consistent") {
 			fp_rand(a);
 			fp_zero(c);
-			TEST_ASSERT(fp_cmp(a, c) == RLC_GT, end);
-			TEST_ASSERT(fp_cmp(c, a) == RLC_LT, end);
+			TEST_ASSERT(fp_cmp(a, c) == CMP_GT, end);
+			TEST_ASSERT(fp_cmp(c, a) == CMP_LT, end);
 		}
 		TEST_END;
 
@@ -124,13 +124,13 @@ int util(void) {
 			fp_rand(a);
 			fp_rand(b);
 			fp_zero(c);
-			TEST_ASSERT(fp_cmp(a, c) == RLC_GT, end);
-			TEST_ASSERT(fp_cmp(b, c) == RLC_GT, end);
-			if (fp_cmp(a, b) != RLC_EQ) {
-				if (fp_cmp(a, b) == RLC_GT) {
-					TEST_ASSERT(fp_cmp(b, a) == RLC_LT, end);
+			TEST_ASSERT(fp_cmp(a, c) == CMP_GT, end);
+			TEST_ASSERT(fp_cmp(b, c) == CMP_GT, end);
+			if (fp_cmp(a, b) != CMP_EQ) {
+				if (fp_cmp(a, b) == CMP_GT) {
+					TEST_ASSERT(fp_cmp(b, a) == CMP_LT, end);
 				} else {
-					TEST_ASSERT(fp_cmp(b, a) == RLC_GT, end);
+					TEST_ASSERT(fp_cmp(b, a) == CMP_GT, end);
 				}
 			}
 		}
@@ -164,7 +164,7 @@ int util(void) {
 			fp_rand(a);
 			fp_write(str, sizeof(str), a, 16);
 			fp_read(b, str, sizeof(str), 16);
-			TEST_ASSERT(fp_cmp(a, b) == RLC_EQ, end);
+			TEST_ASSERT(fp_cmp(a, b) == CMP_EQ, end);
 		}
 		TEST_END;
 
@@ -205,7 +205,7 @@ int addition(void) {
 			fp_rand(b);
 			fp_add(d, a, b);
 			fp_add(e, b, a);
-			TEST_ASSERT(fp_cmp(d, e) == RLC_EQ, end);
+			TEST_ASSERT(fp_cmp(d, e) == CMP_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("addition is associative") {
@@ -216,14 +216,14 @@ int addition(void) {
 			fp_add(d, d, c);
 			fp_add(e, b, c);
 			fp_add(e, a, e);
-			TEST_ASSERT(fp_cmp(d, e) == RLC_EQ, end);
+			TEST_ASSERT(fp_cmp(d, e) == CMP_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("addition has identity") {
 			fp_rand(a);
 			fp_zero(d);
 			fp_add(e, a, d);
-			TEST_ASSERT(fp_cmp(e, a) == RLC_EQ, end);
+			TEST_ASSERT(fp_cmp(e, a) == CMP_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("addition has inverse") {
@@ -262,7 +262,7 @@ int subtraction(void) {
 			fp_sub(c, a, b);
 			fp_sub(d, b, a);
 			fp_neg(d, d);
-			TEST_ASSERT(fp_cmp(c, d) == RLC_EQ, end);
+			TEST_ASSERT(fp_cmp(c, d) == CMP_EQ, end);
 		}
 		TEST_END;
 
@@ -270,7 +270,7 @@ int subtraction(void) {
 			fp_rand(a);
 			fp_zero(c);
 			fp_sub(d, a, c);
-			TEST_ASSERT(fp_cmp(d, a) == RLC_EQ, end);
+			TEST_ASSERT(fp_cmp(d, a) == CMP_EQ, end);
 		}
 		TEST_END;
 
@@ -310,7 +310,7 @@ int multiplication(void) {
 			fp_rand(b);
 			fp_mul(d, a, b);
 			fp_mul(e, b, a);
-			TEST_ASSERT(fp_cmp(d, e) == RLC_EQ, end);
+			TEST_ASSERT(fp_cmp(d, e) == CMP_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("multiplication is associative") {
@@ -321,7 +321,7 @@ int multiplication(void) {
 			fp_mul(d, d, c);
 			fp_mul(e, b, c);
 			fp_mul(e, a, e);
-			TEST_ASSERT(fp_cmp(d, e) == RLC_EQ, end);
+			TEST_ASSERT(fp_cmp(d, e) == CMP_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("multiplication is distributive") {
@@ -333,14 +333,14 @@ int multiplication(void) {
 			fp_mul(e, c, a);
 			fp_mul(f, c, b);
 			fp_add(e, e, f);
-			TEST_ASSERT(fp_cmp(d, e) == RLC_EQ, end);
+			TEST_ASSERT(fp_cmp(d, e) == CMP_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("multiplication has identity") {
 			fp_rand(a);
 			fp_set_dig(d, 1);
 			fp_mul(e, a, d);
-			TEST_ASSERT(fp_cmp(e, a) == RLC_EQ, end);
+			TEST_ASSERT(fp_cmp(e, a) == CMP_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("multiplication has zero property") {
@@ -356,7 +356,7 @@ int multiplication(void) {
 			fp_rand(b);
 			fp_mul(c, a, b);
 			fp_mul_basic(d, a, b);
-			TEST_ASSERT(fp_cmp(c, d) == RLC_EQ, end);
+			TEST_ASSERT(fp_cmp(c, d) == CMP_EQ, end);
 		}
 		TEST_END;
 #endif
@@ -367,7 +367,7 @@ int multiplication(void) {
 			fp_rand(b);
 			fp_mul(c, a, b);
 			fp_mul_comba(d, a, b);
-			TEST_ASSERT(fp_cmp(c, d) == RLC_EQ, end);
+			TEST_ASSERT(fp_cmp(c, d) == CMP_EQ, end);
 		}
 		TEST_END;
 #endif
@@ -378,7 +378,7 @@ int multiplication(void) {
 			fp_rand(b);
 			fp_mul(c, a, b);
 			fp_mul_karat(d, a, b);
-			TEST_ASSERT(fp_cmp(c, d) == RLC_EQ, end);
+			TEST_ASSERT(fp_cmp(c, d) == CMP_EQ, end);
 		}
 		TEST_END;
 #endif
@@ -410,7 +410,7 @@ int squaring(void) {
 			fp_rand(a);
 			fp_mul(b, a, a);
 			fp_sqr(c, a);
-			TEST_ASSERT(fp_cmp(b, c) == RLC_EQ, end);
+			TEST_ASSERT(fp_cmp(b, c) == CMP_EQ, end);
 		} TEST_END;
 
 #if FP_SQR == BASIC || !defined(STRIP)
@@ -418,7 +418,7 @@ int squaring(void) {
 			fp_rand(a);
 			fp_sqr(b, a);
 			fp_sqr_basic(c, a);
-			TEST_ASSERT(fp_cmp(b, c) == RLC_EQ, end);
+			TEST_ASSERT(fp_cmp(b, c) == CMP_EQ, end);
 		} TEST_END;
 #endif
 
@@ -427,7 +427,7 @@ int squaring(void) {
 			fp_rand(a);
 			fp_sqr(b, a);
 			fp_sqr_comba(c, a);
-			TEST_ASSERT(fp_cmp(b, c) == RLC_EQ, end);
+			TEST_ASSERT(fp_cmp(b, c) == CMP_EQ, end);
 		} TEST_END;
 #endif
 
@@ -436,7 +436,7 @@ int squaring(void) {
 			fp_rand(a);
 			fp_sqr(b, a);
 			fp_sqr_karat(c, a);
-			TEST_ASSERT(fp_cmp(b, c) == RLC_EQ, end);
+			TEST_ASSERT(fp_cmp(b, c) == CMP_EQ, end);
 		} TEST_END;
 #endif
 	}
@@ -464,7 +464,7 @@ int doubling_halving(void) {
 			fp_rand(a);
 			fp_add(b, a, a);
 			fp_dbl(c, a);
-			TEST_ASSERT(fp_cmp(b, c) == RLC_EQ, end);
+			TEST_ASSERT(fp_cmp(b, c) == CMP_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("halving is consistent") {
@@ -474,7 +474,7 @@ int doubling_halving(void) {
 			if (!fp_is_even(a)) {
 				fp_add_dig(c, c, 1);
 			}
-			TEST_ASSERT(fp_cmp(c, a) == RLC_EQ, end);
+			TEST_ASSERT(fp_cmp(c, a) == CMP_EQ, end);
 		} TEST_END;
 	}
 	CATCH_ANY {
@@ -505,7 +505,7 @@ int shifting(void) {
 			a[FP_DIGS - 1] = 0;
 			fp_lsh(b, a, 1);
 			fp_rsh(c, b, 1);
-			TEST_ASSERT(fp_cmp(c, a) == RLC_EQ, end);
+			TEST_ASSERT(fp_cmp(c, a) == CMP_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("shifting by 2 bits is consistent") {
@@ -513,7 +513,7 @@ int shifting(void) {
 			a[FP_DIGS - 1] = 0;
 			fp_lsh(b, a, 2);
 			fp_rsh(c, b, 2);
-			TEST_ASSERT(fp_cmp(c, a) == RLC_EQ, end);
+			TEST_ASSERT(fp_cmp(c, a) == CMP_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("shifting by half digit is consistent") {
@@ -521,7 +521,7 @@ int shifting(void) {
 			a[FP_DIGS - 1] = 0;
 			fp_lsh(b, a, FP_DIGIT / 2);
 			fp_rsh(c, b, FP_DIGIT / 2);
-			TEST_ASSERT(fp_cmp(c, a) == RLC_EQ, end);
+			TEST_ASSERT(fp_cmp(c, a) == CMP_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("shifting by 1 digit is consistent") {
@@ -529,7 +529,7 @@ int shifting(void) {
 			a[FP_DIGS - 1] = 0;
 			fp_lsh(b, a, FP_DIGIT);
 			fp_rsh(c, b, FP_DIGIT);
-			TEST_ASSERT(fp_cmp(c, a) == RLC_EQ, end);
+			TEST_ASSERT(fp_cmp(c, a) == CMP_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("shifting by 2 digits is consistent") {
@@ -538,7 +538,7 @@ int shifting(void) {
 			a[FP_DIGS - 2] = 0;
 			fp_lsh(b, a, 2 * FP_DIGIT);
 			fp_rsh(c, b, 2 * FP_DIGIT);
-			TEST_ASSERT(fp_cmp(c, a) == RLC_EQ, end);
+			TEST_ASSERT(fp_cmp(c, a) == CMP_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("shifting by 1 digit and half is consistent") {
@@ -547,7 +547,7 @@ int shifting(void) {
 			a[FP_DIGS - 2] = 0;
 			fp_lsh(b, a, FP_DIGIT + FP_DIGIT / 2);
 			fp_rsh(c, b, (FP_DIGIT + FP_DIGIT / 2));
-			TEST_ASSERT(fp_cmp(c, a) == RLC_EQ, end);
+			TEST_ASSERT(fp_cmp(c, a) == CMP_EQ, end);
 		} TEST_END;
 	}
 	CATCH_ANY {
@@ -581,7 +581,7 @@ int digit(void) {
 			g = b[0];
 			fp_add(c, a, b);
 			fp_add_dig(d, a, g);
-			TEST_ASSERT(fp_cmp(c, d) == RLC_EQ, end);
+			TEST_ASSERT(fp_cmp(c, d) == CMP_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("subtraction of a single digit is consistent") {
@@ -592,7 +592,7 @@ int digit(void) {
 			g = b[0];
 			fp_sub(c, a, b);
 			fp_sub_dig(d, a, g);
-			TEST_ASSERT(fp_cmp(c, d) == RLC_EQ, end);
+			TEST_ASSERT(fp_cmp(c, d) == CMP_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("multiplication by a single digit is consistent") {
@@ -604,7 +604,7 @@ int digit(void) {
 			fp_prime_conv_dig(b, g);
 			fp_mul(c, a, b);
 			fp_mul_dig(d, a, g);
-			TEST_ASSERT(fp_cmp(c, d) == RLC_EQ, end);
+			TEST_ASSERT(fp_cmp(c, d) == CMP_EQ, end);
 		} TEST_END;
 	}
 	CATCH_ANY {
@@ -633,7 +633,7 @@ int inversion(void) {
 			fp_inv(b, a);
 			fp_mul(c, a, b);
 			fp_prime_conv_dig(b, 1);
-			TEST_ASSERT(fp_cmp(c, b) == RLC_EQ, end);
+			TEST_ASSERT(fp_cmp(c, b) == CMP_EQ, end);
 		} TEST_END;
 	}
 	CATCH_ANY {
