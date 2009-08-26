@@ -83,7 +83,7 @@ int core_init(void) {
 #ifdef WITH_EB
 		eb_curve_init();
 #endif
-#ifdef WITH_CP
+#if defined(WITH_CP) && defined(WITH_PB)
 		cp_ecdsa_init();
 #endif
 	}
