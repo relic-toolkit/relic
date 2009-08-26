@@ -431,7 +431,7 @@ void fp_mul_dig(fp_t c, fp_t a, dig_t b);
  * @param[in] A				- the prime field element to square.
  */
 #if FP_SQK > 0
-#define fp_sqr(C, A, B)	fp_sqr_karat(C, A, B)
+#define fp_sqr(C, A)	fp_sqr_karat(C, A)
 #elif FP_SQR == BASIC
 #define fp_sqr(C, A)	fp_sqr_basic(C, A)
 #elif FP_SQR == COMBA
