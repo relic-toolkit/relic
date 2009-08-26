@@ -137,7 +137,7 @@ void fp_set_dig(fp_t c, dig_t a) {
 }
 
 void fp_rand(fp_t a) {
-	rand_get_bytes((unsigned char *)a, FP_DIGS * sizeof(dig_t));
+	rand_bytes((unsigned char *)a, FP_DIGS * sizeof(dig_t));
 
 	while (fp_cmp(a, fp_prime_get()) != CMP_LT) {
 		fp_subn_low(a, a, fp_prime_get());
