@@ -271,8 +271,8 @@ set(LFLAGS "-L ${CMAKE_CURRENT_SOURCE_DIR}/src/low/${LFLAGS}/")
 set (TMP "$ENV{LINK}")
 if (TMP)
 	set(LINK ${TMP} CACHE STRING "User-chosen linker flags.")
+    set(LFLAGS "${LFLAGS} ${LINK}")
 endif(TMP)
-set(LFLAGS "${LFLAGS} ${LINK}")
 
 if (NOT OPSYS)
 	# Discover the operating system.
@@ -343,7 +343,8 @@ if (ARITH STREQUAL "GMP")
 	set(LFLAGS "${LFLAGS} -lgmp")
 endif(ARITH STREQUAL "GMP")
 
-add_definitions("-pipe -std=c99 -pedantic ${WFLAGS} ${DFLAGS} ${PFLAGS} ${CFLAGS}")
+set(CMAKE_C_FLAGS "-pipe -std=c99 -pedantic ${WFLAGS} ${DFLAGS} ${PFLAGS} ${CFLAGS}")
+set(CMAKE_EXE_LINKER_FLAGS ${LFLAGS})
 
 message(STATUS "Compiler flags: -pipe -std=c99 -pedantic ${WFLAGS} ${DFLAGS} ${PFLAGS} ${CFLAGS}")
 message(STATUS "Linker flags: ${LFLAGS}\n")
