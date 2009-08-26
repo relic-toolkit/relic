@@ -1,7 +1,7 @@
 macro(ADD_MODULE MODULE)
 	add_executable(test_${MODULE} test_${MODULE}.c)
 	if (STLIB)
-		target_link_libraries(test_${MODULE} relic_s ${LFLAGS})
+		target_link_libraries(test_${MODULE} relic_s)
 	endif(STLIB)
 	if (STBIN)
 		target_link_libraries(test_${MODULE} -static)
