@@ -38,7 +38,7 @@ void fp_new_impl(fp_t *a) {
 
 int memory(void) {
 	err_t e;
-	int code = RLC_ERR;
+	int code = STS_ERR;
 	fp_t a = NULL;
 
 	TRY {
@@ -54,13 +54,13 @@ int memory(void) {
 				break;
 		}
 	}
-	code = RLC_OK;
+	code = STS_OK;
   end:
 	return code;
 }
 
 int util(void) {
-	int bits, code = RLC_ERR;
+	int bits, code = STS_ERR;
 	char str[1000];
 	fp_t a = NULL, b = NULL, c = NULL;
 
@@ -181,7 +181,7 @@ int util(void) {
 	CATCH_ANY {
 		ERROR(end);
 	}
-	code = RLC_OK;
+	code = STS_OK;
   end:
 	fp_free(a);
 	fp_free(b);
@@ -190,7 +190,7 @@ int util(void) {
 }
 
 int addition(void) {
-	int code = RLC_ERR;
+	int code = STS_ERR;
 	fp_t a = NULL, b = NULL, c = NULL, d = NULL, e = NULL;
 
 	TRY {
@@ -236,7 +236,7 @@ int addition(void) {
 	CATCH_ANY {
 		ERROR(end);
 	}
-	code = RLC_OK;
+	code = STS_OK;
   end:
 	fp_free(a);
 	fp_free(b);
@@ -247,7 +247,7 @@ int addition(void) {
 }
 
 int subtraction(void) {
-	int code = RLC_ERR;
+	int code = STS_ERR;
 	fp_t a = NULL, b = NULL, c = NULL, d = NULL;
 
 	TRY {
@@ -284,7 +284,7 @@ int subtraction(void) {
 	CATCH_ANY {
 		ERROR(end);
 	}
-	code = RLC_OK;
+	code = STS_OK;
   end:
 	fp_free(a);
 	fp_free(b);
@@ -294,7 +294,7 @@ int subtraction(void) {
 }
 
 int multiplication(void) {
-	int code = RLC_ERR;
+	int code = STS_ERR;
 	fp_t a = NULL, b = NULL, c = NULL, d = NULL, e = NULL, f = NULL;
 
 	TRY {
@@ -386,7 +386,7 @@ int multiplication(void) {
 	CATCH_ANY {
 		ERROR(end);
 	}
-	code = RLC_OK;
+	code = STS_OK;
   end:
 	fp_free(a);
 	fp_free(b);
@@ -398,7 +398,7 @@ int multiplication(void) {
 }
 
 int squaring(void) {
-	int code = RLC_ERR;
+	int code = STS_ERR;
 	fp_t a = NULL, b = NULL, c = NULL;
 
 	TRY {
@@ -443,7 +443,7 @@ int squaring(void) {
 	CATCH_ANY {
 		ERROR(end);
 	}
-	code = RLC_OK;
+	code = STS_OK;
   end:
 	fp_free(a);
 	fp_free(b);
@@ -452,7 +452,7 @@ int squaring(void) {
 }
 
 int doubling_halving(void) {
-	int code = RLC_ERR;
+	int code = STS_ERR;
 	fp_t a = NULL, b = NULL, c = NULL;
 
 	TRY {
@@ -481,7 +481,7 @@ int doubling_halving(void) {
 		util_print("FATAL ERROR!\n");
 		ERROR(end);
 	}
-	code = RLC_OK;
+	code = STS_OK;
   end:
 	fp_free(a);
 	fp_free(b);
@@ -490,7 +490,7 @@ int doubling_halving(void) {
 }
 
 int shifting(void) {
-	int code = RLC_ERR;
+	int code = STS_ERR;
 	fp_t a = NULL, b = NULL, c = NULL;
 	dv_t d = NULL;
 
@@ -553,7 +553,7 @@ int shifting(void) {
 	CATCH_ANY {
 		ERROR(end);
 	}
-	code = RLC_OK;
+	code = STS_OK;
   end:
 	fp_free(a);
 	fp_free(b);
@@ -563,7 +563,7 @@ int shifting(void) {
 }
 
 int digit(void) {
-	int code = RLC_ERR;
+	int code = STS_ERR;
 	fp_t a = NULL, b = NULL, c = NULL, d = NULL;
 	dig_t g;
 
@@ -610,7 +610,7 @@ int digit(void) {
 	CATCH_ANY {
 		ERROR(end);
 	}
-	code = RLC_OK;
+	code = STS_OK;
   end:
 	fp_free(a);
 	fp_free(b);
@@ -620,7 +620,7 @@ int digit(void) {
 }
 
 int inversion(void) {
-	int code = RLC_ERR;
+	int code = STS_ERR;
 	fp_t a = NULL, b = NULL, c = NULL;
 
 	TRY {
@@ -639,7 +639,7 @@ int inversion(void) {
 	CATCH_ANY {
 		ERROR(end);
 	}
-	code = RLC_OK;
+	code = STS_OK;
   end:
 	fp_free(a);
 	fp_free(b);
@@ -660,57 +660,57 @@ int main(void) {
 	fp_print(fp_prime_get());
 	util_print("\n");
 
-	if (memory() != RLC_OK) {
+	if (memory() != STS_OK) {
 		rlc_clean();
 		return 1;
 	}
 
-	if (util() != RLC_OK) {
+	if (util() != STS_OK) {
 		rlc_clean();
 		return 1;
 	}
 
-	if (addition() != RLC_OK) {
+	if (addition() != STS_OK) {
 		rlc_clean();
 		return 1;
 	}
 
-	if (subtraction() != RLC_OK) {
+	if (subtraction() != STS_OK) {
 		rlc_clean();
 		return 1;
 	}
 
-	if (multiplication() != RLC_OK) {
+	if (multiplication() != STS_OK) {
 		rlc_clean();
 		return 1;
 	}
 
-	if (squaring() != RLC_OK) {
+	if (squaring() != STS_OK) {
 		rlc_clean();
 		return 1;
 	}
 
-	if (doubling_halving() != RLC_OK) {
+	if (doubling_halving() != STS_OK) {
 		rlc_clean();
 		return 1;
 	}
 
-	if (shifting() != RLC_OK) {
+	if (shifting() != STS_OK) {
 		rlc_clean();
 		return 1;
 	}
 
-	if (inversion() != RLC_OK) {
+	if (inversion() != STS_OK) {
 		rlc_clean();
 		return 1;
 	}
 
-	 /* if (reduction() != RLC_OK) {
+	 /* if (reduction() != STS_OK) {
 	 * rlc_clean();
 	 * return 1;
 	 * } */
 
-	if (digit() != RLC_OK) {
+	if (digit() != STS_OK) {
 		rlc_clean();
 		return 1;
 	}
