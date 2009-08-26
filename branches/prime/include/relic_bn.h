@@ -34,10 +34,14 @@
 #ifndef RELIC_BN_H
 #define RELIC_BN_H
 
-#include <alloca.h>
-
 #include "relic_conf.h"
 #include "relic_types.h"
+
+#if OPSYS == WINDOWS
+#include <malloc.h>
+#else
+#include <alloca.h>
+#endif
 
 /*============================================================================*/
 /* Constant definitions                                                       */

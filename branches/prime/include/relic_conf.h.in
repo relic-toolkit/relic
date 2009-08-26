@@ -445,6 +445,8 @@
 #define LINUX    2
 /** FreeBSD operating system. */
 #define FREEBSD  3
+/** Windows operating system. */
+#define WINDOWS  4
 /** Detected operation system. */
 #define OPSYS    @OPSYS@
 

@@ -35,11 +35,15 @@
 #ifndef RELIC_DV_H
 #define RELIC_DV_H
 
-#include <alloca.h>
-
 #include "relic_conf.h"
 #include "relic_types.h"
 #include "relic_util.h"
+
+#if OPSYS == WINDOWS
+#include <malloc.h>
+#else
+#include <alloca.h>
+#endif
 
 /**
  * Size in bits of the biggest digit vector.

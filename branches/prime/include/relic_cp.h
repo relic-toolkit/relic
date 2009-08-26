@@ -34,13 +34,17 @@
 #ifndef RELIC_CP_H
 #define RELIC_CP_H
 
-#include <alloca.h>
-
 #include "relic_conf.h"
 #include "relic_types.h"
 #include "relic_bn.h"
 #include "relic_eb.h"
 #include "relic_pb.h"
+
+#if OPSYS == WINDOWS
+#include <malloc.h>
+#else
+#include <alloca.h>
+#endif
 
 struct _rsa_pub_t {
 	bn_t n;
