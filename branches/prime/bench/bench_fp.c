@@ -340,7 +340,7 @@ void arith(void) {
 }
 
 int main(void) {
-	rlc_init();
+	core_init();
 	conf_print();
 	bn_t modulus;
 
@@ -358,6 +358,6 @@ int main(void) {
 	util_print("\n--- Arithmetic:\n\n");
 	arith();
 
-	rlc_clean();
+	core_clean();
 	return 0;
 }

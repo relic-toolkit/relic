@@ -648,7 +648,7 @@ int inversion(void) {
 }
 
 int main(void) {
-	rlc_init();
+	core_init();
 	bn_t modulus;
 
 	bn_new(modulus);
@@ -661,60 +661,60 @@ int main(void) {
 	util_print("\n");
 
 	if (memory() != STS_OK) {
-		rlc_clean();
+		core_clean();
 		return 1;
 	}
 
 	if (util() != STS_OK) {
-		rlc_clean();
+		core_clean();
 		return 1;
 	}
 
 	if (addition() != STS_OK) {
-		rlc_clean();
+		core_clean();
 		return 1;
 	}
 
 	if (subtraction() != STS_OK) {
-		rlc_clean();
+		core_clean();
 		return 1;
 	}
 
 	if (multiplication() != STS_OK) {
-		rlc_clean();
+		core_clean();
 		return 1;
 	}
 
 	if (squaring() != STS_OK) {
-		rlc_clean();
+		core_clean();
 		return 1;
 	}
 
 	if (doubling_halving() != STS_OK) {
-		rlc_clean();
+		core_clean();
 		return 1;
 	}
 
 	if (shifting() != STS_OK) {
-		rlc_clean();
+		core_clean();
 		return 1;
 	}
 
 	if (inversion() != STS_OK) {
-		rlc_clean();
+		core_clean();
 		return 1;
 	}
 
 	 /* if (reduction() != STS_OK) {
-	 * rlc_clean();
+	 * core_clean();
 	 * return 1;
 	 * } */
 
 	if (digit() != STS_OK) {
-		rlc_clean();
+		core_clean();
 		return 1;
 	}
 
-	rlc_clean();
+	core_clean();
 	return 0;
 }
