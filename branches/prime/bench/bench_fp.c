@@ -351,11 +351,11 @@ int main(void) {
 	printf("Prime field order: ");
 	fp_print(fp_prime_get());
 
-	rlc_print("\n--- Memory-management:\n\n");
+	util_print("\n--- Memory-management:\n\n");
 	memory();
-	rlc_print("\n--- Utilities:\n\n");
+	util_print("\n--- Utilities:\n\n");
 	util();
-	rlc_print("\n--- Arithmetic:\n\n");
+	util_print("\n--- Arithmetic:\n\n");
 	arith();
 
 	rlc_clean();

@@ -160,14 +160,14 @@ void fp_print(fp_t a) {
 
 		for (i = FP_DIGS - 1; i >= 0; i--) {
 			if (i >= t->used) {
-				rlc_print("%.*lX ", (int)(2 * sizeof(dig_t)),
+				util_print("%.*lX ", (int)(2 * sizeof(dig_t)),
 						(unsigned long int)0);
 			} else {
-				rlc_print("%.*lX ", (int)(2 * sizeof(dig_t)),
+				util_print("%.*lX ", (int)(2 * sizeof(dig_t)),
 						(unsigned long int)t->dp[i]);
 			}
 		}
-		rlc_print("\n");
+		util_print("\n");
 
 	} CATCH_ANY {
 		THROW(ERR_CAUGHT);

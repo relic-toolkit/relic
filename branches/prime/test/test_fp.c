@@ -49,7 +49,7 @@ int memory(void) {
 	} CATCH(e) {
 		switch (e) {
 			case ERR_NO_MEMORY:
-				rlc_print("FATAL ERROR!\n");
+				util_print("FATAL ERROR!\n");
 				ERROR(end);
 				break;
 		}
@@ -478,7 +478,7 @@ int doubling_halving(void) {
 		} TEST_END;
 	}
 	CATCH_ANY {
-		rlc_print("FATAL ERROR!\n");
+		util_print("FATAL ERROR!\n");
 		ERROR(end);
 	}
 	code = RLC_OK;
@@ -656,9 +656,9 @@ int main(void) {
 	fp_prime_set(modulus);
 	bn_free(modulus);
 
-	rlc_print("Prime field order: ");
+	util_print("Prime field order: ");
 	fp_print(fp_prime_get());
-	rlc_print("\n");
+	util_print("\n");
 
 	if (memory() != RLC_OK) {
 		rlc_clean();
