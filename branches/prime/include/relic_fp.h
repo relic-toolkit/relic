@@ -143,8 +143,7 @@ void fp_prime_set(bn_t p);
 #define fp_new(A)			dv_new_statc((dv_t *)&(A), FP_DIGS)
 #elif ALLOC == STACK
 #define fp_new(A)															\
-	A = (dig_t *)alloca(FP_DIGS * sizeof(dig_t) + ALIGN);					\
-	A = (dig_t *)((dig_t)A + (ALIGN - ((dig_t)A & 0x0F)));					\
+	A = (dig_t *)alloca(FP_DIGS * sizeof(dig_t) + ALIGN); ALIGNED(A);		\
 
 #endif
 
@@ -158,7 +157,7 @@ void fp_prime_set(bn_t p);
 #elif ALLOC == STATIC
 #define fp_free(A)			dv_free_statc((dv_t *)&(A))
 #elif ALLOC == STACK
-#define fp_free(A)			(void)A
+#define fp_free(A)			A = NULL;
 #endif
 
 /**
