@@ -165,6 +165,8 @@ int fb_bits(fb_t a) {
 	return 0;
 }
 
+#if defined(__GNUC__) && __GNUC__ >= 4
+
 int fb_bits_dig(dig_t a) {
 	if (a == 0) {
 		return 0;
@@ -173,7 +175,9 @@ int fb_bits_dig(dig_t a) {
 	}
 }
 
-int fb_bits_dig2(dig_t a) {
+#else
+
+int fb_bits_dig(dig_t a) {
 	static const unsigned char table[16] = {
 		0, 1, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4
 	};
@@ -245,6 +249,8 @@ int fb_bits_dig2(dig_t a) {
 	}
 	return 0;
 }
+
+#endif
 
 void fb_rand(fb_t a) {
 	int bits;
