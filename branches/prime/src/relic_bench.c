@@ -29,7 +29,6 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <time.h>
 
 #include "relic_bench.h"
 #include "relic_conf.h"
@@ -49,6 +48,7 @@
 #if TIMER == HPROC || TIMER == HREAL || TIMER == HTHRD
 typedef struct timespec bench_t;
 #elif TIMER == ANSI
+#include <time.h>
 typedef clock_t bench_t;
 #elif TIMER == POSIX
 typedef struct timeval bench_t;
@@ -70,9 +70,9 @@ static inline bench_t cycles(void) {
 }
 #endif
 
+#else
+typedef unsigned int bench_t;
 #endif
-
-#if TIMER != NONE
 
 /**
  * Stores the time measured before the execution of the benchmark.
@@ -93,8 +93,6 @@ static long long total;
  * Benchmarking overhead to be measured and subtracted from benchmarks.
  */
 static long long overhead;
-
-#endif
 
 static void empty(int *a) {
 	(*a)++;
