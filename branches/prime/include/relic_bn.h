@@ -39,6 +39,8 @@
 
 #if OPSYS == WINDOWS
 #include <malloc.h>
+#elif defined(__GNUC__) && defined(__MSP430__)
+#define alloca __builtin_alloca
 #else
 #include <alloca.h>
 #endif
