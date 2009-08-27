@@ -348,7 +348,7 @@ int main(void) {
 	bn_gen_prime(modulus, FP_BITS);
 	fp_prime_set(modulus);
 
-	printf("Prime field order: ");
+	util_print("Prime field order: ");
 	fp_print(fp_prime_get());
 
 	util_print("\n--- Memory-management:\n\n");
