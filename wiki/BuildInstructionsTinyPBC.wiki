@@ -27,7 +27,7 @@ path_to_relic_version/preset/tinypbc.sh path_to_relic_version
 make
 }}}
 
-A suitable static library will be ready in relic-targets/target-tinypbc/lib. To build TinyPBC, we first extract the archive:
+A suitable static library will be ready in relic-targets/target-tinypbc/lib. To build TinyPBC, first extract the archive:
 
 {{{
 tar xzvf TinyPBC.tar.gz
@@ -47,7 +47,7 @@ cd TinyPBC
 make -f Makefile-tossim micaz sim
 }}}
 
-The TinyOS build system does not easily accomodates an external library. For this reason, export the full path to RELIC shared library with the LD_PRELOAD environment variable:
+The TinyOS build system does not easily support an external library. For this reason, export the full path to RELIC shared library with the LD_PRELOAD environment variable:
 
 {{{
 export LD_PRELOAD=path_to_relic_targets/relic-targets/target-tinypbc/lib/librelic.so
