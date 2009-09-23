@@ -1,4 +1,4 @@
-#labels Featured
+#labels Featured,Phase-Deploy
 ==Introduction==
 
 TinyPBC can use RELIC as its cryptographic implementation. Support was introduced in RELIC version 0.1.1. In the rest of this document, we assume that TinyOS is already installed and compatible NesC/avr-gcc toolchains are available.
