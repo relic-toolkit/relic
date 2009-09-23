@@ -1,3 +1,4 @@
+#labels Featured,Phase-Deploy
 ==Introduction==
 
 The build process requires the [http://www.cmake.org/ CMake] cross-platform build system. This should make RELIC available in all platforms supported by CMake.
