@@ -3,7 +3,7 @@
 
 The build process requires the [http://www.cmake.org/ CMake] cross-platform build system. This should make RELIC available in all platforms supported by CMake.
 
-==Steps==
+==Compilation==
 
 In the steps below, replace _version_ by the release version.
 
@@ -39,6 +39,14 @@ By default, static and shared libraries will be built in the `relic-target/lib` 
 ctest relic_target/test
 }}}
 
+The customization options are described in BuildOptions. You can change these by running:
+
+{{{
+ccmake relic_target
+}}}
+
+==Installation==
+
 Installation is not required but can be done with:
 
 {{{
@@ -46,12 +54,6 @@ make install
 }}}
 
 By default, CMake installs binaries and headers into the `/usr/local/` prefix. You can change this by passing a `DESTDIR=` variable along with the `make install` command.
-
-The customization options are described in BuildOptions. You can change these by running:
-
-{{{
-ccmake relic_target
-}}}
 
 ==Contact==
 
