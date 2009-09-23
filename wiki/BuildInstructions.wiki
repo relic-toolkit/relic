@@ -54,4 +54,4 @@ ccmake relic_target
 
 ==Contact==
 
-In case of errors, please contact the developers through the mailing list.
+In case of errors, please contact the developers through the discussion group.
