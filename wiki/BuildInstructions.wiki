@@ -1,0 +1,45 @@
+==Introduction==
+
+The build process requires the [http://www.cmake.org/ CMake] cross-platform build system. This should make RELIC available in all platforms supported by CMake.
+
+==Steps==
+
+In the steps below, replace _version_ by the release version.
+
+First of all, extract the RELIC release archive:
+
+{{{
+tar xzvf relic-version.tar.gz
+}}}
+
+This should create a directory named `relic-version`. Create a target directory:
+
+{{{
+mkdir -p relic-target
+}}}
+
+Run cmake inside the target directory:
+
+{{{
+cd relic-target
+cmake ../relic-version
+}}}
+
+CMake will detect a suitable C compiler and show all the customization options. For now, just compile the library:
+
+{{{
+make
+cd ..
+}}}
+
+By default, static and shared libraries will be built in the `relic-target/lib` directory. Tests and benchmarks should be built in `relic-target/bin`. You can run the automated testes by running each binary independently or by using CTest:
+
+{{{
+ctest relic_target/test
+}}}
+
+The customization options are described in BuildOptions. You can change these by running:
+
+{{{
+ccmake relic_target
+}}}
