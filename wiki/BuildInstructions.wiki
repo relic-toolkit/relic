@@ -32,14 +32,26 @@ make
 cd ..
 }}}
 
-By default, static and shared libraries will be built in the `relic-target/lib` directory. Tests and benchmarks should be built in `relic-target/bin`. You can run the automated testes by running each binary independently or by using CTest:
+By default, static and shared libraries will be built in the `relic-target/lib` directory. Tests and benchmarks should be present in `relic-target/bin`. You can run the automated tests by running each binary independently or by using CTest:
 
 {{{
 ctest relic_target/test
 }}}
+
+Installation is not required but can be done with:
+
+{{{
+make install
+}}}
+
+By default, CMake installs binaries and headers into the `/usr/local/` prefix. You can change this by passing a `DESTDIR=` variable along with the `make install` command.
 
 The customization options are described in BuildOptions. You can change these by running:
 
 {{{
 ccmake relic_target
 }}}
+
+==Contact==
+
+In case of errors, please contact the developers through the mailing list.
