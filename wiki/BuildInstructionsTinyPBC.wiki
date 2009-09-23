@@ -5,7 +5,7 @@ TinyPBC can use RELIC as its cryptographic implementation. Support was introduce
 
 RELIC requires the CMake build system as its own dependency.
 
-==Steps==
+==Compilation==
 
 First of all, extract the RELIC release archive:
 
