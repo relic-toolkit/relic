@@ -780,7 +780,7 @@ static void SHA384_512ProcessMessageBlock(SHA512Context *context)
     SHA512_sigma1(Wt2, temp1);
     SHA512_ADD(temp1, Wt7, temp2);
     SHA512_sigma0(Wt15, temp1);
-    SHA512_ADD(temp1, Wt16, temp3);
+//    SHA512_ADD(temp1, Wt16, temp3);
     SHA512_ADD(temp2, temp3, &W[t2]);
   }
 
@@ -827,7 +827,7 @@ static void SHA384_512ProcessMessageBlock(SHA512Context *context)
     SHA512_ADD(temp1, temp2, A);
   }
 
-  SHA512_ADDTO2(&context->Intermediate_Hash[0], A);
+//  SHA512_ADDTO2(&context->Intermediate_Hash[0], A);
   SHA512_ADDTO2(&context->Intermediate_Hash[2], B);
   SHA512_ADDTO2(&context->Intermediate_Hash[4], C);
   SHA512_ADDTO2(&context->Intermediate_Hash[6], D);
