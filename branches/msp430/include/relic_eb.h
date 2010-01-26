@@ -154,7 +154,11 @@ typedef struct {
 /**
  * Pointer to an elliptic curve point.
  */
+#if ALLOC == STACK && defined(NO_ALLOCA)
+typedef eb_st eb_t[1];
+#else
 typedef eb_st *eb_t;
+#endif
 
 /*============================================================================*/
 /* Macro definitions                                                          */
@@ -165,7 +169,11 @@ typedef eb_st *eb_t;
  *
  * @param[out] A			- the point to initialize.
  */
+#if ALLOC == STACK && defined(NO_ALLOCA)
+#define eb_null(A)
+#else
 #define eb_null(A)		A = NULL;
+#endif
 
 /**
  * Calls a function to allocate a point on a binary elliptic curve.
@@ -191,9 +199,13 @@ typedef eb_st *eb_t;
 	fb_new((A)->z);															\
 
 #elif ALLOC == STACK
+#ifdef NO_ALLOCA
+#define eb_new(A)
+#else
 #define eb_new(A)															\
 	A = (eb_t)alloca(sizeof(eb_st));										\
 
+#endif
 #endif
 
 /**
@@ -218,9 +230,13 @@ typedef eb_st *eb_t;
 	}																		\
 
 #elif ALLOC == STACK
+#ifdef NO_ALLOCA
+#define eb_free(A)
+#else
 #define eb_free(A)															\
 	A = NULL;																\
 
+#endif
 #endif
 
 /**

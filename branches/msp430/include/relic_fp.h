@@ -102,7 +102,11 @@ enum {
  * in little-endian format, that is, the least significant digits are
  * stored in the first positions of the vector.
  */
+#if ALLOC == STACK && defined(NO_ALLOCA)
+typedef align dig_t fp_t[FP_DIGS];
+#else
 typedef dig_t *fp_t;
+#endif
 
 /**
  * Represents a prime field element with automatic memory allocation.
@@ -118,7 +122,11 @@ typedef align dig_t fp_st[FP_DIGS + PADDING(FP_BYTES)/sizeof(dig_t)];
  *
  * @param[out] A			- the binary field element to initialize.
  */
+#if ALLOC == STACK && defined(NO_ALLOCA)
+#define fp_null(A)
+#else
 #define fp_null(A)			A = NULL;
+#endif
 
 /**
  * Calls a function to allocate and initialize a prime field element.
@@ -130,10 +138,14 @@ typedef align dig_t fp_st[FP_DIGS + PADDING(FP_BYTES)/sizeof(dig_t)];
 #elif ALLOC == STATIC
 #define fp_new(A)			dv_new_statc((dv_t *)&(A), FP_DIGS)
 #elif ALLOC == STACK
+#ifdef NO_ALLOCA
+#define fp_new(A)
+#else
 #define fp_new(A)															\
 	A = (dig_t *)alloca(FP_BYTES + PADDING(FP_BYTES));						\
 	A = (dig_t *)ALIGNED(A);												\
 
+#endif
 #endif
 
 /**
@@ -146,7 +158,11 @@ typedef align dig_t fp_st[FP_DIGS + PADDING(FP_BYTES)/sizeof(dig_t)];
 #elif ALLOC == STATIC
 #define fp_free(A)			dv_free_statc((dv_t *)&(A))
 #elif ALLOC == STACK
+#ifdef NO_ALLOCA
+#define fp_free(A)
+#else
 #define fp_free(A)			A = NULL;
+#endif
 #endif
 
 /**

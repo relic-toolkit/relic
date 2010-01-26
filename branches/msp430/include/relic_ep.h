@@ -143,7 +143,11 @@ typedef struct {
 /**
  * Pointer to an elliptic curve point.
  */
+#if ALLOC == STACK && defined(NO_ALLOCA)
+typedef ep_st ep_t[1];
+#else
 typedef ep_st *ep_t;
+#endif
 
 /*============================================================================*/
 /* Macro definitions                                                          */
@@ -154,7 +158,11 @@ typedef ep_st *ep_t;
  *
  * @param[out] A			- the point to initialize.
  */
+#if ALLOC == STACK && defined(NO_ALLOCA)
+#define ep_null(A)
+#else
 #define ep_null(A)		A = NULL;
+#endif
 
 /**
  * Calls a function to allocate a point on a prime elliptic curve.
@@ -180,9 +188,13 @@ typedef ep_st *ep_t;
 	fp_new((A)->z);															\
 
 #elif ALLOC == STACK
+#ifdef NO_ALLOCA
+#define ep_new(A)
+#else
 #define ep_new(A)															\
 	A = (ep_t)alloca(sizeof(ep_st));										\
 
+#endif
 #endif
 
 /**
@@ -207,9 +219,13 @@ typedef ep_st *ep_t;
 	}																		\
 
 #elif ALLOC == STACK
+#ifdef NO_ALLOCA
+#define ep_free(A)
+#else
 #define ep_free(A)															\
 	A = NULL;																\
 
+#endif
 #endif
 
 /**

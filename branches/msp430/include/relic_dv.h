@@ -74,7 +74,11 @@
 /**
  * Represents a temporary double precision digit vector.
  */
+#if ALLOC == STACK && defined(NO_ALLOCA)
+typedef align dig_t dv_t[DV_DIGS];
+#else
 typedef dig_t *dv_t;
+#endif
 
 /*============================================================================*/
 /* Macro definitions                                                          */
@@ -85,7 +89,11 @@ typedef dig_t *dv_t;
  *
  * @param[out] A			- the digit vector to initialize.
  */
+#if ALLOC == STACK && defined(NO_ALLOCA)
+#define dv_null(A)
+#else
 #define dv_null(A)			A = NULL;
+#endif
 
 /**
  * Calls a function to allocate a temporary double precision digit vector.
@@ -97,10 +105,14 @@ typedef dig_t *dv_t;
 #elif ALLOC == STATIC
 #define dv_new(A)			dv_new_statc(&(A), DV_DIGS)
 #elif ALLOC == STACK
+#ifdef NO_ALLOCA
+#define dv_new(A)
+#else
 #define dv_new(A)															\
 	A = (dig_t *)alloca(DV_BYTES + PADDING(DV_BYTES));						\
 	A = (dig_t *)ALIGNED(A);												\
 
+#endif
 #endif
 
 /**
@@ -113,7 +125,11 @@ typedef dig_t *dv_t;
 #elif ALLOC == STATIC
 #define dv_free(A)			dv_free_statc(&(A))
 #elif ALLOC == STACK
+#ifdef NO_ALLOCA
+#define dv_free(A)
+#else
 #define dv_free(A)			(void)A
+#endif
 #endif
 
 /*============================================================================*/

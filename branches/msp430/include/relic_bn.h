@@ -128,7 +128,11 @@ typedef struct {
 /**
  * Pointer to a multiple precision integer structure.
  */
+#if ALLOC == STACK && defined(NO_ALLOCA)
+typedef bn_st bn_t[1];
+#else
 typedef bn_st *bn_t;
+#endif
 
 /*============================================================================*/
 /* Macro definitions                                                          */
@@ -139,7 +143,11 @@ typedef bn_st *bn_t;
  *
  * @param[out] A			- the multiple precision integer to initialize.
  */
+#if ALLOC == STACK && defined(NO_ALLOCA)
+#define bn_null(A)
+#else
 #define bn_null(A)			A = NULL;
+#endif
 
 /**
  * Calls a function to allocate and initialize a multiple precision integer.
@@ -164,10 +172,14 @@ typedef bn_st *bn_t;
 	bn_init(A, BN_SIZE);													\
 
 #elif ALLOC == STACK
+#ifdef NO_ALLOCA
+#define bn_new(A) bn_init(A, BN_SIZE)
+#else
 #define bn_new(A)															\
 	A = (bn_st *)alloca(sizeof(bn_st));										\
 	bn_init(A, BN_SIZE);													\
 
+#endif
 #endif
 
 /**
@@ -197,10 +209,14 @@ typedef bn_st *bn_t;
 	bn_init(A, D);															\
 
 #elif ALLOC == STACK
+#ifdef NO_ALLOCA
+#define bn_new_size(A, D) bn_init(A, D)
+#else
 #define bn_new_size(A, D)													\
 	A = (bn_st *)alloca(sizeof(bn_st));										\
 	bn_init(A, D);															\
 
+#endif
 #endif
 
 /**
@@ -224,9 +240,13 @@ typedef bn_st *bn_t;
 	}
 
 #elif ALLOC == STACK
+#ifdef NO_ALLOCA
+#define bn_free(A)
+#else
 #define bn_free(A)															\
 	A = NULL;
 
+#endif
 #endif
 
 /**
