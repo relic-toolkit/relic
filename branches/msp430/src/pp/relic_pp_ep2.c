@@ -430,12 +430,18 @@ void ep2_curve_init(void) {
 	fp2_new(curve_gy);
 	fp2_new(curve_gz);
 #endif
+#if ALLOC == STACK && defined(NO_ALLOCA)
+	fp2_copy(curve_g.x, curve_gx);
+	fp2_copy(curve_g.y, curve_gy);
+	fp2_copy(curve_g.z, curve_gz);
+#else
 	curve_g.x[0] = curve_gx[0];
 	curve_g.x[1] = curve_gx[1];
 	curve_g.y[0] = curve_gy[0];
 	curve_g.y[1] = curve_gy[1];
 	curve_g.z[0] = curve_gz[0];
 	curve_g.z[1] = curve_gz[1];
+#endif
 	ep2_set_infty(&curve_g);
 	bn_init(&curve_r, FP_DIGS);
 }
@@ -453,12 +459,12 @@ int ep2_curve_is_twist() {
 	return curve_is_twist;
 }
 
-ep2_t ep2_curve_get_gen() {
-	return &curve_g;
+void ep2_curve_get_gen(ep2_t g) {
+	ep2_copy(g, &curve_g);
 }
 
-bn_t ep2_curve_get_ord() {
-	return &curve_r;
+void ep2_curve_get_ord(bn_t o) {
+	bn_copy(o, &curve_r);
 }
 
 void ep2_curve_set_twist(int twist) {
@@ -547,17 +553,33 @@ int ep2_cmp(ep2_t p, ep2_t q) {
 
 void ep2_rand(ep2_t p) {
 	bn_t n, k;
+	ep2_t gen;
 
-	bn_new(k);
+	bn_null(k);
+	bn_null(n);
+	ep2_null(gen);
 
-	n = ep2_curve_get_ord();
+	TRY {
+		bn_new(k);
+		bn_new(n);
+		ep2_new(gen);
 
-	bn_rand(k, BN_POS, bn_bits(n));
-	bn_mod(k, k, n);
+		ep2_curve_get_ord(n);
 
-	ep2_mul(p, ep2_curve_get_gen(), k);
+		bn_rand(k, BN_POS, bn_bits(n));
+		bn_mod(k, k, n);
 
-	bn_free(k);
+		ep2_curve_get_gen(gen);
+		ep2_mul(p, gen, k);
+	}
+	CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	}
+	FINALLY {
+		bn_free(k);
+		bn_free(n);
+		ep2_free(gen);
+	}
 }
 
 void ep2_print(ep2_t p) {

@@ -114,7 +114,7 @@ typedef CAT(EC_LOWER, t) ec_t;
  *
  * @return the generator.
  */
-#define ec_curve_get_gen()			CAT(EC_LOWER, curve_get_gen)()
+#define ec_curve_get_gen(G)			CAT(EC_LOWER, curve_get_gen)(G)
 
 /**
  * Returns the precomputation table for the generator.
@@ -128,7 +128,7 @@ typedef CAT(EC_LOWER, t) ec_t;
  *
  * @return the order of the group.
  */
-#define ec_curve_get_ord()			CAT(EC_LOWER, curve_get_ord)()
+#define ec_curve_get_ord(N)			CAT(EC_LOWER, curve_get_ord)(N)
 
 /**
  * Configures some set of curve parameters for the current security level.

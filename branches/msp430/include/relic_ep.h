@@ -427,7 +427,7 @@ int ep_curve_is_super(void);
  *
  * @param[out] g			- the point to store the generator.
  */
-ep_t ep_curve_get_gen(void);
+void ep_curve_get_gen(ep_t g);
 
 /**
  * Returns the precomputation table for the generator.
@@ -441,7 +441,7 @@ ep_t *ep_curve_get_tab(void);
  *
  * @param[out] r			- the multiple precision integer to store the order.
  */
-bn_t ep_curve_get_ord(void);
+void ep_curve_get_ord(bn_t o);
 
 /**
  * Returns the parameter identifier of the currently configured prime elliptic

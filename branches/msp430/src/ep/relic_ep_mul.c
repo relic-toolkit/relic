@@ -165,6 +165,20 @@ void ep_mul_gen(ep_t r, bn_t k) {
 #ifdef EP_PRECO
 	ep_mul_fix(r, ep_curve_get_tab(), k);
 #else
-	ep_mul(r, ep_curve_get_gen(), k);
+	ep_t gen;
+
+	ep_null(gen);
+
+	TRY {
+		ep_new(gen);
+		ep_curve_get_gen(gen);
+		ep_mul(r, gen, k);
+	}
+	CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	}
+	FINALLY {
+		ep_free(gen);
+	}
 #endif
 }

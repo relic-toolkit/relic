@@ -94,7 +94,7 @@ int ep2_curve_is_super(void);
  *
  * @param[out] g			- the point to store the generator.
  */
-ep2_st *ep2_curve_get_gen(void);
+void ep2_curve_get_gen(ep2_t g);
 
 /**
  * Returns the order of the group of points in the prime elliptic curve.

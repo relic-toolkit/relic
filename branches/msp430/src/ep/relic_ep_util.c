@@ -74,23 +74,30 @@ int ep_cmp(ep_t p, ep_t q) {
 
 void ep_rand(ep_t p) {
 	bn_t n, k;
+	ep_t gen;
 
 	bn_null(k);
 	bn_null(n);
+	ep_null(gen);
 
 	TRY {
 		bn_new(k);
+		bn_new(n);
+		ep_new(gen);
 
-		n = ep_curve_get_ord();
+		ep_curve_get_ord(n);
 
 		bn_rand(k, BN_POS, bn_bits(n));
 		bn_mod(k, k, n);
 
-		ep_mul(p, ep_curve_get_gen(), k);
+		ep_curve_get_gen(gen);
+		ep_mul(p, gen, k);
 	} CATCH_ANY {
 		THROW(ERR_CAUGHT);
 	} FINALLY {
 		bn_free(k);
+		bn_free(n);
+		ep_free(gen);
 	}
 }
 

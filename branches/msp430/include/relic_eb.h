@@ -480,7 +480,7 @@ int eb_curve_is_super(void);
  *
  * @return the generator.
  */
-eb_t eb_curve_get_gen(void);
+void eb_curve_get_gen(eb_t g);
 
 /**
  * Returns the precomputation table for the generator.
@@ -494,28 +494,28 @@ eb_t *eb_curve_get_tab(void);
  *
  * @return the order of the group.
  */
-bn_t eb_curve_get_ord(void);
+void eb_curve_get_ord(bn_t o);
 
 /**
  * Returns the parameter Vm of a Koblitz curve.
  *
  * @return the parameter of the curve.
  */
-bn_t eb_curve_get_vm(void);
+void eb_curve_get_vm(bn_t vm);
 
 /**
  * Returns the parameter S0 of a Koblitz curve.
  *
  * @return the parameter of the curve.
  */
-bn_t eb_curve_get_s0(void);
+void eb_curve_get_s0(bn_t s0);
 
 /**
  * Returns the parameter S1 of a Koblitz curve.
  *
  * @return the parameter of the curve.
  */
-bn_t eb_curve_get_s1(void);
+void eb_curve_get_s1(bn_t s1);
 
 /**
  * Configures a new ordinary binary elliptic curve by its coefficients and
