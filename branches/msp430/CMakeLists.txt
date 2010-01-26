@@ -1,4 +1,4 @@
-project(RELIC)
+project(RELIC C)
 cmake_minimum_required(VERSION 2.6)
 
 set(PROJECT_VERSION_MAJOR "0")
