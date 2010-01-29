@@ -23,7 +23,7 @@ The easiest option is to load a configuration preset into this directory:
 
 {{{
 cd relic-tinypbc
-../relic-version/preset/tinypbc.sh ../relic-version/
+../relic-version/preset/tinypbc-avr.sh ../relic-version/
 make
 }}}
 
@@ -41,7 +41,15 @@ make micaz
 
 ==Simulation==
 
-To build a TOSSIM-compatible image, run:
+To build a TOSSIM-compatible image, you should repeat the steps above only replacing the preset:
+
+{{{
+cd relic-tinypbc
+../relic-version/preset/tinypbc-sim.sh ../relic-version/
+make
+}}}
+
+A TinyPBC image compatible with TOSSIM must also be built:
 {{{
 cd TinyPBC
 make -f Makefile-tossim micaz sim
