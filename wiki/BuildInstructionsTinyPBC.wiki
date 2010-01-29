@@ -58,7 +58,7 @@ make -f Makefile-tossim micaz sim
 The TinyOS build system does not easily support an external library. For this reason, export the full path to RELIC shared library with the LD_PRELOAD environment variable:
 
 {{{
-export LD_PRELOAD=path_to_relic_targets/relic-tinypbc/lib/librelic.so
+export LD_PRELOAD=path/relic-tinypbc/lib/librelic.so
 }}}
 
 Now the simulation can be run as:
