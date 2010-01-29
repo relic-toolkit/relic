@@ -16,14 +16,14 @@ tar xzvf relic-version.tar.gz
 Now create a target directory:
 
 {{{
-mkdir -p relic-targets/target-tinypbc
+mkdir -p relic-tinypbc/
 }}}
 
 The easiest option is to load a configuration preset into this directory:
 
 {{{
-cd relic-targets/target-tinypbc
-path_to_relic_version/preset/tinypbc.sh path_to_relic_version
+cd relic-tinypbc
+../relic-version/preset/tinypbc.sh ../relic-version/
 make
 }}}
 
@@ -50,7 +50,7 @@ make -f Makefile-tossim micaz sim
 The TinyOS build system does not easily support an external library. For this reason, export the full path to RELIC shared library with the LD_PRELOAD environment variable:
 
 {{{
-export LD_PRELOAD=path_to_relic_targets/relic-targets/target-tinypbc/lib/librelic.so
+export LD_PRELOAD=path_to_relic_targets/relic-tinypbc/lib/librelic.so
 }}}
 
 Now the simulation can be run as:
