@@ -30,6 +30,7 @@
  */
 
 #include "relic_core.h"
+#include "relic_md.h"
 #include "relic_ep.h"
 #include "relic_error.h"
 #include "relic_conf.h"
@@ -98,6 +99,32 @@ void ep_rand(ep_t p) {
 		bn_free(k);
 		bn_free(n);
 		ep_free(gen);
+	}
+}
+
+void ep_map(ep_t p, unsigned char *msg, int len) {
+	bn_t n, k;
+	unsigned char digest[MD_LEN];
+
+	bn_null(n);
+	bn_null(k);
+
+	TRY {
+		bn_new(k);
+
+		n = ep_curve_get_ord();
+
+		md_map(digest, msg, len);
+		bn_read_bin(k, digest, MD_LEN, BN_POS);
+		bn_mod(k, k, n);
+
+		n = ep_curve_get_ord();
+
+		ep_mul_gen(p, k);
+	} CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	} FINALLY {
+		bn_free(k);
 	}
 }
 

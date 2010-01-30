@@ -23,32 +23,37 @@
 /**
  * @file
  *
- * Interface of the library visible to the programmer.
+ * Implementation of a Key Derivation function.
  *
  * @version $Id$
- * @ingroup relic
+ * @ingroup md
  */
 
-#ifndef RELIC_H
-#define RELIC_H
+#include <string.h>
 
 #include "relic_conf.h"
 #include "relic_core.h"
-#include "relic_types.h"
-#include "relic_bn.h"
-#include "relic_dv.h"
-#include "relic_fp.h"
-#include "relic_fb.h"
-#include "relic_ep.h"
-#include "relic_eb.h"
-#include "relic_ec.h"
-#include "relic_pp.h"
-#include "relic_pb.h"
-#include "relic_pc.h"
-#include "relic_cp.h"
-#include "relic_md.h"
 #include "relic_error.h"
-#include "relic_rand.h"
 #include "relic_util.h"
+#include "relic_md.h"
 
-#endif /* !RELIC_H */
+/*============================================================================*/
+/* Public definitions                                                         */
+/*============================================================================*/
+
+void md_kdf(unsigned char *key, int key_len, unsigned char *in, int in_len) {
+	int i, d;
+	unsigned char buffer[in_len + sizeof(int)];
+	unsigned char t[key_len + MD_LEN];
+
+	/* d = ceil(kLen/hLen). */
+	d = CEIL(key_len, MD_LEN);
+	memcpy(buffer, in, in_len);
+	for (i = 0; i < d; i++) {
+		/* c = integer_to_string(c, 4). */
+		memcpy(buffer + in_len, &i, sizeof(int));
+		/* t = t || hash(z || c). */
+		md_map(t + i * key_len, buffer, in_len + sizeof(int));
+	}
+	memcpy(key, buffer, key_len);
+}

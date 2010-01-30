@@ -73,13 +73,6 @@ int util(void) {
 		ep_new(b);
 		ep_new(c);
 
-		TEST_BEGIN("comparison is consistent") {
-			ep_rand(a);
-			ep_rand(b);
-			TEST_ASSERT(ep_cmp(a, b) != CMP_EQ, end);
-		}
-		TEST_END;
-
 		TEST_BEGIN("copy and comparison are consistent") {
 			ep_rand(a);
 			ep_rand(b);
@@ -835,7 +828,7 @@ int main(void) {
 	if (r0 == STS_OK) {
 		if (test() != STS_OK) {
 			core_clean();
-			return 1;
+			return 0;
 		}
 	}
 #endif
