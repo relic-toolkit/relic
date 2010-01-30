@@ -188,28 +188,28 @@ typedef CAT(GT_LOWER, t) gt_t;
  *
  * @return the generator.
  */
-#define g1_get_gen()		CAT(G1_LOWER, curve_get_gen)()
+#define g1_get_gen(G)		CAT(G1_LOWER, curve_get_gen)(G)
 
 /**
  * Returns the generator of the group G_2.
  *
  * @return the generator.
  */
-#define g2_get_gen()		CAT(G2_LOWER, curve_get_gen)()
+#define g2_get_gen(G)		CAT(G2_LOWER, curve_get_gen)(G)
 
 /**
  * Returns the order of the group G_1.
  *
  * @return the order of the group.
  */
-#define g1_get_ord()		CAT(G1_LOWER, curve_get_ord)()
+#define g1_get_ord(O)		CAT(G1_LOWER, curve_get_ord)(O)
 
 /**
  * Returns the order of the group G_2.
  *
  * @return the order of the group.
  */
-#define g2_get_ord()		CAT(G2_LOWER, curve_get_ord)()
+#define g2_get_ord(O)		CAT(G2_LOWER, curve_get_ord)(O)
 
 /**
  * Configures some set of curve parameters for the current security level.

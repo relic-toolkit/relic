@@ -110,20 +110,22 @@ void ep_map(ep_t p, unsigned char *msg, int len) {
 	bn_null(k);
 
 	TRY {
+		bn_new(n);
 		bn_new(k);
 
-		n = ep_curve_get_ord();
+		ep_curve_get_ord(n);
 
 		md_map(digest, msg, len);
 		bn_read_bin(k, digest, MD_LEN, BN_POS);
 		bn_mod(k, k, n);
 
-		n = ep_curve_get_ord();
+		ep_curve_get_ord(n);
 
 		ep_mul_gen(p, k);
 	} CATCH_ANY {
 		THROW(ERR_CAUGHT);
 	} FINALLY {
+		bn_free(n);
 		bn_free(k);
 	}
 }

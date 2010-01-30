@@ -847,7 +847,21 @@ void ep2_frb(ep2_t r, ep2_t p) {
 }
 
 void ep2_mul_gen(ep2_t r, bn_t k) {
-	ep2_mul(r, ep2_curve_get_gen(), k);
+	ep2_t gen;
+
+	ep2_null(gen);
+
+	TRY {
+		ep2_new(gen);
+		ep2_curve_get_gen(gen);
+		ep2_mul(r, gen, k);
+	}
+	CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	}
+	FINALLY {
+		ep2_free(gen);
+	}
 }
 
 void ep2_map(ep2_t p, unsigned char *msg, int len) {
@@ -858,20 +872,22 @@ void ep2_map(ep2_t p, unsigned char *msg, int len) {
 	bn_null(k);
 
 	TRY {
+		bn_new(n);
 		bn_new(k);
 
-		n = ep2_curve_get_ord();
+		ep2_curve_get_ord(n);
 
 		md_map(digest, msg, len);
 		bn_read_bin(k, digest, MD_LEN, BN_POS);
 		bn_mod(k, k, n);
 
-		n = ep2_curve_get_ord();
+		ep2_curve_get_ord(n);
 
 		ep2_mul_gen(p, k);
 	} CATCH_ANY {
 		THROW(ERR_CAUGHT);
 	} FINALLY {
+		bn_free(n);
 		bn_free(k);
 	}
 }
