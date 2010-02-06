@@ -1,1 +1,6 @@
-TODO
+==Introduction==
+
+RELIC is a meta-toolkit with strong emphasis in customization. This document details all the build options available in the 0.2.1 release.
+
+==Memory allocation==
+
