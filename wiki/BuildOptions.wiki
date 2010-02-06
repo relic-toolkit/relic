@@ -35,6 +35,26 @@ These options are boolean switches useful to turn on/off features in the whole l
    STBIN=[off|on] Build static binaries.
 }}}
 
+Several module can also be entirely disabled by specifying a list of module using the `WITH` variable. This variable receives a semicolon-separated list of modules.
+
+{{{
+-- Available modules (default = ALL)
+   WITH=BN       Multiple precision arithmetic.
+   WITH=DV       Temporary double-precision digit vectors.
+   WITH=FP       Prime field arithmetic.
+   WITH=FB       Binary field arithmetic.
+   WITH=EP       Elliptic curves over prime fields.
+   WITH=EB       Elliptic curves over binary fields.
+   WTTH=EC       Elliptic curve cryptography.
+   WITH=PB       Pairings over binary elliptic curves.
+   WITH=PP       Pairings over prime elliptic curves.
+   WTTH=PC       Pairing-based cryptography.
+   WITH=MD       Message digests (Hash functions).
+   WITH=CP       Cryptographic protocols.
+   WITH=ALL      All of the above.
+   Note: the programmer is responsible for not using unselected modules.
+}}}
+
 ===Tests and benchmarks===
 
 These options specify the number of times a test of benchmark is ran. You can disable the building of tests and/or benchmarks by assigning a `0` value to these variables.
@@ -51,66 +71,88 @@ Several platform characteristics can be customized with these options. If your t
 
 {{{
 -- Number of available processor cores (default = 1):
-   CORES=n        If n > 1, build with multithreading support.
+   CORES=n        If n > 1, build with multi-threading support.
 }}}
 
--- Available architectures (default = X86):
+RELIC supports several different architectures. The variable `ARCH` receives a string assignment specifying the target architecture, so any specification must be enclosed by quotes. When the library is cross-compiled, be sure to specify the target platform using this variable.
+
+{{{
+-- Available architectures (default = X86_64):
    ARCH=AVR       Atmel AVR ATMega128 8-bit architecture.
    ARCH=MSP       TI MSP430 16-bit architecture.
    ARCH=ARM       ARM 32-bit architecture.
    ARCH=X86       Intel x86-compatible 32-bit architecture.
    ARCH=X86_64    AMD x86_64-compatible 64-bit architecture.
+}}}
 
+The size of a full digit can be changed by using the `WORD` size variable. `WORD` should refer to the maximum native unsigned integer type supported in your platform.
+
+{{{
 -- Available word sizes (default = 64):
    WORD=8         Build a 8-bit library.
    WORD=16        Build a 16-bit library.
    WORD=32        Build a 32-bit library.
    WORD=64        Build a 64-bit library.
+}}}
 
+===Memory allocation and layout===
+
+The `ALIGN` option controls the alignment of digit vectors in the memory layout. It is very useful for specifying custom alignments required by vector instructions sets such as SSE and wMMX.
+
+{{{
 -- Byte boundary to align digit vectors (default = 1):
    ALIGN=1        Do not align digit vectors.
    ALIGN=2        Align digit vectors into 16-bit boundaries.
    ALIGN=8        Align digit vectors into 64-bit boundaries.
    ALIGN=16       Align digit vectors into 128-bit boundaries.
+}}}
 
--- Available modules (default = ALL)
-   WITH=BN       Multiple precision arithmetic.
-   WITH=DV       Temporary double-precision digit vectors.
-   WITH=FP       Prime field arithmetic.
-   WITH=FB       Binary field arithmetic.
-   WITH=EP       Elliptic curves over prime fields.
-   WITH=EB       Elliptic curves over binary fields.
-   WTTH=EC       Elliptic curve cryptography.
-   WITH=PB       Pairings over binary elliptic curves.
-   WITH=PP       Pairings over prime elliptic curves.
-   WTTH=PC       Pairing-based cryptography.
-   WITH=MD       Message digests (Hash functions).
-   WITH=CP       Cryptographic protocols.
-   WITH=ALL      All of the above.
-   Note: the programmer is responsible for not using unselected modules.
+Memory can be allocated in a total of four different ways. The `AUTO` allocator uses automatic allocation from the stack. The `STATIC` allocator tries to allocate all memory from a global pool and when you want to restrict the memory consumption. The `DYNAMIC` allocator allocates memory from the heap using `malloc()` and allows multiple-precision integers to grow arbitrarily. The `STACK` allocator uses the `alloca()` function and is also stack-based.
 
--- Available arithmetic backends (default = EASY):
-   ARITH=EASY     Easy-to-understand implementation.
-   ARITH=GMP      GNU Multiple Precision library.
-
+{{{
 -- Available memory-allocation policies (default = AUTO):
    ALLOC=AUTO     All memory is automatically allocated.
    ALLOC=STATIC   All memory is allocated statically once.
    ALLOC=DYNAMIC  All memory is allocated dynamically on demand.
    ALLOC=STACK    All memory is allocated from the stack.
+}}}
 
+===Arithmetic backend===
+
+RELIC provides a complete framework for customizing arithmetic to a target platform. The `ARITH` variable points to the name of the directory inside the `relic-version/src/low` containing the implementation. By default, only two arithmetic backends are provided: the easy-to-learn C-only `easy` backend and the faster `gmp` backend based on [http://gmplib.org GMP].
+
+{{{
+-- Available arithmetic backends (default = easy):
+   ARITH=easy     Easy-to-understand implementation.
+   ARITH=gmp      GNU Multiple Precision library.
+}}}
+
+===Pseudo-random number generator===
+
+RELIC only supported a FIPS-approved generator.
+
+{{{
 -- Available pseudo-random number generators (default = FIPS):
    RAND=FIPS      Use the FIPS 186-2 SHA1-based generator. (recommended)
+}}}
+
+The variable `SEED` can be used to select the source of the initial PRNG seed. The `LIBC` value turns the library deterministic and should only be used for debugging purposes.
 
 -- Available random number generator seeders (default = DEV):
    SEED=LIBC      Use the libc rand()/random() functions. (not crypto safe!)
    SEED=DEV       Use /dev/random. (recommended)
+
+===Operating system-specific options===
+
+RELIC supports Linux, FreeBSD and Mac OS X via the `OPSYS` variable. If the target platform does not have an operating system (this is the case when using bare-metal toolchains), use the `NONE` option.
 
 -- Supported operating systems (default = LINUX):
    OPSYS=NONE     Undefined/No operating system.
    OPSYS=LINUX    GNU/Linux operating system.
    OPSYS=FREEBSD  FreeBSD operating system.
    OPSYS=MACOSX   Mac OS X.
+
+If your platform has an operating system, you can choose the benchmark timer through the `TIMER` option. You should choose the timer with the best resolution which is avaible in your platform.
 
 -- Supported timers (default = HIGH):
    TIMER=NONE     No timer.
@@ -120,230 +162,3 @@ Several platform characteristics can be customized with these options. If your t
    TIMER=ANSI     ANSI-compatible timer.
    TIMER=POSIX    POSIX-compatible timer.
    TIMER=CYCLE    Cycle-counting timer. (architecture-dependant)
-
--- Multiple precision arithmetic configuration (BN module):
-
-   ** Options for the multiple precision module (default = 1024,DOUBLE,0):
-      BN_PRECI=n        The base precision in bits. Let w be n in words.
-      BN_MAGNI=DOUBLE   A multiple precision integer can store 2w words.
-      BN_MAGNI=CARRY    A multiple precision integer can store w+1 words.
-      BN_MAGNI=SINGLE   A multiple precision integer can store w words.
-      BN_KARAT=n        The number of Karatsuba steps.
-
-   ** Available multiple precision arithmetic methods (default = COMBA;COMBA;MONTY;SLIDE;STEIN;BASIC):
-      BN_METHD=BASIC    Schoolbook multiplication.
-      BN_METHD=COMBA    Comba multiplication.
-      BN_METHD=KnMUL    Karatsuba for (n > 0) steps and MUL multiplication.
-
-      BN_METHD=BASIC    Schoolbook squaring.
-      BN_METHD=COMBA    Comba squaring.
-      BN_METHD=KnSQR    Karatsuba for (n > 0) steps and SQR squaring.
-
-      BN_METHD=BASIC    Division-based modular reduction.
-      BN_METHD=BARRT    Barrett modular reduction.
-      BN_METHD=MONTY    Montgomery modular reduction.
-      BN_METHD=RADIX    Diminished radix modular reduction.
-
-      BN_METHD=BASIC    Binary modular exponentiation.
-      BN_METHD=CONST    Constant-time modular exponentiation.
-      BN_METHD=SLIDE    Sliding window modular exponentiation.
-
-      BN_METHD=BASIC    Euclid's standard GCD algorithm.
-      BN_METHD=LEHME    Lehmer's fast GCD algorithm.
-      BN_METHD=STEIN    Stein's binary GCD algorithm.
-
-      BN_METHD=BASIC    Basic prime generation.
-      BN_METHD=SAFEP    Safe prime generation.
-      BN_METHD=STRON    Strong prime generation.
-
-      Note: these methods must be given in order. Ex: BN_METHD="K1BASIC;COMBA;BARRT;CONST;SAFEP"
-
--- Prime field arithmetic configuration (FP module):
-
-   ** Arithmetic precision of the prime field module (default = BITS):
-      FP_PRIME=n        The prime modulus size in bits.
-
-      FP_KARAT=n        The number of Karatsuba levels.
-      FP_PMERS=[off|on] Prefer Pseudo-Mersenne primes over random primes.
-
-   ** Available prime field arithmetic methods (default = COMBA;COMBA;MONTY):
-      FP_METHD=BASIC    Schoolbook multiplication.
-
-      FP_METHD=INTEG    Integrated modular multiplication.
-      FP_METHD=COMBA    Comba multiplication.
-      FP_METHD=BASIC    Schoolbook squaring.
-      FP_METHD=INTEG    Integrated modular squaring.
-      FP_METHD=COMBA    Comba squaring.
-
-      FP_METHD=BASIC    Division-based reduction.
-      FP_METHD=QUICK    Fast reduction modulo special form prime (2^t - c, c > 0).
-      FP_METHD=MONTY    Montgomery modular reduction.
-
-      Note: these methods must be given in order. Ex: FP_METHD="BASIC;COMBA;MONTY"
-
--- Binary field arithmetic configuration (FB module):
-
-   ** Options for the binary elliptic curve module (default = 283,0,on):
-      FB_POLYN=n        The irreducible polynomial size in bits.
-      FB_KARAT=n        The number of Karatsuba levels.
-      FB_TRINO=[off|on] Prefer trinomials over pentanomials.
-
-   ** Available binary field arithmetic methods (default = LODAH;TABLE;QUICK;BASIC;QUICK;EXGCD;QUICK):
-      FB_METHD=BASIC    Right-to-left shift-and-add multiplication.
-      FB_METHD=INTEG    Integrated modular multiplication.
-      FB_METHD=RCOMB    Right-to-left comb multiplication.
-      FB_METHD=LCOMB    Left-to-right comb multiplication.
-      FB_METHD=LODAH    López-Dahab multiplication with window of width 4.
-      FB_METHD=BASIC    Bit manipulation squaring.
-      FB_METHD=INTEG    Integrated modular squaring.
-      FB_METHD=TABLE    Table-based squaring.
-
-      FB_METHD=BASIC    Shift-and-add modular reduction.
-      FB_METHD=QUICK    Fast reduction modulo a trinomial or pentanomial.
-
-      FB_METHD=BASIC    Square root by repeated squaring.
-      FB_METHD=QUICK    Fast square root extraction.
-
-      FB_METHD=BASIC    Trace computation by repeated squaring.
-      FB_METHD=QUICK    Fast trace computation.
-
-      FB_METHD=BASIC    Solve a quadratic equation by half-trace computation.
-      FB_METHD=QUICK    Fast solving with precomputed half-traces.
-
-      FB_METHD=BASIC    Shift-and-add inversion.
-      FB_METHD=EXGCD    Inversion by the Extended Euclidean algorithm.
-      FB_METHD=ALMOS    Inversion by the Amost inverse algorithm.
-
-      Note: these methods must be given in order. Ex: FB_METHD="INTEG;TABLE;QUICK;BASIC;ALMOS"
-
--- Prime elliptic curve arithmetic configuration (EP module):
-
-   ** Options for the binary elliptic curve module (default = all on):
-      EP_ORDIN=[off|on] Support for ordinary curves.
-      EP_SUPER=[off|on] Support for supersingular curves.
-      EP_STAND=[off|on] Support for standardized curves.
-      EP_MIXED=[off|on] Use mixed coordinates.
-
-      EB_PRECO=[off|on] Build precomputation table for generator.
-      EB_DEPTH=w        Width w in [2,6] of precomputation table for fixed point methods.
-      EB_WIDTH=w        Width w in [2,6] of window processing for unknown point methods.
-
-   ** Available binary elliptic curve methods (default = PROJC;WTNAF;COMBS;INTER):
-      EP_METHD=BASIC    Affine coordinates.
-      EP_METHD=PROJC    Jacobian projective coordinates.
-
-      EB_METHD=BASIC    Binary method.
-      EB_METHD=WTNAF    Window (T)NAF method.
-
-      EB_METHD=BASIC    Binary method for fixed point multiplication.
-      EB_METHD=YAOWI    Yao's windowing method for fixed point multiplication
-      EB_METHD=NAFWI    NAF windowing method for fixed point multiplication.
-      EB_METHD=COMBS    Single-table Comb method for fixed point multiplication.
-      EB_METHD=COMBD    Double-table Comb method for fixed point multiplication.
-      EB_METHD=WTNAF    Window NAF with width w (TNAF for Koblitz curves).
-
-      EB_METHD=BASIC    Multiplication-and-addition simultaneous multiplication.
-      EB_METHD=TRICK    Shamir's trick for simultaneous multiplication.
-      EB_METHD=INTER    Interleaving of w-(T)NAFs.
-      EB_METHD=JOINT    Joint sparse form.
-
-      Note: these methods must be given in order. Ex: EB_METHD="BASIC;WTNAF;COMBD;TRICK"
-
--- Binary elliptic curve arithmetic configuration (EB module):
-
-   ** Options for the binary elliptic curve module (default = on, w = 4):
-      EB_ORDIN=[off|on] Support for ordinary curves.
-      EB_SUPER=[off|on] Support for supersingular curves.
-      EB_KBLTZ=[off|on] Special support for Koblitz curves.
-      EB_STAND=[off|on] Support for standardized curves.
-      EB_MIXED=[off|on] Use mixed coordinates.
-      EB_PRECO=[off|on] Build precomputation table for generator.
-      EB_DEPTH=w        Width w in [2,6] of precomputation table for fixed point methods.
-      EB_WIDTH=w        Width w in [2,6] of window processing for unknown point methods.
-
-   ** Available binary elliptic curve methods (default = PROJC;WTNAF;COMBS;INTER):
-      EB_METHD=BASIC    Affine coordinates.
-      EB_METHD=PROJC    Projective coordinates (López-Dahab for ordinary curves).
-
-      EB_METHD=BASIC    Binary method.
-      EB_METHD=CONST    Constant-time López-Dahab point multiplication.
-      EB_METHD=WTNAF    Window (T)NAF method.
-
-      EB_METHD=BASIC    Binary method for fixed point multiplication.
-      EB_METHD=YAOWI    Yao's windowing method for fixed point multiplication
-      EB_METHD=NAFWI    NAF windowing method for fixed point multiplication.
-      EB_METHD=COMBS    Single-table Comb method for fixed point multiplication.
-      EB_METHD=COMBD    Double-table Comb method for fixed point multiplication.
-      EB_METHD=WTNAF    Window NAF with width w (TNAF for Koblitz curves).
-
-      EB_METHD=BASIC    Multiplication-and-addition simultaneous multiplication.
-      EB_METHD=TRICK    Shamir's trick for simultaneous multiplication.
-      EB_METHD=INTER    Interleaving of w-(T)NAFs.
-      EB_METHD=JOINT    Joint sparse form.
-
-      Note: these methods must be given in order. Ex: EB_METHD="BASIC;WTNAF;COMBD;TRICK"
-
--- Elliptic curve cryptography configuration (EC module):
-
-   ** Options for the binary elliptic curve module (default = on):
-      EC_KBLTZ=[off|on] Prefer Koblitz (prime or binary) curves.
-
-   ** Available elliptic curve methods (default = PRIME):
-      EC_METHD=PRIME    Use prime curves.
-      EC_METHD=BINAR    Use binary curves.
-
-      Note: these methods must be given in order. Ex: EC_METHD="BINAR"
-
--- Bilinear pairings arithmetic configuration (PP module):
-
-   ** Options for the bilinear pairing module (default = on):
-      PP_PARAL=[off|on] Parallel implementation.
-
-   ** Available bilinear pairing methods (default = X-ATE):
-      PP_METHD=R-ATE    R-ate pairing.
-      PP_METHD=X-ATE    X-ate pairing.
-
--- Bilinear pairings arithmetic configuration (PB module):
-
-   ** Options for the bilinear pairing module (default = on):
-      PB_PARAL=[off|on] Parallel implementation.
-
-   ** Available bilinear pairing methods (default = ETATS):
-      PB_METHD=ETATS    Eta-t pairing with square roots.
-      PB_METHD=ETATN    Eta-t pairing without square roots.
-
--- Pairing-based cryptography configuration (PC module):
-
-   ** Available pairing computation methods (default = PRIME):
-      PC_METHD=PRIME    Use prime (asymmetric) setting.
-      PC_METHD=BINAR    Use binary (symmetric) setting.
-
--- Message digest configuration (MD module):
-
-   ** Available hash functions (default = SH256):
-      MD_METHD=SHONE    SHA-1 hash function.
-      MD_METHD=SH224    SHA-224 hash function.
-      MD_METHD=SH256    SHA-256 hash function.
-      MD_METHD=SH384    SHA-384 hash function.
-      MD_METHD=SH512    SHA-512 hash function.
-
--- Cryptographic protocols configuration (CP module):
-
-   ** Options for the binary elliptic curve module (default = PKCS1):
-      CP_RSAPD=EMPTY    RSA without any padding.
-      CP_RSAPD=PKCS1    RSA with PKCS#1 v1.5 padding.
-
-   ** Available cryptographic protocols methods (default = QUICK;BASIC):
-      CP_METHD=BASIC    Slow RSA decryption/signature.
-      CP_METHD=QUICK    Fast RSA decryption/signature using CRT.
-
-      Note: these methods must be given in order. Ex: CP_METHD="QUICK"
-
--- Compiler flags: -pipe -std=c99 -pedantic -Wall   -O0 -funroll-loops -fomit-frame-pointer -ggdb
--- Linker flags: -L/home/iamscared/projects/relic-toolkit/src/low/easy/  -lrt
-
--- Configured /home/iamscared/projects/relic-toolkit/include/relic_conf.h.in
--- Configured /home/iamscared/projects/relic-toolkit/doc/relic.doxygen.in
--- Configuring done
--- Generating done
--- Build files have been written to: /home/iamscared/projects/relic-targets/target-easy
