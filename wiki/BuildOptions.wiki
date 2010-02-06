@@ -138,22 +138,27 @@ RELIC only supported a FIPS-approved generator.
 
 The variable `SEED` can be used to select the source of the initial PRNG seed. The `LIBC` value turns the library deterministic and should only be used for debugging purposes.
 
+{{{
 -- Available random number generator seeders (default = DEV):
    SEED=LIBC      Use the libc rand()/random() functions. (not crypto safe!)
    SEED=DEV       Use /dev/random. (recommended)
+}}}
 
 ===Operating system-specific options===
 
 RELIC supports Linux, FreeBSD and Mac OS X via the `OPSYS` variable. If the target platform does not have an operating system (this is the case when using bare-metal toolchains), use the `NONE` option.
 
+{{{
 -- Supported operating systems (default = LINUX):
    OPSYS=NONE     Undefined/No operating system.
    OPSYS=LINUX    GNU/Linux operating system.
    OPSYS=FREEBSD  FreeBSD operating system.
    OPSYS=MACOSX   Mac OS X.
+}}}
 
 If your platform has an operating system, you can choose the benchmark timer through the `TIMER` option. You should choose the timer with the best resolution which is avaible in your platform.
 
+{{{
 -- Supported timers (default = HIGH):
    TIMER=NONE     No timer.
    TIMER=HREAL    GNU/Linux realtime high-resolution timer.
@@ -162,3 +167,4 @@ If your platform has an operating system, you can choose the benchmark timer thr
    TIMER=ANSI     ANSI-compatible timer.
    TIMER=POSIX    POSIX-compatible timer.
    TIMER=CYCLE    Cycle-counting timer. (architecture-dependant)
+}}}
