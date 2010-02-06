@@ -4,10 +4,10 @@ RELIC is a meta-toolkit with strong emphasis in customization. This document det
 
 ==Customization==
 
-Build options can be changed by using the CMake building system. CMake provides two ways of customizing options: using the `ccmake` interactive utility or by calling the `cmake` command with `-D` directives. For example, to assign a fictional switch `SWITCH` using the command-line tool, run inside the target directory:
+Build options can be changed by using the CMake building system. CMake provides two ways of customizing options: using the `ccmake` interactive utility or by calling the `cmake` command with `-D` directives. For example, to assign a fictional switch `SWITCH` using the command-line tool, run:
 
 {{{
-cmake -DSWITCH=on .
+cmake -DSWITCH=on path_to_target
 }}}
 
 ==Available build options==
