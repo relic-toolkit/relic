@@ -1,0 +1,16 @@
+#summary Record of changes made to RELIC.
+
+= Release 0.2.1 =
+
+* New faster memory allocator AUTO;
+
+= Release 0.2.0 =
+
+* Support for prime fields/curves/pairings and respective benchmarks and tests.
+
+
+
+Add your content here.  Format your content with:
+  * Text in *bold* or _italic_
+  * Headings, paragraphs, and lists
+  * Automatic links to other wiki pages
