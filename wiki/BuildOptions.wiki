@@ -146,7 +146,7 @@ The variable `SEED` can be used to select the source of the initial PRNG seed. T
 
 ===Operating system-specific options===
 
-RELIC supports Linux, FreeBSD and Mac OS X via the `OPSYS` variable. If the target platform does not have an operating system (this is the case when using bare-metal toolchains), use the `NONE` option.
+RELIC supports Linux, FreeBSD and Mac OS X via the `OPSYS` variable. If the target platform does not have an operating system (this is the case when using bare-metal toolchains), use the `NONE` value.
 
 {{{
 -- Supported operating systems (default = LINUX):
