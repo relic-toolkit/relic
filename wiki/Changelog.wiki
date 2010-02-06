@@ -1,16 +1,23 @@
-#summary Record of changes made to RELIC.
+#labels Featured
+==Release 0.2.1==
 
-= Release 0.2.1 =
+ * Added a new faster memory allocator called AUTO. It is now the default and will replace the STACK allocator in the next releases.
+ * Several bugs fixed.
 
-* New faster memory allocator AUTO;
+==Release 0.2.0==
 
-= Release 0.2.0 =
+ * Added support for prime fields and standard NIST curves over prime fields.
+ * Added support for Barreto-Naehrig pairing-friendly curves and the R-ate pairing.
+ * Added an abstraction layer so that protocol can be implemented over a generic pairing.
 
-* Support for prime fields/curves/pairings and respective benchmarks and tests.
+==Release 0.1.2==
 
+ * Fixed several OSX-only bugs.
 
+==Release 0.1.1==
 
-Add your content here.  Format your content with:
-  * Text in *bold* or _italic_
-  * Headings, paragraphs, and lists
-  * Automatic links to other wiki pages
+ * Included support for TinyPBC targets.
+
+==Release 0.1.0==
+
+ * Initial release supporting multi-precision arithmetic, binary fields, NIST binary curves and the nT pairing over supersingular curves.
