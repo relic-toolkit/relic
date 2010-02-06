@@ -156,7 +156,7 @@ RELIC supports Linux, FreeBSD and Mac OS X via the `OPSYS` variable. If the targ
    OPSYS=MACOSX   Mac OS X.
 }}}
 
-If your platform has an operating system, you can choose the benchmark timer through the `TIMER` option. You should choose the timer with the best resolution which is avaible in your platform.
+If your platform has an operating system, you can choose the benchmark timer through the `TIMER` option. You should choose the best resolution timer available in your platform.
 
 {{{
 -- Supported timers (default = HIGH):
