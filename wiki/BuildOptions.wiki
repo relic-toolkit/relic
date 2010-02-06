@@ -14,7 +14,7 @@ cmake -DSWITCH=on path_to_target
 
 In this section, we present all the build options grouped by purpose. For each build option, we specify its type and the possible values it may assume.
 
-===Miscelaneous switches===
+===Miscellaneous switches===
 
 These options are boolean switches useful to turn on/off features in the whole library.
 
@@ -107,7 +107,7 @@ The `ALIGN` option controls the alignment of digit vectors in the memory layout.
    ALIGN=16       Align digit vectors into 128-bit boundaries.
 }}}
 
-Memory can be allocated in a total of four different ways. The `AUTO` allocator uses automatic allocation from the stack. The `STATIC` allocator tries to allocate all memory from a global pool and when you want to restrict the memory consumption. The `DYNAMIC` allocator allocates memory from the heap using `malloc()` and allows multiple-precision integers to grow arbitrarily. The `STACK` allocator uses the `alloca()` function and is also stack-based.
+Memory can be allocated in a total of four different ways. The `AUTO` allocator uses automatic allocation from the stack. The `STATIC` allocator tries to allocate all memory from a global pool and to restrict memory consumption. The `DYNAMIC` allocator allocates memory from the heap using `malloc()` and allows multiple-precision integers to grow arbitrarily. The `STACK` allocator uses the `alloca()` function and is also stack-based.
 
 {{{
 -- Available memory-allocation policies (default = AUTO):
@@ -117,7 +117,7 @@ Memory can be allocated in a total of four different ways. The `AUTO` allocator 
    ALLOC=STACK    All memory is allocated from the stack.
 }}}
 
-===Arithmetic backend===
+===Arithmetic backends===
 
 RELIC provides a complete framework for customizing arithmetic to a target platform. The `ARITH` variable points to the name of the directory inside the `relic-version/src/low` containing the implementation. By default, only two arithmetic backends are provided: the easy-to-learn C-only `easy` backend and the faster `gmp` backend based on [http://gmplib.org GMP].
 
@@ -127,9 +127,9 @@ RELIC provides a complete framework for customizing arithmetic to a target platf
    ARITH=gmp      GNU Multiple Precision library.
 }}}
 
-===Pseudo-random number generator===
+===Pseudo-random number generation===
 
-RELIC only supported a FIPS-approved generator.
+RELIC only supports a FIPS-approved PRNG.
 
 {{{
 -- Available pseudo-random number generators (default = FIPS):
