@@ -12,6 +12,6 @@ cmake -DSWITCH=on path_to_target
 
 ==Available build options==
 
-In this section, we present all the build options grouped by purpose.
+In this section, we present all the build options grouped by purpose. For each build option, we specify its type and the possible values it may assume.
 
 ===Memory allocation===
