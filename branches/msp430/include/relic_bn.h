@@ -91,12 +91,12 @@
 /**
  * Positive sign of a multiple precision integer.
  */
-#define BN_POS			(0)
+#define BN_POS		(0)
 
 /**
  * Negative sign of a multiple precision integer.
  */
-#define BN_NEG			(1)
+#define BN_NEG		(1)
 
 /*============================================================================*/
 /* Type definitions                                                           */
@@ -119,7 +119,7 @@ typedef struct {
 #if ALLOC == DYNAMIC || ALLOC == STATIC
 	/** The sequence of contiguous digits that forms this integer. */
 	dig_t *dp;
-#elif ALLOC == STACK
+#elif ALLOC == STACK || ALLOC == AUTO
 	/** The sequence of contiguous digits that forms this integer. */
 	align dig_t dp[BN_SIZE];
 #endif
@@ -128,7 +128,7 @@ typedef struct {
 /**
  * Pointer to a multiple precision integer structure.
  */
-#if ALLOC == STACK && defined(NO_ALLOCA)
+#if ALLOC == AUTO
 typedef bn_st bn_t[1];
 #else
 typedef bn_st *bn_t;
@@ -143,8 +143,8 @@ typedef bn_st *bn_t;
  *
  * @param[out] A			- the multiple precision integer to initialize.
  */
-#if ALLOC == STACK && defined(NO_ALLOCA)
-#define bn_null(A)
+#if ALLOC == AUTO
+#define bn_null(A)			/* empty */
 #else
 #define bn_null(A)			A = NULL;
 #endif
@@ -165,21 +165,21 @@ typedef bn_st *bn_t;
 
 #elif ALLOC == STATIC
 #define bn_new(A)															\
-	A = (bn_st *)alloca(sizeof(bn_st));										\
+	A = (bn_t)alloca(sizeof(bn_st));										\
 	if ((A) != NULL) {														\
 		(A)->dp = NULL;														\
 	}																		\
 	bn_init(A, BN_SIZE);													\
 
-#elif ALLOC == STACK
-#ifdef NO_ALLOCA
-#define bn_new(A) bn_init(A, BN_SIZE)
-#else
+#elif ALLOC == AUTO
 #define bn_new(A)															\
-	A = (bn_st *)alloca(sizeof(bn_st));										\
 	bn_init(A, BN_SIZE);													\
 
-#endif
+#elif ALLOC == STACK
+#define bn_new(A)															\
+	A = (bn_t)alloca(sizeof(bn_st));										\
+	bn_init(A, BN_SIZE);													\
+
 #endif
 
 /**
@@ -202,21 +202,21 @@ typedef bn_st *bn_t;
 
 #elif ALLOC == STATIC
 #define bn_new_size(A, D)													\
-	A = (bn_st *)alloca(sizeof(bn_st));										\
+	A = (bn_t)alloca(sizeof(bn_st));										\
 	if (A != NULL) {														\
 		(A)->dp = NULL;														\
 	}																		\
 	bn_init(A, D);															\
 
-#elif ALLOC == STACK
-#ifdef NO_ALLOCA
-#define bn_new_size(A, D) bn_init(A, D)
-#else
+#elif ALLOC == AUTO
 #define bn_new_size(A, D)													\
-	A = (bn_st *)alloca(sizeof(bn_st));										\
 	bn_init(A, D);															\
 
-#endif
+#elif ALLOC == STACK
+#define bn_new_size(A, D)													\
+	A = (bn_t)alloca(sizeof(bn_st));										\
+	bn_init(A, D);															\
+
 #endif
 
 /**
@@ -239,14 +239,13 @@ typedef bn_st *bn_t;
 		A = NULL;															\
 	}
 
-#elif ALLOC == STACK
-#ifdef NO_ALLOCA
-#define bn_free(A)
-#else
-#define bn_free(A)															\
-	A = NULL;
+#elif ALLOC == AUTO
+#define bn_free(A)			/* empty */										\
 
-#endif
+#elif ALLOC == STACK
+#define bn_free(A)															\
+	A = NULL;																\
+
 #endif
 
 /**
@@ -257,11 +256,11 @@ typedef bn_st *bn_t;
  * @param[in] B				- the second multiple precision integer to multiply.
  */
 #if BN_KARAT > 0
-#define bn_mul(C, A, B)	bn_mul_karat(C, A, B)
+#define bn_mul(C, A, B)		bn_mul_karat(C, A, B)
 #elif BN_MUL == BASIC
-#define bn_mul(C, A, B)	bn_mul_basic(C, A, B)
+#define bn_mul(C, A, B)		bn_mul_basic(C, A, B)
 #elif BN_MUL == COMBA
-#define bn_mul(C, A, B)	bn_mul_comba(C, A, B)
+#define bn_mul(C, A, B)		bn_mul_comba(C, A, B)
 #endif
 
 /**
@@ -271,11 +270,11 @@ typedef bn_st *bn_t;
  * @param[in] A				- the multiple precision integer to square.
  */
 #if BN_KARAT > 0
-#define bn_sqr(C, A)	bn_sqr_karat(C, A)
+#define bn_sqr(C, A)		bn_sqr_karat(C, A)
 #elif BN_SQR == BASIC
-#define bn_sqr(C, A)	bn_sqr_basic(C, A)
+#define bn_sqr(C, A)		bn_sqr_basic(C, A)
 #elif BN_SQR == COMBA
-#define bn_sqr(C, A)	bn_sqr_comba(C, A)
+#define bn_sqr(C, A)		bn_sqr_comba(C, A)
 #endif
 
 /**
@@ -447,7 +446,7 @@ void bn_grow(bn_t a, int digits);
 /**
  * Adjust the number of valid digits of a multiple precision integer.
  *
- * @param[out] a		- the multiple precision integer to adjust.
+ * @param[out] a			- the multiple precision integer to adjust.
  */
 void bn_trim(bn_t a);
 

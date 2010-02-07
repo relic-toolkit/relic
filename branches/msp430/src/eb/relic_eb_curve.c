@@ -328,14 +328,14 @@ void eb_curve_get_gen(eb_t g) {
 	eb_copy(g, &curve_g);
 }
 
-void eb_curve_get_ord(bn_t o) {
-	bn_copy(o, &curve_r);
+void eb_curve_get_ord(bn_t n) {
+	bn_copy(n, &curve_r);
 }
 
 #if defined(EB_PRECO)
 
 eb_t *eb_curve_get_tab() {
-#if ALLOC == STACK && defined(NO_ALLOCA)
+#if ALLOC == AUTO
 	return (eb_t *) *pointer;
 #else
 	return pointer;
@@ -348,19 +348,25 @@ eb_t *eb_curve_get_tab() {
 void eb_curve_get_vm(bn_t vm) {
 	if (curve_is_koblitz) {
 		bn_copy(vm, &curve_vm);
-	} //TODO: else?
+	} else {
+		bn_zero(vm);
+	}
 }
 
 void eb_curve_get_s0(bn_t s0) {
 	if (curve_is_koblitz) {
-		return bn_copy(s0, &curve_s0);
-	} //TODO: else?
+		bn_copy(s0, &curve_s0);
+	} else {
+		bn_zero(s0);
+	}
 }
 
 void eb_curve_get_s1(bn_t s1) {
 	if (curve_is_koblitz) {
 		bn_copy(s1, &curve_s1);
-	} //TODO: else?
+	} else {
+		bn_zero(s1);
+	}
 }
 #endif
 

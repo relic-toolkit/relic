@@ -428,7 +428,7 @@ void ep2_curve_init(void) {
 	fp2_new(curve_gy);
 	fp2_new(curve_gz);
 #endif
-#if ALLOC == STACK && defined(NO_ALLOCA)
+#if ALLOC == AUTO
 	fp2_copy(curve_g.x, curve_gx);
 	fp2_copy(curve_g.y, curve_gy);
 	fp2_copy(curve_g.z, curve_gz);
@@ -461,11 +461,11 @@ void ep2_curve_get_gen(ep2_t g) {
 	ep2_copy(g, &curve_g);
 }
 
-void ep2_curve_get_ord(bn_t o) {
+void ep2_curve_get_ord(bn_t n) {
 	if (curve_is_twist) {
-		ep_curve_get_ord(o);
+		ep_curve_get_ord(n);
 	} else {
-		bn_copy(o, &curve_r);
+		bn_copy(n, &curve_r);
 	}
 }
 
@@ -783,26 +783,33 @@ void ep2_mul(ep2_t r, ep2_t p, bn_t k) {
 	int i, l;
 	ep2_t t;
 
-	ep2_new(t);
-	l = bn_bits(k);
+	ep2_null(t);
+	TRY {
+		ep2_new(t);
+		l = bn_bits(k);
 
-	if (bn_test_bit(k, l - 1)) {
-		ep2_copy(t, p);
-	} else {
-		ep2_set_infty(t);
-	}
-
-	for (i = l - 2; i >= 0; i--) {
-		ep2_dbl(t, t);
-		if (bn_test_bit(k, i)) {
-			ep2_add(t, t, p);
+		if (bn_test_bit(k, l - 1)) {
+			ep2_copy(t, p);
+		} else {
+			ep2_set_infty(t);
 		}
+
+		for (i = l - 2; i >= 0; i--) {
+			ep2_dbl(t, t);
+			if (bn_test_bit(k, i)) {
+				ep2_add(t, t, p);
+			}
+		}
+
+		ep2_copy(r, t);
+		ep2_norm(r, r);
 	}
-
-	ep2_copy(r, t);
-	ep2_norm(r, r);
-
-	ep_free(t);
+	CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	}
+	FINALLY {
+		ep2_free(t);
+	}
 }
 
 void ep2_norm(ep2_t r, ep2_t p) {

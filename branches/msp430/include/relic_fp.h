@@ -102,7 +102,7 @@ enum {
  * in little-endian format, that is, the least significant digits are
  * stored in the first positions of the vector.
  */
-#if ALLOC == STACK && defined(NO_ALLOCA)
+#if ALLOC == AUTO
 typedef align dig_t fp_t[FP_DIGS];
 #else
 typedef dig_t *fp_t;
@@ -122,8 +122,8 @@ typedef align dig_t fp_st[FP_DIGS + PADDING(FP_BYTES)/sizeof(dig_t)];
  *
  * @param[out] A			- the binary field element to initialize.
  */
-#if ALLOC == STACK && defined(NO_ALLOCA)
-#define fp_null(A)
+#if ALLOC == AUTO
+#define fp_null(A)			/* empty */
 #else
 #define fp_null(A)			A = NULL;
 #endif
@@ -137,15 +137,13 @@ typedef align dig_t fp_st[FP_DIGS + PADDING(FP_BYTES)/sizeof(dig_t)];
 #define fp_new(A)			dv_new_dynam((dv_t *)&(A), FP_DIGS)
 #elif ALLOC == STATIC
 #define fp_new(A)			dv_new_statc((dv_t *)&(A), FP_DIGS)
+#elif ALLOC == AUTO
+#define fp_new(A)			/* empty */
 #elif ALLOC == STACK
-#ifdef NO_ALLOCA
-#define fp_new(A)
-#else
 #define fp_new(A)															\
 	A = (dig_t *)alloca(FP_BYTES + PADDING(FP_BYTES));						\
 	A = (dig_t *)ALIGNED(A);												\
 
-#endif
 #endif
 
 /**
@@ -157,12 +155,10 @@ typedef align dig_t fp_st[FP_DIGS + PADDING(FP_BYTES)/sizeof(dig_t)];
 #define fp_free(A)			dv_free_dynam((dv_t *)&(A))
 #elif ALLOC == STATIC
 #define fp_free(A)			dv_free_statc((dv_t *)&(A))
+#elif ALLOC == AUTO
+#define fp_free(A)			/* empty */
 #elif ALLOC == STACK
-#ifdef NO_ALLOCA
-#define fp_free(A)
-#else
 #define fp_free(A)			A = NULL;
-#endif
 #endif
 
 /**

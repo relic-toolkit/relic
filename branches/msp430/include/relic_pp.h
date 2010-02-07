@@ -95,7 +95,11 @@ typedef struct {
 /**
  * Pointer to an elliptic curve point.
  */
+#if ALLOC == AUTO
+typedef ep2_st ep2_t[1];
+#else
 typedef ep2_st *ep2_t;
+#endif
 
 /*============================================================================*/
 /* Macro definitions                                                          */
@@ -433,7 +437,11 @@ typedef ep2_st *ep2_t;
  *
  * @param[out] A			- the point to initialize.
  */
-#define ep2_null(A)		A = NULL;
+#if ALLOC == AUTO
+#define ep2_null(A)			/* empty */
+#else
+#define ep2_null(A)			A = NULL
+#endif
 
 /**
  * Calls a function to allocate a point on a elliptic curve.
@@ -453,13 +461,16 @@ typedef ep2_st *ep2_t;
 
 #elif ALLOC == STATIC
 #define ep2_new(A)															\
-	A = (ep2_st *)alloca(sizeof(ep2_st));									\
+	A = (ep2_t)alloca(sizeof(ep2_st));										\
 	if (A == NULL) {														\
 		THROW(ERR_NO_MEMORY);												\
 	}																		\
 	fp2_new((A)->x);														\
 	fp2_new((A)->y);														\
 	fp2_new((A)->z);														\
+
+#elif ALLOC == AUTO
+#define ep2_new(A)			/* empty */
 
 #elif ALLOC == STACK
 #define ep2_new(A)															\
@@ -490,6 +501,9 @@ typedef ep2_st *ep2_t;
 		fp2_free((A)->z);													\
 		A = NULL;															\
 	}																		\
+
+#elif ALLOC == AUTO
+#define ep2_free(A)			/* empty */
 
 #elif ALLOC == STACK
 #define ep2_free(A)															\
@@ -906,16 +920,16 @@ int ep2_curve_is_twist(void);
 /**
  * Returns the generator of the group of points in the elliptic curve.
  *
- * @param[out] g			- the point to store the generator.
+ * @param[out] g			- the returned generator.
  */
 void ep2_curve_get_gen(ep2_t g);
 
 /**
  * Returns the order of the group of points in the elliptic curve.
  *
- * @param[out] r			- the multiple precision integer to store the order.
+ * @param[out] n			- the returned order.
  */
-void ep2_curve_get_ord(bn_t o);
+void ep2_curve_get_ord(bn_t n);
 
 /**
  * Configures a new elliptic curve by using the curve over the base prime field

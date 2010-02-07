@@ -150,7 +150,7 @@
  */
 #ifndef QUIET
 #define util_print(...)														\
-	printf(__VA_ARGS__);
+	printf(__VA_ARGS__)
 #else
 #define util_print(...)			/* empty */
 #endif

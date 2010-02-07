@@ -148,7 +148,7 @@ typedef struct {
 	fb_t y;
 	/** The third coordinate (projective representation). */
 	fb_t z;
-#elif ALLOC == DYNAMIC || ALLOC == STACK
+#elif ALLOC == DYNAMIC || ALLOC == STACK || ALLOC == AUTO
 	/** The first coordinate. */
 	fb_st x;
 	/** The second coordinate. */
@@ -163,7 +163,7 @@ typedef struct {
 /**
  * Pointer to an elliptic curve point.
  */
-#if ALLOC == STACK && defined(NO_ALLOCA)
+#if ALLOC == AUTO
 typedef eb_st eb_t[1];
 #else
 typedef eb_st *eb_t;
@@ -178,8 +178,8 @@ typedef eb_st *eb_t;
  *
  * @param[out] A			- the point to initialize.
  */
-#if ALLOC == STACK && defined(NO_ALLOCA)
-#define eb_null(A)
+#if ALLOC == AUTO
+#define eb_null(A)		/* empty */
 #else
 #define eb_null(A)		A = NULL;
 #endif
@@ -199,7 +199,7 @@ typedef eb_st *eb_t;
 
 #elif ALLOC == STATIC
 #define eb_new(A)															\
-	A = (eb_st *)alloca(sizeof(eb_st));										\
+	A = (eb_t)alloca(sizeof(eb_st));										\
 	if (A == NULL) {														\
 		THROW(ERR_NO_MEMORY);												\
 	}																		\
@@ -207,14 +207,13 @@ typedef eb_st *eb_t;
 	fb_new((A)->y);															\
 	fb_new((A)->z);															\
 
+#elif ALLOC == AUTO
+#define eb_new(A)			/* empty */
+
 #elif ALLOC == STACK
-#ifdef NO_ALLOCA
-#define eb_new(A)
-#else
 #define eb_new(A)															\
 	A = (eb_t)alloca(sizeof(eb_st));										\
 
-#endif
 #endif
 
 /**
@@ -238,14 +237,13 @@ typedef eb_st *eb_t;
 		A = NULL;															\
 	}																		\
 
+#elif ALLOC == AUTO
+#define eb_free(A)			/* empty */
+
 #elif ALLOC == STACK
-#ifdef NO_ALLOCA
-#define eb_free(A)
-#else
 #define eb_free(A)															\
 	A = NULL;																\
 
-#endif
 #endif
 
 /**
@@ -487,7 +485,7 @@ int eb_curve_is_super(void);
 /**
  * Returns the generator of the group of points in the binary elliptic curve.
  *
- * @return the generator.
+ * @param[out] g			- the returned generator.
  */
 void eb_curve_get_gen(eb_t g);
 
@@ -501,28 +499,28 @@ eb_t *eb_curve_get_tab(void);
 /**
  * Returns the order of the group of points in the binary elliptic curve.
  *
- * @return the order of the group.
+ * @param[out] n			- the returned order.
  */
-void eb_curve_get_ord(bn_t o);
+void eb_curve_get_ord(bn_t n);
 
 /**
  * Returns the parameter Vm of a Koblitz curve.
  *
- * @return the parameter of the curve.
+ * @param[out] vm			- the returned parameter.
  */
 void eb_curve_get_vm(bn_t vm);
 
 /**
  * Returns the parameter S0 of a Koblitz curve.
  *
- * @return the parameter of the curve.
+ * @param[out] s0			- the returned parameter.
  */
 void eb_curve_get_s0(bn_t s0);
 
 /**
  * Returns the parameter S1 of a Koblitz curve.
  *
- * @return the parameter of the curve.
+ * @param[out] s1			- the returned parameter.
  */
 void eb_curve_get_s1(bn_t s1);
 

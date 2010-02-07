@@ -270,8 +270,10 @@ typedef struct _state_t {
 #ifdef QUIET
 #define THROW(E)			core_ctx->code = STS_ERR;
 #else
-#define THROW(E)			core_ctx->code = STS_ERR; \
-							util_print("FATAL ERROR in %s:%d\n", __FILE__, __LINE__);
+#define THROW(E)															\
+	core_ctx->code = STS_ERR; 												\
+	util_print("FATAL ERROR in %s:%d\n", __FILE__, __LINE__);				\
+
 #endif
 #endif
 

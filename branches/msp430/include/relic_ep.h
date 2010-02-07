@@ -137,7 +137,7 @@ typedef struct {
 	fp_t y;
 	/** The third coordinate (projective representation). */
 	fp_t z;
-#elif ALLOC == DYNAMIC || ALLOC == STACK
+#elif ALLOC == DYNAMIC || ALLOC == STACK || ALLOC == AUTO
 	/** The first coordinate. */
 	fp_st x;
 	/** The second coordinate. */
@@ -152,7 +152,7 @@ typedef struct {
 /**
  * Pointer to an elliptic curve point.
  */
-#if ALLOC == STACK && defined(NO_ALLOCA)
+#if ALLOC == AUTO
 typedef ep_st ep_t[1];
 #else
 typedef ep_st *ep_t;
@@ -167,8 +167,8 @@ typedef ep_st *ep_t;
  *
  * @param[out] A			- the point to initialize.
  */
-#if ALLOC == STACK && defined(NO_ALLOCA)
-#define ep_null(A)
+#if ALLOC == AUTO
+#define ep_null(A)		/* empty */
 #else
 #define ep_null(A)		A = NULL;
 #endif
@@ -188,7 +188,7 @@ typedef ep_st *ep_t;
 
 #elif ALLOC == STATIC
 #define ep_new(A)															\
-	A = (ep_st *)alloca(sizeof(ep_st));										\
+	A = (ep_t)alloca(sizeof(ep_st));										\
 	if (A == NULL) {														\
 		THROW(ERR_NO_MEMORY);												\
 	}																		\
@@ -196,14 +196,13 @@ typedef ep_st *ep_t;
 	fp_new((A)->y);															\
 	fp_new((A)->z);															\
 
+#elif ALLOC == AUTO
+#define ep_new(A)			/* empty */
+
 #elif ALLOC == STACK
-#ifdef NO_ALLOCA
-#define ep_new(A)
-#else
 #define ep_new(A)															\
 	A = (ep_t)alloca(sizeof(ep_st));										\
 
-#endif
 #endif
 
 /**
@@ -227,14 +226,13 @@ typedef ep_st *ep_t;
 		A = NULL;															\
 	}																		\
 
+#elif ALLOC == AUTO
+#define ep_free(A)			/* empty */
+
 #elif ALLOC == STACK
-#ifdef NO_ALLOCA
-#define ep_free(A)
-#else
 #define ep_free(A)															\
 	A = NULL;																\
 
-#endif
 #endif
 
 /**
@@ -434,7 +432,7 @@ int ep_curve_is_super(void);
 /**
  * Returns the generator of the group of points in the prime elliptic curve.
  *
- * @param[out] g			- the point to store the generator.
+ * @param[out] g			- the returned generator.
  */
 void ep_curve_get_gen(ep_t g);
 
@@ -448,9 +446,9 @@ ep_t *ep_curve_get_tab(void);
 /**
  * Returns the order of the group of points in the prime elliptic curve.
  *
- * @param[out] r			- the multiple precision integer to store the order.
+ * @param[out] r			- the returned order.
  */
-void ep_curve_get_ord(bn_t o);
+void ep_curve_get_ord(bn_t n);
 
 /**
  * Returns the parameter identifier of the currently configured prime elliptic
