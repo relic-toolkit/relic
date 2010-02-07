@@ -99,7 +99,6 @@
  * @param[in] FUNCTION		- the function executed.
  */
 #define BENCH_ADD(FUNCTION)													\
-	FUNCTION;																\
 	bench_before();															\
 	for (int j = 0; j < BENCH; j++) {										\
 		FUNCTION;															\
