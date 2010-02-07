@@ -313,6 +313,7 @@ static void arith(void) {
 	}
 	BENCH_END;
 
+#if FP_MUL != INTEG
 	BENCH_BEGIN("fp_rdc") {
 		fp_rand(a);
 		fp_lsh(d, a, FP_BITS);
@@ -365,6 +366,7 @@ static void arith(void) {
 		}
 		BENCH_END;
 	}
+#endif
 #endif
 
 	BENCH_BEGIN("fp_prime_conv") {

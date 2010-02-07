@@ -628,6 +628,8 @@ static int reduction(void) {
 			TEST_ASSERT(fp_is_zero(b) == 1, end);
 		} TEST_END;
 
+#if FP_MUL != INTEG
+
 #if FP_RDC == BASIC || !defined(STRIP)
 		TEST_BEGIN("basic modular reduction is correct") {
 			fp_rand(a);
@@ -656,6 +658,7 @@ static int reduction(void) {
 			}
 			TEST_END;
 		}
+#endif
 #endif
 	}
 	CATCH_ANY {
