@@ -144,7 +144,7 @@
 /** @} */
 
 #ifndef QUIET
-#define util_print(...)			util_printf(__VA_ARGS__)
+#define util_print(...)			printf(__VA_ARGS__)
 #else
 #define util_print(...)			/* empty */
 #endif
