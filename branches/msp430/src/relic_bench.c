@@ -132,7 +132,17 @@ static void empty(int *a) {
 /*============================================================================*/
 
 void bench_overhead(void) {
-#if TIMER != NONE
+#ifdef __MSP430__
+#if BENCH == 1
+	total = overhead = 70;
+#elif BENCH = 4
+	total = overhead = 17;
+#else
+#error "Measure overhead manually!"
+#endif
+	bench_print();
+#elif TIMER != NONE
+//#if TIMER != NONE
 	int a[BENCH + 1];
 	int *tmpa;
 
