@@ -177,7 +177,9 @@ void fp_prime_set(bn_t p) {
 			prime_qnr = 0;
 			break;
 	}
+#if FP_RDC == MONTY
 	bn_mod_monty_setup(&u, &prime);
+#endif
 	bn_set_dig(&conv, 1);
 	bn_set_dig(&one, 1);
 	bn_lsh(&conv, &conv, 2 * prime.used * BN_DIGIT);
