@@ -96,6 +96,13 @@ The size of a full digit can be changed by using the `WORD` size variable. `WORD
    WORD=64        Build a 64-bit library.
 }}}
 
+Changing the WORD size is crucial for solving this common compilation problem reported by users:
+
+{{{
+[  0%] Building C object src/CMakeFiles/relic.dir/relic_core.c.o                                                                                                                    
+/home/*/relic-version/include/relic_types.h:113: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘dbl_t’
+}}}
+
 ===Memory allocation and layout===
 
 The `ALIGN` option controls the alignment of digit vectors in the memory layout. It is very useful for specifying custom alignments required by vector instructions sets such as SSE and wMMX.
