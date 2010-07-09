@@ -1,13 +1,15 @@
 #include "msp430util.h"
 #include <stdio.h>
 
+#ifdef __MSP430__
+
 union cycles_t {
     unsigned long long cycles;
     struct {
         unsigned int e0;
-        unsigned int e1; 
-        unsigned int e2; 
-        unsigned int e3; 
+        unsigned int e1;
+        unsigned int e2;
+        unsigned int e3;
     } e;
 };
 
@@ -25,3 +27,5 @@ unsigned long long msp430_get_cycles()
     cycles.e.e3 = BENCH_CYCLES_3;
     return cycles.cycles;
 }
+
+#endif

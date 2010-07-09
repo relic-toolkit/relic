@@ -1,6 +1,8 @@
 #ifndef MSP430UTIL_H
 #define MSP430UTIL_H
 
+#ifdef __MSP430__
+
 unsigned long long msp430_get_cycles();
 
 volatile unsigned char TEST_CMD __asm__("0x01b0");
@@ -21,5 +23,7 @@ volatile unsigned int BENCH_CYCLES_3 __asm__("0x01b5");
 #define BENCH_START             TEST_CMD = BENCH_START_
 #define BENCH_STOP              TEST_CMD = BENCH_STOP_
 #define BENCH_PRINT             TEST_CMD = BENCH_PRINT_
+
+#endif
 
 #endif //MSP430UTIL_H
