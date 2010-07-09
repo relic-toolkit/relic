@@ -116,7 +116,7 @@ static long long total;
 /**
  * Benchmarking overhead to be measured and subtracted from benchmarks.
  */
-static long long overhead;
+static long long overhead = 0;
 
 /**
  * Dummy function for measuring benchmarking overhead.
@@ -182,7 +182,7 @@ void bench_overhead(void) {
 		 * effects, per example). The ratio 1/2 was found experimentally. */
 		overhead = overhead / 2;
 	} while (overhead < 0);
-
+	overhead = 0;
 	total = overhead;
 	bench_print();
 #endif

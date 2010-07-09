@@ -95,12 +95,16 @@
 #cmakedefine WITH_FP
 /** Build binary field module. */
 #cmakedefine WITH_FB
+/** Build ternary field module. */
+#cmakedefine WITH_FT
 /** Build prime elliptic curve module. */
 #cmakedefine WITH_EP
 /** Build binary elliptic curve module. */
 #cmakedefine WITH_EB
 /** Build elliptic curve cryptography module. */
 #cmakedefine WITH_EC
+/** Build hyperelliptic curve cryptography module. */
+#cmakedefine WITH_HB
 /** Build pairings over prime curves module. */
 #cmakedefine WITH_PP
 /** Build pairings over binary curves module. */
@@ -162,10 +166,10 @@
 
 /** Binary modular exponentiation. */
 #define BASIC    1
-/** Constant-time Montgomery ladder modular exponentiation. */
-#define CONST    2
 /** Sliding window modular exponentiation. */
-#define SLIDE    3
+#define SLIDE    2
+/** Constant-time Montgomery powering ladder. */
+#define MONTY    3
 /** Chosen multiple precision modular exponentiation method. */
 #define BN_MXP   @BN_MXP@
 
@@ -193,9 +197,18 @@
 #define FP_KARAT @FP_KARAT@
 /** Prefer Pseudo-Mersenne primes over random primes. */
 #cmakedefine FP_PMERS
+/** Width of window processing for exponentiation methods. */
+#define FP_WIDTH @FP_WIDTH@
 
 /** Prime field arithmetic method */
 #define FP_METHD "@FP_METHD@"
+
+/** Schoolbook addition. */
+#define BASIC    1
+/** Integrated modular addtion. */
+#define INTEG    3
+/** Chosen prime field multiplication method. */
+#define FP_ADD   @FP_ADD@
 
 /** Schoolbook multiplication. */
 #define BASIC    1
@@ -224,12 +237,38 @@
 /** Chosen prime field reduction method. */
 #define FP_RDC   @FP_RDC@
 
+/** Inversion by Fermat's Little Theorem. */
+#define BASIC    1
+/** Binary inversion. */
+#define BINAR    2
+/** Integrated modular multiplication. */
+#define MONTY    3
+/** Extended Euclidean algorithm. */
+#define EXGCD    4
+/** Use implementation provided by the lower layer. */
+#define LOWER    5
+/** Chosen prime field inversion method. */ 
+#define FP_INV   @FP_INV@ 
+
+/** Binary modular exponentiation. */
+#define BASIC    1
+/** Sliding window modular exponentiation. */
+#define SLIDE    2
+/** Constant-time Montgomery powering ladder. */
+#define MONTY    3
+/** Chosen multiple precision modular exponentiation method. */
+#define FP_EXP   @FP_EXP@
+
 /** Irreducible polynomial size in bits. */
 #define FB_POLYN @FB_POLYN@
 /** Number of Karatsuba steps. */
 #define FB_KARAT @FB_KARAT@
 /** Prefer trinomials over pentanomials. */
 #cmakedefine FB_TRINO
+/** Prefer square-root friendly polynomials. */
+#cmakedefine FB_SQRTF
+/** Precompute multiplication table for sqrt(z). */
+#cmakedefine FB_PRECO
 
 /** Binary field arithmetic method */
 #define FB_METHD "@FB_METHD@"
@@ -284,21 +323,67 @@
 /** Chosen method to solve a quadratic equation. */
 #define FB_SLV   @FB_SLV@
 
-/** Binary inversion. */
+/** Inversion by Fermat's Little Theorem. */
 #define BASIC    1
-/** Extended Euclidean algorithm. */
-#define EXGCD    2
+/** Binary inversion. */
+#define BINAR    2
 /** Almost inverse algorithm. */
 #define ALMOS    3
+/** Extended Euclidean algorithm. */
+#define EXGCD    4
+/** Use implementation provided by the lower layer. */
+#define LOWER    5
 /** Chosen binary field inversion method. */
 #define FB_INV   @FB_INV@ 
+
+/** Irreducible polynomial size in bits. */
+#define FT_POLYN @FT_POLYN@
+/** Number of Karatsuba steps. */
+#define FT_KARAT @FT_KARAT@
+/** Prefer trinomials over pentanomials. */
+#cmakedefine FT_TRINO
+/** Precompute multiplication table for cbrt(z). */
+#cmakedefine FT_PRECO
+
+/** Ternary field arithmetic method */
+#define FT_METHD "@FT_METHD@"
+
+/** Shift-and-add multiplication. */
+#define BASIC    1
+/** Lopez-Dahab multiplication. */
+#define LODAH	 2
+/** Integrated modular multiplication. */
+#define INTEG	 3
+/** Chosen ternary field multiplication method. */
+#define FT_MUL   @FT_MUL@
+
+/** Basic cubing. */
+#define BASIC    1
+/** Table-based cubing. */
+#define TABLE    2
+/** Integrated modular cubing. */
+#define INTEG	 3
+/** Chosen ternary field cubing method. */
+#define FT_CUB   @FT_CUB@
+
+/** Shift-and-add modular reduction. */
+#define BASIC    1
+/** Fast reduction modulo a trinomial or pentanomial. */
+#define QUICK	 2
+/** Chosen ternary field modular reduction method. */
+#define FT_RDC   @FT_RDC@
+
+/** Square root by repeated cubing. */
+#define BASIC    1
+/** Fast cube root extraction. */
+#define QUICK	 2
+/** Chosen binary field modular reduction method. */
+#define FT_CRT   @FT_CRT@
 
 /** Support for ordinary curves. */
 #cmakedefine EP_ORDIN
 /** Support for supersingular curves. */
 #cmakedefine EP_SUPER
-/** Support for NIST standardized curves. */
-#cmakedefine EP_STAND
 /** Use mixed coordinates. */
 #cmakedefine EP_MIXED
 /** Build precomputation table for generator. */
@@ -327,11 +412,11 @@
 
 /** Binary point multiplication. */ 
 #define BASIC	 1
-/** Constant-time point multiplication. */
-#define CONST	 2
 /** Sliding window. */ 
-#define SLIDE    3
-/** 4-width (T)NAF. */ 
+#define SLIDE    2
+/** Montgomery powering ladder. */
+#define MONTY	 3
+/** Width-w (T)NAF. */ 
 #define WTNAF	 4
 /** Chosen prime elliptic curve point multiplication method. */
 #define EP_MUL	 @EP_MUL@
@@ -368,8 +453,6 @@
 #cmakedefine EB_SUPER
 /** Support for Koblitz anomalous binary curves. */
 #cmakedefine EB_KBLTZ
-/** Support for NIST standardized curves. */
-#cmakedefine EB_STAND
 /** Use mixed coordinates. */
 #cmakedefine EB_MIXED
 /** Build precomputation table for generator. */
@@ -391,14 +474,12 @@
 
 /** Binary point multiplication. */ 
 #define BASIC	 1
-/** Constant-time point multiplication. */
-#define CONST	 2
-/** Sliding window. */ 
-#define SLIDE    3
-/** 4-width (T)NAF. */ 
-#define WTNAF	 4
+/** López-Dahab point multiplication. */
+#define LODAH	 2
 /** Halving. */
-#define HALVE    5
+#define HALVE    3
+/** Width-w (T)NAF. */ 
+#define WTNAF	 4
 /** Chosen binary elliptic curve point multiplication method. */
 #define EB_MUL	 @EB_MUL@
 
@@ -435,11 +516,79 @@
 #define EC_METHD "@EC_METHD@"
 
 /** Prime curves. */
-#define PRIME	 1
+#define PRIME    1
 /** Binary curves. */
-#define BINAR	 2
+#define CHAR2    2
 /** Chosen elliptic curve cryptography method. */
 #define EC_CUR	 @EC_CUR@
+
+/** Support for supersingular curves. */
+#cmakedefine HB_SUPER
+/** Build precomputation table for generator. */
+#cmakedefine HB_PRECO
+/** Width of precomputation table for fixed point methods. */
+#define HB_DEPTH @HB_DEPTH@
+/** Width of window processing for unknown point methods. */
+#define HB_WIDTH @HB_WIDTH@
+
+/** Binary elliptic curve arithmetic method. */
+#define HB_METHD "@HB_METHD@"
+
+/** Affine coordinates. */
+#define BASIC	 1
+/** López-Dahab Projective coordinates. */
+#define PROJC	 2
+/** Chosen binary elliptic curve coordinate method. */
+#define HB_ADD	 @EB_ADD@
+
+/** Binary point multiplication. */ 
+#define BASIC	 1
+/** Width-w (T)NAF. */ 
+#define WTNAF	 4
+/** Octupling-based windowing. */
+#define OCTUP	 7
+/** Chosen binary hyperelliptic curve point multiplication method. */
+#define HB_MUL	 @HB_MUL@
+
+/** Binary point multiplication. */ 
+#define BASIC	 1
+/** Yao's windowing method. */
+#define YAOWI	 2
+/** NAF windowing method. */ 
+#define NAFWI	 3
+/** w-(T)NAF method. */
+#define WTNAF    4
+/** Single-table comb method. */
+#define COMBS	 5
+/** Double-table comb method. */
+#define COMBD    6
+/** Yao's windowing method. */
+#define OCTUP	 7
+/** Chosen binary hyperelliptic curve point multiplication method. */
+#define HB_FIX	 @HB_FIX@
+
+/** Basic simultaneouns point multiplication. */
+#define BASIC    1
+/** Shamir's trick. */
+#define TRICK    2
+/** Interleaving of w-(T)NAFs. */
+#define INTER    3
+/** Joint sparse form. */
+#define JOINT    4
+/** Chosen binary elliptic curve simulteanous point multiplication method. */
+#define HB_SIM   @HB_SIM@ 
+
+/** Bilinear pairing method. */
+#define PP_METHD "@PP_METHD@"
+
+/** R-ate pairing. */ 
+#define R_ATE    1
+/** Optimal ate pairing. */
+#define O_ATE    2
+/** X-ate pairing. */
+#define X_ATE    3
+/** Chosen prime elliptic curve point pairing method. */
+#define PP_MAP   @PP_MAP@
 
 /** Parallel implementation. */
 #cmakedefine PB_PARAL
@@ -448,10 +597,10 @@
 #define PB_METHD "@PB_METHD@"
 
 /** Pairing computation with square roots. */ 
-#define ETATS	 1
+#define ETATS    1
 /** Pairing computation without square roots. */
-#define ETATN	 2
-/** Chosen binary elliptic curve point multiplication method. */
+#define ETATN    2
+/** Chosen binary elliptic curve point pairing method. */
 #define PB_MAP	 @PB_MAP@
 
 /** Binary elliptic curve arithmetic method. */
@@ -460,7 +609,7 @@
 /** Prime curves. */
 #define PRIME	 1
 /** Binary curves. */
-#define BINAR	 2
+#define CHAR2	 2
 /** Chosen elliptic curve cryptography method. */
 #define PC_CUR	 @PC_CUR@
 

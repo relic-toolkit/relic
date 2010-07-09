@@ -35,6 +35,10 @@
 #include "relic_eb.h"
 #include "relic_error.h"
 
+/*============================================================================*/
+/* Private definitions                                                        */
+/*============================================================================*/
+
 #if EB_MUL == WTNAF || !defined(STRIP)
 
 #if defined(EB_KBLTZ)
@@ -176,7 +180,7 @@ static void table_init_koblitz(eb_t *t, eb_t p) {
  * @param[in] p					- the point to multiply.
  * @param[in] k					- the integer.
  */
-static void eb_mul_tnaf_tab(eb_t r, eb_t p, bn_t k) {
+static void eb_mul_tnaf_impl(eb_t r, eb_t p, bn_t k) {
 	int len, i, n;
 	signed char tnaf[FB_BITS + 8], *t, u;
 	eb_t table[1 << (EB_WIDTH - 2)];
@@ -274,7 +278,7 @@ static void table_init_ordin(eb_t *t, eb_t p) {
 	eb_copy(t[0], p);
 }
 
-static void eb_mul_naf_tab(eb_t r, eb_t p, bn_t k) {
+static void eb_mul_naf_impl(eb_t r, eb_t p, bn_t k) {
 	int len, i, n;
 	signed char naf[FB_BITS + 1], *t;
 	eb_t table[1 << (EB_WIDTH - 2)];
@@ -367,10 +371,10 @@ void eb_mul_basic(eb_t r, eb_t p, bn_t k) {
 
 #if defined(EB_ORDIN) || defined(EB_KBLTZ)
 
-#if EB_MUL == CONST || !defined(STRIP)
+#if EB_MUL == LODAH || !defined(STRIP)
 
-void eb_mul_const(eb_t r, eb_t p, bn_t k) {
-	int i, t, koblitz;
+void eb_mul_lodah(eb_t r, eb_t p, bn_t k) {
+	int i, t;
 	fb_t x1, z1, x2, z2, r1, r2, r3, r4;
 	dig_t *b;
 
@@ -402,12 +406,18 @@ void eb_mul_const(eb_t r, eb_t p, bn_t k) {
 
 		b = eb_curve_get_b();
 
-		koblitz = eb_curve_is_kbltz();
-
-		if (!koblitz) {
-			fb_add(x2, x2, b);
-		} else {
-			fb_add_dig(x2, x2, (dig_t)1);
+		switch (eb_curve_opt_b()) {
+			case OPT_ZERO:
+				break;
+			case OPT_ONE:
+				fb_add_dig(x2, x2, (dig_t)1);
+				break;
+			case OPT_DIGIT:
+				fb_add_dig(x2, x2, b[0]);
+				break;
+			default:
+				fb_add(x2, x2, b);
+				break;
 		}
 
 		t = bn_bits(k);
@@ -416,21 +426,33 @@ void eb_mul_const(eb_t r, eb_t p, bn_t k) {
 			fb_mul(r2, x2, z1);
 			fb_add(r3, r1, r2);
 			fb_mul(r4, r1, r2);
-			if (bn_get_bit(k, i) == 1) {
+			if (bn_test_bit(k, i) == 1) {
 				fb_sqr(z1, r3);
 				fb_mul(r1, z1, p->x);
 				fb_add(x1, r1, r4);
 				fb_sqr(r1, z2);
 				fb_sqr(r2, x2);
 				fb_mul(z2, r1, r2);
-				if (!koblitz) {
-					fb_sqr(x2, r2);
-					fb_sqr(r1, r1);
-					fb_mul(r2, r1, b);
-					fb_add(x2, x2, r2);
-				} else {
-					fb_add(r1, r1, r2);
-					fb_sqr(x2, r1);
+				switch (eb_curve_opt_b()) {
+					case OPT_ZERO:
+						fb_sqr(x2, r2);
+						break;
+					case OPT_ONE:
+						fb_add(r1, r1, r2);
+						fb_sqr(x2, r1);
+						break;
+					case OPT_DIGIT:
+						fb_sqr(x2, r2);
+						fb_sqr(r1, r1);
+						fb_mul_dig(r2, r1, b[0]);
+						fb_add(x2, x2, r2);
+						break;
+					default:
+						fb_sqr(x2, r2);
+						fb_sqr(r1, r1);
+						fb_mul(r2, r1, b);
+						fb_add(x2, x2, r2);
+						break;
 				}
 			} else {
 				fb_sqr(z2, r3);
@@ -439,14 +461,26 @@ void eb_mul_const(eb_t r, eb_t p, bn_t k) {
 				fb_sqr(r1, z1);
 				fb_sqr(r2, x1);
 				fb_mul(z1, r1, r2);
-				if (!koblitz) {
-					fb_sqr(x1, r2);
-					fb_sqr(r1, r1);
-					fb_mul(r2, r1, b);
-					fb_add(x1, x1, r2);
-				} else {
-					fb_add(r1, r1, r2);
-					fb_sqr(x1, r1);
+				switch (eb_curve_opt_b()) {
+					case OPT_ZERO:
+						fb_sqr(x1, r2);
+						break;
+					case OPT_ONE:
+						fb_add(r1, r1, r2);
+						fb_sqr(x1, r1);
+						break;
+					case OPT_DIGIT:
+						fb_sqr(x1, r2);
+						fb_sqr(r1, r1);
+						fb_mul_dig(r2, r1, b[0]);
+						fb_add(x1, x1, r2);
+						break;
+					default:
+						fb_sqr(x1, r2);
+						fb_sqr(r1, r1);
+						fb_mul(r2, r1, b);
+						fb_add(x1, x1, r2);
+						break;
 				}
 			}
 		}
@@ -461,25 +495,36 @@ void eb_mul_const(eb_t r, eb_t p, bn_t k) {
 				fb_zero(r->z);
 				fb_set_bit(r->z, 0, 1);
 			} else {
+				/* r3 = z1 * z2. */
 				fb_mul(r3, z1, z2);
+				/* z1 = (x1 + x * z1). */
 				fb_mul(z1, z1, p->x);
 				fb_add(z1, z1, x1);
+				/* z2 = x * z2. */
 				fb_mul(z2, z2, p->x);
+				/* x1 = x1 * z2. */
 				fb_mul(x1, x1, z2);
+				/* z2 = (x2 + x * z2)(x1 + x * z1). */
 				fb_add(z2, z2, x2);
-
 				fb_mul(z2, z2, z1);
+
+				/* r4 = (x^2 + y) * z1 * z2 + (x2 + x * z2)(x1 + x * z1). */
 				fb_sqr(r4, p->x);
 				fb_add(r4, r4, p->y);
 				fb_mul(r4, r4, r3);
 				fb_add(r4, r4, z2);
 
+				/* r3 = (z1 * z2 * x)^{-1}. */
 				fb_mul(r3, r3, p->x);
 				fb_inv(r3, r3);
+				/* r4 = (x^2 + y) * z1 * z2 + (x2 + x * z2)(x1 + x * z1) * r3. */
 				fb_mul(r4, r4, r3);
+				/* x2 = x1 * x * z2 * (z1 * z2 * x)^{-1} = x1/z1. */
 				fb_mul(x2, x1, r3);
+				/* z2 = x + x1/z1. */
 				fb_add(z2, x2, p->x);
 
+				/* z2 = z2 * r4 + y. */
 				fb_mul(z2, z2, r4);
 				fb_add(z2, z2, p->y);
 
@@ -508,20 +553,20 @@ void eb_mul_const(eb_t r, eb_t p, bn_t k) {
 }
 
 #endif /* EB_ORDIN || EB_KBLTZ */
-#endif /* EB_MUL == CONST */
+#endif /* EB_MUL == LODAH */
 
 #if EB_MUL == WTNAF || !defined(STRIP)
 
 void eb_mul_wtnaf(eb_t r, eb_t p, bn_t k) {
 #if defined(EB_KBLTZ)
 	if (eb_curve_is_kbltz()) {
-		eb_mul_tnaf_tab(r, p, k);
+		eb_mul_tnaf_impl(r, p, k);
 		return;
 	}
 #endif
 
 #if defined(EB_ORDIN) || defined(EB_SUPER)
-	eb_mul_naf_tab(r, p, k);
+	eb_mul_naf_impl(r, p, k);
 #endif
 }
 
@@ -531,7 +576,7 @@ void eb_mul_wtnaf(eb_t r, eb_t p, bn_t k) {
 
 void eb_mul_halve(eb_t r, eb_t p, bn_t k) {
 	int len, i, j;
-	signed char naf[FB_BITS + 1], *tmp;
+	signed char naf[FB_BITS + 1] = { 0 }, *tmp;
 	eb_t q, table[1 << (EB_WIDTH - 2)];
 	bn_t n, _k;
 
@@ -542,13 +587,13 @@ void eb_mul_halve(eb_t r, eb_t p, bn_t k) {
 		eb_null(table[i]);
 	}
 
+	if (fb_is_zero(eb_curve_get_a())) {
+		THROW(ERR_INVALID);
+	}
+
 	TRY {
 		bn_new(n);
 		bn_new(_k);
-		fb_new(u);
-		fb_new(v);
-		fb_new(l);
-		fb_new(t);
 		eb_new(q);
 
 		/* Prepare the precomputation table. */
@@ -562,7 +607,7 @@ void eb_mul_halve(eb_t r, eb_t p, bn_t k) {
 		bn_lsh(_k, k, bn_bits(n) - 1);
 		bn_mod(_k, _k, n);
 
-		/* Compute the w-TNAF representation of k'. */
+		/* Compute the w-NAF representation of k'. */
 		bn_rec_naf(naf, &len, _k, EB_WIDTH);
 
 		for (i = len; i <= bn_bits(n); i++) {
@@ -610,10 +655,6 @@ void eb_mul_halve(eb_t r, eb_t p, bn_t k) {
 		}
 		bn_free(n);
 		bn_free(_k);
-		fb_free(u);
-		fb_free(v);
-		fb_free(l);
-		fb_free(t);
 	}
 }
 
@@ -639,4 +680,35 @@ void eb_mul_gen(eb_t r, bn_t k) {
 		eb_free(gen);
 	}
 #endif
+}
+
+void eb_mul_dig(eb_t r, eb_t p, dig_t k) {
+	int i, l;
+	eb_t t;
+
+	eb_null(t);
+
+	TRY {
+		eb_new(t);
+
+		l = util_bits_dig(k);
+
+		eb_copy(t, p);
+
+		for (i = l - 2; i >= 0; i--) {
+			eb_dbl(t, t);
+			if (k & ((dig_t)1 << i)) {
+				eb_add(t, t, p);
+			}
+		}
+
+		eb_copy(r, t);
+		eb_norm(r, r);
+	}
+	CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	}
+	FINALLY {
+		eb_free(t);
+	}
 }

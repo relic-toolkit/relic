@@ -434,29 +434,26 @@ static int doubling(void) {
 static int halving(void) {
 	int code = STS_ERR;
 	eb_t a, b, c;
+	fb_t t;
 
 	eb_null(a);
 	eb_null(b);
 	eb_null(c);
+	fb_null(t);
 
 	TRY {
 		eb_new(a);
 		eb_new(b);
 		eb_new(c);
+		fb_new(t);
 
-		if (!eb_curve_is_kbltz()) {
+		fb_trc(t, eb_curve_get_a());
+		if (fb_get_bit(t, 0) == 1 && !eb_curve_is_kbltz()) {
 			TEST_BEGIN("point halving is correct") {
 				eb_rand(a);
 				eb_hlv(b, a);
 				eb_norm(b, b);
 				eb_dbl(c, b);
-				eb_norm(c, c);
-				TEST_ASSERT(eb_cmp(a, c) == CMP_EQ, end);
-				eb_hlv(b, a);
-				eb_hlv(b, b);
-				eb_norm(b, b);
-				eb_dbl(c, b);
-				eb_dbl(c, c);
 				eb_norm(c, c);
 				TEST_ASSERT(eb_cmp(a, c) == CMP_EQ, end);
 			}
@@ -547,9 +544,11 @@ static int frobenius(void) {
 
 static int multiplication(void) {
 	int code = STS_ERR;
+	fb_t t;
 	eb_t p, q, r;
 	bn_t n, k;
 
+	fb_null(t);
 	bn_null(n);
 	bn_null(k);
 	eb_null(p);
@@ -557,6 +556,7 @@ static int multiplication(void) {
 	eb_null(r);
 
 	TRY {
+		fb_new(t);
 		eb_new(p);
 		eb_new(q);
 		eb_new(r);
@@ -589,13 +589,15 @@ static int multiplication(void) {
 		} TEST_END;
 #endif
 
-#if defined(EB_ORDIN) && (EB_MUL == CONST || !defined(STRIP))
+#if defined(EB_ORDIN) && (EB_MUL == LODAH || !defined(STRIP))
 		if (!eb_curve_is_super()) {
-			TEST_BEGIN("constant-time point multiplication is correct") {
+			TEST_BEGIN("l?pez-dahab point multiplication is correct") {
 				bn_rand(k, BN_POS, bn_bits(n));
 				bn_mod(k, k, n);
+				eb_curve_get_ord(k);
+				bn_sub_dig(k, k, 2);
 				eb_mul(q, p, k);
-				eb_mul_const(r, p, k);
+				eb_mul_lodah(r, p, k);
 				TEST_ASSERT(eb_cmp(q, r) == CMP_EQ, end);
 			}
 			TEST_END;
@@ -613,7 +615,8 @@ static int multiplication(void) {
 		TEST_END;
 #endif
 
-		if (!eb_curve_is_kbltz()) {
+		fb_trc(t, eb_curve_get_a());
+		if (fb_get_bit(t, 0) == 1 && !eb_curve_is_kbltz()) {
 #if EB_MUL == HALVE || !defined(STRIP)
 			TEST_BEGIN("point multiplication by halving is correct") {
 				bn_rand(k, BN_POS, bn_bits(n));
@@ -625,6 +628,15 @@ static int multiplication(void) {
 			TEST_END;
 #endif
 		}
+
+		TEST_BEGIN("multiplication by digit is correct") {
+			bn_rand(k, BN_POS, BN_DIGIT);
+			eb_mul(q, p, k);
+			eb_mul_dig(r, p, k->dp[0]);
+			TEST_ASSERT(eb_cmp(q, r) == CMP_EQ, end);
+		}
+		TEST_END;
+
 	}
 	CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -632,6 +644,7 @@ static int multiplication(void) {
 	}
 	code = STS_OK;
   end:
+	fb_free(t);
 	eb_free(p);
 	eb_free(q);
 	eb_free(r);
@@ -913,6 +926,74 @@ static int simultaneous(void) {
 	return code;
 }
 
+static int compression(void) {
+	int code = STS_ERR;
+	eb_t a, b, c;
+
+	eb_null(a);
+	eb_null(b);
+	eb_null(c);
+
+	TRY {
+		eb_new(a);
+		eb_new(b);
+		eb_new(c);
+
+		TEST_BEGIN("point compression is correct") {
+			eb_rand(a);
+			eb_pck(b, a);
+			eb_upk(c, b);
+			TEST_ASSERT(eb_cmp(a, c) == CMP_EQ, end);
+		}
+		TEST_END;
+
+	}
+	CATCH_ANY {
+		ERROR(end);
+	}
+	code = STS_OK;
+  end:
+	eb_free(a);
+	eb_free(b);
+	eb_free(c);
+	return code;
+}
+
+static int hashing(void) {
+	int code = STS_ERR;
+	eb_t a;
+	bn_t n;
+	unsigned char msg[5];
+
+	eb_null(a);
+	bn_null(n);
+
+	TRY {
+		eb_new(a);
+		bn_new(n);
+
+		eb_curve_get_ord(n);
+
+		TEST_BEGIN("point hashing is correct") {
+			rand_bytes(msg, sizeof(msg));
+			eb_map(a, msg, sizeof(strlen));
+			eb_mul(a, a, n);
+			TEST_ASSERT(eb_is_infty(a) == 1, end);
+		}
+		TEST_END;
+
+	}
+	CATCH_ANY {
+		ERROR(end);
+	}
+	code = STS_OK;
+  end:
+	eb_free(a);
+	eb_free(b);
+	eb_free(c);
+	return code;
+}
+
 static int test(void) {
 	eb_param_print();
 
@@ -961,6 +1042,14 @@ static int test(void) {
 		return STS_ERR;
 	}
 
+	if (compression() != STS_OK) {
+		return STS_ERR;
+	}
+
+	if (hashing() != STS_OK) {
+		return STS_ERR;
+	}
+
 	return STS_OK;
 }
 
@@ -975,17 +1064,16 @@ int main(void) {
 	if (r0 == STS_OK) {
 		if (test() != STS_OK) {
 			core_clean();
-			return 0;
+			return 1;
 		}
 	}
 #endif
-
 #if defined(EB_STAND) && defined(EB_KBLTZ)
 	r1 = eb_param_set_any_kbltz();
 	if (r1 == STS_OK) {
 		if (test() != STS_OK) {
 			core_clean();
-			return 0;
+			return 1;
 		}
 	}
 #endif
@@ -995,7 +1083,7 @@ int main(void) {
 	if (r2 == STS_OK) {
 		if (test() != STS_OK) {
 			core_clean();
-			return 0;
+			return 1;
 		}
 	}
 #endif

@@ -1212,16 +1212,6 @@ static int squaring12(void) {
 			fp12_sqr(c, a);
 			TEST_ASSERT(fp12_cmp(b, c) == CMP_EQ, end);
 		} TEST_END;
-
-		TEST_BEGIN("squaring of an unitary element is correct") {
-			fp12_rand(a);
-			fp12_inv(b, a);
-			fp12_inv_uni(a, a);
-			fp12_mul(a, a, b);
-			fp12_sqr(b, a);
-			fp12_sqr(c, a);
-			TEST_ASSERT(fp12_cmp(b, c) == CMP_EQ, end);
-		} TEST_END;
 	}
 	CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -1300,19 +1290,6 @@ static int exponentiation12(void) {
 			dv_copy(d->dp, fp_prime_get(), FP_DIGS);
 			fp12_exp(c, a, d);
 			TEST_ASSERT(fp12_cmp(c, b) == CMP_EQ, end);
-		} TEST_END;
-
-		TEST_BEGIN("exponentiation of an unitary element is correct") {
-			fp12_rand(a);
-			fp12_inv(b, a);
-			fp12_inv_uni(a, a);
-			fp12_mul(a, a, b);
-			d->used = FP_DIGS;
-			dv_copy(d->dp, fp_prime_get(), FP_DIGS);
-			bn_rand(e, BN_POS, bn_bits(d));
-			fp12_exp(b, a, e);
-			fp12_exp_uni(c, a, e);
-			TEST_ASSERT(fp12_cmp(b, c) == CMP_EQ, end);
 		} TEST_END;
 	}
 	CATCH_ANY {
@@ -1806,7 +1783,7 @@ static int pairing(void) {
 
 		ep_curve_get_ord(n);
 
-		TEST_BEGIN("rate pairing is bilinear") {
+		TEST_BEGIN("pairing is bilinear") {
 			ep2_rand(p);
 			ep_rand(q);
 			bn_rand(k, BN_POS, bn_bits(n));
@@ -1814,11 +1791,59 @@ static int pairing(void) {
 			ep_mul(r, q, k);
 			fp12_zero(e1);
 			fp12_zero(e2);
-			pp_map_rate(e1, p, r);
+			pp_map(e1, p, r);
 			ep2_mul(p, p, k);
-			pp_map_rate(e2, p, q);
+			pp_map(e2, p, q);
 			TEST_ASSERT(fp12_cmp(e1, e2) == CMP_EQ, end);
 		} TEST_END;
+
+#if PP_MAP == R_ATE || !defined(STRIP)
+		TEST_BEGIN("r-ate pairing is bilinear") {
+			ep2_rand(p);
+			ep_rand(q);
+			bn_rand(k, BN_POS, bn_bits(n));
+			bn_mod(k, k, n);
+			ep_mul(r, q, k);
+			fp12_zero(e1);
+			fp12_zero(e2);
+			pp_map_r_ate(e1, p, r);
+			ep2_mul(p, p, k);
+			pp_map_r_ate(e2, p, q);
+			TEST_ASSERT(fp12_cmp(e1, e2) == CMP_EQ, end);
+		} TEST_END;
+#endif
+
+#if PP_MAP == O_ATE || !defined(STRIP)
+		TEST_BEGIN("o-ate pairing is bilinear") {
+			ep2_rand(p);
+			ep_rand(q);
+			bn_rand(k, BN_POS, bn_bits(n));
+			bn_mod(k, k, n);
+			ep_mul(r, q, k);
+			fp12_zero(e1);
+			fp12_zero(e2);
+			pp_map_o_ate(e1, p, r);
+			ep2_mul(p, p, k);
+			pp_map_o_ate(e2, p, q);
+			TEST_ASSERT(fp12_cmp(e1, e2) == CMP_EQ, end);
+		} TEST_END;
+#endif
+
+#if PP_MAP == X_ATE || !defined(STRIP)
+		TEST_BEGIN("x-ate pairing is bilinear") {
+			ep2_rand(p);
+			ep_rand(q);
+			bn_rand(k, BN_POS, bn_bits(n));
+			bn_mod(k, k, n);
+			ep_mul(r, q, k);
+			fp12_zero(e1);
+			fp12_zero(e2);
+			pp_map_x_ate(e1, p, r);
+			ep2_mul(p, p, k);
+			pp_map_x_ate(e2, p, q);
+			TEST_ASSERT(fp12_cmp(e1, e2) == CMP_EQ, end);
+		} TEST_END;
+#endif
 	}
 	CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -1839,11 +1864,12 @@ static int pairing(void) {
 int main(void) {
 	core_init();
 
-	if (fp_param_set_any_tower() != STS_OK) {
-		THROW(ERR_NO_FIELD);
+	if (ep_param_set_any_pairf() == STS_ERR) {
+		THROW(ERR_NO_CURVE);
 		core_clean();
 		return 0;
 	}
+	fp2_const_calc();
 
 	util_print_banner("Tests for the PP module", 0);
 
@@ -1992,46 +2018,40 @@ int main(void) {
 		return 1;
 	}
 
-	if (ep_param_set_any_pairf() == STS_ERR) {
-		THROW(ERR_NO_CURVE);
-		core_clean();
-		return 0;
-	}
-
 	util_print_banner("Quadratic twist:", 0);
 	util_print_banner("Utilities:", 1);
 
-	if (memory() != STS_OK) {
-		core_clean();
-		return 1;
-	}
+ 	if (memory() != STS_OK) {
+ 		core_clean();
+ 		return 1;
+ 	}
 
-	if (util() != STS_OK) {
-		core_clean();
-		return 1;
-	}
+ 	if (util() != STS_OK) {
+ 		core_clean();
+ 		return 1;
+ 	}
 
 	util_print_banner("Arithmetic:", 1);
 
-	if (addition() != STS_OK) {
-		core_clean();
-		return 1;
-	}
+ 	if (addition() != STS_OK) {
+ 		core_clean();
+ 		return 1;
+ 	}
 
-	if (subtraction() != STS_OK) {
-		core_clean();
-		return 1;
-	}
+ 	if (subtraction() != STS_OK) {
+ 		core_clean();
+ 		return 1;
+ 	}
 
-	if (doubling() != STS_OK) {
-		core_clean();
-		return 1;
-	}
+ 	if (doubling() != STS_OK) {
+ 		core_clean();
+ 		return 1;
+ 	}
 
-	if (multiplication() != STS_OK) {
-		core_clean();
-		return 1;
-	}
+ 	if (multiplication() != STS_OK) {
+ 		core_clean();
+ 		return 1;
+ 	}
 
 	util_print_banner("Bilinear pairing:\n", 0);
 

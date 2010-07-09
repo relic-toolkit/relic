@@ -162,6 +162,32 @@ typedef align dig_t fp_st[FP_DIGS + PADDING(FP_BYTES)/sizeof(dig_t)];
 #endif
 
 /**
+ * Adds two prime field elements. Computes c = a + b.
+ *
+ * @param[out] C			- the result.
+ * @param[in] A				- the first prime field element.
+ * @param[in] B				- the second prime field element.
+ */
+#if FP_ADD == BASIC
+#define fp_add(C, A, B)		fp_add_basic(C, A, B)
+#elif FP_ADD == INTEG
+#define fp_add(C, A, B)		fp_add_integ(C, A, B)
+#endif
+
+/**
+ * Subtracts a prime field element from another. Computes c = a - b.
+ *
+ * @param[out] C			- the result.
+ * @param[in] A				- the first prime field element.
+ * @param[in] B				- the second prime field element.
+ */
+#if FP_ADD == BASIC
+#define fp_sub(C, A, B)		fp_sub_basic(C, A, B)
+#elif FP_ADD == INTEG
+#define fp_sub(C, A, B)		fp_sub_integ(C, A, B)
+#endif
+
+/**
  * Multiples two prime field elements. Computes c = a * b.
  *
  * @param[out] C			- the result.
@@ -220,6 +246,39 @@ typedef align dig_t fp_st[FP_DIGS + PADDING(FP_BYTES)/sizeof(dig_t)];
 #define fp_rdc_monty(C, A)	fp_rdc_monty_basic(C, A)
 #else
 #define fp_rdc_monty(C, A)	fp_rdc_monty_comba(C, A)
+#endif
+
+/**
+ * Inverts a prime field element. Computes c = a^{-1}.
+ *
+ * @param[out] C			- the result.
+ * @param[in] A				- the prime field element to invert.
+ */
+#if FP_INV == BASIC
+#define fp_inv(C, A)	fp_inv_basic(C, A)
+#elif FP_INV == BINAR
+#define fp_inv(C, A)	fp_inv_binar(C, A)
+#elif FP_INV == MONTY
+#define fp_inv(C, A)	fp_inv_monty(C, A)
+#elif FP_INV == EXGCD
+#define fp_inv(C, A)	fp_inv_exgcd(C, A)
+#elif FP_INV == LOWER
+#define fp_inv(C, A)	fp_inv_lower(C, A)
+#endif
+
+/**
+ * Exponentiates a prime field element. Computes c = a^b (mod p).
+ *
+ * @param[out] C			- the result.
+ * @param[in] A				- the basis.
+ * @param[in] B				- the exponent.
+ */
+#if FP_EXP == BASIC
+#define fp_exp(C, A, B)		fp_exp_basic(C, A, B)
+#elif FP_EXP == SLIDE
+#define fp_exp(C, A, B)		fp_exp_slide(C, A, B)
+#elif FP_EXP == MONTY
+#define fp_exp(C, A, B)		fp_exp_monty(C, A, B)
 #endif
 
 /*============================================================================*/
@@ -316,6 +375,33 @@ void fp_prime_set_dense(bn_t p);
  * @param[in] p			- the new prime field order.
  */
 void fp_prime_set_spars(int *spars, int len);
+
+/**
+ * Imports a multiple precision integer as a prime field element, doing the
+ * necessary conversion.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the multiple precision integer to import.
+ */
+void fp_prime_conv(fp_t c, bn_t a);
+
+/**
+ * Imports a single digit as a prime field element, doing the necessary
+ * conversion.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the digit to import.
+ */
+void fp_prime_conv_dig(fp_t c, dig_t a);
+
+/**
+ * Exports a prime field element as a multiple precision integer, doing the
+ * necessary conversion.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the prime field element to export.
+ */
+void fp_prime_back(bn_t c, fp_t a);
 
 /**
  * Assigns a prime modulus based on its identifier.
@@ -509,13 +595,23 @@ int fp_cmp_dig(fp_t a, dig_t b);
 int fp_cmp(fp_t a, fp_t b);
 
 /**
- * Adds two prime field elements. Computes c = a + b.
+ * Adds two prime field elements using basic addition. Computes c = a + b.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the first prime field element to add.
  * @param[in] b				- the second prime field element to add.
  */
-void fp_add(fp_t c, fp_t a, fp_t b);
+void fp_add_basic(fp_t c, fp_t a, fp_t b);
+
+/**
+ * Adds two prime field elements with integrated modular reduction. Computes
+ * c = a + b.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the first prime field element to add.
+ * @param[in] b				- the second prime field element to add.
+ */
+void fp_add_integ(fp_t c, fp_t a, fp_t b);
 
 /**
  * Adds a prime field element and a digit. Computes c = a + b.
@@ -527,13 +623,24 @@ void fp_add(fp_t c, fp_t a, fp_t b);
 void fp_add_dig(fp_t c, fp_t a, dig_t b);
 
 /**
- * Subtracts a prime field element from another. Computes c = a - b.
+ * Subtracts a prime field element from another using basic subtraction.
+ * Computes c = a - b.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the prime field element.
  * @param[in] b				- the prime field element to subtract.
  */
-void fp_sub(fp_t c, fp_t a, fp_t b);
+void fp_sub_basic(fp_t c, fp_t a, fp_t b);
+
+/**
+ * Subtracts a prime field element from another with integrated modular
+ * reduction. Computes c = a - b.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the prime field element.
+ * @param[in] b				- the prime field element to subtract.
+ */
+void fp_sub_integ(fp_t c, fp_t a, fp_t b);
 
 /**
  * Subtracts a digit from a prime field element. Computes c = a - b.
@@ -659,14 +766,6 @@ void fp_lsh(fp_t c, fp_t a, int bits);
 void fp_rsh(fp_t c, fp_t a, int bits);
 
 /**
- * Inverts a prime field element. Computes c = a^(-1).
- *
- * @param[out] c			- the result.
- * @param[in] a				- the prime field element to inver.
- */
-void fp_inv(fp_t c, fp_t a);
-
-/**
  * Reduces a multiplication result modulo the prime field modulo using
  * division-based reduction.
  *
@@ -703,30 +802,81 @@ void fp_rdc_monty_comba(fp_t c, dv_t a);
 void fp_rdc_quick(fp_t c, dv_t a);
 
 /**
- * Imports a multiple precision integer as a prime field element, doing the
- * necessary conversion.
+ * Inverts a prime field element using Fermat's Little Theorem.
  *
  * @param[out] c			- the result.
- * @param[in] a				- the multiple precision integer to import.
+ * @param[in] a				- the prime field element to invert.
  */
-void fp_prime_conv(fp_t c, bn_t a);
+void fp_inv_basic(fp_t c, fp_t a);
 
 /**
- * Imports a single digit as a prime field element, doing the necessary
- * conversion.
+ * Inverts a prime field element using the binary method.
  *
  * @param[out] c			- the result.
- * @param[in] a				- the digit to import.
+ * @param[in] a				- the prime field element to invert.
  */
-void fp_prime_conv_dig(fp_t c, dig_t a);
+void fp_inv_binar(fp_t c, fp_t a);
 
 /**
- * Exports a prime field element as a multiple precision integer, doing the
- * necessary conversion.
+ * Inverts a prime field element using Montgomery inversion.
  *
  * @param[out] c			- the result.
- * @param[in] a				- the prime field element to export.
+ * @param[in] a				- the prime field element to invert.
  */
-void fp_prime_back(bn_t c, fp_t a);
+void fp_inv_monty(fp_t c, fp_t a);
+
+/**
+ * Inverts a prime field element using the Euclidean Extended Algorithm.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the prime field element to invert.
+ */
+void fp_inv_exgcd(fp_t c, fp_t a);
+
+/**
+ * Inverts a prime field element using a direct call to the lower layer.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the prime field element to invert.
+ */
+void fp_inv_lower(fp_t c, fp_t a);
+
+/**
+ * Exponentiates a prime field element using the binary
+ * method.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the basis.
+ * @param[in] b				- the exponent.
+ */
+void fp_exp_basic(fp_t c, fp_t a, bn_t b);
+
+/**
+ * Exponentiates a prime field element using the sliding window method.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the basis.
+ * @param[in] b				- the exponent.
+ */
+void fp_exp_slide(fp_t c, fp_t a, bn_t b);
+
+/**
+ * Exponentiates a prime field element using the constant-time Montgomery
+ * powering ladder method.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the basis.
+ * @param[in] b				- the exponent.
+ */
+void fp_exp_monty(fp_t c, fp_t a, bn_t b);
+
+/**
+ * Extracts the square root of prime field element. Computes c = sqrt(a). The
+ * other square root is the negation of c.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the prime field element.
+ */
+void fp_srt(fp_t c, fp_t a);
 
 #endif /* !RELIC_FP_H */

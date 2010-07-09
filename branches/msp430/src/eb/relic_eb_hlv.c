@@ -63,6 +63,7 @@ void eb_hlv(eb_t r, eb_t p) {
 		/* Solve l^2 + l = u + a. */
 		switch (eb_curve_opt_a()) {
 			case OPT_ZERO:
+				fb_copy(t, q->x);
 				break;
 			case OPT_ONE:
 				fb_add_dig(t, q->x, (dig_t)1);
@@ -87,7 +88,7 @@ void eb_hlv(eb_t r, eb_t p) {
 		}
 		/* If Tr(t) = 0 then lambda_P = lambda, u = sqrt(t + u). */
 		fb_trc(v, t);
-		if (fb_test_bit(v, 0) == 0) {
+		if (v[0] == 0) {
 			fb_copy(r->y, l);
 			fb_add(t, t, q->x);
 			fb_srt(r->x, t);

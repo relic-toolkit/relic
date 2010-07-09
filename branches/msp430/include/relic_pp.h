@@ -559,14 +559,19 @@ void fp12_sub(fp12_t c, fp12_t a, fp12_t b);
 #endif
 
 /**
- * Computes the etat pairing of two binary elliptic curve points. Computes
- * e(P, Q).
+ * Computes the pairing of two binary elliptic curve points. Computes e(P, Q).
  *
  * @param[out] R			- the result.
  * @param[in] P				- the first elliptic curve point.
  * @param[in] Q				- the second elliptic curve point.
  */
-#define pp_map(R, P, Q)		pp_map_rate(R, P, Q)
+#if PP_MAP == R_ATE
+#define pp_map(R, P, Q)		pp_map_r_ate(R, P, Q)
+#elif PP_MAP == O_ATE
+#define pp_map(R, P, Q)		pp_map_o_ate(R, P, Q)
+#elif PP_MAP == X_ATE
+#define pp_map(R, P, Q)		pp_map_x_ate(R, P, Q)
+#endif
 
 /*============================================================================*/
 /* Function prototypes                                                        */
@@ -1136,6 +1141,26 @@ void pp_pair_clean(void);
  * @param[in] q				- the first elliptic curve point.
  * @param[in] p				- the second elliptic curve point.
  */
-void pp_map_rate(fp12_t r, ep2_t q, ep_t p);
+void pp_map_r_ate(fp12_t r, ep2_t q, ep_t p);
+
+/**
+ * Computes the Optimal ate pairing of two points in a parameterized elliptic
+ * curve. Computes e(Q, P).
+ *
+ * @param[out] r			- the result.
+ * @param[in] q				- the first elliptic curve point.
+ * @param[in] p				- the second elliptic curve point.
+ */
+void pp_map_o_ate(fp12_t r, ep2_t q, ep_t p);
+
+/**
+ * Computes the X-ate pairing of two points in a parameterized elliptic curve.
+ * Computes e(Q, P).
+ *
+ * @param[out] r			- the result.
+ * @param[in] q				- the first elliptic curve point.
+ * @param[in] p				- the second elliptic curve point.
+ */
+void pp_map_x_ate(fp12_t r, ep2_t q, ep_t p);
 
 #endif /* !RELIC_PP_H */
