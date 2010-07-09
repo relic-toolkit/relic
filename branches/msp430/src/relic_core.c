@@ -95,6 +95,11 @@ int core_init(void) {
 		return STS_ERR;
 	}
 
+#ifdef __MSP430__
+	//forces the linking of msp430util.o to prevent a circular dependency
+	//(relic -> libc -> relic)
+	putchar('\n');
+#endif
 	return STS_OK;
 }
 
