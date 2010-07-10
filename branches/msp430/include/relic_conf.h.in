@@ -703,8 +703,6 @@
 /** Chosen timer. */
 #define TIMER    @TIMER@
 
-#cmakedefine NO_ALLOCA
-
 #ifndef ASM
 
 /**
