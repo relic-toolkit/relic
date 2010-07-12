@@ -234,6 +234,26 @@ static int addition(void) {
 			fp_add(e, a, d);
 			TEST_ASSERT(fp_is_zero(e), end);
 		} TEST_END;
+
+#if FP_ADD == BASIC || !defined(STRIP)
+		TEST_BEGIN("basic addition is correct") {
+			fp_rand(a);
+			fp_rand(b);
+			fp_add(d, a, b);
+			fp_add_basic(e, a, b);
+			TEST_ASSERT(fp_cmp(d, e) == CMP_EQ, end);
+		} TEST_END;
+#endif
+
+#if FP_ADD == BASIC || !defined(STRIP)
+		TEST_BEGIN("integrated addition is correct") {
+			fp_rand(a);
+			fp_rand(b);
+			fp_add(d, a, b);
+			fp_add_integ(e, a, b);
+			TEST_ASSERT(fp_cmp(d, e) == CMP_EQ, end);
+		} TEST_END;
+#endif
 	}
 	CATCH_ANY {
 		ERROR(end);
@@ -287,6 +307,25 @@ static int subtraction(void) {
 			TEST_ASSERT(fp_is_zero(c), end);
 		}
 		TEST_END;
+#if FP_ADD == BASIC || !defined(STRIP)
+		TEST_BEGIN("basic subtraction is correct") {
+			fp_rand(a);
+			fp_rand(b);
+			fp_sub(c, a, b);
+			fp_sub_basic(d, a, b);
+			TEST_ASSERT(fp_cmp(c, d) == CMP_EQ, end);
+		} TEST_END;
+#endif
+
+#if FP_ADD == BASIC || !defined(STRIP)
+		TEST_BEGIN("integrated subtraction is correct") {
+			fp_rand(a);
+			fp_rand(b);
+			fp_sub(c, a, b);
+			fp_sub_integ(d, a, b);
+			TEST_ASSERT(fp_cmp(c, d) == CMP_EQ, end);
+		} TEST_END;
+#endif
 	}
 	CATCH_ANY {
 		ERROR(end);
@@ -509,6 +548,24 @@ static int doubling_halving(void) {
 			TEST_ASSERT(fp_cmp(b, c) == CMP_EQ, end);
 		} TEST_END;
 
+#if FP_ADD == BASIC || !defined(STRIP)
+		TEST_BEGIN("basic doubling is correct") {
+			fp_rand(a);
+			fp_dbl(b, a);
+			fp_dbl_basic(c, a);
+			TEST_ASSERT(fp_cmp(b, c) == CMP_EQ, end);
+		} TEST_END;
+#endif
+
+#if FP_ADD == BASIC || !defined(STRIP)
+		TEST_BEGIN("integrated doubling is correct") {
+			fp_rand(a);
+			fp_dbl(b, a);
+			fp_dbl_basic(c, a);
+			TEST_ASSERT(fp_cmp(b, c) == CMP_EQ, end);
+		} TEST_END;
+#endif
+
 		TEST_BEGIN("halving is consistent") {
 			fp_rand(a);
 			if (!fp_is_even(a)) {
@@ -628,8 +685,6 @@ static int reduction(void) {
 			TEST_ASSERT(fp_is_zero(b) == 1, end);
 		} TEST_END;
 
-#if FP_MUL != INTEG
-
 #if FP_RDC == BASIC || !defined(STRIP)
 		TEST_BEGIN("basic modular reduction is correct") {
 			fp_rand(a);
@@ -658,7 +713,6 @@ static int reduction(void) {
 			}
 			TEST_END;
 		}
-#endif
 #endif
 	}
 	CATCH_ANY {
@@ -822,6 +876,7 @@ static int exponentiation(void) {
 static int square_root(void) {
 	int code = STS_ERR;
 	fp_t a, b, c;
+	int r;
 
 	fp_null(a);
 	fp_null(b);
@@ -835,8 +890,9 @@ static int square_root(void) {
 		TEST_BEGIN("square root extraction is correct") {
 			fp_rand(a);
 			fp_sqr(c, a);
-			fp_srt(b, c);
+			r = fp_srt(b, c);
 			fp_neg(c, b);
+			TEST_ASSERT(r, end);
 			TEST_ASSERT(fp_cmp(b, a) == CMP_EQ || fp_cmp(c, a) == CMP_EQ, end);
 		} TEST_END;
 	}

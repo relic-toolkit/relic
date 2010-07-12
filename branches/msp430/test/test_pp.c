@@ -355,7 +355,6 @@ static int multiplication2(void) {
 				case 7:
 					fp2_mul_art(c, a);
 					fp2_add(c, c, a);
-					fp2_add(c, c, a);
 					break;
 			}
 			TEST_ASSERT(fp2_cmp(b, c) == CMP_EQ, end);
@@ -469,6 +468,37 @@ static int exponentiation2(void) {
 	fp2_free(b);
 	fp2_free(c);
 	bn_free(d);
+	return code;
+}
+
+static int square_root2(void) {
+	int code = STS_ERR;
+	fp2_t a, b, c;
+	int r;
+
+	TRY {
+		fp2_new(a);
+		fp2_new(b);
+		fp2_new(c);
+
+		TEST_BEGIN("square root extraction is correct") {
+			fp2_rand(a);
+			fp2_sqr(c, a);
+			r = fp2_srt(b, c);
+			fp2_neg(c, b);
+			TEST_ASSERT(r, end);
+			TEST_ASSERT(fp2_cmp(b, a) == CMP_EQ || fp2_cmp(c, a) == CMP_EQ, end);
+		} TEST_END;
+	}
+	CATCH_ANY {
+		util_print("FATAL ERROR!\n");
+		ERROR(end);
+	}
+	code = STS_OK;
+  end:
+	fp2_free(a);
+	fp2_free(b);
+	fp2_free(c);
 	return code;
 }
 
@@ -1335,15 +1365,19 @@ static int memory(void) {
 int util(void) {
 	int code = STS_ERR;
 	ep2_t a, b, c;
+	bn_t n;
+	unsigned char msg[5];
 
 	ep2_null(a);
 	ep2_null(b);
 	ep2_null(c);
+	bn_null(n);
 
 	TRY {
 		ep2_new(a);
 		ep2_new(b);
 		ep2_new(c);
+		bn_new(n);
 
 		TEST_BEGIN("comparison is consistent") {
 			ep2_rand(a);
@@ -1388,6 +1422,16 @@ int util(void) {
 			TEST_ASSERT(ep2_is_infty(a), end);
 		}
 		TEST_END;
+
+		ep2_curve_get_ord(n);
+
+		TEST_BEGIN("point hashing is correct") {
+			rand_bytes(msg, sizeof(msg));
+			ep2_map(a, msg, sizeof(msg));
+			ep2_mul(a, a, n);
+			TEST_ASSERT(ep2_is_infty(a) == 1, end);
+		}
+		TEST_END;
 	}
 	CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -1398,6 +1442,7 @@ int util(void) {
 	ep_free(a);
 	ep_free(b);
 	ep_free(c);
+	bn_free(n);
 	return code;
 }
 
@@ -1783,6 +1828,15 @@ static int pairing(void) {
 
 		ep_curve_get_ord(n);
 
+		TEST_BEGIN("pairing is not degenerate") {
+			ep2_rand(p);
+			ep_rand(q);
+			pp_map(e1, p, q);
+			fp12_zero(e2);
+			fp_set_dig(e2[0][0][0], 1);
+			TEST_ASSERT(fp12_cmp(e1, e2) != CMP_EQ, end);
+		} TEST_END;
+
 		TEST_BEGIN("pairing is bilinear") {
 			ep2_rand(p);
 			ep_rand(q);
@@ -1919,6 +1973,11 @@ int main(void) {
 	}
 
 	if (exponentiation2() != STS_OK) {
+		core_clean();
+		return 1;
+	}
+
+	if (square_root2() != STS_OK) {
 		core_clean();
 		return 1;
 	}

@@ -580,12 +580,12 @@ void fp12_sub(fp12_t c, fp12_t a, fp12_t b);
 /**
  * Initializes the pairing over elliptic curves.
  */
-void pp_pair_init(void);
+void pp_map_init(void);
 
 /**
  * Finalizes the pairing over elliptic curves.
  */
-void pp_pair_clean(void);
+void pp_map_clean(void);
 
 /**
  * Initializes the constant needed to compute the Frobenius map.
@@ -681,6 +681,16 @@ void fp2_exp(fp2_t c, fp2_t a, bn_t b);
  * @param[in] a				- the quadratic extension element to conjugate.
  */
 void fp2_frb(fp2_t c, fp2_t a);
+
+/**
+ * Extracts the square root of a quadratic extension field element.
+ * Computes c = sqrt(a). The other square root is the negation of c.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the prime field element.
+ * @return					- 1 if there is a square root, 0 otherwise.
+ */
+int fp2_srt(fp2_t c, fp2_t a);
 
 /**
  * Doubles a sextic extension field element. Computes c = 2 * a.
@@ -864,16 +874,16 @@ void ep2_curve_clean(void);
 /**
  * Returns the a coefficient of the currently configured elliptic curve.
  *
- * @return the a coefficient of the elliptic curve.
+ * @param[out] a			- the a coefficient of the elliptic curve.
  */
-dig_t *ep2_curve_get_a(void);
+void ep2_curve_get_a(fp2_t a);
 
 /**
  * Returns the b coefficient of the currently configured elliptic curve.
  *
- * @return the b coefficient of the elliptic curve.
+ * @param[out] b			- the b coefficient of the elliptic curve.
  */
-dig_t *ep2_curve_get_b(void);
+void ep2_curve_get_b(fp2_t b);
 
 /**
  * Returns a optimization identifier based on the coefficient a of the curve.
@@ -1126,12 +1136,12 @@ void ep2_frb(ep2_t r, ep2_t p);
 /**
  * Initializes the pairing over prime fields.
  */
-void pp_pair_init(void);
+void pp_map_init(void);
 
 /**
  * Finalizes the pairing over prime fields.
  */
-void pp_pair_clean(void);
+void pp_map_clean(void);
 
 /**
  * Computes the R-ate pairing of two points in a parameterized elliptic curve.

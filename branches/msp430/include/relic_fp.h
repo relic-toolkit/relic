@@ -86,9 +86,11 @@ enum {
 	/** NIST 521-bit fast reduction polynomial. */
 	NIST_521 = 6,
 	/** 256-bit prime provided in Nogami et al. for use with BN curves. */
-	BNN_256 = 7,
+	BN_254 = 7,
 	/** 256-bit prime provided in Barreto et al. for use with BN curves. */
-	BNP_256 = 8,
+	BN_256 = 8,
+	/** 158-bit prime for use with BN curves. */
+	BN_158 = 9
 };
 
 /*============================================================================*/
@@ -185,6 +187,18 @@ typedef align dig_t fp_st[FP_DIGS + PADDING(FP_BYTES)/sizeof(dig_t)];
 #define fp_sub(C, A, B)		fp_sub_basic(C, A, B)
 #elif FP_ADD == INTEG
 #define fp_sub(C, A, B)		fp_sub_integ(C, A, B)
+#endif
+
+/**
+ * Doubles a prime field element. Computes c = a + a.
+ *
+ * @param[out] C			- the result.
+ * @param[in] A				- the first prime field element.
+ */
+#if FP_ADD == BASIC
+#define fp_dbl(C, A)		fp_dbl_basic(C, A)
+#elif FP_ADD == INTEG
+#define fp_dbl(C, A)		fp_dbl_integ(C, A)
 #endif
 
 /**
@@ -652,6 +666,23 @@ void fp_sub_integ(fp_t c, fp_t a, fp_t b);
 void fp_sub_dig(fp_t c, fp_t a, dig_t b);
 
 /**
+ * Doubles a prime field element using basic addition. Computes c = a + a.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the first prime field element to add.
+ */
+void fp_dbl_basic(fp_t c, fp_t a);
+
+/**
+ * Doubles a prime field element with integrated modular reduction. Computes
+ * c = a + a.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the first prime field element to add.
+ */
+void fp_dbl_integ(fp_t c, fp_t a);
+
+/**
  * Multiples two prime field elements using Schoolbook multiplication.
  *
  * @param[out] c			- the result.
@@ -729,14 +760,6 @@ void fp_sqr_integ(fp_t c, fp_t a);
  * @param[in] a				- the prime field element to square.
  */
 void fp_sqr_karat(fp_t c, fp_t a);
-
-/**
- * Multiplies a prime field element by 2. Computes c = 2 * a.
- *
- * @param[out] c			- the result.
- * @param[in] a				- the prime field element to multiply by 2.
- */
-void fp_dbl(fp_t c, fp_t a);
 
 /**
  * Divides a prime field element by 2. Computes c = floor(a / 2).
@@ -876,7 +899,8 @@ void fp_exp_monty(fp_t c, fp_t a, bn_t b);
  *
  * @param[out] c			- the result.
  * @param[in] a				- the prime field element.
+ * @return					- 1 if there is a square root, 0 otherwise.
  */
-void fp_srt(fp_t c, fp_t a);
+int fp_srt(fp_t c, fp_t a);
 
 #endif /* !RELIC_FP_H */
