@@ -177,6 +177,11 @@ void fp_prime_set(bn_t p) {
 			prime_qnr = 0;
 			break;
 	}
+#ifdef FP_QNRES
+	if (prime_qnr != -1) {
+		THROW(ERR_INVALID);
+	}
+#endif
 #if FP_RDC == MONTY
 	bn_mod_monty_setup(&u, &prime);
 #endif
