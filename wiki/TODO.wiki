@@ -1,5 +1,6 @@
 = Current tasks before next release =
 
  * Implement CP_PAD == PKCS2
+ * Verify is RSA encryption and signatures are compatible with OpenSSL
  * Implement fb4_inv and fb4_exp
  * Complete PC module
