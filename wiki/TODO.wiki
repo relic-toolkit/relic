@@ -1,4 +1,4 @@
-= Current tasks before next release =
+==Current tasks before next release==
 
  * Implement CP_PAD == PKCS2
  * Verify is RSA encryption and signatures are compatible with OpenSSL
