@@ -1,0 +1,5 @@
+= Current tasks before next release =
+
+ * Implement CP_PAD == PKCS2
+ * Implement fb4_inv and fb4_exp
+ * Complete PC module
