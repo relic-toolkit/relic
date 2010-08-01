@@ -130,78 +130,68 @@ typedef ep2_st *ep2_t;
 		fp_free(A[0]); fp_free(A[1]); 										\
 
 /**
- * Copies the second argument to the first argument.
- *
- * @param[out] C			- the result.
- * @param[in] A				- the quadratic extension field element to copy.
- */
-void fp2_copy(fp2_t c, fp2_t a);
-
-/**
- * Negates a quadratic extension field element.
- *
- * @param[out] C			- the result.
- * @param[out] A			- the quadratic extension field element to negate.
- */
-void fp2_neg(fp2_t c, fp2_t a);
-
-/**
- * Assigns zero to a quadratic extension field element.
- *
- * @param[out] A			- the quadratic extension field element to zero.
- */
-void fp2_zero(fp2_t a);
-
-/**
- * Tests if a quadratic extension field element is zero or not.
- *
- * @param[in] A				- the quadratic extension field element to compare.
- * @return 1 if the argument is zero, 0 otherwise.
- */
-int fp2_is_zero(fp2_t a);
-
-/**
- * Assigns a random value to a quadratic extension field element.
- *
- * @param[out] A			- the quadratic extension field element to assign.
- */
-void fp2_rand(fp2_t a);
-
-/**
- * Prints a quadratic extension field element to standard output.
- *
- * @param[in] A				- the quadratic extension field element to print.
- */
-void fp2_print(fp2_t a);
-
-/**
- * Returns the result of a comparison between two quadratic extension field
- * elements
- *
- * @param[in] A				- the first quadratic extension field element.
- * @param[in] B				- the second quadratic extension field element.
- * @return CMP_LT if a < b, CMP_EQ if a == b and CMP_GT if a > b.
- */
-int fp2_cmp(fp2_t a, fp2_t b);
-
-/**
  * Adds two quadratic extension field elements. Computes C = A + B.
  *
- * @param[out] c			- the result.
- * @param[in] a				- the first quadratic extension field element.
- * @param[in] b				- the second quadratic extension field element.
+ * @param[out] C			- the result.
+ * @param[in] A				- the first quadratic extension field element.
+ * @param[in] B				- the second quadratic extension field element.
  */
-void fp2_add(fp2_t c, fp2_t a, fp2_t b);
+#if PP_EXT == BASIC
+#define fp2_add(C, A, B)	fp2_add_basic(C, A, B)
+#elif PP_EXT == LOWER
+#define fp2_add(C, A, B)	fp2_add_lower(C, A, B)
+#endif
 
 /**
- * Subtracts a quadratic extension field element from another. Computes
- * C = A - B.
+ * Subtracts a quadratic extension field elements from another.
+ * Computes C = A - B.
+ *
+ * @param[out] C			- the result.
+ * @param[in] A				- the first quadratic extension field element.
+ * @param[in] B				- the second quadratic extension field element.
+ */
+#if PP_EXT == BASIC
+#define fp2_sub(C, A, B)	fp2_sub_basic(C, A, B)
+#elif PP_EXT == LOWER
+#define fp2_sub(C, A, B)	fp2_sub_lower(C, A, B)
+#endif
+
+/**
+ * Doubles a quadratic extension field elements. Computes C = A + A.
  *
  * @param[out] C			- the result.
  * @param[in] A				- the quadratic extension field element.
- * @param[in] B				- the quadratic extension field element.
  */
-void fp2_sub(fp2_t c, fp2_t a, fp2_t b);
+#if PP_EXT == BASIC
+#define fp2_dbl(C, A)		fp2_dbl_basic(C, A)
+#elif PP_EXT == LOWER
+#define fp2_dbl(C, A)		fp2_dbl_lower(C, A)
+#endif
+
+/**
+ * Multiplies two quadratic extension field elements. Computes C = A * B.
+ *
+ * @param[out] C			- the result.
+ * @param[in] A				- the first quadratic extension field element.
+ * @param[in] B				- the second quadratic extension field element.
+ */
+#if PP_EXT == BASIC
+#define fp2_mul(C, A, B)	fp2_mul_basic(C, A, B)
+#elif PP_EXT == LOWER
+#define fp2_mul(C, A, B)	fp2_mul_lower(C, A, B)
+#endif
+
+/**
+ * Squares a quadratic extension field elements. Computes C = A * A.
+ *
+ * @param[out] C			- the result.
+ * @param[in] A				- the quadratic extension field element to square.
+ */
+#if PP_EXT == BASIC
+#define fp2_sqr(C, A)		fp2_sqr_basic(C, A)
+#elif PP_EXT == LOWER
+#define fp2_sqr(C, A)		fp2_sqr_lower(C, A)
+#endif
 
 /**
  * Initializes a sextic extension field with a null value.
@@ -228,80 +218,6 @@ void fp2_sub(fp2_t c, fp2_t a, fp2_t b);
 		fp2_free(A[0]); fp2_free(A[1]); fp2_new(A[2]); 						\
 
 /**
- * Copies the second argument to the first argument.
- *
- * @param[out] C			- the result.
- * @param[in] A				- the sextic extension field element to copy.
- */
-void fp6_copy(fp6_t c, fp6_t a);
-
-/**
- * Negates a sextic extension field element.
- *
- * @param[out] C			- the result.
- * @param[out] A			- the sextic extension field element to negate.
- */
-void fp6_neg(fp6_t c, fp6_t a);
-
-/**
- * Assigns zero to a sextic extension field element.
- *
- * @param[out] A			- the sextic extension field element to zero.
- */
-void fp6_zero(fp6_t a);
-
-/**
- * Tests if a sextic extension field element is zero or not.
- *
- * @param[in] A				- the sextic extension field element to compare.
- * @return 1 if the argument is zero, 0 otherwise.
- */
-int fp6_is_zero(fp6_t a);
-
-/**
- * Assigns a random value to a sextic extension field element.
- *
- * @param[out] A			- the sextic extension field element to assign.
- */
-void fp6_rand(fp6_t a);
-
-/**
- * Prints a sextic extension field element to standard output.
- *
- * @param[in] A				- the sextic extension field element to print.
- */
-void fp6_print(fp6_t a);
-
-/**
- * Returns the result of a comparison between two sextic extension field
- * elements
- *
- * @param[in] A				- the first sextic extension field element.
- * @param[in] B				- the second sextic extension field element.
- * @return CMP_LT if a < b, CMP_EQ if a == b and CMP_GT if a > b.
- */
-int fp6_cmp(fp6_t a, fp6_t b);
-
-/**
- * Adds two sextic extension field elements. Computes C = A + B.
- *
- * @param[out] C			- the result.
- * @param[in] A				- the first sextic extension field element.
- * @param[in] B				- the second sextic extension field element.
- */
-void fp6_add(fp6_t c, fp6_t a, fp6_t b);
-
-/**
- * Subtracts a sextic extension field element from another. Computes
- * C = A - B.
- *
- * @param[out] C			- the result.
- * @param[in] A				- the sextic extension field element.
- * @param[in] B				- the sextic extension field element.
- */
-void fp6_sub(fp6_t c, fp6_t a, fp6_t b);
-
-/**
  * Initializes a dodecic extension field with a null value.
  *
  * @param[out] A			- the dodecic extension element to initialize.
@@ -324,80 +240,6 @@ void fp6_sub(fp6_t c, fp6_t a, fp6_t b);
  */
 #define fp12_free(A)														\
 		fp6_free(A[0]); fp6_free(A[1]); 									\
-
-/**
- * Copies the second argument to the first argument.
- *
- * @param[out] C			- the result.
- * @param[in] A				- the dodecic extension field element to copy.
- */
-void fp12_copy(fp12_t c, fp12_t a);
-
-/**
- * Negates a dodecic extension field element.
- *
- * @param[out] C			- the result.
- * @param[out] A			- the dodecic extension field element to negate.
- */
-void fp12_neg(fp12_t c, fp12_t a);
-
-/**
- * Assigns zero to a dodecic extension field element.
- *
- * @param[out] A			- the dodecic extension field element to zero.
- */
-void fp12_zero(fp12_t a);
-
-/**
- * Tests if a dodecic extension field element is zero or not.
- *
- * @param[in] A				- the dodecic extension field element to compare.
- * @return 1 if the argument is zero, 0 otherwise.
- */
-int fp12_is_zero(fp12_t a);
-
-/**
- * Assigns a random value to a dodecic extension field element.
- *
- * @param[out] A			- the dodecic extension field element to assign.
- */
-void fp12_rand(fp12_t a);
-
-/**
- * Prints a dodecic extension field element to standard output.
- *
- * @param[in] A				- the dodecic extension field element to print.
- */
-void fp12_print(fp12_t a);
-
-/**
- * Returns the result of a comparison between two dodecic extension field
- * elements
- *
- * @param[in] a				- the first dodecic extension field element.
- * @param[in] b				- the second dodecic extension field element.
- * @return CMP_LT if a < b, CMP_EQ if a == b and CMP_GT if a > b.
- */
-int fp12_cmp(fp12_t a, fp12_t b);
-
-/**
- * Adds two dodecic extension field elements. Computes C = A + B.
- *
- * @param[out] C			- the result.
- * @param[in] A				- the first dodecic extension field element.
- * @param[in] B				- the second dodecic extension field element.
- */
-void fp12_add(fp12_t c, fp12_t a, fp12_t b);
-
-/**
- * Subtracts a dodecic extension field element from another. Computes
- * C = A - B.
- *
- * @param[out] C			- the result.
- * @param[in] A				- the first dodecic extension field element.
- * @param[in] B				- the second dodecic extension field element.
- */
-void fp12_sub(fp12_t c, fp12_t a, fp12_t b);
 
 /**
  * Initializes a point on a elliptic curve with a null value.
@@ -559,6 +401,90 @@ void fp12_sub(fp12_t c, fp12_t a, fp12_t b);
 #endif
 
 /**
+ * Builds a precomputation table for multiplying a fixed prime elliptic point
+ * over a quadratic extension.
+ *
+ * @param[out] T			- the precomputation table.
+ * @param[in] P				- the point to multiply.
+ */
+#if EP_FIX == BASIC
+#define ep2_mul_pre(T, P)		ep2_mul_pre_basic(T, P)
+#elif EP_FIX == YAOWI
+#define ep2_mul_pre(T, P)		ep2_mul_pre_yaowi(T, P)
+#elif EP_FIX == NAFWI
+#define ep2_mul_pre(T, P)		ep2_mul_pre_nafwi(T, P)
+#elif EP_FIX == COMBS
+#define ep2_mul_pre(T, P)		ep2_mul_pre_combs(T, P)
+#elif EP_FIX == COMBD
+#define ep2_mul_pre(T, P)		ep2_mul_pre_combd(T, P)
+#elif EP_FIX == WTNAF
+#define ep2_mul_pre(T, P)		ep2_mul_pre_wtnaf(T, P)
+#endif
+
+/**
+ * Multiplies a fixed prime elliptic point over a quadratic extension using a
+ * precomputation table. Computes R = kP.
+ *
+ * @param[out] R			- the result.
+ * @param[in] T				- the precomputation table.
+ * @param[in] K				- the integer.
+ */
+#if EP_FIX == BASIC
+#define ep2_mul_fix(R, T, K)		ep2_mul_fix_basic(R, T, K)
+#elif EP_FIX == YAOWI
+#define ep2_mul_fix(R, T, K)		ep2_mul_fix_yaowi(R, T, K)
+#elif EP_FIX == NAFWI
+#define ep2_mul_fix(R, T, K)		ep2_mul_fix_nafwi(R, T, K)
+#elif EP_FIX == COMBS
+#define ep2_mul_fix(R, T, K)		ep2_mul_fix_combs(R, T, K)
+#elif EP_FIX == COMBD
+#define ep2_mul_fix(R, T, K)		ep2_mul_fix_combd(R, T, K)
+#elif EP_FIX == WTNAF
+#define ep2_mul_fix(R, T, K)		ep2_mul_fix_wtnaf(R, T, K)
+#endif
+
+/**
+ * Multiplies and adds two prime elliptic curve points simultaneously. Computes
+ * R = kP + lQ.
+ *
+ * @param[out] R			- the result.
+ * @param[in] P				- the first point to multiply.
+ * @param[in] K				- the first integer.
+ * @param[in] Q				- the second point to multiply.
+ * @param[in] L				- the second integer,
+ */
+#if EP_SIM == BASIC
+#define ep2_mul_sim(R, P, K, Q, L)	ep2_mul_sim_basic(R, P, K, Q, L)
+#elif EP_SIM == TRICK
+#define ep2_mul_sim(R, P, K, Q, L)	ep2_mul_sim_trick(R, P, K, Q, L)
+#elif EP_SIM == INTER
+#define ep2_mul_sim(R, P, K, Q, L)	ep2_mul_sim_inter(R, P, K, Q, L)
+#elif EP_SIM == JOINT
+#define ep2_mul_sim(R, P, K, Q, L)	ep2_mul_sim_joint(R, P, K, Q, L)
+#endif
+
+/**
+ * Renames elliptic curve arithmetic operations to build precomputation
+ * tables with the right coordinate system.
+ */
+#if defined(EP_MIXED)
+/** @{ */
+#define ep2_add_tab			ep2_add_basic
+#define ep2_sub_tab			ep2_sub_basic
+#define ep2_neg_tab			ep2_neg_basic
+#define ep2_dbl_tab			ep2_dbl_basic
+/** @} */
+#else
+/**@{ */
+#define ep2_add_tab			ep2_add
+#define ep2_sub_tab			ep2_sub
+#define ep2_neg_tab			ep2_neg
+#define ep2_dbl_tab			ep2_dbl
+#define ep2_frb_tab			ep2_frb
+/** @} */
+#endif
+
+/**
  * Computes the pairing of two binary elliptic curve points. Computes e(P, Q).
  *
  * @param[out] R			- the result.
@@ -605,28 +531,132 @@ void fp2_const_clean(void);
 void fp2_const_calc(void);
 
 /**
- * Returns the constant needed to compute the Frobenius map.
+ * Copies the second argument to the first argument.
  *
- * @param[out] f			- the result.
+ * @param[out] C			- the result.
+ * @param[in] A				- the quadratic extension field element to copy.
  */
-void fp2_const_get(fp2_t f);
+void fp2_copy(fp2_t c, fp2_t a);
 
 /**
- * Doubles a quadratic extension field element. Computes c = 2 * a.
+ * Negates a quadratic extension field element.
+ *
+ * @param[out] C			- the result.
+ * @param[out] A			- the quadratic extension field element to negate.
+ */
+void fp2_neg(fp2_t c, fp2_t a);
+
+/**
+ * Assigns zero to a quadratic extension field element.
+ *
+ * @param[out] A			- the quadratic extension field element to zero.
+ */
+void fp2_zero(fp2_t a);
+
+/**
+ * Tests if a quadratic extension field element is zero or not.
+ *
+ * @param[in] A				- the quadratic extension field element to compare.
+ * @return 1 if the argument is zero, 0 otherwise.
+ */
+int fp2_is_zero(fp2_t a);
+
+/**
+ * Assigns a random value to a quadratic extension field element.
+ *
+ * @param[out] A			- the quadratic extension field element to assign.
+ */
+void fp2_rand(fp2_t a);
+
+/**
+ * Prints a quadratic extension field element to standard output.
+ *
+ * @param[in] A				- the quadratic extension field element to print.
+ */
+void fp2_print(fp2_t a);
+
+/**
+ * Returns the result of a comparison between two quadratic extension field
+ * elements
+ *
+ * @param[in] A				- the first quadratic extension field element.
+ * @param[in] B				- the second quadratic extension field element.
+ * @return CMP_LT if a < b, CMP_EQ if a == b and CMP_GT if a > b.
+ */
+int fp2_cmp(fp2_t a, fp2_t b);
+
+/**
+ * Adds two quadratic extension field elements using basic arithmetic.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the first quadratic extension field element.
+ * @param[in] b				- the second quadratic extension field element.
+ */
+void fp2_add_basic(fp2_t c, fp2_t a, fp2_t b);
+
+/**
+ * Adds two quadratic extension field elements using lower-level implementation.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the first quadratic extension field element.
+ * @param[in] b				- the second quadratic extension field element.
+ */
+void fp2_add_lower(fp2_t c, fp2_t a, fp2_t b);
+
+/**
+ * Subtracts a quadratic extension field element from another using basic
+ * arithmetic.
+ *
+ * @param[out] C			- the result.
+ * @param[in] A				- the first quadratic extension field element.
+ * @param[in] B				- the second quadratic extension field element.
+ */
+void fp2_sub_basic(fp2_t c, fp2_t a, fp2_t b);
+
+/**
+ * Subtracts a quadratic extension field element from another using lower-level
+ * implementation.
+ *
+ * @param[out] C			- the result.
+ * @param[in] A				- the first quadratic extension field element.
+ * @param[in] B				- the second quadratic extension field element.
+ */
+void fp2_sub_lower(fp2_t c, fp2_t a, fp2_t b);
+
+/**
+ * Doubles a quadratic extension field element.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the quadratic extension field element to double.
  */
-void fp2_dbl(fp2_t c, fp2_t a);
+void fp2_dbl_basic(fp2_t c, fp2_t a);
 
 /**
- * Multiples two quadratic extension field elements, that is, compute c = a * b.
+ * Doubles a quadratic extension field element.
  *
  * @param[out] c			- the result.
- * @param[in] a				- the quadratic extension field element.
- * @param[in] b				- the quadratic extension field element.
+ * @param[in] a				- the quadratic extension field element to double.
  */
-void fp2_mul(fp2_t c, fp2_t a, fp2_t b);
+void fp2_dbl_lower(fp2_t c, fp2_t a);
+
+/**
+ * Multiples two quadratic extension field elements using basic arithmetic.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the first quadratic extension field element.
+ * @param[in] b				- the second quadratic extension field element.
+ */
+void fp2_mul_basic(fp2_t c, fp2_t a, fp2_t b);
+
+/**
+ * Multiples two quadratic extension field elements using lower-level
+ * implementation.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the first quadratic extension field element.
+ * @param[in] b				- the second quadratic extension field element.
+ */
+void fp2_mul_lower(fp2_t c, fp2_t a, fp2_t b);
 
 /**
  * Multiplies a quadratic extension field element by the adjoined square root.
@@ -648,13 +678,42 @@ void fp2_mul_art(fp2_t c, fp2_t a);
 void fp2_mul_nor(fp2_t c, fp2_t a);
 
 /**
- * Computes the square of a quadratic extension field element. Computes
- * c = a * a.
+ * Multiplies a quadratic extension field element by a power of the constant
+ * needed to compute the Frobenius map.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the field element to multiply.
+ * @param[in] i				- the power of the constant.
+ */
+void fp2_mul_frb(fp2_t c, fp2_t a, int i);
+
+/**
+ * Multiplies a quadratic extension field element by a power of the constant
+ * needed to compute the repeated Frobenius map.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the field element to multiply.
+ * @param[in] i				- the power of the constant.
+ */
+void fp2_mul_frb_sqr(fp2_t c, fp2_t a, int i);
+
+/**
+ * Computes the square of a quadratic extension field element using basic
+ * arithmetic.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the quadratic extension field element to square.
  */
-void fp2_sqr(fp2_t c, fp2_t a);
+void fp2_sqr_basic(fp2_t c, fp2_t a);
+
+/**
+ * Computes the square of a quadratic extension field element using the lower-
+ * level implementation.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the quadratic extension field element to square.
+ */
+void fp2_sqr_lower(fp2_t c, fp2_t a);
 
 /**
  * Inverts a quadratic extension field element. Computes c = a^(-1).
@@ -691,6 +750,80 @@ void fp2_frb(fp2_t c, fp2_t a);
  * @return					- 1 if there is a square root, 0 otherwise.
  */
 int fp2_srt(fp2_t c, fp2_t a);
+
+/**
+ * Copies the second argument to the first argument.
+ *
+ * @param[out] C			- the result.
+ * @param[in] A				- the sextic extension field element to copy.
+ */
+void fp6_copy(fp6_t c, fp6_t a);
+
+/**
+ * Negates a sextic extension field element.
+ *
+ * @param[out] C			- the result.
+ * @param[out] A			- the sextic extension field element to negate.
+ */
+void fp6_neg(fp6_t c, fp6_t a);
+
+/**
+ * Assigns zero to a sextic extension field element.
+ *
+ * @param[out] A			- the sextic extension field element to zero.
+ */
+void fp6_zero(fp6_t a);
+
+/**
+ * Tests if a sextic extension field element is zero or not.
+ *
+ * @param[in] A				- the sextic extension field element to compare.
+ * @return 1 if the argument is zero, 0 otherwise.
+ */
+int fp6_is_zero(fp6_t a);
+
+/**
+ * Assigns a random value to a sextic extension field element.
+ *
+ * @param[out] A			- the sextic extension field element to assign.
+ */
+void fp6_rand(fp6_t a);
+
+/**
+ * Prints a sextic extension field element to standard output.
+ *
+ * @param[in] A				- the sextic extension field element to print.
+ */
+void fp6_print(fp6_t a);
+
+/**
+ * Returns the result of a comparison between two sextic extension field
+ * elements
+ *
+ * @param[in] A				- the first sextic extension field element.
+ * @param[in] B				- the second sextic extension field element.
+ * @return CMP_LT if a < b, CMP_EQ if a == b and CMP_GT if a > b.
+ */
+int fp6_cmp(fp6_t a, fp6_t b);
+
+/**
+ * Adds two sextic extension field elements. Computes C = A + B.
+ *
+ * @param[out] C			- the result.
+ * @param[in] A				- the first sextic extension field element.
+ * @param[in] B				- the second sextic extension field element.
+ */
+void fp6_add(fp6_t c, fp6_t a, fp6_t b);
+
+/**
+ * Subtracts a sextic extension field element from another. Computes
+ * C = A - B.
+ *
+ * @param[out] C			- the result.
+ * @param[in] A				- the sextic extension field element.
+ * @param[in] B				- the sextic extension field element.
+ */
+void fp6_sub(fp6_t c, fp6_t a, fp6_t b);
 
 /**
  * Doubles a sextic extension field element. Computes c = 2 * a.
@@ -774,6 +907,107 @@ void fp6_exp(fp6_t c, fp6_t a, bn_t b);
 void fp6_frb(fp6_t c, fp6_t a);
 
 /**
+* Computes two consecutive Frobenius endomorphisms of a sextic extension
+* element. Computes c = a^(p^2).
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- a sextic extension field element.
+ */
+void fp6_frb_sqr(fp6_t c, fp6_t a);
+
+/**
+ * Copies the second argument to the first argument.
+ *
+ * @param[out] C			- the result.
+ * @param[in] A				- the dodecic extension field element to copy.
+ */
+void fp12_copy(fp12_t c, fp12_t a);
+
+/**
+ * Negates a dodecic extension field element.
+ *
+ * @param[out] C			- the result.
+ * @param[out] A			- the dodecic extension field element to negate.
+ */
+void fp12_neg(fp12_t c, fp12_t a);
+
+/**
+ * Assigns zero to a dodecic extension field element.
+ *
+ * @param[out] A			- the dodecic extension field element to zero.
+ */
+void fp12_zero(fp12_t a);
+
+/**
+ * Tests if a dodecic extension field element is zero or not.
+ *
+ * @param[in] A				- the dodecic extension field element to compare.
+ * @return 1 if the argument is zero, 0 otherwise.
+ */
+int fp12_is_zero(fp12_t a);
+
+/**
+ * Assigns a random value to a dodecic extension field element.
+ *
+ * @param[out] A			- the dodecic extension field element to assign.
+ */
+void fp12_rand(fp12_t a);
+
+/**
+ * Prints a dodecic extension field element to standard output.
+ *
+ * @param[in] A				- the dodecic extension field element to print.
+ */
+void fp12_print(fp12_t a);
+
+/**
+ * Returns the result of a comparison between two dodecic extension field
+ * elements
+ *
+ * @param[in] a				- the first dodecic extension field element.
+ * @param[in] b				- the second dodecic extension field element.
+ * @return CMP_LT if a < b, CMP_EQ if a == b and CMP_GT if a > b.
+ */
+int fp12_cmp(fp12_t a, fp12_t b);
+
+/**
+ * Returns the result of a signed comparison between a dodecic extension field
+ * element and a digit.
+ *
+ * @param[in] a				- the dodecic extension field element.
+ * @param[in] b				- the digit.
+ * @return FP_LT if a < b, FP_EQ if a == b and FP_GT if a > b.
+ */
+int fp12_cmp_dig(fp12_t a, dig_t b);
+
+/**
+ * Assigns a dodecic extension field element to a digit.
+ *
+ * @param[in] a				- the dodecic extension field element.
+ * @param[in] b				- the digit.
+ */
+void fp12_set_dig(fp12_t a, dig_t b);
+
+/**
+ * Adds two dodecic extension field elements. Computes C = A + B.
+ *
+ * @param[out] C			- the result.
+ * @param[in] A				- the first dodecic extension field element.
+ * @param[in] B				- the second dodecic extension field element.
+ */
+void fp12_add(fp12_t c, fp12_t a, fp12_t b);
+
+/**
+ * Subtracts a dodecic extension field element from another. Computes
+ * C = A - B.
+ *
+ * @param[out] C			- the result.
+ * @param[in] A				- the first dodecic extension field element.
+ * @param[in] B				- the second dodecic extension field element.
+ */
+void fp12_sub(fp12_t c, fp12_t a, fp12_t b);
+
+/**
  * Multiples two dodecic extension field elements. Compute c = a * b.
  *
  * @param[out] c			- the result.
@@ -804,14 +1038,14 @@ void fp12_mul_dxs(fp12_t c, fp12_t a, fp12_t b);
 void fp12_sqr(fp12_t c, fp12_t a);
 
 /**
- * Computes the square of a unitary dodecic extension field element.
+ * Computes the square of a cyclotomic dodecic extension field element.
  *
- * A unitary element is one previously raised to the (p^6 - 1)-th power.
+ * A cyclotomic element is one previously raised to the (p^6 - 1)-th power.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the unitary dodecic extension element to square.
  */
-void fp12_sqr_uni(fp12_t c, fp12_t a);
+void fp12_sqr_cyc(fp12_t c, fp12_t a);
 
 /**
  * Inverts a dodecic extension field element. Computes c = a^(-1).
@@ -822,15 +1056,15 @@ void fp12_sqr_uni(fp12_t c, fp12_t a);
 void fp12_inv(fp12_t c, fp12_t a);
 
 /**
- * Computes the inverse of a dodecic unitary extension field element.
+ * Computes the inverse of a cyclotomic dodecic extension field element.
  *
- * For unitary elements, this is equivalent to computing the conjugate.
- * A unitary element is one previously raised to the (p^6 - 1)-th power.
+ * For cyclotomic elements, this is equivalent to computing the conjugate.
+ * A cyclotomic element is one previously raised to the (p^6 - 1)-th power.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the dodecic extension field element to conjugate.
  */
-void fp12_inv_uni(fp12_t c, fp12_t a);
+void fp12_inv_cyc(fp12_t c, fp12_t a);
 
 /**
  * Computes the Frobenius endomorphism of a dodecic extension element.
@@ -842,6 +1076,15 @@ void fp12_inv_uni(fp12_t c, fp12_t a);
 void fp12_frb(fp12_t c, fp12_t a);
 
 /**
+ * Computes two consecutive Frobenius endomorphisms of a dodecic extension
+ * element. Computes c = a^(p^2).
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- a dodecic extension field element.
+ */
+void fp12_frb_sqr(fp12_t c, fp12_t a);
+
+/**
  * Computes a power of a dodecic extension field element.
  *
  * @param[out] c			- the result.
@@ -851,15 +1094,15 @@ void fp12_frb(fp12_t c, fp12_t a);
 void fp12_exp(fp12_t c, fp12_t a, bn_t b);
 
 /**
- * Computes a power of a unitary dodecic extension field element.
+ * Computes a power of a cyclotomic dodecic extension field element.
  *
- * A unitary element is one previously raised to the (p^6 - 1)-th power.
+ * A cyclotomic element is one previously raised to the (p^6 - 1)-th power.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the basis.
  * @param[in] b				- the exponent.
  */
-void fp12_exp_uni(fp12_t c, fp12_t a, bn_t b);
+void fp12_exp_cyc(fp12_t c, fp12_t a, bn_t b);
 
 /**
  * Initializes the elliptic curve over quadratic extension.
@@ -905,6 +1148,13 @@ int ep2_curve_is_twist(void);
  * @param[out] g			- the returned generator.
  */
 void ep2_curve_get_gen(ep2_t g);
+
+/**
+ * Returns the precomputation table for the generator.
+ *
+ * @return the table.
+ */
+ep2_t *ep2_curve_get_tab(void);
 
 /**
  * Returns the order of the group of points in the elliptic curve.
@@ -1106,6 +1356,188 @@ void ep2_mul(ep2_t r, ep2_t p, bn_t k);
 void ep2_mul_gen(ep2_t r, bn_t k);
 
 /**
+ * Builds a precomputation table for multiplying a fixed prime elliptic point
+ * using the binary method.
+ *
+ * @param[out] t			- the precomputation table.
+ * @param[in] p				- the point to multiply.
+ */
+void ep2_mul_pre_basic(ep2_t *t, ep2_t p);
+
+/**
+ * Builds a precomputation table for multiplying a fixed prime elliptic point
+ * using Yao's windowing method.
+ *
+ * @param[out] t			- the precomputation table.
+ * @param[in] p				- the point to multiply.
+ */
+void ep2_mul_pre_yaowi(ep2_t *t, ep2_t p);
+
+/**
+ * Builds a precomputation table for multiplying a fixed prime elliptic point
+ * using the NAF windowing method.
+ *
+ * @param[out] t			- the precomputation table.
+ * @param[in] p				- the point to multiply.
+ */
+void ep2_mul_pre_nafwi(ep2_t *t, ep2_t p);
+
+/**
+ * Builds a precomputation table for multiplying a fixed prime elliptic point
+ * using the single-table comb method.
+ *
+ * @param[out] t			- the precomputation table.
+ * @param[in] p				- the point to multiply.
+ */
+void ep2_mul_pre_combs(ep2_t *t, ep2_t p);
+
+/**
+ * Builds a precomputation table for multiplying a fixed prime elliptic point
+ * using the double-table comb method.
+ *
+ * @param[out] t			- the precomputation table.
+ * @param[in] p				- the point to multiply.
+ */
+void ep2_mul_pre_combd(ep2_t *t, ep2_t p);
+
+/**
+ * Builds a precomputation table for multiplying a fixed prime elliptic point
+ * using the w-(T)NAF method.
+ *
+ * @param[out] t			- the precomputation table.
+ * @param[in] p				- the point to multiply.
+ */
+void ep2_mul_pre_wtnaf(ep2_t *t, ep2_t p);
+
+/**
+ * Multiplies a fixed prime elliptic point using a precomputation table and
+ * the binary method.
+ *
+ * @param[out] r			- the result.
+ * @param[in] t				- the precomputation table.
+ * @param[in] k				- the integer.
+ */
+void ep2_mul_fix_basic(ep2_t r, ep2_t *t, bn_t k);
+
+/**
+ * Multiplies a fixed prime elliptic point using a precomputation table and
+ * Yao's windowing method
+ *
+ * @param[out] r			- the result.
+ * @param[in] t				- the precomputation table.
+ * @param[in] k				- the integer.
+ */
+void ep2_mul_fix_yaowi(ep2_t r, ep2_t *t, bn_t k);
+
+/**
+ * Multiplies a fixed prime elliptic point using a precomputation table and
+ * the w-(T)NAF method.
+ *
+ * @param[out] r			- the result.
+ * @param[in] t				- the precomputation table.
+ * @param[in] k				- the integer.
+ */
+void ep2_mul_fix_nafwi(ep2_t r, ep2_t *t, bn_t k);
+
+/**
+ * Multiplies a fixed prime elliptic point using a precomputation table and
+ * the single-table comb method.
+ *
+ * @param[out] r			- the result.
+ * @param[in] t				- the precomputation table.
+ * @param[in] k				- the integer.
+ */
+void ep2_mul_fix_combs(ep2_t r, ep2_t *t, bn_t k);
+
+/**
+ * Multiplies a fixed prime elliptic point using a precomputation table and
+ * the double-table comb method.
+ *
+ * @param[out] r			- the result.
+ * @param[in] t				- the precomputation table.
+ * @param[in] k				- the integer.
+ */
+void ep2_mul_fix_combd(ep2_t r, ep2_t *t, bn_t k);
+
+/**
+ * Multiplies a fixed prime elliptic point using a precomputation table and
+ * the w-(T)NAF method.
+ *
+ * @param[out] r			- the result.
+ * @param[in] t				- the precomputation table.
+ * @param[in] k				- the integer.
+ */
+void ep2_mul_fix_wtnaf(ep2_t r, ep2_t *t, bn_t k);
+
+/**
+ * Multiplies and adds two prime elliptic curve points simultaneously using
+ * scalar multiplication and point addition.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the first point to multiply.
+ * @param[in] k				- the first integer.
+ * @param[in] q				- the second point to multiply.
+ * @param[in] l				- the second integer,
+ */
+void ep2_mul_sim_basic(ep2_t r, ep2_t p, bn_t k, ep2_t q, bn_t l);
+
+/**
+ * Multiplies and adds two prime elliptic curve points simultaneously using
+ * shamir's trick.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the first point to multiply.
+ * @param[in] k				- the first integer.
+ * @param[in] q				- the second point to multiply.
+ * @param[in] l				- the second integer,
+ */
+void ep2_mul_sim_trick(ep2_t r, ep2_t p, bn_t k, ep2_t q, bn_t l);
+
+/**
+ * Multiplies and adds two prime elliptic curve points simultaneously using
+ * interleaving of NAFs.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the first point to multiply.
+ * @param[in] k				- the first integer.
+ * @param[in] q				- the second point to multiply.
+ * @param[in] l				- the second integer,
+ */
+void ep2_mul_sim_inter(ep2_t r, ep2_t p, bn_t k, ep2_t q, bn_t l);
+
+/**
+ * Multiplies and adds two prime elliptic curve points simultaneously using
+ * Solinas' Joint Sparse Form.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the first point to multiply.
+ * @param[in] k				- the first integer.
+ * @param[in] q				- the second point to multiply.
+ * @param[in] l				- the second integer,
+ */
+void ep2_mul_sim_joint(ep2_t r, ep2_t p, bn_t k, ep2_t q, bn_t l);
+
+/**
+ * Multiplies and adds the generator and a prime elliptic curve point
+ * simultaneously. Computes R = kG + lQ.
+ *
+ * @param[out] r			- the result.
+ * @param[in] k				- the first integer.
+ * @param[in] q				- the second point to multiply.
+ * @param[in] l				- the second integer,
+ */
+void ep2_mul_sim_gen(ep2_t r, bn_t k, ep2_t q, bn_t l);
+
+/**
+ * Multiplies a prime elliptic point by a small integer.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to multiply.
+ * @param[in] k				- the integer.
+ */
+void ep2_mul_dig(ep2_t r, ep2_t p, dig_t k);
+
+/**
  * Converts a point to affine coordinates.
  *
  * @param[out] r			- the result.
@@ -1134,6 +1566,16 @@ void ep2_map(ep2_t p, unsigned char *msg, int len);
 void ep2_frb(ep2_t r, ep2_t p);
 
 /**
+ * Computes two consectutive Frobenius maps of a point represented in affine
+ * coordinates in an elliptic curve over a quadratic exension. Computes
+ * Frob(P = (x, y)) = (x^(p^2), y^(p^2)).
+ *
+ * @param[out] r			- the result in affine coordinates.
+ * @param[in] p				- a point in affine coordinates.
+ */
+void ep2_frb_sqr(ep2_t r, ep2_t p);
+
+/**
  * Initializes the pairing over prime fields.
  */
 void pp_map_init(void);
@@ -1151,7 +1593,7 @@ void pp_map_clean(void);
  * @param[in] q				- the first elliptic curve point.
  * @param[in] p				- the second elliptic curve point.
  */
-void pp_map_r_ate(fp12_t r, ep2_t q, ep_t p);
+void pp_map_r_ate(fp12_t r, ep_t p, ep2_t q);
 
 /**
  * Computes the Optimal ate pairing of two points in a parameterized elliptic
@@ -1161,7 +1603,7 @@ void pp_map_r_ate(fp12_t r, ep2_t q, ep_t p);
  * @param[in] q				- the first elliptic curve point.
  * @param[in] p				- the second elliptic curve point.
  */
-void pp_map_o_ate(fp12_t r, ep2_t q, ep_t p);
+void pp_map_o_ate(fp12_t r, ep_t p, ep2_t q);
 
 /**
  * Computes the X-ate pairing of two points in a parameterized elliptic curve.
@@ -1171,6 +1613,6 @@ void pp_map_o_ate(fp12_t r, ep2_t q, ep_t p);
  * @param[in] q				- the first elliptic curve point.
  * @param[in] p				- the second elliptic curve point.
  */
-void pp_map_x_ate(fp12_t r, ep2_t q, ep_t p);
+void pp_map_x_ate(fp12_t r, ep_t p, ep2_t q);
 
 #endif /* !RELIC_PP_H */

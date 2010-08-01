@@ -85,12 +85,12 @@ enum {
 	NIST_384 = 5,
 	/** NIST 521-bit fast reduction polynomial. */
 	NIST_521 = 6,
-	/** 256-bit prime provided in Nogami et al. for use with BN curves. */
-	BN_254 = 7,
-	/** 256-bit prime provided in Barreto et al. for use with BN curves. */
-	BN_256 = 8,
 	/** 158-bit prime for use with BN curves. */
-	BN_158 = 9
+	BN_158 = 7,
+	/** 256-bit prime provided in Nogami et al. for use with BN curves. */
+	BN_254 = 8,
+	/** 256-bit prime provided in Barreto et al. for use with BN curves. */
+	BN_256 = 9,
 };
 
 /*============================================================================*/
@@ -590,6 +590,15 @@ void fp_read(fp_t a, const char *str, int len, int radix);
 void fp_write(char *str, int len, fp_t a, int radix);
 
 /**
+ * Returns the result of a comparison between two prime field elements.
+ *
+ * @param[in] a				- the first prime field element.
+ * @param[in] b				- the second prime field element.
+ * @return FP_LT if a < b, FP_EQ if a == b and FP_GT if a > b.
+ */
+int fp_cmp(fp_t a, fp_t b);
+
+/**
  * Returns the result of a signed comparison between a prime field element
  * and a digit.
  *
@@ -598,15 +607,6 @@ void fp_write(char *str, int len, fp_t a, int radix);
  * @return FP_LT if a < b, FP_EQ if a == b and FP_GT if a > b.
  */
 int fp_cmp_dig(fp_t a, dig_t b);
-
-/**
- * Returns the result of a comparison between two prime field elements.
- *
- * @param[in] a				- the first prime field element.
- * @param[in] b				- the second prime field element.
- * @return FP_LT if a < b, FP_EQ if a == b and FP_GT if a > b.
- */
-int fp_cmp(fp_t a, fp_t b);
 
 /**
  * Adds two prime field elements using basic addition. Computes c = a + b.

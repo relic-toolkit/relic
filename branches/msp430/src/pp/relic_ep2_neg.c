@@ -23,73 +23,65 @@
 /**
  * @file
  *
- * Implementation of the ternary field cubing.
+ * Implementation of point negation on elliptic prime curves over quadratic
+ * extensions.
  *
- * @version $Id$
- * @ingroup ft
+ * @version $Id: relic_pp_ep2.c 463 2010-07-13 21:12:13Z conradoplg $
+ * @ingroup pp
  */
 
-#include <string.h>
-
 #include "relic_core.h"
+#include "relic_md.h"
+#include "relic_pp.h"
+#include "relic_error.h"
 #include "relic_conf.h"
-#include "relic_ft.h"
-#include "relic_ft_low.h"
-#include "relic_bn_low.h"
-#include "relic_util.h"
+#include "relic_fp_low.h"
 
 /*============================================================================*/
-/* Public definitions                                                         */
+	/* Public definitions                                                         */
 /*============================================================================*/
 
-#if FT_CUB == BASIC || !defined(STRIP)
+#if EP_ADD == BASIC || defined(EP_MIXED) || !defined(STRIP)
 
-void ft_cub_basic(ft_t c, ft_t a) {
-	dv_t t;
-
-	dv_null(t);
-
-	TRY {
-		/* We need a temporary variable so that c can be a or b. */
-		dv_new(t);
-		ft_cubn_low(t, a);
-		ft_rdc_cub(c, t);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
+void ep2_neg_basic(ep2_t r, ep2_t p) {
+	if (ep2_is_infty(p)) {
+		ep2_set_infty(r);
+		return;
 	}
-	FINALLY {
-		dv_free(t);
+
+	if (r != p) {
+		fp2_copy(r->x, p->x);
+		fp2_copy(r->z, p->z);
 	}
+
+	fp2_neg(r->y, p->y);
+
+	r->norm = 1;
 }
 
 #endif
 
-#if FT_CUB == TABLE || !defined(STRIP)
+#if EP_ADD == PROJC || defined(EP_MIXED) || !defined(STRIP)
 
-void ft_cub_table(ft_t c, ft_t a) {
-	dv_t t;
-
-	dv_null(t);
-
-	TRY {
-		/* We need a temporary variable so that c can be a or b. */
-		dv_new(t);
-		ft_cubl_low(t, a);
-		ft_rdc_cub(c, t);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
+void ep2_neg_projc(ep2_t r, ep2_t p) {
+	if (ep2_is_infty(p)) {
+		ep2_set_infty(r);
+		return;
 	}
-	FINALLY {
-		dv_free(t);
+
+	if (p->norm) {
+		ep2_neg_basic(r, p);
+		return;
 	}
-}
 
-#endif
+	if (r != p) {
+		fp2_copy(r->x, p->x);
+		fp2_copy(r->z, p->z);
+	}
 
-#if FT_CUB == INTEG || !defined(STRIP)
+	fp2_neg(r->y, p->y);
 
-void ft_cub_integ(ft_t c, ft_t a) {
-	ft_cubm_low(c, a);
+	r->norm = 0;
 }
 
 #endif

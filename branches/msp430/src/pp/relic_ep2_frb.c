@@ -23,15 +23,16 @@
 /**
  * @file
  *
- * Implementation of the prime elliptic curve utilities.
+ * Implementation of frobenius action on prime elliptic curves over
+ * quadratic extensions.
  *
- * @version $Id$
- * @ingroup ep
+ * @version $Id: relic_pp_ep2.c 463 2010-07-13 21:12:13Z conradoplg $
+ * @ingroup pp
  */
 
 #include "relic_core.h"
 #include "relic_md.h"
-#include "relic_ep.h"
+#include "relic_pp.h"
 #include "relic_error.h"
 #include "relic_conf.h"
 #include "relic_fp_low.h"
@@ -40,79 +41,20 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-int ep_is_infty(ep_t p) {
-	return (fp_is_zero(p->z) == 1);
+void ep2_frb(ep2_t r, ep2_t p) {
+	fp2_frb(r->x, p->x);
+	fp2_frb(r->y, p->y);
+	fp2_mul_frb(r->x, r->x, 2);
+	fp2_mul_frb(r->y, r->y, 3);
+	r->norm = 1;
+	fp_set_dig(r->z[0], 1);
+	fp_zero(r->z[1]);
 }
 
-void ep_set_infty(ep_t p) {
-	fp_zero(p->x);
-	fp_zero(p->y);
-	fp_zero(p->z);
-	p->norm = 1;
-}
-
-void ep_copy(ep_t r, ep_t p) {
-	fp_copy(r->x, p->x);
-	fp_copy(r->y, p->y);
-	fp_copy(r->z, p->z);
-	r->norm = p->norm;
-}
-
-int ep_cmp(ep_t p, ep_t q) {
-	if (fp_cmp(p->x, q->x) != CMP_EQ) {
-		return CMP_NE;
-	}
-
-	if (fp_cmp(p->y, q->y) != CMP_EQ) {
-		return CMP_NE;
-	}
-
-	if (fp_cmp(p->z, q->z) != CMP_EQ) {
-		return CMP_NE;
-	}
-
-	return CMP_EQ;
-}
-
-void ep_rand(ep_t p) {
-	bn_t n, k;
-	ep_t gen;
-
-	bn_null(k);
-	bn_null(n);
-	ep_null(gen);
-
-	TRY {
-		bn_new(k);
-		bn_new(n);
-		ep_new(gen);
-
-		ep_curve_get_ord(n);
-
-		bn_rand(k, BN_POS, bn_bits(n));
-		bn_mod(k, k, n);
-
-		ep_curve_get_gen(gen);
-		ep_mul(p, gen, k);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
-		bn_free(k);
-		bn_free(n);
-		ep_free(gen);
-	}
-}
-
-void ep_print(ep_t p) {
-	fp_print(p->x);
-	fp_print(p->y);
-	if (!p->norm) {
-		for (int i = FP_DIGS - 1; i >= 0; i--) {
-			util_print("%.*lX ", (int)(2 * sizeof(dig_t)),
-					(unsigned long int)p->z[i]);
-		}
-		util_print("\n");
-	} else {
-		fp_print(p->z);
-	}
+void ep2_frb_sqr(ep2_t r, ep2_t p) {
+	fp2_mul_frb_sqr(r->x, p->x, 2);
+	fp2_neg(r->y, p->y);
+	r->norm = 1;
+	fp_set_dig(r->z[0], 1);
+	fp_zero(r->z[1]);
 }

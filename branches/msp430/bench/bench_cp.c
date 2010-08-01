@@ -248,6 +248,72 @@ static void ecdsa(void) {
 
 #endif
 
+#if defined(WITH_PC)
+
+static void sokaka(void) {
+	sokaka_t s_a;
+	bn_t s;
+	unsigned char key1[MD_LEN];
+
+	sokaka_null(s_a);
+
+	sokaka_new(s_a);
+	bn_new(s);
+
+	cp_sokaka_gen(s);
+
+	BENCH_BEGIN("cp_sokaka_gen") {
+		BENCH_ADD(cp_sokaka_gen(s));
+	} BENCH_END;
+
+	BENCH_BEGIN("cp_sokaka_gen_prv") {
+		BENCH_ADD(cp_sokaka_gen_prv(s_a, "Alice", 5, s));
+	} BENCH_END;
+
+	BENCH_BEGIN("cp_sokaka_key") {
+		BENCH_ADD(cp_sokaka_key(key1, MD_LEN, "Alice", 5, s_a, "Bob", 3));
+	} BENCH_END;
+
+	sokaka_free(s_a);
+	bn_free(s);
+}
+
+static void bls(void) {
+	unsigned char msg[5] = { 0, 1, 2, 3, 4 };
+	g1_t s;
+	g2_t p;
+	bn_t d;
+
+	g1_null(s);
+	g2_null(p);
+	bn_null(d);
+
+	g1_new(s);
+	g2_new(p);
+	bn_new(d);
+
+	BENCH_BEGIN("cp_bls_gen") {
+		BENCH_ADD(cp_bls_gen(d, p));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("cp_bls_sign") {
+		BENCH_ADD(cp_bls_sign(s, msg, 5, d));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("cp_bls_ver") {
+		BENCH_ADD(cp_bls_ver(s, msg, 5, p));
+	}
+	BENCH_END;
+
+	g1_free(s);
+	bn_free(d);
+	g2_free(p);
+}
+
+#endif
+
 int main(void) {
 	core_init();
 	conf_print();
@@ -265,6 +331,16 @@ int main(void) {
 	if (ec_param_set_any() == STS_OK) {
 		ecdh();
 		ecdsa();
+	} else {
+		THROW(ERR_NO_CURVE);
+	}
+#endif
+
+#if defined(WITH_PC)
+	util_print_banner("Protocols based on pairings:\n", 0);
+	if (pc_param_set_any() == STS_OK) {
+		sokaka();
+		bls();
 	} else {
 		THROW(ERR_NO_CURVE);
 	}

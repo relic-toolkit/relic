@@ -277,7 +277,7 @@ typedef CAT(EC_LOWER, t) ec_t;
 
 /**
  * Multiplies and adds two elliptic curve points simultaneously. Computes
- * R = kP + lQ.
+ * R = kG + lQ.
  *
  * @param[out] R			- the result.
  * @param[in] K				- the first integer.
@@ -302,5 +302,21 @@ typedef CAT(EC_LOWER, t) ec_t;
  * @param[in] L				- the array length in bytes.
  */
 #define ec_map(P, M, L);	CAT(EC_LOWER, map)(P, M, L)
+
+/**
+ * Compresses a point.
+ *
+ * @param[out] R			- the result.
+ * @param[in] P				- the point to compress.
+ */
+#define ec_pck(R, P);	CAT(EC_LOWER, pck)(R, P)
+
+/**
+ * Decompresses a point.
+ *
+ * @param[out] R			- the result.
+ * @param[in] P				- the point to decompress.
+ */
+#define ec_upk(R, P);	CAT(EC_LOWER, upk)(R, P)
 
 #endif /* !RELIC_EC_H */

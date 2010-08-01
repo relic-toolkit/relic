@@ -23,96 +23,35 @@
 /**
  * @file
  *
- * Implementation of the prime elliptic curve utilities.
+ * Implementation of the low-level quadratic extension field multiplication
+ * functions.
  *
  * @version $Id$
- * @ingroup ep
+ * @ingroup fp
  */
 
+#include "relic_fp.h"
+#include "relic_pp.h"
 #include "relic_core.h"
-#include "relic_md.h"
-#include "relic_ep.h"
 #include "relic_error.h"
-#include "relic_conf.h"
 #include "relic_fp_low.h"
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
-int ep_is_infty(ep_t p) {
-	return (fp_is_zero(p->z) == 1);
+void fp2_addn_low(fp2_t c, fp2_t a, fp2_t b) {
+  fp_add(c[0], a[0], b[0]);
+  fp_add(c[1], a[1], b[1]);
 }
 
-void ep_set_infty(ep_t p) {
-	fp_zero(p->x);
-	fp_zero(p->y);
-	fp_zero(p->z);
-	p->norm = 1;
+void fp2_subn_low(fp2_t c, fp2_t a, fp2_t b) {
+  fp_sub(c[0], a[0], b[0]);
+  fp_sub(c[1], a[1], b[1]);
 }
 
-void ep_copy(ep_t r, ep_t p) {
-	fp_copy(r->x, p->x);
-	fp_copy(r->y, p->y);
-	fp_copy(r->z, p->z);
-	r->norm = p->norm;
-}
-
-int ep_cmp(ep_t p, ep_t q) {
-	if (fp_cmp(p->x, q->x) != CMP_EQ) {
-		return CMP_NE;
-	}
-
-	if (fp_cmp(p->y, q->y) != CMP_EQ) {
-		return CMP_NE;
-	}
-
-	if (fp_cmp(p->z, q->z) != CMP_EQ) {
-		return CMP_NE;
-	}
-
-	return CMP_EQ;
-}
-
-void ep_rand(ep_t p) {
-	bn_t n, k;
-	ep_t gen;
-
-	bn_null(k);
-	bn_null(n);
-	ep_null(gen);
-
-	TRY {
-		bn_new(k);
-		bn_new(n);
-		ep_new(gen);
-
-		ep_curve_get_ord(n);
-
-		bn_rand(k, BN_POS, bn_bits(n));
-		bn_mod(k, k, n);
-
-		ep_curve_get_gen(gen);
-		ep_mul(p, gen, k);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
-		bn_free(k);
-		bn_free(n);
-		ep_free(gen);
-	}
-}
-
-void ep_print(ep_t p) {
-	fp_print(p->x);
-	fp_print(p->y);
-	if (!p->norm) {
-		for (int i = FP_DIGS - 1; i >= 0; i--) {
-			util_print("%.*lX ", (int)(2 * sizeof(dig_t)),
-					(unsigned long int)p->z[i]);
-		}
-		util_print("\n");
-	} else {
-		fp_print(p->z);
-	}
+void fp2_dbln_low(fp2_t c, fp2_t a) {
+  /* 2 * (a0 + a1 * u) = 2 * a0 + 2 * a1 * u. */
+  fp_dbl(c[0], a[0]);
+  fp_dbl(c[1], a[1]);
 }

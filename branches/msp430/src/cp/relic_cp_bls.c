@@ -23,73 +23,98 @@
 /**
  * @file
  *
- * Implementation of the ternary field cubing.
+ * Implementation of the Boneh-Lynn-Schacham short signature protocol.
  *
  * @version $Id$
- * @ingroup ft
+ * @ingroup cp
  */
 
-#include <string.h>
-
-#include "relic_core.h"
-#include "relic_conf.h"
-#include "relic_ft.h"
-#include "relic_ft_low.h"
-#include "relic_bn_low.h"
-#include "relic_util.h"
+#include "relic.h"
+#include "relic_test.h"
+#include "relic_bench.h"
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
-#if FT_CUB == BASIC || !defined(STRIP)
+void cp_bls_gen(bn_t d, g2_t q) {
+	bn_t n;
 
-void ft_cub_basic(ft_t c, ft_t a) {
-	dv_t t;
-
-	dv_null(t);
+	bn_null(n);
 
 	TRY {
-		/* We need a temporary variable so that c can be a or b. */
-		dv_new(t);
-		ft_cubn_low(t, a);
-		ft_rdc_cub(c, t);
-	} CATCH_ANY {
+		bn_new(n);
+
+		g2_get_ord(n);
+
+		do {
+			bn_rand(d, BN_POS, bn_bits(n));
+			bn_mod(d, d, n);
+		} while (bn_is_zero(d));
+
+		g2_mul_gen(q, d);
+	}
+	CATCH_ANY {
 		THROW(ERR_CAUGHT);
 	}
 	FINALLY {
-		dv_free(t);
+		bn_free(n);
 	}
 }
 
-#endif
+void cp_bls_sign(g1_t s, unsigned char *msg, int len, bn_t d) {
+	g1_t p;
 
-#if FT_CUB == TABLE || !defined(STRIP)
-
-void ft_cub_table(ft_t c, ft_t a) {
-	dv_t t;
-
-	dv_null(t);
+	g1_null(p);
 
 	TRY {
-		/* We need a temporary variable so that c can be a or b. */
-		dv_new(t);
-		ft_cubl_low(t, a);
-		ft_rdc_cub(c, t);
-	} CATCH_ANY {
+		g1_new(p);
+		g1_map(p, msg, len);
+		g1_mul(s, p, d);
+	}
+	CATCH_ANY {
 		THROW(ERR_CAUGHT);
 	}
 	FINALLY {
-		dv_free(t);
+		g1_free(p);
 	}
 }
 
-#endif
+int cp_bls_ver(g1_t s, unsigned char *msg, int len, g2_t q) {
+	g1_t p;
+	g2_t g;
+	gt_t e1, e2;
+	int result = 0;
 
-#if FT_CUB == INTEG || !defined(STRIP)
+	g1_null(p);
+	g2_null(g);
+	gt_null(e1);
+	gt_null(e2);
 
-void ft_cub_integ(ft_t c, ft_t a) {
-	ft_cubm_low(c, a);
+	TRY {
+		g1_new(p);
+		g2_new(g);
+		gt_new(e1);
+		gt_new(e2);
+
+		g2_get_gen(g);
+
+		g1_map(p, msg, len);
+		pc_map(e1, p, q);
+		pc_map(e2, s, g);
+
+		if (gt_cmp(e1, e2) == CMP_EQ) {
+			result = 1;
+		}
+	}
+	CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	}
+	FINALLY {
+		g1_null(p);
+		g2_null(g);
+		gt_null(e1);
+		gt_null(e2);
+	}
+	return result;
 }
-
-#endif

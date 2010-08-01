@@ -23,96 +23,90 @@
 /**
  * @file
  *
- * Implementation of the prime elliptic curve utilities.
+ * Implementation of utilities for prime elliptic curves over quadratic
+ * extensions.
  *
- * @version $Id$
- * @ingroup ep
+ * @version $Id: relic_pp_ep2.c 463 2010-07-13 21:12:13Z conradoplg $
+ * @ingroup pp
  */
 
 #include "relic_core.h"
 #include "relic_md.h"
-#include "relic_ep.h"
+#include "relic_pp.h"
 #include "relic_error.h"
 #include "relic_conf.h"
 #include "relic_fp_low.h"
 
 /*============================================================================*/
-/* Public definitions                                                         */
+	/* Public definitions                                                         */
 /*============================================================================*/
 
-int ep_is_infty(ep_t p) {
-	return (fp_is_zero(p->z) == 1);
+int ep2_is_infty(ep2_t p) {
+	return (fp2_is_zero(p->z) == 1);
 }
 
-void ep_set_infty(ep_t p) {
-	fp_zero(p->x);
-	fp_zero(p->y);
-	fp_zero(p->z);
-	p->norm = 1;
+void ep2_set_infty(ep2_t p) {
+	fp2_zero(p->x);
+	fp2_zero(p->y);
+	fp2_zero(p->z);
 }
 
-void ep_copy(ep_t r, ep_t p) {
-	fp_copy(r->x, p->x);
-	fp_copy(r->y, p->y);
-	fp_copy(r->z, p->z);
+void ep2_copy(ep2_t r, ep2_t p) {
+	fp2_copy(r->x, p->x);
+	fp2_copy(r->y, p->y);
+	fp2_copy(r->z, p->z);
 	r->norm = p->norm;
 }
 
-int ep_cmp(ep_t p, ep_t q) {
-	if (fp_cmp(p->x, q->x) != CMP_EQ) {
+int ep2_cmp(ep2_t p, ep2_t q) {
+	if (fp2_cmp(p->x, q->x) != CMP_EQ) {
 		return CMP_NE;
 	}
 
-	if (fp_cmp(p->y, q->y) != CMP_EQ) {
+	if (fp2_cmp(p->y, q->y) != CMP_EQ) {
 		return CMP_NE;
 	}
 
-	if (fp_cmp(p->z, q->z) != CMP_EQ) {
+	if (fp2_cmp(p->z, q->z) != CMP_EQ) {
 		return CMP_NE;
 	}
 
 	return CMP_EQ;
 }
 
-void ep_rand(ep_t p) {
+void ep2_rand(ep2_t p) {
 	bn_t n, k;
-	ep_t gen;
+	ep2_t gen;
 
 	bn_null(k);
 	bn_null(n);
-	ep_null(gen);
+	ep2_null(gen);
 
 	TRY {
 		bn_new(k);
 		bn_new(n);
-		ep_new(gen);
+		ep2_new(gen);
 
-		ep_curve_get_ord(n);
+		ep2_curve_get_ord(n);
 
 		bn_rand(k, BN_POS, bn_bits(n));
 		bn_mod(k, k, n);
 
-		ep_curve_get_gen(gen);
-		ep_mul(p, gen, k);
-	} CATCH_ANY {
+		ep2_curve_get_gen(gen);
+		ep2_mul(p, gen, k);
+	}
+	CATCH_ANY {
 		THROW(ERR_CAUGHT);
-	} FINALLY {
+	}
+	FINALLY {
 		bn_free(k);
 		bn_free(n);
-		ep_free(gen);
+		ep2_free(gen);
 	}
 }
 
-void ep_print(ep_t p) {
-	fp_print(p->x);
-	fp_print(p->y);
-	if (!p->norm) {
-		for (int i = FP_DIGS - 1; i >= 0; i--) {
-			util_print("%.*lX ", (int)(2 * sizeof(dig_t)),
-					(unsigned long int)p->z[i]);
-		}
-		util_print("\n");
-	} else {
-		fp_print(p->z);
-	}
+void ep2_print(ep2_t p) {
+	fp2_print(p->x);
+	fp2_print(p->y);
+	fp2_print(p->z);
 }

@@ -60,12 +60,12 @@ enum {
 	NIST_P384 = 5,
 	/** NIST P-521 prime curve. */
 	NIST_P521 = 6,
-	/** Barreto-Naehrig curve with negative x (found by Nogami et al.). */
-	BN_P254 = 7,
-	/** Barreto-Naehrig curve with positive x. */
-	BN_P256 = 8,
 	/** Barreto-Naehrig curve with positive x */
-	BN_P158 = 9,
+	BN_P158 = 7,
+	/** Barreto-Naehrig curve with negative x (found by Nogami et al.). */
+	BN_P254 = 8,
+	/** Barreto-Naehrig curve with positive x. */
+	BN_P256 = 9,
 };
 
 /**
@@ -306,8 +306,7 @@ typedef ep_st *ep_t;
 #endif
 
 /**
- * Builds a precomputation table for multiplying a fixed prime elliptic point
- * point.
+ * Builds a precomputation table for multiplying a fixed prime elliptic point.
  *
  * @param[out] T			- the precomputation table.
  * @param[in] P				- the point to multiply.
@@ -423,6 +422,13 @@ dig_t *ep_curve_get_b(void);
  * @return the optimization identifier.
  */
 int ep_curve_opt_a(void);
+
+/**
+ * Returns a optimization identifier based on the coefficient b of the curve.
+ *
+ * @return the optimization identifier.
+ */
+int ep_curve_opt_b(void);
 
 /**
  * Tests if the configured prime elliptic curve is supersingular.
@@ -694,6 +700,15 @@ void ep_mul_wtnaf(ep_t r, ep_t p, bn_t k);
 void ep_mul_gen(ep_t r, bn_t k);
 
 /**
+ * Multiplies a prime elliptic point by a small integer.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to multiply.
+ * @param[in] k				- the integer.
+ */
+void ep_mul_dig(ep_t r, ep_t p, dig_t k);
+
+/**
  * Builds a precomputation table for multiplying a fixed prime elliptic point
  * using the binary method.
  *
@@ -882,5 +897,21 @@ void ep_norm(ep_t r, ep_t p);
  * @param[in] len			- the array length in bytes.
  */
 void ep_map(ep_t p, unsigned char *msg, int len);
+
+/**
+ * Compresses a point.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to compress.
+ */
+void ep_pck(ep_t r, ep_t p);
+
+/**
+ * Decompresses a point.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to decompress.
+ */
+void ep_upk(ep_t r, ep_t p);
 
 #endif /* !RELIC_EP_H */
