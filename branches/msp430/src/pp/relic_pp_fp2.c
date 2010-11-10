@@ -49,7 +49,7 @@ fp2_st const_frb[6];
 /**
  * Constant used to compute consecutive Frobenius maps in higher extensions.
  */
-static fp_st const_sqr[2];
+static fp_st const_sqr[3];
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -57,34 +57,37 @@ static fp_st const_sqr[2];
 
 void fp2_const_init() {
 #if ALLOC == STATIC
-	for (int i = 0; i < 6; i++) {
+	for (int i = 0; i < 5; i++) {
 		fp2_new(const_frb[i]);
 	}
-	fp_new(const_frb_dbl[0]);
-	fp_new(const_frb_dbl[1]);
+	fp_new(const_frb_sqr[0]);
+	fp_new(const_frb_sqr[1]);
 #endif
 }
 
 void fp2_const_clean() {
 #if ALLOC == STATIC
-	for (int i = 0; i < 6; i++) {
+	for (int i = 0; i < 5; i++) {
 		fp2_free(const_frb[i]);
 	}
-	fp_free(const_frb_dbl[0]);
-	fp_free(const_frb_dbl[1]);
+	fp_free(const_frb_sqr[0]);
+	fp_free(const_frb_sqr[1]);
 #endif
 }
 
 void fp2_const_calc() {
 	bn_t e;
 	fp2_t t;
+	fp2_t t2;
 
 	bn_null(e);
 	fp2_null(t);
+	fp2_null(t2);
 
 	TRY {
 		bn_new(e);
 		fp2_new(t);
+		fp2_new(t2);
 		fp2_zero(t);
 		fp_set_dig(t[0], 1);
 		fp2_mul_nor(t, t);
@@ -93,29 +96,44 @@ void fp2_const_calc() {
 		bn_sub_dig(e, e, 1);
 		bn_div_dig(e, e, 6);
 		fp2_exp(t, t, e);
-		fp_copy(const_frb[0][0], t[0]);
-		fp_copy(const_frb[0][1], t[1]);
+#if ALLOC == AUTO
+		fp2_copy(const_frb[0], t);
 		fp2_sqr(const_frb[1], const_frb[0]);
 		fp2_mul(const_frb[2], const_frb[1], const_frb[0]);
 		fp2_sqr(const_frb[3], const_frb[1]);
 		fp2_mul(const_frb[4], const_frb[3], const_frb[0]);
-		fp2_sqr(const_frb[5], const_frb[3]);
+#else
+		fp_copy(const_frb[0][0], t[0]);
+		fp_copy(const_frb[0][1], t[1]);
+		fp2_sqr(t2, t);
+		fp_copy(const_frb[1][0], t2[0]);
+		fp_copy(const_frb[1][1], t2[1]);
+		fp2_mul(t2, t2, t);
+		fp_copy(const_frb[2][0], t2[0]);
+		fp_copy(const_frb[2][1], t2[1]);
+		fp2_sqr(t2, t);
+		fp2_sqr(t2, t2);
+		fp_copy(const_frb[3][0], t2[0]);
+		fp_copy(const_frb[3][1], t2[1]);
+		fp2_mul(t2, t2, t);
+		fp_copy(const_frb[4][0], t2[0]);
+		fp_copy(const_frb[4][1], t2[1]);
+#endif
 		fp2_zero(t);
 		fp_set_dig(t[0], 1);
 		fp2_mul_nor(t, t);
-		e->used = FP_DIGS;
-		dv_copy(e->dp, fp_prime_get(), FP_DIGS);
-		bn_sqr(e, e);
-		bn_sub_dig(e, e, 1);
-		bn_div_dig(e, e, 6);
-		fp2_exp(t, t, e);
+		fp2_frb(t2, t);
+		fp2_mul(t, t2, t);
+		fp_exp(t[0], t[0], e);
 		fp_copy(const_sqr[0], t[0]);
 		fp_sqr(const_sqr[1], const_sqr[0]);
+		fp_mul(const_sqr[2], const_sqr[1], const_sqr[0]);
 	} CATCH_ANY {
 		THROW(ERR_CAUGHT);
 	} FINALLY {
 		bn_free(e);
 		fp2_free(t);
+		fp2_free(t2);
 	}
 }
 
@@ -154,7 +172,27 @@ int fp2_cmp(fp2_t a, fp2_t b) {
 }
 
 void fp2_mul_frb(fp2_t c, fp2_t a, int i) {
+#if ALLOC == AUTO
 	fp2_mul(c, a, const_frb[i-1]);
+#else
+    fp2_t t;
+
+	fp2_null(t);
+
+	TRY {
+		fp2_new(t);
+
+		fp_copy(t[0], const_frb[i-1][0]);
+		fp_copy(t[1], const_frb[i-1][1]);
+		fp2_mul(c, a, t);
+	}
+	CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	}
+	FINALLY {
+		fp2_free(t);
+	}
+#endif
 }
 
 void fp2_mul_frb_sqr(fp2_t c, fp2_t a, int i) {

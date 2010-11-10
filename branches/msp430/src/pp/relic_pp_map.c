@@ -41,7 +41,7 @@
 /**
  * Adds two prime elliptic curve points and evaluates the corresponding line
  * function at another elliptic curve point.
- * 
+ *
  * @param[out] l			- the result of the evaluation.
  * @param[in,out] r			- the first point to add, in Affine coordinates.
  * 							The result of the addition, in Jacobian coordinates.
@@ -63,33 +63,18 @@ void pp_add(fp12_t l, ep2_t r, ep2_t q, ep_t p) {
 		ep2_copy(t, r);
 		ep2_add_slp(r, slope, r, q);
 
-		if (ep2_is_infty(r)) {
-			fp12_zero(l);
-			fp_set_dig(l[0][0][0], 1);
-		} else {
-			fp6_t n, d;
+		fp_zero(l[1][0][1]);
+		fp_copy(l[1][0][0], p->x);
+		fp2_mul(l[1][0], l[1][0], slope);
+		fp2_neg(l[1][0], l[1][0]);
 
-			fp6_new(d);
-			fp6_new(n);
+		fp2_mul(l[1][1], slope, q->x);
+		fp2_mul(l[1][2], r->z, q->y);
+		fp2_sub(l[1][1], l[1][1], l[1][2]);
 
-			fp_zero(d[0][1]);
-			fp_copy(d[0][0], p->x);
-			fp2_mul(d[0], d[0], slope);
-			fp2_neg(d[0], d[0]);
-			fp2_mul(d[2], r->z, q->y);
-			fp2_mul(d[1], slope, q->x);
-			fp2_sub(d[1], d[1], d[2]);
-			fp2_zero(d[2]);
-
-			fp_zero(n[0][1]);
-			fp_copy(n[0][0], p->y);
-			fp2_mul(n[0], n[0], r->z);
-			fp2_zero(n[1]);
-			fp2_zero(n[2]);
-
-			fp6_copy(l[0], n);
-			fp6_copy(l[1], d);
-		}
+		fp_zero(l[0][0][1]);
+		fp_copy(l[0][0][0], p->y);
+		fp2_mul(l[0][0], l[0][0], r->z);
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
@@ -103,7 +88,7 @@ void pp_add(fp12_t l, ep2_t r, ep2_t q, ep_t p) {
 /**
  * Doubles a prime elliptic curve point and evaluates the corresponding line
  * function at another elliptic curve point.
- * 
+ *
  * @param[out] l			- the result of the evaluation.
  * @param[out] r			- the result, in Jacobian coordinates.
  * @param[in] q				- the point to double, in Jacobian coordinates.
@@ -126,33 +111,18 @@ void pp_dbl(fp12_t l, ep2_t r, ep2_t q, ep_t p) {
 		ep2_copy(t, r);
 		ep2_dbl_slp(r, s, e, r);
 
-		if (ep2_is_infty(r)) {
-			fp12_zero(l);
-			fp_set_dig(l[0][0][0], 1);
-		} else {
-			fp6_t n, d;
+		fp2_sqr(t->z, t->z);
+		fp2_mul(l[1][0], t->z, s);
+		fp_mul(l[1][0][0], l[1][0][0], p->x);
+		fp_mul(l[1][0][1], l[1][0][1], p->x);
+		fp2_neg(l[1][0], l[1][0]);
 
-			fp6_new(d);
-			fp6_new(n);
+		fp2_mul(l[1][1], s, t->x);
+		fp2_sub(l[1][1], l[1][1], e);
 
-			fp2_sqr(d[2], t->z);
-			fp2_mul(d[0], d[2], s);
-			fp_mul(d[0][0], d[0][0], p->x);
-			fp_mul(d[0][1], d[0][1], p->x);
-			fp2_neg(d[0], d[0]);
-			fp2_mul(d[1], s, t->x);
-			fp2_sub(d[1], d[1], e);
-
-			fp2_mul(n[0], r->z, d[2]);
-			fp_mul(n[0][0], n[0][0], p->y);
-			fp_mul(n[0][1], n[0][1], p->y);
-			fp2_zero(d[2]);
-			fp2_zero(n[1]);
-			fp2_zero(n[2]);
-
-			fp6_copy(l[0], n);
-			fp6_copy(l[1], d);
-		}
+		fp2_mul(l[0][0], r->z, t->z);
+		fp_mul(l[0][0][0], l[0][0][0], p->y);
+		fp_mul(l[0][0][1], l[0][0][1], p->y);
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
@@ -177,7 +147,7 @@ void pp_dbl(fp12_t l, ep2_t r, ep2_t q, ep_t p) {
  */
 void pp_miller(fp12_t r, ep2_t t, ep2_t q, bn_t a, ep_t p) {
 #ifndef PP_PARAL
-	fp12_t tmp;
+	fp12_t tmp, tmp2;
 
 	fp12_null(tmp);
 
@@ -282,7 +252,7 @@ void pp_miller(fp12_t r, ep2_t t, ep2_t q, bn_t a, ep_t p) {
 
 /**
  * Compute the final exponentiation of the rate pairing in a BN curve.
- * 
+ *
  * @param[in,out] m			- the result.
  * @param[in] x				- the parameter used to generate the curve.
  */
@@ -330,8 +300,11 @@ void pp_exp(fp12_t m, bn_t x) {
 			fp12_inv_cyc(v3, v1);
 			fp12_exp_cyc(v2, v3, x);
 		} else {
+			/* v0 = m^x. */
 			fp12_exp_cyc(v0, m, x);
+			/* v1 = m^x^2. */
 			fp12_exp_cyc(v1, v0, x);
+			/* v2 = m^x^3. */
 			fp12_exp_cyc(v2, v1, x);
 		}
 
@@ -435,37 +408,30 @@ void pp_r_ate_mul(fp12_t res, ep2_t t, ep2_t q, ep_t p) {
  * @param[in] p				- the second point of the pairing, in G_1.
  */
 void pp_o_ate_mul(fp12_t res, ep2_t t, ep2_t q, ep_t p) {
-	ep2_t q1, q2, q3;
+	ep2_t q1, q2;
 	fp12_t tmp;
 
 	fp12_null(tmp);
 	ep2_null(q1);
 	ep2_null(q2);
-	ep2_null(q3);
 
 	TRY {
 		ep2_new(q1);
 		ep2_new(q2);
-		ep2_new(q3);
 		fp12_new(tmp);
 
 		fp_set_dig(q1->z[0], 1);
 		fp_zero(q1->z[1]);
 		fp_set_dig(q2->z[0], 1);
 		fp_zero(q2->z[1]);
-		fp_set_dig(q3->z[0], 1);
-		fp_zero(q3->z[1]);
 
 		ep2_frb(q1, q);
-		ep2_frb(q2, q1);
-		ep2_frb(q3, q2);
+		ep2_frb_sqr(q2, q);
 		ep2_neg(q2, q2);
 
 		pp_add(tmp, t, q1, p);
 		fp12_mul_dxs(res, res, tmp);
 		pp_add(tmp, t, q2, p);
-		fp12_mul_dxs(res, res, tmp);
-		pp_add(tmp, t, q3, p);
 		fp12_mul_dxs(res, res, tmp);
 	} CATCH_ANY {
 		THROW(ERR_CAUGHT);
@@ -473,7 +439,6 @@ void pp_o_ate_mul(fp12_t res, ep2_t t, ep2_t q, ep_t p) {
 		fp12_free(tmp);
 		ep2_free(q1);
 		ep2_free(q2);
-		ep2_free(q3);
 	}
 }
 
@@ -590,34 +555,7 @@ void pp_map_r_ate(fp12_t r, ep_t p, ep2_t q) {
 		bn_new(a);
 		bn_new(x);
 
-		switch (fp_param_get()) {
-			case BN_158:
-				/* x = 4000000031. */
-				bn_set_2b(x, 38);
-				bn_add_dig(x, x, 0x31);
-				break;
-			case BN_254:
-				/* x = -4080000000000001. */
-				bn_set_2b(x, 62);
-				bn_set_2b(a, 55);
-				bn_add(x, x, a);
-				bn_add_dig(x, x, 1);
-				bn_neg(x, x);
-				break;
-			case BN_256:
-				/* x = 6000000000001F2D. */
-				bn_set_2b(x, 62);
-				bn_set_2b(a, 61);
-				bn_add(x, x, a);
-				bn_set_dig(a, 0x1F);
-				bn_lsh(a, a, 8);
-				bn_add(x, x, a);
-				bn_add_dig(x, x, 0x2D);
-				break;
-			default:
-				THROW(ERR_INVALID);
-				break;
-		}
+		fp_param_get_bn(x);
 
 		bn_mul_dig(a, x, 6);
 		bn_add_dig(a, a, 2);
@@ -630,7 +568,7 @@ void pp_map_r_ate(fp12_t r, ep_t p, ep2_t q) {
 
 		if (bn_sign(x) == BN_NEG) {
 			/* Since f_{-r,Q}(P) = 1/f_{r,Q}(P), we must invert the result. */
-			fp12_inv(r, r);
+			fp12_inv_cyc(r, r);
 			ep2_neg(t, t);
 		}
 
@@ -664,34 +602,7 @@ void pp_map_o_ate(fp12_t r, ep_t p, ep2_t q) {
 		bn_new(a);
 		bn_new(x);
 
-		switch (fp_param_get()) {
-			case BN_158:
-				/* x = 4000000031. */
-				bn_set_2b(x, 38);
-				bn_add_dig(x, x, 0x31);
-				break;
-			case BN_254:
-				/* x = -4080000000000001. */
-				bn_set_2b(x, 62);
-				bn_set_2b(a, 55);
-				bn_add(x, x, a);
-				bn_add_dig(x, x, 1);
-				bn_neg(x, x);
-				break;
-			case BN_256:
-				/* x = 6000000000001F2D. */
-				bn_set_2b(x, 62);
-				bn_set_2b(a, 61);
-				bn_add(x, x, a);
-				bn_set_dig(a, 0x1F);
-				bn_lsh(a, a, 8);
-				bn_add(x, x, a);
-				bn_add_dig(x, x, 0x2D);
-				break;
-			default:
-				THROW(ERR_INVALID);
-				break;
-		}
+		fp_param_get_bn(x);
 
 		bn_mul_dig(a, x, 6);
 		bn_add_dig(a, a, 2);
@@ -704,7 +615,7 @@ void pp_map_o_ate(fp12_t r, ep_t p, ep2_t q) {
 
 		if (bn_sign(x) == BN_NEG) {
 			/* Since f_{-r,Q}(P) = 1/f_{r,Q}(P), we must invert the result. */
-			fp12_inv(r, r);
+			fp12_inv_cyc(r, r);
 			ep2_neg(t, t);
 		}
 
@@ -739,34 +650,7 @@ void pp_map_x_ate(fp12_t r, ep_t p, ep2_t q) {
 		bn_new(a);
 		bn_new(x);
 
-		switch (fp_param_get()) {
-			case BN_158:
-				/* x = 4000000031. */
-				bn_set_2b(x, 38);
-				bn_add_dig(x, x, 0x31);
-				break;
-			case BN_254:
-				/* x = -4080000000000001. */
-				bn_set_2b(x, 62);
-				bn_set_2b(a, 55);
-				bn_add(x, x, a);
-				bn_add_dig(x, x, 1);
-				bn_neg(x, x);
-				break;
-			case BN_256:
-				/* x = 6000000000001F2D. */
-				bn_set_2b(x, 62);
-				bn_set_2b(a, 61);
-				bn_add(x, x, a);
-				bn_set_dig(a, 0x1F);
-				bn_lsh(a, a, 8);
-				bn_add(x, x, a);
-				bn_add_dig(x, x, 0x2D);
-				break;
-			default:
-				THROW(ERR_INVALID);
-				break;
-		}
+		fp_param_get_bn(x);
 
 		bn_copy(a, x);
 		if (bn_sign(x) == BN_NEG) {
@@ -781,7 +665,7 @@ void pp_map_x_ate(fp12_t r, ep_t p, ep2_t q) {
 
 		if (bn_sign(x) == BN_NEG) {
 			/* Since f_{-r,Q}(P) = 1/f_{r,Q}(P), we must invert the result. */
-			fp12_inv(r, r);
+			fp12_inv_cyc(r, r);
 			ep2_neg(t, t);
 		}
 

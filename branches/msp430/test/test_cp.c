@@ -221,9 +221,10 @@ static int ecdh(void) {
 	code = STS_OK;
 
   end:
-	bn_free(d);
-	bn_free(r);
-	ec_free(q);
+	bn_free(d_a);
+	bn_free(d_b);
+	ec_free(q_a);
+	ec_free(q_b);
 	return code;
 }
 
@@ -265,16 +266,16 @@ static int ecdsa(void) {
 
 static int sokaka(void) {
 	int code = STS_ERR;
-	sokaka_t s_a, s_b;
+	sokaka_t s_i;
 	bn_t s;
 	unsigned char key1[MD_LEN], key2[MD_LEN];
+	char id_a[5] = {'A', 'l', 'i', 'c', 'e'};
+	char id_b[3] = {'B', 'o', 'b'};
 
-	sokaka_null(s_a);
-	sokaka_null(s_b);
+	sokaka_null(s_i);
 
 	TRY {
-		sokaka_new(s_a);
-		sokaka_new(s_b);
+		sokaka_new(s_i);
 		bn_new(s);
 
 		cp_sokaka_gen(s);
@@ -282,10 +283,10 @@ static int sokaka(void) {
 		TEST_BEGIN
 				("sakai-ohgishi-kasahara authenticated key agreement is correct")
 		{
-			cp_sokaka_gen_prv(s_a, "Alice", strlen("Alice"), s);
-			cp_sokaka_gen_prv(s_b, "Bob", strlen("Bob"), s);
-			cp_sokaka_key(key1, MD_LEN, "Alice", 5, s_a, "Bob", 3);
-			cp_sokaka_key(key2, MD_LEN, "Bob", 3, s_b, "Alice", 5);
+			cp_sokaka_gen_prv(s_i, id_a, 5, s);
+			cp_sokaka_key(key1, MD_LEN, id_a, 5, s_i, id_b, 3);
+			cp_sokaka_gen_prv(s_i, id_b, 3, s);
+			cp_sokaka_key(key2, MD_LEN, id_b, 3, s_i, id_a, 5);
 			TEST_ASSERT(memcmp(key1, key2, MD_LEN) == 0, end);
 		} TEST_END;
 
@@ -295,8 +296,7 @@ static int sokaka(void) {
 	code = STS_OK;
 
   end:
-	sokaka_free(s_a);
-	sokaka_free(s_b);
+	sokaka_free(s_i);
 	return code;
 }
 
@@ -328,8 +328,45 @@ static int bls(void) {
 
   end:
 	bn_free(d);
-	bn_free(r);
-	ec_free(q);
+	g1_free(s);
+	g2_free(q);
+	return code;
+}
+
+static int bbs(void) {
+	int code = STS_ERR;
+	int b;
+	bn_t d;
+	g1_t s;
+	g2_t q;
+	gt_t z;
+	unsigned char msg[5] = { 0, 1, 2, 3, 4 };
+
+	bn_null(d);
+	g1_null(s);
+	g2_null(q);
+	gt_null(z);
+
+	TRY {
+		bn_new(d);
+		g1_new(s);
+		g2_new(q);
+		gt_new(z);
+
+		TEST_BEGIN("boneh-boyen short signature is correct") {
+			cp_bbs_gen(d, q, z);
+			cp_bbs_sign(&b, s, msg, 5, d);
+			TEST_ASSERT(cp_bbs_ver(b, s, msg, 5, q, z) == 1, end);
+		} TEST_END;
+	} CATCH_ANY {
+		ERROR(end);
+	}
+	code = STS_OK;
+
+  end:
+	bn_free(d);
+	g1_free(s);
+	g2_free(q);
 	return code;
 }
 
@@ -378,6 +415,10 @@ int main(void) {
 			return 1;
 		}
 		if (bls() != STS_OK) {
+			core_clean();
+			return 1;
+		}
+		if (bbs() != STS_OK) {
 			core_clean();
 			return 1;
 		}

@@ -32,6 +32,10 @@
 #include <stdlib.h>
 #include <errno.h>
 
+#if ALLOC != AUTO
+#include <malloc.h>
+#endif
+
 #include "relic_conf.h"
 #include "relic_bn.h"
 #include "relic_dv.h"
@@ -44,7 +48,6 @@
 /*============================================================================*/
 
 void bn_init(bn_t a, int digits) {
-
 #if ALLOC == DYNAMIC
 	int r;
 
@@ -54,24 +57,26 @@ void bn_init(bn_t a, int digits) {
 	}
 
 	if (a != NULL && a->dp == NULL) {
-		if (ALIGN == 1) {
-			a->dp = malloc(digits * sizeof(dig_t));
-		} else {
-			r = posix_memalign((void **)&(a->dp), ALIGN,
-					digits * sizeof(dig_t));
-			if (r == ENOMEM) {
-				THROW(ERR_NO_MEMORY);
-			}
-			if (r == EINVAL) {
-				THROW(ERR_INVALID);
-			}
-		}
-
-		if (a->dp == NULL) {
-			free(a);
+#if ALIGN == 1
+		a->dp = malloc(digits * sizeof(dig_t));
+#elif OPSYS == WINDOWS
+		a->dp = _aligned_malloc(digits * sizeof(dig_t), ALIGN);
+#else
+		r = posix_memalign((void **)&(a->dp), ALIGN, digits * sizeof(dig_t));
+		if (r == ENOMEM) {
 			THROW(ERR_NO_MEMORY);
 		}
+		if (r == EINVAL) {
+			THROW(ERR_INVALID);
+		}
+#endif
 	}
+
+	if (a->dp == NULL) {
+		free(a);
+		THROW(ERR_NO_MEMORY);
+	}
+
 #else
 	/* Verify if the number of digits is sane. */
 	if (digits > BN_SIZE) {
@@ -99,7 +104,11 @@ void bn_clean(bn_t a) {
 #if ALLOC == DYNAMIC
 	if (a != NULL) {
 		if (a->dp != NULL) {
+#if OPSYS == WINDOWS && ALIGN > 1
+			_aligned_free(a->dp);
+#else
 			free(a->dp);
+#endif
 			a->dp = NULL;
 		}
 		a->alloc = 0;

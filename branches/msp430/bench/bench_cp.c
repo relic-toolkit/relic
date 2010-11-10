@@ -254,6 +254,8 @@ static void sokaka(void) {
 	sokaka_t s_a;
 	bn_t s;
 	unsigned char key1[MD_LEN];
+	char id_a[5] = {'A', 'l', 'i', 'c', 'e'};
+	char id_b[3] = {'B', 'o', 'b'};
 
 	sokaka_null(s_a);
 
@@ -267,11 +269,11 @@ static void sokaka(void) {
 	} BENCH_END;
 
 	BENCH_BEGIN("cp_sokaka_gen_prv") {
-		BENCH_ADD(cp_sokaka_gen_prv(s_a, "Alice", 5, s));
+		BENCH_ADD(cp_sokaka_gen_prv(s_a, id_a, 5, s));
 	} BENCH_END;
 
 	BENCH_BEGIN("cp_sokaka_key") {
-		BENCH_ADD(cp_sokaka_key(key1, MD_LEN, "Alice", 5, s_a, "Bob", 3));
+		BENCH_ADD(cp_sokaka_key(key1, MD_LEN, id_a, 5, s_a, id_b, 3));
 	} BENCH_END;
 
 	sokaka_free(s_a);
@@ -312,6 +314,43 @@ static void bls(void) {
 	g2_free(p);
 }
 
+static void bbs(void) {
+	unsigned char msg[5] = { 0, 1, 2, 3, 4 };
+	int b;
+	g1_t s;
+	g2_t p;
+	gt_t z;
+	bn_t d;
+
+	g1_null(s);
+	g2_null(p);
+	gt_null(z);
+	bn_null(d);
+
+	g1_new(s);
+	g2_new(p);
+	gt_new(z);
+	bn_new(d);
+
+	BENCH_BEGIN("cp_bls_gen") {
+		BENCH_ADD(cp_bbs_gen(d, p, z));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("cp_bbs_sign") {
+		BENCH_ADD(cp_bbs_sign(&b, s, msg, 5, d));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("cp_bbs_ver") {
+		BENCH_ADD(cp_bbs_ver(b, s, msg, 5, p, z));
+	}
+	BENCH_END;
+
+	g1_free(s);
+	bn_free(d);
+	g2_free(p);
+}
 #endif
 
 int main(void) {
@@ -341,6 +380,7 @@ int main(void) {
 	if (pc_param_set_any() == STS_OK) {
 		sokaka();
 		bls();
+		bbs();
 	} else {
 		THROW(ERR_NO_CURVE);
 	}

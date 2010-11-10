@@ -89,14 +89,23 @@
 #endif
 
 /**
+ * Represents the size in bytes of the order of G_1 and G_2.
+ */
+#if PC_CUR == PRIME
+#define PC_BYTES			FP_BYTES
+#else
+#define PC_BYTES			FB_BYTES
+#endif
+
+/**
  * Represents a G_1 precomputable table.
  */
-#define G1_TABLE			CAT(G1_UPPER, _TABLE)
+#define G1_TABLE			CAT(G1_UPPER, _TABLE_MAX)
 
 /**
  * Represents a G_2 precomputable table.
  */
-#define G2_TABLE			CAT(G2_UPPER, _TABLE)
+#define G2_TABLE			CAT(G2_UPPER, _TABLE_MAX)
 
 /*============================================================================*/
 /* Type definitions                                                           */
@@ -487,15 +496,6 @@ typedef CAT(GT_LOWER, t) gt_t;
 #define gt_sqr(R, P)		CAT(GT_LOWER, sqr)(R, P)
 
 /**
- * Multiplies an element from G_1 by an integer. Computes R = kP.
- *
- * @param[out] R			- the result.
- * @param[in] P				- the element to multiply.
- * @param[in] K				- the integer.
- */
-#define g1_mul(R, P, K)		CAT(G1_LOWER, mul)(R, P, K)
-
-/**
  * Normalizes an element of G_1.
  *
  * @param[out] R			- the result.
@@ -510,6 +510,15 @@ typedef CAT(GT_LOWER, t) gt_t;
  * @param[in] P				- the element to normalize.
  */
 #define g2_norm(R, P)		CAT(G2_LOWER, norm)(R, P)
+
+/**
+ * Multiplies an element from G_1 by an integer. Computes R = kP.
+ *
+ * @param[out] R			- the result.
+ * @param[in] P				- the element to multiply.
+ * @param[in] K				- the integer.
+ */
+#define g1_mul(R, P, K)		CAT(G1_LOWER, mul)(R, P, K)
 
 /**
  * Multiplies an element from G_2 by an integer. Computes R = kP.

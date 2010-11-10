@@ -1328,6 +1328,15 @@ static int squaring12(void) {
 			fp12_sqr(c, a);
 			TEST_ASSERT(fp12_cmp(b, c) == CMP_EQ, end);
 		} TEST_END;
+
+		TEST_BEGIN("doubled squaring is correct") {
+			fp12_rand(a);
+			fp12_sqr(b, a);
+			fp6_dbl(b[0], b[0]);
+			fp6_dbl(b[1], b[1]);
+			fp12_sqr_dbl(c, a);
+			TEST_ASSERT(fp12_cmp(b, c) == CMP_EQ, end);
+		} TEST_END;
 	}
 	CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -1460,7 +1469,6 @@ int util(void) {
 	int code = STS_ERR;
 	ep2_t a, b, c;
 	bn_t n;
-	unsigned char msg[5];
 
 	ep2_null(a);
 	ep2_null(b);
@@ -1514,16 +1522,6 @@ int util(void) {
 		TEST_BEGIN("assignment to infinity and infinity test are consistent") {
 			ep2_set_infty(a);
 			TEST_ASSERT(ep2_is_infty(a), end);
-		}
-		TEST_END;
-
-		ep2_curve_get_ord(n);
-
-		TEST_BEGIN("point hashing is correct") {
-			rand_bytes(msg, sizeof(msg));
-			ep2_map(a, msg, sizeof(msg));
-			ep2_mul(a, a, n);
-			TEST_ASSERT(ep2_is_infty(a) == 1, end);
 		}
 		TEST_END;
 	}
@@ -2180,6 +2178,41 @@ static int simultaneous(void) {
 	return code;
 }
 
+static int hashing(void) {
+	int code = STS_ERR;
+	ep2_t p;
+	bn_t n, k;
+	unsigned char msg[5];
+
+	bn_null(n);
+	ep2_null(p);
+
+	TRY {
+		ep2_new(p);
+		bn_new(n);
+		bn_new(k);
+
+        ep2_curve_get_ord(n);
+
+        TEST_BEGIN("point hashing is correct") {
+                rand_bytes(msg, sizeof(msg));
+                ep2_map(p, msg, sizeof(msg));
+                ep2_mul(p, p, n);
+                TEST_ASSERT(ep2_is_infty(p) == 1, end);
+        }
+        TEST_END;
+	} CATCH_ANY {
+		util_print("FATAL ERROR!\n");
+		ERROR(end);
+	}
+	code = STS_OK;
+  end:
+	ep2_free(p);
+	bn_free(n);
+	bn_free(k);
+	return code;
+}
+
 static int pairing(void) {
 	int code = STS_ERR;
 	fp12_t e1, e2;
@@ -2189,18 +2222,18 @@ static int pairing(void) {
 
 	fp12_null(e1);
 	fp12_null(e2);
-	ep2_null(p);
-	ep_null(q);
-	ep_null(r);
+	ep_null(p);
+	ep2_null(q);
+	ep2_null(r);
 	bn_null(k);
 	bn_null(n);
 
 	TRY {
 		fp12_new(e1);
 		fp12_new(e2);
-		ep2_new(p);
-		ep_new(q);
-		ep_new(r);
+		ep_new(p);
+		ep2_new(q);
+		ep2_new(r);
 		bn_new(n);
 		bn_new(k);
 
@@ -2285,9 +2318,9 @@ static int pairing(void) {
   end:
 	fp12_free(e1);
 	fp12_free(e2);
-	ep2_free(p);
-	ep_free(q);
-	ep_free(r);
+	ep_free(p);
+	ep2_free(q);
+	ep2_free(r);
 	bn_free(n);
 	bn_free(k);
 	return code;
@@ -2301,7 +2334,6 @@ int main(void) {
 		core_clean();
 		return 0;
 	}
-	fp2_const_calc();
 
 	util_print_banner("Tests for the PP module", 0);
 
@@ -2496,6 +2528,11 @@ int main(void) {
  	}
 
  	if (simultaneous() != STS_OK) {
+ 		core_clean();
+ 		return 1;
+ 	}
+
+ 	if (hashing() != STS_OK) {
  		core_clean();
  		return 1;
  	}

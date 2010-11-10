@@ -185,7 +185,7 @@ static fb_st fb_srz;
 /**
  * Multiplication table for the z^(1/2).
  */
-static fb_st fb_tab_srz[600];
+static fb_st fb_tab_srz[256];
 
 #endif
 
