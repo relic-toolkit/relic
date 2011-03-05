@@ -5,7 +5,7 @@
 
 ==Release 0.2.2==
 
- * Updated the TinyPBC AVR profile and released the arithmetic backend for fast binary field arithmetic and fast pairing computing on AVR devices.
+ * Updated the TinyPBC AVR profile and released the arithmetic backend for fast binary field arithmetic and fast pairing computation on AVR devices.
 
 ==Release 0.2.1==
 
