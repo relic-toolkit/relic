@@ -16,7 +16,7 @@
 
  * Added support for prime fields and standard NIST curves over prime fields.
  * Added support for Barreto-Naehrig pairing-friendly curves and the R-ate pairing.
- * Added an abstraction layer so that protocol can be implemented over a generic pairing.
+ * Added an abstraction layer so that protocols can be implemented over a generic pairing e : G_1 x G_2 -> G_T.
 
 ==Release 0.1.2==
 
