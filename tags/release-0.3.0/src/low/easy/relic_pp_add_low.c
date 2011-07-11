@@ -1,0 +1,146 @@
+/*
+ * RELIC is an Efficient LIbrary for Cryptography
+ * Copyright (C) 2007-2011 RELIC Authors
+ *
+ * This file is part of RELIC. RELIC is legal property of its developers,
+ * whose names are not listed here. Please refer to the COPYRIGHT file
+ * for contact information.
+ *
+ * RELIC is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * RELIC is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with RELIC. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/**
+ * @file
+ *
+ * Implementation of the low-level quadratic extension field multiplication
+ * functions.
+ *
+ * @version $Id$
+ * @ingroup pp
+ */
+
+#include "relic_fp.h"
+#include "relic_pp.h"
+#include "relic_core.h"
+#include "relic_error.h"
+#include "relic_fp_low.h"
+
+/*============================================================================*/
+/* Public definitions                                                         */
+/*============================================================================*/
+
+void fp2_addn_low(fp2_t c, fp2_t a, fp2_t b) {
+	fp_addn_low(c[0], a[0], b[0]);
+	fp_addn_low(c[1], a[1], b[1]);
+}
+
+void fp2_addm_low(fp2_t c, fp2_t a, fp2_t b) {
+	fp_addm_low(c[0], a[0], b[0]);
+	fp_addm_low(c[1], a[1], b[1]);
+}
+
+void fp2_addd_low(dv2_t c, dv2_t a, dv2_t b) {
+	fp_addd_low(c[0], a[0], b[0]);
+	fp_addd_low(c[1], a[1], b[1]);
+}
+
+void fp2_addc_low(dv2_t c, dv2_t a, dv2_t b) {
+	fp_addc_low(c[0], a[0], b[0]);
+	fp_addc_low(c[1], a[1], b[1]);
+}
+
+void fp2_subn_low(fp2_t c, fp2_t a, fp2_t b) {
+	fp_subn_low(c[0], a[0], b[0]);
+	fp_subn_low(c[1], a[1], b[1]);
+}
+
+void fp2_subm_low(fp2_t c, fp2_t a, fp2_t b) {
+	fp_subm_low(c[0], a[0], b[0]);
+	fp_subm_low(c[1], a[1], b[1]);
+}
+
+void fp2_dbln_low(fp2_t c, fp2_t a) {
+	/* 2 * (a0 + a1 * u) = 2 * a0 + 2 * a1 * u. */
+	fp_dbln_low(c[0], a[0]);
+	fp_dbln_low(c[1], a[1]);
+}
+
+void fp2_subd_low(dv2_t c, dv2_t a, dv2_t b) {
+	fp_subd_low(c[0], a[0], b[0]);
+	fp_subd_low(c[1], a[1], b[1]);
+}
+
+void fp2_subc_low(dv2_t c, dv2_t a, dv2_t b) {
+	fp_subc_low(c[0], a[0], b[0]);
+	fp_subc_low(c[1], a[1], b[1]);
+}
+
+void fp2_dblm_low(fp2_t c, fp2_t a) {
+	/* 2 * (a0 + a1 * u) = 2 * a0 + 2 * a1 * u. */
+	fp_dblm_low(c[0], a[0]);
+	fp_dblm_low(c[1], a[1]);
+}
+
+void fp2_nord_low(dv2_t c, dv2_t a) {
+	dv2_t t;
+
+	dv2_null(t);
+
+	TRY {
+		dv_new(t);
+
+#ifdef FP_QNRES
+		/* If p = 3 mod 8, (1 + i) is a QNR/CNR. */
+		/* (a_0 + a_1 * i) * (1 + i) = (a_0 - a_1) + (a_0 + a_1) * u. */
+		dv_copy(t[0], a[1], 2 * FP_DIGS);
+		fp_addc_low(c[1], a[0], a[1]);
+		fp_subc_low(c[0], a[0], t[0]);
+#else
+		switch (fp_prime_get_mod8()) {
+			case 3:
+				/* If p = 3 mod 8, (1 + u) is a QNR, u^2 = -1. */
+				/* (a_0 + a_1 * u) * (1 + u) = (a_0 - a_1) + (a_0 + a_1) * u. */
+				dv_copy(t[0], a[1], 2 * FP_DIGS);
+				fp_addc_low(c[1], a[0], a[1]);
+				fp_subc_low(c[0], a[0], t[0]);
+				break;
+			case 5:
+				/* If p = 5 mod 8, (u) is a QNR, u^2 = -2. */
+				dv_copy(t[0], a[0], 2 * FP_DIGS);
+				dv_copy(c[0], a[1], FP_DIGS);
+				fp_subn_low(c[0] + FP_DIGS, fp_prime_get(), a[1] + FP_DIGS);
+				for (int i = -1; i > fp_prime_get_qnr(); i--) {
+					fp_subc_low(c[0], c[0], a[1]);
+				}
+				dv_copy(c[1], t[0], 2 * FP_DIGS);
+				break;
+			case 7:
+				/* If p = 7 mod 8 and p = 2,3 mod 5, (2 + u) is a QNR/CNR.   */
+				/* (a_0 + a_1 * u)(2 + u) = (2a_0 - a_1) + (a_0 + 2a_1) * u. */
+				fp_addc_low(t[1], a[0], a[1]);
+				fp_subc_low(t[0], a[0], a[1]);
+				fp2_addc_low(c, t, a);
+				break;
+			default:
+				THROW(ERR_INVALID);
+		}
+#endif
+	}
+	CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	}
+	FINALLY {
+		dv2_free(t);
+	}
+}
