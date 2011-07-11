@@ -1,4 +1,12 @@
 #labels Featured
+==Release 0.3.0==
+
+ * Faster pairings over BN curves using lazy reduction.
+ * First bits of ternary field arithmetic and time-space trade-offs for computing fixed powers of binary fields.
+ * Abstraction for implementing pairing-based protocols.
+ * Support for supersingular genus-2 curves over binary fields.
+ * Elliptic curve Schnorr signatures and BLS and Boneh-Boyen short signature schemes.
+
 ==Release 0.2.3==
 
  * Fixed a TinyPBC integration bug.
