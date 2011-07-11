@@ -3,7 +3,6 @@
 
  * Faster pairings over BN curves using lazy reduction (more to come on 0.3.1!).
  * First bits of ternary field arithmetic and time-space trade-offs for computing fixed powers of binary fields.
- * Abstraction for implementing pairing-based protocols.
  * Support for supersingular genus-2 curves over binary fields.
  * Elliptic curve Schnorr signatures and BLS and Boneh-Boyen short signature schemes.
  * Better standards-compliance and new padding schemes for RSA.
