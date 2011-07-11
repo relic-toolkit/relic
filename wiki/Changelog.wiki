@@ -6,6 +6,7 @@
  * Abstraction for implementing pairing-based protocols.
  * Support for supersingular genus-2 curves over binary fields.
  * Elliptic curve Schnorr signatures and BLS and Boneh-Boyen short signature schemes.
+ * Better standards-compliance and new padding schemes for RSA.
 
 ==Release 0.2.3==
 
