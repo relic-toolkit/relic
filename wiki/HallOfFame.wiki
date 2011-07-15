@@ -1,2 +1,2 @@
-Asymmetric-Key Cryptography for Contiki
+Qamar Toheed, Hassan Razi. Asymmetric-Key Cryptography for Contiki.
 [http://publications.lib.chalmers.se/records/fulltext/129176.pdf]
