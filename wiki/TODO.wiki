@@ -1,7 +1,5 @@
 ==Current tasks before next release==
 
- * Implement CP_RSAPD == PKCS2
- * Verify if RSA encryption and signatures are compatible with OpenSSL
- * Implement fb4_inv and fb4_exp
+ * Verify if ECDSA and RSA are compatible with OpenSSL
  * Complete PC module
  * Finish basic FT module
