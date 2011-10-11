@@ -45,7 +45,7 @@ To build a TOSSIM-compatible image, you should repeat the steps above only repla
 
 {{{
 cd relic-tinypbc
-../relic-version/preset/tinypbc-sim.sh ../relic-version/
+../relic-version/preset/tinypbc-avr-sim.sh ../relic-version/
 make
 }}}
 
