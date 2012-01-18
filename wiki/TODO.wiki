@@ -1,5 +1,4 @@
 ==Current tasks before next release==
 
- * Verify if ECDSA and RSA are compatible with OpenSSL
  * Complete PC module
  * Finish basic FT module
