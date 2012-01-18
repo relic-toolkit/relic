@@ -1,4 +1,13 @@
 #labels Featured
+==Release 0.3.1==
+
+ * Added a new backend for instantiating TinyPBC at the 80-bit security level on AVR sensors.
+ * Minor speedups in pairing code and new parameters at the 192-bit security level.
+ * Square roots can now be computed when p = 1 mod 4.
+ * Added pairings defined over supersingular genus-2 curves over binary fields.
+ * Added ECMQV protocol.
+ * Fixed MANY bugs and memory leaks.
+
 ==Release 0.3.0==
 
  * Faster pairings over BN curves using lazy reduction (more to come on 0.3.1!).
