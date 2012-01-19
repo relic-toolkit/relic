@@ -2,6 +2,7 @@
 ==Release 0.3.1==
 
  * Added a new backend for instantiating TinyPBC at the 80-bit security level on AVR sensors.
+ * Added a new backend for primitive CURVE2251 on SSE-capable platforms and the corresponding preset.
  * Improved compatibility with Windows platforms.
  * Minor speedups in pairing code and new parameters at the 192-bit security level.
  * Square roots can now be computed when p = 1 mod 4.
