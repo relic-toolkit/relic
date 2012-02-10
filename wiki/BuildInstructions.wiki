@@ -45,6 +45,8 @@ The customization options are described in BuildOptions. You can change these by
 ccmake relic_target
 }}}
 
+If you are using one of the provided configuration presets, make sure it is applied to an empty target folder. Presets were not designed to provide full configurations or to fix bad ones, but only to override some of the defaults. 
+
 ==Installation==
 
 Installation is not required but can be done with:
