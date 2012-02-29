@@ -1,0 +1,3 @@
+#labels Featured
+<wiki:gadget url="http://www.google.com/ig/add?moduleurl=http://google-code-project-hosting-gadgets.googlecode.com/svn/build/prod/changes/gcChanges.xml"
+up_projectName=relic-toolkit />
