@@ -36,13 +36,14 @@ cd ..
 By default, static and shared libraries will be built in the `relic-target/lib` directory. Tests and benchmarks should be present in `relic-target/bin`. You can run the automated tests by running each binary independently or by using CTest:
 
 {{{
-ctest relic_target/test
+cd relic-target
+ctest
 }}}
 
 The customization options are described in BuildOptions. You can change these by running:
 
 {{{
-ccmake relic_target
+ccmake relic-target
 }}}
 
 If you are using one of the provided configuration presets, make sure it is applied to an empty target folder. Presets were not designed to provide full configurations or to fix bad ones, but only to override some of the defaults. 
