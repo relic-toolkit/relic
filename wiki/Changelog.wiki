@@ -1,4 +1,10 @@
 #labels Featured
+==Release 0.3.2==
+
+ * Refactored code for pairings over binary and prime fields.
+ * Faster GMP backend.
+ * Released backends for TI MSP430 platform.
+
 ==Release 0.3.1==
 
  * Added a new backend for instantiating TinyPBC at the 80-bit security level on AVR sensors.
