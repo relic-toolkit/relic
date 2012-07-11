@@ -2,4 +2,3 @@
 
  * Complete PC module
  * Finish basic FT module
- * Make towering more flexible
