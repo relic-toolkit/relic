@@ -252,6 +252,7 @@ Value: `DEV` | `LIBC` | `ZERO`
 
 The variable `SEED` can be used to select the source of the initial PRNG seed.
   * `DEV`: uses /dev/random. Only works on Unix and may block indefinitely waiting for entropy
+  * `UDEV`: uses /dev/urandom. Will not block. May not be adequate for highly sensitive applications
   * `LIBC`: uses the libc `rand()`/`random()` function (deterministic; not crypto safe! Should only be used for debugging purposes)
   * `ZERO`: uses a fixed zero seed (deterministic; not crypto safe! Should only be used for debugging purposes)
 
