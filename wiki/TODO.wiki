@@ -1,4 +1,5 @@
 ==Current tasks before next release==
 
+ * Carefully review RSA padding code, check length when digestInfo needs to be inserted and make padding scheme decided on runtime.
  * Complete PC module
  * Finish basic FT module
