@@ -273,9 +273,10 @@ void eb_tab(eb_t *t, eb_t p, int w) {
 			t[i]->norm = 1;
 		}
 
-		eb_copy(t[0], p);
 #if defined(EB_MIXED)
-		eb_norm(t[0], t[0]);
+		eb_norm(t[0], p);
+#else
+		eb_copy(t[0], p);
 #endif
 
 		switch (w) {
@@ -313,6 +314,9 @@ void eb_tab(eb_t *t, eb_t p, int w) {
 				eb_add(t[2], t[3], p);
 				eb_frb(t[3], t[3]);
 
+				eb_frb(t[7], t[3]);
+				eb_sub(t[7], t[7], p);
+
 				if (u == 1) {
 					eb_neg(t[3], t[3]);
 				}
@@ -320,11 +324,6 @@ void eb_tab(eb_t *t, eb_t p, int w) {
 
 				eb_frb(t[4], t[2]);
 				eb_frb(t[4], t[4]);
-
-#if defined(EB_MIXED) && defined(STRIP)
-				eb_norm(t[2], t[2]);
-#endif
-				eb_sub(t[7], t[4], t[2]);
 
 				eb_neg(t[4], t[4]);
 				eb_sub(t[5], t[4], p);
@@ -347,6 +346,7 @@ void eb_tab(eb_t *t, eb_t p, int w) {
 				eb_add(t[14], t[14], p);
 
 				eb_frb(t[0], t[0]);
+				eb_frb(t[8], t[0]);
 				if (u == -1) {
 					eb_neg(t[0], t[0]);
 				}
@@ -358,22 +358,19 @@ void eb_tab(eb_t *t, eb_t p, int w) {
 				eb_sub(t[1], t[0], p);
 				eb_add(t[2], t[0], p);
 
-#if defined(EB_MIXED) && defined(STRIP)
-				eb_norm(t[13], t[13]);
-#endif
-				eb_add(t[15], t[0], t[13]);
+				eb_frb(t[15], t[8]);
+				if (u == -1) {
+					eb_neg(t[15], t[15]);
+				}
+				eb_sub(t[15], t[15], p);
 
 				eb_frb(t[0], t[13]);
 				eb_frb(t[0], t[0]);
 				eb_sub(t[5], t[0], p);
 				eb_add(t[6], t[0], p);
 
-				eb_neg(t[8], t[0]);
-				eb_add(t[7], t[8], t[13]);
-#if defined(EB_MIXED) && defined(STRIP)
-				eb_norm(t[14], t[14]);
-#endif
-				eb_add(t[8], t[8], t[14]);
+				eb_sub(t[7], t[8], p);
+				eb_add(t[8], t[8], p);
 
 				eb_frb(t[0], t[0]);
 				if (u == -1) {
@@ -604,6 +601,33 @@ void eb_tab(eb_t *t, eb_t p, int w) {
 					*/
 					eb_mul_frb(t[_k], p, tnaf, len);
 				}
+
+				eb_frb(t[0], t[0]);
+				eb_frb(t[0], t[0]);
+				eb_sub(t[17], t[0], p);
+				eb_add(t[18], t[0], p);
+				eb_frb(t[0], t[0]);
+				if (u == 1) {
+					eb_neg(t[0], t[0]);
+				}
+				eb_sub(t[19], t[0], p);
+				eb_add(t[20], t[0], p);
+
+				eb_frb(t[0], t[19]);
+				eb_frb(t[0], t[0]);
+				eb_neg(t[0], t[0]);
+				eb_sub(t[1], t[0], p);
+				eb_add(t[2], t[0], p);
+
+				eb_frb(t[0], t[17]);
+				eb_frb(t[0], t[0]);
+				eb_frb(t[0], t[0]);
+				if (u == -1) {
+					eb_neg(t[0], t[0]);
+				}
+				eb_sub(t[3], t[0], p);
+
+
 /*
 				signed char k1[] = {-1, 0, 1, 0, 0, -1, };
 				eb_mul_frb(t[1], p, k1, sizeof(k1));

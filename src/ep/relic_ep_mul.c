@@ -167,7 +167,7 @@ static void ep_mul_naf_imp(ep_t r, ep_t p, bn_t k) {
 		/* Compute the precomputation table. */
 		ep_tab(table, p, EP_WIDTH);
 
-		/* Compute the w-TNAF representation of k. */
+		/* Compute the w-NAF representation of k. */
 		bn_rec_naf(naf, &len, k, EP_WIDTH);
 
 		t = naf + len - 1;
@@ -186,7 +186,64 @@ static void ep_mul_naf_imp(ep_t r, ep_t p, bn_t k) {
 		}
 		/* Convert r to affine coordinates. */
 		ep_norm(r, r);
+	}
+	CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	}
+	FINALLY {
+		/* Free the precomputation table. */
+		for (i = 0; i < (1 << (EP_WIDTH - 2)); i++) {
+			ep_free(table[i]);
+		}
+	}
+}
 
+#endif /* EP_ORDIN || EP_SUPER */
+#endif /* EP_MUL == LWNAF */
+
+#if EP_MUL == LWREG || !defined(STRIP)
+
+#if defined(EP_ORDIN) || defined(EP_SUPER)
+
+static void ep_mul_reg_imp(ep_t r, ep_t p, bn_t k) {
+	int len, i, j, n;
+	signed char reg[FP_BITS + 1], *t;
+	ep_t table[1 << (EP_WIDTH - 2)];
+
+	for (i = 0; i < (1 << (EP_WIDTH - 2)); i++) {
+		ep_null(table[i]);
+	}
+
+	TRY {
+		/* Prepare the precomputation table. */
+		for (i = 0; i < (1 << (EP_WIDTH - 2)); i++) {
+			ep_new(table[i]);
+		}
+		/* Compute the precomputation table. */
+		ep_tab(table, p, EP_WIDTH);
+
+		/* Compute the w-NAF representation of k. */
+		bn_rec_reg(reg, &len, k, FP_BITS, EP_WIDTH);
+
+		t = reg + len - 1;
+
+		ep_set_infty(r);
+		for (i = len - 1; i >= 0; i--, t--) {
+			for (j = 0; j < EP_WIDTH - 1; j++) {
+				ep_dbl(r, r);
+			}
+
+			n = *t;
+			if (n > 0) {
+				ep_add(r, r, table[n / 2]);
+			}
+			if (n < 0) {
+				ep_sub(r, r, table[-n / 2]);
+			}
+		}
+
+		/* Convert r to affine coordinates. */
+		ep_norm(r, r);
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
@@ -375,6 +432,23 @@ void ep_mul_lwnaf(ep_t r, ep_t p, bn_t k) {
 
 #if defined(EP_ORDIN) || defined(EP_SUPER)
 	ep_mul_naf_imp(r, p, k);
+#endif
+}
+
+#endif
+
+#if EP_MUL == LWREG || !defined(STRIP)
+
+void ep_mul_lwreg(ep_t r, ep_t p, bn_t k) {
+#if defined(EP_KBLTZ)
+	if (ep_curve_is_kbltz()) {
+		ep_mul_glv_imp(r, p, k);
+		return;
+	}
+#endif
+
+#if defined(EP_ORDIN) || defined(EP_SUPER)
+	ep_mul_reg_imp(r, p, k);
 #endif
 }
 
