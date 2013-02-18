@@ -1,4 +1,16 @@
 #labels Featured
+==Release 0.3.4==
+ * Added constant-time comparisons for verifying digital signatures.
+ * Added support for Android and updated support for Windows.
+ * Added explicit library context to make library thread-friendlier and support multiple configurations.
+ * Added support for BLS12 at the 192-bit security level curve and updated formulas for line functions in pairing computation.
+ * Added preliminary support for library fixes. Full support should come in next version (0.4.0).
+ * Lots of bug fixes and polishing.
+
+==Release 0.3.3==
+ * Licensing change.
+ * RSA is now able to sign a precomputed hash.
+
 ==Release 0.3.2==
 
  * Refactored code for pairings over binary and prime fields.
