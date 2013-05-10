@@ -50,6 +50,10 @@ You can run the automated tests by running by using CTest:
 ctest -R test -V
 }}}
 
+== Platform specific code ==
+
+MSPGCC requires a putchar function provided by the user in order to print things. RELIC has a putchar implementation which interfaces with the custom MSPsim simulator above. If you have your own printing mechanism (e.g. UART), then edit src/arch/relic_arch_msp.c to remove the RELIC putchar.
+
 == IAR Embedded Workbench ==
 
 It is possible to use the IAR compiler by creating a project and adding all the .c files. There may be some issues with variable-length arrays. Define the MSP430X symbol in the assembler to add support for MSP430X, and define MSP430X2 to add support for the 32-bit multiplier.
