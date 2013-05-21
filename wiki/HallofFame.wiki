@@ -1,0 +1,4 @@
+#labels Featured
+The links below augment or employ RELIC in several ways:
+
+[[http://crysp.uwaterloo.ca/software/ C++/Python Wrapper]]
