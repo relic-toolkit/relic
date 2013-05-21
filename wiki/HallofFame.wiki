@@ -5,4 +5,4 @@ The projects below augment RELIC's capabilities for different applications:
 
 [http://www.charm-crypto.com/Main.html Charm: A tool for rapid cryptographic prototyping]
 
-The papers below employ RELIC as a building block for efficient implementations of cryptography:
+The papers below directly employ RELIC as a building block for efficient implementations of cryptography:
