@@ -7,16 +7,16 @@ The projects below augment RELIC's capabilities for different applications:
 
 The papers below directly employ RELIC as a building block for efficient implementations of cryptography:
 
-Diego F. Aranha, Jean-Luc Beuchat, Jérémie Detrey, Nicolas Estibals: Optimal Eta Pairing on Supersingular Genus-2 Binary Hyperelliptic Curves. CT-RSA 2012: 98-115
+* Diego F. Aranha, Jean-Luc Beuchat, Jérémie Detrey, Nicolas Estibals: Optimal Eta Pairing on Supersingular Genus-2 Binary Hyperelliptic Curves. CT-RSA 2012: 98-115
 
-Diego F. Aranha, Laura Fuentes-Castañeda, Edward Knapp, Alfred Menezes, Francisco Rodríguez-Henríquez: Implementing Pairings at the 192-Bit Security Level. Pairing 2012: 177-195
+* Diego F. Aranha, Laura Fuentes-Castañeda, Edward Knapp, Alfred Menezes, Francisco Rodríguez-Henríquez: Implementing Pairings at the 192-Bit Security Level. Pairing 2012: 177-195
 
-Leonardo B. Oliveira, Diego F. Aranha, Conrado Porto Lopes Gouvêa, Michael Scott, Danilo F. Câmara, Julio López, Ricardo Dahab: TinyPBC: Pairings for authenticated identity-based non-interactive key distribution in sensor networks. Computer Communications 34(3): 485-493 (2011)
+* Leonardo B. Oliveira, Diego F. Aranha, Conrado Porto Lopes Gouvêa, Michael Scott, Danilo F. Câmara, Julio López, Ricardo Dahab: TinyPBC: Pairings for authenticated identity-based non-interactive key distribution in sensor networks. Computer Communications 34(3): 485-493 (2011)
 
-Diego F. Aranha, Koray Karabina, Patrick Longa, Catherine H. Gebotys, Julio López: Faster Explicit Formulas for Computing Pairings over Ordinary Curves. EUROCRYPT 2011: 48-68
+* Diego F. Aranha, Koray Karabina, Patrick Longa, Catherine H. Gebotys, Julio López: Faster Explicit Formulas for Computing Pairings over Ordinary Curves. EUROCRYPT 2011: 48-68
 
-Diego F. Aranha, Edward Knapp, Alfred Menezes, Francisco Rodríguez-Henríquez: Parallelizing the Weil and Tate Pairings. IMA Int. Conf. 2011: 275-295
+* Diego F. Aranha, Edward Knapp, Alfred Menezes, Francisco Rodríguez-Henríquez: Parallelizing the Weil and Tate Pairings. IMA Int. Conf. 2011: 275-295
 
-Diego F. Aranha, Julio López, Darrel Hankerson: High-Speed Parallel Software Implementation of the ηT Pairing. CT-RSA 2010: 89-105
+* Diego F. Aranha, Julio López, Darrel Hankerson: High-Speed Parallel Software Implementation of the ηT Pairing. CT-RSA 2010: 89-105
 
-Diego F. Aranha, Julio López, Darrel Hankerson: Efficient Software Implementation of Binary Field Arithmetic Using Vector Instruction Sets. LATINCRYPT 2010: 144-161
+* Diego F. Aranha, Julio López, Darrel Hankerson: Efficient Software Implementation of Binary Field Arithmetic Using Vector Instruction Sets. LATINCRYPT 2010: 144-161
