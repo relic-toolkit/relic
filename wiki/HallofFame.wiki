@@ -1,4 +1,6 @@
 #labels Featured
-The links below augment or employ RELIC in several ways:
+The projects below augment RELIC's capabilities for different applications:
 
-[[http://crysp.uwaterloo.ca/software/ C++/Python Wrapper]]
+[http://crysp.uwaterloo.ca/software/ C++/Python wrapper contributed by UWaterloo CrySP reserach group]
+
+The papers below employ RELIC as a building block for efficient implementations of cryptography:
