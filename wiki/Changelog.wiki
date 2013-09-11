@@ -1,4 +1,13 @@
 #labels Featured
+==Release 0.3.5==
+ * Fixed installation support.
+ * Added partial const-correctness across the library.
+ * Added support for simultaneous linking of multiple libraries.
+ * Added support for pairings defined over supersingular prime curves.
+ * Deprecated PB module and support to TinyPBC due to improved discrete log algorithms in small characteristic.
+ * Removed support for hyperelliptic supersingular curves, due to the same reason.
+ * As always, plenty of polishing and bug fixes.
+
 ==Release 0.3.4==
  * Added constant-time comparisons for verifying digital signatures.
  * Added support for Android and updated support for Windows.
