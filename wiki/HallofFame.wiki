@@ -26,3 +26,5 @@ The papers below directly employ RELIC as a building block for efficient impleme
   * Diego F. Aranha, Julio López, Darrel Hankerson: High-Speed Parallel Software Implementation of the ηT Pairing. CT-RSA 2010: 89-105
 
   * Diego F. Aranha, Julio López, Darrel Hankerson: Efficient Software Implementation of Binary Field Arithmetic Using Vector Instruction Sets. LATINCRYPT 2010: 144-161
+
+  * Luis J. Dominguez Perez, Michael Scott: Designing a Code Generator for Pairing Based Cryptographic Functions. Pairing 2010: 207-224
