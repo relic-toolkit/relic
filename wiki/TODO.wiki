@@ -3,4 +3,5 @@
  * Implement const keywords for constant operands
  * Improve code for eb_tab() when w = 7,8.
  * Carefully review RSA padding code, check length when digestInfo needs to be inserted and make padding scheme decided on runtime.
- * Complete PC module
+ * Complete PC module.
+ * Implement HMAC-DRBG when HMAC is considered stable.
