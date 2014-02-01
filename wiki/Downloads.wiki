@@ -1,6 +1,6 @@
 #labels Featured
 RELIC documentation:
-[https://relic-toolkit.googlecode.com/svn/downloads/relic-doc.tar.gz]
+[https://relic-toolkit.googlecode.com/svn/downloads/relic-doc.tar.gz relic-doc.tar.gz]
 
 RELIC version 0.3.5 (Maintenance release):
-[https://relic-toolkit.googlecode.com/svn/downloads/relic-0.3.5.tar.gz]
+[https://relic-toolkit.googlecode.com/svn/downloads/relic-0.3.5.tar.gz relic-0.3.5.tar.gz]
