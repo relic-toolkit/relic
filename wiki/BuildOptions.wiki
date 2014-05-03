@@ -131,7 +131,8 @@ Available modules:
   * `PB`:       Pairings over binary elliptic curves.
   * `PP`:       Pairings over prime elliptic curves.
   * `PC`:       Pairing-based cryptography.
-  * `MD`:       Message digests (Hash functions).
+  * `BC`:       Block ciphers (symmetric encryption).
+  * `MD`:       Message digests (hash functions).
   * `CP`:       Cryptographic protocols.
   * `ALL`:      All of the above.
 
