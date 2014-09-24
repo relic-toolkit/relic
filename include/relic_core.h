@@ -45,6 +45,7 @@
 #include "relic_bn.h"
 #include "relic_eb.h"
 #include "relic_epx.h"
+#include "relic_ed.h"
 #include "relic_conf.h"
 #include "relic_bench.h"
 #include "relic_rand.h"
@@ -337,6 +338,19 @@ typedef struct _ctx_t {
 	fp2_st _ep2_pre[3 * EP_TABLE];
 #endif /* ALLOC == STACK */
 #endif /* WITH_EPX */
+
+#ifdef WITH_ED
+	/** Identifier of the currently configured prime Twisted Edwards elliptic curve. */
+	int ed_id;
+	/** The 'a' coefficient of the Twisted Edwards elliptic curve. */
+	fp_st ed_a;
+	/** The 'd' coefficient of the Twisted Edwards elliptic curve. */
+	fp_st ed_d;
+	/** The generator of the elliptic curve. */
+	ed_st ed_g;
+	/** The order of the group of points in the elliptic curve. */
+	bn_st ed_r;
+#endif
 
 #ifdef WITH_PP
 	/** Constants for computing Frobenius maps in higher extensions. @{ */

@@ -88,6 +88,7 @@
 #include "relic_fbx.h"
 #include "relic_ep.h"
 #include "relic_eb.h"
+#include "relic_ed.h"
 #include "relic_ec.h"
 #include "relic_pp.h"
 #include "relic_pc.h"

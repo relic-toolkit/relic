@@ -38,6 +38,7 @@
 
 #include "relic_ep.h"
 #include "relic_eb.h"
+#include "relic_ed.h"
 #include "relic_bn.h"
 #include "relic_util.h"
 #include "relic_conf.h"
@@ -54,6 +55,8 @@
 #define EC_LOWER			ep_
 #elif EC_CUR == CHAR2
 #define EC_LOWER			eb_
+#elif EC_CUR == EDWARD
+#define EC_LOWER      ed_
 #endif
 
 /**
@@ -63,6 +66,8 @@
 #define EC_UPPER			EP_
 #elif EC_CUR == CHAR2
 #define EC_UPPER			EB_
+#elif EC_CUR == EDWARD
+#define EC_UPPER      ED_
 #endif
 
 /**

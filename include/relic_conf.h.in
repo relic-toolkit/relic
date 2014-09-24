@@ -105,6 +105,8 @@
 #cmakedefine WITH_EPX
 /** Build binary elliptic curve module. */
 #cmakedefine WITH_EB
+/** Build elliptic Edwards curve module. */
+#cmakedefine WITH_ED
 /** Build elliptic curve cryptography module. */
 #cmakedefine WITH_EC
 /** Build pairings over prime curves module. */
@@ -521,6 +523,8 @@
 #define PRIME    1
 /** Binary curves. */
 #define CHAR2    2
+/** Edwards curves */
+#define EDWARD  3
 /** Chosen elliptic curve type. */
 #define EC_CUR	 @EC_CUR@
 

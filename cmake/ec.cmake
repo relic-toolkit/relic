@@ -5,7 +5,8 @@ message("      EC_ENDOM=[off|on] Prefer (prime or binary) curves with endomorphi
 
 message("   ** Available elliptic curve methods (default = PRIME):")
 message("      EC_METHD=PRIME    Use prime curves.")
-message("      EC_METHD=CHAR2    Use binary curves.\n")
+message("      EC_METHD=CHAR2    Use binary curves.")
+message("      EC_METHD=EDWARD   Use prime Edwards curves.\n")
 
 message("      Note: these methods must be given in order. Ex: EC_METHD=\"BINAR\"\n")
 
