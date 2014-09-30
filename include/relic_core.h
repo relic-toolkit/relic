@@ -350,6 +350,8 @@ typedef struct _ctx_t {
 	ed_st ed_g;
 	/** The order of the group of points in the elliptic curve. */
 	bn_st ed_r;
+	/** The cofactor of the Twisted Edwards elliptic curve */
+	bn_st ed_h;
 #endif
 
 #ifdef WITH_PP

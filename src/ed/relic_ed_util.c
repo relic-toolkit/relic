@@ -68,6 +68,10 @@ void ed_curve_get_ord(bn_t n) {
 	bn_copy(n, &core_get()->ed_r);
 }
 
+void ed_curve_get_cof(bn_t h) {
+	bn_copy(h, &core_get()->ed_h);
+}
+
 void ed_copy(ed_t r, const ed_t p) {
 	fp_copy(r->x, p->x);
 	fp_copy(r->y, p->y);

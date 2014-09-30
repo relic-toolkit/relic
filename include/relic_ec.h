@@ -56,7 +56,7 @@
 #elif EC_CUR == CHAR2
 #define EC_LOWER			eb_
 #elif EC_CUR == EDWARD
-#define EC_LOWER      ed_
+#define EC_LOWER      		ed_
 #endif
 
 /**
@@ -67,7 +67,7 @@
 #elif EC_CUR == CHAR2
 #define EC_UPPER			EB_
 #elif EC_CUR == EDWARD
-#define EC_UPPER      ED_
+#define EC_UPPER      		ED_
 #endif
 
 /**
@@ -86,6 +86,8 @@
 #define FC_DIGS				FP_DIGS
 #elif EC_CUR == CHAR2
 #define FC_DIGS				FB_DIGS
+#elif EC_CUR == EDWARD
+#define FC_DIGS				FP_DIGS
 #endif
 
 /**
@@ -95,6 +97,8 @@
 #define FC_BITS				FP_BITS
 #elif EC_CUR == CHAR2
 #define FC_BITS				FB_BITS
+#elif EC_CUR == EDWARD
+#define FC_BITS				FP_BITS
 #endif
 
 /**
@@ -104,6 +108,8 @@
 #define FC_BYTES			FP_BYTES
 #elif EC_CUR == CHAR2
 #define FC_BYTES			FB_BYTES
+#elif EC_CUR == EDWARD
+#define FC_BYTES 			FP_BYTES
 #endif
 
 /*============================================================================*/

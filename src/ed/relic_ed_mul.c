@@ -125,3 +125,44 @@ void ed_mul_dig(ed_t r, const ed_t p, dig_t k) {
 		ed_free(t);
 	}
 }
+
+void ed_mul_sim(ed_t r, const ed_t p, const bn_t k, const ed_t q,
+		const bn_t m) {
+	ed_t t;
+
+	ed_null(t);
+
+	TRY {
+		ed_new(t);
+		ed_mul(t, q, m);
+		ed_mul(r, p, k);
+		ed_add(t, t, r);
+		ed_norm(r, t);
+
+	} CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	}
+	FINALLY {
+		ed_free(t);
+	}
+}
+
+void ed_mul_sim_gen(ed_t r, const bn_t k, const ed_t q, const bn_t m) {
+	ed_t g;
+
+	ed_null(g);
+
+	TRY {
+		ed_new(g);
+
+		ed_curve_get_gen(g);
+
+		ed_mul_sim(r, g, k, q, m);
+	}
+	CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	}
+	FINALLY {
+		ed_free(g);
+	}
+}

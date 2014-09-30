@@ -524,7 +524,7 @@
 /** Binary curves. */
 #define CHAR2    2
 /** Edwards curves */
-#define EDWARD  3
+#define EDWARD   3
 /** Chosen elliptic curve type. */
 #define EC_CUR	 @EC_CUR@
 

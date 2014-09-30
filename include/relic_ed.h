@@ -204,9 +204,21 @@ void ed_curve_get_ord(bn_t r);
 void ed_curve_get_gen(ed_t g);
 
 /**
+ * Returns the cofactor of the prime elliptic twisted Edwards curve.
+ *
+ * @param[out] n      - the returned cofactor.
+ */
+void ed_curve_get_cof(bn_t h);
+
+/**
  * Prints the current configured prime elliptic twisted Edwards curve.
  */
 void ed_param_print(void);
+
+/**
+ * Returns the current security level.
+ */
+int ed_param_level(void);
 
 /**
  * Recovers the x coordinate of and Edwards curve point given y coordinate and d.
@@ -312,6 +324,30 @@ void ed_mul_gen(ed_t r, const bn_t k);
 void ed_mul_dig(ed_t r, const ed_t p, dig_t k);
 
 /**
+ * Multiplies and adds two prime elliptic twisted Edwards curve points simultaneously. Computes
+ * R = kP + mQ.
+ *
+ * @param[out] R      - the result.
+ * @param[in] P       - the first point to multiply.
+ * @param[in] K       - the first integer.
+ * @param[in] Q       - the second point to multiply.
+ * @param[in] M       - the second integer,
+ */
+void ed_mul_sim(ed_t r, const ed_t p, const bn_t k, const ed_t q,
+    const bn_t m);
+
+/**
+ * Multiplies and adds the generator and a prime elliptic twisted Edwards curve point
+ * simultaneously. Computes R = kG + mQ.
+ *
+ * @param[out] r      - the result.
+ * @param[in] k       - the first integer.
+ * @param[in] q       - the second point to multiply.
+ * @param[in] m       - the second integer.
+ */
+void ed_mul_sim_gen(ed_t r, const bn_t k, const ed_t q, const bn_t m);
+
+/**
  * Prints a prime elliptic twisted Edwards curve point.
  *
  * @param[in] p       - the prime elliptic curve point to print.
@@ -324,5 +360,38 @@ void ed_print(const ed_t p);
  * @param[in] p       - the point to test.
  */
 int ed_is_valid(const ed_t p);
+
+/**
+ * Returns the number of bytes necessary to store a prime elliptic twisted Edwards curve point
+ * with optional point compression.
+ *
+ * @param[in] a       - the prime field element.
+ * @param[in] pack      - the flag to indicate compression.
+ * @return the number of bytes.
+ */
+int ed_size_bin(const ed_t a, int pack);
+
+/**
+ * Reads a prime elliptic twisted Edwards curve point from a byte vector in big-endian format.
+ *
+ * @param[out] a      - the result.
+ * @param[in] bin     - the byte vector.
+ * @param[in] len     - the buffer capacity.
+ * @throw ERR_NO_VALID    - if the encoded point is invalid.
+ * @throw ERR_NO_BUFFER   - if the buffer capacity is invalid. 
+ */
+void ed_read_bin(ed_t a, const uint8_t *bin, int len);
+
+/**
+ * Writes a prime elliptic twisted Edwards curve point to a byte vector in big-endian format
+ * with optional point compression.
+ *
+ * @param[out] bin      - the byte vector.
+ * @param[in] len     - the buffer capacity.
+ * @param[in] a       - the prime elliptic curve point to write.
+ * @param[in] pack      - the flag to indicate point compression.
+ * @throw ERR_NO_BUFFER   - if the buffer capacity is invalid. 
+ */
+void ed_write_bin(uint8_t *bin, int len, const ed_t a, int pack);
 
 #endif
