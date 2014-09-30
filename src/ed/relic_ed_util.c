@@ -32,6 +32,7 @@
 #include <assert.h>
 
 #include "relic_core.h"
+#include "relic_md.h"
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -139,7 +140,7 @@ void ed_norm(ed_t r, const ed_t p) {
 		fp_mul(r->x, p->x, z_inv);
 		fp_mul(r->y, p->y, z_inv);
 		fp_mul(r->z, p->z, z_inv);
-		
+
 		fp_free(z_inv);
 	}
 }
@@ -169,7 +170,7 @@ int ed_is_valid(const ed_t p) {
 		fp_new(tmpFP2);
 
 		ed_norm(t, p);
-		
+
 		fp_sqr(tmpFP0, t->x);
 		fp_mul(tmpFP0, core_get()->ed_a, tmpFP0);
 		fp_sqr(tmpFP1, t->y);
@@ -191,6 +192,60 @@ int ed_is_valid(const ed_t p) {
 		ed_free(t);
 	}
 	return r;
+}
+
+void ed_map(ed_t p, const uint8_t *msg, int len) {
+	bn_t k;
+	fp_t t;
+	uint8_t digest[MD_LEN];
+
+	bn_null(k);
+	fp_null(t);
+
+	TRY {
+		bn_new(k);
+		fp_new(t);
+
+		md_map(digest, msg, len);
+		bn_read_bin(k, digest, MIN(FP_BYTES, MD_LEN));
+
+		ed_mul_gen(p, k);
+	}
+	CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	}
+	FINALLY {
+		bn_free(k);
+		fp_free(t);
+	}
+}
+
+int ed_size_bin(const ed_t a, int pack) {
+	ed_t t;
+	int size = 0;
+
+	ed_null(t);
+
+	if (ed_is_infty(a)) {
+		return 1;
+	}
+
+	TRY {
+		ed_new(t);
+
+		ed_norm(t, a);
+
+		size = 1 + FP_BYTES;
+		if (!pack) {
+			size += FP_BYTES;
+		}
+	} CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	} FINALLY {
+		ed_free(t);
+	}
+
+	return size;
 }
 
 #if 0
@@ -256,28 +311,6 @@ void ep_rhs(fp_t rhs, const ep_t p) {
 	}
 }
 
-int ep_is_valid(const ep_t p) {
-	ep_t t;
-	int r = 0;
-
-	ep_null(t);
-
-	TRY {
-		ep_new(t);
-
-		ep_norm(t, p);
-
-		ep_rhs(t->x, t);
-		fp_sqr(t->y, t->y);
-		r = (fp_cmp(t->x, t->y) == CMP_EQ) || ep_is_infty(p);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
-		ep_free(t);
-	}
-	return r;
-}
-
 void ep_tab(ep_t *t, const ep_t p, int w) {
 	if (w > 2) {
 		ep_dbl(t[0], p);
@@ -293,40 +326,6 @@ void ep_tab(ep_t *t, const ep_t p, int w) {
 #endif
 	}
 	ep_copy(t[0], p);
-}
-
-void ep_print(const ep_t p) {
-	fp_print(p->x);
-	fp_print(p->y);
-	fp_print(p->z);
-}
-
-int ep_size_bin(const ep_t a, int pack) {
-	ep_t t;
-	int size = 0;
-
-	ep_null(t);
-
-	if (ep_is_infty(a)) {
-		return 1;
-	}
-
-	TRY {
-		ep_new(t);
-
-		ep_norm(t, a);
-
-		size = 1 + FP_BYTES;
-		if (!pack) {
-			size += FP_BYTES;
-		}
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
-		ep_free(t);	
-	}
-
-	return size;
 }
 
 void ep_read_bin(ep_t a, const uint8_t *bin, int len) {
@@ -394,7 +393,7 @@ void ep_write_bin(uint8_t *bin, int len, const ep_t a, int pack) {
 
 		if (pack) {
 			if (len != FP_BYTES + 1) {
-				THROW(ERR_NO_BUFFER);	
+				THROW(ERR_NO_BUFFER);
 			} else {
 				ep_pck(t, t);
 				bin[0] = 2 | fp_get_bit(t->y, 0);
@@ -416,4 +415,5 @@ void ep_write_bin(uint8_t *bin, int len, const ep_t a, int pack) {
 		ep_free(t);
 	}
 }
+
 #endif

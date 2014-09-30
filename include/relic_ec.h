@@ -77,6 +77,8 @@
 #define EC_TABLE			EP_TABLE
 #elif EC_CUR == CHAR2
 #define EC_TABLE			EB_TABLE
+#elif EC_CUR == EDWARD
+#define EC_TABLE			ED_TABLE
 #endif
 
 /**
@@ -190,6 +192,8 @@ typedef CAT(EC_LOWER, t) ec_t;
 #else
 #define ec_param_set_any()	eb_param_set_any()
 #endif
+#elif EC_CUR == EDWARD
+#define ec_param_set_any()  ed_param_set_any()
 #endif
 
 /**

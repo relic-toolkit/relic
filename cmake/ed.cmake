@@ -1,0 +1,10 @@
+message(STATUS "Elliptic Edwards curve over prime fields arithmetic configuration (ED module):\n")
+
+if (NOT ED_DEPTH)
+	set(ED_DEPTH 4)
+endif(NOT ED_DEPTH)
+if (NOT ED_WIDTH)
+	set(ED_WIDTH 4)
+endif(NOT ED_WIDTH)
+set(ED_FIX MONTY)
+set(ED_MUL MONTY)

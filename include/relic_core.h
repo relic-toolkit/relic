@@ -324,7 +324,7 @@ typedef struct _ctx_t {
 	/** The order of the group of points in the elliptic curve. */
 	bn_st ep2_r;
 	/** The cofactor of the group order in the elliptic curve. */
-	bn_st ep2_h;	
+	bn_st ep2_h;
 	/** Flag that stores if the prime curve is a twist. */
 	int ep2_is_twist;
 #ifdef EP_PRECO
@@ -352,6 +352,13 @@ typedef struct _ctx_t {
 	bn_st ed_r;
 	/** The cofactor of the Twisted Edwards elliptic curve */
 	bn_st ed_h;
+
+#ifdef ED_PRECO
+	/** Precomputation table for generator multiplication. */
+	ed_st ed_pre[ED_TABLE];
+	/** Array of pointers to the precomputation table. */
+	ed_st *ed_ptr[ED_TABLE];
+#endif /* ED_PRECO */
 #endif
 
 #ifdef WITH_PP

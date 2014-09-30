@@ -144,10 +144,10 @@ int util(void) {
 				ec_norm(a, a);
 				ec_write_bin(bin, l, a, j);
 				ec_read_bin(b, bin, l);
-				TEST_ASSERT(ec_cmp(a, b) == CMP_EQ, end);						
+				TEST_ASSERT(ec_cmp(a, b) == CMP_EQ, end);
 			}
 		}
-		TEST_END;		
+		TEST_END;
 	}
 	CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -368,6 +368,7 @@ static int multiplication(void) {
 	return code;
 }
 
+#if 0
 static int fixed(void) {
 	int code = STS_ERR;
 	bn_t n, k;
@@ -487,7 +488,9 @@ static int simultaneous(void) {
 	ec_free(s);
 	return code;
 }
+#endif
 
+#if 0
 static int compression(void) {
 	int code = STS_ERR;
 	ec_t a, b, c;
@@ -520,6 +523,7 @@ static int compression(void) {
 	ec_free(c);
 	return code;
 }
+#endif
 
 static int hashing(void) {
 	int code = STS_ERR;
@@ -587,6 +591,7 @@ int test(void) {
 		return STS_ERR;
 	}
 
+	#if 0
 	if (fixed() != STS_OK) {
 		return STS_ERR;
 	}
@@ -598,6 +603,7 @@ int test(void) {
 	if (compression() != STS_OK) {
 		return STS_ERR;
 	}
+	#endif
 
 	if (hashing() != STS_OK) {
 		return STS_ERR;

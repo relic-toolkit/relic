@@ -1,4 +1,4 @@
-# Helper macro to add a "doc" target with CMake build system. 
+# Helper macro to add a "doc" target with CMake build system.
 # and configure doxy.config.in to doxy.config
 #
 # Please note, that the tools, e.g.:
@@ -11,10 +11,14 @@
 find_package(Doxygen)
 
 if (DOXYGEN_FOUND)
-    
+  if (OPSYS STREQUAL "MACOSX")
+    set(GENERATE_DOCSET "YES")
+  else (OPSYS STREQUAL "MACOSX")
+    set(GENERATE_DOCSET "NO")
+  endif (OPSYS STREQUAL "MACOSX")
 	if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/doc/relic.doxygen.in")
 		message(STATUS "Configured ${CMAKE_CURRENT_SOURCE_DIR}/doc/relic.doxygen.in")
-		configure_file(${CMAKE_CURRENT_SOURCE_DIR}/doc/relic.doxygen.in 
+		configure_file(${CMAKE_CURRENT_SOURCE_DIR}/doc/relic.doxygen.in
 			${CMAKE_CURRENT_BINARY_DIR}/doc/relic.doxygen @ONLY )
 		# use config from BUILD tree
 		set(DOXY_CONFIG "${CMAKE_CURRENT_BINARY_DIR}/doc/relic.doxygen")
@@ -29,7 +33,7 @@ if (DOXYGEN_FOUND)
 		endif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/doc/relic.doxygen")
 
 	endif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/doc/relic.doxygen.in")
-  
+
 	add_custom_target(doc ${DOXYGEN_EXECUTABLE} ${DOXY_CONFIG})
-  
+
 endif(DOXYGEN_FOUND)

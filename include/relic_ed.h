@@ -85,8 +85,63 @@ typedef ed_st *ed_t;
 #endif
 
 /*============================================================================*/
-/* Macro definitions                                                          */
+/* Precomputaion table                                                        */
 /*============================================================================*/
+/**
+ * Size of a precomputation table using the binary method.
+ */
+#define ED_TABLE_BASIC		(FP_BITS + 1)
+
+/**
+ * Size of a precomputation table using Yao's windowing method.
+ */
+#define ED_TABLE_YAOWI      (FP_BITS / ED_DEPTH + 1)
+
+/**
+ * Size of a precomputation table using the NAF windowing method.
+ */
+#define ED_TABLE_NAFWI      (FP_BITS / ED_DEPTH + 1)
+
+/**
+ * Size of a precomputation table using the single-table comb method.
+ */
+#define ED_TABLE_COMBS      (1 << ED_DEPTH)
+
+/**
+ * Size of a precomputation table using the double-table comb method.
+ */
+#define ED_TABLE_COMBD		(1 << (ED_DEPTH + 1))
+
+/**
+ * Size of a precomputation table using the w-(T)NAF method.
+ */
+#define ED_TABLE_LWNAF		(1 << (ED_DEPTH - 2))
+
+/**
+ * Size of a precomputation table using the chosen algorithm.
+ */
+#if ED_FIX == BASIC
+#define ED_TABLE			ED_TABLE_BASIC
+#elif ED_FIX == YAOWI
+#define ED_TABLE			ED_TABLE_YAOWI
+#elif ED_FIX == NAFWI
+#define ED_TABLE			ED_TABLE_NAFWI
+#elif ED_FIX == COMBS
+#define ED_TABLE			ED_TABLE_COMBS
+#elif ED_FIX == COMBD
+#define ED_TABLE			ED_TABLE_COMBD
+#elif ED_FIX == LWNAF
+#define ED_TABLE			ED_TABLE_LWNAF
+#endif
+
+/**
+ * Maximum size of a precomputation table.
+ */
+#ifdef STRIP
+#define ED_TABLE_MAX ED_TABLE
+#else
+#define ED_TABLE_MAX MAX(ED_TABLE_BASIC, ED_TABLE_COMBD)
+#endif
 
 /*============================================================================*/
 /* Macro definitions                                                          */
@@ -282,6 +337,16 @@ void ed_neg(ed_t r, const ed_t p);
 void ed_add(ed_t r, const ed_t p, const ed_t q);
 
 /**
+ * Subtracts a prime elliptic twisted Edwards curve point from another, that is, compute
+ * R = P - Q.
+ *
+ * @param[out] R			- the result.
+ * @param[in] P				- the first point.
+ * @param[in] Q				- the second point.
+ */
+void ed_sub(ed_t r, const ed_t p, const ed_t q);
+
+/**
  * Doubles a prime elliptic twisted Edwards curve point represented in projective coordinates.
  *
  * @param[out] r      - the result.
@@ -298,13 +363,72 @@ void ed_dbl(ed_t r, const ed_t p);
 void ed_norm(ed_t r, const ed_t p);
 
 /**
- * Multiplies a prime elliptic twisted Edwards point by an integer.
+ * Maps a byte array to a point in a prime elliptic twisted Edwards curve.
  *
- * @param[out] r      - the result.
- * @param[in] p       - the point to multiply.
- * @param[in] k       - the integer.
+ * @param[out] p			- the result.
+ * @param[in] msg			- the byte array to map.
+ * @param[in] len			- the array length in bytes.
  */
-void ed_mul(ed_t r, const ed_t p, const bn_t k);
+void ed_map(ed_t p, const uint8_t *msg, int len);
+
+/**
+ * Multiplies a prime elliptic curve point by an integer. Computes R = kP.
+ *
+ * @param[out] R			- the result.
+ * @param[in] P				- the point to multiply.
+ * @param[in] K				- the integer.
+ */
+#if ED_MUL == BASIC
+#define ed_mul(R, P, K)		ed_mul_basic(R, P, K)
+#elif ED_MUL == SLIDE
+#define ed_mul(R, P, K)		ed_mul_slide(R, P, K)
+#elif ED_MUL == MONTY
+#define ed_mul(R, P, K)		ed_mul_monty(R, P, K)
+#elif ED_MUL == LWNAF
+#define ed_mul(R, P, K)		ed_mul_lwnaf(R, P, K)
+#endif
+
+/**
+ * Builds a precomputation table for multiplying a fixed prime elliptic point.
+ *
+ * @param[out] T			- the precomputation table.
+ * @param[in] P				- the point to multiply.
+ */
+#if ED_FIX == BASIC
+#define ed_mul_pre(T, P)		ed_mul_pre_basic(T, P)
+#elif ED_FIX == YAOWI
+#define ed_mul_pre(T, P)		ed_mul_pre_yaowi(T, P)
+#elif ED_FIX == NAFWI
+#define ed_mul_pre(T, P)		ed_mul_pre_nafwi(T, P)
+#elif ED_FIX == COMBS
+#define ed_mul_pre(T, P)		ed_mul_pre_combs(T, P)
+#elif ED_FIX == COMBD
+#define ed_mul_pre(T, P)		ed_mul_pre_combd(T, P)
+#elif ED_FIX == LWNAF
+#define ed_mul_pre(T, P)		ed_mul_pre_lwnaf(T, P)
+#endif
+
+/**
+ * Multiplies a fixed prime elliptic point using a precomputation table.
+ * Computes R = kP.
+ *
+ * @param[out] R			- the result.
+ * @param[in] T				- the precomputation table.
+ * @param[in] K				- the integer.
+ */
+#if ED_FIX == BASIC
+#define ed_mul_fix(R, T, K)		ed_mul_fix_basic(R, T, K)
+#elif ED_FIX == YAOWI
+#define ed_mul_fix(R, T, K)		ed_mul_fix_yaowi(R, T, K)
+#elif ED_FIX == NAFWI
+#define ed_mul_fix(R, T, K)		ed_mul_fix_nafwi(R, T, K)
+#elif ED_FIX == COMBS
+#define ed_mul_fix(R, T, K)		ed_mul_fix_combs(R, T, K)
+#elif ED_FIX == COMBD
+#define ed_mul_fix(R, T, K)		ed_mul_fix_combd(R, T, K)
+#elif ED_FIX == LWNAF
+#define ed_mul_fix(R, T, K)		ed_mul_fix_lwnaf(R, T, K)
+#endif
 
 /**
  * Multiplies the generator of a prime elliptic twisted Edwards curve by an integer.
@@ -378,7 +502,7 @@ int ed_size_bin(const ed_t a, int pack);
  * @param[in] bin     - the byte vector.
  * @param[in] len     - the buffer capacity.
  * @throw ERR_NO_VALID    - if the encoded point is invalid.
- * @throw ERR_NO_BUFFER   - if the buffer capacity is invalid. 
+ * @throw ERR_NO_BUFFER   - if the buffer capacity is invalid.
  */
 void ed_read_bin(ed_t a, const uint8_t *bin, int len);
 
@@ -390,8 +514,55 @@ void ed_read_bin(ed_t a, const uint8_t *bin, int len);
  * @param[in] len     - the buffer capacity.
  * @param[in] a       - the prime elliptic curve point to write.
  * @param[in] pack      - the flag to indicate point compression.
- * @throw ERR_NO_BUFFER   - if the buffer capacity is invalid. 
+ * @throw ERR_NO_BUFFER   - if the buffer capacity is invalid.
  */
 void ed_write_bin(uint8_t *bin, int len, const ed_t a, int pack);
+
+/**
+ * Multiplies a prime elliptic point by an integer using the binary method.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to multiply.
+ * @param[in] k				- the integer.
+ */
+void ed_mul_basic(ed_t r, const ed_t p, const bn_t k);
+
+/**
+ * Multiplies a prime elliptic point by an integer using the sliding window
+ * method.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to multiply.
+ * @param[in] k				- the integer.
+ */
+void ed_mul_slide(ed_t r, const ed_t p, const bn_t k);
+
+/**
+ * Multiplies a prime elliptic point by an integer using the constant-time
+ * Montgomery laddering point multiplication method.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to multiply.
+ * @param[in] k				- the integer.
+ */
+void ed_mul_monty(ed_t r, const ed_t p, const bn_t k);
+
+/**
+ * Multiplies a prime elliptic point by an integer using the w-NAF method.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to multiply.
+ * @param[in] k				- the integer.
+ */
+void ed_mul_lwnaf(ed_t r, const ed_t p, const bn_t k);
+
+/**
+ * Multiplies a prime elliptic point by an integer using a regular method.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to multiply.
+ * @param[in] k				- the integer.
+ */
+void ed_mul_lwreg(ed_t r, const ed_t p, const bn_t k);
 
 #endif

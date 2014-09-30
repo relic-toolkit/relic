@@ -180,3 +180,27 @@ void ed_add(ed_t r, const ed_t p, const ed_t q) {
 void ed_dbl(ed_t r, const ed_t p) {
 	ed_add(r, p, p);
 }
+
+void ed_sub(ed_t r, const ed_t p, const ed_t q) {
+	ed_t t;
+
+	ed_null(t);
+
+	if (p == q) {
+		ed_set_infty(r);
+		return;
+	}
+
+	TRY {
+		ed_new(t);
+
+		ed_neg(t, q);
+		ed_add(r, p, t);
+	}
+	CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	}
+	FINALLY {
+		ed_free(t);
+	}
+}
