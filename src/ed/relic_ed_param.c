@@ -39,18 +39,29 @@
 #define CURVE_ED25519_A	"7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffec"
 #define CURVE_ED25519_D "52036cee2b6ffe738cc740797779e89800700a4d4141d8ab75eb4dca135978a3"
 #define CURVE_ED25519_Y	"6666666666666666666666666666666666666666666666666666666666666658"
-#define CURVE_ED25519_X "216936d3cd6e53fec0a4e231fdd6dc5c692cc7609525a7b2c9562d608f25d51a" 
+#define CURVE_ED25519_X "216936d3cd6e53fec0a4e231fdd6dc5c692cc7609525a7b2c9562d608f25d51a"
 #define CURVE_ED25519_R "1000000000000000000000000000000014def9dea2f79cd65812631a5cf5d3ed"
 #define CURVE_ED25519_H "0000000000000000000000000000000000000000000000000000000000000008"
 /** @} */
 #endif
 
-void ed_recover_x(fp_t x, const fp_t y, const fp_t d) {
+void ed_recover_x(fp_t x, const fp_t y, const fp_t d, const fp_t a) {
 	fp_t tmpFP1;
 
 	fp_null(tmpFP1);
 	fp_new(tmpFP1);
 
+  // x = +/- sqrt((y^2 - 1) / (dy^2 - a))
+  fp_sqr(x, y);
+  fp_copy(tmpFP1, x);
+  fp_sub_dig(x, x, 1);
+  fp_mul(tmpFP1, tmpFP1, d);
+  fp_sub(tmpFP1, tmpFP1, a);
+  fp_inv(tmpFP1, tmpFP1);
+  fp_mul(x, x, tmpFP1);
+  fp_srt(x, x);
+
+  /*
 	fp_mul(x, y, y);
 	fp_sub_dig(x, x, 1);
 	fp_mul(tmpFP1, d, y);
@@ -60,6 +71,7 @@ void ed_recover_x(fp_t x, const fp_t y, const fp_t d) {
 	fp_mul(x, x, tmpFP1);
 	fp_srt(x, x);
 	fp_neg(x, x);
+  */
 
 	fp_free(tmpFP1);
 }

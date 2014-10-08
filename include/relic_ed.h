@@ -278,7 +278,7 @@ int ed_param_level(void);
 /**
  * Recovers the x coordinate of and Edwards curve point given y coordinate and d.
  */
-void ed_recover_x(fp_t x, const fp_t y, const fp_t d);
+void ed_recover_x(fp_t x, const fp_t y, const fp_t d, const fp_t a);
 
 /**
  * Assigns a random value to a prime elliptic twisted Edwards curve point.
@@ -363,6 +363,15 @@ void ed_dbl(ed_t r, const ed_t p);
 void ed_norm(ed_t r, const ed_t p);
 
 /**
+ * Converts multiple points to affine coordinates.
+ *
+ * @param[out] r			- the result.
+ * @param[in] t				- the points to convert.
+ * @param[in] n				- the number of points.
+ */
+void ed_norm_sim(ed_t *r, const ed_t *t, int n);
+
+/**
  * Maps a byte array to a point in a prime elliptic twisted Edwards curve.
  *
  * @param[out] p			- the result.
@@ -370,6 +379,120 @@ void ed_norm(ed_t r, const ed_t p);
  * @param[in] len			- the array length in bytes.
  */
 void ed_map(ed_t p, const uint8_t *msg, int len);
+
+/**
+ * Builds a precomputation table for multiplying a fixed prime elliptic point
+ * using the binary method.
+ *
+ * @param[out] t			- the precomputation table.
+ * @param[in] p				- the point to multiply.
+ */
+void ed_mul_pre_basic(ed_t *t, const ed_t p);
+
+/**
+ * Builds a precomputation table for multiplying a fixed prime elliptic point
+ * using Yao's windowing method.
+ *
+ * @param[out] t			- the precomputation table.
+ * @param[in] p				- the point to multiply.
+ */
+void ed_mul_pre_yaowi(ed_t *t, const ed_t p);
+
+/**
+ * Builds a precomputation table for multiplying a fixed prime elliptic point
+ * using the NAF windowing method.
+ *
+ * @param[out] t			- the precomputation table.
+ * @param[in] p				- the point to multiply.
+ */
+void ed_mul_pre_nafwi(ed_t *t, const ed_t p);
+
+/**
+ * Builds a precomputation table for multiplying a fixed prime elliptic point
+ * using the single-table comb method.
+ *
+ * @param[out] t			- the precomputation table.
+ * @param[in] p				- the point to multiply.
+ */
+void ed_mul_pre_combs(ed_t *t, const ed_t p);
+
+/**
+ * Builds a precomputation table for multiplying a fixed prime elliptic point
+ * using the double-table comb method.
+ *
+ * @param[out] t			- the precomputation table.
+ * @param[in] p				- the point to multiply.
+ */
+void ed_mul_pre_combd(ed_t *t, const ed_t p);
+
+/**
+ * Builds a precomputation table for multiplying a fixed prime elliptic point
+ * using the w-(T)NAF method.
+ *
+ * @param[out] t			- the precomputation table.
+ * @param[in] p				- the point to multiply.
+ */
+void ed_mul_pre_lwnaf(ed_t *t, const ed_t p);
+
+/**
+ * Multiplies a fixed prime elliptic point using a precomputation table and
+ * the binary method.
+ *
+ * @param[out] r			- the result.
+ * @param[in] t				- the precomputation table.
+ * @param[in] k				- the integer.
+ */
+void ed_mul_fix_basic(ed_t r, const ed_t *t, const bn_t k);
+
+/**
+ * Multiplies a fixed prime elliptic point using a precomputation table and
+ * Yao's windowing method
+ *
+ * @param[out] r			- the result.
+ * @param[in] t				- the precomputation table.
+ * @param[in] k				- the integer.
+ */
+void ed_mul_fix_yaowi(ed_t r, const ed_t *t, const bn_t k);
+
+/**
+ * Multiplies a fixed prime elliptic point using a precomputation table and
+ * the w-(T)NAF method.
+ *
+ * @param[out] r			- the result.
+ * @param[in] t				- the precomputation table.
+ * @param[in] k				- the integer.
+ */
+void ed_mul_fix_nafwi(ed_t r, const ed_t *t, const bn_t k);
+
+/**
+ * Multiplies a fixed prime elliptic point using a precomputation table and
+ * the single-table comb method.
+ *
+ * @param[out] r			- the result.
+ * @param[in] t				- the precomputation table.
+ * @param[in] k				- the integer.
+ */
+void ed_mul_fix_combs(ed_t r, const ed_t *t, const bn_t k);
+
+/**
+ * Multiplies a fixed prime elliptic point using a precomputation table and
+ * the double-table comb method.
+ *
+ * @param[out] r			- the result.
+ * @param[in] t				- the precomputation table.
+ * @param[in] k				- the integer.
+ */
+void ed_mul_fix_combd(ed_t r, const ed_t *t, const bn_t k);
+
+/**
+ * Multiplies a fixed prime elliptic point using a precomputation table and
+ * the w-(T)NAF method.
+ *
+ * @param[out] r			- the result.
+ * @param[in] t				- the precomputation table.
+ * @param[in] k				- the integer.
+ */
+void ed_mul_fix_lwnaf(ed_t r, const ed_t *t, const bn_t k);
 
 /**
  * Multiplies a prime elliptic curve point by an integer. Computes R = kP.
@@ -472,6 +595,15 @@ void ed_mul_sim(ed_t r, const ed_t p, const bn_t k, const ed_t q,
 void ed_mul_sim_gen(ed_t r, const bn_t k, const ed_t q, const bn_t m);
 
 /**
+ * Builds a precomputation table for multiplying a random prime elliptic twisted Edwards point.
+ *
+ * @param[out] t			- the precomputation table.
+ * @param[in] p				- the point to multiply.
+ * @param[in] w				- the window width.
+ */
+void ed_tab(ed_t *t, const ed_t p, int w);
+
+/**
  * Prints a prime elliptic twisted Edwards curve point.
  *
  * @param[in] p       - the prime elliptic curve point to print.
@@ -564,5 +696,22 @@ void ed_mul_lwnaf(ed_t r, const ed_t p, const bn_t k);
  * @param[in] k				- the integer.
  */
 void ed_mul_lwreg(ed_t r, const ed_t p, const bn_t k);
+
+/**
+ * Compresses a point.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to compress.
+ */
+void ed_pck(ed_t r, const ed_t p);
+
+/**
+ * Decompresses a point.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to decompress.
+ * @return if the decompression was successful
+ */
+int ed_upk(ed_t r, const ed_t p);
 
 #endif

@@ -154,17 +154,25 @@ int addition(void) {
 }
 
 int util(void) {
-	int code = STS_ERR;
+	int l, code = STS_ERR;
 	ed_t a, b, c;
+	fp_t x, x_neg;
+	uint8_t bin[2 * FP_BYTES + 1];
 
 	ed_null(a);
 	ed_null(b);
 	ed_null(c);
 
+	fp_null(x);
+	fp_null(x_neg);
+
 	TRY {
 		ed_new(a);
 		ed_new(b);
 		ed_new(c);
+
+		fp_new(x);
+		fp_new(x_neg);
 
 		TEST_BEGIN("negation and comparison are consistent") {
 			ed_rand(a);
@@ -195,7 +203,15 @@ int util(void) {
 		}
 		TEST_END;
 
-		/*
+		TEST_BEGIN("recovery of x-coordinate is correct") {
+			ed_rand(a);
+			ed_norm(a, a);
+			ed_recover_x(x, a->y, core_get()->ed_d, core_get()->ed_a);
+			fp_neg(x_neg, x);
+			TEST_ASSERT((fp_cmp(x, a->x) == CMP_EQ) || (fp_cmp(x_neg, a->x) == CMP_EQ), end);
+		}
+		TEST_END;
+
 		TEST_BEGIN("reading and writing a point are consistent") {
 			for (int j = 0; j < 2; j++) {
 				ed_set_infty(a);
@@ -217,7 +233,7 @@ int util(void) {
 				TEST_ASSERT(ed_cmp(a, b) == CMP_EQ, end);
 			}
 		}
-		TEST_END;*/
+		TEST_END;
 	}
 	CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -225,6 +241,8 @@ int util(void) {
 	}
 	code = STS_OK;
   end:
+	fp_free(x_neg);
+	fp_free(x);
 	ed_free(a);
 	ed_free(b);
 	ed_free(c);
@@ -386,48 +404,6 @@ static int hashing(void) {
 }
 #endif
 
-int test_x_coordinate_recovery() {
-	int code = STS_ERR;
-	fp_t y;
-	fp_t x;
-	fp_t d;
-	fp_t expected_x;
-
-	fp_null(y);
-	fp_null(x);
-	fp_null(d);
-	fp_null(expected_x);
-
-	TRY {
-		fp_new(y);
-		fp_new(x);
-		fp_new(d);
-		fp_new(expected_x);
-
-		TEST_BEGIN("x coordinate recovery is working") {
-			fp_read_str(expected_x, "216936d3cd6e53fec0a4e231fdd6dc5c692cc7609525a7b2c9562d608f25d51a", sizeof("216936d3cd6e53fec0a4e231fdd6dc5c692cc7609525a7b2c9562d608f25d51a") - 1, 16);
-			fp_read_str(y, "6666666666666666666666666666666666666666666666666666666666666658", sizeof("6666666666666666666666666666666666666666666666666666666666666658") - 1, 16);
-			fp_read_str(d, "52036cee2b6ffe738cc740797779e89800700a4d4141d8ab75eb4dca135978a3", sizeof("52036cee2b6ffe738cc740797779e89800700a4d4141d8ab75eb4dca135978a3") - 1, 16);
-
-			ed_recover_x(x, y, d);
-
-			TEST_ASSERT(fp_cmp(expected_x, x) == CMP_EQ, end);
-		}
-		TEST_END;
-	}
-	CATCH_ANY {
-		ERROR(end);
-	}
-	code = STS_OK;
-  end:
-  	// free stuff
-  	fp_free(expected_x);
-  	fp_free(d);
-  	fp_free(x);
-  	fp_free(y);
-	return code;
-}
-
 int test(void) {
 	ed_param_print();
 
@@ -435,10 +411,6 @@ int test(void) {
 	if (memory() != STS_OK) {
 		core_clean();
 		return 1;
-	}
-
-	if (test_x_coordinate_recovery() != STS_OK) {
-		return STS_ERR;
 	}
 
 	util_banner("Arithmetic:", 1);

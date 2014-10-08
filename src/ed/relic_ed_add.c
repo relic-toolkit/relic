@@ -23,7 +23,7 @@
 /**
  * @file
  *
- * Implementation of the point addition and doubling on prime elliptic Edwards curves.
+ * Implementation of the point addition on prime elliptic twisted Edwards curves.
  *
  * @version $Id$
  * @ingroup ed
@@ -175,10 +175,6 @@ void ed_add(ed_t r, const ed_t p, const ed_t q) {
 	fp_free(F);
 	fp_free(G);
 	fp_free(H);
-}
-
-void ed_dbl(ed_t r, const ed_t p) {
-	ed_add(r, p, p);
 }
 
 void ed_sub(ed_t r, const ed_t p, const ed_t q) {

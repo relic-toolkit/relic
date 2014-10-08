@@ -1,0 +1,98 @@
+/*
+* RELIC is an Efficient LIbrary for Cryptography
+* Copyright (C) 2007-2014 RELIC Authors
+*
+* This file is part of RELIC. RELIC is legal property of its developers,
+* whose names are not listed here. Please refer to the COPYRIGHT file
+* for contact information.
+*
+* RELIC is free software; you can redistribute it and/or
+* modify it under the terms of the GNU Lesser General Public
+* License as published by the Free Software Foundation; either
+* version 2.1 of the License, or (at your option) any later version.
+*
+* RELIC is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+* Lesser General Public License for more details.
+*
+* You should have received a copy of the GNU Lesser General Public License
+* along with RELIC. If not, see <http://www.gnu.org/licenses/>.
+*/
+
+/**
+* @file
+*
+* Implementation of the point doubling on prime elliptic twisted Edwards curves.
+*
+* @version $Id$
+* @ingroup ed
+*/
+
+#include "relic_core.h"
+
+void ed_dbl_projective_twisted_coordinates(ed_t r, const ed_t p) {
+	fp_t B;
+	fp_t C;
+	fp_t D;
+	fp_t E;
+	fp_t F;
+	fp_t H;
+	fp_t J;
+
+	fp_new(B);
+	fp_new(C);
+	fp_new(D);
+	fp_new(E);
+	fp_new(F);
+	fp_new(H);
+	fp_new(J);
+
+	// B = (X_1 + Y_1)^2
+	fp_add(B, p->x, p->y);
+	fp_sqr(B, B);
+
+	// C = X_1^2
+	fp_sqr(C, p->x);
+
+	// D = Y_1^2
+	fp_sqr(D, p->y);
+
+	// E = aC
+	fp_mul(E, core_get()->ed_a, C);
+
+	// F = E + D
+	fp_add(F, E, D);
+
+	// H = Z^2
+	fp_sqr(H, p->z);
+
+	// J = F - 2H
+	fp_dbl(J, H);
+	fp_sub(J, F, J);
+
+	// X_3 = (B - C - D) * J
+	fp_sub(r->x, B, C);
+	fp_sub(r->x, r->x, D);
+	fp_mul(r->x, r->x, J);
+
+	// Y_3 = F * (E - D)
+	fp_sub(r->y, E, D);
+	fp_mul(r->y, F, r->y);
+
+	// Z_3 = F * J
+	fp_mul(r->z, F, J);
+
+	fp_free(B);
+	fp_free(C);
+	fp_free(D);
+	fp_free(E);
+	fp_free(F);
+	fp_free(H);
+	fp_free(J);
+}
+
+void ed_dbl(ed_t r, const ed_t p) {
+	//ed_add(r, p, p);
+	ed_dbl_projective_twisted_coordinates(r, p);
+}
