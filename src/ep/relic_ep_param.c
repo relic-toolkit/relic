@@ -36,20 +36,6 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-#if defined(EP_ENDOM) && FP_PRIME == 80
-/**
- * Parameters for a Galbraith-Linn-Scott prime curve over a quadratic extension.
- */
-/** @{ */
-#define GLS_P160_A		"A64DE9BD37A6F4DE9BD4"
-#define GLS_P160_B		"68"
-#define GLS_P160_X		"DF00327584BC470B3685"
-#define GLS_P160_Y		"4F51A281017F02370924"
-#define GLS_P160_R		"FEFFFFFFFF4B523AF38F"
-#define GLS_P160_H		"1"
-/** @} */
-#endif
-
 #if defined(EP_PLAIN) && FP_PRIME == 160
 /**
  * Parameters for the SECG P-160 prime elliptic curve.
@@ -491,12 +477,6 @@ void ep_param_set(int param) {
 		core_get()->ep_id = 0;
 
 		switch (param) {
-#if defined(EP_ENDOM) && FP_PRIME == 80
-			case GLS_P160:
-				ASSIGN(GLS_P160, GLS_80);
-				plain = 1;
-				break;
-#endif			
 #if defined(EP_ENDOM) && FP_PRIME == 158
 			case BN_P158:
 				ASSIGNK(BN_P158, BN_158);
@@ -585,7 +565,7 @@ void ep_param_set(int param) {
 				endom = 1;
 				break;
 #endif
-#if defined(EP_PLAIN) & FP_PRIME == 382
+#if defined(EP_ENDOM) & FP_PRIME == 382
 			case CURVE_67254:
 				ASSIGN(CURVE_67254, PRIME_382105);
 				endom = 1;
@@ -609,7 +589,7 @@ void ep_param_set(int param) {
 				plain = 1;
 				break;
 #endif
-#if defined(EP_PLAIN) && FP_PRIME == 508
+#if defined(EP_ENDOM) && FP_PRIME == 508
 			case KSS_P508:
 				ASSIGNK(KSS_P508, KSS_508);
 				endom = 1;
@@ -750,9 +730,7 @@ int ep_param_set_any_plain() {
 int ep_param_set_any_endom() {
 	int r = STS_OK;
 #if defined(EP_ENDOM)
-#if FP_PRIME == 80
-	ep_param_set(GLS_P160);
-#elif FP_PRIME == 158
+#if FP_PRIME == 158
 	ep_param_set(BN_P158);
 #elif FP_PRIME == 160
 	ep_param_set(SECG_K160);
@@ -796,11 +774,7 @@ int ep_param_set_any_super() {
 int ep_param_set_any_pairf() {
 	int type = 0, degree = 0, r = STS_OK;
 #if defined(EP_ENDOM)
-#if FP_PRIME == 80
-	ep_param_set(GLS_P160);
-	type = EP_MTYPE;
-	degree = 2;
-#elif FP_PRIME == 158
+#if FP_PRIME == 158
 	ep_param_set(BN_P158);
 	type = EP_DTYPE;
 	degree = 2;
