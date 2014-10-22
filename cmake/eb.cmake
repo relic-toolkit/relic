@@ -9,15 +9,18 @@ message("      EB_DEPTH=w        Width w in [2,6] of precomputation table for fi
 message("      EB_WIDTH=w        Width w in [2,6] of window processing for unknown point methods.\n")
 
 message("   ** Available binary elliptic curve methods (default = PROJC;LWNAF;COMBS;INTER):")
+message("      *** elliptic curve point representation ***")
 message("      EB_METHD=BASIC    Affine coordinates.")
 message("      EB_METHD=PROJC    Projective coordinates (López-Dahab for ordinary curves).\n")
 
+message("      *** variable-base multiplication method ***")
 message("      EB_METHD=BASIC    Binary method.")
 message("      EB_METHD=LODAH    López-Dahab constant-time point multiplication.")
 message("      EB_METHD=LWNAF    Left-to-right window (T)NAF method.")
 message("      EB_METHD=RWNAF    Right-to-left window (T)NAF method.")
 message("      EB_METHD=HALVE    Halving method.\n")
 
+message("      *** fixed-base multiplication method ***")
 message("      EB_METHD=BASIC    Binary method for fixed point multiplication.")
 message("      EB_METHD=YAOWI    Yao's windowing method for fixed point multiplication")
 message("      EB_METHD=NAFWI    NAF windowing method for fixed point multiplication.")
@@ -25,6 +28,7 @@ message("      EB_METHD=COMBS    Single-table Comb method for fixed point multip
 message("      EB_METHD=COMBD    Double-table Comb method for fixed point multiplication.")
 message("      EB_METHD=LWNAF    Left-to-right window (T)NAF method.\n")
 
+message("      *** variable-base simultaneous multiplication method ***")
 message("      EB_METHD=BASIC    Multiplication-and-addition simultaneous multiplication.")
 message("      EB_METHD=TRICK    Shamir's trick for simultaneous multiplication.")
 message("      EB_METHD=INTER    Interleaving of window (T)NAFs.")
