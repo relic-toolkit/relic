@@ -565,10 +565,10 @@ void ep_param_set(int param) {
 				endom = 1;
 				break;
 #endif
-#if defined(EP_ENDOM) & FP_PRIME == 382
+#if defined(EP_PLAIN) & FP_PRIME == 382
 			case CURVE_67254:
 				ASSIGN(CURVE_67254, PRIME_382105);
-				endom = 1;
+				plain = 1;
 				break;
 #endif
 #if defined(EP_PLAIN) && FP_PRIME == 383
