@@ -58,13 +58,13 @@ endif(WITH_DV)
 
 if (WITH_FP)
 	list(APPEND RELIC_SRCS ${FP_SRCS})
-	file(GLOB TEMP low/easy/relic_fp*.c)
+	file(GLOB TEMP low/easy/relic_fp_*.c)
 	list(APPEND LOW_SRCS ${TEMP})
 endif(WITH_FP)
 
 if (WITH_FPX)
 	list(APPEND RELIC_SRCS ${FPX_SRCS})
-	file(GLOB TEMP low/easy/relic_fpx*.c)
+	file(GLOB TEMP low/easy/relic_fpx_*.c)
 	list(APPEND LOW_SRCS ${TEMP})
 endif(WITH_FPX)
 
