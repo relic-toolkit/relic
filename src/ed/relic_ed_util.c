@@ -73,6 +73,22 @@ void ed_curve_get_cof(bn_t h) {
 	bn_copy(h, &core_get()->ed_h);
 }
 
+const ed_t *ed_curve_get_tab() {
+#if defined(ED_PRECO)
+
+	/* Return a meaningful pointer. */
+#if ALLOC == AUTO
+	return (const ed_t *)*core_get()->ed_ptr;
+#else
+	return (const ed_t *)core_get()->ed_ptr;
+#endif
+
+#else
+	/* Return a null pointer. */
+	return NULL;
+#endif
+}
+
 void ed_copy(ed_t r, const ed_t p) {
 	fp_copy(r->x, p->x);
 	fp_copy(r->y, p->y);
@@ -257,32 +273,6 @@ int ed_is_valid(const ed_t p) {
 		ed_free(t);
 	}
 	return r;
-}
-
-void ed_map(ed_t p, const uint8_t *msg, int len) {
-	bn_t k;
-	fp_t t;
-	uint8_t digest[MD_LEN];
-
-	bn_null(k);
-	fp_null(t);
-
-	TRY {
-		bn_new(k);
-		fp_new(t);
-
-		md_map(digest, msg, len);
-		bn_read_bin(k, digest, MIN(FP_BYTES, MD_LEN));
-
-		ed_mul_gen(p, k);
-	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	}
-	FINALLY {
-		bn_free(k);
-		fp_free(t);
-	}
 }
 
 int ed_size_bin(const ed_t a, int pack) {

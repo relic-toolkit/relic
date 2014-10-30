@@ -131,6 +131,30 @@ void ed_param_set(int param) {
 	bn_copy(&core_get()->ed_r, r);
 	ed_copy(&core_get()->ed_g, g);
 
+	ctx_t *ctx = core_get();
+#ifdef ED_PRECO
+	for (int i = 0; i < ED_TABLE; i++) {
+		ctx->ed_ptr[i] = &(ctx->ed_pre[i]);
+	}
+#endif
+#if ALLOC == STATIC
+	fp_new(ctx->ed_g.x);
+	fp_new(ctx->ed_g.y);
+	fp_new(ctx->ed_g.z);
+#ifdef ED_PRECO
+	for (int i = 0; i < ED_TABLE; i++) {
+		fp_new(ctx->ed_pre[i].x);
+		fp_new(ctx->ed_pre[i].y);
+		fp_new(ctx->ed_pre[i].z);
+	}
+#endif
+#endif
+
+
+#if defined(ED_PRECO)
+	ed_mul_pre((ed_t *)ed_curve_get_tab(), &core_get()->ed_g);
+#endif
+
 	bn_free(r);
 	bn_free(h);
 	ed_free(g);

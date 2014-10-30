@@ -36,6 +36,11 @@
  #ifndef RELIC_ED_H
  #define RELIC_ED_H
 
+#include "relic_fp.h"
+#include "relic_bn.h"
+#include "relic_types.h"
+#include "relic_label.h"
+
 /*============================================================================*/
 /* Constant definitions                                                       */
 /*============================================================================*/
@@ -47,42 +52,6 @@ enum {
   /** ED25519 prime curve. */
   CURVE_ED25519 = 1
 };
-
-/*============================================================================*/
-/* Type definitions                                                           */
-/*============================================================================*/
-
-/**
- * Represents an elliptic curve point over a prime field.
- */
-typedef struct {
-#if ALLOC == STATIC
-  /** The first coordinate. */
-  fp_t x;
-  /** The second coordinate. */
-  fp_t y;
-  /** The third coordinate (projective representation). */
-  fp_t z;
-#elif ALLOC == DYNAMIC || ALLOC == STACK || ALLOC == AUTO
-  /** The first coordinate. */
-  fp_st x;
-  /** The second coordinate. */
-  fp_st y;
-  /** The third coordinate (projective representation). */
-  fp_st z;
-#endif
-  /** Flag to indicate that this point is normalized. */
-  int norm;
-} ed_st;
-
-/**
- * Pointer to an elliptic curve point.
- */
-#if ALLOC == AUTO
-typedef ed_st ed_t[1];
-#else
-typedef ed_st *ed_t;
-#endif
 
 /*============================================================================*/
 /* Precomputaion table                                                        */
@@ -141,6 +110,42 @@ typedef ed_st *ed_t;
 #define ED_TABLE_MAX ED_TABLE
 #else
 #define ED_TABLE_MAX MAX(ED_TABLE_BASIC, ED_TABLE_COMBD)
+#endif
+
+/*============================================================================*/
+/* Type definitions                                                           */
+/*============================================================================*/
+
+/**
+ * Represents an elliptic curve point over a prime field.
+ */
+typedef struct {
+#if ALLOC == STATIC
+  /** The first coordinate. */
+  fp_t x;
+  /** The second coordinate. */
+  fp_t y;
+  /** The third coordinate (projective representation). */
+  fp_t z;
+#elif ALLOC == DYNAMIC || ALLOC == STACK || ALLOC == AUTO
+  /** The first coordinate. */
+  fp_st x;
+  /** The second coordinate. */
+  fp_st y;
+  /** The third coordinate (projective representation). */
+  fp_st z;
+#endif
+  /** Flag to indicate that this point is normalized. */
+  int norm;
+} ed_st;
+
+/**
+ * Pointer to an elliptic curve point.
+ */
+#if ALLOC == AUTO
+typedef ed_st ed_t[1];
+#else
+typedef ed_st *ed_t;
 #endif
 
 /*============================================================================*/
@@ -257,6 +262,13 @@ void ed_curve_get_ord(bn_t r);
  * @param[out] g      - the returned generator.
  */
 void ed_curve_get_gen(ed_t g);
+
+/**
+ * Returns the precomputation table for the generator.
+ *
+ * @return the table.
+ */
+const ed_t *ed_curve_get_tab(void);
 
 /**
  * Returns the cofactor of the prime elliptic twisted Edwards curve.
@@ -381,6 +393,85 @@ void ed_norm_sim(ed_t *r, const ed_t *t, int n);
 void ed_map(ed_t p, const uint8_t *msg, int len);
 
 /**
+ * Multiplies a prime elliptic curve point by an integer. Computes R = kP.
+ *
+ * @param[out] R      - the result.
+ * @param[in] P       - the point to multiply.
+ * @param[in] K       - the integer.
+ */
+#if ED_MUL == BASIC
+#define ed_mul(R, P, K)   ed_mul_basic(R, P, K)
+#elif ED_MUL == SLIDE
+#define ed_mul(R, P, K)   ed_mul_slide(R, P, K)
+#elif ED_MUL == MONTY
+#define ed_mul(R, P, K)   ed_mul_monty(R, P, K)
+#elif ED_MUL == LWNAF
+#define ed_mul(R, P, K)   ed_mul_lwnaf(R, P, K)
+#endif
+
+/**
+ * Builds a precomputation table for multiplying a fixed prime elliptic point.
+ *
+ * @param[out] T      - the precomputation table.
+ * @param[in] P       - the point to multiply.
+ */
+#if ED_FIX == BASIC
+#define ed_mul_pre(T, P)    ed_mul_pre_basic(T, P)
+#elif ED_FIX == YAOWI
+#define ed_mul_pre(T, P)    ed_mul_pre_yaowi(T, P)
+#elif ED_FIX == NAFWI
+#define ed_mul_pre(T, P)    ed_mul_pre_nafwi(T, P)
+#elif ED_FIX == COMBS
+#define ed_mul_pre(T, P)    ed_mul_pre_combs(T, P)
+#elif ED_FIX == COMBD
+#define ed_mul_pre(T, P)    ed_mul_pre_combd(T, P)
+#elif ED_FIX == LWNAF
+#define ed_mul_pre(T, P)    ed_mul_pre_lwnaf(T, P)
+#endif
+
+/**
+ * Multiplies a fixed prime elliptic point using a precomputation table.
+ * Computes R = kP.
+ *
+ * @param[out] R      - the result.
+ * @param[in] T       - the precomputation table.
+ * @param[in] K       - the integer.
+ */
+#if ED_FIX == BASIC
+#define ed_mul_fix(R, T, K)   ed_mul_fix_basic(R, T, K)
+#elif ED_FIX == YAOWI
+#define ed_mul_fix(R, T, K)   ed_mul_fix_yaowi(R, T, K)
+#elif ED_FIX == NAFWI
+#define ed_mul_fix(R, T, K)   ed_mul_fix_nafwi(R, T, K)
+#elif ED_FIX == COMBS
+#define ed_mul_fix(R, T, K)   ed_mul_fix_combs(R, T, K)
+#elif ED_FIX == COMBD
+#define ed_mul_fix(R, T, K)   ed_mul_fix_combd(R, T, K)
+#elif ED_FIX == LWNAF
+#define ed_mul_fix(R, T, K)   ed_mul_fix_lwnaf(R, T, K)
+#endif
+
+ /**
+ * Multiplies and adds two prime elliptic curve points simultaneously. Computes
+ * R = kP + mQ.
+ *
+ * @param[out] R      - the result.
+ * @param[in] P       - the first point to multiply.
+ * @param[in] K       - the first integer.
+ * @param[in] Q       - the second point to multiply.
+ * @param[in] M       - the second integer,
+ */
+#if ED_SIM == BASIC
+#define ed_mul_sim(R, P, K, Q, M) ed_mul_sim_basic(R, P, K, Q, M)
+#elif ED_SIM == TRICK
+#define ed_mul_sim(R, P, K, Q, M) ed_mul_sim_trick(R, P, K, Q, M)
+#elif ED_SIM == INTER
+#define ed_mul_sim(R, P, K, Q, M) ed_mul_sim_inter(R, P, K, Q, M)
+#elif ED_SIM == JOINT
+#define ed_mul_sim(R, P, K, Q, M) ed_mul_sim_joint(R, P, K, Q, M)
+#endif
+
+/**
  * Builds a precomputation table for multiplying a fixed prime elliptic point
  * using the binary method.
  *
@@ -495,65 +586,6 @@ void ed_mul_fix_combd(ed_t r, const ed_t *t, const bn_t k);
 void ed_mul_fix_lwnaf(ed_t r, const ed_t *t, const bn_t k);
 
 /**
- * Multiplies a prime elliptic curve point by an integer. Computes R = kP.
- *
- * @param[out] R			- the result.
- * @param[in] P				- the point to multiply.
- * @param[in] K				- the integer.
- */
-#if ED_MUL == BASIC
-#define ed_mul(R, P, K)		ed_mul_basic(R, P, K)
-#elif ED_MUL == SLIDE
-#define ed_mul(R, P, K)		ed_mul_slide(R, P, K)
-#elif ED_MUL == MONTY
-#define ed_mul(R, P, K)		ed_mul_monty(R, P, K)
-#elif ED_MUL == LWNAF
-#define ed_mul(R, P, K)		ed_mul_lwnaf(R, P, K)
-#endif
-
-/**
- * Builds a precomputation table for multiplying a fixed prime elliptic point.
- *
- * @param[out] T			- the precomputation table.
- * @param[in] P				- the point to multiply.
- */
-#if ED_FIX == BASIC
-#define ed_mul_pre(T, P)		ed_mul_pre_basic(T, P)
-#elif ED_FIX == YAOWI
-#define ed_mul_pre(T, P)		ed_mul_pre_yaowi(T, P)
-#elif ED_FIX == NAFWI
-#define ed_mul_pre(T, P)		ed_mul_pre_nafwi(T, P)
-#elif ED_FIX == COMBS
-#define ed_mul_pre(T, P)		ed_mul_pre_combs(T, P)
-#elif ED_FIX == COMBD
-#define ed_mul_pre(T, P)		ed_mul_pre_combd(T, P)
-#elif ED_FIX == LWNAF
-#define ed_mul_pre(T, P)		ed_mul_pre_lwnaf(T, P)
-#endif
-
-/**
- * Multiplies a fixed prime elliptic point using a precomputation table.
- * Computes R = kP.
- *
- * @param[out] R			- the result.
- * @param[in] T				- the precomputation table.
- * @param[in] K				- the integer.
- */
-#if ED_FIX == BASIC
-#define ed_mul_fix(R, T, K)		ed_mul_fix_basic(R, T, K)
-#elif ED_FIX == YAOWI
-#define ed_mul_fix(R, T, K)		ed_mul_fix_yaowi(R, T, K)
-#elif ED_FIX == NAFWI
-#define ed_mul_fix(R, T, K)		ed_mul_fix_nafwi(R, T, K)
-#elif ED_FIX == COMBS
-#define ed_mul_fix(R, T, K)		ed_mul_fix_combs(R, T, K)
-#elif ED_FIX == COMBD
-#define ed_mul_fix(R, T, K)		ed_mul_fix_combd(R, T, K)
-#elif ED_FIX == LWNAF
-#define ed_mul_fix(R, T, K)		ed_mul_fix_lwnaf(R, T, K)
-#endif
-
-/**
  * Multiplies the generator of a prime elliptic twisted Edwards curve by an integer.
  *
  * @param[out] r      - the result.
@@ -571,20 +603,59 @@ void ed_mul_gen(ed_t r, const bn_t k);
 void ed_mul_dig(ed_t r, const ed_t p, dig_t k);
 
 /**
- * Multiplies and adds two prime elliptic twisted Edwards curve points simultaneously. Computes
- * R = kP + mQ.
+ * Multiplies and adds two prime elliptic curve points simultaneously using
+ * scalar multiplication and point addition.
  *
- * @param[out] R      - the result.
- * @param[in] P       - the first point to multiply.
- * @param[in] K       - the first integer.
- * @param[in] Q       - the second point to multiply.
- * @param[in] M       - the second integer,
+ * @param[out] r      - the result.
+ * @param[in] p       - the first point to multiply.
+ * @param[in] k       - the first integer.
+ * @param[in] q       - the second point to multiply.
+ * @param[in] m       - the second integer,
  */
-void ed_mul_sim(ed_t r, const ed_t p, const bn_t k, const ed_t q,
+void ed_mul_sim_basic(ed_t r, const ed_t p, const bn_t k, const ed_t q,
     const bn_t m);
 
 /**
- * Multiplies and adds the generator and a prime elliptic twisted Edwards curve point
+ * Multiplies and adds two prime elliptic curve points simultaneously using
+ * shamir's trick.
+ *
+ * @param[out] r      - the result.
+ * @param[in] p       - the first point to multiply.
+ * @param[in] k       - the first integer.
+ * @param[in] q       - the second point to multiply.
+ * @param[in] m       - the second integer,
+ */
+void ed_mul_sim_trick(ed_t r, const ed_t p, const bn_t k, const ed_t q,
+    const bn_t m);
+
+/**
+ * Multiplies and adds two prime elliptic curve points simultaneously using
+ * interleaving of NAFs.
+ *
+ * @param[out] r      - the result.
+ * @param[in] p       - the first point to multiply.
+ * @param[in] k       - the first integer.
+ * @param[in] q       - the second point to multiply.
+ * @param[in] m       - the second integer,
+ */
+void ed_mul_sim_inter(ed_t r, const ed_t p, const bn_t k, const ed_t q,
+    const bn_t m);
+
+/**
+ * Multiplies and adds two prime elliptic curve points simultaneously using
+ * Solinas' Joint Sparse Form.
+ *
+ * @param[out] r      - the result.
+ * @param[in] p       - the first point to multiply.
+ * @param[in] k       - the first integer.
+ * @param[in] q       - the second point to multiply.
+ * @param[in] m       - the second integer,
+ */
+void ed_mul_sim_joint(ed_t r, const ed_t p, const bn_t k, const ed_t q,
+    const bn_t m);
+
+/**
+ * Multiplies and adds the generator and a prime elliptic curve point
  * simultaneously. Computes R = kG + mQ.
  *
  * @param[out] r      - the result.

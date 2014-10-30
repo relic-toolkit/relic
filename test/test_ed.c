@@ -1,4 +1,4 @@
-/*
+	/*
  * RELIC is an Efficient LIbrary for Cryptography
  * Copyright (C) 2007-2014 RELIC Authors
  *
@@ -316,6 +316,49 @@ static int multiplication(void) {
 			TEST_ASSERT(ed_cmp(q, r) == CMP_EQ, end);
 		} TEST_END;
 
+#if ED_MUL == BASIC
+		TEST_BEGIN("binary point multiplication is correct") {
+			bn_rand(k, BN_POS, bn_bits(n));
+			bn_mod(k, k, n);
+			ed_mul(q, p, k);
+			ed_mul_basic(r, p, k);
+			TEST_ASSERT(ed_cmp(q, r) == CMP_EQ, end);
+		} TEST_END;
+#endif
+
+#if ED_MUL == SLIDE
+		TEST_BEGIN("sliding window point multiplication is correct") {
+			bn_rand(k, BN_POS, bn_bits(n));
+			bn_mod(k, k, n);
+			ed_mul(q, p, k);
+			ed_mul_slide(r, p, k);
+			TEST_ASSERT(ed_cmp(q, r) == CMP_EQ, end);
+		}
+		TEST_END;
+#endif
+
+#if ED_MUL == MONTY
+		TEST_BEGIN("montgomery laddering point multiplication is correct") {
+			bn_rand(k, BN_POS, bn_bits(n));
+			bn_mod(k, k, n);
+			ed_mul(q, p, k);
+			ed_mul_monty(r, p, k);
+			TEST_ASSERT(ed_cmp(q, r) == CMP_EQ, end);
+		}
+		TEST_END;
+#endif
+
+#if ED_MUL == LWNAF
+		TEST_BEGIN("left-to-right w-naf point multiplication is correct") {
+			bn_rand(k, BN_POS, bn_bits(n));
+			bn_mod(k, k, n);
+			ed_mul(q, p, k);
+			ed_mul_lwnaf(r, p, k);
+			TEST_ASSERT(ed_cmp(q, r) == CMP_EQ, end);
+		}
+		TEST_END;
+#endif
+
 		TEST_BEGIN("multiplication by digit is correct") {
 			bn_rand(k, BN_POS, BN_DIGIT);
 			ed_mul(q, p, k);
@@ -370,26 +413,28 @@ static int compression(void) {
 	return code;
 }
 
+#endif
+
 static int hashing(void) {
 	int code = STS_ERR;
-	ep_t a;
+	ed_t a;
 	bn_t n;
 	uint8_t msg[5];
 
-	ep_null(a);
+	ed_null(a);
 	bn_null(n);
 
 	TRY {
-		ep_new(a);
+		ed_new(a);
 		bn_new(n);
 
-		ep_curve_get_ord(n);
+		ed_curve_get_ord(n);
 
 		TEST_BEGIN("point hashing is correct") {
 			rand_bytes(msg, sizeof(msg));
-			ep_map(a, msg, sizeof(msg));
-			ep_mul(a, a, n);
-			TEST_ASSERT(ep_is_infty(a) == 1, end);
+			ed_map(a, msg, sizeof(msg));
+			ed_mul(a, a, n);
+			TEST_ASSERT(ed_is_infty(a) == 1, end);
 		}
 		TEST_END;
 	}
@@ -398,11 +443,10 @@ static int hashing(void) {
 	}
 	code = STS_OK;
   end:
-	ep_free(a);
+	ed_free(a);
 	bn_free(n);
 	return code;
 }
-#endif
 
 int test(void) {
 	ed_param_print();
@@ -419,11 +463,6 @@ int test(void) {
 		return STS_ERR;
 	}
 
-	util_banner("Utilities:", 1);
-	if (util() != STS_OK) {
-		return STS_ERR;
-	}
-
 	util_banner("Doubling:", 1);
 	if (doubling() != STS_OK) {
 		return STS_ERR;
@@ -433,6 +472,16 @@ int test(void) {
 	if (multiplication() != STS_OK) {
 		return STS_ERR;
 	}
+
+	util_banner("Utilities:", 1);
+	if (util() != STS_OK) {
+		return STS_ERR;
+	}
+
+//	util_banner("Hashing:", 1);
+//	if (hashing() != STS_OK) {
+//		return STS_ERR;
+//	}
 
 	#if 0
 		if (fixed() != STS_OK) {
@@ -447,9 +496,7 @@ int test(void) {
 			return STS_ERR;
 		}
 
-		if (hashing() != STS_OK) {
-			return STS_ERR;
-		}
+		
 	#endif
 
 	return STS_OK;

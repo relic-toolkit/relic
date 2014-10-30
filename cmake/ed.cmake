@@ -8,6 +8,8 @@ message("      ED_WIDTH=w        Width w in [2,6] of window processing for unkno
 message("   ** Available prime elliptic Edwards curve methods (default = LWNAF;COMBS;INTER):")
 message("      *** variable-base multiplication method ***")
 message("      ED_METHD=BASIC    Binary method.")
+message("      ED_METHD=SLIDE    Sliding window method.")
+message("      ED_METHD=MONTY    Montgomery ladder method.")
 message("      ED_METHD=LWNAF    Left-to-right window NAF method (GLV for Koblitz curves).\n")
 
 message("      *** fixed-base multiplication method ***")
@@ -35,11 +37,7 @@ endif(NOT ED_WIDTH)
 set(ED_DEPTH "${ED_DEPTH}" CACHE STRING "Width of precomputation table for fixed point methods.")
 set(ED_WIDTH "${ED_WIDTH}" CACHE STRING "Width of window processing for unknown point methods.")
 
-option(EP_PLAIN "Support for ordinary curves" on)
-option(EP_SUPER "Support for supersingular curves" on)
-option(EP_MIXED "Use mixed coordinates" on)
-option(EP_ENDOM "Special support for Koblitz curves" on)
-option(EP_PRECO "Build precomputation table for generator" on)
+option(ED_PRECO "Build precomputation table for generator" on)
 
 # Choose the arithmetic methods.
 if (NOT ED_METHD)
