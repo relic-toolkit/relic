@@ -650,6 +650,7 @@ static int pairing12(void) {
 			ep_set_infty(p);
 			pp_map_k12(e1, p, q);
 			TEST_ASSERT(fp12_cmp_dig(e1, 1) == CMP_EQ, end);
+			ep_rand(p);
 			ep2_set_infty(q);
 			pp_map_k12(e1, p, q);
 			TEST_ASSERT(fp12_cmp_dig(e1, 1) == CMP_EQ, end);		
@@ -678,6 +679,7 @@ static int pairing12(void) {
 			ep_set_infty(p);
 			pp_map_tatep_k12(e1, p, q);
 			TEST_ASSERT(fp12_cmp_dig(e1, 1) == CMP_EQ, end);
+			ep_rand(p);
 			ep2_set_infty(q);
 			pp_map_tatep_k12(e1, p, q);
 			TEST_ASSERT(fp12_cmp_dig(e1, 1) == CMP_EQ, end);			
@@ -707,6 +709,7 @@ static int pairing12(void) {
 			ep_set_infty(p);
 			pp_map_weilp_k12(e1, p, q);
 			TEST_ASSERT(fp12_cmp_dig(e1, 1) == CMP_EQ, end);
+			ep_rand(p);
 			ep2_set_infty(q);
 			pp_map_weilp_k12(e1, p, q);
 			TEST_ASSERT(fp12_cmp_dig(e1, 1) == CMP_EQ, end);					
@@ -736,6 +739,7 @@ static int pairing12(void) {
 			ep_set_infty(p);
 			pp_map_oatep_k12(e1, p, q);
 			TEST_ASSERT(fp12_cmp_dig(e1, 1) == CMP_EQ, end);
+			ep_rand(p);
 			ep2_set_infty(q);
 			pp_map_oatep_k12(e1, p, q);
 			TEST_ASSERT(fp12_cmp_dig(e1, 1) == CMP_EQ, end);					

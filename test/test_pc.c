@@ -1088,7 +1088,7 @@ int util(void) {
 		}
 		TEST_END;
 
-		TEST_BEGIN("assignment to infinity and infinity test are consistent") {
+		TEST_BEGIN("assignment to unity and unity test are consistent") {
 			gt_set_unity(a);
 			TEST_ASSERT(gt_is_unity(a), end);
 		}
@@ -1298,8 +1298,14 @@ static int pairing(void) {
 			g1_rand(p);
 			g2_rand(r);
 			pc_map(e1, p, r);
-			gt_set_unity(e2);
-			TEST_ASSERT(gt_cmp(e1, e2) != CMP_EQ, end);
+			TEST_ASSERT(gt_cmp_dig(e1, 1) != CMP_EQ, end);
+			g1_set_infty(p);
+			pc_map(e1, p, r);
+			TEST_ASSERT(gt_cmp_dig(e1, 1) == CMP_EQ, end);
+			g1_rand(p);
+			g2_set_infty(r);
+			pc_map(e1, p, r);
+			TEST_ASSERT(gt_cmp_dig(e1, 1) == CMP_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("pairing is bilinear") {

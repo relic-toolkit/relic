@@ -277,7 +277,7 @@ typedef CAT(GT_LOWER, t) gt_t;
  * @param[in] P				- the element to test.
  * @return 1 if the element it the unity, 0 otherwise.
  */
-#define gt_is_unity(P)		CAT(GT_LOWER, cmp_dig)(P, 1)
+#define gt_is_unity(P)		~CAT(GT_LOWER, cmp_dig)(P, 1)
 
 /**
  * Assigns a G_1 element to the unity.
@@ -357,6 +357,15 @@ typedef CAT(GT_LOWER, t) gt_t;
  * @return CMP_EQ if P == Q and CMP_NE if P != Q.
  */
 #define gt_cmp(P, Q)		CAT(GT_LOWER, cmp)(P, Q)
+
+/**
+ * Compares a G_T element with a digit.
+ *
+ * @param[in] P				- the G_T element.
+ * @param[in] D				- the digit.
+ * @return CMP_EQ if P == D and CMP_NE if P != D.
+ */
+#define gt_cmp_dig(P, D)	CAT(GT_LOWER, cmp_dig)(P, D)
 
 /**
  * Assigns a random value to a G_1 element.
