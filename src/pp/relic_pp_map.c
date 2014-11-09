@@ -59,10 +59,7 @@ static void pp_mil_k2(fp2_t r, ep_t t, ep_t p, ep_t q, bn_t a) {
 		ep_new(_q);
 
 		fp2_zero(l);
-		fp2_zero(r);
-		fp_set_dig(r[0], 1);
 		ep_copy(t, p);
-
 		ep_neg(_q, q);
 
 		for (int i = bn_bits(a) - 2; i >= 0; i--) {
@@ -106,8 +103,6 @@ static void pp_mil_k12(fp12_t r, ep2_t t, ep2_t q, ep_t p, bn_t a) {
 		ep_new(_p);
 
 		fp12_zero(l);
-		fp12_zero(r);
-		fp_set_dig(r[0][0][0], 1);
 		ep2_copy(t, q);
 
 		/* Precomputing. */
@@ -170,8 +165,6 @@ static void pp_mil_sps_k12(fp12_t r, ep2_t t, ep2_t q, ep_t p, int *s, int len) 
 		ep2_new(_q);
 
 		fp12_zero(l);
-		fp12_zero(r);
-		fp_set_dig(r[0][0][0], 1);
 		ep2_copy(t, q);
 		ep2_neg(_q, q);
 
@@ -234,11 +227,8 @@ static void pp_mil_lit_k12(fp12_t r, ep_t t, ep_t p, ep2_t q, bn_t a) {
 
 	TRY {
 		fp12_new(l);
-		fp12_zero(l);
 
 		ep_copy(t, p);
-		fp12_zero(r);
-		fp_set_dig(r[0][0][0], 1);
 		fp12_zero(l);
 
 		for (int i = bn_bits(a) - 2; i >= 0; i--) {
@@ -282,10 +272,8 @@ static void pp_fin_k12_oatep(fp12_t r, ep2_t t, ep2_t q, ep_t p) {
 		fp12_new(tmp);
 		fp12_zero(tmp);
 
-		fp_set_dig(q1->z[0], 1);
-		fp_zero(q1->z[1]);
-		fp_set_dig(q2->z[0], 1);
-		fp_zero(q2->z[1]);
+		fp2_set_dig(q1->z, 1);
+		fp2_set_dig(q2->z, 1);
 
 		ep2_frb(q1, q, 1);
 		ep2_frb(q2, q, 2);
@@ -333,8 +321,12 @@ void pp_map_tatep_k2(fp2_t r, ep_t p, ep_t q) {
 		ep_curve_get_ord(n);
 		/* Since p has order n, we do not have to perform last iteration. */
 		bn_sub_dig(n, n, 1);
-		pp_mil_k2(r, t, p, q, n);
-		pp_exp_k2(r, r);
+		fp2_set_dig(r, 1);
+
+		if (!ep_is_infty(p) && !ep_is_infty(q)) {
+			pp_mil_k2(r, t, p, q, n);
+			pp_exp_k2(r, r);
+		}
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
@@ -361,8 +353,12 @@ void pp_map_tatep_k12(fp12_t r, ep_t p, ep2_t q) {
 		bn_new(n);
 
 		ep_curve_get_ord(n);
-		pp_mil_lit_k12(r, t, p, q, n);
-		pp_exp_k12(r, r);
+		fp12_set_dig(r, 1);
+
+		if (!ep_is_infty(p) && !ep2_is_infty(q)) {
+			pp_mil_lit_k12(r, t, p, q, n);
+			pp_exp_k12(r, r);
+		}
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
@@ -399,10 +395,15 @@ void pp_map_weilp_k2(fp2_t r, ep_t p, ep_t q) {
 		ep_curve_get_ord(n);
 		/* Since p has order n, we do not have to perform last iteration. */
 		bn_sub_dig(n, n, 1);
-		pp_mil_k2(r0, t0, p, q, n);
-		pp_mil_k2(r1, t1, q, p, n);
-		fp2_inv(r1, r1);
-		fp2_mul(r0, r0, r1);
+		fp2_set_dig(r0, 1);
+		fp2_set_dig(r1, 1);
+
+		if (!ep_is_infty(p) && !ep_is_infty(q)) {
+			pp_mil_k2(r0, t0, p, q, n);
+			pp_mil_k2(r1, t1, q, p, n);
+			fp2_inv(r1, r1);
+		}
+		fp2_mul(r, r0, r1);
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
@@ -436,13 +437,17 @@ void pp_map_weilp_k12(fp12_t r, ep_t p, ep2_t q) {
 		bn_new(n);
 
 		ep_curve_get_ord(n);
-		pp_mil_lit_k12(r0, t0, p, q, n);
-		pp_mil_k12(r1, t1, q, p, n);
-		fp12_inv(r1, r1);
-		fp12_mul(r0, r0, r1);
+		fp12_set_dig(r0, 1);
+		fp12_set_dig(r1, 1);
 
-		fp12_inv(r1, r0);
-		fp12_inv_uni(r0, r0);
+		if (!ep_is_infty(p) && !ep2_is_infty(q)) {
+			pp_mil_lit_k12(r0, t0, p, q, n);
+			pp_mil_k12(r1, t1, q, p, n);
+			fp12_inv(r1, r1);
+			fp12_mul(r0, r0, r1);
+			fp12_inv(r1, r0);
+			fp12_inv_uni(r0, r0);			
+		}
 		fp12_mul(r, r0, r1);
 	}
 	CATCH_ANY {
@@ -478,31 +483,34 @@ void pp_map_oatep_k12(fp12_t r, ep_t p, ep2_t q) {
 		bn_mul_dig(a, a, 6);
 		bn_add_dig(a, a, 2);
 		fp_param_get_map(s, &len);
+		fp12_set_dig(r, 1);
 
-		switch (ep_param_get()) {
-			case BN_P158:
-			case BN_P254:
-			case BN_P256:
-			case BN_P638:
-				/* r = f_{|a|,Q}(P). */
-				pp_mil_sps_k12(r, t, q, p, s, len);
-				if (bn_sign(a) == BN_NEG) {
-					/* f_{-a,Q}(P) = 1/f_{a,Q}(P). */
-					fp12_inv_uni(r, r);
-					ep2_neg(t, t);
-				}
-				pp_fin_k12_oatep(r, t, q, p);
-				pp_exp_k12(r, r);
-				break;
-			case B12_P638:
-				/* r = f_{|a|,Q}(P). */
-				pp_mil_sps_k12(r, t, q, p, s, len);
-				if (bn_sign(a) == BN_NEG) {
-					fp12_inv_uni(r, r);
-					ep2_neg(t, t);
-				}
-				pp_exp_k12(r, r);
-				break;
+		if (!ep_is_infty(p) && !ep2_is_infty(q)) {
+			switch (ep_param_get()) {
+				case BN_P158:
+				case BN_P254:
+				case BN_P256:
+				case BN_P638:
+					/* r = f_{|a|,Q}(P). */
+					pp_mil_sps_k12(r, t, q, p, s, len);
+					if (bn_sign(a) == BN_NEG) {
+						/* f_{-a,Q}(P) = 1/f_{a,Q}(P). */
+						fp12_inv_uni(r, r);
+						ep2_neg(t, t);
+					}
+					pp_fin_k12_oatep(r, t, q, p);
+					pp_exp_k12(r, r);
+					break;
+				case B12_P638:
+					/* r = f_{|a|,Q}(P). */
+					pp_mil_sps_k12(r, t, q, p, s, len);
+					if (bn_sign(a) == BN_NEG) {
+						fp12_inv_uni(r, r);
+						ep2_neg(t, t);
+					}
+					pp_exp_k12(r, r);
+					break;
+			}
 		}
 	}
 	CATCH_ANY {
