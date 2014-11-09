@@ -174,6 +174,12 @@ void fp3_write_bin(uint8_t *bin, int len, fp3_t a) {
 	fp_write_bin(bin + 2 * FP_BYTES, FP_BYTES, a[2]);
 }
 
+void fp3_set_dig(fp3_t a, dig_t b) {
+	fp_set_dig(a[0], b);
+	fp_zero(a[1]);
+	fp_zero(a[2]);
+}
+
 void fp6_copy(fp6_t c, fp6_t a) {
 	fp2_copy(c[0], a[0]);
 	fp2_copy(c[1], a[1]);
@@ -222,6 +228,12 @@ void fp6_write_bin(uint8_t *bin, int len, fp6_t a) {
 	fp2_write_bin(bin, 2 * FP_BYTES, a[0], 0);
 	fp2_write_bin(bin + 2 * FP_BYTES, 2 * FP_BYTES, a[1], 0);
 	fp2_write_bin(bin + 4 * FP_BYTES, 2 * FP_BYTES, a[2], 0);
+}
+
+void fp6_set_dig(fp6_t a, dig_t b) {
+	fp2_set_dig(a[0], b);
+	fp2_zero(a[1]);
+	fp2_zero(a[2]);
 }
 
 void fp12_copy(fp12_t c, fp12_t a) {
@@ -311,8 +323,8 @@ void fp12_write_bin(uint8_t *bin, int len, fp12_t a, int pack) {
 }
 
 void fp12_set_dig(fp12_t a, dig_t b) {
-	fp12_zero(a);
-	fp_set_dig(a[0][0][0], b);
+	fp6_set_dig(a[0], b);
+	fp6_zero(a[1]);
 }
 
 void fp18_copy(fp18_t c, fp18_t a) {
@@ -344,6 +356,7 @@ void fp18_print(fp18_t a) {
 }
 
 void fp18_set_dig(fp18_t a, dig_t b) {
-	fp18_zero(a);
-	fp_set_dig(a[0][0][0], b);
+	fp6_set_dig(a[0], b);
+	fp6_zero(a[1]);
+	fp6_zero(a[2]);
 }
