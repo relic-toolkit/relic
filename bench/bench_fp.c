@@ -154,16 +154,16 @@ static void util(void) {
 	}
 	BENCH_END;
 
-	BENCH_BEGIN("fp_cmp_dig") {
-		fp_rand(a);
-		BENCH_ADD(fp_cmp_dig(a, (dig_t)0));
-	}
-	BENCH_END;
-
 	BENCH_BEGIN("fp_cmp") {
 		fp_rand(a);
 		fp_rand(b);
 		BENCH_ADD(fp_cmp(b, a));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp_cmp_dig") {
+		fp_rand(a);
+		BENCH_ADD(fp_cmp_dig(a, (dig_t)0));
 	}
 	BENCH_END;
 
