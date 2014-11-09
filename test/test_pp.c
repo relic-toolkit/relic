@@ -291,8 +291,7 @@ static int pairing2(void) {
 			ep_rand(p);
 			ep_rand(q);
 			pp_map_k2(e1, p, q);
-			fp2_zero(e2);
-			fp_set_dig(e2[0], 1);
+			fp2_set_dig(e2, 1);
 			TEST_ASSERT(fp2_cmp(e1, e2) != CMP_EQ, end);
 		} TEST_END;
 
@@ -315,8 +314,7 @@ static int pairing2(void) {
 			ep_rand(p);
 			ep_rand(q);
 			pp_map_tatep_k2(e1, p, q);
-			fp2_zero(e2);
-			fp_set_dig(e2[0], 1);
+			fp2_set_dig(e2, 1);
 			TEST_ASSERT(fp2_cmp(e1, e2) != CMP_EQ, end);
 		} TEST_END;
 
@@ -340,8 +338,7 @@ static int pairing2(void) {
 			ep_rand(p);
 			ep_rand(q);
 			pp_map_weilp_k2(e1, p, q);
-			fp2_zero(e2);
-			fp_set_dig(e2[0], 1);
+			fp2_set_dig(e2, 1);
 			TEST_ASSERT(fp2_cmp(e1, e2) != CMP_EQ, end);
 		} TEST_END;
 
@@ -649,9 +646,13 @@ static int pairing12(void) {
 			ep_rand(p);
 			ep2_rand(q);
 			pp_map_k12(e1, p, q);
-			fp12_zero(e2);
-			fp_set_dig(e2[0][0][0], 1);
-			TEST_ASSERT(fp12_cmp(e1, e2) != CMP_EQ, end);
+			TEST_ASSERT(fp12_cmp_dig(e1, 1) != CMP_EQ, end);
+			ep_set_infty(p);
+			pp_map_k12(e1, p, q);
+			TEST_ASSERT(fp12_cmp_dig(e1, 1) == CMP_EQ, end);
+			ep2_set_infty(q);
+			pp_map_k12(e1, p, q);
+			TEST_ASSERT(fp12_cmp_dig(e1, 1) == CMP_EQ, end);		
 		} TEST_END;
 
 		TEST_BEGIN("pairing is bilinear") {
@@ -673,9 +674,13 @@ static int pairing12(void) {
 			ep_rand(p);
 			ep2_rand(q);
 			pp_map_tatep_k12(e1, p, q);
-			fp12_zero(e2);
-			fp_set_dig(e2[0][0][0], 1);
-			TEST_ASSERT(fp12_cmp(e1, e2) != CMP_EQ, end);
+			TEST_ASSERT(fp12_cmp_dig(e1, 1) != CMP_EQ, end);
+			ep_set_infty(p);
+			pp_map_tatep_k12(e1, p, q);
+			TEST_ASSERT(fp12_cmp_dig(e1, 1) == CMP_EQ, end);
+			ep2_set_infty(q);
+			pp_map_tatep_k12(e1, p, q);
+			TEST_ASSERT(fp12_cmp_dig(e1, 1) == CMP_EQ, end);			
 		} TEST_END;
 
 		TEST_BEGIN("tate pairing is bilinear") {
@@ -698,9 +703,13 @@ static int pairing12(void) {
 			ep_rand(p);
 			ep2_rand(q);
 			pp_map_weilp_k12(e1, p, q);
-			fp12_zero(e2);
-			fp_set_dig(e2[0][0][0], 1);
-			TEST_ASSERT(fp12_cmp(e1, e2) != CMP_EQ, end);
+			TEST_ASSERT(fp12_cmp_dig(e1, 1) != CMP_EQ, end);
+			ep_set_infty(p);
+			pp_map_weilp_k12(e1, p, q);
+			TEST_ASSERT(fp12_cmp_dig(e1, 1) == CMP_EQ, end);
+			ep2_set_infty(q);
+			pp_map_weilp_k12(e1, p, q);
+			TEST_ASSERT(fp12_cmp_dig(e1, 1) == CMP_EQ, end);					
 		} TEST_END;
 
 		TEST_BEGIN("weil pairing is bilinear") {
@@ -723,9 +732,13 @@ static int pairing12(void) {
 			ep_rand(p);
 			ep2_rand(q);
 			pp_map_oatep_k12(e1, p, q);
-			fp12_zero(e2);
-			fp_set_dig(e2[0][0][0], 1);
-			TEST_ASSERT(fp12_cmp(e1, e2) != CMP_EQ, end);
+			TEST_ASSERT(fp12_cmp_dig(e1, 1) != CMP_EQ, end);
+			ep_set_infty(p);
+			pp_map_oatep_k12(e1, p, q);
+			TEST_ASSERT(fp12_cmp_dig(e1, 1) == CMP_EQ, end);
+			ep2_set_infty(q);
+			pp_map_oatep_k12(e1, p, q);
+			TEST_ASSERT(fp12_cmp_dig(e1, 1) == CMP_EQ, end);					
 		} TEST_END;
 
 		TEST_BEGIN("optimal ate pairing is bilinear") {

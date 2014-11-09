@@ -124,7 +124,9 @@ static int util(void) {
 		TEST_END;
 
 		TEST_BEGIN("assignment to zero and comparison are consistent") {
-			fp_rand(a);
+			do {
+				fp_rand(a);
+			} while (fp_is_zero(a));
 			fp_zero(c);
 			TEST_ASSERT(fp_cmp(a, c) == CMP_GT, end);
 			TEST_ASSERT(fp_cmp(c, a) == CMP_LT, end);
@@ -132,8 +134,10 @@ static int util(void) {
 		TEST_END;
 
 		TEST_BEGIN("assignment to random and comparison are consistent") {
-			fp_rand(a);
-			fp_rand(b);
+			do {
+				fp_rand(a);
+				fp_rand(b);
+			} while (fp_is_zero(a) || fp_is_zero(b));
 			fp_zero(c);
 			TEST_ASSERT(fp_cmp(a, c) == CMP_GT, end);
 			TEST_ASSERT(fp_cmp(b, c) == CMP_GT, end);
