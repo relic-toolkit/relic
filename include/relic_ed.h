@@ -471,6 +471,20 @@ void ed_map(ed_t p, const uint8_t *msg, int len);
 #define ed_mul_sim(R, P, K, Q, M) ed_mul_sim_joint(R, P, K, Q, M)
 #endif
 
+/*============================================================================*/
+/* Function prototypes                                                        */
+/*============================================================================*/
+
+/**
+ * Initializes the prime elliptic curve arithmetic module.
+ */
+void ed_curve_init(void);
+
+/**
+ * Finalizes the prime elliptic curve arithmetic module.
+ */
+void ed_curve_clean(void);
+
 /**
  * Builds a precomputation table for multiplying a fixed prime elliptic point
  * using the binary method.

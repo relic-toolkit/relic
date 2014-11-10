@@ -23,10 +23,10 @@
 /**
  * @file
  *
- * Implementation of fixed point multiplication on binary elliptic curves.
+ * Implementation of fixed point multiplication on prime elliptic Edwards curves.
  *
  * @version $Id$
- * @ingroup ep
+ * @ingroup ed
  */
 
 #include "relic_core.h"
@@ -277,6 +277,7 @@ void ed_mul_fix_basic(ed_t r, const ed_t *t, const bn_t k) {
 	int i, l;
 
 	l = bn_bits(k);
+	assert((l <= bn_bits(&core_get()->ed_r)) && "factor larger than ECC group order");
 
 	ed_set_infty(r);
 

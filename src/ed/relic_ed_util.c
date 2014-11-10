@@ -120,6 +120,7 @@ void ed_set_infty(ed_t p) {
 }
 
 int ed_is_infty(const ed_t p) {
+	assert(!fp_is_zero(p->z));
 	int ret = 0;
 	fp_t norm_y;
 
@@ -243,34 +244,38 @@ int ed_is_valid(const ed_t p) {
 	fp_null(tmpFP1);
 	fp_null(tmpFP2);
 
-	TRY {
-		ed_new(t);
-		fp_new(tmpFP0);
-		fp_new(tmpFP1);
-		fp_new(tmpFP2);
+	if (fp_is_zero(p->z)) {
+		r = 0;
+	} else {
+		TRY {
+			ed_new(t);
+			fp_new(tmpFP0);
+			fp_new(tmpFP1);
+			fp_new(tmpFP2);
 
-		ed_norm(t, p);
+			ed_norm(t, p);
 
-		// a * X^2 + Y^2 - 1 - d * X^2 * Y^2 =?= 0
-		fp_sqr(tmpFP0, t->x);
-		fp_mul(tmpFP0, core_get()->ed_a, tmpFP0);
-		fp_sqr(tmpFP1, t->y);
-		fp_add(tmpFP1, tmpFP0, tmpFP1);
-		fp_sub_dig(tmpFP1, tmpFP1, 1);
-		fp_sqr(tmpFP0, t->x);
-		fp_mul(tmpFP0, core_get()->ed_d, tmpFP0);
-		fp_sqr(tmpFP2, t->y);
-		fp_mul(tmpFP2, tmpFP0, tmpFP2);
-		fp_sub(tmpFP0, tmpFP1, tmpFP2);
+			// a * X^2 + Y^2 - 1 - d * X^2 * Y^2 =?= 0
+			fp_sqr(tmpFP0, t->x);
+			fp_mul(tmpFP0, core_get()->ed_a, tmpFP0);
+			fp_sqr(tmpFP1, t->y);
+			fp_add(tmpFP1, tmpFP0, tmpFP1);
+			fp_sub_dig(tmpFP1, tmpFP1, 1);
+			fp_sqr(tmpFP0, t->x);
+			fp_mul(tmpFP0, core_get()->ed_d, tmpFP0);
+			fp_sqr(tmpFP2, t->y);
+			fp_mul(tmpFP2, tmpFP0, tmpFP2);
+			fp_sub(tmpFP0, tmpFP1, tmpFP2);
 
-		r = fp_is_zero(tmpFP0);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
-		fp_free(lhs);
-		fp_free(tmpFP1);
-		fp_free(tmpFP2);
-		ed_free(t);
+			r = fp_is_zero(tmpFP0);
+		} CATCH_ANY {
+			THROW(ERR_CAUGHT);
+		} FINALLY {
+			fp_free(lhs);
+			fp_free(tmpFP1);
+			fp_free(tmpFP2);
+			ed_free(t);
+		}
 	}
 	return r;
 }

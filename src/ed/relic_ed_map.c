@@ -38,16 +38,21 @@
 
 void ed_map(ed_t p, const uint8_t *msg, int len) {
 	bn_t k;
+	bn_t n;
 	uint8_t digest[MD_LEN];
 
 	bn_null(k);
+	bn_null(n);
 
 	TRY {
 		bn_new(k);
+		bn_new(n);
 
 		md_map(digest, msg, len);
 		bn_read_bin(k, digest, MIN(FP_BYTES, MD_LEN));
 
+		ed_curve_get_ord(n);
+		bn_mod(k, k, n);
 		ed_mul_gen(p, k);
 	}
 	CATCH_ANY {
@@ -55,6 +60,7 @@ void ed_map(ed_t p, const uint8_t *msg, int len) {
 	}
 	FINALLY {
 		bn_free(k);
+		bn_free(n);
 	}
 }
 
