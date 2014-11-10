@@ -109,6 +109,7 @@ void pp_dbl_k12_basic(fp12_t l, ep2_t r, ep2_t q, ep_t p) {
 void pp_dbl_k2_projc_basic(fp2_t l, ep_t r, ep_t p, ep_t q) {
 	fp_t t0, t1, t2, t3, t4, t5;
 
+	fp_null(t0);
 	fp_null(t1);
 	fp_null(t2);
 	fp_null(t3);
@@ -116,7 +117,6 @@ void pp_dbl_k2_projc_basic(fp2_t l, ep_t r, ep_t p, ep_t q) {
 	fp_null(t5);
 
 	TRY {
-
 		fp_new(t0);
 		fp_new(t1);
 		fp_new(t2);
@@ -348,6 +348,7 @@ void pp_dbl_k12_projc_basic(fp12_t l, ep2_t r, ep2_t q, ep_t p) {
 void pp_dbl_k2_projc_lazyr(fp2_t l, ep_t r, ep_t p, ep_t q) {
 	fp_t t0, t1, t2, t3, t4, t5;
 
+	fp_null(t0);
 	fp_null(t1);
 	fp_null(t2);
 	fp_null(t3);
@@ -355,7 +356,6 @@ void pp_dbl_k2_projc_lazyr(fp2_t l, ep_t r, ep_t p, ep_t q) {
 	fp_null(t5);
 
 	TRY {
-
 		fp_new(t0);
 		fp_new(t1);
 		fp_new(t2);
@@ -383,12 +383,9 @@ void pp_dbl_k2_projc_lazyr(fp2_t l, ep_t r, ep_t p, ep_t q) {
 		fp_dbl(t3, t4);
 		fp_add(t3, t3, t4);
 
-		/* x3 = alpha^2 - 8 * beta. */
+		/* t2 = 4 * beta. */
 		fp_dbl(t2, t2);
 		fp_dbl(t2, t2);
-		fp_dbl(t5, t2);
-		fp_sqr(r->x, t3);
-		fp_sub(r->x, r->x, t5);
 
 		/* z3 = (y1 + z1)^2 - gamma - delta. */
 		fp_add(r->z, p->y, p->z);
@@ -396,8 +393,19 @@ void pp_dbl_k2_projc_lazyr(fp2_t l, ep_t r, ep_t p, ep_t q) {
 		fp_sub(r->z, r->z, t1);
 		fp_sub(r->z, r->z, t0);
 
-		/* y3 = alpha * (4 * beta - x3) - 8 * gamma^2. */
+		/* l0 = 2 * gamma - alpha * (delta * xq + x1). */
 		fp_dbl(t1, t1);
+		fp_mul(t5, t0, q->x);
+		fp_add(t5, t5, p->x);
+		fp_mul(t5, t5, t3);
+		fp_sub(l[0], t1, t5);
+
+		/* x3 = alpha^2 - 8 * beta. */
+		fp_dbl(t5, t2);
+		fp_sqr(r->x, t3);
+		fp_sub(r->x, r->x, t5);
+
+		/* y3 = alpha * (4 * beta - x3) - 8 * gamma^2. */
 		fp_sqr(t4, t1);
 		fp_dbl(t4, t4);
 		fp_sub(r->y, t2, r->x);
@@ -407,12 +415,6 @@ void pp_dbl_k2_projc_lazyr(fp2_t l, ep_t r, ep_t p, ep_t q) {
 		/* l1 = - z3 * delta * yq. */
 		fp_mul(l[1], r->z, t0);
 		fp_mul(l[1], l[1], q->y);
-
-		/* l0 = 2 * gamma - alpha * (delta * x1 + xq). */
-		fp_mul(t0, t0, q->x);
-		fp_add(t0, t0, p->x);
-		fp_mul(t0, t0, t3);
-		fp_sub(l[0], t1, t0);
 
 		r->norm = 0;
 	}
