@@ -127,6 +127,12 @@ typedef struct {
   fp_t y;
   /** The third coordinate (projective representation). */
   fp_t z;
+
+#if ED_ADD == EXTND
+  /** The forth coordinate (extended twisted Edwards coordinates) */
+  fp_t t;
+#endif
+
 #elif ALLOC == DYNAMIC || ALLOC == STACK || ALLOC == AUTO
   /** The first coordinate. */
   fp_st x;
@@ -134,6 +140,12 @@ typedef struct {
   fp_st y;
   /** The third coordinate (projective representation). */
   fp_st z;
+
+#if ED_ADD == EXTND
+  /** The forth coordinate (extended twisted Edwards coordinates) */
+  fp_st t;
+#endif
+
 #endif
   /** Flag to indicate that this point is normalized. */
   int norm;
@@ -177,6 +189,8 @@ typedef ed_st *ed_t;
   }                                   \
 
 #elif ALLOC == STATIC
+#if ED_ADD == PROJC
+
 #define ed_new(A)                             \
   A = (ed_t)alloca(sizeof(ed_st));                    \
   if (A == NULL) {                            \
@@ -188,6 +202,24 @@ typedef ed_st *ed_t;
   fp_new((A)->x);                             \
   fp_new((A)->y);                             \
   fp_new((A)->z);                             \
+
+#elif ED_ADD == EXTND
+
+#define ed_new(A)                             \
+  A = (ed_t)alloca(sizeof(ed_st));                    \
+  if (A == NULL) {                            \
+    THROW(ERR_NO_MEMORY);                       \
+  }                                   \
+  fp_null((A)->x);                            \
+  fp_null((A)->y);                            \
+  fp_null((A)->z);                            \
+  fp_null((A)->t);                            \
+  fp_new((A)->x);                             \
+  fp_new((A)->y);                             \
+  fp_new((A)->z);                             \
+  fp_new((A)->t);                             \
+
+#endif
 
 #elif ALLOC == AUTO
 #define ed_new(A)       /* empty */
@@ -211,6 +243,9 @@ typedef ed_st *ed_t;
   }
 
 #elif ALLOC == STATIC
+
+#if ED_ADD == PROJC
+
 #define ed_free(A)                              \
   if (A != NULL) {                            \
     fp_free((A)->x);                          \
@@ -218,6 +253,19 @@ typedef ed_st *ed_t;
     fp_free((A)->z);                          \
     A = NULL;                             \
   }                                   \
+
+#elif ED_ADD == EXTND
+
+#define ed_free(A)                            \
+  if (A != NULL) {                            \
+    fp_free((A)->x);                          \
+    fp_free((A)->y);                          \
+    fp_free((A)->z);                          \
+    fp_free((A)->t);                          \
+    A = NULL;                                 \
+  }                                           \
+
+#endif
 
 #elif ALLOC == AUTO
 #define ed_free(A)        /* empty */
@@ -291,6 +339,13 @@ int ed_param_level(void);
  * Recovers the x coordinate of and Edwards curve point given y coordinate and d.
  */
 void ed_recover_x(fp_t x, const fp_t y, const fp_t d, const fp_t a);
+
+#if ED_ADD == EXTND
+/**
+ * Converts projective twisted Edwards point into extended twisted Edwards point.
+ */
+void ed_projc_to_extnd(ed_t r, const fp_t x, const fp_t y, const fp_t z);
+#endif
 
 /**
  * Assigns a random value to a prime elliptic twisted Edwards curve point.

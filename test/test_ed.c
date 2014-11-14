@@ -478,26 +478,10 @@ int test(void) {
 		return STS_ERR;
 	}
 
-//	util_banner("Hashing:", 1);
-//	if (hashing() != STS_OK) {
-//		return STS_ERR;
-//	}
-
-	#if 0
-		if (fixed() != STS_OK) {
-			return STS_ERR;
-		}
-
-		if (simultaneous() != STS_OK) {
-			return STS_ERR;
-		}
-
-		if (compression() != STS_OK) {
-			return STS_ERR;
-		}
-
-		
-	#endif
+	util_banner("Hashing:", 1);
+	if (hashing() != STS_OK) {
+		return STS_ERR;
+	}
 
 	return STS_OK;
 }

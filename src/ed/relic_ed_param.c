@@ -129,7 +129,12 @@ void ed_param_set(int param) {
 
 	bn_copy(&core_get()->ed_h, h);
 	bn_copy(&core_get()->ed_r, r);
-	ed_copy(&core_get()->ed_g, g);
+
+#if ED_ADD == PROJC
+  ed_copy(&core_get()->ed_g, g);
+#elif ED_ADD == EXTND
+  ed_projc_to_extnd(&core_get()->ed_g, g->x, g->y, g->z);
+#endif
 
 	ctx_t *ctx = core_get();
 #ifdef ED_PRECO
@@ -141,24 +146,30 @@ void ed_param_set(int param) {
 	fp_new(ctx->ed_g.x);
 	fp_new(ctx->ed_g.y);
 	fp_new(ctx->ed_g.z);
+#if ED_ADD == EXTND
+  fp_new(ctx->ed_g.t);
+#endif
 #ifdef ED_PRECO
 	for (int i = 0; i < ED_TABLE; i++) {
 		fp_new(ctx->ed_pre[i].x);
 		fp_new(ctx->ed_pre[i].y);
 		fp_new(ctx->ed_pre[i].z);
+#if ED_ADD == EXTND
+    fp_new(ctx->ed_pre[i].t);
+#endif
 	}
 #endif
 #endif
 
 
 #if defined(ED_PRECO)
-	ed_mul_pre((ed_t *)ed_curve_get_tab(), &core_get()->ed_g);
+	ed_mul_pre((ed_t *)ed_curve_get_tab(), &ctx->ed_g);
 #endif
 
 	bn_free(r);
 	bn_free(h);
 	ed_free(g);
-	core_get()->ed_id = param;
+	ctx->ed_id = param;
 }
 
 int ed_param_set_any(void) {

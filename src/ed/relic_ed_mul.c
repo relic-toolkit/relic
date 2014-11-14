@@ -319,7 +319,7 @@ void ed_mul_slide(ed_t r, const ed_t p, const bn_t k) {
 	if (bn_is_zero(k)) {
 		ed_set_infty(r);
 		return;
-	}	
+	}
 
 	TRY {
 		for (i = 0; i < (1 << (ED_WIDTH - 1)); i ++) {
@@ -467,7 +467,7 @@ void ed_mul_gen(ed_t r, const bn_t k) {
 		ed_set_infty(r);
 		return;
 	}
-		
+
 #ifdef ED_PRECO
 	ed_mul_fix(r, ed_curve_get_tab(), k);
 #else

@@ -89,10 +89,25 @@ const ed_t *ed_curve_get_tab() {
 #endif
 }
 
+#if ED_ADD == EXTND
+void ed_projc_to_extnd(ed_t r, const fp_t x, const fp_t y, const fp_t z) {
+	fp_mul(r->t, x, y);
+	fp_mul(r->x, x, z);
+	fp_mul(r->y, y, z);
+	fp_sqr(r->z, z);
+}
+#endif
+
 void ed_copy(ed_t r, const ed_t p) {
+#if ED_ADD == PROJC || ED_ADD == EXTND
 	fp_copy(r->x, p->x);
 	fp_copy(r->y, p->y);
 	fp_copy(r->z, p->z);
+#endif
+#if ED_ADD == EXTND
+	fp_copy(r->t, p->t);
+#endif
+
 	r->norm = p->norm;
 }
 
@@ -105,6 +120,10 @@ int ed_cmp(const ed_t p, const ed_t q) {
 		ret = CMP_NE;
 	} else if (fp_cmp(p->z, q->z) != CMP_EQ) {
 		ret = CMP_NE;
+#if ED_ADD == EXTND
+	} else if (fp_cmp(p->t, q->t) != CMP_EQ) {
+		ret = CMP_NE;
+#endif
 	} else {
 		ret = CMP_EQ;
 	}
@@ -113,9 +132,16 @@ int ed_cmp(const ed_t p, const ed_t q) {
 }
 
 void ed_set_infty(ed_t p) {
+#if ED_ADD == PROJC
 	fp_zero(p->x);
 	fp_set_dig(p->y, 1);
 	fp_set_dig(p->z, 1);
+#elif ED_ADD == EXTND
+	fp_zero(p->x);
+	fp_set_dig(p->y, 1);
+	fp_zero(p->t);
+	fp_set_dig(p->z, 1);
+#endif
 	p->norm = 0;
 }
 
@@ -139,9 +165,16 @@ int ed_is_infty(const ed_t p) {
 }
 
 void ed_neg(ed_t r, const ed_t p) {
+#if ED_ADD == PROJC
 	fp_neg(r->x, p->x);
 	fp_copy(r->y, p->y);
 	fp_copy(r->z, p->z);
+#elif ED_ADD == EXTND
+	fp_neg(r->x, p->x);
+	fp_copy(r->y, p->y);
+	fp_neg(r->t, p->t);
+	fp_copy(r->z, p->z);
+#endif
 }
 
 /**
@@ -169,6 +202,10 @@ void ed_norm(ed_t r, const ed_t p) {
 
 		fp_mul(r->x, p->x, z_inv);
 		fp_mul(r->y, p->y, z_inv);
+	#if ED_ADD == EXTND
+		fp_mul(r->t, p->t, z_inv);
+	#endif
+
 		fp_set_dig(r->z, 1);
 
 		fp_free(z_inv);
@@ -194,6 +231,9 @@ void ed_norm_sim(ed_t *r, const ed_t *t, int n) {
 		for (i = 0; i < n; i++) {
 			fp_mul(r[i]->x, t[i]->x, a[i]);
 			fp_mul(r[i]->y, t[i]->y, a[i]);
+#if ED_ADD == EXTND
+			fp_mul(r[i]->t, t[i]->t, a[i]);
+#endif
 			fp_set_dig(r[i]->z, 1);
 		}
 	}
@@ -229,213 +269,96 @@ void ed_norm(ed_t r, const ed_t p) {
 void ed_print(const ed_t p) {
 	fp_print(p->x);
 	fp_print(p->y);
+#if ED_ADD == EXTND
+	fp_print(p->t);
+#endif
 	fp_print(p->z);
+}
+
+int ed_affine_is_valid(const fp_t x, const fp_t y) {
+	fp_t tmpFP0;
+	fp_t tmpFP1;
+	fp_t tmpFP2;
+
+	fp_null(tmpFP0);
+	fp_null(tmpFP1);
+	fp_null(tmpFP2);
+
+	int r = 0;
+
+	TRY {
+		fp_new(tmpFP0);
+		fp_new(tmpFP1);
+		fp_new(tmpFP2);
+
+		// a * X^2 + Y^2 - 1 - d * X^2 * Y^2 =?= 0
+		fp_sqr(tmpFP0, x);
+		fp_mul(tmpFP0, core_get()->ed_a, tmpFP0);
+		fp_sqr(tmpFP1, y);
+		fp_add(tmpFP1, tmpFP0, tmpFP1);
+		fp_sub_dig(tmpFP1, tmpFP1, 1);
+		fp_sqr(tmpFP0, x);
+		fp_mul(tmpFP0, core_get()->ed_d, tmpFP0);
+		fp_sqr(tmpFP2, y);
+		fp_mul(tmpFP2, tmpFP0, tmpFP2);
+		fp_sub(tmpFP0, tmpFP1, tmpFP2);
+
+		r = fp_is_zero(tmpFP0);
+	} CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	} FINALLY {
+		fp_free(tmpFP0);
+		fp_free(tmpFP1);
+		fp_free(tmpFP2);
+	}
+	return r;
 }
 
 int ed_is_valid(const ed_t p) {
 	ed_t t;
-	fp_t tmpFP0;
-	fp_t tmpFP1;
-	fp_t tmpFP2;
+#if ED_ADD == EXTND
+	fp_t x_times_y;
+#endif
 	int r = 0;
 
 	ed_null(t);
-	fp_null(tmpFP0);
-	fp_null(tmpFP1);
-	fp_null(tmpFP2);
+#if ED_ADD == EXTND
+	fp_null(x_times_y);
+#endif
 
 	if (fp_is_zero(p->z)) {
 		r = 0;
 	} else {
 		TRY {
+#if ED_ADD == EXTND
+			fp_new(x_times_y);
+#endif
 			ed_new(t);
-			fp_new(tmpFP0);
-			fp_new(tmpFP1);
-			fp_new(tmpFP2);
-
 			ed_norm(t, p);
 
-			// a * X^2 + Y^2 - 1 - d * X^2 * Y^2 =?= 0
-			fp_sqr(tmpFP0, t->x);
-			fp_mul(tmpFP0, core_get()->ed_a, tmpFP0);
-			fp_sqr(tmpFP1, t->y);
-			fp_add(tmpFP1, tmpFP0, tmpFP1);
-			fp_sub_dig(tmpFP1, tmpFP1, 1);
-			fp_sqr(tmpFP0, t->x);
-			fp_mul(tmpFP0, core_get()->ed_d, tmpFP0);
-			fp_sqr(tmpFP2, t->y);
-			fp_mul(tmpFP2, tmpFP0, tmpFP2);
-			fp_sub(tmpFP0, tmpFP1, tmpFP2);
-
-			r = fp_is_zero(tmpFP0);
+			// check t coordinate
+#if ED_ADD == PROJC
+			r = ed_affine_is_valid(t->x, t->y);
+#elif ED_ADD == EXTND
+			fp_mul(x_times_y, t->x, t->y);
+			if (fp_cmp(x_times_y, t->t) != CMP_EQ) {
+				r = 0;
+			} else {
+				r = ed_affine_is_valid(t->x, t->y);
+			}
+#endif
+			// if (r == 0) {
+			// 	util_printf("\n\n(X, Y, T, Z) = \n");
+			// 	ed_print(p);
+			// }
 		} CATCH_ANY {
 			THROW(ERR_CAUGHT);
 		} FINALLY {
-			fp_free(lhs);
-			fp_free(tmpFP1);
-			fp_free(tmpFP2);
+			fp_free(x_times_y);
 			ed_free(t);
 		}
 	}
 	return r;
-}
-
-int ed_size_bin(const ed_t a, int pack) {
-	ed_t t;
-	int size = 0;
-
-	ed_null(t);
-
-	if (ed_is_infty(a)) {
-		return 1;
-	}
-
-	TRY {
-		ed_new(t);
-
-		ed_norm(t, a);
-
-		size = 1 + FP_BYTES;
-		if (!pack) {
-			size += FP_BYTES;
-		}
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
-		ed_free(t);
-	}
-
-	return size;
-}
-
-/*
- * Compress twisted Edwards curve point by compressing the x-coordinate to its sign.
- */
-void ed_pck(ed_t r, const ed_t p) {
-	fp_copy(r->y, p->y);
-	int b = fp_get_bit(p->x, 0);
-	fp_zero(r->x);
-	fp_set_bit(r->x, 0, b);
-	fp_set_dig(r->z, 1);
-	r->norm = 1;
-}
-
-/*
- * Uncompress twisted Edwards curve point.
- */
-int ed_upk(ed_t r, const ed_t p) {
-	int result = 1;
-	fp_t t;
-
-	TRY {
-		fp_new(t);
-
-		fp_copy(r->y, p->y);
-		ed_recover_x(t, p->y, core_get()->ed_d, core_get()->ed_a);
-
-		if (fp_get_bit(t, 0) != fp_get_bit(p->x, 0)) {
-			fp_neg(t, t);
-		}
-		fp_copy(r->x, t);
-
-		fp_set_dig(r->z, 1);
-		r->norm = 1;
-	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	}
-	FINALLY {
-		fp_free(t);
-	}
-	return result;
-}
-
-void ed_write_bin(uint8_t *bin, int len, const ed_t a, int pack) {
-	ed_t t;
-
-	ed_null(t);
-
-	if (ed_is_infty(a)) {
-		if (len != 1) {
-			THROW(ERR_NO_BUFFER);
-		} else {
-			bin[0] = 0;
-			return;
-		}
-	}
-
-	TRY {
-		ed_new(t);
-
-		ed_norm(t, a);
-
-		if (pack) {
-			if (len != FP_BYTES + 1) {
-				THROW(ERR_NO_BUFFER);
-			} else {
-				ed_pck(t, t);
-				bin[0] = 2 | fp_get_bit(t->x, 0);
-				fp_write_bin(bin + 1, FP_BYTES, t->y);
-			}
-		} else {
-			if (len != 2 * FP_BYTES + 1) {
-				THROW(ERR_NO_BUFFER);
-			} else {
-				bin[0] = 4;
-				fp_write_bin(bin + 1, FP_BYTES, t->y);
-				fp_write_bin(bin + FP_BYTES + 1, FP_BYTES, t->x);
-			}
-		}
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	}
-	FINALLY {
-		ed_free(t);
-	}
-}
-
-void ed_read_bin(ed_t a, const uint8_t *bin, int len) {
-	if (len == 1) {
-		if (bin[0] == 0) {
-			ed_set_infty(a);
-			return;
-		} else {
-			THROW(ERR_NO_BUFFER);
-			return;
-		}
-	}
-
-	if (len != (FP_BYTES + 1) && len != (2 * FP_BYTES + 1)) {
-		THROW(ERR_NO_BUFFER);
-		return;
-	}
-
-	a->norm = 1;
-	fp_set_dig(a->z, 1);
-	fp_read_bin(a->y, bin + 1, FP_BYTES);
-	if (len == FP_BYTES + 1) {
-		switch(bin[0]) {
-			case 2:
-				fp_zero(a->x);
-				break;
-			case 3:
-				fp_zero(a->x);
-				fp_set_bit(a->x, 0, 1);
-				break;
-			default:
-				THROW(ERR_NO_VALID);
-				break;
-		}
-		ed_upk(a, a);
-	}
-
-	if (len == 2 * FP_BYTES + 1) {
-		if (bin[0] == 4) {
-			fp_read_bin(a->x, bin + FP_BYTES + 1, FP_BYTES);
-		} else {
-			THROW(ERR_NO_VALID);
-		}
-	}
 }
 
 void ed_tab(ed_t *t, const ed_t p, int w) {

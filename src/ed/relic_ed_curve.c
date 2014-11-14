@@ -42,11 +42,17 @@ void ed_curve_init(void) {
   fp_new(ctx->ed_g.x);
   fp_new(ctx->ed_g.y);
   fp_new(ctx->ed_g.z);
+#if ED_ADD == EXTND
+  fp_new(ctx->ed_g.t);
+#endif
 #ifdef ED_PRECO
   for (int i = 0; i < ED_TABLE; i++) {
     fp_new(ctx->ed_pre[i].x);
     fp_new(ctx->ed_pre[i].y);
     fp_new(ctx->ed_pre[i].z);
+#if ED_ADD == EXTND
+    fp_new(ctx->ed_pre[i].t);
+#endif
   }
 #endif
 #endif
@@ -67,11 +73,17 @@ void ed_curve_clean(void) {
   fp_free(ctx->ed_g.x);
   fp_free(ctx->ed_g.y);
   fp_free(ctx->ed_g.z);
+#if ED_ADD == EXTND
+  fp_free(ctx->ed_g.t);
+#endif
 #ifdef ED_PRECO
   for (int i = 0; i < ED_TABLE; i++) {
     fp_free(ctx->ed_pre[i].x);
     fp_free(ctx->ed_pre[i].y);
     fp_free(ctx->ed_pre[i].z);
+#if ED_ADD == EXTND
+    fp_free(ctx->ed_pre[i].t);
+#endif
   }
 #endif
 #endif

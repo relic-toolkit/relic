@@ -257,7 +257,6 @@ void ed_mul_pre_basic(ed_t *t, const ed_t p) {
 		bn_new(n);
 
 		ed_curve_get_ord(n);
-
 		ed_copy(t[0], p);
 		for (int i = 1; i < bn_bits(n); i++) {
 			ed_dbl(t[i], t[i - 1]);
@@ -277,7 +276,6 @@ void ed_mul_fix_basic(ed_t r, const ed_t *t, const bn_t k) {
 	int i, l;
 
 	l = bn_bits(k);
-	assert((l <= bn_bits(&core_get()->ed_r)) && "factor larger than ECC group order");
 
 	ed_set_infty(r);
 

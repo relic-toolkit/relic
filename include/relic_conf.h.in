@@ -531,6 +531,13 @@
 /** Width of window processing for unknown point methods. */
 #define ED_WIDTH @ED_WIDTH@
 
+/** Simple projective twisted Edwards coordinates */
+#define PROJC	 2
+/** Extended projective twisted Edwards coordinates */
+#define EXTND	 3
+/** Chosen binary elliptic curve coordinate method. */
+#define ED_ADD	 @ED_ADD@
+
 /** Chosen prime elliptic twisted Edwards curve point multiplication method. */
 #define ED_FIX	 @ED_FIX@
 

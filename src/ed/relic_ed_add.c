@@ -107,7 +107,8 @@ void ed_add_inverted(ed_t r, const ed_t p, const ed_t q) {
 	fp_free(J);
 }
 
-void ed_add(ed_t r, const ed_t p, const ed_t q) {
+#if ED_ADD == PROJC
+void ed_add_projective(ed_t r, const ed_t p, const ed_t q) {
 	fp_t A;
 	fp_t B;
 	fp_t C;
@@ -175,6 +176,88 @@ void ed_add(ed_t r, const ed_t p, const ed_t q) {
 	fp_free(F);
 	fp_free(G);
 	fp_free(H);
+}
+#endif
+
+#if ED_ADD == EXTND
+void ed_add_extended(ed_t r, const ed_t p, const ed_t q) {
+	fp_t A;
+	fp_t B;
+	fp_t C;
+	fp_t D;
+	fp_t E;
+	fp_t F;
+	fp_t G;
+	fp_t H;
+
+	fp_new(A);
+	fp_new(B);
+	fp_new(C);
+	fp_new(D);
+	fp_new(E);
+	fp_new(F);
+	fp_new(G);
+	fp_new(H);
+
+	// A = X_1 * X_2
+	fp_mul(A, p->x, q->x);
+
+	// B = Y_1 * Y_2
+	fp_mul(B, p->y, q->y);
+
+	// C = d * T_1 * T_2
+	fp_mul(C, core_get()->ed_d, p->t);
+	fp_mul(C, C, q->t);
+
+	// D = Z_1 * Z_2
+	fp_mul(D, p->z, q->z);
+
+	// E = (X_1 + Y_1) * (X_2 + Y_2) - A - B
+	fp_add(E, p->x, p->y);
+	fp_add(F, q->x, q->y);
+	fp_mul(E, E, F);
+	fp_sub(E, E, A);
+	fp_sub(E, E, B);
+
+	// F = D - C
+	fp_sub(F, D, C);
+
+	// G = D + C
+	fp_add(G, D, C);
+
+	// H = B - aA
+	fp_mul(r->x, core_get()->ed_a, A);
+	fp_sub(H, B, r->x);
+
+	// X_3 = E * F
+	fp_mul(r->x, E, F);
+
+	// Y_3 = G * H
+	fp_mul(r->y, G, H);
+
+	// T_3 = E * H
+	fp_mul(r->t, E, H);
+
+	// Z_3 = F * G
+	fp_mul(r->z, F, G);
+
+	fp_free(A);
+	fp_free(B);
+	fp_free(C);
+	fp_free(D);
+	fp_free(E);
+	fp_free(F);
+	fp_free(G);
+	fp_free(H)
+}
+#endif
+
+void ed_add(ed_t r, const ed_t p, const ed_t q) {
+#if ED_ADD == PROJC
+	ed_add_projective(r, p, q);
+#elif ED_ADD == EXTND
+	ed_add_extended(r, p, q);
+#endif
 }
 
 void ed_sub(ed_t r, const ed_t p, const ed_t q) {
