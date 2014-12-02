@@ -569,6 +569,7 @@ void ed_mul_monty(ed_t r, const ed_t p, const bn_t k) {
 
 		for (int i = bn_bits(k) - 1; i >= 0; i--) {
 			int j = bn_get_bit(k, i);
+#if ED_ADD == PROJC
 			dv_swap_cond(t[0]->x, t[1]->x, FP_DIGS, j ^ 1);
 			dv_swap_cond(t[0]->y, t[1]->y, FP_DIGS, j ^ 1);
 			dv_swap_cond(t[0]->z, t[1]->z, FP_DIGS, j ^ 1);
@@ -577,6 +578,18 @@ void ed_mul_monty(ed_t r, const ed_t p, const bn_t k) {
 			dv_swap_cond(t[0]->x, t[1]->x, FP_DIGS, j ^ 1);
 			dv_swap_cond(t[0]->y, t[1]->y, FP_DIGS, j ^ 1);
 			dv_swap_cond(t[0]->z, t[1]->z, FP_DIGS, j ^ 1);
+#elif ED_ADD == EXTND
+			dv_swap_cond(t[0]->x, t[1]->x, FP_DIGS, j ^ 1);
+			dv_swap_cond(t[0]->y, t[1]->y, FP_DIGS, j ^ 1);
+			dv_swap_cond(t[0]->z, t[1]->z, FP_DIGS, j ^ 1);
+			dv_swap_cond(t[0]->t, t[1]->t, FP_DIGS, j ^ 1);
+			ed_add(t[0], t[0], t[1]);
+			ed_dbl(t[1], t[1]);
+			dv_swap_cond(t[0]->x, t[1]->x, FP_DIGS, j ^ 1);
+			dv_swap_cond(t[0]->y, t[1]->y, FP_DIGS, j ^ 1);
+			dv_swap_cond(t[0]->z, t[1]->z, FP_DIGS, j ^ 1);
+			dv_swap_cond(t[0]->t, t[1]->t, FP_DIGS, j ^ 1);
+#endif
 		}
 
 		ed_norm(r, t[0]);
