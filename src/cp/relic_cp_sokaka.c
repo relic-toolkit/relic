@@ -102,19 +102,19 @@ int cp_sokaka_key(uint8_t *key, unsigned int key_len, char *id1,
 			if (strncmp(id1, id2, len1) == 0) {
 				THROW(ERR_NO_VALID);
 			}
-			first = (strncmp(id1, id2, len1) == -1 ? 1 : 2);
+			first = (strncmp(id1, id2, len1) < 0 ? 1 : 2);
 		} else {
 			if (len1 < len2) {
 				if (strncmp(id1, id2, len1) == 0) {
 					first = 1;
 				} else {
-					first = (strncmp(id1, id2, len2) == -1 ? 1 : 2);
+					first = (strncmp(id1, id2, len2) < 0 ? 1 : 2);
 				}
 			} else {
 				if (strncmp(id1, id2, len2) == 0) {
 					first = 2;
 				} else {
-					first = (strncmp(id1, id2, len2) == -1 ? 1 : 2);
+					first = (strncmp(id1, id2, len2) < 0 ? 1 : 2);
 				}
 			}
 		}
@@ -130,25 +130,9 @@ int cp_sokaka_key(uint8_t *key, unsigned int key_len, char *id1,
 				pc_map(e, p, k->s2);
 			}
 		}
-#if FP_PRIME < 1536
-		uint8_t buf[12 * FP_BYTES], *ptr;
-		ptr = buf;
-		for (int i = 0; i < 2; i++) {
-			for (int j = 0; j < 3; j++) {
-				for (int m = 0; m < 2; m++) {
-					fp_write_bin(ptr, FP_BYTES, e[i][j][m]);
-					ptr += FP_BYTES;
-				}
-			}
-		}
-#else
-		uint8_t buf[2 * FP_BYTES], *ptr;
-		ptr = buf;
-		for (int i = 0; i < 2; i++) {
-			fp_write_bin(ptr, FP_BYTES, e[i]);
-			ptr += FP_BYTES;
-		}
-#endif
+		/* Allocate size for storing the output. */
+		uint8_t buf[gt_size_bin(e, 0)];
+		gt_write_bin(buf, sizeof(buf), e, 0);
 		md_kdf1(key, key_len, buf, sizeof(buf));
 	}
 	CATCH_ANY {
