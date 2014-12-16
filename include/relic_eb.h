@@ -764,7 +764,7 @@ void eb_mul_basic(eb_t r, const eb_t p, const bn_t k);
 
 /**
  * Multiplies a binary elliptic point by an integer using the constant-time
- * López-Dahab point multiplication method.
+ * Lopez-Dahab point multiplication method.
  *
  * @param[out] r			- the result.
  * @param[in] p				- the point to multiply.

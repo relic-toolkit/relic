@@ -774,7 +774,7 @@ void fb_mul_lcomb(fb_t c, const fb_t a, const fb_t b);
 void fb_mul_rcomb(fb_t c, const fb_t a, const fb_t b);
 
 /**
- * Multiples two binary field elements using López-Dahab multiplication.
+ * Multiples two binary field elements using Lopez-Dahab multiplication.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the first binary field element to multiply.

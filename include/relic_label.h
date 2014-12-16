@@ -1443,6 +1443,8 @@
 #undef fp3_read_bin
 #undef fp3_write_bin
 #undef fp3_cmp
+#undef fp3_cmp_dig
+#undef fp3_set_dig
 #undef fp3_add_basic
 #undef fp3_add_integ
 #undef fp3_sub_basic
@@ -1473,6 +1475,8 @@
 #define fp3_read_bin 	PREFIX(fp3_read_bin)
 #define fp3_write_bin 	PREFIX(fp3_write_bin)
 #define fp3_cmp 	PREFIX(fp3_cmp)
+#define fp3_cmp_dig 	PREFIX(fp3_cmp_dig)
+#define fp3_set_dig 	PREFIX(fp3_set_dig)
 #define fp3_add_basic 	PREFIX(fp3_add_basic)
 #define fp3_add_integ 	PREFIX(fp3_add_integ)
 #define fp3_sub_basic 	PREFIX(fp3_sub_basic)
@@ -1529,6 +1533,8 @@
 #undef fp6_read_bin
 #undef fp6_write_bin
 #undef fp6_cmp
+#undef fp6_cmp_dig
+#undef fp6_set_dig
 #undef fp6_add
 #undef fp6_sub
 #undef fp6_neg
@@ -1554,6 +1560,8 @@
 #define fp6_read_bin 	PREFIX(fp6_read_bin)
 #define fp6_write_bin 	PREFIX(fp6_write_bin)
 #define fp6_cmp 	PREFIX(fp6_cmp)
+#define fp6_cmp_dig 	PREFIX(fp6_cmp_dig)
+#define fp6_set_dig 	PREFIX(fp6_set_dig)
 #define fp6_add 	PREFIX(fp6_add)
 #define fp6_sub 	PREFIX(fp6_sub)
 #define fp6_neg 	PREFIX(fp6_neg)
