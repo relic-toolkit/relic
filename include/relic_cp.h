@@ -175,6 +175,43 @@ typedef sokaka_st sokaka_t[1];
 typedef sokaka_st *sokaka_t;
 #endif
 
+/**
+ * Represents a Boneh-Goh-Nissim cryptosystem key pair.
+ */
+typedef struct _bgn_t {
+	/** The first exponent. */
+	bn_t x;
+	/** The second exponent. */
+	bn_t y;
+	/** The third exponent. */
+	bn_t z;
+	/* The generator of the first group. */
+	g1_t g;
+	/* The first element from the first group. */
+	g1_t gx;
+	/* The second element from the first group. */
+	g1_t gy;
+	/* The thirs element from the first group. */
+	g1_t gz;
+	/* The generator of the second group. */
+	g2_t h;
+	/* The first element from the second group. */
+	g2_t hx;
+	/* The second element from the second group. */
+	g2_t hy;
+	/* The third element from the second group. */
+	g2_t hz;
+} bgn_st;
+
+/**
+ * Pointer to a a Boneh-Goh-Nissim cryptosystem key pair.
+ */
+#if ALLOC == AUTO
+typedef bgn_st bgn_t[1];
+#else
+typedef bgn_st *bgn_t;
+#endif
+
 /*============================================================================*/
 /* Macro definitions                                                          */
 /*============================================================================*/
@@ -597,6 +634,136 @@ typedef sokaka_st *sokaka_t;
 #endif
 
 /**
+ * Initializes a BGN key pair with a null value.
+ *
+ * @param[out] A			- the key pair to initialize.
+ */
+#if ALLOC == AUTO
+#define bgn_null(A)			/* empty */
+#else
+#define bgn_null(A)			A = NULL;
+#endif
+
+/**
+ * Calls a function to allocate and initialize a BGN key pair.
+ *
+ * @param[out] A			- the new key pair.
+ */
+#if ALLOC == DYNAMIC
+#define bgn_new(A)															\
+	A = (bgn_t)calloc(1, sizeof(bgn_st));									\
+	if (A == NULL) {														\
+		THROW(ERR_NO_MEMORY);												\
+	}																		\
+	bn_new((A)->x);															\
+	bn_new((A)->y);															\
+	bn_new((A)->z);															\
+	g1_new((A)->g);															\
+	g1_new((A)->gx);														\
+	g1_new((A)->gy);														\
+	g1_new((A)->gz);														\
+	g2_new((A)->h);															\
+	g2_new((A)->hx);														\
+	g2_new((A)->hy);														\
+	g2_new((A)->hz);														\
+
+#elif ALLOC == STATIC
+#define sokaka_new(A)														\
+	A = (sokaka_t)alloca(sizeof(sokaka_st));								\
+	if (A == NULL) {														\
+		THROW(ERR_NO_MEMORY);												\
+	}																		\
+	bn_new((A)->x);															\
+	bn_new((A)->y);															\
+	bn_new((A)->z);															\
+	g1_new((A)->g);															\
+	g1_new((A)->gx);														\
+	g1_new((A)->gy);														\
+	g1_new((A)->gz);														\
+	g2_new((A)->h);															\
+	g2_new((A)->hx);														\
+	g2_new((A)->hy);														\
+	g2_new((A)->hz);														\
+
+#elif ALLOC == AUTO
+#define bgn_new(A)			/* empty */
+
+#elif ALLOC == STACK
+#define bgn_new(A)															\
+	A = (sbgn_t)alloca(sizeof(bgn_st));										\
+	bn_new((A)->x);															\
+	bn_new((A)->y);															\
+	bn_new((A)->z);															\
+	g1_new((A)->g);															\
+	g1_new((A)->gx);														\
+	g1_new((A)->gy);														\
+	g1_new((A)->gz);														\
+	g2_new((A)->h);															\
+	g2_new((A)->hx);														\
+	g2_new((A)->hy);														\
+	g2_new((A)->hz);														\
+
+#endif
+
+/**
+ * Calls a function to clean and free a BGN key pair.
+ *
+ * @param[out] A			- the key pair to clean and free.
+ */
+#if ALLOC == DYNAMIC
+#define bgn_free(A)															\
+	if (A != NULL) {														\
+		bn_free((A)->x);													\
+		bn_free((A)->y);													\
+		bn_free((A)->z);													\
+		g1_free((A)->g);													\
+		g1_free((A)->gx);													\
+		g1_free((A)->gy);													\
+		g1_free((A)->gz);													\
+		g2_free((A)->h);													\
+		g2_free((A)->hx);													\
+		g2_free((A)->hy);													\
+		g2_free((A)->hz);													\
+		free(A);															\
+		A = NULL;															\
+	}
+
+#elif ALLOC == STATIC
+#define sokaka_free(A)														\
+	if (A != NULL) {														\
+		bn_free((A)->x);													\
+		bn_free((A)->y);													\
+		bn_free((A)->z);													\
+		g1_free((A)->g);													\
+		g1_free((A)->gx);													\
+		g1_free((A)->gy);													\
+		g1_free((A)->gz);													\
+		g2_free((A)->h);													\
+		g2_free((A)->hx);													\
+		g2_free((A)->hy);													\
+		g2_free((A)->hz);													\
+		A = NULL;															\
+	}																		\
+
+#elif ALLOC == AUTO
+#define bgn_free(A)			/* empty */
+
+#elif ALLOC == STACK
+#define bgn_free(A)															\
+	bn_free((A)->x);														\
+	bn_free((A)->y);														\
+	bn_free((A)->z);														\
+	g1_free((A)->gx);														\
+	g1_free((A)->gy);														\
+	g1_free((A)->gz);														\
+	g2_free((A)->hx);														\
+	g2_free((A)->hy);														\
+	g2_free((A)->hz);														\
+	A = NULL;																\
+
+#endif
+
+/**
  * Generates a new RSA key pair.
  *
  * @param[out] PB			- the public key.
@@ -881,7 +1048,7 @@ int cp_ecdh_key(uint8_t *key, int key_len, bn_t d, ec_t q);
  * Should also be used to generate the ephemeral key pair.
  *
  * @param[out] d			- the private key.
- * @param[in] q				- the public key.
+ * @param[out] q				- the public key.
  */
 int cp_ecmqv_gen(bn_t d, ec_t q);
 
