@@ -625,6 +625,15 @@ typedef CAT(GT_LOWER, t) gt_t;
 #define g1_mul(R, P, K)		CAT(G1_LOWER, mul)(R, P, K)
 
 /**
+ * Multiplies an element from G_1 by a small integer. Computes R = kP.
+ *
+ * @param[out] R			- the result.
+ * @param[in] P				- the element to multiply.
+ * @param[in] K				- the small integer.
+ */
+#define g1_mul_dig(R, P, K)		CAT(G1_LOWER, mul_dig)(R, P, K)
+
+/**
  * Multiplies an element from G_2 by an integer. Computes R = kP.
  *
  * @param[out] R			- the result.
@@ -632,6 +641,15 @@ typedef CAT(GT_LOWER, t) gt_t;
  * @param[in] K				- the integer.
  */
 #define g2_mul(R, P, K)		CAT(G2_LOWER, mul)(R, P, K)
+
+/**
+ * Multiplies an element from G_2 by a small integer. Computes R = kP.
+ *
+ * @param[out] R			- the result.
+ * @param[in] P				- the element to multiply.
+ * @param[in] K				- the small integer.
+ */
+#define g2_mul_dig(R, P, K)		CAT(G2_LOWER, mul_dig)(R, P, K)
 
 /**
  * Powers an element from G_T. Computes R = kP.
