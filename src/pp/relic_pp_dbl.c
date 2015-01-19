@@ -53,7 +53,6 @@ void pp_dbl_k2_basic(fp2_t l, ep_t r, ep_t p, ep_t q) {
 
 		ep_copy(t, p);
 		ep_dbl_slp_basic(r, s, p);
-		fp2_zero(l);
 		fp_add(l[0], t->x, q->x);
 		fp_mul(l[0], l[0], s);
 		fp_sub(l[0], t->y, l[0]);
