@@ -43,7 +43,7 @@
  *
  * @param[out] r			- the result.
  * @param[out] t			- the resulting point.
- * @param[in] p				- the first point of the pairing, in G_1.
+ * @param[in] p				- the first point of the pairing, in G_2.
  * @param[in] q				- the second point of the pairing, in G_1.
  * @param[in] a				- the loop parameter.
  */
@@ -77,6 +77,57 @@ static void pp_mil_k2(fp2_t r, ep_t t, ep_t p, ep_t q, bn_t a) {
 	}
 	FINALLY {
 		fp2_free(l);
+		ep_free(_q);
+	}
+}
+
+/**
+ * Compute the Miller loop for pairings of type G_1 x G_2 over the bits of a
+ * given parameter.
+ *
+ * @param[out] r			- the result.
+ * @param[out] t			- the resulting point.
+ * @param[in] p				- the first point of the pairing, in G_1.
+ * @param[in] q				- the second point of the pairing, in G_2.
+ * @param[in] a				- the loop parameter.
+ */
+static void pp_mil_lit_k2(fp2_t r, ep_t t, ep_t p, ep_t q, bn_t a) {
+	fp2_t l, m;
+	ep_t _q;
+
+	fp2_null(l);
+	ep_null(_q);
+
+	TRY {
+		fp2_new(l);
+		fp2_new(m);
+		ep_new(_q);
+
+		fp2_zero(l);
+		fp2_zero(m);
+		ep_copy(t, p);
+		ep_neg(_q, q);
+
+		for (int i = bn_bits(a) - 2; i >= 0; i--) {
+			fp2_sqr(r, r);
+			pp_dbl_k2(l, t, t, _q);
+			fp_copy(m[0], l[1]);
+			fp_copy(m[1], l[0]);
+			fp2_mul(r, r, m);
+			if (bn_get_bit(a, i)) {
+				pp_add_k2(l, t, p, q);
+				fp_copy(m[0], l[1]);
+				fp_copy(m[1], l[0]);
+				fp2_mul(r, r, m);
+			}
+		}
+	}
+	CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	}
+	FINALLY {
+		fp2_free(l);
+		fp2_free(m);
 		ep_free(_q);
 	}
 }
@@ -399,9 +450,12 @@ void pp_map_weilp_k2(fp2_t r, ep_t p, ep_t q) {
 		fp2_set_dig(r1, 1);
 
 		if (!ep_is_infty(p) && !ep_is_infty(q)) {
-			pp_mil_k2(r0, t0, p, q, n);
+			pp_mil_lit_k2(r0, t0, p, q, n);
 			pp_mil_k2(r1, t1, q, p, n);
 			fp2_inv(r1, r1);
+			fp2_mul(r0, r0, r1);
+			fp2_inv(r1, r0);
+			fp2_inv_uni(r0, r0);
 		}
 		fp2_mul(r, r0, r1);
 	}
@@ -446,7 +500,7 @@ void pp_map_weilp_k12(fp12_t r, ep_t p, ep2_t q) {
 			fp12_inv(r1, r1);
 			fp12_mul(r0, r0, r1);
 			fp12_inv(r1, r0);
-			fp12_inv_uni(r0, r0);			
+			fp12_inv_uni(r0, r0);
 		}
 		fp12_mul(r, r0, r1);
 	}
