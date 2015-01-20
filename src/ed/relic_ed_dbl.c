@@ -168,13 +168,90 @@ void ed_dbl_extended_twisted_coordinates(ed_t r, const ed_t p) {
 	fp_free(G);
 	fp_free(H);
 }
+
+void ed_dbl_extended_twisted_coordinates_short(ed_t r, const ed_t p) {
+	fp_t A;
+	fp_t B;
+	fp_t C;
+	fp_t D;
+	fp_t E;
+	fp_t F;
+	fp_t G;
+	fp_t H;
+
+
+	fp_new(A);
+	fp_new(B);
+	fp_new(C);
+	fp_new(D);
+	fp_new(E);
+	fp_new(F);
+	fp_new(G);
+	fp_new(H);
+
+	// A = X^2
+	fp_sqr(A, p->x);
+
+	// B = Y^2
+	fp_sqr(B, p->y);
+
+	// C = 2 * Z^2
+	fp_sqr(C, p->z);
+	fp_dbl(C, C);
+
+	// D = a * A
+	fp_mul(D, core_get()->ed_a, A);
+
+	// E = (X + Y) ^ 2 - A - B
+	fp_add(E, p->x, p->y);
+	fp_sqr(E, E);
+	fp_sub(E, E, A);
+	fp_sub(E, E, B);
+
+	// G = D + B
+	fp_add(G, D, B);
+
+	// F = G - C
+	fp_sub(F, G, C);
+
+	// H = D - B
+	fp_sub(H, D, B);
+
+	// X = E * F
+	fp_mul(r->x, E, F);
+
+	// Y = G * H
+	fp_mul(r->y, G, H);
+
+	// Z = F * G
+	fp_mul(r->z, F, G);
+
+	// 4M + 4S + 1D + 7add
+
+	fp_free(A);
+	fp_free(B);
+	fp_free(C);
+	fp_free(D);
+	fp_free(E);
+	fp_free(F);
+	fp_free(G);
+	fp_free(H);
+}
+
 #endif
 
 void ed_dbl(ed_t r, const ed_t p) {
-	//ed_add(r, p, p);
 #if ED_ADD == PROJC
 	ed_dbl_projective_twisted_coordinates(r, p);
 #elif ED_ADD == EXTND
 	ed_dbl_extended_twisted_coordinates(r, p);
+#endif
+}
+
+void ed_dbl_short(ed_t r, const ed_t p) {
+#if ED_ADD == PROJC
+	ed_dbl(r, p);
+#elif ED_ADD == EXTND
+	ed_dbl_extended_twisted_coordinates_short(r, p);
 #endif
 }

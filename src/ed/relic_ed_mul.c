@@ -202,6 +202,180 @@ static void ed_mul_naf_imp(ed_t r, const ed_t p, const bn_t k) {
 #endif /* ED_PLAIN || ED_SUPER */
 #endif /* ED_MUL == LWNAF */
 
+#if ED_MUL == LWNAF_MIXED || !defined(STRIP)
+
+#if defined(ED_ENDOM)
+
+static void ed_mul_glv_imp(ed_t r, const ed_t p, const bn_t k) {
+	int l, l0, l1, i, n0, n1, s0, s1;
+	int8_t naf0[FP_BITS + 1], naf1[FP_BITS + 1], *t0, *t1;
+	bn_t n, k0, k1, v1[3], v2[3];
+	ed_t q, t[1 << (ED_WIDTH - 2)];
+
+	bn_null(n);
+	bn_null(k0);
+	bn_null(k1);
+	ed_null(q);
+
+	TRY {
+		bn_new(n);
+		bn_new(k0);
+		bn_new(k1);
+		ed_new(q);
+		for (i = 0; i < (1 << (ED_WIDTH - 2)); i++) {
+			ed_null(t[i]);
+			ed_new(t[i]);
+		}
+		for (i = 0; i < 3; i++) {
+			bn_null(v1[i]);
+			bn_null(v2[i]);
+			bn_new(v1[i]);
+			bn_new(v2[i]);
+		}
+
+		ed_curve_get_ord(n);
+		ed_curve_get_v1(v1);
+		ed_curve_get_v2(v2);
+		bn_rec_glv(k0, k1, k, n, (const bn_t *)v1, (const bn_t *)v2);
+		s0 = bn_sign(k0);
+		s1 = bn_sign(k1);
+		bn_abs(k0, k0);
+		bn_abs(k1, k1);
+
+		if (s0 == BN_POS) {
+			ed_tab(t, p, ED_WIDTH);
+		} else {
+			ed_neg(q, p);
+			ed_tab(t, q, ED_WIDTH);
+		}
+
+		l0 = l1 = FP_BITS + 1;
+		bn_rec_naf(naf0, &l0, k0, ED_WIDTH);
+		bn_rec_naf(naf1, &l1, k1, ED_WIDTH);
+
+		l = MAX(l0, l1);
+		t0 = naf0 + l - 1;
+		t1 = naf1 + l - 1;
+		for (i = l0; i < l; i++)
+			naf0[i] = 0;
+		for (i = l1; i < l; i++)
+			naf1[i] = 0;
+
+		ed_set_infty(r);
+		for (i = l - 1; i >= 0; i--, t0--, t1--) {
+			ed_dbl(r, r);
+
+			n0 = *t0;
+			n1 = *t1;
+			if (n0 > 0) {
+				ed_add(r, r, t[n0 / 2]);
+			}
+			if (n0 < 0) {
+				ed_sub(r, r, t[-n0 / 2]);
+			}
+			if (n1 > 0) {
+				ed_copy(q, t[n1 / 2]);
+				fp_mul(q->x, q->x, ed_curve_get_beta());
+				if (s0 != s1) {
+					ed_neg(q, q);
+				}
+				ed_add(r, r, q);
+			}
+			if (n1 < 0) {
+				ed_copy(q, t[-n1 / 2]);
+				fp_mul(q->x, q->x, ed_curve_get_beta());
+				if (s0 != s1) {
+					ed_neg(q, q);
+				}
+				ed_sub(r, r, q);
+			}
+		}
+		/* Convert r to affine coordinates. */
+		ed_norm(r, r);
+	}
+	CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	}
+	FINALLY {
+		bn_free(n);
+		bn_free(k0);
+		bn_free(k1);
+		bn_free(n)
+		ed_free(q);
+		for (i = 0; i < 1 << (ED_WIDTH - 2); i++) {
+			ed_free(t[i]);
+		}
+		for (i = 0; i < 3; i++) {
+			bn_free(v1[i]);
+			bn_free(v2[i]);
+		}
+
+	}
+}
+
+#endif /* ED_ENDOM */
+
+#if defined(ED_PLAIN) || defined(ED_SUPER)
+
+static void ed_mul_naf_mixed_imp(ed_t r, const ed_t p, const bn_t k) {
+	int l, i, n;
+	int8_t naf[FP_BITS + 1], *_k;
+	ed_t t[1 << (ED_WIDTH - 2)];
+
+	for (i = 0; i < (1 << (ED_WIDTH - 2)); i++) {
+		ed_null(t[i]);
+	}
+
+	TRY {
+		/* Prepare the precomputation table. */
+		for (i = 0; i < (1 << (ED_WIDTH - 2)); i++) {
+			ed_new(t[i]);
+		}
+		/* Compute the precomputation table. */
+		ed_tab(t, p, ED_WIDTH);
+
+		/* Compute the w-NAF representation of k. */
+		l = FP_BITS + 1;
+		bn_rec_naf(naf, &l, k, ED_WIDTH);
+
+		_k = naf + l - 1;
+		ed_set_infty(r);
+		for (i = l - 1; i >= 0; i--, _k--) {
+			n = *_k;
+			if (n == 0) {
+				/* doubling is followed by another doubling */
+				if (i > 0) {
+					ed_dbl_short(r, r);
+				} else {
+					/* use full extended coordinate doubling for last step */
+					ed_dbl(r, r);
+				}
+			} else {
+				ed_dbl(r, r);
+				if (n > 0) {
+					ed_add(r, r, t[n / 2]);
+				} else if (n < 0) {
+					ed_sub(r, r, t[-n / 2]);
+				}
+			}
+		}
+		/* Convert r to affine coordinates. */
+		ed_norm(r, r);
+	}
+	CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	}
+	FINALLY {
+		/* Free the precomputation table. */
+		for (i = 0; i < (1 << (ED_WIDTH - 2)); i++) {
+			ed_free(t[i]);
+		}
+	}
+}
+
+#endif /* ED_PLAIN || ED_SUPER */
+#endif /* ED_MUL == LWNAF_MIXED */
+
 #if ED_MUL == LWREG || !defined(STRIP)
 
 #if defined(ED_PLAIN) || defined(ED_SUPER)
@@ -435,6 +609,28 @@ void ed_mul_lwnaf(ed_t r, const ed_t p, const bn_t k) {
 
 #if defined(ED_PLAIN) || defined(ED_SUPER)
 	ed_mul_naf_imp(r, p, k);
+#endif
+}
+
+#endif
+
+#if ED_MUL == LWNAF_MIXED || !defined(STRIP)
+
+void ed_mul_lwnaf_mixed(ed_t r, const ed_t p, const bn_t k) {
+	if (bn_is_zero(k)) {
+		ed_set_infty(r);
+		return;
+	}
+
+#if defined(ED_ENDOM)
+	if (ed_curve_is_endom()) {
+		ed_mul_glv_imp(r, p, k);
+		return;
+	}
+#endif
+
+#if defined(ED_PLAIN) || defined(ED_SUPER)
+	ed_mul_naf_mixed_imp(r, p, k);
 #endif
 }
 

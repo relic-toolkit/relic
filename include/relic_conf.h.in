@@ -519,6 +519,16 @@
 /** Prefer curves with efficient endomorphisms. */
 #cmakedefine EC_ENDOM
 
+/** Binary point multiplication. */
+#define BASIC	 1
+/** Sliding window. */
+#define SLIDE    2
+/** Montgomery powering ladder. */
+#define MONTY	 3
+/** Left-to-right Width-w NAF. */
+#define LWNAF	 4
+/** Left-to-right Width-w NAF with mixed coordinates. */
+#define LWNAF_MIXED	 7
 /** Chosen prime elliptic twisted Edwards curve point multiplication method. */
 #define ED_MUL	 @ED_MUL@
 
@@ -538,6 +548,18 @@
 /** Chosen binary elliptic curve coordinate method. */
 #define ED_ADD	 @ED_ADD@
 
+/** Binary point multiplication. */
+#define BASIC	 1
+/** Yao's windowing method. */
+#define YAOWI	 2
+/** NAF windowing method. */
+#define NAFWI	 3
+/** Left-to-right Width-w NAF. */
+#define LWNAF	 4
+/** Single-table comb method. */
+#define COMBS	 5
+/** Double-table comb method. */
+#define COMBD    6
 /** Chosen prime elliptic twisted Edwards curve point multiplication method. */
 #define ED_FIX	 @ED_FIX@
 

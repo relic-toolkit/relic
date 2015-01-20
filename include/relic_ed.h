@@ -101,6 +101,8 @@ enum {
 #define ED_TABLE			ED_TABLE_COMBD
 #elif ED_FIX == LWNAF
 #define ED_TABLE			ED_TABLE_LWNAF
+#elif ED_FIX == LWNAF_MIXED
+#define ED_TABLE      ED_TABLE_LWNAF
 #endif
 
 /**
@@ -422,6 +424,14 @@ void ed_sub(ed_t r, const ed_t p, const ed_t q);
 void ed_dbl(ed_t r, const ed_t p);
 
 /**
+ * Doubles a prime elliptic twisted Edwards curve point represented in projective coordinates and skips T coordinate calculation.
+ *
+ * @param[out] r      - the result.
+ * @param[in] p       - the point to double.
+ */
+void ed_dbl_short(ed_t r, const ed_t p);
+
+/**
  * Converts a point to affine coordinates.
  *
  * @param[out] r      - the result.
@@ -462,6 +472,8 @@ void ed_map(ed_t p, const uint8_t *msg, int len);
 #define ed_mul(R, P, K)   ed_mul_monty(R, P, K)
 #elif ED_MUL == LWNAF
 #define ed_mul(R, P, K)   ed_mul_lwnaf(R, P, K)
+#elif ED_MUL == LWNAF_MIXED
+#define ed_mul(R, P, K)   ed_mul_lwnaf_mixed(R, P, K)
 #endif
 
 /**
@@ -481,6 +493,8 @@ void ed_map(ed_t p, const uint8_t *msg, int len);
 #elif ED_FIX == COMBD
 #define ed_mul_pre(T, P)    ed_mul_pre_combd(T, P)
 #elif ED_FIX == LWNAF
+#define ed_mul_pre(T, P)    ed_mul_pre_lwnaf(T, P)
+#elif ED_FIX == LWNAF_MIXED
 #define ed_mul_pre(T, P)    ed_mul_pre_lwnaf(T, P)
 #endif
 
@@ -504,6 +518,8 @@ void ed_map(ed_t p, const uint8_t *msg, int len);
 #define ed_mul_fix(R, T, K)   ed_mul_fix_combd(R, T, K)
 #elif ED_FIX == LWNAF
 #define ed_mul_fix(R, T, K)   ed_mul_fix_lwnaf(R, T, K)
+#elif ED_FIX == LWNAF_MIXED
+#define ed_mul_fix(R, T, K)   ed_mul_fix_lwnaf_mixed(R, T, K)
 #endif
 
  /**
@@ -653,6 +669,16 @@ void ed_mul_fix_combd(ed_t r, const ed_t *t, const bn_t k);
  * @param[in] k				- the integer.
  */
 void ed_mul_fix_lwnaf(ed_t r, const ed_t *t, const bn_t k);
+
+/**
+ * Multiplies a fixed prime elliptic point using a precomputation table and
+ * the w-(T)NAF mixed coordinate method.
+ *
+ * @param[out] r      - the result.
+ * @param[in] t       - the precomputation table.
+ * @param[in] k       - the integer.
+ */
+void ed_mul_fix_lwnaf_mixed(ed_t r, const ed_t *t, const bn_t k);
 
 /**
  * Multiplies the generator of a prime elliptic twisted Edwards curve by an integer.
@@ -827,6 +853,15 @@ void ed_mul_monty(ed_t r, const ed_t p, const bn_t k);
  * @param[in] k				- the integer.
  */
 void ed_mul_lwnaf(ed_t r, const ed_t p, const bn_t k);
+
+/**
+ * Multiplies a prime elliptic point by an integer using the w-NAF mixed coordinate method.
+ *
+ * @param[out] r      - the result.
+ * @param[in] p       - the point to multiply.
+ * @param[in] k       - the integer.
+ */
+void ed_mul_lwnaf_mixed(ed_t r, const ed_t p, const bn_t k);
 
 /**
  * Multiplies a prime elliptic point by an integer using a regular method.

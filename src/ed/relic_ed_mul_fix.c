@@ -242,6 +242,158 @@ static void ed_mul_combs_plain(ed_t r, const ed_t *t, const bn_t k) {
 
 #endif /* ED_FIX == LWNAF */
 
+#if ED_FIX == LWNAF_MIXED || !defined(STRIP)
+
+/**
+ * Multiplies a binary elliptic curve point by an integer using the w-NAF mixed coordinate
+ * method.
+ *
+ * @param[out] r 				- the result.
+ * @param[in] t					- the precomputed table.
+ * @param[in] k					- the integer.
+ */
+static void ed_mul_fix_plain_mixed(ed_t r, const ed_t *t, const bn_t k) {
+	int l, i, n;
+	int8_t naf[FP_BITS + 1], *_k;
+
+	/* Compute the w-TNAF representation of k. */
+	l = FP_BITS + 1;
+	bn_rec_naf(naf, &l, k, ED_DEPTH);
+
+	_k = naf + l - 1;
+	ed_set_infty(r);
+	for (i = l - 1; i >= 0; i--, _k--) {
+		n = *_k;
+		if (n == 0) {
+			/* doubling is followed by another doubling */
+			if (i > 0) {
+				ed_dbl_short(r, r);
+			} else {
+				/* use full extended coordinate doubling for last step */
+				ed_dbl(r, r);
+			}
+		} else {
+			ed_dbl(r, r);
+			if (n > 0) {
+				ed_add(r, r, t[n / 2]);
+			} else if (n < 0) {
+				ed_sub(r, r, t[-n / 2]);
+			}
+		}
+	}
+	/* Convert r to affine coordinates. */
+	ed_norm(r, r);
+}
+
+#endif /* ED_FIX == LWNAF_MIXED */
+
+#if ED_FIX == COMBS || !defined(STRIP)
+
+#if defined(ED_ENDOM)
+
+/**
+ * Multiplies a prime elliptic curve point by an integer using the COMBS
+ * method.
+ *
+ * @param[out] r 				- the result.
+ * @param[in] t					- the precomputed table.
+ * @param[in] k					- the integer.
+ */
+static void ed_mul_combs_endom(ed_t r, const ed_t *t, const bn_t k) {
+	int i, j, l, w0, w1, n0, n1, p0, p1, s0, s1;
+	bn_t n, k0, k1, v1[3], v2[3];
+	ed_t u;
+
+	bn_null(n);
+	bn_null(k0);
+	bn_null(k1);
+	ed_null(u);
+
+	TRY {
+		bn_new(n);
+		bn_new(k0);
+		bn_new(k1);
+		ed_new(u);
+		for (i = 0; i < 3; i++) {
+			bn_null(v1[i]);
+			bn_null(v2[i]);
+			bn_new(v1[i]);
+			bn_new(v2[i]);
+		}
+
+		ed_curve_get_ord(n);
+		ed_curve_get_v1(v1);
+		ed_curve_get_v2(v2);
+		l = bn_bits(n);
+		l = ((l % (2 * ED_DEPTH)) ==
+				0 ? (l / (2 * ED_DEPTH)) : (l / (2 * ED_DEPTH)) + 1);
+
+		bn_rec_glv(k0, k1, k, n, (const bn_t *)v1, (const bn_t *)v2);
+		s0 = bn_sign(k0);
+		s1 = bn_sign(k1);
+		bn_abs(k0, k0);
+		bn_abs(k1, k1);
+
+		n0 = bn_bits(k0);
+		n1 = bn_bits(k1);
+
+		p0 = (ED_DEPTH) * l - 1;
+
+		ed_set_infty(r);
+
+		for (i = l - 1; i >= 0; i--) {
+			ed_dbl(r, r);
+
+			w0 = 0;
+			w1 = 0;
+			p1 = p0--;
+			for (j = ED_DEPTH - 1; j >= 0; j--, p1 -= l) {
+				w0 = w0 << 1;
+				w1 = w1 << 1;
+				if (p1 < n0 && bn_get_bit(k0, p1)) {
+					w0 = w0 | 1;
+				}
+				if (p1 < n1 && bn_get_bit(k1, p1)) {
+					w1 = w1 | 1;
+				}
+			}
+			if (w0 > 0) {
+				if (s0 == BN_POS) {
+					ed_add(r, r, t[w0]);
+				} else {
+					ed_sub(r, r, t[w0]);
+				}
+			}
+			if (w1 > 0) {
+				ed_copy(u, t[w1]);
+				fp_mul(u->x, u->x, ed_curve_get_beta());
+				if (s1 == BN_NEG) {
+					ed_neg(u, u);
+				}
+				ed_add(r, r, u);
+			}
+		}
+		ed_norm(r, r);
+	}
+	CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	}
+	FINALLY {
+		bn_free(n);
+		bn_free(k0);
+		bn_free(k1);
+		ed_free(u);
+		for (i = 0; i < 3; i++) {
+			bn_free(v1[i]);
+			bn_free(v2[i]);
+		}
+	}
+}
+
+#endif /* ED_ENDOM */
+
+#endif /* ED_FIX == COMBS || !defined(STRIP) */
+
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
@@ -622,5 +774,16 @@ void ed_mul_pre_lwnaf(ed_t *t, const ed_t p) {
 
 void ed_mul_fix_lwnaf(ed_t r, const ed_t *t, const bn_t k) {
 	ed_mul_fix_plain(r, t, k);
+}
+#endif
+
+#if ED_FIX == LWNAF_MIXED || !defined(STRIP)
+
+void ed_mul_pre_lwnaf_mixed(ed_t *t, const ed_t p) {
+	ed_tab(t, p, ED_DEPTH);
+}
+
+void ed_mul_fix_lwnaf_mixed(ed_t r, const ed_t *t, const bn_t k) {
+	ed_mul_fix_plain_mixed(r, t, k);
 }
 #endif

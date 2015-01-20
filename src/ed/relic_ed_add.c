@@ -107,7 +107,7 @@ void ed_add_inverted(ed_t r, const ed_t p, const ed_t q) {
 	fp_free(J);
 }
 
-#if ED_ADD == PROJC
+#if ED_ADD == PROJC || ED_MUL == LWNAF_MIXED
 void ed_add_projective(ed_t r, const ed_t p, const ed_t q) {
 	fp_t A;
 	fp_t B;
@@ -248,7 +248,7 @@ void ed_add_extended(ed_t r, const ed_t p, const ed_t q) {
 	fp_free(E);
 	fp_free(F);
 	fp_free(G);
-	fp_free(H)
+	fp_free(H);
 }
 #endif
 
