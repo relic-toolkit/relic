@@ -131,6 +131,14 @@
 #define _CAT(A, B)			A ## B
 /** @} */
 
+ /**
+  * Inserts quotation marks in the macro argument.
+  */
+ /** @{ */
+#define QUOTE(A)			_QUOTE(A)
+#define _QUOTE(A)			#A
+/** @} */
+
 /**
  * Selects a basic or advanced version of a function by checking if an
  * additional argument was passed.
