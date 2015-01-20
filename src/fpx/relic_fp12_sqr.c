@@ -80,7 +80,7 @@ static void fp4_mul_unr(dv2_t e, dv2_t f, fp2_t a, fp2_t b, fp2_t c, fp2_t d) {
 	}
 }
 
-void fp4_sqr_unr(dv2_t c, dv2_t d, fp2_t a, fp2_t b) {
+static void fp4_sqr_unr(dv2_t c, dv2_t d, fp2_t a, fp2_t b) {
 	fp2_t t;
 	dv2_t u0, u1;
 
