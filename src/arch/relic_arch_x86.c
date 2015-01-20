@@ -30,6 +30,7 @@
  */
 
 #include "relic_types.h"
+#include "relic_label.h"
 
 /**
  * Renames the inline assembly macro to a prettier name.
