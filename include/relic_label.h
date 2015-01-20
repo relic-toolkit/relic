@@ -141,6 +141,9 @@
 #define util_printf 	PREFIX(util_printf)
 #define util_print_dig 	PREFIX(util_print_dig)
 
+#undef conf_print
+#define conf_print       PREFIX(conf_print)
+
 #undef dv_t
 #define dv_t	PREFIX(dv_t)
 
