@@ -52,7 +52,7 @@
  * @param[in] m					- the second integer.
  * @param[in] t					- the pointer to the precomputed table.
  */
-void ep_mul_sim_endom(ep_t r, const ep_t p, const bn_t k, const ep_t q,
+static void ep_mul_sim_endom(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 		const bn_t m, const ep_t *t) {
 	int len, len0, len1, len2, len3, i, n, sk0, sk1, sl0, sl1, w, g = 0;
 	int8_t naf0[FP_BITS + 1], naf1[FP_BITS + 1], *t0, *t1;
