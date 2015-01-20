@@ -92,6 +92,7 @@ REDEF util
 
 echo "#undef conf_print"
 echo "#define conf_print       PREFIX(conf_print)"
+echo
 
 echo "#undef dv_t"
 echo "#define dv_t	PREFIX(dv_t)"
