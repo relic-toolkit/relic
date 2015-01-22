@@ -51,7 +51,7 @@
 #include "relic_pool.h"
 #include "relic_label.h"
 
-#ifdef MULTI
+#if MULTI != NONE
 #include <math.h>
 
 #if MULTI == OPENMP
@@ -60,7 +60,7 @@
 #include <pthread.h>
 #endif /* OPENMP */
 
-#endif /* MULTI */
+#endif /* MULTI != NONE */
 
 /*============================================================================*/
 /* Constant definitions                                                       */
