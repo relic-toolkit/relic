@@ -1,36 +1,45 @@
 message(STATUS "Binary field arithmetic configuration (FB module):\n")
 
-message("   ** Options for the binary elliptic curve module (default = 283,0,on,on,on):")
+message("   ** Options for the binary elliptic curve module (default = 283,0,on,on,on):\n")
+
 message("      FB_POLYN=n        The irreducible polynomial size in bits.")
 message("      FB_KARAT=n        The number of Karatsuba levels.") 
 message("      FB_TRINO=[off|on] Prefer trinomials.")
 message("      FB_SQRTF=[off|on] Prefer square-root friendly polynomials.")
-message("      FB_PRECO=[off|on] Precompute multiplication table for sqrt(z).\n")
+message("      FB_PRECO=[off|on] Precompute multiplication table for sqrt(z).")
 message("      FB_WIDTH=w        Width w in [2,6] of window processing for exponentiation methods.\n")
 
-message("   ** Available binary field arithmetic methods (default = LODAH;TABLE;QUICK;BASIC;QUICK;QUICK;EXGCD;SLIDE;QUICK):")
+message("   ** Available binary field arithmetic methods (default = LODAH;TABLE;QUICK;BASIC;QUICK;QUICK;EXGCD;SLIDE;QUICK):\n")
+
+message("      Field multiplication:")
 message("      FB_METHD=BASIC    Right-to-left shift-and-add multiplication.")
 message("      FB_METHD=INTEG    Integrated modular multiplication.")
 message("      FB_METHD=RCOMB    Right-to-left comb multiplication.")
 message("      FB_METHD=LCOMB    Left-to-right comb multiplication.")
 message("      FB_METHD=LODAH    López-Dahab comb multiplication with window of width 4.\n")
 
+message("      Field squaring:")
 message("      FB_METHD=BASIC    Bit manipulation squaring.")
 message("      FB_METHD=INTEG    Integrated modular squaring.")
 message("      FB_METHD=TABLE    Table-based squaring.\n")
 
+message("      Modular reduction:")
 message("      FB_METHD=BASIC    Shift-and-add modular reduction.")
 message("      FB_METHD=QUICK    Fast reduction modulo a trinomial or pentanomial.\n")
 
+message("      Field square root:")
 message("      FB_METHD=BASIC    Square root by repeated squaring.")
 message("      FB_METHD=QUICK    Fast square root extraction.\n")
 
+message("      Trace computation:")
 message("      FB_METHD=BASIC    Trace computation by repeated squaring.")
 message("      FB_METHD=QUICK    Fast trace computation.\n")
 
+message("      Quadratic equation solver:")
 message("      FB_METHD=BASIC    Solve a quadratic equation by half-trace computation.")
 message("      FB_METHD=QUICK    Fast solving with precomputed half-traces.\n")
 
+message("      Field inversion:")
 message("      FB_METHD=BASIC    Inversion by Fermat's Little Theorem.")
 message("      FB_METHD=BINAR    Binary Inversion algorithm.")
 message("      FB_METHD=ALMOS    Inversion by the Amost inverse algorithm.")
@@ -39,13 +48,14 @@ message("      FB_METHD=ITOHT    Inversion by Itoh-Tsuji.")
 message("      FB_METHD=BRUCH    Hardware-friendly inversion by Brunner et al.") 
 message("      FB_METHD=LOWER    Pass inversion to the lower level.\n")
 
+message("      Field exponentiation:")
 message("      FB_METHD=BASIC    Binary exponentiation.")
 message("      FB_METHD=SLIDE    Sliding window exponentiation.")
 message("      FB_METHD=MONTY    Constant-time Montgomery powering ladder.\n")
 
+message("      Iterated squaring/square-root:")
 message("      FB_METHD=BASIC    Iterated squaring/square-root by consecutive squaring/square-root.")
 message("      FB_METHD=QUICK    Iterated squaring/square-root by table-based method.\n")
-message("      Note: these methods must be given in order. Ex: FB_METHD=\"INTEG;INTEG;QUICK;QUICK;QUICK;QUICK;ALMOS;BASIC;BASIC\"\n")
 
 # Choose the polynomial size.
 if (NOT FB_POLYN)

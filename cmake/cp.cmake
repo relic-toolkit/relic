@@ -1,15 +1,15 @@
 message(STATUS "Cryptographic protocols configuration (CP module):\n")
 
-message("   ** Options for the cryptographic protocols module (default = PKCS1):")
+message("   ** Options for the cryptographic protocols module (default = PKCS1):\n")
+
 message("      CP_RSAPD=BASIC    RSA with basic padding.")
 message("      CP_RSAPD=PKCS1    RSA with PKCS#1 v1.5 padding.")
 message("      CP_RSAPD=PKCS2    RSA with PKCS#1 v2.1 padding.\n")
 
-message("   ** Available cryptographic protocols methods (default = QUICK;BASIC):")
+message("   ** Available cryptographic protocols methods (default = QUICK;BASIC):\n")
+
 message("      CP_METHD=BASIC    Slow RSA decryption/signature.")
 message("      CP_METHD=QUICK    Fast RSA decryption/signature using CRT.\n")
-
-message("      Note: these methods must be given in order. Ex: CP_METHD=\"QUICK\"\n")
 
 if (NOT CP_RSAPD)
 	set(CP_RSAPD "PKCS1")
