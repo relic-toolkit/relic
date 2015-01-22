@@ -81,7 +81,7 @@
 /** Intel x86-compatible 32-bit architecture. */
 #define X86      5
 /** AMD64-compatible 64-bit architecture. */
-#define X64      6 
+#define X64      6
 /** Architecture. */
 #define ARCH	 @ARCH@
 
@@ -105,6 +105,8 @@
 #cmakedefine WITH_EPX
 /** Build binary elliptic curve module. */
 #cmakedefine WITH_EB
+/** Build elliptic Edwards curve module. */
+#cmakedefine WITH_ED
 /** Build elliptic curve cryptography module. */
 #cmakedefine WITH_EC
 /** Build pairings over prime curves module. */
@@ -174,7 +176,7 @@
 /** Chosen multiple precision modular exponentiation method. */
 #define BN_MXP   @BN_MXP@
 
-/** Basic Euclidean GCD Algorithm. */ 
+/** Basic Euclidean GCD Algorithm. */
 #define BASIC    1
 /** Lehmer's fast GCD Algorithm. */
 #define LEHME    2
@@ -201,7 +203,7 @@
 #define FP_KARAT @FP_KARAT@
 /** Prefer Pseudo-Mersenne primes over random primes. */
 #cmakedefine FP_PMERS
-/** Use -1 as quadratic non-residue. */ 
+/** Use -1 as quadratic non-residue. */
 #cmakedefine FP_QNRES
 /** Width of window processing for exponentiation methods. */
 #define FP_WIDTH @FP_WIDTH@
@@ -252,8 +254,8 @@
 #define EXGCD    4
 /** Use implementation provided by the lower layer. */
 #define LOWER    7
-/** Chosen prime field inversion method. */ 
-#define FP_INV   @FP_INV@ 
+/** Chosen prime field inversion method. */
+#define FP_INV   @FP_INV@
 
 /** Binary modular exponentiation. */
 #define BASIC    1
@@ -272,21 +274,21 @@
 /** Integrated extension field arithmetic. */
 #define INTEG    3
 /* Chosen extension field arithmetic method. */
-#define FPX_QDR   @FPX_QDR@ 
+#define FPX_QDR   @FPX_QDR@
 
 /** Basic cubic extension field arithmetic. */
 #define BASIC    1
 /** Integrated extension field arithmetic. */
 #define INTEG    3
 /* Chosen extension field arithmetic method. */
-#define FPX_CBC   @FPX_CBC@ 
+#define FPX_CBC   @FPX_CBC@
 
 /** Basic quadratic extension field arithmetic. */
 #define BASIC    1
 /** Lazy-reduced extension field arithmetic. */
 #define LAZYR    2
 /* Chosen extension field arithmetic method. */
-#define FPX_RDC   @FPX_RDC@ 
+#define FPX_RDC   @FPX_RDC@
 
 /** Prime extension field arithmetic method */
 #define FPX_METHD "@FPX_METHD@"
@@ -369,7 +371,7 @@
 /** Use implementation provided by the lower layer. */
 #define LOWER    7
 /** Chosen binary field inversion method. */
-#define FB_INV   @FB_INV@ 
+#define FB_INV   @FB_INV@
 
 /** Binary modular exponentiation. */
 #define BASIC    1
@@ -412,24 +414,24 @@
 /** Chosen prime elliptic curve coordinate method. */
 #define EP_ADD	 @EP_ADD@
 
-/** Binary point multiplication. */ 
+/** Binary point multiplication. */
 #define BASIC	 1
-/** Sliding window. */ 
+/** Sliding window. */
 #define SLIDE    2
 /** Montgomery powering ladder. */
 #define MONTY	 3
-/** Left-to-right Width-w NAF. */ 
+/** Left-to-right Width-w NAF. */
 #define LWNAF	 4
 /** Chosen prime elliptic curve point multiplication method. */
 #define EP_MUL	 @EP_MUL@
 
-/** Binary point multiplication. */ 
+/** Binary point multiplication. */
 #define BASIC	 1
 /** Yao's windowing method. */
 #define YAOWI	 2
-/** NAF windowing method. */ 
+/** NAF windowing method. */
 #define NAFWI	 3
-/** Left-to-right Width-w NAF. */ 
+/** Left-to-right Width-w NAF. */
 #define LWNAF	 4
 /** Single-table comb method. */
 #define COMBS	 5
@@ -447,7 +449,7 @@
 /** Joint sparse form. */
 #define JOINT    4
 /** Chosen prime elliptic curve simulteanous point multiplication method. */
-#define EP_SIM   @EP_SIM@ 
+#define EP_SIM   @EP_SIM@
 
 /** Prime elliptic curve arithmetic method. */
 #define EP_METHD "@EP_METHD@"
@@ -470,31 +472,31 @@
 
 /** Affine coordinates. */
 #define BASIC	 1
-/** López-Dahab Projective coordinates. */
+/** Lï¿½pez-Dahab Projective coordinates. */
 #define PROJC	 2
 /** Chosen binary elliptic curve coordinate method. */
 #define EB_ADD	 @EB_ADD@
 
-/** Binary point multiplication. */ 
+/** Binary point multiplication. */
 #define BASIC	 1
-/** López-Dahab point multiplication. */
+/** Lï¿½pez-Dahab point multiplication. */
 #define LODAH	 2
 /** Halving. */
 #define HALVE    3
-/** Left-to-right width-w (T)NAF. */ 
+/** Left-to-right width-w (T)NAF. */
 #define LWNAF	 4
-/** Right-to-left width-w (T)NAF. */ 
+/** Right-to-left width-w (T)NAF. */
 #define RWNAF	 5
 /** Chosen binary elliptic curve point multiplication method. */
 #define EB_MUL	 @EB_MUL@
 
-/** Binary point multiplication. */ 
+/** Binary point multiplication. */
 #define BASIC	 1
 /** Yao's windowing method. */
 #define YAOWI	 2
-/** NAF windowing method. */ 
+/** NAF windowing method. */
 #define NAFWI	 3
-/** Left-to-right Width-w NAF. */ 
+/** Left-to-right Width-w NAF. */
 #define LWNAF	 4
 /** Single-table comb method. */
 #define COMBS	 5
@@ -512,15 +514,64 @@
 /** Joint sparse form. */
 #define JOINT    4
 /** Chosen binary elliptic curve simulteanous point multiplication method. */
-#define EB_SIM   @EB_SIM@ 
+#define EB_SIM   @EB_SIM@
 
 /** Prefer curves with efficient endomorphisms. */
 #cmakedefine EC_ENDOM
+
+/** Binary point multiplication. */
+#define BASIC	 1
+/** Sliding window. */
+#define SLIDE    2
+/** Montgomery powering ladder. */
+#define MONTY	 3
+/** Left-to-right Width-w NAF. */
+#define LWNAF	 4
+/** Left-to-right Width-w NAF with mixed coordinates. */
+#define LWNAF_MIXED	 7
+/** Chosen prime elliptic twisted Edwards curve point multiplication method. */
+#define ED_MUL	 @ED_MUL@
+
+#define ED_PLAIN
+
+/** Build precomputation table for generator. */
+#cmakedefine ED_PRECO
+/** Width of precomputation table for fixed point methods. */
+#define ED_DEPTH @ED_DEPTH@
+/** Width of window processing for unknown point methods. */
+#define ED_WIDTH @ED_WIDTH@
+
+/** Simple projective twisted Edwards coordinates */
+#define PROJC	 2
+/** Extended projective twisted Edwards coordinates */
+#define EXTND	 3
+/** Chosen binary elliptic curve coordinate method. */
+#define ED_ADD	 @ED_ADD@
+
+/** Binary point multiplication. */
+#define BASIC	 1
+/** Yao's windowing method. */
+#define YAOWI	 2
+/** NAF windowing method. */
+#define NAFWI	 3
+/** Left-to-right Width-w NAF. */
+#define LWNAF	 4
+/** Single-table comb method. */
+#define COMBS	 5
+/** Double-table comb method. */
+#define COMBD    6
+/** Chosen prime elliptic twisted Edwards curve point multiplication method. */
+#define ED_FIX	 @ED_FIX@
+
+/** Chosen prime elliptic curve simulteanous point multiplication method. */
+#define ED_SIM   @ED_SIM@
 
 /** Prime curves. */
 #define PRIME    1
 /** Binary curves. */
 #define CHAR2    2
+/** Edwards curves */
+#define EDWARD   3
 /** Chosen elliptic curve type. */
 #define EC_CUR	 @EC_CUR@
 
@@ -535,7 +586,7 @@
 /** Lazy-reduced extension field arithmetic. */
 #define LAZYR    2
 /* Chosen extension field arithmetic method. */
-#define PP_EXT   @PP_EXT@ 
+#define PP_EXT   @PP_EXT@
 
 /** Bilinear pairing method. */
 #define PP_METHD "@PP_METHD@"

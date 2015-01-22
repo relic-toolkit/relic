@@ -53,6 +53,10 @@ if (WITH_EB)
 	ADD_MODULE(eb)
 endif(WITH_EB)
 
+if (WITH_ED)
+	ADD_MODULE(ed)
+endif (WITH_ED)
+
 if (WITH_EC)
 	ADD_MODULE(ec)
 endif(WITH_EC)

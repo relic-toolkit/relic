@@ -45,6 +45,7 @@
 #include "relic_bn.h"
 #include "relic_eb.h"
 #include "relic_epx.h"
+#include "relic_ed.h"
 #include "relic_conf.h"
 #include "relic_bench.h"
 #include "relic_rand.h"
@@ -323,7 +324,7 @@ typedef struct _ctx_t {
 	/** The order of the group of points in the elliptic curve. */
 	bn_st ep2_r;
 	/** The cofactor of the group order in the elliptic curve. */
-	bn_st ep2_h;	
+	bn_st ep2_h;
 	/** Flag that stores if the prime curve is a twist. */
 	int ep2_is_twist;
 #ifdef EP_PRECO
@@ -337,6 +338,28 @@ typedef struct _ctx_t {
 	fp2_st _ep2_pre[3 * EP_TABLE];
 #endif /* ALLOC == STACK */
 #endif /* WITH_EPX */
+
+#ifdef WITH_ED
+	/** Identifier of the currently configured prime Twisted Edwards elliptic curve. */
+	int ed_id;
+	/** The 'a' coefficient of the Twisted Edwards elliptic curve. */
+	fp_st ed_a;
+	/** The 'd' coefficient of the Twisted Edwards elliptic curve. */
+	fp_st ed_d;
+	/** The generator of the elliptic curve. */
+	ed_st ed_g;
+	/** The order of the group of points in the elliptic curve. */
+	bn_st ed_r;
+	/** The cofactor of the Twisted Edwards elliptic curve */
+	bn_st ed_h;
+
+#ifdef ED_PRECO
+	/** Precomputation table for generator multiplication. */
+	ed_st ed_pre[ED_TABLE];
+	/** Array of pointers to the precomputation table. */
+	ed_st *ed_ptr[ED_TABLE];
+#endif /* ED_PRECO */
+#endif
 
 #ifdef WITH_PP
 	/** Constants for computing Frobenius maps in higher extensions. @{ */

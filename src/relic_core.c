@@ -122,6 +122,9 @@ int core_init(void) {
 #ifdef WITH_EB
 		eb_curve_init();
 #endif
+#ifdef WITH_ED
+		ed_curve_init();
+#endif
 #ifdef WITH_PP
 		pp_map_init();
 #endif
@@ -149,6 +152,9 @@ int core_clean(void) {
 #endif
 #ifdef WITH_EB
 	eb_curve_clean();
+#endif
+#ifdef WITH_ED
+	ed_curve_clean();
 #endif
 #ifdef WITH_PP
 	pp_map_clean();
