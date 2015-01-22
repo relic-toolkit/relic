@@ -648,10 +648,12 @@
 /** Detected operation system. */
 #define OPSYS    @OPSYS@
 
+/** No multithreading. */
+#define NONE     1
 /** OpenMP multithreading support. */
-#define OPENMP   1
+#define OPENMP   2
 /** POSIX multithreading support. */
-#define PTHREAD  2
+#define PTHREAD  3
 /** Chosen multithreading API. */
 #cmakedefine MULTI    @MULTI@
 
