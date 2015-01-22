@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 2.8)
 
 set(PROJECT_VERSION_MAJOR "0")
 set(PROJECT_VERSION_MINOR "4")
-set(PROJECT_VERSION_PATCH "0")
+set(PROJECT_VERSION_PATCH "1")
 set(PROJECT_VERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}")
 set(VERSION ${PROJECT_VERSION})
 
@@ -17,7 +17,8 @@ set(WFLAGS "-Wall")
 
 message("\n-- Configuring ${PROJECT_NAME} ${PROJECT_VERSION}...\n")
 
-message(STATUS "Available switches (default = CHECK, VERBS, DOCUM):")
+message(STATUS "Available switches (default = CHECK, VERBS, DOCUM):\n")
+
 message("   DEBUG=[off|on] Build with debugging support.")
 message("   PROFL=[off|on] Build with profiling support.")
 message("   CHECK=[off|on] Build with error-checking support.")
@@ -48,14 +49,17 @@ option(SHLIB "Build shared library" on)
 option(STLIB "Build static library" on)
 option(STBIN "Build static binaries" off)
 
-message(STATUS "Number of times each test or benchmark is ran (default = 50, 1000):")
+message(STATUS "Number of times each test or benchmark is ran (default = 50, 1000):\n")
+
 message("   TESTS=n        If n > 0, build automated tests and run them n times.")
 message("   BENCH=n        If n > 0, build automated benchmarks and run them n * n times.\n")
 
-message(STATUS "Number of available processor cores (default = 1):")
+message(STATUS "Number of available processor cores (default = 1):\n")
+
 message("   CORES=n        If n > 1, please enable multithreading support.\n")
 
-message(STATUS "Available modules (default = ALL)")
+message(STATUS "Available modules (default = ALL)\n")
+
 message("   WITH=BN       Multiple precision arithmetic.")
 message("   WITH=DV       Temporary double-precision digit vectors.")
 message("   WITH=FP       Prime field arithmetic.")
@@ -74,17 +78,20 @@ message("   WITH=CP       Cryptographic protocols.")
 message("   WITH=ALL      All of the above.")
 message("   Note: the programmer is responsible for not using unselected modules.\n")
 
-message(STATUS "Available arithmetic backends (default = easy):")
+message(STATUS "Available arithmetic backends (default = easy):\n")
+
 message("   ARITH=easy     Easy-to-understand implementation.")
 message("   ARITH=gmp      GNU Multiple Precision library.\n")
 
-message(STATUS "Available memory-allocation policies (default = AUTO):")
+message(STATUS "Available memory-allocation policies (default = AUTO):\n")
+
 message("   ALLOC=AUTO     All memory is automatically allocated.")
 message("   ALLOC=STATIC   All memory is allocated statically once.")
 message("   ALLOC=DYNAMIC  All memory is allocated dynamically on demand.")
 message("   ALLOC=STACK    All memory is allocated from the stack.\n")
 
-message(STATUS "Supported operating systems (default = LINUX):")
+message(STATUS "Supported operating systems (default = LINUX):\n")
+
 message("   OPSYS=NONE     Undefined/No operating system.")
 message("   OPSYS=LINUX    GNU/Linux operating system.")
 message("   OPSYS=FREEBSD  FreeBSD operating system.")
@@ -93,11 +100,12 @@ message("   OPSYS=WINDOWS  Windows operating system.")
 message("   OPSYS=DROID    Android operating system.")
 message("   OPSYS=DUINO    Arduino platform.\n")
 
-message(STATUS "Supported multithreading APIs.")
+message(STATUS "Supported multithreading APIs (default = NONE):\n")
 message("   MULTI=OPENMP   Open Multi-Processing.")
 message("   MULTI=PTHREAD  POSIX threads.\n")
 
-message(STATUS "Supported timers (default = HPROC):")
+message(STATUS "Supported timers (default = HPROC):\n")
+
 message("   TIMER=NONE     No timer.")
 message("   TIMER=HREAL    GNU/Linux realtime high-resolution timer.")
 message("   TIMER=HPROC    GNU/Linux per-process high-resolution timer.")
@@ -106,7 +114,8 @@ message("   TIMER=ANSI     ANSI-compatible timer.")
 message("   TIMER=POSIX    POSIX-compatible timer.")
 message("   TIMER=CYCLE    Cycle-counting timer. (architecture-dependant)\n")
 
-message(STATUS "Prefix to identify this build of the library (default = \"\"):")
+message(STATUS "Prefix to identify this build of the library (default = \"\"):\n")
+
 message("   LABEL=relic\n")
 
 include(cmake/arch.cmake)
