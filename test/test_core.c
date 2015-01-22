@@ -71,7 +71,7 @@ int main(void) {
 
 	code = STS_OK;
 
-#ifdef MULTI
+#if MULTI != NONE
 	TEST_ONCE("library context is thread-safe") {
 	omp_set_num_threads(CORES);
 #pragma omp parallel shared(code)
