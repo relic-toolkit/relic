@@ -36,11 +36,11 @@
  * Parameters for the Curve25519 prime elliptic curve.
  */
 /** @{ */
-#define CURVE_ED25519_A	"7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffec"
-#define CURVE_ED25519_D "52036cee2b6ffe738cc740797779e89800700a4d4141d8ab75eb4dca135978a3"
+#define CURVE_ED25519_A	"7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEC"
+#define CURVE_ED25519_D "52036CEE2B6FFE738CC740797779E89800700A4D4141D8AB75EB4DCA135978A3"
 #define CURVE_ED25519_Y	"6666666666666666666666666666666666666666666666666666666666666658"
-#define CURVE_ED25519_X "216936d3cd6e53fec0a4e231fdd6dc5c692cc7609525a7b2c9562d608f25d51a"
-#define CURVE_ED25519_R "1000000000000000000000000000000014def9dea2f79cd65812631a5cf5d3ed"
+#define CURVE_ED25519_X "216936D3CD6E53FEC0A4E231FDD6DC5C692CC7609525A7B2C9562D608F25D51A"
+#define CURVE_ED25519_R "1000000000000000000000000000000014DEF9DEA2F79CD65812631A5CF5D3ED"
 #define CURVE_ED25519_H "0000000000000000000000000000000000000000000000000000000000000008"
 /** @} */
 #endif
@@ -51,15 +51,15 @@ void ed_recover_x(fp_t x, const fp_t y, const fp_t d, const fp_t a) {
 	fp_null(tmpFP1);
 	fp_new(tmpFP1);
 
-  // x = +/- sqrt((y^2 - 1) / (dy^2 - a))
-  fp_sqr(x, y);
-  fp_copy(tmpFP1, x);
-  fp_sub_dig(x, x, 1);
-  fp_mul(tmpFP1, tmpFP1, d);
-  fp_sub(tmpFP1, tmpFP1, a);
-  fp_inv(tmpFP1, tmpFP1);
-  fp_mul(x, x, tmpFP1);
-  fp_srt(x, x);
+	// x = +/- sqrt((y^2 - 1) / (dy^2 - a))
+	fp_sqr(x, y);
+	fp_copy(tmpFP1, x);
+	fp_sub_dig(x, x, 1);
+	fp_mul(tmpFP1, tmpFP1, d);
+	fp_sub(tmpFP1, tmpFP1, a);
+	fp_inv(tmpFP1, tmpFP1);
+	fp_mul(x, x, tmpFP1);
+	fp_srt(x, x);
 
   /*
 	fp_mul(x, y, y);
@@ -100,76 +100,82 @@ void ed_recover_x(fp_t x, const fp_t y, const fp_t d, const fp_t a) {
 	bn_read_str(h, str, strlen(str), 16);
 
 void ed_param_set(int param) {
-	core_get()->ed_id = 0;
-
+	ctx_t *ctx = core_get();
 	char str[2 * FP_BYTES + 2];
 
 	ed_t g;
 	bn_t r;
 	bn_t h;
 
-	ed_new(g);
 	ed_null(g);
-
-	bn_new(r);
 	bn_null(r);
-
-	bn_new(h);
 	bn_null(h);
 
-	switch(param) {
-#if FP_PRIME == 255
-		case CURVE_ED25519:
-			ASSIGN_ED(CURVE_ED25519, PRIME_25519);
-			break;
-#else
-	#error "No edwards curve supported with used FP_PRIME value."
-#endif
-	}
+	TRY {
+		ed_new(g);
+		bn_new(r);
+		bn_new(h);
 
-	bn_copy(&core_get()->ed_h, h);
-	bn_copy(&core_get()->ed_r, r);
+		core_get()->ed_id = 0;
+
+		switch(param) {
+#if FP_PRIME == 255
+			case CURVE_ED25519:
+				ASSIGN_ED(CURVE_ED25519, PRIME_25519);
+				break;
+#endif
+			default:
+				(void)str;
+				THROW(ERR_NO_VALID);
+				break;
+		}
+
+		bn_copy(&core_get()->ed_h, h);
+		bn_copy(&core_get()->ed_r, r);
 
 #if ED_ADD == PROJC
-  ed_copy(&core_get()->ed_g, g);
+		ed_copy(&core_get()->ed_g, g);
 #elif ED_ADD == EXTND
-  ed_projc_to_extnd(&core_get()->ed_g, g->x, g->y, g->z);
+		ed_projc_to_extnd(&core_get()->ed_g, g->x, g->y, g->z);
 #endif
 
-	ctx_t *ctx = core_get();
 #ifdef ED_PRECO
-	for (int i = 0; i < ED_TABLE; i++) {
-		ctx->ed_ptr[i] = &(ctx->ed_pre[i]);
-	}
+		for (int i = 0; i < ED_TABLE; i++) {
+			ctx->ed_ptr[i] = &(ctx->ed_pre[i]);
+		}
 #endif
 #if ALLOC == STATIC
-	fp_new(ctx->ed_g.x);
-	fp_new(ctx->ed_g.y);
-	fp_new(ctx->ed_g.z);
+		fp_new(ctx->ed_g.x);
+		fp_new(ctx->ed_g.y);
+		fp_new(ctx->ed_g.z);
 #if ED_ADD == EXTND
-  fp_new(ctx->ed_g.t);
+  		fp_new(ctx->ed_g.t);
 #endif
 #ifdef ED_PRECO
-	for (int i = 0; i < ED_TABLE; i++) {
-		fp_new(ctx->ed_pre[i].x);
-		fp_new(ctx->ed_pre[i].y);
-		fp_new(ctx->ed_pre[i].z);
+		for (int i = 0; i < ED_TABLE; i++) {
+			fp_new(ctx->ed_pre[i].x);
+			fp_new(ctx->ed_pre[i].y);
+			fp_new(ctx->ed_pre[i].z);
 #if ED_ADD == EXTND
-    fp_new(ctx->ed_pre[i].t);
+    		fp_new(ctx->ed_pre[i].t);
 #endif
-	}
+		}
 #endif
 #endif
-
 
 #if defined(ED_PRECO)
-	ed_mul_pre((ed_t *)ed_curve_get_tab(), &ctx->ed_g);
+		ed_mul_pre((ed_t *)ed_curve_get_tab(), &ctx->ed_g);
 #endif
-
-	bn_free(r);
-	bn_free(h);
-	ed_free(g);
-	ctx->ed_id = param;
+		ctx->ed_id = param;
+	}
+	CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	}
+	FINALLY {
+		bn_free(r);
+		bn_free(h);
+		ed_free(g);
+	}
 }
 
 int ed_param_set_any(void) {
@@ -188,7 +194,6 @@ int ed_param_level() {
 	}
 	return 0;
 }
-
 
 void ed_param_print(void) {
 	switch (ed_param_get()) {
