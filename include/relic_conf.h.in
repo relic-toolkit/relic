@@ -655,7 +655,7 @@
 /** POSIX multithreading support. */
 #define PTHREAD  3
 /** Chosen multithreading API. */
-#cmakedefine MULTI    @MULTI@
+#define MULTI    @MULTI@
 
 /** No timer. */
 #define NONE     1
