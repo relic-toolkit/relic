@@ -89,18 +89,6 @@ void fp2_dblm_low(fp2_t c, fp2_t a) {
 	fp_dblm_low(c[1], a[1]);
 }
 
-void fp2_add_basic(fp2_t c, fp2_t a, fp2_t b) {
-
-}
-
-void fp2_dbl_basic(fp2_t c, fp2_t a) {
-
-}
-
-void fp2_mul_art(fp2_t c, fp2_t a) {
-
-}
-
 void fp2_norm_low(fp2_t c, fp2_t a) {
 	fp2_t t;
 	bn_t b;
