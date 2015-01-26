@@ -23,7 +23,7 @@
 /**
  * @file
  *
- * Implementation of the point multiplication on prime elliptic curves.
+ * Implementation of the point multiplication on Twisted Edwards elliptic curves.
  *
  * @version $Id$
  * @ingroup ed
