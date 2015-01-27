@@ -291,7 +291,7 @@ void ep_write_bin(uint8_t *bin, int len, const ep_t a, int pack) {
 		ep_norm(t, a);
 
 		if (pack) {
-			if (len != FP_BYTES + 1) {
+			if (len < FP_BYTES + 1) {
 				THROW(ERR_NO_BUFFER);	
 			} else {
 				ep_pck(t, t);
@@ -299,7 +299,7 @@ void ep_write_bin(uint8_t *bin, int len, const ep_t a, int pack) {
 				fp_write_bin(bin + 1, FP_BYTES, t->x);
 			}
 		} else {
-			if (len != 2 * FP_BYTES + 1) {
+			if (len < 2 * FP_BYTES + 1) {
 				THROW(ERR_NO_BUFFER);
 			} else {
 				bin[0] = 4;

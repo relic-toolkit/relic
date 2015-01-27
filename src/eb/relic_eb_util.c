@@ -752,7 +752,7 @@ void eb_write_bin(uint8_t *bin, int len, const eb_t a, int pack) {
 		eb_norm(t, a);
 
 		if (pack) {
-			if (len != FB_BYTES + 1) {
+			if (len < FB_BYTES + 1) {
 				THROW(ERR_NO_BUFFER);	
 			} else {
 				eb_pck(t, t);
@@ -760,7 +760,7 @@ void eb_write_bin(uint8_t *bin, int len, const eb_t a, int pack) {
 				fb_write_bin(bin + 1, FB_BYTES, t->x);
 			}
 		} else {
-			if (len != 2 * FB_BYTES + 1) {
+			if (len < 2 * FB_BYTES + 1) {
 				THROW(ERR_NO_BUFFER);
 			} else {
 				bin[0] = 4;
