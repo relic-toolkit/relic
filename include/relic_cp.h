@@ -157,7 +157,7 @@ typedef bdpe_st *bdpe_t;
 #endif
 
 /**
- * Represents a SOK key pair.
+ * Represents a SOKAKA key pair.
  */
 typedef struct _sokaka {
 	/** The private key in G_1. */
@@ -167,7 +167,7 @@ typedef struct _sokaka {
 } sokaka_st;
 
 /**
- * Pointer to SOK key pair.
+ * Pointer to SOKAKA key pair.
  */
 #if ALLOC == AUTO
 typedef sokaka_st sokaka_t[1];
@@ -1028,6 +1028,7 @@ int cp_phpe_dec(uint8_t *out, int out_len, uint8_t *in, int in_len, bn_t n,
  *
  * @param[out] d			- the private key.
  * @param[in] q				- the public key.
+ * @return STS_OK if no errors occurred, STS_ERR otherwise.
  */
 int cp_ecdh_gen(bn_t d, ec_t q);
 
@@ -1168,20 +1169,22 @@ int cp_ecss_sig(bn_t e, bn_t s, uint8_t *msg, int len, bn_t d);
 int cp_ecss_ver(bn_t e, bn_t s, uint8_t *msg, int len, ec_t q);
 
 /**
- * Generates a master key for the SOK identity-based non-interactive
+ * Generates a master key for the SOKAKA identity-based non-interactive
  * authenticated key agreement protocol.
  *
  * @param[out] master			- the master key.
+ * @return STS_OK if no errors occurred, STS_ERR otherwise.
  */
 int cp_sokaka_gen(bn_t master);
 
 /**
- * Generates a private key for the SOK protocol.
+ * Generates a private key for the SOKAKA protocol.
  *
  * @param[out] k				- the private key.
  * @param[in] id				- the identity.
  * @param[in] len				- the length of identity in bytes.
  * @param[in] master			- the master key.
+ * @return STS_OK if no errors occurred, STS_ERR otherwise.
  */
 int cp_sokaka_gen_prv(sokaka_t k, char *id, int len, bn_t master);
 
@@ -1198,6 +1201,52 @@ int cp_sokaka_gen_prv(sokaka_t k, char *id, int len, bn_t master);
  */
 int cp_sokaka_key(uint8_t *key, unsigned int key_len, char *id1, int len1,
 		sokaka_t k, char *id2, int len2);
+
+/**
+ * Generates a master key for a Private Key Generator (PKG) in the
+ * Boneh-Franklin Identity-Based Encryption (BF-IBE).
+ *
+ * @param[out] master			- the master key.
+ * @param[out] pub 				- the public key of the private key generator.
+ * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ */
+int cp_ibe_gen(bn_t master, g1_t pub);
+
+/**
+ * Generates a private key for a user in the BF-IBE protocol.
+ *
+ * @param[out] prv				- the private key.
+ * @param[in] id				- the identity.
+ * @param[in] len				- the length of identity in bytes.
+ * @param[in] s					- the master key.
+ * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ */
+int cp_ibe_gen_prv(g2_t prv, char *id, int len, bn_t master);
+
+/**
+ * Encrypts a message in the BF-IBE protocol.
+ *
+ * @param[out] out			- the output buffer.
+ * @param[in, out] out_len	- the buffer capacity and number of bytes written.
+ * @param[in] in			- the input buffer.
+ * @param[in] in_len		- the number of bytes to encrypt.
+ * @param[in] pub			- the public key of the PKG.
+ * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ */
+int cp_ibe_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len,
+		char *id, int len, g1_t pub);
+
+/**
+ * Decrypts a message in the BF-IBE protocol.
+ *
+ * @param[out] out			- the output buffer.
+ * @param[in, out] out_len	- the buffer capacity and number of bytes written.
+ * @param[in] in			- the input buffer.
+ * @param[in] in_len		- the number of bytes to decrypt.
+ * @param[in] pub			- the private key of the user.
+ * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ */
+int cp_ibe_dec(uint8_t *out, int *out_len, uint8_t *in, int in_len, g2_t prv);
 
 /**
  * Generates a BLS key pair.
