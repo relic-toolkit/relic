@@ -88,12 +88,12 @@
 /**
  * Positive sign of a multiple precision integer.
  */
-#define BN_POS		(0)
+#define BN_POS		0
 
 /**
  * Negative sign of a multiple precision integer.
  */
-#define BN_NEG		(1)
+#define BN_NEG		1
 
 /*============================================================================*/
 /* Type definitions                                                           */
