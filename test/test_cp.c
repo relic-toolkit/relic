@@ -776,6 +776,145 @@ static int sokaka(void) {
 	return code;
 }
 
+static int bgn(void) {
+	int code = STS_ERR;
+	bgn_t pub, prv;
+	g1_t c0, c1, c2, c3;
+	g2_t d0, d1, d2, d3;
+	dig_t in, out;
+	int result;
+
+	g1_null(c0);
+	g1_null(c1);
+	g1_null(c2);
+	g1_null(c3);
+	g2_null(d0);
+	g2_null(d1);
+	g2_null(d2);
+	g2_null(d3);
+	bgn_null(pub);
+	bgn_null(prv);
+
+	TRY {
+		g1_new(c0);
+		g1_new(c1);
+		g1_new(c2);
+		g1_new(c3);
+		g2_new(d0);
+		g2_new(d1);
+		g2_new(d2);
+		g2_new(d3);
+		bgn_new(pub);
+		bgn_new(prv);
+
+		result = cp_bgn_gen(pub, prv);
+
+		TEST_BEGIN("boneh-go-nissim encryption/decryption is correct") {
+			TEST_ASSERT(result == STS_OK, end);
+			rand_bytes((unsigned char *)&in, 1);
+			in = in % bn_get_prime(47);
+			TEST_ASSERT(cp_bgn_enc1(c0, c1, in, pub) == STS_OK, end);
+			TEST_ASSERT(cp_bgn_dec1(&out, c0, c1, prv) == STS_OK, end);
+			TEST_ASSERT(in == out, end);
+			rand_bytes((unsigned char *)&in, 1);
+			in = in % bn_get_prime(47);
+			TEST_ASSERT(cp_bgn_enc2(d0, d1, in, pub) == STS_OK, end);
+			TEST_ASSERT(cp_bgn_dec2(&out, d0, d1, prv) == STS_OK, end);
+			TEST_ASSERT(in == out, end);
+		} TEST_END;
+
+		TEST_BEGIN("boneh-go-nissim encryption/decryption is homomorphic") {
+			TEST_ASSERT(result == STS_OK, end);
+			rand_bytes((unsigned char *)&in, 1);
+			in = in % bn_get_prime(47);
+			rand_bytes((unsigned char *)&out, 1);
+			out = out % bn_get_prime(47);
+			TEST_ASSERT(cp_bgn_enc1(c0, c1, in, pub) == STS_OK, end);
+			TEST_ASSERT(cp_bgn_enc1(c2, c3, out, pub) == STS_OK, end);
+			in = in + out;
+			g1_add(c0, c0, c2);
+			g1_add(c1, c1, c3);
+			g1_norm(c0, c0);
+			g1_norm(c1, c1);
+			TEST_ASSERT(cp_bgn_dec1(&out, c0, c1, prv) == STS_OK, end);
+			TEST_ASSERT(in == out, end);
+			rand_bytes((unsigned char *)&in, 1);
+			in = in % bn_get_prime(47);
+			rand_bytes((unsigned char *)&out, 1);
+			out = out % bn_get_prime(47);
+			TEST_ASSERT(cp_bgn_enc2(d0, d1, in, pub) == STS_OK, end);
+			TEST_ASSERT(cp_bgn_enc2(d2, d3, out, pub) == STS_OK, end);
+			in = in + out;
+			g2_add(d0, d0, d2);
+			g2_add(d1, d1, d3);
+			g2_norm(d0, d0);
+			g2_norm(d1, d1);
+			TEST_ASSERT(cp_bgn_dec2(&out, d0, d1, prv) == STS_OK, end);
+			TEST_ASSERT(in == out, end);
+		} TEST_END;
+
+	} CATCH_ANY {
+		ERROR(end);
+	}
+	code = STS_OK;
+
+  end:
+	g1_free(c0);
+	g1_free(c1);
+	g1_free(c2);
+	g1_free(c3);
+	g2_free(d0);
+	g2_free(d1);
+	g2_free(d2);
+	g2_free(d3);
+	bgn_free(pub);
+	bgn_free(prv);
+	return code;
+}
+
+static int ibe(void) {
+	int code = STS_ERR;
+	bn_t s;
+	g1_t pub;
+	g2_t prv;
+	uint8_t in[10], out[10 + 2 * FP_BYTES + 1];
+	char id[5] = { 'A', 'l', 'i', 'c', 'e' };
+	int il, ol;
+	int result;
+
+	bn_null(s);
+	g1_null(pub);
+	g2_null(prv);
+
+	TRY {
+		bn_new(s);
+		g1_new(pub);
+		g2_new(prv);
+
+		result = cp_ibe_gen(s, pub);
+
+		TEST_BEGIN("boneh-franklin identity-based encryption/decryption is correct") {
+			TEST_ASSERT(result == STS_OK, end);
+			il = ol = 10;
+			ol += 1 + 2 * FP_BYTES;
+			rand_bytes(in, il);
+			TEST_ASSERT(cp_ibe_gen_prv(prv, id, 5, s) == STS_OK, end);
+			TEST_ASSERT(cp_ibe_enc(out, &ol, in, il, id, 5, pub) == STS_OK, end);
+			TEST_ASSERT(cp_ibe_dec(out, &il, out, ol, prv) == STS_OK, end);
+			TEST_ASSERT(memcmp(in, out, il) == 0, end);
+		} TEST_END;
+	} CATCH_ANY {
+		ERROR(end);
+	}
+	code = STS_OK;
+
+  end:
+	bn_free(s);
+	g1_free(pub);
+	g2_free(prv);
+	return code;
+}
+
 static int bls(void) {
 	int code = STS_ERR;
 	bn_t d;
@@ -926,6 +1065,16 @@ int main(void) {
 	if (pc_param_set_any() == STS_OK) {
 
 		if (sokaka() != STS_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (bgn() != STS_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (ibe() != STS_OK) {
 			core_clean();
 			return 1;
 		}
