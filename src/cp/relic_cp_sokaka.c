@@ -44,7 +44,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-int cp_sokaka_gen(bn_t s) {
+int cp_sokaka_gen(bn_t master) {
 	bn_t n;
 	int result = STS_OK;
 
@@ -54,11 +54,7 @@ int cp_sokaka_gen(bn_t s) {
 		bn_new(n);
 
 		g1_get_ord(n);
-
-		do {
-			bn_rand(s, BN_POS, bn_bits(n));
-			bn_mod(s, s, n);
-		} while (bn_is_zero(s));
+		bn_rand_mod(master, n);
 	}
 	CATCH_ANY {
 		result = STS_ERR;
@@ -69,15 +65,15 @@ int cp_sokaka_gen(bn_t s) {
 	return result;
 }
 
-int cp_sokaka_gen_prv(sokaka_t k, char *id, int len, bn_t s) {
+int cp_sokaka_gen_prv(sokaka_t k, char *id, int len, bn_t master) {
 	if (pc_map_is_type1()) {
 		g1_map(k->s1, (uint8_t *)id, len);
-		g1_mul(k->s1, k->s1, s);
+		g1_mul(k->s1, k->s1, master);
 	} else {
 		g1_map(k->s1, (uint8_t *)id, len);
-		g1_mul(k->s1, k->s1, s);
+		g1_mul(k->s1, k->s1, master);
 		g2_map(k->s2, (uint8_t *)id, len);
-		g2_mul(k->s2, k->s2, s);
+		g2_mul(k->s2, k->s2, master);
 	}
 	return STS_OK;
 }

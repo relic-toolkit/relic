@@ -47,11 +47,7 @@ int cp_ibe_gen(bn_t master, g1_t pub) {
 		bn_new(n);
 
 		g1_get_ord(n);
-
-		do {
-			bn_rand(master, BN_POS, bn_bits(n));
-			bn_mod(master, master, n);
-		} while (bn_is_zero(master));
+		bn_rand_mod(master, n);
 
 		/* K_pub = sG. */
 		g1_mul_gen(pub, master);
@@ -114,12 +110,8 @@ int cp_ibe_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len,
 		l = gt_size_bin(e, 0);
 		uint8_t buf[l];
 
-		do {
-			bn_rand(r, BN_POS, bn_bits(n));
-			bn_mod(r, r, n);
-		} while (bn_is_zero(r));
-
 		/* h = H_2(e^r). */
+		bn_rand_mod(r, n);		
 		gt_exp(e, e, r);
 		gt_write_bin(buf, sizeof(buf), e, 0);
 		md_map(h, buf, l);

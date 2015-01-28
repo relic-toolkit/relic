@@ -102,10 +102,7 @@ int cp_phpe_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len, bn_t n) {
 		bn_read_bin(m, in, in_len);
 
 		/* Generate r in Z_n^*. */
-		do {
-			bn_rand(r, BN_POS, bn_bits(n));
-			bn_mod(r, r, n);
-		} while (bn_is_zero(r));
+		bn_rand_mod(r, n);
 
 		/* Compute c = (g^m)(r^n) mod n^2. */
 		bn_add_dig(g, n, 1);
