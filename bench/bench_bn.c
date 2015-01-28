@@ -196,6 +196,12 @@ static void util(void) {
 	}
 	BENCH_END;
 
+	BENCH_BEGIN("bn_rand_mod") {
+		bn_rand(b, BN_POS, BN_BITS);
+		BENCH_ADD(bn_rand_mod(a, b));
+	}
+	BENCH_END;
+
 	BENCH_BEGIN("bn_size_str") {
 		bn_rand(a, BN_POS, BN_BITS);
 		BENCH_ADD(bn_size_str(a, 10));

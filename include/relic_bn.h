@@ -575,6 +575,15 @@ void bn_set_2b(bn_t a, int b);
 void bn_rand(bn_t a, int sign, int bits);
 
 /**
+ * Assigns a non-zero random value to a multiple precision integer with absolute
+ * value smaller than a given modulus.
+ *
+ * @param[out] a			- the multiple precision integer to assign.
+ * @param[in] b				- the modulus.
+ */
+void bn_rand_mod(bn_t a, bn_t b);
+
+/**
  * Prints a multiple precision integer to standard output.
  *
  * @param[in] a				- the multiple precision integer to print.

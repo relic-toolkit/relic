@@ -179,6 +179,20 @@ static int util(void) {
 		}
 		TEST_END;
 
+		TEST_BEGIN("generating a random integer is consistent") {
+			bn_rand(b, BN_POS, BN_BITS);
+			bn_rand_mod(a, b);
+			TEST_ASSERT(bn_sign(a) == bn_sign(b), end);
+			TEST_ASSERT(bn_is_zero(a) == 0, end);
+			TEST_ASSERT(bn_cmp(a, b) == CMP_LT, end);
+			bn_rand(b, BN_NEG, BN_DIGIT);
+			bn_rand_mod(a, b);
+			TEST_ASSERT(bn_sign(a) == bn_sign(b), end);
+			TEST_ASSERT(bn_is_zero(a) == 0, end);
+			TEST_ASSERT(bn_cmp(a, b) == CMP_GT, end);
+		}
+		TEST_END;
+
 		TEST_BEGIN("reading and writing the first digit are consistent") {
 			bn_rand(a, BN_POS, BN_DIGIT);
 			bn_rand(b, BN_POS, BN_DIGIT);
