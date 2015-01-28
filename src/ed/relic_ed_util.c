@@ -354,7 +354,9 @@ int ed_is_valid(const ed_t p) {
 		} CATCH_ANY {
 			THROW(ERR_CAUGHT);
 		} FINALLY {
+#if ED_ADD == EXTND
 			fp_free(x_times_y);
+#endif
 			ed_free(t);
 		}
 	}
