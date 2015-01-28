@@ -55,32 +55,17 @@ int cp_bgn_gen(bgn_t pub, bgn_t prv) {
 
 		g1_get_ord(n);
 
-		do {
-			bn_rand(prv->x, BN_POS, bn_bits(n));
-			bn_mod(prv->x, prv->x, n);
-		} while (bn_is_zero(prv->x));
+		bn_rand_mod(prv->x, n);
+		bn_rand_mod(prv->y, n);
+		bn_rand_mod(prv->z, n);
 
-		do {
-			bn_rand(prv->y, BN_POS, bn_bits(n));
-			bn_mod(prv->y, prv->y, n);
-		} while (bn_is_zero(prv->y));
+		g1_mul_gen(pub->gx, prv->x);
+		g1_mul_gen(pub->gy, prv->y);
+		g1_mul_gen(pub->gz, prv->z);
 
-		do {
-			bn_rand(prv->z, BN_POS, bn_bits(n));
-			bn_mod(prv->z, prv->z, n);
-		} while (bn_is_zero(prv->z));
-
-		g1_rand(pub->g);
-		g1_mul(pub->gx, pub->g, prv->x);
-		g1_mul(pub->gy, pub->g, prv->y);
-		g1_mul(pub->gz, pub->g, prv->z);
-		g1_copy(prv->g, pub->g);
-
-		g2_rand(pub->h);
-		g2_mul(pub->hx, pub->h, prv->x);
-		g2_mul(pub->hy, pub->h, prv->y);
-		g2_mul(pub->hz, pub->h, prv->z);
-		g2_copy(prv->h, pub->h);
+		g2_mul_gen(pub->hx, prv->x);
+		g2_mul_gen(pub->hy, prv->y);
+		g2_mul_gen(pub->hz, prv->z);
 	}
 	CATCH_ANY {
 		result = STS_ERR;
@@ -92,7 +77,7 @@ int cp_bgn_gen(bgn_t pub, bgn_t prv) {
 	return result;
 }
 
-int cp_bgn_enc1(g1_t c0, g1_t c1, dig_t m, bgn_t pub) {
+int cp_bgn_enc1(g1_t out[2], dig_t in, bgn_t pub) {
 	bn_t r, n;
 	g1_t t;
 	int result = STS_OK;
@@ -107,20 +92,19 @@ int cp_bgn_enc1(g1_t c0, g1_t c1, dig_t m, bgn_t pub) {
 		g1_new(t);
 
 		g1_get_ord(n);
-
-		do {
-			bn_rand(r, BN_POS, bn_bits(n));
-			bn_mod(r, r, n);
-		} while (bn_is_zero(r));
+		bn_rand_mod(r, n);
 
 		/* Compute c0 = (ym + r)G. */
-		g1_mul_dig(c0, pub->gy, m);
-		g1_mul(t, pub->g, r);
-		g1_add(c0, c0, t);
-		/* Compute c0 = (zm + xr)G. */
-		g1_mul_dig(c1, pub->gz, m);
+		g1_mul_dig(out[0], pub->gy, in);
+		g1_mul_gen(t, r);
+		g1_add(out[0], out[0], t);
+		g1_norm(out[0], out[0]);
+
+		/* Compute c1 = (zm + xr)G. */
+		g1_mul_dig(out[1], pub->gz, in);
 		g1_mul(t, pub->gx, r);
-		g1_add(c1, c1, t);
+		g1_add(out[1], out[1], t);
+		g1_norm(out[1], out[1]);
 	}
 	CATCH_ANY {
 		result = STS_ERR;
@@ -134,7 +118,7 @@ int cp_bgn_enc1(g1_t c0, g1_t c1, dig_t m, bgn_t pub) {
 	return result;
 }
 
-int cp_bgn_dec1(dig_t *out, g1_t c0, g1_t c1, bgn_t prv) {
+int cp_bgn_dec1(dig_t *out, g1_t in[2], bgn_t prv) {
 	bn_t r, n;
 	g1_t s, t, u;
 	int i, result = STS_OK;
@@ -152,14 +136,14 @@ int cp_bgn_dec1(dig_t *out, g1_t c0, g1_t c1, bgn_t prv) {
 
 		g1_get_ord(n);
 		/* Compute T = x(ym + r)G - (zm + xr)G = m(xy - z)G. */
-		g1_mul(t, c0, prv->x);
-		g1_sub(t, t, c1);
+		g1_mul(t, in[0], prv->x);
+		g1_sub(t, t, in[1]);
 		g1_norm(t, t);
 		/* Compute U = (xy - z)G and find m. */
 		bn_mul(r, prv->x, prv->y);
 		bn_sub(r, r, prv->z);
 		bn_mod(r, r, n);
-		g1_mul(s, prv->g, r);
+		g1_mul_gen(s, r);
 		g1_copy(u, s);
 		for (i = 0; i < INT_MAX; i++) {
 			if (g1_cmp(t, u) == CMP_EQ) {
@@ -186,7 +170,7 @@ int cp_bgn_dec1(dig_t *out, g1_t c0, g1_t c1, bgn_t prv) {
 	return result;
 }
 
-int cp_bgn_enc2(g2_t c0, g2_t c1, dig_t m, bgn_t pub) {
+int cp_bgn_enc2(g2_t out[2], dig_t in, bgn_t pub) {
 	bn_t r, n;
 	g2_t t;
 	int result = STS_OK;
@@ -201,20 +185,19 @@ int cp_bgn_enc2(g2_t c0, g2_t c1, dig_t m, bgn_t pub) {
 		g1_new(t);
 
 		g2_get_ord(n);
-
-		do {
-			bn_rand(r, BN_POS, bn_bits(n));
-			bn_mod(r, r, n);
-		} while (bn_is_zero(r));
+		bn_rand_mod(r, n);
 
 		/* Compute c0 = (ym + r)G. */
-		g2_mul_dig(c0, pub->hy, m);
-		g2_mul(t, pub->h, r);
-		g2_add(c0, c0, t);
-		/* Compute c0 = (zm + xr)G. */
-		g2_mul_dig(c1, pub->hz, m);
+		g2_mul_dig(out[0], pub->hy, in);
+		g2_mul_gen(t, r);
+		g2_add(out[0], out[0], t);
+		g2_norm(out[0], out[0]);
+
+		/* Compute c1 = (zm + xr)G. */
+		g2_mul_dig(out[1], pub->hz, in);
 		g2_mul(t, pub->hx, r);
-		g2_add(c1, c1, t);
+		g2_add(out[1], out[1], t);
+		g2_norm(out[1], out[1]);
 	}
 	CATCH_ANY {
 		result = STS_ERR;
@@ -228,7 +211,7 @@ int cp_bgn_enc2(g2_t c0, g2_t c1, dig_t m, bgn_t pub) {
 	return result;
 }
 
-int cp_bgn_dec2(dig_t *m, g2_t c0, g2_t c1, bgn_t prv) {
+int cp_bgn_dec2(dig_t *out, g2_t in[2], bgn_t prv) {
 	bn_t r, n;
 	g2_t s, t, u;
 	int i, result = STS_OK;
@@ -246,18 +229,18 @@ int cp_bgn_dec2(dig_t *m, g2_t c0, g2_t c1, bgn_t prv) {
 
 		g2_get_ord(n);
 		/* Compute T = x(ym + r)G - (zm + xr)G = m(xy - z)G. */
-		g2_mul(t, c0, prv->x);
-		g2_sub(t, t, c1);
+		g2_mul(t, in[0], prv->x);
+		g2_sub(t, t, in[1]);
 		g2_norm(t, t);
 		/* Compute U = (xy - z)G and find m. */
 		bn_mul(r, prv->x, prv->y);
 		bn_sub(r, r, prv->z);
 		bn_mod(r, r, n);
-		g2_mul(s, prv->h, r);
+		g2_mul_gen(s, r);
 		g2_copy(u, s);
 		for (i = 0; i < INT_MAX; i++) {
 			if (g2_cmp(t, u) == CMP_EQ) {
-				*m = i + 1;
+				*out = i + 1;
 				break;
 			}
 			g2_add(u, u, s);
@@ -275,6 +258,102 @@ int cp_bgn_dec2(dig_t *m, g2_t c0, g2_t c1, bgn_t prv) {
 		g2_free(s);
 		g2_free(t);
 		g2_free(u);
+	}
+
+	return result;
+}
+
+int cp_bgn_add(gt_t e[4], gt_t c[4], gt_t d[4]) {
+	for (int i = 0; i < 4; i++) {
+		gt_mul(e[i], c[i], d[i]);
+	}
+	return STS_OK;
+}
+
+int cp_bgn_mul(gt_t e[4], g1_t c[2], g2_t d[2]) {
+	for (int i = 0; i < 2; i++) {
+		for (int j = 0; j < 2; j++) {
+			pc_map(e[2*i + j], c[i], d[j]);
+		}
+	}
+	return STS_OK;
+}
+
+int cp_bgn_dec(dig_t *out, gt_t in[4], bgn_t prv) {
+	int i, result = STS_OK;
+	g1_t g;
+	g2_t h;
+	gt_t t[4];
+	bn_t n, r, s;
+
+	bn_null(n);
+	bn_null(r);
+	bn_null(s);
+	g1_null(g);
+	g2_null(h);
+
+	TRY {
+		bn_new(n);
+		bn_new(r);
+		bn_new(s);
+		g1_new(g);
+		g2_new(h);
+		for (i = 0; i < 4; i++) {
+			gt_null(t[i]);
+			gt_new(t[i]);
+		}
+
+		gt_exp(t[0], in[0], prv->x);
+		gt_exp(t[0], t[0], prv->x);
+
+		gt_mul(t[1], in[1], in[2]);
+		gt_exp(t[1], t[1], prv->x);
+		gt_inv(t[1], t[1]);
+
+		gt_mul(t[3], in[3], t[1]);
+		gt_mul(t[3], t[3], t[0]);
+
+		gt_get_ord(n);
+		g1_get_gen(g);
+		g2_get_gen(h);
+
+		bn_mul(r, prv->x, prv->y);
+		bn_sqr(r, r);
+
+		bn_mul(s, prv->x, prv->y);
+		bn_mul(s, s, prv->z);
+		bn_sub(r, r, s);
+		bn_sub(r, r, s);
+
+		bn_sqr(s, prv->z);
+		bn_add(r, r, s);
+		bn_mod(r, r, n);
+		pc_map(t[1], g, h);
+		gt_exp(t[1], t[1], r);
+
+		gt_copy(t[2], t[1]);
+		for (i = 0; i < INT_MAX; i++) {
+			if (gt_cmp(t[2], t[3]) == CMP_EQ) {
+				*out = i + 1;
+				break;
+			}
+			gt_mul(t[2], t[2], t[1]);
+		}
+
+		if (i == INT_MAX) {
+			result = STS_ERR;
+		}
+	} CATCH_ANY {
+		result = STS_ERR;
+	} FINALLY {
+		bn_free(n);
+		bn_free(r);
+		bn_free(s);
+		g1_free(g);
+		g2_free(h);		
+		for (i = 0; i < 4; i++) {
+			gt_free(t[i]);
+		}		
 	}
 
 	return result;
