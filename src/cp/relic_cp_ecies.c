@@ -52,12 +52,7 @@ int cp_ecies_gen(bn_t d, ec_t q) {
 		bn_new(n);
 
 		ec_curve_get_ord(n);
-
-		do {
-			bn_rand(d, BN_POS, bn_bits(n));
-			bn_mod(d, d, n);
-		} while (bn_is_zero(d));
-
+		bn_rand_mod(d, n);
 		ec_mul_gen(q, d);
 	}
 	CATCH_ANY {
@@ -89,12 +84,8 @@ int cp_ecies_enc(ec_t r, uint8_t *out, int *out_len, uint8_t *in, int in_len,
 		ec_new(p);
 
 		ec_curve_get_ord(n);
-
-		do {
-			bn_rand(k, BN_POS, bn_bits(n));
-			bn_mod(k, k, n);
-		} while (bn_is_zero(k));
-
+		bn_rand_mod(k, n);
+		
 		ec_mul_gen(r, k);
 		ec_mul(p, q, k);
 		ec_get_x(x, p);

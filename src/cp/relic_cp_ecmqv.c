@@ -47,12 +47,7 @@ int cp_ecmqv_gen(bn_t d, ec_t q) {
 		bn_new(n);
 
 		ec_curve_get_ord(n);
-
-		do {
-			bn_rand(d, BN_POS, bn_bits(n));
-			bn_mod(d, d, n);
-		} while (bn_is_zero(d));
-
+		bn_rand_mod(d, n);
 		ec_mul_gen(q, d);
 	}
 	CATCH_ANY {

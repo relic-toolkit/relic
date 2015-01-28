@@ -46,12 +46,7 @@ int cp_ecss_gen(bn_t d, ec_t q) {
 		bn_new(n);
 
 		ec_curve_get_ord(n);
-
-		do {
-			bn_rand(d, BN_POS, bn_bits(n));
-			bn_mod(d, d, n);
-		} while (bn_is_zero(d));
-
+		bn_rand_mod(d, n);
 		ec_mul_gen(q, d);
 	}
 	CATCH_ANY {
@@ -85,11 +80,7 @@ int cp_ecss_sig(bn_t e, bn_t s, uint8_t *msg, int len, bn_t d) {
 
 		ec_curve_get_ord(n);
 		do {
-			do {
-				bn_rand(k, BN_POS, bn_bits(n));
-				bn_mod(k, k, n);
-			} while (bn_is_zero(k));
-
+			bn_rand_mod(k, n);
 			ec_mul_gen(p, k);
 			ec_get_x(x, p);
 			bn_mod(r, x, n);
