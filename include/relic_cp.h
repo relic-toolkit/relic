@@ -185,16 +185,12 @@ typedef struct _bgn_t {
 	bn_t y;
 	/** The third exponent. */
 	bn_t z;
-	/* The generator of the first group. */
-	g1_t g;
 	/* The first element from the first group. */
 	g1_t gx;
 	/* The second element from the first group. */
 	g1_t gy;
 	/* The thirs element from the first group. */
 	g1_t gz;
-	/* The generator of the second group. */
-	g2_t h;
 	/* The first element from the second group. */
 	g2_t hx;
 	/* The second element from the second group. */
@@ -658,18 +654,16 @@ typedef bgn_st *bgn_t;
 	bn_new((A)->x);															\
 	bn_new((A)->y);															\
 	bn_new((A)->z);															\
-	g1_new((A)->g);															\
 	g1_new((A)->gx);														\
 	g1_new((A)->gy);														\
 	g1_new((A)->gz);														\
-	g2_new((A)->h);															\
 	g2_new((A)->hx);														\
 	g2_new((A)->hy);														\
 	g2_new((A)->hz);														\
 
 #elif ALLOC == STATIC
-#define sokaka_new(A)														\
-	A = (sokaka_t)alloca(sizeof(sokaka_st));								\
+#define bgn_new(A)															\
+	A = (bgn_t)alloca(sizeof(sokaka_st));									\
 	if (A == NULL) {														\
 		THROW(ERR_NO_MEMORY);												\
 	}																		\
@@ -694,11 +688,9 @@ typedef bgn_st *bgn_t;
 	bn_new((A)->x);															\
 	bn_new((A)->y);															\
 	bn_new((A)->z);															\
-	g1_new((A)->g);															\
 	g1_new((A)->gx);														\
 	g1_new((A)->gy);														\
 	g1_new((A)->gz);														\
-	g2_new((A)->h);															\
 	g2_new((A)->hx);														\
 	g2_new((A)->hy);														\
 	g2_new((A)->hz);														\
@@ -716,11 +708,9 @@ typedef bgn_st *bgn_t;
 		bn_free((A)->x);													\
 		bn_free((A)->y);													\
 		bn_free((A)->z);													\
-		g1_free((A)->g);													\
 		g1_free((A)->gx);													\
 		g1_free((A)->gy);													\
 		g1_free((A)->gz);													\
-		g2_free((A)->h);													\
 		g2_free((A)->hx);													\
 		g2_free((A)->hy);													\
 		g2_free((A)->hz);													\
@@ -815,7 +805,7 @@ typedef bgn_st *bgn_t;
 /*============================================================================*/
 
 /**
- * Generates a new key pair for basic RSA algorithm.
+ * Generates a key pair for the basic RSA algorithm.
  *
  * @param[out] pub			- the public key.
  * @param[out] prv			- the private key.
@@ -825,7 +815,7 @@ typedef bgn_st *bgn_t;
 int cp_rsa_gen_basic(rsa_t pub, rsa_t prv, int bits);
 
 /**
- * Generates a new key RSA pair for fast operations with the CRT optimization.
+ * Generates a key pair for fast RSA operations with the CRT optimization.
  *
  * @param[out] pub			- the public key.
  * @param[out] prv			- the private key.
@@ -918,7 +908,7 @@ int cp_rsa_ver(uint8_t *sig, int sig_len, uint8_t *msg, int msg_len, int hash,
 		rsa_t pub);
 
 /**
- * Generates a new key pair for the Rabin cryptosystem.
+ * Generates a key pair for the Rabin cryptosystem.
  *
  * @param[out] pub			- the public key.
  * @param[out] prv			- the private key,
@@ -954,7 +944,7 @@ int cp_rabin_dec(uint8_t *out, int *out_len, uint8_t *in, int in_len,
 		rabin_t prv);
 
 /**
- * Generates a new key pair for Benaloh's Dense Probabilistic Encryption.
+ * Generates a key pair for Benaloh's Dense Probabilistic Encryption.
  *
  * @param[out] pub			- the public key.
  * @param[out] prv			- the private key.
@@ -987,7 +977,7 @@ int cp_bdpe_enc(uint8_t *out, int *out_len, dig_t in, bdpe_t pub);
 int cp_bdpe_dec(dig_t *out, uint8_t *in, int in_len, bdpe_t prv);
 
 /**
- * Generates a new key pair for Paillier's Homomorphic Probabilistic Encryption.
+ * Generates a key pair for Paillier's Homomorphic Probabilistic Encryption.
  *
  * @param[out] n			- the public key.
  * @param[out] l			- the private key.
@@ -1211,6 +1201,84 @@ int cp_sokaka_key(uint8_t *key, unsigned int key_len, char *id1, int len1,
  * @return STS_OK if no errors occurred, STS_ERR otherwise.
  */
 int cp_ibe_gen(bn_t master, g1_t pub);
+
+/**
+ * Generates a BGN key pair.
+ *
+ * @param[out] pub 				- the public key.
+ * @param[out] prv 				- the private key.
+ * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ */
+int cp_bgn_gen(bgn_t pub, bgn_t prv);
+
+/**
+ * Encrypts in G_1 using the BGN cryptosystem.
+ *
+ * @param[out] out 				- the ciphertext.
+ * @param[in] in 				- the plaintext as a small integer.
+ * @param[in] pub 				- the public key.
+ * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ */
+int cp_bgn_enc1(g1_t out[2], dig_t in, bgn_t pub);
+
+/**
+ * Decrypts in G_1 using the BGN cryptosystem.
+ *
+ * @param[out] out 				- the decrypted small integer.
+ * @param[in] in 				- the ciphertext.
+ * @param[in] prv 				- the private key.
+ * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ */
+int cp_bgn_dec1(dig_t *out, g1_t in[2], bgn_t prv);
+
+/**
+ * Encrypts in G_2 using the BGN cryptosystem.
+ *
+ * @param[out] c 				- the ciphertext.
+ * @param[in] m 				- the plaintext as a small integer.
+ * @param[in] pub 				- the public key.
+ * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ */
+int cp_bgn_enc2(g2_t out[2], dig_t in, bgn_t pub);
+
+/**
+ * Decrypts in G_2 using the BGN cryptosystem.
+ *
+ * @param[out] out 				- the decrypted small integer.
+ * @param[in] c 				- the ciphertext.
+ * @param[in] prv 				- the private key.
+ * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ */
+int cp_bgn_dec2(dig_t *out, g2_t in[2], bgn_t prv);
+
+/**
+ * Adds homomorphically two BGN ciphertexts in G_T.
+ *
+ * @param[out] e 				- the resulting ciphertext.
+ * @param[in] c 				- the first ciphertext to add.
+ * @param[in] d 				- the second ciphertext to add.
+ * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ */
+int cp_bgn_add(gt_t e[4], gt_t c[4], gt_t d[4]);
+
+/**
+ * Multiplies homomorphically two BGN ciphertexts in G_T.
+ *
+ * @param[out] e 				- the resulting ciphertext.
+ * @param[in] c 				- the first ciphertext to add.
+ * @param[in] d 				- the second ciphertext to add.
+ * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ */
+int cp_bgn_mul(gt_t e[4], g1_t c[2], g2_t d[2]);
+
+/**
+ * Decrypts in G_T using the BGN cryptosystem.
+ * @param[out] out 				- the decrypted small integer.
+ * @param[in] c 				- the ciphertext.
+ * @param[in] prv 				- the private key.
+ * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ */
+int cp_bgn_dec(dig_t *out, gt_t in[4], bgn_t prv);
 
 /**
  * Generates a private key for a user in the BF-IBE protocol.

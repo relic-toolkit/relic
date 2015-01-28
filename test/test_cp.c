@@ -776,102 +776,6 @@ static int sokaka(void) {
 	return code;
 }
 
-static int bgn(void) {
-	int code = STS_ERR;
-	bgn_t pub, prv;
-	g1_t c0, c1, c2, c3;
-	g2_t d0, d1, d2, d3;
-	dig_t in, out;
-	int result;
-
-	g1_null(c0);
-	g1_null(c1);
-	g1_null(c2);
-	g1_null(c3);
-	g2_null(d0);
-	g2_null(d1);
-	g2_null(d2);
-	g2_null(d3);
-	bgn_null(pub);
-	bgn_null(prv);
-
-	TRY {
-		g1_new(c0);
-		g1_new(c1);
-		g1_new(c2);
-		g1_new(c3);
-		g2_new(d0);
-		g2_new(d1);
-		g2_new(d2);
-		g2_new(d3);
-		bgn_new(pub);
-		bgn_new(prv);
-
-		result = cp_bgn_gen(pub, prv);
-
-		TEST_BEGIN("boneh-go-nissim encryption/decryption is correct") {
-			TEST_ASSERT(result == STS_OK, end);
-			rand_bytes((unsigned char *)&in, 1);
-			in = in % bn_get_prime(47);
-			TEST_ASSERT(cp_bgn_enc1(c0, c1, in, pub) == STS_OK, end);
-			TEST_ASSERT(cp_bgn_dec1(&out, c0, c1, prv) == STS_OK, end);
-			TEST_ASSERT(in == out, end);
-			rand_bytes((unsigned char *)&in, 1);
-			in = in % bn_get_prime(47);
-			TEST_ASSERT(cp_bgn_enc2(d0, d1, in, pub) == STS_OK, end);
-			TEST_ASSERT(cp_bgn_dec2(&out, d0, d1, prv) == STS_OK, end);
-			TEST_ASSERT(in == out, end);
-		} TEST_END;
-
-		TEST_BEGIN("boneh-go-nissim encryption/decryption is homomorphic") {
-			TEST_ASSERT(result == STS_OK, end);
-			rand_bytes((unsigned char *)&in, 1);
-			in = in % bn_get_prime(47);
-			rand_bytes((unsigned char *)&out, 1);
-			out = out % bn_get_prime(47);
-			TEST_ASSERT(cp_bgn_enc1(c0, c1, in, pub) == STS_OK, end);
-			TEST_ASSERT(cp_bgn_enc1(c2, c3, out, pub) == STS_OK, end);
-			in = in + out;
-			g1_add(c0, c0, c2);
-			g1_add(c1, c1, c3);
-			g1_norm(c0, c0);
-			g1_norm(c1, c1);
-			TEST_ASSERT(cp_bgn_dec1(&out, c0, c1, prv) == STS_OK, end);
-			TEST_ASSERT(in == out, end);
-			rand_bytes((unsigned char *)&in, 1);
-			in = in % bn_get_prime(47);
-			rand_bytes((unsigned char *)&out, 1);
-			out = out % bn_get_prime(47);
-			TEST_ASSERT(cp_bgn_enc2(d0, d1, in, pub) == STS_OK, end);
-			TEST_ASSERT(cp_bgn_enc2(d2, d3, out, pub) == STS_OK, end);
-			in = in + out;
-			g2_add(d0, d0, d2);
-			g2_add(d1, d1, d3);
-			g2_norm(d0, d0);
-			g2_norm(d1, d1);
-			TEST_ASSERT(cp_bgn_dec2(&out, d0, d1, prv) == STS_OK, end);
-			TEST_ASSERT(in == out, end);
-		} TEST_END;
-
-	} CATCH_ANY {
-		ERROR(end);
-	}
-	code = STS_OK;
-
-  end:
-	g1_free(c0);
-	g1_free(c1);
-	g1_free(c2);
-	g1_free(c3);
-	g2_free(d0);
-	g2_free(d1);
-	g2_free(d2);
-	g2_free(d3);
-	bgn_free(pub);
-	bgn_free(prv);
-	return code;
-}
-
 static int ibe(void) {
 	int code = STS_ERR;
 	bn_t s;
@@ -912,6 +816,120 @@ static int ibe(void) {
 	bn_free(s);
 	g1_free(pub);
 	g2_free(prv);
+	return code;
+}
+
+static int bgn(void) {
+	int result, code = STS_ERR;
+	g1_t c[2], d[2];
+	g2_t e[2], f[2];
+	gt_t g[4], h[4];
+	bgn_t pub, prv;
+	dig_t in, out, t;
+
+	g1_null(c[0]);
+	g1_null(c[1]);
+	g1_null(d[0]);
+	g1_null(d[1]);
+	g2_null(e[0]);
+	g2_null(e[1]);
+	g2_null(f[0]);
+	g2_null(f[1]);
+	bgn_null(pub);
+	bgn_null(prv);
+
+	TRY {
+		g1_new(c[0]);
+		g1_new(c[1]);
+		g1_new(d[0]);
+		g1_new(d[1]);
+		g2_new(e[0]);
+		g2_new(e[1]);
+		g2_new(f[0]);
+		g2_new(f[1]);
+		bgn_new(pub);
+		bgn_new(prv);
+		for (int i = 0; i < 4; i++) {
+			gt_null(g[i]);
+			gt_new(g[i]);
+		}
+
+		result = cp_bgn_gen(pub, prv);
+
+		TEST_BEGIN("boneh-go-nissim encryption/decryption is correct") {
+			TEST_ASSERT(result == STS_OK, end);
+			do {
+				rand_bytes((unsigned char *)&in, 1);
+				in = in % 11;
+			} while (in == 0);
+			TEST_ASSERT(cp_bgn_enc1(c, in, pub) == STS_OK, end);
+			TEST_ASSERT(cp_bgn_dec1(&out, c, prv) == STS_OK, end);
+			TEST_ASSERT(in == out, end);
+			TEST_ASSERT(cp_bgn_enc2(d, in, pub) == STS_OK, end);
+			TEST_ASSERT(cp_bgn_dec2(&out, d, prv) == STS_OK, end);
+			TEST_ASSERT(in == out, end);
+		} TEST_END;
+
+		TEST_BEGIN("boneh-go-nissim encryption is additively homomorphic") {
+			do {
+				rand_bytes((unsigned char *)&in, 1);
+				in = in % 11;
+				out = in % 7;
+			} while (in == 0 || out == 0);
+			TEST_ASSERT(cp_bgn_enc1(c, in, pub) == STS_OK, end);
+			TEST_ASSERT(cp_bgn_enc1(d, out, pub) == STS_OK, end);
+			g1_add(c[0], c[0], d[0]);
+			g1_add(c[1], c[1], d[1]);
+			g1_norm(c[0], c[0]);
+			g1_norm(c[1], c[1]);
+			TEST_ASSERT(cp_bgn_dec1(&t, c, prv) == STS_OK, end);
+			TEST_ASSERT(in + out == t, end);
+			TEST_ASSERT(cp_bgn_enc2(e, in, pub) == STS_OK, end);
+			TEST_ASSERT(cp_bgn_enc2(f, out, pub) == STS_OK, end);
+			g2_add(e[0], e[0], f[0]);
+			g2_add(e[1], e[1], f[1]);
+			g2_norm(e[0], e[0]);
+			g2_norm(e[1], e[1]);
+			TEST_ASSERT(cp_bgn_dec2(&t, e, prv) == STS_OK, end);
+			TEST_ASSERT(in + out == t, end);
+		} TEST_END;
+
+		TEST_BEGIN("boneh-go-nissim encryption is multiplicatively homomorphic") {
+			do {
+				rand_bytes((unsigned char *)&in, 1);
+				in = in % 11;
+				out = in % 17;
+			} while (in == 0 || out == 0);
+			TEST_ASSERT(cp_bgn_enc1(c, in, pub) == STS_OK, end);
+			TEST_ASSERT(cp_bgn_enc2(e, out, pub) == STS_OK, end);
+			in = in * out;
+			TEST_ASSERT(cp_bgn_mul(g, c, e) == STS_OK, end);
+			TEST_ASSERT(cp_bgn_dec(&t, g, prv) == STS_OK, end);
+			TEST_ASSERT(in == t, end);
+			TEST_ASSERT(cp_bgn_add(g, g, g) == STS_OK, end);
+			TEST_ASSERT(cp_bgn_dec(&t, g, prv) == STS_OK, end);
+			TEST_ASSERT(in + in == t, end);
+		} TEST_END;
+
+	} CATCH_ANY {
+		ERROR(end);
+	}
+	code = STS_OK;
+
+  end:
+	g1_free(c[0]);
+	g1_free(c[1]);
+	g1_free(d[0]);
+	g1_free(d[1]);
+	g2_free(e[0]);
+	g2_free(e[1]);
+	g2_free(f[0]);
+	g2_free(f[1]);
+	bgn_free(pub);
+	bgn_free(prv);
+	for (int i = 0; i < 4; i++) {
+		gt_free(g[i]);
+	}
 	return code;
 }
 
@@ -1024,6 +1042,7 @@ int main(void) {
 		core_clean();
 		return 1;
 	}
+
 #endif
 
 #if defined(WITH_EC)
@@ -1069,15 +1088,16 @@ int main(void) {
 			return 1;
 		}
 
+		if (ibe() != STS_OK) {
+			core_clean();
+			return 1;
+		}
+
 		if (bgn() != STS_OK) {
 			core_clean();
 			return 1;
 		}
 
-		if (ibe() != STS_OK) {
-			core_clean();
-			return 1;
-		}
 
 		if (bls() != STS_OK) {
 			core_clean();

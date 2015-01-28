@@ -363,7 +363,7 @@ static void ecies(void) {
 		out_len = sizeof(out);
 		rand_bytes(in, sizeof(in));
 		cp_ecies_enc(r, out, &out_len, in, in_len, q);
-		BENCH_ADD(cp_ecies_dec(out, &out_len, r, out, out_len, d));
+		BENCH_ADD(cp_ecies_dec(in, &in_len, r, out, out_len, d));
 	}
 	BENCH_END;
 
@@ -553,6 +553,80 @@ static void ibe(void) {
 	bn_free(d);
 }
 
+static void bgn(void) {
+	g1_t c[2];
+	g2_t d[2];
+	gt_t e[4];
+	bgn_t pub, prv;
+	dig_t in;
+
+	g1_null(c[0]);
+	g1_null(c[1]);
+	g2_null(d[0]);
+	g2_null(d[1]);
+	bgn_null(pub);
+	bgn_null(prv);
+
+	g1_new(c[0]);
+	g1_new(c[1]);
+	g2_new(d[0]);
+	g2_new(d[1]);
+	bgn_new(pub);
+	bgn_new(prv);
+	for (int i = 0; i < 4; i++) {
+		gt_null(e[i]);
+		gt_new(e[i]);
+	}
+
+	BENCH_BEGIN("cp_bgn_gen") {
+		BENCH_ADD(cp_bgn_gen(pub, prv));
+	} BENCH_END;
+
+	in = 10;
+
+	BENCH_BEGIN("cp_bgn_enc1") {
+		BENCH_ADD(cp_bgn_enc1(c, in, pub));
+		cp_bgn_dec1(&in, c, prv);
+	} BENCH_END;
+
+	BENCH_BEGIN("cp_bgn_dec1 (10)") {
+		cp_bgn_enc1(c, in, pub);
+		BENCH_ADD(cp_bgn_dec1(&in, c, prv));
+	} BENCH_END;
+
+	BENCH_BEGIN("cp_bgn_enc2") {
+		BENCH_ADD(cp_bgn_enc2(d, in, pub));
+		cp_bgn_dec2(&in, d, prv);
+	} BENCH_END;
+
+	BENCH_BEGIN("cp_bgn_dec2 (10)") {
+		cp_bgn_enc2(d, in, pub);
+		BENCH_ADD(cp_bgn_dec2(&in, d, prv));
+	} BENCH_END;
+
+	BENCH_BEGIN("cp_bgn_mul") {
+		BENCH_ADD(cp_bgn_mul(e, c, d));
+	} BENCH_END;
+
+	BENCH_BEGIN("cp_bgn_dec (100)") {
+		BENCH_ADD(cp_bgn_dec(&in, e, prv));
+	} BENCH_END;
+
+	BENCH_BEGIN("cp_bgn_add") {
+		BENCH_ADD(cp_bgn_add(e, e, e));
+	} BENCH_END;
+
+	g1_free(c[0]);
+	g1_free(c[1]);
+	g2_free(d[0]);
+	g2_free(d[1]);
+	bgn_free(pub);
+	bgn_free(prv);
+	for (int i = 0; i < 4; i++) {
+		gt_free(e[i]);
+	}
+}
+
 static void bls(void) {
 	uint8_t msg[5] = { 0, 1, 2, 3, 4 };
 	g1_t s;
@@ -673,6 +747,7 @@ int main(void) {
 	if (pc_param_set_any() == STS_OK) {
 		sokaka();
 		ibe();
+		bgn();
 		bls();
 		bbs();
 	} else {
