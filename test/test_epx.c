@@ -897,6 +897,7 @@ static int frobenius(void) {
 			ep2_rand(a);
 			ep2_frb(b, a, 1);
 			ep2_frb(b, b, 1);
+			ep2_frb(b, b, 1);
 			ep2_frb(c, a, 3);
 			TEST_ASSERT(ep2_cmp(c, b) == CMP_EQ, end);
 		} TEST_END;
