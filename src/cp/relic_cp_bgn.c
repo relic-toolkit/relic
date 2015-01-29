@@ -123,12 +123,14 @@ int cp_bgn_dec1(dig_t *out, g1_t in[2], bgn_t prv) {
 	g1_t s, t, u;
 	int i, result = STS_OK;
 
+	bn_null(n);
 	bn_null(r);
 	g1_null(s);
 	g1_null(t);
 	g1_null(u);
 
 	TRY {
+		bn_new(n);
 		bn_new(r);
 		g1_new(s);
 		g1_new(t);
@@ -161,6 +163,7 @@ int cp_bgn_dec1(dig_t *out, g1_t in[2], bgn_t prv) {
 		result = STS_ERR;
 	}
 	FINALLY {
+		bn_free(n);
 		bn_free(r);
 		g1_free(s);
 		g1_free(t);
@@ -216,12 +219,14 @@ int cp_bgn_dec2(dig_t *out, g2_t in[2], bgn_t prv) {
 	g2_t s, t, u;
 	int i, result = STS_OK;
 
+	bn_null(n);
 	bn_null(r);
 	g2_null(s);
 	g2_null(t);
 	g2_null(u);
 
 	TRY {
+		bn_new(n);
 		bn_new(r);
 		g2_new(s);
 		g2_new(t);
@@ -254,6 +259,7 @@ int cp_bgn_dec2(dig_t *out, g2_t in[2], bgn_t prv) {
 		result = STS_ERR;
 	}
 	FINALLY {
+		bn_free(n);
 		bn_free(r);
 		g2_free(s);
 		g2_free(t);

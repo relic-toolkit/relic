@@ -95,6 +95,7 @@ int cp_ibe_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len,
 	TRY {
 		bn_new(n);
 		bn_new(r);
+		g1_new(p);
 		g2_new(q);
 		gt_new(e);
 

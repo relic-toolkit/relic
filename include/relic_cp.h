@@ -670,11 +670,9 @@ typedef bgn_st *bgn_t;
 	bn_new((A)->x);															\
 	bn_new((A)->y);															\
 	bn_new((A)->z);															\
-	g1_new((A)->g);															\
 	g1_new((A)->gx);														\
 	g1_new((A)->gy);														\
 	g1_new((A)->gz);														\
-	g2_new((A)->h);															\
 	g2_new((A)->hx);														\
 	g2_new((A)->hy);														\
 	g2_new((A)->hz);														\
@@ -724,7 +722,6 @@ typedef bgn_st *bgn_t;
 		bn_free((A)->x);													\
 		bn_free((A)->y);													\
 		bn_free((A)->z);													\
-		g1_free((A)->g);													\
 		g1_free((A)->gx);													\
 		g1_free((A)->gy);													\
 		g1_free((A)->gz);													\

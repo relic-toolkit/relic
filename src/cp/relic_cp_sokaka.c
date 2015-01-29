@@ -114,6 +114,7 @@ int cp_sokaka_key(uint8_t *key, unsigned int key_len, char *id1,
 				}
 			}
 		}
+
 		if (pc_map_is_type1()) {
 			g2_map(q, (uint8_t *)id2, len2);
 			pc_map(e, k->s1, q);
@@ -126,6 +127,7 @@ int cp_sokaka_key(uint8_t *key, unsigned int key_len, char *id1,
 				pc_map(e, p, k->s2);
 			}
 		}
+
 		/* Allocate size for storing the output. */
 		uint8_t buf[gt_size_bin(e, 0)];
 		gt_write_bin(buf, sizeof(buf), e, 0);
