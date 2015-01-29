@@ -1681,21 +1681,17 @@ static int recoding(void) {
 
 #if defined(WITH_EB) && defined(EB_KBLTZ) && (EB_MUL == LWNAF || EB_MUL == RWNAF || EB_FIX == LWNAF || EB_SIM == INTER || !defined(STRIP))
 		if (eb_param_set_any_kbltz() == STS_OK) {
-			eb_curve_get_vm(v1[0]);			
-			eb_curve_get_s0(v1[1]);
-			eb_curve_get_s1(v1[2]);
-			eb_curve_get_ord(v2[2]);
+			eb_curve_get_ord(v1[2]);
 			TEST_BEGIN("tnaf recoding is correct") {
 				for (w = 2; w <= 8; w++) {
 					int8_t t_w, beta[1 << (w - 2)], gama[1 << (w - 2)];
 					int8_t tnaf[FB_BITS + 8];
 					int8_t u = (eb_curve_opt_a() == OPT_ZERO ? -1 : 1);
-					bn_rand(a, BN_POS, BN_BITS);
-					bn_mod(a, a, v2[2]);
+					bn_rand_mod(a, v1[2]);
 					l = FB_BITS + 1;
-					bn_rec_tnaf_mod(v2[0], v2[1], a, v1[0], v1[1], v1[2], u, FB_BITS);
+					bn_rec_tnaf_mod(v1[0], v1[1], a, u, FB_BITS);
 					bn_rec_tnaf_get(&t_w, beta, gama, u, w);
-					bn_rec_tnaf(tnaf, &l, a, v1[0], v1[1], v1[2], u, FB_BITS, w);
+					bn_rec_tnaf(tnaf, &l, a, u, FB_BITS, w);
 					bn_zero(a);
 					bn_zero(b);
 					for (k = l - 1; k >= 0; k--) {
@@ -1740,8 +1736,8 @@ static int recoding(void) {
 							}							
 						}
 					}
-					TEST_ASSERT(bn_cmp(a, v2[0]) == CMP_EQ, end);
-					TEST_ASSERT(bn_cmp(b, v2[1]) == CMP_EQ, end);
+					TEST_ASSERT(bn_cmp(a, v1[0]) == CMP_EQ, end);
+					TEST_ASSERT(bn_cmp(b, v1[1]) == CMP_EQ, end);
 				}
 			}
 			TEST_END;
@@ -1753,13 +1749,12 @@ static int recoding(void) {
 					int8_t u = (eb_curve_opt_a() == OPT_ZERO ? -1 : 1);
 					int n;
 					do {
-						bn_rand(a, BN_POS, BN_BITS);
-						bn_mod(a, a, v2[2]);
+						bn_rand_mod(a, v1[2]);
 						l = FB_BITS + 1;
-						bn_rec_tnaf_mod(v2[0], v2[1], a, v1[0], v1[1], v1[2], u, FB_BITS);
-					} while (bn_is_even(v2[0]) || bn_is_even(v2[1]));
+						bn_rec_tnaf_mod(v1[0], v1[1], a, u, FB_BITS);
+					} while (bn_is_even(v1[0]) || bn_is_even(v1[1]));
 					bn_rec_tnaf_get(&t_w, beta, gama, u, w);
-					bn_rec_rtnaf(tnaf, &l, a, v1[0], v1[1], v1[2], u, FB_BITS, w);
+					bn_rec_rtnaf(tnaf, &l, a, u, FB_BITS, w);
 					bn_zero(a);
 					bn_zero(b);
 					n = 0;
@@ -1810,8 +1805,8 @@ static int recoding(void) {
 							}				
 						}
 					}
-					TEST_ASSERT(bn_cmp(a, v2[0]) == CMP_EQ, end);
-					TEST_ASSERT(bn_cmp(b, v2[1]) == CMP_EQ, end);
+					TEST_ASSERT(bn_cmp(a, v1[0]) == CMP_EQ, end);
+					TEST_ASSERT(bn_cmp(b, v1[1]) == CMP_EQ, end);
 				}
 			} TEST_END;			
 		}
@@ -1927,7 +1922,7 @@ int main(void) {
 
 	util_banner("Arithmetic:", 1);
 
-	if (addition() != STS_OK) {
+/*	if (addition() != STS_OK) {
 		core_clean();
 		return 1;
 	}
@@ -1985,7 +1980,7 @@ int main(void) {
 	if (digit() != STS_OK) {
 		core_clean();
 		return 1;
-	}
+	}*/
 
 	if (recoding() != STS_OK) {
 		core_clean();

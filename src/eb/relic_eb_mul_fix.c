@@ -52,17 +52,8 @@
 static void eb_mul_fix_kbltz(eb_t r, const eb_t *t, const bn_t k) {
 	int l, i, n;
 	int8_t u, tnaf[FB_BITS + 8], *_k;
-	bn_t vm, s0, s1;
-
-	bn_null(vm);
-	bn_null(s0);
-	bn_null(s1);
 
 	TRY {
-		bn_new(vm);
-		bn_new(s0);
-		bn_new(s1);
-
 		/* Compute the w-TNAF representation of k. */
 		if (eb_curve_opt_a() == OPT_ZERO) {
 			u = -1;
@@ -70,13 +61,9 @@ static void eb_mul_fix_kbltz(eb_t r, const eb_t *t, const bn_t k) {
 			u = 1;
 		}
 
-		eb_curve_get_vm(vm);
-		eb_curve_get_s0(s0);
-		eb_curve_get_s1(s1);
-
 		/* Compute the w-TNAF representation of k. */
 		l = FB_BITS + 8;
-		bn_rec_tnaf(tnaf, &l, k, vm, s0, s1, u, FB_BITS, EB_DEPTH);
+		bn_rec_tnaf(tnaf, &l, k, u, FB_BITS, EB_DEPTH);
 
 		_k = tnaf + l - 1;
 		eb_set_infty(r);
@@ -96,11 +83,6 @@ static void eb_mul_fix_kbltz(eb_t r, const eb_t *t, const bn_t k) {
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
-	}
-	FINALLY {
-		bn_free(vm);
-		bn_free(s0);
-		bn_free(s1);
 	}
 }
 
@@ -242,7 +224,7 @@ void eb_mul_fix_yaowi(eb_t r, const eb_t *t, const bn_t k) {
 		eb_set_infty(r);
 		eb_set_infty(a);
 
-		l = CEIL(FB_BITS, EP_DEPTH);
+		l = CEIL(FB_BITS, EB_DEPTH);
 		bn_rec_win(win, &l, k, EB_DEPTH);
 
 		for (j = (1 << EB_DEPTH) - 1; j >= 1; j--) {

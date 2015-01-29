@@ -55,11 +55,6 @@ static void eb_mul_ltnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 	int len, i, n;
 	int8_t tnaf[FB_BITS + 8], *_k, u;
 	eb_t t[1 << (EB_WIDTH - 2)];
-	bn_t vm, s0, s1;
-
-	bn_null(vm);
-	bn_null(s0);
-	bn_null(s1);
 
 	if (eb_curve_opt_a() == OPT_ZERO) {
 		u = -1;
@@ -68,10 +63,6 @@ static void eb_mul_ltnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 	}
 
 	TRY {
-		bn_new(vm);
-		bn_new(s0);
-		bn_new(s1);
-
 		/* Prepare the precomputation table. */
 		for (i = 0; i < (1 << (EB_WIDTH - 2)); i++) {
 			eb_new(t[i]);
@@ -80,11 +71,8 @@ static void eb_mul_ltnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 		eb_tab(t, p, EB_WIDTH);
 
 		/* Compute the w-TNAF representation of k. */
-		eb_curve_get_vm(vm);
-		eb_curve_get_s0(s0);
-		eb_curve_get_s1(s1);
 		len = FB_BITS + 8;
-		bn_rec_tnaf(tnaf, &len, k, vm, s0, s1, u, FB_BITS, EB_WIDTH);
+		bn_rec_tnaf(tnaf, &len, k, u, FB_BITS, EB_WIDTH);
 
 		_k = tnaf + len - 1;
 		eb_set_infty(r);
@@ -106,10 +94,6 @@ static void eb_mul_ltnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 		THROW(ERR_CAUGHT);
 	}
 	FINALLY {
-		bn_free(vm);
-		bn_free(s0);
-		bn_free(s1);
-
 		/* Free the precomputation table. */
 		for (i = 0; i < (1 << (EB_WIDTH - 2)); i++) {
 			eb_free(t[i]);
@@ -152,7 +136,6 @@ static void eb_mul_lnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 		/* Compute the w-NAF representation of k. */
 		len = FB_BITS + 1;
 		bn_rec_naf(naf, &len, k, EB_WIDTH);
-
 		_k = naf + len - 1;
 
 		eb_set_infty(r);
@@ -200,11 +183,6 @@ static void eb_mul_rtnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 	int len, i, n;
 	int8_t tnaf[FB_BITS + 8], *_k, u;
 	eb_t t[1 << (EB_WIDTH - 2)];
-	bn_t vm, s0, s1;
-
-	bn_null(vm);
-	bn_null(s0);
-	bn_null(s1);
 
 	if (eb_curve_opt_a() == OPT_ZERO) {
 		u = -1;
@@ -213,23 +191,15 @@ static void eb_mul_rtnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 	}
 
 	TRY {
-		bn_new(vm);
-		bn_new(s0);
-		bn_new(s1);
-
 		/* Prepare the precomputation table. */
 		for (i = 0; i < (1 << (EB_WIDTH - 2)); i++) {
 			eb_new(t[i]);
 			eb_set_infty(t[i]);
 		}
-		/* Compute the precomputation table. */
 
-		eb_curve_get_vm(vm);
-		eb_curve_get_s0(s0);
-		eb_curve_get_s1(s1);
 		/* Compute the w-TNAF representation of k. */
 		len = FB_BITS + 8;
-		bn_rec_tnaf(tnaf, &len, k, vm, s0, s1, u, FB_BITS, EB_WIDTH);
+		bn_rec_tnaf(tnaf, &len, k, u, FB_BITS, EB_WIDTH);
 
 		_k = tnaf;
 		eb_copy(r, p);
@@ -486,10 +456,6 @@ static void eb_mul_rtnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 		THROW(ERR_CAUGHT);
 	}
 	FINALLY {
-		bn_free(vm);
-		bn_free(s0);
-		bn_free(s1);
-
 		/* Free the precomputation table. */
 		for (i = 0; i < (1 << (EB_WIDTH - 2)); i++) {
 			eb_free(t[i]);

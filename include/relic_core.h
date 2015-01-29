@@ -225,14 +225,6 @@ typedef struct _ctx_t {
 	bn_st eb_r;
 	/** The cofactor of the group order in the elliptic curve. */
 	bn_st eb_h;
-#ifdef EB_KBLTZ
-#if (EB_MUL == LWNAF || EB_MUL == RWNAF || EB_FIX == LWNAF || EB_SIM == INTER || !defined(STRIP))
-	/** Parameters required by Koblitz curves. @{ */
-	bn_st eb_vm;
-	bn_st eb_s0;
-	bn_st eb_s1;
-#endif /* EB_KBLTZ */
-#endif /* EB_MUL */
 	/** Flag that stores if the binary curve has efficient endomorphisms. */
 	int eb_is_kbltz;
 #ifdef EB_PRECO

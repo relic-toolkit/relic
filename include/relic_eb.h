@@ -475,27 +475,6 @@ void eb_curve_get_ord(bn_t n);
 void eb_curve_get_cof(bn_t h);
 
 /**
- * Returns the parameter Vm of a Koblitz curve.
- *
- * @param[out] vm			- the returned parameter.
- */
-void eb_curve_get_vm(bn_t vm);
-
-/**
- * Returns the parameter S0 of a Koblitz curve.
- *
- * @param[out] s0			- the returned parameter.
- */
-void eb_curve_get_s0(bn_t s0);
-
-/**
- * Returns the parameter S1 of a Koblitz curve.
- *
- * @param[out] s1			- the returned parameter.
- */
-void eb_curve_get_s1(bn_t s1);
-
-/**
  * Configures an ordinary binary elliptic curve by its coefficients and
  * generator.
  *

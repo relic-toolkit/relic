@@ -37,88 +37,6 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-#if defined(EB_KBLTZ) && (EB_MUL == LWNAF || EB_MUL == RWNAF || EB_FIX == LWNAF || EB_SIM == INTER || !defined(STRIP))
-
-/**
- * Precomputes additional parameters for Koblitz curves used by the w-TNAF
- * multiplication algorithm.
- */
-static void compute_kbltz(void) {
-	int u, i;
-	bn_t a, b, c;
-	ctx_t *ctx = core_get();
-
-	bn_null(a);
-	bn_null(b);
-	bn_null(c);
-
-	TRY {
-		bn_new(a);
-		bn_new(b);
-		bn_new(c);
-
-		if (ctx->eb_opt_a == OPT_ZERO) {
-			u = -1;
-		} else {
-			u = 1;
-		}
-
-		bn_set_dig(a, 2);
-		bn_set_dig(b, 1);
-		if (u == -1) {
-			bn_neg(b, b);
-		}
-		for (i = 2; i <= FB_BITS; i++) {
-			bn_copy(c, b);
-			if (u == -1) {
-				bn_neg(b, b);
-			}
-			bn_dbl(a, a);
-			bn_sub(b, b, a);
-			bn_copy(a, c);
-		}
-		bn_copy(&(ctx->eb_vm), b);
-
-		bn_zero(a);
-		bn_set_dig(b, 1);
-		for (i = 2; i <= FB_BITS; i++) {
-			bn_copy(c, b);
-			if (u == -1) {
-				bn_neg(b, b);
-			}
-			bn_dbl(a, a);
-			bn_sub(b, b, a);
-			bn_add_dig(b, b, 1);
-			bn_copy(a, c);
-		}
-		bn_copy(&(ctx->eb_s0), b);
-
-		bn_zero(a);
-		bn_zero(b);
-		for (i = 2; i <= FB_BITS; i++) {
-			bn_copy(c, b);
-			if (u == -1) {
-				bn_neg(b, b);
-			}
-			bn_dbl(a, a);
-			bn_sub(b, b, a);
-			bn_sub_dig(b, b, 1);
-			bn_copy(a, c);
-		}
-		bn_copy(&(ctx->eb_s1), b);
-	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	}
-	FINALLY {
-		bn_free(a);
-		bn_free(b);
-		bn_free(c);
-	}
-}
-
-#endif
-
 /**
  * Detects an optimization based on the curve coefficients.
  *
@@ -167,11 +85,6 @@ void eb_curve_init(void) {
 	fb_zero(ctx->eb_g.z);
 	bn_init(&(ctx->eb_r), FB_DIGS);
 	bn_init(&(ctx->eb_h), FB_DIGS);
-#if defined(EB_KBLTZ) && (EB_MUL == LWNAF || !defined(STRIP))
-	bn_init(&(ctx->eb_vm), FB_DIGS);
-	bn_init(&(ctx->eb_s0), FB_DIGS);
-	bn_init(&(ctx->eb_s1), FB_DIGS);
-#endif
 }
 
 void eb_curve_clean(void) {
@@ -188,11 +101,6 @@ void eb_curve_clean(void) {
 #endif
 	bn_clean(&(ctx->eb_r));
 	bn_clean(&(ctx->eb_h));
-#if defined(EB_KBLTZ) && (EB_MUL == LWNAF || !defined(STRIP))
-	bn_clean(&(ctx->eb_vm));
-	bn_clean(&(ctx->eb_s0));
-	bn_clean(&(ctx->eb_s1));
-#endif
 }
 
 dig_t *eb_curve_get_a() {
@@ -227,32 +135,6 @@ void eb_curve_get_cof(bn_t h) {
 	bn_copy(h, &(core_get()->eb_h));
 }
 
-#if defined(EB_KBLTZ) && (EB_MUL == LWNAF || EB_FIX == LWNAF || EB_SIM == INTER || !defined(STRIP))
-void eb_curve_get_vm(bn_t vm) {
-	if (core_get()->eb_is_kbltz) {
-		bn_copy(vm, &(core_get()->eb_vm));
-	} else {
-		bn_zero(vm);
-	}
-}
-
-void eb_curve_get_s0(bn_t s0) {
-	if (core_get()->eb_is_kbltz) {
-		bn_copy(s0, &(core_get()->eb_s0));
-	} else {
-		bn_zero(s0);
-	}
-}
-
-void eb_curve_get_s1(bn_t s1) {
-	if (core_get()->eb_is_kbltz) {
-		bn_copy(s1, &(core_get()->eb_s1));
-	} else {
-		bn_zero(s1);
-	}
-}
-#endif
-
 const eb_t *eb_curve_get_tab() {
 #if defined(EB_PRECO)
 
@@ -283,11 +165,6 @@ void eb_curve_set(const fb_t a, const fb_t b, const eb_t g, const bn_t r,
 	} else {
 		ctx->eb_is_kbltz = 0;
 	}
-#if defined(EB_KBLTZ) && (EB_MUL == LWNAF || EB_FIX == LWNAF || EB_SIM == INTER || !defined(STRIP))
-	if (ctx->eb_is_kbltz) {
-		compute_kbltz();
-	}
-#endif
 	eb_norm(&(ctx->eb_g), g);
 	bn_copy(&(ctx->eb_r), r);
 	bn_copy(&(ctx->eb_h), h);

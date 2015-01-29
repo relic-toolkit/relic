@@ -60,11 +60,6 @@ static void eb_mul_sim_kbltz(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 	int8_t u, tnaf0[FB_BITS + 8], tnaf1[FB_BITS + 8], *_k, *_m;
 	eb_t t0[1 << (EB_WIDTH - 2)];
 	eb_t t1[1 << (EB_WIDTH - 2)];
-	bn_t vm, s0, s1;
-
-	bn_null(vm);
-	bn_null(s0);
-	bn_null(s1);
 
 	for (i = 0; i < (1 << (EB_WIDTH - 2)); i++) {
 		eb_null(t0[i]);
@@ -72,10 +67,6 @@ static void eb_mul_sim_kbltz(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 	}
 
 	TRY {
-		bn_new(vm);
-		bn_new(s0);
-		bn_new(s1);
-
 		/* Compute the w-TNAF representation of k. */
 		if (eb_curve_opt_a() == OPT_ZERO) {
 			u = -1;
@@ -111,13 +102,10 @@ static void eb_mul_sim_kbltz(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 		} else {
 			w = EB_WIDTH;
 		}
-		eb_curve_get_vm(vm);
-		eb_curve_get_s0(s0);
-		eb_curve_get_s1(s1);
 
 		l0 = l1 = FB_BITS + 8;
-		bn_rec_tnaf(tnaf0, &l0, k, vm, s0, s1, u, FB_BITS, w);
-		bn_rec_tnaf(tnaf1, &l1, m, vm, s0, s1, u, FB_BITS, EB_WIDTH);
+		bn_rec_tnaf(tnaf0, &l0, k, u, FB_BITS, w);
+		bn_rec_tnaf(tnaf1, &l1, m, u, FB_BITS, EB_WIDTH);
 
 		l = MAX(l0, l1);
 		_k = tnaf0 + l - 1;
@@ -163,9 +151,6 @@ static void eb_mul_sim_kbltz(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 		for (i = 0; i < (1 << (EB_WIDTH - 2)); i++) {
 			eb_free(t1[i]);
 		}
-		bn_free(vm);
-		bn_free(s0);
-		bn_free(s1);
 	}
 }
 
