@@ -1047,9 +1047,6 @@
 #undef eb_curve_get_tab
 #undef eb_curve_get_ord
 #undef eb_curve_get_cof
-#undef eb_curve_get_vm
-#undef eb_curve_get_s0
-#undef eb_curve_get_s1
 #undef eb_curve_set
 #undef eb_param_set
 #undef eb_param_set_any
@@ -1122,9 +1119,6 @@
 #define eb_curve_get_tab 	PREFIX(eb_curve_get_tab)
 #define eb_curve_get_ord 	PREFIX(eb_curve_get_ord)
 #define eb_curve_get_cof 	PREFIX(eb_curve_get_cof)
-#define eb_curve_get_vm 	PREFIX(eb_curve_get_vm)
-#define eb_curve_get_s0 	PREFIX(eb_curve_get_s0)
-#define eb_curve_get_s1 	PREFIX(eb_curve_get_s1)
 #define eb_curve_set 	PREFIX(eb_curve_set)
 #define eb_param_set 	PREFIX(eb_param_set)
 #define eb_param_set_any 	PREFIX(eb_param_set_any)
