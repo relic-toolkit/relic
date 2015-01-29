@@ -313,6 +313,7 @@ static void arith(void) {
 		}
 		BENCH_END;
 	}
+
 #if EB_ADD == BASIC || !defined(STRIP)
 	if (eb_curve_is_kbltz()) {
 		BENCH_BEGIN("eb_frb_basic") {
@@ -334,6 +335,8 @@ static void arith(void) {
 		BENCH_END;
 	}
 #endif
+	
+#endif /* EB_KBLTZ */
 
 	BENCH_BEGIN("eb_neg") {
 		eb_rand(p);
