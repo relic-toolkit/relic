@@ -548,9 +548,9 @@ static void ibe(void) {
 	}
 	BENCH_END;
 
-	ec_free(q);
-	ec_free(r);
-	bn_free(d);
+	bn_free(s);
+	g1_free(pub);
+	g2_free(prv);
 }
 
 static void bgn(void) {

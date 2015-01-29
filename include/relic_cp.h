@@ -719,7 +719,7 @@ typedef bgn_st *bgn_t;
 	}
 
 #elif ALLOC == STATIC
-#define sokaka_free(A)														\
+#define bgn_free(A)															\
 	if (A != NULL) {														\
 		bn_free((A)->x);													\
 		bn_free((A)->y);													\
