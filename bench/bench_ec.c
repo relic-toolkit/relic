@@ -198,16 +198,14 @@ static void arith(void) {
 	BENCH_END;
 
 	BENCH_BEGIN("ec_mul") {
-		bn_rand(k, BN_POS, bn_bits(n));
-		bn_mod(k, k, n);
+		bn_rand_mod(k, n);
 		ec_rand(p);
 		BENCH_ADD(ec_mul(q, p, k));
 	}
 	BENCH_END;
 
 	BENCH_BEGIN("ec_mul_gen") {
-		bn_rand(k, BN_POS, bn_bits(n));
-		bn_mod(k, k, n);
+		bn_rand_mod(k, n);
 		BENCH_ADD(ec_mul_gen(q, k));
 	}
 	BENCH_END;
@@ -222,18 +220,15 @@ static void arith(void) {
 	BENCH_END;
 
 	BENCH_BEGIN("ec_mul_fix") {
-		bn_rand(k, BN_POS, bn_bits(n));
-		bn_mod(k, k, n);
+		bn_rand_mod(k, n);
 		ec_mul_pre(t, p);
 		BENCH_ADD(ec_mul_fix(q, (const ec_t *)t, k));
 	}
 	BENCH_END;
 
 	BENCH_BEGIN("ec_mul_sim") {
-		bn_rand(k, BN_POS, bn_bits(n));
-		bn_mod(k, k, n);
-		bn_rand(l, BN_POS, bn_bits(n));
-		bn_mod(l, l, n);
+		bn_rand_mod(k, n);
+		bn_rand_mod(l, n);
 		ec_rand(p);
 		ec_rand(q);
 		BENCH_ADD(ec_mul_sim(r, p, k, q, l));
@@ -241,10 +236,8 @@ static void arith(void) {
 	BENCH_END;
 
 	BENCH_BEGIN("ec_mul_sim_gen") {
-		bn_rand(k, BN_POS, bn_bits(n));
-		bn_mod(k, k, n);
-		bn_rand(l, BN_POS, bn_bits(n));
-		bn_mod(l, l, n);
+		bn_rand_mod(k, n);
+		bn_rand_mod(l, n);
 		ec_rand(q);
 		BENCH_ADD(ec_mul_sim_gen(r, k, q, l));
 	}

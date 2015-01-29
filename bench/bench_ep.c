@@ -320,24 +320,21 @@ static void arith(void) {
 #endif
 
 	BENCH_BEGIN("ep_mul") {
-		bn_rand(k, BN_POS, bn_bits(n));
-		bn_mod(k, k, n);
+		bn_rand_mod(k, n);
 		ep_rand(p);
 		BENCH_ADD(ep_mul(q, p, k));
 	} BENCH_END;
 
 #if EP_MUL == BASIC || !defined(STRIP)
 	BENCH_BEGIN("ep_mul_basic") {
-		bn_rand(k, BN_POS, bn_bits(n));
-		bn_mod(k, k, n);
+		bn_rand_mod(k, n);
 		BENCH_ADD(ep_mul_basic(q, p, k));
 	} BENCH_END;
 #endif
 
 #if EP_MUL == SLIDE || !defined(STRIP)
 	BENCH_BEGIN("ep_mul_slide") {
-		bn_rand(k, BN_POS, bn_bits(n));
-		bn_mod(k, k, n);
+		bn_rand_mod(k, n);
 		ep_rand(p);
 		BENCH_ADD(ep_mul_slide(q, p, k));
 	} BENCH_END;
@@ -345,8 +342,7 @@ static void arith(void) {
 
 #if EP_MUL == MONTY || !defined(STRIP)
 	BENCH_BEGIN("ep_mul_monty") {
-		bn_rand(k, BN_POS, bn_bits(n));
-		bn_mod(k, k, n);
+		bn_rand_mod(k, n);
 		ep_rand(p);
 		BENCH_ADD(ep_mul_monty(q, p, k));
 	} BENCH_END;
@@ -354,22 +350,20 @@ static void arith(void) {
 
 #if EP_MUL == LWNAF || !defined(STRIP)
 	BENCH_BEGIN("ep_mul_lwnaf") {
-		bn_rand(k, BN_POS, bn_bits(n));
-		bn_mod(k, k, n);
+		bn_rand_mod(k, n);
 		ep_rand(p);
 		BENCH_ADD(ep_mul_lwnaf(q, p, k));
 	} BENCH_END;
 #endif
 
 	BENCH_BEGIN("ep_mul_gen") {
-		bn_rand(k, BN_POS, bn_bits(n));
-		bn_mod(k, k, n);
+		bn_rand_mod(k, n);
 		BENCH_ADD(ep_mul_gen(q, k));
 	} BENCH_END;
 
 	BENCH_BEGIN("ep_mul_dig") {
 		bn_rand(k, BN_POS, BN_DIGIT);
-		bn_mod(k, k, n);
+		bn_rand_mod(k, n);
 		BENCH_ADD(ep_mul_dig(p, q, k->dp[0]));
 	}
 	BENCH_END;
@@ -384,8 +378,7 @@ static void arith(void) {
 	} BENCH_END;
 
 	BENCH_BEGIN("ep_mul_fix") {
-		bn_rand(k, BN_POS, bn_bits(n));
-		bn_mod(k, k, n);
+		bn_rand_mod(k, n);
 		ep_rand(p);
 		ep_mul_pre(t, p);
 		BENCH_ADD(ep_mul_fix(q, (const ep_t *)t, k));
@@ -405,8 +398,7 @@ static void arith(void) {
 	} BENCH_END;
 
 	BENCH_BEGIN("ep_mul_fix_basic") {
-		bn_rand(k, BN_POS, bn_bits(n));
-		bn_mod(k, k, n);
+		bn_rand_mod(k, n);
 		ep_rand(p);
 		ep_mul_pre_basic(t, p);
 		BENCH_ADD(ep_mul_fix_basic(q, (const ep_t *)t, k));
@@ -426,8 +418,7 @@ static void arith(void) {
 	} BENCH_END;
 
 	BENCH_BEGIN("ep_mul_fix_yaowi") {
-		bn_rand(k, BN_POS, bn_bits(n));
-		bn_mod(k, k, n);
+		bn_rand_mod(k, n);
 		ep_rand(p);
 		ep_mul_pre_yaowi(t, p);
 		BENCH_ADD(ep_mul_fix_yaowi(q, (const ep_t *)t, k));
@@ -447,8 +438,7 @@ static void arith(void) {
 	} BENCH_END;
 
 	BENCH_BEGIN("ep_mul_fix_nafwi") {
-		bn_rand(k, BN_POS, bn_bits(n));
-		bn_mod(k, k, n);
+		bn_rand_mod(k, n);
 		ep_rand(p);
 		ep_mul_pre_nafwi(t, p);
 		BENCH_ADD(ep_mul_fix_nafwi(q, (const ep_t *)t, k));
@@ -468,8 +458,7 @@ static void arith(void) {
 	} BENCH_END;
 
 	BENCH_BEGIN("ep_mul_fix_combs") {
-		bn_rand(k, BN_POS, bn_bits(n));
-		bn_mod(k, k, n);
+		bn_rand_mod(k, n);
 		ep_rand(p);
 		ep_mul_pre_combs(t, p);
 		BENCH_ADD(ep_mul_fix_combs(q, (const ep_t *)t, k));
@@ -488,8 +477,7 @@ static void arith(void) {
 	} BENCH_END;
 
 	BENCH_BEGIN("ep_mul_fix_combd") {
-		bn_rand(k, BN_POS, bn_bits(n));
-		bn_mod(k, k, n);
+		bn_rand_mod(k, n);
 		ep_mul_pre_combd(t, p);
 		BENCH_ADD(ep_mul_fix_combd(q, (const ep_t *)t, k));
 	} BENCH_END;
@@ -508,8 +496,7 @@ static void arith(void) {
 	} BENCH_END;
 
 	BENCH_BEGIN("ep_mul_fix_lwnaf") {
-		bn_rand(k, BN_POS, bn_bits(n));
-		bn_mod(k, k, n);
+		bn_rand_mod(k, n);
 		ep_rand(p);
 		ep_mul_pre_lwnaf(t, p);
 		BENCH_ADD(ep_mul_fix_lwnaf(q, (const ep_t *)t, k));
@@ -519,10 +506,8 @@ static void arith(void) {
 	}
 #endif
 	BENCH_BEGIN("ep_mul_sim") {
-		bn_rand(k, BN_POS, bn_bits(n));
-		bn_mod(k, k, n);
-		bn_rand(l, BN_POS, bn_bits(n));
-		bn_mod(l, l, n);
+		bn_rand_mod(k, n);
+		bn_rand_mod(l, n);
 		ep_rand(p);
 		ep_rand(q);
 		BENCH_ADD(ep_mul_sim(r, p, k, q, l));
@@ -530,10 +515,8 @@ static void arith(void) {
 
 #if EP_SIM == BASIC || !defined(STRIP)
 	BENCH_BEGIN("ep_mul_sim_basic") {
-		bn_rand(k, BN_POS, bn_bits(n));
-		bn_mod(k, k, n);
-		bn_rand(l, BN_POS, bn_bits(n));
-		bn_mod(l, l, n);
+		bn_rand_mod(k, n);
+		bn_rand_mod(l, n);
 		ep_rand(p);
 		ep_rand(q);
 		BENCH_ADD(ep_mul_sim_basic(r, p, k, q, l));
@@ -542,10 +525,8 @@ static void arith(void) {
 
 #if EP_SIM == TRICK || !defined(STRIP)
 	BENCH_BEGIN("ep_mul_sim_trick") {
-		bn_rand(k, BN_POS, bn_bits(n));
-		bn_mod(k, k, n);
-		bn_rand(l, BN_POS, bn_bits(n));
-		bn_mod(l, l, n);
+		bn_rand_mod(k, n);
+		bn_rand_mod(l, n);
 		ep_rand(p);
 		ep_rand(q);
 		BENCH_ADD(ep_mul_sim_trick(r, p, k, q, l));
@@ -554,10 +535,8 @@ static void arith(void) {
 
 #if EP_SIM == INTER || !defined(STRIP)
 	BENCH_BEGIN("ep_mul_sim_inter") {
-		bn_rand(k, BN_POS, bn_bits(n));
-		bn_mod(k, k, n);
-		bn_rand(l, BN_POS, bn_bits(n));
-		bn_mod(l, l, n);
+		bn_rand_mod(k, n);
+		bn_rand_mod(l, n);
 		ep_rand(p);
 		ep_rand(q);
 		BENCH_ADD(ep_mul_sim_inter(r, p, k, q, l));
@@ -566,10 +545,8 @@ static void arith(void) {
 
 #if EP_SIM == JOINT || !defined(STRIP)
 	BENCH_BEGIN("ep_mul_sim_joint") {
-		bn_rand(k, BN_POS, bn_bits(n));
-		bn_mod(k, k, n);
-		bn_rand(l, BN_POS, bn_bits(n));
-		bn_mod(l, l, n);
+		bn_rand_mod(k, n);
+		bn_rand_mod(l, n);
 		ep_rand(p);
 		ep_rand(q);
 		BENCH_ADD(ep_mul_sim_joint(r, p, k, q, l));
@@ -577,10 +554,8 @@ static void arith(void) {
 #endif
 
 	BENCH_BEGIN("ep_mul_sim_gen") {
-		bn_rand(k, BN_POS, bn_bits(n));
-		bn_mod(k, k, n);
-		bn_rand(l, BN_POS, bn_bits(n));
-		bn_mod(l, l, n);
+		bn_rand_mod(k, n);
+		bn_rand_mod(l, n);
 		ep_rand(q);
 		BENCH_ADD(ep_mul_sim_gen(r, k, q, l));
 	} BENCH_END;
