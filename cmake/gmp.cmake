@@ -44,6 +44,8 @@ endif(GMP_INCLUDE_DIR AND GMP_LIBRARIES)
 
 if(GMP_FOUND)
 	message(STATUS "Configured GMP: ${GMP_LIBRARIES}")
+else(GMP_FOUND)
+	message(STATUS "Could NOT find GMP")
 endif(GMP_FOUND)
 
 mark_as_advanced(GMP_INCLUDE_DIR GMP_LIBRARIES)
