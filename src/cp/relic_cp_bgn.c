@@ -112,7 +112,7 @@ int cp_bgn_enc1(g1_t out[2], dig_t in, bgn_t pub) {
 	FINALLY {
 		bn_free(n);
 		bn_free(r);
-		g1_null(t);
+		g1_free(t);
 	}
 
 	return result;

@@ -865,8 +865,8 @@ static int bgn(void) {
 			TEST_ASSERT(cp_bgn_enc1(c, in, pub) == STS_OK, end);
 			TEST_ASSERT(cp_bgn_dec1(&out, c, prv) == STS_OK, end);
 			TEST_ASSERT(in == out, end);
-			TEST_ASSERT(cp_bgn_enc2(d, in, pub) == STS_OK, end);
-			TEST_ASSERT(cp_bgn_dec2(&out, d, prv) == STS_OK, end);
+			TEST_ASSERT(cp_bgn_enc2(e, in, pub) == STS_OK, end);
+			TEST_ASSERT(cp_bgn_dec2(&out, e, prv) == STS_OK, end);
 			TEST_ASSERT(in == out, end);
 		} TEST_END;
 
