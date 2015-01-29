@@ -262,7 +262,7 @@ typedef struct _ctx_t {
 	int qnr;
 	/** Cubic non-residue. */
 	int cnr;
-#if FP_RDC == QUICK || !define(STRIP)
+#if FP_RDC == QUICK || !defined(STRIP)
 	/** Sparse representation of prime modulus. */
 	int sps[MAX_TERMS + 1];
 	/** Length of sparse prime representation. */
