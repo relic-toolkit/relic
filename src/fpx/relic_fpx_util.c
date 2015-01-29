@@ -99,9 +99,9 @@ void fp2_write_bin(uint8_t *bin, int len, fp2_t a, int pack) {
 			if (len != FP_BYTES + 1) {
 				THROW(ERR_NO_BUFFER);	
 			} else {
-				fp2_pck(t, t);
-				fp_write_bin(bin, FP_BYTES, a[0]);
-				bin[FP_BYTES] = fp_get_bit(a[1], 0);
+				fp2_pck(t, a);
+				fp_write_bin(bin, FP_BYTES, t[0]);
+				bin[FP_BYTES] = fp_get_bit(t[1], 0);
 			}
 		} else {
 			if (len != 2 * FP_BYTES) {
