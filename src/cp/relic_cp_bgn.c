@@ -177,12 +177,12 @@ int cp_bgn_enc2(g2_t out[2], dig_t in, bgn_t pub) {
 
 	bn_null(n);
 	bn_null(r);
-	g1_null(t);
+	g2_null(t);
 
 	TRY {
 		bn_new(n);
 		bn_new(r);
-		g1_new(t);
+		g2_new(t);
 
 		g2_get_ord(n);
 		bn_rand_mod(r, n);
@@ -205,7 +205,7 @@ int cp_bgn_enc2(g2_t out[2], dig_t in, bgn_t pub) {
 	FINALLY {
 		bn_free(n);
 		bn_free(r);
-		g1_free(t);
+		g2_free(t);
 	}
 
 	return result;
