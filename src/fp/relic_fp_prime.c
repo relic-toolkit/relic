@@ -296,9 +296,12 @@ static void fp3_calc() {
 
 void fp_prime_init() {
 	ctx_t *ctx = core_get();
-	ctx->fp_id = ctx->sps_len = 0;
-	memset(ctx->sps, 0, sizeof(ctx->sps));
+	ctx->fp_id = 0;
 	bn_init(&(ctx->prime), FP_DIGS);
+#if FP_RDC == QUICK || !defined(STRIP)
+	ctx->sps_len = 0;
+	memset(ctx->sps, 0, sizeof(ctx->sps));
+#endif
 #if FP_RDC == MONTY || !defined(STRIP)
 	bn_init(&(ctx->conv), FP_DIGS);
 	bn_init(&(ctx->one), FP_DIGS);
@@ -307,8 +310,11 @@ void fp_prime_init() {
 
 void fp_prime_clean() {
 	ctx_t *ctx = core_get();
-	ctx->fp_id = ctx->sps_len = 0;
+	ctx->fp_id = 0;
+#if FP_RDC == QUICK || !defined(STRIP)	
+	ctx->sps_len = 0;
 	memset(ctx->sps, 0, sizeof(ctx->sps));
+#endif
 #if FP_RDC == MONTY || !defined(STRIP)
 	bn_clean(&(ctx->one));
 	bn_clean(&(ctx->conv));
@@ -365,8 +371,6 @@ int fp_prime_get_cnr() {
 
 void fp_prime_set_dense(const bn_t p) {
 	fp_prime_set(p);
-	core_get()->sps_len = 0;
-
 #if FP_RDC == QUICK
 	THROW(ERR_NO_CONFIG);
 #endif
@@ -374,7 +378,6 @@ void fp_prime_set_dense(const bn_t p) {
 
 void fp_prime_set_pmers(const int *f, int len) {
 	bn_t p, t;
-	ctx_t *ctx = core_get();
 
 	bn_null(p);
 	bn_null(t);
@@ -404,6 +407,7 @@ void fp_prime_set_pmers(const int *f, int len) {
 		}
 
 #if FP_RDC == QUICK || !defined(STRIP)
+		ctx_t *ctx = core_get();
 		for (int i = 0; i < len; i++) {
 			ctx->sps[i] = f[i];
 		}
