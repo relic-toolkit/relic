@@ -84,8 +84,7 @@ void ep2_rand(ep2_t p) {
 
 		ep2_curve_get_ord(n);
 
-		bn_rand(k, BN_POS, bn_bits(n));
-		bn_mod(k, k, n);
+		bn_rand_mod(k, n);
 
 		ep2_curve_get_gen(gen);
 		ep2_mul(p, gen, k);

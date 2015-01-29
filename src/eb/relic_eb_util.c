@@ -83,8 +83,7 @@ void eb_rand(eb_t p) {
 
 		eb_curve_get_ord(n);
 
-		bn_rand(k, BN_POS, bn_bits(n));
-		bn_mod(k, k, n);
+		bn_rand_mod(k, n);
 
 		eb_mul_gen(p, k);
 	} CATCH_ANY {
