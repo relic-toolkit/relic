@@ -823,7 +823,7 @@ static int bgn(void) {
 	int result, code = STS_ERR;
 	g1_t c[2], d[2];
 	g2_t e[2], f[2];
-	gt_t g[4], h[4];
+	gt_t g[4];
 	bgn_t pub, prv;
 	dig_t in, out, t;
 
