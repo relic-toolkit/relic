@@ -859,7 +859,7 @@ static int bgn(void) {
 		TEST_BEGIN("boneh-go-nissim encryption/decryption is correct") {
 			TEST_ASSERT(result == STS_OK, end);
 			do {
-				rand_bytes((unsigned char *)&in, 1);
+				rand_bytes((unsigned char *)&in, sizeof(dig_t));
 				in = in % 11;
 			} while (in == 0);
 			TEST_ASSERT(cp_bgn_enc1(c, in, pub) == STS_OK, end);
@@ -872,7 +872,7 @@ static int bgn(void) {
 
 		TEST_BEGIN("boneh-go-nissim encryption is additively homomorphic") {
 			do {
-				rand_bytes((unsigned char *)&in, 1);
+				rand_bytes((unsigned char *)&in, sizeof(dig_t));
 				in = in % 11;
 				out = in % 7;
 			} while (in == 0 || out == 0);
@@ -896,7 +896,7 @@ static int bgn(void) {
 
 		TEST_BEGIN("boneh-go-nissim encryption is multiplicatively homomorphic") {
 			do {
-				rand_bytes((unsigned char *)&in, 1);
+				rand_bytes((unsigned char *)&in, sizeof(dig_t));
 				in = in % 11;
 				out = in % 17;
 			} while (in == 0 || out == 0);
