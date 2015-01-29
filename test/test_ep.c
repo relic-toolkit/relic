@@ -494,8 +494,7 @@ static int multiplication(void) {
 		} TEST_END;
 
 		TEST_BEGIN("generator multiplication is correct") {
-			bn_rand(k, BN_POS, bn_bits(n));
-			bn_mod(k, k, n);
+			bn_rand_mod(k, n);
 			ep_mul(q, p, k);
 			ep_mul_gen(r, k);
 			TEST_ASSERT(ep_cmp(q, r) == CMP_EQ, end);
@@ -503,8 +502,7 @@ static int multiplication(void) {
 
 #if EP_MUL == BASIC || !defined(STRIP)
 		TEST_BEGIN("binary point multiplication is correct") {
-			bn_rand(k, BN_POS, bn_bits(n));
-			bn_mod(k, k, n);
+			bn_rand_mod(k, n);
 			ep_mul(q, p, k);
 			ep_mul_basic(r, p, k);
 			TEST_ASSERT(ep_cmp(q, r) == CMP_EQ, end);
@@ -513,8 +511,7 @@ static int multiplication(void) {
 
 #if EP_MUL == MONTY || !defined(STRIP)
 		TEST_BEGIN("sliding window point multiplication is correct") {
-			bn_rand(k, BN_POS, bn_bits(n));
-			bn_mod(k, k, n);
+			bn_rand_mod(k, n);
 			ep_mul(q, p, k);
 			ep_mul_slide(r, p, k);
 			TEST_ASSERT(ep_cmp(q, r) == CMP_EQ, end);
@@ -524,8 +521,7 @@ static int multiplication(void) {
 
 #if EP_MUL == MONTY || !defined(STRIP)
 		TEST_BEGIN("montgomery laddering point multiplication is correct") {
-			bn_rand(k, BN_POS, bn_bits(n));
-			bn_mod(k, k, n);
+			bn_rand_mod(k, n);
 			ep_mul(q, p, k);
 			ep_mul_monty(r, p, k);
 			TEST_ASSERT(ep_cmp(q, r) == CMP_EQ, end);
@@ -535,8 +531,7 @@ static int multiplication(void) {
 
 #if EP_MUL == LWNAF || !defined(STRIP)
 		TEST_BEGIN("left-to-right w-naf point multiplication is correct") {
-			bn_rand(k, BN_POS, bn_bits(n));
-			bn_mod(k, k, n);
+			bn_rand_mod(k, n);
 			ep_mul(q, p, k);
 			ep_mul_lwnaf(r, p, k);
 			TEST_ASSERT(ep_cmp(q, r) == CMP_EQ, end);
@@ -595,8 +590,7 @@ static int fixed(void) {
 			ep_new(t[i]);
 		}
 		TEST_BEGIN("fixed point multiplication is correct") {
-			bn_rand(k, BN_POS, bn_bits(n));
-			bn_mod(k, k, n);
+			bn_rand_mod(k, n);
 			ep_mul(q, p, k);
 			ep_mul_pre(t, p);
 			ep_mul_fix(q, (const ep_t *)t, k);
@@ -612,8 +606,7 @@ static int fixed(void) {
 			ep_new(t[i]);
 		}
 		TEST_BEGIN("binary fixed point multiplication is correct") {
-			bn_rand(k, BN_POS, bn_bits(n));
-			bn_mod(k, k, n);
+			bn_rand_mod(k, n);
 			ep_mul(q, p, k);
 			ep_mul_pre_basic(t, p);
 			ep_mul_fix_basic(q, (const ep_t *)t, k);
@@ -630,8 +623,7 @@ static int fixed(void) {
 			ep_new(t[i]);
 		}
 		TEST_BEGIN("yao windowing fixed point multiplication is correct") {
-			bn_rand(k, BN_POS, bn_bits(n));
-			bn_mod(k, k, n);
+			bn_rand_mod(k, n);
 			ep_mul(q, p, k);
 			ep_mul_pre_yaowi(t, p);
 			ep_mul_fix_yaowi(q, (const ep_t *)t, k);
@@ -648,8 +640,7 @@ static int fixed(void) {
 			ep_new(t[i]);
 		}
 		TEST_BEGIN("naf windowing fixed point multiplication is correct") {
-			bn_rand(k, BN_POS, bn_bits(n));
-			bn_mod(k, k, n);
+			bn_rand_mod(k, n);
 			ep_mul(q, p, k);
 			ep_mul_pre_nafwi(t, p);
 			ep_mul_fix_nafwi(q, (const ep_t *)t, k);
@@ -666,8 +657,7 @@ static int fixed(void) {
 			ep_new(t[i]);
 		}
 		TEST_BEGIN("single-table comb fixed point multiplication is correct") {
-			bn_rand(k, BN_POS, bn_bits(n));
-			bn_mod(k, k, n);
+			bn_rand_mod(k, n);
 			ep_mul(q, p, k);
 			ep_mul_pre_combs(t, p);
 			ep_mul_fix_combs(q, (const ep_t *)t, k);
@@ -684,8 +674,7 @@ static int fixed(void) {
 			ep_new(t[i]);
 		}
 		TEST_BEGIN("double-table comb fixed point multiplication is correct") {
-			bn_rand(k, BN_POS, bn_bits(n));
-			bn_mod(k, k, n);
+			bn_rand_mod(k, n);
 			ep_mul(q, p, k);
 			ep_mul_pre_combd(t, p);
 			ep_mul_fix_combd(q, (const ep_t *)t, k);
@@ -702,8 +691,7 @@ static int fixed(void) {
 			ep_new(t[i]);
 		}
 		TEST_BEGIN("left-to-right w-naf fixed point multiplication is correct") {
-			bn_rand(k, BN_POS, bn_bits(n));
-			bn_mod(k, k, n);
+			bn_rand_mod(k, n);
 			ep_mul(q, p, k);
 			ep_mul_pre_lwnaf(t, p);
 			ep_mul_fix_lwnaf(q, (const ep_t *)t, k);
@@ -753,10 +741,8 @@ static int simultaneous(void) {
 		ep_curve_get_ord(n);
 
 		TEST_BEGIN("simultaneous point multiplication is correct") {
-			bn_rand(k, BN_POS, bn_bits(n));
-			bn_mod(k, k, n);
-			bn_rand(l, BN_POS, bn_bits(n));
-			bn_mod(l, l, n);
+			bn_rand_mod(k, n);
+			bn_rand_mod(l, n);
 			ep_rand(p);
 			ep_rand(q);
 			ep_mul_sim(r, p, k, q, l);
@@ -769,10 +755,8 @@ static int simultaneous(void) {
 
 #if EP_SIM == BASIC || !defined(STRIP)
 		TEST_BEGIN("basic simultaneous point multiplication is correct") {
-			bn_rand(k, BN_POS, bn_bits(n));
-			bn_mod(k, k, n);
-			bn_rand(l, BN_POS, bn_bits(n));
-			bn_mod(l, l, n);
+			bn_rand_mod(k, n);
+			bn_rand_mod(l, n);
 			ep_mul_sim(r, p, k, q, l);
 			ep_mul_sim_basic(q, p, k, q, l);
 			TEST_ASSERT(ep_cmp(q, r) == CMP_EQ, end);
@@ -781,10 +765,8 @@ static int simultaneous(void) {
 
 #if EP_SIM == TRICK || !defined(STRIP)
 		TEST_BEGIN("shamir's trick for simultaneous multiplication is correct") {
-			bn_rand(k, BN_POS, bn_bits(n));
-			bn_mod(k, k, n);
-			bn_rand(l, BN_POS, bn_bits(n));
-			bn_mod(l, l, n);
+			bn_rand_mod(k, n);
+			bn_rand_mod(l, n);
 			ep_mul_sim(r, p, k, q, l);
 			ep_mul_sim_trick(q, p, k, q, l);
 			TEST_ASSERT(ep_cmp(q, r) == CMP_EQ, end);
@@ -793,10 +775,8 @@ static int simultaneous(void) {
 
 #if EP_SIM == INTER || !defined(STRIP)
 		TEST_BEGIN("interleaving for simultaneous multiplication is correct") {
-			bn_rand(k, BN_POS, bn_bits(n));
-			bn_mod(k, k, n);
-			bn_rand(l, BN_POS, bn_bits(n));
-			bn_mod(l, l, n);
+			bn_rand_mod(k, n);
+			bn_rand_mod(l, n);
 			ep_mul_sim(r, p, k, q, l);
 			ep_mul_sim_inter(q, p, k, q, l);
 			TEST_ASSERT(ep_cmp(q, r) == CMP_EQ, end);
@@ -805,10 +785,8 @@ static int simultaneous(void) {
 
 #if EP_SIM == JOINT || !defined(STRIP)
 		TEST_BEGIN("jsf for simultaneous multiplication is correct") {
-			bn_rand(k, BN_POS, bn_bits(n));
-			bn_mod(k, k, n);
-			bn_rand(l, BN_POS, bn_bits(n));
-			bn_mod(l, l, n);
+			bn_rand_mod(k, n);
+			bn_rand_mod(l, n);
 			ep_mul_sim(r, p, k, q, l);
 			ep_mul_sim_joint(q, p, k, q, l);
 			TEST_ASSERT(ep_cmp(q, r) == CMP_EQ, end);
@@ -816,10 +794,8 @@ static int simultaneous(void) {
 #endif
 
 		TEST_BEGIN("simultaneous multiplication with generator is correct") {
-			bn_rand(k, BN_POS, bn_bits(n));
-			bn_mod(k, k, n);
-			bn_rand(l, BN_POS, bn_bits(n));
-			bn_mod(l, l, n);
+			bn_rand_mod(k, n);
+			bn_rand_mod(l, n);
 			ep_mul_sim_gen(r, k, q, l);
 			ep_curve_get_gen(p);
 			ep_mul_sim(q, p, k, q, l);

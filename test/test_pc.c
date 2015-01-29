@@ -340,8 +340,7 @@ static int multiplication1(void) {
 		} TEST_END;
 
 		TEST_BEGIN("generator multiplication is correct") {
-			bn_rand(k, BN_POS, bn_bits(n));
-			bn_mod(k, k, n);
+			bn_rand_mod(k, n);
 			g1_mul(q, p, k);
 			g1_mul_gen(r, k);
 			TEST_ASSERT(g1_cmp(q, r) == CMP_EQ, end);
@@ -397,8 +396,7 @@ static int fixed1(void) {
 			g1_new(t[i]);
 		}
 		TEST_BEGIN("fixed point multiplication is correct") {
-			bn_rand(k, BN_POS, bn_bits(n));
-			bn_mod(k, k, n);
+			bn_rand_mod(k, n);
 			g1_mul(q, p, k);
 			g1_mul_pre(t, p);
 			g1_mul_fix(q, (const g1_t *)t, k);
@@ -449,10 +447,8 @@ static int simultaneous1(void) {
 		g1_get_ord(n);
 
 		TEST_BEGIN("simultaneous point multiplication is correct") {
-			bn_rand(k, BN_POS, bn_bits(n));
-			bn_mod(k, k, n);
-			bn_rand(l, BN_POS, bn_bits(n));
-			bn_mod(l, l, n);
+			bn_rand_mod(k, n);
+			bn_rand_mod(l, n);
 			g1_mul(q, p, k);
 			g1_mul(s, q, l);
 			g1_mul_sim(r, p, k, q, l);
@@ -462,10 +458,8 @@ static int simultaneous1(void) {
 		} TEST_END;
 
 		TEST_BEGIN("simultaneous multiplication with generator is correct") {
-			bn_rand(k, BN_POS, bn_bits(n));
-			bn_mod(k, k, n);
-			bn_rand(l, BN_POS, bn_bits(n));
-			bn_mod(l, l, n);
+			bn_rand_mod(k, n);
+			bn_rand_mod(l, n);
 			g1_mul_sim(r, p, k, q, l);
 			g1_get_gen(s);
 			g1_mul_sim(q, s, k, q, l);
@@ -828,8 +822,7 @@ static int multiplication2(void) {
 		} TEST_END;
 
 		TEST_BEGIN("generator multiplication is correct") {
-			bn_rand(k, BN_POS, bn_bits(n));
-			bn_mod(k, k, n);
+			bn_rand_mod(k, n);
 			g2_mul(q, p, k);
 			g2_mul_gen(r, k);
 			TEST_ASSERT(g2_cmp(q, r) == CMP_EQ, end);
@@ -885,8 +878,7 @@ static int fixed2(void) {
 			g2_new(t[i]);
 		}
 		TEST_BEGIN("fixed point multiplication is correct") {
-			bn_rand(k, BN_POS, bn_bits(n));
-			bn_mod(k, k, n);
+			bn_rand_mod(k, n);
 			g2_mul(q, p, k);
 			g2_mul_pre(t, p);
 			g2_mul_fix(q, t, k);
@@ -937,10 +929,8 @@ static int simultaneous2(void) {
 		g2_get_ord(n);
 
 		TEST_BEGIN("simultaneous point multiplication is correct") {
-			bn_rand(k, BN_POS, bn_bits(n));
-			bn_mod(k, k, n);
-			bn_rand(l, BN_POS, bn_bits(n));
-			bn_mod(l, l, n);
+			bn_rand_mod(k, n);
+			bn_rand_mod(l, n);
 			g2_mul(q, p, k);
 			g2_mul(s, q, l);
 			g2_mul_sim(r, p, k, q, l);
@@ -950,10 +940,8 @@ static int simultaneous2(void) {
 		} TEST_END;
 
 		TEST_BEGIN("simultaneous multiplication with generator is correct") {
-			bn_rand(k, BN_POS, bn_bits(n));
-			bn_mod(k, k, n);
-			bn_rand(l, BN_POS, bn_bits(n));
-			bn_mod(l, l, n);
+			bn_rand_mod(k, n);
+			bn_rand_mod(l, n);
 			g2_mul_sim_gen(r, k, q, l);
 			g2_get_gen(s);
 			g2_mul_sim(q, s, k, q, l);
@@ -1311,8 +1299,7 @@ static int pairing(void) {
 		TEST_BEGIN("pairing is bilinear") {
 			g1_rand(p);
 			g2_rand(r);
-			bn_rand(k, BN_POS, bn_bits(n));
-			bn_mod(k, k, n);
+			bn_rand_mod(k, n);
 			g1_mul(q, p, k);
 			pc_map(e1, q, r);
 			g2_mul(s, r, k);

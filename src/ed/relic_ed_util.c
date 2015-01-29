@@ -49,7 +49,7 @@ void ed_rand(ed_t p) {
 
 		ed_curve_get_ord(n);
 
-		bn_rand_mod(k, n));
+		bn_rand_mod(k, n);
 
 		ed_mul_gen(p, k);
 	} CATCH_ANY {

@@ -298,8 +298,7 @@ static int pairing2(void) {
 		TEST_BEGIN("pairing is bilinear") {
 			ep_rand(p);
 			ep_rand(q);
-			bn_rand(k, BN_POS, bn_bits(n));
-			bn_mod(k, k, n);
+			bn_rand_mod(k, n);
 			ep_mul(r, q, k);
 			fp2_zero(e1);
 			fp2_zero(e2);
@@ -321,8 +320,7 @@ static int pairing2(void) {
 		TEST_BEGIN("tate pairing is bilinear") {
 			ep_rand(p);
 			ep_rand(q);
-			bn_rand(k, BN_POS, bn_bits(n));
-			bn_mod(k, k, n);
+			bn_rand_mod(k, n);
 			ep_mul(r, q, k);
 			fp2_zero(e1);
 			fp2_zero(e2);
@@ -345,8 +343,7 @@ static int pairing2(void) {
 		TEST_BEGIN("weil pairing is bilinear") {
 			ep_rand(p);
 			ep_rand(q);
-			bn_rand(k, BN_POS, bn_bits(n));
-			bn_mod(k, k, n);
+			bn_rand_mod(k, n);
 			ep_mul(r, q, k);
 			fp2_zero(e1);
 			fp2_zero(e2);
@@ -659,8 +656,7 @@ static int pairing12(void) {
 		TEST_BEGIN("pairing is bilinear") {
 			ep_rand(p);
 			ep2_rand(q);
-			bn_rand(k, BN_POS, bn_bits(n));
-			bn_mod(k, k, n);
+			bn_rand_mod(k, n);
 			ep2_mul(r, q, k);
 			fp12_zero(e1);
 			fp12_zero(e2);
@@ -688,8 +684,7 @@ static int pairing12(void) {
 		TEST_BEGIN("tate pairing is bilinear") {
 			ep_rand(p);
 			ep2_rand(q);
-			bn_rand(k, BN_POS, bn_bits(n));
-			bn_mod(k, k, n);
+			bn_rand_mod(k, n);
 			ep2_mul(r, q, k);
 			fp12_zero(e1);
 			fp12_zero(e2);
@@ -718,8 +713,7 @@ static int pairing12(void) {
 		TEST_BEGIN("weil pairing is bilinear") {
 			ep_rand(p);
 			ep2_rand(q);
-			bn_rand(k, BN_POS, bn_bits(n));
-			bn_mod(k, k, n);
+			bn_rand_mod(k, n);
 			ep2_mul(r, q, k);
 			fp12_zero(e1);
 			fp12_zero(e2);
@@ -748,8 +742,7 @@ static int pairing12(void) {
 		TEST_BEGIN("optimal ate pairing is bilinear") {
 			ep_rand(p);
 			ep2_rand(q);
-			bn_rand(k, BN_POS, bn_bits(n));
-			bn_mod(k, k, n);
+			bn_rand_mod(k, n);
 			ep2_mul(r, q, k);
 			fp12_zero(e1);
 			fp12_zero(e2);

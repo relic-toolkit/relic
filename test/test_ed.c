@@ -309,8 +309,7 @@ static int multiplication(void) {
 		} TEST_END;
 
 		TEST_BEGIN("generator multiplication is correct") {
-			bn_rand(k, BN_POS, bn_bits(n));
-			bn_mod(k, k, n);
+			bn_rand_mod(k, n);
 			ed_mul(q, p, k);
 			ed_mul_gen(r, k);
 			TEST_ASSERT(ed_cmp(q, r) == CMP_EQ, end);
@@ -318,8 +317,7 @@ static int multiplication(void) {
 
 #if ED_MUL == BASIC
 		TEST_BEGIN("binary point multiplication is correct") {
-			bn_rand(k, BN_POS, bn_bits(n));
-			bn_mod(k, k, n);
+			bn_rand_mod(k, n);
 			ed_mul(q, p, k);
 			ed_mul_basic(r, p, k);
 			TEST_ASSERT(ed_cmp(q, r) == CMP_EQ, end);
@@ -328,8 +326,7 @@ static int multiplication(void) {
 
 #if ED_MUL == SLIDE
 		TEST_BEGIN("sliding window point multiplication is correct") {
-			bn_rand(k, BN_POS, bn_bits(n));
-			bn_mod(k, k, n);
+			bn_rand_mod(k, n);
 			ed_mul(q, p, k);
 			ed_mul_slide(r, p, k);
 			TEST_ASSERT(ed_cmp(q, r) == CMP_EQ, end);
@@ -339,8 +336,7 @@ static int multiplication(void) {
 
 #if ED_MUL == MONTY
 		TEST_BEGIN("montgomery laddering point multiplication is correct") {
-			bn_rand(k, BN_POS, bn_bits(n));
-			bn_mod(k, k, n);
+			bn_rand_mod(k, n);
 			ed_mul(q, p, k);
 			ed_mul_monty(r, p, k);
 			TEST_ASSERT(ed_cmp(q, r) == CMP_EQ, end);
@@ -350,8 +346,7 @@ static int multiplication(void) {
 
 #if ED_MUL == LWNAF
 		TEST_BEGIN("left-to-right w-naf point multiplication is correct") {
-			bn_rand(k, BN_POS, bn_bits(n));
-			bn_mod(k, k, n);
+			bn_rand_mod(k, n);
 			ed_mul(q, p, k);
 			ed_mul_lwnaf(r, p, k);
 			TEST_ASSERT(ed_cmp(q, r) == CMP_EQ, end);

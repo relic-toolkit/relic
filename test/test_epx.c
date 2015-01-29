@@ -509,7 +509,6 @@ static int multiplication(void) {
 		} TEST_END;
 
 		TEST_BEGIN("generator multiplication is correct") {
-			bn_rand(k, BN_POS, bn_bits(n));
 			bn_mod(k, k, n);
 			ep2_mul(q, p, k);
 			ep2_mul_gen(r, k);
@@ -567,7 +566,6 @@ static int fixed(void) {
 			ep2_new(t[i]);
 		}
 		TEST_BEGIN("fixed point multiplication is correct") {
-			bn_rand(k, BN_POS, bn_bits(n));
 			bn_mod(k, k, n);
 			ep2_mul(q, p, k);
 			ep2_mul_pre(t, p);
@@ -584,7 +582,6 @@ static int fixed(void) {
 			ep2_new(t[i]);
 		}
 		TEST_BEGIN("binary fixed point multiplication is correct") {
-			bn_rand(k, BN_POS, bn_bits(n));
 			bn_mod(k, k, n);
 			ep2_mul(q, p, k);
 			ep2_mul_pre_basic(t, p);
@@ -602,7 +599,6 @@ static int fixed(void) {
 			ep2_new(t[i]);
 		}
 		TEST_BEGIN("yao windowing fixed point multiplication is correct") {
-			bn_rand(k, BN_POS, bn_bits(n));
 			bn_mod(k, k, n);
 			ep2_mul(q, p, k);
 			ep2_mul_pre_yaowi(t, p);
@@ -620,7 +616,6 @@ static int fixed(void) {
 			ep2_new(t[i]);
 		}
 		TEST_BEGIN("naf windowing fixed point multiplication is correct") {
-			bn_rand(k, BN_POS, bn_bits(n));
 			bn_mod(k, k, n);
 			ep2_mul(q, p, k);
 			ep2_mul_pre_nafwi(t, p);
@@ -638,7 +633,6 @@ static int fixed(void) {
 			ep2_new(t[i]);
 		}
 		TEST_BEGIN("single-table comb fixed point multiplication is correct") {
-			bn_rand(k, BN_POS, bn_bits(n));
 			bn_mod(k, k, n);
 			ep2_mul(q, p, k);
 			ep2_mul_pre_combs(t, p);
@@ -656,7 +650,6 @@ static int fixed(void) {
 			ep2_new(t[i]);
 		}
 		TEST_BEGIN("double-table comb fixed point multiplication is correct") {
-			bn_rand(k, BN_POS, bn_bits(n));
 			bn_mod(k, k, n);
 			ep2_mul(q, p, k);
 			ep2_mul_pre_combd(t, p);
@@ -674,7 +667,6 @@ static int fixed(void) {
 			ep2_new(t[i]);
 		}
 		TEST_BEGIN("left-to-right w-naf fixed point multiplication is correct") {
-			bn_rand(k, BN_POS, bn_bits(n));
 			bn_mod(k, k, n);
 			ep2_mul(q, p, k);
 			ep2_mul_pre_lwnaf(t, p);
@@ -727,10 +719,8 @@ static int simultaneous(void) {
 		ep2_curve_get_ord(n);
 
 		TEST_BEGIN("simultaneous point multiplication is correct") {
-			bn_rand(k, BN_POS, bn_bits(n));
 			bn_mod(k, k, n);
-			bn_rand(l, BN_POS, bn_bits(n));
-			bn_mod(l, l, n);
+			bn_rand_mod(l, n);
 			ep2_mul(q, p, k);
 			ep2_mul(s, q, l);
 			ep2_mul_sim(r, p, k, q, l);
@@ -741,10 +731,8 @@ static int simultaneous(void) {
 
 #if EP_SIM == BASIC || !defined(STRIP)
 		TEST_BEGIN("basic simultaneous point multiplication is correct") {
-			bn_rand(k, BN_POS, bn_bits(n));
 			bn_mod(k, k, n);
-			bn_rand(l, BN_POS, bn_bits(n));
-			bn_mod(l, l, n);
+			bn_rand_mod(l, n);
 			ep2_mul_sim(r, p, k, q, l);
 			ep2_mul_sim_basic(q, p, k, q, l);
 			TEST_ASSERT(ep2_cmp(q, r) == CMP_EQ, end);
@@ -753,10 +741,8 @@ static int simultaneous(void) {
 
 #if EP_SIM == TRICK || !defined(STRIP)
 		TEST_BEGIN("shamir's trick for simultaneous multiplication is correct") {
-			bn_rand(k, BN_POS, bn_bits(n));
 			bn_mod(k, k, n);
-			bn_rand(l, BN_POS, bn_bits(n));
-			bn_mod(l, l, n);
+			bn_rand_mod(l, n);
 			ep2_mul_sim(r, p, k, q, l);
 			ep2_mul_sim_trick(q, p, k, q, l);
 			TEST_ASSERT(ep2_cmp(q, r) == CMP_EQ, end);
@@ -765,10 +751,8 @@ static int simultaneous(void) {
 
 #if EP_SIM == INTER || !defined(STRIP)
 		TEST_BEGIN("interleaving for simultaneous multiplication is correct") {
-			bn_rand(k, BN_POS, bn_bits(n));
 			bn_mod(k, k, n);
-			bn_rand(l, BN_POS, bn_bits(n));
-			bn_mod(l, l, n);
+			bn_rand_mod(l, n);
 			ep2_mul_sim(r, p, k, q, l);
 			ep2_mul_sim_inter(q, p, k, q, l);
 			TEST_ASSERT(ep2_cmp(q, r) == CMP_EQ, end);
@@ -777,10 +761,8 @@ static int simultaneous(void) {
 
 #if EP_SIM == JOINT || !defined(STRIP)
 		TEST_BEGIN("jsf for simultaneous multiplication is correct") {
-			bn_rand(k, BN_POS, bn_bits(n));
 			bn_mod(k, k, n);
-			bn_rand(l, BN_POS, bn_bits(n));
-			bn_mod(l, l, n);
+			bn_rand_mod(l, n);
 			ep2_mul_sim(r, p, k, q, l);
 			ep2_mul_sim_joint(q, p, k, q, l);
 			TEST_ASSERT(ep2_cmp(q, r) == CMP_EQ, end);
@@ -788,10 +770,8 @@ static int simultaneous(void) {
 #endif
 
 		TEST_BEGIN("simultaneous multiplication with generator is correct") {
-			bn_rand(k, BN_POS, bn_bits(n));
 			bn_mod(k, k, n);
-			bn_rand(l, BN_POS, bn_bits(n));
-			bn_mod(l, l, n);
+			bn_rand_mod(l, n);
 			ep2_mul_sim_gen(r, k, q, l);
 			ep2_curve_get_gen(s);
 			ep2_mul_sim(q, s, k, q, l);
@@ -916,7 +896,6 @@ static int frobenius(void) {
 		TEST_BEGIN("cubed frobenius is consistent") {
 			ep2_rand(a);
 			ep2_frb(b, a, 1);
-			ep2_frb(b, b, 1);
 			ep2_frb(b, b, 1);
 			ep2_frb(c, a, 3);
 			TEST_ASSERT(ep2_cmp(c, b) == CMP_EQ, end);
