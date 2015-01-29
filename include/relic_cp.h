@@ -663,7 +663,7 @@ typedef bgn_st *bgn_t;
 
 #elif ALLOC == STATIC
 #define bgn_new(A)															\
-	A = (bgn_t)alloca(sizeof(sokaka_st));									\
+	A = (bgn_t)alloca(sizeof(bgn_st));										\
 	if (A == NULL) {														\
 		THROW(ERR_NO_MEMORY);												\
 	}																		\
@@ -684,7 +684,7 @@ typedef bgn_st *bgn_t;
 
 #elif ALLOC == STACK
 #define bgn_new(A)															\
-	A = (sbgn_t)alloca(sizeof(bgn_st));										\
+	A = (bgn_t)alloca(sizeof(bgn_st));										\
 	bn_new((A)->x);															\
 	bn_new((A)->y);															\
 	bn_new((A)->z);															\
