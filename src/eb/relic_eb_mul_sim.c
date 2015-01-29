@@ -298,7 +298,7 @@ void eb_mul_sim_trick(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 	eb_t t0[1 << (EB_WIDTH / 2)], t1[1 << (EB_WIDTH / 2)], t[1 << EB_WIDTH];
 	bn_t n;
 	int l0, l1, w = EB_WIDTH / 2;
-	uint8_t w0[CEIL(FB_BITS, 2)], w1[CEIL(FB_BITS, w)];
+	uint8_t w0[CEIL(FB_BITS, w)], w1[CEIL(FB_BITS, w)];
 
 	bn_null(n);
 
