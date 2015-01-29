@@ -179,8 +179,13 @@ void ed_param_set(int param) {
 }
 
 int ed_param_set_any(void) {
+	int r = STS_OK;
+#if FP_PRIME == 255
 	ed_param_set(CURVE_ED25519);
-	return 0;
+#else
+	r = STS_ERR;
+#endif
+	return r;
 }
 
 int ed_param_get(void) {
