@@ -77,7 +77,7 @@ int core_init(void) {
 		core_ctx = &(first_ctx);
 	}
 
-#if defined(CHECK) || defined(TRACE)
+#if defined(CHECK) && defined(TRACE)
 	core_ctx->trace = 0;
 #endif
 
