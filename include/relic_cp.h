@@ -728,7 +728,6 @@ typedef bgn_st *bgn_t;
 		g1_free((A)->gx);													\
 		g1_free((A)->gy);													\
 		g1_free((A)->gz);													\
-		g2_free((A)->h);													\
 		g2_free((A)->hx);													\
 		g2_free((A)->hy);													\
 		g2_free((A)->hz);													\
