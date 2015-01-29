@@ -325,6 +325,7 @@ const dig_t *fp_prime_get_rdc(void) {
 }
 
 const int *fp_prime_get_sps(int *len) {
+#if FP_RDC == QUICK || !defined(STRIP)
 	ctx_t *ctx = core_get();
 	if (ctx->sps_len > 0 && ctx->sps_len < MAX_TERMS) {
 		if (len != NULL) {
@@ -337,6 +338,9 @@ const int *fp_prime_get_sps(int *len) {
 		}
 		return NULL;
 	}
+#else
+	return NULL;
+#endif
 }
 
 const dig_t *fp_prime_get_conv(void) {
@@ -399,11 +403,14 @@ void fp_prime_set_pmers(const int *f, int len) {
 			bn_sub_dig(p, p, -f[0]);
 		}
 
+#if FP_RDC == QUICK || !defined(STRIP)
 		for (int i = 0; i < len; i++) {
 			ctx->sps[i] = f[i];
 		}
 		ctx->sps[len] = 0;
 		ctx->sps_len = len;
+#endif /* FP_RDC == QUICK */
+
 		fp_prime_set(p);
 	}
 	CATCH_ANY {

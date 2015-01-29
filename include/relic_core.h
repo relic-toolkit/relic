@@ -159,10 +159,10 @@ typedef struct _ctx_t {
 	int caught;
 #endif /* CHECK */
 
-#if defined(CHECK) || defined(TRACE)
+#if defined(CHECK) && defined(TRACE)
 	/** The current trace size. */
 	int trace;
-#endif /* CHECK || TRACE */
+#endif /* CHECK && TRACE */
 
 #if ALLOC == STATIC
 	/** The static pool of digit vectors. */
@@ -253,7 +253,7 @@ typedef struct _ctx_t {
 	bn_st conv;
 	/** Value of constant one in Montgomery form. */
 	bn_st one;
-#endif /* FP_RDC */
+#endif /* FP_RDC == MONTY */
 	/** Prime modulus modulo 8. */
 	dig_t mod8;
 	/** Value derived from the prime used for modular reduction. */
@@ -262,10 +262,12 @@ typedef struct _ctx_t {
 	int qnr;
 	/** Cubic non-residue. */
 	int cnr;
+#if FP_RDC == QUICK || !define(STRIP)
 	/** Sparse representation of prime modulus. */
 	int sps[MAX_TERMS + 1];
 	/** Length of sparse prime representation. */
 	int sps_len;
+#endif /* FP_RDC == QUICK */
 #endif /* WITH_FP */
 
 #ifdef WITH_EP
