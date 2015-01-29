@@ -649,7 +649,6 @@ static int multiplication(void) {
 
 #if EB_MUL == HALVE || !defined(STRIP)
 		TEST_BEGIN("point multiplication by halving is correct") {
-			bn_rand(k, BN_POS, FB_BITS);
 			bn_rand_mod(k, n);
 			eb_mul(q, p, k);
 			eb_mul_halve(r, p, k);
