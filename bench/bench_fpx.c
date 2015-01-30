@@ -402,6 +402,21 @@ static void arith2(void) {
 	}
 	BENCH_END;
 
+	BENCH_BEGIN("fp2_pck") {
+		fp2_rand(a);
+		fp2_conv_uni(a, a);
+		BENCH_ADD(fp2_pck(c, a));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp2_upk") {
+		fp2_rand(a);
+		fp2_conv_uni(a, a);
+		fp2_pck(a, a);
+		BENCH_ADD(fp2_upk(c, a));
+	}
+	BENCH_END;
+
 	fp2_free(a);
 	fp2_free(b);
 	fp2_free(c);
@@ -1322,12 +1337,6 @@ static void arith12(void) {
 
 	BENCH_BEGIN("fp12_pck") {
 		fp12_rand(a);
-		BENCH_ADD(fp12_pck(c, a));
-	}
-	BENCH_END;
-
-	BENCH_BEGIN("fp12_pck (cyc)") {
-		fp12_rand(a);
 		fp12_conv_cyc(a, a);
 		BENCH_ADD(fp12_pck(c, a));
 	}
@@ -1335,13 +1344,8 @@ static void arith12(void) {
 
 	BENCH_BEGIN("fp12_upk") {
 		fp12_rand(a);
-		BENCH_ADD(fp12_upk(c, a));
-	}
-	BENCH_END;
-
-	BENCH_BEGIN("fp12_upk (cyc)") {
-		fp12_rand(a);
 		fp12_conv_cyc(a, a);
+		fp12_pck(a, a);
 		BENCH_ADD(fp12_upk(c, a));
 	}
 	BENCH_END;

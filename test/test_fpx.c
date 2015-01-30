@@ -151,7 +151,7 @@ static int util2(void) {
 			fp2_conv_uni(a, a);
 			fp2_write_bin(bin, FP_BYTES + 1, a, 1);
 			fp2_read_bin(b, bin, FP_BYTES + 1);
-			TEST_ASSERT(fp2_cmp(a, b) == CMP_EQ, end);						
+			TEST_ASSERT(fp2_cmp(a, b) == CMP_EQ, end);
 		}
 		TEST_END;
 
@@ -698,6 +698,44 @@ static int exponentiation2(void) {
 	bn_free(d);
 	return code;
 }
+
+static int compression2(void) {
+	int code = STS_ERR;
+	fp2_t a, b, c;
+
+	fp2_null(a);
+	fp2_null(b);
+	fp2_null(c);
+
+	TRY {
+		fp2_new(a);
+		fp2_new(b);
+		fp2_new(c);
+
+		TEST_BEGIN("compression is consistent") {
+			fp2_rand(a);
+			fp2_pck(b, a);
+			TEST_ASSERT(fp2_upk(c, b) == 1, end);
+			TEST_ASSERT(fp2_cmp(a, c) == CMP_EQ, end);
+			fp2_rand(a);
+			fp2_conv_uni(a, a);
+			fp2_pck(b, a);
+			TEST_ASSERT(fp2_upk(c, b) == 1, end);
+			TEST_ASSERT(fp2_cmp(a, c) == CMP_EQ, end);
+		} TEST_END;
+	}
+	CATCH_ANY {
+		util_print("FATAL ERROR!\n");
+		ERROR(end);
+	}
+	code = STS_OK;
+  end:
+	fp2_free(a);
+	fp2_free(b);
+	fp2_free(c);
+	return code;
+}
+
 
 static int square_root2(void) {
 	int code = STS_ERR;
@@ -3336,6 +3374,11 @@ int main(void) {
 		}
 
 		if (exponentiation2() != STS_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (compression2() != STS_OK) {
 			core_clean();
 			return 1;
 		}
