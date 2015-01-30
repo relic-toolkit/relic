@@ -78,6 +78,7 @@ void fp2_read_bin(fp2_t a, uint8_t *bin, int len) {
 	}
 	if (len == FP_BYTES + 1) {
 		fp_read_bin(a[0], bin, FP_BYTES);
+		fp_zero(a[1]);
 		fp_set_bit(a[1], 0, bin[FP_BYTES]);
 		fp2_upk(a, a);
 	}
@@ -96,7 +97,7 @@ void fp2_write_bin(uint8_t *bin, int len, fp2_t a, int pack) {
 		fp2_new(t);
 
 		if (pack && fp2_test_uni(a)) {
-			if (len != FP_BYTES + 1) {
+			if (len < FP_BYTES + 1) {
 				THROW(ERR_NO_BUFFER);	
 			} else {
 				fp2_pck(t, a);
@@ -104,7 +105,7 @@ void fp2_write_bin(uint8_t *bin, int len, fp2_t a, int pack) {
 				bin[FP_BYTES] = fp_get_bit(t[1], 0);
 			}
 		} else {
-			if (len != 2 * FP_BYTES) {
+			if (len < 2 * FP_BYTES) {
 				THROW(ERR_NO_BUFFER);
 			} else {
 				fp_write_bin(bin, FP_BYTES, a[0]);

@@ -47,38 +47,42 @@ void fp2_pck(fp2_t c, fp2_t a) {
 }
 
 int fp2_upk(fp2_t c, fp2_t a) {
-	int result, b = fp_get_bit(a[1], 0);
-	fp_t t;
+	if (fp_bits(a[1]) <= 1) {
+		int result, b = fp_get_bit(a[1], 0);
+		fp_t t;
 
-	fp_null(t);
+		fp_null(t);
 
-	TRY {
-		fp_new(t);
+		TRY {
+			fp_new(t);
 
-		/* a_0^2 + a_1^2 = 1, thus a_1^2 = 1 - a_0^2. */
-		fp_sqr(t, a[0]);
-		fp_sub_dig(t, t, 1);
-		fp_neg(t, t);
+			/* a_0^2 + a_1^2 = 1, thus a_1^2 = 1 - a_0^2. */
+			fp_sqr(t, a[0]);
+			fp_sub_dig(t, t, 1);
+			fp_neg(t, t);
 
-		/* a1 = sqrt(a_0^2). */
-		result = fp_srt(t, t);
+			/* a1 = sqrt(a_0^2). */
+			result = fp_srt(t, t);
 
-		if (result) {
-			/* Verify if least significant bit of the result matches the
-			 * compressed second coordinate. */
-			if (fp_get_bit(t, 0) != b) {
-				fp_neg(t, t);
+			if (result) {
+				/* Verify if least significant bit of the result matches the
+				 * compressed second coordinate. */
+				if (fp_get_bit(t, 0) != b) {
+					fp_neg(t, t);
+				}
+				fp_copy(c[0], a[0]);
+				fp_copy(c[1], t);
 			}
-			fp_copy(c[0], a[0]);
-			fp_copy(c[1], t);
+		} CATCH_ANY {
+			THROW(ERR_CAUGHT);
+		} FINALLY {
+			fp_free(t);
 		}
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
-		fp_free(t);
+		return result;
+	} else {
+		fp2_copy(c, a);
+		return 1;
 	}
-
-	return result;
 }
 
 void fp12_pck(fp12_t c, fp12_t a) {
