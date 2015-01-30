@@ -1922,7 +1922,7 @@ int main(void) {
 
 	util_banner("Arithmetic:", 1);
 
-/*	if (addition() != STS_OK) {
+	if (addition() != STS_OK) {
 		core_clean();
 		return 1;
 	}
@@ -1980,7 +1980,7 @@ int main(void) {
 	if (digit() != STS_OK) {
 		core_clean();
 		return 1;
-	}*/
+	}
 
 	if (recoding() != STS_OK) {
 		core_clean();
