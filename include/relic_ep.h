@@ -1098,7 +1098,7 @@ void ep_pck(ep_t r, const ep_t p);
  *
  * @param[out] r			- the result.
  * @param[in] p				- the point to decompress.
- * @return if the decompression was successful
+ * @return a boolean value indicating if the decompression was successful.
  */
 int ep_upk(ep_t r, const ep_t p);
 

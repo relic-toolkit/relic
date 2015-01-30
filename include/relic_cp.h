@@ -898,7 +898,7 @@ int cp_rsa_sig_quick(uint8_t *sig, int *sig_len, uint8_t *msg, int msg_len,
  * @param[in] msg_len		- the message length in bytes.
  * @param[in] hash			- the flag to indicate the message format.
  * @param[in] pub			- the public key.
- * @return 1 if the signature is valid, 0 otherwise.
+ * @return a boolean value indicating if the signature is valid.
  */
 int cp_rsa_ver(uint8_t *sig, int sig_len, uint8_t *msg, int msg_len, int hash,
 		rsa_t pub);
@@ -1096,6 +1096,7 @@ int cp_ecies_dec(uint8_t *out, int *out_len, ec_t r, uint8_t *in, int in_len,
  *
  * @param[out] d			- the private key.
  * @param[in] q				- the public key.
+ * @return STS_OK if no errors occurred, STS_ERR otherwise.
  */
 int cp_ecdsa_gen(bn_t d, ec_t q);
 
@@ -1108,6 +1109,7 @@ int cp_ecdsa_gen(bn_t d, ec_t q);
  * @param[in] len				- the message length in bytes.
  * @param[in] hash				- the flag to indicate the message format.
  * @param[in] d					- the private key.
+ * @return STS_OK if no errors occurred, STS_ERR otherwise.
  */
 int cp_ecdsa_sig(bn_t r, bn_t s, uint8_t *msg, int len, int hash, bn_t d);
 
@@ -1120,6 +1122,7 @@ int cp_ecdsa_sig(bn_t r, bn_t s, uint8_t *msg, int len, int hash, bn_t d);
  * @param[in] len				- the message length in bytes.
  * @param[in] hash				- the flag to indicate the message format.
  * @param[in] q					- the public key.
+ * @return a boolean value indicating if the signature is valid.
  */
 int cp_ecdsa_ver(bn_t r, bn_t s, uint8_t *msg, int len, int hash, ec_t q);
 
@@ -1128,6 +1131,7 @@ int cp_ecdsa_ver(bn_t r, bn_t s, uint8_t *msg, int len, int hash, ec_t q);
  *
  * @param[out] d			- the private key.
  * @param[in] q				- the public key.
+ * @return STS_OK if no errors occurred, STS_ERR otherwise.
  */
 int cp_ecss_gen(bn_t d, ec_t q);
 
@@ -1139,6 +1143,7 @@ int cp_ecss_gen(bn_t d, ec_t q);
  * @param[in] msg				- the message to sign.
  * @param[in] len				- the message length in bytes.
  * @param[in] d					- the private key.
+ * @return STS_OK if no errors occurred, STS_ERR otherwise.
  */
 int cp_ecss_sig(bn_t e, bn_t s, uint8_t *msg, int len, bn_t d);
 
@@ -1151,6 +1156,7 @@ int cp_ecss_sig(bn_t e, bn_t s, uint8_t *msg, int len, bn_t d);
  * @param[in] msg				- the message to sign.
  * @param[in] len				- the message length in bytes.
  * @param[in] q					- the public key.
+ * @return a boolean value indicating if the signature is valid.
  */
 int cp_ecss_ver(bn_t e, bn_t s, uint8_t *msg, int len, ec_t q);
 
@@ -1184,6 +1190,7 @@ int cp_sokaka_gen_prv(sokaka_t k, char *id, int len, bn_t master);
  * @param[in] k					- the private key of the first identity.
  * @param[in] id2				- the second identity.
  * @param[in] len2				- the length of the second identity in bytes.
+ * @return STS_OK if no errors occurred, STS_ERR otherwise.
  */
 int cp_sokaka_key(uint8_t *key, unsigned int key_len, char *id1, int len1,
 		sokaka_t k, char *id2, int len2);
@@ -1337,7 +1344,7 @@ int cp_bls_sig(g1_t s, uint8_t *msg, int len, bn_t d);
  * @param[in] msg				- the message to sign.
  * @param[in] len				- the message length in bytes.
  * @param[in] q					- the public key.
- * @return a boolean value indicating the verification result.
+ * @return a boolean value indicating if the signature is valid.
  */
 int cp_bls_ver(g1_t s, uint8_t *msg, int len, g2_t q);
 
