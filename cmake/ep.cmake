@@ -43,10 +43,10 @@ endif(NOT EP_WIDTH)
 set(EP_DEPTH "${EP_DEPTH}" CACHE STRING "Width of precomputation table for fixed point methods.")
 set(EP_WIDTH "${EP_WIDTH}" CACHE STRING "Width of window processing for unknown point methods.")
 
-option(EP_PLAIN "Support for ordinary curves" on)
+option(EP_PLAIN "Support for ordinary curves without endomorphisms" on)
 option(EP_SUPER "Support for supersingular curves" on)
 option(EP_MIXED "Use mixed coordinates" on)
-option(EP_ENDOM "Special support for Koblitz curves" on)
+option(EP_ENDOM "Support for ordinary curves with endomorphisms" on)
 option(EP_PRECO "Build precomputation table for generator" on)
 
 # Choose the arithmetic methods.
