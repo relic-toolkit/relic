@@ -595,8 +595,7 @@ void fp_param_set(int param) {
 				break;
 #else
 			default:
-				bn_gen_prime(p, FP_BITS);
-				fp_prime_set_dense(p);
+				fp_param_set_any_dense();
 				core_get()->fp_id = 0;
 				break;
 #endif
@@ -663,18 +662,26 @@ int fp_param_set_any(void) {
 }
 
 int fp_param_set_any_dense() {
-	bn_t modulus;
+	bn_t p;
+	dig_t mod8;
 	int result = STS_OK;
 
-	bn_null(modulus);
+	bn_null(p);
 
 	TRY {
-		bn_new(modulus);
-		bn_gen_prime(modulus, FP_BITS);
-		if (!bn_is_prime(modulus)) {
+		bn_new(p);
+#ifdef FP_QNRES
+		do {
+			bn_gen_prime(p, FP_BITS);
+			bn_mod_dig((dig_t *)&mod8, p, 8);
+		} while (mod8 != 3);
+#else		
+		bn_gen_prime(p, FP_BITS);
+#endif
+		if (!bn_is_prime(p)) {
 			result = STS_ERR;
 		} else {
-			fp_prime_set_dense(modulus);
+			fp_prime_set_dense(p);
 		}
 	}
 	CATCH_ANY {
