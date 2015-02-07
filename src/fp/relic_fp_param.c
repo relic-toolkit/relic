@@ -688,7 +688,7 @@ int fp_param_set_any_dense() {
 		THROW(ERR_CAUGHT);
 	}
 	FINALLY {
-		bn_free(modulus);
+		bn_free(p);
 	}
 	return result;
 }
