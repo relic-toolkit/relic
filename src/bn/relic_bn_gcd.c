@@ -40,9 +40,6 @@
 void bn_gcd_basic(bn_t c, const bn_t a, const bn_t b) {
 	bn_t u, v;
 
-	bn_null(u);
-	bn_null(v);
-
 	if (bn_is_zero(a)) {
 		bn_abs(c, b);
 		return;
@@ -52,6 +49,9 @@ void bn_gcd_basic(bn_t c, const bn_t a, const bn_t b) {
 		bn_abs(c, a);
 		return;
 	}
+
+	bn_null(u);
+	bn_null(v);
 
 	TRY {
 		bn_new(u);
@@ -77,13 +77,6 @@ void bn_gcd_basic(bn_t c, const bn_t a, const bn_t b) {
 void bn_gcd_ext_basic(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 	bn_t u, v, x_1, y_1, q, r;
 
-	bn_null(u);
-	bn_null(v);
-	bn_null(x_1);
-	bn_null(y_1);
-	bn_null(q);
-	bn_null(r);
-
 	if (bn_is_zero(a)) {
 		bn_abs(c, b);
 		bn_zero(d);
@@ -101,6 +94,13 @@ void bn_gcd_ext_basic(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 		}
 		return;
 	}
+
+	bn_null(u);
+	bn_null(v);
+	bn_null(x_1);
+	bn_null(y_1);
+	bn_null(q);
+	bn_null(r);
 
 	TRY {
 		bn_new(u);
@@ -175,15 +175,6 @@ void bn_gcd_lehme(bn_t c, const bn_t a, const bn_t b) {
 	dig_t _x, _y, q, _q, t, _t;
 	dis_t _a, _b, _c, _d;
 
-	bn_null(x);
-	bn_null(y);
-	bn_null(u);
-	bn_null(v);
-	bn_null(t0);
-	bn_null(t1);
-	bn_null(t2);
-	bn_null(t3);
-
 	if (bn_is_zero(a)) {
 		bn_abs(c, b);
 		return;
@@ -193,6 +184,15 @@ void bn_gcd_lehme(bn_t c, const bn_t a, const bn_t b) {
 		bn_abs(c, a);
 		return;
 	}
+
+	bn_null(x);
+	bn_null(y);
+	bn_null(u);
+	bn_null(v);
+	bn_null(t0);
+	bn_null(t1);
+	bn_null(t2);
+	bn_null(t3);
 
 	/*
 	 * Taken from Handbook of Hyperelliptic and Elliptic Cryptography.
@@ -357,16 +357,6 @@ void bn_gcd_ext_lehme(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 	dis_t _a, _b, _c, _d;
 	int swap;
 
-	bn_null(x);
-	bn_null(y);
-	bn_null(u);
-	bn_null(v);
-	bn_null(t0);
-	bn_null(t1);
-	bn_null(t2);
-	bn_null(t3);
-	bn_null(t4);
-
 	if (bn_is_zero(a)) {
 		bn_abs(c, b);
 		bn_zero(d);
@@ -384,6 +374,16 @@ void bn_gcd_ext_lehme(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 		}
 		return;
 	}
+
+	bn_null(x);
+	bn_null(y);
+	bn_null(u);
+	bn_null(v);
+	bn_null(t0);
+	bn_null(t1);
+	bn_null(t2);
+	bn_null(t3);
+	bn_null(t4);
 
 	/*
 	 * Taken from Handbook of Hyperelliptic and Elliptic Cryptography.
@@ -613,10 +613,6 @@ void bn_gcd_stein(bn_t c, const bn_t a, const bn_t b) {
 	bn_t u, v, t;
 	int shift;
 
-	bn_null(u);
-	bn_null(v);
-	bn_null(t);
-
 	if (bn_is_zero(a)) {
 		bn_abs(c, b);
 		return;
@@ -626,6 +622,10 @@ void bn_gcd_stein(bn_t c, const bn_t a, const bn_t b) {
 		bn_abs(c, a);
 		return;
 	}
+
+	bn_null(u);
+	bn_null(v);
+	bn_null(t);
 
 	TRY {
 		bn_new(u);
@@ -673,14 +673,6 @@ void bn_gcd_ext_stein(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 	bn_t x, y, u, v, _a, _b, _e;
 	int shift, found;
 
-	bn_null(x);
-	bn_null(y);
-	bn_null(u);
-	bn_null(v);
-	bn_null(_a);
-	bn_null(_b);
-	bn_null(_e);
-
 	if (bn_is_zero(a)) {
 		bn_abs(c, b);
 		bn_zero(d);
@@ -698,6 +690,14 @@ void bn_gcd_ext_stein(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 		}
 		return;
 	}
+
+	bn_null(x);
+	bn_null(y);
+	bn_null(u);
+	bn_null(v);
+	bn_null(_a);
+	bn_null(_b);
+	bn_null(_e);
 
 	TRY {
 		bn_new(x);
@@ -802,17 +802,6 @@ void bn_gcd_ext_mid(bn_t c, bn_t d, bn_t e, bn_t f, const bn_t a, const bn_t b) 
 	bn_t q, r, s, t, u, v, x, w, y, z;
 	int stop;
 
-	bn_null(q);
-	bn_null(r);
-	bn_null(s);
-	bn_null(t);
-	bn_null(u);
-	bn_null(v);
-	bn_null(x);
-	bn_null(w);
-	bn_null(y);
-	bn_null(z);
-
 	if (bn_is_zero(a)) {
 		bn_abs(c, b);
 		bn_zero(d);
@@ -826,6 +815,17 @@ void bn_gcd_ext_mid(bn_t c, bn_t d, bn_t e, bn_t f, const bn_t a, const bn_t b) 
 		bn_set_dig(e, 1);
 		return;
 	}
+
+	bn_null(q);
+	bn_null(r);
+	bn_null(s);
+	bn_null(t);
+	bn_null(u);
+	bn_null(v);
+	bn_null(x);
+	bn_null(w);
+	bn_null(y);
+	bn_null(z);
 
 	TRY {
 		bn_new(q);
@@ -938,13 +938,6 @@ void bn_gcd_ext_dig(bn_t c, bn_t d, bn_t e, const bn_t a, const dig_t b) {
 	bn_t u, v, x1, y1, q, r;
 	dig_t _v, _q, _t, _u;
 
-	bn_null(u);
-	bn_null(v);
-	bn_null(x1);
-	bn_null(y1);
-	bn_null(q);
-	bn_null(r);
-
 	if (d == NULL && e == NULL) {
 		bn_gcd_dig(c, a, b);
 		return;
@@ -967,6 +960,13 @@ void bn_gcd_ext_dig(bn_t c, bn_t d, bn_t e, const bn_t a, const dig_t b) {
 		}
 		return;
 	}
+
+	bn_null(u);
+	bn_null(v);
+	bn_null(x1);
+	bn_null(y1);
+	bn_null(q);
+	bn_null(r);
 
 	TRY {
 		bn_new(u);
