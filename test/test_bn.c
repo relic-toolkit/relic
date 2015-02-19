@@ -1027,6 +1027,38 @@ static int exponentiation(void) {
 	return code;
 }
 
+static int square_root(void) {
+	int code = STS_ERR;
+	bn_t a, b, c;
+
+	bn_null(a);
+	bn_null(b);
+	bn_null(c);
+
+	TRY {
+		bn_new(a);
+		bn_new(b);
+		bn_new(c);
+
+		TEST_BEGIN("square root extraction is correct") {
+			bn_rand(a, BN_POS, BN_BITS / 2);
+			bn_sqr(c, a);
+			bn_srt(b, c);
+			TEST_ASSERT(bn_cmp(a, b) == CMP_EQ, end);
+		}
+		TEST_END;
+	}
+	CATCH_ANY {
+		ERROR(end);
+	}
+	code = STS_OK;
+  end:
+	bn_free(a);
+	bn_free(b);
+	bn_free(c);
+	return code;
+}
+
 static int gcd(void) {
 	int code = STS_ERR;
 	bn_t a, b, c, d, e, f;
@@ -1860,14 +1892,13 @@ static int recoding(void) {
 #if defined(WITH_EP) && defined(EP_ENDOM) && (EP_MUL == LWNAF || EP_FIX == COMBS || EP_FIX == LWNAF || EP_SIM == INTER || !defined(STRIP))
 		TEST_BEGIN("glv recoding is correct") {
 			if (ep_param_set_any_endom() == STS_OK) {
-				bn_rand(a, BN_POS, FP_BITS);
-				ep_curve_get_ord(b);
-				bn_mod(a, a, b);
 				ep_curve_get_v1(v1);
 				ep_curve_get_v2(v2);
+				ep_curve_get_ord(b);
+				bn_rand_mod(a, b);
 				bn_rec_glv(b, c, a, b, (const bn_t *)v1, (const bn_t *)v2);
 				ep_curve_get_ord(v2[0]);
-				/* Recover parameter lambda. */
+				/* Recover lambda parameter. */
 				bn_gcd_ext(v1[0], v2[1], NULL, v1[2], v2[0]);
 				if (bn_sign(v2[1]) == BN_NEG) {
 					bn_add(v2[1], v2[1], v2[0]);
@@ -1958,6 +1989,11 @@ int main(void) {
 	}
 
 	if (reduction() != STS_OK) {
+		core_clean();
+		return 1;
+	}
+
+	if (square_root() != STS_OK) {
 		core_clean();
 		return 1;
 	}

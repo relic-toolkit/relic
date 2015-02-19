@@ -1056,6 +1056,16 @@ void bn_mxp_monty(bn_t c, const bn_t a, const bn_t b, const bn_t m);
 void bn_mxp_dig(bn_t c, const bn_t a, dig_t b, const bn_t m);
 
 /**
+ * Extracts an approximate integer square-root of a multiple precision integer.
+ *
+ * @param[out] c 			- the result.
+ * @param[in] a 			- the multiple precision integer to extract.
+ *
+ * @throw ERR_NO_VALID		- if the argument is negative.
+ */
+void bn_srt(bn_t c, bn_t a);
+
+/**
  * Computes the greatest common divisor of two multiple precision integers
  * using the standard Euclidean algorithm.
  *
@@ -1133,8 +1143,8 @@ void bn_gcd_ext_stein(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b);
 
 /**
  * Computes the extended greatest common divisor of two multiple precision
- * halfway through the algorithm returning also two short vectors
- * v1 = (c, d), v2 = (-d, e) useful to decompose an integer k into k0, k1 such
+ * integers halfway through the algorithm. Returns also two short vectors
+ * v1 = (c, d), v2 = (-e, f) useful to decompose an integer k into k0, k1 such
  * that k = k_0 + k_1 * a (mod b).
  *
  * @param[out] c			- the first component of the first vector.

@@ -662,6 +662,12 @@ static void arith(void) {
 	}
 	BENCH_END;
 
+	BENCH_BEGIN("bn_srt") {
+		bn_rand(a, BN_POS, BN_BITS);
+		BENCH_ADD(bn_srt(b, a));
+	}
+	BENCH_END;
+
 	BENCH_BEGIN("bn_gcd") {
 		bn_rand(a, BN_POS, BN_BITS);
 		bn_rand(b, BN_POS, BN_BITS);
