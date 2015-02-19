@@ -277,7 +277,7 @@ typedef CAT(GT_LOWER, t) gt_t;
  * @param[in] P				- the element to test.
  * @return 1 if the element it the unity, 0 otherwise.
  */
-#define gt_is_unity(P)		~CAT(GT_LOWER, cmp_dig)(P, 1)
+#define gt_is_unity(P)		(CAT(GT_LOWER, cmp_dig)(P, 1) == CMP_EQ)
 
 /**
  * Assigns a G_1 element to the unity.
