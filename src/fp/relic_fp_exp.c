@@ -44,6 +44,11 @@ void fp_exp_basic(fp_t c, const fp_t a, const bn_t b) {
 
 	fp_null(r);
 
+	if (bn_is_zero(b)) {
+		fp_set_dig(c, 1);
+		return;
+	}
+
 	TRY {
 		fp_new(r);
 
@@ -58,7 +63,11 @@ void fp_exp_basic(fp_t c, const fp_t a, const bn_t b) {
 			}
 		}
 
-		fp_copy(c, r);
+		if (bn_sign(b) == BN_NEG) {
+			fp_inv(c, r);
+		} else {
+			fp_copy(c, r);
+		}
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
@@ -78,6 +87,12 @@ void fp_exp_slide(fp_t c, const fp_t a, const bn_t b) {
 	uint8_t win[FP_BITS + 1];
 
 	fp_null(r);
+
+	if (bn_is_zero(b)) {
+		fp_set_dig(c, 1);
+		return;
+	}
+
 
 	/* Initialize table. */
 	for (i = 0; i < (1 << (FP_WIDTH - 1)); i++) {
@@ -112,7 +127,11 @@ void fp_exp_slide(fp_t c, const fp_t a, const bn_t b) {
 			}
 		}
 
-		fp_copy(c, r);
+		if (bn_sign(b) == BN_NEG) {
+			fp_inv(c, r);
+		} else {
+			fp_copy(c, r);
+		}
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
@@ -135,6 +154,11 @@ void fp_exp_monty(fp_t c, const fp_t a, const bn_t b) {
 	fp_null(t[0]);
 	fp_null(t[1]);
 
+	if (bn_is_zero(b)) {
+		fp_set_dig(c, 1);
+		return;
+	}
+
 	TRY {
 		fp_new(t[0]);
 		fp_new(t[1]);
@@ -150,8 +174,11 @@ void fp_exp_monty(fp_t c, const fp_t a, const bn_t b) {
 			dv_swap_cond(t[0], t[1], FP_DIGS, j ^ 1);
 		}
 
-		fp_copy(c, t[0]);
-
+		if (bn_sign(b) == BN_NEG) {
+			fp_inv(c, t[0]);
+		} else {
+			fp_copy(c, t[0]);
+		}
 	} CATCH_ANY {
 		THROW(ERR_CAUGHT);
 	}
