@@ -799,7 +799,7 @@ void bn_gcd_ext_stein(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 #endif
 
 void bn_gcd_ext_mid(bn_t c, bn_t d, bn_t e, bn_t f, const bn_t a, const bn_t b) {
-	bn_t q, r, s, t, u, v, x, w, y, z;
+	bn_t p, q, r, s, t, u, v, x, w, y, z;
 	int stop;
 
 	if (bn_is_zero(a)) {
@@ -828,6 +828,7 @@ void bn_gcd_ext_mid(bn_t c, bn_t d, bn_t e, bn_t f, const bn_t a, const bn_t b) 
 	bn_null(z);
 
 	TRY {
+		bn_new(p);
 		bn_new(q);
 		bn_new(r);
 		bn_new(s);
@@ -848,6 +849,7 @@ void bn_gcd_ext_mid(bn_t c, bn_t d, bn_t e, bn_t f, const bn_t a, const bn_t b) 
 		}
 
 		stop = bn_bits(u) >> 1;
+		bn_srt(p, u);
 
 		bn_set_dig(x, 1);
 		bn_zero(t);
@@ -869,7 +871,7 @@ void bn_gcd_ext_mid(bn_t c, bn_t d, bn_t e, bn_t f, const bn_t a, const bn_t b) 
 				bn_neg(f, x);
 				wait = 0;
 			}
-			if (bn_bits(u) > stop) {
+			if (bn_cmp(u, p) == CMP_GT) {
 				bn_copy(c, r);
 				bn_neg(d, x);
 				bn_copy(w, u);
