@@ -989,8 +989,8 @@ static int exponentiation(void) {
 		bn_new(d);
 
 		TEST_BEGIN("exponentiation is correct") {
+			fb_rand(a);			
 			bn_zero(d);
-			fb_rand(a);
 			fb_exp(c, a, d);
 			TEST_ASSERT(fb_cmp_dig(c, 1) == CMP_EQ, end);
 			bn_set_dig(d, 1);
@@ -1002,7 +1002,6 @@ static int exponentiation(void) {
 			fb_exp(c, a, d);
 			fb_inv(c, c);
 			TEST_ASSERT(fb_cmp(b, c) == CMP_EQ, end);
-			fb_rand(a);
 			bn_set_2b(d, FB_BITS);
 			fb_exp(c, a, d);
 			TEST_ASSERT(fb_cmp(a, c) == CMP_EQ, end);

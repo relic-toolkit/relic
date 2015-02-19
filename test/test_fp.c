@@ -906,8 +906,8 @@ static int exponentiation(void) {
 		bn_new(d);
 
 		TEST_BEGIN("exponentiation is correct") {
+			fp_rand(a);			
 			bn_zero(d);
-			fp_rand(a);
 			fp_exp(c, a, d);
 			TEST_ASSERT(fp_cmp_dig(c, 1) == CMP_EQ, end);
 			bn_set_dig(d, 1);
@@ -919,7 +919,6 @@ static int exponentiation(void) {
 			fp_exp(c, a, d);
 			fp_inv(c, c);
 			TEST_ASSERT(fp_cmp(b, c) == CMP_EQ, end);
-			fp_rand(a);
 			d->sign = BN_POS;
 			d->used = FP_DIGS;
 			dv_copy(d->dp, fp_prime_get(), FP_DIGS);
