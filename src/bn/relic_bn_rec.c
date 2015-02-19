@@ -141,18 +141,18 @@ void bn_rec_naf(int8_t *naf, int *len, const bn_t k, int w) {
 	dig_t t0, mask;
 	int8_t u_i;
 
-	bn_null(t);
-
-	mask = MASK(w);
-	l = (1 << w);
-
 	if (*len < (bn_bits(k) + 1)) {
 		THROW(ERR_NO_BUFFER);
 	}
 
+	bn_null(t);
+
 	TRY {
 		bn_new(t);
-		bn_copy(t, k);
+		bn_abs(t, k);
+
+		mask = MASK(w);
+		l = (1 << w);
 
 		i = 0;
 		if (w == 2) {
@@ -360,7 +360,7 @@ void bn_rec_tnaf_mod(bn_t r0, bn_t r1, const bn_t k, int u, int m) {
 		bn_zero(t2);
 		bn_zero(t3);
 		/* (r0, r1) = (k, 0). */
-		bn_copy(r0, k);
+		bn_abs(r0, k);
 		bn_zero(r1);
 
 		for (int i = 0; i < m; i++) {
@@ -429,7 +429,8 @@ void bn_rec_tnaf(int8_t *tnaf, int *len, const bn_t k, int8_t u, int m, int w) {
 		bn_new(tmp);
 
 		bn_rec_tnaf_get(&t_w, beta, gama, u, w);
-		bn_rec_tnaf_mod(r0, r1, k, u, m);
+		bn_abs(tmp, k);
+		bn_rec_tnaf_mod(r0, r1, tmp, u, m);
 
 		mask = MASK(w);
 		l = 1 << w;
@@ -553,7 +554,8 @@ void bn_rec_rtnaf(int8_t *tnaf, int *len, const bn_t k, int8_t u, int m, int w) 
 		bn_new(tmp);
 
 		bn_rec_tnaf_get(&t_w, beta, gama, u, w);
-		bn_rec_tnaf_mod(r0, r1, k, u, m);
+		bn_abs(tmp, k);
+		bn_rec_tnaf_mod(r0, r1, tmp, u, m);
 		mask = MASK(w);
 		l = CEIL(m + 2, (w - 1));
 
@@ -686,7 +688,7 @@ void bn_rec_reg(int8_t *naf, int *len, const bn_t k, int n, int w) {
 
 	TRY {
 		bn_new(t);
-		bn_copy(t, k);
+		bn_abs(t, k);
 
 		i = 0;
 		if (w == 2) {
@@ -735,8 +737,8 @@ void bn_rec_jsf(int8_t *jsf, int *len, const bn_t k, const bn_t l) {
 		bn_new(n0);
 		bn_new(n1);
 
-		bn_copy(n0, k);
-		bn_copy(n1, l);
+		bn_abs(n0, k);
+		bn_abs(n1, l);
 
 		i = bn_bits(k);
 		j = bn_bits(l);
@@ -807,27 +809,28 @@ void bn_rec_glv(bn_t k0, bn_t k1, const bn_t k, const bn_t n, const bn_t *v1,
 		bn_new(b2);
 		bn_new(t);
 
+		bn_abs(t, k);
 		bits = bn_bits(n);
 
-		bn_mul(b1, k, v1[0]);
+		bn_mul(b1, t, v1[0]);
 		r1 = bn_get_bit(b1, bits);
 		bn_rsh(b1, b1, bits + 1);
 		bn_add_dig(b1, b1, r1);
 
-		bn_mul(b2, k, v2[0]);
+		bn_mul(b2, t, v2[0]);
 		r2 = bn_get_bit(b2, bits);
 		bn_rsh(b2, b2, bits + 1);
 		bn_add_dig(b2, b2, r2);
 
 		bn_mul(k0, b1, v1[1]);
-		bn_mul(t, b2, v2[1]);
-		bn_add(k0, k0, t);
+		bn_mul(k1, b2, v2[1]);
+		bn_add(k0, k0, k1);
+		bn_sub(k0, t, k0);
 
 		bn_mul(k1, b1, v1[2]);
 		bn_mul(t, b2, v2[2]);
 		bn_add(k1, k1, t);
 
-		bn_sub(k0, k, k0);
 		bn_neg(k1, k1);
 	}
 	CATCH_ANY {

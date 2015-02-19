@@ -1284,7 +1284,8 @@ int bn_factor(bn_t c, const bn_t a);
 int bn_is_factor(bn_t c, const bn_t a);
 
 /**
- * Recodes an integer in window form.
+ * Recodes a positive integer in window form. If a negative integer is given
+ * instead, takes its absolute value.
  *
  * @param[out] win			- the recoded integer.
  * @param[out] len			- the number of bytes written.
@@ -1295,7 +1296,8 @@ int bn_is_factor(bn_t c, const bn_t a);
 void bn_rec_win(uint8_t *win, int *len, const bn_t k, int w);
 
 /**
- * Recodes an integer in sliding window form.
+ * Recodes a positive integer in sliding window form. If a negative integer is
+ * given instead, takes its absolute value.
  *
  * @param[out] win			- the recoded integer.
  * @param[out] len			- the number of bytes written.
@@ -1306,7 +1308,8 @@ void bn_rec_win(uint8_t *win, int *len, const bn_t k, int w);
 void bn_rec_slw(uint8_t *win, int *len, const bn_t k, int w);
 
 /**
- * Recodes an integer in width-w Non-Adjacent Form.
+ * Recodes a positive integer in width-w Non-Adjacent Form. If a negative
+ * integer is given instead, takes its absolute value.
  *
  * @param[out] naf			- the recoded integer.
  * @param[out] len			- the number of bytes written.
@@ -1317,7 +1320,8 @@ void bn_rec_slw(uint8_t *win, int *len, const bn_t k, int w);
 void bn_rec_naf(int8_t *naf, int *len, const bn_t k, int w);
 
 /**
- * Recodes an integer in width-w \tau-NAF.
+ * Recodes a positive integer in width-w \tau-NAF. If a negative integer is
+ * given instead, takes its absolute value.
  *
  * @param[out] tnaf			- the recoded integer.
  * @param[out] len			- the number of bytes written.
@@ -1330,7 +1334,8 @@ void bn_rec_naf(int8_t *naf, int *len, const bn_t k, int w);
 void bn_rec_tnaf(int8_t *tnaf, int *len, const bn_t k, int8_t u, int m, int w);
 
 /**
- * Recodes an integer in regular fixed-length width-w \tau-NAF.
+ * Recodes a positive integer in regular fixed-length width-w \tau-NAF.
+ * If a negative integer is given instead, takes its absolute value.
  *
  * @param[out] tnaf			- the recoded integer.
  * @param[out] len			- the number of bytes written.
@@ -1355,7 +1360,8 @@ void bn_rec_rtnaf(int8_t *tnaf, int *len, const bn_t k, int8_t u, int m, int w);
 void bn_rec_tnaf_get(int8_t *t, int8_t *beta, int8_t *gama, int8_t u, int w);
 
 /**
- * Computes k partmod d = r0 + r1 * t, where d = (t^m - 1)/(t - 1).
+ * Computes the partial reduction k partmod d = r0 + r1 * t, where
+ * d = (t^m - 1)/(t - 1).
  *
  * @param[out] r0		- the first half of the result.
  * @param[out] r1		- the second half of the result.
@@ -1366,7 +1372,8 @@ void bn_rec_tnaf_get(int8_t *t, int8_t *beta, int8_t *gama, int8_t u, int w);
 void bn_rec_tnaf_mod(bn_t r0, bn_t r1, const bn_t k, int u, int m);
 
 /**
- * Recodes an integer in regular fixed-length width-w NAF.
+ * Recodes a positive integer in regular fixed-length width-w NAF. If a negative
+ * integer is given instead, takes its absolute value.
  *
  * @param[out] naf			- the recoded integer.
  * @param[out] len			- the number of bytes written.
@@ -1378,7 +1385,8 @@ void bn_rec_tnaf_mod(bn_t r0, bn_t r1, const bn_t k, int u, int m);
 void bn_rec_reg(int8_t *naf, int *len, const bn_t k, int n, int w);
 
 /**
- * Recodes a pair of integers in Joint Sparse Form.
+ * Recodes of a pair of positive integers in Joint Sparse Form. If negative
+ * integers are given instead, takes their absolute value.
  *
  * @param[out] jsf			- the recoded pair of integers.
  * @param[out] len			- the number of bytes written.
@@ -1389,8 +1397,9 @@ void bn_rec_reg(int8_t *naf, int *len, const bn_t k, int n, int w);
 void bn_rec_jsf(int8_t *jsf, int *len, const bn_t k, const bn_t l);
 
 /**
- * Recodes an integer in two parts such that k = k0 + phi(k1), where
- * phi is the efficient curve endomorphism.
+ * Recodes a positive integer into two parts k0,k1 such that k = k0 + phi(k1),
+ * where phi is an efficient curve endomorphism. If a negative integer is
+ * given instead, takes its absolute value.
  *
  * @param[out] k0			- the first part of the result.
  * @param[out] k1			- the second part of the result.
