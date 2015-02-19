@@ -196,7 +196,7 @@ void bn_rand(bn_t a, int sign, int bits) {
 void bn_rand_mod(bn_t a, bn_t b) {
 	do {
 		bn_rand(a, bn_sign(b), bn_bits(b));
-	} while (bn_is_zero(a) || bn_cmp_abs(a, b) == CMP_GT);
+	} while (bn_is_zero(a) || bn_cmp_abs(a, b) != CMP_LT);
 }
 
 void bn_print(const bn_t a) {
