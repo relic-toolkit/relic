@@ -663,7 +663,6 @@ int fp_param_set_any(void) {
 
 int fp_param_set_any_dense() {
 	bn_t p;
-	dig_t mod8;
 	int result = STS_OK;
 
 	bn_null(p);
