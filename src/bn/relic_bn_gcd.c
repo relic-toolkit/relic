@@ -800,7 +800,6 @@ void bn_gcd_ext_stein(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 
 void bn_gcd_ext_mid(bn_t c, bn_t d, bn_t e, bn_t f, const bn_t a, const bn_t b) {
 	bn_t p, q, r, s, t, u, v, x, w, y, z;
-	int stop;
 
 	if (bn_is_zero(a)) {
 		bn_abs(c, b);
@@ -848,7 +847,6 @@ void bn_gcd_ext_mid(bn_t c, bn_t d, bn_t e, bn_t f, const bn_t a, const bn_t b) 
 			bn_abs(v, a);
 		}
 
-		stop = bn_bits(u) >> 1;
 		bn_srt(p, u);
 
 		bn_set_dig(x, 1);
