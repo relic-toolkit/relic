@@ -1357,7 +1357,7 @@ void bn_rec_rtnaf(int8_t *tnaf, int *len, const bn_t k, int8_t u, int m, int w);
  * @param[in] u 		- the u curve parameter.
  * @param[in] w 		- the window size in bits.
  */
-void bn_rec_tnaf_get(int8_t *t, int8_t *beta, int8_t *gama, int8_t u, int w);
+void bn_rec_tnaf_get(uint8_t *t, int8_t *beta, int8_t *gama, int8_t u, int w);
 
 /**
  * Computes the partial reduction k partmod d = r0 + r1 * t, where

@@ -205,7 +205,7 @@ void bn_rec_naf(int8_t *naf, int *len, const bn_t k, int w) {
 	}
 }
 
-void bn_rec_tnaf_get(int8_t *t, int8_t *beta, int8_t *gama, int8_t u, int w) {
+void bn_rec_tnaf_get(uint8_t *t, int8_t *beta, int8_t *gama, int8_t u, int w) {
 	if (u == -1) {
 		switch (w) {
 			case 2:
@@ -411,7 +411,8 @@ void bn_rec_tnaf_mod(bn_t r0, bn_t r1, const bn_t k, int u, int m) {
 void bn_rec_tnaf(int8_t *tnaf, int *len, const bn_t k, int8_t u, int m, int w) {
 	int i, l;
 	bn_t tmp, r0, r1;
-	int8_t beta[1 << (w - 2)], gama[1 << (w - 2)], t_w;
+	int8_t beta[1 << (w - 2)], gama[1 << (w - 2)];
+	uint8_t t_w;
 	dig_t t0, t1, mask;
 	int s, t, u_i;
 
@@ -536,7 +537,8 @@ void bn_rec_tnaf(int8_t *tnaf, int *len, const bn_t k, int8_t u, int m, int w) {
 void bn_rec_rtnaf(int8_t *tnaf, int *len, const bn_t k, int8_t u, int m, int w) {
 	int i, l;
 	bn_t tmp, r0, r1;
-	int8_t beta[1 << (w - 2)], gama[1 << (w - 2)], t_w;
+	int8_t beta[1 << (w - 2)], gama[1 << (w - 2)];
+	uint8_t t_w;
 	dig_t t0, t1, mask;
 	int s, t, u_i;
 
