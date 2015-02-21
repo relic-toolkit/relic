@@ -672,8 +672,7 @@ int fp_param_set_any_dense() {
 #ifdef FP_QNRES
 		do {
 			bn_gen_prime(p, FP_BITS);
-			bn_mod_dig((dig_t *)&mod8, p, 8);
-		} while (mod8 != 3);
+		} while ((p->dp[0] & 0x7) != 3);
 #else		
 		bn_gen_prime(p, FP_BITS);
 #endif
