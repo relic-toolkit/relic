@@ -675,14 +675,6 @@ void fp_read_str(fp_t a, const char *str, int len, int radix);
 void fp_write_str(char *str, int len, const fp_t a, int radix);
 
 /**
- * Returns the number of bytes necessary to store a prime field element.
- *
- * @param[in] a				- the prime field element.
- * @return the number of bytes.
- */
-int fp_size_bin(const fp_t a);
-
-/**
  * Reads a prime field element from a byte vector in big-endian format.
  *
  * @param[out] a			- the result.

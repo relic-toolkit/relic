@@ -290,10 +290,6 @@ void fb_write_str(char *str, int len, const fb_t a, int radix) {
 	}
 }
 
-int fb_size_bin(const fb_t a) {
-	return FB_BYTES;
-}
-
 void fb_read_bin(fb_t a, const uint8_t *bin, int len) {
 	bn_t t;
 

@@ -652,14 +652,6 @@ void fb_read_str(fb_t a, const char *str, int len, int radix);
 void fb_write_str(char *str, int len, const fb_t a, int radix);
 
 /**
- * Returns the number of bytes necessary to store a binary field element.
- *
- * @param[in] a				- the binary field element.
- * @return the number of bytes.
- */
-int fb_size_bin(const fb_t a);
-
-/**
  * Reads a binary field element from a byte vector in big-endian format.
  *
  * @param[out] a			- the result.

@@ -136,12 +136,6 @@ static void util(void) {
 	}
 	BENCH_END;
 
-	BENCH_BEGIN("fb_size_bin") {
-		fb_rand(a);
-		BENCH_ADD(fb_size_bin(a));
-	}
-	BENCH_END;
-
 	BENCH_BEGIN("fb_write_bin") {
 		fb_rand(a);
 		BENCH_ADD(fb_write_bin(bin, sizeof(bin), a));

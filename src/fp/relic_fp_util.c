@@ -227,10 +227,6 @@ void fp_write_str(char *str, int len, const fp_t a, int radix) {
 	}
 }
 
-int fp_size_bin(const fp_t a) {
-	return FP_BYTES;
-}
-
 void fp_read_bin(fp_t a, const uint8_t *bin, int len) {
 	bn_t t;
 

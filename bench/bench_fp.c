@@ -135,12 +135,6 @@ static void util(void) {
 	}
 	BENCH_END;
 
-	BENCH_BEGIN("fp_size_bin") {
-		fp_rand(a);
-		BENCH_ADD(fp_size_bin(a));
-	}
-	BENCH_END;
-
 	BENCH_BEGIN("fp_write_bin") {
 		fp_rand(a);
 		BENCH_ADD(fp_write_bin(bin, sizeof(bin), a));
