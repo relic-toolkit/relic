@@ -23,9 +23,8 @@
 /**
  * @file
  *
- * Implementation of frobenius action in binary fields extensions.
+ * Implementation of inversion in binary fields extensions.
  *
- * @version $Id$
  * @ingroup fbx
  */
 
@@ -36,26 +35,33 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void fb4_frb(fb4_t c, fb4_t a) {
-	int alpha;
+void fb2_inv(fb2_t c, fb2_t a) {
+	fb_t a0, a1, m0, m1;
 
-	if (FB_BITS % 4 == 3) {
-		alpha = 0;
-	} else {
-		alpha = 1;
-	}
+	fb_null(a0);
+	fb_null(a1);
+	fb_null(m0);
+	fb_null(m1);
 
-	if (alpha == 1) {
-		fb_add(c[0], a[0], a[1]);
-		fb_add(c[0], c[0], a[3]);
-	} else {
-		fb_add(c[0], a[0], a[1]);
-		fb_add(c[0], c[0], a[2]);
+	TRY {
+		fb_new(a0);
+		fb_new(a1);
+		fb_new(m0);
+		fb_new(m1);
+
+		fb_add(a0, a[0], a[1]);
+		fb_sqr(m0, a[0]);
+		fb_mul(m1, a0, a[1]);
+		fb_add(a1, m0, m1);
+		fb_inv(a1, a1);
+		fb_mul(c[0], a0, a1);
+		fb_mul(c[1], a[1], a1);
+	} CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	} FINALLY {
+		fb_free(a0);
+		fb_free(a1);
+		fb_free(m0);
+		fb_free(m1);
 	}
-	fb_add(c[1], a[1], a[2]);
-	if (alpha == 0) {
-		fb_add(c[1], c[1], a[3]);
-	}
-	fb_add(c[2], a[2], a[3]);
-	fb_copy(c[3], a[3]);
 }

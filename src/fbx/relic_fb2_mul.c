@@ -25,7 +25,6 @@
  *
  * Implementation of multiplication in quadratic extensions of binary fields.
  *
- * @version $Id$
  * @ingroup fbx
  */
 

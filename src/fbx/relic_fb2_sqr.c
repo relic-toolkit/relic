@@ -25,7 +25,6 @@
  *
  * Implementation of squaring in binary fields extensions.
  *
- * @version $Id$
  * @ingroup fbx
  */
 
@@ -40,15 +39,4 @@ void fb2_sqr(fb2_t c, fb2_t a) {
 	fb_sqr(c[1], a[1]);
 	fb_sqr(c[0], a[0]);
 	fb_add(c[0], c[0], c[1]);
-}
-
-void fb4_sqr(fb4_t c, fb4_t a) {
-	fb_sqr(c[3], a[3]);
-	fb_sqr(c[2], a[2]);
-	fb_sqr(c[1], a[1]);
-	fb_sqr(c[0], a[0]);
-	fb_add(c[0], c[0], c[1]);
-	fb_add(c[0], c[0], c[3]);
-	fb_add(c[1], c[1], c[2]);
-	fb_add(c[2], c[2], c[3]);
 }
