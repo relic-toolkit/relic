@@ -29,7 +29,6 @@
  *
  * Interface of the library core functions.
  *
- * @version $Id$
  * @ingroup relic
  */
 

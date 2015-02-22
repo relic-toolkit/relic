@@ -29,7 +29,6 @@
  *
  * Interface of the module for pseudo-random number generation.
  *
- * @version $Id$
  * @ingroup rand
  */
 

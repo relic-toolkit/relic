@@ -29,7 +29,6 @@
  *
  * Interface of the module for prime field arithmetic.
  *
- * @version $Id$
  * @ingroup fp
  */
 

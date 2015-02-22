@@ -70,7 +70,6 @@
  *
  * Library interface.
  *
- * @version $Id$
  */
 
 #ifndef RELIC_H

@@ -29,7 +29,6 @@
  *
  * Interface of module for binary field arithmetic.
  *
- * @version $Id$
  * @ingroup fb
  */
 

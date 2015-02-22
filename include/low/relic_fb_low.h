@@ -28,7 +28,6 @@
  * All functions assume a configured polynomial basis f(z) and that the
  * destination has enough capacity to store the result of the computation.
  *
- * @version $Id$
  * @ingroup fb
  */
 

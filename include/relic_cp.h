@@ -29,7 +29,6 @@
  *
  * Interface of cryptographic protocols.
  *
- * @version $Id$
  * @ingroup bn
  */
 

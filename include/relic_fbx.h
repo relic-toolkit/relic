@@ -29,7 +29,6 @@
  *
  * Interface of the module for extension field arithmetic over binary fields.
  *
- * @version $Id$
  * @ingroup fbx
  */
 

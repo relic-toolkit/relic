@@ -30,7 +30,6 @@
  * Interface of the module for computing bilinear pairings over prime elliptic
  * curves.
  *
- * @version $Id$
  * @ingroup pp
  */
 

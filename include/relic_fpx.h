@@ -29,7 +29,6 @@
  *
  * Interface of the module for extension field arithmetic over prime fields.
  *
- * @version $Id$
  * @ingroup fpx
  */
 

@@ -29,7 +29,6 @@
  *
  * Interface of useful routines for benchmarking.
  *
- * @version $Id$
  * @ingroup bench
  */
 

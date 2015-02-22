@@ -25,7 +25,6 @@
  *
  * Symbol renaming to a#undef clashes when simultaneous linking multiple builds.
  *
- * @version $Id$
  * @ingroup core
  */
 

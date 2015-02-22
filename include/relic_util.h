@@ -29,7 +29,6 @@
  *
  * Interface of misc utilitles.
  *
- * @version $Id$
  * @ingroup util
  */
 

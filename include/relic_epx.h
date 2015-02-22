@@ -30,7 +30,6 @@
  * Interface of the module for arithmetic on prime elliptic curves defined over
  * extension fields.
  *
- * @version $Id: relic_pp.h 1148 2012-04-01 20:35:37Z dfaranha $
  * @ingroup epx
  */
 

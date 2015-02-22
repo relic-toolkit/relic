@@ -29,7 +29,6 @@
  *
  * Interface of architecture-dependent functions.
  *
- * @version $Id$
  * @ingroup arch
  */
 

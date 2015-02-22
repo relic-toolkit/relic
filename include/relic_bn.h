@@ -29,7 +29,6 @@
  *
  * Interface of the module for multiple precision integer arithmetic.
  *
- * @version $Id$
  * @ingroup bn
  */
 

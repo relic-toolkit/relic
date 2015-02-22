@@ -29,7 +29,6 @@
  *
  * Interface of the module for encrypting with block ciphers.
  *
- * @version $Id$
  * @ingroup bc
  */
 

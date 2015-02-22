@@ -25,7 +25,6 @@
  *
  * Interface of the tracing functions.
  *
- * @version $Id$
  * @ingroup relic
  */
 

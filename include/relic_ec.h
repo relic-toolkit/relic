@@ -29,7 +29,6 @@
  *
  * Abstractions of elliptic curve arithmetic useful to protocol implementors.
  *
- * @version $Id$
  * @ingroup ec
  */
 

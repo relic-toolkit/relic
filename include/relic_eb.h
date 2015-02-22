@@ -29,7 +29,6 @@
  *
  * Interface of the module for arithmetic on binary elliptic curves.
  *
- * @version $Id$
  * @ingroup eb
  */
 

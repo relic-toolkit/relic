@@ -29,7 +29,6 @@
  *
  * Abstractions of pairing computation useful to protocol implementors.
  *
- * @version $Id$
  * @ingroup pc
  */
 

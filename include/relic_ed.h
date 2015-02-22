@@ -29,7 +29,6 @@
  *
  * Interface of the module for arithmetic on elliptic twisted Edwards curves.
  *
- * @version $Id$
  * @ingroup ed
  */
 

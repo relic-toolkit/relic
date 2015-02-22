@@ -25,7 +25,6 @@
  *
  * Interface of the error-handling functions.
  *
- * @version $Id$
  * @ingroup relic
  */
 

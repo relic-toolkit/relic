@@ -25,7 +25,6 @@
  *
  * Elementary types.
  *
- * @version $Id$
  * @ingroup relic
  */
 

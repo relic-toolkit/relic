@@ -25,7 +25,6 @@
  *
  * Interface of the low-level digit vector module.
  *
- * @version $Id$
  * @ingroup dv
  */
 

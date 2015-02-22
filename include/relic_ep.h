@@ -29,7 +29,6 @@
  *
  * Interface of the module for arithmetic on prime elliptic curves.
  *
- * @version $Id$
  * @ingroup ep
  */
 

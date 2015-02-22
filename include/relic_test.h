@@ -29,7 +29,6 @@
  *
  * Interface of useful routines for testing.
  *
- * @version $Id$
  * @ingroup test
  */
 

@@ -30,7 +30,6 @@
  * Interface of the module for manipulating temporary double-precision digit
  * vectors.
  *
- * @version $Id$
  * @ingroup dv
  */
 
