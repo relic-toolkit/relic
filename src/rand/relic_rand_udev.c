@@ -25,7 +25,6 @@
  *
  * Implementation of the /dev/urandom wrapper.
  *
- * @version $Id: relic_rand.c 1522 2013-08-27 15:55:54Z dfaranha $
  * @ingroup rand
  */
 

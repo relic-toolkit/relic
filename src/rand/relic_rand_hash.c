@@ -23,9 +23,8 @@
 /**
  * @file
  *
- * Implementation of the hash-drbg pseudo-random number generator.
+ * Implementation of the Hash_DRBG pseudo-random number generator.
  *
- * @version $Id: relic_rand.c 1522 2013-08-27 15:55:54Z dfaranha $
  * @ingroup rand
  */
 

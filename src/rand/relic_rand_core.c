@@ -25,7 +25,6 @@
  *
  * Implementation of utilities for pseudo-random number generation.
  *
- * @version $Id$
  * @ingroup rand
  */
 
