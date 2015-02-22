@@ -25,7 +25,6 @@
  *
  * Implementation of the low-level binary field squaring.
  *
- * @version $Id$
  * @ingroup bn
  */
 

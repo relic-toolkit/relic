@@ -25,7 +25,6 @@
  *
  * Implementation of the low-level binary field addition functions.
  *
- * @version $Id$
  * @ingroup fb
  */
 

@@ -25,7 +25,6 @@
  *
  * Implementation of the low-level multiple precision division functions.
  *
- * @version $Id$
  * @ingroup bn
  */
 

@@ -25,7 +25,6 @@
  *
  * Implementation of the low-level extension field squaring functions.
  *
- * @version $Id$
  * @ingroup pp
  */
 

@@ -25,7 +25,6 @@
  *
  * Implementation of the low-level binary field shifting.
  *
- * @version $Id$
  * @ingroup fb
  */
 

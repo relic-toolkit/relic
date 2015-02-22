@@ -23,7 +23,6 @@
  *
  * Implementation of the low-level multiple precision bit shifting functions.
  *
- * @version $Id$
  * @ingroup bn
  */
 

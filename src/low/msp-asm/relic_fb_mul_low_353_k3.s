@@ -23,7 +23,6 @@
  *
  * Binary field multiplication functions.
  *
- * @version $Id$
  * @ingroup fb
  */
 

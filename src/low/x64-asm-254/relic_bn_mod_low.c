@@ -26,7 +26,6 @@
  * Implementation of the low-level multiple precision integer modular reduction
  * functions.
  *
- * @version $Id$
  * @ingroup bn
  */
 

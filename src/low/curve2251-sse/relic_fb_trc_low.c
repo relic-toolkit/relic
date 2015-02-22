@@ -25,7 +25,6 @@
  *
  * Implementation of the low-level trace function.
  *
- * @version $Id$
  * @ingroup fb
  */
 

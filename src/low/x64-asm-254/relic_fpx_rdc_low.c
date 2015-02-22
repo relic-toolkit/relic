@@ -25,7 +25,6 @@
  *
  * Implementation of the low-level extension field modular reduction functions.
  *
- * @version $Id$
  * @ingroup fpx
  */
 

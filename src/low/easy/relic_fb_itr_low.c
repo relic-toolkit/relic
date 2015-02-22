@@ -25,7 +25,6 @@
  *
  * Implementation of the low-level iterated squaring/square-root.
  *
- * @version $Id$
  * @ingroup fb
  */
 

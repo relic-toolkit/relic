@@ -25,7 +25,6 @@
  *
  * Implementation of the low-level binary field comparison functions.
  *
- * @version $Id$
  * @ingroup fb
  */
 

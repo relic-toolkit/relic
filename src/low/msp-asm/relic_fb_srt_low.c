@@ -25,7 +25,6 @@
  *
  * Implementation of the low-level binary field square root.
  *
- * @version $Id$
  * @ingroup fb
  */
 

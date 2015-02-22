@@ -25,7 +25,6 @@
  *
  * Implementation of the low-level modular reduction functions.
  *
- * @version $Id$
  * @ingroup fb
  */
 

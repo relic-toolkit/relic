@@ -25,7 +25,6 @@
  *
  * Implementation of the low-level inversion functions.
  *
- * @version $Id$
  * @ingroup fb
  */
 

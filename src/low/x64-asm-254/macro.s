@@ -27,7 +27,6 @@
  *
  * Implementation of low-level prime field multiplication.
  *
- * @version $Id$
  * @ingroup fp
  */
 

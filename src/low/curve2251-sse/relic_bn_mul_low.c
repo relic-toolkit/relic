@@ -26,7 +26,6 @@
  * Implementation of the multiple precision integer arithmetic multiplication
  * functions.
  *
- * @version $Id$
  * @ingroup bn
  */
 

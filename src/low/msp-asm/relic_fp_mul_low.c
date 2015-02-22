@@ -23,7 +23,6 @@
  *
  * Implementation of the low-level prime field multiplication functions.
  *
- * @version $Id$
  * @ingroup bn
  */
 

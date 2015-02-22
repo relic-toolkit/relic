@@ -26,7 +26,6 @@
  * Implementation of the low-level quadratic extension field multiplication
  * functions.
  *
- * @version $Id$
  * @ingroup fpx
  */
 

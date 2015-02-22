@@ -25,7 +25,6 @@
  *
  * Implementation of the low-level prime field comparison functions.
  *
- * @version $Id$
  * @ingroup fp
  */
 

@@ -25,7 +25,6 @@
  *
  * Implementation of the low-level extension field addition functions.
  *
- * @version $Id$
  * @ingroup fpx
  */
 

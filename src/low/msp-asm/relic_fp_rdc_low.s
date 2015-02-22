@@ -23,7 +23,6 @@
  *
  * Implementation of the low-level prime field modular reduction functions.
  *
- * @version $Id$
  * @ingroup fp
  */
 

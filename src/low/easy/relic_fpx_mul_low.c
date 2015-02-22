@@ -25,7 +25,6 @@
  *
  * Implementation of the low-level extension field multiplication functions.
  *
- * @version $Id$
  * @ingroup fpx
  */
 

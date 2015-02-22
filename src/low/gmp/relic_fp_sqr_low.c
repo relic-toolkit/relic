@@ -25,7 +25,6 @@
  *
  * Implementation of low-level prime field squaring functions.
  *
- * @version $Id$
  * @ingroup fp
  */
 

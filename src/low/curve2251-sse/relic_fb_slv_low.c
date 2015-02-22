@@ -25,7 +25,6 @@
  *
  * Implementation of the low-level binary field half-trace.
  *
- * @version $Id$
  * @ingroup fb
  */
 

@@ -25,7 +25,6 @@
  *
  * Implementation of the low-level prime field shifting functions.
  *
- * @version $Id$
  * @ingroup bn
  */
 

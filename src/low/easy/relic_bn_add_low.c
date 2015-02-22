@@ -26,7 +26,6 @@
  * Implementation of the low-level multiple precision addition and subtraction
  * functions.
  *
- * @version $Id$
  * @ingroup bn
  */
 

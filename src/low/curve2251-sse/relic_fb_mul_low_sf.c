@@ -25,7 +25,6 @@
  *
  * Implementation of the low-level binary field bit multiplication functions.
  *
- * @version $Id$
  * @ingroup fb
  */
 

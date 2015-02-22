@@ -25,7 +25,6 @@
  *
  * Implementation of the low-level multiple precision comparison functions.
  *
- * @version $Id$
  * @ingroup bn
  */
 
