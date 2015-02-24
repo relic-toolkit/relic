@@ -25,7 +25,6 @@
  *
  * Implementation of point multiplication on binary elliptic curves.
  *
- * @version $Id$
  * @ingroup eb
  */
 
@@ -52,9 +51,14 @@
  * @param[in] k					- the integer.
  */
 static void eb_mul_ltnaf_imp(eb_t r, const eb_t p, const bn_t k) {
-	int len, i, n;
-	int8_t tnaf[FB_BITS + 8], *_k, u;
+	int i, l, n;
+	int8_t tnaf[FB_BITS + 8], u;
 	eb_t t[1 << (EB_WIDTH - 2)];
+
+	if (bn_is_zero(k)) {
+		eb_set_infty(r);
+		return;
+	}
 
 	if (eb_curve_opt_a() == OPT_ZERO) {
 		u = -1;
@@ -64,22 +68,28 @@ static void eb_mul_ltnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 
 	TRY {
 		/* Prepare the precomputation table. */
-		for (i = 0; i < (1 << (EB_WIDTH - 2)); i++) {
+		for (int i = 0; i < (1 << (EB_WIDTH - 2)); i++) {
+			eb_null(t[i]);
 			eb_new(t[i]);
 		}
 		/* Compute the precomputation table. */
 		eb_tab(t, p, EB_WIDTH);
 
 		/* Compute the w-TNAF representation of k. */
-		len = FB_BITS + 8;
-		bn_rec_tnaf(tnaf, &len, k, u, FB_BITS, EB_WIDTH);
+		l = sizeof(tnaf);
+		bn_rec_tnaf(tnaf, &l, k, u, FB_BITS, EB_WIDTH);
 
-		_k = tnaf + len - 1;
-		eb_set_infty(r);
-		for (i = len - 1; i >= 0; i--, _k--) {
+		n = tnaf[l - 1];
+		if (n > 0) {
+			eb_copy(r, t[n / 2]);
+		} else {
+			eb_neg(r, t[-n / 2]);
+		}
+
+		for (int i = l - 2; i >= 0; i--) {
 			eb_frb(r, r);
 
-			n = *_k;
+			n = tnaf[i];
 			if (n > 0) {
 				eb_add(r, r, t[n / 2]);
 			}
@@ -89,6 +99,9 @@ static void eb_mul_ltnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 		}
 		/* Convert r to affine coordinates. */
 		eb_norm(r, r);
+		if (bn_sign(k) == BN_NEG) {
+			eb_neg(r, r);
+		}
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
@@ -114,35 +127,41 @@ static void eb_mul_ltnaf_imp(eb_t r, const eb_t p, const bn_t k) {
  * @param[in] k					- the integer.
  */
 static void eb_mul_lnaf_imp(eb_t r, const eb_t p, const bn_t k) {
-	int len, i, n;
-	int8_t naf[FB_BITS + 1], *_k;
+	int l, i, n;
+	int8_t naf[FB_BITS + 1];
 	eb_t t[1 << (EB_WIDTH - 2)];
 
-	for (i = 0; i < (1 << (EB_WIDTH - 2)); i++) {
-		eb_null(t[i]);
+	if (bn_is_zero(k)) {
+		eb_set_infty(r);
+		return;
 	}
 
 	TRY {
 		/* Prepare the precomputation table. */
 		for (i = 0; i < (1 << (EB_WIDTH - 2)); i++) {
+			eb_null(t[i]);
 			eb_new(t[i]);
 			eb_set_infty(t[i]);
 			fb_set_dig(t[i]->z, 1);
 			t[i]->norm = 1;
 		}
+
 		/* Compute the precomputation table. */
 		eb_tab(t, p, EB_WIDTH);
 
 		/* Compute the w-NAF representation of k. */
-		len = FB_BITS + 1;
-		bn_rec_naf(naf, &len, k, EB_WIDTH);
-		_k = naf + len - 1;
+		l = sizeof(naf);
+		bn_rec_naf(naf, &l, k, EB_WIDTH);
 
-		eb_set_infty(r);
-		for (i = len - 1; i >= 0; i--, _k--) {
+		n = naf[l - 1];
+		if (n > 0) {
+			eb_copy(r, t[n / 2]);
+		}
+
+		for (i = l - 2; i >= 0; i--) {
 			eb_dbl(r, r);
 
-			n = *_k;
+			n = naf[i];
 			if (n > 0) {
 				eb_add(r, r, t[n / 2]);
 			}
@@ -152,6 +171,9 @@ static void eb_mul_lnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 		}
 		/* Convert r to affine coordinates. */
 		eb_norm(r, r);
+		if (bn_sign(k) == BN_NEG) {
+			eb_neg(r, r);
+		}
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
@@ -180,9 +202,14 @@ static void eb_mul_lnaf_imp(eb_t r, const eb_t p, const bn_t k) {
  * @param[in] k					- the integer.
  */
 static void eb_mul_rtnaf_imp(eb_t r, const eb_t p, const bn_t k) {
-	int len, i, n;
-	int8_t tnaf[FB_BITS + 8], *_k, u;
+	int l, i, n;
+	int8_t tnaf[FB_BITS + 8], u;
 	eb_t t[1 << (EB_WIDTH - 2)];
+
+	if (bn_is_zero(k)) {
+		eb_set_infty(r);
+		return;
+	}
 
 	if (eb_curve_opt_a() == OPT_ZERO) {
 		u = -1;
@@ -193,18 +220,18 @@ static void eb_mul_rtnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 	TRY {
 		/* Prepare the precomputation table. */
 		for (i = 0; i < (1 << (EB_WIDTH - 2)); i++) {
+			eb_null(t[i]);
 			eb_new(t[i]);
 			eb_set_infty(t[i]);
 		}
 
 		/* Compute the w-TNAF representation of k. */
-		len = FB_BITS + 8;
-		bn_rec_tnaf(tnaf, &len, k, u, FB_BITS, EB_WIDTH);
+		l = sizeof(tnaf);
+		bn_rec_tnaf(tnaf, &l, k, u, FB_BITS, EB_WIDTH);
 
-		_k = tnaf;
 		eb_copy(r, p);
-		for (i = 0; i < len; i++, _k++) {
-			n = *_k;
+		for (i = 0; i < l; i++) {
+			n = tnaf[i];
 			if (n > 0) {
 				eb_add(t[n / 2], t[n / 2], r);
 			}
@@ -451,6 +478,9 @@ static void eb_mul_rtnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 		}
 		/* Convert r to affine coordinates. */
 		eb_norm(r, r);
+		if (bn_sign(k) == BN_NEG) {
+			eb_neg(r, r);
+		}
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
@@ -476,30 +506,30 @@ static void eb_mul_rtnaf_imp(eb_t r, const eb_t p, const bn_t k) {
  * @param[in] k					- the integer.
  */
 static void eb_mul_rnaf_imp(eb_t r, const eb_t p, const bn_t k) {
-	int len, i, n;
-	int8_t naf[FB_BITS + 1], *_k;
+	int l, i, n;
+	int8_t naf[FB_BITS + 1];
 	eb_t t[1 << (EB_WIDTH - 2)];
 
-	for (i = 0; i < (1 << (EB_WIDTH - 2)); i++) {
-		eb_null(t[i]);
+	if (bn_is_zero(k)) {
+		eb_set_infty(r);
+		return;
 	}
 
 	TRY {
 		/* Prepare the accumulator table. */
 		for (i = 0; i < (1 << (EB_WIDTH - 2)); i++) {
+			eb_null(t[i]);
 			eb_new(t[i]);
 			eb_set_infty(t[i]);
 		}
 
 		/* Compute the w-NAF representation of k. */
-		len = FB_BITS + 1;
-		bn_rec_naf(naf, &len, k, EB_WIDTH);
-
-		_k = naf;
+		l = sizeof(naf);
+		bn_rec_naf(naf, &l, k, EB_WIDTH);
 
 		eb_copy(r, p);
-		for (i = 0; i < len; i++, _k++) {
-			n = *_k;
+		for (i = 0; i < l; i++) {
+			n = naf[i];
 			if (n > 0) {
 				eb_add(t[n / 2], t[n / 2], r);
 			}
@@ -579,6 +609,9 @@ static void eb_mul_rnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 		}
 		/* Convert r to affine coordinates. */
 		eb_norm(r, r);
+		if (bn_sign(k) == BN_NEG) {
+			eb_neg(r, r);
+		}
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
@@ -601,23 +634,20 @@ static void eb_mul_rnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 #if EB_MUL == BASIC || !defined(STRIP)
 
 void eb_mul_basic(eb_t r, const eb_t p, const bn_t k) {
-	int i, l;
 	eb_t t;
-
-	eb_null(t);
 
 	if (bn_is_zero(k)) {
 		eb_set_infty(r);
 		return;
 	}
 
+	eb_null(t);
+
 	TRY {
 		eb_new(t);
 
-		l = bn_bits(k);
-
 		eb_copy(t, p);
-		for (i = l - 2; i >= 0; i--) {
+		for (int i = bn_bits(k) - 2; i >= 0; i--) {
 			eb_dbl(t, t);
 			if (bn_get_bit(k, i)) {
 				eb_add(t, t, p);
@@ -625,6 +655,9 @@ void eb_mul_basic(eb_t r, const eb_t p, const bn_t k) {
 		}
 
 		eb_norm(r, t);
+		if (bn_sign(k) == BN_NEG) {
+			eb_neg(r, r);
+		}
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
@@ -642,6 +675,11 @@ void eb_mul_lodah(eb_t r, const eb_t p, const bn_t k) {
 	int i, t;
 	dv_t x1, z1, x2, z2, r1, r2, r3, r4, r5;
 	const dig_t *b;
+
+	if (bn_is_zero(k)) {
+		eb_set_infty(r);
+		return;
+	}
 
 	dv_null(x1);
 	dv_null(z1);
@@ -780,6 +818,10 @@ void eb_mul_lodah(eb_t r, const eb_t p, const bn_t k) {
 				r->norm = 1;
 			}
 		}
+
+		if (bn_sign(k) == BN_NEG) {
+			eb_neg(r, r);
+		}
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
@@ -848,6 +890,11 @@ void eb_mul_halve(eb_t r, const eb_t p, const bn_t k) {
 	bn_t n, m;
 	fb_t u, v, w, z;
 
+	if (bn_is_zero(k)) {
+		eb_set_infty(r);
+		return;
+	}
+
 	bn_null(m);
 	bn_null(n);
 	eb_null(q);
@@ -882,7 +929,7 @@ void eb_mul_halve(eb_t r, const eb_t p, const bn_t k) {
 		bn_mod(m, m, n);
 
 		/* Compute the w-NAF representation of k'. */
-		l = FB_BITS + 1;
+		l = sizeof(naf);
 		bn_rec_naf(naf, &l, m, EB_WIDTH);
 
 		for (i = l; i <= bn_bits(n); i++) {
@@ -1039,24 +1086,20 @@ void eb_mul_gen(eb_t r, const bn_t k) {
 }
 
 void eb_mul_dig(eb_t r, const eb_t p, dig_t k) {
-	int i, l;
 	eb_t t;
-
-	eb_null(t);
 
 	if (k == 0) {
 		eb_set_infty(r);
 		return;
 	}
 
+	eb_null(t);
+
 	TRY {
 		eb_new(t);
 
-		l = util_bits_dig(k);
-
 		eb_copy(t, p);
-
-		for (i = l - 2; i >= 0; i--) {
+		for (int i = util_bits_dig(k) - 2; i >= 0; i--) {
 			eb_dbl(t, t);
 			if (k & ((dig_t)1 << i)) {
 				eb_add(t, t, p);

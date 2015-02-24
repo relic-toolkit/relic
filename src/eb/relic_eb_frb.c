@@ -25,7 +25,6 @@
  *
  * Implementation of the Frobenius map on binary elliptic curves.
  *
- * @version $Id$
  * @ingroup eb
  */
 

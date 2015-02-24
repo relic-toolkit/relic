@@ -25,7 +25,6 @@
  *
  * Implementation of point doubling on binary elliptic curves.
  *
- * @version $Id$
  * @ingroup eb
  */
 

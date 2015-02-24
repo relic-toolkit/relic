@@ -25,7 +25,6 @@
  *
  * Implementation of the point normalization on binary elliptic curves.
  *
- * @version $Id$
  * @ingroup eb
  */
 

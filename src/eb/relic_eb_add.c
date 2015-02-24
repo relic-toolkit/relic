@@ -25,7 +25,6 @@
  *
  * Implementation of point addition on binary elliptic curves.
  *
- * @version $Id$
  * @ingroup eb
  */
 

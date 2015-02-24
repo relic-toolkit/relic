@@ -25,7 +25,6 @@
  *
  * Implementation of hashing to a binary elliptic curve.
  *
- * @version $Id$
  * @ingroup eb
  */
 

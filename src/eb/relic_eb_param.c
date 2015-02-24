@@ -25,7 +25,6 @@
  *
  * Implementation of the binary elliptic curve utilities.
  *
- * @version $Id$
  * @ingroup eb
  */
 

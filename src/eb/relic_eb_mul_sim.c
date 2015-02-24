@@ -26,7 +26,6 @@
  * Implementation of simultaneous point multiplication on binary elliptic
  * curves.
  *
- * @version $Id$
  * @ingroup eb
  */
 

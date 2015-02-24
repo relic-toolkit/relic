@@ -25,7 +25,6 @@
  *
  * Implementation of point compression on binary elliptic curves.
  *
- * @version $Id$
  * @ingroup eb
  */
 
