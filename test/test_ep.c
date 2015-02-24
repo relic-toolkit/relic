@@ -25,7 +25,6 @@
  *
  * Tests for arithmetic on prime elliptic curves.
  *
- * @version $Id$
  * @ingroup test
  */
 
@@ -943,7 +942,7 @@ int main(void) {
 
 	util_banner("Tests for the EP module:", 0);
 
-#if defined(EP_ORDIN)
+#if defined(EP_PLAIN)
 	r0 = ep_param_set_any_plain();
 	if (r0 == STS_OK) {
 		if (test() != STS_OK) {
@@ -953,7 +952,7 @@ int main(void) {
 	}
 #endif
 
-#if defined(EP_KBLTZ)
+#if defined(EP_ENDOM)
 	r1 = ep_param_set_any_endom();
 	if (r1 == STS_OK) {
 		if (test() != STS_OK) {
