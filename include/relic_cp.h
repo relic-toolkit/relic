@@ -804,7 +804,7 @@ typedef vbnn_ibs_user_st *vbnn_ibs_user_t;
 #define vbnn_ibs_kgc_new(A)																	\
 	A = (vbnn_ibs_kgc_t)calloc(1, sizeof(vbnn_ibs_kgc_st));									\
 	if (A == NULL) {																		\
-		THROW(ERR_NO_MEMORY);																\	
+		THROW(ERR_NO_MEMORY);																\
 	}																						\
 	ec_null((A)->mpk);																		\
 	bn_null((A)->msk);																		\
@@ -815,8 +815,8 @@ typedef vbnn_ibs_user_st *vbnn_ibs_user_t;
 #define vbnn_ibs_kgc_new(A)																	\
 	A = (vbnn_ibs_kgc_t)alloca(sizeof(vbnn_ibs_kgc_st));									\
 	if (A == NULL) {																		\
-		THROW(ERR_NO_MEMORY);																\	
-	}		
+		THROW(ERR_NO_MEMORY);																\
+	}																						\
 	ec_null((A)->mpk);																		\
 	bn_null((A)->msk);																		\
 	ec_new((A)->mpk);																		\
@@ -889,7 +889,7 @@ typedef vbnn_ibs_user_st *vbnn_ibs_user_t;
 #define vbnn_ibs_user_new(A)																\
 	A = (vbnn_ibs_user_t)calloc(1, sizeof(vbnn_ibs_user_st));								\
 	if (A == NULL) {																		\
-		THROW(ERR_NO_MEMORY);																\	
+		THROW(ERR_NO_MEMORY);																\
 	}																						\
 	ec_null((A)->R);																		\
 	bn_null((A)->s);																		\
@@ -900,8 +900,8 @@ typedef vbnn_ibs_user_st *vbnn_ibs_user_t;
 #define vbnn_ibs_user_new(A)																\
 	A = (vbnn_ibs_user_t)alloca(sizeof(vbnn_ibs_user_st));									\
 	if (A == NULL) {																		\
-		THROW(ERR_NO_MEMORY);																\	
-	}		
+		THROW(ERR_NO_MEMORY);																\
+	}																						\
 	ec_null((A)->R);																		\
 	bn_null((A)->s);																		\
 	ec_new((A)->R);																			\
