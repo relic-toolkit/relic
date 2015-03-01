@@ -207,6 +207,42 @@ typedef bgn_st bgn_t[1];
 typedef bgn_st *bgn_t;
 #endif
 
+/**
+ * Represents a vBNN-IBS keg generation center.
+ */
+typedef struct _vbnn_ibs_kgc_t {
+	/** master public key */
+	ec_t mpk;
+	/** master secret key */
+	bn_t msk;
+} vbnn_ibs_kgc_st;
+
+/**
+ * Pointer to a vBNN-IBS keg generation center.
+ */
+#if ALLOC == AUTO
+typedef vbnn_ibs_kgc_st vbnn_ibs_kgc_t[1];
+#else
+typedef vbnn_ibs_kgc_st *vbnn_ibs_kgc_t;
+#endif
+
+/**
+ * Represents a vBNN-IBS user.
+ */
+typedef struct _vbnn_ibs_user_t {
+	ec_t R;
+	bn_t s;
+} vbnn_ibs_user_st;
+
+/**
+ * Pointer to a vBNN-IBS user.
+ */
+#if ALLOC == AUTO
+typedef vbnn_ibs_user_st vbnn_ibs_user_t[1];
+#else
+typedef vbnn_ibs_user_st *vbnn_ibs_user_t;
+#endif
+
 /*============================================================================*/
 /* Macro definitions                                                          */
 /*============================================================================*/
@@ -744,6 +780,176 @@ typedef bgn_st *bgn_t;
 	g2_free((A)->hx);														\
 	g2_free((A)->hy);														\
 	g2_free((A)->hz);														\
+	A = NULL;																\
+
+#endif
+
+/**
+ * Initialize a vBNN-IBS key generation center with a null value.
+ *
+ * @param[out] A 			- key generation center to initialize.
+ */
+#if ALLOC == AUTO
+#define vbnn_ibs_kgc_null(A)	/* empty */
+#else
+#define vbnn_ibs_kgc_null(A)	A = NULL;
+#endif
+
+/**
+ * Allocates and initializes a vBNN-IBS key generation center.
+ *
+ * @param[out] A 			- the new vBNN-IBS KGC
+ */
+#if ALLOC == DYNAMIC
+#define vbnn_ibs_kgc_new(A)																	\
+	A = (vbnn_ibs_kgc_t)calloc(1, sizeof(vbnn_ibs_kgc_st));									\
+	if (A == NULL) {																		\
+		THROW(ERR_NO_MEMORY);																\
+	}																						\
+	ec_null((A)->mpk);																		\
+	bn_null((A)->msk);																		\
+	ec_new((A)->mpk);																		\
+	bn_new((A)->msk);																		\
+
+#elif ALLOC == STATIC
+#define vbnn_ibs_kgc_new(A)																	\
+	A = (vbnn_ibs_kgc_t)alloca(sizeof(vbnn_ibs_kgc_st));									\
+	if (A == NULL) {																		\
+		THROW(ERR_NO_MEMORY);																\
+	}																						\
+	ec_null((A)->mpk);																		\
+	bn_null((A)->msk);																		\
+	ec_new((A)->mpk);																		\
+	bn_new((A)->msk);																		\
+
+#elif ALLOC == AUTO
+#define vbnn_ibs_kgc_new(A)																	\
+	ec_new((A)->mpk);																		\
+	bn_new((A)->msk);																		\
+
+#elif ALLOC == STACK
+#define vbnn_ibs_kgc_new(A)																	\
+	A = (vbnn_ibs_kgc_t)alloca(sizeof(vbnn_ibs_kgc_st));									\
+	ec_new((A)->mpk);																		\
+	bn_new((A)->msk);																		\
+
+#endif
+
+/**
+ * Frees memory of a vBNN-IBS key generation center
+ *
+ * @param[out] A 			- the vBNN-IBS KGC to clean
+ */
+#if ALLOC == DYNAMIC
+#define vbnn_ibs_kgc_free(A)												\
+	if (A != NULL) {														\
+		ec_free((A)->mpk);													\
+		bn_free((A)->msk);													\
+		free(A);															\
+		A = NULL;															\
+	}																		\
+
+#elif ALLOC == STATIC
+#define vbnn_ibs_kgc_free(A)												\
+	if (A != NULL) {														\
+		ec_free((A)->mpk);													\
+		bn_free((A)->msk);													\
+		free(A);															\
+		A = NULL;															\
+	}																		\
+
+#elif ALLOC == AUTO
+#define vbnn_ibs_kgc_free(A)				/* empty */
+
+#elif ALLOC == STACK
+#define vbnn_ibs_kgc_free(A)												\
+	ec_free((A)->mpk);														\
+	bn_free((A)->msk);														\
+	A = NULL;																\
+
+#endif
+
+/**
+ * Initialize a vBNN-IBS user with a null value.
+ *
+ * @param[out] A 			- user to initialize.
+ */
+#if ALLOC == AUTO
+#define vbnn_ibs_user_null(A)	/* empty */
+#else
+#define vbnn_ibs_user_null(A)	A = NULL;
+#endif
+
+/**
+ * Allocates and initializes a vBNN-IBS user.
+ *
+ * @param[out] A 			- the new vBNN-IBS KGC
+ */
+#if ALLOC == DYNAMIC
+#define vbnn_ibs_user_new(A)																\
+	A = (vbnn_ibs_user_t)calloc(1, sizeof(vbnn_ibs_user_st));								\
+	if (A == NULL) {																		\
+		THROW(ERR_NO_MEMORY);																\
+	}																						\
+	ec_null((A)->R);																		\
+	bn_null((A)->s);																		\
+	ec_new((A)->R);																			\
+	bn_new((A)->s);																			\
+
+#elif ALLOC == STATIC
+#define vbnn_ibs_user_new(A)																\
+	A = (vbnn_ibs_user_t)alloca(sizeof(vbnn_ibs_user_st));									\
+	if (A == NULL) {																		\
+		THROW(ERR_NO_MEMORY);																\
+	}																						\
+	ec_null((A)->R);																		\
+	bn_null((A)->s);																		\
+	ec_new((A)->R);																			\
+	bn_new((A)->s);																			\
+
+#elif ALLOC == AUTO
+#define vbnn_ibs_user_new(A)																\
+	ec_new((A)->R);																			\
+	bn_new((A)->s);																			\
+
+#elif ALLOC == STACK
+#define vbnn_ibs_user_new(A)																\
+	A = (vbnn_ibs_user_t)alloca(sizeof(vbnn_ibs_user_st));									\
+	ec_new((A)->R);																			\
+	bn_new((A)->s);																			\
+
+#endif
+
+/**
+ * Frees memory of a vBNN-IBS user
+ *
+ * @param[out] A 			- the vBNN-IBS KGC to clean
+ */
+#if ALLOC == DYNAMIC
+#define vbnn_ibs_user_free(A)												\
+	if (A != NULL) {														\
+		ec_free((A)->R);													\
+		bn_free((A)->s);													\
+		free(A);															\
+		A = NULL;															\
+	}																		\
+
+#elif ALLOC == STATIC
+#define vbnn_ibs_user_free(A)												\
+	if (A != NULL) {														\
+		ec_free((A)->R);													\
+		bn_free((A)->s);													\
+		free(A);															\
+		A = NULL;															\
+	}																		\
+
+#elif ALLOC == AUTO
+#define vbnn_ibs_user_free(A)				/* empty */
+
+#elif ALLOC == STACK
+#define vbnn_ibs_user_free(A)												\
+	ec_free((A)->R);														\
+	bn_free((A)->s);														\
 	A = NULL;																\
 
 #endif
@@ -1378,5 +1584,50 @@ int cp_bbs_sig(g1_t s, uint8_t *msg, int len, int hash, bn_t d);
  * @return a boolean value indicating the verification result.
  */
 int cp_bbs_ver(g1_t s, uint8_t *msg, int len, int hash, g2_t q, gt_t z);
+
+/**
+ * Generates a vBNN-IBS key generation center.
+ *
+ * @param[out] kgc 				- the key generation center.
+ */
+int cp_vbnn_ibs_kgc_gen(vbnn_ibs_kgc_t kgc);
+
+/**
+ * Extract a user key from an identity and a vBNN-IBS key generation center.
+ *
+ * @param[out] user 			- the extracted vBNN-IBS user.
+ * @param[in]  kgc 				- the key generation center.
+ * @param[in]  identity         - the identity used for extraction.
+ * @param[in]  identity_len 	- the identity length in bytes.
+ */
+int cp_vbnn_ibs_kgc_extract_key(vbnn_ibs_user_t user, vbnn_ibs_kgc_t kgc, uint8_t *identity, int identity_len);
+
+/**
+ * Signs a message using the vBNN-IBS scheme.
+ * 
+ * @param[out] 	sig_R			- the R value of the signature.
+ * @param[out] 	sig_z 			- the z value of the signature.
+ * @param[out] 	sig_h 			- the h value of the signature.
+ * @param[in] 	identity 		- the identity buffer.
+ * @param[in] 	identity_len 	- the size of identity buffer.
+ * @param[in] 	msg 			- the message buffer to sign.
+ * @param[in] 	msg_len 		- the size of message buffer.
+ * @param[in] 	user 			- the user who creates the signature.
+ */
+int cp_vbnn_ibs_user_sign(ec_t sig_R, bn_t sig_z, bn_t sig_h, uint8_t *identity, int identity_len, uint8_t *msg, int msg_len, vbnn_ibs_user_t user);
+
+/**
+ * Verifies a signature and message using the vBNN-IBS scheme.
+ *
+ * @param[in] 	sig_R			- the R value of the signature.
+ * @param[in] 	sig_z 			- the z value of the signature.
+ * @param[in] 	sig_h 			- the h value of the signature.
+ * @param[in] 	identity 		- the identity buffer.
+ * @param[in] 	identity_len 	- the size of identity buffer.
+ * @param[in] 	msg 			- the message buffer to sign.
+ * @param[in] 	msg_len 		- the size of message buffer.
+ * @param[in] 	mpk				- the master public key of the key generation center.
+ */
+int cp_vbnn_ibs_user_verify(ec_t sig_R, bn_t sig_z, bn_t sig_h, uint8_t *identity, int identity_len, uint8_t *msg, int msg_len, ec_t mpk);
 
 #endif /* !RELIC_CP_H */

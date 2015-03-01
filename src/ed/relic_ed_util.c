@@ -149,8 +149,8 @@ int ed_is_infty(const ed_t p) {
 	int ret = 0;
 	fp_t norm_y;
 
-	fp_new(norm_y);
 	fp_null(norm_y);
+	fp_new(norm_y);
 
 	fp_inv(norm_y, p->z);
 	fp_mul(norm_y, p->y, norm_y);
@@ -194,8 +194,8 @@ void ed_norm(ed_t r, const ed_t p) {
 	} else {
 		fp_t z_inv;
 
-		fp_new(z_inv);
 		fp_null(z_inv);
+		fp_new(z_inv);
 
 		fp_inv(z_inv, p->z);
 

@@ -456,6 +456,70 @@ static void ecss(void) {
 	ec_free(p);
 }
 
+static void vbnn_ibs(void) {
+	vbnn_ibs_kgc_t kgc;
+
+	uint8_t userA_id[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+	vbnn_ibs_user_t userA;
+
+	uint8_t userB_id[] = { 5, 6, 7, 8, 9, 0, 1, 2, 3, 4 };
+	vbnn_ibs_user_t userB;
+
+	uint8_t message[] = "Thrice the brinded cat hath mew'd.";
+
+	ec_t sig_R;
+	bn_t sig_z;
+	bn_t sig_h;
+
+	vbnn_ibs_kgc_null(kgc);
+
+	vbnn_ibs_user_null(userA);
+	vbnn_ibs_user_null(userB);
+
+	ec_null(sig_R);
+	bn_null(sig_z);
+	bn_null(sig_h);
+
+	vbnn_ibs_kgc_new(kgc);
+
+	vbnn_ibs_user_new(userA);
+	vbnn_ibs_user_new(userB);
+
+	ec_new(sig_R);
+	bn_new(sig_z);
+	bn_new(sig_h);
+
+	BENCH_BEGIN("cp_vbnn_ibs_kgc_gen") {
+		BENCH_ADD(cp_vbnn_ibs_kgc_gen(kgc));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("cp_vbnn_ibs_kgc_extract_key") {
+		BENCH_ADD(cp_vbnn_ibs_kgc_extract_key(userA, kgc, userA_id, sizeof(userA_id)));
+	}
+	BENCH_END;
+
+	cp_vbnn_ibs_kgc_extract_key(userB, kgc, userB_id, sizeof(userB_id));
+
+	BENCH_BEGIN("cp_vbnn_ibs_user_sign") {
+		BENCH_ADD(cp_vbnn_ibs_user_sign(sig_R, sig_z, sig_h, userA_id, sizeof(userA_id), message, sizeof(message), userA));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("cp_vbnn_ibs_user_verify") {
+		BENCH_ADD(cp_vbnn_ibs_user_verify(sig_R, sig_z, sig_h, userA_id, sizeof(userA_id), message, sizeof(message), kgc->mpk));
+	}
+	BENCH_END;
+
+	ec_free(sig_R);
+	bn_free(sig_z);
+	bn_free(sig_h);
+
+	vbnn_ibs_kgc_free(kgc);
+	vbnn_ibs_user_free(userA);
+	vbnn_ibs_user_free(userB);
+}
+
 #endif
 
 #if defined(WITH_PC)
@@ -737,6 +801,7 @@ int main(void) {
 		ecies();
 		ecdsa();
 		ecss();
+		vbnn_ibs();
 	} else {
 		THROW(ERR_NO_CURVE);
 	}
