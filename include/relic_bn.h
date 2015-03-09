@@ -1284,7 +1284,7 @@ int bn_is_factor(bn_t c, const bn_t a);
 
 /**
  * Recodes a positive integer in window form. If a negative integer is given
- * instead, takes its absolute value.
+ * instead, its absolute value is taken.
  *
  * @param[out] win			- the recoded integer.
  * @param[out] len			- the number of bytes written.
@@ -1296,7 +1296,7 @@ void bn_rec_win(uint8_t *win, int *len, const bn_t k, int w);
 
 /**
  * Recodes a positive integer in sliding window form. If a negative integer is
- * given instead, takes its absolute value.
+ * given instead, its absolute value is taken.
  *
  * @param[out] win			- the recoded integer.
  * @param[out] len			- the number of bytes written.
@@ -1308,7 +1308,7 @@ void bn_rec_slw(uint8_t *win, int *len, const bn_t k, int w);
 
 /**
  * Recodes a positive integer in width-w Non-Adjacent Form. If a negative
- * integer is given instead, takes its absolute value.
+ * integer is given instead, its absolute value is taken.
  *
  * @param[out] naf			- the recoded integer.
  * @param[out] len			- the number of bytes written.
@@ -1320,7 +1320,7 @@ void bn_rec_naf(int8_t *naf, int *len, const bn_t k, int w);
 
 /**
  * Recodes a positive integer in width-w \tau-NAF. If a negative integer is
- * given instead, takes its absolute value.
+ * given instead, its absolute value is taken.
  *
  * @param[out] tnaf			- the recoded integer.
  * @param[out] len			- the number of bytes written.
@@ -1334,7 +1334,7 @@ void bn_rec_tnaf(int8_t *tnaf, int *len, const bn_t k, int8_t u, int m, int w);
 
 /**
  * Recodes a positive integer in regular fixed-length width-w \tau-NAF.
- * If a negative integer is given instead, takes its absolute value.
+ * If a negative integer is given instead, its absolute value is taken.
  *
  * @param[out] tnaf			- the recoded integer.
  * @param[out] len			- the number of bytes written.
@@ -1372,7 +1372,7 @@ void bn_rec_tnaf_mod(bn_t r0, bn_t r1, const bn_t k, int u, int m);
 
 /**
  * Recodes a positive integer in regular fixed-length width-w NAF. If a negative
- * integer is given instead, takes its absolute value.
+ * integer is given instead, its absolute value is taken.
  *
  * @param[out] naf			- the recoded integer.
  * @param[out] len			- the number of bytes written.
@@ -1398,7 +1398,7 @@ void bn_rec_jsf(int8_t *jsf, int *len, const bn_t k, const bn_t l);
 /**
  * Recodes a positive integer into two parts k0,k1 such that k = k0 + phi(k1),
  * where phi is an efficient curve endomorphism. If a negative integer is
- * given instead, takes its absolute value.
+ * given instead, its absolute value is taken.
  *
  * @param[out] k0			- the first part of the result.
  * @param[out] k1			- the second part of the result.
