@@ -35,7 +35,7 @@ message("   STLIB=[off|on] Build static library.")
 message("   STBIN=[off|on] Build static binaries.\n")
 
 option(DEBUG "Build with debugging support" off)
-option(PROFL "Build with debugging support" off)
+option(PROFL "Build with profiling support" off)
 option(CHECK "Build with error-checking support" on)
 option(VERBS "Build with detailed error messages" on)
 option(TRACE "Build with tracing support" off)
