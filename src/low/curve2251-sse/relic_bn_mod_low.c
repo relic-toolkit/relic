@@ -40,7 +40,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void bn_modn_low(dig_t *c, dig_t *a, int sa, dig_t *m, int sm, dig_t u) {
+void bn_modn_low(dig_t *c, const dig_t *a, int sa, const dig_t *m, int sm, dig_t u) {
 	int i;
 	dig_t r, carry, *tmpc;
 

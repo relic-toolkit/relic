@@ -64,7 +64,7 @@ const align uint32_t tm[] = {
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void fb_mul1_low(dig_t *c, dig_t *a, dig_t digit) {
+void fb_mul1_low(dig_t *c, const dig_t *a, dig_t digit) {
 	int j, k;
 	dig_t b1, b2;
 
@@ -95,7 +95,7 @@ void fb_mul1_low(dig_t *c, dig_t *a, dig_t digit) {
 	}
 }
 
-void fb_mulm_low(dig_t * c, dig_t * a, dig_t * b) {
+void fb_mulm_low(dig_t *c, const dig_t *a, const dig_t *b) {
 	__m128i rl[FB_DIGS], rh[FB_DIGS], l0, l1, h0, h1;
 	__m128i t0, t1, mask, m[FB_DIGS], m0, m1, m2, m3, m8, m9;
 	dig_t r0, r1, r2, r3;
@@ -233,7 +233,7 @@ void fb_mulm_low(dig_t * c, dig_t * a, dig_t * b) {
 	c[3] = x[1] & 0x07FFFFFFFFFFFFFF;
 }
 
-void fb_muln_low(dig_t * c, dig_t * a, dig_t * b) {
+void fb_muln_low(dig_t *c, const dig_t * a, const dig_t * b) {
 	__m128i rl[FB_DIGS], rh[FB_DIGS], l0, l1, h0, h1;
 	__m128i t0, t1, mask, m[FB_DIGS], m0, m1, m2, m3;
 	dig_t r0, r1, r2, r3;

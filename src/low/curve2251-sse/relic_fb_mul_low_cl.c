@@ -44,7 +44,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void fb_muln_low(dig_t *c, dig_t *a, dig_t *b) {
+void fb_muln_low(dig_t *c, const dig_t *a, const dig_t *b) {
 	__m128i ma0, ma1, mb0, mb1, m0, m1, m2, m3, m4, m5, t0, t1, t2, t3;
 
 	ma0 = _mm_load_si128((__m128i *)a);
@@ -84,7 +84,7 @@ void fb_muln_low(dig_t *c, dig_t *a, dig_t *b) {
 
 #if !defined(__INTEL_COMPILER)
 
-void fb_mulm_low(dig_t *c, dig_t *a, dig_t *b) {
+void fb_mulm_low(dig_t *c, const dig_t *a, const dig_t *b) {
 	__m128i ma0, ma1, mb0, mb1, m0, m1, m2, m3, m4, m5, t0, t1, t2, t3;
 	align dig_t t[2*FB_DIGS];
 
@@ -194,7 +194,7 @@ void fb_mulm_low(dig_t *c, dig_t *a, dig_t *b) {
 
 #else
 
-void fb_mulm_low(dig_t *c, dig_t *a, dig_t *b) {
+void fb_mulm_low(dig_t *c, const dig_t *a, const dig_t *b) {
 	__m128i ma0, ma1, mb0, mb1, m0, m1, m2, m3, m4, m5, m8, m9, t0, t1, t2, t3;
 
 	ma0 = _mm_load_si128((__m128i *)a);
@@ -237,7 +237,7 @@ void fb_mulm_low(dig_t *c, dig_t *a, dig_t *b) {
 
 #endif
 
-void fb_mul1_low(dig_t *c, dig_t *a, dig_t digit) {
+void fb_mul1_low(dig_t *c, const dig_t *a, dig_t digit) {
 	__m128i ma, mb, m0, m1, m2, t0, t1, t2;
 
 	ma = _mm_load_si128((__m128i *)a);

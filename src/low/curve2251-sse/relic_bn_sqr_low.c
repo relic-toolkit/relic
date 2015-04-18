@@ -39,7 +39,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void bn_sqra_low(dig_t *c, dig_t *a, int size) {
+void bn_sqra_low(dig_t *c, const dig_t *a, int size) {
 	dig_t carry;
 	dig_t digit;
 
@@ -53,6 +53,6 @@ void bn_sqra_low(dig_t *c, dig_t *a, int size) {
 	}
 }
 
-void bn_sqrn_low(dig_t *c, dig_t *a, int size) {
+void bn_sqrn_low(dig_t *c, const dig_t *a, int size) {
 	mpn_mul_n(c, a, a, size);
 }
