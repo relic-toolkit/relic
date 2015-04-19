@@ -25,7 +25,6 @@
  *
  * Benchmarks for prime field arithmetic.
  *
- * @version $Id$
  * @ingroup bench
  */
 

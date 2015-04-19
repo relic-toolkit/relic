@@ -25,7 +25,6 @@
  *
  * Benchmarks for arithmetic on prime elliptic curves.
  *
- * @version $Id$
  * @ingroup bench
  */
 

@@ -25,7 +25,6 @@
  *
  * Benchmarks for pairings defined over prime elliptic curves.
  *
- * @version $Id$
  * @ingroup bench
  */
 

@@ -25,7 +25,6 @@
  *
  * Benchmarks for binary field arithmetic.
  *
- * @version $Id$
  * @ingroup bench
  */
 

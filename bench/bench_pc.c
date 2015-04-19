@@ -25,7 +25,6 @@
  *
  * Benchmarks for Pairing-Based Cryptography.
  *
- * @version $Id$
  * @ingroup bench
  */
 

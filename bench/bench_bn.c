@@ -25,7 +25,6 @@
  *
  * Benchmarks for multiple precision integer arithmetic.
  *
- * @version $Id$
  * @ingroup bench
  */
 

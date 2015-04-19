@@ -25,7 +25,6 @@
  *
  * Benchmarks for arithmetic on binary elliptic curves.
  *
- * @version $Id$
  * @ingroup bench
  */
 
@@ -668,7 +667,7 @@ int main(void) {
 	conf_print();
 	util_banner("Benchmarks for the EB module:", 0);
 
-#if defined(EB_ORDIN)
+#if defined(EB_PLAIN)
 	r0 = eb_param_set_any_plain();
 	if (r0 == STS_OK) {
 		bench();

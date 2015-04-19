@@ -25,7 +25,6 @@
  *
  * Benchmarks for random number generation.
  *
- * @version $Id: bench_dv.c 1718 2014-01-07 12:58:03Z dfaranha $
  * @ingroup rand
  */
 

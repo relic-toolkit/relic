@@ -25,7 +25,6 @@
  *
  * Benchmarks for elliptic curves defined over extensions of prime fields.
  *
- * @version $Id$
  * @ingroup bench
  */
 

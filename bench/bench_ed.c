@@ -25,7 +25,6 @@
 *
 * Benchmarks for arithmetic on prime elliptic twisted Edwards curves.
 *
-* @version $Id$
 * @ingroup bench
 */
 

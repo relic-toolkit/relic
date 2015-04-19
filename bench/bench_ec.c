@@ -25,7 +25,6 @@
  *
  * Benchmarks for Elliptic Curve Cryptography.
  *
- * @version $Id$
  * @ingroup bench
  */
 

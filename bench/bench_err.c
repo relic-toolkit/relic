@@ -25,7 +25,6 @@
  *
  * Benchmarks for error-management routines.
  *
- * @version $Id$
  * @ingroup bench
  */
 

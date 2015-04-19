@@ -25,7 +25,6 @@
  *
  * Benchmarks for extensions of prime fields
  *
- * @version $Id$
  * @ingroup bench
  */
 
