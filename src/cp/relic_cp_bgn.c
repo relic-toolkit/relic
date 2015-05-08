@@ -345,7 +345,6 @@ int cp_bgn_dec(dig_t *out, gt_t in[4], bgn_t prv) {
 		gt_exp(t[1], t[1], r);
 
 		gt_copy(t[2], t[1]);
-		gt_print(t[3]);
 
 		if (gt_is_unity(t[3]) == 1) {
 			*out = 0;
