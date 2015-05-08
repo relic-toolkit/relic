@@ -25,7 +25,6 @@
  *
  * Implementation of the pairings over prime curves.
  *
- * @version $Id$
  * @ingroup pp
  */
 
@@ -59,8 +58,9 @@ static void pp_mil_k2(fp2_t r, ep_t t, ep_t p, ep_t q, bn_t a) {
 		ep_new(_q);
 
 		fp2_zero(l);
-		ep_copy(t, p);
-		ep_neg(_q, q);
+		ep_norm(t, p);
+		ep_norm(_q, q);
+		ep_neg(_q, _q);
 
 		for (int i = bn_bits(a) - 2; i >= 0; i--) {
 			fp2_sqr(r, r);
@@ -105,8 +105,9 @@ static void pp_mil_lit_k2(fp2_t r, ep_t t, ep_t p, ep_t q, bn_t a) {
 
 		fp2_zero(l);
 		fp2_zero(m);
-		ep_copy(t, p);
-		ep_neg(_q, q);
+		ep_norm(t, p);
+		ep_norm(_q, q);
+		ep_neg(_q, _q);
 
 		for (int i = bn_bits(a) - 2; i >= 0; i--) {
 			fp2_sqr(r, r);
@@ -154,17 +155,19 @@ static void pp_mil_k12(fp12_t r, ep2_t t, ep2_t q, ep_t p, bn_t a) {
 		ep_new(_p);
 
 		fp12_zero(l);
-		ep2_copy(t, q);
+		ep2_norm(t, q);
 
 		/* Precomputing. */
 #if EP_ADD == BASIC
-		fp_copy(_p->x, p->x);
-		fp_neg(_p->y, p->y);
+		ep_neg(_p, p);
 #else
-		fp_neg(_p->y, p->y);
 		fp_add(_p->x, p->x, p->x);
 		fp_add(_p->x, _p->x, p->x);
+		fp_neg(_p->y, p->y);
+		fp_set_dig(_p->z, 1);
+		_p->norm = 1;
 #endif
+		ep_norm(_p, _p);
 
 		pp_dbl_k12(r, t, t, _p);
 		if (bn_get_bit(a, bn_bits(a) - 2)) {
@@ -220,13 +223,15 @@ static void pp_mil_sps_k12(fp12_t r, ep2_t t, ep2_t q, ep_t p, int *s, int len) 
 		ep2_neg(_q, q);
 
 #if EP_ADD == BASIC
-		fp_copy(_p->x, p->x);
-		fp_neg(_p->y, p->y);
+		ep_neg(_p, p);
 #else
-		fp_neg(_p->y, p->y);
 		fp_add(_p->x, p->x, p->x);
 		fp_add(_p->x, _p->x, p->x);
+		fp_neg(_p->y, p->y);
+		fp_set_dig(_p->z, 1);
+		_p->norm = 1;
 #endif
+		ep_norm(_p, _p);
 
 		pp_dbl_k12(r, t, t, _p);
 		if (s[len - 2] > 0) {
@@ -273,21 +278,25 @@ static void pp_mil_sps_k12(fp12_t r, ep2_t t, ep2_t q, ep_t p, int *s, int len) 
  */
 static void pp_mil_lit_k12(fp12_t r, ep_t t, ep_t p, ep2_t q, bn_t a) {
 	fp12_t l;
+	ep2_t _q;
 
 	fp12_null(l);
+	ep2_null(_q);
 
 	TRY {
 		fp12_new(l);
+		ep2_new(_q);
 
-		ep_copy(t, p);
+		ep_norm(t, p);
+		ep2_neg(_q, q);
 		fp12_zero(l);
 
 		for (int i = bn_bits(a) - 2; i >= 0; i--) {
 			fp12_sqr(r, r);
-			pp_dbl_lit_k12(l, t, t, q);
+			pp_dbl_lit_k12(l, t, t, _q);
 			fp12_mul(r, r, l);
 			if (bn_get_bit(a, i)) {
-				pp_add_lit_k12(l, t, p, q);
+				pp_add_lit_k12(l, t, p, _q);
 				fp12_mul(r, r, l);
 			}
 		}
@@ -297,6 +306,7 @@ static void pp_mil_lit_k12(fp12_t r, ep_t t, ep_t p, ep2_t q, bn_t a) {
 	}
 	FINALLY {
 		fp12_free(l);
+		ep2_free(_q);
 	}
 }
 

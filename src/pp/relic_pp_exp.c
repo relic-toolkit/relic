@@ -25,7 +25,6 @@
  *
  * Implementation of the final exponentiation for pairings over prime curves.
  *
- * @version $Id$
  * @ingroup pp
  */
 

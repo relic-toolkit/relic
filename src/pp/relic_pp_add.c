@@ -25,7 +25,6 @@
  *
  * Implementation of the Miller addition functions.
  *
- * @version $Id$
  * @ingroup pp
  */
 

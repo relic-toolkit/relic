@@ -25,7 +25,6 @@
  *
  * Implementation of point normalization for points used in pairing computation.
  *
- * @version $Id$
  * @ingroup pp
  */
 

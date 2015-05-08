@@ -25,7 +25,6 @@
  *
  * Implementation of the Miller doubling function.
  *
- * @version $Id$
  * @ingroup pp
  */
 
