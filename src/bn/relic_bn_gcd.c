@@ -25,7 +25,6 @@
  *
  * Implementation of the multiple precision addition and subtraction functions.
  *
- * @version $Id$
  * @ingroup bn
  */
 
@@ -897,6 +896,7 @@ void bn_gcd_ext_mid(bn_t c, bn_t d, bn_t e, bn_t f, const bn_t a, const bn_t b) 
 		THROW(ERR_CAUGHT);
 	}
 	FINALLY {
+		bn_free(p);
 		bn_free(q);
 		bn_free(r);
 		bn_free(s);

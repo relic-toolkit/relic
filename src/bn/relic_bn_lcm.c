@@ -25,7 +25,6 @@
  *
  * Implementation of least common multiple.
  *
- * @version $Id$
  * @ingroup bn
  */
 

@@ -25,7 +25,6 @@
  *
  * Implementation of the multiple precision multiplication functions.
  *
- * @version $Id$
  * @ingroup bn
  */
 

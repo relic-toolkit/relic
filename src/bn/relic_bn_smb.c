@@ -25,7 +25,6 @@
  *
  * Implementation of Legendre and Jacobi symbols.
  *
- * @version $Id$
  * @ingroup bn
  */
 

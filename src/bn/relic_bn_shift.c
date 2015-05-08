@@ -25,7 +25,6 @@
  *
  * Implementation of the multiple precision arithmetic shift functions.
  *
- * @version $Id$
  * @ingroup bn
  */
 

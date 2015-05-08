@@ -25,7 +25,6 @@
  *
  * Implementation of prime factorization algorithms.
  *
- * @version $Id$
  * @ingroup bn
  */
 

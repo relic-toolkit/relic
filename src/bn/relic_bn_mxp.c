@@ -25,7 +25,6 @@
  *
  * Implementation of the multiple precision exponentiation functions.
  *
- * @version $Id$
  * @ingroup bn
  */
 

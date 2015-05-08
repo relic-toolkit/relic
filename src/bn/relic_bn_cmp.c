@@ -25,7 +25,6 @@
  *
  * Implementation of the multiple precision comparison functions.
  *
- * @version $Id$
  * @ingroup bn
  */
 

@@ -25,7 +25,6 @@
  *
  * Implementation of the multiple precision integer memory management routines.
  *
- * @version $Id$
  * @ingroup bn
  */
 

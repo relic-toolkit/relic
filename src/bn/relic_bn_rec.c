@@ -25,7 +25,6 @@
  *
  * Implementation of the multiple precision integer recoding functions.
  *
- * @version $Id$
  * @ingroup bn
  */
 

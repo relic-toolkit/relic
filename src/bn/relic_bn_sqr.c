@@ -26,7 +26,6 @@
  * Implementation of the multiple precision arithmetic squaring
  * functions.
  *
- * @version $Id$
  * @ingroup bn
  */
 

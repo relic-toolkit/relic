@@ -25,7 +25,6 @@
  *
  * Implementation of the multiple precision utilities.
  *
- * @version $Id$
  * @ingroup bn
  */
 

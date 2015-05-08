@@ -28,7 +28,6 @@
  * Strong prime generation is based on Gordon's Algorithm, taken from Handbook
  * of Applied Cryptography.
  *
- * @version $Id$
  * @ingroup bn
  */
 

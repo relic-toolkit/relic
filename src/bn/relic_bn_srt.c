@@ -25,7 +25,6 @@
  *
  * Implementation of the multiple precision integer square root extraction.
  *
- * @version $Id$
  * @ingroup bn
  */
 
