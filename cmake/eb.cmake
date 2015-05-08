@@ -6,7 +6,7 @@ message("      EB_PLAIN=[off|on] Support for ordinary curves without endomorphis
 message("      EB_KBLTZ=[off|on] Support for Koblitz anomalous binary curves.")
 message("      EB_MIXED=[off|on] Use mixed coordinates.")
 message("      EB_PRECO=[off|on] Build precomputation table for generator.")
-message("      EB_DEPTH=w        Width w in [2,6] of precomputation table for fixed point methods.")
+message("      EB_DEPTH=w        Width w in [2,8] of precomputation table for fixed point methods.")
 message("      EB_WIDTH=w        Width w in [2,6] of window processing for unknown point methods.\n")
 
 message("   ** Available binary elliptic curve methods (default = PROJC;LWNAF;COMBS;INTER):\n")
