@@ -25,7 +25,6 @@
  *
  * Implementation of Paillier's Homomorphic Probabilistic Encryption.
  *
- * @version $Id$
  * @ingroup cp
  */
 

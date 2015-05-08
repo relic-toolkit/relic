@@ -25,7 +25,6 @@
  *
  * Implementation of the RSA cryptosystem.
  *
- * @version $Id$
  * @ingroup cp
  */
 

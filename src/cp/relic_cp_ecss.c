@@ -25,7 +25,6 @@
  *
  * Implementation of the Schnorr protocol.
  *
- * @version $Id$
  * @ingroup cp
  */
 

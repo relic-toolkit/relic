@@ -25,7 +25,6 @@
  *
  * Implementation of the Boneh-Franklin indentity-based encryption.
  *
- * @version $Id$
  * @ingroup cp
  */
 

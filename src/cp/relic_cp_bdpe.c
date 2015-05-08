@@ -25,7 +25,6 @@
  *
  * Implementation of Benaloh's Dense Probabilistic Encryption cryptosystem.
  *
- * @version $Id$
  * @ingroup cp
  */
 

@@ -25,7 +25,6 @@
  *
  * Implementation of the ECMQV protocol.
  *
- * @version $Id$
  * @ingroup cp
  */
 

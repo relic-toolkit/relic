@@ -26,7 +26,6 @@
  * Implementation of the Sakai-Ohgishi-Kasahara Identity-Based Non-Interactive
  * Authenticated Key Agreement scheme.
  *
- * @version $Id$
  * @ingroup test
  */
 

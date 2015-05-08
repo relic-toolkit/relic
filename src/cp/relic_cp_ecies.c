@@ -25,7 +25,6 @@
  *
  * Implementation of the ECIES cryptosystem.
  *
- * @version $Id$
  * @ingroup cp
  */
 

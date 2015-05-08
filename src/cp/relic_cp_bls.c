@@ -25,7 +25,6 @@
  *
  * Implementation of the Boneh-Lynn-Schacham short signature protocol.
  *
- * @version $Id$
  * @ingroup cp
  */
 

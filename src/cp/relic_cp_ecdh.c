@@ -25,7 +25,6 @@
  *
  * Implementation of the ECDH protocol.
  *
- * @version $Id$
  * @ingroup cp
  */
 
