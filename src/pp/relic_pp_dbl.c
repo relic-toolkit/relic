@@ -666,7 +666,6 @@ void pp_dbl_lit_k12(fp12_t l, ep_t r, ep_t p, ep2_t q) {
 		fp_sub(l[zero][zero][0], t3, t1);
 		fp_zero(l[zero][zero][1]);
 
-		fp_neg(t5, t5);
 		fp_mul(l[one][one][0], q->y[0], t5);
 		fp_mul(l[one][one][1], q->y[1], t5);
 	}
