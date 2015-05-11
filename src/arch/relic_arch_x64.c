@@ -25,7 +25,6 @@
  *
  * Implementation of AMD64-dependent routines.
  *
- * @version $Id$
  * @ingroup arch
  */
 

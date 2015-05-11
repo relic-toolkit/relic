@@ -25,7 +25,6 @@
  *
  * Implementation of AVR-dependent routines.
  *
- * @version $Id$
  * @ingroup arch
  */
 

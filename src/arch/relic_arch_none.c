@@ -25,7 +25,6 @@
  *
  * Implementation of architecture-dependent routines.
  *
- * @version $Id$
  * @ingroup arch
  */
 

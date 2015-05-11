@@ -25,7 +25,6 @@
  *
  * Implementation of architecture-dependent routines.
  *
- * @version $Id$
  * @ingroup arch
  */
 
@@ -52,7 +51,9 @@
 /*============================================================================*/
 
 void arch_init(void) {
- #if defined(__ARM_ARCH_6__) || defined(__ARM_ARCH_6J__) || defined(__ARM_ARCH_6K__) || defined(__ARM_ARCH_6Z__) || defined(__ARM_ARCH_6ZK__) || defined(__ARM_ARCH_6T2__)
+#if TIMER == CYCLE
+
+#if defined(__ARM_ARCH_6__) || defined(__ARM_ARCH_6J__) || defined(__ARM_ARCH_6K__) || defined(__ARM_ARCH_6Z__) || defined(__ARM_ARCH_6ZK__) || defined(__ARM_ARCH_6T2__)
 	/* 
 	 * This relies on a Kernel module described in:
 	 * http://blog.regehr.org/archives/794
@@ -72,6 +73,8 @@ void arch_init(void) {
 	*DWT_CYCCNT = 0; // reset the counter
 	*DWT_CONTROL = *DWT_CONTROL | 1 ; // enable the counter
 #endif
+
+#endif /* TIMER = CYCLE */
 }
 
 void arch_clean(void) {

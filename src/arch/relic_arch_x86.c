@@ -25,7 +25,6 @@
  *
  * Implementation of Intel x86-dependent routines.
  *
- * @version $Id$
  * @ingroup arch
  */
 
