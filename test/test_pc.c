@@ -25,7 +25,6 @@
  *
  * Tests for the Pairing-Based Cryptography module.
  *
- * @version $Id$
  * @ingroup test
  */
 
@@ -1257,16 +1256,15 @@ int exponentiation(void) {
 static int pairing(void) {
 	int code = STS_ERR;
 	gt_t e1, e2;
-	g1_t p, q;
-	g2_t r, s;
+	g1_t p;
+	g2_t q, r;
 	bn_t k, n;
 
 	gt_null(e1);
 	gt_null(e2);
 	g1_null(p);
-	g1_null(q);
+	g2_null(q);
 	g2_null(r);
-	g2_null(s);
 	bn_null(k);
 	bn_null(n);
 
@@ -1274,7 +1272,7 @@ static int pairing(void) {
 		gt_new(e1);
 		gt_new(e2);
 		g1_new(p);
-		g1_new(q);
+		g2_new(q);
 		g2_new(r);
 		g2_new(s);
 		bn_new(k);
@@ -1282,7 +1280,7 @@ static int pairing(void) {
 
 		g1_get_ord(n);
 
-		TEST_BEGIN("pairing is not degenerate") {
+		TEST_BEGIN("pairing non-degeneracy is correct") {
 			g1_rand(p);
 			g2_rand(r);
 			pc_map(e1, p, r);
@@ -1298,12 +1296,23 @@ static int pairing(void) {
 
 		TEST_BEGIN("pairing is bilinear") {
 			g1_rand(p);
-			g2_rand(r);
+			g2_rand(q);
 			bn_rand_mod(k, n);
-			g1_mul(q, p, k);
-			pc_map(e1, q, r);
-			g2_mul(s, r, k);
-			pc_map(e2, p, s);
+			g2_mul(r, q, k);
+			pc_map(e1, p, r);
+			pc_map(e2, p, q);
+			gt_exp(e2, e2, k);
+			TEST_ASSERT(gt_cmp(e1, e2) == CMP_EQ, end);
+			g1_mul(p, p, k);
+			pc_map(e2, p, q);
+			TEST_ASSERT(gt_cmp(e1, e2) == CMP_EQ, end);
+			g1_dbl(p, p);
+			pc_map(e2, p, q);
+			gt_sqr(e1, e1);
+			TEST_ASSERT(gt_cmp(e1, e2) == CMP_EQ, end);
+			g2_dbl(q, q);
+			pc_map(e2, p, q);
+			gt_sqr(e1, e1);
 			TEST_ASSERT(gt_cmp(e1, e2) == CMP_EQ, end);
 		} TEST_END;
 	}
@@ -1316,9 +1325,8 @@ static int pairing(void) {
 	gt_free(e1);
 	gt_free(e2);
 	g1_free(p);
-	g1_free(q);
+	g2_free(q);
 	g2_free(r);
-	g2_free(s);
 	bn_free(k);
 	bn_free(n);
 	return code;
