@@ -25,7 +25,6 @@
  *
  * Implementation of the prime elliptic curve utilities.
  *
- * @version $Id$
  * @ingroup ep
  */
 
@@ -365,6 +364,9 @@
 #if defined(EP_ENDOM) && FP_PRIME == 638
 /**
  * Parameters for a 638-bit pairing-friendly prime curve.
+ * 
+ * Pairing computation over this curve is not supported anymore, but B12_P638
+ * is an overall better candidate anyway.
  */
 /** @{ */
 #define BN_P638_A		"0"
