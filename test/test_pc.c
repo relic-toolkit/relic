@@ -1274,7 +1274,6 @@ static int pairing(void) {
 		g1_new(p);
 		g2_new(q);
 		g2_new(r);
-		g2_new(s);
 		bn_new(k);
 		bn_new(n);
 
