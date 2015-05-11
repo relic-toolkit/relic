@@ -30,6 +30,7 @@
 
 #include "relic_core.h"
 #include "relic_pp.h"
+#include "relic_fp_low.h"
 #include "relic_fpx_low.h"
 #include "relic_util.h"
 
@@ -345,6 +346,7 @@ void pp_dbl_k12_projc_basic(fp12_t l, ep2_t r, ep2_t q, ep_t p) {
 
 void pp_dbl_k2_projc_lazyr(fp2_t l, ep_t r, ep_t p, ep_t q) {
 	fp_t t0, t1, t2, t3, t4, t5;
+	dv_t u0, u1;
 
 	fp_null(t0);
 	fp_null(t1);
@@ -352,6 +354,8 @@ void pp_dbl_k2_projc_lazyr(fp2_t l, ep_t r, ep_t p, ep_t q) {
 	fp_null(t3);
 	fp_null(t4);
 	fp_null(t5);
+	dv_null(u0);
+	dv_null(u1);
 
 	TRY {
 		fp_new(t0);
@@ -360,6 +364,8 @@ void pp_dbl_k2_projc_lazyr(fp2_t l, ep_t r, ep_t p, ep_t q) {
 		fp_new(t3);
 		fp_new(t4);
 		fp_new(t5);
+		dv_new(u0);
+		dv_new(u1);
 
 		/* For these curves, we always can choose a = -3. */
 		/* dbl-2001-b formulas: 3M + 5S + 8add + 1*4 + 2*8 + 1*3 */
@@ -404,11 +410,12 @@ void pp_dbl_k2_projc_lazyr(fp2_t l, ep_t r, ep_t p, ep_t q) {
 		fp_sub(r->x, r->x, t5);
 
 		/* y3 = alpha * (4 * beta - x3) - 8 * gamma^2. */
-		fp_sqr(t4, t1);
-		fp_dbl(t4, t4);
-		fp_sub(r->y, t2, r->x);
-		fp_mul(r->y, r->y, t3);
-		fp_sub(r->y, r->y, t4);
+		fp_sqrn_low(u0, t1);
+		fp_addc_low(u0, u0, u0);
+		fp_subm_low(r->y, t2, r->x);
+		fp_muln_low(u1, r->y, t3);
+		fp_subc_low(u1, u1, u0);
+		fp_rdcn_low(r->y, u1);
 
 		/* l1 = - z3 * delta * yq. */
 		fp_mul(l[1], r->z, t0);
@@ -426,6 +433,8 @@ void pp_dbl_k2_projc_lazyr(fp2_t l, ep_t r, ep_t p, ep_t q) {
 		fp_free(t3);
 		fp_free(t4);
 		fp_free(t5);
+		dv_free(u0);
+		dv_free(u1);
 	}
 }
 
