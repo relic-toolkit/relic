@@ -430,7 +430,9 @@ void pp_map_tatep_k12(fp12_t r, ep_t p, ep2_t q) {
 		THROW(ERR_CAUGHT);
 	}
 	FINALLY {
+		ep_free(_p);
 		ep_free(t);
+		ep2_free(_q);
 		bn_free(n);
 	}
 }
