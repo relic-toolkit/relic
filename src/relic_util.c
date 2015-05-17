@@ -25,7 +25,6 @@
  *
  * Implementation of useful configuration routines.
  *
- * @version $Id$
  * @ingroup relic
  */
 

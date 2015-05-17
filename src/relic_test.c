@@ -25,7 +25,6 @@
  *
  * Implementation of useful test routines.
  *
- * @version $Id$
  * @ingroup relic
  */
 

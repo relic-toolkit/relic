@@ -25,7 +25,6 @@
  *
  * Implementation of useful benchmark routines.
  *
- * @version $Id$
  * @ingroup relic
  */
 

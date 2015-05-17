@@ -25,7 +25,6 @@
  *
  * Implementation of the library basic functions.
  *
- * @version $Id$
  * @ingroup relic
  */
 

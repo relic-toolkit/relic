@@ -25,7 +25,6 @@
  *
  * Implementation of error-handling routines.
  *
- * @version $Id$
  * @ingroup relic
  */
 

@@ -26,7 +26,6 @@
  * Implementation of the memory-management routines for manipulating the
  * global pool of digit vectors used by the static allocation mode.
  *
- * @version $Id$
  * @ingroup relic
  */
 
