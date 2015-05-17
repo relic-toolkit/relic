@@ -25,7 +25,6 @@
  *
  * Implementation of the AES block cipher.
  *
- * @version $Id$
  * @ingroup bc
  */
 
