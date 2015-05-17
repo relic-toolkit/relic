@@ -25,7 +25,6 @@
  *
  * Implementation of the SHA-384 hash function.
  *
- * @version $Id$
  * @ingroup md
  */
 

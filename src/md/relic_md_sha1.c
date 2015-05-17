@@ -25,7 +25,6 @@
  *
  * Implementation of the SHA-1 hash function.
  *
- * @version $Id$
  * @ingroup md
  */
 

@@ -25,7 +25,6 @@
  *
  * Implementation of Hash-based Message Authentication Code.
  *
- * @version $Id$
  * @ingroup md
  */
 

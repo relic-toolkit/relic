@@ -25,7 +25,6 @@
  *
  * Implementation of a Mask Generation Function.
  *
- * @version $Id$
  * @ingroup md
  */
 

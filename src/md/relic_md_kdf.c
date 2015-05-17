@@ -25,7 +25,6 @@
  *
  * Implementation of a Key Derivation function.
  *
- * @version $Id$
  * @ingroup md
  */
 
