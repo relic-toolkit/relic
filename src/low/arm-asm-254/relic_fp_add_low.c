@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2013 RELIC Authors
+ * Copyright (C) 2007-2015 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -26,7 +26,6 @@
  * Implementation of the low-level prime field addition and subtraction
  * functions.
  *
- * @version $Id: relic_fp_add_low.c 1108 2012-03-11 21:45:01Z dfaranha $
  * @ingroup fp
  */
 
@@ -54,8 +53,8 @@ dig_t fp_add1_low(dig_t *c, const dig_t *a, dig_t digit) {
 	return carry;
 }
 
-/*
-dig_t fp_addn_low(dig_t *c, dig_t *a, dig_t *b) {
+#if 0
+dig_t fp_addn_low(dig_t *c, const dig_t *a, const dig_t *b) {
 	int i;
 	dig_t carry, c0, c1, r0, r1;
 
@@ -71,7 +70,7 @@ dig_t fp_addn_low(dig_t *c, dig_t *a, dig_t *b) {
 	return carry;
 }
 
-void fp_addm_low(dig_t *c, dig_t *a, dig_t *b) {
+void fp_addm_low(dig_t *c, const dig_t *a, const dig_t *b) {
 	int i;
 	dig_t carry, c0, c1, r0, r1;
 
@@ -89,7 +88,7 @@ void fp_addm_low(dig_t *c, dig_t *a, dig_t *b) {
 	}
 }
 
-dig_t fp_addd_low(dig_t *c, dig_t *a, dig_t *b) {
+dig_t fp_addd_low(dig_t *c, const dig_t *a, const dig_t *b) {
 	int i;
 	dig_t carry, c0, c1, r0, r1;
 
@@ -103,13 +102,14 @@ dig_t fp_addd_low(dig_t *c, dig_t *a, dig_t *b) {
 		c[i] = r1;
 	}
 	return carry;
-}*/
+}
+#endif
 
 void fp_addc_low(dig_t *c, const dig_t *a, const dig_t *b) {
-	fp_addd_low(c, a, b);
+	dig_t carry = fp_addd_low(c, a, b);
 
-	if (fp_cmpn_low(c + FP_DIGS, fp_prime_get()) != CMP_LT) {
-		fp_subn_low(c + FP_DIGS, c + FP_DIGS, fp_prime_get());
+	if (carry || (fp_cmpn_low(c + FP_DIGS, fp_prime_get()) != CMP_LT)) {
+		carry = fp_subn_low(c + FP_DIGS, c + FP_DIGS, fp_prime_get());
 	}
 }
 
@@ -126,12 +126,12 @@ dig_t fp_sub1_low(dig_t *c, const dig_t *a, dig_t digit) {
 	return carry;
 }
 
-/*
-dig_t fp_subn_low(dig_t *c, dig_t *a, dig_t *b) {
+#if 0
+dig_t fp_subn_low(dig_t *c, const dig_t *a, const dig_t *b) {
 	int i;
 	dig_t carry, r0, diff;
 
-	// Zero the carry.
+	/* Zero the carry. */
 	carry = 0;
 	for (i = 0; i < FP_DIGS; i++, a++, b++, c++) {
 		diff = (*a) - (*b);
@@ -142,11 +142,11 @@ dig_t fp_subn_low(dig_t *c, dig_t *a, dig_t *b) {
 	return carry;
 }
 
-void fp_subm_low(dig_t *c, dig_t *a, dig_t *b) {
+void fp_subm_low(dig_t *c, const dig_t *a, const dig_t *b) {
 	int i;
 	dig_t carry, r0, diff;
 
-	// Zero the carry. 
+	/* Zero the carry. */
 	carry = 0;
 	for (i = 0; i < FP_DIGS; i++, a++, b++) {
 		diff = (*a) - (*b);
@@ -159,10 +159,11 @@ void fp_subm_low(dig_t *c, dig_t *a, dig_t *b) {
 	}
 }
 
-dig_t fp_subd_low(dig_t *c, dig_t *a, dig_t *b) {
+dig_t fp_subd_low(dig_t *c, const dig_t *a, const dig_t *b) {
 	int i;
 	dig_t carry, r0, diff;
 
+	/* Zero the carry. */
 	carry = 0;
 	for (i = 0; i < 2 * FP_DIGS; i++, a++, b++) {
 		diff = (*a) - (*b);
@@ -172,7 +173,7 @@ dig_t fp_subd_low(dig_t *c, dig_t *a, dig_t *b) {
 	}
 	return carry;
 }
-*/
+#endif
 
 void fp_subc_low(dig_t *c, const dig_t *a, const dig_t *b) {
 	dig_t carry = fp_subd_low(c, a, b);
@@ -187,11 +188,37 @@ void fp_negm_low(dig_t *c, const dig_t *a) {
 }
 
 dig_t fp_dbln_low(dig_t *c, const dig_t *a) {
-	fp_addn_low(c, a, a);
+	int i;
+	dig_t carry, c0, c1, r0, r1;
+
+	carry = 0;
+	for (i = 0; i < FP_DIGS; i++, a++, c++) {
+		r0 = (*a) + (*a);
+		c0 = (r0 < (*a));
+		r1 = r0 + carry;
+		c1 = (r1 < r0);
+		carry = c0 | c1;
+		(*c) = r1;
+	}
+	return carry;
 }
 
 void fp_dblm_low(dig_t *c, const dig_t *a) {
-	fp_addm_low(c, a, a);
+	int i;
+	dig_t carry, c0, c1, r0, r1;
+
+	carry = 0;
+	for (i = 0; i < FP_DIGS; i++, a++) {
+		r0 = (*a) + (*a);
+		c0 = (r0 < (*a));
+		r1 = r0 + carry;
+		c1 = (r1 < r0);
+		carry = c0 | c1;
+		c[i] = r1;
+	}
+	if (carry || (fp_cmpn_low(c, fp_prime_get()) != CMP_LT)) {
+		carry = fp_subn_low(c, c, fp_prime_get());
+	}
 }
 
 void fp_hlvm_low(dig_t *c, const dig_t *a) {
@@ -200,7 +227,7 @@ void fp_hlvm_low(dig_t *c, const dig_t *a) {
 	if (a[0] & 1) {
 		carry = fp_addn_low(c, a, fp_prime_get());
 	} else {
-		fp_copy(c, a);
+		dv_copy(c, a, FP_DIGS);
 	}
 	fp_rsh1_low(c, c);
 	if (carry) {
@@ -214,7 +241,7 @@ void fp_hlvd_low(dig_t *c, const dig_t *a) {
 	if (a[0] & 1) {
 		carry = fp_addn_low(c, a, fp_prime_get());
 	} else {
-		fp_copy(c, a);
+		dv_copy(c, a, FP_DIGS);
 	}
 
 	fp_add1_low(c + FP_DIGS, a + FP_DIGS, carry);
