@@ -25,7 +25,6 @@
  *
  * Implementation of pairing computation utilities.
  *
- * @version $Id$
  * @ingroup pc
  */
 
