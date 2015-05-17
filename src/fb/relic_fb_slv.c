@@ -25,7 +25,6 @@
  *
  * Implementation of quadratic equation solution on binary fields.
  *
- * @version $Id$
  * @ingroup fb
  */
 

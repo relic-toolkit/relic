@@ -25,7 +25,6 @@
  *
  * Implementation of the basic functions to manipulate binary field elements.
  *
- * @version $Id$
  * @ingroup fb
  */
 

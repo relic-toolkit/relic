@@ -26,7 +26,6 @@
  * Implementation of the iterated squaring/square-root of a binary field
  * element.
  *
- * @version $Id$
  * @ingroup fb
  */
 

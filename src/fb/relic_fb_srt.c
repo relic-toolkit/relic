@@ -25,7 +25,6 @@
  *
  * Implementation of the binary field square root.
  *
- * @version $Id$
  * @ingroup fb
  */
 

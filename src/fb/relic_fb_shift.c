@@ -25,7 +25,6 @@
  *
  * Implementation of the binary field multiplication by the basis.
  *
- * @version $Id$
  * @ingroup fb
  */
 

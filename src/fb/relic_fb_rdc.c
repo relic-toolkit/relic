@@ -25,7 +25,6 @@
  *
  * Implementation of the binary field modular reduction.
  *
- * @version $Id$
  * @ingroup fb
  */
 

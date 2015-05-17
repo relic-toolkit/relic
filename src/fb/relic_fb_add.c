@@ -25,7 +25,6 @@
  *
  * Implementation of binary field addition and subtraction functions.
  *
- * @version $Id$
  * @ingroup fb
  */
 

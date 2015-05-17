@@ -25,7 +25,6 @@
  *
  * Implementation of the binary field squaring.
  *
- * @version $Id$
  * @ingroup fb
  */
 

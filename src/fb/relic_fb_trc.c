@@ -25,7 +25,6 @@
  *
  * Implementation of binary field trace function.
  *
- * @version $Id$
  * @ingroup fb
  */
 

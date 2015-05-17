@@ -25,7 +25,6 @@
  *
  * Implementation of the binary field modulus manipulation.
  *
- * @version $Id$
  * @ingroup fb
  */
 

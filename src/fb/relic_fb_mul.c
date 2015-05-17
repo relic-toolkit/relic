@@ -25,7 +25,6 @@
  *
  * Implementation of the binary field multiplication functions.
  *
- * @version $Id$
  * @ingroup fb
  */
 
