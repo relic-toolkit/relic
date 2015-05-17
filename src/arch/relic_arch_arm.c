@@ -83,7 +83,10 @@ void arch_clean(void) {
 
 ull_t arch_cycles(void) {
 	unsigned int value = 0;
- #if defined(__ARM_ARCH_6__) || defined(__ARM_ARCH_6J__) || defined(__ARM_ARCH_6K__) || defined(__ARM_ARCH_6Z__) || defined(__ARM_ARCH_6ZK__) || defined(__ARM_ARCH_6T2__)
+	
+#if TIMER == CYCLE
+
+#if defined(__ARM_ARCH_6__) || defined(__ARM_ARCH_6J__) || defined(__ARM_ARCH_6K__) || defined(__ARM_ARCH_6Z__) || defined(__ARM_ARCH_6ZK__) || defined(__ARM_ARCH_6T2__)
 	asm("mrc p15, 0, %0, c15, c12, 1" : "=r"(value));	
 #elif __ARM_ARCH_7A__
 	asm("mcr p15, 0, %0, c9, c13, 0" : "=r"(value));
@@ -92,5 +95,8 @@ ull_t arch_cycles(void) {
 #else
 	#error "Unsupported ARM architecture. Cycle count implementation missing for this ARM version."
 #endif
+
+#endif /* TIMER = CYCLE */
+
 	return value;
 }
