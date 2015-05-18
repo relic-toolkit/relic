@@ -35,30 +35,17 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 int ed_size_bin(const ed_t a, int pack) {
-	ed_t t;
 	int size = 0;
-
-	ed_null(t);
 
 	if (ed_is_infty(a)) {
 		return 1;
 	}
 
-	TRY {
-		ed_new(t);
-
-		ed_norm(t, a);
-
-		size = 1 + FP_BYTES;
-		if (!pack) {
-			size += FP_BYTES;
-		}
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
-		ed_free(t);
+	size = 1 + FP_BYTES;
+	if (!pack) {
+		size += FP_BYTES;
 	}
-
+	
 	return size;
 }
 
