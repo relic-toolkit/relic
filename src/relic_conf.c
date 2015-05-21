@@ -36,6 +36,7 @@
 #include "relic_fb.h"
 #include "relic_ep.h"
 #include "relic_eb.h"
+#include "relic_ed.h"
 #include "relic_ec.h"
 #include "relic_pc.h"
 #include "relic_core.h"
@@ -121,6 +122,11 @@ void conf_print(void) {
 #ifdef WITH_EC
 	util_print("** Elliptic Curve Cryptography module options:\n");
 	util_print("   Arithmetic method: " EC_METHD "\n\n");
+#endif
+
+#ifdef WITH_ED
+	util_print("** Edwards Curve Cryptography module options:\n");
+	util_print("   Arithmetic method: " ED_METHD "\n\n");
 #endif
 
 #ifdef WITH_MD

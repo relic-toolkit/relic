@@ -566,6 +566,8 @@
 /** Chosen prime elliptic curve simulteanous point multiplication method. */
 #define ED_SIM   @ED_SIM@
 
+#define ED_METHD "@ED_METHD@"
+
 /** Prime curves. */
 #define PRIME    1
 /** Binary curves. */
