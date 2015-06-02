@@ -46,14 +46,14 @@
  * @param[in] A				- the first digit to multiply.
  * @param[in] B				- the second digit to multiply.
  */
-#define COMBA_STEP(R2, R1, R0, A, B)										\
+#define COMBA_STEP_FP_RDC_LOW(R2, R1, R0, A, B)								\
 	dbl_t r = (dbl_t)(A) * (dbl_t)(B);										\
 	dig_t _r = (R1);														\
 	(R0) += (dig_t)(r);														\
 	(R1) += (R0) < (dig_t)(r);												\
 	(R2) += (R1) < _r;														\
-	(R1) += (dig_t)(r >> (dbl_t)BN_DIGIT);								\
-	(R2) += (R1) < (dig_t)(r >> (dbl_t)BN_DIGIT);						\
+	(R1) += (dig_t)(r >> (dbl_t)BN_DIGIT);									\
+	(R2) += (R1) < (dig_t)(r >> (dbl_t)BN_DIGIT);							\
 
 /**
  * Accumulates a single precision digit in a triple register variable.
@@ -159,11 +159,11 @@ void fp_rdcn_low(dig_t *c, dig_t *a) {
 		tmp = c;
 		tmpm = m + i;
 		for (j = 0; j < i; j++, tmp++, tmpm--) {
-			COMBA_STEP(r2, r1, r0, *tmp, *tmpm);
+			COMBA_STEP_FP_RDC_LOW(r2, r1, r0, *tmp, *tmpm);
 		}
 		COMBA_ADD(r2, r1, r0, *a);
 		*tmpc = (dig_t)(r0 * u);
-		COMBA_STEP(r2, r1, r0, *tmpc, *m);
+		COMBA_STEP_FP_RDC_LOW(r2, r1, r0, *tmpc, *m);
 		r0 = r1;
 		r1 = r2;
 		r2 = 0;
@@ -173,7 +173,7 @@ void fp_rdcn_low(dig_t *c, dig_t *a) {
 		tmp = c + (i - FP_DIGS + 1);
 		tmpm = m + FP_DIGS - 1;
 		for (j = i - FP_DIGS + 1; j < FP_DIGS; j++, tmp++, tmpm--) {
-			COMBA_STEP(r2, r1, r0, *tmp, *tmpm);
+			COMBA_STEP_FP_RDC_LOW(r2, r1, r0, *tmp, *tmpm);
 		}
 		COMBA_ADD(r2, r1, r0, *a);
 		c[i - FP_DIGS] = r0;
