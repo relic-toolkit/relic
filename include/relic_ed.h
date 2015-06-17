@@ -469,6 +469,8 @@ void ed_map(ed_t p, const uint8_t *msg, int len);
 #define ed_mul(R, P, K)   ed_mul_slide(R, P, K)
 #elif ED_MUL == MONTY
 #define ed_mul(R, P, K)   ed_mul_monty(R, P, K)
+#elif ED_MUL == FIXED
+#define ed_mul(R, P, K)   ed_mul_fixed(R, P, K)
 #elif ED_MUL == LWNAF
 #define ed_mul(R, P, K)   ed_mul_lwnaf(R, P, K)
 #elif ED_MUL == LWNAF_MIXED
@@ -843,6 +845,16 @@ void ed_mul_slide(ed_t r, const ed_t p, const bn_t k);
  * @param[in] k				- the integer.
  */
 void ed_mul_monty(ed_t r, const ed_t p, const bn_t k);
+
+/**
+ * Multiplies a prime elliptic point by an integer using the constant-time
+ * fixed window method.
+ *
+ * @param[out] r      - the result.
+ * @param[in] p       - the point to multiply.
+ * @param[in] k       - the integer.
+ */
+void ed_mul_fixed(ed_t r, const ed_t p, const bn_t k);
 
 /**
  * Multiplies a prime elliptic point by an integer using the w-NAF method.

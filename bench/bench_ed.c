@@ -230,6 +230,14 @@ static void arith(void) {
 	} BENCH_END;
 #endif
 
+#if ED_MUL == MONTY || !defined(STRIP)
+	BENCH_BEGIN("ed_mul_fixed") {
+		bn_rand_mod(k, n);
+		ed_rand(p);
+		BENCH_ADD(ed_mul_fixed(q, p, k));
+	} BENCH_END;
+#endif
+
 #if ED_MUL == LWNAF || !defined(STRIP)
 	BENCH_BEGIN("ed_mul_lwnaf") {
 		bn_rand_mod(k, n);
