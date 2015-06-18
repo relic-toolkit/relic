@@ -13,6 +13,7 @@ message("      *** variable-base multiplication method ***")
 message("      ED_METHD=BASIC    	Binary method.")
 message("      ED_METHD=SLIDE    	Sliding window method.")
 message("      ED_METHD=MONTY    	Montgomery ladder method.")
+message("      ED_METHD=FIXED    	2-bit fixed window method.")
 message("      ED_METHD=LWNAF    	Left-to-right window NAF method (GLV for Koblitz curves).")
 message("      ED_METHD=LWNAF_MIXED Left-to-right window NAF mixed method (GLV for Koblitz curves).\n")
 

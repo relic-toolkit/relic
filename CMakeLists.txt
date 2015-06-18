@@ -32,7 +32,8 @@ message("   COLOR=[off|on] Build with colored output.")
 message("   BIGED=[off|on] Build with big-endian support.")
 message("   SHLIB=[off|on] Build shared library.")
 message("   STLIB=[off|on] Build static library.")
-message("   STBIN=[off|on] Build static binaries.\n")
+message("   STBIN=[off|on] Build static binaries.")
+message("   AMALG=[off|on] Build as an amalgamation for better optimizations.\n")
 
 option(DEBUG "Build with debugging support" off)
 option(PROFL "Build with profiling support" off)
@@ -48,6 +49,7 @@ option(BIGED "Build with big-endian support" off)
 option(SHLIB "Build shared library" on)
 option(STLIB "Build static library" on)
 option(STBIN "Build static binaries" off)
+option(AMALG "Build as amalgamation" off)
 
 message(STATUS "Number of times each test or benchmark is ran (default = 50, 1000):\n")
 

@@ -671,6 +671,49 @@ void ed_mul_lwreg(ed_t r, const ed_t p, const bn_t k) {
 
 #endif
 
+#if ED_MUL == FIXED || !defined(STRIP)
+void ed_mul_fixed(ed_t r, const ed_t b, const bn_t k) {
+	if (bn_is_zero(k)) {
+		ed_set_infty(r);
+		return;
+	}
+
+	ed_t pre[4];
+
+	for (int n = 0; n < 4; n++) {
+		ed_null(pre[n]);
+		ed_new(pre[n]);
+	}
+
+	// precomputation
+	ed_set_infty(pre[0]);
+	ed_copy(pre[1], b);
+	ed_dbl(pre[2], b);
+	ed_add(pre[3], pre[2], pre[1]);
+
+	int k_bits = bn_bits(k);
+	char hightest_bits = bn_get_bit(k, k_bits - 1 + (k_bits % 2)) * 2 + bn_get_bit(k, k_bits - 2 + (k_bits % 2));
+
+	ed_copy(r, pre[hightest_bits]);
+
+	for (int i = ((k_bits - 1) / 2) * 2 ; i > 1 ; i -= 2) {
+		int index = (i - 2) / (sizeof(dig_t) * 8);
+		int shift = (i - 2) % (sizeof(dig_t) * 8);
+		char bits = (k->dp[index] >> shift) & 3;
+		ed_dbl_short(r, r);
+		ed_dbl(r, r);
+		ed_add(r, r, pre[bits]);
+	}
+
+	ed_norm(r, r);
+
+	for (int n = 0; n < 4; n++) {
+		ed_free(pre[n]);
+	}
+}
+
+#endif
+
 void ed_mul_gen(ed_t r, const bn_t k) {
 	if (bn_is_zero(k)) {
 		ed_set_infty(r);

@@ -183,21 +183,15 @@ void ed_add_projective(ed_t r, const ed_t p, const ed_t q) {
 void ed_add_extended(ed_t r, const ed_t p, const ed_t q) {
 	fp_t A;
 	fp_t B;
-	fp_t C;
-	fp_t D;
 	fp_t E;
 	fp_t F;
 	fp_t G;
-	fp_t H;
 
 	fp_new(A);
 	fp_new(B);
-	fp_new(C);
-	fp_new(D);
 	fp_new(E);
 	fp_new(F);
 	fp_new(G);
-	fp_new(H);
 
 	// A = X_1 * X_2
 	fp_mul(A, p->x, q->x);
@@ -206,10 +200,12 @@ void ed_add_extended(ed_t r, const ed_t p, const ed_t q) {
 	fp_mul(B, p->y, q->y);
 
 	// C = d * T_1 * T_2
+	#define C (r->t)
 	fp_mul(C, core_get()->ed_d, p->t);
 	fp_mul(C, C, q->t);
 
 	// D = Z_1 * Z_2
+	#define D (r->z)
 	fp_mul(D, p->z, q->z);
 
 	// E = (X_1 + Y_1) * (X_2 + Y_2) - A - B
@@ -224,9 +220,12 @@ void ed_add_extended(ed_t r, const ed_t p, const ed_t q) {
 
 	// G = D + C
 	fp_add(G, D, C);
+	#undef C
+	#undef D
 
 	// H = B - aA
 	fp_mul(r->x, core_get()->ed_a, A);
+	#define H (r->z)
 	fp_sub(H, B, r->x);
 
 	// X_3 = E * F
@@ -237,18 +236,16 @@ void ed_add_extended(ed_t r, const ed_t p, const ed_t q) {
 
 	// T_3 = E * H
 	fp_mul(r->t, E, H);
+	#undef H
 
 	// Z_3 = F * G
 	fp_mul(r->z, F, G);
 
 	fp_free(A);
 	fp_free(B);
-	fp_free(C);
-	fp_free(D);
 	fp_free(E);
 	fp_free(F);
 	fp_free(G);
-	fp_free(H);
 }
 #endif
 

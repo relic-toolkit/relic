@@ -529,6 +529,8 @@
 #define LWNAF	 4
 /** Left-to-right Width-w NAF with mixed coordinates. */
 #define LWNAF_MIXED	 7
+/** Fixed window. */
+#define FIXED	 8
 /** Chosen prime elliptic twisted Edwards curve point multiplication method. */
 #define ED_MUL	 @ED_MUL@
 
@@ -565,6 +567,8 @@
 
 /** Chosen prime elliptic curve simulteanous point multiplication method. */
 #define ED_SIM   @ED_SIM@
+
+#define ED_METHD "@ED_METHD@"
 
 /** Prime curves. */
 #define PRIME    1

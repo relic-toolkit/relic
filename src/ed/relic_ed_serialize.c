@@ -79,6 +79,10 @@ int ed_upk(ed_t r, const ed_t p) {
 		}
 		fp_copy(r->x, t);
 
+#if ED_ADD == EXTND
+		fp_mul(r->t, r->x, r->y);
+#endif
+
 		fp_set_dig(r->z, 1);
 		r->norm = 1;
 	}
