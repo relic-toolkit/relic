@@ -77,9 +77,6 @@ static void ep_mul_fix_plain(ep_t r, const ep_t *t, const bn_t k) {
 	}
 	/* Convert r to affine coordinates. */
 	ep_norm(r, r);
-	if (bn_sign(k) == BN_NEG) {
-		ep_neg(r, r);
-	}
 }
 
 #endif /* EP_FIX == LWNAF */
