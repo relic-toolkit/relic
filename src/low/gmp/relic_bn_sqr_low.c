@@ -40,16 +40,13 @@
 /*============================================================================*/
 
 void bn_sqra_low(dig_t *c, const dig_t *a, int size) {
-	dig_t carry;
-	dig_t digit;
-
-	digit = *a;
+	dig_t carry, digit = *a;
 
 	carry = mpn_addmul_1(c, a, size, digit);
-	mpn_add_1(c+size, c+size, size, carry);
-	if (size - 1 > 0) {
-		carry = mpn_addmul_1(c+1, a+1, size-1, digit);
-		mpn_add_1(c+size, c+size, size, carry);
+	mpn_add_1(c + size, c + size, size, carry);
+	if (size > 1) {
+		carry = mpn_addmul_1(c + 1, a + 1, size - 1, digit);
+		mpn_add_1(c + size, c + size, size, carry);
 	}
 }
 
