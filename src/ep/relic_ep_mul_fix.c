@@ -25,7 +25,6 @@
  *
  * Implementation of fixed point multiplication on binary elliptic curves.
  *
- * @version $Id$
  * @ingroup ep
  */
 
@@ -47,18 +46,28 @@
  */
 static void ep_mul_fix_plain(ep_t r, const ep_t *t, const bn_t k) {
 	int l, i, n;
-	int8_t naf[FP_BITS + 1], *_k;
+	int8_t naf[FP_BITS + 1];
+
+	if (bn_is_zero(k)) {
+		ep_set_infty(r);
+		return;
+	}
 
 	/* Compute the w-TNAF representation of k. */
 	l = FP_BITS + 1;
 	bn_rec_naf(naf, &l, k, EP_DEPTH);
 
-	_k = naf + l - 1;
-	ep_set_infty(r);
-	for (i = l - 1; i >= 0; i--, _k--) {
+	n = naf[l - 1];
+	if (n > 0) {
+		ep_copy(r, t[n / 2]);
+	} else {
+		ep_neg(r, t[-n / 2]);
+	}
+
+	for (i = l - 1; i >= 0; i--) {
 		ep_dbl(r, r);
 
-		n = *_k;
+		n = naf[i];
 		if (n > 0) {
 			ep_add(r, r, t[n / 2]);
 		}
@@ -68,6 +77,9 @@ static void ep_mul_fix_plain(ep_t r, const ep_t *t, const bn_t k) {
 	}
 	/* Convert r to affine coordinates. */
 	ep_norm(r, r);
+	if (bn_sign(k) == BN_NEG) {
+		ep_neg(r, r);
+	}
 }
 
 #endif /* EP_FIX == LWNAF */
@@ -88,6 +100,11 @@ static void ep_mul_combs_endom(ep_t r, const ep_t *t, const bn_t k) {
 	int i, j, l, w0, w1, n0, n1, p0, p1, s0, s1;
 	bn_t n, k0, k1, v1[3], v2[3];
 	ep_t u;
+
+	if (bn_is_zero(k)) {
+		ep_set_infty(r);
+		return;
+	}
 
 	bn_null(n);
 	bn_null(k0);
@@ -159,6 +176,9 @@ static void ep_mul_combs_endom(ep_t r, const ep_t *t, const bn_t k) {
 			}
 		}
 		ep_norm(r, r);
+		if (bn_sign(k) == BN_NEG) {
+			ep_neg(r, r);
+		}
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
@@ -190,17 +210,20 @@ static void ep_mul_combs_plain(ep_t r, const ep_t *t, const bn_t k) {
 	int i, j, l, w, n0, p0, p1;
 	bn_t n;
 
+	if (bn_is_zero(k)) {
+		ep_set_infty(r);
+		return;
+	}	
+
 	bn_null(n);
 
 	TRY {
 		bn_new(n);
 
 		ep_curve_get_ord(n);
-		l = bn_bits(n);
-		l = ((l % EP_DEPTH) == 0 ? (l / EP_DEPTH) : (l / EP_DEPTH) + 1);
+		l = CEIL(bn_bits(n), EP_DEPTH);
 
 		n0 = bn_bits(k);
-
 		p0 = (EP_DEPTH) * l - 1;
 
 		w = 0;
@@ -211,8 +234,8 @@ static void ep_mul_combs_plain(ep_t r, const ep_t *t, const bn_t k) {
 				w = w | 1;
 			}
 		}
+		
 		ep_copy(r, t[w]);
-
 		for (i = l - 2; i >= 0; i--) {
 			ep_dbl(r, r);
 
@@ -229,6 +252,9 @@ static void ep_mul_combs_plain(ep_t r, const ep_t *t, const bn_t k) {
 			}
 		}
 		ep_norm(r, r);
+		if (bn_sign(k) == BN_NEG) {
+			ep_neg(r, r);
+		}
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
@@ -274,13 +300,16 @@ void ep_mul_pre_basic(ep_t *t, const ep_t p) {
 }
 
 void ep_mul_fix_basic(ep_t r, const ep_t *t, const bn_t k) {
-	int i, l;
+	int i;
 
-	l = bn_bits(k);
+	if (bn_is_zero(k)) {
+		ep_set_infty(r);
+		return;
+	}	
 
 	ep_set_infty(r);
 
-	for (i = 0; i < l; i++) {
+	for (i = 0; i < bn_bits(k); i++) {
 		if (bn_get_bit(k, i)) {
 			ep_add(r, r, t[i]);
 		}
@@ -302,8 +331,7 @@ void ep_mul_pre_yaowi(ep_t *t, const ep_t p) {
 		bn_new(n);
 
 		ep_curve_get_ord(n);
-		l = bn_bits(n);
-		l = ((l % EP_DEPTH) == 0 ? (l / EP_DEPTH) : (l / EP_DEPTH) + 1);
+		l = CEIL(bn_bits(n), EP_DEPTH);
 
 		ep_copy(t[0], p);
 		for (int i = 1; i < l; i++) {
@@ -322,9 +350,14 @@ void ep_mul_pre_yaowi(ep_t *t, const ep_t p) {
 }
 
 void ep_mul_fix_yaowi(ep_t r, const ep_t *t, const bn_t k) {
-	int i, j, l;
+	int i, j, l = FP_BITS;
 	ep_t a;
 	uint8_t win[CEIL(FP_BITS, EP_DEPTH)];
+
+	if (bn_is_zero(k)) {
+		ep_set_infty(r);
+		return;
+	}
 
 	ep_null(a);
 
@@ -334,7 +367,6 @@ void ep_mul_fix_yaowi(ep_t r, const ep_t *t, const bn_t k) {
 		ep_set_infty(r);
 		ep_set_infty(a);
 
-		l = CEIL(FP_BITS, EP_DEPTH);
 		bn_rec_win(win, &l, k, EP_DEPTH);
 
 		for (j = (1 << EP_DEPTH) - 1; j >= 1; j--) {
@@ -369,8 +401,7 @@ void ep_mul_pre_nafwi(ep_t *t, const ep_t p) {
 		bn_new(n);
 
 		ep_curve_get_ord(n);
-		l = bn_bits(n) + 1;
-		l = ((l % EP_DEPTH) == 0 ? (l / EP_DEPTH) : (l / EP_DEPTH) + 1);
+		l = CEIL(bn_bits(n) + 1, EP_DEPTH);
 
 		ep_copy(t[0], p);
 		for (int i = 1; i < l; i++) {
@@ -395,6 +426,11 @@ void ep_mul_fix_nafwi(ep_t r, const ep_t *t, const bn_t k) {
 	ep_t a;
 	int8_t naf[FP_BITS + 1];
 	char w;
+
+	if (bn_is_zero(k)) {
+		ep_set_infty(r);
+		return;
+	}
 
 	ep_null(a);
 
@@ -523,8 +559,7 @@ void ep_mul_pre_combd(ep_t *t, const ep_t p) {
 		bn_new(n);
 
 		ep_curve_get_ord(n);
-		d = bn_bits(n);
-		d = ((d % EP_DEPTH) == 0 ? (d / EP_DEPTH) : (d / EP_DEPTH) + 1);
+		d = CEIL(bn_bits(n), EP_DEPTH);
 		e = (d % 2 == 0 ? (d / 2) : (d / 2) + 1);
 
 		ep_set_infty(t[0]);
@@ -565,14 +600,18 @@ void ep_mul_fix_combd(ep_t r, const ep_t *t, const bn_t k) {
 	int i, j, d, e, w0, w1, n0, p0, p1;
 	bn_t n;
 
+	if (bn_is_zero(k)) {
+		ep_set_infty(r);
+		return;
+	}
+
 	bn_null(n);
 
 	TRY {
 		bn_new(n);
 
 		ep_curve_get_ord(n);
-		d = bn_bits(n);
-		d = ((d % EP_DEPTH) == 0 ? (d / EP_DEPTH) : (d / EP_DEPTH) + 1);
+		d = CEIL(bn_bits(n), EP_DEPTH);
 		e = (d % 2 == 0 ? (d / 2) : (d / 2) + 1);
 
 		ep_set_infty(r);
