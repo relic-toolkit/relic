@@ -174,9 +174,8 @@ static void bn_mul_karat_imp(bn_t c, const bn_t a, const bn_t b, int level) {
 /*============================================================================*/
 
 void bn_mul_dig(bn_t c, const bn_t a, dig_t b) {
-	c->used = a->used + 1;
-	c->sign = a->sign;
 	bn_grow(c, a->used + 1);
+	c->sign = a->sign;
 	c->dp[a->used] = bn_mul1_low(c->dp, a->dp, b, a->used);
 	bn_trim(c);
 }
