@@ -64,7 +64,7 @@ static void ep_mul_fix_plain(ep_t r, const ep_t *t, const bn_t k) {
 		ep_neg(r, t[-n / 2]);
 	}
 
-	for (i = l - 1; i >= 0; i--) {
+	for (i = l - 2; i >= 0; i--) {
 		ep_dbl(r, r);
 
 		n = naf[i];
