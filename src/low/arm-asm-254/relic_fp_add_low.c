@@ -53,58 +53,6 @@ dig_t fp_add1_low(dig_t *c, const dig_t *a, dig_t digit) {
 	return carry;
 }
 
-#if 0
-dig_t fp_addn_low(dig_t *c, const dig_t *a, const dig_t *b) {
-	int i;
-	dig_t carry, c0, c1, r0, r1;
-
-	carry = 0;
-	for (i = 0; i < FP_DIGS; i++, a++, b++, c++) {
-		r0 = (*a) + (*b);
-		c0 = (r0 < (*a));
-		r1 = r0 + carry;
-		c1 = (r1 < r0);
-		carry = c0 | c1;
-		(*c) = r1;
-	}
-	return carry;
-}
-
-void fp_addm_low(dig_t *c, const dig_t *a, const dig_t *b) {
-	int i;
-	dig_t carry, c0, c1, r0, r1;
-
-	carry = 0;
-	for (i = 0; i < FP_DIGS; i++, a++, b++) {
-		r0 = (*a) + (*b);
-		c0 = (r0 < (*a));
-		r1 = r0 + carry;
-		c1 = (r1 < r0);
-		carry = c0 | c1;
-		c[i] = r1;
-	}
-	if (carry || (fp_cmpn_low(c, fp_prime_get()) != CMP_LT)) {
-		carry = fp_subn_low(c, c, fp_prime_get());
-	}
-}
-
-dig_t fp_addd_low(dig_t *c, const dig_t *a, const dig_t *b) {
-	int i;
-	dig_t carry, c0, c1, r0, r1;
-
-	carry = 0;
-	for (i = 0; i < 2 * FP_DIGS; i++, a++, b++) {
-		r0 = (*a) + (*b);
-		c0 = (r0 < (*a));
-		r1 = r0 + carry;
-		c1 = (r1 < r0);
-		carry = c0 | c1;
-		c[i] = r1;
-	}
-	return carry;
-}
-#endif
-
 void fp_addc_low(dig_t *c, const dig_t *a, const dig_t *b) {
 	dig_t carry = fp_addd_low(c, a, b);
 
@@ -125,55 +73,6 @@ dig_t fp_sub1_low(dig_t *c, const dig_t *a, dig_t digit) {
 	}
 	return carry;
 }
-
-#if 0
-dig_t fp_subn_low(dig_t *c, const dig_t *a, const dig_t *b) {
-	int i;
-	dig_t carry, r0, diff;
-
-	/* Zero the carry. */
-	carry = 0;
-	for (i = 0; i < FP_DIGS; i++, a++, b++, c++) {
-		diff = (*a) - (*b);
-		r0 = diff - carry;
-		carry = ((*a) < (*b)) || (carry && !diff);
-		(*c) = r0;
-	}
-	return carry;
-}
-
-void fp_subm_low(dig_t *c, const dig_t *a, const dig_t *b) {
-	int i;
-	dig_t carry, r0, diff;
-
-	/* Zero the carry. */
-	carry = 0;
-	for (i = 0; i < FP_DIGS; i++, a++, b++) {
-		diff = (*a) - (*b);
-		r0 = diff - carry;
-		carry = ((*a) < (*b)) || (carry && !diff);
-		c[i] = r0;
-	}
-	if (carry) {
-		fp_addn_low(c, c, fp_prime_get());
-	}
-}
-
-dig_t fp_subd_low(dig_t *c, const dig_t *a, const dig_t *b) {
-	int i;
-	dig_t carry, r0, diff;
-
-	/* Zero the carry. */
-	carry = 0;
-	for (i = 0; i < 2 * FP_DIGS; i++, a++, b++) {
-		diff = (*a) - (*b);
-		r0 = diff - carry;
-		carry = ((*a) < (*b)) || (carry && !diff);
-		c[i] = r0;
-	}
-	return carry;
-}
-#endif
 
 void fp_subc_low(dig_t *c, const dig_t *a, const dig_t *b) {
 	dig_t carry = fp_subd_low(c, a, b);

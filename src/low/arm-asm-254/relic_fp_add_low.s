@@ -13,9 +13,9 @@
 .text
 
 .global fp_addn_low
-.global fp_addd_low
-.global fp_addm_low
 .global fp_subn_low
+.global fp_addm_low
+.global fp_addd_low
 .global fp_subd_low
 .global fp_subm_low
 
@@ -69,10 +69,11 @@ fp_addn_low:
 	/**** Oitava iteracao ****/	
 	LDR r3, [r1, #28]	/* r3 = *a */
 	LDR r4, [r2, #28]	/* r4 = *b */
-	ADC r3, r3, r4		/* r3 = (*a) + (*b) */
+	ADCS r3, r3, r4		/* r3 = (*a) + (*b) */
 	STR r3, [r0, #28]	/* (*c) = r3*/
 	
 	MOV r0, #0		/* r0 = carry = 0 */
+	ADC r0, r0, r0 	/* Armazenando o resultado do carry no r0*/
 
 	LDMIA sp!, {r4}
 	MOV pc, lr		/* return carry*/
@@ -130,7 +131,7 @@ fp_subn_low:
 	STR r3, [r0, #28]	/* (*c) = r3*/
 	
 	MOV r0, #0		/* r0 = carry = 0 */
-	SBCS r0, r0, r0 	/* Armazenando o resultado do carry no r0*/
+	SBC r0, r0, r0 	/* Armazenando o resultado do carry no r0*/
 	
 	LDMIA sp!, {r4}
 	MOV pc, lr		/* return carry*/
@@ -154,6 +155,7 @@ fp_addd_low:
 	.endr
 
 	MOV r0, #0		/* r0 = carry = 0 */
+	ADC r0, r0, r0 	/* Armazenando o resultado do carry no r0*/
 
 	LDMIA sp!, {r4}
 	MOV pc, lr		/* return carry*/
