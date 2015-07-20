@@ -1543,7 +1543,7 @@ int cp_bls_gen(bn_t d, g2_t q);
 int cp_bls_sig(g1_t s, uint8_t *msg, int len, bn_t d);
 
 /**
- * Verifies a message signed with BLS using the basic method.
+ * Verifies a message signed with BLS scheme.
  *
  * @param[out] s				- the signature.
  * @param[in] msg				- the message to sign.
@@ -1574,7 +1574,7 @@ int cp_bbs_gen(bn_t d, g2_t q, gt_t z);
 int cp_bbs_sig(g1_t s, uint8_t *msg, int len, int hash, bn_t d);
 
 /**
- * Verifies a message signed with BLS using the basic method.
+ * Verifies a message signed with Boneh-Boyen scheme.
  *
  * @param[in] s					- the signature.
  * @param[in] msg				- the message to sign.
