@@ -23,7 +23,7 @@
 /**
  * @file
  *
- * Implementation of the Boneh-Lynn-Schacham short signature protocol.
+ * Implementation of the Boneh-Boyen-Schacham short signature protocol.
  *
  * @ingroup cp
  */
