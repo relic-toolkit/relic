@@ -26,7 +26,6 @@
  * Implementation of the memory-management routines for temporary double
  * precision digit vectors.
  *
- * @version $Id$
  * @ingroup dv
  */
 

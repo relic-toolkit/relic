@@ -26,7 +26,6 @@
  * Implementation of the basic functions to temporary double precision digit
  * vectors.
  *
- * @version $Id$
  * @ingroup dv
  */
 
