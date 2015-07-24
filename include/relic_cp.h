@@ -1556,9 +1556,9 @@ int cp_bls_ver(g1_t s, uint8_t *msg, int len, g2_t q);
 /**
  * Generates a Boneh-Boyen key pair.
  *
- * @param[out] d			- the private key.
- * @param[in] q				- the first component of the public key.
- * @param[in] q				- the second component of the public key.
+ * @param[out] d				- the private key.
+ * @param[out] q				- the first component of the public key.
+ * @param[out] z				- the second component of the public key.
  */
 int cp_bbs_gen(bn_t d, g2_t q, gt_t z);
 
@@ -1580,10 +1580,44 @@ int cp_bbs_sig(g1_t s, uint8_t *msg, int len, int hash, bn_t d);
  * @param[in] msg				- the message to sign.
  * @param[in] len				- the message length in bytes.
  * @param[in] hash				- the flag to indicate the message format.
- * @param[in] q					- the public key.
+ * @param[out] q				- the first component of the public key.
+ * @param[out] z				- the second component of the public key.
  * @return a boolean value indicating the verification result.
  */
 int cp_bbs_ver(g1_t s, uint8_t *msg, int len, int hash, g2_t q, gt_t z);
+
+/**
+ * Generates a Zhang-Safavi-Naini-Susilo (ZSS) key pair.
+ *
+ * @param[out] d				- the private key.
+ * @param[out] q				- the first component of the public key.
+ * @param[out] z				- the second component of the public key.
+ */
+int cp_zss_gen(bn_t d, g1_t q, gt_t z);
+
+/**
+ * Signs a message using ZSS scheme.
+ *
+ * @param[out] s				- the signature.
+ * @param[in] msg				- the message to sign.
+ * @param[in] len				- the message length in bytes.
+ * @param[in] hash				- the flag to indicate the message format.
+ * @param[in] d					- the private key.
+ */
+int cp_zss_sig(g2_t s, uint8_t *msg, int len, int hash, bn_t d);
+
+/**
+ * Verifies a message signed with ZSS scheme.
+ *
+ * @param[in] s					- the signature.
+ * @param[in] msg				- the message to sign.
+ * @param[in] len				- the message length in bytes.
+ * @param[in] hash				- the flag to indicate the message format.
+ * @param[out] q				- the first component of the public key.
+ * @param[out] z				- the second component of the public key.
+ * @return a boolean value indicating the verification result.
+ */
+int cp_zss_ver(g2_t s, uint8_t *msg, int len, int hash, g1_t q, gt_t z);
 
 /**
  * Generates a vBNN-IBS key generation center.

@@ -228,19 +228,19 @@ dig_t bn_mul1_low(dig_t *c, const dig_t *a, dig_t digit, int size);
 void bn_muln_low(dig_t *c, const dig_t *a, const dig_t *b, int size);
 
 /**
- * Multiplies two digit vectors of different sizes, with sizea > sizeb. Computes
+ * Multiplies two digit vectors of different sizes, with sa > sb. Computes
  * c = a * b. This function outputs as result only the digits between low and
- * high, inclusive, with high > sizea and low < sizeb.
+ * high, inclusive, with high > sa and low < sb.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the first digit vector to multiply.
  * @param[in] b				- the second digit vector to multiply.
- * @param[in] sizea			- the number of digits in the first operand.
- * @param[in] sizeb			- the number of digits in the second operand.
+ * @param[in] sa			- the number of digits in the first operand.
+ * @param[in] sb			- the number of digits in the second operand.
  * @param[in] low			- the first digit to compute.
  * @param[in] high			- the last digit to compute.
  */
-void bn_muld_low(dig_t *c, const dig_t *a, int sizea, const dig_t *b, int sizeb,
+void bn_muld_low(dig_t *c, const dig_t *a, int sa, const dig_t *b, int sb,
 		int low, int high);
 
 /**
@@ -264,17 +264,16 @@ void bn_sqrn_low(dig_t *c, const dig_t *a, int size);
 
 /**
  * Divides a digit vector by another digit vector. Computes c = floor(a / b) and
- * d = a mod b. The dividend and the divisor are destroyed inside the function.
+ * d = a mod b. The dividend and divisor may be destroyed inside the function.
  *
  * @param[out] c			- the quotient.
  * @param[out] d			- the remainder.
  * @param[in,out] a			- the dividend.
- * @param[in] sizea			- the size of the dividend.
+ * @param[in] sa			- the size of the dividend.
  * @param[in,out] b			- the divisor.
- * @param[in] sizeb			- the size of the divisor.
+ * @param[in] sb			- the size of the divisor.
  */
-void bn_divn_low(dig_t *c, dig_t *d, dig_t *a, int sizea, dig_t *b,
-		int sizeb);
+void bn_divn_low(dig_t *c, dig_t *d, dig_t *a, int sa, dig_t *b, int sb);
 
 /**
  * Divides a digit vector by a digit. Computes c = floor(a / digit) and
@@ -284,7 +283,7 @@ void bn_divn_low(dig_t *c, dig_t *d, dig_t *a, int sizea, dig_t *b,
  * @param[out] d			- the remainder.
  * @param[in] a				- the dividend.
  * @param[in] size			- the size of the dividend.
- * @param[in] digit				- the divisor.
+ * @param[in] digit			- the divisor.
  */
 void bn_div1_low(dig_t *c, dig_t *d, const dig_t *a, int size, dig_t digit);
 
@@ -293,13 +292,13 @@ void bn_div1_low(dig_t *c, dig_t *d, const dig_t *a, int size, dig_t digit);
  *
  * @param[out] c			- the result.
  * @param[in] a				- the digit vector to reduce.
- * @param[in] sizea			- the number of digits to reduce
+ * @param[in] sa			- the number of digits to reduce
  * @param[in] m				- the modulus.
- * @param[in] sizem			- the size of the modulus.
+ * @param[in] sm			- the size of the modulus.
  * @param[in] u				- the reciprocal of the modulus.
  */
-void bn_modn_low(dig_t *c, const dig_t *a, int sizea, const dig_t *m, int sizem,
-		dig_t u);
+void bn_modn_low(dig_t *c, const dig_t *a, int sa, const dig_t *m, int sm,
+	dig_t u);
 
 #endif /* !ASM */
 
