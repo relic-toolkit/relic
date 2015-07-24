@@ -603,7 +603,7 @@ static void ibe(void) {
 	}
 	BENCH_END;
 
-	BENCH_BEGIN("cp_ecies_dec") {
+	BENCH_BEGIN("cp_ibe_dec") {
 		in_len = sizeof(in);
 		out_len = in_len + 2 * FP_BYTES + 1;
 		rand_bytes(in, sizeof(in));
@@ -773,6 +773,56 @@ static void bbs(void) {
 	bn_free(d);
 	g2_free(p);
 }
+
+static void zss(void) {
+	uint8_t msg[5] = { 0, 1, 2, 3, 4 }, h[MD_LEN];
+	g1_t p;
+	g2_t s;
+	gt_t z;
+	bn_t d;
+
+	bn_null(d);
+	g1_null(p);
+	g2_null(s);
+	gt_null(z);
+
+	g1_new(p);
+	g2_new(s);
+	gt_new(z);
+	bn_new(d);
+
+	BENCH_BEGIN("cp_zss_gen") {
+		BENCH_ADD(cp_zss_gen(d, p, z));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("cp_zss_sign (h = 0)") {
+		BENCH_ADD(cp_zss_sig(s, msg, 5, 0, d));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("cp_zsss_sign (h = 1)") {
+		md_map(h, msg, 5);
+		BENCH_ADD(cp_zss_sig(s, h, MD_LEN, 1, d));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("cp_zss_ver (h = 0)") {
+		BENCH_ADD(cp_zss_ver(s, msg, 5, 0, p, z));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("cp_zss_ver (h = 1)") {
+		md_map(h, msg, 5);
+		BENCH_ADD(cp_zss_ver(s, h, MD_LEN, 1, p, z));
+	}
+	BENCH_END;
+
+	bn_free(d);
+	g1_free(p);
+	g2_free(s);
+}
+
 #endif
 
 int main(void) {
@@ -815,6 +865,7 @@ int main(void) {
 		bgn();
 		bls();
 		bbs();
+		zss();
 	} else {
 		THROW(ERR_NO_CURVE);
 	}

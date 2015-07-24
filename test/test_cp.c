@@ -1070,6 +1070,48 @@ static int bbs(void) {
 	return code;
 }
 
+static int zss(void) {
+	int code = STS_ERR;
+	bn_t d;
+	g1_t q;
+	g2_t s;
+	gt_t z;
+	uint8_t m[5] = { 0, 1, 2, 3, 4 }, h[MD_LEN];
+
+	bn_null(d);
+	g1_null(q);
+	g2_null(s);
+	gt_null(z);
+
+	TRY {
+		bn_new(d);
+		g1_new(q);
+		g2_new(s);
+		gt_new(z);
+
+		TEST_BEGIN("zhang-safavi-naini-susilo signature is correct") {
+			TEST_ASSERT(cp_zss_gen(d, q, z) == STS_OK, end);
+			TEST_ASSERT(cp_zss_sig(s, m, sizeof(m), 0, d) == STS_OK, end);
+			TEST_ASSERT(cp_zss_ver(s, m, sizeof(m), 0, q, z) == 1, end);
+			md_map(h, m, sizeof(m));
+			TEST_ASSERT(cp_zss_sig(s, m, sizeof(m), 1, d) == STS_OK, end);
+			TEST_ASSERT(cp_zss_ver(s, m, sizeof(m), 1, q, z) == 1, end);
+		}
+		TEST_END;
+	}
+	CATCH_ANY {
+		ERROR(end);
+	}
+	code = STS_OK;
+
+  end:
+	bn_free(d);
+	g1_free(q);
+	g2_free(s);
+	gt_free(z);
+	return code;
+}
+
 #endif
 
 int main(void) {
@@ -1170,6 +1212,11 @@ int main(void) {
 		}
 
 		if (bbs() != STS_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (zss() != STS_OK) {
 			core_clean();
 			return 1;
 		}
