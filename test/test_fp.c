@@ -25,7 +25,6 @@
  *
  * Tests for prime field arithmetic.
  *
- * @version $Id$
  * @ingroup test
  */
 

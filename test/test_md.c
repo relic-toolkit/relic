@@ -25,7 +25,6 @@
  *
  * Tests for hash functions.
  *
- * @version $Id$
  * @ingroup test
  */
 

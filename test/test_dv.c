@@ -25,7 +25,6 @@
  *
  * Tests for manipulating temporary double-precision digit vectors.
  *
- * @version $Id$
  * @ingroup test
  */
 

@@ -25,7 +25,6 @@
  *
  * Tests for random number generation.
  *
- * @version $Id$
  * @ingroup test
  */
 

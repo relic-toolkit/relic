@@ -25,7 +25,6 @@
  *
  * Tests for the error-management routines.
  *
- * @version $Id$
  * @ingroup test
  */
 
