@@ -129,7 +129,7 @@ int cp_zss_ver(g2_t s, uint8_t *msg, int len, int hash, g1_t q, gt_t z) {
 
 	bn_null(m);
 	bn_null(n);
-	g2_null(g);
+	g1_null(g);
 	gt_null(e);
 
 	TRY {
@@ -165,7 +165,7 @@ int cp_zss_ver(g2_t s, uint8_t *msg, int len, int hash, g1_t q, gt_t z) {
 	FINALLY {
 		bn_free(m);
 		bn_free(n);
-		g2_free(g);
+		g1_free(g);
 		gt_free(e);
 	}
 	return result;
