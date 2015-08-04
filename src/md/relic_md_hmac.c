@@ -41,9 +41,9 @@
 
 void md_hmac(uint8_t *mac, const uint8_t *in, int in_len, const uint8_t *key,
 		int key_len) {
-#if MD_MAP == SHONE || MD_MAP == SH224 || MD_MAP == SH256 || MD_MAP == BLAKE2S_160
+#if MD_MAP == SHONE || MD_MAP == SH224 || MD_MAP == SH256 || MD_MAP == BLAKE2S_160 || MD_MAP == BLAKE2S_256
 	int block_size = 64;
-#elif MD_MAP == SH384 || MD_MAP == SH512 || MD_MAP == BLAKE2S_256
+#elif MD_MAP == SH384 || MD_MAP == SH512
 	int block_size = 128;
 #endif
 	uint8_t opad[block_size + MD_LEN], ipad[block_size + in_len];
