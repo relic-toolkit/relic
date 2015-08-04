@@ -607,15 +607,19 @@
 #define PP_MAP   @PP_MAP@
 
 /** SHA-1 hash function. */
-#define SHONE    1
+#define SHONE          1
 /** SHA-224 hash function. */
-#define SH224    2
+#define SH224          2
 /** SHA-256 hash function. */
-#define SH256    3
+#define SH256          3
 /** SHA-384 hash function. */
-#define SH384    4
+#define SH384          4
 /** SHA-512 hash function. */
-#define SH512    5
+#define SH512          5
+/** BLAKE2s-160 hash function. */
+#define BLAKE2S_160    6
+/** BLAKE2s-256 hash function. */
+#define BLAKE2S_256    7
 /** Chosen hash function. */
 #define MD_MAP   @MD_MAP@
 

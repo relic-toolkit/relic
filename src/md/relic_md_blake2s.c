@@ -23,7 +23,7 @@
 /**
  * @file
  *
- * Implementation of Hash-based Message Authentication Code.
+ * Implementation of the BLAKE2s hash function.
  *
  * @ingroup md
  */
@@ -34,37 +34,24 @@
 #include "relic_core.h"
 #include "relic_util.h"
 #include "relic_md.h"
+#include "blake2.h"
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void md_hmac(uint8_t *mac, const uint8_t *in, int in_len, const uint8_t *key,
-		int key_len) {
-#if MD_MAP == SHONE || MD_MAP == SH224 || MD_MAP == SH256 || MD_MAP == BLAKE2S_160
-	int block_size = 64;
-#elif MD_MAP == SH384 || MD_MAP == SH512 || MD_MAP == BLAKE2S_256
-	int block_size = 128;
-#endif
-	uint8_t opad[block_size + MD_LEN], ipad[block_size + in_len];
+#if MD_MAP == BLAKE2S_128 || !defined(STRIP)
 
-	if (key_len > block_size) {
-		uint8_t _key[MD_LEN];
-		md_map(_key, key, key_len);
-		key = _key;
-		key_len = MD_LEN;
-	}
-	if (key_len < block_size) {
-		uint8_t _key[block_size];
-		memcpy(_key, key, key_len);
-		memset(_key + key_len, 0, block_size - key_len);
-		key = _key;
-	}
-	for (int i = 0; i < block_size; i++) {
-		opad[i] = 0x5C ^ key[i];
-		ipad[i] = 0x36 ^ key[i];
-	}
-	memcpy(ipad + block_size, in, in_len);
-	md_map(opad + block_size, ipad, block_size + in_len);
-	md_map(mac, opad, block_size + MD_LEN);
+void md_map_blake2s_160(uint8_t *hash, const uint8_t *msg, int len) {
+	blake2s(hash, msg, 0, 20, len, 0);
 }
+
+#endif
+
+#if MD_MAP == BLAKE2S_256 || !defined(STRIP)
+
+void md_map_blake2s_256(uint8_t *hash, const uint8_t *msg, int len) {
+	blake2s(hash, msg, 0, 32, len, 0);
+}
+
+#endif
