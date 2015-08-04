@@ -135,7 +135,7 @@ int cp_zss_ver(g2_t s, uint8_t *msg, int len, int hash, g1_t q, gt_t z) {
 	TRY {
 		bn_new(m);
 		bn_new(n);
-		g2_new(g);
+		g1_new(g);
 		gt_new(e);
 
 		g1_get_ord(n);
