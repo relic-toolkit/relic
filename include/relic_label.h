@@ -243,6 +243,7 @@
 #undef bn_mxp_slide
 #undef bn_mxp_monty
 #undef bn_mxp_dig
+#undef bn_srt
 #undef bn_gcd_basic
 #undef bn_gcd_lehme
 #undef bn_gcd_stein
@@ -344,6 +345,7 @@
 #define bn_mxp_slide 	PREFIX(bn_mxp_slide)
 #define bn_mxp_monty 	PREFIX(bn_mxp_monty)
 #define bn_mxp_dig 	PREFIX(bn_mxp_dig)
+#define bn_srt 	PREFIX(bn_srt)
 #define bn_gcd_basic 	PREFIX(bn_gcd_basic)
 #define bn_gcd_lehme 	PREFIX(bn_gcd_lehme)
 #define bn_gcd_stein 	PREFIX(bn_gcd_stein)
@@ -464,7 +466,6 @@
 #undef fp_size_str
 #undef fp_read_str
 #undef fp_write_str
-#undef fp_size_bin
 #undef fp_read_bin
 #undef fp_write_bin
 #undef fp_cmp
@@ -545,7 +546,6 @@
 #define fp_size_str 	PREFIX(fp_size_str)
 #define fp_read_str 	PREFIX(fp_read_str)
 #define fp_write_str 	PREFIX(fp_write_str)
-#define fp_size_bin 	PREFIX(fp_size_bin)
 #define fp_read_bin 	PREFIX(fp_read_bin)
 #define fp_write_bin 	PREFIX(fp_write_bin)
 #define fp_cmp 	PREFIX(fp_cmp)
@@ -690,7 +690,6 @@
 #undef fb_size_str
 #undef fb_read_str
 #undef fb_write_str
-#undef fb_size_bin
 #undef fb_read_bin
 #undef fb_write_bin
 #undef fb_cmp
@@ -766,7 +765,6 @@
 #define fb_size_str 	PREFIX(fb_size_str)
 #define fb_read_str 	PREFIX(fb_read_str)
 #define fb_write_str 	PREFIX(fb_write_str)
-#define fb_size_bin 	PREFIX(fb_size_bin)
 #define fb_read_bin 	PREFIX(fb_read_bin)
 #define fb_write_bin 	PREFIX(fb_write_bin)
 #define fb_cmp 	PREFIX(fb_cmp)
@@ -1721,32 +1719,14 @@
 #undef fb2_sqr
 #undef fb2_slv
 #undef fb2_inv
-#undef fb4_inv
 
 #define fb2_mul 	PREFIX(fb2_mul)
  #define fb2_mul_nor 	PREFIX(fb2_mul_nor)
 #define fb2_sqr 	PREFIX(fb2_sqr)
 #define fb2_slv 	PREFIX(fb2_slv)
 #define fb2_inv 	PREFIX(fb2_inv)
-#define fb4_inv 	PREFIX(fb4_inv)
 
-#undef fb4_mul
-#undef fb4_mul_dxd
-#undef fb4_mul_dxs
-#undef fb4_mul_sxs
-#undef fb4_sqr
-#undef fb4_inv
-#undef fb4_exp
-#undef fb4_frb
 
-#define fb4_mul 	PREFIX(fb4_mul)
-#define fb4_mul_dxd 	PREFIX(fb4_mul_dxd)
-#define fb4_mul_dxs 	PREFIX(fb4_mul_dxs)
-#define fb4_mul_sxs 	PREFIX(fb4_mul_sxs)
-#define fb4_sqr 	PREFIX(fb4_sqr)
-#define fb4_inv 	PREFIX(fb4_inv)
-#define fb4_exp 	PREFIX(fb4_exp)
-#define fb4_frb 	PREFIX(fb4_frb)
 
 #undef pp_map_init
 #undef pp_map_clean
@@ -1860,6 +1840,10 @@
 #undef cp_bbs_gen
 #undef cp_bbs_sig
 #undef cp_bbs_ver
+#undef cp_vbnn_ibs_kgc_gen
+#undef cp_vbnn_ibs_kgc_extract_key
+#undef cp_vbnn_ibs_user_sign
+#undef cp_vbnn_ibs_user_verify
 
 #define cp_rsa_gen_basic 	PREFIX(cp_rsa_gen_basic)
 #define cp_rsa_gen_quick 	PREFIX(cp_rsa_gen_quick)
@@ -1912,6 +1896,10 @@
 #define cp_bbs_gen 	PREFIX(cp_bbs_gen)
 #define cp_bbs_sig 	PREFIX(cp_bbs_sig)
 #define cp_bbs_ver 	PREFIX(cp_bbs_ver)
+#define cp_vbnn_ibs_kgc_gen 	PREFIX(cp_vbnn_ibs_kgc_gen)
+#define cp_vbnn_ibs_kgc_extract_key 	PREFIX(cp_vbnn_ibs_kgc_extract_key)
+#define cp_vbnn_ibs_user_sign 	PREFIX(cp_vbnn_ibs_user_sign)
+#define cp_vbnn_ibs_user_verify 	PREFIX(cp_vbnn_ibs_user_verify)
 
 #endif /* LABEL */
 
