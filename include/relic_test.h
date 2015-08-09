@@ -39,6 +39,7 @@
 
 #include "relic_conf.h"
 #include "relic_label.h"
+#include "relic_util.h"
 
 /*============================================================================*/
 /* Macro definitions                                                          */
@@ -77,7 +78,7 @@
 		util_print(__FILE__);												\
 		util_print(":%d)\n", __LINE__);										\
 		ERROR(LABEL);														\
-	}
+	}																		\
 
 /**
  * Finalizes a test printing the test result.
