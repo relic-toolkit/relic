@@ -70,11 +70,13 @@ enum {
 	CURVE_25519,
 	/** NIST P-256 prime curve. */
 	NIST_P256,
+	/** Brainpool P256r1 curve. */
+	BSI_P256,
 	/** SECG K-256 prime curve. */
 	SECG_K256,
 	/** Curve67254 prime curve. */
 	CURVE_67254,
-	/**	Curve383187 prime curve. */
+	/** Curve383187 prime curve. */
 	CURVE_383187,
 	/** NIST P-384 prime curve. */
 	NIST_P384,

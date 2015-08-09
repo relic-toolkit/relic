@@ -95,6 +95,8 @@ enum {
 	PRIME_25519,
 	/** NIST 256-bit fast reduction polynomial. */
 	NIST_256,
+	/** Brainpool random 256-bit prime. */
+	BSI_256,
 	/** SECG 256-bit denser reduction prime. */
 	SECG_256,
 	/** Curve67254 382-bit prime modulus. */
