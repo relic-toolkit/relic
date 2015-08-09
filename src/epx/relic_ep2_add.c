@@ -26,7 +26,6 @@
  * Implementation of addition on prime elliptic curves over quadratic
  * extensions.
  *
- * @version $Id$
  * @ingroup epx
  */
 

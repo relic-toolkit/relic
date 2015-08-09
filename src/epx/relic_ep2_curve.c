@@ -26,7 +26,6 @@
  * Implementation of configuration of prime elliptic curves over quadratic
  * extensions.
  *
- * @version $Id$
  * @ingroup epx
  */
 

@@ -26,7 +26,6 @@
  * Implementation of fixed point multiplication on a prime elliptic curve over
  * a quadratic extension.
  *
- * @version $Id$
  * @ingroup epx
  */
 

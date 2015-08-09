@@ -26,7 +26,6 @@
  * Implementation of point compression on prime elliptic curves over quadratic
  * extensions.
  *
- * @version $Id: relic_ep_pck.c 1669 2013-12-28 03:20:53Z dfaranha $
  * @ingroup ep
  */
 

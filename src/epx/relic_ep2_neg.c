@@ -26,7 +26,6 @@
  * Implementation of point negation on elliptic prime curves over quadratic
  * extensions.
  *
- * @version $Id$
  * @ingroup epx
  */
 

@@ -26,7 +26,6 @@
  * Implementation of hashing to a prime elliptic curve over a quadratic
  * extension.
  *
- * @version $Id$
  * @ingroup epx
  */
 
