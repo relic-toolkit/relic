@@ -56,6 +56,7 @@ int cp_bbs_gen(bn_t d, g2_t q, gt_t z) {
 
 		g2_get_ord(n);
 
+		/* Use short scalars. */
 		do {
 			bn_rand(d, BN_POS, 2 * pc_param_level());
 			bn_mod(d, d, n);
@@ -63,7 +64,6 @@ int cp_bbs_gen(bn_t d, g2_t q, gt_t z) {
 
 		/* q = d * g2. */
 		g2_mul_gen(q, d);
-		g2_norm(q, q);
 	}
 	CATCH_ANY {
 		result = STS_ERR;
@@ -131,6 +131,10 @@ int cp_bbs_ver(g1_t s, uint8_t *msg, int len, int hash, g2_t q, gt_t z) {
 	bn_null(n);
 	g2_null(g);
 	gt_null(e);
+
+	if (!g1_is_valid(s)) {
+		return result;
+	}
 
 	TRY {
 		bn_new(m);
