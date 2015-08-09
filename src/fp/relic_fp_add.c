@@ -25,7 +25,6 @@
  *
  * Implementation of the prime field addition and subtraction functions.
  *
- * @version $Id$
  * @ingroup fp
  */
 

@@ -25,7 +25,6 @@
  *
  * Implementation of the prime field inversion functions.
  *
- * @version $Id$
  * @ingroup fp
  */
 

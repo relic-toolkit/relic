@@ -24,7 +24,6 @@
  *
  * Implementation of the prime field comparison functions.
  *
- * @version $Id$
  * @ingroup fp
  */
 

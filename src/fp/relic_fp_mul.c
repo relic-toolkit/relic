@@ -24,7 +24,6 @@
  *
  * Implementation of the prime field multiplication functions.
  *
- * @version $Id$
  * @ingroup fp
  */
 
@@ -254,9 +253,14 @@ void fp_mul_karat(fp_t c, const fp_t a, const fp_t b) {
 	TRY {
 		/* We need a temporary variable so that c can be a or b. */
 		dv_new(t);
+
 		dv_zero(t, 2 * FP_DIGS);
 
-		fp_mul_karat_imp(t, a, b, FP_DIGS, FP_KARAT);
+		if (FP_DIGS > 1) {
+			fp_mul_karat_imp(t, a, b, FP_DIGS, FP_KARAT);
+		} else {
+			fp_muln_low(t, a, b);
+		}
 
 		fp_rdc(c, t);
 	} CATCH_ANY {

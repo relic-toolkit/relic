@@ -25,7 +25,6 @@
  *
  * Implementation of the prime field modular reduction functions.
  *
- * @version $Id$
  * @ingroup fp
  */
 

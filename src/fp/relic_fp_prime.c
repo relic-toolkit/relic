@@ -25,7 +25,6 @@
  *
  * Implementation of the prime field prime manipulation functions.
  *
- * @version $Id$
  * @ingroup fp
  */
 
@@ -121,8 +120,7 @@ static void fp_prime_set(const bn_t p) {
  */
 static void fp2_calc() {
 	bn_t e;
-	fp2_t t0;
-	fp2_t t1;
+	fp2_t t0, t1;
 	ctx_t *ctx = core_get();
 
 	bn_null(e);
@@ -134,9 +132,8 @@ static void fp2_calc() {
 		fp2_new(t0);
 		fp2_new(t1);
 
-		fp2_zero(t0);
-		fp_set_dig(t0[0], 1);
-		fp2_mul_nor(t0, t0);
+		fp2_set_dig(t1, 1);
+		fp2_mul_nor(t0, t1);
 		e->used = FP_DIGS;
 		dv_copy(e->dp, fp_prime_get(), FP_DIGS);
 		bn_sub_dig(e, e, 1);

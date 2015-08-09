@@ -25,7 +25,6 @@
  *
  * Implementation of the prime field modulus manipulation.
  *
- * @version $Id$
  * @ingroup fp
  */
 
@@ -41,6 +40,15 @@
  * Cofactor description of 1536-bit prime modulus.
  */
 #define SS_P1536	"83093742908D4D529CEF06C72191A05D5E6073FE861E637D7747C3E52FBB92DAA5DDF3EF1C61F5F70B256802481A36CAFE995FE33CD54014B846751364C0D3B8327D9E45366EA08F1B3446AC23C9D4B656886731A8D05618CFA1A3B202A2445ABA0E77C5F4F00CA1239975A05377084F256DEAA07D21C4CF2A4279BC117603ACB7B10228C3AB8F8C1742D674395701BB02071A88683041D9C4231E8EE982B8DA"
+#endif
+
+#if FP_PRIME == 256
+
+/**
+ * Random prime modulus for the Brainpool P256r1.
+ */
+#define BSI_P256		"A9FB57DBA1EEA9BC3E660A909D838D726E3BF623D52620282013481D1F6E5377"
+
 #endif
 
 /*============================================================================*/
@@ -433,6 +441,10 @@ void fp_param_set(int param) {
 				f[3] = -224;
 				f[4] = 256;
 				fp_prime_set_pmers(f, 5);
+				break;
+			case BSI_256:
+				bn_read_str(p, BSI_P256, strlen(BSI_P256), 16);
+				fp_prime_set_dense(p);
 				break;
 			case SECG_256:
 				/* p = 2^256 - 2^32 - 2^9 - 2^8 - 2^7 - 2^6 - 2^4 - 1. */

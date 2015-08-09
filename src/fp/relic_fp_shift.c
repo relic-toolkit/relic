@@ -25,7 +25,6 @@
  *
  * Implementation of the prime field arithmetic shift functions.
  *
- * @version $Id$
  * @ingroup fp
  */
 

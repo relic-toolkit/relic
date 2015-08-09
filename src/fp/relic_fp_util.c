@@ -25,7 +25,6 @@
  *
  * Implementation of the prime field utilities.
  *
- * @version $Id$
  * @ingroup fp
  */
 
