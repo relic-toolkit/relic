@@ -195,6 +195,20 @@
 /** @} */
 #endif
 
+#if defined(EP_PLAIN) && FP_PRIME == 256
+/**
+ * Parameters for the Brainpool P256r1 prime elliptic curve.
+ */
+/** @{ */
+#define BSI_P256_A		"7D5A0975FC2C3057EEF67530417AFFE7FB8055C126DC5C6CE94A4B44F330B5D9"
+#define BSI_P256_B		"26DC5C6CE94A4B44F330B5D9BBD77CBF958416295CF7E1CE6BCCDC18FF8C07B6"
+#define BSI_P256_X		"8BD2AEB9CB7E57CB2C4B482FFC81B7AFB9DE27E1E3BD23C23A4453BD9ACE3262"
+#define BSI_P256_Y		"547EF835C3DAC4FD97F8461A14611DC9C27745132DED8E545C1D54C72F046997"
+#define BSI_P256_R		"A9FB57DBA1EEA9BC3E660A909D838D718C397AA3B561A6F7901E0E82974856A7"
+#define BSI_P256_H		"1"
+/** @} */
+#endif
+
 #if defined(EP_ENDOM) && FP_PRIME == 256
 /**
  * Parameters for the SECG K-256 prime elliptic curve.
@@ -556,6 +570,10 @@ void ep_param_set(int param) {
 				ASSIGN(NIST_P256, NIST_256);
 				plain = 1;
 				break;
+			case BSI_P256:
+				ASSIGN(BSI_P256, BSI_256);
+				plain = 1;
+				break;
 #endif
 #if defined(EP_ENDOM) && FP_PRIME == 256
 			case SECG_K256:
@@ -709,7 +727,7 @@ int ep_param_set_any_plain() {
 #elif FP_PRIME == 255
 	ep_param_set(CURVE_25519);
 #elif FP_PRIME == 256
-	ep_param_set(NIST_P256);
+	ep_param_set(BSI_P256);
 #elif FP_PRIME == 382
 	ep_param_set(CURVE_67254);
 #elif FP_PRIME == 383
@@ -850,6 +868,9 @@ void ep_param_print() {
 			break;
 		case NIST_P256:
 			util_banner("Curve NIST-P256:", 0);
+			break;
+		case BSI_P256:
+			util_banner("Curve BSI-P256:", 0);
 			break;
 		case SECG_K256:
 			util_banner("Curve SECG-K256:", 0);
