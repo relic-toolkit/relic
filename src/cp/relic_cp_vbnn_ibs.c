@@ -104,11 +104,11 @@ int cp_vbnn_ibs_kgc_extract_key(vbnn_ibs_user_t user, vbnn_ibs_kgc_t kgc, uint8_
 		ec_mul_gen(user->R, r);
 
 		/* calculate s part of the user key */
-		buffer_id_and_R_size = identity_len + ec_size_bin(user->R, 0);
+		buffer_id_and_R_size = identity_len + ec_size_bin(user->R, 1);
 		len = buffer_id_and_R_size;
 		buffer_id_and_R = (uint8_t*)malloc(buffer_id_and_R_size);
 		memcpy(buffer_id_and_R, identity, identity_len);
-		ec_write_bin(buffer_id_and_R + identity_len, ec_size_bin(user->R, 0), user->R, 0);
+		ec_write_bin(buffer_id_and_R + identity_len, ec_size_bin(user->R, 1), user->R, 1);
 
 		md_map(hash, buffer_id_and_R, len);
 		len = MD_LEN;
@@ -168,7 +168,7 @@ int cp_vbnn_ibs_user_sign(ec_t sig_R, bn_t sig_z, bn_t sig_h, uint8_t *identity,
 		ec_mul_gen(Y, y);
 
 		/* calculate h part of the signature */
-		buffer_id_and_message_and_R_and_Y_size = identity_len + msg_len + ec_size_bin(Y, 0) + ec_size_bin(user->R, 0);
+		buffer_id_and_message_and_R_and_Y_size = identity_len + msg_len + ec_size_bin(Y, 1) + ec_size_bin(user->R, 1);
 		len = buffer_id_and_message_and_R_and_Y_size;
 		buffer_id_and_message_and_R_and_Y = (uint8_t*)malloc(buffer_id_and_message_and_R_and_Y_size);
 		buffer_i = buffer_id_and_message_and_R_and_Y;
@@ -179,10 +179,10 @@ int cp_vbnn_ibs_user_sign(ec_t sig_R, bn_t sig_z, bn_t sig_h, uint8_t *identity,
 		memcpy(buffer_i, msg, msg_len);
 		buffer_i += msg_len;
 
-		ec_write_bin(buffer_i, ec_size_bin(user->R, 0), user->R, 0);
-		buffer_i += ec_size_bin(user->R, 0);
+		ec_write_bin(buffer_i, ec_size_bin(user->R, 1), user->R, 1);
+		buffer_i += ec_size_bin(user->R, 1);
 
-		ec_write_bin(buffer_i, ec_size_bin(Y, 0), Y, 0);
+		ec_write_bin(buffer_i, ec_size_bin(Y, 1), Y, 1);
 
 		md_map(hash, buffer_id_and_message_and_R_and_Y, len);
 		len = MD_LEN;
@@ -198,7 +198,7 @@ int cp_vbnn_ibs_user_sign(ec_t sig_R, bn_t sig_z, bn_t sig_h, uint8_t *identity,
 		/* calculate z part of the signature */
 		bn_mul(sig_z, sig_h, user->s);
 		bn_add(sig_z, sig_z, y);
-		bn_mod(sig_z, sig_z, n); 
+		bn_mod(sig_z, sig_z, n);
 
 		/* calculate R part of the signature */
 		ec_copy(sig_R, user->R);
@@ -251,7 +251,7 @@ int cp_vbnn_ibs_user_verify(ec_t sig_R, bn_t sig_z, bn_t sig_h, uint8_t *identit
 		ec_curve_get_ord(n);
 
 		/* calculate c */
-		buffer_hash_size = identity_len + ec_size_bin(sig_R, 0);
+		buffer_hash_size = identity_len + ec_size_bin(sig_R, 1);
 		len = buffer_hash_size;
 		buffer_hash = (uint8_t*)malloc(buffer_hash_size);
 		buffer_i = buffer_hash;
@@ -259,7 +259,7 @@ int cp_vbnn_ibs_user_verify(ec_t sig_R, bn_t sig_z, bn_t sig_h, uint8_t *identit
 		memcpy(buffer_i, identity, identity_len);
 		buffer_i += identity_len;
 
-		ec_write_bin(buffer_i, ec_size_bin(sig_R, 0), sig_R, 0);
+		ec_write_bin(buffer_i, ec_size_bin(sig_R, 1), sig_R, 1);
 
 		md_map(hash, buffer_hash, len);
 		len = MD_LEN;
@@ -283,7 +283,7 @@ int cp_vbnn_ibs_user_verify(ec_t sig_R, bn_t sig_z, bn_t sig_h, uint8_t *identit
 
 
 		/* calculate h_verify */
-		buffer_hash_size = identity_len + msg_len + ec_size_bin(sig_R, 0) + ec_size_bin(Z, 0);
+		buffer_hash_size = identity_len + msg_len + ec_size_bin(sig_R, 1) + ec_size_bin(Z, 1);
 		len = buffer_hash_size;
 		buffer_hash = (uint8_t*)malloc(buffer_hash_size);
 		buffer_i = buffer_hash;
@@ -292,9 +292,9 @@ int cp_vbnn_ibs_user_verify(ec_t sig_R, bn_t sig_z, bn_t sig_h, uint8_t *identit
 		buffer_i += identity_len;
 		memcpy(buffer_i, msg, msg_len);
 		buffer_i += msg_len;
-		ec_write_bin(buffer_i, ec_size_bin(sig_R, 0), sig_R, 0);
-		buffer_i += ec_size_bin(sig_R, 0);
-		ec_write_bin(buffer_i, ec_size_bin(Z, 0), Z, 0);
+		ec_write_bin(buffer_i, ec_size_bin(sig_R, 1), sig_R, 1);
+		buffer_i += ec_size_bin(sig_R, 1);
+		ec_write_bin(buffer_i, ec_size_bin(Z, 1), Z, 1);
 
 		md_map(hash, buffer_hash, len);
 		len = MD_LEN;
