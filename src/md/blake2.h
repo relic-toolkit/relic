@@ -17,11 +17,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#if defined(_MSC_VER)
-#define ALIGN(x) __declspec(align(x))
-#else
-#define ALIGN(x) __attribute__((aligned(x)))
-#endif
+#include "relic_types.h"
 
 #if defined(__cplusplus)
 extern "C" {
@@ -61,7 +57,7 @@ extern "C" {
     uint8_t  personal[BLAKE2S_PERSONALBYTES];  // 32
   } blake2s_param;
 
-  ALIGN( 64 ) typedef struct __blake2s_state
+  ALIGNME( 64 ) typedef struct __blake2s_state
   {
     uint32_t h[8];
     uint32_t t[2];
@@ -86,7 +82,7 @@ extern "C" {
     uint8_t  personal[BLAKE2B_PERSONALBYTES];  // 64
   } blake2b_param;
 
-  ALIGN( 64 ) typedef struct __blake2b_state
+  ALIGNME( 64 ) typedef struct __blake2b_state
   {
     uint64_t h[8];
     uint64_t t[2];
