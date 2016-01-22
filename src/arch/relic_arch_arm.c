@@ -89,7 +89,7 @@ ull_t arch_cycles(void) {
 #if defined(__ARM_ARCH_6__) || defined(__ARM_ARCH_6J__) || defined(__ARM_ARCH_6K__) || defined(__ARM_ARCH_6Z__) || defined(__ARM_ARCH_6ZK__) || defined(__ARM_ARCH_6T2__)
 	asm("mrc p15, 0, %0, c15, c12, 1" : "=r"(value));	
 #elif __ARM_ARCH_7A__
-	asm("mcr p15, 0, %0, c9, c13, 0" : "=r"(value));
+	asm("mrc p15, 0, %0, c9, c13, 0" : "=r"(value));
 #elif __ARM_ARCH_7M__
 	value = *DWT_CYCCNT;	
 #else
