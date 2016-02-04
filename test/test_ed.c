@@ -375,25 +375,25 @@ static int multiplication(void) {
 	ed_free(r);
 	return code;
 }
-#if 0
+
 static int compression(void) {
 	int code = STS_ERR;
-	ep_t a, b, c;
+	ed_t a, b, c;
 
-	ep_null(a);
-	ep_null(b);
-	ep_null(c);
+	ed_null(a);
+	ed_null(b);
+	ed_null(c);
 
 	TRY {
-		ep_new(a);
-		ep_new(b);
-		ep_new(c);
+		ed_new(a);
+		ed_new(b);
+		ed_new(c);
 
 		TEST_BEGIN("point compression is correct") {
-			ep_rand(a);
-			ep_pck(b, a);
-			TEST_ASSERT(ep_upk(c, b) == 1, end);
-			TEST_ASSERT(ep_cmp(a, c) == CMP_EQ, end);
+			ed_rand(a);
+			ed_pck(b, a);
+			TEST_ASSERT(ed_upk(c, b) == 1, end);
+			TEST_ASSERT(ed_cmp(a, c) == CMP_EQ, end);
 		}
 		TEST_END;
 	}
@@ -402,13 +402,11 @@ static int compression(void) {
 	}
 	code = STS_OK;
   end:
-	ep_free(a);
-	ep_free(b);
-	ep_free(c);
+	ed_free(a);
+	ed_free(b);
+	ed_free(c);
 	return code;
 }
-
-#endif
 
 static int hashing(void) {
 	int code = STS_ERR;
@@ -475,6 +473,11 @@ int test(void) {
 
 	util_banner("Hashing:", 1);
 	if (hashing() != STS_OK) {
+		return STS_ERR;
+	}
+
+	util_banner("Compression:", 1);
+	if (compression() != STS_OK) {
 		return STS_ERR;
 	}
 
