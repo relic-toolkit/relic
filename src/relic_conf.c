@@ -30,6 +30,7 @@
 
 #include <stdio.h>
 
+#include "relic_core.h"
 #include "relic_conf.h"
 #include "relic_bn.h"
 #include "relic_fp.h"
@@ -39,7 +40,6 @@
 #include "relic_ed.h"
 #include "relic_ec.h"
 #include "relic_pc.h"
-#include "relic_core.h"
 #include "relic_bench.h"
 
 /*============================================================================*/
