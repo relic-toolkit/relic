@@ -194,57 +194,83 @@ static void pp_mil_k12(fp12_t r, ep2_t t, ep2_t q, ep_t p, bn_t a) {
  *
  * @param[out] r			- the result.
  * @param[out] t			- the resulting point.
- * @param[in] q				- the first pairing argument in affine coordinates.
- * @param[in] p				- the second pairing argument in affine coordinates.
+ * @param[in] q				- the vector of first arguments in affine coordinates.
+ * @param[in] p				- the vector of second arguments in affine coordinates.
+ * @param[in] n 			- the number of arguments.
  * @param[in] s				- the loop parameter in sparse form.
  * @paramin] len			- the length of the loop parameter.
  */
-static void pp_mil_sps_k12(fp12_t r, ep2_t t, ep2_t q, ep_t p, int *s, int len) {
+static void pp_mil_sps_k12(fp12_t r, ep2_t t[], ep2_t q[], ep_t p[], int n, int *s, int len) {
 	fp12_t l;
-	ep_t _p;
-	ep2_t _q;
+	ep_t _p[n];
+	ep2_t _q[n];
+	int i, j;
+
+	if (n == 0) {
+		return;
+	}
 
 	fp12_null(l);
-	ep_null(_p);
-	ep2_null(_q);
+	for (j = 0; j < n; j++) {
+		ep_null(_p[j]);
+		ep2_null(_q[j]);
+	}
 
 	TRY {
 		fp12_new(l);
-		ep_new(_p);
-		ep2_new(_q);
-
 		fp12_zero(l);
-		ep2_copy(t, q);
-		ep2_neg(_q, q);
 
+		for (j = 0; j < n; j++) {
+			ep_new(_p[j]);
+			ep2_new(_q[j]);
+			ep2_copy(t[j], q[j]);
+			ep2_neg(_q[j], q[j]);			
 #if EP_ADD == BASIC
-		ep_neg(_p, p);
+			ep_neg(_p[j], p[j]);
 #else
-		fp_add(_p->x, p->x, p->x);
-		fp_add(_p->x, _p->x, p->x);
-		fp_neg(_p->y, p->y);
+			fp_add(_p[j]->x, p[j]->x, p[j]->x);
+			fp_add(_p[j]->x, _p[j]->x, p[j]->x);
+			fp_neg(_p[j]->y, p[j]->y);
 #endif
+		}
 
-		pp_dbl_k12(r, t, t, _p);
+		pp_dbl_k12(r, t[0], t[0], _p[0]);
 		if (s[len - 2] > 0) {
-			pp_add_k12(l, t, q, p);
+			pp_add_k12(l, t[0], q[0], p[0]);
 			fp12_mul_dxs(r, r, l);
 		}
 		if (s[len - 2] < 0) {
-			pp_add_k12(l, t, _q, p);
+			pp_add_k12(l, t[0], _q[0], p[0]);
 			fp12_mul_dxs(r, r, l);
 		}
-		for (int i = len - 3; i >= 0; i--) {
-			fp12_sqr(r, r);
-			pp_dbl_k12(l, t, t, _p);
-			fp12_mul_dxs(r, r, l);
-			if (s[i] > 0) {
-				pp_add_k12(l, t, q, p);
+	
+		for (j = 1; j < n; j++) {
+			pp_dbl_k12(l, t[j], t[j], _p[j]);
+			fp12_mul_dxs(r, r, l);	
+
+			if (s[len - 2] > 0) {
+				pp_add_k12(l, t[j], q[j], p[j]);
 				fp12_mul_dxs(r, r, l);
 			}
-			if (s[i] < 0) {
-				pp_add_k12(l, t, _q, p);
+			if (s[len - 2] < 0) {
+				pp_add_k12(l, t[j], _q[j], p[j]);
 				fp12_mul_dxs(r, r, l);
+			}
+		}
+
+		for (i = len - 3; i >= 0; i--) {
+			fp12_sqr(r, r);
+			for (j = 0; j < n; j++) {
+				pp_dbl_k12(l, t[j], t[j], _p[j]);
+				fp12_mul_dxs(r, r, l);
+				if (s[i] > 0) {
+					pp_add_k12(l, t[j], q[j], p[j]);
+					fp12_mul_dxs(r, r, l);
+				}
+				if (s[i] < 0) {
+					pp_add_k12(l, t[j], _q[j], p[j]);
+					fp12_mul_dxs(r, r, l);
+				}
 			}
 		}
 	}
@@ -253,8 +279,10 @@ static void pp_mil_sps_k12(fp12_t r, ep2_t t, ep2_t q, ep_t p, int *s, int len) 
 	}
 	FINALLY {
 		fp12_free(l);
-		ep_free(_p);
-		ep2_free(_q);
+		for (j = 0; j < n; j++) {
+			ep_free(_p[j]);
+			ep2_free(_q[j]);
+		}
 	}
 }
 
@@ -555,8 +583,8 @@ void pp_map_weilp_k12(fp12_t r, ep_t p, ep2_t q) {
 #if PP_MAP == OATEP || !defined(STRIP)
 
 void pp_map_oatep_k12(fp12_t r, ep_t p, ep2_t q) {
-	ep_t _p;
-	ep2_t t, _q;
+	ep_t _p[1];
+	ep2_t t[1], _q[1];
 	bn_t a;
 	int len = FP_BITS, s[FP_BITS];
 
@@ -566,14 +594,11 @@ void pp_map_oatep_k12(fp12_t r, ep_t p, ep2_t q) {
 	bn_null(a);
 
 	TRY {
-		ep_new(_p);
-		ep2_new(_q);
-		ep2_new(t);
+		ep_new(_p[0]);
+		ep2_new(_q[0]);
+		ep2_new(t[0]);
 		bn_new(a);
 
-
-		ep_norm(_p, p);
-		ep2_norm(_q, q);
 		fp_param_get_var(a);
 		bn_mul_dig(a, a, 6);
 		bn_add_dig(a, a, 2);
@@ -581,27 +606,30 @@ void pp_map_oatep_k12(fp12_t r, ep_t p, ep2_t q) {
 		fp12_set_dig(r, 1);
 
 		if (!ep_is_infty(p) && !ep2_is_infty(q)) {
+			ep_norm(_p[0], p);
+			ep2_norm(_q[0], q);
+
 			switch (ep_param_get()) {
 				case BN_P158:
 				case BN_P254:
 				case BN_P256:
 				case BN_P638:
 					/* r = f_{|a|,Q}(P). */
-					pp_mil_sps_k12(r, t, _q, _p, s, len);
+					pp_mil_sps_k12(r, t, _q, _p, 1, s, len);
 					if (bn_sign(a) == BN_NEG) {
 						/* f_{-a,Q}(P) = 1/f_{a,Q}(P). */
 						fp12_inv_uni(r, r);
-						ep2_neg(t, t);
+						ep2_neg(t[0], t[0]);
 					}
-					pp_fin_k12_oatep(r, t, _q, _p);
+					pp_fin_k12_oatep(r, t[0], _q[0], _p[0]);
 					pp_exp_k12(r, r);
 					break;
 				case B12_P638:
 					/* r = f_{|a|,Q}(P). */
-					pp_mil_sps_k12(r, t, _q, _p, s, len);
+					pp_mil_sps_k12(r, t, _q, _p, 1, s, len);
 					if (bn_sign(a) == BN_NEG) {
 						fp12_inv_uni(r, r);
-						ep2_neg(t, t);
+						ep2_neg(t[0], t[0]);
 					}
 					pp_exp_k12(r, r);
 					break;
@@ -616,6 +644,83 @@ void pp_map_oatep_k12(fp12_t r, ep_t p, ep2_t q) {
 		ep2_free(_q);
 		ep2_free(t);
 		bn_free(a);
+	}
+}
+
+void pp_map_sim_oatep_k12(fp12_t r, ep_t *p, ep2_t *q, int n) {
+	ep_t _p[n];
+	ep2_t t[n], _q[n];
+	bn_t a;
+	int i, j, len = FP_BITS, s[FP_BITS];
+
+	bn_null(a);
+	ep_null(_p);
+	ep2_null(_q);	
+	ep2_null(t);
+
+	TRY {
+		bn_new(a);		
+		for (i = 0; i < n; i++) {
+			ep_new(_p[i]);
+			ep2_new(_q[i]);
+			ep2_new(t[i]);
+		}
+
+		j = 0;
+		for (i = 0; i < n; i++) {
+			if (!ep_is_infty(p[i]) && !ep2_is_infty(q[i])) {
+				ep_norm(_p[j], p[i]);
+				ep2_norm(_q[j++], q[i]);
+			}
+		}
+
+		fp12_set_dig(r, 1);
+		fp_param_get_var(a);
+		bn_mul_dig(a, a, 6);
+		bn_add_dig(a, a, 2);
+		fp_param_get_map(s, &len);
+
+		if (j > 0) {
+			switch (ep_param_get()) {
+				case BN_P158:
+				case BN_P254:
+				case BN_P256:
+				case BN_P638:
+					/* r = f_{|a|,Q}(P). */
+					pp_mil_sps_k12(r, t, _q, _p, j, s, len);
+					if (bn_sign(a) == BN_NEG) {
+						/* f_{-a,Q}(P) = 1/f_{a,Q}(P). */
+						fp12_inv_uni(r, r);
+					}
+					for (i = 0; i < j; i++) {
+						if (bn_sign(a) == BN_NEG) {						
+							ep2_neg(t[i], t[i]);
+						}
+						pp_fin_k12_oatep(r, t[i], _q[i], _p[i]);
+					}
+					pp_exp_k12(r, r);
+					break;
+				case B12_P638:
+					/* r = f_{|a|,Q}(P). */
+					pp_mil_sps_k12(r, t, _q, _p, j, s, len);
+					if (bn_sign(a) == BN_NEG) {
+						fp12_inv_uni(r, r);
+					}
+					pp_exp_k12(r, r);
+					break;
+			}
+		}
+	}
+	CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	}
+	FINALLY {
+		bn_free(a);
+		for (i = 0; i < n; i++) {
+			ep_free(_p);
+			ep2_free(_q);
+			ep2_free(t);
+		}
 	}
 }
 

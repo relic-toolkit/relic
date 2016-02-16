@@ -638,18 +638,20 @@ static void arith(void) {
 }
 
 static void pairing(void) {
-	g1_t p;
-	g2_t q;
+	g1_t p[2];
+	g2_t q[2];
 	gt_t r;
 
-	g1_new(p);
-	g2_new(q);
+	g1_new(p[0]);
+	g2_new(q[0]);
+	g1_new(p[1]);
+	g2_new(q[1]);
 	gt_new(r);
 
 	BENCH_BEGIN("pc_map") {
-		g1_rand(p);
-		g2_rand(q);
-		BENCH_ADD(pc_map(r, p, q));
+		g1_rand(p[0]);
+		g2_rand(q[0]);
+		BENCH_ADD(pc_map(r, p[0], q[0]));
 	}
 	BENCH_END;
 
@@ -659,8 +661,17 @@ static void pairing(void) {
 	}
 	BENCH_END;
 
-	g1_free(p);
-	g2_free(q);	
+	BENCH_BEGIN("pc_map_sim (2)") {
+		g1_rand(p[1]);
+		g2_rand(q[1]);
+		BENCH_ADD(pc_map_sim(r, p, q, 2));
+	}
+	BENCH_END;
+
+	g1_free(p[0]);
+	g2_free(q[0]);	
+	g1_free(p[1]);
+	g2_free(q[1]);
 	gt_free(r);	
 }
 

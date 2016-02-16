@@ -782,9 +782,24 @@ typedef CAT(GT_LOWER, t) gt_t;
  * @param[in] Q				- the second element.
  */
 #if FP_PRIME < 1536
-#define pc_map(R, P, Q);	CAT(PC_LOWER, map_k12)(R, P, Q)
+#define pc_map(R, P, Q);		CAT(PC_LOWER, map_k12)(R, P, Q)
 #else
-#define pc_map(R, P, Q);	CAT(PC_LOWER, map_k2)(R, P, Q)
+#define pc_map(R, P, Q);		CAT(PC_LOWER, map_k2)(R, P, Q)
+#endif
+
+/**
+ * Computes the multi-pairing of G_1 elements and G_2 elements. Computes
+ * R = \prod e(P_i, Q_i).
+ *
+ * @param[out] R			- the result.
+ * @param[in] P				- the first pairing arguments.
+ * @param[in] Q				- the second pairing arguments.
+ * @param[in] N 			- the number of pairing arguments.
+ */
+#if FP_PRIME < 1536
+#define pc_map_sim(R, P, Q, N);	CAT(PC_LOWER, map_sim_k12)(R, P, Q, N)
+#else
+#error To be implemented!
 #endif
 
 /**
@@ -794,9 +809,9 @@ typedef CAT(GT_LOWER, t) gt_t;
  * @param[in] A				- the field element to exponentiate.
  */
 #if FP_PRIME < 1536
-#define pc_exp(C, A);		CAT(PC_LOWER, exp_k12)(C, A)
+#define pc_exp(C, A);			CAT(PC_LOWER, exp_k12)(C, A)
 #else
-#define pc_exp(C, A);		CAT(PC_LOWER, exp_k2)(C, A)
+#define pc_exp(C, A);			CAT(PC_LOWER, exp_k2)(C, A)
 #endif
 
 /*============================================================================*/

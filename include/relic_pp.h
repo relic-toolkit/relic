@@ -200,6 +200,19 @@
 #define pp_map_k12(R, P, Q)				pp_map_oatep_k12(R, P, Q)
 #endif
 
+/**
+ * Computes a multi-pairing of elliptic curve points defined on an elliptic
+ * curve of embedding degree 12. Computes \prod e(P_i, Q_i).
+ *
+ * @param[out] R			- the result.
+ * @param[in] P				- the first pairing arguments.
+ * @param[in] Q				- the second pairing arguments.
+ * @param[in] N 			- the number of arguments.
+ */
+#if PP_MAP == OATEP
+#define pp_map_sim_k12(R, P, Q, N)				pp_map_sim_oatep_k12(R, P, Q, N)
+#endif
+
 /*============================================================================*/
 /* Function prototypes                                                        */
 /*============================================================================*/
@@ -465,5 +478,16 @@ void pp_map_weilp_k12(fp12_t r, ep_t p, ep2_t q);
  * @param[in] p				- the second elliptic curve point.
  */
 void pp_map_oatep_k12(fp12_t r, ep_t p, ep2_t q);
+
+/**
+ * Computes the optimal ate multi-pairing of two points in a parameterized
+ * elliptic curve with embedding degree 12.
+ *
+ * @param[out] r			- the result.
+ * @param[in] q				- the first pairing arguments.
+ * @param[in] p				- the second pairing arguments.
+ * @param[in] n 			- the number of pairings to evaluate.
+ */
+void pp_map_sim_oatep_k12(fp12_t r, ep_t *p, ep2_t *q, int n);
 
 #endif /* !RELIC_PP_H */

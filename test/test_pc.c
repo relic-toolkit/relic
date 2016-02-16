@@ -1254,16 +1254,14 @@ int exponentiation(void) {
 }
 
 static int pairing(void) {
-	int code = STS_ERR;
+	int j, code = STS_ERR;
 	gt_t e1, e2;
-	g1_t p;
-	g2_t q, r;
+	g1_t p[2];
+	g2_t q[2], r;
 	bn_t k, n;
 
 	gt_null(e1);
 	gt_null(e2);
-	g1_null(p);
-	g2_null(q);
 	g2_null(r);
 	bn_null(k);
 	bn_null(n);
@@ -1271,49 +1269,80 @@ static int pairing(void) {
 	TRY {
 		gt_new(e1);
 		gt_new(e2);
-		g1_new(p);
-		g2_new(q);
 		g2_new(r);
 		bn_new(k);
 		bn_new(n);
 
+		for (j = 0; j < 2; j++) {
+			g1_null(p[j]);
+			g2_null(q[j]);
+			g1_new(p[j]);
+			g2_new(q[j]);
+		}		
+
 		g1_get_ord(n);
 
 		TEST_BEGIN("pairing non-degeneracy is correct") {
-			g1_rand(p);
+			g1_rand(p[0]);
 			g2_rand(r);
-			pc_map(e1, p, r);
+			pc_map(e1, p[0], r);
 			TEST_ASSERT(gt_cmp_dig(e1, 1) != CMP_EQ, end);
-			g1_set_infty(p);
-			pc_map(e1, p, r);
+			g1_set_infty(p[0]);
+			pc_map(e1, p[0], r);
 			TEST_ASSERT(gt_cmp_dig(e1, 1) == CMP_EQ, end);
-			g1_rand(p);
+			g1_rand(p[0]);
 			g2_set_infty(r);
-			pc_map(e1, p, r);
+			pc_map(e1, p[0], r);
 			TEST_ASSERT(gt_cmp_dig(e1, 1) == CMP_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("pairing is bilinear") {
-			g1_rand(p);
-			g2_rand(q);
+			g1_rand(p[0]);
+			g2_rand(q[0]);
 			bn_rand_mod(k, n);
-			g2_mul(r, q, k);
-			pc_map(e1, p, r);
-			pc_map(e2, p, q);
+			g2_mul(r, q[0], k);
+			pc_map(e1, p[0], r);
+			pc_map(e2, p[0], q[0]);
 			gt_exp(e2, e2, k);
 			TEST_ASSERT(gt_cmp(e1, e2) == CMP_EQ, end);
-			g1_mul(p, p, k);
-			pc_map(e2, p, q);
+			g1_mul(p[0], p[0], k);
+			pc_map(e2, p[0], q[0]);
 			TEST_ASSERT(gt_cmp(e1, e2) == CMP_EQ, end);
-			g1_dbl(p, p);
-			pc_map(e2, p, q);
+			g1_dbl(p[0], p[0]);
+			pc_map(e2, p[0], q[0]);
 			gt_sqr(e1, e1);
 			TEST_ASSERT(gt_cmp(e1, e2) == CMP_EQ, end);
-			g2_dbl(q, q);
-			pc_map(e2, p, q);
+			g2_dbl(q[0], q[0]);
+			pc_map(e2, p[0], q[0]);
 			gt_sqr(e1, e1);
 			TEST_ASSERT(gt_cmp(e1, e2) == CMP_EQ, end);
 		} TEST_END;
+
+		TEST_BEGIN("multi-pairing is correct") {
+			g1_rand(p[i % 2]);
+			g2_rand(q[i % 2]);
+			pc_map(e1, p[i % 2], q[i % 2]);
+			g1_rand(p[1 - (i % 2)]);
+			g2_set_infty(q[1 - (i % 2)]);
+			pc_map_sim(e2, p, q, 2);
+			TEST_ASSERT(fp12_cmp(e1, e2) == CMP_EQ, end);
+			g1_set_infty(p[1 - (i % 2)]);
+			g2_rand(q[1 - (i % 2)]);
+			pc_map_sim(e2, p, q, 2);
+			TEST_ASSERT(fp12_cmp(e1, e2) == CMP_EQ, end);
+			ep2_set_infty(q[i % 2]);
+			pc_map_sim(e2, p, q, 2);
+			TEST_ASSERT(fp12_cmp_dig(e2, 1) == CMP_EQ, end);
+			g1_rand(p[0]);
+			g2_rand(q[0]);
+			pc_map(e1, p[0], q[0]);
+			g1_rand(p[1]);
+			g2_rand(q[1]);
+			pc_map(e2, p[1], q[1]);
+			fp12_mul(e1, e1, e2);
+			pc_map_sim(e2, p, q, 2);
+			TEST_ASSERT(fp12_cmp(e1, e2) == CMP_EQ, end);
+		} TEST_END;		
 	}
 	CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -1323,11 +1352,13 @@ static int pairing(void) {
   end:
 	gt_free(e1);
 	gt_free(e2);
-	g1_free(p);
-	g2_free(q);
 	g2_free(r);
 	bn_free(k);
 	bn_free(n);
+	for (j = 0; j < 2; j++) {
+		g1_free(p);
+		g2_free(q);
+	}
 	return code;
 }
 
