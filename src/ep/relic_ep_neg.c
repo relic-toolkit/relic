@@ -25,7 +25,6 @@
  *
  * Implementation of the point negation on binary elliptic curves.
  *
- * @version $Id$
  * @ingroup ep
  */
 

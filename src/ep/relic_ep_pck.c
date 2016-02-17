@@ -25,7 +25,6 @@
  *
  * Implementation of point compression on prime elliptic curves.
  *
- * @version $Id$
  * @ingroup ep
  */
 

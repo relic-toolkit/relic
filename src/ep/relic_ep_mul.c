@@ -267,7 +267,7 @@ void ep_mul_basic(ep_t r, const ep_t p, const bn_t k) {
 
 	ep_null(t);
 
-	if (bn_is_zero(k)) {
+	if (bn_is_zero(k) || ep_is_infty(p)) {
 		ep_set_infty(r);
 		return;
 	}
@@ -305,18 +305,14 @@ void ep_mul_slide(ep_t r, const ep_t p, const bn_t k) {
 
 	ep_null(q);
 
-	/* Initialize table. */
-	for (i = 0; i < (1 << (EP_WIDTH - 1)); i++) {
-		ep_null(t[i]);
-	}
-
-	if (bn_is_zero(k)) {
+	if (bn_is_zero(k) || ep_is_infty(p)) {
 		ep_set_infty(r);
 		return;
 	}	
 
 	TRY {
 		for (i = 0; i < (1 << (EP_WIDTH - 1)); i ++) {
+			ep_null(t[i]);
 			ep_new(t[i]);
 		}
 
@@ -375,7 +371,7 @@ void ep_mul_monty(ep_t r, const ep_t p, const bn_t k) {
 	ep_null(t[0]);
 	ep_null(t[1]);
 
-	if (bn_is_zero(k)) {
+	if (bn_is_zero(k) || ep_is_infty(p)) {
 		ep_set_infty(r);
 		return;
 	}
@@ -415,7 +411,7 @@ void ep_mul_monty(ep_t r, const ep_t p, const bn_t k) {
 #if EP_MUL == LWNAF || !defined(STRIP)
 
 void ep_mul_lwnaf(ep_t r, const ep_t p, const bn_t k) {
-	if (bn_is_zero(k)) {
+	if (bn_is_zero(k) || ep_is_infty(p)) {
 		ep_set_infty(r);
 		return;
 	}
@@ -437,7 +433,7 @@ void ep_mul_lwnaf(ep_t r, const ep_t p, const bn_t k) {
 #if EP_MUL == LWREG || !defined(STRIP)
 
 void ep_mul_lwreg(ep_t r, const ep_t p, const bn_t k) {
-	if (bn_is_zero(k)) {
+	if (bn_is_zero(k) || ep_is_infty(p)) {
 		ep_set_infty(r);
 		return;
 	}
@@ -489,7 +485,7 @@ void ep_mul_dig(ep_t r, const ep_t p, dig_t k) {
 
 	ep_null(t);
 
-	if (k == 0) {
+	if (k == 0 || ep_is_infty(p)) {
 		ep_set_infty(r);
 		return;
 	}

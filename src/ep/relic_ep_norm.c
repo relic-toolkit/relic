@@ -25,7 +25,6 @@
  *
  * Implementation of the point normalization on prime elliptic curves.
  *
- * @version $Id$
  * @ingroup ep
  */
 

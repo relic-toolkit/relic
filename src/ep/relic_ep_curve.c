@@ -25,7 +25,6 @@
  *
  * Implementation of the prime elliptic curve utilities.
  *
- * @version $Id$
  * @ingroup ep
  */
 

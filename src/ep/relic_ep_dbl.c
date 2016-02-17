@@ -25,7 +25,6 @@
  *
  * Implementation of the point doubling on prime elliptic curves.
  *
- * @version $Id$
  * @ingroup ep
  */
 
