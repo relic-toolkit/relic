@@ -28,7 +28,7 @@
 
 .global fp_muln_low
 
-fp_muln_low1:
+fp_muln_low:
     STMDB sp!, {r4-r12, r14}
 
     PLD    [r1, #32]
