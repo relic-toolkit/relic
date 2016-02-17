@@ -317,7 +317,7 @@ static void pairing12(void) {
 	}
 	BENCH_END;
 
-	BENCH_BEGIN("pp_map_sim_k12") {
+	BENCH_BEGIN("pp_map_sim_k12 (2)") {
 		ep2_rand(p[0]);
 		ep_rand(q[0]);
 		ep2_rand(p[1]);
@@ -333,6 +333,15 @@ static void pairing12(void) {
 		BENCH_ADD(pp_map_tatep_k12(e, q[0], p[0]));
 	}
 	BENCH_END;
+
+	BENCH_BEGIN("pp_map_tatep_sim_k12 (2)") {
+		ep2_rand(p[0]);
+		ep_rand(q[0]);
+		ep2_rand(p[1]);
+		ep_rand(q[1]);
+		BENCH_ADD(pp_map_sim_tatep_k12(e, q, p, 2));
+	}
+	BENCH_END;
 #endif
 
 #if PP_MAP == WEILP || !defined(STRIP)
@@ -340,6 +349,15 @@ static void pairing12(void) {
 		ep2_rand(p[0]);
 		ep_rand(q[0]);
 		BENCH_ADD(pp_map_weilp_k12(e, q[0], p[0]));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("pp_map_weilp_sim_k12 (2)") {
+		ep2_rand(p[0]);
+		ep_rand(q[0]);
+		ep2_rand(p[1]);
+		ep_rand(q[1]);
+		BENCH_ADD(pp_map_sim_weilp_k12(e, q, p, 2));
 	}
 	BENCH_END;
 #endif
@@ -368,10 +386,10 @@ static void pairing12(void) {
 	bn_free(n);
 	bn_free(l);
 	fp12_free(e);
-	ep_free(q);
+	ep2_free(r);
 	for (j = 0; j < 2; j++) {
-		ep2_free(p);
-		ep2_free(r);
+		ep2_free(p[j]);
+		ep_free(q[j]);
 	}
 }
 

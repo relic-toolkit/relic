@@ -139,43 +139,56 @@ static void pp_mil_lit_k2(fp2_t r, ep_t t, ep_t p, ep_t q, bn_t a) {
  * @param[out] t			- the resulting point.
  * @param[in] q				- the first pairing argument in affine coordinates.
  * @param[in] p				- the second pairing argument in affine coordinates.
+ * @param[in] n 			- the number of pairings to evaluate.
  * @param[in] a				- the loop parameter.
  */
-static void pp_mil_k12(fp12_t r, ep2_t t, ep2_t q, ep_t p, bn_t a) {
+static void pp_mil_k12(fp12_t r, ep2_t *t, ep2_t *q, ep_t *p, int m, bn_t a) {
 	fp12_t l;
-	ep_t _p;
+	ep_t _p[m];
+	int i, j;
+
+	if (m == 0) {
+		return;
+	}
 
 	fp12_null(l);
-	ep_null(_p);
 
 	TRY {
 		fp12_new(l);
-		ep_new(_p);
+
+		for (j = 0; j < m; j++) {
+			ep_null(_p[j]);
+			ep_new(_p[j]);
+#if EP_ADD == BASIC
+			ep_neg(_p[j], p[i]);
+#else
+			fp_add(_p[j]->x, p[j]->x, p[j]->x);
+			fp_add(_p[j]->x, _p[j]->x, p[j]->x);
+			fp_neg(_p[j]->y, p[j]->y);
+#endif
+			ep2_copy(t[j], q[j]);
+		}
 
 		fp12_zero(l);
-		ep2_copy(t, q);
 
 		/* Precomputing. */
-#if EP_ADD == BASIC
-		ep_neg(_p, p);
-#else
-		fp_add(_p->x, p->x, p->x);
-		fp_add(_p->x, _p->x, p->x);
-		fp_neg(_p->y, p->y);
-#endif
-
-		pp_dbl_k12(r, t, t, _p);
+		pp_dbl_k12(r, t[0], t[0], _p[0]);
 		if (bn_get_bit(a, bn_bits(a) - 2)) {
-			pp_add_k12(l, t, q, p);
-			fp12_mul_dxs(r, r, l);
-		}
-		for (int i = bn_bits(a) - 3; i >= 0; i--) {
-			fp12_sqr(r, r);
-			pp_dbl_k12(l, t, t, _p);
-			fp12_mul_dxs(r, r, l);
-			if (bn_get_bit(a, i)) {
-				pp_add_k12(l, t, q, p);
+			for (j = 0; j < m; j++) {			
+				pp_add_k12(l, t[j], q[j], p[j]);
 				fp12_mul_dxs(r, r, l);
+			}
+		}
+
+		for (i = bn_bits(a) - 3; i >= 0; i--) {
+			fp12_sqr(r, r);
+			for (j = 0; j < m; j++) {
+				pp_dbl_k12(l, t[j], t[j], _p[j]);
+				fp12_mul_dxs(r, r, l);
+				if (bn_get_bit(a, i)) {
+					pp_add_k12(l, t[j], q[j], p[j]);
+					fp12_mul_dxs(r, r, l);
+				}
 			}
 		}
 	}
@@ -184,7 +197,9 @@ static void pp_mil_k12(fp12_t r, ep2_t t, ep2_t q, ep_t p, bn_t a) {
 	}
 	FINALLY {
 		fp12_free(l);
-		ep_free(_p);
+		for (j = 0; j < m; j++) {
+			ep_free(_p[j]);
+		}
 	}
 }
 
@@ -196,31 +211,29 @@ static void pp_mil_k12(fp12_t r, ep2_t t, ep2_t q, ep_t p, bn_t a) {
  * @param[out] t			- the resulting point.
  * @param[in] q				- the vector of first arguments in affine coordinates.
  * @param[in] p				- the vector of second arguments in affine coordinates.
- * @param[in] n 			- the number of arguments.
+ * @param[in] n 			- the number of pairings to evaluate.
  * @param[in] s				- the loop parameter in sparse form.
  * @paramin] len			- the length of the loop parameter.
  */
-static void pp_mil_sps_k12(fp12_t r, ep2_t t[], ep2_t q[], ep_t p[], int n, int *s, int len) {
+static void pp_mil_sps_k12(fp12_t r, ep2_t *t, ep2_t *q, ep_t *p, int m, int *s, int len) {
 	fp12_t l;
-	ep_t _p[n];
-	ep2_t _q[n];
+	ep_t _p[m];
+	ep2_t _q[m];
 	int i, j;
 
-	if (n == 0) {
+	if (m == 0) {
 		return;
 	}
 
 	fp12_null(l);
-	for (j = 0; j < n; j++) {
-		ep_null(_p[j]);
-		ep2_null(_q[j]);
-	}
 
 	TRY {
 		fp12_new(l);
 		fp12_zero(l);
 
-		for (j = 0; j < n; j++) {
+		for (j = 0; j < m; j++) {
+			ep_null(_p[j]);
+			ep2_null(_q[j]);
 			ep_new(_p[j]);
 			ep2_new(_q[j]);
 			ep2_copy(t[j], q[j]);
@@ -235,32 +248,26 @@ static void pp_mil_sps_k12(fp12_t r, ep2_t t[], ep2_t q[], ep_t p[], int n, int 
 		}
 
 		pp_dbl_k12(r, t[0], t[0], _p[0]);
-		if (s[len - 2] > 0) {
-			pp_add_k12(l, t[0], q[0], p[0]);
-			fp12_mul_dxs(r, r, l);
-		}
-		if (s[len - 2] < 0) {
-			pp_add_k12(l, t[0], _q[0], p[0]);
-			fp12_mul_dxs(r, r, l);
-		}
-	
-		for (j = 1; j < n; j++) {
+		for (j = 1; j < m; j++) {
 			pp_dbl_k12(l, t[j], t[j], _p[j]);
-			fp12_mul_dxs(r, r, l);	
-
-			if (s[len - 2] > 0) {
+			fp12_mul_dxs(r, r, l);
+		}
+		if (s[len - 2] > 0) {
+			for (j = 0; j < m; j++) {
 				pp_add_k12(l, t[j], q[j], p[j]);
 				fp12_mul_dxs(r, r, l);
 			}
-			if (s[len - 2] < 0) {
+		}
+		if (s[len - 2] < 0) {
+			for (j = 0; j < m; j++) {			
 				pp_add_k12(l, t[j], _q[j], p[j]);
 				fp12_mul_dxs(r, r, l);
 			}
 		}
-
+	
 		for (i = len - 3; i >= 0; i--) {
 			fp12_sqr(r, r);
-			for (j = 0; j < n; j++) {
+			for (j = 0; j < m; j++) {
 				pp_dbl_k12(l, t[j], t[j], _p[j]);
 				fp12_mul_dxs(r, r, l);
 				if (s[i] > 0) {
@@ -279,13 +286,12 @@ static void pp_mil_sps_k12(fp12_t r, ep2_t t[], ep2_t q[], ep_t p[], int n, int 
 	}
 	FINALLY {
 		fp12_free(l);
-		for (j = 0; j < n; j++) {
+		for (j = 0; j < m; j++) {
 			ep_free(_p[j]);
 			ep2_free(_q[j]);
 		}
 	}
 }
-
 /**
  * Compute the Miller loop for pairings of type G_1 x G_2 over the bits of a
  * given parameter.
@@ -294,30 +300,35 @@ static void pp_mil_sps_k12(fp12_t r, ep2_t t[], ep2_t q[], ep_t p[], int n, int 
  * @param[out] t			- the resulting point.
  * @param[in] p				- the first pairing argument in affine coordinates.
  * @param[in] q				- the second pairing argument in affine coordinates.
+ * @param[in] n 			- the number of pairings to evaluate.
  * @param[in] a				- the loop parameter.
  */
-static void pp_mil_lit_k12(fp12_t r, ep_t t, ep_t p, ep2_t q, bn_t a) {
+static void pp_mil_lit_k12(fp12_t r, ep_t *t, ep_t *p, ep2_t *q, int m, bn_t a) {
 	fp12_t l;
-	ep2_t _q;
+	ep2_t _q[m];
+	int j;
 
 	fp12_null(l);
-	ep2_null(_q);
 
 	TRY {
 		fp12_new(l);
-		ep2_new(_q);
+		for (j = 0; j < m; j++) {
+			ep2_null(_q[j]);
+			ep2_new(_q[j]);
+			ep_copy(t[j], p[j]);
+			ep2_neg(_q[j], q[j]);
+		}
 
-		ep_copy(t, p);
-		ep2_neg(_q, q);
 		fp12_zero(l);
-
 		for (int i = bn_bits(a) - 2; i >= 0; i--) {
 			fp12_sqr(r, r);
-			pp_dbl_lit_k12(l, t, t, _q);
-			fp12_mul(r, r, l);
-			if (bn_get_bit(a, i)) {
-				pp_add_lit_k12(l, t, p, q);
+			for (j = 0; j < m; j++) {
+				pp_dbl_lit_k12(l, t[j], t[j], _q[j]);
 				fp12_mul(r, r, l);
+				if (bn_get_bit(a, i)) {
+					pp_add_lit_k12(l, t[j], p[j], q[j]);
+					fp12_mul(r, r, l);
+				}
 			}
 		}
 	}
@@ -326,7 +337,9 @@ static void pp_mil_lit_k12(fp12_t r, ep_t t, ep_t p, ep2_t q, bn_t a) {
 	}
 	FINALLY {
 		fp12_free(l);
-		ep2_free(_q);
+		for (j = 0; j < m; j++) {
+			ep2_free(_q[j]);
+		}
 	}
 }
 
@@ -429,28 +442,28 @@ void pp_map_tatep_k2(fp2_t r, ep_t p, ep_t q) {
 #if PP_MAP == TATEP || !defined(STRIP)
 
 void pp_map_tatep_k12(fp12_t r, ep_t p, ep2_t q) {
-	ep_t _p, t;
-	ep2_t _q;
+	ep_t _p[1], t[1];
+	ep2_t _q[1];
 	bn_t n;
 
-	ep_null(_p);
-	ep_null(t);
-	ep2_null(_q);
+	ep_null(_p[0]);
+	ep_null(t[0]);
+	ep2_null(_q[0]);
 	bn_null(n);
 
 	TRY {
-		ep_new(_p);
-		ep_new(t);
-		ep2_new(_q);
+		ep_new(_p[0]);
+		ep_new(t[0]);
+		ep2_new(_q[0]);
 		bn_new(n);
 
-		ep_norm(_p, p);
-		ep2_norm(_q, q);
+		ep_norm(_p[0], p);
+		ep2_norm(_q[0], q);
 		ep_curve_get_ord(n);
 		fp12_set_dig(r, 1);
 
-		if (!ep_is_infty(_p) && !ep2_is_infty(_q)) {
-			pp_mil_lit_k12(r, t, _p, _q, n);
+		if (!ep_is_infty(p) && !ep2_is_infty(q)) {
+			pp_mil_lit_k12(r, t, _p, _q, 1, n);
 			pp_exp_k12(r, r);
 		}
 	}
@@ -458,10 +471,57 @@ void pp_map_tatep_k12(fp12_t r, ep_t p, ep2_t q) {
 		THROW(ERR_CAUGHT);
 	}
 	FINALLY {
-		ep_free(_p);
-		ep_free(t);
-		ep2_free(_q);
+		ep_free(_p[0]);
+		ep_free(t[0]);
+		ep2_free(_q[0]);
 		bn_free(n);
+	}
+}
+
+void pp_map_sim_tatep_k12(fp12_t r, ep_t *p, ep2_t *q, int m) {
+	ep_t _p[m], t[m];
+	ep2_t _q[m];
+	bn_t n;
+	int i, j;
+
+	bn_null(n);
+
+	TRY {
+		bn_new(n);
+		for (i = 0; i < m; i++) {
+			ep_null(_p[i]);
+			ep_null(t[i]);
+			ep2_null(_q[i]);
+			ep_new(_p[i]);
+			ep_new(t[i]);
+			ep2_new(_q[i]);
+		}
+
+		j = 0;
+		for (i = 0; i < m; i++) {
+			if (!ep_is_infty(p[i]) && !ep2_is_infty(q[i])) {
+				ep_norm(_p[j], p[i]);
+				ep2_norm(_q[j++], q[i]);
+			}
+		}
+		
+		ep_curve_get_ord(n);
+		fp12_set_dig(r, 1);
+		if (j > 0) {
+			pp_mil_lit_k12(r, t, _p, _q, j, n);
+			pp_exp_k12(r, r);
+		}
+	}
+	CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	}
+	FINALLY {
+		bn_free(n);
+		for (i = 0; i < m; i++) {
+			ep_free(_p[i]);
+			ep_free(t[i]);
+			ep2_free(_q[i]);
+		}
 	}
 }
 
@@ -524,38 +584,38 @@ void pp_map_weilp_k2(fp2_t r, ep_t p, ep_t q) {
 }
 
 void pp_map_weilp_k12(fp12_t r, ep_t p, ep2_t q) {
-	ep_t _p, t0;
-	ep2_t _q, t1;
+	ep_t _p[1], t0[1];
+	ep2_t _q[1], t1[1];
 	fp12_t r0, r1;
 	bn_t n;
 
-	ep_null(_p);
-	ep_null(t0);
-	ep2_null(_q);
-	ep2_null(t1);
+	ep_null(_p[0]);
+	ep_null(t0[1]);
+	ep2_null(_q[0]);
+	ep2_null(t1[1]);
 	fp12_null(r0);
 	fp12_null(r1);
 	bn_null(n);
 
 	TRY {
-		ep_new(_p);
-		ep_new(t0);
-		ep2_new(_q);
-		ep2_new(t1);
+		ep_new(_p[0]);
+		ep_new(t0[0]);
+		ep2_new(_q[0]);
+		ep2_new(t1[0]);
 		fp12_new(r0);
 		fp12_new(r1);
 		bn_new(n);
 
-		ep_norm(_p, p);
-		ep2_norm(_q, q);
+		ep_norm(_p[0], p);
+		ep2_norm(_q[0], q);
 		ep_curve_get_ord(n);
 		bn_sub_dig(n, n, 1);
 		fp12_set_dig(r0, 1);
 		fp12_set_dig(r1, 1);
 
-		if (!ep_is_infty(_p) && !ep2_is_infty(_q)) {
-			pp_mil_lit_k12(r0, t0, _p, _q, n);
-			pp_mil_k12(r1, t1, _q, _p, n);
+		if (!ep_is_infty(_p[0]) && !ep2_is_infty(_q[0])) {
+			pp_mil_lit_k12(r0, t0, _p, _q, 1, n);
+			pp_mil_k12(r1, t1, _q, _p, 1, n);
 			fp12_inv(r1, r1);
 			fp12_mul(r0, r0, r1);
 			fp12_inv(r1, r0);
@@ -567,13 +627,78 @@ void pp_map_weilp_k12(fp12_t r, ep_t p, ep2_t q) {
 		THROW(ERR_CAUGHT);
 	}
 	FINALLY {
-		ep_free(_p);
-		ep_free(t0);
-		ep2_free(_q);
-		ep2_free(t1);
+		ep_free(_p[0]);
+		ep_free(t0[0]);
+		ep2_free(_q[0]);
+		ep2_free(t1[0]);
 		fp12_free(r0);
 		fp12_free(r1);
 		bn_free(n);
+	}
+}
+
+void pp_map_sim_weilp_k12(fp12_t r, ep_t *p, ep2_t *q, int m) {
+	ep_t _p[m], t0[m];
+	ep2_t _q[m], t1[m];
+	fp12_t r0, r1;
+	bn_t n;
+	int i, j;
+
+	fp12_null(r0);
+	fp12_null(r1);
+	bn_null(n);
+
+	TRY {
+		fp12_new(r0);
+		fp12_new(r1);
+		bn_new(n);
+		for (i = 0; i < m; i++) {
+			ep_null(_p[i]);
+			ep_null(t0[i]);
+			ep2_null(_q[i]);
+			ep2_null(t1[i]);
+			ep_new(_p[i]);
+			ep_new(t0[i]);
+			ep2_new(_q[i]);
+			ep2_new(t1[i]);
+		}
+
+		j = 0;
+		for (i = 0; i < m; i++) {
+			if (!ep_is_infty(p[i]) && !ep2_is_infty(q[i])) {
+				ep_norm(_p[j], p[i]);
+				ep2_norm(_q[j++], q[i]);
+			}
+		}
+
+		ep_curve_get_ord(n);
+		bn_sub_dig(n, n, 1);
+		fp12_set_dig(r0, 1);
+		fp12_set_dig(r1, 1);
+
+		if (j > 0) {
+			pp_mil_lit_k12(r0, t0, _p, _q, j, n);
+			pp_mil_k12(r1, t1, _q, _p, j, n);
+			fp12_inv(r1, r1);
+			fp12_mul(r0, r0, r1);
+			fp12_inv(r1, r0);
+			fp12_inv_uni(r0, r0);
+		}
+		fp12_mul(r, r0, r1);
+	}
+	CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	}
+	FINALLY {
+		fp12_free(r0);
+		fp12_free(r1);
+		bn_free(n);
+		for (i = 0; i < m; i++) {
+			ep_free(_p[i]);
+			ep_free(t0[i]);
+			ep2_free(_q[i]);
+			ep2_free(t1[i]);
+		}
 	}
 }
 
@@ -588,9 +713,9 @@ void pp_map_oatep_k12(fp12_t r, ep_t p, ep2_t q) {
 	bn_t a;
 	int len = FP_BITS, s[FP_BITS];
 
-	ep_null(_p);
-	ep2_null(_q);	
-	ep2_null(t);
+	ep_null(_p[0]);
+	ep2_null(_q[0]);	
+	ep2_null(t[0]);
 	bn_null(a);
 
 	TRY {
@@ -640,9 +765,9 @@ void pp_map_oatep_k12(fp12_t r, ep_t p, ep2_t q) {
 		THROW(ERR_CAUGHT);
 	}
 	FINALLY {
-		ep_free(_p);
-		ep2_free(_q);
-		ep2_free(t);
+		ep_free(_p[0]);
+		ep2_free(_q[0]);
+		ep2_free(t[0]);
 		bn_free(a);
 	}
 }
@@ -654,13 +779,13 @@ void pp_map_sim_oatep_k12(fp12_t r, ep_t *p, ep2_t *q, int n) {
 	int i, j, len = FP_BITS, s[FP_BITS];
 
 	bn_null(a);
-	ep_null(_p);
-	ep2_null(_q);	
-	ep2_null(t);
 
 	TRY {
 		bn_new(a);		
 		for (i = 0; i < n; i++) {
+			ep_null(_p[i]);
+			ep2_null(_q[i]);	
+			ep2_null(t[i]);
 			ep_new(_p[i]);
 			ep2_new(_q[i]);
 			ep2_new(t[i]);
@@ -717,9 +842,9 @@ void pp_map_sim_oatep_k12(fp12_t r, ep_t *p, ep2_t *q, int n) {
 	FINALLY {
 		bn_free(a);
 		for (i = 0; i < n; i++) {
-			ep_free(_p);
-			ep2_free(_q);
-			ep2_free(t);
+			ep_free(_p[i]);
+			ep2_free(_q[i]);
+			ep2_free(t[i]);
 		}
 	}
 }

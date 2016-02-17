@@ -1325,23 +1325,23 @@ static int pairing(void) {
 			g1_rand(p[1 - (i % 2)]);
 			g2_set_infty(q[1 - (i % 2)]);
 			pc_map_sim(e2, p, q, 2);
-			TEST_ASSERT(fp12_cmp(e1, e2) == CMP_EQ, end);
+			TEST_ASSERT(gt_cmp(e1, e2) == CMP_EQ, end);
 			g1_set_infty(p[1 - (i % 2)]);
 			g2_rand(q[1 - (i % 2)]);
 			pc_map_sim(e2, p, q, 2);
-			TEST_ASSERT(fp12_cmp(e1, e2) == CMP_EQ, end);
+			TEST_ASSERT(gt_cmp(e1, e2) == CMP_EQ, end);
 			ep2_set_infty(q[i % 2]);
 			pc_map_sim(e2, p, q, 2);
-			TEST_ASSERT(fp12_cmp_dig(e2, 1) == CMP_EQ, end);
+			TEST_ASSERT(gt_cmp_dig(e2, 1) == CMP_EQ, end);
 			g1_rand(p[0]);
 			g2_rand(q[0]);
 			pc_map(e1, p[0], q[0]);
 			g1_rand(p[1]);
 			g2_rand(q[1]);
 			pc_map(e2, p[1], q[1]);
-			fp12_mul(e1, e1, e2);
+			gt_mul(e1, e1, e2);
 			pc_map_sim(e2, p, q, 2);
-			TEST_ASSERT(fp12_cmp(e1, e2) == CMP_EQ, end);
+			TEST_ASSERT(gt_cmp(e1, e2) == CMP_EQ, end);
 		} TEST_END;		
 	}
 	CATCH_ANY {
@@ -1356,8 +1356,8 @@ static int pairing(void) {
 	bn_free(k);
 	bn_free(n);
 	for (j = 0; j < 2; j++) {
-		g1_free(p);
-		g2_free(q);
+		g1_free(p[j]);
+		g2_free(q[j]);
 	}
 	return code;
 }
