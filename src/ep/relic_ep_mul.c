@@ -25,7 +25,6 @@
  *
  * Implementation of the point multiplication on prime elliptic curves.
  *
- * @version $Id$
  * @ingroup eb
  */
 
@@ -152,32 +151,27 @@ static void ep_mul_glv_imp(ep_t r, const ep_t p, const bn_t k) {
 
 static void ep_mul_naf_imp(ep_t r, const ep_t p, const bn_t k) {
 	int l, i, n;
-	int8_t naf[FP_BITS + 1], *_k;
+	int8_t naf[FP_BITS + 1];
 	ep_t t[1 << (EP_WIDTH - 2)];
-
-	for (i = 0; i < (1 << (EP_WIDTH - 2)); i++) {
-		ep_null(t[i]);
-	}
 
 	TRY {
 		/* Prepare the precomputation table. */
 		for (i = 0; i < (1 << (EP_WIDTH - 2)); i++) {
+			ep_null(t[i]);
 			ep_new(t[i]);
 		}
 		/* Compute the precomputation table. */
 		ep_tab(t, p, EP_WIDTH);
 
 		/* Compute the w-NAF representation of k. */
-		l = FP_BITS + 1;
+		l = sizeof(naf);
 		bn_rec_naf(naf, &l, k, EP_WIDTH);
 
-		_k = naf + l - 1;
-
 		ep_set_infty(r);
-		for (i = l - 1; i >= 0; i--, _k--) {
+		for (i = l - 1; i >= 0; i--) {
 			ep_dbl(r, r);
 
-			n = *_k;
+			n = naf[i];
 			if (n > 0) {
 				ep_add(r, r, t[n / 2]);
 			}
@@ -506,7 +500,6 @@ void ep_mul_dig(ep_t r, const ep_t p, dig_t k) {
 		l = util_bits_dig(k);
 
 		ep_copy(t, p);
-
 		for (i = l - 2; i >= 0; i--) {
 			ep_dbl(t, t);
 			if (k & ((dig_t)1 << i)) {
