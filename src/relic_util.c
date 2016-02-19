@@ -51,7 +51,7 @@
  */
 #if ARCH == AVR
 #ifndef QUIET
-volatile char print_buf[64 + 1];
+volatile char print_buf[128 + 1];
 volatile char *util_print_ptr;
 #endif
 #endif
@@ -165,8 +165,14 @@ void util_printf(const char *format, ...) {
 	util_print_ptr = print_buf + 1;
 	va_list list;
 	va_start(list, format);
-	vsnprintf_P((char *)util_print_ptr, 64, format, list);
+	vsnprintf_P((char *)util_print_ptr, sizeof(print_buf) - 1, format, list);
+	va_end(list);
 	print_buf[0] = (uint8_t)2;
+#elif ARCH == AVR && OPSYS == DUINO
+	va_list list;
+	va_start(list, format);
+	vsnprintf_P((char *)print_buf, sizeof(print_buf), format, list);
+	printf("%s\r", (char *)print_buf);
 	va_end(list);
 #elif ARCH == MSP && OPSYS == NONE
 	va_list list;
