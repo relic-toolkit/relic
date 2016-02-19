@@ -56,6 +56,25 @@ volatile char *util_print_ptr;
 #endif
 #endif
 
+#if ARCH == AVR
+/**
+ * Stream for serial port.
+ */
+FILE uart_output = FDEV_SETUP_STREAM(uart_putchar, NULL, _FDEV_SETUP_WRITE);
+
+/**
+ * Send byte to serial port.
+ */
+void uart_putchar(char c, FILE *stream) {
+    if (c == '\n') {
+        uart_putchar('\r', stream);
+    }
+    loop_until_bit_is_set(UCSR0A, UDRE0);
+    UDR0 = c;
+}
+
+#endif
+
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
@@ -169,10 +188,11 @@ void util_printf(const char *format, ...) {
 	va_end(list);
 	print_buf[0] = (uint8_t)2;
 #elif ARCH == AVR && OPSYS == DUINO
+	stdout = &uart_output;
 	va_list list;
 	va_start(list, format);
 	vsnprintf_P((char *)print_buf, sizeof(print_buf), format, list);
-	printf("%s\r", (char *)print_buf);
+	printf("%s", (char *)print_buf);
 	va_end(list);
 #elif ARCH == MSP && OPSYS == NONE
 	va_list list;
