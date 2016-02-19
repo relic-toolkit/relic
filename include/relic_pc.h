@@ -794,12 +794,12 @@ typedef CAT(GT_LOWER, t) gt_t;
  * @param[out] R			- the result.
  * @param[in] P				- the first pairing arguments.
  * @param[in] Q				- the second pairing arguments.
- * @param[in] N 			- the number of pairing arguments.
+ * @param[in] M 			- the number of pairing arguments.
  */
 #if FP_PRIME < 1536
-#define pc_map_sim(R, P, Q, N);	CAT(PC_LOWER, map_sim_k12)(R, P, Q, N)
+#define pc_map_sim(R, P, Q, M);	CAT(PC_LOWER, map_sim_k12)(R, P, Q, M)
 #else
-#error To be implemented!
+#define pc_map_sim(R, P, Q, M);	CAT(PC_LOWER, map_sim_k2)(R, P, Q, M)
 #endif
 
 /**

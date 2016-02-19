@@ -202,15 +202,33 @@
 
 /**
  * Computes a multi-pairing of elliptic curve points defined on an elliptic
+ * curve of embedding degree 2. Computes \prod e(P_i, Q_i).
+ *
+ * @param[out] R			- the result.
+ * @param[in] P				- the first pairing arguments.
+ * @param[in] Q				- the second pairing arguments.
+ * @param[in] M 			- the number of pairings to evaluate.
+ */
+#if PP_MAP == WEILP
+#define pp_map_sim_k2(R, P, Q, M)		pp_map_sim_weilp_k2(R, P, Q, M)
+#elif PP_MAP == OATEP
+#define pp_map_sim_k2(R, P, Q, M)		pp_map_sim_tatep_k2(R, P, Q, M)
+#endif
+
+
+/**
+ * Computes a multi-pairing of elliptic curve points defined on an elliptic
  * curve of embedding degree 12. Computes \prod e(P_i, Q_i).
  *
  * @param[out] R			- the result.
  * @param[in] P				- the first pairing arguments.
  * @param[in] Q				- the second pairing arguments.
- * @param[in] N 			- the number of arguments.
+ * @param[in] M 			- the number of pairings to evaluate.
  */
-#if PP_MAP == OATEP
-#define pp_map_sim_k12(R, P, Q, N)				pp_map_sim_oatep_k12(R, P, Q, N)
+#if PP_MAP == WEILP
+#define pp_map_sim_k12(R, P, Q, M)		pp_map_sim_weilp_k12(R, P, Q, M)
+#elif PP_MAP == OATEP
+#define pp_map_sim_k12(R, P, Q, M)		pp_map_sim_oatep_k12(R, P, Q, M)
 #endif
 
 /*============================================================================*/
@@ -460,6 +478,17 @@ void pp_map_weilp_k2(fp2_t r, ep_t p, ep_t q);
 void pp_map_tatep_k12(fp12_t r, ep_t p, ep2_t q);
 
 /**
+ * Computes the Tate multi-pairing of in a parameterized elliptic curve with
+ * embedding degree 12.
+ *
+ * @param[out] r			- the result.
+ * @param[in] q				- the first pairing arguments.
+ * @param[in] p				- the second pairing arguments.
+ * @param[in] m 			- the number of pairings to evaluate.
+ */
+void pp_map_sim_tatep_k12(fp12_t r, ep_t *p, ep2_t *q, int m);
+
+/**
  * Computes the Weil pairing of two points in a parameterized elliptic curve
  * with embedding degree 12.
  *
@@ -468,6 +497,17 @@ void pp_map_tatep_k12(fp12_t r, ep_t p, ep2_t q);
  * @param[in] p				- the second elliptic curve point.
  */
 void pp_map_weilp_k12(fp12_t r, ep_t p, ep2_t q);
+
+/**
+ * Computes the Weil multi-pairing of in a parameterized elliptic curve with
+ * embedding degree 12.
+ *
+ * @param[out] r			- the result.
+ * @param[in] q				- the first pairing arguments.
+ * @param[in] p				- the second pairing arguments.
+ * @param[in] m 			- the number of pairings to evaluate.
+ */
+void pp_map_sim_weilp_k12(fp12_t r, ep_t *p, ep2_t *q, int m);
 
 /**
  * Computes the optimal ate pairing of two points in a parameterized elliptic
@@ -480,14 +520,14 @@ void pp_map_weilp_k12(fp12_t r, ep_t p, ep2_t q);
 void pp_map_oatep_k12(fp12_t r, ep_t p, ep2_t q);
 
 /**
- * Computes the optimal ate multi-pairing of two points in a parameterized
- * elliptic curve with embedding degree 12.
+ * Computes the optimal ate multi-pairing of in a parameterized elliptic
+ * curve with embedding degree 12.
  *
  * @param[out] r			- the result.
  * @param[in] q				- the first pairing arguments.
  * @param[in] p				- the second pairing arguments.
- * @param[in] n 			- the number of pairings to evaluate.
+ * @param[in] m 			- the number of pairings to evaluate.
  */
-void pp_map_sim_oatep_k12(fp12_t r, ep_t *p, ep2_t *q, int n);
+void pp_map_sim_oatep_k12(fp12_t r, ep_t *p, ep2_t *q, int m);
 
 #endif /* !RELIC_PP_H */
