@@ -129,14 +129,9 @@ typedef unsigned long long ull_t;
  * Specification for aligned variables.
  */
 #if ALIGN > 1
-#  if defined(_MSC_VER)
-#    define ALIGNME(x) __declspec(align(x))
-#  else
-#    define ALIGNME(x) __attribute__((aligned(x)))
-#  endif
+#define align 			__attribute__ ((aligned (ALIGN)))
 #else
-#  define align 			/* empty*/
-#  define ALIGNME(x)          /* empty*/
+#define align 			/* empty*/
 #endif
 
 /**

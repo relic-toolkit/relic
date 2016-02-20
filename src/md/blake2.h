@@ -17,7 +17,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "relic_types.h"
+#if defined(_MSC_VER)
+#define ALIGNME(x)  __declspec(align(x))
+#else
+#define ALIGNME(x)  __attribute__((aligned(x)))
+#endif
 
 #if defined(__cplusplus)
 extern "C" {
