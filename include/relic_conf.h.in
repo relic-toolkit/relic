@@ -617,9 +617,9 @@
 /** SHA-512 hash function. */
 #define SH512          5
 /** BLAKE2s-160 hash function. */
-#define BLAKE2S_160    6
+#define B2S160         6
 /** BLAKE2s-256 hash function. */
-#define BLAKE2S_256    7
+#define B2S256         7
 /** Chosen hash function. */
 #define MD_MAP   @MD_MAP@
 
