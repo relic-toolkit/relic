@@ -40,17 +40,17 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-#if MD_MAP == BLAKE2S_128 || !defined(STRIP)
+#if MD_MAP == B2S160 || !defined(STRIP)
 
-void md_map_blake2s_160(uint8_t *hash, const uint8_t *msg, int len) {
+void md_map_b2s160(uint8_t *hash, const uint8_t *msg, int len) {
 	blake2s(hash, msg, 0, 20, len, 0);
 }
 
 #endif
 
-#if MD_MAP == BLAKE2S_256 || !defined(STRIP)
+#if MD_MAP == B2S256 || !defined(STRIP)
 
-void md_map_blake2s_256(uint8_t *hash, const uint8_t *msg, int len) {
+void md_map_b2s256(uint8_t *hash, const uint8_t *msg, int len) {
 	blake2s(hash, msg, 0, 32, len, 0);
 }
 
