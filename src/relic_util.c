@@ -50,18 +50,12 @@
  * Buffer to hold printed messages.
  */
 #if ARCH == AVR
+
 #ifndef QUIET
 volatile char print_buf[128 + 1];
 volatile char *util_print_ptr;
-#endif
-#endif
 
-#if ARCH == AVR
-/**
- * Stream for serial port.
- */
-FILE uart_output = FDEV_SETUP_STREAM(uart_putchar, NULL, _FDEV_SETUP_WRITE);
-
+#if OPSYS == DUINO
 /**
  * Send byte to serial port.
  */
@@ -73,7 +67,15 @@ void uart_putchar(char c, FILE *stream) {
     UDR0 = c;
 }
 
+/**
+ * Stream for serial port.
+ */
+FILE uart_output = FDEV_SETUP_STREAM(uart_putchar, NULL, _FDEV_SETUP_WRITE);
+
 #endif
+#endif
+
+#endif /* QUIET */
 
 /*============================================================================*/
 /* Public definitions                                                         */
