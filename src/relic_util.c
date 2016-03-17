@@ -219,15 +219,27 @@ void util_printf(const char *format, ...) {
 void util_print_dig(dig_t a, int pad) {
 #if DIGIT == 64
 	if (pad) {
-		util_print("%.*" PRIX64, (int)(2 * sizeof(dig_t)), (uint64_t)a);
+		util_print("%.16" PRIX64, (uint64_t)a);
 	} else {
 		util_print("%" PRIX64, (uint64_t)a);
 	}
-#else
+#elif DIGIT == 32
 	if (pad) {
-		util_print("%.*" PRIX32, (int)(2 * sizeof(dig_t)), (uint32_t)a);
+		util_print("%.8" PRIX32, (uint32_t)a);
 	} else {
 		util_print("%" PRIX32, (uint32_t)a);
+	}
+#elif DIGIT == 16
+	if (pad) {
+		util_print("%.4" PRIX16, (uint16_t)a);
+	} else {
+		util_print("%" PRIX16, (uint16_t)a);
+	}
+#else
+	if (pad) {
+		util_print("%.2" PRIX8, (uint8_t)a);
+	} else {
+		util_print("%" PRIX8, (uint8_t)a);
 	}
 #endif
 }
