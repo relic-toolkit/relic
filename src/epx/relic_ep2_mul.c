@@ -32,10 +32,64 @@
 #include "relic_core.h"
 
 /*============================================================================*/
+/* Private definitions                                                        */
+/*============================================================================*/
+
+#if EP_MUL == LWNAF || !defined(STRIP)
+
+static void ep2_mul_naf_imp(ep2_t r, ep2_t p, const bn_t k) {
+	int l, i, n;
+	int8_t naf[FP_BITS + 1];
+	ep2_t t[1 << (EP_WIDTH - 2)];
+
+	TRY {
+		/* Prepare the precomputation table. */
+		for (i = 0; i < (1 << (EP_WIDTH - 2)); i++) {
+			ep2_null(t[i]);
+			ep2_new(t[i]);
+		}
+		/* Compute the precomputation table. */
+		ep2_tab(t, p, EP_WIDTH);
+
+		/* Compute the w-NAF representation of k. */
+		l = sizeof(naf);
+		bn_rec_naf(naf, &l, k, EP_WIDTH);
+
+		ep2_set_infty(r);
+		for (i = l - 1; i >= 0; i--) {
+			ep2_dbl(r, r);
+
+			n = naf[i];
+			if (n > 0) {
+				ep2_add(r, r, t[n / 2]);
+			}
+			if (n < 0) {
+				ep2_sub(r, r, t[-n / 2]);
+			}
+		}
+		/* Convert r to affine coordinates. */
+		ep2_norm(r, r);
+	}
+	CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	}
+	FINALLY {
+		/* Free the precomputation table. */
+		for (i = 0; i < (1 << (EP_WIDTH - 2)); i++) {
+			ep2_free(t[i]);
+		}
+	}
+}
+
+#endif /* EP_MUL == LWNAF */
+
+/*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void ep2_mul(ep2_t r, ep2_t p, bn_t k) {
+#if EP_MUL == BASIC || !defined(STRIP)
+
+void ep2_mul_basic(ep2_t r, ep2_t p, const bn_t k) {
 	int i, l;
 	ep2_t t;
 
@@ -67,6 +121,148 @@ void ep2_mul(ep2_t r, ep2_t p, bn_t k) {
 		ep2_free(t);
 	}
 }
+
+#endif
+
+#if EP_MUL == SLIDE || !defined(STRIP)
+
+void ep2_mul_slide(ep2_t r, ep2_t p, const bn_t k) {
+	ep2_t t[1 << (EP_WIDTH - 1)], q;
+	int i, j, l;
+	uint8_t win[FP_BITS + 1];
+
+	ep2_null(q);
+
+	if (bn_is_zero(k) || ep2_is_infty(p)) {
+		ep2_set_infty(r);
+		return;
+	}
+
+	TRY {
+		for (i = 0; i < (1 << (EP_WIDTH - 1)); i ++) {
+			ep2_null(t[i]);
+			ep2_new(t[i]);
+		}
+
+		ep2_new(q);
+
+		ep2_copy(t[0], p);
+		ep2_dbl(q, p);
+
+#if defined(EP_MIXED)
+		ep2_norm(q, q);
+#endif
+
+		/* Create table. */
+		for (i = 1; i < (1 << (EP_WIDTH - 1)); i++) {
+			ep2_add(t[i], t[i - 1], q);
+		}
+
+#if defined(EP_MIXED)
+		ep2_norm_sim(t + 1, (const ep2_t *)t + 1, (1 << (EP_WIDTH - 1)) - 1);
+#endif
+
+		ep2_set_infty(q);
+		l = FP_BITS + 1;
+		bn_rec_slw(win, &l, k, EP_WIDTH);
+		for (i = 0; i < l; i++) {
+			if (win[i] == 0) {
+				ep2_dbl(q, q);
+			} else {
+				for (j = 0; j < util_bits_dig(win[i]); j++) {
+					ep2_dbl(q, q);
+				}
+				ep2_add(q, q, t[win[i] >> 1]);
+			}
+		}
+
+		ep2_norm(r, q);
+	}
+	CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	}
+	FINALLY {
+		for (i = 0; i < (1 << (EP_WIDTH - 1)); i++) {
+			ep2_free(t[i]);
+		}
+		ep2_free(q);
+	}
+}
+
+#endif
+
+#if EP_MUL == MONTY || !defined(STRIP)
+
+void ep2_mul_monty(ep2_t r, ep2_t p, const bn_t k) {
+	ep2_t t[2];
+
+	ep2_null(t[0]);
+	ep2_null(t[1]);
+
+	if (bn_is_zero(k) || ep2_is_infty(p)) {
+		ep2_set_infty(r);
+		return;
+	}
+
+	TRY {
+		ep2_new(t[0]);
+		ep2_new(t[1]);
+
+		ep2_set_infty(t[0]);
+		ep2_copy(t[1], p);
+
+		for (int i = bn_bits(k) - 1; i >= 0; i--) {
+			int j = bn_get_bit(k, i);
+			dv_swap_cond(t[0]->x[0], t[1]->x[0], FP_DIGS, j ^ 1);
+			dv_swap_cond(t[0]->x[1], t[1]->x[1], FP_DIGS, j ^ 1);
+			dv_swap_cond(t[0]->y[0], t[1]->y[0], FP_DIGS, j ^ 1);
+			dv_swap_cond(t[0]->y[1], t[1]->y[1], FP_DIGS, j ^ 1);
+			dv_swap_cond(t[0]->z[0], t[1]->z[0], FP_DIGS, j ^ 1);
+			dv_swap_cond(t[0]->z[1], t[1]->z[1], FP_DIGS, j ^ 1);
+			ep2_add(t[0], t[0], t[1]);
+			ep2_dbl(t[1], t[1]);
+			dv_swap_cond(t[0]->x[0], t[1]->x[0], FP_DIGS, j ^ 1);
+			dv_swap_cond(t[0]->x[1], t[1]->x[1], FP_DIGS, j ^ 1);
+			dv_swap_cond(t[0]->y[0], t[1]->y[0], FP_DIGS, j ^ 1);
+			dv_swap_cond(t[0]->y[1], t[1]->y[1], FP_DIGS, j ^ 1);
+			dv_swap_cond(t[0]->z[0], t[1]->z[0], FP_DIGS, j ^ 1);
+			dv_swap_cond(t[0]->z[1], t[1]->z[1], FP_DIGS, j ^ 1);
+		}
+
+		ep2_norm(r, t[0]);
+
+	} CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	}
+	FINALLY {
+		ep2_free(t[1]);
+		ep2_free(t[0]);
+	}
+}
+
+#endif
+
+#if EP_MUL == LWNAF || !defined(STRIP)
+
+void ep2_mul_lwnaf(ep2_t r, ep2_t p, const bn_t k) {
+	if (bn_is_zero(k) || ep2_is_infty(p)) {
+		ep2_set_infty(r);
+		return;
+	}
+
+/*#if defined(ep2_ENDOM)
+	if (ep2_curve_is_endom()) {
+		ep2_mul_glv_imp(r, p, k);
+		return;
+	}
+#endif*/
+
+//#if defined(ep2_PLAIN) || defined(ep2_SUPER)
+	ep2_mul_naf_imp(r, p, k);
+//#endif
+}
+
+#endif
 
 void ep2_mul_gen(ep2_t r, bn_t k) {
 #ifdef EP_PRECO

@@ -131,24 +131,6 @@ void ep2_rhs(fp2_t rhs, ep2_t p) {
 	}
 }
 
-void ep2_tab(ep2_t * t, ep2_t p, int w) {
-	if (w > 2) {
-		ep2_dbl(t[0], p);
-#if defined(EP_MIXED)
-		ep2_norm(t[0], t[0]);
-#endif
-		ep2_add(t[1], t[0], p);
-		for (int i = 2; i < (1 << (w - 2)); i++) {
-			ep2_add(t[i], t[i - 1], t[0]);
-		}
-#if defined(EP_MIXED)
-		for (int i = 1; i < (1 << (EP_WIDTH - 2)); i++) {
-			ep2_norm(t[i], t[i]);
-		}
-#endif
-	}
-	ep2_copy(t[0], p);
-}
 
 int ep2_is_valid(ep2_t p) {
 	ep2_t t;
@@ -171,6 +153,23 @@ int ep2_is_valid(ep2_t p) {
 		ep2_free(t);
 	}
 	return r;
+}
+
+void ep2_tab(ep2_t *t, ep2_t p, int w) {
+	if (w > 2) {
+		ep2_dbl(t[0], p);
+#if defined(EP_MIXED)
+		ep2_norm(t[0], t[0]);
+#endif
+		ep2_add(t[1], t[0], p);
+		for (int i = 2; i < (1 << (w - 2)); i++) {
+			ep2_add(t[i], t[i - 1], t[0]);
+		}
+#if defined(EP_MIXED)
+		ep2_norm_sim(t + 1, t + 1, (1 << (w - 2)) - 1);
+#endif
+	}
+	ep2_copy(t[0], p);
 }
 
 void ep2_print(ep2_t p) {
@@ -274,7 +273,7 @@ void ep2_write_bin(uint8_t *bin, int len, ep2_t a, int pack) {
 
 		if (pack) {
 			if (len < 2 * FP_BYTES + 1) {
-				THROW(ERR_NO_BUFFER);	
+				THROW(ERR_NO_BUFFER);
 			} else {
 				ep2_pck(t, t);
 				bin[0] = 2 | fp_get_bit(t->y[0], 0);
