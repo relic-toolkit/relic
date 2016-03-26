@@ -342,8 +342,38 @@ static void arith(void) {
 	BENCH_BEGIN("ep2_mul") {
 		bn_rand_mod(k, n);
 		BENCH_ADD(ep2_mul(q, p, k));
-	}
-	BENCH_END;
+	} BENCH_END;
+
+#if EP_MUL == BASIC || !defined(STRIP)
+	BENCH_BEGIN("ep2_mul_basic") {
+		bn_rand_mod(k, n);
+		BENCH_ADD(ep2_mul_basic(q, p, k));
+	} BENCH_END;
+#endif
+
+#if EP_MUL == SLIDE || !defined(STRIP)
+	BENCH_BEGIN("ep2_mul_slide") {
+		bn_rand_mod(k, n);
+		ep_rand(p);
+		BENCH_ADD(ep2_mul_slide(q, p, k));
+	} BENCH_END;
+#endif
+
+#if EP_MUL == MONTY || !defined(STRIP)
+	BENCH_BEGIN("ep2_mul_monty") {
+		bn_rand_mod(k, n);
+		ep_rand(p);
+		BENCH_ADD(ep2_mul_monty(q, p, k));
+	} BENCH_END;
+#endif
+
+#if EP_MUL == LWNAF || !defined(STRIP)
+	BENCH_BEGIN("ep2_mul_lwnaf") {
+		bn_rand_mod(k, n);
+		ep_rand(p);
+		BENCH_ADD(ep2_mul_lwnaf(q, p, k));
+	} BENCH_END;
+#endif
 
 	BENCH_BEGIN("ep2_mul_gen") {
 		bn_rand_mod(k, n);
@@ -564,7 +594,7 @@ static void arith(void) {
 	BENCH_BEGIN("ep2_upk") {
 		ep2_rand(p);
 		BENCH_ADD(ep2_upk(q, p));
-	} BENCH_END;	
+	} BENCH_END;
 
 	ep2_free(p);
 	ep2_free(q);

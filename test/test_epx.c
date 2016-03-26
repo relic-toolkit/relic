@@ -25,7 +25,6 @@
  *
  * Tests for elliptic curves defined over extensions of prime fields.
  *
- * @version $Id$
  * @ingroup test
  */
 
@@ -33,7 +32,6 @@
 
 #include "relic.h"
 #include "relic_test.h"
-#include "relic_bench.h"
 
 static int memory(void) {
 	err_t e;
@@ -149,10 +147,10 @@ int util(void) {
 				ep2_norm(a, a);
 				ep2_write_bin(bin, l, a, j);
 				ep2_read_bin(b, bin, l);
-				TEST_ASSERT(ep2_cmp(a, b) == CMP_EQ, end);						
+				TEST_ASSERT(ep2_cmp(a, b) == CMP_EQ, end);
 			}
 		}
-		TEST_END;		
+		TEST_END;
 	}
 	CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -514,6 +512,45 @@ static int multiplication(void) {
 			ep2_mul_gen(r, k);
 			TEST_ASSERT(ep2_cmp(q, r) == CMP_EQ, end);
 		} TEST_END;
+
+#if EP_MUL == BASIC || !defined(STRIP)
+		TEST_BEGIN("binary point multiplication is correct") {
+			bn_rand_mod(k, n);
+			ep2_mul(q, p, k);
+			ep2_mul_basic(r, p, k);
+			TEST_ASSERT(ep2_cmp(q, r) == CMP_EQ, end);
+		} TEST_END;
+#endif
+
+#if EP_MUL == MONTY || !defined(STRIP)
+		TEST_BEGIN("sliding window point multiplication is correct") {
+			bn_rand_mod(k, n);
+			ep2_mul(q, p, k);
+			ep2_mul_slide(r, p, k);
+			TEST_ASSERT(ep2_cmp(q, r) == CMP_EQ, end);
+		}
+		TEST_END;
+#endif
+
+#if EP_MUL == MONTY || !defined(STRIP)
+		TEST_BEGIN("montgomery laddering point multiplication is correct") {
+			bn_rand_mod(k, n);
+			ep2_mul(q, p, k);
+			ep2_mul_monty(r, p, k);
+			TEST_ASSERT(ep2_cmp(q, r) == CMP_EQ, end);
+		}
+		TEST_END;
+#endif
+
+#if EP_MUL == LWNAF || !defined(STRIP)
+		TEST_BEGIN("left-to-right w-naf point multiplication is correct") {
+			bn_rand_mod(k, n);
+			ep2_mul(q, p, k);
+			ep2_mul_lwnaf(r, p, k);
+			TEST_ASSERT(ep2_cmp(q, r) == CMP_EQ, end);
+		}
+		TEST_END;
+#endif
 
 		TEST_BEGIN("multiplication by digit is correct") {
 			bn_rand(k, BN_POS, BN_DIGIT);
@@ -932,7 +969,7 @@ int main(void) {
 	if (ep2_curve_is_twist() == 0) {
 		THROW(ERR_NO_CURVE);
 		core_clean();
-		return 0;		
+		return 0;
 	}
 
 	ep_param_print();
