@@ -308,7 +308,7 @@ void ep_mul_slide(ep_t r, const ep_t p, const bn_t k) {
 	if (bn_is_zero(k) || ep_is_infty(p)) {
 		ep_set_infty(r);
 		return;
-	}	
+	}
 
 	TRY {
 		for (i = 0; i < (1 << (EP_WIDTH - 1)); i ++) {
@@ -457,7 +457,7 @@ void ep_mul_gen(ep_t r, const bn_t k) {
 		ep_set_infty(r);
 		return;
 	}
-		
+
 #ifdef EP_PRECO
 	ep_mul_fix(r, ep_curve_get_tab(), k);
 #else
