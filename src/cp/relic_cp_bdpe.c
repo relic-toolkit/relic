@@ -160,8 +160,8 @@ int cp_bdpe_enc(uint8_t *out, int *out_len, dig_t in, bdpe_t pub) {
 
 int cp_bdpe_dec(dig_t *out, uint8_t *in, int in_len, bdpe_t prv) {
 	bn_t m, t, z;
-	unsigned i;
 	int size, result = STS_OK;
+	dit_t i;
 
 	size = bn_size_bin(prv->n);
 
