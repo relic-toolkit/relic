@@ -219,7 +219,7 @@ int ep_size_bin(const ep_t a, int pack) {
 	} CATCH_ANY {
 		THROW(ERR_CAUGHT);
 	} FINALLY {
-		ep_free(t);	
+		ep_free(t);
 	}
 
 	return size;
@@ -290,7 +290,7 @@ void ep_write_bin(uint8_t *bin, int len, const ep_t a, int pack) {
 
 		if (pack) {
 			if (len < FP_BYTES + 1) {
-				THROW(ERR_NO_BUFFER);	
+				THROW(ERR_NO_BUFFER);
 			} else {
 				ep_pck(t, t);
 				bin[0] = 2 | fp_get_bit(t->y, 0);
