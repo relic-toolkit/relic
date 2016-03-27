@@ -37,6 +37,148 @@
 
 #if EP_MUL == LWNAF || !defined(STRIP)
 
+#if defined(EP_ENDOM)
+
+static void ep2_mul_glv_imp(ep2_t r, ep2_t p, const bn_t k) {
+	int i, j, l;
+	bn_t n, _k[4], u[4], v[4];
+	ep2_t q[4];
+
+	bn_null(n);
+
+	TRY {
+		bn_new(n);
+		for (i = 0; i < 4; i++) {
+			bn_null(u[i]);
+			bn_null(v[i]);
+			bn_null(_k[i]);
+			ep2_null(q[i]);
+			bn_new(u[i]);
+			bn_new(v[i]);
+			bn_new(_k[i]);
+			ep2_new(q[i]);
+		}
+
+		ep2_curve_get_ord(n);
+		ep2_curve_get_vs(v);
+
+		for (i = 0; i < 4; i++) {
+			bn_mul(v[i], v[i], k);
+			bn_div(v[i], v[i], n);
+			if (bn_sign(v[i]) == BN_NEG)
+				bn_add_dig(v[i], v[i], 1);
+			bn_zero(_k[i]);
+		}
+
+		fp_param_get_var(u[0]);
+		bn_dbl(u[2], u[0]);
+		bn_add_dig(u[1], u[2], 1);
+		bn_sub_dig(u[3], u[0], 1);
+		bn_add_dig(u[0], u[0], 1);
+		bn_copy(_k[0], k);
+		for (i = 0; i < 4; i++) {
+			bn_mul(u[i], u[i], v[i]);
+			bn_mod(u[i], u[i], n);
+			bn_add(_k[0], _k[0], n);
+			bn_sub(_k[0], _k[0], u[i]);
+			bn_mod(_k[0], _k[0], n);
+		}
+
+		fp_param_get_var(u[0]);
+		bn_neg(u[1], u[0]);
+		bn_dbl(u[2], u[0]);
+		bn_add_dig(u[2], u[2], 1);
+		bn_dbl(u[3], u[2]);
+		for (i = 0; i < 4; i++) {
+			bn_mul(u[i], u[i], v[i]);
+			bn_mod(u[i], u[i], n);
+			bn_add(_k[1], _k[1], n);
+			bn_sub(_k[1], _k[1], u[i]);
+			bn_mod(_k[1], _k[1], n);
+		}
+
+		fp_param_get_var(u[0]);
+		bn_add_dig(u[1], u[0], 1);
+		bn_neg(u[1], u[1]);
+		bn_dbl(u[2], u[0]);
+		bn_add_dig(u[2], u[2], 1);
+		bn_sub_dig(u[3], u[2], 2);
+		bn_neg(u[3], u[3]);
+		for (i = 0; i < 4; i++) {
+			bn_mul(u[i], u[i], v[i]);
+			bn_mod(u[i], u[i], n);
+			bn_add(_k[2], _k[2], n);
+			bn_sub(_k[2], _k[2], u[i]);
+			bn_mod(_k[2], _k[2], n);
+		}
+
+		fp_param_get_var(u[1]);
+		bn_dbl(u[0], u[1]);
+		bn_neg(u[0], u[0]);
+		bn_dbl(u[2], u[1]);
+		bn_add_dig(u[2], u[2], 1);
+		bn_sub_dig(u[3], u[1], 1);
+		bn_neg(u[1], u[1]);
+		for (i = 0; i < 4; i++) {
+			bn_mul(u[i], u[i], v[i]);
+			bn_mod(u[i], u[i], n);
+			bn_add(_k[3], _k[3], n);
+			bn_sub(_k[3], _k[3], u[i]);
+			bn_mod(_k[3], _k[3], n);
+		}
+
+		ep2_copy(q[0], p);
+		ep2_frb(q[1], q[0], 1);
+		ep2_frb(q[2], q[1], 1);
+		ep2_frb(q[3], q[2], 1);
+
+		for (i = 0; i < 4; i++) {
+			l = bn_bits(_k[i]);
+			bn_sub(_k[i], n, _k[i]);
+			if (bn_bits(_k[i]) > l) {
+				bn_sub(_k[i], _k[i], n);
+				bn_neg(_k[i], _k[i]);
+			} else {
+				ep2_neg(q[i], q[i]);
+			}
+			bn_abs(_k[i], _k[i]);
+		}
+
+		l = MAX(bn_bits(_k[0]), bn_bits(_k[1]));
+		l = MAX(l, bn_bits(_k[2]));
+		l = MAX(l, bn_bits(_k[3]));
+		ep2_set_infty(r);
+		for (i = l - 1; i >= 0; i--) {
+			ep2_dbl(r, r);
+			for (j = 0; j < 4; j++) {
+				if (bn_get_bit(_k[j], i)) {
+					ep2_add(r, r, q[j]);
+				}
+			}
+		}
+
+		/* Convert r to affine coordinates. */
+		ep2_norm(r, r);
+	}
+	CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	}
+	FINALLY {
+		bn_free(n);
+		for (i = 0; i < 4; i++) {
+			bn_free(u[i]);
+			bn_free(v[i]);
+			bn_free(_k[i]);
+			ep2_free(q[i]);
+		}
+
+	}
+}
+
+#endif /* EP_ENDOM */
+
+#if defined(EP_PLAIN) || defined(EP_SUPER)
+
 static void ep2_mul_naf_imp(ep2_t r, ep2_t p, const bn_t k) {
 	int l, i, n;
 	int8_t naf[FP_BITS + 1];
@@ -81,6 +223,7 @@ static void ep2_mul_naf_imp(ep2_t r, ep2_t p, const bn_t k) {
 	}
 }
 
+#endif /* EP_PLAIN || EP_SUPER */
 #endif /* EP_MUL == LWNAF */
 
 /*============================================================================*/
@@ -159,7 +302,7 @@ void ep2_mul_slide(ep2_t r, ep2_t p, const bn_t k) {
 		}
 
 #if defined(EP_MIXED)
-		ep2_norm_sim(t + 1, (const ep2_t *)t + 1, (1 << (EP_WIDTH - 1)) - 1);
+		ep2_norm_sim(t + 1, t + 1, (1 << (EP_WIDTH - 1)) - 1);
 #endif
 
 		ep2_set_infty(q);
@@ -250,16 +393,16 @@ void ep2_mul_lwnaf(ep2_t r, ep2_t p, const bn_t k) {
 		return;
 	}
 
-/*#if defined(ep2_ENDOM)
-	if (ep2_curve_is_endom()) {
+#if defined(EP_ENDOM)
+	if (ep_curve_is_endom()) {
 		ep2_mul_glv_imp(r, p, k);
 		return;
 	}
-#endif*/
+#endif
 
-//#if defined(ep2_PLAIN) || defined(ep2_SUPER)
+#if defined(EP_PLAIN) || defined(EP_SUPER)
 	ep2_mul_naf_imp(r, p, k);
-//#endif
+#endif
 }
 
 #endif

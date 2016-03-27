@@ -244,6 +244,7 @@ typedef ep3_st *ep3_t;
 
 /**
  * Negates a point in an elliptic curve over a quadratic extension field.
+ * Computes R = -P.
  *
  * @param[out] R				- the result.
  * @param[in] P					- the point to negate.
@@ -284,7 +285,7 @@ typedef ep3_st *ep3_t;
 
 /**
  * Doubles a point in an elliptic curve over a quadratic extension field.
- * Computes R = 2 * P.
+ * Computes R = 2P.
  *
  * @param[out] R				- the result.
  * @param[in] P					- the point to double.
@@ -293,6 +294,24 @@ typedef ep3_st *ep3_t;
 #define ep2_dbl(R, P)			ep2_dbl_basic(R, P);
 #elif EP_ADD == PROJC
 #define ep2_dbl(R, P)			ep2_dbl_projc(R, P);
+#endif
+
+/**
+ * Multiplies a point in an elliptic curve over a quadratic extension field.
+ * Computes R = kP.
+ *
+ * @param[out] R			- the result.
+ * @param[in] P				- the point to multiply.
+ * @param[in] K				- the integer.
+ */
+#if EP_MUL == BASIC
+#define ep2_mul(R, P, K)		ep2_mul_basic(R, P, K)
+#elif EP_MUL == SLIDE
+#define ep2_mul(R, P, K)		ep2_mul_slide(R, P, K)
+#elif EP_MUL == MONTY
+#define ep2_mul(R, P, K)		ep2_mul_monty(R, P, K)
+#elif EP_MUL == LWNAF
+#define ep2_mul(R, P, K)		ep2_mul_lwnaf(R, P, K)
 #endif
 
 /**
@@ -391,6 +410,13 @@ void ep2_curve_get_a(fp2_t a);
  * @param[out] b			- the 'b' coefficient of the elliptic curve.
  */
 void ep2_curve_get_b(fp2_t b);
+
+/**
+ * Returns the vector of coefficients required to perform GLV method.
+ *
+ * @param[out] b			- the vector of coefficients.
+ */
+void ep2_curve_get_vs(bn_t *v);
 
 /**
  * Returns a optimization identifier based on the 'a' coefficient of the curve.
@@ -541,7 +567,7 @@ int ep2_size_bin(ep2_t a, int pack);
  * @param[in] bin			- the byte vector.
  * @param[in] len			- the buffer capacity.
  * @throw ERR_NO_VALID		- if the encoded point is invalid.
- * @throw ERR_NO_BUFFER		- if the buffer capacity is invalid. 
+ * @throw ERR_NO_BUFFER		- if the buffer capacity is invalid.
  */
 void ep2_read_bin(ep2_t a, uint8_t *bin, int len);
 
@@ -553,7 +579,7 @@ void ep2_read_bin(ep2_t a, uint8_t *bin, int len);
  * @param[in] len			- the buffer capacity.
  * @param[in] a				- the prime elliptic curve point to write.
  * @param[in] pack			- the flag to indicate point compression.
- * @throw ERR_NO_BUFFER		- if the buffer capacity is invalid. 
+ * @throw ERR_NO_BUFFER		- if the buffer capacity is invalid.
  */
 void ep2_write_bin(uint8_t *bin, int len, ep2_t a, int pack);
 
@@ -655,14 +681,51 @@ void ep2_dbl_slp_basic(ep2_t r, fp2_t s, ep2_t p);
 void ep2_dbl_projc(ep2_t r, ep2_t p);
 
 /**
- * Multiplies a point in a elliptic curve over a quadratic extension by an
- * integer scalar.
+ * Multiplies a prime elliptic point by an integer using the binary method.
  *
  * @param[out] r			- the result.
  * @param[in] p				- the point to multiply.
- * @param[in] k				- the scalar.
+ * @param[in] k				- the integer.
  */
-void ep2_mul(ep2_t r, ep2_t p, bn_t k);
+void ep2_mul_basic(ep2_t r, ep2_t p, const bn_t k);
+
+/**
+ * Multiplies a prime elliptic point by an integer using the sliding window
+ * method.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to multiply.
+ * @param[in] k				- the integer.
+ */
+void ep2_mul_slide(ep2_t r, ep2_t p, const bn_t k);
+
+/**
+ * Multiplies a prime elliptic point by an integer using the constant-time
+ * Montgomery laddering point multiplication method.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to multiply.
+ * @param[in] k				- the integer.
+ */
+void ep2_mul_monty(ep2_t r, ep2_t p, const bn_t k);
+
+/**
+ * Multiplies a prime elliptic point by an integer using the w-NAF method.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to multiply.
+ * @param[in] k				- the integer.
+ */
+void ep2_mul_lwnaf(ep2_t r, ep2_t p, const bn_t k);
+
+/**
+ * Multiplies a prime elliptic point by an integer using a regular method.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to multiply.
+ * @param[in] k				- the integer.
+ */
+void ep2_mul_lwreg(ep2_t r, ep2_t p, const bn_t k);
 
 /**
  * Multiplies the generator of an elliptic curve over a qaudratic extension.
@@ -865,6 +928,15 @@ void ep2_mul_dig(ep2_t r, ep2_t p, dig_t k);
  * @param[in] p				- the point to convert.
  */
 void ep2_norm(ep2_t r, ep2_t p);
+
+/**
+ * Converts multiple points to affine coordinates.
+ *
+ * @param[out] r			- the result.
+ * @param[in] t				- the points to convert.
+ * @param[in] n				- the number of points.
+ */
+void ep2_norm_sim(ep2_t *r, ep2_t *t, int n);
 
 /**
  * Maps a byte array to a point in an elliptic curve over a quadratic extension.

@@ -223,6 +223,49 @@ void ep2_curve_get_b(fp2_t b) {
 	fp_copy(b[1], ctx->ep2_b[1]);
 }
 
+void ep2_curve_get_vs(bn_t *v) {
+	bn_t x, t;
+
+	bn_null(x);
+	bn_null(t);
+
+	TRY {
+		bn_new(x);
+		bn_new(t);
+
+		fp_param_get_var(x);
+
+		bn_mul_dig(v[0], x, 3);
+		bn_add_dig(v[0], v[0], 1);
+
+		bn_copy(v[1], x);
+		bn_copy(v[2], x);
+		bn_copy(v[3], x);
+
+		bn_sqr(x, x);
+		bn_lsh(t, x, 1);
+		bn_add(v[0], v[0], t);
+		bn_add(v[3], v[3], t);
+		bn_lsh(t, t, 1);
+		bn_add(v[2], v[2], t);
+		bn_lsh(t, t, 1);
+		bn_add(v[1], v[1], t);
+
+		fp_param_get_var(t);
+		bn_mul(x, x, t);
+		bn_mul_dig(t, x, 6);
+		bn_add(v[2], v[2], t);
+		bn_lsh(t, t, 1);
+		bn_add(v[1], v[1], t);
+		bn_neg(v[3], v[3]);
+	} CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	} FINALLY {
+		bn_free(x);
+		bn_free(t);
+	}
+}
+
 void ep2_curve_get_ord(bn_t n) {
 	ctx_t *ctx = core_get();
 	if (ctx->ep2_is_twist) {
