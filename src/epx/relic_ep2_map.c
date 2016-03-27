@@ -60,7 +60,7 @@ void ep2_mul_cof_bn(ep2_t r, ep2_t p) {
 		fp_param_get_var(x);
 
 		/* Compute t0 = xP. */
-		ep2_mul(t0, p, x);
+		ep2_mul_basic(t0, p, x);
 		if (bn_sign(x) == BN_NEG) {
 			ep2_neg(t0, t0);
 		}
@@ -118,12 +118,12 @@ void ep2_mul_cof_b12(ep2_t r, ep2_t p) {
 		fp_param_get_var(x);
 
 		/* Compute t0 = xP. */
-		ep2_mul(t0, p, x);
+		ep2_mul_basic(t0, p, x);
 		if (bn_sign(x) == BN_NEG) {
 			ep2_neg(t0, t0);
 		}
 		/* Compute t1 = [x^2]P. */
-		ep2_mul(t1, t0, x);
+		ep2_mul_basic(t1, t0, x);
 		if (bn_sign(x) == BN_NEG) {
 			ep2_neg(t1, t1);
 		}
