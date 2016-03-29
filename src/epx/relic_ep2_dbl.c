@@ -35,7 +35,7 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-#if EP_ADD == BASIC || !defined(STRIP) || FP_PRIME == 80
+#if EP_ADD == BASIC || !defined(STRIP)
 
 /**
  * Doubles a point represented in affine coordinates on an ordinary prime

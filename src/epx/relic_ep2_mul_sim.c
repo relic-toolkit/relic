@@ -249,9 +249,9 @@ void ep2_mul_sim_inter(ep2_t r, ep2_t p, bn_t k, ep2_t q, bn_t l) {
 	//  }
 #endif
 
-#if defined(EP_PLAIN)
+//#if defined(EP_PLAIN)
 	ep2_mul_sim_plain(r, p, k, q, l, NULL);
-#endif
+//#endif
 }
 
 #endif
