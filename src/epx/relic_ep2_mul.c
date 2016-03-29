@@ -127,7 +127,7 @@ static void ep2_mul_glv_imp(ep2_t r, ep2_t p, const bn_t k) {
 			bn_mod(_k[3], _k[3], n);
 		}
 
-		ep2_copy(q[0], p);
+		ep2_norm(q[0], p);
 		ep2_frb(q[1], q[0], 1);
 		ep2_frb(q[2], q[1], 1);
 		ep2_frb(q[3], q[2], 1);
@@ -230,7 +230,7 @@ static void ep2_mul_naf_imp(ep2_t r, ep2_t p, const bn_t k) {
 /* Public definitions                                                         */
 /*============================================================================*/
 
-#if EP_MUL == BASIC || !defined(STRIP)
+#if EP_MUL == BASIC || EP_MUL == LWNAF || !defined(STRIP)
 
 void ep2_mul_basic(ep2_t r, ep2_t p, const bn_t k) {
 	int i, l;
