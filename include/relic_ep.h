@@ -289,7 +289,7 @@ typedef ep_st *ep_t;
 #endif
 
 /**
- * Negates a prime elliptic curve point.
+ * Negates a prime elliptic curve point. Computes R = -P.
  *
  * @param[out] R			- the result.
  * @param[in] P				- the point to negate.
@@ -301,7 +301,7 @@ typedef ep_st *ep_t;
 #endif
 
 /**
- * Adds two prime elliptic curve points.
+ * Adds two prime elliptic curve points. Computes R = P + Q.
  *
  * @param[out] R			- the result.
  * @param[in] P				- the first point to add.
@@ -314,8 +314,7 @@ typedef ep_st *ep_t;
 #endif
 
 /**
- * Subtracts a prime elliptic curve point from another, that is, compute
- * R = P - Q.
+ * Subtracts a prime elliptic curve point from another. Computes R = P - Q.
  *
  * @param[out] R			- the result.
  * @param[in] P				- the first point.
@@ -328,7 +327,7 @@ typedef ep_st *ep_t;
 #endif
 
 /**
- * Doubles a prime elliptic curve point.
+ * Doubles a prime elliptic curve point. Computes R = 2P.
  *
  * @param[out] R			- the result.
  * @param[in] P				- the point to double.
@@ -712,7 +711,7 @@ int ep_size_bin(const ep_t a, int pack);
  * @param[in] bin			- the byte vector.
  * @param[in] len			- the buffer capacity.
  * @throw ERR_NO_VALID		- if the encoded point is invalid.
- * @throw ERR_NO_BUFFER		- if the buffer capacity is invalid. 
+ * @throw ERR_NO_BUFFER		- if the buffer capacity is invalid.
  */
 void ep_read_bin(ep_t a, const uint8_t *bin, int len);
 
@@ -724,7 +723,7 @@ void ep_read_bin(ep_t a, const uint8_t *bin, int len);
  * @param[in] len			- the buffer capacity.
  * @param[in] a				- the prime elliptic curve point to write.
  * @param[in] pack			- the flag to indicate point compression.
- * @throw ERR_NO_BUFFER		- if the buffer capacity is invalid. 
+ * @throw ERR_NO_BUFFER		- if the buffer capacity is invalid.
  */
 void ep_write_bin(uint8_t *bin, int len, const ep_t a, int pack);
 
