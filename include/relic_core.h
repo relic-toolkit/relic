@@ -51,7 +51,7 @@
 #include "relic_pool.h"
 #include "relic_label.h"
 
-#if MULTI != NONE
+#if MULTI != RELIC_NONE
 #include <math.h>
 
 #if MULTI == OPENMP
@@ -60,7 +60,7 @@
 #include <pthread.h>
 #endif /* OPENMP */
 
-#endif /* MULTI != NONE */
+#endif /* MULTI != RELIC_NONE */
 
 /*============================================================================*/
 /* Constant definitions                                                       */
@@ -127,7 +127,7 @@
 /**
  * Optimization identifier for the case where the coefficient is random
  */
-#define OPT_NONE		5
+#define RELIC_OPT_NONE		5
 
 /**
  * Maximum number of terms to describe a sparse object.
@@ -201,9 +201,9 @@ typedef struct _ctx_t {
 	/** Stores the length of the addition chain. */
 	int chain_len;
 	/** Tables for repeated squarings. */
-	fb_st fb_tab_sqr[MAX_TERMS][FB_TABLE];
+	fb_st fb_tab_sqr[MAX_TERMS][RELIC_FB_TABLE];
 	/** Pointers to the elements in the tables of repeated squarings. */
-	fb_st *fb_tab_ptr[MAX_TERMS][FB_TABLE];
+	fb_st *fb_tab_ptr[MAX_TERMS][RELIC_FB_TABLE];
 #endif /* FB_INV == ITOHT */
 #endif /* WITH_FB */
 
@@ -228,9 +228,9 @@ typedef struct _ctx_t {
 	int eb_is_kbltz;
 #ifdef EB_PRECO
 	/** Precomputation table for generator multiplication. */
-	eb_st eb_pre[EB_TABLE];
+	eb_st eb_pre[RELIC_EB_TABLE];
 	/** Array of pointers to the precomputation table. */
-	eb_st *eb_ptr[EB_TABLE];
+	eb_st *eb_ptr[RELIC_EB_TABLE];
 #endif /* EB_PRECO */
 #endif /* WITH_EB */
 
@@ -293,9 +293,9 @@ typedef struct _ctx_t {
 	int ep_is_super;
 #ifdef EP_PRECO
 	/** Precomputation table for generator multiplication. */
-	ep_st ep_pre[EP_TABLE];
+	ep_st ep_pre[RELIC_EP_TABLE];
 	/** Array of pointers to the precomputation table. */
-	ep_st *ep_ptr[EP_TABLE];
+	ep_st *ep_ptr[RELIC_EP_TABLE];
 #endif /* EP_PRECO */
 #endif /* WITH_EP */
 
@@ -322,13 +322,13 @@ typedef struct _ctx_t {
 	int ep2_is_twist;
 #ifdef EP_PRECO
 	/** Precomputation table for generator multiplication.*/
-	ep2_st ep2_pre[EP_TABLE];
+	ep2_st ep2_pre[RELIC_EP_TABLE];
 	/** Array of pointers to the precomputation table. */
-	ep2_st *ep2_ptr[EP_TABLE];
+	ep2_st *ep2_ptr[RELIC_EP_TABLE];
 #endif /* EP_PRECO */
 #if ALLOC == STACK
 /** In case of stack allocation, we need to get global memory for the table. */
-	fp2_st _ep2_pre[3 * EP_TABLE];
+	fp2_st _ep2_pre[3 * RELIC_EP_TABLE];
 #endif /* ALLOC == STACK */
 #endif /* WITH_EPX */
 
@@ -348,9 +348,9 @@ typedef struct _ctx_t {
 
 #ifdef ED_PRECO
 	/** Precomputation table for generator multiplication. */
-	ed_st ed_pre[ED_TABLE];
+	ed_st ed_pre[RELIC_ED_TABLE];
 	/** Array of pointers to the precomputation table. */
-	ed_st *ed_ptr[ED_TABLE];
+	ed_st *ed_ptr[RELIC_ED_TABLE];
 #endif /* ED_PRECO */
 #endif
 

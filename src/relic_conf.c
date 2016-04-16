@@ -48,7 +48,7 @@
 
 void conf_print(void) {
 #ifndef QUIET
-	util_print("-- RELIC " VERSION " configuration:\n\n");
+	util_print("-- RELIC " RELIC_VERSION " configuration:\n\n");
 #if ALLOC == STATIC
 	util_print("** Allocation mode: STATIC\n\n");
 #elif ALLOC == DYNAMIC
@@ -83,7 +83,7 @@ void conf_print(void) {
 
 #ifdef WITH_BN
 	util_print("** Multiple precision module options:\n");
-	util_print("   Precision: %d bits, %d words\n", BN_BITS, BN_DIGS);
+	util_print("   Precision: %d bits, %d words\n", RELIC_BN_BITS, BN_DIGS);
 	util_print("   Arithmetic method: " BN_METHD "\n\n");
 #endif
 

@@ -94,15 +94,15 @@ typedef struct _rsa_t {
 	bn_t dq;
 	/** The inverse of q modulo p. */
 	bn_t qi;
-} rsa_st;
+} relic_rsa_st;
 
 /**
  * Pointer to an RSA key pair.
  */
 #if ALLOC == AUTO
-typedef rsa_st rsa_t[1];
+typedef relic_rsa_st rsa_t[1];
 #else
-typedef rsa_st *rsa_t;
+typedef relic_rsa_st *rsa_t;
 #endif
 
 /**
@@ -265,7 +265,7 @@ typedef vbnn_ibs_user_st *vbnn_ibs_user_t;
  */
 #if ALLOC == DYNAMIC
 #define rsa_new(A)															\
-	A = (rsa_t)calloc(1, sizeof(rsa_st));									\
+	A = (rsa_t)calloc(1, sizeof(relic_rsa_st));									\
 	if (A == NULL) {														\
 		THROW(ERR_NO_MEMORY);												\
 	}																		\
@@ -288,7 +288,7 @@ typedef vbnn_ibs_user_st *vbnn_ibs_user_t;
 
 #elif ALLOC == STATIC
 #define rsa_new(A)															\
-	A = (rsa_t)alloca(sizeof(rsa_st));										\
+	A = (rsa_t)alloca(sizeof(relic_rsa_st));										\
 	if (A == NULL) {														\
 		THROW(ERR_NO_MEMORY);												\
 	}																		\
@@ -322,7 +322,7 @@ typedef vbnn_ibs_user_st *vbnn_ibs_user_t;
 
 #elif ALLOC == STACK
 #define rsa_new(A)															\
-	A = (rsa_t)alloca(sizeof(rsa_st));										\
+	A = (rsa_t)alloca(sizeof(relic_rsa_st));										\
 	bn_new((A)->e);															\
 	bn_new((A)->n);															\
 	bn_new((A)->d);															\

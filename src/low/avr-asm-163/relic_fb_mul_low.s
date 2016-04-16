@@ -236,7 +236,7 @@ fb_sqrm_table2:
 	std		y + 32, RT		; tab[15][i] = r6^r9
 .endm
 
-.macro FILL_TABLE i, j
+.macro RELIC_FILL_TABLE i, j
 	/*
 	 * We do not need to initialize the first row with zeroes, as the .data
 	 * section is already initialized with null bytes.
@@ -257,7 +257,7 @@ fb_sqrm_table2:
 		.endif
 	.endif
 	.if \i < \j
-		FILL_TABLE \i + 1, \j
+		RELIC_FILL_TABLE \i + 1, \j
 	.endif
 .endm
 
@@ -382,12 +382,12 @@ fb_sqrm_table2:
 
 #if FB_POLYN == 163
 
-.macro MULN_TABLE
+.macro RELIC_MULN_TABLE
 	ldi		RC, 0x40
 	ldi		r29, hi8(fb_muln_table0)
-	FILL_TABLE 0, 15
+	RELIC_FILL_TABLE 0, 15
 	ldi		r29, hi8(fb_muln_table1)
-	FILL_TABLE 16, 20
+	RELIC_FILL_TABLE 16, 20
 .endm
 
 .macro MULN_DO
@@ -431,7 +431,7 @@ fb_muln_low:
 	movw	r26, r22		; copy a to x
 	movw	r30, r20		; copy b to z
 
-	MULN_TABLE
+	RELIC_MULN_TABLE
 	movw	r30, r24		; z = &c
 	MULN_DO
 
@@ -527,7 +527,7 @@ fb_muli_low:
 	movw	r26, r20		; copy a to x
 	movw	r30, r18		; copy b to z
 
-	MULN_TABLE
+	RELIC_MULN_TABLE
 	movw	r30, r14		; z = &t
 	MULN_DO
 

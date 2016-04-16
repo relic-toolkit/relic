@@ -52,7 +52,7 @@ static void detect_opt(int *opt, fb_t a) {
 			if (fb_bits(a) <= FB_DIGIT) {
 				*opt = OPT_DIGIT;
 			} else {
-				*opt = OPT_NONE;
+				*opt = RELIC_OPT_NONE;
 			}
 		}
 	}
@@ -65,7 +65,7 @@ static void detect_opt(int *opt, fb_t a) {
 void eb_curve_init(void) {
 	ctx_t *ctx = core_get();
 #ifdef EB_PRECO
-	for (int i = 0; i < EB_TABLE; i++) {
+	for (int i = 0; i < RELIC_EB_TABLE; i++) {
 		ctx->eb_ptr[i] = &(ctx->eb_pre[i]);
 	}
 #endif
@@ -73,7 +73,7 @@ void eb_curve_init(void) {
 	fb_new(ctx->eb_g.x);
 	fb_new(ctx->eb_g.y);
 	fb_new(ctx->eb_g.z);
-	for (int i = 0; i < EB_TABLE; i++) {
+	for (int i = 0; i < RELIC_EB_TABLE; i++) {
 		fb_new(ctx->eb_pre[i].x);
 		fb_new(ctx->eb_pre[i].y);
 		fb_new(ctx->eb_pre[i].z);
@@ -92,7 +92,7 @@ void eb_curve_clean(void) {
 	fb_free(ctx->eb_g.x);
 	fb_free(ctx->eb_g.y);
 	fb_free(ctx->eb_g.z);
-	for (int i = 0; i < EB_TABLE; i++) {
+	for (int i = 0; i < RELIC_EB_TABLE; i++) {
 		fb_free(ctx->eb_pre[i].x);
 		fb_free(ctx->eb_pre[i].y);
 		fb_free(ctx->eb_pre[i].z);

@@ -153,7 +153,7 @@ void ep2_curve_init(void) {
 	ctx_t *ctx = core_get();
 
 #ifdef EP_PRECO
-	for (int i = 0; i < EP_TABLE; i++) {
+	for (int i = 0; i < RELIC_EP_TABLE; i++) {
 		ctx->ep2_ptr[i] = &(ctx->ep2_pre[i]);
 	}
 #endif
@@ -169,13 +169,13 @@ void ep2_curve_init(void) {
 
 #ifdef EP_PRECO
 #if ALLOC == STATIC || ALLOC == DYNAMIC
-	for (int i = 0; i < EP_TABLE; i++) {
+	for (int i = 0; i < RELIC_EP_TABLE; i++) {
 		fp2_new(ctx->ep2_pre[i].x);
 		fp2_new(ctx->ep2_pre[i].y);
 		fp2_new(ctx->ep2_pre[i].z);
 	}
 #elif ALLOC == STACK
-	for (int i = 0; i < EP_TABLE; i++) {
+	for (int i = 0; i < RELIC_EP_TABLE; i++) {
 		ctx->ep2_pre[i].x[0] = ctx->_ep2_pre[3 * i][0];
 		ctx->ep2_pre[i].x[1] = ctx->_ep2_pre[3 * i][1];
 		ctx->ep2_pre[i].y[0] = ctx->_ep2_pre[3 * i + 1][0];
@@ -193,7 +193,7 @@ void ep2_curve_init(void) {
 void ep2_curve_clean(void) {
 	ctx_t *ctx = core_get();
 #ifdef EP_PRECO
-	for (int i = 0; i < EP_TABLE; i++) {
+	for (int i = 0; i < RELIC_EP_TABLE; i++) {
 		fp2_free(ctx->ep2_pre[i].x);
 		fp2_free(ctx->ep2_pre[i].y);
 		fp2_free(ctx->ep2_pre[i].z);

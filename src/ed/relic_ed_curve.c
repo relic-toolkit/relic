@@ -34,7 +34,7 @@
 void ed_curve_init(void) {
   ctx_t *ctx = core_get();
 #ifdef ED_PRECO
-  for (int i = 0; i < ED_TABLE; i++) {
+  for (int i = 0; i < RELIC_ED_TABLE; i++) {
     ctx->ed_ptr[i] = &(ctx->ed_pre[i]);
   }
 #endif
@@ -46,7 +46,7 @@ void ed_curve_init(void) {
   fp_new(ctx->ed_g.t);
 #endif
 #ifdef ED_PRECO
-  for (int i = 0; i < ED_TABLE; i++) {
+  for (int i = 0; i < RELIC_ED_TABLE; i++) {
     fp_new(ctx->ed_pre[i].x);
     fp_new(ctx->ed_pre[i].y);
     fp_new(ctx->ed_pre[i].z);
@@ -77,7 +77,7 @@ void ed_curve_clean(void) {
   fp_free(ctx->ed_g.t);
 #endif
 #ifdef ED_PRECO
-  for (int i = 0; i < ED_TABLE; i++) {
+  for (int i = 0; i < RELIC_ED_TABLE; i++) {
     fp_free(ctx->ed_pre[i].x);
     fp_free(ctx->ed_pre[i].y);
     fp_free(ctx->ed_pre[i].z);

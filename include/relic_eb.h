@@ -80,57 +80,57 @@ enum {
 /**
  * Size of a precomputation table using the binary method.
  */
-#define EB_TABLE_BASIC		(FB_BITS)
+#define RELIC_EB_TABLE_BASIC		(FB_BITS)
 
 /**
  * Size of a precomputation table using Yao's windowing method.
  */
-#define EB_TABLE_YAOWI      (FB_BITS / EB_DEPTH + 1)
+#define RELIC_EB_TABLE_YAOWI      (FB_BITS / EB_DEPTH + 1)
 
 /**
  * Size of a precomputation table using the NAF windowing method.
  */
-#define EB_TABLE_NAFWI      (FB_BITS / EB_DEPTH + 1)
+#define RELIC_EB_TABLE_NAFWI      (FB_BITS / EB_DEPTH + 1)
 
 /**
  * Size of a precomputation table using the single-table comb method.
  */
-#define EB_TABLE_COMBS      (1 << EB_DEPTH)
+#define RELIC_EB_TABLE_COMBS      (1 << EB_DEPTH)
 
 /**
  * Size of a precomputation table using the double-table comb method.
  */
-#define EB_TABLE_COMBD		(1 << (EB_DEPTH + 1))
+#define RELIC_EB_TABLE_COMBD		(1 << (EB_DEPTH + 1))
 
 /**
  * Size of a precomputation table using the w-(T)NAF method.
  */
-#define EB_TABLE_LWNAF		(1 << (EB_DEPTH - 2))
+#define RELIC_EB_TABLE_LWNAF		(1 << (EB_DEPTH - 2))
 
 /**
  * Size of a precomputation table using the chosen algorithm.
  */
 #if EB_FIX == BASIC
-#define EB_TABLE			EB_TABLE_BASIC
+#define RELIC_EB_TABLE			RELIC_EB_TABLE_BASIC
 #elif EB_FIX == YAOWI
-#define EB_TABLE			EB_TABLE_YAOWI
+#define RELIC_EB_TABLE			RELIC_EB_TABLE_YAOWI
 #elif EB_FIX == NAFWI
-#define EB_TABLE			EB_TABLE_NAFWI
+#define RELIC_EB_TABLE			RELIC_EB_TABLE_NAFWI
 #elif EB_FIX == COMBS
-#define EB_TABLE			EB_TABLE_COMBS
+#define RELIC_EB_TABLE			RELIC_EB_TABLE_COMBS
 #elif EB_FIX == COMBD
-#define EB_TABLE			EB_TABLE_COMBD
+#define RELIC_EB_TABLE			RELIC_EB_TABLE_COMBD
 #elif EB_FIX == LWNAF
-#define EB_TABLE			EB_TABLE_LWNAF
+#define RELIC_EB_TABLE			RELIC_EB_TABLE_LWNAF
 #endif
 
 /**
  * Maximum size of a precomputation table.
  */
 #ifdef STRIP
-#define EB_TABLE_MAX 		EB_TABLE
+#define RELIC_EB_TABLE_MAX 		RELIC_EB_TABLE
 #else
-#define EB_TABLE_MAX 		MAX(EB_TABLE_BASIC, EB_TABLE_COMBD)
+#define RELIC_EB_TABLE_MAX 		MAX(RELIC_EB_TABLE_BASIC, RELIC_EB_TABLE_COMBD)
 #endif
 
 /*============================================================================*/

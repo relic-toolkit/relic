@@ -136,13 +136,13 @@ static void util1(void) {
 }
 
 static void arith1(void) {
-	g1_t p, q, r, t[G1_TABLE];
+	g1_t p, q, r, t[RELIC_G1_TABLE];
 	bn_t k, l, n;
 
 	g1_null(p);
 	g1_null(q);
 	g1_null(r);
-	for (int i = 0; i < G1_TABLE; i++) {
+	for (int i = 0; i < RELIC_G1_TABLE; i++) {
 		g1_null(t[i]);
 	}
 
@@ -208,7 +208,7 @@ static void arith1(void) {
 	}
 	BENCH_END;
 
-	for (int i = 0; i < G1_TABLE; i++) {
+	for (int i = 0; i < RELIC_G1_TABLE; i++) {
 		g1_new(t[i]);
 	}
 
@@ -255,7 +255,7 @@ static void arith1(void) {
 	bn_free(k);
 	bn_free(l);
 	bn_free(n);
-	for (int i = 0; i < G1_TABLE; i++) {
+	for (int i = 0; i < RELIC_G1_TABLE; i++) {
 		g1_free(t[i]);
 	}
 }
@@ -366,13 +366,13 @@ static void util2(void) {
 }
 
 static void arith2(void) {
-	g2_t p, q, r, t[G1_TABLE];
+	g2_t p, q, r, t[RELIC_G1_TABLE];
 	bn_t k, l, n;
 
 	g2_null(p);
 	g2_null(q);
 	g2_null(r);
-	for (int i = 0; i < G1_TABLE; i++) {
+	for (int i = 0; i < RELIC_G1_TABLE; i++) {
 		g2_null(t[i]);
 	}
 
@@ -438,7 +438,7 @@ static void arith2(void) {
 	}
 	BENCH_END;
 
-	for (int i = 0; i < G1_TABLE; i++) {
+	for (int i = 0; i < RELIC_G1_TABLE; i++) {
 		g2_new(t[i]);
 	}
 
@@ -485,7 +485,7 @@ static void arith2(void) {
 	bn_free(k);
 	bn_free(l);
 	bn_free(n);
-	for (int i = 0; i < G1_TABLE; i++) {
+	for (int i = 0; i < RELIC_G1_TABLE; i++) {
 		g2_free(t[i]);
 	}
 }

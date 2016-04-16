@@ -119,57 +119,57 @@ enum {
 /**
  * Size of a precomputation table using the binary method.
  */
-#define EP_TABLE_BASIC		(FP_BITS + 1)
+#define RELIC_EP_TABLE_BASIC		(FP_BITS + 1)
 
 /**
  * Size of a precomputation table using Yao's windowing method.
  */
-#define EP_TABLE_YAOWI      (FP_BITS / EP_DEPTH + 1)
+#define RELIC_EP_TABLE_YAOWI      (FP_BITS / EP_DEPTH + 1)
 
 /**
  * Size of a precomputation table using the NAF windowing method.
  */
-#define EP_TABLE_NAFWI      (FP_BITS / EP_DEPTH + 1)
+#define RELIC_EP_TABLE_NAFWI      (FP_BITS / EP_DEPTH + 1)
 
 /**
  * Size of a precomputation table using the single-table comb method.
  */
-#define EP_TABLE_COMBS      (1 << EP_DEPTH)
+#define RELIC_EP_TABLE_COMBS      (1 << EP_DEPTH)
 
 /**
  * Size of a precomputation table using the double-table comb method.
  */
-#define EP_TABLE_COMBD		(1 << (EP_DEPTH + 1))
+#define RELIC_EP_TABLE_COMBD		(1 << (EP_DEPTH + 1))
 
 /**
  * Size of a precomputation table using the w-(T)NAF method.
  */
-#define EP_TABLE_LWNAF		(1 << (EP_DEPTH - 2))
+#define RELIC_EP_TABLE_LWNAF		(1 << (EP_DEPTH - 2))
 
 /**
  * Size of a precomputation table using the chosen algorithm.
  */
 #if EP_FIX == BASIC
-#define EP_TABLE			EP_TABLE_BASIC
+#define RELIC_EP_TABLE			RELIC_EP_TABLE_BASIC
 #elif EP_FIX == YAOWI
-#define EP_TABLE			EP_TABLE_YAOWI
+#define RELIC_EP_TABLE			RELIC_EP_TABLE_YAOWI
 #elif EP_FIX == NAFWI
-#define EP_TABLE			EP_TABLE_NAFWI
+#define RELIC_EP_TABLE			RELIC_EP_TABLE_NAFWI
 #elif EP_FIX == COMBS
-#define EP_TABLE			EP_TABLE_COMBS
+#define RELIC_EP_TABLE			RELIC_EP_TABLE_COMBS
 #elif EP_FIX == COMBD
-#define EP_TABLE			EP_TABLE_COMBD
+#define RELIC_EP_TABLE			RELIC_EP_TABLE_COMBD
 #elif EP_FIX == LWNAF
-#define EP_TABLE			EP_TABLE_LWNAF
+#define RELIC_EP_TABLE			RELIC_EP_TABLE_LWNAF
 #endif
 
 /**
  * Maximum size of a precomputation table.
  */
 #ifdef STRIP
-#define EP_TABLE_MAX EP_TABLE
+#define RELIC_EP_TABLE_MAX RELIC_EP_TABLE
 #else
-#define EP_TABLE_MAX MAX(EP_TABLE_BASIC, EP_TABLE_COMBD)
+#define RELIC_EP_TABLE_MAX MAX(RELIC_EP_TABLE_BASIC, RELIC_EP_TABLE_COMBD)
 #endif
 
 /*============================================================================*/

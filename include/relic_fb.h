@@ -134,31 +134,31 @@ enum {
  * Size of a precomputation table for repeated squaring/square-root using the
  * trivial approach.
  */
-#define FB_TABLE_BASIC		(1)
+#define RELIC_FB_TABLE_BASIC		(1)
 
 /**
  * Size of a precomputation table for repeated squaring/square-root using the
  * faster approach.
  */
-#define FB_TABLE_QUICK      ((FB_DIGIT / 4) * FB_DIGS * 16)
+#define RELIC_FB_TABLE_QUICK      ((FB_DIGIT / 4) * FB_DIGS * 16)
 
 /**
  * Size of a precomputation table for repeated squaring/square-root using the
  * chosen algorithm.
  */
 #if FB_ITR == BASIC
-#define FB_TABLE 			FB_TABLE_BASIC
+#define RELIC_FB_TABLE 			RELIC_FB_TABLE_BASIC
 #else
-#define FB_TABLE			FB_TABLE_QUICK
+#define RELIC_FB_TABLE			RELIC_FB_TABLE_QUICK
 #endif
 
 /**
  * Maximum size of a precomputation table.
  */
 #ifdef STRIP
-#define FB_TABLE_MAX 		FB_TABLE
+#define RELIC_FB_TABLE_MAX 		RELIC_FB_TABLE
 #else
-#define FB_TABLE_MAX 		FB_TABLE_QUICK
+#define RELIC_FB_TABLE_MAX 		RELIC_FB_TABLE_QUICK
 #endif
 
 /*============================================================================*/
@@ -257,7 +257,7 @@ typedef align dig_t fb_st[FB_DIGS + PADDING(FB_BYTES)/(FB_DIGIT / 8)];
  */
 #if FB_SQR == BASIC
 #define fb_sqr(C, A)	fb_sqr_basic(C, A)
-#elif FB_SQR == TABLE
+#elif FB_SQR == RELIC_TABLE
 #define fb_sqr(C, A)	fb_sqr_table(C, A)
 #elif FB_SQR == INTEG
 #define fb_sqr(C, A)	fb_sqr_integ(C, A)

@@ -139,7 +139,7 @@ static void util(void) {
 }
 
 static void arith(void) {
-	ep2_t p, q, r, t[EPX_TABLE_MAX];
+	ep2_t p, q, r, t[RELIC_EPX_TABLE_MAX];
 	bn_t k, n, l;
 	fp2_t s;
 
@@ -149,7 +149,7 @@ static void arith(void) {
 	bn_null(k);
 	bn_null(n);
 	fp2_null(s);
-	for (int i = 0; i < EPX_TABLE_MAX; i++) {
+	for (int i = 0; i < RELIC_EPX_TABLE_MAX; i++) {
 		ep2_null(t[i]);
 	}
 
@@ -357,7 +357,7 @@ static void arith(void) {
 	}
 	BENCH_END;
 
-	for (int i = 0; i < EPX_TABLE_MAX; i++) {
+	for (int i = 0; i < RELIC_EPX_TABLE_MAX; i++) {
 		ep2_new(t[i]);
 	}
 
@@ -373,12 +373,12 @@ static void arith(void) {
 		BENCH_ADD(ep2_mul_fix(q, t, k));
 	} BENCH_END;
 
-	for (int i = 0; i < EPX_TABLE_MAX; i++) {
+	for (int i = 0; i < RELIC_EPX_TABLE_MAX; i++) {
 		ep2_free(t[i]);
 	}
 
 #if EP_FIX == BASIC || !defined(STRIP)
-	for (int i = 0; i < EPX_TABLE_BASIC; i++) {
+	for (int i = 0; i < RELIC_EPX_TABLE_BASIC; i++) {
 		ep2_new(t[i]);
 	}
 	BENCH_BEGIN("ep2_mul_pre_basic") {
@@ -392,13 +392,13 @@ static void arith(void) {
 		ep2_mul_pre_basic(t, p);
 		BENCH_ADD(ep2_mul_fix_basic(q, t, k));
 	} BENCH_END;
-	for (int i = 0; i < EPX_TABLE_BASIC; i++) {
+	for (int i = 0; i < RELIC_EPX_TABLE_BASIC; i++) {
 		ep2_free(t[i]);
 	}
 #endif
 
 #if EP_FIX == YAOWI || !defined(STRIP)
-	for (int i = 0; i < EPX_TABLE_YAOWI; i++) {
+	for (int i = 0; i < RELIC_EPX_TABLE_YAOWI; i++) {
 		ep2_new(t[i]);
 	}
 	BENCH_BEGIN("ep2_mul_pre_yaowi") {
@@ -412,13 +412,13 @@ static void arith(void) {
 		ep2_mul_pre_yaowi(t, p);
 		BENCH_ADD(ep2_mul_fix_yaowi(q, t, k));
 	} BENCH_END;
-	for (int i = 0; i < EPX_TABLE_YAOWI; i++) {
+	for (int i = 0; i < RELIC_EPX_TABLE_YAOWI; i++) {
 		ep2_free(t[i]);
 	}
 #endif
 
 #if EP_FIX == NAFWI || !defined(STRIP)
-	for (int i = 0; i < EPX_TABLE_NAFWI; i++) {
+	for (int i = 0; i < RELIC_EPX_TABLE_NAFWI; i++) {
 		ep2_new(t[i]);
 	}
 	BENCH_BEGIN("ep2_mul_pre_nafwi") {
@@ -432,13 +432,13 @@ static void arith(void) {
 		ep2_mul_pre_nafwi(t, p);
 		BENCH_ADD(ep2_mul_fix_nafwi(q, t, k));
 	} BENCH_END;
-	for (int i = 0; i < EPX_TABLE_NAFWI; i++) {
+	for (int i = 0; i < RELIC_EPX_TABLE_NAFWI; i++) {
 		ep2_free(t[i]);
 	}
 #endif
 
 #if EP_FIX == COMBS || !defined(STRIP)
-	for (int i = 0; i < EPX_TABLE_COMBS; i++) {
+	for (int i = 0; i < RELIC_EPX_TABLE_COMBS; i++) {
 		ep2_new(t[i]);
 	}
 	BENCH_BEGIN("ep2_mul_pre_combs") {
@@ -452,13 +452,13 @@ static void arith(void) {
 		ep2_mul_pre_combs(t, p);
 		BENCH_ADD(ep2_mul_fix_combs(q, t, k));
 	} BENCH_END;
-	for (int i = 0; i < EPX_TABLE_COMBS; i++) {
+	for (int i = 0; i < RELIC_EPX_TABLE_COMBS; i++) {
 		ep2_free(t[i]);
 	}
 #endif
 
 #if EP_FIX == COMBD || !defined(STRIP)
-	for (int i = 0; i < EPX_TABLE_COMBD; i++) {
+	for (int i = 0; i < RELIC_EPX_TABLE_COMBD; i++) {
 		ep2_new(t[i]);
 	}
 	BENCH_BEGIN("ep2_mul_pre_combd") {
@@ -470,13 +470,13 @@ static void arith(void) {
 		ep2_mul_pre_combd(t, p);
 		BENCH_ADD(ep2_mul_fix_combd(q, t, k));
 	} BENCH_END;
-	for (int i = 0; i < EPX_TABLE_COMBD; i++) {
+	for (int i = 0; i < RELIC_EPX_TABLE_COMBD; i++) {
 		ep2_free(t[i]);
 	}
 #endif
 
 #if EP_FIX == LWNAF || !defined(STRIP)
-	for (int i = 0; i < EPX_TABLE_LWNAF; i++) {
+	for (int i = 0; i < RELIC_EPX_TABLE_LWNAF; i++) {
 		ep2_new(t[i]);
 	}
 	BENCH_BEGIN("ep2_mul_pre_lwnaf") {
@@ -490,7 +490,7 @@ static void arith(void) {
 		ep2_mul_pre_lwnaf(t, p);
 		BENCH_ADD(ep2_mul_fix_lwnaf(q, t, k));
 	} BENCH_END;
-	for (int i = 0; i < EPX_TABLE_LWNAF; i++) {
+	for (int i = 0; i < RELIC_EPX_TABLE_LWNAF; i++) {
 		ep2_free(t[i]);
 	}
 #endif
