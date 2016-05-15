@@ -657,7 +657,11 @@ typedef CAT(GT_LOWER, t) gt_t;
  * @param[in] P				- the element to exponentiate.
  * @param[in] K				- the integer.
  */
-#define gt_exp(R, P, K)		CAT(GT_LOWER, exp)(R, P, K)
+#if FP_PRIME < 1536
+#define gt_exp(R, P, K)		CAT(GT_LOWER, exp_cyc)(R, P, K)
+#else
+#define gt_exp(R, P, K)		CAT(GT_LOWER, exp_uni)(R, P, K)
+#endif
 
 /**
  * Multiplies the generator of G_1 by an integer.
