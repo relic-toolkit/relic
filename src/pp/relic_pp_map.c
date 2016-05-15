@@ -44,30 +44,36 @@
  * @param[out] t			- the resulting point.
  * @param[in] p				- the first pairing argument in affine coordinates.
  * @param[in] q				- the second pairing argument in affine coordinates.
+ * @param[in] m 			- the number of pairings to evaluate.
  * @param[in] a				- the loop parameter.
  */
-static void pp_mil_k2(fp2_t r, ep_t t, ep_t p, ep_t q, bn_t a) {
+static void pp_mil_k2(fp2_t r, ep_t *t, ep_t *p, ep_t *q, int m, bn_t a) {
 	fp2_t l;
-	ep_t _q;
+	ep_t _q[m];
+	int i, j;
 
 	fp2_null(l);
-	ep_null(_q);
 
 	TRY {
 		fp2_new(l);
-		ep_new(_q);
+		for (j = 0; j < m; j++) {
+			ep_null(_q[j]);
+			ep_new(_q[j]);
+			ep_copy(t[j], p[j]);
+			ep_neg(_q[j], q[j]);
+		}
 
 		fp2_zero(l);
-		ep_copy(t, p);
-		ep_neg(_q, q);
 
-		for (int i = bn_bits(a) - 2; i >= 0; i--) {
+		for (i = bn_bits(a) - 2; i >= 0; i--) {
 			fp2_sqr(r, r);
-			pp_dbl_k2(l, t, t, _q);
-			fp2_mul(r, r, l);
-			if (bn_get_bit(a, i)) {
-				pp_add_k2(l, t, p, q);
+			for (j = 0; j < m; j++) {
+				pp_dbl_k2(l, t[j], t[j], _q[j]);
 				fp2_mul(r, r, l);
+				if (bn_get_bit(a, i)) {
+					pp_add_k2(l, t[j], p[j], q[j]);
+					fp2_mul(r, r, l);
+				}
 			}
 		}
 	}
@@ -76,7 +82,9 @@ static void pp_mil_k2(fp2_t r, ep_t t, ep_t p, ep_t q, bn_t a) {
 	}
 	FINALLY {
 		fp2_free(l);
-		ep_free(_q);
+		for (j = 0; j < m; j++) {
+			ep_free(_q[j]);
+		}
 	}
 }
 
@@ -90,34 +98,36 @@ static void pp_mil_k2(fp2_t r, ep_t t, ep_t p, ep_t q, bn_t a) {
  * @param[in] q				- the second pairing argument in affine coordinates.
  * @param[in] a				- the loop parameter.
  */
-static void pp_mil_lit_k2(fp2_t r, ep_t t, ep_t p, ep_t q, bn_t a) {
-	fp2_t l, m;
-	ep_t _q;
+static void pp_mil_lit_k2(fp2_t r, ep_t *t, ep_t *p, ep_t *q, int m, bn_t a) {
+	fp2_t l, _l;
+	ep_t _q[m];
+	int i, j;
 
-	fp2_null(l);
+	fp2_null(_l);
 	ep_null(_q);
 
 	TRY {
-		fp2_new(l);
-		fp2_new(m);
-		ep_new(_q);
+		fp2_new(_l);
+		for (j = 0; j < m; j++) {
+			ep_null(_q[j]);
+			ep_new(_q[j]);
+			ep_copy(t[j], p[j]);
+			ep_neg(_q[j], q[j]);
+		}
 
-		fp2_zero(l);
-		fp2_zero(m);
-		ep_copy(t, p);
-		ep_neg(_q, q);
-
-		for (int i = bn_bits(a) - 2; i >= 0; i--) {
+		for (i = bn_bits(a) - 2; i >= 0; i--) {
 			fp2_sqr(r, r);
-			pp_dbl_k2(l, t, t, _q);
-			fp_copy(m[0], l[1]);
-			fp_copy(m[1], l[0]);
-			fp2_mul(r, r, m);
-			if (bn_get_bit(a, i)) {
-				pp_add_k2(l, t, p, q);
-				fp_copy(m[0], l[1]);
-				fp_copy(m[1], l[0]);
-				fp2_mul(r, r, m);
+			for (j = 0; j < m; j++) {
+				pp_dbl_k2(l, t[j], t[j], _q[j]);
+				fp_copy(_l[0], l[1]);
+				fp_copy(_l[1], l[0]);
+				fp2_mul(r, r, _l);
+				if (bn_get_bit(a, i)) {
+					pp_add_k2(l, t[j], p[j], q[j]);
+					fp_copy(_l[0], l[1]);
+					fp_copy(_l[1], l[0]);
+					fp2_mul(r, r, _l);
+				}
 			}
 		}
 	}
@@ -125,7 +135,7 @@ static void pp_mil_lit_k2(fp2_t r, ep_t t, ep_t p, ep_t q, bn_t a) {
 		THROW(ERR_CAUGHT);
 	}
 	FINALLY {
-		fp2_free(l);
+		fp2_free(_l);
 		fp2_free(m);
 		ep_free(_q);
 	}
@@ -174,7 +184,7 @@ static void pp_mil_k12(fp12_t r, ep2_t *t, ep2_t *q, ep_t *p, int m, bn_t a) {
 		/* Precomputing. */
 		pp_dbl_k12(r, t[0], t[0], _p[0]);
 		if (bn_get_bit(a, bn_bits(a) - 2)) {
-			for (j = 0; j < m; j++) {			
+			for (j = 0; j < m; j++) {
 				pp_add_k12(l, t[j], q[j], p[j]);
 				fp12_mul_dxs(r, r, l);
 			}
@@ -215,7 +225,8 @@ static void pp_mil_k12(fp12_t r, ep2_t *t, ep2_t *q, ep_t *p, int m, bn_t a) {
  * @param[in] s				- the loop parameter in sparse form.
  * @paramin] len			- the length of the loop parameter.
  */
-static void pp_mil_sps_k12(fp12_t r, ep2_t *t, ep2_t *q, ep_t *p, int m, int *s, int len) {
+static void pp_mil_sps_k12(fp12_t r, ep2_t *t, ep2_t *q, ep_t *p, int m, int *s,
+		int len) {
 	fp12_t l;
 	ep_t _p[m];
 	ep2_t _q[m];
@@ -237,7 +248,7 @@ static void pp_mil_sps_k12(fp12_t r, ep2_t *t, ep2_t *q, ep_t *p, int m, int *s,
 			ep_new(_p[j]);
 			ep2_new(_q[j]);
 			ep2_copy(t[j], q[j]);
-			ep2_neg(_q[j], q[j]);			
+			ep2_neg(_q[j], q[j]);
 #if EP_ADD == BASIC
 			ep_neg(_p[j], p[j]);
 #else
@@ -259,12 +270,12 @@ static void pp_mil_sps_k12(fp12_t r, ep2_t *t, ep2_t *q, ep_t *p, int m, int *s,
 			}
 		}
 		if (s[len - 2] < 0) {
-			for (j = 0; j < m; j++) {			
+			for (j = 0; j < m; j++) {
 				pp_add_k12(l, t[j], _q[j], p[j]);
 				fp12_mul_dxs(r, r, l);
 			}
 		}
-	
+
 		for (i = len - 3; i >= 0; i--) {
 			fp12_sqr(r, r);
 			for (j = 0; j < m; j++) {
@@ -292,6 +303,7 @@ static void pp_mil_sps_k12(fp12_t r, ep2_t *t, ep2_t *q, ep_t *p, int m, int *s,
 		}
 	}
 }
+
 /**
  * Compute the Miller loop for pairings of type G_1 x G_2 over the bits of a
  * given parameter.
@@ -402,27 +414,27 @@ void pp_map_clean(void) {
 #if PP_MAP == TATEP || PP_MAP == OATEP || !defined(STRIP)
 
 void pp_map_tatep_k2(fp2_t r, ep_t p, ep_t q) {
-	ep_t _p, _q, t;
+	ep_t _p[1], _q[1], t[1];
 	bn_t n;
 
-	ep_null(_p);
-	ep_null(_q);
-	ep_null(t);
+	ep_null(_p[0]);
+	ep_null(_q[0]);
+	ep_null(t[0]);
 	bn_null(n);
 
 	TRY {
-		ep_new(t);
+		ep_new(t[0]);
 		bn_new(n);
 
-		ep_norm(_p, p);
-		ep_norm(_q, q);
+		ep_norm(_p[0], p);
+		ep_norm(_q[0], q);
 		ep_curve_get_ord(n);
 		/* Since p has order n, we do not have to perform last iteration. */
 		bn_sub_dig(n, n, 1);
 		fp2_set_dig(r, 1);
 
-		if (!ep_is_infty(_p) && !ep_is_infty(_q)) {
-			pp_mil_k2(r, t, _p, _q, n);
+		if (!ep_is_infty(p) && !ep_is_infty(q)) {
+			pp_mil_k2(r, t, _p, _q, 1, n);
 			pp_exp_k2(r, r);
 		}
 	}
@@ -430,10 +442,56 @@ void pp_map_tatep_k2(fp2_t r, ep_t p, ep_t q) {
 		THROW(ERR_CAUGHT);
 	}
 	FINALLY {
-		ep_free(_p);
-		ep_free(_q);
-		ep_free(t);
+		ep_free(_p[0]);
+		ep_free(_q[0]);
+		ep_free(t[0]);
 		bn_free(n);
+	}
+}
+
+void pp_map_sim_tatep_k2(fp2_t r, ep_t *p, ep_t *q, int m) {
+	ep_t _p[m], _q[m], t[m];
+	bn_t n;
+	int i, j;
+
+	bn_null(n);
+
+	TRY {
+		bn_new(n);
+		for (i = 0; i < m; i++) {
+			ep_null(_p[i]);
+			ep_null(_q[i]);
+			ep_null(t[i]);
+			ep_new(_p[i]);
+			ep_new(_q[i]);
+			ep_new(t[i]);
+		}
+
+		j = 0;
+		for (i = 0; i < m; i++) {
+			if (!ep_is_infty(p[i]) && !ep_is_infty(q[i])) {
+				ep_norm(_p[j], p[i]);
+				ep_norm(_q[j++], q[i]);
+			}
+		}
+
+		ep_curve_get_ord(n);
+		fp2_set_dig(r, 1);
+		if (j > 0) {
+			pp_mil_k2(r, t, _p, _q, j, n);
+			pp_exp_k2(r, r);
+		}
+	}
+	CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	}
+	FINALLY {
+		bn_free(n);
+		for (i = 0; i < m; i++) {
+			ep_free(_p[i]);
+			ep_free(_q[i]);
+			ep_free(t[i]);
+		}
 	}
 }
 
@@ -504,7 +562,7 @@ void pp_map_sim_tatep_k12(fp12_t r, ep_t *p, ep2_t *q, int m) {
 				ep2_norm(_q[j++], q[i]);
 			}
 		}
-		
+
 		ep_curve_get_ord(n);
 		fp12_set_dig(r, 1);
 		if (j > 0) {
@@ -530,38 +588,38 @@ void pp_map_sim_tatep_k12(fp12_t r, ep_t *p, ep2_t *q, int m) {
 #if PP_MAP == WEILP || !defined(STRIP)
 
 void pp_map_weilp_k2(fp2_t r, ep_t p, ep_t q) {
-	ep_t _p, _q, t0, t1;
+	ep_t _p[1], _q[1], t0[1], t1[1];
 	fp2_t r0, r1;
 	bn_t n;
 
-	ep_null(_p);
-	ep_null(_q);
-	ep_null(t0);
-	ep_null(t1);
+	ep_null(_p[0]);
+	ep_null(_q[0]);
+	ep_null(t0[0]);
+	ep_null(t1[0]);
 	fp2_null(r0);
 	fp2_null(r1);
 	bn_null(n);
 
 	TRY {
-		ep_new(_p);
-		ep_new(_q);
-		ep_new(t0);
-		ep_new(t1);
+		ep_new(_p[0]);
+		ep_new(_q[0]);
+		ep_new(t0[0]);
+		ep_new(t1[0]);
 		fp2_new(r0);
 		fp2_new(r1);
 		bn_new(n);
 
-		ep_norm(_p, p);
-		ep_norm(_q, q);
+		ep_norm(_p[0], p);
+		ep_norm(_q[0], q);
 		ep_curve_get_ord(n);
 		/* Since p has order n, we do not have to perform last iteration. */
 		bn_sub_dig(n, n, 1);
 		fp2_set_dig(r0, 1);
 		fp2_set_dig(r1, 1);
 
-		if (!ep_is_infty(_p) && !ep_is_infty(_q)) {
-			pp_mil_lit_k2(r0, t0, _p, _q, n);
-			pp_mil_k2(r1, t1, _q, _p, n);
+		if (!ep_is_infty(_p[0]) && !ep_is_infty(_q[0])) {
+			pp_mil_lit_k2(r0, t0, _p, _q, 1, n);
+			pp_mil_k2(r1, t1, _q, _p, 1, n);
 			fp2_inv(r1, r1);
 			fp2_mul(r0, r0, r1);
 			fp2_inv(r1, r0);
@@ -573,13 +631,77 @@ void pp_map_weilp_k2(fp2_t r, ep_t p, ep_t q) {
 		THROW(ERR_CAUGHT);
 	}
 	FINALLY {
-		ep_free(_p);
-		ep_free(_q);
-		ep_free(t0);
-		ep_free(t1);
+		ep_free(_p[0]);
+		ep_free(_q[0]);
+		ep_free(t0[0]);
+		ep_free(t1[0]);
 		fp2_free(r0);
 		fp2_free(r1);
 		bn_free(n);
+	}
+}
+
+void pp_map_sim_weilp_k2(fp2_t r, ep_t *p, ep_t *q, int m) {
+	ep_t _p[m], _q[m], t0[m], t1[m];
+	fp2_t r0, r1;
+	bn_t n;
+	int i, j;
+
+	fp2_null(r0);
+	fp2_null(r1);
+	bn_null(r);
+
+	TRY {
+		fp2_new(r0);
+		fp2_new(r1);
+		bn_new(n);
+		for (i = 0; i < m; i++) {
+			ep_null(_p[i]);
+			ep_null(_q[i]);
+			ep_null(t0[i]);
+			ep_null(t1[i]);
+			ep_new(_p[i]);
+			ep_new(_q[i]);
+			ep_new(t0[i]);
+			ep_new(t1[i]);
+		}
+
+		j = 0;
+		for (i = 0; i < m; i++) {
+			if (!ep_is_infty(p[i]) && !ep_is_infty(q[i])) {
+				ep_norm(_p[j], p[i]);
+				ep_norm(_q[j++], q[i]);
+			}
+		}
+
+		ep_curve_get_ord(n);
+		bn_sub_dig(n, n, 1);
+		fp2_set_dig(r0, 1);
+		fp2_set_dig(r1, 1);
+
+		if (j > 0) {
+			pp_mil_lit_k2(r0, t0, _p, _q, j, n);
+			pp_mil_k2(r1, t1, _q, _p, j, n);
+			fp2_inv(r1, r1);
+			fp2_mul(r0, r0, r1);
+			fp2_inv(r1, r0);
+			fp2_inv_uni(r0, r0);
+		}
+		fp2_mul(r, r0, r1);
+	}
+	CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	}
+	FINALLY {
+		fp2_free(r0);
+		fp2_free(r1);
+		bn_free(n);
+		for (i = 0; i < m; i++) {
+			ep_free(_p[i]);
+			ep_free(_q[i]);
+			ep_free(t0[i]);
+			ep_free(t1[i]);
+		}
 	}
 }
 
@@ -646,7 +768,7 @@ void pp_map_sim_weilp_k12(fp12_t r, ep_t *p, ep2_t *q, int m) {
 
 	fp12_null(r0);
 	fp12_null(r1);
-	bn_null(n);
+	bn_null(r);
 
 	TRY {
 		fp12_new(r0);
@@ -714,7 +836,7 @@ void pp_map_oatep_k12(fp12_t r, ep_t p, ep2_t q) {
 	int len = FP_BITS, s[FP_BITS];
 
 	ep_null(_p[0]);
-	ep2_null(_q[0]);	
+	ep2_null(_q[0]);
 	ep2_null(t[0]);
 	bn_null(a);
 
@@ -730,10 +852,10 @@ void pp_map_oatep_k12(fp12_t r, ep_t p, ep2_t q) {
 		fp_param_get_map(s, &len);
 		fp12_set_dig(r, 1);
 
-		if (!ep_is_infty(p) && !ep2_is_infty(q)) {
-			ep_norm(_p[0], p);
-			ep2_norm(_q[0], q);
+		ep_norm(_p[0], p);
+		ep2_norm(_q[0], q);
 
+		if (!ep_is_infty(_p[0]) && !ep2_is_infty(_q[0])) {
 			switch (ep_param_get()) {
 				case BN_P158:
 				case BN_P254:
@@ -772,19 +894,18 @@ void pp_map_oatep_k12(fp12_t r, ep_t p, ep2_t q) {
 	}
 }
 
-void pp_map_sim_oatep_k12(fp12_t r, ep_t *p, ep2_t *q, int n) {
-	ep_t _p[n];
-	ep2_t t[n], _q[n];
+void pp_map_sim_oatep_k12(fp12_t r, ep_t *p, ep2_t *q, int m) {
+	ep_t _p[m];
+	ep2_t t[m], _q[m];
 	bn_t a;
 	int i, j, len = FP_BITS, s[FP_BITS];
 
-	bn_null(a);
-
 	TRY {
-		bn_new(a);		
-		for (i = 0; i < n; i++) {
+		bn_null(a);
+		bn_new(a);
+		for (i = 0; i < m; i++) {
 			ep_null(_p[i]);
-			ep2_null(_q[i]);	
+			ep2_null(_q[i]);
 			ep2_null(t[i]);
 			ep_new(_p[i]);
 			ep2_new(_q[i]);
@@ -792,7 +913,7 @@ void pp_map_sim_oatep_k12(fp12_t r, ep_t *p, ep2_t *q, int n) {
 		}
 
 		j = 0;
-		for (i = 0; i < n; i++) {
+		for (i = 0; i < m; i++) {
 			if (!ep_is_infty(p[i]) && !ep2_is_infty(q[i])) {
 				ep_norm(_p[j], p[i]);
 				ep2_norm(_q[j++], q[i]);
@@ -818,7 +939,7 @@ void pp_map_sim_oatep_k12(fp12_t r, ep_t *p, ep2_t *q, int n) {
 						fp12_inv_uni(r, r);
 					}
 					for (i = 0; i < j; i++) {
-						if (bn_sign(a) == BN_NEG) {						
+						if (bn_sign(a) == BN_NEG) {
 							ep2_neg(t[i], t[i]);
 						}
 						pp_fin_k12_oatep(r, t[i], _q[i], _p[i]);
@@ -841,7 +962,7 @@ void pp_map_sim_oatep_k12(fp12_t r, ep_t *p, ep2_t *q, int n) {
 	}
 	FINALLY {
 		bn_free(a);
-		for (i = 0; i < n; i++) {
+		for (i = 0; i < m; i++) {
 			ep_free(_p[i]);
 			ep2_free(_q[i]);
 			ep2_free(t[i]);
