@@ -479,6 +479,17 @@ void pp_map_sim_tatep_k2(fp2_t r, ep_t *p, ep_t *q, int m);
 void pp_map_weilp_k2(fp2_t r, ep_t p, ep_t q);
 
 /**
+ * Computes the Weil multi-pairing of in a parameterized elliptic curve with
+ * embedding degree 2.
+ *
+ * @param[out] r			- the result.
+ * @param[in] q				- the first pairing arguments.
+ * @param[in] p				- the second pairing arguments.
+ * @param[in] m 			- the number of pairings to evaluate.
+ */
+void pp_map_sim_weilp_k2(fp2_t r, ep_t *p, ep_t *q, int m);
+
+/**
  * Computes the Tate pairing of two points in a parameterized elliptic curve
  * with embedding degree 12.
  *
