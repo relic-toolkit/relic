@@ -1330,7 +1330,7 @@ static int pairing(void) {
 			g2_rand(q[1 - (i % 2)]);
 			pc_map_sim(e2, p, q, 2);
 			TEST_ASSERT(gt_cmp(e1, e2) == CMP_EQ, end);
-			ep2_set_infty(q[i % 2]);
+			g2_set_infty(q[i % 2]);
 			pc_map_sim(e2, p, q, 2);
 			TEST_ASSERT(gt_cmp_dig(e2, 1) == CMP_EQ, end);
 			g1_rand(p[0]);

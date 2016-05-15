@@ -262,15 +262,13 @@ static int doubling2(void) {
 }
 
 static int pairing2(void) {
-	int code = STS_ERR;
+	int j, code = STS_ERR;
 	bn_t k, n;
-	ep_t p, q, r;
+	ep_t p[2], q[2], r;
 	fp2_t e1, e2;
 
 	bn_null(k);
 	bn_null(n);
-	ep_null(p);
-	ep_null(q);
 	ep_null(r);
 	fp2_null(e1);
 	fp2_null(e2);
@@ -278,123 +276,206 @@ static int pairing2(void) {
 	TRY {
 		bn_new(n);
 		bn_new(k);
-		ep_new(p);
-		ep_new(q);
 		ep_new(r);
 		fp2_new(e1);
 		fp2_new(e2);
 
+		for (j = 0; j < 2; j++) {
+			ep_null(p[j]);
+			ep_null(q[j]);
+			ep_new(p[j]);
+			ep_new(q[j]);
+		}
+
 		ep_curve_get_ord(n);
 
 		TEST_BEGIN("pairing non-degeneracy is correct") {
-			ep_rand(p);
-			ep_rand(q);
-			pp_map_k2(e1, p, q);
+			ep_rand(p[0]);
+			ep_rand(q[0]);
+			pp_map_k2(e1, p[0], q[0]);
 			TEST_ASSERT(fp2_cmp_dig(e1, 1) != CMP_EQ, end);
-			ep_set_infty(p);
-			pp_map_k2(e1, p, q);
+			ep_set_infty(p[0]);
+			pp_map_k2(e1, p[0], q[0]);
 			TEST_ASSERT(fp2_cmp_dig(e1, 1) == CMP_EQ, end);
-			ep_rand(p);
-			ep_set_infty(q);
-			pp_map_k2(e1, p, q);
+			ep_rand(p[0]);
+			ep_set_infty(q[0]);
+			pp_map_k2(e1, p[0], q[0]);
 			TEST_ASSERT(fp2_cmp_dig(e1, 1) == CMP_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("pairing is bilinear") {
-			ep_rand(p);
-			ep_rand(q);
+			ep_rand(p[0]);
+			ep_rand(q[0]);
 			bn_rand_mod(k, n);
-			ep_mul(r, q, k);
-			pp_map_k2(e1, p, r);
-			pp_map_k2(e2, p, q);
+			ep_mul(r, q[0], k);
+			pp_map_k2(e1, p[0], r);
+			pp_map_k2(e2, p[0], q[0]);
 			fp2_exp(e2, e2, k);
 			TEST_ASSERT(fp2_cmp(e1, e2) == CMP_EQ, end);
-			ep_mul(p, p, k);
-			pp_map_k2(e2, p, q);
+			ep_mul(p[0], p[0], k);
+			pp_map_k2(e2, p[0], q[0]);
 			TEST_ASSERT(fp2_cmp(e1, e2) == CMP_EQ, end);
-			ep_dbl(p, p);
-			pp_map_k2(e2, p, q);
+			ep_dbl(p[0], p[0]);
+			pp_map_k2(e2, p[0], q[0]);
 			fp2_sqr(e1, e1);
 			TEST_ASSERT(fp2_cmp(e1, e2) == CMP_EQ, end);
-			ep_dbl(q, q);
-			pp_map_k2(e2, p, q);
+			ep_dbl(q[0], q[0]);
+			pp_map_k2(e2, p[0], q[0]);
 			fp2_sqr(e1, e1);
 			TEST_ASSERT(fp2_cmp(e1, e2) == CMP_EQ, end);
 		} TEST_END;
 
+                TEST_BEGIN("multi-pairing is correct") {
+                        ep_rand(p[i % 2]);
+                        ep_rand(q[i % 2]);
+                        pp_map_k2(e1, p[i % 2], q[i % 2]);
+                        ep_rand(p[1 - (i % 2)]);
+                        ep_set_infty(q[1 - (i % 2)]);
+                        pp_map_sim_k2(e2, p, q, 2);
+                        TEST_ASSERT(fp2_cmp(e1, e2) == CMP_EQ, end);
+                        ep_set_infty(p[1 - (i % 2)]);
+                        ep_rand(q[1 - (i % 2)]);
+                        pp_map_sim_k2(e2, p, q, 2);
+                        TEST_ASSERT(fp2_cmp(e1, e2) == CMP_EQ, end);
+                        ep_set_infty(q[i % 2]);
+                        pp_map_sim_k2(e2, p, q, 2);
+                        TEST_ASSERT(fp2_cmp_dig(e2, 1) == CMP_EQ, end);
+                        ep_rand(p[0]);
+                        ep_rand(q[0]);
+                        pp_map_k2(e1, p[0], q[0]);
+                        ep_rand(p[1]);
+                        ep_rand(q[1]);
+                        pp_map_k2(e2, p[1], q[1]);
+                        fp2_mul(e1, e1, e2);
+                        pp_map_sim_k2(e2, p, q, 2);
+                        TEST_ASSERT(fp2_cmp(e1, e2) == CMP_EQ, end);
+                } TEST_END;
+
 #if PP_MAP == TATEP || PP_MAP == OATEP || !defined(STRIP)
 		TEST_BEGIN("tate pairing non-degeneracy is correct") {
-			ep_rand(p);
-			ep_rand(q);
-			pp_map_tatep_k2(e1, p, q);
+			ep_rand(p[0]);
+			ep_rand(q[0]);
+			pp_map_tatep_k2(e1, p[0], q[0]);
 			TEST_ASSERT(fp2_cmp_dig(e1, 1) != CMP_EQ, end);
-			ep_set_infty(p);
-			pp_map_tatep_k2(e1, p, q);
+			ep_set_infty(p[0]);
+			pp_map_tatep_k2(e1, p[0], q[0]);
 			TEST_ASSERT(fp2_cmp_dig(e1, 1) == CMP_EQ, end);
-			ep_rand(p);
-			ep_set_infty(q);
-			pp_map_tatep_k2(e1, p, q);
+			ep_rand(p[0]);
+			ep_set_infty(q[0]);
+			pp_map_tatep_k2(e1, p[0], q[0]);
 			TEST_ASSERT(fp2_cmp_dig(e1, 1) == CMP_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("tate pairing is bilinear") {
-			ep_rand(p);
-			ep_rand(q);
+			ep_rand(p[0]);
+			ep_rand(q[0]);
 			bn_rand_mod(k, n);
-			ep_mul(r, q, k);
-			pp_map_tatep_k2(e1, p, r);
-			pp_map_tatep_k2(e2, p, q);
+			ep_mul(r, q[0], k);
+			pp_map_tatep_k2(e1, p[0], r);
+			pp_map_tatep_k2(e2, p[0], q[0]);
 			fp2_exp(e2, e2, k);
 			TEST_ASSERT(fp2_cmp(e1, e2) == CMP_EQ, end);
-			ep_mul(p, p, k);
-			pp_map_tatep_k2(e2, p, q);
+			ep_mul(p[0], p[0], k);
+			pp_map_tatep_k2(e2, p[0], q[0]);
 			TEST_ASSERT(fp2_cmp(e1, e2) == CMP_EQ, end);
-			ep_dbl(p, p);
-			pp_map_tatep_k2(e2, p, q);
+			ep_dbl(p[0], p[0]);
+			pp_map_tatep_k2(e2, p[0], q[0]);
 			fp2_sqr(e1, e1);
 			TEST_ASSERT(fp2_cmp(e1, e2) == CMP_EQ, end);
-			ep_dbl(q, q);
-			pp_map_tatep_k2(e2, p, q);
+			ep_dbl(q[0], q[0]);
+			pp_map_tatep_k2(e2, p[0], q[0]);
 			fp2_sqr(e1, e1);
+			TEST_ASSERT(fp2_cmp(e1, e2) == CMP_EQ, end);
+		} TEST_END;
+
+		TEST_BEGIN("tate multi-pairing is correct") {
+			ep_rand(p[i % 2]);
+			ep_rand(q[i % 2]);
+			pp_map_tatep_k2(e1, p[i % 2], q[i % 2]);
+			ep_rand(p[1 - (i % 2)]);
+			ep_set_infty(q[1 - (i % 2)]);
+			pp_map_sim_tatep_k2(e2, p, q, 2);
+			TEST_ASSERT(fp2_cmp(e1, e2) == CMP_EQ, end);
+			ep_set_infty(p[1 - (i % 2)]);
+			ep_rand(q[1 - (i % 2)]);
+			pp_map_sim_tatep_k2(e2, p, q, 2);
+			TEST_ASSERT(fp2_cmp(e1, e2) == CMP_EQ, end);
+			ep_set_infty(q[i % 2]);
+			pp_map_sim_tatep_k2(e2, p, q, 2);
+			TEST_ASSERT(fp2_cmp_dig(e2, 1) == CMP_EQ, end);
+			ep_rand(p[0]);
+			ep_rand(q[0]);
+			pp_map_tatep_k2(e1, p[0], q[0]);
+			ep_rand(p[1]);
+			ep_rand(q[1]);
+			pp_map_tatep_k2(e2, p[1], q[1]);
+			fp2_mul(e1, e1, e2);
+			pp_map_sim_tatep_k2(e2, p, q, 2);
 			TEST_ASSERT(fp2_cmp(e1, e2) == CMP_EQ, end);
 		} TEST_END;
 #endif
 
 #if PP_MAP == WEIL || !defined(STRIP)
 		TEST_BEGIN("weil pairing non-degeneracy is correct") {
-			ep_rand(p);
-			ep_rand(q);
-			pp_map_weilp_k2(e1, p, q);
+			ep_rand(p[0]);
+			ep_rand(q[0]);
+			pp_map_weilp_k2(e1, p[0], q[0]);
 			TEST_ASSERT(fp2_cmp_dig(e1, 1) != CMP_EQ, end);
-			ep_set_infty(p);
-			pp_map_weilp_k2(e1, p, q);
+			ep_set_infty(p[0]);
+			pp_map_weilp_k2(e1, p[0], q[0]);
 			TEST_ASSERT(fp2_cmp_dig(e1, 1) == CMP_EQ, end);
-			ep_rand(p);
-			ep_set_infty(q);
-			pp_map_weilp_k2(e1, p, q);
+			ep_rand(p[0]);
+			ep_set_infty(q[0]);
+			pp_map_weilp_k2(e1, p[0], q[0]);
 			TEST_ASSERT(fp2_cmp_dig(e1, 1) == CMP_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("weil multi-pairing is correct") {
-			ep_rand(p);
-			ep_rand(q);
+		TEST_BEGIN("weil pairing is bilinear") {
+			ep_rand(p[0]);
+			ep_rand(q[0]);
 			bn_rand_mod(k, n);
-			ep_mul(r, q, k);
-			pp_map_weilp_k2(e1, p, r);
-			pp_map_weilp_k2(e2, p, q);
+			ep_mul(r, q[0], k);
+			pp_map_weilp_k2(e1, p[0], r);
+			pp_map_weilp_k2(e2, p[0], q[0]);
 			fp2_exp(e2, e2, k);
 			TEST_ASSERT(fp2_cmp(e1, e2) == CMP_EQ, end);
-			ep_mul(p, p, k);
-			pp_map_weilp_k2(e2, p, q);
+			ep_mul(p[0], p[0], k);
+			pp_map_weilp_k2(e2, p[0], q[0]);
 			TEST_ASSERT(fp2_cmp(e1, e2) == CMP_EQ, end);
-			ep_dbl(p, p);
-			pp_map_weilp_k2(e2, p, q);
+			ep_dbl(p[0], p[0]);
+			pp_map_weilp_k2(e2, p[0], q[0]);
 			fp2_sqr(e1, e1);
 			TEST_ASSERT(fp2_cmp(e1, e2) == CMP_EQ, end);
-			ep_dbl(q, q);
-			pp_map_weilp_k2(e2, p, q);
+			ep_dbl(q[0], q[0]);
+			pp_map_weilp_k2(e2, p[0], q[0]);
 			fp2_sqr(e1, e1);
-			//TEST_ASSERT(fp2_cmp(e1, e2) == CMP_EQ, end);
+			TEST_ASSERT(fp2_cmp(e1, e2) == CMP_EQ, end);
+		} TEST_END;
+
+		TEST_BEGIN("weil multi-pairing is correct") {
+			ep_rand(p[i % 2]);
+			ep_rand(q[i % 2]);
+			pp_map_weilp_k2(e1, p[i % 2], q[i % 2]);
+			ep_rand(p[1 - (i % 2)]);
+			ep_set_infty(q[1 - (i % 2)]);
+			pp_map_sim_weilp_k2(e2, p, q, 2);
+			TEST_ASSERT(fp2_cmp(e1, e2) == CMP_EQ, end);
+			ep_set_infty(p[1 - (i % 2)]);
+			ep_rand(q[1 - (i % 2)]);
+			pp_map_sim_weilp_k2(e2, p, q, 2);
+			TEST_ASSERT(fp2_cmp(e1, e2) == CMP_EQ, end);
+			ep_set_infty(q[i % 2]);
+			pp_map_sim_weilp_k2(e2, p, q, 2);
+			TEST_ASSERT(fp2_cmp_dig(e2, 1) == CMP_EQ, end);
+			ep_rand(p[0]);
+			ep_rand(q[0]);
+			pp_map_weilp_k2(e1, p[0], q[0]);
+			ep_rand(p[1]);
+			ep_rand(q[1]);
+			pp_map_weilp_k2(e2, p[1], q[1]);
+			fp2_mul(e1, e1, e2);
+			pp_map_sim_weilp_k2(e2, p, q, 2);
+			TEST_ASSERT(fp2_cmp(e1, e2) == CMP_EQ, end);
 		} TEST_END;
 #endif
 	}
@@ -406,12 +487,16 @@ static int pairing2(void) {
   end:
 	bn_free(n);
 	bn_free(k);
-	ep_free(p);
-	ep_free(q);
 	ep_free(r);
 	fp2_free(e1);
 	fp2_free(e2);
-	return code;
+
+	for (j = 0; j < 2; j++) {
+		ep_free(p[j]);
+		ep2_free(q[j]);
+	}
+
+        return code;
 }
 
 static int addition12(void) {
