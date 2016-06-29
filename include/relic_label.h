@@ -43,6 +43,9 @@
 
 #ifdef LABEL
 
+#undef first_ctx
+#define first_ctx	PREFIX(first_ctx)
+
 #undef core_ctx
 #define core_ctx	PREFIX(core_ctx)
 
