@@ -87,6 +87,7 @@ int util(void) {
 			ep2_rand(a);
 			ep2_rand(b);
 			ep2_rand(c);
+			/* Compare points in affine coordinates. */
 			if (ep2_cmp(a, c) != CMP_EQ) {
 				ep2_copy(c, a);
 				TEST_ASSERT(ep2_cmp(c, a) == CMP_EQ, end);
@@ -95,6 +96,17 @@ int util(void) {
 				ep2_copy(c, b);
 				TEST_ASSERT(ep2_cmp(b, c) == CMP_EQ, end);
 			}
+			/* Compare with one point in projective. */
+			ep2_dbl(c, a);
+			ep2_norm(c, c);
+			ep2_dbl(a, a);
+			TEST_ASSERT(ep2_cmp(c, a) == CMP_EQ, end);
+			TEST_ASSERT(ep2_cmp(a, c) == CMP_EQ, end);
+			/* Compare with two points in projective. */
+			ep2_dbl(c, c);
+			ep2_dbl(a, a);
+			TEST_ASSERT(ep2_cmp(c, a) == CMP_EQ, end);
+			TEST_ASSERT(ep2_cmp(a, c) == CMP_EQ, end);
 		}
 		TEST_END;
 
@@ -187,8 +199,6 @@ int addition(void) {
 			ep2_rand(b);
 			ep2_add(d, a, b);
 			ep2_add(e, b, a);
-			ep2_norm(d, d);
-			ep2_norm(e, e);
 			TEST_ASSERT(ep2_cmp(d, e) == CMP_EQ, end);
 		} TEST_END;
 
@@ -200,8 +210,6 @@ int addition(void) {
 			ep2_add(d, d, c);
 			ep2_add(e, b, c);
 			ep2_add(e, e, a);
-			ep2_norm(d, d);
-			ep2_norm(e, e);
 			TEST_ASSERT(ep2_cmp(d, e) == CMP_EQ, end);
 		} TEST_END;
 
@@ -316,8 +324,6 @@ int subtraction(void) {
 			ep2_rand(b);
 			ep2_sub(c, a, b);
 			ep2_sub(d, b, a);
-			ep2_norm(c, c);
-			ep2_norm(d, d);
 			ep2_neg(d, d);
 			TEST_ASSERT(ep2_cmp(c, d) == CMP_EQ, end);
 		}
@@ -327,7 +333,6 @@ int subtraction(void) {
 			ep2_rand(a);
 			ep2_set_infty(c);
 			ep2_sub(d, a, c);
-			ep2_norm(d, d);
 			TEST_ASSERT(ep2_cmp(d, a) == CMP_EQ, end);
 		}
 		TEST_END;
@@ -335,7 +340,6 @@ int subtraction(void) {
 		TEST_BEGIN("point subtraction has inverse") {
 			ep2_rand(a);
 			ep2_sub(c, a, a);
-			ep2_norm(c, c);
 			TEST_ASSERT(ep2_is_infty(c), end);
 		}
 		TEST_END;
@@ -430,9 +434,7 @@ int doubling(void) {
 		TEST_BEGIN("point doubling is correct") {
 			ep2_rand(a);
 			ep2_add(b, a, a);
-			ep2_norm(b, b);
 			ep2_dbl(c, a);
-			ep2_norm(c, c);
 			TEST_ASSERT(ep2_cmp(b, c) == CMP_EQ, end);
 		} TEST_END;
 
@@ -762,7 +764,6 @@ static int simultaneous(void) {
 			ep2_mul(s, q, l);
 			ep2_mul_sim(r, p, k, q, l);
 			ep2_add(q, q, s);
-			ep2_norm(q, q);
 			TEST_ASSERT(ep2_cmp(q, r) == CMP_EQ, end);
 		} TEST_END;
 

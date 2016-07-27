@@ -25,7 +25,6 @@
  *
  * Tests for the Elliptic Curve Cryptography module.
  *
- * @version $Id$
  * @ingroup test
  */
 
@@ -84,6 +83,8 @@ int util(void) {
 		TEST_BEGIN("copy and comparison are consistent") {
 			ec_rand(a);
 			ec_rand(b);
+			ec_rand(c);
+			/* Compare points in affine coordinates. */
 			if (ec_cmp(a, c) != CMP_EQ) {
 				ec_copy(c, a);
 				TEST_ASSERT(ec_cmp(c, a) == CMP_EQ, end);
@@ -92,6 +93,17 @@ int util(void) {
 				ec_copy(c, b);
 				TEST_ASSERT(ec_cmp(b, c) == CMP_EQ, end);
 			}
+			/* Compare with one point in projective. */
+			ec_dbl(c, a);
+			ec_norm(c, c);
+			ec_dbl(a, a);
+			TEST_ASSERT(ec_cmp(c, a) == CMP_EQ, end);
+			TEST_ASSERT(ec_cmp(a, c) == CMP_EQ, end);
+			/* Compare with two points in projective. */
+			ec_dbl(c, c);
+			ec_dbl(a, a);
+			TEST_ASSERT(ec_cmp(c, a) == CMP_EQ, end);
+			TEST_ASSERT(ec_cmp(a, c) == CMP_EQ, end);
 		}
 		TEST_END;
 
@@ -184,8 +196,6 @@ int addition(void) {
 			ec_rand(b);
 			ec_add(d, a, b);
 			ec_add(e, b, a);
-			ec_norm(d, d);
-			ec_norm(e, e);
 			TEST_ASSERT(ec_cmp(d, e) == CMP_EQ, end);
 		} TEST_END;
 
@@ -197,8 +207,6 @@ int addition(void) {
 			ec_add(d, d, c);
 			ec_add(e, b, c);
 			ec_add(e, e, a);
-			ec_norm(d, d);
-			ec_norm(e, e);
 			TEST_ASSERT(ec_cmp(d, e) == CMP_EQ, end);
 		} TEST_END;
 
@@ -251,8 +259,6 @@ int subtraction(void) {
 			ec_rand(b);
 			ec_sub(c, a, b);
 			ec_sub(d, b, a);
-			ec_norm(c, c);
-			ec_norm(d, d);
 			ec_neg(d, d);
 			TEST_ASSERT(ec_cmp(c, d) == CMP_EQ, end);
 		}
@@ -262,7 +268,6 @@ int subtraction(void) {
 			ec_rand(a);
 			ec_set_infty(c);
 			ec_sub(d, a, c);
-			ec_norm(d, d);
 			TEST_ASSERT(ec_cmp(d, a) == CMP_EQ, end);
 		}
 		TEST_END;
@@ -270,7 +275,6 @@ int subtraction(void) {
 		TEST_BEGIN("point subtraction has inverse") {
 			ec_rand(a);
 			ec_sub(c, a, a);
-			ec_norm(c, c);
 			TEST_ASSERT(ec_is_infty(c), end);
 		}
 		TEST_END;
@@ -303,9 +307,7 @@ int doubling(void) {
 		TEST_BEGIN("point doubling is correct") {
 			ec_rand(a);
 			ec_add(b, a, a);
-			ec_norm(b, b);
 			ec_dbl(c, a);
-			ec_norm(c, c);
 			TEST_ASSERT(ec_cmp(b, c) == CMP_EQ, end);
 		} TEST_END;
 	}
@@ -350,6 +352,24 @@ static int multiplication(void) {
 			bn_rand_mod(k, n);
 			ec_mul(q, p, k);
 			ec_mul_gen(r, k);
+			TEST_ASSERT(ec_cmp(q, r) == CMP_EQ, end);
+		} TEST_END;
+
+		TEST_BEGIN("point multiplication is correct") {
+			ec_rand(p);
+			ec_mul(r, p, n);
+			TEST_ASSERT(ec_is_infty(r), end);
+			bn_zero(k);
+			ec_mul(r, p, k);
+			TEST_ASSERT(ec_is_infty(r), end);
+			bn_set_dig(k, 1);
+			ec_mul(r, p, k);
+			TEST_ASSERT(ec_cmp(p, r) == CMP_EQ, end);
+			bn_rand_mod(k, n);
+			ec_mul(q, p, k);
+			bn_neg(k, k);
+			ec_mul(r, p, k);
+			ec_neg(r, r);
 			TEST_ASSERT(ec_cmp(q, r) == CMP_EQ, end);
 		} TEST_END;
 	}
@@ -453,7 +473,6 @@ static int simultaneous(void) {
 			ec_mul(s, q, l);
 			ec_mul_sim(r, p, k, q, l);
 			ec_add(q, q, s);
-			ec_norm(q, q);
 			TEST_ASSERT(ec_cmp(q, r) == CMP_EQ, end);
 		} TEST_END;
 

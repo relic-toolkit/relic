@@ -77,6 +77,7 @@ int util(void) {
 			ep_rand(a);
 			ep_rand(b);
 			ep_rand(c);
+			/* Compare points in affine coordinates. */
 			if (ep_cmp(a, c) != CMP_EQ) {
 				ep_copy(c, a);
 				TEST_ASSERT(ep_cmp(c, a) == CMP_EQ, end);
@@ -85,6 +86,17 @@ int util(void) {
 				ep_copy(c, b);
 				TEST_ASSERT(ep_cmp(b, c) == CMP_EQ, end);
 			}
+			/* Compare with one point in projective. */
+			ep_dbl(c, a);
+			ep_norm(c, c);
+			ep_dbl(a, a);
+			TEST_ASSERT(ep_cmp(c, a) == CMP_EQ, end);
+			TEST_ASSERT(ep_cmp(a, c) == CMP_EQ, end);
+			/* Compare with two points in projective. */
+			ep_dbl(c, c);
+			ep_dbl(a, a);
+			TEST_ASSERT(ep_cmp(c, a) == CMP_EQ, end);
+			TEST_ASSERT(ep_cmp(a, c) == CMP_EQ, end);
 		}
 		TEST_END;
 
@@ -135,7 +147,7 @@ int util(void) {
 				ep_norm(a, a);
 				ep_write_bin(bin, l, a, j);
 				ep_read_bin(b, bin, l);
-				TEST_ASSERT(ep_cmp(a, b) == CMP_EQ, end);						
+				TEST_ASSERT(ep_cmp(a, b) == CMP_EQ, end);
 			}
 		}
 		TEST_END;
@@ -174,8 +186,6 @@ int addition(void) {
 			ep_rand(b);
 			ep_add(d, a, b);
 			ep_add(e, b, a);
-			ep_norm(d, d);
-			ep_norm(e, e);
 			TEST_ASSERT(ep_cmp(d, e) == CMP_EQ, end);
 		} TEST_END;
 
@@ -187,8 +197,6 @@ int addition(void) {
 			ep_add(d, d, c);
 			ep_add(e, b, c);
 			ep_add(e, e, a);
-			ep_norm(d, d);
-			ep_norm(e, e);
 			TEST_ASSERT(ep_cmp(d, e) == CMP_EQ, end);
 		} TEST_END;
 
@@ -302,8 +310,6 @@ int subtraction(void) {
 			ep_rand(b);
 			ep_sub(c, a, b);
 			ep_sub(d, b, a);
-			ep_norm(c, c);
-			ep_norm(d, d);
 			ep_neg(d, d);
 			TEST_ASSERT(ep_cmp(c, d) == CMP_EQ, end);
 		}
@@ -313,7 +319,6 @@ int subtraction(void) {
 			ep_rand(a);
 			ep_set_infty(c);
 			ep_sub(d, a, c);
-			ep_norm(d, d);
 			TEST_ASSERT(ep_cmp(d, a) == CMP_EQ, end);
 		}
 		TEST_END;
@@ -321,7 +326,6 @@ int subtraction(void) {
 		TEST_BEGIN("point subtraction has inverse") {
 			ep_rand(a);
 			ep_sub(c, a, a);
-			ep_norm(c, c);
 			TEST_ASSERT(ep_is_infty(c), end);
 		}
 		TEST_END;
@@ -416,9 +420,7 @@ int doubling(void) {
 		TEST_BEGIN("point doubling is correct") {
 			ep_rand(a);
 			ep_add(b, a, a);
-			ep_norm(b, b);
 			ep_dbl(c, a);
-			ep_norm(c, c);
 			TEST_ASSERT(ep_cmp(b, c) == CMP_EQ, end);
 		} TEST_END;
 
@@ -748,7 +750,6 @@ static int simultaneous(void) {
 			ep_mul(p, p, k);
 			ep_mul(q, q, l);
 			ep_add(q, q, p);
-			ep_norm(q, q);
 			TEST_ASSERT(ep_cmp(q, r) == CMP_EQ, end);
 		} TEST_END;
 

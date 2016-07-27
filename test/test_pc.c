@@ -84,6 +84,7 @@ int util1(void) {
 			g1_rand(a);
 			g1_rand(b);
 			g1_rand(c);
+			/* Compare points in affine coordinates. */
 			if (g1_cmp(a, c) != CMP_EQ) {
 				g1_copy(c, a);
 				TEST_ASSERT(g1_cmp(c, a) == CMP_EQ, end);
@@ -92,6 +93,17 @@ int util1(void) {
 				g1_copy(c, b);
 				TEST_ASSERT(g1_cmp(b, c) == CMP_EQ, end);
 			}
+			/* Compare with one point in projective. */
+			g1_dbl(c, a);
+			g1_norm(c, c);
+			g1_dbl(a, a);
+			TEST_ASSERT(g1_cmp(c, a) == CMP_EQ, end);
+			TEST_ASSERT(g1_cmp(a, c) == CMP_EQ, end);
+			/* Compare with two points in projective. */
+			g1_dbl(c, c);
+			g1_dbl(a, a);
+			TEST_ASSERT(g1_cmp(c, a) == CMP_EQ, end);
+			TEST_ASSERT(g1_cmp(a, c) == CMP_EQ, end);
 		}
 		TEST_END;
 
@@ -136,10 +148,10 @@ int util1(void) {
 				g1_norm(a, a);
 				g1_write_bin(bin, l, a, j);
 				g1_read_bin(b, bin, l);
-				TEST_ASSERT(g1_cmp(a, b) == CMP_EQ, end);						
+				TEST_ASSERT(g1_cmp(a, b) == CMP_EQ, end);
 			}
 		}
-		TEST_END;		
+		TEST_END;
 	}
 	CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -176,8 +188,6 @@ int addition1(void) {
 			g1_rand(b);
 			g1_add(d, a, b);
 			g1_add(e, b, a);
-			g1_norm(d, d);
-			g1_norm(e, e);
 			TEST_ASSERT(g1_cmp(d, e) == CMP_EQ, end);
 		} TEST_END;
 
@@ -189,8 +199,6 @@ int addition1(void) {
 			g1_add(d, d, c);
 			g1_add(e, b, c);
 			g1_add(e, e, a);
-			g1_norm(d, d);
-			g1_norm(e, e);
 			TEST_ASSERT(g1_cmp(d, e) == CMP_EQ, end);
 		} TEST_END;
 
@@ -243,8 +251,6 @@ int subtraction1(void) {
 			g1_rand(b);
 			g1_sub(c, a, b);
 			g1_sub(d, b, a);
-			g1_norm(c, c);
-			g1_norm(d, d);
 			g1_neg(d, d);
 			TEST_ASSERT(g1_cmp(c, d) == CMP_EQ, end);
 		}
@@ -254,7 +260,6 @@ int subtraction1(void) {
 			g1_rand(a);
 			g1_set_infty(c);
 			g1_sub(d, a, c);
-			g1_norm(d, d);
 			TEST_ASSERT(g1_cmp(d, a) == CMP_EQ, end);
 		}
 		TEST_END;
@@ -262,7 +267,6 @@ int subtraction1(void) {
 		TEST_BEGIN("point subtraction has inverse") {
 			g1_rand(a);
 			g1_sub(c, a, a);
-			g1_norm(c, c);
 			TEST_ASSERT(g1_is_infty(c), end);
 		}
 		TEST_END;
@@ -295,9 +299,7 @@ int doubling1(void) {
 		TEST_BEGIN("point doubling is correct") {
 			g1_rand(a);
 			g1_add(b, a, a);
-			g1_norm(b, b);
 			g1_dbl(c, a);
-			g1_norm(c, c);
 			TEST_ASSERT(g1_cmp(b, c) == CMP_EQ, end);
 		} TEST_END;
 	}
@@ -452,7 +454,6 @@ static int simultaneous1(void) {
 			g1_mul(s, q, l);
 			g1_mul_sim(r, p, k, q, l);
 			g1_add(q, q, s);
-			g1_norm(q, q);
 			TEST_ASSERT(g1_cmp(q, r) == CMP_EQ, end);
 		} TEST_END;
 
@@ -566,6 +567,7 @@ int util2(void) {
 			g2_rand(a);
 			g2_rand(b);
 			g2_rand(c);
+			/* Compare points in affine coordinates. */
 			if (g2_cmp(a, c) != CMP_EQ) {
 				g2_copy(c, a);
 				TEST_ASSERT(g2_cmp(c, a) == CMP_EQ, end);
@@ -574,6 +576,17 @@ int util2(void) {
 				g2_copy(c, b);
 				TEST_ASSERT(g2_cmp(b, c) == CMP_EQ, end);
 			}
+			/* Compare with one point in projective. */
+			g2_dbl(c, a);
+			g2_norm(c, c);
+			g2_dbl(a, a);
+			TEST_ASSERT(g2_cmp(c, a) == CMP_EQ, end);
+			TEST_ASSERT(g2_cmp(a, c) == CMP_EQ, end);
+			/* Compare with two points in projective. */
+			g2_dbl(c, c);
+			g2_dbl(a, a);
+			TEST_ASSERT(g2_cmp(c, a) == CMP_EQ, end);
+			TEST_ASSERT(g2_cmp(a, c) == CMP_EQ, end);
 		}
 		TEST_END;
 
@@ -618,10 +631,10 @@ int util2(void) {
 				g2_norm(a, a);
 				g2_write_bin(bin, l, a, j);
 				g2_read_bin(b, bin, l);
-				TEST_ASSERT(g2_cmp(a, b) == CMP_EQ, end);						
+				TEST_ASSERT(g2_cmp(a, b) == CMP_EQ, end);
 			}
 		}
-		TEST_END;		
+		TEST_END;
 	}
 	CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -658,8 +671,6 @@ int addition2(void) {
 			g2_rand(b);
 			g2_add(d, a, b);
 			g2_add(e, b, a);
-			g2_norm(d, d);
-			g2_norm(e, e);
 			TEST_ASSERT(g2_cmp(d, e) == CMP_EQ, end);
 		} TEST_END;
 
@@ -671,8 +682,6 @@ int addition2(void) {
 			g2_add(d, d, c);
 			g2_add(e, b, c);
 			g2_add(e, e, a);
-			g2_norm(d, d);
-			g2_norm(e, e);
 			TEST_ASSERT(g2_cmp(d, e) == CMP_EQ, end);
 		} TEST_END;
 
@@ -725,8 +734,6 @@ int subtraction2(void) {
 			g2_rand(b);
 			g2_sub(c, a, b);
 			g2_sub(d, b, a);
-			g2_norm(c, c);
-			g2_norm(d, d);
 			g2_neg(d, d);
 			TEST_ASSERT(g2_cmp(c, d) == CMP_EQ, end);
 		}
@@ -736,7 +743,6 @@ int subtraction2(void) {
 			g2_rand(a);
 			g2_set_infty(c);
 			g2_sub(d, a, c);
-			g2_norm(d, d);
 			TEST_ASSERT(g2_cmp(d, a) == CMP_EQ, end);
 		}
 		TEST_END;
@@ -744,7 +750,6 @@ int subtraction2(void) {
 		TEST_BEGIN("point subtraction has inverse") {
 			g2_rand(a);
 			g2_sub(c, a, a);
-			g2_norm(c, c);
 			TEST_ASSERT(g2_is_infty(c), end);
 		}
 		TEST_END;
@@ -777,9 +782,7 @@ int doubling2(void) {
 		TEST_BEGIN("point doubling is correct") {
 			g2_rand(a);
 			g2_add(b, a, a);
-			g2_norm(b, b);
 			g2_dbl(c, a);
-			g2_norm(c, c);
 			TEST_ASSERT(g2_cmp(b, c) == CMP_EQ, end);
 		} TEST_END;
 	}
@@ -1278,7 +1281,7 @@ static int pairing(void) {
 			g2_null(q[j]);
 			g1_new(p[j]);
 			g2_new(q[j]);
-		}		
+		}
 
 		g1_get_ord(n);
 
@@ -1342,7 +1345,7 @@ static int pairing(void) {
 			gt_mul(e1, e1, e2);
 			pc_map_sim(e2, p, q, 2);
 			TEST_ASSERT(gt_cmp(e1, e2) == CMP_EQ, end);
-		} TEST_END;		
+		} TEST_END;
 	}
 	CATCH_ANY {
 		util_print("FATAL ERROR!\n");
