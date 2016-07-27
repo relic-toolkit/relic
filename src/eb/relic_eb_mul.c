@@ -55,11 +55,6 @@ static void eb_mul_ltnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 	int8_t tnaf[FB_BITS + 8], u;
 	eb_t t[1 << (EB_WIDTH - 2)];
 
-	if (bn_is_zero(k)) {
-		eb_set_infty(r);
-		return;
-	}
-
 	if (eb_curve_opt_a() == OPT_ZERO) {
 		u = -1;
 	} else {
@@ -131,11 +126,6 @@ static void eb_mul_lnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 	int8_t naf[FB_BITS + 1];
 	eb_t t[1 << (EB_WIDTH - 2)];
 
-	if (bn_is_zero(k)) {
-		eb_set_infty(r);
-		return;
-	}
-
 	TRY {
 		/* Prepare the precomputation table. */
 		for (i = 0; i < (1 << (EB_WIDTH - 2)); i++) {
@@ -205,11 +195,6 @@ static void eb_mul_rtnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 	int l, i, n;
 	int8_t tnaf[FB_BITS + 8], u;
 	eb_t t[1 << (EB_WIDTH - 2)];
-
-	if (bn_is_zero(k)) {
-		eb_set_infty(r);
-		return;
-	}
 
 	if (eb_curve_opt_a() == OPT_ZERO) {
 		u = -1;
@@ -510,11 +495,6 @@ static void eb_mul_rnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 	int8_t naf[FB_BITS + 1];
 	eb_t t[1 << (EB_WIDTH - 2)];
 
-	if (bn_is_zero(k)) {
-		eb_set_infty(r);
-		return;
-	}
-
 	TRY {
 		/* Prepare the accumulator table. */
 		for (i = 0; i < (1 << (EB_WIDTH - 2)); i++) {
@@ -636,7 +616,7 @@ static void eb_mul_rnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 void eb_mul_basic(eb_t r, const eb_t p, const bn_t k) {
 	eb_t t;
 
-	if (bn_is_zero(k)) {
+	if (bn_is_zero(k) || eb_is_infty(p)) {
 		eb_set_infty(r);
 		return;
 	}
@@ -764,7 +744,7 @@ void eb_mul_lodah(eb_t r, const eb_t p, const bn_t k) {
 					break;
 			}
 			dv_swap_cond(x1, x2, FB_DIGS, t ^ 1);
-			dv_swap_cond(z1, z2, FB_DIGS, t ^ 1);			
+			dv_swap_cond(z1, z2, FB_DIGS, t ^ 1);
 		}
 
 		if (fb_is_zero(z1)) {
@@ -844,6 +824,11 @@ void eb_mul_lodah(eb_t r, const eb_t p, const bn_t k) {
 #if EB_MUL == LWNAF || !defined(STRIP)
 
 void eb_mul_lwnaf(eb_t r, const eb_t p, const bn_t k) {
+	if (bn_is_zero(k) || eb_is_infty(p)) {
+		eb_set_infty(r);
+		return;
+	}
+
 #if defined(EB_KBLTZ)
 	if (eb_curve_is_kbltz()) {
 		eb_mul_ltnaf_imp(r, p, k);
@@ -861,6 +846,11 @@ void eb_mul_lwnaf(eb_t r, const eb_t p, const bn_t k) {
 #if EB_MUL == RWNAF || !defined(STRIP)
 
 void eb_mul_rwnaf(eb_t r, const eb_t p, const bn_t k) {
+	if (bn_is_zero(k) || eb_is_infty(p)) {
+		eb_set_infty(r);
+		return;
+	}
+
 #if defined(EB_KBLTZ)
 	if (eb_curve_is_kbltz()) {
 		eb_mul_rtnaf_imp(r, p, k);
@@ -868,7 +858,7 @@ void eb_mul_rwnaf(eb_t r, const eb_t p, const bn_t k) {
 	}
 #endif
 
-#if defined(EB_PLAIN) 
+#if defined(EB_PLAIN)
 #if defined(EB_MIXED) && defined(STRIP)
 	/* It is impossible to run a right-to-left algorithm using ordinary curves
 	 * and only mixed additions. */
@@ -890,7 +880,7 @@ void eb_mul_halve(eb_t r, const eb_t p, const bn_t k) {
 	bn_t n, m;
 	fb_t u, v, w, z;
 
-	if (bn_is_zero(k)) {
+	if (bn_is_zero(k) || eb_is_infty(p)) {
 		eb_set_infty(r);
 		return;
 	}
@@ -1088,7 +1078,7 @@ void eb_mul_gen(eb_t r, const bn_t k) {
 void eb_mul_dig(eb_t r, const eb_t p, dig_t k) {
 	eb_t t;
 
-	if (k == 0) {
+	if (k == 0 || eb_is_infty(p)) {
 		eb_set_infty(r);
 		return;
 	}

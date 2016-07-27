@@ -279,7 +279,6 @@ void eb_mul_sim_basic(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 		eb_mul(r, p, k);
 		eb_add(t, t, r);
 		eb_norm(r, t);
-
 	} CATCH_ANY {
 		THROW(ERR_CAUGHT);
 	}
