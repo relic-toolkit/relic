@@ -86,6 +86,21 @@ static void util(void) {
 
 	BENCH_BEGIN("eb_cmp") {
 		eb_rand(p);
+		eb_dbl(p, p);
+		eb_rand(q);
+		eb_dbl(q, q);
+		BENCH_ADD(eb_cmp(p, q));
+	} BENCH_END;
+
+	BENCH_BEGIN("eb_cmp (1 norm)") {
+		eb_rand(p);
+		eb_dbl(p, p);
+		eb_rand(q);
+		BENCH_ADD(eb_cmp(p, q));
+	} BENCH_END;
+
+	BENCH_BEGIN("eb_cmp (2 norm)") {
+		eb_rand(p);
 		eb_rand(q);
 		BENCH_ADD(eb_cmp(p, q));
 	} BENCH_END;
@@ -334,7 +349,7 @@ static void arith(void) {
 		BENCH_END;
 	}
 #endif
-	
+
 #endif /* EB_KBLTZ */
 
 	BENCH_BEGIN("eb_neg") {

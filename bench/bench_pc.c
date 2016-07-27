@@ -54,7 +54,7 @@ static void memory1(void) {
 static void util1(void) {
 	g1_t p, q;
 	uint8_t bin[2 * PC_BYTES + 1];
-	int l;	
+	int l;
 
 	g1_null(p);
 	g1_null(q);
@@ -83,10 +83,24 @@ static void util1(void) {
 
 	BENCH_BEGIN("g1_cmp") {
 		g1_rand(p);
+		g1_dbl(p, p);
+		g1_rand(q);
+		g1_dbl(q, q);
+		BENCH_ADD(g1_cmp(p, q));
+	} BENCH_END;
+
+	BENCH_BEGIN("g1_cmp (1 norm)") {
+		g1_rand(p);
+		g1_dbl(p, p);
 		g1_rand(q);
 		BENCH_ADD(g1_cmp(p, q));
-	}
-	BENCH_END;
+	} BENCH_END;
+
+	BENCH_BEGIN("g1_cmp (2 norm)") {
+		g1_rand(p);
+		g1_rand(q);
+		BENCH_ADD(g1_cmp(p, q));
+	} BENCH_END;
 
 	BENCH_BEGIN("g1_rand") {
 		BENCH_ADD(g1_rand(p));
@@ -310,10 +324,24 @@ static void util2(void) {
 
 	BENCH_BEGIN("g2_cmp") {
 		g2_rand(p);
+		g2_dbl(p, p);
+		g2_rand(q);
+		g2_dbl(q, q);
+		BENCH_ADD(g2_cmp(p, q));
+	} BENCH_END;
+
+	BENCH_BEGIN("g2_cmp (1 norm)") {
+		g2_rand(p);
+		g2_dbl(p, p);
 		g2_rand(q);
 		BENCH_ADD(g2_cmp(p, q));
-	}
-	BENCH_END;
+	} BENCH_END;
+
+	BENCH_BEGIN("g2_cmp (2 norm)") {
+		g2_rand(p);
+		g2_rand(q);
+		BENCH_ADD(g2_cmp(p, q));
+	} BENCH_END;
 
 	BENCH_BEGIN("g2_rand") {
 		BENCH_ADD(g2_rand(p));
@@ -589,7 +617,7 @@ static void util(void) {
 		l = gt_size_bin(a, 1);
 		gt_write_bin(bin, l, a, 1);
 		BENCH_ADD(gt_read_bin(a, bin, l));
-	} BENCH_END;	
+	} BENCH_END;
 
 	gt_free(a);
 	gt_free(b);
@@ -669,10 +697,10 @@ static void pairing(void) {
 	BENCH_END;
 
 	g1_free(p[0]);
-	g2_free(q[0]);	
+	g2_free(q[0]);
 	g1_free(p[1]);
 	g2_free(q[1]);
-	gt_free(r);	
+	gt_free(r);
 }
 
 int main(void) {
@@ -716,7 +744,7 @@ int main(void) {
 	util_banner("Arithmetic:", 1);
 	arith();
 
-	util_banner("Pairing:", 0);	
+	util_banner("Pairing:", 0);
 	util_banner("Arithmetic:", 1);
 	pairing();
 

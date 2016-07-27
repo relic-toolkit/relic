@@ -86,6 +86,21 @@ static void util(void) {
 
 	BENCH_BEGIN("ep_cmp") {
 		ep_rand(p);
+		ep_dbl(p, p);
+		ep_rand(q);
+		ep_dbl(q, q);
+		BENCH_ADD(ep_cmp(p, q));
+	} BENCH_END;
+
+	BENCH_BEGIN("ep_cmp (1 norm)") {
+		ep_rand(p);
+		ep_dbl(p, p);
+		ep_rand(q);
+		BENCH_ADD(ep_cmp(p, q));
+	} BENCH_END;
+
+	BENCH_BEGIN("ep_cmp (2 norm)") {
+		ep_rand(p);
 		ep_rand(q);
 		BENCH_ADD(ep_cmp(p, q));
 	} BENCH_END;
@@ -352,6 +367,14 @@ static void arith(void) {
 		bn_rand_mod(k, n);
 		ep_rand(p);
 		BENCH_ADD(ep_mul_lwnaf(q, p, k));
+	} BENCH_END;
+#endif
+
+#if EP_MUL == LWREG || !defined(STRIP)
+	BENCH_BEGIN("ep_mul_lwreg") {
+		bn_rand_mod(k, n);
+		ep_rand(p);
+		BENCH_ADD(ep_mul_lwreg(q, p, k));
 	} BENCH_END;
 #endif
 

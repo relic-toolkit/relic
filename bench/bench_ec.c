@@ -83,10 +83,24 @@ static void util(void) {
 
 	BENCH_BEGIN("ec_cmp") {
 		ec_rand(p);
+		ec_dbl(p, p);
+		ec_rand(q);
+		ec_dbl(q, q);
+		BENCH_ADD(ec_cmp(p, q));
+	} BENCH_END;
+
+	BENCH_BEGIN("ec_cmp (1 norm)") {
+		ec_rand(p);
+		ec_dbl(p, p);
 		ec_rand(q);
 		BENCH_ADD(ec_cmp(p, q));
-	}
-	BENCH_END;
+	} BENCH_END;
+
+	BENCH_BEGIN("ec_cmp (2 norm)") {
+		ec_rand(p);
+		ec_rand(q);
+		BENCH_ADD(ec_cmp(p, q));
+	} BENCH_END;
 
 	BENCH_BEGIN("ec_rand") {
 		BENCH_ADD(ec_rand(p));
@@ -132,7 +146,7 @@ static void util(void) {
 		l = ec_size_bin(p, 1);
 		ec_write_bin(bin, l, p, 1);
 		BENCH_ADD(ec_read_bin(p, bin, l));
-	} BENCH_END;	
+	} BENCH_END;
 
 	ec_free(p);
 	ec_free(q);

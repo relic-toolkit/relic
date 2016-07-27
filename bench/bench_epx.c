@@ -83,10 +83,24 @@ static void util(void) {
 
 	BENCH_BEGIN("ep2_cmp") {
 		ep2_rand(p);
+		ep2_dbl(p, p);
+		ep2_rand(q);
+		ep2_dbl(q, q);
+		BENCH_ADD(ep2_cmp(p, q));
+	} BENCH_END;
+
+	BENCH_BEGIN("ep2_cmp (1 norm)") {
+		ep2_rand(p);
+		ep2_dbl(p, p);
 		ep2_rand(q);
 		BENCH_ADD(ep2_cmp(p, q));
-	}
-	BENCH_END;
+	} BENCH_END;
+
+	BENCH_BEGIN("ep2_cmp (2 norm)") {
+		ep2_rand(p);
+		ep2_rand(q);
+		BENCH_ADD(ep2_cmp(p, q));
+	} BENCH_END;
 
 	BENCH_BEGIN("ep2_rand") {
 		BENCH_ADD(ep2_rand(p));
