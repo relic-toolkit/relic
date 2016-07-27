@@ -53,19 +53,56 @@ void ep2_copy(ep2_t r, ep2_t p) {
 }
 
 int ep2_cmp(ep2_t p, ep2_t q) {
-	if (fp2_cmp(p->x, q->x) != CMP_EQ) {
-		return CMP_NE;
-	}
+    ep2_t r, s;
+    int result = CMP_EQ;
 
-	if (fp2_cmp(p->y, q->y) != CMP_EQ) {
-		return CMP_NE;
-	}
+    ep2_null(r);
+    ep2_null(s);
 
-	if (fp2_cmp(p->z, q->z) != CMP_EQ) {
-		return CMP_NE;
-	}
+    TRY {
+        ep2_new(r);
+        ep2_new(s);
 
-	return CMP_EQ;
+        if ((!p->norm) && (!q->norm)) {
+            /* If the two points are not normalized, it is faster to compare
+             * x1 * z2^2 == x2 * z1^2 and y1 * z2^3 == y2 * z1^3. */
+            fp2_sqr(r->z, p->z);
+            fp2_sqr(s->z, q->z);
+            fp2_mul(r->x, p->x, s->z);
+            fp2_mul(s->x, q->x, r->z);
+            fp2_mul(r->z, r->z, p->z);
+            fp2_mul(s->z, s->z, q->z);
+            fp2_mul(r->y, p->y, s->z);
+            fp2_mul(s->y, q->y, r->z);
+        } else {
+            if (!p->norm) {
+                ep2_norm(r, p);
+            } else {
+                ep2_copy(r, p);
+            }
+
+            if (!q->norm) {
+                ep2_norm(s, q);
+            } else {
+                ep2_copy(s, q);
+            }
+        }
+
+        if (fp2_cmp(r->x, s->x) != CMP_EQ) {
+            result = CMP_NE;
+        }
+
+        if (fp2_cmp(r->y, s->y) != CMP_EQ) {
+            result = CMP_NE;
+        }
+    } CATCH_ANY {
+        THROW(ERR_CAUGHT);
+    } FINALLY {
+        ep2_free(r);
+        ep2_free(s);
+    }
+
+    return result;
 }
 
 void ep2_rand(ep2_t p) {

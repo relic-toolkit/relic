@@ -55,19 +55,54 @@ void eb_copy(eb_t r, const eb_t p) {
 }
 
 int eb_cmp(const eb_t p, const eb_t q) {
-	if (fb_cmp(p->x, q->x) != CMP_EQ) {
-		return CMP_NE;
-	}
+    eb_t r, s;
+    int result = CMP_EQ;
 
-	if (fb_cmp(p->y, q->y) != CMP_EQ) {
-		return CMP_NE;
-	}
+    eb_null(r);
+    eb_null(s);
 
-	if (fb_cmp(p->z, q->z) != CMP_EQ) {
-		return CMP_NE;
-	}
+    TRY {
+        eb_new(r);
+        eb_new(s);
 
-	return CMP_EQ;
+        if ((p->norm == 0) && (q->norm == 0)) {
+            /* If the two points are not normalized, it is faster to compare
+             * x1 * z2 == x2 * z1 and y1 * z2^2 == y2 * z1^2. */
+            fb_mul(r->x, p->x, q->z);
+            fb_mul(s->x, q->x, p->z);
+            fb_sqr(r->z, p->z);
+            fb_sqr(s->z, q->z);
+            fb_mul(r->y, p->y, s->z);
+            fb_mul(s->y, q->y, r->z);
+        } else {
+            if (p->norm == 1) {
+                eb_copy(r, p);
+            } else {
+                eb_norm(r, p);
+            }
+
+            if (q->norm == 1) {
+                eb_copy(s, q);
+            } else {
+                eb_norm(s, q);
+            }
+        }
+
+        if (fb_cmp(r->x, s->x) != CMP_EQ) {
+            result = CMP_NE;
+        }
+
+        if (fb_cmp(r->y, s->y) != CMP_EQ) {
+            result = CMP_NE;
+        }
+    } CATCH_ANY {
+        THROW(ERR_CAUGHT);
+    } FINALLY {
+        eb_free(r);
+        eb_free(s);
+    }
+
+    return result;
 }
 
 void eb_rand(eb_t p) {
@@ -501,7 +536,7 @@ int eb_size_bin(const eb_t a, int pack) {
 	} CATCH_ANY {
 		THROW(ERR_CAUGHT);
 	} FINALLY {
-		eb_free(t);	
+		eb_free(t);
 	}
 
 	return size;
@@ -572,7 +607,7 @@ void eb_write_bin(uint8_t *bin, int len, const eb_t a, int pack) {
 
 		if (pack) {
 			if (len < FB_BYTES + 1) {
-				THROW(ERR_NO_BUFFER);	
+				THROW(ERR_NO_BUFFER);
 			} else {
 				eb_pck(t, t);
 				bin[0] = 2 | fb_get_bit(t->y, 0);
