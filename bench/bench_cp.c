@@ -255,7 +255,7 @@ static void paillier(void) {
 		cp_phpe_dec(new, in_len, out, out_len, n, l);
 	} BENCH_END;
 
-	BENCH_BEGIN("cp_bdpe_dec") {
+	BENCH_BEGIN("cp_phpe_dec") {
 		in_len = bn_size_bin(n);
 		out_len = BN_BITS / 8 + 1;
 		memset(in, 0, sizeof(in));
