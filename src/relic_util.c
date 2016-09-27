@@ -182,7 +182,7 @@ int util_cmp_const(const void * a, const void *b, int size) {
 
 void util_printf(const char *format, ...) {
 #ifndef QUIET
-#if ARCH == AVR && OPSYS == NONE
+#if ARCH == AVR && OPSYS == RELIC_NONE
 	util_print_ptr = print_buf + 1;
 	va_list list;
 	va_start(list, format);
@@ -196,7 +196,7 @@ void util_printf(const char *format, ...) {
 	vsnprintf_P((char *)print_buf, sizeof(print_buf), format, list);
 	printf("%s", (char *)print_buf);
 	va_end(list);
-#elif ARCH == MSP && OPSYS == NONE
+#elif ARCH == MSP && OPSYS == RELIC_NONE
 	va_list list;
 	va_start(list, format);
 	vprintf(format, list);

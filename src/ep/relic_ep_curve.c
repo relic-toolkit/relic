@@ -66,7 +66,7 @@ static void detect_opt(int *opt, fp_t a) {
 						if (fp_bits(a) <= FP_DIGIT) {
 							*opt = OPT_DIGIT;
 						} else {
-							*opt = OPT_NONE;
+							*opt = RELIC_OPT_NONE;
 						}
 					}
 				}
@@ -88,7 +88,7 @@ static void detect_opt(int *opt, fp_t a) {
 void ep_curve_init(void) {
 	ctx_t *ctx = core_get();
 #ifdef EP_PRECO
-	for (int i = 0; i < EP_TABLE; i++) {
+	for (int i = 0; i < RELIC_EP_TABLE; i++) {
 		ctx->ep_ptr[i] = &(ctx->ep_pre[i]);
 	}
 #endif
@@ -97,7 +97,7 @@ void ep_curve_init(void) {
 	fp_new(ctx->ep_g.y);
 	fp_new(ctx->ep_g.z);
 #ifdef EP_PRECO
-	for (int i = 0; i < EP_TABLE; i++) {
+	for (int i = 0; i < RELIC_EP_TABLE; i++) {
 		fp_new(ctx->ep_pre[i].x);
 		fp_new(ctx->ep_pre[i].y);
 		fp_new(ctx->ep_pre[i].z);
@@ -122,7 +122,7 @@ void ep_curve_clean(void) {
 	fp_free(ctx->ep_g.y);
 	fp_free(ctx->ep_g.z);
 #ifdef EP_PRECO
-	for (int i = 0; i < EP_TABLE; i++) {
+	for (int i = 0; i < RELIC_EP_TABLE; i++) {
 		fp_free(ctx->ep_pre[i].x);
 		fp_free(ctx->ep_pre[i].y);
 		fp_free(ctx->ep_pre[i].z);

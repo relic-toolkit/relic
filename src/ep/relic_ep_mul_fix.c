@@ -520,7 +520,7 @@ void ep_mul_pre_combs(ep_t *t, const ep_t p) {
 			}
 		}
 
-		ep_norm_sim(t + 2, (const ep_t *)t + 2, EP_TABLE_COMBS - 2);
+		ep_norm_sim(t + 2, (const ep_t *)t + 2, RELIC_EP_TABLE_COMBS - 2);
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);

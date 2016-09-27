@@ -370,7 +370,7 @@ static int multiplication1(void) {
 static int fixed1(void) {
 	int code = STS_ERR;
 	g1_t p, q, r;
-	g1_t t[G1_TABLE];
+	g1_t t[RELIC_G1_TABLE];
 	bn_t n, k;
 
 	bn_null(n);
@@ -379,7 +379,7 @@ static int fixed1(void) {
 	g1_null(q);
 	g1_null(r);
 
-	for (int i = 0; i < G1_TABLE; i++) {
+	for (int i = 0; i < RELIC_G1_TABLE; i++) {
 		g1_null(t[i]);
 	}
 
@@ -393,7 +393,7 @@ static int fixed1(void) {
 		g1_get_gen(p);
 		g1_get_ord(n);
 
-		for (int i = 0; i < G1_TABLE; i++) {
+		for (int i = 0; i < RELIC_G1_TABLE; i++) {
 			g1_new(t[i]);
 		}
 		TEST_BEGIN("fixed point multiplication is correct") {
@@ -404,7 +404,7 @@ static int fixed1(void) {
 			g1_mul(r, p, k);
 			TEST_ASSERT(g1_cmp(q, r) == CMP_EQ, end);
 		} TEST_END;
-		for (int i = 0; i < G1_TABLE; i++) {
+		for (int i = 0; i < RELIC_G1_TABLE; i++) {
 			g1_free(t[i]);
 		}
 	}
@@ -853,7 +853,7 @@ static int multiplication2(void) {
 static int fixed2(void) {
 	int code = STS_ERR;
 	g2_t p, q, r;
-	g2_t t[G2_TABLE];
+	g2_t t[RELIC_G2_TABLE];
 	bn_t n, k;
 
 	bn_null(n);
@@ -862,7 +862,7 @@ static int fixed2(void) {
 	g2_null(q);
 	g2_null(r);
 
-	for (int i = 0; i < G2_TABLE; i++) {
+	for (int i = 0; i < RELIC_G2_TABLE; i++) {
 		g2_null(t[i]);
 	}
 
@@ -876,7 +876,7 @@ static int fixed2(void) {
 		g2_get_gen(p);
 		g2_get_ord(n);
 
-		for (int i = 0; i < G2_TABLE; i++) {
+		for (int i = 0; i < RELIC_G2_TABLE; i++) {
 			g2_new(t[i]);
 		}
 		TEST_BEGIN("fixed point multiplication is correct") {
@@ -887,7 +887,7 @@ static int fixed2(void) {
 			g2_mul(r, p, k);
 			TEST_ASSERT(g2_cmp(q, r) == CMP_EQ, end);
 		} TEST_END;
-		for (int i = 0; i < G2_TABLE; i++) {
+		for (int i = 0; i < RELIC_G2_TABLE; i++) {
 			g2_free(t[i]);
 		}
 	}

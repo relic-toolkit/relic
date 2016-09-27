@@ -58,59 +58,59 @@ enum {
 /**
  * Size of a precomputation table using the binary method.
  */
-#define ED_TABLE_BASIC		(FP_BITS + 1)
+#define RELIC_ED_TABLE_BASIC		(FP_BITS + 1)
 
 /**
  * Size of a precomputation table using Yao's windowing method.
  */
-#define ED_TABLE_YAOWI      (FP_BITS / ED_DEPTH + 1)
+#define RELIC_ED_TABLE_YAOWI      (FP_BITS / ED_DEPTH + 1)
 
 /**
  * Size of a precomputation table using the NAF windowing method.
  */
-#define ED_TABLE_NAFWI      (FP_BITS / ED_DEPTH + 1)
+#define RELIC_ED_TABLE_NAFWI      (FP_BITS / ED_DEPTH + 1)
 
 /**
  * Size of a precomputation table using the single-table comb method.
  */
-#define ED_TABLE_COMBS      (1 << ED_DEPTH)
+#define RELIC_ED_TABLE_COMBS      (1 << ED_DEPTH)
 
 /**
  * Size of a precomputation table using the double-table comb method.
  */
-#define ED_TABLE_COMBD		(1 << (ED_DEPTH + 1))
+#define RELIC_ED_TABLE_COMBD		(1 << (ED_DEPTH + 1))
 
 /**
  * Size of a precomputation table using the w-(T)NAF method.
  */
-#define ED_TABLE_LWNAF		(1 << (ED_DEPTH - 2))
+#define RELIC_ED_TABLE_LWNAF		(1 << (ED_DEPTH - 2))
 
 /**
  * Size of a precomputation table using the chosen algorithm.
  */
 #if ED_FIX == BASIC
-#define ED_TABLE			ED_TABLE_BASIC
+#define RELIC_ED__TABLE			RELIC_ED_TABLE_BASIC
 #elif ED_FIX == YAOWI
-#define ED_TABLE			ED_TABLE_YAOWI
+#define RELIC_ED_TABLE			RELIC_ED_TABLE_YAOWI
 #elif ED_FIX == NAFWI
-#define ED_TABLE			ED_TABLE_NAFWI
+#define RELIC_ED_TABLE			RELIC_ED_TABLE_NAFWI
 #elif ED_FIX == COMBS
-#define ED_TABLE			ED_TABLE_COMBS
+#define RELIC_ED_TABLE			RELIC_ED_TABLE_COMBS
 #elif ED_FIX == COMBD
-#define ED_TABLE			ED_TABLE_COMBD
+#define RELIC_ED_TABLE			RELIC_ED_TABLE_COMBD
 #elif ED_FIX == LWNAF
-#define ED_TABLE			ED_TABLE_LWNAF
+#define RELIC_ED_TABLE			RELIC_ED_TABLE_LWNAF
 #elif ED_FIX == LWNAF_MIXED
-#define ED_TABLE      ED_TABLE_LWNAF
+#define RELIC_ED_TABLE                  RELIC_ED_TABLE_LWNAF
 #endif
 
 /**
  * Maximum size of a precomputation table.
  */
 #ifdef STRIP
-#define ED_TABLE_MAX ED_TABLE
+#define RELIC_ED_TABLE_MAX RELIC_ED_TABLE
 #else
-#define ED_TABLE_MAX MAX(ED_TABLE_BASIC, ED_TABLE_COMBD)
+#define RELIC_ED_TABLE_MAX MAX(RELIC_ED_TABLE_BASIC, RELIC_ED_TABLE_COMBD)
 #endif
 
 /*============================================================================*/

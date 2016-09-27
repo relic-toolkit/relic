@@ -148,13 +148,13 @@ static void util(void) {
 }
 
 static void arith(void) {
-	ed_t p, q, r, t[ED_TABLE_MAX];
+	ed_t p, q, r, t[RELIC_ED_TABLE_MAX];
 	bn_t k, l, n;
 
 	ed_null(p);
 	ed_null(q);
 	ed_null(r);
-	for (int i = 0; i < ED_TABLE_MAX; i++) {
+	for (int i = 0; i < RELIC_ED_TABLE_MAX; i++) {
 		ed_null(t[i]);
 	}
 
@@ -258,7 +258,7 @@ static void arith(void) {
 	}
 	BENCH_END;
 
-	for (int i = 0; i < ED_TABLE; i++) {
+	for (int i = 0; i < RELIC_ED_TABLE; i++) {
 		ed_new(t[i]);
 	}
 
@@ -274,12 +274,12 @@ static void arith(void) {
 		BENCH_ADD(ed_mul_fix(q, (const ed_t *)t, k));
 	} BENCH_END;
 
-	for (int i = 0; i < ED_TABLE; i++) {
+	for (int i = 0; i < RELIC_ED_TABLE; i++) {
 		ed_free(t[i]);
 	}
 
 #if ED_FIX == BASIC || !defined(STRIP)
-	for (int i = 0; i < ED_TABLE_BASIC; i++) {
+	for (int i = 0; i < RELIC_ED_TABLE_BASIC; i++) {
 		ed_new(t[i]);
 	}
 	BENCH_BEGIN("ed_mul_pre_basic") {
@@ -293,13 +293,13 @@ static void arith(void) {
 		ed_mul_pre_basic(t, p);
 		BENCH_ADD(ed_mul_fix_basic(q, (const ed_t *)t, k));
 	} BENCH_END;
-	for (int i = 0; i < ED_TABLE_BASIC; i++) {
+	for (int i = 0; i < RELIC_ED_TABLE_BASIC; i++) {
 		ed_free(t[i]);
 	}
 #endif
 
 #if ED_FIX == YAOWI || !defined(STRIP)
-	for (int i = 0; i < ED_TABLE_YAOWI; i++) {
+	for (int i = 0; i < RELIC_ED_TABLE_YAOWI; i++) {
 		ed_new(t[i]);
 	}
 	BENCH_BEGIN("ed_mul_pre_yaowi") {
@@ -313,13 +313,13 @@ static void arith(void) {
 		ed_mul_pre_yaowi(t, p);
 		BENCH_ADD(ed_mul_fix_yaowi(q, (const ed_t *)t, k));
 	} BENCH_END;
-	for (int i = 0; i < ED_TABLE_YAOWI; i++) {
+	for (int i = 0; i < RELIC_ED_TABLE_YAOWI; i++) {
 		ed_free(t[i]);
 	}
 #endif
 
 #if ED_FIX == NAFWI || !defined(STRIP)
-	for (int i = 0; i < ED_TABLE_NAFWI; i++) {
+	for (int i = 0; i < RELIC_ED_TABLE_NAFWI; i++) {
 		ed_new(t[i]);
 	}
 	BENCH_BEGIN("ed_mul_pre_nafwi") {
@@ -333,13 +333,13 @@ static void arith(void) {
 		ed_mul_pre_nafwi(t, p);
 		BENCH_ADD(ed_mul_fix_nafwi(q, (const ed_t *)t, k));
 	} BENCH_END;
-	for (int i = 0; i < ED_TABLE_NAFWI; i++) {
+	for (int i = 0; i < RELIC_ED_TABLE_NAFWI; i++) {
 		ed_free(t[i]);
 	}
 #endif
 
 #if ED_FIX == COMBS || !defined(STRIP)
-	for (int i = 0; i < ED_TABLE_COMBS; i++) {
+	for (int i = 0; i < RELIC_ED_TABLE_COMBS; i++) {
 		ed_new(t[i]);
 	}
 	BENCH_BEGIN("ed_mul_pre_combs") {
@@ -353,13 +353,13 @@ static void arith(void) {
 		ed_mul_pre_combs(t, p);
 		BENCH_ADD(ed_mul_fix_combs(q, (const ed_t *)t, k));
 	} BENCH_END;
-	for (int i = 0; i < ED_TABLE_COMBS; i++) {
+	for (int i = 0; i < RELIC_ED_TABLE_COMBS; i++) {
 		ed_free(t[i]);
 	}
 #endif
 
 #if ED_FIX == COMBD || !defined(STRIP)
-	for (int i = 0; i < ED_TABLE_COMBD; i++) {
+	for (int i = 0; i < RELIC_ED_TABLE_COMBD; i++) {
 		ed_new(t[i]);
 	}
 	BENCH_BEGIN("ed_mul_pre_combd") {
@@ -371,13 +371,13 @@ static void arith(void) {
 		ed_mul_pre_combd(t, p);
 		BENCH_ADD(ed_mul_fix_combd(q, (const ed_t *)t, k));
 	} BENCH_END;
-	for (int i = 0; i < ED_TABLE_COMBD; i++) {
+	for (int i = 0; i < RELIC_ED_TABLE_COMBD; i++) {
 		ed_free(t[i]);
 	}
 #endif
 
 #if ED_FIX == LWNAF || !defined(STRIP)
-	for (int i = 0; i < ED_TABLE_LWNAF; i++) {
+	for (int i = 0; i < RELIC_ED_TABLE_LWNAF; i++) {
 		ed_new(t[i]);
 	}
 	BENCH_BEGIN("ed_mul_pre_lwnaf") {
@@ -391,7 +391,7 @@ static void arith(void) {
 		ed_mul_pre_lwnaf(t, p);
 		BENCH_ADD(ed_mul_fix_lwnaf(q, (const ed_t *)t, k));
 	} BENCH_END;
-	for (int i = 0; i < ED_TABLE_LWNAF; i++) {
+	for (int i = 0; i < RELIC_ED_TABLE_LWNAF; i++) {
 		ed_free(t[i]);
 	}
 #endif

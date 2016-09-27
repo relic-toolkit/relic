@@ -360,7 +360,7 @@ static int hmac(void) {
 		"Test Using Larger Than Block-Size Key - Hash Key First",
 		"This is a test using a larger than block-size key and a larger "
 				"than block-size data. The key needs to be hashed before being "
-				"used by the HMAC algorithm."
+				"used by the RELIC_HMAC algorithm."
 	};
 
 #define FUNCTION "sha256"

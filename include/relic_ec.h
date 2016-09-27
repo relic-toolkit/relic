@@ -73,11 +73,11 @@
  * Size of a precomputation table using the chosen algorithm.
  */
 #if EC_CUR == PRIME
-#define EC_TABLE			EP_TABLE
+#define RELIC_EC_TABLE			RELIC_EP_TABLE
 #elif EC_CUR == CHAR2
-#define EC_TABLE			EB_TABLE
+#define RELIC_EC_TABLE			RELIC_EB_TABLE
 #elif EC_CUR == EDWARD
-#define EC_TABLE			ED_TABLE
+#define RELIC_EC_TABLE			RELIC_ED_TABLE
 #endif
 
 /**

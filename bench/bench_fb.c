@@ -166,7 +166,7 @@ static void util(void) {
 }
 
 static void arith(void) {
-	fb_t a, b, c, d[2], t[FB_TABLE_MAX];
+	fb_t a, b, c, d[2], t[RELIC_FB_TABLE_MAX];
 	dv_t e;
 	bn_t f;
 	int bits;
@@ -176,7 +176,7 @@ static void arith(void) {
 	fb_null(c);
 	fb_null(d[0]);
 	fb_null(d[1]);
-	for (int i = 0; i < FB_TABLE_MAX; i++) {
+	for (int i = 0; i < RELIC_FB_TABLE_MAX; i++) {
 		fb_null(t[i]);
 	}
 	dv_null(e);
@@ -321,7 +321,7 @@ static void arith(void) {
 	BENCH_END;
 #endif
 
-#if FB_SQR == TABLE || !defined(STRIP)
+#if FB_SQR == RELIC_TABLE || !defined(STRIP)
 	BENCH_BEGIN("fb_sqr_table") {
 		fb_rand(a);
 		BENCH_ADD(fb_sqr_table(c, a));
@@ -548,7 +548,7 @@ static void arith(void) {
 	BENCH_END;
 #endif
 
-	for (int i = 0; i < FB_TABLE; i++) {
+	for (int i = 0; i < RELIC_FB_TABLE; i++) {
 		fb_new(t[i]);
 	}
 
@@ -560,7 +560,7 @@ static void arith(void) {
 	}
 	BENCH_END;
 
-	for (int i = 0; i < FB_TABLE; i++) {
+	for (int i = 0; i < RELIC_FB_TABLE; i++) {
 		fb_free(t[i]);
 	}
 
@@ -574,7 +574,7 @@ static void arith(void) {
 #endif
 
 #if FB_ITR == QUICK || !defined(STRIP)
-	for (int i = 0; i < FB_TABLE_QUICK; i++) {
+	for (int i = 0; i < RELIC_FB_TABLE_QUICK; i++) {
 		fb_new(t[i]);
 	}
 	BENCH_BEGIN("fb_itr_quick") {
@@ -584,7 +584,7 @@ static void arith(void) {
 		BENCH_ADD(fb_itr_quick(c, a, (const fb_t *)t));
 	}
 	BENCH_END;
-	for (int i = 0; i < FB_TABLE_QUICK; i++) {
+	for (int i = 0; i < RELIC_FB_TABLE_QUICK; i++) {
 		fb_new(t[i]);
 	}
 #endif
