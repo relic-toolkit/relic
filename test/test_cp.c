@@ -1160,11 +1160,12 @@ int main(void) {
 			core_clean();
 			return 1;
 		}
-
+#if defined(WITH_BC)
 		if (ecies() != STS_OK) {
 			core_clean();
 			return 1;
 		}
+#endif
 
 		if (ecdsa() != STS_OK) {
 			core_clean();
