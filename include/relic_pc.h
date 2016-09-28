@@ -82,12 +82,12 @@
 /**
  * Represents a G_1 precomputable table.
  */
-#define G1_TABLE			CAT(G1_UPPER, _TABLE_MAX)
+#define RELIC_G1_TABLE			CAT(CAT(RELIC_, G1_UPPER), _TABLE_MAX)
 
 /**
  * Represents a G_2 precomputable table.
  */
-#define G2_TABLE			CAT(G2_UPPER, _TABLE_MAX)
+#define RELIC_G2_TABLE			CAT(CAT(RELIC_, G2_UPPER), _TABLE_MAX)
 
 /*============================================================================*/
 /* Type definitions                                                           */

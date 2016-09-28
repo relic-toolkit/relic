@@ -33,7 +33,7 @@
 #define RELIC_CONF_H
 
 /** Project version. */
-#define VERSION "@VERSION@"
+#define RELIC_VERSION "@VERSION@"
 
 /** Debugging support. */
 #cmakedefine DEBUG
@@ -71,7 +71,7 @@
 #define CORES    @CORES@
 
 /** Generic architecture. */
-#define NONE     1
+#define RELIC_NONE     1
 /** Atmel AVR ATMega128 8-bit architecture. */
 #define AVR      2
 /** MSP430 16-bit architecture. */
@@ -322,7 +322,7 @@
 /** Basic squaring. */
 #define BASIC    1
 /** Table-based squaring. */
-#define TABLE    2
+#define RELIC_TABLE    2
 /** Integrated modular squaring. */
 #define INTEG	 3
 /** Chosen binary field squaring method. */
@@ -663,7 +663,7 @@
 /** NIST HASH-DRBG generator. */
 #define HASH     1
 /** NIST HMAC-DRBG generator. */
-#define HMAC     2
+#define RELIC_HMAC     2
 /** Operating system underlying generator. */
 #define UDEV     3
 /** Intel RdRand instruction. */
@@ -691,7 +691,7 @@
 #define SEED     @SEED@
 
 /** Undefined/No operating system. */
-#define NONE     1
+#define RELIC_NONE     1
 /** GNU/Linux operating system. */
 #define LINUX    2
 /** FreeBSD operating system. */
@@ -708,7 +708,7 @@
 #define OPSYS    @OPSYS@
 
 /** No multithreading. */
-#define NONE     1
+#define RELIC_NONE     1
 /** OpenMP multithreading support. */
 #define OPENMP   2
 /** POSIX multithreading support. */
@@ -717,7 +717,7 @@
 #define MULTI    @MULTI@
 
 /** No timer. */
-#define NONE     1
+#define RELIC_NONE     1
 /** Per-process high-resolution timer. */
 #define HREAL    2
 /** Per-process high-resolution timer. */

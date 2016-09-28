@@ -37,7 +37,7 @@
 /**
  * Size of precomputation table.
  */
-#define TABLE_SIZE			64
+#define RELIC_TABLE_SIZE			64
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -105,15 +105,15 @@ void bn_mxp_basic(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 #if BN_MXP == SLIDE || !defined(STRIP)
 
 void bn_mxp_slide(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
-	bn_t tab[TABLE_SIZE], t, u, r;
+	bn_t tab[RELIC_TABLE_SIZE], t, u, r;
 	int i, j, l, w = 1;
-	uint8_t win[BN_BITS];
+	uint8_t win[RELIC_BN_BITS];
 
 	bn_null(t);
 	bn_null(u);
 	bn_null(r);
 	/* Initialize table. */
-	for (i = 0; i < TABLE_SIZE; i++) {
+	for (i = 0; i < RELIC_TABLE_SIZE; i++) {
 		bn_null(tab[i]);
 	}
 
@@ -160,7 +160,7 @@ void bn_mxp_slide(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 			bn_mod(tab[2 * i + 1], tab[2 * i + 1], m, u);
 		}
 
-		l = BN_BITS + 1;
+		l = RELIC_BN_BITS + 1;
 		bn_rec_slw(win, &l, b, w);
 		for (i = 0; i < l; i++) {
 			if (win[i] == 0) {

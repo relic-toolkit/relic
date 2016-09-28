@@ -517,7 +517,7 @@ static int squaring(void) {
 		} TEST_END;
 #endif
 
-#if FB_SQR == TABLE || !defined(STRIP)
+#if FB_SQR == RELIC_TABLE || !defined(STRIP)
 		TEST_BEGIN("table squaring is correct") {
 			fb_rand(a);
 			fb_sqr(b, a);
@@ -970,13 +970,13 @@ static int inversion(void) {
 
 static int exponentiation(void) {
 	int code = STS_ERR;
-	fb_t a, b, c, t[FB_TABLE_MAX];
+	fb_t a, b, c, t[RELIC_FB_TABLE_MAX];
 	bn_t d;
 
 	fb_null(a);
 	fb_null(b);
 	fb_null(c);
-	for (int i = 0; i < FB_TABLE_MAX; i++) {
+	for (int i = 0; i < RELIC_FB_TABLE_MAX; i++) {
 		fb_null(t[i]);
 	}
 	bn_null(d);
@@ -1036,7 +1036,7 @@ static int exponentiation(void) {
 		} TEST_END;
 #endif
 
-		for (int i = 0; i < FB_TABLE; i++) {
+		for (int i = 0; i < RELIC_FB_TABLE; i++) {
 			fb_new(t[i]);
 		}
 
@@ -1062,7 +1062,7 @@ static int exponentiation(void) {
 			TEST_ASSERT(fb_cmp(a, b) == CMP_EQ, end);
 		} TEST_END;
 
-		for (int i = 0; i < FB_TABLE; i++) {
+		for (int i = 0; i < RELIC_FB_TABLE; i++) {
 			fb_free(t[i]);
 		}
 
@@ -1089,7 +1089,7 @@ static int exponentiation(void) {
 #endif
 
 #if FB_ITR == QUICK || !defined(STRIP)
-		for (int i = 0; i < FB_TABLE_QUICK; i++) {
+		for (int i = 0; i < RELIC_FB_TABLE_QUICK; i++) {
 			fb_new(t[i]);
 			fb_zero(t[i]);
 		}
@@ -1115,7 +1115,7 @@ static int exponentiation(void) {
 			TEST_ASSERT(fb_cmp(a, b) == CMP_EQ, end);
 		} TEST_END;
 
-		for (int i = 0; i < FB_TABLE_QUICK; i++) {
+		for (int i = 0; i < RELIC_FB_TABLE_QUICK; i++) {
 			fb_free(t[i]);
 		}
 #endif

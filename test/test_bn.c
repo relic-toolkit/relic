@@ -63,9 +63,9 @@ static int memory(void) {
 
 static int util(void) {
 	int bits, code = STS_ERR;
-	char str[BN_BITS + 2];
+	char str[RELIC_BN_BITS + 2];
 	dig_t digit, raw[BN_DIGS];
-	uint8_t bin[BN_BYTES];
+	uint8_t bin[RELIC_BN_BYTES];
 	bn_t a, b, c;
 
 	bn_null(a);
@@ -78,8 +78,8 @@ static int util(void) {
 		bn_new(c);
 
 		TEST_BEGIN("comparison is consistent") {
-			bn_rand(a, BN_POS, BN_BITS);
-			bn_rand(b, BN_POS, BN_BITS);
+			bn_rand(a, BN_POS, RELIC_BN_BITS);
+			bn_rand(b, BN_POS, RELIC_BN_BITS);
 			if (bn_cmp(a, b) != CMP_EQ) {
 				if (bn_cmp(a, b) == CMP_GT) {
 					TEST_ASSERT(bn_cmp(b, a) == CMP_LT, end);
@@ -91,9 +91,9 @@ static int util(void) {
 		TEST_END;
 
 		TEST_BEGIN("copy and comparison are consistent") {
-			bn_rand(a, BN_POS, BN_BITS);
-			bn_rand(b, BN_POS, BN_BITS);
-			bn_rand(c, BN_POS, BN_BITS);
+			bn_rand(a, BN_POS, RELIC_BN_BITS);
+			bn_rand(b, BN_POS, RELIC_BN_BITS);
+			bn_rand(c, BN_POS, RELIC_BN_BITS);
 			if (bn_cmp(a, c) != CMP_EQ) {
 				bn_copy(c, a);
 				TEST_ASSERT(bn_cmp(c, a) == CMP_EQ, end);
@@ -106,7 +106,7 @@ static int util(void) {
 		TEST_END;
 
 		TEST_BEGIN("absolute, negation and comparison are consistent") {
-			bn_rand(a, BN_POS, BN_BITS);
+			bn_rand(a, BN_POS, RELIC_BN_BITS);
 			bn_neg(b, a);
 			bn_abs(a, b);
 			TEST_ASSERT(bn_cmp(a, b) == CMP_GT, end);
@@ -117,15 +117,15 @@ static int util(void) {
 		} TEST_END;
 
 		TEST_BEGIN("signal test is correct") {
-			bn_rand(a, BN_POS, BN_BITS);
-			bn_rand(b, BN_NEG, BN_BITS);
+			bn_rand(a, BN_POS, RELIC_BN_BITS);
+			bn_rand(b, BN_NEG, RELIC_BN_BITS);
 			TEST_ASSERT(bn_sign(a) == BN_POS, end);
 			TEST_ASSERT(bn_sign(b) == BN_NEG, end);
 		} TEST_END;
 
 		TEST_BEGIN("assignment to zero and comparison are consistent") {
-			bn_rand(a, BN_POS, BN_BITS);
-			bn_rand(b, BN_NEG, BN_BITS);
+			bn_rand(a, BN_POS, RELIC_BN_BITS);
+			bn_rand(b, BN_NEG, RELIC_BN_BITS);
 			bn_zero(c);
 			TEST_ASSERT(bn_cmp(a, c) == CMP_GT, end);
 			TEST_ASSERT(bn_cmp(c, a) == CMP_LT, end);
@@ -153,7 +153,7 @@ static int util(void) {
 		TEST_BEGIN("assignment and bit counting are consistent") {
 			bn_set_2b(a, bits);
 			TEST_ASSERT(bits + 1 == bn_bits(a), end);
-			bits = (bits + 1) % BN_BITS;
+			bits = (bits + 1) % RELIC_BN_BITS;
 		} TEST_END;
 
 		bits = 0;
@@ -163,7 +163,7 @@ static int util(void) {
 			TEST_ASSERT(bn_get_bit(a, bits) == 1, end);
 			bn_set_bit(a, bits, 0);
 			TEST_ASSERT(bn_get_bit(a, bits) == 0, end);
-			bits = (bits + 1) % BN_BITS;
+			bits = (bits + 1) % RELIC_BN_BITS;
 		}
 		TEST_END;
 
@@ -174,12 +174,12 @@ static int util(void) {
 				bn_set_bit(a, j, 1);
 			}
 			TEST_ASSERT(bn_ham(a) == bits, end);
-			bits = (bits + 1) % BN_BITS;
+			bits = (bits + 1) % RELIC_BN_BITS;
 		}
 		TEST_END;
 
 		TEST_BEGIN("generating a random integer is consistent") {
-			bn_rand(b, BN_POS, BN_BITS);
+			bn_rand(b, BN_POS, RELIC_BN_BITS);
 			bn_rand_mod(a, b);
 			TEST_ASSERT(bn_sign(a) == bn_sign(b), end);
 			TEST_ASSERT(bn_is_zero(a) == 0, end);
@@ -210,8 +210,8 @@ static int util(void) {
 		} TEST_END;
 
 		TEST_BEGIN("assignment to random and comparison are consistent") {
-			bn_rand(a, BN_POS, BN_BITS);
-			bn_rand(b, BN_NEG, BN_BITS);
+			bn_rand(a, BN_POS, RELIC_BN_BITS);
+			bn_rand(b, BN_NEG, RELIC_BN_BITS);
 			bn_zero(c);
 			TEST_ASSERT(bn_cmp(a, c) == CMP_GT, end);
 			TEST_ASSERT(bn_cmp(b, c) == CMP_LT, end);
@@ -229,8 +229,8 @@ static int util(void) {
 		} TEST_END;
 
 		TEST_BEGIN("reading and writing a positive number are consistent") {
-			int len = BN_BYTES;
-			bn_rand(a, BN_POS, BN_BITS);
+			int len = RELIC_BN_BYTES;
+			bn_rand(a, BN_POS, RELIC_BN_BITS);
 			for (int j = 2; j <= 64; j++) {
 				bits = bn_size_str(a, j);
 				bn_write_str(str, bits, a, j);
@@ -248,7 +248,7 @@ static int util(void) {
 		TEST_END;
 
 		TEST_BEGIN("getting the size of a positive number is correct") {
-			bn_rand(a, BN_POS, BN_BITS);
+			bn_rand(a, BN_POS, RELIC_BN_BITS);
 			TEST_ASSERT((bn_size_str(a, 2) - 1) == bn_bits(a), end);
 			bits = (bn_bits(a) % 8 == 0 ? bn_bits(a) / 8 : bn_bits(a) / 8 + 1);
 			TEST_ASSERT(bn_size_bin(a) == bits, end);
@@ -257,8 +257,8 @@ static int util(void) {
 		TEST_END;
 
 		TEST_BEGIN("reading and writing a negative number are consistent") {
-			int len = BN_BYTES;
-			bn_rand(a, BN_NEG, BN_BITS);
+			int len = RELIC_BN_BYTES;
+			bn_rand(a, BN_NEG, RELIC_BN_BITS);
 			for (int j = 2; j <= 64; j++) {
 				bits = bn_size_str(a, j);
 				bn_write_str(str, bits, a, j);
@@ -278,7 +278,7 @@ static int util(void) {
 		TEST_END;
 
 		TEST_BEGIN("getting the size of a negative number is correct") {
-			bn_rand(a, BN_NEG, BN_BITS);
+			bn_rand(a, BN_NEG, RELIC_BN_BITS);
 			TEST_ASSERT((bn_size_str(a, 2) - 2) == bn_bits(a), end);
 			bits = (bn_bits(a) % 8 == 0 ? bn_bits(a) / 8 : bn_bits(a) / 8 + 1);
 			TEST_ASSERT(bn_size_bin(a) == bits, end);
@@ -315,17 +315,17 @@ static int addition(void) {
 		bn_new(e);
 
 		TEST_BEGIN("addition is commutative") {
-			bn_rand(a, BN_POS, BN_BITS);
-			bn_rand(b, BN_POS, BN_BITS);
+			bn_rand(a, BN_POS, RELIC_BN_BITS);
+			bn_rand(b, BN_POS, RELIC_BN_BITS);
 			bn_add(d, a, b);
 			bn_add(e, b, a);
 			TEST_ASSERT(bn_cmp(d, e) == CMP_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("addition is associative") {
-			bn_rand(a, BN_POS, BN_BITS);
-			bn_rand(b, BN_POS, BN_BITS);
-			bn_rand(c, BN_POS, BN_BITS);
+			bn_rand(a, BN_POS, RELIC_BN_BITS);
+			bn_rand(b, BN_POS, RELIC_BN_BITS);
+			bn_rand(c, BN_POS, RELIC_BN_BITS);
 			bn_add(d, a, b);
 			bn_add(d, d, c);
 			bn_add(e, b, c);
@@ -334,7 +334,7 @@ static int addition(void) {
 		} TEST_END;
 
 		TEST_BEGIN("addition has identity") {
-			bn_rand(a, BN_POS, BN_BITS);
+			bn_rand(a, BN_POS, RELIC_BN_BITS);
 			bn_zero(d);
 			bn_add(e, a, d);
 			TEST_ASSERT(bn_cmp(e, a) == CMP_EQ, end);
@@ -343,7 +343,7 @@ static int addition(void) {
 		} TEST_END;
 
 		TEST_BEGIN("addition has inverse") {
-			bn_rand(a, BN_POS, BN_BITS);
+			bn_rand(a, BN_POS, RELIC_BN_BITS);
 			bn_neg(d, a);
 			bn_add(e, a, d);
 			TEST_ASSERT(bn_is_zero(e), end);
@@ -379,8 +379,8 @@ static int subtraction(void) {
 		bn_new(d);
 
 		TEST_BEGIN("subtraction is anti-commutative") {
-			bn_rand(a, BN_POS, BN_BITS);
-			bn_rand(b, BN_POS, BN_BITS);
+			bn_rand(a, BN_POS, RELIC_BN_BITS);
+			bn_rand(b, BN_POS, RELIC_BN_BITS);
 			bn_sub(c, a, b);
 			bn_sub(d, b, a);
 			TEST_ASSERT(bn_cmp_abs(c, d) == CMP_EQ, end);
@@ -392,7 +392,7 @@ static int subtraction(void) {
 		TEST_END;
 
 		TEST_BEGIN("subtraction has identity") {
-			bn_rand(a, BN_POS, BN_BITS);
+			bn_rand(a, BN_POS, RELIC_BN_BITS);
 			bn_zero(c);
 			bn_sub(d, a, c);
 			TEST_ASSERT(bn_cmp(d, a) == CMP_EQ, end);
@@ -400,7 +400,7 @@ static int subtraction(void) {
 		TEST_END;
 
 		TEST_BEGIN("subtraction has inverse") {
-			bn_rand(a, BN_POS, BN_BITS);
+			bn_rand(a, BN_POS, RELIC_BN_BITS);
 			bn_sub(c, a, a);
 			TEST_ASSERT(bn_is_zero(c), end);
 		}
@@ -438,17 +438,17 @@ static int multiplication(void) {
 		bn_new(f);
 
 		TEST_BEGIN("multiplication is commutative") {
-			bn_rand(a, BN_POS, BN_BITS / 2);
-			bn_rand(b, BN_POS, BN_BITS / 2);
+			bn_rand(a, BN_POS, RELIC_BN_BITS / 2);
+			bn_rand(b, BN_POS, RELIC_BN_BITS / 2);
 			bn_mul(d, a, b);
 			bn_mul(e, b, a);
 			TEST_ASSERT(bn_cmp(d, e) == CMP_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("multiplication is associative") {
-			bn_rand(a, BN_POS, BN_BITS / 3);
-			bn_rand(b, BN_POS, BN_BITS / 3);
-			bn_rand(c, BN_POS, BN_BITS / 3);
+			bn_rand(a, BN_POS, RELIC_BN_BITS / 3);
+			bn_rand(b, BN_POS, RELIC_BN_BITS / 3);
+			bn_rand(c, BN_POS, RELIC_BN_BITS / 3);
 			bn_mul(d, a, b);
 			bn_mul(d, d, c);
 			bn_mul(e, b, c);
@@ -457,9 +457,9 @@ static int multiplication(void) {
 		} TEST_END;
 
 		TEST_BEGIN("multiplication is distributive") {
-			bn_rand(a, BN_POS, BN_BITS / 2);
-			bn_rand(b, BN_POS, BN_BITS / 2);
-			bn_rand(c, BN_POS, BN_BITS / 2);
+			bn_rand(a, BN_POS, RELIC_BN_BITS / 2);
+			bn_rand(b, BN_POS, RELIC_BN_BITS / 2);
+			bn_rand(c, BN_POS, RELIC_BN_BITS / 2);
 			bn_add(d, a, b);
 			bn_mul(d, c, d);
 			bn_mul(e, c, a);
@@ -469,21 +469,21 @@ static int multiplication(void) {
 		} TEST_END;
 
 		TEST_BEGIN("multiplication has identity") {
-			bn_rand(a, BN_POS, BN_BITS);
+			bn_rand(a, BN_POS, RELIC_BN_BITS);
 			bn_set_dig(d, (dig_t)1);
 			bn_mul(e, a, d);
 			TEST_ASSERT(bn_cmp(e, a) == CMP_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("multiplication has zero property") {
-			bn_rand(a, BN_POS, BN_BITS);
+			bn_rand(a, BN_POS, RELIC_BN_BITS);
 			bn_zero(d);
 			bn_mul(e, a, d);
 			TEST_ASSERT(bn_is_zero(e), end);
 		} TEST_END;
 
 		TEST_BEGIN("multiplication has negation property") {
-			bn_rand(a, BN_POS, BN_BITS);
+			bn_rand(a, BN_POS, RELIC_BN_BITS);
 			bn_set_dig(d, 1);
 			bn_neg(d, d);
 			bn_mul(e, a, d);
@@ -492,9 +492,9 @@ static int multiplication(void) {
 		} TEST_END;
 
 		TEST_BEGIN("multiplication by a positive number preserves order") {
-			bn_rand(a, BN_POS, BN_BITS / 2);
-			bn_rand(b, BN_POS, BN_BITS / 2);
-			bn_rand(c, BN_POS, BN_BITS / 2);
+			bn_rand(a, BN_POS, RELIC_BN_BITS / 2);
+			bn_rand(b, BN_POS, RELIC_BN_BITS / 2);
+			bn_rand(c, BN_POS, RELIC_BN_BITS / 2);
 			int t = bn_cmp(a, b);
 			bn_mul(d, c, a);
 			bn_mul(e, c, b);
@@ -502,9 +502,9 @@ static int multiplication(void) {
 		} TEST_END;
 
 		TEST_BEGIN("multiplication by a negative number reverses order") {
-			bn_rand(a, BN_POS, BN_BITS / 2);
-			bn_rand(b, BN_POS, BN_BITS / 2);
-			bn_rand(c, BN_POS, BN_BITS / 2);
+			bn_rand(a, BN_POS, RELIC_BN_BITS / 2);
+			bn_rand(b, BN_POS, RELIC_BN_BITS / 2);
+			bn_rand(c, BN_POS, RELIC_BN_BITS / 2);
 			int t = bn_cmp(a, b);
 			bn_neg(d, c);
 			bn_mul(e, d, a);
@@ -517,8 +517,8 @@ static int multiplication(void) {
 
 #if BN_MUL == BASIC || !defined(STRIP)
 		TEST_BEGIN("basic multiplication is correct") {
-			bn_rand(a, BN_POS, BN_BITS / 2);
-			bn_rand(b, BN_POS, BN_BITS / 2);
+			bn_rand(a, BN_POS, RELIC_BN_BITS / 2);
+			bn_rand(b, BN_POS, RELIC_BN_BITS / 2);
 			bn_mul(c, a, b);
 			bn_mul_basic(d, a, b);
 			TEST_ASSERT(bn_cmp(c, d) == CMP_EQ, end);
@@ -528,8 +528,8 @@ static int multiplication(void) {
 
 #if BN_MUL == COMBA || !defined(STRIP)
 		TEST_BEGIN("comba multiplication is correct") {
-			bn_rand(a, BN_POS, BN_BITS / 2);
-			bn_rand(b, BN_POS, BN_BITS / 2);
+			bn_rand(a, BN_POS, RELIC_BN_BITS / 2);
+			bn_rand(b, BN_POS, RELIC_BN_BITS / 2);
 			bn_mul(c, a, b);
 			bn_mul_comba(d, a, b);
 			TEST_ASSERT(bn_cmp(c, d) == CMP_EQ, end);
@@ -539,8 +539,8 @@ static int multiplication(void) {
 
 #if BN_KARAT > 0 || !defined(STRIP)
 		TEST_BEGIN("karatsuba multiplication is correct") {
-			bn_rand(a, BN_POS, BN_BITS / 2);
-			bn_rand(b, BN_POS, BN_BITS / 2);
+			bn_rand(a, BN_POS, RELIC_BN_BITS / 2);
+			bn_rand(b, BN_POS, RELIC_BN_BITS / 2);
 			bn_mul(c, a, b);
 			bn_mul_karat(d, a, b);
 			TEST_ASSERT(bn_cmp(c, d) == CMP_EQ, end);
@@ -577,7 +577,7 @@ static int squaring(void) {
 		bn_new(c);
 
 		TEST_BEGIN("squaring is correct") {
-			bn_rand(a, BN_POS, BN_BITS / 2);
+			bn_rand(a, BN_POS, RELIC_BN_BITS / 2);
 			bn_mul(b, a, a);
 			bn_sqr(c, a);
 			TEST_ASSERT(bn_cmp(b, c) == CMP_EQ, end);
@@ -585,7 +585,7 @@ static int squaring(void) {
 
 #if BN_SQR == BASIC || !defined(STRIP)
 		TEST_BEGIN("basic squaring is correct") {
-			bn_rand(a, BN_POS, BN_BITS / 2);
+			bn_rand(a, BN_POS, RELIC_BN_BITS / 2);
 			bn_sqr(b, a);
 			bn_sqr_basic(c, a);
 			TEST_ASSERT(bn_cmp(b, c) == CMP_EQ, end);
@@ -594,7 +594,7 @@ static int squaring(void) {
 
 #if BN_SQR == COMBA || !defined(STRIP)
 		TEST_BEGIN("comba squaring is correct") {
-			bn_rand(a, BN_POS, BN_BITS / 2);
+			bn_rand(a, BN_POS, RELIC_BN_BITS / 2);
 			bn_sqr(b, a);
 			bn_sqr_comba(c, a);
 			TEST_ASSERT(bn_cmp(b, c) == CMP_EQ, end);
@@ -603,7 +603,7 @@ static int squaring(void) {
 
 #if BN_KARAT > 0 || !defined(STRIP)
 		TEST_BEGIN("karatsuba squaring is correct") {
-			bn_rand(a, BN_POS, BN_BITS / 2);
+			bn_rand(a, BN_POS, RELIC_BN_BITS / 2);
 			bn_sqr(b, a);
 			bn_sqr_karat(c, a);
 			TEST_ASSERT(bn_cmp(b, c) == CMP_EQ, end);
@@ -636,14 +636,14 @@ static int doubling_halving(void) {
 		bn_new(c);
 
 		TEST_BEGIN("doubling is consistent") {
-			bn_rand(a, BN_POS, BN_BITS - 1);
+			bn_rand(a, BN_POS, RELIC_BN_BITS - 1);
 			bn_add(b, a, a);
 			bn_dbl(c, a);
 			TEST_ASSERT(bn_cmp(b, c) == CMP_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("halving is consistent") {
-			bn_rand(a, BN_POS, BN_BITS - 1);
+			bn_rand(a, BN_POS, RELIC_BN_BITS - 1);
 			bn_dbl(b, a);
 			bn_hlv(c, b);
 			TEST_ASSERT(bn_cmp(c, a) == CMP_EQ, end);
@@ -674,7 +674,7 @@ static int shifting(void) {
 		bn_new(c);
 
 		TEST_BEGIN("shifting by 1 bit is consistent") {
-			bn_rand(a, BN_POS, BN_BITS - 1);
+			bn_rand(a, BN_POS, RELIC_BN_BITS - 1);
 			bn_lsh(b, a, 1);
 			bn_dbl(c, a);
 			TEST_ASSERT(bn_cmp(b, c) == CMP_EQ, end);
@@ -687,14 +687,14 @@ static int shifting(void) {
 		} TEST_END;
 
 		TEST_BEGIN("shifting by 2 bits is consistent") {
-			bn_rand(a, BN_POS, BN_BITS - 2);
+			bn_rand(a, BN_POS, RELIC_BN_BITS - 2);
 			bn_lsh(b, a, 2);
 			bn_rsh(c, b, 2);
 			TEST_ASSERT(bn_cmp(a, c) == CMP_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("shifting by half digit is consistent") {
-			bn_rand(a, BN_POS, BN_BITS - BN_DIGIT / 2);
+			bn_rand(a, BN_POS, RELIC_BN_BITS - BN_DIGIT / 2);
 			bn_lsh(b, a, BN_DIGIT / 2);
 			bn_rsh(c, b, BN_DIGIT / 2);
 			TEST_ASSERT(bn_cmp(a, c) == CMP_EQ, end);
@@ -708,7 +708,7 @@ static int shifting(void) {
 		} TEST_END;
 
 		TEST_BEGIN("shifting by 2 digits is consistent") {
-			bn_rand(a, BN_POS, BN_BITS - 2 * BN_DIGIT);
+			bn_rand(a, BN_POS, RELIC_BN_BITS - 2 * BN_DIGIT);
 			bn_lsh(b, a, 2 * BN_DIGIT);
 			bn_rsh(c, b, 2 * BN_DIGIT);
 			TEST_ASSERT(bn_cmp(a, c) == CMP_EQ, end);
@@ -716,7 +716,7 @@ static int shifting(void) {
 		TEST_END;
 
 		TEST_BEGIN("shifting by 1 digit and half is consistent") {
-			bn_rand(a, BN_POS, BN_BITS - BN_DIGIT - BN_DIGIT / 2);
+			bn_rand(a, BN_POS, RELIC_BN_BITS - BN_DIGIT - BN_DIGIT / 2);
 			bn_lsh(b, a, BN_DIGIT + BN_DIGIT / 2);
 			bn_copy(c, a);
 			for (int j = 0; j < (int)(BN_DIGIT + BN_DIGIT / 2); j++)
@@ -758,8 +758,8 @@ static int division(void) {
 		bn_new(e);
 
 		TEST_BEGIN("trivial division is correct") {
-			bn_rand(a, BN_POS, BN_BITS / 2);
-			bn_rand(b, BN_POS, BN_BITS);
+			bn_rand(a, BN_POS, RELIC_BN_BITS / 2);
+			bn_rand(b, BN_POS, RELIC_BN_BITS);
 			bn_div(e, a, b);
 			bn_div_rem(c, d, a, b);
 			TEST_ASSERT(bn_cmp(e, c) == CMP_EQ, end);
@@ -771,8 +771,8 @@ static int division(void) {
 		} TEST_END;
 
 		TEST_BEGIN("trivial negative division is correct") {
-			bn_rand(a, BN_NEG, BN_BITS / 2);
-			bn_rand(b, BN_POS, BN_BITS);
+			bn_rand(a, BN_NEG, RELIC_BN_BITS / 2);
+			bn_rand(b, BN_POS, RELIC_BN_BITS);
 			bn_div(e, a, b);
 			bn_div_rem(c, d, a, b);
 			TEST_ASSERT(bn_cmp(e, c) == CMP_EQ, end);
@@ -784,8 +784,8 @@ static int division(void) {
 		} TEST_END;
 
 		TEST_BEGIN("trivial division by negative is correct") {
-			bn_rand(a, BN_POS, BN_BITS / 2);
-			bn_rand(b, BN_NEG, BN_BITS);
+			bn_rand(a, BN_POS, RELIC_BN_BITS / 2);
+			bn_rand(b, BN_NEG, RELIC_BN_BITS);
 			bn_div(e, a, b);
 			bn_div_rem(c, d, a, b);
 			TEST_ASSERT(bn_cmp(e, c) == CMP_EQ, end);
@@ -810,8 +810,8 @@ static int division(void) {
 		} TEST_END;
 
 		TEST_BEGIN("division is correct") {
-			bn_rand(a, BN_POS, BN_BITS);
-			bn_rand(b, BN_POS, BN_BITS / 2);
+			bn_rand(a, BN_POS, RELIC_BN_BITS);
+			bn_rand(b, BN_POS, RELIC_BN_BITS / 2);
 			bn_div(e, a, b);
 			bn_div_rem(c, d, a, b);
 			TEST_ASSERT(bn_cmp(e, c) == CMP_EQ, end);
@@ -823,8 +823,8 @@ static int division(void) {
 		} TEST_END;
 
 		TEST_BEGIN("negative division is correct") {
-			bn_rand(a, BN_NEG, BN_BITS);
-			bn_rand(b, BN_POS, BN_BITS / 2);
+			bn_rand(a, BN_NEG, RELIC_BN_BITS);
+			bn_rand(b, BN_POS, RELIC_BN_BITS / 2);
 			bn_div(e, a, b);
 			bn_div_rem(c, d, a, b);
 			TEST_ASSERT(bn_cmp(e, c) == CMP_EQ, end);
@@ -836,8 +836,8 @@ static int division(void) {
 		} TEST_END;
 
 		TEST_BEGIN("division by negative is correct") {
-			bn_rand(a, BN_POS, BN_BITS);
-			bn_rand(b, BN_NEG, BN_BITS / 2);
+			bn_rand(a, BN_POS, RELIC_BN_BITS);
+			bn_rand(b, BN_NEG, RELIC_BN_BITS / 2);
 			bn_div(e, a, b);
 			bn_div_rem(c, d, a, b);
 			TEST_ASSERT(bn_cmp(e, c) == CMP_EQ, end);
@@ -907,8 +907,8 @@ static int reduction(void) {
 
 #if BN_MOD == BARRT || !defined(STRIP)
 		TEST_BEGIN("barrett reduction is correct") {
-			bn_rand(a, BN_POS, BN_BITS - BN_DIGIT / 2);
-			bn_rand(b, BN_POS, BN_BITS / 2);
+			bn_rand(a, BN_POS, RELIC_BN_BITS - BN_DIGIT / 2);
+			bn_rand(b, BN_POS, RELIC_BN_BITS / 2);
 			bn_div_rem(c, d, a, b);
 			bn_sqr(c, b);
 			if (bn_cmp(a, c) == CMP_LT) {
@@ -922,8 +922,8 @@ static int reduction(void) {
 
 #if (BN_MOD == MONTY && BN_MUL == BASIC) || !defined(STRIP)
 		TEST_BEGIN("basic montgomery reduction is correct") {
-			bn_rand(a, BN_POS, BN_BITS - BN_DIGIT / 2);
-			bn_rand(b, BN_POS, BN_BITS / 2);
+			bn_rand(a, BN_POS, RELIC_BN_BITS - BN_DIGIT / 2);
+			bn_rand(b, BN_POS, RELIC_BN_BITS / 2);
 			if (bn_is_even(b)) {
 				bn_add_dig(b, b, 1);
 			}
@@ -938,8 +938,8 @@ static int reduction(void) {
 
 #if (BN_MOD == MONTY && BN_MUL == COMBA) || !defined(STRIP)
 		TEST_BEGIN("comba montgomery reduction is correct") {
-			bn_rand(a, BN_POS, BN_BITS - BN_DIGIT / 2);
-			bn_rand(b, BN_POS, BN_BITS / 2);
+			bn_rand(a, BN_POS, RELIC_BN_BITS - BN_DIGIT / 2);
+			bn_rand(b, BN_POS, RELIC_BN_BITS / 2);
 			if (bn_is_even(b)) {
 				bn_add_dig(b, b, 1);
 			}
@@ -954,12 +954,12 @@ static int reduction(void) {
 
 #if BN_MOD == PMERS || !defined(STRIP)
 		TEST_BEGIN("pseudo-mersenne reduction is correct") {
-			bn_rand(a, BN_POS, BN_BITS);
-			bn_rand(b, BN_POS, BN_BITS / 2);
-			bn_rand(c, BN_POS, BN_BITS / 4);
+			bn_rand(a, BN_POS, RELIC_BN_BITS);
+			bn_rand(b, BN_POS, RELIC_BN_BITS / 2);
+			bn_rand(c, BN_POS, RELIC_BN_BITS / 4);
 			if (bn_is_zero(c))
 				bn_set_dig(c, 1);
-			bn_set_2b(b, BN_BITS / 2);
+			bn_set_2b(b, RELIC_BN_BITS / 2);
 			bn_sub(b, b, c);
 			bn_mod(c, a, b);
 			bn_mod_pre_pmers(e, b);
@@ -997,7 +997,7 @@ static int exponentiation(void) {
 		bn_new(p);
 
 #if BN_MOD != PMERS
-		bn_gen_prime(p, BN_BITS);
+		bn_gen_prime(p, RELIC_BN_BITS);
 #elif BN_PRECI >= 128
 		/* Let's try a Mersenne prime. */
 		bn_zero(p);
@@ -1006,7 +1006,7 @@ static int exponentiation(void) {
 #endif
 
 		TEST_BEGIN("modular exponentiation is correct") {
-			bn_rand(a, BN_POS, BN_BITS);
+			bn_rand(a, BN_POS, RELIC_BN_BITS);
 			bn_mod(a, a, p);
 			bn_mxp(b, a, p, p);
 			TEST_ASSERT(bn_cmp(a, b) == CMP_EQ, end);
@@ -1014,7 +1014,7 @@ static int exponentiation(void) {
 		TEST_END;
 
 		TEST_BEGIN("modular exponentiation with zero power is correct") {
-			bn_rand(a, BN_POS, BN_BITS);
+			bn_rand(a, BN_POS, RELIC_BN_BITS);
 			bn_zero(b);
 			bn_mxp(a, a, b, p);
 			TEST_ASSERT(bn_cmp_dig(a, 1) == CMP_EQ, end);
@@ -1023,7 +1023,7 @@ static int exponentiation(void) {
 
 #if BN_MXP == BASIC || !defined(STRIP)
 		TEST_BEGIN("basic modular exponentiation is correct") {
-			bn_rand(a, BN_POS, BN_BITS);
+			bn_rand(a, BN_POS, RELIC_BN_BITS);
 			bn_mod(a, a, p);
 			bn_copy(b, a);
 			bn_mxp_basic(b, a, p, p);
@@ -1034,7 +1034,7 @@ static int exponentiation(void) {
 
 #if BN_MXP == SLIDE || !defined(STRIP)
 		TEST_BEGIN("sliding window modular exponentiation is correct") {
-			bn_rand(a, BN_POS, BN_BITS);
+			bn_rand(a, BN_POS, RELIC_BN_BITS);
 			bn_mod(a, a, p);
 			bn_copy(b, a);
 			bn_mxp_slide(b, b, p, p);
@@ -1045,7 +1045,7 @@ static int exponentiation(void) {
 
 #if BN_MXP == CONST || !defined(STRIP)
 		TEST_BEGIN("powering ladder modular exponentiation is correct") {
-			bn_rand(a, BN_POS, BN_BITS);
+			bn_rand(a, BN_POS, RELIC_BN_BITS);
 			bn_mod(a, a, p);
 			bn_copy(b, a);
 			bn_mxp_monty(b, b, p, p);
@@ -1080,7 +1080,7 @@ static int square_root(void) {
 		bn_new(c);
 
 		TEST_BEGIN("square root extraction is correct") {
-			bn_rand(a, BN_POS, BN_BITS / 2);
+			bn_rand(a, BN_POS, RELIC_BN_BITS / 2);
 			bn_sqr(c, a);
 			bn_srt(b, c);
 			TEST_ASSERT(bn_cmp(a, b) == CMP_EQ, end);
@@ -1118,8 +1118,8 @@ static int gcd(void) {
 		bn_new(f);
 
 		TEST_BEGIN("greatest common divisor is correct") {
-			bn_rand(a, BN_POS, BN_BITS);
-			bn_rand(b, BN_POS, BN_BITS);
+			bn_rand(a, BN_POS, RELIC_BN_BITS);
+			bn_rand(b, BN_POS, RELIC_BN_BITS);
 			bn_gcd(c, a, b);
 			bn_mod(d, a, c);
 			bn_mod(e, b, c);
@@ -1128,19 +1128,19 @@ static int gcd(void) {
 			bn_div(b, b, c);
 			bn_gcd(c, a, b);
 			TEST_ASSERT(bn_cmp_dig(c, 1) == CMP_EQ, end);
-			bn_rand(a, BN_POS, BN_BITS);
+			bn_rand(a, BN_POS, RELIC_BN_BITS);
 			bn_zero(b);
 			bn_gcd(c, a, b);
 			TEST_ASSERT(bn_cmp_abs(c, a) == CMP_EQ, end);
-			bn_rand(a, BN_NEG, BN_BITS);
+			bn_rand(a, BN_NEG, RELIC_BN_BITS);
 			bn_zero(b);
 			bn_gcd(c, a, b);
 			TEST_ASSERT(bn_cmp_abs(c, a) == CMP_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("extended greatest common divisor is correct") {
-			bn_rand(a, BN_POS, BN_BITS);
-			bn_rand(b, BN_POS, BN_BITS);
+			bn_rand(a, BN_POS, RELIC_BN_BITS);
+			bn_rand(b, BN_POS, RELIC_BN_BITS);
 			bn_gcd_ext(c, d, e, a, b);
 			bn_mul(d, d, a);
 			bn_mul(e, e, b);
@@ -1151,16 +1151,16 @@ static int gcd(void) {
 
 #if BN_GCD == BASIC || !defined(STRIP)
 		TEST_BEGIN("basic greatest common divisor is correct") {
-			bn_rand(a, BN_POS, BN_BITS);
-			bn_rand(b, BN_POS, BN_BITS);
+			bn_rand(a, BN_POS, RELIC_BN_BITS);
+			bn_rand(b, BN_POS, RELIC_BN_BITS);
 			bn_gcd(c, a, b);
 			bn_gcd_basic(d, a, b);
 			TEST_ASSERT(bn_cmp(c, d) == CMP_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("basic extended greatest common divisor is correct") {
-			bn_rand(a, BN_POS, BN_BITS);
-			bn_rand(b, BN_POS, BN_BITS);
+			bn_rand(a, BN_POS, RELIC_BN_BITS);
+			bn_rand(b, BN_POS, RELIC_BN_BITS);
 			bn_gcd_ext_basic(c, d, e, a, b);
 			bn_mul(d, d, a);
 			bn_mul(e, e, b);
@@ -1172,16 +1172,16 @@ static int gcd(void) {
 
 #if BN_GCD == LEHME || !defined(STRIP)
 		TEST_BEGIN("lehmer greatest common divisor is correct") {
-			bn_rand(a, BN_POS, BN_BITS);
-			bn_rand(b, BN_POS, BN_BITS);
+			bn_rand(a, BN_POS, RELIC_BN_BITS);
+			bn_rand(b, BN_POS, RELIC_BN_BITS);
 			bn_gcd(c, a, b);
 			bn_gcd_lehme(d, a, b);
 			TEST_ASSERT(bn_cmp(c, d) == CMP_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("lehmer extended greatest common divisor is correct") {
-			bn_rand(a, BN_POS, BN_BITS);
-			bn_rand(b, BN_POS, BN_BITS);
+			bn_rand(a, BN_POS, RELIC_BN_BITS);
+			bn_rand(b, BN_POS, RELIC_BN_BITS);
 			bn_gcd_ext_lehme(c, d, e, a, b);
 			bn_mul(d, d, a);
 			bn_mul(e, e, b);
@@ -1193,16 +1193,16 @@ static int gcd(void) {
 
 #if BN_GCD == STEIN || !defined(STRIP)
 		TEST_BEGIN("stein greatest common divisor is correct") {
-			bn_rand(a, BN_POS, BN_BITS);
-			bn_rand(b, BN_POS, BN_BITS);
+			bn_rand(a, BN_POS, RELIC_BN_BITS);
+			bn_rand(b, BN_POS, RELIC_BN_BITS);
 			bn_gcd(c, a, b);
 			bn_gcd_stein(d, a, b);
 			TEST_ASSERT(bn_cmp(c, d) == CMP_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("stein extended greatest common divisor is correct") {
-			bn_rand(a, BN_POS, BN_BITS);
-			bn_rand(b, BN_POS, BN_BITS);
+			bn_rand(a, BN_POS, RELIC_BN_BITS);
+			bn_rand(b, BN_POS, RELIC_BN_BITS);
 			bn_gcd_ext_stein(c, d, e, a, b);
 			bn_mul(d, d, a);
 			bn_mul(e, e, b);
@@ -1212,8 +1212,8 @@ static int gcd(void) {
 #endif
 
 		TEST_BEGIN("midway extended greatest common divisor is correct") {
-			bn_rand(a, BN_POS, BN_BITS);
-			bn_rand(b, BN_POS, BN_BITS);
+			bn_rand(a, BN_POS, RELIC_BN_BITS);
+			bn_rand(b, BN_POS, RELIC_BN_BITS);
 			bn_gcd_ext_mid(c, d, e, f, a, b);
 			bn_abs(d, d);
 			bn_abs(f, f);
@@ -1251,8 +1251,8 @@ static int lcm(void) {
 		bn_new(c);
 
 		TEST_BEGIN("least common multiple is correct") {
-			bn_rand(a, BN_POS, BN_BITS);
-			bn_rand(b, BN_POS, BN_BITS);
+			bn_rand(a, BN_POS, RELIC_BN_BITS);
+			bn_rand(b, BN_POS, RELIC_BN_BITS);
 			bn_lcm(c, a, b);
 			bn_mod(a, c, a);
 			bn_mod(b, c, b);
@@ -1288,27 +1288,27 @@ static int symbol(void) {
 		bn_new(q);
 
 		do {
-			bn_gen_prime(p, BN_BITS);
-			bn_gen_prime(q, BN_BITS);
+			bn_gen_prime(p, RELIC_BN_BITS);
+			bn_gen_prime(q, RELIC_BN_BITS);
 		} while (bn_is_even(p) || bn_is_even(q));
 
 		TEST_BEGIN("legendre symbol is correct") {
 			bn_smb_leg(c, p, p);
 			TEST_ASSERT(bn_is_zero(c) == 1, end);
-			bn_rand(a, BN_POS, BN_BITS);
+			bn_rand(a, BN_POS, RELIC_BN_BITS);
 			bn_sqr(a, a);
 			bn_mod(a, a, p);
 			bn_smb_leg(c, a, p);
 			TEST_ASSERT(bn_cmp_dig(c, 1) == CMP_EQ, end);
-			bn_rand(a, BN_POS, BN_BITS);
+			bn_rand(a, BN_POS, RELIC_BN_BITS);
 			bn_smb_leg(c, a, p);
 			bn_set_dig(a, 1);
 			TEST_ASSERT(bn_cmp_abs(c, a) == CMP_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("legendre symbol is a homomorphism") {
-			bn_rand(a, BN_POS, BN_BITS / 2);
-			bn_rand(b, BN_POS, BN_BITS / 2);
+			bn_rand(a, BN_POS, RELIC_BN_BITS / 2);
+			bn_rand(b, BN_POS, RELIC_BN_BITS / 2);
 			bn_mul(c, a, b);
 			bn_smb_leg(a, a, p);
 			bn_smb_leg(b, b, p);
@@ -1355,16 +1355,16 @@ static int symbol(void) {
 		} TEST_END;
 
 		TEST_BEGIN("jacobi symbol is correct") {
-			bn_rand(a, BN_POS, BN_BITS);
+			bn_rand(a, BN_POS, RELIC_BN_BITS);
 			bn_smb_leg(c, a, p);
 			bn_smb_jac(b, a, p);
 			TEST_ASSERT(bn_cmp_abs(c, b) == CMP_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("jacobi symbol is a homomorphism") {
-			bn_rand(a, BN_POS, BN_BITS / 2);
-			bn_rand(b, BN_POS, BN_BITS / 2);
-			bn_rand(p, BN_POS, BN_BITS / 2);
+			bn_rand(a, BN_POS, RELIC_BN_BITS / 2);
+			bn_rand(b, BN_POS, RELIC_BN_BITS / 2);
+			bn_rand(p, BN_POS, RELIC_BN_BITS / 2);
 			if (bn_is_even(p)) {
 				bn_add_dig(p, p, 1);
 			}
@@ -1377,8 +1377,8 @@ static int symbol(void) {
 		} TEST_END;
 
 		TEST_BEGIN("jacobi symbol is consistent with gcd") {
-			bn_rand(a, BN_POS, BN_BITS / 2);
-			bn_rand(p, BN_POS, BN_BITS / 2);
+			bn_rand(a, BN_POS, RELIC_BN_BITS / 2);
+			bn_rand(p, BN_POS, RELIC_BN_BITS / 2);
 			if (bn_is_even(p)) {
 				bn_add_dig(p, p, 1);
 			}
@@ -1393,11 +1393,11 @@ static int symbol(void) {
 		} TEST_END;
 
 		TEST_BEGIN("jacobi symbol respects quadratic reciprocity") {
-			bn_rand(p, BN_POS, BN_BITS / 2);
+			bn_rand(p, BN_POS, RELIC_BN_BITS / 2);
 			if (bn_is_even(p)) {
 				bn_add_dig(p, p, 1);
 			}
-			bn_rand(q, BN_POS, BN_BITS / 2);
+			bn_rand(q, BN_POS, RELIC_BN_BITS / 2);
 			if (bn_is_even(q)) {
 				bn_add_dig(q, q, 1);
 			}
@@ -1471,7 +1471,7 @@ static int digit(void) {
 		bn_new(f);
 
 		TEST_BEGIN("addition of a single digit is consistent") {
-			bn_rand(a, BN_POS, BN_BITS);
+			bn_rand(a, BN_POS, RELIC_BN_BITS);
 			bn_rand(b, BN_POS, BN_DIGIT);
 			bn_get_dig(&g, b);
 			bn_add(c, a, b);
@@ -1480,7 +1480,7 @@ static int digit(void) {
 		} TEST_END;
 
 		TEST_BEGIN("subtraction of a single digit is consistent") {
-			bn_rand(a, BN_POS, BN_BITS);
+			bn_rand(a, BN_POS, RELIC_BN_BITS);
 			bn_rand(b, BN_POS, BN_DIGIT);
 			bn_get_dig(&g, b);
 			bn_sub(c, a, b);
@@ -1489,7 +1489,7 @@ static int digit(void) {
 		} TEST_END;
 
 		TEST_BEGIN("multiplication by a single digit is consistent") {
-			bn_rand(a, BN_POS, BN_BITS);
+			bn_rand(a, BN_POS, RELIC_BN_BITS);
 			bn_rand(b, BN_POS, BN_DIGIT);
 			bn_get_dig(&g, b);
 			bn_mul(c, a, b);
@@ -1498,7 +1498,7 @@ static int digit(void) {
 		} TEST_END;
 
 		TEST_BEGIN("division by a single digit is consistent") {
-			bn_rand(a, BN_POS, BN_BITS);
+			bn_rand(a, BN_POS, RELIC_BN_BITS);
 			bn_rand(b, BN_POS, BN_DIGIT);
 			if (b->dp[0] == 0)
 				continue;
@@ -1513,7 +1513,7 @@ static int digit(void) {
 		TEST_END;
 
 		TEST_BEGIN("modular reduction modulo a digit is consistent") {
-			bn_rand(a, BN_POS, BN_BITS);
+			bn_rand(a, BN_POS, RELIC_BN_BITS);
 			bn_rand(b, BN_POS, BN_DIGIT);
 			if (b->dp[0] == 0)
 				continue;
@@ -1524,7 +1524,7 @@ static int digit(void) {
 		TEST_END;
 
 		TEST_BEGIN("greatest common divisor with a digit is consistent") {
-			bn_rand(a, BN_POS, BN_BITS);
+			bn_rand(a, BN_POS, RELIC_BN_BITS);
 			bn_rand(b, BN_POS, BN_DIGIT);
 			bn_get_dig(&g, b);
 			bn_gcd(c, a, b);
@@ -1536,7 +1536,7 @@ static int digit(void) {
 		TEST_BEGIN
 				("extended greatest common divisor with a digit is consistent")
 		{
-			bn_rand(a, BN_POS, BN_BITS);
+			bn_rand(a, BN_POS, RELIC_BN_BITS);
 			bn_rand(b, BN_POS, BN_DIGIT);
 			bn_get_dig(&g, b);
 			bn_gcd_ext_dig(c, d, e, a, g);
@@ -1548,7 +1548,7 @@ static int digit(void) {
 		TEST_END;
 
 #if BN_MOD != PMERS
-		bn_gen_prime(d, BN_BITS);
+		bn_gen_prime(d, RELIC_BN_BITS);
 #elif BN_PRECI >= 128
 		/* Let's try a Mersenne prime. */
 		bn_zero(d);
@@ -1557,7 +1557,7 @@ static int digit(void) {
 #endif
 
 		TEST_BEGIN("modular exponentiation with a digit is consistent") {
-			bn_rand(a, BN_POS, BN_BITS);
+			bn_rand(a, BN_POS, RELIC_BN_BITS);
 			bn_rand(b, BN_POS, BN_DIGIT);
 			bn_get_dig(&g, b);
 			bn_mxp(c, a, b, d);
@@ -1590,20 +1590,20 @@ static int prime(void) {
 		bn_new(p);
 
 		TEST_ONCE("prime generation is consistent") {
-			bn_gen_prime(p, BN_BITS);
+			bn_gen_prime(p, RELIC_BN_BITS);
 			TEST_ASSERT(bn_is_prime(p) == 1, end);
 		} TEST_END;
 
 #if BN_GEN == BASIC || !defined(STRIP)
 		TEST_ONCE("basic prime generation is consistent") {
-			bn_gen_prime_basic(p, BN_BITS);
+			bn_gen_prime_basic(p, RELIC_BN_BITS);
 			TEST_ASSERT(bn_is_prime(p) == 1, end);
 		} TEST_END;
 #endif
 
 #if BN_GEN == SAFEP || !defined(STRIP)
 		TEST_ONCE("safe prime generation is consistent") {
-			bn_gen_prime_safep(p, BN_BITS);
+			bn_gen_prime_safep(p, RELIC_BN_BITS);
 			TEST_ASSERT(bn_is_prime(p) == 1, end);
 			bn_sub_dig(p, p, 1);
 			bn_hlv(p, p);
@@ -1613,12 +1613,12 @@ static int prime(void) {
 
 #if BN_GEN == STRON || !defined(STRIP)
 		TEST_ONCE("strong prime generation is consistent") {
-			bn_gen_prime_stron(p, BN_BITS);
+			bn_gen_prime_stron(p, RELIC_BN_BITS);
 			TEST_ASSERT(bn_is_prime(p) == 1, end);
 		} TEST_END;
 #endif
 
-		bn_gen_prime(p, BN_BITS);
+		bn_gen_prime(p, RELIC_BN_BITS);
 
 		TEST_ONCE("basic prime testing is correct") {
 			TEST_ASSERT(bn_is_prime_basic(p) == 1, end);
@@ -1656,7 +1656,7 @@ static int factor(void) {
 
 		TEST_ONCE("integer factorization is consistent") {
 			bn_gen_prime(p, 16);
-			bn_rand(n, BN_POS, BN_BITS - 16);
+			bn_rand(n, BN_POS, RELIC_BN_BITS - 16);
 			bn_mul(n, n, p);
 			if (bn_factor(q, n) == 1) {
 				TEST_ASSERT(bn_is_factor(q, n) == 1, end);
@@ -1680,8 +1680,8 @@ static int recoding(void) {
 	int code = STS_ERR;
 	bn_t a, b, c, v1[3], v2[3];
 	int w, k, l;
-	uint8_t d[BN_BITS + 1];
-	signed char e[2 * (BN_BITS + 1)];
+	uint8_t d[RELIC_BN_BITS + 1];
+	signed char e[2 * (RELIC_BN_BITS + 1)];
 
 	bn_null(a);
 	bn_null(b);
@@ -1702,8 +1702,8 @@ static int recoding(void) {
 
 		TEST_BEGIN("window recoding is correct") {
 			for (w = 2; w <= 8; w++) {
-				bn_rand(a, BN_POS, BN_BITS);
-				l = BN_BITS + 1;
+				bn_rand(a, BN_POS, RELIC_BN_BITS);
+				l = RELIC_BN_BITS + 1;
 				bn_rec_win(d, &l, a, w);
 				bn_zero(b);
 				for (k = l - 1; k >= 0; k--) {
@@ -1716,8 +1716,8 @@ static int recoding(void) {
 
 		TEST_BEGIN("sliding window recoding is correct") {
 			for (w = 2; w <= 8; w++) {
-				bn_rand(a, BN_POS, BN_BITS);
-				l = BN_BITS + 1;
+				bn_rand(a, BN_POS, RELIC_BN_BITS);
+				l = RELIC_BN_BITS + 1;
 				bn_rec_slw(d, &l, a, w);
 				bn_zero(b);
 				for (k = 0; k < l; k++) {
@@ -1734,8 +1734,8 @@ static int recoding(void) {
 
 		TEST_BEGIN("naf recoding is correct") {
 			for (w = 2; w <= 8; w++) {
-				bn_rand(a, BN_POS, BN_BITS);
-				l = BN_BITS + 1;
+				bn_rand(a, BN_POS, RELIC_BN_BITS);
+				l = RELIC_BN_BITS + 1;
 				bn_rec_naf(e, &l, a, w);
 				bn_zero(b);
 				for (k = l - 1; k >= 0; k--) {
@@ -1887,12 +1887,12 @@ static int recoding(void) {
 
 		TEST_BEGIN("regular recoding is correct") {
 			for (w = 2; w <= 8; w++) {
-				bn_rand(a, BN_POS, BN_BITS);
+				bn_rand(a, BN_POS, RELIC_BN_BITS);
 				if (bn_is_even(a)) {
 					bn_add_dig(a, a, 1);
 				}
-				l = BN_BITS + 1;
-				bn_rec_reg(e, &l, a, BN_BITS, w);
+				l = RELIC_BN_BITS + 1;
+				bn_rec_reg(e, &l, a, RELIC_BN_BITS, w);
 				bn_zero(b);
 				for (k = l - 1; k >= 0; k--) {
 					bn_lsh(b, b, w - 1);
@@ -1907,9 +1907,9 @@ static int recoding(void) {
 		} TEST_END;
 
 		TEST_BEGIN("jsf recoding is correct") {
-			bn_rand(a, BN_POS, BN_BITS);
-			bn_rand(b, BN_POS, BN_BITS);
-			l = 2 * (BN_BITS + 1);
+			bn_rand(a, BN_POS, RELIC_BN_BITS);
+			bn_rand(b, BN_POS, RELIC_BN_BITS);
+			l = 2 * (RELIC_BN_BITS + 1);
 			bn_rec_jsf(e, &l, a, b);
 			w = MAX(bn_bits(a), bn_bits(b)) + 1;
 			bn_add(a, a, b);

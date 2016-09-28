@@ -38,7 +38,7 @@
 
 static void rsa(void) {
 	rsa_t pub, prv;
-	uint8_t in[10], new[10], h[MD_LEN], out[BN_BITS / 8 + 1];
+	uint8_t in[10], new[10], h[MD_LEN], out[RELIC_BN_BITS / 8 + 1];
 	int out_len, new_len;
 
 	rsa_null(pub);
@@ -47,10 +47,10 @@ static void rsa(void) {
 	rsa_new(pub);
 	rsa_new(prv);
 
-	BENCH_ONCE("cp_rsa_gen", cp_rsa_gen(pub, prv, BN_BITS));
+	BENCH_ONCE("cp_rsa_gen", cp_rsa_gen(pub, prv, RELIC_BN_BITS));
 
 	BENCH_BEGIN("cp_rsa_enc") {
-		out_len = BN_BITS / 8 + 1;
+		out_len = RELIC_BN_BITS / 8 + 1;
 		new_len = out_len;
 		rand_bytes(in, sizeof(in));
 		BENCH_ADD(cp_rsa_enc(out, &out_len, in, sizeof(in), pub));
@@ -58,7 +58,7 @@ static void rsa(void) {
 	} BENCH_END;
 
 	BENCH_BEGIN("cp_rsa_dec") {
-		out_len = BN_BITS / 8 + 1;
+		out_len = RELIC_BN_BITS / 8 + 1;
 		new_len = out_len;
 		rand_bytes(in, sizeof(in));
 		cp_rsa_enc(out, &out_len, in, sizeof(in), pub);
@@ -66,10 +66,10 @@ static void rsa(void) {
 	} BENCH_END;
 
 #if CP_RSA == BASIC || !defined(STRIP)
-	BENCH_ONCE("cp_rsa_gen_basic", cp_rsa_gen_basic(pub, prv, BN_BITS));
+	BENCH_ONCE("cp_rsa_gen_basic", cp_rsa_gen_basic(pub, prv, RELIC_BN_BITS));
 
 	BENCH_BEGIN("cp_rsa_dec_basic") {
-		out_len = BN_BITS / 8 + 1;
+		out_len = RELIC_BN_BITS / 8 + 1;
 		new_len =out_len;
 		rand_bytes(in, sizeof(in));
 		cp_rsa_enc(out, &out_len, in, sizeof(in), pub);
@@ -78,10 +78,10 @@ static void rsa(void) {
 #endif
 
 #if CP_RSA == QUICK || !defined(STRIP)
-	BENCH_ONCE("cp_rsa_gen_quick", cp_rsa_gen_quick(pub, prv, BN_BITS));
+	BENCH_ONCE("cp_rsa_gen_quick", cp_rsa_gen_quick(pub, prv, RELIC_BN_BITS));
 
 	BENCH_BEGIN("cp_rsa_dec_quick") {
-		out_len = BN_BITS / 8 + 1;
+		out_len = RELIC_BN_BITS / 8 + 1;
 		new_len =out_len;
 		rand_bytes(in, sizeof(in));
 		cp_rsa_enc(out, &out_len, in, sizeof(in), pub);
@@ -89,17 +89,17 @@ static void rsa(void) {
 	} BENCH_END;
 #endif
 
-	BENCH_ONCE("cp_rsa_gen", cp_rsa_gen(pub, prv, BN_BITS));
+	BENCH_ONCE("cp_rsa_gen", cp_rsa_gen(pub, prv, RELIC_BN_BITS));
 
 	BENCH_BEGIN("cp_rsa_sig (h = 0)") {
-		out_len = BN_BITS / 8 + 1;
+		out_len = RELIC_BN_BITS / 8 + 1;
 		new_len = out_len;
 		rand_bytes(in, sizeof(in));
 		BENCH_ADD(cp_rsa_sig(out, &out_len, in, sizeof(in), 0, prv));
 	} BENCH_END;
 
 	BENCH_BEGIN("cp_rsa_sig (h = 1)") {
-		out_len = BN_BITS / 8 + 1;
+		out_len = RELIC_BN_BITS / 8 + 1;
 		new_len = out_len;
 		rand_bytes(in, sizeof(in));
 		md_map(h, in, sizeof(in));
@@ -107,7 +107,7 @@ static void rsa(void) {
 	} BENCH_END;
 
 	BENCH_BEGIN("cp_rsa_ver (h = 0)") {
-		out_len = BN_BITS / 8 + 1;
+		out_len = RELIC_BN_BITS / 8 + 1;
 		new_len = out_len;
 		rand_bytes(in, sizeof(in));
 		cp_rsa_sig(out, &out_len, in, sizeof(in), 0, prv);
@@ -115,7 +115,7 @@ static void rsa(void) {
 	} BENCH_END;
 
 	BENCH_BEGIN("cp_rsa_ver (h = 1)") {
-		out_len = BN_BITS / 8 + 1;
+		out_len = RELIC_BN_BITS / 8 + 1;
 		new_len = out_len;
 		rand_bytes(in, sizeof(in));
 		md_map(h, in, sizeof(in));
@@ -124,17 +124,17 @@ static void rsa(void) {
 	} BENCH_END;
 
 #if CP_RSA == BASIC || !defined(STRIP)
-	BENCH_ONCE("cp_rsa_gen_basic", cp_rsa_gen_basic(pub, prv, BN_BITS));
+	BENCH_ONCE("cp_rsa_gen_basic", cp_rsa_gen_basic(pub, prv, RELIC_BN_BITS));
 
 	BENCH_BEGIN("cp_rsa_sig_basic (h = 0)") {
-		out_len = BN_BITS / 8 + 1;
+		out_len = RELIC_BN_BITS / 8 + 1;
 		new_len = out_len;
 		rand_bytes(in, sizeof(in));
 		BENCH_ADD(cp_rsa_sig_basic(out, &out_len, in, sizeof(in), 0, prv));
 	} BENCH_END;
 
 	BENCH_BEGIN("cp_rsa_sig_basic (h = 1)") {
-		out_len = BN_BITS / 8 + 1;
+		out_len = RELIC_BN_BITS / 8 + 1;
 		new_len = out_len;
 		rand_bytes(in, sizeof(in));
 		md_map(h, in, sizeof(in));
@@ -143,17 +143,17 @@ static void rsa(void) {
 #endif
 
 #if CP_RSA == QUICK || !defined(STRIP)
-	BENCH_ONCE("cp_rsa_gen_quick", cp_rsa_gen_quick(pub, prv, BN_BITS));
+	BENCH_ONCE("cp_rsa_gen_quick", cp_rsa_gen_quick(pub, prv, RELIC_BN_BITS));
 
 	BENCH_BEGIN("cp_rsa_sig_quick (h = 0)") {
-		out_len = BN_BITS / 8 + 1;
+		out_len = RELIC_BN_BITS / 8 + 1;
 		new_len = out_len;
 		rand_bytes(in, sizeof(in));
 		BENCH_ADD(cp_rsa_sig_quick(out, &out_len, in, sizeof(in), 0, prv));
 	} BENCH_END;
 
 	BENCH_BEGIN("cp_rsa_sig_quick (h = 1)") {
-		out_len = BN_BITS / 8 + 1;
+		out_len = RELIC_BN_BITS / 8 + 1;
 		new_len = out_len;
 		rand_bytes(in, sizeof(in));
 		md_map(h, in, sizeof(in));
@@ -167,7 +167,7 @@ static void rsa(void) {
 
 static void rabin(void) {
 	rabin_t pub, prv;
-	uint8_t in[1000], new[1000], out[BN_BITS / 8 + 1];
+	uint8_t in[1000], new[1000], out[RELIC_BN_BITS / 8 + 1];
 	int in_len, out_len, new_len;
 
 	rabin_null(pub);
@@ -176,11 +176,11 @@ static void rabin(void) {
 	rabin_new(pub);
 	rabin_new(prv);
 
-	BENCH_ONCE("cp_rabin_gen", cp_rabin_gen(pub, prv, BN_BITS));
+	BENCH_ONCE("cp_rabin_gen", cp_rabin_gen(pub, prv, RELIC_BN_BITS));
 
 	BENCH_BEGIN("cp_rabin_enc") {
 		in_len = bn_size_bin(pub->n) - 9;
-		out_len = BN_BITS / 8 + 1;
+		out_len = RELIC_BN_BITS / 8 + 1;
 		rand_bytes(in, in_len);
 		BENCH_ADD(cp_rabin_enc(out, &out_len, in, in_len, pub));
 		cp_rabin_dec(new, &new_len, out, out_len, prv);
@@ -189,7 +189,7 @@ static void rabin(void) {
 	BENCH_BEGIN("cp_rabin_dec") {
 		in_len = bn_size_bin(pub->n) - 9;
 		new_len = in_len;
-		out_len = BN_BITS / 8 + 1;
+		out_len = RELIC_BN_BITS / 8 + 1;
 		rand_bytes(in, in_len);
 		cp_rabin_enc(out, &out_len, in, in_len, pub);
 		BENCH_ADD(cp_rabin_dec(new, &new_len, out, out_len, prv));
@@ -202,7 +202,7 @@ static void rabin(void) {
 static void benaloh(void) {
 	bdpe_t pub, prv;
 	dig_t in, new;
-	uint8_t out[BN_BITS / 8 + 1];
+	uint8_t out[RELIC_BN_BITS / 8 + 1];
 	int out_len;
 
 	bdpe_null(pub);
@@ -211,10 +211,10 @@ static void benaloh(void) {
 	bdpe_new(pub);
 	bdpe_new(prv);
 
-	BENCH_ONCE("cp_bdpe_gen", cp_bdpe_gen(pub, prv, bn_get_prime(47), BN_BITS));
+	BENCH_ONCE("cp_bdpe_gen", cp_bdpe_gen(pub, prv, bn_get_prime(47), RELIC_BN_BITS));
 
 	BENCH_BEGIN("cp_bdpe_enc") {
-		out_len = BN_BITS / 8 + 1;
+		out_len = RELIC_BN_BITS / 8 + 1;
 		rand_bytes(out, 1);
 		in = out[0] % bn_get_prime(47);
 		BENCH_ADD(cp_bdpe_enc(out, &out_len, in, pub));
@@ -222,7 +222,7 @@ static void benaloh(void) {
 	} BENCH_END;
 
 	BENCH_BEGIN("cp_bdpe_dec") {
-		out_len = BN_BITS / 8 + 1;
+		out_len = RELIC_BN_BITS / 8 + 1;
 		rand_bytes(out, 1);
 		in = out[0] % bn_get_prime(47);
 		cp_bdpe_enc(out, &out_len, in, pub);
@@ -235,7 +235,7 @@ static void benaloh(void) {
 
 static void paillier(void) {
 	bn_t n, l;
-	uint8_t in[1000], new[1000], out[BN_BITS / 8 + 1];
+	uint8_t in[1000], new[1000], out[RELIC_BN_BITS / 8 + 1];
 	int in_len, out_len;
 
 	bn_null(n);
@@ -244,11 +244,11 @@ static void paillier(void) {
 	bn_new(n);
 	bn_new(l);
 
-	BENCH_ONCE("cp_phpe_gen", cp_phpe_gen(n, l, BN_BITS / 2));
+	BENCH_ONCE("cp_phpe_gen", cp_phpe_gen(n, l, RELIC_BN_BITS / 2));
 
 	BENCH_BEGIN("cp_phpe_enc") {
 		in_len = bn_size_bin(n);
-		out_len = BN_BITS / 8 + 1;
+		out_len = RELIC_BN_BITS / 8 + 1;
 		memset(in, 0, sizeof(in));
 		rand_bytes(in + 1, in_len - 1);
 		BENCH_ADD(cp_phpe_enc(out, &out_len, in, in_len, n));
@@ -257,7 +257,7 @@ static void paillier(void) {
 
 	BENCH_BEGIN("cp_phpe_dec") {
 		in_len = bn_size_bin(n);
-		out_len = BN_BITS / 8 + 1;
+		out_len = RELIC_BN_BITS / 8 + 1;
 		memset(in, 0, sizeof(in));
 		rand_bytes(in + 1, in_len - 1);
 		cp_phpe_enc(out, &out_len, in, in_len, n);

@@ -153,13 +153,13 @@ static void util(void) {
 }
 
 static void arith(void) {
-	ec_t p, q, r, t[EC_TABLE];
+	ec_t p, q, r, t[RELIC_EC_TABLE];
 	bn_t k, l, n;
 
 	ec_null(p);
 	ec_null(q);
 	ec_null(r);
-	for (int i = 0; i < EC_TABLE; i++) {
+	for (int i = 0; i < RELIC_EC_TABLE; i++) {
 		ec_null(t[i]);
 	}
 
@@ -223,7 +223,7 @@ static void arith(void) {
 	}
 	BENCH_END;
 
-	for (int i = 0; i < EC_TABLE; i++) {
+	for (int i = 0; i < RELIC_EC_TABLE; i++) {
 		ec_new(t[i]);
 	}
 
@@ -277,7 +277,7 @@ static void arith(void) {
 	bn_free(k);
 	bn_free(l);
 	bn_free(n);
-	for (int i = 0; i < EC_TABLE; i++) {
+	for (int i = 0; i < RELIC_EC_TABLE; i++) {
 		ec_free(t[i]);
 	}
 }

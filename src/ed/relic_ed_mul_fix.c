@@ -638,7 +638,7 @@ void ed_mul_pre_combs(ed_t *t, const ed_t p) {
 			}
 		}
 
-		ed_norm_sim(t + 2, (const ed_t *)t + 2, ED_TABLE_COMBS - 2);
+		ed_norm_sim(t + 2, (const ed_t *)t + 2, RELIC_ED_TABLE_COMBS - 2);
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);

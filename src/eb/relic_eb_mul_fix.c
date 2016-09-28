@@ -398,7 +398,7 @@ void eb_mul_pre_combs(eb_t *t, const eb_t p) {
 			}
 		}
 
-		eb_norm_sim(t + 2, (const eb_t *)t + 2, EB_TABLE_COMBS - 2);
+		eb_norm_sim(t + 2, (const eb_t *)t + 2, RELIC_EB_TABLE_COMBS - 2);
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);

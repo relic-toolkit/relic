@@ -168,13 +168,13 @@ static void util(void) {
 }
 
 static void arith(void) {
-	eb_t p, q, r, t[EB_TABLE_MAX];
+	eb_t p, q, r, t[RELIC_EB_TABLE_MAX];
 	bn_t k, l, n;
 
 	eb_null(p);
 	eb_null(q);
 	eb_null(r);
-	for (int i = 0; i < EB_TABLE_MAX; i++) {
+	for (int i = 0; i < RELIC_EB_TABLE_MAX; i++) {
 		eb_null(t[i]);
 	} bn_null(k);
 	bn_null(l);
@@ -444,7 +444,7 @@ static void arith(void) {
 	}
 	BENCH_END;
 
-	for (int i = 0; i < EB_TABLE; i++) {
+	for (int i = 0; i < RELIC_EB_TABLE; i++) {
 		eb_new(t[i]);
 	}
 
@@ -460,12 +460,12 @@ static void arith(void) {
 		BENCH_ADD(eb_mul_fix(q, (const eb_t *)t, k));
 	} BENCH_END;
 
-	for (int i = 0; i < EB_TABLE; i++) {
+	for (int i = 0; i < RELIC_EB_TABLE; i++) {
 		eb_free(t[i]);
 	}
 
 #if EB_FIX == BASIC || !defined(STRIP)
-	for (int i = 0; i < EB_TABLE_BASIC; i++) {
+	for (int i = 0; i < RELIC_EB_TABLE_BASIC; i++) {
 		eb_new(t[i]);
 	}
 	BENCH_BEGIN("eb_mul_pre_basic") {
@@ -479,13 +479,13 @@ static void arith(void) {
 		eb_mul_pre_basic(t, p);
 		BENCH_ADD(eb_mul_fix_basic(q, (const eb_t *)t, k));
 	} BENCH_END;
-	for (int i = 0; i < EB_TABLE_BASIC; i++) {
+	for (int i = 0; i < RELIC_EB_TABLE_BASIC; i++) {
 		eb_free(t[i]);
 	}
 #endif
 
 #if EB_FIX == YAOWI || !defined(STRIP)
-	for (int i = 0; i < EB_TABLE_YAOWI; i++) {
+	for (int i = 0; i < RELIC_EB_TABLE_YAOWI; i++) {
 		eb_new(t[i]);
 	}
 	BENCH_BEGIN("eb_mul_pre_yaowi") {
@@ -499,13 +499,13 @@ static void arith(void) {
 		eb_mul_pre_yaowi(t, p);
 		BENCH_ADD(eb_mul_fix_yaowi(q, (const eb_t *)t, k));
 	} BENCH_END;
-	for (int i = 0; i < EB_TABLE_YAOWI; i++) {
+	for (int i = 0; i < RELIC_EB_TABLE_YAOWI; i++) {
 		eb_free(t[i]);
 	}
 #endif
 
 #if EB_FIX == NAFWI || !defined(STRIP)
-	for (int i = 0; i < EB_TABLE_NAFWI; i++) {
+	for (int i = 0; i < RELIC_EB_TABLE_NAFWI; i++) {
 		eb_new(t[i]);
 	}
 	BENCH_BEGIN("eb_mul_pre_nafwi") {
@@ -519,13 +519,13 @@ static void arith(void) {
 		eb_mul_pre_nafwi(t, p);
 		BENCH_ADD(eb_mul_fix_nafwi(q, (const eb_t *)t, k));
 	} BENCH_END;
-	for (int i = 0; i < EB_TABLE_NAFWI; i++) {
+	for (int i = 0; i < RELIC_EB_TABLE_NAFWI; i++) {
 		eb_free(t[i]);
 	}
 #endif
 
 #if EB_FIX == COMBS || !defined(STRIP)
-	for (int i = 0; i < EB_TABLE_COMBS; i++) {
+	for (int i = 0; i < RELIC_EB_TABLE_COMBS; i++) {
 		eb_new(t[i]);
 	}
 	BENCH_BEGIN("eb_mul_pre_combs") {
@@ -539,13 +539,13 @@ static void arith(void) {
 		eb_mul_pre_combs(t, p);
 		BENCH_ADD(eb_mul_fix_combs(q, (const eb_t *)t, k));
 	} BENCH_END;
-	for (int i = 0; i < EB_TABLE_COMBS; i++) {
+	for (int i = 0; i < RELIC_EB_TABLE_COMBS; i++) {
 		eb_free(t[i]);
 	}
 #endif
 
 #if EB_FIX == COMBD || !defined(STRIP)
-	for (int i = 0; i < EB_TABLE_COMBD; i++) {
+	for (int i = 0; i < RELIC_EB_TABLE_COMBD; i++) {
 		eb_new(t[i]);
 	}
 	BENCH_BEGIN("eb_mul_pre_combd") {
@@ -559,13 +559,13 @@ static void arith(void) {
 		eb_mul_pre_combd(t, p);
 		BENCH_ADD(eb_mul_fix_combd(q, (const eb_t *)t, k));
 	} BENCH_END;
-	for (int i = 0; i < EB_TABLE_COMBD; i++) {
+	for (int i = 0; i < RELIC_EB_TABLE_COMBD; i++) {
 		eb_free(t[i]);
 	}
 #endif
 
 #if EB_FIX == LWNAF || !defined(STRIP)
-	for (int i = 0; i < EB_TABLE_LWNAF; i++) {
+	for (int i = 0; i < RELIC_EB_TABLE_LWNAF; i++) {
 		eb_new(t[i]);
 	}
 	BENCH_BEGIN("eb_mul_pre_lwnaf") {
@@ -579,7 +579,7 @@ static void arith(void) {
 		eb_mul_pre_lwnaf(t, p);
 		BENCH_ADD(eb_mul_fix_lwnaf(q, (const eb_t *)t, k));
 	} BENCH_END;
-	for (int i = 0; i < EB_TABLE_LWNAF; i++) {
+	for (int i = 0; i < RELIC_EB_TABLE_LWNAF; i++) {
 		eb_free(t[i]);
 	}
 #endif

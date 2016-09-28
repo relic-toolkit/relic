@@ -390,7 +390,7 @@ static int multiplication(void) {
 static int fixed(void) {
 	int code = STS_ERR;
 	bn_t n, k;
-	ec_t p, q, r, t[EC_TABLE];
+	ec_t p, q, r, t[RELIC_EC_TABLE];
 
 	bn_null(n);
 	bn_null(k);
@@ -398,7 +398,7 @@ static int fixed(void) {
 	ec_null(q);
 	ec_null(r);
 
-	for (int i = 0; i < EC_TABLE; i++) {
+	for (int i = 0; i < RELIC_EC_TABLE; i++) {
 		ec_null(t[i]);
 	}
 
@@ -412,7 +412,7 @@ static int fixed(void) {
 		ec_curve_get_gen(p);
 		ec_curve_get_ord(n);
 
-		for (int i = 0; i < EC_TABLE; i++) {
+		for (int i = 0; i < RELIC_EC_TABLE; i++) {
 			ec_new(t[i]);
 		}
 		TEST_BEGIN("fixed point multiplication is correct") {
@@ -423,7 +423,7 @@ static int fixed(void) {
 			ec_mul(r, p, k);
 			TEST_ASSERT(ec_cmp(q, r) == CMP_EQ, end);
 		} TEST_END;
-		for (int i = 0; i < EC_TABLE; i++) {
+		for (int i = 0; i < RELIC_EC_TABLE; i++) {
 			ec_free(t[i]);
 		}
 	}

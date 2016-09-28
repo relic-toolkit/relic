@@ -5,7 +5,7 @@ message("   ARCH=MSP       TI MSP430 16-bit architecture.")
 message("   ARCH=ARM       ARM 32-bit architecture.")
 message("   ARCH=X86       Intel x86-compatible 32-bit architecture.")
 message("   ARCH=X64       AMD x86_64-compatible 64-bit architecture.")
-message("   ARCH=NONE      No specific architecture (disable some features).\n")
+message("   ARCH=RELIC_NONE      No specific architecture (disable some features).\n")
 
 message(STATUS "Available word sizes (default = 64):\n")
 

@@ -37,7 +37,7 @@
 static int rsa(void) {
 	int code = STS_ERR;
 	rsa_t pub, prv;
-	uint8_t in[10], out[BN_BITS / 8 + 1], h[MD_LEN];
+	uint8_t in[10], out[RELIC_BN_BITS / 8 + 1], h[MD_LEN];
 	int il, ol;
 	int result;
 
@@ -48,12 +48,12 @@ static int rsa(void) {
 		rsa_new(pub);
 		rsa_new(prv);
 
-		result = cp_rsa_gen(pub, prv, BN_BITS);
+		result = cp_rsa_gen(pub, prv, RELIC_BN_BITS);
 
 		TEST_BEGIN("rsa encryption/decryption is correct") {
 			TEST_ASSERT(result == STS_OK, end);
 			il = 10;
-			ol = BN_BITS / 8 + 1;
+			ol = RELIC_BN_BITS / 8 + 1;
 			rand_bytes(in, il);
 			TEST_ASSERT(cp_rsa_enc(out, &ol, in, il, pub) == STS_OK, end);
 			TEST_ASSERT(cp_rsa_dec(out, &ol, out, ol, prv) == STS_OK, end);
@@ -61,12 +61,12 @@ static int rsa(void) {
 		} TEST_END;
 
 #if CP_RSA == BASIC || !defined(STRIP)
-		result = cp_rsa_gen_basic(pub, prv, BN_BITS);
+		result = cp_rsa_gen_basic(pub, prv, RELIC_BN_BITS);
 
 		TEST_BEGIN("basic rsa encryption/decryption is correct") {
 			TEST_ASSERT(result == STS_OK, end);
 			il = 10;
-			ol = BN_BITS / 8 + 1;
+			ol = RELIC_BN_BITS / 8 + 1;
 			rand_bytes(in, il);
 			TEST_ASSERT(cp_rsa_enc(out, &ol, in, il, pub) == STS_OK, end);
 			TEST_ASSERT(cp_rsa_dec_basic(out, &ol, out, ol, prv) == STS_OK,
@@ -76,12 +76,12 @@ static int rsa(void) {
 #endif
 
 #if CP_RSA == QUICK || !defined(STRIP)
-		result = cp_rsa_gen_quick(pub, prv, BN_BITS);
+		result = cp_rsa_gen_quick(pub, prv, RELIC_BN_BITS);
 
 		TEST_BEGIN("fast rsa encryption/decryption is correct") {
 			TEST_ASSERT(result == STS_OK, end);
 			il = 10;
-			ol = BN_BITS / 8 + 1;
+			ol = RELIC_BN_BITS / 8 + 1;
 			rand_bytes(in, il);
 			TEST_ASSERT(cp_rsa_enc(out, &ol, in, il, pub) == STS_OK, end);
 			TEST_ASSERT(cp_rsa_dec_quick(out, &ol, out, ol, prv) == STS_OK,
@@ -90,12 +90,12 @@ static int rsa(void) {
 		} TEST_END;
 #endif
 
-		result = cp_rsa_gen(pub, prv, BN_BITS);
+		result = cp_rsa_gen(pub, prv, RELIC_BN_BITS);
 
 		TEST_BEGIN("rsa signature/verification is correct") {
 			TEST_ASSERT(result == STS_OK, end);
 			il = 10;
-			ol = BN_BITS / 8 + 1;
+			ol = RELIC_BN_BITS / 8 + 1;
 			rand_bytes(in, il);
 			TEST_ASSERT(cp_rsa_sig(out, &ol, in, il, 0, prv) == STS_OK, end);
 			TEST_ASSERT(cp_rsa_ver(out, ol, in, il, 0, pub) == 1, end);
@@ -105,12 +105,12 @@ static int rsa(void) {
 		} TEST_END;
 
 #if CP_RSA == BASIC || !defined(STRIP)
-		result = cp_rsa_gen_basic(pub, prv, BN_BITS);
+		result = cp_rsa_gen_basic(pub, prv, RELIC_BN_BITS);
 
 		TEST_BEGIN("basic rsa signature/verification is correct") {
 			TEST_ASSERT(result == STS_OK, end);
 			il = 10;
-			ol = BN_BITS / 8 + 1;
+			ol = RELIC_BN_BITS / 8 + 1;
 			rand_bytes(in, il);
 			TEST_ASSERT(cp_rsa_sig_basic(out, &ol, in, il, 0, prv) == STS_OK,
 					end);
@@ -123,12 +123,12 @@ static int rsa(void) {
 #endif
 
 #if CP_RSA == QUICK || !defined(STRIP)
-		result = cp_rsa_gen_quick(pub, prv, BN_BITS);
+		result = cp_rsa_gen_quick(pub, prv, RELIC_BN_BITS);
 
 		TEST_BEGIN("fast rsa signature/verification is correct") {
 			TEST_ASSERT(result == STS_OK, end);
 			il = 10;
-			ol = BN_BITS / 8 + 1;
+			ol = RELIC_BN_BITS / 8 + 1;
 			rand_bytes(in, il);
 			TEST_ASSERT(cp_rsa_sig_quick(out, &ol, in, il, 0, prv) == STS_OK,
 					end);
@@ -154,7 +154,7 @@ static int rabin(void) {
 	int code = STS_ERR;
 	rabin_t pub, prv;
 	uint8_t in[10];
-	uint8_t out[BN_BITS / 8 + 1];
+	uint8_t out[RELIC_BN_BITS / 8 + 1];
 	int in_len, out_len;
 	int result;
 
@@ -165,12 +165,12 @@ static int rabin(void) {
 		rabin_new(pub);
 		rabin_new(prv);
 
-		result = cp_rabin_gen(pub, prv, BN_BITS);
+		result = cp_rabin_gen(pub, prv, RELIC_BN_BITS);
 
 		TEST_BEGIN("rabin encryption/decryption is correct") {
 			TEST_ASSERT(result == STS_OK, end);
 			in_len = 10;
-			out_len = BN_BITS / 8 + 1;
+			out_len = RELIC_BN_BITS / 8 + 1;
 			rand_bytes(in, in_len);
 			TEST_ASSERT(cp_rabin_enc(out, &out_len, in, in_len, pub) == STS_OK,
 					end);
@@ -194,7 +194,7 @@ static int benaloh(void) {
 	bdpe_t pub, prv;
 	bn_t a, b;
 	dig_t in, out;
-	uint8_t buf[BN_BITS / 8 + 1];
+	uint8_t buf[RELIC_BN_BITS / 8 + 1];
 	int len;
 	int result;
 
@@ -209,11 +209,11 @@ static int benaloh(void) {
 		bdpe_new(pub);
 		bdpe_new(prv);
 
-		result = cp_bdpe_gen(pub, prv, bn_get_prime(47), BN_BITS);
+		result = cp_bdpe_gen(pub, prv, bn_get_prime(47), RELIC_BN_BITS);
 
 		TEST_BEGIN("benaloh encryption/decryption is correct") {
 			TEST_ASSERT(result == STS_OK, end);
-			len = BN_BITS / 8 + 1;
+			len = RELIC_BN_BITS / 8 + 1;
 			rand_bytes(buf, 1);
 			in = buf[0] % bn_get_prime(47);
 			TEST_ASSERT(cp_bdpe_enc(buf, &len, in, pub) == STS_OK, end);
@@ -223,7 +223,7 @@ static int benaloh(void) {
 
 		TEST_BEGIN("benaloh encryption/decryption is homomorphic") {
 			TEST_ASSERT(result == STS_OK, end);
-			len = BN_BITS / 8 + 1;
+			len = RELIC_BN_BITS / 8 + 1;
 			rand_bytes(buf, 1);
 			in = buf[0] % bn_get_prime(47);
 			TEST_ASSERT(cp_bdpe_enc(buf, &len, in, pub) == STS_OK, end);
@@ -256,7 +256,7 @@ static int benaloh(void) {
 static int paillier(void) {
 	int code = STS_ERR;
 	bn_t a, b, c, d, n, l, s;
-	uint8_t in[BN_BITS / 8 + 1], out[BN_BITS / 8 + 1];
+	uint8_t in[RELIC_BN_BITS / 8 + 1], out[RELIC_BN_BITS / 8 + 1];
 	int in_len, out_len;
 	int result;
 
@@ -277,12 +277,12 @@ static int paillier(void) {
 		bn_new(l);
 		bn_new(s);
 
-		result = cp_phpe_gen(n, l, BN_BITS / 2);
+		result = cp_phpe_gen(n, l, RELIC_BN_BITS / 2);
 
 		TEST_BEGIN("paillier encryption/decryption is correct") {
 			TEST_ASSERT(result == STS_OK, end);
 			in_len = bn_size_bin(n);
-			out_len = BN_BITS / 8 + 1;
+			out_len = RELIC_BN_BITS / 8 + 1;
 			memset(in, 0, sizeof(in));
 			rand_bytes(in + (in_len - 10), 10);
 			TEST_ASSERT(cp_phpe_enc(out, &out_len, in, in_len, n) == STS_OK,
@@ -296,7 +296,7 @@ static int paillier(void) {
 		TEST_BEGIN("paillier encryption/decryption is homomorphic") {
 			TEST_ASSERT(result == STS_OK, end);
 			in_len = bn_size_bin(n);
-			out_len = BN_BITS / 8 + 1;
+			out_len = RELIC_BN_BITS / 8 + 1;
 			memset(in, 0, sizeof(in));
 			rand_bytes(in + (in_len - 10), 10);
 			bn_read_bin(a, in, in_len);
@@ -306,7 +306,7 @@ static int paillier(void) {
 			memset(in, 0, sizeof(in));
 			rand_bytes(in + (in_len - 10), 10);
 			bn_read_bin(c, in, in_len);
-			out_len = BN_BITS / 8 + 1;
+			out_len = RELIC_BN_BITS / 8 + 1;
 			TEST_ASSERT(cp_phpe_enc(out, &out_len, in, in_len, n) == STS_OK,
 					end);
 			bn_read_bin(d, out, out_len);

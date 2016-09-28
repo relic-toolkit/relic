@@ -334,7 +334,7 @@ void ep2_mul_pre_combs(ep2_t *t, ep2_t p) {
 			}
 		}
 #if defined(EP_MIXED)
-		for (i = 1; i < EP_TABLE_COMBS; i++) {
+		for (i = 1; i < RELIC_EP_TABLE_COMBS; i++) {
 			ep2_norm(t[i], t[i]);
 		}
 #endif
@@ -439,7 +439,7 @@ void ep2_mul_pre_combd(ep2_t *t, ep2_t p) {
 			}
 		}
 #if defined(EP_MIXED)
-		for (i = 1; i < EP_TABLE_COMBD; i++) {
+		for (i = 1; i < RELIC_EP_TABLE_COMBD; i++) {
 			ep2_norm(t[i], t[i]);
 		}
 #endif

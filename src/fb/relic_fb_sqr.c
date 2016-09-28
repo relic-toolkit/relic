@@ -63,7 +63,7 @@ void fb_sqr_basic(fb_t c, const fb_t a) {
 
 #endif
 
-#if FB_SQR == TABLE || !defined(STRIP)
+#if FB_SQR == RELIC_TABLE || !defined(STRIP)
 
 void fb_sqr_table(fb_t c, const fb_t a) {
 	dv_t t;

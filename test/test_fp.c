@@ -170,7 +170,7 @@ static int util(void) {
 			TEST_ASSERT(fp_get_bit(a, bits) == 1, end);
 			fp_set_bit(a, bits, 0);
 			TEST_ASSERT(fp_get_bit(a, bits) == 0, end);
-			bits = (bits + 1) % BN_BITS;
+			bits = (bits + 1) % RELIC_BN_BITS;
 		}
 		TEST_END;
 

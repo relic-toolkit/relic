@@ -269,7 +269,7 @@ static void find_chain() {
 	int x, y, u[ctx->chain_len + 1];
 
 	for (i = 0; i < MAX_TERMS; i++) {
-		for (j = 0; j < FB_TABLE; j++) {
+		for (j = 0; j < RELIC_FB_TABLE; j++) {
 			ctx->fb_tab_ptr[i][j] = &(ctx->fb_tab_sqr[i][j]);
 		}
 	}
