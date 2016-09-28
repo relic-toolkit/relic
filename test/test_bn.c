@@ -780,7 +780,7 @@ static int division(void) {
 			bn_add(e, e, d);
 			TEST_ASSERT(bn_cmp(a, e) == CMP_EQ, end);
 			TEST_ASSERT(bn_sign(a) == bn_sign(c), end);
-			TEST_ASSERT(bn_sign(d) == BN_POS, end);
+			TEST_ASSERT(bn_sign(d) == bn_sign(b), end);
 		} TEST_END;
 
 		TEST_BEGIN("trivial division by negative is correct") {
@@ -792,8 +792,21 @@ static int division(void) {
 			bn_mul(e, c, b);
 			bn_add(e, e, d);
 			TEST_ASSERT(bn_cmp(a, e) == CMP_EQ, end);
-			TEST_ASSERT(bn_sign(a) == bn_sign(c), end);
-			TEST_ASSERT(bn_sign(d) == BN_POS, end);
+			TEST_ASSERT(bn_sign(a) != bn_sign(c), end);
+			TEST_ASSERT(bn_sign(d) == bn_sign(b), end);
+		} TEST_END;
+
+		TEST_BEGIN("negative trivial division by negative is correct") {
+			bn_rand(a, BN_NEG, BN_BITS / 2);
+			bn_rand(b, BN_NEG, BN_BITS);
+			bn_div(e, a, b);
+			bn_div_rem(c, d, a, b);
+			TEST_ASSERT(bn_cmp(e, c) == CMP_EQ, end);
+			bn_mul(e, c, b);
+			bn_add(e, e, d);
+			TEST_ASSERT(bn_cmp(a, e) == CMP_EQ, end);
+			TEST_ASSERT(bn_sign(a) != bn_sign(c), end);
+			TEST_ASSERT(bn_sign(d) == bn_sign(b), end);
 		} TEST_END;
 
 		TEST_BEGIN("division is correct") {
@@ -806,7 +819,7 @@ static int division(void) {
 			bn_add(e, e, d);
 			TEST_ASSERT(bn_cmp(a, e) == CMP_EQ, end);
 			TEST_ASSERT(bn_sign(a) == bn_sign(c), end);
-			TEST_ASSERT(bn_sign(d) == BN_POS, end);
+			TEST_ASSERT(bn_sign(d) == bn_sign(d), end);
 		} TEST_END;
 
 		TEST_BEGIN("negative division is correct") {
@@ -832,7 +845,20 @@ static int division(void) {
 			bn_add(e, e, d);
 			TEST_ASSERT(bn_cmp(a, e) == CMP_EQ, end);
 			TEST_ASSERT(bn_sign(a) != bn_sign(c), end);
-			TEST_ASSERT(bn_sign(d) == BN_POS, end);
+			TEST_ASSERT(bn_sign(d) == bn_sign(b), end);
+		} TEST_END;
+
+		TEST_BEGIN("negative division by negative is correct") {
+			bn_rand(a, BN_NEG, BN_BITS);
+			bn_rand(b, BN_NEG, BN_BITS / 2);
+			bn_div(e, a, b);
+			bn_div_rem(c, d, a, b);
+			TEST_ASSERT(bn_cmp(e, c) == CMP_EQ, end);
+			bn_mul(e, c, b);
+			bn_add(e, e, d);
+			TEST_ASSERT(bn_cmp(a, e) == CMP_EQ, end);
+			TEST_ASSERT(bn_sign(a) != bn_sign(c), end);
+			TEST_ASSERT(bn_sign(d) == bn_sign(b), end);
 		} TEST_END;
 	}
 	CATCH_ANY {
@@ -864,6 +890,20 @@ static int reduction(void) {
 		bn_new(c);
 		bn_new(d);
 		bn_new(e);
+
+#if BN_MOD == BASIC || !defined(STRIP)
+		TEST_BEGIN("basic reduction is correct") {
+			bn_rand(a, BN_POS, BN_BITS - BN_DIGIT / 2);
+			bn_rand(b, BN_POS, BN_BITS / 2);
+			bn_div_rem(c, d, a, b);
+			bn_sqr(c, b);
+			if (bn_cmp(a, c) == CMP_LT) {
+				bn_mod_basic(e, a, b);
+				TEST_ASSERT(bn_cmp(e, d) == CMP_EQ, end);
+			}
+		}
+		TEST_END;
+#endif
 
 #if BN_MOD == BARRT || !defined(STRIP)
 		TEST_BEGIN("barrett reduction is correct") {
@@ -1744,7 +1784,7 @@ static int recoding(void) {
 						} else {
 							if (tnaf[k] > 0) {
 								if (beta[tnaf[k] / 2] >= 0) {
-									bn_add_dig(a, a, beta[tnaf[k] / 2]);	
+									bn_add_dig(a, a, beta[tnaf[k] / 2]);
 								} else {
 									bn_sub_dig(a, a, -beta[tnaf[k] / 2]);
 								}
@@ -1765,7 +1805,7 @@ static int recoding(void) {
 								} else {
 									bn_add_dig(b, b, -gama[-tnaf[k] / 2]);
 								}
-							}							
+							}
 						}
 					}
 					TEST_ASSERT(bn_cmp(a, v1[0]) == CMP_EQ, end);
@@ -1814,7 +1854,7 @@ static int recoding(void) {
 						} else {
 							if (tnaf[k] > 0) {
 								if (beta[tnaf[k] / 2] >= 0) {
-									bn_add_dig(a, a, beta[tnaf[k] / 2]);	
+									bn_add_dig(a, a, beta[tnaf[k] / 2]);
 								} else {
 									bn_sub_dig(a, a, -beta[tnaf[k] / 2]);
 								}
@@ -1835,13 +1875,13 @@ static int recoding(void) {
 								} else {
 									bn_add_dig(b, b, -gama[-tnaf[k] / 2]);
 								}
-							}				
+							}
 						}
 					}
 					TEST_ASSERT(bn_cmp(a, v1[0]) == CMP_EQ, end);
 					TEST_ASSERT(bn_cmp(b, v1[1]) == CMP_EQ, end);
 				}
-			} TEST_END;			
+			} TEST_END;
 		}
 #endif
 
@@ -2037,7 +2077,7 @@ int main(void) {
 	if (factor() != STS_OK) {
 		core_clean();
 		return 1;
-	}	
+	}
 
 	util_banner("All tests have passed.\n", 0);
 
