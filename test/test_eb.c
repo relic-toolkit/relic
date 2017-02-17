@@ -733,14 +733,14 @@ static int multiplication(void) {
 #endif
 
 		TEST_BEGIN("multiplication by digit is correct") {
-			bn_rand(k, BN_POS, BN_DIGIT);
-			eb_mul(q, p, k);
-			eb_mul_dig(r, p, k->dp[0]);
-			TEST_ASSERT(eb_cmp(q, r) == CMP_EQ, end);
 			eb_mul_dig(r, p, 0);
 			TEST_ASSERT(eb_is_infty(r), end);
 			eb_mul_dig(r, p, 1);
 			TEST_ASSERT(eb_cmp(p, r) == CMP_EQ, end);
+			bn_rand(k, BN_POS, BN_DIGIT);
+			eb_mul(q, p, k);
+			eb_mul_dig(r, p, k->dp[0]);
+			TEST_ASSERT(eb_cmp(q, r) == CMP_EQ, end);
 		}
 		TEST_END;
 
@@ -948,7 +948,7 @@ static int fixed(void) {
 		for (int i = 0; i < RELIC_EB_TABLE_LWNAF; i++) {
 			eb_new(t[i]);
 		}
-		TEST_BEGIN("w(t)naf fixed point multiplication is correct") {
+		TEST_BEGIN("left-to-right w(t)naf fixed point multiplication is correct") {
 			eb_rand(p);
 			eb_mul_pre_lwnaf(t, p);
 			bn_zero(k);

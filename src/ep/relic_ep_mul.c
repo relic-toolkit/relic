@@ -194,6 +194,9 @@ static void ep_mul_naf_imp(ep_t r, const ep_t p, const bn_t k) {
 		}
 		/* Convert r to affine coordinates. */
 		ep_norm(r, r);
+		if (bn_sign(k) == BN_NEG) {
+			ep_neg(r, r);
+		}
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
