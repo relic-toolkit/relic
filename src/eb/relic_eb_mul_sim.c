@@ -55,12 +55,12 @@
  */
 static void eb_mul_sim_kbltz(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 		const bn_t m, const eb_t *t) {
-	int l0, l1, l, i, n0, n1, w, g;
+	int i, l, l0, l1, n0, n1, w, g;
 	int8_t u, tnaf0[FB_BITS + 8], tnaf1[FB_BITS + 8], *_k, *_m;
 	eb_t t0[1 << (EB_WIDTH - 2)];
 	eb_t t1[1 << (EB_WIDTH - 2)];
 
-	for (i = 0; i < (1 << (EB_WIDTH - 2)); i++) {
+	for (i =  0; i < (1 << (EB_WIDTH - 2)); i++) {
 		eb_null(t0[i]);
 		eb_null(t1[i]);
 	}
@@ -75,7 +75,7 @@ static void eb_mul_sim_kbltz(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 
 		g = (t == NULL ? 0 : 1);
 		if (!g) {
-			for (i = 0; i < (1 << (EB_WIDTH - 2)); i++) {
+			for (i =  0; i < (1 << (EB_WIDTH - 2)); i++) {
 				eb_new(t0[i]);
 				eb_set_infty(t0[i]);
 				fb_set_bit(t0[i]->z, 0, 1);
@@ -86,7 +86,7 @@ static void eb_mul_sim_kbltz(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 		}
 
 		/* Prepare the precomputation table. */
-		for (i = 0; i < (1 << (EB_WIDTH - 2)); i++) {
+		for (i =  0; i < (1 << (EB_WIDTH - 2)); i++) {
 			eb_new(t1[i]);
 			eb_set_infty(t1[i]);
 			fb_set_bit(t1[i]->z, 0, 1);
@@ -109,15 +109,28 @@ static void eb_mul_sim_kbltz(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 		l = MAX(l0, l1);
 		_k = tnaf0 + l - 1;
 		_m = tnaf1 + l - 1;
-		for (i = l0; i < l; i++)
+		for (i =  l0; i < l; i++) {
 			tnaf0[i] = 0;
-		for (i = l1; i < l; i++)
+		}
+		for (i =  l1; i < l; i++) {
 			tnaf1[i] = 0;
+		}
+
+		if (bn_sign(k) == BN_NEG) {
+			for (i =  0; i < l0; i++) {
+				tnaf0[i] = -tnaf0[i];
+			}
+		}
+		if (bn_sign(m) == BN_NEG) {
+			for (i =  0; i < l1; i++) {
+				tnaf1[i] = -tnaf1[i];
+			}
+		}
 
 		_k = tnaf0 + l - 1;
 		_m = tnaf1 + l - 1;
 		eb_set_infty(r);
-		for (i = l - 1; i >= 0; i--, _k--, _m--) {
+		for (i =  l - 1; i >= 0; i--, _k--, _m--) {
 			eb_frb(r, r);
 
 			n0 = *_k;
@@ -143,11 +156,11 @@ static void eb_mul_sim_kbltz(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 	}
 	FINALLY {
 		if (!g) {
-			for (i = 0; i < (1 << (EB_WIDTH - 2)); i++) {
+			for (i =  0; i < (1 << (EB_WIDTH - 2)); i++) {
 				eb_free(t0[i]);
 			}
 		}
-		for (i = 0; i < (1 << (EB_WIDTH - 2)); i++) {
+		for (i =  0; i < (1 << (EB_WIDTH - 2)); i++) {
 			eb_free(t1[i]);
 		}
 	}
@@ -171,12 +184,12 @@ static void eb_mul_sim_kbltz(eb_t r, const eb_t p, const bn_t k, const eb_t q,
  */
 static void eb_mul_sim_plain(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 		const bn_t m, const eb_t *t) {
-	int l, l0, l1, i, n0, n1, w, g;
+	int i, l, l0, l1, n0, n1, w, g;
 	int8_t naf0[FB_BITS + 1], naf1[FB_BITS + 1], *_k, *_m;
 	eb_t t0[1 << (EB_WIDTH - 2)];
 	eb_t t1[1 << (EB_WIDTH - 2)];
 
-	for (i = 0; i < (1 << (EB_WIDTH - 2)); i++) {
+	for (i =  0; i < (1 << (EB_WIDTH - 2)); i++) {
 		eb_null(t0[i]);
 		eb_null(t1[i]);
 	}
@@ -184,7 +197,7 @@ static void eb_mul_sim_plain(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 	TRY {
 		g = (t == NULL ? 0 : 1);
 		if (!g) {
-			for (i = 0; i < (1 << (EB_WIDTH - 2)); i++) {
+			for (i =  0; i < (1 << (EB_WIDTH - 2)); i++) {
 				eb_new(t0[i]);
 			}
 			eb_tab(t0, p, EB_WIDTH);
@@ -192,7 +205,7 @@ static void eb_mul_sim_plain(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 		}
 
 		/* Prepare the precomputation table. */
-		for (i = 0; i < (1 << (EB_WIDTH - 2)); i++) {
+		for (i =  0; i < (1 << (EB_WIDTH - 2)); i++) {
 			eb_new(t1[i]);
 		}
 		/* Compute the precomputation table. */
@@ -212,15 +225,26 @@ static void eb_mul_sim_plain(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 		l = MAX(l0, l1);
 		_k = naf0 + l - 1;
 		_m = naf1 + l - 1;
-		for (i = l0; i < l; i++) {
+		for (i =  l0; i < l; i++) {
 			naf0[i] = 0;
 		}
-		for (i = l1; i < l; i++) {
+		for (i =  l1; i < l; i++) {
 			naf1[i] = 0;
 		}
 
+		if (bn_sign(k) == BN_NEG) {
+			for (i =  0; i < l0; i++) {
+				naf0[i] = -naf0[i];
+			}
+		}
+		if (bn_sign(m) == BN_NEG) {
+			for (i =  0; i < l1; i++) {
+				naf1[i] = -naf1[i];
+			}
+		}
+
 		eb_set_infty(r);
-		for (i = l - 1; i >= 0; i--, _k--, _m--) {
+		for (i =  l - 1; i >= 0; i--, _k--, _m--) {
 			eb_dbl(r, r);
 
 			n0 = *_k;
@@ -247,11 +271,11 @@ static void eb_mul_sim_plain(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 	FINALLY {
 		/* Free the precomputation tables. */
 		if (!g) {
-			for (i = 0; i < 1 << (EB_WIDTH - 2); i++) {
+			for (i =  0; i < 1 << (EB_WIDTH - 2); i++) {
 				eb_free(t0[i]);
 			}
 		}
-		for (i = 0; i < 1 << (EB_WIDTH - 2); i++) {
+		for (i =  0; i < 1 << (EB_WIDTH - 2); i++) {
 			eb_free(t1[i]);
 		}
 	}
@@ -295,18 +319,18 @@ void eb_mul_sim_trick(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 		const bn_t m) {
 	eb_t t0[1 << (EB_WIDTH / 2)], t1[1 << (EB_WIDTH / 2)], t[1 << EB_WIDTH];
 	bn_t n;
-	int l0, l1, w = EB_WIDTH / 2;
+	int i, l0, l1, w = EB_WIDTH / 2;
 	uint8_t w0[CEIL(FB_BITS, w)], w1[CEIL(FB_BITS, w)];
 
 	bn_null(n);
 
-	for (int i = 0; i < 1 << EB_WIDTH; i++) {
-		eb_null(t[i]);
+	if (bn_is_zero(k) || eb_is_infty(p)) {
+		eb_mul(r, q, m);
+		return;
 	}
-
-	for (int i = 0; i < 1 << (EB_WIDTH / 2); i++) {
-		eb_null(t0[i]);
-		eb_null(t1[i]);
+	if (bn_is_zero(m) || eb_is_infty(q)) {
+		eb_mul(r, p, k);
+		return;
 	}
 
 	TRY {
@@ -314,25 +338,36 @@ void eb_mul_sim_trick(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 
 		eb_curve_get_ord(n);
 
-		for (int i = 0; i < (1 << w); i++) {
+		for (i =  0; i < (1 << w); i++) {
+			eb_null(t0[i]);
+			eb_null(t1[i]);
 			eb_new(t0[i]);
 			eb_new(t1[i]);
 		}
-		for (int i = 0; i < (1 << EB_WIDTH); i++) {
+		for (i =  0; i < (1 << EB_WIDTH); i++) {
+			eb_null(t[i]);
 			eb_new(t[i]);
 		}
 
 		eb_set_infty(t0[0]);
-		for (int i = 1; i < (1 << w); i++) {
-			eb_add(t0[i], t0[i - 1], p);
+		eb_copy(t0[1], p);
+		if (bn_sign(k) == BN_NEG) {
+			eb_neg(t0[1], t0[1]);
+		}
+		for (i =  2; i < (1 << w); i++) {
+			eb_add(t0[i], t0[i - 1], t0[1]);
 		}
 
 		eb_set_infty(t1[0]);
-		for (int i = 1; i < (1 << w); i++) {
-			eb_add(t1[i], t1[i - 1], q);
+		eb_copy(t1[1], q);
+		if (bn_sign(m) == BN_NEG) {
+			eb_neg(t1[1], t1[1]);
+		}
+		for (i =  2; i < (1 << w); i++) {
+			eb_add(t1[i], t1[i - 1], t1[1]);
 		}
 
-		for (int i = 0; i < (1 << w); i++) {
+		for (i =  0; i < (1 << w); i++) {
 			for (int j = 0; j < (1 << w); j++) {
 				eb_add(t[(i << w) + j], t0[i], t1[j]);
 			}
@@ -345,16 +380,15 @@ void eb_mul_sim_trick(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 		l0 = l1 = CEIL(FB_BITS, w);
 		bn_rec_win(w0, &l0, k, w);
 		bn_rec_win(w1, &l1, m, w);
-
-		for (int i = l0; i < l1; i++) {
+		for (i =  l0; i < l1; i++) {
 			w0[i] = 0;
 		}
-		for (int i = l1; i < l0; i++) {
+		for (i =  l1; i < l0; i++) {
 			w1[i] = 0;
 		}
 
 		eb_set_infty(r);
-		for (int i = MAX(l0, l1) - 1; i >= 0; i--) {
+		for (i =  MAX(l0, l1) - 1; i >= 0; i--) {
 			for (int j = 0; j < w; j++) {
 				eb_dbl(r, r);
 			}
@@ -366,11 +400,11 @@ void eb_mul_sim_trick(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 	}
 	FINALLY {
 		bn_free(n);
-		for (int i = 0; i < (1 << w); i++) {
+		for (i =  0; i < (1 << w); i++) {
 			eb_free(t0[i]);
 			eb_free(t1[i]);
 		}
-		for (int i = 0; i < (1 << EB_WIDTH); i++) {
+		for (i =  0; i < (1 << EB_WIDTH); i++) {
 			eb_free(t[i]);
 		}
 	}
@@ -381,6 +415,16 @@ void eb_mul_sim_trick(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 
 void eb_mul_sim_inter(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 		const bn_t m) {
+
+	if (bn_is_zero(k) || eb_is_infty(p)) {
+		eb_mul(r, q, m);
+		return;
+	}
+	if (bn_is_zero(m) || eb_is_infty(q)) {
+		eb_mul(r, p, k);
+		return;
+	}
+
 #if defined(EB_KBLTZ)
 	if (eb_curve_is_kbltz()) {
 		eb_mul_sim_kbltz(r, p, k, q, m, NULL);
@@ -400,26 +444,35 @@ void eb_mul_sim_inter(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 void eb_mul_sim_joint(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 		const bn_t m) {
 	eb_t t[5];
-	int u_i, len, offset;
+	int i, u_i, len, offset;
 	int8_t jsf[2 * (FB_BITS + 1)];
-	int i;
 
-	eb_null(t[0]);
-	eb_null(t[1]);
-	eb_null(t[2]);
-	eb_null(t[3]);
-	eb_null(t[4]);
+	if (bn_is_zero(k) || eb_is_infty(p)) {
+		eb_mul(r, q, m);
+		return;
+	}
+	if (bn_is_zero(m) || eb_is_infty(q)) {
+		eb_mul(r, p, k);
+		return;
+	}
 
 	TRY {
-		for (i = 0; i < 5; i++) {
+		for (i =  0; i < 5; i++) {
+			eb_null(t[i]);
 			eb_new(t[i]);
 		}
 
 		eb_set_infty(t[0]);
 		eb_copy(t[1], q);
+		if (bn_sign(m) == BN_NEG) {
+			eb_neg(t[1], t[1]);
+		}
 		eb_copy(t[2], p);
-		eb_add(t[3], p, q);
-		eb_sub(t[4], p, q);
+		if (bn_sign(k) == BN_NEG) {
+			eb_neg(t[2], t[2]);
+		}
+		eb_add(t[3], t[2], t[1]);
+		eb_sub(t[4], t[2], t[1]);
 #if defined(EB_MIXED)
 		eb_norm_sim(t + 3, (const eb_t*)(t + 3), 2);
 #endif
@@ -454,7 +507,7 @@ void eb_mul_sim_joint(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 		THROW(ERR_CAUGHT);
 	}
 	FINALLY {
-		for (i = 0; i < 5; i++) {
+		for (i =  0; i < 5; i++) {
 			eb_free(t[i]);
 		}
 	}
@@ -466,6 +519,15 @@ void eb_mul_sim_gen(eb_t r, const bn_t k, const eb_t q, const bn_t m) {
 	eb_t g;
 
 	eb_null(g);
+
+	if (bn_is_zero(k)) {
+		eb_mul(r, q, m);
+		return;
+	}
+	if (bn_is_zero(m) || eb_is_infty(q)) {
+		eb_mul_gen(r, k);
+		return;
+	}
 
 	TRY {
 		eb_new(g);
