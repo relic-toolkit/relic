@@ -797,8 +797,8 @@ static int division(void) {
 		} TEST_END;
 
 		TEST_BEGIN("negative trivial division by negative is correct") {
-			bn_rand(a, BN_NEG, BN_BITS / 2);
-			bn_rand(b, BN_NEG, BN_BITS);
+			bn_rand(a, BN_NEG, RELIC_BN_BITS / 2);
+			bn_rand(b, BN_NEG, RELIC_BN_BITS);
 			bn_div(e, a, b);
 			bn_div_rem(c, d, a, b);
 			TEST_ASSERT(bn_cmp(e, c) == CMP_EQ, end);
@@ -849,8 +849,8 @@ static int division(void) {
 		} TEST_END;
 
 		TEST_BEGIN("negative division by negative is correct") {
-			bn_rand(a, BN_NEG, BN_BITS);
-			bn_rand(b, BN_NEG, BN_BITS / 2);
+			bn_rand(a, BN_NEG, RELIC_BN_BITS);
+			bn_rand(b, BN_NEG, RELIC_BN_BITS / 2);
 			bn_div(e, a, b);
 			bn_div_rem(c, d, a, b);
 			TEST_ASSERT(bn_cmp(e, c) == CMP_EQ, end);
@@ -893,8 +893,8 @@ static int reduction(void) {
 
 #if BN_MOD == BASIC || !defined(STRIP)
 		TEST_BEGIN("basic reduction is correct") {
-			bn_rand(a, BN_POS, BN_BITS - BN_DIGIT / 2);
-			bn_rand(b, BN_POS, BN_BITS / 2);
+			bn_rand(a, BN_POS, RELIC_BN_BITS - BN_DIGIT / 2);
+			bn_rand(b, BN_POS, RELIC_BN_BITS / 2);
 			bn_div_rem(c, d, a, b);
 			bn_sqr(c, b);
 			if (bn_cmp(a, c) == CMP_LT) {
