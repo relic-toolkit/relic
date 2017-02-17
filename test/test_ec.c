@@ -349,22 +349,32 @@ static int multiplication(void) {
 		} TEST_END;
 
 		TEST_BEGIN("generator multiplication is correct") {
+			bn_zero(k);
+			ec_mul_gen(r, k);
+			TEST_ASSERT(ec_is_infty(r), end);
+			bn_set_dig(k, 1);
+			ec_mul_gen(r, k);
+			TEST_ASSERT(ec_cmp(p, r) == CMP_EQ, end);
 			bn_rand_mod(k, n);
 			ec_mul(q, p, k);
 			ec_mul_gen(r, k);
 			TEST_ASSERT(ec_cmp(q, r) == CMP_EQ, end);
+			bn_neg(k, k);
+			ec_mul_gen(r, k);
+			ec_neg(r, r);
+			TEST_ASSERT(ec_cmp(q, r) == CMP_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("point multiplication is correct") {
-			ec_rand(p);
-			ec_mul(r, p, n);
-			TEST_ASSERT(ec_is_infty(r), end);
 			bn_zero(k);
 			ec_mul(r, p, k);
 			TEST_ASSERT(ec_is_infty(r), end);
 			bn_set_dig(k, 1);
 			ec_mul(r, p, k);
 			TEST_ASSERT(ec_cmp(p, r) == CMP_EQ, end);
+			ec_rand(p);
+			ec_mul(r, p, n);
+			TEST_ASSERT(ec_is_infty(r), end);
 			bn_rand_mod(k, n);
 			ec_mul(q, p, k);
 			bn_neg(k, k);
@@ -416,11 +426,22 @@ static int fixed(void) {
 			ec_new(t[i]);
 		}
 		TEST_BEGIN("fixed point multiplication is correct") {
+			ec_rand(p);
+			ec_mul_pre(t, p);
+			bn_zero(k);
+			ec_mul_fix(r, (const ec_t *)t, k);
+			TEST_ASSERT(ec_is_infty(r), end);
+			bn_set_dig(k, 1);
+			ec_mul_fix(r, (const ec_t *)t, k);
+			TEST_ASSERT(ec_cmp(p, r) == CMP_EQ, end);
 			bn_rand_mod(k, n);
 			ec_mul(q, p, k);
-			ec_mul_pre(t, p);
 			ec_mul_fix(q, (const ec_t *)t, k);
 			ec_mul(r, p, k);
+			TEST_ASSERT(ec_cmp(q, r) == CMP_EQ, end);
+			bn_neg(k, k);
+			ec_mul_fix(r, (const ec_t *)t, k);
+			ec_neg(r, r);
 			TEST_ASSERT(ec_cmp(q, r) == CMP_EQ, end);
 		} TEST_END;
 		for (int i = 0; i < RELIC_EC_TABLE; i++) {
@@ -444,7 +465,7 @@ static int fixed(void) {
 static int simultaneous(void) {
 	int code = STS_ERR;
 	bn_t n, k, l;
-	ec_t p, q, r, s;
+	ec_t p, q, r;
 
 	bn_null(n);
 	bn_null(k);
@@ -464,24 +485,67 @@ static int simultaneous(void) {
 		ec_new(s);
 
 		ec_curve_get_gen(p);
+		ec_curve_get_gen(q);
 		ec_curve_get_ord(n);
 
 		TEST_BEGIN("simultaneous point multiplication is correct") {
+			bn_zero(k);
+			bn_rand_mod(l, n);
+			ec_mul(q, p, l);
+			ec_mul_sim(r, p, k, p, l);
+			TEST_ASSERT(ec_cmp(q, r) == CMP_EQ, end);
+			bn_rand_mod(k, n);
+			bn_zero(l);
+			ec_mul(q, p, k);
+			ec_mul_sim(r, p, k, p, l);
+			TEST_ASSERT(ec_cmp(q, r) == CMP_EQ, end);
 			bn_rand_mod(k, n);
 			bn_rand_mod(l, n);
-			ec_mul(q, p, k);
-			ec_mul(s, q, l);
 			ec_mul_sim(r, p, k, q, l);
-			ec_add(q, q, s);
+			ec_mul(p, p, k);
+			ec_mul(q, q, l);
+			ec_add(q, q, p);
+			TEST_ASSERT(ec_cmp(q, r) == CMP_EQ, end);
+			bn_neg(k, k);
+			ec_mul_sim(r, p, k, q, l);
+			ec_mul(p, p, k);
+			ec_mul(q, q, l);
+			ec_add(q, q, p);
+			TEST_ASSERT(ec_cmp(q, r) == CMP_EQ, end);
+			bn_neg(l, l);
+			ec_mul_sim(r, p, k, q, l);
+			ec_mul(p, p, k);
+			ec_mul(q, q, l);
+			ec_add(q, q, p);
 			TEST_ASSERT(ec_cmp(q, r) == CMP_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("simultaneous multiplication with generator is correct") {
+			bn_zero(k);
+			bn_rand_mod(l, n);
+			ec_mul(q, p, l);
+			ec_mul_sim_gen(r, k, p, l);
+			TEST_ASSERT(ec_cmp(q, r) == CMP_EQ, end);
+			bn_rand_mod(k, n);
+			bn_zero(l);
+			ec_mul_gen(q, k);
+			ec_mul_sim_gen(r, k, p, l);
+			TEST_ASSERT(ec_cmp(q, r) == CMP_EQ, end);
 			bn_rand_mod(k, n);
 			bn_rand_mod(l, n);
 			ec_mul_sim_gen(r, k, q, l);
-			ec_curve_get_gen(s);
-			ec_mul_sim(q, s, k, q, l);
+			ec_curve_get_gen(p);
+			ec_mul_sim(q, p, k, q, l);
+			TEST_ASSERT(ec_cmp(q, r) == CMP_EQ, end);
+			bn_neg(k, k);
+			ec_mul_sim_gen(r, k, q, l);
+			ec_curve_get_gen(p);
+			ec_mul_sim(q, p, k, q, l);
+			TEST_ASSERT(ec_cmp(q, r) == CMP_EQ, end);
+			bn_neg(l, l);
+			ec_mul_sim_gen(r, k, q, l);
+			ec_curve_get_gen(p);
+			ec_mul_sim(q, p, k, q, l);
 			TEST_ASSERT(ec_cmp(q, r) == CMP_EQ, end);
 		} TEST_END;
 	}
