@@ -144,6 +144,7 @@ static void ep2_mul_glv_imp(ep2_t r, ep2_t p, const bn_t k) {
 				}
 			}
 			break;
+		case B12_P455:
 		case B12_P638:
 			bn_copy(v[0], k);
 			fp_param_get_var(u[0]);
