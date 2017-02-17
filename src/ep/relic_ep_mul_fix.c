@@ -77,6 +77,9 @@ static void ep_mul_fix_plain(ep_t r, const ep_t *t, const bn_t k) {
 	}
 	/* Convert r to affine coordinates. */
 	ep_norm(r, r);
+	if (bn_sign(k) == BN_NEG) {
+		ep_neg(r, r);
+	}
 }
 
 #endif /* EP_FIX == LWNAF */
@@ -210,7 +213,7 @@ static void ep_mul_combs_plain(ep_t r, const ep_t *t, const bn_t k) {
 	if (bn_is_zero(k)) {
 		ep_set_infty(r);
 		return;
-	}	
+	}
 
 	bn_null(n);
 
@@ -231,7 +234,7 @@ static void ep_mul_combs_plain(ep_t r, const ep_t *t, const bn_t k) {
 				w = w | 1;
 			}
 		}
-		
+
 		ep_copy(r, t[w]);
 		for (i = l - 2; i >= 0; i--) {
 			ep_dbl(r, r);
@@ -297,21 +300,22 @@ void ep_mul_pre_basic(ep_t *t, const ep_t p) {
 }
 
 void ep_mul_fix_basic(ep_t r, const ep_t *t, const bn_t k) {
-	int i;
-
 	if (bn_is_zero(k)) {
 		ep_set_infty(r);
 		return;
-	}	
+	}
 
 	ep_set_infty(r);
 
-	for (i = 0; i < bn_bits(k); i++) {
+	for (int i = 0; i < bn_bits(k); i++) {
 		if (bn_get_bit(k, i)) {
 			ep_add(r, r, t[i]);
 		}
 	}
 	ep_norm(r, r);
+	if (bn_sign(k) == BN_NEG) {
+		ep_neg(r, r);
+	}
 }
 
 #endif
@@ -375,6 +379,9 @@ void ep_mul_fix_yaowi(ep_t r, const ep_t *t, const bn_t k) {
 			ep_add(r, r, a);
 		}
 		ep_norm(r, r);
+		if (bn_sign(k) == BN_NEG) {
+			ep_neg(r, r);
+		}
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
@@ -471,6 +478,9 @@ void ep_mul_fix_nafwi(ep_t r, const ep_t *t, const bn_t k) {
 			ep_add(r, r, a);
 		}
 		ep_norm(r, r);
+		if (bn_sign(k) == BN_NEG) {
+			ep_neg(r, r);
+		}
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
@@ -640,6 +650,9 @@ void ep_mul_fix_combd(ep_t r, const ep_t *t, const bn_t k) {
 			ep_add(r, r, t[(1 << EP_DEPTH) + w1]);
 		}
 		ep_norm(r, r);
+		if (bn_sign(k) == BN_NEG) {
+			ep_neg(r, r);
+		}
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);

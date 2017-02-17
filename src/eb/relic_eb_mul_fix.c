@@ -29,7 +29,6 @@
  */
 
 #include "relic_core.h"
-#include "relic_eb.h"
 
 /*============================================================================*/
 /* Private definitions                                                        */

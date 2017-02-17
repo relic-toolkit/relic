@@ -30,8 +30,6 @@
  */
 
 #include "relic_core.h"
-#include "relic_eb.h"
-#include "relic_util.h"
 
 /*============================================================================*/
 /* Private definitions                                                        */
@@ -481,7 +479,6 @@ void eb_mul_sim_joint(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 		bn_rec_jsf(jsf, &len, k, m);
 
 		eb_set_infty(r);
-
 		offset = MAX(bn_bits(k), bn_bits(m)) + 1;
 		for (i = len - 1; i >= 0; i--) {
 			eb_dbl(r, r);

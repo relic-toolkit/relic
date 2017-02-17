@@ -28,11 +28,8 @@
  * @ingroup eb
  */
 
-#include "string.h"
-
 #include "relic_core.h"
 #include "relic_fb_low.h"
-#include "relic_eb.h"
 
 /*============================================================================*/
 /* Private definitions                                                        */

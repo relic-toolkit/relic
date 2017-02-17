@@ -44,6 +44,11 @@ static void ep_mul_glv_imp(ep_t r, const ep_t p, const bn_t k) {
 	bn_t n, k0, k1, v1[3], v2[3];
 	ep_t q, t[1 << (EP_WIDTH - 2)];
 
+	if (bn_is_zero(k)) {
+		ep_set_infty(r);
+		return;
+	}
+
 	bn_null(n);
 	bn_null(k0);
 	bn_null(k1);
@@ -124,6 +129,9 @@ static void ep_mul_glv_imp(ep_t r, const ep_t p, const bn_t k) {
 		}
 		/* Convert r to affine coordinates. */
 		ep_norm(r, r);
+		if (bn_sign(k) == BN_NEG) {
+			ep_neg(r, r);
+		}
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
@@ -150,9 +158,14 @@ static void ep_mul_glv_imp(ep_t r, const ep_t p, const bn_t k) {
 #if defined(EP_PLAIN) || defined(EP_SUPER)
 
 static void ep_mul_naf_imp(ep_t r, const ep_t p, const bn_t k) {
-	int l, i, n;
+	int i, l, n;
 	int8_t naf[FP_BITS + 1];
 	ep_t t[1 << (EP_WIDTH - 2)];
+
+	if (bn_is_zero(k)) {
+		ep_set_infty(r);
+		return;
+	}
 
 	TRY {
 		/* Prepare the precomputation table. */
@@ -201,12 +214,17 @@ static void ep_mul_naf_imp(ep_t r, const ep_t p, const bn_t k) {
 #if defined(EP_PLAIN) || defined(EP_SUPER)
 
 static void ep_mul_reg_imp(ep_t r, const ep_t p, const bn_t k) {
-	int l, i, j, n;
+	int i, j, l, n;
 	int8_t reg[CEIL(FP_BITS + 1, EP_WIDTH - 1)], *_k;
 	ep_t t[1 << (EP_WIDTH - 2)];
 
 	for (i = 0; i < (1 << (EP_WIDTH - 2)); i++) {
 		ep_null(t[i]);
+	}
+
+	if (bn_is_zero(k)) {
+		ep_set_infty(r);
+		return;
 	}
 
 	TRY {
@@ -262,7 +280,6 @@ static void ep_mul_reg_imp(ep_t r, const ep_t p, const bn_t k) {
 #if EP_MUL == BASIC || !defined(STRIP)
 
 void ep_mul_basic(ep_t r, const ep_t p, const bn_t k) {
-	int i, l;
 	ep_t t;
 
 	ep_null(t);
@@ -274,10 +291,9 @@ void ep_mul_basic(ep_t r, const ep_t p, const bn_t k) {
 
 	TRY {
 		ep_new(t);
-		l = bn_bits(k);
 
 		ep_copy(t, p);
-		for (i = l - 2; i >= 0; i--) {
+		for (int i = bn_bits(k) - 2; i >= 0; i--) {
 			ep_dbl(t, t);
 			if (bn_get_bit(k, i)) {
 				ep_add(t, t, p);
@@ -285,6 +301,9 @@ void ep_mul_basic(ep_t r, const ep_t p, const bn_t k) {
 		}
 
 		ep_norm(r, t);
+		if (bn_sign(k) == BN_NEG) {
+			ep_neg(r, r);
+		}
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
@@ -349,6 +368,9 @@ void ep_mul_slide(ep_t r, const ep_t p, const bn_t k) {
 		}
 
 		ep_norm(r, q);
+		if (bn_sign(k) == BN_NEG) {
+			ep_neg(r, r);
+		}
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
@@ -396,7 +418,9 @@ void ep_mul_monty(ep_t r, const ep_t p, const bn_t k) {
 		}
 
 		ep_norm(r, t[0]);
-
+		if (bn_sign(k) == BN_NEG) {
+			ep_neg(r, r);
+		}
 	} CATCH_ANY {
 		THROW(ERR_CAUGHT);
 	}
@@ -480,7 +504,6 @@ void ep_mul_gen(ep_t r, const bn_t k) {
 }
 
 void ep_mul_dig(ep_t r, const ep_t p, dig_t k) {
-	int i, l;
 	ep_t t;
 
 	ep_null(t);
@@ -493,10 +516,8 @@ void ep_mul_dig(ep_t r, const ep_t p, dig_t k) {
 	TRY {
 		ep_new(t);
 
-		l = util_bits_dig(k);
-
 		ep_copy(t, p);
-		for (i = l - 2; i >= 0; i--) {
+		for (int i = util_bits_dig(k) - 2; i >= 0; i--) {
 			ep_dbl(t, t);
 			if (k & ((dig_t)1 << i)) {
 				ep_add(t, t, p);
