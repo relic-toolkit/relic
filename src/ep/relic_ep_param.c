@@ -343,6 +343,21 @@
 /** @} */
 #endif
 
+#if defined(EP_ENDOM) && FP_PRIME == 455
+/**
+ * Parameters for a 455-bit pairing-friendly prime curve at the new 128-bit security level.
+ */
+/** @{ */
+#define B12_P455_A		"0"
+#define B12_P455_B		"A"
+#define B12_P455_X		"03018DF4C2336D178E6EA61540353ABA01923E3890B3295848906DFC90E0C43008E4751FFC913DC1FF3DF33D11DB57BADA7A9297195ACFB2FA"
+#define B12_P455_Y		"19A8A9C4C3AC2FFB4C6B380D17B8282E029615052EAA6416C16C8F36F251D87C272657F0702CC58C4E072628D7BAD3C0E9B3A8AEBFC6B2357C"
+#define B12_P455_R		"10000080000380002E0000F10004F00025E000750001D1000A00000400001C00007FFFFC00001"
+#define B12_P455_H		"555556AAAAB15555B54AAB6A9557FFAABFFAAB"
+#define B12_P455_BETA	"55555955557955572A900E0EF5B48D02FFFE695C91731354CAFD99D7B469DB33A586A8B2B9BDD548FEC90FA5190F4A3762A9202FFC00000AA9"
+#define B12_P455_LAMB	"10000080000380002E0000F10004F00025E000650001910008BFFFF1FFFFF7FFFFFFFFF800001"
+#endif
+
 #if defined(EP_ENDOM) && FP_PRIME == 477
 /**
  * Parameters for a 477-bit pairing-friendly prime curve at the 192-bit security level.
@@ -378,7 +393,7 @@
 #if defined(EP_ENDOM) && FP_PRIME == 638
 /**
  * Parameters for a 638-bit pairing-friendly prime curve.
- * 
+ *
  * Pairing computation over this curve is not supported anymore, but B12_P638
  * is an overall better candidate anyway.
  */
@@ -603,9 +618,15 @@ void ep_param_set(int param) {
 				plain = 1;
 				break;
 #endif
-#if defined(EP_PLAIN) && FP_PRIME == 477
+#if defined(EP_ENDOM) && FP_PRIME == 455
+			case B12_P455:
+				ASSIGNK(B12_P455, B12_455);
+				endom = 1;
+				break;
+#endif
+#if defined(EP_ENDOM) && FP_PRIME == 477
 			case B24_P477:
-				ASSIGN(B24_P477, B24_477);
+				ASSIGNK(B24_P477, B24_477);
 				plain = 1;
 				break;
 #endif
@@ -727,7 +748,7 @@ int ep_param_set_any_plain() {
 #elif FP_PRIME == 255
 	ep_param_set(CURVE_25519);
 #elif FP_PRIME == 256
-	ep_param_set(BSI_P256);
+	ep_param_set(NIST_P256);
 #elif FP_PRIME == 382
 	ep_param_set(CURVE_67254);
 #elif FP_PRIME == 383
@@ -762,6 +783,8 @@ int ep_param_set_any_endom() {
 	ep_param_set(BN_P254);
 #elif FP_PRIME == 256
 	ep_param_set(SECG_K256);
+#elif FP_PRIME == 455
+	ep_param_set(B12_P455);
 #elif FP_PRIME == 477
 	ep_param_set(B24_P477);
 #elif FP_PRIME == 508
@@ -804,6 +827,10 @@ int ep_param_set_any_pairf() {
 	degree = 2;
 #elif FP_PRIME == 256
 	ep_param_set(BN_P256);
+	type = EP_DTYPE;
+	degree = 2;
+#elif FP_PRIME == 455
+	ep_param_set(B12_P455);
 	type = EP_DTYPE;
 	degree = 2;
 #elif FP_PRIME == 477
@@ -890,6 +917,9 @@ void ep_param_print() {
 		case BN_P256:
 			util_banner("Curve BN-P256:", 0);
 			break;
+		case B12_P455:
+			util_banner("Curve B12-P455:", 0);
+			break;
 		case B24_P477:
 			util_banner("Curve B24-P477:", 0);
 			break;
@@ -931,10 +961,11 @@ int ep_param_level() {
 		case SECG_K224:
 			return 112;
 		case BN_P254:
-			return 126;
+		case BN_P256:
+			return 100;
 		case NIST_P256:
 		case SECG_K256:
-		case BN_P256:
+		case B12_P455:
 		case SS_P1536:
 			return 128;
 		case NIST_P384:
@@ -954,6 +985,7 @@ int ep_param_embed() {
 		case BN_P254:
 		case BN_P256:
 		case BN_P638:
+		case B12_P455:
 		case B12_P638:
 			return 12;
 		case SS_P1536:
