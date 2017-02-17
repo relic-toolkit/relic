@@ -28,8 +28,6 @@
  * @ingroup bench
  */
 
-#include <stdio.h>
-
 #include "relic.h"
 #include "relic_bench.h"
 
