@@ -92,6 +92,16 @@ void fp_param_get_var(bn_t x) {
 				bn_add_dig(x, x, 0x9B);
 				bn_neg(x, x);
 				break;
+			case B12_455:
+				/* x = 2^76 + 2^53 + 2^31 + 2^11. */
+				bn_set_2b(x, 76);
+				bn_set_2b(a, 53);
+				bn_add(x, x, a);
+				bn_set_2b(a, 31);
+				bn_add(x, x, a);
+				bn_set_2b(a, 11);
+				bn_add(x, x, a);
+				break;
 			case B24_477:
 				/* x = -2^48 + 2^45 + 2^31 - 2^7. */
 				bn_set_2b(x, 48);
@@ -183,6 +193,13 @@ void fp_param_get_sps(int *s, int *len) {
 					}
 				}
 				break;
+			case B12_455:
+				s[0] = 11;
+				s[1] = 31;
+				s[2] = 53;
+				s[3] = 76;
+				*len = 4;
+				break;
 			case B24_477:
 				s[0] = 7;
 				s[1] = -31;
@@ -251,6 +268,10 @@ void fp_param_get_map(int *s, int *len) {
 		case BN_256:
 			s[5] = s[7] = s[8] = s[11] = s[14] = s[15] = s[62] = s[65] = 1;
 			*len = 66;
+			break;
+		case B12_455:
+			s[11] = s[31] = s[53] = s[76] = 1;
+			*len = 77;
 			break;
 		case B24_477:
 			s[7] = s[48] = 1;
@@ -516,6 +537,22 @@ void fp_param_set(int param) {
 				bn_add(p, p, t0);
 				fp_prime_set_dense(p);
 				break;
+#elif FP_PRIME == 455
+			case B12_455:
+				fp_param_get_var(t0);
+				/* p = (x^2 - 2x + 1) * (x^4 - x^2 + 1)/3 + x. */
+				bn_sqr(t1, t0);
+				bn_sqr(p, t1);
+				bn_sub(p, p, t1);
+				bn_add_dig(p, p, 1);
+				bn_sub(t1, t1, t0);
+				bn_sub(t1, t1, t0);
+				bn_add_dig(t1, t1, 1);
+				bn_mul(p, p, t1);
+				bn_div_dig(p, p, 3);
+				bn_add(p, p, t0);
+				fp_prime_set_dense(p);
+				break;
 #elif FP_PRIME == 508
 			case KSS_508:
 				fp_param_get_var(t0);
@@ -655,6 +692,8 @@ int fp_param_set_any(void) {
 	fp_param_set(PRIME_383187);
 #elif FP_PRIME == 384
 	fp_param_set(NIST_384);
+#elif FP_PRIME == 455
+	fp_param_set(B12_455);
 #elif FP_PRIME == 477
 	fp_param_set(B24_477);
 #elif FP_PRIME == 508
@@ -685,7 +724,7 @@ int fp_param_set_any_dense() {
 		do {
 			bn_gen_prime(p, FP_BITS);
 		} while ((p->dp[0] & 0x7) != 3);
-#else		
+#else
 		bn_gen_prime(p, FP_BITS);
 #endif
 		if (!bn_is_prime(p)) {
@@ -729,6 +768,8 @@ int fp_param_set_any_tower() {
 	fp_param_set(BN_254);
 #elif FP_PRIME == 256
 	fp_param_set(BN_256);
+#elif FP_PRIME == 455
+	fp_param_set(B12_455);
 #elif FP_PRIME == 477
 	fp_param_set(B24_477);
 #elif FP_PRIME == 508
