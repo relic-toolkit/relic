@@ -343,6 +343,22 @@
 /** @} */
 #endif
 
+#if defined(EP_ENDOM) && FP_PRIME == 382
+/**
+ * Parameters for a 256-bit pairing-friendly prime curve.
+ */
+/** @{ */
+#define BN_P382_A		"0"
+#define BN_P382_B		"2"
+#define BN_P382_X		"24009015183F94892D996CC179C6D1666F82CEFBE47879BBA6E58DBE43002A0609480097801382BE004E000000000012"
+#define BN_P382_Y		"1"
+#define BN_P382_R		"24009015183F94892D996CC179C6D1666F82CEFBE47879BB46E4CDA2E2E2281D08DC008E80108252004200000000000D"
+#define BN_P382_H		"1"
+#define BN_P382_BETA	"4800D81F38406C6AA53C1444D128028A40C60B760288002AC006C0F3001B000000000007"
+#define BN_P382_LAMB	"9001B03E7080D8D54A78288AC2524566A1E61CA70654006D801382BE004E000000000016"
+/** @} */
+#endif
+
 #if defined(EP_ENDOM) && FP_PRIME == 455
 /**
  * Parameters for a 455-bit pairing-friendly prime curve at the new 128-bit security level.
@@ -606,6 +622,12 @@ void ep_param_set(int param) {
 				plain = 1;
 				break;
 #endif
+#if defined(EP_ENDOM) & FP_PRIME == 382
+			case BN_P382:
+				ASSIGNK(BN_P382, BN_382);
+				endom = 1;
+				break;
+#endif
 #if defined(EP_PLAIN) && FP_PRIME == 383
 			case CURVE_383187:
 				ASSIGN(CURVE_383187, PRIME_383187);
@@ -783,6 +805,8 @@ int ep_param_set_any_endom() {
 	ep_param_set(BN_P254);
 #elif FP_PRIME == 256
 	ep_param_set(SECG_K256);
+#elif FP_PRIME == 382
+	ep_param_set(BN_P382);
 #elif FP_PRIME == 455
 	ep_param_set(B12_P455);
 #elif FP_PRIME == 477
@@ -827,6 +851,10 @@ int ep_param_set_any_pairf() {
 	degree = 2;
 #elif FP_PRIME == 256
 	ep_param_set(BN_P256);
+	type = EP_DTYPE;
+	degree = 2;
+#elif FP_PRIME == 382
+	ep_param_set(BN_P382);
 	type = EP_DTYPE;
 	degree = 2;
 #elif FP_PRIME == 455
@@ -917,6 +945,9 @@ void ep_param_print() {
 		case BN_P256:
 			util_banner("Curve BN-P256:", 0);
 			break;
+		case BN_P382:
+			util_banner("Curve BN-P382:", 0);
+			break;
 		case B12_P455:
 			util_banner("Curve B12-P455:", 0);
 			break;
@@ -963,6 +994,8 @@ int ep_param_level() {
 		case BN_P254:
 		case BN_P256:
 			return 100;
+		case BN_P382:
+			return 128;
 		case NIST_P256:
 		case SECG_K256:
 		case B12_P455:
@@ -984,6 +1017,7 @@ int ep_param_embed() {
 		case BN_P158:
 		case BN_P254:
 		case BN_P256:
+		case BN_P382:
 		case BN_P638:
 		case B12_P455:
 		case B12_P638:

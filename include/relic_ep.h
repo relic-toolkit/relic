@@ -88,10 +88,12 @@ enum {
 	BN_P158,
 	/** Barreto-Naehrig curve with negative x (found by Nogami et al.). */
 	BN_P254,
-	/** Barreto-Lynn-Scott curve with embedding degree 12. */
-	B12_P455,
 	/** Barreto-Naehrig curve with negative x. */
 	BN_P256,
+	/** Barreto-Naehrig curve with negative x. */
+	BN_P382,
+	/** Barreto-Lynn-Scott curve with embedding degree 12. */
+	B12_P455,
 	/** Barreto-Lynn-Scott curve with embedding degree 24. */
 	B24_P477,
 	/** Kachisa-Schafer-Scott with negative x. */
