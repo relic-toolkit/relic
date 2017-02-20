@@ -1217,8 +1217,8 @@ static int inversion(void) {
 
 int exponentiation(void) {
 	int code = STS_ERR;
-	gt_t a, c;
-	bn_t n;
+	gt_t a, b, c;
+	bn_t n, d;
 
 	gt_null(a);
 	gt_null(c);
@@ -1226,7 +1226,9 @@ int exponentiation(void) {
 
 	TRY {
 		gt_new(a);
+		gt_new(b);
 		gt_new(c);
+		bn_new(d);
 		bn_new(n);
 
 		gt_get_gen(a);
@@ -1237,12 +1239,23 @@ int exponentiation(void) {
 			TEST_ASSERT(gt_is_unity(c), end);
 		} TEST_END;
 
-		TEST_BEGIN("random element has the right order") {
+		TEST_BEGIN("exponentiation is correct") {
 			gt_rand(a);
+			bn_zero(d);
+			gt_exp(c, a, d);
+			TEST_ASSERT(gt_is_unity(c), end);
+			bn_set_dig(d, 1);
+			gt_exp(c, a, d);
+			TEST_ASSERT(gt_cmp(c, a) == CMP_EQ, end);
 			gt_exp(c, a, n);
 			TEST_ASSERT(gt_is_unity(c), end);
-		}
-		TEST_END;
+			bn_rand(d, BN_POS, FP_BITS);
+			gt_exp(b, a, d);
+			bn_neg(d, d);
+			gt_exp(c, a, d);
+			gt_inv(c, c);
+			TEST_ASSERT(gt_cmp(b, c) == CMP_EQ, end);
+		} TEST_END;
 	}
 	CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -1251,7 +1264,9 @@ int exponentiation(void) {
 	code = STS_OK;
   end:
 	gt_free(a);
+	gt_free(b);
 	gt_free(c);
+	bn_free(d);
 	bn_free(n);
 	return code;
 }

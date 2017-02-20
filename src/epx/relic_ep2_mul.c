@@ -148,10 +148,17 @@ static void ep2_mul_glv_imp(ep2_t r, ep2_t p, const bn_t k) {
 		case B12_P638:
 			bn_copy(v[0], k);
 			fp_param_get_var(u[0]);
+			bn_copy(u[1], u[0]);
+			if (bn_sign(u[0]) == BN_NEG) {
+				bn_neg(u[0], u[0]);
+			}
 
 			for (i = 0; i < 4; i++) {
 				bn_mod(_k[i], v[0], u[0]);
 				bn_div(v[0], v[0], u[0]);
+				if ((bn_sign(u[1]) == BN_NEG) && (i % 2 != 0)) {
+					bn_neg(_k[i], _k[i]);
+				}
 			}
 			break;
 		}

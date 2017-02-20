@@ -37,6 +37,9 @@
 
 void ep2_frb(ep2_t r, ep2_t p, int i) {
 	switch (i) {
+		case 0:
+			ep2_copy(r, p);
+			break;
 		case 1:
 			fp2_frb(r->x, p->x, 1);
 			fp2_frb(r->y, p->y, 1);
