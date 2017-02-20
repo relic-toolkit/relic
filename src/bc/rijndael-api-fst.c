@@ -38,6 +38,7 @@
 //#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 
 #include "rijndael-alg-fst.h"
 #include "rijndael-api-fst.h"
