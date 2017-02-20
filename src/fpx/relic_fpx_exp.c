@@ -25,7 +25,6 @@
  *
  * Implementation of exponentiation in extensions defined over prime fields.
  *
- * @version $Id$
  * @ingroup fpx
  */
 
@@ -37,6 +36,11 @@
 
 void fp2_exp(fp2_t c, fp2_t a, bn_t b) {
 	fp2_t t;
+
+	if (bn_is_zero(b)) {
+		fp2_set_dig(c, 1);
+		return;
+	}
 
 	fp2_null(t);
 
@@ -51,7 +55,12 @@ void fp2_exp(fp2_t c, fp2_t a, bn_t b) {
 				fp2_mul(t, t, a);
 			}
 		}
-		fp2_copy(c, t);
+
+		if (bn_sign(b) == BN_NEG) {
+			fp2_inv(c, t);
+		} else {
+			fp2_copy(c, t);
+		}
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
@@ -89,6 +98,11 @@ void fp2_exp_uni(fp2_t c, fp2_t a, bn_t b) {
 	fp2_t r, s, t[1 << (FP_WIDTH - 2)];
 	int i, l;
 	signed char naf[FP_BITS + 1], *k, n;
+
+	if (bn_is_zero(b)) {
+		fp2_set_dig(c, 1);
+		return;
+	}
 
 	fp2_null(r);
 	fp2_null(s);
@@ -156,6 +170,8 @@ int fp2_test_uni(fp2_t a) {
 		fp_sqr(t[0], a[0]);
 		fp_sqr(t[1], a[1]);
 		fp_add(t[0], t[0], t[1]);
+		fp_set_dig(t[1], 2);
+		fp_neg(t[1], t[1]);
 
 		result = ((fp_cmp_dig(t[0], 1) == CMP_EQ) ? 1 : 0);
 	}
@@ -172,6 +188,11 @@ int fp2_test_uni(fp2_t a) {
 void fp3_exp(fp3_t c, fp3_t a, bn_t b) {
 	fp3_t t;
 
+	if (bn_is_zero(b)) {
+		fp3_set_dig(c, 1);
+		return;
+	}
+
 	fp3_null(t);
 
 	TRY {
@@ -185,7 +206,12 @@ void fp3_exp(fp3_t c, fp3_t a, bn_t b) {
 				fp3_mul(t, t, a);
 			}
 		}
-		fp3_copy(c, t);
+
+		if (bn_sign(b) == BN_NEG) {
+			fp3_inv(c, t);
+		} else {
+			fp3_copy(c, t);
+		}
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
@@ -197,6 +223,11 @@ void fp3_exp(fp3_t c, fp3_t a, bn_t b) {
 
 void fp6_exp(fp6_t c, fp6_t a, bn_t b) {
 	fp6_t t;
+
+	if (bn_is_zero(b)) {
+		fp6_set_dig(c, 1);
+		return;
+	}
 
 	fp6_null(t);
 
@@ -211,7 +242,12 @@ void fp6_exp(fp6_t c, fp6_t a, bn_t b) {
 				fp6_mul(t, t, a);
 			}
 		}
-		fp6_copy(c, t);
+
+		if (bn_sign(b) == BN_NEG) {
+			fp6_inv(c, t);
+		} else {
+			fp6_copy(c, t);
+		}
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
@@ -223,6 +259,11 @@ void fp6_exp(fp6_t c, fp6_t a, bn_t b) {
 
 void fp12_exp(fp12_t c, fp12_t a, bn_t b) {
 	fp12_t t;
+
+	if (bn_is_zero(b)) {
+		fp12_set_dig(c, 1);
+		return;
+	}
 
 	fp12_null(t);
 
@@ -240,7 +281,12 @@ void fp12_exp(fp12_t c, fp12_t a, bn_t b) {
 					fp12_mul(t, t, a);
 				}
 			}
-			fp12_copy(c, t);
+
+			if (bn_sign(b) == BN_NEG) {
+				fp12_inv(c, t);
+			} else {
+				fp12_copy(c, t);
+			}
 		}
 	}
 	CATCH_ANY {
@@ -254,6 +300,11 @@ void fp12_exp(fp12_t c, fp12_t a, bn_t b) {
 void fp12_exp_cyc(fp12_t c, fp12_t a, bn_t b) {
 	fp12_t t;
 	int i, j, k, w = bn_ham(b);
+
+	if (bn_is_zero(b)) {
+		fp12_set_dig(c, 1);
+		return;
+	}
 
 	fp12_null(t);
 
@@ -269,7 +320,12 @@ void fp12_exp_cyc(fp12_t c, fp12_t a, bn_t b) {
 					fp12_mul(t, t, a);
 				}
 			}
-			fp12_copy(c, t);
+
+			if (bn_sign(b) == BN_NEG) {
+				fp12_inv_uni(c, t);
+			} else {
+				fp12_copy(c, t);
+			}
 		}
 		CATCH_ANY {
 			THROW(ERR_CAUGHT);
@@ -331,6 +387,11 @@ void fp12_exp_cyc(fp12_t c, fp12_t a, bn_t b) {
 void fp12_exp_cyc_sps(fp12_t c, fp12_t a, int *b, int len) {
 	int i, j, k, w = len;
 	fp12_t t, u[w];
+
+	if (len == 0) {
+		fp12_set_dig(c, 1);
+		return;
+	}
 
 	fp12_null(t);
 
@@ -434,7 +495,9 @@ void fp12_conv_cyc(fp12_t c, fp12_t a) {
 
 		/* Second, compute c^(p^2 + 1). */
 		/* t = c^(p^2). */
-		fp12_frb(t, c, 2);
+		fp12_frb(t, c, 1);
+		fp12_frb(t, t, 1);
+
 		/* c = c^(p^2 + 1). */
 		fp12_mul(c, c, t);
 	}
@@ -529,6 +592,10 @@ void fp12_back_cyc(fp12_t c, fp12_t a) {
 void fp12_back_cyc_sim(fp12_t c[], fp12_t a[], int n) {
 	fp2_t t0[n], t1[n], t2[n];
 
+	if (n == 0) {
+		return;
+	}
+
 	for (int i = 0; i < n; i++) {
 		fp2_null(t0[i]);
 		fp2_null(t1[i]);
@@ -598,6 +665,11 @@ void fp12_back_cyc_sim(fp12_t c[], fp12_t a[], int n) {
 void fp18_exp(fp18_t c, fp18_t a, bn_t b) {
 	fp18_t t;
 
+	if (bn_is_zero(b)) {
+		fp18_set_dig(c, 1);
+		return;
+	}
+
 	fp18_null(t);
 
 	TRY {
@@ -614,7 +686,12 @@ void fp18_exp(fp18_t c, fp18_t a, bn_t b) {
 					fp18_mul(t, t, a);
 				}
 			}
-			fp18_copy(c, t);
+
+			if (bn_sign(b) == BN_NEG) {
+				fp18_inv(c, t);
+			} else {
+				fp18_copy(c, t);
+			}
 		}
 	}
 	CATCH_ANY {
@@ -628,6 +705,11 @@ void fp18_exp(fp18_t c, fp18_t a, bn_t b) {
 void fp18_exp_cyc(fp18_t c, fp18_t a, bn_t b) {
 	fp18_t t;
 	int i, j, k, w = bn_ham(b);
+
+	if (bn_is_zero(b)) {
+		fp18_set_dig(c, 1);
+		return;
+	}
 
 	fp18_null(t);
 
@@ -643,7 +725,12 @@ void fp18_exp_cyc(fp18_t c, fp18_t a, bn_t b) {
 					fp18_mul(t, t, a);
 				}
 			}
-			fp18_copy(c, t);
+
+			if (bn_sign(b) == BN_NEG) {
+				fp18_inv_uni(c, t);
+			} else {
+				fp18_copy(c, t);
+			}
 		}
 		CATCH_ANY {
 			THROW(ERR_CAUGHT);
@@ -705,6 +792,10 @@ void fp18_exp_cyc(fp18_t c, fp18_t a, bn_t b) {
 void fp18_exp_cyc_sps(fp18_t c, fp18_t a, int *b, int len) {
 	int i, j, k, w = len;
 	fp18_t t, u[w];
+
+	if (len == 0) {
+		fp12_set_dig(c, 1);
+	}
 
 	fp18_null(t);
 
@@ -934,6 +1025,10 @@ void fp18_back_cyc(fp18_t c, fp18_t a) {
 
 void fp18_back_cyc_sim(fp18_t c[], fp18_t a[], int n) {
 	fp3_t t0[n], t1[n], t2[n], t3[n], t4[n], t5[n], t6[n];
+
+	if (n == 0) {
+		return;
+	}
 
 	for (int i = 0; i < n; i++) {
 		fp3_null(t0[i]);

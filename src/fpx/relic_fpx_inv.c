@@ -25,7 +25,6 @@
  *
  * Implementation of inversion in extensions defined over prime fields.
  *
- * @version $Id$
  * @ingroup fpx
  */
 

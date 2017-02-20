@@ -25,7 +25,6 @@
  *
  * Implementation of frobenius action in extensions defined over prime fields.
  *
- * @version $Id$
  * @ingroup fpx
  */
 
@@ -65,31 +64,30 @@ void fp3_frb(fp3_t c, fp3_t a, int i) {
 }
 
 void fp6_frb(fp6_t c, fp6_t a, int i) {
-	if (i == 1) {
-		fp2_frb(c[0], a[0], 1);
-		fp2_frb(c[1], a[1], 1);
-		fp2_frb(c[2], a[2], 1);
-		fp2_mul_frb(c[1], c[1], 1, 2);
-		fp2_mul_frb(c[2], c[2], 1, 4);
-	} else {
-		fp2_copy(c[0], a[0]);
-		fp2_mul_frb(c[1], a[1], 2, 2);
-		fp2_mul_frb(c[2], a[2], 2, 1);
-		fp2_neg(c[2], c[2]);
+	switch (i) {
+		case 0:
+			fp6_copy(c, a);
+			break;
+		case 1:
+			fp2_frb(c[0], a[0], 1);
+			fp2_frb(c[1], a[1], 1);
+			fp2_frb(c[2], a[2], 1);
+			fp2_mul_frb(c[1], c[1], 1, 2);
+			fp2_mul_frb(c[2], c[2], 1, 4);
+			break;
+		case 2:
+			fp2_copy(c[0], a[0]);
+			fp2_mul_frb(c[1], a[1], 2, 2);
+			fp2_mul_frb(c[2], a[2], 2, 1);
+			fp2_neg(c[2], c[2]);
+			break;
 	}
 }
 
 void fp12_frb(fp12_t c, fp12_t a, int i) {
 	switch (i) {
-		case 2:
-			fp2_copy(c[0][0], a[0][0]);
-			fp2_mul_frb(c[0][2], a[0][2], 2, 1);
-			fp2_mul_frb(c[0][1], a[0][1], 2, 2);
-			fp2_neg(c[0][2], c[0][2]);
-			fp2_mul_frb(c[1][0], a[1][0], 2, 1);
-			fp2_mul_frb(c[1][2], a[1][2], 2, 2);
-			fp2_mul_frb(c[1][1], a[1][1], 2, 3);
-			fp2_neg(c[1][2], c[1][2]);
+		case 0:
+			fp12_copy(c, a);
 			break;
 		case 1:
 			fp2_frb(c[0][0], a[0][0], 1);
@@ -103,6 +101,16 @@ void fp12_frb(fp12_t c, fp12_t a, int i) {
 			fp2_mul_frb(c[1][1], c[1][1], 1, 3);
 			fp2_mul_frb(c[0][2], c[0][2], 1, 4);
 			fp2_mul_frb(c[1][2], c[1][2], 1, 5);
+			break;
+		case 2:
+			fp2_copy(c[0][0], a[0][0]);
+			fp2_mul_frb(c[0][2], a[0][2], 2, 1);
+			fp2_mul_frb(c[0][1], a[0][1], 2, 2);
+			fp2_neg(c[0][2], c[0][2]);
+			fp2_mul_frb(c[1][0], a[1][0], 2, 1);
+			fp2_mul_frb(c[1][2], a[1][2], 2, 2);
+			fp2_mul_frb(c[1][1], a[1][1], 2, 3);
+			fp2_neg(c[1][2], c[1][2]);
 			break;
 		case 3:
 			fp2_frb(c[0][0], a[0][0], 1);

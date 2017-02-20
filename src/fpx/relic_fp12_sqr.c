@@ -25,7 +25,6 @@
  *
  * Implementation of squaring in a dodecic extension of a prime field.
  *
- * @version $Id$
  * @ingroup fpx
  */
 

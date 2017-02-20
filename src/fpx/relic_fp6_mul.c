@@ -25,7 +25,6 @@
  *
  * Implementation of multiplication in a sextic extension of a prime field.
  *
- * @version $Id$
  * @ingroup fpx
  */
 

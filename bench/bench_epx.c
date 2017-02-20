@@ -368,7 +368,7 @@ static void arith(void) {
 #if EP_MUL == SLIDE || !defined(STRIP)
 	BENCH_BEGIN("ep2_mul_slide") {
 		bn_rand_mod(k, n);
-		ep_rand(p);
+		ep2_rand(p);
 		BENCH_ADD(ep2_mul_slide(q, p, k));
 	} BENCH_END;
 #endif
@@ -376,7 +376,7 @@ static void arith(void) {
 #if EP_MUL == MONTY || !defined(STRIP)
 	BENCH_BEGIN("ep2_mul_monty") {
 		bn_rand_mod(k, n);
-		ep_rand(p);
+		ep2_rand(p);
 		BENCH_ADD(ep2_mul_monty(q, p, k));
 	} BENCH_END;
 #endif
@@ -384,7 +384,7 @@ static void arith(void) {
 #if EP_MUL == LWNAF || !defined(STRIP)
 	BENCH_BEGIN("ep2_mul_lwnaf") {
 		bn_rand_mod(k, n);
-		ep_rand(p);
+		ep2_rand(p);
 		BENCH_ADD(ep2_mul_lwnaf(q, p, k));
 	} BENCH_END;
 #endif

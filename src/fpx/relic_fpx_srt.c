@@ -25,7 +25,6 @@
  *
  * Implementation of square root in extensions defined over prime fields.
  *
- * @version $Id$
  * @ingroup fpx
  */
 

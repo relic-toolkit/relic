@@ -25,15 +25,11 @@
  *
  * Tests for extensions defined over prime fields.
  *
- * @version $Id$
  * @ingroup test
  */
 
-#include <stdio.h>
-
 #include "relic.h"
 #include "relic_test.h"
-#include "relic_bench.h"
 
 static int memory2(void) {
 	err_t e;
@@ -124,7 +120,7 @@ static int util2(void) {
 		TEST_BEGIN("assignment to random and comparison are consistent") {
 			do {
 				fp2_rand(a);
-			} while (fp2_is_zero(a));			
+			} while (fp2_is_zero(a));
 			fp2_rand(c);
 			TEST_ASSERT(fp2_cmp(a, c) == CMP_NE, end);
 		}
@@ -660,9 +656,28 @@ static int exponentiation2(void) {
 		fp2_new(c);
 		bn_new(d);
 
+		TEST_BEGIN("exponentiation is correct") {
+			fp2_rand(a);
+			bn_zero(d);
+			fp2_exp(c, a, d);
+			TEST_ASSERT(fp2_cmp_dig(c, 1) == CMP_EQ, end);
+			bn_set_dig(d, 1);
+			fp2_exp(c, a, d);
+			TEST_ASSERT(fp2_cmp(c, a) == CMP_EQ, end);
+			bn_rand(d, BN_POS, FP_BITS);
+			fp2_exp(b, a, d);
+			bn_neg(d, d);
+			fp2_exp(c, a, d);
+			fp2_inv(c, c);
+			TEST_ASSERT(fp2_cmp(b, c) == CMP_EQ, end);
+		} TEST_END;
+
 		TEST_BEGIN("frobenius and exponentiation are consistent") {
 			fp2_rand(a);
+			fp2_frb(b, a, 0);
+			TEST_ASSERT(fp2_cmp(a, b) == CMP_EQ, end);
 			fp2_frb(b, a, 1);
+			d->sign = BN_POS;
 			d->used = FP_DIGS;
 			dv_copy(d->dp, fp_prime_get(), FP_DIGS);
 			fp2_exp(c, a, d);
@@ -701,16 +716,18 @@ static int exponentiation2(void) {
 
 static int compression2(void) {
 	int code = STS_ERR;
-	fp2_t a, b, c;
+	fp2_t a, b, c, d;
 
 	fp2_null(a);
 	fp2_null(b);
 	fp2_null(c);
+	fp2_null(d);
 
 	TRY {
 		fp2_new(a);
 		fp2_new(b);
 		fp2_new(c);
+		fp2_new(d);
 
 		TEST_BEGIN("compression is consistent") {
 			fp2_rand(a);
@@ -718,10 +735,10 @@ static int compression2(void) {
 			TEST_ASSERT(fp2_upk(c, b) == 1, end);
 			TEST_ASSERT(fp2_cmp(a, c) == CMP_EQ, end);
 			fp2_rand(a);
-			fp2_conv_uni(a, a);
-			fp2_pck(b, a);
-			TEST_ASSERT(fp2_upk(c, b) == 1, end);
-			TEST_ASSERT(fp2_cmp(a, c) == CMP_EQ, end);
+			fp2_conv_uni(b, a);
+			fp2_pck(c, b);
+			TEST_ASSERT(fp2_upk(d, c) == 1, end);
+			TEST_ASSERT(fp2_cmp(b, d) == CMP_EQ, end);
 		} TEST_END;
 	}
 	CATCH_ANY {
@@ -733,9 +750,9 @@ static int compression2(void) {
 	fp2_free(a);
 	fp2_free(b);
 	fp2_free(c);
+	fp2_free(d);
 	return code;
 }
-
 
 static int square_root2(void) {
 	int code = STS_ERR;
@@ -801,7 +818,7 @@ static int memory3(void) {
 
 static int util3(void) {
 	int code = STS_ERR;
-	uint8_t bin[3 * FP_BYTES];	
+	uint8_t bin[3 * FP_BYTES];
 	fp3_t a, b, c;
 	dig_t d;
 
@@ -879,7 +896,7 @@ static int util3(void) {
 			fp3_set_dig(a, d);
 			TEST_ASSERT(fp3_cmp_dig(a, d) == CMP_EQ, end);
 		}
-		TEST_END;		
+		TEST_END;
 
 		TEST_BEGIN("reading and writing a finite field element are consistent") {
 			fp3_rand(a);
@@ -1386,9 +1403,28 @@ static int exponentiation3(void) {
 		fp3_new(c);
 		bn_new(d);
 
+		TEST_BEGIN("exponentiation is correct") {
+			fp3_rand(a);
+			bn_zero(d);
+			fp3_exp(c, a, d);
+			TEST_ASSERT(fp3_cmp_dig(c, 1) == CMP_EQ, end);
+			bn_set_dig(d, 1);
+			fp3_exp(c, a, d);
+			TEST_ASSERT(fp3_cmp(c, a) == CMP_EQ, end);
+			bn_rand(d, BN_POS, FP_BITS);
+			fp3_exp(b, a, d);
+			bn_neg(d, d);
+			fp3_exp(c, a, d);
+			fp3_inv(c, c);
+			TEST_ASSERT(fp3_cmp(b, c) == CMP_EQ, end);
+		} TEST_END;
+
 		TEST_BEGIN("frobenius and exponentiation are consistent") {
 			fp3_rand(a);
+			fp3_frb(b, a, 0);
+			TEST_ASSERT(fp3_cmp(a, b) == CMP_EQ, end);
 			fp3_frb(b, a, 1);
+			d->sign = BN_POS;
 			d->used = FP_DIGS;
 			dv_copy(d->dp, fp_prime_get(), FP_DIGS);
 			fp3_exp(c, a, d);
@@ -1488,7 +1524,7 @@ static int memory6(void) {
 
 static int util6(void) {
 	int code = STS_ERR;
-	uint8_t bin[6 * FP_BYTES];	
+	uint8_t bin[6 * FP_BYTES];
 	fp6_t a, b, c;
 	dig_t d;
 
@@ -1949,9 +1985,28 @@ static int exponentiation6(void) {
 		fp6_new(c);
 		bn_new(d);
 
+		TEST_BEGIN("exponentiation is correct") {
+			fp6_rand(a);
+			bn_zero(d);
+			fp6_exp(c, a, d);
+			TEST_ASSERT(fp6_cmp_dig(c, 1) == CMP_EQ, end);
+			bn_set_dig(d, 1);
+			fp6_exp(c, a, d);
+			TEST_ASSERT(fp6_cmp(c, a) == CMP_EQ, end);
+			bn_rand(d, BN_POS, FP_BITS);
+			fp6_exp(b, a, d);
+			bn_neg(d, d);
+			fp6_exp(c, a, d);
+			fp6_inv(c, c);
+			TEST_ASSERT(fp6_cmp(b, c) == CMP_EQ, end);
+		} TEST_END;
+
 		TEST_BEGIN("frobenius and exponentiation are consistent") {
 			fp6_rand(a);
+			fp6_frb(b, a, 0);
+			TEST_ASSERT(fp6_cmp(a, b) == CMP_EQ, end);
 			fp6_frb(b, a, 1);
+			d->sign = BN_POS;
 			d->used = FP_DIGS;
 			dv_copy(d->dp, fp_prime_get(), FP_DIGS);
 			fp6_exp(c, a, d);
@@ -2007,7 +2062,7 @@ static int memory12(void) {
 
 static int util12(void) {
 	int code = STS_ERR;
-	uint8_t bin[12 * FP_BYTES];	
+	uint8_t bin[12 * FP_BYTES];
 	fp12_t a, b, c;
 	dig_t d;
 
@@ -2085,7 +2140,7 @@ static int util12(void) {
 			fp12_set_dig(a, d);
 			TEST_ASSERT(fp12_cmp_dig(a, d) == CMP_EQ, end);
 		}
-		TEST_END;		
+		TEST_END;
 
 		TEST_BEGIN("reading and writing a finite field element are consistent") {
 			fp12_rand(a);
@@ -2095,7 +2150,7 @@ static int util12(void) {
 			fp12_conv_cyc(a, a);
 			fp12_write_bin(bin, 8 * FP_BYTES, a, 1);
 			fp12_read_bin(b, bin, 8 * FP_BYTES);
-			TEST_ASSERT(fp12_cmp(a, b) == CMP_EQ, end);			
+			TEST_ASSERT(fp12_cmp(a, b) == CMP_EQ, end);
 		}
 		TEST_END;
 
@@ -2103,7 +2158,7 @@ static int util12(void) {
 			fp12_rand(a);
 			TEST_ASSERT(fp12_size_bin(a, 0) == 12 * FP_BYTES, end);
 			fp12_conv_cyc(a, a);
-			TEST_ASSERT(fp12_size_bin(a, 1) == 8 * FP_BYTES, end);			
+			TEST_ASSERT(fp12_size_bin(a, 1) == 8 * FP_BYTES, end);
 		}
 		TEST_END;
 	}
@@ -2545,6 +2600,18 @@ static int cyclotomic12(void) {
 			fp12_exp(b, a, f);
 			fp12_exp_cyc(c, a, f);
 			TEST_ASSERT(fp12_cmp(b, c) == CMP_EQ, end);
+			bn_zero(f);
+			fp12_exp_cyc(c, a, f);
+			TEST_ASSERT(fp12_cmp_dig(c, 1) == CMP_EQ, end);
+			bn_set_dig(f, 1);
+			fp12_exp_cyc(c, a, f);
+			TEST_ASSERT(fp12_cmp(c, a) == CMP_EQ, end);
+			bn_rand(f, BN_POS, FP_BITS);
+			fp12_exp_cyc(b, a, f);
+			bn_neg(f, f);
+			fp12_exp_cyc(c, a, f);
+			fp12_inv(c, c);
+			TEST_ASSERT(fp12_cmp(b, c) == CMP_EQ, end);
         } TEST_END;
 
 		TEST_BEGIN("sparse cyclotomic exponentiation is correct") {
@@ -2560,6 +2627,17 @@ static int cyclotomic12(void) {
 			fp12_conv_cyc(a, a);
 			fp12_exp(b, a, f);
 			fp12_exp_cyc_sps(c, a, g, 3);
+			TEST_ASSERT(fp12_cmp(b, c) == CMP_EQ, end);
+			g[0] = 0;
+			fp12_exp_cyc_sps(c, a, g, 0);
+			TEST_ASSERT(fp12_cmp_dig(c, 1) == CMP_EQ, end);
+			g[0] = 0;
+			fp12_exp_cyc_sps(c, a, g, 1);
+			TEST_ASSERT(fp12_cmp(c, a) == CMP_EQ, end);
+			g[0] = -1;
+			fp12_exp_cyc_sps(b, a, g, 1);
+			fp12_inv(b, b);
+			fp12_sqr_cyc(c, a);
 			TEST_ASSERT(fp12_cmp(b, c) == CMP_EQ, end);
 		} TEST_END;
 	}
@@ -2638,9 +2716,28 @@ static int exponentiation12(void) {
 		fp12_new(c);
 		bn_new(d);
 
+		TEST_BEGIN("exponentiation is correct") {
+			fp12_rand(a);
+			bn_zero(d);
+			fp12_exp(c, a, d);
+			TEST_ASSERT(fp12_cmp_dig(c, 1) == CMP_EQ, end);
+			bn_set_dig(d, 1);
+			fp12_exp(c, a, d);
+			TEST_ASSERT(fp12_cmp(c, a) == CMP_EQ, end);
+			bn_rand(d, BN_POS, FP_BITS);
+			fp12_exp(b, a, d);
+			bn_neg(d, d);
+			fp12_exp(c, a, d);
+			fp12_inv(c, c);
+			TEST_ASSERT(fp12_cmp(b, c) == CMP_EQ, end);
+		} TEST_END;
+
 		TEST_BEGIN("frobenius and exponentiation are consistent") {
 			fp12_rand(a);
+			fp12_frb(b, a, 0);
+			TEST_ASSERT(fp12_cmp(a, b) == CMP_EQ, end);
 			fp12_frb(b, a, 1);
+			d->sign = BN_POS;
 			d->used = FP_DIGS;
 			dv_copy(d->dp, fp_prime_get(), FP_DIGS);
 			fp12_exp(c, a, d);
@@ -2794,10 +2891,23 @@ static int util18(void) {
 				fp18_rand(a);
 			} while (fp18_is_zero(a));
 			fp18_zero(c);
+			fp18_print(a);
+			fp18_print(c);
 			TEST_ASSERT(fp18_cmp(a, c) == CMP_NE, end);
 			TEST_ASSERT(fp18_cmp(c, a) == CMP_NE, end);
 		}
 		TEST_END;
+
+		TEST_BEGIN("assignment to zero and comparison are consistent") {
+			do {
+				fp18_rand(a);
+			} while (fp18_is_zero(a));
+			fp18_zero(c);
+			TEST_ASSERT(fp18_cmp(a, c) == CMP_NE, end);
+			TEST_ASSERT(fp18_cmp(c, a) == CMP_NE, end);
+		}
+		TEST_END;
+
 
 		TEST_BEGIN("assignment to random and comparison are consistent") {
 			do {
@@ -3159,6 +3269,18 @@ static int cyclotomic18(void) {
 			fp18_exp(b, a, f);
 			fp18_exp_cyc(c, a, f);
 			TEST_ASSERT(fp18_cmp(b, c) == CMP_EQ, end);
+			bn_zero(f);
+			fp18_exp_cyc(c, a, f);
+			TEST_ASSERT(fp18_cmp_dig(c, 1) == CMP_EQ, end);
+			bn_set_dig(f, 1);
+			fp18_exp_cyc(c, a, f);
+			TEST_ASSERT(fp18_cmp(c, a) == CMP_EQ, end);
+			bn_rand(f, BN_POS, FP_BITS);
+			fp18_exp_cyc(b, a, f);
+			bn_neg(f, f);
+			fp18_exp_cyc(c, a, f);
+			fp18_inv(c, c);
+			TEST_ASSERT(fp18_cmp(b, c) == CMP_EQ, end);
         } TEST_END;
 
 		TEST_BEGIN("sparse cyclotomic exponentiation is correct") {
@@ -3168,12 +3290,23 @@ static int cyclotomic18(void) {
 				g[1] = f->dp[0] % FP_BITS;
 			} while (g[1] == 0 || g[1] == FP_BITS - 1);
 			bn_set_2b(f, FP_BITS - 1);
-			bn_set_bit(f, g[1] % FP_BITS, 1);
-			bn_add_dig(f, f, 1);
+			bn_set_bit(f, g[1], 1);
+			bn_set_bit(f, 0, 1);
 			fp18_rand(a);
 			fp18_conv_cyc(a, a);
 			fp18_exp(b, a, f);
 			fp18_exp_cyc_sps(c, a, g, 3);
+			TEST_ASSERT(fp18_cmp(b, c) == CMP_EQ, end);
+			g[0] = 0;
+			fp18_exp_cyc_sps(c, a, g, 0);
+			TEST_ASSERT(fp18_cmp_dig(c, 1) == CMP_EQ, end);
+			g[0] = 0;
+			fp18_exp_cyc_sps(c, a, g, 1);
+			TEST_ASSERT(fp18_cmp(c, a) == CMP_EQ, end);
+			g[0] = -1;
+			fp18_exp_cyc_sps(b, a, g, 1);
+			fp18_inv(b, b);
+			fp18_sqr_cyc(c, a);
 			TEST_ASSERT(fp18_cmp(b, c) == CMP_EQ, end);
 		} TEST_END;
 	}
@@ -3252,9 +3385,28 @@ static int exponentiation18(void) {
 		fp18_new(c);
 		bn_new(d);
 
+		TEST_BEGIN("exponentiation is correct") {
+			fp18_rand(a);
+			bn_zero(d);
+			fp18_exp(c, a, d);
+			TEST_ASSERT(fp18_cmp_dig(c, 1) == CMP_EQ, end);
+			bn_set_dig(d, 1);
+			fp18_exp(c, a, d);
+			TEST_ASSERT(fp18_cmp(c, a) == CMP_EQ, end);
+			bn_rand(d, BN_POS, FP_BITS);
+			fp18_exp(b, a, d);
+			bn_neg(d, d);
+			fp18_exp(c, a, d);
+			fp18_inv(c, c);
+			TEST_ASSERT(fp12_cmp(b, c) == CMP_EQ, end);
+		} TEST_END;
+
 		TEST_BEGIN("frobenius and exponentiation are consistent") {
 			fp18_rand(a);
+			fp18_frb(b, a, 0);
+			TEST_ASSERT(fp18_cmp(a, b) == CMP_EQ, end);
 			fp18_frb(b, a, 1);
+			d->sign = BN_POS;
 			d->used = FP_DIGS;
 			dv_copy(d->dp, fp_prime_get(), FP_DIGS);
 			fp18_exp(c, a, d);
@@ -3552,7 +3704,7 @@ int main(void) {
 		if (compression12() != STS_OK) {
 			core_clean();
 			return 1;
-		}		
+		}
 	}
 
 	/*
