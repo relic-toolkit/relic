@@ -268,6 +268,7 @@ void pp_exp_k12(fp12_t c, fp12_t a) {
 		case BN_P638:
 			pp_exp_bn(c, a);
 			break;
+		case B12_P455:
 		case B12_P638:
 			pp_exp_b12(c, a);
 			break;

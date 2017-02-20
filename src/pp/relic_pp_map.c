@@ -871,6 +871,7 @@ void pp_map_oatep_k12(fp12_t r, ep_t p, ep2_t q) {
 					pp_fin_k12_oatep(r, t[0], _q[0], _p[0]);
 					pp_exp_k12(r, r);
 					break;
+				case B12_P455:
 				case B12_P638:
 					/* r = f_{|a|,Q}(P). */
 					pp_mil_sps_k12(r, t, _q, _p, 1, s, len);
@@ -946,6 +947,7 @@ void pp_map_sim_oatep_k12(fp12_t r, ep_t *p, ep2_t *q, int m) {
 					}
 					pp_exp_k12(r, r);
 					break;
+				case B12_P455:
 				case B12_P638:
 					/* r = f_{|a|,Q}(P). */
 					pp_mil_sps_k12(r, t, _q, _p, j, s, len);
