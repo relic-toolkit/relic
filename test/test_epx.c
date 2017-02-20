@@ -901,24 +901,29 @@ static int hashing(void) {
 static int frobenius(void) {
 	int code = STS_ERR;
 	ep2_t a, b, c;
-	bn_t d;
+	bn_t d, n;
 
 	ep2_null(a);
 	ep2_null(b);
 	ep2_null(c);
 	bn_null(d);
+	bn_null(n);
 
 	TRY {
 		ep2_new(a);
 		ep2_new(b);
 		ep2_new(c);
 		bn_new(d);
+		bn_new(n);
+
+		ep2_curve_get_ord(n);
 
 		TEST_BEGIN("frobenius and scalar multiplication are consistent") {
-			ep2_curve_get_gen(a);
+			ep2_rand(a);
 			ep2_frb(b, a, 1);
 			d->used = FP_DIGS;
 			dv_copy(d->dp, fp_prime_get(), FP_DIGS);
+			bn_mod(d, d, n);
 			ep2_mul(c, a, d);
 			TEST_ASSERT(ep2_cmp(c, b) == CMP_EQ, end);
 		} TEST_END;
@@ -950,6 +955,7 @@ static int frobenius(void) {
 	ep2_free(b);
 	ep2_free(c);
 	bn_free(d);
+	bn_free(n);
 	return code;
 }
 
