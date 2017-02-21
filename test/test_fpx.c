@@ -489,7 +489,6 @@ static int multiplication2(void) {
 				case 7:
 					fp2_mul_art(d, a);
 					fp2_dbl(c, a);
-					fp2_dbl(c, c);
 					fp2_add(c, c, d);
 					break;
 				default:
@@ -2594,12 +2593,8 @@ static int cyclotomic12(void) {
 #endif
 
         TEST_BEGIN("cyclotomic exponentiation is correct") {
-			bn_rand(f, BN_POS, FP_BITS);
 			fp12_rand(a);
 			fp12_conv_cyc(a, a);
-			fp12_exp(b, a, f);
-			fp12_exp_cyc(c, a, f);
-			TEST_ASSERT(fp12_cmp(b, c) == CMP_EQ, end);
 			bn_zero(f);
 			fp12_exp_cyc(c, a, f);
 			TEST_ASSERT(fp12_cmp_dig(c, 1) == CMP_EQ, end);
@@ -2607,10 +2602,14 @@ static int cyclotomic12(void) {
 			fp12_exp_cyc(c, a, f);
 			TEST_ASSERT(fp12_cmp(c, a) == CMP_EQ, end);
 			bn_rand(f, BN_POS, FP_BITS);
+			fp12_exp(b, a, f);
+			fp12_exp_cyc(c, a, f);
+			TEST_ASSERT(fp12_cmp(b, c) == CMP_EQ, end);
+			bn_rand(f, BN_POS, FP_BITS);
 			fp12_exp_cyc(b, a, f);
 			bn_neg(f, f);
 			fp12_exp_cyc(c, a, f);
-			fp12_inv(c, c);
+			fp12_inv_uni(c, c);
 			TEST_ASSERT(fp12_cmp(b, c) == CMP_EQ, end);
         } TEST_END;
 
@@ -3472,10 +3471,14 @@ int main(void) {
 
 	util_banner("Tests for the FPX module", 0);
 
-	if (fp_param_set_any_tower() == STS_ERR) {
-		THROW(ERR_NO_FIELD);
-		core_clean();
-		return 0;
+	/* Try using a pairing-friendly curve for faster exponentiation method. */
+	if (pc_param_set_any() != STS_OK) {
+		/* If it does not work, try a tower-friendly field. */
+		if (fp_param_set_any_tower() == STS_ERR) {
+			THROW(ERR_NO_FIELD);
+			core_clean();
+			return 0;
+		}
 	}
 
 	/* Only execute these if there is an assigned quadratic non-residue. */

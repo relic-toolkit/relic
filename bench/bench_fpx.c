@@ -996,7 +996,7 @@ static void memory12(void) {
 
 static void util12(void) {
 	fp12_t a, b;
-	uint8_t bin[12 * FP_BYTES];	
+	uint8_t bin[12 * FP_BYTES];
 
 	fp12_null(a);
 	fp12_null(b);
@@ -1076,7 +1076,7 @@ static void util12(void) {
 		fp12_write_bin(bin, sizeof(bin), a, 0);
 		BENCH_ADD(fp12_read_bin(a, bin, sizeof(bin)));
 	}
-	BENCH_END;	
+	BENCH_END;
 
 	BENCH_BEGIN("fp12_read_bin (1)") {
 		fp12_rand(a);
@@ -1096,7 +1096,7 @@ static void util12(void) {
 		fp12_rand(a);
 		BENCH_ADD(fp12_cmp_dig(a, (dig_t)0));
 	}
-	BENCH_END;	
+	BENCH_END;
 
 	fp12_free(a);
 	fp12_free(b);
@@ -1277,8 +1277,7 @@ static void arith12(void) {
 
 	BENCH_BEGIN("fp12_exp") {
 		fp12_rand(a);
-		e->used = FP_DIGS;
-		dv_copy(e->dp, fp_prime_get(), FP_DIGS);
+		bn_rand(e, BN_POS, FP_BITS);
 		BENCH_ADD(fp12_exp(c, a, e));
 	}
 	BENCH_END;
@@ -1286,8 +1285,7 @@ static void arith12(void) {
 	BENCH_BEGIN("fp12_exp (cyc)") {
 		fp12_rand(a);
 		fp12_conv_cyc(a, a);
-		e->used = FP_DIGS;
-		dv_copy(e->dp, fp_prime_get(), FP_DIGS);
+		bn_rand(e, BN_POS, FP_BITS);
 		BENCH_ADD(fp12_exp(c, a, e));
 	}
 	BENCH_END;
@@ -1337,7 +1335,7 @@ static void arith12(void) {
 		fp12_conv_cyc(a, a);
 		BENCH_ADD(fp12_pck(c, a));
 	}
-	BENCH_END;	
+	BENCH_END;
 
 	BENCH_BEGIN("fp12_upk") {
 		fp12_rand(a);
@@ -1680,10 +1678,14 @@ int main(void) {
 
 	util_banner("Benchmarks for the FPX module:", 0);
 
-	if (fp_param_set_any_tower() != STS_OK) {
-		THROW(ERR_NO_CURVE);
-		core_clean();
-		return 0;
+	/* Try using a pairing-friendly curve for faster exponentiation method. */
+	if (pc_param_set_any() != STS_OK) {
+		/* If it does not work, try a tower-friendly field. */
+		if (fp_param_set_any_tower() == STS_ERR) {
+			THROW(ERR_NO_FIELD);
+			core_clean();
+			return 0;
+		}
 	}
 
 	fp_param_print();
