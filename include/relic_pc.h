@@ -445,7 +445,7 @@ typedef CAT(GT_LOWER, t) gt_t;
  * @param[out] P			- the result.
  * @param[in] B				- the byte vector.
  * @param[in] L				- the buffer capacity.
- * @throw ERR_NO_BUFFER		- if the buffer capacity is not sufficient. 
+ * @throw ERR_NO_BUFFER		- if the buffer capacity is not sufficient.
  */
 #define g1_read_bin(P, B, L) 	CAT(G1_LOWER, read_bin)(P, B, L)
 
@@ -455,7 +455,7 @@ typedef CAT(GT_LOWER, t) gt_t;
  * @param[out] P			- the result.
  * @param[in] B				- the byte vector.
  * @param[in] L				- the buffer capacity.
- * @throw ERR_NO_BUFFER		- if the buffer capacity is not sufficient. 
+ * @throw ERR_NO_BUFFER		- if the buffer capacity is not sufficient.
  */
 #define g2_read_bin(P, B, L) 	CAT(G2_LOWER, read_bin)(P, B, L)
 
@@ -465,9 +465,9 @@ typedef CAT(GT_LOWER, t) gt_t;
  * @param[out] P			- the result.
  * @param[in] B				- the byte vector.
  * @param[in] L				- the buffer capacity.
- * @throw ERR_NO_BUFFER		- if the buffer capacity is not sufficient. 
+ * @throw ERR_NO_BUFFER		- if the buffer capacity is not sufficient.
  */
-#define gt_read_bin(P, B, L) 	CAT(GT_LOWER, read_bin)(P, B, L)	
+#define gt_read_bin(P, B, L) 	CAT(GT_LOWER, read_bin)(P, B, L)
 
 /**
  * Writes an optionally compressed G_1 element to a byte vector in big-endian
@@ -527,7 +527,7 @@ typedef CAT(GT_LOWER, t) gt_t;
  * @param[out] R			- the result.
  * @param[in] P				- the element to negate.
  */
-#define gt_inv(R, P)		CAT(GT_LOWER, inv)(R, P)
+#define gt_inv(R, P)		CAT(GT_LOWER, inv_uni)(R, P)
 
 /**
  * Adds two elliptic elements from G_1. Computes R = P + Q.
