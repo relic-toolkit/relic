@@ -59,109 +59,110 @@ static void ep2_mul_glv_imp(ep2_t r, ep2_t p, const bn_t k) {
 			ep2_new(q[i]);
 		}
 
-	ep2_curve_get_ord(n);
+		ep2_curve_get_ord(n);
 
-	switch (ep_param_get()) {
-		case BN_P158:
-		case BN_P254:
-		case BN_P256:
-		case BN_P382:
-		case BN_P638:
-			ep2_curve_get_vs(v);
+		switch (ep_param_get()) {
+			case BN_P158:
+			case BN_P254:
+			case BN_P256:
+			case BN_P382:
+			case BN_P638:
+				ep2_curve_get_vs(v);
 
-			for (i = 0; i < 4; i++) {
-				bn_mul(v[i], v[i], k);
-				bn_div(v[i], v[i], n);
-				if (bn_sign(v[i]) == BN_NEG)
-					bn_add_dig(v[i], v[i], 1);
-				bn_zero(_k[i]);
-			}
-
-			fp_param_get_var(u[0]);
-			bn_dbl(u[2], u[0]);
-			bn_add_dig(u[1], u[2], 1);
-			bn_sub_dig(u[3], u[0], 1);
-			bn_add_dig(u[0], u[0], 1);
-			bn_copy(_k[0], k);
-			for (i = 0; i < 4; i++) {
-				bn_mul(u[i], u[i], v[i]);
-				bn_mod(u[i], u[i], n);
-				bn_add(_k[0], _k[0], n);
-				bn_sub(_k[0], _k[0], u[i]);
-				bn_mod(_k[0], _k[0], n);
-			}
-
-			fp_param_get_var(u[0]);
-			bn_neg(u[1], u[0]);
-			bn_dbl(u[2], u[0]);
-			bn_add_dig(u[2], u[2], 1);
-			bn_dbl(u[3], u[2]);
-			for (i = 0; i < 4; i++) {
-				bn_mul(u[i], u[i], v[i]);
-				bn_mod(u[i], u[i], n);
-				bn_add(_k[1], _k[1], n);
-				bn_sub(_k[1], _k[1], u[i]);
-				bn_mod(_k[1], _k[1], n);
-			}
-
-			fp_param_get_var(u[0]);
-			bn_add_dig(u[1], u[0], 1);
-			bn_neg(u[1], u[1]);
-			bn_dbl(u[2], u[0]);
-			bn_add_dig(u[2], u[2], 1);
-			bn_sub_dig(u[3], u[2], 2);
-			bn_neg(u[3], u[3]);
-			for (i = 0; i < 4; i++) {
-				bn_mul(u[i], u[i], v[i]);
-				bn_mod(u[i], u[i], n);
-				bn_add(_k[2], _k[2], n);
-				bn_sub(_k[2], _k[2], u[i]);
-				bn_mod(_k[2], _k[2], n);
-			}
-
-			fp_param_get_var(u[1]);
-			bn_dbl(u[0], u[1]);
-			bn_neg(u[0], u[0]);
-			bn_dbl(u[2], u[1]);
-			bn_add_dig(u[2], u[2], 1);
-			bn_sub_dig(u[3], u[1], 1);
-			bn_neg(u[1], u[1]);
-			for (i = 0; i < 4; i++) {
-				bn_mul(u[i], u[i], v[i]);
-				bn_mod(u[i], u[i], n);
-				bn_add(_k[3], _k[3], n);
-				bn_sub(_k[3], _k[3], u[i]);
-				bn_mod(_k[3], _k[3], n);
-			}
-
-			for (i = 0; i < 4; i++) {
-				l = bn_bits(_k[i]);
-				bn_sub(_k[i], n, _k[i]);
-				if (bn_bits(_k[i]) > l) {
-					bn_sub(_k[i], _k[i], n);
-					_k[i]->sign = BN_POS;
-				} else {
-					_k[i]->sign = BN_NEG;
+				for (i = 0; i < 4; i++) {
+					bn_mul(v[i], v[i], k);
+					bn_div(v[i], v[i], n);
+					if (bn_sign(v[i]) == BN_NEG) {
+						bn_add_dig(v[i], v[i], 1);
+					}
+					bn_zero(_k[i]);
 				}
-			}
-			break;
-		case B12_P455:
-		case B12_P638:
-			bn_copy(v[0], k);
-			fp_param_get_var(u[0]);
-			bn_copy(u[1], u[0]);
-			if (bn_sign(u[0]) == BN_NEG) {
+
+				fp_param_get_var(u[0]);
+				bn_dbl(u[2], u[0]);
+				bn_add_dig(u[1], u[2], 1);
+				bn_sub_dig(u[3], u[0], 1);
+				bn_add_dig(u[0], u[0], 1);
+				bn_copy(_k[0], k);
+				for (i = 0; i < 4; i++) {
+					bn_mul(u[i], u[i], v[i]);
+					bn_mod(u[i], u[i], n);
+					bn_add(_k[0], _k[0], n);
+					bn_sub(_k[0], _k[0], u[i]);
+					bn_mod(_k[0], _k[0], n);
+				}
+
+				fp_param_get_var(u[0]);
+				bn_neg(u[1], u[0]);
+				bn_dbl(u[2], u[0]);
+				bn_add_dig(u[2], u[2], 1);
+				bn_dbl(u[3], u[2]);
+				for (i = 0; i < 4; i++) {
+					bn_mul(u[i], u[i], v[i]);
+					bn_mod(u[i], u[i], n);
+					bn_add(_k[1], _k[1], n);
+					bn_sub(_k[1], _k[1], u[i]);
+					bn_mod(_k[1], _k[1], n);
+				}
+
+				fp_param_get_var(u[0]);
+				bn_add_dig(u[1], u[0], 1);
+				bn_neg(u[1], u[1]);
+				bn_dbl(u[2], u[0]);
+				bn_add_dig(u[2], u[2], 1);
+				bn_sub_dig(u[3], u[2], 2);
+				bn_neg(u[3], u[3]);
+				for (i = 0; i < 4; i++) {
+					bn_mul(u[i], u[i], v[i]);
+					bn_mod(u[i], u[i], n);
+					bn_add(_k[2], _k[2], n);
+					bn_sub(_k[2], _k[2], u[i]);
+					bn_mod(_k[2], _k[2], n);
+				}
+
+				fp_param_get_var(u[1]);
+				bn_dbl(u[0], u[1]);
 				bn_neg(u[0], u[0]);
-			}
-
-			for (i = 0; i < 4; i++) {
-				bn_mod(_k[i], v[0], u[0]);
-				bn_div(v[0], v[0], u[0]);
-				if ((bn_sign(u[1]) == BN_NEG) && (i % 2 != 0)) {
-					bn_neg(_k[i], _k[i]);
+				bn_dbl(u[2], u[1]);
+				bn_add_dig(u[2], u[2], 1);
+				bn_sub_dig(u[3], u[1], 1);
+				bn_neg(u[1], u[1]);
+				for (i = 0; i < 4; i++) {
+					bn_mul(u[i], u[i], v[i]);
+					bn_mod(u[i], u[i], n);
+					bn_add(_k[3], _k[3], n);
+					bn_sub(_k[3], _k[3], u[i]);
+					bn_mod(_k[3], _k[3], n);
 				}
-			}
-			break;
+
+				for (i = 0; i < 4; i++) {
+					l = bn_bits(_k[i]);
+					bn_sub(_k[i], n, _k[i]);
+					if (bn_bits(_k[i]) > l) {
+						bn_sub(_k[i], _k[i], n);
+						_k[i]->sign = BN_POS;
+					} else {
+						_k[i]->sign = BN_NEG;
+					}
+				}
+				break;
+			case B12_P455:
+			case B12_P638:
+				bn_copy(v[0], k);
+				fp_param_get_var(u[0]);
+				bn_copy(u[1], u[0]);
+				if (bn_sign(u[0]) == BN_NEG) {
+					bn_neg(u[0], u[0]);
+				}
+
+				for (i = 0; i < 4; i++) {
+					bn_mod(_k[i], v[0], u[0]);
+					bn_div(v[0], v[0], u[0]);
+					if ((bn_sign(u[1]) == BN_NEG) && (i % 2 != 0)) {
+						bn_neg(_k[i], _k[i]);
+					}
+				}
+				break;
 		}
 
 		ep2_norm(q[0], p);
@@ -176,8 +177,7 @@ static void ep2_mul_glv_imp(ep2_t r, ep2_t p, const bn_t k) {
 		}
 
 		l = MAX(bn_bits(_k[0]), bn_bits(_k[1]));
-		l = MAX(l, bn_bits(_k[2]));
-		l = MAX(l, bn_bits(_k[3]));
+		l = MAX(l, MAX(bn_bits(_k[2]), bn_bits(_k[3])));
 		ep2_set_infty(r);
 		for (i = l - 1; i >= 0; i--) {
 			ep2_dbl(r, r);
