@@ -285,6 +285,9 @@ void fp_param_get_map(int *s, int *len) {
 			*len = 66;
 			break;
 		case BN_382:
+			s[2] = s[49] = s[50] = s[65] = s[66] = s[68] = 1;
+			s[69] = s[79] = s[80] = s[95] = s[96] = 1;
+			*len = 97;
 			break;
 		case B12_455:
 			s[11] = s[31] = s[53] = s[76] = 1;
