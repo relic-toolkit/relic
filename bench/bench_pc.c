@@ -625,12 +625,13 @@ static void util(void) {
 
 static void arith(void) {
 	gt_t a, b, c;
-	bn_t d;
+	bn_t d, e;
 
 	gt_new(a);
 	gt_new(b);
 	gt_new(c);
 	bn_new(d);
+	bn_new(e);
 
 	BENCH_BEGIN("gt_mul") {
 		gt_rand(a);
@@ -654,8 +655,9 @@ static void arith(void) {
 
 	BENCH_BEGIN("gt_exp") {
 		gt_rand(a);
-		g1_get_ord(d);
-		BENCH_ADD(gt_exp(c, a, d));
+		gt_get_ord(d);
+		bn_rand_mod(e, d);
+		BENCH_ADD(gt_exp(c, a, e));
 	}
 	BENCH_END;
 
@@ -663,6 +665,7 @@ static void arith(void) {
 	gt_free(b);
 	gt_free(c);
 	bn_free(d);
+	bn_free(e);
 }
 
 static void pairing(void) {
