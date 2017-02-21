@@ -1249,7 +1249,7 @@ int exponentiation(void) {
 			TEST_ASSERT(gt_cmp(c, a) == CMP_EQ, end);
 			gt_exp(c, a, n);
 			TEST_ASSERT(gt_is_unity(c), end);
-			bn_rand(d, BN_POS, FP_BITS);
+			bn_rand_mod(d, n);
 			gt_exp(b, a, d);
 			bn_neg(d, d);
 			gt_exp(c, a, d);
