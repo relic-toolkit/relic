@@ -473,7 +473,6 @@ static int simultaneous(void) {
 	ec_null(p);
 	ec_null(q);
 	ec_null(r);
-	ec_null(s);
 
 	TRY {
 		bn_new(n);
@@ -482,7 +481,6 @@ static int simultaneous(void) {
 		ec_new(p);
 		ec_new(q);
 		ec_new(r);
-		ec_new(s);
 
 		ec_curve_get_gen(p);
 		ec_curve_get_gen(q);
@@ -561,7 +559,6 @@ static int simultaneous(void) {
 	ec_free(p);
 	ec_free(q);
 	ec_free(r);
-	ec_free(s);
 	return code;
 }
 
