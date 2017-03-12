@@ -103,10 +103,11 @@ static void pp_mil_lit_k2(fp2_t r, ep_t *t, ep_t *p, ep_t *q, int m, bn_t a) {
 	ep_t _q[m];
 	int i, j;
 
+	fp2_null(l);
 	fp2_null(_l);
-	ep_null(_q);
 
 	TRY {
+		fp2_new(l);
 		fp2_new(_l);
 		for (j = 0; j < m; j++) {
 			ep_null(_q[j]);
@@ -135,9 +136,11 @@ static void pp_mil_lit_k2(fp2_t r, ep_t *t, ep_t *p, ep_t *q, int m, bn_t a) {
 		THROW(ERR_CAUGHT);
 	}
 	FINALLY {
+		fp2_free(l);
 		fp2_free(_l);
-		fp2_free(m);
-		ep_free(_q);
+		for (j = 0; j < m; j++) {
+			ep_null(_q[j]);
+		}
 	}
 }
 
@@ -712,9 +715,9 @@ void pp_map_weilp_k12(fp12_t r, ep_t p, ep2_t q) {
 	bn_t n;
 
 	ep_null(_p[0]);
-	ep_null(t0[1]);
+	ep_null(t0[0]);
 	ep2_null(_q[0]);
-	ep2_null(t1[1]);
+	ep2_null(t1[0]);
 	fp12_null(r0);
 	fp12_null(r1);
 	bn_null(n);
