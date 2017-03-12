@@ -130,7 +130,7 @@ void fb_set_bit(fb_t a, int bit, int value) {
 int fb_bits(const fb_t a) {
 	int i = FB_DIGS - 1;
 
-	while (a[i] == 0) {
+	while (i >= 0 && a[i] == 0) {
 		i--;
 	}
 

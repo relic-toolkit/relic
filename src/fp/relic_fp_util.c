@@ -90,7 +90,7 @@ void fp_set_bit(fp_t a, int bit, int value) {
 int fp_bits(const fp_t a) {
 	int i = FP_DIGS - 1;
 
-	while (a[i] == 0) {
+	while (i >= 0 && a[i] == 0) {
 		i--;
 	}
 
