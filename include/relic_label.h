@@ -43,9 +43,6 @@
 
 #ifdef LABEL
 
-#undef first_ctx
-#define first_ctx	PREFIX(first_ctx)
-
 #undef core_ctx
 #define core_ctx	PREFIX(core_ctx)
 
@@ -1189,6 +1186,7 @@
 #undef ep2_curve_clean
 #undef ep2_curve_get_a
 #undef ep2_curve_get_b
+#undef ep2_curve_get_vs
 #undef ep2_curve_opt_a
 #undef ep2_curve_is_twist
 #undef ep2_curve_get_gen
@@ -1219,7 +1217,11 @@
 #undef ep2_dbl_basic
 #undef ep2_dbl_slp_basic
 #undef ep2_dbl_projc
-#undef ep2_mul
+#undef ep2_mul_basic
+#undef ep2_mul_slide
+#undef ep2_mul_monty
+#undef ep2_mul_lwnaf
+#undef ep2_mul_lwreg
 #undef ep2_mul_gen
 #undef ep2_mul_pre_basic
 #undef ep2_mul_pre_yaowi
@@ -1240,6 +1242,7 @@
 #undef ep2_mul_sim_gen
 #undef ep2_mul_dig
 #undef ep2_norm
+#undef ep2_norm_sim
 #undef ep2_map
 #undef ep2_frb
 #undef ep2_pck
@@ -1249,6 +1252,7 @@
 #define ep2_curve_clean 	PREFIX(ep2_curve_clean)
 #define ep2_curve_get_a 	PREFIX(ep2_curve_get_a)
 #define ep2_curve_get_b 	PREFIX(ep2_curve_get_b)
+#define ep2_curve_get_vs 	PREFIX(ep2_curve_get_vs)
 #define ep2_curve_opt_a 	PREFIX(ep2_curve_opt_a)
 #define ep2_curve_is_twist 	PREFIX(ep2_curve_is_twist)
 #define ep2_curve_get_gen 	PREFIX(ep2_curve_get_gen)
@@ -1279,7 +1283,11 @@
 #define ep2_dbl_basic 	PREFIX(ep2_dbl_basic)
 #define ep2_dbl_slp_basic 	PREFIX(ep2_dbl_slp_basic)
 #define ep2_dbl_projc 	PREFIX(ep2_dbl_projc)
-#define ep2_mul 	PREFIX(ep2_mul)
+#define ep2_mul_basic 	PREFIX(ep2_mul_basic)
+#define ep2_mul_slide 	PREFIX(ep2_mul_slide)
+#define ep2_mul_monty 	PREFIX(ep2_mul_monty)
+#define ep2_mul_lwnaf 	PREFIX(ep2_mul_lwnaf)
+#define ep2_mul_lwreg 	PREFIX(ep2_mul_lwreg)
 #define ep2_mul_gen 	PREFIX(ep2_mul_gen)
 #define ep2_mul_pre_basic 	PREFIX(ep2_mul_pre_basic)
 #define ep2_mul_pre_yaowi 	PREFIX(ep2_mul_pre_yaowi)
@@ -1300,6 +1308,7 @@
 #define ep2_mul_sim_gen 	PREFIX(ep2_mul_sim_gen)
 #define ep2_mul_dig 	PREFIX(ep2_mul_dig)
 #define ep2_norm 	PREFIX(ep2_norm)
+#define ep2_norm_sim 	PREFIX(ep2_norm_sim)
 #define ep2_map 	PREFIX(ep2_map)
 #define ep2_frb 	PREFIX(ep2_frb)
 #define ep2_pck 	PREFIX(ep2_pck)
@@ -1752,10 +1761,15 @@
 #undef pp_norm_k2
 #undef pp_norm_k12
 #undef pp_map_tatep_k2
+#undef pp_map_sim_tatep_k2
 #undef pp_map_weilp_k2
+#undef pp_map_sim_weilp_k2
 #undef pp_map_tatep_k12
+#undef pp_map_sim_tatep_k12
 #undef pp_map_weilp_k12
+#undef pp_map_sim_weilp_k12
 #undef pp_map_oatep_k12
+#undef pp_map_sim_oatep_k12
 
 #define pp_map_init 	PREFIX(pp_map_init)
 #define pp_map_clean 	PREFIX(pp_map_clean)
@@ -1778,10 +1792,15 @@
 #define pp_norm_k2 	PREFIX(pp_norm_k2)
 #define pp_norm_k12 	PREFIX(pp_norm_k12)
 #define pp_map_tatep_k2 	PREFIX(pp_map_tatep_k2)
+#define pp_map_sim_tatep_k2 	PREFIX(pp_map_sim_tatep_k2)
 #define pp_map_weilp_k2 	PREFIX(pp_map_weilp_k2)
+#define pp_map_sim_weilp_k2 	PREFIX(pp_map_sim_weilp_k2)
 #define pp_map_tatep_k12 	PREFIX(pp_map_tatep_k12)
+#define pp_map_sim_tatep_k12 	PREFIX(pp_map_sim_tatep_k12)
 #define pp_map_weilp_k12 	PREFIX(pp_map_weilp_k12)
+#define pp_map_sim_weilp_k12 	PREFIX(pp_map_sim_weilp_k12)
 #define pp_map_oatep_k12 	PREFIX(pp_map_oatep_k12)
+#define pp_map_sim_oatep_k12 	PREFIX(pp_map_sim_oatep_k12)
 
 #undef rsa_t
 #undef rabin_t
@@ -1843,6 +1862,9 @@
 #undef cp_bbs_gen
 #undef cp_bbs_sig
 #undef cp_bbs_ver
+#undef cp_zss_gen
+#undef cp_zss_sig
+#undef cp_zss_ver
 #undef cp_vbnn_ibs_kgc_gen
 #undef cp_vbnn_ibs_kgc_extract_key
 #undef cp_vbnn_ibs_user_sign
@@ -1899,6 +1921,9 @@
 #define cp_bbs_gen 	PREFIX(cp_bbs_gen)
 #define cp_bbs_sig 	PREFIX(cp_bbs_sig)
 #define cp_bbs_ver 	PREFIX(cp_bbs_ver)
+#define cp_zss_gen 	PREFIX(cp_zss_gen)
+#define cp_zss_sig 	PREFIX(cp_zss_sig)
+#define cp_zss_ver 	PREFIX(cp_zss_ver)
 #define cp_vbnn_ibs_kgc_gen 	PREFIX(cp_vbnn_ibs_kgc_gen)
 #define cp_vbnn_ibs_kgc_extract_key 	PREFIX(cp_vbnn_ibs_kgc_extract_key)
 #define cp_vbnn_ibs_user_sign 	PREFIX(cp_vbnn_ibs_user_sign)
