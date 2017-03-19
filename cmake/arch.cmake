@@ -1,11 +1,11 @@
 message(STATUS "Available architectures (default = X64):\n")
 
+message("   ARCH=          No specific architecture (disable some features).")
 message("   ARCH=AVR       Atmel AVR ATMega128 8-bit architecture.")
 message("   ARCH=MSP       TI MSP430 16-bit architecture.")
 message("   ARCH=ARM       ARM 32-bit architecture.")
 message("   ARCH=X86       Intel x86-compatible 32-bit architecture.")
-message("   ARCH=X64       AMD x86_64-compatible 64-bit architecture.")
-message("   ARCH=RELIC_NONE      No specific architecture (disable some features).\n")
+message("   ARCH=X64       AMD x86_64-compatible 64-bit architecture.\n")
 
 message(STATUS "Available word sizes (default = 64):\n")
 

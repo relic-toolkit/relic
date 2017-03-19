@@ -63,9 +63,9 @@ void fb_sqr_basic(fb_t c, const fb_t a) {
 
 #endif
 
-#if FB_SQR == RELIC_TABLE || !defined(STRIP)
+#if FB_SQR == LUTBL || !defined(STRIP)
 
-void fb_sqr_table(fb_t c, const fb_t a) {
+void fb_sqr_lutbl(fb_t c, const fb_t a) {
 	dv_t t;
 
 	dv_null(t);

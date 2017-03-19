@@ -3,13 +3,13 @@ message(STATUS "Binary field arithmetic configuration (FB module):\n")
 message("   ** Options for the binary elliptic curve module (default = 283,0,on,on,on):\n")
 
 message("      FB_POLYN=n        The irreducible polynomial size in bits.")
-message("      FB_KARAT=n        The number of Karatsuba levels.") 
+message("      FB_KARAT=n        The number of Karatsuba levels.")
 message("      FB_TRINO=[off|on] Prefer trinomials.")
 message("      FB_SQRTF=[off|on] Prefer square-root friendly polynomials.")
 message("      FB_PRECO=[off|on] Precompute multiplication table for sqrt(z).")
 message("      FB_WIDTH=w        Width w in [2,6] of window processing for exponentiation methods.\n")
 
-message("   ** Available binary field arithmetic methods (default = LODAH;RELIC_TABLE;QUICK;BASIC;QUICK;QUICK;EXGCD;SLIDE;QUICK):\n")
+message("   ** Available binary field arithmetic methods (default = LODAH;LUTBL;QUICK;BASIC;QUICK;QUICK;EXGCD;SLIDE;QUICK):\n")
 
 message("      Field multiplication:")
 message("      FB_METHD=BASIC    Right-to-left shift-and-add multiplication.")
@@ -21,7 +21,7 @@ message("      FB_METHD=LODAH    López-Dahab comb multiplication with window of 
 message("      Field squaring:")
 message("      FB_METHD=BASIC    Bit manipulation squaring.")
 message("      FB_METHD=INTEG    Integrated modular squaring.")
-message("      FB_METHD=RELIC_TABLE    Table-based squaring.\n")
+message("      FB_METHD=LUTBL    Table-based squaring.\n")
 
 message("      Modular reduction:")
 message("      FB_METHD=BASIC    Shift-and-add modular reduction.")
@@ -45,7 +45,7 @@ message("      FB_METHD=BINAR    Binary Inversion algorithm.")
 message("      FB_METHD=ALMOS    Inversion by the Amost inverse algorithm.")
 message("      FB_METHD=EXGCD    Inversion by the Extended Euclidean algorithm.")
 message("      FB_METHD=ITOHT    Inversion by Itoh-Tsuji.")
-message("      FB_METHD=BRUCH    Hardware-friendly inversion by Brunner et al.") 
+message("      FB_METHD=BRUCH    Hardware-friendly inversion by Brunner et al.")
 message("      FB_METHD=LOWER    Pass inversion to the lower level.\n")
 
 message("      Field exponentiation:")
@@ -80,7 +80,7 @@ option(FB_PRECO "Precompute multiplication table for sqrt(z)." on)
 
 # Choose the arithmetic methods.
 if (NOT FB_METHD)
-	set(FB_METHD "LODAH;RELIC_TABLE;QUICK;QUICK;QUICK;QUICK;EXGCD;SLIDE;QUICK")
+	set(FB_METHD "LODAH;LUTBL;QUICK;QUICK;QUICK;QUICK;EXGCD;SLIDE;QUICK")
 endif(NOT FB_METHD)
 list(LENGTH FB_METHD FB_LEN)
 if (FB_LEN LESS 9)

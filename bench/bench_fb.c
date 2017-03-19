@@ -321,10 +321,10 @@ static void arith(void) {
 	BENCH_END;
 #endif
 
-#if FB_SQR == RELIC_TABLE || !defined(STRIP)
-	BENCH_BEGIN("fb_sqr_table") {
+#if FB_SQR == LUTBL || !defined(STRIP)
+	BENCH_BEGIN("fb_sqr_lutbl") {
 		fb_rand(a);
-		BENCH_ADD(fb_sqr_table(c, a));
+		BENCH_ADD(fb_sqr_lutbl(c, a));
 	}
 	BENCH_END;
 #endif

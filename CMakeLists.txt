@@ -99,7 +99,7 @@ message("   ALLOC=STACK    All memory is allocated from the stack.\n")
 
 message(STATUS "Supported operating systems (default = LINUX):\n")
 
-message("   OPSYS=RELIC_NONE     Undefined/No operating system.")
+message("   OPSYS=         Undefined/No specific operating system.")
 message("   OPSYS=LINUX    GNU/Linux operating system.")
 message("   OPSYS=FREEBSD  FreeBSD operating system.")
 message("   OPSYS=MACOSX   Mac OS X operating system.")
@@ -107,15 +107,15 @@ message("   OPSYS=WINDOWS  Windows operating system.")
 message("   OPSYS=DROID    Android operating system.")
 message("   OPSYS=DUINO    Arduino platform.\n")
 
-message(STATUS "Supported multithreading APIs (default = RELIC_NONE):\n")
+message(STATUS "Supported multithreading APIs (default = UNDEF):\n")
 
-message("   MULTI=RELIC_NONE     NO multithreading support.")
+message("   MULTI=         No multithreading support.")
 message("   MULTI=OPENMP   Open Multi-Processing.")
 message("   MULTI=PTHREAD  POSIX threads.\n")
 
 message(STATUS "Supported timers (default = HPROC):\n")
 
-message("   TIMER=RELIC_NONE     No timer.")
+message("   TIMER=         No timer.")
 message("   TIMER=HREAL    GNU/Linux realtime high-resolution timer.")
 message("   TIMER=HPROC    GNU/Linux per-process high-resolution timer.")
 message("   TIMER=HTHRD    GNU/Linux per-thread high-resolution timer.")

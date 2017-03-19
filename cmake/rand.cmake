@@ -1,7 +1,6 @@
 message(STATUS "Available pseudo-random number generators (default = HASH):\n")
 
 message("   RAND=HASH      Use the HASH-DRBG generator. (recommended)")
-message("   RAND=RELIC_HMAC      Use the RELIC_HMAC-DRBG generator. (recommended)")
 message("   RAND=UDEV      Use the operating system underlying generator.")
 message("   RAND=FIPS      Use the FIPS 186-2 (CN1) SHA1-based generator.")
 message("   RAND=CALL      Override the generator with a callback.\n")
