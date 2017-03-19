@@ -341,9 +341,19 @@ static int multiplication1(void) {
 		} TEST_END;
 
 		TEST_BEGIN("generator multiplication is correct") {
+			bn_zero(k);
+			g1_mul_gen(r, k);
+			TEST_ASSERT(g1_is_infty(r), end);
+			bn_set_dig(k, 1);
+			g1_mul_gen(r, k);
+			TEST_ASSERT(g1_cmp(p, r) == CMP_EQ, end);
 			bn_rand_mod(k, n);
 			g1_mul(q, p, k);
 			g1_mul_gen(r, k);
+			TEST_ASSERT(g1_cmp(q, r) == CMP_EQ, end);
+			bn_neg(k, k);
+			g1_mul_gen(r, k);
+			g1_neg(r, r);
 			TEST_ASSERT(g1_cmp(q, r) == CMP_EQ, end);
 		} TEST_END;
 
@@ -397,11 +407,22 @@ static int fixed1(void) {
 			g1_new(t[i]);
 		}
 		TEST_BEGIN("fixed point multiplication is correct") {
+			g1_rand(p);
+			g1_mul_pre(t, p);
+			bn_zero(k);
+			g1_mul_fix(r, (const g1_t *)t, k);
+			TEST_ASSERT(g1_is_infty(r), end);
+			bn_set_dig(k, 1);
+			g1_mul_fix(r, (const g1_t *)t, k);
+			TEST_ASSERT(g1_cmp(p, r) == CMP_EQ, end);
 			bn_rand_mod(k, n);
 			g1_mul(q, p, k);
-			g1_mul_pre(t, p);
 			g1_mul_fix(q, (const g1_t *)t, k);
 			g1_mul(r, p, k);
+			TEST_ASSERT(g1_cmp(q, r) == CMP_EQ, end);
+			bn_neg(k, k);
+			g1_mul_fix(r, (const g1_t *)t, k);
+			g1_neg(r, r);
 			TEST_ASSERT(g1_cmp(q, r) == CMP_EQ, end);
 		} TEST_END;
 		for (int i = 0; i < RELIC_G1_TABLE; i++) {
@@ -424,7 +445,7 @@ static int fixed1(void) {
 
 static int simultaneous1(void) {
 	int code = STS_ERR;
-	g1_t p, q, r, s;
+	g1_t p, q, r;
 	bn_t n, k, l;
 
 	bn_null(n);
@@ -433,7 +454,6 @@ static int simultaneous1(void) {
 	g1_null(p);
 	g1_null(q);
 	g1_null(r);
-	g1_null(s);
 
 	TRY {
 		bn_new(n);
@@ -442,27 +462,68 @@ static int simultaneous1(void) {
 		g1_new(p);
 		g1_new(q);
 		g1_new(r);
-		g1_new(s);
 
 		g1_get_gen(p);
 		g1_get_ord(n);
 
 		TEST_BEGIN("simultaneous point multiplication is correct") {
+			bn_zero(k);
+			bn_rand_mod(l, n);
+			g1_mul(q, p, l);
+			g1_mul_sim(r, p, k, p, l);
+			TEST_ASSERT(g1_cmp(q, r) == CMP_EQ, end);
+			bn_rand_mod(k, n);
+			bn_zero(l);
+			g1_mul(q, p, k);
+			g1_mul_sim(r, p, k, p, l);
+			TEST_ASSERT(g1_cmp(q, r) == CMP_EQ, end);
 			bn_rand_mod(k, n);
 			bn_rand_mod(l, n);
-			g1_mul(q, p, k);
-			g1_mul(s, q, l);
 			g1_mul_sim(r, p, k, q, l);
-			g1_add(q, q, s);
+			g1_mul(p, p, k);
+			g1_mul(q, q, l);
+			g1_add(q, q, p);
+			TEST_ASSERT(g1_cmp(q, r) == CMP_EQ, end);
+			bn_neg(k, k);
+			g1_mul_sim(r, p, k, q, l);
+			g1_mul(p, p, k);
+			g1_mul(q, q, l);
+			g1_add(q, q, p);
+			TEST_ASSERT(g1_cmp(q, r) == CMP_EQ, end);
+			bn_neg(l, l);
+			g1_mul_sim(r, p, k, q, l);
+			g1_mul(p, p, k);
+			g1_mul(q, q, l);
+			g1_add(q, q, p);
 			TEST_ASSERT(g1_cmp(q, r) == CMP_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("simultaneous multiplication with generator is correct") {
+			bn_zero(k);
+			bn_rand_mod(l, n);
+			g1_mul(q, p, l);
+			g1_mul_sim_gen(r, k, p, l);
+			TEST_ASSERT(g1_cmp(q, r) == CMP_EQ, end);
+			bn_rand_mod(k, n);
+			bn_zero(l);
+			g1_mul_gen(q, k);
+			g1_mul_sim_gen(r, k, p, l);
+			TEST_ASSERT(g1_cmp(q, r) == CMP_EQ, end);
 			bn_rand_mod(k, n);
 			bn_rand_mod(l, n);
-			g1_mul_sim(r, p, k, q, l);
-			g1_get_gen(s);
-			g1_mul_sim(q, s, k, q, l);
+			g1_mul_sim_gen(r, k, q, l);
+			g1_get_gen(p);
+			g1_mul_sim(q, p, k, q, l);
+			TEST_ASSERT(g1_cmp(q, r) == CMP_EQ, end);
+			bn_neg(k, k);
+			g1_mul_sim_gen(r, k, q, l);
+			g1_get_gen(p);
+			g1_mul_sim(q, p, k, q, l);
+			TEST_ASSERT(g1_cmp(q, r) == CMP_EQ, end);
+			bn_neg(l, l);
+			g1_mul_sim_gen(r, k, q, l);
+			g1_get_gen(p);
+			g1_mul_sim(q, p, k, q, l);
 			TEST_ASSERT(g1_cmp(q, r) == CMP_EQ, end);
 		} TEST_END;
 	}
@@ -478,7 +539,6 @@ static int simultaneous1(void) {
 	g1_free(p);
 	g1_free(q);
 	g1_free(r);
-	g1_free(s);
 	return code;
 }
 
@@ -824,9 +884,19 @@ static int multiplication2(void) {
 		} TEST_END;
 
 		TEST_BEGIN("generator multiplication is correct") {
+			bn_zero(k);
+			g2_mul_gen(r, k);
+			TEST_ASSERT(g2_is_infty(r), end);
+			bn_set_dig(k, 1);
+			g2_mul_gen(r, k);
+			TEST_ASSERT(g2_cmp(p, r) == CMP_EQ, end);
 			bn_rand_mod(k, n);
 			g2_mul(q, p, k);
 			g2_mul_gen(r, k);
+			TEST_ASSERT(g2_cmp(q, r) == CMP_EQ, end);
+			bn_neg(k, k);
+			g2_mul_gen(r, k);
+			g2_neg(r, r);
 			TEST_ASSERT(g2_cmp(q, r) == CMP_EQ, end);
 		} TEST_END;
 
@@ -880,11 +950,22 @@ static int fixed2(void) {
 			g2_new(t[i]);
 		}
 		TEST_BEGIN("fixed point multiplication is correct") {
+			g2_rand(p);
+			g2_mul_pre(t, p);
+			bn_zero(k);
+			g2_mul_fix(r, t, k);
+			TEST_ASSERT(g2_is_infty(r), end);
+			bn_set_dig(k, 1);
+			g2_mul_fix(r, t, k);
+			TEST_ASSERT(g2_cmp(p, r) == CMP_EQ, end);
 			bn_rand_mod(k, n);
 			g2_mul(q, p, k);
-			g2_mul_pre(t, p);
 			g2_mul_fix(q, t, k);
 			g2_mul(r, p, k);
+			TEST_ASSERT(g2_cmp(q, r) == CMP_EQ, end);
+			bn_neg(k, k);
+			g2_mul_fix(r, t, k);
+			g2_neg(r, r);
 			TEST_ASSERT(g2_cmp(q, r) == CMP_EQ, end);
 		} TEST_END;
 		for (int i = 0; i < RELIC_G2_TABLE; i++) {
@@ -907,7 +988,7 @@ static int fixed2(void) {
 
 static int simultaneous2(void) {
 	int code = STS_ERR;
-	g2_t p, q, r, s;
+	g2_t p, q, r;
 	bn_t n, k, l;
 
 	bn_null(n);
@@ -916,7 +997,6 @@ static int simultaneous2(void) {
 	g2_null(p);
 	g2_null(q);
 	g2_null(r);
-	g2_null(s);
 
 	TRY {
 		bn_new(n);
@@ -925,28 +1005,68 @@ static int simultaneous2(void) {
 		g2_new(p);
 		g2_new(q);
 		g2_new(r);
-		g2_new(s);
 
 		g2_get_gen(p);
 		g2_get_ord(n);
 
 		TEST_BEGIN("simultaneous point multiplication is correct") {
+			bn_zero(k);
+			bn_rand_mod(l, n);
+			g2_mul(q, p, l);
+			g2_mul_sim(r, p, k, p, l);
+			TEST_ASSERT(g2_cmp(q, r) == CMP_EQ, end);
+			bn_rand_mod(k, n);
+			bn_zero(l);
+			g2_mul(q, p, k);
+			g2_mul_sim(r, p, k, p, l);
+			TEST_ASSERT(g2_cmp(q, r) == CMP_EQ, end);
 			bn_rand_mod(k, n);
 			bn_rand_mod(l, n);
-			g2_mul(q, p, k);
-			g2_mul(s, q, l);
 			g2_mul_sim(r, p, k, q, l);
-			g2_add(q, q, s);
-			g2_norm(q, q);
+			g2_mul(p, p, k);
+			g2_mul(q, q, l);
+			g2_add(q, q, p);
+			TEST_ASSERT(g2_cmp(q, r) == CMP_EQ, end);
+			bn_neg(k, k);
+			g2_mul_sim(r, p, k, q, l);
+			g2_mul(p, p, k);
+			g2_mul(q, q, l);
+			g2_add(q, q, p);
+			TEST_ASSERT(g2_cmp(q, r) == CMP_EQ, end);
+			bn_neg(l, l);
+			g2_mul_sim(r, p, k, q, l);
+			g2_mul(p, p, k);
+			g2_mul(q, q, l);
+			g2_add(q, q, p);
 			TEST_ASSERT(g2_cmp(q, r) == CMP_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("simultaneous multiplication with generator is correct") {
+			bn_zero(k);
+			bn_rand_mod(l, n);
+			g2_mul(q, p, l);
+			g2_mul_sim_gen(r, k, p, l);
+			TEST_ASSERT(g2_cmp(q, r) == CMP_EQ, end);
+			bn_rand_mod(k, n);
+			bn_zero(l);
+			g2_mul_gen(q, k);
+			g2_mul_sim_gen(r, k, p, l);
+			TEST_ASSERT(g2_cmp(q, r) == CMP_EQ, end);
 			bn_rand_mod(k, n);
 			bn_rand_mod(l, n);
 			g2_mul_sim_gen(r, k, q, l);
-			g2_get_gen(s);
-			g2_mul_sim(q, s, k, q, l);
+			g2_get_gen(p);
+			g2_mul_sim(q, p, k, q, l);
+			TEST_ASSERT(g2_cmp(q, r) == CMP_EQ, end);
+			bn_neg(k, k);
+			g2_mul_sim_gen(r, k, q, l);
+			g2_get_gen(p);
+			g2_mul_sim(q, p, k, q, l);
+			TEST_ASSERT(g2_cmp(q, r) == CMP_EQ, end);
+			bn_neg(l, l);
+			g2_mul_sim_gen(r, k, q, l);
+			g2_get_gen(p);
+			g2_mul_sim(q, p, k, q, l);
 			TEST_ASSERT(g2_cmp(q, r) == CMP_EQ, end);
 		} TEST_END;
 	}
@@ -962,7 +1082,6 @@ static int simultaneous2(void) {
 	g2_free(p);
 	g2_free(q);
 	g2_free(r);
-	g2_free(s);
 	return code;
 }
 
