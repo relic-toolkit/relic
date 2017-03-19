@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2015 RELIC Authors
+ * Copyright (C) 2007-2017 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -489,6 +489,7 @@ static int multiplication2(void) {
 				case 7:
 					fp2_mul_art(d, a);
 					fp2_dbl(c, a);
+					fp2_dbl(c, c);
 					fp2_add(c, c, d);
 					break;
 				default:

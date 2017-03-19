@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2015 RELIC Authors
+ * Copyright (C) 2007-2017 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -85,7 +85,7 @@ void rand_clean(void);
 
 /**
  * Sets the initial state of the pseudo-random number generator.
- * 
+ *
  * @param[in] buf			- the buffer that represents the initial state.
  * @param[in] size			- the number of bytes.
  * @throw ERR_NO_VALID		- if the entropy length is too small or too large.
@@ -97,7 +97,7 @@ void rand_seed(uint8_t *buf, int size);
 /**
  * Sets the initial state of the pseudo-random number generator as a function
  * pointer.
- * 
+ *
  * @param[in] callback		- the callback to call.
  * @param[in] arg			- the argument for the callback.
  */
@@ -107,7 +107,7 @@ void rand_seed(void (*callback)(uint8_t *, int, void *), void *arg);
 
 /**
  * Gathers pseudo-random bytes from the pseudo-random number generator.
- * 
+ *
  * @param[out] buf			- the buffer to write.
  * @param[in] size			- the number of bytes to gather.
  * @throw ERR_NO_VALID		- if the required length is too large.

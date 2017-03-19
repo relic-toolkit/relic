@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2015 RELIC Authors
+ * Copyright (C) 2007-2017 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -224,7 +224,7 @@ void util_printf(const char *format, ...);
 
 /**
  * Prints a digit.
- * 
+ *
  * @param[in] a 			- the digit to print.
  * @param[in] pad 			- the flag to indicate if the digit must be padded
  * 							with zeroes.

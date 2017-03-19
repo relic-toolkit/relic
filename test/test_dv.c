@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2015 RELIC Authors
+ * Copyright (C) 2007-2017 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -163,7 +163,7 @@ static int swap(void) {
 			TEST_ASSERT(dv_cmp_const(c, b, DV_DIGS) == CMP_EQ, end);
 			TEST_ASSERT(dv_cmp_const(d, a, DV_DIGS) == CMP_EQ, end);
 			TEST_ASSERT(dv_cmp_const(c, a, DV_DIGS) == CMP_NE, end);
-			TEST_ASSERT(dv_cmp_const(d, b, DV_DIGS) == CMP_NE, end);			
+			TEST_ASSERT(dv_cmp_const(d, b, DV_DIGS) == CMP_NE, end);
 		}
 		TEST_END;
 	} CATCH_ANY {

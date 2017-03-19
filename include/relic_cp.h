@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2015 RELIC Authors
+ * Copyright (C) 2007-2017 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -1208,7 +1208,7 @@ int cp_phpe_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len, bn_t n);
  * @param[out] out_len		- the number of bytes to write in the output buffer.
  * @param[in] in_len		- the number of bytes to decrypt.
  * @param[in] n				- the public key.
- * @param[in] l				- the private key. 
+ * @param[in] l				- the private key.
  * @return STS_OK if no errors occurred, STS_ERR otherwise.
  */
 int cp_phpe_dec(uint8_t *out, int out_len, uint8_t *in, int in_len, bn_t n,
@@ -1273,7 +1273,7 @@ int cp_ecies_gen(bn_t d, ec_t q);
  * @param[out] r 			- the resulting elliptic curve point.
  * @param[out] out			- the output buffer.
  * @param[in, out] out_len	- the buffer capacity and number of bytes written.
- * @param[in] in			- the input buffer. 
+ * @param[in] in			- the input buffer.
  * @param[in] in_len		- the number of bytes to encrypt.
  * @param[in] iv 			- the block cipher initialization vector.
  * @param[in] q				- the public key.
@@ -1638,7 +1638,7 @@ int cp_vbnn_ibs_kgc_extract_key(vbnn_ibs_user_t user, vbnn_ibs_kgc_t kgc, uint8_
 
 /**
  * Signs a message using the vBNN-IBS scheme.
- * 
+ *
  * @param[out] 	sig_R			- the R value of the signature.
  * @param[out] 	sig_z 			- the z value of the signature.
  * @param[out] 	sig_h 			- the h value of the signature.

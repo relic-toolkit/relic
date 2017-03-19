@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2015 RELIC Authors
+ * Copyright (C) 2007-2017 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -671,7 +671,7 @@ static int doubling12(void) {
 			fp_add(p->x, p->z, p->x);
 #endif
 			pp_dbl_k12(e1, r, q, p);
-			pp_exp_k12(e1, e1);			
+			pp_exp_k12(e1, e1);
 			TEST_ASSERT(fp12_cmp(e1, e2) == CMP_EQ, end);
 		} TEST_END;
 #endif
@@ -767,7 +767,7 @@ static int pairing12(void) {
 			ep2_null(q[j]);
 			ep_new(p[j]);
 			ep2_new(q[j]);
-		}		
+		}
 
 		ep_curve_get_ord(n);
 
@@ -782,7 +782,7 @@ static int pairing12(void) {
 			ep_rand(p[0]);
 			ep2_set_infty(q[0]);
 			pp_map_k12(e1, p[0], q[0]);
-			TEST_ASSERT(fp12_cmp_dig(e1, 1) == CMP_EQ, end);		
+			TEST_ASSERT(fp12_cmp_dig(e1, 1) == CMP_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("pairing is bilinear") {
@@ -845,7 +845,7 @@ static int pairing12(void) {
 			ep_rand(p[0]);
 			ep2_set_infty(q[0]);
 			pp_map_tatep_k12(e1, p[0], q[0]);
-			TEST_ASSERT(fp12_cmp_dig(e1, 1) == CMP_EQ, end);			
+			TEST_ASSERT(fp12_cmp_dig(e1, 1) == CMP_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("tate pairing is bilinear") {

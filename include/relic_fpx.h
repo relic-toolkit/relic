@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2015 RELIC Authors
+ * Copyright (C) 2007-2017 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -644,7 +644,7 @@ void fp2_print(fp2_t a);
  *
  * @param[in] a				- the extension field element.
  * @param[in] pack			- the flag to indicate compression.
- * @return the number of bytes. 
+ * @return the number of bytes.
  */
 int fp2_size_bin(fp2_t a, int pack);
 
@@ -655,12 +655,12 @@ int fp2_size_bin(fp2_t a, int pack);
  * @param[out] a			- the result.
  * @param[in] bin			- the byte vector.
  * @param[in] len			- the buffer capacity.
- * @throw ERR_NO_BUFFER		- if the buffer capacity is not correct. 
+ * @throw ERR_NO_BUFFER		- if the buffer capacity is not correct.
  */
 void fp2_read_bin(fp2_t a, uint8_t *bin, int len);
 
 /**
- * Writes a quadratic extension field element to a byte vector in big-endian 
+ * Writes a quadratic extension field element to a byte vector in big-endian
  * format.
  *
  * @param[out] bin			- the byte vector.
@@ -989,12 +989,12 @@ int fp3_size_bin(fp3_t a);
  * @param[out] a			- the result.
  * @param[in] bin			- the byte vector.
  * @param[in] len			- the buffer capacity.
- * @throw ERR_NO_BUFFER		- if the buffer capacity is not correct. 
+ * @throw ERR_NO_BUFFER		- if the buffer capacity is not correct.
  */
 void fp3_read_bin(fp3_t a, uint8_t *bin, int len);
 
 /**
- * Writes a cubic extension field element to a byte vector in big-endian 
+ * Writes a cubic extension field element to a byte vector in big-endian
  * format.
  *
  * @param[out] bin			- the byte vector.
@@ -1269,12 +1269,12 @@ int fp6_size_bin(fp6_t a);
  * @param[out] a			- the result.
  * @param[in] bin			- the byte vector.
  * @param[in] len			- the buffer capacity.
- * @throw ERR_NO_BUFFER		- if the buffer capacity is not correct. 
+ * @throw ERR_NO_BUFFER		- if the buffer capacity is not correct.
  */
 void fp6_read_bin(fp6_t a, uint8_t *bin, int len);
 
 /**
- * Writes a setix extension field element to a byte vector in big-endian 
+ * Writes a setix extension field element to a byte vector in big-endian
  * format.
  *
  * @param[out] bin			- the byte vector.
@@ -1501,12 +1501,12 @@ int fp12_size_bin(fp12_t a, int pack);
  * @param[out] a			- the result.
  * @param[in] bin			- the byte vector.
  * @param[in] len			- the buffer capacity.
- * @throw ERR_NO_BUFFER		- if the buffer capacity is not correct. 
+ * @throw ERR_NO_BUFFER		- if the buffer capacity is not correct.
  */
 void fp12_read_bin(fp12_t a, uint8_t *bin, int len);
 
 /**
- * Writes a setix extension field element to a byte vector in big-endian 
+ * Writes a setix extension field element to a byte vector in big-endian
  * format.
  *
  * @param[out] bin			- the byte vector.

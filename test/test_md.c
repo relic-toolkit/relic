@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2015 RELIC Authors
+ * Copyright (C) 2007-2017 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -441,19 +441,19 @@ static int hmac(void) {
 			k2[j] = j + 0x30;
 		}
 		md_hmac(mac, (uint8_t *)msg[1], strlen(msg[1]), k2, sizeof(k2));
-		TEST_ASSERT(memcmp(mac, result[1], MD_LEN) == 0, end);		
+		TEST_ASSERT(memcmp(mac, result[1], MD_LEN) == 0, end);
 		for (int j = 0; j < sizeof(k3); j++) {
 			k3[j] = j + 0x50;
 		}
 		md_hmac(mac, (uint8_t *)msg[2], strlen(msg[2]), k3, sizeof(k3));
-		TEST_ASSERT(memcmp(mac, result[2], MD_LEN) == 0, end);		
+		TEST_ASSERT(memcmp(mac, result[2], MD_LEN) == 0, end);
 		for (int j = 0; j < sizeof(k4); j++) {
 			k4[j] = j + 0x70;
 		}
 		md_hmac(mac, (uint8_t *)msg[3], strlen(msg[3]), k4, sizeof(k4));
-		TEST_ASSERT(memcmp(mac, result[3], 12) == 0, end);		
+		TEST_ASSERT(memcmp(mac, result[3], 12) == 0, end);
 	}
-	TEST_END;	
+	TEST_END;
 #endif
 
 	code = STS_OK;

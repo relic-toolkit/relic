@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2015 RELIC Authors
+ * Copyright (C) 2007-2017 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -632,7 +632,7 @@ int fb_size_str(const fb_t a, int radix);
  * @param[in] str			- the string.
  * @param[in] len			- the size of the string.
  * @param[in] radix			- the radix.
- * @throw ERR_NO_VALID		- if the radix is invalid. 
+ * @throw ERR_NO_VALID		- if the radix is invalid.
  * @throw ERR_NO_BUFFER		- if the string is too long.
  */
 void fb_read_str(fb_t a, const char *str, int len, int radix);
@@ -645,7 +645,7 @@ void fb_read_str(fb_t a, const char *str, int len, int radix);
  * @param[in] len			- the buffer capacity.
  * @param[in] a				- the binary field element to write.
  * @param[in] radix			- the radix.
- * @throw ERR_NO_VALID		- if the radix is invalid. 
+ * @throw ERR_NO_VALID		- if the radix is invalid.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is insufficient.
  */
 void fb_write_str(char *str, int len, const fb_t a, int radix);
@@ -656,7 +656,7 @@ void fb_write_str(char *str, int len, const fb_t a, int radix);
  * @param[out] a			- the result.
  * @param[in] bin			- the byte vector.
  * @param[in] len			- the buffer capacity.
- * @throw ERR_NO_BUFFER		- if the buffer capacity is not FP_BYTES. 
+ * @throw ERR_NO_BUFFER		- if the buffer capacity is not FP_BYTES.
  */
 void fb_read_bin(fb_t a, const uint8_t *bin, int len);
 

@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2015 RELIC Authors
+ * Copyright (C) 2007-2017 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -618,7 +618,7 @@ int eb_size_bin(const eb_t a, int pack);
  * @param[in] bin			- the byte vector.
  * @param[in] len			- the buffer capacity.
  * @throw ERR_NO_VALID		- if the encoded point is invalid.
- * @throw ERR_NO_BUFFER		- if the buffer capacity is invalid. 
+ * @throw ERR_NO_BUFFER		- if the buffer capacity is invalid.
  */
 void eb_read_bin(eb_t a, const uint8_t *bin, int len);
 
@@ -630,7 +630,7 @@ void eb_read_bin(eb_t a, const uint8_t *bin, int len);
  * @param[in] len			- the buffer capacity.
  * @param[in] a				- the binary elliptic curve point to write.
  * @param[in] pack			- the flag to indicate point compression.
- * @throw ERR_NO_BUFFER		- if the buffer capacity is invalid. 
+ * @throw ERR_NO_BUFFER		- if the buffer capacity is invalid.
  */
 void eb_write_bin(uint8_t *bin, int len, const eb_t a, int pack);
 

@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2015 RELIC Authors
+ * Copyright (C) 2007-2017 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -1347,9 +1347,9 @@ void bn_rec_tnaf(int8_t *tnaf, int *len, const bn_t k, int8_t u, int m, int w);
 void bn_rec_rtnaf(int8_t *tnaf, int *len, const bn_t k, int8_t u, int m, int w);
 
 /**
- * Write the constants needed for \tau-NAF recoding as a set of \alpha_u = 
+ * Write the constants needed for \tau-NAF recoding as a set of \alpha_u =
  * \beta_u + \gamma_u * \tau elements.
- * 
+ *
  * @param[out] t 		- the integer corresponding to \tau.
  * @param[out] beta		- the first coefficients of the constants.
  * @param[out] gama		- the second coefficients of the constants.

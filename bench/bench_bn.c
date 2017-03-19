@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2015 RELIC Authors
+ * Copyright (C) 2007-2017 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -862,7 +862,7 @@ static void arith(void) {
 				BENCH_ADD((len = FB_BITS + 8, bn_rec_rtnaf(tnaf, &len, a, 1, FB_BITS, 4)));
 			}
 		}
-		BENCH_END;		
+		BENCH_END;
 	}
 #endif
 

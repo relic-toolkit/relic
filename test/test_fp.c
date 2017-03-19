@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2015 RELIC Authors
+ * Copyright (C) 2007-2017 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -904,7 +904,7 @@ static int exponentiation(void) {
 		bn_new(d);
 
 		TEST_BEGIN("exponentiation is correct") {
-			fp_rand(a);			
+			fp_rand(a);
 			bn_zero(d);
 			fp_exp(c, a, d);
 			TEST_ASSERT(fp_cmp_dig(c, 1) == CMP_EQ, end);

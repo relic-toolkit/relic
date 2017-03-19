@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2015 RELIC Authors
+ * Copyright (C) 2007-2017 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -467,7 +467,7 @@ static int test(void) {
 	code = STS_OK;
 
   end:
-	return code;	
+	return code;
 }
 
 #elif RAND == CALL
@@ -478,7 +478,7 @@ static int test(void) {
 
 static void test_bytes(uint8_t *buf, int size, void *args) {
 	int c, l, fd = *(int *)args;
-	
+
 	if (fd == -1) {
 		THROW(ERR_NO_FILE);
 	}

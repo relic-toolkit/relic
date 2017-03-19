@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2015 RELIC Authors
+ * Copyright (C) 2007-2017 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -22,7 +22,7 @@
 
 /**
  * @mainpage
- * 
+ *
  * RELIC is a modern cryptographic meta-toolkit with emphasis on efficiency and
  * flexibility. RELIC can be used to build efficient and usable cryptographic
  * toolkits tailored for specific security levels and algorithmic choices.
@@ -41,9 +41,9 @@
  * </ul>
  *
  * @section algo_sec Algorithms
- * 
+ *
  * RELIC implements to date:
- * 
+ *
  * <ul>
  * <li> Multiple-precision integer arithmetic
  * <li> Prime and Binary field arithmetic
@@ -57,12 +57,12 @@
  *
  * RELIC is released under an LGPL version 2.1-or-above license to encourage
  * collaboration with other research groups and contributions from the industry.
- * 
+ *
  * @section disc_sec Disclaimer
  *
  * RELIC is alpha-quality software. Implementations may not be correct or secure
  * and may include patented algorithms. Backward API compatibility with early
- * versions may not necessarily be maintained. Use at your own risk. 
+ * versions may not necessarily be maintained. Use at your own risk.
  */
 
 /**

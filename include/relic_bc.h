@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2015 RELIC Authors
+ * Copyright (C) 2007-2017 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -54,7 +54,7 @@
 
 /**
  * Encrypts with AES in CBC mode.
- * 
+ *
  * @param[out] out			- the resulting ciphertext.
  * @param[in,out] out_len	- the buffer capacity and number of bytes written.
  * @param[in] in			- the bytes to be encrypted.
