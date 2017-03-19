@@ -70,20 +70,18 @@
 /** Number of available cores. */
 #define CORES    @CORES@
 
-/** Generic architecture. */
-#define RELIC_NONE     1
 /** Atmel AVR ATMega128 8-bit architecture. */
-#define AVR      2
+#define AVR      1
 /** MSP430 16-bit architecture. */
-#define MSP      3
+#define MSP      2
 /** ARM 32-bit architecture. */
-#define ARM      4
+#define ARM      3
 /** Intel x86-compatible 32-bit architecture. */
-#define X86      5
+#define X86      4
 /** AMD64-compatible 64-bit architecture. */
-#define X64      6
+#define X64      5
 /** Architecture. */
-#define ARCH	 @ARCH@
+#cmakedefine ARCH	 @ARCH@
 
 /** Size of word in this architecture. */
 #define WORD     @WORD@
@@ -690,48 +688,42 @@
 /** Chosen random generator seeder. */
 #define SEED     @SEED@
 
-/** Undefined/No operating system. */
-#define RELIC_NONE     1
 /** GNU/Linux operating system. */
-#define LINUX    2
+#define LINUX    1
 /** FreeBSD operating system. */
-#define FREEBSD  3
+#define FREEBSD  2
 /** Windows operating system. */
-#define MACOSX   4
+#define MACOSX   3
 /** Windows operating system. */
-#define WINDOWS  5
+#define WINDOWS  4
 /** Android operating system. */
-#define DROID    6
+#define DROID    5
 /* Arduino platform. */
-#define DUINO    7
+#define DUINO    6
 /** Detected operation system. */
-#define OPSYS    @OPSYS@
+#cmakedefine OPSYS    @OPSYS@
 
-/** No multithreading. */
-#define RELIC_NONE     1
 /** OpenMP multithreading support. */
-#define OPENMP   2
+#define OPENMP   1
 /** POSIX multithreading support. */
-#define PTHREAD  3
+#define PTHREAD  2
 /** Chosen multithreading API. */
-#define MULTI    @MULTI@
+#cmakedefine MULTI    @MULTI@
 
-/** No timer. */
-#define RELIC_NONE     1
 /** Per-process high-resolution timer. */
-#define HREAL    2
+#define HREAL    1
 /** Per-process high-resolution timer. */
-#define HPROC    3
+#define HPROC    2
 /** Per-thread high-resolution timer. */
-#define HTHRD    4
+#define HTHRD    3
 /** POSIX-compatible timer. */
-#define POSIX    5
+#define POSIX    4
 /** ANSI-compatible timer. */
-#define ANSI     6
+#define ANSI     5
 /** Cycle-counting timer. */
-#define CYCLE    7
+#define CYCLE    6
 /** Chosen timer. */
-#define TIMER    @TIMER@
+#cmakedefine TIMER    @TIMER@
 
 /** Prefix to identity this build of the library. */
 #cmakedefine LABEL    @LABEL@
