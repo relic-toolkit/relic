@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2015 RELIC Authors
+ * Copyright (C) 2007-2017 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -24,7 +24,7 @@
  * @file
  *
  * Implementation of the vBNN-IBS idenenty-based signature algorithm.
- * 
+ *
  * Paper: "IMBAS: Identity-based multi-user broadcast authentication in wireless sensor networks"
  *
  * @version $Id$
@@ -41,7 +41,7 @@
 
 int cp_vbnn_ibs_kgc_gen(vbnn_ibs_kgc_t kgc) {
 	int result = STS_OK;
-	
+
 	/* order of the ECC group */
 	bn_t n;
 
@@ -172,7 +172,7 @@ int cp_vbnn_ibs_user_sign(ec_t sig_R, bn_t sig_z, bn_t sig_h, uint8_t *identity,
 		len = buffer_id_and_message_and_R_and_Y_size;
 		buffer_id_and_message_and_R_and_Y = (uint8_t*)malloc(buffer_id_and_message_and_R_and_Y_size);
 		buffer_i = buffer_id_and_message_and_R_and_Y;
-		
+
 		memcpy(buffer_i, identity, identity_len);
 		buffer_i += identity_len;
 

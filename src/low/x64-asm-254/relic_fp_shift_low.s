@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2015 RELIC Authors
+ * Copyright (C) 2007-2017 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -42,7 +42,7 @@ fp_rsh1_low:
 	shrd	$1, %r9, %r8
 	shrd	$1, %r10, %r9
 	shrd	$1, %r11, %r10
-	shr		$1, %r11
+	shr	$1, %r11
 	movq	%r8,0(%rdi)
 	movq	%r9,8(%rdi)
 	movq	%r10,16(%rdi)
@@ -57,7 +57,7 @@ fp_lsh1_low:
 	shld	$1, %r9, %r8
 	shld	$1, %r10, %r9
 	shld	$1, %r11, %r10
-	shl		$1, %r11
+	shl	$1, %r11
 	movq	%r8,0(%rdi)
 	movq	%r9,8(%rdi)
 	movq	%r10,16(%rdi)

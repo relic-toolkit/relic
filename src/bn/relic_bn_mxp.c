@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2015 RELIC Authors
+ * Copyright (C) 2007-2017 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -240,7 +240,7 @@ void bn_mxp_monty(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 			mask = -(j ^ 1);
 			t = (tab[0]->used ^ tab[1]->used) & mask;
 			tab[0]->used ^= t;
-			tab[1]->used ^= t;			
+			tab[1]->used ^= t;
 		}
 
 #if BN_MOD == MONTY

@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2015 RELIC Authors
+ * Copyright (C) 2007-2017 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -42,5 +42,5 @@ void bn_divn_low(dig_t *c, dig_t *d, dig_t *a, int sa, dig_t *b, int sb) {
 }
 
 void bn_div1_low(dig_t *c, dig_t *d, const dig_t *a, int size, dig_t b) {
-	*d = mpn_divrem_1(c, 0, a, size, b); 
+	*d = mpn_divrem_1(c, 0, a, size, b);
 }

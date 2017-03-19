@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2015 RELIC Authors
+ * Copyright (C) 2007-2017 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -247,7 +247,7 @@ int cp_bgn_dec2(dig_t *out, g2_t in[2], bgn_t prv) {
 		bn_mod(r, r, n);
 		g2_mul_gen(s, r);
 		g2_copy(u, s);
-		
+
 		if (g2_is_infty(t) == 1) {
 			*out = 0;
 			result = STS_OK;
@@ -366,10 +366,10 @@ int cp_bgn_dec(dig_t *out, gt_t in[4], bgn_t prv) {
 		bn_free(r);
 		bn_free(s);
 		g1_free(g);
-		g2_free(h);		
+		g2_free(h);
 		for (i = 0; i < 4; i++) {
 			gt_free(t[i]);
-		}		
+		}
 	}
 
 	return result;

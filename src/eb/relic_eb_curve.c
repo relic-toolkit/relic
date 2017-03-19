@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2015 RELIC Authors
+ * Copyright (C) 2007-2017 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -150,7 +150,7 @@ const eb_t *eb_curve_get_tab() {
 #endif
 }
 
-void eb_curve_set(const fb_t a, const fb_t b, const eb_t g, const bn_t r, 
+void eb_curve_set(const fb_t a, const fb_t b, const eb_t g, const bn_t r,
 		const bn_t h) {
 	ctx_t *ctx = core_get();
 	fb_copy(ctx->eb_a, a);

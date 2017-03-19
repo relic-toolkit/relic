@@ -28,7 +28,7 @@
 
 #include "relic_fp_low.h"
 
-.arch atmega128
+//.arch atmega128
 
 /*============================================================================*/
 /* Public definitions                                                         */

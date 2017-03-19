@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2015 RELIC Authors
+ * Copyright (C) 2007-2017 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -90,7 +90,7 @@ void fp2_sqrn_low(dv2_t c, fp2_t a) {
 		}
 		for (int i = 0; i <= fp_prime_get_qnr(); i++) {
 			fp_subc_low(c[0], c[0], c[1]);
-		}		
+		}
 		/* c1 = 2 * a0 * a1. */
 		fp_addd_low(c[1], c[1], c[1]);
 #else
@@ -99,7 +99,7 @@ void fp2_sqrn_low(dv2_t c, fp2_t a) {
 		}
 		for (int i = 0; i <= fp_prime_get_qnr(); i++) {
 			fp_subc_low(c[0], c[0], c[1]);
-		}		
+		}
 		/* c1 = 2 * a0 * a1. */
 		fp_addc_low(c[1], c[1], c[1]);
 #endif

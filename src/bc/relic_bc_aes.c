@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2015 RELIC Authors
+ * Copyright (C) 2007-2017 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -43,7 +43,7 @@ int bc_aes_cbc_enc(uint8_t *out, int *out_len, uint8_t *in,
 		int in_len, uint8_t *key, int key_len, uint8_t *iv) {
 	keyInstance key_inst;
 	cipherInstance cipher_inst;
-	
+
 	int pad_len = 16 - (in_len - 16 * (in_len/16));
 	if (*out_len < in_len + pad_len) {
 		return STS_ERR;
@@ -66,11 +66,11 @@ int bc_aes_cbc_dec(uint8_t *out, int *out_len, uint8_t *in,
 		int in_len, uint8_t *key, int key_len, uint8_t *iv) {
 	keyInstance key_inst;
 	cipherInstance cipher_inst;
-	
+
 	if (*out_len < in_len) {
 		return STS_ERR;
 	}
-	
+
 	if (makeKey2(&key_inst, DIR_DECRYPT, key_len, (char *)key) != TRUE) {
 		return STS_ERR;
 	}

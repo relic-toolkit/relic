@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2015 RELIC Authors
+ * Copyright (C) 2007-2017 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -84,7 +84,7 @@ int cp_ecies_enc(ec_t r, uint8_t *out, int *out_len, uint8_t *in, int in_len,
 
 		ec_curve_get_ord(n);
 		bn_rand_mod(k, n);
-		
+
 		ec_mul_gen(r, k);
 		ec_mul(p, q, k);
 		ec_get_x(x, p);
@@ -92,7 +92,7 @@ int cp_ecies_enc(ec_t r, uint8_t *out, int *out_len, uint8_t *in, int in_len,
 		if (bn_bits(x) % 8 == 0) {
 			/* Compatibility with BouncyCastle. */
 			l = l + 1;
-		}				
+		}
 		bn_write_bin(_x, l, x);
 		md_kdf2(key, 2 * size, _x, l);
 		l = *out_len;
@@ -137,7 +137,7 @@ int cp_ecies_dec(uint8_t *out, int *out_len, ec_t r, uint8_t *in, int in_len,
 		if (bn_bits(x) % 8 == 0) {
 			/* Compatibility with BouncyCastle. */
 			l = l + 1;
-		}				
+		}
 		bn_write_bin(_x, l, x);
 		md_kdf2(key, 2 * size, _x, l);
 		md_hmac(h, in, in_len - MD_LEN, key + size, size);

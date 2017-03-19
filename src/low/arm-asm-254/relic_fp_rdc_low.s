@@ -1,6 +1,6 @@
 #include "relic_fp_low.h"
 
-.arch armv7-a
+.syntax unified
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -251,7 +251,8 @@ fp_rdcn_low:
 	UMLAL r3, r12, r6, r8
 		MOV r14, #0
 		LDR r6, [r0, #(4*0)]
-    	MOV r7, #P6
+    	MOVW r7, #0x0001
+    	MOVT r7, #0x4000
 	ADCS r5, r5, r12
 	ADC r4, r4, #0
 
@@ -326,7 +327,8 @@ fp_rdcn_low:
 	UMLAL r4, r12, r6, r7
 		MOV r14, #0
 		LDR r6, [r0, #(4*1)]
-    	MOV r7, #P6
+    	MOVW r7, #0x0001
+    	MOVT r7, #0x4000
 	ADDS r3, r3, r12
 	ADC r5, r5, #0
 	/* COMBA_STEP_LO_2 1 P6 */
@@ -400,7 +402,8 @@ fp_rdcn_low:
 	UMLAL r3, r12, r6, r7
 		MOV r14, #0
 		LDR r6, [r0, #(4*2)]
-    	MOV r7, #P6
+    	MOVW r7, #0x0001
+    	MOVT r7, #0x4000
 	ADDS r5, r5, r12
 	ADC r4, r4, #0
 	/* COMBA_STEP_HI_3 2 P6 */
@@ -469,7 +472,8 @@ fp_rdcn_low:
 	UMLAL r5, r14, r6, r7
 		MOV r12, #0
 		LDR r6, [r0, #(4*3)]
-    	MOV r7, #P6
+    	MOVW r7, #0x0001
+    	MOVT r7, #0x4000
 	ADDS r4, r4, r14
 	ADC r3, r3, #0
 	/* COMBA_STEP_HI_1 3 P6 */
@@ -530,7 +534,8 @@ fp_rdcn_low:
 	UMLAL r4, r14, r6, r7
 		MOV r12, #0
 		LDR r6, [r0, #(4*4)]
-    	MOV r7, #P6
+    	MOVW r7, #0x0001
+    	MOVT r7, #0x4000
 	ADDS r3, r3, r14
 	ADC r5, r5, #0
 	/* COMBA_STEP_HI_2 4 P6 */
@@ -582,7 +587,8 @@ fp_rdcn_low:
 	UMLAL r3, r12, r6, r7
 		MOV r14, #0
 		LDR r6, [r0, #(4*5)]
-    	MOV r7, #P6
+    	MOVW r7, #0x0001
+    	MOVT r7, #0x4000
 	ADDS r5, r5, r12
 	ADC r4, r4, #0
 	/* COMBA_STEP_HI_3 5 P6 */
@@ -624,7 +630,8 @@ fp_rdcn_low:
 	UMLAL r5, r12, r6, r7
 		MOV r14, #0
 		LDR r6, [r0, #(4*6)]
-   		MOV r7, #P6
+    	MOVW r7, #0x0001
+    	MOVT r7, #0x4000
 	ADDS r4, r4, r12
 	ADC r3, r3, #0
 	/* COMBA_STEP_HI_1 6 P6 */
@@ -659,7 +666,8 @@ fp_rdcn_low:
 	UMLAL r4, r14, r6, r7
 		MOV r12, #0
 		LDR r6, [r0, #(4*7)]
-    	MOV r7, #P6
+    	MOVW r7, #0x0001
+    	MOVT r7, #0x4000
 	ADDS r3, r3, r14
 	ADC r5, r5, #0
 	/* COMBA_STEP_HI_2 7 P6 */
@@ -724,7 +732,8 @@ fp_rdcn_low:
 	BLO LESS_THAN
 
 	/**** Segunda iteracao ****/
-	MOV r3, #P6
+    	MOVW r3, #0x0001
+    	MOVT r3, #0x4000
 	CMP r11, r3
 	BHI GREATER_THAN_OR_EQUAL
 	BLO LESS_THAN
@@ -805,7 +814,8 @@ GREATER_THAN_OR_EQUAL:
 	STR r10, [r0, #20]
 
 	/**** Setima iteracao ****/
-	MOV r3, #P6
+    	MOVW r3, #0x0001
+    	MOVT r3, #0x4000
 	SBCS r11, r11, r3
 	STR r11, [r0, #24]
 

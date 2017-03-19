@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2015 RELIC Authors
+ * Copyright (C) 2007-2017 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -101,7 +101,7 @@ fp_sqrn_low:
 	movq %rax,%r8
 	movq %rdx,%r10
 
-	xorq %r9,%r9 
+	xorq %r9,%r9
 	movq 8(%rsi),%rax
 	mulq 16(%rsi)
 	addq %rax,%r8

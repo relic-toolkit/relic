@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2015 RELIC Authors
+ * Copyright (C) 2007-2017 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -41,7 +41,7 @@
 
 dig_t bn_mula_low(dig_t *c, const dig_t *a, dig_t digit, int size) {
 	dig_t t[size + 1], scratch[mpn_sec_mul_itch(size, 1)];
-	mpn_sec_mul(t, a, size, &digit, 1, scratch);	
+	mpn_sec_mul(t, a, size, &digit, 1, scratch);
 	return t[size] + mpn_add_n(c, c, t, size);
 }
 

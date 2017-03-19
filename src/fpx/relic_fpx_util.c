@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2015 RELIC Authors
+ * Copyright (C) 2007-2017 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -97,7 +97,7 @@ void fp2_write_bin(uint8_t *bin, int len, fp2_t a, int pack) {
 
 		if (pack && fp2_test_uni(a)) {
 			if (len < FP_BYTES + 1) {
-				THROW(ERR_NO_BUFFER);	
+				THROW(ERR_NO_BUFFER);
 			} else {
 				fp2_pck(t, a);
 				fp_write_bin(bin, FP_BYTES, t[0]);

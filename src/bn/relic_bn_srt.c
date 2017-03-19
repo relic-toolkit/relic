@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2015 RELIC Authors
+ * Copyright (C) 2007-2017 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -38,28 +38,28 @@
 void bn_srt(bn_t c, bn_t a) {
 	bn_t h, l, m, t;
 	int bits, cmp;
-	
+
 	if (bn_sign(a) == BN_NEG) {
 		THROW(ERR_NO_VALID);
 	}
-	
+
 	bits = bn_bits(a);
 	bits += (bits % 2);
-	
+
 	bn_null(h);
 	bn_null(l);
 	bn_null(m);
-	bn_null(t);	
-	
+	bn_null(t);
+
 	TRY{
 		bn_new(h);
 		bn_new(l);
 		bn_new(m);
 		bn_new(t);
-		
+
 		bn_set_2b(h, bits >> 1);
 		bn_set_2b(l, (bits >> 1) - 1);
-	
+
 		/* Trivial binary search approach. */
 		do {
 			bn_add(m, h, l);
@@ -84,6 +84,6 @@ void bn_srt(bn_t c, bn_t a) {
 		bn_free(h);
 		bn_free(l);
 		bn_free(m);
-		bn_free(t);		
+		bn_free(t);
 	}
-} 
+}

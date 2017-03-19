@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2015 RELIC Authors
+ * Copyright (C) 2007-2017 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -52,7 +52,7 @@ ull_t arch_cycles(void) {
 		"cpuid\n\t"/*serialize*/
 		"rdtsc\n\t"/*read the clock*/
 		"mov %%edx, %0\n\t"
-		"mov %%eax, %1\n\t" 
+		"mov %%eax, %1\n\t"
 		: "=r" (hi), "=r" (lo):: "%rax", "%rbx", "%rcx", "%rdx"
 	);
 	return ((ull_t) lo) | (((ull_t) hi) << 32);

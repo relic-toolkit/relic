@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2015 RELIC Authors
+ * Copyright (C) 2007-2017 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -100,7 +100,7 @@ int fb_is_zero(const fb_t a) {
 	for (i = 0; i < FB_DIGS; i++) {
 		t |= a[i];
 	}
-	
+
 	return !t;
 }
 
@@ -300,7 +300,7 @@ void fb_read_bin(fb_t a, const uint8_t *bin, int len) {
 
 	TRY {
 		bn_new(t);
-		
+
 		bn_read_bin(t, bin, len);
 
 		fb_copy(a, t->dp);

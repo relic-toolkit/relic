@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2015 RELIC Authors
+ * Copyright (C) 2007-2017 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -89,7 +89,7 @@ void dv_swap_cond(dig_t *c, dig_t *a, int digits, dig_t cond) {
 		t = (a[i] ^ c[i]) & mask;
 		a[i] ^= t;
 		c[i] ^= t;
-	}	
+	}
 }
 
 int dv_cmp_const(const dig_t *a, const dig_t *b, int size) {

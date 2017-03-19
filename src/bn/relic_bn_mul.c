@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2015 RELIC Authors
+ * Copyright (C) 2007-2017 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -177,7 +177,7 @@ void bn_mul_dig(bn_t c, const bn_t a, dig_t b) {
 	bn_grow(c, a->used + 1);
 	c->sign = a->sign;
 	c->dp[a->used] = bn_mul1_low(c->dp, a->dp, b, a->used);
-	c->used = a->used + 1;	
+	c->used = a->used + 1;
 	bn_trim(c);
 }
 

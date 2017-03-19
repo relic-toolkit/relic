@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2015 RELIC Authors
+ * Copyright (C) 2007-2017 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -54,11 +54,11 @@ void arch_init(void) {
 #if TIMER == CYCLE
 
 #if defined(__ARM_ARCH_6__) || defined(__ARM_ARCH_6J__) || defined(__ARM_ARCH_6K__) || defined(__ARM_ARCH_6Z__) || defined(__ARM_ARCH_6ZK__) || defined(__ARM_ARCH_6T2__)
-	/* 
+	/*
 	 * This relies on a Kernel module described in:
 	 * http://blog.regehr.org/archives/794
 	 */
-	asm("mcr p15, 0, %0, c15, c12, 0" : : "r" (1));		
+	asm("mcr p15, 0, %0, c15, c12, 0" : : "r" (1));
 #elif __ARM_ARCH_7A__
 	/*
 	 * This relies on a Kernel module described in:
@@ -83,15 +83,15 @@ void arch_clean(void) {
 
 ull_t arch_cycles(void) {
 	unsigned int value = 0;
-	
+
 #if TIMER == CYCLE
 
 #if defined(__ARM_ARCH_6__) || defined(__ARM_ARCH_6J__) || defined(__ARM_ARCH_6K__) || defined(__ARM_ARCH_6Z__) || defined(__ARM_ARCH_6ZK__) || defined(__ARM_ARCH_6T2__)
-	asm("mrc p15, 0, %0, c15, c12, 1" : "=r"(value));	
+	asm("mrc p15, 0, %0, c15, c12, 1" : "=r"(value));
 #elif __ARM_ARCH_7A__
 	asm("mrc p15, 0, %0, c9, c13, 0" : "=r"(value));
 #elif __ARM_ARCH_7M__
-	value = *DWT_CYCCNT;	
+	value = *DWT_CYCCNT;
 #else
 	#error "Unsupported ARM architecture. Cycle count implementation missing for this ARM version."
 #endif

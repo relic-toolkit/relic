@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2015 RELIC Authors
+ * Copyright (C) 2007-2017 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -94,7 +94,7 @@ void bn_rec_win(uint8_t *win, int *len, const bn_t k, int w) {
 	int i, j, l;
 
 	l = bn_bits(k);
-	
+
 	if (*len < CEIL(l, w)) {
 		THROW(ERR_NO_BUFFER);
 	}
@@ -368,7 +368,7 @@ void bn_rec_tnaf_mod(bn_t r0, bn_t r1, const bn_t k, int u, int m) {
 				bn_sub_dig(r0, r0, 1);
 				/* (b0, b1) = (b0 + a0, b1 + a1). */
 				bn_add(t2, t2, t0);
-				bn_add(t3, t3, t1);				
+				bn_add(t3, t3, t1);
 			}
 
 			bn_hlv(t, r0);
@@ -401,7 +401,7 @@ void bn_rec_tnaf_mod(bn_t r0, bn_t r1, const bn_t k, int u, int m) {
 	FINALLY {
 		bn_free(t);
 		bn_free(t0);
-		bn_free(t1);		
+		bn_free(t1);
 		bn_free(t2);
 		bn_free(t3);
 	}
@@ -603,7 +603,7 @@ void bn_rec_rtnaf(int8_t *tnaf, int *len, const bn_t k, int8_t u, int m, int w) 
 					tnaf[i++] = u_i;
 					u_i = (int8_t)(u_i >> 1);
 					t = beta[u_i];
-					s = gama[u_i];					
+					s = gama[u_i];
 				}
 				/* r0 = r0 - s * beta_u. */
 				if (t > 0) {
@@ -630,7 +630,7 @@ void bn_rec_rtnaf(int8_t *tnaf, int *len, const bn_t k, int8_t u, int m, int w) 
 				/* r1 = - r0 / 2. */
 				bn_copy(r1, tmp);
 				r1->sign = tmp->sign ^ 1;
-			}			
+			}
 		}
 		s = r0->dp[0];
 		t = r1->dp[0];
@@ -639,7 +639,7 @@ void bn_rec_rtnaf(int8_t *tnaf, int *len, const bn_t k, int8_t u, int m, int w) 
 		}
 		if (bn_sign(r1) == BN_NEG) {
 			t = -t;
-		}		
+		}
 		if (s != 0 && t != 0) {
 			for (int j = 0; j < (1 << (w - 2)); j++) {
 				if (beta[j] == s && gama[j] == t) {
@@ -652,7 +652,7 @@ void bn_rec_rtnaf(int8_t *tnaf, int *len, const bn_t k, int8_t u, int m, int w) 
 					tnaf[i++] = -(2 * j + 1);
 					break;
 				}
-			}		
+			}
 		} else {
 			if (t != 0) {
 				tnaf[i++] = t;

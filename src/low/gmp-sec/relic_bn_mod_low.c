@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2015 RELIC Authors
+ * Copyright (C) 2007-2017 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -49,7 +49,7 @@ void bn_modn_low(dig_t *c, const dig_t *a, int sa, const dig_t *m, int sm,
 
 	for (i = 0; i < sm; i++, tmpc++) {
 		r = (dig_t)(*tmpc * u);
-		mpn_sec_mul(t, m, sm, &r, 1, scratch);	
+		mpn_sec_mul(t, m, sm, &r, 1, scratch);
 		*tmpc = t[sm] + mpn_add_n(tmpc, tmpc, t, sm);
 	}
 	i = mpn_add_n(c, c, tmpc, sm);

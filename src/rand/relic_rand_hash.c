@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2015 RELIC Authors
+ * Copyright (C) 2007-2017 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -76,7 +76,7 @@ static void rand_hash(uint8_t *out, int out_len, uint8_t *in,
 
 /**
  * Accumulates a small integer in the internal state.
- * 
+ *
  * @param[in,out] state		- the internal state.
  * @param[in] digit			- the small integer.
  */
@@ -93,7 +93,7 @@ static int rand_inc(uint8_t *data, int size, int digit) {
 
 /**
  * Accumulates the hash value in the internal state.
- * 
+ *
  * @param[in,out] state		- the internal state.
  * @param[in] hash			- the hash value.
  */

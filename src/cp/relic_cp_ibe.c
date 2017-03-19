@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2015 RELIC Authors
+ * Copyright (C) 2007-2017 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -111,7 +111,7 @@ int cp_ibe_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len,
 		uint8_t buf[l];
 
 		/* h = H_2(e^r). */
-		bn_rand_mod(r, n);		
+		bn_rand_mod(r, n);
 		gt_exp(e, e, r);
 		gt_write_bin(buf, sizeof(buf), e, 0);
 		md_map(h, buf, l);
@@ -121,7 +121,7 @@ int cp_ibe_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len,
 		g1_write_bin(out, *out_len, p, 0);
 
 		for (l = 0; l < MIN(in_len, MD_LEN); l++) {
-			out[l + (2 * FP_BYTES + 1)] = in[l] ^ h[l];			
+			out[l + (2 * FP_BYTES + 1)] = in[l] ^ h[l];
 		}
 
 		*out_len = in_len + (2 * FP_BYTES + 1);
@@ -170,7 +170,7 @@ int cp_ibe_dec(uint8_t *out, int *out_len, uint8_t *in, int in_len, g2_t prv) {
 		md_map(h, buf, l);
 
 		for (l = 0; l < MIN(in_len, MD_LEN); l++) {
-			out[l] = in[l + (2 * FP_BYTES + 1)] ^ h[l];			
+			out[l] = in[l + (2 * FP_BYTES + 1)] ^ h[l];
 		}
 
 		*out_len = in_len - (2 * FP_BYTES + 1);

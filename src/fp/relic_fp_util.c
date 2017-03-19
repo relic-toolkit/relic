@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2015 RELIC Authors
+ * Copyright (C) 2007-2017 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -53,7 +53,7 @@ int fp_is_zero(const fp_t a) {
 	for (i = 0; i < FP_DIGS; i++) {
 		t |= a[i];
 	}
-	
+
 	return !t;
 }
 

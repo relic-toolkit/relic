@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2015 RELIC Authors
+ * Copyright (C) 2007-2017 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -39,7 +39,7 @@
  * Prototype for Arduino timing function.
  *
  * @return The time in microseconds since the program began running.
- */ 
+ */
 uint32_t micros();
 #endif
 
