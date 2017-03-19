@@ -37,7 +37,7 @@
 /*============================================================================*/
 
 /**
- * Multiplies a point on a Barreto-Naehrig curve by the cofactor.
+ * Multiplies a point by the cofactor in a Barreto-Naehrig curve.
  *
  * @param[out] r			- the result.
  * @param[in] p				- the point to multiply.
@@ -61,9 +61,6 @@ void ep2_mul_cof_bn(ep2_t r, ep2_t p) {
 
 		/* Compute t0 = xP. */
 		ep2_mul_basic(t0, p, x);
-		if (bn_sign(x) == BN_NEG) {
-			ep2_neg(t0, t0);
-		}
 
 		/* Compute t1 = \psi(3xP). */
 		ep2_dbl(t1, t0);
@@ -93,7 +90,7 @@ void ep2_mul_cof_bn(ep2_t r, ep2_t p) {
 }
 
 /**
- * Multiplies a point on a Barreto-Lynn-Soctt curve by the cofactor.
+ * Multiplies a point by the cofactor in a Barreto-Lynn-Soctt.
  *
  * @param[out] r			- the result.
  * @param[in] p				- the point to multiply.
@@ -119,14 +116,8 @@ void ep2_mul_cof_b12(ep2_t r, ep2_t p) {
 
 		/* Compute t0 = xP. */
 		ep2_mul_basic(t0, p, x);
-		if (bn_sign(x) == BN_NEG) {
-			ep2_neg(t0, t0);
-		}
 		/* Compute t1 = [x^2]P. */
 		ep2_mul_basic(t1, t0, x);
-		if (bn_sign(x) == BN_NEG) {
-			ep2_neg(t1, t1);
-		}
 
 		/* t2 = (x^2 - x - 1)P = x^2P - x*P - P. */
 		ep2_sub(t2, t1, t0);
@@ -207,6 +198,9 @@ void ep2_map(ep2_t p, uint8_t *msg, int len) {
 				ep2_curve_get_cof(x);
 				if (bn_bits(x) < BN_DIGIT) {
 					ep2_mul_dig(p, p, x->dp[0]);
+					if (bn_sign(x) == BN_NEG) {
+						ep2_neg(p, p);
+					}
 				} else {
 					ep2_mul(p, p, x);
 				}
