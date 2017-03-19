@@ -268,30 +268,34 @@ void ep2_curve_get_vs(bn_t *v) {
 		bn_new(t);
 
 		fp_param_get_var(x);
-
-		bn_mul_dig(v[0], x, 3);
-		bn_add_dig(v[0], v[0], 1);
-
 		bn_copy(v[1], x);
 		bn_copy(v[2], x);
 		bn_copy(v[3], x);
 
-		bn_sqr(x, x);
-		bn_lsh(t, x, 1);
-		bn_add(v[0], v[0], t);
-		bn_add(v[3], v[3], t);
-		bn_lsh(t, t, 1);
-		bn_add(v[2], v[2], t);
-		bn_lsh(t, t, 1);
-		bn_add(v[1], v[1], t);
+		/* t = 2x^2. */
+		bn_sqr(t, x);
+		bn_dbl(t, t);
 
-		fp_param_get_var(t);
-		bn_mul(x, x, t);
-		bn_mul_dig(t, x, 6);
-		bn_add(v[2], v[2], t);
-		bn_lsh(t, t, 1);
-		bn_add(v[1], v[1], t);
+		/* v0 = 2x^2 + 3x + 1. */
+		bn_mul_dig(v[0], x, 3);
+		bn_add_dig(v[0], v[0], 1);
+		bn_add(v[0], v[0], t);
+
+		/* v3 = -(2x^2 + x). */
+		bn_add(v[3], v[3], t);
 		bn_neg(v[3], v[3]);
+
+		/* v1 = 12x^3 + 8x^2 + x, v2 = 6x^3 + 4x^2 + x. */
+		bn_dbl(t, t);
+		bn_add(v[2], v[2], t);
+		bn_dbl(t, t);
+		bn_add(v[1], v[1], t);
+		bn_rsh(t, t, 2);
+		bn_mul(t, t, x);
+		bn_mul_dig(t, t, 3);
+		bn_add(v[2], v[2], t);
+		bn_dbl(t, t);
+		bn_add(v[1], v[1], t);
 	} CATCH_ANY {
 		THROW(ERR_CAUGHT);
 	} FINALLY {

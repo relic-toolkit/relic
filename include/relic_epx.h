@@ -371,16 +371,16 @@ typedef ep3_st *ep3_t;
  * @param[in] P					- the first point to multiply.
  * @param[in] K					- the first integer.
  * @param[in] Q					- the second point to multiply.
- * @param[in] L					- the second integer,
+ * @param[in] M					- the second integer,
  */
 #if EP_SIM == BASIC
-#define ep2_mul_sim(R, P, K, Q, L)	ep2_mul_sim_basic(R, P, K, Q, L)
+#define ep2_mul_sim(R, P, K, Q, M)	ep2_mul_sim_basic(R, P, K, Q, M)
 #elif EP_SIM == TRICK
-#define ep2_mul_sim(R, P, K, Q, L)	ep2_mul_sim_trick(R, P, K, Q, L)
+#define ep2_mul_sim(R, P, K, Q, M)	ep2_mul_sim_trick(R, P, K, Q, M)
 #elif EP_SIM == INTER
-#define ep2_mul_sim(R, P, K, Q, L)	ep2_mul_sim_inter(R, P, K, Q, L)
+#define ep2_mul_sim(R, P, K, Q, M)	ep2_mul_sim_inter(R, P, K, Q, M)
 #elif EP_SIM == JOINT
-#define ep2_mul_sim(R, P, K, Q, L)	ep2_mul_sim_joint(R, P, K, Q, L)
+#define ep2_mul_sim(R, P, K, Q, M)	ep2_mul_sim_joint(R, P, K, Q, M)
 #endif
 
 /*============================================================================*/
@@ -857,10 +857,9 @@ void ep2_mul_fix_lwnaf(ep2_t r, ep2_t *t, bn_t k);
  * @param[in] p				- the first point to multiply.
  * @param[in] k				- the first integer.
  * @param[in] q				- the second point to multiply.
- * @param[in] l				- the second integer,
+ * @param[in] m				- the second integer,
  */
-void ep2_mul_sim_basic(ep2_t r, ep2_t p, bn_t k, ep2_t q,
-		bn_t l);
+void ep2_mul_sim_basic(ep2_t r, ep2_t p, bn_t k, ep2_t q, bn_t m);
 
 /**
  * Multiplies and adds two prime elliptic curve points simultaneously using
@@ -870,10 +869,9 @@ void ep2_mul_sim_basic(ep2_t r, ep2_t p, bn_t k, ep2_t q,
  * @param[in] p				- the first point to multiply.
  * @param[in] k				- the first integer.
  * @param[in] q				- the second point to multiply.
- * @param[in] l				- the second integer,
+ * @param[in] m				- the second integer,
  */
-void ep2_mul_sim_trick(ep2_t r, ep2_t p, bn_t k, ep2_t q,
-		bn_t l);
+void ep2_mul_sim_trick(ep2_t r, ep2_t p, bn_t k, ep2_t q, bn_t m);
 
 /**
  * Multiplies and adds two prime elliptic curve points simultaneously using
@@ -883,10 +881,9 @@ void ep2_mul_sim_trick(ep2_t r, ep2_t p, bn_t k, ep2_t q,
  * @param[in] p				- the first point to multiply.
  * @param[in] k				- the first integer.
  * @param[in] q				- the second point to multiply.
- * @param[in] l				- the second integer,
+ * @param[in] m				- the second integer,
  */
-void ep2_mul_sim_inter(ep2_t r, ep2_t p, bn_t k, ep2_t q,
-		bn_t l);
+void ep2_mul_sim_inter(ep2_t r, ep2_t p, bn_t k, ep2_t q, bn_t m);
 
 /**
  * Multiplies and adds two prime elliptic curve points simultaneously using
@@ -896,10 +893,9 @@ void ep2_mul_sim_inter(ep2_t r, ep2_t p, bn_t k, ep2_t q,
  * @param[in] p				- the first point to multiply.
  * @param[in] k				- the first integer.
  * @param[in] q				- the second point to multiply.
- * @param[in] l				- the second integer,
+ * @param[in] m				- the second integer,
  */
-void ep2_mul_sim_joint(ep2_t r, ep2_t p, bn_t k, ep2_t q,
-		bn_t l);
+void ep2_mul_sim_joint(ep2_t r, ep2_t p, bn_t k, ep2_t q, bn_t m);
 
 /**
  * Multiplies and adds the generator and a prime elliptic curve point
@@ -908,9 +904,9 @@ void ep2_mul_sim_joint(ep2_t r, ep2_t p, bn_t k, ep2_t q,
  * @param[out] r			- the result.
  * @param[in] k				- the first integer.
  * @param[in] q				- the second point to multiply.
- * @param[in] l				- the second integer,
+ * @param[in] m				- the second integer,
  */
-void ep2_mul_sim_gen(ep2_t r, bn_t k, ep2_t q, bn_t l);
+void ep2_mul_sim_gen(ep2_t r, bn_t k, ep2_t q, bn_t m);
 
 /**
  * Multiplies a prime elliptic point by a small integer.

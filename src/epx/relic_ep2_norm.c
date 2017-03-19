@@ -43,7 +43,7 @@
  * @param r			- the result.
  * @param p			- the point to normalize.
  */
-static void ep2_norm_imp(ep2_t r, const ep2_t p, int inverted) {
+static void ep2_norm_imp(ep2_t r, ep2_t p, int inverted) {
 	if (!p->norm) {
 		fp2_t t0, t1;
 

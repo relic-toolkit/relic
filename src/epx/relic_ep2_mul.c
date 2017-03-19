@@ -78,6 +78,7 @@ static void ep2_mul_glv_imp(ep2_t r, ep2_t p, const bn_t k) {
 					bn_zero(_k[i]);
 				}
 
+				/* u0 = x + 1, u1 = 2x + 1, u2 = 2x, u3 = x - 1. */
 				fp_param_get_var(u[0]);
 				bn_dbl(u[2], u[0]);
 				bn_add_dig(u[1], u[2], 1);
@@ -92,6 +93,7 @@ static void ep2_mul_glv_imp(ep2_t r, ep2_t p, const bn_t k) {
 					bn_mod(_k[0], _k[0], n);
 				}
 
+				/* u0 = x, u1 = -x, u2 = 2x + 1, u3 = 4x + 2. */
 				fp_param_get_var(u[0]);
 				bn_neg(u[1], u[0]);
 				bn_dbl(u[2], u[0]);
@@ -105,6 +107,7 @@ static void ep2_mul_glv_imp(ep2_t r, ep2_t p, const bn_t k) {
 					bn_mod(_k[1], _k[1], n);
 				}
 
+				/* u0 = x, u1 = -(x + 1), u2 = 2x + 1, u3 = -(2x - 1). */
 				fp_param_get_var(u[0]);
 				bn_add_dig(u[1], u[0], 1);
 				bn_neg(u[1], u[1]);
@@ -120,6 +123,7 @@ static void ep2_mul_glv_imp(ep2_t r, ep2_t p, const bn_t k) {
 					bn_mod(_k[2], _k[2], n);
 				}
 
+				/* u0 = -2x, u1 = -x, u2 = 2x + 1, u3 = x - 1. */
 				fp_param_get_var(u[1]);
 				bn_dbl(u[0], u[1]);
 				bn_neg(u[0], u[0]);
@@ -242,6 +246,9 @@ static void ep2_mul_naf_imp(ep2_t r, ep2_t p, const bn_t k) {
 		}
 		/* Convert r to affine coordinates. */
 		ep2_norm(r, r);
+		if (bn_sign(k) == BN_NEG) {
+			ep2_neg(r, r);
+		}
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
@@ -268,6 +275,12 @@ void ep2_mul_basic(ep2_t r, ep2_t p, const bn_t k) {
 	ep2_t t;
 
 	ep2_null(t);
+
+	if (bn_is_zero(k) || ep2_is_infty(p)) {
+		ep2_set_infty(r);
+		return;
+	}
+
 	TRY {
 		ep2_new(t);
 		l = bn_bits(k);
@@ -287,6 +300,9 @@ void ep2_mul_basic(ep2_t r, ep2_t p, const bn_t k) {
 
 		ep2_copy(r, t);
 		ep2_norm(r, r);
+		if (bn_sign(k) == BN_NEG) {
+			ep2_neg(r, r);
+		}
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
@@ -351,6 +367,9 @@ void ep2_mul_slide(ep2_t r, ep2_t p, const bn_t k) {
 		}
 
 		ep2_norm(r, q);
+		if (bn_sign(k) == BN_NEG) {
+			ep2_neg(r, r);
+		}
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
@@ -404,7 +423,9 @@ void ep2_mul_monty(ep2_t r, ep2_t p, const bn_t k) {
 		}
 
 		ep2_norm(r, t[0]);
-
+		if (bn_sign(k) == BN_NEG) {
+			ep2_neg(r, r);
+		}
 	} CATCH_ANY {
 		THROW(ERR_CAUGHT);
 	}
@@ -439,6 +460,11 @@ void ep2_mul_lwnaf(ep2_t r, ep2_t p, const bn_t k) {
 #endif
 
 void ep2_mul_gen(ep2_t r, bn_t k) {
+	if (bn_is_zero(k)) {
+		ep2_set_infty(r);
+		return;
+	}
+
 #ifdef EP_PRECO
 	ep2_mul_fix(r, ep2_curve_get_tab(), k);
 #else
@@ -466,7 +492,7 @@ void ep2_mul_dig(ep2_t r, ep2_t p, dig_t k) {
 
 	ep2_null(t);
 
-	if (k == 0) {
+	if (k == 0 || ep2_is_infty(p)) {
 		ep2_set_infty(r);
 		return;
 	}

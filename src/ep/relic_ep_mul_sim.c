@@ -291,15 +291,11 @@ static void ep_mul_sim_plain(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 	ep_t t0[1 << (EP_WIDTH - 2)];
 	ep_t t1[1 << (EP_WIDTH - 2)];
 
-	for (i = 0; i < (1 << (EP_WIDTH - 2)); i++) {
-		ep_null(t0[i]);
-		ep_null(t1[i]);
-	}
-
 	TRY {
 		gen = (t == NULL ? 0 : 1);
 		if (!gen) {
 			for (i = 0; i < (1 << (EP_WIDTH - 2)); i++) {
+				ep_null(t0[i]);
 				ep_new(t0[i]);
 			}
 			ep_tab(t0, p, EP_WIDTH);
@@ -308,6 +304,7 @@ static void ep_mul_sim_plain(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 
 		/* Prepare the precomputation table. */
 		for (i = 0; i < (1 << (EP_WIDTH - 2)); i++) {
+			ep_null(t1[i]);
 			ep_new(t1[i]);
 		}
 		/* Compute the precomputation table. */
@@ -547,7 +544,7 @@ void ep_mul_sim_inter(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 void ep_mul_sim_joint(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 		const bn_t m) {
 	ep_t t[5];
-	int i, u_i, len, offset;
+	int i, l, u_i, offset;
 	int8_t jsf[2 * (FP_BITS + 1)];
 
 	if (bn_is_zero(k) || ep_is_infty(p)) {
@@ -580,13 +577,13 @@ void ep_mul_sim_joint(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 		ep_norm_sim(t + 3, (const ep_t *)t + 3, 2);
 #endif
 
-		len = 2 * (FP_BITS + 1);
-		bn_rec_jsf(jsf, &len, k, m);
+		l = 2 * (FP_BITS + 1);
+		bn_rec_jsf(jsf, &l, k, m);
 
 		ep_set_infty(r);
 
 		offset = MAX(bn_bits(k), bn_bits(m)) + 1;
-		for (i = len - 1; i >= 0; i--) {
+		for (i = l - 1; i >= 0; i--) {
 			ep_dbl(r, r);
 			if (jsf[i] != 0 && jsf[i] == -jsf[i + offset]) {
 				u_i = jsf[i] * 2 + jsf[i + offset];
