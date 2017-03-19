@@ -500,7 +500,7 @@ void fp_param_set(int param) {
 				fp_prime_set_pmers(f, 8);
 				break;
 			case BN_256:
-				/* x = 6000000000001F2D. */
+				/* x = -0x600000000000219B. */
 				fp_param_get_var(t0);
 				/* p = 36 * x^4 + 36 * x^3 + 24 * x^2 + 6 * x + 1. */
 				bn_set_dig(p, 1);
