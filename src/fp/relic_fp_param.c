@@ -773,7 +773,7 @@ int fp_param_set_any(void) {
 #elif FP_PRIME == 381
 	fp_param_set(B12_381);
 #elif FP_PRIME == 382
-	fp_param_set(PRIME_382105);
+	fp_param_set(BN_382);
 #elif FP_PRIME == 383
 	fp_param_set(PRIME_383187);
 #elif FP_PRIME == 384
