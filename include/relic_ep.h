@@ -90,6 +90,8 @@ enum {
 	BN_P254,
 	/** Barreto-Naehrig curve with negative x. */
 	BN_P256,
+	/** Barreto-Lynn-Scott curve with embedding degree 12. */
+	B12_P381,
 	/** Barreto-Naehrig curve with negative x. */
 	BN_P382,
 	/** Barreto-Lynn-Scott curve with embedding degree 12. */

@@ -343,9 +343,25 @@
 /** @} */
 #endif
 
+#if defined(EP_ENDOM) && FP_PRIME == 381
+/**
+* Parameters for a 381-bit pairing-friendly prime curve.
+*/
+/** @{ */
+#define B12_P381_A		"0"
+#define B12_P381_B		"4"
+#define B12_P381_X		"17F1D3A73197D7942695638C4FA9AC0FC3688C4F9774B905A14E3A3F171BAC586C55E83FF97A1AEFFB3AF00ADB22C6BB"
+#define B12_P381_Y		"08B3F481E3AAA0F1A09E30ED741D8AE4FCF5E095D5D00AF600DB18CB2C04B3EDD03CC744A2888AE40CAA232946C5E7E1"
+#define B12_P381_R		"73EDA753299D7D483339D80809A1D80553BDA402FFFE5BFEFFFFFFFF00000001"
+#define B12_P381_H		"396C8C005555E1568C00AAAB0000AAAB"
+#define B12_P381_BETA	"5F19672FDF76CE51BA69C6076A0F77EADDB3A93BE6F89688DE17D813620A00022E01FFFFFFFEFFFE"
+#define B12_P381_LAMB	"73EDA753299D7D483339D80809A1D804A7780001FFFCB7FCFFFFFFFE00000001"
+/** @} */
+#endif
+
 #if defined(EP_ENDOM) && FP_PRIME == 382
 /**
- * Parameters for a 256-bit pairing-friendly prime curve.
+ * Parameters for a 382-bit pairing-friendly prime curve.
  */
 /** @{ */
 #define BN_P382_A		"0"
@@ -622,6 +638,12 @@ void ep_param_set(int param) {
 				plain = 1;
 				break;
 #endif
+#if defined(EP_ENDOM) & FP_PRIME == 381
+			case B12_P381:
+				ASSIGNK(B12_P381, B12_381);
+				endom = 1;
+				break;
+#endif
 #if defined(EP_ENDOM) & FP_PRIME == 382
 			case BN_P382:
 				ASSIGNK(BN_P382, BN_382);
@@ -805,6 +827,8 @@ int ep_param_set_any_endom() {
 	ep_param_set(BN_P254);
 #elif FP_PRIME == 256
 	ep_param_set(SECG_K256);
+#elif FP_PRIME == 381
+	ep_param_set(B12_P381);
 #elif FP_PRIME == 382
 	ep_param_set(BN_P382);
 #elif FP_PRIME == 455
@@ -852,6 +876,10 @@ int ep_param_set_any_pairf() {
 #elif FP_PRIME == 256
 	ep_param_set(BN_P256);
 	type = EP_DTYPE;
+	degree = 2;
+#elif FP_PRIME == 381
+	ep_param_set(B12_P381);
+	type = EP_MTYPE;
 	degree = 2;
 #elif FP_PRIME == 382
 	ep_param_set(BN_P382);
@@ -948,6 +976,9 @@ void ep_param_print() {
 		case BN_P382:
 			util_banner("Curve BN-P382:", 0);
 			break;
+		case B12_P381:
+			util_banner("Curve B12-P381:", 0);
+			break;
 		case B12_P455:
 			util_banner("Curve B12-P455:", 0);
 			break;
@@ -993,21 +1024,23 @@ int ep_param_level() {
 			return 112;
 		case BN_P254:
 		case BN_P256:
-			return 100;
-		case BN_P382:
-			return 128;
+			return 112;
 		case NIST_P256:
 		case SECG_K256:
-		case B12_P455:
+			return 128;
+		case B12_P381:
+		case BN_P382:
 		case SS_P1536:
 			return 128;
+		case B12_P455:
+			return 140;
 		case NIST_P384:
 			return 192;
 		case NIST_P521:
 			return 256;
 		case BN_P638:
 		case B12_P638:
-			return 192;
+			return 160;
 	}
 	return 0;
 }
@@ -1019,6 +1052,7 @@ int ep_param_embed() {
 		case BN_P256:
 		case BN_P382:
 		case BN_P638:
+		case B12_P381:
 		case B12_P455:
 		case B12_P638:
 			return 12;

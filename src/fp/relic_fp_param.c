@@ -92,6 +92,21 @@ void fp_param_get_var(bn_t x) {
 				bn_add_dig(x, x, 0x9B);
 				bn_neg(x, x);
 				break;
+			case B12_381:
+				/* x = -(2^63 + 2^62 + 2^60 + 2^57 + 2^48 + 2^16). */
+				bn_set_2b(x, 63);
+				bn_set_2b(a, 62);
+				bn_add(x, x, a);
+				bn_set_2b(a, 60);
+				bn_add(x, x, a);
+				bn_set_2b(a, 57);
+				bn_add(x, x, a);
+				bn_set_2b(a, 48);
+				bn_add(x, x, a);
+				bn_set_2b(a, 16);
+				bn_add(x, x, a);
+				bn_neg(x, x);
+				break;
 			case BN_382:
 				/* x = -(2^94 + 2^78 + 2^67 + 2^64 + 2^48 + 1). */
 				bn_set_2b(x, 94);
@@ -208,6 +223,15 @@ void fp_param_get_sps(int *s, int *len) {
 					}
 				}
 				break;
+			case B12_381:
+				s[0] = 16;
+				s[1] = 48;
+				s[2] = 57;
+				s[3] = 60;
+				s[4] = 62;
+				s[5] = 63;
+				*len = 6;
+				break;
 			case B12_455:
 				s[0] = 11;
 				s[1] = 31;
@@ -288,6 +312,10 @@ void fp_param_get_map(int *s, int *len) {
 			s[2] = s[49] = s[50] = s[65] = s[66] = s[68] = 1;
 			s[69] = s[79] = s[80] = s[95] = s[96] = 1;
 			*len = 97;
+			break;
+		case B12_381:
+			s[16] = s[48] = s[57] = s[60] = s[62] = s[63] = 1;
+			*len = 64;
 			break;
 		case B12_455:
 			s[11] = s[31] = s[53] = s[76] = 1;
@@ -519,6 +547,22 @@ void fp_param_set(int param) {
 				bn_add(p, p, t1);
 				fp_prime_set_dense(p);
 				break;
+#elif FP_PRIME == 381
+			case B12_381:
+				fp_param_get_var(t0);
+				/* p = (x^2 - 2x + 1) * (x^4 - x^2 + 1)/3 + x. */
+				bn_sqr(t1, t0);
+				bn_sqr(p, t1);
+				bn_sub(p, p, t1);
+				bn_add_dig(p, p, 1);
+				bn_sub(t1, t1, t0);
+				bn_sub(t1, t1, t0);
+				bn_add_dig(t1, t1, 1);
+				bn_mul(p, p, t1);
+				bn_div_dig(p, p, 3);
+				bn_add(p, p, t0);
+				fp_prime_set_dense(p);
+				break;
 #elif FP_PRIME == 382
 			case PRIME_382105:
 				bn_set_2b(p, 382);
@@ -561,22 +605,6 @@ void fp_param_set(int param) {
 				f[4] = 384;
 				fp_prime_set_pmers(f, 5);
 				break;
-#elif FP_PRIME == 477
-			case B24_477:
-				fp_param_get_var(t0);
-				/* p = (u - 1)^2 * (u^8 - u^4 + 1) div 3 + u. */
-				bn_sub_dig(p, t0, 1);
-				bn_sqr(p, p);
-				bn_sqr(t1, t0);
-				bn_sqr(t1, t1);
-				bn_sqr(t2, t1);
-				bn_sub(t2, t2, t1);
-				bn_add_dig(t2, t2, 1);
-				bn_mul(p, p, t2);
-				bn_div_dig(p, p, 3);
-				bn_add(p, p, t0);
-				fp_prime_set_dense(p);
-				break;
 #elif FP_PRIME == 455
 			case B12_455:
 				fp_param_get_var(t0);
@@ -589,6 +617,22 @@ void fp_param_set(int param) {
 				bn_sub(t1, t1, t0);
 				bn_add_dig(t1, t1, 1);
 				bn_mul(p, p, t1);
+				bn_div_dig(p, p, 3);
+				bn_add(p, p, t0);
+				fp_prime_set_dense(p);
+				break;
+#elif FP_PRIME == 477
+			case B24_477:
+				fp_param_get_var(t0);
+				/* p = (u - 1)^2 * (u^8 - u^4 + 1) div 3 + u. */
+				bn_sub_dig(p, t0, 1);
+				bn_sqr(p, p);
+				bn_sqr(t1, t0);
+				bn_sqr(t1, t1);
+				bn_sqr(t2, t1);
+				bn_sub(t2, t2, t1);
+				bn_add_dig(t2, t2, 1);
+				bn_mul(p, p, t2);
 				bn_div_dig(p, p, 3);
 				bn_add(p, p, t0);
 				fp_prime_set_dense(p);
@@ -726,6 +770,8 @@ int fp_param_set_any(void) {
 #else
 	fp_param_set(BN_256);
 #endif
+#elif FP_PRIME == 381
+	fp_param_set(B12_381);
 #elif FP_PRIME == 382
 	fp_param_set(PRIME_382105);
 #elif FP_PRIME == 383
@@ -808,6 +854,8 @@ int fp_param_set_any_tower() {
 	fp_param_set(BN_254);
 #elif FP_PRIME == 256
 	fp_param_set(BN_256);
+#elif FP_PRIME == 381
+	fp_param_set(B12_381);
 #elif FP_PRIME == 382
 	fp_param_set(BN_382);
 #elif FP_PRIME == 455

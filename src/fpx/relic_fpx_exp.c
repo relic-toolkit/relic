@@ -415,6 +415,7 @@ void fp12_exp_cyc(fp12_t c, fp12_t a, bn_t b) {
 
 					endom = 1;
 					break;
+				case B12_P381:
 				case B12_P455:
 				case B12_P638:
 					bn_copy(v[0], b);

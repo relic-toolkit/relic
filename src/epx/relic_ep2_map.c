@@ -189,6 +189,7 @@ void ep2_map(ep2_t p, uint8_t *msg, int len) {
 			case BN_P638:
 				ep2_mul_cof_bn(p, p);
 				break;
+			case B12_P381:
 			case B12_P455:
 			case B12_P638:
 				ep2_mul_cof_b12(p, p);
