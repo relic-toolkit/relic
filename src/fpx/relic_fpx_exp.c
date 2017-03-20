@@ -144,7 +144,11 @@ void fp2_exp_uni(fp2_t c, fp2_t a, bn_t b) {
 			}
 		}
 
-		fp2_copy(c, r);
+		if (bn_sign(b) == BN_NEG) {
+			fp2_inv_uni(c, r);
+		} else {
+			fp2_copy(c, r);
+		}
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
