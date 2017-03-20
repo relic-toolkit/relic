@@ -522,7 +522,7 @@ typedef CAT(GT_LOWER, t) gt_t;
 #define g2_neg(R, P)		CAT(G2_LOWER, neg)(R, P)
 
 /**
- * Inverts a element from G_T. Computes R = P^{-1}.
+ * Inverts a element from G_T. Computes R = 1/P.
  *
  * @param[out] R			- the result.
  * @param[in] P				- the element to negate.
@@ -651,7 +651,7 @@ typedef CAT(GT_LOWER, t) gt_t;
 #define g2_mul_dig(R, P, K)		CAT(G2_LOWER, mul_dig)(R, P, K)
 
 /**
- * Powers an element from G_T. Computes R = kP.
+ * Powers an element from G_T. Computes R = P^k.
  *
  * @param[out] R			- the result.
  * @param[in] P				- the element to exponentiate.

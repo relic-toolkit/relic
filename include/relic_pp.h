@@ -211,7 +211,7 @@
  */
 #if PP_MAP == WEILP
 #define pp_map_sim_k2(R, P, Q, M)		pp_map_sim_weilp_k2(R, P, Q, M)
-#elif PP_MAP == OATEP
+#elif PP_MAP == TATEP || PP_MAP == OATEP
 #define pp_map_sim_k2(R, P, Q, M)		pp_map_sim_tatep_k2(R, P, Q, M)
 #endif
 
@@ -225,7 +225,9 @@
  * @param[in] Q				- the second pairing arguments.
  * @param[in] M 			- the number of pairings to evaluate.
  */
-#if PP_MAP == WEILP
+#if PP_MAP == TATEP
+#define pp_map_sim_k12(R, P, Q, M)		pp_map_sim_tatep_k12(R, P, Q, M)
+#elif PP_MAP == WEILP
 #define pp_map_sim_k12(R, P, Q, M)		pp_map_sim_weilp_k12(R, P, Q, M)
 #elif PP_MAP == OATEP
 #define pp_map_sim_k12(R, P, Q, M)		pp_map_sim_oatep_k12(R, P, Q, M)
