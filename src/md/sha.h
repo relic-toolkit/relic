@@ -189,17 +189,17 @@ typedef struct USHAContext {
 } USHAContext;
 
 /*
- *  This structure will hold context information for the RELIC_HMAC
+ *  This structure will hold context information for the HMAC
  *  keyed hashing operation.
  */
-typedef struct RELIC_HMACContext {
+typedef struct HMACContext {
     int whichSha;               /* which SHA is being used */
     int hashSize;               /* hash size of SHA being used */
     int blockSize;              /* block size of SHA being used */
     USHAContext shaContext;     /* SHA context */
     uint8_t k_opad[USHA_Max_Message_Block_Size];
                         /* outer padding - key XORd with opad */
-} RELIC_HMACContext;
+} HMACContext;
 
 /*
  *  Function Prototypes

@@ -216,7 +216,7 @@ void md_kdf2(uint8_t *key, int key_len, const uint8_t *in, int in_len);
 void md_mgf1(uint8_t *mask, int mask_len, const uint8_t *in, int in_len);
 
 /**
- * Computes a Message Authentication Code through RELIC_HMAC.
+ * Computes a Message Authentication Code through HMAC.
  *
  * @param[out] mac				- the authentication.
  * @param[in] in				- the date to authenticate.

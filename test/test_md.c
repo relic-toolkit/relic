@@ -81,7 +81,7 @@ static int sha1(void) {
 
 	TEST_ONCE("sha1 hash function is correct") {
 		for (i = 0; i < TEST_MAX; i++) {
-			message[0] = '\0';
+			memset(message, 0, MSG_SIZE);
 			for (j = 0; j < count[i]; j++) {
 				strcat((char *)message, tests[i]);
 			}
@@ -120,7 +120,7 @@ static int sha224(void) {
 
 	TEST_ONCE("sha224 hash function is correct") {
 		for (i = 0; i < TEST_MAX; i++) {
-			message[0] = '\0';
+			memset(message, 0, MSG_SIZE);
 			for (j = 0; j < count[i]; j++) {
 				strcat((char *)message, tests[i]);
 			}
@@ -159,7 +159,7 @@ static int sha256(void) {
 
 	TEST_ONCE("sha256 hash function is correct") {
 		for (i = 0; i < TEST_MAX; i++) {
-			message[0] = '\0';
+			memset(message, 0, MSG_SIZE);
 			for (j = 0; j < count[i]; j++) {
 				strcat((char *)message, tests[i]);
 			}
@@ -212,7 +212,7 @@ static int sha384(void) {
 
 	TEST_ONCE("sha384 hash function is correct") {
 		for (i = 0; i < TEST_MAX; i++) {
-			message[0] = '\0';
+			memset(message, 0, MSG_SIZE);
 			for (j = 0; j < count2[i]; j++) {
 				strcat((char *)message, tests2[i]);
 			}
@@ -263,7 +263,7 @@ static int sha512(void) {
 
 	TEST_ONCE("sha512 hash function is correct") {
 		for (i = 0; i < TEST_MAX; i++) {
-			message[0] = '\0';
+			memset(message, 0, MSG_SIZE);
 			for (j = 0; j < count2[i]; j++) {
 				strcat((char *)message, tests2[i]);
 			}
@@ -360,10 +360,8 @@ static int hmac(void) {
 		"Test Using Larger Than Block-Size Key - Hash Key First",
 		"This is a test using a larger than block-size key and a larger "
 				"than block-size data. The key needs to be hashed before being "
-				"used by the RELIC_HMAC algorithm."
+				"used by the HMAC algorithm."
 	};
-
-#define FUNCTION "sha256"
 
 	uint8_t result[][64] = {
 		{ 0xB0, 0x34, 0x4C, 0x61, 0xD8, 0xDB, 0x38, 0x53, 0x5C, 0xA8, 0xAF,
@@ -388,7 +386,7 @@ static int hmac(void) {
 			0x13, 0x93, 0x8A, 0x7F, 0x51, 0x53, 0x5C, 0x3A, 0x35, 0xE2 },
 	};
 
-	TEST_ONCE("hmac (" FUNCTION ") is correct") {
+	TEST_ONCE("hmac (sha256) is correct") {
 		memset(key, 0x0B, 20);
 		md_hmac(mac, (uint8_t *)msg[0], strlen(msg[0]), key, 20);
 		TEST_ASSERT(memcmp(mac, result[0], MD_LEN) == 0, end);
