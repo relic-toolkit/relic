@@ -418,16 +418,12 @@ void fp12_exp_cyc(fp12_t c, fp12_t a, bn_t b) {
 				case B12_P381:
 				case B12_P455:
 				case B12_P638:
-					bn_copy(v[0], b);
+					bn_abs(v[0], b);
 					fp_param_get_var(u[0]);
 
 					bn_copy(u[1], u[0]);
 					if (bn_sign(u[0]) == BN_NEG) {
 						bn_neg(u[0], u[0]);
-					}
-					bn_copy(v[1], v[0]);
-					if (bn_sign(v[0]) == BN_NEG) {
-						bn_neg(v[0], v[0]);
 					}
 
 					for (i = 0; i < 4; i++) {
@@ -436,7 +432,7 @@ void fp12_exp_cyc(fp12_t c, fp12_t a, bn_t b) {
 						if ((bn_sign(u[1]) == BN_NEG) && (i % 2 != 0)) {
 							bn_neg(_b[i], _b[i]);
 						}
-						if (bn_sign(v[1]) == BN_NEG) {
+						if (bn_sign(b) == BN_NEG) {
 							bn_neg(_b[i], _b[i]);
 						}
 					}
