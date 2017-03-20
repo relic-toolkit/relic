@@ -97,7 +97,7 @@ void fp2_conv_uni(fp2_t c, fp2_t a) {
 void fp2_exp_uni(fp2_t c, fp2_t a, bn_t b) {
 	fp2_t r, s, t[1 << (FP_WIDTH - 2)];
 	int i, l;
-	signed char naf[FP_BITS + 1], *k, n;
+	signed char naf[FP_BITS + 1], *k;
 
 	if (bn_is_zero(b)) {
 		fp2_set_dig(c, 1);
@@ -125,8 +125,7 @@ void fp2_exp_uni(fp2_t c, fp2_t a, bn_t b) {
 		fp2_copy(t[0], a);
 
 		l = FP_BITS + 1;
-		fp2_zero(r);
-		fp_set_dig(r[0], 1);
+		fp2_set_dig(r, 1);
 		bn_rec_naf(naf, &l, b, FP_WIDTH);
 
 		k = naf + l - 1;
@@ -134,12 +133,11 @@ void fp2_exp_uni(fp2_t c, fp2_t a, bn_t b) {
 		for (i = l - 1; i >= 0; i--, k--) {
 			fp2_sqr(r, r);
 
-			n = *k;
-			if (n > 0) {
-				fp2_mul(r, r, t[n / 2]);
+			if (*k > 0) {
+				fp2_mul(r, r, t[*k / 2]);
 			}
-			if (n < 0) {
-				fp2_inv_uni(s, t[-n / 2]);
+			if (*k < 0) {
+				fp2_inv_uni(s, t[-*k / 2]);
 				fp2_mul(r, r, s);
 			}
 		}
