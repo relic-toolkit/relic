@@ -51,5 +51,5 @@ RELIC is at most alpha-quality software. Implementations may not be correct or s
 
 **Privacy Warning:** This site tracks visitor information.
 
-[Project stats](https://www.openhub.net/p/relic-toolkit)
+[Project stats:](https://www.openhub.net/p/relic-toolkit)
 ![](https://www.openhub.net/p/relic-toolkit/widgets/project_partner_badge.gif)
