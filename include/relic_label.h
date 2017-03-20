@@ -707,7 +707,7 @@
 #undef fb_mul_karat
 #undef fb_sqr_basic
 #undef fb_sqr_integ
-#undef fb_sqr_table
+#undef fb_sqr_lutbl
 #undef fb_lsh
 #undef fb_rsh
 #undef fb_rdc_basic
@@ -782,7 +782,7 @@
 #define fb_mul_karat 	PREFIX(fb_mul_karat)
 #define fb_sqr_basic 	PREFIX(fb_sqr_basic)
 #define fb_sqr_integ 	PREFIX(fb_sqr_integ)
-#define fb_sqr_table 	PREFIX(fb_sqr_table)
+#define fb_sqr_lutbl 	PREFIX(fb_sqr_lutbl)
 #define fb_lsh 	PREFIX(fb_lsh)
 #define fb_rsh 	PREFIX(fb_rsh)
 #define fb_rdc_basic 	PREFIX(fb_rdc_basic)
