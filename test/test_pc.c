@@ -1366,6 +1366,9 @@ int exponentiation(void) {
 			bn_set_dig(d, 1);
 			gt_exp(c, a, d);
 			TEST_ASSERT(gt_cmp(c, a) == CMP_EQ, end);
+			bn_add_dig(d, n, 1);
+			gt_exp(c, a, d);
+			TEST_ASSERT(gt_cmp(c, a) == CMP_EQ, end);
 			gt_exp(c, a, n);
 			TEST_ASSERT(gt_is_unity(c), end);
 			bn_rand_mod(d, n);
