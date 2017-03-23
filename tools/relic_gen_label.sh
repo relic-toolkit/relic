@@ -76,6 +76,8 @@ REDEF2_LOW() {
 	echo
 }
 
+echo "#undef first_ctx"
+echo "#define first_ctx	PREFIX(first_ctx)"
 echo "#undef core_ctx"
 echo "#define core_ctx	PREFIX(core_ctx)"
 echo
