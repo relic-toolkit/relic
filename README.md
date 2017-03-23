@@ -22,7 +22,7 @@ RELIC implements to date:
  * Elliptic curves over prime and binary fields (NIST curves and pairing-friendly curves)
  * Bilinear maps and related extension fields
  * Cryptographic protocols (RSA, Rabin, ECDSA, ECMQV, ECSS (Schnorr), ECIES, Sakai-Ohgishi-Kasahara ID-based authenticated key agreement, Boneh-Lynn-Schacham and Boneh-Boyen short signatures, Paillier and Benaloh homomorphic encryption systems)
-
+d
 RELIC is being used as the main cryptography implementation of the [TinyPBC](http://sites.google.com/site/tinypbc/) project. Support was included in version 0.1.1. Build instructions for MICAz motes suitable for TinyPBC deployments can be found in the Wiki.
 
 ### Citing
@@ -41,9 +41,13 @@ RELIC is released under an LGPL version 2.1-or-above license to encourage collab
 
 Starting from version 0.3.3, static linking and changes in the configuration or build system are explicitly exempted from representing derived works. Please refer to files COPYING and COPYING.LESSER for additional details.
 
+### Build instructions
+
+Instructions for building the library can be found in the [Wiki](https://github.com/relic-toolkit/relic/wiki/Bulding).
+
 ### Donations
 
-If you like RELIC, please consider supporting development through [Paypal] (https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=R7D6ZE3BLMTF2&lc=BR&item_name=RELIC%20Development&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted).
+If you like RELIC, please consider supporting development through [Paypal](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=R7D6ZE3BLMTF2&lc=BR&item_name=RELIC%20Development&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted).
 
 ### Disclaimer
 
@@ -51,5 +55,5 @@ RELIC is at most alpha-quality software. Implementations may not be correct or s
 
 **Privacy Warning:** This site tracks visitor information.
 
-[![Project Stats](https://www.openhub.net/p/relic-toolkit/widgets/project_partner_badge.gif)]
-(https://www.openhub.net/p/relic-toolkit)
+[Project stats:](https://www.openhub.net/p/relic-toolkit)
+![](https://www.openhub.net/p/relic-toolkit/widgets/project_partner_badge.gif)
