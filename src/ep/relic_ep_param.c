@@ -717,6 +717,7 @@ void ep_param_set(int param) {
 		/* Do not generate warnings. */
 		(void)endom;
 		(void)plain;
+		(void)super;
 		(void)beta;
 
 		fp_zero(g->z);
@@ -838,7 +839,7 @@ int ep_param_set_any_endom() {
 #elif FP_PRIME == 508
 	ep_param_set(KSS_P508);
 #elif FP_PRIME == 638
-	ep_param_set(BN_P638);
+	ep_param_set(B12_P638);
 #else
 	r = STS_ERR;
 #endif
