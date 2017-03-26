@@ -31,12 +31,17 @@
 # GMP_LIBRARIES - Libraries needed to use GMP
 
 if (GMP_INCLUDE_DIR AND GMP_LIBRARIES)
-	# Already in cache, be silent
-	set(GMP_FIND_QUIETLY TRUE)
+	# Force search at every time, in case configuration changes
+	unset(GMP_INCLUDE_DIR CACHE)
+	unset(GMP_LIBRARIES CACHE)
 endif (GMP_INCLUDE_DIR AND GMP_LIBRARIES)
 
 find_path(GMP_INCLUDE_DIR NAMES gmp.h)
-find_library(GMP_LIBRARIES NAMES gmp)
+if(STBIN)
+	find_library(GMP_LIBRARIES NAMES libgmp.a gmp)
+else(STBIN)
+	find_library(GMP_LIBRARIES NAMES libgmp.so gmp)
+endif(STBIN)
 
 if(GMP_INCLUDE_DIR AND GMP_LIBRARIES)
    set(GMP_FOUND TRUE)
