@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2012 RELIC Authors
+ * Copyright (C) 2007-2017 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -26,7 +26,6 @@
  * Implementation of the low-level multiple precision integer modular reduction
  * functions.
  *
- * @version $Id: relic_bn_mod_low.c 677 2011-03-05 22:19:43Z dfaranha $
  * @ingroup bn
  */
 
@@ -41,9 +40,10 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void bn_modn_low(dig_t *c, dig_t *a, int sa, dig_t *m, int sm, dig_t u) {
+void bn_modn_low(dig_t *c, const dig_t *a, int sa, const dig_t *m, int sm,
+		dig_t u) {
 	int i;
-	dig_t r, carry, *tmpc;
+	dig_t r, *tmpc;
 
 	tmpc = c;
 
@@ -55,8 +55,9 @@ void bn_modn_low(dig_t *c, dig_t *a, int sa, dig_t *m, int sm, dig_t u) {
 
 	for (i = 0; i < sm; i++, tmpc++) {
 		r = (dig_t)(*tmpc * u);
-		carry = mpn_addmul_1(tmpc, m, sm, r);
-		mpn_add_1(tmpc + sm, tmpc + sm,  sm - i + 1, carry);
+		*tmpc = mpn_addmul_1(tmpc, m, sm, r);
 	}
-	bn_rshd_low(c, c, 2 * sm + 1, sm);
+	if (mpn_add_n(c, c, tmpc, sm)) {
+		mpn_sub_n(c, c, m, sm);
+	}
 }

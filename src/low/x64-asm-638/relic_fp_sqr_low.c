@@ -38,10 +38,10 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void fp_sqrn_low(dig_t *c, dig_t *a) {
+void fp_sqrn_low(dig_t *c, const dig_t *a) {
 	fp_muln_low(c, a, a);
 }
 
-void fp_sqrm_low(dig_t *c, dig_t *a) {
+void fp_sqrm_low(dig_t *c, const dig_t *a) {
 	fp_mulm_low(c, a, a);
 }

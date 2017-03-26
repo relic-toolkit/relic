@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2012 RELIC Authors
+ * Copyright (C) 2007-2017 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -26,7 +26,6 @@
  * Implementation of the multiple precision integer arithmetic multiplication
  * functions.
  *
- * @version $Id: relic_bn_sqr_low.c 677 2011-03-05 22:19:43Z dfaranha $
  * @ingroup bn
  */
 
@@ -40,7 +39,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void bn_sqradd_low(dig_t *c, dig_t *a, int size) {
+void bn_sqra_low(dig_t *c, const dig_t *a, int size) {
 	dig_t carry;
 	dig_t digit;
 
@@ -54,6 +53,6 @@ void bn_sqradd_low(dig_t *c, dig_t *a, int size) {
 	}
 }
 
-void bn_sqrn_low(dig_t *c, dig_t *a, int size) {
+void bn_sqrn_low(dig_t *c, const dig_t *a, int size) {
 	mpn_mul_n(c, a, a, size);
 }

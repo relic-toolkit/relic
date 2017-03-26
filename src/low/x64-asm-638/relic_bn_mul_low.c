@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2012 RELIC Authors
+ * Copyright (C) 2007-2017 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -26,7 +26,6 @@
  * Implementation of the multiple precision integer arithmetic multiplication
  * functions.
  *
- * @version $Id: relic_bn_mul_low.c 677 2011-03-05 22:19:43Z dfaranha $
  * @ingroup bn
  */
 
@@ -40,21 +39,21 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-dig_t bn_muladd_low(dig_t *c, dig_t *a, dig_t digit, int size) {
+dig_t bn_mula_low(dig_t *c, const dig_t *a, dig_t digit, int size) {
 	return mpn_addmul_1(c, a, size, digit);
 }
 
-dig_t bn_mul1_low(dig_t *c, dig_t *a, dig_t digit, int size) {
+dig_t bn_mul1_low(dig_t *c, const dig_t *a, dig_t digit, int size) {
 	return mpn_mul_1(c, a, size, digit);
 }
 
-void bn_muln_low(dig_t *c, dig_t *a, dig_t *b, int size) {
+void bn_muln_low(dig_t *c, const dig_t *a, const dig_t *b, int size) {
 	mpn_mul_n(c, a, b, size);
 }
 
-void bn_muld_low(dig_t *c, dig_t *a, int sizea, dig_t *b, int sizeb,
+void bn_muld_low(dig_t *c, const dig_t *a, int sizea, const dig_t *b, int sizeb,
 		int low, int high) {
-	(void) low;
-	(void) high;
+	(void)low;
+	(void)high;
 	mpn_mul(c, a, sizea, b, sizeb);
 }

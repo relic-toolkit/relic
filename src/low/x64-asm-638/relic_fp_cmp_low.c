@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2012 RELIC Authors
+ * Copyright (C) 2007-2017 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -25,7 +25,6 @@
  *
  * Implementation of the low-level prime field comparison functions.
  *
- * @version $Id: relic_fp_cmp_low.c 677 2011-03-05 22:19:43Z dfaranha $
  * @ingroup fp
  */
 
@@ -42,6 +41,6 @@ int fp_cmp1_low(dig_t a, dig_t b) {
 	return mpn_cmp(&a, &b, 1);
 }
 
-int fp_cmpn_low(dig_t *a, dig_t *b) {
+int fp_cmpn_low(const dig_t *a, const dig_t *b) {
 	return mpn_cmp(a, b, FP_DIGS);
 }

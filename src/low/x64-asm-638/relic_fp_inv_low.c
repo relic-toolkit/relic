@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2012 RELIC Authors
+ * Copyright (C) 2007-2017 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -25,51 +25,45 @@
  *
  * Implementation of the low-level inversion functions.
  *
- * @&version $Id: relic_fp_inv_low.c 677 2011-03-05 22:19:43Z dfaranha $
+ * @&version $Id$
  * @ingroup fp
  */
 
-#include "relic_bn.h"
+#include <gmp.h>
+
 #include "relic_fp.h"
 #include "relic_fp_low.h"
 #include "relic_core.h"
-#include "relic_error.h"
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void fp_invn_low(dig_t *c, dig_t *a) {
-	bn_t t;
-	int i, k;
+void fp_invn_low(dig_t *c, const dig_t *a) {
+	mp_size_t cn;
+	align dig_t s[FP_DIGS], t[2 * FP_DIGS], u[FP_DIGS + 1];
 
-	fp_null(t);
+#if FP_RDC == MONTY
+	dv_zero(t + FP_DIGS, FP_DIGS);
+	dv_copy(t, a, FP_DIGS);
+	fp_rdcn_low(u, t);
+#else
+	fp_copy(u, a);
+#endif
 
-	TRY {
-		bn_new(t);
+	dv_copy(s, fp_prime_get(), FP_DIGS);
 
-		k = fp_invn_asm(t->dp, a);
-		t->used = FP_DIGS;
-
-		/* If k < Wt then x1 = x1 * R^2 * R^{-1} mod p. */
-		if (k <= FP_DIGS * FP_DIGIT) {
-			fp_mul(t->dp, t->dp, fp_prime_get_conv());
-			k = k + FP_DIGS * FP_DIGIT;
-		}
-
-		/* x1 = x1 * R^2 * R^{-1} mod p. */
-		fp_mul(t->dp, t->dp, fp_prime_get_conv());
-
-		/* c = x1 * 2^(2Wt - k) * R^{-1} mod p. */
-		fp_copy(c, t->dp);
-		dv_zero(t->dp, FP_DIGS);
-		bn_set_2b(t, 2 * FP_DIGS * FP_DIGIT - k);
-		fp_mul(c, c, t->dp);
+	mpn_gcdext(t, c, &cn, u, FP_DIGS, s, FP_DIGS);
+	if (cn < 0) {
+		dv_zero(c - cn, FP_DIGS + cn);
+		mpn_sub_n(c, fp_prime_get(), c, FP_DIGS);
+	} else {
+		dv_zero(c + cn, FP_DIGS - cn);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	}
-	FINALLY {
-		fp_free(t);
-	}
+
+#if FP_RDC == MONTY
+	dv_zero(t, FP_DIGS);
+	dv_copy(t + FP_DIGS, c, FP_DIGS);
+	mpn_tdiv_qr(u, c, 0, t, 2 * FP_DIGS, fp_prime_get(), FP_DIGS);
+#endif
 }

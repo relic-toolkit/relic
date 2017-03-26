@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2012 RELIC Authors
+ * Copyright (C) 2007-2017 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -25,7 +25,6 @@
  *
  * Implementation of the low-level multiple precision division functions.
  *
- * @version $Id: relic_bn_div_low.c 677 2011-03-05 22:19:43Z dfaranha $
  * @ingroup bn
  */
 
@@ -42,6 +41,6 @@ void bn_divn_low(dig_t *c, dig_t *d, dig_t *a, int sa, dig_t *b, int sb) {
 	mpn_tdiv_qr(c, d, 0, a, sa, b, sb);
 }
 
-void bn_div1_low(dig_t *c, dig_t *d, dig_t *a, int size, dig_t b) {
-	*d = mpn_divrem_1(c, 0, a, size, b); 
+void bn_div1_low(dig_t *c, dig_t *d, const dig_t *a, int size, dig_t b) {
+	*d = mpn_divrem_1(c, 0, a, size, b);
 }
