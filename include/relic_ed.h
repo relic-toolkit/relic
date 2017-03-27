@@ -336,11 +336,6 @@ void ed_param_print(void);
  */
 int ed_param_level(void);
 
-/**
- * Recovers the x coordinate of and Edwards curve point given y coordinate and d.
- */
-void ed_recover_x(fp_t x, const fp_t y, const fp_t d, const fp_t a);
-
 #if ED_ADD == EXTND
 /**
  * Converts projective twisted Edwards point into extended twisted Edwards point.

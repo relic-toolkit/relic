@@ -38,14 +38,14 @@
 #if ED_FIX == LWNAF || !defined(STRIP)
 
 /**
- * Multiplies a binary elliptic curve point by an integer using the w-NAF
+ * Multiplies a binary elliptic curve point by an integer using the w-NAF mixed coordinate
  * method.
  *
  * @param[out] r 				- the result.
  * @param[in] t					- the precomputed table.
  * @param[in] k					- the integer.
  */
-static void ed_mul_fix_plain(ed_t r, const ed_t *t, const bn_t k) {
+static void ed_mul_fix_plain(ed_t r, const ed_t * t, const bn_t k) {
 	int l, i, n;
 	int8_t naf[FP_BITS + 1], *_k;
 
@@ -56,14 +56,22 @@ static void ed_mul_fix_plain(ed_t r, const ed_t *t, const bn_t k) {
 	_k = naf + l - 1;
 	ed_set_infty(r);
 	for (i = l - 1; i >= 0; i--, _k--) {
-		ed_dbl(r, r);
-
 		n = *_k;
-		if (n > 0) {
-			ed_add(r, r, t[n / 2]);
-		}
-		if (n < 0) {
-			ed_sub(r, r, t[-n / 2]);
+		if (n == 0) {
+			/* doubling is followed by another doubling */
+			if (i > 0) {
+				ed_dbl_short(r, r);
+			} else {
+				/* use full extended coordinate doubling for last step */
+				ed_dbl(r, r);
+			}
+		} else {
+			ed_dbl(r, r);
+			if (n > 0) {
+				ed_add(r, r, t[n / 2]);
+			} else if (n < 0) {
+				ed_sub(r, r, t[-n / 2]);
+			}
 		}
 	}
 	/* Convert r to affine coordinates. */
@@ -84,7 +92,7 @@ static void ed_mul_fix_plain(ed_t r, const ed_t *t, const bn_t k) {
  * @param[in] t					- the precomputed table.
  * @param[in] k					- the integer.
  */
-static void ed_mul_combs_endom(ed_t r, const ed_t *t, const bn_t k) {
+static void ed_mul_combs_endom(ed_t r, const ed_t * t, const bn_t k) {
 	int i, j, l, w0, w1, n0, n1, p0, p1, s0, s1;
 	bn_t n, k0, k1, v1[3], v2[3];
 	ed_t u;
@@ -186,7 +194,7 @@ static void ed_mul_combs_endom(ed_t r, const ed_t *t, const bn_t k) {
  * @param[in] t					- the precomputed table.
  * @param[in] k					- the integer.
  */
-static void ed_mul_combs_plain(ed_t r, const ed_t *t, const bn_t k) {
+static void ed_mul_combs_plain(ed_t r, const ed_t * t, const bn_t k) {
 	int i, j, l, w, n0, p0, p1;
 	bn_t n;
 
@@ -242,51 +250,6 @@ static void ed_mul_combs_plain(ed_t r, const ed_t *t, const bn_t k) {
 
 #endif /* ED_FIX == LWNAF */
 
-#if ED_FIX == LWNAF_MIXED || !defined(STRIP)
-
-/**
- * Multiplies a binary elliptic curve point by an integer using the w-NAF mixed coordinate
- * method.
- *
- * @param[out] r 				- the result.
- * @param[in] t					- the precomputed table.
- * @param[in] k					- the integer.
- */
-static void ed_mul_fix_plain_mixed(ed_t r, const ed_t *t, const bn_t k) {
-	int l, i, n;
-	int8_t naf[FP_BITS + 1], *_k;
-
-	/* Compute the w-TNAF representation of k. */
-	l = FP_BITS + 1;
-	bn_rec_naf(naf, &l, k, ED_DEPTH);
-
-	_k = naf + l - 1;
-	ed_set_infty(r);
-	for (i = l - 1; i >= 0; i--, _k--) {
-		n = *_k;
-		if (n == 0) {
-			/* doubling is followed by another doubling */
-			if (i > 0) {
-				ed_dbl_short(r, r);
-			} else {
-				/* use full extended coordinate doubling for last step */
-				ed_dbl(r, r);
-			}
-		} else {
-			ed_dbl(r, r);
-			if (n > 0) {
-				ed_add(r, r, t[n / 2]);
-			} else if (n < 0) {
-				ed_sub(r, r, t[-n / 2]);
-			}
-		}
-	}
-	/* Convert r to affine coordinates. */
-	ed_norm(r, r);
-}
-
-#endif /* ED_FIX == LWNAF_MIXED */
-
 #if ED_FIX == COMBS || !defined(STRIP)
 
 #if defined(ED_ENDOM)
@@ -299,7 +262,7 @@ static void ed_mul_fix_plain_mixed(ed_t r, const ed_t *t, const bn_t k) {
  * @param[in] t					- the precomputed table.
  * @param[in] k					- the integer.
  */
-static void ed_mul_combs_endom(ed_t r, const ed_t *t, const bn_t k) {
+static void ed_mul_combs_endom(ed_t r, const ed_t * t, const bn_t k) {
 	int i, j, l, w0, w1, n0, n1, p0, p1, s0, s1;
 	bn_t n, k0, k1, v1[3], v2[3];
 	ed_t u;
@@ -400,7 +363,7 @@ static void ed_mul_combs_endom(ed_t r, const ed_t *t, const bn_t k) {
 
 #if ED_FIX == BASIC || !defined(STRIP)
 
-void ed_mul_pre_basic(ed_t *t, const ed_t p) {
+void ed_mul_pre_basic(ed_t * t, const ed_t p) {
 	bn_t n;
 
 	bn_null(n);
@@ -424,7 +387,7 @@ void ed_mul_pre_basic(ed_t *t, const ed_t p) {
 	}
 }
 
-void ed_mul_fix_basic(ed_t r, const ed_t *t, const bn_t k) {
+void ed_mul_fix_basic(ed_t r, const ed_t * t, const bn_t k) {
 	int i, l;
 
 	l = bn_bits(k);
@@ -443,7 +406,7 @@ void ed_mul_fix_basic(ed_t r, const ed_t *t, const bn_t k) {
 
 #if ED_FIX == YAOWI || !defined(STRIP)
 
-void ed_mul_pre_yaowi(ed_t *t, const ed_t p) {
+void ed_mul_pre_yaowi(ed_t * t, const ed_t p) {
 	int l;
 	bn_t n;
 
@@ -472,7 +435,7 @@ void ed_mul_pre_yaowi(ed_t *t, const ed_t p) {
 	}
 }
 
-void ed_mul_fix_yaowi(ed_t r, const ed_t *t, const bn_t k) {
+void ed_mul_fix_yaowi(ed_t r, const ed_t * t, const bn_t k) {
 	int i, j, l;
 	ed_t a;
 	uint8_t win[CEIL(FP_BITS, ED_DEPTH)];
@@ -510,7 +473,7 @@ void ed_mul_fix_yaowi(ed_t r, const ed_t *t, const bn_t k) {
 
 #if ED_FIX == NAFWI || !defined(STRIP)
 
-void ed_mul_pre_nafwi(ed_t *t, const ed_t p) {
+void ed_mul_pre_nafwi(ed_t * t, const ed_t p) {
 	int l;
 	bn_t n;
 
@@ -541,7 +504,7 @@ void ed_mul_pre_nafwi(ed_t *t, const ed_t p) {
 	}
 }
 
-void ed_mul_fix_nafwi(ed_t r, const ed_t *t, const bn_t k) {
+void ed_mul_fix_nafwi(ed_t r, const ed_t * t, const bn_t k) {
 	int i, j, l, d, m;
 	ed_t a;
 	int8_t naf[FP_BITS + 1];
@@ -602,7 +565,7 @@ void ed_mul_fix_nafwi(ed_t r, const ed_t *t, const bn_t k) {
 
 #if ED_FIX == COMBS || !defined(STRIP)
 
-void ed_mul_pre_combs(ed_t *t, const ed_t p) {
+void ed_mul_pre_combs(ed_t * t, const ed_t p) {
 	int i, j, l;
 	bn_t n;
 
@@ -648,7 +611,7 @@ void ed_mul_pre_combs(ed_t *t, const ed_t p) {
 	}
 }
 
-void ed_mul_fix_combs(ed_t r, const ed_t *t, const bn_t k) {
+void ed_mul_fix_combs(ed_t r, const ed_t * t, const bn_t k) {
 #if defined(ED_ENDOM)
 	if (ed_curve_is_endom()) {
 		ed_mul_combs_endom(r, t, k);
@@ -664,7 +627,7 @@ void ed_mul_fix_combs(ed_t r, const ed_t *t, const bn_t k) {
 
 #if ED_FIX == COMBD || !defined(STRIP)
 
-void ed_mul_pre_combd(ed_t *t, const ed_t p) {
+void ed_mul_pre_combd(ed_t * t, const ed_t p) {
 	int i, j, d, e;
 	bn_t n;
 
@@ -712,7 +675,7 @@ void ed_mul_pre_combd(ed_t *t, const ed_t p) {
 	}
 }
 
-void ed_mul_fix_combd(ed_t r, const ed_t *t, const bn_t k) {
+void ed_mul_fix_combd(ed_t r, const ed_t * t, const bn_t k) {
 	int i, j, d, e, w0, w1, n0, p0, p1;
 	bn_t n;
 
@@ -768,22 +731,11 @@ void ed_mul_fix_combd(ed_t r, const ed_t *t, const bn_t k) {
 
 #if ED_FIX == LWNAF || !defined(STRIP)
 
-void ed_mul_pre_lwnaf(ed_t *t, const ed_t p) {
+void ed_mul_pre_lwnaf(ed_t * t, const ed_t p) {
 	ed_tab(t, p, ED_DEPTH);
 }
 
-void ed_mul_fix_lwnaf(ed_t r, const ed_t *t, const bn_t k) {
+void ed_mul_fix_lwnaf(ed_t r, const ed_t * t, const bn_t k) {
 	ed_mul_fix_plain(r, t, k);
-}
-#endif
-
-#if ED_FIX == LWNAF_MIXED || !defined(STRIP)
-
-void ed_mul_pre_lwnaf_mixed(ed_t *t, const ed_t p) {
-	ed_tab(t, p, ED_DEPTH);
-}
-
-void ed_mul_fix_lwnaf_mixed(ed_t r, const ed_t *t, const bn_t k) {
-	ed_mul_fix_plain_mixed(r, t, k);
 }
 #endif

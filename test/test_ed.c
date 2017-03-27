@@ -156,23 +156,16 @@ int addition(void) {
 int util(void) {
 	int l, code = STS_ERR;
 	ed_t a, b, c;
-	fp_t x, x_neg;
 	uint8_t bin[2 * FP_BYTES + 1];
 
 	ed_null(a);
 	ed_null(b);
 	ed_null(c);
 
-	fp_null(x);
-	fp_null(x_neg);
-
 	TRY {
 		ed_new(a);
 		ed_new(b);
 		ed_new(c);
-
-		fp_new(x);
-		fp_new(x_neg);
 
 		TEST_BEGIN("negation and comparison are consistent") {
 			ed_rand(a);
@@ -200,15 +193,6 @@ int util(void) {
 			TEST_ASSERT(ed_is_valid(a), end);
 			fp_rand(a->x);
 			TEST_ASSERT(!ed_is_valid(a), end);
-		}
-		TEST_END;
-
-		TEST_BEGIN("recovery of x-coordinate is correct") {
-			ed_rand(a);
-			ed_norm(a, a);
-			ed_recover_x(x, a->y, core_get()->ed_d, core_get()->ed_a);
-			fp_neg(x_neg, x);
-			TEST_ASSERT((fp_cmp(x, a->x) == CMP_EQ) || (fp_cmp(x_neg, a->x) == CMP_EQ), end);
 		}
 		TEST_END;
 
@@ -241,8 +225,6 @@ int util(void) {
 	}
 	code = STS_OK;
   end:
-	fp_free(x_neg);
-	fp_free(x);
 	ed_free(a);
 	ed_free(b);
 	ed_free(c);

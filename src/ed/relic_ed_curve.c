@@ -32,67 +32,67 @@
 #include "relic_core.h"
 
 void ed_curve_init(void) {
-  ctx_t *ctx = core_get();
+	ctx_t *ctx = core_get();
 #ifdef ED_PRECO
-  for (int i = 0; i < RELIC_ED_TABLE; i++) {
-    ctx->ed_ptr[i] = &(ctx->ed_pre[i]);
-  }
+	for (int i = 0; i < RELIC_ED_TABLE; i++) {
+		ctx->ed_ptr[i] = &(ctx->ed_pre[i]);
+	}
 #endif
 #if ALLOC == STATIC
-  fp_new(ctx->ed_g.x);
-  fp_new(ctx->ed_g.y);
-  fp_new(ctx->ed_g.z);
+	fp_new(ctx->ed_g.x);
+	fp_new(ctx->ed_g.y);
+	fp_new(ctx->ed_g.z);
 #if ED_ADD == EXTND
-  fp_new(ctx->ed_g.t);
+	fp_new(ctx->ed_g.t);
 #endif
 #ifdef ED_PRECO
-  for (int i = 0; i < RELIC_ED_TABLE; i++) {
-    fp_new(ctx->ed_pre[i].x);
-    fp_new(ctx->ed_pre[i].y);
-    fp_new(ctx->ed_pre[i].z);
+	for (int i = 0; i < RELIC_ED_TABLE; i++) {
+		fp_new(ctx->ed_pre[i].x);
+		fp_new(ctx->ed_pre[i].y);
+		fp_new(ctx->ed_pre[i].z);
 #if ED_ADD == EXTND
-    fp_new(ctx->ed_pre[i].t);
+		fp_new(ctx->ed_pre[i].t);
 #endif
-  }
+	}
 #endif
 #endif
-  ed_set_infty(&ctx->ed_g);
-  bn_init(&ctx->ed_r, FP_DIGS);
-  bn_init(&ctx->ed_h, FP_DIGS);
+	ed_set_infty(&ctx->ed_g);
+	bn_init(&ctx->ed_r, FP_DIGS);
+	bn_init(&ctx->ed_h, FP_DIGS);
 #if defined(ED_ENDOM) && (ED_MUL == LWNAF || ED_FIX == COMBS || ED_FIX == LWNAF || !defined(STRIP))
-  for (int i = 0; i < 3; i++) {
-    bn_init(&(ctx->ed_v1[i]), FP_DIGS);
-    bn_init(&(ctx->ed_v2[i]), FP_DIGS);
-  }
+	for (int i = 0; i < 3; i++) {
+		bn_init(&(ctx->ed_v1[i]), FP_DIGS);
+		bn_init(&(ctx->ed_v2[i]), FP_DIGS);
+	}
 #endif
 }
 
 void ed_curve_clean(void) {
-  ctx_t *ctx = core_get();
+	ctx_t *ctx = core_get();
 #if ALLOC == STATIC
-  fp_free(ctx->ed_g.x);
-  fp_free(ctx->ed_g.y);
-  fp_free(ctx->ed_g.z);
+	fp_free(ctx->ed_g.x);
+	fp_free(ctx->ed_g.y);
+	fp_free(ctx->ed_g.z);
 #if ED_ADD == EXTND
-  fp_free(ctx->ed_g.t);
+	fp_free(ctx->ed_g.t);
 #endif
 #ifdef ED_PRECO
-  for (int i = 0; i < RELIC_ED_TABLE; i++) {
-    fp_free(ctx->ed_pre[i].x);
-    fp_free(ctx->ed_pre[i].y);
-    fp_free(ctx->ed_pre[i].z);
+	for (int i = 0; i < RELIC_ED_TABLE; i++) {
+		fp_free(ctx->ed_pre[i].x);
+		fp_free(ctx->ed_pre[i].y);
+		fp_free(ctx->ed_pre[i].z);
 #if ED_ADD == EXTND
-    fp_free(ctx->ed_pre[i].t);
+		fp_free(ctx->ed_pre[i].t);
 #endif
-  }
+	}
 #endif
 #endif
-  bn_clean(&ctx->ed_r);
-  bn_clean(&ctx->ed_h);
+	bn_clean(&ctx->ed_r);
+	bn_clean(&ctx->ed_h);
 #if defined(ED_ENDOM) && (ED_MUL == LWNAF || ED_FIX == LWNAF || !defined(STRIP))
-  for (int i = 0; i < 3; i++) {
-    bn_clean(&(ctx->ed_v1[i]));
-    bn_clean(&(ctx->ed_v2[i]));
-  }
+	for (int i = 0; i < 3; i++) {
+		bn_clean(&(ctx->ed_v1[i]));
+		bn_clean(&(ctx->ed_v2[i]));
+	}
 #endif
 }

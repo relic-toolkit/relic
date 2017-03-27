@@ -132,6 +132,13 @@ echo "#define ep_t	PREFIX(ep_t)"
 echo
 REDEF ep
 
+echo "#undef ed_st"
+echo "#undef ed_t"
+echo "#define ed_st	PREFIX(ed_st)"
+echo "#define ed_t	PREFIX(ed_t)"
+echo
+REDEF ed
+
 echo "#undef eb_st"
 echo "#undef eb_t"
 echo "#define eb_st	PREFIX(eb_st)"

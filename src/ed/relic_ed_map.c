@@ -36,73 +36,93 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
+/* Square root of -1 mod p. */
+#define SRTM1 "2B8324804FC1DF0B2B4D00993DFBD7A72F431806AD2FE478C4EE1B274A0EA0B0"
+
 void ed_map(ed_t p, const uint8_t *msg, int len) {
-	bn_t k;
-	bn_t n;
+	bn_t h;
+	fp_t t, u, v;
 	uint8_t digest[MD_LEN];
 
-	bn_null(k);
-	bn_null(n);
-
-	TRY {
-		bn_new(k);
-		bn_new(n);
-
-		md_map(digest, msg, len);
-		bn_read_bin(k, digest, MIN(FP_BYTES, MD_LEN));
-
-		ed_curve_get_ord(n);
-		bn_mod(k, k, n);
-		ed_mul_gen(p, k);
-	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	}
-	FINALLY {
-		bn_free(k);
-		bn_free(n);
-	}
-}
-
-#if 0
-void ed_map(ed_t p, const uint8_t *msg, int len) {
-	bn_t k;
-	fp_t t;
-	uint8_t digest[MD_LEN];
-
-	bn_null(k);
+	bn_null(h);
 	fp_null(t);
+	fp_null(u);
+	fp_null(v);
 
 	TRY {
-		bn_new(k);
+		bn_new(h);
 		fp_new(t);
+		fp_new(u);
+		fp_new(v);
 
 		md_map(digest, msg, len);
-		bn_read_bin(k, digest, MIN(FP_BYTES, MD_LEN));
+		bn_read_bin(h, digest, MIN(FP_BYTES, MD_LEN));
 
-		fp_prime_conv(p->x, k);
-		fp_zero(p->y);
+		fp_prime_conv(p->y, h);
 		fp_set_dig(p->z, 1);
 
-		#if 0
-		while (1) {
-			ed_rhs(t, p);
+		/* Make e = p. */
+		h->used = FP_DIGS;
+		dv_copy(h->dp, fp_prime_get(), FP_DIGS);
 
-			if (fp_srt(p->y, t)) {
-				p->norm = 1;
+		/* Compute a^((p - 5)/8). */
+		bn_sub_dig(h, h, 5);
+		bn_rsh(h, h, 3);
+
+		/* Decode using Elligator 2. */
+		while (1) {
+			/* u = y^2 - 1, v = d * y^2 + 1. */
+			fp_sqr(u, p->y);
+			fp_mul(v, u, core_get()->ed_d);
+			fp_sub_dig(u, u, 1);
+			fp_add_dig(v, v, 1);
+
+			/* t = v^3, x = uv^7. */
+			fp_sqr(t, v);
+			fp_mul(t, t, v);
+			fp_sqr(p->x, t);
+			fp_mul(p->x, p->x, v);
+			fp_mul(p->x, p->x, u);
+
+			/* x = uv^3 * (uv^7)^((p - 5)/8). */
+			fp_exp(p->x, p->x, h);
+			fp_mul(p->x, p->x, t);
+			fp_mul(p->x, p->x, u);
+
+			/* Check if vx^2 == u. */
+			fp_sqr(t, p->x);
+			fp_mul(t, t, v);
+
+			if (fp_cmp(t, u) != CMP_EQ) {
+				fp_neg(u, u);
+				/* Check if vx^2 == -u. */
+				if (fp_cmp(t, u) != CMP_EQ) {
+					fp_add_dig(p->y, p->y, 1);
+				} else {
+					fp_read_str(t, SRTM1, strlen(SRTM1), 16);
+					fp_mul(p->x, p->x, t);
+					break;
+				}
+			} else {
 				break;
 			}
-			fp_add_dig(p->x, p->x, 1);
 		}
-		#endif
 
-		/* Now, multiply by cofactor to get the correct group. */
-		ed_curve_get_cof(k);
-		if (bn_bits(k) < BN_DIGIT) {
-			ed_mul_dig(p, p, k->dp[0]);
-		} else {
-			ed_mul(p, p, k);
+		/* By Elligator convention. */
+		if (p->x[FP_DIGS - 1] >> (FP_DIGIT - 1) == 1) {
+			fp_neg(p->x, p->x);
 		}
+
+		/* Multiply by cofactor. */
+		ed_dbl(p, p);
+		ed_dbl(p, p);
+		ed_dbl(p, p);
+		ed_norm(p, p);
+
+#if ED_ADD == EXTND
+		fp_mul(p->t, p->x, p->y);
+#endif
+		p->norm = 1;
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
@@ -112,4 +132,3 @@ void ed_map(ed_t p, const uint8_t *msg, int len) {
 		fp_free(t);
 	}
 }
-#endif

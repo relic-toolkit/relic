@@ -31,7 +31,7 @@
 
 #include "relic_core.h"
 
- #if FP_PRIME == 255
+#if FP_PRIME == 255
 /**
  * Parameters for the Curve25519 prime elliptic curve.
  */
@@ -44,38 +44,6 @@
 #define CURVE_ED25519_H "0000000000000000000000000000000000000000000000000000000000000008"
 /** @} */
 #endif
-
-void ed_recover_x(fp_t x, const fp_t y, const fp_t d, const fp_t a) {
-	fp_t tmpFP1;
-
-	fp_null(tmpFP1);
-	fp_new(tmpFP1);
-
-	// x = +/- sqrt((y^2 - 1) / (dy^2 - a))
-	fp_sqr(x, y);
-	fp_copy(tmpFP1, x);
-	fp_sub_dig(x, x, 1);
-	fp_mul(tmpFP1, tmpFP1, d);
-	fp_sub(tmpFP1, tmpFP1, a);
-	fp_inv(tmpFP1, tmpFP1);
-	fp_mul(x, x, tmpFP1);
-	fp_srt(x, x);
-
-  /*
-	fp_mul(x, y, y);
-	fp_sub_dig(x, x, 1);
-	fp_mul(tmpFP1, d, y);
-	fp_mul(tmpFP1, tmpFP1, y);
-	fp_add_dig(tmpFP1, tmpFP1, 1);
-	fp_inv(tmpFP1, tmpFP1);
-	fp_mul(x, x, tmpFP1);
-	fp_srt(x, x);
-	fp_neg(x, x);
-  */
-
-	fp_free(tmpFP1);
-}
-
 
 /**
  * Assigns a set of ordinary elliptic curve parameters.
@@ -118,7 +86,7 @@ void ed_param_set(int param) {
 
 		core_get()->ed_id = 0;
 
-		switch(param) {
+		switch (param) {
 #if FP_PRIME == 255
 			case CURVE_ED25519:
 				ASSIGN_ED(CURVE_ED25519, PRIME_25519);
@@ -149,7 +117,7 @@ void ed_param_set(int param) {
 		fp_new(ctx->ed_g.y);
 		fp_new(ctx->ed_g.z);
 #if ED_ADD == EXTND
-  		fp_new(ctx->ed_g.t);
+		fp_new(ctx->ed_g.t);
 #endif
 #ifdef ED_PRECO
 		for (int i = 0; i < RELIC_ED_TABLE; i++) {
@@ -157,14 +125,14 @@ void ed_param_set(int param) {
 			fp_new(ctx->ed_pre[i].y);
 			fp_new(ctx->ed_pre[i].z);
 #if ED_ADD == EXTND
-    		fp_new(ctx->ed_pre[i].t);
+			fp_new(ctx->ed_pre[i].t);
 #endif
 		}
 #endif
 #endif
 
 #if defined(ED_PRECO)
-		ed_mul_pre((ed_t *)ed_curve_get_tab(), &ctx->ed_g);
+		ed_mul_pre((ed_t *) ed_curve_get_tab(), &ctx->ed_g);
 #endif
 		ctx->ed_id = param;
 	}

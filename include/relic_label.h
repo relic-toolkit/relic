@@ -44,7 +44,7 @@
 #ifdef LABEL
 
 #undef first_ctx
-#define first_ctx PREFIX(first_ctx)
+#define first_ctx	PREFIX(first_ctx)
 #undef core_ctx
 #define core_ctx	PREFIX(core_ctx)
 
@@ -1029,6 +1029,133 @@
 #define ep_map 	PREFIX(ep_map)
 #define ep_pck 	PREFIX(ep_pck)
 #define ep_upk 	PREFIX(ep_upk)
+
+#undef ed_st
+#undef ed_t
+#define ed_st	PREFIX(ed_st)
+#define ed_t	PREFIX(ed_t)
+
+#undef ed_param_set
+#undef ed_param_set_any
+#undef ed_param_get
+#undef ed_curve_get_ord
+#undef ed_curve_get_gen
+#undef ed_curve_get_tab
+#undef ed_curve_get_cof
+#undef ed_param_print
+#undef ed_param_level
+#undef ed_projc_to_extnd
+#undef ed_rand
+#undef ed_copy
+#undef ed_cmp
+#undef ed_set_infty
+#undef ed_is_infty
+#undef ed_neg
+#undef ed_add
+#undef ed_sub
+#undef ed_dbl
+#undef ed_dbl_short
+#undef ed_norm
+#undef ed_norm_sim
+#undef ed_map
+#undef ed_curve_init
+#undef ed_curve_clean
+#undef ed_mul_pre_basic
+#undef ed_mul_pre_yaowi
+#undef ed_mul_pre_nafwi
+#undef ed_mul_pre_combs
+#undef ed_mul_pre_combd
+#undef ed_mul_pre_lwnaf
+#undef ed_mul_fix_basic
+#undef ed_mul_fix_yaowi
+#undef ed_mul_fix_nafwi
+#undef ed_mul_fix_combs
+#undef ed_mul_fix_combd
+#undef ed_mul_fix_lwnaf
+#undef ed_mul_fix_lwnaf_mixed
+#undef ed_mul_gen
+#undef ed_mul_dig
+#undef ed_mul_sim_basic
+#undef ed_mul_sim_trick
+#undef ed_mul_sim_inter
+#undef ed_mul_sim_joint
+#undef ed_mul_sim_gen
+#undef ed_tab
+#undef ed_print
+#undef ed_is_valid
+#undef ed_size_bin
+#undef ed_read_bin
+#undef ed_write_bin
+#undef ed_mul_basic
+#undef ed_mul_slide
+#undef ed_mul_monty
+#undef ed_mul_fixed
+#undef ed_mul_lwnaf
+#undef ed_mul_lwnaf_mixed
+#undef ed_mul_lwreg
+#undef ed_pck
+#undef ed_upk
+
+#define ed_param_set 	PREFIX(ed_param_set)
+#define ed_param_set_any 	PREFIX(ed_param_set_any)
+#define ed_param_get 	PREFIX(ed_param_get)
+#define ed_curve_get_ord 	PREFIX(ed_curve_get_ord)
+#define ed_curve_get_gen 	PREFIX(ed_curve_get_gen)
+#define ed_curve_get_tab 	PREFIX(ed_curve_get_tab)
+#define ed_curve_get_cof 	PREFIX(ed_curve_get_cof)
+#define ed_param_print 	PREFIX(ed_param_print)
+#define ed_param_level 	PREFIX(ed_param_level)
+#define ed_projc_to_extnd 	PREFIX(ed_projc_to_extnd)
+#define ed_rand 	PREFIX(ed_rand)
+#define ed_copy 	PREFIX(ed_copy)
+#define ed_cmp 	PREFIX(ed_cmp)
+#define ed_set_infty 	PREFIX(ed_set_infty)
+#define ed_is_infty 	PREFIX(ed_is_infty)
+#define ed_neg 	PREFIX(ed_neg)
+#define ed_add 	PREFIX(ed_add)
+#define ed_sub 	PREFIX(ed_sub)
+#define ed_dbl 	PREFIX(ed_dbl)
+#define ed_dbl_short 	PREFIX(ed_dbl_short)
+#define ed_norm 	PREFIX(ed_norm)
+#define ed_norm_sim 	PREFIX(ed_norm_sim)
+#define ed_map 	PREFIX(ed_map)
+#define ed_curve_init 	PREFIX(ed_curve_init)
+#define ed_curve_clean 	PREFIX(ed_curve_clean)
+#define ed_mul_pre_basic 	PREFIX(ed_mul_pre_basic)
+#define ed_mul_pre_yaowi 	PREFIX(ed_mul_pre_yaowi)
+#define ed_mul_pre_nafwi 	PREFIX(ed_mul_pre_nafwi)
+#define ed_mul_pre_combs 	PREFIX(ed_mul_pre_combs)
+#define ed_mul_pre_combd 	PREFIX(ed_mul_pre_combd)
+#define ed_mul_pre_lwnaf 	PREFIX(ed_mul_pre_lwnaf)
+#define ed_mul_fix_basic 	PREFIX(ed_mul_fix_basic)
+#define ed_mul_fix_yaowi 	PREFIX(ed_mul_fix_yaowi)
+#define ed_mul_fix_nafwi 	PREFIX(ed_mul_fix_nafwi)
+#define ed_mul_fix_combs 	PREFIX(ed_mul_fix_combs)
+#define ed_mul_fix_combd 	PREFIX(ed_mul_fix_combd)
+#define ed_mul_fix_lwnaf 	PREFIX(ed_mul_fix_lwnaf)
+#define ed_mul_fix_lwnaf_mixed 	PREFIX(ed_mul_fix_lwnaf_mixed)
+#define ed_mul_gen 	PREFIX(ed_mul_gen)
+#define ed_mul_dig 	PREFIX(ed_mul_dig)
+#define ed_mul_sim_basic 	PREFIX(ed_mul_sim_basic)
+#define ed_mul_sim_trick 	PREFIX(ed_mul_sim_trick)
+#define ed_mul_sim_inter 	PREFIX(ed_mul_sim_inter)
+#define ed_mul_sim_joint 	PREFIX(ed_mul_sim_joint)
+#define ed_mul_sim_gen 	PREFIX(ed_mul_sim_gen)
+#define ed_tab 	PREFIX(ed_tab)
+#define ed_print 	PREFIX(ed_print)
+#define ed_is_valid 	PREFIX(ed_is_valid)
+#define ed_size_bin 	PREFIX(ed_size_bin)
+#define ed_read_bin 	PREFIX(ed_read_bin)
+#define ed_write_bin 	PREFIX(ed_write_bin)
+#define ed_mul_basic 	PREFIX(ed_mul_basic)
+#define ed_mul_slide 	PREFIX(ed_mul_slide)
+#define ed_mul_monty 	PREFIX(ed_mul_monty)
+#define ed_mul_fixed 	PREFIX(ed_mul_fixed)
+#define ed_mul_lwnaf 	PREFIX(ed_mul_lwnaf)
+#define ed_mul_lwnaf_mixed 	PREFIX(ed_mul_lwnaf_mixed)
+#define ed_mul_lwreg 	PREFIX(ed_mul_lwreg)
+#define ed_pck 	PREFIX(ed_pck)
+#define ed_upk 	PREFIX(ed_upk)
 
 #undef eb_st
 #undef eb_t

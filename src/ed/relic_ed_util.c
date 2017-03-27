@@ -32,11 +32,56 @@
 #include <assert.h>
 
 #include "relic_core.h"
+#include "relic_label.h"
 #include "relic_md.h"
+
+/*============================================================================*/
+/* Private definitions                                                         */
+/*============================================================================*/
+
+static int ed_affine_is_valid(const fp_t x, const fp_t y) {
+	fp_t tmpFP0;
+	fp_t tmpFP1;
+	fp_t tmpFP2;
+
+	fp_null(tmpFP0);
+	fp_null(tmpFP1);
+	fp_null(tmpFP2);
+
+	int r = 0;
+
+	TRY {
+		fp_new(tmpFP0);
+		fp_new(tmpFP1);
+		fp_new(tmpFP2);
+
+		// a * X^2 + Y^2 - 1 - d * X^2 * Y^2 =?= 0
+		fp_sqr(tmpFP0, x);
+		fp_mul(tmpFP0, core_get()->ed_a, tmpFP0);
+		fp_sqr(tmpFP1, y);
+		fp_add(tmpFP1, tmpFP0, tmpFP1);
+		fp_sub_dig(tmpFP1, tmpFP1, 1);
+		fp_sqr(tmpFP0, x);
+		fp_mul(tmpFP0, core_get()->ed_d, tmpFP0);
+		fp_sqr(tmpFP2, y);
+		fp_mul(tmpFP2, tmpFP0, tmpFP2);
+		fp_sub(tmpFP0, tmpFP1, tmpFP2);
+
+		r = fp_is_zero(tmpFP0);
+	} CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	} FINALLY {
+		fp_free(tmpFP0);
+		fp_free(tmpFP1);
+		fp_free(tmpFP2);
+	}
+	return r;
+}
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
+
 void ed_rand(ed_t p) {
 	bn_t n, k;
 
@@ -201,9 +246,9 @@ void ed_norm(ed_t r, const ed_t p) {
 
 		fp_mul(r->x, p->x, z_inv);
 		fp_mul(r->y, p->y, z_inv);
-	#if ED_ADD == EXTND
+#if ED_ADD == EXTND
 		fp_mul(r->t, p->t, z_inv);
-	#endif
+#endif
 
 		fp_set_dig(r->z, 1);
 
@@ -211,7 +256,7 @@ void ed_norm(ed_t r, const ed_t p) {
 	}
 }
 
-void ed_norm_sim(ed_t *r, const ed_t *t, int n) {
+void ed_norm_sim(ed_t * r, const ed_t * t, int n) {
 	int i;
 	fp_t a[n];
 
@@ -246,25 +291,6 @@ void ed_norm_sim(ed_t *r, const ed_t *t, int n) {
 	}
 }
 
-/*
-void ed_norm(ed_t r, const ed_t p) {
-	if (fp_cmp_dig(p->z, 1) == CMP_EQ) {
-		ed_copy(r, p);
-	} else {
-		fp_t z_inv;
-
-		fp_new(z_inv);
-		fp_null(z_inv);
-
-		fp_inv(z_inv, p->z);
-		fp_mul(r->x, p->x, z_inv);
-		fp_mul(r->y, p->y, z_inv);
-		fp_mul(r->z, p->z, z_inv);
-
-		fp_free(z_inv);
-	}
-}*/
-
 void ed_print(const ed_t p) {
 	fp_print(p->x);
 	fp_print(p->y);
@@ -272,45 +298,6 @@ void ed_print(const ed_t p) {
 	fp_print(p->t);
 #endif
 	fp_print(p->z);
-}
-
-int ed_affine_is_valid(const fp_t x, const fp_t y) {
-	fp_t tmpFP0;
-	fp_t tmpFP1;
-	fp_t tmpFP2;
-
-	fp_null(tmpFP0);
-	fp_null(tmpFP1);
-	fp_null(tmpFP2);
-
-	int r = 0;
-
-	TRY {
-		fp_new(tmpFP0);
-		fp_new(tmpFP1);
-		fp_new(tmpFP2);
-
-		// a * X^2 + Y^2 - 1 - d * X^2 * Y^2 =?= 0
-		fp_sqr(tmpFP0, x);
-		fp_mul(tmpFP0, core_get()->ed_a, tmpFP0);
-		fp_sqr(tmpFP1, y);
-		fp_add(tmpFP1, tmpFP0, tmpFP1);
-		fp_sub_dig(tmpFP1, tmpFP1, 1);
-		fp_sqr(tmpFP0, x);
-		fp_mul(tmpFP0, core_get()->ed_d, tmpFP0);
-		fp_sqr(tmpFP2, y);
-		fp_mul(tmpFP2, tmpFP0, tmpFP2);
-		fp_sub(tmpFP0, tmpFP1, tmpFP2);
-
-		r = fp_is_zero(tmpFP0);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
-		fp_free(tmpFP0);
-		fp_free(tmpFP1);
-		fp_free(tmpFP2);
-	}
-	return r;
 }
 
 int ed_is_valid(const ed_t p) {
@@ -346,13 +333,11 @@ int ed_is_valid(const ed_t p) {
 				r = ed_affine_is_valid(t->x, t->y);
 			}
 #endif
-			// if (r == 0) {
-			// 	util_printf("\n\n(X, Y, T, Z) = \n");
-			// 	ed_print(p);
-			// }
-		} CATCH_ANY {
+		}
+		CATCH_ANY {
 			THROW(ERR_CAUGHT);
-		} FINALLY {
+		}
+		FINALLY {
 #if ED_ADD == EXTND
 			fp_free(x_times_y);
 #endif
@@ -362,7 +347,7 @@ int ed_is_valid(const ed_t p) {
 	return r;
 }
 
-void ed_tab(ed_t *t, const ed_t p, int w) {
+void ed_tab(ed_t * t, const ed_t p, int w) {
 	if (w > 2) {
 		ed_dbl(t[0], p);
 #if defined(ED_MIXED)
@@ -379,67 +364,109 @@ void ed_tab(ed_t *t, const ed_t p, int w) {
 	ed_copy(t[0], p);
 }
 
-#if 0
+int ed_size_bin(const ed_t a, int pack) {
+	int size = 0;
 
-void ep_rhs(fp_t rhs, const ep_t p) {
-	fp_t t0;
-	fp_t t1;
+	if (ed_is_infty(a)) {
+		return 1;
+	}
 
-	fp_null(t0);
-	fp_null(t1);
+	size = 1 + FP_BYTES;
+	if (!pack) {
+		size += FP_BYTES;
+	}
+
+	return size;
+}
+
+void ed_write_bin(uint8_t *bin, int len, const ed_t a, int pack) {
+	ed_t t;
+
+	ed_null(t);
+
+	if (ed_is_infty(a)) {
+		if (len != 1) {
+			THROW(ERR_NO_BUFFER);
+		} else {
+			bin[0] = 0;
+			return;
+		}
+	}
 
 	TRY {
-		fp_new(t0);
-		fp_new(t1);
+		ed_new(t);
 
-		/* t0 = x1^2. */
-		fp_sqr(t0, p->x);
-		/* t1 = x1^3. */
-		fp_mul(t1, t0, p->x);
+		ed_norm(t, a);
 
-		/* t1 = x1^3 + a * x1 + b. */
-		switch (ep_curve_opt_a()) {
-			case OPT_ZERO:
-				break;
-			case OPT_ONE:
-				fp_add(t1, t1, p->x);
-				break;
-#if FP_RDC != MONTY
-			case OPT_DIGIT:
-				fp_mul_dig(t0, p->x, ep_curve_get_a()[0]);
-				fp_add(t1, t1, t0);
-				break;
-#endif
-			default:
-				fp_mul(t0, p->x, ep_curve_get_a());
-				fp_add(t1, t1, t0);
-				break;
+		if (pack) {
+			if (len != FP_BYTES + 1) {
+				THROW(ERR_NO_BUFFER);
+			} else {
+				ed_pck(t, t);
+				bin[0] = 2 | fp_get_bit(t->x, 0);
+				fp_write_bin(bin + 1, FP_BYTES, t->y);
+			}
+		} else {
+			if (len != 2 * FP_BYTES + 1) {
+				THROW(ERR_NO_BUFFER);
+			} else {
+				bin[0] = 4;
+				fp_write_bin(bin + 1, FP_BYTES, t->y);
+				fp_write_bin(bin + FP_BYTES + 1, FP_BYTES, t->x);
+			}
 		}
-
-		switch (ep_curve_opt_b()) {
-			case OPT_ZERO:
-				break;
-			case OPT_ONE:
-				fp_add_dig(t1, t1, 1);
-				break;
-#if FP_RDC != MONTY
-			case OPT_DIGIT:
-				fp_add_dig(t1, t1, ep_curve_get_b()[0]);
-				break;
-#endif
-			default:
-				fp_add(t1, t1, ep_curve_get_b());
-				break;
-		}
-
-		fp_copy(rhs, t1);
-
-	} CATCH_ANY {
+	}
+	CATCH_ANY {
 		THROW(ERR_CAUGHT);
-	} FINALLY {
-		fp_free(t0);
-		fp_free(t1);
+	}
+	FINALLY {
+		ed_free(t);
 	}
 }
 
+void ed_read_bin(ed_t a, const uint8_t *bin, int len) {
+	if (len == 1) {
+		if (bin[0] == 0) {
+			ed_set_infty(a);
+			return;
+		} else {
+			THROW(ERR_NO_BUFFER);
+			return;
+		}
+	}
+
+	if (len != (FP_BYTES + 1) && len != (2 * FP_BYTES + 1)) {
+		THROW(ERR_NO_BUFFER);
+		return;
+	}
+
+	a->norm = 1;
+	fp_set_dig(a->z, 1);
+	fp_read_bin(a->y, bin + 1, FP_BYTES);
+	if (len == FP_BYTES + 1) {
+		switch (bin[0]) {
+			case 2:
+				fp_zero(a->x);
+				break;
+			case 3:
+				fp_zero(a->x);
+				fp_set_bit(a->x, 0, 1);
+				break;
+			default:
+				THROW(ERR_NO_VALID);
+				break;
+		}
+		ed_upk(a, a);
+	}
+
+	if (len == 2 * FP_BYTES + 1) {
+		if (bin[0] == 4) {
+			fp_read_bin(a->x, bin + FP_BYTES + 1, FP_BYTES);
+		} else {
+			THROW(ERR_NO_VALID);
+		}
+	}
+#if ED_ADD == EXTND
+	ed_projc_to_extnd(a, a->x, a->y, a->z);
 #endif
+}

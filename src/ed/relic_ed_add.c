@@ -32,9 +32,9 @@
 #include <assert.h>
 
 #include "relic_core.h"
+#include "relic_label.h"
 
-
-void ed_add_inverted(ed_t r, const ed_t p, const ed_t q) {
+static void ed_add_inver(ed_t r, const ed_t p, const ed_t q) {
 	assert(ed_is_valid(p) != 0);
 	assert(ed_is_valid(q) != 0);
 
@@ -108,7 +108,8 @@ void ed_add_inverted(ed_t r, const ed_t p, const ed_t q) {
 }
 
 #if ED_ADD == PROJC || ED_MUL == LWNAF_MIXED
-void ed_add_projective(ed_t r, const ed_t p, const ed_t q) {
+
+static void ed_add_projc(ed_t r, const ed_t p, const ed_t q) {
 	fp_t A;
 	fp_t B;
 	fp_t C;
@@ -180,7 +181,8 @@ void ed_add_projective(ed_t r, const ed_t p, const ed_t q) {
 #endif
 
 #if ED_ADD == EXTND
-void ed_add_extended(ed_t r, const ed_t p, const ed_t q) {
+
+static void ed_add_extnd(ed_t r, const ed_t p, const ed_t q) {
 	fp_t A;
 	fp_t B;
 	fp_t E;
@@ -200,12 +202,12 @@ void ed_add_extended(ed_t r, const ed_t p, const ed_t q) {
 	fp_mul(B, p->y, q->y);
 
 	// C = d * T_1 * T_2
-	#define C (r->t)
+#define C (r->t)
 	fp_mul(C, core_get()->ed_d, p->t);
 	fp_mul(C, C, q->t);
 
 	// D = Z_1 * Z_2
-	#define D (r->z)
+#define D (r->z)
 	fp_mul(D, p->z, q->z);
 
 	// E = (X_1 + Y_1) * (X_2 + Y_2) - A - B
@@ -220,12 +222,12 @@ void ed_add_extended(ed_t r, const ed_t p, const ed_t q) {
 
 	// G = D + C
 	fp_add(G, D, C);
-	#undef C
-	#undef D
+#undef C
+#undef D
 
 	// H = B - aA
 	fp_mul(r->x, core_get()->ed_a, A);
-	#define H (r->z)
+#define H (r->z)
 	fp_sub(H, B, r->x);
 
 	// X_3 = E * F
@@ -236,7 +238,7 @@ void ed_add_extended(ed_t r, const ed_t p, const ed_t q) {
 
 	// T_3 = E * H
 	fp_mul(r->t, E, H);
-	#undef H
+#undef H
 
 	// Z_3 = F * G
 	fp_mul(r->z, F, G);
@@ -247,13 +249,14 @@ void ed_add_extended(ed_t r, const ed_t p, const ed_t q) {
 	fp_free(F);
 	fp_free(G);
 }
+
 #endif
 
 void ed_add(ed_t r, const ed_t p, const ed_t q) {
 #if ED_ADD == PROJC
-	ed_add_projective(r, p, q);
+	ed_add_projc(r, p, q);
 #elif ED_ADD == EXTND
-	ed_add_extended(r, p, q);
+	ed_add_extnd(r, p, q);
 #endif
 }
 

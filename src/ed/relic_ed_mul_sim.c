@@ -53,7 +53,7 @@
  * @param[in] t					- the pointer to the precomputed table.
  */
 void ed_mul_sim_endom(ed_t r, const ed_t p, const bn_t k, const ed_t q,
-		const bn_t m, const ed_t *t) {
+		const bn_t m, const ed_t * t) {
 	int len, len0, len1, len2, len3, i, n, sk0, sk1, sl0, sl1, w, g = 0;
 	int8_t naf0[FP_BITS + 1], naf1[FP_BITS + 1], *t0, *t1;
 	int8_t naf2[FP_BITS + 1], naf3[FP_BITS + 1], *t2, *t3;
@@ -269,7 +269,7 @@ void ed_mul_sim_endom(ed_t r, const ed_t p, const bn_t k, const ed_t q,
  * @param[in] t					- the pointer to the precomputed table.
  */
 static void ed_mul_sim_plain(ed_t r, const ed_t p, const bn_t k, const ed_t q,
-		const bn_t m, const ed_t *t) {
+		const bn_t m, const ed_t * t) {
 	int len, l0, l1, i, n0, n1, w, gen;
 	int8_t naf0[FP_BITS + 1], naf1[FP_BITS + 1], *_k, *_m;
 	ed_t t0[1 << (ED_WIDTH - 2)];
@@ -584,11 +584,11 @@ void ed_mul_sim_gen(ed_t r, const bn_t k, const ed_t q, const bn_t m) {
 #if defined(ED_PLAIN) || defined(ED_SUPER)
 #if ED_SIM == INTER && ED_FIX == LWNAF && defined(ED_PRECO)
 		//if (!ed_curve_is_endom()) {
-			ed_mul_sim_plain(r, g, k, q, m, ed_curve_get_tab());
+		ed_mul_sim_plain(r, g, k, q, m, ed_curve_get_tab());
 		//}
 #else
 		//if (!ed_curve_is_endom()) {
-			ed_mul_sim(r, g, k, q, m);
+		ed_mul_sim(r, g, k, q, m);
 		//}
 #endif
 #endif
