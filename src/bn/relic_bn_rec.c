@@ -66,8 +66,8 @@ static char get_bits(const bn_t a, int from, int to) {
 		mf = MASK(BN_DIGIT - from) << from;
 		mt = MASK(to + 1);
 
-		return ((a->dp[f] & mf) >> from) | ((a->dp[t] & mt) << (BN_DIGIT -
-						from));
+		return ((a->dp[f] & mf) >> from) |
+				((a->dp[t] & mt) << (BN_DIGIT - from));
 	}
 }
 
@@ -395,7 +395,8 @@ void bn_rec_tnaf_mod(bn_t r0, bn_t r1, const bn_t k, int u, int m) {
 		/*r 0 = r0 + b0, r1 = r1 + b1. */
 		bn_add(r0, r0, t2);
 		bn_add(r1, r1, t3);
-	} CATCH_ANY {
+	}
+	CATCH_ANY {
 		THROW(ERR_CAUGHT);
 	}
 	FINALLY {
