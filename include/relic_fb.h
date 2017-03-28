@@ -169,7 +169,7 @@ enum {
  * Represents a binary field element.
  */
 #if ALLOC == AUTO
-typedef align dig_t fb_t[FB_DIGS + PADDING(FB_BYTES)/(FB_DIGIT / 8)];
+typedef relic_align dig_t fb_t[FB_DIGS + PADDING(FB_BYTES)/(FB_DIGIT / 8)];
 #else
 typedef dig_t *fb_t;
 #endif
@@ -177,7 +177,7 @@ typedef dig_t *fb_t;
 /**
  * Represents a binary field element with automatic memory allocation.
  */
-typedef align dig_t fb_st[FB_DIGS + PADDING(FB_BYTES)/(FB_DIGIT / 8)];
+typedef relic_align dig_t fb_st[FB_DIGS + PADDING(FB_BYTES)/(FB_DIGIT / 8)];
 
 /*============================================================================*/
 /* Macro definitions                                                          */

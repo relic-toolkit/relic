@@ -75,7 +75,7 @@ void fb_mul1_low(dig_t *c, const dig_t *a, dig_t digit) {
 }
 
 void fb_muln_low(dig_t *c, const dig_t *a, const dig_t *b) {
-	align dig_t t[16][FB_DIGS + 1];
+	relic_align dig_t t[16][FB_DIGS + 1];
 	dig_t r0, r1, r2, r4, r8, u, carry, *tmpc;
 	const dig_t *tmpa;
 	int i, j;
@@ -148,7 +148,7 @@ void fb_muln_low(dig_t *c, const dig_t *a, const dig_t *b) {
 }
 
 void fb_muld_low(dig_t *c, const dig_t *a, const dig_t *b, int size) {
-	align dig_t t[16][size + 1];
+	relic_align dig_t t[16][size + 1];
 	dig_t u, r0, r1, r2, r4, r8, *tmpc;
 	const dig_t *tmpa;
 	int i, j;
@@ -215,7 +215,7 @@ void fb_muld_low(dig_t *c, const dig_t *a, const dig_t *b, int size) {
 }
 
 void fb_mulm_low(dig_t *c, const dig_t *a, const dig_t *b) {
-	dig_t align t[2 * FB_DIGS];
+	dig_t relic_align t[2 * FB_DIGS];
 
 	fb_muln_low(t, a, b);
 	fb_rdc(c, t);

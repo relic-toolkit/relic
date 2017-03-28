@@ -129,9 +129,9 @@ typedef unsigned long long ull_t;
  * Specification for aligned variables.
  */
 #if ALIGN > 1
-#define align 			__attribute__ ((aligned (ALIGN)))
+#define relic_align 			__attribute__ ((aligned (ALIGN)))
 #else
-#define align 			/* empty*/
+#define relic_align 			/* empty*/
 #endif
 
 /**
