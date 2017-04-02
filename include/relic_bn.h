@@ -117,7 +117,7 @@ typedef struct {
 	dig_t *dp;
 #elif ALLOC == STACK || ALLOC == AUTO
 	/** The sequence of contiguous digits that forms this integer. */
-	align dig_t dp[BN_SIZE];
+	relic_align dig_t dp[BN_SIZE];
 #endif
 } bn_st;
 

@@ -41,7 +41,7 @@ void fb_itrn_low(dig_t *c, const dig_t *a, dig_t *t) {
 	int i, j;
 	dig_t u, *p;
 	const dig_t *tmp;
-	align dig_t v[FB_DIGS];
+	relic_align dig_t v[FB_DIGS];
 
 	fb_zero(v);
 

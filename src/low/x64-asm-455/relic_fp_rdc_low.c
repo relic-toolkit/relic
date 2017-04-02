@@ -40,8 +40,8 @@
 /*============================================================================*/
 
 void fp_rdcs_low(dig_t *c, const dig_t *a, const dig_t *m) {
-	align dig_t q[2 * FP_DIGS], _q[2 * FP_DIGS];
-	align dig_t _r[2 * FP_DIGS], r[2 * FP_DIGS], t[2 * FP_DIGS];
+	relic_align dig_t q[2 * FP_DIGS], _q[2 * FP_DIGS];
+	relic_align dig_t _r[2 * FP_DIGS], r[2 * FP_DIGS], t[2 * FP_DIGS];
 	const int *sform;
 	int len, first, i, j, b0, d0, b1, d1;
 	dig_t carry;

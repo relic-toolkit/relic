@@ -38,7 +38,7 @@
 /*============================================================================*/
 
 void fp2_muln_low(dv2_t c, fp2_t a, fp2_t b) {
-	align dig_t t0[2 * FP_DIGS], t1[2 * FP_DIGS], t2[2 * FP_DIGS];
+	relic_align dig_t t0[2 * FP_DIGS], t1[2 * FP_DIGS], t2[2 * FP_DIGS];
 
 	/* Karatsuba algorithm. */
 
@@ -85,7 +85,7 @@ void fp2_muln_low(dv2_t c, fp2_t a, fp2_t b) {
 }
 
 void fp2_mulc_low(dv2_t c, fp2_t a, fp2_t b) {
-	align dig_t t0[2 * FP_DIGS], t1[2 * FP_DIGS], t2[2 * FP_DIGS];
+	relic_align dig_t t0[2 * FP_DIGS], t1[2 * FP_DIGS], t2[2 * FP_DIGS];
 
 	/* Karatsuba algorithm. */
 
@@ -125,7 +125,7 @@ void fp2_mulc_low(dv2_t c, fp2_t a, fp2_t b) {
 }
 
 void fp2_mulm_low(fp2_t c, fp2_t a, fp2_t b) {
-	align dv2_t t;
+	relic_align dv2_t t;
 
 	dv2_null(t);
 
@@ -141,8 +141,8 @@ void fp2_mulm_low(fp2_t c, fp2_t a, fp2_t b) {
 }
 
 void fp3_muln_low(dv3_t c, fp3_t a, fp3_t b) {
-	align dig_t t0[2 * FP_DIGS], t1[2 * FP_DIGS], t2[2 * FP_DIGS], t3[2 * FP_DIGS];
-	align dig_t t4[2 * FP_DIGS], t5[2 * FP_DIGS], t6[2 * FP_DIGS];
+	relic_align dig_t t0[2 * FP_DIGS], t1[2 * FP_DIGS], t2[2 * FP_DIGS], t3[2 * FP_DIGS];
+	relic_align dig_t t4[2 * FP_DIGS], t5[2 * FP_DIGS], t6[2 * FP_DIGS];
 
 	/* Karatsuba algorithm. */
 

@@ -50,7 +50,7 @@ void fp_muln_low(dig_t *c, const dig_t *a, const dig_t *b) {
 }
 
 void fp_mulm_low(dig_t *c, const dig_t *a, const dig_t *b) {
-	dig_t align t[2 * FP_DIGS];
+	dig_t relic_align t[2 * FP_DIGS];
 
 	fp_muln_low(t, a, b);
 	fp_rdc(c, t);

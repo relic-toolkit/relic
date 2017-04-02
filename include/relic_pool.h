@@ -75,7 +75,7 @@ typedef struct {
 	/** Indicates if this pool element is being used. */
 	int state;
 	/** The pool element. The extra digit stores the pool position. */
-	align dig_t elem[DV_DIGS + 1];
+	relic_align dig_t elem[DV_DIGS + 1];
 } pool_t;
 
 /*============================================================================*/

@@ -50,7 +50,7 @@ static const dig_t t1[16] = {
 static void fb_srtt_low(dig_t *c, const dig_t *a, int fa) {
 	int i, j, n, h, sh, rh, lh, sa, la, ra;
 	dig_t d, d_e, d_o;
-	align dig_t t[2 * FB_DIGS] = { 0 };
+	relic_align dig_t t[2 * FB_DIGS] = { 0 };
 
 	sh = 1 + (FB_BITS >> FB_DIG_LOG);
 	h = (sh + 1) >> 1;
@@ -103,7 +103,7 @@ static void fb_srtt_low(dig_t *c, const dig_t *a, int fa) {
 static void fb_srtp_low(dig_t *c, const dig_t *a, int fa, int fb, int fc) {
 	int i, j, n, h, sh, rh, lh, sa, la, ra, sb, lb, rb, sc, lc, rc;
 	dig_t d, d_e, d_o;
-	align dig_t t[DV_DIGS] = { 0 };
+	relic_align dig_t t[DV_DIGS] = { 0 };
 
 	sh = 1 + (FB_BITS >> FB_DIG_LOG);
 	h = (sh + 1) >> 1;
@@ -173,8 +173,8 @@ static void fb_srtp_low(dig_t *c, const dig_t *a, int fa, int fb, int fc) {
 static void fb_sqrt_low(dig_t *c, const dig_t *a) {
 	int i, j, n, sh;
 	dig_t d, d_e, d_o;
-	align dig_t t[2 * FB_DIGS] = { 0 }, s[FB_DIGS + 1] = { 0 };
-	align dig_t t_e[FB_DIGS] = { 0 }, t_o[FB_DIGS] = { 0 };
+	relic_align dig_t t[2 * FB_DIGS] = { 0 }, s[FB_DIGS + 1] = { 0 };
+	relic_align dig_t t_e[FB_DIGS] = { 0 }, t_o[FB_DIGS] = { 0 };
 
 	sh = 1 + (FB_BITS >> FB_DIG_LOG);
 

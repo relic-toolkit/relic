@@ -37,7 +37,7 @@
 /*============================================================================*/
 
 void fp2_sqrn_low(dv2_t c, fp2_t a) {
-	align dig_t t0[2 * FP_DIGS], t1[2 * FP_DIGS], t2[2 * FP_DIGS];
+	relic_align dig_t t0[2 * FP_DIGS], t1[2 * FP_DIGS], t2[2 * FP_DIGS];
 
 	/* t0 = (a0 + a1). */
 #ifdef FP_SPACE
@@ -109,7 +109,7 @@ void fp2_sqrn_low(dv2_t c, fp2_t a) {
 }
 
 void fp2_sqrm_low(fp2_t c, fp2_t a) {
-	align dv2_t t;
+	relic_align dv2_t t;
 
 	dv2_null(t);
 
@@ -125,8 +125,8 @@ void fp2_sqrm_low(fp2_t c, fp2_t a) {
 }
 
 void fp3_sqrn_low(dv3_t c, fp3_t a) {
-	align dig_t t0[2 * FP_DIGS], t1[2 * FP_DIGS], t2[2 * FP_DIGS];
-	align dig_t t3[2 * FP_DIGS], t4[2 * FP_DIGS], t5[2 * FP_DIGS];
+	relic_align dig_t t0[2 * FP_DIGS], t1[2 * FP_DIGS], t2[2 * FP_DIGS];
+	relic_align dig_t t3[2 * FP_DIGS], t4[2 * FP_DIGS], t5[2 * FP_DIGS];
 
 	/* t0 = a_0^2. */
 	fp_sqrn_low(t0, a[0]);
@@ -181,7 +181,7 @@ void fp3_sqrn_low(dv3_t c, fp3_t a) {
 }
 
 void fp3_sqrm_low(fp3_t c, fp3_t a) {
-	align dv3_t t;
+	relic_align dv3_t t;
 
 	dv3_null(t);
 

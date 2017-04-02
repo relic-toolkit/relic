@@ -155,7 +155,7 @@ enum {
  * stored in the first positions of the vector.
  */
 #if ALLOC == AUTO
-typedef align dig_t fp_t[FP_DIGS + PADDING(FP_BYTES)/(FP_DIGIT / 8)];
+typedef relic_align dig_t fp_t[FP_DIGS + PADDING(FP_BYTES)/(FP_DIGIT / 8)];
 #else
 typedef dig_t *fp_t;
 #endif
@@ -163,7 +163,7 @@ typedef dig_t *fp_t;
 /**
  * Represents a prime field element with automatic memory allocation.
  */
-typedef align dig_t fp_st[FP_DIGS + PADDING(FP_BYTES)/(FP_DIGIT / 8)];
+typedef relic_align dig_t fp_st[FP_DIGS + PADDING(FP_BYTES)/(FP_DIGIT / 8)];
 
 /*============================================================================*/
 /* Macro definitions                                                          */

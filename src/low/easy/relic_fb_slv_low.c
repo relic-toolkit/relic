@@ -49,7 +49,7 @@ static const dig_t table_odds[16] = {
 void fb_slvn_low(dig_t *c, const dig_t *a) {
 	int i, j, k, b, d, v[FB_BITS];
 	dig_t u, *p;
-	align dig_t s[FB_DIGS], t[FB_DIGS];
+	relic_align dig_t s[FB_DIGS], t[FB_DIGS];
 	dig_t mask;
 	const void *tab = fb_poly_get_slv();
 
