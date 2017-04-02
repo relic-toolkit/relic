@@ -24,9 +24,9 @@
 
 #include "macro.s"
 
-.global fp2_rdcn_low
+.global cdecl(fp2_rdcn_low)
 
-fp2_rdcn_low:
+cdecl(fp2_rdcn_low):
 	push %r12
 	push %r13
 	push %r14

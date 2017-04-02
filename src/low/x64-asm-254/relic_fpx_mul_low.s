@@ -24,16 +24,16 @@
 
 #include "macro.s"
 
-.global fp2_mulm_low
-.global fp2_muln_low
-.global fp2_mulc_low
+.global cdecl(fp2_mulm_low)
+.global cdecl(fp2_muln_low)
+.global cdecl(fp2_mulc_low)
 
 /*
  * Function: fp2_mulm_low
  * Inputs: rdi = c, rsi = a, rcx = b
  * Output: c = a * b
  */
-fp2_mulm_low:
+cdecl(fp2_mulm_low):
 	push %r12
 	push %r13
 	push %r14
@@ -151,7 +151,7 @@ fp2_mulm_low:
  * Inputs: rdi = c, rsi = a, rcx = b
  * Output: c = a * b
  */
-fp2_muln_low:
+cdecl(fp2_muln_low):
 	push %r12
 	push %r13
 	push %r14
@@ -284,7 +284,7 @@ fp2_muln_low:
 	pop %r12
 	ret
 
-fp2_mulc_low:
+cdecl(fp2_mulc_low):
 	push %r12
 	push %r13
 	push %r14

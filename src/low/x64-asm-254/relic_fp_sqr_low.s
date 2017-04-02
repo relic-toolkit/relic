@@ -30,8 +30,10 @@
  * @ingroup fp
  */
 
+#include "macro.s"
+
 .text
-.global fp_sqrn_low
+.global cdecl(fp_sqrn_low)
 
 .macro COMBA_STEP a, b
 	movq	\a, %rax
@@ -60,7 +62,7 @@
  * Inputs: rdi = c, rsi = a
  * Output: rax
  */
-fp_sqrn_low:
+cdecl(fp_sqrn_low):
 	xorq %r10,%r10
 	movq 0(%rsi),%rax
 	mulq 8(%rsi)

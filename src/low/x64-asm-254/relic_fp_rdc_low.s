@@ -33,7 +33,7 @@
 #include "macro.s"
 
 .text
-.global fp_rdcn_low
+.global cdecl(fp_rdcn_low)
 
 /*
  * Function: fp_rdcn_low
@@ -41,7 +41,7 @@
  * Output: rax
  */
 
-fp_rdcn_low:
+cdecl(fp_rdcn_low):
 	push %r12
 	push %r13
 	push %r14

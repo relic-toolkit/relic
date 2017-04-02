@@ -23,10 +23,10 @@
 #include "macro.s"
 
 .text
-.global fp_muln_low
-.global fp_mulm_low
+.global cdecl(fp_muln_low)
+.global cdecl(fp_mulm_low)
 
-fp_mulm_low:
+cdecl(fp_mulm_low):
 	push %r12
 	push %r13
 	push %r14
@@ -44,7 +44,7 @@ fp_mulm_low:
 	pop	%r12
 	ret
 
-fp_muln_low:
+cdecl(fp_muln_low):
 	movq %rdx,%rcx
 	FP_MULN_LOW %rdi, %r8, %r9, %r10, 0(%rsi), 8(%rsi), 16(%rsi), 24(%rsi), 0(%rcx), 8(%rcx), 16(%rcx), 24(%rcx)
 	ret

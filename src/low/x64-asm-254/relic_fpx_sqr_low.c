@@ -25,7 +25,7 @@
  *
  * Implementation of the low-level extension field squaring functions.
  *
- * @ingroup pp
+ * @ingroup fpx
  */
 
 #include "relic_core.h"

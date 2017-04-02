@@ -21,17 +21,18 @@
  */
 
 #include "relic_dv_low.h"
+
 #include "macro.s"
 
-.global fp2_sqrn_low
-.global fp2_sqrm_low
+.global cdecl(fp2_sqrn_low)
+.global cdecl(fp2_sqrm_low)
 
 /*
- * Function: fp2_mulm_low
+ * Function: fp2_sqrm_low
  * Inputs: rdi = c, rsi = a
- * Output: c = a * b
+ * Output: c = a * a
  */
- fp2_sqrm_low:
+cdecl(fp2_sqrm_low):
 	push %r12
 	push %r13
 	push %r14
@@ -112,7 +113,7 @@
 	pop %r12
 	ret
 
-fp2_sqrn_low:
+cdecl(fp2_sqrn_low):
 	push %r12
 	push %r13
 	push %r14

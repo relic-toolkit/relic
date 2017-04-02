@@ -37,10 +37,6 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-dig_t fp_lsh1_low(dig_t *c, const dig_t *a) {
-	return mpn_lshift(c, a, FP_DIGS, 1);
-}
-
 dig_t fp_lshb_low(dig_t *c, const dig_t *a, int bits) {
 	return mpn_lshift(c, a, FP_DIGS, bits);
 }

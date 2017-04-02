@@ -48,9 +48,13 @@
 #define NP23 $0xDD1A26C000000004
 #define NP24 $0x1291B24120000000
 
+#if defined(__APPLE__)
+#define cdecl(S) _PREFIX(,S)
+#else
+#define cdecl(S) S
+#endif
+
 .text
-.global fp_muln_low		// multiplication
-.global fp_mulm_low		// modular multiplication
 
 .macro ADD1_STEP i, j
 	movq	8*\i(%rsi), %r10

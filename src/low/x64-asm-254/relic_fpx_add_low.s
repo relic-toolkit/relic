@@ -26,27 +26,28 @@
 
 .text
 
-.global fp2_addn_low
-.global fp2_addm_low
-.global fp2_addd_low
-.global fp2_addc_low
-.global fp2_subn_low
-.global fp2_subm_low
-.global fp2_subd_low
-.global fp2_subc_low
-.global fp2_dbln_low
-.global fp2_dblm_low
-.global fp2_norm_low
-.global fp2_nord_low
-.global fp2_norh_low
-.global fp2_hlvm_low
+.global cdecl(fp2_addn_low)
+.global cdecl(fp2_addm_low)
+.global cdecl(fp2_addd_low)
+.global cdecl(fp2_addc_low)
+.global cdecl(fp2_addc_low)
+.global cdecl(fp2_subn_low)
+.global cdecl(fp2_subm_low)
+.global cdecl(fp2_subd_low)
+.global cdecl(fp2_subc_low)
+.global cdecl(fp2_dbln_low)
+.global cdecl(fp2_dblm_low)
+.global cdecl(fp2_norm_low)
+.global cdecl(fp2_nord_low)
+.global cdecl(fp2_norh_low)
+.global cdecl(fp2_hlvm_low)
 
 /*
  * Function: fp2_addn_low
  * Inputs: rdi = c, rsi = a, rdx = b
  * Output: rax
  */
-fp2_addn_low:
+cdecl(fp2_addn_low):
 	movq	0(%rdx), %r8
 	addq	0(%rsi), %r8
 	movq	%r8, 0(%rdi)
@@ -64,7 +65,7 @@ fp2_addn_low:
 
 	ret
 
-fp2_addm_low:
+cdecl(fp2_addm_low):
 	push	%r12
 	push	%r13
 	push	%r14
@@ -143,7 +144,7 @@ fp2_addm_low:
 	pop	%r12
 	ret
 
-fp2_addd_low:
+cdecl(fp2_addd_low):
 	movq	0(%rdx), %r8
 	addq	0(%rsi), %r8
 	movq	%r8, 0(%rdi)
@@ -161,7 +162,7 @@ fp2_addd_low:
 
 	ret
 
-fp2_addc_low:
+cdecl(fp2_addc_low):
 	push    %r12
 	push    %r13
 	push    %r14
@@ -258,7 +259,7 @@ fp2_addc_low:
 	pop	%r12
 	ret
 
-fp2_subn_low:
+cdecl(fp2_subn_low):
 	push	%r12
 	push	%r13
 	movq	0(%rsi), %r8
@@ -327,7 +328,7 @@ fp2_subn_low:
 	pop	%r12
 	ret
 
-fp2_subm_low:
+cdecl(fp2_subm_low):
 	push	%r12
 	push	%r13
 	push	%r14
@@ -399,7 +400,7 @@ fp2_subm_low:
 	pop	%r12
 	ret
 
-fp2_subd_low:
+cdecl(fp2_subd_low):
 	movq	0(%rdx), %r8
 	subq	0(%rsi), %r8
 	movq	%r8, 0(%rdi)
@@ -418,7 +419,7 @@ fp2_subd_low:
 
 	ret
 
-fp2_subc_low:
+cdecl(fp2_subc_low):
 	push	%r12
 	push	%r13
 	push	%r14
@@ -514,7 +515,7 @@ fp2_subc_low:
 	pop	%r12
 	ret
 
-fp2_dbln_low:
+cdecl(fp2_dbln_low):
 	movq	0(%rdx), %r8
 	addq	%r8, %r8
 	movq	%r8, 0(%rdi)
@@ -531,7 +532,7 @@ fp2_dbln_low:
 
 	ret
 
-fp2_dblm_low:
+cdecl(fp2_dblm_low):
 	push	%r12
 	push	%r13
 	push	%r14
@@ -614,7 +615,7 @@ fp2_dblm_low:
 	pop	%r12
 	ret
 
-fp2_norm_low:
+cdecl(fp2_norm_low):
 	push	%r12
 	push	%r13
 	push	%r14
@@ -687,7 +688,7 @@ fp2_norm_low:
 
 	ret
 
-fp2_nord_low:
+cdecl(fp2_nord_low):
 	push	%r12
 	push	%r13
 	push	%r14
@@ -782,7 +783,7 @@ fp2_nord_low:
 
 	ret
 
-fp2_norh_low:
+cdecl(fp2_norh_low):
 	movq    0(%rsi), %r8
 	addq    8*DV_DIGS(%rsi), %r8
 	movq    %r8, 8*DV_DIGS(%rdi)
@@ -846,7 +847,7 @@ fp2_norh_low:
 
 	ret
 
-fp2_hlvm_low:
+cdecl(fp2_hlvm_low):
 	xorq	%rdx, %rdx
 	movq	P0, %r8
 	movq	P1, %r9
