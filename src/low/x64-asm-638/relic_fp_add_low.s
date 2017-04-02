@@ -50,43 +50,43 @@ u0: .quad 0xFAD7AB621D14745D
 
 .text
 
-.global fp_add1_low
-.global fp_addn_low
-.global fp_addm_low
-.global fp_addd_low
-.global fp_addc_low
-.global fp_sub1_low
-.global fp_subn_low
-.global fp_subm_low
-.global fp_subd_low
-.global fp_subc_low
-.global fp_negm_low
-.global fp_dbln_low
-.global fp_dblm_low
-.global fp_hlvm_low
-.global fp_hlvd_low
+.global cdecl(fp_add1_low)
+.global cdecl(fp_addn_low)
+.global cdecl(fp_addm_low)
+.global cdecl(fp_addd_low)
+.global cdecl(fp_addc_low)
+.global cdecl(fp_sub1_low)
+.global cdecl(fp_subn_low)
+.global cdecl(fp_subm_low)
+.global cdecl(fp_subd_low)
+.global cdecl(fp_subc_low)
+.global cdecl(fp_negm_low)
+.global cdecl(fp_dbln_low)
+.global cdecl(fp_dblm_low)
+.global cdecl(fp_hlvm_low)
+.global cdecl(fp_hlvd_low)
 
-fp_add1_low:
+cdecl(fp_add1_low):
 	movq	0(%rsi), %r10
 	addq	%rdx   , %r10
 	movq	%r10   , 0(%rdi)
 
-	ADD1 1 (FP_DIGS - 1)
+	ADD1	1, (FP_DIGS - 1)
 
 	ret
 
-fp_addn_low:
+cdecl(fp_addn_low):
 	movq	0(%rdx), %r11
 	addq	0(%rsi), %r11
 	movq	%r11   , 0(%rdi)
 
-	ADDN 	1 (FP_DIGS - 1)
+	ADDN 	1, (FP_DIGS - 1)
 
 	xorq	%rax, %rax
 
 	ret
 
-fp_addm_low:
+cdecl(fp_addm_low):
 	push	%rbx
 	push	%rbp
 	push	%r12
@@ -189,16 +189,16 @@ fp_addm_low:
 	pop		%rbx
 	ret
 
-fp_addd_low:
+cdecl(fp_addd_low):
 	movq	0(%rdx), %r11
 	addq	0(%rsi), %r11
 	movq	%r11   , 0(%rdi)
 
-	ADDN 	1 (2 * FP_DIGS - 1)
+	ADDN 	1, (2 * FP_DIGS - 1)
 
 	ret
 
-fp_addc_low:
+cdecl(fp_addc_low):
 	push	%rbx
 	push	%rbp
 	push	%r12
@@ -211,7 +211,7 @@ fp_addc_low:
 	addq	0(%rdx), %r8
 	movq	%r8    , 0(%rdi)
 
-	ADDN	1 (FP_DIGS - 1)
+	ADDN	1, (FP_DIGS - 1)
 
 	movq     80(%rsi), %r8
 	adcq     80(%rdx), %r8
@@ -309,28 +309,28 @@ fp_addc_low:
 	pop		%rbx
 	ret
 
-fp_sub1_low:
+cdecl(fp_sub1_low):
 	movq	0(%rsi), %r10
 	subq	%rdx   , %r10
 	movq	%r10   , 0(%rdi)
 
-	SUB1 	1 (FP_DIGS - 1)
+	SUB1 	1, (FP_DIGS - 1)
 
 	ret
 
-fp_subn_low:
+cdecl(fp_subn_low):
 	xorq	%rax   , %rax
 	movq	0(%rsi), %r11
 	subq	0(%rdx), %r11
 	movq	%r11   , 0(%rdi)
 
-	SUBN 1 (FP_DIGS - 1)
+	SUBN 	1, (FP_DIGS - 1)
 
 	adcq	$0, %rax
 
 	ret
 
-fp_subm_low:
+cdecl(fp_subm_low):
 	pushq	%r12
 	pushq	%r13
 	xorq	%rax, %rax
@@ -340,7 +340,7 @@ fp_subm_low:
 	subq	0(%rdx), %r8
 	movq	%r8    , 0(%rdi)
 
-	SUBN	1 (FP_DIGS - 1)
+	SUBN	1, (FP_DIGS - 1)
 
 	movq	$0, %r8
 	movq	$0, %r9
@@ -362,31 +362,31 @@ fp_subm_low:
 	cmovc	p8, %r12
 	cmovc	p9, %r13
 
-    addq	%rax,  0(%rdi)
-    adcq	%rcx,  8(%rdi)
-    adcq	%r8,  16(%rdi)
-    adcq	%r9,  24(%rdi)
-    adcq	%r10, 32(%rdi)
-    adcq	%r11, 40(%rdi)
-    adcq	%rdx, 48(%rdi)
-    adcq	%rsi, 56(%rdi)
-    adcq	%r12, 64(%rdi)
-    adcq	%r13, 72(%rdi)
+	addq	%rax,  0(%rdi)
+	adcq	%rcx,  8(%rdi)
+	adcq	%r8,  16(%rdi)
+	adcq	%r9,  24(%rdi)
+	adcq	%r10, 32(%rdi)
+	adcq	%r11, 40(%rdi)
+	adcq	%rdx, 48(%rdi)
+	adcq	%rsi, 56(%rdi)
+	adcq	%r12, 64(%rdi)
+	adcq	%r13, 72(%rdi)
 
 	pop		%r13
 	pop		%r12
 	ret
 
-fp_subd_low:
+cdecl(fp_subd_low):
 	movq	0(%rsi), %r8
 	subq	0(%rdx), %r8
 	movq	%r8, 0(%rdi)
 
-	SUBN 	1 (2 * FP_DIGS - 1)
+	SUBN 	1, (2 * FP_DIGS - 1)
 
 	ret
 
-fp_subc_low:
+cdecl(fp_subc_low):
 	push	%r12
 	push	%r13
 	xorq    %rax,%rax
@@ -396,7 +396,7 @@ fp_subc_low:
 	subq    0(%rdx), %r8
 	movq    %r8,     0(%rdi)
 
-	SUBN 	1 (2 * FP_DIGS - 1)
+	SUBN 	1, (2 * FP_DIGS - 1)
 
 	movq	$0, %r8
 	movq	$0, %r9
@@ -418,22 +418,22 @@ fp_subc_low:
 	cmovc	p8, %r12
 	cmovc	p9, %r13
 
-    addq	%rax,  80(%rdi)
-    adcq	%rcx,  88(%rdi)
-    adcq	%r8,   96(%rdi)
-    adcq	%r9,  104(%rdi)
-    adcq	%r10, 112(%rdi)
-    adcq	%r11, 120(%rdi)
-    adcq	%rsi, 128(%rdi)
-    adcq	%rdx, 136(%rdi)
-    adcq	%r12, 144(%rdi)
-    adcq	%r13, 152(%rdi)
+	addq	%rax,  80(%rdi)
+	adcq	%rcx,  88(%rdi)
+	adcq	%r8,   96(%rdi)
+	adcq	%r9,  104(%rdi)
+	adcq	%r10, 112(%rdi)
+	adcq	%r11, 120(%rdi)
+	adcq	%rsi, 128(%rdi)
+	adcq	%rdx, 136(%rdi)
+	adcq	%r12, 144(%rdi)
+	adcq	%r13, 152(%rdi)
 
 	pop		%r13
 	pop		%r12
 	ret
 
-fp_negm_low:
+cdecl(fp_negm_low):
 	movq 	P0      , %r8
 	subq 	0(%rsi) , %r8
 	movq 	%r8     , 0(%rdi)
@@ -466,17 +466,17 @@ fp_negm_low:
 	movq 	%r8     , 72(%rdi)
   	ret
 
-fp_dbln_low:
+cdecl(fp_dbln_low):
 	movq	0(%rsi), %r8
 	addq	%r8    , %r8
 	movq	%r8    , 0(%rdi)
 
-	DBLN 1 (FP_DIGS - 1)
+	DBLN 	1, (FP_DIGS - 1)
 
 	xorq	%rax,%rax
 	ret
 
-fp_dblm_low:
+cdecl(fp_dblm_low):
 	push	%rbx
 	push	%rbp
 	push	%r12
@@ -586,7 +586,7 @@ fp_dblm_low:
 	pop		%rbx
 	ret
 
-fp_hlvm_low:
+cdecl(fp_hlvm_low):
 	push	%r12
 	push	%r13
 	push	%r14
@@ -639,7 +639,7 @@ fp_hlvm_low:
 	adcq	%rdx    , %r15
 	movq	64(%rsi), %rdx
 	adcq	%rdx    , %rbp
-	mov		72(%rsi), %rdx
+	mov	72(%rsi), %rdx
 	adcq	%rdx    ,%rbx
 
 	rcrq	$1, %rbx
@@ -666,14 +666,14 @@ fp_hlvm_low:
 	xorq	%rax, %rax
 
 	pop     %rbx
-	pop		%rbp
-	pop		%r15
-	pop		%r14
-	pop		%r13
-	pop		%r12
+	pop	%rbp
+	pop	%r15
+	pop	%r14
+	pop	%r13
+	pop	%r12
 	ret
 
-fp_hlvd_low:
+cdecl(fp_hlvd_low):
 	push	%rbx
 	push	%rbp
 	push	%r12

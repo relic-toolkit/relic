@@ -49,50 +49,56 @@
 #define NP43 $0x6E8D136000000002
 #define NP44 $0x0948D92090000000
 
+#if defined(__APPLE__)
+#define cdecl(S) _PREFIX(,S)
+#else
+#define cdecl(S) S
+#endif
+
 .text
 
-.macro ADD1 i j
+.macro ADD1 i, j
 	movq	8*\i(%rsi), %r10
 	adcq	$0, %r10
 	movq	%r10, 8*\i(%rdi)
 	.if \i - \j
-		ADD1 "(\i + 1)" \j
+		ADD1 "(\i + 1)", \j
 	.endif
 .endm
 
-.macro ADDN i j
+.macro ADDN i, j
 	movq	8*\i(%rdx), %r11
 	adcq	8*\i(%rsi), %r11
 	movq	%r11, 8*\i(%rdi)
 	.if \i - \j
-		ADDN "(\i + 1)" \j
+		ADDN "(\i + 1)", \j
 	.endif
 .endm
 
-.macro SUB1 i j
+.macro SUB1 i, j
 	movq	8*\i(%rsi),%r10
 	sbbq	$0, %r10
 	movq	%r10,8*\i(%rdi)
 	.if \i - \j
-		SUB1 "(\i + 1)" \j
+		SUB1 "(\i + 1)", \j
 	.endif
 .endm
 
-.macro SUBN i j
+.macro SUBN i, j
 	movq	8*\i(%rsi), %r8
 	sbbq	8*\i(%rdx), %r8
 	movq	%r8, 8*\i(%rdi)
 	.if \i - \j
-		SUBN "(\i + 1)" \j
+		SUBN "(\i + 1)", \j
 	.endif
 .endm
 
-.macro DBLN i j
+.macro DBLN i, j
 	movq	8*\i(%rsi), %r8
 	adcq	%r8, %r8
 	movq	%r8, 8*\i(%rdi)
 	.if \i - \j
-		DBLN "(\i + 1)" \j
+		DBLN "(\i + 1)", \j
 	.endif
 .endm
 

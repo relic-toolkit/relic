@@ -47,15 +47,15 @@ u0: .quad 0xFAD7AB621D14745D
 
 .text
 
-.global fp_muln_low
-.global fp_mulm_low
+.global cdecl(fp_muln_low)
+.global cdecl(fp_mulm_low)
 
-fp_muln_low:
+cdecl(fp_muln_low):
 	movq %rdx,%rcx
 	FP_MULN_LOW %rdi, %r8, %r9, %r10, %rsi, %rcx
 	ret
 
-fp_mulm_low:
+cdecl(fp_mulm_low):
 	push	%r12
 	push	%r13
 	push	%r14
