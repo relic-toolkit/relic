@@ -33,7 +33,7 @@
 
 #include "relic_conf.h"
 
-#define PREFIX(F)			_PREFIX(LABEL, F)
+#define PREFIX(F)		_PREFIX(LABEL, F)
 #define _PREFIX(A, B)		__PREFIX(A, B)
 #define __PREFIX(A, B)		A ## _ ## B
 
