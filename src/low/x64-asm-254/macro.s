@@ -52,48 +52,48 @@
 .global fp_muln_low		// multiplication
 .global fp_mulm_low		// modular multiplication
 
-.macro ADD1_STEP i j
+.macro ADD1_STEP i, j
 	movq	8*\i(%rsi), %r10
 	adcq	$0, %r10
 	movq	%r10, 8*\i(%rdi)
 	.if \i - \j
-		ADD1_STEP "(\i + 1)" \j
+		ADD1_STEP "(\i + 1)", \j
 	.endif
 .endm
 
-.macro ADDN_STEP i j
+.macro ADDN_STEP i, j
 	movq	8*\i(%rdx), %r11
 	adcq	8*\i(%rsi), %r11
 	movq	%r11, 8*\i(%rdi)
 	.if \i - \j
-		ADDN_STEP "(\i + 1)" \j
+		ADDN_STEP "(\i + 1)", \j
 	.endif
 .endm
 
-.macro SUB1_STEP i j
+.macro SUB1_STEP i, j
 	movq	8*\i(%rsi),%r10
 	sbbq	$0, %r10
 	movq	%r10,8*\i(%rdi)
 	.if \i - \j
-		SUB1_STEP "(\i + 1)" \j
+		SUB1_STEP "(\i + 1)", \j
 	.endif
 .endm
 
-.macro SUBN_STEP i j
+.macro SUBN_STEP i, j
 	movq	8*\i(%rsi), %r8
 	sbbq	8*\i(%rdx), %r8
 	movq	%r8, 8*\i(%rdi)
 	.if \i - \j
-		SUBN_STEP "(\i + 1)" \j
+		SUBN_STEP "(\i + 1)", \j
 	.endif
 .endm
 
-.macro DBLN_STEP i j
+.macro DBLN_STEP i, j
 	movq	8*\i(%rsi), %r8
 	adcq	%r8, %r8
 	movq	%r8, 8*\i(%rdi)
 	.if \i - \j
-		DBLN_STEP "(\i + 1)" \j
+		DBLN_STEP "(\i + 1)", \j
 	.endif
 .endm
 

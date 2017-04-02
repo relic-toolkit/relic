@@ -60,7 +60,7 @@ fp_add1_low:
 	addq	%rdx, %r10
 	movq	%r10, 0(%rdi)
 
-	ADD1_STEP 1 (FP_DIGS - 1)
+	ADD1_STEP 1, (FP_DIGS - 1)
 
 	ret
 
@@ -74,7 +74,7 @@ fp_addn_low:
 	addq	0(%rsi), %r11
 	movq	%r11, 0(%rdi)
 
-	ADDN_STEP 1 (FP_DIGS - 1)
+	ADDN_STEP 1, (FP_DIGS - 1)
 
 	xorq	%rax, %rax
 
@@ -129,7 +129,7 @@ fp_addd_low:
 	addq	0(%rsi), %r11
 	movq	%r11, 0(%rdi)
 
-	ADDN_STEP 1 (2 * FP_DIGS - 1)
+	ADDN_STEP 1, (2 * FP_DIGS - 1)
 
 	ret
 
@@ -194,7 +194,7 @@ fp_sub1_low:
 	subq	%rdx, %r10
 	movq	%r10,0(%rdi)
 
-	SUB1_STEP 1 (FP_DIGS - 1)
+	SUB1_STEP 1, (FP_DIGS - 1)
 
 	ret
 
@@ -209,7 +209,7 @@ fp_subn_low:
 	subq	0(%rdx), %r11
 	movq	%r11, 0(%rdi)
 
-	SUBN_STEP 1 (FP_DIGS - 1)
+	SUBN_STEP 1, (FP_DIGS - 1)
 
 	adcq	$0, %rax
 
@@ -242,10 +242,10 @@ fp_subm_low:
 	cmovc	%r9, %rcx
 	cmovc	%r10, %rdx
 	cmovc	%r11, %rsi
-    addq	%rax,0(%rdi)
-    adcq	%rcx,8(%rdi)
-    adcq	%rdx,16(%rdi)
-    adcq	%rsi,24(%rdi)
+	addq	%rax,0(%rdi)
+	adcq	%rcx,8(%rdi)
+	adcq	%rdx,16(%rdi)
+	adcq	%rsi,24(%rdi)
 	ret
 
 fp_subc_low:
@@ -255,18 +255,18 @@ fp_subc_low:
 	subq    0(%rdx), %r8
 	movq    %r8, 0(%rdi)
 
-	SUBN_STEP 1 (2 * FP_DIGS - 1)
+	SUBN_STEP 1, (2 * FP_DIGS - 1)
 
 	movq	$0, %rsi
 	movq	$0, %rdx
 	movq    P0,%r8
-    movq    P1,%r9
-    movq    P2,%r10
-    movq    P3,%r11
-    cmovc   %r8, %rax
-    cmovc   %r9, %rsi
-    cmovc   %r10, %rcx
-    cmovc   %r11, %rdx
+	movq    P1,%r9
+	movq    P2,%r10
+	movq    P3,%r11
+	cmovc   %r8, %rax
+	cmovc   %r9, %rsi
+	cmovc   %r10, %rcx
+	cmovc   %r11, %rdx
 	addq    %rax,32(%rdi)
 	adcq    %rsi,40(%rdi)
 	adcq    %rcx,48(%rdi)
@@ -279,7 +279,7 @@ fp_subd_low:
 	subq	0(%rdx), %r8
 	movq	%r8, 0(%rdi)
 
-	SUBN_STEP 1 (2 * FP_DIGS - 1)
+	SUBN_STEP 1, (2 * FP_DIGS - 1)
 
 	ret
 
@@ -303,7 +303,7 @@ fp_dbln_low:
 	addq	%r8, %r8
 	movq	%r8, 0(%rdi)
 
-	DBLN_STEP 1 (FP_DIGS - 1)
+	DBLN_STEP 1, (FP_DIGS - 1)
 
 	xorq	%rax,%rax
 	ret
@@ -320,7 +320,7 @@ fp_dblm_low:
 	adcq	%r10, %r10
 	movq	24(%rsi), %r11
 	adcq	%r11, %r11
-    adcq	%rax,%rax
+	adcq	%rax,%rax
 
 	movq 	%r8, %rax
 	movq 	%r9, %rcx
@@ -370,13 +370,13 @@ fp_hlvm_low:
 	movq	24(%rsi), %rdx
 	adcq	%rdx, %r11
 
-    shrd    $1, %r9, %r8
+	shrd    $1, %r9, %r8
   	movq 	%r8,0(%rdi)
-    shrd    $1, %r10, %r9
+	shrd    $1, %r10, %r9
   	movq 	%r9,8(%rdi)
-    shrd    $1, %r11, %r10
+	shrd    $1, %r11, %r10
   	movq 	%r10,16(%rdi)
-    shr     $1, %r11
+	shr     $1, %r11
   	movq 	%r11,24(%rdi)
 	ret
 

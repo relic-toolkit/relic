@@ -51,7 +51,7 @@ fp2_addn_low:
 	addq	0(%rsi), %r8
 	movq	%r8, 0(%rdi)
 
-	ADDN_STEP 1 (FP_DIGS - 1)
+	ADDN_STEP 1, (FP_DIGS - 1)
 
 	addq	$(8*FP_DIGS), %rdx
 	addq	$(8*FP_DIGS), %rsi
@@ -60,7 +60,7 @@ fp2_addn_low:
 	addq	0(%rsi), %r8
 	movq	%r8, 0(%rdi)
 
-	ADDN_STEP 1 (FP_DIGS - 1)
+	ADDN_STEP 1, (FP_DIGS - 1)
 
 	ret
 
@@ -148,7 +148,7 @@ fp2_addd_low:
 	addq	0(%rsi), %r8
 	movq	%r8, 0(%rdi)
 
-	ADDN_STEP 1 (2 * FP_DIGS - 1)
+	ADDN_STEP 1, (2 * FP_DIGS - 1)
 
 	addq	$(8*DV_DIGS), %rdx
 	addq	$(8*DV_DIGS), %rsi
@@ -157,7 +157,7 @@ fp2_addd_low:
 	addq	0(%rsi), %r8
 	movq	%r8, 0(%rdi)
 
-	ADDN_STEP 1 (2 * FP_DIGS - 1)
+	ADDN_STEP 1, (2 * FP_DIGS - 1)
 
 	ret
 
@@ -404,7 +404,7 @@ fp2_subd_low:
 	subq	0(%rsi), %r8
 	movq	%r8, 0(%rdi)
 
-	SUBN_STEP 1 (2 * FP_DIGS - 1)
+	SUBN_STEP 1, (2 * FP_DIGS - 1)
 
 	addq	$(8*DV_DIGS), %rdx
 	addq	$(8*DV_DIGS), %rsi
@@ -414,7 +414,7 @@ fp2_subd_low:
 	addq	0(%rsi), %r8
 	movq	%r8, 0(%rdi)
 
-	SUBN_STEP 1 (2 * FP_DIGS - 1)
+	SUBN_STEP 1, (2 * FP_DIGS - 1)
 
 	ret
 
@@ -519,7 +519,7 @@ fp2_dbln_low:
 	addq	%r8, %r8
 	movq	%r8, 0(%rdi)
 
-	DBLN_STEP 1 (FP_DIGS - 1)
+	DBLN_STEP 1, (FP_DIGS - 1)
 
 	addq	$(8*FP_DIGS), %rsi
 	addq	$(8*FP_DIGS), %rdi
@@ -527,7 +527,7 @@ fp2_dbln_low:
 	addq	%r8, %r8
 	movq	%r8, 0(%rdi)
 
-	DBLN_STEP 1 (FP_DIGS - 1)
+	DBLN_STEP 1, (FP_DIGS - 1)
 
 	ret
 
