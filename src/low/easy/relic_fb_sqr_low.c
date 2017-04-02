@@ -156,7 +156,7 @@ void fb_sqrl_low(dig_t *c, const dig_t *a) {
 }
 
 void fb_sqrm_low(dig_t *c, const dig_t *a) {
-	dig_t relic_align t[2 * FB_DIGS];
+	relic_align dig_t t[2 * FB_DIGS];
 
 	fb_sqrl_low(t, a);
 	fb_rdc(c, t);

@@ -215,7 +215,7 @@ void fb_muld_low(dig_t *c, const dig_t *a, const dig_t *b, int size) {
 }
 
 void fb_mulm_low(dig_t *c, const dig_t *a, const dig_t *b) {
-	dig_t relic_align t[2 * FB_DIGS];
+	relic_align dig_t t[2 * FB_DIGS];
 
 	fb_muln_low(t, a, b);
 	fb_rdc(c, t);
