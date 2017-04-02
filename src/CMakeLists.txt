@@ -1,8 +1,12 @@
 string(TOLOWER ${ARITH} ARITH_PATH)
-
 if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/low/${ARITH_PATH}/CMakeLists.txt")
 	include("${CMAKE_CURRENT_SOURCE_DIR}/low/${ARITH_PATH}/CMakeLists.txt")
 endif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/low/${ARITH_PATH}/CMakeLists.txt")
+
+if (NOT INHERIT)
+	set(INHERIT "easy")
+endif(NOT INHERIT)
+string(TOLOWER ${INHERIT} INHERIT_PATH)
 
 set(CORE_SRCS relic_err.c relic_core.c relic_conf.c relic_pool.c relic_util.c)
 
@@ -149,8 +153,13 @@ foreach(SRC ${LOW_SRCS})
 	if (EXISTS "${FILE}.s")
 		list(APPEND ARITH_ASMS "${FILE}.s")
 	endif(EXISTS "${FILE}.s")
-	if(NOT EXISTS "${FILE}.c" AND NOT EXISTS "${FILE}.s")
-		list(APPEND ARITH_SRCS "low/easy/${SRC}.c")
+	if (NOT EXISTS "${FILE}.c" AND NOT EXISTS "${FILE}.s")
+		if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/low/${INHERIT_PATH}/${SRC}.c")
+		message(STATUS "${INHERIT}")
+			list(APPEND ARITH_SRCS "low/${INHERIT_PATH}/${SRC}.c")
+		else(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/low/${INHERIT_PATH}/${SRC}.c")
+			list(APPEND ARITH_SRCS "low/easy/${SRC}.c")
+		endif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/low/${INHERIT_PATH}/${SRC}.c")
 	endif(NOT EXISTS "${FILE}.c" AND NOT EXISTS "${FILE}.s")
 endforeach(SRC)
 
