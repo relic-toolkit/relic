@@ -51,7 +51,7 @@ void fb_mulh_low(dig_t *c, const dig_t *a) {
 	__m128i m0, m1, m2, m3, m8, m9, t0, t1;
 	uint8_t ta;
 	int j;
-	align dig_t x[2];
+	relic_align dig_t x[2];
 	dig_t *tab;
 
 #define LSHIFT8(m2,m1,m0)\
@@ -118,7 +118,7 @@ void fb_mulh_low(dig_t *c, const dig_t *a) {
 
 	m1 = XOR(m1, m4);
 
-	align dig_t _x[2];
+	relic_align dig_t _x[2];
 
 	RED251(m2,m1,m0);													\
 	m8 = _mm_srli_si128(m1,8);											\
@@ -144,8 +144,8 @@ void fb_mulh_low(dig_t *c, const dig_t *a) {
 
 void fb_srtn_low(dig_t *c, const dig_t *a) {
 	__m128i m0, m1, m2, perm, mask0, mask1, sqrt0, sqrt1;
-	align dig_t x[2], d0, d1;
-	align dig_t t_e[FB_DIGS] = {0}, t_o[FB_DIGS] = {0};
+	relic_align dig_t x[2], d0, d1;
+	relic_align dig_t t_e[FB_DIGS] = {0}, t_o[FB_DIGS] = {0};
 	int i, n;
 
 	//sqrt1 = sqrt0<<2
