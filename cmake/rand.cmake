@@ -16,5 +16,10 @@ message("   SEED=ZERO      Use a zero seed. (insecure!)\n")
 # Choose the pseudo-random number generator.
 set(RAND "HASH" CACHE STRING "Pseudo-random number generator")
 
+if (MSVC)
+# Choose the pseudo-random number generator.
+set(SEED "WCGR" CACHE STRING "Random number generator seeder")
+else(MSVC)
 # Choose the pseudo-random number generator.
 set(SEED "UDEV" CACHE STRING "Random number generator seeder")
+endif(MSVC)
