@@ -52,8 +52,14 @@
 #undef WORD
 #undef DOUBLE
 
+/* Windows uses FIXED, temporarily remove it */
+#pragma push_macro("FIXED")
+#undef FIXED
+
 #include <windows.h>
 #include <Wincrypt.h>
+
+#pragma pop_macro("FIXED")
 
 #elif SEED == RDRND
 
