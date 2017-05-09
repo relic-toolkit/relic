@@ -54,7 +54,7 @@ void md_hmac(uint8_t *mac, const uint8_t *in, int in_len, const uint8_t *key,
 		key = _key;
 		key_len = MD_LEN;
 	}
-	if (key_len < block_size) {
+	if (key_len <= block_size) {
 		memcpy(_key, key, key_len);
 		memset(_key + key_len, 0, block_size - key_len);
 		key = _key;
