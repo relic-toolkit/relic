@@ -69,7 +69,10 @@ int cp_ecies_enc(ec_t r, uint8_t *out, int *out_len, uint8_t *in, int in_len,
 	bn_t k, n, x;
 	ec_t p;
 	int l, result = STS_OK, size = CEIL(ec_param_level(), 8);
-	uint8_t _x[FC_BYTES + 1], key[2 * size], iv[BC_LEN] = { 0 };
+	uint8_t
+		*_x = malloc(FC_BYTES + 1),
+		*key = malloc(2 * size),
+		*iv = calloc(1,BC_LEN);// = { 0 };
 
 	bn_null(k);
 	bn_null(n);
@@ -112,6 +115,9 @@ int cp_ecies_enc(ec_t r, uint8_t *out, int *out_len, uint8_t *in, int in_len,
 		bn_free(n);
 		bn_free(x);
 		ec_free(p);
+		free(_x   );
+		free(key  );
+		free(iv   );
 	}
 
 	return result;
@@ -122,7 +128,11 @@ int cp_ecies_dec(uint8_t *out, int *out_len, ec_t r, uint8_t *in, int in_len,
 	ec_t p;
 	bn_t x;
 	int l, result = STS_OK, size = CEIL(ec_param_level(), 8);
-	uint8_t _x[FC_BYTES + 1], h[MD_LEN], key[2 * size], iv[BC_LEN] = { 0 };
+	uint8_t
+		* _x = malloc(FC_BYTES + 1),
+		*h   = malloc(MD_LEN),
+		*key = malloc(2 * size),
+		*iv  = calloc(1, BC_LEN);// = { 0 };
 
 	bn_null(x);
 	ec_null(p);
@@ -156,6 +166,10 @@ int cp_ecies_dec(uint8_t *out, int *out_len, ec_t r, uint8_t *in, int in_len,
 	FINALLY {
 		bn_free(x);
 		ec_free(p);
+		free( _x);
+		free(h  );
+		free(key);
+		free(iv );
 	}
 
 	return result;

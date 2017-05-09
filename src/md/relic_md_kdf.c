@@ -42,8 +42,8 @@
 void md_kdf1(uint8_t *key, int key_len, const uint8_t *in,
 		int in_len) {
 	uint32_t i, j, d;
-	uint8_t buffer[in_len + sizeof(uint32_t)];
-	uint8_t t[key_len + MD_LEN];
+	uint8_t *buffer = malloc(in_len + sizeof(uint32_t));
+	uint8_t *t = malloc( key_len + MD_LEN);
 
 	/* d = ceil(kLen/hLen). */
 	d = CEIL(key_len, MD_LEN);
@@ -56,13 +56,16 @@ void md_kdf1(uint8_t *key, int key_len, const uint8_t *in,
 		md_map(t + i * MD_LEN, buffer, in_len + sizeof(uint32_t));
 	}
 	memcpy(key, t, key_len);
+
+	free(buffer);
+	free(t);
 }
 
 void md_kdf2(uint8_t *key, int key_len, const uint8_t *in,
 		int in_len) {
 	uint32_t i, j, d;
-	uint8_t buffer[in_len + sizeof(uint32_t)];
-	uint8_t t[key_len + MD_LEN];
+	uint8_t *buffer = malloc(in_len + sizeof(uint32_t));
+	uint8_t *t = malloc(key_len + MD_LEN);
 
 	/* d = ceil(kLen/hLen). */
 	d = CEIL(key_len, MD_LEN);
@@ -75,4 +78,7 @@ void md_kdf2(uint8_t *key, int key_len, const uint8_t *in,
 		md_map(t + (i - 1) * MD_LEN, buffer, in_len + sizeof(uint32_t));
 	}
 	memcpy(key, t, key_len);
+
+	free(buffer);
+	free(t);
 }

@@ -328,7 +328,9 @@ uint8_t result2[] = {
 
 static int test(void) {
 	int i, len = 2 * MD_LEN, size = (RAND_SIZE - 1) / 2, code = STS_ERR;
-	uint8_t out[len], seed2[size], seed3[size];
+	uint8_t *out = malloc(len),
+		* seed2 = malloc(size), 
+		* seed3 = malloc(size);
 
 	for (i = 0; i < (RAND_SIZE - 1) / 2; i++) {
 		seed1[i] = i;
@@ -352,10 +354,10 @@ static int test(void) {
 	TEST_ONCE("hash-dbrg (" FUNCTION ") reseeding is correct") {
 		rand_clean();
 		rand_seed(seed1, sizeof(seed1));
-		rand_seed(seed2, sizeof(seed2));
+		rand_seed(seed2, size);
 		rand_bytes(out, len);
 		TEST_ASSERT(memcmp(out, result2, len) == 0, end);
-		rand_seed(seed3, sizeof(seed3));
+		rand_seed(seed3, size);
 		rand_bytes(out, len);
 		TEST_ASSERT(memcmp(out, result2 + len, len) == 0, end);
 	}
@@ -363,7 +365,11 @@ static int test(void) {
 
 	code = STS_OK;
 
-  end:
+end:
+
+	free(out);
+	free(seed2);
+	free(seed3); 
 	return code;
 }
 

@@ -318,7 +318,8 @@ void eb_mul_sim_trick(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 	eb_t t0[1 << (EB_WIDTH / 2)], t1[1 << (EB_WIDTH / 2)], t[1 << EB_WIDTH];
 	bn_t n;
 	int i, l0, l1, w = EB_WIDTH / 2;
-	uint8_t w0[CEIL(FB_BITS, w)], w1[CEIL(FB_BITS, w)];
+	uint8_t *w0 = malloc(CEIL(FB_BITS, w)), 
+		* w1 = malloc(CEIL(FB_BITS, w));
 
 	bn_null(n);
 
@@ -405,6 +406,8 @@ void eb_mul_sim_trick(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 		for (i =  0; i < (1 << EB_WIDTH); i++) {
 			eb_free(t[i]);
 		}
+		free(w0);
+		free(w1);
 	}
 }
 #endif

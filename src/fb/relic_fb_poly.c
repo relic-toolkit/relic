@@ -266,7 +266,7 @@ static void find_chain() {
 			break;
 	}
 
-	int x, y, u[ctx->chain_len + 1];
+	int x, y, *u = malloc(sizeof(int) * (ctx->chain_len + 1));
 
 	for (i = 0; i < MAX_TERMS; i++) {
 		for (j = 0; j < RELIC_FB_TABLE; j++) {
@@ -289,6 +289,7 @@ static void find_chain() {
 	for (i = 0; i <= ctx->chain_len; i++) {
 		fb_itr_pre((fb_t *)fb_poly_tab_sqr(i), u[i]);
 	}
+	free(u);
 }
 
 #endif

@@ -489,7 +489,7 @@ void fp12_exp_cyc(fp12_t c, fp12_t a, bn_t b) {
 			}
 		}
 	} else {
-		fp12_t t, u[w];
+		fp12_t t, *u = malloc(sizeof(fp12_t) * w);
 
 		fp12_null(t);
 
@@ -537,13 +537,14 @@ void fp12_exp_cyc(fp12_t c, fp12_t a, bn_t b) {
 				fp12_free(u[i]);
 			}
 			fp12_free(t);
+			free(u);
 		}
 	}
 }
 
 void fp12_exp_cyc_sps(fp12_t c, fp12_t a, int *b, int len) {
 	int i, j, k, w = len;
-	fp12_t t, u[w];
+	fp12_t t, *u = malloc(sizeof(fp12_t) * w);
 
 	if (len == 0) {
 		fp12_set_dig(c, 1);
@@ -747,11 +748,14 @@ void fp12_back_cyc(fp12_t c, fp12_t a) {
 }
 
 void fp12_back_cyc_sim(fp12_t c[], fp12_t a[], int n) {
-	fp2_t t0[n], t1[n], t2[n];
-
+	
 	if (n == 0) {
 		return;
 	}
+	
+	fp2_t* t0 = malloc(sizeof(fp2_t) * n),
+		 * t1 = malloc(sizeof(fp2_t) * n), 
+		 * t2 = malloc(sizeof(fp2_t) * n);
 
 	for (int i = 0; i < n; i++) {
 		fp2_null(t0[i]);
@@ -816,6 +820,9 @@ void fp12_back_cyc_sim(fp12_t c[], fp12_t a[], int n) {
 			fp2_free(t1[i]);
 			fp2_free(t2[i]);
 		}
+		free(t0);
+		free(t1);
+		free(t2);
 	}
 }
 
@@ -896,7 +903,7 @@ void fp18_exp_cyc(fp18_t c, fp18_t a, bn_t b) {
 			fp18_free(t);
 		}
 	} else {
-		fp18_t u[w];
+		fp18_t *u = malloc(sizeof(fp18_t) * w);
 
 		TRY {
 			for (i = 0; i < w; i++) {
@@ -942,13 +949,14 @@ void fp18_exp_cyc(fp18_t c, fp18_t a, bn_t b) {
 				fp18_free(u[i]);
 			}
 			fp18_free(t);
+			free(u);
 		}
 	}
 }
 
 void fp18_exp_cyc_sps(fp18_t c, fp18_t a, int *b, int len) {
 	int i, j, k, w = len;
-	fp18_t t, u[w];
+	fp18_t t, *u = malloc(sizeof(fp18_t) * w);
 
 	if (len == 0) {
 		fp12_set_dig(c, 1);
@@ -1012,6 +1020,7 @@ void fp18_exp_cyc_sps(fp18_t c, fp18_t a, int *b, int len) {
 			fp18_free(u[i]);
 		}
 		fp18_free(t);
+		free(u);
 	}
 }
 
@@ -1181,7 +1190,13 @@ void fp18_back_cyc(fp18_t c, fp18_t a) {
 }
 
 void fp18_back_cyc_sim(fp18_t c[], fp18_t a[], int n) {
-	fp3_t t0[n], t1[n], t2[n], t3[n], t4[n], t5[n], t6[n];
+	fp3_t *t0 = malloc(sizeof(fp3_t) * n),
+		  *t1 = malloc(sizeof(fp3_t) * n),
+		  *t2 = malloc(sizeof(fp3_t) * n),
+		  *t3 = malloc(sizeof(fp3_t) * n),
+		  *t4 = malloc(sizeof(fp3_t) * n),
+		  *t5 = malloc(sizeof(fp3_t) * n),
+		  *t6 = malloc(sizeof(fp3_t) * n);
 
 	if (n == 0) {
 		return;
@@ -1280,6 +1295,14 @@ void fp18_back_cyc_sim(fp18_t c[], fp18_t a[], int n) {
 			fp3_free(t4[i]);
 			fp3_free(t5[i]);
 			fp3_free(t6[i]);
+
+			free(t0);
+			free(t1);
+			free(t2);
+			free(t3);
+			free(t4);
+			free(t5);
+			free(t6);
 		}
 	}
 }

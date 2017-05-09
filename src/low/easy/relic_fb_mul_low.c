@@ -148,7 +148,12 @@ void fb_muln_low(dig_t *c, const dig_t *a, const dig_t *b) {
 }
 
 void fb_muld_low(dig_t *c, const dig_t *a, const dig_t *b, int size) {
-	relic_align dig_t t[16][size + 1];
+	relic_align dig_t* t[16];
+	dig_t *tt = malloc(sizeof(dig_t) * (size + 1) * 16);
+	for (int i = 0; i < 16; ++i) {
+		t[i] = tt + i * (size + 1);
+	}
+
 	dig_t u, r0, r1, r2, r4, r8, *tmpc;
 	const dig_t *tmpa;
 	int i, j;
@@ -212,6 +217,8 @@ void fb_muld_low(dig_t *c, const dig_t *a, const dig_t *b, int size) {
 		u = *a & 0x0F;
 		fb_addd_low(c, c, t[u], size + 1);
 	}
+
+	free(tt); 
 }
 
 void fb_mulm_low(dig_t *c, const dig_t *a, const dig_t *b) {

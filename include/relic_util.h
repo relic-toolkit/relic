@@ -139,12 +139,19 @@
 /** @} */
 
 /**
+  *  Indirection to help expand __VA_ARGS__ on the VS compiler
+  */
+ /** @{ */
+#define EXPAND( A ) A
+/** @} */
+
+/**
  * Selects a basic or advanced version of a function by checking if an
  * additional argument was passed.
  */
 /** @{ */
 #define OPT(...)				_OPT(__VA_ARGS__, _imp, _basic, _error)
-#define _OPT(...)				__OPT(__VA_ARGS__)
+#define _OPT(...)				EXPAND( __OPT(__VA_ARGS__) )
 #define __OPT(_1, _2, N, ...)	N
 /** @} */
 

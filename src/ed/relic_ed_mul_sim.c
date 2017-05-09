@@ -393,7 +393,8 @@ void ed_mul_sim_trick(ed_t r, const ed_t p, const bn_t k, const ed_t q,
 	ed_t t0[1 << (ED_WIDTH / 2)], t1[1 << (ED_WIDTH / 2)], t[1 << ED_WIDTH];
 	bn_t n;
 	int l0, l1, w = ED_WIDTH / 2;
-	uint8_t w0[CEIL(FP_BITS + 1, w)], w1[CEIL(FP_BITS + 1, w)];
+	uint8_t* w0 = malloc(CEIL(FP_BITS + 1, w)), 
+		* w1 = malloc(CEIL(FP_BITS + 1, w));
 
 	bn_null(n);
 
@@ -470,6 +471,8 @@ void ed_mul_sim_trick(ed_t r, const ed_t p, const bn_t k, const ed_t q,
 		for (int i = 0; i < (1 << ED_WIDTH); i++) {
 			ed_free(t[i]);
 		}
+		free(w0);
+		free(w1);
 	}
 }
 #endif

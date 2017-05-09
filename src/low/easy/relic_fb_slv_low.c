@@ -82,7 +82,7 @@ void fb_slvn_low(dig_t *c, const dig_t *a) {
 	}
 
 	for (i = 0; i < k; i++) {
-		p = (dig_t *)(tab + (16 * i + v[i]) * sizeof(fb_st));
+		p = (dig_t *)((fb_st*)tab + (16 * i + v[i]));
 		fb_add(s, s, p);
 	}
 

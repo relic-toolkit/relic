@@ -913,9 +913,9 @@ void eb_mul_halve(eb_t r, const eb_t p, const bn_t k) {
 		/* Convert k to alternate representation k' = (2^{t-1}k mod n). */
 		eb_curve_get_ord(n);
 		bn_lsh(m, k, bn_bits(n) - 1);
-		bn_mod(m, m, n);
+		bn_mod(m, m, n); 
 
-		/* Compute the w-NAF representation of k'. */
+		/* Compute the w-NAF representation of k'. */ 
 		l = sizeof(naf);
 		bn_rec_naf(naf, &l, m, EB_WIDTH);
 
