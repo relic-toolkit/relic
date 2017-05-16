@@ -337,6 +337,12 @@ else(DEBUG)
 	set(DFLAGS "")
 endif(DEBUG)
 
+if(MSVC)
+	# If on Visual Studio, Link the static c runtime
+	set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} /MT")
+	set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} /MTd")
+endif(MSVC)
+
 if(MULTI STREQUAL OPENMP)
 	find_package(OpenMP REQUIRED)
 	set(CFLAGS "${CFLAGS} -fopenmp")
