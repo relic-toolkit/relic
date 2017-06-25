@@ -47,15 +47,14 @@ void md_hmac(uint8_t *mac, const uint8_t *in, int in_len, const uint8_t *key,
 	int block_size = 128;
 #endif
 	uint8_t opad[block_size + MD_LEN], ipad[block_size + in_len];
+	uint8_t _key[MAX(MD_LEN, block_size)];
 
 	if (key_len > block_size) {
-		uint8_t _key[MD_LEN];
 		md_map(_key, key, key_len);
 		key = _key;
 		key_len = MD_LEN;
 	}
-	if (key_len < block_size) {
-		uint8_t _key[block_size];
+	if (key_len <= block_size) {
 		memcpy(_key, key, key_len);
 		memset(_key + key_len, 0, block_size - key_len);
 		key = _key;

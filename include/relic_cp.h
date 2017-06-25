@@ -854,7 +854,6 @@ typedef vbnn_ibs_user_st *vbnn_ibs_user_t;
 	if (A != NULL) {														\
 		ec_free((A)->mpk);													\
 		bn_free((A)->msk);													\
-		free(A);															\
 		A = NULL;															\
 	}																		\
 
@@ -939,7 +938,6 @@ typedef vbnn_ibs_user_st *vbnn_ibs_user_t;
 	if (A != NULL) {														\
 		ec_free((A)->R);													\
 		bn_free((A)->s);													\
-		free(A);															\
 		A = NULL;															\
 	}																		\
 

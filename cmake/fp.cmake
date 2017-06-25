@@ -33,7 +33,7 @@ message("      FP_METHD=MONTY    Montgomery modular reduction.\n")
 message("      Field inversion")
 message("      FP_METHD=BASIC    Inversion by Fermat's Little Theorem.")
 message("      FP_METHD=BINAR    Binary Inversion algorithm.")
-message("      FP_METHD=MONTY    Mntgomery inversion.")
+message("      FP_METHD=MONTY    Montgomery inversion.")
 message("      FP_METHD=EXGCD    Inversion by the Extended Euclidean algorithm.")
 message("      FP_METHD=LOWER    Pass inversion to the lower level.\n")
 

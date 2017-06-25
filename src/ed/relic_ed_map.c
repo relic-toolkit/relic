@@ -128,7 +128,9 @@ void ed_map(ed_t p, const uint8_t *msg, int len) {
 		THROW(ERR_CAUGHT);
 	}
 	FINALLY {
-		bn_free(k);
+		bn_free(h);
 		fp_free(t);
+		fp_free(u);
+		fp_free(v);
 	}
 }
