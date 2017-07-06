@@ -43,7 +43,7 @@ Starting from version 0.3.3, static linking and changes in the configuration or 
 
 ### Build instructions
 
-Instructions for building the library can be found in the [Wiki](https://github.com/relic-toolkit/relic/wiki/Bulding).
+Instructions for building the library can be found in the [Wiki](https://github.com/relic-toolkit/relic/wiki/Building).
 
 ### Donations
 
