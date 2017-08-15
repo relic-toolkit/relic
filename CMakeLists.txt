@@ -5,6 +5,15 @@ endif()
 
 project(RELIC C CXX)
 
+include(CheckFunctionExists)
+include(CheckIncludeFiles)
+# test for headers
+CHECK_INCLUDE_FILES (execinfo.h HAVE_EXECINFO_H)
+
+# test for functions
+CHECK_FUNCTION_EXISTS (backtrace HAVE_BACKTRACE)
+CHECK_FUNCTION_EXISTS (backtrace_symbols HAVE_BACKTRACE_SYMBOLS)
+
 set(PROJECT_VERSION_MAJOR "0")
 set(PROJECT_VERSION_MINOR "4")
 set(PROJECT_VERSION_PATCH "1")
