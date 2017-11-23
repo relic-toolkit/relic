@@ -2,7 +2,7 @@
 
 export XCODE_BASE=/Applications/Xcode.app/Contents
 export SIMULATOR_BASEiOS=$XCODE_BASE/Developer/Platforms/iPhoneOS.platform
-export FRAMEWORKSiOS=$SIMULATOR_BASEiOS/Developer/SDKs/iPhoneOS11.0.sdk/System/Library/Frameworks/
+export FRAMEWORKSiOS=$SIMULATOR_BASEiOS/Developer/SDKs/iPhoneOS.sdk/System/Library/Frameworks/
 export ARCHFLAGS="-arch arm64 "
 export VERFLAGS="-mios-simulator-version-min=11.0"
 
