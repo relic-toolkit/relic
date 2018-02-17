@@ -1,21 +1,13 @@
 #!/bin/bash 
 
-export NDK=/opt/android-ndk
-SYSROOT=$NDK/platforms/android-18/arch-arm
+# First run /opt/android-ndk/build/tools/make-standalone-toolchain.sh --platform=android-18 --install-dir=/tmp/android-test/
 
-MIDDLE=toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin/
+ROOT=/tmp/android-test
+export NDK=/opt/android-ndk
+SYSROOT=$ROOT/sysroot
+
 PREF=arm-linux-androideabi-
 
-export CC="$NDK/$MIDDLE/${PREF}gcc  --sysroot=$SYSROOT"
-export CXX="$NDK/$MIDDLE/${PREF}g++  --sysroot=$SYSROOT"
-export LD="$NDK/$MIDDLE/${PREF}ld  --sysroot=$SYSROOT"
-export CPP="$NDK/$MIDDLE/${PREF}cpp  --sysroot=$SYSROOT"
-export AS="$NDK/$MIDDLE/${PREF}as  --sysroot=$SYSROOT"
-export OBJCOPY="$NDK/$MIDDLE/${PREF}objcopy  --sysroot=$SYSROOT"
-export OBJDUMP="$NDK/$MIDDLE/${PREF}objdump  --sysroot=$SYSROOT"
-export STRIP="$NDK/$MIDDLE/${PREF}strip  --sysroot=$SYSROOT"
-export RANLIB="$NDK/$MIDDLE/${PREF}ranlib  --sysroot=$SYSROOT"
-export CCLD="$NDK/$MIDDLE/${PREF}gcc  --sysroot=$SYSROOT"
-export AR="$NDK/$MIDDLE/${PREF}ar  --sysroot=$SYSROOT"
+export CC="$ROOT/bin/${PREF}gcc --sysroot=$SYSROOT"
 
-cmake -DWITH="DV;BN;MD;FP;EP;FPX;EPX;PP;PC;CP" -DCHECK=off -DARITH=arm-asm-254 -DARCH=ARM -DCOLOR=off -DOPSYS=DROID -DFP_PRIME=254 -DFP_QNRES=on -DFP_METHD="INTEG;INTEG;INTEG;MONTY;EXGCD;SLIDE" -DFPX_METHD="INTEG;INTEG;LAZYR" -DPP_METHD="LAZYR;OATEP" -DCOMP="-O3 -funroll-loops -fomit-frame-pointer -I$(NDK)/platforms/android-14/arch-arm/usr/include" -DLINK="-L/opt/android-ndk/platforms/android-14/arch-arm/usr/lib/ -llog" -DTIMER=HREAL -DWORD=32 -DSTLIB=on -DSHLIB=off $1
+cmake -DWITH="DV;BN;MD;FP;EP;FPX;EPX;PP;PC;CP" -DCHECK=off -DARITH=arm-asm-254 -DARCH=ARM -DCOLOR=off -DOPSYS=DROID -DFP_PRIME=254 -DFP_QNRES=on -DFP_METHD="INTEG;INTEG;INTEG;MONTY;EXGCD;SLIDE" -DFPX_METHD="INTEG;INTEG;LAZYR" -DPP_METHD="LAZYR;OATEP" -DCOMP="-O3 -funroll-loops -fomit-frame-pointer" -DLINK="-L$SYSROOT/usr/lib/gcc/arm-linux-androideabi/4.9.x/ -L$SYSROOT/usr/lib -llog" -DTIMER=HREAL -DWORD=32 -DSTLIB=on -DSHLIB=off $1
