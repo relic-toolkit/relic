@@ -1,6 +1,7 @@
 #include "relic_fp_low.h"
 
 .syntax unified
+.arch armv7-a
 
 /*============================================================================*/
 /* Public definitions                                                         */

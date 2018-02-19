@@ -1,4 +1,8 @@
+#include "relic_fp_low.h"
+
 .syntax unified
+.arch armv7-a
+
 .global fp_muln_low
 
 /*============================================================================*/
