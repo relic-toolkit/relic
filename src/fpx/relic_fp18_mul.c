@@ -150,65 +150,6 @@ static void fp6_mul_dxs_basic(fp6_t c, fp6_t a, fp6_t b) {
 	}
 }
 
-static void fp6_mul_dxs_unr(dv6_t c, fp6_t a, fp6_t b) {
-	fp3_t t0, t1, t2;
-	dv3_t t3, t4, t5;
-
-	fp3_null(t0);
-	fp3_null(t1);
-	fp3_null(t2);
-	fp3_null(t3);
-	fp3_null(t4);
-	fp3_null(t5);
-
-	TRY {
-		fp3_new(t0);
-		fp3_new(t1);
-		fp3_new(t2);
-		fp3_new(t3);
-		fp3_new(t4);
-		fp3_new(t5);
-
-		fp_copy(t0[0], a[0][0]);
-		fp_copy(t0[1], a[2][0]);
-		fp_copy(t0[2], a[1][1]);
-		fp_copy(t1[0], a[1][0]);
-		fp_copy(t1[1], a[0][1]);
-		fp_copy(t1[2], a[2][1]);
-		fp_copy(t2[0], b[1][0]);
-		fp_copy(t2[1], b[0][1]);
-		fp_copy(t2[2], b[2][1]);
-
-		fp3_muln_low(t4, t1, t2);
-		fp3_add(t0, t0, t1);
-		fp3_muln_low(t5, t0, t2);
-		for (int i = 0; i < 3; i++) {
-			fp_subc_low(t5[i], t5[i], t4[i]);
-		}
-
-		dv_zero(t3[0], 2 * FP_DIGS);
-		for (int i = -1; i >= fp_prime_get_cnr(); i--) {
-			fp_subc_low(t3[0], t3[0], t4[2]);
-		}
-
-		dv_copy(c[0][0], t3[0], 2 * FP_DIGS);
-		dv_copy(c[2][0], t4[0], 2 * FP_DIGS);
-		dv_copy(c[1][1], t4[1], 2 * FP_DIGS);
-		dv_copy(c[1][0], t5[0], 2 * FP_DIGS);
-		dv_copy(c[0][1], t5[1], 2 * FP_DIGS);
-		dv_copy(c[2][1], t5[2], 2 * FP_DIGS);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
-		fp3_free(t0);
-		fp3_free(t1);
-		fp3_free(t2);
-		fp3_free(t3);
-		fp3_free(t4);
-		fp3_free(t5);
-	}
-}
-
 static void fp6_mul0_basic(fp6_t c, fp6_t a, fp6_t b) {
 	fp2_t v0, v1, v2, t0, t1, t2;
 
@@ -461,6 +402,65 @@ void fp18_mul_dxs_basic(fp18_t c, fp18_t a, fp18_t b) {
 #endif
 
 #if PP_EXT == LAZYR || !defined(STRIP)
+
+static void fp6_mul_dxs_unr(dv6_t c, fp6_t a, fp6_t b) {
+	fp3_t t0, t1, t2;
+	dv3_t t3, t4, t5;
+
+	fp3_null(t0);
+	fp3_null(t1);
+	fp3_null(t2);
+	fp3_null(t3);
+	fp3_null(t4);
+	fp3_null(t5);
+
+	TRY {
+		fp3_new(t0);
+		fp3_new(t1);
+		fp3_new(t2);
+		fp3_new(t3);
+		fp3_new(t4);
+		fp3_new(t5);
+
+		fp_copy(t0[0], a[0][0]);
+		fp_copy(t0[1], a[2][0]);
+		fp_copy(t0[2], a[1][1]);
+		fp_copy(t1[0], a[1][0]);
+		fp_copy(t1[1], a[0][1]);
+		fp_copy(t1[2], a[2][1]);
+		fp_copy(t2[0], b[1][0]);
+		fp_copy(t2[1], b[0][1]);
+		fp_copy(t2[2], b[2][1]);
+
+		fp3_muln_low(t4, t1, t2);
+		fp3_add(t0, t0, t1);
+		fp3_muln_low(t5, t0, t2);
+		for (int i = 0; i < 3; i++) {
+			fp_subc_low(t5[i], t5[i], t4[i]);
+		}
+
+		dv_zero(t3[0], 2 * FP_DIGS);
+		for (int i = -1; i >= fp_prime_get_cnr(); i--) {
+			fp_subc_low(t3[0], t3[0], t4[2]);
+		}
+
+		dv_copy(c[0][0], t3[0], 2 * FP_DIGS);
+		dv_copy(c[2][0], t4[0], 2 * FP_DIGS);
+		dv_copy(c[1][1], t4[1], 2 * FP_DIGS);
+		dv_copy(c[1][0], t5[0], 2 * FP_DIGS);
+		dv_copy(c[0][1], t5[1], 2 * FP_DIGS);
+		dv_copy(c[2][1], t5[2], 2 * FP_DIGS);
+	} CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	} FINALLY {
+		fp3_free(t0);
+		fp3_free(t1);
+		fp3_free(t2);
+		fp3_free(t3);
+		fp3_free(t4);
+		fp3_free(t5);
+	}
+}
 
 void fp18_mul_lazyr(fp18_t c, fp18_t a, fp18_t b) {
 	dv6_t u0, u1, u2, u3, u4, u5;
