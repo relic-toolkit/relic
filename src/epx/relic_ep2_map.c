@@ -150,7 +150,7 @@ void ep2_mul_cof_b12(ep2_t r, ep2_t p) {
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void ep2_map(ep2_t p, uint8_t *msg, int len) {
+void ep2_map(ep2_t p, const uint8_t *msg, int len) {
 	bn_t x;
 	fp2_t t0;
 	uint8_t digest[MD_LEN];

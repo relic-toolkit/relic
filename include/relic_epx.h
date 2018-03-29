@@ -941,7 +941,7 @@ void ep2_norm_sim(ep2_t *r, ep2_t *t, int n);
  * @param[in] msg			- the byte array to map.
  * @param[in] len			- the array length in bytes.
  */
-void ep2_map(ep2_t p, uint8_t *msg, int len);
+void ep2_map(ep2_t p, const uint8_t *msg, int len);
 
 /**
  * Computes a power of the Gailbraith-Lin-Scott homomorphism of a point
