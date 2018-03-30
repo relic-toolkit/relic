@@ -19,5 +19,5 @@ env:
 
 script:
   - mkdir build && cd build
-  - cmake $CONFIG  .. && make -j && ctest $TEST
+  - cmake $CONFIG  .. && make -j && ctest -V $TEST
   - cd .. && rm -rf build
