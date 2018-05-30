@@ -67,7 +67,7 @@
 #if ARCH == AVR
 #define FETCH(STR, ID, L)	arch_copy_rom(STR, STRING(ID), L);
 #else
-#define FETCH(STR, ID, L)	strncpy(STR, ID, L);
+#define FETCH(STR, ID, L)	memcpy(STR, ID, L);
 #endif
 
 /*============================================================================*/
