@@ -160,7 +160,7 @@ int ed_param_get(void) {
 	return core_get()->ed_id;
 }
 
-int ed_param_level() {
+int ed_param_level(void) {
 	switch (ed_param_get()) {
 		case CURVE_ED25519:
 			return 128;

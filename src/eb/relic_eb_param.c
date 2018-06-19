@@ -245,7 +245,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-int eb_param_get() {
+int eb_param_get(void) {
 	return core_get()->eb_id;
 }
 
@@ -361,7 +361,7 @@ void eb_param_set(int param) {
 	}
 }
 
-int eb_param_set_any() {
+int eb_param_set_any(void) {
 	int r0, r1;
 
 	r0 = eb_param_set_any_plain();
@@ -374,7 +374,7 @@ int eb_param_set_any() {
 	return STS_OK;
 }
 
-int eb_param_set_any_plain() {
+int eb_param_set_any_plain(void) {
 	int r = STS_OK;
 #if defined(EB_PLAIN)
 #if FB_POLYN == 163
@@ -400,7 +400,7 @@ int eb_param_set_any_plain() {
 	return r;
 }
 
-int eb_param_set_any_kbltz() {
+int eb_param_set_any_kbltz(void) {
 	int r = STS_OK;
 #if defined(EB_KBLTZ)
 #if FB_POLYN == 163
@@ -424,7 +424,7 @@ int eb_param_set_any_kbltz() {
 	return r;
 }
 
-void eb_param_print() {
+void eb_param_print(void) {
 	switch (core_get()->eb_id) {
 		case NIST_B163:
 			util_banner("Curve NIST-B163:", 0);
@@ -468,7 +468,7 @@ void eb_param_print() {
 	}
 }
 
-int eb_param_level() {
+int eb_param_level(void) {
 	switch (core_get()->eb_id) {
 		case NIST_B163:
 		case NIST_K163:

@@ -66,7 +66,7 @@ int putchar(int c) {
     return c;
 }
 
-unsigned long long arch_cycles() {
+unsigned long long arch_cycles(void) {
     union cycles_t cycles;
     cycles.e.e0 = BENCH_CYCLES_0;
     cycles.e.e1 = BENCH_CYCLES_1;
@@ -82,7 +82,7 @@ unsigned long long arch_cycles() {
 
 volatile ull_t  __cycles = 0;
 
-ull_t arch_cycles() {
+ull_t arch_cycles(void) {
 	return __cycles;
 }
 

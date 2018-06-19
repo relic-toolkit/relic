@@ -114,13 +114,13 @@ void bench_overhead(void) {
 
 #endif /* OVER && TIMER && BENCH > 1 */
 
-void bench_reset() {
+void bench_reset(void) {
 #ifdef TIMER
 	core_get()->total = 0;
 #endif
 }
 
-void bench_before() {
+void bench_before(void) {
 #if OPSYS == DUINO && TIMER == HREAL
 	core_get()->before = micros();
 #elif TIMER == HREAL || TIMER == HPROC || TIMER == HTHRD
@@ -134,7 +134,7 @@ void bench_before() {
 #endif
 }
 
-void bench_after() {
+void bench_after(void) {
 	ctx_t *ctx = core_get();
 	long long result;
 
@@ -178,7 +178,7 @@ void bench_compute(int benches) {
 #endif /* TIMER */
 }
 
-void bench_print() {
+void bench_print(void) {
 	ctx_t *ctx = core_get();
 
 #if TIMER == POSIX || TIMER == ANSI || (OPSYS == DUINO && TIMER == HREAL)
@@ -195,6 +195,6 @@ void bench_print() {
 	}
 }
 
-ull_t bench_total() {
+ull_t bench_total(void) {
 	return core_get()->total;
 }

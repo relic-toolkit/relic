@@ -163,7 +163,7 @@ int core_clean(void) {
 	return STS_OK;
 }
 
-ctx_t *core_get() {
+ctx_t *core_get(void) {
 	return core_ctx;
 }
 

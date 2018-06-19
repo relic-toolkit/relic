@@ -117,7 +117,7 @@ void ed_curve_get_cof(bn_t h) {
 	bn_copy(h, &core_get()->ed_h);
 }
 
-const ed_t *ed_curve_get_tab() {
+const ed_t *ed_curve_get_tab(void) {
 #if defined(ED_PRECO)
 
 	/* Return a meaningful pointer. */
