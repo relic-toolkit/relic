@@ -479,6 +479,7 @@ void pp_map_sim_tatep_k2(fp2_t r, ep_t *p, ep_t *q, int m) {
 		}
 
 		ep_curve_get_ord(n);
+		bn_sub_dig(n, n, 1);
 		fp2_set_dig(r, 1);
 		if (j > 0) {
 			pp_mil_k2(r, t, _p, _q, j, n);
