@@ -78,7 +78,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void rand_init() {
+void rand_init(void) {
 	uint8_t buf[SEED_SIZE];
 
 #if RAND == UDEV
@@ -171,7 +171,7 @@ void rand_init() {
 #endif
 }
 
-void rand_clean() {
+void rand_clean(void) {
 
 #if RAND == UDEV
 	int *fd = (int *)&(core_get()->rand);

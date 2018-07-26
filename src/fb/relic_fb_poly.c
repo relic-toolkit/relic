@@ -50,7 +50,7 @@
  * @throw ERR_NO_MEMORY if there is no available memory.
  * @throw ERR_NO_VALID if the polynomial is invalid.
  */
-static void find_trace() {
+static void find_trace(void) {
 	fb_t t0, t1;
 	int counter;
 	ctx_t *ctx = core_get();
@@ -112,7 +112,7 @@ static void find_trace() {
  *
  * @throw ERR_NO_MEMORY if there is no available memory.
  */
-static void find_solve() {
+static void find_solve(void) {
 	int i, j, k, l;
 	fb_t t0;
 	ctx_t *ctx = core_get();
@@ -156,7 +156,7 @@ static void find_solve() {
 /**
  * Precomputes the square root of z.
  */
-static void find_srz() {
+static void find_srz(void) {
 	ctx_t *ctx = core_get();
 
 	fb_set_dig(ctx->fb_srz, 2);
@@ -179,7 +179,7 @@ static void find_srz() {
 /**
  * Finds an addition chain for (FB_BITS - 1).
  */
-static void find_chain() {
+static void find_chain(void) {
 	int i, j, k, l;
 	ctx_t *ctx = core_get();
 
@@ -487,7 +487,7 @@ void fb_poly_get_rdc(int *a, int *b, int *c) {
 	*c = ctx->fb_pc;
 }
 
-const dig_t *fb_poly_get_slv() {
+const dig_t *fb_poly_get_slv(void) {
 #if FB_SLV == QUICK || !defined(STRIP)
 	return (dig_t *)&(core_get()->fb_half);
 #else

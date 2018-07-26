@@ -102,23 +102,23 @@ void eb_curve_clean(void) {
 	bn_clean(&(ctx->eb_h));
 }
 
-dig_t *eb_curve_get_a() {
+dig_t *eb_curve_get_a(void) {
 	return core_get()->eb_a;
 }
 
-int eb_curve_opt_a() {
+int eb_curve_opt_a(void) {
 	return core_get()->eb_opt_a;
 }
 
-dig_t *eb_curve_get_b() {
+dig_t *eb_curve_get_b(void) {
 	return core_get()->eb_b;
 }
 
-int eb_curve_opt_b() {
+int eb_curve_opt_b(void) {
 	return core_get()->eb_opt_b;
 }
 
-int eb_curve_is_kbltz() {
+int eb_curve_is_kbltz(void) {
 	return core_get()->eb_is_kbltz;
 }
 
@@ -134,7 +134,7 @@ void eb_curve_get_cof(bn_t h) {
 	bn_copy(h, &(core_get()->eb_h));
 }
 
-const eb_t *eb_curve_get_tab() {
+const eb_t *eb_curve_get_tab(void) {
 #if defined(EB_PRECO)
 
 	/* Return a meaningful pointer. */

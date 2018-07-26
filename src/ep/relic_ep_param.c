@@ -509,7 +509,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-int ep_param_get() {
+int ep_param_get(void) {
 	return core_get()->ep_id;
 }
 
@@ -759,7 +759,7 @@ void ep_param_set(int param) {
 	}
 }
 
-int ep_param_set_any() {
+int ep_param_set_any(void) {
 	int r0, r1, r2;
 
 	r0 = ep_param_set_any_plain();
@@ -775,7 +775,7 @@ int ep_param_set_any() {
 	return STS_OK;
 }
 
-int ep_param_set_any_plain() {
+int ep_param_set_any_plain(void) {
 	int r = STS_OK;
 #if defined(EP_PLAIN)
 #if FP_PRIME == 160
@@ -813,7 +813,7 @@ int ep_param_set_any_plain() {
 	return r;
 }
 
-int ep_param_set_any_endom() {
+int ep_param_set_any_endom(void) {
 	int r = STS_OK;
 #if defined(EP_ENDOM)
 #if FP_PRIME == 158
@@ -849,7 +849,7 @@ int ep_param_set_any_endom() {
 	return r;
 }
 
-int ep_param_set_any_super() {
+int ep_param_set_any_super(void) {
 	int r = STS_OK;
 #if defined(EP_SUPER)
 #if FP_PRIME == 1536
@@ -863,7 +863,7 @@ int ep_param_set_any_super() {
 	return r;
 }
 
-int ep_param_set_any_pairf() {
+int ep_param_set_any_pairf(void) {
 	int type = 0, degree = 0, r = STS_OK;
 #if defined(EP_ENDOM)
 #if FP_PRIME == 158
@@ -930,7 +930,7 @@ int ep_param_set_any_pairf() {
 	return r;
 }
 
-void ep_param_print() {
+void ep_param_print(void) {
 	switch (ep_param_get()) {
 		case SECG_P160:
 			util_banner("Curve SECG-P160:", 0);
@@ -1010,7 +1010,7 @@ void ep_param_print() {
 	}
 }
 
-int ep_param_level() {
+int ep_param_level(void) {
 	switch (ep_param_get()) {
 		case BN_P158:
 			return 78;
@@ -1046,7 +1046,7 @@ int ep_param_level() {
 	return 0;
 }
 
-int ep_param_embed() {
+int ep_param_embed(void) {
 	switch (ep_param_get()) {
 		case BN_P158:
 		case BN_P254:

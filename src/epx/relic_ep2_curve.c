@@ -254,7 +254,7 @@ void ep2_curve_clean(void) {
 	bn_clean(&(ctx->ep2_h));
 }
 
-int ep2_curve_is_twist() {
+int ep2_curve_is_twist(void) {
 	return core_get()->ep2_is_twist;
 }
 
@@ -336,7 +336,7 @@ void ep2_curve_get_cof(bn_t h) {
 
 #if defined(EP_PRECO)
 
-ep2_t *ep2_curve_get_tab() {
+ep2_t *ep2_curve_get_tab(void) {
 #if ALLOC == AUTO
 	return (ep2_t *)*(core_get()->ep2_ptr);
 #else

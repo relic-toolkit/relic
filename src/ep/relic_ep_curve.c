@@ -139,17 +139,17 @@ void ep_curve_clean(void) {
 #endif
 }
 
-dig_t *ep_curve_get_b() {
+dig_t *ep_curve_get_b(void) {
 	return core_get()->ep_b;
 }
 
-dig_t *ep_curve_get_a() {
+dig_t *ep_curve_get_a(void) {
 	return core_get()->ep_a;
 }
 
 #if defined(EP_ENDOM) && (EP_MUL == LWNAF || EP_FIX == COMBS || EP_FIX == LWNAF || EP_SIM == INTER || !defined(STRIP))
 
-dig_t *ep_curve_get_beta() {
+dig_t *ep_curve_get_beta(void) {
 	return core_get()->beta;
 }
 
@@ -169,19 +169,19 @@ void ep_curve_get_v2(bn_t v[]) {
 
 #endif
 
-int ep_curve_opt_a() {
+int ep_curve_opt_a(void) {
 	return core_get()->ep_opt_a;
 }
 
-int ep_curve_opt_b() {
+int ep_curve_opt_b(void) {
 	return core_get()->ep_opt_b;
 }
 
-int ep_curve_is_endom() {
+int ep_curve_is_endom(void) {
 	return core_get()->ep_is_endom;
 }
 
-int ep_curve_is_super() {
+int ep_curve_is_super(void) {
 	return core_get()->ep_is_super;
 }
 
@@ -197,7 +197,7 @@ void ep_curve_get_cof(bn_t h) {
 	bn_copy(h, &core_get()->ep_h);
 }
 
-const ep_t *ep_curve_get_tab() {
+const ep_t *ep_curve_get_tab(void) {
 #if defined(EP_PRECO)
 
 	/* Return a meaningful pointer. */

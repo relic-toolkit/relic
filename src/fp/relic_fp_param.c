@@ -798,7 +798,7 @@ int fp_param_set_any(void) {
 	return STS_OK;
 }
 
-int fp_param_set_any_dense() {
+int fp_param_set_any_dense(void) {
 	bn_t p;
 	int result = STS_OK;
 
@@ -847,7 +847,7 @@ int fp_param_set_any_pmers(void) {
 	return STS_OK;
 }
 
-int fp_param_set_any_tower() {
+int fp_param_set_any_tower(void) {
 #if FP_PRIME == 158
 	fp_param_set(BN_158);
 #elif FP_PRIME == 254
