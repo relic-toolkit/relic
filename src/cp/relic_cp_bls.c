@@ -79,29 +79,32 @@ int cp_bls_sig(g1_t s, uint8_t *msg, int len, bn_t d) {
 }
 
 int cp_bls_ver(g1_t s, uint8_t *msg, int len, g2_t q) {
-	g1_t p;
-	g2_t g;
-	gt_t e1, e2;
+	g1_t p[2];
+	g2_t r[2];
+	gt_t e;
 	int result = 0;
 
-	g1_null(p);
-	g2_null(g);
-	gt_null(e1);
-	gt_null(e2);
+	g1_null(p[0]);
+	g1_null(p[1]);
+	g2_null(r[0]);
+	g2_null(r[1]);
+	gt_null(e);
 
 	TRY {
-		g1_new(p);
-		g2_new(g);
-		gt_new(e1);
-		gt_new(e2);
+		g1_new(p[0]);
+		g1_new(p[1]);
+		g2_new(r[0]);
+		g2_new(r[1]);
+		gt_new(e);
 
-		g2_get_gen(g);
+		g1_map(p[0], msg, len);
+		g1_copy(p[1], s);
+		g2_copy(r[0], q);
+		g2_get_gen(r[1]);
+		g2_neg(r[1], r[1]);
 
-		g1_map(p, msg, len);
-		pc_map(e1, p, q);
-		pc_map(e2, s, g);
-
-		if (gt_cmp(e1, e2) == CMP_EQ) {
+		pc_map_sim(e, p, r, 2);
+		if (gt_is_unity(e)) {
 			result = 1;
 		}
 	}
@@ -109,10 +112,11 @@ int cp_bls_ver(g1_t s, uint8_t *msg, int len, g2_t q) {
 		THROW(ERR_CAUGHT);
 	}
 	FINALLY {
-		g1_free(p);
-		g2_free(g);
-		gt_free(e1);
-		gt_free(e2);
+		g1_free(p[0]);
+		g1_free(p[1]);
+		g2_free(r[0]);
+		g2_free(r[1]);
+		gt_free(e);
 	}
 	return result;
 }
