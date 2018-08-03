@@ -60,7 +60,7 @@
  * @param[in] in			- the bytes to be encrypted.
  * @param[in] in_len		- the number of bytes to encrypt.
  * @param[in] key			- the key.
- * @param[in] key_len		- the key size in bytes.
+ * @param[in] key_len		- the key size in bits.
  * @return STS_OK if no errors occurred, STS_ERR otherwise.
  */
 int bc_aes_cbc_enc(uint8_t *out, int *out_len, uint8_t *in,
@@ -74,7 +74,7 @@ int bc_aes_cbc_enc(uint8_t *out, int *out_len, uint8_t *in,
  * @param[in] in			- the bytes to be decrypted.
  * @param[in] in_len		- the number of bytes to decrypt.
  * @param[in] key			- the key.
- * @param[in] key_len		- the key size in bytes.
+ * @param[in] key_len		- the key size in bits.
  * @return STS_OK if no errors occurred, STS_ERR otherwise.
  */
 int bc_aes_cbc_dec(uint8_t *out, int *out_len, uint8_t *in,
