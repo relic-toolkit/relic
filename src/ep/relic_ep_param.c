@@ -1028,6 +1028,7 @@ int ep_param_level(void) {
 			return 112;
 		case NIST_P256:
 		case SECG_K256:
+		case CURVE_25519:
 			return 128;
 		case B12_P381:
 		case BN_P382:
