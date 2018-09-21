@@ -84,7 +84,7 @@
 #cmakedefine ARCH	 @ARCH@
 
 /** Size of word in this architecture. */
-#define WORD     @WORD@
+#define WSIZE    @WSIZE@
 
 /** Byte boundary to align digit vectors. */
 #define ALIGN    @ALIGN@

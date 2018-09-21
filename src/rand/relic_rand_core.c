@@ -49,7 +49,7 @@
 
 /* Avoid redefinition warning. */
 #undef ERROR
-#undef WORD
+#undef WSIZE
 #undef DOUBLE
 
 #include <windows.h>

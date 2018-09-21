@@ -9,10 +9,10 @@ message("   ARCH=X64       AMD x86_64-compatible 64-bit architecture.\n")
 
 message(STATUS "Available word sizes (default = 64):\n")
 
-message("   WORD=8         Build a 8-bit library.")
-message("   WORD=16        Build a 16-bit library.")
-message("   WORD=32        Build a 32-bit library.")
-message("   WORD=64        Build a 64-bit library.\n")
+message("   WSIZE=8        Build a 8-bit library.")
+message("   WSIZE=16       Build a 16-bit library.")
+message("   WSIZE=32       Build a 32-bit library.")
+message("   WSIZE=64       Build a 64-bit library.\n")
 
 message(STATUS "Byte boundary to align digit vectors (default = 1):\n")
 
@@ -31,17 +31,17 @@ endif(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
 
 if(ARCH STREQUAL X86)
 	set(AFLAGS "-m32")
-	set(WORD 32)
+	set(WSIZE 32)
 endif(ARCH STREQUAL X86)
 if(ARCH STREQUAL X64)
 	set(AFLAGS "-m64")
-	set(WORD 64)
+	set(WSIZE 64)
 endif(ARCH STREQUAL X64)
 
-if(NOT WORD)
-	set(WORD 64)
-endif(NOT WORD)
-set(WORD ${WORD} CACHE INTEGER "Processor word size")
+if(NOT WSIZE)
+	set(WSIZE 64)
+endif(NOT WSIZE)
+set(WSIZE ${WSIZE} CACHE INTEGER "Processor word size")
 
 if(NOT ALIGN)
 	set(ALIGN 1)

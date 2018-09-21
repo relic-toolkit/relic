@@ -207,7 +207,7 @@ void bn_print(const bn_t a) {
 	if (a->used == 0) {
 		util_print("0\n");
 	} else {
-#if WORD == 64
+#if WSIZE == 64
 		util_print_dig(a->dp[a->used - 1], 0);
 		for (i = a->used - 2; i >= 0; i--) {
 			util_print_dig(a->dp[i], 1);
