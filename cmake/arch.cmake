@@ -43,6 +43,10 @@ if(NOT WSIZE)
 endif(NOT WSIZE)
 set(WSIZE ${WSIZE} CACHE INTEGER "Processor word size")
 
+if(WORD AND NOT WSIZE)
+	message(FATAL_ERROR "WORD has been replaced with WSIZE. Please update your configuration")
+endif()
+
 if(NOT ALIGN)
 	set(ALIGN 1)
 endif(NOT ALIGN)

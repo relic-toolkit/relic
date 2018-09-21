@@ -53,6 +53,10 @@ if (ED_LEN LESS 4)
 	message(FATAL_ERROR "Incomplete ED_METHD specification: ${ED_METHD}")
 endif(ED_LEN LESS 4)
 
+if(ED_METHD MATCHES FIXED)
+	message(FATAL_ERROR "FIXED is not valid andymore. Use FIXWI: ${ED_METHD}")
+endif(ED_METHD MATCHES FIXED)
+
 list(GET ED_METHD 0 ED_ADD)
 list(GET ED_METHD 1 ED_MUL)
 list(GET ED_METHD 2 ED_FIX)
