@@ -357,7 +357,7 @@ void ed_mul_lwreg(ed_t r, const ed_t p, const bn_t k) {
 
 #endif
 
-#if ED_MUL == FIXED || !defined(STRIP)
+#if ED_MUL == FIXWI || !defined(STRIP)
 void ed_mul_fixed(ed_t r, const ed_t b, const bn_t k) {
 	ed_t pre[4];
 	int h, l;

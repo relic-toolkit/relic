@@ -464,7 +464,7 @@ void ed_map(ed_t p, const uint8_t *msg, int len);
 #define ed_mul(R, P, K)   ed_mul_slide(R, P, K)
 #elif ED_MUL == MONTY
 #define ed_mul(R, P, K)   ed_mul_monty(R, P, K)
-#elif ED_MUL == FIXED
+#elif ED_MUL == FIXWI
 #define ed_mul(R, P, K)   ed_mul_fixed(R, P, K)
 #elif ED_MUL == LWNAF
 #define ed_mul(R, P, K)   ed_mul_lwnaf(R, P, K)
