@@ -108,7 +108,7 @@ uint32_t util_conv_little(uint32_t i) {
 }
 
 char util_conv_char(dig_t i) {
-#if WORD == 8 || WORD == 16
+#if WSIZE == 8 || WSIZE == 16
 	/* Avoid tables to save up some memory. This is not performance-critical. */
 	if (i < 10) {
 		return i + '0';
@@ -133,19 +133,19 @@ char util_conv_char(dig_t i) {
 }
 
 int util_bits_dig(dig_t a) {
-#if WORD == 8 || WORD == 16
+#if WSIZE == 8 || WSIZE == 16
 	static const uint8_t table[16] = {
 		0, 1, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4
 	};
 #endif
-#if WORD == 8
+#if WSIZE == 8
 	if (a >> 4 == 0) {
 		return table[a & 0xF];
 	} else {
 		return table[a >> 4] + 4;
 	}
 	return 0;
-#elif WORD == 16
+#elif WSIZE == 16
 	int offset;
 
 	if (a >= ((dig_t)1 << 8)) {
@@ -160,9 +160,9 @@ int util_bits_dig(dig_t a) {
 		return table[a >> 4] + 4 + offset;
 	}
 	return 0;
-#elif WORD == 32
+#elif WSIZE == 32
 	return DIGIT - __builtin_clz(a);
-#elif WORD == 64
+#elif WSIZE == 64
 	return DIGIT - __builtin_clzll(a);
 #endif
 }

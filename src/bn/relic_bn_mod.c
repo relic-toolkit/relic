@@ -161,13 +161,13 @@ void bn_mod_pre_monty(bn_t u, const bn_t m) {
 
 	x = (((b + 2) & 4) << 1) + b;	/* here x*a==1 mod 2**4 */
 	x *= 2 - b * x;				/* here x*a==1 mod 2**8 */
-#if WORD != 8
+#if WSIZE != 8
 	x *= 2 - b * x;				/* here x*a==1 mod 2**16 */
 #endif
-#if WORD == 64 || WORD != 8 || WORD == 16
+#if WSIZE == 64 || WSIZE != 8 || WSIZE == 16
 	x *= 2 - b * x;				/* here x*a==1 mod 2**32 */
 #endif
-#if WORD == 64
+#if WSIZE == 64
 	x *= 2 - b * x;				/* here x*a==1 mod 2**64 */
 #endif
 	/* u = -1/m0 (mod 2^BN_DIGIT) */
