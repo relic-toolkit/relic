@@ -29,6 +29,10 @@ if(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
 	set(ARCH "X64" CACHE STRING "Architecture")
 endif(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
 
+if(WORD AND NOT WSIZE)
+	message(FATAL_ERROR "WORD has been replaced with WSIZE. Please update your configuration")
+endif()
+
 if(ARCH STREQUAL X86)
 	set(AFLAGS "-m32")
 	set(WSIZE 32)
@@ -42,10 +46,6 @@ if(NOT WSIZE)
 	set(WSIZE 64)
 endif(NOT WSIZE)
 set(WSIZE ${WSIZE} CACHE INTEGER "Processor word size")
-
-if(WORD AND NOT WSIZE)
-	message(FATAL_ERROR "WORD has been replaced with WSIZE. Please update your configuration")
-endif()
 
 if(NOT ALIGN)
 	set(ALIGN 1)
