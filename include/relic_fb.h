@@ -331,6 +331,10 @@ typedef relic_align dig_t fb_st[FB_DIGS + PADDING(FB_BYTES)/(FB_DIGIT / 8)];
 #define fb_inv(C, A)	fb_inv_almos(C, A)
 #elif FB_INV == ITOHT
 #define fb_inv(C, A)	fb_inv_itoht(C, A)
+#elif FB_INV == BRUCH
+#define fb_inv(C, A)	fb_inv_bruch(C, A)
+#elif FB_INV == CNAIA
+#define fb_inv(C, A)	fb_inv_cnaia(C, A)
 #endif
 
 /**

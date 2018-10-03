@@ -251,7 +251,7 @@
 /** Extended Euclidean algorithm. */
 #define EXGCD    4
 /** Use implementation provided by the lower layer. */
-#define LOWER    7
+#define LOWER    8
 /** Chosen prime field inversion method. */
 #define FP_INV   @FP_INV@
 
@@ -366,8 +366,10 @@
 #define ITOHT    5
 /** Hardware-friendly inversion by Brunner-Curiger-Hofstetter.*/
 #define BRUCH    6
+/** Constant-time version of almost inverse. */
+#define CNAIA    7
 /** Use implementation provided by the lower layer. */
-#define LOWER    7
+#define LOWER    8
 /** Chosen binary field inversion method. */
 #define FB_INV   @FB_INV@
 

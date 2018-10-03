@@ -532,6 +532,94 @@ void fb_inv_bruch(fb_t c, const fb_t a) {
 
 #endif
 
+#if FB_INV == CNAIA || !defined(STRIP)
+
+void fb_inv_cnaia(fb_t c, const fb_t a) {
+	fb_t r, s, t, u, v;
+	dv_t _t;
+	int d, h, k, q, z;
+
+	fb_null(r);
+	fb_null(s);
+	fb_null(t);
+	fb_null(u);
+	fb_null(v);
+
+	TRY {
+		fb_new(r);
+		fb_new(s);
+		fb_new(t);
+		fb_new(u);
+		fb_new(v);
+
+		fb_set_dig(r, 1);
+		fb_zero(s);
+		dv_zero(_t, 2 * FB_DIGS);
+
+		d = FB_BITS / DIGIT;
+		dv_copy(_t + d, a, FB_DIGS);
+		fb_lshb_low(_t + d, _t + d, FB_BITS % DIGIT);
+		dv_print(_t, 2*FB_DIGS);
+		fb_rdc(u, _t);
+		fb_print(u);
+		dv_copy(_t + d, u, FB_DIGS);
+		fb_lshb_low(_t + d, _t + d, FB_BITS % DIGIT);
+		fb_rdc(u, _t);
+		fb_print(u);
+		fb_copy(v, fb_poly_get());
+
+		k = 0;
+		for (q = 0; q < 2 * FB_BITS; q++) {
+			h = u[0] & 1;
+			fb_zero(t);
+			fb_set_dig(t, ((1 - h) << 1) ^ h);
+			fb_rsh(u, u, (1 - h));
+			fb_mul(s, s, t);
+			k += (1 - h);
+			h = h & (fb_bits(u) > 0 ? 1 : 0);
+			z = h & (fb_bits(u) < fb_bits(v) ? 1 : 0);
+			fb_lsh(_t, v, h);
+			fb_rdc(t, _t);
+			fb_print(t);
+			fb_add(u, u, t);
+			fb_lsh(_t, s, h);
+			fb_rdc(t, _t);
+			fb_add(r, r, t);
+			fb_lsh(_t, u, z);
+			fb_rdc(t, _t);
+			fb_add(v, v, t);
+			fb_lsh(_t, r, z);
+			fb_rdc(t, _t);
+			fb_add(s, s, t);
+		}
+
+		dv_zero(_t, 2*FB_DIGS);
+		d = FB_BITS / DIGIT;
+		dv_copy(_t + d, r, FB_DIGS);
+		fb_lshb_low(_t + d, _t + d, FB_BITS % DIGIT);
+		fb_rdc(r, _t);
+		fb_print(r);
+
+		dv_zero(_t, 2*FB_DIGS);
+		d = (FB_BITS - k) / DIGIT;
+		dv_copy(_t + d, r, FB_DIGS);
+		dv_print(_t, 2*FB_DIGS);
+		fb_lshb_low(_t + d, _t + d, (FB_BITS - k) % DIGIT);
+		dv_print(_t, 2*FB_DIGS);
+		fb_rdc(c, _t);
+	} CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	} FINALLY {
+		fb_free(r);
+		fb_free(s);
+		fb_free(t);
+		fb_free(u);
+		fb_free(v);
+	}
+}
+
+#endif
+
 #if FB_INV == LOWER || !defined(STRIP)
 
 void fb_inv_lower(fb_t c, const fb_t a) {

@@ -934,6 +934,17 @@ static int inversion(void) {
 		} TEST_END;
 #endif
 
+#if FB_INV == CNAIA || !defined(STRIP)
+		TEST_BEGIN("constant-time almost inversion is correct") {
+			fb_rand(a);
+			fb_inv(b, a);
+			fb_inv_cnaia(c, a);
+			fb_mul(c, c, a);
+			fb_print(c);
+			TEST_ASSERT(fb_cmp(b, c) == CMP_EQ, end);
+		} TEST_END;
+#endif
+
 #if FB_INV == LOWER || !defined(STRIP)
 		TEST_BEGIN("lower inversion is correct") {
 			fb_rand(a);
