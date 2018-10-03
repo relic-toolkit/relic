@@ -69,7 +69,7 @@ void fp2_addd_low(dv2_t c, dv2_t a, dv2_t b);
 
 /**
  * Adds two double-precision quadratic extension field elements of the same size
- * and corrects the result by conditionally adding 2^(FP_DIGS * WORD) * p.
+ * and corrects the result by conditionally adding 2^(FP_DIGS * WSIZE) * p.
  * Computes c = a + b.
  *
  * @param[out] c			- the result.
@@ -111,7 +111,7 @@ void fp2_subd_low(dv2_t c, dv2_t a, dv2_t b);
 /**
  * Subtracts a double-precision quadratic extension field element from another
  * of the same size and  corrects the result by conditionally adding
- * 2^(FP_DIGS * WORD) * p. Computes c = a - b.
+ * 2^(FP_DIGS * WSIZE) * p. Computes c = a - b.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the first field element to add.
@@ -176,7 +176,7 @@ void fp2_muln_low(dv2_t c, fp2_t a, fp2_t b);
 
 /**
  * Multiplies two quadratic extension elements of the same size and corrects
- * the result by adding (2^(FP_DIGS * WORD) * p)/4. This function should only
+ * the result by adding (2^(FP_DIGS * WSIZE) * p)/4. This function should only
  * be used when the FP_SPACE optimization is detected. Computes c = a * b.
  *
  * @param[out] c			- the result.
@@ -264,7 +264,7 @@ void fp3_subm_low(fp3_t c, fp3_t a, fp3_t b);
 /**
  * Subtracts a double-precision cubic extension field element from another
  * of the same size and corrects the result by conditionally adding
- * 2^(FP_DIGS * WORD) * p. Computes c = a - b.
+ * 2^(FP_DIGS * WSIZE) * p. Computes c = a - b.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the first field element to add.

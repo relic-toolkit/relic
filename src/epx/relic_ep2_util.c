@@ -43,6 +43,7 @@ void ep2_set_infty(ep2_t p) {
 	fp2_zero(p->x);
 	fp2_zero(p->y);
 	fp2_zero(p->z);
+	p->norm = 1;
 }
 
 void ep2_copy(ep2_t r, ep2_t p) {

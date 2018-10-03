@@ -49,6 +49,13 @@ Instructions for building the library can be found in the [Wiki](https://github.
 
 If you like RELIC, please consider supporting development through [Paypal](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=R7D6ZE3BLMTF2&lc=BR&item_name=RELIC%20Development&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted).
 
+### License
+
+This work is dual-licensed under Apache 2.0 and LGPL 2.1
+You can choose between one of them if you use this work.
+
+`SPDX-License-Identifier: Apache-2.0 OR LGPL-2.1`
+
 ### Disclaimer
 
 RELIC is at most alpha-quality software. Implementations may not be correct or secure and may include patented algorithms. There are *many* configuration options which make the library horribly insecure. Backward API compatibility with early versions may not necessarily be maintained. Use at your own risk.

@@ -43,10 +43,10 @@
 #include "relic_conf.h"
 
 #undef FB_DIGS
-#if (FB_POLYN % WORD) > 0
-#define FB_DIGS	(FB_POLYN/WORD + 1)
+#if (FB_POLYN % WSIZE) > 0
+#define FB_DIGS	(FB_POLYN/WSIZE + 1)
 #else
-#define FB_DIGS	(FB_POLYN/WORD)
+#define FB_DIGS	(FB_POLYN/WSIZE)
 #endif
 
 #else

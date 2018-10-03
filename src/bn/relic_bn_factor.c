@@ -55,7 +55,7 @@ int bn_factor(bn_t c, const bn_t a) {
 
 		bn_set_dig(t0, 2);
 
-#if WORD == 8
+#if WSIZE == 8
 		tests = 255;
 #else
 		tests = 65535;

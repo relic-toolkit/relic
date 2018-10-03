@@ -46,7 +46,7 @@
 /**
  * Size in bits of a digit.
  */
-#define DIGIT			(WORD)
+#define DIGIT			(WSIZE)
 
 /**
  * Logarithm of the digit size in bits in base two.
