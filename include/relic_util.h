@@ -109,6 +109,15 @@
 #define LOW(D)				(D & LMASK)
 
 /**
+ * Selects between two values depending on the value of a flag.
+ *
+ * @param[in] A			- the first argument.
+ * @param[in] B			- the second argument.
+ * @param[in] C			- the selection flag.
+ */
+#define SEL(A, B, C) ((-(C) & ((A) ^ (B))) ^ (A))
+
+/**
  * Returns the highest half of a digit.
  *
  * @param[in] D			- the digit.
