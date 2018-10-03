@@ -556,7 +556,7 @@ void fb_inv_ctaia(fb_t c, const fb_t a) {
 		fb_zero(v);
 		d = -1;
 
-		for (k = 0; k < 2 * FB_BITS; k++) {
+		for (k = 1; k < 2 * FB_BITS; k++) {
 			r0 = r[0] & 1;
 			d0 = d >> (8 * sizeof(int) - 1);
 
@@ -579,7 +579,7 @@ void fb_inv_ctaia(fb_t c, const fb_t a) {
 			fb_rsh(u, u, 1);
 			d--;
 		}
-		
+
 		fb_copy(c, v);
 	} CATCH_ANY {
 		THROW(ERR_CAUGHT);
