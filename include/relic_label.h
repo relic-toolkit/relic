@@ -724,6 +724,7 @@
 #undef fb_inv_almos
 #undef fb_inv_itoht
 #undef fb_inv_bruch
+#undef fb_inv_ctaia
 #undef fb_inv_lower
 #undef fb_inv_sim
 #undef fb_exp_2b
@@ -799,6 +800,7 @@
 #define fb_inv_almos 	PREFIX(fb_inv_almos)
 #define fb_inv_itoht 	PREFIX(fb_inv_itoht)
 #define fb_inv_bruch 	PREFIX(fb_inv_bruch)
+#define fb_inv_ctaia 	PREFIX(fb_inv_ctaia)
 #define fb_inv_lower 	PREFIX(fb_inv_lower)
 #define fb_inv_sim 	PREFIX(fb_inv_sim)
 #define fb_exp_2b 	PREFIX(fb_exp_2b)
