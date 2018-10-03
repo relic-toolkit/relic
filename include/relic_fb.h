@@ -323,8 +323,6 @@ typedef relic_align dig_t fb_st[FB_DIGS + PADDING(FB_BYTES)/(FB_DIGIT / 8)];
 #define fb_inv(C, A)	fb_inv_basic(C, A)
 #elif FB_INV == BINAR
 #define fb_inv(C, A)	fb_inv_binar(C, A)
-#elif FB_INV == LOWER
-#define fb_inv(C, A)	fb_inv_lower(C, A)
 #elif FB_INV == EXGCD
 #define fb_inv(C, A)	fb_inv_exgcd(C, A)
 #elif FB_INV == ALMOS
@@ -333,8 +331,10 @@ typedef relic_align dig_t fb_st[FB_DIGS + PADDING(FB_BYTES)/(FB_DIGIT / 8)];
 #define fb_inv(C, A)	fb_inv_itoht(C, A)
 #elif FB_INV == BRUCH
 #define fb_inv(C, A)	fb_inv_bruch(C, A)
-#elif FB_INV == CNAIA
-#define fb_inv(C, A)	fb_inv_cnaia(C, A)
+#elif FB_INV == CTAIA
+#define fb_inv(C, A)	fb_inv_ctaia(C, A)
+#elif FB_INV == LOWER
+#define fb_inv(C, A)	fb_inv_lower(C, A)
 #endif
 
 /**
@@ -938,6 +938,15 @@ void fb_inv_itoht(fb_t c, const fb_t a);
  * @param[in] a				- the binary field element to invert.
  */
 void fb_inv_bruch(fb_t c, const fb_t a);
+
+/**
+ * Inverts a binary field element in constant-time using
+ * the Wu-Wu-Shieh-Hwang algorithm.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the binary field element to invert.
+ */
+void fb_inv_ctaia(fb_t c, const fb_t a);
 
 /**
  * Inverts a binary field element using a direct call to the lower layer.

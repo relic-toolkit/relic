@@ -367,7 +367,7 @@
 /** Hardware-friendly inversion by Brunner-Curiger-Hofstetter.*/
 #define BRUCH    6
 /** Constant-time version of almost inverse. */
-#define CNAIA    7
+#define CTAIA    7
 /** Use implementation provided by the lower layer. */
 #define LOWER    8
 /** Chosen binary field inversion method. */

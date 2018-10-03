@@ -499,10 +499,10 @@ static void arith(void) {
 	BENCH_END;
 #endif
 
-#if FB_INV == CNAIA || !defined(STRIP)
-	BENCH_BEGIN("fb_inv_cnaia") {
+#if FB_INV == CTAIA || !defined(STRIP)
+	BENCH_BEGIN("fb_inv_ctaia") {
 		fb_rand(a);
-		BENCH_ADD(fb_inv_cnaia(c, a));
+		BENCH_ADD(fb_inv_ctaia(c, a));
 	}
 	BENCH_END;
 #endif
