@@ -300,6 +300,8 @@ set(LFLAGS "${LFLAGS} ${LINK}")
 
 if(STBIN)
 	set(LFLAGS "${LFLAGS} -static")
+	set(CMAKE_LINK_SEARCH_START_STATIC ON)
+	set(CMAKE_LINK_SEARCH_END_STATIC ON)
 endif(STBIN)
 
 # Discover the operating system.
