@@ -28,8 +28,8 @@
  * @ingroup relic
  */
 
-#ifndef RELIC_ERROR_H
-#define RELIC_ERROR_H
+#ifndef RELIC_ERR_H
+#define RELIC_ERR_H
 
 #include <stdint.h>
 #include <setjmp.h>
@@ -362,4 +362,4 @@ void err_get_msg(err_t *e, char **msg);
  */
 int err_get_code(void);
 
-#endif /* !RELIC_ERROR_H */
+#endif /* !RELIC_ERR_H */
