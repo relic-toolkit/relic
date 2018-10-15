@@ -390,7 +390,7 @@ static int hmac(void) {
 		memset(key, 0x0B, 20);
 		md_hmac(mac, (uint8_t *)msg[0], strlen(msg[0]), key, 20);
 		TEST_ASSERT(memcmp(mac, result[0], MD_LEN) == 0, end);
-		strncpy((char *)key, "Jefe", 4);
+		strncpy((char *)key, "Jefe", 5);
 		md_hmac(mac, (uint8_t *)msg[1], strlen(msg[1]), key, 4);
 		TEST_ASSERT(memcmp(mac, result[1], MD_LEN) == 0, end);
 		memset(key, 0xAA, 20);
