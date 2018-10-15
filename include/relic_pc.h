@@ -381,20 +381,6 @@ typedef CAT(GT_LOWER, t) gt_t;
 #define g2_rand(P)			CAT(G2_LOWER, rand)(P)
 
 /**
- * Tests if G_1 element is valid.
- *
- * @param[out] P			- the element to assign.
- */
-#define g1_is_valid(P)		CAT(G1_LOWER, is_valid)(P)
-
-/**
- * Tests if G_2 element is valid.
- *
- * @param[out] P			- the element to assign.
- */
-#define g2_is_valid(P)		CAT(G2_LOWER, is_valid)(P)
-
-/**
  * Prints a G_1 element.
  *
  * @param[in] P				- the element to print.
@@ -810,14 +796,14 @@ typedef CAT(GT_LOWER, t) gt_t;
 /*============================================================================*/
 
 /**
- * Assigns a random value to a G_T element.
+ * Assigns a random value to an element from G_T.
  *
  * @param[out] a			- the element to assign.
  */
 void gt_rand(gt_t a);
 
 /**
- * Powers an element from G_T.
+ * Computes the exponentiation of an element form G_T.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the element to exponentiate.
@@ -826,10 +812,31 @@ void gt_rand(gt_t a);
 void gt_exp(gt_t c, gt_t a, bn_t b);
 
  /**
-  * Returns the generator of the group G_T.
+  * Returns the generator for the group G_T.
   *
-  * @param[out] G			- the returned generator.
+  * @param[out] g			- the returned generator.
   */
-void gt_get_gen(gt_t a);
+void gt_get_gen(gt_t g);
+
+/**
+ * Checks if an element from G_1 is valid (has the right order).
+ *
+ * @param[in] a             - the element to check.
+ */
+int g1_is_valid(g1_t a);
+
+/**
+ * Checks if an element form G_2 is valid (has the right order).
+ *
+ * @param[in] a             - the element to check.
+ */
+int g2_is_valid(g2_t a);
+
+/**
+ * Checks if an element form G_T is valid (has the right order).
+ *
+ * @param[in] a             - the element to check.
+ */
+int gt_is_valid(gt_t a);
 
 #endif /* !RELIC_PC_H */

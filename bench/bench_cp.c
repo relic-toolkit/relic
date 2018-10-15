@@ -456,68 +456,64 @@ static void ecss(void) {
 	ec_free(p);
 }
 
-static void vbnn_ibs(void) {
-	vbnn_ibs_kgc_t kgc;
+static void vbnn(void) {
+	uint8_t ida[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+	vbnn_kgc_t s;
+	uint8_t idb[] = { 5, 6, 7, 8, 9, 0, 1, 2, 3, 4 };
+	vbnn_user_t a;
+	vbnn_user_t b;
 
-	uint8_t userA_id[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
-	vbnn_ibs_user_t userA;
+	uint8_t m[] = "Thrice the brinded cat hath mew'd.";
 
-	uint8_t userB_id[] = { 5, 6, 7, 8, 9, 0, 1, 2, 3, 4 };
-	vbnn_ibs_user_t userB;
+	ec_t r;
+	bn_t z;
+	bn_t h;
 
-	uint8_t message[] = "Thrice the brinded cat hath mew'd.";
+	vbnn_kgc_null(s);
+	vbnn_user_null(a);
+	vbnn_user_null(b);
 
-	ec_t sig_R;
-	bn_t sig_z;
-	bn_t sig_h;
+	ec_null(r);
+	bn_null(z);
+	bn_null(h);
 
-	vbnn_ibs_kgc_null(kgc);
+	vbnn_kgc_new(s);
+	vbnn_user_new(a);
+	vbnn_user_new(b);
 
-	vbnn_ibs_user_null(userA);
-	vbnn_ibs_user_null(userB);
+	ec_new(r);
+	bn_new(z);
+	bn_new(h);
 
-	ec_null(sig_R);
-	bn_null(sig_z);
-	bn_null(sig_h);
-
-	vbnn_ibs_kgc_new(kgc);
-
-	vbnn_ibs_user_new(userA);
-	vbnn_ibs_user_new(userB);
-
-	ec_new(sig_R);
-	bn_new(sig_z);
-	bn_new(sig_h);
-
-	BENCH_BEGIN("cp_vbnn_ibs_kgc_gen") {
-		BENCH_ADD(cp_vbnn_ibs_kgc_gen(kgc));
+	BENCH_BEGIN("cp_vbnn_gen") {
+		BENCH_ADD(cp_vbnn_gen(s));
 	}
 	BENCH_END;
 
-	BENCH_BEGIN("cp_vbnn_ibs_kgc_extract_key") {
-		BENCH_ADD(cp_vbnn_ibs_kgc_extract_key(userA, kgc, userA_id, sizeof(userA_id)));
+	BENCH_BEGIN("cp_vbnn_gen_prv") {
+		BENCH_ADD(cp_vbnn_gen_prv(a, s, ida, sizeof(ida)));
 	}
 	BENCH_END;
 
-	cp_vbnn_ibs_kgc_extract_key(userB, kgc, userB_id, sizeof(userB_id));
+	cp_vbnn_gen_prv(b, s, idb, sizeof(idb));
 
-	BENCH_BEGIN("cp_vbnn_ibs_user_sign") {
-		BENCH_ADD(cp_vbnn_ibs_user_sign(sig_R, sig_z, sig_h, userA_id, sizeof(userA_id), message, sizeof(message), userA));
+	BENCH_BEGIN("cp_vbnn_sig") {
+		BENCH_ADD(cp_vbnn_sig(r, z, h, ida, sizeof(ida), m, sizeof(m), a));
 	}
 	BENCH_END;
 
-	BENCH_BEGIN("cp_vbnn_ibs_user_verify") {
-		BENCH_ADD(cp_vbnn_ibs_user_verify(sig_R, sig_z, sig_h, userA_id, sizeof(userA_id), message, sizeof(message), kgc->mpk));
+	BENCH_BEGIN("cp_vbnn_ver") {
+		BENCH_ADD(cp_vbnn_ver(r, z, h, ida, sizeof(ida), m, sizeof(m), s->mpk));
 	}
 	BENCH_END;
 
-	ec_free(sig_R);
-	bn_free(sig_z);
-	bn_free(sig_h);
+	ec_free(r);
+	bn_free(z);
+	bn_free(h);
 
-	vbnn_ibs_kgc_free(kgc);
-	vbnn_ibs_user_free(userA);
-	vbnn_ibs_user_free(userB);
+	vbnn_kgc_free(s);
+	vbnn_user_free(a);
+	vbnn_user_free(b);
 }
 
 #endif
@@ -774,6 +770,79 @@ static void bbs(void) {
 	g2_free(p);
 }
 
+static int cls(void) {
+	int code = STS_ERR;
+	bn_t r, t, u, v;
+	g1_t a, A, b, B, c;
+	g2_t x, y, z;
+	uint8_t m[5] = { 0, 1, 2, 3, 4 };
+
+	bn_null(r);
+	bn_null(t);
+	bn_null(u);
+	bn_null(v);
+	g1_null(a);
+	g1_null(A);
+	g1_null(b);
+	g1_null(A);
+	g1_null(c);
+	g2_null(x);
+	g2_null(y);
+	g2_null(z);
+
+	bn_new(r);
+	bn_new(t);
+	bn_new(u);
+	bn_new(v);
+	g1_new(a);
+	g1_new(A);
+	g1_new(b);
+	g1_new(B);
+	g1_new(c);
+	g2_new(x);
+	g2_new(y);
+	g2_new(z);
+
+	BENCH_BEGIN("cp_cls_gen") {
+		BENCH_ADD(cp_cls_gen(u, v, x, y));
+	} BENCH_END;
+
+	BENCH_BEGIN("cp_cls_sig") {
+		BENCH_ADD(cp_cls_sig(a, b, c, m, sizeof(m), u, v));
+	} BENCH_END;
+
+	BENCH_BEGIN("cp_cls_ver") {
+		BENCH_ADD(cp_cls_ver(a, b, c, m, sizeof(m), x, y));
+	} BENCH_END;
+
+	BENCH_BEGIN("cp_cli_gen") {
+		BENCH_ADD(cp_cli_gen(t, u, v, x, y, z));
+	} BENCH_END;
+
+	bn_rand(r, BN_POS, 2 * pc_param_level());
+	BENCH_BEGIN("cp_cli_sig") {
+		BENCH_ADD(cp_cli_sig(a, A, b, B, c, m, sizeof(m), r, t, u, v));
+	} BENCH_END;
+
+	BENCH_BEGIN("cp_cli_ver") {
+		BENCH_ADD(cp_cli_ver(a, A, b, B, c, m, sizeof(m), r, x, y, z));
+	} BENCH_END;
+
+	bn_free(r);
+	bn_free(t);
+	bn_free(u);
+	bn_free(v);
+	g1_free(a);
+	g1_free(A);
+	g1_free(b);
+	g1_free(B);
+	g1_free(c);
+	g2_free(x);
+	g2_free(y);
+	g2_free(z);
+  	return code;
+}
+
 static void zss(void) {
 	uint8_t msg[5] = { 0, 1, 2, 3, 4 }, h[MD_LEN];
 	g1_t p;
@@ -801,7 +870,7 @@ static void zss(void) {
 	}
 	BENCH_END;
 
-	BENCH_BEGIN("cp_zsss_sign (h = 1)") {
+	BENCH_BEGIN("cp_zss_sign (h = 1)") {
 		md_map(h, msg, 5);
 		BENCH_ADD(cp_zss_sig(s, h, MD_LEN, 1, d));
 	}
@@ -851,7 +920,7 @@ int main(void) {
 		ecies();
 		ecdsa();
 		ecss();
-		vbnn_ibs();
+		vbnn();
 	} else {
 		THROW(ERR_NO_CURVE);
 	}
@@ -865,6 +934,7 @@ int main(void) {
 		bgn();
 		bls();
 		bbs();
+		cls();
 		zss();
 	} else {
 		THROW(ERR_NO_CURVE);

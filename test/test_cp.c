@@ -734,51 +734,48 @@ static int ecss(void) {
 	return code;
 }
 
-static int vbnn_ibs(void) {
+static int vbnn(void) {
 	int code = STS_ERR;
+	uint8_t ida[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+	uint8_t idb[] = { 5, 6, 7, 8, 9, 0, 1, 2, 3, 4 };
+	vbnn_user_t a;
+	vbnn_user_t b;
+	vbnn_kgc_t s;
 
-	vbnn_ibs_kgc_t kgc;
+	uint8_t m[] = "Thrice the brinded cat hath mew'd.";
 
-	uint8_t userA_id[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
-	vbnn_ibs_user_t userA;
+	ec_t r;
+	bn_t z;
+	bn_t h;
 
-	uint8_t userB_id[] = { 5, 6, 7, 8, 9, 0, 1, 2, 3, 4 };
-	vbnn_ibs_user_t userB;
+	vbnn_kgc_null(kgc);
 
-	uint8_t message[] = "Thrice the brinded cat hath mew'd.";
+	vbnn_user_null(userA);
+	vbnn_user_null(userB);
 
-	ec_t sig_R;
-	bn_t sig_z;
-	bn_t sig_h;
-
-	vbnn_ibs_kgc_null(kgc);
-
-	vbnn_ibs_user_null(userA);
-	vbnn_ibs_user_null(userB);
-
-	ec_null(sig_R);
-	bn_null(sig_z);
-	bn_null(sig_h);
+	ec_null(r);
+	bn_null(z);
+	bn_null(h);
 
 	TRY {
-		vbnn_ibs_kgc_new(kgc);
+		vbnn_kgc_new(s);
 
-		vbnn_ibs_user_new(userA);
-		vbnn_ibs_user_new(userB);
+		vbnn_user_new(a);
+		vbnn_user_new(b);
 
-		ec_new(sig_R);
-		bn_new(sig_z);
-		bn_new(sig_h);
+		ec_new(r);
+		bn_new(z);
+		bn_new(h);
 
-		TEST_BEGIN("vbnn_ibs is correct") {
-			TEST_ASSERT(cp_vbnn_ibs_kgc_gen(kgc) == STS_OK, end);
-			TEST_ASSERT(cp_vbnn_ibs_kgc_extract_key(userA, kgc, userA_id, sizeof(userA_id)) == STS_OK, end);
-			TEST_ASSERT(cp_vbnn_ibs_kgc_extract_key(userB, kgc, userB_id, sizeof(userB_id)) == STS_OK, end);
-			TEST_ASSERT(cp_vbnn_ibs_user_sign(sig_R, sig_z, sig_h, userA_id, sizeof(userA_id), message, sizeof(message), userA) == STS_OK, end);
-			TEST_ASSERT(cp_vbnn_ibs_user_verify(sig_R, sig_z, sig_h, userA_id, sizeof(userA_id), message, sizeof(message), kgc->mpk) == 1, end);
-			TEST_ASSERT(cp_vbnn_ibs_user_verify(sig_R, sig_z, sig_h, userB_id, sizeof(userB_id), message, sizeof(message), kgc->mpk) == 0, end);
-			TEST_ASSERT(cp_vbnn_ibs_user_sign(sig_R, sig_z, sig_h, userA_id, sizeof(userA_id), message, sizeof(message), userB) == STS_OK, end);
-			TEST_ASSERT(cp_vbnn_ibs_user_verify(sig_R, sig_z, sig_h, userA_id, sizeof(userA_id), message, sizeof(message), kgc->mpk) == 0, end);
+		TEST_BEGIN("vbnn is correct") {
+			TEST_ASSERT(cp_vbnn_gen(s) == STS_OK, end);
+			TEST_ASSERT(cp_vbnn_gen_prv(a, s, ida, sizeof(ida)) == STS_OK, end);
+			TEST_ASSERT(cp_vbnn_gen_prv(b, s, idb, sizeof(idb)) == STS_OK, end);
+			TEST_ASSERT(cp_vbnn_sig(r, z, h, ida, sizeof(ida), m, sizeof(m), a) == STS_OK, end);
+			TEST_ASSERT(cp_vbnn_ver(r, z, h, ida, sizeof(ida), m, sizeof(m), s->mpk) == 1, end);
+			TEST_ASSERT(cp_vbnn_ver(r, z, h, idb, sizeof(idb), m, sizeof(m), s->mpk) == 0, end);
+			TEST_ASSERT(cp_vbnn_sig(r, z, h, ida, sizeof(ida), m, sizeof(m), b) == STS_OK, end);
+			TEST_ASSERT(cp_vbnn_ver(r, z, h, ida, sizeof(ida), m, sizeof(m), s->mpk) == 0, end);
 		}
 		TEST_END;
 	}
@@ -788,13 +785,13 @@ static int vbnn_ibs(void) {
 	code = STS_OK;
 
 end:
-	ec_free(sig_R);
-	bn_free(sig_z);
-	bn_free(sig_h);
+	ec_free(r);
+	bn_free(z);
+	bn_free(h);
 
-	vbnn_ibs_kgc_free(kgc);
-	vbnn_ibs_user_free(userA);
-	vbnn_ibs_user_free(userB);
+	vbnn_kgc_free(s);
+	vbnn_user_free(a);
+	vbnn_user_free(b);
 	return code;
 }
 
@@ -1070,6 +1067,76 @@ static int bbs(void) {
 	return code;
 }
 
+static int cls(void) {
+	int code = STS_ERR;
+	bn_t r, t, u, v;
+	g1_t a, A, b, B, c;
+	g2_t x, y, z;
+	uint8_t m[5] = { 0, 1, 2, 3, 4 };
+
+	bn_null(r);
+	bn_null(t);
+	bn_null(u);
+	bn_null(v);
+	g1_null(a);
+	g1_null(A);
+	g1_null(b);
+	g1_null(B);
+	g1_null(c);
+	g2_null(x);
+	g2_null(y);
+	g2_null(z);
+
+	TRY {
+		bn_new(r);
+		bn_new(t);
+		bn_new(u);
+		bn_new(v);
+		g1_new(a);
+		g1_new(A);
+		g1_new(b);
+		g1_new(B);
+		g1_new(c);
+		g2_new(x);
+		g2_new(y);
+		g2_new(z);
+
+		TEST_BEGIN("camenisch-lysyanskaya simple signature is correct") {
+			TEST_ASSERT(cp_cls_gen(u, v, x, y) == STS_OK, end);
+			TEST_ASSERT(cp_cls_sig(a, b, c, m, sizeof(m), u, v) == STS_OK, end);
+			TEST_ASSERT(cp_cls_ver(a, b, c, m, sizeof(m), x, y) == 1, end);
+		}
+		TEST_END;
+
+		TEST_BEGIN("camenisch-lysyanskaya independent signature is correct") {
+			bn_rand(r, BN_POS, 2 * pc_param_level());
+			TEST_ASSERT(cp_cli_gen(t, u, v, x, y,z ) == STS_OK, end);
+			TEST_ASSERT(cp_cli_sig(a, A, b, B, c, m, sizeof(m), r, t, u, v) == STS_OK, end);
+			TEST_ASSERT(cp_cli_ver(a, A, b, B, c, m, sizeof(m), r, x, y, z) == 1, end);
+		}
+		TEST_END;
+	}
+	CATCH_ANY {
+		ERROR(end);
+	}
+	code = STS_OK;
+
+  end:
+  	bn_free(r);
+  	bn_free(t);
+	bn_free(u);
+	bn_free(v);
+	g1_free(a);
+	g1_free(A);
+	g1_free(b);
+	g1_free(B);
+	g1_free(c);
+	g2_free(x);
+	g2_free(y);
+	g2_free(z);
+  	return code;
+}
+
 static int zss(void) {
 	int code = STS_ERR;
 	bn_t d;
@@ -1177,7 +1244,7 @@ int main(void) {
 			return 1;
 		}
 
-		if (vbnn_ibs() != STS_OK) {
+		if (vbnn() != STS_OK) {
 			core_clean();
 			return 1;
 		}
@@ -1206,13 +1273,17 @@ int main(void) {
 			return 1;
 		}
 
-
 		if (bls() != STS_OK) {
 			core_clean();
 			return 1;
 		}
 
 		if (bbs() != STS_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (cls() != STS_OK) {
 			core_clean();
 			return 1;
 		}

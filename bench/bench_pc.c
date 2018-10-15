@@ -619,6 +619,11 @@ static void util(void) {
 		BENCH_ADD(gt_read_bin(a, bin, l));
 	} BENCH_END;
 
+	BENCH_BEGIN("gt_is_valid") {
+		gt_rand(a);
+		BENCH_ADD(gt_is_valid(a));
+	} BENCH_END;
+
 	gt_free(a);
 	gt_free(b);
 }

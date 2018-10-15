@@ -69,7 +69,7 @@ void gt_rand(gt_t a) {
 #endif
 }
 
-void gt_get_gen(gt_t a) {
+void gt_get_gen(gt_t g) {
 	g1_t g1;
 	g2_t g2;
 
@@ -83,7 +83,7 @@ void gt_get_gen(gt_t a) {
 		g1_get_gen(g1);
 		g2_get_gen(g2);
 
-		pc_map(a, g1, g2);
+		pc_map(g, g1, g2);
 	} CATCH_ANY {
 		THROW(ERR_CAUGHT);
 	} FINALLY {
@@ -100,7 +100,7 @@ void gt_exp(gt_t c, gt_t a, bn_t b) {
 	TRY {
 		bn_new(n);
 
-		ep_curve_get_ord(n);
+		gt_get_ord(n);
 		bn_mod(n, b, n);
 		gt_exp_imp(c, a, n);
 	} CATCH_ANY {
@@ -108,4 +108,122 @@ void gt_exp(gt_t c, gt_t a, bn_t b) {
 	} FINALLY {
 		bn_free(n);
 	}
+}
+
+int g1_is_valid(g1_t a) {
+	bn_t n;
+	g1_t u;
+	int r;
+
+	bn_null(n);
+	g1_null(u);
+
+	TRY {
+		bn_new(n);
+		g1_new(u);
+
+		ep_curve_get_cof(n);
+		if (bn_cmp_dig(n, 1) == CMP_EQ) {
+			/* If curve has prime order, simpler to check if point on curve. */
+			return ep_is_valid(a);
+		} else {
+			/* Otherwise, check order explicitly. */
+			g1_get_ord(n);
+			g1_mul(u, a, n);
+			r = (g1_is_infty(u) == 1);
+		}
+	} CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	} FINALLY {
+		bn_free(p);
+		g1_free(u);
+	}
+
+	return r;
+}
+
+int g2_is_valid(g2_t a) {
+	bn_t p, n;
+	g2_t u, v;
+	int r;
+
+	bn_null(n);
+	bn_null(p);
+	g2_null(u);
+	g2_null(v);
+
+	TRY {
+		bn_new(n);
+		bn_new(p);
+		g2_new(u);
+		g2_new(v);
+
+		g2_get_ord(n);
+		ep_curve_get_cof(p);
+		bn_mul(n, n, p);
+		dv_copy(p->dp, fp_prime_get(), FP_DIGS);
+		p->used = FP_DIGS;
+		p->sign = BN_POS;
+		/* Compute trace t = p - n + 1. */
+		bn_sub(n, p, n);
+		bn_add_dig(n, n, 1);
+		/* Compute u = a^t. */
+		g2_mul(u, a, n);
+		/* Compute v = a^(p + 1). */
+		ep2_frb(v, a, 1);
+		g2_add(v, v, a);
+		/* Check if a^(p + 1) = a^t. */
+		r = (g2_cmp(u, v) == CMP_EQ);
+	} CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	} FINALLY {
+		bn_free(p);
+		bn_free(n);
+		g2_free(u);
+		g2_free(v);
+	}
+
+	return r;
+}
+
+int gt_is_valid(gt_t a) {
+	bn_t p, n;
+	gt_t u, v;
+	int r;
+
+	bn_null(n);
+	bn_null(p);
+	gt_null(u);
+	gt_null(v);
+
+	TRY {
+		bn_new(n);
+		bn_new(p);
+		gt_new(u);
+		gt_new(v);
+
+		gt_get_ord(n);
+		dv_copy(p->dp, fp_prime_get(), FP_DIGS);
+		p->used = FP_DIGS;
+		p->sign = BN_POS;
+		/* Compute trace t = p - n + 1. */
+		bn_sub(n, p, n);
+		bn_add_dig(n, n, 1);
+		/* Compute u = a^t. */
+		gt_exp(u, a, n);
+		/* Compute v = a^(p + 1). */
+		fp12_frb(v, a, 1);
+		gt_mul(v, v, a);
+		/* Check if a^(p + 1) = a^t. */
+		r = (gt_cmp(u, v) == CMP_EQ);
+	} CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	} FINALLY {
+		bn_free(p);
+		bn_free(n);
+		gt_free(u);
+		gt_free(v);
+	}
+
+	return r;
 }

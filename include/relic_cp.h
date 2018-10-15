@@ -210,37 +210,37 @@ typedef bgn_st *bgn_t;
 /**
  * Represents a vBNN-IBS keg generation center.
  */
-typedef struct _vbnn_ibs_kgc_t {
+typedef struct _vbnn_kgc_t {
 	/** master public key */
 	ec_t mpk;
 	/** master secret key */
 	bn_t msk;
-} vbnn_ibs_kgc_st;
+} vbnn_kgc_st;
 
 /**
  * Pointer to a vBNN-IBS keg generation center.
  */
 #if ALLOC == AUTO
-typedef vbnn_ibs_kgc_st vbnn_ibs_kgc_t[1];
+typedef vbnn_kgc_st vbnn_kgc_t[1];
 #else
-typedef vbnn_ibs_kgc_st *vbnn_ibs_kgc_t;
+typedef vbnn_kgc_st *vbnn_kgc_t;
 #endif
 
 /**
  * Represents a vBNN-IBS user.
  */
-typedef struct _vbnn_ibs_user_t {
+typedef struct _vbnn_user_t {
 	ec_t R;
 	bn_t s;
-} vbnn_ibs_user_st;
+} vbnn_user_st;
 
 /**
  * Pointer to a vBNN-IBS user.
  */
 #if ALLOC == AUTO
-typedef vbnn_ibs_user_st vbnn_ibs_user_t[1];
+typedef vbnn_user_st vbnn_user_t[1];
 #else
-typedef vbnn_ibs_user_st *vbnn_ibs_user_t;
+typedef vbnn_user_st *vbnn_user_t;
 #endif
 
 /*============================================================================*/
@@ -790,9 +790,9 @@ typedef vbnn_ibs_user_st *vbnn_ibs_user_t;
  * @param[out] A 			- key generation center to initialize.
  */
 #if ALLOC == AUTO
-#define vbnn_ibs_kgc_null(A)	/* empty */
+#define vbnn_kgc_null(A)	/* empty */
 #else
-#define vbnn_ibs_kgc_null(A)	A = NULL;
+#define vbnn_kgc_null(A)	A = NULL;
 #endif
 
 /**
@@ -801,8 +801,8 @@ typedef vbnn_ibs_user_st *vbnn_ibs_user_t;
  * @param[out] A 			- the new vBNN-IBS KGC
  */
 #if ALLOC == DYNAMIC
-#define vbnn_ibs_kgc_new(A)																	\
-	A = (vbnn_ibs_kgc_t)calloc(1, sizeof(vbnn_ibs_kgc_st));									\
+#define vbnn_kgc_new(A)																	\
+	A = (vbnn_kgc_t)calloc(1, sizeof(vbnn_kgc_st));									\
 	if (A == NULL) {																		\
 		THROW(ERR_NO_MEMORY);																\
 	}																						\
@@ -812,8 +812,8 @@ typedef vbnn_ibs_user_st *vbnn_ibs_user_t;
 	bn_new((A)->msk);																		\
 
 #elif ALLOC == STATIC
-#define vbnn_ibs_kgc_new(A)																	\
-	A = (vbnn_ibs_kgc_t)alloca(sizeof(vbnn_ibs_kgc_st));									\
+#define vbnn_kgc_new(A)																	\
+	A = (vbnn_kgc_t)alloca(sizeof(vbnn_kgc_st));									\
 	if (A == NULL) {																		\
 		THROW(ERR_NO_MEMORY);																\
 	}																						\
@@ -823,13 +823,13 @@ typedef vbnn_ibs_user_st *vbnn_ibs_user_t;
 	bn_new((A)->msk);																		\
 
 #elif ALLOC == AUTO
-#define vbnn_ibs_kgc_new(A)																	\
+#define vbnn_kgc_new(A)																	\
 	ec_new((A)->mpk);																		\
 	bn_new((A)->msk);																		\
 
 #elif ALLOC == STACK
-#define vbnn_ibs_kgc_new(A)																	\
-	A = (vbnn_ibs_kgc_t)alloca(sizeof(vbnn_ibs_kgc_st));									\
+#define vbnn_kgc_new(A)																	\
+	A = (vbnn_kgc_t)alloca(sizeof(vbnn_kgc_st));									\
 	ec_new((A)->mpk);																		\
 	bn_new((A)->msk);																		\
 
@@ -841,7 +841,7 @@ typedef vbnn_ibs_user_st *vbnn_ibs_user_t;
  * @param[out] A 			- the vBNN-IBS KGC to clean
  */
 #if ALLOC == DYNAMIC
-#define vbnn_ibs_kgc_free(A)												\
+#define vbnn_kgc_free(A)												\
 	if (A != NULL) {														\
 		ec_free((A)->mpk);													\
 		bn_free((A)->msk);													\
@@ -850,7 +850,7 @@ typedef vbnn_ibs_user_st *vbnn_ibs_user_t;
 	}																		\
 
 #elif ALLOC == STATIC
-#define vbnn_ibs_kgc_free(A)												\
+#define vbnn_kgc_free(A)												\
 	if (A != NULL) {														\
 		ec_free((A)->mpk);													\
 		bn_free((A)->msk);													\
@@ -858,10 +858,10 @@ typedef vbnn_ibs_user_st *vbnn_ibs_user_t;
 	}																		\
 
 #elif ALLOC == AUTO
-#define vbnn_ibs_kgc_free(A)				/* empty */
+#define vbnn_kgc_free(A)				/* empty */
 
 #elif ALLOC == STACK
-#define vbnn_ibs_kgc_free(A)												\
+#define vbnn_kgc_free(A)												\
 	ec_free((A)->mpk);														\
 	bn_free((A)->msk);														\
 	A = NULL;																\
@@ -874,9 +874,9 @@ typedef vbnn_ibs_user_st *vbnn_ibs_user_t;
  * @param[out] A 			- user to initialize.
  */
 #if ALLOC == AUTO
-#define vbnn_ibs_user_null(A)	/* empty */
+#define vbnn_user_null(A)	/* empty */
 #else
-#define vbnn_ibs_user_null(A)	A = NULL;
+#define vbnn_user_null(A)	A = NULL;
 #endif
 
 /**
@@ -885,8 +885,8 @@ typedef vbnn_ibs_user_st *vbnn_ibs_user_t;
  * @param[out] A 			- the new vBNN-IBS KGC
  */
 #if ALLOC == DYNAMIC
-#define vbnn_ibs_user_new(A)																\
-	A = (vbnn_ibs_user_t)calloc(1, sizeof(vbnn_ibs_user_st));								\
+#define vbnn_user_new(A)																\
+	A = (vbnn_user_t)calloc(1, sizeof(vbnn_user_st));								\
 	if (A == NULL) {																		\
 		THROW(ERR_NO_MEMORY);																\
 	}																						\
@@ -896,8 +896,8 @@ typedef vbnn_ibs_user_st *vbnn_ibs_user_t;
 	bn_new((A)->s);																			\
 
 #elif ALLOC == STATIC
-#define vbnn_ibs_user_new(A)																\
-	A = (vbnn_ibs_user_t)alloca(sizeof(vbnn_ibs_user_st));									\
+#define vbnn_user_new(A)																\
+	A = (vbnn_user_t)alloca(sizeof(vbnn_user_st));									\
 	if (A == NULL) {																		\
 		THROW(ERR_NO_MEMORY);																\
 	}																						\
@@ -907,13 +907,13 @@ typedef vbnn_ibs_user_st *vbnn_ibs_user_t;
 	bn_new((A)->s);																			\
 
 #elif ALLOC == AUTO
-#define vbnn_ibs_user_new(A)																\
+#define vbnn_user_new(A)																\
 	ec_new((A)->R);																			\
 	bn_new((A)->s);																			\
 
 #elif ALLOC == STACK
-#define vbnn_ibs_user_new(A)																\
-	A = (vbnn_ibs_user_t)alloca(sizeof(vbnn_ibs_user_st));									\
+#define vbnn_user_new(A)																\
+	A = (vbnn_user_t)alloca(sizeof(vbnn_user_st));									\
 	ec_new((A)->R);																			\
 	bn_new((A)->s);																			\
 
@@ -925,7 +925,7 @@ typedef vbnn_ibs_user_st *vbnn_ibs_user_t;
  * @param[out] A 			- the vBNN-IBS KGC to clean
  */
 #if ALLOC == DYNAMIC
-#define vbnn_ibs_user_free(A)												\
+#define vbnn_user_free(A)												\
 	if (A != NULL) {														\
 		ec_free((A)->R);													\
 		bn_free((A)->s);													\
@@ -934,7 +934,7 @@ typedef vbnn_ibs_user_st *vbnn_ibs_user_t;
 	}																		\
 
 #elif ALLOC == STATIC
-#define vbnn_ibs_user_free(A)												\
+#define vbnn_user_free(A)												\
 	if (A != NULL) {														\
 		ec_free((A)->R);													\
 		bn_free((A)->s);													\
@@ -942,10 +942,10 @@ typedef vbnn_ibs_user_st *vbnn_ibs_user_t;
 	}																		\
 
 #elif ALLOC == AUTO
-#define vbnn_ibs_user_free(A)				/* empty */
+#define vbnn_user_free(A)				/* empty */
 
 #elif ALLOC == STACK
-#define vbnn_ibs_user_free(A)												\
+#define vbnn_user_free(A)												\
 	ec_free((A)->R);														\
 	bn_free((A)->s);														\
 	A = NULL;																\
@@ -1224,10 +1224,10 @@ int cp_ecdh_gen(bn_t d, ec_t q);
 /**
  * Derives a shared secret using ECDH.
  *
- * @param[out] key				- the shared key.
- * @param[int] key_len			- the intended shared key length in bytes.
- * @param[in] d					- the private key.
- * @param[in] q					- the point received from the other party.
+ * @param[out] key			- the shared key.
+ * @param[int] key_len		- the intended shared key length in bytes.
+ * @param[in] d				- the private key.
+ * @param[in] q				- the point received from the other party.
  * @return STS_OK if no errors occurred, STS_ERR otherwise.
  */
 int cp_ecdh_key(uint8_t *key, int key_len, bn_t d, ec_t q);
@@ -1238,20 +1238,22 @@ int cp_ecdh_key(uint8_t *key, int key_len, bn_t d, ec_t q);
  * Should also be used to generate the ephemeral key pair.
  *
  * @param[out] d			- the private key.
- * @param[out] q				- the public key.
+ * @param[out] q			- the public key.
+ * @return STS_OK if no errors occurred, STS_ERR otherwise.
  */
 int cp_ecmqv_gen(bn_t d, ec_t q);
 
 /**
  * Derives a shared secret using ECMQV.
  *
- * @param[out] key				- the shared key.
- * @param[int] key_len			- the intended shared key length in bytes.
- * @param[in] d1				- the private key.
- * @param[in] d2				- the ephemeral private key.
- * @param[in] q2u				- the ephemeral public key.
- * @param[in] q1v				- the point received from the other party.
- * @param[in] q2v				- the ephemeral point received from the other party.
+ * @param[out] key			- the shared key.
+ * @param[int] key_len		- the intended shared key length in bytes.
+ * @param[in] d1			- the private key.
+ * @param[in] d2			- the ephemeral private key.
+ * @param[in] q2u			- the ephemeral public key.
+ * @param[in] q1v			- the point received from the other party.
+ * @param[in] q2v			- the ephemeral point received from the party.
+ * @return STS_OK if no errors occurred, STS_ERR otherwise.
  */
 int cp_ecmqv_key(uint8_t *key, int key_len, bn_t d1, bn_t d2, ec_t q2u,
 		ec_t q1v, ec_t q2v);
@@ -1306,12 +1308,12 @@ int cp_ecdsa_gen(bn_t d, ec_t q);
 /**
  * Signs a message using ECDSA.
  *
- * @param[out] r				- the first component of the signature.
- * @param[out] s				- the second component of the signature.
- * @param[in] msg				- the message to sign.
- * @param[in] len				- the message length in bytes.
- * @param[in] hash				- the flag to indicate the message format.
- * @param[in] d					- the private key.
+ * @param[out] r			- the first component of the signature.
+ * @param[out] s			- the second component of the signature.
+ * @param[in] msg			- the message to sign.
+ * @param[in] len			- the message length in bytes.
+ * @param[in] hash			- the flag to indicate the message format.
+ * @param[in] d				- the private key.
  * @return STS_OK if no errors occurred, STS_ERR otherwise.
  */
 int cp_ecdsa_sig(bn_t r, bn_t s, uint8_t *msg, int len, int hash, bn_t d);
@@ -1319,12 +1321,12 @@ int cp_ecdsa_sig(bn_t r, bn_t s, uint8_t *msg, int len, int hash, bn_t d);
 /**
  * Verifies a message signed with ECDSA using the basic method.
  *
- * @param[out] r				- the first component of the signature.
- * @param[out] s				- the second component of the signature.
- * @param[in] msg				- the message to sign.
- * @param[in] len				- the message length in bytes.
- * @param[in] hash				- the flag to indicate the message format.
- * @param[in] q					- the public key.
+ * @param[out] r			- the first component of the signature.
+ * @param[out] s			- the second component of the signature.
+ * @param[in] msg			- the message to sign.
+ * @param[in] len			- the message length in bytes.
+ * @param[in] hash			- the flag to indicate the message format.
+ * @param[in] q				- the public key.
  * @return a boolean value indicating if the signature is valid.
  */
 int cp_ecdsa_ver(bn_t r, bn_t s, uint8_t *msg, int len, int hash, ec_t q);
@@ -1341,11 +1343,11 @@ int cp_ecss_gen(bn_t d, ec_t q);
 /**
  * Signs a message using the Elliptic Curve Schnorr Signature.
  *
- * @param[out] r				- the first component of the signature.
- * @param[out] s				- the second component of the signature.
- * @param[in] msg				- the message to sign.
- * @param[in] len				- the message length in bytes.
- * @param[in] d					- the private key.
+ * @param[out] r			- the first component of the signature.
+ * @param[out] s			- the second component of the signature.
+ * @param[in] msg			- the message to sign.
+ * @param[in] len			- the message length in bytes.
+ * @param[in] d				- the private key.
  * @return STS_OK if no errors occurred, STS_ERR otherwise.
  */
 int cp_ecss_sig(bn_t e, bn_t s, uint8_t *msg, int len, bn_t d);
@@ -1354,11 +1356,11 @@ int cp_ecss_sig(bn_t e, bn_t s, uint8_t *msg, int len, bn_t d);
  * Verifies a message signed with the Elliptic Curve Schnorr Signature using the
  * basic method.
  *
- * @param[out] r				- the first component of the signature.
- * @param[out] s				- the second component of the signature.
- * @param[in] msg				- the message to sign.
- * @param[in] len				- the message length in bytes.
- * @param[in] q					- the public key.
+ * @param[out] r			- the first component of the signature.
+ * @param[out] s			- the second component of the signature.
+ * @param[in] msg			- the message to sign.
+ * @param[in] len			- the message length in bytes.
+ * @param[in] q				- the public key.
  * @return a boolean value indicating if the signature is valid.
  */
 int cp_ecss_ver(bn_t e, bn_t s, uint8_t *msg, int len, ec_t q);
@@ -1375,10 +1377,10 @@ int cp_sokaka_gen(bn_t master);
 /**
  * Generates a private key for the SOKAKA protocol.
  *
- * @param[out] k				- the private key.
- * @param[in] id				- the identity.
- * @param[in] len				- the length of identity in bytes.
- * @param[in] master			- the master key.
+ * @param[out] k			- the private key.
+ * @param[in] id			- the identity.
+ * @param[in] len			- the length of identity in bytes.
+ * @param[in] master		- the master key.
  * @return STS_OK if no errors occurred, STS_ERR otherwise.
  */
 int cp_sokaka_gen_prv(sokaka_t k, char *id, int len, bn_t master);
@@ -1386,33 +1388,23 @@ int cp_sokaka_gen_prv(sokaka_t k, char *id, int len, bn_t master);
 /**
  * Computes a shared key between two entities.
  *
- * @param[out] key				- the shared key.
- * @param[int] key_len			- the intended shared key length in bytes.
- * @param[in] id1				- the first identity.
- * @param[in] len1				- the length of the first identity in bytes.
- * @param[in] k					- the private key of the first identity.
- * @param[in] id2				- the second identity.
- * @param[in] len2				- the length of the second identity in bytes.
+ * @param[out] key			- the shared key.
+ * @param[int] key_len		- the intended shared key length in bytes.
+ * @param[in] id1			- the first identity.
+ * @param[in] len1			- the length of the first identity in bytes.
+ * @param[in] k				- the private key of the first identity.
+ * @param[in] id2			- the second identity.
+ * @param[in] len2			- the length of the second identity in bytes.
  * @return STS_OK if no errors occurred, STS_ERR otherwise.
  */
 int cp_sokaka_key(uint8_t *key, unsigned int key_len, char *id1, int len1,
 		sokaka_t k, char *id2, int len2);
 
 /**
- * Generates a master key for a Private Key Generator (PKG) in the
- * Boneh-Franklin Identity-Based Encryption (BF-IBE).
+ * Generates a key pair for the Boneh-Go-Nissim (BGN) cryptosystem.
  *
- * @param[out] master			- the master key.
- * @param[out] pub 				- the public key of the private key generator.
- * @return STS_OK if no errors occurred, STS_ERR otherwise.
- */
-int cp_ibe_gen(bn_t master, g1_t pub);
-
-/**
- * Generates a BGN key pair.
- *
- * @param[out] pub 				- the public key.
- * @param[out] prv 				- the private key.
+ * @param[out] pub 			- the public key.
+ * @param[out] prv 			- the private key.
  * @return STS_OK if no errors occurred, STS_ERR otherwise.
  */
 int cp_bgn_gen(bgn_t pub, bgn_t prv);
@@ -1420,9 +1412,9 @@ int cp_bgn_gen(bgn_t pub, bgn_t prv);
 /**
  * Encrypts in G_1 using the BGN cryptosystem.
  *
- * @param[out] out 				- the ciphertext.
- * @param[in] in 				- the plaintext as a small integer.
- * @param[in] pub 				- the public key.
+ * @param[out] out 			- the ciphertext.
+ * @param[in] in 			- the plaintext as a small integer.
+ * @param[in] pub 			- the public key.
  * @return STS_OK if no errors occurred, STS_ERR otherwise.
  */
 int cp_bgn_enc1(g1_t out[2], dig_t in, bgn_t pub);
@@ -1430,9 +1422,9 @@ int cp_bgn_enc1(g1_t out[2], dig_t in, bgn_t pub);
 /**
  * Decrypts in G_1 using the BGN cryptosystem.
  *
- * @param[out] out 				- the decrypted small integer.
- * @param[in] in 				- the ciphertext.
- * @param[in] prv 				- the private key.
+ * @param[out] out 			- the decrypted small integer.
+ * @param[in] in 			- the ciphertext.
+ * @param[in] prv 			- the private key.
  * @return STS_OK if no errors occurred, STS_ERR otherwise.
  */
 int cp_bgn_dec1(dig_t *out, g1_t in[2], bgn_t prv);
@@ -1440,9 +1432,9 @@ int cp_bgn_dec1(dig_t *out, g1_t in[2], bgn_t prv);
 /**
  * Encrypts in G_2 using the BGN cryptosystem.
  *
- * @param[out] c 				- the ciphertext.
- * @param[in] m 				- the plaintext as a small integer.
- * @param[in] pub 				- the public key.
+ * @param[out] c 			- the ciphertext.
+ * @param[in] m 			- the plaintext as a small integer.
+ * @param[in] pub 			- the public key.
  * @return STS_OK if no errors occurred, STS_ERR otherwise.
  */
 int cp_bgn_enc2(g2_t out[2], dig_t in, bgn_t pub);
@@ -1450,9 +1442,9 @@ int cp_bgn_enc2(g2_t out[2], dig_t in, bgn_t pub);
 /**
  * Decrypts in G_2 using the BGN cryptosystem.
  *
- * @param[out] out 				- the decrypted small integer.
- * @param[in] c 				- the ciphertext.
- * @param[in] prv 				- the private key.
+ * @param[out] out 			- the decrypted small integer.
+ * @param[in] c 			- the ciphertext.
+ * @param[in] prv 			- the private key.
  * @return STS_OK if no errors occurred, STS_ERR otherwise.
  */
 int cp_bgn_dec2(dig_t *out, g2_t in[2], bgn_t prv);
@@ -1460,9 +1452,9 @@ int cp_bgn_dec2(dig_t *out, g2_t in[2], bgn_t prv);
 /**
  * Adds homomorphically two BGN ciphertexts in G_T.
  *
- * @param[out] e 				- the resulting ciphertext.
- * @param[in] c 				- the first ciphertext to add.
- * @param[in] d 				- the second ciphertext to add.
+ * @param[out] e 			- the resulting ciphertext.
+ * @param[in] c 			- the first ciphertext to add.
+ * @param[in] d 			- the second ciphertext to add.
  * @return STS_OK if no errors occurred, STS_ERR otherwise.
  */
 int cp_bgn_add(gt_t e[4], gt_t c[4], gt_t d[4]);
@@ -1470,35 +1462,46 @@ int cp_bgn_add(gt_t e[4], gt_t c[4], gt_t d[4]);
 /**
  * Multiplies homomorphically two BGN ciphertexts in G_T.
  *
- * @param[out] e 				- the resulting ciphertext.
- * @param[in] c 				- the first ciphertext to add.
- * @param[in] d 				- the second ciphertext to add.
+ * @param[out] e 			- the resulting ciphertext.
+ * @param[in] c 			- the first ciphertext to add.
+ * @param[in] d 			- the second ciphertext to add.
  * @return STS_OK if no errors occurred, STS_ERR otherwise.
  */
 int cp_bgn_mul(gt_t e[4], g1_t c[2], g2_t d[2]);
 
 /**
  * Decrypts in G_T using the BGN cryptosystem.
- * @param[out] out 				- the decrypted small integer.
- * @param[in] c 				- the ciphertext.
- * @param[in] prv 				- the private key.
+ *
+ * @param[out] out 			- the decrypted small integer.
+ * @param[in] c 			- the ciphertext.
+ * @param[in] prv 			- the private key.
  * @return STS_OK if no errors occurred, STS_ERR otherwise.
  */
 int cp_bgn_dec(dig_t *out, gt_t in[4], bgn_t prv);
 
 /**
+ * Generates a master key for a Private Key Generator (PKG) in the
+ * Boneh-Franklin Identity-Based Encryption (BF-IBE).
+ *
+ * @param[out] master		- the master key.
+ * @param[out] pub 			- the public key of the private key generator.
+ * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ */
+int cp_ibe_gen(bn_t master, g1_t pub);
+
+/**
  * Generates a private key for a user in the BF-IBE protocol.
  *
- * @param[out] prv				- the private key.
- * @param[in] id				- the identity.
- * @param[in] len				- the length of identity in bytes.
- * @param[in] s					- the master key.
+ * @param[out] prv			- the private key.
+ * @param[in] id			- the identity.
+ * @param[in] len			- the length of identity in bytes.
+ * @param[in] s				- the master key.
  * @return STS_OK if no errors occurred, STS_ERR otherwise.
  */
 int cp_ibe_gen_prv(g2_t prv, char *id, int len, bn_t master);
 
 /**
- * Encrypts a message in the BF-IBE protocol.
+ * Encrypts a message using the BF-IBE protocol.
  *
  * @param[out] out			- the output buffer.
  * @param[in, out] out_len	- the buffer capacity and number of bytes written.
@@ -1511,7 +1514,7 @@ int cp_ibe_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len,
 		char *id, int len, g1_t pub);
 
 /**
- * Decrypts a message in the BF-IBE protocol.
+ * Decrypts a message using the BF-IBE protocol.
  *
  * @param[out] out			- the output buffer.
  * @param[in, out] out_len	- the buffer capacity and number of bytes written.
@@ -1523,96 +1526,192 @@ int cp_ibe_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len,
 int cp_ibe_dec(uint8_t *out, int *out_len, uint8_t *in, int in_len, g2_t prv);
 
 /**
- * Generates a BLS key pair.
+ * Generates a key pair for the Boneh-Lynn-Schacham (BLS) signature protocol.
  *
  * @param[out] d			- the private key.
- * @param[in] q				- the public key.
+ * @param[out] q			- the public key.
+ * @return STS_OK if no errors occurred, STS_ERR otherwise.
  */
 int cp_bls_gen(bn_t d, g2_t q);
 
 /**
- * Signs a message using BLS.
+ * Signs a message using the BLS protocol.
  *
- * @param[out] s				- the signature.
- * @param[in] msg				- the message to sign.
- * @param[in] len				- the message length in bytes.
- * @param[in] d					- the private key.
+ * @param[out] s			- the signature.
+ * @param[in] msg			- the message to sign.
+ * @param[in] len			- the message length in bytes.
+ * @param[in] d				- the private key.
+ * @return STS_OK if no errors occurred, STS_ERR otherwise.
  */
 int cp_bls_sig(g1_t s, uint8_t *msg, int len, bn_t d);
 
 /**
- * Verifies a message signed with BLS scheme.
+ * Verifies a message signed with BLS protocol.
  *
- * @param[out] s				- the signature.
- * @param[in] msg				- the message to sign.
- * @param[in] len				- the message length in bytes.
- * @param[in] q					- the public key.
+ * @param[out] s			- the signature.
+ * @param[in] msg			- the message to sign.
+ * @param[in] len			- the message length in bytes.
+ * @param[in] q				- the public key.
  * @return a boolean value indicating if the signature is valid.
  */
 int cp_bls_ver(g1_t s, uint8_t *msg, int len, g2_t q);
 
 /**
- * Generates a Boneh-Boyen key pair.
+ * Generates a key pair for the Boneh-Boyen (BB) signature protocol.
  *
- * @param[out] d				- the private key.
- * @param[out] q				- the first component of the public key.
- * @param[out] z				- the second component of the public key.
+ * @param[out] d			- the private key.
+ * @param[out] q			- the first component of the public key.
+ * @param[out] z			- the second component of the public key.
+ * @return STS_OK if no errors occurred, STS_ERR otherwise.
  */
 int cp_bbs_gen(bn_t d, g2_t q, gt_t z);
 
 /**
- * Signs a message using Boneh-Boyen Short Signature.
+ * Signs a message using the BB protocol.
  *
- * @param[out] s				- the signature.
- * @param[in] msg				- the message to sign.
- * @param[in] len				- the message length in bytes.
- * @param[in] hash				- the flag to indicate the message format.
- * @param[in] d					- the private key.
+ * @param[out] s			- the signature.
+ * @param[in] msg			- the message to sign.
+ * @param[in] len			- the message length in bytes.
+ * @param[in] hash			- the flag to indicate the message format.
+ * @param[in] d				- the private key.
+ * @return STS_OK if no errors occurred, STS_ERR otherwise.
  */
 int cp_bbs_sig(g1_t s, uint8_t *msg, int len, int hash, bn_t d);
 
 /**
- * Verifies a message signed with Boneh-Boyen scheme.
+ * Verifies a message signed with the BB protocol.
  *
- * @param[in] s					- the signature.
- * @param[in] msg				- the message to sign.
- * @param[in] len				- the message length in bytes.
- * @param[in] hash				- the flag to indicate the message format.
- * @param[out] q				- the first component of the public key.
- * @param[out] z				- the second component of the public key.
+ * @param[in] s				- the signature.
+ * @param[in] msg			- the message to sign.
+ * @param[in] len			- the message length in bytes.
+ * @param[in] hash			- the flag to indicate the message format.
+ * @param[out] q			- the first component of the public key.
+ * @param[out] z			- the second component of the public key.
  * @return a boolean value indicating the verification result.
  */
 int cp_bbs_ver(g1_t s, uint8_t *msg, int len, int hash, g2_t q, gt_t z);
 
 /**
+ * Generates a key pair for the Camenisch-Lysyanskaya simple signature (CLS)
+ * protocol.
+ *
+ * @param[out] u			- the first part of the private key.
+ * @param[out] v			- the second part of the private key.
+ * @param[out] x			- the first part of the public key.
+ * @param[out] y			- the second part of the public key.
+ * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ */
+int cp_cls_gen(bn_t u, bn_t v, g2_t x, g2_t y);
+
+/**
+ * Signs a message using the CLS protocol.
+ *
+ * @param[out] a			- the first part of the signature.
+ * @param[out] b			- the second part of the signature.
+ * @param[out] b			- the third part of the signature.
+ * @param[in] msg			- the message to sign.
+ * @param[in] len			- the message length in bytes.
+ * @param[in] u				- the first part of the private key.
+ * @param[in] v				- the second part of the private key.
+ * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ */
+int cp_cls_sig(g1_t a, g1_t b, g1_t c, uint8_t *msg, int len, bn_t u, bn_t v);
+
+/**
+ ** Verifies a signature using the CLS protocol.
+ *
+ * @param[in] a				- the first part of the signature.
+ * @param[in] b				- the second part of the signature.
+ * @param[in] b				- the third part of the signature.
+ * @param[in] msg			- the message to sign.
+ * @param[in] len			- the message length in bytes.
+ * @param[in] u				- the first part of the public key.
+ * @param[in] v				- the second part of the public key.
+ * @return a boolean value indicating the verification result.
+ */
+int cp_cls_ver(g1_t a, g1_t b, g1_t c, uint8_t *msg, int len, g2_t x, g2_t y);
+
+/**
+ * Generates a key pair for the Camenisch-Lysyanskaya message-independent (CLI)
+ * signature protocol.
+ *
+ * @param[out] t			- the first part of the private key.
+ * @param[out] u			- the second part of the private key.
+ * @param[out] v			- the third part of the private key.
+ * @param[out] x			- the first part of the public key.
+ * @param[out] y			- the second part of the public key.
+ * @param[out] z			- the third part of the public key.
+ * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ */
+int cp_cli_gen(bn_t t, bn_t u, bn_t v, g2_t x, g2_t y, g2_t z);
+
+/**
+ * Signs a message using the CLI protocol.
+ *
+ * @param[out] a			- one of the components of the signature.
+ * @param[out] A			- one of the components of the signature.
+ * @param[out] b			- one of the components of the signature.
+ * @param[out] B			- one of the components of the signature.
+ * @param[out] c			- one of the components of the signature.
+ * @param[in] msg			- the message to sign.
+ * @param[in] len			- the message length in bytes.
+ * @param[in] r				- the per-message randomness.
+ * @param[in] t				- the first part of the private key.
+ * @param[in] u				- the second part of the private key.
+ * @param[in] v				- the third part of the private key.
+ * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ */
+int cp_cli_sig(g1_t a, g1_t A, g1_t b, g1_t B, g1_t c, uint8_t *msg, int len,
+	bn_t r, bn_t t, bn_t u, bn_t v);
+
+/**
+ * Verifies a message signed using the CLI protocol.
+ *
+ * @param[in] a				- one of the components of the signature.
+ * @param[in] A				- one of the components of the signature.
+ * @param[in] b				- one of the components of the signature.
+ * @param[in] B				- one of the components of the signature.
+ * @param[in] c				- one of the components of the signature.
+ * @param[in] msg			- the message to sign.
+ * @param[in] len			- the message length in bytes.
+ * @param[in] r				- the per-message randomness.
+ * @param[in] x				- the first part of the public key.
+ * @param[in] y				- the second part of the public key.
+ * @param[in] z				- the third part of the public key.
+ * @return a boolean value indicating the verification result.
+ */
+int cp_cli_ver(g1_t a, g1_t A, g1_t b, g1_t B, g1_t c, uint8_t *msg, int len,
+	bn_t r, g2_t x, g2_t y, g2_t z);
+
+/**
  * Generates a Zhang-Safavi-Naini-Susilo (ZSS) key pair.
  *
- * @param[out] d				- the private key.
- * @param[out] q				- the first component of the public key.
- * @param[out] z				- the second component of the public key.
+ * @param[out] d			- the private key.
+ * @param[out] q			- the first component of the public key.
+ * @param[out] z			- the second component of the public key.
  */
 int cp_zss_gen(bn_t d, g1_t q, gt_t z);
 
 /**
  * Signs a message using ZSS scheme.
  *
- * @param[out] s				- the signature.
- * @param[in] msg				- the message to sign.
- * @param[in] len				- the message length in bytes.
- * @param[in] hash				- the flag to indicate the message format.
- * @param[in] d					- the private key.
+ * @param[out] s			- the signature.
+ * @param[in] msg			- the message to sign.
+ * @param[in] len			- the message length in bytes.
+ * @param[in] hash			- the flag to indicate the message format.
+ * @param[in] d				- the private key.
  */
 int cp_zss_sig(g2_t s, uint8_t *msg, int len, int hash, bn_t d);
 
 /**
  * Verifies a message signed with ZSS scheme.
  *
- * @param[in] s					- the signature.
- * @param[in] msg				- the message to sign.
- * @param[in] len				- the message length in bytes.
- * @param[in] hash				- the flag to indicate the message format.
- * @param[out] q				- the first component of the public key.
- * @param[out] z				- the second component of the public key.
+ * @param[in] s				- the signature.
+ * @param[in] msg			- the message to sign.
+ * @param[in] len			- the message length in bytes.
+ * @param[in] hash			- the flag to indicate the message format.
+ * @param[out] q			- the first component of the public key.
+ * @param[out] z			- the second component of the public key.
  * @return a boolean value indicating the verification result.
  */
 int cp_zss_ver(g2_t s, uint8_t *msg, int len, int hash, g1_t q, gt_t z);
@@ -1620,46 +1719,49 @@ int cp_zss_ver(g2_t s, uint8_t *msg, int len, int hash, g1_t q, gt_t z);
 /**
  * Generates a vBNN-IBS key generation center.
  *
- * @param[out] kgc 				- the key generation center.
+ * @param[out] kgc 			- the key generation center.
  */
-int cp_vbnn_ibs_kgc_gen(vbnn_ibs_kgc_t kgc);
+int cp_vbnn_gen(vbnn_kgc_t kgc);
 
 /**
  * Extract a user key from an identity and a vBNN-IBS key generation center.
  *
- * @param[out] user 			- the extracted vBNN-IBS user.
- * @param[in]  kgc 				- the key generation center.
- * @param[in]  identity         - the identity used for extraction.
- * @param[in]  identity_len 	- the identity length in bytes.
+ * @param[out] user 		- the extracted vBNN-IBS user.
+ * @param[in]  kgc 			- the key generation center.
+ * @param[in]  id			- the identity used for extraction.
+ * @param[in]  id_len		- the identity length in bytes.
  */
-int cp_vbnn_ibs_kgc_extract_key(vbnn_ibs_user_t user, vbnn_ibs_kgc_t kgc, uint8_t *identity, int identity_len);
+int cp_vbnn_gen_prv(vbnn_user_t user, vbnn_kgc_t kgc,
+	uint8_t *id, int id_len);
 
 /**
  * Signs a message using the vBNN-IBS scheme.
  *
- * @param[out] 	sig_R			- the R value of the signature.
- * @param[out] 	sig_z 			- the z value of the signature.
- * @param[out] 	sig_h 			- the h value of the signature.
- * @param[in] 	identity 		- the identity buffer.
- * @param[in] 	identity_len 	- the size of identity buffer.
- * @param[in] 	msg 			- the message buffer to sign.
- * @param[in] 	msg_len 		- the size of message buffer.
- * @param[in] 	user 			- the user who creates the signature.
+ * @param[out] 	r			- the R value of the signature.
+ * @param[out] 	z 			- the z value of the signature.
+ * @param[out] 	h 			- the h value of the signature.
+ * @param[in] 	id 			- the identity buffer.
+ * @param[in] 	id_len 		- the size of identity buffer.
+ * @param[in] 	msg 		- the message buffer to sign.
+ * @param[in] 	msg_len 	- the size of message buffer.
+ * @param[in] 	user 		- the user who creates the signature.
  */
-int cp_vbnn_ibs_user_sign(ec_t sig_R, bn_t sig_z, bn_t sig_h, uint8_t *identity, int identity_len, uint8_t *msg, int msg_len, vbnn_ibs_user_t user);
+int cp_vbnn_sig(ec_t r, bn_t z, bn_t h, uint8_t *id, int id_len, uint8_t *msg,
+		int msg_len, vbnn_user_t user);
 
 /**
  * Verifies a signature and message using the vBNN-IBS scheme.
  *
- * @param[in] 	sig_R			- the R value of the signature.
- * @param[in] 	sig_z 			- the z value of the signature.
- * @param[in] 	sig_h 			- the h value of the signature.
- * @param[in] 	identity 		- the identity buffer.
- * @param[in] 	identity_len 	- the size of identity buffer.
- * @param[in] 	msg 			- the message buffer to sign.
- * @param[in] 	msg_len 		- the size of message buffer.
- * @param[in] 	mpk				- the master public key of the key generation center.
+ * @param[in] 	r			- the R value of the signature.
+ * @param[in] 	z 			- the z value of the signature.
+ * @param[in] 	h 			- the h value of the signature.
+ * @param[in] 	id 			- the identity buffer.
+ * @param[in] 	id_len 		- the size of identity buffer.
+ * @param[in] 	msg 		- the message buffer to sign.
+ * @param[in] 	msg_len 	- the size of message buffer.
+ * @param[in] 	mpk			- the master public key of the key generation center.
  */
-int cp_vbnn_ibs_user_verify(ec_t sig_R, bn_t sig_z, bn_t sig_h, uint8_t *identity, int identity_len, uint8_t *msg, int msg_len, ec_t mpk);
+int cp_vbnn_ver(ec_t r, bn_t z, bn_t h, uint8_t *id, int id_len, uint8_t *msg,
+		int msg_len, ec_t mpk);
 
 #endif /* !RELIC_CP_H */

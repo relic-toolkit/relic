@@ -560,8 +560,7 @@ static int hashing1(void) {
 		TEST_BEGIN("point hashing is correct") {
 			rand_bytes(msg, sizeof(msg));
 			g1_map(a, msg, sizeof(msg));
-			g1_mul(a, a, n);
-			TEST_ASSERT(g1_is_infty(a) == 1, end);
+			TEST_ASSERT(g1_is_valid(a) == 1, end);
 		}
 		TEST_END;
 
@@ -1103,8 +1102,7 @@ static int hashing2(void) {
 		TEST_BEGIN("point hashing is correct") {
 			rand_bytes(msg, sizeof(msg));
 			g2_map(a, msg, sizeof(msg));
-			g2_mul(a, a, n);
-			TEST_ASSERT(g2_is_infty(a) == 1, end);
+			TEST_ASSERT(g2_is_valid(a) == 1, end);
 		}
 		TEST_END;
 
@@ -1356,6 +1354,11 @@ int exponentiation(void) {
 		TEST_BEGIN("generator has the right order") {
 			gt_exp(c, a, n);
 			TEST_ASSERT(gt_is_unity(c), end);
+		} TEST_END;
+
+		TEST_BEGIN("random element has the right order") {
+			gt_rand(a);
+			TEST_ASSERT(gt_is_valid(a), end);
 		} TEST_END;
 
 		TEST_BEGIN("exponentiation is correct") {
