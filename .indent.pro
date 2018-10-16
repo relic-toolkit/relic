@@ -34,6 +34,7 @@
 -ts4	--tab-size4
 -T int8_t
 -T uint8_t
+-T FILE
 -T bn_t
 -T dv_t
 -T dv2_t

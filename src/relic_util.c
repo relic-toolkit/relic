@@ -60,11 +60,11 @@ volatile char *util_print_ptr;
  * Send byte to serial port.
  */
 void uart_putchar(char c, FILE *stream) {
-    if (c == '\n') {
-        uart_putchar('\r', stream);
-    }
-    loop_until_bit_is_set(UCSR0A, UDRE0);
-    UDR0 = c;
+	if (c == '\n') {
+		uart_putchar('\r', stream);
+	}
+	loop_until_bit_is_set(UCSR0A, UDRE0);
+	UDR0 = c;
 }
 
 /**
@@ -88,7 +88,8 @@ uint32_t util_conv_endian(uint32_t i) {
 	i3 = (i >> 16) & 0xFF;
 	i4 = (i >> 24) & 0xFF;
 
-	return ((uint32_t)i1 << 24) | ((uint32_t)i2 << 16) | ((uint32_t)i3 << 8) | i4;
+	return ((uint32_t) i1 << 24) | ((uint32_t) i2 << 16) | ((uint32_t) i3 << 8)
+			| i4;
 }
 
 uint32_t util_conv_big(uint32_t i) {
@@ -167,9 +168,9 @@ int util_bits_dig(dig_t a) {
 #endif
 }
 
-int util_cmp_const(const void * a, const void *b, int size) {
-	const uint8_t *_a = (const uint8_t *) a;
-	const uint8_t *_b = (const uint8_t *) b;
+int util_cmp_const(const void *a, const void *b, int size) {
+	const uint8_t *_a = (const uint8_t *)a;
+	const uint8_t *_b = (const uint8_t *)b;
 	uint8_t result = 0;
 	int i;
 
@@ -182,7 +183,7 @@ int util_cmp_const(const void * a, const void *b, int size) {
 
 void util_printf(const char *format, ...) {
 #ifndef QUIET
-#if ARCH == AVR && OPSYS == RELIC_NONE
+#if ARCH == AVR && !defined(OPSYS)
 	util_print_ptr = print_buf + 1;
 	va_list list;
 	va_start(list, format);
@@ -196,7 +197,7 @@ void util_printf(const char *format, ...) {
 	vsnprintf_P((char *)print_buf, sizeof(print_buf), format, list);
 	printf("%s", (char *)print_buf);
 	va_end(list);
-#elif ARCH == MSP && OPSYS == RELIC_NONE
+#elif ARCH == MSP && !defined(OPSYS)
 	va_list list;
 	va_start(list, format);
 	vprintf(format, list);
@@ -219,21 +220,21 @@ void util_printf(const char *format, ...) {
 void util_print_dig(dig_t a, int pad) {
 #if DIGIT == 64
 	if (pad) {
-		util_print("%.16" PRIX64, (uint64_t)a);
+		util_print("%.16" PRIX64, (uint64_t) a);
 	} else {
-		util_print("%" PRIX64, (uint64_t)a);
+		util_print("%" PRIX64, (uint64_t) a);
 	}
 #elif DIGIT == 32
 	if (pad) {
-		util_print("%.8" PRIX32, (uint32_t)a);
+		util_print("%.8" PRIX32, (uint32_t) a);
 	} else {
-		util_print("%" PRIX32, (uint32_t)a);
+		util_print("%" PRIX32, (uint32_t) a);
 	}
 #elif DIGIT == 16
 	if (pad) {
-		util_print("%.4" PRIX16, (uint16_t)a);
+		util_print("%.4" PRIX16, (uint16_t) a);
 	} else {
-		util_print("%" PRIX16, (uint16_t)a);
+		util_print("%" PRIX16, (uint16_t) a);
 	}
 #else
 	if (pad) {

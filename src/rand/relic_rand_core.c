@@ -90,7 +90,7 @@ void rand_init(void) {
 	}
 #else
 
-#if SEED == ZERO
+#if !defined(SEED)
 
 	memset(buf, 0, SEED_SIZE);
 
@@ -117,11 +117,13 @@ void rand_init(void) {
 #elif SEED == LIBC
 
 #if OPSYS == FREEBSD
-	srandom(1);
+	/* This is better than using a fixed value. */
+	srandomdev();
 	for (int i = 0; i < SEED_SIZE; i++) {
 		buf[i] = (uint8_t)random();
 	}
 #else
+	/* This is horribly insecure, serves only for benchmarking. */
 	srand(1);
 	for (int i = 0; i < SEED_SIZE; i++) {
 		buf[i] = (uint8_t)rand();

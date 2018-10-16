@@ -1108,7 +1108,7 @@ static int cls(void) {
 		}
 		TEST_END;
 
-		TEST_BEGIN("camenisch-lysyanskaya independent signature is correct") {
+		TEST_BEGIN("camenisch-lysyanskaya message-independent signature is correct") {
 			bn_rand(r, BN_POS, 2 * pc_param_level());
 			TEST_ASSERT(cp_cli_gen(t, u, v, x, y,z ) == STS_OK, end);
 			TEST_ASSERT(cp_cli_sig(a, A, b, B, c, m, sizeof(m), r, t, u, v) == STS_OK, end);
