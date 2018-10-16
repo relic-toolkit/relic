@@ -666,29 +666,27 @@
 #define RELIC_HMAC     2
 /** Operating system underlying generator. */
 #define UDEV     3
-/** Intel RdRand instruction. */
-#define RDRND    4
 /** FIPS 186-2 (CN1) SHA-1 based generator. */
-#define FIPS     5
+#define FIPS     4
+/** Intel RdRand instruction. */
+#define RDRND    5
 /** Override library generator with the callback. */
 #define CALL     6
 /** Chosen random generator. */
 #define RAND     @RAND@
 
+/** Standard C library generator. */
+#define LIBC     1
 /** Use Windows' CryptGenRandom. */
-#define WCGR     1
-/** Device node generator. */
-#define DEV      2
+#define WCGR     2
 /** Device node generator. */
 #define UDEV     3
+/** Device node generator. */
+#define DEV      4
 /** Intel RdRand instruction. */
-#define RDRND    4
-/** Standard C library generator. */
-#define LIBC     5
-/** Null seed. */
-#define	ZERO     6
+#define RDRND    5
 /** Chosen random generator seeder. */
-#define SEED     @SEED@
+#cmakedefine SEED     @SEED@
 
 /** GNU/Linux operating system. */
 #define LINUX    1
