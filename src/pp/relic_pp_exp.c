@@ -62,8 +62,8 @@ static void pp_exp_bn(fp12_t c, fp12_t a) {
 		bn_new(x);
 
 		/*
-		 * New final exponentiation following Fuentes-Castañeda, Knapp and
-		 * Rodríguez-Henríquez: Fast Hashing to G_2.
+		 * New final exponentiation following Fuentes-CastaÃ±eda, Knapp and
+		 * RodrÃ­guez-HenrÃ­quez: Fast Hashing to G_2.
 		 */
 		fp_param_get_var(x);
 		fp_param_get_sps(b, &l);
