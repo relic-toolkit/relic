@@ -1,6 +1,7 @@
 ![](https://github.com/relic-toolkit/relic/blob/master/art/logo.png)
 =====
 
+[![Project stats:](https://www.openhub.net/p/relic-toolkit/widgets/project_thin_badge.gif)](https://www.openhub.net/p/relic-toolkit)
 [![Build Status](https://travis-ci.org/relic-toolkit/relic.svg?branch=master)](https://travis-ci.org/relic-toolkit/relic)
 
 RELIC is a modern cryptographic meta-toolkit with emphasis on efficiency and flexibility. RELIC can be used to build efficient and usable cryptographic toolkits tailored for specific security levels and algorithmic choices.
@@ -56,6 +57,3 @@ Starting from version 0.3.3, static linking and changes in the configuration or 
 RELIC is at most alpha-quality software. Implementations may not be correct or secure and may include patented algorithms. There are *many* configuration options which make the library horribly insecure. Backward API compatibility with early versions may not necessarily be maintained. Use at your own risk.
 
 **Privacy Warning:** This site tracks visitor information.
-
-[Project stats:](https://www.openhub.net/p/relic-toolkit)
-![](https://www.openhub.net/p/relic-toolkit/widgets/project_partner_badge.gif)
