@@ -1,6 +1,8 @@
 ![](https://github.com/relic-toolkit/relic/blob/master/art/logo.png)
 =====
 
+[![Build Status](https://travis-ci.org/relic-toolkit/relic.svg?branch=master)](https://travis-ci.org/relic-toolkit/relic)
+
 RELIC is a modern cryptographic meta-toolkit with emphasis on efficiency and flexibility. RELIC can be used to build efficient and usable cryptographic toolkits tailored for specific security levels and algorithmic choices.
 
 ### Goals
@@ -35,12 +37,6 @@ If you use RELIC, please cite using the template below:
         howpublished = {\url{https://github.com/relic-toolkit/relic}},
     }`
 
-### Licensing
-
-RELIC is released under an LGPL version 2.1-or-above license to encourage collaboration with other research groups and contributions from the industry.
-
-Starting from version 0.3.3, static linking and changes in the configuration or build system are explicitly exempted from representing derived works. Please refer to files COPYING and COPYING.LESSER for additional details.
-
 ### Build instructions
 
 Instructions for building the library can be found in the [Wiki](https://github.com/relic-toolkit/relic/wiki/Building).
@@ -49,12 +45,13 @@ Instructions for building the library can be found in the [Wiki](https://github.
 
 If you like RELIC, please consider supporting development through [Paypal](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=R7D6ZE3BLMTF2&lc=BR&item_name=RELIC%20Development&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted).
 
-### License
+### Licensing
 
-This work is dual-licensed under Apache 2.0 and LGPL 2.1
-You can choose between one of them if you use this work.
+This work is dual-licensed under Apache 2.0 and LGPL 2.1-or-above to encourage collaboration with other research groups and contributions from the industry. You can choose between one of them if you use this work.
 
 `SPDX-License-Identifier: Apache-2.0 OR LGPL-2.1`
+
+Starting from version 0.3.3, static linking and changes in the configuration or build system are explicitly exempted from representing derived works. Please refer to the LICENSE files for additional details.
 
 ### Disclaimer
 
