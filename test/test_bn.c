@@ -1500,8 +1500,9 @@ static int digit(void) {
 		TEST_BEGIN("division by a single digit is consistent") {
 			bn_rand(a, BN_POS, RELIC_BN_BITS);
 			bn_rand(b, BN_POS, BN_DIGIT);
-			if (b->dp[0] == 0)
+			if (bn_is_zero(b)) {
 				continue;
+			}
 			bn_div(d, a, b);
 			bn_div_dig(e, a, b->dp[0]);
 			TEST_ASSERT(bn_cmp(d, e) == CMP_EQ, end);
