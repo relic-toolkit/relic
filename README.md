@@ -24,8 +24,6 @@ RELIC implements to date:
  * Elliptic curves over prime and binary fields (NIST curves and pairing-friendly curves)
  * Bilinear maps and related extension fields
  * Cryptographic protocols (RSA, Rabin, ECDSA, ECMQV, ECSS (Schnorr), ECIES, Sakai-Ohgishi-Kasahara ID-based authenticated key agreement, Boneh-Lynn-Schacham and Boneh-Boyen short signatures, Paillier and Benaloh homomorphic encryption systems)
-d
-RELIC is being used as the main cryptography implementation of the [TinyPBC](http://sites.google.com/site/tinypbc/) project. Support was included in version 0.1.1. Build instructions for MICAz motes suitable for TinyPBC deployments can be found in the Wiki.
 
 ### Citing
 
