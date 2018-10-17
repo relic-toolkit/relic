@@ -44,7 +44,7 @@
 /**
  * Size of the PRNG internal state in bytes.
  */
-#if RAND == HASH
+#if RAND == HASHD
 
 #if MD_MAP == SHONE || MD_MAP == SH224 || MD_MAP == SH256 || MD_MAP == BLAKE2S_160 || MD_MAP == BLAKE2S_256
 #define RAND_SIZE		(1 + 2*440/8)

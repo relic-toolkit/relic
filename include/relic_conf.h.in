@@ -661,9 +661,9 @@
 #define ALLOC    @ALLOC@
 
 /** NIST HASH-DRBG generator. */
-#define HASH     1
+#define HASHD    1
 /** NIST HMAC-DRBG generator. */
-#define RELIC_HMAC     2
+#define HMACD    2
 /** Operating system underlying generator. */
 #define UDEV     3
 /** FIPS 186-2 (CN1) SHA-1 based generator. */
