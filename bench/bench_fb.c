@@ -321,10 +321,10 @@ static void arith(void) {
 	BENCH_END;
 #endif
 
-#if FB_SQR == LUTBL || !defined(STRIP)
-	BENCH_BEGIN("fb_sqr_lutbl") {
+#if FB_SQR == QUICK || !defined(STRIP)
+	BENCH_BEGIN("fb_sqr_quick") {
 		fb_rand(a);
-		BENCH_ADD(fb_sqr_lutbl(c, a));
+		BENCH_ADD(fb_sqr_quick(c, a));
 	}
 	BENCH_END;
 #endif

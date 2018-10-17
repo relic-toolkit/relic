@@ -320,7 +320,7 @@
 /** Basic squaring. */
 #define BASIC    1
 /** Table-based squaring. */
-#define RELIC_TABLE    2
+#define QUICK    2
 /** Integrated modular squaring. */
 #define INTEG	 3
 /** Chosen binary field squaring method. */

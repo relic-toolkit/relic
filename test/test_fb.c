@@ -517,11 +517,11 @@ static int squaring(void) {
 		} TEST_END;
 #endif
 
-#if FB_SQR == LUTBL || !defined(STRIP)
+#if FB_SQR == QUICK || !defined(STRIP)
 		TEST_BEGIN("table squaring is correct") {
 			fb_rand(a);
 			fb_sqr(b, a);
-			fb_sqr_lutbl(c, a);
+			fb_sqr_quick(c, a);
 			TEST_ASSERT(fb_cmp(b, c) == CMP_EQ, end);
 		} TEST_END;
 #endif

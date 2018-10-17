@@ -156,8 +156,8 @@ enum {
  * Maximum size of a precomputation table.
  */
 #ifdef STRIP
-#define RELIC_FB_TABLE_MAX 		RELIC_FB_TABLE
 #else
+#define RELIC_FB_TABLE_MAX 		RELIC_FB_TABLE
 #define RELIC_FB_TABLE_MAX 		RELIC_FB_TABLE_QUICK
 #endif
 
@@ -257,8 +257,8 @@ typedef relic_align dig_t fb_st[FB_DIGS + PADDING(FB_BYTES)/(FB_DIGIT / 8)];
  */
 #if FB_SQR == BASIC
 #define fb_sqr(C, A)	fb_sqr_basic(C, A)
-#elif FB_SQR == LUTBL
-#define fb_sqr(C, A)	fb_sqr_lutbl(C, A)
+#elif FB_SQR == QUICK
+#define fb_sqr(C, A)	fb_sqr_quick(C, A)
 #elif FB_SQR == INTEG
 #define fb_sqr(C, A)	fb_sqr_integ(C, A)
 #endif
@@ -817,7 +817,7 @@ void fb_sqr_integ(fb_t c, const fb_t a);
  * @param[out] c			- the result.
  * @param[in] a				- the binary field element to square.
  */
-void fb_sqr_lutbl(fb_t c, const fb_t a);
+void fb_sqr_quick(fb_t c, const fb_t a);
 
 /**
  * Shifts a binary field element to the left. Computes c = a * z^bits mod f(z).
