@@ -1002,7 +1002,7 @@ static int exponentiation(void) {
 		/* Let's try a Mersenne prime. */
 		bn_zero(p);
 		bn_set_bit(p, 127, 1);
-		bn_sub(p, p, 1);
+		bn_sub_dig(p, p, 1);
 #endif
 
 		TEST_BEGIN("modular exponentiation is correct") {
@@ -1554,7 +1554,7 @@ static int digit(void) {
 		/* Let's try a Mersenne prime. */
 		bn_zero(d);
 		bn_set_bit(d, 127, 1);
-		bn_sub(p, p, 1);
+		bn_sub_dig(d, d, 1);
 #endif
 
 		TEST_BEGIN("modular exponentiation with a digit is consistent") {

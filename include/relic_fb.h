@@ -156,8 +156,8 @@ enum {
  * Maximum size of a precomputation table.
  */
 #ifdef STRIP
-#else
 #define RELIC_FB_TABLE_MAX 		RELIC_FB_TABLE
+#else
 #define RELIC_FB_TABLE_MAX 		RELIC_FB_TABLE_QUICK
 #endif
 
