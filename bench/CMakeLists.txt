@@ -7,7 +7,6 @@ macro(ADD_MODULE MODULE)
 			target_link_libraries(bench_${MODULE} ${RELIC})
 		endif(SHLIB)
 	endif(STLIB)
-	add_test(bench_${MODULE} ${SIMUL} ${SIMAR} ${EXECUTABLE_OUTPUT_PATH}/bench_${MODULE})
 endmacro(ADD_MODULE)
 
 if (CHECK)
