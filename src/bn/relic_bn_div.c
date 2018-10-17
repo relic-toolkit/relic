@@ -94,7 +94,7 @@ static void bn_div_imp(bn_t c, bn_t d, const bn_t a, const bn_t b) {
 			q->used = a->used - b->used + 1;
 			q->sign = sign;
 			bn_trim(q);
-			if ((bn_sign(a) == bn_sign(b) || bn_is_zero(r))) {
+			if ((bn_is_zero(r)) || (bn_sign(a) == bn_sign(b))) {
 				bn_copy(c, q);
 			} else {
 				bn_sub_dig(c, q, 1);
@@ -225,4 +225,3 @@ void bn_div_rem_dig(bn_t c, dig_t *d, const bn_t a, dig_t b) {
 		bn_free(q);
 	}
 }
-
