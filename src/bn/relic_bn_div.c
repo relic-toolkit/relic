@@ -105,7 +105,7 @@ static void bn_div_imp(bn_t c, bn_t d, const bn_t a, const bn_t b) {
 			r->used = b->used;
 			r->sign = b->sign;
 			bn_trim(r);
-			if (bn_sign(a) == bn_sign(b)) {
+			if ((bn_is_zero(r)) || (bn_sign(a) == bn_sign(b))) {
 				bn_copy(d, r);
 			} else {
 				bn_sub(d, b, r);
