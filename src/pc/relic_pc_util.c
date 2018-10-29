@@ -135,7 +135,7 @@ int g1_is_valid(g1_t a) {
 	} CATCH_ANY {
 		THROW(ERR_CAUGHT);
 	} FINALLY {
-		bn_free(p);
+		bn_free(n);
 		g1_free(u);
 	}
 
