@@ -606,11 +606,25 @@ void ed_mul_sim_fix(ed_t r, const ed_t *t_p, const ed_t p, const bn_t k,
 	ed_t t;
 	ed_null(t);
 
+	ed_t _t_p[RELIC_ED_TABLE], _t_q[RELIC_ED_TABLE];
+
     if (t_p == NULL) {
-        ed_mul_pre(t_p, p);
+		for (int i = 0; i < RELIC_ED_TABLE; i++) {
+			ed_null(_t_p[i]);
+			ed_new(_t_p[i]);
+		}
+
+        ed_mul_pre(_t_p, p);
+		t_p = _t_p;
     }
     if (t_q == NULL) {
-        ed_mul_pre(t_q, q);
+		for (int i = 0; i < RELIC_ED_TABLE; i++) {
+			ed_null(_t_q[i]);
+			ed_new(_t_q[i]);
+		}
+
+        ed_mul_pre(_t_q, q);
+		t_q = _t_q;
     }
 
 	TRY {
@@ -623,6 +637,16 @@ void ed_mul_sim_fix(ed_t r, const ed_t *t_p, const ed_t p, const bn_t k,
 		THROW(ERR_CAUGHT);
 	}
 	FINALLY {
+		if (t_p == NULL) {
+			for (int i = 0; i < RELIC_ED_TABLE; i++) {
+				ed_free(_t_p[i]);
+			}
+		}
+		if (t_q == NULL) {
+			for (int i = 0; i < RELIC_ED_TABLE; i++) {
+				ed_free(_t_q[i]);
+			}
+		}
 		ed_free(t);
 	}
 }

@@ -401,11 +401,25 @@ void ep2_mul_sim_fix(ep2_t r, const ep2_t *t_p, const ep2_t p, const bn_t k,
 	ep2_t t;
 	ep2_null(t);
 
+	ep2_t _t_p[RELIC_EPX_TABLE], _t_q[RELIC_EPX_TABLE];
+
     if (t_p == NULL) {
-        ep2_mul_pre(t_p, p);
+		for (int i = 0; i < RELIC_EPX_TABLE; i++) {
+			ep2_null(_t_p[i]);
+			ep2_new(_t_p[i]);
+		}
+
+        ep2_mul_pre(_t_p, p);
+		t_p = _t_p;
     }
     if (t_q == NULL) {
-        ep2_mul_pre(t_q, q);
+		for (int i = 0; i < RELIC_EPX_TABLE; i++) {
+			ep2_null(_t_q[i]);
+			ep2_new(_t_q[i]);
+		}
+
+        ep2_mul_pre(_t_q, q);
+		t_q = _t_q;
     }
 
 	TRY {
@@ -418,6 +432,16 @@ void ep2_mul_sim_fix(ep2_t r, const ep2_t *t_p, const ep2_t p, const bn_t k,
 		THROW(ERR_CAUGHT);
 	}
 	FINALLY {
+		if (t_p == NULL) {
+			for (int i = 0; i < RELIC_EPX_TABLE; i++) {
+				ep2_free(_t_p[i]);
+			}
+		}
+		if (t_q == NULL) {
+			for (int i = 0; i < RELIC_EPX_TABLE; i++) {
+				ep2_free(_t_q[i]);
+			}
+		}
 		ep2_free(t);
 	}
 }
