@@ -393,6 +393,20 @@ typedef CAT(EC_LOWER, t) ec_t;
 #define ec_mul_sim_gen(R, K, Q, L)	CAT(EC_LOWER, mul_sim_gen)(R, K, Q, L)
 
 /**
+ * Multiplies and adds two binary elliptic curve points simultaneously using
+ * scalar multiplication, point addition and precomputation tables.
+ *
+ * @param[out] R			- the result.
+ * @param[in] T_P			- the precomputation table of the first point.
+ * @param[in] P				- the first point to multiply.
+ * @param[in] K				- the first integer.
+ * @param[in] T_Q			- the precomputation table of the second point.
+ * @param[in] Q				- the second point to multiply.
+ * @param[in] M				- the second integer.
+ */
+#define ec_mul_sim_fix(R, T_P, P, K, T_Q, Q, M) CAT(EC_LOWER, mul_sim_fix)(R, T_P, P, K, T_Q, Q, M)
+
+/**
  * Converts a point to affine coordinates.
  *
  * @param[out] R			- the result.

@@ -149,6 +149,7 @@ static void util(void) {
 
 static void arith(void) {
 	ed_t p, q, r, t[RELIC_ED_TABLE_MAX];
+	ed_t t_p[RELIC_ED_TABLE_MAX], t_q[RELIC_ED_TABLE_MAX];
 	bn_t k, l, n;
 
 	ed_null(p);
@@ -156,6 +157,8 @@ static void arith(void) {
 	ed_null(r);
 	for (int i = 0; i < RELIC_ED_TABLE_MAX; i++) {
 		ed_null(t[i]);
+		ed_null(t_p[i]);
+		ed_null(t_q[i]);
 	}
 
 	ed_new(p);
@@ -409,6 +412,26 @@ static void arith(void) {
 		ed_rand(q);
 		BENCH_ADD(ed_mul_sim_gen(r, k, q, l));
 	} BENCH_END;
+
+	for (int i = 0; i < RELIC_ED_TABLE; i++) {
+		ed_new(t_p[i]);
+		ed_new(t_q[i]);
+	}
+
+	BENCH_BEGIN("ed_mul_sim_fix") {
+		bn_rand_mod(k, n);
+		bn_rand_mod(l, n);
+		ed_rand(p);
+		ed_rand(q);
+		ed_mul_pre(t_p, p);
+		ed_mul_pre(t_q, q);
+		BENCH_ADD(ed_mul_sim_fix(r, t_p, p, k, t_q, q, l));
+	} BENCH_END;
+
+	for (int i = 0; i < RELIC_ED_TABLE; i++) {
+		ed_free(t_p[i]);
+		ed_free(t_q[i]);
+	}
 
 	BENCH_BEGIN("ed_map") {
 		uint8_t msg[5];

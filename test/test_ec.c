@@ -466,6 +466,7 @@ static int simultaneous(void) {
 	int code = STS_ERR;
 	bn_t n, k, l;
 	ec_t p, q, r;
+	ec_t t_p[RELIC_EB_TABLE_MAX], t_q[RELIC_EB_TABLE_MAX];
 
 	bn_null(n);
 	bn_null(k);
@@ -474,6 +475,11 @@ static int simultaneous(void) {
 	ec_null(q);
 	ec_null(r);
 
+	for (int i = 0; i < RELIC_EB_TABLE_MAX; i++) {
+		ec_null(t_p[i]);
+		ec_null(t_q[i]);
+	}
+
 	TRY {
 		bn_new(n);
 		bn_new(k);
@@ -481,6 +487,11 @@ static int simultaneous(void) {
 		ec_new(p);
 		ec_new(q);
 		ec_new(r);
+
+		for (int i = 0; i < RELIC_EB_TABLE; i++) {
+			ec_new(t_p[i]);
+			ec_new(t_q[i]);
+		}
 
 		ec_curve_get_gen(p);
 		ec_curve_get_gen(q);
@@ -546,6 +557,46 @@ static int simultaneous(void) {
 			ec_mul_sim(q, p, k, q, l);
 			TEST_ASSERT(ec_cmp(q, r) == CMP_EQ, end);
 		} TEST_END;
+
+		TEST_BEGIN("simultaneous-fixed point multiplication is correct") {
+			bn_zero(k);
+			bn_rand_mod(l, n);
+			ec_mul(q, p, l);
+			ec_mul_pre(t_p, p);
+			ec_mul_sim_fix(r, t_p, p, k, t_p, p, l);
+			TEST_ASSERT(ec_cmp(q, r) == CMP_EQ, end);
+			bn_rand_mod(k, n);
+			bn_zero(l);
+			ec_mul(q, p, k);
+			ec_mul_pre(t_p, p);
+			ec_mul_sim_fix(r, t_p, p, k, t_p, p, l);
+			TEST_ASSERT(ec_cmp(q, r) == CMP_EQ, end);
+			bn_rand_mod(k, n);
+			bn_rand_mod(l, n);
+			ec_mul_pre(t_p, p);
+			ec_mul_pre(t_q, q);
+			ec_mul_sim_fix(r, t_p, p, k, t_q, q, l);
+			ec_mul(p, p, k);
+			ec_mul(q, q, l);
+			ec_add(q, q, p);
+			TEST_ASSERT(ec_cmp(q, r) == CMP_EQ, end);
+			bn_neg(k, k);
+			ec_mul_pre(t_p, p);
+			ec_mul_pre(t_q, q);
+			ec_mul_sim_fix(r, t_p, p, k, t_q, q, l);
+			ec_mul(p, p, k);
+			ec_mul(q, q, l);
+			ec_add(q, q, p);
+			TEST_ASSERT(ec_cmp(q, r) == CMP_EQ, end);
+			bn_neg(l, l);
+			ec_mul_pre(t_p, p);
+			ec_mul_pre(t_q, q);
+			ec_mul_sim_fix(r, t_p, p, k, t_q, q, l);
+			ec_mul(p, p, k);
+			ec_mul(q, q, l);
+			ec_add(q, q, p);
+			TEST_ASSERT(ec_cmp(q, r) == CMP_EQ, end);
+		} TEST_END;
 	}
 	CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -559,6 +610,10 @@ static int simultaneous(void) {
 	ec_free(p);
 	ec_free(q);
 	ec_free(r);
+	for (int i = 0; i < RELIC_EB_TABLE_MAX; i++) {
+		eb_free(t_p[i]);
+		eb_free(t_q[i]);
+	}
 	return code;
 }
 

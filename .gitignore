@@ -1,3 +1,4 @@
 relic-all.c
 target-*
 *.o
+relic-target

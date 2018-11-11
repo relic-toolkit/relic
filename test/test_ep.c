@@ -859,6 +859,7 @@ static int simultaneous(void) {
 	int code = STS_ERR;
 	bn_t n, k, l;
 	ep_t p, q, r;
+	ep_t t_p[RELIC_EP_TABLE_MAX], t_q[RELIC_EP_TABLE_MAX];
 
 	bn_null(n);
 	bn_null(k);
@@ -866,6 +867,11 @@ static int simultaneous(void) {
 	ep_null(p);
 	ep_null(q);
 	ep_null(r);
+
+	for (int i = 0; i < RELIC_EP_TABLE_MAX; i++) {
+		ep_null(t_p[i]);
+		ep_null(t_q[i]);
+	}
 
 	TRY {
 		bn_new(n);
@@ -875,7 +881,13 @@ static int simultaneous(void) {
 		ep_new(q);
 		ep_new(r);
 
+		for (int i = 0; i < RELIC_EP_TABLE_MAX; i++) {
+			ep_new(t_p[i]);
+			ep_new(t_q[i]);
+		}
+
 		ep_curve_get_gen(p);
+		ep_curve_get_gen(q);
 		ep_curve_get_ord(n);
 
 		TEST_BEGIN("simultaneous point multiplication is correct") {
@@ -1074,6 +1086,46 @@ static int simultaneous(void) {
 			ep_mul_sim(q, p, k, q, l);
 			TEST_ASSERT(ep_cmp(q, r) == CMP_EQ, end);
 		} TEST_END;
+
+		TEST_BEGIN("simultaneous-fixed point multiplication is correct") {
+			bn_zero(k);
+			bn_rand_mod(l, n);
+			ep_mul(q, p, l);
+			ep_mul_pre(t_p, p);
+			ep_mul_sim_fix(r, t_p, p, k, t_p, p, l);
+			TEST_ASSERT(ep_cmp(q, r) == CMP_EQ, end);
+			bn_rand_mod(k, n);
+			bn_zero(l);
+			ep_mul(q, p, k);
+			ep_mul_pre(t_p, p);
+			ep_mul_sim_fix(r, t_p, p, k, t_p, p, l);
+			TEST_ASSERT(ep_cmp(q, r) == CMP_EQ, end);
+			bn_rand_mod(k, n);
+			bn_rand_mod(l, n);
+			ep_mul_pre(t_p, p);
+			ep_mul_pre(t_q, q);
+			ep_mul_sim_fix(r, t_p, p, k, t_q, q, l);
+			ep_mul(p, p, k);
+			ep_mul(q, q, l);
+			ep_add(q, q, p);
+			TEST_ASSERT(ep_cmp(q, r) == CMP_EQ, end);
+			bn_neg(k, k);
+			ep_mul_pre(t_p, p);
+			ep_mul_pre(t_q, q);
+			ep_mul_sim_fix(r, t_p, p, k, t_q, q, l);
+			ep_mul(p, p, k);
+			ep_mul(q, q, l);
+			ep_add(q, q, p);
+			TEST_ASSERT(ep_cmp(q, r) == CMP_EQ, end);
+			bn_neg(l, l);
+			ep_mul_pre(t_p, p);
+			ep_mul_pre(t_q, q);
+			ep_mul_sim_fix(r, t_p, p, k, t_q, q, l);
+			ep_mul(p, p, k);
+			ep_mul(q, q, l);
+			ep_add(q, q, p);
+			TEST_ASSERT(ep_cmp(q, r) == CMP_EQ, end);
+		} TEST_END;
 	}
 	CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -1087,6 +1139,10 @@ static int simultaneous(void) {
 	ep_free(p);
 	ep_free(q);
 	ep_free(r);
+	for (int i = 0; i < RELIC_EP_TABLE_MAX; i++) {
+		ep_free(t_p[i]);
+		ep_free(t_q[i]);
+	}
 	return code;
 }
 

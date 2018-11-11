@@ -600,3 +600,29 @@ void ed_mul_sim_gen(ed_t r, const bn_t k, const ed_t q, const bn_t m) {
 		ed_free(g);
 	}
 }
+
+void ed_mul_sim_fix(ed_t r, const ed_t *t_p, const ed_t p, const bn_t k, 
+		const ed_t *t_q, const ed_t q, const bn_t m) {
+	ed_t t;
+	ed_null(t);
+
+    if (t_p == NULL) {
+        ed_mul_pre(t_p, p);
+    }
+    if (t_q == NULL) {
+        ed_mul_pre(t_q, q);
+    }
+
+	TRY {
+		ed_new(t);
+        ed_mul_fix(t, t_q, m);
+        ed_mul_fix(r, t_p, k);
+		ed_add(t, t, r);
+		ed_norm(r, t);
+	} CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	}
+	FINALLY {
+		ed_free(t);
+	}
+}

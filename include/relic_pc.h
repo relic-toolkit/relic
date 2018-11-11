@@ -722,7 +722,7 @@ typedef CAT(GT_LOWER, t) gt_t;
 #define g1_mul_sim_gen(R, K, Q, L)	CAT(G1_LOWER, mul_sim_gen)(R, K, Q, L)
 
 /**
- * Multiplies simultaneously two elements from G_1, where one of the is the
+ * Multiplies simultaneously two elements from G_2, where one of the is the
  * generator. Computes R = kG + lQ.
  *
  * @param[out] R			- the result.
@@ -731,6 +731,34 @@ typedef CAT(GT_LOWER, t) gt_t;
  * @param[out] Q			- the second integer scalar.
  */
 #define g2_mul_sim_gen(R, K, Q, L)	CAT(G2_LOWER, mul_sim_gen)(R, K, Q, L)
+
+/**
+ * Multiplies simultaneously two elements from G_1 using precomputation 
+ * tables. Computes R = kP + lQ.
+ *
+ * @param[out] R			- the result.
+ * @param[in] T_P			- the precomputation table of the first point.
+ * @param[in] P				- the first point to multiply.
+ * @param[in] K				- the first integer.
+ * @param[in] T_Q			- the precomputation table of the second point.
+ * @param[in] Q				- the second point to multiply.
+ * @param[in] M				- the second integer.
+ */
+#define g1_mul_sim_fix(R, T_P, P, K, T_Q, Q, M) CAT(G1_LOWER, mul_sim_fix)(R, T_P, P, K, T_Q, Q, M)
+
+/**
+ * Multiplies simultaneously two elements from G_2 using precomputation 
+ * tables. Computes R = kP + lQ.
+ *
+ * @param[out] R			- the result.
+ * @param[in] T_P			- the precomputation table of the first point.
+ * @param[in] P				- the first point to multiply.
+ * @param[in] K				- the first integer.
+ * @param[in] T_Q			- the precomputation table of the second point.
+ * @param[in] Q				- the second point to multiply.
+ * @param[in] M				- the second integer.
+ */
+#define g2_mul_sim_fix(R, T_P, P, K, T_Q, Q, M) CAT(G2_LOWER, mul_sim_fix)(R, T_P, P, K, T_Q, Q, M)
 
 /**
  * Maps a byte array to an element in G_1.

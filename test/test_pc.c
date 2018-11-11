@@ -445,6 +445,7 @@ static int fixed1(void) {
 
 static int simultaneous1(void) {
 	int code = STS_ERR;
+	g1_t t_p[RELIC_G1_TABLE], t_q[RELIC_G1_TABLE];
 	g1_t p, q, r;
 	bn_t n, k, l;
 
@@ -455,6 +456,11 @@ static int simultaneous1(void) {
 	g1_null(q);
 	g1_null(r);
 
+	for (int i = 0; i < RELIC_G1_TABLE; i++) {
+		g1_null(t_p[i]);
+		g1_null(t_q[i]);
+	}
+
 	TRY {
 		bn_new(n);
 		bn_new(k);
@@ -462,6 +468,11 @@ static int simultaneous1(void) {
 		g1_new(p);
 		g1_new(q);
 		g1_new(r);
+
+		for (int i = 0; i < RELIC_G1_TABLE; i++) {
+			g1_new(t_p[i]);
+			g1_new(t_q[i]);
+		}
 
 		g1_get_gen(p);
 		g1_get_ord(n);
@@ -526,6 +537,46 @@ static int simultaneous1(void) {
 			g1_mul_sim(q, p, k, q, l);
 			TEST_ASSERT(g1_cmp(q, r) == CMP_EQ, end);
 		} TEST_END;
+
+		TEST_BEGIN("simultaneous-fixed point multiplication is correct") {
+			bn_zero(k);
+			bn_rand_mod(l, n);
+			g1_mul(q, p, l);
+			g1_mul_pre(t_p, p);
+			g1_mul_sim_fix(r, (const g1_t *)t_p, p, k, (const g1_t *)t_p, p, l);
+			TEST_ASSERT(g1_cmp(q, r) == CMP_EQ, end);
+			bn_rand_mod(k, n);
+			bn_zero(l);
+			g1_mul(q, p, k);
+			g1_mul_pre(t_p, p);
+			g1_mul_sim_fix(r, (const g1_t *)t_p, p, k, (const g1_t *)t_p, p, l);
+			TEST_ASSERT(g1_cmp(q, r) == CMP_EQ, end);
+			bn_rand_mod(k, n);
+			bn_rand_mod(l, n);
+			g1_mul_pre(t_p, p);
+			g1_mul_pre(t_q, q);
+			g1_mul_sim_fix(r, (const g1_t *)t_p, p, k, (const g1_t *)t_q, q, l);
+			g1_mul(p, p, k);
+			g1_mul(q, q, l);
+			g1_add(q, q, p);
+			TEST_ASSERT(g1_cmp(q, r) == CMP_EQ, end);
+			bn_neg(k, k);
+			g1_mul_pre(t_p, p);
+			g1_mul_pre(t_q, q);
+			g1_mul_sim_fix(r, (const g1_t *)t_p, p, k, (const g1_t *)t_q, q, l);
+			g1_mul(p, p, k);
+			g1_mul(q, q, l);
+			g1_add(q, q, p);
+			TEST_ASSERT(g1_cmp(q, r) == CMP_EQ, end);
+			bn_neg(l, l);
+			g1_mul_pre(t_p, p);
+			g1_mul_pre(t_q, q);
+			g1_mul_sim_fix(r, (const g1_t *)t_p, p, k, (const g1_t *)t_q, q, l);
+			g1_mul(p, p, k);
+			g1_mul(q, q, l);
+			g1_add(q, q, p);
+			TEST_ASSERT(g1_cmp(q, r) == CMP_EQ, end);
+		} TEST_END;
 	}
 	CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -539,6 +590,10 @@ static int simultaneous1(void) {
 	g1_free(p);
 	g1_free(q);
 	g1_free(r);
+	for (int i = 0; i < RELIC_G1_TABLE; i++) {
+		g1_free(t_p[i]);
+		g1_free(t_q[i]);
+	}
 	return code;
 }
 
@@ -987,6 +1042,7 @@ static int fixed2(void) {
 
 static int simultaneous2(void) {
 	int code = STS_ERR;
+	g2_t t_p[RELIC_G2_TABLE], t_q[RELIC_G2_TABLE];
 	g2_t p, q, r;
 	bn_t n, k, l;
 
@@ -997,6 +1053,11 @@ static int simultaneous2(void) {
 	g2_null(q);
 	g2_null(r);
 
+	for (int i = 0; i < RELIC_G2_TABLE; i++) {
+		g2_null(t_p[i]);
+		g2_null(t_q[i]);
+	}
+
 	TRY {
 		bn_new(n);
 		bn_new(k);
@@ -1004,6 +1065,11 @@ static int simultaneous2(void) {
 		g2_new(p);
 		g2_new(q);
 		g2_new(r);
+
+		for (int i = 0; i < RELIC_G2_TABLE; i++) {
+			g2_new(t_p[i]);
+			g2_new(t_q[i]);
+		}
 
 		g2_get_gen(p);
 		g2_get_ord(n);
@@ -1068,6 +1134,46 @@ static int simultaneous2(void) {
 			g2_mul_sim(q, p, k, q, l);
 			TEST_ASSERT(g2_cmp(q, r) == CMP_EQ, end);
 		} TEST_END;
+
+		TEST_BEGIN("simultaneous-fixed point multiplication is correct") {
+			bn_zero(k);
+			bn_rand_mod(l, n);
+			g2_mul(q, p, l);
+			g2_mul_pre(t_p, p);
+			g2_mul_sim_fix(r, (const g2_t *)t_p, p, k, (const g2_t *)t_p, p, l);
+			TEST_ASSERT(g2_cmp(q, r) == CMP_EQ, end);
+			bn_rand_mod(k, n);
+			bn_zero(l);
+			g2_mul(q, p, k);
+			g2_mul_pre(t_p, p);
+			g2_mul_sim_fix(r, (const g2_t *)t_p, p, k, (const g2_t *)t_p, p, l);
+			TEST_ASSERT(g2_cmp(q, r) == CMP_EQ, end);
+			bn_rand_mod(k, n);
+			bn_rand_mod(l, n);
+			g2_mul_pre(t_p, p);
+			g2_mul_pre(t_q, q);
+			g2_mul_sim_fix(r, (const g2_t *)t_p, p, k, (const g2_t *)t_q, q, l);
+			g2_mul(p, p, k);
+			g2_mul(q, q, l);
+			g2_add(q, q, p);
+			TEST_ASSERT(g2_cmp(q, r) == CMP_EQ, end);
+			bn_neg(k, k);
+			g2_mul_pre(t_p, p);
+			g2_mul_pre(t_q, q);
+			g2_mul_sim_fix(r, (const g2_t *)t_p, p, k, (const g2_t *)t_q, q, l);
+			g2_mul(p, p, k);
+			g2_mul(q, q, l);
+			g2_add(q, q, p);
+			TEST_ASSERT(g2_cmp(q, r) == CMP_EQ, end);
+			bn_neg(l, l);
+			g2_mul_pre(t_p, p);
+			g2_mul_pre(t_q, q);
+			g2_mul_sim_fix(r, (const g2_t *)t_p, p, k, (const g2_t *)t_q, q, l);
+			g2_mul(p, p, k);
+			g2_mul(q, q, l);
+			g2_add(q, q, p);
+			TEST_ASSERT(g2_cmp(q, r) == CMP_EQ, end);
+		} TEST_END;
 	}
 	CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -1081,6 +1187,10 @@ static int simultaneous2(void) {
 	g2_free(p);
 	g2_free(q);
 	g2_free(r);
+	for (int i = 0; i < RELIC_G2_TABLE; i++) {
+		g2_free(t_p[i]);
+		g2_free(t_q[i]);
+	}
 	return code;
 }
 

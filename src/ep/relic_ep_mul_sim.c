@@ -665,3 +665,29 @@ void ep_mul_sim_gen(ep_t r, const bn_t k, const ep_t q, const bn_t m) {
 		ep_free(g);
 	}
 }
+
+void ep_mul_sim_fix(ep_t r, const ep_t *t_p, const ep_t p, const bn_t k, 
+		const ep_t *t_q, const ep_t q, const bn_t m) {
+	ep_t t;
+	ep_null(t);
+
+    if (t_p == NULL) {
+        ep_mul_pre(t_p, p);
+    }
+    if (t_q == NULL) {
+        ep_mul_pre(t_q, q);
+    }
+
+	TRY {
+		ep_new(t);
+        ep_mul_fix(t, t_q, m);
+        ep_mul_fix(r, t_p, k);
+		ep_add(t, t, r);
+		ep_norm(r, t);
+	} CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	}
+	FINALLY {
+		ep_free(t);
+	}
+}

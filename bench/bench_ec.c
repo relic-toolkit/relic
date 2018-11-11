@@ -154,13 +154,17 @@ static void util(void) {
 
 static void arith(void) {
 	ec_t p, q, r, t[RELIC_EC_TABLE];
+	ec_t t_p[RELIC_EC_TABLE], t_q[RELIC_EC_TABLE];
 	bn_t k, l, n;
 
 	ec_null(p);
 	ec_null(q);
 	ec_null(r);
+
 	for (int i = 0; i < RELIC_EC_TABLE; i++) {
 		ec_null(t[i]);
+		ec_null(t_p[i]);
+		ec_null(t_q[i]);
 	}
 
 	ec_new(p);
@@ -256,6 +260,22 @@ static void arith(void) {
 	}
 	BENCH_END;
 
+	for (int i = 0; i < RELIC_EC_TABLE; i++) {
+		eb_new(t_p[i]);
+		eb_new(t_q[i]);
+	}
+
+	BENCH_BEGIN("ec_mul_sim_fix") {
+		bn_rand_mod(k, n);
+		bn_rand_mod(l, n);
+		ec_rand(p);
+		ec_rand(q);
+		ec_mul_pre(t_p, p);
+		ec_mul_pre(t_q, q);
+		BENCH_ADD(ec_mul_sim_fix(r, t_p, p, k, t_q, q, l));
+	}
+	BENCH_END;
+
 	BENCH_BEGIN("ec_map") {
 		uint8_t msg[5];
 		rand_bytes(msg, 5);
@@ -279,6 +299,8 @@ static void arith(void) {
 	bn_free(n);
 	for (int i = 0; i < RELIC_EC_TABLE; i++) {
 		ec_free(t[i]);
+		ec_free(t_p[i]);
+		ec_free(t_q[i]);
 	}
 }
 

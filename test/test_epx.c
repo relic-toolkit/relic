@@ -868,6 +868,7 @@ static int simultaneous(void) {
 	int code = STS_ERR;
 	bn_t n, k, l;
 	ep2_t p, q, r;
+	ep2_t t_p[RELIC_EPX_TABLE_MAX], t_q[RELIC_EPX_TABLE_MAX];
 
 	bn_null(n);
 	bn_null(k);
@@ -876,6 +877,11 @@ static int simultaneous(void) {
 	ep2_null(q);
 	ep2_null(r);
 
+	for (int i = 0; i < RELIC_EPX_TABLE_MAX; i++) {
+		ep2_null(t_p[i]);
+		ep2_null(t_q[i]);
+	}
+
 	TRY {
 		bn_new(n);
 		bn_new(k);
@@ -883,6 +889,11 @@ static int simultaneous(void) {
 		ep2_new(p);
 		ep2_new(q);
 		ep2_new(r);
+
+		for (int i = 0; i < RELIC_EPX_TABLE_MAX; i++) {
+			ep2_new(t_p[i]);
+			ep2_new(t_q[i]);
+		}
 
 		ep2_curve_get_gen(p);
 		ep2_curve_get_ord(n);
@@ -1083,6 +1094,46 @@ static int simultaneous(void) {
 			ep2_mul_sim(q, p, k, q, l);
 			TEST_ASSERT(ep2_cmp(q, r) == CMP_EQ, end);
 		} TEST_END;
+
+		TEST_BEGIN("simultaneous-fixed point multiplication is correct") {
+			bn_zero(k);
+			bn_rand_mod(l, n);
+			ep2_mul(q, p, l);
+			ep2_mul_pre(t_p, p);
+			ep2_mul_sim_fix(r, t_p, p, k, t_p, p, l);
+			TEST_ASSERT(ep2_cmp(q, r) == CMP_EQ, end);
+			bn_rand_mod(k, n);
+			bn_zero(l);
+			ep2_mul(q, p, k);
+			ep2_mul_pre(t_p, p);
+			ep2_mul_sim_fix(r, t_p, p, k, t_p, p, l);
+			TEST_ASSERT(ep2_cmp(q, r) == CMP_EQ, end);
+			bn_rand_mod(k, n);
+			bn_rand_mod(l, n);
+			ep2_mul_pre(t_p, p);
+			ep2_mul_pre(t_q, q);
+			ep2_mul_sim_fix(r, t_p, p, k, t_q, q, l);
+			ep2_mul(p, p, k);
+			ep2_mul(q, q, l);
+			ep2_add(q, q, p);
+			TEST_ASSERT(ep2_cmp(q, r) == CMP_EQ, end);
+			bn_neg(k, k);
+			ep2_mul_pre(t_p, p);
+			ep2_mul_pre(t_q, q);
+			ep2_mul_sim_fix(r, t_p, p, k, t_q, q, l);
+			ep2_mul(p, p, k);
+			ep2_mul(q, q, l);
+			ep2_add(q, q, p);
+			TEST_ASSERT(ep2_cmp(q, r) == CMP_EQ, end);
+			bn_neg(l, l);
+			ep2_mul_pre(t_p, p);
+			ep2_mul_pre(t_q, q);
+			ep2_mul_sim_fix(r, t_p, p, k, t_q, q, l);
+			ep2_mul(p, p, k);
+			ep2_mul(q, q, l);
+			ep2_add(q, q, p);
+			TEST_ASSERT(ep2_cmp(q, r) == CMP_EQ, end);
+		} TEST_END;
 	}
 	CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -1096,6 +1147,10 @@ static int simultaneous(void) {
 	ep2_free(p);
 	ep2_free(q);
 	ep2_free(r);
+	for (int i = 0; i < RELIC_EPX_TABLE_MAX; i++) {
+		ep2_free(t_p[i]);
+		ep2_free(t_q[i]);
+	}
 	return code;
 }
 

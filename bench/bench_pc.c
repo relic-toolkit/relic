@@ -151,6 +151,7 @@ static void util1(void) {
 
 static void arith1(void) {
 	g1_t p, q, r, t[RELIC_G1_TABLE];
+	g1_t t_p[RELIC_G1_TABLE], t_q[RELIC_G1_TABLE];
 	bn_t k, l, n;
 
 	g1_null(p);
@@ -158,6 +159,8 @@ static void arith1(void) {
 	g1_null(r);
 	for (int i = 0; i < RELIC_G1_TABLE; i++) {
 		g1_null(t[i]);
+		g1_null(t_p[i]);
+		g1_null(t_q[i]);
 	}
 
 	g1_new(p);
@@ -257,6 +260,27 @@ static void arith1(void) {
 		BENCH_ADD(g1_mul_sim_gen(r, k, q, l));
 	}
 	BENCH_END;
+
+	for (int i = 0; i < RELIC_G1_TABLE; i++) {
+		g1_new(t_p[i]);
+		g1_new(t_q[i]);
+	}
+
+	BENCH_BEGIN("g1_mul_sim_fix") {
+		bn_rand(k, BN_POS, bn_bits(n));
+		bn_rand_mod(k, n);
+		bn_rand_mod(l, n);
+		g1_rand(p);
+		g1_rand(q);
+		g1_mul_pre(t_p, p);
+		g1_mul_pre(t_q, q);
+		BENCH_ADD(g1_mul_sim_fix(r, (const g1_t *)t_p, p, k, (const g1_t *)t_q, q, l));
+	} BENCH_END;
+
+	for (int i = 0; i < RELIC_G1_TABLE; i++) {
+		g1_free(t_p[i]);
+		g1_free(t_q[i]);
+	}
 
 	BENCH_BEGIN("g1_map") {
 		uint8_t msg[5];
@@ -394,14 +418,17 @@ static void util2(void) {
 }
 
 static void arith2(void) {
-	g2_t p, q, r, t[RELIC_G1_TABLE];
+	g2_t p, q, r, t[RELIC_G2_TABLE];
+	g2_t t_p[RELIC_G2_TABLE], t_q[RELIC_G2_TABLE];
 	bn_t k, l, n;
 
 	g2_null(p);
 	g2_null(q);
 	g2_null(r);
-	for (int i = 0; i < RELIC_G1_TABLE; i++) {
+	for (int i = 0; i < RELIC_G2_TABLE; i++) {
 		g2_null(t[i]);
+		g2_null(t_p[i]);
+		g2_null(t_q[i]);
 	}
 
 	g2_new(p);
@@ -501,6 +528,27 @@ static void arith2(void) {
 		BENCH_ADD(g2_mul_sim_gen(r, k, q, l));
 	}
 	BENCH_END;
+
+	for (int i = 0; i < RELIC_G2_TABLE; i++) {
+		g2_new(t_p[i]);
+		g2_new(t_q[i]);
+	}
+
+	BENCH_BEGIN("g2_mul_sim_fix") {
+		bn_rand(k, BN_POS, bn_bits(n));
+		bn_rand_mod(k, n);
+		bn_rand_mod(l, n);
+		g2_rand(p);
+		g2_rand(q);
+		g2_mul_pre(t_p, p);
+		g2_mul_pre(t_q, q);
+		BENCH_ADD(g2_mul_sim_fix(r, (const g2_t *)t_p, p, k, (const g2_t *)t_q, q, l));
+	} BENCH_END;
+
+	for (int i = 0; i < RELIC_G2_TABLE; i++) {
+		g2_free(t_p[i]);
+		g2_free(t_q[i]);
+	}
 
 	BENCH_BEGIN("g2_map") {
 		uint8_t msg[5];

@@ -946,6 +946,7 @@
 #undef ep_mul_sim_inter
 #undef ep_mul_sim_joint
 #undef ep_mul_sim_gen
+#undef ep_mul_sim_fix
 #undef ep_norm
 #undef ep_norm_sim
 #undef ep_map
@@ -1026,6 +1027,7 @@
 #define ep_mul_sim_inter 	PREFIX(ep_mul_sim_inter)
 #define ep_mul_sim_joint 	PREFIX(ep_mul_sim_joint)
 #define ep_mul_sim_gen 	PREFIX(ep_mul_sim_gen)
+#define ep_mul_sim_fix  PREFIX(ep_mul_sim_fix)
 #define ep_norm 	PREFIX(ep_norm)
 #define ep_norm_sim 	PREFIX(ep_norm_sim)
 #define ep_map 	PREFIX(ep_map)
@@ -1082,6 +1084,7 @@
 #undef ed_mul_sim_inter
 #undef ed_mul_sim_joint
 #undef ed_mul_sim_gen
+#undef ed_mul_sim_fix
 #undef ed_tab
 #undef ed_print
 #undef ed_is_valid
@@ -1143,6 +1146,7 @@
 #define ed_mul_sim_inter 	PREFIX(ed_mul_sim_inter)
 #define ed_mul_sim_joint 	PREFIX(ed_mul_sim_joint)
 #define ed_mul_sim_gen 	PREFIX(ed_mul_sim_gen)
+#define ed_mul_sim_fix  PREFIX(ed_mul_sim_fix)
 #define ed_tab 	PREFIX(ed_tab)
 #define ed_print 	PREFIX(ed_print)
 #define ed_is_valid 	PREFIX(ed_is_valid)
@@ -1230,6 +1234,7 @@
 #undef eb_mul_sim_inter
 #undef eb_mul_sim_joint
 #undef eb_mul_sim_gen
+#undef eb_mul_sim_fix
 #undef eb_norm
 #undef eb_norm_sim
 #undef eb_map
@@ -1302,6 +1307,7 @@
 #define eb_mul_sim_inter 	PREFIX(eb_mul_sim_inter)
 #define eb_mul_sim_joint 	PREFIX(eb_mul_sim_joint)
 #define eb_mul_sim_gen 	PREFIX(eb_mul_sim_gen)
+#define eb_mul_sim_fix  PREFIX(eb_mul_sim_fix)
 #define eb_norm 	PREFIX(eb_norm)
 #define eb_norm_sim 	PREFIX(eb_norm_sim)
 #define eb_map 	PREFIX(eb_map)
@@ -1371,6 +1377,7 @@
 #undef ep2_mul_sim_inter
 #undef ep2_mul_sim_joint
 #undef ep2_mul_sim_gen
+#undef ep2_mul_sim_fix
 #undef ep2_mul_dig
 #undef ep2_norm
 #undef ep2_norm_sim
@@ -1437,6 +1444,7 @@
 #define ep2_mul_sim_inter 	PREFIX(ep2_mul_sim_inter)
 #define ep2_mul_sim_joint 	PREFIX(ep2_mul_sim_joint)
 #define ep2_mul_sim_gen 	PREFIX(ep2_mul_sim_gen)
+#define ep2_mul_sim_fix     PREFIX(ep2_mul_sim_fix)
 #define ep2_mul_dig 	PREFIX(ep2_mul_dig)
 #define ep2_norm 	PREFIX(ep2_norm)
 #define ep2_norm_sim 	PREFIX(ep2_norm_sim)

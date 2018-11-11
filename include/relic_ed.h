@@ -757,6 +757,21 @@ void ed_mul_sim_joint(ed_t r, const ed_t p, const bn_t k, const ed_t q,
 void ed_mul_sim_gen(ed_t r, const bn_t k, const ed_t q, const bn_t m);
 
 /**
+ * Multiplies and adds two prime elliptic curve points simultaneously using
+ * scalar multiplication, point addition and precomputation tables.
+ *
+ * @param[out] r			- the result.
+ * @param[in] t_p			- the precomputation table of the first point.
+ * @param[in] p				- the first point to multiply.
+ * @param[in] k				- the first integer.
+ * @param[in] t_q			- the precomputation table of the second point.
+ * @param[in] q				- the second point to multiply.
+ * @param[in] m				- the second integer.
+ */
+void ed_mul_sim_fix(ed_t r, const ed_t *t_p, const ed_t p, const bn_t k, 
+		const ed_t *t_q, const ed_t q, const bn_t m);
+
+/**
  * Builds a precomputation table for multiplying a random prime elliptic twisted Edwards point.
  *
  * @param[out] t			- the precomputation table.
