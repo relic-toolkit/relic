@@ -571,14 +571,13 @@ void eb_mul_sim_fix(eb_t r, const eb_t *t_p, const eb_t p, const bn_t k,
 	TRY {
 		eb_new(t);
 		if (t_p == NULL || t_q == NULL) {
-			eb_mul(t, q, m);
-			eb_mul(r, p, k);
+			eb_mul_sim(r, p, k, q, m);
 		} else {
 			eb_mul_fix(t, t_q, m);
         	eb_mul_fix(r, t_p, k);
+			eb_add(t, t, r);
+			eb_norm(r, t);
 		}
-		eb_add(t, t, r);
-		eb_norm(r, t);
 	} CATCH_ANY {
 		THROW(ERR_CAUGHT);
 	}

@@ -609,14 +609,13 @@ void ed_mul_sim_fix(ed_t r, const ed_t *t_p, const ed_t p, const bn_t k,
 	TRY {
 		ed_new(t);
         if (t_p == NULL || t_q == NULL) {
-			ed_mul(t, q, m);
-			ed_mul(r, p, k);
+			ed_mul_sim(r, p, k, q, m);
 		} else {
 			ed_mul_fix(t, t_q, m);
         	ed_mul_fix(r, t_p, k);
+			ed_add(t, t, r);
+			ed_norm(r, t);
 		}
-		ed_add(t, t, r);
-		ed_norm(r, t);
 	} CATCH_ANY {
 		THROW(ERR_CAUGHT);
 	}

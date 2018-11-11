@@ -404,14 +404,13 @@ void ep2_mul_sim_fix(ep2_t r, const ep2_t *t_p, const ep2_t p, const bn_t k,
 	TRY {
 		ep2_new(t);
         if (t_p == NULL || t_q == NULL) {
-			ep2_mul(t, q, m);
-			ep2_mul(r, p, k);
+			ep2_mul_sim(r, p, k, q, m);
 		} else {
 			ep2_mul_fix(t, t_q, m);
         	ep2_mul_fix(r, t_p, k);
+			ep2_add(t, t, r);
+			ep2_norm(r, t);
 		}
-		ep2_add(t, t, r);
-		ep2_norm(r, t);
 	} CATCH_ANY {
 		THROW(ERR_CAUGHT);
 	}
