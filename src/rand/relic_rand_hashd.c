@@ -55,7 +55,8 @@
 static void rand_hash(uint8_t *out, int out_len, uint8_t *in, int in_len) {
 	uint32_t j = util_conv_big(8 * out_len);
 	int len = CEIL(out_len, MD_LEN);
-	uint8_t buf[1 + sizeof(uint32_t) + in_len], hash[MD_LEN];
+    uint8_t* buf = RELIC_ALLOCA(uint8_t, 1 + sizeof(uint32_t) + in_len);
+	uint8_t hash[MD_LEN];
 
 	buf[0] = 1;
 	memcpy(buf + 1, &j, sizeof(uint32_t));
@@ -183,11 +184,12 @@ void rand_seed(uint8_t *buf, int size) {
 		rand_hash(ctx->rand + 1 + len, len, ctx->rand, len + 1);
 	} else {
 		/* V = hash_df(01 || V || seed). */
-		uint8_t tmp[1 + len + size];
+        int tmp_size = 1 + len + size;
+		uint8_t* tmp = RELIC_ALLOCA(uint8_t, tmp_size);
 		tmp[0] = 1;
 		memcpy(tmp + 1, ctx->rand + 1, len);
 		memcpy(tmp + 1 + len, buf, size);
-		rand_hash(ctx->rand + 1, len, tmp, sizeof(tmp));
+		rand_hash(ctx->rand + 1, len, tmp, tmp_size);
 		/* C = hash_df(00 || V). */
 		rand_hash(ctx->rand + 1 + len, len, ctx->rand, len + 1);
 	}

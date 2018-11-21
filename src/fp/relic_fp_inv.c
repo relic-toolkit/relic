@@ -392,7 +392,7 @@ void fp_inv_lower(fp_t c, const fp_t a) {
 
 void fp_inv_sim(fp_t *c, const fp_t *a, int n) {
 	int i;
-	fp_t u, t[n];
+	fp_t u, *t = RELIC_ALLOCA(fp_t, n);
 
 	for (i = 0; i < n; i++) {
 		fp_null(t[i]);

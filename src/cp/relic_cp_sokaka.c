@@ -128,9 +128,10 @@ int cp_sokaka_key(uint8_t *key, unsigned int key_len, char *id1,
 		}
 
 		/* Allocate size for storing the output. */
-		uint8_t buf[gt_size_bin(e, 0)];
-		gt_write_bin(buf, sizeof(buf), e, 0);
-		md_kdf1(key, key_len, buf, sizeof(buf));
+        int buf_size = gt_size_bin(e, 0);
+		uint8_t *buf = RELIC_ALLOCA(uint8_t, buf_size);
+		gt_write_bin(buf, buf_size, e, 0);
+		md_kdf1(key, key_len, buf, buf_size);
 	}
 	CATCH_ANY {
 		result = STS_ERR;

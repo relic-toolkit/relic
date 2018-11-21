@@ -170,7 +170,8 @@ void ep2_mul_sim_trick(ep2_t r, ep2_t p, bn_t k, ep2_t q, bn_t m) {
 	ep2_t t[1 << EP_WIDTH];
 	bn_t n;
 	int l0, l1, w = EP_WIDTH / 2;
-	uint8_t w0[CEIL(2 * FP_BITS, w)], w1[CEIL(2 * FP_BITS, w)];
+	uint8_t *w0 = RELIC_ALLOCA(uint8_t, CEIL(2 * FP_BITS, w)),
+        *w1 = RELIC_ALLOCA(uint8_t, CEIL(2 * FP_BITS, w));
 
 	bn_null(n);
 

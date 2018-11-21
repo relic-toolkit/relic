@@ -266,7 +266,7 @@ static void find_chain(void) {
 			break;
 	}
 
-	int x, y, u[ctx->chain_len + 1];
+	int x, y, *u = RELIC_ALLOCA(int, ctx->chain_len + 1);
 
 	for (i = 0; i < MAX_TERMS; i++) {
 		for (j = 0; j < RELIC_FB_TABLE; j++) {
