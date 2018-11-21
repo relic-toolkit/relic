@@ -26,6 +26,6 @@ if (MSVC)
 else (MSVC)
 
     # Choose the pseudo-random number generator.
-    set(SEED "WCGR" CACHE STRING "Random number generator seeder")
+    set(SEED "UDEV" CACHE STRING "Random number generator seeder")
 
 endif (MSVC)
