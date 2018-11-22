@@ -569,7 +569,7 @@ int ep2_size_bin(ep2_t a, int pack);
  * @throw ERR_NO_VALID		- if the encoded point is invalid.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is invalid.
  */
-void ep2_read_bin(ep2_t a, uint8_t *bin, int len);
+void ep2_read_bin(ep2_t a, const uint8_t *bin, int len);
 
 /**
  * Writes a prime elliptic curve pointer over a quadratic extension to a byte
