@@ -51,24 +51,6 @@ void ed_curve_init(void) {
 
 void ed_curve_clean(void) {
 	ctx_t *ctx = core_get();
-#if ALLOC == STATIC
-	fp_free(ctx->ed_g.x);
-	fp_free(ctx->ed_g.y);
-	fp_free(ctx->ed_g.z);
-#if ED_ADD == EXTND
-	fp_free(ctx->ed_g.t);
-#endif
-#ifdef ED_PRECO
-	for (int i = 0; i < RELIC_ED_TABLE; i++) {
-		fp_free(ctx->ed_pre[i].x);
-		fp_free(ctx->ed_pre[i].y);
-		fp_free(ctx->ed_pre[i].z);
-#if ED_ADD == EXTND
-		fp_free(ctx->ed_pre[i].t);
-#endif
-	}
-#endif
-#endif
 	bn_clean(&ctx->ed_r);
 	bn_clean(&ctx->ed_h);
 #if defined(ED_ENDOM) && (ED_MUL == LWNAF || ED_FIX == LWNAF || !defined(STRIP))
