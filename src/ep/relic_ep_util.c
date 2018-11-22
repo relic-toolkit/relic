@@ -312,7 +312,7 @@ void ep_write_bin(uint8_t *bin, int len, const ep_t a, int pack) {
 	ep_null(t);
 
 	if (ep_is_infty(a)) {
-		if (len != 1) {
+		if (len < 1) {
 			THROW(ERR_NO_BUFFER);
 		} else {
 			bin[0] = 0;
