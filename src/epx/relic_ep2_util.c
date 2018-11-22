@@ -244,7 +244,7 @@ int ep2_size_bin(ep2_t a, int pack) {
 	return size;
 }
 
-void ep2_read_bin(ep2_t a, uint8_t *bin, int len) {
+void ep2_read_bin(ep2_t a, const uint8_t *bin, int len) {
 	if (len == 1) {
 		if (bin[0] == 0) {
 			ep2_set_infty(a);

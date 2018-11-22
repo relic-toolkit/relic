@@ -657,7 +657,7 @@ int fp2_size_bin(fp2_t a, int pack);
  * @param[in] len			- the buffer capacity.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is not correct.
  */
-void fp2_read_bin(fp2_t a, uint8_t *bin, int len);
+void fp2_read_bin(fp2_t a, const uint8_t *bin, int len);
 
 /**
  * Writes a quadratic extension field element to a byte vector in big-endian
@@ -991,7 +991,7 @@ int fp3_size_bin(fp3_t a);
  * @param[in] len			- the buffer capacity.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is not correct.
  */
-void fp3_read_bin(fp3_t a, uint8_t *bin, int len);
+void fp3_read_bin(fp3_t a, const uint8_t *bin, int len);
 
 /**
  * Writes a cubic extension field element to a byte vector in big-endian
@@ -1271,7 +1271,7 @@ int fp6_size_bin(fp6_t a);
  * @param[in] len			- the buffer capacity.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is not correct.
  */
-void fp6_read_bin(fp6_t a, uint8_t *bin, int len);
+void fp6_read_bin(fp6_t a, const uint8_t *bin, int len);
 
 /**
  * Writes a setix extension field element to a byte vector in big-endian
@@ -1503,7 +1503,7 @@ int fp12_size_bin(fp12_t a, int pack);
  * @param[in] len			- the buffer capacity.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is not correct.
  */
-void fp12_read_bin(fp12_t a, uint8_t *bin, int len);
+void fp12_read_bin(fp12_t a, const uint8_t *bin, int len);
 
 /**
  * Writes a setix extension field element to a byte vector in big-endian

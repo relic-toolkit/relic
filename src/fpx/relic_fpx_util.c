@@ -71,7 +71,7 @@ int fp2_size_bin(fp2_t a, int pack) {
 	}
 }
 
-void fp2_read_bin(fp2_t a, uint8_t *bin, int len) {
+void fp2_read_bin(fp2_t a, const uint8_t *bin, int len) {
 	if (len != FP_BYTES + 1 && len != 2 * FP_BYTES) {
 		THROW(ERR_NO_BUFFER);
 	}
@@ -156,7 +156,7 @@ int fp3_size_bin(fp3_t a) {
 	return 3 * FP_BYTES;
 }
 
-void fp3_read_bin(fp3_t a, uint8_t *bin, int len) {
+void fp3_read_bin(fp3_t a, const uint8_t *bin, int len) {
 	if (len != 3 * FP_BYTES) {
 		THROW(ERR_NO_BUFFER);
 	}
@@ -212,7 +212,7 @@ int fp6_size_bin(fp6_t a) {
 	return 6 * FP_BYTES;
 }
 
-void fp6_read_bin(fp6_t a, uint8_t *bin, int len) {
+void fp6_read_bin(fp6_t a, const uint8_t *bin, int len) {
 	if (len != 6 * FP_BYTES) {
 		THROW(ERR_NO_BUFFER);
 	}
@@ -272,7 +272,7 @@ int fp12_size_bin(fp12_t a, int pack) {
 	}
 }
 
-void fp12_read_bin(fp12_t a, uint8_t *bin, int len) {
+void fp12_read_bin(fp12_t a, const uint8_t *bin, int len) {
 	if (len != 8 * FP_BYTES && len != 12 * FP_BYTES) {
 		THROW(ERR_NO_BUFFER);
 	}
