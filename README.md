@@ -34,7 +34,7 @@ If you use RELIC, please cite using the template below:
         author = {D. F. Aranha and C. P. L. Gouv\^{e}a},
         title = {{RELIC is an Efficient LIbrary for Cryptography}},
         howpublished = {\url{https://github.com/relic-toolkit/relic}},
-    }`
+    }
 
 ### Build instructions
 

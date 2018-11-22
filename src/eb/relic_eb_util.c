@@ -592,7 +592,7 @@ void eb_write_bin(uint8_t *bin, int len, const eb_t a, int pack) {
 	eb_null(t);
 
 	if (eb_is_infty(a)) {
-		if (len != 1) {
+		if (len < 1) {
 			THROW(ERR_NO_BUFFER);
 		} else {
 			bin[0] = 0;
