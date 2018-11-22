@@ -296,7 +296,7 @@ void ep2_write_bin(uint8_t *bin, int len, ep2_t a, int pack) {
 	ep2_null(t);
 
 	if (ep2_is_infty(a)) {
-		if (len != 1) {
+		if (len < 1) {
 			THROW(ERR_NO_BUFFER);
 		} else {
 			bin[0] = 0;

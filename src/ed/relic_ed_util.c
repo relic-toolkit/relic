@@ -385,7 +385,7 @@ void ed_write_bin(uint8_t *bin, int len, const ed_t a, int pack) {
 	ed_null(t);
 
 	if (ed_is_infty(a)) {
-		if (len != 1) {
+		if (len < 1) {
 			THROW(ERR_NO_BUFFER);
 		} else {
 			bin[0] = 0;
