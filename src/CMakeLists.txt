@@ -8,7 +8,7 @@ if (NOT INHERIT)
 endif(NOT INHERIT)
 string(TOLOWER ${INHERIT} INHERIT_PATH)
 
-set(CORE_SRCS relic_err.c relic_core.c relic_conf.c relic_pool.c relic_util.c)
+set(CORE_SRCS relic_err.c relic_core.c relic_conf.c relic_util.c)
 
 if (ARCH)
 	string(TOLOWER ${ARCH} ARCH_PATH)

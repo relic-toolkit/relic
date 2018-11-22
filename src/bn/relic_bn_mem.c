@@ -75,14 +75,6 @@ void bn_init(bn_t a, int digits) {
 	} else {
 		digits = BN_SIZE;
 	}
-#if ALLOC == STATIC
-	if (a != NULL) {
-		a->dp = pool_get();
-		if (a->dp == NULL) {
-			THROW(ERR_NO_MEMORY);
-		}
-	}
-#endif
 #endif
 	if (a != NULL) {
 		a->used = 0;
@@ -103,12 +95,6 @@ void bn_clean(bn_t a) {
 			a->dp = NULL;
 		}
 		a->alloc = 0;
-	}
-#endif
-#if ALLOC == STATIC
-	if (a != NULL && a->dp != NULL) {
-		pool_put(a->dp);
-		a->dp = NULL;
 	}
 #endif
 	if (a != NULL) {
@@ -132,7 +118,7 @@ void bn_grow(bn_t a, int digits) {
 		/* Set the newly allocated digits to zero. */
 		a->alloc = digits;
 	}
-#else /* ALLOC == STATIC || ALLOC == STACK */
+#else /* ALLOC == AUTO || ALLOC == STACK */
 	if (digits > BN_SIZE) {
 		THROW(ERR_NO_PRECI)
 	}

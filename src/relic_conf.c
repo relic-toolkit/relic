@@ -49,9 +49,7 @@
 void conf_print(void) {
 #ifndef QUIET
 	util_print("-- RELIC " RELIC_VERSION " configuration:\n\n");
-#if ALLOC == STATIC
-	util_print("** Allocation mode: STATIC\n\n");
-#elif ALLOC == DYNAMIC
+#if ALLOC == DYNAMIC
 	util_print("** Allocation mode: DYNAMIC\n\n");
 #elif ALLOC == STACK
 	util_print("** Allocation mode: STACK\n\n");

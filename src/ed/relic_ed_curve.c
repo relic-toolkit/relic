@@ -38,24 +38,6 @@ void ed_curve_init(void) {
 		ctx->ed_ptr[i] = &(ctx->ed_pre[i]);
 	}
 #endif
-#if ALLOC == STATIC
-	fp_new(ctx->ed_g.x);
-	fp_new(ctx->ed_g.y);
-	fp_new(ctx->ed_g.z);
-#if ED_ADD == EXTND
-	fp_new(ctx->ed_g.t);
-#endif
-#ifdef ED_PRECO
-	for (int i = 0; i < RELIC_ED_TABLE; i++) {
-		fp_new(ctx->ed_pre[i].x);
-		fp_new(ctx->ed_pre[i].y);
-		fp_new(ctx->ed_pre[i].z);
-#if ED_ADD == EXTND
-		fp_new(ctx->ed_pre[i].t);
-#endif
-	}
-#endif
-#endif
 	ed_set_infty(&ctx->ed_g);
 	bn_init(&ctx->ed_r, FP_DIGS);
 	bn_init(&ctx->ed_h, FP_DIGS);

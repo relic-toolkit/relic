@@ -651,12 +651,10 @@
 
 /** Automatic memory allocation. */
 #define AUTO     1
-/** Static memory allocation. */
-#define	STATIC   2
 /** Dynamic memory allocation. */
-#define DYNAMIC  3
+#define DYNAMIC  2
 /** Stack memory allocation. */
-#define STACK    4
+#define STACK    3
 /** Chosen memory allocation policy. */
 #define ALLOC    @ALLOC@
 

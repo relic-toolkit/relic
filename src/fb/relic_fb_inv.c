@@ -540,12 +540,14 @@ void fb_inv_ctaia(fb_t c, const fb_t a) {
 
 	fb_null(r);
 	fb_null(s);
+	fb_null(t);
 	fb_null(u);
 	fb_null(v);
 
 	TRY {
 		fb_new(r);
 		fb_new(s);
+		fb_new(t);
 		fb_new(u);
 		fb_new(v);
 

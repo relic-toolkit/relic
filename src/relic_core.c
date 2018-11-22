@@ -93,10 +93,6 @@ int core_init(void) {
 	core_ctx->last = NULL;
 #endif /* CHECK */
 
-#if ALLOC == STATIC
-	core_ctx->next = 0;
-#endif
-
 #ifdef OVERH
 	core_ctx->over = 0;
 #endif

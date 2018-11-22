@@ -187,19 +187,6 @@ typedef ep3_st *ep3_t;
 	fp2_new((A)->y);														\
 	fp2_new((A)->z);														\
 
-#elif ALLOC == STATIC
-#define ep2_new(A)															\
-	A = (ep2_t)alloca(sizeof(ep2_st));										\
-	if (A == NULL) {														\
-		THROW(ERR_NO_MEMORY);												\
-	}																		\
-	fp2_null((A)->x);														\
-	fp2_null((A)->y);														\
-	fp2_null((A)->z);														\
-	fp2_new((A)->x);														\
-	fp2_new((A)->y);														\
-	fp2_new((A)->z);														\
-
 #elif ALLOC == AUTO
 #define ep2_new(A)				/* empty */
 
@@ -224,15 +211,6 @@ typedef ep3_st *ep3_t;
 		fp2_free((A)->y);													\
 		fp2_free((A)->z);													\
 		free(A);															\
-		A = NULL;															\
-	}																		\
-
-#elif ALLOC == STATIC
-#define ep2_free(A)															\
-	if (A != NULL) {														\
-		fp2_free((A)->x);													\
-		fp2_free((A)->y);													\
-		fp2_free((A)->z);													\
 		A = NULL;															\
 	}																		\
 

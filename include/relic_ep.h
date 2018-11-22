@@ -186,21 +186,12 @@ enum {
  * Represents an elliptic curve point over a prime field.
  */
 typedef struct {
-#if ALLOC == STATIC
-	/** The first coordinate. */
-	fp_t x;
-	/** The second coordinate. */
-	fp_t y;
-	/** The third coordinate (projective representation). */
-	fp_t z;
-#elif ALLOC == DYNAMIC || ALLOC == STACK || ALLOC == AUTO
 	/** The first coordinate. */
 	fp_st x;
 	/** The second coordinate. */
 	fp_st y;
 	/** The third coordinate (projective representation). */
 	fp_st z;
-#endif
 	/** Flag to indicate that this point is normalized. */
 	int norm;
 } ep_st;
@@ -242,19 +233,6 @@ typedef ep_st *ep_t;
 		THROW(ERR_NO_MEMORY);												\
 	}																		\
 
-#elif ALLOC == STATIC
-#define ep_new(A)															\
-	A = (ep_t)alloca(sizeof(ep_st));										\
-	if (A == NULL) {														\
-		THROW(ERR_NO_MEMORY);												\
-	}																		\
-	fp_null((A)->x);														\
-	fp_null((A)->y);														\
-	fp_null((A)->z);														\
-	fp_new((A)->x);															\
-	fp_new((A)->y);															\
-	fp_new((A)->z);															\
-
 #elif ALLOC == AUTO
 #define ep_new(A)				/* empty */
 
@@ -275,15 +253,6 @@ typedef ep_st *ep_t;
 		free(A);															\
 		A = NULL;															\
 	}
-
-#elif ALLOC == STATIC
-#define ep_free(A)															\
-	if (A != NULL) {														\
-		fp_free((A)->x);													\
-		fp_free((A)->y);													\
-		fp_free((A)->z);													\
-		A = NULL;															\
-	}																		\
 
 #elif ALLOC == AUTO
 #define ep_free(A)				/* empty */

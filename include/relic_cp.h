@@ -286,29 +286,6 @@ typedef vbnn_user_st *vbnn_user_t;
 	bn_new((A)->q);															\
 	bn_new((A)->qi);														\
 
-#elif ALLOC == STATIC
-#define rsa_new(A)															\
-	A = (rsa_t)alloca(sizeof(relic_rsa_st));										\
-	if (A == NULL) {														\
-		THROW(ERR_NO_MEMORY);												\
-	}																		\
-	bn_null((A)->e);														\
-	bn_null((A)->n);														\
-	bn_null((A)->d);														\
-	bn_null((A)->dp);														\
-	bn_null((A)->dq);														\
-	bn_null((A)->p);														\
-	bn_null((A)->q);														\
-	bn_null((A)->qi);														\
-	bn_new((A)->e);															\
-	bn_new((A)->n);															\
-	bn_new((A)->d);															\
-	bn_new((A)->dp);														\
-	bn_new((A)->dq);														\
-	bn_new((A)->p);															\
-	bn_new((A)->q);															\
-	bn_new((A)->qi);														\
-
 #elif ALLOC == AUTO
 #define rsa_new(A)															\
 	bn_new((A)->e);															\
@@ -353,20 +330,6 @@ typedef vbnn_user_st *vbnn_user_t;
 		free(A);															\
 		A = NULL;															\
 	}
-
-#elif ALLOC == STATIC
-#define rsa_free(A)															\
-	if (A != NULL) {														\
-		bn_free((A)->e);													\
-		bn_free((A)->n);													\
-		bn_free((A)->d);													\
-		bn_free((A)->dp);													\
-		bn_free((A)->dq);													\
-		bn_free((A)->p);													\
-		bn_free((A)->q);													\
-		bn_free((A)->qi);													\
-		A = NULL;															\
-	}																		\
 
 #elif ALLOC == AUTO
 #define rsa_free(A)				/* empty */
@@ -413,18 +376,6 @@ typedef vbnn_user_st *vbnn_user_t;
 	bn_new((A)->p);															\
 	bn_new((A)->q);															\
 
-#elif ALLOC == STATIC
-#define rabin_new(A)														\
-	A = (rabin_t)alloca(sizeof(rabin_st));									\
-	if (A == NULL) {														\
-		THROW(ERR_NO_MEMORY);												\
-	}																		\
-	bn_new((A)->n);															\
-	bn_new((A)->dp);														\
-	bn_new((A)->dq);														\
-	bn_new((A)->p);															\
-	bn_new((A)->q);															\
-
 #elif ALLOC == AUTO
 #define rabin_new(A)														\
 	bn_new((A)->n);															\
@@ -461,17 +412,6 @@ typedef vbnn_user_st *vbnn_user_t;
 		A = NULL;															\
 	}
 
-#elif ALLOC == STATIC
-#define rabin_free(A)														\
-	if (A != NULL) {														\
-		bn_free((A)->n);													\
-		bn_free((A)->dp);													\
-		bn_free((A)->dq);													\
-		bn_free((A)->p);													\
-		bn_free((A)->q);													\
-		A = NULL;															\
-	}																		\
-
 #elif ALLOC == AUTO
 #define rabin_free(A)			/* empty */
 
@@ -505,18 +445,6 @@ typedef vbnn_user_st *vbnn_user_t;
 #if ALLOC == DYNAMIC
 #define bdpe_new(A)															\
 	A = (bdpe_t)calloc(1, sizeof(bdpe_st));									\
-	if (A == NULL) {														\
-		THROW(ERR_NO_MEMORY);												\
-	}																		\
-	bn_new((A)->n);															\
-	bn_new((A)->y);															\
-	bn_new((A)->p);															\
-	bn_new((A)->q);															\
-	(A)->t = 0;																\
-
-#elif ALLOC == STATIC
-#define bdpe_new(A)															\
-	A = (bdpe_t)alloca(sizeof(bdpe_st));									\
 	if (A == NULL) {														\
 		THROW(ERR_NO_MEMORY);												\
 	}																		\
@@ -561,17 +489,6 @@ typedef vbnn_user_st *vbnn_user_t;
 		A = NULL;															\
 	}
 
-#elif ALLOC == STATIC
-#define bdpe_free(A)														\
-	if (A != NULL) {														\
-		bn_free((A)->n);													\
-		bn_free((A)->y);													\
-		bn_free((A)->p);													\
-		bn_free((A)->q);													\
-		(A)->t = 0;															\
-		A = NULL;															\
-	}																		\
-
 #elif ALLOC == AUTO
 #define bdpe_free(A)			/* empty */
 
@@ -611,15 +528,6 @@ typedef vbnn_user_st *vbnn_user_t;
 	g1_new((A)->s1);														\
 	g2_new((A)->s2);														\
 
-#elif ALLOC == STATIC
-#define sokaka_new(A)														\
-	A = (sokaka_t)alloca(sizeof(sokaka_st));								\
-	if (A == NULL) {														\
-		THROW(ERR_NO_MEMORY);												\
-	}																		\
-	g1_new((A)->s1);														\
-	g2_new((A)->s2);														\
-
 #elif ALLOC == AUTO
 #define sokaka_new(A)			/* empty */
 
@@ -644,14 +552,6 @@ typedef vbnn_user_st *vbnn_user_t;
 		free(A);															\
 		A = NULL;															\
 	}
-
-#elif ALLOC == STATIC
-#define sokaka_free(A)														\
-	if (A != NULL) {														\
-		g1_free((A)->s1);													\
-		g2_free((A)->s2);													\
-		A = NULL;															\
-	}																		\
 
 #elif ALLOC == AUTO
 #define sokaka_free(A)			/* empty */
@@ -683,22 +583,6 @@ typedef vbnn_user_st *vbnn_user_t;
 #if ALLOC == DYNAMIC
 #define bgn_new(A)															\
 	A = (bgn_t)calloc(1, sizeof(bgn_st));									\
-	if (A == NULL) {														\
-		THROW(ERR_NO_MEMORY);												\
-	}																		\
-	bn_new((A)->x);															\
-	bn_new((A)->y);															\
-	bn_new((A)->z);															\
-	g1_new((A)->gx);														\
-	g1_new((A)->gy);														\
-	g1_new((A)->gz);														\
-	g2_new((A)->hx);														\
-	g2_new((A)->hy);														\
-	g2_new((A)->hz);														\
-
-#elif ALLOC == STATIC
-#define bgn_new(A)															\
-	A = (bgn_t)alloca(sizeof(bgn_st));										\
 	if (A == NULL) {														\
 		THROW(ERR_NO_MEMORY);												\
 	}																		\
@@ -751,21 +635,6 @@ typedef vbnn_user_st *vbnn_user_t;
 		A = NULL;															\
 	}
 
-#elif ALLOC == STATIC
-#define bgn_free(A)															\
-	if (A != NULL) {														\
-		bn_free((A)->x);													\
-		bn_free((A)->y);													\
-		bn_free((A)->z);													\
-		g1_free((A)->gx);													\
-		g1_free((A)->gy);													\
-		g1_free((A)->gz);													\
-		g2_free((A)->hx);													\
-		g2_free((A)->hy);													\
-		g2_free((A)->hz);													\
-		A = NULL;															\
-	}																		\
-
 #elif ALLOC == AUTO
 #define bgn_free(A)			/* empty */
 
@@ -801,37 +670,26 @@ typedef vbnn_user_st *vbnn_user_t;
  * @param[out] A 			- the new vBNN-IBS KGC
  */
 #if ALLOC == DYNAMIC
-#define vbnn_kgc_new(A)																	\
-	A = (vbnn_kgc_t)calloc(1, sizeof(vbnn_kgc_st));									\
-	if (A == NULL) {																		\
-		THROW(ERR_NO_MEMORY);																\
-	}																						\
-	ec_null((A)->mpk);																		\
-	bn_null((A)->msk);																		\
-	ec_new((A)->mpk);																		\
-	bn_new((A)->msk);																		\
-
-#elif ALLOC == STATIC
-#define vbnn_kgc_new(A)																	\
-	A = (vbnn_kgc_t)alloca(sizeof(vbnn_kgc_st));									\
-	if (A == NULL) {																		\
-		THROW(ERR_NO_MEMORY);																\
-	}																						\
-	ec_null((A)->mpk);																		\
-	bn_null((A)->msk);																		\
-	ec_new((A)->mpk);																		\
-	bn_new((A)->msk);																		\
+#define vbnn_kgc_new(A)														\
+	A = (vbnn_kgc_t)calloc(1, sizeof(vbnn_kgc_st));							\
+	if (A == NULL) {														\
+		THROW(ERR_NO_MEMORY);												\
+	}																		\
+	ec_null((A)->mpk);														\
+	bn_null((A)->msk);														\
+	ec_new((A)->mpk);														\
+	bn_new((A)->msk);														\
 
 #elif ALLOC == AUTO
-#define vbnn_kgc_new(A)																	\
-	ec_new((A)->mpk);																		\
-	bn_new((A)->msk);																		\
+#define vbnn_kgc_new(A)														\
+	ec_new((A)->mpk);														\
+	bn_new((A)->msk);														\
 
 #elif ALLOC == STACK
-#define vbnn_kgc_new(A)																	\
-	A = (vbnn_kgc_t)alloca(sizeof(vbnn_kgc_st));									\
-	ec_new((A)->mpk);																		\
-	bn_new((A)->msk);																		\
+#define vbnn_kgc_new(A)														\
+	A = (vbnn_kgc_t)alloca(sizeof(vbnn_kgc_st));							\
+	ec_new((A)->mpk);														\
+	bn_new((A)->msk);														\
 
 #endif
 
@@ -841,7 +699,7 @@ typedef vbnn_user_st *vbnn_user_t;
  * @param[out] A 			- the vBNN-IBS KGC to clean
  */
 #if ALLOC == DYNAMIC
-#define vbnn_kgc_free(A)												\
+#define vbnn_kgc_free(A)													\
 	if (A != NULL) {														\
 		ec_free((A)->mpk);													\
 		bn_free((A)->msk);													\
@@ -849,19 +707,11 @@ typedef vbnn_user_st *vbnn_user_t;
 		A = NULL;															\
 	}																		\
 
-#elif ALLOC == STATIC
-#define vbnn_kgc_free(A)												\
-	if (A != NULL) {														\
-		ec_free((A)->mpk);													\
-		bn_free((A)->msk);													\
-		A = NULL;															\
-	}																		\
-
 #elif ALLOC == AUTO
 #define vbnn_kgc_free(A)				/* empty */
 
 #elif ALLOC == STACK
-#define vbnn_kgc_free(A)												\
+#define vbnn_kgc_free(A)													\
 	ec_free((A)->mpk);														\
 	bn_free((A)->msk);														\
 	A = NULL;																\
@@ -885,37 +735,26 @@ typedef vbnn_user_st *vbnn_user_t;
  * @param[out] A 			- the new vBNN-IBS KGC
  */
 #if ALLOC == DYNAMIC
-#define vbnn_user_new(A)																\
-	A = (vbnn_user_t)calloc(1, sizeof(vbnn_user_st));								\
-	if (A == NULL) {																		\
-		THROW(ERR_NO_MEMORY);																\
-	}																						\
-	ec_null((A)->R);																		\
-	bn_null((A)->s);																		\
-	ec_new((A)->R);																			\
-	bn_new((A)->s);																			\
-
-#elif ALLOC == STATIC
-#define vbnn_user_new(A)																\
-	A = (vbnn_user_t)alloca(sizeof(vbnn_user_st));									\
-	if (A == NULL) {																		\
-		THROW(ERR_NO_MEMORY);																\
-	}																						\
-	ec_null((A)->R);																		\
-	bn_null((A)->s);																		\
-	ec_new((A)->R);																			\
-	bn_new((A)->s);																			\
+#define vbnn_user_new(A)													\
+	A = (vbnn_user_t)calloc(1, sizeof(vbnn_user_st));						\
+	if (A == NULL) {														\
+		THROW(ERR_NO_MEMORY);												\
+	}																		\
+	ec_null((A)->R);														\
+	bn_null((A)->s);														\
+	ec_new((A)->R);															\
+	bn_new((A)->s);															\
 
 #elif ALLOC == AUTO
-#define vbnn_user_new(A)																\
-	ec_new((A)->R);																			\
-	bn_new((A)->s);																			\
+#define vbnn_user_new(A)													\
+	ec_new((A)->R);															\
+	bn_new((A)->s);															\
 
 #elif ALLOC == STACK
-#define vbnn_user_new(A)																\
-	A = (vbnn_user_t)alloca(sizeof(vbnn_user_st));									\
-	ec_new((A)->R);																			\
-	bn_new((A)->s);																			\
+#define vbnn_user_new(A)													\
+	A = (vbnn_user_t)alloca(sizeof(vbnn_user_st));							\
+	ec_new((A)->R);															\
+	bn_new((A)->s);															\
 
 #endif
 
@@ -925,7 +764,7 @@ typedef vbnn_user_st *vbnn_user_t;
  * @param[out] A 			- the vBNN-IBS KGC to clean
  */
 #if ALLOC == DYNAMIC
-#define vbnn_user_free(A)												\
+#define vbnn_user_free(A)													\
 	if (A != NULL) {														\
 		ec_free((A)->R);													\
 		bn_free((A)->s);													\
@@ -933,19 +772,11 @@ typedef vbnn_user_st *vbnn_user_t;
 		A = NULL;															\
 	}																		\
 
-#elif ALLOC == STATIC
-#define vbnn_user_free(A)												\
-	if (A != NULL) {														\
-		ec_free((A)->R);													\
-		bn_free((A)->s);													\
-		A = NULL;															\
-	}																		\
-
 #elif ALLOC == AUTO
 #define vbnn_user_free(A)				/* empty */
 
 #elif ALLOC == STACK
-#define vbnn_user_free(A)												\
+#define vbnn_user_free(A)													\
 	ec_free((A)->R);														\
 	bn_free((A)->s);														\
 	A = NULL;																\

@@ -48,8 +48,8 @@
  * Prime elliptic twisted Edwards curve identifiers.
  */
 enum {
-  /** ED25519 prime curve. */
-  CURVE_ED25519 = 1
+    /** ED25519 prime curve. */
+    CURVE_ED25519 = 1
 };
 
 /*============================================================================*/
@@ -58,32 +58,32 @@ enum {
 /**
  * Size of a precomputation table using the binary method.
  */
-#define RELIC_ED_TABLE_BASIC		(FP_BITS + 1)
+#define RELIC_ED_TABLE_BASIC    (FP_BITS + 1)
 
 /**
  * Size of a precomputation table using Yao's windowing method.
  */
-#define RELIC_ED_TABLE_YAOWI      (FP_BITS / ED_DEPTH + 1)
+#define RELIC_ED_TABLE_YAOWI    (FP_BITS / ED_DEPTH + 1)
 
 /**
  * Size of a precomputation table using the NAF windowing method.
  */
-#define RELIC_ED_TABLE_NAFWI      (FP_BITS / ED_DEPTH + 1)
+#define RELIC_ED_TABLE_NAFWI    (FP_BITS / ED_DEPTH + 1)
 
 /**
  * Size of a precomputation table using the single-table comb method.
  */
-#define RELIC_ED_TABLE_COMBS      (1 << ED_DEPTH)
+#define RELIC_ED_TABLE_COMBS    (1 << ED_DEPTH)
 
 /**
  * Size of a precomputation table using the double-table comb method.
  */
-#define RELIC_ED_TABLE_COMBD		(1 << (ED_DEPTH + 1))
+#define RELIC_ED_TABLE_COMBD	(1 << (ED_DEPTH + 1))
 
 /**
  * Size of a precomputation table using the w-(T)NAF method.
  */
-#define RELIC_ED_TABLE_LWNAF		(1 << (ED_DEPTH - 2))
+#define RELIC_ED_TABLE_LWNAF	(1 << (ED_DEPTH - 2))
 
 /**
  * Size of a precomputation table using the chosen algorithm.
@@ -101,7 +101,7 @@ enum {
 #elif ED_FIX == LWNAF
 #define RELIC_ED_TABLE			RELIC_ED_TABLE_LWNAF
 #elif ED_FIX == LWNAF_MIXED
-#define RELIC_ED_TABLE                  RELIC_ED_TABLE_LWNAF
+#define RELIC_ED_TABLE			RELIC_ED_TABLE_LWNAF
 #endif
 
 /**
@@ -121,35 +121,18 @@ enum {
  * Represents an elliptic curve point over a prime field.
  */
 typedef struct {
-#if ALLOC == STATIC
-  /** The first coordinate. */
-  fp_t x;
-  /** The second coordinate. */
-  fp_t y;
-  /** The third coordinate (projective representation). */
-  fp_t z;
-
+    /** The first coordinate. */
+    fp_st x;
+    /** The second coordinate. */
+    fp_st y;
+    /** The third coordinate (projective representation). */
+    fp_st z;
 #if ED_ADD == EXTND
-  /** The forth coordinate (extended twisted Edwards coordinates) */
-  fp_t t;
+    /** The forth coordinate (extended twisted Edwards coordinates) */
+    fp_st t;
 #endif
-
-#elif ALLOC == DYNAMIC || ALLOC == STACK || ALLOC == AUTO
-  /** The first coordinate. */
-  fp_st x;
-  /** The second coordinate. */
-  fp_st y;
-  /** The third coordinate (projective representation). */
-  fp_st z;
-
-#if ED_ADD == EXTND
-  /** The forth coordinate (extended twisted Edwards coordinates) */
-  fp_st t;
-#endif
-
-#endif
-  /** Flag to indicate that this point is normalized. */
-  int norm;
+    /** Flag to indicate that this point is normalized. */
+    int norm;
 } ed_st;
 
 /**
@@ -166,7 +149,7 @@ typedef ed_st *ed_t;
 /*============================================================================*/
 
 /**
- * Initializes a point on a prime elliptic twisted Edwards curve with a null value.
+ * Initializes a point on a twisted Edwards prime curve with a null value.
  *
  * @param[out] A      - the point to initialize.
  */
@@ -177,109 +160,51 @@ typedef ed_st *ed_t;
 #endif
 
 /**
- * Calls a function to allocate a point on a prime elliptic twisted Edwards curve.
+ * Calls a function to allocate a point on a twisted Edwards prime curve.
  *
  * @param[out] A      - the new point.
  * @throw ERR_NO_MEMORY   - if there is no available memory.
  */
 #if ALLOC == DYNAMIC
-#define ed_new(A)                             \
-  A = (ed_t)calloc(1, sizeof(ed_st));                   \
-  if (A == NULL) {                            \
-    THROW(ERR_NO_MEMORY);                       \
-  }                                   \
-
-#elif ALLOC == STATIC
-#if ED_ADD == PROJC
-
-#define ed_new(A)                             \
-  A = (ed_t)alloca(sizeof(ed_st));                    \
-  if (A == NULL) {                            \
-    THROW(ERR_NO_MEMORY);                       \
-  }                                   \
-  fp_null((A)->x);                            \
-  fp_null((A)->y);                            \
-  fp_null((A)->z);                            \
-  fp_new((A)->x);                             \
-  fp_new((A)->y);                             \
-  fp_new((A)->z);                             \
-
-#elif ED_ADD == EXTND
-
-#define ed_new(A)                             \
-  A = (ed_t)alloca(sizeof(ed_st));                    \
-  if (A == NULL) {                            \
-    THROW(ERR_NO_MEMORY);                       \
-  }                                   \
-  fp_null((A)->x);                            \
-  fp_null((A)->y);                            \
-  fp_null((A)->z);                            \
-  fp_null((A)->t);                            \
-  fp_new((A)->x);                             \
-  fp_new((A)->y);                             \
-  fp_new((A)->z);                             \
-  fp_new((A)->t);                             \
-
-#endif
+#define ed_new(A)															\
+    A = (ed_t)calloc(1, sizeof(ed_st));										\
+    if (A == NULL) {														\
+        THROW(ERR_NO_MEMORY);												\
+    }
 
 #elif ALLOC == AUTO
 #define ed_new(A)       /* empty */
 
 #elif ALLOC == STACK
-#define ed_new(A)                             \
-  A = (ed_t)alloca(sizeof(ed_st));                    \
+#define ed_new(A)															\
+    A = (ed_t)alloca(sizeof(ed_st));										\
 
 #endif
 
 /**
- * Calls a function to clean and free a point on a prime elliptic twisted Edwards curve.
+ * Calls a function to clean and free a point on a twisted Edwards prime curve.
  *
  * @param[out] A      - the point to free.
  */
 #if ALLOC == DYNAMIC
-#define ed_free(A)                              \
-  if (A != NULL) {                            \
-    free(A);                              \
-    A = NULL;                             \
-  }
-
-#elif ALLOC == STATIC
-
-#if ED_ADD == PROJC
-
-#define ed_free(A)                              \
-  if (A != NULL) {                            \
-    fp_free((A)->x);                          \
-    fp_free((A)->y);                          \
-    fp_free((A)->z);                          \
-    A = NULL;                             \
-  }                                   \
-
-#elif ED_ADD == EXTND
-
-#define ed_free(A)                            \
-  if (A != NULL) {                            \
-    fp_free((A)->x);                          \
-    fp_free((A)->y);                          \
-    fp_free((A)->z);                          \
-    fp_free((A)->t);                          \
-    A = NULL;                                 \
-  }                                           \
-
-#endif
+#define ed_free(A)															\
+	if (A != NULL) {														\
+    	free(A);															\
+    	A = NULL;															\
+	}
 
 #elif ALLOC == AUTO
 #define ed_free(A)        /* empty */
 
 #elif ALLOC == STACK
-#define ed_free(A)                              \
-  A = NULL;                               \
+#define ed_free(A)															\
+	A = NULL;																\
 
 #endif
 
 
 /**
- * Configures a prime elliptic twisted Edwards curve by its parameter identifier.
+ * Configures a twisted Edwards prime curve by its parameter identifier.
  *
  * @param				- the parameter identifier.
  */
@@ -299,14 +224,14 @@ int ed_param_set_any(void);
 int ed_param_get(void);
 
 /**
- * Returns the order of the group of points in the prime elliptic twisted Edwards curve.
+ * Returns the order of the group of points in the twisted Edwards prime curve.
  *
  * @param[out] r      - the returned order.
  */
 void ed_curve_get_ord(bn_t r);
 
 /**
- * Returns the generator of the group of points in the prime elliptic twisted Edwards curve.
+ * Returns the generator of the group of points in the twisted Edwards curve.
  *
  * @param[out] g      - the returned generator.
  */
@@ -320,14 +245,14 @@ void ed_curve_get_gen(ed_t g);
 const ed_t *ed_curve_get_tab(void);
 
 /**
- * Returns the cofactor of the prime elliptic twisted Edwards curve.
+ * Returns the cofactor of the twisted Edwards prime elliptic curve.
  *
  * @param[out] n      - the returned cofactor.
  */
 void ed_curve_get_cof(bn_t h);
 
 /**
- * Prints the current configured prime elliptic twisted Edwards curve.
+ * Prints the current configured twisted Edwards prime elliptic curve.
  */
 void ed_param_print(void);
 
@@ -346,90 +271,91 @@ void ed_projc_to_extnd(ed_t r, const fp_t x, const fp_t y, const fp_t z);
 /**
  * Assigns a random value to a prime elliptic twisted Edwards curve point.
  *
- * @param[out] p      - the prime elliptic twisted Edwards curve point to assign.
+ * @param[out] p	- the prime elliptic twisted Edwards curve point to assign.
  */
 void ed_rand(ed_t p);
 
 /**
  * Copies the second argument to the first argument.
  *
- * @param[out] q      - the result.
- * @param[in] p       - the prime elliptic twisted Edwards curve point to copy.
+ * @param[out] q	- the result.
+ * @param[in] p		- the prime elliptic curve point to copy.
  */
 void ed_copy(ed_t r, const ed_t p);
 
 /**
  * Compares two prime elliptic twisted Edwards curve points.
  *
- * @param[in] p       - the first prime elliptic twisted Edwards curve point.
- * @param[in] q       - the second prime elliptic twisted Edwards curve point.
+ * @param[in] p		- the first prime elliptic curve point.
+ * @param[in] q		- the second prime elliptic curve point.
  * @return CMP_EQ if p == q and CMP_NE if p != q.
  */
 int ed_cmp(const ed_t p, const ed_t q);
 
 /**
- * Assigns a prime elliptic twisted Edwards curve point to a point at the infinity.
+ * Assigns a prime elliptic curve point to a point at the infinity.
  *
- * @param[out] p      - the point to assign.
+ * @param[out] p	- the point to assign.
  */
 void ed_set_infty(ed_t p);
 
 /**
- * Tests if a point on a prime elliptic twisted Edwards curve is at the infinity.
+ * Tests if a point on a prime elliptic curve is at the infinity.
  *
- * @param[in] p       - the point to test.
+ * @param[in] p		- the point to test.
  * @return 1 if the point is at infinity, 0 otherise.
  */
 int ed_is_infty(const ed_t p);
 
 /**
- * Negates a prime elliptic twisted Edwards curve point represented by projective coordinates.
+ * Negates a prime elliptic curve point represented by projective coordinates.
  *
- * @param[out] r      - the result.
- * @param[in] p       - the point to negate.
+ * @param[out] r	- the result.
+ * @param[in] p		- the point to negate.
  */
 void ed_neg(ed_t r, const ed_t p);
 
 /**
- * Adds two prime elliptic twisted Edwards curve points represented in projective coordinates.
+ * Adds two prime elliptic curve points represented in projective coordinates.
  *
- * @param[out] r      - the result.
- * @param[in] p       - the first point to add.
- * @param[in] q       - the second point to add.
+ * @param[out] r	- the result.
+ * @param[in] p		- the first point to add.
+ * @param[in] q		- the second point to add.
  */
 void ed_add(ed_t r, const ed_t p, const ed_t q);
 
 /**
- * Subtracts a prime elliptic twisted Edwards curve point from another, that is, compute
+ * Subtracts a prime elliptic curve point from another, that is, compute
  * R = P - Q.
  *
- * @param[out] R			- the result.
- * @param[in] P				- the first point.
- * @param[in] Q				- the second point.
+ * @param[out] R		- the result.
+ * @param[in] P			- the first point.
+ * @param[in] Q			- the second point.
  */
 void ed_sub(ed_t r, const ed_t p, const ed_t q);
 
 /**
- * Doubles a prime elliptic twisted Edwards curve point represented in projective coordinates.
+ * Doubles a prime elliptic curve point represented in projective coordinates.
  *
- * @param[out] r      - the result.
- * @param[in] p       - the point to double.
+ * @param[out] r		- the result.
+ * @param[in] p			- the point to double.
  */
 void ed_dbl(ed_t r, const ed_t p);
 
 /**
- * Doubles a prime elliptic twisted Edwards curve point represented in projective coordinates and skips T coordinate calculation.
+ * Doubles a prime elliptic curve point represented in projective coordinates
+ * and skips T-coordinate calculation.
  *
- * @param[out] r      - the result.
- * @param[in] p       - the point to double.
+ * @param[out] r		- the result.
+ * @param[in] p			- the point to double.
  */
 void ed_dbl_short(ed_t r, const ed_t p);
 
 /**
  * Converts a point to affine coordinates.
  *
- * @param[out] r      - the result.
- * @param[in] p       - the point to convert.
+ * @param[out] r		- the result.
+ * @param[in] p			- the point to convert.
  */
 void ed_norm(ed_t r, const ed_t p);
 
@@ -454,9 +380,9 @@ void ed_map(ed_t p, const uint8_t *msg, int len);
 /**
  * Multiplies a prime elliptic curve point by an integer. Computes R = kP.
  *
- * @param[out] R      - the result.
- * @param[in] P       - the point to multiply.
- * @param[in] K       - the integer.
+ * @param[out] R		- the result.
+ * @param[in] P			- the point to multiply.
+ * @param[in] K			- the integer.
  */
 #if ED_MUL == BASIC
 #define ed_mul(R, P, K)   ed_mul_basic(R, P, K)
@@ -475,8 +401,8 @@ void ed_map(ed_t p, const uint8_t *msg, int len);
 /**
  * Builds a precomputation table for multiplying a fixed prime elliptic point.
  *
- * @param[out] T      - the precomputation table.
- * @param[in] P       - the point to multiply.
+ * @param[out] T		- the precomputation table.
+ * @param[in] P			- the point to multiply.
  */
 #if ED_FIX == BASIC
 #define ed_mul_pre(T, P)    ed_mul_pre_basic(T, P)
@@ -498,9 +424,9 @@ void ed_map(ed_t p, const uint8_t *msg, int len);
  * Multiplies a fixed prime elliptic point using a precomputation table.
  * Computes R = kP.
  *
- * @param[out] R      - the result.
- * @param[in] T       - the precomputation table.
- * @param[in] K       - the integer.
+ * @param[out] R		- the result.
+ * @param[in] T			- the precomputation table.
+ * @param[in] K			- the integer.
  */
 #if ED_FIX == BASIC
 #define ed_mul_fix(R, T, K)   ed_mul_fix_basic(R, T, K)
@@ -522,11 +448,11 @@ void ed_map(ed_t p, const uint8_t *msg, int len);
  * Multiplies and adds two prime elliptic curve points simultaneously. Computes
  * R = kP + mQ.
  *
- * @param[out] R      - the result.
- * @param[in] P       - the first point to multiply.
- * @param[in] K       - the first integer.
- * @param[in] Q       - the second point to multiply.
- * @param[in] M       - the second integer,
+ * @param[out] R		- the result.
+ * @param[in] P			- the first point to multiply.
+ * @param[in] K			- the first integer.
+ * @param[in] Q			- the second point to multiply.
+ * @param[in] M			- the second integer,
  */
 #if ED_SIM == BASIC
 #define ed_mul_sim(R, P, K, Q, M) ed_mul_sim_basic(R, P, K, Q, M)

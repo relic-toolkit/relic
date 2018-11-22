@@ -112,8 +112,6 @@ typedef dig_t *dv_t;
  */
 #if ALLOC == DYNAMIC
 #define dv_new(A)			dv_new_dynam(&(A), DV_DIGS)
-#elif ALLOC == STATIC
-#define dv_new(A)			dv_new_statc(&(A), DV_DIGS)
 #elif ALLOC == AUTO
 #define dv_new(A)			/* empty */
 #elif ALLOC == STACK
@@ -130,8 +128,6 @@ typedef dig_t *dv_t;
  */
 #if ALLOC == DYNAMIC
 #define dv_free(A)			dv_free_dynam(&(A))
-#elif ALLOC == STATIC
-#define dv_free(A)			dv_free_statc(&(A))
 #elif ALLOC == AUTO
 #define dv_free(A)			(void)A
 #elif ALLOC == STACK
@@ -208,8 +204,6 @@ int dv_cmp_const(const dig_t *a, const dig_t *b, int size);
  */
 #if ALLOC == DYNAMIC
 void dv_new_dynam(dv_t *a, int digits);
-#elif ALLOC == STATIC
-void dv_new_statc(dv_t *a, int digits);
 #endif
 
 /**
@@ -219,8 +213,6 @@ void dv_new_statc(dv_t *a, int digits);
  */
 #if ALLOC == DYNAMIC
 void dv_free_dynam(dv_t *a);
-#elif ALLOC == STATIC
-void dv_free_statc(dv_t *a);
 #endif
 
 #endif /* !RELIC_DV_H */

@@ -112,24 +112,6 @@ void ed_param_set(int param) {
 			ctx->ed_ptr[i] = &(ctx->ed_pre[i]);
 		}
 #endif
-#if ALLOC == STATIC
-		fp_new(ctx->ed_g.x);
-		fp_new(ctx->ed_g.y);
-		fp_new(ctx->ed_g.z);
-#if ED_ADD == EXTND
-		fp_new(ctx->ed_g.t);
-#endif
-#ifdef ED_PRECO
-		for (int i = 0; i < RELIC_ED_TABLE; i++) {
-			fp_new(ctx->ed_pre[i].x);
-			fp_new(ctx->ed_pre[i].y);
-			fp_new(ctx->ed_pre[i].z);
-#if ED_ADD == EXTND
-			fp_new(ctx->ed_pre[i].t);
-#endif
-		}
-#endif
-#endif
 
 #if defined(ED_PRECO)
 		ed_mul_pre((ed_t *) ed_curve_get_tab(), &ctx->ed_g);

@@ -69,16 +69,6 @@ void eb_curve_init(void) {
 		ctx->eb_ptr[i] = &(ctx->eb_pre[i]);
 	}
 #endif
-#if ALLOC == STATIC
-	fb_new(ctx->eb_g.x);
-	fb_new(ctx->eb_g.y);
-	fb_new(ctx->eb_g.z);
-	for (int i = 0; i < RELIC_EB_TABLE; i++) {
-		fb_new(ctx->eb_pre[i].x);
-		fb_new(ctx->eb_pre[i].y);
-		fb_new(ctx->eb_pre[i].z);
-	}
-#endif
 	fb_zero(ctx->eb_g.x);
 	fb_zero(ctx->eb_g.y);
 	fb_zero(ctx->eb_g.z);
@@ -88,16 +78,6 @@ void eb_curve_init(void) {
 
 void eb_curve_clean(void) {
 	ctx_t *ctx = core_get();
-#if ALLOC == STATIC
-	fb_free(ctx->eb_g.x);
-	fb_free(ctx->eb_g.y);
-	fb_free(ctx->eb_g.z);
-	for (int i = 0; i < RELIC_EB_TABLE; i++) {
-		fb_free(ctx->eb_pre[i].x);
-		fb_free(ctx->eb_pre[i].y);
-		fb_free(ctx->eb_pre[i].z);
-	}
-#endif
 	bn_clean(&(ctx->eb_r));
 	bn_clean(&(ctx->eb_h));
 }

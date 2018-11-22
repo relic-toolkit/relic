@@ -112,7 +112,7 @@ typedef struct {
 	int used;
 	/** The sign of this multiple precision integer. */
 	int sign;
-#if ALLOC == DYNAMIC || ALLOC == STATIC
+#if ALLOC == DYNAMIC
 	/** The sequence of contiguous digits that forms this integer. */
 	dig_t *dp;
 #elif ALLOC == STACK || ALLOC == AUTO
@@ -159,14 +159,6 @@ typedef bn_st *bn_t;
 	}																		\
 	bn_init(A, BN_SIZE);													\
 
-#elif ALLOC == STATIC
-#define bn_new(A)															\
-	A = (bn_t)alloca(sizeof(bn_st));										\
-	if ((A) != NULL) {														\
-		(A)->dp = NULL;														\
-	}																		\
-	bn_init(A, BN_SIZE);													\
-
 #elif ALLOC == AUTO
 #define bn_new(A)															\
 	bn_init(A, BN_SIZE);													\
@@ -196,14 +188,6 @@ typedef bn_st *bn_t;
 	}																		\
 	bn_init(A, D);															\
 
-#elif ALLOC == STATIC
-#define bn_new_size(A, D)													\
-	A = (bn_t)alloca(sizeof(bn_st));										\
-	if (A != NULL) {														\
-		(A)->dp = NULL;														\
-	}																		\
-	bn_init(A, D);															\
-
 #elif ALLOC == AUTO
 #define bn_new_size(A, D)													\
 	bn_init(A, D);															\
@@ -225,13 +209,6 @@ typedef bn_st *bn_t;
 	if (A != NULL) {														\
 		bn_clean(A);														\
 		free(A);															\
-		A = NULL;															\
-	}
-
-#elif ALLOC == STATIC
-#define bn_free(A)															\
-	if (A != NULL) {														\
-		bn_clean(A);														\
 		A = NULL;															\
 	}
 

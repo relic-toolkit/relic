@@ -39,7 +39,6 @@
 #include "relic_core.h"
 #include "relic_conf.h"
 #include "relic_dv.h"
-#include "relic_pool.h"
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -77,26 +76,6 @@ void dv_free_dynam(dv_t *a) {
 #else
 		free(*a);
 #endif
-	}
-	(*a) = NULL;
-}
-
-#elif ALLOC == STATIC
-
-void dv_new_statc(dv_t *a, int digits) {
-	if (digits > DV_DIGS) {
-		THROW(ERR_NO_PRECI);
-	}
-
-	(*a) = pool_get();
-	if ((*a) == NULL) {
-		THROW(ERR_NO_MEMORY);
-	}
-}
-
-void dv_free_statc(dv_t *a) {
-	if ((*a) != NULL) {
-		pool_put((*a));
 	}
 	(*a) = NULL;
 }

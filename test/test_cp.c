@@ -748,11 +748,6 @@ static int vbnn(void) {
 	bn_t z;
 	bn_t h;
 
-	vbnn_kgc_null(kgc);
-
-	vbnn_user_null(userA);
-	vbnn_user_null(userB);
-
 	ec_null(r);
 	bn_null(z);
 	bn_null(h);

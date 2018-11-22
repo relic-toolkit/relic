@@ -209,7 +209,7 @@ void ep2_curve_init(void) {
 	}
 #endif
 
-#if ALLOC == STATIC || ALLOC == DYNAMIC || ALLOC == STACK
+#if ALLOC == DYNAMIC || ALLOC == STACK
 	ctx->ep2_g.x[0] = ctx->ep2_gx[0];
 	ctx->ep2_g.x[1] = ctx->ep2_gx[1];
 	ctx->ep2_g.y[0] = ctx->ep2_gy[0];
@@ -219,7 +219,7 @@ void ep2_curve_init(void) {
 #endif
 
 #ifdef EP_PRECO
-#if ALLOC == STATIC || ALLOC == DYNAMIC
+#if ALLOC == DYNAMIC
 	for (int i = 0; i < RELIC_EP_TABLE; i++) {
 		fp2_new(ctx->ep2_pre[i].x);
 		fp2_new(ctx->ep2_pre[i].y);

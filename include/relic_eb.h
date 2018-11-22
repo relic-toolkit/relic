@@ -141,21 +141,12 @@ enum {
  * Represents an elliptic curve point over a binary field.
  */
 typedef struct {
-#if ALLOC == STATIC
-	/** The first coordinate. */
-	fb_t x;
-	/** The second coordinate. */
-	fb_t y;
-	/** The third coordinate (projective representation). */
-	fb_t z;
-#elif ALLOC == DYNAMIC || ALLOC == STACK || ALLOC == AUTO
 	/** The first coordinate. */
 	fb_st x;
 	/** The second coordinate. */
 	fb_st y;
 	/** The third coordinate (projective representation). */
 	fb_st z;
-#endif
 	/** Flag to indicate that this point is normalized. */
 	int norm;
 } eb_st;
@@ -197,19 +188,6 @@ typedef eb_st *eb_t;
 		THROW(ERR_NO_MEMORY);												\
 	}																		\
 
-#elif ALLOC == STATIC
-#define eb_new(A)															\
-	A = (eb_t)alloca(sizeof(eb_st));										\
-	if (A == NULL) {														\
-		THROW(ERR_NO_MEMORY);												\
-	}																		\
-	fb_null((A)->x);														\
-	fb_null((A)->y);														\
-	fb_null((A)->z);														\
-	fb_new((A)->x);															\
-	fb_new((A)->y);															\
-	fb_new((A)->z);															\
-
 #elif ALLOC == AUTO
 #define eb_new(A)				/* empty */
 
@@ -228,15 +206,6 @@ typedef eb_st *eb_t;
 #define eb_free(A)															\
 	if (A != NULL) {														\
 		free(A);															\
-		A = NULL;															\
-	}																		\
-
-#elif ALLOC == STATIC
-#define eb_free(A)															\
-	if (A != NULL) {														\
-		fb_free((A)->x);													\
-		fb_free((A)->y);													\
-		fb_free((A)->z);													\
 		A = NULL;															\
 	}																		\
 

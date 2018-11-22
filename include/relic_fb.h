@@ -202,8 +202,6 @@ typedef relic_align dig_t fb_st[FB_DIGS + PADDING(FB_BYTES)/(FB_DIGIT / 8)];
  */
 #if ALLOC == DYNAMIC
 #define fb_new(A)			dv_new_dynam((dv_t *)&(A), FB_DIGS)
-#elif ALLOC == STATIC
-#define fb_new(A)			dv_new_statc((dv_t *)&(A), FB_DIGS)
 #elif ALLOC == AUTO
 #define fb_new(A)			/* empty */
 #elif ALLOC == STACK
@@ -220,8 +218,6 @@ typedef relic_align dig_t fb_st[FB_DIGS + PADDING(FB_BYTES)/(FB_DIGIT / 8)];
  */
 #if ALLOC == DYNAMIC
 #define fb_free(A)			dv_free_dynam((dv_t *)&(A))
-#elif ALLOC == STATIC
-#define fb_free(A)			dv_free_statc((dv_t *)&(A))
 #elif ALLOC == AUTO
 #define fb_free(A)			/* empty */
 #elif ALLOC == STACK

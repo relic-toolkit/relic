@@ -187,8 +187,6 @@ typedef relic_align dig_t fp_st[FP_DIGS + PADDING(FP_BYTES)/(FP_DIGIT / 8)];
  */
 #if ALLOC == DYNAMIC
 #define fp_new(A)			dv_new_dynam((dv_t *)&(A), FP_DIGS)
-#elif ALLOC == STATIC
-#define fp_new(A)			dv_new_statc((dv_t *)&(A), FP_DIGS)
 #elif ALLOC == AUTO
 #define fp_new(A)			/* empty */
 #elif ALLOC == STACK
@@ -205,8 +203,6 @@ typedef relic_align dig_t fp_st[FP_DIGS + PADDING(FP_BYTES)/(FP_DIGIT / 8)];
  */
 #if ALLOC == DYNAMIC
 #define fp_free(A)			dv_free_dynam((dv_t *)&(A))
-#elif ALLOC == STATIC
-#define fp_free(A)			dv_free_statc((dv_t *)&(A))
 #elif ALLOC == AUTO
 #define fp_free(A)			/* empty */
 #elif ALLOC == STACK

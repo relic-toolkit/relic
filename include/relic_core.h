@@ -48,7 +48,6 @@
 #include "relic_conf.h"
 #include "relic_bench.h"
 #include "relic_rand.h"
-#include "relic_pool.h"
 #include "relic_label.h"
 
 #if defined(MULTI)
@@ -160,13 +159,6 @@ typedef struct _ctx_t {
 	/** The current trace size. */
 	int trace;
 #endif /* CHECK && TRACE */
-
-#if ALLOC == STATIC
-	/** The static pool of digit vectors. */
-	pool_t pool[POOL_SIZE];
-	/** The index of the next free digit vector in the pool. */
-	int next;
-#endif /* ALLOC == STATIC */
 
 #ifdef WITH_FB
 	/** Identifier of the currently configured binary field. */
@@ -300,7 +292,7 @@ typedef struct _ctx_t {
 #ifdef WITH_EPX
 	/** The generator of the elliptic curve. */
 	ep2_st ep2_g;
-#if ALLOC == STATIC || ALLOC == DYNAMIC || ALLOC == STACK
+#if ALLOC == DYNAMIC || ALLOC == STACK
 	/** The first coordinate of the generator. */
 	fp2_st ep2_gx;
 	/** The second coordinate of the generator. */

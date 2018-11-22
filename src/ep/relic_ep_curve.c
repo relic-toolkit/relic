@@ -92,18 +92,6 @@ void ep_curve_init(void) {
 		ctx->ep_ptr[i] = &(ctx->ep_pre[i]);
 	}
 #endif
-#if ALLOC == STATIC
-	fp_new(ctx->ep_g.x);
-	fp_new(ctx->ep_g.y);
-	fp_new(ctx->ep_g.z);
-#ifdef EP_PRECO
-	for (int i = 0; i < RELIC_EP_TABLE; i++) {
-		fp_new(ctx->ep_pre[i].x);
-		fp_new(ctx->ep_pre[i].y);
-		fp_new(ctx->ep_pre[i].z);
-	}
-#endif
-#endif
 	ep_set_infty(&ctx->ep_g);
 	bn_init(&ctx->ep_r, FP_DIGS);
 	bn_init(&ctx->ep_h, FP_DIGS);
@@ -117,18 +105,6 @@ void ep_curve_init(void) {
 
 void ep_curve_clean(void) {
 	ctx_t *ctx = core_get();
-#if ALLOC == STATIC
-	fp_free(ctx->ep_g.x);
-	fp_free(ctx->ep_g.y);
-	fp_free(ctx->ep_g.z);
-#ifdef EP_PRECO
-	for (int i = 0; i < RELIC_EP_TABLE; i++) {
-		fp_free(ctx->ep_pre[i].x);
-		fp_free(ctx->ep_pre[i].y);
-		fp_free(ctx->ep_pre[i].z);
-	}
-#endif
-#endif
 	bn_clean(&ctx->ep_r);
 	bn_clean(&ctx->ep_h);
 #if defined(EP_ENDOM) && (EP_MUL == LWNAF || EP_FIX == LWNAF || !defined(STRIP))
