@@ -985,15 +985,17 @@ static int reduction(void) {
 
 static int exponentiation(void) {
 	int code = STS_ERR;
-	bn_t a, b, p;
+	bn_t a, b, c, p;
 
 	bn_null(a);
 	bn_null(b);
+	bn_null(c);
 	bn_null(p);
 
 	TRY {
 		bn_new(a);
 		bn_new(b);
+		bn_new(c);
 		bn_new(p);
 
 #if BN_MOD != PMERS
@@ -1021,11 +1023,26 @@ static int exponentiation(void) {
 		}
 		TEST_END;
 
+		TEST_BEGIN("modular exponentiation with negative power is correct") {
+			bn_rand(a, BN_POS, RELIC_BN_BITS);
+			bn_mod(a, a, p);
+			bn_rand(b, BN_POS, RELIC_BN_BITS);
+			/* Compute c = a^b mod p. */
+			bn_mxp(c, a, b, p);
+			/* Compute b = a^-b mod p. */
+			bn_neg(b, b);
+			bn_mxp(b, a, b, p);
+			/* Check that c * b = 1 mod p. */
+			bn_mul(c, c, b);
+			bn_mod(c, c, p);
+			TEST_ASSERT(bn_cmp_dig(c, 1) == CMP_EQ, end);
+		}
+		TEST_END;
+
 #if BN_MXP == BASIC || !defined(STRIP)
 		TEST_BEGIN("basic modular exponentiation is correct") {
 			bn_rand(a, BN_POS, RELIC_BN_BITS);
 			bn_mod(a, a, p);
-			bn_copy(b, a);
 			bn_mxp_basic(b, a, p, p);
 			TEST_ASSERT(bn_cmp(a, b) == CMP_EQ, end);
 		}
@@ -1036,8 +1053,7 @@ static int exponentiation(void) {
 		TEST_BEGIN("sliding window modular exponentiation is correct") {
 			bn_rand(a, BN_POS, RELIC_BN_BITS);
 			bn_mod(a, a, p);
-			bn_copy(b, a);
-			bn_mxp_slide(b, b, p, p);
+			bn_mxp_slide(b, a, p, p);
 			TEST_ASSERT(bn_cmp(a, b) == CMP_EQ, end);
 		}
 		TEST_END;
@@ -1047,13 +1063,11 @@ static int exponentiation(void) {
 		TEST_BEGIN("powering ladder modular exponentiation is correct") {
 			bn_rand(a, BN_POS, RELIC_BN_BITS);
 			bn_mod(a, a, p);
-			bn_copy(b, a);
-			bn_mxp_monty(b, b, p, p);
+			bn_mxp_monty(b, a, p, p);
 			TEST_ASSERT(bn_cmp(a, b) == CMP_EQ, end);
 		}
 		TEST_END;
 #endif
-
 	}
 	CATCH_ANY {
 		ERROR(end);
@@ -1062,6 +1076,7 @@ static int exponentiation(void) {
   end:
 	bn_free(a);
 	bn_free(b);
+	bn_free(c);
 	bn_free(p);
 	return code;
 }
@@ -1317,7 +1332,7 @@ static int symbol(void) {
 			TEST_ASSERT(bn_cmp(a, c) == CMP_EQ, end);
 		} TEST_END;
 
-		TEST_ONCE("legendre symbol respects quadratic reciprocity") {
+		TEST_ONCE("legendre symbol satisfies quadratic reciprocity") {
 			/* Check the first supplement: (-1|p) = (-1)^(p-1)/2. */
 			bn_set_dig(a, 1);
 			bn_neg(a, a);
@@ -1392,7 +1407,7 @@ static int symbol(void) {
 			}
 		} TEST_END;
 
-		TEST_BEGIN("jacobi symbol respects quadratic reciprocity") {
+		TEST_BEGIN("jacobi symbol satisfies quadratic reciprocity") {
 			bn_rand(p, BN_POS, RELIC_BN_BITS / 2);
 			if (bn_is_even(p)) {
 				bn_add_dig(p, p, 1);

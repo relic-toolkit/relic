@@ -303,8 +303,8 @@ typedef bn_st *bn_t;
 #endif
 
 /**
- * Reduces a multiple precision integer modulo a modulus using Montgomery
- * reduction. Computes c = a * u^(-1) (mod m).
+ * Reduces a multiple precision integer modulo a positive integer using
+ * Montgomery reduction. Computes c = a * u^(-1) (mod m).
  *
  * @param[out] C			- the result.
  * @param[in] A				- the multiple precision integer to reduce.
@@ -889,7 +889,7 @@ void bn_mod_2b(bn_t c, const bn_t a, int b);
 void bn_mod_dig(dig_t *c, const bn_t a, dig_t b);
 
 /**
- * Reduces a multiple precision integer modulo a modulus using straightforward
+ * Reduces a multiple precision integer modulo an integer using straightforward
  * division.
  *
  * @param[out] c			- the result.
@@ -908,7 +908,7 @@ void bn_mod_basic(bn_t c, const bn_t a, const bn_t m);
 void bn_mod_pre_barrt(bn_t u, const bn_t m);
 
 /**
- * Reduces a multiple precision integer modulo a modulus using Barrett
+ * Reduces a multiple precision integer modulo a positive integer using Barrett
  * reduction.
  *
  * @param[out] c			- the result.
@@ -947,8 +947,8 @@ void bn_mod_monty_conv(bn_t c, const bn_t a, const bn_t m);
 void bn_mod_monty_back(bn_t c, const bn_t a, const bn_t m);
 
 /**
- * Reduces a multiple precision integer modulo a modulus using Montgomery
- * reduction with Schoolbook multiplication.
+ * Reduces a multiple precision integer modulo a positive integer using
+ * Montgomery reduction with Schoolbook multiplication.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the multiple precision integer to reduce.
@@ -958,8 +958,8 @@ void bn_mod_monty_back(bn_t c, const bn_t a, const bn_t m);
 void bn_mod_monty_basic(bn_t c, const bn_t a, const bn_t m, const bn_t u);
 
 /**
- * Reduces a multiple precision integer modulo a modulus using Montgomery
- * reduction with Comba multiplication.
+ * Reduces a multiple precision integer modulo a positive integer using
+ * Montgomery reduction with Comba multiplication.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the multiple precision integer to reduce.
@@ -977,8 +977,8 @@ void bn_mod_monty_comba(bn_t c, const bn_t a, const bn_t m, const bn_t u);
 void bn_mod_pre_pmers(bn_t u, const bn_t m);
 
 /**
- * Reduces a multiple precision integer modulo a modulus using Pseudo-Mersenne
- * modular reduction.
+ * Reduces a multiple precision integer modulo a positive integer using
+ * pseudo-Mersenne modular reduction.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the multiple precision integer to reduce.
@@ -988,8 +988,8 @@ void bn_mod_pre_pmers(bn_t u, const bn_t m);
 void bn_mod_pmers(bn_t c, const bn_t a, const bn_t m, const bn_t u);
 
 /**
- * Exponentiates a multiple precision integer modulo a modulus using the binary
- * method.
+ * Exponentiates a multiple precision integer modulo a positive integer using
+ * the binary method.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the basis.
@@ -999,8 +999,8 @@ void bn_mod_pmers(bn_t c, const bn_t a, const bn_t m, const bn_t u);
 void bn_mxp_basic(bn_t c, const bn_t a, const bn_t b, const bn_t m);
 
 /**
- * Exponentiates a multiple precision integer modulo a modulus using the
- * sliding window method.
+ * Exponentiates a multiple precision integer modulo a positive integer using
+ * the sliding window method.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the basis.
@@ -1010,8 +1010,8 @@ void bn_mxp_basic(bn_t c, const bn_t a, const bn_t b, const bn_t m);
 void bn_mxp_slide(bn_t c, const bn_t a, const bn_t b, const bn_t m);
 
 /**
- * Exponentiates a multiple precision integer modulo a modulus using a
- * constant-time Montgomery powering ladder method.
+ * Exponentiates a multiple precision integer modulo a positive integer using
+ * the constant-time Montgomery powering ladder method.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the basis.
@@ -1021,8 +1021,8 @@ void bn_mxp_slide(bn_t c, const bn_t a, const bn_t b, const bn_t m);
 void bn_mxp_monty(bn_t c, const bn_t a, const bn_t b, const bn_t m);
 
 /**
- * Exponentiates a multiple precision integer by a small power modulo a modulus
- * using the binary method.
+ * Exponentiates a multiple precision integer by a small power modulo a positive
+ * integer using the binary method.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the basis.

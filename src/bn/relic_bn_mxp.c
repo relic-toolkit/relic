@@ -85,10 +85,23 @@ void bn_mxp_basic(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 		}
 
 #if BN_MOD == MONTY
-		bn_mod_monty_back(c, r, m);
-#else
-		bn_copy(c, r);
+		bn_mod_monty_back(r, r, m);
 #endif
+
+		if (bn_sign(b) == BN_NEG) {
+			bn_gcd_ext(t, r, NULL, r, m);
+			if (bn_sign(r) == BN_NEG) {
+				bn_add(r, r, m);
+			}
+			if (bn_cmp_dig(t, 1) == CMP_EQ) {
+				bn_copy(c, r);
+			} else {
+				bn_zero(c);
+				THROW(ERR_NO_VALID);
+			}
+		} else {
+			bn_copy(c, r);
+		}
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
@@ -109,6 +122,11 @@ void bn_mxp_slide(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 	int i, j, l, w = 1;
 	uint8_t win[RELIC_BN_BITS];
 
+	if (bn_is_zero(b)) {
+		bn_set_dig(c, 1);
+		return;
+	}
+
 	bn_null(t);
 	bn_null(u);
 	bn_null(r);
@@ -118,7 +136,6 @@ void bn_mxp_slide(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 	}
 
 	TRY {
-
 		/* Find window size. */
 		i = bn_bits(b);
 		if (i <= 21) {
@@ -177,10 +194,23 @@ void bn_mxp_slide(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 		}
 		bn_trim(r);
 #if BN_MOD == MONTY
-		bn_mod_monty_back(c, r, m);
-#else
-		bn_copy(c, r);
+		bn_mod_monty_back(r, r, m);
 #endif
+
+		if (bn_sign(b) == BN_NEG) {
+			bn_gcd_ext(t, r, NULL, r, m);
+			if (bn_sign(r) == BN_NEG) {
+				bn_add(r, r, m);
+			}
+			if (bn_cmp_dig(t, 1) == CMP_EQ) {
+				bn_copy(c, r);
+			} else {
+				bn_zero(c);
+				THROW(ERR_NO_VALID);
+			}
+		} else {
+			bn_copy(c, r);
+		}
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
@@ -195,7 +225,6 @@ void bn_mxp_slide(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 	}
 }
 
-
 #endif
 
 #if BN_MXP == MONTY || !defined(STRIP)
@@ -203,7 +232,12 @@ void bn_mxp_slide(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 void bn_mxp_monty(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 	bn_t tab[2], u;
 	dig_t mask;
-	int t;
+	int i, j, t;
+
+	if (bn_is_zero(b)) {
+		bn_set_dig(c, 1);
+		return;
+	}
 
 	bn_null(tab[0]);
 	bn_null(tab[1]);
@@ -225,8 +259,8 @@ void bn_mxp_monty(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 		bn_copy(tab[1], a);
 #endif
 
-		for (int i = bn_bits(b) - 1; i >= 0; i--) {
-			int j = bn_get_bit(b, i);
+		for (i = bn_bits(b) - 1; i >= 0; i--) {
+			j = bn_get_bit(b, i);
 			dv_swap_cond(tab[0]->dp, tab[1]->dp, BN_DIGS, j ^ 1);
 			mask = -(j ^ 1);
 			t = (tab[0]->used ^ tab[1]->used) & mask;
@@ -244,12 +278,27 @@ void bn_mxp_monty(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 		}
 
 #if BN_MOD == MONTY
-		bn_mod_monty_back(c, tab[0], m);
+		bn_mod_monty_back(u, tab[0], m);
 #else
-		bn_copy(c, tab[0]);
+		bn_copy(u, tab[0]);
 #endif
 
-	} CATCH_ANY {
+		/* Silly branchless code, since called functions not constant-time. */
+		bn_gcd_ext(tab[1], tab[0], NULL, u, m);
+		dv_swap_cond(u->dp, tab[0]->dp, BN_DIGS, bn_sign(b) == BN_NEG);
+		if (bn_sign(b) == BN_NEG) {
+			u->sign = tab[0]->sign;
+			if (bn_cmp_dig(tab[1], 1) != CMP_EQ) {
+				bn_zero(c);
+				THROW(ERR_NO_VALID);
+			}
+		}
+		bn_add(tab[1], u, m);
+		dv_swap_cond(u->dp, tab[1]->dp, BN_DIGS, bn_sign(b) == BN_NEG && bn_sign(u) == BN_NEG);
+		u->sign = BN_POS;
+		bn_copy(c, u);
+	}
+	CATCH_ANY {
 		THROW(ERR_CAUGHT);
 	}
 	FINALLY {
@@ -305,8 +354,8 @@ void bn_mxp_dig(bn_t c, const bn_t a, dig_t b, const bn_t m) {
 #else
 		bn_copy(c, r);
 #endif
-	}
-	CATCH_ANY {
+		/* Exponent is unsigned, so no need to invert if negative. */
+	} CATCH_ANY {
 		THROW(ERR_CAUGHT);
 	}
 	FINALLY {
