@@ -215,7 +215,12 @@ endif(DEBUG)
 
 if(MULTI STREQUAL OPENMP)
 	find_package(OpenMP REQUIRED)
-	set(CFLAGS "${CFLAGS} -fopenmp")
+	if (MSVC)
+		set(CFLAGS "${CFLAGS} /openmp")
+	else (MSVC)
+		set(CFLAGS "${CFLAGS} -fopenmp")
+	endif (MSVC)
+
 	set(MULTI "OPENMP" CACHE STRING "Multithreading interface")
 else(MULTI STREQUAL OPENMP)
 	if(MULTI STREQUAL PTHREAD)
