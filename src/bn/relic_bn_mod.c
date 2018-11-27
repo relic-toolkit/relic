@@ -175,10 +175,9 @@ void bn_mod_pre_monty(bn_t u, const bn_t m) {
 }
 
 void bn_mod_monty_conv(bn_t c, const bn_t a, const bn_t m) {
-	if (bn_sign(a) == BN_NEG) {
-		bn_add(c, m, a);
-	} else {
-		bn_copy(c, a);
+	bn_copy(c, a);
+	while (bn_sign(c) == BN_NEG) {
+		bn_add(c, c, m);
 	}
 	bn_lsh(c, c, m->used * BN_DIGIT);
 	bn_mod(c, c, m);
