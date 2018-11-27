@@ -77,7 +77,7 @@ int fp12_cmp_dig(fp12_t a, dig_t b) {
 
 int fp18_cmp(fp18_t a, fp18_t b) {
 	return (fp6_cmp(a[0], b[0]) == CMP_EQ) && (fp6_cmp(a[1], b[1]) == CMP_EQ) &&
-			(fp6_cmp(a[2], b[2]) == CMP_EQ ? CMP_EQ : CMP_NE);
+			(fp6_cmp(a[2], b[2]) == CMP_EQ) ? CMP_EQ : CMP_NE;
 }
 
 int fp18_cmp_dig(fp18_t a, dig_t b) {
