@@ -48,7 +48,7 @@ int bc_aes_cbc_enc(uint8_t *out, int *out_len, uint8_t *in,
 	if (*out_len < in_len + pad_len) {
 		return STS_ERR;
 	}
-	if (makeKey2(&key_inst, DIR_ENCRYPT, key_len, (char *)key) != TRUE) {
+	if (makeKey2(&key_inst, DIR_ENCRYPT, 8 * key_len, (char *)key) != TRUE) {
 		return STS_ERR;
 	}
 	if (cipherInit(&cipher_inst, MODE_CBC, NULL) != TRUE) {
@@ -71,7 +71,7 @@ int bc_aes_cbc_dec(uint8_t *out, int *out_len, uint8_t *in,
 		return STS_ERR;
 	}
 
-	if (makeKey2(&key_inst, DIR_DECRYPT, key_len, (char *)key) != TRUE) {
+	if (makeKey2(&key_inst, DIR_DECRYPT, 8 * key_len, (char *)key) != TRUE) {
 		return STS_ERR;
 	}
 	if (cipherInit(&cipher_inst, MODE_CBC, NULL) != TRUE) {

@@ -96,7 +96,7 @@ int cp_ecies_enc(ec_t r, uint8_t *out, int *out_len, uint8_t *in, int in_len,
 		bn_write_bin(_x, l, x);
 		md_kdf2(key, 2 * size, _x, l);
 		l = *out_len;
-		if (bc_aes_cbc_enc(out, out_len, in, in_len, key, 8 * size, iv)
+		if (bc_aes_cbc_enc(out, out_len, in, in_len, key, size, iv)
 				!= STS_OK || (*out_len + MD_LEN) > l) {
 			result = STS_ERR;
 		} else {
@@ -144,7 +144,7 @@ int cp_ecies_dec(uint8_t *out, int *out_len, ec_t r, uint8_t *in, int in_len,
 		if (util_cmp_const(h, in + in_len - MD_LEN, MD_LEN)) {
 			result = STS_ERR;
 		} else {
-			if (bc_aes_cbc_dec(out, out_len, in, in_len - MD_LEN, key, 8 * size, iv)
+			if (bc_aes_cbc_dec(out, out_len, in, in_len - MD_LEN, key, size, iv)
 					!= STS_OK) {
 				result = STS_ERR;
 			}
