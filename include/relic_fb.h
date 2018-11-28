@@ -226,10 +226,6 @@ typedef relic_align dig_t fb_st[FB_DIGS + PADDING(FB_BYTES)/(DIGIT / 8)];
 #define fb_mul(C, A, B)	fb_mul_basic(C, A, B)
 #elif FB_MUL == INTEG
 #define fb_mul(C, A, B)	fb_mul_integ(C, A, B)
-#elif FB_MUL == LCOMB
-#define fb_mul(C, A, B)	fb_mul_lcomb(C, A, B)
-#elif FB_MUL == RCOMB
-#define fb_mul(C, A, B)	fb_mul_rcomb(C, A, B)
 #elif FB_MUL == LODAH
 #define fb_mul(C, A, B)	fb_mul_lodah(C, A, B)
 #endif

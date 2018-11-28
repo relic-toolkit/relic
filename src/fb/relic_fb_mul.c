@@ -84,73 +84,6 @@ static void fb_mul_basic_imp(dig_t *c, const dig_t *a, const dig_t *b, int size)
 }
 #endif /* FB_MUL == BASIC */
 
-#if FB_MUL == LCOMB
-/**
- * Multiplies two binary field elements using left-to-right comb multiplication.
- *
- * @param c					- the result.
- * @param a					- the first binary field element.
- * @param b					- the second binary field element.
- * @param size				- the number of digits to multiply.
- */
-static void fb_mul_lcomb_imp(dig_t *c, const dig_t *a, const dig_t *b, int size) {
-	dv_zero(c, 2 * size);
-
-	for (int i = DIGIT - 1; i >= 0; i--) {
-		for (int j = 0; j < size; j++) {
-			if (a[j] & ((dig_t)1 << i)) {
-				fb_addd_low(c + j, c + j, b, size);
-			}
-		}
-		if (i != 0) {
-			bn_lsh1_low(c, c, 2 * size);
-		}
-	}
-}
-#endif /* FB_MUL == LCOMB */
-
-#if FB_MUL == RCOMB
-/**
- * Multiplies two binary field elements using right-to-left comb multiplication.
- *
- * @param c					- the result.
- * @param a					- the first binary field element.
- * @param b					- the second binary field element.
- * @param size				- the number of digits to multiply.
- */
-static void fb_mul_rcomb_imp(dig_t *c, const dig_t *a, const dig_t *b, int size) {
-	dv_t _b;
-
-	dv_null(_b);
-
-	TRY {
-		dv_new(_b);
-		dv_zero(c, 2 * size);
-
-		for (int i = 0; i < size; i++)
-			_b[i] = b[i];
-		_b[size] = 0;
-
-		for (int i = 0; i < DIGIT; i++) {
-			for (int j = 0; j < size; j++) {
-				if (a[j] & ((dig_t)1 << i)) {
-					fb_addd_low(c + j, c + j, _b, size + 1);
-				}
-			}
-			if (i != DIGIT - 1) {
-				bn_lsh1_low(_b, _b, size + 1);
-			}
-		}
-	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	}
-	FINALLY {
-		dv_free(_b);
-	}
-}
-#endif /* FB_MUL == RCOMB */
-
 #if FB_KARAT > 0 || !defined(STRIP)
 /**
  * Multiplies two binary field elements using recursive Karatsuba
@@ -189,12 +122,6 @@ static void fb_mul_karat_imp(dv_t c, const fb_t a, const fb_t b, int size,
 #if FB_MUL == BASIC
 			fb_mul_basic_imp(a0b0, a, b, h);
 			fb_mul_basic_imp(a1b1, a + h, b + h, h1);
-#elif FB_MUL == LCOMB
-			fb_mul_lcomb_imp(a0b0, a, b, h);
-			fb_mul_lcomb_imp(a1b1, a + h, b + h, h1);
-#elif FB_MUL == RCOMB
-			fb_mul_rcomb_imp(a0b0, a, b, h);
-			fb_mul_rcomb_imp(a1b1, a + h, b + h, h1);
 #elif FB_MUL == INTEG || FB_MUL == LODAH
 			fb_muld_low(a0b0, a, b, h);
 			fb_muld_low(a1b1, a + h, b + h, h1);
@@ -229,10 +156,6 @@ static void fb_mul_karat_imp(dv_t c, const fb_t a, const fb_t b, int size,
 			/* a1b1 = (a1 + a0)*(b1 + b0) */
 #if FB_MUL == BASIC
 			fb_mul_basic_imp(a1b1, a1, b1, h1);
-#elif FB_MUL == LCOMB
-			fb_mul_lcomb_imp(a1b1, a1, b1, h1);
-#elif FB_MUL == RCOMB
-			fb_mul_rcomb_imp(a1b1, a1, b1, h1);
 #elif FB_MUL == INTEG || FB_MUL == LODAH
 			fb_muld_low(a1b1, a1, b1, h1);
 #endif
@@ -311,87 +234,6 @@ void fb_mul_basic(fb_t c, const fb_t a, const fb_t b) {
 
 void fb_mul_integ(fb_t c, const fb_t a, const fb_t b) {
 	fb_mulm_low(c, a, b);
-}
-
-#endif
-
-#if FB_MUL == LCOMB || !defined(STRIP)
-
-void fb_mul_lcomb(fb_t c, const fb_t a, const fb_t b) {
-	dv_t t;
-	dig_t carry;
-
-	dv_null(t);
-
-	TRY {
-		dv_new(t);
-		dv_zero(t, 2 * FB_DIGS);
-
-		for (int i = DIGIT - 1; i >= 0; i--) {
-			for (int j = 0; j < FB_DIGS; j++) {
-				if (a[j] & ((dig_t)1 << i)) {
-					/* This cannot use fb_addn_low() because there is no
-					 * guarantee that operands will be aligned. */
-					fb_addd_low(t + j, t + j, b, FB_DIGS);
-				}
-			}
-			if (i != 0) {
-				carry = fb_lsh1_low(t, t);
-				fb_lsh1_low(t + FB_DIGS, t + FB_DIGS);
-				t[FB_DIGS] |= carry;
-			}
-		}
-
-		fb_rdc(c, t);
-	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	}
-	FINALLY {
-		dv_free(t);
-	}
-}
-
-#endif
-
-#if FB_MUL == RCOMB || !defined(STRIP)
-
-void fb_mul_rcomb(fb_t c, const fb_t a, const fb_t b) {
-	dv_t t, _b;
-	dig_t carry;
-
-	dv_null(t);
-	dv_null(_b);
-
-	TRY {
-		dv_new(t);
-		dv_new(_b);
-		dv_zero(t, 2 * FB_DIGS);
-		dv_zero(_b, FB_DIGS + 1);
-
-		fb_copy(_b, b);
-
-		for (int i = 0; i < DIGIT; i++) {
-			for (int j = 0; j < FB_DIGS; j++) {
-				if (a[j] & ((dig_t)1 << i)) {
-					fb_addd_low(t + j, t + j, _b, FB_DIGS + 1);
-				}
-			}
-			if (i != DIGIT - 1) {
-				carry = fb_lsh1_low(_b, _b);
-				_b[FB_DIGS] = (_b[FB_DIGS] << 1) | carry;
-			}
-		}
-
-		fb_rdc(c, t);
-	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	}
-	FINALLY {
-		dv_free(t);
-		dv_free(_b);
-	}
 }
 
 #endif

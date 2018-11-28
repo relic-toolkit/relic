@@ -310,10 +310,6 @@
 #define LODAH	 2
 /** Integrated modular multiplication. */
 #define INTEG	 3
-/** Left-to-right Comb multiplication. */
-#define LCOMB	 4
-/** Right-to-left Comb multiplication. */
-#define RCOMB	 5
 /** Chosen binary field multiplication method. */
 #define FB_MUL   @FB_MUL@
 

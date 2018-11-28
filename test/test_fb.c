@@ -443,28 +443,6 @@ static int multiplication(void) {
 		TEST_END;
 #endif
 
-#if FB_MUL == LCOMB || !defined(STRIP)
-		TEST_BEGIN("left-to-right comb multiplication is correct") {
-			fb_rand(a);
-			fb_rand(b);
-			fb_mul(c, a, b);
-			fb_mul_lcomb(d, a, b);
-			TEST_ASSERT(fb_cmp(c, d) == CMP_EQ, end);
-		}
-		TEST_END;
-#endif
-
-#if FB_MUL == RCOMB || !defined(STRIP)
-		TEST_BEGIN("right-to-left comb multiplication is correct") {
-			fb_rand(a);
-			fb_rand(b);
-			fb_mul(c, a, b);
-			fb_mul_rcomb(d, a, b);
-			TEST_ASSERT(fb_cmp(c, d) == CMP_EQ, end);
-		}
-		TEST_END;
-#endif
-
 #if FB_KARAT > 0 || !defined(STRIP)
 		TEST_BEGIN("karatsuba multiplication is correct") {
 			fb_rand(a);

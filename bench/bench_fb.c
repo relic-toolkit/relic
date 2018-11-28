@@ -263,24 +263,6 @@ static void arith(void) {
 	BENCH_END;
 #endif
 
-#if FB_MUL == LCOMB || !defined(STRIP)
-	BENCH_BEGIN("fb_mul_lcomb") {
-		fb_rand(a);
-		fb_rand(b);
-		BENCH_ADD(fb_mul_lcomb(c, a, b));
-	}
-	BENCH_END;
-#endif
-
-#if FB_MUL == RCOMB || !defined(STRIP)
-	BENCH_BEGIN("fb_mul_rcomb") {
-		fb_rand(a);
-		fb_rand(b);
-		BENCH_ADD(fb_mul_rcomb(c, a, b));
-	}
-	BENCH_END;
-#endif
-
 #if FB_MUL == LODAH || !defined(STRIP)
 	BENCH_BEGIN("fb_mul_lodah") {
 		fb_rand(a);
