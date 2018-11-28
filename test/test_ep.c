@@ -706,60 +706,6 @@ static int fixed(void) {
 		}
 #endif
 
-#if EP_FIX == YAOWI || !defined(STRIP)
-		for (int i = 0; i < RELIC_EP_TABLE_YAOWI; i++) {
-			ep_new(t[i]);
-		}
-		TEST_BEGIN("yao windowing fixed point multiplication is correct") {
-			ep_rand(p);
-			ep_mul_pre_yaowi(t, p);
-			bn_zero(k);
-			ep_mul_fix_yaowi(r, (const ep_t *)t, k);
-			TEST_ASSERT(ep_is_infty(r), end);
-			bn_set_dig(k, 1);
-			ep_mul_fix_yaowi(r, (const ep_t *)t, k);
-			TEST_ASSERT(ep_cmp(p, r) == CMP_EQ, end);
-			bn_rand_mod(k, n);
-			ep_mul(r, p, k);
-			ep_mul_fix_yaowi(q, (const ep_t *)t, k);
-			TEST_ASSERT(ep_cmp(q, r) == CMP_EQ, end);
-			bn_neg(k, k);
-			ep_mul_fix_yaowi(r, (const ep_t *)t, k);
-			ep_neg(r, r);
-			TEST_ASSERT(ep_cmp(q, r) == CMP_EQ, end);
-		} TEST_END;
-		for (int i = 0; i < RELIC_EP_TABLE_YAOWI; i++) {
-			ep_free(t[i]);
-		}
-#endif
-
-#if EP_FIX == NAFWI || !defined(STRIP)
-		for (int i = 0; i < RELIC_EP_TABLE_NAFWI; i++) {
-			ep_new(t[i]);
-		}
-		TEST_BEGIN("naf windowing fixed point multiplication is correct") {
-			ep_rand(p);
-			ep_mul_pre_nafwi(t, p);
-			bn_zero(k);
-			ep_mul_fix_nafwi(r, (const ep_t *)t, k);
-			TEST_ASSERT(ep_is_infty(r), end);
-			bn_set_dig(k, 1);
-			ep_mul_fix_nafwi(r, (const ep_t *)t, k);
-			TEST_ASSERT(ep_cmp(p, r) == CMP_EQ, end);
-			bn_rand_mod(k, n);
-			ep_mul(r, p, k);
-			ep_mul_fix_nafwi(q, (const ep_t *)t, k);
-			TEST_ASSERT(ep_cmp(q, r) == CMP_EQ, end);
-			bn_neg(k, k);
-			ep_mul_fix_nafwi(r, (const ep_t *)t, k);
-			ep_neg(r, r);
-			TEST_ASSERT(ep_cmp(q, r) == CMP_EQ, end);
-		} TEST_END;
-		for (int i = 0; i < RELIC_EP_TABLE_NAFWI; i++) {
-			ep_free(t[i]);
-		}
-#endif
-
 #if EP_FIX == COMBS || !defined(STRIP)
 		for (int i = 0; i < RELIC_EP_TABLE_COMBS; i++) {
 			ep_new(t[i]);

@@ -423,16 +423,12 @@
 
 /** Binary point multiplication. */
 #define BASIC	 1
-/** Yao's windowing method. */
-#define YAOWI	 2
-/** NAF windowing method. */
-#define NAFWI	 3
+/** Single-table comb method. */
+#define COMBS	 2
+/** Double-table comb method. */
+#define COMBD    3
 /** Left-to-right Width-w NAF. */
 #define LWNAF	 4
-/** Single-table comb method. */
-#define COMBS	 5
-/** Double-table comb method. */
-#define COMBD    6
 /** Chosen prime elliptic curve point multiplication method. */
 #define EP_FIX	 @EP_FIX@
 
@@ -488,16 +484,12 @@
 
 /** Binary point multiplication. */
 #define BASIC	 1
-/** Yao's windowing method. */
-#define YAOWI	 2
-/** NAF windowing method. */
-#define NAFWI	 3
+/** Single-table comb method. */
+#define COMBS	 2
+/** Double-table comb method. */
+#define COMBD    3
 /** Left-to-right Width-w NAF. */
 #define LWNAF	 4
-/** Single-table comb method. */
-#define COMBS	 5
-/** Double-table comb method. */
-#define COMBD    6
 /** Chosen binary elliptic curve point multiplication method. */
 #define EB_FIX	 @EB_FIX@
 
@@ -548,16 +540,12 @@
 
 /** Binary point multiplication. */
 #define BASIC	 1
-/** Yao's windowing method. */
-#define YAOWI	 2
-/** NAF windowing method. */
-#define NAFWI	 3
+/** Single-table comb method. */
+#define COMBS	 2
+/** Double-table comb method. */
+#define COMBD    3
 /** Left-to-right Width-w NAF. */
 #define LWNAF	 4
-/** Single-table comb method. */
-#define COMBS	 5
-/** Double-table comb method. */
-#define COMBD    6
 /** Chosen prime elliptic twisted Edwards curve point multiplication method. */
 #define ED_FIX	 @ED_FIX@
 
@@ -597,8 +585,6 @@
 #define WEILP    2
 /** Optimal ate pairing. */
 #define OATEP    3
-/** Beta Weil pairing. */
-#define BWEIL    4
 /** Chosen pairing method over prime elliptic curves. */
 #define PP_MAP   @PP_MAP@
 

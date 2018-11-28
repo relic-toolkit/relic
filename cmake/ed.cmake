@@ -18,8 +18,6 @@ message("      ED_METHD=LWNAF    	Left-to-right window NAF method (GLV for Kobli
 
 message("      *** fixed-base multiplication method ***")
 message("      ED_METHD=BASIC    	Binary method for fixed point multiplication.")
-message("      ED_METHD=YAOWI    	Yao's windowing method for fixed point multiplication")
-message("      ED_METHD=NAFWI    	NAF windowing method for fixed point multiplication.")
 message("      ED_METHD=COMBS    	Single-table Comb method for fixed point multiplication.")
 message("      ED_METHD=COMBD    	Double-table Comb method for fixed point multiplication.")
 message("      ED_METHD=LWNAF    	Left-to-right window NAF method (GLV for Koblitz curves).\n")

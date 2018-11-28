@@ -441,46 +441,6 @@ static void arith(void) {
 	}
 #endif
 
-#if EP_FIX == YAOWI || !defined(STRIP)
-	for (int i = 0; i < RELIC_EPX_TABLE_YAOWI; i++) {
-		ep2_new(t[i]);
-	}
-	BENCH_BEGIN("ep2_mul_pre_yaowi") {
-		ep2_rand(p);
-		BENCH_ADD(ep2_mul_pre_yaowi(t, p));
-	} BENCH_END;
-
-	BENCH_BEGIN("ep2_mul_fix_yaowi") {
-		bn_rand_mod(k, n);
-		ep2_rand(p);
-		ep2_mul_pre_yaowi(t, p);
-		BENCH_ADD(ep2_mul_fix_yaowi(q, t, k));
-	} BENCH_END;
-	for (int i = 0; i < RELIC_EPX_TABLE_YAOWI; i++) {
-		ep2_free(t[i]);
-	}
-#endif
-
-#if EP_FIX == NAFWI || !defined(STRIP)
-	for (int i = 0; i < RELIC_EPX_TABLE_NAFWI; i++) {
-		ep2_new(t[i]);
-	}
-	BENCH_BEGIN("ep2_mul_pre_nafwi") {
-		ep2_rand(p);
-		BENCH_ADD(ep2_mul_pre_nafwi(t, p));
-	} BENCH_END;
-
-	BENCH_BEGIN("ep2_mul_fix_nafwi") {
-		bn_rand_mod(k, n);
-		ep2_rand(p);
-		ep2_mul_pre_nafwi(t, p);
-		BENCH_ADD(ep2_mul_fix_nafwi(q, t, k));
-	} BENCH_END;
-	for (int i = 0; i < RELIC_EPX_TABLE_NAFWI; i++) {
-		ep2_free(t[i]);
-	}
-#endif
-
 #if EP_FIX == COMBS || !defined(STRIP)
 	for (int i = 0; i < RELIC_EPX_TABLE_COMBS; i++) {
 		ep2_new(t[i]);

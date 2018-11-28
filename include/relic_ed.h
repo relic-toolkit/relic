@@ -61,16 +61,6 @@ enum {
 #define RELIC_ED_TABLE_BASIC    (FP_BITS + 1)
 
 /**
- * Size of a precomputation table using Yao's windowing method.
- */
-#define RELIC_ED_TABLE_YAOWI    (FP_BITS / ED_DEPTH + 1)
-
-/**
- * Size of a precomputation table using the NAF windowing method.
- */
-#define RELIC_ED_TABLE_NAFWI    (FP_BITS / ED_DEPTH + 1)
-
-/**
  * Size of a precomputation table using the single-table comb method.
  */
 #define RELIC_ED_TABLE_COMBS    (1 << ED_DEPTH)
@@ -90,10 +80,6 @@ enum {
  */
 #if ED_FIX == BASIC
 #define RELIC_ED__TABLE			RELIC_ED_TABLE_BASIC
-#elif ED_FIX == YAOWI
-#define RELIC_ED_TABLE			RELIC_ED_TABLE_YAOWI
-#elif ED_FIX == NAFWI
-#define RELIC_ED_TABLE			RELIC_ED_TABLE_NAFWI
 #elif ED_FIX == COMBS
 #define RELIC_ED_TABLE			RELIC_ED_TABLE_COMBS
 #elif ED_FIX == COMBD
@@ -406,10 +392,6 @@ void ed_map(ed_t p, const uint8_t *msg, int len);
  */
 #if ED_FIX == BASIC
 #define ed_mul_pre(T, P)    ed_mul_pre_basic(T, P)
-#elif ED_FIX == YAOWI
-#define ed_mul_pre(T, P)    ed_mul_pre_yaowi(T, P)
-#elif ED_FIX == NAFWI
-#define ed_mul_pre(T, P)    ed_mul_pre_nafwi(T, P)
 #elif ED_FIX == COMBS
 #define ed_mul_pre(T, P)    ed_mul_pre_combs(T, P)
 #elif ED_FIX == COMBD
@@ -430,10 +412,6 @@ void ed_map(ed_t p, const uint8_t *msg, int len);
  */
 #if ED_FIX == BASIC
 #define ed_mul_fix(R, T, K)   ed_mul_fix_basic(R, T, K)
-#elif ED_FIX == YAOWI
-#define ed_mul_fix(R, T, K)   ed_mul_fix_yaowi(R, T, K)
-#elif ED_FIX == NAFWI
-#define ed_mul_fix(R, T, K)   ed_mul_fix_nafwi(R, T, K)
 #elif ED_FIX == COMBS
 #define ed_mul_fix(R, T, K)   ed_mul_fix_combs(R, T, K)
 #elif ED_FIX == COMBD

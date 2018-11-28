@@ -298,46 +298,6 @@ static void arith(void) {
 	}
 #endif
 
-#if ED_FIX == YAOWI || !defined(STRIP)
-	for (int i = 0; i < RELIC_ED_TABLE_YAOWI; i++) {
-		ed_new(t[i]);
-	}
-	BENCH_BEGIN("ed_mul_pre_yaowi") {
-		ed_rand(p);
-		BENCH_ADD(ed_mul_pre_yaowi(t, p));
-	} BENCH_END;
-
-	BENCH_BEGIN("ed_mul_fix_yaowi") {
-		bn_rand_mod(k, n);
-		ed_rand(p);
-		ed_mul_pre_yaowi(t, p);
-		BENCH_ADD(ed_mul_fix_yaowi(q, (const ed_t *)t, k));
-	} BENCH_END;
-	for (int i = 0; i < RELIC_ED_TABLE_YAOWI; i++) {
-		ed_free(t[i]);
-	}
-#endif
-
-#if ED_FIX == NAFWI || !defined(STRIP)
-	for (int i = 0; i < RELIC_ED_TABLE_NAFWI; i++) {
-		ed_new(t[i]);
-	}
-	BENCH_BEGIN("ed_mul_pre_nafwi") {
-		ed_rand(p);
-		BENCH_ADD(ed_mul_pre_nafwi(t, p));
-	} BENCH_END;
-
-	BENCH_BEGIN("ed_mul_fix_nafwi") {
-		bn_rand_mod(k, n);
-		ed_rand(p);
-		ed_mul_pre_nafwi(t, p);
-		BENCH_ADD(ed_mul_fix_nafwi(q, (const ed_t *)t, k));
-	} BENCH_END;
-	for (int i = 0; i < RELIC_ED_TABLE_NAFWI; i++) {
-		ed_free(t[i]);
-	}
-#endif
-
 #if ED_FIX == COMBS || !defined(STRIP)
 	for (int i = 0; i < RELIC_ED_TABLE_COMBS; i++) {
 		ed_new(t[i]);
