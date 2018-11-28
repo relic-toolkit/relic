@@ -67,7 +67,7 @@ int fp_is_even(const fp_t a) {
 int fp_get_bit(const fp_t a, int bit) {
 	int d;
 
-	SPLIT(bit, d, bit, FP_DIG_LOG);
+	SPLIT(bit, d, bit, DIG_LOG);
 
 	return (a[d] >> bit) & 1;
 }
@@ -76,7 +76,7 @@ void fp_set_bit(fp_t a, int bit, int value) {
 	int d;
 	dig_t mask;
 
-	SPLIT(bit, d, bit, FP_DIG_LOG);
+	SPLIT(bit, d, bit, DIG_LOG);
 
 	mask = (dig_t)1 << bit;
 
@@ -95,7 +95,7 @@ int fp_bits(const fp_t a) {
 	}
 
 	if (i > 0) {
-		return (i << FP_DIG_LOG) + util_bits_dig(a[i]);
+		return (i << DIG_LOG) + util_bits_dig(a[i]);
 	} else {
 		return util_bits_dig(a[0]);
 	}
@@ -110,7 +110,7 @@ void fp_rand(fp_t a) {
 
 	rand_bytes((uint8_t *)a, FP_DIGS * sizeof(dig_t));
 
-	SPLIT(bits, digits, FP_BITS, FP_DIG_LOG);
+	SPLIT(bits, digits, FP_BITS, DIG_LOG);
 	if (bits > 0) {
 		dig_t mask = ((dig_t)1 << (dig_t)bits) - 1;
 		a[FP_DIGS - 1] &= mask;

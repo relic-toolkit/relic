@@ -121,7 +121,7 @@ void fb_inv_binar(fb_t c, const fb_t a) {
 		/* u = a, v = f, g1 = 1, g2 = 0. */
 		fb_copy(u, a);
 		fb_copy(v, fb_poly_get());
-		if (FB_BITS % FB_DIGIT == 0) {
+		if (FB_BITS % DIGIT == 0) {
 			v[FB_DIGS] = 1;
 		}
 		dv_zero(g1, 2 * FB_DIGS);
@@ -129,7 +129,7 @@ void fb_inv_binar(fb_t c, const fb_t a) {
 		dv_zero(g2, 2 * FB_DIGS);
 
 		lu = FB_DIGS;
-		lv = FB_DIGS + (FB_BITS % FB_DIGIT == 0);
+		lv = FB_DIGS + (FB_BITS % DIGIT == 0);
 
 		/* While (u != 1 && v != 1. */
 		while (1) {
@@ -140,7 +140,7 @@ void fb_inv_binar(fb_t c, const fb_t a) {
 				/* If z divides g1 then g1 = g1/z; else g1 = (g1 + f)/z. */
 				if ((g1[0] & 0x01) == 1) {
 					fb_poly_add(g1, g1);
-					if (FB_BITS % FB_DIGIT == 0) {
+					if (FB_BITS % DIGIT == 0) {
 						g1[FB_DIGS] ^= 1;
 					}
 				}
@@ -159,7 +159,7 @@ void fb_inv_binar(fb_t c, const fb_t a) {
 				/* If z divides g2 then g2 = g2/z; else (g2 = g2 + f)/z. */
 				if ((g2[0] & 0x01) == 1) {
 					fb_poly_add(g2, g2);
-					if (FB_BITS % FB_DIGIT == 0) {
+					if (FB_BITS % DIGIT == 0) {
 						g2[FB_DIGS] ^= 1;
 					}
 				}
@@ -263,7 +263,7 @@ void fb_inv_exgcd(fb_t c, const fb_t a) {
 				j = -j;
 			}
 
-			SPLIT(j, d, j, FB_DIG_LOG);
+			SPLIT(j, d, j, DIG_LOG);
 
 			/* u = u + v * z^j. */
 			if (j > 0) {
@@ -296,7 +296,7 @@ void fb_inv_exgcd(fb_t c, const fb_t a) {
 
 			/* j = deg(u) - deg(v). */
 			lt = util_bits_dig(u[lu - 1]) - util_bits_dig(v[lv - 1]);
-			j = ((lu - lv) << FB_DIG_LOG) + lt;
+			j = ((lu - lv) << DIG_LOG) + lt;
 		}
 		/* Return g1. */
 		fb_copy(c, g1);
@@ -344,12 +344,12 @@ void fb_inv_almos(fb_t c, const fb_t a) {
 		fb_copy(u, a);
 		fb_copy(v, fb_poly_get());
 
-		if (FB_BITS % FB_DIGIT == 0) {
+		if (FB_BITS % DIGIT == 0) {
 			v[FB_DIGS] = 1;
 		}
 
 		lu = FB_DIGS;
-		lv = FB_DIGS + (FB_BITS % FB_DIGIT == 0);
+		lv = FB_DIGS + (FB_BITS % DIGIT == 0);
 
 		while (1) {
 			/* While z divides u do. */
@@ -359,7 +359,7 @@ void fb_inv_almos(fb_t c, const fb_t a) {
 				/* If z divide v then b = b/z; else b = (b + f)/z. */
 				if ((b[0] & 0x01) == 1) {
 					fb_poly_add(b, b);
-					if (FB_BITS % FB_DIGIT == 0) {
+					if (FB_BITS % DIGIT == 0) {
 						b[FB_DIGS] ^= 1;
 					}
 				}
@@ -494,12 +494,12 @@ void fb_inv_bruch(fb_t c, const fb_t a) {
 		v = _v;
 
 		for (int i = 1; i <= 2 * FB_BITS; i++) {
-			if ((r[FB_DIGS - 1] & ((dig_t)1 << (FB_BITS % FB_DIGIT))) == 0) {
+			if ((r[FB_DIGS - 1] & ((dig_t)1 << (FB_BITS % DIGIT))) == 0) {
 				fb_lsh(r, r, 1);
 				fb_lsh(u, u, 1);
 				delta++;
 			} else {
-				if ((s[FB_DIGS - 1] & ((dig_t)1 << (FB_BITS % FB_DIGIT)))) {
+				if ((s[FB_DIGS - 1] & ((dig_t)1 << (FB_BITS % DIGIT)))) {
 					fb_add(s, s, r);
 					fb_add(v, v, u);
 				}

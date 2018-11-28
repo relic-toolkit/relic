@@ -82,13 +82,13 @@ static void util(void) {
 
 	BENCH_BEGIN("fp_get_bit") {
 		fp_rand(a);
-		BENCH_ADD(fp_get_bit(a, FP_DIGIT / 2));
+		BENCH_ADD(fp_get_bit(a, DIGIT / 2));
 	}
 	BENCH_END;
 
 	BENCH_BEGIN("fp_set_bit") {
 		fp_rand(a);
-		BENCH_ADD(fp_set_bit(a, FP_DIGIT / 2, 1));
+		BENCH_ADD(fp_set_bit(a, DIGIT / 2, 1));
 	}
 	BENCH_END;
 
@@ -400,7 +400,7 @@ static void arith(void) {
 	BENCH_BEGIN("fp_lsh") {
 		fp_rand(a);
 		a[FP_DIGS - 1] = 0;
-		BENCH_ADD(fp_lsh(c, a, FP_DIGIT / 2));
+		BENCH_ADD(fp_lsh(c, a, DIGIT / 2));
 	}
 	BENCH_END;
 

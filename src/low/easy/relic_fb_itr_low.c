@@ -45,14 +45,14 @@ void fb_itrn_low(dig_t *c, const dig_t *a, dig_t *t) {
 
 	fb_zero(v);
 
-	for (i = FB_DIGIT - 4; i >= 0; i -= 4) {
+	for (i = DIGIT - 4; i >= 0; i -= 4) {
 		tmp = a;
 		for (j = 0; j < FB_DIGS; j++, tmp++) {
 			u = (*tmp >> i) & 0x0F;
 #if ALLOC == AUTO
-			p = (t + ((j * FB_DIGIT + i) * 4 + u) * FB_DIGS);
+			p = (t + ((j * DIGIT + i) * 4 + u) * FB_DIGS);
 #else
-			p = ((fb_t *)t)[(j * FB_DIGIT + i) * 4 + u];
+			p = ((fb_t *)t)[(j * DIGIT + i) * 4 + u];
 #endif
 			fb_addn_low(v, v, p);
 		}

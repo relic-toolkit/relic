@@ -133,7 +133,7 @@ static int util2(void) {
 		TEST_END;
 
 		TEST_BEGIN("assignment to a constant and comparison are consistent") {
-			rand_bytes((uint8_t *)&d, (FP_DIGIT / 8));
+			rand_bytes((uint8_t *)&d, (DIGIT / 8));
 			fp2_set_dig(a, d);
 			TEST_ASSERT(fp2_cmp_dig(a, d) == CMP_EQ, end);
 		}
@@ -892,7 +892,7 @@ static int util3(void) {
 		TEST_END;
 
 		TEST_BEGIN("assignment to a constant and comparison are consistent") {
-			rand_bytes((uint8_t *)&d, (FP_DIGIT / 8));
+			rand_bytes((uint8_t *)&d, (DIGIT / 8));
 			fp3_set_dig(a, d);
 			TEST_ASSERT(fp3_cmp_dig(a, d) == CMP_EQ, end);
 		}
@@ -1598,7 +1598,7 @@ static int util6(void) {
 		TEST_END;
 
 		TEST_BEGIN("assignment to a constant and comparison are consistent") {
-			rand_bytes((uint8_t *)&d, (FP_DIGIT / 8));
+			rand_bytes((uint8_t *)&d, (DIGIT / 8));
 			fp6_set_dig(a, d);
 			TEST_ASSERT(fp6_cmp_dig(a, d) == CMP_EQ, end);
 		}
@@ -2136,7 +2136,7 @@ static int util12(void) {
 		TEST_END;
 
 		TEST_BEGIN("assignment to a constant and comparison are consistent") {
-			rand_bytes((uint8_t *)&d, (FP_DIGIT / 8));
+			rand_bytes((uint8_t *)&d, (DIGIT / 8));
 			fp12_set_dig(a, d);
 			TEST_ASSERT(fp12_cmp_dig(a, d) == CMP_EQ, end);
 		}
@@ -2925,7 +2925,7 @@ static int util18(void) {
 		TEST_END;
 
 		TEST_BEGIN("assignment to a constant and comparison are consistent") {
-			rand_bytes((uint8_t *)&d, (FP_DIGIT / 8));
+			rand_bytes((uint8_t *)&d, (DIGIT / 8));
 			fp18_set_dig(a, d);
 			TEST_ASSERT(fp18_cmp_dig(a, d) == CMP_EQ, end);
 		}

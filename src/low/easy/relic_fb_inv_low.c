@@ -85,7 +85,7 @@ void fb_invn_low(dig_t *c, const dig_t *a) {
 			j = -j;
 		}
 
-		SPLIT(j, d, j, FB_DIG_LOG);
+		SPLIT(j, d, j, DIG_LOG);
 
 		/* u = u + v * z^j. */
 		if (j > 0) {
@@ -118,7 +118,7 @@ void fb_invn_low(dig_t *c, const dig_t *a) {
 
 		/* j = deg(u) - deg(v). */
 		lt = util_bits_dig(u[lu - 1]) - util_bits_dig(v[lv - 1]);
-		j = ((lu - lv) << FB_DIG_LOG) + lt;
+		j = ((lu - lv) << DIG_LOG) + lt;
 	}
 	/* Return g1. */
 	fb_copy(c, g1);

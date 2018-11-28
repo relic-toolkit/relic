@@ -382,7 +382,7 @@ void fb_poly_set_trino(int a) {
 		ctx->fb_pa = a;
 		ctx->fb_pb = ctx->fb_pc = 0;
 
-		ctx->fb_na = ctx->fb_pa >> FB_DIG_LOG;
+		ctx->fb_na = ctx->fb_pa >> DIG_LOG;
 		ctx->fb_nb = ctx->fb_nc = -1;
 
 		fb_new(f);
@@ -413,9 +413,9 @@ void fb_poly_set_penta(int a, int b, int c) {
 		ctx->fb_pb = b;
 		ctx->fb_pc = c;
 
-		ctx->fb_na = ctx->fb_pa >> FB_DIG_LOG;
-		ctx->fb_nb = ctx->fb_pb >> FB_DIG_LOG;
-		ctx->fb_nc = ctx->fb_pc >> FB_DIG_LOG;
+		ctx->fb_na = ctx->fb_pa >> DIG_LOG;
+		ctx->fb_nb = ctx->fb_pb >> DIG_LOG;
+		ctx->fb_nc = ctx->fb_pc >> DIG_LOG;
 
 		fb_zero(f);
 		fb_set_bit(f, FB_BITS, 1);

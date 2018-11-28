@@ -55,7 +55,7 @@ void fb_mul1_low(dig_t *c, const dig_t *a, dig_t digit) {
 	c[FB_DIGS] = fb_lshb_low(c, a, util_bits_dig(digit) - 1);
 	for (int i = util_bits_dig(digit) - 2; i > 0; i--) {
 		if (digit & ((dig_t)1 << i)) {
-			j = FB_DIGIT - i;
+			j = DIGIT - i;
 			b1 = a[0];
 			c[0] ^= (b1 << i);
 			for (k = 1; k < FB_DIGS; k++) {
@@ -91,9 +91,9 @@ void fb_muln_low(dig_t *c, dig_t *a, dig_t *b) {
 	u = 0;
 	for (i = 0; i < FB_DIGS; i++) {
 		r1 = r0 = b[i];
-		r2 = (r0 << 1) | (u >> (FB_DIGIT - 1));
-		r4 = (r0 << 2) | (u >> (FB_DIGIT - 2));
-		r8 = (r0 << 3) | (u >> (FB_DIGIT - 3));
+		r2 = (r0 << 1) | (u >> (DIGIT - 1));
+		r4 = (r0 << 2) | (u >> (DIGIT - 2));
+		r8 = (r0 << 3) | (u >> (DIGIT - 3));
 		table[0][i] = 0;
 		table[1][i] = r1;
 		table[2][i] = r2;
@@ -114,9 +114,9 @@ void fb_muln_low(dig_t *c, dig_t *a, dig_t *b) {
 	}
 
 	if (u > 0) {
-		r2 = u >> (FB_DIGIT - 1);
-		r4 = u >> (FB_DIGIT - 2);
-		r8 = u >> (FB_DIGIT - 3);
+		r2 = u >> (DIGIT - 1);
+		r4 = u >> (DIGIT - 2);
+		r8 = u >> (DIGIT - 3);
 		table[0][FB_DIGS] = table[1][FB_DIGS] = 0;
 		table[2][FB_DIGS] = table[3][FB_DIGS] = r2;
 		table[4][FB_DIGS] = table[5][FB_DIGS] = r4;
@@ -127,7 +127,7 @@ void fb_muln_low(dig_t *c, dig_t *a, dig_t *b) {
 		table[14][FB_DIGS] = table[15][FB_DIGS] = r2 ^ r4 ^ r8;
 	}
 
-	for (i = FB_DIGIT - 4; i >= 4; i -= 4) {
+	for (i = DIGIT - 4; i >= 4; i -= 4) {
 		tmpa = a;
 		tmpc = c;
 		for (j = 0; j < FB_DIGS; j++, tmpa++, tmpc++) {
@@ -170,9 +170,9 @@ void fb_muld_low(dig_t *c, const dig_t *a, const dig_t *b, int size) {
 	u = 0;
 	for (i = 0; i < size; i++) {
 		r1 = r0 = b[i];
-		r2 = (r0 << 1) | (u >> (FB_DIGIT - 1));
-		r4 = (r0 << 2) | (u >> (FB_DIGIT - 2));
-		r8 = (r0 << 3) | (u >> (FB_DIGIT - 3));
+		r2 = (r0 << 1) | (u >> (DIGIT - 1));
+		r4 = (r0 << 2) | (u >> (DIGIT - 2));
+		r8 = (r0 << 3) | (u >> (DIGIT - 3));
 		table[0][i] = 0;
 		table[1][i] = r1;
 		table[2][i] = r2;
@@ -193,9 +193,9 @@ void fb_muld_low(dig_t *c, const dig_t *a, const dig_t *b, int size) {
 	}
 
 	if (u > 0) {
-		r2 = u >> (FB_DIGIT - 1);
-		r4 = u >> (FB_DIGIT - 2);
-		r8 = u >> (FB_DIGIT - 3);
+		r2 = u >> (DIGIT - 1);
+		r4 = u >> (DIGIT - 2);
+		r8 = u >> (DIGIT - 3);
 		table[0][size] = table[1][size] = 0;
 		table[2][size] = table[3][size] = r2;
 		table[4][size] = table[5][size] = r4;
@@ -206,7 +206,7 @@ void fb_muld_low(dig_t *c, const dig_t *a, const dig_t *b, int size) {
 		table[14][size] = table[15][size] = r2 ^ r4 ^ r8;
 	}
 
-	for (i = FB_DIGIT - 4; i >= 4; i -= 4) {
+	for (i = DIGIT - 4; i >= 4; i -= 4) {
 		tmpa = a;
 		tmpc = c;
 		for (j = 0; j < size; j++, tmpa++, tmpc++) {

@@ -109,7 +109,7 @@ void ed_map(ed_t p, const uint8_t *msg, int len) {
 		}
 
 		/* By Elligator convention. */
-		if (p->x[FP_DIGS - 1] >> (FP_DIGIT - 1) == 1) {
+		if (p->x[FP_DIGS - 1] >> (DIGIT - 1) == 1) {
 			fp_neg(p->x, p->x);
 		}
 

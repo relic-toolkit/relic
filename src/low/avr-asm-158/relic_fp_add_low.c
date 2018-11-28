@@ -157,7 +157,7 @@ void fp_hlvm_low(dig_t *c, const dig_t *a) {
 	}
 	fp_rsh1_low(c, c);
 	if (carry) {
-		c[FP_DIGS - 1] ^= ((dig_t)1 << (FP_DIGIT - 1));
+		c[FP_DIGS - 1] ^= ((dig_t)1 << (DIGIT - 1));
 	}
 }
 
@@ -175,6 +175,6 @@ void fp_hlvd_low(dig_t *c, const dig_t *a) {
 	carry = fp_rsh1_low(c + FP_DIGS, c + FP_DIGS);
 	fp_rsh1_low(c, c);
 	if (carry) {
-		c[FP_DIGS - 1] ^= ((dig_t)1 << (FP_DIGIT - 1));
+		c[FP_DIGS - 1] ^= ((dig_t)1 << (DIGIT - 1));
 	}
 }

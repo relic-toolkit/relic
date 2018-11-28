@@ -88,13 +88,13 @@ static void util(void) {
 
 	BENCH_BEGIN("fb_get_bit") {
 		fb_rand(a);
-		BENCH_ADD(fb_get_bit(a, FB_DIGIT / 2));
+		BENCH_ADD(fb_get_bit(a, DIGIT / 2));
 	}
 	BENCH_END;
 
 	BENCH_BEGIN("fb_set_bit") {
 		fb_rand(a);
-		BENCH_ADD(fb_set_bit(a, FB_DIGIT / 2, 1));
+		BENCH_ADD(fb_set_bit(a, DIGIT / 2, 1));
 	}
 	BENCH_END;
 
@@ -332,7 +332,7 @@ static void arith(void) {
 	BENCH_BEGIN("fb_lsh") {
 		fb_rand(a);
 		a[FB_DIGS - 1] = 0;
-		bits = a[0] & MASK(FB_DIG_LOG);
+		bits = a[0] & MASK(DIG_LOG);
 		BENCH_ADD(fb_lsh(c, a, bits));
 	}
 	BENCH_END;
@@ -340,7 +340,7 @@ static void arith(void) {
 	BENCH_BEGIN("fb_rsh") {
 		fb_rand(a);
 		a[FB_DIGS - 1] = 0;
-		bits = a[0] & MASK(FB_DIG_LOG);
+		bits = a[0] & MASK(DIG_LOG);
 		BENCH_ADD(fb_rsh(c, a, bits));
 
 	}

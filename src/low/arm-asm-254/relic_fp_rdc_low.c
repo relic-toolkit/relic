@@ -82,7 +82,7 @@ void fp_rdcs_low(dig_t *c, const dig_t *a, const dig_t *m) {
 
 	sform = fp_prime_get_sps(&len);
 
-	SPLIT(b0, d0, FP_BITS, FP_DIG_LOG);
+	SPLIT(b0, d0, FP_BITS, DIG_LOG);
 	first = (d0) + (b0 == 0 ? 0 : 1);
 
 	/* q = floor(a/b^k) */
@@ -102,7 +102,7 @@ void fp_rdcs_low(dig_t *c, const dig_t *a, const dig_t *m) {
 		dv_zero(_q, 2 * FP_DIGS);
 		for (i = len - 1; i > 0; i--) {
 			j = (sform[i] < 0 ? -sform[i] : sform[i]);
-			SPLIT(b1, d1, j, FP_DIG_LOG);
+			SPLIT(b1, d1, j, DIG_LOG);
 			dv_zero(t, 2 * FP_DIGS);
 			bn_lshd_low(t, q, FP_DIGS, d1);
 			if (b1 > 0) {

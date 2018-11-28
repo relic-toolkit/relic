@@ -157,7 +157,7 @@ static int util(void) {
 		TEST_END;
 
 		TEST_BEGIN("assignment to a constant and comparison are consistent") {
-			rand_bytes((uint8_t *)&e, (FP_DIGIT / 8));
+			rand_bytes((uint8_t *)&e, (DIGIT / 8));
 			fp_set_dig(a, e);
 			TEST_ASSERT(fp_cmp_dig(a, e) == CMP_EQ, end);
 		}
@@ -686,16 +686,16 @@ static int shifting(void) {
 		TEST_BEGIN("shifting by half digit is consistent") {
 			fp_rand(a);
 			a[FP_DIGS - 1] = 0;
-			fp_lsh(b, a, FP_DIGIT / 2);
-			fp_rsh(c, b, FP_DIGIT / 2);
+			fp_lsh(b, a, DIGIT / 2);
+			fp_rsh(c, b, DIGIT / 2);
 			TEST_ASSERT(fp_cmp(c, a) == CMP_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("shifting by 1 digit is consistent") {
 			fp_rand(a);
 			a[FP_DIGS - 1] = 0;
-			fp_lsh(b, a, FP_DIGIT);
-			fp_rsh(c, b, FP_DIGIT);
+			fp_lsh(b, a, DIGIT);
+			fp_rsh(c, b, DIGIT);
 			TEST_ASSERT(fp_cmp(c, a) == CMP_EQ, end);
 		} TEST_END;
 
@@ -703,8 +703,8 @@ static int shifting(void) {
 			fp_rand(a);
 			a[FP_DIGS - 1] = 0;
 			a[FP_DIGS - 2] = 0;
-			fp_lsh(b, a, 2 * FP_DIGIT);
-			fp_rsh(c, b, 2 * FP_DIGIT);
+			fp_lsh(b, a, 2 * DIGIT);
+			fp_rsh(c, b, 2 * DIGIT);
 			TEST_ASSERT(fp_cmp(c, a) == CMP_EQ, end);
 		} TEST_END;
 
@@ -712,8 +712,8 @@ static int shifting(void) {
 			fp_rand(a);
 			a[FP_DIGS - 1] = 0;
 			a[FP_DIGS - 2] = 0;
-			fp_lsh(b, a, FP_DIGIT + FP_DIGIT / 2);
-			fp_rsh(c, b, (FP_DIGIT + FP_DIGIT / 2));
+			fp_lsh(b, a, DIGIT + DIGIT / 2);
+			fp_rsh(c, b, (DIGIT + DIGIT / 2));
 			TEST_ASSERT(fp_cmp(c, a) == CMP_EQ, end);
 		} TEST_END;
 	}

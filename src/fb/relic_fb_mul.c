@@ -67,7 +67,7 @@ static void fb_mul_basic_imp(dig_t *c, const dig_t *a, const dig_t *b, int size)
 		if (a[0] & 1) {
 			dv_copy(c, b, size);
 		}
-		for (i = 1; i <= (FB_DIGIT * size) - 1; i++) {
+		for (i = 1; i <= (DIGIT * size) - 1; i++) {
 			fb_lsh1_low(s, s);
 			fb_rdc(s, s);
 			if (fb_get_bit(a, i)) {
@@ -96,7 +96,7 @@ static void fb_mul_basic_imp(dig_t *c, const dig_t *a, const dig_t *b, int size)
 static void fb_mul_lcomb_imp(dig_t *c, const dig_t *a, const dig_t *b, int size) {
 	dv_zero(c, 2 * size);
 
-	for (int i = FB_DIGIT - 1; i >= 0; i--) {
+	for (int i = DIGIT - 1; i >= 0; i--) {
 		for (int j = 0; j < size; j++) {
 			if (a[j] & ((dig_t)1 << i)) {
 				fb_addd_low(c + j, c + j, b, size);
@@ -131,13 +131,13 @@ static void fb_mul_rcomb_imp(dig_t *c, const dig_t *a, const dig_t *b, int size)
 			_b[i] = b[i];
 		_b[size] = 0;
 
-		for (int i = 0; i < FB_DIGIT; i++) {
+		for (int i = 0; i < DIGIT; i++) {
 			for (int j = 0; j < size; j++) {
 				if (a[j] & ((dig_t)1 << i)) {
 					fb_addd_low(c + j, c + j, _b, size + 1);
 				}
 			}
-			if (i != FB_DIGIT - 1) {
+			if (i != DIGIT - 1) {
 				bn_lsh1_low(_b, _b, size + 1);
 			}
 		}
@@ -327,7 +327,7 @@ void fb_mul_lcomb(fb_t c, const fb_t a, const fb_t b) {
 		dv_new(t);
 		dv_zero(t, 2 * FB_DIGS);
 
-		for (int i = FB_DIGIT - 1; i >= 0; i--) {
+		for (int i = DIGIT - 1; i >= 0; i--) {
 			for (int j = 0; j < FB_DIGS; j++) {
 				if (a[j] & ((dig_t)1 << i)) {
 					/* This cannot use fb_addn_low() because there is no
@@ -371,13 +371,13 @@ void fb_mul_rcomb(fb_t c, const fb_t a, const fb_t b) {
 
 		fb_copy(_b, b);
 
-		for (int i = 0; i < FB_DIGIT; i++) {
+		for (int i = 0; i < DIGIT; i++) {
 			for (int j = 0; j < FB_DIGS; j++) {
 				if (a[j] & ((dig_t)1 << i)) {
 					fb_addd_low(t + j, t + j, _b, FB_DIGS + 1);
 				}
 			}
-			if (i != FB_DIGIT - 1) {
+			if (i != DIGIT - 1) {
 				carry = fb_lsh1_low(_b, _b);
 				_b[FB_DIGS] = (_b[FB_DIGS] << 1) | carry;
 			}

@@ -53,7 +53,7 @@ dig_t fb_lsh1_low(dig_t *c, const dig_t *a) {
 	carry = 0;
 	for (i = 0; i < FB_DIGS; i++, a++, c++) {
 		/* Get the most significant bit. */
-		r = *a >> (FB_DIGIT - 1);
+		r = *a >> (DIGIT - 1);
 		/* Shift the operand and insert the carry, */
 		*c = (*a << 1) | carry;
 		/* Update the carry. */
@@ -67,7 +67,7 @@ dig_t fb_lshb_low(dig_t *c, const dig_t *a, int bits) {
 	dig_t r, carry, mask, shift;
 
 	/* Prepare the bit mask. */
-	shift = FB_DIGIT - bits;
+	shift = DIGIT - bits;
 	carry = 0;
 	mask = MASK(bits);
 	for (i = 0; i < FB_DIGS; i++, a++, c++) {
@@ -108,7 +108,7 @@ dig_t fb_rsh1_low(dig_t *c, const dig_t *a) {
 		/* Get the least significant bit. */
 		r = *a & 0x01;
 		/* Shift the operand and insert the carry. */
-		carry <<= FB_DIGIT - 1;
+		carry <<= DIGIT - 1;
 		*c = (*a >> 1) | carry;
 		/* Update the carry. */
 		carry = r;
@@ -123,7 +123,7 @@ dig_t fb_rshb_low(dig_t *c, const dig_t *a, int bits) {
 	c += FB_DIGS - 1;
 	a += FB_DIGS - 1;
 	/* Prepare the bit mask. */
-	shift = FB_DIGIT - bits;
+	shift = DIGIT - bits;
 	carry = 0;
 	mask = MASK(bits);
 	for (i = FB_DIGS - 1; i >= 0; i--, a--, c--) {
@@ -178,7 +178,7 @@ dig_t fb_lsha_low(dig_t *c, const dig_t *a, int bits, int size) {
 		return fb_lshadd8_low(c, a, size);
 	}
 
-	j = FB_DIGIT - bits;
+	j = DIGIT - bits;
 	b1 = a[0];
 	c[0] ^= (b1 << bits);
 	for (i = 1; i < size; i++) {

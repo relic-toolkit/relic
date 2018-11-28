@@ -46,19 +46,19 @@ void fb_itrn_low(dig_t *c, const dig_t *a, dig_t *t) {
 
 	__m128i r0, r1;
 	r0 = r1 = _mm_setzero_si128();
-	for (i = FB_DIGIT - 4; i >= 0; i -= 4) {
+	for (i = DIGIT - 4; i >= 0; i -= 4) {
 		tmp = a;
 		for (j = 0; j < FB_DIGS - 1; j++, tmp++) {
 			u = (*tmp >> i) & 0x0F;
-			p = (t + ((j * FB_DIGIT + i) * 4 + u) * FB_DIGS);
+			p = (t + ((j * DIGIT + i) * 4 + u) * FB_DIGS);
 			r0 = _mm_xor_si128(r0, *(__m128i *)(p));
 			r1 = _mm_xor_si128(r1, *(__m128i *)(p + 2));
 		}
 	}
-	for (i = FB_DIGIT - 8; i >= 0; i -= 4) {
+	for (i = DIGIT - 8; i >= 0; i -= 4) {
 		tmp = a + FB_DIGS - 1;
 		u = (*tmp >> i) & 0x0F;
-		p = (t + ((j * FB_DIGIT + i) * 4 + u) * FB_DIGS);
+		p = (t + ((j * DIGIT + i) * 4 + u) * FB_DIGS);
 		r0 = _mm_xor_si128(r0, *(__m128i *)(p));
 		r1 = _mm_xor_si128(r1, *(__m128i *)(p + 2));
 	}

@@ -58,22 +58,22 @@ void fb_slvn_low(dig_t *c, const dig_t *a) {
 
 	for (i = (FB_BITS - 1)/2; i > 0; i--) {
 		if (fb_get_bit(t, i + i)) {
-			SPLIT(b, d, i, FB_DIG_LOG);
+			SPLIT(b, d, i, DIG_LOG);
 			t[d] ^= ((dig_t)1 << b);
 			s[d] ^= ((dig_t)1 << b);
 		}
 	}
 
 	k = 0;
-	SPLIT(b, d, FB_BITS, FB_DIG_LOG);
+	SPLIT(b, d, FB_BITS, DIG_LOG);
 	for (i = 0; i < d; i++) {
 		u = t[i];
-		for (j = 0; j < FB_DIGIT / 8; j++) {
+		for (j = 0; j < DIGIT / 8; j++) {
 			v[k++] = table_odds[((u & 0x0A) + ((u & 0xA0) >> 5))];
 			u >>= 8;
 		}
 	}
-	mask = (b == FB_DIGIT ? DMASK : MASK(b));
+	mask = (b == DIGIT ? DMASK : MASK(b));
 	u = t[d] & mask;
 	/* We ignore the first even bit if it is present. */
 	for (j = 1; j < b; j += 8) {

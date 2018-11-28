@@ -79,7 +79,7 @@ void fb_mul1_low(dig_t *c, const dig_t *a, dig_t digit) {
 	c[FB_DIGS] = fb_lshb_low(c, a, util_bits_dig(digit) - 1);
 	for (int i = util_bits_dig(digit) - 2; i > 0; i--) {
 		if (digit & ((dig_t)1 << i)) {
-			j = FB_DIGIT - i;
+			j = DIGIT - i;
 			b1 = a[0];
 			c[0] ^= (b1 << i);
 			for (k = 1; k < FB_DIGS; k++) {

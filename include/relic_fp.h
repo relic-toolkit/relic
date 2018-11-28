@@ -50,19 +50,9 @@
 #define FP_BITS 	((int)FP_PRIME)
 
 /**
- * Size in bits of a digit.
- */
-#define FP_DIGIT	((int)DIGIT)
-
-/**
- * Logarithm of the digit size in base 2.
- */
-#define FP_DIG_LOG	((int)DIG_LOG)
-
-/**
  * Size in digits of a block sufficient to store a prime field element.
  */
-#define FP_DIGS		((int)((FP_BITS)/(FP_DIGIT) + (FP_BITS % FP_DIGIT > 0)))
+#define FP_DIGS		((int)((FP_BITS)/(DIGIT) + (FP_BITS % DIGIT > 0)))
 
 /**
  * Size in bytes of a block sufficient to store a binary field element.
@@ -155,7 +145,7 @@ enum {
  * stored in the first positions of the vector.
  */
 #if ALLOC == AUTO
-typedef relic_align dig_t fp_t[FP_DIGS + PADDING(FP_BYTES)/(FP_DIGIT / 8)];
+typedef relic_align dig_t fp_t[FP_DIGS + PADDING(FP_BYTES)/(DIGIT / 8)];
 #else
 typedef dig_t *fp_t;
 #endif
@@ -163,7 +153,7 @@ typedef dig_t *fp_t;
 /**
  * Represents a prime field element with automatic memory allocation.
  */
-typedef relic_align dig_t fp_st[FP_DIGS + PADDING(FP_BYTES)/(FP_DIGIT / 8)];
+typedef relic_align dig_t fp_st[FP_DIGS + PADDING(FP_BYTES)/(DIGIT / 8)];
 
 /*============================================================================*/
 /* Macro definitions                                                          */
@@ -612,7 +602,7 @@ void fp_set_bit(fp_t a, int bit, int value);
  * Assigns a small positive constant to a prime field element.
  *
  * The constant must fit on a multiple precision digit, or dig_t type using
- * only the number of bits specified on FP_DIGIT.
+ * only the number of bits specified on DIGIT.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the constant to assign.

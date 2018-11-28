@@ -43,7 +43,7 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-#define HALF ((int)((FB_BITS / 2)/(FB_DIGIT) + ((FB_BITS / 2) % FB_DIGIT > 0)))
+#define HALF ((int)((FB_BITS / 2)/(DIGIT) + ((FB_BITS / 2) % DIGIT > 0)))
 
 #ifndef __PCLMUL__
 

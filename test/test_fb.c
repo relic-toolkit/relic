@@ -154,7 +154,7 @@ static int util(void) {
 		TEST_END;
 
 		TEST_BEGIN("assignment to a constant and comparison are consistent") {
-			rand_bytes((uint8_t *)&d, (FB_DIGIT / 8));
+			rand_bytes((uint8_t *)&d, (DIGIT / 8));
 			fb_set_dig(a, d);
 			TEST_ASSERT(fb_cmp_dig(a, d) == CMP_EQ, end);
 		}
@@ -629,16 +629,16 @@ static int shifting(void) {
 		TEST_BEGIN("shifting by half digit is consistent") {
 			fb_rand(a);
 			a[FB_DIGS - 1] = 0;
-			fb_lsh(b, a, FB_DIGIT / 2);
-			fb_rsh(c, b, FB_DIGIT / 2);
+			fb_lsh(b, a, DIGIT / 2);
+			fb_rsh(c, b, DIGIT / 2);
 			TEST_ASSERT(fb_cmp(c, a) == CMP_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("shifting by 1 digit is consistent") {
 			fb_rand(a);
 			a[FB_DIGS - 1] = 0;
-			fb_lsh(b, a, FB_DIGIT);
-			fb_rsh(c, b, FB_DIGIT);
+			fb_lsh(b, a, DIGIT);
+			fb_rsh(c, b, DIGIT);
 			TEST_ASSERT(fb_cmp(c, a) == CMP_EQ, end);
 		} TEST_END;
 
@@ -647,8 +647,8 @@ static int shifting(void) {
 				fb_rand(a);
 				a[FB_DIGS - 1] = 0;
 				a[FB_DIGS - 2] = 0;
-				fb_lsh(b, a, 2 * FB_DIGIT);
-				fb_rsh(c, b, 2 * FB_DIGIT);
+				fb_lsh(b, a, 2 * DIGIT);
+				fb_rsh(c, b, 2 * DIGIT);
 				TEST_ASSERT(fb_cmp(c, a) == CMP_EQ, end);
 			} TEST_END;
 
@@ -656,8 +656,8 @@ static int shifting(void) {
 				fb_rand(a);
 				a[FB_DIGS - 1] = 0;
 				a[FB_DIGS - 2] = 0;
-				fb_lsh(b, a, FB_DIGIT + FB_DIGIT / 2);
-				fb_rsh(c, b, (FB_DIGIT + FB_DIGIT / 2));
+				fb_lsh(b, a, DIGIT + DIGIT / 2);
+				fb_rsh(c, b, (DIGIT + DIGIT / 2));
 				TEST_ASSERT(fb_cmp(c, a) == CMP_EQ, end);
 			} TEST_END;
 		}
@@ -693,7 +693,7 @@ static int reduction(void) {
 		dv_new(t1);
 
 		TEST_BEGIN("modular reduction is correct") {
-			if (FB_POLYN % FB_DIGIT == 0) {
+			if (FB_POLYN % DIGIT == 0) {
 				/* Test if a * f(z) mod f(z) == 0. */
 				fb_rand(a);
 				fb_mul(b, a, fb_poly_get());
@@ -704,7 +704,7 @@ static int reduction(void) {
 				/* Test if f(z) * z^(m-1) mod f(z) == 0. */
 				dv_zero(t0, FB_DIGS);
 				carry = fb_lshb_low(t0 + FB_DIGS - 1, fb_poly_get(),
-						FB_POLYN % FB_DIGIT - 1);
+						FB_POLYN % DIGIT - 1);
 				t0[2 * FB_DIGS - 1] = carry;
 				fb_rdc(a, t0);
 			}

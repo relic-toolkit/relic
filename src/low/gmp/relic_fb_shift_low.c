@@ -90,7 +90,7 @@ dig_t fb_lsha_low(dig_t *c, const dig_t *a, int bits, int size) {
 	int i, j;
 	dig_t b1, b2;
 
-	j = FB_DIGIT - bits;
+	j = DIGIT - bits;
 	b1 = a[0];
 	c[0] ^= (b1 << bits);
 	if (size == FB_DIGS) {

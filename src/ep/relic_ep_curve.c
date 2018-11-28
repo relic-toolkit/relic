@@ -63,7 +63,7 @@ static void detect_opt(int *opt, fp_t a) {
 					if (fp_cmp_dig(a, 2) == CMP_EQ) {
 						*opt = OPT_TWO;
 					} else {
-						if (fp_bits(a) <= FP_DIGIT) {
+						if (fp_bits(a) <= DIGIT) {
 							*opt = OPT_DIGIT;
 						} else {
 							*opt = RELIC_OPT_NONE;

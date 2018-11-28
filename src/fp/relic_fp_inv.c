@@ -262,10 +262,10 @@ void fp_inv_monty(fp_t c, const fp_t a) {
 		dv_copy(x2->dp, fp_prime_get_conv(), FP_DIGS);
 
 		/* If k < Wt then x1 = x1 * R^2 * R^{-1} mod p. */
-		if (k <= FP_DIGS * FP_DIGIT) {
+		if (k <= FP_DIGS * DIGIT) {
 			flag = 1;
 			fp_mul(x1->dp, x1->dp, x2->dp);
-			k = k + FP_DIGS * FP_DIGIT;
+			k = k + FP_DIGS * DIGIT;
 		}
 
 		/* x1 = x1 * R^2 * R^{-1} mod p. */
@@ -274,7 +274,7 @@ void fp_inv_monty(fp_t c, const fp_t a) {
 		/* c = x1 * 2^(2Wt - k) * R^{-1} mod p. */
 		fp_copy(c, x1->dp);
 		dv_zero(x1->dp, FP_DIGS);
-		bn_set_2b(x1, 2 * FP_DIGS * FP_DIGIT - k);
+		bn_set_2b(x1, 2 * FP_DIGS * DIGIT - k);
 		fp_mul(c, c, x1->dp);
 
 #if FP_RDC != MONTY

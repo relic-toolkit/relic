@@ -70,7 +70,7 @@ dig_t fp_mula_low(dig_t *c, const dig_t *a, dig_t digit) {
 		/* Increment the column and assign the result. */
 		*c = (dig_t)r;
 		/* Update the carry. */
-		carry = (dig_t)(r >> (dbl_t)FP_DIGIT);
+		carry = (dig_t)(r >> (dbl_t)DIGIT);
 	}
 	return carry;
 }
@@ -95,7 +95,7 @@ dig_t fp_mul1_low(dig_t *c, const dig_t *a, dig_t digit) {
 		/* Increment the column and assign the result. */
 		*c = (dig_t)r;
 		/* Update the carry. */
-		carry = (dig_t)(r >> (dbl_t)FP_DIGIT);
+		carry = (dig_t)(r >> (dbl_t)DIGIT);
 	}
 	return carry;
 }

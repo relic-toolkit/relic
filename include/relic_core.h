@@ -175,7 +175,7 @@ typedef struct _ctx_t {
 #endif /* FB_TRC == QUICK */
 #if FB_SLV == QUICK || !defined(STRIP)
 	/** Table of precomputed half-traces. */
-	fb_st fb_half[(FB_DIGIT / 8 + 1) * FB_DIGS][16];
+	fb_st fb_half[(DIGIT / 8 + 1) * FB_DIGS][16];
 #endif /* FB_SLV == QUICK */
 #if FB_SRT == QUICK || !defined(STRIP)
 	/** Square root of z. */

@@ -107,7 +107,7 @@ int fb_is_zero(const fb_t a) {
 int fb_get_bit(const fb_t a, int bit) {
 	int d;
 
-	SPLIT(bit, d, bit, FB_DIG_LOG);
+	SPLIT(bit, d, bit, DIG_LOG);
 
 	return (a[d] >> bit) & 1;
 }
@@ -116,7 +116,7 @@ void fb_set_bit(fb_t a, int bit, int value) {
 	int d;
 	dig_t mask;
 
-	SPLIT(bit, d, bit, FB_DIG_LOG);
+	SPLIT(bit, d, bit, DIG_LOG);
 
 	mask = (dig_t)1 << bit;
 
@@ -135,7 +135,7 @@ int fb_bits(const fb_t a) {
 	}
 
 	if (i > 0) {
-		return (i << FB_DIG_LOG) + util_bits_dig(a[i]);
+		return (i << DIG_LOG) + util_bits_dig(a[i]);
 	} else {
 		return util_bits_dig(a[0]);
 	}
@@ -151,7 +151,7 @@ void fb_rand(fb_t a) {
 
 	rand_bytes((uint8_t *)a, FB_DIGS * sizeof(dig_t));
 
-	SPLIT(bits, digits, FB_BITS, FB_DIG_LOG);
+	SPLIT(bits, digits, FB_BITS, DIG_LOG);
 	if (bits > 0) {
 		dig_t mask = MASK(bits);
 		a[FB_DIGS - 1] &= mask;

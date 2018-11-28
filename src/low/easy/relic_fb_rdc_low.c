@@ -40,13 +40,13 @@ static void fb_rdct_low(dig_t *c, dig_t *a, int fa) {
 	int i, sh, lh, rh, sa, la, ra;
 	dig_t d;
 
-	SPLIT(rh, sh, FB_BITS, FB_DIG_LOG);
+	SPLIT(rh, sh, FB_BITS, DIG_LOG);
 	sh++;
-	lh = FB_DIGIT - rh;
+	lh = DIGIT - rh;
 
-	SPLIT(ra, sa, FB_BITS - fa, FB_DIG_LOG);
+	SPLIT(ra, sa, FB_BITS - fa, DIG_LOG);
 	sa++;
-	la = FB_DIGIT - ra;
+	la = DIGIT - ra;
 
 	for (i = 2 * FB_DIGS - 1; i >= sh; i--) {
 		d = a[i];
@@ -66,7 +66,7 @@ static void fb_rdct_low(dig_t *c, dig_t *a, int fa) {
 		}
 	}
 
-	if (FB_BITS % FB_DIGIT == 0) {
+	if (FB_BITS % DIGIT == 0) {
 		while (a[FB_DIGS] != 0) {
 
 			d = a[sh - 1] >> rh;
@@ -106,21 +106,21 @@ static void fb_rdcp_low(dig_t *c, dig_t *a, int fa, int fb, int fc) {
 	int i, sh, lh, rh, sa, la, ra, sb, lb, rb, sc, lc, rc;
 	dig_t d;
 
-	SPLIT(rh, sh, FB_BITS, FB_DIG_LOG);
+	SPLIT(rh, sh, FB_BITS, DIG_LOG);
 	sh++;
-	lh = FB_DIGIT - rh;
+	lh = DIGIT - rh;
 
-	SPLIT(ra, sa, FB_BITS - fa, FB_DIG_LOG);
+	SPLIT(ra, sa, FB_BITS - fa, DIG_LOG);
 	sa++;
-	la = FB_DIGIT - ra;
+	la = DIGIT - ra;
 
-	SPLIT(rb, sb, FB_BITS - fb, FB_DIG_LOG);
+	SPLIT(rb, sb, FB_BITS - fb, DIG_LOG);
 	sb++;
-	lb = FB_DIGIT - rb;
+	lb = DIGIT - rb;
 
-	SPLIT(rc, sc, FB_BITS - fc, FB_DIG_LOG);
+	SPLIT(rc, sc, FB_BITS - fc, DIG_LOG);
 	sc++;
-	lc = FB_DIGIT - rc;
+	lc = DIGIT - rc;
 
 	for (i = 2 * FB_DIGS - 1; i >= sh; i--) {
 		d = a[i];
@@ -152,7 +152,7 @@ static void fb_rdcp_low(dig_t *c, dig_t *a, int fa, int fb, int fc) {
 		}
 	}
 
-	if (FB_BITS % FB_DIGIT == 0) {
+	if (FB_BITS % DIGIT == 0) {
 		while (a[FB_DIGS] != 0) {
 			d = a[sh - 1] >> rh;
 
@@ -246,22 +246,22 @@ void fb_rdc1_low(dig_t *c, dig_t *a) {
 
 	sh = lh = rh = sa = la = ra = sb = lb = rb = sc = lc = rc = 0;
 
-	SPLIT(rh, sh, FB_BITS, FB_DIG_LOG);
+	SPLIT(rh, sh, FB_BITS, DIG_LOG);
 	sh++;
-	lh = FB_DIGIT - rh;
+	lh = DIGIT - rh;
 
-	SPLIT(ra, sa, FB_BITS - fa, FB_DIG_LOG);
+	SPLIT(ra, sa, FB_BITS - fa, DIG_LOG);
 	sa++;
-	la = FB_DIGIT - ra;
+	la = DIGIT - ra;
 
 	if (fb != 0) {
-		SPLIT(rb, sb, FB_BITS - fb, FB_DIG_LOG);
+		SPLIT(rb, sb, FB_BITS - fb, DIG_LOG);
 		sb++;
-		lb = FB_DIGIT - rb;
+		lb = DIGIT - rb;
 
-		SPLIT(rc, sc, FB_BITS - fc, FB_DIG_LOG);
+		SPLIT(rc, sc, FB_BITS - fc, DIG_LOG);
 		sc++;
-		lc = FB_DIGIT - rc;
+		lc = DIGIT - rc;
 	}
 
 	d = a[FB_DIGS];

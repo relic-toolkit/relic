@@ -444,7 +444,7 @@ void fp_prime_conv(fp_t c, const bn_t a) {
 
 #if FP_RDC == MONTY
 		bn_mod(t, a, &(core_get()->prime));
-		bn_lsh(t, t, FP_DIGS * FP_DIGIT);
+		bn_lsh(t, t, FP_DIGS * DIGIT);
 		bn_mod(t, t, &(core_get()->prime));
 		dv_copy(c, t->dp, FP_DIGS);
 #else

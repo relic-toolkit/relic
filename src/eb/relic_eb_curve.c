@@ -49,7 +49,7 @@ static void detect_opt(int *opt, fb_t a) {
 		if (fb_cmp_dig(a, 1) == CMP_EQ) {
 			*opt = OPT_ONE;
 		} else {
-			if (fb_bits(a) <= FB_DIGIT) {
+			if (fb_bits(a) <= DIGIT) {
 				*opt = OPT_DIGIT;
 			} else {
 				*opt = RELIC_OPT_NONE;

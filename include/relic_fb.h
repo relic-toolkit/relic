@@ -50,19 +50,9 @@
 #define FB_BITS 	((int)FB_POLYN)
 
 /**
- * Size in bits of a digit.
- */
-#define FB_DIGIT	((int)DIGIT)
-
-/**
- * Logarithm of the digit size in base 2.
- */
-#define FB_DIG_LOG	((int)DIG_LOG)
-
-/**
  * Size in digits of a block sufficient to store a binary field element.
  */
-#define FB_DIGS		((int)((FB_BITS)/(FB_DIGIT) + (FB_BITS % FB_DIGIT > 0)))
+#define FB_DIGS		((int)((FB_BITS)/(DIGIT) + (FB_BITS % DIGIT > 0)))
 
 /**
  * Size in bytes of a block sufficient to store a binary field element.
@@ -139,7 +129,7 @@ enum {
  * Size of a precomputation table for repeated squaring/square-root using the
  * faster approach.
  */
-#define RELIC_FB_TABLE_QUICK      ((FB_DIGIT / 4) * FB_DIGS * 16)
+#define RELIC_FB_TABLE_QUICK      ((DIGIT / 4) * FB_DIGS * 16)
 
 /**
  * Size of a precomputation table for repeated squaring/square-root using the
@@ -168,7 +158,7 @@ enum {
  * Represents a binary field element.
  */
 #if ALLOC == AUTO
-typedef relic_align dig_t fb_t[FB_DIGS + PADDING(FB_BYTES)/(FB_DIGIT / 8)];
+typedef relic_align dig_t fb_t[FB_DIGS + PADDING(FB_BYTES)/(DIGIT / 8)];
 #else
 typedef dig_t *fb_t;
 #endif
@@ -176,7 +166,7 @@ typedef dig_t *fb_t;
 /**
  * Represents a binary field element with automatic memory allocation.
  */
-typedef relic_align dig_t fb_st[FB_DIGS + PADDING(FB_BYTES)/(FB_DIGIT / 8)];
+typedef relic_align dig_t fb_st[FB_DIGS + PADDING(FB_BYTES)/(DIGIT / 8)];
 
 /*============================================================================*/
 /* Macro definitions                                                          */
@@ -583,7 +573,7 @@ void fb_set_bit(fb_t a, int bit, int value);
 /**
  * Assigns a small positive polynomial to a binary field element.
  *
- * The degree of the polynomial must be smaller than FB_DIGIT.
+ * The degree of the polynomial must be smaller than DIGIT.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the small polynomial to assign.

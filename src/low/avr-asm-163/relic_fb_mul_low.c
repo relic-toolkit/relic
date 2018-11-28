@@ -38,7 +38,7 @@ void fb_mul1_low(dig_t *c, const dig_t *a, dig_t digit) {
 
 	fb_zero(c);
 	fb_zero(c + FB_DIGS);
-	for (int i = FB_DIGIT - 1; i >= 0; i--) {
+	for (int i = DIGIT - 1; i >= 0; i--) {
 		if (digit & ((dig_t)1 << i)) {
 			fb_addn_low(c, c, a);
 		}

@@ -64,7 +64,7 @@ void fb_itr_pre_quick(fb_t *t, int b) {
 	TRY {
 		fb_new(r);
 
-		for (i = 0; i < FB_DIGS * FB_DIGIT; i += 4) {
+		for (i = 0; i < FB_DIGS * DIGIT; i += 4) {
 			for (j = 0; j < 16; j++) {
 				fb_zero(r);
 				fb_set_dig(r, j);

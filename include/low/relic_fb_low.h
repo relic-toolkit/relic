@@ -115,7 +115,7 @@ dig_t fb_lsh1_low(dig_t *c, const dig_t *a);
 
 /**
  * Shifts a digit vector to the left by an amount smaller than a digit.
- * The shift amount must be bigger than 0 and smaller than FB_DIGIT. Computes
+ * The shift amount must be bigger than 0 and smaller than DIGIT. Computes
  * c = a * z^bits.
  *
  * @param[out] c			- the result
@@ -146,7 +146,7 @@ dig_t fb_rsh1_low(dig_t *c, const dig_t *a);
 
 /**
  * Shifts a digit vector to the right by an amount smaller than a digit.
- * The shift amount must be bigger than 0 and smaller than FB_DIGIT.
+ * The shift amount must be bigger than 0 and smaller than DIGIT.
  * Computes c = a / (z^bits).
  *
  * @param[out] c			- the result

@@ -66,7 +66,7 @@ dig_t fb_lshb_low(dig_t *c, const dig_t *a, int bits) {
 		return fb_lsh1_low(c, a);
 
 	/* Prepare the bit mask. */
-	shift = FB_DIGIT - bits;
+	shift = DIGIT - bits;
 	carry = 0;
 	for (i = 0; i < FB_DIGS; i++, a++, c++) {
 		/* Get the needed least significant bits. */
@@ -106,7 +106,7 @@ dig_t fb_rshb_low(dig_t *c, const dig_t *a, int bits) {
 	a += FB_DIGS - 1;
 	/* Prepare the bit mask. */
 	mask = ((dig_t)1 << (dig_t)bits) - 1;
-	shift = FB_DIGIT - bits;
+	shift = DIGIT - bits;
 	carry = 0;
 	for (i = FB_DIGS - 1; i >= 0; i--, a--, c--) {
 		/* Get the needed least significant bits. */
@@ -164,7 +164,7 @@ dig_t fb_lsha_low(dig_t *c, const dig_t *a, int bits, int size) {
 	int i, j;
 	dig_t b1, b2;
 
-	j = FB_DIGIT - bits;
+	j = DIGIT - bits;
 	b1 = a[0];
 	c[0] ^= (b1 << bits);
 	if (size == FB_DIGS) {

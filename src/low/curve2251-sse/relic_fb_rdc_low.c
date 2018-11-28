@@ -115,18 +115,18 @@ void fb_rdc1_low(dig_t *c, dig_t *a) {
 	const int fb = 4;
 	const int fc = 2;
 
-	const int rh = FB_BITS % FB_DIGIT;
-	const int sh = FB_BITS / FB_DIGIT + 1;
-	const int lh = FB_DIGIT - rh;;
-	const int ra = (FB_BITS - fa) % FB_DIGIT;
-	const int sa = (FB_BITS - fa) / FB_DIGIT + 1;
-	const int la = FB_DIGIT - ra;
-	const int rb = (FB_BITS - fb) % FB_DIGIT;
-	const int sb = (FB_BITS - fb) / FB_DIGIT + 1;
-	const int lb = FB_DIGIT - rb;
-	const int rc = (FB_BITS - fc) % FB_DIGIT;
-	const int sc = (FB_BITS - fc) / FB_DIGIT + 1;
-	const int lc = FB_DIGIT - rc;
+	const int rh = FB_BITS % DIGIT;
+	const int sh = FB_BITS / DIGIT + 1;
+	const int lh = DIGIT - rh;;
+	const int ra = (FB_BITS - fa) % DIGIT;
+	const int sa = (FB_BITS - fa) / DIGIT + 1;
+	const int la = DIGIT - ra;
+	const int rb = (FB_BITS - fb) % DIGIT;
+	const int sb = (FB_BITS - fb) / DIGIT + 1;
+	const int lb = DIGIT - rb;
+	const int rc = (FB_BITS - fc) % DIGIT;
+	const int sc = (FB_BITS - fc) / DIGIT + 1;
+	const int lc = DIGIT - rc;
 
 	d = a[FB_DIGS];
 
