@@ -444,8 +444,8 @@ void bn_gen_prime_stron(bn_t a, int bits) {
 		do {
 			do {
 				/* Generate two large primes r and s. */
-				bn_rand(s, BN_POS, bits / 2 - BN_DIGIT / 2);
-				bn_rand(t, BN_POS, bits / 2 - BN_DIGIT / 2);
+				bn_rand(s, BN_POS, bits / 2 - DIGIT / 2);
+				bn_rand(t, BN_POS, bits / 2 - DIGIT / 2);
 			} while (!bn_is_prime(s) || !bn_is_prime(t));
 			found = 1;
 			bn_rand(a, BN_POS, bits / 2 - bn_bits(t) - 1);

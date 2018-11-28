@@ -65,7 +65,7 @@ static int util(void) {
 	int bits, code = STS_ERR;
 	char str[RELIC_BN_BITS + 2];
 	dig_t digit, raw[BN_DIGS];
-	uint8_t bin[RELIC_BN_BYTES];
+	uint8_t bin[CEIL(RELIC_BN_BITS, 8)];
 	bn_t a, b, c;
 
 	bn_null(a);
@@ -184,7 +184,7 @@ static int util(void) {
 			TEST_ASSERT(bn_sign(a) == bn_sign(b), end);
 			TEST_ASSERT(bn_is_zero(a) == 0, end);
 			TEST_ASSERT(bn_cmp(a, b) == CMP_LT, end);
-			bn_rand(b, BN_NEG, BN_DIGIT);
+			bn_rand(b, BN_NEG, DIGIT);
 			bn_rand_mod(a, b);
 			TEST_ASSERT(bn_sign(a) == bn_sign(b), end);
 			TEST_ASSERT(bn_is_zero(a) == 0, end);
@@ -193,8 +193,8 @@ static int util(void) {
 		TEST_END;
 
 		TEST_BEGIN("reading and writing the first digit are consistent") {
-			bn_rand(a, BN_POS, BN_DIGIT);
-			bn_rand(b, BN_POS, BN_DIGIT);
+			bn_rand(a, BN_POS, DIGIT);
+			bn_rand(b, BN_POS, DIGIT);
 			bn_get_dig(&digit, a);
 			bn_set_dig(b, digit);
 			TEST_ASSERT(bn_cmp(a, b) == CMP_EQ, end);
@@ -224,12 +224,12 @@ static int util(void) {
 			bn_set_dig(a, (dig_t)(1) << (dig_t)bits);
 			bn_set_2b(b, bits);
 			bits++;
-			bits %= (BN_DIGIT);
+			bits %= (DIGIT);
 			TEST_ASSERT(bn_cmp(a, b) == CMP_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("reading and writing a positive number are consistent") {
-			int len = RELIC_BN_BYTES;
+			int len = CEIL(RELIC_BN_BITS, 8);
 			bn_rand(a, BN_POS, RELIC_BN_BITS);
 			for (int j = 2; j <= 64; j++) {
 				bits = bn_size_str(a, j);
@@ -257,7 +257,7 @@ static int util(void) {
 		TEST_END;
 
 		TEST_BEGIN("reading and writing a negative number are consistent") {
-			int len = RELIC_BN_BYTES;
+			int len = CEIL(RELIC_BN_BITS, 8);
 			bn_rand(a, BN_NEG, RELIC_BN_BITS);
 			for (int j = 2; j <= 64; j++) {
 				bits = bn_size_str(a, j);
@@ -694,37 +694,37 @@ static int shifting(void) {
 		} TEST_END;
 
 		TEST_BEGIN("shifting by half digit is consistent") {
-			bn_rand(a, BN_POS, RELIC_BN_BITS - BN_DIGIT / 2);
-			bn_lsh(b, a, BN_DIGIT / 2);
-			bn_rsh(c, b, BN_DIGIT / 2);
+			bn_rand(a, BN_POS, RELIC_BN_BITS - DIGIT / 2);
+			bn_lsh(b, a, DIGIT / 2);
+			bn_rsh(c, b, DIGIT / 2);
 			TEST_ASSERT(bn_cmp(a, c) == CMP_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("shifting by 1 digit is consistent") {
-			bn_rand(a, BN_POS, BN_DIGIT);
-			bn_lsh(b, a, BN_DIGIT);
-			bn_rsh(c, b, BN_DIGIT);
+			bn_rand(a, BN_POS, DIGIT);
+			bn_lsh(b, a, DIGIT);
+			bn_rsh(c, b, DIGIT);
 			TEST_ASSERT(bn_cmp(a, c) == CMP_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("shifting by 2 digits is consistent") {
-			bn_rand(a, BN_POS, RELIC_BN_BITS - 2 * BN_DIGIT);
-			bn_lsh(b, a, 2 * BN_DIGIT);
-			bn_rsh(c, b, 2 * BN_DIGIT);
+			bn_rand(a, BN_POS, RELIC_BN_BITS - 2 * DIGIT);
+			bn_lsh(b, a, 2 * DIGIT);
+			bn_rsh(c, b, 2 * DIGIT);
 			TEST_ASSERT(bn_cmp(a, c) == CMP_EQ, end);
 		}
 		TEST_END;
 
 		TEST_BEGIN("shifting by 1 digit and half is consistent") {
-			bn_rand(a, BN_POS, RELIC_BN_BITS - BN_DIGIT - BN_DIGIT / 2);
-			bn_lsh(b, a, BN_DIGIT + BN_DIGIT / 2);
+			bn_rand(a, BN_POS, RELIC_BN_BITS - DIGIT - DIGIT / 2);
+			bn_lsh(b, a, DIGIT + DIGIT / 2);
 			bn_copy(c, a);
-			for (int j = 0; j < (int)(BN_DIGIT + BN_DIGIT / 2); j++)
+			for (int j = 0; j < (int)(DIGIT + DIGIT / 2); j++)
 				bn_dbl(c, c);
 			TEST_ASSERT(bn_cmp(b, c) == CMP_EQ, end);
-			bn_rsh(b, a, (BN_DIGIT + BN_DIGIT / 2));
+			bn_rsh(b, a, (DIGIT + DIGIT / 2));
 			bn_copy(c, a);
-			for (int j = 0; j < (int)(BN_DIGIT + BN_DIGIT / 2); j++)
+			for (int j = 0; j < (int)(DIGIT + DIGIT / 2); j++)
 				bn_hlv(c, c);
 			TEST_ASSERT(bn_cmp(b, c) == CMP_EQ, end);
 		} TEST_END;
@@ -893,7 +893,7 @@ static int reduction(void) {
 
 #if BN_MOD == BASIC || !defined(STRIP)
 		TEST_BEGIN("basic reduction is correct") {
-			bn_rand(a, BN_POS, RELIC_BN_BITS - BN_DIGIT / 2);
+			bn_rand(a, BN_POS, RELIC_BN_BITS - DIGIT / 2);
 			bn_rand(b, BN_POS, RELIC_BN_BITS / 2);
 			bn_div_rem(c, d, a, b);
 			bn_sqr(c, b);
@@ -907,7 +907,7 @@ static int reduction(void) {
 
 #if BN_MOD == BARRT || !defined(STRIP)
 		TEST_BEGIN("barrett reduction is correct") {
-			bn_rand(a, BN_POS, RELIC_BN_BITS - BN_DIGIT / 2);
+			bn_rand(a, BN_POS, RELIC_BN_BITS - DIGIT / 2);
 			bn_rand(b, BN_POS, RELIC_BN_BITS / 2);
 			bn_div_rem(c, d, a, b);
 			bn_sqr(c, b);
@@ -922,7 +922,7 @@ static int reduction(void) {
 
 #if (BN_MOD == MONTY && BN_MUL == BASIC) || !defined(STRIP)
 		TEST_BEGIN("basic montgomery reduction is correct") {
-			bn_rand(a, BN_POS, RELIC_BN_BITS - BN_DIGIT / 2);
+			bn_rand(a, BN_POS, RELIC_BN_BITS - DIGIT / 2);
 			bn_rand(b, BN_POS, RELIC_BN_BITS / 2);
 			if (bn_is_even(b)) {
 				bn_add_dig(b, b, 1);
@@ -938,7 +938,7 @@ static int reduction(void) {
 
 #if (BN_MOD == MONTY && BN_MUL == COMBA) || !defined(STRIP)
 		TEST_BEGIN("comba montgomery reduction is correct") {
-			bn_rand(a, BN_POS, RELIC_BN_BITS - BN_DIGIT / 2);
+			bn_rand(a, BN_POS, RELIC_BN_BITS - DIGIT / 2);
 			bn_rand(b, BN_POS, RELIC_BN_BITS / 2);
 			if (bn_is_even(b)) {
 				bn_add_dig(b, b, 1);
@@ -1487,7 +1487,7 @@ static int digit(void) {
 
 		TEST_BEGIN("addition of a single digit is consistent") {
 			bn_rand(a, BN_POS, RELIC_BN_BITS);
-			bn_rand(b, BN_POS, BN_DIGIT);
+			bn_rand(b, BN_POS, DIGIT);
 			bn_get_dig(&g, b);
 			bn_add(c, a, b);
 			bn_add_dig(d, a, g);
@@ -1496,7 +1496,7 @@ static int digit(void) {
 
 		TEST_BEGIN("subtraction of a single digit is consistent") {
 			bn_rand(a, BN_POS, RELIC_BN_BITS);
-			bn_rand(b, BN_POS, BN_DIGIT);
+			bn_rand(b, BN_POS, DIGIT);
 			bn_get_dig(&g, b);
 			bn_sub(c, a, b);
 			bn_sub_dig(d, a, g);
@@ -1505,7 +1505,7 @@ static int digit(void) {
 
 		TEST_BEGIN("multiplication by a single digit is consistent") {
 			bn_rand(a, BN_POS, RELIC_BN_BITS);
-			bn_rand(b, BN_POS, BN_DIGIT);
+			bn_rand(b, BN_POS, DIGIT);
 			bn_get_dig(&g, b);
 			bn_mul(c, a, b);
 			bn_mul_dig(d, a, g);
@@ -1514,7 +1514,7 @@ static int digit(void) {
 
 		TEST_BEGIN("division by a single digit is consistent") {
 			bn_rand(a, BN_POS, RELIC_BN_BITS);
-			bn_rand(b, BN_POS, BN_DIGIT);
+			bn_rand(b, BN_POS, DIGIT);
 			if (bn_is_zero(b)) {
 				continue;
 			}
@@ -1530,7 +1530,7 @@ static int digit(void) {
 
 		TEST_BEGIN("modular reduction modulo a digit is consistent") {
 			bn_rand(a, BN_POS, RELIC_BN_BITS);
-			bn_rand(b, BN_POS, BN_DIGIT);
+			bn_rand(b, BN_POS, DIGIT);
 			if (b->dp[0] == 0)
 				continue;
 			bn_div_rem(d, c, a, b);
@@ -1541,7 +1541,7 @@ static int digit(void) {
 
 		TEST_BEGIN("greatest common divisor with a digit is consistent") {
 			bn_rand(a, BN_POS, RELIC_BN_BITS);
-			bn_rand(b, BN_POS, BN_DIGIT);
+			bn_rand(b, BN_POS, DIGIT);
 			bn_get_dig(&g, b);
 			bn_gcd(c, a, b);
 			bn_gcd_dig(e, a, g);
@@ -1553,7 +1553,7 @@ static int digit(void) {
 				("extended greatest common divisor with a digit is consistent")
 		{
 			bn_rand(a, BN_POS, RELIC_BN_BITS);
-			bn_rand(b, BN_POS, BN_DIGIT);
+			bn_rand(b, BN_POS, DIGIT);
 			bn_get_dig(&g, b);
 			bn_gcd_ext_dig(c, d, e, a, g);
 			bn_mul(d, d, a);
@@ -1574,7 +1574,7 @@ static int digit(void) {
 
 		TEST_BEGIN("modular exponentiation with a digit is consistent") {
 			bn_rand(a, BN_POS, RELIC_BN_BITS);
-			bn_rand(b, BN_POS, BN_DIGIT);
+			bn_rand(b, BN_POS, DIGIT);
 			bn_get_dig(&g, b);
 			bn_mxp(c, a, b, d);
 			bn_mxp_dig(e, a, g, d);

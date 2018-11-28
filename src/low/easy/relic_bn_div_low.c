@@ -42,11 +42,11 @@ void bn_divn_low(dig_t *c, dig_t *d, dig_t *a, int sa, dig_t *b, int sb) {
 	dig_t carry, t1[3], t2[3];
 
 	/* Normalize x and y so that the leading digit of y is bigger than
-	 * 2^(BN_DIGIT-1). */
-	norm = util_bits_dig(b[sb - 1]) % BN_DIGIT;
+	 * 2^(DIGIT-1). */
+	norm = util_bits_dig(b[sb - 1]) % DIGIT;
 
-	if (norm < (int)(BN_DIGIT - 1)) {
-		norm = (BN_DIGIT - 1) - norm;
+	if (norm < (int)(DIGIT - 1)) {
+		norm = (DIGIT - 1) - norm;
 		carry = bn_lshb_low(a, a, sa, norm);
 		if (carry) {
 			a[sa++] = carry;
@@ -82,10 +82,10 @@ void bn_divn_low(dig_t *c, dig_t *d, dig_t *a, int sa, dig_t *b, int sb) {
 		}
 
 		if (a[i] == b[t]) {
-			c[i - t - 1] = ((((dbl_t)1) << BN_DIGIT) - 1);
+			c[i - t - 1] = ((((dbl_t)1) << DIGIT) - 1);
 		} else {
 			dbl_t tmp;
-			tmp = ((dbl_t)a[i]) << ((dbl_t)BN_DIGIT);
+			tmp = ((dbl_t)a[i]) << ((dbl_t)DIGIT);
 			tmp |= (dbl_t)(a[i - 1]);
 			tmp /= (dbl_t)(b[t]);
 			c[i - t - 1] = (dig_t)tmp;
@@ -135,7 +135,7 @@ void bn_div1_low(dig_t *c, dig_t *d, const dig_t *a, int size, dig_t b) {
 
 	w = 0;
 	for (i = size - 1; i >= 0; i--) {
-		w = (w << ((dbl_t)BN_DIGIT)) | ((dbl_t)a[i]);
+		w = (w << ((dbl_t)DIGIT)) | ((dbl_t)a[i]);
 
 		if (w >= b) {
 			r = (dig_t)(w / b);

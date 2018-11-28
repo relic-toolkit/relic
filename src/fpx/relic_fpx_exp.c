@@ -310,7 +310,7 @@ void fp12_exp_cyc(fp12_t c, fp12_t a, bn_t b) {
 
 	bn_null(n);
 
-	if ((bn_bits(b) > BN_DIGIT) && ((w << 3) > bn_bits(b))) {
+	if ((bn_bits(b) > DIGIT) && ((w << 3) > bn_bits(b))) {
 		fp12_t t[4];
 
 		TRY {

@@ -66,7 +66,7 @@ void ep_map(ep_t p, const uint8_t *msg, int len) {
 
 		/* Now, multiply by cofactor to get the correct group. */
 		ep_curve_get_cof(k);
-		if (bn_bits(k) < BN_DIGIT) {
+		if (bn_bits(k) < DIGIT) {
 			ep_mul_dig(p, p, k->dp[0]);
 		} else {
 			ep_mul(p, p, k);

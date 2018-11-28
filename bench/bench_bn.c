@@ -93,8 +93,8 @@ static void memory(void) {
 
 static void util(void) {
 	dig_t digit;
-	char str[RELIC_BN_BYTES * 3 + 1];
-	uint8_t bin[RELIC_BN_BYTES];
+	char str[CEIL(RELIC_BN_BITS, 8) * 3 + 1];
+	uint8_t bin[CEIL(RELIC_BN_BITS, 8)];
 	dig_t raw[BN_DIGS];
 	bn_t a, b;
 
@@ -412,43 +412,43 @@ static void arith(void) {
 
 	BENCH_BEGIN("bn_lsh") {
 		bn_rand(a, BN_POS, RELIC_BN_BITS);
-		BENCH_ADD(bn_lsh(c, a, RELIC_BN_BITS / 2 + BN_DIGIT / 2));
+		BENCH_ADD(bn_lsh(c, a, RELIC_BN_BITS / 2 + DIGIT / 2));
 	}
 	BENCH_END;
 
 	BENCH_BEGIN("bn_rsh") {
 		bn_rand(a, BN_POS, RELIC_BN_BITS);
-		BENCH_ADD(bn_rsh(c, a, RELIC_BN_BITS / 2 + BN_DIGIT / 2));
+		BENCH_ADD(bn_rsh(c, a, RELIC_BN_BITS / 2 + DIGIT / 2));
 	}
 	BENCH_END;
 
 	BENCH_BEGIN("bn_div") {
-		bn_rand(a, BN_POS, 2 * RELIC_BN_BITS - BN_DIGIT / 2);
+		bn_rand(a, BN_POS, 2 * RELIC_BN_BITS - DIGIT / 2);
 		bn_rand(b, BN_POS, RELIC_BN_BITS);
 		BENCH_ADD(bn_div(c, a, b));
 	}
 	BENCH_END;
 
 	BENCH_BEGIN("bn_div_rem") {
-		bn_rand(a, BN_POS, 2 * RELIC_BN_BITS - BN_DIGIT / 2);
+		bn_rand(a, BN_POS, 2 * RELIC_BN_BITS - DIGIT / 2);
 		bn_rand(b, BN_POS, RELIC_BN_BITS);
 		BENCH_ADD(bn_div_rem(c, d, a, b));
 	}
 	BENCH_END;
 
 	BENCH_BEGIN("bn_div_dig") {
-		bn_rand(a, BN_POS, 2 * RELIC_BN_BITS - BN_DIGIT / 2);
+		bn_rand(a, BN_POS, 2 * RELIC_BN_BITS - DIGIT / 2);
 		do {
-			bn_rand(b, BN_POS, BN_DIGIT);
+			bn_rand(b, BN_POS, DIGIT);
 		} while (bn_is_zero(b));
 		BENCH_ADD(bn_div_dig(c, a, b->dp[0]));
 	}
 	BENCH_END;
 
 	BENCH_BEGIN("bn_div_rem_dig") {
-		bn_rand(a, BN_POS, 2 * RELIC_BN_BITS - BN_DIGIT / 2);
+		bn_rand(a, BN_POS, 2 * RELIC_BN_BITS - DIGIT / 2);
 		do {
-			bn_rand(b, BN_POS, BN_DIGIT);
+			bn_rand(b, BN_POS, DIGIT);
 		} while (bn_is_zero(b));
 		BENCH_ADD(bn_div_rem_dig(c, &f, a, b->dp[0]));
 	}
@@ -463,7 +463,7 @@ static void arith(void) {
 	BENCH_BEGIN("bn_mod_dig") {
 		bn_rand(a, BN_POS, RELIC_BN_BITS);
 		do {
-			bn_rand(b, BN_POS, BN_DIGIT);
+			bn_rand(b, BN_POS, DIGIT);
 		} while (bn_is_zero(b));
 		BENCH_ADD(bn_mod_dig(&f, a, b->dp[0]));
 	}
@@ -471,13 +471,13 @@ static void arith(void) {
 
 	BENCH_BEGIN("bn_mod") {
 #if BN_MOD == PMERS
-		bn_rand(a, BN_POS, 2 * RELIC_BN_BITS - BN_DIGIT / 2);
+		bn_rand(a, BN_POS, 2 * RELIC_BN_BITS - DIGIT / 2);
 		bn_set_2b(b, RELIC_BN_BITS);
-		bn_rand(c, BN_POS, BN_DIGIT);
+		bn_rand(c, BN_POS, DIGIT);
 		bn_sub(b, b, c);
 		bn_mod_pre(d, b);
 #else
-		bn_rand(a, BN_POS, 2 * RELIC_BN_BITS - BN_DIGIT / 2);
+		bn_rand(a, BN_POS, 2 * RELIC_BN_BITS - DIGIT / 2);
 		bn_rand(b, BN_POS, RELIC_BN_BITS);
 		if (bn_is_even(b)) {
 			bn_add_dig(b, b, 1);
@@ -490,7 +490,7 @@ static void arith(void) {
 
 #if BN_MOD == BASIC || !defined(STRIP)
 	BENCH_BEGIN("bn_mod_basic") {
-		bn_rand(a, BN_POS, 2 * RELIC_BN_BITS - BN_DIGIT / 2);
+		bn_rand(a, BN_POS, 2 * RELIC_BN_BITS - DIGIT / 2);
 		bn_rand(b, BN_POS, RELIC_BN_BITS);
 		BENCH_ADD(bn_mod_basic(c, a, b));
 	}
@@ -507,7 +507,7 @@ static void arith(void) {
 
 #if BN_MOD == BARRT || !defined(STRIP)
 	BENCH_BEGIN("bn_mod_barrt") {
-		bn_rand(a, BN_POS, 2 * RELIC_BN_BITS - BN_DIGIT / 2);
+		bn_rand(a, BN_POS, 2 * RELIC_BN_BITS - DIGIT / 2);
 		bn_rand(b, BN_POS, RELIC_BN_BITS);
 		bn_mod_pre_barrt(d, b);
 		BENCH_ADD(bn_mod_barrt(c, a, b, d));
@@ -526,7 +526,7 @@ static void arith(void) {
 	BENCH_END;
 
 	BENCH_BEGIN("bn_mod_monty_conv") {
-		bn_rand(a, BN_POS, 2 * RELIC_BN_BITS - BN_DIGIT / 2);
+		bn_rand(a, BN_POS, 2 * RELIC_BN_BITS - DIGIT / 2);
 		bn_rand(b, BN_POS, RELIC_BN_BITS);
 		if (bn_is_even(b)) {
 			bn_add_dig(b, b, 1);
@@ -537,7 +537,7 @@ static void arith(void) {
 	BENCH_END;
 
 	BENCH_BEGIN("bn_mod_monty") {
-		bn_rand(a, BN_POS, 2 * RELIC_BN_BITS - BN_DIGIT / 2);
+		bn_rand(a, BN_POS, 2 * RELIC_BN_BITS - DIGIT / 2);
 		bn_rand(b, BN_POS, RELIC_BN_BITS);
 		if (bn_is_even(b)) {
 			bn_add_dig(b, b, 1);
@@ -550,7 +550,7 @@ static void arith(void) {
 
 #if BN_MUL == BASIC || !defined(STRIP)
 	BENCH_BEGIN("bn_mod_monty_basic") {
-		bn_rand(a, BN_POS, 2 * RELIC_BN_BITS - BN_DIGIT / 2);
+		bn_rand(a, BN_POS, 2 * RELIC_BN_BITS - DIGIT / 2);
 		bn_rand(b, BN_POS, RELIC_BN_BITS);
 		if (bn_is_even(b)) {
 			bn_add_dig(b, b, 1);
@@ -564,7 +564,7 @@ static void arith(void) {
 
 #if BN_MUL == COMBA || !defined(STRIP)
 	BENCH_BEGIN("bn_mod_monty_comba") {
-		bn_rand(a, BN_POS, 2 * RELIC_BN_BITS - BN_DIGIT / 2);
+		bn_rand(a, BN_POS, 2 * RELIC_BN_BITS - DIGIT / 2);
 		bn_rand(b, BN_POS, RELIC_BN_BITS);
 		if (bn_is_even(b)) {
 			bn_add_dig(b, b, 1);
@@ -577,7 +577,7 @@ static void arith(void) {
 #endif
 
 	BENCH_BEGIN("bn_mod_monty_back") {
-		bn_rand(a, BN_POS, 2 * RELIC_BN_BITS - BN_DIGIT / 2);
+		bn_rand(a, BN_POS, 2 * RELIC_BN_BITS - DIGIT / 2);
 		bn_rand(b, BN_POS, RELIC_BN_BITS);
 		if (bn_is_even(b)) {
 			bn_add_dig(b, b, 1);
@@ -591,18 +591,18 @@ static void arith(void) {
 
 #if BN_MOD == PMERS || !defined(STRIP)
 	BENCH_BEGIN("bn_mod_pre_pmers") {
-		bn_rand(a, BN_POS, 2 * RELIC_BN_BITS - BN_DIGIT / 2);
+		bn_rand(a, BN_POS, 2 * RELIC_BN_BITS - DIGIT / 2);
 		bn_set_2b(b, RELIC_BN_BITS);
-		bn_rand(c, BN_POS, BN_DIGIT);
+		bn_rand(c, BN_POS, DIGIT);
 		bn_sub(b, b, c);
 		BENCH_ADD(bn_mod_pre_pmers(d, b));
 	}
 	BENCH_END;
 
 	BENCH_BEGIN("bn_mod_pmers") {
-		bn_rand(a, BN_POS, 2 * RELIC_BN_BITS - BN_DIGIT / 2);
+		bn_rand(a, BN_POS, 2 * RELIC_BN_BITS - DIGIT / 2);
 		bn_set_2b(b, RELIC_BN_BITS);
-		bn_rand(c, BN_POS, BN_DIGIT);
+		bn_rand(c, BN_POS, DIGIT);
 		bn_sub(b, b, c);
 		bn_mod_pre_pmers(d, b);
 		BENCH_ADD(bn_mod_pmers(c, a, b, d));
@@ -611,7 +611,7 @@ static void arith(void) {
 #endif
 
 	BENCH_BEGIN("bn_mxp") {
-		bn_rand(a, BN_POS, 2 * RELIC_BN_BITS - BN_DIGIT / 2);
+		bn_rand(a, BN_POS, 2 * RELIC_BN_BITS - DIGIT / 2);
 		bn_rand(b, BN_POS, RELIC_BN_BITS);
 #if BN_MOD != PMERS
 		if (bn_is_even(b)) {
@@ -619,7 +619,7 @@ static void arith(void) {
 		}
 #else
 		bn_set_2b(b, RELIC_BN_BITS);
-		bn_rand(c, BN_POS, BN_DIGIT);
+		bn_rand(c, BN_POS, DIGIT);
 		bn_sub(b, b, c);
 #endif
 		bn_mod(a, a, b);
@@ -637,7 +637,7 @@ static void arith(void) {
 
 #if BN_MXP == SLIDE || !defined(STRIP)
 	BENCH_BEGIN("bn_mxp_slide") {
-		bn_rand(a, BN_POS, 2 * RELIC_BN_BITS - BN_DIGIT / 2);
+		bn_rand(a, BN_POS, 2 * RELIC_BN_BITS - DIGIT / 2);
 		bn_mod(a, a, b);
 		BENCH_ADD(bn_mxp_slide(c, a, b, b));
 	}
@@ -646,7 +646,7 @@ static void arith(void) {
 
 #if BN_MXP == CONST || !defined(STRIP)
 	BENCH_BEGIN("bn_mxp_monty") {
-		bn_rand(a, BN_POS, 2 * RELIC_BN_BITS - BN_DIGIT / 2);
+		bn_rand(a, BN_POS, 2 * RELIC_BN_BITS - DIGIT / 2);
 		bn_mod(a, a, b);
 		BENCH_ADD(bn_mxp_monty(c, a, b, b));
 	}
@@ -655,7 +655,7 @@ static void arith(void) {
 
 	BENCH_BEGIN("bn_mxp_dig") {
 		bn_rand(a, BN_POS, RELIC_BN_BITS);
-		bn_rand(d, BN_POS, BN_DIGIT);
+		bn_rand(d, BN_POS, DIGIT);
 		bn_get_dig(&f, d);
 		BENCH_ADD(bn_mxp_dig(c, a, f, b));
 	}
@@ -703,7 +703,7 @@ static void arith(void) {
 
 	BENCH_BEGIN("bn_gcd_dig") {
 		bn_rand(a, BN_POS, RELIC_BN_BITS);
-		bn_rand(b, BN_POS, BN_DIGIT);
+		bn_rand(b, BN_POS, DIGIT);
 		bn_get_dig(&f, b);
 		BENCH_ADD(bn_gcd_dig(c, a, f));
 	}
@@ -752,7 +752,7 @@ static void arith(void) {
 
 	BENCH_BEGIN("bn_gcd_ext_dig") {
 		bn_rand(a, BN_POS, RELIC_BN_BITS);
-		bn_rand(b, BN_POS, BN_DIGIT);
+		bn_rand(b, BN_POS, DIGIT);
 		BENCH_ADD(bn_gcd_ext_dig(c, d, e, a, b->dp[0]));
 	}
 	BENCH_END;

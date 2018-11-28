@@ -98,7 +98,7 @@ static void fp_prime_set(const bn_t p) {
 		ctx->conv.used = FP_DIGS;
 		bn_trim(&(ctx->conv));
 		bn_set_dig(&(ctx->one), 1);
-		bn_lsh(&(ctx->one), &(ctx->one), ctx->prime.used * BN_DIGIT);
+		bn_lsh(&(ctx->one), &(ctx->one), ctx->prime.used * DIGIT);
 		bn_mod(&(ctx->one), &(ctx->one), &(ctx->prime));
 #endif
 		fp_prime_calc();

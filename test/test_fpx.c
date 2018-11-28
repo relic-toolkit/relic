@@ -2617,7 +2617,7 @@ static int cyclotomic12(void) {
 		TEST_BEGIN("sparse cyclotomic exponentiation is correct") {
 			int g[3] = {0, 0, FP_BITS - 1};
 			do {
-				bn_rand(f, BN_POS, BN_DIGIT);
+				bn_rand(f, BN_POS, DIGIT);
 				g[1] = f->dp[0] % FP_BITS;
 			} while (g[1] == 0 || g[1] == FP_BITS - 1);
 			bn_set_2b(f, FP_BITS - 1);
@@ -3286,7 +3286,7 @@ static int cyclotomic18(void) {
 		TEST_BEGIN("sparse cyclotomic exponentiation is correct") {
 			int g[3] = {0, 0, FP_BITS - 1};
 			do {
-				bn_rand(f, BN_POS, BN_DIGIT);
+				bn_rand(f, BN_POS, DIGIT);
 				g[1] = f->dp[0] % FP_BITS;
 			} while (g[1] == 0 || g[1] == FP_BITS - 1);
 			bn_set_2b(f, FP_BITS - 1);

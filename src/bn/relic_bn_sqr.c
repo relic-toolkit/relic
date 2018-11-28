@@ -123,10 +123,10 @@ static void bn_sqr_karat_imp(bn_t c, const bn_t a, int level) {
 		bn_sub(t, t, a0);
 
 		/* t = (a1 + a0)*(a1 + a0) - (a0*a0 + a1*a1) << h digits */
-		bn_lsh(t, t, h * BN_DIGIT);
+		bn_lsh(t, t, h * DIGIT);
 
 		/* t2 = a1 * b1 << 2*h digits */
-		bn_lsh(a1a1, a1a1, 2 * h * BN_DIGIT);
+		bn_lsh(a1a1, a1a1, 2 * h * DIGIT);
 
 		/* t = t + a0*a0 */
 		bn_add(t, t, a0a0);

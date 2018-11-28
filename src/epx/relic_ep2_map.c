@@ -197,7 +197,7 @@ void ep2_map(ep2_t p, const uint8_t *msg, int len) {
 			default:
 				/* Now, multiply by cofactor to get the correct group. */
 				ep2_curve_get_cof(x);
-				if (bn_bits(x) < BN_DIGIT) {
+				if (bn_bits(x) < DIGIT) {
 					ep2_mul_dig(p, p, x->dp[0]);
 					if (bn_sign(x) == BN_NEG) {
 						ep2_neg(p, p);

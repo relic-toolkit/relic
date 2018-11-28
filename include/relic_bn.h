@@ -36,6 +36,7 @@
 #define RELIC_BN_H
 
 #include "relic_conf.h"
+#include "relic_util.h"
 #include "relic_types.h"
 #include "relic_label.h"
 
@@ -54,24 +55,9 @@
 #define RELIC_BN_BITS 	((int)BN_PRECI)
 
 /**
- * Size in bits of a digit.
- */
-#define BN_DIGIT	((int)DIGIT)
-
-/**
- * Logarithm of the digit size in base 2.
- */
-#define BN_DIG_LOG	((int)DIGIT_LOG)
-
-/**
  * Size in digits of a block sufficient to store the required precision.
  */
-#define BN_DIGS		((int)((RELIC_BN_BITS)/(BN_DIGIT) + (RELIC_BN_BITS % BN_DIGIT > 0)))
-
-/**
- * Size in bytes of a block sufficient to store the required precision.
- */
-#define RELIC_BN_BYTES 	((int)((RELIC_BN_BITS)/8 + ((RELIC_BN_BITS % 8) > 0)))
+#define BN_DIGS			((int)CEIL(BN_PRECI, DIGIT))
 
 /**
  * Size in digits of a block sufficient to store a multiple precision integer.
@@ -526,7 +512,7 @@ void bn_get_dig(dig_t *digit, const bn_t a);
  * Assigns a small positive constant to a multiple precision integer.
  *
  * The constant must fit on a multiple precision digit, or dig_t type using
- * only the number of bits specified on BN_DIGIT.
+ * only the number of bits specified on DIGIT.
  *
  * @param[out] a			- the result.
  * @param[in] digit			- the constant to assign.

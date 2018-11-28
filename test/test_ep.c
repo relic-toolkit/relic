@@ -607,7 +607,7 @@ static int multiplication(void) {
 			TEST_ASSERT(ep_is_infty(r), end);
 			ep_mul_dig(r, p, 1);
 			TEST_ASSERT(ep_cmp(p, r) == CMP_EQ, end);
-			bn_rand(k, BN_POS, BN_DIGIT);
+			bn_rand(k, BN_POS, DIGIT);
 			ep_mul(q, p, k);
 			ep_mul_dig(r, p, k->dp[0]);
 			TEST_ASSERT(ep_cmp(q, r) == CMP_EQ, end);

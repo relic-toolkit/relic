@@ -43,7 +43,7 @@ dig_t bn_lsh1_low(dig_t *c, const dig_t *a, int size) {
 	carry = 0;
 	for (i = 0; i < size; i++, a++, c++) {
 		/* Get the most significant bit. */
-		r = *a >> (BN_DIGIT - 1);
+		r = *a >> (DIGIT - 1);
 		/* Shift the operand and insert the carry, */
 		*c = (*a << 1) | carry;
 		/* Update the carry. */
@@ -56,7 +56,7 @@ dig_t bn_lshb_low(dig_t *c, const dig_t *a, int size, int bits) {
 	int i;
 	dig_t r, carry, shift, mask;
 
-	shift = BN_DIGIT - bits;
+	shift = DIGIT - bits;
 	carry = 0;
 	mask = MASK(bits);
 	for (i = 0; i < size; i++, a++, c++) {
@@ -97,7 +97,7 @@ dig_t bn_rsh1_low(dig_t *c, const dig_t *a, int size) {
 		/* Get the least significant bit. */
 		r = *a & 0x01;
 		/* Shift the operand and insert the carry. */
-		carry <<= BN_DIGIT - 1;
+		carry <<= DIGIT - 1;
 		*c = (*a >> 1) | carry;
 		/* Update the carry. */
 		carry = r;
@@ -112,7 +112,7 @@ dig_t bn_rshb_low(dig_t *c, const dig_t *a, int size, int bits) {
 	c += size - 1;
 	a += size - 1;
 	/* Prepare the bit mask. */
-	shift = BN_DIGIT - bits;
+	shift = DIGIT - bits;
 	carry = 0;
 	mask = MASK(bits);
 	for (i = size - 1; i >= 0; i--, a--, c--) {

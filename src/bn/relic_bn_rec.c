@@ -46,8 +46,8 @@ static char get_bits(const bn_t a, int from, int to) {
 	int f, t;
 	dig_t mf, mt;
 
-	SPLIT(from, f, from, BN_DIG_LOG);
-	SPLIT(to, t, to, BN_DIG_LOG);
+	SPLIT(from, f, from, DIG_LOG);
+	SPLIT(to, t, to, DIG_LOG);
 
 	if (f == t) {
 		/* Same digit. */
@@ -55,7 +55,7 @@ static char get_bits(const bn_t a, int from, int to) {
 		mf = MASK(from);
 		mt = MASK(to + 1);
 
-		if (to + 1 == BN_DIGIT) {
+		if (to + 1 == DIGIT) {
 			mt = DMASK;
 		}
 
@@ -63,11 +63,11 @@ static char get_bits(const bn_t a, int from, int to) {
 
 		return ((a->dp[f] & (mf)) >> from);
 	} else {
-		mf = MASK(BN_DIGIT - from) << from;
+		mf = MASK(DIGIT - from) << from;
 		mt = MASK(to + 1);
 
 		return ((a->dp[f] & mf) >> from) |
-				((a->dp[t] & mt) << (BN_DIGIT - from));
+				((a->dp[t] & mt) << (DIGIT - from));
 	}
 }
 

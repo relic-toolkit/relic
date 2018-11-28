@@ -71,10 +71,10 @@ void bn_lsh(bn_t c, const bn_t a, int bits) {
 		return;
 	}
 
-	SPLIT(bits, digits, bits, BN_DIG_LOG);
+	SPLIT(bits, digits, bits, DIG_LOG);
 
 	if (bits > 0) {
-		if (bn_bits(c) + bits > c->used * (int)BN_DIGIT) {
+		if (bn_bits(c) + bits > c->used * (int)DIGIT) {
 			bn_grow(c, c->used + digits + 1);
 		}
 	} else {
@@ -109,7 +109,7 @@ void bn_rsh(bn_t c, const bn_t a, int bits) {
 		return;
 	}
 
-	SPLIT(bits, digits, bits, BN_DIG_LOG);
+	SPLIT(bits, digits, bits, DIG_LOG);
 
 	if (digits > 0) {
 		bn_rshd_low(c->dp, a->dp, a->used, digits);

@@ -52,8 +52,8 @@
 	(R0) += (dig_t)s;														\
 	(R1) += (R0) < (dig_t)s;												\
 	(R2) += (R1) < _r;														\
-	(R1) += (dig_t)(s >> (dbl_t)BN_DIGIT);									\
-	(R2) += (R1) < (dig_t)(s >> (dbl_t)BN_DIGIT);							\
+	(R1) += (dig_t)(s >> (dbl_t)DIGIT);									\
+	(R2) += (R1) < (dig_t)(s >> (dbl_t)DIGIT);							\
 	(R2) += (s < r);														\
 
 /**
@@ -70,8 +70,8 @@
 	(R0) += (dig_t)(r);														\
 	(R1) += (R0) < (dig_t)r;												\
 	(R2) += (R1) < _r;														\
-	(R1) += (dig_t)(r >> (dbl_t)BN_DIGIT);									\
-	(R2) += (R1) < (dig_t)(r >> (dbl_t)BN_DIGIT);							\
+	(R1) += (dig_t)(r >> (dbl_t)DIGIT);									\
+	(R2) += (R1) < (dig_t)(r >> (dbl_t)DIGIT);							\
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -91,7 +91,7 @@ void bn_sqra_low(dig_t *c, const dig_t *a, int size) {
 	*c = (dig_t)r;
 
 	/* Update the carry. */
-	c0 = (dig_t)(r >> (dbl_t)BN_DIGIT);
+	c0 = (dig_t)(r >> (dbl_t)DIGIT);
 	c1 = 0;
 
 	c++;
@@ -103,7 +103,7 @@ void bn_sqra_low(dig_t *c, const dig_t *a, int size) {
 		*c = (dig_t)r1;
 
 		/* Accumulate the old delayed carry. */
-		c0 = (dig_t)((r1 >> (dbl_t)BN_DIGIT) + c1);
+		c0 = (dig_t)((r1 >> (dbl_t)DIGIT) + c1);
 		/* Compute the new delayed carry. */
 		c1 = (r0 < r) || (r1 < r0) || (c0 < c1);
 	}

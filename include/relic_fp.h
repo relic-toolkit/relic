@@ -57,7 +57,7 @@
 /**
  * Logarithm of the digit size in base 2.
  */
-#define FP_DIG_LOG	((int)DIGIT_LOG)
+#define FP_DIG_LOG	((int)DIG_LOG)
 
 /**
  * Size in digits of a block sufficient to store a prime field element.

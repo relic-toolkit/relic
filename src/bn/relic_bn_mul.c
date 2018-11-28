@@ -138,10 +138,10 @@ static void bn_mul_karat_imp(bn_t c, const bn_t a, const bn_t b, int level) {
 		bn_sub(t, t, a1b1);
 
 		/* t = (a1 + a0)*(b1 + b0) - (a0*b0 + a1*b1) << h digits */
-		bn_lsh(t, t, h * BN_DIGIT);
+		bn_lsh(t, t, h * DIGIT);
 
 		/* t2 = a1 * b1 << 2*h digits */
-		bn_lsh(a1b1, a1b1, 2 * h * BN_DIGIT);
+		bn_lsh(a1b1, a1b1, 2 * h * DIGIT);
 
 		/* t = t + a0*b0 */
 		bn_add(t, t, a0b0);

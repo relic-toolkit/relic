@@ -75,7 +75,7 @@ int cp_ecdh_key(uint8_t *key, int key_len, bn_t d, ec_t q) {
 		bn_new(h);
 
 		ec_curve_get_cof(h);
-		if (bn_bits(h) < BN_DIGIT) {
+		if (bn_bits(h) < DIGIT) {
 			ec_mul_dig(p, q, h->dp[0]);
 		} else {
 			ec_mul(p, q, h);

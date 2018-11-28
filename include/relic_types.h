@@ -52,13 +52,13 @@
  * Logarithm of the digit size in bits in base two.
  */
 #if DIGIT == 8
-#define DIGIT_LOG		3
+#define DIG_LOG		3
 #elif DIGIT == 16
-#define DIGIT_LOG		4
+#define DIG_LOG		4
 #elif DIGIT == 32
-#define DIGIT_LOG		5
+#define DIG_LOG		5
 #elif DIGIT == 64
-#define DIGIT_LOG		6
+#define DIG_LOG		6
 #endif
 
 /*============================================================================*/

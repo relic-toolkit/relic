@@ -83,7 +83,7 @@ void eb_map(eb_t p, const uint8_t *msg, int len) {
 		}
 		/* Now, multiply by cofactor to get the correct group. */
 		eb_curve_get_cof(k);
-		if (bn_bits(k) < BN_DIGIT) {
+		if (bn_bits(k) < DIGIT) {
 			eb_mul_dig(p, p, k->dp[0]);
 		} else {
 			eb_mul(p, p, k);

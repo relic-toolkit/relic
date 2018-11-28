@@ -51,8 +51,8 @@
 	(R0) += (dig_t)(r);														\
 	(R1) += (R0) < (dig_t)(r);												\
 	(R2) += (R1) < _r;														\
-	(R1) += (dig_t)((r) >> (dbl_t)BN_DIGIT);								\
-	(R2) += (R1) < (dig_t)((r) >> (dbl_t)BN_DIGIT);							\
+	(R1) += (dig_t)((r) >> (dbl_t)DIGIT);								\
+	(R2) += (R1) < (dig_t)((r) >> (dbl_t)DIGIT);							\
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -71,7 +71,7 @@ dig_t bn_mula_low(dig_t *c, const dig_t *a, dig_t digit, int size) {
 		/* Increment the column and assign the result. */
 		*c = (dig_t)r;
 		/* Update the carry. */
-		carry = (dig_t)(r >> (dbl_t)BN_DIGIT);
+		carry = (dig_t)(r >> (dbl_t)DIGIT);
 	}
 	return carry;
 }
@@ -89,7 +89,7 @@ dig_t bn_mul1_low(dig_t *c, const dig_t *a, dig_t digit, int size) {
 		/* Increment the column and assign the result. */
 		*c = (dig_t)r;
 		/* Update the carry. */
-		carry = (dig_t)(r >> (dbl_t)BN_DIGIT);
+		carry = (dig_t)(r >> (dbl_t)DIGIT);
 	}
 	return carry;
 }

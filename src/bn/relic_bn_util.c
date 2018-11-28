@@ -106,7 +106,7 @@ int bn_bits(const bn_t a) {
 	}
 
 	/* Bits in lower digits. */
-	bits = (a->used - 1) * BN_DIGIT;
+	bits = (a->used - 1) * DIGIT;
 
 	return bits + util_bits_dig(a->dp[a->used - 1]);
 }
@@ -114,7 +114,7 @@ int bn_bits(const bn_t a) {
 int bn_get_bit(const bn_t a, int bit) {
 	int d;
 
-	SPLIT(bit, d, bit, BN_DIG_LOG);
+	SPLIT(bit, d, bit, DIG_LOG);
 
 	if (d >= a->used) {
 		return 0;
@@ -126,7 +126,7 @@ int bn_get_bit(const bn_t a, int bit) {
 void bn_set_bit(bn_t a, int bit, int value) {
 	int d;
 
-	SPLIT(bit, d, bit, BN_DIG_LOG);
+	SPLIT(bit, d, bit, DIG_LOG);
 
 	if (value == 1) {
 		a->dp[d] |= ((dig_t)1 << bit);
@@ -163,7 +163,7 @@ void bn_set_dig(bn_t a, dig_t digit) {
 void bn_set_2b(bn_t a, int b) {
 	int i, d;
 
-	SPLIT(b, d, b, BN_DIG_LOG);
+	SPLIT(b, d, b, DIG_LOG);
 
 	bn_grow(a, d + 1);
 	for (i = 0; i < d; i++)
@@ -176,7 +176,7 @@ void bn_set_2b(bn_t a, int b) {
 void bn_rand(bn_t a, int sign, int bits) {
 	int digits;
 
-	SPLIT(bits, digits, bits, BN_DIG_LOG);
+	SPLIT(bits, digits, bits, DIG_LOG);
 	digits += (bits > 0 ? 1 : 0);
 
 	bn_grow(a, digits);
@@ -374,7 +374,7 @@ int bn_size_bin(const bn_t a) {
 	dig_t d;
 	int digits;
 
-	digits = (a->used - 1) * (BN_DIGIT / 8);
+	digits = (a->used - 1) * (DIGIT / 8);
 	d = a->dp[a->used - 1];
 
 	while (d != 0) {
@@ -386,7 +386,7 @@ int bn_size_bin(const bn_t a) {
 
 void bn_read_bin(bn_t a, const uint8_t *bin, int len) {
 	int i, j;
-	dig_t d = (BN_DIGIT / 8);
+	dig_t d = (DIGIT / 8);
 	int digs = (len % d == 0 ? len / d : len / d + 1);
 
 	bn_grow(a, digs);
@@ -395,17 +395,17 @@ void bn_read_bin(bn_t a, const uint8_t *bin, int len) {
 
 	for (i = 0; i < digs - 1; i++) {
 		d = 0;
-		for (j = (BN_DIGIT / 8) - 1; j >= 0; j--) {
+		for (j = (DIGIT / 8) - 1; j >= 0; j--) {
 			d = d << 8;
-			d |= bin[len - 1 - (i * (BN_DIGIT / 8) + j)];
+			d |= bin[len - 1 - (i * (DIGIT / 8) + j)];
 		}
 		a->dp[i] = d;
 	}
 	d = 0;
-	for (j = (BN_DIGIT / 8) - 1; j >= 0; j--) {
-		if ((int)(i * (BN_DIGIT / 8) + j) < len) {
+	for (j = (DIGIT / 8) - 1; j >= 0; j--) {
+		if ((int)(i * (DIGIT / 8) + j) < len) {
 			d = d << 8;
-			d |= bin[len - 1 - (i * (BN_DIGIT / 8) + j)];
+			d |= bin[len - 1 - (i * (DIGIT / 8) + j)];
 		}
 	}
 	a->dp[i] = d;
@@ -427,7 +427,7 @@ void bn_write_bin(uint8_t *bin, int len, const bn_t a) {
 	k = 0;
 	for (int i = 0; i < a->used - 1; i++) {
 		d = a->dp[i];
-		for (int j = 0; j < (int)(BN_DIGIT / 8); j++) {
+		for (int j = 0; j < (int)(DIGIT / 8); j++) {
 			bin[len - 1 - k++] = d & 0xFF;
 			d = d >> 8;
 		}

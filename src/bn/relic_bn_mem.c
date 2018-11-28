@@ -110,7 +110,7 @@ void bn_grow(bn_t a, int digits) {
 	if (a->alloc < digits) {
 		/* At least add BN_SIZE more digits. */
 		digits += (BN_SIZE * 2) - (digits % BN_SIZE);
-		t = (dig_t *)realloc(a->dp, (BN_DIGIT / 8) * digits);
+		t = (dig_t *)realloc(a->dp, (DIGIT / 8) * digits);
 		if (t == NULL) {
 			THROW(ERR_NO_MEMORY);
 		}

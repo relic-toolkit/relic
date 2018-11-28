@@ -51,8 +51,8 @@
 	(R0) += (dig_t)s;														\
 	(R1) += (R0) < (dig_t)s;												\
 	(R2) += (R1) < _r;														\
-	(R1) += (dig_t)(s >> (dbl_t)BN_DIGIT);									\
-	(R2) += (R1) < (dig_t)(s >> (dbl_t)BN_DIGIT);							\
+	(R1) += (dig_t)(s >> (dbl_t)DIGIT);									\
+	(R2) += (R1) < (dig_t)(s >> (dbl_t)DIGIT);							\
 	(R2) += (s < r);														\
 
 /**
@@ -69,8 +69,8 @@
 	(R0) += (dig_t)(r);														\
 	(R1) += (R0) < (dig_t)r;												\
 	(R2) += (R1) < _r;														\
-	(R1) += (dig_t)(r >> (dbl_t)BN_DIGIT);									\
-	(R2) += (R1) < (dig_t)(r >> (dbl_t)BN_DIGIT);							\
+	(R1) += (dig_t)(r >> (dbl_t)DIGIT);									\
+	(R2) += (R1) < (dig_t)(r >> (dbl_t)DIGIT);							\
 
 /*============================================================================*/
 /* Public definitions                                                         */

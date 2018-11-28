@@ -395,7 +395,7 @@ static void arith(void) {
 	} BENCH_END;
 
 	BENCH_BEGIN("ep2_mul_dig") {
-		bn_rand(k, BN_POS, BN_DIGIT);
+		bn_rand(k, BN_POS, DIGIT);
 		bn_rand_mod(k, n);
 		BENCH_ADD(ep2_mul_dig(p, q, k->dp[0]));
 	}

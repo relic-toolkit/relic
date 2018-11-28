@@ -337,7 +337,7 @@ static int multiplication(void) {
 #endif
 
 		TEST_BEGIN("multiplication by digit is correct") {
-			bn_rand(k, BN_POS, BN_DIGIT);
+			bn_rand(k, BN_POS, DIGIT);
 			ed_mul(q, p, k);
 			ed_mul_dig(r, p, k->dp[0]);
 			TEST_ASSERT(ed_cmp(q, r) == CMP_EQ, end);
