@@ -101,7 +101,7 @@ int bn_is_even(const bn_t a) {
 int bn_bits(const bn_t a) {
 	int bits;
 
-	if (a->used == 0) {
+	if (bn_is_zero(a)) {
 		return 0;
 	}
 
