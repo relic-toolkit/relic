@@ -129,8 +129,13 @@ int g1_is_valid(g1_t a) {
 		} else {
 			/* Otherwise, check order explicitly. */
 			g1_get_ord(n);
+			/* Multiply by (n-1)/2 to prevent weird interactions with recoding. */
+			bn_sub_dig(n, n, 1);
+			bn_hlv(n, n);
 			g1_mul(u, a, n);
-			r = (g1_is_infty(u) == 1);
+			g1_dbl(u, u);
+			g1_neg(u, u);
+			r = (g1_cmp(u, a) == CMP_EQ);
 		}
 	} CATCH_ANY {
 		THROW(ERR_CAUGHT);
