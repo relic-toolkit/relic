@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2018 RELIC Authors
+ * Copyright (C) 2007-2019 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -16,9 +16,9 @@
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the LICENSE files for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License or
- * the Apache License along with RELIC. If not, see http://www.gnu.org/licenses
- * or http://www.apache.org/licenses
+ * You should have received a copy of the GNU Lesser General Public or the
+ * Apache License along with RELIC. If not, see <https://www.gnu.org/licenses/>
+ * or <https://www.apache.org/licenses/>.
  */
 
 /**
@@ -56,14 +56,16 @@
  *
  * @section lic_sec Licensing
  *
- * RELIC is released under an LGPL version 2.1-or-above license to encourage
+ * RELIC is dual-licensed under Apache 2.0 and LGPL 2.1-or-above to encourage
  * collaboration with other research groups and contributions from the industry.
+ * You can choose between one of them.
  *
  * @section disc_sec Disclaimer
  *
- * RELIC is alpha-quality software. Implementations may not be correct or secure
- * and may include patented algorithms. Backward API compatibility with early
- * versions may not necessarily be maintained. Use at your own risk.
+ * RELIC is at most alpha-quality software. Implementations may not be correct
+ * or secure and may include patented algorithms. There are many configuration
+ * options which make the library horribly insecure. Backward API compatibility
+ * with early versions may not necessarily be maintained. Use at your own risk.
  */
 
 /**
