@@ -1,2 +1,5 @@
 include(${CMAKE_SOURCE_DIR}/cmake/gmp.cmake)
-set(ARITH_LIBS "gmp")
+if(GMP_FOUND)
+  include_directories(${GMP_INCLUDE_DIR})
+  set(ARITH_LIBS ${GMP_LIBRARIES})
+endif(GMP_FOUND)
