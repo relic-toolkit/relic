@@ -148,6 +148,7 @@
 #undef dv_copy
 #undef dv_copy_cond
 #undef dv_swap_cond
+#undef dv_cmp
 #undef dv_cmp_const
 #undef dv_new_dynam
 #undef dv_free_dynam
@@ -157,6 +158,7 @@
 #define dv_copy 	PREFIX(dv_copy)
 #define dv_copy_cond 	PREFIX(dv_copy_cond)
 #define dv_swap_cond 	PREFIX(dv_swap_cond)
+#define dv_cmp 	PREFIX(dv_cmp)
 #define dv_cmp_const 	PREFIX(dv_cmp_const)
 #define dv_new_dynam 	PREFIX(dv_new_dynam)
 #define dv_free_dynam 	PREFIX(dv_free_dynam)
@@ -596,8 +598,6 @@
 #undef fp_dblm_low
 #undef fp_hlvm_low
 #undef fp_hlvd_low
-#undef fp_cmp1_low
-#undef fp_cmpn_low
 #undef fp_lsh1_low
 #undef fp_lshb_low
 #undef fp_lshd_low
@@ -629,8 +629,6 @@
 #define fp_dblm_low 	PREFIX(fp_dblm_low)
 #define fp_hlvm_low 	PREFIX(fp_hlvm_low)
 #define fp_hlvd_low 	PREFIX(fp_hlvd_low)
-#define fp_cmp1_low 	PREFIX(fp_cmp1_low)
-#define fp_cmpn_low 	PREFIX(fp_cmpn_low)
 #define fp_lsh1_low 	PREFIX(fp_lsh1_low)
 #define fp_lshb_low 	PREFIX(fp_lshb_low)
 #define fp_lshd_low 	PREFIX(fp_lshd_low)
@@ -797,8 +795,6 @@
 #undef fb_add1_low
 #undef fb_addn_low
 #undef fb_addd_low
-#undef fb_cmp1_low
-#undef fb_cmpn_low
 #undef fb_lsh1_low
 #undef fb_lshb_low
 #undef fb_lshd_low
@@ -824,8 +820,6 @@
 #define fb_add1_low 	PREFIX(fb_add1_low)
 #define fb_addn_low 	PREFIX(fb_addn_low)
 #define fb_addd_low 	PREFIX(fb_addd_low)
-#define fb_cmp1_low 	PREFIX(fb_cmp1_low)
-#define fb_cmpn_low 	PREFIX(fb_cmpn_low)
 #define fb_lsh1_low 	PREFIX(fb_lsh1_low)
 #define fb_lshb_low 	PREFIX(fb_lshb_low)
 #define fb_lshd_low 	PREFIX(fb_lshd_low)
