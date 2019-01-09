@@ -46,7 +46,7 @@ void fp_subc_low(dig_t *c, const dig_t *a, const dig_t *b) {
 
 void fp_addc_low(dig_t *c, const dig_t *a, const dig_t *b) {
 	dig_t carry = fp_addd_low(c, a, b);
-	if (carry || (fp_cmpn_low(c + FP_DIGS, fp_prime_get()) != CMP_LT)) {
+	if (carry || (dv_cmp(c + FP_DIGS, fp_prime_get(), FP_DIGS) != CMP_LT)) {
 		fp_subn_low(c + FP_DIGS, c + FP_DIGS, fp_prime_get());
 	}
 }

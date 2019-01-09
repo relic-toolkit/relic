@@ -65,45 +65,25 @@ static int util(void) {
 	int bits, code = STS_ERR;
 	char str[FP_BITS + 1];
 	uint8_t bin[FP_BYTES];
-	fp_t a, b, c;
-	bn_t d;
-	dig_t e;
+	fp_t a, b;
+	bn_t c;
+	dig_t d;
 
 	fp_null(a);
 	fp_null(b);
-	fp_null(c);
-	bn_null(d);
+	bn_null(c);
 
 	TRY {
 		fp_new(a);
 		fp_new(b);
-		fp_new(c);
-		bn_new(d);
-
-		TEST_BEGIN("comparison is consistent") {
-			fp_rand(a);
-			fp_rand(b);
-			if (fp_cmp(a, b) != CMP_EQ) {
-				if (fp_cmp(a, b) == CMP_GT) {
-					TEST_ASSERT(fp_cmp(b, a) == CMP_LT, end);
-				} else {
-					TEST_ASSERT(fp_cmp(b, a) == CMP_GT, end);
-				}
-			}
-		}
-		TEST_END;
+		bn_new(c);
 
 		TEST_BEGIN("copy and comparison are consistent") {
 			fp_rand(a);
-			fp_rand(c);
 			fp_rand(b);
-			if (fp_cmp(a, c) != CMP_EQ) {
-				fp_copy(c, a);
-				TEST_ASSERT(fp_cmp(c, a) == CMP_EQ, end);
-			}
-			if (fp_cmp(b, c) != CMP_EQ) {
-				fp_copy(c, b);
-				TEST_ASSERT(fp_cmp(b, c) == CMP_EQ, end);
+			if (fp_cmp(a, b) != CMP_EQ) {
+				fp_copy(b, a);
+				TEST_ASSERT(fp_cmp(a, b) == CMP_EQ, end);
 			}
 		}
 		TEST_END;
@@ -112,55 +92,28 @@ static int util(void) {
 			fp_rand(a);
 			fp_neg(b, a);
 			if (fp_cmp(a, b) != CMP_EQ) {
-				if (fp_cmp(a, b) == CMP_GT) {
-					TEST_ASSERT(fp_cmp(b, a) == CMP_LT, end);
+				if (dv_cmp(a, b, FP_DIGS) == CMP_GT) {
+					TEST_ASSERT(dv_cmp(b, a, FP_DIGS) == CMP_LT, end);
 				} else {
-					TEST_ASSERT(fp_cmp(b, a) == CMP_GT, end);
+					TEST_ASSERT(dv_cmp(b, a, FP_DIGS) == CMP_GT, end);
 				}
 			}
 			fp_neg(b, b);
-			TEST_ASSERT(fp_cmp(a, b) == CMP_EQ, end);
+			TEST_ASSERT(dv_cmp(a, b, FP_DIGS) == CMP_EQ, end);
 		}
 		TEST_END;
 
-		TEST_BEGIN("assignment to zero and comparison are consistent") {
+		TEST_BEGIN("assignment and comparison are consistent") {
 			do {
 				fp_rand(a);
 			} while (fp_is_zero(a));
-			fp_zero(c);
-			TEST_ASSERT(fp_cmp(a, c) == CMP_GT, end);
-			TEST_ASSERT(fp_cmp(c, a) == CMP_LT, end);
-		}
-		TEST_END;
-
-		TEST_BEGIN("assignment to random and comparison are consistent") {
-			do {
-				fp_rand(a);
-				fp_rand(b);
-			} while (fp_is_zero(a) || fp_is_zero(b));
-			fp_zero(c);
-			TEST_ASSERT(fp_cmp(a, c) == CMP_GT, end);
-			TEST_ASSERT(fp_cmp(b, c) == CMP_GT, end);
-			if (fp_cmp(a, b) != CMP_EQ) {
-				if (fp_cmp(a, b) == CMP_GT) {
-					TEST_ASSERT(fp_cmp(b, a) == CMP_LT, end);
-				} else {
-					TEST_ASSERT(fp_cmp(b, a) == CMP_GT, end);
-				}
-			}
-		}
-		TEST_END;
-
-		TEST_BEGIN("assignment to zero and zero test are consistent") {
-			fp_zero(a);
-			TEST_ASSERT(fp_is_zero(a), end);
-		}
-		TEST_END;
-
-		TEST_BEGIN("assignment to a constant and comparison are consistent") {
-			rand_bytes((uint8_t *)&e, (DIGIT / 8));
-			fp_set_dig(a, e);
-			TEST_ASSERT(fp_cmp_dig(a, e) == CMP_EQ, end);
+			fp_zero(b);
+			TEST_ASSERT(fp_cmp(a, b) == CMP_NE, end);
+			TEST_ASSERT(fp_cmp(b, a) == CMP_NE, end);
+			TEST_ASSERT(fp_is_zero(b), end);
+			rand_bytes((uint8_t *)&d, (DIGIT / 8));
+			fp_set_dig(a, d);
+			TEST_ASSERT(fp_cmp_dig(a, d) == CMP_EQ, end);
 		}
 		TEST_END;
 
@@ -171,7 +124,7 @@ static int util(void) {
 			TEST_ASSERT(fp_get_bit(a, bits) == 1, end);
 			fp_set_bit(a, bits, 0);
 			TEST_ASSERT(fp_get_bit(a, bits) == 0, end);
-			bits = (bits + 1) % RELIC_BN_BITS;
+			bits = (bits + 1) % FP_BITS;
 		}
 		TEST_END;
 
@@ -200,8 +153,8 @@ static int util(void) {
 
 		TEST_BEGIN("getting the size of a prime field element is correct") {
 			fp_rand(a);
-			fp_prime_back(d, a);
-			TEST_ASSERT((fp_size_str(a, 2) - 1) == bn_bits(d), end);
+			fp_prime_back(c, a);
+			TEST_ASSERT(fp_size_str(a, 2) == (1 + bn_bits(c)), end);
 		}
 		TEST_END;
 	}
@@ -212,8 +165,7 @@ static int util(void) {
   end:
 	fp_free(a);
 	fp_free(b);
-	fp_free(c);
-	bn_free(d);
+	bn_free(c);
 	return code;
 }
 

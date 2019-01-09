@@ -68,7 +68,7 @@ void bn_divn_low(dig_t *c, dig_t *d, dig_t *a, int sa, dig_t *b, int sb) {
 	bn_lshd_low(b, b, sb, (n - t));
 
 	/* Find the most significant digit of the quotient. */
-	while (bn_cmpn_low(a, b, sa) != CMP_LT) {
+	while (dv_cmp(a, b, sa) != CMP_LT) {
 		c[n - t]++;
 		bn_subn_low(a, a, b, sa);
 	}
@@ -104,7 +104,7 @@ void bn_divn_low(dig_t *c, dig_t *d, dig_t *a, int sa, dig_t *b, int sb) {
 			t2[0] = (i - 2 < 0) ? 0 : a[i - 2];
 			t2[1] = (i - 1 < 0) ? 0 : a[i - 1];
 			t2[2] = a[i];
-		} while (bn_cmpn_low(t1, t2, 3) == CMP_GT);
+		} while (dv_cmp(t1, t2, 3) == CMP_GT);
 
 		carry = bn_mul1_low(d, b, c[i - t - 1], sb);
 		sd = sb;

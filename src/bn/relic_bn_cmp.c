@@ -45,7 +45,7 @@ int bn_cmp_abs(const bn_t a, const bn_t b) {
 		return CMP_LT;
 	}
 
-	return bn_cmpn_low(a->dp, b->dp, a->used);
+	return dv_cmp(a->dp, b->dp, a->used);
 }
 
 int bn_cmp_dig(const bn_t a, dig_t b) {
@@ -57,7 +57,15 @@ int bn_cmp_dig(const bn_t a, dig_t b) {
 		return CMP_GT;
 	}
 
-	return bn_cmp1_low(a->dp[0], b);
+	if (a->dp[0] > b) {
+		return CMP_GT;
+	}
+
+	if (a->dp[0] < b) {
+		return CMP_LT;
+	}
+
+	return CMP_EQ;
 }
 
 int bn_cmp(const bn_t a, const bn_t b) {

@@ -48,11 +48,5 @@ int fb_cmp_dig(const fb_t a, dig_t b) {
 }
 
 int fb_cmp(const fb_t a, const fb_t b) {
-	int i, r = 0;
-
-	for (i = 0; i < FB_DIGS; i++) {
-		r |= (a[i] ^ b[i]);
-	}
-
-	return (r == 0 ? CMP_EQ : CMP_NE);
+	return dv_cmp_const(a, b, FB_DIGS);
 }

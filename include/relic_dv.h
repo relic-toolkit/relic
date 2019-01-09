@@ -185,6 +185,16 @@ void dv_copy_cond(dig_t *c, const dig_t *a, int digits, dig_t cond);
 void dv_swap_cond(dig_t *c, dig_t *a, int digits, dig_t cond);
 
 /**
+ * Returns the result of a comparison between two digit vectors.
+ *
+ * @param[in] a				- the first digit vector.
+ * @param[in] b				- the second digit vector.
+ * @param[in] size			- the length in digits of the vectors.
+ * @return CMP_LT if a < b, CMP_EQ if a == b and CMP_GT if a > b.
+ */
+int dv_cmp(const dig_t *a, const dig_t *b, int size);
+
+/**
  * Compares two digit vectors in constant time.
  *
  * @param[in] a				- the first digit vector.

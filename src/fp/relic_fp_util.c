@@ -117,7 +117,7 @@ void fp_rand(fp_t a) {
 		a[FP_DIGS - 1] &= mask;
 	}
 
-	while (fp_cmpn_low(a, fp_prime_get()) != CMP_LT) {
+	while (dv_cmp(a, fp_prime_get(), FP_DIGS) != CMP_LT) {
 		fp_subn_low(a, a, fp_prime_get());
 	}
 }

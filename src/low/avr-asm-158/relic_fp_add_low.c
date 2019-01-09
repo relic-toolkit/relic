@@ -40,7 +40,7 @@
 
 void fp_addm_low(dig_t *c, const dig_t *a, const dig_t *b) {
 	fp_addn_low(c, a, b);
-	if (fp_cmp(c, fp_prime_get()) != CMP_LT) {
+	if (dv_cmp(c, fp_prime_get(), FP_DIGS) != CMP_LT) {
 		fp_subn_low(c, c, fp_prime_get());
 	}
 }
@@ -48,7 +48,7 @@ void fp_addm_low(dig_t *c, const dig_t *a, const dig_t *b) {
 void fp_addc_low(dig_t *c, const dig_t *a, const dig_t *b) {
 	dig_t carry = fp_addd_low(c, a, b);
 
-	if (carry || (fp_cmpn_low(c + FP_DIGS, fp_prime_get()) != CMP_LT)) {
+	if (carry || (dv_cmp(c + FP_DIGS, fp_prime_get(), FP_DIGS) != CMP_LT)) {
 		carry = fp_subn_low(c + FP_DIGS, c + FP_DIGS, fp_prime_get());
 	}
 }
@@ -143,7 +143,7 @@ void fp_dblm_low(dig_t *c, const dig_t *a) {
 		carry = c0 | c1;
 		c[i] = r1;
 	}
-	if (carry || (fp_cmpn_low(c, fp_prime_get()) != CMP_LT)) {
+	if (carry || (dv_cmp(c, fp_prime_get(), FP_DIGS) != CMP_LT)) {
 		carry = fp_subn_low(c, c, fp_prime_get());
 	}
 }

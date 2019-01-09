@@ -73,6 +73,13 @@ static int copy(void) {
 		TEST_BEGIN("copy and comparison are consistent") {
 			rand_bytes((uint8_t *)a, DV_DIGS * sizeof(dig_t));
 			rand_bytes((uint8_t *)b, DV_DIGS * sizeof(dig_t));
+			if (dv_cmp(a, b, DV_DIGS) != CMP_EQ) {
+				if (dv_cmp(a, b, DV_DIGS) == CMP_GT) {
+					TEST_ASSERT(dv_cmp(b, a, DV_DIGS) == CMP_LT, end);
+				} else {
+					TEST_ASSERT(dv_cmp(b, a, DV_DIGS) == CMP_GT, end);
+				}
+			}
 			dv_copy(a, b, DV_DIGS);
 			TEST_ASSERT(dv_cmp_const(a, b, DV_DIGS) == CMP_EQ, end);
 		}

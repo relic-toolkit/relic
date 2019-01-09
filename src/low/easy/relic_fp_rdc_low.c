@@ -140,7 +140,7 @@ void fp_rdcs_low(dig_t *c, const dig_t *a, const dig_t *m) {
 			}
 		}
 	}
-	while (fp_cmpn_low(r, m) != CMP_LT) {
+	while (dv_cmp(r, m, FP_DIGS) != CMP_LT) {
 		fp_subn_low(r, r, m);
 	}
 	fp_copy(c, r);
@@ -185,7 +185,7 @@ void fp_rdcn_low(dig_t *c, dig_t *a) {
 	COMBA_ADD(r2, r1, r0, *a);
 	c[FP_DIGS - 1] = r0;
 
-	if (r1 || fp_cmpn_low(c, m) != CMP_LT) {
+	if (r1 || dv_cmp(c, m, FP_DIGS) != CMP_LT) {
 		fp_subn_low(c, c, m);
 	}
 }

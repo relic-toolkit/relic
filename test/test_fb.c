@@ -74,7 +74,6 @@ static int util(void) {
 	TRY {
 		fb_new(a);
 		fb_new(b);
-		fb_new(c);
 
 		TEST_BEGIN("copy and comparison are consistent") {
 			fb_rand(a);
@@ -136,7 +135,7 @@ static int util(void) {
 
 		TEST_BEGIN("getting the size of a binary field element is correct") {
 			fb_rand(a);
-			TEST_ASSERT((fb_size_str(a, 2) - 1) == fb_bits(a), end);
+			TEST_ASSERT(fb_size_str(a, 2) == (1 + fb_bits(a)), end);
 		}
 		TEST_END;
 	}

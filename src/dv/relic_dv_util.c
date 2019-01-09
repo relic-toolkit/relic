@@ -93,12 +93,27 @@ void dv_swap_cond(dig_t *c, dig_t *a, int digits, dig_t cond) {
 	}
 }
 
+int dv_cmp(const dig_t *a, const dig_t *b, int size) {
+	int i, r;
+
+	a += (size - 1);
+	b += (size - 1);
+
+	r = CMP_EQ;
+	for (i = 0; i < size; i++, --a, --b) {
+		if (*a != *b && r == CMP_EQ) {
+			r = (*a > *b ? CMP_GT : CMP_LT);
+		}
+	}
+	return r;
+}
+
 int dv_cmp_const(const dig_t *a, const dig_t *b, int size) {
-	int result = 0;
+	int r = 0;
 
 	for (int i = 0; i < size; i++) {
-		result |= a[i] ^ b[i];
+		r |= a[i] ^ b[i];
 	}
 
-	return (result == 0 ? CMP_EQ : CMP_NE);
+	return (r == 0 ? CMP_EQ : CMP_NE);
 }

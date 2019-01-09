@@ -206,12 +206,6 @@ static void arith(void) {
 	}
 	BENCH_END;
 
-	BENCH_BEGIN("fb_poly_sub") {
-		fb_rand(a);
-		BENCH_ADD(fb_poly_sub(c, a));
-	}
-	BENCH_END;
-
 	BENCH_BEGIN("fb_mul") {
 		fb_rand(a);
 		fb_rand(b);

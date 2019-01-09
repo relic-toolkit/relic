@@ -693,7 +693,7 @@ void fp_write_bin(uint8_t *bin, int len, const fp_t a);
  *
  * @param[in] a				- the first prime field element.
  * @param[in] b				- the second prime field element.
- * @return CMP_LT if a < b, CMP_EQ if a == b and CMP_GT if a > b.
+ * @return CMP_EQ if a == b, and CMP_NE otherwise.
  */
 int fp_cmp(const fp_t a, const fp_t b);
 
@@ -703,7 +703,7 @@ int fp_cmp(const fp_t a, const fp_t b);
  *
  * @param[in] a				- the prime field element.
  * @param[in] b				- the digit.
- * @return CMP_LT if a < b, CMP_EQ if a == b and CMP_GT if a > b.
+ * @return CMP_EQ if a == b, and CMP_NE otherwise.
  */
 int fp_cmp_dig(const fp_t a, dig_t b);
 

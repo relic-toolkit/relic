@@ -36,7 +36,6 @@
 /*============================================================================*/
 
 int fp_cmp_dig(const fp_t a, dig_t b) {
-#if FP_RDC == MONTY
 	fp_t t;
 	int r = CMP_EQ;
 
@@ -44,7 +43,6 @@ int fp_cmp_dig(const fp_t a, dig_t b) {
 
 	TRY {
 		fp_new(t);
-
 		fp_prime_conv_dig(t, b);
 		r = fp_cmp(a, t);
 	} CATCH_ANY {
@@ -54,17 +52,8 @@ int fp_cmp_dig(const fp_t a, dig_t b) {
 	}
 
 	return r;
-#else
-	for (int i = 1; i < FP_DIGS; i++) {
-		if (a[i] > 0) {
-			return CMP_GT;
-		}
-	}
-
-	return fp_cmp1_low(a[0], b);
-#endif
 }
 
 int fp_cmp(const fp_t a, const fp_t b) {
-	return fp_cmpn_low(a, b);
+	return dv_cmp_const(a, b, FP_DIGS);
 }

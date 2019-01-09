@@ -101,7 +101,7 @@ void fp_rdcs_low(dig_t *c, const dig_t *a, const dig_t *m) {
 			fp_subn_low(r, r, m);
 		}
 	}
-	while (fp_cmpn_low(r, m) != CMP_LT) {
+	while (dv_cmp(r, m, FP_DIGS) != CMP_LT) {
 		fp_subn_low(r, r, m);
 	}
 	fp_copy(c, r);

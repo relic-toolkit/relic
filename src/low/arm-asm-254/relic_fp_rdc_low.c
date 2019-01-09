@@ -26,7 +26,6 @@
  *
  * Implementation of the low-level prime field modular reduction functions.
  *
- * @version $Id: relic_fp_rdc_low.c 1355 2013-01-27 02:28:52Z dfaranha $
  * @ingroup fp
  */
 
@@ -34,42 +33,6 @@
 #include "relic_fp.h"
 #include "relic_fp_low.h"
 #include "relic_bn_low.h"
-
-/*============================================================================*/
-/* Private definitions                                                        */
-/*============================================================================*/
-
-/**
- * Accumulates a double precision digit in a triple register variable.
- *
- * @param[in,out] R2		- most significant word of the triple register.
- * @param[in,out] R1		- middle word of the triple register.
- * @param[in,out] R0		- lowest significant word of the triple register.
- * @param[in] A				- the first digit to multiply.
- * @param[in] B				- the second digit to multiply.
- */
-#define COMBA_STEP(R2, R1, R0, A, B)										\
-	dbl_t r = (dbl_t)(A) * (dbl_t)(B);										\
-	dig_t _r = (R1);														\
-	(R0) += (dig_t)(r);														\
-	(R1) += (R0) < (dig_t)(r);												\
-	(R2) += (R1) < _r;														\
-	(R1) += (dig_t)(r >> (dbl_t)DIGIT);								\
-	(R2) += (R1) < (dig_t)(r >> (dbl_t)DIGIT);						\
-
-/**
- * Accumulates a single precision digit in a triple register variable.
- *
- * @param[in,out] R2		- most significant word of the triple register.
- * @param[in,out] R1		- middle word of the triple register.
- * @param[in,out] R0		- lowest significant word of the triple register.
- * @param[in] A				- the first digit to accumulate.
- */
-#define COMBA_ADD(R2, R1, R0, A)											\
-	dig_t __r = (R1);														\
-	(R0) += (A);															\
-	(R1) += (R0) < (A);														\
-	(R2) += (R1) < __r;														\
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -131,7 +94,7 @@ void fp_rdcs_low(dig_t *c, const dig_t *a, const dig_t *m) {
 		}
 		fp_add(r, r, _r);
 	}
-	while (fp_cmpn_low(r, m) != CMP_LT) {
+	while (dv_cmp(r, m, FP_DIGS) != CMP_LT) {
 		fp_subn_low(r, r, m);
 	}
 	fp_copy(c, r);

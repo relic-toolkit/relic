@@ -256,7 +256,7 @@ void fp_inv_monty(fp_t c, const fp_t a) {
 					x1->used - FP_DIGS);
 			bn_trim(x1);
 		}
-		if (fp_cmpn_low(x1->dp, fp_prime_get()) == CMP_GT) {
+		if (dv_cmp(x1->dp, fp_prime_get(), FP_DIGS) == CMP_GT) {
 			fp_subn_low(x1->dp, x1->dp, fp_prime_get());
 		}
 
