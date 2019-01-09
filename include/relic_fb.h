@@ -510,15 +510,6 @@ void fb_param_print(void);
 void fb_poly_add(fb_t c, const fb_t a);
 
 /**
- * Subtracts the irreducible polynomial from a binary field element. Computes
- * c = a - f(z).
- *
- * @param[out] c			- the destination.
- * @param[in] a				- the binary field element.
- */
-void fb_poly_sub(fb_t c, const fb_t a);
-
-/**
  * Copies the second argument to the first argument.
  *
  * @param[out] c			- the result.
@@ -661,7 +652,7 @@ void fb_write_bin(uint8_t *bin, int len, const fb_t a);
  *
  * @param[in] a				- the first binary field element.
  * @param[in] b				- the second binary field element.
- * @return CMP_LT if a < b, CMP_EQ if a == b and CMP_GT if a > b.
+ * @return CMP_EQ if a == b, and CMP_NE otherwise.
  */
 int fb_cmp(const fb_t a, const fb_t b);
 
@@ -671,7 +662,7 @@ int fb_cmp(const fb_t a, const fb_t b);
  *
  * @param[in] a				- the binary field element.
  * @param[in] b				- the small binary field element.
- * @return CMP_LT if a < b, CMP_EQ if a == b and CMP_GT if a > b.
+ * @return CMP_EQ if a == b, and CMP_NE otherwise.
  */
 int fb_cmp_dig(const fb_t a, dig_t b);
 
@@ -695,25 +686,6 @@ void fb_add(fb_t c, const fb_t a, const fb_t b);
 void fb_add_dig(fb_t c, const fb_t a, dig_t b);
 
 /**
- * Subtracts a binary field element from another. Computes c = a - b.
- *
- * @param[out] c			- the result.
- * @param[in] a				- the binary field element.
- * @param[in] b				- the binary field element to subtract.
- */
-void fb_sub(fb_t c, const fb_t a, const fb_t b);
-
-/**
- * Subtracts a small binary field element from a binary field element.
- * Computes c = a - b.
- *
- * @param[out] c			- the result.
- * @param[in] a				- the binary field element.
- * @param[in] b				- the small binary field element to subtract.
- */
-void fb_sub_dig(fb_t c, const fb_t a, dig_t b);
-
-/**
  * Multiples two binary field elements using Shift-and-add multiplication.
  *
  * @param[out] c			- the result.
@@ -731,24 +703,6 @@ void fb_mul_basic(fb_t c, const fb_t a, const fb_t b);
  * @param[in] b				- the second binary field element to multiply.
  */
 void fb_mul_integ(fb_t c, const fb_t a, const fb_t b);
-
-/**
- * Multiples two binary field elements using Left-to-right comb multiplication.
- *
- * @param[out] c			- the result.
- * @param[in] a				- the first binary field element to multiply.
- * @param[in] b				- the second binary field element to multiply.
- */
-void fb_mul_lcomb(fb_t c, const fb_t a, const fb_t b);
-
-/**
- * Multiples two binary field elements using Right-to-left comb multiplication.
- *
- * @param[out] c			- the result.
- * @param[in] a				- the first binary field element to multiply.
- * @param[in] b				- the second binary field element to multiply.
- */
-void fb_mul_rcomb(fb_t c, const fb_t a, const fb_t b);
 
 /**
  * Multiples two binary field elements using Lopez-Dahab multiplication.

@@ -80,12 +80,6 @@ void fb_copy(fb_t c, const fb_t a) {
 	}
 }
 
-void fb_neg(fb_t c, const fb_t a) {
-	for (int i = 0; i < FB_DIGS; i++) {
-		c[i] = a[i];
-	}
-}
-
 void fb_zero(fb_t a) {
 	int i;
 

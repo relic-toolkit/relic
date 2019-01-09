@@ -152,17 +152,6 @@ typedef fb_t fb2_t[2];
 #define fb2_add(C, A, B)													\
 		fb_add(C[0], A[0], B[0]); fb_add(C[1], A[1], B[1]);					\
 
-/**
- * Subtracts a quadratic extension field element from another. Computes
- * c = a - b.
- *
- * @param[out] C			- the result.
- * @param[in] A				- the quadratic extension binary field element.
- * @param[in] B				- the quadratic extension binary field element.
- */
-#define fb2_sub(C, A, B)													\
-		fb_sub(C[0], A[0], B[0]); fb_sub(C[1], A[1], B[1]);					\
-
 /*============================================================================*/
 /* Function prototypes                                                        */
 /*============================================================================*/

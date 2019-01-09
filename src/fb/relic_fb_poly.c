@@ -362,10 +362,6 @@ void fb_poly_add(fb_t c, const fb_t a) {
 	}
 }
 
-void fb_poly_sub(fb_t c, const fb_t a) {
-	fb_poly_add(c, a);
-}
-
 void fb_poly_set_dense(const fb_t f) {
 	ctx_t *ctx = core_get();
 	fb_poly_set(f);

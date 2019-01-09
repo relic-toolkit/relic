@@ -107,12 +107,6 @@
 #define rand_seed 	PREFIX(rand_seed)
 #define rand_bytes 	PREFIX(rand_bytes)
 
-#undef pool_get
-#undef pool_put
-
-#define pool_get 	PREFIX(pool_get)
-#define pool_put 	PREFIX(pool_put)
-
 #undef test_fail
 #undef test_pass
 
@@ -156,9 +150,7 @@
 #undef dv_swap_cond
 #undef dv_cmp_const
 #undef dv_new_dynam
-#undef dv_new_statc
 #undef dv_free_dynam
-#undef dv_free_statc
 
 #define dv_print 	PREFIX(dv_print)
 #define dv_zero 	PREFIX(dv_zero)
@@ -167,9 +159,7 @@
 #define dv_swap_cond 	PREFIX(dv_swap_cond)
 #define dv_cmp_const 	PREFIX(dv_cmp_const)
 #define dv_new_dynam 	PREFIX(dv_new_dynam)
-#define dv_new_statc 	PREFIX(dv_new_statc)
 #define dv_free_dynam 	PREFIX(dv_free_dynam)
-#define dv_free_statc 	PREFIX(dv_free_statc)
 
 
 
@@ -679,7 +669,6 @@
 #undef fb_param_set_any
 #undef fb_param_print
 #undef fb_poly_add
-#undef fb_poly_sub
 #undef fb_copy
 #undef fb_neg
 #undef fb_zero
@@ -699,12 +688,8 @@
 #undef fb_cmp_dig
 #undef fb_add
 #undef fb_add_dig
-#undef fb_sub
-#undef fb_sub_dig
 #undef fb_mul_basic
 #undef fb_mul_integ
-#undef fb_mul_lcomb
-#undef fb_mul_rcomb
 #undef fb_mul_lodah
 #undef fb_mul_dig
 #undef fb_mul_karat
@@ -755,7 +740,6 @@
 #define fb_param_set_any 	PREFIX(fb_param_set_any)
 #define fb_param_print 	PREFIX(fb_param_print)
 #define fb_poly_add 	PREFIX(fb_poly_add)
-#define fb_poly_sub 	PREFIX(fb_poly_sub)
 #define fb_copy 	PREFIX(fb_copy)
 #define fb_neg 	PREFIX(fb_neg)
 #define fb_zero 	PREFIX(fb_zero)
@@ -775,12 +759,8 @@
 #define fb_cmp_dig 	PREFIX(fb_cmp_dig)
 #define fb_add 	PREFIX(fb_add)
 #define fb_add_dig 	PREFIX(fb_add_dig)
-#define fb_sub 	PREFIX(fb_sub)
-#define fb_sub_dig 	PREFIX(fb_sub_dig)
 #define fb_mul_basic 	PREFIX(fb_mul_basic)
 #define fb_mul_integ 	PREFIX(fb_mul_integ)
-#define fb_mul_lcomb 	PREFIX(fb_mul_lcomb)
-#define fb_mul_rcomb 	PREFIX(fb_mul_rcomb)
 #define fb_mul_lodah 	PREFIX(fb_mul_lodah)
 #define fb_mul_dig 	PREFIX(fb_mul_dig)
 #define fb_mul_karat 	PREFIX(fb_mul_karat)
@@ -1976,7 +1956,6 @@
 #undef cp_sokaka_gen
 #undef cp_sokaka_gen_prv
 #undef cp_sokaka_key
-#undef cp_ibe_gen
 #undef cp_bgn_gen
 #undef cp_bgn_enc1
 #undef cp_bgn_dec1
@@ -1985,6 +1964,7 @@
 #undef cp_bgn_add
 #undef cp_bgn_mul
 #undef cp_bgn_dec
+#undef cp_ibe_gen
 #undef cp_ibe_gen_prv
 #undef cp_ibe_enc
 #undef cp_ibe_dec
@@ -1994,13 +1974,19 @@
 #undef cp_bbs_gen
 #undef cp_bbs_sig
 #undef cp_bbs_ver
+#undef cp_cls_gen
+#undef cp_cls_sig
+#undef cp_cls_ver
+#undef cp_cli_gen
+#undef cp_cli_sig
+#undef cp_cli_ver
 #undef cp_zss_gen
 #undef cp_zss_sig
 #undef cp_zss_ver
-#undef cp_vbnn_ibs_kgc_gen
-#undef cp_vbnn_ibs_kgc_extract_key
-#undef cp_vbnn_ibs_user_sign
-#undef cp_vbnn_ibs_user_verify
+#undef cp_vbnn_gen
+#undef cp_vbnn_gen_prv
+#undef cp_vbnn_sig
+#undef cp_vbnn_ver
 
 #define cp_rsa_gen_basic 	PREFIX(cp_rsa_gen_basic)
 #define cp_rsa_gen_quick 	PREFIX(cp_rsa_gen_quick)
@@ -2035,7 +2021,6 @@
 #define cp_sokaka_gen 	PREFIX(cp_sokaka_gen)
 #define cp_sokaka_gen_prv 	PREFIX(cp_sokaka_gen_prv)
 #define cp_sokaka_key 	PREFIX(cp_sokaka_key)
-#define cp_ibe_gen 	PREFIX(cp_ibe_gen)
 #define cp_bgn_gen 	PREFIX(cp_bgn_gen)
 #define cp_bgn_enc1 	PREFIX(cp_bgn_enc1)
 #define cp_bgn_dec1 	PREFIX(cp_bgn_dec1)
@@ -2044,6 +2029,7 @@
 #define cp_bgn_add 	PREFIX(cp_bgn_add)
 #define cp_bgn_mul 	PREFIX(cp_bgn_mul)
 #define cp_bgn_dec 	PREFIX(cp_bgn_dec)
+#define cp_ibe_gen 	PREFIX(cp_ibe_gen)
 #define cp_ibe_gen_prv 	PREFIX(cp_ibe_gen_prv)
 #define cp_ibe_enc 	PREFIX(cp_ibe_enc)
 #define cp_ibe_dec 	PREFIX(cp_ibe_dec)
@@ -2053,13 +2039,19 @@
 #define cp_bbs_gen 	PREFIX(cp_bbs_gen)
 #define cp_bbs_sig 	PREFIX(cp_bbs_sig)
 #define cp_bbs_ver 	PREFIX(cp_bbs_ver)
+#define cp_cls_gen 	PREFIX(cp_cls_gen)
+#define cp_cls_sig 	PREFIX(cp_cls_sig)
+#define cp_cls_ver 	PREFIX(cp_cls_ver)
+#define cp_cli_gen 	PREFIX(cp_cli_gen)
+#define cp_cli_sig 	PREFIX(cp_cli_sig)
+#define cp_cli_ver 	PREFIX(cp_cli_ver)
 #define cp_zss_gen 	PREFIX(cp_zss_gen)
 #define cp_zss_sig 	PREFIX(cp_zss_sig)
 #define cp_zss_ver 	PREFIX(cp_zss_ver)
-#define cp_vbnn_ibs_kgc_gen 	PREFIX(cp_vbnn_ibs_kgc_gen)
-#define cp_vbnn_ibs_kgc_extract_key 	PREFIX(cp_vbnn_ibs_kgc_extract_key)
-#define cp_vbnn_ibs_user_sign 	PREFIX(cp_vbnn_ibs_user_sign)
-#define cp_vbnn_ibs_user_verify 	PREFIX(cp_vbnn_ibs_user_verify)
+#define cp_vbnn_gen 	PREFIX(cp_vbnn_gen)
+#define cp_vbnn_gen_prv 	PREFIX(cp_vbnn_gen_prv)
+#define cp_vbnn_sig 	PREFIX(cp_vbnn_sig)
+#define cp_vbnn_ver 	PREFIX(cp_vbnn_ver)
 
 #endif /* LABEL */
 

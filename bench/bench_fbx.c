@@ -67,12 +67,6 @@ static void util2(void) {
 	}
 	BENCH_END;
 
-	BENCH_BEGIN("fb2_neg") {
-		fb2_rand(a);
-		BENCH_ADD(fb2_neg(b, a));
-	}
-	BENCH_END;
-
 	BENCH_BEGIN("fb2_zero") {
 		fb2_rand(a);
 		BENCH_ADD(fb2_zero(a));
@@ -112,13 +106,6 @@ static void arith2(void) {
 		fb2_rand(a);
 		fb2_rand(b);
 		BENCH_ADD(fb2_add(c, a, b));
-	}
-	BENCH_END;
-
-	BENCH_BEGIN("fb2_sub") {
-		fb2_rand(a);
-		fb2_rand(b);
-		BENCH_ADD(fb2_sub(c, a, b));
 	}
 	BENCH_END;
 

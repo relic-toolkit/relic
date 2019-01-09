@@ -63,98 +63,37 @@ static int memory(void) {
 
 static int util(void) {
 	int bits, code = STS_ERR;
-	fb_t a, b, c;
+	fb_t a, b;
 	char str[FB_BITS + 1];
 	uint8_t bin[FB_BYTES];
 	dig_t d;
 
 	fb_null(a);
 	fb_null(b);
-	fb_null(c);
 
 	TRY {
 		fb_new(a);
 		fb_new(b);
 		fb_new(c);
 
-		TEST_BEGIN("comparison is consistent") {
-			fb_rand(a);
-			fb_rand(b);
-			if (fb_cmp(a, b) != CMP_EQ) {
-				if (fb_cmp(a, b) == CMP_GT) {
-					TEST_ASSERT(fb_cmp(b, a) == CMP_LT, end);
-				} else {
-					TEST_ASSERT(fb_cmp(b, a) == CMP_GT, end);
-				}
-			}
-		}
-		TEST_END;
-
 		TEST_BEGIN("copy and comparison are consistent") {
 			fb_rand(a);
 			fb_rand(b);
-			fb_rand(c);
-			if (fb_cmp(a, c) != CMP_EQ) {
-				fb_copy(c, a);
-				TEST_ASSERT(fb_cmp(c, a) == CMP_EQ, end);
-			}
-			if (fb_cmp(b, c) != CMP_EQ) {
-				fb_copy(c, b);
-				TEST_ASSERT(fb_cmp(b, c) == CMP_EQ, end);
-			}
-		}
-		TEST_END;
-
-		TEST_BEGIN("negation is consistent") {
-			fb_rand(a);
-			fb_neg(b, a);
 			if (fb_cmp(a, b) != CMP_EQ) {
-				if (fb_cmp(a, b) == CMP_GT) {
-					TEST_ASSERT(fb_cmp(b, a) == CMP_LT, end);
-				} else {
-					TEST_ASSERT(fb_cmp(b, a) == CMP_GT, end);
-				}
+				fb_copy(b, a);
+				TEST_ASSERT(fb_cmp(a, b) == CMP_EQ, end);
 			}
-			fb_neg(b, b);
-			TEST_ASSERT(fb_cmp(a, b) == CMP_EQ, end);
 		}
 		TEST_END;
 
-		TEST_BEGIN("assignment to zero and comparison are consistent") {
+		TEST_BEGIN("assignment and comparison are consistent") {
 			do {
 				fb_rand(a);
 			} while (fb_is_zero(a));
-			fb_zero(c);
-			TEST_ASSERT(fb_cmp(a, c) == CMP_GT, end);
-			TEST_ASSERT(fb_cmp(c, a) == CMP_LT, end);
-		}
-		TEST_END;
-
-		TEST_BEGIN("assignment to random and comparison are consistent") {
-			do {
-				fb_rand(a);
-				fb_rand(b);
-			} while (fb_is_zero(a) || fb_is_zero(b));
-			fb_zero(c);
-			TEST_ASSERT(fb_cmp(a, c) == CMP_GT, end);
-			TEST_ASSERT(fb_cmp(b, c) == CMP_GT, end);
-			if (fb_cmp(a, b) != CMP_EQ) {
-				if (fb_cmp(a, b) == CMP_GT) {
-					TEST_ASSERT(fb_cmp(b, a) == CMP_LT, end);
-				} else {
-					TEST_ASSERT(fb_cmp(b, a) == CMP_GT, end);
-				}
-			}
-		}
-		TEST_END;
-
-		TEST_BEGIN("assignment to zero and zero test are consistent") {
-			fb_zero(a);
-			TEST_ASSERT(fb_is_zero(a), end);
-		}
-		TEST_END;
-
-		TEST_BEGIN("assignment to a constant and comparison are consistent") {
+			fb_zero(b);
+			TEST_ASSERT(fb_cmp(a, b) == CMP_NE, end);
+			TEST_ASSERT(fb_cmp(b, a) == CMP_NE, end);
+			TEST_ASSERT(fb_is_zero(b), end);
 			rand_bytes((uint8_t *)&d, (DIGIT / 8));
 			fb_set_dig(a, d);
 			TEST_ASSERT(fb_cmp_dig(a, d) == CMP_EQ, end);
@@ -208,7 +147,6 @@ static int util(void) {
   end:
 	fb_free(a);
 	fb_free(b);
-	fb_free(c);
 	return code;
 }
 
@@ -257,7 +195,7 @@ static int addition(void) {
 
 		TEST_BEGIN("addition has inverse") {
 			fb_rand(a);
-			fb_neg(d, a);
+			fb_copy(d, a);
 			fb_add(e, a, d);
 			TEST_ASSERT(fb_is_zero(e), end);
 		} TEST_END;
@@ -279,74 +217,6 @@ static int addition(void) {
 	fb_free(c);
 	fb_free(d);
 	fb_free(e);
-	return code;
-}
-
-static int subtraction(void) {
-	int code = STS_ERR;
-	fb_t a, b, c, d;
-
-	fb_null(a);
-	fb_null(b);
-	fb_null(c);
-	fb_null(d);
-
-	TRY {
-		fb_new(a);
-		fb_new(b);
-		fb_new(c);
-		fb_new(d);
-
-		TEST_BEGIN("subtraction is anti-commutative") {
-			fb_rand(a);
-			fb_rand(b);
-			fb_sub(c, a, b);
-			fb_sub(d, b, a);
-			fb_neg(d, d);
-			TEST_ASSERT(fb_cmp(c, d) == CMP_EQ, end);
-		}
-		TEST_END;
-
-		TEST_BEGIN("subtraction has identity") {
-			fb_rand(a);
-			fb_zero(c);
-			fb_sub(d, a, c);
-			TEST_ASSERT(fb_cmp(d, a) == CMP_EQ, end);
-		}
-		TEST_END;
-
-		TEST_BEGIN("subtraction has inverse") {
-			fb_rand(a);
-			fb_sub(c, a, a);
-			TEST_ASSERT(fb_is_zero(c), end);
-		}
-		TEST_END;
-
-		TEST_BEGIN("subtraction of the modulo f(z) is correct") {
-			fb_rand(a);
-			fb_poly_sub(c, a);
-			fb_sub(d, a, fb_poly_get());
-			TEST_ASSERT(fb_cmp(c, d) == CMP_EQ, end);
-		} TEST_END;
-
-		TEST_BEGIN("subtraction is the same as addition") {
-			fb_rand(a);
-			fb_rand(b);
-			fb_add(c, a, b);
-			fb_sub(d, a, b);
-			TEST_ASSERT(fb_cmp(c, d) == CMP_EQ, end);
-		} TEST_END;
-	}
-	CATCH_ANY {
-		util_print("FATAL ERROR!\n");
-		ERROR(end);
-	}
-	code = STS_OK;
-  end:
-	fb_free(a);
-	fb_free(b);
-	fb_free(c);
-	fb_free(d);
 	return code;
 }
 
@@ -1147,17 +1017,6 @@ static int digit(void) {
 			TEST_ASSERT(fb_cmp(c, d) == CMP_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("subtraction of a single digit is consistent") {
-			fb_rand(a);
-			fb_rand(b);
-			for (int j = 1; j < FB_DIGS; j++)
-				b[j] = 0;
-			g = b[0];
-			fb_sub(c, a, b);
-			fb_sub_dig(d, a, g);
-			TEST_ASSERT(fb_cmp(c, d) == CMP_EQ, end);
-		} TEST_END;
-
 		TEST_BEGIN("multiplication by a single digit is consistent") {
 			fb_rand(a);
 			fb_rand(b);
@@ -1213,11 +1072,6 @@ int main(void) {
 	util_banner("Arithmetic", 1);
 
 	if (addition() != STS_OK) {
-		core_clean();
-		return 1;
-	}
-
-	if (subtraction() != STS_OK) {
 		core_clean();
 		return 1;
 	}

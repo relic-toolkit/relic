@@ -62,16 +62,14 @@ static int memory2(void) {
 
 static int util2(void) {
 	int code = STS_ERR;
-	fb2_t a, b, c;
+	fb2_t a, b;
 
 	fb2_null(a);
 	fb2_null(b);
-	fb2_null(c);
 
 	TRY {
 		fb2_new(a);
 		fb2_new(b);
-		fb2_new(c);
 
 		TEST_BEGIN("comparison is consistent") {
 			fb2_rand(a);
@@ -85,50 +83,23 @@ static int util2(void) {
 		TEST_BEGIN("copy and comparison are consistent") {
 			fb2_rand(a);
 			fb2_rand(b);
-			fb2_rand(c);
-			if (fb2_cmp(a, c) != CMP_EQ) {
-				fb2_copy(c, a);
-				TEST_ASSERT(fb2_cmp(c, a) == CMP_EQ, end);
-			}
-			if (fb2_cmp(b, c) != CMP_EQ) {
-				fb2_copy(c, b);
-				TEST_ASSERT(fb2_cmp(b, c) == CMP_EQ, end);
-			}
-		}
-		TEST_END;
-
-		TEST_BEGIN("negation is consistent") {
-			fb2_rand(a);
-			fb2_neg(b, a);
 			if (fb2_cmp(a, b) != CMP_EQ) {
-				TEST_ASSERT(fb2_cmp(b, a) == CMP_NE, end);
+				fb2_copy(b, a);
+				TEST_ASSERT(fb2_cmp(b, a) == CMP_EQ, end);
 			}
-			fb2_neg(b, b);
-			TEST_ASSERT(fb2_cmp(a, b) == CMP_EQ, end);
 		}
 		TEST_END;
 
-		TEST_BEGIN("assignment to zero and comparison are consistent") {
-			fb2_rand(a);
-			fb2_zero(c);
-			TEST_ASSERT(fb2_cmp(a, c) == CMP_NE, end);
-			TEST_ASSERT(fb2_cmp(c, a) == CMP_NE, end);
+		TEST_BEGIN("assignment and comparison are consistent") {
+			do {
+				fb2_rand(a);
+			} while (fb2_is_zero(a));
+			fb2_zero(b);
+			TEST_ASSERT(fb2_cmp(a, b) == CMP_NE, end);
+			TEST_ASSERT(fb2_cmp(b, a) == CMP_NE, end);
+			TEST_ASSERT(fb2_is_zero(b), end);
 		}
 		TEST_END;
-
-		TEST_BEGIN("assignment to random and comparison are consistent") {
-			fb2_rand(a);
-			fb2_zero(c);
-			TEST_ASSERT(fb2_cmp(a, c) == CMP_NE, end);
-		}
-		TEST_END;
-
-		TEST_BEGIN("assignment to zero and zero test are consistent") {
-			fb2_zero(a);
-			TEST_ASSERT(fb2_is_zero(a), end);
-		}
-		TEST_END;
-
 	}
 	CATCH_ANY {
 		ERROR(end);
@@ -137,7 +108,6 @@ static int util2(void) {
   end:
 	fb2_free(a);
 	fb2_free(b);
-	fb2_free(c);
 	return code;
 }
 
@@ -186,7 +156,7 @@ static int addition2(void) {
 
 		TEST_BEGIN("addition has inverse") {
 			fb2_rand(a);
-			fb2_neg(d, a);
+			fb2_copy(d, a);
 			fb2_add(e, a, d);
 			TEST_ASSERT(fb2_is_zero(e), end);
 		} TEST_END;
@@ -202,59 +172,6 @@ static int addition2(void) {
 	fb2_free(c);
 	fb2_free(d);
 	fb2_free(e);
-	return code;
-}
-
-static int subtraction2(void) {
-	int code = STS_ERR;
-	fb2_t a, b, c, d;
-
-	fb2_null(a);
-	fb2_null(b);
-	fb2_null(c);
-	fb2_null(d);
-
-	TRY {
-		fb2_new(a);
-		fb2_new(b);
-		fb2_new(c);
-		fb2_new(d);
-
-		TEST_BEGIN("subtraction is anti-commutative") {
-			fb2_rand(a);
-			fb2_rand(b);
-			fb2_sub(c, a, b);
-			fb2_sub(d, b, a);
-			fb2_neg(d, d);
-			TEST_ASSERT(fb2_cmp(c, d) == CMP_EQ, end);
-		}
-		TEST_END;
-
-		TEST_BEGIN("subtraction has identity") {
-			fb2_rand(a);
-			fb2_zero(c);
-			fb2_sub(d, a, c);
-			TEST_ASSERT(fb2_cmp(d, a) == CMP_EQ, end);
-		}
-		TEST_END;
-
-		TEST_BEGIN("subtraction has inverse") {
-			fb2_rand(a);
-			fb2_sub(c, a, a);
-			TEST_ASSERT(fb2_is_zero(c), end);
-		}
-		TEST_END;
-	}
-	CATCH_ANY {
-		util_print("FATAL ERROR!\n");
-		ERROR(end);
-	}
-	code = STS_OK;
-  end:
-	fb2_free(a);
-	fb2_free(b);
-	fb2_free(c);
-	fb2_free(d);
 	return code;
 }
 
@@ -470,11 +387,6 @@ int main(void) {
 	util_banner("Arithmetic:", 1);
 
 	if (addition2() != STS_OK) {
-		core_clean();
-		return 1;
-	}
-
-	if (subtraction2() != STS_OK) {
 		core_clean();
 		return 1;
 	}

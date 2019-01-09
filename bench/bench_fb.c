@@ -69,12 +69,6 @@ static void util(void) {
 	}
 	BENCH_END;
 
-	BENCH_BEGIN("fb_neg") {
-		fb_rand(a);
-		BENCH_ADD(fb_neg(b, a));
-	}
-	BENCH_END;
-
 	BENCH_BEGIN("fb_zero") {
 		fb_rand(a);
 		BENCH_ADD(fb_zero(a));
@@ -203,20 +197,6 @@ static void arith(void) {
 		fb_rand(a);
 		fb_rand(b);
 		BENCH_ADD(fb_add_dig(c, a, b[0]));
-	}
-	BENCH_END;
-
-	BENCH_BEGIN("fb_sub") {
-		fb_rand(a);
-		fb_rand(b);
-		BENCH_ADD(fb_sub(c, a, b));
-	}
-	BENCH_END;
-
-	BENCH_BEGIN("fb_sub_dig") {
-		fb_rand(a);
-		fb_rand(b);
-		BENCH_ADD(fb_sub_dig(c, a, b[0]));
 	}
 	BENCH_END;
 
