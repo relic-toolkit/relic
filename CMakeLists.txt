@@ -214,10 +214,10 @@ else(DEBUG)
 endif(DEBUG)
 
 if(MULTI STREQUAL OPENMP)
-	find_package(OpenMP REQUIRED)
 	if (MSVC)
 		set(CFLAGS "${CFLAGS} /openmp")
 	else (MSVC)
+		find_package(OpenMP REQUIRED)
 		set(CFLAGS "${CFLAGS} -fopenmp")
 	endif (MSVC)
 
