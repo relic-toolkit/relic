@@ -1065,9 +1065,9 @@ static int bbs(void) {
 
 static int cls(void) {
 	int i, code = STS_ERR;
-	bn_t r, t, u, v, _v[4];
-	g1_t a, A, b, B, c, _A[4], _B[4];
-	g2_t x, y, z, _z[4];
+	bn_t r, t, u, v, vs[4];
+	g1_t a, A, b, B, c, As[4], Bs[4];
+	g2_t x, y, z, zs[4];
 	uint8_t m[5] = { 0, 1, 2, 3, 4 };
 	uint8_t *msgs[5] = {m, m, m, m, m};
 	int lens[5] = {sizeof(m), sizeof(m), sizeof(m), sizeof(m), sizeof(m)};
@@ -1085,10 +1085,10 @@ static int cls(void) {
 	g2_null(y);
 	g2_null(z);
 	for (i = 0; i < 4; i++) {
-		bn_null(_v[i]);
-		g1_null(_A[i]);
-		g1_null(_B[i]);
-		g2_null(_z[i]);
+		bn_null(vs[i]);
+		g1_null(As[i]);
+		g1_null(Bs[i]);
+		g2_null(zs[i]);
 	}
 
 	TRY {
@@ -1105,10 +1105,10 @@ static int cls(void) {
 		g2_new(y);
 		g2_new(z);
 		for (i = 0; i < 4; i++) {
-			bn_new(_v[i]);
-			g1_new(_A[i]);
-			g1_new(_B[i]);
-			g2_new(_z[i]);
+			bn_new(vs[i]);
+			g1_new(As[i]);
+			g1_new(Bs[i]);
+			g2_new(zs[i]);
 		}
 
 		TEST_BEGIN("camenisch-lysyanskaya simple signature is correct") {
@@ -1139,9 +1139,9 @@ static int cls(void) {
 		TEST_END;
 
 		TEST_BEGIN("camenisch-lysyanskaya message-block signature is correct") {
-			TEST_ASSERT(cp_clb_gen(t, u, _v, x, y, _z, 5) == STS_OK, end);
-			TEST_ASSERT(cp_clb_sig(a, _A, b, _B, c, msgs, lens, t, u, _v, 5) == STS_OK, end);
-			TEST_ASSERT(cp_clb_ver(a, _A, b, _B, c, msgs, lens, x, y, _z, 5) == 1, end);
+			TEST_ASSERT(cp_clb_gen(t, u, vs, x, y, zs, 5) == STS_OK, end);
+			TEST_ASSERT(cp_clb_sig(a, As, b, Bs, c, msgs, lens, t, u, vs, 5) == STS_OK, end);
+			TEST_ASSERT(cp_clb_ver(a, As, b, Bs, c, msgs, lens, x, y, zs, 5) == 1, end);
 		}
 		TEST_END;
 	}
@@ -1164,10 +1164,10 @@ static int cls(void) {
 	g2_free(y);
 	g2_free(z);
 	for (i = 0; i < 4; i++) {
-		bn_free(_v[i]);
-		g1_free(_A[i]);
-		g1_free(_B[i]);
-		g2_free(_z[i]);
+		bn_free(vs[i]);
+		g1_free(As[i]);
+		g1_free(Bs[i]);
+		g2_free(zs[i]);
 	}
   	return code;
 }

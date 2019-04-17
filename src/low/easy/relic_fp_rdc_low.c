@@ -109,14 +109,14 @@ void fp_rdcs_low(dig_t *c, const dig_t *a, const dig_t *m) {
 				bn_lshb_low(t, t, 2 * FP_DIGS, b1);
 			}
 			/* Check if these two have the same sign. */
-			if ((sform[len - 2] ^ sform[i]) >= 0) {
+			if ((sform[len - 2] < 0) == (sform[i] < 0)) {
 				bn_addn_low(_q, _q, t, 2 * FP_DIGS);
 			} else {
 				bn_subn_low(_q, _q, t, 2 * FP_DIGS);
 			}
 		}
 		/* Check if these two have the same sign. */
-		if ((sform[len - 2] ^ sform[0]) >= 0) {
+		if ((sform[len - 2] < 0) == (sform[0] < 0)) {
 			bn_addn_low(_q, _q, q, 2 * FP_DIGS);
 		} else {
 			bn_subn_low(_q, _q, q, 2 * FP_DIGS);
