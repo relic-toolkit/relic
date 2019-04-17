@@ -1064,11 +1064,13 @@ static int bbs(void) {
 }
 
 static int cls(void) {
-	int code = STS_ERR;
-	bn_t r, t, u, v;
-	g1_t a, A, b, B, c;
-	g2_t x, y, z;
+	int i, code = STS_ERR;
+	bn_t r, t, u, v, _v[4];
+	g1_t a, A, b, B, c, _A[4], _B[4];
+	g2_t x, y, z, _z[4];
 	uint8_t m[5] = { 0, 1, 2, 3, 4 };
+	uint8_t *msgs[5] = {m, m, m, m, m};
+	int lens[5] = {sizeof(m), sizeof(m), sizeof(m), sizeof(m), sizeof(m)};
 
 	bn_null(r);
 	bn_null(t);
@@ -1082,6 +1084,12 @@ static int cls(void) {
 	g2_null(x);
 	g2_null(y);
 	g2_null(z);
+	for (i = 0; i < 4; i++) {
+		bn_null(_v[i]);
+		g1_null(_A[i]);
+		g1_null(_B[i]);
+		g2_null(_z[i]);
+	}
 
 	TRY {
 		bn_new(r);
@@ -1096,19 +1104,44 @@ static int cls(void) {
 		g2_new(x);
 		g2_new(y);
 		g2_new(z);
+		for (i = 0; i < 4; i++) {
+			bn_new(_v[i]);
+			g1_new(_A[i]);
+			g1_new(_B[i]);
+			g2_new(_z[i]);
+		}
 
 		TEST_BEGIN("camenisch-lysyanskaya simple signature is correct") {
 			TEST_ASSERT(cp_cls_gen(u, v, x, y) == STS_OK, end);
 			TEST_ASSERT(cp_cls_sig(a, b, c, m, sizeof(m), u, v) == STS_OK, end);
 			TEST_ASSERT(cp_cls_ver(a, b, c, m, sizeof(m), x, y) == 1, end);
+			/* Check adversarial signature. */
+			g1_set_infty(a);
+			g1_set_infty(b);
+			g1_set_infty(c);
+			TEST_ASSERT(cp_cls_ver(a, b, c, m, sizeof(m), x, y) == 0, end);
 		}
 		TEST_END;
 
 		TEST_BEGIN("camenisch-lysyanskaya message-independent signature is correct") {
 			bn_rand(r, BN_POS, 2 * pc_param_level());
-			TEST_ASSERT(cp_cli_gen(t, u, v, x, y,z ) == STS_OK, end);
+			TEST_ASSERT(cp_cli_gen(t, u, v, x, y, z) == STS_OK, end);
 			TEST_ASSERT(cp_cli_sig(a, A, b, B, c, m, sizeof(m), r, t, u, v) == STS_OK, end);
 			TEST_ASSERT(cp_cli_ver(a, A, b, B, c, m, sizeof(m), r, x, y, z) == 1, end);
+			/* Check adversarial signature. */
+			g1_set_infty(a);
+			g1_set_infty(A);
+			g1_set_infty(b);
+			g1_set_infty(B);
+			g1_set_infty(c);
+			TEST_ASSERT(cp_cli_ver(a, A, b, B, c, m, sizeof(m), r, x, y, z) == 0, end);
+		}
+		TEST_END;
+
+		TEST_BEGIN("camenisch-lysyanskaya message-block signature is correct") {
+			TEST_ASSERT(cp_clb_gen(t, u, _v, x, y, _z, 5) == STS_OK, end);
+			TEST_ASSERT(cp_clb_sig(a, _A, b, _B, c, msgs, lens, t, u, _v, 5) == STS_OK, end);
+			TEST_ASSERT(cp_clb_ver(a, _A, b, _B, c, msgs, lens, x, y, _z, 5) == 1, end);
 		}
 		TEST_END;
 	}
@@ -1130,6 +1163,84 @@ static int cls(void) {
 	g2_free(x);
 	g2_free(y);
 	g2_free(z);
+	for (i = 0; i < 4; i++) {
+		bn_free(_v[i]);
+		g1_free(_A[i]);
+		g1_free(_B[i]);
+		g2_free(_z[i]);
+	}
+  	return code;
+}
+
+static int pss(void) {
+	int i, code = STS_ERR;
+	bn_t u, v, _v[5];
+	g1_t a, b;
+	g2_t g, x, y, _y[5];
+	uint8_t m[5] = { 0, 1, 2, 3, 4 };
+	uint8_t *msgs[5] = {m, m, m, m, m};
+	int lens[5] = {sizeof(m), sizeof(m), sizeof(m), sizeof(m), sizeof(m)};
+
+	bn_null(u);
+	bn_null(v);
+	g1_null(a);
+	g1_null(b);
+	g2_null(g);
+	g2_null(x);
+	g2_null(y);
+	for (i = 0; i < 5; i++) {
+		bn_null(_v[i]);
+		g2_null(_y[i]);
+	}
+
+	TRY {
+		bn_new(u);
+		bn_new(v);
+		g1_new(a);
+		g1_new(b);
+		g2_new(g);
+		g2_new(x);
+		g2_new(y);
+		for (i = 0; i < 5; i++) {
+			bn_new(_v[i]);
+			g2_new(_y[i]);
+		}
+
+		TEST_BEGIN("pointcheval-sanders simple signature is correct") {
+			TEST_ASSERT(cp_pss_gen(u, v, g, x, y) == STS_OK, end);
+			TEST_ASSERT(cp_pss_sig(a, b, m, sizeof(m), u, v) == STS_OK, end);
+			TEST_ASSERT(cp_pss_ver(a, b, m, sizeof(m), g, x, y) == 1, end);
+			/* Check adversarial signature. */
+			g1_set_infty(a);
+			g1_set_infty(b);
+			TEST_ASSERT(cp_pss_ver(a, b, m, sizeof(m), g, x, y) == 0, end);
+		}
+		TEST_END;
+
+		TEST_BEGIN("pointcheval-sanders message-block signature is correct") {
+			TEST_ASSERT(cp_psb_gen(u, _v, g, x, _y, 5) == STS_OK, end);
+			TEST_ASSERT(cp_psb_sig(a, b, msgs, lens, u, _v, 5) == STS_OK, end);
+			TEST_ASSERT(cp_psb_ver(a, b, msgs, lens, g, x, _y, 5) == 1, end);
+		}
+		TEST_END;
+	}
+	CATCH_ANY {
+		ERROR(end);
+	}
+	code = STS_OK;
+
+  end:
+	bn_free(u);
+	bn_free(v);
+	g1_free(a);
+	g1_free(b);
+	g2_free(g);
+	g2_free(x);
+	g2_free(y);
+	for (i = 0; i < 5; i++) {
+		bn_new(_v[i]);
+		g2_new(_y[i]);
+	}
   	return code;
 }
 
@@ -1280,6 +1391,11 @@ int main(void) {
 		}
 
 		if (cls() != STS_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (pss() != STS_OK) {
 			core_clean();
 			return 1;
 		}

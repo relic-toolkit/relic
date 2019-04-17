@@ -571,7 +571,7 @@ typedef vbnn_user_st *vbnn_user_t;
  * @param[out] A			- the key pair to initialize.
  */
 #if ALLOC == AUTO
-#define bgn_null(A)			/* empty */
+#define bgn_null(A)				/* empty */
 #else
 #define bgn_null(A)			A = NULL;
 #endif
@@ -598,7 +598,7 @@ typedef vbnn_user_st *vbnn_user_t;
 	g2_new((A)->hz);														\
 
 #elif ALLOC == AUTO
-#define bgn_new(A)			/* empty */
+#define bgn_new(A)				/* empty */
 
 #elif ALLOC == STACK
 #define bgn_new(A)															\
@@ -637,7 +637,7 @@ typedef vbnn_user_st *vbnn_user_t;
 	}
 
 #elif ALLOC == AUTO
-#define bgn_free(A)			/* empty */
+#define bgn_free(A)				/* empty */
 
 #elif ALLOC == STACK
 #define bgn_free(A)															\
@@ -660,7 +660,7 @@ typedef vbnn_user_st *vbnn_user_t;
  * @param[out] A 			- key generation center to initialize.
  */
 #if ALLOC == AUTO
-#define vbnn_kgc_null(A)	/* empty */
+#define vbnn_kgc_null(A)		/* empty */
 #else
 #define vbnn_kgc_null(A)	A = NULL;
 #endif
@@ -709,7 +709,7 @@ typedef vbnn_user_st *vbnn_user_t;
 	}																		\
 
 #elif ALLOC == AUTO
-#define vbnn_kgc_free(A)				/* empty */
+#define vbnn_kgc_free(A)		/* empty */
 
 #elif ALLOC == STACK
 #define vbnn_kgc_free(A)													\
@@ -725,7 +725,7 @@ typedef vbnn_user_st *vbnn_user_t;
  * @param[out] A 			- user to initialize.
  */
 #if ALLOC == AUTO
-#define vbnn_user_null(A)	/* empty */
+#define vbnn_user_null(A)		/* empty */
 #else
 #define vbnn_user_null(A)	A = NULL;
 #endif
@@ -774,7 +774,7 @@ typedef vbnn_user_st *vbnn_user_t;
 	}																		\
 
 #elif ALLOC == AUTO
-#define vbnn_user_free(A)				/* empty */
+#define vbnn_user_free(A)		/* empty */
 
 #elif ALLOC == STACK
 #define vbnn_user_free(A)													\
@@ -1440,7 +1440,7 @@ int cp_cls_gen(bn_t u, bn_t v, g2_t x, g2_t y);
  *
  * @param[out] a			- the first part of the signature.
  * @param[out] b			- the second part of the signature.
- * @param[out] b			- the third part of the signature.
+ * @param[out] c			- the third part of the signature.
  * @param[in] msg			- the message to sign.
  * @param[in] len			- the message length in bytes.
  * @param[in] u				- the first part of the private key.
@@ -1454,7 +1454,7 @@ int cp_cls_sig(g1_t a, g1_t b, g1_t c, uint8_t *msg, int len, bn_t u, bn_t v);
  *
  * @param[in] a				- the first part of the signature.
  * @param[in] b				- the second part of the signature.
- * @param[in] b				- the third part of the signature.
+ * @param[in] c				- the third part of the signature.
  * @param[in] msg			- the message to sign.
  * @param[in] len			- the message length in bytes.
  * @param[in] u				- the first part of the public key.
@@ -1494,7 +1494,7 @@ int cp_cli_gen(bn_t t, bn_t u, bn_t v, g2_t x, g2_t y, g2_t z);
  * @return STS_OK if no errors occurred, STS_ERR otherwise.
  */
 int cp_cli_sig(g1_t a, g1_t A, g1_t b, g1_t B, g1_t c, uint8_t *msg, int len,
-	bn_t r, bn_t t, bn_t u, bn_t v);
+		bn_t r, bn_t t, bn_t u, bn_t v);
 
 /**
  * Verifies a message signed using the CLI protocol.
@@ -1513,7 +1513,144 @@ int cp_cli_sig(g1_t a, g1_t A, g1_t b, g1_t B, g1_t c, uint8_t *msg, int len,
  * @return a boolean value indicating the verification result.
  */
 int cp_cli_ver(g1_t a, g1_t A, g1_t b, g1_t B, g1_t c, uint8_t *msg, int len,
-	bn_t r, g2_t x, g2_t y, g2_t z);
+		bn_t r, g2_t x, g2_t y, g2_t z);
+
+/**
+ * Generates a key pair for the Camenisch-Lysyanskaya message-block (CLB)
+ * signature protocol.
+ *
+ * @param[out] t			- the first part of the private key.
+ * @param[out] u			- the second part of the private key.
+ * @param[out] v			- the remaining (l - 1) parts of the private key.
+ * @param[out] x			- the first part of the public key.
+ * @param[out] y			- the second part of the public key.
+ * @param[out] z			- the remaining (l - 1) parts of the public key.
+ * @param[in] l 			- the number of messages to sign.
+ * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ */
+int cp_clb_gen(bn_t t, bn_t u, bn_t v[], g2_t x, g2_t y, g2_t z[], int l);
+
+/**
+ * Signs a block of messages using the CLB protocol.
+ *
+ * @param[out] a			- the first component of the signature.
+ * @param[out] A			- the (l - 1) next components of the signature.
+ * @param[out] b			- the next component of the signature.
+ * @param[out] B			- the (l - 1) next components of the signature.
+ * @param[out] c			- the last component of the signature.
+ * @param[in] msgs			- the l messages to sign.
+ * @param[in] lens			- the l message lengths in bytes.
+ * @param[in] t				- the first part of the private key.
+ * @param[in] u				- the second part of the private key.
+ * @param[in] v				- the remaining (l - 1) parts of the private key.
+ * @param[in] l 			- the number of messages to sign.
+ * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ */
+int cp_clb_sig(g1_t a, g1_t A[], g1_t b, g1_t B[], g1_t c, uint8_t *msgs[],
+		int lens[], bn_t t, bn_t u, bn_t v[], int l);
+
+/**
+ * Verifies a block of messages signed using the CLB protocol.
+ *
+ * @param[out] a			- the first component of the signature.
+ * @param[out] A			- the (l - 1) next components of the signature.
+ * @param[out] b			- the next component of the signature.
+ * @param[out] B			- the (l - 1) next components of the signature.
+ * @param[out] c			- the last component of the signature.
+ * @param[in] msgs			- the l messages to sign.
+ * @param[in] lens			- the l message lengths in bytes.
+ * @param[in] x				- the first part of the public key.
+ * @param[in] y				- the second part of the public key.
+ * @param[in] z			- the remaining (l - 1) parts of the public key.
+ * @param[in] l 			- the number of messages to sign.
+ * @return a boolean value indicating the verification result.
+ */
+int cp_clb_ver(g1_t a, g1_t A[], g1_t b, g1_t B[], g1_t c, uint8_t *msgs[],
+		int lens[], g2_t x, g2_t y, g2_t z[], int l);
+
+/**
+ * Generates a key pair for the Pointcheval-Sanders simple signature (PSS)
+ * protocol.
+ *
+ * @param[out] u			- the first part of the private key.
+ * @param[out] v			- the second part of the private key.
+ * @param[out] g			- the first part of the public key.
+ * @param[out] x			- the secpmd part of the public key.
+ * @param[out] y			- the third part of the public key.
+ * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ */
+int cp_pss_gen(bn_t u, bn_t v, g2_t g, g2_t x, g2_t y);
+
+/**
+ * Signs a message using the PSS protocol.
+ *
+ * @param[out] a			- the first part of the signature.
+ * @param[out] b			- the second part of the signature.
+ * @param[in] msg			- the message to sign.
+ * @param[in] len			- the message length in bytes.
+ * @param[in] u				- the first part of the private key.
+ * @param[in] v				- the second part of the private key.
+ * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ */
+int cp_pss_sig(g1_t a, g1_t b, uint8_t *msg, int len, bn_t u, bn_t v);
+
+/**
+ ** Verifies a signature using the PSS protocol.
+ *
+ * @param[in] a				- the first part of the signature.
+ * @param[in] b				- the second part of the signature.
+ * @param[in] msg			- the message to sign.
+ * @param[in] len			- the message length in bytes.
+ * @param[in] g				- the first part of the public key.
+ * @param[in] u				- the second part of the public key.
+ * @param[in] v				- the third part of the public key.
+ * @return a boolean value indicating the verification result.
+ */
+int cp_pss_ver(g1_t a, g1_t b, uint8_t *msg, int len, g2_t g, g2_t x, g2_t y);
+
+/**
+ * Generates a key pair for the Pointcheval-Sanders block signature (PSB)
+ * protocol.
+ *
+ * @param[out] r			- the first part of the private key.
+ * @param[out] s			- the second part of the private key.
+ * @param[out] g			- the first part of the public key.
+ * @param[out] x			- the secpmd part of the public key.
+ * @param[out] y			- the third part of the public key.
+ * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ */
+int cp_psb_gen(bn_t r, bn_t s[], g2_t g, g2_t x, g2_t y[], int l);
+
+/**
+ * Signs a block of messages using the PSB protocol.
+ *
+ * @param[out] a			- the first component of the signature.
+ * @param[out] b			- the second component of the signature.
+ * @param[in] msgs			- the l messages to sign.
+ * @param[in] lens			- the l message lengths in bytes.
+ * @param[in] r				- the first part of the private key.
+ * @param[in] s				- the remaining l part of the private key.
+ * @param[in] l 			- the number of messages to sign.
+ * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ */
+int cp_psb_sig(g1_t a, g1_t b, uint8_t *msgs[], int lens[], bn_t r, bn_t s[],
+		int l);
+
+/**
+ * Verifies a block of messages signed using the PSB protocol.
+ *
+ * @param[out] a			- the first component of the signature.
+ * @param[out] b			- the seconed component of the signature.
+ * @param[in] msgs			- the l messages to sign.
+ * @param[in] lens			- the l message lengths in bytes.
+ * @param[in] g				- the first part of the public key.
+ * @param[in] x				- the second part of the public key.
+ * @param[in] y				- the remaining l parts of the public key.
+ * @param[in] l 			- the number of messages to sign.
+ * @return a boolean value indicating the verification result.
+ */
+int cp_psb_ver(g1_t a, g1_t b, uint8_t *msgs[], int lens[], g2_t g, g2_t x,
+		g2_t y[], int l);
 
 /**
  * Generates a Zhang-Safavi-Naini-Susilo (ZSS) key pair.
@@ -1563,8 +1700,7 @@ int cp_vbnn_gen(vbnn_kgc_t kgc);
  * @param[in]  id			- the identity used for extraction.
  * @param[in]  id_len		- the identity length in bytes.
  */
-int cp_vbnn_gen_prv(vbnn_user_t user, vbnn_kgc_t kgc,
-	uint8_t *id, int id_len);
+int cp_vbnn_gen_prv(vbnn_user_t user, vbnn_kgc_t kgc, uint8_t *id, int id_len);
 
 /**
  * Signs a message using the vBNN-IBS scheme.
