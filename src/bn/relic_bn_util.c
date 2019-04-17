@@ -34,6 +34,15 @@
 #include "relic_core.h"
 
 /*============================================================================*/
+/* Private definitions                                                        */
+/*============================================================================*/
+
+/**
+ * Statistical distance 1/2^\lambda between sampling and uniform distribution.
+ */
+#define RAND_DIST	30
+
+/*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
@@ -191,7 +200,8 @@ void bn_rand(bn_t a, int sign, int bits) {
 
 void bn_rand_mod(bn_t a, bn_t b) {
 	do {
-		bn_rand(a, bn_sign(b), bn_bits(b));
+		bn_rand(a, bn_sign(b), bn_bits(b) + RAND_DIST);
+		bn_mod(a, a, b);
 	} while (bn_is_zero(a) || bn_cmp_abs(a, b) != CMP_LT);
 }
 
