@@ -40,7 +40,7 @@
 /**
  * Statistical distance 1/2^\lambda between sampling and uniform distribution.
  */
-#define RAND_DIST	30
+#define RAND_DIST		40
 
 /*============================================================================*/
 /* Public definitions                                                         */
