@@ -722,7 +722,9 @@ static int inversion(void) {
 		fb_new(d[1]);
 
 		TEST_BEGIN("inversion is correct") {
-			fb_rand(a);
+			do {
+				fb_rand(a);
+			} while (fb_is_zero(a));
 			fb_inv(b, a);
 			fb_mul(c, a, b);
 			TEST_ASSERT(fb_cmp_dig(c, 1) == CMP_EQ, end);
@@ -730,7 +732,9 @@ static int inversion(void) {
 
 #if FB_INV == BASIC || !defined(STRIP)
 		TEST_BEGIN("basic inversion is correct") {
-			fb_rand(a);
+			do {
+				fb_rand(a);
+			} while (fb_is_zero(a));
 			fb_inv(b, a);
 			fb_inv_basic(c, a);
 			TEST_ASSERT(fb_cmp(b, c) == CMP_EQ, end);
@@ -739,7 +743,9 @@ static int inversion(void) {
 
 #if FB_INV == BINAR || !defined(STRIP)
 		TEST_BEGIN("binary inversion is correct") {
-			fb_rand(a);
+			do {
+				fb_rand(a);
+			} while (fb_is_zero(a));
 			fb_inv(b, a);
 			fb_inv_binar(c, a);
 			TEST_ASSERT(fb_cmp(b, c) == CMP_EQ, end);
@@ -748,7 +754,9 @@ static int inversion(void) {
 
 #if FB_INV == ALMOS || !defined(STRIP)
 		TEST_BEGIN("almost inverse is correct") {
-			fb_rand(a);
+			do {
+				fb_rand(a);
+			} while (fb_is_zero(a));
 			fb_inv(b, a);
 			fb_inv_almos(c, a);
 			TEST_ASSERT(fb_cmp(b, c) == CMP_EQ, end);
@@ -757,7 +765,9 @@ static int inversion(void) {
 
 #if FB_INV == EXGCD || !defined(STRIP)
 		TEST_BEGIN("euclidean inversion is correct") {
-			fb_rand(a);
+			do {
+				fb_rand(a);
+			} while (fb_is_zero(a));
 			fb_inv(b, a);
 			fb_inv_exgcd(c, a);
 			TEST_ASSERT(fb_cmp(b, c) == CMP_EQ, end);
@@ -766,7 +776,9 @@ static int inversion(void) {
 
 #if FB_INV == BRUCH || !defined(STRIP)
 		TEST_BEGIN("brunner inversion is correct") {
-			fb_rand(a);
+			do {
+				fb_rand(a);
+			} while (fb_is_zero(a));
 			fb_inv(b, a);
 			fb_inv_bruch(c, a);
 			TEST_ASSERT(fb_cmp(b, c) == CMP_EQ, end);
@@ -775,7 +787,9 @@ static int inversion(void) {
 
 #if FB_INV == ITOHT || !defined(STRIP)
 		TEST_BEGIN("itoh-tsuji inversion is correct") {
-			fb_rand(a);
+			do {
+				fb_rand(a);
+			} while (fb_is_zero(a));
 			fb_inv(b, a);
 			fb_inv_itoht(c, a);
 			TEST_ASSERT(fb_cmp(b, c) == CMP_EQ, end);
@@ -784,7 +798,9 @@ static int inversion(void) {
 
 #if FB_INV == CTAIA || !defined(STRIP)
 		TEST_BEGIN("constant-time almost inversion is correct") {
-			fb_rand(a);
+			do {
+				fb_rand(a);
+			} while (fb_is_zero(a));
 			fb_inv(b, a);
 			fb_inv_ctaia(c, a);
 			TEST_ASSERT(fb_cmp(b, c) == CMP_EQ, end);
@@ -793,7 +809,9 @@ static int inversion(void) {
 
 #if FB_INV == LOWER || !defined(STRIP)
 		TEST_BEGIN("lower inversion is correct") {
-			fb_rand(a);
+			do {
+				fb_rand(a);
+			} while (fb_is_zero(a));
 			fb_inv(b, a);
 			fb_inv_lower(c, a);
 			TEST_ASSERT(fb_cmp(b, c) == CMP_EQ, end);
@@ -801,8 +819,10 @@ static int inversion(void) {
 #endif
 
 		TEST_BEGIN("simultaneous inversion is correct") {
-			fb_rand(a);
-			fb_rand(b);
+			do {
+				fb_rand(a);
+				fb_rand(b);
+			} while (fb_is_zero(a) || fb_is_zero(b));
 			fb_copy(d[0], a);
 			fb_copy(d[1], b);
 			fb_inv(a, a);

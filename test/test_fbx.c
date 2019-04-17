@@ -338,7 +338,9 @@ static int inversion2(void) {
 		fb2_new(c);
 
 		TEST_BEGIN("inversion is correct") {
-			fb2_rand(a);
+			do {
+				fb2_rand(a);
+			} while (fb2_is_zero(a));
 			fb2_inv(b, a);
 			fb2_mul(c, a, b);
 			TEST_ASSERT(fb_cmp_dig(c[0], 1) == CMP_EQ, end);

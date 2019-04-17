@@ -951,6 +951,7 @@ void fp_rdc_quick(fp_t c, dv_t a);
  *
  * @param[out] c			- the result.
  * @param[in] a				- the prime field element to invert.
+ * @throw ERR_NO_VALID		- if the field element is not invertible.
  */
 void fp_inv_basic(fp_t c, const fp_t a);
 
@@ -959,6 +960,7 @@ void fp_inv_basic(fp_t c, const fp_t a);
  *
  * @param[out] c			- the result.
  * @param[in] a				- the prime field element to invert.
+ * @throw ERR_NO_VALID		- if the field element is not invertible.
  */
 void fp_inv_binar(fp_t c, const fp_t a);
 
@@ -967,6 +969,7 @@ void fp_inv_binar(fp_t c, const fp_t a);
  *
  * @param[out] c			- the result.
  * @param[in] a				- the prime field element to invert.
+ * @throw ERR_NO_VALID		- if the field element is not invertible.
  */
 void fp_inv_monty(fp_t c, const fp_t a);
 
@@ -975,6 +978,7 @@ void fp_inv_monty(fp_t c, const fp_t a);
  *
  * @param[out] c			- the result.
  * @param[in] a				- the prime field element to invert.
+ * @throw ERR_NO_VALID		- if the field element is not invertible.
  */
 void fp_inv_exgcd(fp_t c, const fp_t a);
 
@@ -983,6 +987,7 @@ void fp_inv_exgcd(fp_t c, const fp_t a);
  *
  * @param[out] c			- the result.
  * @param[in] a				- the prime field element to invert.
+ * @throw ERR_NO_VALID		- if the field element is not invertible.
  */
 void fp_inv_lower(fp_t c, const fp_t a);
 

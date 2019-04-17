@@ -50,6 +50,10 @@ void fb_inv_basic(fb_t c, const fb_t a) {
 	fb_null(u);
 	fb_null(v);
 
+	if (fb_is_zero(a)) {
+		THROW(ERR_NO_VALID);
+	}
+
 	TRY {
 		fb_new(t);
 		fb_new(u);
@@ -112,6 +116,10 @@ void fb_inv_binar(fb_t c, const fb_t a) {
 	dv_null(v);
 	dv_null(g1);
 	dv_null(g2);
+
+	if (fb_is_zero(a)) {
+		THROW(ERR_NO_VALID);
+	}
 
 	TRY {
 		dv_new(u);
@@ -214,6 +222,10 @@ void fb_inv_exgcd(fb_t c, const fb_t a) {
 	fb_null(_v);
 	fb_null(_g1);
 	fb_null(_g2);
+
+	if (fb_is_zero(a)) {
+		THROW(ERR_NO_VALID);
+	}
 
 	TRY {
 		dv_new(_u);
@@ -327,6 +339,10 @@ void fb_inv_almos(fb_t c, const fb_t a) {
 	dv_null(_u);
 	dv_null(_v);
 
+	if (fb_is_zero(a)) {
+		THROW(ERR_NO_VALID);
+	}
+
 	TRY {
 		dv_new(_b);
 		dv_new(_d);
@@ -419,6 +435,10 @@ void fb_inv_itoht(fb_t c, const fb_t a) {
 		fb_null(table[i]);
 	}
 
+	if (fb_is_zero(a)) {
+		THROW(ERR_NO_VALID);
+	}
+
 	TRY {
 		for (i = 0; i <= len; i++) {
 			fb_new(table[i]);
@@ -477,6 +497,10 @@ void fb_inv_bruch(fb_t c, const fb_t a) {
 	fb_null(_s);
 	fb_null(_u);
 	fb_null(_v);
+
+	if (fb_is_zero(a)) {
+		THROW(ERR_NO_VALID);
+	}
 
 	TRY {
 		fb_new(_r);
@@ -545,6 +569,10 @@ void fb_inv_ctaia(fb_t c, const fb_t a) {
 	fb_null(u);
 	fb_null(v);
 
+	if (fb_is_zero(a)) {
+		THROW(ERR_NO_VALID);
+	}
+
 	TRY {
 		fb_new(r);
 		fb_new(s);
@@ -600,6 +628,10 @@ void fb_inv_ctaia(fb_t c, const fb_t a) {
 #if FB_INV == LOWER || !defined(STRIP)
 
 void fb_inv_lower(fb_t c, const fb_t a) {
+	if (fb_is_zero(a)) {
+		THROW(ERR_NO_VALID);
+	}
+
 	fb_invn_low(c, a);
 }
 #endif

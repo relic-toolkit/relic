@@ -763,7 +763,9 @@ static int inversion(void) {
 		fp_new(d[1]);
 
 		TEST_BEGIN("inversion is correct") {
-			fp_rand(a);
+			do {
+				fp_rand(a);
+			} while (fp_is_zero(a));
 			fp_inv(b, a);
 			fp_mul(c, a, b);
 			fp_set_dig(b, 1);
@@ -772,8 +774,9 @@ static int inversion(void) {
 
 #if FP_INV == BASIC || !defined(STRIP)
 		TEST_BEGIN("basic inversion is correct") {
-			fp_rand(a);
-			fp_inv(b, a);
+			do {
+				fp_rand(a);
+			} while (fp_is_zero(a));			fp_inv(b, a);
 			fp_inv_basic(c, a);
 			TEST_ASSERT(fp_cmp(c, b) == CMP_EQ, end);
 		} TEST_END;
@@ -781,7 +784,9 @@ static int inversion(void) {
 
 #if FP_INV == BINAR || !defined(STRIP)
 		TEST_BEGIN("binary inversion is correct") {
-			fp_rand(a);
+			do {
+				fp_rand(a);
+			} while (fp_is_zero(a));
 			fp_inv(b, a);
 			fp_inv_binar(c, a);
 			TEST_ASSERT(fp_cmp(c, b) == CMP_EQ, end);
@@ -790,7 +795,9 @@ static int inversion(void) {
 
 #if FP_INV == MONTY || !defined(STRIP)
 		TEST_BEGIN("montgomery inversion is correct") {
-			fp_rand(a);
+			do {
+				fp_rand(a);
+			} while (fp_is_zero(a));
 			fp_inv(b, a);
 			fp_inv_monty(c, a);
 			TEST_ASSERT(fp_cmp(c, b) == CMP_EQ, end);
@@ -799,7 +806,9 @@ static int inversion(void) {
 
 #if FP_INV == EXGCD || !defined(STRIP)
 		TEST_BEGIN("euclidean inversion is correct") {
-			fp_rand(a);
+			do {
+				fp_rand(a);
+			} while (fp_is_zero(a));
 			fp_inv(b, a);
 			fp_inv_exgcd(c, a);
 			TEST_ASSERT(fp_cmp(c, b) == CMP_EQ, end);
@@ -808,7 +817,9 @@ static int inversion(void) {
 
 #if FP_INV == LOWER || !defined(STRIP)
 		TEST_BEGIN("lower inversion is correct") {
-			fp_rand(a);
+			do {
+				fp_rand(a);
+			} while (fp_is_zero(a));
 			fp_inv(b, a);
 			fp_inv_lower(c, a);
 			TEST_ASSERT(fp_cmp(c, b) == CMP_EQ, end);
@@ -816,8 +827,10 @@ static int inversion(void) {
 #endif
 
 		TEST_BEGIN("simultaneous inversion is correct") {
-			fp_rand(a);
-			fp_rand(b);
+			do {
+				fp_rand(a);
+				fp_rand(b);
+			} while (fp_is_zero(a) || fp_is_zero(b));
 			fp_copy(d[0], a);
 			fp_copy(d[1], b);
 			fp_inv(a, a);

@@ -599,7 +599,9 @@ static int inversion2(void) {
 		fp2_new(d[1]);
 
 		TEST_BEGIN("inversion is correct") {
-			fp2_rand(a);
+			do {
+				fp2_rand(a);
+			} while (fp2_is_zero(a));
 			fp2_inv(b, a);
 			fp2_mul(c, a, b);
 			fp2_zero(b);
@@ -608,7 +610,9 @@ static int inversion2(void) {
 		} TEST_END;
 
 		TEST_BEGIN("inversion of a unitary element is correct") {
-			fp2_rand(a);
+			do {
+				fp2_rand(a);
+			} while (fp2_is_zero(a));
 			fp2_conv_uni(a, a);
 			fp2_inv(b, a);
 			fp2_inv_uni(c, a);
@@ -616,8 +620,10 @@ static int inversion2(void) {
 		} TEST_END;
 
 		TEST_BEGIN("simultaneous inversion is correct") {
-			fp2_rand(a);
-			fp2_rand(b);
+			do {
+				fp2_rand(a);
+				fp2_rand(b);
+			} while (fp2_is_zero(a) || fp2_is_zero(b));
 			fp2_copy(d[0], a);
 			fp2_copy(d[1], b);
 			fp2_inv(a, a);
@@ -1354,7 +1360,9 @@ static int inversion3(void) {
 		fp3_new(d[1]);
 
 		TEST_BEGIN("inversion is correct") {
-			fp3_rand(a);
+			do {
+				fp3_rand(a);
+			} while (fp3_is_zero(a));
 			fp3_inv(b, a);
 			fp3_mul(c, a, b);
 			fp3_zero(b);
@@ -1363,8 +1371,10 @@ static int inversion3(void) {
 		} TEST_END;
 
 		TEST_BEGIN("simultaneous inversion is correct") {
-			fp3_rand(a);
-			fp3_rand(b);
+			do {
+				fp3_rand(a);
+				fp3_rand(b);
+			} while (fp2_is_zero(a) || fp2_is_zero(b));
 			fp3_copy(d[0], a);
 			fp3_copy(d[1], b);
 			fp3_inv(a, a);
@@ -1950,7 +1960,9 @@ static int inversion6(void) {
 		fp6_new(c);
 
 		TEST_BEGIN("inversion is correct") {
-			fp6_rand(a);
+			do {
+				fp6_rand(a);
+			} while (fp6_is_zero(a));
 			fp6_inv(b, a);
 			fp6_mul(c, a, b);
 			fp6_zero(b);
@@ -2673,7 +2685,9 @@ static int inversion12(void) {
 		fp12_new(c);
 
 		TEST_BEGIN("inversion is correct") {
-			fp12_rand(a);
+			do {
+				fp12_rand(a);
+			} while (fp12_is_zero(a));
 			fp12_inv(b, a);
 			fp12_mul(c, a, b);
 			fp12_zero(b);
@@ -2682,7 +2696,9 @@ static int inversion12(void) {
 		} TEST_END;
 
 		TEST_BEGIN("inversion of a unitary element is correct") {
-			fp12_rand(a);
+			do {
+				fp12_rand(a);
+			} while (fp12_is_zero(a));
 			fp12_conv_uni(a, a);
 			fp12_inv(b, a);
 			fp12_inv_uni(c, a);
@@ -3342,7 +3358,9 @@ static int inversion18(void) {
 		fp18_new(c);
 
 		TEST_BEGIN("inversion is correct") {
-			fp18_rand(a);
+			do {
+				fp18_rand(a);
+			} while (fp18_is_zero(a));
 			fp18_inv(b, a);
 			fp18_mul(c, a, b);
 			fp18_zero(b);
@@ -3351,7 +3369,9 @@ static int inversion18(void) {
 		} TEST_END;
 
 		TEST_BEGIN("inversion of a unitary element is correct") {
-			fp18_rand(a);
+			do {
+				fp18_rand(a);
+			} while (fp18_is_zero(a));
 			fp18_conv_uni(a, a);
 			fp18_inv(b, a);
 			fp18_inv_uni(c, a);

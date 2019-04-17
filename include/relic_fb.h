@@ -831,6 +831,7 @@ dig_t fb_trc_quick(const fb_t a);
  *
  * @param[out] c			- the result.
  * @param[in] a				- the binary field element to invert.
+ * @throw ERR_NO_VALID		- if the field element is not invertible.
  */
 void fb_inv_basic(fb_t c, const fb_t a);
 
@@ -839,6 +840,7 @@ void fb_inv_basic(fb_t c, const fb_t a);
  *
  * @param[out] c			- the result.
  * @param[in] a				- the binary field element to invert.
+ * @throw ERR_NO_VALID		- if the field element is not invertible.
  */
 void fb_inv_binar(fb_t c, const fb_t a);
 
@@ -847,6 +849,7 @@ void fb_inv_binar(fb_t c, const fb_t a);
  *
  * @param[out] c			- the result.
  * @param[in] a				- the binary field element to invert.
+ * @throw ERR_NO_VALID		- if the field element is not invertible.
  */
 void fb_inv_exgcd(fb_t c, const fb_t a);
 
@@ -855,6 +858,7 @@ void fb_inv_exgcd(fb_t c, const fb_t a);
  *
  * @param[out] c			- the result.
  * @param[in] a				- the binary field element to invert.
+ * @throw ERR_NO_VALID		- if the field element is not invertible.
  */
 void fb_inv_almos(fb_t c, const fb_t a);
 
@@ -863,6 +867,7 @@ void fb_inv_almos(fb_t c, const fb_t a);
  *
  * @param[out] c			- the result.
  * @param[in] a				- the binary field element to invert.
+ * @throw ERR_NO_VALID		- if the field element is not invertible.
  */
 void fb_inv_itoht(fb_t c, const fb_t a);
 
@@ -872,6 +877,7 @@ void fb_inv_itoht(fb_t c, const fb_t a);
  *
  * @param[out] c			- the result.
  * @param[in] a				- the binary field element to invert.
+ * @throw ERR_NO_VALID		- if the field element is not invertible.
  */
 void fb_inv_bruch(fb_t c, const fb_t a);
 
@@ -881,6 +887,7 @@ void fb_inv_bruch(fb_t c, const fb_t a);
  *
  * @param[out] c			- the result.
  * @param[in] a				- the binary field element to invert.
+ * @throw ERR_NO_VALID		- if the field element is not invertible.
  */
 void fb_inv_ctaia(fb_t c, const fb_t a);
 
@@ -889,6 +896,7 @@ void fb_inv_ctaia(fb_t c, const fb_t a);
  *
  * @param[out] c			- the result.
  * @param[in] a				- the binary field element to invert.
+ * @throw ERR_NO_VALID		- if the field element is not invertible.
  */
 void fb_inv_lower(fb_t c, const fb_t a);
 

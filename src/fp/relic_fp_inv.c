@@ -44,6 +44,10 @@ void fp_inv_basic(fp_t c, const fp_t a) {
 
 	bn_null(e);
 
+	if (fp_is_zero(a)) {
+		THROW(ERR_NO_VALID);
+	}
+
 	TRY {
 		bn_new(e);
 
@@ -73,6 +77,10 @@ void fp_inv_binar(fp_t c, const fp_t a) {
 	bn_null(g1);
 	bn_null(g2);
 	bn_null(p);
+
+	if (fp_is_zero(a)) {
+		THROW(ERR_NO_VALID);
+	}
 
 	TRY {
 		bn_new(u);
@@ -189,6 +197,10 @@ void fp_inv_monty(fp_t c, const fp_t a) {
 	bn_null(v);
 	bn_null(x1);
 	bn_null(x2);
+
+	if (fp_is_zero(a)) {
+		THROW(ERR_NO_VALID);
+	}
 
 	TRY {
 		bn_new(_a);
@@ -326,6 +338,10 @@ void fp_inv_exgcd(fp_t c, const fp_t a) {
 	bn_null(q);
 	bn_null(r);
 
+	if (fp_is_zero(a)) {
+		THROW(ERR_NO_VALID);
+	}
+
 	TRY {
 		bn_new(u);
 		bn_new(v);
@@ -395,10 +411,10 @@ void fp_inv_sim(fp_t *c, const fp_t *a, int n) {
 	int i;
 	fp_t u, t[n];
 
+	fp_null(u);
 	for (i = 0; i < n; i++) {
 		fp_null(t[i]);
 	}
-	fp_null(u);
 
 	TRY {
 		for (i = 0; i < n; i++) {
