@@ -144,11 +144,11 @@ include(cmake/rand.cmake)
 include(cmake/with.cmake)
 
 # Number of tests and benchmarks
-set(BENCH 100 CACHE INTEGER "Number of times each benchmark is ran.")
-set(TESTS 100 CACHE INTEGER "Number of times each test is ran.")
+set(BENCH "100" CACHE STRING "Number of times each benchmark is ran.")
+set(TESTS "100" CACHE STRING "Number of times each test is ran.")
 
 # Number of cores.
-set(CORES 1 CACHE INTEGER "Number of available processor cores.")
+set(CORES "1" CACHE STRING "Number of available processor cores.")
 
 # Choose the arithmetic backend.
 set(ARITH "easy" CACHE STRING "Arithmetic backend")
