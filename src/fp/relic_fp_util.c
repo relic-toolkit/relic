@@ -37,9 +37,7 @@
 /*============================================================================*/
 
 void fp_copy(fp_t c, const fp_t a) {
-	for (int i = 0; i < FP_DIGS; i++) {
-		c[i] = a[i];
-	}
+	dv_copy(c, a, FP_DIGS);
 }
 
 void fp_zero(fp_t a) {

@@ -65,11 +65,7 @@ void dv_zero(dig_t *a, int digits) {
 }
 
 void dv_copy(dig_t *c, const dig_t *a, int digits) {
-	const dig_t *tmp = a;
-
-	for (int i = 0; i < digits; i++, c++, tmp++) {
-		*c = *tmp;
-	}
+	memcpy(c, a, digits * sizeof(dig_t));
 }
 
 void dv_copy_cond(dig_t *c, const dig_t *a, int digits, dig_t cond) {

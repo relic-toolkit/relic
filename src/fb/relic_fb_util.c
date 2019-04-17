@@ -75,9 +75,7 @@ static int log_radix(int radix) {
 /*============================================================================*/
 
 void fb_copy(fb_t c, const fb_t a) {
-	for (int i = 0; i < FB_DIGS; i++) {
-		c[i] = a[i];
-	}
+	dv_copy(c, a, FB_DIGS);
 }
 
 void fb_zero(fb_t a) {

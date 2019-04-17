@@ -38,16 +38,12 @@
 /*============================================================================*/
 
 void bn_copy(bn_t c, const bn_t a) {
-	int i;
-
-	if (c->dp == a->dp)
+	if (c->dp == a->dp) {
 		return;
+	}
 
 	bn_grow(c, a->used);
-
-	for (i = 0; i < a->used; i++) {
-		c->dp[i] = a->dp[i];
-	}
+	dv_copy(c->dp, a->dp, a->used);
 
 	c->used = a->used;
 	c->sign = a->sign;
