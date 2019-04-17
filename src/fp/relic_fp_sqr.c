@@ -197,7 +197,7 @@ void fp_sqr_comba(fp_t c, const fp_t a) {
 
 		fp_rdc(c, t);
 	} CATCH_ANY {
-
+		THROW(ERR_CAUGHT);
 	}
 	FINALLY {
 		fp_free(t);
