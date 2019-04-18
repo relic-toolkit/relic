@@ -131,6 +131,11 @@
 #define RLC_UPP(C)			((C) - 0x20 * (((C) >= 'a') && ((C) <= 'z')))
 
 /**
+  *  Indirection to help some compilers expand symbols.
+  */
+#define RLC_ECHO(A) 			A
+
+/**
  * Concatenates two tokens.
  */
 /** @{ */
@@ -144,7 +149,7 @@
  */
 /** @{ */
 #define RLC_OPT(...)			_OPT(__VA_ARGS__, _imp, _basic, _error)
-#define _OPT(...)				__OPT(__VA_ARGS__)
+#define _OPT(...)				RLC_ECHO(__OPT(__VA_ARGS__))
 #define __OPT(_1, _2, N, ...)	N
 /** @} */
 
