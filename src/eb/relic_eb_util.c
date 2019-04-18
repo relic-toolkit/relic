@@ -516,28 +516,15 @@ void eb_print(const eb_t p) {
 }
 
 int eb_size_bin(const eb_t a, int pack) {
-	eb_t t;
 	int size = 0;
-
-	eb_null(t);
 
 	if (eb_is_infty(a)) {
 		return 1;
 	}
 
-	TRY {
-		eb_new(t);
-
-		eb_norm(t, a);
-
-		size = 1 + RLC_FB_BYTES;
-		if (!pack) {
-			size += RLC_FB_BYTES;
-		}
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
-		eb_free(t);
+	size = 1 + RLC_FB_BYTES;
+	if (!pack) {
+		size += RLC_FB_BYTES;
 	}
 
 	return size;

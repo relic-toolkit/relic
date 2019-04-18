@@ -24,120 +24,93 @@
 /**
  * @file
  *
- * Implementation of point normalization on binary elliptic curves.
+ * Implementation of point normalization on Edwards elliptic curves.
  *
- * @ingroup eb
+ * @ingroup ep
  */
 
-#include "string.h"
-
 #include "relic_core.h"
-#include "relic_eb.h"
 
 /*============================================================================*/
 /* Private definitions                                                        */
 /*============================================================================*/
 
-#if EB_ADD == PROJC || !defined(STRIP)
+#if ED_ADD == PROJC || ED_ADD == EXTND || !defined(STRIP)
 
 /**
  * Normalizes a point represented in projective coordinates.
  *
- * @param[out] r		- the result.
- * @param[in] p			- the point to normalize.
- * @param[in] inverted	- if the Z coordinate is already inverted.
+ * @param r			- the result.
+ * @param p			- the point to normalize.
  */
-static void eb_norm_imp(eb_t r, const eb_t p, int inverted) {
+static void ed_norm_imp(ed_t r, const ed_t p, int inverted) {
 	if (!p->norm) {
 		if (inverted) {
-			fb_copy(r->z, p->z);
+			fp_copy(r->z, p->z);
 		} else {
-			fb_inv(r->z, p->z);
+			fp_inv(r->z, p->z);
 		}
-		fb_mul(r->x, p->x, r->z);
-		fb_sqr(r->z, r->z);
-		fb_mul(r->y, p->y, r->z);
-		fb_set_dig(r->z, 1);
+		fp_mul(r->x, p->x, r->z);
+		fp_mul(r->y, p->y, r->z);
+#if ED_ADD == EXTND
+		fp_mul(r->t, p->t, r->z);
+#endif
+		fp_set_dig(r->z, 1);
+
+		r->norm = 1;
 	}
-
-	r->norm = 1;
 }
 
-#endif /* EB_ADD == PROJC */
-
-/**
- * Normalizes a point represented in lambda-coordinates.
- *
- * @param[out] r		- the result.
- * @param[in] p			- the point to normalize.
- */
-static void eb_norm_hlv(eb_t r, const eb_t p) {
-	fb_add(r->y, p->x, p->y);
-	fb_mul(r->y, r->y, p->x);
-	fb_copy(r->x, p->x);
-	r->norm = 1;
-}
+#endif /* EP_ADD == PROJC */
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void eb_norm(eb_t r, const eb_t p) {
-	if (eb_is_infty(p)) {
-		eb_set_infty(r);
+void ed_norm(ed_t r, const ed_t p) {
+	if (ed_is_infty(p)) {
+		ed_set_infty(r);
 		return;
 	}
 
-	if (p->norm == 1) {
+	if (p->norm) {
 		/* If the point is represented in affine coordinates, just copy it. */
-		eb_copy(r, p);
+		ed_copy(r, p);
 		return;
 	}
-
-	if (p->norm == 2) {
-		eb_norm_hlv(r, p);
-		return;
-	}
-
-#if EB_ADD == PROJC || !defined(STRIP)
-	eb_norm_imp(r, p, 0);
-#endif /* EB_ADD == PROJC */
+#if ED_ADD == PROJC || ED_ADD == EXTND || !defined(STRIP)
+	ed_norm_imp(r, p, 0);
+#endif /* EP_ADD != BASIC*/
 }
 
-void eb_norm_sim(eb_t *r, const eb_t *t, int n) {
-	fb_t a[n];
-
-	if (n == 1) {
-		eb_norm(r[0], t[0]);
-		return;
-	}
+void ed_norm_sim(ed_t *r, const ed_t *t, int n) {
+	fp_t a[n];
 
 	for (int i = 0; i < n; i++) {
-		fb_null(a[i]);
+		fp_null(a[i]);
 	}
 
 	TRY {
 		for (int i = 0; i < n; i++) {
-			fb_new(a[i]);
-			if (!eb_is_infty(t[i])) {
-				fb_copy(a[i], t[i]->z);
-			} else {
-				fb_set_dig(a[i], 1);
+			fp_new(a[i]);
+			fp_copy(a[i], t[i]->z);
+		}
+
+		fp_inv_sim(a, (const fp_t *)a, n);
+
+		for (int i = 0; i < n; i++) {
+			fp_copy(r[i]->x, t[i]->x);
+			fp_copy(r[i]->y, t[i]->y);
+#if ED_ADD == EXTND
+			fp_copy(r[i]->t, t[i]->t);
+#endif
+			if (!ed_is_infty(t[i])) {
+				fp_copy(r[i]->z, a[i]);
 			}
 		}
 
-		fb_inv_sim(a, (const fb_t *)a, n);
-
 		for (int i = 0; i < n; i++) {
-			fb_copy(r[i]->x, t[i]->x);
-			fb_copy(r[i]->y, t[i]->y);
-			if (!eb_is_infty(t[i])) {
-				fb_copy(r[i]->z, a[i]);
-			}
-		}
-
-		for (int i = 0; i < n; i++) {
-			eb_norm_imp(r[i], r[i], 1);
+			ed_norm_imp(r[i], r[i], 1);
 		}
 	}
 	CATCH_ANY {
@@ -145,7 +118,7 @@ void eb_norm_sim(eb_t *r, const eb_t *t, int n) {
 	}
 	FINALLY {
 		for (int i = 0; i < n; i++) {
-			fb_free(a[i]);
+			fp_free(a[i]);
 		}
 	}
 }

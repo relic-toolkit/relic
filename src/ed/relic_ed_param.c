@@ -24,7 +24,7 @@
 /**
  * @file
  *
- * Implementation of the prime elliptic curve utilities.
+ * Implementation of the Edwards elliptic curve parameters.
  *
  * @version $Id$
  * @ingroup ed
@@ -39,8 +39,8 @@
 /** @{ */
 #define CURVE_ED25519_A	"7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEC"
 #define CURVE_ED25519_D "52036CEE2B6FFE738CC740797779E89800700A4D4141D8AB75EB4DCA135978A3"
-#define CURVE_ED25519_Y	"6666666666666666666666666666666666666666666666666666666666666658"
 #define CURVE_ED25519_X "216936D3CD6E53FEC0A4E231FDD6DC5C692CC7609525A7B2C9562D608F25D51A"
+#define CURVE_ED25519_Y	"6666666666666666666666666666666666666666666666666666666666666658"
 #define CURVE_ED25519_R "1000000000000000000000000000000014DEF9DEA2F79CD65812631A5CF5D3ED"
 #define CURVE_ED25519_H "0000000000000000000000000000000000000000000000000000000000000008"
 /** @} */
@@ -58,10 +58,10 @@
 	fp_read_str(core_get()->ed_a, str, strlen(str), 16);					\
 	RLC_GET(str, CURVE##_D, sizeof(CURVE##_D));								\
 	fp_read_str(core_get()->ed_d, str, strlen(str), 16);					\
-	RLC_GET(str, CURVE##_Y, sizeof(CURVE##_Y));								\
-	fp_read_str(g->y, str, strlen(str), 16);								\
 	RLC_GET(str, CURVE##_X, sizeof(CURVE##_X));								\
 	fp_read_str(g->x, str, strlen(str), 16);								\
+	RLC_GET(str, CURVE##_Y, sizeof(CURVE##_Y));								\
+	fp_read_str(g->y, str, strlen(str), 16);								\
 	fp_set_dig(g->z, 1);													\
 	RLC_GET(str, CURVE##_R, sizeof(CURVE##_R));								\
 	bn_read_str(r, str, strlen(str), 16);									\
@@ -98,10 +98,11 @@ void ed_param_set(int param) {
 				THROW(ERR_NO_VALID);
 				break;
 		}
+		fp_set_dig(g->z, 1);
+		g->norm = 1;
 
 		bn_copy(&core_get()->ed_h, h);
 		bn_copy(&core_get()->ed_r, r);
-
 #if ED_ADD == PROJC
 		ed_copy(&core_get()->ed_g, g);
 #elif ED_ADD == EXTND

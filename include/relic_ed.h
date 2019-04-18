@@ -189,6 +189,17 @@ typedef ed_st *ed_t;
 
 #endif
 
+/**
+ * Negates an Edwards elliptic curve point. Computes R = -P.
+ *
+ * @param[out] R			- the result.
+ * @param[in] P				- the point to negate.
+ */
+#if ED_ADD == BASIC
+#define ed_neg(R, P)		ed_neg_basic(R, P)
+#elif ED_ADD == PROJC || ED_ADD == EXTND
+#define ed_neg(R, P)		ed_neg_projc(R, P)
+#endif
 
 /**
  * Configures a twisted Edwards prime curve by its parameter identifier.

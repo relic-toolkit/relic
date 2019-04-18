@@ -77,23 +77,19 @@ int ep_cmp(const ep_t p, const ep_t q) {
             fp_mul(r->y, p->y, s->z);
             fp_mul(s->y, q->y, r->z);
         } else {
+			ep_copy(r, p);
+            ep_copy(s, q);
             if (!p->norm) {
                 ep_norm(r, p);
-            } else {
-                ep_copy(r, p);
             }
-
             if (!q->norm) {
                 ep_norm(s, q);
-            } else {
-                ep_copy(s, q);
             }
         }
 
         if (fp_cmp(r->x, s->x) != RLC_EQ) {
             result = RLC_NE;
         }
-
         if (fp_cmp(r->y, s->y) != RLC_EQ) {
             result = RLC_NE;
         }
@@ -200,7 +196,6 @@ int ep_is_valid(const ep_t p) {
 		ep_new(t);
 
 		ep_norm(t, p);
-
 		ep_rhs(t->x, t);
 		fp_sqr(t->y, t->y);
 		r = (fp_cmp(t->x, t->y) == RLC_EQ) || ep_is_infty(p);
@@ -236,28 +231,15 @@ void ep_print(const ep_t p) {
 }
 
 int ep_size_bin(const ep_t a, int pack) {
-	ep_t t;
 	int size = 0;
-
-	ep_null(t);
 
 	if (ep_is_infty(a)) {
 		return 1;
 	}
 
-	TRY {
-		ep_new(t);
-
-		ep_norm(t, a);
-
-		size = 1 + RLC_FP_BYTES;
-		if (!pack) {
-			size += RLC_FP_BYTES;
-		}
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
-		ep_free(t);
+	size = 1 + RLC_FP_BYTES;
+	if (!pack) {
+		size += RLC_FP_BYTES;
 	}
 
 	return size;

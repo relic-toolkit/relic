@@ -42,22 +42,38 @@ void ed_curve_init(void) {
 	ed_set_infty(&ctx->ed_g);
 	bn_init(&ctx->ed_r, RLC_FP_DIGS);
 	bn_init(&ctx->ed_h, RLC_FP_DIGS);
-#if defined(ED_ENDOM) && (ED_MUL == LWNAF || ED_FIX == COMBS || ED_FIX == LWNAF || !defined(STRIP))
-	for (int i = 0; i < 3; i++) {
-		bn_init(&(ctx->ed_v1[i]), RLC_FP_DIGS);
-		bn_init(&(ctx->ed_v2[i]), RLC_FP_DIGS);
-	}
-#endif
 }
 
 void ed_curve_clean(void) {
 	ctx_t *ctx = core_get();
 	bn_clean(&ctx->ed_r);
 	bn_clean(&ctx->ed_h);
-#if defined(ED_ENDOM) && (ED_MUL == LWNAF || ED_FIX == LWNAF || !defined(STRIP))
-	for (int i = 0; i < 3; i++) {
-		bn_clean(&(ctx->ed_v1[i]));
-		bn_clean(&(ctx->ed_v2[i]));
-	}
+}
+
+void ed_curve_get_gen(ed_t g) {
+	ed_copy(g, &core_get()->ed_g);
+}
+
+void ed_curve_get_ord(bn_t n) {
+	bn_copy(n, &core_get()->ed_r);
+}
+
+void ed_curve_get_cof(bn_t h) {
+	bn_copy(h, &core_get()->ed_h);
+}
+
+const ed_t *ed_curve_get_tab(void) {
+#if defined(ED_PRECO)
+
+	/* Return a meaningful pointer. */
+#if ALLOC == AUTO
+	return (const ed_t *)*core_get()->ed_ptr;
+#else
+	return (const ed_t *)core_get()->ed_ptr;
+#endif
+
+#else
+	/* Return a null pointer. */
+	return NULL;
 #endif
 }

@@ -24,7 +24,7 @@
 /**
  * @file
  *
- * Implementation of point compression on Edwards elliptic curves.
+ * Implementation of the point negation on Edwards elliptic curves.
  *
  * @ingroup ep
  */
@@ -35,53 +35,38 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void ed_pck(ed_t r, const ed_t p) {
+#if ED_ADD == BASIC || !defined(STRIP)
+
+void ed_neg_basic(ed_t r, const ed_t p) {
+	if (ed_is_infty(p)) {
+		ed_set_infty(r);
+		return;
+	}
+
 	fp_copy(r->y, p->y);
-	int b = fp_get_bit(p->x, 0);
-	fp_zero(r->x);
-	fp_set_bit(r->x, 0, b);
-	fp_set_dig(r->z, 1);
+	fp_neg(r->x, p->x);
+
 	r->norm = 1;
 }
 
-int ed_upk(ed_t r, const ed_t p) {
-	int result = 1;
-	fp_t t, u;
-
-	fp_null(t);
-	fp_null(u);
-
-	TRY {
-		fp_new(t);
-		fp_new(u);
-
-		fp_copy(r->y, p->y);
-
-		/* x = +/- sqrt((y^2 - 1) / (dy^2 - a)). */
-		fp_sqr(t, p->y);
-		fp_sub_dig(u, t, 1);
-		fp_mul(t, t, core_get()->ed_d);
-		fp_sub(t, t, core_get()->ed_a);
-		fp_inv(t, t);
-		fp_mul(u, u, t);
-		fp_srt(u, u);
-
-		if (fp_get_bit(u, 0) != fp_get_bit(p->x, 0)) {
-			fp_neg(u, u);
-		}
-		fp_copy(r->x, u);
-
-#if ED_ADD == EXTND
-		fp_mul(r->t, r->x, r->y);
 #endif
-		fp_set_dig(r->z, 1);
-		r->norm = 1;
+
+#if ED_ADD == PROJC || ED_ADD == EXTND || !defined(STRIP)
+
+void ed_neg_projc(ed_t r, const ed_t p) {
+	if (ed_is_infty(p)) {
+		ed_set_infty(r);
+		return;
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	}
-	FINALLY {
-		fp_free(t);
-	}
-	return result;
+
+	fp_neg(r->x, p->x);
+	fp_copy(r->y, p->y);
+	fp_copy(r->z, p->z);
+#if ED_ADD == EXTND
+	fp_neg(r->t, p->t);
+#endif
+
+	r->norm = p->norm;
 }
+
+#endif

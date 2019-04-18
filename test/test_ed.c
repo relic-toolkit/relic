@@ -61,6 +61,113 @@ static int memory(void) {
 	return code;
 }
 
+int util(void) {
+	int l, code = RLC_ERR;
+	ed_t a, b, c;
+	uint8_t bin[2 * RLC_FP_BYTES + 1];
+
+	ed_null(a);
+	ed_null(b);
+	ed_null(c);
+
+	TRY {
+		ed_new(a);
+		ed_new(b);
+		ed_new(c);
+
+		TEST_BEGIN("copy and comparison are consistent") {
+			ed_rand(a);
+			ed_rand(b);
+			ed_rand(c);
+			/* Compare points in affine coordinates. */
+			if (ed_cmp(a, c) != RLC_EQ) {
+				ed_copy(c, a);
+				TEST_ASSERT(ed_cmp(c, a) == RLC_EQ, end);
+			}
+			if (ed_cmp(b, c) != RLC_EQ) {
+				ed_copy(c, b);
+				TEST_ASSERT(ed_cmp(b, c) == RLC_EQ, end);
+			}
+			/* Compare with one point in projective. */
+			ed_dbl(c, a);
+			ed_norm(c, c);
+			ed_dbl(a, a);
+			TEST_ASSERT(ed_cmp(c, a) == RLC_EQ, end);
+			TEST_ASSERT(ed_cmp(a, c) == RLC_EQ, end);
+			/* Compare with two points in projective. */
+			ed_dbl(c, c);
+			ed_dbl(a, a);
+			TEST_ASSERT(ed_cmp(c, a) == RLC_EQ, end);
+			TEST_ASSERT(ed_cmp(a, c) == RLC_EQ, end);
+		}
+		TEST_END;
+
+		TEST_BEGIN("negation and comparison are consistent") {
+			ed_rand(a);
+			ed_neg(b, a);
+			TEST_ASSERT(ed_cmp(a, b) != RLC_EQ, end);
+		}
+		TEST_END;
+
+		TEST_BEGIN("assignment to random and comparison are consistent") {
+			ed_rand(a);
+			ed_set_infty(c);
+			TEST_ASSERT(ed_cmp(a, c) != RLC_EQ, end);
+			TEST_ASSERT(ed_cmp(c, a) != RLC_EQ, end);
+		}
+		TEST_END;
+
+		TEST_BEGIN("assignment to infinity and infinity test are consistent") {
+			ed_set_infty(a);
+			TEST_ASSERT(ed_is_infty(a), end);
+		}
+		TEST_END;
+
+		TEST_BEGIN("validity test is correct") {
+			ed_set_infty(a);
+			TEST_ASSERT(ed_is_valid(a), end);
+			ed_rand(a);
+			TEST_ASSERT(ed_is_valid(a), end);
+			fp_rand(a->x);
+			TEST_ASSERT(!ed_is_valid(a), end);
+		}
+		TEST_END;
+
+		TEST_BEGIN("reading and writing a point are consistent") {
+			for (int j = 0; j < 2; j++) {
+				ed_set_infty(a);
+				l = ed_size_bin(a, j);
+				ed_write_bin(bin, l, a, j);
+				ed_read_bin(b, bin, l);
+				TEST_ASSERT(ed_cmp(a, b) == RLC_EQ, end);
+				ed_rand(a);
+				l = ed_size_bin(a, j);
+				ed_write_bin(bin, l, a, j);
+				ed_read_bin(b, bin, l);
+				TEST_ASSERT(ed_cmp(a, b) == RLC_EQ, end);
+				ed_rand(a);
+				ed_dbl(a, a);
+				l = ed_size_bin(a, j);
+				ed_norm(a, a);
+				ed_write_bin(bin, l, a, j);
+				ed_read_bin(b, bin, l);
+				TEST_ASSERT(ed_cmp(a, b) == RLC_EQ, end);
+			}
+		}
+		TEST_END;
+	}
+	CATCH_ANY {
+		util_print("FATAL ERROR!\n");
+		ERROR(end);
+	}
+	code = RLC_OK;
+  end:
+	ed_free(a);
+	ed_free(b);
+	ed_free(c);
+	return code;
+}
+
 int addition(void) {
 	int code = RLC_ERR;
 	ed_t a, b, c, d, e;
@@ -77,22 +184,6 @@ int addition(void) {
 		ed_new(c);
 		ed_new(d);
 		ed_new(e);
-
-		TEST_BEGIN("base point is valid point on the curve") {
-			ed_curve_get_gen(a);
-			TEST_ASSERT(ed_is_valid(a) != 0, end);
-		} TEST_END;
-
-		TEST_BEGIN("identity element is a valid point on the curve") {
-			ed_set_infty(a);
-			TEST_ASSERT(ed_is_valid(a) != 0, end);
-		} TEST_END;
-
-		TEST_BEGIN("random generated point is on curve") {
-			ed_null(a);
-			ed_rand(a);
-			TEST_ASSERT(ed_is_valid(a) != 0, end);
-		} TEST_END;
 
 		TEST_BEGIN("point addition is commutative") {
 			ed_rand(a);
@@ -154,84 +245,6 @@ int addition(void) {
 	return code;
 }
 
-int util(void) {
-	int l, code = RLC_ERR;
-	ed_t a, b, c;
-	uint8_t bin[2 * RLC_FP_BYTES + 1];
-
-	ed_null(a);
-	ed_null(b);
-	ed_null(c);
-
-	TRY {
-		ed_new(a);
-		ed_new(b);
-		ed_new(c);
-
-		TEST_BEGIN("negation and comparison are consistent") {
-			ed_rand(a);
-			ed_neg(b, a);
-			TEST_ASSERT(ed_cmp(a, b) != RLC_EQ, end);
-		}
-		TEST_END;
-
-		TEST_BEGIN("assignment to random and comparison are consistent") {
-			ed_rand(a);
-			ed_set_infty(c);
-			TEST_ASSERT(ed_cmp(a, c) != RLC_EQ, end);
-			TEST_ASSERT(ed_cmp(c, a) != RLC_EQ, end);
-		}
-		TEST_END;
-
-		TEST_BEGIN("assignment to infinity and infinity test are consistent") {
-			ed_set_infty(a);
-			TEST_ASSERT(ed_is_infty(a), end);
-		}
-		TEST_END;
-
-		TEST_BEGIN("validity test is correct") {
-			ed_rand(a);
-			TEST_ASSERT(ed_is_valid(a), end);
-			fp_rand(a->x);
-			TEST_ASSERT(!ed_is_valid(a), end);
-		}
-		TEST_END;
-
-		TEST_BEGIN("reading and writing a point are consistent") {
-			for (int j = 0; j < 2; j++) {
-				ed_set_infty(a);
-				l = ed_size_bin(a, j);
-				ed_write_bin(bin, l, a, j);
-				ed_read_bin(b, bin, l);
-				TEST_ASSERT(ed_cmp(a, b) == RLC_EQ, end);
-				ed_rand(a);
-				l = ed_size_bin(a, j);
-				ed_write_bin(bin, l, a, j);
-				ed_read_bin(b, bin, l);
-				TEST_ASSERT(ed_cmp(a, b) == RLC_EQ, end);
-				ed_rand(a);
-				ed_dbl(a, a);
-				l = ed_size_bin(a, j);
-				ed_norm(a, a);
-				ed_write_bin(bin, l, a, j);
-				ed_read_bin(b, bin, l);
-				TEST_ASSERT(ed_cmp(a, b) == RLC_EQ, end);
-			}
-		}
-		TEST_END;
-	}
-	CATCH_ANY {
-		util_print("FATAL ERROR!\n");
-		ERROR(end);
-	}
-	code = RLC_OK;
-  end:
-	ed_free(a);
-	ed_free(b);
-	ed_free(c);
-	return code;
-}
-
 int doubling(void) {
 	int code = RLC_ERR;
 	ed_t a, b, c;
@@ -287,6 +300,7 @@ static int multiplication(void) {
 		ed_curve_get_ord(n);
 
 		TEST_BEGIN("generator has the right order") {
+			TEST_ASSERT(ed_is_valid(p), end);
 			ed_mul(r, p, n);
 			TEST_ASSERT(ed_is_infty(r) == 1, end);
 		} TEST_END;
@@ -427,10 +441,15 @@ static int hashing(void) {
 int test(void) {
 	ed_param_print();
 
-	util_banner("Memory:", 1);
+	util_banner("Utilities:", 1);
+
 	if (memory() != RLC_OK) {
 		core_clean();
 		return 1;
+	}
+
+	if (util() != RLC_OK) {
+		return RLC_ERR;
 	}
 
 	util_banner("Arithmetic:", 1);
@@ -439,27 +458,18 @@ int test(void) {
 		return RLC_ERR;
 	}
 
-	util_banner("Doubling:", 1);
 	if (doubling() != RLC_OK) {
 		return RLC_ERR;
 	}
 
-	util_banner("Multiplication:", 1);
 	if (multiplication() != RLC_OK) {
 		return RLC_ERR;
 	}
 
-	util_banner("Utilities:", 1);
-	if (util() != RLC_OK) {
-		return RLC_ERR;
-	}
-
-	util_banner("Hashing:", 1);
 	if (hashing() != RLC_OK) {
 		return RLC_ERR;
 	}
 
-	util_banner("Compression:", 1);
 	if (compression() != RLC_OK) {
 		return RLC_ERR;
 	}

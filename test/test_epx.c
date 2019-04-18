@@ -135,6 +135,8 @@ int util(void) {
 		TEST_END;
 
 		TEST_BEGIN("validity test is correct") {
+			ep2_set_infty(a);
+			TEST_ASSERT(ep2_is_valid(a), end);
 			ep2_rand(a);
 			TEST_ASSERT(ep2_is_valid(a), end);
 			fp2_rand(a->x);
@@ -503,6 +505,12 @@ static int multiplication(void) {
 
 		ep2_curve_get_gen(p);
 		ep2_curve_get_ord(n);
+
+		TEST_BEGIN("generator has the right order") {
+			TEST_ASSERT(ep2_is_valid(p), end);
+			ep2_mul(r, p, n);
+			TEST_ASSERT(ep2_is_infty(r) == 1, end);
+		} TEST_END;
 
 		TEST_BEGIN("generator multiplication is correct") {
 			bn_zero(k);

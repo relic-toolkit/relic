@@ -319,17 +319,17 @@ typedef struct _ctx_t {
 #endif /* WITH_EPX */
 
 #ifdef WITH_ED
-	/** Identifier of the currently configured prime Twisted Edwards elliptic curve. */
+	/** Identifier of the currently configured Edwards elliptic curve. */
 	int ed_id;
-	/** The 'a' coefficient of the Twisted Edwards elliptic curve. */
+	/** The 'a' coefficient of the Edwards elliptic curve. */
 	fp_st ed_a;
-	/** The 'd' coefficient of the Twisted Edwards elliptic curve. */
+	/** The 'd' coefficient of the Edwards elliptic curve. */
 	fp_st ed_d;
-	/** The generator of the elliptic curve. */
+	/** The generator of the Edwards elliptic curve. */
 	ed_st ed_g;
-	/** The order of the group of points in the elliptic curve. */
+	/** The order of the group of points in the Edwards elliptic curve. */
 	bn_st ed_r;
-	/** The cofactor of the Twisted Edwards elliptic curve */
+	/** The cofactor of the Edwards elliptic curve. */
 	bn_st ed_h;
 
 #ifdef ED_PRECO

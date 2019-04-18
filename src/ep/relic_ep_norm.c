@@ -45,33 +45,30 @@
  */
 static void ep_norm_imp(ep_t r, const ep_t p, int inverted) {
 	if (!p->norm) {
-		fp_t t0, t1;
+		fp_t t;
 
-		fp_null(t0);
-		fp_null(t1);
+		fp_null(t);
 
 		TRY {
 
-			fp_new(t0);
-			fp_new(t1);
+			fp_new(t);
 
 			if (inverted) {
-				fp_copy(t1, p->z);
+				fp_copy(r->z, p->z);
 			} else {
-				fp_inv(t1, p->z);
+				fp_inv(r->z, p->z);
 			}
-			fp_sqr(t0, t1);
-			fp_mul(r->x, p->x, t0);
-			fp_mul(t0, t0, t1);
-			fp_mul(r->y, p->y, t0);
+			fp_sqr(t, r->z);
+			fp_mul(r->x, p->x, t);
+			fp_mul(t, t, r->z);
+			fp_mul(r->y, p->y, t);
 			fp_set_dig(r->z, 1);
 		}
 		CATCH_ANY {
 			THROW(ERR_CAUGHT);
 		}
 		FINALLY {
-			fp_free(t0);
-			fp_free(t1);
+			fp_free(t);
 		}
 	}
 
@@ -91,7 +88,7 @@ void ep_norm(ep_t r, const ep_t p) {
 	}
 
 	if (p->norm) {
-		/* If the point is represented in affine coordinates, we just copy it. */
+		/* If the point is represented in affine coordinates, just copy it. */
 		ep_copy(r, p);
 		return;
 	}
@@ -119,7 +116,9 @@ void ep_norm_sim(ep_t *r, const ep_t *t, int n) {
 		for (i = 0; i < n; i++) {
 			fp_copy(r[i]->x, t[i]->x);
 			fp_copy(r[i]->y, t[i]->y);
-			fp_copy(r[i]->z, a[i]);
+			if (!ep_is_infty(t[i])) {
+				fp_copy(r[i]->z, a[i]);
+			}
 		}
 
 		for (i = 0; i < n; i++) {

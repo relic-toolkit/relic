@@ -24,7 +24,7 @@
 /**
  * @file
  *
- * Implementation of the point negation on binary elliptic curves.
+ * Implementation of the point negation on prime elliptic curves.
  *
  * @ingroup ep
  */

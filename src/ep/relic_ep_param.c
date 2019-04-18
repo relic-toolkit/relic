@@ -721,7 +721,6 @@ void ep_param_set(int param) {
 		(void)super;
 		(void)beta;
 
-		fp_zero(g->z);
 		fp_set_dig(g->z, 1);
 		g->norm = 1;
 

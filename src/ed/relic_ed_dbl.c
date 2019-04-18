@@ -88,6 +88,7 @@ static void ed_dbl_projc(ed_t r, const ed_t p) {
 	fp_mul(r->z, F, J);
 
 	// 3M + 4S + 1D + 7add
+	r->norm = 0;
 
 	fp_free(B);
 	fp_free(C);
@@ -162,6 +163,7 @@ static void ed_dbl_extnd(ed_t r, const ed_t p) {
 	fp_mul(r->z, F, G);
 
 	// 4M + 4S + 1D + 7add
+	r->norm = 0;
 
 	fp_free(A);
 	fp_free(B);
@@ -228,6 +230,7 @@ static void ed_dbl_extnd_short(ed_t r, const ed_t p) {
 	fp_mul(r->z, F, G);
 
 	// 4M + 4S + 1D + 7add
+	r->norm = 0;
 
 	fp_free(A);
 	fp_free(B);

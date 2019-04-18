@@ -125,6 +125,8 @@ static int util(void) {
 		TEST_END;
 
 		TEST_BEGIN("validity test is correct") {
+			eb_set_infty(a);
+			TEST_ASSERT(eb_is_valid(a), end);
 			eb_rand(a);
 			TEST_ASSERT(eb_is_valid(a), end);
 			fb_rand(a->x);
@@ -598,6 +600,7 @@ static int multiplication(void) {
 		eb_curve_get_ord(n);
 
 		TEST_BEGIN("generator has the right order") {
+			TEST_ASSERT(eb_is_valid(p), end);
 			eb_mul(r, p, n);
 			TEST_ASSERT(eb_is_infty(r) == 1, end);
 		} TEST_END;

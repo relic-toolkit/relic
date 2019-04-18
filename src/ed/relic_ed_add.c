@@ -170,6 +170,8 @@ static void ed_add_projc(ed_t r, const ed_t p, const ed_t q) {
 	// Z_3 = F * G
 	fp_mul(r->z, F, G);
 
+	r->norm = 0;
+
 	fp_free(A);
 	fp_free(B);
 	fp_free(C);
@@ -243,6 +245,8 @@ static void ed_add_extnd(ed_t r, const ed_t p, const ed_t q) {
 
 	// Z_3 = F * G
 	fp_mul(r->z, F, G);
+
+	r->norm = 0;
 
 	fp_free(A);
 	fp_free(B);
