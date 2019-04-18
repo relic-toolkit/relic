@@ -145,7 +145,7 @@ typedef dig_t *dv_t;
  * @param[out] A			- the double-precision result.
  */
 #if ALLOC == DYNAMIC
-#define dv_new(A)			dv_new_dynam(&(A), )
+#define dv_new(A)			dv_new_dynam(&(A), RLC_DV_DIGS)
 #elif ALLOC == AUTO
 #define dv_new(A)			/* empty */
 #elif ALLOC == STACK

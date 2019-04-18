@@ -48,7 +48,7 @@
 #if ALLOC == DYNAMIC
 
 void dv_new_dynam(dv_t *a, int digits) {
-	if (digits > ) {
+	if (digits > RLC_DV_DIGS) {
 		THROW(ERR_NO_PRECI);
 	}
 #if ALIGN == 1
