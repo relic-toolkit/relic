@@ -165,13 +165,13 @@ cdecl(fp_addm_low):
 
 	movq	%r15, %rdi
 	movq	8(%rdi), %r15
-	sbbq	p7, %r15
+	sbbq	p7(%rip), %r15
 	movq	%r15, 8(%rdi)
 	movq	24(%rdi), %r15
-	sbbq	p8, %r15
+	sbbq	p8(%rip), %r15
 	movq	%r15, 24(%rdi)
 	movq	40(%rdi), %r15
-	sbbq	p9, %r15
+	sbbq	p9(%rip), %r15
 	movq	%r15, 40(%rdi)
 
 	pop		%rdi
@@ -283,13 +283,13 @@ cdecl(fp_addc_low):
 
 	movq	%r15, %rdi
 	movq	88(%rdi), %r15
-	sbbq	p7, %r15
+	sbbq	p7(%rip), %r15
 	movq	%r15, 88(%rdi)
 	movq	104(%rdi), %r15
-	sbbq	p8, %r15
+	sbbq	p8(%rip), %r15
 	movq	%r15, 104(%rdi)
 	movq	120(%rdi), %r15
-	sbbq	p9, %r15
+	sbbq	p9(%rip), %r15
 	movq	%r15, 120(%rdi)
 
 	pop		%rdi
@@ -559,13 +559,13 @@ cdecl(fp_dblm_low):
 	movq	%r15, %rdi
 
 	movq	8(%rdi), %r15
-	sbbq	p7, %r15
+	sbbq	p7(%rip), %r15
 	movq	%r15, 8(%rdi)
 	movq	24(%rdi), %r15
-	sbbq	p8, %r15
+	sbbq	p8(%rip), %r15
 	movq	%r15, 24(%rdi)
 	movq	40(%rdi), %r15
-	sbbq	p9, %r15
+	sbbq	p9(%rip), %r15
 	movq	%r15, 40(%rdi)
 
 	pop		%rdi
