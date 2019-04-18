@@ -52,8 +52,8 @@
 	(R0) += (dig_t)s;														\
 	(R1) += (R0) < (dig_t)s;												\
 	(R2) += (R1) < _r;														\
-	(R1) += (dig_t)(s >> (dbl_t)DIGIT);									\
-	(R2) += (R1) < (dig_t)(s >> (dbl_t)DIGIT);							\
+	(R1) += (dig_t)(s >> (dbl_t)RLC_DIG);									\
+	(R2) += (R1) < (dig_t)(s >> (dbl_t)RLC_DIG);							\
 	(R2) += (s < r);														\
 
 /**
@@ -70,15 +70,15 @@
 	(R0) += (dig_t)(r);														\
 	(R1) += (R0) < (dig_t)r;												\
 	(R2) += (R1) < _r;														\
-	(R1) += (dig_t)(r >> (dbl_t)DIGIT);									\
-	(R2) += (R1) < (dig_t)(r >> (dbl_t)DIGIT);							\
+	(R1) += (dig_t)(r >> (dbl_t)RLC_DIG);									\
+	(R2) += (R1) < (dig_t)(r >> (dbl_t)RLC_DIG);							\
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
 void fp_sqrm_low(dig_t *c, const dig_t *a) {
-	dig_t relic_align t[2 * FP_DIGS];
+	dig_t rlc_align t[2 * RLC_FP_DIGS];
 
 	fp_sqrn_low(t, a);
 	fp_rdc(c, t);

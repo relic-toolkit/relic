@@ -62,33 +62,33 @@ static void copy(void) {
 	dv_new(b);
 
 	BENCH_BEGIN("dv_copy") {
-		rand_bytes((uint8_t *)a, DV_DIGS * sizeof(dig_t));
-		rand_bytes((uint8_t *)b, DV_DIGS * sizeof(dig_t));
-		BENCH_ADD(dv_copy(a, b, DV_DIGS));
+		rand_bytes((uint8_t *)a, RLC_DV_DIGS * sizeof(dig_t));
+		rand_bytes((uint8_t *)b, RLC_DV_DIGS * sizeof(dig_t));
+		BENCH_ADD(dv_copy(a, b, RLC_DV_DIGS));
 	} BENCH_END;
 
 	BENCH_BEGIN("dv_copy_cond") {
-		rand_bytes((uint8_t *)a, DV_DIGS * sizeof(dig_t));
-		rand_bytes((uint8_t *)b, DV_DIGS * sizeof(dig_t));
-		BENCH_ADD(dv_copy_cond(a, b, DV_DIGS, 1));
+		rand_bytes((uint8_t *)a, RLC_DV_DIGS * sizeof(dig_t));
+		rand_bytes((uint8_t *)b, RLC_DV_DIGS * sizeof(dig_t));
+		BENCH_ADD(dv_copy_cond(a, b, RLC_DV_DIGS, 1));
 	} BENCH_END;
 
 	BENCH_BEGIN("dv_swap_cond") {
-		rand_bytes((uint8_t *)a, DV_DIGS * sizeof(dig_t));
-		rand_bytes((uint8_t *)b, DV_DIGS * sizeof(dig_t));
-		BENCH_ADD(dv_swap_cond(a, b, DV_DIGS, 1));
+		rand_bytes((uint8_t *)a, RLC_DV_DIGS * sizeof(dig_t));
+		rand_bytes((uint8_t *)b, RLC_DV_DIGS * sizeof(dig_t));
+		BENCH_ADD(dv_swap_cond(a, b, RLC_DV_DIGS, 1));
 	} BENCH_END;
 
 	BENCH_BEGIN("dv_cmp") {
-		rand_bytes((uint8_t *)a, DV_DIGS * sizeof(dig_t));
-		rand_bytes((uint8_t *)b, DV_DIGS * sizeof(dig_t));
-		BENCH_ADD(dv_cmp(a, b, DV_DIGS));
+		rand_bytes((uint8_t *)a, RLC_DV_DIGS * sizeof(dig_t));
+		rand_bytes((uint8_t *)b, RLC_DV_DIGS * sizeof(dig_t));
+		BENCH_ADD(dv_cmp(a, b, RLC_DV_DIGS));
 	} BENCH_END;
 
 	BENCH_BEGIN("dv_cmp_const") {
-		rand_bytes((uint8_t *)a, DV_DIGS * sizeof(dig_t));
-		rand_bytes((uint8_t *)b, DV_DIGS * sizeof(dig_t));
-		BENCH_ADD(dv_cmp_const(a, b, DV_DIGS));
+		rand_bytes((uint8_t *)a, RLC_DV_DIGS * sizeof(dig_t));
+		rand_bytes((uint8_t *)b, RLC_DV_DIGS * sizeof(dig_t));
+		BENCH_ADD(dv_cmp_const(a, b, RLC_DV_DIGS));
 	} BENCH_END;
 
 	dv_free(a);
@@ -96,7 +96,7 @@ static void copy(void) {
 }
 
 int main(void) {
-	if (core_init() != STS_OK) {
+	if (core_init() != RLC_OK) {
 		core_clean();
 		return 1;
 	}

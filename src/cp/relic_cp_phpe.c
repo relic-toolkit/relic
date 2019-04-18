@@ -45,7 +45,7 @@
 
 int cp_phpe_gen(bn_t n, bn_t l, int bits) {
 	bn_t p, q;
-	int result = STS_OK;
+	int result = RLC_OK;
 
 	bn_null(p);
 	bn_null(q);
@@ -58,7 +58,7 @@ int cp_phpe_gen(bn_t n, bn_t l, int bits) {
 		do {
 			bn_gen_prime(p, bits / 2);
 			bn_gen_prime(q, bits / 2);
-		} while (bn_cmp(p, q) == CMP_EQ);
+		} while (bn_cmp(p, q) == RLC_EQ);
 
 		/* Compute n = pq and l = \phi(n). */
 		bn_mul(n, p, q);
@@ -67,7 +67,7 @@ int cp_phpe_gen(bn_t n, bn_t l, int bits) {
 		bn_mul(l, p, q);
 	}
 	CATCH_ANY {
-		result = STS_ERR;
+		result = RLC_ERR;
 	}
 	FINALLY {
 		bn_free(p);
@@ -79,7 +79,7 @@ int cp_phpe_gen(bn_t n, bn_t l, int bits) {
 
 int cp_phpe_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len, bn_t n) {
 	bn_t g, m, r, s;
-	int size, result = STS_OK;
+	int size, result = RLC_OK;
 
 	bn_null(g);
 	bn_null(m);
@@ -89,7 +89,7 @@ int cp_phpe_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len, bn_t n) {
 	size = bn_size_bin(n);
 
 	if (n == NULL || in_len <= 0 || in_len > size) {
-		return STS_ERR;
+		return RLC_ERR;
 	}
 
 	TRY {
@@ -116,11 +116,11 @@ int cp_phpe_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len, bn_t n) {
 			memset(out, 0, *out_len);
 			bn_write_bin(out, *out_len, m);
 		} else {
-			result = STS_ERR;
+			result = RLC_ERR;
 		}
 	}
 	CATCH_ANY {
-		result = STS_ERR;
+		result = RLC_ERR;
 	}
 	FINALLY {
 		bn_free(g);
@@ -135,12 +135,12 @@ int cp_phpe_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len, bn_t n) {
 int cp_phpe_dec(uint8_t *out, int out_len, uint8_t *in, int in_len, bn_t n,
 	bn_t l) {
 	bn_t c, u, s;
-	int size, result = STS_OK;
+	int size, result = RLC_OK;
 
 	size = bn_size_bin(n);
 
 	if (in_len < 0 || in_len != 2 * size) {
-		return STS_ERR;
+		return RLC_ERR;
 	}
 
 	bn_null(c);
@@ -159,7 +159,7 @@ int cp_phpe_dec(uint8_t *out, int out_len, uint8_t *in, int in_len, bn_t n,
 		bn_sub_dig(c, c, 1);
 		bn_div(c, c, n);
 		bn_gcd_ext(s, u, NULL, l, n);
-		if (bn_sign(u) == BN_NEG) {
+		if (bn_sign(u) == RLC_NEG) {
 			bn_add(u, u, n);
 		}
 		bn_mul(c, c, u);
@@ -170,10 +170,10 @@ int cp_phpe_dec(uint8_t *out, int out_len, uint8_t *in, int in_len, bn_t n,
 			memset(out, 0, out_len);
 			bn_write_bin(out + (out_len - size), size, c);
 		} else {
-			result = STS_ERR;
+			result = RLC_ERR;
 		}
 	} CATCH_ANY {
-		result = STS_ERR;
+		result = RLC_ERR;
 	}
 	FINALLY {
 		bn_free(c);

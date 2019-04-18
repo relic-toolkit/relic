@@ -33,8 +33,8 @@
  * @ingroup fpx
  */
 
-#ifndef RELIC_FPX_H
-#define RELIC_FPX_H
+#ifndef RLC_FPX_H
+#define RLC_FPX_H
 
 #include "relic_fp.h"
 #include "relic_types.h"
@@ -678,7 +678,7 @@ void fp2_write_bin(uint8_t *bin, int len, fp2_t a, int pack);
  *
  * @param[in] A				- the first quadratic extension field element.
  * @param[in] B				- the second quadratic extension field element.
- * @return CMP_EQ if a == b, and CMP_NE otherwise.
+ * @return RLC_EQ if a == b, and RLC_NE otherwise.
  */
 int fp2_cmp(fp2_t a, fp2_t b);
 
@@ -688,7 +688,7 @@ int fp2_cmp(fp2_t a, fp2_t b);
  *
  * @param[in] a				- the quadratic extension field element.
  * @param[in] b				- the digit.
- * @return CMP_EQ if a == b, and CMP_NE otherwise.
+ * @return RLC_EQ if a == b, and RLC_NE otherwise.
  */
 int fp2_cmp_dig(fp2_t a, dig_t b);
 
@@ -1011,7 +1011,7 @@ void fp3_write_bin(uint8_t *bin, int len, fp3_t a);
  *
  * @param[in] A				- the first cubic extension field element.
  * @param[in] B				- the second cubic extension field element.
- * @return CMP_EQ if a == b, and CMP_NE otherwise.
+ * @return RLC_EQ if a == b, and RLC_NE otherwise.
  */
 int fp3_cmp(fp3_t a, fp3_t b);
 
@@ -1021,7 +1021,7 @@ int fp3_cmp(fp3_t a, fp3_t b);
  *
  * @param[in] a				- the cubic extension field element.
  * @param[in] b				- the digit.
- * @return CMP_EQ if a == b, and CMP_NE otherwise.
+ * @return RLC_EQ if a == b, and RLC_NE otherwise.
  */
 int fp3_cmp_dig(fp3_t a, dig_t b);
 
@@ -1291,7 +1291,7 @@ void fp6_write_bin(uint8_t *bin, int len, fp6_t a);
  *
  * @param[in] A				- the first sextic extension field element.
  * @param[in] B				- the second sextic extension field element.
- * @return CMP_EQ if a == b, and CMP_NE otherwise.
+ * @return RLC_EQ if a == b, and RLC_NE otherwise.
  */
 int fp6_cmp(fp6_t a, fp6_t b);
 
@@ -1301,7 +1301,7 @@ int fp6_cmp(fp6_t a, fp6_t b);
  *
  * @param[in] a				- the sextic extension field element.
  * @param[in] b				- the digit.
- * @return CMP_EQ if a == b, and CMP_NE otherwise.
+ * @return RLC_EQ if a == b, and RLC_NE otherwise.
  */
 int fp6_cmp_dig(fp6_t a, dig_t b);
 
@@ -1524,7 +1524,7 @@ void fp12_write_bin(uint8_t *bin, int len, fp12_t a, int pack);
  *
  * @param[in] a				- the first dodecic extension field element.
  * @param[in] b				- the second dodecic extension field element.
- * @return CMP_EQ if a == b, and CMP_NE otherwise.
+ * @return RLC_EQ if a == b, and RLC_NE otherwise.
  */
 int fp12_cmp(fp12_t a, fp12_t b);
 
@@ -1534,7 +1534,7 @@ int fp12_cmp(fp12_t a, fp12_t b);
  *
  * @param[in] a				- the dodecic extension field element.
  * @param[in] b				- the digit.
- * @return CMP_EQ if a == b, and CMP_NE otherwise.
+ * @return RLC_EQ if a == b, and RLC_NE otherwise.
  */
 int fp12_cmp_dig(fp12_t a, dig_t b);
 
@@ -1847,7 +1847,7 @@ void fp18_print(fp18_t a);
  *
  * @param[in] a				- the first octodecic extension field element.
  * @param[in] b				- the second octodecic extension field element.
- * @return CMP_EQ if a == b, and CMP_NE otherwise.
+ * @return RLC_EQ if a == b, and RLC_NE otherwise.
  */
 int fp18_cmp(fp18_t a, fp18_t b);
 
@@ -1857,7 +1857,7 @@ int fp18_cmp(fp18_t a, fp18_t b);
  *
  * @param[in] a				- the octodecic extension field element.
  * @param[in] b				- the digit.
- * @return CMP_EQ if a == b, and CMP_NE otherwise.
+ * @return RLC_EQ if a == b, and RLC_NE otherwise.
  */
 int fp18_cmp_dig(fp18_t a, dig_t b);
 
@@ -2072,4 +2072,4 @@ void fp18_exp_cyc(fp18_t c, fp18_t a, bn_t b);
  */
 void fp18_exp_cyc_sps(fp18_t c, fp18_t a, int *b, int l);
 
-#endif /* !RELIC_FPX_H */
+#endif /* !RLC_FPX_H */

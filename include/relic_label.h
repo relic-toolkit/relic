@@ -29,8 +29,8 @@
  * @ingroup core
  */
 
-#ifndef RELIC_LABEL_H
-#define RELIC_LABEL_H
+#ifndef RLC_LABEL_H
+#define RLC_LABEL_H
 
 #include "relic_conf.h"
 
@@ -2049,4 +2049,4 @@
 
 #endif /* LABEL */
 
-#endif /* !RELIC_LABEL_H */
+#endif /* !RLC_LABEL_H */

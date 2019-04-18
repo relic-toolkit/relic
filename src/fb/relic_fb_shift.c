@@ -41,7 +41,7 @@
 void fb_lsh(fb_t c, const fb_t a, int bits) {
 	int digits;
 
-	SPLIT(bits, digits, bits, DIG_LOG);
+	RLC_RIP(bits, digits, bits);
 
 	if (digits) {
 		fb_lshd_low(c, a, digits);
@@ -66,7 +66,7 @@ void fb_lsh(fb_t c, const fb_t a, int bits) {
 void fb_rsh(fb_t c, const fb_t a, int bits) {
 	int digits;
 
-	SPLIT(bits, digits, bits, DIG_LOG);
+	RLC_RIP(bits, digits, bits);
 
 	if (digits) {
 		fb_rshd_low(c, a, digits);

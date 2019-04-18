@@ -33,8 +33,8 @@
  * @ingroup arch
  */
 
-#ifndef RELIC_ARCH_H
-#define RELIC_ARCH_H
+#ifndef RLC_ARCH_H
+#define RLC_ARCH_H
 
 #include "relic_types.h"
 #include "relic_label.h"
@@ -50,25 +50,25 @@
 /**
  * Chooses a proper way to store a string in the target architecture.
  *
- * @param[in] STR		- the string to store.
+ * @param[in] S					- the string to store.
  */
 #if ARCH == AVR
-#define STRING(STR)			PSTR(STR)
+#define RLC_STR(S)				PSTR(S)
 #else
-#define STRING(STR)			STR
+#define RLC_STR(S)				S
 #endif
 
 /**
  * Fetches a constant string to be used by the library.
  *
- * @param[out] STR		- the resulting prepared parameter.
- * @param[in] ID		- the parameter represented as a string.
- * @param[in] L			- the length of the string.
+ * @param[out] S			- the resulting prepared parameter.
+ * @param[in] ID			- the parameter represented as a string.
+ * @param[in] L				- the length of the string.
  */
 #if ARCH == AVR
-#define FETCH(STR, ID, L)	arch_copy_rom(STR, STRING(ID), L);
+#define RLC_GET(S, ID, L)		arch_copy_rom(S, RLC_STR(ID), L);
 #else
-#define FETCH(STR, ID, L)	memcpy(STR, ID, L);
+#define RLC_GET(S, ID, L)		memcpy(S, ID, L);
 #endif
 
 /*============================================================================*/
@@ -103,4 +103,4 @@ void arch_copy_rom(char *dest, const char *src, int len);
 
 #endif
 
-#endif /* !RELIC_ARCH_H */
+#endif /* !RLC_ARCH_H */

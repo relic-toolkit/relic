@@ -154,13 +154,13 @@ static void util(void) {
 }
 
 static void arith(void) {
-	ec_t p, q, r, t[RELIC_EC_TABLE];
+	ec_t p, q, r, t[RLC_EC_TABLE];
 	bn_t k, l, n;
 
 	ec_null(p);
 	ec_null(q);
 	ec_null(r);
-	for (int i = 0; i < RELIC_EC_TABLE; i++) {
+	for (int i = 0; i < RLC_EC_TABLE; i++) {
 		ec_null(t[i]);
 	}
 
@@ -224,7 +224,7 @@ static void arith(void) {
 	}
 	BENCH_END;
 
-	for (int i = 0; i < RELIC_EC_TABLE; i++) {
+	for (int i = 0; i < RLC_EC_TABLE; i++) {
 		ec_new(t[i]);
 	}
 
@@ -278,13 +278,13 @@ static void arith(void) {
 	bn_free(k);
 	bn_free(l);
 	bn_free(n);
-	for (int i = 0; i < RELIC_EC_TABLE; i++) {
+	for (int i = 0; i < RLC_EC_TABLE; i++) {
 		ec_free(t[i]);
 	}
 }
 
 int main(void) {
-	if (core_init() != STS_OK) {
+	if (core_init() != RLC_OK) {
 		core_clean();
 		return 1;
 	}
@@ -292,7 +292,7 @@ int main(void) {
 	conf_print();
 	util_banner("Benchmarks for the EC module:", 0);
 
-	if (ec_param_set_any() != STS_OK) {
+	if (ec_param_set_any() != RLC_OK) {
 		THROW(ERR_NO_CURVE);
 		core_clean();
 		return 0;

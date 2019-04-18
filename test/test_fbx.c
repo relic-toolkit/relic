@@ -36,7 +36,7 @@
 
 static int memory2(void) {
 	err_t e;
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	fb2_t a;
 
 	fb2_null(a);
@@ -55,13 +55,13 @@ static int memory2(void) {
 		}
 	}
 	(void)a;
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	return code;
 }
 
 static int util2(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	fb2_t a, b;
 
 	fb2_null(a);
@@ -74,8 +74,8 @@ static int util2(void) {
 		TEST_BEGIN("comparison is consistent") {
 			fb2_rand(a);
 			fb2_rand(b);
-			if (fb2_cmp(a, b) != CMP_EQ) {
-				TEST_ASSERT(fb2_cmp(b, a) == CMP_NE, end);
+			if (fb2_cmp(a, b) != RLC_EQ) {
+				TEST_ASSERT(fb2_cmp(b, a) == RLC_NE, end);
 			}
 		}
 		TEST_END;
@@ -83,9 +83,9 @@ static int util2(void) {
 		TEST_BEGIN("copy and comparison are consistent") {
 			fb2_rand(a);
 			fb2_rand(b);
-			if (fb2_cmp(a, b) != CMP_EQ) {
+			if (fb2_cmp(a, b) != RLC_EQ) {
 				fb2_copy(b, a);
-				TEST_ASSERT(fb2_cmp(b, a) == CMP_EQ, end);
+				TEST_ASSERT(fb2_cmp(b, a) == RLC_EQ, end);
 			}
 		}
 		TEST_END;
@@ -95,8 +95,8 @@ static int util2(void) {
 				fb2_rand(a);
 			} while (fb2_is_zero(a));
 			fb2_zero(b);
-			TEST_ASSERT(fb2_cmp(a, b) == CMP_NE, end);
-			TEST_ASSERT(fb2_cmp(b, a) == CMP_NE, end);
+			TEST_ASSERT(fb2_cmp(a, b) == RLC_NE, end);
+			TEST_ASSERT(fb2_cmp(b, a) == RLC_NE, end);
 			TEST_ASSERT(fb2_is_zero(b), end);
 		}
 		TEST_END;
@@ -104,7 +104,7 @@ static int util2(void) {
 	CATCH_ANY {
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	fb2_free(a);
 	fb2_free(b);
@@ -112,7 +112,7 @@ static int util2(void) {
 }
 
 static int addition2(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	fb2_t a, b, c, d, e;
 
 	fb2_null(a);
@@ -133,7 +133,7 @@ static int addition2(void) {
 			fb2_rand(b);
 			fb2_add(d, a, b);
 			fb2_add(e, b, a);
-			TEST_ASSERT(fb2_cmp(d, e) == CMP_EQ, end);
+			TEST_ASSERT(fb2_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("addition is associative") {
@@ -144,14 +144,14 @@ static int addition2(void) {
 			fb2_add(d, d, c);
 			fb2_add(e, b, c);
 			fb2_add(e, a, e);
-			TEST_ASSERT(fb2_cmp(d, e) == CMP_EQ, end);
+			TEST_ASSERT(fb2_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("addition has identity") {
 			fb2_rand(a);
 			fb2_zero(d);
 			fb2_add(e, a, d);
-			TEST_ASSERT(fb2_cmp(e, a) == CMP_EQ, end);
+			TEST_ASSERT(fb2_cmp(e, a) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("addition has inverse") {
@@ -165,7 +165,7 @@ static int addition2(void) {
 		util_print("FATAL ERROR!\n");
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	fb2_free(a);
 	fb2_free(b);
@@ -176,7 +176,7 @@ static int addition2(void) {
 }
 
 static int multiplication2(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	fb2_t a, b, c, d, e, f;
 
 	fb2_null(a);
@@ -199,7 +199,7 @@ static int multiplication2(void) {
 			fb2_rand(b);
 			fb2_mul(d, a, b);
 			fb2_mul(e, b, a);
-			TEST_ASSERT(fb2_cmp(d, e) == CMP_EQ, end);
+			TEST_ASSERT(fb2_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("multiplication is associative") {
@@ -210,7 +210,7 @@ static int multiplication2(void) {
 			fb2_mul(d, d, c);
 			fb2_mul(e, b, c);
 			fb2_mul(e, a, e);
-			TEST_ASSERT(fb2_cmp(d, e) == CMP_EQ, end);
+			TEST_ASSERT(fb2_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("multiplication is distributive") {
@@ -222,7 +222,7 @@ static int multiplication2(void) {
 			fb2_mul(e, c, a);
 			fb2_mul(f, c, b);
 			fb2_add(e, e, f);
-			TEST_ASSERT(fb2_cmp(d, e) == CMP_EQ, end);
+			TEST_ASSERT(fb2_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("multiplication has identity") {
@@ -230,7 +230,7 @@ static int multiplication2(void) {
 			fb_set_bit(d[0], 0, 1);
 			fb2_rand(a);
 			fb2_mul(e, a, d);
-			TEST_ASSERT(fb2_cmp(e, a) == CMP_EQ, end);
+			TEST_ASSERT(fb2_cmp(e, a) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("multiplication has zero property") {
@@ -244,7 +244,7 @@ static int multiplication2(void) {
 		util_print("FATAL ERROR!\n");
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	fb2_free(a);
 	fb2_free(b);
@@ -256,7 +256,7 @@ static int multiplication2(void) {
 }
 
 static int squaring2(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	fb2_t a, b, c;
 
 	fb2_null(a);
@@ -272,14 +272,14 @@ static int squaring2(void) {
 			fb2_rand(a);
 			fb2_mul(b, a, a);
 			fb2_sqr(c, a);
-			TEST_ASSERT(fb2_cmp(b, c) == CMP_EQ, end);
+			TEST_ASSERT(fb2_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 	}
 	CATCH_ANY {
 		util_print("FATAL ERROR!\n");
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	fb2_free(a);
 	fb2_free(b);
@@ -288,7 +288,7 @@ static int squaring2(void) {
 }
 
 static int solve2(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	fb2_t a, b, c;
 
 	fb2_null(a);
@@ -310,13 +310,13 @@ static int solve2(void) {
 			/* Verify the solution. */
 			fb2_sqr(c, b);
 			fb2_add(c, c, b);
-			TEST_ASSERT(fb2_cmp(c, a) == CMP_EQ, end);
+			TEST_ASSERT(fb2_cmp(c, a) == RLC_EQ, end);
 		} TEST_END;
 	}
 	CATCH_ANY {
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	fb2_free(a);
 	fb2_free(b);
@@ -325,7 +325,7 @@ static int solve2(void) {
 }
 
 static int inversion2(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	fb2_t a, b, c;
 
 	fb2_null(a);
@@ -343,14 +343,14 @@ static int inversion2(void) {
 			} while (fb2_is_zero(a));
 			fb2_inv(b, a);
 			fb2_mul(c, a, b);
-			TEST_ASSERT(fb_cmp_dig(c[0], 1) == CMP_EQ, end);
+			TEST_ASSERT(fb_cmp_dig(c[0], 1) == RLC_EQ, end);
 		} TEST_END;
 	}
 	CATCH_ANY {
 		util_print("FATAL ERROR!\n");
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	fb2_free(a);
 	fb2_free(b);
@@ -359,7 +359,7 @@ static int inversion2(void) {
 }
 
 int main(void) {
-	if (core_init() != STS_OK) {
+	if (core_init() != RLC_OK) {
 		core_clean();
 		return 1;
 	}
@@ -376,39 +376,39 @@ int main(void) {
 	util_banner("Quadratic extension:", 0);
 	util_banner("Utilities:", 1);
 
-	if (memory2() != STS_OK) {
+	if (memory2() != RLC_OK) {
 		core_clean();
 		return 1;
 	}
 
-	if (util2() != STS_OK) {
+	if (util2() != RLC_OK) {
 		core_clean();
 		return 1;
 	}
 
 	util_banner("Arithmetic:", 1);
 
-	if (addition2() != STS_OK) {
+	if (addition2() != RLC_OK) {
 		core_clean();
 		return 1;
 	}
 
-	if (multiplication2() != STS_OK) {
+	if (multiplication2() != RLC_OK) {
 		core_clean();
 		return 1;
 	}
 
-	if (squaring2() != STS_OK) {
+	if (squaring2() != RLC_OK) {
 		core_clean();
 		return 1;
 	}
 
-	if (solve2() != STS_OK) {
+	if (solve2() != RLC_OK) {
 		core_clean();
 		return 1;
 	}
 
-	if (inversion2() != STS_OK) {
+	if (inversion2() != RLC_OK) {
 		core_clean();
 		return 1;
 	}

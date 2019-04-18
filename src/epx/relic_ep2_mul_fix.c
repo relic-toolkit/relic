@@ -78,7 +78,7 @@ static void ep2_mul_pre_ordin(ep2_t *t, ep2_t p) {
  */
 static void ep2_mul_fix_ordin(ep2_t r, ep2_t *table, bn_t k) {
 	int len, i, n;
-	int8_t naf[2 * FP_BITS + 1], *t;
+	int8_t naf[2 * RLC_FP_BITS + 1], *t;
 
 	if (bn_is_zero(k)) {
 		ep2_set_infty(r);
@@ -86,7 +86,7 @@ static void ep2_mul_fix_ordin(ep2_t r, ep2_t *table, bn_t k) {
 	}
 
 	/* Compute the w-TNAF representation of k. */
-	len = 2 * FP_BITS + 1;
+	len = 2 * RLC_FP_BITS + 1;
 	bn_rec_naf(naf, &len, k, EP_DEPTH);
 
 	t = naf + len - 1;
@@ -104,7 +104,7 @@ static void ep2_mul_fix_ordin(ep2_t r, ep2_t *table, bn_t k) {
 	}
 	/* Convert r to affine coordinates. */
 	ep2_norm(r, r);
-	if (bn_sign(k) == BN_NEG) {
+	if (bn_sign(k) == RLC_NEG) {
 		ep2_neg(r, r);
 	}
 }
@@ -154,7 +154,7 @@ void ep2_mul_fix_basic(ep2_t r, ep2_t *t, bn_t k) {
 		}
 	}
 	ep2_norm(r, r);
-	if (bn_sign(k) == BN_NEG) {
+	if (bn_sign(k) == RLC_NEG) {
 		ep2_neg(r, r);
 	}
 }
@@ -192,7 +192,7 @@ void ep2_mul_pre_combs(ep2_t *t, ep2_t p) {
 			}
 		}
 #if defined(EP_MIXED)
-		for (i = 1; i < RELIC_EP_TABLE_COMBS; i++) {
+		for (i = 1; i < RLC_EP_TABLE_COMBS; i++) {
 			ep2_norm(t[i], t[i]);
 		}
 #endif
@@ -253,7 +253,7 @@ void ep2_mul_fix_combs(ep2_t r, ep2_t *t, bn_t k) {
 			}
 		}
 		ep2_norm(r, r);
-		if (bn_sign(k) == BN_NEG) {
+		if (bn_sign(k) == RLC_NEG) {
 			ep2_neg(r, r);
 		}
 	}
@@ -305,7 +305,7 @@ void ep2_mul_pre_combd(ep2_t *t, ep2_t p) {
 			}
 		}
 #if defined(EP_MIXED)
-		for (i = 1; i < RELIC_EP_TABLE_COMBD; i++) {
+		for (i = 1; i < RLC_EP_TABLE_COMBD; i++) {
 			ep2_norm(t[i], t[i]);
 		}
 #endif
@@ -366,7 +366,7 @@ void ep2_mul_fix_combd(ep2_t r, ep2_t *t, bn_t k) {
 			ep2_add(r, r, t[(1 << EP_DEPTH) + w1]);
 		}
 		ep2_norm(r, r);
-		if (bn_sign(k) == BN_NEG) {
+		if (bn_sign(k) == RLC_NEG) {
 			ep2_neg(r, r);
 		}
 	}

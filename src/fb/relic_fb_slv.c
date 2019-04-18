@@ -55,7 +55,7 @@ void fb_slv_basic(fb_t c, const fb_t a) {
 		fb_copy(t0, a);
 		fb_copy(c, a);
 
-		for (i = 0; i < (FB_BITS - 1) / 2; i++) {
+		for (i = 0; i < (RLC_FB_BITS - 1) / 2; i++) {
 			fb_sqr(c, c);
 			fb_sqr(c, c);
 			fb_add(c, c, t0);

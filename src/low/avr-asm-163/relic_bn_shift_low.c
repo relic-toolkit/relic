@@ -41,9 +41,9 @@ dig_t bn_lshb_low(dig_t *c, const dig_t *a, int size, int bits) {
 	int i;
 	dig_t r, carry, shift, mask;
 
-	shift = DIGIT - bits;
+	shift = RLC_DIG - bits;
 	carry = 0;
-	mask = MASK(bits);
+	mask = RLC_MASK(bits);
 	for (i = 0; i < size; i++, a++, c++) {
 		/* Get the needed least significant bits. */
 		r = ((*a) >> shift) & mask;
@@ -78,9 +78,9 @@ dig_t bn_rshb_low(dig_t *c, const dig_t *a, int size, int bits) {
 	c += size - 1;
 	a += size - 1;
 	/* Prepare the bit mask. */
-	shift = DIGIT - bits;
+	shift = RLC_DIG - bits;
 	carry = 0;
-	mask = MASK(bits);
+	mask = RLC_MASK(bits);
 	for (i = size - 1; i >= 0; i--, a--, c--) {
 		/* Get the needed least significant bits. */
 		r = (*a) & mask;

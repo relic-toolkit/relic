@@ -48,15 +48,15 @@
 #if ALLOC == DYNAMIC
 
 void dv_new_dynam(dv_t *a, int digits) {
-	if (digits > DV_DIGS) {
+	if (digits > ) {
 		THROW(ERR_NO_PRECI);
 	}
 #if ALIGN == 1
-	*a = malloc(digits * (DIGIT / 8));
+	*a = malloc(digits * (RLC_DIG / 8));
 #elif OPSYS == WINDOWS
-	*a = _aligned_malloc(digits * (DIGIT / 8), ALIGN);
+	*a = _aligned_malloc(digits * (RLC_DIG / 8), ALIGN);
 #else
-	int r = posix_memalign((void **)a, ALIGN, digits * (DIGIT / 8));
+	int r = posix_memalign((void **)a, ALIGN, digits * (RLC_DIG / 8));
 	if (r == ENOMEM) {
 		THROW(ERR_NO_MEMORY);
 	}

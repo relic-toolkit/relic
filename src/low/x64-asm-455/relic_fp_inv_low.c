@@ -42,29 +42,29 @@
 
 void fp_invn_low(dig_t *c, const dig_t *a) {
 	mp_size_t cn;
-	relic_align dig_t s[FP_DIGS], t[2 * FP_DIGS], u[FP_DIGS + 1];
+	rlc_align dig_t s[RLC_FP_DIGS], t[2 * RLC_FP_DIGS], u[RLC_FP_DIGS + 1];
 
 #if FP_RDC == MONTY
-	dv_zero(t + FP_DIGS, FP_DIGS);
-	dv_copy(t, a, FP_DIGS);
+	dv_zero(t + RLC_FP_DIGS, RLC_FP_DIGS);
+	dv_copy(t, a, RLC_FP_DIGS);
 	fp_rdcn_low(u, t);
 #else
 	fp_copy(u, a);
 #endif
 
-	dv_copy(s, fp_prime_get(), FP_DIGS);
+	dv_copy(s, fp_prime_get(), RLC_FP_DIGS);
 
-	mpn_gcdext(t, c, &cn, u, FP_DIGS, s, FP_DIGS);
+	mpn_gcdext(t, c, &cn, u, RLC_FP_DIGS, s, RLC_FP_DIGS);
 	if (cn < 0) {
-		dv_zero(c - cn, FP_DIGS + cn);
-		mpn_sub_n(c, fp_prime_get(), c, FP_DIGS);
+		dv_zero(c - cn, RLC_FP_DIGS + cn);
+		mpn_sub_n(c, fp_prime_get(), c, RLC_FP_DIGS);
 	} else {
-		dv_zero(c + cn, FP_DIGS - cn);
+		dv_zero(c + cn, RLC_FP_DIGS - cn);
 	}
 
 #if FP_RDC == MONTY
-	dv_zero(t, FP_DIGS);
-	dv_copy(t + FP_DIGS, c, FP_DIGS);
-	mpn_tdiv_qr(u, c, 0, t, 2 * FP_DIGS, fp_prime_get(), FP_DIGS);
+	dv_zero(t, RLC_FP_DIGS);
+	dv_copy(t + RLC_FP_DIGS, c, RLC_FP_DIGS);
+	mpn_tdiv_qr(u, c, 0, t, 2 * RLC_FP_DIGS, fp_prime_get(), RLC_FP_DIGS);
 #endif
 }

@@ -54,12 +54,13 @@ void dv_print(dig_t *a, int digits) {
 void dv_zero(dig_t *a, int digits) {
 	int i;
 
-	if (digits > DV_DIGS) {
+	if (digits > RLC_DV_DIGS) {
 		THROW(ERR_NO_PRECI);
 	}
 
-	for (i = 0; i < digits; i++, a++)
+	for (i = 0; i < digits; i++, a++) {
 		(*a) = 0;
+	}
 
 	return;
 }
@@ -95,10 +96,10 @@ int dv_cmp(const dig_t *a, const dig_t *b, int size) {
 	a += (size - 1);
 	b += (size - 1);
 
-	r = CMP_EQ;
+	r = RLC_EQ;
 	for (i = 0; i < size; i++, --a, --b) {
-		if (*a != *b && r == CMP_EQ) {
-			r = (*a > *b ? CMP_GT : CMP_LT);
+		if (*a != *b && r == RLC_EQ) {
+			r = (*a > *b ? RLC_GT : RLC_LT);
 		}
 	}
 	return r;
@@ -111,5 +112,5 @@ int dv_cmp_const(const dig_t *a, const dig_t *b, int size) {
 		r |= a[i] ^ b[i];
 	}
 
-	return (r == 0 ? CMP_EQ : CMP_NE);
+	return (r == 0 ? RLC_EQ : RLC_NE);
 }

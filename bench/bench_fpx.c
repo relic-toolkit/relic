@@ -51,7 +51,7 @@ static void memory2(void) {
 }
 
 static void util2(void) {
-	uint8_t bin[2 * FP_BYTES];
+	uint8_t bin[2 * RLC_FP_BYTES];
 	fp2_t a, b;
 	int l;
 
@@ -356,16 +356,16 @@ static void arith2(void) {
 
 	BENCH_BEGIN("fp2_exp") {
 		fp2_rand(a);
-		e->used = FP_DIGS;
-		dv_copy(e->dp, fp_prime_get(), FP_DIGS);
+		e->used = RLC_FP_DIGS;
+		dv_copy(e->dp, fp_prime_get(), RLC_FP_DIGS);
 		BENCH_ADD(fp2_exp(c, a, e));
 	}
 	BENCH_END;
 
 	BENCH_BEGIN("fp2_exp_uni") {
 		fp2_rand(a);
-		e->used = FP_DIGS;
-		dv_copy(e->dp, fp_prime_get(), FP_DIGS);
+		e->used = RLC_FP_DIGS;
+		dv_copy(e->dp, fp_prime_get(), RLC_FP_DIGS);
 		BENCH_ADD(fp2_exp_uni(c, a, e));
 	}
 	BENCH_END;
@@ -449,7 +449,7 @@ static void memory3(void) {
 }
 
 static void util3(void) {
-	uint8_t bin[3 * FP_BYTES];
+	uint8_t bin[3 * RLC_FP_BYTES];
 	fp3_t a, b;
 
 	fp3_null(a);
@@ -692,8 +692,8 @@ static void arith3(void) {
 
 	BENCH_BEGIN("fp3_exp") {
 		fp3_rand(a);
-		e->used = FP_DIGS;
-		dv_copy(e->dp, fp_prime_get(), FP_DIGS);
+		e->used = RLC_FP_DIGS;
+		dv_copy(e->dp, fp_prime_get(), RLC_FP_DIGS);
 		BENCH_ADD(fp3_exp(c, a, e));
 	}
 	BENCH_END;
@@ -785,7 +785,7 @@ static void memory6(void) {
 }
 
 static void util6(void) {
-	uint8_t bin[6 * FP_BYTES];
+	uint8_t bin[6 * RLC_FP_BYTES];
 	fp6_t a, b;
 
 	fp6_null(a);
@@ -961,8 +961,8 @@ static void arith6(void) {
 
 	BENCH_BEGIN("fp6_exp") {
 		fp6_rand(a);
-		d->used = FP_DIGS;
-		dv_copy(d->dp, fp_prime_get(), FP_DIGS);
+		d->used = RLC_FP_DIGS;
+		dv_copy(d->dp, fp_prime_get(), RLC_FP_DIGS);
 		BENCH_ADD(fp6_exp(c, a, d));
 	}
 	BENCH_END;
@@ -1004,7 +1004,7 @@ static void memory12(void) {
 
 static void util12(void) {
 	fp12_t a, b;
-	uint8_t bin[12 * FP_BYTES];
+	uint8_t bin[12 * RLC_FP_BYTES];
 
 	fp12_null(a);
 	fp12_null(b);
@@ -1075,7 +1075,7 @@ static void util12(void) {
 	BENCH_BEGIN("fp12_write_bin (1)") {
 		fp12_rand(a);
 		fp12_conv_cyc(a, a);
-		BENCH_ADD(fp12_write_bin(bin, 8 * FP_BYTES, a, 1));
+		BENCH_ADD(fp12_write_bin(bin, 8 * RLC_FP_BYTES, a, 1));
 	}
 	BENCH_END;
 
@@ -1088,7 +1088,7 @@ static void util12(void) {
 
 	BENCH_BEGIN("fp12_read_bin (1)") {
 		fp12_rand(a);
-		fp12_write_bin(bin, 8 * FP_BYTES, a, 1);
+		fp12_write_bin(bin, 8 * RLC_FP_BYTES, a, 1);
 		BENCH_ADD(fp12_read_bin(a, bin, sizeof(bin)));
 	}
 	BENCH_END;
@@ -1285,7 +1285,7 @@ static void arith12(void) {
 
 	BENCH_BEGIN("fp12_exp") {
 		fp12_rand(a);
-		bn_rand(e, BN_POS, FP_BITS);
+		bn_rand(e, RLC_POS, RLC_FP_BITS);
 		BENCH_ADD(fp12_exp(c, a, e));
 	}
 	BENCH_END;
@@ -1293,7 +1293,7 @@ static void arith12(void) {
 	BENCH_BEGIN("fp12_exp (cyc)") {
 		fp12_rand(a);
 		fp12_conv_cyc(a, a);
-		bn_rand(e, BN_POS, FP_BITS);
+		bn_rand(e, RLC_POS, RLC_FP_BITS);
 		BENCH_ADD(fp12_exp(c, a, e));
 	}
 	BENCH_END;
@@ -1304,8 +1304,8 @@ static void arith12(void) {
 		bn_zero(e);
 		fp_param_get_var(e);
 		if (bn_is_zero(e)) {
-			bn_set_2b(e, FP_BITS - 1);
-			bn_set_bit(e, FP_BITS / 2, 1);
+			bn_set_2b(e, RLC_FP_BITS - 1);
+			bn_set_bit(e, RLC_FP_BITS / 2, 1);
 			bn_set_bit(e, 0, 1);
 		}
 		BENCH_ADD(fp12_exp_cyc(c, a, e));
@@ -1313,7 +1313,7 @@ static void arith12(void) {
 	BENCH_END;
 
 	BENCH_BEGIN("fp12_exp_cyc_sps (param)") {
-		int l = MAX_TERMS + 1, k[MAX_TERMS + 1];
+		int l = RLC_TERMS + 1, k[RLC_TERMS + 1];
 		fp_param_get_sps(k, &l);
 		fp12_rand(a);
 		BENCH_ADD(fp12_exp_cyc_sps(c, a, k, l));
@@ -1601,8 +1601,8 @@ static void arith18(void) {
 
 	BENCH_BEGIN("fp18_exp") {
 		fp18_rand(a);
-		e->used = FP_DIGS;
-		dv_copy(e->dp, fp_prime_get(), FP_DIGS);
+		e->used = RLC_FP_DIGS;
+		dv_copy(e->dp, fp_prime_get(), RLC_FP_DIGS);
 		BENCH_ADD(fp18_exp(c, a, e));
 	}
 	BENCH_END;
@@ -1610,8 +1610,8 @@ static void arith18(void) {
 	BENCH_BEGIN("fp18_exp (cyc)") {
 		fp18_rand(a);
 		fp18_conv_cyc(a, a);
-		e->used = FP_DIGS;
-		dv_copy(e->dp, fp_prime_get(), FP_DIGS);
+		e->used = RLC_FP_DIGS;
+		dv_copy(e->dp, fp_prime_get(), RLC_FP_DIGS);
 		BENCH_ADD(fp18_exp(c, a, e));
 	}
 	BENCH_END;
@@ -1622,8 +1622,8 @@ static void arith18(void) {
 		bn_zero(e);
 		fp_param_get_var(e);
 		if (bn_is_zero(e)) {
-			bn_set_2b(e, FP_BITS - 1);
-			bn_set_bit(e, FP_BITS / 2, 1);
+			bn_set_2b(e, RLC_FP_BITS - 1);
+			bn_set_bit(e, RLC_FP_BITS / 2, 1);
 			bn_set_bit(e, 0, 1);
 		}
 		BENCH_ADD(fp18_exp(c, a, e));
@@ -1631,7 +1631,7 @@ static void arith18(void) {
 	BENCH_END;
 
 	BENCH_BEGIN("fp18_exp_cyc_sps (param)") {
-		int l = MAX_TERMS + 1, k[MAX_TERMS + 1];
+		int l = RLC_TERMS + 1, k[RLC_TERMS + 1];
 		fp_param_get_sps(k, &l);
 		fp18_rand(a);
 		BENCH_ADD(fp18_exp_cyc_sps(c, a, k, l));
@@ -1677,7 +1677,7 @@ static void arith18(void) {
 }
 
 int main(void) {
-	if (core_init() != STS_OK) {
+	if (core_init() != RLC_OK) {
 		core_clean();
 		return 1;
 	}
@@ -1687,9 +1687,9 @@ int main(void) {
 	util_banner("Benchmarks for the FPX module:", 0);
 
 	/* Try using a pairing-friendly curve for faster exponentiation method. */
-	if (pc_param_set_any() != STS_OK) {
+	if (pc_param_set_any() != RLC_OK) {
 		/* If it does not work, try a tower-friendly field. */
-		if (fp_param_set_any_tower() == STS_ERR) {
+		if (fp_param_set_any_tower() == RLC_ERR) {
 			THROW(ERR_NO_FIELD);
 			core_clean();
 			return 0;

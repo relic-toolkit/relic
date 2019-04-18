@@ -95,7 +95,7 @@ static void rng(void) {
 #endif
 
 int main(void) {
-	if (core_init() != STS_OK) {
+	if (core_init() != RLC_OK) {
 		core_clean();
 		return 1;
 	}

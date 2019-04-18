@@ -61,6 +61,52 @@ static void empty(int *a) {
 
 #endif /* OVER && TIMER && BENCH > 1 */
 
+/**
+ * Shared parameter for these timer.
+ */
+#if TIMER == HREAL
+#define CLOCK			CLOCK_REALTIME
+#elif TIMER == HPROC
+#define CLOCK			CLOCK_PROCESS_CPUTIME_ID
+#elif TIMER == HTHRD
+#define CLOCK			CLOCK_THREAD_CPUTIME_ID
+#else
+#define CLOCK			NULL
+#endif
+
+/**
+ * Timer type.
+ */
+#if OPSYS == DUINO && TIMER == HREAL
+
+typedef uint32_t bench_t;
+
+#elif TIMER == HREAL || TIMER == HPROC || TIMER == HTHRD
+
+#include <sys/time.h>
+#include <time.h>
+typedef struct timespec bench_t;
+
+#elif TIMER == ANSI
+
+#include <time.h>
+typedef clock_t bench_t;
+
+#elif TIMER == POSIX
+
+#include <sys/time.h>
+typedef struct timeval bench_t;
+
+#elif TIMER == CYCLE
+
+typedef unsigned long long bench_t;
+
+#else
+
+typedef unsigned long long bench_t;
+
+#endif
+
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/

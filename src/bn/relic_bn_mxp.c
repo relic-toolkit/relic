@@ -38,7 +38,7 @@
 /**
  * Size of precomputation table.
  */
-#define RELIC_TABLE_SIZE			64
+#define RLC_TABLE_SIZE			64
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -89,12 +89,12 @@ void bn_mxp_basic(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 		bn_mod_monty_back(r, r, m);
 #endif
 
-		if (bn_sign(b) == BN_NEG) {
+		if (bn_sign(b) == RLC_NEG) {
 			bn_gcd_ext(t, r, NULL, r, m);
-			if (bn_sign(r) == BN_NEG) {
+			if (bn_sign(r) == RLC_NEG) {
 				bn_add(r, r, m);
 			}
-			if (bn_cmp_dig(t, 1) == CMP_EQ) {
+			if (bn_cmp_dig(t, 1) == RLC_EQ) {
 				bn_copy(c, r);
 			} else {
 				bn_zero(c);
@@ -119,9 +119,9 @@ void bn_mxp_basic(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 #if BN_MXP == SLIDE || !defined(STRIP)
 
 void bn_mxp_slide(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
-	bn_t tab[RELIC_TABLE_SIZE], t, u, r;
+	bn_t tab[RLC_TABLE_SIZE], t, u, r;
 	int i, j, l, w = 1;
-	uint8_t win[RELIC_BN_BITS];
+	uint8_t win[RLC_BN_BITS];
 
 	if (bn_is_zero(b)) {
 		bn_set_dig(c, 1);
@@ -132,7 +132,7 @@ void bn_mxp_slide(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 	bn_null(u);
 	bn_null(r);
 	/* Initialize table. */
-	for (i = 0; i < RELIC_TABLE_SIZE; i++) {
+	for (i = 0; i < RLC_TABLE_SIZE; i++) {
 		bn_null(tab[i]);
 	}
 
@@ -178,7 +178,7 @@ void bn_mxp_slide(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 			bn_mod(tab[2 * i + 1], tab[2 * i + 1], m, u);
 		}
 
-		l = RELIC_BN_BITS + 1;
+		l = RLC_BN_BITS + 1;
 		bn_rec_slw(win, &l, b, w);
 		for (i = 0; i < l; i++) {
 			if (win[i] == 0) {
@@ -198,12 +198,12 @@ void bn_mxp_slide(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 		bn_mod_monty_back(r, r, m);
 #endif
 
-		if (bn_sign(b) == BN_NEG) {
+		if (bn_sign(b) == RLC_NEG) {
 			bn_gcd_ext(t, r, NULL, r, m);
-			if (bn_sign(r) == BN_NEG) {
+			if (bn_sign(r) == RLC_NEG) {
 				bn_add(r, r, m);
 			}
-			if (bn_cmp_dig(t, 1) == CMP_EQ) {
+			if (bn_cmp_dig(t, 1) == RLC_EQ) {
 				bn_copy(c, r);
 			} else {
 				bn_zero(c);
@@ -262,7 +262,7 @@ void bn_mxp_monty(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 
 		for (i = bn_bits(b) - 1; i >= 0; i--) {
 			j = bn_get_bit(b, i);
-			dv_swap_cond(tab[0]->dp, tab[1]->dp, BN_DIGS, j ^ 1);
+			dv_swap_cond(tab[0]->dp, tab[1]->dp, RLC_BN_DIGS, j ^ 1);
 			mask = -(j ^ 1);
 			t = (tab[0]->used ^ tab[1]->used) & mask;
 			tab[0]->used ^= t;
@@ -271,7 +271,7 @@ void bn_mxp_monty(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 			bn_mod(tab[0], tab[0], m, u);
 			bn_sqr(tab[1], tab[1]);
 			bn_mod(tab[1], tab[1], m, u);
-			dv_swap_cond(tab[0]->dp, tab[1]->dp, BN_DIGS, j ^ 1);
+			dv_swap_cond(tab[0]->dp, tab[1]->dp, RLC_BN_DIGS, j ^ 1);
 			mask = -(j ^ 1);
 			t = (tab[0]->used ^ tab[1]->used) & mask;
 			tab[0]->used ^= t;
@@ -286,17 +286,17 @@ void bn_mxp_monty(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 
 		/* Silly branchless code, since called functions not constant-time. */
 		bn_gcd_ext(tab[1], tab[0], NULL, u, m);
-		dv_swap_cond(u->dp, tab[0]->dp, BN_DIGS, bn_sign(b) == BN_NEG);
-		if (bn_sign(b) == BN_NEG) {
+		dv_swap_cond(u->dp, tab[0]->dp, RLC_BN_DIGS, bn_sign(b) == RLC_NEG);
+		if (bn_sign(b) == RLC_NEG) {
 			u->sign = tab[0]->sign;
-			if (bn_cmp_dig(tab[1], 1) != CMP_EQ) {
+			if (bn_cmp_dig(tab[1], 1) != RLC_EQ) {
 				bn_zero(c);
 				THROW(ERR_NO_VALID);
 			}
 		}
 		bn_add(tab[1], u, m);
-		dv_swap_cond(u->dp, tab[1]->dp, BN_DIGS, bn_sign(b) == BN_NEG && bn_sign(u) == BN_NEG);
-		u->sign = BN_POS;
+		dv_swap_cond(u->dp, tab[1]->dp, RLC_BN_DIGS, bn_sign(b) == RLC_NEG && bn_sign(u) == RLC_NEG);
+		u->sign = RLC_POS;
 		bn_copy(c, u);
 	}
 	CATCH_ANY {

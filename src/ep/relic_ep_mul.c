@@ -41,7 +41,7 @@
 
 static void ep_mul_glv_imp(ep_t r, const ep_t p, const bn_t k) {
 	int l, l0, l1, i, n0, n1, s0, s1;
-	int8_t naf0[FP_BITS + 1], naf1[FP_BITS + 1], *t0, *t1;
+	int8_t naf0[RLC_FP_BITS + 1], naf1[RLC_FP_BITS + 1], *t0, *t1;
 	bn_t n, k0, k1, v1[3], v2[3];
 	ep_t q, t[1 << (EP_WIDTH - 2)];
 
@@ -80,18 +80,18 @@ static void ep_mul_glv_imp(ep_t r, const ep_t p, const bn_t k) {
 		bn_abs(k0, k0);
 		bn_abs(k1, k1);
 
-		if (s0 == BN_POS) {
+		if (s0 == RLC_POS) {
 			ep_tab(t, p, EP_WIDTH);
 		} else {
 			ep_neg(q, p);
 			ep_tab(t, q, EP_WIDTH);
 		}
 
-		l0 = l1 = FP_BITS + 1;
+		l0 = l1 = RLC_FP_BITS + 1;
 		bn_rec_naf(naf0, &l0, k0, EP_WIDTH);
 		bn_rec_naf(naf1, &l1, k1, EP_WIDTH);
 
-		l = MAX(l0, l1);
+		l = RLC_MAX(l0, l1);
 		t0 = naf0 + l - 1;
 		t1 = naf1 + l - 1;
 		for (i = l0; i < l; i++)
@@ -130,7 +130,7 @@ static void ep_mul_glv_imp(ep_t r, const ep_t p, const bn_t k) {
 		}
 		/* Convert r to affine coordinates. */
 		ep_norm(r, r);
-		if (bn_sign(k) == BN_NEG) {
+		if (bn_sign(k) == RLC_NEG) {
 			ep_neg(r, r);
 		}
 	}
@@ -160,7 +160,7 @@ static void ep_mul_glv_imp(ep_t r, const ep_t p, const bn_t k) {
 
 static void ep_mul_naf_imp(ep_t r, const ep_t p, const bn_t k) {
 	int i, l, n;
-	int8_t naf[FP_BITS + 1];
+	int8_t naf[RLC_FP_BITS + 1];
 	ep_t t[1 << (EP_WIDTH - 2)];
 
 	if (bn_is_zero(k)) {
@@ -195,7 +195,7 @@ static void ep_mul_naf_imp(ep_t r, const ep_t p, const bn_t k) {
 		}
 		/* Convert r to affine coordinates. */
 		ep_norm(r, r);
-		if (bn_sign(k) == BN_NEG) {
+		if (bn_sign(k) == RLC_NEG) {
 			ep_neg(r, r);
 		}
 	}
@@ -219,7 +219,7 @@ static void ep_mul_naf_imp(ep_t r, const ep_t p, const bn_t k) {
 
 static void ep_mul_reg_imp(ep_t r, const ep_t p, const bn_t k) {
 	int i, j, l, n;
-	int8_t reg[CEIL(FP_BITS + 1, EP_WIDTH - 1)], *_k;
+	int8_t reg[RLC_CEIL(RLC_FP_BITS + 1, EP_WIDTH - 1)], *_k;
 	ep_t t[1 << (EP_WIDTH - 2)];
 
 	for (i = 0; i < (1 << (EP_WIDTH - 2)); i++) {
@@ -240,8 +240,8 @@ static void ep_mul_reg_imp(ep_t r, const ep_t p, const bn_t k) {
 		ep_tab(t, p, EP_WIDTH);
 
 		/* Compute the w-NAF representation of k. */
-		l = CEIL(FP_BITS + 1, EP_WIDTH - 1);
-		bn_rec_reg(reg, &l, k, FP_BITS, EP_WIDTH);
+		l = RLC_CEIL(RLC_FP_BITS + 1, EP_WIDTH - 1);
+		bn_rec_reg(reg, &l, k, RLC_FP_BITS, EP_WIDTH);
 
 		_k = reg + l - 1;
 
@@ -305,7 +305,7 @@ void ep_mul_basic(ep_t r, const ep_t p, const bn_t k) {
 		}
 
 		ep_norm(r, t);
-		if (bn_sign(k) == BN_NEG) {
+		if (bn_sign(k) == RLC_NEG) {
 			ep_neg(r, r);
 		}
 	}
@@ -324,7 +324,7 @@ void ep_mul_basic(ep_t r, const ep_t p, const bn_t k) {
 void ep_mul_slide(ep_t r, const ep_t p, const bn_t k) {
 	ep_t t[1 << (EP_WIDTH - 1)], q;
 	int i, j, l;
-	uint8_t win[FP_BITS + 1];
+	uint8_t win[RLC_FP_BITS + 1];
 
 	ep_null(q);
 
@@ -358,7 +358,7 @@ void ep_mul_slide(ep_t r, const ep_t p, const bn_t k) {
 #endif
 
 		ep_set_infty(q);
-		l = FP_BITS + 1;
+		l = RLC_FP_BITS + 1;
 		bn_rec_slw(win, &l, k, EP_WIDTH);
 		for (i = 0; i < l; i++) {
 			if (win[i] == 0) {
@@ -372,7 +372,7 @@ void ep_mul_slide(ep_t r, const ep_t p, const bn_t k) {
 		}
 
 		ep_norm(r, q);
-		if (bn_sign(k) == BN_NEG) {
+		if (bn_sign(k) == RLC_NEG) {
 			ep_neg(r, r);
 		}
 	}
@@ -411,18 +411,18 @@ void ep_mul_monty(ep_t r, const ep_t p, const bn_t k) {
 
 		for (int i = bn_bits(k) - 1; i >= 0; i--) {
 			int j = bn_get_bit(k, i);
-			dv_swap_cond(t[0]->x, t[1]->x, FP_DIGS, j ^ 1);
-			dv_swap_cond(t[0]->y, t[1]->y, FP_DIGS, j ^ 1);
-			dv_swap_cond(t[0]->z, t[1]->z, FP_DIGS, j ^ 1);
+			dv_swap_cond(t[0]->x, t[1]->x, RLC_FP_DIGS, j ^ 1);
+			dv_swap_cond(t[0]->y, t[1]->y, RLC_FP_DIGS, j ^ 1);
+			dv_swap_cond(t[0]->z, t[1]->z, RLC_FP_DIGS, j ^ 1);
 			ep_add(t[0], t[0], t[1]);
 			ep_dbl(t[1], t[1]);
-			dv_swap_cond(t[0]->x, t[1]->x, FP_DIGS, j ^ 1);
-			dv_swap_cond(t[0]->y, t[1]->y, FP_DIGS, j ^ 1);
-			dv_swap_cond(t[0]->z, t[1]->z, FP_DIGS, j ^ 1);
+			dv_swap_cond(t[0]->x, t[1]->x, RLC_FP_DIGS, j ^ 1);
+			dv_swap_cond(t[0]->y, t[1]->y, RLC_FP_DIGS, j ^ 1);
+			dv_swap_cond(t[0]->z, t[1]->z, RLC_FP_DIGS, j ^ 1);
 		}
 
 		ep_norm(r, t[0]);
-		if (bn_sign(k) == BN_NEG) {
+		if (bn_sign(k) == RLC_NEG) {
 			ep_neg(r, r);
 		}
 	} CATCH_ANY {

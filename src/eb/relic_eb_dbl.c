@@ -72,12 +72,12 @@ static void eb_dbl_basic_imp(eb_t r, const eb_t p) {
 
 		/* t2 = lambda^2 + lambda + a2. */
 		switch (eb_curve_opt_a()) {
-			case OPT_ZERO:
+			case RLC_ZERO:
 				break;
-			case OPT_ONE:
+			case RLC_ONE:
 				fb_add_dig(t2, t2, (dig_t)1);
 				break;
-			case OPT_DIGIT:
+			case RLC_TINY:
 				fb_add_dig(t2, t2, eb_curve_get_a()[0]);
 				break;
 			default:
@@ -157,12 +157,12 @@ static void eb_dbl_projc_imp(eb_t r, const eb_t p) {
 
 		/* C^2 + D + a2 * z3. */
 		switch (eb_curve_opt_a()) {
-			case OPT_ZERO:
+			case RLC_ZERO:
 				break;
-			case OPT_ONE:
+			case RLC_ONE:
 				fb_add(r->x, r->z, r->x);
 				break;
-			case OPT_DIGIT:
+			case RLC_TINY:
 				fb_mul_dig(r->y, r->z, eb_curve_get_a()[0]);
 				fb_add(r->x, r->y, r->x);
 				break;

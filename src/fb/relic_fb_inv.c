@@ -61,7 +61,7 @@ void fb_inv_basic(fb_t c, const fb_t a) {
 
 #if (FB_POLYN % 2) == 0
 		fb_sqr(v, a);
-		for (i = 2; i < FB_BITS; i++) {
+		for (i = 2; i < RLC_FB_BITS; i++) {
 			fb_sqr(u, a);
 			for (int j = 1; j < i; j++) {
 				fb_sqr(u, u);
@@ -73,7 +73,7 @@ void fb_inv_basic(fb_t c, const fb_t a) {
 		/* u = a^2, v = 1, x = (m - 1)/2. */
 		fb_sqr(u, a);
 		fb_set_dig(v, 1);
-		x = (FB_BITS - 1) >> 1;
+		x = (RLC_FB_BITS - 1) >> 1;
 
 		while (x != 0) {
 			/* u = u * a^{2x}. */
@@ -130,15 +130,15 @@ void fb_inv_binar(fb_t c, const fb_t a) {
 		/* u = a, v = f, g1 = 1, g2 = 0. */
 		fb_copy(u, a);
 		fb_copy(v, fb_poly_get());
-		if (FB_BITS % DIGIT == 0) {
-			v[FB_DIGS] = 1;
+		if (RLC_FB_BITS % RLC_DIG == 0) {
+			v[RLC_FB_DIGS] = 1;
 		}
-		dv_zero(g1, 2 * FB_DIGS);
+		dv_zero(g1, 2 * RLC_FB_DIGS);
 		g1[0] = 1;
-		dv_zero(g2, 2 * FB_DIGS);
+		dv_zero(g2, 2 * RLC_FB_DIGS);
 
-		lu = FB_DIGS;
-		lv = FB_DIGS + (FB_BITS % DIGIT == 0);
+		lu = RLC_FB_DIGS;
+		lv = RLC_FB_DIGS + (RLC_FB_BITS % RLC_DIG == 0);
 
 		/* While (u != 1 && v != 1. */
 		while (1) {
@@ -149,11 +149,11 @@ void fb_inv_binar(fb_t c, const fb_t a) {
 				/* If z divides g1 then g1 = g1/z; else g1 = (g1 + f)/z. */
 				if ((g1[0] & 0x01) == 1) {
 					fb_poly_add(g1, g1);
-					if (FB_BITS % DIGIT == 0) {
-						g1[FB_DIGS] ^= 1;
+					if (RLC_FB_BITS % RLC_DIG == 0) {
+						g1[RLC_FB_DIGS] ^= 1;
 					}
 				}
-				bn_rsh1_low(g1, g1, FB_DIGS + 1);
+				bn_rsh1_low(g1, g1, RLC_FB_DIGS + 1);
 			}
 
 			while (u[lu - 1] == 0)
@@ -168,11 +168,11 @@ void fb_inv_binar(fb_t c, const fb_t a) {
 				/* If z divides g2 then g2 = g2/z; else (g2 = g2 + f)/z. */
 				if ((g2[0] & 0x01) == 1) {
 					fb_poly_add(g2, g2);
-					if (FB_BITS % DIGIT == 0) {
-						g2[FB_DIGS] ^= 1;
+					if (RLC_FB_BITS % RLC_DIG == 0) {
+						g2[RLC_FB_DIGS] ^= 1;
 					}
 				}
-				bn_rsh1_low(g2, g2, FB_DIGS + 1);
+				bn_rsh1_low(g2, g2, RLC_FB_DIGS + 1);
 			}
 
 			while (v[lv - 1] == 0)
@@ -233,8 +233,8 @@ void fb_inv_exgcd(fb_t c, const fb_t a) {
 		dv_new(_g1);
 		dv_new(_g2);
 
-		dv_zero(_g1, FB_DIGS + 1);
-		dv_zero(_g2, FB_DIGS + 1);
+		dv_zero(_g1, RLC_FB_DIGS + 1);
+		dv_zero(_g2, RLC_FB_DIGS + 1);
 
 		u = _u;
 		v = _v;
@@ -246,11 +246,11 @@ void fb_inv_exgcd(fb_t c, const fb_t a) {
 		fb_copy(v, fb_poly_get());
 		g1[0] = 1;
 
-		lu = lv = FB_DIGS;
+		lu = lv = RLC_FB_DIGS;
 		l1 = l2 = 1;
 
 		bu = fb_bits(u);
-		bv = FB_BITS + 1;
+		bv = RLC_FB_BITS + 1;
 		j = bu - bv;
 
 		/* While (u != 1). */
@@ -276,7 +276,7 @@ void fb_inv_exgcd(fb_t c, const fb_t a) {
 				j = -j;
 			}
 
-			SPLIT(j, d, j, DIG_LOG);
+			RLC_RIP(j, d, j);
 
 			/* u = u + v * z^j. */
 			if (j > 0) {
@@ -309,7 +309,7 @@ void fb_inv_exgcd(fb_t c, const fb_t a) {
 
 			/* j = deg(u) - deg(v). */
 			lt = util_bits_dig(u[lu - 1]) - util_bits_dig(v[lv - 1]);
-			j = ((lu - lv) << DIG_LOG) + lt;
+			j = ((lu - lv) << RLC_DIG_LOG) + lt;
 		}
 		/* Return g1. */
 		fb_copy(c, g1);
@@ -355,18 +355,18 @@ void fb_inv_almos(fb_t c, const fb_t a) {
 		v = _v;
 
 		/* b = 1, d = 0, u = a, v = f. */
-		dv_zero(b, 2 * FB_DIGS);
+		dv_zero(b, 2 * RLC_FB_DIGS);
 		fb_set_dig(b, 1);
-		dv_zero(d, 2 * FB_DIGS);
+		dv_zero(d, 2 * RLC_FB_DIGS);
 		fb_copy(u, a);
 		fb_copy(v, fb_poly_get());
 
-		if (FB_BITS % DIGIT == 0) {
-			v[FB_DIGS] = 1;
+		if (RLC_FB_BITS % RLC_DIG == 0) {
+			v[RLC_FB_DIGS] = 1;
 		}
 
-		lu = FB_DIGS;
-		lv = FB_DIGS + (FB_BITS % DIGIT == 0);
+		lu = RLC_FB_DIGS;
+		lv = RLC_FB_DIGS + (RLC_FB_BITS % RLC_DIG == 0);
 
 		while (1) {
 			/* While z divides u do. */
@@ -376,12 +376,12 @@ void fb_inv_almos(fb_t c, const fb_t a) {
 				/* If z divide v then b = b/z; else b = (b + f)/z. */
 				if ((b[0] & 0x01) == 1) {
 					fb_poly_add(b, b);
-					if (FB_BITS % DIGIT == 0) {
-						b[FB_DIGS] ^= 1;
+					if (RLC_FB_BITS % RLC_DIG == 0) {
+						b[RLC_FB_DIGS] ^= 1;
 					}
 				}
-				/* b often has FB_DIGS digits. */
-				bn_rsh1_low(b, b, FB_DIGS + 1);
+				/* b often has RLC_FB_DIGS digits. */
+				bn_rsh1_low(b, b, RLC_FB_DIGS + 1);
 			}
 			/* If u = 1, return b. */
 			while (u[lu - 1] == 0)
@@ -446,7 +446,7 @@ void fb_inv_itoht(fb_t c, const fb_t a) {
 
 #if (FB_POLYN % 2) == 0
 		fb_sqr(table[0], a);
-		for (i = 2; i < FB_BITS; i++) {
+		for (i = 2; i < RLC_FB_BITS; i++) {
 			fb_sqr(table[1], a);
 			for (int j = 1; j < i; j++) {
 				fb_sqr(table[1], table[1]);
@@ -518,13 +518,13 @@ void fb_inv_bruch(fb_t c, const fb_t a) {
 		u = _u;
 		v = _v;
 
-		for (int i = 1; i <= 2 * FB_BITS; i++) {
-			if ((r[FB_DIGS - 1] & ((dig_t)1 << (FB_BITS % DIGIT))) == 0) {
+		for (int i = 1; i <= 2 * RLC_FB_BITS; i++) {
+			if ((r[RLC_FB_DIGS - 1] & ((dig_t)1 << (RLC_FB_BITS % RLC_DIG))) == 0) {
 				fb_lsh(r, r, 1);
 				fb_lsh(u, u, 1);
 				delta++;
 			} else {
-				if ((s[FB_DIGS - 1] & ((dig_t)1 << (FB_BITS % DIGIT)))) {
+				if ((s[RLC_FB_DIGS - 1] & ((dig_t)1 << (RLC_FB_BITS % RLC_DIG)))) {
 					fb_add(s, s, r);
 					fb_add(v, v, u);
 				}
@@ -587,25 +587,25 @@ void fb_inv_ctaia(fb_t c, const fb_t a) {
 		fb_zero(v);
 		d = -1;
 
-		for (k = 1; k < 2 * FB_BITS; k++) {
+		for (k = 1; k < 2 * RLC_FB_BITS; k++) {
 			r0 = r[0] & 1;
 			d0 = d >> (8 * sizeof(int) - 1);
 
-			for (i = 0; i < FB_DIGS; i++) {
+			for (i = 0; i < RLC_FB_DIGS; i++) {
 				r[i] ^= (s[i] & -r0);
 				u[i] ^= (v[i] & -r0);
 				s[i] ^= (r[i] & d0);
 				v[i] ^= (u[i] & d0);
 			}
 
-			d = SEL(d, -d, r0 & -d0);
+			d = RLC_SEL(d, -d, r0 & -d0);
 
 			fb_rsh(r, r, 1);
 
 			r0 = u[0] & 1;
 			fb_poly_add(t, u);
-			for (i = 0; i < FB_DIGS; i++) {
-				u[i] = SEL(u[i], t[i], r0);
+			for (i = 0; i < RLC_FB_DIGS; i++) {
+				u[i] = RLC_SEL(u[i], t[i], r0);
 			}
 			fb_rsh(u, u, 1);
 			d--;

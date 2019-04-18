@@ -38,45 +38,45 @@
 
 int bn_cmp_abs(const bn_t a, const bn_t b) {
 	if (a->used > b->used) {
-		return CMP_GT;
+		return RLC_GT;
 	}
 
 	if (a->used < b->used) {
-		return CMP_LT;
+		return RLC_LT;
 	}
 
 	return dv_cmp(a->dp, b->dp, a->used);
 }
 
 int bn_cmp_dig(const bn_t a, dig_t b) {
-	if (a->sign == BN_NEG) {
-		return CMP_LT;
+	if (a->sign == RLC_NEG) {
+		return RLC_LT;
 	}
 
 	if (a->used > 1) {
-		return CMP_GT;
+		return RLC_GT;
 	}
 
 	if (a->dp[0] > b) {
-		return CMP_GT;
+		return RLC_GT;
 	}
 
 	if (a->dp[0] < b) {
-		return CMP_LT;
+		return RLC_LT;
 	}
 
-	return CMP_EQ;
+	return RLC_EQ;
 }
 
 int bn_cmp(const bn_t a, const bn_t b) {
-	if (a->sign == BN_POS && b->sign == BN_NEG) {
-		return CMP_GT;
+	if (a->sign == RLC_POS && b->sign == RLC_NEG) {
+		return RLC_GT;
 	}
-	if (a->sign == BN_NEG && b->sign == BN_POS) {
-		return CMP_LT;
+	if (a->sign == RLC_NEG && b->sign == RLC_POS) {
+		return RLC_LT;
 	}
 
-	if (a->sign == BN_NEG) {
+	if (a->sign == RLC_NEG) {
 		return bn_cmp_abs(b, a);
 	}
 

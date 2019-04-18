@@ -68,7 +68,7 @@ int bn_factor(bn_t c, const bn_t a) {
 
 		bn_sub_dig(t0, t0, 1);
 		bn_gcd(t1, t0, a);
-		if (bn_cmp_dig(t1, 1) == CMP_GT && bn_cmp(t1, a) == CMP_LT) {
+		if (bn_cmp_dig(t1, 1) == RLC_GT && bn_cmp(t1, a) == RLC_LT) {
 			bn_copy(c, t1);
 		} else {
 			result = 0;

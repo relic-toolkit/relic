@@ -33,8 +33,8 @@
  * @ingroup fbx
  */
 
-#ifndef RELIC_FBX_H
-#define RELIC_FBX_H
+#ifndef RLC_FBX_H
+#define RLC_FBX_H
 
 #include "relic_fb.h"
 #include "relic_types.h"
@@ -136,11 +136,11 @@ typedef fb_t fb2_t[2];
  *
  * @param[in] A				- the first quadratic extension field element.
  * @param[in] B				- the second quadratic extension field element.
- * @return CMP_NE if a != b, CMP_EQ if a == b.
+ * @return RLC_NE if a != b, RLC_EQ if a == b.
  */
 #define fb2_cmp(A, B)														\
-		((fb_cmp(A[0], B[0]) == CMP_EQ) && (fb_cmp(A[1], B[1]) == CMP_EQ)	\
-		? CMP_EQ : CMP_NE)													\
+		((fb_cmp(A[0], B[0]) == RLC_EQ) && (fb_cmp(A[1], B[1]) == RLC_EQ)	\
+		? RLC_EQ : RLC_NE)													\
 
 /**
  * Adds two quadratic extension field elements. Computes c = a + b.
@@ -201,4 +201,4 @@ void fb2_slv(fb2_t c, fb2_t a);
  */
 void fb2_inv(fb2_t c, fb2_t a);
 
-#endif /* !RELIC_FBX_H */
+#endif /* !RLC_FBX_H */

@@ -41,7 +41,7 @@
  *
  * @param[out] A 				- the element to assign.
  */
-#define gt_rand_imp(A)			CAT(GT_LOWER, rand)(A)
+#define gt_rand_imp(A)			RLC_CAT(GT_LOWER, rand)(A)
 
 /**
  * Internal macro to power an element from G_T. Computes C = A^B.
@@ -51,9 +51,9 @@
  * @param[in] B				- the integer exponent.
  */
 #if FP_PRIME < 1536
-#define gt_exp_imp(C, A, B)		CAT(GT_LOWER, exp_cyc)(C, A, B);
+#define gt_exp_imp(C, A, B)		RLC_CAT(GT_LOWER, exp_cyc)(C, A, B);
 #else
-#define gt_exp_imp(C, A, B)		CAT(GT_LOWER, exp_uni)(C, A, B);
+#define gt_exp_imp(C, A, B)		RLC_CAT(GT_LOWER, exp_uni)(C, A, B);
 #endif
 
 /*============================================================================*/
@@ -123,7 +123,7 @@ int g1_is_valid(g1_t a) {
 		g1_new(u);
 
 		ep_curve_get_cof(n);
-		if (bn_cmp_dig(n, 1) == CMP_EQ) {
+		if (bn_cmp_dig(n, 1) == RLC_EQ) {
 			/* If curve has prime order, simpler to check if point on curve. */
 			return ep_is_valid(a);
 		} else {
@@ -135,7 +135,7 @@ int g1_is_valid(g1_t a) {
 			g1_mul(u, a, n);
 			g1_dbl(u, u);
 			g1_neg(u, u);
-			r = (g1_cmp(u, a) == CMP_EQ);
+			r = (g1_cmp(u, a) == RLC_EQ);
 		}
 	} CATCH_ANY {
 		THROW(ERR_CAUGHT);
@@ -166,9 +166,9 @@ int g2_is_valid(g2_t a) {
 		g2_get_ord(n);
 		ep_curve_get_cof(p);
 		bn_mul(n, n, p);
-		dv_copy(p->dp, fp_prime_get(), FP_DIGS);
-		p->used = FP_DIGS;
-		p->sign = BN_POS;
+		dv_copy(p->dp, fp_prime_get(), RLC_FP_DIGS);
+		p->used = RLC_FP_DIGS;
+		p->sign = RLC_POS;
 		/* Compute trace t = p - n + 1. */
 		bn_sub(n, p, n);
 		bn_add_dig(n, n, 1);
@@ -178,7 +178,7 @@ int g2_is_valid(g2_t a) {
 		ep2_frb(v, a, 1);
 		g2_add(v, v, a);
 		/* Check if a^(p + 1) = a^t. */
-		r = (g2_cmp(u, v) == CMP_EQ);
+		r = (g2_cmp(u, v) == RLC_EQ);
 	} CATCH_ANY {
 		THROW(ERR_CAUGHT);
 	} FINALLY {
@@ -208,9 +208,9 @@ int gt_is_valid(gt_t a) {
 		gt_new(v);
 
 		gt_get_ord(n);
-		dv_copy(p->dp, fp_prime_get(), FP_DIGS);
-		p->used = FP_DIGS;
-		p->sign = BN_POS;
+		dv_copy(p->dp, fp_prime_get(), RLC_FP_DIGS);
+		p->used = RLC_FP_DIGS;
+		p->sign = RLC_POS;
 		/* Compute trace t = p - n + 1. */
 		bn_sub(n, p, n);
 		bn_add_dig(n, n, 1);
@@ -220,7 +220,7 @@ int gt_is_valid(gt_t a) {
 		fp12_frb(v, a, 1);
 		gt_mul(v, v, a);
 		/* Check if a^(p + 1) = a^t. */
-		r = (gt_cmp(u, v) == CMP_EQ);
+		r = (gt_cmp(u, v) == RLC_EQ);
 	} CATCH_ANY {
 		THROW(ERR_CAUGHT);
 	} FINALLY {

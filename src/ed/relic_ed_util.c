@@ -157,20 +157,20 @@ void ed_copy(ed_t r, const ed_t p) {
 }
 
 int ed_cmp(const ed_t p, const ed_t q) {
-	int ret = CMP_NE;
+	int ret = RLC_NE;
 
-	if (fp_cmp(p->x, q->x) != CMP_EQ) {
-		ret = CMP_NE;
-	} else if (fp_cmp(p->y, q->y) != CMP_EQ) {
-		ret = CMP_NE;
-	} else if (fp_cmp(p->z, q->z) != CMP_EQ) {
-		ret = CMP_NE;
+	if (fp_cmp(p->x, q->x) != RLC_EQ) {
+		ret = RLC_NE;
+	} else if (fp_cmp(p->y, q->y) != RLC_EQ) {
+		ret = RLC_NE;
+	} else if (fp_cmp(p->z, q->z) != RLC_EQ) {
+		ret = RLC_NE;
 #if ED_ADD == EXTND
-	} else if (fp_cmp(p->t, q->t) != CMP_EQ) {
-		ret = CMP_NE;
+	} else if (fp_cmp(p->t, q->t) != RLC_EQ) {
+		ret = RLC_NE;
 #endif
 	} else {
-		ret = CMP_EQ;
+		ret = RLC_EQ;
 	}
 
 	return ret;
@@ -201,7 +201,7 @@ int ed_is_infty(const ed_t p) {
 	fp_inv(norm_y, p->z);
 	fp_mul(norm_y, p->y, norm_y);
 
-	if (fp_cmp_dig(norm_y, 1) == CMP_EQ && fp_is_zero(p->x)) {
+	if (fp_cmp_dig(norm_y, 1) == RLC_EQ && fp_is_zero(p->x)) {
 		ret = 1;
 	}
 
@@ -234,7 +234,7 @@ void ed_norm(ed_t r, const ed_t p) {
 		return;
 	}
 
-	if (fp_cmp_dig(p->z, 1) == CMP_EQ) {
+	if (fp_cmp_dig(p->z, 1) == RLC_EQ) {
 		/* If the point is represented in affine coordinates, we just copy it. */
 		ed_copy(r, p);
 	} else {
@@ -328,7 +328,7 @@ int ed_is_valid(const ed_t p) {
 			r = ed_affine_is_valid(t->x, t->y);
 #elif ED_ADD == EXTND
 			fp_mul(x_times_y, t->x, t->y);
-			if (fp_cmp(x_times_y, t->t) != CMP_EQ) {
+			if (fp_cmp(x_times_y, t->t) != RLC_EQ) {
 				r = 0;
 			} else {
 				r = ed_affine_is_valid(t->x, t->y);
@@ -372,9 +372,9 @@ int ed_size_bin(const ed_t a, int pack) {
 		return 1;
 	}
 
-	size = 1 + FP_BYTES;
+	size = 1 + RLC_FP_BYTES;
 	if (!pack) {
-		size += FP_BYTES;
+		size += RLC_FP_BYTES;
 	}
 
 	return size;
@@ -400,20 +400,20 @@ void ed_write_bin(uint8_t *bin, int len, const ed_t a, int pack) {
 		ed_norm(t, a);
 
 		if (pack) {
-			if (len != FP_BYTES + 1) {
+			if (len != RLC_FP_BYTES + 1) {
 				THROW(ERR_NO_BUFFER);
 			} else {
 				ed_pck(t, t);
 				bin[0] = 2 | fp_get_bit(t->x, 0);
-				fp_write_bin(bin + 1, FP_BYTES, t->y);
+				fp_write_bin(bin + 1, RLC_FP_BYTES, t->y);
 			}
 		} else {
-			if (len != 2 * FP_BYTES + 1) {
+			if (len != 2 * RLC_FP_BYTES + 1) {
 				THROW(ERR_NO_BUFFER);
 			} else {
 				bin[0] = 4;
-				fp_write_bin(bin + 1, FP_BYTES, t->y);
-				fp_write_bin(bin + FP_BYTES + 1, FP_BYTES, t->x);
+				fp_write_bin(bin + 1, RLC_FP_BYTES, t->y);
+				fp_write_bin(bin + RLC_FP_BYTES + 1, RLC_FP_BYTES, t->x);
 			}
 		}
 	}
@@ -436,15 +436,15 @@ void ed_read_bin(ed_t a, const uint8_t *bin, int len) {
 		}
 	}
 
-	if (len != (FP_BYTES + 1) && len != (2 * FP_BYTES + 1)) {
+	if (len != (RLC_FP_BYTES + 1) && len != (2 * RLC_FP_BYTES + 1)) {
 		THROW(ERR_NO_BUFFER);
 		return;
 	}
 
 	a->norm = 1;
 	fp_set_dig(a->z, 1);
-	fp_read_bin(a->y, bin + 1, FP_BYTES);
-	if (len == FP_BYTES + 1) {
+	fp_read_bin(a->y, bin + 1, RLC_FP_BYTES);
+	if (len == RLC_FP_BYTES + 1) {
 		switch (bin[0]) {
 			case 2:
 				fp_zero(a->x);
@@ -460,9 +460,9 @@ void ed_read_bin(ed_t a, const uint8_t *bin, int len) {
 		ed_upk(a, a);
 	}
 
-	if (len == 2 * FP_BYTES + 1) {
+	if (len == 2 * RLC_FP_BYTES + 1) {
 		if (bin[0] == 4) {
-			fp_read_bin(a->x, bin + FP_BYTES + 1, FP_BYTES);
+			fp_read_bin(a->x, bin + RLC_FP_BYTES + 1, RLC_FP_BYTES);
 		} else {
 			THROW(ERR_NO_VALID);
 		}

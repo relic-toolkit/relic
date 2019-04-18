@@ -35,17 +35,17 @@
 void ed_curve_init(void) {
 	ctx_t *ctx = core_get();
 #ifdef ED_PRECO
-	for (int i = 0; i < RELIC_ED_TABLE; i++) {
+	for (int i = 0; i < RLC_ED_TABLE; i++) {
 		ctx->ed_ptr[i] = &(ctx->ed_pre[i]);
 	}
 #endif
 	ed_set_infty(&ctx->ed_g);
-	bn_init(&ctx->ed_r, FP_DIGS);
-	bn_init(&ctx->ed_h, FP_DIGS);
+	bn_init(&ctx->ed_r, RLC_FP_DIGS);
+	bn_init(&ctx->ed_h, RLC_FP_DIGS);
 #if defined(ED_ENDOM) && (ED_MUL == LWNAF || ED_FIX == COMBS || ED_FIX == LWNAF || !defined(STRIP))
 	for (int i = 0; i < 3; i++) {
-		bn_init(&(ctx->ed_v1[i]), FP_DIGS);
-		bn_init(&(ctx->ed_v2[i]), FP_DIGS);
+		bn_init(&(ctx->ed_v1[i]), RLC_FP_DIGS);
+		bn_init(&(ctx->ed_v2[i]), RLC_FP_DIGS);
 	}
 #endif
 }

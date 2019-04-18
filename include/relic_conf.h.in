@@ -30,11 +30,11 @@
  * @ingroup relic
  */
 
-#ifndef RELIC_CONF_H
-#define RELIC_CONF_H
+#ifndef RLC_CONF_H
+#define RLC_CONF_H
 
 /** Project version. */
-#define RELIC_VERSION "@VERSION@"
+#define RLC_VERSION "@VERSION@"
 
 /** Debugging support. */
 #cmakedefine DEBUG
@@ -465,7 +465,7 @@
 
 /** Affine coordinates. */
 #define BASIC	 1
-/** L�pez-Dahab Projective coordinates. */
+/** López-Dahab Projective coordinates. */
 #define PROJC	 2
 /** Chosen binary elliptic curve coordinate method. */
 #define EB_ADD	 @EB_ADD@
@@ -532,6 +532,8 @@
 /** Width of window processing for unknown point methods. */
 #define ED_WIDTH @ED_WIDTH@
 
+/** Affine coordinates. */
+#define BASIC    1
 /** Simple projective twisted Edwards coordinates */
 #define PROJC	 2
 /** Extended projective twisted Edwards coordinates */
@@ -560,7 +562,7 @@
 /** Binary curves. */
 #define CHAR2    2
 /** Edwards curves */
-#define EDWARD   3
+#define EDDIE    3
 /** Chosen elliptic curve type. */
 #define EC_CUR	 @EC_CUR@
 
@@ -720,4 +722,4 @@ void conf_print(void);
 
 #endif /* ASM */
 
-#endif /* !RELIC_CONF_H */
+#endif /* !RLC_CONF_H */

@@ -33,8 +33,8 @@
  * @ingroup test
  */
 
-#ifndef RELIC_TEST_H
-#define RELIC_TEST_H
+#ifndef RLC_TEST_H
+#define RLC_TEST_H
 
 #include <string.h>
 
@@ -101,4 +101,4 @@ void test_fail(void);
  */
 void test_pass(void);
 
-#endif /* !RELIC_TEST_H */
+#endif /* !RLC_TEST_H */

@@ -29,8 +29,8 @@
  * @ingroup relic
  */
 
-#ifndef RELIC_ERR_H
-#define RELIC_ERR_H
+#ifndef RLC_ERR_H
+#define RLC_ERR_H
 
 #include <stdint.h>
 #include <setjmp.h>
@@ -72,39 +72,15 @@ enum errors {
 	/** Occurs when the library configuration is incorrect. */
 	ERR_NO_CONFIG,
 	/** Constant to indicate the number of errors. */
-	ERR_LAST
+	ERR_MAX
 };
 
-/** Constant to indicate the number of possible errors. */
-#define ERR_MAX			(ERR_LAST - ERR_CAUGHT + 1)
-
-/** Error message respective to ERR_NO_MEMORY. */
-#define MSG_NO_MEMORY 		"not enough memory"
-/** Error message respective to ERR_PRECISION. */
-#define MSG_NO_PRECI 		"insufficient precision"
-/** Error message respective to ERR_NO FILE. */
-#define MSG_NO_FILE			"file not found"
-/** Error message respective to ERR_NO_READ. */
-#define MSG_NO_READ			"can't read bytes from file"
-/** Error message respective to ERR_NO_VALID. */
-#define MSG_NO_VALID		"invalid value passed as input"
-/** Error message respective to ERR_NO_BUFFER. */
-#define MSG_NO_BUFFER		"insufficient buffer capacity"
-/** Error message respective to ERR_NO_FIELD. */
-#define MSG_NO_FIELD		"no finite field supported at this security level"
-/** Error message respective to ERR_NO_CURVE. */
-#define MSG_NO_CURVE		"no curve supported at this security level"
-/** Error message respective to ERR_NO_CONFIG. */
-#define MSG_NO_CONFIG		"invalid library configuration"
-
-/** File name wrapper. */
-#define STR_FILE			STRING(__FILE__)
-
-/** Truncated file name if verbosity is turned off. */
+/** Truncate file name if verbosity is turned off. */
 #ifdef VERBS
-#define ERR_FILE			STR_FILE
+#define ERR_FILE	RLC_STR(__FILE__)
 #else
-#define ERR_FILE			((strrchr(STR_FILE, '/') ? : STR_FILE - 1) + 1)
+#define ERR_FILE															\
+	((strrchr(RLC_STR(__FILE__), '/') ? : RLC_STR(__FILE__) - 1) + 1)
 #endif
 
 /*============================================================================*/
@@ -201,7 +177,7 @@ typedef struct _sts_t {
 #define ERR_THROW(E)													\
 	{																	\
 		ctx_t *_ctx = core_get();										\
-		_ctx->code = STS_ERR;											\
+		_ctx->code = RLC_ERR;											\
 		if (_ctx->last != NULL && _ctx->last->block == 0) {				\
 			exit(E);													\
 		}																\
@@ -281,10 +257,10 @@ typedef struct _sts_t {
  * Stub for the THROW clause.
  */
 #ifdef QUIET
-#define THROW(E)			core_get()->code = STS_ERR;
+#define THROW(E)			core_get()->code = RLC_ERR;
 #else
 #define THROW(E)															\
-	core_get()->code = STS_ERR; 											\
+	core_get()->code = RLC_ERR; 											\
 	util_print("FATAL ERROR in %s:%d\n", ERR_FILE, __LINE__);				\
 
 #endif
@@ -361,4 +337,4 @@ void err_get_msg(err_t *e, char **msg);
  */
 int err_get_code(void);
 
-#endif /* !RELIC_ERR_H */
+#endif /* !RLC_ERR_H */

@@ -40,13 +40,13 @@
 int fb_cmp_dig(const fb_t a, dig_t b) {
 	dig_t r = b;
 
-	for (int i = 0; i < FB_DIGS; i++) {
+	for (int i = 0; i < RLC_FB_DIGS; i++) {
 		r ^= a[i];
 	}
 
-	return (r == 0 ? CMP_EQ : CMP_NE);
+	return (r == 0 ? RLC_EQ : RLC_NE);
 }
 
 int fb_cmp(const fb_t a, const fb_t b) {
-	return dv_cmp_const(a, b, FB_DIGS);
+	return dv_cmp_const(a, b, RLC_FB_DIGS);
 }

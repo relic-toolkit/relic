@@ -52,8 +52,8 @@
 	(R0) += (dig_t)(r);														\
 	(R1) += (R0) < (dig_t)(r);												\
 	(R2) += (R1) < _r;														\
-	(R1) += (dig_t)(r >> (dbl_t)DIGIT);									\
-	(R2) += (R1) < (dig_t)(r >> (dbl_t)DIGIT);							\
+	(R1) += (dig_t)(r >> (dbl_t)RLC_DIG);									\
+	(R2) += (R1) < (dig_t)(r >> (dbl_t)RLC_DIG);							\
 
 /**
  * Accumulates a single precision digit in a triple register variable.

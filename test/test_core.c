@@ -40,10 +40,10 @@ void *master(void *ptr) {
 	int *code = (int *)ptr;
 	core_init();
 	THROW(ERR_NO_MEMORY);
-	if (err_get_code() != STS_ERR) {
-		*code = STS_ERR;
+	if (err_get_code() != RLC_ERR) {
+		*code = RLC_ERR;
 	} else {
-		*code = STS_OK;
+		*code = RLC_OK;
 	}
 	core_clean();
 	return NULL;
@@ -52,10 +52,10 @@ void *master(void *ptr) {
 void *tester(void *ptr) {
 	int *code = (int *)ptr;
 	core_init();
-	if (err_get_code() != STS_OK) {
-		*code = STS_ERR;
+	if (err_get_code() != RLC_OK) {
+		*code = RLC_ERR;
 	} else {
-		*code = STS_OK;
+		*code = RLC_OK;
 	}
 	core_clean();
 	return NULL;
@@ -64,10 +64,10 @@ void *tester(void *ptr) {
 #endif
 
 int main(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 
 	/* Initialize library with default configuration. */
-	if (core_init() != STS_OK) {
+	if (core_init() != RLC_OK) {
 		core_clean();
 		return 1;
 	}
@@ -89,16 +89,16 @@ int main(void) {
 		/* Run function to manipulate the library context. */
 		THROW(ERR_NO_MEMORY);
 		core_set(old_ctx);
-		TEST_ASSERT(err_get_code() == STS_OK, end);
+		TEST_ASSERT(err_get_code() == RLC_OK, end);
 		core_set(&new_ctx);
-		TEST_ASSERT(err_get_code() == STS_ERR, end);
+		TEST_ASSERT(err_get_code() == RLC_ERR, end);
 		/* Now we need to finalize the new context. */
 		core_clean();
 		/* And restore the original context. */
 		core_set(old_ctx);
 	} TEST_END;
 
-	code = STS_OK;
+	code = RLC_OK;
 
 #if MULTI == OPENMP
 	TEST_ONCE("library context is thread-safe") {
@@ -107,46 +107,46 @@ int main(void) {
 		{
 			if (omp_get_thread_num() == 0) {
 				THROW(ERR_NO_MEMORY);
-				if (err_get_code() != STS_ERR) {
-					code = STS_ERR;
+				if (err_get_code() != RLC_ERR) {
+					code = RLC_ERR;
 				}
 			} else {
 				core_init();
-				if (err_get_code() != STS_OK) {
-					code = STS_ERR;
+				if (err_get_code() != RLC_OK) {
+					code = RLC_ERR;
 				}
 				core_clean();
 			}
 		}
-		TEST_ASSERT(code == STS_OK, end);
+		TEST_ASSERT(code == RLC_OK, end);
 	} TEST_END;
 #endif
 
 #if MULTI == PTHREAD
 	TEST_ONCE("library context is thread-safe") {
 		pthread_t thread[CORES];
-		int result[CORES] = { STS_OK };
+		int result[CORES] = { RLC_OK };
 		for (int i = 0; i < CORES; i++) {
 			if (i == 0) {
 				if (pthread_create(&(thread[0]), NULL, master, &(result[0]))) {
-					code = STS_ERR;
+					code = RLC_ERR;
 				}
 			} else {
 				if (pthread_create(&(thread[i]), NULL, tester, &(result[i]))) {
-					code = STS_ERR;
+					code = RLC_ERR;
 				}
 			}
-			if (result[i] != STS_OK) {
-				code = STS_ERR;
+			if (result[i] != RLC_OK) {
+				code = RLC_ERR;
 			}
 		}
 
 		for (int i = 0; i < CORES; i++) {
 			if (pthread_join(thread[i], NULL)) {
-				code = STS_ERR;
+				code = RLC_ERR;
 			}
 		}
-		TEST_ASSERT(code == STS_OK, end);
+		TEST_ASSERT(code == RLC_OK, end);
 	} TEST_END;
 #endif
 

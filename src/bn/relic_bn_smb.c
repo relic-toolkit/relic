@@ -40,7 +40,7 @@ void bn_smb_leg(bn_t c, const bn_t a, const bn_t b) {
 
 	bn_null(t);
 
-	if (bn_cmp(a, b) == CMP_EQ) {
+	if (bn_cmp(a, b) == RLC_EQ) {
 		bn_zero(c);
 		return;
 	}
@@ -48,7 +48,7 @@ void bn_smb_leg(bn_t c, const bn_t a, const bn_t b) {
 	TRY {
 		bn_new(t);
 
-		if (bn_sign(b) == BN_NEG) {
+		if (bn_sign(b) == RLC_NEG) {
 			THROW(ERR_NO_VALID);
 		}
 
@@ -57,7 +57,7 @@ void bn_smb_leg(bn_t c, const bn_t a, const bn_t b) {
 		bn_rsh(t, t, 1);
 		bn_mxp(c, a, t, b);
 		bn_sub_dig(t, b, 1);
-		if (bn_cmp(c, t) == CMP_EQ) {
+		if (bn_cmp(c, t) == RLC_EQ) {
 			bn_set_dig(c, 1);
 			bn_neg(c, c);
 		}
@@ -85,11 +85,11 @@ void bn_smb_jac(bn_t c, const bn_t a, const bn_t b) {
 		t = 1;
 
 		/* Argument b must be odd. */
-		if (bn_is_even(b) || bn_sign(b) == BN_NEG) {
+		if (bn_is_even(b) || bn_sign(b) == RLC_NEG) {
 			THROW(ERR_NO_VALID);
 		}
 
-		if (bn_sign(a) == BN_NEG) {
+		if (bn_sign(a) == RLC_NEG) {
 			bn_add(t0, a, b);
 		} else {
 			bn_copy(t0, a);
@@ -101,7 +101,7 @@ void bn_smb_jac(bn_t c, const bn_t a, const bn_t b) {
 			bn_mod(t0, t0, t1);
 			/* If a = 0 then if n = 1 return t else return 0. */
 			if (bn_is_zero(t0)) {
-				if (bn_cmp_dig(t1, 1) == CMP_EQ) {
+				if (bn_cmp_dig(t1, 1) == RLC_EQ) {
 					bn_set_dig(c, 1);
 					if (t == -1) {
 						bn_neg(c, c);
@@ -120,15 +120,15 @@ void bn_smb_jac(bn_t c, const bn_t a, const bn_t b) {
 			}
 			/* If h != 0 (mod 2) and n != +-1 (mod 8) then t = -t. */
 			bn_mod_2b(r, t1, 3);
-			if ((h % 2 != 0) && (bn_cmp_dig(r, 1) != CMP_EQ) &&
-					(bn_cmp_dig(r, 7) != CMP_EQ)) {
+			if ((h % 2 != 0) && (bn_cmp_dig(r, 1) != RLC_EQ) &&
+					(bn_cmp_dig(r, 7) != RLC_EQ)) {
 				t = -t;
 			}
 			/* If t0 != 1 (mod 4) and n != 1 (mod 4) then t = -t. */
 			bn_mod_2b(r, t0, 2);
-			if (bn_cmp_dig(r, 1) != CMP_EQ) {
+			if (bn_cmp_dig(r, 1) != RLC_EQ) {
 				bn_mod_2b(r, t1, 2);
-				if (bn_cmp_dig(r, 1) != CMP_EQ) {
+				if (bn_cmp_dig(r, 1) != RLC_EQ) {
 					t = -t;
 				}
 			}

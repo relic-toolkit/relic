@@ -53,14 +53,14 @@ void eb_map(eb_t p, const uint8_t *msg, int len) {
 		fb_new(t1);
 
 		md_map(digest, msg, len);
-		bn_read_bin(k, digest, MIN(FB_BYTES, MD_LEN));
+		bn_read_bin(k, digest, RLC_MIN(RLC_FB_BYTES, MD_LEN));
 		fb_set_dig(p->z, 1);
 
 		i = 0;
 		while (1) {
 			bn_add_dig(k, k, 1);
-			bn_mod_2b(k, k, FB_BITS);
-			dv_copy(p->x, k->dp, FB_DIGS);
+			bn_mod_2b(k, k, RLC_FB_BITS);
+			dv_copy(p->x, k->dp, RLC_FB_DIGS);
 
 			eb_rhs(t1, p);
 
@@ -84,7 +84,7 @@ void eb_map(eb_t p, const uint8_t *msg, int len) {
 		}
 		/* Now, multiply by cofactor to get the correct group. */
 		eb_curve_get_cof(k);
-		if (bn_bits(k) < DIGIT) {
+		if (bn_bits(k) < RLC_DIG) {
 			eb_mul_dig(p, p, k->dp[0]);
 		} else {
 			eb_mul(p, p, k);

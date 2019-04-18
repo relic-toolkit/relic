@@ -52,7 +52,7 @@ void fb_add1_low(dig_t *c, const dig_t *a, dig_t digit) {
 	(*c) = (*a) ^ digit;
 	c++;
 	a++;
-	for (i = 0; i < FB_DIGS - 1; i++, a++, c++)
+	for (i = 0; i < RLC_FB_DIGS - 1; i++, a++, c++)
 		(*c) = (*a);
 }
 
@@ -62,7 +62,7 @@ void fb_addn_low(dig_t *c, const dig_t *a, const dig_t *b) {
 }
 
 void fb_addd_low(dig_t *c, const dig_t *a, const dig_t *b, int size) {
-	if (size == 2 * FB_DIGS) {
+	if (size == 2 * RLC_FB_DIGS) {
 		*(__m128i *)c = XOR(*(__m128i*)(a), *(__m128i*)(b));
 		*(__m128i *)(c + 2) = XOR(*(__m128i*)(a + 2), *(__m128i*)(b + 2));
 		*(__m128i *)(c + 4) = XOR(*(__m128i*)(a + 4), *(__m128i*)(b + 4));

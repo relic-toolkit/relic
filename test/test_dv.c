@@ -36,7 +36,7 @@
 
 static int memory(void) {
 	err_t e;
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	dv_t a;
 
 	dv_null(a);
@@ -54,14 +54,14 @@ static int memory(void) {
 				break;
 		}
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	return code;
 }
 
 static int copy(void) {
 	dv_t a, b;
-	int code = STS_ERR;
+	int code = RLC_ERR;
 
 	dv_null(a);
 	dv_null(b);
@@ -71,33 +71,33 @@ static int copy(void) {
 		dv_new(b);
 
 		TEST_BEGIN("copy and comparison are consistent") {
-			rand_bytes((uint8_t *)a, DV_DIGS * sizeof(dig_t));
-			rand_bytes((uint8_t *)b, DV_DIGS * sizeof(dig_t));
-			if (dv_cmp(a, b, DV_DIGS) != CMP_EQ) {
-				if (dv_cmp(a, b, DV_DIGS) == CMP_GT) {
-					TEST_ASSERT(dv_cmp(b, a, DV_DIGS) == CMP_LT, end);
+			rand_bytes((uint8_t *)a, RLC_DV_DIGS * sizeof(dig_t));
+			rand_bytes((uint8_t *)b, RLC_DV_DIGS * sizeof(dig_t));
+			if (dv_cmp(a, b, RLC_DV_DIGS) != RLC_EQ) {
+				if (dv_cmp(a, b, RLC_DV_DIGS) == RLC_GT) {
+					TEST_ASSERT(dv_cmp(b, a, RLC_DV_DIGS) == RLC_LT, end);
 				} else {
-					TEST_ASSERT(dv_cmp(b, a, DV_DIGS) == CMP_GT, end);
+					TEST_ASSERT(dv_cmp(b, a, RLC_DV_DIGS) == RLC_GT, end);
 				}
 			}
-			dv_copy(a, b, DV_DIGS);
-			TEST_ASSERT(dv_cmp_const(a, b, DV_DIGS) == CMP_EQ, end);
+			dv_copy(a, b, RLC_DV_DIGS);
+			TEST_ASSERT(dv_cmp_const(a, b, RLC_DV_DIGS) == RLC_EQ, end);
 		}
 		TEST_END;
 
 		TEST_BEGIN("conditional copy and comparison are consistent") {
-			rand_bytes((uint8_t *)a, DV_DIGS * sizeof(dig_t));
-			rand_bytes((uint8_t *)b, DV_DIGS * sizeof(dig_t));
-			dv_copy_cond(a, b, DV_DIGS, 0);
-			TEST_ASSERT(dv_cmp_const(a, b, DV_DIGS) == CMP_NE, end);
-			dv_copy_cond(a, b, DV_DIGS, 1);
-			TEST_ASSERT(dv_cmp_const(a, b, DV_DIGS) == CMP_EQ, end);
+			rand_bytes((uint8_t *)a, RLC_DV_DIGS * sizeof(dig_t));
+			rand_bytes((uint8_t *)b, RLC_DV_DIGS * sizeof(dig_t));
+			dv_copy_cond(a, b, RLC_DV_DIGS, 0);
+			TEST_ASSERT(dv_cmp_const(a, b, RLC_DV_DIGS) == RLC_NE, end);
+			dv_copy_cond(a, b, RLC_DV_DIGS, 1);
+			TEST_ASSERT(dv_cmp_const(a, b, RLC_DV_DIGS) == RLC_EQ, end);
 		}
 		TEST_END;
 	} CATCH_ANY {
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	dv_free(a);
 	dv_free(b);
@@ -106,7 +106,7 @@ static int copy(void) {
 
 static int swap(void) {
 	dv_t a, b, c, d;
-	int code = STS_ERR;
+	int code = RLC_ERR;
 
 	dv_null(a);
 	dv_null(b);
@@ -120,35 +120,35 @@ static int swap(void) {
 		dv_new(d);
 
 		TEST_BEGIN("conditional swap and copy are consistent") {
-			rand_bytes((uint8_t *)a, DV_DIGS * sizeof(dig_t));
-			rand_bytes((uint8_t *)b, DV_DIGS * sizeof(dig_t));
-			dv_copy(c, a, DV_DIGS);
-			dv_swap_cond(a, b, DV_DIGS, 1);
-			TEST_ASSERT(dv_cmp_const(c, b, DV_DIGS) == CMP_EQ, end);
+			rand_bytes((uint8_t *)a, RLC_DV_DIGS * sizeof(dig_t));
+			rand_bytes((uint8_t *)b, RLC_DV_DIGS * sizeof(dig_t));
+			dv_copy(c, a, RLC_DV_DIGS);
+			dv_swap_cond(a, b, RLC_DV_DIGS, 1);
+			TEST_ASSERT(dv_cmp_const(c, b, RLC_DV_DIGS) == RLC_EQ, end);
 		}
 		TEST_END;
 
 		TEST_BEGIN("conditional swap and comparison are consistent") {
-			rand_bytes((uint8_t *)a, DV_DIGS * sizeof(dig_t));
-			rand_bytes((uint8_t *)b, DV_DIGS * sizeof(dig_t));
-			dv_copy(c, a, DV_DIGS);
-			dv_copy(d, b, DV_DIGS);
-			dv_swap_cond(a, b, DV_DIGS, 0);
-			TEST_ASSERT(dv_cmp_const(c, a, DV_DIGS) == CMP_EQ, end);
-			TEST_ASSERT(dv_cmp_const(d, b, DV_DIGS) == CMP_EQ, end);
-			TEST_ASSERT(dv_cmp_const(c, b, DV_DIGS) == CMP_NE, end);
-			TEST_ASSERT(dv_cmp_const(d, a, DV_DIGS) == CMP_NE, end);
-			dv_swap_cond(a, b, DV_DIGS, 1);
-			TEST_ASSERT(dv_cmp_const(c, b, DV_DIGS) == CMP_EQ, end);
-			TEST_ASSERT(dv_cmp_const(d, a, DV_DIGS) == CMP_EQ, end);
-			TEST_ASSERT(dv_cmp_const(c, a, DV_DIGS) == CMP_NE, end);
-			TEST_ASSERT(dv_cmp_const(d, b, DV_DIGS) == CMP_NE, end);
+			rand_bytes((uint8_t *)a, RLC_DV_DIGS * sizeof(dig_t));
+			rand_bytes((uint8_t *)b, RLC_DV_DIGS * sizeof(dig_t));
+			dv_copy(c, a, RLC_DV_DIGS);
+			dv_copy(d, b, RLC_DV_DIGS);
+			dv_swap_cond(a, b, RLC_DV_DIGS, 0);
+			TEST_ASSERT(dv_cmp_const(c, a, RLC_DV_DIGS) == RLC_EQ, end);
+			TEST_ASSERT(dv_cmp_const(d, b, RLC_DV_DIGS) == RLC_EQ, end);
+			TEST_ASSERT(dv_cmp_const(c, b, RLC_DV_DIGS) == RLC_NE, end);
+			TEST_ASSERT(dv_cmp_const(d, a, RLC_DV_DIGS) == RLC_NE, end);
+			dv_swap_cond(a, b, RLC_DV_DIGS, 1);
+			TEST_ASSERT(dv_cmp_const(c, b, RLC_DV_DIGS) == RLC_EQ, end);
+			TEST_ASSERT(dv_cmp_const(d, a, RLC_DV_DIGS) == RLC_EQ, end);
+			TEST_ASSERT(dv_cmp_const(c, a, RLC_DV_DIGS) == RLC_NE, end);
+			TEST_ASSERT(dv_cmp_const(d, b, RLC_DV_DIGS) == RLC_NE, end);
 		}
 		TEST_END;
 	} CATCH_ANY {
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	dv_free(a);
 	dv_free(b);
@@ -158,24 +158,24 @@ static int swap(void) {
 }
 
 int main(void) {
-	if (core_init() != STS_OK) {
+	if (core_init() != RLC_OK) {
 		core_clean();
 		return 1;
 	}
 
 	util_banner("Tests for the DV module:\n", 0);
 
-	if (memory() != STS_OK) {
+	if (memory() != RLC_OK) {
 		core_clean();
 		return 1;
 	}
 
-	if (copy() != STS_OK) {
+	if (copy() != RLC_OK) {
 		core_clean();
 		return 1;
 	}
 
-	if (swap() != STS_OK) {
+	if (swap() != RLC_OK) {
 		core_clean();
 		return 1;
 	}

@@ -393,7 +393,7 @@ void pp_add_k12_projc_lazyr(fp12_t l, ep2_t r, ep2_t q, ep_t p) {
 		fp2_sub(t4, t4, r->x);
 		fp2_sub(t4, t4, r->x);
 		fp2_sub(r->x, r->x, t4);
-#ifdef FP_SPACE
+#ifdef RLC_FP_ROOM
 		fp2_mulc_low(u1, t2, r->x);
 		fp2_mulc_low(u2, t3, r->y);
 #else
@@ -414,7 +414,7 @@ void pp_add_k12_projc_lazyr(fp12_t l, ep2_t r, ep2_t q, ep_t p) {
 		fp_mul(l[one][zero][1], t2[1], p->x);
 		fp2_neg(l[one][zero], l[one][zero]);
 
-#ifdef FP_SPACE
+#ifdef RLC_FP_ROOM
 		fp2_mulc_low(u1, q->x, t2);
 		fp2_mulc_low(u2, q->y, t1);
 #else

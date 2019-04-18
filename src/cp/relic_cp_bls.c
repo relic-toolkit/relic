@@ -37,7 +37,7 @@
 
 int cp_bls_gen(bn_t d, g2_t q) {
 	bn_t n;
-	int result = STS_OK;
+	int result = RLC_OK;
 
 	bn_null(n);
 
@@ -49,7 +49,7 @@ int cp_bls_gen(bn_t d, g2_t q) {
 		g2_mul_gen(q, d);
 	}
 	CATCH_ANY {
-		result = STS_ERR;
+		result = RLC_ERR;
 	}
 	FINALLY {
 		bn_free(n);
@@ -59,7 +59,7 @@ int cp_bls_gen(bn_t d, g2_t q) {
 
 int cp_bls_sig(g1_t s, uint8_t *msg, int len, bn_t d) {
 	g1_t p;
-	int result = STS_OK;
+	int result = RLC_OK;
 
 	g1_null(p);
 
@@ -69,7 +69,7 @@ int cp_bls_sig(g1_t s, uint8_t *msg, int len, bn_t d) {
 		g1_mul(s, p, d);
 	}
 	CATCH_ANY {
-		result = STS_ERR;
+		result = RLC_ERR;
 	}
 	FINALLY {
 		g1_free(p);

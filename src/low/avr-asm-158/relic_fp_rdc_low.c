@@ -46,7 +46,7 @@ void fp_rdcn_low(dig_t *c, dig_t *a) {
 
 	r1 = fp_rdci_low(c, a);
 
-	if (r1 || fp_cmp(c, m) != CMP_LT) {
+	if (r1 || fp_cmp(c, m) != RLC_LT) {
 		fp_subn_low(c, c, m);
 	}
 }

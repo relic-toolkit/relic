@@ -39,8 +39,8 @@
 /*============================================================================*/
 
 void fp3_muln_low(dv3_t c, fp3_t a, fp3_t b) {
-	dig_t t0[2 * FP_DIGS], t1[2 * FP_DIGS], t2[2 * FP_DIGS], t3[2 * FP_DIGS];
-	dig_t t4[2 * FP_DIGS], t5[2 * FP_DIGS], t6[2 * FP_DIGS];
+	dig_t t0[2 * RLC_FP_DIGS], t1[2 * RLC_FP_DIGS], t2[2 * RLC_FP_DIGS], t3[2 * RLC_FP_DIGS];
+	dig_t t4[2 * RLC_FP_DIGS], t5[2 * RLC_FP_DIGS], t6[2 * RLC_FP_DIGS];
 
 	/* Karatsuba algorithm. */
 
@@ -50,7 +50,7 @@ void fp3_muln_low(dv3_t c, fp3_t a, fp3_t b) {
 	fp_muln_low(t2, a[2], b[2]);
 
 	/* t3 = (a_1 + a_2) * (b_1 + b_2). */
-#ifdef FP_SPACE
+#ifdef RLC_FP_ROOM
 	fp_addn_low(t3, a[1], a[2]);
 	fp_addn_low(t4, b[1], b[2]);
 #else
@@ -65,7 +65,7 @@ void fp3_muln_low(dv3_t c, fp3_t a, fp3_t b) {
 		fp_subc_low(c[0], c[0], t4);
 	}
 
-#ifdef FP_SPACE
+#ifdef RLC_FP_ROOM
 	fp_addn_low(t4, a[0], a[1]);
 	fp_addn_low(t5, b[0], b[1]);
 #else
@@ -80,7 +80,7 @@ void fp3_muln_low(dv3_t c, fp3_t a, fp3_t b) {
 		fp_subc_low(c[1], c[1], t2);
 	}
 
-#ifdef FP_SPACE
+#ifdef RLC_FP_ROOM
 	fp_addn_low(t5, a[0], a[2]);
 	fp_addn_low(t6, b[0], b[2]);
 #else

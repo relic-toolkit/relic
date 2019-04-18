@@ -51,8 +51,8 @@
 	(R0) += (dig_t)(r);														\
 	(R1) += (R0) < (dig_t)(r);												\
 	(R2) += (R1) < _r;														\
-	(R1) += (dig_t)((r) >> (dbl_t)DIGIT);								\
-	(R2) += (R1) < (dig_t)((r) >> (dbl_t)DIGIT);							\
+	(R1) += (dig_t)((r) >> (dbl_t)RLC_DIG);								\
+	(R2) += (R1) < (dig_t)((r) >> (dbl_t)RLC_DIG);							\
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -64,14 +64,14 @@ dig_t fp_mula_low(dig_t *c, const dig_t *a, dig_t digit) {
 	dbl_t r;
 
 	carry = 0;
-	for (i = 0; i < FP_DIGS; i++, a++, c++) {
+	for (i = 0; i < RLC_FP_DIGS; i++, a++, c++) {
 		/* Multiply the digit *tmpa by b and accumulate with the previous
 		 * result in the same columns and the propagated carry. */
 		r = (dbl_t)(*c) + (dbl_t)(*a) * (dbl_t)(digit) + (dbl_t)(carry);
 		/* Increment the column and assign the result. */
 		*c = (dig_t)r;
 		/* Update the carry. */
-		carry = (dig_t)(r >> (dbl_t)DIGIT);
+		carry = (dig_t)(r >> (dbl_t)RLC_DIG);
 	}
 	return carry;
 }
@@ -82,14 +82,14 @@ dig_t fp_mul1_low(dig_t *c, const dig_t *a, dig_t digit) {
 	dbl_t r;
 
 	carry = 0;
-	for (i = 0; i < FP_DIGS; i++, a++, c++) {
+	for (i = 0; i < RLC_FP_DIGS; i++, a++, c++) {
 		/* Multiply the digit *tmpa by b and accumulate with the previous
 		 * result in the same columns and the propagated carry. */
 		r = (dbl_t)(*a) * (dbl_t)(digit) + (dbl_t)(carry);
 		/* Increment the column and assign the result. */
 		*c = (dig_t)r;
 		/* Update the carry. */
-		carry = (dig_t)(r >> (dbl_t)DIGIT);
+		carry = (dig_t)(r >> (dbl_t)RLC_DIG);
 	}
 	return carry;
 }
@@ -100,7 +100,7 @@ void fp_muln_low(dig_t *c, const dig_t *a, const dig_t *b) {
 	dig_t r0, r1, r2;
 
 	r0 = r1 = r2 = 0;
-	for (i = 0; i < FP_DIGS; i++, c++) {
+	for (i = 0; i < RLC_FP_DIGS; i++, c++) {
 		tmpa = a;
 		tmpb = b + i;
 		for (j = 0; j <= i; j++, tmpa++, tmpb--) {
@@ -111,10 +111,10 @@ void fp_muln_low(dig_t *c, const dig_t *a, const dig_t *b) {
 		r1 = r2;
 		r2 = 0;
 	}
-	for (i = 0; i < FP_DIGS; i++, c++) {
+	for (i = 0; i < RLC_FP_DIGS; i++, c++) {
 		tmpa = a + i + 1;
-		tmpb = b + (FP_DIGS - 1);
-		for (j = 0; j < FP_DIGS - (i + 1); j++, tmpa++, tmpb--) {
+		tmpb = b + (RLC_FP_DIGS - 1);
+		for (j = 0; j < RLC_FP_DIGS - (i + 1); j++, tmpa++, tmpb--) {
 			COMBA_STEP_FP_MUL_LOW(r2, r1, r0, *tmpa, *tmpb);
 		}
 		*c = r0;
@@ -125,7 +125,7 @@ void fp_muln_low(dig_t *c, const dig_t *a, const dig_t *b) {
 }
 
 void fp_mulm_low(dig_t *c, const dig_t *a, const dig_t *b) {
-	relic_align dig_t t[2 * FP_DIGS];
+	rlc_align dig_t t[2 * RLC_FP_DIGS];
 
 	fp_muln_low(t, a, b);
 	fp_rdc(c, t);

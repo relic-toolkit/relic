@@ -163,9 +163,9 @@ int util_bits_dig(dig_t a) {
 	}
 	return 0;
 #elif WSIZE == 32
-	return DIGIT - __builtin_clz(a);
+	return RLC_DIG - __builtin_clz(a);
 #elif WSIZE == 64
-	return DIGIT - __builtin_clzll(a);
+	return RLC_DIG - __builtin_clzll(a);
 #endif
 }
 
@@ -179,10 +179,10 @@ int util_cmp_const(const void *a, const void *b, int size) {
 		result |= _a[i] ^ _b[i];
 	}
 
-	return (result == 0 ? CMP_EQ : CMP_NE);
+	return (result == 0 ? RLC_EQ : RLC_NE);
 }
 
-void util_printf(const char *format, ...) {
+void util_print(const char *format, ...) {
 #ifndef QUIET
 #if ARCH == AVR && !defined(OPSYS)
 	util_print_ptr = print_buf + 1;
@@ -219,19 +219,19 @@ void util_printf(const char *format, ...) {
 }
 
 void util_print_dig(dig_t a, int pad) {
-#if DIGIT == 64
+#if RLC_DIG == 64
 	if (pad) {
 		util_print("%.16" PRIX64, (uint64_t) a);
 	} else {
 		util_print("%" PRIX64, (uint64_t) a);
 	}
-#elif DIGIT == 32
+#elif RLC_DIG == 32
 	if (pad) {
 		util_print("%.8" PRIX32, (uint32_t) a);
 	} else {
 		util_print("%" PRIX32, (uint32_t) a);
 	}
-#elif DIGIT == 16
+#elif RLC_DIG == 16
 	if (pad) {
 		util_print("%.4" PRIX16, (uint16_t) a);
 	} else {

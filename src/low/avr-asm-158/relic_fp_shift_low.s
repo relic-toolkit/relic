@@ -54,14 +54,14 @@
 fp_rsh1_low:
 	movw 	r30, r24
 	movw 	r26, r22
-	ldi		r20, FP_DIGS
+	ldi		r20, RLC_FP_DIGS
 	add     r30, r20
 	adc     r31, r1
 	add		r26, r20
 	adc		r27, r1
 
 	clc
-	RSH1_STEP 0, FP_DIGS - 1
+	RSH1_STEP 0, RLC_FP_DIGS - 1
 
 	clr		r24
 	adc		r24, r1
@@ -81,7 +81,7 @@ fp_lsh1_low:
 	movw 	r26, r22
 
 	clc
-	LSH1_STEP 0, FP_DIGS - 1
+	LSH1_STEP 0, RLC_FP_DIGS - 1
 
 	clr		r24
 	adc		r24, r1

@@ -135,7 +135,7 @@ cdecl(fp2_mulm_low):
 		movq	%r8, \i(%rsp)
 	.endr
 
-	addq $(FP_DIGS * 8), %rdi
+	addq $(RLC_FP_DIGS * 8), %rdi
 	FP_RDCN_LOW %rdi, %rsp
 
 	addq $256, %rsp

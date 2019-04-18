@@ -45,7 +45,7 @@
 /*============================================================================*/
 
 void fb_muld_low(dig_t *c, const dig_t *a, const dig_t *b, int size) {
-	relic_align dig_t t[16][size + 1];
+	rlc_align dig_t t[16][size + 1];
 	dig_t u, r0, r1, r2, r4, r8, *tmpc;
 	const dig_t *tmpa;
 	int i, j;
@@ -59,9 +59,9 @@ void fb_muld_low(dig_t *c, const dig_t *a, const dig_t *b, int size) {
 	u = 0;
 	for (i = 0; i < size; i++) {
 		r1 = r0 = b[i];
-		r2 = (r0 << 1) | (u >> (DIGIT - 1));
-		r4 = (r0 << 2) | (u >> (DIGIT - 2));
-		r8 = (r0 << 3) | (u >> (DIGIT - 3));
+		r2 = (r0 << 1) | (u >> (RLC_DIG - 1));
+		r4 = (r0 << 2) | (u >> (RLC_DIG - 2));
+		r8 = (r0 << 3) | (u >> (RLC_DIG - 3));
 		t[0][i] = 0;
 		t[1][i] = r1;
 		t[2][i] = r2;
@@ -82,9 +82,9 @@ void fb_muld_low(dig_t *c, const dig_t *a, const dig_t *b, int size) {
 	}
 
 	if (u > 0) {
-		r2 = u >> (DIGIT - 1);
-		r4 = u >> (DIGIT - 2);
-		r8 = u >> (DIGIT - 3);
+		r2 = u >> (RLC_DIG - 1);
+		r4 = u >> (RLC_DIG - 2);
+		r8 = u >> (RLC_DIG - 3);
 		t[0][size] = t[1][size] = 0;
 		t[2][size] = t[3][size] = r2;
 		t[4][size] = t[5][size] = r4;
@@ -95,7 +95,7 @@ void fb_muld_low(dig_t *c, const dig_t *a, const dig_t *b, int size) {
 		t[14][size] = t[15][size] = r2 ^ r4 ^ r8;
 	}
 
-	for (i = DIGIT - 4; i > 0; i -= 4) {
+	for (i = RLC_DIG - 4; i > 0; i -= 4) {
 		tmpa = a;
 		tmpc = c;
 		for (j = 0; j < size; j++, tmpa++, tmpc++) {

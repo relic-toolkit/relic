@@ -43,11 +43,11 @@ void bn_divn_low(dig_t *c, dig_t *d, dig_t *a, int sa, dig_t *b, int sb) {
 	dig_t carry, t1[3], t2[3];
 
 	/* Normalize x and y so that the leading digit of y is bigger than
-	 * 2^(DIGIT-1). */
-	norm = util_bits_dig(b[sb - 1]) % DIGIT;
+	 * 2^(RLC_DIG-1). */
+	norm = util_bits_dig(b[sb - 1]) % RLC_DIG;
 
-	if (norm < (int)(DIGIT - 1)) {
-		norm = (DIGIT - 1) - norm;
+	if (norm < (int)(RLC_DIG - 1)) {
+		norm = (RLC_DIG - 1) - norm;
 		carry = bn_lshb_low(a, a, sa, norm);
 		if (carry) {
 			a[sa++] = carry;
@@ -68,7 +68,7 @@ void bn_divn_low(dig_t *c, dig_t *d, dig_t *a, int sa, dig_t *b, int sb) {
 	bn_lshd_low(b, b, sb, (n - t));
 
 	/* Find the most significant digit of the quotient. */
-	while (dv_cmp(a, b, sa) != CMP_LT) {
+	while (dv_cmp(a, b, sa) != RLC_LT) {
 		c[n - t]++;
 		bn_subn_low(a, a, b, sa);
 	}
@@ -83,10 +83,10 @@ void bn_divn_low(dig_t *c, dig_t *d, dig_t *a, int sa, dig_t *b, int sb) {
 		}
 
 		if (a[i] == b[t]) {
-			c[i - t - 1] = ((((dbl_t)1) << DIGIT) - 1);
+			c[i - t - 1] = ((((dbl_t)1) << RLC_DIG) - 1);
 		} else {
 			dbl_t tmp;
-			tmp = ((dbl_t)a[i]) << ((dbl_t)DIGIT);
+			tmp = ((dbl_t)a[i]) << ((dbl_t)RLC_DIG);
 			tmp |= (dbl_t)(a[i - 1]);
 			tmp /= (dbl_t)(b[t]);
 			c[i - t - 1] = (dig_t)tmp;
@@ -104,7 +104,7 @@ void bn_divn_low(dig_t *c, dig_t *d, dig_t *a, int sa, dig_t *b, int sb) {
 			t2[0] = (i - 2 < 0) ? 0 : a[i - 2];
 			t2[1] = (i - 1 < 0) ? 0 : a[i - 1];
 			t2[2] = a[i];
-		} while (dv_cmp(t1, t2, 3) == CMP_GT);
+		} while (dv_cmp(t1, t2, 3) == RLC_GT);
 
 		carry = bn_mul1_low(d, b, c[i - t - 1], sb);
 		sd = sb;
@@ -136,7 +136,7 @@ void bn_div1_low(dig_t *c, dig_t *d, const dig_t *a, int size, dig_t b) {
 
 	w = 0;
 	for (i = size - 1; i >= 0; i--) {
-		w = (w << ((dbl_t)DIGIT)) | ((dbl_t)a[i]);
+		w = (w << ((dbl_t)RLC_DIG)) | ((dbl_t)a[i]);
 
 		if (w >= b) {
 			r = (dig_t)(w / b);

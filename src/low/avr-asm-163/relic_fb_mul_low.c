@@ -38,14 +38,14 @@ void fb_mul1_low(dig_t *c, const dig_t *a, dig_t digit) {
 	dig_t carry;
 
 	fb_zero(c);
-	fb_zero(c + FB_DIGS);
-	for (int i = DIGIT - 1; i >= 0; i--) {
+	fb_zero(c + RLC_FB_DIGS);
+	for (int i = RLC_DIG - 1; i >= 0; i--) {
 		if (digit & ((dig_t)1 << i)) {
 			fb_addn_low(c, c, a);
 		}
 		if (i != 0) {
 			carry = fb_lsh1_low(c, c);
-			c[FB_DIGS] = (c[FB_DIGS] << 1) | carry;
+			c[RLC_FB_DIGS] = (c[RLC_FB_DIGS] << 1) | carry;
 		}
 	}
 }

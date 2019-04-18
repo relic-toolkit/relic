@@ -55,7 +55,7 @@ static void bn_div_imp(bn_t c, bn_t d, const bn_t a, const bn_t b) {
 	bn_null(r);
 
 	/* If |a| < |b|, we're done. */
-	if (bn_cmp_abs(a, b) == CMP_LT) {
+	if (bn_cmp_abs(a, b) == RLC_LT) {
 		if (bn_sign(a) == bn_sign(b)) {
 			if (c != NULL) {
 				bn_zero(c);
@@ -86,7 +86,7 @@ static void bn_div_imp(bn_t c, bn_t d, const bn_t a, const bn_t b) {
 		bn_abs(y, b);
 
 		/* Find the sign. */
-		sign = (a->sign == b->sign ? BN_POS : BN_NEG);
+		sign = (a->sign == b->sign ? RLC_POS : RLC_NEG);
 
 		bn_divn_low(q->dp, r->dp, x->dp, a->used, y->dp, b->used);
 

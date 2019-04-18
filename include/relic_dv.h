@@ -34,8 +34,8 @@
  * @ingroup dv
  */
 
-#ifndef RELIC_DV_H
-#define RELIC_DV_H
+#ifndef RLC_DV_H
+#define RLC_DV_H
 
 #include "relic_bn.h"
 #include "relic_conf.h"
@@ -48,22 +48,25 @@
 /*============================================================================*/
 
 /**
- * Size in digits of a squaring result in a prime field.
+ * Size in bits of the largest field element.
  */
 #ifdef WITH_FP
-#define DV_FP	(2 * ((int)((FP_PRIME)/(DIGIT) + (FP_PRIME % DIGIT > 0))) + 1)
-#else
-#define DV_FP	(0)
+
+#ifdef WITH_FB
+#define RLC_DV_MAX		RLC_MAX(FP_PRIME, FB_POLYN)
+#else /* !WITH_FB */
+#define RLC_DV_MAX		FP_PRIME
 #endif
 
-/**
- * Size in digits of a squaring result in a binary field.
- */
+#else /* !WITH_FP */
+
 #ifdef WITH_FB
-#define DV_FB	(2 * ((int)((FB_POLYN)/(DIGIT) + (FB_POLYN % DIGIT > 0))))
-#else
-#define DV_FB	(0)
+#define RLC_DV_MAX		FB_POLYN
+#else /* !WITH_FB */
+#define RLC_DV_MAX		(0)
 #endif
+
+#endif /* WITH_FP */
 
 /**
  * Size in digits of a temporary vector.
@@ -71,12 +74,42 @@
  * A temporary vector has enough size to store a multiplication/squaring result
  * produced by any module.
  */
-#define DV_DIGS		MAX(MAX(DV_FP, DV_FB), BN_SIZE)
+#define RLC_DV_DIGS		(RLC_MAX(RLC_CEIL(RLC_DV_MAX, RLC_DIG), RLC_BN_SIZE))
 
 /**
  * Size in bytes of a temporary vector.
  */
-#define DV_BYTES	(DV_DIGS * (DIGIT / 8))
+#define RLC_DV_BYTES	( * (RLC_DIG / 8))
+
+/*============================================================================*/
+/* Macro definitions                                                          */
+/*============================================================================*/
+
+/**
+ * Size of padding to be added so that digit vectors are aligned.
+ */
+#if ALIGN > 1
+#define RLC_PAD(A)		((A) % ALIGN == 0 ? 0 : ALIGN - ((A) % ALIGN))
+#else
+#define RLC_PAD(A)		(0)
+#endif
+
+/**
+ * Align digit vector pointer to specified byte-boundary.
+ *
+ * @param[in,out] A		- the pointer to align.
+ */
+#if ALIGN > 1
+#if ARCH == AVR || ARCH == MSP || ARCH == X86 || ARCH == ARM
+#define ALIGNED(A)		((unsigned int)(A) + RLC_PAD((unsigned int)(A)));
+
+#elif ARCH  == X64
+#define ALIGNED(A)		((unsigned long)(A) + RLC_PAD((unsigned long)(A)));
+
+#endif
+#else
+#define ALIGNED(A)		(A)
+#endif
 
 /*============================================================================*/
 /* Type definitions                                                           */
@@ -86,7 +119,7 @@
  * Represents a temporary double-precision digit vector.
  */
 #if ALLOC == AUTO
-typedef relic_align dig_t dv_t[DV_DIGS + PADDING(DV_BYTES)/(DIGIT / 8)];
+typedef rlc_align dig_t dv_t[RLC_DV_DIGS + RLC_PAD(RLC_DV_BYTES)/(RLC_DIG / 8)];
 #else
 typedef dig_t *dv_t;
 #endif
@@ -112,12 +145,12 @@ typedef dig_t *dv_t;
  * @param[out] A			- the double-precision result.
  */
 #if ALLOC == DYNAMIC
-#define dv_new(A)			dv_new_dynam(&(A), DV_DIGS)
+#define dv_new(A)			dv_new_dynam(&(A), )
 #elif ALLOC == AUTO
 #define dv_new(A)			/* empty */
 #elif ALLOC == STACK
 #define dv_new(A)															\
-	A = (dig_t *)alloca(DV_BYTES + PADDING(DV_BYTES));						\
+	A = (dig_t *)alloca(DV_BYTES + RLC_PAD(DV_BYTES));						\
 	A = (dig_t *)ALIGNED(A);												\
 
 #endif
@@ -190,7 +223,7 @@ void dv_swap_cond(dig_t *c, dig_t *a, int digits, dig_t cond);
  * @param[in] a				- the first digit vector.
  * @param[in] b				- the second digit vector.
  * @param[in] size			- the length in digits of the vectors.
- * @return CMP_LT if a < b, CMP_EQ if a == b and CMP_GT if a > b.
+ * @return RLC_LT if a < b, RLC_EQ if a == b and RLC_GT if a > b.
  */
 int dv_cmp(const dig_t *a, const dig_t *b, int size);
 
@@ -200,7 +233,7 @@ int dv_cmp(const dig_t *a, const dig_t *b, int size);
  * @param[in] a				- the first digit vector.
  * @param[in] b				- the second digit vector.
  * @param[in] size			- the length in digits of the vectors.
- * @return CMP_EQ if they are equal and CMP_NE otherwise.
+ * @return RLC_EQ if they are equal and RLC_NE otherwise.
  */
 int dv_cmp_const(const dig_t *a, const dig_t *b, int size);
 
@@ -226,4 +259,4 @@ void dv_new_dynam(dv_t *a, int digits);
 void dv_free_dynam(dv_t *a);
 #endif
 
-#endif /* !RELIC_DV_H */
+#endif /* !RLC_DV_H */

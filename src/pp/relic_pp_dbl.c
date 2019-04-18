@@ -217,7 +217,7 @@ void pp_dbl_k12_projc_basic(fp12_t l, ep2_t r, ep2_t q, ep_t p) {
 			zero ^= 1;
 		}
 
-		if (ep_curve_opt_b() == OPT_TWO) {
+		if (ep_curve_opt_b() == RLC_TWO) {
 			/* t0 = x1^2. */
 			fp2_sqr(t0, q->x);
 			/* t1 = B = y1^2. */
@@ -470,7 +470,7 @@ void pp_dbl_k12_projc_lazyr(fp12_t l, ep2_t r, ep2_t q, ep_t p) {
 			zero ^= 1;
 		}
 
-		if (ep_curve_opt_b() == OPT_TWO) {
+		if (ep_curve_opt_b() == RLC_TWO) {
 			/* C = z1^2. */
 			fp2_sqr(t0, q->z);
 			/* B = y1^2. */

@@ -47,14 +47,14 @@ void bn_lcm(bn_t c, const bn_t a, const bn_t b) {
 
 		bn_gcd(u, a, b);
 
-		if (bn_cmp_abs(a, b) == CMP_LT) {
+		if (bn_cmp_abs(a, b) == RLC_LT) {
 			bn_div(v, a, u);
 			bn_mul(c, b, v);
 		} else {
 			bn_div(v, b, u);
 			bn_mul(c, a, v);
 		}
-		c->sign = BN_POS;
+		c->sign = RLC_POS;
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);

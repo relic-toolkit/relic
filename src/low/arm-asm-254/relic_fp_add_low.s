@@ -23,9 +23,9 @@
 
 #include "relic_fp_low.h"
 
-#define CMP_LT	-1
-#define CMP_EQ	0
-#define CMP_GT	1
+#define RLC_LT	-1
+#define RLC_EQ	0
+#define RLC_GT	1
 
 .syntax unified
 .arch armv7-a
@@ -499,7 +499,7 @@ void fp_subm_low(dig_t *c, dig_t *a, dig_t *b) {
 	dig_t carry, r0, diff;
 
 	carry = 0;
-	for (i = 0; i < FP_DIGS; i++, a++, b++) {
+	for (i = 0; i < RLC_FP_DIGS; i++, a++, b++) {
 		diff = (*a) - (*b);
 		r0 = diff - carry;
 		carry = ((*a) < (*b)) || (carry && !diff);

@@ -29,8 +29,8 @@
  * @ingroup relic
  */
 
-#ifndef RELIC_TRACE_H
-#define RELIC_TRACE_H
+#ifndef RLC_TRACE_H
+#define RLC_TRACE_H
 
 #include "relic_label.h"
 
@@ -80,4 +80,4 @@ void trace_exit(void *this, void *from)
 
 #endif
 
-#endif /* !RELIC_TRACE_H */
+#endif /* !RLC_TRACE_H */

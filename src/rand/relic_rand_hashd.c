@@ -55,7 +55,7 @@
  */
 static void rand_hash(uint8_t *out, int out_len, uint8_t *in, int in_len) {
 	uint32_t j = util_conv_big(8 * out_len);
-	int len = CEIL(out_len, MD_LEN);
+	int len = RLC_CEIL(out_len, MD_LEN);
 	uint8_t buf[1 + sizeof(uint32_t) + in_len], hash[MD_LEN];
 
 	buf[0] = 1;
@@ -66,7 +66,7 @@ static void rand_hash(uint8_t *out, int out_len, uint8_t *in, int in_len) {
 		/* h = Hash(counter || bits_to_return || input_string) */
 		md_map(hash, buf, 1 + sizeof(uint32_t) + in_len);
 		/* temp = temp || h */
-		memcpy(out, hash, MIN(MD_LEN, out_len));
+		memcpy(out, hash, RLC_MIN(MD_LEN, out_len));
 		out += MD_LEN;
 		out_len -= MD_LEN;
 		/* counter = counter + 1 */
@@ -116,7 +116,7 @@ static int rand_add(uint8_t *state, uint8_t *hash, int size) {
  * @param[in] out_len		- the number of bytes to write.
  */
 static void rand_gen(uint8_t *out, int out_len) {
-	int m = CEIL(out_len, MD_LEN);
+	int m = RLC_CEIL(out_len, MD_LEN);
 	uint8_t hash[MD_LEN], data[(RAND_SIZE - 1)/2];
 	ctx_t *ctx = core_get();
 
@@ -126,7 +126,7 @@ static void rand_gen(uint8_t *out, int out_len) {
 		/* w_i = Hash(data) */
 		md_map(hash, data, sizeof(data));
 		/* W = W || w_i */
-		memcpy(out, hash, MIN(MD_LEN, out_len));
+		memcpy(out, hash, RLC_MIN(MD_LEN, out_len));
 		out += MD_LEN;
 		out_len -= MD_LEN;
 		/* data = data + 1 mod 2^b. */

@@ -29,8 +29,8 @@
  * @ingroup relic
  */
 
-#ifndef RELIC_TYPES_H
-#define RELIC_TYPES_H
+#ifndef RLC_TYPES_H
+#define RLC_TYPES_H
 
 #include <stdint.h>
 
@@ -47,19 +47,19 @@
 /**
  * Size in bits of a digit.
  */
-#define DIGIT			(WSIZE)
+#define RLC_DIG			(WSIZE)
 
 /**
  * Logarithm of the digit size in bits in base two.
  */
-#if DIGIT == 8
-#define DIG_LOG		3
-#elif DIGIT == 16
-#define DIG_LOG		4
-#elif DIGIT == 32
-#define DIG_LOG		5
-#elif DIGIT == 64
-#define DIG_LOG		6
+#if RLC_DIG == 8
+#define RLC_DIG_LOG		3
+#elif RLC_DIG == 16
+#define RLC_DIG_LOG		4
+#elif RLC_DIG == 32
+#define RLC_DIG_LOG		5
+#elif RLC_DIG == 64
+#define RLC_DIG_LOG		6
 #endif
 
 /*============================================================================*/
@@ -74,27 +74,27 @@
  */
 #if ARITH == GMP
 typedef mp_limb_t dig_t;
-#elif DIGIT == 8
+#elif WSIZE == 8
 typedef uint8_t dig_t;
-#elif DIGIT == 16
+#elif WSIZE == 16
 typedef uint16_t dig_t;
-#elif DIGIT == 32
+#elif WSIZE == 32
 typedef uint32_t dig_t;
-#elif DIGIT == 64
+#elif WSIZE == 64
 typedef uint64_t dig_t;
 #endif
 
 /**
  * Represents a signed digit.
  */
-#if DIGIT == 8
-typedef int8_t dis_t;
-#elif DIGIT == 16
-typedef int16_t dis_t;
-#elif DIGIT == 32
-typedef int32_t dis_t;
-#elif DIGIT == 64
-typedef int64_t dis_t;
+#if WSIZE == 8
+typedef int8_t sig_t;
+#elif WSIZE == 16
+typedef int16_t sig_t;
+#elif WSIZE == 32
+typedef int32_t sig_t;
+#elif WSIZE == 64
+typedef int64_t sig_t;
 #endif
 
 /**
@@ -102,13 +102,13 @@ typedef int64_t dis_t;
  *
  * This is useful to store a result from a multiplication of two digits.
  */
-#if DIGIT == 8
+#if WSIZE == 8
 typedef uint16_t dbl_t;
-#elif DIGIT == 16
+#elif WSIZE == 16
 typedef uint32_t dbl_t;
-#elif DIGIT == 32
+#elif WSIZE == 32
 typedef uint64_t dbl_t;
-#elif DIGIT == 64
+#elif WSIZE == 64
 #if defined(__GNUC__) && !defined(__INTEL_COMPILER)
 typedef __uint128_t dbl_t;
 #elif ARITH == EASY
@@ -130,37 +130,9 @@ typedef unsigned long long ull_t;
  * Specification for aligned variables.
  */
 #if ALIGN > 1
-#define relic_align 			__attribute__ ((aligned (ALIGN)))
+#define rlc_align 		__attribute__ ((aligned (ALIGN)))
 #else
-#define relic_align 			/* empty*/
+#define rlc_align 		/* empty*/
 #endif
 
-/**
- * Size of padding to be added so that digit vectors are aligned.
- */
-#if ALIGN > 1
-#define PADDING(A)		((A) % ALIGN == 0 ? 0 : ALIGN - ((A) % ALIGN))
-#else
-#define PADDING(A)		(0)
-#endif
-
-/**
- * Align digit vector pointer to specified byte-boundary.
- *
- * @param[in,out] A		- the pointer to align.
- */
-#if ALIGN > 1
-#if ARCH == AVR || ARCH == MSP || ARCH == X86 || ARCH == ARM
-#define ALIGNED(A)															\
-	((unsigned int)(A) + PADDING((unsigned int)(A)));						\
-
-#elif ARCH  == X64
-#define ALIGNED(A)															\
-	((unsigned long)(A) + PADDING((unsigned long)(A)));						\
-
-#endif
-#else
-#define ALIGNED(A)		(A)
-#endif
-
-#endif /* !RELIC_TYPES_H */
+#endif /* !RLC_TYPES_H */

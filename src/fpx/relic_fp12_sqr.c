@@ -54,7 +54,7 @@ static void fp4_mul_unr(dv2_t e, dv2_t f, fp2_t a, fp2_t b, fp2_t c, fp2_t d) {
 		dv2_new(u0);
 		dv2_new(u1);
 
-#ifdef FP_SPACE
+#ifdef RLC_FP_ROOM
 		fp2_mulc_low(u0, a, c);
 		fp2_mulc_low(u1, b, d);
 		fp2_addn_low(t0, c, d);
@@ -385,7 +385,7 @@ void fp12_sqr_lazyr(fp12_t c, fp12_t a) {
 		fp4_sqr_unr(u8, u9, t2, t3);
 
 		/* c2 = (c2 + (t6,t7))/2. */
-#ifdef FP_SPACE
+#ifdef RLC_FP_ROOM
 		fp2_addd_low(u8, u8, u6);
 		fp2_addd_low(u9, u9, u7);
 #else

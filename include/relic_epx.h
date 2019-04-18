@@ -34,8 +34,8 @@
  * @ingroup epx
  */
 
-#ifndef RELIC_EPX_H
-#define RELIC_EPX_H
+#ifndef RLC_EPX_H
+#define RLC_EPX_H
 
 #include "relic_fpx.h"
 #include "relic_ep.h"
@@ -48,43 +48,43 @@
 /**
  * Size of a precomputation table using the binary method.
  */
-#define RELIC_EPX_TABLE_BASIC		(2 * FP_BITS + 1)
+#define RLC_EPX_TABLE_BASIC		(2 * RLC_FP_BITS + 1)
 
 /**
  * Size of a precomputation table using the single-table comb method.
  */
-#define RELIC_EPX_TABLE_COMBS      (1 << EP_DEPTH)
+#define RLC_EPX_TABLE_COMBS      (1 << EP_DEPTH)
 
 /**
  * Size of a precomputation table using the double-table comb method.
  */
-#define RELIC_EPX_TABLE_COMBD		(1 << (EP_DEPTH + 1))
+#define RLC_EPX_TABLE_COMBD		(1 << (EP_DEPTH + 1))
 
 /**
  * Size of a precomputation table using the w-(T)NAF method.
  */
-#define RELIC_EPX_TABLE_LWNAF		(1 << (EP_DEPTH - 2))
+#define RLC_EPX_TABLE_LWNAF		(1 << (EP_DEPTH - 2))
 
 /**
  * Size of a precomputation table using the chosen algorithm.
  */
 #if EP_FIX == BASIC
-#define RELIC_EPX_TABLE			RELIC_EPX_TABLE_BASIC
+#define RLC_EPX_TABLE			RLC_EPX_TABLE_BASIC
 #elif EP_FIX == COMBS
-#define RELIC_EPX_TABLE			RELIC_EPX_TABLE_COMBS
+#define RLC_EPX_TABLE			RLC_EPX_TABLE_COMBS
 #elif EP_FIX == COMBD
-#define RELIC_EPX_TABLE			RELIC_EPX_TABLE_COMBD
+#define RLC_EPX_TABLE			RLC_EPX_TABLE_COMBD
 #elif EP_FIX == LWNAF
-#define RELIC_EPX_TABLE			RELIC_EPX_TABLE_LWNAF
+#define RLC_EPX_TABLE			RLC_EPX_TABLE_LWNAF
 #endif
 
 /**
  * Maximum size of a precomputation table.
  */
 #ifdef STRIP
-#define RELIC_EPX_TABLE_MAX RELIC_EPX_TABLE
+#define RLC_EPX_TABLE_MAX 	RLC_EPX_TABLE
 #else
-#define RELIC_EPX_TABLE_MAX MAX(RELIC_EPX_TABLE_BASIC, RELIC_EPX_TABLE_COMBD)
+#define RLC_EPX_TABLE_MAX 	RLC_MAX(RLC_EPX_TABLE_BASIC, RLC_EPX_TABLE_COMBD)
 #endif
 
 
@@ -463,7 +463,7 @@ void ep2_copy(ep2_t r, ep2_t p);
  *
  * @param[in] p				- the first elliptic curve point.
  * @param[in] q				- the second elliptic curve point.
- * @return CMP_EQ if p == q and CMP_NE if p != q.
+ * @return RLC_EQ if p == q and RLC_NE if p != q.
  */
 int ep2_cmp(ep2_t p, ep2_t q);
 
@@ -931,4 +931,4 @@ void ep2_pck(ep2_t r, ep2_t p);
  */
 int ep2_upk(ep2_t r, ep2_t p);
 
-#endif /* !RELIC_EPX_H */
+#endif /* !RLC_EPX_H */

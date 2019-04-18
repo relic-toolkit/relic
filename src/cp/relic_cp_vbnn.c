@@ -41,7 +41,7 @@
 /*============================================================================*/
 
 int cp_vbnn_gen(vbnn_kgc_t kgc) {
-	int result = STS_OK;
+	int result = RLC_OK;
 
 	/* order of the ECC group */
 	bn_t n;
@@ -63,7 +63,7 @@ int cp_vbnn_gen(vbnn_kgc_t kgc) {
 		ec_mul_gen(kgc->mpk, kgc->msk);
 	}
 	CATCH_ANY {
-		result = STS_ERR;
+		result = RLC_ERR;
 	}
 	FINALLY {
 		/* free variables */
@@ -75,7 +75,7 @@ int cp_vbnn_gen(vbnn_kgc_t kgc) {
 int cp_vbnn_gen_prv(vbnn_user_t user, vbnn_kgc_t kgc, uint8_t *id, int id_len) {
 	uint8_t hash[MD_LEN];
 	int len;
-	int result = STS_OK;
+	int result = RLC_OK;
 
 	/* order of the ECC group */
 	bn_t n;
@@ -109,7 +109,7 @@ int cp_vbnn_gen_prv(vbnn_user_t user, vbnn_kgc_t kgc, uint8_t *id, int id_len) {
 		len = MD_LEN;
 
 		if (8 * len > bn_bits(n)) {
-			len = CEIL(bn_bits(n), 8);
+			len = RLC_CEIL(bn_bits(n), 8);
 			bn_read_bin(user->s, hash, len);
 			bn_rsh(user->s, user->s, 8 * len - bn_bits(n));
 		} else {
@@ -121,7 +121,7 @@ int cp_vbnn_gen_prv(vbnn_user_t user, vbnn_kgc_t kgc, uint8_t *id, int id_len) {
 		bn_mod(user->s, user->s, n);
 	}
 	CATCH_ANY {
-		result = STS_ERR;
+		result = RLC_ERR;
 	}
 	FINALLY {
 		/* free variables */
@@ -133,7 +133,7 @@ int cp_vbnn_gen_prv(vbnn_user_t user, vbnn_kgc_t kgc, uint8_t *id, int id_len) {
 
 int cp_vbnn_sig(ec_t sig_R, bn_t sig_z, bn_t sig_h, uint8_t *id, int id_len,
 		uint8_t *msg, int msg_len, vbnn_user_t user) {
-	int result = STS_OK;
+	int result = RLC_OK;
 
 	uint8_t *buffer = NULL;
 	uint8_t *buffer_i = NULL;
@@ -181,7 +181,7 @@ int cp_vbnn_sig(ec_t sig_R, bn_t sig_z, bn_t sig_h, uint8_t *id, int id_len,
 		len = MD_LEN;
 
 		if (8 * len > bn_bits(n)) {
-			len = CEIL(bn_bits(n), 8);
+			len = RLC_CEIL(bn_bits(n), 8);
 			bn_read_bin(sig_h, hash, len);
 			bn_rsh(sig_h, sig_h, 8 * len - bn_bits(n));
 		} else {
@@ -198,7 +198,7 @@ int cp_vbnn_sig(ec_t sig_R, bn_t sig_z, bn_t sig_h, uint8_t *id, int id_len,
 
 	}
 	CATCH_ANY {
-		result = STS_ERR;
+		result = RLC_ERR;
 	}
 	FINALLY {
 		/* free variables */
@@ -257,7 +257,7 @@ int cp_vbnn_ver(ec_t sig_R, bn_t sig_z, bn_t sig_h, uint8_t *id, int id_len,
 		len = MD_LEN;
 
 		if (8 * len > bn_bits(n)) {
-			len = CEIL(bn_bits(n), 8);
+			len = RLC_CEIL(bn_bits(n), 8);
 			bn_read_bin(c, hash, len);
 			bn_rsh(c, c, 8 * len - bn_bits(n));
 		} else {
@@ -291,14 +291,14 @@ int cp_vbnn_ver(ec_t sig_R, bn_t sig_z, bn_t sig_h, uint8_t *id, int id_len,
 		len = MD_LEN;
 
 		if (8 * len > bn_bits(n)) {
-			len = CEIL(bn_bits(n), 8);
+			len = RLC_CEIL(bn_bits(n), 8);
 			bn_read_bin(h_verify, hash, len);
 			bn_rsh(h_verify, h_verify, 8 * len - bn_bits(n));
 		} else {
 			bn_read_bin(h_verify, hash, len);
 		}
 
-		if (bn_cmp(sig_h, h_verify) == CMP_EQ) {
+		if (bn_cmp(sig_h, h_verify) == RLC_EQ) {
 			result = 1;
 		} else {
 			result = 0;

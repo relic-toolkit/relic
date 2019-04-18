@@ -33,29 +33,12 @@
  * @ingroup bench
  */
 
-#ifndef RELIC_BENCH_H
-#define RELIC_BENCH_H
+#ifndef RLC_BENCH_H
+#define RLC_BENCH_H
 
 #include "relic_conf.h"
 #include "relic_label.h"
 #include "relic_util.h"
-
-/*============================================================================*/
-/* Constant definitions                                                       */
-/*============================================================================*/
-
-/**
- * Shared parameter for these timer.
- */
-#if TIMER == HREAL
-#define CLOCK			CLOCK_REALTIME
-#elif TIMER == HPROC
-#define CLOCK			CLOCK_PROCESS_CPUTIME_ID
-#elif TIMER == HTHRD
-#define CLOCK			CLOCK_THREAD_CPUTIME_ID
-#else
-#define CLOCK			NULL
-#endif
 
 /*============================================================================*/
 /* Macro definitions                                                          */
@@ -206,4 +189,4 @@ void bench_print(void);
  */
 ull_t bench_total(void);
 
-#endif /* !RELIC_BENCH_H */
+#endif /* !RLC_BENCH_H */

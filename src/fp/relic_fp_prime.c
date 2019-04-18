@@ -48,7 +48,7 @@ static void fp_prime_set(const bn_t p) {
 	bn_t t;
 	ctx_t *ctx = core_get();
 
-	if (p->used != FP_DIGS) {
+	if (p->used != RLC_FP_DIGS) {
 		THROW(ERR_NO_VALID);
 	}
 
@@ -91,15 +91,15 @@ static void fp_prime_set(const bn_t p) {
 #if FP_RDC == MONTY || !defined(STRIP)
 		bn_mod_pre_monty(t, &(ctx->prime));
 		ctx->u = t->dp[0];
-		dv_zero(s, 2 * FP_DIGS);
-		s[2 * FP_DIGS] = 1;
-		dv_zero(q, 2 * FP_DIGS + 1);
-		dv_copy(q, ctx->prime.dp, FP_DIGS);
-		bn_divn_low(t->dp, ctx->conv.dp, s, 2 * FP_DIGS + 1, q, FP_DIGS);
-		ctx->conv.used = FP_DIGS;
+		dv_zero(s, 2 * RLC_FP_DIGS);
+		s[2 * RLC_FP_DIGS] = 1;
+		dv_zero(q, 2 * RLC_FP_DIGS + 1);
+		dv_copy(q, ctx->prime.dp, RLC_FP_DIGS);
+		bn_divn_low(t->dp, ctx->conv.dp, s, 2 * RLC_FP_DIGS + 1, q, RLC_FP_DIGS);
+		ctx->conv.used = RLC_FP_DIGS;
 		bn_trim(&(ctx->conv));
 		bn_set_dig(&(ctx->one), 1);
-		bn_lsh(&(ctx->one), &(ctx->one), ctx->prime.used * DIGIT);
+		bn_lsh(&(ctx->one), &(ctx->one), ctx->prime.used * RLC_DIG);
 		bn_mod(&(ctx->one), &(ctx->one), &(ctx->prime));
 #endif
 		fp_prime_calc();
@@ -135,8 +135,8 @@ static void fp2_calc(void) {
 
 		fp2_set_dig(t1, 1);
 		fp2_mul_nor(t0, t1);
-		e->used = FP_DIGS;
-		dv_copy(e->dp, fp_prime_get(), FP_DIGS);
+		e->used = RLC_FP_DIGS;
+		dv_copy(e->dp, fp_prime_get(), RLC_FP_DIGS);
 		bn_sub_dig(e, e, 1);
 		bn_div_dig(e, e, 6);
 		fp2_exp(t0, t0, e);
@@ -204,8 +204,8 @@ static void fp3_calc(void) {
 
 		fp_set_dig(ctx->fp3_base[0], -fp_prime_get_cnr());
 		fp_neg(ctx->fp3_base[0], ctx->fp3_base[0]);
-		e->used = FP_DIGS;
-		dv_copy(e->dp, fp_prime_get(), FP_DIGS);
+		e->used = RLC_FP_DIGS;
+		dv_copy(e->dp, fp_prime_get(), RLC_FP_DIGS);
 		bn_sub_dig(e, e, 1);
 		bn_div_dig(e, e, 3);
 		fp_exp(ctx->fp3_base[0], ctx->fp3_base[0], e);
@@ -213,7 +213,7 @@ static void fp3_calc(void) {
 
 		fp3_zero(t0);
 		fp_set_dig(t0[1], 1);
-		dv_copy(e->dp, fp_prime_get(), FP_DIGS);
+		dv_copy(e->dp, fp_prime_get(), RLC_FP_DIGS);
 		bn_sub_dig(e, e, 1);
 		bn_div_dig(e, e, 6);
 
@@ -295,14 +295,14 @@ static void fp3_calc(void) {
 void fp_prime_init(void) {
 	ctx_t *ctx = core_get();
 	ctx->fp_id = 0;
-	bn_init(&(ctx->prime), FP_DIGS);
+	bn_init(&(ctx->prime), RLC_FP_DIGS);
 #if FP_RDC == QUICK || !defined(STRIP)
 	ctx->sps_len = 0;
 	memset(ctx->sps, 0, sizeof(ctx->sps));
 #endif
 #if FP_RDC == MONTY || !defined(STRIP)
-	bn_init(&(ctx->conv), FP_DIGS);
-	bn_init(&(ctx->one), FP_DIGS);
+	bn_init(&(ctx->conv), RLC_FP_DIGS);
+	bn_init(&(ctx->one), RLC_FP_DIGS);
 #endif
 }
 
@@ -331,7 +331,7 @@ const dig_t *fp_prime_get_rdc(void) {
 const int *fp_prime_get_sps(int *len) {
 #if FP_RDC == QUICK || !defined(STRIP)
 	ctx_t *ctx = core_get();
-	if (ctx->sps_len > 0 && ctx->sps_len < MAX_TERMS) {
+	if (ctx->sps_len > 0 && ctx->sps_len < RLC_TERMS) {
 		if (len != NULL) {
 			*len = ctx->sps_len;
 		}
@@ -384,7 +384,7 @@ void fp_prime_set_pmers(const int *f, int len) {
 		bn_new(p);
 		bn_new(t);
 
-		if (len >= MAX_TERMS) {
+		if (len >= RLC_TERMS) {
 			THROW(ERR_NO_VALID);
 		}
 
@@ -445,11 +445,11 @@ void fp_prime_conv(fp_t c, const bn_t a) {
 
 #if FP_RDC == MONTY
 		bn_mod(t, a, &(core_get()->prime));
-		bn_lsh(t, t, FP_DIGS * DIGIT);
+		bn_lsh(t, t, RLC_FP_DIGS * RLC_DIG);
 		bn_mod(t, t, &(core_get()->prime));
-		dv_copy(c, t->dp, FP_DIGS);
+		dv_copy(c, t->dp, RLC_FP_DIGS);
 #else
-		if (a->used > FP_DIGS) {
+		if (a->used > RLC_FP_DIGS) {
 			THROW(ERR_NO_PRECI);
 		}
 
@@ -462,7 +462,7 @@ void fp_prime_conv(fp_t c, const bn_t a) {
 			for (i = 0; i < t->used; i++) {
 				c[i] = t->dp[i];
 			}
-			for (; i < FP_DIGS; i++) {
+			for (; i < RLC_FP_DIGS; i++) {
 				c[i] = 0;
 			}
 		}
@@ -488,11 +488,11 @@ void fp_prime_conv_dig(fp_t c, dig_t a) {
 
 #if FP_RDC == MONTY
 		if (a != 1) {
-			dv_zero(t, 2 * FP_DIGS + 1);
-			t[FP_DIGS] = fp_mul1_low(t, ctx->conv.dp, a);
+			dv_zero(t, 2 * RLC_FP_DIGS + 1);
+			t[RLC_FP_DIGS] = fp_mul1_low(t, ctx->conv.dp, a);
 			fp_rdc(c, t);
 		} else {
-			dv_copy(c, ctx->one.dp, FP_DIGS);
+			dv_copy(c, ctx->one.dp, RLC_FP_DIGS);
 		}
 #else
 		(void)ctx;
@@ -517,17 +517,17 @@ void fp_prime_back(bn_t c, const fp_t a) {
 	TRY {
 		dv_new(t);
 
-		bn_grow(c, FP_DIGS);
-		for (i = 0; i < FP_DIGS; i++) {
+		bn_grow(c, RLC_FP_DIGS);
+		for (i = 0; i < RLC_FP_DIGS; i++) {
 			c->dp[i] = a[i];
 		}
 #if FP_RDC == MONTY
-		dv_zero(t, 2 * FP_DIGS + 1);
-		dv_copy(t, a, FP_DIGS);
+		dv_zero(t, 2 * RLC_FP_DIGS + 1);
+		dv_copy(t, a, RLC_FP_DIGS);
 		fp_rdc(c->dp, t);
 #endif
-		c->used = FP_DIGS;
-		c->sign = BN_POS;
+		c->used = RLC_FP_DIGS;
+		c->sign = RLC_POS;
 		bn_trim(c);
 	}
 	CATCH_ANY {

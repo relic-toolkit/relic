@@ -37,7 +37,7 @@
 
 static int memory(void) {
 	err_t e;
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	ed_t a;
 
 	ed_null(a);
@@ -56,13 +56,13 @@ static int memory(void) {
 		}
 	}
 	(void)a;
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	return code;
 }
 
 int addition(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	ed_t a, b, c, d, e;
 
 	ed_null(a);
@@ -101,7 +101,7 @@ int addition(void) {
 			ed_add(e, b, a);
 			ed_norm(d, d);
 			ed_norm(e, e);
-			TEST_ASSERT(ed_cmp(d, e) == CMP_EQ, end);
+			TEST_ASSERT(ed_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("point addition is associative") {
@@ -114,23 +114,23 @@ int addition(void) {
 			ed_add(e, e, a);
 			ed_norm(d, d);
 			ed_norm(e, e);
-			TEST_ASSERT(ed_cmp(d, e) == CMP_EQ, end);
+			TEST_ASSERT(ed_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("point addition has identity") {
 			ed_rand(a);
 			ed_set_infty(d);
 			ed_add(e, a, d);
-			TEST_ASSERT(ed_cmp(e, a) == CMP_EQ, end);
+			TEST_ASSERT(ed_cmp(e, a) == RLC_EQ, end);
 			ed_add(e, d, a);
-			TEST_ASSERT(ed_cmp(e, a) == CMP_EQ, end);
+			TEST_ASSERT(ed_cmp(e, a) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("double negation works") {
 			ed_rand(a);
 			ed_neg(b, a);
 			ed_neg(b, b);
-			TEST_ASSERT(ed_cmp(a, b) == CMP_EQ, end);
+			TEST_ASSERT(ed_cmp(a, b) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("point addition has inverse") {
@@ -144,7 +144,7 @@ int addition(void) {
 	CATCH_ANY {
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	ed_free(a);
 	ed_free(b);
@@ -155,9 +155,9 @@ int addition(void) {
 }
 
 int util(void) {
-	int l, code = STS_ERR;
+	int l, code = RLC_ERR;
 	ed_t a, b, c;
-	uint8_t bin[2 * FP_BYTES + 1];
+	uint8_t bin[2 * RLC_FP_BYTES + 1];
 
 	ed_null(a);
 	ed_null(b);
@@ -171,15 +171,15 @@ int util(void) {
 		TEST_BEGIN("negation and comparison are consistent") {
 			ed_rand(a);
 			ed_neg(b, a);
-			TEST_ASSERT(ed_cmp(a, b) != CMP_EQ, end);
+			TEST_ASSERT(ed_cmp(a, b) != RLC_EQ, end);
 		}
 		TEST_END;
 
 		TEST_BEGIN("assignment to random and comparison are consistent") {
 			ed_rand(a);
 			ed_set_infty(c);
-			TEST_ASSERT(ed_cmp(a, c) != CMP_EQ, end);
-			TEST_ASSERT(ed_cmp(c, a) != CMP_EQ, end);
+			TEST_ASSERT(ed_cmp(a, c) != RLC_EQ, end);
+			TEST_ASSERT(ed_cmp(c, a) != RLC_EQ, end);
 		}
 		TEST_END;
 
@@ -203,19 +203,19 @@ int util(void) {
 				l = ed_size_bin(a, j);
 				ed_write_bin(bin, l, a, j);
 				ed_read_bin(b, bin, l);
-				TEST_ASSERT(ed_cmp(a, b) == CMP_EQ, end);
+				TEST_ASSERT(ed_cmp(a, b) == RLC_EQ, end);
 				ed_rand(a);
 				l = ed_size_bin(a, j);
 				ed_write_bin(bin, l, a, j);
 				ed_read_bin(b, bin, l);
-				TEST_ASSERT(ed_cmp(a, b) == CMP_EQ, end);
+				TEST_ASSERT(ed_cmp(a, b) == RLC_EQ, end);
 				ed_rand(a);
 				ed_dbl(a, a);
 				l = ed_size_bin(a, j);
 				ed_norm(a, a);
 				ed_write_bin(bin, l, a, j);
 				ed_read_bin(b, bin, l);
-				TEST_ASSERT(ed_cmp(a, b) == CMP_EQ, end);
+				TEST_ASSERT(ed_cmp(a, b) == RLC_EQ, end);
 			}
 		}
 		TEST_END;
@@ -224,7 +224,7 @@ int util(void) {
 		util_print("FATAL ERROR!\n");
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	ed_free(a);
 	ed_free(b);
@@ -233,7 +233,7 @@ int util(void) {
 }
 
 int doubling(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	ed_t a, b, c;
 
 	ed_null(a);
@@ -251,13 +251,13 @@ int doubling(void) {
 			ed_norm(b, b);
 			ed_dbl(c, a);
 			ed_norm(c, c);
-			TEST_ASSERT(ed_cmp(b, c) == CMP_EQ, end);
+			TEST_ASSERT(ed_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 	}
 	CATCH_ANY {
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	ed_free(a);
 	ed_free(b);
@@ -266,7 +266,7 @@ int doubling(void) {
 }
 
 static int multiplication(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	bn_t n, k;
 	ed_t p, q, r;
 
@@ -295,7 +295,7 @@ static int multiplication(void) {
 			bn_rand_mod(k, n);
 			ed_mul(q, p, k);
 			ed_mul_gen(r, k);
-			TEST_ASSERT(ed_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(ed_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 
 #if ED_MUL == BASIC
@@ -303,7 +303,7 @@ static int multiplication(void) {
 			bn_rand_mod(k, n);
 			ed_mul(q, p, k);
 			ed_mul_basic(r, p, k);
-			TEST_ASSERT(ed_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(ed_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 #endif
 
@@ -312,7 +312,7 @@ static int multiplication(void) {
 			bn_rand_mod(k, n);
 			ed_mul(q, p, k);
 			ed_mul_slide(r, p, k);
-			TEST_ASSERT(ed_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(ed_cmp(q, r) == RLC_EQ, end);
 		}
 		TEST_END;
 #endif
@@ -322,7 +322,7 @@ static int multiplication(void) {
 			bn_rand_mod(k, n);
 			ed_mul(q, p, k);
 			ed_mul_monty(r, p, k);
-			TEST_ASSERT(ed_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(ed_cmp(q, r) == RLC_EQ, end);
 		}
 		TEST_END;
 #endif
@@ -332,16 +332,16 @@ static int multiplication(void) {
 			bn_rand_mod(k, n);
 			ed_mul(q, p, k);
 			ed_mul_lwnaf(r, p, k);
-			TEST_ASSERT(ed_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(ed_cmp(q, r) == RLC_EQ, end);
 		}
 		TEST_END;
 #endif
 
 		TEST_BEGIN("multiplication by digit is correct") {
-			bn_rand(k, BN_POS, DIGIT);
+			bn_rand(k, RLC_POS, RLC_DIG);
 			ed_mul(q, p, k);
 			ed_mul_dig(r, p, k->dp[0]);
-			TEST_ASSERT(ed_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(ed_cmp(q, r) == RLC_EQ, end);
 		}
 		TEST_END;
 	}
@@ -349,7 +349,7 @@ static int multiplication(void) {
 		util_print("FATAL ERROR!\n");
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	bn_free(n);
 	bn_free(k);
@@ -360,7 +360,7 @@ static int multiplication(void) {
 }
 
 static int compression(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	ed_t a, b, c;
 
 	ed_null(a);
@@ -376,14 +376,14 @@ static int compression(void) {
 			ed_rand(a);
 			ed_pck(b, a);
 			TEST_ASSERT(ed_upk(c, b) == 1, end);
-			TEST_ASSERT(ed_cmp(a, c) == CMP_EQ, end);
+			TEST_ASSERT(ed_cmp(a, c) == RLC_EQ, end);
 		}
 		TEST_END;
 	}
 	CATCH_ANY {
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	ed_free(a);
 	ed_free(b);
@@ -392,7 +392,7 @@ static int compression(void) {
 }
 
 static int hashing(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	ed_t a;
 	bn_t n;
 	uint8_t msg[5];
@@ -417,7 +417,7 @@ static int hashing(void) {
 	CATCH_ANY {
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	ed_free(a);
 	bn_free(n);
@@ -428,62 +428,62 @@ int test(void) {
 	ed_param_print();
 
 	util_banner("Memory:", 1);
-	if (memory() != STS_OK) {
+	if (memory() != RLC_OK) {
 		core_clean();
 		return 1;
 	}
 
 	util_banner("Arithmetic:", 1);
 
-	if (addition() != STS_OK) {
-		return STS_ERR;
+	if (addition() != RLC_OK) {
+		return RLC_ERR;
 	}
 
 	util_banner("Doubling:", 1);
-	if (doubling() != STS_OK) {
-		return STS_ERR;
+	if (doubling() != RLC_OK) {
+		return RLC_ERR;
 	}
 
 	util_banner("Multiplication:", 1);
-	if (multiplication() != STS_OK) {
-		return STS_ERR;
+	if (multiplication() != RLC_OK) {
+		return RLC_ERR;
 	}
 
 	util_banner("Utilities:", 1);
-	if (util() != STS_OK) {
-		return STS_ERR;
+	if (util() != RLC_OK) {
+		return RLC_ERR;
 	}
 
 	util_banner("Hashing:", 1);
-	if (hashing() != STS_OK) {
-		return STS_ERR;
+	if (hashing() != RLC_OK) {
+		return RLC_ERR;
 	}
 
 	util_banner("Compression:", 1);
-	if (compression() != STS_OK) {
-		return STS_ERR;
+	if (compression() != RLC_OK) {
+		return RLC_ERR;
 	}
 
-	return STS_OK;
+	return RLC_OK;
 }
 
 int main(void) {
-	int r0 = STS_ERR, r1 = STS_ERR, r2 = STS_ERR, r3 = STS_ERR;
+	int r0 = RLC_ERR, r1 = RLC_ERR, r2 = RLC_ERR, r3 = RLC_ERR;
 
-	if (core_init() != STS_OK) {
+	if (core_init() != RLC_OK) {
 		core_clean();
 		return 1;
 	}
 
 	util_banner("Tests for the ED module:", 0);
 
-	if (r0 == STS_ERR && r1 == STS_ERR && r2 == STS_ERR && r3 == STS_ERR) {
-		if (ed_param_set_any() == STS_ERR) {
+	if (r0 == RLC_ERR && r1 == RLC_ERR && r2 == RLC_ERR && r3 == RLC_ERR) {
+		if (ed_param_set_any() == RLC_ERR) {
 			THROW(ERR_NO_CURVE);
 			core_clean();
 			return 0;
 		} else {
-			if (test() != STS_OK) {
+			if (test() != RLC_OK) {
 				core_clean();
 				return 1;
 			}

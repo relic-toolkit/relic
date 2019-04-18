@@ -39,7 +39,7 @@
 
 int cp_ecdh_gen(bn_t d, ec_t q) {
 	bn_t n;
-	int result = STS_OK;
+	int result = RLC_OK;
 
 	bn_null(n);
 
@@ -51,7 +51,7 @@ int cp_ecdh_gen(bn_t d, ec_t q) {
 		ec_mul_gen(q, d);
 	}
 	CATCH_ANY {
-		result = STS_ERR;
+		result = RLC_ERR;
 	}
 	FINALLY {
 		bn_free(n);
@@ -63,7 +63,7 @@ int cp_ecdh_gen(bn_t d, ec_t q) {
 int cp_ecdh_key(uint8_t *key, int key_len, bn_t d, ec_t q) {
 	ec_t p;
 	bn_t x, h;
-	int l, result = STS_OK;
+	int l, result = RLC_OK;
 	uint8_t _x[FC_BYTES];
 
 	ec_null(p);
@@ -76,14 +76,14 @@ int cp_ecdh_key(uint8_t *key, int key_len, bn_t d, ec_t q) {
 		bn_new(h);
 
 		ec_curve_get_cof(h);
-		if (bn_bits(h) < DIGIT) {
+		if (bn_bits(h) < RLC_DIG) {
 			ec_mul_dig(p, q, h->dp[0]);
 		} else {
 			ec_mul(p, q, h);
 		}
 		ec_mul(p, p, d);
 		if (ec_is_infty(p)) {
-			result = STS_ERR;
+			result = RLC_ERR;
 		}
 		ec_get_x(x, p);
 		l = bn_size_bin(x);

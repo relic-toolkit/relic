@@ -47,20 +47,20 @@ int bc_aes_cbc_enc(uint8_t *out, int *out_len, uint8_t *in,
 
 	int pad_len = 16 - (in_len - 16 * (in_len/16));
 	if (*out_len < in_len + pad_len) {
-		return STS_ERR;
+		return RLC_ERR;
 	}
 	if (makeKey2(&key_inst, DIR_ENCRYPT, 8 * key_len, (char *)key) != TRUE) {
-		return STS_ERR;
+		return RLC_ERR;
 	}
 	if (cipherInit(&cipher_inst, MODE_CBC, NULL) != TRUE) {
-		return STS_ERR;
+		return RLC_ERR;
 	}
-	memcpy(cipher_inst.IV, iv, BC_LEN);
+	memcpy(cipher_inst.IV, iv, RLC_BC_LEN);
 	*out_len = padEncrypt(&cipher_inst, &key_inst, in, in_len, out);
 	if (*out_len <= 0) {
-		return STS_ERR;
+		return RLC_ERR;
 	}
-	return STS_OK;
+	return RLC_OK;
 }
 
 int bc_aes_cbc_dec(uint8_t *out, int *out_len, uint8_t *in,
@@ -69,19 +69,19 @@ int bc_aes_cbc_dec(uint8_t *out, int *out_len, uint8_t *in,
 	cipherInstance cipher_inst;
 
 	if (*out_len < in_len) {
-		return STS_ERR;
+		return RLC_ERR;
 	}
 
 	if (makeKey2(&key_inst, DIR_DECRYPT, 8 * key_len, (char *)key) != TRUE) {
-		return STS_ERR;
+		return RLC_ERR;
 	}
 	if (cipherInit(&cipher_inst, MODE_CBC, NULL) != TRUE) {
-		return STS_ERR;
+		return RLC_ERR;
 	}
-	memcpy(cipher_inst.IV, iv, BC_LEN);
+	memcpy(cipher_inst.IV, iv, RLC_BC_LEN);
 	*out_len = padDecrypt(&cipher_inst, &key_inst, in, in_len, out);
 	if (*out_len <= 0) {
-		return STS_ERR;
+		return RLC_ERR;
 	}
-	return STS_OK;
+	return RLC_OK;
 }

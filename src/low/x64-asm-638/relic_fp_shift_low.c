@@ -39,11 +39,11 @@
 /*============================================================================*/
 
 dig_t fp_lsh1_low(dig_t *c, const dig_t *a) {
-	return mpn_lshift(c, a, FP_DIGS, 1);
+	return mpn_lshift(c, a, RLC_FP_DIGS, 1);
 }
 
 dig_t fp_lshb_low(dig_t *c, const dig_t *a, int bits) {
-	return mpn_lshift(c, a, FP_DIGS, bits);
+	return mpn_lshift(c, a, RLC_FP_DIGS, bits);
 }
 
 void fp_lshd_low(dig_t *c, const dig_t *a, int digits) {
@@ -51,10 +51,10 @@ void fp_lshd_low(dig_t *c, const dig_t *a, int digits) {
 	const dig_t *bot;
 	int i;
 
-	top = c + FP_DIGS - 1;
-	bot = a + FP_DIGS - 1 - digits;
+	top = c + RLC_FP_DIGS - 1;
+	bot = a + RLC_FP_DIGS - 1 - digits;
 
-	for (i = 0; i < FP_DIGS - digits; i++, top--, bot--) {
+	for (i = 0; i < RLC_FP_DIGS - digits; i++, top--, bot--) {
 		*top = *bot;
 	}
 	for (i = 0; i < digits; i++, c++) {
@@ -63,11 +63,11 @@ void fp_lshd_low(dig_t *c, const dig_t *a, int digits) {
 }
 
 dig_t fp_rsh1_low(dig_t *c, const dig_t *a) {
-	return mpn_rshift(c, a, FP_DIGS, 1);
+	return mpn_rshift(c, a, RLC_FP_DIGS, 1);
 }
 
 dig_t fp_rshb_low(dig_t *c, const dig_t *a, int bits) {
-	return mpn_rshift(c, a, FP_DIGS, bits);
+	return mpn_rshift(c, a, RLC_FP_DIGS, bits);
 }
 
 void fp_rshd_low(dig_t *c, const dig_t *a, int digits) {
@@ -78,10 +78,10 @@ void fp_rshd_low(dig_t *c, const dig_t *a, int digits) {
 	top = a + digits;
 	bot = c;
 
-	for (i = 0; i < FP_DIGS - digits; i++, top++, bot++) {
+	for (i = 0; i < RLC_FP_DIGS - digits; i++, top++, bot++) {
 		*bot = *top;
 	}
-	for (; i < FP_DIGS; i++, bot++) {
+	for (; i < RLC_FP_DIGS; i++, bot++) {
 		*bot = 0;
 	}
 }

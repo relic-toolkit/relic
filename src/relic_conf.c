@@ -44,12 +44,24 @@
 #include "relic_bench.h"
 
 /*============================================================================*/
+/* Private definitions                                                        */
+/*============================================================================*/
+
+/**
+ * Inserts quotation marks in the macro argument.
+ */
+/** @{ */
+#define QUOTE(A)			_QUOTE(A)
+#define _QUOTE(A)			#A
+/** @} */
+
+/*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
 void conf_print(void) {
 #ifndef QUIET
-	util_print("-- RELIC " RELIC_VERSION " configuration:\n\n");
+	util_print("-- RELIC " RLC_VERSION " configuration:\n\n");
 #if ALLOC == DYNAMIC
 	util_print("** Allocation mode: DYNAMIC\n\n");
 #elif ALLOC == STACK
@@ -82,13 +94,13 @@ void conf_print(void) {
 
 #ifdef WITH_BN
 	util_print("** Multiple precision module options:\n");
-	util_print("   Precision: %d bits, %d words\n", RELIC_BN_BITS, BN_DIGS);
+	util_print("   Precision: %d bits, %d words\n", RLC_BN_BITS, RLC_BN_DIGS);
 	util_print("   Arithmetic method: " BN_METHD "\n\n");
 #endif
 
 #ifdef WITH_FP
 	util_print("** Prime field module options:\n");
-	util_print("   Prime size: %d bits, %d words\n", FP_BITS, FP_DIGS);
+	util_print("   Prime size: %d bits, %d words\n", RLC_FP_BITS, RLC_FP_DIGS);
 	util_print("   Arithmetic method: " FP_METHD "\n\n");
 #endif
 
@@ -109,7 +121,7 @@ void conf_print(void) {
 
 #ifdef WITH_FB
 	util_print("** Binary field module options:\n");
-	util_print("   Polynomial size: %d bits, %d words\n", FB_BITS, FB_DIGS);
+	util_print("   Polynomial size: %d bits, %d words\n", RLC_FB_BITS, RLC_FB_DIGS);
 	util_print("   Arithmetic method: " FB_METHD "\n\n");
 #endif
 

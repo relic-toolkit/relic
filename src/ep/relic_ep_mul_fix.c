@@ -47,7 +47,7 @@
  */
 static void ep_mul_fix_plain(ep_t r, const ep_t *t, const bn_t k) {
 	int l, i, n;
-	int8_t naf[FP_BITS + 1];
+	int8_t naf[RLC_FP_BITS + 1];
 
 	if (bn_is_zero(k)) {
 		ep_set_infty(r);
@@ -55,7 +55,7 @@ static void ep_mul_fix_plain(ep_t r, const ep_t *t, const bn_t k) {
 	}
 
 	/* Compute the w-TNAF representation of k. */
-	l = FP_BITS + 1;
+	l = RLC_FP_BITS + 1;
 	bn_rec_naf(naf, &l, k, EP_DEPTH);
 
 	n = naf[l - 1];
@@ -78,7 +78,7 @@ static void ep_mul_fix_plain(ep_t r, const ep_t *t, const bn_t k) {
 	}
 	/* Convert r to affine coordinates. */
 	ep_norm(r, r);
-	if (bn_sign(k) == BN_NEG) {
+	if (bn_sign(k) == RLC_NEG) {
 		ep_neg(r, r);
 	}
 }
@@ -161,7 +161,7 @@ static void ep_mul_combs_endom(ep_t r, const ep_t *t, const bn_t k) {
 				}
 			}
 			if (w0 > 0) {
-				if (s0 == BN_POS) {
+				if (s0 == RLC_POS) {
 					ep_add(r, r, t[w0]);
 				} else {
 					ep_sub(r, r, t[w0]);
@@ -170,14 +170,14 @@ static void ep_mul_combs_endom(ep_t r, const ep_t *t, const bn_t k) {
 			if (w1 > 0) {
 				ep_copy(u, t[w1]);
 				fp_mul(u->x, u->x, ep_curve_get_beta());
-				if (s1 == BN_NEG) {
+				if (s1 == RLC_NEG) {
 					ep_neg(u, u);
 				}
 				ep_add(r, r, u);
 			}
 		}
 		ep_norm(r, r);
-		if (bn_sign(k) == BN_NEG) {
+		if (bn_sign(k) == RLC_NEG) {
 			ep_neg(r, r);
 		}
 	}
@@ -222,7 +222,7 @@ static void ep_mul_combs_plain(ep_t r, const ep_t *t, const bn_t k) {
 		bn_new(n);
 
 		ep_curve_get_ord(n);
-		l = CEIL(bn_bits(n), EP_DEPTH);
+		l = RLC_CEIL(bn_bits(n), EP_DEPTH);
 
 		n0 = bn_bits(k);
 		p0 = (EP_DEPTH) * l - 1;
@@ -253,7 +253,7 @@ static void ep_mul_combs_plain(ep_t r, const ep_t *t, const bn_t k) {
 			}
 		}
 		ep_norm(r, r);
-		if (bn_sign(k) == BN_NEG) {
+		if (bn_sign(k) == RLC_NEG) {
 			ep_neg(r, r);
 		}
 	}
@@ -314,7 +314,7 @@ void ep_mul_fix_basic(ep_t r, const ep_t *t, const bn_t k) {
 		}
 	}
 	ep_norm(r, r);
-	if (bn_sign(k) == BN_NEG) {
+	if (bn_sign(k) == RLC_NEG) {
 		ep_neg(r, r);
 	}
 }
@@ -359,7 +359,7 @@ void ep_mul_pre_combs(ep_t *t, const ep_t p) {
 			}
 		}
 
-		ep_norm_sim(t + 2, (const ep_t *)t + 2, RELIC_EP_TABLE_COMBS - 2);
+		ep_norm_sim(t + 2, (const ep_t *)t + 2, RLC_EP_TABLE_COMBS - 2);
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
@@ -395,7 +395,7 @@ void ep_mul_pre_combd(ep_t *t, const ep_t p) {
 		bn_new(n);
 
 		ep_curve_get_ord(n);
-		d = CEIL(bn_bits(n), EP_DEPTH);
+		d = RLC_CEIL(bn_bits(n), EP_DEPTH);
 		e = (d % 2 == 0 ? (d / 2) : (d / 2) + 1);
 
 		ep_set_infty(t[0]);
@@ -447,7 +447,7 @@ void ep_mul_fix_combd(ep_t r, const ep_t *t, const bn_t k) {
 		bn_new(n);
 
 		ep_curve_get_ord(n);
-		d = CEIL(bn_bits(n), EP_DEPTH);
+		d = RLC_CEIL(bn_bits(n), EP_DEPTH);
 		e = (d % 2 == 0 ? (d / 2) : (d / 2) + 1);
 
 		ep_set_infty(r);
@@ -479,7 +479,7 @@ void ep_mul_fix_combd(ep_t r, const ep_t *t, const bn_t k) {
 			ep_add(r, r, t[(1 << EP_DEPTH) + w1]);
 		}
 		ep_norm(r, r);
-		if (bn_sign(k) == BN_NEG) {
+		if (bn_sign(k) == RLC_NEG) {
 			ep_neg(r, r);
 		}
 	}

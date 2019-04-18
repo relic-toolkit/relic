@@ -60,7 +60,7 @@ static void fb_mul_basic_imp(dig_t *c, const dig_t *a, const dig_t *b, int size)
 	TRY {
 		/* We need a temporary variable so that c can be a or b. */
 		dv_new(s);
-		dv_zero(s, 2 * FB_DIGS);
+		dv_zero(s, 2 * RLC_FB_DIGS);
 
 		dv_copy(s, b, size);
 		dv_zero(c, 2 * size);
@@ -68,7 +68,7 @@ static void fb_mul_basic_imp(dig_t *c, const dig_t *a, const dig_t *b, int size)
 		if (a[0] & 1) {
 			dv_copy(c, b, size);
 		}
-		for (i = 1; i <= (DIGIT * size) - 1; i++) {
+		for (i = 1; i <= (RLC_DIG * size) - 1; i++) {
 			fb_lsh1_low(s, s);
 			fb_rdc(s, s);
 			if (fb_get_bit(a, i)) {
@@ -198,23 +198,23 @@ void fb_mul_basic(fb_t c, const fb_t a, const fb_t b) {
 		fb_new(t);
 		dv_new(s);
 		fb_zero(t);
-		dv_zero(s + FB_DIGS, FB_DIGS);
+		dv_zero(s + RLC_FB_DIGS, RLC_FB_DIGS);
 		fb_copy(s, b);
 
 		if (a[0] & 1) {
 			fb_copy(t, b);
 		}
-		for (i = 1; i < FB_BITS; i++) {
+		for (i = 1; i < RLC_FB_BITS; i++) {
 			/* We are already shifting a temporary value, so this is more efficient
 			 * than calling fb_lsh(). */
-			s[FB_DIGS] = fb_lsh1_low(s, s);
+			s[RLC_FB_DIGS] = fb_lsh1_low(s, s);
 			fb_rdc(s, s);
 			if (fb_get_bit(a, i)) {
 				fb_add(t, t, s);
 			}
 		}
 
-		if (fb_bits(t) > FB_BITS) {
+		if (fb_bits(t) > RLC_FB_BITS) {
 			fb_poly_add(c, t);
 		} else {
 			fb_copy(c, t);
@@ -272,9 +272,9 @@ void fb_mul_karat(fb_t c, const fb_t a, const fb_t b) {
 	TRY {
 		/* We need a temporary variable so that c can be a or b. */
 		dv_new(t);
-		dv_zero(t, 2 * FB_DIGS);
+		dv_zero(t, 2 * RLC_FB_DIGS);
 
-		fb_mul_karat_imp(t, a, b, FB_DIGS, FB_KARAT);
+		fb_mul_karat_imp(t, a, b, RLC_FB_DIGS, FB_KARAT);
 
 		fb_rdc(c, t);
 	} CATCH_ANY {

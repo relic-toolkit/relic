@@ -40,7 +40,7 @@
 int cp_bbs_gen(bn_t d, g2_t q, gt_t z) {
 	bn_t n;
 	g1_t g;
-	int result = STS_OK;
+	int result = RLC_OK;
 
 	bn_null(n);
 	g1_null(g);
@@ -59,7 +59,7 @@ int cp_bbs_gen(bn_t d, g2_t q, gt_t z) {
 
 		/* Use short scalars. */
 		do {
-			bn_rand(d, BN_POS, 2 * pc_param_level());
+			bn_rand(d, RLC_POS, 2 * pc_param_level());
 			bn_mod(d, d, n);
 		} while (bn_is_zero(d));
 
@@ -67,7 +67,7 @@ int cp_bbs_gen(bn_t d, g2_t q, gt_t z) {
 		g2_mul_gen(q, d);
 	}
 	CATCH_ANY {
-		result = STS_ERR;
+		result = RLC_ERR;
 	}
 	FINALLY {
 		bn_free(n);
@@ -79,7 +79,7 @@ int cp_bbs_gen(bn_t d, g2_t q, gt_t z) {
 int cp_bbs_sig(g1_t s, uint8_t *msg, int len, int hash, bn_t d) {
 	bn_t m, n, r;
 	uint8_t h[MD_LEN];
-	int result = STS_OK;
+	int result = RLC_OK;
 
 	bn_null(m);
 	bn_null(n);
@@ -104,14 +104,14 @@ int cp_bbs_sig(g1_t s, uint8_t *msg, int len, int hash, bn_t d) {
 		/* m = 1/(m + d) mod n. */
 		bn_add(m, m, d);
 		bn_gcd_ext(r, m, NULL, m, n);
-		if (bn_sign(m) == BN_NEG) {
+		if (bn_sign(m) == RLC_NEG) {
 			bn_add(m, m, n);
 		}
 		/* s = 1/(m+d) * g1. */
 		g1_mul_gen(s, m);
 	}
 	CATCH_ANY {
-		result = STS_ERR;
+		result = RLC_ERR;
 	}
 	FINALLY {
 		bn_free(m);
@@ -160,7 +160,7 @@ int cp_bbs_ver(g1_t s, uint8_t *msg, int len, int hash, g2_t q, gt_t z) {
 
 		pc_map(e, s, g);
 
-		if (gt_cmp(e, z) == CMP_EQ) {
+		if (gt_cmp(e, z) == RLC_EQ) {
 			result = 1;
 		}
 	}

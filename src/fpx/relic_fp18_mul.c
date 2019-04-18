@@ -440,17 +440,17 @@ static void fp6_mul_dxs_unr(dv6_t c, fp6_t a, fp6_t b) {
 			fp_subc_low(t5[i], t5[i], t4[i]);
 		}
 
-		dv_zero(t3[0], 2 * FP_DIGS);
+		dv_zero(t3[0], 2 * RLC_FP_DIGS);
 		for (int i = -1; i >= fp_prime_get_cnr(); i--) {
 			fp_subc_low(t3[0], t3[0], t4[2]);
 		}
 
-		dv_copy(c[0][0], t3[0], 2 * FP_DIGS);
-		dv_copy(c[2][0], t4[0], 2 * FP_DIGS);
-		dv_copy(c[1][1], t4[1], 2 * FP_DIGS);
-		dv_copy(c[1][0], t5[0], 2 * FP_DIGS);
-		dv_copy(c[0][1], t5[1], 2 * FP_DIGS);
-		dv_copy(c[2][1], t5[2], 2 * FP_DIGS);
+		dv_copy(c[0][0], t3[0], 2 * RLC_FP_DIGS);
+		dv_copy(c[2][0], t4[0], 2 * RLC_FP_DIGS);
+		dv_copy(c[1][1], t4[1], 2 * RLC_FP_DIGS);
+		dv_copy(c[1][0], t5[0], 2 * RLC_FP_DIGS);
+		dv_copy(c[0][1], t5[1], 2 * RLC_FP_DIGS);
+		dv_copy(c[2][1], t5[2], 2 * RLC_FP_DIGS);
 	} CATCH_ANY {
 		THROW(ERR_CAUGHT);
 	} FINALLY {
@@ -515,10 +515,10 @@ void fp18_mul_lazyr(fp18_t c, fp18_t a, fp18_t b) {
 			fp2_subc_low(u4[i], u4[i], u1[i]);
 		}
 		fp2_nord_low(u5[0], u2[2]);
-		dv_copy(u5[1][0], u2[0][0], 2 * FP_DIGS);
-		dv_copy(u5[1][1], u2[0][1], 2 * FP_DIGS);
-		dv_copy(u5[2][0], u2[1][0], 2 * FP_DIGS);
-		dv_copy(u5[2][1], u2[1][1], 2 * FP_DIGS);
+		dv_copy(u5[1][0], u2[0][0], 2 * RLC_FP_DIGS);
+		dv_copy(u5[1][1], u2[0][1], 2 * RLC_FP_DIGS);
+		dv_copy(u5[2][0], u2[1][0], 2 * RLC_FP_DIGS);
+		dv_copy(u5[2][1], u2[1][1], 2 * RLC_FP_DIGS);
 		for (int i = 0; i < 3; i++) {
 			fp2_addc_low(u4[i], u4[i], u5[i]);
 			fp2_rdcn_low(c[1][i], u4[i]);

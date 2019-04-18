@@ -39,19 +39,19 @@
 /*============================================================================*/
 
 dig_t fp_mula_low(dig_t *c, const dig_t *a, dig_t digit) {
-	return mpn_addmul_1(c, a, FP_DIGS, digit);
+	return mpn_addmul_1(c, a, RLC_FP_DIGS, digit);
 }
 
 dig_t fp_mul1_low(dig_t *c, const dig_t *a, dig_t digit) {
-	return mpn_mul_1(c, a, FP_DIGS, digit);
+	return mpn_mul_1(c, a, RLC_FP_DIGS, digit);
 }
 
 void fp_muln_low(dig_t *c, const dig_t *a, const dig_t *b) {
-	mpn_mul_n(c, a, b, FP_DIGS);
+	mpn_mul_n(c, a, b, RLC_FP_DIGS);
 }
 
 void fp_mulm_low(dig_t *c, const dig_t *a, const dig_t *b) {
-	relic_align dig_t t[2 * FP_DIGS];
+	rlc_align dig_t t[2 * RLC_FP_DIGS];
 
 	fp_muln_low(t, a, b);
 	fp_rdc(c, t);

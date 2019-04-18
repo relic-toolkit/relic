@@ -46,7 +46,7 @@
 
 int cp_sokaka_gen(bn_t master) {
 	bn_t n;
-	int result = STS_OK;
+	int result = RLC_OK;
 
 	bn_null(n);
 
@@ -57,7 +57,7 @@ int cp_sokaka_gen(bn_t master) {
 		bn_rand_mod(master, n);
 	}
 	CATCH_ANY {
-		result = STS_ERR;
+		result = RLC_ERR;
 	}
 	FINALLY {
 		bn_free(n);
@@ -75,12 +75,12 @@ int cp_sokaka_gen_prv(sokaka_t k, char *id, int len, bn_t master) {
 		g2_map(k->s2, (uint8_t *)id, len);
 		g2_mul(k->s2, k->s2, master);
 	}
-	return STS_OK;
+	return RLC_OK;
 }
 
 int cp_sokaka_key(uint8_t *key, unsigned int key_len, char *id1,
 		int len1, sokaka_t k, char *id2, int len2) {
-	int first = 0, result = STS_OK;
+	int first = 0, result = RLC_OK;
 	g1_t p;
 	g2_t q;
 	gt_t e;
@@ -134,7 +134,7 @@ int cp_sokaka_key(uint8_t *key, unsigned int key_len, char *id1,
 		md_kdf1(key, key_len, buf, sizeof(buf));
 	}
 	CATCH_ANY {
-		result = STS_ERR;
+		result = RLC_ERR;
 	}
 	FINALLY {
 		g1_free(p);

@@ -47,28 +47,28 @@ static char get_bits(const bn_t a, int from, int to) {
 	int f, t;
 	dig_t mf, mt;
 
-	SPLIT(from, f, from, DIG_LOG);
-	SPLIT(to, t, to, DIG_LOG);
+	RLC_RIP(from, f, from);
+	RLC_RIP(to, t, to);
 
 	if (f == t) {
 		/* Same digit. */
 
-		mf = MASK(from);
-		mt = MASK(to + 1);
+		mf = RLC_MASK(from);
+		mt = RLC_MASK(to + 1);
 
-		if (to + 1 == DIGIT) {
-			mt = DMASK;
+		if (to + 1 == RLC_DIG) {
+			mt = RLC_DMASK;
 		}
 
 		mf = mf ^ mt;
 
 		return ((a->dp[f] & (mf)) >> from);
 	} else {
-		mf = MASK(DIGIT - from) << from;
-		mt = MASK(to + 1);
+		mf = RLC_MASK(RLC_DIG - from) << from;
+		mt = RLC_MASK(to + 1);
 
 		return ((a->dp[f] & mf) >> from) |
-				((a->dp[t] & mt) << (DIGIT - from));
+				((a->dp[t] & mt) << (RLC_DIG - from));
 	}
 }
 
@@ -96,7 +96,7 @@ void bn_rec_win(uint8_t *win, int *len, const bn_t k, int w) {
 
 	l = bn_bits(k);
 
-	if (*len < CEIL(l, w)) {
+	if (*len < RLC_CEIL(l, w)) {
 		THROW(ERR_NO_BUFFER);
 	}
 
@@ -113,7 +113,7 @@ void bn_rec_slw(uint8_t *win, int *len, const bn_t k, int w) {
 
 	l = bn_bits(k);
 
-	if (*len < CEIL(l, w)) {
+	if (*len < RLC_CEIL(l, w)) {
 		THROW(ERR_NO_BUFFER);
 	}
 
@@ -124,7 +124,7 @@ void bn_rec_slw(uint8_t *win, int *len, const bn_t k, int w) {
 			i--;
 			win[j++] = 0;
 		} else {
-			s = MAX(i - w + 1, 0);
+			s = RLC_MAX(i - w + 1, 0);
 			while (!bn_get_bit(k, s)) {
 				s++;
 			}
@@ -151,7 +151,7 @@ void bn_rec_naf(int8_t *naf, int *len, const bn_t k, int w) {
 		bn_new(t);
 		bn_abs(t, k);
 
-		mask = MASK(w);
+		mask = RLC_MASK(w);
 		l = (1 << w);
 
 		i = 0;
@@ -434,7 +434,7 @@ void bn_rec_tnaf(int8_t *tnaf, int *len, const bn_t k, int8_t u, int m, int w) {
 		bn_abs(tmp, k);
 		bn_rec_tnaf_mod(r0, r1, tmp, u, m);
 
-		mask = MASK(w);
+		mask = RLC_MASK(w);
 		l = 1 << w;
 
 		i = 0;
@@ -456,11 +456,11 @@ void bn_rec_tnaf(int8_t *tnaf, int *len, const bn_t k, int8_t u, int m, int w) {
 			/* If r0 is odd. */
 			if (w == 2) {
 				t0 = r0->dp[0];
-				if (bn_sign(r0) == BN_NEG) {
+				if (bn_sign(r0) == RLC_NEG) {
 					t0 = l - t0;
 				}
 				t1 = r1->dp[0];
-				if (bn_sign(r1) == BN_NEG) {
+				if (bn_sign(r1) == RLC_NEG) {
 					t1 = l - t1;
 				}
 				u_i = 2 - ((t0 - 2 * t1) & mask);
@@ -473,12 +473,12 @@ void bn_rec_tnaf(int8_t *tnaf, int *len, const bn_t k, int8_t u, int m, int w) {
 			} else {
 				/* t0 = r0 mod_s 2^w. */
 				t0 = r0->dp[0];
-				if (bn_sign(r0) == BN_NEG) {
+				if (bn_sign(r0) == RLC_NEG) {
 					t0 = l - t0;
 				}
 				/* t1 = r1 mod_s 2^w. */
 				t1 = r1->dp[0];
-				if (bn_sign(r1) == BN_NEG) {
+				if (bn_sign(r1) == RLC_NEG) {
 					t1 = l - t1;
 				}
 				/* u = r0 + r1 * (t_w) mod_s 2^w. */
@@ -559,19 +559,19 @@ void bn_rec_rtnaf(int8_t *tnaf, int *len, const bn_t k, int8_t u, int m, int w) 
 		bn_rec_tnaf_get(&t_w, beta, gama, u, w);
 		bn_abs(tmp, k);
 		bn_rec_tnaf_mod(r0, r1, tmp, u, m);
-		mask = MASK(w);
-		l = CEIL(m + 2, (w - 1));
+		mask = RLC_MASK(w);
+		l = RLC_CEIL(m + 2, (w - 1));
 
 		i = 0;
 		while (i < l) {
 			/* If r0 is odd. */
 			if (w == 2) {
 				t0 = r0->dp[0];
-				if (bn_sign(r0) == BN_NEG) {
+				if (bn_sign(r0) == RLC_NEG) {
 					t0 = (1 << w) - t0;
 				}
 				t1 = r1->dp[0];
-				if (bn_sign(r1) == BN_NEG) {
+				if (bn_sign(r1) == RLC_NEG) {
 					t1 = (1 << w) - t1;
 				}
 				u_i = ((t0 - 2 * t1) & mask) - 2;
@@ -584,12 +584,12 @@ void bn_rec_rtnaf(int8_t *tnaf, int *len, const bn_t k, int8_t u, int m, int w) 
 			} else {
 				/* t0 = r0 mod_s 2^w. */
 				t0 = r0->dp[0];
-				if (bn_sign(r0) == BN_NEG) {
+				if (bn_sign(r0) == RLC_NEG) {
 					t0 = (1 << w) - t0;
 				}
 				/* t1 = r1 mod_s 2^w. */
 				t1 = r1->dp[0];
-				if (bn_sign(r1) == BN_NEG) {
+				if (bn_sign(r1) == RLC_NEG) {
 					t1 = (1 << w) - t1;
 				}
 				/* u = r0 + r1 * (t_w) mod_s 2^w. */
@@ -636,10 +636,10 @@ void bn_rec_rtnaf(int8_t *tnaf, int *len, const bn_t k, int8_t u, int m, int w) 
 		}
 		s = r0->dp[0];
 		t = r1->dp[0];
-		if (bn_sign(r0) == BN_NEG) {
+		if (bn_sign(r0) == RLC_NEG) {
 			s = -s;
 		}
-		if (bn_sign(r1) == BN_NEG) {
+		if (bn_sign(r1) == RLC_NEG) {
 			t = -t;
 		}
 		if (s != 0 && t != 0) {
@@ -682,8 +682,8 @@ void bn_rec_reg(int8_t *naf, int *len, const bn_t k, int n, int w) {
 
 	bn_null(t);
 
-	mask = MASK(w);
-	l = CEIL(n, (w - 1));
+	mask = RLC_MASK(w);
+	l = RLC_CEIL(n, (w - 1));
 
 	if (*len < l) {
 		THROW(ERR_NO_BUFFER);
@@ -745,7 +745,7 @@ void bn_rec_jsf(int8_t *jsf, int *len, const bn_t k, const bn_t l) {
 
 		i = bn_bits(k);
 		j = bn_bits(l);
-		offset = MAX(i, j) + 1;
+		offset = RLC_MAX(i, j) + 1;
 
 		i = 0;
 		d0 = d1 = 0;
@@ -753,14 +753,14 @@ void bn_rec_jsf(int8_t *jsf, int *len, const bn_t k, const bn_t l) {
 			bn_get_dig(&l0, n0);
 			bn_get_dig(&l1, n1);
 			/* For reduction modulo 8. */
-			l0 = (l0 + d0) & MASK(3);
-			l1 = (l1 + d1) & MASK(3);
+			l0 = (l0 + d0) & RLC_MASK(3);
+			l1 = (l1 + d1) & RLC_MASK(3);
 
 			if (l0 % 2 == 0) {
 				u0 = 0;
 			} else {
-				u0 = 2 - (l0 & MASK(2));
-				if ((l0 == 3 || l0 == 5) && ((l1 & MASK(2)) == 2)) {
+				u0 = 2 - (l0 & RLC_MASK(2));
+				if ((l0 == 3 || l0 == 5) && ((l1 & RLC_MASK(2)) == 2)) {
 					u0 = (int8_t)-u0;
 				}
 			}
@@ -768,8 +768,8 @@ void bn_rec_jsf(int8_t *jsf, int *len, const bn_t k, const bn_t l) {
 			if (l1 % 2 == 0) {
 				u1 = 0;
 			} else {
-				u1 = 2 - (l1 & MASK(2));
-				if ((l1 == 3 || l1 == 5) && ((l0 & MASK(2)) == 2)) {
+				u1 = 2 - (l1 & RLC_MASK(2));
+				if ((l1 == 3 || l1 == 5) && ((l0 & RLC_MASK(2)) == 2)) {
 					u1 = (int8_t)-u1;
 				}
 			}

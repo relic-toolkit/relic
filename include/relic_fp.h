@@ -33,8 +33,8 @@
  * @ingroup fp
  */
 
-#ifndef RELIC_FP_H
-#define RELIC_FP_H
+#ifndef RLC_FP_H
+#define RLC_FP_H
 
 #include "relic_dv.h"
 #include "relic_bn.h"
@@ -48,17 +48,17 @@
 /**
  * Precision in bits of a prime field element.
  */
-#define FP_BITS 	((int)FP_PRIME)
+#define RLC_FP_BITS 	((int)FP_PRIME)
 
 /**
  * Size in digits of a block sufficient to store a prime field element.
  */
-#define FP_DIGS		((int)((FP_BITS)/(DIGIT) + (FP_BITS % DIGIT > 0)))
+#define RLC_FP_DIGS 	((int)RLC_CEIL(RLC_FP_BITS, RLC_DIG))
 
 /**
  * Size in bytes of a block sufficient to store a binary field element.
  */
-#define FP_BYTES 	((int)((FP_BITS)/8 + (FP_BITS % 8 > 0)))
+#define RLC_FP_BYTES 	((int)RLC_CEIL(RLC_FP_BITS, 8))
 
 /*
  * Finite field identifiers.
@@ -129,9 +129,9 @@ enum {
  * prime field elements. This can be used to avoid carries.
  */
 #if ((FP_PRIME % WSIZE) != 0) && ((FP_PRIME % WSIZE) <= (WSIZE - 2))
-#define FP_SPACE
+#define RLC_FP_ROOM
 #else
-#undef FP_SPACE
+#undef RLC_FP_ROOM
 #endif
 
 /*============================================================================*/
@@ -146,7 +146,7 @@ enum {
  * stored in the first positions of the vector.
  */
 #if ALLOC == AUTO
-typedef relic_align dig_t fp_t[FP_DIGS + PADDING(FP_BYTES)/(DIGIT / 8)];
+typedef rlc_align dig_t fp_t[RLC_FP_DIGS + RLC_PAD(RLC_FP_BYTES)/(RLC_DIG / 8)];
 #else
 typedef dig_t *fp_t;
 #endif
@@ -154,7 +154,7 @@ typedef dig_t *fp_t;
 /**
  * Represents a prime field element with automatic memory allocation.
  */
-typedef relic_align dig_t fp_st[FP_DIGS + PADDING(FP_BYTES)/(DIGIT / 8)];
+typedef rlc_align dig_t fp_st[RLC_FP_DIGS + RLC_PAD(RLC_FP_BYTES)/(RLC_DIG / 8)];
 
 /*============================================================================*/
 /* Macro definitions                                                          */
@@ -177,13 +177,13 @@ typedef relic_align dig_t fp_st[FP_DIGS + PADDING(FP_BYTES)/(DIGIT / 8)];
  * @param[out] A			- the new prime field element.
  */
 #if ALLOC == DYNAMIC
-#define fp_new(A)			dv_new_dynam((dv_t *)&(A), FP_DIGS)
+#define fp_new(A)			dv_new_dynam((dv_t *)&(A), RLC_FP_DIGS)
 #elif ALLOC == AUTO
 #define fp_new(A)			/* empty */
 #elif ALLOC == STACK
 #define fp_new(A)															\
-	A = (dig_t *)alloca(FP_BYTES + PADDING(FP_BYTES));						\
-	A = (dig_t *)ALIGNED(A);												\
+	A = (dig_t *)alloca(RLC_FP_BYTES + RLC_PAD(RLC_FP_BYTES));						\
+	A = (dig_t *)RLC_ALIGN(A);												\
 
 #endif
 
@@ -403,7 +403,7 @@ dig_t fp_prime_get_mod8(void);
 
 /**
  * Returns the prime stored in special form. The most significant bit is
- * FP_BITS.
+ * RLC_FP_BITS.
  *
  * @param[out] len		- the number of returned bits, can be NULL.
  *
@@ -488,28 +488,28 @@ void fp_param_set(int param);
 /**
  * Assigns any pre-defined parameter as the prime modulus.
  *
- * @return STS_OK if no errors occurred; STS_ERR otherwise.
+ * @return RLC_OK if no errors occurred; RLC_ERR otherwise.
  */
 int fp_param_set_any(void);
 
 /**
  * Assigns the order of the prime field to any non-sparse prime.
  *
- * @return STS_OK if no errors occurred; STS_ERR otherwise.
+ * @return RLC_OK if no errors occurred; RLC_ERR otherwise.
  */
 int fp_param_set_any_dense(void);
 
 /**
  * Assigns the order of the prime field to any sparse prime.
  *
- * @return STS_OK if no errors occurred; STS_ERR otherwise.
+ * @return RLC_OK if no errors occurred; RLC_ERR otherwise.
  */
 int fp_param_set_any_pmers(void);
 
 /**
  * Assigns the order of the prime field to any towering-friendly prime.
  *
- * @return STS_OK if no errors occurred; STS_ERR otherwise.
+ * @return RLC_OK if no errors occurred; RLC_ERR otherwise.
  */
 int fp_param_set_any_tower(void);
 
@@ -528,7 +528,7 @@ void fp_param_get_var(bn_t x);
 /**
  * Returns the absolute value of the variable used to parameterize the currently
  * configured prime modulus in sparse form. The first argument must be an array
- * of size (MAX_TERMS + 1).
+ * of size (RLC_TERMS + 1).
  *
  * @param[out] s			- the parameter in sparse form.
  * @param[out] len			- the length of the parameter in sparse form.
@@ -541,7 +541,7 @@ void fp_param_get_sps(int *s, int *len);
 /**
  * Returns the value of the parameter used to construct the optimal ate pairing
  * on the currently configured elliptic curve. The first argument must be an
- * array of size FP_BITS.
+ * array of size RLC_FP_BITS.
  *
  * @param[out] s			- the parameter in sparse form.
  * @param[out] len			- the length of the parameter in sparse form.
@@ -603,7 +603,7 @@ void fp_set_bit(fp_t a, int bit, int value);
  * Assigns a small positive constant to a prime field element.
  *
  * The constant must fit on a multiple precision digit, or dig_t type using
- * only the number of bits specified on DIGIT.
+ * only the number of bits specified on RLC_DIG.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the constant to assign.
@@ -674,7 +674,7 @@ void fp_write_str(char *str, int len, const fp_t a, int radix);
  * @param[out] a			- the result.
  * @param[in] bin			- the byte vector.
  * @param[in] len			- the buffer capacity.
- * @throw ERR_NO_BUFFER		- if the buffer capacity is not FP_BYTES.
+ * @throw ERR_NO_BUFFER		- if the buffer capacity is not RLC_FP_BYTES.
  */
 void fp_read_bin(fp_t a, const uint8_t *bin, int len);
 
@@ -684,7 +684,7 @@ void fp_read_bin(fp_t a, const uint8_t *bin, int len);
  * @param[out] bin			- the byte vector.
  * @param[in] len			- the buffer capacity.
  * @param[in] a				- the prime field element to write.
- * @throw ERR_NO_BUFFER		- if the buffer capacity is not FP_BYTES.
+ * @throw ERR_NO_BUFFER		- if the buffer capacity is not RLC_FP_BYTES.
  */
 void fp_write_bin(uint8_t *bin, int len, const fp_t a);
 
@@ -693,7 +693,7 @@ void fp_write_bin(uint8_t *bin, int len, const fp_t a);
  *
  * @param[in] a				- the first prime field element.
  * @param[in] b				- the second prime field element.
- * @return CMP_EQ if a == b, and CMP_NE otherwise.
+ * @return RLC_EQ if a == b, and RLC_NE otherwise.
  */
 int fp_cmp(const fp_t a, const fp_t b);
 
@@ -703,7 +703,7 @@ int fp_cmp(const fp_t a, const fp_t b);
  *
  * @param[in] a				- the prime field element.
  * @param[in] b				- the digit.
- * @return CMP_EQ if a == b, and CMP_NE otherwise.
+ * @return RLC_EQ if a == b, and RLC_NE otherwise.
  */
 int fp_cmp_dig(const fp_t a, dig_t b);
 
@@ -1039,4 +1039,4 @@ void fp_exp_monty(fp_t c, const fp_t a, const bn_t b);
  */
 int fp_srt(fp_t c, const fp_t a);
 
-#endif /* !RELIC_FP_H */
+#endif /* !RLC_FP_H */

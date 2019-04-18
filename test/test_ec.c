@@ -36,7 +36,7 @@
 
 static int memory(void) {
 	err_t e;
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	ec_t a;
 
 	ec_null(a);
@@ -55,13 +55,13 @@ static int memory(void) {
 		}
 	}
 	(void)a;
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	return code;
 }
 
 int util(void) {
-	int l, code = STS_ERR;
+	int l, code = RLC_ERR;
 	ec_t a, b, c;
 	uint8_t bin[2 * FC_BYTES + 1];
 
@@ -77,7 +77,7 @@ int util(void) {
 		TEST_BEGIN("comparison is consistent") {
 			ec_rand(a);
 			ec_rand(b);
-			TEST_ASSERT(ec_cmp(a, b) != CMP_EQ, end);
+			TEST_ASSERT(ec_cmp(a, b) != RLC_EQ, end);
 		}
 		TEST_END;
 
@@ -86,32 +86,32 @@ int util(void) {
 			ec_rand(b);
 			ec_rand(c);
 			/* Compare points in affine coordinates. */
-			if (ec_cmp(a, c) != CMP_EQ) {
+			if (ec_cmp(a, c) != RLC_EQ) {
 				ec_copy(c, a);
-				TEST_ASSERT(ec_cmp(c, a) == CMP_EQ, end);
+				TEST_ASSERT(ec_cmp(c, a) == RLC_EQ, end);
 			}
-			if (ec_cmp(b, c) != CMP_EQ) {
+			if (ec_cmp(b, c) != RLC_EQ) {
 				ec_copy(c, b);
-				TEST_ASSERT(ec_cmp(b, c) == CMP_EQ, end);
+				TEST_ASSERT(ec_cmp(b, c) == RLC_EQ, end);
 			}
 			/* Compare with one point in projective. */
 			ec_dbl(c, a);
 			ec_norm(c, c);
 			ec_dbl(a, a);
-			TEST_ASSERT(ec_cmp(c, a) == CMP_EQ, end);
-			TEST_ASSERT(ec_cmp(a, c) == CMP_EQ, end);
+			TEST_ASSERT(ec_cmp(c, a) == RLC_EQ, end);
+			TEST_ASSERT(ec_cmp(a, c) == RLC_EQ, end);
 			/* Compare with two points in projective. */
 			ec_dbl(c, c);
 			ec_dbl(a, a);
-			TEST_ASSERT(ec_cmp(c, a) == CMP_EQ, end);
-			TEST_ASSERT(ec_cmp(a, c) == CMP_EQ, end);
+			TEST_ASSERT(ec_cmp(c, a) == RLC_EQ, end);
+			TEST_ASSERT(ec_cmp(a, c) == RLC_EQ, end);
 		}
 		TEST_END;
 
 		TEST_BEGIN("negation and comparison are consistent") {
 			ec_rand(a);
 			ec_neg(b, a);
-			TEST_ASSERT(ec_cmp(a, b) != CMP_EQ, end);
+			TEST_ASSERT(ec_cmp(a, b) != RLC_EQ, end);
 		}
 		TEST_END;
 
@@ -120,8 +120,8 @@ int util(void) {
 		{
 			ec_rand(a);
 			ec_set_infty(c);
-			TEST_ASSERT(ec_cmp(a, c) != CMP_EQ, end);
-			TEST_ASSERT(ec_cmp(c, a) != CMP_EQ, end);
+			TEST_ASSERT(ec_cmp(a, c) != RLC_EQ, end);
+			TEST_ASSERT(ec_cmp(c, a) != RLC_EQ, end);
 		}
 		TEST_END;
 
@@ -145,19 +145,19 @@ int util(void) {
 				l = ec_size_bin(a, j);
 				ec_write_bin(bin, l, a, j);
 				ec_read_bin(b, bin, l);
-				TEST_ASSERT(ec_cmp(a, b) == CMP_EQ, end);
+				TEST_ASSERT(ec_cmp(a, b) == RLC_EQ, end);
 				ec_rand(a);
 				l = ec_size_bin(a, j);
 				ec_write_bin(bin, l, a, j);
 				ec_read_bin(b, bin, l);
-				TEST_ASSERT(ec_cmp(a, b) == CMP_EQ, end);
+				TEST_ASSERT(ec_cmp(a, b) == RLC_EQ, end);
 				ec_rand(a);
 				ec_dbl(a, a);
 				l = ec_size_bin(a, j);
 				ec_norm(a, a);
 				ec_write_bin(bin, l, a, j);
 				ec_read_bin(b, bin, l);
-				TEST_ASSERT(ec_cmp(a, b) == CMP_EQ, end);
+				TEST_ASSERT(ec_cmp(a, b) == RLC_EQ, end);
 			}
 		}
 		TEST_END;
@@ -166,7 +166,7 @@ int util(void) {
 		util_print("FATAL ERROR!\n");
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	ec_free(a);
 	ec_free(b);
@@ -175,7 +175,7 @@ int util(void) {
 }
 
 int addition(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 
 	ec_t a, b, c, d, e;
 
@@ -197,7 +197,7 @@ int addition(void) {
 			ec_rand(b);
 			ec_add(d, a, b);
 			ec_add(e, b, a);
-			TEST_ASSERT(ec_cmp(d, e) == CMP_EQ, end);
+			TEST_ASSERT(ec_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("point addition is associative") {
@@ -208,16 +208,16 @@ int addition(void) {
 			ec_add(d, d, c);
 			ec_add(e, b, c);
 			ec_add(e, e, a);
-			TEST_ASSERT(ec_cmp(d, e) == CMP_EQ, end);
+			TEST_ASSERT(ec_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("point addition has identity") {
 			ec_rand(a);
 			ec_set_infty(d);
 			ec_add(e, a, d);
-			TEST_ASSERT(ec_cmp(e, a) == CMP_EQ, end);
+			TEST_ASSERT(ec_cmp(e, a) == RLC_EQ, end);
 			ec_add(e, d, a);
-			TEST_ASSERT(ec_cmp(e, a) == CMP_EQ, end);
+			TEST_ASSERT(ec_cmp(e, a) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("point addition has inverse") {
@@ -230,7 +230,7 @@ int addition(void) {
 	CATCH_ANY {
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	ec_free(a);
 	ec_free(b);
@@ -241,7 +241,7 @@ int addition(void) {
 }
 
 int subtraction(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	ec_t a, b, c, d;
 
 	ec_null(a);
@@ -261,7 +261,7 @@ int subtraction(void) {
 			ec_sub(c, a, b);
 			ec_sub(d, b, a);
 			ec_neg(d, d);
-			TEST_ASSERT(ec_cmp(c, d) == CMP_EQ, end);
+			TEST_ASSERT(ec_cmp(c, d) == RLC_EQ, end);
 		}
 		TEST_END;
 
@@ -269,7 +269,7 @@ int subtraction(void) {
 			ec_rand(a);
 			ec_set_infty(c);
 			ec_sub(d, a, c);
-			TEST_ASSERT(ec_cmp(d, a) == CMP_EQ, end);
+			TEST_ASSERT(ec_cmp(d, a) == RLC_EQ, end);
 		}
 		TEST_END;
 
@@ -283,7 +283,7 @@ int subtraction(void) {
 	CATCH_ANY {
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	ec_free(a);
 	ec_free(b);
@@ -293,7 +293,7 @@ int subtraction(void) {
 }
 
 int doubling(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	ec_t a, b, c;
 
 	ec_null(a);
@@ -309,13 +309,13 @@ int doubling(void) {
 			ec_rand(a);
 			ec_add(b, a, a);
 			ec_dbl(c, a);
-			TEST_ASSERT(ec_cmp(b, c) == CMP_EQ, end);
+			TEST_ASSERT(ec_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 	}
 	CATCH_ANY {
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	ec_free(a);
 	ec_free(b);
@@ -324,7 +324,7 @@ int doubling(void) {
 }
 
 static int multiplication(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	bn_t n, k;
 	ec_t p, q, r;
 
@@ -355,15 +355,15 @@ static int multiplication(void) {
 			TEST_ASSERT(ec_is_infty(r), end);
 			bn_set_dig(k, 1);
 			ec_mul_gen(r, k);
-			TEST_ASSERT(ec_cmp(p, r) == CMP_EQ, end);
+			TEST_ASSERT(ec_cmp(p, r) == RLC_EQ, end);
 			bn_rand_mod(k, n);
 			ec_mul(q, p, k);
 			ec_mul_gen(r, k);
-			TEST_ASSERT(ec_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(ec_cmp(q, r) == RLC_EQ, end);
 			bn_neg(k, k);
 			ec_mul_gen(r, k);
 			ec_neg(r, r);
-			TEST_ASSERT(ec_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(ec_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("point multiplication is correct") {
@@ -372,7 +372,7 @@ static int multiplication(void) {
 			TEST_ASSERT(ec_is_infty(r), end);
 			bn_set_dig(k, 1);
 			ec_mul(r, p, k);
-			TEST_ASSERT(ec_cmp(p, r) == CMP_EQ, end);
+			TEST_ASSERT(ec_cmp(p, r) == RLC_EQ, end);
 			ec_rand(p);
 			ec_mul(r, p, n);
 			TEST_ASSERT(ec_is_infty(r), end);
@@ -381,14 +381,14 @@ static int multiplication(void) {
 			bn_neg(k, k);
 			ec_mul(r, p, k);
 			ec_neg(r, r);
-			TEST_ASSERT(ec_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(ec_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 	}
 	CATCH_ANY {
 		util_print("FATAL ERROR!\n");
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	ec_free(p);
 	ec_free(q);
@@ -399,9 +399,9 @@ static int multiplication(void) {
 }
 
 static int fixed(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	bn_t n, k;
-	ec_t p, q, r, t[RELIC_EC_TABLE];
+	ec_t p, q, r, t[RLC_EC_TABLE];
 
 	bn_null(n);
 	bn_null(k);
@@ -409,7 +409,7 @@ static int fixed(void) {
 	ec_null(q);
 	ec_null(r);
 
-	for (int i = 0; i < RELIC_EC_TABLE; i++) {
+	for (int i = 0; i < RLC_EC_TABLE; i++) {
 		ec_null(t[i]);
 	}
 
@@ -423,7 +423,7 @@ static int fixed(void) {
 		ec_curve_get_gen(p);
 		ec_curve_get_ord(n);
 
-		for (int i = 0; i < RELIC_EC_TABLE; i++) {
+		for (int i = 0; i < RLC_EC_TABLE; i++) {
 			ec_new(t[i]);
 		}
 		TEST_BEGIN("fixed point multiplication is correct") {
@@ -434,18 +434,18 @@ static int fixed(void) {
 			TEST_ASSERT(ec_is_infty(r), end);
 			bn_set_dig(k, 1);
 			ec_mul_fix(r, (const ec_t *)t, k);
-			TEST_ASSERT(ec_cmp(p, r) == CMP_EQ, end);
+			TEST_ASSERT(ec_cmp(p, r) == RLC_EQ, end);
 			bn_rand_mod(k, n);
 			ec_mul(q, p, k);
 			ec_mul_fix(q, (const ec_t *)t, k);
 			ec_mul(r, p, k);
-			TEST_ASSERT(ec_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(ec_cmp(q, r) == RLC_EQ, end);
 			bn_neg(k, k);
 			ec_mul_fix(r, (const ec_t *)t, k);
 			ec_neg(r, r);
-			TEST_ASSERT(ec_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(ec_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
-		for (int i = 0; i < RELIC_EC_TABLE; i++) {
+		for (int i = 0; i < RLC_EC_TABLE; i++) {
 			ec_free(t[i]);
 		}
 	}
@@ -453,7 +453,7 @@ static int fixed(void) {
 		util_print("FATAL ERROR!\n");
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	ec_free(p);
 	ec_free(q);
@@ -464,7 +464,7 @@ static int fixed(void) {
 }
 
 static int simultaneous(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	bn_t n, k, l;
 	ec_t p, q, r;
 
@@ -492,31 +492,31 @@ static int simultaneous(void) {
 			bn_rand_mod(l, n);
 			ec_mul(q, p, l);
 			ec_mul_sim(r, p, k, p, l);
-			TEST_ASSERT(ec_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(ec_cmp(q, r) == RLC_EQ, end);
 			bn_rand_mod(k, n);
 			bn_zero(l);
 			ec_mul(q, p, k);
 			ec_mul_sim(r, p, k, p, l);
-			TEST_ASSERT(ec_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(ec_cmp(q, r) == RLC_EQ, end);
 			bn_rand_mod(k, n);
 			bn_rand_mod(l, n);
 			ec_mul_sim(r, p, k, q, l);
 			ec_mul(p, p, k);
 			ec_mul(q, q, l);
 			ec_add(q, q, p);
-			TEST_ASSERT(ec_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(ec_cmp(q, r) == RLC_EQ, end);
 			bn_neg(k, k);
 			ec_mul_sim(r, p, k, q, l);
 			ec_mul(p, p, k);
 			ec_mul(q, q, l);
 			ec_add(q, q, p);
-			TEST_ASSERT(ec_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(ec_cmp(q, r) == RLC_EQ, end);
 			bn_neg(l, l);
 			ec_mul_sim(r, p, k, q, l);
 			ec_mul(p, p, k);
 			ec_mul(q, q, l);
 			ec_add(q, q, p);
-			TEST_ASSERT(ec_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(ec_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("simultaneous multiplication with generator is correct") {
@@ -524,35 +524,35 @@ static int simultaneous(void) {
 			bn_rand_mod(l, n);
 			ec_mul(q, p, l);
 			ec_mul_sim_gen(r, k, p, l);
-			TEST_ASSERT(ec_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(ec_cmp(q, r) == RLC_EQ, end);
 			bn_rand_mod(k, n);
 			bn_zero(l);
 			ec_mul_gen(q, k);
 			ec_mul_sim_gen(r, k, p, l);
-			TEST_ASSERT(ec_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(ec_cmp(q, r) == RLC_EQ, end);
 			bn_rand_mod(k, n);
 			bn_rand_mod(l, n);
 			ec_mul_sim_gen(r, k, q, l);
 			ec_curve_get_gen(p);
 			ec_mul_sim(q, p, k, q, l);
-			TEST_ASSERT(ec_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(ec_cmp(q, r) == RLC_EQ, end);
 			bn_neg(k, k);
 			ec_mul_sim_gen(r, k, q, l);
 			ec_curve_get_gen(p);
 			ec_mul_sim(q, p, k, q, l);
-			TEST_ASSERT(ec_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(ec_cmp(q, r) == RLC_EQ, end);
 			bn_neg(l, l);
 			ec_mul_sim_gen(r, k, q, l);
 			ec_curve_get_gen(p);
 			ec_mul_sim(q, p, k, q, l);
-			TEST_ASSERT(ec_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(ec_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 	}
 	CATCH_ANY {
 		util_print("FATAL ERROR!\n");
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	bn_free(n);
 	bn_free(k);
@@ -564,7 +564,7 @@ static int simultaneous(void) {
 }
 
 static int compression(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	ec_t a, b, c;
 
 	ec_null(a);
@@ -580,7 +580,7 @@ static int compression(void) {
 			ec_rand(a);
 			ec_pck(b, a);
 			ec_upk(c, b);
-			TEST_ASSERT(ec_cmp(a, c) == CMP_EQ, end);
+			TEST_ASSERT(ec_cmp(a, c) == RLC_EQ, end);
 		}
 		TEST_END;
 
@@ -588,7 +588,7 @@ static int compression(void) {
 	CATCH_ANY {
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	ec_free(a);
 	ec_free(b);
@@ -597,7 +597,7 @@ static int compression(void) {
 }
 
 static int hashing(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	ec_t a;
 	bn_t n;
 	uint8_t msg[5];
@@ -623,7 +623,7 @@ static int hashing(void) {
 	CATCH_ANY {
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	ec_free(a);
 	bn_free(n);
@@ -635,67 +635,67 @@ int test(void) {
 
 	util_banner("Utilities:", 1);
 
-	if (memory() != STS_OK) {
+	if (memory() != RLC_OK) {
 		core_clean();
 		return 1;
 	}
 
-	if (util() != STS_OK) {
-		return STS_ERR;
+	if (util() != RLC_OK) {
+		return RLC_ERR;
 	}
 
 	util_banner("Arithmetic:", 1);
 
-	if (addition() != STS_OK) {
-		return STS_ERR;
+	if (addition() != RLC_OK) {
+		return RLC_ERR;
 	}
 
-	if (subtraction() != STS_OK) {
-		return STS_ERR;
+	if (subtraction() != RLC_OK) {
+		return RLC_ERR;
 	}
 
-	if (doubling() != STS_OK) {
-		return STS_ERR;
+	if (doubling() != RLC_OK) {
+		return RLC_ERR;
 	}
 
-	if (multiplication() != STS_OK) {
-		return STS_ERR;
+	if (multiplication() != RLC_OK) {
+		return RLC_ERR;
 	}
 
-	if (fixed() != STS_OK) {
-		return STS_ERR;
+	if (fixed() != RLC_OK) {
+		return RLC_ERR;
 	}
 
-	if (simultaneous() != STS_OK) {
-		return STS_ERR;
+	if (simultaneous() != RLC_OK) {
+		return RLC_ERR;
 	}
 
-	if (compression() != STS_OK) {
-		return STS_ERR;
+	if (compression() != RLC_OK) {
+		return RLC_ERR;
 	}
 
-	if (hashing() != STS_OK) {
-		return STS_ERR;
+	if (hashing() != RLC_OK) {
+		return RLC_ERR;
 	}
 
-	return STS_OK;
+	return RLC_OK;
 }
 
 int main(void) {
-	if (core_init() != STS_OK) {
+	if (core_init() != RLC_OK) {
 		core_clean();
 		return 1;
 	}
 
 	util_banner("Tests for the EC module:", 0);
 
-	if (ec_param_set_any() == STS_ERR) {
+	if (ec_param_set_any() == RLC_ERR) {
 		THROW(ERR_NO_CURVE);
 		core_clean();
 		return 0;
 	}
 
-	if (test() != STS_OK) {
+	if (test() != RLC_OK) {
 		core_clean();
 		return 1;
 	}

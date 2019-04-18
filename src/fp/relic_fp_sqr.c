@@ -165,10 +165,10 @@ void fp_sqr_basic(fp_t c, const fp_t a) {
 
 	TRY {
 		dv_new(t);
-		dv_zero(t, 2 * FP_DIGS);
+		dv_zero(t, 2 * RLC_FP_DIGS);
 
-		for (i = 0; i < FP_DIGS; i++) {
-			bn_sqra_low(t + (2 * i), a + i, FP_DIGS - i);
+		for (i = 0; i < RLC_FP_DIGS; i++) {
+			bn_sqra_low(t + (2 * i), a + i, RLC_FP_DIGS - i);
 		}
 
 		fp_rdc(c, t);
@@ -223,10 +223,10 @@ void fp_sqr_karat(fp_t c, const fp_t a) {
 
 	TRY {
 		dv_new(t);
-		dv_zero(t, 2 * FP_DIGS);
+		dv_zero(t, 2 * RLC_FP_DIGS);
 
-		if (FP_DIGS > 1) {
-			fp_sqr_karat_imp(t, a, FP_DIGS, FP_KARAT);
+		if (RLC_FP_DIGS > 1) {
+			fp_sqr_karat_imp(t, a, RLC_FP_DIGS, FP_KARAT);
 		} else {
 			fp_sqrn_low(t, a);
 		}

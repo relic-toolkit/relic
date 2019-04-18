@@ -42,9 +42,9 @@ dig_t fp_lshb_low(dig_t *c, const dig_t *a, int bits) {
 
 	/* Prepare the bit mask. */
 	mask = ((dig_t)1 << (dig_t)bits) - 1;
-	shift = DIGIT - bits;
+	shift = RLC_DIG - bits;
 	carry = 0;
-	for (i = 0; i < FP_DIGS; i++, a++, c++) {
+	for (i = 0; i < RLC_FP_DIGS; i++, a++, c++) {
 		/* Get the needed least significant bits. */
 		r = ((*a) >> shift) & mask;
 		/* Shift left the operand. */
@@ -60,10 +60,10 @@ void fp_lshd_low(dig_t *c, const dig_t *a, int digits) {
 	const dig_t *bot;
 	int i;
 
-	top = c + FP_DIGS - 1;
-	bot = a + FP_DIGS - 1 - digits;
+	top = c + RLC_FP_DIGS - 1;
+	bot = a + RLC_FP_DIGS - 1 - digits;
 
-	for (i = 0; i < FP_DIGS - digits; i++, top--, bot--) {
+	for (i = 0; i < RLC_FP_DIGS - digits; i++, top--, bot--) {
 		*top = *bot;
 	}
 	for (i = 0; i < digits; i++, c++) {
@@ -75,13 +75,13 @@ dig_t fp_rshb_low(dig_t *c, const dig_t *a, int bits) {
 	int i;
 	dig_t r, carry, mask, shift;
 
-	c += FP_DIGS - 1;
-	a += FP_DIGS - 1;
+	c += RLC_FP_DIGS - 1;
+	a += RLC_FP_DIGS - 1;
 	/* Prepare the bit mask. */
 	mask = ((dig_t)1 << (dig_t)bits) - 1;
-	shift = DIGIT - bits;
+	shift = RLC_DIG - bits;
 	carry = 0;
-	for (i = FP_DIGS - 1; i >= 0; i--, a--, c--) {
+	for (i = RLC_FP_DIGS - 1; i >= 0; i--, a--, c--) {
 		/* Get the needed least significant bits. */
 		r = (*a) & mask;
 		/* Shift left the operand. */
@@ -100,10 +100,10 @@ void fp_rshd_low(dig_t *c, const dig_t *a, int digits) {
 	top = a + digits;
 	bot = c;
 
-	for (i = 0; i < FP_DIGS - digits; i++, top++, bot++) {
+	for (i = 0; i < RLC_FP_DIGS - digits; i++, top++, bot++) {
 		*bot = *top;
 	}
-	for (; i < FP_DIGS; i++, bot++) {
+	for (; i < RLC_FP_DIGS; i++, bot++) {
 		*bot = 0;
 	}
 }

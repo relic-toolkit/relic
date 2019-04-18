@@ -52,8 +52,8 @@
 	(R0) += (dig_t)s;														\
 	(R1) += (R0) < (dig_t)s;												\
 	(R2) += (R1) < _r;														\
-	(R1) += (dig_t)(s >> (dbl_t)DIGIT);									\
-	(R2) += (R1) < (dig_t)(s >> (dbl_t)DIGIT);							\
+	(R1) += (dig_t)(s >> (dbl_t)RLC_DIG);									\
+	(R2) += (R1) < (dig_t)(s >> (dbl_t)RLC_DIG);							\
 	(R2) += (s < r);														\
 
 /**
@@ -70,8 +70,8 @@
 	(R0) += (dig_t)(r);														\
 	(R1) += (R0) < (dig_t)r;												\
 	(R2) += (R1) < _r;														\
-	(R1) += (dig_t)(r >> (dbl_t)DIGIT);									\
-	(R2) += (R1) < (dig_t)(r >> (dbl_t)DIGIT);							\
+	(R1) += (dig_t)(r >> (dbl_t)RLC_DIG);									\
+	(R2) += (R1) < (dig_t)(r >> (dbl_t)RLC_DIG);							\
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -86,7 +86,7 @@ void fp_sqrn_low(dig_t *c, const dig_t *a) {
 	r0 = r1 = r2 = 0;
 
 	/* Comba squaring produces one column of the result per iteration. */
-	for (i = 0; i < FP_DIGS; i++, c++) {
+	for (i = 0; i < RLC_FP_DIGS; i++, c++) {
 		tmpa = a;
 		tmpb = a + i;
 
@@ -102,15 +102,15 @@ void fp_sqrn_low(dig_t *c, const dig_t *a) {
 		r1 = r2;
 		r2 = 0;
 	}
-	for (i = 0; i < FP_DIGS; i++, c++) {
+	for (i = 0; i < RLC_FP_DIGS; i++, c++) {
 		tmpa = a + (i + 1);
-		tmpb = a + (FP_DIGS - 1);
+		tmpb = a + (RLC_FP_DIGS - 1);
 
 		/* Compute the number of additions in this column. */
-		for (j = 0; j < (FP_DIGS - 1 - i) / 2; j++, tmpa++, tmpb--) {
+		for (j = 0; j < (RLC_FP_DIGS - 1 - i) / 2; j++, tmpa++, tmpb--) {
 			COMBA_STEP_FP_SQR_LOW(r2, r1, r0, *tmpa, *tmpb);
 		}
-		if (!((FP_DIGS - i) & 0x01)) {
+		if (!((RLC_FP_DIGS - i) & 0x01)) {
 			COMBA_FINAL(r2, r1, r0, *tmpa);
 		}
 		*c = r0;
@@ -121,7 +121,7 @@ void fp_sqrn_low(dig_t *c, const dig_t *a) {
 }
 
 void fp_sqrm_low(dig_t *c, const dig_t *a) {
-	relic_align dig_t t[2 * FP_DIGS];
+	rlc_align dig_t t[2 * RLC_FP_DIGS];
 
 	fp_sqrn_low(t, a);
 	fp_rdc(c, t);

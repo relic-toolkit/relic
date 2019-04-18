@@ -241,9 +241,9 @@ void fb_param_print(void) {
 
 	if (fb == 0) {
 		util_banner("Irreducible trinomial:", 0);
-		util_print("   z^%d + z^%d + 1\n", FB_BITS, fa);
+		util_print("   z^%d + z^%d + 1\n", RLC_FB_BITS, fa);
 	} else {
 		util_banner("Irreducible pentanomial:", 0);
-		util_print("   z^%d + z^%d + z^%d + z^%d + 1\n", FB_BITS, fa, fb, fc);
+		util_print("   z^%d + z^%d + z^%d + z^%d + 1\n", RLC_FB_BITS, fa, fb, fc);
 	}
 }

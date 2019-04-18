@@ -58,7 +58,7 @@ inline static void fp6_mul_dxs_unr_lazyr(dv6_t c, fp6_t a, fp6_t b) {
 		fp2_new(t0);
 		fp2_new(t1);
 
-#ifdef FP_SPACE
+#ifdef RLC_FP_ROOM
 		fp2_mulc_low(u0, a[0], b[0]);
 		fp2_mulc_low(u1, a[1], b[1]);
 		fp2_addn_low(t0, a[0], a[1]);
@@ -98,7 +98,7 @@ inline static void fp6_mul_dxs_unr_lazyr(dv6_t c, fp6_t a, fp6_t b) {
 		fp2_addc_low(c[2], u1, u2);
 #endif
 
-#ifdef FP_SPACE
+#ifdef RLC_FP_ROOM
 
 #else
 
@@ -291,10 +291,10 @@ void fp12_mul_lazyr(fp12_t c, fp12_t a, fp12_t b) {
 		}
 		/* c_0 = a_0b_0 + v * a_1b_1. */
 		fp2_nord_low(u2[0], u1[2]);
-		dv_copy(u2[1][0], u1[0][0], 2 * FP_DIGS);
-		dv_copy(u2[1][1], u1[0][1], 2 * FP_DIGS);
-		dv_copy(u2[2][0], u1[1][0], 2 * FP_DIGS);
-		dv_copy(u2[2][1], u1[1][1], 2 * FP_DIGS);
+		dv_copy(u2[1][0], u1[0][0], 2 * RLC_FP_DIGS);
+		dv_copy(u2[1][1], u1[0][1], 2 * RLC_FP_DIGS);
+		dv_copy(u2[2][0], u1[1][0], 2 * RLC_FP_DIGS);
+		dv_copy(u2[2][1], u1[1][1], 2 * RLC_FP_DIGS);
 		for (int i = 0; i < 3; i++) {
 			fp2_addc_low(u2[i], u0[i], u2[i]);
 			fp2_rdcn_low(c[0][i], u2[i]);
@@ -341,7 +341,7 @@ void fp12_mul_dxs_lazyr(fp12_t c, fp12_t a, fp12_t b) {
 			fp2_copy(t0[1], b[1][1]);
 #elif EP_ADD == PROJC
 			/* t0 = a_0 * b_0. */
-#ifdef FP_SPACE
+#ifdef RLC_FP_ROOM
 			fp2_mulc_low(u0[0], a[0][0], b[0][0]);
 			fp2_mulc_low(u0[1], a[0][1], b[0][0]);
 			fp2_mulc_low(u0[2], a[0][2], b[0][0]);

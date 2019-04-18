@@ -39,7 +39,7 @@
 void fp_lsh(fp_t c, const fp_t a, int bits) {
 	int digits;
 
-	SPLIT(bits, digits, bits, DIG_LOG);
+	RLC_RIP(bits, digits, bits);
 
 	if (digits) {
 		fp_lshd_low(c, a, digits);
@@ -65,7 +65,7 @@ void fp_lsh(fp_t c, const fp_t a, int bits) {
 void fp_rsh(fp_t c, const fp_t a, int bits) {
 	int digits;
 
-	SPLIT(bits, digits, bits, DIG_LOG);
+	RLC_RIP(bits, digits, bits);
 
 	if (digits) {
 		fp_rshd_low(c, a, digits);

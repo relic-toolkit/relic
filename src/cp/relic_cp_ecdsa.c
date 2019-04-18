@@ -38,7 +38,7 @@
 
 int cp_ecdsa_gen(bn_t d, ec_t q) {
 	bn_t n;
-	int result = STS_OK;
+	int result = RLC_OK;
 
 	bn_null(n);
 
@@ -50,7 +50,7 @@ int cp_ecdsa_gen(bn_t d, ec_t q) {
 		ec_mul_gen(q, d);
 	}
 	CATCH_ANY {
-		result = STS_ERR;
+		result = RLC_ERR;
 	}
 	FINALLY {
 		bn_free(n);
@@ -63,7 +63,7 @@ int cp_ecdsa_sig(bn_t r, bn_t s, uint8_t *msg, int len, int hash, bn_t d) {
 	bn_t n, k, x, e;
 	ec_t p;
 	uint8_t h[MD_LEN];
-	int result = STS_OK;
+	int result = RLC_OK;
 
 	bn_null(n);
 	bn_null(k);
@@ -93,7 +93,7 @@ int cp_ecdsa_sig(bn_t r, bn_t s, uint8_t *msg, int len, int hash, bn_t d) {
 				len = MD_LEN;
 			}
 			if (8 * len > bn_bits(n)) {
-				len = CEIL(bn_bits(n), 8);
+				len = RLC_CEIL(bn_bits(n), 8);
 				bn_read_bin(e, msg, len);
 				bn_rsh(e, e, 8 * len - bn_bits(n));
 			} else {
@@ -105,7 +105,7 @@ int cp_ecdsa_sig(bn_t r, bn_t s, uint8_t *msg, int len, int hash, bn_t d) {
 			bn_add(s, s, e);
 			bn_mod(s, s, n);
 			bn_gcd_ext(x, k, NULL, k, n);
-			if (bn_sign(k) == BN_NEG) {
+			if (bn_sign(k) == RLC_NEG) {
 				bn_add(k, k, n);
 			}
 			bn_mul(s, s, k);
@@ -113,7 +113,7 @@ int cp_ecdsa_sig(bn_t r, bn_t s, uint8_t *msg, int len, int hash, bn_t d) {
 		} while (bn_is_zero(s));
 	}
 	CATCH_ANY {
-		result = STS_ERR;
+		result = RLC_ERR;
 	}
 	FINALLY {
 		bn_free(n);
@@ -146,11 +146,11 @@ int cp_ecdsa_ver(bn_t r, bn_t s, uint8_t *msg, int len, int hash, ec_t q) {
 
 		ec_curve_get_ord(n);
 
-		if (bn_sign(r) == BN_POS && bn_sign(s) == BN_POS &&
+		if (bn_sign(r) == RLC_POS && bn_sign(s) == RLC_POS &&
 				!bn_is_zero(r) && !bn_is_zero(s)) {
-			if (bn_cmp(r, n) == CMP_LT && bn_cmp(s, n) == CMP_LT) {
+			if (bn_cmp(r, n) == RLC_LT && bn_cmp(s, n) == RLC_LT) {
 				bn_gcd_ext(e, k, NULL, s, n);
-				if (bn_sign(k) == BN_NEG) {
+				if (bn_sign(k) == RLC_NEG) {
 					bn_add(k, k, n);
 				}
 
@@ -160,7 +160,7 @@ int cp_ecdsa_ver(bn_t r, bn_t s, uint8_t *msg, int len, int hash, ec_t q) {
 					len = MD_LEN;
 				}
 				if (8 * len > bn_bits(n)) {
-					len = CEIL(bn_bits(n), 8);
+					len = RLC_CEIL(bn_bits(n), 8);
 					bn_read_bin(e, msg, len);
 					bn_rsh(e, e, 8 * len - bn_bits(n));
 				} else {
@@ -177,8 +177,8 @@ int cp_ecdsa_ver(bn_t r, bn_t s, uint8_t *msg, int len, int hash, ec_t q) {
 
 				bn_mod(v, v, n);
 
-				result = dv_cmp_const(v->dp, r->dp, MIN(v->used, r->used));
-				result = (result == CMP_NE ? 0 : 1);
+				result = dv_cmp_const(v->dp, r->dp, RLC_MIN(v->used, r->used));
+				result = (result == RLC_NE ? 0 : 1);
 
 				if (v->used != r->used) {
 					result = 0;

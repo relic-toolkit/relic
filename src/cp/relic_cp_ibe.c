@@ -39,7 +39,7 @@
 
 int cp_ibe_gen(bn_t master, g1_t pub) {
 	bn_t n;
-	int result = STS_OK;
+	int result = RLC_OK;
 
 	bn_null(n);
 
@@ -53,7 +53,7 @@ int cp_ibe_gen(bn_t master, g1_t pub) {
 		g1_mul_gen(pub, master);
 	}
 	CATCH_ANY {
-		result = STS_ERR;
+		result = RLC_ERR;
 	}
 	FINALLY {
 		bn_free(n);
@@ -64,12 +64,12 @@ int cp_ibe_gen(bn_t master, g1_t pub) {
 int cp_ibe_gen_prv(g2_t prv, char *id, int len, bn_t master) {
 	g2_map(prv, (uint8_t *)id, len);
 	g2_mul(prv, prv, master);
-	return STS_OK;
+	return RLC_OK;
 }
 
 int cp_ibe_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len,
 		char *id, int len, g1_t pub) {
-	int l, result = STS_OK;
+	int l, result = RLC_OK;
 	uint8_t h[MD_LEN];
 	bn_t n;
 	bn_t r;
@@ -84,12 +84,12 @@ int cp_ibe_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len,
 	gt_null(e);
 
 	if (pub == NULL || in_len <= 0 || in_len > MD_LEN ) {
-		return STS_ERR;
+		return RLC_ERR;
 	}
 
-	l = 1 + 2 * FP_BYTES;
+	l = 1 + 2 * RLC_FP_BYTES;
 	if (*out_len < (in_len + l)) {
-		return STS_ERR;
+		return RLC_ERR;
 	}
 
 	TRY {
@@ -121,13 +121,13 @@ int cp_ibe_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len,
 		g1_mul_gen(p, r);
 		g1_write_bin(out, *out_len, p, 0);
 
-		for (l = 0; l < MIN(in_len, MD_LEN); l++) {
-			out[l + (2 * FP_BYTES + 1)] = in[l] ^ h[l];
+		for (l = 0; l < RLC_MIN(in_len, MD_LEN); l++) {
+			out[l + (2 * RLC_FP_BYTES + 1)] = in[l] ^ h[l];
 		}
 
-		*out_len = in_len + (2 * FP_BYTES + 1);
+		*out_len = in_len + (2 * RLC_FP_BYTES + 1);
 	} CATCH_ANY {
-		result = STS_ERR;
+		result = RLC_ERR;
 	} FINALLY {
 		bn_free(n);
 		bn_free(r);
@@ -139,7 +139,7 @@ int cp_ibe_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len,
 }
 
 int cp_ibe_dec(uint8_t *out, int *out_len, uint8_t *in, int in_len, g2_t prv) {
-	int l, result = STS_OK;
+	int l, result = RLC_OK;
 	uint8_t h[MD_LEN];
 	g1_t p;
 	gt_t e;
@@ -147,13 +147,13 @@ int cp_ibe_dec(uint8_t *out, int *out_len, uint8_t *in, int in_len, g2_t prv) {
 	g1_null(p);
 	gt_null(e);
 
-	l = 2 * FP_BYTES + 1;
+	l = 2 * RLC_FP_BYTES + 1;
 	if (prv == NULL || in_len <= l || in_len > (MD_LEN + l)) {
-		return STS_ERR;
+		return RLC_ERR;
 	}
 
 	if (*out_len < (in_len - l)) {
-		return STS_ERR;
+		return RLC_ERR;
 	}
 
 	TRY {
@@ -170,13 +170,13 @@ int cp_ibe_dec(uint8_t *out, int *out_len, uint8_t *in, int in_len, g2_t prv) {
 		gt_write_bin(buf, sizeof(buf), e, 0);
 		md_map(h, buf, l);
 
-		for (l = 0; l < MIN(in_len, MD_LEN); l++) {
-			out[l] = in[l + (2 * FP_BYTES + 1)] ^ h[l];
+		for (l = 0; l < RLC_MIN(in_len, MD_LEN); l++) {
+			out[l] = in[l + (2 * RLC_FP_BYTES + 1)] ^ h[l];
 		}
 
-		*out_len = in_len - (2 * FP_BYTES + 1);
+		*out_len = in_len - (2 * RLC_FP_BYTES + 1);
 	} CATCH_ANY {
-		result = STS_ERR;
+		result = RLC_ERR;
 	} FINALLY {
 		g1_free(p);
 		gt_free(e);

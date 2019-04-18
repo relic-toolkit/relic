@@ -67,11 +67,11 @@
 fb_rsh1_low:
 	movw	r30, r24
 	movw	r26, r22
-	adiw	r30, FB_DIGS
-	adiw	r26, FB_DIGS
+	adiw	r30, RLC_FB_DIGS
+	adiw	r26, RLC_FB_DIGS
 
 	clc
-	RSH1_STEP 0, FB_DIGS - 1
+	RSH1_STEP 0, RLC_FB_DIGS - 1
 
 	clr		r24
 	adc		r24, r1
@@ -82,7 +82,7 @@ fb_lsh1_low:
 	movw	r26, r22
 
 	clc
-	LSH1_STEP 0, FB_DIGS - 1
+	LSH1_STEP 0, RLC_FB_DIGS - 1
 
 	clr		r24
 	adc		r24, r1

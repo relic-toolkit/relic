@@ -41,7 +41,7 @@
 int cp_zss_gen(bn_t d, g1_t q, gt_t z) {
 	bn_t n;
 	g2_t g;
-	int result = STS_OK;
+	int result = RLC_OK;
 
 	bn_null(n);
 	g2_null(g);
@@ -62,7 +62,7 @@ int cp_zss_gen(bn_t d, g1_t q, gt_t z) {
 		g1_mul_gen(q, d);
 	}
 	CATCH_ANY {
-		result = STS_ERR;
+		result = RLC_ERR;
 	}
 	FINALLY {
 		bn_free(n);
@@ -74,7 +74,7 @@ int cp_zss_gen(bn_t d, g1_t q, gt_t z) {
 int cp_zss_sig(g2_t s, uint8_t *msg, int len, int hash, bn_t d) {
 	bn_t m, n, r, t;
 	uint8_t h[MD_LEN];
-	int result = STS_OK;
+	int result = RLC_OK;
 
 	bn_null(m);
 	bn_null(n);
@@ -102,7 +102,7 @@ int cp_zss_sig(g2_t s, uint8_t *msg, int len, int hash, bn_t d) {
         bn_add(t, m, d);
         bn_mod(t, t, n);
         bn_gcd_ext(r, t, NULL, t, n);
-		if (bn_sign(t) == BN_NEG) {
+		if (bn_sign(t) == RLC_NEG) {
 			bn_add(t, t, n);
 		}
 
@@ -110,7 +110,7 @@ int cp_zss_sig(g2_t s, uint8_t *msg, int len, int hash, bn_t d) {
 		g2_mul_gen(s, t);
 	}
 	CATCH_ANY {
-		result = STS_ERR;
+		result = RLC_ERR;
 	}
 	FINALLY {
 		bn_free(m);
@@ -156,7 +156,7 @@ int cp_zss_ver(g2_t s, uint8_t *msg, int len, int hash, g1_t q, gt_t z) {
 
 		pc_map(e, g, s);
 
-		if (gt_cmp(e, z) == CMP_EQ) {
+		if (gt_cmp(e, z) == RLC_EQ) {
 			result = 1;
 		}
 	}

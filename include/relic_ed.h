@@ -33,8 +33,8 @@
  * @ingroup ed
  */
 
- #ifndef RELIC_ED_H
- #define RELIC_ED_H
+ #ifndef RLC_ED_H
+ #define RLC_ED_H
 
 #include "relic_fp.h"
 #include "relic_bn.h"
@@ -59,45 +59,45 @@ enum {
 /**
  * Size of a precomputation table using the binary method.
  */
-#define RELIC_ED_TABLE_BASIC    (FP_BITS + 1)
+#define RLC_ED_TABLE_BASIC    (RLC_FP_BITS + 1)
 
 /**
  * Size of a precomputation table using the single-table comb method.
  */
-#define RELIC_ED_TABLE_COMBS    (1 << ED_DEPTH)
+#define RLC_ED_TABLE_COMBS    (1 << ED_DEPTH)
 
 /**
  * Size of a precomputation table using the double-table comb method.
  */
-#define RELIC_ED_TABLE_COMBD	(1 << (ED_DEPTH + 1))
+#define RLC_ED_TABLE_COMBD	(1 << (ED_DEPTH + 1))
 
 /**
  * Size of a precomputation table using the w-(T)NAF method.
  */
-#define RELIC_ED_TABLE_LWNAF	(1 << (ED_DEPTH - 2))
+#define RLC_ED_TABLE_LWNAF	(1 << (ED_DEPTH - 2))
 
 /**
  * Size of a precomputation table using the chosen algorithm.
  */
 #if ED_FIX == BASIC
-#define RELIC_ED__TABLE			RELIC_ED_TABLE_BASIC
+#define RLC_ED__TABLE			RLC_ED_TABLE_BASIC
 #elif ED_FIX == COMBS
-#define RELIC_ED_TABLE			RELIC_ED_TABLE_COMBS
+#define RLC_ED_TABLE			RLC_ED_TABLE_COMBS
 #elif ED_FIX == COMBD
-#define RELIC_ED_TABLE			RELIC_ED_TABLE_COMBD
+#define RLC_ED_TABLE			RLC_ED_TABLE_COMBD
 #elif ED_FIX == LWNAF
-#define RELIC_ED_TABLE			RELIC_ED_TABLE_LWNAF
+#define RLC_ED_TABLE			RLC_ED_TABLE_LWNAF
 #elif ED_FIX == LWNAF_MIXED
-#define RELIC_ED_TABLE			RELIC_ED_TABLE_LWNAF
+#define RLC_ED_TABLE			RLC_ED_TABLE_LWNAF
 #endif
 
 /**
  * Maximum size of a precomputation table.
  */
 #ifdef STRIP
-#define RELIC_ED_TABLE_MAX RELIC_ED_TABLE
+#define RLC_ED_TABLE_MAX    RLC_ED_TABLE
 #else
-#define RELIC_ED_TABLE_MAX MAX(RELIC_ED_TABLE_BASIC, RELIC_ED_TABLE_COMBD)
+#define RLC_ED_TABLE_MAX    RLC_MAX(RLC_ED_TABLE_BASIC, RLC_ED_TABLE_COMBD)
 #endif
 
 /*============================================================================*/
@@ -275,7 +275,7 @@ void ed_copy(ed_t r, const ed_t p);
  *
  * @param[in] p		- the first prime elliptic curve point.
  * @param[in] q		- the second prime elliptic curve point.
- * @return CMP_EQ if p == q and CMP_NE if p != q.
+ * @return RLC_EQ if p == q and RLC_NE if p != q.
  */
 int ed_cmp(const ed_t p, const ed_t q);
 

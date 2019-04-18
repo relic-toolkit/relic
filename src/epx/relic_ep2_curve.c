@@ -178,23 +178,23 @@
  * @param[in] CURVE		- the curve parameters to assign.
  */
 #define ASSIGN(CURVE)														\
-	FETCH(str, CURVE##_A0, sizeof(CURVE##_A0));								\
+	RLC_GET(str, CURVE##_A0, sizeof(CURVE##_A0));								\
 	fp_read_str(a[0], str, strlen(str), 16);									\
-	FETCH(str, CURVE##_A1, sizeof(CURVE##_A1));								\
+	RLC_GET(str, CURVE##_A1, sizeof(CURVE##_A1));								\
 	fp_read_str(a[1], str, strlen(str), 16);									\
-	FETCH(str, CURVE##_B0, sizeof(CURVE##_B0));								\
+	RLC_GET(str, CURVE##_B0, sizeof(CURVE##_B0));								\
 	fp_read_str(b[0], str, strlen(str), 16);									\
-	FETCH(str, CURVE##_B1, sizeof(CURVE##_B1));								\
+	RLC_GET(str, CURVE##_B1, sizeof(CURVE##_B1));								\
 	fp_read_str(b[1], str, strlen(str), 16);									\
-	FETCH(str, CURVE##_X0, sizeof(CURVE##_X0));								\
+	RLC_GET(str, CURVE##_X0, sizeof(CURVE##_X0));								\
 	fp_read_str(g->x[0], str, strlen(str), 16);									\
-	FETCH(str, CURVE##_X1, sizeof(CURVE##_X1));								\
+	RLC_GET(str, CURVE##_X1, sizeof(CURVE##_X1));								\
 	fp_read_str(g->x[1], str, strlen(str), 16);									\
-	FETCH(str, CURVE##_Y0, sizeof(CURVE##_Y0));								\
+	RLC_GET(str, CURVE##_Y0, sizeof(CURVE##_Y0));								\
 	fp_read_str(g->y[0], str, strlen(str), 16);									\
-	FETCH(str, CURVE##_Y1, sizeof(CURVE##_Y1));								\
+	RLC_GET(str, CURVE##_Y1, sizeof(CURVE##_Y1));								\
 	fp_read_str(g->y[1], str, strlen(str), 16);									\
-	FETCH(str, CURVE##_R, sizeof(CURVE##_R));								\
+	RLC_GET(str, CURVE##_R, sizeof(CURVE##_R));								\
 	bn_read_str(r, str, strlen(str), 16);									\
 
 /*============================================================================*/
@@ -205,7 +205,7 @@ void ep2_curve_init(void) {
 	ctx_t *ctx = core_get();
 
 #ifdef EP_PRECO
-	for (int i = 0; i < RELIC_EP_TABLE; i++) {
+	for (int i = 0; i < RLC_EP_TABLE; i++) {
 		ctx->ep2_ptr[i] = &(ctx->ep2_pre[i]);
 	}
 #endif
@@ -221,13 +221,13 @@ void ep2_curve_init(void) {
 
 #ifdef EP_PRECO
 #if ALLOC == DYNAMIC
-	for (int i = 0; i < RELIC_EP_TABLE; i++) {
+	for (int i = 0; i < RLC_EP_TABLE; i++) {
 		fp2_new(ctx->ep2_pre[i].x);
 		fp2_new(ctx->ep2_pre[i].y);
 		fp2_new(ctx->ep2_pre[i].z);
 	}
 #elif ALLOC == STACK
-	for (int i = 0; i < RELIC_EP_TABLE; i++) {
+	for (int i = 0; i < RLC_EP_TABLE; i++) {
 		ctx->ep2_pre[i].x[0] = ctx->_ep2_pre[3 * i][0];
 		ctx->ep2_pre[i].x[1] = ctx->_ep2_pre[3 * i][1];
 		ctx->ep2_pre[i].y[0] = ctx->_ep2_pre[3 * i + 1][0];
@@ -238,14 +238,14 @@ void ep2_curve_init(void) {
 #endif
 #endif
 	ep2_set_infty(&(ctx->ep2_g));
-	bn_init(&(ctx->ep2_r), FP_DIGS);
-	bn_init(&(ctx->ep2_h), FP_DIGS);
+	bn_init(&(ctx->ep2_r), RLC_FP_DIGS);
+	bn_init(&(ctx->ep2_h), RLC_FP_DIGS);
 }
 
 void ep2_curve_clean(void) {
 	ctx_t *ctx = core_get();
 #ifdef EP_PRECO
-	for (int i = 0; i < RELIC_EP_TABLE; i++) {
+	for (int i = 0; i < RLC_EP_TABLE; i++) {
 		fp2_free(ctx->ep2_pre[i].x);
 		fp2_free(ctx->ep2_pre[i].y);
 		fp2_free(ctx->ep2_pre[i].z);
@@ -348,7 +348,7 @@ ep2_t *ep2_curve_get_tab(void) {
 #endif
 
 void ep2_curve_set_twist(int type) {
-	char str[2 * FP_BYTES + 1];
+	char str[2 * RLC_FP_BYTES + 1];
 	ctx_t *ctx = core_get();
 	ep2_t g;
 	fp2_t a;

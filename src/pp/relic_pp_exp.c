@@ -46,7 +46,7 @@
  */
 static void pp_exp_bn(fp12_t c, fp12_t a) {
 	fp12_t t0, t1, t2, t3;
-	int l = MAX_TERMS + 1, b[MAX_TERMS + 1];
+	int l = RLC_TERMS + 1, b[RLC_TERMS + 1];
 	bn_t x;
 
 	fp12_null(t0);
@@ -85,7 +85,7 @@ static void pp_exp_bn(fp12_t c, fp12_t a) {
 		fp12_sqr_cyc(t3, t2);
 		fp12_exp_cyc_sps(t3, t3, b, l);
 
-		if (bn_sign(x) == BN_NEG) {
+		if (bn_sign(x) == RLC_NEG) {
 			fp12_inv_uni(t0, t0);
 			fp12_inv_uni(t1, t1);
 			fp12_inv_uni(t3, t3);
@@ -133,7 +133,7 @@ static void pp_exp_bn(fp12_t c, fp12_t a) {
 static void pp_exp_b12(fp12_t c, fp12_t a) {
 	fp12_t t0, t1, t2, t3;
 	bn_t x;
-	int l = MAX_TERMS + 1, b[MAX_TERMS + 1];
+	int l = RLC_TERMS + 1, b[RLC_TERMS + 1];
 
 	fp12_null(t0);
 	fp12_null(t1);
@@ -164,13 +164,13 @@ static void pp_exp_b12(fp12_t c, fp12_t a) {
 
 		/* t1 = f^x. */
 		fp12_exp_cyc_sps(t1, c, b, l);
-		if (bn_sign(x) == BN_NEG) {
+		if (bn_sign(x) == RLC_NEG) {
 			fp12_inv_uni(t1, t1);
 		}
 
 		/* t2 = f^(x^2). */
 		fp12_exp_cyc_sps(t2, t1, b, l);
-		if (bn_sign(x) == BN_NEG) {
+		if (bn_sign(x) == RLC_NEG) {
 			fp12_inv_uni(t2, t2);
 		}
 
@@ -183,13 +183,13 @@ static void pp_exp_b12(fp12_t c, fp12_t a) {
 
 		/* t2 = t1^x. */
 		fp12_exp_cyc_sps(t2, t1, b, l);
-		if (bn_sign(x) == BN_NEG) {
+		if (bn_sign(x) == RLC_NEG) {
 			fp12_inv_uni(t2, t2);
 		}
 
 		/* t3 = t2^x/t1. */
 		fp12_exp_cyc_sps(t3, t2, b, l);
-		if (bn_sign(x) == BN_NEG) {
+		if (bn_sign(x) == RLC_NEG) {
 			fp12_inv_uni(t3, t3);
 		}
 		fp12_inv_uni(t1, t1);
@@ -203,7 +203,7 @@ static void pp_exp_b12(fp12_t c, fp12_t a) {
 
 		/* t2 = f * f^2 * t3^x. */
 		fp12_exp_cyc_sps(t2, t3, b, l);
-		if (bn_sign(x) == BN_NEG) {
+		if (bn_sign(x) == RLC_NEG) {
 			fp12_inv_uni(t2, t2);
 		}
 		fp12_mul(t2, t2, t0);
@@ -243,9 +243,9 @@ void pp_exp_k2(fp2_t c, fp2_t a) {
 		ep_curve_get_ord(n);
 
 		fp2_conv_uni(c, a);
-		dv_copy(e->dp, fp_prime_get(), FP_DIGS);
-		e->used = FP_DIGS;
-		e->sign = BN_POS;
+		dv_copy(e->dp, fp_prime_get(), RLC_FP_DIGS);
+		e->used = RLC_FP_DIGS;
+		e->sign = RLC_POS;
 		bn_add_dig(e, e, 1);
 		bn_div(e, e, n);
 		fp2_exp_uni(c, c, e);

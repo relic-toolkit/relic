@@ -54,7 +54,7 @@ static void memory(void) {
 
 static void util(void) {
 	ep_t p, q, t[4];
-	uint8_t bin[2 * FP_BYTES + 1];
+	uint8_t bin[2 * RLC_FP_BYTES + 1];
 	int l;
 
 	ep_null(p);
@@ -169,13 +169,13 @@ static void util(void) {
 }
 
 static void arith(void) {
-	ep_t p, q, r, t[RELIC_EP_TABLE_MAX];
+	ep_t p, q, r, t[RLC_EP_TABLE_MAX];
 	bn_t k, l, n;
 
 	ep_null(p);
 	ep_null(q);
 	ep_null(r);
-	for (int i = 0; i < RELIC_EP_TABLE_MAX; i++) {
+	for (int i = 0; i < RLC_EP_TABLE_MAX; i++) {
 		ep_null(t[i]);
 	}
 
@@ -385,13 +385,13 @@ static void arith(void) {
 	} BENCH_END;
 
 	BENCH_BEGIN("ep_mul_dig") {
-		bn_rand(k, BN_POS, DIGIT);
+		bn_rand(k, RLC_POS, RLC_DIG);
 		bn_rand_mod(k, n);
 		BENCH_ADD(ep_mul_dig(p, q, k->dp[0]));
 	}
 	BENCH_END;
 
-	for (int i = 0; i < RELIC_EP_TABLE; i++) {
+	for (int i = 0; i < RLC_EP_TABLE; i++) {
 		ep_new(t[i]);
 	}
 
@@ -407,12 +407,12 @@ static void arith(void) {
 		BENCH_ADD(ep_mul_fix(q, (const ep_t *)t, k));
 	} BENCH_END;
 
-	for (int i = 0; i < RELIC_EP_TABLE; i++) {
+	for (int i = 0; i < RLC_EP_TABLE; i++) {
 		ep_free(t[i]);
 	}
 
 #if EP_FIX == BASIC || !defined(STRIP)
-	for (int i = 0; i < RELIC_EP_TABLE_BASIC; i++) {
+	for (int i = 0; i < RLC_EP_TABLE_BASIC; i++) {
 		ep_new(t[i]);
 	}
 	BENCH_BEGIN("ep_mul_pre_basic") {
@@ -426,13 +426,13 @@ static void arith(void) {
 		ep_mul_pre_basic(t, p);
 		BENCH_ADD(ep_mul_fix_basic(q, (const ep_t *)t, k));
 	} BENCH_END;
-	for (int i = 0; i < RELIC_EP_TABLE_BASIC; i++) {
+	for (int i = 0; i < RLC_EP_TABLE_BASIC; i++) {
 		ep_free(t[i]);
 	}
 #endif
 
 #if EP_FIX == COMBS || !defined(STRIP)
-	for (int i = 0; i < RELIC_EP_TABLE_COMBS; i++) {
+	for (int i = 0; i < RLC_EP_TABLE_COMBS; i++) {
 		ep_new(t[i]);
 	}
 	BENCH_BEGIN("ep_mul_pre_combs") {
@@ -446,13 +446,13 @@ static void arith(void) {
 		ep_mul_pre_combs(t, p);
 		BENCH_ADD(ep_mul_fix_combs(q, (const ep_t *)t, k));
 	} BENCH_END;
-	for (int i = 0; i < RELIC_EP_TABLE_COMBS; i++) {
+	for (int i = 0; i < RLC_EP_TABLE_COMBS; i++) {
 		ep_free(t[i]);
 	}
 #endif
 
 #if EP_FIX == COMBD || !defined(STRIP)
-	for (int i = 0; i < RELIC_EP_TABLE_COMBD; i++) {
+	for (int i = 0; i < RLC_EP_TABLE_COMBD; i++) {
 		ep_new(t[i]);
 	}
 	BENCH_BEGIN("ep_mul_pre_combd") {
@@ -464,13 +464,13 @@ static void arith(void) {
 		ep_mul_pre_combd(t, p);
 		BENCH_ADD(ep_mul_fix_combd(q, (const ep_t *)t, k));
 	} BENCH_END;
-	for (int i = 0; i < RELIC_EP_TABLE_COMBD; i++) {
+	for (int i = 0; i < RLC_EP_TABLE_COMBD; i++) {
 		ep_free(t[i]);
 	}
 #endif
 
 #if EP_FIX == LWNAF || !defined(STRIP)
-	for (int i = 0; i < RELIC_EP_TABLE_LWNAF; i++) {
+	for (int i = 0; i < RLC_EP_TABLE_LWNAF; i++) {
 		ep_new(t[i]);
 	}
 	BENCH_BEGIN("ep_mul_pre_lwnaf") {
@@ -484,7 +484,7 @@ static void arith(void) {
 		ep_mul_pre_lwnaf(t, p);
 		BENCH_ADD(ep_mul_fix_lwnaf(q, (const ep_t *)t, k));
 	} BENCH_END;
-	for (int i = 0; i < RELIC_EP_TABLE_LWNAF; i++) {
+	for (int i = 0; i < RLC_EP_TABLE_LWNAF; i++) {
 		ep_free(t[i]);
 	}
 #endif
@@ -577,9 +577,9 @@ static void bench(void) {
 }
 
 int main(void) {
-	int r0 = STS_ERR, r1 = STS_ERR, r2 = STS_ERR;
+	int r0 = RLC_ERR, r1 = RLC_ERR, r2 = RLC_ERR;
 
-	if (core_init() != STS_OK) {
+	if (core_init() != RLC_OK) {
 		core_clean();
 		return 1;
 	}
@@ -589,27 +589,27 @@ int main(void) {
 
 #if defined(EP_PLAIN)
 	r0 = ep_param_set_any_plain();
-	if (r0 == STS_OK) {
+	if (r0 == RLC_OK) {
 		bench();
 	}
 #endif
 
 #if defined(EP_ENDOM)
 	r1 = ep_param_set_any_endom();
-	if (r1 == STS_OK) {
+	if (r1 == RLC_OK) {
 		bench();
 	}
 #endif
 
 #if defined(EP_SUPER)
 	r2 = ep_param_set_any_super();
-	if (r2 == STS_OK) {
+	if (r2 == RLC_OK) {
 		bench();
 	}
 #endif
 
-	if (r0 == STS_ERR && r1 == STS_ERR && r2 == STS_ERR) {
-		if (ep_param_set_any() == STS_ERR) {
+	if (r0 == RLC_ERR && r1 == RLC_ERR && r2 == RLC_ERR) {
+		if (ep_param_set_any() == RLC_ERR) {
 			THROW(ERR_NO_CURVE);
 		}
 	}

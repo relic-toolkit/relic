@@ -53,16 +53,16 @@ cdecl(fp2_addn_low):
 	addq	0(%rsi), %r8
 	movq	%r8, 0(%rdi)
 
-	ADDN_STEP 1, (FP_DIGS - 1)
+	ADDN_STEP 1, (RLC_FP_DIGS - 1)
 
-	addq	$(8*FP_DIGS), %rdx
-	addq	$(8*FP_DIGS), %rsi
-	addq	$(8*FP_DIGS), %rdi
+	addq	$(8*RLC_FP_DIGS), %rdx
+	addq	$(8*RLC_FP_DIGS), %rsi
+	addq	$(8*RLC_FP_DIGS), %rdi
 	movq	0(%rdx), %r8
 	addq	0(%rsi), %r8
 	movq	%r8, 0(%rdi)
 
-	ADDN_STEP 1, (FP_DIGS - 1)
+	ADDN_STEP 1, (RLC_FP_DIGS - 1)
 
 	ret
 
@@ -103,9 +103,9 @@ cdecl(fp2_addm_low):
 	cmovnc	%r14, %r11
 	movq	%r11,24(%rdi)
 
-	addq	$(8*FP_DIGS), %rdx
-	addq	$(8*FP_DIGS), %rsi
-	addq	$(8*FP_DIGS), %rdi
+	addq	$(8*RLC_FP_DIGS), %rdx
+	addq	$(8*RLC_FP_DIGS), %rsi
+	addq	$(8*RLC_FP_DIGS), %rdi
 
 	movq	0(%rdx), %r8
 	addq	0(%rsi), %r8
@@ -150,7 +150,7 @@ cdecl(fp2_addd_low):
 	addq	0(%rsi), %r8
 	movq	%r8, 0(%rdi)
 
-	ADDN_STEP 1, (2 * FP_DIGS - 1)
+	ADDN_STEP 1, (2 * RLC_FP_DIGS - 1)
 
 	addq	$(8*DV_DIGS), %rdx
 	addq	$(8*DV_DIGS), %rsi
@@ -159,7 +159,7 @@ cdecl(fp2_addd_low):
 	addq	0(%rsi), %r8
 	movq	%r8, 0(%rdi)
 
-	ADDN_STEP 1, (2 * FP_DIGS - 1)
+	ADDN_STEP 1, (2 * RLC_FP_DIGS - 1)
 
 	ret
 
@@ -293,9 +293,9 @@ cdecl(fp2_subn_low):
 
 	xorq	%rax,%rax
 	xorq	%rcx,%rcx
-	addq	$(8*FP_DIGS), %rdx
-	addq	$(8*FP_DIGS), %rsi
-	addq	$(8*FP_DIGS), %rdi
+	addq	$(8*RLC_FP_DIGS), %rdx
+	addq	$(8*RLC_FP_DIGS), %rsi
+	addq	$(8*RLC_FP_DIGS), %rdi
 
 	movq	0(%rsi), %r8
 	subq	0(%rdx), %r8
@@ -363,11 +363,11 @@ cdecl(fp2_subm_low):
 	adcq	%r14, %r11
 	movq	%r11, 24(%rdi)
 
-	addq	$(8*FP_DIGS), %rdx
+	addq	$(8*RLC_FP_DIGS), %rdx
 	movq	$0, %r13
-	addq	$(8*FP_DIGS), %rsi
+	addq	$(8*RLC_FP_DIGS), %rsi
 	movq	$0, %r14
-	addq	$(8*FP_DIGS), %rdi
+	addq	$(8*RLC_FP_DIGS), %rdi
 
 	xorq	%rax,%rax
 	xorq	%rcx,%rcx
@@ -406,7 +406,7 @@ cdecl(fp2_subd_low):
 	subq	0(%rsi), %r8
 	movq	%r8, 0(%rdi)
 
-	SUBN_STEP 1, (2 * FP_DIGS - 1)
+	SUBN_STEP 1, (2 * RLC_FP_DIGS - 1)
 
 	addq	$(8*DV_DIGS), %rdx
 	addq	$(8*DV_DIGS), %rsi
@@ -416,7 +416,7 @@ cdecl(fp2_subd_low):
 	addq	0(%rsi), %r8
 	movq	%r8, 0(%rdi)
 
-	SUBN_STEP 1, (2 * FP_DIGS - 1)
+	SUBN_STEP 1, (2 * RLC_FP_DIGS - 1)
 
 	ret
 
@@ -521,15 +521,15 @@ cdecl(fp2_dbln_low):
 	addq	%r8, %r8
 	movq	%r8, 0(%rdi)
 
-	DBLN_STEP 1, (FP_DIGS - 1)
+	DBLN_STEP 1, (RLC_FP_DIGS - 1)
 
-	addq	$(8*FP_DIGS), %rsi
-	addq	$(8*FP_DIGS), %rdi
+	addq	$(8*RLC_FP_DIGS), %rsi
+	addq	$(8*RLC_FP_DIGS), %rdi
 	movq	0(%rdx), %r8
 	addq	%r8, %r8
 	movq	%r8, 0(%rdi)
 
-	DBLN_STEP 1, (FP_DIGS - 1)
+	DBLN_STEP 1, (RLC_FP_DIGS - 1)
 
 	ret
 
@@ -573,9 +573,9 @@ cdecl(fp2_dblm_low):
 
 	xorq	%rax,%rax
 	xorq	%rdx,%rdx
-	addq	$(8*FP_DIGS), %rdx
-	addq	$(8*FP_DIGS), %rsi
-	addq	$(8*FP_DIGS), %rdi
+	addq	$(8*RLC_FP_DIGS), %rdx
+	addq	$(8*RLC_FP_DIGS), %rsi
+	addq	$(8*RLC_FP_DIGS), %rdi
 
 	movq	0(%rsi), %r8
 	addq	%r8, %r8
@@ -623,13 +623,13 @@ cdecl(fp2_norm_low):
 	xorq	%rax,%rax
 	xorq	%rcx,%rcx
 	movq	0(%rsi), %r8
-	subq	8*FP_DIGS(%rsi), %r8
+	subq	8*RLC_FP_DIGS(%rsi), %r8
 	movq	8(%rsi), %r9
-	sbbq	8*FP_DIGS+8(%rsi), %r9
+	sbbq	8*RLC_FP_DIGS+8(%rsi), %r9
 	movq	16(%rsi), %r10
-	sbbq	8*FP_DIGS+16(%rsi), %r10
+	sbbq	8*RLC_FP_DIGS+16(%rsi), %r10
 	movq	24(%rsi), %r11
-	sbbq	8*FP_DIGS+24(%rsi), %r11
+	sbbq	8*RLC_FP_DIGS+24(%rsi), %r11
 
 	movq	$0, %r13
 	movq	$0, %r14
@@ -652,13 +652,13 @@ cdecl(fp2_norm_low):
 
 	xorq	%rax, %rax
 	movq	0(%rsi), %r8
-	addq	8*FP_DIGS(%rsi), %r8
+	addq	8*RLC_FP_DIGS(%rsi), %r8
 	movq	8(%rsi), %r9
-	adcq	8*FP_DIGS+8(%rsi), %r9
+	adcq	8*RLC_FP_DIGS+8(%rsi), %r9
 	movq	16(%rsi), %r10
-	adcq	8*FP_DIGS+16(%rsi), %r10
+	adcq	8*RLC_FP_DIGS+16(%rsi), %r10
 	movq	24(%rsi), %r11
-	adcq	8*FP_DIGS+24(%rsi), %r11
+	adcq	8*RLC_FP_DIGS+24(%rsi), %r11
 
 	movq 	%r8, %rax
 	movq 	%r9, %rcx
@@ -679,10 +679,10 @@ cdecl(fp2_norm_low):
 	cmovnc	%r12, %r10
 	cmovnc	%r13, %r11
 
-	movq	%r8, 8*FP_DIGS(%rdi)
-	movq	%r9, 8*FP_DIGS+8(%rdi)
-	movq	%r10, 8*FP_DIGS+16(%rdi)
-	movq	%r11, 8*FP_DIGS+24(%rdi)
+	movq	%r8, 8*RLC_FP_DIGS(%rdi)
+	movq	%r9, 8*RLC_FP_DIGS+8(%rdi)
+	movq	%r10, 8*RLC_FP_DIGS+16(%rdi)
+	movq	%r11, 8*RLC_FP_DIGS+24(%rdi)
 	pop	%r14
 	pop	%r13
 	pop	%r12
@@ -878,8 +878,8 @@ cdecl(fp2_hlvm_low):
 	shr     $1, %r11
 	movq 	%r11,24(%rdi)
 
-	addq	$(8*FP_DIGS), %rsi
-	addq	$(8*FP_DIGS), %rdi
+	addq	$(8*RLC_FP_DIGS), %rsi
+	addq	$(8*RLC_FP_DIGS), %rdi
 
 	xorq	%rdx, %rdx
 	movq	P0, %r8

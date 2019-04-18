@@ -38,7 +38,7 @@
 
 int cp_ecss_gen(bn_t d, ec_t q) {
 	bn_t n;
-	int result = STS_OK;
+	int result = RLC_OK;
 
 	bn_null(n);
 
@@ -50,7 +50,7 @@ int cp_ecss_gen(bn_t d, ec_t q) {
 		ec_mul_gen(q, d);
 	}
 	CATCH_ANY {
-		result = STS_ERR;
+		result = RLC_ERR;
 	}
 	FINALLY {
 		bn_free(n);
@@ -63,7 +63,7 @@ int cp_ecss_sig(bn_t e, bn_t s, uint8_t *msg, int len, bn_t d) {
 	ec_t p;
 	uint8_t hash[MD_LEN];
 	uint8_t m[len + FC_BYTES];
-	int result = STS_OK;
+	int result = RLC_OK;
 
 	bn_null(n);
 	bn_null(k);
@@ -91,7 +91,7 @@ int cp_ecss_sig(bn_t e, bn_t s, uint8_t *msg, int len, bn_t d) {
 		md_map(hash, m, len + FC_BYTES);
 
 		if (8 * MD_LEN > bn_bits(n)) {
-			len = CEIL(bn_bits(n), 8);
+			len = RLC_CEIL(bn_bits(n), 8);
 			bn_read_bin(e, hash, len);
 			bn_rsh(e, e, 8 * MD_LEN - bn_bits(n));
 		} else {
@@ -107,7 +107,7 @@ int cp_ecss_sig(bn_t e, bn_t s, uint8_t *msg, int len, bn_t d) {
 		bn_mod(s, s, n);
 	}
 	CATCH_ANY {
-		result = STS_ERR;
+		result = RLC_ERR;
 	}
 	FINALLY {
 		bn_free(n);
@@ -139,8 +139,8 @@ int cp_ecss_ver(bn_t e, bn_t s, uint8_t *msg, int len, ec_t q) {
 
 		ec_curve_get_ord(n);
 
-		if (bn_sign(e) == BN_POS && bn_sign(s) == BN_POS && !bn_is_zero(s)) {
-			if (bn_cmp(e, n) == CMP_LT && bn_cmp(s, n) == CMP_LT) {
+		if (bn_sign(e) == RLC_POS && bn_sign(s) == RLC_POS && !bn_is_zero(s)) {
+			if (bn_cmp(e, n) == RLC_LT && bn_cmp(s, n) == RLC_LT) {
 				ec_mul_sim_gen(p, s, q, e);
 				ec_get_x(rv, p);
 
@@ -151,7 +151,7 @@ int cp_ecss_ver(bn_t e, bn_t s, uint8_t *msg, int len, ec_t q) {
 				md_map(hash, m, len + FC_BYTES);
 
 				if (8 * MD_LEN > bn_bits(n)) {
-					len = CEIL(bn_bits(n), 8);
+					len = RLC_CEIL(bn_bits(n), 8);
 					bn_read_bin(ev, hash, len);
 					bn_rsh(ev, ev, 8 * MD_LEN - bn_bits(n));
 				} else {
@@ -160,8 +160,8 @@ int cp_ecss_ver(bn_t e, bn_t s, uint8_t *msg, int len, ec_t q) {
 
 				bn_mod(ev, ev, n);
 
-				result = dv_cmp_const(ev->dp, e->dp, MIN(ev->used, e->used));
-				result = (result == CMP_NE ? 0 : 1);
+				result = dv_cmp_const(ev->dp, e->dp, RLC_MIN(ev->used, e->used));
+				result = (result == RLC_NE ? 0 : 1);
 
 				if (ev->used != e->used) {
 					result = 0;

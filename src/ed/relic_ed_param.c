@@ -54,23 +54,23 @@
  */
 #define ASSIGN_ED(CURVE, FIELD)												\
 	fp_param_set(FIELD);													\
-	FETCH(str, CURVE##_A, sizeof(CURVE##_A));								\
+	RLC_GET(str, CURVE##_A, sizeof(CURVE##_A));								\
 	fp_read_str(core_get()->ed_a, str, strlen(str), 16);					\
-	FETCH(str, CURVE##_D, sizeof(CURVE##_D));								\
+	RLC_GET(str, CURVE##_D, sizeof(CURVE##_D));								\
 	fp_read_str(core_get()->ed_d, str, strlen(str), 16);					\
-	FETCH(str, CURVE##_Y, sizeof(CURVE##_Y));								\
+	RLC_GET(str, CURVE##_Y, sizeof(CURVE##_Y));								\
 	fp_read_str(g->y, str, strlen(str), 16);								\
-	FETCH(str, CURVE##_X, sizeof(CURVE##_X));								\
+	RLC_GET(str, CURVE##_X, sizeof(CURVE##_X));								\
 	fp_read_str(g->x, str, strlen(str), 16);								\
 	fp_set_dig(g->z, 1);													\
-	FETCH(str, CURVE##_R, sizeof(CURVE##_R));								\
+	RLC_GET(str, CURVE##_R, sizeof(CURVE##_R));								\
 	bn_read_str(r, str, strlen(str), 16);									\
-	FETCH(str, CURVE##_H, sizeof(CURVE##_H));								\
+	RLC_GET(str, CURVE##_H, sizeof(CURVE##_H));								\
 	bn_read_str(h, str, strlen(str), 16);
 
 void ed_param_set(int param) {
 	ctx_t *ctx = core_get();
-	char str[2 * FP_BYTES + 2];
+	char str[2 * RLC_FP_BYTES + 2];
 
 	ed_t g;
 	bn_t r;
@@ -109,7 +109,7 @@ void ed_param_set(int param) {
 #endif
 
 #ifdef ED_PRECO
-		for (int i = 0; i < RELIC_ED_TABLE; i++) {
+		for (int i = 0; i < RLC_ED_TABLE; i++) {
 			ctx->ed_ptr[i] = &(ctx->ed_pre[i]);
 		}
 #endif
@@ -130,11 +130,11 @@ void ed_param_set(int param) {
 }
 
 int ed_param_set_any(void) {
-	int r = STS_OK;
+	int r = RLC_OK;
 #if FP_PRIME == 255
 	ed_param_set(CURVE_ED25519);
 #else
-	r = STS_ERR;
+	r = RLC_ERR;
 #endif
 	return r;
 }

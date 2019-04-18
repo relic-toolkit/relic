@@ -50,7 +50,7 @@ dig_t fb_trc_basic(const fb_t a) {
 
 		fb_copy(t, a);
 		fb_copy(u, a);
-		for (int i = 1; i < FB_BITS; i++) {
+		for (int i = 1; i < RLC_FB_BITS; i++) {
 			fb_sqr(t, t);
 			fb_add(u, u, t);
 		}

@@ -68,13 +68,13 @@ static void ep_dbl_basic_imp(ep_t r, fp_t s, const ep_t p) {
 		fp_add(t1, t1, t2);
 
 		switch (ep_curve_opt_a()) {
-			case OPT_ZERO:
+			case RLC_ZERO:
 				break;
-			case OPT_ONE:
+			case RLC_ONE:
 				fp_add_dig(t1, t1, (dig_t)1);
 				break;
 #if FP_RDC != MONTY
-			case OPT_DIGIT:
+			case RLC_TINY:
 				fp_add_dig(t1, t1, ep_curve_get_a()[0]);
 				break;
 #endif
@@ -145,7 +145,7 @@ static void ep_dbl_projc_imp(ep_t r, const ep_t p) {
 		fp_new(t4);
 		fp_new(t5);
 
-		if (!p->norm && ep_curve_opt_a() == OPT_MINUS3) {
+		if (!p->norm && ep_curve_opt_a() == RLC_MIN3) {
 			/* dbl-2001-b formulas: 3M + 5S + 8add + 1*4 + 2*8 + 1*3 */
 			/* http://www.hyperelliptic.org/EFD/g1p/auto-shortw-jacobian-3.html#doubling-dbl-2001-b */
 
@@ -185,7 +185,7 @@ static void ep_dbl_projc_imp(ep_t r, const ep_t p) {
 			fp_sub(r->y, t2, r->x);
 			fp_mul(r->y, r->y, t3);
 			fp_sub(r->y, r->y, t1);
-		} else if (ep_curve_opt_a() == OPT_ZERO) {
+		} else if (ep_curve_opt_a() == RLC_ZERO) {
 			/* dbl-2009-l formulas: 2M + 5S + 6add + 1*8 + 3*2 + 1*3. */
 			/* http://www.hyperelliptic.org/EFD/g1p/auto-shortw-jacobian-0.html#doubling-dbl-2009-l */
 
@@ -240,7 +240,7 @@ static void ep_dbl_projc_imp(ep_t r, const ep_t p) {
 				/* t3 = z1^2. */
 				fp_sqr(t3, p->z);
 
-				if (ep_curve_get_a() == OPT_ZERO) {
+				if (ep_curve_get_a() == RLC_ZERO) {
 					/* z3 = 2 * y1 * z1. */
 					fp_mul(r->z, p->y, p->z);
 					fp_dbl(r->z, r->z);
@@ -269,12 +269,12 @@ static void ep_dbl_projc_imp(ep_t r, const ep_t p) {
 			if (!p->norm) {
 				fp_sqr(t3, t3);
 				switch (ep_curve_opt_a()) {
-					case OPT_ZERO:
+					case RLC_ZERO:
 						break;
-					case OPT_ONE:
+					case RLC_ONE:
 						fp_add(t5, t5, ep_curve_get_a());
 						break;
-					case OPT_DIGIT:
+					case RLC_TINY:
 						fp_mul_dig(t1, t3, ep_curve_get_a()[0]);
 						fp_add(t5, t5, t1);
 						break;
@@ -285,12 +285,12 @@ static void ep_dbl_projc_imp(ep_t r, const ep_t p) {
 				}
 			} else {
 				switch (ep_curve_opt_a()) {
-					case OPT_ZERO:
+					case RLC_ZERO:
 						break;
-					case OPT_ONE:
+					case RLC_ONE:
 						fp_add_dig(t5, t5, (dig_t)1);
 						break;
-					case OPT_DIGIT:
+					case RLC_TINY:
 						fp_add_dig(t5, t5, ep_curve_get_a()[0]);
 						break;
 					default:

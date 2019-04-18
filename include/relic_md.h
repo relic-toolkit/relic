@@ -33,8 +33,8 @@
  * @ingroup md
  */
 
-#ifndef RELIC_MD_H
-#define RELIC_MD_H
+#ifndef RLC_MD_H
+#define RLC_MD_H
 
 #include "relic_conf.h"
 #include "relic_types.h"
@@ -228,4 +228,4 @@ void md_mgf1(uint8_t *mask, int mask_len, const uint8_t *in, int in_len);
 void md_hmac(uint8_t *mac, const uint8_t *in, int in_len, const uint8_t *key,
 		int key_len);
 
-#endif /* !RELIC_MD_H */
+#endif /* !RLC_MD_H */

@@ -51,8 +51,8 @@ void fp_inv_basic(fp_t c, const fp_t a) {
 	TRY {
 		bn_new(e);
 
-		e->used = FP_DIGS;
-		dv_copy(e->dp, fp_prime_get(), FP_DIGS);
+		e->used = RLC_FP_DIGS;
+		dv_copy(e->dp, fp_prime_get(), RLC_FP_DIGS);
 		bn_sub_dig(e, e, 2);
 
 		fp_exp(c, a, e);
@@ -91,8 +91,8 @@ void fp_inv_binar(fp_t c, const fp_t a) {
 
 		/* u = a, v = p, g1 = 1, g2 = 0. */
 		fp_prime_back(u, a);
-		p->used = FP_DIGS;
-		dv_copy(p->dp, fp_prime_get(), FP_DIGS);
+		p->used = RLC_FP_DIGS;
+		dv_copy(p->dp, fp_prime_get(), RLC_FP_DIGS);
 		bn_copy(v, p);
 		bn_set_dig(g1, 1);
 		bn_zero(g2);
@@ -134,7 +134,7 @@ void fp_inv_binar(fp_t c, const fp_t a) {
 				break;
 
 			/* If u > v then u = u - v, g1 = g1 - g2. */
-			if (bn_cmp(u, v) == CMP_GT) {
+			if (bn_cmp(u, v) == RLC_GT) {
 				bn_sub(u, u, v);
 				bn_sub(g1, g1, g2);
 			} else {
@@ -143,29 +143,29 @@ void fp_inv_binar(fp_t c, const fp_t a) {
 			}
 		}
 		/* If u == 1 then return g1; else return g2. */
-		if (bn_cmp_dig(u, 1) == CMP_EQ) {
-			while (bn_sign(g1) == BN_NEG) {
+		if (bn_cmp_dig(u, 1) == RLC_EQ) {
+			while (bn_sign(g1) == RLC_NEG) {
 				bn_add(g1, g1, p);
 			}
-			while (bn_cmp(g1, p) != CMP_LT) {
+			while (bn_cmp(g1, p) != RLC_LT) {
 				bn_sub(g1, g1, p);
 			}
 #if FP_RDC == MONTY
 			fp_prime_conv(c, g1);
 #else
-			dv_copy(c, g1->dp, FP_DIGS);
+			dv_copy(c, g1->dp, RLC_FP_DIGS);
 #endif
 		} else {
-			while (bn_sign(g2) == BN_NEG) {
+			while (bn_sign(g2) == RLC_NEG) {
 				bn_add(g2, g2, p);
 			}
-			while (bn_cmp(g2, p) != CMP_LT) {
+			while (bn_cmp(g2, p) != RLC_LT) {
 				bn_sub(g2, g2, p);
 			}
 #if FP_RDC == MONTY
 			fp_prime_conv(c, g2);
 #else
-			dv_copy(c, g2->dp, FP_DIGS);
+			dv_copy(c, g2->dp, RLC_FP_DIGS);
 #endif
 		}
 	}
@@ -218,13 +218,13 @@ void fp_inv_monty(fp_t c, const fp_t a) {
 		bn_zero(x2);
 
 #if FP_RDC != MONTY
-		bn_read_raw(_a, a, FP_DIGS);
-		bn_read_raw(_p, p, FP_DIGS);
+		bn_read_raw(_a, a, RLC_FP_DIGS);
+		bn_read_raw(_p, p, RLC_FP_DIGS);
 		bn_mod_monty_conv(u, _a, _p);
 #else
-		bn_read_raw(u, a, FP_DIGS);
+		bn_read_raw(u, a, RLC_FP_DIGS);
 #endif
-		bn_read_raw(v, p, FP_DIGS);
+		bn_read_raw(v, p, RLC_FP_DIGS);
 
 		while (!bn_is_zero(v)) {
 			/* If v is even then v = v/2, x1 = 2 * x1. */
@@ -238,7 +238,7 @@ void fp_inv_monty(fp_t c, const fp_t a) {
 					bn_dbl(x2, x2);
 					/* If v >= u,then v = (v - u)/2, x2 += x1, x1 = 2 * x1. */
 				} else {
-					if (bn_cmp(v, u) != CMP_LT) {
+					if (bn_cmp(v, u) != RLC_LT) {
 						fp_subn_low(v->dp, v->dp, u->dp);
 						fp_rsh1_low(v->dp, v->dp);
 						bn_add(x2, x2, x1);
@@ -258,27 +258,27 @@ void fp_inv_monty(fp_t c, const fp_t a) {
 		}
 
 		/* If x1 > p then x1 = x1 - p. */
-		for (i = x1->used; i < FP_DIGS; i++) {
+		for (i = x1->used; i < RLC_FP_DIGS; i++) {
 			x1->dp[i] = 0;
 		}
 
-		while (x1->used > FP_DIGS) {
-			carry = bn_subn_low(x1->dp, x1->dp, fp_prime_get(), FP_DIGS);
-			bn_sub1_low(x1->dp + FP_DIGS, x1->dp + FP_DIGS, carry,
-					x1->used - FP_DIGS);
+		while (x1->used > RLC_FP_DIGS) {
+			carry = bn_subn_low(x1->dp, x1->dp, fp_prime_get(), RLC_FP_DIGS);
+			bn_sub1_low(x1->dp + RLC_FP_DIGS, x1->dp + RLC_FP_DIGS, carry,
+					x1->used - RLC_FP_DIGS);
 			bn_trim(x1);
 		}
-		if (dv_cmp(x1->dp, fp_prime_get(), FP_DIGS) == CMP_GT) {
+		if (dv_cmp(x1->dp, fp_prime_get(), RLC_FP_DIGS) == RLC_GT) {
 			fp_subn_low(x1->dp, x1->dp, fp_prime_get());
 		}
 
-		dv_copy(x2->dp, fp_prime_get_conv(), FP_DIGS);
+		dv_copy(x2->dp, fp_prime_get_conv(), RLC_FP_DIGS);
 
 		/* If k < Wt then x1 = x1 * R^2 * R^{-1} mod p. */
-		if (k <= FP_DIGS * DIGIT) {
+		if (k <= RLC_FP_DIGS * RLC_DIG) {
 			flag = 1;
 			fp_mul(x1->dp, x1->dp, x2->dp);
-			k = k + FP_DIGS * DIGIT;
+			k = k + RLC_FP_DIGS * RLC_DIG;
 		}
 
 		/* x1 = x1 * R^2 * R^{-1} mod p. */
@@ -286,8 +286,8 @@ void fp_inv_monty(fp_t c, const fp_t a) {
 
 		/* c = x1 * 2^(2Wt - k) * R^{-1} mod p. */
 		fp_copy(c, x1->dp);
-		dv_zero(x1->dp, FP_DIGS);
-		bn_set_2b(x1, 2 * FP_DIGS * DIGIT - k);
+		dv_zero(x1->dp, RLC_FP_DIGS);
+		bn_set_2b(x1, 2 * RLC_FP_DIGS * RLC_DIG - k);
 		fp_mul(c, c, x1->dp);
 
 #if FP_RDC != MONTY
@@ -296,8 +296,8 @@ void fp_inv_monty(fp_t c, const fp_t a) {
 		 * a^{-1}R^3 mod p or a^{-1}R^4 mod p, depending on flag.
 		 * Hence we must reduce the result three or four times.
 		 */
-		_a->used = FP_DIGS;
-		dv_copy(_a->dp, c, FP_DIGS);
+		_a->used = RLC_FP_DIGS;
+		dv_copy(_a->dp, c, RLC_FP_DIGS);
 		bn_mod_monty_back(_a, _a, _p);
 		bn_mod_monty_back(_a, _a, _p);
 		bn_mod_monty_back(_a, _a, _p);
@@ -353,14 +353,14 @@ void fp_inv_exgcd(fp_t c, const fp_t a) {
 
 		/* u = a, v = p, g1 = 1, g2 = 0. */
 		fp_prime_back(u, a);
-		p->used = FP_DIGS;
-		dv_copy(p->dp, fp_prime_get(), FP_DIGS);
+		p->used = RLC_FP_DIGS;
+		dv_copy(p->dp, fp_prime_get(), RLC_FP_DIGS);
 		bn_copy(v, p);
 		bn_set_dig(g1, 1);
 		bn_zero(g2);
 
 		/* While (u != 1. */
-		while (bn_cmp_dig(u, 1) != CMP_EQ) {
+		while (bn_cmp_dig(u, 1) != RLC_EQ) {
 			/* q = [v/u], r = v mod u. */
 			bn_div_rem(q, r, v, u);
 			/* v = u, u = r. */
@@ -374,13 +374,13 @@ void fp_inv_exgcd(fp_t c, const fp_t a) {
 			bn_copy(g1, r);
 		}
 
-		if (bn_sign(g1) == BN_NEG) {
+		if (bn_sign(g1) == RLC_NEG) {
 			bn_add(g1, g1, p);
 		}
 #if FP_RDC == MONTY
 		fp_prime_conv(c, g1);
 #else
-		dv_copy(c, g1->dp, FP_DIGS);
+		dv_copy(c, g1->dp, RLC_FP_DIGS);
 #endif
 	}
 	CATCH_ANY {

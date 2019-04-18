@@ -43,11 +43,11 @@
 void fp_invn_low(dig_t *c, const dig_t *a) {
 	bn_st e;
 
-	bn_init(&e, FP_DIGS);
+	bn_init(&e, RLC_FP_DIGS);
 
-	e.used = FP_DIGS;
-	dv_copy(e.dp, fp_prime_get(), FP_DIGS);
-	bn_sub1_low(e.dp, e.dp, 2, FP_DIGS);
+	e.used = RLC_FP_DIGS;
+	dv_copy(e.dp, fp_prime_get(), RLC_FP_DIGS);
+	bn_sub1_low(e.dp, e.dp, 2, RLC_FP_DIGS);
 #if AUTO == ALLOC
 	fp_exp(c, a, &e);
 #else

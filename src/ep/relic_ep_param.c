@@ -480,17 +480,17 @@
  */
 #define ASSIGN(CURVE, FIELD)												\
 	fp_param_set(FIELD);													\
-	FETCH(str, CURVE##_A, sizeof(CURVE##_A));								\
+	RLC_GET(str, CURVE##_A, sizeof(CURVE##_A));								\
 	fp_read_str(a, str, strlen(str), 16);									\
-	FETCH(str, CURVE##_B, sizeof(CURVE##_B));								\
+	RLC_GET(str, CURVE##_B, sizeof(CURVE##_B));								\
 	fp_read_str(b, str, strlen(str), 16);									\
-	FETCH(str, CURVE##_X, sizeof(CURVE##_X));								\
+	RLC_GET(str, CURVE##_X, sizeof(CURVE##_X));								\
 	fp_read_str(g->x, str, strlen(str), 16);								\
-	FETCH(str, CURVE##_Y, sizeof(CURVE##_Y));								\
+	RLC_GET(str, CURVE##_Y, sizeof(CURVE##_Y));								\
 	fp_read_str(g->y, str, strlen(str), 16);								\
-	FETCH(str, CURVE##_R, sizeof(CURVE##_R));								\
+	RLC_GET(str, CURVE##_R, sizeof(CURVE##_R));								\
 	bn_read_str(r, str, strlen(str), 16);									\
-	FETCH(str, CURVE##_H, sizeof(CURVE##_H));								\
+	RLC_GET(str, CURVE##_H, sizeof(CURVE##_H));								\
 	bn_read_str(h, str, strlen(str), 16);									\
 
 /**
@@ -501,9 +501,9 @@
  */
 #define ASSIGNK(CURVE, FIELD)												\
 	ASSIGN(CURVE, FIELD);													\
-	FETCH(str, CURVE##_BETA, sizeof(CURVE##_BETA));							\
+	RLC_GET(str, CURVE##_BETA, sizeof(CURVE##_BETA));						\
 	fp_read_str(beta, str, strlen(str), 16);								\
-	FETCH(str, CURVE##_LAMB, sizeof(CURVE##_LAMB));							\
+	RLC_GET(str, CURVE##_LAMB, sizeof(CURVE##_LAMB));						\
 	bn_read_str(lamb, str, strlen(str), 16);								\
 
 /*============================================================================*/
@@ -516,7 +516,7 @@ int ep_param_get(void) {
 
 void ep_param_set(int param) {
 	int plain = 0, endom = 0, super = 0;
-	char str[2 * FP_BYTES + 2];
+	char str[2 * RLC_FP_BYTES + 2];
 	fp_t a, b, beta;
 	ep_t g;
 	bn_t r, h, lamb;
@@ -764,20 +764,20 @@ int ep_param_set_any(void) {
 	int r0, r1, r2;
 
 	r0 = ep_param_set_any_plain();
-	if (r0 == STS_ERR) {
+	if (r0 == RLC_ERR) {
 		r1 = ep_param_set_any_endom();
-		if (r1 == STS_ERR) {
+		if (r1 == RLC_ERR) {
 			r2 = ep_param_set_any_pairf();
-			if (r2 == STS_ERR) {
-				return STS_ERR;
+			if (r2 == RLC_ERR) {
+				return RLC_ERR;
 			}
 		}
 	}
-	return STS_OK;
+	return RLC_OK;
 }
 
 int ep_param_set_any_plain(void) {
-	int r = STS_OK;
+	int r = RLC_OK;
 #if defined(EP_PLAIN)
 #if FP_PRIME == 160
 	ep_param_set(SECG_P160);
@@ -806,16 +806,16 @@ int ep_param_set_any_plain(void) {
 #elif FP_PRIME == 521
 	ep_param_set(NIST_P521);
 #else
-	r = STS_ERR;
+	r = RLC_ERR;
 #endif
 #else
-	r = STS_ERR;
+	r = RLC_ERR;
 #endif
 	return r;
 }
 
 int ep_param_set_any_endom(void) {
-	int r = STS_OK;
+	int r = RLC_OK;
 #if defined(EP_ENDOM)
 #if FP_PRIME == 158
 	ep_param_set(BN_P158);
@@ -842,30 +842,30 @@ int ep_param_set_any_endom(void) {
 #elif FP_PRIME == 638
 	ep_param_set(B12_P638);
 #else
-	r = STS_ERR;
+	r = RLC_ERR;
 #endif
 #else
-	r = STS_ERR;
+	r = RLC_ERR;
 #endif
 	return r;
 }
 
 int ep_param_set_any_super(void) {
-	int r = STS_OK;
+	int r = RLC_OK;
 #if defined(EP_SUPER)
 #if FP_PRIME == 1536
 	ep_param_set(SS_P1536);
 #else
-	r = STS_ERR;
+	r = RLC_ERR;
 #endif
 #else
-	r = STS_ERR;
+	r = RLC_ERR;
 #endif
 	return r;
 }
 
 int ep_param_set_any_pairf(void) {
-	int type = 0, degree = 0, r = STS_OK;
+	int type = 0, degree = 0, r = RLC_OK;
 #if defined(EP_ENDOM)
 #if FP_PRIME == 158
 	ep_param_set(BN_P158);
@@ -907,13 +907,13 @@ int ep_param_set_any_pairf(void) {
 	ep_param_set(SS_P1536);
 	degree = 0;
 #else
-	r = STS_ERR;
+	r = RLC_ERR;
 #endif
 #else
-	r = STS_ERR;
+	r = RLC_ERR;
 #endif
 #ifdef WITH_PP
-	if (r == STS_OK) {
+	if (r == RLC_OK) {
 		if (degree == 0) {
 			ep2_curve_set_twist(0);
 		}
@@ -921,7 +921,7 @@ int ep_param_set_any_pairf(void) {
 			ep2_curve_set_twist(type);
 		}
 		if (degree == 3 || degree == 4) {
-			r = STS_ERR;
+			r = RLC_ERR;
 		}
 	}
 #else

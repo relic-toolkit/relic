@@ -67,11 +67,11 @@ dig_t fb_lshb_low(dig_t *c, const dig_t *a, int bits) {
 		return fb_lsh1_low(c, a);
 
 	/* Prepare the bit mask. */
-	shift = DIGIT - bits;
+	shift = RLC_DIG - bits;
 	carry = 0;
-	for (i = 0; i < FB_DIGS; i++, a++, c++) {
+	for (i = 0; i < RLC_FB_DIGS; i++, a++, c++) {
 		/* Get the needed least significant bits. */
-		r = ((*a) >> shift) & MASK(bits);
+		r = ((*a) >> shift) & RLC_MASK(bits);
 		/* Shift left the operand. */
 		*c = ((*a) << bits) | carry;
 		/* Update the carry. */
@@ -85,10 +85,10 @@ void fb_lshd_low(dig_t *c, const dig_t *a, int digits) {
 	const dig_t *bot;
 	int i;
 
-	top = c + FB_DIGS + digits - 1;
-	bot = a + FB_DIGS - 1;
+	top = c + RLC_FB_DIGS + digits - 1;
+	bot = a + RLC_FB_DIGS - 1;
 
-	for (i = 0; i < FB_DIGS; i++, top--, bot--) {
+	for (i = 0; i < RLC_FB_DIGS; i++, top--, bot--) {
 		*top = *bot;
 	}
 	for (i = 0; i < digits; i++, c++) {
@@ -103,13 +103,13 @@ dig_t fb_rshb_low(dig_t *c, const dig_t *a, int bits) {
 	if (bits == 1)
 		return fb_rsh1_low(c, a);
 
-	c += FB_DIGS - 1;
-	a += FB_DIGS - 1;
+	c += RLC_FB_DIGS - 1;
+	a += RLC_FB_DIGS - 1;
 	/* Prepare the bit mask. */
 	mask = ((dig_t)1 << (dig_t)bits) - 1;
-	shift = DIGIT - bits;
+	shift = RLC_DIG - bits;
 	carry = 0;
-	for (i = FB_DIGS - 1; i >= 0; i--, a--, c--) {
+	for (i = RLC_FB_DIGS - 1; i >= 0; i--, a--, c--) {
 		/* Get the needed least significant bits. */
 		r = (*a) & mask;
 		/* Shift left the operand. */
@@ -128,10 +128,10 @@ void fb_rshd_low(dig_t *c, const dig_t *a, int digits) {
 	top = a + digits;
 	bot = c;
 
-	for (i = 0; i < FB_DIGS - digits; i++, top++, bot++) {
+	for (i = 0; i < RLC_FB_DIGS - digits; i++, top++, bot++) {
 		*bot = *top;
 	}
-	for (; i < FB_DIGS; i++, bot++) {
+	for (; i < RLC_FB_DIGS; i++, bot++) {
 		*bot = 0;
 	}
 }
@@ -154,7 +154,7 @@ dig_t fb_lsha_low(dig_t *c, const dig_t *a, int bits, int size) {
 	if (bits == 7)
 		return fb_lsha7_low(c, a, size);
 
-	for (int i = 0; i < FB_DIGS; i++, c++, a++)
+	for (int i = 0; i < RLC_FB_DIGS; i++, c++, a++)
 		(*c) ^= (*a);
 	return 0;
 }
@@ -165,11 +165,11 @@ dig_t fb_lsha_low(dig_t *c, const dig_t *a, int bits, int size) {
 	int i, j;
 	dig_t b1, b2;
 
-	j = DIGIT - bits;
+	j = RLC_DIG - bits;
 	b1 = a[0];
 	c[0] ^= (b1 << bits);
-	if (size == FB_DIGS) {
-		for (i = 1; i < FB_DIGS; i++) {
+	if (size == RLC_FB_DIGS) {
+		for (i = 1; i < RLC_FB_DIGS; i++) {
 			b2 = a[i];
 			c[i] ^= ((b2 << bits) | (b1 >> j));
 			b1 = b2;

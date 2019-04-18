@@ -87,7 +87,7 @@ void fb_muln_low(dig_t *c, const dig_t *a, const dig_t *b) {
 
 void fb_mulm_low(dig_t *c, const dig_t *a, const dig_t *b) {
 	__m128i ma0, ma1, mb0, mb1, m0, m1, m2, m3, m4, m5, t0, t1, t2, t3;
-	relic_align dig_t t[2*FB_DIGS];
+	rlc_align dig_t t[2*RLC_FB_DIGS];
 
 	ma0 = _mm_load_si128((__m128i *)a);
 	mb0 = _mm_load_si128((__m128i *)b);
@@ -226,7 +226,7 @@ void fb_mulm_low(dig_t *c, const dig_t *a, const dig_t *b) {
 	m1 = XOR(m1, m4);
 	m2 = XOR(m2, m5);
 
-	relic_align dig_t _x[2];
+	rlc_align dig_t _x[2];
 
 	REDUCE();
 	_mm_store_si128((__m128i *) c + 0, m0);

@@ -38,14 +38,14 @@
 /*============================================================================*/
 
 void fp3_sqrn_low(dv3_t c, fp3_t a) {
-	dig_t t0[2 * FP_DIGS], t1[2 * FP_DIGS], t2[2 * FP_DIGS];
-	dig_t t3[2 * FP_DIGS], t4[2 * FP_DIGS], t5[2 * FP_DIGS];
+	dig_t t0[2 * RLC_FP_DIGS], t1[2 * RLC_FP_DIGS], t2[2 * RLC_FP_DIGS];
+	dig_t t3[2 * RLC_FP_DIGS], t4[2 * RLC_FP_DIGS], t5[2 * RLC_FP_DIGS];
 
 	/* t0 = a_0^2. */
 	fp_sqrn_low(t0, a[0]);
 
 	/* t1 = 2 * a_1 * a_2. */
-#ifdef FP_SPACE
+#ifdef RLC_FP_ROOM
 	fp_dbln_low(t2, a[1]);
 #else
 	fp_dblm_low(t2, a[1]);
@@ -57,7 +57,7 @@ void fp3_sqrn_low(dv3_t c, fp3_t a) {
 	fp_sqrn_low(t2, a[2]);
 
 	/* t3 = (a_0 + a_2 + a_1)^2, t4 = (a_0 + a_2 - a_1)^2. */
-#ifdef FP_SPACE
+#ifdef RLC_FP_ROOM
 	fp_addn_low(t3, a[0], a[2]);
 	fp_addn_low(t4, t3, a[1]);
 #else

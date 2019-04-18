@@ -65,7 +65,7 @@ fp_add1_low:
 	adc		r18, r20
 	st		z+, r18
 
-	ADD1_STEP 1, FP_DIGS - 1
+	ADD1_STEP 1, RLC_FP_DIGS - 1
 
 	clr		r24
 	adc		r24, r1
@@ -97,7 +97,7 @@ fp_addn_low:
 	adc		r18, r19
 	st		z+, r18
 
-	ADDN_STEP 1, FP_DIGS - 1
+	ADDN_STEP 1, RLC_FP_DIGS - 1
 
 	clr		r24
 	adc		r24, r1
@@ -126,7 +126,7 @@ fp_sub1_low:
 	sbc		r18, r20
 	st		z+, r18
 
-	SUB1_STEP 1, FP_DIGS - 1
+	SUB1_STEP 1, RLC_FP_DIGS - 1
 
 	clr		r24
 	adc		r24, r1
@@ -158,7 +158,7 @@ fp_subn_low:
 	sbc		r18, r19
 	st		z+, r18
 
-	SUBN_STEP 1, FP_DIGS - 1
+	SUBN_STEP 1, RLC_FP_DIGS - 1
 
 	clr		r24
 	adc		r24, r1

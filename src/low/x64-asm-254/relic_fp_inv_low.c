@@ -54,7 +54,7 @@ void fp_invn_low(dig_t *c, const dig_t *a) {
 
 		/* u = a, v = p, x1 = 1, x2 = 0, k = 0. */
 		k = fp_invn_asm(x1, a, c);
-		if (k > FP_DIGS * DIGIT) {
+		if (k > RLC_FP_DIGS * RLC_DIG) {
 			t[0] = t[1] = t[2] = t[3] = 0;
 			k = 512 - k;
 			j = k % 64;

@@ -32,8 +32,8 @@ cat << PREAMBLE
  * @ingroup core
  */
 
-#ifndef RELIC_LABEL_H
-#define RELIC_LABEL_H
+#ifndef RLC_LABEL_H
+#define RLC_LABEL_H
 
 #include "relic_conf.h"
 
@@ -191,4 +191,4 @@ REDEF cp
 
 echo "#endif /* LABEL */"
 echo
-echo "#endif /* !RELIC_LABEL_H */"
+echo "#endif /* !RLC_LABEL_H */"

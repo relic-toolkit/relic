@@ -39,7 +39,7 @@
 
 static void rsa(void) {
 	rsa_t pub, prv;
-	uint8_t in[10], new[10], h[MD_LEN], out[RELIC_BN_BITS / 8 + 1];
+	uint8_t in[10], new[10], h[MD_LEN], out[RLC_BN_BITS / 8 + 1];
 	int out_len, new_len;
 
 	rsa_null(pub);
@@ -48,10 +48,10 @@ static void rsa(void) {
 	rsa_new(pub);
 	rsa_new(prv);
 
-	BENCH_ONCE("cp_rsa_gen", cp_rsa_gen(pub, prv, RELIC_BN_BITS));
+	BENCH_ONCE("cp_rsa_gen", cp_rsa_gen(pub, prv, RLC_BN_BITS));
 
 	BENCH_BEGIN("cp_rsa_enc") {
-		out_len = RELIC_BN_BITS / 8 + 1;
+		out_len = RLC_BN_BITS / 8 + 1;
 		new_len = out_len;
 		rand_bytes(in, sizeof(in));
 		BENCH_ADD(cp_rsa_enc(out, &out_len, in, sizeof(in), pub));
@@ -59,7 +59,7 @@ static void rsa(void) {
 	} BENCH_END;
 
 	BENCH_BEGIN("cp_rsa_dec") {
-		out_len = RELIC_BN_BITS / 8 + 1;
+		out_len = RLC_BN_BITS / 8 + 1;
 		new_len = out_len;
 		rand_bytes(in, sizeof(in));
 		cp_rsa_enc(out, &out_len, in, sizeof(in), pub);
@@ -67,10 +67,10 @@ static void rsa(void) {
 	} BENCH_END;
 
 #if CP_RSA == BASIC || !defined(STRIP)
-	BENCH_ONCE("cp_rsa_gen_basic", cp_rsa_gen_basic(pub, prv, RELIC_BN_BITS));
+	BENCH_ONCE("cp_rsa_gen_basic", cp_rsa_gen_basic(pub, prv, RLC_BN_BITS));
 
 	BENCH_BEGIN("cp_rsa_dec_basic") {
-		out_len = RELIC_BN_BITS / 8 + 1;
+		out_len = RLC_BN_BITS / 8 + 1;
 		new_len =out_len;
 		rand_bytes(in, sizeof(in));
 		cp_rsa_enc(out, &out_len, in, sizeof(in), pub);
@@ -79,10 +79,10 @@ static void rsa(void) {
 #endif
 
 #if CP_RSA == QUICK || !defined(STRIP)
-	BENCH_ONCE("cp_rsa_gen_quick", cp_rsa_gen_quick(pub, prv, RELIC_BN_BITS));
+	BENCH_ONCE("cp_rsa_gen_quick", cp_rsa_gen_quick(pub, prv, RLC_BN_BITS));
 
 	BENCH_BEGIN("cp_rsa_dec_quick") {
-		out_len = RELIC_BN_BITS / 8 + 1;
+		out_len = RLC_BN_BITS / 8 + 1;
 		new_len =out_len;
 		rand_bytes(in, sizeof(in));
 		cp_rsa_enc(out, &out_len, in, sizeof(in), pub);
@@ -90,17 +90,17 @@ static void rsa(void) {
 	} BENCH_END;
 #endif
 
-	BENCH_ONCE("cp_rsa_gen", cp_rsa_gen(pub, prv, RELIC_BN_BITS));
+	BENCH_ONCE("cp_rsa_gen", cp_rsa_gen(pub, prv, RLC_BN_BITS));
 
 	BENCH_BEGIN("cp_rsa_sig (h = 0)") {
-		out_len = RELIC_BN_BITS / 8 + 1;
+		out_len = RLC_BN_BITS / 8 + 1;
 		new_len = out_len;
 		rand_bytes(in, sizeof(in));
 		BENCH_ADD(cp_rsa_sig(out, &out_len, in, sizeof(in), 0, prv));
 	} BENCH_END;
 
 	BENCH_BEGIN("cp_rsa_sig (h = 1)") {
-		out_len = RELIC_BN_BITS / 8 + 1;
+		out_len = RLC_BN_BITS / 8 + 1;
 		new_len = out_len;
 		rand_bytes(in, sizeof(in));
 		md_map(h, in, sizeof(in));
@@ -108,7 +108,7 @@ static void rsa(void) {
 	} BENCH_END;
 
 	BENCH_BEGIN("cp_rsa_ver (h = 0)") {
-		out_len = RELIC_BN_BITS / 8 + 1;
+		out_len = RLC_BN_BITS / 8 + 1;
 		new_len = out_len;
 		rand_bytes(in, sizeof(in));
 		cp_rsa_sig(out, &out_len, in, sizeof(in), 0, prv);
@@ -116,7 +116,7 @@ static void rsa(void) {
 	} BENCH_END;
 
 	BENCH_BEGIN("cp_rsa_ver (h = 1)") {
-		out_len = RELIC_BN_BITS / 8 + 1;
+		out_len = RLC_BN_BITS / 8 + 1;
 		new_len = out_len;
 		rand_bytes(in, sizeof(in));
 		md_map(h, in, sizeof(in));
@@ -125,17 +125,17 @@ static void rsa(void) {
 	} BENCH_END;
 
 #if CP_RSA == BASIC || !defined(STRIP)
-	BENCH_ONCE("cp_rsa_gen_basic", cp_rsa_gen_basic(pub, prv, RELIC_BN_BITS));
+	BENCH_ONCE("cp_rsa_gen_basic", cp_rsa_gen_basic(pub, prv, RLC_BN_BITS));
 
 	BENCH_BEGIN("cp_rsa_sig_basic (h = 0)") {
-		out_len = RELIC_BN_BITS / 8 + 1;
+		out_len = RLC_BN_BITS / 8 + 1;
 		new_len = out_len;
 		rand_bytes(in, sizeof(in));
 		BENCH_ADD(cp_rsa_sig_basic(out, &out_len, in, sizeof(in), 0, prv));
 	} BENCH_END;
 
 	BENCH_BEGIN("cp_rsa_sig_basic (h = 1)") {
-		out_len = RELIC_BN_BITS / 8 + 1;
+		out_len = RLC_BN_BITS / 8 + 1;
 		new_len = out_len;
 		rand_bytes(in, sizeof(in));
 		md_map(h, in, sizeof(in));
@@ -144,17 +144,17 @@ static void rsa(void) {
 #endif
 
 #if CP_RSA == QUICK || !defined(STRIP)
-	BENCH_ONCE("cp_rsa_gen_quick", cp_rsa_gen_quick(pub, prv, RELIC_BN_BITS));
+	BENCH_ONCE("cp_rsa_gen_quick", cp_rsa_gen_quick(pub, prv, RLC_BN_BITS));
 
 	BENCH_BEGIN("cp_rsa_sig_quick (h = 0)") {
-		out_len = RELIC_BN_BITS / 8 + 1;
+		out_len = RLC_BN_BITS / 8 + 1;
 		new_len = out_len;
 		rand_bytes(in, sizeof(in));
 		BENCH_ADD(cp_rsa_sig_quick(out, &out_len, in, sizeof(in), 0, prv));
 	} BENCH_END;
 
 	BENCH_BEGIN("cp_rsa_sig_quick (h = 1)") {
-		out_len = RELIC_BN_BITS / 8 + 1;
+		out_len = RLC_BN_BITS / 8 + 1;
 		new_len = out_len;
 		rand_bytes(in, sizeof(in));
 		md_map(h, in, sizeof(in));
@@ -168,7 +168,7 @@ static void rsa(void) {
 
 static void rabin(void) {
 	rabin_t pub, prv;
-	uint8_t in[1000], new[1000], out[RELIC_BN_BITS / 8 + 1];
+	uint8_t in[1000], new[1000], out[RLC_BN_BITS / 8 + 1];
 	int in_len, out_len, new_len;
 
 	rabin_null(pub);
@@ -177,11 +177,11 @@ static void rabin(void) {
 	rabin_new(pub);
 	rabin_new(prv);
 
-	BENCH_ONCE("cp_rabin_gen", cp_rabin_gen(pub, prv, RELIC_BN_BITS));
+	BENCH_ONCE("cp_rabin_gen", cp_rabin_gen(pub, prv, RLC_BN_BITS));
 
 	BENCH_BEGIN("cp_rabin_enc") {
 		in_len = bn_size_bin(pub->n) - 9;
-		out_len = RELIC_BN_BITS / 8 + 1;
+		out_len = RLC_BN_BITS / 8 + 1;
 		rand_bytes(in, in_len);
 		BENCH_ADD(cp_rabin_enc(out, &out_len, in, in_len, pub));
 		cp_rabin_dec(new, &new_len, out, out_len, prv);
@@ -190,7 +190,7 @@ static void rabin(void) {
 	BENCH_BEGIN("cp_rabin_dec") {
 		in_len = bn_size_bin(pub->n) - 9;
 		new_len = in_len;
-		out_len = RELIC_BN_BITS / 8 + 1;
+		out_len = RLC_BN_BITS / 8 + 1;
 		rand_bytes(in, in_len);
 		cp_rabin_enc(out, &out_len, in, in_len, pub);
 		BENCH_ADD(cp_rabin_dec(new, &new_len, out, out_len, prv));
@@ -203,7 +203,7 @@ static void rabin(void) {
 static void benaloh(void) {
 	bdpe_t pub, prv;
 	dig_t in, new;
-	uint8_t out[RELIC_BN_BITS / 8 + 1];
+	uint8_t out[RLC_BN_BITS / 8 + 1];
 	int out_len;
 
 	bdpe_null(pub);
@@ -212,10 +212,10 @@ static void benaloh(void) {
 	bdpe_new(pub);
 	bdpe_new(prv);
 
-	BENCH_ONCE("cp_bdpe_gen", cp_bdpe_gen(pub, prv, bn_get_prime(47), RELIC_BN_BITS));
+	BENCH_ONCE("cp_bdpe_gen", cp_bdpe_gen(pub, prv, bn_get_prime(47), RLC_BN_BITS));
 
 	BENCH_BEGIN("cp_bdpe_enc") {
-		out_len = RELIC_BN_BITS / 8 + 1;
+		out_len = RLC_BN_BITS / 8 + 1;
 		rand_bytes(out, 1);
 		in = out[0] % bn_get_prime(47);
 		BENCH_ADD(cp_bdpe_enc(out, &out_len, in, pub));
@@ -223,7 +223,7 @@ static void benaloh(void) {
 	} BENCH_END;
 
 	BENCH_BEGIN("cp_bdpe_dec") {
-		out_len = RELIC_BN_BITS / 8 + 1;
+		out_len = RLC_BN_BITS / 8 + 1;
 		rand_bytes(out, 1);
 		in = out[0] % bn_get_prime(47);
 		cp_bdpe_enc(out, &out_len, in, pub);
@@ -236,7 +236,7 @@ static void benaloh(void) {
 
 static void paillier(void) {
 	bn_t n, l;
-	uint8_t in[1000], new[1000], out[RELIC_BN_BITS / 8 + 1];
+	uint8_t in[1000], new[1000], out[RLC_BN_BITS / 8 + 1];
 	int in_len, out_len;
 
 	bn_null(n);
@@ -245,11 +245,11 @@ static void paillier(void) {
 	bn_new(n);
 	bn_new(l);
 
-	BENCH_ONCE("cp_phpe_gen", cp_phpe_gen(n, l, RELIC_BN_BITS / 2));
+	BENCH_ONCE("cp_phpe_gen", cp_phpe_gen(n, l, RLC_BN_BITS / 2));
 
 	BENCH_BEGIN("cp_phpe_enc") {
 		in_len = bn_size_bin(n);
-		out_len = RELIC_BN_BITS / 8 + 1;
+		out_len = RLC_BN_BITS / 8 + 1;
 		memset(in, 0, sizeof(in));
 		rand_bytes(in + 1, in_len - 1);
 		BENCH_ADD(cp_phpe_enc(out, &out_len, in, in_len, n));
@@ -258,7 +258,7 @@ static void paillier(void) {
 
 	BENCH_BEGIN("cp_phpe_dec") {
 		in_len = bn_size_bin(n);
-		out_len = RELIC_BN_BITS / 8 + 1;
+		out_len = RLC_BN_BITS / 8 + 1;
 		memset(in, 0, sizeof(in));
 		rand_bytes(in + 1, in_len - 1);
 		cp_phpe_enc(out, &out_len, in, in_len, n);
@@ -567,7 +567,7 @@ static void ibe(void) {
 	bn_t s;
 	g1_t pub;
 	g2_t prv;
-	uint8_t in[10], out[10 + 2 * FP_BYTES + 1];
+	uint8_t in[10], out[10 + 2 * RLC_FP_BYTES + 1];
 	char id[5] = { 'A', 'l', 'i', 'c', 'e' };
 	int in_len, out_len;
 
@@ -593,7 +593,7 @@ static void ibe(void) {
 
 	BENCH_BEGIN("cp_ibe_enc") {
 		in_len = sizeof(in);
-		out_len = in_len + 2 * FP_BYTES + 1;
+		out_len = in_len + 2 * RLC_FP_BYTES + 1;
 		rand_bytes(in, sizeof(in));
 		BENCH_ADD(cp_ibe_enc(out, &out_len, in, in_len, id, sizeof(id), pub));
 		cp_ibe_dec(out, &out_len, out, out_len, prv);
@@ -602,7 +602,7 @@ static void ibe(void) {
 
 	BENCH_BEGIN("cp_ibe_dec") {
 		in_len = sizeof(in);
-		out_len = in_len + 2 * FP_BYTES + 1;
+		out_len = in_len + 2 * RLC_FP_BYTES + 1;
 		rand_bytes(in, sizeof(in));
 		cp_ibe_enc(out, &out_len, in, in_len, id, sizeof(id), pub);
 		BENCH_ADD(cp_ibe_dec(out, &out_len, out, out_len, prv));
@@ -772,7 +772,7 @@ static void bbs(void) {
 }
 
 static int cls(void) {
-	int i, code = STS_ERR;
+	int i, code = RLC_ERR;
 	bn_t r, t, u, v, _v[4];
 	g1_t a, A, b, B, c, _A[4], _B[4];
 	g2_t x, y, z, _z[4];
@@ -834,7 +834,7 @@ static int cls(void) {
 		BENCH_ADD(cp_cli_gen(t, u, v, x, y, z));
 	} BENCH_END;
 
-	bn_rand(r, BN_POS, 2 * pc_param_level());
+	bn_rand(r, RLC_POS, 2 * pc_param_level());
 	BENCH_BEGIN("cp_cli_sig") {
 		BENCH_ADD(cp_cli_sig(a, A, b, B, c, m, sizeof(m), r, t, u, v));
 	} BENCH_END;
@@ -877,7 +877,7 @@ static int cls(void) {
 }
 
 static int pss(void) {
-	int i, code = STS_ERR;
+	int i, code = RLC_ERR;
 	bn_t u, v, _v[5];
 	g1_t a, b;
 	g2_t g, x, y, _y[5];
@@ -999,7 +999,7 @@ static void zss(void) {
 #endif
 
 int main(void) {
-	if (core_init() != STS_OK) {
+	if (core_init() != RLC_OK) {
 		core_clean();
 		return 1;
 	}
@@ -1018,7 +1018,7 @@ int main(void) {
 
 #if defined(WITH_EC)
 	util_banner("Protocols based on elliptic curves:\n", 0);
-	if (ec_param_set_any() == STS_OK) {
+	if (ec_param_set_any() == RLC_OK) {
 		ecdh();
 		ecmqv();
 		ecies();
@@ -1032,7 +1032,7 @@ int main(void) {
 
 #if defined(WITH_PC)
 	util_banner("Protocols based on pairings:\n", 0);
-	if (pc_param_set_any() == STS_OK) {
+	if (pc_param_set_any() == RLC_OK) {
 		sokaka();
 		ibe();
 		bgn();

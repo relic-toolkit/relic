@@ -46,6 +46,29 @@
 #include "relic_pp.h"
 
 /*============================================================================*/
+/* Private definitions                                                        */
+/*============================================================================*/
+
+/** Error message respective to ERR_NO_MEMORY. */
+#define MSG_NO_MEMORY 		"not enough memory"
+/** Error message respective to ERR_PRECISION. */
+#define MSG_NO_PRECI 		"insufficient precision"
+/** Error message respective to ERR_NO FILE. */
+#define MSG_NO_FILE			"file not found"
+/** Error message respective to ERR_NO_READ. */
+#define MSG_NO_READ			"can't read bytes from file"
+/** Error message respective to ERR_NO_VALID. */
+#define MSG_NO_VALID		"invalid value passed as input"
+/** Error message respective to ERR_NO_BUFFER. */
+#define MSG_NO_BUFFER		"insufficient buffer capacity"
+/** Error message respective to ERR_NO_FIELD. */
+#define MSG_NO_FIELD		"no finite field supported at this security level"
+/** Error message respective to ERR_NO_CURVE. */
+#define MSG_NO_CURVE		"no curve supported at this security level"
+/** Error message respective to ERR_NO_CONFIG. */
+#define MSG_NO_CONFIG		"invalid library configuration"
+
+/*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
@@ -98,7 +121,7 @@ int core_init(void) {
 	core_ctx->over = 0;
 #endif
 
-	core_ctx->code = STS_OK;
+	core_ctx->code = RLC_OK;
 
 	TRY {
 		arch_init();
@@ -126,10 +149,10 @@ int core_init(void) {
 #endif
 	}
 	CATCH_ANY {
-		return STS_ERR;
+		return RLC_ERR;
 	}
 
-	return STS_OK;
+	return RLC_OK;
 }
 
 int core_clean(void) {
@@ -157,7 +180,7 @@ int core_clean(void) {
 #endif
 	arch_clean();
 	core_ctx = NULL;
-	return STS_OK;
+	return RLC_OK;
 }
 
 ctx_t *core_get(void) {

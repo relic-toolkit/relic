@@ -32,8 +32,8 @@
  * @ingroup fb
  */
 
-#ifndef RELIC_FB_LOW_H
-#define RELIC_FB_LOW_H
+#ifndef RLC_FB_LOW_H
+#define RLC_FB_LOW_H
 
 /*============================================================================*/
 /* Constant definitions                                                       */
@@ -43,11 +43,11 @@
 
 #include "relic_conf.h"
 
-#undef FB_DIGS
+#undef RLC_FB_DIGS
 #if (FB_POLYN % WSIZE) > 0
-#define FB_DIGS	(FB_POLYN/WSIZE + 1)
+#define RLC_FB_DIGS		(FB_POLYN/WSIZE + 1)
 #else
-#define FB_DIGS	(FB_POLYN/WSIZE)
+#define RLC_FB_DIGS		(FB_POLYN/WSIZE)
 #endif
 
 #else
@@ -98,7 +98,7 @@ dig_t fb_lsh1_low(dig_t *c, const dig_t *a);
 
 /**
  * Shifts a digit vector to the left by an amount smaller than a digit.
- * The shift amount must be bigger than 0 and smaller than DIGIT. Computes
+ * The shift amount must be bigger than 0 and smaller than RLC_DIG. Computes
  * c = a * z^bits.
  *
  * @param[out] c			- the result
@@ -110,7 +110,7 @@ dig_t fb_lshb_low(dig_t *c, const dig_t *a, int bits);
 
 /**
  * Shifts a digit vector to the left by some digits.
- * Computes c = a * z^(digits * DIGIT).
+ * Computes c = a * z^(digits * RLC_DIG).
  *
  * @param[out] c			- the result.
  * @param[in] a				- the multiple precision integer to shift.
@@ -129,7 +129,7 @@ dig_t fb_rsh1_low(dig_t *c, const dig_t *a);
 
 /**
  * Shifts a digit vector to the right by an amount smaller than a digit.
- * The shift amount must be bigger than 0 and smaller than DIGIT.
+ * The shift amount must be bigger than 0 and smaller than RLC_DIG.
  * Computes c = a / (z^bits).
  *
  * @param[out] c			- the result
@@ -141,7 +141,7 @@ dig_t fb_rshb_low(dig_t *c, const dig_t *a, int bits);
 
 /**
  * Shifts a digit vector to the right by some digits.
- * Computes c = a / z^(digits * DIGIT).
+ * Computes c = a / z^(digits * RLC_DIG).
  *
  * @param[out] c			- the result.
  * @param[in] a				- the multiple precision integer to shift.
@@ -287,4 +287,4 @@ void fb_invn_low(dig_t *c, const dig_t *a);
 
 #endif /* !ASM */
 
-#endif /* !RELIC_FB_LOW_H */
+#endif /* !RLC_FB_LOW_H */

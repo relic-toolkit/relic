@@ -37,7 +37,7 @@
 
 int cp_pss_gen(bn_t r, bn_t s, g2_t g, g2_t x, g2_t y) {
 	bn_t n;
-	int result = STS_OK;
+	int result = RLC_OK;
 
 	bn_null(n);
 
@@ -52,7 +52,7 @@ int cp_pss_gen(bn_t r, bn_t s, g2_t g, g2_t x, g2_t y) {
 		g2_mul(y, g, s);
 	}
 	CATCH_ANY {
-		result = STS_ERR;
+		result = RLC_ERR;
 	}
 	FINALLY {
 		bn_free(n);
@@ -62,7 +62,7 @@ int cp_pss_gen(bn_t r, bn_t s, g2_t g, g2_t x, g2_t y) {
 
 int cp_pss_sig(g1_t a, g1_t b, uint8_t *msg, int len, bn_t r, bn_t s) {
 	bn_t m, n;
-	int result = STS_OK;
+	int result = RLC_OK;
 
 	bn_null(m);
 	bn_null(n);
@@ -81,7 +81,7 @@ int cp_pss_sig(g1_t a, g1_t b, uint8_t *msg, int len, bn_t r, bn_t s) {
 		g1_mul(b, a, m);
 	}
 	CATCH_ANY {
-		result = STS_ERR;
+		result = RLC_ERR;
 	}
 	FINALLY {
 		bn_free(m);
@@ -151,7 +151,7 @@ int cp_pss_ver(g1_t a, g1_t b, uint8_t *msg, int len, g2_t g, g2_t x, g2_t y) {
 
 int cp_psb_gen(bn_t r, bn_t s[], g2_t g, g2_t x, g2_t y[], int l) {
 	bn_t n;
-	int i, result = STS_OK;
+	int i, result = RLC_OK;
 
 	bn_null(n);
 
@@ -168,7 +168,7 @@ int cp_psb_gen(bn_t r, bn_t s[], g2_t g, g2_t x, g2_t y[], int l) {
 		}
 	}
 	CATCH_ANY {
-		result = STS_ERR;
+		result = RLC_ERR;
 	}
 	FINALLY {
 		bn_free(n);
@@ -179,7 +179,7 @@ int cp_psb_gen(bn_t r, bn_t s[], g2_t g, g2_t x, g2_t y[], int l) {
 int cp_psb_sig(g1_t a, g1_t b, uint8_t *msgs[], int lens[], bn_t r, bn_t s[],
 		int l) {
 	bn_t m, n, t;
-	int i, result = STS_OK;
+	int i, result = RLC_OK;
 
 	bn_null(m);
 	bn_null(n);
@@ -206,7 +206,7 @@ int cp_psb_sig(g1_t a, g1_t b, uint8_t *msgs[], int lens[], bn_t r, bn_t s[],
 		g1_mul(b, a, t);
 	}
 	CATCH_ANY {
-		result = STS_ERR;
+		result = RLC_ERR;
 	}
 	FINALLY {
 		bn_free(m);

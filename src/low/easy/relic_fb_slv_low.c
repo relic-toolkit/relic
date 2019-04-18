@@ -48,33 +48,33 @@ static const dig_t table_odds[16] = {
 /*============================================================================*/
 
 void fb_slvn_low(dig_t *c, const dig_t *a) {
-	int i, j, k, b, d, v[FB_BITS];
+	int i, j, k, b, d, v[RLC_FB_BITS];
 	dig_t u, *p;
-	relic_align dig_t s[FB_DIGS], t[FB_DIGS];
+	rlc_align dig_t s[RLC_FB_DIGS], t[RLC_FB_DIGS];
 	dig_t mask;
 	const void *tab = fb_poly_get_slv();
 
-	dv_zero(s, FB_DIGS);
-	dv_copy(t, a, FB_DIGS);
+	dv_zero(s, RLC_FB_DIGS);
+	dv_copy(t, a, RLC_FB_DIGS);
 
-	for (i = (FB_BITS - 1)/2; i > 0; i--) {
+	for (i = (RLC_FB_BITS - 1)/2; i > 0; i--) {
 		if (fb_get_bit(t, i + i)) {
-			SPLIT(b, d, i, DIG_LOG);
+			RLC_RIP(b, d, i);
 			t[d] ^= ((dig_t)1 << b);
 			s[d] ^= ((dig_t)1 << b);
 		}
 	}
 
 	k = 0;
-	SPLIT(b, d, FB_BITS, DIG_LOG);
+	RLC_RIP(b, d, RLC_FB_BITS);
 	for (i = 0; i < d; i++) {
 		u = t[i];
-		for (j = 0; j < DIGIT / 8; j++) {
+		for (j = 0; j < RLC_DIG / 8; j++) {
 			v[k++] = table_odds[((u & 0x0A) + ((u & 0xA0) >> 5))];
 			u >>= 8;
 		}
 	}
-	mask = (b == DIGIT ? DMASK : MASK(b));
+	mask = (b == RLC_DIG ? RLC_DMASK : RLC_MASK(b));
 	u = t[d] & mask;
 	/* We ignore the first even bit if it is present. */
 	for (j = 1; j < b; j += 8) {

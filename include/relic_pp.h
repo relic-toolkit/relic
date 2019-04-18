@@ -34,8 +34,8 @@
  * @ingroup pp
  */
 
-#ifndef RELIC_PP_H
-#define RELIC_PP_H
+#ifndef RLC_PP_H
+#define RLC_PP_H
 
 #include "relic_fpx.h"
 #include "relic_epx.h"
@@ -555,4 +555,4 @@ void pp_map_oatep_k12(fp12_t r, ep_t p, ep2_t q);
  */
 void pp_map_sim_oatep_k12(fp12_t r, ep_t *p, ep2_t *q, int m);
 
-#endif /* !RELIC_PP_H */
+#endif /* !RLC_PP_H */

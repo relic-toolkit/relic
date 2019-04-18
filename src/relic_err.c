@@ -101,6 +101,6 @@ void err_get_msg(err_t *e, char **msg) {
 int err_get_code(void) {
 	ctx_t *ctx = core_get();
 	int r = ctx->code;
-	ctx->code = STS_OK;
+	ctx->code = RLC_OK;
 	return r;
 }

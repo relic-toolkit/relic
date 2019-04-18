@@ -37,7 +37,7 @@
 
 int cp_cls_gen(bn_t r, bn_t s, g2_t x, g2_t y) {
 	bn_t n;
-	int result = STS_OK;
+	int result = RLC_OK;
 
 	bn_null(n);
 
@@ -51,7 +51,7 @@ int cp_cls_gen(bn_t r, bn_t s, g2_t x, g2_t y) {
 		g2_mul_gen(y, s);
 	}
 	CATCH_ANY {
-		result = STS_ERR;
+		result = RLC_ERR;
 	}
 	FINALLY {
 		bn_free(n);
@@ -61,7 +61,7 @@ int cp_cls_gen(bn_t r, bn_t s, g2_t x, g2_t y) {
 
 int cp_cls_sig(g1_t a, g1_t b, g1_t c, uint8_t *msg, int len, bn_t r, bn_t s) {
 	bn_t m, n;
-	int result = STS_OK;
+	int result = RLC_OK;
 
 	bn_null(m);
 	bn_null(n);
@@ -86,7 +86,7 @@ int cp_cls_sig(g1_t a, g1_t b, g1_t c, uint8_t *msg, int len, bn_t r, bn_t s) {
 		g1_mul(c, a, m);
 	}
 	CATCH_ANY {
-		result = STS_ERR;
+		result = RLC_ERR;
 	}
 	FINALLY {
 		bn_free(m);
@@ -165,7 +165,7 @@ int cp_cls_ver(g1_t a, g1_t b, g1_t c, uint8_t *msg, int len, g2_t x, g2_t y) {
 
 int cp_cli_gen(bn_t t, bn_t u, bn_t v, g2_t x, g2_t y, g2_t z) {
 	bn_t n;
-	int result = STS_OK;
+	int result = RLC_OK;
 
 	bn_null(n);
 
@@ -181,7 +181,7 @@ int cp_cli_gen(bn_t t, bn_t u, bn_t v, g2_t x, g2_t y, g2_t z) {
 		g2_mul_gen(z, v);
 	}
 	CATCH_ANY {
-		result = STS_ERR;
+		result = RLC_ERR;
 	}
 	FINALLY {
 		bn_free(n);
@@ -192,7 +192,7 @@ int cp_cli_gen(bn_t t, bn_t u, bn_t v, g2_t x, g2_t y, g2_t z) {
 int cp_cli_sig(g1_t a, g1_t A, g1_t b, g1_t B, g1_t c, uint8_t *msg, int len,
 		bn_t r, bn_t t, bn_t u, bn_t v) {
 	bn_t m, n;
-	int result = STS_OK;
+	int result = RLC_OK;
 
 	bn_null(m);
 	bn_null(n);
@@ -228,7 +228,7 @@ int cp_cli_sig(g1_t a, g1_t A, g1_t b, g1_t B, g1_t c, uint8_t *msg, int len,
 		g1_mul(b, a, u);
 	}
 	CATCH_ANY {
-		result = STS_ERR;
+		result = RLC_ERR;
 	}
 	FINALLY {
 		bn_free(m);
@@ -327,7 +327,7 @@ int cp_cli_ver(g1_t a, g1_t A, g1_t b, g1_t B, g1_t c, uint8_t *msg, int len,
 
 int cp_clb_gen(bn_t t, bn_t u, bn_t v[], g2_t x, g2_t y, g2_t z[], int l) {
 	bn_t n;
-	int i, result = STS_OK;
+	int i, result = RLC_OK;
 
 	bn_null(n);
 
@@ -345,7 +345,7 @@ int cp_clb_gen(bn_t t, bn_t u, bn_t v[], g2_t x, g2_t y, g2_t z[], int l) {
 		}
 	}
 	CATCH_ANY {
-		result = STS_ERR;
+		result = RLC_ERR;
 	}
 	FINALLY {
 		bn_free(n);
@@ -356,7 +356,7 @@ int cp_clb_gen(bn_t t, bn_t u, bn_t v[], g2_t x, g2_t y, g2_t z[], int l) {
 int cp_clb_sig(g1_t a, g1_t A[], g1_t b, g1_t B[], g1_t c, uint8_t *msgs[],
 		int lens[], bn_t t, bn_t u, bn_t v[], int l) {
 	bn_t m, n;
-	int i, result = STS_OK;
+	int i, result = RLC_OK;
 
 	bn_null(m);
 	bn_null(n);
@@ -396,7 +396,7 @@ int cp_clb_sig(g1_t a, g1_t A[], g1_t b, g1_t B[], g1_t c, uint8_t *msgs[],
 		g1_mul(b, a, u);
 	}
 	CATCH_ANY {
-		result = STS_ERR;
+		result = RLC_ERR;
 	}
 	FINALLY {
 		bn_free(m);

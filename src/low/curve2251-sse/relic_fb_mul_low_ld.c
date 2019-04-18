@@ -49,25 +49,25 @@ void fb_mul1_low(dig_t *c, const dig_t *a, dig_t digit) {
 	dig_t b1, b2;
 
 	if (digit == 0) {
-		dv_zero(c, FB_DIGS + 1);
+		dv_zero(c, RLC_FB_DIGS + 1);
 		return;
 	}
 	if (digit == 1) {
 		fb_copy(c, a);
 		return;
 	}
-	c[FB_DIGS] = fb_lshb_low(c, a, util_bits_dig(digit) - 1);
+	c[RLC_FB_DIGS] = fb_lshb_low(c, a, util_bits_dig(digit) - 1);
 	for (int i = util_bits_dig(digit) - 2; i > 0; i--) {
 		if (digit & ((dig_t)1 << i)) {
-			j = DIGIT - i;
+			j = RLC_DIG - i;
 			b1 = a[0];
 			c[0] ^= (b1 << i);
-			for (k = 1; k < FB_DIGS; k++) {
+			for (k = 1; k < RLC_FB_DIGS; k++) {
 				b2 = a[k];
 				c[k] ^= ((b2 << i) | (b1 >> j));
 				b1 = b2;
 			}
-			c[FB_DIGS] ^= (b1 >> j);
+			c[RLC_FB_DIGS] ^= (b1 >> j);
 		}
 	}
 	if (digit & (dig_t)1) {
@@ -188,7 +188,7 @@ void fb_muln_low(dig_t *c, const dig_t *a, const dig_t *b) {
 void fb_mulm_low(dig_t *c, const dig_t *a, const dig_t *b) {
 	__m128i tab[16][8], tab1[16][8];
 	__m128i s0, m0, m1, m2, m3, m4, m8, m9;
-	align dig_t t[2*FB_DIGS];
+	align dig_t t[2*RLC_FB_DIGS];
 	char ta, tb;
 	int i, j, k;
 

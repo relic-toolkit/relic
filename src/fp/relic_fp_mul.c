@@ -192,10 +192,10 @@ void fp_mul_basic(fp_t c, const fp_t a, const fp_t b) {
 	TRY {
 		/* We need a temporary variable so that c can be a or b. */
 		dv_new(t);
-		dv_zero(t, 2 * FP_DIGS);
-		for (i = 0; i < FP_DIGS; i++) {
+		dv_zero(t, 2 * RLC_FP_DIGS);
+		for (i = 0; i < RLC_FP_DIGS; i++) {
 			carry = fp_mula_low(t + i, b, *(a + i));
-			*(t + i + FP_DIGS) = carry;
+			*(t + i + RLC_FP_DIGS) = carry;
 		}
 
 		fp_rdc(c, t);
@@ -255,10 +255,10 @@ void fp_mul_karat(fp_t c, const fp_t a, const fp_t b) {
 		/* We need a temporary variable so that c can be a or b. */
 		dv_new(t);
 
-		dv_zero(t, 2 * FP_DIGS);
+		dv_zero(t, 2 * RLC_FP_DIGS);
 
-		if (FP_DIGS > 1) {
-			fp_mul_karat_imp(t, a, b, FP_DIGS, FP_KARAT);
+		if (RLC_FP_DIGS > 1) {
+			fp_mul_karat_imp(t, a, b, RLC_FP_DIGS, FP_KARAT);
 		} else {
 			fp_muln_low(t, a, b);
 		}

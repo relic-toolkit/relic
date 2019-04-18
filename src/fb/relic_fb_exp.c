@@ -68,7 +68,7 @@ void fb_exp_basic(fb_t c, const fb_t a, const bn_t b) {
 			}
 		}
 
-		if (bn_sign(b) == BN_NEG) {
+		if (bn_sign(b) == RLC_NEG) {
 			fb_inv(c, r);
 		} else {
 			fb_copy(c, r);
@@ -89,7 +89,7 @@ void fb_exp_basic(fb_t c, const fb_t a, const bn_t b) {
 void fb_exp_slide(fb_t c, const fb_t a, const bn_t b) {
 	fb_t t[1 << (FB_WIDTH - 1)], r;
 	int i, j, l;
-	uint8_t win[FB_BITS + 1];
+	uint8_t win[RLC_FB_BITS + 1];
 
 	fb_null(r);
 
@@ -119,7 +119,7 @@ void fb_exp_slide(fb_t c, const fb_t a, const bn_t b) {
 		}
 
 		fb_set_dig(r, 1);
-		l = FB_BITS + 1;
+		l = RLC_FB_BITS + 1;
 		bn_rec_slw(win, &l, b, FB_WIDTH);
 		for (i = 0; i < l; i++) {
 			if (win[i] == 0) {
@@ -132,7 +132,7 @@ void fb_exp_slide(fb_t c, const fb_t a, const bn_t b) {
 			}
 		}
 
-		if (bn_sign(b) == BN_NEG) {
+		if (bn_sign(b) == RLC_NEG) {
 			fb_inv(c, r);
 		} else {
 			fb_copy(c, r);
@@ -173,13 +173,13 @@ void fb_exp_monty(fb_t c, const fb_t a, const bn_t b) {
 
 		for (int i = bn_bits(b) - 1; i >= 0; i--) {
 			int j = bn_get_bit(b, i);
-			dv_swap_cond(t[0], t[1], FB_DIGS, j ^ 1);
+			dv_swap_cond(t[0], t[1], RLC_FB_DIGS, j ^ 1);
 			fb_mul(t[0], t[0], t[1]);
 			fb_sqr(t[1], t[1]);
-			dv_swap_cond(t[0], t[1], FB_DIGS, j ^ 1);
+			dv_swap_cond(t[0], t[1], RLC_FB_DIGS, j ^ 1);
 		}
 
-		if (bn_sign(b) == BN_NEG) {
+		if (bn_sign(b) == RLC_NEG) {
 			fb_inv(c, t[0]);
 		} else {
 			fb_copy(c, t[0]);

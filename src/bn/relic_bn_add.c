@@ -107,14 +107,14 @@ void bn_add(bn_t c, const bn_t a, const bn_t b) {
 	if (sa == sb) {
 		/* If the signs are equal, copy the sign and add. */
 		c->sign = sa;
-		if (bn_cmp_abs(a, b) == CMP_LT) {
+		if (bn_cmp_abs(a, b) == RLC_LT) {
 			bn_add_imp(c, b, a);
 		} else {
 			bn_add_imp(c, a, b);
 		}
 	} else {
 		/* If the signs are different, subtract. */
-		if (bn_cmp_abs(a, b) == CMP_LT) {
+		if (bn_cmp_abs(a, b) == RLC_LT) {
 			c->sign = sb;
 			bn_sub_imp(c, b, a);
 		} else {
@@ -129,20 +129,20 @@ void bn_add_dig(bn_t c, const bn_t a, dig_t b) {
 
 	bn_grow(c, a->used);
 
-	if (a->sign == BN_POS) {
+	if (a->sign == RLC_POS) {
 		carry = bn_add1_low(c->dp, a->dp, b, a->used);
 		if (carry) {
 			bn_grow(c, a->used + 1);
 			c->dp[a->used] = carry;
 		}
 		c->used = a->used + carry;
-		c->sign = BN_POS;
+		c->sign = RLC_POS;
 	} else {
 		/* If a < 0 && |a| >= b, compute c = -(|a| - b). */
 		if (a->used > 1 || a->dp[0] >= b) {
 			carry = bn_sub1_low(c->dp, a->dp, b, a->used);
 			c->used = a->used;
-			c->sign = BN_NEG;
+			c->sign = RLC_NEG;
 		} else {
 			/* If a < 0 && |a| < b. */
 			if (a->used == 1) {
@@ -151,7 +151,7 @@ void bn_add_dig(bn_t c, const bn_t a, dig_t b) {
 				c->dp[0] = b;
 			}
 			c->used = 1;
-			c->sign = BN_POS;
+			c->sign = RLC_POS;
 		}
 	}
 	bn_trim(c);
@@ -167,18 +167,18 @@ void bn_sub(bn_t c, const bn_t a, const bn_t b) {
 		/* If the signs are different, copy the sign of the first number and
 		 * add. */
 		c->sign = sa;
-		if (bn_cmp_abs(a, b) == CMP_LT) {
+		if (bn_cmp_abs(a, b) == RLC_LT) {
 			bn_add_imp(c, b, a);
 		} else {
 			bn_add_imp(c, a, b);
 		}
 	} else {
 		/* If the signs are equal, adjust the sign and subtract. */
-		if (bn_cmp_abs(a, b) != CMP_LT) {
+		if (bn_cmp_abs(a, b) != RLC_LT) {
 			c->sign = sa;
 			bn_sub_imp(c, a, b);
 		} else {
-			c->sign = (sa == BN_POS) ? BN_NEG : BN_POS;
+			c->sign = (sa == RLC_POS) ? RLC_NEG : RLC_POS;
 			bn_sub_imp(c, b, a);
 		}
 	}
@@ -190,20 +190,20 @@ void bn_sub_dig(bn_t c, const bn_t a, dig_t b) {
 	bn_grow(c, a->used);
 
 	/* If a < 0, compute c = -(|a| + b). */
-	if (a->sign == BN_NEG) {
+	if (a->sign == RLC_NEG) {
 		carry = bn_add1_low(c->dp, a->dp, b, a->used);
 		if (carry) {
 			bn_grow(c, a->used + 1);
 			c->dp[a->used] = carry;
 		}
 		c->used = a->used + carry;
-		c->sign = BN_NEG;
+		c->sign = RLC_NEG;
 	} else {
 		/* If a > 0 && |a| >= b, compute c = (|a| - b). */
 		if (a->used > 1 || a->dp[0] >= b) {
 			carry = bn_sub1_low(c->dp, a->dp, b, a->used);
 			c->used = a->used;
-			c->sign = BN_POS;
+			c->sign = RLC_POS;
 		} else {
 			/* If a > 0 && a < b. */
 			if (a->used == 1) {
@@ -212,7 +212,7 @@ void bn_sub_dig(bn_t c, const bn_t a, dig_t b) {
 				c->dp[0] = b;
 			}
 			c->used = 1;
-			c->sign = BN_NEG;
+			c->sign = RLC_NEG;
 		}
 	}
 	bn_trim(c);

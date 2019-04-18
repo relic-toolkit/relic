@@ -41,67 +41,67 @@
 /*============================================================================*/
 
 void fp_rdcs_low(dig_t *c, const dig_t *a, const dig_t *m) {
-	relic_align dig_t q[2 * FP_DIGS], _q[2 * FP_DIGS];
-	relic_align dig_t _r[2 * FP_DIGS], r[2 * FP_DIGS], t[2 * FP_DIGS];
+	rlc_align dig_t q[2 * RLC_FP_DIGS], _q[2 * RLC_FP_DIGS];
+	rlc_align dig_t _r[2 * RLC_FP_DIGS], r[2 * RLC_FP_DIGS], t[2 * RLC_FP_DIGS];
 	const int *sform;
 	int len, first, i, j, b0, d0, b1, d1;
 	dig_t carry;
 
 	sform = fp_prime_get_sps(&len);
 
-	SPLIT(b0, d0, sform[len - 1], DIG_LOG);
+	RLC_RIP(b0, d0, sform[len - 1]);
 	first = (d0) + (b0 == 0 ? 0 : 1);
 
 	/* q = floor(a/b^k) */
-	dv_zero(q, 2 * FP_DIGS);
-	bn_rshd_low(q, a, 2 * FP_DIGS, d0);
+	dv_zero(q, 2 * RLC_FP_DIGS);
+	bn_rshd_low(q, a, 2 * RLC_FP_DIGS, d0);
 	if (b0 > 0) {
-		bn_rshb_low(q, q, 2 * FP_DIGS, b0);
+		bn_rshb_low(q, q, 2 * RLC_FP_DIGS, b0);
 	}
 
 	/* r = a - qb^k. */
 	dv_copy(r, a, first);
 	if (b0 > 0) {
-		r[first - 1] &= MASK(b0);
+		r[first - 1] &= RLC_MASK(b0);
 	}
 
 	carry = 0;
 	while (!fp_is_zero(q)) {
-		dv_zero(_q, 2 * FP_DIGS);
+		dv_zero(_q, 2 * RLC_FP_DIGS);
 		for (i = len - 2; i > 0; i--) {
 			j = (sform[i] < 0 ? -sform[i] : sform[i]);
-			SPLIT(b1, d1, j, DIG_LOG);
-			dv_zero(t, 2 * FP_DIGS);
-			bn_lshd_low(t, q, FP_DIGS, d1);
+			RLC_RIP(b1, d1, j);
+			dv_zero(t, 2 * RLC_FP_DIGS);
+			bn_lshd_low(t, q, RLC_FP_DIGS, d1);
 			if (b1 > 0) {
-				bn_lshb_low(t, t, 2 * FP_DIGS, b1);
+				bn_lshb_low(t, t, 2 * RLC_FP_DIGS, b1);
 			}
 			if (sform[i] > 0) {
-				bn_subn_low(_q, _q, t, 2 * FP_DIGS);
+				bn_subn_low(_q, _q, t, 2 * RLC_FP_DIGS);
 			} else {
-				bn_addn_low(_q, _q, t, 2 * FP_DIGS);
+				bn_addn_low(_q, _q, t, 2 * RLC_FP_DIGS);
 			}
 		}
 		if (sform[0] > 0) {
-			bn_subn_low(_q, _q, q, 2 * FP_DIGS);
+			bn_subn_low(_q, _q, q, 2 * RLC_FP_DIGS);
 		} else {
-			bn_addn_low(_q, _q, q, 2 * FP_DIGS);
+			bn_addn_low(_q, _q, q, 2 * RLC_FP_DIGS);
 		}
-		bn_rshd_low(q, _q, 2 * FP_DIGS, d0);
+		bn_rshd_low(q, _q, 2 * RLC_FP_DIGS, d0);
 		if (b0 > 0) {
-			bn_rshb_low(q, q, 2 * FP_DIGS, b0);
+			bn_rshb_low(q, q, 2 * RLC_FP_DIGS, b0);
 		}
 
 		dv_copy(_r, _q, first);
 		if (b0 > 0) {
-			_r[first - 1] &= MASK(b0);
+			_r[first - 1] &= RLC_MASK(b0);
 		}
 		carry = fp_addn_low(r, r, _r);
 		if (carry) {
 			fp_subn_low(r, r, m);
 		}
 	}
-	while (dv_cmp(r, m, FP_DIGS) != CMP_LT) {
+	while (dv_cmp(r, m, RLC_FP_DIGS) != RLC_LT) {
 		fp_subn_low(r, r, m);
 	}
 	fp_copy(c, r);
@@ -115,9 +115,9 @@ void fp_rdcn_low(dig_t *c, dig_t *a) {
 	u = *(fp_prime_get_rdc());
 	m = fp_prime_get();
 
-	for (i = 0; i < FP_DIGS; i++, a++) {
+	for (i = 0; i < RLC_FP_DIGS; i++, a++) {
 		r = (dig_t)(*a * u);
-		*a = mpn_addmul_1(a, m, FP_DIGS, r);
+		*a = mpn_addmul_1(a, m, RLC_FP_DIGS, r);
 	}
-	fp_addm_low(c, a, a - FP_DIGS);
+	fp_addm_low(c, a, a - RLC_FP_DIGS);
 }

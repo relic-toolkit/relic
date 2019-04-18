@@ -67,8 +67,8 @@ cdecl(fp2_rdcn_low):
 	leaq 	p0, %rbx
 
 	FP_RDCN_LOW %rdi, %r8, %r9, %r10, %rsi, %rbx
-	addq $(8*FP_DIGS), %rdi
-	addq $(8*DV_DIGS), %rsi
+	addq $(8*RLC_FP_DIGS), %rdi
+	addq $(8*), %rsi
 	FP_RDCN_LOW %rdi, %r8, %r9, %r10, %rsi, %rbx
 
 	pop		%rbp

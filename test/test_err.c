@@ -58,9 +58,9 @@ static void dummy2(void) {
 int main(void) {
 	err_t e;
 	char *msg = NULL;
-	int code = STS_ERR;
+	int code = RLC_ERR;
 
-	if (core_init() != STS_OK) {
+	if (core_init() != RLC_OK) {
 		core_clean();
 		return 1;
 	}
@@ -69,10 +69,10 @@ int main(void) {
 
 	TEST_ONCE("not using try-catch is correct") {
 		dummy();
-		if (err_get_code() == STS_ERR) {
+		if (err_get_code() == RLC_ERR) {
 			err_get_msg(&e, &msg);
 			TEST_ASSERT(msg == core_get()->reason[ERR_NO_MEMORY], end);
-			TEST_ASSERT(err_get_code() != STS_ERR, end);
+			TEST_ASSERT(err_get_code() != RLC_ERR, end);
 		}
 	} TEST_END;
 
@@ -93,10 +93,10 @@ int main(void) {
 
 	util_banner("All tests have passed.\n", 0);
 
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	core_clean();
-	if (code == STS_ERR)
+	if (code == RLC_ERR)
 		return 0;
 	else {
 		return 1;

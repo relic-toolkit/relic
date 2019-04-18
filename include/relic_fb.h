@@ -33,8 +33,8 @@
  * @ingroup fb
  */
 
-#ifndef RELIC_FB_H
-#define RELIC_FB_H
+#ifndef RLC_FB_H
+#define RLC_FB_H
 
 #include "relic_bn.h"
 #include "relic_dv.h"
@@ -48,17 +48,17 @@
 /**
  * Precision in bits of a binary field element.
  */
-#define FB_BITS 	((int)FB_POLYN)
+#define RLC_FB_BITS 	((int)FB_POLYN)
 
 /**
  * Size in digits of a block sufficient to store a binary field element.
  */
-#define FB_DIGS		((int)((FB_BITS)/(DIGIT) + (FB_BITS % DIGIT > 0)))
+#define RLC_FB_DIGS		((int)RLC_CEIL(RLC_FB_BITS, RLC_DIG))
 
 /**
  * Size in bytes of a block sufficient to store a binary field element.
  */
-#define FB_BYTES 	((int)((FB_BITS)/8 + (FB_BITS % 8 > 0)))
+#define RLC_FB_BYTES 	((int)RLC_CEIL(RLC_FB_BITS, 8))
 
 /**
  * Finite field identifiers.
@@ -124,31 +124,31 @@ enum {
  * Size of a precomputation table for repeated squaring/square-root using the
  * trivial approach.
  */
-#define RELIC_FB_TABLE_BASIC		(1)
+#define RLC_FB_TABLE_BASIC		(1)
 
 /**
  * Size of a precomputation table for repeated squaring/square-root using the
  * faster approach.
  */
-#define RELIC_FB_TABLE_QUICK      ((DIGIT / 4) * FB_DIGS * 16)
+#define RLC_FB_TABLE_QUICK      ((RLC_DIG / 4) * RLC_FB_DIGS * 16)
 
 /**
  * Size of a precomputation table for repeated squaring/square-root using the
  * chosen algorithm.
  */
 #if FB_ITR == BASIC
-#define RELIC_FB_TABLE 			RELIC_FB_TABLE_BASIC
+#define RLC_FB_TABLE 			RLC_FB_TABLE_BASIC
 #else
-#define RELIC_FB_TABLE			RELIC_FB_TABLE_QUICK
+#define RLC_FB_TABLE			RLC_FB_TABLE_QUICK
 #endif
 
 /**
  * Maximum size of a precomputation table.
  */
 #ifdef STRIP
-#define RELIC_FB_TABLE_MAX 		RELIC_FB_TABLE
+#define RLC_FB_TABLE_MAX 		RLC_FB_TABLE
 #else
-#define RELIC_FB_TABLE_MAX 		RELIC_FB_TABLE_QUICK
+#define RLC_FB_TABLE_MAX 		RLC_FB_TABLE_QUICK
 #endif
 
 /*============================================================================*/
@@ -159,7 +159,7 @@ enum {
  * Represents a binary field element.
  */
 #if ALLOC == AUTO
-typedef relic_align dig_t fb_t[FB_DIGS + PADDING(FB_BYTES)/(DIGIT / 8)];
+typedef rlc_align dig_t fb_t[RLC_FB_DIGS + RLC_PAD(RLC_FB_BYTES) / (RLC_DIG / 8)];
 #else
 typedef dig_t *fb_t;
 #endif
@@ -167,7 +167,7 @@ typedef dig_t *fb_t;
 /**
  * Represents a binary field element with automatic memory allocation.
  */
-typedef relic_align dig_t fb_st[FB_DIGS + PADDING(FB_BYTES)/(DIGIT / 8)];
+typedef rlc_align dig_t fb_st[RLC_FB_DIGS + RLC_PAD(RLC_FB_BYTES) / (RLC_DIG / 8)];
 
 /*============================================================================*/
 /* Macro definitions                                                          */
@@ -179,7 +179,7 @@ typedef relic_align dig_t fb_st[FB_DIGS + PADDING(FB_BYTES)/(DIGIT / 8)];
  * @param[out] A			- the binary field element to initialize.
  */
 #if ALLOC == AUTO
-#define fb_null(A)			/* empty */
+#define fb_null(A)				/* empty */
 #else
 #define fb_null(A)			A = NULL;
 #endif
@@ -191,13 +191,13 @@ typedef relic_align dig_t fb_st[FB_DIGS + PADDING(FB_BYTES)/(DIGIT / 8)];
  * @throw ERR_NO_MEMORY		- if there is no available memory.
  */
 #if ALLOC == DYNAMIC
-#define fb_new(A)			dv_new_dynam((dv_t *)&(A), FB_DIGS)
+#define fb_new(A)			dv_new_dynam((dv_t *)&(A), RLC_FB_DIGS)
 #elif ALLOC == AUTO
-#define fb_new(A)			/* empty */
+#define fb_new(A)				/* empty */
 #elif ALLOC == STACK
 #define fb_new(A)															\
-	A = (dig_t *)alloca(FB_BYTES + PADDING(FB_BYTES));						\
-	A = (dig_t *)ALIGNED(A);												\
+	A = (dig_t *)alloca(RLC_FB_BYTES + RLC_PAD(RLC_FB_BYTES));						\
+	A = (dig_t *)RLC_ALIGN(A);												\
 
 #endif
 
@@ -209,7 +209,7 @@ typedef relic_align dig_t fb_st[FB_DIGS + PADDING(FB_BYTES)/(DIGIT / 8)];
 #if ALLOC == DYNAMIC
 #define fb_free(A)			dv_free_dynam((dv_t *)&(A))
 #elif ALLOC == AUTO
-#define fb_free(A)			/* empty */
+#define fb_free(A)				/* empty */
 #elif ALLOC == STACK
 #define fb_free(A)			A = NULL;
 #endif
@@ -222,13 +222,13 @@ typedef relic_align dig_t fb_st[FB_DIGS + PADDING(FB_BYTES)/(DIGIT / 8)];
  * @param[in] B				- the second binary field element to multiply.
  */
 #if FB_KARAT > 0
-#define fb_mul(C, A, B)	fb_mul_karat(C, A, B)
+#define fb_mul(C, A, B)		fb_mul_karat(C, A, B)
 #elif FB_MUL == BASIC
-#define fb_mul(C, A, B)	fb_mul_basic(C, A, B)
+#define fb_mul(C, A, B)		fb_mul_basic(C, A, B)
 #elif FB_MUL == INTEG
-#define fb_mul(C, A, B)	fb_mul_integ(C, A, B)
+#define fb_mul(C, A, B)		fb_mul_integ(C, A, B)
 #elif FB_MUL == LODAH
-#define fb_mul(C, A, B)	fb_mul_lodah(C, A, B)
+#define fb_mul(C, A, B)		fb_mul_lodah(C, A, B)
 #endif
 
 /**
@@ -238,11 +238,11 @@ typedef relic_align dig_t fb_st[FB_DIGS + PADDING(FB_BYTES)/(DIGIT / 8)];
  * @param[in] A				- the binary field element to square.
  */
 #if FB_SQR == BASIC
-#define fb_sqr(C, A)	fb_sqr_basic(C, A)
+#define fb_sqr(C, A)		fb_sqr_basic(C, A)
 #elif FB_SQR == QUICK
-#define fb_sqr(C, A)	fb_sqr_quick(C, A)
+#define fb_sqr(C, A)		fb_sqr_quick(C, A)
 #elif FB_SQR == INTEG
-#define fb_sqr(C, A)	fb_sqr_integ(C, A)
+#define fb_sqr(C, A)		fb_sqr_integ(C, A)
 #endif
 
 /**
@@ -252,9 +252,9 @@ typedef relic_align dig_t fb_st[FB_DIGS + PADDING(FB_BYTES)/(DIGIT / 8)];
  * @param[in] A				- the binary field element.
  */
 #if FB_SRT == BASIC
-#define fb_srt(C, A)	fb_srt_basic(C, A)
+#define fb_srt(C, A)		fb_srt_basic(C, A)
 #elif FB_SRT == QUICK
-#define fb_srt(C, A)	fb_srt_quick(C, A)
+#define fb_srt(C, A)		fb_srt_quick(C, A)
 #endif
 
 /**
@@ -265,9 +265,9 @@ typedef relic_align dig_t fb_st[FB_DIGS + PADDING(FB_BYTES)/(DIGIT / 8)];
  * @param[in] A				- the multiplication result to reduce.
  */
 #if FB_RDC == BASIC
-#define fb_rdc(C, A)	fb_rdc_basic(C, A)
+#define fb_rdc(C, A)		fb_rdc_basic(C, A)
 #elif FB_RDC == QUICK
-#define fb_rdc(C, A)	fb_rdc_quick(C, A)
+#define fb_rdc(C, A)		fb_rdc_quick(C, A)
 #endif
 
 /**
@@ -277,9 +277,9 @@ typedef relic_align dig_t fb_st[FB_DIGS + PADDING(FB_BYTES)/(DIGIT / 8)];
  * @return the trace of the binary field element.
  */
 #if FB_TRC == BASIC
-#define fb_trc(A)		fb_trc_basic(A)
+#define fb_trc(A)			fb_trc_basic(A)
 #elif FB_TRC == QUICK
-#define fb_trc(A)		fb_trc_quick(A)
+#define fb_trc(A)			fb_trc_quick(A)
 #endif
 
 /**
@@ -290,9 +290,9 @@ typedef relic_align dig_t fb_st[FB_DIGS + PADDING(FB_BYTES)/(DIGIT / 8)];
  * @param[in] A				- the binary field element.
  */
 #if FB_SLV == BASIC
-#define fb_slv(C, A)	fb_slv_basic(C, A)
+#define fb_slv(C, A)		fb_slv_basic(C, A)
 #elif FB_SLV == QUICK
-#define fb_slv(C, A)	fb_slv_quick(C, A)
+#define fb_slv(C, A)		fb_slv_quick(C, A)
 #endif
 
 /**
@@ -302,21 +302,21 @@ typedef relic_align dig_t fb_st[FB_DIGS + PADDING(FB_BYTES)/(DIGIT / 8)];
  * @param[in] A				- the binary field element to invert.
  */
 #if FB_INV == BASIC
-#define fb_inv(C, A)	fb_inv_basic(C, A)
+#define fb_inv(C, A)		fb_inv_basic(C, A)
 #elif FB_INV == BINAR
-#define fb_inv(C, A)	fb_inv_binar(C, A)
+#define fb_inv(C, A)		fb_inv_binar(C, A)
 #elif FB_INV == EXGCD
-#define fb_inv(C, A)	fb_inv_exgcd(C, A)
+#define fb_inv(C, A)		fb_inv_exgcd(C, A)
 #elif FB_INV == ALMOS
-#define fb_inv(C, A)	fb_inv_almos(C, A)
+#define fb_inv(C, A)		fb_inv_almos(C, A)
 #elif FB_INV == ITOHT
-#define fb_inv(C, A)	fb_inv_itoht(C, A)
+#define fb_inv(C, A)		fb_inv_itoht(C, A)
 #elif FB_INV == BRUCH
-#define fb_inv(C, A)	fb_inv_bruch(C, A)
+#define fb_inv(C, A)		fb_inv_bruch(C, A)
 #elif FB_INV == CTAIA
-#define fb_inv(C, A)	fb_inv_ctaia(C, A)
+#define fb_inv(C, A)		fb_inv_ctaia(C, A)
 #elif FB_INV == LOWER
-#define fb_inv(C, A)	fb_inv_lower(C, A)
+#define fb_inv(C, A)		fb_inv_lower(C, A)
 #endif
 
 /**
@@ -360,27 +360,26 @@ typedef relic_align dig_t fb_st[FB_DIGS + PADDING(FB_BYTES)/(DIGIT / 8)];
  * @param[in] B				- the exponent.
  * @param[in] ...			- the modulus and an optional argument.
  */
-#define fb_itr(C, A, ...)CAT(fb_itr, OPT(__VA_ARGS__))(C, A, __VA_ARGS__)
+#define fb_itr(C, A, ...)													\
+	RLC_CAT(fb_itr, RLC_OPT(__VA_ARGS__)) (C, A, __VA_ARGS__)
 
 /**
  * Reduces a multiple precision integer modulo another integer. This macro
  * should not be called directly. Use bn_mod() with 4 arguments instead.
  *
- * @param[out] C			- the result.
- * @param[in] A				- the binary field element to exponentiate.
- * @param[in] B				- the exponent.
- * @param[in] T				- the precomputed table for the exponent.
+ * @param[out] C				- the result.
+ * @param[in] A					- the binary field element to exponentiate.
+ * @param[in] B					- the exponent.
+ * @param[in] T					- the precomputed table for the exponent.
  */
 #if FB_ITR == BASIC
 #define fb_itr_imp(C, A, B, T)		fb_itr_basic(C, A, B)
 #elif FB_ITR == QUICK
 #define fb_itr_imp(C, A, B, T)		fb_itr_quick(C, A, T)
 #endif
-
 /*============================================================================*/
-/* Function prototypes                                                        */
+		/* Function prototypes                                                        */
 /*============================================================================*/
-
 /**
  * Initializes the binary field arithmetic layer.
  */
@@ -408,7 +407,7 @@ void fb_poly_set_dense(const fb_t f);
 
 /**
  * Configures a trinomial as the irreducible polynomial by its non-zero
- * coefficients. The other coefficients are FB_BITS and 0.
+ * coefficients. The other coefficients are RLC_FB_BITS and 0.
  *
  * @param[in] a				- the second coefficient.
  */
@@ -416,7 +415,7 @@ void fb_poly_set_trino(int a);
 
 /**
  * Configures a pentanomial as the binary field modulo by its non-zero
- * coefficients. The other coefficients are FB_BITS and 0.
+ * coefficients. The other coefficients are RLC_FB_BITS and 0.
  *
  * @param[in] a				- the second coefficient.
  * @param[in] b				- the third coefficient.
@@ -447,9 +446,9 @@ const dig_t *fb_poly_tab_srz(int i);
 const fb_t *fb_poly_tab_sqr(int i);
 
 /**
- * Returns an addition chain for (FB_BITS - 1).
+ * Returns an addition chain for (RLC_FB_BITS - 1).
  *
- * @param[out] len		- the number of elements in the addition chain.
+ * @param[out] len			- the number of elements in the addition chain.
  *
  * @return a pointer to the addition chain.
  */
@@ -458,7 +457,7 @@ const int *fb_poly_get_chain(int *len);
 /**
  * Returns the non-zero coefficients of the configured trinomial or pentanomial.
  * If b is -1, the irreducible polynomial configured is a trinomial.
- * The other coefficients are FB_BITS and 0.
+ * The other coefficients are RLC_FB_BITS and 0.
  *
  * @param[out] a			- the second coefficient.
  * @param[out] b			- the third coefficient.
@@ -561,7 +560,7 @@ void fb_set_bit(fb_t a, int bit, int value);
 /**
  * Assigns a small positive polynomial to a binary field element.
  *
- * The degree of the polynomial must be smaller than DIGIT.
+ * The degree of the polynomial must be smaller than RLC_DIG.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the small polynomial to assign.
@@ -633,7 +632,7 @@ void fb_write_str(char *str, int len, const fb_t a, int radix);
  * @param[out] a			- the result.
  * @param[in] bin			- the byte vector.
  * @param[in] len			- the buffer capacity.
- * @throw ERR_NO_BUFFER		- if the buffer capacity is not FP_BYTES.
+ * @throw ERR_NO_BUFFER		- if the buffer capacity is not RLC_FP_BYTES.
  */
 void fb_read_bin(fb_t a, const uint8_t *bin, int len);
 
@@ -643,7 +642,7 @@ void fb_read_bin(fb_t a, const uint8_t *bin, int len);
  * @param[out] bin			- the byte vector.
  * @param[in] len			- the buffer capacity.
  * @param[in] a				- the binary field element to write.
- * @throw ERR_NO_BUFFER		- if the buffer capacity is not FP_BYTES.
+ * @throw ERR_NO_BUFFER		- if the buffer capacity is not RLC_FP_BYTES.
  */
 void fb_write_bin(uint8_t *bin, int len, const fb_t a);
 
@@ -652,7 +651,7 @@ void fb_write_bin(uint8_t *bin, int len, const fb_t a);
  *
  * @param[in] a				- the first binary field element.
  * @param[in] b				- the second binary field element.
- * @return CMP_EQ if a == b, and CMP_NE otherwise.
+ * @return RLC_EQ if a == b, and RLC_NE otherwise.
  */
 int fb_cmp(const fb_t a, const fb_t b);
 
@@ -662,7 +661,7 @@ int fb_cmp(const fb_t a, const fb_t b);
  *
  * @param[in] a				- the binary field element.
  * @param[in] b				- the small binary field element.
- * @return CMP_EQ if a == b, and CMP_NE otherwise.
+ * @return RLC_EQ if a == b, and RLC_NE otherwise.
  */
 int fb_cmp_dig(const fb_t a, dig_t b);
 
@@ -994,4 +993,4 @@ void fb_itr_pre_quick(fb_t *t, int b);
  */
 void fb_itr_quick(fb_t c, const fb_t a, const fb_t *t);
 
-#endif /* !RELIC_FB_H */
+#endif /* !RLC_FB_H */

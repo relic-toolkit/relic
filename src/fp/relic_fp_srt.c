@@ -51,8 +51,8 @@ int fp_srt(fp_t c, const fp_t a) {
 		fp_new(t1);
 
 		/* Make e = p. */
-		e->used = FP_DIGS;
-		dv_copy(e->dp, fp_prime_get(), FP_DIGS);
+		e->used = RLC_FP_DIGS;
+		dv_copy(e->dp, fp_prime_get(), RLC_FP_DIGS);
 
 		if (fp_prime_get_mod8() == 3 || fp_prime_get_mod8() == 7) {
 			/* Easy case, compute a^((p + 1)/4). */
@@ -61,7 +61,7 @@ int fp_srt(fp_t c, const fp_t a) {
 
 			fp_exp(t0, a, e);
 			fp_sqr(t1, t0);
-			r = (fp_cmp(t1, a) == CMP_EQ);
+			r = (fp_cmp(t1, a) == RLC_EQ);
 			fp_copy(c, t0);
 		} else {
 			int f = 0, m = 0;
@@ -70,7 +70,7 @@ int fp_srt(fp_t c, const fp_t a) {
 			bn_rsh(e, e, 1);
 			fp_exp(t0, a, e);
 
-			if (fp_cmp_dig(t0, 1) != CMP_EQ) {
+			if (fp_cmp_dig(t0, 1) != RLC_EQ) {
 				/* Nope, there is no square root. */
 				r = 0;
 			} else {
@@ -80,7 +80,7 @@ int fp_srt(fp_t c, const fp_t a) {
 				do {
 					fp_rand(t1);
 					fp_exp(t0, t1, e);
-				} while (fp_cmp_dig(t0, 1) == CMP_EQ);
+				} while (fp_cmp_dig(t0, 1) == RLC_EQ);
 
 				/* Write p - 1 as (e * 2^f), odd e. */
 				bn_lsh(e, e, 1);
@@ -101,11 +101,11 @@ int fp_srt(fp_t c, const fp_t a) {
 				fp_copy(c, e->dp);
 
 				while (1) {
-					if (fp_cmp_dig(t0, 1) == CMP_EQ) {
+					if (fp_cmp_dig(t0, 1) == RLC_EQ) {
 						break;
 					}
 					fp_copy(e->dp, t0);
-					for (m = 0; (m < f) && (fp_cmp_dig(t0, 1) != CMP_EQ); m++) {
+					for (m = 0; (m < f) && (fp_cmp_dig(t0, 1) != RLC_EQ); m++) {
 						fp_sqr(t0, t0);
 					}
 					fp_copy(t0, e->dp);

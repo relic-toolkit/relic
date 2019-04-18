@@ -128,7 +128,7 @@ static void ep2_dbl_projc_imp(ep2_t r, ep2_t p) {
 	fp2_null(t5);
 
 	TRY {
-		if (ep_curve_opt_a() == OPT_ZERO) {
+		if (ep_curve_opt_a() == RLC_ZERO) {
 			fp2_new(t0);
 			fp2_new(t1);
 			fp2_new(t2);
@@ -169,7 +169,7 @@ static void ep2_dbl_projc_imp(ep2_t r, ep2_t p) {
 				/* t3 = z1^2. */
 				fp2_sqr(t3, p->z);
 
-				if (ep_curve_get_a() == OPT_ZERO) {
+				if (ep_curve_get_a() == RLC_ZERO) {
 					/* z3 = 2 * y1 * z1. */
 					fp2_mul(r->z, p->y, p->z);
 					fp2_dbl(r->z, r->z);

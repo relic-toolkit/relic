@@ -53,9 +53,9 @@ void fp_rdc_basic(fp_t c, dv_t a) {
 		dv_new(t2);
 		dv_new(t3);
 
-		dv_copy(t2, a, 2 * FP_DIGS);
-		dv_copy(t3, fp_prime_get(), FP_DIGS);
-		bn_divn_low(t0, t1, t2, 2 * FP_DIGS, t3, FP_DIGS);
+		dv_copy(t2, a, 2 * RLC_FP_DIGS);
+		dv_copy(t3, fp_prime_get(), RLC_FP_DIGS);
+		bn_divn_low(t0, t1, t2, 2 * RLC_FP_DIGS, t3, RLC_FP_DIGS);
 		fp_copy(c, t1);
 	}
 	CATCH_ANY {
@@ -80,11 +80,11 @@ void fp_rdc_monty_basic(fp_t c, dv_t a) {
 
 	u0 = *(fp_prime_get_rdc());
 
-	for (i = 0; i < FP_DIGS; i++, a++) {
+	for (i = 0; i < RLC_FP_DIGS; i++, a++) {
 		r = (dig_t)(*a * u0);
 		*a = fp_mula_low(a, fp_prime_get(), r);
 	}
-	fp_addm_low(c, a, a - FP_DIGS);
+	fp_addm_low(c, a, a - RLC_FP_DIGS);
 }
 
 #endif

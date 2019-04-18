@@ -43,9 +43,9 @@
 
 void bn_init(bn_t a, int digits) {
 #if ALLOC == DYNAMIC
-	if (digits % BN_SIZE != 0) {
+	if (digits % RLC_BN_SIZE != 0) {
 		/* Pad the number of digits to a multiple of the block. */
-		digits += (BN_SIZE - digits % BN_SIZE);
+		digits += (RLC_BN_SIZE - digits % RLC_BN_SIZE);
 	}
 
 	if (a != NULL) {
@@ -71,16 +71,16 @@ void bn_init(bn_t a, int digits) {
 	}
 #else
 	/* Verify if the number of digits is sane. */
-	if (digits > BN_SIZE) {
+	if (digits > RLC_BN_SIZE) {
 		THROW(ERR_NO_PRECI);
 	} else {
-		digits = BN_SIZE;
+		digits = RLC_BN_SIZE;
 	}
 #endif
 	if (a != NULL) {
 		a->used = 0;
 		a->alloc = digits;
-		a->sign = BN_POS;
+		a->sign = RLC_POS;
 	}
 }
 
@@ -100,7 +100,7 @@ void bn_clean(bn_t a) {
 #endif
 	if (a != NULL) {
 		a->used = 0;
-		a->sign = BN_POS;
+		a->sign = RLC_POS;
 	}
 }
 
@@ -109,9 +109,9 @@ void bn_grow(bn_t a, int digits) {
 	dig_t *t;
 
 	if (a->alloc < digits) {
-		/* At least add BN_SIZE more digits. */
-		digits += (BN_SIZE * 2) - (digits % BN_SIZE);
-		t = (dig_t *)realloc(a->dp, (DIGIT / 8) * digits);
+		/* At least add RLC_BN_SIZE more digits. */
+		digits += (RLC_BN_SIZE * 2) - (digits % RLC_BN_SIZE);
+		t = (dig_t *)realloc(a->dp, (RLC_DIG / 8) * digits);
 		if (t == NULL) {
 			THROW(ERR_NO_MEMORY);
 		}
@@ -120,7 +120,7 @@ void bn_grow(bn_t a, int digits) {
 		a->alloc = digits;
 	}
 #else /* ALLOC == AUTO || ALLOC == STACK */
-	if (digits > BN_SIZE) {
+	if (digits > RLC_BN_SIZE) {
 		THROW(ERR_NO_PRECI)
 	}
 	(void)a;
@@ -135,6 +135,6 @@ void bn_trim(bn_t a) {
 	if (a->used <= 0) {
 		a->used = 1;
 		a->dp[0] = 0;
-		a->sign = BN_POS;
+		a->sign = RLC_POS;
 	}
 }

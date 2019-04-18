@@ -418,7 +418,7 @@ static void pairing12(void) {
 }
 
 int main(void) {
-	if (core_init() != STS_OK) {
+	if (core_init() != RLC_OK) {
 		core_clean();
 		return 1;
 	}
@@ -427,7 +427,7 @@ int main(void) {
 
 	util_banner("Benchmarks for the PP module:", 0);
 
-	if (ep_param_set_any_pairf() != STS_OK) {
+	if (ep_param_set_any_pairf() != RLC_OK) {
 		THROW(ERR_NO_CURVE);
 		core_clean();
 		return 0;

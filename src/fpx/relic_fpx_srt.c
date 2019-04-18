@@ -126,8 +126,8 @@ int fp3_srt(fp3_t c, fp3_t a) {
 		fp3_mul(t3, t3, t1);
 		fp3_mul(t0, t0, t3);
 
-		e->used = FP_DIGS;
-		dv_copy(e->dp, fp_prime_get(), FP_DIGS);
+		e->used = RLC_FP_DIGS;
+		dv_copy(e->dp, fp_prime_get(), RLC_FP_DIGS);
 		bn_sub_dig(e, e, 5);
 		bn_div_dig(e, e, 8);
 		fp3_exp(t0, t0, e);
@@ -142,7 +142,7 @@ int fp3_srt(fp3_t c, fp3_t a) {
 		fp3_mul(c, t0, t1);
 
 		fp3_sqr(t0, c);
-		if (fp3_cmp(t0, a) == CMP_EQ) {
+		if (fp3_cmp(t0, a) == RLC_EQ) {
 			r = 1;
 		}
 	} CATCH_ANY {

@@ -62,7 +62,7 @@ void bn_abs(bn_t c, const bn_t a) {
 	if (c->dp != a->dp) {
 		bn_copy(c, a);
 	}
-	c->sign = BN_POS;
+	c->sign = RLC_POS;
 }
 
 void bn_neg(bn_t c, const bn_t a) {
@@ -79,7 +79,7 @@ int bn_sign(const bn_t a) {
 }
 
 void bn_zero(bn_t a) {
-	a->sign = BN_POS;
+	a->sign = RLC_POS;
 	a->used = 1;
 	dv_zero(a->dp, a->alloc);
 }
@@ -112,7 +112,7 @@ int bn_bits(const bn_t a) {
 	}
 
 	/* Bits in lower digits. */
-	bits = (a->used - 1) * DIGIT;
+	bits = (a->used - 1) * RLC_DIG;
 
 	return bits + util_bits_dig(a->dp[a->used - 1]);
 }
@@ -120,7 +120,7 @@ int bn_bits(const bn_t a) {
 int bn_get_bit(const bn_t a, int bit) {
 	int d;
 
-	SPLIT(bit, d, bit, DIG_LOG);
+	RLC_RIP(bit, d, bit);
 
 	if (d >= a->used) {
 		return 0;
@@ -132,7 +132,7 @@ int bn_get_bit(const bn_t a, int bit) {
 void bn_set_bit(bn_t a, int bit, int value) {
 	int d;
 
-	SPLIT(bit, d, bit, DIG_LOG);
+	RLC_RIP(bit, d, bit);
 
 	if (value == 1) {
 		a->dp[d] |= ((dig_t)1 << bit);
@@ -163,26 +163,26 @@ void bn_set_dig(bn_t a, dig_t digit) {
 	bn_zero(a);
 	a->dp[0] = digit;
 	a->used = 1;
-	a->sign = BN_POS;
+	a->sign = RLC_POS;
 }
 
 void bn_set_2b(bn_t a, int b) {
 	int i, d;
 
-	SPLIT(b, d, b, DIG_LOG);
+	RLC_RIP(b, d, b);
 
 	bn_grow(a, d + 1);
 	for (i = 0; i < d; i++)
 		a->dp[i] = 0;
 	a->used = d + 1;
 	a->dp[d] = ((dig_t)1 << b);
-	a->sign = BN_POS;
+	a->sign = RLC_POS;
 }
 
 void bn_rand(bn_t a, int sign, int bits) {
 	int digits;
 
-	SPLIT(bits, digits, bits, DIG_LOG);
+	RLC_RIP(bits, digits, bits);
 	digits += (bits > 0 ? 1 : 0);
 
 	bn_grow(a, digits);
@@ -202,13 +202,13 @@ void bn_rand_mod(bn_t a, bn_t b) {
 	do {
 		bn_rand(a, bn_sign(b), bn_bits(b) + RAND_DIST);
 		bn_mod(a, a, b);
-	} while (bn_is_zero(a) || bn_cmp_abs(a, b) != CMP_LT);
+	} while (bn_is_zero(a) || bn_cmp_abs(a, b) != RLC_LT);
 }
 
 void bn_print(const bn_t a) {
 	int i;
 
-	if (a->sign == BN_NEG) {
+	if (a->sign == RLC_NEG) {
 		util_print("-");
 	}
 	if (a->used == 0) {
@@ -237,7 +237,7 @@ int bn_size_str(const bn_t a, int radix) {
 
 	/* Binary case requires the bits, a sign and the null terminator. */
 	if (radix == 2) {
-		return bn_bits(a) + (a->sign == BN_NEG ? 1 : 0) + 1;
+		return bn_bits(a) + (a->sign == RLC_NEG ? 1 : 0) + 1;
 	}
 
 	/* Check the radix. */
@@ -249,7 +249,7 @@ int bn_size_str(const bn_t a, int radix) {
 		return 2;
 	}
 
-	if (a->sign == BN_NEG) {
+	if (a->sign == RLC_NEG) {
 		digits++;
 	}
 
@@ -257,7 +257,7 @@ int bn_size_str(const bn_t a, int radix) {
 		bn_new(t);
 		bn_copy(t, a);
 
-		t->sign = BN_POS;
+		t->sign = RLC_POS;
 
 		while (!bn_is_zero(t)) {
 			bn_div_dig(t, t, (dig_t)radix);
@@ -285,13 +285,13 @@ void bn_read_str(bn_t a, const char *str, int len, int radix) {
 	j = 0;
 	if (str[0] == '-') {
 		j++;
-		sign = BN_NEG;
+		sign = RLC_NEG;
 	} else {
-		sign = BN_POS;
+		sign = RLC_POS;
 	}
 
 	while (str[j] && j < len) {
-		c = (char)((radix < 36) ? TOUPPER(str[j]) : str[j]);
+		c = (char)((radix < 36) ? RLC_UPP(str[j]) : str[j]);
 		for (i = 0; i < 64; i++) {
 			if (c == util_conv_char(i)) {
 				break;
@@ -338,10 +338,10 @@ void bn_write_str(char *str, int len, const bn_t a, int radix) {
 		bn_copy(t, a);
 
 		j = 0;
-		if (t->sign == BN_NEG) {
+		if (t->sign == RLC_NEG) {
 			str[j] = '-';
 			j++;
-			t->sign = BN_POS;
+			t->sign = RLC_POS;
 		}
 
 		digits = 0;
@@ -381,7 +381,7 @@ int bn_size_bin(const bn_t a) {
 	dig_t d;
 	int digits;
 
-	digits = (a->used - 1) * (DIGIT / 8);
+	digits = (a->used - 1) * (RLC_DIG / 8);
 	d = a->dp[a->used - 1];
 
 	while (d != 0) {
@@ -393,7 +393,7 @@ int bn_size_bin(const bn_t a) {
 
 void bn_read_bin(bn_t a, const uint8_t *bin, int len) {
 	int i, j;
-	dig_t d = (DIGIT / 8);
+	dig_t d = (RLC_DIG / 8);
 	int digs = (len % d == 0 ? len / d : len / d + 1);
 
 	bn_grow(a, digs);
@@ -402,22 +402,22 @@ void bn_read_bin(bn_t a, const uint8_t *bin, int len) {
 
 	for (i = 0; i < digs - 1; i++) {
 		d = 0;
-		for (j = (DIGIT / 8) - 1; j >= 0; j--) {
+		for (j = (RLC_DIG / 8) - 1; j >= 0; j--) {
 			d = d << 8;
-			d |= bin[len - 1 - (i * (DIGIT / 8) + j)];
+			d |= bin[len - 1 - (i * (RLC_DIG / 8) + j)];
 		}
 		a->dp[i] = d;
 	}
 	d = 0;
-	for (j = (DIGIT / 8) - 1; j >= 0; j--) {
-		if ((int)(i * (DIGIT / 8) + j) < len) {
+	for (j = (RLC_DIG / 8) - 1; j >= 0; j--) {
+		if ((int)(i * (RLC_DIG / 8) + j) < len) {
 			d = d << 8;
-			d |= bin[len - 1 - (i * (DIGIT / 8) + j)];
+			d |= bin[len - 1 - (i * (RLC_DIG / 8) + j)];
 		}
 	}
 	a->dp[i] = d;
 
-	a->sign = BN_POS;
+	a->sign = RLC_POS;
 	bn_trim(a);
 }
 
@@ -434,7 +434,7 @@ void bn_write_bin(uint8_t *bin, int len, const bn_t a) {
 	k = 0;
 	for (int i = 0; i < a->used - 1; i++) {
 		d = a->dp[i];
-		for (int j = 0; j < (int)(DIGIT / 8); j++) {
+		for (int j = 0; j < (int)(RLC_DIG / 8); j++) {
 			bin[len - 1 - k++] = d & 0xFF;
 			d = d >> 8;
 		}
@@ -459,7 +459,7 @@ void bn_read_raw(bn_t a, const dig_t *raw, int len) {
 	TRY {
 		bn_grow(a, len);
 		a->used = len;
-		a->sign = BN_POS;
+		a->sign = RLC_POS;
 		dv_copy(a->dp, raw, len);
 		bn_trim(a);
 	} CATCH_ANY {

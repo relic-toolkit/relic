@@ -46,7 +46,7 @@ void fb_sqrn_low(dig_t *c, const dig_t *a) {
 	__m128i m0, t;
 	int j = 0;
 
-	for (int i = 0; i < FB_DIGS; i++) {
+	for (int i = 0; i < RLC_FB_DIGS; i++) {
 		m0 = _mm_set_epi32(0x00000000, a[i] >> 32, 0x00000000, a[i] & 0xFFFFFFFFFFFFFFFF);
 		t = _mm_slli_epi64(m0, 16);
 		t = _mm_or_si128(t, m0);
@@ -107,7 +107,7 @@ void fb_sqrl_low(dig_t *c, const dig_t *a) {
 
 void fb_sqrm_low(dig_t *c, const dig_t *a) {
 	__m128i t0, t1, m0, m1, m2, m3, m4, m5, m6, m8, m9, mask;
-	relic_align dig_t x[2];
+	rlc_align dig_t x[2];
 
 	t0 = _mm_set_epi32(0x55545150, 0x45444140, 0x15141110, 0x05040100);
 	mask = _mm_set_epi32(0x0F0F0F0F, 0x0F0F0F0F, 0x0F0F0F0F, 0x0F0F0F0F);
@@ -146,7 +146,7 @@ void fb_sqrm_low(dig_t *c, const dig_t *a) {
 
 void fb_sqrm_low(dig_t *c, const dig_t *a) {
 	__m128i t0, m0, m1, m2, m3, m4, m5, m6, mask;
-	relic_align dig_t t[2*FB_DIGS];
+	rlc_align dig_t t[2*RLC_FB_DIGS];
 
 	t0 = _mm_set_epi32(0x55545150, 0x45444140, 0x15141110, 0x05040100);
 	mask = _mm_set_epi32(0x0F0F0F0F, 0x0F0F0F0F, 0x0F0F0F0F, 0x0F0F0F0F);

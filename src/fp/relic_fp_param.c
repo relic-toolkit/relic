@@ -199,7 +199,7 @@ void fp_param_get_sps(int *s, int *len) {
 
 	bn_null(a);
 
-	if (*len < MAX_TERMS) {
+	if (*len < RLC_TERMS) {
 		THROW(ERR_NO_BUFFER);
 	}
 
@@ -214,7 +214,7 @@ void fp_param_get_sps(int *s, int *len) {
 			case BN_256:
 			case BN_382:
 				fp_param_get_var(a);
-				if (bn_sign(a) == BN_NEG) {
+				if (bn_sign(a) == RLC_NEG) {
 					bn_neg(a, a);
 				}
 				*len = bn_ham(a);
@@ -288,11 +288,11 @@ void fp_param_get_sps(int *s, int *len) {
 }
 
 void fp_param_get_map(int *s, int *len) {
-	if (*len < FP_BITS) {
+	if (*len < RLC_FP_BITS) {
 		THROW(ERR_NO_BUFFER);
 	}
 
-	for (int i = 0; i < FP_BITS; i++) {
+	for (int i = 0; i < RLC_FP_BITS; i++) {
 		s[i] = 0;
 	}
 
@@ -796,12 +796,12 @@ int fp_param_set_any(void) {
 #else
 	return fp_param_set_any_dense();
 #endif
-	return STS_OK;
+	return RLC_OK;
 }
 
 int fp_param_set_any_dense(void) {
 	bn_t p;
-	int result = STS_OK;
+	int result = RLC_OK;
 
 	bn_null(p);
 
@@ -809,13 +809,13 @@ int fp_param_set_any_dense(void) {
 		bn_new(p);
 #ifdef FP_QNRES
 		do {
-			bn_gen_prime(p, FP_BITS);
+			bn_gen_prime(p, RLC_FP_BITS);
 		} while ((p->dp[0] & 0x7) != 3);
 #else
-		bn_gen_prime(p, FP_BITS);
+		bn_gen_prime(p, RLC_FP_BITS);
 #endif
 		if (!bn_is_prime(p)) {
-			result = STS_ERR;
+			result = RLC_ERR;
 		} else {
 			fp_prime_set_dense(p);
 		}
@@ -843,9 +843,9 @@ int fp_param_set_any_pmers(void) {
 #elif FP_PRIME == 521
 	fp_param_set(NIST_521);
 #else
-	return STS_ERR;
+	return RLC_ERR;
 #endif
-	return STS_OK;
+	return RLC_OK;
 }
 
 int fp_param_set_any_tower(void) {
@@ -876,7 +876,7 @@ int fp_param_set_any_tower(void) {
 	} while (fp_prime_get_mod8() == 1 || fp_prime_get_mod8() == 5);
 #endif
 
-	return STS_OK;
+	return RLC_OK;
 }
 
 void fp_param_print(void) {

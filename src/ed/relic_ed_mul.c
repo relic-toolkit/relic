@@ -42,7 +42,7 @@
 
 static void ed_mul_naf_imp(ed_t r, const ed_t p, const bn_t k) {
 	int l, i, n;
-	int8_t naf[FP_BITS + 1], *_k;
+	int8_t naf[RLC_FP_BITS + 1], *_k;
 	ed_t t[1 << (ED_WIDTH - 2)];
 
 	for (i = 0; i < (1 << (ED_WIDTH - 2)); i++) {
@@ -58,7 +58,7 @@ static void ed_mul_naf_imp(ed_t r, const ed_t p, const bn_t k) {
 		ed_tab(t, p, ED_WIDTH);
 
 		/* Compute the w-NAF representation of k. */
-		l = FP_BITS + 1;
+		l = RLC_FP_BITS + 1;
 		bn_rec_naf(naf, &l, k, ED_WIDTH);
 
 		_k = naf + l - 1;
@@ -105,7 +105,7 @@ static void ed_mul_naf_imp(ed_t r, const ed_t p, const bn_t k) {
 
 static void ed_mul_reg_imp(ed_t r, const ed_t p, const bn_t k) {
 	int l, i, j, n;
-	int8_t reg[CEIL(FP_BITS + 1, ED_WIDTH - 1)], *_k;
+	int8_t reg[RLC_CEIL(RLC_FP_BITS + 1, ED_WIDTH - 1)], *_k;
 	ed_t t[1 << (ED_WIDTH - 2)];
 
 	for (i = 0; i < (1 << (ED_WIDTH - 2)); i++) {
@@ -121,8 +121,8 @@ static void ed_mul_reg_imp(ed_t r, const ed_t p, const bn_t k) {
 		ed_tab(t, p, ED_WIDTH);
 
 		/* Compute the w-NAF representation of k. */
-		l = CEIL(FP_BITS + 1, ED_WIDTH - 1);
-		bn_rec_reg(reg, &l, k, FP_BITS, ED_WIDTH);
+		l = RLC_CEIL(RLC_FP_BITS + 1, ED_WIDTH - 1);
+		bn_rec_reg(reg, &l, k, RLC_FP_BITS, ED_WIDTH);
 
 		_k = reg + l - 1;
 
@@ -204,7 +204,7 @@ void ed_mul_basic(ed_t r, const ed_t p, const bn_t k) {
 void ed_mul_slide(ed_t r, const ed_t p, const bn_t k) {
 	ed_t t[1 << (ED_WIDTH - 1)], q;
 	int i, j, l;
-	uint8_t win[FP_BITS + 1];
+	uint8_t win[RLC_FP_BITS + 1];
 
 	ed_null(q);
 
@@ -242,7 +242,7 @@ void ed_mul_slide(ed_t r, const ed_t p, const bn_t k) {
 #endif
 
 		ed_set_infty(q);
-		l = FP_BITS + 1;
+		l = RLC_FP_BITS + 1;
 		bn_rec_slw(win, &l, k, ED_WIDTH);
 		for (i = 0; i < l; i++) {
 			if (win[i] == 0) {
@@ -293,25 +293,25 @@ void ed_mul_monty(ed_t r, const ed_t p, const bn_t k) {
 		for (int i = bn_bits(k) - 1; i >= 0; i--) {
 			int j = bn_get_bit(k, i);
 #if ED_ADD == PROJC
-			dv_swap_cond(t[0]->x, t[1]->x, FP_DIGS, j ^ 1);
-			dv_swap_cond(t[0]->y, t[1]->y, FP_DIGS, j ^ 1);
-			dv_swap_cond(t[0]->z, t[1]->z, FP_DIGS, j ^ 1);
+			dv_swap_cond(t[0]->x, t[1]->x, RLC_FP_DIGS, j ^ 1);
+			dv_swap_cond(t[0]->y, t[1]->y, RLC_FP_DIGS, j ^ 1);
+			dv_swap_cond(t[0]->z, t[1]->z, RLC_FP_DIGS, j ^ 1);
 			ed_add(t[0], t[0], t[1]);
 			ed_dbl(t[1], t[1]);
-			dv_swap_cond(t[0]->x, t[1]->x, FP_DIGS, j ^ 1);
-			dv_swap_cond(t[0]->y, t[1]->y, FP_DIGS, j ^ 1);
-			dv_swap_cond(t[0]->z, t[1]->z, FP_DIGS, j ^ 1);
+			dv_swap_cond(t[0]->x, t[1]->x, RLC_FP_DIGS, j ^ 1);
+			dv_swap_cond(t[0]->y, t[1]->y, RLC_FP_DIGS, j ^ 1);
+			dv_swap_cond(t[0]->z, t[1]->z, RLC_FP_DIGS, j ^ 1);
 #elif ED_ADD == EXTND
-			dv_swap_cond(t[0]->x, t[1]->x, FP_DIGS, j ^ 1);
-			dv_swap_cond(t[0]->y, t[1]->y, FP_DIGS, j ^ 1);
-			dv_swap_cond(t[0]->z, t[1]->z, FP_DIGS, j ^ 1);
-			dv_swap_cond(t[0]->t, t[1]->t, FP_DIGS, j ^ 1);
+			dv_swap_cond(t[0]->x, t[1]->x, RLC_FP_DIGS, j ^ 1);
+			dv_swap_cond(t[0]->y, t[1]->y, RLC_FP_DIGS, j ^ 1);
+			dv_swap_cond(t[0]->z, t[1]->z, RLC_FP_DIGS, j ^ 1);
+			dv_swap_cond(t[0]->t, t[1]->t, RLC_FP_DIGS, j ^ 1);
 			ed_add(t[0], t[0], t[1]);
 			ed_dbl(t[1], t[1]);
-			dv_swap_cond(t[0]->x, t[1]->x, FP_DIGS, j ^ 1);
-			dv_swap_cond(t[0]->y, t[1]->y, FP_DIGS, j ^ 1);
-			dv_swap_cond(t[0]->z, t[1]->z, FP_DIGS, j ^ 1);
-			dv_swap_cond(t[0]->t, t[1]->t, FP_DIGS, j ^ 1);
+			dv_swap_cond(t[0]->x, t[1]->x, RLC_FP_DIGS, j ^ 1);
+			dv_swap_cond(t[0]->y, t[1]->y, RLC_FP_DIGS, j ^ 1);
+			dv_swap_cond(t[0]->z, t[1]->z, RLC_FP_DIGS, j ^ 1);
+			dv_swap_cond(t[0]->t, t[1]->t, RLC_FP_DIGS, j ^ 1);
 #endif
 		}
 

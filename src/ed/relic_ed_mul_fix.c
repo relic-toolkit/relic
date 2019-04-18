@@ -48,10 +48,10 @@
  */
 static void ed_mul_fix_plain(ed_t r, const ed_t * t, const bn_t k) {
 	int l, i, n;
-	int8_t naf[FP_BITS + 1], *_k;
+	int8_t naf[RLC_FP_BITS + 1], *_k;
 
 	/* Compute the w-TNAF representation of k. */
-	l = FP_BITS + 1;
+	l = RLC_FP_BITS + 1;
 	bn_rec_naf(naf, &l, k, ED_DEPTH);
 
 	_k = naf + l - 1;
@@ -152,7 +152,7 @@ static void ed_mul_combs_endom(ed_t r, const ed_t * t, const bn_t k) {
 				}
 			}
 			if (w0 > 0) {
-				if (s0 == BN_POS) {
+				if (s0 == RLC_POS) {
 					ed_add(r, r, t[w0]);
 				} else {
 					ed_sub(r, r, t[w0]);
@@ -161,7 +161,7 @@ static void ed_mul_combs_endom(ed_t r, const ed_t * t, const bn_t k) {
 			if (w1 > 0) {
 				ed_copy(u, t[w1]);
 				fp_mul(u->x, u->x, ed_curve_get_beta());
-				if (s1 == BN_NEG) {
+				if (s1 == RLC_NEG) {
 					ed_neg(u, u);
 				}
 				ed_add(r, r, u);
@@ -322,7 +322,7 @@ static void ed_mul_combs_endom(ed_t r, const ed_t * t, const bn_t k) {
 				}
 			}
 			if (w0 > 0) {
-				if (s0 == BN_POS) {
+				if (s0 == RLC_POS) {
 					ed_add(r, r, t[w0]);
 				} else {
 					ed_sub(r, r, t[w0]);
@@ -331,7 +331,7 @@ static void ed_mul_combs_endom(ed_t r, const ed_t * t, const bn_t k) {
 			if (w1 > 0) {
 				ed_copy(u, t[w1]);
 				fp_mul(u->x, u->x, ed_curve_get_beta());
-				if (s1 == BN_NEG) {
+				if (s1 == RLC_NEG) {
 					ed_neg(u, u);
 				}
 				ed_add(r, r, u);
@@ -443,7 +443,7 @@ void ed_mul_pre_combs(ed_t * t, const ed_t p) {
 			}
 		}
 
-		ed_norm_sim(t + 2, (const ed_t *)t + 2, RELIC_ED_TABLE_COMBS - 2);
+		ed_norm_sim(t + 2, (const ed_t *)t + 2, RLC_ED_TABLE_COMBS - 2);
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);

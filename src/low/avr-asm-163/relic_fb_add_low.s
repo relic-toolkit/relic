@@ -76,7 +76,7 @@ fb_add1_low:
 	eor		r18,r20
 	st		z+, r18
 
-	ADD1_STEP 1, FB_DIGS - 1
+	ADD1_STEP 1, RLC_FB_DIGS - 1
 
 	ret
 
@@ -87,7 +87,7 @@ fb_addn_low:
 	movw	r28, r22
 	movw	r26, r20
 
-	ADDN_STEP 0, FB_DIGS - 1
+	ADDN_STEP 0, RLC_FB_DIGS - 1
 
 	pop		r29
 	pop		r28

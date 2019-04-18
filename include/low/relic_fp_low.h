@@ -29,8 +29,8 @@
  * @ingroup fp
  */
 
-#ifndef RELIC_FP_LOW_H
-#define RELIC_FP_LOW_H
+#ifndef RLC_FP_LOW_H
+#define RLC_FP_LOW_H
 
 /*============================================================================*/
 /* Constant definitions                                                       */
@@ -42,9 +42,9 @@
 #include "relic_label.h"
 
 #if (FP_PRIME % WSIZE) > 0
-#define FP_DIGS	(FP_PRIME/WSIZE + 1)
+#define RLC_FP_DIGS		(FP_PRIME/WSIZE + 1)
 #else
-#define FP_DIGS	(FP_PRIME/WSIZE)
+#define RLC_FP_DIGS		(FP_PRIME/WSIZE)
 #endif
 #else
 
@@ -220,7 +220,7 @@ dig_t fp_lshb_low(dig_t *c, const dig_t *a, int bits);
 
 /**
  * Shifts a digit vector to the left by some digits.
- * Computes c = a << (digits * DIGIT).
+ * Computes c = a << (digits * RLC_DIG).
  *
  * @param[out] c			- the result.
  * @param[in] a				- the multiple precision integer to shift.
@@ -250,7 +250,7 @@ dig_t fp_rshb_low(dig_t *c, const dig_t *a, int bits);
 
 /**
  * Shifts a digit vector to the right by some digits.
- * Computes c = a >> (digits * DIGIT).
+ * Computes c = a >> (digits * RLC_DIG).
  *
  * @param[out] c			- the result.
  * @param[in] a				- the multiple precision integer to shift.
@@ -343,4 +343,4 @@ void fp_invn_low(dig_t *c, const dig_t *a);
 
 #endif /* ASM */
 
-#endif /* !RELIC_FP_LOW_H */
+#endif /* !RLC_FP_LOW_H */

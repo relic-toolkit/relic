@@ -49,7 +49,7 @@ void ep_map(ep_t p, const uint8_t *msg, int len) {
 		fp_new(t);
 
 		md_map(digest, msg, len);
-		bn_read_bin(k, digest, MIN(FP_BYTES, MD_LEN));
+		bn_read_bin(k, digest, RLC_MIN(RLC_FP_BYTES, MD_LEN));
 
 		fp_prime_conv(p->x, k);
 		fp_zero(p->y);
@@ -67,7 +67,7 @@ void ep_map(ep_t p, const uint8_t *msg, int len) {
 
 		/* Now, multiply by cofactor to get the correct group. */
 		ep_curve_get_cof(k);
-		if (bn_bits(k) < DIGIT) {
+		if (bn_bits(k) < RLC_DIG) {
 			ep_mul_dig(p, p, k->dp[0]);
 		} else {
 			ep_mul(p, p, k);

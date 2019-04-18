@@ -32,8 +32,8 @@
  * @ingroup bn
  */
 
-#ifndef RELIC_BN_LOW_H
-#define RELIC_BN_LOW_H
+#ifndef RLC_BN_LOW_H
+#define RLC_BN_LOW_H
 
 /*============================================================================*/
 /* Constant definitions                                                       */
@@ -44,17 +44,17 @@
 #include "relic_conf.h"
 
 #if (BN_PRECI % WSIZE) > 0
-#define BN_DIGS	(BN_PRECI/WSIZE + 1)
+#define RLC_BN_DIGS		(BN_PRECI/WSIZE + 1)
 #else
-#define BN_DIGS	(BN_PRECI/WSIZE)
+#define RLC_BN_DIGS		(BN_PRECI/WSIZE)
 #endif
 
 #if BN_MAGNI == DOUBLE
-#define BN_SIZE	(2 * BN_DIGS + 2)
+#define RLC_BN_SIZE		(2 * RLC_BN_DIGS + 2)
 #elif BN_MAGNI == CARRY
-#define BN_SIZE	((BN_DIGS + 1)
+#define RLC_BN_SIZE		((RLC_BN_DIGS + 1)
 #elif BN_MAGNI == SINGLE
-#define BN_SIZE	(BN_DIGS)
+#define RLC_BN_SIZE		(RLC_BN_DIGS)
 #endif
 
 #else
@@ -152,7 +152,7 @@ dig_t bn_lshb_low(dig_t *c, const dig_t *a, int size, int bits);
 
 /**
  * Shifts a digit vector to the left by some digits.
- * Computes c = a << (digits * DIGIT).
+ * Computes c = a << (digits * RLC_DIG).
  *
  * @param[out] c			- the result.
  * @param[in] a				- the multiple precision integer to shift.
@@ -185,7 +185,7 @@ dig_t bn_rshb_low(dig_t *c, const dig_t *a, int size, int bits);
 
 /**
  * Shifts a digit vector to the right by some digits.
- * Computes c = a >> (digits * DIGIT).
+ * Computes c = a >> (digits * RLC_DIG).
  *
  * @param[out] c			- the result.
  * @param[in] a				- the multiple precision integer to shift.
@@ -303,4 +303,4 @@ void bn_modn_low(dig_t *c, const dig_t *a, int sa, const dig_t *m, int sm,
 
 #endif /* !ASM */
 
-#endif /* !RELIC_BN_LOW_H */
+#endif /* !RLC_BN_LOW_H */

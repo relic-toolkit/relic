@@ -39,12 +39,12 @@
 
 void fb_invn_low(dig_t *c, const dig_t *a) {
 	int j, d, lu, lv, lt, l1, l2, bu, bv;
-	relic_align dig_t _u[2 * FB_DIGS], _v[2 * FB_DIGS];
-	relic_align dig_t _g1[2 * FB_DIGS], _g2[2 * FB_DIGS];
+	rlc_align dig_t _u[2 * RLC_FB_DIGS], _v[2 * RLC_FB_DIGS];
+	rlc_align dig_t _g1[2 * RLC_FB_DIGS], _g2[2 * RLC_FB_DIGS];
 	dig_t *t = NULL, *u = NULL, *v = NULL, *g1 = NULL, *g2 = NULL, carry;
 
-	dv_zero(_g1, FB_DIGS + 1);
-	dv_zero(_g2, FB_DIGS + 1);
+	dv_zero(_g1, RLC_FB_DIGS + 1);
+	dv_zero(_g2, RLC_FB_DIGS + 1);
 
 	u = _u;
 	v = _v;
@@ -52,15 +52,15 @@ void fb_invn_low(dig_t *c, const dig_t *a) {
 	g2 = _g2;
 
 	/* u = a, v = f, g1 = 1, g2 = 0. */
-	dv_copy(u, a, FB_DIGS);
-	dv_copy(v, fb_poly_get(), FB_DIGS);
+	dv_copy(u, a, RLC_FB_DIGS);
+	dv_copy(v, fb_poly_get(), RLC_FB_DIGS);
 	g1[0] = 1;
 
-	lu = lv = FB_DIGS;
+	lu = lv = RLC_FB_DIGS;
 	l1 = l2 = 1;
 
 	bu = fb_bits(u);
-	bv = FB_BITS + 1;
+	bv = RLC_FB_BITS + 1;
 	j = bu - bv;
 
 	/* While (u != 1). */
@@ -86,7 +86,7 @@ void fb_invn_low(dig_t *c, const dig_t *a) {
 			j = -j;
 		}
 
-		SPLIT(j, d, j, DIG_LOG);
+		RLC_RIP(j, d, j);
 
 		/* u = u + v * z^j. */
 		if (j > 0) {
@@ -119,7 +119,7 @@ void fb_invn_low(dig_t *c, const dig_t *a) {
 
 		/* j = deg(u) - deg(v). */
 		lt = util_bits_dig(u[lu - 1]) - util_bits_dig(v[lv - 1]);
-		j = ((lu - lv) << DIG_LOG) + lt;
+		j = ((lu - lv) << RLC_DIG_LOG) + lt;
 	}
 	/* Return g1. */
 	fb_copy(c, g1);

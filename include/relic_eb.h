@@ -33,8 +33,8 @@
  * @ingroup eb
  */
 
-#ifndef RELIC_EB_H
-#define RELIC_EB_H
+#ifndef RLC_EB_H
+#define RLC_EB_H
 
 #include "relic_fb.h"
 #include "relic_bn.h"
@@ -81,43 +81,43 @@ enum {
 /**
  * Size of a precomputation table using the binary method.
  */
-#define RELIC_EB_TABLE_BASIC		(FB_BITS)
+#define RLC_EB_TABLE_BASIC		(RLC_FB_BITS)
 
 /**
  * Size of a precomputation table using the single-table comb method.
  */
-#define RELIC_EB_TABLE_COMBS      (1 << EB_DEPTH)
+#define RLC_EB_TABLE_COMBS      (1 << EB_DEPTH)
 
 /**
  * Size of a precomputation table using the double-table comb method.
  */
-#define RELIC_EB_TABLE_COMBD		(1 << (EB_DEPTH + 1))
+#define RLC_EB_TABLE_COMBD		(1 << (EB_DEPTH + 1))
 
 /**
  * Size of a precomputation table using the w-(T)NAF method.
  */
-#define RELIC_EB_TABLE_LWNAF		(1 << (EB_DEPTH - 2))
+#define RLC_EB_TABLE_LWNAF		(1 << (EB_DEPTH - 2))
 
 /**
  * Size of a precomputation table using the chosen algorithm.
  */
 #if EB_FIX == BASIC
-#define RELIC_EB_TABLE			RELIC_EB_TABLE_BASIC
+#define RLC_EB_TABLE			RLC_EB_TABLE_BASIC
 #elif EB_FIX == COMBS
-#define RELIC_EB_TABLE			RELIC_EB_TABLE_COMBS
+#define RLC_EB_TABLE			RLC_EB_TABLE_COMBS
 #elif EB_FIX == COMBD
-#define RELIC_EB_TABLE			RELIC_EB_TABLE_COMBD
+#define RLC_EB_TABLE			RLC_EB_TABLE_COMBD
 #elif EB_FIX == LWNAF
-#define RELIC_EB_TABLE			RELIC_EB_TABLE_LWNAF
+#define RLC_EB_TABLE			RLC_EB_TABLE_LWNAF
 #endif
 
 /**
  * Maximum size of a precomputation table.
  */
 #ifdef STRIP
-#define RELIC_EB_TABLE_MAX 		RELIC_EB_TABLE
+#define RLC_EB_TABLE_MAX 		RLC_EB_TABLE
 #else
-#define RELIC_EB_TABLE_MAX 		MAX(RELIC_EB_TABLE_BASIC, RELIC_EB_TABLE_COMBD)
+#define RLC_EB_TABLE_MAX 		RLC_MAX(RLC_EB_TABLE_BASIC, RLC_EB_TABLE_COMBD)
 #endif
 
 /*============================================================================*/
@@ -450,14 +450,14 @@ int eb_param_set_any(void);
  * Configures a set of curve parameters without endormorphisms for the current
  * security level.
  *
- * @return STS_OK if there is a curve at this security level, STS_ERR otherwise.
+ * @return RLC_OK if there is a curve at this security level, RLC_ERR otherwise.
  */
 int eb_param_set_any_plain(void);
 
 /**
  * Configures a set of Koblitz curve parameters for the current security level.
  *
- * @return STS_OK if there is a curve at this security level, STS_ERR otherwise.
+ * @return RLC_OK if there is a curve at this security level, RLC_ERR otherwise.
  */
 int eb_param_set_any_kbltz(void);
 
@@ -507,7 +507,7 @@ void eb_copy(eb_t r, const eb_t p);
  *
  * @param[in] p				- the first binary elliptic curve point.
  * @param[in] q				- the second binary elliptic curve point.
- * @return CMP_EQ if p == q and CMP_NE if p != q.
+ * @return RLC_EQ if p == q and RLC_NE if p != q.
  */
 int eb_cmp(const eb_t p, const eb_t q);
 
@@ -964,4 +964,4 @@ void eb_pck(eb_t r, const eb_t p);
  */
 int eb_upk(eb_t r, const eb_t p);
 
-#endif /* !RELIC_EB_H */
+#endif /* !RLC_EB_H */

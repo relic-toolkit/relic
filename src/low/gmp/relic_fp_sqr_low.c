@@ -39,11 +39,11 @@
 /*============================================================================*/
 
 void fp_sqrn_low(dig_t *c, const dig_t *a) {
-	mpn_mul_n(c, a, a, FP_DIGS);
+	mpn_mul_n(c, a, a, RLC_FP_DIGS);
 }
 
 void fp_sqrm_low(dig_t *c, const dig_t *a) {
-	relic_align dig_t t[2 * FP_DIGS];
+	rlc_align dig_t t[2 * RLC_FP_DIGS];
 
 	fp_sqrn_low(t, a);
 	fp_rdc(c, t);

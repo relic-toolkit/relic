@@ -47,7 +47,7 @@ void md_kdf1(uint8_t *key, int key_len, const uint8_t *in,
 	uint8_t t[key_len + MD_LEN];
 
 	/* d = ceil(kLen/hLen). */
-	d = CEIL(key_len, MD_LEN);
+	d = RLC_CEIL(key_len, MD_LEN);
 	memcpy(buffer, in, in_len);
 	for (i = 0; i < d; i++) {
 		j = util_conv_big(i);
@@ -66,7 +66,7 @@ void md_kdf2(uint8_t *key, int key_len, const uint8_t *in,
 	uint8_t t[key_len + MD_LEN];
 
 	/* d = ceil(kLen/hLen). */
-	d = CEIL(key_len, MD_LEN);
+	d = RLC_CEIL(key_len, MD_LEN);
 	memcpy(buffer, in, in_len);
 	for (i = 1; i <= d; i++) {
 		j = util_conv_big(i);

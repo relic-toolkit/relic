@@ -63,7 +63,7 @@ void fp_exp_basic(fp_t c, const fp_t a, const bn_t b) {
 			}
 		}
 
-		if (bn_sign(b) == BN_NEG) {
+		if (bn_sign(b) == RLC_NEG) {
 			fp_inv(c, r);
 		} else {
 			fp_copy(c, r);
@@ -84,7 +84,7 @@ void fp_exp_basic(fp_t c, const fp_t a, const bn_t b) {
 void fp_exp_slide(fp_t c, const fp_t a, const bn_t b) {
 	fp_t t[1 << (FP_WIDTH - 1)], r;
 	int i, j, l;
-	uint8_t win[FP_BITS + 1];
+	uint8_t win[RLC_FP_BITS + 1];
 
 	fp_null(r);
 
@@ -114,7 +114,7 @@ void fp_exp_slide(fp_t c, const fp_t a, const bn_t b) {
 		}
 
 		fp_set_dig(r, 1);
-		l = FP_BITS + 1;
+		l = RLC_FP_BITS + 1;
 		bn_rec_slw(win, &l, b, FP_WIDTH);
 		for (i = 0; i < l; i++) {
 			if (win[i] == 0) {
@@ -127,7 +127,7 @@ void fp_exp_slide(fp_t c, const fp_t a, const bn_t b) {
 			}
 		}
 
-		if (bn_sign(b) == BN_NEG) {
+		if (bn_sign(b) == RLC_NEG) {
 			fp_inv(c, r);
 		} else {
 			fp_copy(c, r);
@@ -168,13 +168,13 @@ void fp_exp_monty(fp_t c, const fp_t a, const bn_t b) {
 
 		for (int i = bn_bits(b) - 1; i >= 0; i--) {
 			int j = bn_get_bit(b, i);
-			dv_swap_cond(t[0], t[1], FP_DIGS, j ^ 1);
+			dv_swap_cond(t[0], t[1], RLC_FP_DIGS, j ^ 1);
 			fp_mul(t[0], t[0], t[1]);
 			fp_sqr(t[1], t[1]);
-			dv_swap_cond(t[0], t[1], FP_DIGS, j ^ 1);
+			dv_swap_cond(t[0], t[1], RLC_FP_DIGS, j ^ 1);
 		}
 
-		if (bn_sign(b) == BN_NEG) {
+		if (bn_sign(b) == RLC_NEG) {
 			fp_inv(c, t[0]);
 		} else {
 			fp_copy(c, t[0]);

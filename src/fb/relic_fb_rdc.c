@@ -57,28 +57,28 @@ void fb_rdc_basic(fb_t c, dv_t a) {
 	TRY {
 		dv_new(r);
 
-		tmpa = a + FB_DIGS;
+		tmpa = a + RLC_FB_DIGS;
 
 		/* First reduce the high part. */
 		for (int i = fb_bits(tmpa) - 1; i >= 0; i--) {
 			if (fb_get_bit(tmpa, i)) {
-				SPLIT(k, j, i - FB_BITS, DIG_LOG);
+				RLC_RIP(k, j, i - RLC_FB_BITS);
 				if (k <= 0) {
-					fb_addd_low(tmpa + j, tmpa + j, fb_poly_get(), FB_DIGS);
+					fb_addd_low(tmpa + j, tmpa + j, fb_poly_get(), RLC_FB_DIGS);
 				} else {
-					r[FB_DIGS] = fb_lshb_low(r, fb_poly_get(), k);
-					fb_addd_low(tmpa + j, tmpa + j, r, FB_DIGS + 1);
+					r[RLC_FB_DIGS] = fb_lshb_low(r, fb_poly_get(), k);
+					fb_addd_low(tmpa + j, tmpa + j, r, RLC_FB_DIGS + 1);
 				}
 			}
 		}
-		for (int i = fb_bits(a) - 1; i >= FB_BITS; i--) {
+		for (int i = fb_bits(a) - 1; i >= RLC_FB_BITS; i--) {
 			if (fb_get_bit(a, i)) {
-				SPLIT(k, j, i - FB_BITS, DIG_LOG);
+				RLC_RIP(k, j, i - RLC_FB_BITS);
 				if (k == 0) {
-					fb_addd_low(a + j, a + j, fb_poly_get(), FB_DIGS);
+					fb_addd_low(a + j, a + j, fb_poly_get(), RLC_FB_DIGS);
 				} else {
-					r[FB_DIGS] = fb_lshb_low(r, fb_poly_get(), k);
-					fb_addd_low(a + j, a + j, r, FB_DIGS + 1);
+					r[RLC_FB_DIGS] = fb_lshb_low(r, fb_poly_get(), k);
+					fb_addd_low(a + j, a + j, r, RLC_FB_DIGS + 1);
 				}
 			}
 		}

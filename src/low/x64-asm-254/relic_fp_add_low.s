@@ -61,7 +61,7 @@ cdecl(fp_add1_low):
 	addq	%rdx, %r10
 	movq	%r10, 0(%rdi)
 
-	ADD1_STEP 1, (FP_DIGS - 1)
+	ADD1_STEP 1, (RLC_FP_DIGS - 1)
 
 	ret
 
@@ -75,7 +75,7 @@ cdecl(fp_addn_low):
 	addq	0(%rsi), %r11
 	movq	%r11, 0(%rdi)
 
-	ADDN_STEP 1, (FP_DIGS - 1)
+	ADDN_STEP 1, (RLC_FP_DIGS - 1)
 
 	xorq	%rax, %rax
 
@@ -130,7 +130,7 @@ cdecl(fp_addd_low):
 	addq	0(%rsi), %r11
 	movq	%r11, 0(%rdi)
 
-	ADDN_STEP 1, (2 * FP_DIGS - 1)
+	ADDN_STEP 1, (2 * RLC_FP_DIGS - 1)
 
 	ret
 
@@ -195,7 +195,7 @@ cdecl(fp_sub1_low):
 	subq	%rdx, %r10
 	movq	%r10,0(%rdi)
 
-	SUB1_STEP 1, (FP_DIGS - 1)
+	SUB1_STEP 1, (RLC_FP_DIGS - 1)
 
 	ret
 
@@ -210,7 +210,7 @@ cdecl(fp_subn_low):
 	subq	0(%rdx), %r11
 	movq	%r11, 0(%rdi)
 
-	SUBN_STEP 1, (FP_DIGS - 1)
+	SUBN_STEP 1, (RLC_FP_DIGS - 1)
 
 	adcq	$0, %rax
 
@@ -256,7 +256,7 @@ cdecl(fp_subc_low):
 	subq    0(%rdx), %r8
 	movq    %r8, 0(%rdi)
 
-	SUBN_STEP 1, (2 * FP_DIGS - 1)
+	SUBN_STEP 1, (2 * RLC_FP_DIGS - 1)
 
 	movq	$0, %rsi
 	movq	$0, %rdx
@@ -280,7 +280,7 @@ cdecl(fp_subd_low):
 	subq	0(%rdx), %r8
 	movq	%r8, 0(%rdi)
 
-	SUBN_STEP 1, (2 * FP_DIGS - 1)
+	SUBN_STEP 1, (2 * RLC_FP_DIGS - 1)
 
 	ret
 
@@ -304,7 +304,7 @@ cdecl(fp_dbln_low):
 	addq	%r8, %r8
 	movq	%r8, 0(%rdi)
 
-	DBLN_STEP 1, (FP_DIGS - 1)
+	DBLN_STEP 1, (RLC_FP_DIGS - 1)
 
 	xorq	%rax,%rax
 	ret
