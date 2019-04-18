@@ -43,10 +43,6 @@ file(GLOB PC_SRCS pc/*.c)
 
 set(RELIC_SRCS ${CORE_SRCS})
 
-if (TRACE)
-	list(APPEND RELIC_SRCS "relic_trace.c")
-endif(TRACE)
-
 if (TESTS GREATER 0)
 	list(APPEND RELIC_SRCS "relic_test.c")
 endif(TESTS GREATER 0)
@@ -181,9 +177,6 @@ macro(LINK_LIBS LIBRARY)
 	if(MULTI STREQUAL PTHREAD)
 		target_link_libraries(${LIBRARY} pthread m)
 	endif(MULTI STREQUAL PTHREAD)
-	if(TRACE)
-		target_link_libraries(${LIBRARY} dl)
-	endif(TRACE)
 endmacro(LINK_LIBS)
 
 function(AMALGAMATE output inputFiles)

@@ -44,8 +44,6 @@
 #cmakedefine CHECK
 /** Verbose error messages. */
 #cmakedefine VERBS
-/** Trace support. */
-#cmakedefine TRACE
 /** Build with overhead estimation. */
 #cmakedefine OVERH
 /** Build documentation. */

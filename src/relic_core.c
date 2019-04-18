@@ -100,10 +100,6 @@ int core_init(void) {
 		core_ctx = &(first_ctx);
 	}
 
-#if defined(CHECK) && defined(TRACE)
-	core_ctx->trace = 0;
-#endif
-
 #ifdef CHECK
 	core_ctx->reason[ERR_NO_MEMORY] = MSG_NO_MEMORY;
 	core_ctx->reason[ERR_NO_PRECI] = MSG_NO_PRECI;

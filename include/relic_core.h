@@ -156,11 +156,6 @@ typedef struct _ctx_t {
 	int caught;
 #endif /* CHECK */
 
-#if defined(CHECK) && defined(TRACE)
-	/** The current trace size. */
-	int trace;
-#endif /* CHECK && TRACE */
-
 #ifdef WITH_FB
 	/** Identifier of the currently configured binary field. */
 	int fb_id;
@@ -386,22 +381,6 @@ typedef struct _ctx_t {
 	/** Counter to keep track of number of calls since last seeding. */
 	int counter;
 } ctx_t;
-
-#ifdef TRACE
-
-/*
- * The default library context. This context is only visible when tracing is
- * enabled to avoid infinite recursion insde the trace functions.
- */
-extern ctx_t first_ctx;
-
-/*
- * The current library context. This context is only visible when tracing is
- * enabled to avoid infinite recursion insde the trace functions.
- */
-extern ctx_t *core_ctx;
-
-#endif
 
 /*============================================================================*/
 /* Function prototypes                                                        */
