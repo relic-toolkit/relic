@@ -26,23 +26,10 @@
  *
  * Implementation of the low-level prime field multiplication functions.
  *
- * @version $Id: relic_fp_mul_low.c 683 2011-03-10 23:51:23Z dfaranha $
  * @ingroup bn
  */
 
 #include "macro.s"
-
-.data
-
-p0: .quad 0xAAA00001800002AB
-p1: .quad 0xA6C589556B2AA956
-p2: .quad 0xB3DB9994ACE86D1B
-p3: .quad 0x4BD93954FCB314B8
-p4: .quad 0x3F665E3A5B1D5623
-p5: .quad 0xA00E0F95B4920300
-p6: .quad 0x555955557955572A
-p7: .quad 0x0000000000000055
-u0: .quad 0x4B3EF8137F4017FD
 
 .text
 
@@ -64,7 +51,7 @@ fp_mulm_low:
 	subq 	$128, %rsp
 
 	movq 	%rdx,%rcx
-	leaq 	p0, %rbx
+	leaq 	p0(%rip), %rbx
 
 	FP_MULN_LOW %rsp, %r8, %r9, %r10, %rsi, %rcx
 

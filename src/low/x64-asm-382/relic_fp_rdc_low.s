@@ -34,15 +34,6 @@
 
 #include "macro.s"
 
-.data
-
-p0: .quad P0
-p1: .quad P1
-p2: .quad P2
-p3: .quad P3
-p4: .quad P4
-p5: .quad P5
-
 .text
 
 .global fp_rdcn_low
@@ -59,7 +50,7 @@ fp_rdcn_low:
 	push	%r15
 	push 	%rbx
 	push	%rbp
-	leaq 	p0, %rbx
+	leaq 	p0(%rip), %rbx
 
 	FP_RDCN_LOW %rdi, %r8, %r9, %r10, %rsi, %rbx
 

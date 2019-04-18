@@ -29,7 +29,6 @@
  * Implementation of the low-level prime field addition and subtraction
  * functions.
  *
- * @version $Id: relic_fp_add_low.c 88 2009-09-06 21:27:19Z dfaranha $
  * @ingroup fp
  */
 
@@ -37,17 +36,38 @@
 
 .data
 
-p0: .quad 0xAAAAAAAABEAB000B
-p1: .quad 0xEAF3FF000AAAAAAA
-p2: .quad 0xAAAAAAAAAAAAAA93
-p3: .quad 0x00000AC79600D2AB
-p4: .quad 0x5C75D6C2AB000000
-p5: .quad 0x3955555555529C00
-p6: .quad 0x00631BBD42171501
-p7: .quad 0xFC01DCDE95D40000
-p8: .quad 0xE80015554DD25DB0
-p9: .quad 0x3CB868653D300B3F
-u0: .quad 0xFAD7AB621D14745D
+p0: .quad P0
+p1: .quad P1
+p2: .quad P2
+p3: .quad P3
+p4: .quad P4
+p5: .quad P5
+p6: .quad P6
+p7: .quad P7
+p8: .quad P8
+p9: .quad P9
+
+.global p0
+.global p1
+.global p2
+.global p3
+.global p4
+.global p5
+.global p6
+.global p7
+.global p8
+.global p9
+
+.hidden p0
+.hidden p1
+.hidden p2
+.hidden p3
+.hidden p4
+.hidden p5
+.hidden p6
+.hidden p7
+.hidden p8
+.hidden p9
 
 .text
 
@@ -133,13 +153,13 @@ cdecl(fp_addm_low):
 	movq	%r13, %rbp
 	movq	%r14, %rdi
 
-	subq	p0, %rax
-	sbbq	p1, %rcx
-	sbbq	p2, %rdx
-	sbbq	p3, %rsi
-	sbbq	p4, %rbx
-	sbbq	p5, %rbp
-	sbbq	p6, %rdi
+	subq	p0(%rip), %rax
+	sbbq	p1(%rip), %rcx
+	sbbq	p2(%rip), %rdx
+	sbbq	p3(%rip), %rsi
+	sbbq	p4(%rip), %rbx
+	sbbq	p5(%rip), %rbp
+	sbbq	p6(%rip), %rdi
 
 	push	%rdi
 
@@ -251,13 +271,13 @@ cdecl(fp_addc_low):
 	movq	%r13, %rbp
 	movq	%r14, %rdi
 
-	subq	p0, %rax
-	sbbq	p1, %rcx
-	sbbq	p2, %rdx
-	sbbq	p3, %rsi
-	sbbq	p4, %rbx
-	sbbq	p5, %rbp
-	sbbq	p6, %rdi
+	subq	p0(%rip), %rax
+	sbbq	p1(%rip), %rcx
+	sbbq	p2(%rip), %rdx
+	sbbq	p3(%rip), %rsi
+	sbbq	p4(%rip), %rbx
+	sbbq	p5(%rip), %rbp
+	sbbq	p6(%rip), %rdi
 
 	push	%rdi
 
@@ -352,16 +372,16 @@ cdecl(fp_subm_low):
 	movq	$0, %r12
 	movq	$0, %r13
 
-	cmovc	p0, %rax
-	cmovc	p1, %rcx
-	cmovc	p2, %r8
-	cmovc	p3, %r9
-	cmovc	p4, %r10
-	cmovc	p5, %r11
-	cmovc	p6, %rdx
-	cmovc	p7, %rsi
-	cmovc	p8, %r12
-	cmovc	p9, %r13
+	cmovc	p0(%rip), %rax
+	cmovc	p1(%rip), %rcx
+	cmovc	p2(%rip), %r8
+	cmovc	p3(%rip), %r9
+	cmovc	p4(%rip), %r10
+	cmovc	p5(%rip), %r11
+	cmovc	p6(%rip), %rdx
+	cmovc	p7(%rip), %rsi
+	cmovc	p8(%rip), %r12
+	cmovc	p9(%rip), %r13
 
 	addq	%rax,  0(%rdi)
 	adcq	%rcx,  8(%rdi)
@@ -408,16 +428,16 @@ cdecl(fp_subc_low):
 	movq	$0, %r12
 	movq	$0, %r13
 
-	cmovc	p0, %rax
-	cmovc	p1, %rcx
-	cmovc	p2, %r8
-	cmovc	p3, %r9
-	cmovc	p4, %r10
-	cmovc	p5, %r11
-	cmovc	p6, %rsi
-	cmovc	p7, %rdx
-	cmovc	p8, %r12
-	cmovc	p9, %r13
+	cmovc	p0(%rip), %rax
+	cmovc	p1(%rip), %rcx
+	cmovc	p2(%rip), %r8
+	cmovc	p3(%rip), %r9
+	cmovc	p4(%rip), %r10
+	cmovc	p5(%rip), %r11
+	cmovc	p6(%rip), %rsi
+	cmovc	p7(%rip), %rdx
+	cmovc	p8(%rip), %r12
+	cmovc	p9(%rip), %r13
 
 	addq	%rax,  80(%rdi)
 	adcq	%rcx,  88(%rdi)
@@ -435,34 +455,34 @@ cdecl(fp_subc_low):
 	ret
 
 cdecl(fp_negm_low):
-	movq 	P0      , %r8
+	movq 	$P0      , %r8
 	subq 	0(%rsi) , %r8
 	movq 	%r8     , 0(%rdi)
-	movq 	P1      , %r8
+	movq 	$P1      , %r8
 	sbbq 	8(%rsi) , %r8
 	movq 	%r8     , 8(%rdi)
-	movq 	P2      , %r8
+	movq 	$P2      , %r8
 	sbbq 	16(%rsi), %r8
 	movq 	%r8     , 16(%rdi)
-	movq 	P3      , %r8
+	movq 	$P3      , %r8
 	sbbq 	24(%rsi), %r8
 	movq 	%r8     , 24(%rdi)
-	movq 	P4      , %r8
+	movq 	$P4      , %r8
 	sbbq 	32(%rsi), %r8
 	movq 	%r8     , 32(%rdi)
-	movq 	P5      , %r8
+	movq 	$P5      , %r8
 	sbbq 	40(%rsi), %r8
 	movq 	%r8     , 40(%rdi)
-	movq 	P6      , %r8
+	movq 	$P6      , %r8
 	sbbq 	48(%rsi), %r8
 	movq 	%r8     , 48(%rdi)
-	movq 	P7      , %r8
+	movq 	$P7      , %r8
 	sbbq 	56(%rsi), %r8
 	movq 	%r8     , 56(%rdi)
-	movq 	P8      , %r8
+	movq 	$P8      , %r8
 	sbbq 	64(%rsi), %r8
 	movq 	%r8     , 64(%rdi)
-	movq 	P9      , %r8
+	movq 	$P9      , %r8
 	sbbq 	72(%rsi), %r8
 	movq 	%r8     , 72(%rdi)
   	ret
@@ -527,13 +547,13 @@ cdecl(fp_dblm_low):
 	movq	%r13, %rbp
 	movq	%r14, %rdi
 
-	subq	p0, %rax
-	sbbq	p1, %rcx
-	sbbq	p2, %rdx
-	sbbq	p3, %rsi
-	sbbq	p4, %rbx
-	sbbq	p5, %rbp
-	sbbq	p6, %rdi
+	subq	p0(%rip), %rax
+	sbbq	p1(%rip), %rcx
+	sbbq	p2(%rip), %rdx
+	sbbq	p3(%rip), %rsi
+	sbbq	p4(%rip), %rbx
+	sbbq	p5(%rip), %rbp
+	sbbq	p6(%rip), %rdi
 
 	push	%rdi
 	movq	%r15, %rdi
@@ -597,16 +617,16 @@ cdecl(fp_hlvm_low):
 
 	xorq	%rdx, %rdx
 
-	movq	P0, %r8
-	movq	P1, %r9
-	movq	P2, %r10
-	movq	P3, %r11
-	movq	P4, %r12
-	movq	P5, %r13
-	movq	P6, %r14
-	movq	P7, %r15
-	movq	P8, %rbp
-	movq	P9, %rbx
+	movq	$P0, %r8
+	movq	$P1, %r9
+	movq	$P2, %r10
+	movq	$P3, %r11
+	movq	$P4, %r12
+	movq	$P5, %r13
+	movq	$P6, %r14
+	movq	$P7, %r15
+	movq	$P8, %rbp
+	movq	$P9, %rbx
 
   	movq 	$1     ,%rax
   	movq 	0(%rsi),%rcx
@@ -684,16 +704,16 @@ cdecl(fp_hlvd_low):
 
 	xorq	%rdx, %rdx
 
-	movq	P0, %r8
-	movq	P1, %r9
-	movq	P2, %r10
-	movq	P3, %r11
-	movq	P4, %r12
-	movq	P5, %r13
-	movq	P6, %r14
-	movq	P7, %r15
-	movq	P8, %rax
-	movq	P9, %rbx
+	movq	$P0, %r8
+	movq	$P1, %r9
+	movq	$P2, %r10
+	movq	$P3, %r11
+	movq	$P4, %r12
+	movq	$P5, %r13
+	movq	$P6, %r14
+	movq	$P7, %r15
+	movq	$P8, %rax
+	movq	$P9, %rbx
 
   	movq 	$1     ,%rbp
   	movq 	0(%rsi),%rcx

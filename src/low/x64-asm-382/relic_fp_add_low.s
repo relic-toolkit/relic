@@ -44,6 +44,20 @@ p3: .quad P3
 p4: .quad P4
 p5: .quad P5
 
+.global p0
+.global p1
+.global p2
+.global p3
+.global p4
+.global p5
+
+.hidden p0
+.hidden p1
+.hidden p2
+.hidden p3
+.hidden p4
+.hidden p5
+
 .text
 
 .global fp_add1_low
@@ -109,12 +123,12 @@ fp_addm_low:
 	movq	%r12, %rbx
 	movq	%r13, %rbp
 
-	subq	p0, %rax
-	sbbq	p1, %rcx
-	sbbq	p2, %rdx
-	sbbq	p3, %rsi
-	sbbq	p4, %rbx
-	sbbq	p5, %rbp
+	subq	p0(%rip), %rax
+	sbbq	p1(%rip), %rcx
+	sbbq	p2(%rip), %rdx
+	sbbq	p3(%rip), %rsi
+	sbbq	p4(%rip), %rbx
+	sbbq	p5(%rip), %rbp
 
 	cmovnc	%rax, %r8
 	cmovnc	%rcx, %r9
@@ -178,12 +192,12 @@ fp_addc_low:
 	movq	%r12, %rbx
 	movq	%r13, %rbp
 
-	subq	p0, %rax
-	sbbq	p1, %rcx
-	sbbq	p2, %rdx
-	sbbq	p3, %rsi
-	sbbq	p4, %rbx
-	sbbq	p5, %rbp
+	subq	p0(%rip), %rax
+	sbbq	p1(%rip), %rcx
+	sbbq	p2(%rip), %rdx
+	sbbq	p3(%rip), %rsi
+	sbbq	p4(%rip), %rbx
+	sbbq	p5(%rip), %rbp
 
 	cmovnc	%rax, %r8
 	cmovnc	%rcx, %r9
@@ -243,12 +257,12 @@ fp_subm_low:
 	movq	$0, %r10
 	movq	$0, %r11
 
-	cmovc	p0, %rax
-	cmovc	p1, %rcx
-	cmovc	p2, %r8
-	cmovc	p3, %r9
-	cmovc	p4, %r10
-	cmovc	p5, %r11
+	cmovc	p0(%rip), %rax
+	cmovc	p1(%rip), %rcx
+	cmovc	p2(%rip), %r8
+	cmovc	p3(%rip), %r9
+	cmovc	p4(%rip), %r10
+	cmovc	p5(%rip), %r11
 
 	addq	%rax,  0(%rdi)
 	adcq	%rcx,  8(%rdi)
@@ -283,12 +297,12 @@ fp_subc_low:
 	movq	$0, %r10
 	movq	$0, %r11
 
-	cmovc	p0, %rax
-	cmovc	p1, %rcx
-	cmovc	p2, %r8
-	cmovc	p3, %r9
-	cmovc	p4, %r10
-	cmovc	p5, %r11
+	cmovc	p0(%rip), %rax
+	cmovc	p1(%rip), %rcx
+	cmovc	p2(%rip), %r8
+	cmovc	p3(%rip), %r9
+	cmovc	p4(%rip), %r10
+	cmovc	p5(%rip), %r11
 
 	addq	%rax, 48(%rdi)
 	adcq	%rcx, 56(%rdi)
@@ -360,12 +374,12 @@ fp_dblm_low:
 	movq	%r12, %rbx
 	movq	%r13, %rbp
 
-	subq	p0, %rax
-	sbbq	p1, %rcx
-	sbbq	p2, %rdx
-	sbbq	p3, %rsi
-	sbbq	p4, %rbx
-	sbbq	p5, %rbp
+	subq	p0(%rip), %rax
+	sbbq	p1(%rip), %rcx
+	sbbq	p2(%rip), %rdx
+	sbbq	p3(%rip), %rsi
+	sbbq	p4(%rip), %rbx
+	sbbq	p5(%rip), %rbp
 
 	cmovnc	%rax, %r8
 	cmovnc	%rcx, %r9

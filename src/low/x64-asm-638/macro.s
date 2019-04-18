@@ -32,23 +32,17 @@
  * @ingroup fp
  */
 
-#define P0	$0xAAAAAAAABEAB000B
-#define P1	$0xEAF3FF000AAAAAAA
-#define P2	$0xAAAAAAAAAAAAAA93
-#define P3	$0x00000AC79600D2AB
-#define P4	$0x5C75D6C2AB000000
-#define P5	$0x3955555555529C00
-#define P6	$0x00631BBD42171501
-#define P7	$0xFC01DCDE95D40000
-#define P8	$0xE80015554DD25DB0
-#define P9	$0x3CB868653D300B3F
-#define U0	$0xFAD7AB621D14745D
-
-#define NP40 $0xC000000000000000
-#define NP41 $0xE9C0000000000004
-#define NP42 $0x1848400000000004
-#define NP43 $0x6E8D136000000002
-#define NP44 $0x0948D92090000000
+#define P0	0xAAAAAAAABEAB000B
+#define P1	0xEAF3FF000AAAAAAA
+#define P2	0xAAAAAAAAAAAAAA93
+#define P3	0x00000AC79600D2AB
+#define P4	0x5C75D6C2AB000000
+#define P5	0x3955555555529C00
+#define P6	0x00631BBD42171501
+#define P7	0xFC01DCDE95D40000
+#define P8	0xE80015554DD25DB0
+#define P9	0x3CB868653D300B3F
+#define U0	0xFAD7AB621D14745D
 
 #if defined(__APPLE__)
 #define cdecl(S) _PREFIX(,S)
@@ -222,7 +216,7 @@
 // r8, r9, r10, r11, r12, r13, r14, r15, rbp, rbx, rsp, //rsi, rdi, //rax, rcx, rdx
 .macro FP_RDCN_LOW C, R0, R1, R2, A, P
 	xorq	\R1, \R1
-	movq	U0, %rcx
+	movq	$U0, %rcx
 
 	movq	0(\A), \R0
 	movq	\R0  , %rax
@@ -266,16 +260,16 @@
 	movq	144(\A), %r8
 	movq	152(\A), %r9
 
-	subq	p0, %r11
-	sbbq	p1, %r12
-	sbbq	p2, %r13
-	sbbq	p3, %r14
-	sbbq	p4, %r15
-	sbbq	p5, %rcx
-	sbbq	p6, %rbp
-	sbbq	p7, %rdx
-	sbbq	p8, %r8
-	sbbq	p9, %r9
+	subq	p0(%rip), %r11
+	sbbq	p1(%rip), %r12
+	sbbq	p2(%rip), %r13
+	sbbq	p3(%rip), %r14
+	sbbq	p4(%rip), %r15
+	sbbq	p5(%rip), %rcx
+	sbbq	p6(%rip), %rbp
+	sbbq	p7(%rip), %rdx
+	sbbq	p8(%rip), %r8
+	sbbq	p9(%rip), %r9
 
 	cmovc	80(\A), %r11
 	cmovc	88(\A), %r12

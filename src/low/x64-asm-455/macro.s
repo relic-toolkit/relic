@@ -32,15 +32,15 @@
  * @ingroup fp
  */
 
-#define P0	$0xAAA00001800002AB
-#define P1	$0xA6C589556B2AA956
-#define P2	$0xB3DB9994ACE86D1B
-#define P3	$0x4BD93954FCB314B8
-#define P4	$0x3F665E3A5B1D5623
-#define P5	$0xA00E0F95B4920300
-#define P6	$0x555955557955572A
-#define P7	$0x0000000000000055
-#define U0	$0x4B3EF8137F4017FD
+#define P0	0xAAA00001800002AB
+#define P1	0xA6C589556B2AA956
+#define P2	0xB3DB9994ACE86D1B
+#define P3	0x4BD93954FCB314B8
+#define P4	0x3F665E3A5B1D5623
+#define P5	0xA00E0F95B4920300
+#define P6	0x555955557955572A
+#define P7	0x0000000000000055
+#define U0	0x4B3EF8137F4017FD
 
 .text
 
@@ -200,7 +200,7 @@
 // r8, r9, r10, r11, r12, r13, r14, r15, rbp, rbx, rsp, //rsi, rdi, //rax, rcx, rdx
 .macro FP_RDCN_LOW C, R0, R1, R2, A, P
 	xorq	\R1, \R1
-	movq	U0, %rcx
+	movq	$U0, %rcx
 
 	movq	0(\A), \R0
 	movq	\R0  , %rax
@@ -238,14 +238,14 @@
 	movq	112(\A), %rbp
 	movq	120(\A), %rdx
 
-	subq	p0, %r11
-	sbbq	p1, %r12
-	sbbq	p2, %r13
-	sbbq	p3, %r14
-	sbbq	p4, %r15
-	sbbq	p5, %rcx
-	sbbq	p6, %rbp
-	sbbq	p7, %rdx
+	subq	p0(%rip), %r11
+	sbbq	p1(%rip), %r12
+	sbbq	p2(%rip), %r13
+	sbbq	p3(%rip), %r14
+	sbbq	p4(%rip), %r15
+	sbbq	p5(%rip), %rcx
+	sbbq	p6(%rip), %rbp
+	sbbq	p7(%rip), %rdx
 
 	cmovc	64(\A), %r11
 	cmovc	72(\A), %r12

@@ -24,9 +24,8 @@
 /**
  * @file
  *
- * Implementation of the low-le&vel in&version functions.
+ * Implementation of the low-level in&version functions.
  *
- * @&version $Id: relic_fp_inv_low.c 401 2010-07-05 01:40:18Z dfaranha $
  * @ingroup fp
  */
 
@@ -72,14 +71,14 @@ fp_invn_asm:
 	subq 	$256, %rsp
 
 	/* v = p. */
-	movq	P0, %r8
-	movq	P1, %r9
-	movq	P2, %r10
-	movq	P3, %r11
-	movq	P4, %r12
-	movq	P5, %r13
-	movq	P6, %r14
-	movq	P7, %r15
+	movq	$P0, %r8
+	movq	$P1, %r9
+	movq	$P2, %r10
+	movq	$P3, %r11
+	movq	$P4, %r12
+	movq	$P5, %r13
+	movq	$P6, %r14
+	movq	$P7, %r15
 
 	/* rsp[0..7] = u = a. */
 	movq	0(%rsi),%rax

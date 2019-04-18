@@ -26,27 +26,12 @@
  *
  * Implementation of low-level prime field modular reduction.
  *
- * @version $Id: relic_fp_add_low.c 88 2009-09-06 21:27:19Z dfaranha $
  * @ingroup fp
  */
 
 #include "relic_fp_low.h"
 
 #include "macro.s"
-
-.data
-
-p0: .quad 0xAAAAAAAABEAB000B
-p1: .quad 0xEAF3FF000AAAAAAA
-p2: .quad 0xAAAAAAAAAAAAAA93
-p3: .quad 0x00000AC79600D2AB
-p4: .quad 0x5C75D6C2AB000000
-p5: .quad 0x3955555555529C00
-p6: .quad 0x00631BBD42171501
-p7: .quad 0xFC01DCDE95D40000
-p8: .quad 0xE80015554DD25DB0
-p9: .quad 0x3CB868653D300B3F
-u0: .quad 0xFAD7AB621D14745D
 
 .text
 
@@ -64,7 +49,7 @@ cdecl(fp_rdcn_low):
 	push	%r15
 	push 	%rbx
 	push	%rbp
-	leaq 	p0, %rbx
+	leaq 	p0(%rip), %rbx
 
 	FP_RDCN_LOW %rdi, %r8, %r9, %r10, %rsi, %rbx
 

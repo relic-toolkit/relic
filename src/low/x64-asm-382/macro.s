@@ -232,12 +232,12 @@
 	movq	80(\A), %r15
 	movq	88(\A), %rcx
 
-	subq	p0, %r11
-	sbbq	p1, %r12
-	sbbq	p2, %r13
-	sbbq	p3, %r14
-	sbbq	p4, %r15
-	sbbq	p5, %rcx
+	subq	p0(%rip), %r11
+	sbbq	p1(%rip), %r12
+	sbbq	p2(%rip), %r13
+	sbbq	p3(%rip), %r14
+	sbbq	p4(%rip), %r15
+	sbbq	p5(%rip), %rcx
 
 	cmovc	48(\A), %r11
 	cmovc	56(\A), %r12

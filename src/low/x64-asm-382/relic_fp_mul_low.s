@@ -32,15 +32,6 @@
 
 #include "macro.s"
 
-.data
-
-p0: .quad P0
-p1: .quad P1
-p2: .quad P2
-p3: .quad P3
-p4: .quad P4
-p5: .quad P5
-
 .text
 
 .global fp_muln_low
@@ -61,7 +52,7 @@ fp_mulm_low:
 	subq 	$96, %rsp
 
 	movq 	%rdx,%rcx
-	leaq 	p0, %rbx
+	leaq 	p0(%rip), %rbx
 
 	FP_MULN_LOW %rsp, %r8, %r9, %r10, %rsi, %rcx
 
