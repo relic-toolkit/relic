@@ -24,7 +24,7 @@
 /**
  * @file
  *
- * Implementation of the point normalization on binary elliptic curves.
+ * Implementation of point normalization on binary elliptic curves.
  *
  * @ingroup eb
  */

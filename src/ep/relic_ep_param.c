@@ -24,7 +24,7 @@
 /**
  * @file
  *
- * Implementation of the prime elliptic curve utilities.
+ * Implementation of the prime elliptic curve parameters.
  *
  * @ingroup ep
  */

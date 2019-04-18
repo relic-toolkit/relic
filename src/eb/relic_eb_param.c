@@ -24,7 +24,7 @@
 /**
  * @file
  *
- * Implementation of the binary elliptic curve utilities.
+ * Implementation of the binary elliptic curve parameters.
  *
  * @ingroup eb
  */
