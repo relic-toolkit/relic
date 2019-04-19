@@ -318,7 +318,7 @@ void ed_read_bin(ed_t a, const uint8_t *bin, int len) {
 #if ED_ADD == EXTND
 	fp_mul(a->t, a->x, a->y);
 	fp_mul(a->x, a->x, a->z);
-	fp_mul(r->y, a->y, a->z);
+	fp_mul(a->y, a->y, a->z);
 	fp_sqr(a->z, a->z);
 #endif
 }

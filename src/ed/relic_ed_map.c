@@ -37,9 +37,6 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-/* Square root of -1 mod p. */
-#define SRTM1 "2B8324804FC1DF0B2B4D00993DFBD7A72F431806AD2FE478C4EE1B274A0EA0B0"
-
 void ed_map(ed_t p, const uint8_t *msg, int len) {
 	bn_t h;
 	fp_t t, u, v;
@@ -100,8 +97,7 @@ void ed_map(ed_t p, const uint8_t *msg, int len) {
 				if (fp_cmp(t, u) != RLC_EQ) {
 					fp_add_dig(p->y, p->y, 1);
 				} else {
-					fp_read_str(t, SRTM1, strlen(SRTM1), 16);
-					fp_mul(p->x, p->x, t);
+					fp_mul(p->x, p->x, core_get()->srm1);
 					break;
 				}
 			} else {

@@ -493,7 +493,7 @@ static int multiplication(void) {
 		ep_curve_get_ord(n);
 
 		TEST_BEGIN("generator has the right order") {
-			TEST_ASSERT(ed_is_valid(p), end);
+			TEST_ASSERT(ep_is_valid(p), end);
 			ep_mul(r, p, n);
 			TEST_ASSERT(ep_is_infty(r) == 1, end);
 		} TEST_END;

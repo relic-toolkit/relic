@@ -99,15 +99,17 @@ void ed_param_set(int param) {
 				break;
 		}
 		fp_set_dig(g->z, 1);
+		fp_neg(g->z, g->z);
+		fp_srt(core_get()->srm1, g->z);
+		fp_neg(g->z, g->z);
 		g->norm = 1;
+#if ED_ADD == EXTND
+		fp_mul(g->t, g->x, g->y);
+#endif
 
 		bn_copy(&core_get()->ed_h, h);
 		bn_copy(&core_get()->ed_r, r);
-#if ED_ADD == PROJC
 		ed_copy(&core_get()->ed_g, g);
-#elif ED_ADD == EXTND
-		ed_projc_to_extnd(&core_get()->ed_g, g->x, g->y, g->z);
-#endif
 
 #ifdef ED_PRECO
 		for (int i = 0; i < RLC_ED_TABLE; i++) {
