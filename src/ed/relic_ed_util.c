@@ -114,7 +114,7 @@ int ed_cmp(const ed_t p, const ed_t q) {
             fp_mul(s->y, q->y, p->z);
 #if ED_ADD == EXTND
 			fp_mul(r->t, p->t, q->z);
-			fp_mul(s->y, q->y, p->z);
+			fp_mul(s->t, q->t, p->z);
 #endif
         } else {
 			ed_copy(r, p);
