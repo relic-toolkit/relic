@@ -47,16 +47,18 @@ int ed_is_infty(const ed_t p) {
 
 	fp_null(t);
 
+	if (p->norm) {
+		return (fp_is_zero(p->x) && (fp_cmp_dig(p->y, 1) == RLC_EQ));
+	}
+
 	if (fp_is_zero(p->z)) {
 		THROW(ERR_NO_VALID);
 	}
 
 	TRY {
 		fp_new(t);
-
 		fp_inv(t, p->z);
 		fp_mul(t, p->y, t);
-
 		if (fp_is_zero(p->x) && (fp_cmp_dig(t, 1) == RLC_EQ)) {
 			r = 1;
 		}
@@ -72,9 +74,7 @@ int ed_is_infty(const ed_t p) {
 void ed_set_infty(ed_t p) {
 	fp_zero(p->x);
 	fp_set_dig(p->y, 1);
-#if ED_ADD == PROJC || ED_ADD == EXTND
 	fp_set_dig(p->z, 1);
-#endif
 #if ED_ADD == EXTND
 	fp_zero(p->t);
 #endif
@@ -84,9 +84,7 @@ void ed_set_infty(ed_t p) {
 void ed_copy(ed_t r, const ed_t p) {
 	fp_copy(r->x, p->x);
 	fp_copy(r->y, p->y);
-#if ED_ADD == PROJC || ED_ADD == EXTND
 	fp_copy(r->z, p->z);
-#endif
 #if ED_ADD == EXTND
 	fp_copy(r->t, p->t);
 #endif
@@ -115,6 +113,9 @@ int ed_cmp(const ed_t p, const ed_t q) {
 #if ED_ADD == EXTND
 			fp_mul(r->t, p->t, q->z);
 			fp_mul(s->t, q->t, p->z);
+			if (fp_cmp(r->t, s->t) != RLC_EQ) {
+	            result = RLC_NE;
+	        }
 #endif
         } else {
 			ed_copy(r, p);
@@ -133,11 +134,6 @@ int ed_cmp(const ed_t p, const ed_t q) {
         if (fp_cmp(r->y, s->y) != RLC_EQ) {
             result = RLC_NE;
         }
-#if ED_ADD == EXTND
-		if (fp_cmp(r->t, s->t) != RLC_EQ) {
-            result = RLC_NE;
-        }
-#endif
     } CATCH_ANY {
         THROW(ERR_CAUGHT);
     } FINALLY {

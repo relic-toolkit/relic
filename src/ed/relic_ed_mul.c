@@ -38,8 +38,6 @@
 
 #if ED_MUL == LWNAF || !defined(STRIP)
 
-#if defined(ED_PLAIN) || defined(ED_SUPER)
-
 static void ed_mul_naf_imp(ed_t r, const ed_t p, const bn_t k) {
 	int l, i, n;
 	int8_t naf[RLC_FP_BITS + 1];
@@ -106,25 +104,19 @@ static void ed_mul_naf_imp(ed_t r, const ed_t p, const bn_t k) {
 	}
 }
 
-#endif /* ED_PLAIN || ED_SUPER */
 #endif /* ED_MUL == LWNAF_MIXED */
 
 #if ED_MUL == LWREG || !defined(STRIP)
-
-#if defined(ED_PLAIN) || defined(ED_SUPER)
 
 static void ed_mul_reg_imp(ed_t r, const ed_t p, const bn_t k) {
 	int l, i, j, n;
 	int8_t reg[RLC_CEIL(RLC_FP_BITS + 1, ED_WIDTH - 1)], *_k;
 	ed_t t[1 << (ED_WIDTH - 2)];
 
-	for (i = 0; i < (1 << (ED_WIDTH - 2)); i++) {
-		ed_null(t[i]);
-	}
-
 	TRY {
 		/* Prepare the precomputation table. */
 		for (i = 0; i < (1 << (ED_WIDTH - 2)); i++) {
+			ed_null(t[i]);
 			ed_new(t[i]);
 		}
 		/* Compute the precomputation table. */
@@ -139,6 +131,7 @@ static void ed_mul_reg_imp(ed_t r, const ed_t p, const bn_t k) {
 		ed_set_infty(r);
 		for (i = l - 1; i >= 0; i--, _k--) {
 			for (j = 0; j < ED_WIDTH - 1; j++) {
+				r->norm = 2;
 				ed_dbl(r, r);
 			}
 
@@ -165,7 +158,6 @@ static void ed_mul_reg_imp(ed_t r, const ed_t p, const bn_t k) {
 	}
 }
 
-#endif /* ED_PLAIN || ED_SUPER */
 #endif /* ED_MUL == LWNAF */
 
 /*============================================================================*/
@@ -175,22 +167,20 @@ static void ed_mul_reg_imp(ed_t r, const ed_t p, const bn_t k) {
 #if ED_MUL == BASIC || !defined(STRIP)
 
 void ed_mul_basic(ed_t r, const ed_t p, const bn_t k) {
-	int i, l;
 	ed_t t;
 
 	ed_null(t);
 
-	if (bn_is_zero(k)) {
+	if (bn_is_zero(k) || ed_is_infty(p)) {
 		ed_set_infty(r);
 		return;
 	}
 
 	TRY {
 		ed_new(t);
-		l = bn_bits(k);
 
 		ed_copy(t, p);
-		for (i = l - 2; i >= 0; i--) {
+		for (int i = bn_bits(k) - 2; i >= 0; i--) {
 			ed_dbl(t, t);
 			if (bn_get_bit(k, i)) {
 				ed_add(t, t, p);
@@ -198,6 +188,9 @@ void ed_mul_basic(ed_t r, const ed_t p, const bn_t k) {
 		}
 
 		ed_norm(r, t);
+		if (bn_sign(k) == RLC_NEG) {
+			ed_neg(r, r);
+		}
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
@@ -212,24 +205,20 @@ void ed_mul_basic(ed_t r, const ed_t p, const bn_t k) {
 #if ED_MUL == SLIDE || !defined(STRIP)
 
 void ed_mul_slide(ed_t r, const ed_t p, const bn_t k) {
-	ed_t t[1 << (ED_WIDTH - 1)], q;
+	ed_t t[1 << (EP_WIDTH - 1)], q;
 	int i, j, l;
 	uint8_t win[RLC_FP_BITS + 1];
 
 	ed_null(q);
 
-	/* Initialize table. */
-	for (i = 0; i < (1 << (ED_WIDTH - 1)); i++) {
-		ed_null(t[i]);
-	}
-
-	if (bn_is_zero(k)) {
+	if (bn_is_zero(k) || ed_is_infty(p)) {
 		ed_set_infty(r);
 		return;
 	}
 
 	TRY {
-		for (i = 0; i < (1 << (ED_WIDTH - 1)); i++) {
+		for (i = 0; i < (1 << (EP_WIDTH - 1)); i ++) {
+			ed_null(t[i]);
 			ed_new(t[i]);
 		}
 
@@ -238,22 +227,22 @@ void ed_mul_slide(ed_t r, const ed_t p, const bn_t k) {
 		ed_copy(t[0], p);
 		ed_dbl(q, p);
 
-#if defined(ED_MIXED)
+#if defined(EP_MIXED)
 		ed_norm(q, q);
 #endif
 
 		/* Create table. */
-		for (i = 1; i < (1 << (ED_WIDTH - 1)); i++) {
+		for (i = 1; i < (1 << (EP_WIDTH - 1)); i++) {
 			ed_add(t[i], t[i - 1], q);
 		}
 
-#if defined(ED_MIXED)
-		ed_norm_sim(t + 1, (const ed_t *)t + 1, (1 << (ED_WIDTH - 1)) - 1);
+#if defined(EP_MIXED)
+		ed_norm_sim(t + 1, (const ed_t *)t + 1, (1 << (EP_WIDTH - 1)) - 1);
 #endif
 
 		ed_set_infty(q);
 		l = RLC_FP_BITS + 1;
-		bn_rec_slw(win, &l, k, ED_WIDTH);
+		bn_rec_slw(win, &l, k, EP_WIDTH);
 		for (i = 0; i < l; i++) {
 			if (win[i] == 0) {
 				ed_dbl(q, q);
@@ -266,12 +255,15 @@ void ed_mul_slide(ed_t r, const ed_t p, const bn_t k) {
 		}
 
 		ed_norm(r, q);
+		if (bn_sign(k) == RLC_NEG) {
+			ed_neg(r, r);
+		}
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
 	}
 	FINALLY {
-		for (i = 0; i < (1 << (ED_WIDTH - 1)); i++) {
+		for (i = 0; i < (1 << (EP_WIDTH - 1)); i++) {
 			ed_free(t[i]);
 		}
 		ed_free(q);
@@ -288,7 +280,7 @@ void ed_mul_monty(ed_t r, const ed_t p, const bn_t k) {
 	ed_null(t[0]);
 	ed_null(t[1]);
 
-	if (bn_is_zero(k)) {
+	if (bn_is_zero(k) || ed_is_infty(p)) {
 		ed_set_infty(r);
 		return;
 	}
@@ -302,31 +294,27 @@ void ed_mul_monty(ed_t r, const ed_t p, const bn_t k) {
 
 		for (int i = bn_bits(k) - 1; i >= 0; i--) {
 			int j = bn_get_bit(k, i);
-#if ED_ADD == PROJC
+
 			dv_swap_cond(t[0]->x, t[1]->x, RLC_FP_DIGS, j ^ 1);
 			dv_swap_cond(t[0]->y, t[1]->y, RLC_FP_DIGS, j ^ 1);
 			dv_swap_cond(t[0]->z, t[1]->z, RLC_FP_DIGS, j ^ 1);
-			ed_add(t[0], t[0], t[1]);
-			ed_dbl(t[1], t[1]);
-			dv_swap_cond(t[0]->x, t[1]->x, RLC_FP_DIGS, j ^ 1);
-			dv_swap_cond(t[0]->y, t[1]->y, RLC_FP_DIGS, j ^ 1);
-			dv_swap_cond(t[0]->z, t[1]->z, RLC_FP_DIGS, j ^ 1);
-#elif ED_ADD == EXTND
-			dv_swap_cond(t[0]->x, t[1]->x, RLC_FP_DIGS, j ^ 1);
-			dv_swap_cond(t[0]->y, t[1]->y, RLC_FP_DIGS, j ^ 1);
-			dv_swap_cond(t[0]->z, t[1]->z, RLC_FP_DIGS, j ^ 1);
+#if ED_ADD == EXTND
 			dv_swap_cond(t[0]->t, t[1]->t, RLC_FP_DIGS, j ^ 1);
+#endif
 			ed_add(t[0], t[0], t[1]);
 			ed_dbl(t[1], t[1]);
 			dv_swap_cond(t[0]->x, t[1]->x, RLC_FP_DIGS, j ^ 1);
 			dv_swap_cond(t[0]->y, t[1]->y, RLC_FP_DIGS, j ^ 1);
 			dv_swap_cond(t[0]->z, t[1]->z, RLC_FP_DIGS, j ^ 1);
+#if ED_ADD == EXTND
 			dv_swap_cond(t[0]->t, t[1]->t, RLC_FP_DIGS, j ^ 1);
 #endif
 		}
 
 		ed_norm(r, t[0]);
-
+		if (bn_sign(k) == RLC_NEG) {
+			ed_neg(r, r);
+		}
 	} CATCH_ANY {
 		THROW(ERR_CAUGHT);
 	}
@@ -341,14 +329,12 @@ void ed_mul_monty(ed_t r, const ed_t p, const bn_t k) {
 #if ED_MUL == LWNAF || !defined(STRIP)
 
 void ed_mul_lwnaf(ed_t r, const ed_t p, const bn_t k) {
-	if (bn_is_zero(k)) {
+	if (bn_is_zero(k) || ed_is_infty(p)) {
 		ed_set_infty(r);
 		return;
 	}
 
-#if defined(ED_PLAIN) || defined(ED_SUPER)
 	ed_mul_naf_imp(r, p, k);
-#endif
 }
 
 #endif
@@ -356,14 +342,12 @@ void ed_mul_lwnaf(ed_t r, const ed_t p, const bn_t k) {
 #if ED_MUL == LWREG || !defined(STRIP)
 
 void ed_mul_lwreg(ed_t r, const ed_t p, const bn_t k) {
-	if (bn_is_zero(k)) {
+	if (bn_is_zero(k) || ed_is_infty(p)) {
 		ed_set_infty(r);
 		return;
 	}
 
-#if defined(ED_PLAIN) || defined(ED_SUPER)
 	ed_mul_reg_imp(r, p, k);
-#endif
 }
 
 #endif

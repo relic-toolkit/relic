@@ -78,116 +78,15 @@ static void ed_mul_fix_plain(ed_t r, const ed_t * t, const bn_t k) {
 	}
 	/* Convert r to affine coordinates. */
 	ed_norm(r, r);
+	if (bn_sign(k) == RLC_NEG) {
+		ed_neg(r, r);
+	}
 }
 
 #endif /* ED_FIX == LWNAF */
 
 #if ED_FIX == COMBS || !defined(STRIP)
 
-#if defined(ED_ENDOM)
-
-/**
- * Multiplies a prime elliptic curve point by an integer using the COMBS
- * method.
- *
- * @param[out] r 				- the result.
- * @param[in] t					- the precomputed table.
- * @param[in] k					- the integer.
- */
-static void ed_mul_combs_endom(ed_t r, const ed_t * t, const bn_t k) {
-	int i, j, l, w0, w1, n0, n1, p0, p1, s0, s1;
-	bn_t n, k0, k1, v1[3], v2[3];
-	ed_t u;
-
-	bn_null(n);
-	bn_null(k0);
-	bn_null(k1);
-	ed_null(u);
-
-	TRY {
-		bn_new(n);
-		bn_new(k0);
-		bn_new(k1);
-		ed_new(u);
-		for (i = 0; i < 3; i++) {
-			bn_null(v1[i]);
-			bn_null(v2[i]);
-			bn_new(v1[i]);
-			bn_new(v2[i]);
-		}
-
-		ed_curve_get_ord(n);
-		ed_curve_get_v1(v1);
-		ed_curve_get_v2(v2);
-		l = bn_bits(n);
-		l = ((l % (2 * ED_DEPTH)) ==
-				0 ? (l / (2 * ED_DEPTH)) : (l / (2 * ED_DEPTH)) + 1);
-
-		bn_rec_glv(k0, k1, k, n, (const bn_t *)v1, (const bn_t *)v2);
-		s0 = bn_sign(k0);
-		s1 = bn_sign(k1);
-		bn_abs(k0, k0);
-		bn_abs(k1, k1);
-
-		n0 = bn_bits(k0);
-		n1 = bn_bits(k1);
-
-		p0 = (ED_DEPTH) * l - 1;
-
-		ed_set_infty(r);
-
-		for (i = l - 1; i >= 0; i--) {
-			ed_dbl(r, r);
-
-			w0 = 0;
-			w1 = 0;
-			p1 = p0--;
-			for (j = ED_DEPTH - 1; j >= 0; j--, p1 -= l) {
-				w0 = w0 << 1;
-				w1 = w1 << 1;
-				if (p1 < n0 && bn_get_bit(k0, p1)) {
-					w0 = w0 | 1;
-				}
-				if (p1 < n1 && bn_get_bit(k1, p1)) {
-					w1 = w1 | 1;
-				}
-			}
-			if (w0 > 0) {
-				if (s0 == RLC_POS) {
-					ed_add(r, r, t[w0]);
-				} else {
-					ed_sub(r, r, t[w0]);
-				}
-			}
-			if (w1 > 0) {
-				ed_copy(u, t[w1]);
-				fp_mul(u->x, u->x, ed_curve_get_beta());
-				if (s1 == RLC_NEG) {
-					ed_neg(u, u);
-				}
-				ed_add(r, r, u);
-			}
-		}
-		ed_norm(r, r);
-	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	}
-	FINALLY {
-		bn_free(n);
-		bn_free(k0);
-		bn_free(k1);
-		ed_free(u);
-		for (i = 0; i < 3; i++) {
-			bn_free(v1[i]);
-			bn_free(v2[i]);
-		}
-	}
-}
-
-#endif /* ED_ENDOM */
-
-#if defined(ED_PLAIN) || defined(ED_SUPER)
 /**
  * Multiplies a prime elliptic curve point by an integer using the COMBS
  * method.
@@ -239,6 +138,9 @@ static void ed_mul_combs_plain(ed_t r, const ed_t * t, const bn_t k) {
 			}
 		}
 		ed_norm(r, r);
+		if (bn_sign(k) == RLC_NEG) {
+			ed_neg(r, r);
+		}
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
@@ -248,116 +150,7 @@ static void ed_mul_combs_plain(ed_t r, const ed_t * t, const bn_t k) {
 	}
 }
 
-#endif /* ED_PLAIN || ED_SUPER */
-
-#endif /* ED_FIX == LWNAF */
-
-#if ED_FIX == COMBS || !defined(STRIP)
-
-#if defined(ED_ENDOM)
-
-/**
- * Multiplies a prime elliptic curve point by an integer using the COMBS
- * method.
- *
- * @param[out] r 				- the result.
- * @param[in] t					- the precomputed table.
- * @param[in] k					- the integer.
- */
-static void ed_mul_combs_endom(ed_t r, const ed_t * t, const bn_t k) {
-	int i, j, l, w0, w1, n0, n1, p0, p1, s0, s1;
-	bn_t n, k0, k1, v1[3], v2[3];
-	ed_t u;
-
-	bn_null(n);
-	bn_null(k0);
-	bn_null(k1);
-	ed_null(u);
-
-	TRY {
-		bn_new(n);
-		bn_new(k0);
-		bn_new(k1);
-		ed_new(u);
-		for (i = 0; i < 3; i++) {
-			bn_null(v1[i]);
-			bn_null(v2[i]);
-			bn_new(v1[i]);
-			bn_new(v2[i]);
-		}
-
-		ed_curve_get_ord(n);
-		ed_curve_get_v1(v1);
-		ed_curve_get_v2(v2);
-		l = bn_bits(n);
-		l = ((l % (2 * ED_DEPTH)) ==
-				0 ? (l / (2 * ED_DEPTH)) : (l / (2 * ED_DEPTH)) + 1);
-
-		bn_rec_glv(k0, k1, k, n, (const bn_t *)v1, (const bn_t *)v2);
-		s0 = bn_sign(k0);
-		s1 = bn_sign(k1);
-		bn_abs(k0, k0);
-		bn_abs(k1, k1);
-
-		n0 = bn_bits(k0);
-		n1 = bn_bits(k1);
-
-		p0 = (ED_DEPTH) * l - 1;
-
-		ed_set_infty(r);
-
-		for (i = l - 1; i >= 0; i--) {
-			ed_dbl(r, r);
-
-			w0 = 0;
-			w1 = 0;
-			p1 = p0--;
-			for (j = ED_DEPTH - 1; j >= 0; j--, p1 -= l) {
-				w0 = w0 << 1;
-				w1 = w1 << 1;
-				if (p1 < n0 && bn_get_bit(k0, p1)) {
-					w0 = w0 | 1;
-				}
-				if (p1 < n1 && bn_get_bit(k1, p1)) {
-					w1 = w1 | 1;
-				}
-			}
-			if (w0 > 0) {
-				if (s0 == RLC_POS) {
-					ed_add(r, r, t[w0]);
-				} else {
-					ed_sub(r, r, t[w0]);
-				}
-			}
-			if (w1 > 0) {
-				ed_copy(u, t[w1]);
-				fp_mul(u->x, u->x, ed_curve_get_beta());
-				if (s1 == RLC_NEG) {
-					ed_neg(u, u);
-				}
-				ed_add(r, r, u);
-			}
-		}
-		ed_norm(r, r);
-	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	}
-	FINALLY {
-		bn_free(n);
-		bn_free(k0);
-		bn_free(k1);
-		ed_free(u);
-		for (i = 0; i < 3; i++) {
-			bn_free(v1[i]);
-			bn_free(v2[i]);
-		}
-	}
-}
-
-#endif /* ED_ENDOM */
-
-#endif /* ED_FIX == COMBS || !defined(STRIP) */
+#endif /* ED_FIX == COMBS */
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -374,6 +167,7 @@ void ed_mul_pre_basic(ed_t * t, const ed_t p) {
 		bn_new(n);
 
 		ed_curve_get_ord(n);
+
 		ed_copy(t[0], p);
 		for (int i = 1; i < bn_bits(n); i++) {
 			ed_dbl(t[i], t[i - 1]);
@@ -389,19 +183,23 @@ void ed_mul_pre_basic(ed_t * t, const ed_t p) {
 	}
 }
 
-void ed_mul_fix_basic(ed_t r, const ed_t * t, const bn_t k) {
-	int i, l;
-
-	l = bn_bits(k);
+void ed_mul_fix_basic(ed_t r, const ed_t *t, const bn_t k) {
+	if (bn_is_zero(k)) {
+		ed_set_infty(r);
+		return;
+	}
 
 	ed_set_infty(r);
 
-	for (i = 0; i < l; i++) {
+	for (int i = 0; i < bn_bits(k); i++) {
 		if (bn_get_bit(k, i)) {
 			ed_add(r, r, t[i]);
 		}
 	}
 	ed_norm(r, r);
+	if (bn_sign(k) == RLC_NEG) {
+		ed_neg(r, r);
+	}
 }
 
 #endif
@@ -448,16 +246,7 @@ void ed_mul_pre_combs(ed_t * t, const ed_t p) {
 }
 
 void ed_mul_fix_combs(ed_t r, const ed_t * t, const bn_t k) {
-#if defined(ED_ENDOM)
-	if (ed_curve_is_endom()) {
-		ed_mul_combs_endom(r, t, k);
-		return;
-	}
-#endif
-
-#if defined(ED_PLAIN) || defined(ED_SUPER)
 	ed_mul_combs_plain(r, t, k);
-#endif
 }
 #endif
 
@@ -554,6 +343,9 @@ void ed_mul_fix_combd(ed_t r, const ed_t * t, const bn_t k) {
 			ed_add(r, r, t[(1 << ED_DEPTH) + w1]);
 		}
 		ed_norm(r, r);
+		if (bn_sign(k) == RLC_NEG) {
+			ed_neg(r, r);
+		}
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
@@ -574,4 +366,5 @@ void ed_mul_pre_lwnaf(ed_t * t, const ed_t p) {
 void ed_mul_fix_lwnaf(ed_t r, const ed_t * t, const bn_t k) {
 	ed_mul_fix_plain(r, t, k);
 }
+
 #endif

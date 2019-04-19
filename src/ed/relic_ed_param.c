@@ -34,7 +34,7 @@
 
 #if FP_PRIME == 255
 /**
- * Parameters for the Curve25519 prime elliptic curve.
+ * Parameters for the Ed25519 prime elliptic curve.
  */
 /** @{ */
 #define CURVE_ED25519_A	"7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEC"

@@ -33,6 +33,63 @@
 #include "relic_core.h"
 #include "relic_label.h"
 
+/*============================================================================*/
+/* Public definitions                                                         */
+/*============================================================================*/
+
+#if ED_ADD == BASIC || !defined(STRIP)
+
+void ed_dbl_basic(ed_t r, const ed_t p) {
+	fp_t t0, t1, t2;
+
+	fp_null(t0);
+	fp_null(t1);
+	fp_null(t2);
+
+	TRY {
+		fp_new(t0);
+		fp_new(t1);
+		fp_new(t2);
+
+		/* x3 = (x1*y1+y1*x1)/(1+d*x1*x1*y1*y1)
+		 * y3 = (y1*y1-a*x1*x1)/(1-d*x1*x1*y1*y1) */
+
+		fp_mul(t0, p->x, p->y);
+		fp_sqr(t1, t0);
+
+		fp_mul(t1, t1, core_get()->ed_d);
+		fp_add_dig(t2, t1, 1);
+		fp_inv(t2, t2);
+		fp_sub_dig(t1, t1, 1);
+		fp_neg(t1, t1);
+		fp_inv(t1, t1);
+
+		fp_dbl(t0, t0);
+		fp_mul(t0, t0, t2);
+
+		fp_sqr(t2, p->x);
+		fp_mul(t2, t2, core_get()->ed_a);
+		fp_sqr(r->y, p->y);
+		fp_sub(r->y, r->y, t2);
+		fp_mul(r->y, r->y, t1);
+
+		fp_copy(r->x, t0);
+		fp_copy(r->z, p->z);
+
+		r->norm = 1;
+	}
+	CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	}
+	FINALLY {
+		fp_free(t0);
+		fp_free(t1);
+		fp_free(t2);
+	}
+}
+
+#endif /* EP_ADD == BASIC */
+
 #if ED_ADD == PROJC || !defined(STRIP)
 
 void ed_dbl_projc(ed_t r, const ed_t p) {

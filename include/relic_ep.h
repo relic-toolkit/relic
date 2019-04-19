@@ -270,9 +270,9 @@ typedef ep_st *ep_t;
  * @param[in] Q				- the second point to add.
  */
 #if EP_ADD == BASIC
-#define ep_add(R, P, Q)		ep_add_basic(R, P, Q);
+#define ep_add(R, P, Q)		ep_add_basic(R, P, Q)
 #elif EP_ADD == PROJC
-#define ep_add(R, P, Q)		ep_add_projc(R, P, Q);
+#define ep_add(R, P, Q)		ep_add_projc(R, P, Q)
 #endif
 
 /**
@@ -295,9 +295,9 @@ typedef ep_st *ep_t;
  * @param[in] P				- the point to double.
  */
 #if EP_ADD == BASIC
-#define ep_dbl(R, P)		ep_dbl_basic(R, P);
+#define ep_dbl(R, P)		ep_dbl_basic(R, P)
 #elif EP_ADD == PROJC
-#define ep_dbl(R, P)		ep_dbl_projc(R, P);
+#define ep_dbl(R, P)		ep_dbl_projc(R, P)
 #endif
 
 /**
@@ -728,7 +728,7 @@ void ep_add_projc(ep_t r, const ep_t p, const ep_t q);
 
 /**
  * Subtracts a prime elliptic curve point from another, both points represented
- * by affine coordinates..
+ * in affine coordinates.
  *
  * @param[out] r			- the result.
  * @param[in] p				- the first point.
@@ -738,7 +738,7 @@ void ep_sub_basic(ep_t r, const ep_t p, const ep_t q);
 
 /**
  * Subtracts a prime elliptic curve point from another, both points represented
- * by projective coordinates..
+ * in projective coordinates.
  *
  * @param[out] r			- the result.
  * @param[in] p				- the first point.
