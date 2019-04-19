@@ -178,7 +178,7 @@ void ed_rhs(fp_t rhs, const ed_t p) {
 
 	TRY {
 		fp_new(t0);
-		fp_new(1);
+		fp_new(t1);
 
 		// 1 = a * X^2 + Y^2 - d * X^2 * Y^2
 		fp_sqr(t0, p->x);
@@ -223,9 +223,6 @@ int ed_is_valid(const ed_t p) {
 			THROW(ERR_CAUGHT);
 		}
 		FINALLY {
-#if ED_ADD == EXTND
-			fp_free(x_times_y);
-#endif
 			ed_free(t);
 		}
 	}
