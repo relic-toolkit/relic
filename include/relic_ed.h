@@ -231,7 +231,6 @@ typedef ed_st *ed_t;
 #define ed_sub(R, P, Q)		ed_sub_extnd(R, P, Q)
 #endif
 
-
 /**
  * Doubles an Edwards elliptic curve point. Computes R = 2P.
  *
@@ -318,6 +317,15 @@ void ed_projc_to_extnd(ed_t r, const fp_t x, const fp_t y, const fp_t z);
  * @param[out] p	- the Edwards elliptic twisted Edwards curve point to assign.
  */
 void ed_rand(ed_t p);
+
+/**
+ * Computes the right-hand side of the elliptic curve equation at a certain
+ * Edwards elliptic curve point.
+ *
+ * @param[out] rhs			- the result.
+ * @param[in] p				- the point.
+ */
+void ed_rhs(fp_t rhs, const ed_t p);
 
 /**
  * Copies the second argument to the first argument.

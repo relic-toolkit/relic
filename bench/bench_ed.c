@@ -22,12 +22,12 @@
  */
 
 /**
-* @file
-*
-* Benchmarks for arithmetic on prime elliptic twisted Edwards curves.
-*
-* @ingroup bench
-*/
+ * @file
+ *
+ * Benchmarks for arithmetic on Edwards elliptic curves.
+ *
+ * @ingroup bench
+ */
 
 #include <stdio.h>
 
@@ -87,12 +87,32 @@ static void util(void) {
 
 	BENCH_BEGIN("ed_cmp") {
 		ed_rand(p);
+		ed_dbl(p, p);
+		ed_rand(q);
+		ed_dbl(q, q);
+		BENCH_ADD(ed_cmp(p, q));
+	} BENCH_END;
+
+	BENCH_BEGIN("ed_cmp (1 norm)") {
+		ed_rand(p);
+		ed_dbl(p, p);
+		ed_rand(q);
+		BENCH_ADD(ed_cmp(p, q));
+	} BENCH_END;
+
+	BENCH_BEGIN("ed_cmp (2 norm)") {
+		ed_rand(p);
 		ed_rand(q);
 		BENCH_ADD(ed_cmp(p, q));
 	} BENCH_END;
 
 	BENCH_BEGIN("ed_rand") {
 		BENCH_ADD(ed_rand(p));
+	} BENCH_END;
+
+	BENCH_BEGIN("ed_rhs") {
+		ed_rand(p);
+		BENCH_ADD(ed_rhs(q->x, p));
 	} BENCH_END;
 
 	BENCH_BEGIN("ed_tab (4)") {
@@ -178,6 +198,72 @@ static void arith(void) {
 		BENCH_ADD(ed_add(r, p, q));
 	} BENCH_END;
 
+#if ED_ADD == BASIC || !defined(STRIP)
+	BENCH_BEGIN("ed_add_basic") {
+		ed_rand(p);
+		ed_rand(q);
+		BENCH_ADD(ed_add_basic(r, p, q));
+	} BENCH_END;
+#endif
+
+#if ED_ADD == PROJC || !defined(STRIP)
+	BENCH_BEGIN("ed_add_projc") {
+		ed_rand(p);
+		ed_rand(q);
+		ed_add_projc(p, p, q);
+		ed_rand(q);
+		ed_rand(p);
+		ed_add_projc(q, q, p);
+		BENCH_ADD(ed_add_projc(r, p, q));
+	} BENCH_END;
+
+	BENCH_BEGIN("ed_add_projc (z2 = 1)") {
+		ed_rand(p);
+		ed_rand(q);
+		ed_add_projc(p, p, q);
+		ed_rand(q);
+		ed_norm(q, q);
+		BENCH_ADD(ed_add_projc(r, p, q));
+	} BENCH_END;
+
+	BENCH_BEGIN("ed_add_projc (z1,z2 = 1)") {
+		ed_rand(p);
+		ed_norm(p, p);
+		ed_rand(q);
+		ed_norm(q, q);
+		BENCH_ADD(ed_add_projc(r, p, q));
+	} BENCH_END;
+#endif
+
+#if ED_ADD == EXTND || !defined(STRIP)
+	BENCH_BEGIN("ed_add_extnd") {
+		ed_rand(p);
+		ed_rand(q);
+		ed_add_extnd(p, p, q);
+		ed_rand(q);
+		ed_rand(p);
+		ed_add_extnd(q, q, p);
+		BENCH_ADD(ed_add_extnd(r, p, q));
+	} BENCH_END;
+
+	BENCH_BEGIN("ed_add_extnd (z2 = 1)") {
+		ed_rand(p);
+		ed_rand(q);
+		ed_add_extnd(p, p, q);
+		ed_rand(q);
+		ed_norm(q, q);
+		BENCH_ADD(ed_add_extnd(r, p, q));
+	} BENCH_END;
+
+	BENCH_BEGIN("ed_add_extnd (z1,z2 = 1)") {
+		ed_rand(p);
+		ed_norm(p, p);
+		ed_rand(q);
+		ed_norm(q, q);
+		BENCH_ADD(ed_add_extnd(r, p, q));
+	} BENCH_END;
+#endif
+
 	BENCH_BEGIN("ed_sub") {
 		ed_rand(p);
 		ed_rand(q);
@@ -188,6 +274,72 @@ static void arith(void) {
 		BENCH_ADD(ed_sub(r, p, q));
 	} BENCH_END;
 
+#if ED_ADD == BASIC || !defined(STRIP)
+	BENCH_BEGIN("ed_sub_basic") {
+		ed_rand(p);
+		ed_rand(q);
+		BENCH_ADD(ed_sub_basic(r, p, q));
+	} BENCH_END;
+#endif
+
+#if ED_ADD == PROJC || !defined(STRIP)
+	BENCH_BEGIN("ed_sub_projc") {
+		ed_rand(p);
+		ed_rand(q);
+		ed_add_projc(p, p, q);
+		ed_rand(q);
+		ed_rand(p);
+		ed_add_projc(q, q, p);
+		BENCH_ADD(ed_sub_projc(r, p, q));
+	} BENCH_END;
+
+	BENCH_BEGIN("ed_sub_projc (z2 = 1)") {
+		ed_rand(p);
+		ed_rand(q);
+		ed_add_projc(p, p, q);
+		ed_rand(q);
+		ed_norm(q, q);
+		BENCH_ADD(ed_sub_projc(r, p, q));
+	} BENCH_END;
+
+	BENCH_BEGIN("ed_sub_projc (z1,z2 = 1)") {
+		ed_rand(p);
+		ed_norm(p, p);
+		ed_rand(q);
+		ed_norm(q, q);
+		BENCH_ADD(ed_sub_projc(r, p, q));
+	} BENCH_END;
+#endif
+
+#if ED_ADD == EXTND || !defined(STRIP)
+	BENCH_BEGIN("ed_sub_extnd") {
+		ed_rand(p);
+		ed_rand(q);
+		ed_add_extnd(p, p, q);
+		ed_rand(q);
+		ed_rand(p);
+		ed_add_extnd(q, q, p);
+		BENCH_ADD(ed_sub_extnd(r, p, q));
+	} BENCH_END;
+
+	BENCH_BEGIN("ed_sub_projc (z2 = 1)") {
+		ed_rand(p);
+		ed_rand(q);
+		ed_add_extnd(p, p, q);
+		ed_rand(q);
+		ed_norm(q, q);
+		BENCH_ADD(ed_sub_extnd(r, p, q));
+	} BENCH_END;
+
+	BENCH_BEGIN("ed_sub_projc (z1,z2 = 1)") {
+		ed_rand(p);
+		ed_norm(p, p);
+		ed_rand(q);
+		ed_norm(q, q);
+		BENCH_ADD(ed_sub_projc(r, p, q));
+	} BENCH_END;
+#endif
+
 	BENCH_BEGIN("ed_dbl") {
 		ed_rand(p);
 		ed_rand(q);
@@ -195,12 +347,65 @@ static void arith(void) {
 		BENCH_ADD(ed_dbl(r, p));
 	} BENCH_END;
 
+#if ED_ADD == BASIC || !defined(STRIP)
+	BENCH_BEGIN("ed_dbl_basic") {
+		ed_rand(p);
+		BENCH_ADD(ed_dbl_basic(r, p));
+	} BENCH_END;
+#endif
+
+#if ED_ADD == PROJC || !defined(STRIP)
+	BENCH_BEGIN("ed_dbl_projc") {
+		ed_rand(p);
+		ed_rand(q);
+		ed_add_projc(p, p, q);
+		BENCH_ADD(ed_dbl_projc(r, p));
+	} BENCH_END;
+
+	BENCH_BEGIN("ed_dbl_projc (z1 = 1)") {
+		ed_rand(p);
+		ed_norm(p, p);
+		BENCH_ADD(ed_dbl_projc(r, p));
+	} BENCH_END;
+#endif
+
+#if ED_ADD == PROJC || !defined(STRIP)
+	BENCH_BEGIN("ed_dbl_extnd") {
+		ed_rand(p);
+		ed_rand(q);
+		ed_add_extnd(p, p, q);
+		BENCH_ADD(ed_dbl_extnd(r, p));
+	} BENCH_END;
+
+	BENCH_BEGIN("ed_dbl_extnd (z1 = 1)") {
+		ed_rand(p);
+		ed_norm(p, p);
+		BENCH_ADD(ed_dbl_extnd(r, p));
+	} BENCH_END;
+#endif
+
 	BENCH_BEGIN("ed_neg") {
 		ed_rand(p);
 		ed_rand(q);
 		ed_add(p, p, q);
 		BENCH_ADD(ed_neg(r, p));
 	} BENCH_END;
+
+#if ED_ADD == BASIC || !defined(STRIP)
+	BENCH_BEGIN("ed_neg_basic") {
+		ed_rand(p);
+		BENCH_ADD(ed_neg_basic(r, p));
+	} BENCH_END;
+#endif
+
+#if ED_ADD == PROJC || !defined(STRIP)
+	BENCH_BEGIN("ed_neg_projc") {
+		ed_rand(p);
+		ed_rand(q);
+		ed_add_projc(p, p, q);
+		BENCH_ADD(ed_neg_projc(r, p));
+	} BENCH_END;
+#endif
 
 	BENCH_BEGIN("ed_mul") {
 		bn_rand_mod(k, n);
@@ -231,19 +436,19 @@ static void arith(void) {
 	} BENCH_END;
 #endif
 
-#if ED_MUL == MONTY || !defined(STRIP)
-	BENCH_BEGIN("ed_mul_fixed") {
-		bn_rand_mod(k, n);
-		ed_rand(p);
-		BENCH_ADD(ed_mul_fixed(q, p, k));
-	} BENCH_END;
-#endif
-
 #if ED_MUL == LWNAF || !defined(STRIP)
 	BENCH_BEGIN("ed_mul_lwnaf") {
 		bn_rand_mod(k, n);
 		ed_rand(p);
 		BENCH_ADD(ed_mul_lwnaf(q, p, k));
+	} BENCH_END;
+#endif
+
+#if ED_MUL == LWREG || !defined(STRIP)
+	BENCH_BEGIN("ed_mul_lwreg") {
+		bn_rand_mod(k, n);
+		ed_rand(p);
+		BENCH_ADD(ed_mul_lwreg(q, p, k));
 	} BENCH_END;
 #endif
 
@@ -364,6 +569,46 @@ static void arith(void) {
 		BENCH_ADD(ed_mul_sim(r, p, k, q, l));
 	} BENCH_END;
 
+#if ED_SIM == BASIC || !defined(STRIP)
+	BENCH_BEGIN("ed_mul_sim_basic") {
+		bn_rand_mod(k, n);
+		bn_rand_mod(l, n);
+		ed_rand(p);
+		ed_rand(q);
+		BENCH_ADD(ed_mul_sim_basic(r, p, k, q, l));
+	} BENCH_END;
+#endif
+
+#if ED_SIM == TRICK || !defined(STRIP)
+	BENCH_BEGIN("ed_mul_sim_trick") {
+		bn_rand_mod(k, n);
+		bn_rand_mod(l, n);
+		ed_rand(p);
+		ed_rand(q);
+		BENCH_ADD(ed_mul_sim_trick(r, p, k, q, l));
+	} BENCH_END;
+#endif
+
+#if ED_SIM == INTER || !defined(STRIP)
+	BENCH_BEGIN("ed_mul_sim_inter") {
+		bn_rand_mod(k, n);
+		bn_rand_mod(l, n);
+		ed_rand(p);
+		ed_rand(q);
+		BENCH_ADD(ed_mul_sim_inter(r, p, k, q, l));
+	} BENCH_END;
+#endif
+
+#if ED_SIM == JOINT || !defined(STRIP)
+	BENCH_BEGIN("ed_mul_sim_joint") {
+		bn_rand_mod(k, n);
+		bn_rand_mod(l, n);
+		ed_rand(p);
+		ed_rand(q);
+		BENCH_ADD(ed_mul_sim_joint(r, p, k, q, l));
+	} BENCH_END;
+#endif
+
 	BENCH_BEGIN("ed_mul_sim_gen") {
 		bn_rand_mod(k, n);
 		bn_rand_mod(l, n);
@@ -413,7 +658,7 @@ int main(void) {
 	}
 
 	conf_print();
-	util_banner("Benchmarks for the EP module:", 0);
+	util_banner("Benchmarks for the ED module:", 0);
 	r0 = ed_param_set_any();
 	if (r0 == RLC_OK) {
 		bench();

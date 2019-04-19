@@ -618,7 +618,7 @@ void ep_rand(ep_t p);
 
 /**
  * Computes the right-hand side of the elliptic curve equation at a certain
- * elliptic curve point.
+ * prime elliptic curve point.
  *
  * @param[out] rhs			- the result.
  * @param[in] p				- the point.
