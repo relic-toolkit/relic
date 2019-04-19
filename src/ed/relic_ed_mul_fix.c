@@ -61,7 +61,8 @@ static void ed_mul_fix_plain(ed_t r, const ed_t * t, const bn_t k) {
 		if (n == 0) {
 			/* doubling is followed by another doubling */
 			if (i > 0) {
-				ed_dbl_short(r, r);
+				r->norm = 2;
+				ed_dbl(r, r);
 			} else {
 				/* use full extended coordinate doubling for last step */
 				ed_dbl(r, r);
@@ -419,13 +420,6 @@ void ed_mul_pre_combs(ed_t * t, const ed_t p) {
 		ed_curve_get_ord(n);
 		l = bn_bits(n);
 		l = ((l % ED_DEPTH) == 0 ? (l / ED_DEPTH) : (l / ED_DEPTH) + 1);
-#if defined(ED_ENDOM)
-		if (ed_curve_is_endom()) {
-			l = bn_bits(n);
-			l = ((l % (2 * ED_DEPTH)) ==
-					0 ? (l / (2 * ED_DEPTH)) : (l / (2 * ED_DEPTH)) + 1);
-		}
-#endif
 
 		ed_set_infty(t[0]);
 

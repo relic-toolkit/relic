@@ -33,225 +33,143 @@
 #include "relic_core.h"
 #include "relic_label.h"
 
-#if ED_ADD == PROJC
+#if ED_ADD == PROJC || !defined(STRIP)
 
-static void ed_dbl_projc(ed_t r, const ed_t p) {
-	fp_t B;
-	fp_t C;
-	fp_t D;
-	fp_t E;
-	fp_t F;
-	fp_t H;
-	fp_t J;
+void ed_dbl_projc(ed_t r, const ed_t p) {
+	fp_t t0, t1, t2, t3, t4, t5, t6;
 
-	fp_new(B);
-	fp_new(C);
-	fp_new(D);
-	fp_new(E);
-	fp_new(F);
-	fp_new(H);
-	fp_new(J);
+	fp_null(t0);
+	fp_null(t1);
+	fp_null(t2);
+	fp_null(t3);
+	fp_null(t4);
+	fp_null(t5);
+	fp_null(t6);
 
-	// B = (X_1 + Y_1)^2
-	fp_add(B, p->x, p->y);
-	fp_sqr(B, B);
+	TRY {
+		fp_new(t0);
+		fp_new(t1);
+		fp_new(t2);
+		fp_new(t3);
+		fp_new(t4);
+		fp_new(t5);
+		fp_new(t6);
 
-	// C = X_1^2
-	fp_sqr(C, p->x);
+		// 3M + 4S + 1D + 7add
 
-	// D = Y_1^2
-	fp_sqr(D, p->y);
+		/* B = (x1 + y1)^2 */
+		fp_add(t0, p->x, p->y);
+		fp_sqr(t0, t0);
 
-	// E = aC
-	fp_mul(E, core_get()->ed_a, C);
+		/* C = x1^2 */
+		fp_sqr(t1, p->x);
 
-	// F = E + D
-	fp_add(F, E, D);
+		/*  D = y1^2 */
+		fp_sqr(t2, p->y);
 
-	// H = Z^2
-	fp_sqr(H, p->z);
+		/* E = a * C */
+		fp_mul(t3, core_get()->ed_a, t1);
 
-	// J = F - 2H
-	fp_dbl(J, H);
-	fp_sub(J, F, J);
+		/* F = E + D, H = Z^2 */
+		fp_add(t4, t3, t2);
+		fp_sqr(t5, p->z);
 
-	// X_3 = (B - C - D) * J
-	fp_sub(r->x, B, C);
-	fp_sub(r->x, r->x, D);
-	fp_mul(r->x, r->x, J);
+		// J = F - 2H
+		fp_dbl(t6, t5);
+		fp_sub(t6, t4, t6);
 
-	// Y_3 = F * (E - D)
-	fp_sub(r->y, E, D);
-	fp_mul(r->y, F, r->y);
+		// x3 = (B - C - D) * J
+		fp_sub(r->x, t0, t1);
+		fp_sub(r->x, r->x, t2);
+		fp_mul(r->x, r->x, t6);
 
-	// Z_3 = F * J
-	fp_mul(r->z, F, J);
+		// x3 = F * (E - D)
+		fp_sub(r->y, t3, t2);
+		fp_mul(r->y, t4, r->y);
 
-	// 3M + 4S + 1D + 7add
+		/* x3 = F * J */
+		fp_mul(r->z, t4, t6);
+
+		r->norm = 0;
+	} CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	} FINALLY {
+		fp_free(t0);
+		fp_free(t1);
+		fp_free(t2);
+		fp_free(t3);
+		fp_free(t4);
+		fp_free(t5);
+		fp_free(t6);
+	}
+}
+
+#endif /* ED_PROJC */
+
+#if ED_ADD == EXTND || !defined(STRIP)
+
+void ed_dbl_extnd(ed_t r, const ed_t p) {
+	fp_t t0, t1, t2, t3, t4;
+
+	fp_null(t0);
+	fp_null(t1);
+	fp_null(t2);
+	fp_null(t3);
+	fp_null(t4);
+
+	TRY {
+		fp_new(t0);
+		fp_new(t1);
+		fp_new(t2);
+		fp_new(t3);
+		fp_new(t4);
+
+		// efd: dbl-2008-hwcd, rfc edition
+		// 4M + 4S + 1D + 7add
+
+		/* A = X^2, B = Y^2 */
+		fp_sqr(t0, p->x);
+		fp_sqr(t1, p->y);
+
+		/* C = 2 * Z^2 */
+		fp_sqr(r->z, p->z);
+		fp_dbl(r->z, r->z);
+
+		/* D = a * A */
+		fp_mul(r->t, core_get()->ed_a, t0);
+
+		/* E = (X + Y) ^ 2 - A - B */
+		fp_add(t2, p->x, p->y);
+		fp_sqr(t2, t2);
+		fp_sub(t2, t2, t0);
+		fp_sub(t2, t2, t1);
+
+		/* G = D + B, F = G - C, H = D - B */
+		fp_add(t4, r->t, t1);
+		fp_sub(t3, t4, r->z);
+		fp_sub(r->z, r->t, t1);
+
+		/* X = E * F */
+		fp_mul(r->x, t2, t3);
+		/* Y = G * H */
+		fp_mul(r->y, t4, r->z);
+		if (r->norm != 2) {
+			/* T = E * H */
+			fp_mul(r->t, t2, r->z);
+		}
+		/* Z = F * G */
+		fp_mul(r->z, t3, t4);
+	} CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	} FINALLY {}
+
 	r->norm = 0;
 
-	fp_free(B);
-	fp_free(C);
-	fp_free(D);
-	fp_free(E);
-	fp_free(F);
-	fp_free(H);
-	fp_free(J);
+	fp_free(t0);
+	fp_free(t1);
+	fp_free(t2);
+	fp_free(t3);
+	fp_free(t4);
 }
 
-#endif
-
-#if ED_ADD == EXTND
-
-static void ed_dbl_extnd(ed_t r, const ed_t p) {
-	fp_t A;
-	fp_t B;
-	fp_t E;
-	fp_t F;
-	fp_t G;
-
-	fp_new(A);
-	fp_new(B);
-	fp_new(E);
-	fp_new(F);
-	fp_new(G);
-
-	// A = X^2
-	fp_sqr(A, p->x);
-
-	// B = Y^2
-	fp_sqr(B, p->y);
-
-	// C = 2 * Z^2
-#define C (r->z)
-	fp_sqr(C, p->z);
-	fp_dbl(C, C);
-
-	// D = a * A
-#define D (r->t)
-	fp_mul(D, core_get()->ed_a, A);
-
-	// E = (X + Y) ^ 2 - A - B
-	fp_add(E, p->x, p->y);
-	fp_sqr(E, E);
-	fp_sub(E, E, A);
-	fp_sub(E, E, B);
-
-	// G = D + B
-	fp_add(G, D, B);
-
-	// F = G - C
-	fp_sub(F, G, C);
-#undef C
-
-	// H = D - B
-#define H (r->z)
-	fp_sub(H, D, B);
-#undef D
-
-	// X = E * F
-	fp_mul(r->x, E, F);
-
-	// Y = G * H
-	fp_mul(r->y, G, H);
-
-	// T = E * H
-	fp_mul(r->t, E, H);
-#undef H
-
-	// Z = F * G
-	fp_mul(r->z, F, G);
-
-	// 4M + 4S + 1D + 7add
-	r->norm = 0;
-
-	fp_free(A);
-	fp_free(B);
-	fp_free(E);
-	fp_free(F);
-	fp_free(G);
-}
-
-static void ed_dbl_extnd_short(ed_t r, const ed_t p) {
-	fp_t A;
-	fp_t B;
-	fp_t F;
-	fp_t G;
-
-
-	fp_new(A);
-	fp_new(B);
-	fp_new(F);
-	fp_new(G);
-
-	// A = X^2
-	fp_sqr(A, p->x);
-
-	// B = Y^2
-	fp_sqr(B, p->y);
-
-	// C = 2 * Z^2
-#define C (r->z)
-	fp_sqr(C, p->z);
-	fp_dbl(C, C);
-
-	// D = a * A
-#define D (r->t)
-	fp_mul(D, core_get()->ed_a, A);
-
-	// E = (X + Y) ^ 2 - A - B
-#define E (r->y)
-	fp_add(E, p->x, p->y);
-	fp_sqr(E, E);
-	fp_sub(E, E, A);
-	fp_sub(E, E, B);
-
-	// G = D + B
-	fp_add(G, D, B);
-
-	// F = G - C
-	fp_sub(F, G, C);
-#undef C
-
-	// H = D - B
-#define H (r->z)
-	fp_sub(H, D, B);
-#undef D
-
-	// X = E * F
-	fp_mul(r->x, E, F);
-#undef E
-
-	// Y = G * H
-	fp_mul(r->y, G, H);
-#undef H
-
-	// Z = F * G
-	fp_mul(r->z, F, G);
-
-	// 4M + 4S + 1D + 7add
-	r->norm = 0;
-
-	fp_free(A);
-	fp_free(B);
-	fp_free(F);
-	fp_free(G);
-}
-
-#endif
-
-void ed_dbl(ed_t r, const ed_t p) {
-#if ED_ADD == PROJC
-	ed_dbl_projc(r, p);
-#elif ED_ADD == EXTND
-	ed_dbl_extnd(r, p);
-#endif
-}
-
-void ed_dbl_short(ed_t r, const ed_t p) {
-#if ED_ADD == PROJC
-	ed_dbl(r, p);
-#elif ED_ADD == EXTND
-	ed_dbl_extnd_short(r, p);
-#endif
-}
+#endif /* ED_EXTND */

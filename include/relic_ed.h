@@ -114,7 +114,7 @@ typedef struct {
     fp_st y;
     /** The third coordinate (projective representation). */
     fp_st z;
-#if ED_ADD == EXTND
+#if ED_ADD == EXTND || !defined(STRIP)
     /** The forth coordinate (extended twisted Edwards coordinates) */
     fp_st t;
 #endif
@@ -200,6 +200,21 @@ typedef ed_st *ed_t;
 #elif ED_ADD == PROJC || ED_ADD == EXTND
 #define ed_neg(R, P)		ed_neg_projc(R, P)
 #endif
+
+/**
+ * Doubles an Edwards elliptic curve point. Computes R = 2P.
+ *
+ * @param[out] R			- the result.
+ * @param[in] P				- the point to double.
+ */
+#if ED_ADD == BASIC
+#define ed_dbl(R, P)		ed_dbl_basic(R, P);
+#elif ED_ADD == PROJC
+#define ed_dbl(R, P)		ed_dbl_projc(R, P);
+#elif ED_ADD == EXTND
+#define ed_dbl(R, P)		ed_dbl_extnd(R, P);
+#endif
+
 
 /**
  * Configures a twisted Edwards prime curve by its parameter identifier.

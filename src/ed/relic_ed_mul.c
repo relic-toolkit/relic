@@ -42,37 +42,34 @@
 
 static void ed_mul_naf_imp(ed_t r, const ed_t p, const bn_t k) {
 	int l, i, n;
-	int8_t naf[RLC_FP_BITS + 1], *_k;
+	int8_t naf[RLC_FP_BITS + 1];
 	ed_t t[1 << (ED_WIDTH - 2)];
 
-	for (i = 0; i < (1 << (ED_WIDTH - 2)); i++) {
-		ed_null(t[i]);
+	if (bn_is_zero(k)) {
+		ed_set_infty(r);
+		return;
 	}
 
 	TRY {
 		/* Prepare the precomputation table. */
 		for (i = 0; i < (1 << (ED_WIDTH - 2)); i++) {
+			ed_null(t[i]);
 			ed_new(t[i]);
 		}
 		/* Compute the precomputation table. */
 		ed_tab(t, p, ED_WIDTH);
 
 		/* Compute the w-NAF representation of k. */
-		l = RLC_FP_BITS + 1;
-		bn_rec_naf(naf, &l, k, ED_WIDTH);
+		l = sizeof(naf);
+		bn_rec_naf(naf, &l, k, EP_WIDTH);
 
-		_k = naf + l - 1;
 		ed_set_infty(r);
-		for (i = l - 1; i >= 0; i--, _k--) {
-			n = *_k;
+		for (i = l - 1; i > 0; i--) {
+			n = naf[i];
 			if (n == 0) {
-				/* doubling is followed by another doubling */
-				if (i > 0) {
-					ed_dbl_short(r, r);
-				} else {
-					/* use full extended coordinate doubling for last step */
-					ed_dbl(r, r);
-				}
+				/* This point will be doubled in the previous iteration. */
+				r->norm = 2;
+				ed_dbl(r, r);
 			} else {
 				ed_dbl(r, r);
 				if (n > 0) {
@@ -82,8 +79,21 @@ static void ed_mul_naf_imp(ed_t r, const ed_t p, const bn_t k) {
 				}
 			}
 		}
+
+		/* Last iteration. */
+		n = naf[0];
+		ed_dbl(r, r);
+		if (n > 0) {
+			ed_add(r, r, t[n / 2]);
+		} else if (n < 0) {
+			ed_sub(r, r, t[-n / 2]);
+		}
+
 		/* Convert r to affine coordinates. */
 		ed_norm(r, r);
+		if (bn_sign(k) == RLC_NEG) {
+			ed_neg(r, r);
+		}
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
@@ -388,7 +398,8 @@ void ed_mul_fixed(ed_t r, const ed_t b, const bn_t k) {
 		int index = (i - 2) / (sizeof(dig_t) * 8);
 		int shift = (i - 2) % (sizeof(dig_t) * 8);
 		int bits = (k->dp[index] >> shift) & 3;
-		ed_dbl_short(r, r);
+		r->norm = 2;
+		ed_dbl(r, r);
 		ed_dbl(r, r);
 		ed_add(r, r, pre[bits]);
 	}

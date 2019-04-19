@@ -188,8 +188,7 @@ static void ep_mul_naf_imp(ep_t r, const ep_t p, const bn_t k) {
 			n = naf[i];
 			if (n > 0) {
 				ep_add(r, r, t[n / 2]);
-			}
-			if (n < 0) {
+			} else if (n < 0) {
 				ep_sub(r, r, t[-n / 2]);
 			}
 		}

@@ -102,14 +102,14 @@ void ed_param_set(int param) {
 		fp_neg(g->z, g->z);
 		fp_srt(core_get()->srm1, g->z);
 		fp_neg(g->z, g->z);
-		g->norm = 1;
 #if ED_ADD == EXTND
 		fp_mul(g->t, g->x, g->y);
 #endif
+		g->norm = 1;
 
-		bn_copy(&core_get()->ed_h, h);
-		bn_copy(&core_get()->ed_r, r);
-		ed_copy(&core_get()->ed_g, g);
+		bn_copy(&ctx->ed_h, h);
+		bn_copy(&ctx->ed_r, r);
+		ed_copy(&ctx->ed_g, g);
 
 #ifdef ED_PRECO
 		for (int i = 0; i < RLC_ED_TABLE; i++) {
@@ -118,7 +118,7 @@ void ed_param_set(int param) {
 #endif
 
 #if defined(ED_PRECO)
-		ed_mul_pre((ed_t *) ed_curve_get_tab(), &ctx->ed_g);
+		ed_mul_pre((ed_t *)ed_curve_get_tab(), &ctx->ed_g);
 #endif
 		ctx->ed_id = param;
 	}
