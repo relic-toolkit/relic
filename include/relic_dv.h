@@ -79,7 +79,7 @@
 /**
  * Size in bytes of a temporary vector.
  */
-#define RLC_DV_BYTES	( * (RLC_DIG / 8))
+#define RLC_DV_BYTES	(RLC_DV_DIGS * (RLC_DIG / 8))
 
 /*============================================================================*/
 /* Macro definitions                                                          */
