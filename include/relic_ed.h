@@ -87,8 +87,6 @@ enum {
 #define RLC_ED_TABLE			RLC_ED_TABLE_COMBD
 #elif ED_FIX == LWNAF
 #define RLC_ED_TABLE			RLC_ED_TABLE_LWNAF
-#elif ED_FIX == LWNAF_MIXED
-#define RLC_ED_TABLE			RLC_ED_TABLE_LWNAF
 #endif
 
 /**
@@ -499,8 +497,6 @@ void ed_map(ed_t p, const uint8_t *msg, int len);
 #define ed_mul(R, P, K)   ed_mul_fixed(R, P, K)
 #elif ED_MUL == LWNAF
 #define ed_mul(R, P, K)   ed_mul_lwnaf(R, P, K)
-#elif ED_MUL == LWNAF_MIXED
-#define ed_mul(R, P, K)   ed_mul_lwnaf_mixed(R, P, K)
 #endif
 
 /**
@@ -516,8 +512,6 @@ void ed_map(ed_t p, const uint8_t *msg, int len);
 #elif ED_FIX == COMBD
 #define ed_mul_pre(T, P)    ed_mul_pre_combd(T, P)
 #elif ED_FIX == LWNAF
-#define ed_mul_pre(T, P)    ed_mul_pre_lwnaf(T, P)
-#elif ED_FIX == LWNAF_MIXED
 #define ed_mul_pre(T, P)    ed_mul_pre_lwnaf(T, P)
 #endif
 
@@ -537,8 +531,6 @@ void ed_map(ed_t p, const uint8_t *msg, int len);
 #define ed_mul_fix(R, T, K)   ed_mul_fix_combd(R, T, K)
 #elif ED_FIX == LWNAF
 #define ed_mul_fix(R, T, K)   ed_mul_fix_lwnaf(R, T, K)
-#elif ED_FIX == LWNAF_MIXED
-#define ed_mul_fix(R, T, K)   ed_mul_fix_lwnaf_mixed(R, T, K)
 #endif
 
  /**

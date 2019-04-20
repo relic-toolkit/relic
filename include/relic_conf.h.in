@@ -514,8 +514,6 @@
 #define MONTY	 3
 /** Left-to-right Width-w NAF. */
 #define LWNAF	 4
-/** Left-to-right Width-w NAF with mixed coordinates. */
-#define LWNAF_MIXED	 7
 /** Fixed window. */
 #define FIXWI	 8
 /** Chosen prime elliptic twisted Edwards curve point multiplication method. */

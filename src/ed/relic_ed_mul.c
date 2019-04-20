@@ -104,7 +104,7 @@ static void ed_mul_naf_imp(ed_t r, const ed_t p, const bn_t k) {
 	}
 }
 
-#endif /* ED_MUL == LWNAF_MIXED */
+#endif /* ED_MUL == LWNAF */
 
 #if ED_MUL == LWREG || !defined(STRIP)
 

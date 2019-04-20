@@ -21,7 +21,6 @@ message("      ED_METHD=BASIC    	Binary method for fixed point multiplication."
 message("      ED_METHD=COMBS    	Single-table Comb method for fixed point multiplication.")
 message("      ED_METHD=COMBD    	Double-table Comb method for fixed point multiplication.")
 message("      ED_METHD=LWNAF    	Left-to-right window NAF method (GLV for Koblitz curves).\n")
-message("      ED_METHD=LWNAF_MIXED Left-to-right window NAF mixed method (GLV for Koblitz curves).\n")
 
 message("      *** variable-base simultaneous multiplication method ***")
 message("      ED_METHD=BASIC    Multiplication-and-addition simultaneous multiplication.")
