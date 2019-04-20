@@ -268,8 +268,7 @@ typedef bn_st *bn_t;
  * @param[in] A				- the multiple precision integer to reduce.
  * @param[in] ...			- the modulus and an optional argument.
  */
-#define bn_mod(C, A, ...)													\
-	RLC_CAT(bn_mod, RLC_OPT(__VA_ARGS__))(C, A, __VA_ARGS__)
+#define bn_mod(C, A, ...)	RLC_CAT(bn_mod, RLC_OPT(__VA_ARGS__))(C, A, __VA_ARGS__)
 
 /**
  * Reduces a multiple precision integer modulo another integer. This macro

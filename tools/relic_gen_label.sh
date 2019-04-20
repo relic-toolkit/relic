@@ -88,7 +88,6 @@ REDEF bench
 REDEF err
 REDEF rand
 REDEF test
-REDEF trace
 REDEF util
 
 echo "#undef conf_print"
@@ -149,7 +148,7 @@ REDEF eb
 echo "#undef ep2_st"
 echo "#undef ep2_t"
 echo "#define ep2_st	PREFIX(ep2_st)"
-echo "#define ep2_t		PREFIX(ep2_t)"
+echo "#define ep2_t	PREFIX(ep2_t)"
 echo
 REDEF2 epx ep2
 

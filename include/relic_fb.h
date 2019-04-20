@@ -360,8 +360,7 @@ typedef rlc_align dig_t fb_st[RLC_FB_DIGS + RLC_PAD(RLC_FB_BYTES) / (RLC_DIG / 8
  * @param[in] B				- the exponent.
  * @param[in] ...			- the modulus and an optional argument.
  */
-#define fb_itr(C, A, ...)													\
-	RLC_CAT(fb_itr, RLC_OPT(__VA_ARGS__)) (C, A, __VA_ARGS__)
+#define fb_itr(C, A, ...)	RLC_CAT(fb_itr, RLC_OPT(__VA_ARGS__)) (C, A, __VA_ARGS__)
 
 /**
  * Reduces a multiple precision integer modulo another integer. This macro
