@@ -218,28 +218,28 @@ cdecl(fp2_muln_low):
 	/* rsp[0..8] = t4 = t3 - t2 */
 	movq	128(%rsp), %rcx
 	subq	%r8, %rcx
-	movq	%rcx, 8*DV_DIGS(%rdi)
+	movq	%rcx, 8*RLC_DV_DIGS(%rdi)
 	movq	136(%rsp), %rcx
 	sbbq	%r9, %rcx
-	movq	%rcx, 8*DV_DIGS+8(%rdi)
+	movq	%rcx, 8*RLC_DV_DIGS+8(%rdi)
 	movq	144(%rsp), %rcx
 	sbbq	%r10, %rcx
-	movq	%rcx, 8*DV_DIGS+16(%rdi)
+	movq	%rcx, 8*RLC_DV_DIGS+16(%rdi)
 	movq	152(%rsp), %rcx
 	sbbq	%r11, %rcx
-	movq	%rcx, 8*DV_DIGS+24(%rdi)
+	movq	%rcx, 8*RLC_DV_DIGS+24(%rdi)
 	movq	160(%rsp), %rcx
 	sbbq	%r12, %rcx
-	movq	%rcx, 8*DV_DIGS+32(%rdi)
+	movq	%rcx, 8*RLC_DV_DIGS+32(%rdi)
 	movq	168(%rsp), %rcx
 	sbbq	%r13, %rcx
-	movq	%rcx, 8*DV_DIGS+40(%rdi)
+	movq	%rcx, 8*RLC_DV_DIGS+40(%rdi)
 	movq	176(%rsp), %rcx
 	sbbq	%r14, %rcx
-	movq	%rcx, 8*DV_DIGS+48(%rdi)
+	movq	%rcx, 8*RLC_DV_DIGS+48(%rdi)
 	movq	184(%rsp), %rcx
 	sbbq	%r15, %rcx
-	movq	%rcx, 8*DV_DIGS+56(%rdi)
+	movq	%rcx, 8*RLC_DV_DIGS+56(%rdi)
 	xorq	%rax,%rax
 	xorq	%rcx,%rcx
 	movq	0(%rsp), %r8
@@ -348,28 +348,28 @@ cdecl(fp2_mulc_low):
 	/* rsp[0..8] = t4 = t3 - t2 */
 	movq	128(%rsp), %rcx
 	subq	%r8, %rcx
-	movq	%rcx, 8*DV_DIGS(%rdi)
+	movq	%rcx, 8*RLC_DV_DIGS(%rdi)
 	movq	136(%rsp), %rcx
 	sbbq	%r9, %rcx
-	movq	%rcx, 8*DV_DIGS+8(%rdi)
+	movq	%rcx, 8*RLC_DV_DIGS+8(%rdi)
 	movq	144(%rsp), %rcx
 	sbbq	%r10, %rcx
-	movq	%rcx, 8*DV_DIGS+16(%rdi)
+	movq	%rcx, 8*RLC_DV_DIGS+16(%rdi)
 	movq	152(%rsp), %rcx
 	sbbq	%r11, %rcx
-	movq	%rcx, 8*DV_DIGS+24(%rdi)
+	movq	%rcx, 8*RLC_DV_DIGS+24(%rdi)
 	movq	160(%rsp), %rcx
 	sbbq	%r12, %rcx
-	movq	%rcx, 8*DV_DIGS+32(%rdi)
+	movq	%rcx, 8*RLC_DV_DIGS+32(%rdi)
 	movq	168(%rsp), %rcx
 	sbbq	%r13, %rcx
-	movq	%rcx, 8*DV_DIGS+40(%rdi)
+	movq	%rcx, 8*RLC_DV_DIGS+40(%rdi)
 	movq	176(%rsp), %rcx
 	sbbq	%r14, %rcx
-	movq	%rcx, 8*DV_DIGS+48(%rdi)
+	movq	%rcx, 8*RLC_DV_DIGS+48(%rdi)
 	movq	184(%rsp), %rcx
 	sbbq	%r15, %rcx
-	movq	%rcx, 8*DV_DIGS+56(%rdi)
+	movq	%rcx, 8*RLC_DV_DIGS+56(%rdi)
 
 	/* rsp[0..8] = t1 = (a0 * a1) + u^2 * (a1 * b1) */
 	movq    NP40, %rax

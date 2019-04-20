@@ -34,7 +34,7 @@ cdecl(fp2_rdcn_low):
 
 	FP_RDCN_LOW %rdi, %rsi
 	addq $(8*RLC_FP_DIGS), %rdi
-	addq $(8*DV_DIGS), %rsi
+	addq $(8*RLC_DV_DIGS), %rsi
 	FP_RDCN_LOW %rdi, %rsi
 
 	pop %r14
