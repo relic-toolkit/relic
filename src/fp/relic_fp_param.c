@@ -122,6 +122,13 @@ void fp_param_get_var(bn_t x) {
 				bn_add_dig(x, x, 1);
 				bn_neg(x, x);
 				break;
+			case BN_446:
+				/* x = 2^110 + 2^36 + 1. */
+				bn_set_2b(x, 110);
+				bn_set_2b(a, 36);
+				bn_add(x, x, a);
+				bn_add_dig(x, x, 1);
+				break;
 			case B12_455:
 				/* x = 2^76 + 2^53 + 2^31 + 2^11. */
 				bn_set_2b(x, 76);
@@ -213,6 +220,7 @@ void fp_param_get_sps(int *s, int *len) {
 			case BN_254:
 			case BN_256:
 			case BN_382:
+			case BN_446:
 				fp_param_get_var(a);
 				if (bn_sign(a) == RLC_NEG) {
 					bn_neg(a, a);
@@ -314,9 +322,9 @@ void fp_param_get_map(int *s, int *len) {
 			s[69] = s[79] = s[80] = s[95] = s[96] = 1;
 			*len = 97;
 			break;
-		case B12_381:
-			s[16] = s[48] = s[57] = s[60] = s[62] = s[63] = 1;
-			*len = 64;
+		case BN_446:
+			s[3] = s[37] = s[38] = s[111] = s[112] = 1;
+			*len = 113;
 			break;
 		case B12_455:
 			s[11] = s[31] = s[53] = s[76] = 1;
@@ -606,6 +614,26 @@ void fp_param_set(int param) {
 				f[4] = 384;
 				fp_prime_set_pmers(f, 5);
 				break;
+#elif FP_PRIME == 446
+			case BN_446:
+				fp_param_get_var(t0);
+				/* p = 36 * x^4 + 36 * x^3 + 24 * x^2 + 6 * x + 1. */
+				bn_set_dig(p, 1);
+				bn_mul_dig(t1, t0, 6);
+				bn_add(p, p, t1);
+				bn_mul(t1, t0, t0);
+				bn_mul_dig(t1, t1, 24);
+				bn_add(p, p, t1);
+				bn_mul(t1, t0, t0);
+				bn_mul(t1, t1, t0);
+				bn_mul_dig(t1, t1, 36);
+				bn_add(p, p, t1);
+				bn_mul(t0, t0, t0);
+				bn_mul(t1, t0, t0);
+				bn_mul_dig(t1, t1, 36);
+				bn_add(p, p, t1);
+				fp_prime_set_dense(p);
+				break;
 #elif FP_PRIME == 455
 			case B12_455:
 				fp_param_get_var(t0);
@@ -779,6 +807,8 @@ int fp_param_set_any(void) {
 	fp_param_set(PRIME_383187);
 #elif FP_PRIME == 384
 	fp_param_set(NIST_384);
+#elif FP_PRIME == 446
+	fp_param_set(BN_446);
 #elif FP_PRIME == 455
 	fp_param_set(B12_455);
 #elif FP_PRIME == 477
@@ -859,6 +889,8 @@ int fp_param_set_any_tower(void) {
 	fp_param_set(B12_381);
 #elif FP_PRIME == 382
 	fp_param_set(BN_382);
+#elif FP_PRIME == 446
+	fp_param_set(BN_446);
 #elif FP_PRIME == 455
 	fp_param_set(B12_455);
 #elif FP_PRIME == 477
@@ -866,7 +898,7 @@ int fp_param_set_any_tower(void) {
 #elif FP_PRIME == 508
 	fp_param_set(KSS_508);
 #elif FP_PRIME == 638
-	fp_param_set(B12_638);
+	fp_param_set(BN_638);
 #elif FP_PRIME == 1536
 	fp_param_set(SS_1536);
 #else

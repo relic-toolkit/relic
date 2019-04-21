@@ -91,10 +91,12 @@ enum {
 	BN_P254,
 	/** Barreto-Naehrig curve with negative x. */
 	BN_P256,
-	/** Barreto-Lynn-Scott curve with embedding degree 12. */
+	/** Barreto-Lynn-Scott curve with embedding degree 12 (ZCash curve). */
 	B12_P381,
 	/** Barreto-Naehrig curve with negative x. */
 	BN_P382,
+	/** Barreto-Naehrig curve with embedding degree 12. */
+	BN_P446,
 	/** Barreto-Lynn-Scott curve with embedding degree 12. */
 	B12_P455,
 	/** Barreto-Lynn-Scott curve with embedding degree 24. */

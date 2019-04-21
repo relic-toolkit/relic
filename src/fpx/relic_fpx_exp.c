@@ -334,6 +334,7 @@ void fp12_exp_cyc(fp12_t c, fp12_t a, bn_t b) {
 				case BN_P254:
 				case BN_P256:
 				case BN_P382:
+				case BN_P446:
 				case BN_P638:
 					ep2_curve_get_vs(v);
 

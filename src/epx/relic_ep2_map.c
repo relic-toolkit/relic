@@ -187,6 +187,7 @@ void ep2_map(ep2_t p, const uint8_t *msg, int len) {
 			case BN_P254:
 			case BN_P256:
 			case BN_P382:
+			case BN_P446:
 			case BN_P638:
 				ep2_mul_cof_bn(p, p);
 				break;

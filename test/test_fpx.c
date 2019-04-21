@@ -484,14 +484,14 @@ static int multiplication2(void) {
 					fp2_mul_art(c, a);
 					break;
 				case 3:
-					fp2_mul_art(c, a);
-					fp2_add(c, c, a);
+					fp_set_dig(c[0], 1);
+					fp_set_dig(c[1], 1);
+					fp2_mul(c, a, c);
 					break;
 				case 7:
-					fp2_mul_art(d, a);
-					fp2_dbl(c, a);
-					fp2_dbl(c, c);
-					fp2_add(c, c, d);
+					fp_set_dig(c[0], 16);
+					fp_set_dig(c[1], 1);
+					fp2_mul(c, a, c);
 					break;
 				default:
 					fp2_copy(c, b);

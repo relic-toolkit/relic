@@ -168,18 +168,21 @@ void fp2_mul_nor_basic(fp2_t c, fp2_t a) {
 				break;
 			case 1:
 			case 5:
-				/* If p = 5 mod 8, (u) is a QNR/CNR. */
+				/* If p = 1,5 mod 8, (u) is a QNR/CNR. */
 				fp2_mul_art(c, a);
 				break;
 			case 7:
-				/* If p = 7 mod 8, we choose (4 + u) as a QNR/CNR. */
+				/* If p = 7 mod 8, we choose (16 + u) as a QNR/CNR. */
 				fp2_mul_art(t, a);
 				fp2_dbl(c, a);
+				fp2_dbl(c, c);
+				fp2_dbl(c, c);
 				fp2_dbl(c, c);
 				fp2_add(c, c, t);
 				break;
 			default:
 				THROW(ERR_NO_VALID);
+				break;
 		}
 #endif
 	}

@@ -866,6 +866,7 @@ void pp_map_oatep_k12(fp12_t r, ep_t p, ep2_t q) {
 				case BN_P254:
 				case BN_P256:
 				case BN_P382:
+				case BN_P446:
 				case BN_P638:
 					/* r = f_{|a|,Q}(P). */
 					pp_mil_sps_k12(r, t, _q, _p, 1, s, len);
@@ -940,6 +941,7 @@ void pp_map_sim_oatep_k12(fp12_t r, ep_t *p, ep2_t *q, int m) {
 				case BN_P254:
 				case BN_P256:
 				case BN_P382:
+				case BN_P446:
 				case BN_P638:
 					/* r = f_{|a|,Q}(P). */
 					pp_mil_sps_k12(r, t, _q, _p, j, s, len);

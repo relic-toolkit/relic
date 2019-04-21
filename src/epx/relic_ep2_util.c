@@ -109,23 +109,18 @@ int ep2_cmp(ep2_t p, ep2_t q) {
 
 void ep2_rand(ep2_t p) {
 	bn_t n, k;
-	ep2_t gen;
 
 	bn_null(k);
 	bn_null(n);
-	ep2_null(gen);
 
 	TRY {
 		bn_new(k);
 		bn_new(n);
-		ep2_new(gen);
 
 		ep2_curve_get_ord(n);
-
 		bn_rand_mod(k, n);
 
-		ep2_curve_get_gen(gen);
-		ep2_mul(p, gen, k);
+		ep2_mul_gen(p, k);
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
@@ -133,7 +128,6 @@ void ep2_rand(ep2_t p) {
 	FINALLY {
 		bn_free(k);
 		bn_free(n);
-		ep2_free(gen);
 	}
 }
 

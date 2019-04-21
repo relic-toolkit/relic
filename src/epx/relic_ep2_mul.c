@@ -67,6 +67,7 @@ static void ep2_mul_glv_imp(ep2_t r, ep2_t p, const bn_t k) {
 			case BN_P254:
 			case BN_P256:
 			case BN_P382:
+			case BN_P446:
 			case BN_P638:
 				ep2_curve_get_vs(v);
 

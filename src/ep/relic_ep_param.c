@@ -376,6 +376,21 @@
 /** @} */
 #endif
 
+#if defined(EP_ENDOM) && FP_PRIME == 446
+/**
+ * Parameters for a 455-bit pairing-friendly prime curve at the new 128-bit security level.
+ */
+/** @{ */
+#define BN_P446_A		"0"
+#define BN_P446_B		"101"
+#define BN_P446_X		"2400000000000000002400000002D00000000D800000021C0000001800000000870000000B0400000057C00000015C000000132000000066"
+#define BN_P446_Y		"10"
+#define BN_P446_R		"2400000000000000002400000002D00000000D800000021C00000017A0000000870000000AD400000054C000000156000000126000000061"
+#define BN_P446_H		"1"
+#define BN_P446_BETA	"4800000000000000003600000004800000000D800000024000000019E00000004800000006300000002E"
+#define BN_P446_LAMB	"9000000000000000006C00000007E00000001B00000003F000000027C00000007E00000009600000003D"
+#endif
+
 #if defined(EP_ENDOM) && FP_PRIME == 455
 /**
  * Parameters for a 455-bit pairing-friendly prime curve at the new 128-bit security level.
@@ -663,6 +678,12 @@ void ep_param_set(int param) {
 				plain = 1;
 				break;
 #endif
+#if defined(EP_ENDOM) && FP_PRIME == 446
+			case BN_P446:
+				ASSIGNK(BN_P446, BN_446);
+				endom = 1;
+				break;
+#endif
 #if defined(EP_ENDOM) && FP_PRIME == 455
 			case B12_P455:
 				ASSIGNK(B12_P455, B12_455);
@@ -839,7 +860,7 @@ int ep_param_set_any_endom(void) {
 #elif FP_PRIME == 508
 	ep_param_set(KSS_P508);
 #elif FP_PRIME == 638
-	ep_param_set(B12_P638);
+	ep_param_set(BN_P638);
 #else
 	r = RLC_ERR;
 #endif
@@ -886,6 +907,10 @@ int ep_param_set_any_pairf(void) {
 	ep_param_set(BN_P382);
 	type = EP_DTYPE;
 	degree = 2;
+#elif FP_PRIME == 446
+	ep_param_set(BN_P446);
+	type = EP_DTYPE;
+	degree = 2;
 #elif FP_PRIME == 455
 	ep_param_set(B12_P455);
 	type = EP_DTYPE;
@@ -899,7 +924,7 @@ int ep_param_set_any_pairf(void) {
 	type = EP_DTYPE;
 	degree = 3;
 #elif FP_PRIME == 638
-	ep_param_set(B12_P638);
+	ep_param_set(BN_P638);
 	type = EP_MTYPE;
 	degree = 2;
 #elif FP_PRIME == 1536
@@ -980,6 +1005,9 @@ void ep_param_print(void) {
 		case B12_P381:
 			util_banner("Curve B12-P381:", 0);
 			break;
+		case BN_P446:
+			util_banner("Curve BN-P446:", 0);
+			break;
 		case B12_P455:
 			util_banner("Curve B12-P455:", 0);
 			break;
@@ -1032,6 +1060,7 @@ int ep_param_level(void) {
 			return 128;
 		case B12_P381:
 		case BN_P382:
+		case BN_P446:
 		case SS_P1536:
 			return 128;
 		case B12_P455:
@@ -1053,6 +1082,7 @@ int ep_param_embed(void) {
 		case BN_P254:
 		case BN_P256:
 		case BN_P382:
+		case BN_P446:
 		case BN_P638:
 		case B12_P381:
 		case B12_P455:

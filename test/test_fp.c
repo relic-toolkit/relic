@@ -776,7 +776,8 @@ static int inversion(void) {
 		TEST_BEGIN("basic inversion is correct") {
 			do {
 				fp_rand(a);
-			} while (fp_is_zero(a));			fp_inv(b, a);
+			} while (fp_is_zero(a));
+			fp_inv(b, a);
 			fp_inv_basic(c, a);
 			TEST_ASSERT(fp_cmp(c, b) == RLC_EQ, end);
 		} TEST_END;
