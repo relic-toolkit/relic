@@ -49,7 +49,7 @@ fp_rsh1_low:
 	shrd	$1, %r11, %r10
 	shrd	$1, %rax, %r11
 	shrd	$1, %rcx, %rax
-	shr	$1, %rcx
+	shr	    $1, %rcx
 	movq	%r8,0(%rdi)
 	movq	%r9,8(%rdi)
 	movq	%r10,16(%rdi)
@@ -70,7 +70,7 @@ fp_lsh1_low:
 	shld	$1, %r10, %r11
 	shld	$1, %r9, %r10
 	shld	$1, %r8, %r9
-	shl	$1, %r8
+	shl     $1, %r8
 	movq	%r8,0(%rdi)
 	movq	%r9,8(%rdi)
 	movq	%r10,16(%rdi)
