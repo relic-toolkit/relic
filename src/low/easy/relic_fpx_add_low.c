@@ -123,8 +123,10 @@ void fp2_norm_low(fp2_t c, fp2_t a) {
 				fp2_mul_art(t, a);
 				fp2_dbl(c, a);
 				fp2_dbl(c, c);
+#if FP_PRIME == 446
 				fp2_dbl(c, c);
 				fp2_dbl(c, c);
+#endif
 				fp2_add(c, c, t);
 				break;
 			default:

@@ -489,7 +489,11 @@ static int multiplication2(void) {
 					fp2_mul(c, a, c);
 					break;
 				case 7:
+#if FP_PRIME == 256
+					fp_set_dig(c[0], 4);
+#else
 					fp_set_dig(c[0], 16);
+#endif
 					fp_set_dig(c[1], 1);
 					fp2_mul(c, a, c);
 					break;
