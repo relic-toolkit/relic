@@ -173,7 +173,7 @@ void bn_gcd_ext_basic(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 void bn_gcd_lehme(bn_t c, const bn_t a, const bn_t b) {
 	bn_t x, y, u, v, t0, t1, t2, t3;
 	dig_t _x, _y, q, _q, t, _t;
-	sig_t _a, _b, _c, _d;
+	dis_t _a, _b, _c, _d;
 
 	if (bn_is_zero(a)) {
 		bn_abs(c, b);
@@ -354,7 +354,7 @@ void bn_gcd_lehme(bn_t c, const bn_t a, const bn_t b) {
 void bn_gcd_ext_lehme(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 	bn_t x, y, u, v, t0, t1, t2, t3, t4;
 	dig_t _x, _y, q, _q, t, _t;
-	sig_t _a, _b, _c, _d;
+	dis_t _a, _b, _c, _d;
 	int swap;
 
 	if (bn_is_zero(a)) {
