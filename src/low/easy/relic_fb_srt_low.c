@@ -104,7 +104,7 @@ static void fb_srtt_low(dig_t *c, const dig_t *a, int fa) {
 static void fb_srtp_low(dig_t *c, const dig_t *a, int fa, int fb, int fc) {
 	int i, j, n, h, sh, rh, lh, sa, la, ra, sb, lb, rb, sc, lc, rc;
 	dig_t d, d_e, d_o;
-	rlc_align dig_t t[] = { 0 };
+	rlc_align dig_t t[RLC_FB_DIGS] = { 0 };
 
 	sh = 1 + (RLC_FB_BITS >> RLC_DIG_LOG);
 	h = (sh + 1) >> 1;

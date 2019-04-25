@@ -216,17 +216,17 @@ void ed_dbl_extnd(ed_t r, const ed_t p) {
 		}
 		/* Z = F * G */
 		fp_mul(r->z, t3, t4);
+
+		r->norm = 0;
 	} CATCH_ANY {
 		THROW(ERR_CAUGHT);
-	} FINALLY {}
-
-	r->norm = 0;
-
-	fp_free(t0);
-	fp_free(t1);
-	fp_free(t2);
-	fp_free(t3);
-	fp_free(t4);
+	} FINALLY {
+		fp_free(t0);
+		fp_free(t1);
+		fp_free(t2);
+		fp_free(t3);
+		fp_free(t4);
+	}
 }
 
 #endif /* ED_EXTND */
