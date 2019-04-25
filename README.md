@@ -1,4 +1,4 @@
-![](https://github.com/relic-toolkit/relic/blob/master/art/logo.png)
+![](https://github.com/relic-toolkit/relic/blob/master/art/rlc_logo.png)
 =====
 
 [![Project stats](https://www.openhub.net/p/relic-toolkit/widgets/project_thin_badge.gif)](https://www.openhub.net/p/relic-toolkit)
