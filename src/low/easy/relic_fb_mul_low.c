@@ -151,7 +151,7 @@ void fb_muln_low(dig_t *c, const dig_t *a, const dig_t *b) {
 
 void fb_muld_low(dig_t *c, const dig_t *a, const dig_t *b, int size) {
 
-    dig_t *tt = RELIC_ALLOCA(dig_t, 16 * (size + 1));
+    dig_t *tt = RLC_ALLOCA(dig_t, 16 * (size + 1));
 	dig_t *t[16];
 	dig_t u, r0, r1, r2, r4, r8, *tmpc;
 	const dig_t *tmpa;

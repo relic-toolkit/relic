@@ -48,7 +48,7 @@ void md_hmac(uint8_t *mac, const uint8_t *in, int in_len, const uint8_t *key,
     #define block_size  128
 #endif
     uint8_t opad[block_size + MD_LEN];
-    uint8_t *ipad = RELIC_ALLOCA(uint8_t, block_size + in_len);
+    uint8_t *ipad = RLC_ALLOCA(uint8_t, block_size + in_len);
 	uint8_t _key[RLC_MAX(MD_LEN, block_size)];
 
 	if (key_len > block_size) {

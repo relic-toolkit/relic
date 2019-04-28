@@ -9,7 +9,7 @@
     // frame is returned from.
     //
     // Note: This is the Windows specific implementation.
-    #define RELIC_ALLOCA(Type, size)(Type*) _alloca((size) * sizeof(Type))
+    #define RLC_ALLOCA(Type, size)(Type*) _alloca((size) * sizeof(Type))
 #else
 
     #include <alloca.h>
@@ -19,5 +19,5 @@
     // frame is returned from. 
     //
     // Note: This is the POSIX specific implementation.
-    #define RELIC_ALLOCA(Type, size)(Type*) alloca((size) * sizeof(Type))
+    #define RLC_ALLOCA(Type, size)(Type*) alloca((size) * sizeof(Type))
 #endif

@@ -101,7 +101,7 @@ int cp_vbnn_gen_prv(vbnn_user_t user, vbnn_kgc_t kgc, uint8_t *id, int id_len) {
 
 		/* calculate s part of the user key */
 		len = id_len + ec_size_bin(user->R, 1);
-		uint8_t *buffer = RELIC_ALLOCA(uint8_t, len);
+		uint8_t *buffer = RLC_ALLOCA(uint8_t, len);
 		memcpy(buffer, id, id_len);
 		ec_write_bin(buffer + id_len, ec_size_bin(user->R, 1), user->R, 1);
 

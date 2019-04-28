@@ -1773,8 +1773,8 @@ static int recoding(void) {
 			TEST_BEGIN("tnaf recoding is correct") {
 				for (w = 2; w <= 8; w++) {
 					uint8_t t_w;
-					int8_t *beta = RELIC_ALLOCA(int8_t, 1 << (w - 2)), 
-                        *gama = RELIC_ALLOCA(int8_t, 1 << (w - 2));
+					int8_t *beta = RLC_ALLOCA(int8_t, 1 << (w - 2)), 
+                        *gama = RLC_ALLOCA(int8_t, 1 << (w - 2));
 					int8_t tnaf[RLC_FB_BITS + 8];
 					int8_t u = (eb_curve_opt_a() == RLC_ZERO ? -1 : 1);
 					bn_rand_mod(a, v1[2]);
@@ -1835,8 +1835,8 @@ static int recoding(void) {
 			TEST_BEGIN("regular tnaf recoding is correct") {
 				for (w = 2; w <= 8; w++) {
 					uint8_t t_w;
-					int8_t *beta = RELIC_ALLOCA(int8_t, 1 << (w - 2)), 
-                        *gama = RELIC_ALLOCA(int8_t, 1 << (w - 2));
+					int8_t *beta = RLC_ALLOCA(int8_t, 1 << (w - 2)), 
+                        *gama = RLC_ALLOCA(int8_t, 1 << (w - 2));
 					int8_t tnaf[RLC_FB_BITS + 8];
 					int8_t u = (eb_curve_opt_a() == RLC_ZERO ? -1 : 1);
 					int n;
