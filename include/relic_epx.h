@@ -1,23 +1,24 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2017 RELIC Authors
+ * Copyright (C) 2007-2019 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
  * for contact information.
  *
- * RELIC is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * RELIC is free software; you can redistribute it and/or modify it under the
+ * terms of the version 2.1 (or later) of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; or version 2.0 of the Apache
+ * License as published by the Apache Software Foundation. See the LICENSE files
+ * for more details.
  *
- * RELIC is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * RELIC is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the LICENSE files for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RELIC. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General Public or the
+ * Apache License along with RELIC. If not, see <https://www.gnu.org/licenses/>
+ * or <https://www.apache.org/licenses/>.
  */
 
 /**
@@ -33,8 +34,8 @@
  * @ingroup epx
  */
 
-#ifndef RELIC_EPX_H
-#define RELIC_EPX_H
+#ifndef RLC_EPX_H
+#define RLC_EPX_H
 
 #include "relic_fpx.h"
 #include "relic_ep.h"
@@ -47,57 +48,43 @@
 /**
  * Size of a precomputation table using the binary method.
  */
-#define RELIC_EPX_TABLE_BASIC		(2 * FP_BITS + 1)
-
-/**
- * Size of a precomputation table using Yao's windowing method.
- */
-#define RELIC_EPX_TABLE_YAOWI      (2 * FP_BITS / EP_DEPTH + 1)
-
-/**
- * Size of a precomputation table using the NAF windowing method.
- */
-#define RELIC_EPX_TABLE_NAFWI      (2 * FP_BITS / EP_DEPTH + 1)
+#define RLC_EPX_TABLE_BASIC		(2 * RLC_FP_BITS + 1)
 
 /**
  * Size of a precomputation table using the single-table comb method.
  */
-#define RELIC_EPX_TABLE_COMBS      (1 << EP_DEPTH)
+#define RLC_EPX_TABLE_COMBS      (1 << EP_DEPTH)
 
 /**
  * Size of a precomputation table using the double-table comb method.
  */
-#define RELIC_EPX_TABLE_COMBD		(1 << (EP_DEPTH + 1))
+#define RLC_EPX_TABLE_COMBD		(1 << (EP_DEPTH + 1))
 
 /**
  * Size of a precomputation table using the w-(T)NAF method.
  */
-#define RELIC_EPX_TABLE_LWNAF		(1 << (EP_DEPTH - 2))
+#define RLC_EPX_TABLE_LWNAF		(1 << (EP_DEPTH - 2))
 
 /**
  * Size of a precomputation table using the chosen algorithm.
  */
 #if EP_FIX == BASIC
-#define RELIC_EPX_TABLE			RELIC_EPX_TABLE_BASIC
-#elif EP_FIX == YAOWI
-#define RELIC_EPX_TABLE			RELIC_EPX_TABLE_YAOWI
-#elif EP_FIX == NAFWI
-#define RELIC_EPX_TABLE			RELIC_EPX_TABLE_NAFWI
+#define RLC_EPX_TABLE			RLC_EPX_TABLE_BASIC
 #elif EP_FIX == COMBS
-#define RELIC_EPX_TABLE			RELIC_EPX_TABLE_COMBS
+#define RLC_EPX_TABLE			RLC_EPX_TABLE_COMBS
 #elif EP_FIX == COMBD
-#define RELIC_EPX_TABLE			RELIC_EPX_TABLE_COMBD
+#define RLC_EPX_TABLE			RLC_EPX_TABLE_COMBD
 #elif EP_FIX == LWNAF
-#define RELIC_EPX_TABLE			RELIC_EPX_TABLE_LWNAF
+#define RLC_EPX_TABLE			RLC_EPX_TABLE_LWNAF
 #endif
 
 /**
  * Maximum size of a precomputation table.
  */
 #ifdef STRIP
-#define RELIC_EPX_TABLE_MAX RELIC_EPX_TABLE
+#define RLC_EPX_TABLE_MAX 	RLC_EPX_TABLE
 #else
-#define RELIC_EPX_TABLE_MAX MAX(RELIC_EPX_TABLE_BASIC, RELIC_EPX_TABLE_COMBD)
+#define RLC_EPX_TABLE_MAX 	RLC_MAX(RLC_EPX_TABLE_BASIC, RLC_EPX_TABLE_COMBD)
 #endif
 
 
@@ -187,19 +174,6 @@ typedef ep3_st *ep3_t;
 	fp2_new((A)->y);														\
 	fp2_new((A)->z);														\
 
-#elif ALLOC == STATIC
-#define ep2_new(A)															\
-	A = (ep2_t)alloca(sizeof(ep2_st));										\
-	if (A == NULL) {														\
-		THROW(ERR_NO_MEMORY);												\
-	}																		\
-	fp2_null((A)->x);														\
-	fp2_null((A)->y);														\
-	fp2_null((A)->z);														\
-	fp2_new((A)->x);														\
-	fp2_new((A)->y);														\
-	fp2_new((A)->z);														\
-
 #elif ALLOC == AUTO
 #define ep2_new(A)				/* empty */
 
@@ -224,15 +198,6 @@ typedef ep3_st *ep3_t;
 		fp2_free((A)->y);													\
 		fp2_free((A)->z);													\
 		free(A);															\
-		A = NULL;															\
-	}																		\
-
-#elif ALLOC == STATIC
-#define ep2_free(A)															\
-	if (A != NULL) {														\
-		fp2_free((A)->x);													\
-		fp2_free((A)->y);													\
-		fp2_free((A)->z);													\
 		A = NULL;															\
 	}																		\
 
@@ -323,10 +288,6 @@ typedef ep3_st *ep3_t;
  */
 #if EP_FIX == BASIC
 #define ep2_mul_pre(T, P)		ep2_mul_pre_basic(T, P)
-#elif EP_FIX == YAOWI
-#define ep2_mul_pre(T, P)		ep2_mul_pre_yaowi(T, P)
-#elif EP_FIX == NAFWI
-#define ep2_mul_pre(T, P)		ep2_mul_pre_nafwi(T, P)
 #elif EP_FIX == COMBS
 #define ep2_mul_pre(T, P)		ep2_mul_pre_combs(T, P)
 #elif EP_FIX == COMBD
@@ -348,10 +309,6 @@ typedef ep3_st *ep3_t;
  */
 #if EP_FIX == BASIC
 #define ep2_mul_fix(R, T, K)	ep2_mul_fix_basic(R, T, K)
-#elif EP_FIX == YAOWI
-#define ep2_mul_fix(R, T, K)	ep2_mul_fix_yaowi(R, T, K)
-#elif EP_FIX == NAFWI
-#define ep2_mul_fix(R, T, K)	ep2_mul_fix_nafwi(R, T, K)
 #elif EP_FIX == COMBS
 #define ep2_mul_fix(R, T, K)	ep2_mul_fix_combs(R, T, K)
 #elif EP_FIX == COMBD
@@ -506,7 +463,7 @@ void ep2_copy(ep2_t r, ep2_t p);
  *
  * @param[in] p				- the first elliptic curve point.
  * @param[in] q				- the second elliptic curve point.
- * @return CMP_EQ if p == q and CMP_NE if p != q.
+ * @return RLC_EQ if p == q and RLC_NE if p != q.
  */
 int ep2_cmp(ep2_t p, ep2_t q);
 
@@ -569,7 +526,7 @@ int ep2_size_bin(ep2_t a, int pack);
  * @throw ERR_NO_VALID		- if the encoded point is invalid.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is invalid.
  */
-void ep2_read_bin(ep2_t a, uint8_t *bin, int len);
+void ep2_read_bin(ep2_t a, const uint8_t *bin, int len);
 
 /**
  * Writes a prime elliptic curve pointer over a quadratic extension to a byte
@@ -974,4 +931,4 @@ void ep2_pck(ep2_t r, ep2_t p);
  */
 int ep2_upk(ep2_t r, ep2_t p);
 
-#endif /* !RELIC_EPX_H */
+#endif /* !RLC_EPX_H */

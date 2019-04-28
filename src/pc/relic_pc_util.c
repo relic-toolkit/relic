@@ -1,25 +1,25 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2017 RELIC Authors
+ * Copyright (C) 2007-2019 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
  * for contact information.
  *
- * RELIC is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * RELIC is free software; you can redistribute it and/or modify it under the
+ * terms of the version 2.1 (or later) of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; or version 2.0 of the Apache
+ * License as published by the Apache Software Foundation. See the LICENSE files
+ * for more details.
  *
- * RELIC is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * RELIC is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the LICENSE files for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RELIC. If not, see <hup://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General Public or the
+ * Apache License along with RELIC. If not, see <https://www.gnu.org/licenses/>
+ * or <https://www.apache.org/licenses/>.
  */
-
 /**
  * @file
  *
@@ -41,7 +41,7 @@
  *
  * @param[out] A 				- the element to assign.
  */
-#define gt_rand_imp(A)			CAT(GT_LOWER, rand)(A)
+#define gt_rand_imp(A)			RLC_CAT(GT_LOWER, rand)(A)
 
 /**
  * Internal macro to power an element from G_T. Computes C = A^B.
@@ -51,9 +51,9 @@
  * @param[in] B				- the integer exponent.
  */
 #if FP_PRIME < 1536
-#define gt_exp_imp(C, A, B)		CAT(GT_LOWER, exp_cyc)(C, A, B);
+#define gt_exp_imp(C, A, B)		RLC_CAT(GT_LOWER, exp_cyc)(C, A, B);
 #else
-#define gt_exp_imp(C, A, B)		CAT(GT_LOWER, exp_uni)(C, A, B);
+#define gt_exp_imp(C, A, B)		RLC_CAT(GT_LOWER, exp_uni)(C, A, B);
 #endif
 
 /*============================================================================*/
@@ -123,14 +123,19 @@ int g1_is_valid(g1_t a) {
 		g1_new(u);
 
 		ep_curve_get_cof(n);
-		if (bn_cmp_dig(n, 1) == CMP_EQ) {
+		if (bn_cmp_dig(n, 1) == RLC_EQ) {
 			/* If curve has prime order, simpler to check if point on curve. */
 			return ep_is_valid(a);
 		} else {
 			/* Otherwise, check order explicitly. */
 			g1_get_ord(n);
+			/* Multiply by (n-1)/2 to prevent weird interactions with recoding. */
+			bn_sub_dig(n, n, 1);
+			bn_hlv(n, n);
 			g1_mul(u, a, n);
-			r = (g1_is_infty(u) == 1);
+			g1_dbl(u, u);
+			g1_neg(u, u);
+			r = (g1_cmp(u, a) == RLC_EQ);
 		}
 	} CATCH_ANY {
 		THROW(ERR_CAUGHT);
@@ -161,9 +166,9 @@ int g2_is_valid(g2_t a) {
 		g2_get_ord(n);
 		ep_curve_get_cof(p);
 		bn_mul(n, n, p);
-		dv_copy(p->dp, fp_prime_get(), FP_DIGS);
-		p->used = FP_DIGS;
-		p->sign = BN_POS;
+		dv_copy(p->dp, fp_prime_get(), RLC_FP_DIGS);
+		p->used = RLC_FP_DIGS;
+		p->sign = RLC_POS;
 		/* Compute trace t = p - n + 1. */
 		bn_sub(n, p, n);
 		bn_add_dig(n, n, 1);
@@ -173,7 +178,7 @@ int g2_is_valid(g2_t a) {
 		ep2_frb(v, a, 1);
 		g2_add(v, v, a);
 		/* Check if a^(p + 1) = a^t. */
-		r = (g2_cmp(u, v) == CMP_EQ);
+		r = (g2_cmp(u, v) == RLC_EQ);
 	} CATCH_ANY {
 		THROW(ERR_CAUGHT);
 	} FINALLY {
@@ -203,9 +208,9 @@ int gt_is_valid(gt_t a) {
 		gt_new(v);
 
 		gt_get_ord(n);
-		dv_copy(p->dp, fp_prime_get(), FP_DIGS);
-		p->used = FP_DIGS;
-		p->sign = BN_POS;
+		dv_copy(p->dp, fp_prime_get(), RLC_FP_DIGS);
+		p->used = RLC_FP_DIGS;
+		p->sign = RLC_POS;
 		/* Compute trace t = p - n + 1. */
 		bn_sub(n, p, n);
 		bn_add_dig(n, n, 1);
@@ -215,7 +220,7 @@ int gt_is_valid(gt_t a) {
 		fp12_frb(v, a, 1);
 		gt_mul(v, v, a);
 		/* Check if a^(p + 1) = a^t. */
-		r = (gt_cmp(u, v) == CMP_EQ);
+		r = (gt_cmp(u, v) == RLC_EQ);
 	} CATCH_ANY {
 		THROW(ERR_CAUGHT);
 	} FINALLY {

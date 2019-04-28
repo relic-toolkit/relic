@@ -1,23 +1,24 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2017 RELIC Authors
+ * Copyright (C) 2007-2019 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
  * for contact information.
  *
- * RELIC is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * RELIC is free software; you can redistribute it and/or modify it under the
+ * terms of the version 2.1 (or later) of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; or version 2.0 of the Apache
+ * License as published by the Apache Software Foundation. See the LICENSE files
+ * for more details.
  *
- * RELIC is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * RELIC is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the LICENSE files for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RELIC. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General Public or the
+ * Apache License along with RELIC. If not, see <https://www.gnu.org/licenses/>
+ * or <https://www.apache.org/licenses/>.
  */
 
 /**
@@ -58,7 +59,7 @@
 
 int cp_rabin_gen(rabin_t pub, rabin_t prv, int bits) {
 	bn_t r;
-	int result = STS_OK;
+	int result = RLC_OK;
 
 	bn_null(r);
 
@@ -69,31 +70,31 @@ int cp_rabin_gen(rabin_t pub, rabin_t prv, int bits) {
 		do {
 			bn_gen_prime(prv->p, bits / 2);
 			bn_mod_2b(r, prv->p, 2);
-		} while (bn_cmp_dig(r, 3) != CMP_EQ);
+		} while (bn_cmp_dig(r, 3) != RLC_EQ);
 
 		do {
 			bn_gen_prime(prv->q, bits / 2);
 			bn_mod_2b(r, prv->q, 2);
-		} while (bn_cmp(prv->p, prv->q) == CMP_EQ ||
-				bn_cmp_dig(r, 3) != CMP_EQ);
+		} while (bn_cmp(prv->p, prv->q) == RLC_EQ ||
+				bn_cmp_dig(r, 3) != RLC_EQ);
 
 		/* Swap p and q so that p is smaller. */
-		if (bn_cmp(prv->p, prv->q) == CMP_LT) {
+		if (bn_cmp(prv->p, prv->q) == RLC_LT) {
 			bn_copy(r, prv->p);
 			bn_copy(prv->p, prv->q);
 			bn_copy(prv->q, r);
 		}
 
 		bn_gcd_ext(r, prv->dp, prv->dq, prv->p, prv->q);
-		if (bn_cmp_dig(r, 1) != CMP_EQ) {
-			result = STS_ERR;
+		if (bn_cmp_dig(r, 1) != RLC_EQ) {
+			result = RLC_ERR;
 		}
 
 		bn_mul(prv->n, prv->p, prv->q);
 		bn_copy(pub->n, prv->n);
 	}
 	CATCH_ANY {
-		result = STS_ERR;
+		result = RLC_ERR;
 	}
 	FINALLY {
 		bn_free(r);
@@ -105,7 +106,7 @@ int cp_rabin_gen(rabin_t pub, rabin_t prv, int bits) {
 int cp_rabin_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len,
 		rabin_t pub) {
 	bn_t m, t;
-	int size, result = STS_OK;
+	int size, result = RLC_OK;
 
 	bn_null(m);
 	bn_null(t);
@@ -113,7 +114,7 @@ int cp_rabin_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len,
 	size = bn_size_bin(pub->n);
 
 	if (in_len <= 0 || in_len > (size - RABIN_PAD_LEN - 2)) {
-		return STS_ERR;
+		return RLC_ERR;
 	}
 
 	TRY {
@@ -139,11 +140,11 @@ int cp_rabin_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len,
 			memset(out, 0, *out_len);
 			bn_write_bin(out, size, m);
 		} else {
-			result = STS_ERR;
+			result = RLC_ERR;
 		}
 	}
 	CATCH_ANY {
-		result = STS_ERR;
+		result = RLC_ERR;
 	}
 	FINALLY {
 		bn_free(m);
@@ -156,11 +157,11 @@ int cp_rabin_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len,
 int cp_rabin_dec(uint8_t *out, int *out_len, uint8_t *in, int in_len,
 		rabin_t prv) {
 	bn_t m, m0, m1, t, n;
-	int size, result = STS_OK;
+	int size, result = RLC_OK;
 	uint8_t pad;
 
 	if (in_len < RABIN_PAD_LEN) {
-		return STS_ERR;
+		return RLC_ERR;
 	}
 
 	bn_null(m);
@@ -192,54 +193,54 @@ int cp_rabin_dec(uint8_t *out, int *out_len, uint8_t *in, int in_len,
 		bn_mul(t, t, m0);
 		bn_add(m0, m, t);
 		bn_mod(m0, m0, prv->n);
-		if (bn_sign(m0) == BN_NEG) {
+		if (bn_sign(m0) == RLC_NEG) {
 			bn_add(m0, m0, prv->n);
 		}
 		bn_sub(m1, m, t);
 		bn_mod(m1, m1, prv->n);
-		if (bn_sign(m1) == BN_NEG) {
+		if (bn_sign(m1) == RLC_NEG) {
 			bn_add(m1, m1, prv->n);
 		}
 
 		bn_mod_2b(m, m0, 8 * RABIN_PAD_LEN);
 		bn_rsh(t, m0, 8 * RABIN_PAD_LEN);
 		bn_mod_2b(t, t, 8 * RABIN_PAD_LEN);
-		if (bn_cmp(t, m) == CMP_EQ) {
+		if (bn_cmp(t, m) == RLC_EQ) {
 			bn_rsh(m, m0, 8 * RABIN_PAD_LEN);
 		} else {
 			bn_sub(m0, prv->n, m0);
 			bn_mod_2b(m, m0, 8 * RABIN_PAD_LEN);
 			bn_rsh(t, m0, 8 * RABIN_PAD_LEN);
 			bn_mod_2b(t, t, 8 * RABIN_PAD_LEN);
-			if (bn_cmp(t, m) == CMP_EQ) {
+			if (bn_cmp(t, m) == RLC_EQ) {
 				bn_rsh(m, m0, 8 * RABIN_PAD_LEN);
 			} else {
 				bn_mod_2b(m, m1, 8 * RABIN_PAD_LEN);
 				bn_rsh(t, m1, 8 * RABIN_PAD_LEN);
 				bn_mod_2b(t, t, 8 * RABIN_PAD_LEN);
-				if (bn_cmp(t, m) == CMP_EQ) {
+				if (bn_cmp(t, m) == RLC_EQ) {
 					bn_rsh(m, m1, 8 * RABIN_PAD_LEN);
 				} else {
 					bn_sub(m1, prv->n, m1);
 					bn_mod_2b(m, m1, 8 * RABIN_PAD_LEN);
 					bn_rsh(t, m1, 8 * RABIN_PAD_LEN);
 					bn_mod_2b(t, t, 8 * RABIN_PAD_LEN);
-					if (bn_cmp(t, m) == CMP_EQ) {
+					if (bn_cmp(t, m) == RLC_EQ) {
 						bn_rsh(m, m1, 8 * RABIN_PAD_LEN);
 					} else {
-						result = STS_ERR;
+						result = RLC_ERR;
 					}
 				}
 			}
 		}
 
-		if (result == STS_OK) {
+		if (result == RLC_OK) {
 			size = bn_size_bin(prv->n);
 			size--;
 			bn_rsh(t, m, 8 * size);
 
 			if (!bn_is_zero(t)) {
-				result = STS_ERR;
+				result = RLC_ERR;
 			} else {
 				do {
 					size--;
@@ -248,7 +249,7 @@ int cp_rabin_dec(uint8_t *out, int *out_len, uint8_t *in, int in_len,
 				} while (pad == 0);
 
 				if (pad != RABIN_PAD) {
-					result = STS_ERR;
+					result = RLC_ERR;
 				} else {
 					bn_mod_2b(m, m, size * 8);
 				}
@@ -259,12 +260,12 @@ int cp_rabin_dec(uint8_t *out, int *out_len, uint8_t *in, int in_len,
 				memset(out, 0, size);
 				bn_write_bin(out, size, m);
 			} else {
-				result = STS_ERR;
+				result = RLC_ERR;
 			}
 		}
 	}
 	CATCH_ANY {
-		result = STS_ERR;
+		result = RLC_ERR;
 	}
 	FINALLY {
 		bn_free(m);

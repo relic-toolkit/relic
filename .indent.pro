@@ -59,6 +59,6 @@
 -T state_t
 -T dig_t
 -T dbl_t
--T sig_t
+-T dis_t
 -T rsa_pub_t
 -T rsa_prv_t

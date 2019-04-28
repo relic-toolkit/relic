@@ -1,23 +1,24 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2017 RELIC Authors
+ * Copyright (C) 2007-2019 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
  * for contact information.
  *
- * RELIC is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * RELIC is free software; you can redistribute it and/or modify it under the
+ * terms of the version 2.1 (or later) of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; or version 2.0 of the Apache
+ * License as published by the Apache Software Foundation. See the LICENSE files
+ * for more details.
  *
- * RELIC is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * RELIC is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the LICENSE files for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RELIC. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General Public or the
+ * Apache License along with RELIC. If not, see <https://www.gnu.org/licenses/>
+ * or <https://www.apache.org/licenses/>.
  */
 
 /**
@@ -32,43 +33,14 @@
  * @ingroup bn
  */
 
-#ifndef RELIC_CP_H
-#define RELIC_CP_H
+#ifndef RLC_CP_H
+#define RLC_CP_H
 
 #include "relic_conf.h"
 #include "relic_types.h"
 #include "relic_bn.h"
 #include "relic_ec.h"
 #include "relic_pc.h"
-
-/*============================================================================*/
-/* Constant definitions                                                       */
-/*============================================================================*/
-
-/**
- * Flag used to indicate that the message being signed is plaintext.
- */
-#define CP_TEXT		0
-
-/**
- * Flag used to indicate that the message being signed is a hash value.
- */
-#define CP_HASH		1
-
-/**
- * Flag used to indicate that no padding should be used.
- */
-#define CP_EMPTY	0
-
-/**
- * Flag used to indicate that PKCS#1 v1.5 padding should be used.
- */
-#define CP_PKCS1	1
-
-/**
- * Flag used to indicate that PKCS#1 v2.5 padding should be used.
- */
-#define CP_PKCS2	2
 
 /*============================================================================*/
 /* Type definitions.                                                          */
@@ -286,29 +258,6 @@ typedef vbnn_user_st *vbnn_user_t;
 	bn_new((A)->q);															\
 	bn_new((A)->qi);														\
 
-#elif ALLOC == STATIC
-#define rsa_new(A)															\
-	A = (rsa_t)alloca(sizeof(relic_rsa_st));										\
-	if (A == NULL) {														\
-		THROW(ERR_NO_MEMORY);												\
-	}																		\
-	bn_null((A)->e);														\
-	bn_null((A)->n);														\
-	bn_null((A)->d);														\
-	bn_null((A)->dp);														\
-	bn_null((A)->dq);														\
-	bn_null((A)->p);														\
-	bn_null((A)->q);														\
-	bn_null((A)->qi);														\
-	bn_new((A)->e);															\
-	bn_new((A)->n);															\
-	bn_new((A)->d);															\
-	bn_new((A)->dp);														\
-	bn_new((A)->dq);														\
-	bn_new((A)->p);															\
-	bn_new((A)->q);															\
-	bn_new((A)->qi);														\
-
 #elif ALLOC == AUTO
 #define rsa_new(A)															\
 	bn_new((A)->e);															\
@@ -353,20 +302,6 @@ typedef vbnn_user_st *vbnn_user_t;
 		free(A);															\
 		A = NULL;															\
 	}
-
-#elif ALLOC == STATIC
-#define rsa_free(A)															\
-	if (A != NULL) {														\
-		bn_free((A)->e);													\
-		bn_free((A)->n);													\
-		bn_free((A)->d);													\
-		bn_free((A)->dp);													\
-		bn_free((A)->dq);													\
-		bn_free((A)->p);													\
-		bn_free((A)->q);													\
-		bn_free((A)->qi);													\
-		A = NULL;															\
-	}																		\
 
 #elif ALLOC == AUTO
 #define rsa_free(A)				/* empty */
@@ -413,18 +348,6 @@ typedef vbnn_user_st *vbnn_user_t;
 	bn_new((A)->p);															\
 	bn_new((A)->q);															\
 
-#elif ALLOC == STATIC
-#define rabin_new(A)														\
-	A = (rabin_t)alloca(sizeof(rabin_st));									\
-	if (A == NULL) {														\
-		THROW(ERR_NO_MEMORY);												\
-	}																		\
-	bn_new((A)->n);															\
-	bn_new((A)->dp);														\
-	bn_new((A)->dq);														\
-	bn_new((A)->p);															\
-	bn_new((A)->q);															\
-
 #elif ALLOC == AUTO
 #define rabin_new(A)														\
 	bn_new((A)->n);															\
@@ -461,17 +384,6 @@ typedef vbnn_user_st *vbnn_user_t;
 		A = NULL;															\
 	}
 
-#elif ALLOC == STATIC
-#define rabin_free(A)														\
-	if (A != NULL) {														\
-		bn_free((A)->n);													\
-		bn_free((A)->dp);													\
-		bn_free((A)->dq);													\
-		bn_free((A)->p);													\
-		bn_free((A)->q);													\
-		A = NULL;															\
-	}																		\
-
 #elif ALLOC == AUTO
 #define rabin_free(A)			/* empty */
 
@@ -505,18 +417,6 @@ typedef vbnn_user_st *vbnn_user_t;
 #if ALLOC == DYNAMIC
 #define bdpe_new(A)															\
 	A = (bdpe_t)calloc(1, sizeof(bdpe_st));									\
-	if (A == NULL) {														\
-		THROW(ERR_NO_MEMORY);												\
-	}																		\
-	bn_new((A)->n);															\
-	bn_new((A)->y);															\
-	bn_new((A)->p);															\
-	bn_new((A)->q);															\
-	(A)->t = 0;																\
-
-#elif ALLOC == STATIC
-#define bdpe_new(A)															\
-	A = (bdpe_t)alloca(sizeof(bdpe_st));									\
 	if (A == NULL) {														\
 		THROW(ERR_NO_MEMORY);												\
 	}																		\
@@ -561,17 +461,6 @@ typedef vbnn_user_st *vbnn_user_t;
 		A = NULL;															\
 	}
 
-#elif ALLOC == STATIC
-#define bdpe_free(A)														\
-	if (A != NULL) {														\
-		bn_free((A)->n);													\
-		bn_free((A)->y);													\
-		bn_free((A)->p);													\
-		bn_free((A)->q);													\
-		(A)->t = 0;															\
-		A = NULL;															\
-	}																		\
-
 #elif ALLOC == AUTO
 #define bdpe_free(A)			/* empty */
 
@@ -611,15 +500,6 @@ typedef vbnn_user_st *vbnn_user_t;
 	g1_new((A)->s1);														\
 	g2_new((A)->s2);														\
 
-#elif ALLOC == STATIC
-#define sokaka_new(A)														\
-	A = (sokaka_t)alloca(sizeof(sokaka_st));								\
-	if (A == NULL) {														\
-		THROW(ERR_NO_MEMORY);												\
-	}																		\
-	g1_new((A)->s1);														\
-	g2_new((A)->s2);														\
-
 #elif ALLOC == AUTO
 #define sokaka_new(A)			/* empty */
 
@@ -645,14 +525,6 @@ typedef vbnn_user_st *vbnn_user_t;
 		A = NULL;															\
 	}
 
-#elif ALLOC == STATIC
-#define sokaka_free(A)														\
-	if (A != NULL) {														\
-		g1_free((A)->s1);													\
-		g2_free((A)->s2);													\
-		A = NULL;															\
-	}																		\
-
 #elif ALLOC == AUTO
 #define sokaka_free(A)			/* empty */
 
@@ -670,7 +542,7 @@ typedef vbnn_user_st *vbnn_user_t;
  * @param[out] A			- the key pair to initialize.
  */
 #if ALLOC == AUTO
-#define bgn_null(A)			/* empty */
+#define bgn_null(A)				/* empty */
 #else
 #define bgn_null(A)			A = NULL;
 #endif
@@ -696,24 +568,8 @@ typedef vbnn_user_st *vbnn_user_t;
 	g2_new((A)->hy);														\
 	g2_new((A)->hz);														\
 
-#elif ALLOC == STATIC
-#define bgn_new(A)															\
-	A = (bgn_t)alloca(sizeof(bgn_st));										\
-	if (A == NULL) {														\
-		THROW(ERR_NO_MEMORY);												\
-	}																		\
-	bn_new((A)->x);															\
-	bn_new((A)->y);															\
-	bn_new((A)->z);															\
-	g1_new((A)->gx);														\
-	g1_new((A)->gy);														\
-	g1_new((A)->gz);														\
-	g2_new((A)->hx);														\
-	g2_new((A)->hy);														\
-	g2_new((A)->hz);														\
-
 #elif ALLOC == AUTO
-#define bgn_new(A)			/* empty */
+#define bgn_new(A)				/* empty */
 
 #elif ALLOC == STACK
 #define bgn_new(A)															\
@@ -751,23 +607,8 @@ typedef vbnn_user_st *vbnn_user_t;
 		A = NULL;															\
 	}
 
-#elif ALLOC == STATIC
-#define bgn_free(A)															\
-	if (A != NULL) {														\
-		bn_free((A)->x);													\
-		bn_free((A)->y);													\
-		bn_free((A)->z);													\
-		g1_free((A)->gx);													\
-		g1_free((A)->gy);													\
-		g1_free((A)->gz);													\
-		g2_free((A)->hx);													\
-		g2_free((A)->hy);													\
-		g2_free((A)->hz);													\
-		A = NULL;															\
-	}																		\
-
 #elif ALLOC == AUTO
-#define bgn_free(A)			/* empty */
+#define bgn_free(A)				/* empty */
 
 #elif ALLOC == STACK
 #define bgn_free(A)															\
@@ -790,7 +631,7 @@ typedef vbnn_user_st *vbnn_user_t;
  * @param[out] A 			- key generation center to initialize.
  */
 #if ALLOC == AUTO
-#define vbnn_kgc_null(A)	/* empty */
+#define vbnn_kgc_null(A)		/* empty */
 #else
 #define vbnn_kgc_null(A)	A = NULL;
 #endif
@@ -801,37 +642,26 @@ typedef vbnn_user_st *vbnn_user_t;
  * @param[out] A 			- the new vBNN-IBS KGC
  */
 #if ALLOC == DYNAMIC
-#define vbnn_kgc_new(A)																	\
-	A = (vbnn_kgc_t)calloc(1, sizeof(vbnn_kgc_st));									\
-	if (A == NULL) {																		\
-		THROW(ERR_NO_MEMORY);																\
-	}																						\
-	ec_null((A)->mpk);																		\
-	bn_null((A)->msk);																		\
-	ec_new((A)->mpk);																		\
-	bn_new((A)->msk);																		\
-
-#elif ALLOC == STATIC
-#define vbnn_kgc_new(A)																	\
-	A = (vbnn_kgc_t)alloca(sizeof(vbnn_kgc_st));									\
-	if (A == NULL) {																		\
-		THROW(ERR_NO_MEMORY);																\
-	}																						\
-	ec_null((A)->mpk);																		\
-	bn_null((A)->msk);																		\
-	ec_new((A)->mpk);																		\
-	bn_new((A)->msk);																		\
+#define vbnn_kgc_new(A)														\
+	A = (vbnn_kgc_t)calloc(1, sizeof(vbnn_kgc_st));							\
+	if (A == NULL) {														\
+		THROW(ERR_NO_MEMORY);												\
+	}																		\
+	ec_null((A)->mpk);														\
+	bn_null((A)->msk);														\
+	ec_new((A)->mpk);														\
+	bn_new((A)->msk);														\
 
 #elif ALLOC == AUTO
-#define vbnn_kgc_new(A)																	\
-	ec_new((A)->mpk);																		\
-	bn_new((A)->msk);																		\
+#define vbnn_kgc_new(A)														\
+	ec_new((A)->mpk);														\
+	bn_new((A)->msk);														\
 
 #elif ALLOC == STACK
-#define vbnn_kgc_new(A)																	\
-	A = (vbnn_kgc_t)alloca(sizeof(vbnn_kgc_st));									\
-	ec_new((A)->mpk);																		\
-	bn_new((A)->msk);																		\
+#define vbnn_kgc_new(A)														\
+	A = (vbnn_kgc_t)alloca(sizeof(vbnn_kgc_st));							\
+	ec_new((A)->mpk);														\
+	bn_new((A)->msk);														\
 
 #endif
 
@@ -841,7 +671,7 @@ typedef vbnn_user_st *vbnn_user_t;
  * @param[out] A 			- the vBNN-IBS KGC to clean
  */
 #if ALLOC == DYNAMIC
-#define vbnn_kgc_free(A)												\
+#define vbnn_kgc_free(A)													\
 	if (A != NULL) {														\
 		ec_free((A)->mpk);													\
 		bn_free((A)->msk);													\
@@ -849,19 +679,11 @@ typedef vbnn_user_st *vbnn_user_t;
 		A = NULL;															\
 	}																		\
 
-#elif ALLOC == STATIC
-#define vbnn_kgc_free(A)												\
-	if (A != NULL) {														\
-		ec_free((A)->mpk);													\
-		bn_free((A)->msk);													\
-		A = NULL;															\
-	}																		\
-
 #elif ALLOC == AUTO
-#define vbnn_kgc_free(A)				/* empty */
+#define vbnn_kgc_free(A)		/* empty */
 
 #elif ALLOC == STACK
-#define vbnn_kgc_free(A)												\
+#define vbnn_kgc_free(A)													\
 	ec_free((A)->mpk);														\
 	bn_free((A)->msk);														\
 	A = NULL;																\
@@ -874,7 +696,7 @@ typedef vbnn_user_st *vbnn_user_t;
  * @param[out] A 			- user to initialize.
  */
 #if ALLOC == AUTO
-#define vbnn_user_null(A)	/* empty */
+#define vbnn_user_null(A)		/* empty */
 #else
 #define vbnn_user_null(A)	A = NULL;
 #endif
@@ -885,37 +707,26 @@ typedef vbnn_user_st *vbnn_user_t;
  * @param[out] A 			- the new vBNN-IBS KGC
  */
 #if ALLOC == DYNAMIC
-#define vbnn_user_new(A)																\
-	A = (vbnn_user_t)calloc(1, sizeof(vbnn_user_st));								\
-	if (A == NULL) {																		\
-		THROW(ERR_NO_MEMORY);																\
-	}																						\
-	ec_null((A)->R);																		\
-	bn_null((A)->s);																		\
-	ec_new((A)->R);																			\
-	bn_new((A)->s);																			\
-
-#elif ALLOC == STATIC
-#define vbnn_user_new(A)																\
-	A = (vbnn_user_t)alloca(sizeof(vbnn_user_st));									\
-	if (A == NULL) {																		\
-		THROW(ERR_NO_MEMORY);																\
-	}																						\
-	ec_null((A)->R);																		\
-	bn_null((A)->s);																		\
-	ec_new((A)->R);																			\
-	bn_new((A)->s);																			\
+#define vbnn_user_new(A)													\
+	A = (vbnn_user_t)calloc(1, sizeof(vbnn_user_st));						\
+	if (A == NULL) {														\
+		THROW(ERR_NO_MEMORY);												\
+	}																		\
+	ec_null((A)->R);														\
+	bn_null((A)->s);														\
+	ec_new((A)->R);															\
+	bn_new((A)->s);															\
 
 #elif ALLOC == AUTO
-#define vbnn_user_new(A)																\
-	ec_new((A)->R);																			\
-	bn_new((A)->s);																			\
+#define vbnn_user_new(A)													\
+	ec_new((A)->R);															\
+	bn_new((A)->s);															\
 
 #elif ALLOC == STACK
-#define vbnn_user_new(A)																\
-	A = (vbnn_user_t)alloca(sizeof(vbnn_user_st));									\
-	ec_new((A)->R);																			\
-	bn_new((A)->s);																			\
+#define vbnn_user_new(A)													\
+	A = (vbnn_user_t)alloca(sizeof(vbnn_user_st));							\
+	ec_new((A)->R);															\
+	bn_new((A)->s);															\
 
 #endif
 
@@ -925,7 +736,7 @@ typedef vbnn_user_st *vbnn_user_t;
  * @param[out] A 			- the vBNN-IBS KGC to clean
  */
 #if ALLOC == DYNAMIC
-#define vbnn_user_free(A)												\
+#define vbnn_user_free(A)													\
 	if (A != NULL) {														\
 		ec_free((A)->R);													\
 		bn_free((A)->s);													\
@@ -933,19 +744,11 @@ typedef vbnn_user_st *vbnn_user_t;
 		A = NULL;															\
 	}																		\
 
-#elif ALLOC == STATIC
-#define vbnn_user_free(A)												\
-	if (A != NULL) {														\
-		ec_free((A)->R);													\
-		bn_free((A)->s);													\
-		A = NULL;															\
-	}																		\
-
 #elif ALLOC == AUTO
-#define vbnn_user_free(A)				/* empty */
+#define vbnn_user_free(A)		/* empty */
 
 #elif ALLOC == STACK
-#define vbnn_user_free(A)												\
+#define vbnn_user_free(A)													\
 	ec_free((A)->R);														\
 	bn_free((A)->s);														\
 	A = NULL;																\
@@ -958,7 +761,7 @@ typedef vbnn_user_st *vbnn_user_t;
  * @param[out] PB			- the public key.
  * @param[out] PV			- the private key.
  * @param[in] B				- the key length in bits.
- * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 #if CP_RSA == BASIC
 #define cp_rsa_gen(PB, PV, B)				cp_rsa_gen_basic(PB, PV, B)
@@ -974,7 +777,7 @@ typedef vbnn_user_st *vbnn_user_t;
  * @param[in] I				- the input buffer.
  * @param[in] IL			- the number of bytes to encrypt.
  * @param[in] K				- the private key.
- * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 #if CP_RSA == BASIC
 #define cp_rsa_dec(O, OL, I, IL, K)			cp_rsa_dec_basic(O, OL, I, IL, K)
@@ -991,7 +794,7 @@ typedef vbnn_user_st *vbnn_user_t;
  * @param[in] IL			- the number of bytes to sign.
  * @param[in] H				- the flag to indicate the message format.
  * @param[in] K				- the private key.
- * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 #if CP_RSA == BASIC
 #define cp_rsa_sig(O, OL, I, IL, H, K)	cp_rsa_sig_basic(O, OL, I, IL, H, K)
@@ -1009,7 +812,7 @@ typedef vbnn_user_st *vbnn_user_t;
  * @param[out] pub			- the public key.
  * @param[out] prv			- the private key.
  * @param[in] bits			- the key length in bits.
- * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_rsa_gen_basic(rsa_t pub, rsa_t prv, int bits);
 
@@ -1019,7 +822,7 @@ int cp_rsa_gen_basic(rsa_t pub, rsa_t prv, int bits);
  * @param[out] pub			- the public key.
  * @param[out] prv			- the private key.
  * @param[in] bits			- the key length in bits.
- * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_rsa_gen_quick(rsa_t pub, rsa_t prv, int bits);
 
@@ -1031,7 +834,7 @@ int cp_rsa_gen_quick(rsa_t pub, rsa_t prv, int bits);
  * @param[in] in			- the input buffer.
  * @param[in] in_len		- the number of bytes to encrypt.
  * @param[in] pub			- the public key.
- * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_rsa_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len, rsa_t pub);
 
@@ -1043,7 +846,7 @@ int cp_rsa_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len, rsa_t pub);
  * @param[in] in			- the input buffer.
  * @param[in] in_len		- the number of bytes to decrypt.
  * @param[in] prv			- the private key.
- * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_rsa_dec_basic(uint8_t *out, int *out_len, uint8_t *in, int in_len,
 		rsa_t prv);
@@ -1056,7 +859,7 @@ int cp_rsa_dec_basic(uint8_t *out, int *out_len, uint8_t *in, int in_len,
  * @param[in] in			- the input buffer.
  * @param[in] in_len		- the number of bytes to decrypt.
  * @param[in] prv			- the private key.
- * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_rsa_dec_quick(uint8_t *out, int *out_len, uint8_t *in, int in_len,
 		rsa_t prv);
@@ -1071,7 +874,7 @@ int cp_rsa_dec_quick(uint8_t *out, int *out_len, uint8_t *in, int in_len,
  * @param[in] msg_len		- the number of bytes to sign.
  * @param[in] hash			- the flag to indicate the message format.
  * @param[in] prv			- the private key.
- * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_rsa_sig_basic(uint8_t *sig, int *sig_len, uint8_t *msg, int msg_len,
 		int hash, rsa_t prv);
@@ -1086,7 +889,7 @@ int cp_rsa_sig_basic(uint8_t *sig, int *sig_len, uint8_t *msg, int msg_len,
  * @param[in] msg_len		- the number of bytes to sign.
  * @param[in] hash			- the flag to indicate the message format.
  * @param[in] prv			- the private key.
- * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_rsa_sig_quick(uint8_t *sig, int *sig_len, uint8_t *msg, int msg_len,
 		int hash, rsa_t prv);
@@ -1112,7 +915,7 @@ int cp_rsa_ver(uint8_t *sig, int sig_len, uint8_t *msg, int msg_len, int hash,
  * @param[out] pub			- the public key.
  * @param[out] prv			- the private key,
  * @param[in] bits			- the key length in bits.
- * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_rabin_gen(rabin_t pub, rabin_t prv, int bits);
 
@@ -1124,7 +927,7 @@ int cp_rabin_gen(rabin_t pub, rabin_t prv, int bits);
  * @param[in] in			- the input buffer.
  * @param[in] in_len		- the number of bytes to encrypt.
  * @param[in] pub			- the public key.
- * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_rabin_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len,
 		rabin_t pub);
@@ -1137,7 +940,7 @@ int cp_rabin_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len,
  * @param[in] in			- the input buffer.
  * @param[in] in_len		- the number of bytes to decrypt.
  * @param[in] prv			- the private key.
- * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_rabin_dec(uint8_t *out, int *out_len, uint8_t *in, int in_len,
 		rabin_t prv);
@@ -1149,7 +952,7 @@ int cp_rabin_dec(uint8_t *out, int *out_len, uint8_t *in, int in_len,
  * @param[out] prv			- the private key.
  * @param[in] block			- the block size.
  * @param[in] bits			- the key length in bits.
- * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_bdpe_gen(bdpe_t pub, bdpe_t prv, dig_t block, int bits);
 
@@ -1160,7 +963,7 @@ int cp_bdpe_gen(bdpe_t pub, bdpe_t prv, dig_t block, int bits);
  * @param[in, out] out_len	- the buffer capacity and number of bytes written.
  * @param[in] in			- the plaintext as a small integer.
  * @param[in] pub			- the public key.
- * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_bdpe_enc(uint8_t *out, int *out_len, dig_t in, bdpe_t pub);
 
@@ -1171,7 +974,7 @@ int cp_bdpe_enc(uint8_t *out, int *out_len, dig_t in, bdpe_t pub);
  * @param[in] in			- the input buffer.
  * @param[in] in_len		- the number of bytes to encrypt.
  * @param[in] prv			- the private key.
- * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_bdpe_dec(dig_t *out, uint8_t *in, int in_len, bdpe_t prv);
 
@@ -1181,7 +984,7 @@ int cp_bdpe_dec(dig_t *out, uint8_t *in, int in_len, bdpe_t prv);
  * @param[out] n			- the public key.
  * @param[out] l			- the private key.
  * @param[in] bits			- the key length in bits.
- * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_phpe_gen(bn_t n, bn_t l, int bits);
 
@@ -1193,7 +996,7 @@ int cp_phpe_gen(bn_t n, bn_t l, int bits);
  * @param[in] in			- the input buffer.
  * @param[in] in_len		- the number of bytes to encrypt.
  * @param[in] n				- the public key.
- * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_phpe_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len, bn_t n);
 
@@ -1207,7 +1010,7 @@ int cp_phpe_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len, bn_t n);
  * @param[in] in_len		- the number of bytes to decrypt.
  * @param[in] n				- the public key.
  * @param[in] l				- the private key.
- * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_phpe_dec(uint8_t *out, int out_len, uint8_t *in, int in_len, bn_t n,
 		bn_t l);
@@ -1217,7 +1020,7 @@ int cp_phpe_dec(uint8_t *out, int out_len, uint8_t *in, int in_len, bn_t n,
  *
  * @param[out] d			- the private key.
  * @param[in] q				- the public key.
- * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_ecdh_gen(bn_t d, ec_t q);
 
@@ -1228,7 +1031,7 @@ int cp_ecdh_gen(bn_t d, ec_t q);
  * @param[int] key_len		- the intended shared key length in bytes.
  * @param[in] d				- the private key.
  * @param[in] q				- the point received from the other party.
- * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_ecdh_key(uint8_t *key, int key_len, bn_t d, ec_t q);
 
@@ -1239,7 +1042,7 @@ int cp_ecdh_key(uint8_t *key, int key_len, bn_t d, ec_t q);
  *
  * @param[out] d			- the private key.
  * @param[out] q			- the public key.
- * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_ecmqv_gen(bn_t d, ec_t q);
 
@@ -1253,7 +1056,7 @@ int cp_ecmqv_gen(bn_t d, ec_t q);
  * @param[in] q2u			- the ephemeral public key.
  * @param[in] q1v			- the point received from the other party.
  * @param[in] q2v			- the ephemeral point received from the party.
- * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_ecmqv_key(uint8_t *key, int key_len, bn_t d1, bn_t d2, ec_t q2u,
 		ec_t q1v, ec_t q2v);
@@ -1263,7 +1066,7 @@ int cp_ecmqv_key(uint8_t *key, int key_len, bn_t d1, bn_t d2, ec_t q2u,
  *
  * @param[out] d			- the private key.
  * @param[in] q				- the public key.
- * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_ecies_gen(bn_t d, ec_t q);
 
@@ -1277,7 +1080,7 @@ int cp_ecies_gen(bn_t d, ec_t q);
  * @param[in] in_len		- the number of bytes to encrypt.
  * @param[in] iv 			- the block cipher initialization vector.
  * @param[in] q				- the public key.
- * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_ecies_enc(ec_t r, uint8_t *out, int *out_len, uint8_t *in, int in_len,
 		ec_t q);
@@ -1291,7 +1094,7 @@ int cp_ecies_enc(ec_t r, uint8_t *out, int *out_len, uint8_t *in, int in_len,
  * @param[in] in_len		- the number of bytes to encrypt.
  * @param[in] iv 			- the block cipher initialization vector.
  * @param[in] d				- the private key.
- * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_ecies_dec(uint8_t *out, int *out_len, ec_t r, uint8_t *in, int in_len,
 		bn_t d);
@@ -1301,7 +1104,7 @@ int cp_ecies_dec(uint8_t *out, int *out_len, ec_t r, uint8_t *in, int in_len,
  *
  * @param[out] d			- the private key.
  * @param[in] q				- the public key.
- * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_ecdsa_gen(bn_t d, ec_t q);
 
@@ -1314,7 +1117,7 @@ int cp_ecdsa_gen(bn_t d, ec_t q);
  * @param[in] len			- the message length in bytes.
  * @param[in] hash			- the flag to indicate the message format.
  * @param[in] d				- the private key.
- * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_ecdsa_sig(bn_t r, bn_t s, uint8_t *msg, int len, int hash, bn_t d);
 
@@ -1336,7 +1139,7 @@ int cp_ecdsa_ver(bn_t r, bn_t s, uint8_t *msg, int len, int hash, ec_t q);
  *
  * @param[out] d			- the private key.
  * @param[in] q				- the public key.
- * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_ecss_gen(bn_t d, ec_t q);
 
@@ -1348,7 +1151,7 @@ int cp_ecss_gen(bn_t d, ec_t q);
  * @param[in] msg			- the message to sign.
  * @param[in] len			- the message length in bytes.
  * @param[in] d				- the private key.
- * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_ecss_sig(bn_t e, bn_t s, uint8_t *msg, int len, bn_t d);
 
@@ -1370,7 +1173,7 @@ int cp_ecss_ver(bn_t e, bn_t s, uint8_t *msg, int len, ec_t q);
  * authenticated key agreement protocol.
  *
  * @param[out] master			- the master key.
- * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_sokaka_gen(bn_t master);
 
@@ -1381,7 +1184,7 @@ int cp_sokaka_gen(bn_t master);
  * @param[in] id			- the identity.
  * @param[in] len			- the length of identity in bytes.
  * @param[in] master		- the master key.
- * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_sokaka_gen_prv(sokaka_t k, char *id, int len, bn_t master);
 
@@ -1395,7 +1198,7 @@ int cp_sokaka_gen_prv(sokaka_t k, char *id, int len, bn_t master);
  * @param[in] k				- the private key of the first identity.
  * @param[in] id2			- the second identity.
  * @param[in] len2			- the length of the second identity in bytes.
- * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_sokaka_key(uint8_t *key, unsigned int key_len, char *id1, int len1,
 		sokaka_t k, char *id2, int len2);
@@ -1405,7 +1208,7 @@ int cp_sokaka_key(uint8_t *key, unsigned int key_len, char *id1, int len1,
  *
  * @param[out] pub 			- the public key.
  * @param[out] prv 			- the private key.
- * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_bgn_gen(bgn_t pub, bgn_t prv);
 
@@ -1415,7 +1218,7 @@ int cp_bgn_gen(bgn_t pub, bgn_t prv);
  * @param[out] out 			- the ciphertext.
  * @param[in] in 			- the plaintext as a small integer.
  * @param[in] pub 			- the public key.
- * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_bgn_enc1(g1_t out[2], dig_t in, bgn_t pub);
 
@@ -1425,7 +1228,7 @@ int cp_bgn_enc1(g1_t out[2], dig_t in, bgn_t pub);
  * @param[out] out 			- the decrypted small integer.
  * @param[in] in 			- the ciphertext.
  * @param[in] prv 			- the private key.
- * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_bgn_dec1(dig_t *out, g1_t in[2], bgn_t prv);
 
@@ -1435,7 +1238,7 @@ int cp_bgn_dec1(dig_t *out, g1_t in[2], bgn_t prv);
  * @param[out] c 			- the ciphertext.
  * @param[in] m 			- the plaintext as a small integer.
  * @param[in] pub 			- the public key.
- * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_bgn_enc2(g2_t out[2], dig_t in, bgn_t pub);
 
@@ -1445,7 +1248,7 @@ int cp_bgn_enc2(g2_t out[2], dig_t in, bgn_t pub);
  * @param[out] out 			- the decrypted small integer.
  * @param[in] c 			- the ciphertext.
  * @param[in] prv 			- the private key.
- * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_bgn_dec2(dig_t *out, g2_t in[2], bgn_t prv);
 
@@ -1455,7 +1258,7 @@ int cp_bgn_dec2(dig_t *out, g2_t in[2], bgn_t prv);
  * @param[out] e 			- the resulting ciphertext.
  * @param[in] c 			- the first ciphertext to add.
  * @param[in] d 			- the second ciphertext to add.
- * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_bgn_add(gt_t e[4], gt_t c[4], gt_t d[4]);
 
@@ -1465,7 +1268,7 @@ int cp_bgn_add(gt_t e[4], gt_t c[4], gt_t d[4]);
  * @param[out] e 			- the resulting ciphertext.
  * @param[in] c 			- the first ciphertext to add.
  * @param[in] d 			- the second ciphertext to add.
- * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_bgn_mul(gt_t e[4], g1_t c[2], g2_t d[2]);
 
@@ -1475,7 +1278,7 @@ int cp_bgn_mul(gt_t e[4], g1_t c[2], g2_t d[2]);
  * @param[out] out 			- the decrypted small integer.
  * @param[in] c 			- the ciphertext.
  * @param[in] prv 			- the private key.
- * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_bgn_dec(dig_t *out, gt_t in[4], bgn_t prv);
 
@@ -1485,7 +1288,7 @@ int cp_bgn_dec(dig_t *out, gt_t in[4], bgn_t prv);
  *
  * @param[out] master		- the master key.
  * @param[out] pub 			- the public key of the private key generator.
- * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_ibe_gen(bn_t master, g1_t pub);
 
@@ -1496,7 +1299,7 @@ int cp_ibe_gen(bn_t master, g1_t pub);
  * @param[in] id			- the identity.
  * @param[in] len			- the length of identity in bytes.
  * @param[in] s				- the master key.
- * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_ibe_gen_prv(g2_t prv, char *id, int len, bn_t master);
 
@@ -1508,7 +1311,7 @@ int cp_ibe_gen_prv(g2_t prv, char *id, int len, bn_t master);
  * @param[in] in			- the input buffer.
  * @param[in] in_len		- the number of bytes to encrypt.
  * @param[in] pub			- the public key of the PKG.
- * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_ibe_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len,
 		char *id, int len, g1_t pub);
@@ -1521,7 +1324,7 @@ int cp_ibe_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len,
  * @param[in] in			- the input buffer.
  * @param[in] in_len		- the number of bytes to decrypt.
  * @param[in] pub			- the private key of the user.
- * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_ibe_dec(uint8_t *out, int *out_len, uint8_t *in, int in_len, g2_t prv);
 
@@ -1530,7 +1333,7 @@ int cp_ibe_dec(uint8_t *out, int *out_len, uint8_t *in, int in_len, g2_t prv);
  *
  * @param[out] d			- the private key.
  * @param[out] q			- the public key.
- * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_bls_gen(bn_t d, g2_t q);
 
@@ -1541,7 +1344,7 @@ int cp_bls_gen(bn_t d, g2_t q);
  * @param[in] msg			- the message to sign.
  * @param[in] len			- the message length in bytes.
  * @param[in] d				- the private key.
- * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_bls_sig(g1_t s, uint8_t *msg, int len, bn_t d);
 
@@ -1562,7 +1365,7 @@ int cp_bls_ver(g1_t s, uint8_t *msg, int len, g2_t q);
  * @param[out] d			- the private key.
  * @param[out] q			- the first component of the public key.
  * @param[out] z			- the second component of the public key.
- * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_bbs_gen(bn_t d, g2_t q, gt_t z);
 
@@ -1574,7 +1377,7 @@ int cp_bbs_gen(bn_t d, g2_t q, gt_t z);
  * @param[in] len			- the message length in bytes.
  * @param[in] hash			- the flag to indicate the message format.
  * @param[in] d				- the private key.
- * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_bbs_sig(g1_t s, uint8_t *msg, int len, int hash, bn_t d);
 
@@ -1599,7 +1402,7 @@ int cp_bbs_ver(g1_t s, uint8_t *msg, int len, int hash, g2_t q, gt_t z);
  * @param[out] v			- the second part of the private key.
  * @param[out] x			- the first part of the public key.
  * @param[out] y			- the second part of the public key.
- * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_cls_gen(bn_t u, bn_t v, g2_t x, g2_t y);
 
@@ -1608,12 +1411,12 @@ int cp_cls_gen(bn_t u, bn_t v, g2_t x, g2_t y);
  *
  * @param[out] a			- the first part of the signature.
  * @param[out] b			- the second part of the signature.
- * @param[out] b			- the third part of the signature.
+ * @param[out] c			- the third part of the signature.
  * @param[in] msg			- the message to sign.
  * @param[in] len			- the message length in bytes.
  * @param[in] u				- the first part of the private key.
  * @param[in] v				- the second part of the private key.
- * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_cls_sig(g1_t a, g1_t b, g1_t c, uint8_t *msg, int len, bn_t u, bn_t v);
 
@@ -1622,7 +1425,7 @@ int cp_cls_sig(g1_t a, g1_t b, g1_t c, uint8_t *msg, int len, bn_t u, bn_t v);
  *
  * @param[in] a				- the first part of the signature.
  * @param[in] b				- the second part of the signature.
- * @param[in] b				- the third part of the signature.
+ * @param[in] c				- the third part of the signature.
  * @param[in] msg			- the message to sign.
  * @param[in] len			- the message length in bytes.
  * @param[in] u				- the first part of the public key.
@@ -1641,7 +1444,7 @@ int cp_cls_ver(g1_t a, g1_t b, g1_t c, uint8_t *msg, int len, g2_t x, g2_t y);
  * @param[out] x			- the first part of the public key.
  * @param[out] y			- the second part of the public key.
  * @param[out] z			- the third part of the public key.
- * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_cli_gen(bn_t t, bn_t u, bn_t v, g2_t x, g2_t y, g2_t z);
 
@@ -1659,10 +1462,10 @@ int cp_cli_gen(bn_t t, bn_t u, bn_t v, g2_t x, g2_t y, g2_t z);
  * @param[in] t				- the first part of the private key.
  * @param[in] u				- the second part of the private key.
  * @param[in] v				- the third part of the private key.
- * @return STS_OK if no errors occurred, STS_ERR otherwise.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_cli_sig(g1_t a, g1_t A, g1_t b, g1_t B, g1_t c, uint8_t *msg, int len,
-	bn_t r, bn_t t, bn_t u, bn_t v);
+		bn_t r, bn_t t, bn_t u, bn_t v);
 
 /**
  * Verifies a message signed using the CLI protocol.
@@ -1681,7 +1484,144 @@ int cp_cli_sig(g1_t a, g1_t A, g1_t b, g1_t B, g1_t c, uint8_t *msg, int len,
  * @return a boolean value indicating the verification result.
  */
 int cp_cli_ver(g1_t a, g1_t A, g1_t b, g1_t B, g1_t c, uint8_t *msg, int len,
-	bn_t r, g2_t x, g2_t y, g2_t z);
+		bn_t r, g2_t x, g2_t y, g2_t z);
+
+/**
+ * Generates a key pair for the Camenisch-Lysyanskaya message-block (CLB)
+ * signature protocol.
+ *
+ * @param[out] t			- the first part of the private key.
+ * @param[out] u			- the second part of the private key.
+ * @param[out] v			- the remaining (l - 1) parts of the private key.
+ * @param[out] x			- the first part of the public key.
+ * @param[out] y			- the second part of the public key.
+ * @param[out] z			- the remaining (l - 1) parts of the public key.
+ * @param[in] l 			- the number of messages to sign.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int cp_clb_gen(bn_t t, bn_t u, bn_t v[], g2_t x, g2_t y, g2_t z[], int l);
+
+/**
+ * Signs a block of messages using the CLB protocol.
+ *
+ * @param[out] a			- the first component of the signature.
+ * @param[out] A			- the (l - 1) next components of the signature.
+ * @param[out] b			- the next component of the signature.
+ * @param[out] B			- the (l - 1) next components of the signature.
+ * @param[out] c			- the last component of the signature.
+ * @param[in] msgs			- the l messages to sign.
+ * @param[in] lens			- the l message lengths in bytes.
+ * @param[in] t				- the first part of the private key.
+ * @param[in] u				- the second part of the private key.
+ * @param[in] v				- the remaining (l - 1) parts of the private key.
+ * @param[in] l 			- the number of messages to sign.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int cp_clb_sig(g1_t a, g1_t A[], g1_t b, g1_t B[], g1_t c, uint8_t *msgs[],
+		int lens[], bn_t t, bn_t u, bn_t v[], int l);
+
+/**
+ * Verifies a block of messages signed using the CLB protocol.
+ *
+ * @param[out] a			- the first component of the signature.
+ * @param[out] A			- the (l - 1) next components of the signature.
+ * @param[out] b			- the next component of the signature.
+ * @param[out] B			- the (l - 1) next components of the signature.
+ * @param[out] c			- the last component of the signature.
+ * @param[in] msgs			- the l messages to sign.
+ * @param[in] lens			- the l message lengths in bytes.
+ * @param[in] x				- the first part of the public key.
+ * @param[in] y				- the second part of the public key.
+ * @param[in] z			- the remaining (l - 1) parts of the public key.
+ * @param[in] l 			- the number of messages to sign.
+ * @return a boolean value indicating the verification result.
+ */
+int cp_clb_ver(g1_t a, g1_t A[], g1_t b, g1_t B[], g1_t c, uint8_t *msgs[],
+		int lens[], g2_t x, g2_t y, g2_t z[], int l);
+
+/**
+ * Generates a key pair for the Pointcheval-Sanders simple signature (PSS)
+ * protocol.
+ *
+ * @param[out] u			- the first part of the private key.
+ * @param[out] v			- the second part of the private key.
+ * @param[out] g			- the first part of the public key.
+ * @param[out] x			- the secpmd part of the public key.
+ * @param[out] y			- the third part of the public key.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int cp_pss_gen(bn_t u, bn_t v, g2_t g, g2_t x, g2_t y);
+
+/**
+ * Signs a message using the PSS protocol.
+ *
+ * @param[out] a			- the first part of the signature.
+ * @param[out] b			- the second part of the signature.
+ * @param[in] msg			- the message to sign.
+ * @param[in] len			- the message length in bytes.
+ * @param[in] u				- the first part of the private key.
+ * @param[in] v				- the second part of the private key.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int cp_pss_sig(g1_t a, g1_t b, uint8_t *msg, int len, bn_t u, bn_t v);
+
+/**
+ ** Verifies a signature using the PSS protocol.
+ *
+ * @param[in] a				- the first part of the signature.
+ * @param[in] b				- the second part of the signature.
+ * @param[in] msg			- the message to sign.
+ * @param[in] len			- the message length in bytes.
+ * @param[in] g				- the first part of the public key.
+ * @param[in] u				- the second part of the public key.
+ * @param[in] v				- the third part of the public key.
+ * @return a boolean value indicating the verification result.
+ */
+int cp_pss_ver(g1_t a, g1_t b, uint8_t *msg, int len, g2_t g, g2_t x, g2_t y);
+
+/**
+ * Generates a key pair for the Pointcheval-Sanders block signature (PSB)
+ * protocol.
+ *
+ * @param[out] r			- the first part of the private key.
+ * @param[out] s			- the second part of the private key.
+ * @param[out] g			- the first part of the public key.
+ * @param[out] x			- the secpmd part of the public key.
+ * @param[out] y			- the third part of the public key.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int cp_psb_gen(bn_t r, bn_t s[], g2_t g, g2_t x, g2_t y[], int l);
+
+/**
+ * Signs a block of messages using the PSB protocol.
+ *
+ * @param[out] a			- the first component of the signature.
+ * @param[out] b			- the second component of the signature.
+ * @param[in] msgs			- the l messages to sign.
+ * @param[in] lens			- the l message lengths in bytes.
+ * @param[in] r				- the first part of the private key.
+ * @param[in] s				- the remaining l part of the private key.
+ * @param[in] l 			- the number of messages to sign.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int cp_psb_sig(g1_t a, g1_t b, uint8_t *msgs[], int lens[], bn_t r, bn_t s[],
+		int l);
+
+/**
+ * Verifies a block of messages signed using the PSB protocol.
+ *
+ * @param[out] a			- the first component of the signature.
+ * @param[out] b			- the seconed component of the signature.
+ * @param[in] msgs			- the l messages to sign.
+ * @param[in] lens			- the l message lengths in bytes.
+ * @param[in] g				- the first part of the public key.
+ * @param[in] x				- the second part of the public key.
+ * @param[in] y				- the remaining l parts of the public key.
+ * @param[in] l 			- the number of messages to sign.
+ * @return a boolean value indicating the verification result.
+ */
+int cp_psb_ver(g1_t a, g1_t b, uint8_t *msgs[], int lens[], g2_t g, g2_t x,
+		g2_t y[], int l);
 
 /**
  * Generates a Zhang-Safavi-Naini-Susilo (ZSS) key pair.
@@ -1731,8 +1671,7 @@ int cp_vbnn_gen(vbnn_kgc_t kgc);
  * @param[in]  id			- the identity used for extraction.
  * @param[in]  id_len		- the identity length in bytes.
  */
-int cp_vbnn_gen_prv(vbnn_user_t user, vbnn_kgc_t kgc,
-	uint8_t *id, int id_len);
+int cp_vbnn_gen_prv(vbnn_user_t user, vbnn_kgc_t kgc, uint8_t *id, int id_len);
 
 /**
  * Signs a message using the vBNN-IBS scheme.
@@ -1764,4 +1703,4 @@ int cp_vbnn_sig(ec_t r, bn_t z, bn_t h, uint8_t *id, int id_len, uint8_t *msg,
 int cp_vbnn_ver(ec_t r, bn_t z, bn_t h, uint8_t *id, int id_len, uint8_t *msg,
 		int msg_len, ec_t mpk);
 
-#endif /* !RELIC_CP_H */
+#endif /* !RLC_CP_H */

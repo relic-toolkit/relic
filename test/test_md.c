@@ -1,23 +1,24 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2017 RELIC Authors
+ * Copyright (C) 2007-2019 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
  * for contact information.
  *
- * RELIC is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * RELIC is free software; you can redistribute it and/or modify it under the
+ * terms of the version 2.1 (or later) of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; or version 2.0 of the Apache
+ * License as published by the Apache Software Foundation. See the LICENSE files
+ * for more details.
  *
- * RELIC is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * RELIC is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the LICENSE files for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RELIC. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General Public or the
+ * Apache License along with RELIC. If not, see <https://www.gnu.org/licenses/>
+ * or <https://www.apache.org/licenses/>.
  */
 
 /**
@@ -75,7 +76,7 @@ uint8_t result1[3][20] = {
 };
 
 static int sha1(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	int i, j;
 	uint8_t message[MSG_SIZE], digest[20];
 
@@ -91,7 +92,7 @@ static int sha1(void) {
 	}
 	TEST_END;
 
-	code = STS_OK;
+	code = RLC_OK;
 
   end:
 	return code;
@@ -114,7 +115,7 @@ uint8_t result224[3][28] = {
 };
 
 static int sha224(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	int i, j;
 	uint8_t message[MSG_SIZE], digest[28];
 
@@ -130,7 +131,7 @@ static int sha224(void) {
 	}
 	TEST_END;
 
-	code = STS_OK;
+	code = RLC_OK;
 
   end:
 	return code;
@@ -153,7 +154,7 @@ uint8_t result256[3][32] = {
 };
 
 static int sha256(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	int i, j;
 	uint8_t message[MSG_SIZE], digest[32];
 
@@ -169,7 +170,7 @@ static int sha256(void) {
 	}
 	TEST_END;
 
-	code = STS_OK;
+	code = RLC_OK;
 
   end:
 	return code;
@@ -206,7 +207,7 @@ uint8_t result384[4][48] = {
 };
 
 static int sha384(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	int i, j;
 	uint8_t message[MSG_SIZE], digest[48];
 
@@ -222,7 +223,7 @@ static int sha384(void) {
 	}
 	TEST_END;
 
-	code = STS_OK;
+	code = RLC_OK;
 
   end:
 	return code;
@@ -257,7 +258,7 @@ uint8_t result512[4][64] = {
 };
 
 static int sha512(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	int i, j;
 	uint8_t message[MSG_SIZE], digest[64];
 
@@ -273,7 +274,7 @@ static int sha512(void) {
 	}
 	TEST_END;
 
-	code = STS_OK;
+	code = RLC_OK;
 
   end:
 	return code;
@@ -294,7 +295,7 @@ uint8_t key2[] = {
 };
 
 static int kdf(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	uint8_t message[] = { 0XDE, 0XAD, 0xBE, 0xEF, 0xFE, 0xEB, 0xDA, 0xED };
 	uint8_t key[32];
 
@@ -311,7 +312,7 @@ static int kdf(void) {
 	}
 	TEST_END;
 
-	code = STS_OK;
+	code = RLC_OK;
 
   end:
 	return code;
@@ -320,12 +321,12 @@ static int kdf(void) {
 	(void)message;
 	(void)code;
 	(void)key;
-	return STS_OK;
+	return RLC_OK;
 #endif
 }
 
 static int mgf(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	uint8_t message[] = { 0XDE, 0XAD, 0xBE, 0xEF, 0xFE, 0xEB, 0xDA, 0xED };
 	uint8_t key[32];
 
@@ -336,7 +337,7 @@ static int mgf(void) {
 	}
 	TEST_END;
 
-	code = STS_OK;
+	code = RLC_OK;
 
   end:
 	return code;
@@ -345,12 +346,12 @@ static int mgf(void) {
 	(void)message;
 	(void)code;
 	(void)key;
-	return STS_OK;
+	return RLC_OK;
 #endif
 }
 
 static int hmac(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	uint8_t mac[MD_LEN];
 
 #if MD_MAP == SH256
@@ -454,14 +455,14 @@ static int hmac(void) {
 	TEST_END;
 #endif
 
-	code = STS_OK;
+	code = RLC_OK;
 
   end:
 	return code;
 }
 
 int main(void) {
-	if (core_init() != STS_OK) {
+	if (core_init() != RLC_OK) {
 		core_clean();
 		return 1;
 	}
@@ -469,51 +470,51 @@ int main(void) {
 	util_banner("Tests for the MD module:\n", 0);
 
 #if MD_MAP == SHONE || !defined(STRIP)
-	if (sha1() != STS_OK) {
+	if (sha1() != RLC_OK) {
 		core_clean();
 		return 1;
 	}
 #endif
 
 #if MD_MAP == SH224 || !defined(STRIP)
-	if (sha224() != STS_OK) {
+	if (sha224() != RLC_OK) {
 		core_clean();
 		return 1;
 	}
 #endif
 
 #if MD_MAP == SH256 || !defined(STRIP)
-	if (sha256() != STS_OK) {
+	if (sha256() != RLC_OK) {
 		core_clean();
 		return 1;
 	}
 #endif
 
 #if MD_MAP == SH384 || !defined(STRIP)
-	if (sha384() != STS_OK) {
+	if (sha384() != RLC_OK) {
 		core_clean();
 		return 1;
 	}
 #endif
 
 #if MD_MAP == SH512 || !defined(STRIP)
-	if (sha512() != STS_OK) {
+	if (sha512() != RLC_OK) {
 		core_clean();
 		return 1;
 	}
 #endif
 
-	if (kdf() != STS_OK) {
+	if (kdf() != RLC_OK) {
 		core_clean();
 		return 1;
 	}
 
-	if (mgf() != STS_OK) {
+	if (mgf() != RLC_OK) {
 		core_clean();
 		return 1;
 	}
 
-	if (hmac() != STS_OK) {
+	if (hmac() != RLC_OK) {
 		core_clean();
 		return 1;
 	}

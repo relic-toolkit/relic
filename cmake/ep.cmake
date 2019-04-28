@@ -15,15 +15,13 @@ message("   ** Available prime elliptic curve methods (default = PROJC;LWNAF;COM
 message("      Point representation:")
 message("      EP_METHD=BASIC    Affine coordinates.")
 message("      EP_METHD=PROJC    Jacobian projective coordinates.\n")
- 
+
 message("      Variable-base scalar multiplication:")
 message("      EP_METHD=BASIC    Binary method.")
 message("      EP_METHD=LWNAF    Left-to-right window NAF method (GLV for Koblitz curves).\n")
 
 message("      Fixed-base scalar multiplication:")
 message("      EP_METHD=BASIC    Binary method for fixed point multiplication.")
-message("      EP_METHD=YAOWI    Yao's windowing method for fixed point multiplication")
-message("      EP_METHD=NAFWI    NAF windowing method for fixed point multiplication.")
 message("      EP_METHD=COMBS    Single-table Comb method for fixed point multiplication.")
 message("      EP_METHD=COMBD    Double-table Comb method for fixed point multiplication.")
 message("      EP_METHD=LWNAF    Left-to-right window NAF method (GLV for Koblitz curves).\n")
@@ -36,10 +34,10 @@ message("      EP_METHD=JOINT    Joint sparse form.\n")
 
 if (NOT EP_DEPTH)
 	set(EP_DEPTH 4)
-endif(NOT EP_DEPTH)	
+endif(NOT EP_DEPTH)
 if (NOT EP_WIDTH)
 	set(EP_WIDTH 4)
-endif(NOT EP_WIDTH)	
+endif(NOT EP_WIDTH)
 set(EP_DEPTH "${EP_DEPTH}" CACHE STRING "Width of precomputation table for fixed point methods.")
 set(EP_WIDTH "${EP_WIDTH}" CACHE STRING "Width of window processing for unknown point methods.")
 

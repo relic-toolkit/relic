@@ -1,23 +1,24 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2017 RELIC Authors
+ * Copyright (C) 2007-2019 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
  * for contact information.
  *
- * RELIC is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * RELIC is free software; you can redistribute it and/or modify it under the
+ * terms of the version 2.1 (or later) of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; or version 2.0 of the Apache
+ * License as published by the Apache Software Foundation. See the LICENSE files
+ * for more details.
  *
- * RELIC is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * RELIC is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the LICENSE files for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RELIC. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General Public or the
+ * Apache License along with RELIC. If not, see <https://www.gnu.org/licenses/>
+ * or <https://www.apache.org/licenses/>.
  */
 
 /**
@@ -53,7 +54,7 @@ static void memory(void) {
 
 static void util(void) {
 	ep2_t p, q;
-	uint8_t bin[4 * FP_BYTES + 1];
+	uint8_t bin[4 * RLC_FP_BYTES + 1];
 	int l;
 
 	ep2_null(p);
@@ -153,7 +154,7 @@ static void util(void) {
 }
 
 static void arith(void) {
-	ep2_t p, q, r, t[RELIC_EPX_TABLE_MAX];
+	ep2_t p, q, r, t[RLC_EPX_TABLE_MAX];
 	bn_t k, n, l;
 	fp2_t s;
 
@@ -163,7 +164,7 @@ static void arith(void) {
 	bn_null(k);
 	bn_null(n);
 	fp2_null(s);
-	for (int i = 0; i < RELIC_EPX_TABLE_MAX; i++) {
+	for (int i = 0; i < RLC_EPX_TABLE_MAX; i++) {
 		ep2_null(t[i]);
 	}
 
@@ -395,13 +396,13 @@ static void arith(void) {
 	} BENCH_END;
 
 	BENCH_BEGIN("ep2_mul_dig") {
-		bn_rand(k, BN_POS, BN_DIGIT);
+		bn_rand(k, RLC_POS, RLC_DIG);
 		bn_rand_mod(k, n);
 		BENCH_ADD(ep2_mul_dig(p, q, k->dp[0]));
 	}
 	BENCH_END;
 
-	for (int i = 0; i < RELIC_EPX_TABLE_MAX; i++) {
+	for (int i = 0; i < RLC_EPX_TABLE_MAX; i++) {
 		ep2_new(t[i]);
 	}
 
@@ -417,12 +418,12 @@ static void arith(void) {
 		BENCH_ADD(ep2_mul_fix(q, t, k));
 	} BENCH_END;
 
-	for (int i = 0; i < RELIC_EPX_TABLE_MAX; i++) {
+	for (int i = 0; i < RLC_EPX_TABLE_MAX; i++) {
 		ep2_free(t[i]);
 	}
 
 #if EP_FIX == BASIC || !defined(STRIP)
-	for (int i = 0; i < RELIC_EPX_TABLE_BASIC; i++) {
+	for (int i = 0; i < RLC_EPX_TABLE_BASIC; i++) {
 		ep2_new(t[i]);
 	}
 	BENCH_BEGIN("ep2_mul_pre_basic") {
@@ -436,53 +437,13 @@ static void arith(void) {
 		ep2_mul_pre_basic(t, p);
 		BENCH_ADD(ep2_mul_fix_basic(q, t, k));
 	} BENCH_END;
-	for (int i = 0; i < RELIC_EPX_TABLE_BASIC; i++) {
-		ep2_free(t[i]);
-	}
-#endif
-
-#if EP_FIX == YAOWI || !defined(STRIP)
-	for (int i = 0; i < RELIC_EPX_TABLE_YAOWI; i++) {
-		ep2_new(t[i]);
-	}
-	BENCH_BEGIN("ep2_mul_pre_yaowi") {
-		ep2_rand(p);
-		BENCH_ADD(ep2_mul_pre_yaowi(t, p));
-	} BENCH_END;
-
-	BENCH_BEGIN("ep2_mul_fix_yaowi") {
-		bn_rand_mod(k, n);
-		ep2_rand(p);
-		ep2_mul_pre_yaowi(t, p);
-		BENCH_ADD(ep2_mul_fix_yaowi(q, t, k));
-	} BENCH_END;
-	for (int i = 0; i < RELIC_EPX_TABLE_YAOWI; i++) {
-		ep2_free(t[i]);
-	}
-#endif
-
-#if EP_FIX == NAFWI || !defined(STRIP)
-	for (int i = 0; i < RELIC_EPX_TABLE_NAFWI; i++) {
-		ep2_new(t[i]);
-	}
-	BENCH_BEGIN("ep2_mul_pre_nafwi") {
-		ep2_rand(p);
-		BENCH_ADD(ep2_mul_pre_nafwi(t, p));
-	} BENCH_END;
-
-	BENCH_BEGIN("ep2_mul_fix_nafwi") {
-		bn_rand_mod(k, n);
-		ep2_rand(p);
-		ep2_mul_pre_nafwi(t, p);
-		BENCH_ADD(ep2_mul_fix_nafwi(q, t, k));
-	} BENCH_END;
-	for (int i = 0; i < RELIC_EPX_TABLE_NAFWI; i++) {
+	for (int i = 0; i < RLC_EPX_TABLE_BASIC; i++) {
 		ep2_free(t[i]);
 	}
 #endif
 
 #if EP_FIX == COMBS || !defined(STRIP)
-	for (int i = 0; i < RELIC_EPX_TABLE_COMBS; i++) {
+	for (int i = 0; i < RLC_EPX_TABLE_COMBS; i++) {
 		ep2_new(t[i]);
 	}
 	BENCH_BEGIN("ep2_mul_pre_combs") {
@@ -496,13 +457,13 @@ static void arith(void) {
 		ep2_mul_pre_combs(t, p);
 		BENCH_ADD(ep2_mul_fix_combs(q, t, k));
 	} BENCH_END;
-	for (int i = 0; i < RELIC_EPX_TABLE_COMBS; i++) {
+	for (int i = 0; i < RLC_EPX_TABLE_COMBS; i++) {
 		ep2_free(t[i]);
 	}
 #endif
 
 #if EP_FIX == COMBD || !defined(STRIP)
-	for (int i = 0; i < RELIC_EPX_TABLE_COMBD; i++) {
+	for (int i = 0; i < RLC_EPX_TABLE_COMBD; i++) {
 		ep2_new(t[i]);
 	}
 	BENCH_BEGIN("ep2_mul_pre_combd") {
@@ -514,13 +475,13 @@ static void arith(void) {
 		ep2_mul_pre_combd(t, p);
 		BENCH_ADD(ep2_mul_fix_combd(q, t, k));
 	} BENCH_END;
-	for (int i = 0; i < RELIC_EPX_TABLE_COMBD; i++) {
+	for (int i = 0; i < RLC_EPX_TABLE_COMBD; i++) {
 		ep2_free(t[i]);
 	}
 #endif
 
 #if EP_FIX == LWNAF || !defined(STRIP)
-	for (int i = 0; i < RELIC_EPX_TABLE_LWNAF; i++) {
+	for (int i = 0; i < RLC_EPX_TABLE_LWNAF; i++) {
 		ep2_new(t[i]);
 	}
 	BENCH_BEGIN("ep2_mul_pre_lwnaf") {
@@ -534,7 +495,7 @@ static void arith(void) {
 		ep2_mul_pre_lwnaf(t, p);
 		BENCH_ADD(ep2_mul_fix_lwnaf(q, t, k));
 	} BENCH_END;
-	for (int i = 0; i < RELIC_EPX_TABLE_LWNAF; i++) {
+	for (int i = 0; i < RLC_EPX_TABLE_LWNAF; i++) {
 		ep2_free(t[i]);
 	}
 #endif
@@ -620,7 +581,7 @@ static void arith(void) {
 }
 
 int main(void) {
-	if (core_init() != STS_OK) {
+	if (core_init() != RLC_OK) {
 		core_clean();
 		return 1;
 	}
@@ -629,7 +590,7 @@ int main(void) {
 
 	util_banner("Benchmarks for the EPX module:", 0);
 
-	if (ep_param_set_any_pairf() != STS_OK) {
+	if (ep_param_set_any_pairf() != RLC_OK) {
 		THROW(ERR_NO_CURVE);
 		core_clean();
 		return 0;

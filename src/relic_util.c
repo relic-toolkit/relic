@@ -1,23 +1,24 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2017 RELIC Authors
+ * Copyright (C) 2007-2019 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
  * for contact information.
  *
- * RELIC is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * RELIC is free software; you can redistribute it and/or modify it under the
+ * terms of the version 2.1 (or later) of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; or version 2.0 of the Apache
+ * License as published by the Apache Software Foundation. See the LICENSE files
+ * for more details.
  *
- * RELIC is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * RELIC is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the LICENSE files for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RELIC. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General Public or the
+ * Apache License along with RELIC. If not, see <https://www.gnu.org/licenses/>
+ * or <https://www.apache.org/licenses/>.
  */
 
 /**
@@ -167,15 +168,15 @@ int util_bits_dig(dig_t a) {
 	return 0;
 #elif WSIZE == 32
 #ifdef _MSC_VER
-    return DIGIT - __lzcnt(a);
+    return RLC_DIG - __lzcnt(a);
 #else
-	return DIGIT - __builtin_clz(a);
+	return RLC_DIG - __builtin_clz(a);
 #endif
 #elif WSIZE == 64
 #ifdef _MSC_VER
-    return DIGIT - __lzcnt64(a);
+    return RLC_DIG - __lzcnt64(a);
 #else
-	return DIGIT - __builtin_clzll(a);
+	return RLC_DIG - __builtin_clzll(a);
 #endif
 #endif
 }
@@ -190,10 +191,10 @@ int util_cmp_const(const void *a, const void *b, int size) {
 		result |= _a[i] ^ _b[i];
 	}
 
-	return (result == 0 ? CMP_EQ : CMP_NE);
+	return (result == 0 ? RLC_EQ : RLC_NE);
 }
 
-void util_printf(const char *format, ...) {
+void util_print(const char *format, ...) {
 #ifndef QUIET
 #if ARCH == AVR && !defined(OPSYS)
 	util_print_ptr = print_buf + 1;
@@ -230,19 +231,19 @@ void util_printf(const char *format, ...) {
 }
 
 void util_print_dig(dig_t a, int pad) {
-#if DIGIT == 64
+#if RLC_DIG == 64
 	if (pad) {
 		util_print("%.16" PRIX64, (uint64_t) a);
 	} else {
 		util_print("%" PRIX64, (uint64_t) a);
 	}
-#elif DIGIT == 32
+#elif RLC_DIG == 32
 	if (pad) {
 		util_print("%.8" PRIX32, (uint32_t) a);
 	} else {
 		util_print("%" PRIX32, (uint32_t) a);
 	}
-#elif DIGIT == 16
+#elif RLC_DIG == 16
 	if (pad) {
 		util_print("%.4" PRIX16, (uint16_t) a);
 	} else {

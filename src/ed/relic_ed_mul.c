@@ -1,23 +1,24 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2017 RELIC Authors
+ * Copyright (C) 2007-2019 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
  * for contact information.
  *
- * RELIC is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * RELIC is free software; you can redistribute it and/or modify it under the
+ * terms of the version 2.1 (or later) of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; or version 2.0 of the Apache
+ * License as published by the Apache Software Foundation. See the LICENSE files
+ * for more details.
  *
- * RELIC is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * RELIC is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the LICENSE files for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RELIC. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General Public or the
+ * Apache License along with RELIC. If not, see <https://www.gnu.org/licenses/>
+ * or <https://www.apache.org/licenses/>.
  */
 
 /**
@@ -37,41 +38,36 @@
 
 #if ED_MUL == LWNAF || !defined(STRIP)
 
-#if defined(ED_PLAIN) || defined(ED_SUPER)
-
 static void ed_mul_naf_imp(ed_t r, const ed_t p, const bn_t k) {
 	int l, i, n;
-	int8_t naf[FP_BITS + 1], *_k;
+	int8_t naf[RLC_FP_BITS + 1];
 	ed_t t[1 << (ED_WIDTH - 2)];
 
-	for (i = 0; i < (1 << (ED_WIDTH - 2)); i++) {
-		ed_null(t[i]);
+	if (bn_is_zero(k)) {
+		ed_set_infty(r);
+		return;
 	}
 
 	TRY {
 		/* Prepare the precomputation table. */
 		for (i = 0; i < (1 << (ED_WIDTH - 2)); i++) {
+			ed_null(t[i]);
 			ed_new(t[i]);
 		}
 		/* Compute the precomputation table. */
 		ed_tab(t, p, ED_WIDTH);
 
 		/* Compute the w-NAF representation of k. */
-		l = FP_BITS + 1;
-		bn_rec_naf(naf, &l, k, ED_WIDTH);
+		l = sizeof(naf);
+		bn_rec_naf(naf, &l, k, EP_WIDTH);
 
-		_k = naf + l - 1;
 		ed_set_infty(r);
-		for (i = l - 1; i >= 0; i--, _k--) {
-			n = *_k;
+		for (i = l - 1; i > 0; i--) {
+			n = naf[i];
 			if (n == 0) {
-				/* doubling is followed by another doubling */
-				if (i > 0) {
-					ed_dbl_short(r, r);
-				} else {
-					/* use full extended coordinate doubling for last step */
-					ed_dbl(r, r);
-				}
+				/* This point will be doubled in the previous iteration. */
+				r->norm = 2;
+				ed_dbl(r, r);
 			} else {
 				ed_dbl(r, r);
 				if (n > 0) {
@@ -81,8 +77,21 @@ static void ed_mul_naf_imp(ed_t r, const ed_t p, const bn_t k) {
 				}
 			}
 		}
+
+		/* Last iteration. */
+		n = naf[0];
+		ed_dbl(r, r);
+		if (n > 0) {
+			ed_add(r, r, t[n / 2]);
+		} else if (n < 0) {
+			ed_sub(r, r, t[-n / 2]);
+		}
+
 		/* Convert r to affine coordinates. */
 		ed_norm(r, r);
+		if (bn_sign(k) == RLC_NEG) {
+			ed_neg(r, r);
+		}
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
@@ -95,39 +104,34 @@ static void ed_mul_naf_imp(ed_t r, const ed_t p, const bn_t k) {
 	}
 }
 
-#endif /* ED_PLAIN || ED_SUPER */
-#endif /* ED_MUL == LWNAF_MIXED */
+#endif /* ED_MUL == LWNAF */
 
 #if ED_MUL == LWREG || !defined(STRIP)
 
-#if defined(ED_PLAIN) || defined(ED_SUPER)
-
 static void ed_mul_reg_imp(ed_t r, const ed_t p, const bn_t k) {
 	int l, i, j, n;
-	int8_t reg[CEIL(FP_BITS + 1, ED_WIDTH - 1)], *_k;
+	int8_t reg[RLC_CEIL(RLC_FP_BITS + 1, ED_WIDTH - 1)], *_k;
 	ed_t t[1 << (ED_WIDTH - 2)];
-
-	for (i = 0; i < (1 << (ED_WIDTH - 2)); i++) {
-		ed_null(t[i]);
-	}
 
 	TRY {
 		/* Prepare the precomputation table. */
 		for (i = 0; i < (1 << (ED_WIDTH - 2)); i++) {
+			ed_null(t[i]);
 			ed_new(t[i]);
 		}
 		/* Compute the precomputation table. */
 		ed_tab(t, p, ED_WIDTH);
 
 		/* Compute the w-NAF representation of k. */
-		l = CEIL(FP_BITS + 1, ED_WIDTH - 1);
-		bn_rec_reg(reg, &l, k, FP_BITS, ED_WIDTH);
+		l = RLC_CEIL(RLC_FP_BITS + 1, ED_WIDTH - 1);
+		bn_rec_reg(reg, &l, k, RLC_FP_BITS, ED_WIDTH);
 
 		_k = reg + l - 1;
 
 		ed_set_infty(r);
 		for (i = l - 1; i >= 0; i--, _k--) {
 			for (j = 0; j < ED_WIDTH - 1; j++) {
+				r->norm = 2;
 				ed_dbl(r, r);
 			}
 
@@ -154,7 +158,6 @@ static void ed_mul_reg_imp(ed_t r, const ed_t p, const bn_t k) {
 	}
 }
 
-#endif /* ED_PLAIN || ED_SUPER */
 #endif /* ED_MUL == LWNAF */
 
 /*============================================================================*/
@@ -164,22 +167,20 @@ static void ed_mul_reg_imp(ed_t r, const ed_t p, const bn_t k) {
 #if ED_MUL == BASIC || !defined(STRIP)
 
 void ed_mul_basic(ed_t r, const ed_t p, const bn_t k) {
-	int i, l;
 	ed_t t;
 
 	ed_null(t);
 
-	if (bn_is_zero(k)) {
+	if (bn_is_zero(k) || ed_is_infty(p)) {
 		ed_set_infty(r);
 		return;
 	}
 
 	TRY {
 		ed_new(t);
-		l = bn_bits(k);
 
 		ed_copy(t, p);
-		for (i = l - 2; i >= 0; i--) {
+		for (int i = bn_bits(k) - 2; i >= 0; i--) {
 			ed_dbl(t, t);
 			if (bn_get_bit(k, i)) {
 				ed_add(t, t, p);
@@ -187,6 +188,9 @@ void ed_mul_basic(ed_t r, const ed_t p, const bn_t k) {
 		}
 
 		ed_norm(r, t);
+		if (bn_sign(k) == RLC_NEG) {
+			ed_neg(r, r);
+		}
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
@@ -201,24 +205,20 @@ void ed_mul_basic(ed_t r, const ed_t p, const bn_t k) {
 #if ED_MUL == SLIDE || !defined(STRIP)
 
 void ed_mul_slide(ed_t r, const ed_t p, const bn_t k) {
-	ed_t t[1 << (ED_WIDTH - 1)], q;
+	ed_t t[1 << (EP_WIDTH - 1)], q;
 	int i, j, l;
-	uint8_t win[FP_BITS + 1];
+	uint8_t win[RLC_FP_BITS + 1];
 
 	ed_null(q);
 
-	/* Initialize table. */
-	for (i = 0; i < (1 << (ED_WIDTH - 1)); i++) {
-		ed_null(t[i]);
-	}
-
-	if (bn_is_zero(k)) {
+	if (bn_is_zero(k) || ed_is_infty(p)) {
 		ed_set_infty(r);
 		return;
 	}
 
 	TRY {
-		for (i = 0; i < (1 << (ED_WIDTH - 1)); i++) {
+		for (i = 0; i < (1 << (EP_WIDTH - 1)); i ++) {
+			ed_null(t[i]);
 			ed_new(t[i]);
 		}
 
@@ -227,22 +227,22 @@ void ed_mul_slide(ed_t r, const ed_t p, const bn_t k) {
 		ed_copy(t[0], p);
 		ed_dbl(q, p);
 
-#if defined(ED_MIXED)
+#if defined(EP_MIXED)
 		ed_norm(q, q);
 #endif
 
 		/* Create table. */
-		for (i = 1; i < (1 << (ED_WIDTH - 1)); i++) {
+		for (i = 1; i < (1 << (EP_WIDTH - 1)); i++) {
 			ed_add(t[i], t[i - 1], q);
 		}
 
-#if defined(ED_MIXED)
-		ed_norm_sim(t + 1, (const ed_t *)t + 1, (1 << (ED_WIDTH - 1)) - 1);
+#if defined(EP_MIXED)
+		ed_norm_sim(t + 1, (const ed_t *)t + 1, (1 << (EP_WIDTH - 1)) - 1);
 #endif
 
 		ed_set_infty(q);
-		l = FP_BITS + 1;
-		bn_rec_slw(win, &l, k, ED_WIDTH);
+		l = RLC_FP_BITS + 1;
+		bn_rec_slw(win, &l, k, EP_WIDTH);
 		for (i = 0; i < l; i++) {
 			if (win[i] == 0) {
 				ed_dbl(q, q);
@@ -255,12 +255,15 @@ void ed_mul_slide(ed_t r, const ed_t p, const bn_t k) {
 		}
 
 		ed_norm(r, q);
+		if (bn_sign(k) == RLC_NEG) {
+			ed_neg(r, r);
+		}
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
 	}
 	FINALLY {
-		for (i = 0; i < (1 << (ED_WIDTH - 1)); i++) {
+		for (i = 0; i < (1 << (EP_WIDTH - 1)); i++) {
 			ed_free(t[i]);
 		}
 		ed_free(q);
@@ -277,7 +280,7 @@ void ed_mul_monty(ed_t r, const ed_t p, const bn_t k) {
 	ed_null(t[0]);
 	ed_null(t[1]);
 
-	if (bn_is_zero(k)) {
+	if (bn_is_zero(k) || ed_is_infty(p)) {
 		ed_set_infty(r);
 		return;
 	}
@@ -291,31 +294,27 @@ void ed_mul_monty(ed_t r, const ed_t p, const bn_t k) {
 
 		for (int i = bn_bits(k) - 1; i >= 0; i--) {
 			int j = bn_get_bit(k, i);
-#if ED_ADD == PROJC
-			dv_swap_cond(t[0]->x, t[1]->x, FP_DIGS, j ^ 1);
-			dv_swap_cond(t[0]->y, t[1]->y, FP_DIGS, j ^ 1);
-			dv_swap_cond(t[0]->z, t[1]->z, FP_DIGS, j ^ 1);
+
+			dv_swap_cond(t[0]->x, t[1]->x, RLC_FP_DIGS, j ^ 1);
+			dv_swap_cond(t[0]->y, t[1]->y, RLC_FP_DIGS, j ^ 1);
+			dv_swap_cond(t[0]->z, t[1]->z, RLC_FP_DIGS, j ^ 1);
+#if ED_ADD == EXTND
+			dv_swap_cond(t[0]->t, t[1]->t, RLC_FP_DIGS, j ^ 1);
+#endif
 			ed_add(t[0], t[0], t[1]);
 			ed_dbl(t[1], t[1]);
-			dv_swap_cond(t[0]->x, t[1]->x, FP_DIGS, j ^ 1);
-			dv_swap_cond(t[0]->y, t[1]->y, FP_DIGS, j ^ 1);
-			dv_swap_cond(t[0]->z, t[1]->z, FP_DIGS, j ^ 1);
-#elif ED_ADD == EXTND
-			dv_swap_cond(t[0]->x, t[1]->x, FP_DIGS, j ^ 1);
-			dv_swap_cond(t[0]->y, t[1]->y, FP_DIGS, j ^ 1);
-			dv_swap_cond(t[0]->z, t[1]->z, FP_DIGS, j ^ 1);
-			dv_swap_cond(t[0]->t, t[1]->t, FP_DIGS, j ^ 1);
-			ed_add(t[0], t[0], t[1]);
-			ed_dbl(t[1], t[1]);
-			dv_swap_cond(t[0]->x, t[1]->x, FP_DIGS, j ^ 1);
-			dv_swap_cond(t[0]->y, t[1]->y, FP_DIGS, j ^ 1);
-			dv_swap_cond(t[0]->z, t[1]->z, FP_DIGS, j ^ 1);
-			dv_swap_cond(t[0]->t, t[1]->t, FP_DIGS, j ^ 1);
+			dv_swap_cond(t[0]->x, t[1]->x, RLC_FP_DIGS, j ^ 1);
+			dv_swap_cond(t[0]->y, t[1]->y, RLC_FP_DIGS, j ^ 1);
+			dv_swap_cond(t[0]->z, t[1]->z, RLC_FP_DIGS, j ^ 1);
+#if ED_ADD == EXTND
+			dv_swap_cond(t[0]->t, t[1]->t, RLC_FP_DIGS, j ^ 1);
 #endif
 		}
 
 		ed_norm(r, t[0]);
-
+		if (bn_sign(k) == RLC_NEG) {
+			ed_neg(r, r);
+		}
 	} CATCH_ANY {
 		THROW(ERR_CAUGHT);
 	}
@@ -330,14 +329,12 @@ void ed_mul_monty(ed_t r, const ed_t p, const bn_t k) {
 #if ED_MUL == LWNAF || !defined(STRIP)
 
 void ed_mul_lwnaf(ed_t r, const ed_t p, const bn_t k) {
-	if (bn_is_zero(k)) {
+	if (bn_is_zero(k) || ed_is_infty(p)) {
 		ed_set_infty(r);
 		return;
 	}
 
-#if defined(ED_PLAIN) || defined(ED_SUPER)
 	ed_mul_naf_imp(r, p, k);
-#endif
 }
 
 #endif
@@ -345,14 +342,12 @@ void ed_mul_lwnaf(ed_t r, const ed_t p, const bn_t k) {
 #if ED_MUL == LWREG || !defined(STRIP)
 
 void ed_mul_lwreg(ed_t r, const ed_t p, const bn_t k) {
-	if (bn_is_zero(k)) {
+	if (bn_is_zero(k) || ed_is_infty(p)) {
 		ed_set_infty(r);
 		return;
 	}
 
-#if defined(ED_PLAIN) || defined(ED_SUPER)
 	ed_mul_reg_imp(r, p, k);
-#endif
 }
 
 #endif
@@ -387,7 +382,8 @@ void ed_mul_fixed(ed_t r, const ed_t b, const bn_t k) {
 		int index = (i - 2) / (sizeof(dig_t) * 8);
 		int shift = (i - 2) % (sizeof(dig_t) * 8);
 		int bits = (k->dp[index] >> shift) & 3;
-		ed_dbl_short(r, r);
+		r->norm = 2;
+		ed_dbl(r, r);
 		ed_dbl(r, r);
 		ed_add(r, r, pre[bits]);
 	}

@@ -1,23 +1,24 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2017 RELIC Authors
+ * Copyright (C) 2007-2019 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
  * for contact information.
  *
- * RELIC is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * RELIC is free software; you can redistribute it and/or modify it under the
+ * terms of the version 2.1 (or later) of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; or version 2.0 of the Apache
+ * License as published by the Apache Software Foundation. See the LICENSE files
+ * for more details.
  *
- * RELIC is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * RELIC is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the LICENSE files for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RELIC. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General Public or the
+ * Apache License along with RELIC. If not, see <https://www.gnu.org/licenses/>
+ * or <https://www.apache.org/licenses/>.
  */
 
 /**
@@ -52,8 +53,8 @@ static void memory(void) {
 }
 
 static void util(void) {
-	char str[2 * FB_BYTES + 1];
-	uint8_t bin[FB_BYTES];
+	char str[2 * RLC_FB_BYTES + 1];
+	uint8_t bin[RLC_FB_BYTES];
 	fb_t a, b;
 
 	fb_null(a);
@@ -65,12 +66,6 @@ static void util(void) {
 	BENCH_BEGIN("fb_copy") {
 		fb_rand(a);
 		BENCH_ADD(fb_copy(b, a));
-	}
-	BENCH_END;
-
-	BENCH_BEGIN("fb_neg") {
-		fb_rand(a);
-		BENCH_ADD(fb_neg(b, a));
 	}
 	BENCH_END;
 
@@ -88,13 +83,13 @@ static void util(void) {
 
 	BENCH_BEGIN("fb_get_bit") {
 		fb_rand(a);
-		BENCH_ADD(fb_get_bit(a, FB_DIGIT / 2));
+		BENCH_ADD(fb_get_bit(a, RLC_DIG / 2));
 	}
 	BENCH_END;
 
 	BENCH_BEGIN("fb_set_bit") {
 		fb_rand(a);
-		BENCH_ADD(fb_set_bit(a, FB_DIGIT / 2, 1));
+		BENCH_ADD(fb_set_bit(a, RLC_DIG / 2, 1));
 	}
 	BENCH_END;
 
@@ -166,7 +161,7 @@ static void util(void) {
 }
 
 static void arith(void) {
-	fb_t a, b, c, d[2], t[RELIC_FB_TABLE_MAX];
+	fb_t a, b, c, d[2], t[RLC_FB_TABLE_MAX];
 	dv_t e;
 	bn_t f;
 	int bits;
@@ -176,7 +171,7 @@ static void arith(void) {
 	fb_null(c);
 	fb_null(d[0]);
 	fb_null(d[1]);
-	for (int i = 0; i < RELIC_FB_TABLE_MAX; i++) {
+	for (int i = 0; i < RLC_FB_TABLE_MAX; i++) {
 		fb_null(t[i]);
 	}
 	dv_null(e);
@@ -188,7 +183,7 @@ static void arith(void) {
 	fb_new(d[0]);
 	fb_new(d[1]);
 	dv_new(e);
-	dv_zero(e, 2 * FB_DIGS);
+	dv_zero(e, 2 * RLC_FB_DIGS);
 	bn_new(f);
 
 	BENCH_BEGIN("fb_add") {
@@ -205,29 +200,9 @@ static void arith(void) {
 	}
 	BENCH_END;
 
-	BENCH_BEGIN("fb_sub") {
-		fb_rand(a);
-		fb_rand(b);
-		BENCH_ADD(fb_sub(c, a, b));
-	}
-	BENCH_END;
-
-	BENCH_BEGIN("fb_sub_dig") {
-		fb_rand(a);
-		fb_rand(b);
-		BENCH_ADD(fb_sub_dig(c, a, b[0]));
-	}
-	BENCH_END;
-
 	BENCH_BEGIN("fb_poly_add") {
 		fb_rand(a);
 		BENCH_ADD(fb_poly_add(c, a));
-	}
-	BENCH_END;
-
-	BENCH_BEGIN("fb_poly_sub") {
-		fb_rand(a);
-		BENCH_ADD(fb_poly_sub(c, a));
 	}
 	BENCH_END;
 
@@ -259,24 +234,6 @@ static void arith(void) {
 		fb_rand(a);
 		fb_rand(b);
 		BENCH_ADD(fb_mul_integ(c, a, b));
-	}
-	BENCH_END;
-#endif
-
-#if FB_MUL == LCOMB || !defined(STRIP)
-	BENCH_BEGIN("fb_mul_lcomb") {
-		fb_rand(a);
-		fb_rand(b);
-		BENCH_ADD(fb_mul_lcomb(c, a, b));
-	}
-	BENCH_END;
-#endif
-
-#if FB_MUL == RCOMB || !defined(STRIP)
-	BENCH_BEGIN("fb_mul_rcomb") {
-		fb_rand(a);
-		fb_rand(b);
-		BENCH_ADD(fb_mul_rcomb(c, a, b));
 	}
 	BENCH_END;
 #endif
@@ -331,16 +288,16 @@ static void arith(void) {
 
 	BENCH_BEGIN("fb_lsh") {
 		fb_rand(a);
-		a[FB_DIGS - 1] = 0;
-		bits = a[0] & MASK(FB_DIG_LOG);
+		a[RLC_FB_DIGS - 1] = 0;
+		bits = a[0] & RLC_MASK(RLC_DIG_LOG);
 		BENCH_ADD(fb_lsh(c, a, bits));
 	}
 	BENCH_END;
 
 	BENCH_BEGIN("fb_rsh") {
 		fb_rand(a);
-		a[FB_DIGS - 1] = 0;
-		bits = a[0] & MASK(FB_DIG_LOG);
+		a[RLC_FB_DIGS - 1] = 0;
+		bits = a[0] & RLC_MASK(RLC_DIG_LOG);
 		BENCH_ADD(fb_rsh(c, a, bits));
 
 	}
@@ -348,7 +305,7 @@ static void arith(void) {
 
 	BENCH_BEGIN("fb_rdc") {
 		fb_rand(a);
-		fb_lsh(e, a, FB_BITS);
+		fb_lsh(e, a, RLC_FB_BITS);
 		fb_rand(e);
 		BENCH_ADD(fb_rdc(c, e));
 	}
@@ -357,7 +314,7 @@ static void arith(void) {
 #if FB_RDC == BASIC || !defined(STRIP)
 	BENCH_BEGIN("fb_rdc_basic") {
 		fb_rand(a);
-		fb_lsh(e, a, FB_BITS);
+		fb_lsh(e, a, RLC_FB_BITS);
 		fb_rand(e);
 		BENCH_ADD(fb_rdc_basic(c, e));
 	}
@@ -367,7 +324,7 @@ static void arith(void) {
 #if FB_RDC == QUICK || !defined(STRIP)
 	BENCH_BEGIN("fb_rdc_quick") {
 		fb_rand(a);
-		fb_lsh(e, a, FB_BITS);
+		fb_lsh(e, a, RLC_FB_BITS);
 		fb_rand(e);
 		BENCH_ADD(fb_rdc_quick(c, e));
 	}
@@ -421,7 +378,7 @@ static void arith(void) {
 	BENCH_END;
 #endif
 
-	if (FB_BITS % 2 != 0) {
+	if (RLC_FB_BITS % 2 != 0) {
 		BENCH_BEGIN("fb_slv") {
 			fb_rand(a);
 			BENCH_ADD(fb_slv(c, a));
@@ -524,7 +481,7 @@ static void arith(void) {
 
 	BENCH_BEGIN("fb_exp") {
 		fb_rand(a);
-		bn_rand(f, BN_POS, FB_BITS);
+		bn_rand(f, RLC_POS, RLC_FB_BITS);
 		BENCH_ADD(fb_exp(c, a, f));
 	}
 	BENCH_END;
@@ -532,7 +489,7 @@ static void arith(void) {
 #if FB_EXP == BASIC || !defined(STRIP)
 	BENCH_BEGIN("fb_exp_basic") {
 		fb_rand(a);
-		bn_rand(f, BN_POS, FB_BITS);
+		bn_rand(f, RLC_POS, RLC_FB_BITS);
 		BENCH_ADD(fb_exp_basic(c, a, f));
 	}
 	BENCH_END;
@@ -541,7 +498,7 @@ static void arith(void) {
 #if FB_EXP == SLIDE || !defined(STRIP)
 	BENCH_BEGIN("fb_exp_slide") {
 		fb_rand(a);
-		bn_rand(f, BN_POS, FB_BITS);
+		bn_rand(f, RLC_POS, RLC_FB_BITS);
 		BENCH_ADD(fb_exp_slide(c, a, f));
 	}
 	BENCH_END;
@@ -550,49 +507,49 @@ static void arith(void) {
 #if FB_EXP == MONTY || !defined(STRIP)
 	BENCH_BEGIN("fb_exp_monty") {
 		fb_rand(a);
-		bn_rand(f, BN_POS, FB_BITS);
+		bn_rand(f, RLC_POS, RLC_FB_BITS);
 		BENCH_ADD(fb_exp_monty(c, a, f));
 	}
 	BENCH_END;
 #endif
 
-	for (int i = 0; i < RELIC_FB_TABLE; i++) {
+	for (int i = 0; i < RLC_FB_TABLE; i++) {
 		fb_new(t[i]);
 	}
 
 	BENCH_BEGIN("fb_itr") {
 		fb_rand(a);
-		bn_rand(f, BN_POS, 8);
+		bn_rand(f, RLC_POS, 8);
 		fb_itr_pre(t, f->dp[0]);
 		BENCH_ADD(fb_itr(c, a, f->dp[0], (const fb_t *)t));
 	}
 	BENCH_END;
 
-	for (int i = 0; i < RELIC_FB_TABLE; i++) {
+	for (int i = 0; i < RLC_FB_TABLE; i++) {
 		fb_free(t[i]);
 	}
 
 #if FB_ITR == BASIC || !defined(STRIP)
 	BENCH_BEGIN("fb_itr_basic") {
 		fb_rand(a);
-		bn_rand(f, BN_POS, 8);
+		bn_rand(f, RLC_POS, 8);
 		BENCH_ADD(fb_itr_basic(c, a, f->dp[0]));
 	}
 	BENCH_END;
 #endif
 
 #if FB_ITR == QUICK || !defined(STRIP)
-	for (int i = 0; i < RELIC_FB_TABLE_QUICK; i++) {
+	for (int i = 0; i < RLC_FB_TABLE_QUICK; i++) {
 		fb_new(t[i]);
 	}
 	BENCH_BEGIN("fb_itr_quick") {
 		fb_rand(a);
-		bn_rand(f, BN_POS, 8);
+		bn_rand(f, RLC_POS, 8);
 		fb_itr_pre_quick(t, f->dp[0]);
 		BENCH_ADD(fb_itr_quick(c, a, (const fb_t *)t));
 	}
 	BENCH_END;
-	for (int i = 0; i < RELIC_FB_TABLE_QUICK; i++) {
+	for (int i = 0; i < RLC_FB_TABLE_QUICK; i++) {
 		fb_new(t[i]);
 	}
 #endif
@@ -607,7 +564,7 @@ static void arith(void) {
 }
 
 int main(void) {
-	if (core_init() != STS_OK) {
+	if (core_init() != RLC_OK) {
 		core_clean();
 		return 1;
 	}

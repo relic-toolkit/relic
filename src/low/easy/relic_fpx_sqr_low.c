@@ -1,23 +1,24 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2017 RELIC Authors
+ * Copyright (C) 2007-2019 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
  * for contact information.
  *
- * RELIC is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * RELIC is free software; you can redistribute it and/or modify it under the
+ * terms of the version 2.1 (or later) of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; or version 2.0 of the Apache
+ * License as published by the Apache Software Foundation. See the LICENSE files
+ * for more details.
  *
- * RELIC is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * RELIC is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the LICENSE files for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RELIC. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General Public or the
+ * Apache License along with RELIC. If not, see <https://www.gnu.org/licenses/>
+ * or <https://www.apache.org/licenses/>.
  */
 
 /**
@@ -37,10 +38,10 @@
 /*============================================================================*/
 
 void fp2_sqrn_low(dv2_t c, fp2_t a) {
-	relic_align dig_t t0[2 * FP_DIGS], t1[2 * FP_DIGS], t2[2 * FP_DIGS];
+	rlc_align dig_t t0[2 * RLC_FP_DIGS], t1[2 * RLC_FP_DIGS], t2[2 * RLC_FP_DIGS];
 
 	/* t0 = (a0 + a1). */
-#ifdef FP_SPACE
+#ifdef RLC_FP_ROOM
 	/* if we have room for carries, we can avoid reductions here. */
 	fp_addn_low(t0, a[0], a[1]);
 #else
@@ -51,7 +52,7 @@ void fp2_sqrn_low(dv2_t c, fp2_t a) {
 
 #ifdef FP_QNRES
 
-#ifdef FP_SPACE
+#ifdef RLC_FP_ROOM
 	fp_dbln_low(t2, a[0]);
 #else
 	fp_dblm_low(t2, a[0]);
@@ -84,7 +85,7 @@ void fp2_sqrn_low(dv2_t c, fp2_t a) {
 		/* c0 = a0^2 + b_0^2 * u^2. */
 		fp_muln_low(c[0], t0, t1);
 
-#ifdef FP_SPACE
+#ifdef RLC_FP_ROOM
 		for (int i = -1; i > fp_prime_get_qnr(); i--) {
 			fp_addd_low(c[0], c[0], c[1]);
 		}
@@ -109,7 +110,7 @@ void fp2_sqrn_low(dv2_t c, fp2_t a) {
 }
 
 void fp2_sqrm_low(fp2_t c, fp2_t a) {
-	relic_align dv2_t t;
+	rlc_align dv2_t t;
 
 	dv2_null(t);
 
@@ -125,14 +126,14 @@ void fp2_sqrm_low(fp2_t c, fp2_t a) {
 }
 
 void fp3_sqrn_low(dv3_t c, fp3_t a) {
-	relic_align dig_t t0[2 * FP_DIGS], t1[2 * FP_DIGS], t2[2 * FP_DIGS];
-	relic_align dig_t t3[2 * FP_DIGS], t4[2 * FP_DIGS], t5[2 * FP_DIGS];
+	rlc_align dig_t t0[2 * RLC_FP_DIGS], t1[2 * RLC_FP_DIGS], t2[2 * RLC_FP_DIGS];
+	rlc_align dig_t t3[2 * RLC_FP_DIGS], t4[2 * RLC_FP_DIGS], t5[2 * RLC_FP_DIGS];
 
 	/* t0 = a_0^2. */
 	fp_sqrn_low(t0, a[0]);
 
 	/* t1 = 2 * a_1 * a_2. */
-#ifdef FP_SPACE
+#ifdef RLC_FP_ROOM
 	fp_dbln_low(t2, a[1]);
 #else
 	fp_dblm_low(t2, a[1]);
@@ -144,7 +145,7 @@ void fp3_sqrn_low(dv3_t c, fp3_t a) {
 	fp_sqrn_low(t2, a[2]);
 
 	/* t3 = (a_0 + a_2 + a_1)^2, t4 = (a_0 + a_2 - a_1)^2. */
-#ifdef FP_SPACE
+#ifdef RLC_FP_ROOM
 	fp_addn_low(t3, a[0], a[2]);
 	fp_addn_low(t4, t3, a[1]);
 #else
@@ -181,7 +182,7 @@ void fp3_sqrn_low(dv3_t c, fp3_t a) {
 }
 
 void fp3_sqrm_low(fp3_t c, fp3_t a) {
-	relic_align dv3_t t;
+	rlc_align dv3_t t;
 
 	dv3_null(t);
 

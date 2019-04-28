@@ -1,23 +1,24 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2017 RELIC Authors
+ * Copyright (C) 2007-2019 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
  * for contact information.
  *
- * RELIC is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * RELIC is free software; you can redistribute it and/or modify it under the
+ * terms of the version 2.1 (or later) of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; or version 2.0 of the Apache
+ * License as published by the Apache Software Foundation. See the LICENSE files
+ * for more details.
  *
- * RELIC is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * RELIC is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the LICENSE files for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RELIC. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General Public or the
+ * Apache License along with RELIC. If not, see <https://www.gnu.org/licenses/>
+ * or <https://www.apache.org/licenses/>.
  */
 
 /**
@@ -163,7 +164,7 @@ void ep2_map(ep2_t p, const uint8_t *msg, int len) {
 		fp2_new(t0);
 
 		md_map(digest, msg, len);
-		bn_read_bin(x, digest, MIN(FP_BYTES, MD_LEN));
+		bn_read_bin(x, digest, RLC_MIN(RLC_FP_BYTES, MD_LEN));
 
 		fp_prime_conv(p->x[0], x);
 		fp_zero(p->x[1]);
@@ -186,6 +187,7 @@ void ep2_map(ep2_t p, const uint8_t *msg, int len) {
 			case BN_P254:
 			case BN_P256:
 			case BN_P382:
+			case BN_P446:
 			case BN_P638:
 				ep2_mul_cof_bn(p, p);
 				break;
@@ -197,9 +199,9 @@ void ep2_map(ep2_t p, const uint8_t *msg, int len) {
 			default:
 				/* Now, multiply by cofactor to get the correct group. */
 				ep2_curve_get_cof(x);
-				if (bn_bits(x) < BN_DIGIT) {
+				if (bn_bits(x) < RLC_DIG) {
 					ep2_mul_dig(p, p, x->dp[0]);
-					if (bn_sign(x) == BN_NEG) {
+					if (bn_sign(x) == RLC_NEG) {
 						ep2_neg(p, p);
 					}
 				} else {

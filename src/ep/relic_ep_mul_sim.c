@@ -1,23 +1,24 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2017 RELIC Authors
+ * Copyright (C) 2007-2019 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
  * for contact information.
  *
- * RELIC is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * RELIC is free software; you can redistribute it and/or modify it under the
+ * terms of the version 2.1 (or later) of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; or version 2.0 of the Apache
+ * License as published by the Apache Software Foundation. See the LICENSE files
+ * for more details.
  *
- * RELIC is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * RELIC is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the LICENSE files for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RELIC. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General Public or the
+ * Apache License along with RELIC. If not, see <https://www.gnu.org/licenses/>
+ * or <https://www.apache.org/licenses/>.
  */
 
 /**
@@ -54,8 +55,8 @@
 static void ep_mul_sim_endom(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 		const bn_t m, const ep_t *t) {
 	int i, l, l0, l1, l2, l3, n, sk0, sk1, sl0, sl1, w, g = 0;
-	int8_t naf0[FP_BITS + 1], naf1[FP_BITS + 1], *t0, *t1;
-	int8_t naf2[FP_BITS + 1], naf3[FP_BITS + 1], *t2, *t3;
+	int8_t naf0[RLC_FP_BITS + 1], naf1[RLC_FP_BITS + 1], *t0, *t1;
+	int8_t naf2[RLC_FP_BITS + 1], naf3[RLC_FP_BITS + 1], *t2, *t3;
 	bn_t k0, k1, m0, m1;
 	bn_t ord, v1[3], v2[3];
 	ep_t u;
@@ -127,13 +128,13 @@ static void ep_mul_sim_endom(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 		} else {
 			w = EP_WIDTH;
 		}
-		l0 = l1 = l2 = l3 = FP_BITS + 1;
+		l0 = l1 = l2 = l3 = RLC_FP_BITS + 1;
 		bn_rec_naf(naf0, &l0, k0, w);
 		bn_rec_naf(naf1, &l1, k1, w);
 		bn_rec_naf(naf2, &l2, m0, EP_WIDTH);
 		bn_rec_naf(naf3, &l3, m1, EP_WIDTH);
 
-		l = MAX(MAX(l0, l1), MAX(l2, l3));
+		l = RLC_MAX(RLC_MAX(l0, l1), RLC_MAX(l2, l3));
 		t0 = naf0 + l - 1;
 		t1 = naf1 + l - 1;
 		t2 = naf2 + l - 1;
@@ -151,7 +152,7 @@ static void ep_mul_sim_endom(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 			naf3[i] = 0;
 		}
 
-		if (bn_sign(k) == BN_NEG) {
+		if (bn_sign(k) == RLC_NEG) {
 			for (i =  0; i < l0; i++) {
 				naf0[i] = -naf0[i];
 			}
@@ -159,7 +160,7 @@ static void ep_mul_sim_endom(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 				naf1[i] = -naf1[i];
 			}
 		}
-		if (bn_sign(m) == BN_NEG) {
+		if (bn_sign(m) == RLC_NEG) {
 			for (i =  0; i < l2; i++) {
 				naf2[i] = -naf2[i];
 			}
@@ -174,14 +175,14 @@ static void ep_mul_sim_endom(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 
 			n = *t0;
 			if (n > 0) {
-				if (sk0 == BN_POS) {
+				if (sk0 == RLC_POS) {
 					ep_add(r, r, t[n / 2]);
 				} else {
 					ep_sub(r, r, t[n / 2]);
 				}
 			}
 			if (n < 0) {
-				if (sk0 == BN_POS) {
+				if (sk0 == RLC_POS) {
 					ep_sub(r, r, t[-n / 2]);
 				} else {
 					ep_add(r, r, t[-n / 2]);
@@ -191,7 +192,7 @@ static void ep_mul_sim_endom(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 			if (n > 0) {
 				ep_copy(u, t[n / 2]);
 				fp_mul(u->x, u->x, ep_curve_get_beta());
-				if (sk1 == BN_NEG) {
+				if (sk1 == RLC_NEG) {
 					ep_neg(u, u);
 				}
 				ep_add(r, r, u);
@@ -199,7 +200,7 @@ static void ep_mul_sim_endom(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 			if (n < 0) {
 				ep_copy(u, t[-n / 2]);
 				fp_mul(u->x, u->x, ep_curve_get_beta());
-				if (sk1 == BN_NEG) {
+				if (sk1 == RLC_NEG) {
 					ep_neg(u, u);
 				}
 				ep_sub(r, r, u);
@@ -207,14 +208,14 @@ static void ep_mul_sim_endom(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 
 			n = *t2;
 			if (n > 0) {
-				if (sl0 == BN_POS) {
+				if (sl0 == RLC_POS) {
 					ep_add(r, r, tab1[n / 2]);
 				} else {
 					ep_sub(r, r, tab1[n / 2]);
 				}
 			}
 			if (n < 0) {
-				if (sl0 == BN_POS) {
+				if (sl0 == RLC_POS) {
 					ep_sub(r, r, tab1[-n / 2]);
 				} else {
 					ep_add(r, r, tab1[-n / 2]);
@@ -224,7 +225,7 @@ static void ep_mul_sim_endom(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 			if (n > 0) {
 				ep_copy(u, tab1[n / 2]);
 				fp_mul(u->x, u->x, ep_curve_get_beta());
-				if (sl1 == BN_NEG) {
+				if (sl1 == RLC_NEG) {
 					ep_neg(u, u);
 				}
 				ep_add(r, r, u);
@@ -232,7 +233,7 @@ static void ep_mul_sim_endom(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 			if (n < 0) {
 				ep_copy(u, tab1[-n / 2]);
 				fp_mul(u->x, u->x, ep_curve_get_beta());
-				if (sl1 == BN_NEG) {
+				if (sl1 == RLC_NEG) {
 					ep_neg(u, u);
 				}
 				ep_sub(r, r, u);
@@ -287,7 +288,7 @@ static void ep_mul_sim_endom(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 static void ep_mul_sim_plain(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 		const bn_t m, const ep_t *t) {
 	int i, l, l0, l1, n0, n1, w, gen;
-	int8_t naf0[FP_BITS + 1], naf1[FP_BITS + 1], *_k, *_m;
+	int8_t naf0[RLC_FP_BITS + 1], naf1[RLC_FP_BITS + 1], *_k, *_m;
 	ep_t t0[1 << (EP_WIDTH - 2)];
 	ep_t t1[1 << (EP_WIDTH - 2)];
 
@@ -316,11 +317,11 @@ static void ep_mul_sim_plain(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 		} else {
 			w = EP_WIDTH;
 		}
-		l0 = l1 = FP_BITS + 1;
+		l0 = l1 = RLC_FP_BITS + 1;
 		bn_rec_naf(naf0, &l0, k, w);
 		bn_rec_naf(naf1, &l1, m, EP_WIDTH);
 
-		l = MAX(l0, l1);
+		l = RLC_MAX(l0, l1);
 		for (i = l0; i < l; i++) {
 			naf0[i] = 0;
 		}
@@ -328,12 +329,12 @@ static void ep_mul_sim_plain(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 			naf1[i] = 0;
 		}
 
-		if (bn_sign(k) == BN_NEG) {
+		if (bn_sign(k) == RLC_NEG) {
 			for (i =  0; i < l0; i++) {
 				naf0[i] = -naf0[i];
 			}
 		}
-		if (bn_sign(m) == BN_NEG) {
+		if (bn_sign(m) == RLC_NEG) {
 			for (i =  0; i < l1; i++) {
 				naf1[i] = -naf1[i];
 			}
@@ -419,8 +420,8 @@ void ep_mul_sim_trick(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 	ep_t t0[1 << (EP_WIDTH / 2)], t1[1 << (EP_WIDTH / 2)], t[1 << EP_WIDTH];
 	bn_t n;
 	int l0, l1, w = EP_WIDTH / 2;
-	uint8_t* w0 = RELIC_ALLOCA(uint8_t, CEIL(FP_BITS + 1, w)), 
-        * w1 = RELIC_ALLOCA(uint8_t, CEIL(FP_BITS + 1, w));
+	uint8_t* w0 = RELIC_ALLOCA(uint8_t, RLC_CEIL(RLC_FP_BITS + 1, w)),
+        * w1 = RELIC_ALLOCA(uint8_t, RLC_CEIL(RLC_FP_BITS + 1, w));
 
 	bn_null(n);
 
@@ -451,7 +452,7 @@ void ep_mul_sim_trick(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 
 		ep_set_infty(t0[0]);
 		ep_copy(t0[1], p);
-		if (bn_sign(k) == BN_NEG) {
+		if (bn_sign(k) == RLC_NEG) {
 			ep_neg(t0[1], t0[1]);
 		}
 		for (int i = 2; i < (1 << w); i++) {
@@ -460,7 +461,7 @@ void ep_mul_sim_trick(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 
 		ep_set_infty(t1[0]);
 		ep_copy(t1[1], q);
-		if (bn_sign(m) == BN_NEG) {
+		if (bn_sign(m) == RLC_NEG) {
 			ep_neg(t1[1], t1[1]);
 		}
 		for (int i = 1; i < (1 << w); i++) {
@@ -477,7 +478,7 @@ void ep_mul_sim_trick(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 		ep_norm_sim(t + 1, (const ep_t *)t + 1, (1 << (EP_WIDTH)) - 1);
 #endif
 
-		l0 = l1 = CEIL(FP_BITS, w);
+		l0 = l1 = RLC_CEIL(RLC_FP_BITS, w);
 		bn_rec_win(w0, &l0, k, w);
 		bn_rec_win(w1, &l1, m, w);
 
@@ -489,7 +490,7 @@ void ep_mul_sim_trick(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 		}
 
 		ep_set_infty(r);
-		for (int i = MAX(l0, l1) - 1; i >= 0; i--) {
+		for (int i = RLC_MAX(l0, l1) - 1; i >= 0; i--) {
 			for (int j = 0; j < w; j++) {
 				ep_dbl(r, r);
 			}
@@ -546,7 +547,7 @@ void ep_mul_sim_joint(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 		const bn_t m) {
 	ep_t t[5];
 	int i, l, u_i, offset;
-	int8_t jsf[2 * (FP_BITS + 1)];
+	int8_t jsf[2 * (RLC_FP_BITS + 1)];
 
 	if (bn_is_zero(k) || ep_is_infty(p)) {
 		ep_mul(r, q, m);
@@ -565,11 +566,11 @@ void ep_mul_sim_joint(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 
 		ep_set_infty(t[0]);
 		ep_copy(t[1], q);
-		if (bn_sign(m) == BN_NEG) {
+		if (bn_sign(m) == RLC_NEG) {
 			ep_neg(t[1], t[1]);
 		}
 		ep_copy(t[2], p);
-		if (bn_sign(k) == BN_NEG) {
+		if (bn_sign(k) == RLC_NEG) {
 			ep_neg(t[2], t[2]);
 		}
 		ep_add(t[3], t[2], t[1]);
@@ -578,12 +579,12 @@ void ep_mul_sim_joint(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 		ep_norm_sim(t + 3, (const ep_t *)t + 3, 2);
 #endif
 
-		l = 2 * (FP_BITS + 1);
+		l = 2 * (RLC_FP_BITS + 1);
 		bn_rec_jsf(jsf, &l, k, m);
 
 		ep_set_infty(r);
 
-		offset = MAX(bn_bits(k), bn_bits(m)) + 1;
+		offset = RLC_MAX(bn_bits(k), bn_bits(m)) + 1;
 		for (i = l - 1; i >= 0; i--) {
 			ep_dbl(r, r);
 			if (jsf[i] != 0 && jsf[i] == -jsf[i + offset]) {

@@ -1,23 +1,24 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2017 RELIC Authors
+ * Copyright (C) 2007-2019 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
  * for contact information.
  *
- * RELIC is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * RELIC is free software; you can redistribute it and/or modify it under the
+ * terms of the version 2.1 (or later) of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; or version 2.0 of the Apache
+ * License as published by the Apache Software Foundation. See the LICENSE files
+ * for more details.
  *
- * RELIC is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * RELIC is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the LICENSE files for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RELIC. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General Public or the
+ * Apache License along with RELIC. If not, see <https://www.gnu.org/licenses/>
+ * or <https://www.apache.org/licenses/>.
  */
 
 /**
@@ -33,7 +34,7 @@
 
 static int memory2(void) {
 	err_t e;
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	fp2_t a;
 
 	fp2_null(a);
@@ -52,14 +53,14 @@ static int memory2(void) {
 		}
 	}
 	(void)a;
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	return code;
 }
 
 static int util2(void) {
-	int code = STS_ERR;
-	uint8_t bin[2 * FP_BYTES];
+	int code = RLC_ERR;
+	uint8_t bin[2 * RLC_FP_BYTES];
 	fp2_t a, b, c;
 	dig_t d;
 
@@ -75,8 +76,8 @@ static int util2(void) {
 		TEST_BEGIN("comparison is consistent") {
 			fp2_rand(a);
 			fp2_rand(b);
-			if (fp2_cmp(a, b) != CMP_EQ) {
-				TEST_ASSERT(fp2_cmp(b, a) == CMP_NE, end);
+			if (fp2_cmp(a, b) != RLC_EQ) {
+				TEST_ASSERT(fp2_cmp(b, a) == RLC_NE, end);
 			}
 		}
 		TEST_END;
@@ -85,13 +86,13 @@ static int util2(void) {
 			fp2_rand(a);
 			fp2_rand(b);
 			fp2_rand(c);
-			if (fp2_cmp(a, c) != CMP_EQ) {
+			if (fp2_cmp(a, c) != RLC_EQ) {
 				fp2_copy(c, a);
-				TEST_ASSERT(fp2_cmp(c, a) == CMP_EQ, end);
+				TEST_ASSERT(fp2_cmp(c, a) == RLC_EQ, end);
 			}
-			if (fp2_cmp(b, c) != CMP_EQ) {
+			if (fp2_cmp(b, c) != RLC_EQ) {
 				fp2_copy(c, b);
-				TEST_ASSERT(fp2_cmp(b, c) == CMP_EQ, end);
+				TEST_ASSERT(fp2_cmp(b, c) == RLC_EQ, end);
 			}
 		}
 		TEST_END;
@@ -99,11 +100,11 @@ static int util2(void) {
 		TEST_BEGIN("negation is consistent") {
 			fp2_rand(a);
 			fp2_neg(b, a);
-			if (fp2_cmp(a, b) != CMP_EQ) {
-				TEST_ASSERT(fp2_cmp(b, a) == CMP_NE, end);
+			if (fp2_cmp(a, b) != RLC_EQ) {
+				TEST_ASSERT(fp2_cmp(b, a) == RLC_NE, end);
 			}
 			fp2_neg(b, b);
-			TEST_ASSERT(fp2_cmp(a, b) == CMP_EQ, end);
+			TEST_ASSERT(fp2_cmp(a, b) == RLC_EQ, end);
 		}
 		TEST_END;
 
@@ -112,8 +113,8 @@ static int util2(void) {
 				fp2_rand(a);
 			} while (fp2_is_zero(a));
 			fp2_zero(c);
-			TEST_ASSERT(fp2_cmp(a, c) == CMP_NE, end);
-			TEST_ASSERT(fp2_cmp(c, a) == CMP_NE, end);
+			TEST_ASSERT(fp2_cmp(a, c) == RLC_NE, end);
+			TEST_ASSERT(fp2_cmp(c, a) == RLC_NE, end);
 		}
 		TEST_END;
 
@@ -122,7 +123,7 @@ static int util2(void) {
 				fp2_rand(a);
 			} while (fp2_is_zero(a));
 			fp2_rand(c);
-			TEST_ASSERT(fp2_cmp(a, c) == CMP_NE, end);
+			TEST_ASSERT(fp2_cmp(a, c) == RLC_NE, end);
 		}
 		TEST_END;
 
@@ -133,9 +134,9 @@ static int util2(void) {
 		TEST_END;
 
 		TEST_BEGIN("assignment to a constant and comparison are consistent") {
-			rand_bytes((uint8_t *)&d, (FP_DIGIT / 8));
+			rand_bytes((uint8_t *)&d, (RLC_DIG / 8));
 			fp2_set_dig(a, d);
-			TEST_ASSERT(fp2_cmp_dig(a, d) == CMP_EQ, end);
+			TEST_ASSERT(fp2_cmp_dig(a, d) == RLC_EQ, end);
 		}
 		TEST_END;
 
@@ -143,27 +144,27 @@ static int util2(void) {
 			fp2_rand(a);
 			fp2_write_bin(bin, sizeof(bin), a, 0);
 			fp2_read_bin(b, bin, sizeof(bin));
-			TEST_ASSERT(fp2_cmp(a, b) == CMP_EQ, end);
+			TEST_ASSERT(fp2_cmp(a, b) == RLC_EQ, end);
 			fp2_conv_uni(a, a);
-			fp2_write_bin(bin, FP_BYTES + 1, a, 1);
-			fp2_read_bin(b, bin, FP_BYTES + 1);
-			TEST_ASSERT(fp2_cmp(a, b) == CMP_EQ, end);
+			fp2_write_bin(bin, RLC_FP_BYTES + 1, a, 1);
+			fp2_read_bin(b, bin, RLC_FP_BYTES + 1);
+			TEST_ASSERT(fp2_cmp(a, b) == RLC_EQ, end);
 		}
 		TEST_END;
 
 		TEST_BEGIN("getting the size of a prime field element is correct") {
 			fp2_rand(a);
-			TEST_ASSERT(fp2_size_bin(a, 0) == 2 * FP_BYTES, end);
+			TEST_ASSERT(fp2_size_bin(a, 0) == 2 * RLC_FP_BYTES, end);
 			fp2_conv_uni(a, a);
-			TEST_ASSERT(fp2_size_bin(a, 0) == 2 * FP_BYTES, end);
-			TEST_ASSERT(fp2_size_bin(a, 1) == FP_BYTES + 1, end);
+			TEST_ASSERT(fp2_size_bin(a, 0) == 2 * RLC_FP_BYTES, end);
+			TEST_ASSERT(fp2_size_bin(a, 1) == RLC_FP_BYTES + 1, end);
 		}
 		TEST_END;
 	}
 	CATCH_ANY {
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	fp2_free(a);
 	fp2_free(b);
@@ -172,7 +173,7 @@ static int util2(void) {
 }
 
 static int addition2(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	fp2_t a, b, c, d, e;
 
 	fp2_null(a);
@@ -193,7 +194,7 @@ static int addition2(void) {
 			fp2_rand(b);
 			fp2_add(d, a, b);
 			fp2_add(e, b, a);
-			TEST_ASSERT(fp2_cmp(d, e) == CMP_EQ, end);
+			TEST_ASSERT(fp2_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("addition is associative") {
@@ -204,14 +205,14 @@ static int addition2(void) {
 			fp2_add(d, d, c);
 			fp2_add(e, b, c);
 			fp2_add(e, a, e);
-			TEST_ASSERT(fp2_cmp(d, e) == CMP_EQ, end);
+			TEST_ASSERT(fp2_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("addition has identity") {
 			fp2_rand(a);
 			fp2_zero(d);
 			fp2_add(e, a, d);
-			TEST_ASSERT(fp2_cmp(e, a) == CMP_EQ, end);
+			TEST_ASSERT(fp2_cmp(e, a) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("addition has inverse") {
@@ -227,7 +228,7 @@ static int addition2(void) {
 			fp2_rand(b);
 			fp2_add(d, a, b);
 			fp2_add_basic(e, a, b);
-			TEST_ASSERT(fp2_cmp(d, e) == CMP_EQ, end);
+			TEST_ASSERT(fp2_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 #endif
 
@@ -237,7 +238,7 @@ static int addition2(void) {
 			fp2_rand(b);
 			fp2_add(d, a, b);
 			fp2_add_integ(e, a, b);
-			TEST_ASSERT(fp2_cmp(d, e) == CMP_EQ, end);
+			TEST_ASSERT(fp2_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 #endif
 	}
@@ -245,7 +246,7 @@ static int addition2(void) {
 		util_print("FATAL ERROR!\n");
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	fp2_free(a);
 	fp2_free(b);
@@ -256,7 +257,7 @@ static int addition2(void) {
 }
 
 static int subtraction2(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	fp2_t a, b, c, d;
 
 	fp2_null(a);
@@ -276,7 +277,7 @@ static int subtraction2(void) {
 			fp2_sub(c, a, b);
 			fp2_sub(d, b, a);
 			fp2_neg(d, d);
-			TEST_ASSERT(fp2_cmp(c, d) == CMP_EQ, end);
+			TEST_ASSERT(fp2_cmp(c, d) == RLC_EQ, end);
 		}
 		TEST_END;
 
@@ -284,7 +285,7 @@ static int subtraction2(void) {
 			fp2_rand(a);
 			fp2_zero(c);
 			fp2_sub(d, a, c);
-			TEST_ASSERT(fp2_cmp(d, a) == CMP_EQ, end);
+			TEST_ASSERT(fp2_cmp(d, a) == RLC_EQ, end);
 		}
 		TEST_END;
 
@@ -301,7 +302,7 @@ static int subtraction2(void) {
 			fp2_rand(b);
 			fp2_sub(c, a, b);
 			fp2_sub_basic(d, a, b);
-			TEST_ASSERT(fp2_cmp(c, d) == CMP_EQ, end);
+			TEST_ASSERT(fp2_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
 #endif
 
@@ -311,7 +312,7 @@ static int subtraction2(void) {
 			fp2_rand(b);
 			fp2_sub(c, a, b);
 			fp2_sub_integ(d, a, b);
-			TEST_ASSERT(fp2_cmp(c, d) == CMP_EQ, end);
+			TEST_ASSERT(fp2_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
 #endif
 	}
@@ -319,7 +320,7 @@ static int subtraction2(void) {
 		util_print("FATAL ERROR!\n");
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	fp2_free(a);
 	fp2_free(b);
@@ -329,7 +330,7 @@ static int subtraction2(void) {
 }
 
 static int doubling2(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	fp2_t a, b, c;
 
 	fp2_null(a);
@@ -345,7 +346,7 @@ static int doubling2(void) {
 			fp2_rand(a);
 			fp2_dbl(b, a);
 			fp2_add(c, a, a);
-			TEST_ASSERT(fp2_cmp(b, c) == CMP_EQ, end);
+			TEST_ASSERT(fp2_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
 #if PP_QDR == BASIC || !defined(STRIP)
@@ -353,7 +354,7 @@ static int doubling2(void) {
 			fp2_rand(a);
 			fp2_dbl(b, a);
 			fp2_dbl_basic(c, a);
-			TEST_ASSERT(fp2_cmp(b, c) == CMP_EQ, end);
+			TEST_ASSERT(fp2_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 #endif
 
@@ -362,7 +363,7 @@ static int doubling2(void) {
 			fp2_rand(a);
 			fp2_dbl(b, a);
 			fp2_dbl_integ(c, a);
-			TEST_ASSERT(fp2_cmp(b, c) == CMP_EQ, end);
+			TEST_ASSERT(fp2_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 #endif
 	}
@@ -370,7 +371,7 @@ static int doubling2(void) {
 		util_print("FATAL ERROR!\n");
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	fp2_free(a);
 	fp2_free(b);
@@ -379,7 +380,7 @@ static int doubling2(void) {
 }
 
 static int multiplication2(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	fp2_t a, b, c, d, e, f;
 	bn_t g;
 
@@ -405,7 +406,7 @@ static int multiplication2(void) {
 			fp2_rand(b);
 			fp2_mul(d, a, b);
 			fp2_mul(e, b, a);
-			TEST_ASSERT(fp2_cmp(d, e) == CMP_EQ, end);
+			TEST_ASSERT(fp2_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("multiplication is associative") {
@@ -416,7 +417,7 @@ static int multiplication2(void) {
 			fp2_mul(d, d, c);
 			fp2_mul(e, b, c);
 			fp2_mul(e, a, e);
-			TEST_ASSERT(fp2_cmp(d, e) == CMP_EQ, end);
+			TEST_ASSERT(fp2_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("multiplication is distributive") {
@@ -428,7 +429,7 @@ static int multiplication2(void) {
 			fp2_mul(e, c, a);
 			fp2_mul(f, c, b);
 			fp2_add(e, e, f);
-			TEST_ASSERT(fp2_cmp(d, e) == CMP_EQ, end);
+			TEST_ASSERT(fp2_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("multiplication has identity") {
@@ -436,7 +437,7 @@ static int multiplication2(void) {
 			fp2_zero(d);
 			fp_set_dig(d[0], 1);
 			fp2_mul(e, a, d);
-			TEST_ASSERT(fp2_cmp(e, a) == CMP_EQ, end);
+			TEST_ASSERT(fp2_cmp(e, a) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("multiplication has zero property") {
@@ -452,7 +453,7 @@ static int multiplication2(void) {
 			fp2_rand(b);
 			fp2_mul(d, a, b);
 			fp2_mul_basic(e, b, a);
-			TEST_ASSERT(fp2_cmp(d, e) == CMP_EQ, end);
+			TEST_ASSERT(fp2_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 #endif
 
@@ -462,7 +463,7 @@ static int multiplication2(void) {
 			fp2_rand(b);
 			fp2_mul(d, a, b);
 			fp2_mul_integ(e, b, a);
-			TEST_ASSERT(fp2_cmp(d, e) == CMP_EQ, end);
+			TEST_ASSERT(fp2_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 #endif
 
@@ -472,7 +473,7 @@ static int multiplication2(void) {
 			fp_set_dig(b[1], 1);
 			fp2_mul(c, a, b);
 			fp2_mul_art(d, a);
-			TEST_ASSERT(fp2_cmp(c, d) == CMP_EQ, end);
+			TEST_ASSERT(fp2_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("multiplication by quadratic/cubic non-residue is correct") {
@@ -483,20 +484,24 @@ static int multiplication2(void) {
 					fp2_mul_art(c, a);
 					break;
 				case 3:
-					fp2_mul_art(c, a);
-					fp2_add(c, c, a);
+					fp_set_dig(c[0], 1);
+					fp_set_dig(c[1], 1);
+					fp2_mul(c, a, c);
 					break;
 				case 7:
-					fp2_mul_art(d, a);
-					fp2_dbl(c, a);
-					fp2_dbl(c, c);
-					fp2_add(c, c, d);
+#if FP_PRIME == 256
+					fp_set_dig(c[0], 4);
+#else
+					fp_set_dig(c[0], 16);
+#endif
+					fp_set_dig(c[1], 1);
+					fp2_mul(c, a, c);
 					break;
 				default:
 					fp2_copy(c, b);
 					break;
 			}
-			TEST_ASSERT(fp2_cmp(b, c) == CMP_EQ, end);
+			TEST_ASSERT(fp2_cmp(b, c) == RLC_EQ, end);
 		}
 		TEST_END;
 
@@ -505,7 +510,7 @@ static int multiplication2(void) {
 			fp2_rand(a);
 			fp2_mul_nor(b, a);
 			fp2_mul_nor_basic(c, a);
-			TEST_ASSERT(fp2_cmp(b, c) == CMP_EQ, end);
+			TEST_ASSERT(fp2_cmp(b, c) == RLC_EQ, end);
 		}
 		TEST_END;
 #endif
@@ -515,7 +520,7 @@ static int multiplication2(void) {
 			fp2_rand(a);
 			fp2_mul_nor(b, a);
 			fp2_mul_nor_integ(c, a);
-			TEST_ASSERT(fp2_cmp(b, c) == CMP_EQ, end);
+			TEST_ASSERT(fp2_cmp(b, c) == RLC_EQ, end);
 		}
 		TEST_END;
 #endif
@@ -524,7 +529,7 @@ static int multiplication2(void) {
 		util_print("FATAL ERROR!\n");
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	fp2_free(a);
 	fp2_free(b);
@@ -537,7 +542,7 @@ static int multiplication2(void) {
 }
 
 static int squaring2(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	fp2_t a, b, c;
 
 	fp2_null(a);
@@ -553,7 +558,7 @@ static int squaring2(void) {
 			fp2_rand(a);
 			fp2_mul(b, a, a);
 			fp2_sqr(c, a);
-			TEST_ASSERT(fp2_cmp(b, c) == CMP_EQ, end);
+			TEST_ASSERT(fp2_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
 #if PP_QDR == BASIC || !defined(STRIP)
@@ -561,7 +566,7 @@ static int squaring2(void) {
 			fp2_rand(a);
 			fp2_sqr(b, a);
 			fp2_sqr_basic(c, a);
-			TEST_ASSERT(fp2_cmp(b, c) == CMP_EQ, end);
+			TEST_ASSERT(fp2_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 #endif
 
@@ -570,7 +575,7 @@ static int squaring2(void) {
 			fp2_rand(a);
 			fp2_sqr(b, a);
 			fp2_sqr_integ(c, a);
-			TEST_ASSERT(fp2_cmp(b, c) == CMP_EQ, end);
+			TEST_ASSERT(fp2_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 #endif
 	}
@@ -578,7 +583,7 @@ static int squaring2(void) {
 		util_print("FATAL ERROR!\n");
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	fp2_free(a);
 	fp2_free(b);
@@ -587,7 +592,7 @@ static int squaring2(void) {
 }
 
 static int inversion2(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	fp2_t a, b, c, d[2];
 
 	TRY {
@@ -598,39 +603,45 @@ static int inversion2(void) {
 		fp2_new(d[1]);
 
 		TEST_BEGIN("inversion is correct") {
-			fp2_rand(a);
+			do {
+				fp2_rand(a);
+			} while (fp2_is_zero(a));
 			fp2_inv(b, a);
 			fp2_mul(c, a, b);
 			fp2_zero(b);
 			fp_set_dig(b[0], 1);
-			TEST_ASSERT(fp2_cmp(c, b) == CMP_EQ, end);
+			TEST_ASSERT(fp2_cmp(c, b) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("inversion of a unitary element is correct") {
-			fp2_rand(a);
+			do {
+				fp2_rand(a);
+			} while (fp2_is_zero(a));
 			fp2_conv_uni(a, a);
 			fp2_inv(b, a);
 			fp2_inv_uni(c, a);
-			TEST_ASSERT(fp2_cmp(b, c) == CMP_EQ, end);
+			TEST_ASSERT(fp2_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("simultaneous inversion is correct") {
-			fp2_rand(a);
-			fp2_rand(b);
+			do {
+				fp2_rand(a);
+				fp2_rand(b);
+			} while (fp2_is_zero(a) || fp2_is_zero(b));
 			fp2_copy(d[0], a);
 			fp2_copy(d[1], b);
 			fp2_inv(a, a);
 			fp2_inv(b, b);
 			fp2_inv_sim(d, d, 2);
-			TEST_ASSERT(fp2_cmp(d[0], a) == CMP_EQ &&
-					fp2_cmp(d[1], b) == CMP_EQ, end);
+			TEST_ASSERT(fp2_cmp(d[0], a) == RLC_EQ &&
+					fp2_cmp(d[1], b) == RLC_EQ, end);
 		} TEST_END;
 	}
 	CATCH_ANY {
 		util_print("FATAL ERROR!\n");
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	fp2_free(a);
 	fp2_free(b);
@@ -641,7 +652,7 @@ static int inversion2(void) {
 }
 
 static int exponentiation2(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	fp2_t a, b, c;
 	bn_t d;
 
@@ -660,28 +671,28 @@ static int exponentiation2(void) {
 			fp2_rand(a);
 			bn_zero(d);
 			fp2_exp(c, a, d);
-			TEST_ASSERT(fp2_cmp_dig(c, 1) == CMP_EQ, end);
+			TEST_ASSERT(fp2_cmp_dig(c, 1) == RLC_EQ, end);
 			bn_set_dig(d, 1);
 			fp2_exp(c, a, d);
-			TEST_ASSERT(fp2_cmp(c, a) == CMP_EQ, end);
-			bn_rand(d, BN_POS, FP_BITS);
+			TEST_ASSERT(fp2_cmp(c, a) == RLC_EQ, end);
+			bn_rand(d, RLC_POS, RLC_FP_BITS);
 			fp2_exp(b, a, d);
 			bn_neg(d, d);
 			fp2_exp(c, a, d);
 			fp2_inv(c, c);
-			TEST_ASSERT(fp2_cmp(b, c) == CMP_EQ, end);
+			TEST_ASSERT(fp2_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("frobenius and exponentiation are consistent") {
 			fp2_rand(a);
 			fp2_frb(b, a, 0);
-			TEST_ASSERT(fp2_cmp(a, b) == CMP_EQ, end);
+			TEST_ASSERT(fp2_cmp(a, b) == RLC_EQ, end);
 			fp2_frb(b, a, 1);
-			d->sign = BN_POS;
-			d->used = FP_DIGS;
-			dv_copy(d->dp, fp_prime_get(), FP_DIGS);
+			d->sign = RLC_POS;
+			d->used = RLC_FP_DIGS;
+			dv_copy(d->dp, fp_prime_get(), RLC_FP_DIGS);
 			fp2_exp(c, a, d);
-			TEST_ASSERT(fp2_cmp(c, b) == CMP_EQ, end);
+			TEST_ASSERT(fp2_cmp(c, b) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("frobenius and squared frobenius are consistent") {
@@ -689,23 +700,23 @@ static int exponentiation2(void) {
 			fp2_frb(b, a, 1);
 			fp2_frb(b, b, 1);
 			fp2_frb(c, a, 2);
-			TEST_ASSERT(fp2_cmp(c, b) == CMP_EQ, end);
+			TEST_ASSERT(fp2_cmp(c, b) == RLC_EQ, end);
 		} TEST_END;
 
         TEST_BEGIN("exponentiation of unitary element is correct") {
-			bn_rand(d, BN_POS, FP_BITS);
+			bn_rand(d, RLC_POS, RLC_FP_BITS);
 			fp2_rand(a);
 			fp2_conv_uni(a, a);
 			fp2_exp(b, a, d);
 			fp2_exp_uni(c, a, d);
-			TEST_ASSERT(fp2_cmp(b, c) == CMP_EQ, end);
+			TEST_ASSERT(fp2_cmp(b, c) == RLC_EQ, end);
         } TEST_END;
 	}
 	CATCH_ANY {
 		util_print("FATAL ERROR!\n");
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	fp2_free(a);
 	fp2_free(b);
@@ -715,7 +726,7 @@ static int exponentiation2(void) {
 }
 
 static int compression2(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	fp2_t a, b, c, d;
 
 	fp2_null(a);
@@ -733,19 +744,19 @@ static int compression2(void) {
 			fp2_rand(a);
 			fp2_pck(b, a);
 			TEST_ASSERT(fp2_upk(c, b) == 1, end);
-			TEST_ASSERT(fp2_cmp(a, c) == CMP_EQ, end);
+			TEST_ASSERT(fp2_cmp(a, c) == RLC_EQ, end);
 			fp2_rand(a);
 			fp2_conv_uni(b, a);
 			fp2_pck(c, b);
 			TEST_ASSERT(fp2_upk(d, c) == 1, end);
-			TEST_ASSERT(fp2_cmp(b, d) == CMP_EQ, end);
+			TEST_ASSERT(fp2_cmp(b, d) == RLC_EQ, end);
 		} TEST_END;
 	}
 	CATCH_ANY {
 		util_print("FATAL ERROR!\n");
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	fp2_free(a);
 	fp2_free(b);
@@ -755,7 +766,7 @@ static int compression2(void) {
 }
 
 static int square_root2(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	fp2_t a, b, c;
 	int r;
 
@@ -774,15 +785,15 @@ static int square_root2(void) {
 			r = fp2_srt(b, c);
 			fp2_neg(c, b);
 			TEST_ASSERT(r, end);
-			TEST_ASSERT(fp2_cmp(b, a) == CMP_EQ ||
-					fp2_cmp(c, a) == CMP_EQ, end);
+			TEST_ASSERT(fp2_cmp(b, a) == RLC_EQ ||
+					fp2_cmp(c, a) == RLC_EQ, end);
 		} TEST_END;
 	}
 	CATCH_ANY {
 		util_print("FATAL ERROR!\n");
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	fp2_free(a);
 	fp2_free(b);
@@ -792,7 +803,7 @@ static int square_root2(void) {
 
 static int memory3(void) {
 	err_t e;
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	fp3_t a;
 
 	fp3_null(a);
@@ -811,14 +822,14 @@ static int memory3(void) {
 		}
 	}
 	(void)a;
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	return code;
 }
 
 static int util3(void) {
-	int code = STS_ERR;
-	uint8_t bin[3 * FP_BYTES];
+	int code = RLC_ERR;
+	uint8_t bin[3 * RLC_FP_BYTES];
 	fp3_t a, b, c;
 	dig_t d;
 
@@ -834,8 +845,8 @@ static int util3(void) {
 		TEST_BEGIN("comparison is consistent") {
 			fp3_rand(a);
 			fp3_rand(b);
-			if (fp3_cmp(a, b) != CMP_EQ) {
-				TEST_ASSERT(fp3_cmp(b, a) == CMP_NE, end);
+			if (fp3_cmp(a, b) != RLC_EQ) {
+				TEST_ASSERT(fp3_cmp(b, a) == RLC_NE, end);
 			}
 		}
 		TEST_END;
@@ -844,13 +855,13 @@ static int util3(void) {
 			fp3_rand(a);
 			fp3_rand(b);
 			fp3_rand(c);
-			if (fp3_cmp(a, c) != CMP_EQ) {
+			if (fp3_cmp(a, c) != RLC_EQ) {
 				fp3_copy(c, a);
-				TEST_ASSERT(fp3_cmp(c, a) == CMP_EQ, end);
+				TEST_ASSERT(fp3_cmp(c, a) == RLC_EQ, end);
 			}
-			if (fp3_cmp(b, c) != CMP_EQ) {
+			if (fp3_cmp(b, c) != RLC_EQ) {
 				fp3_copy(c, b);
-				TEST_ASSERT(fp3_cmp(b, c) == CMP_EQ, end);
+				TEST_ASSERT(fp3_cmp(b, c) == RLC_EQ, end);
 			}
 		}
 		TEST_END;
@@ -858,11 +869,11 @@ static int util3(void) {
 		TEST_BEGIN("negation is consistent") {
 			fp3_rand(a);
 			fp3_neg(b, a);
-			if (fp3_cmp(a, b) != CMP_EQ) {
-				TEST_ASSERT(fp3_cmp(b, a) == CMP_NE, end);
+			if (fp3_cmp(a, b) != RLC_EQ) {
+				TEST_ASSERT(fp3_cmp(b, a) == RLC_NE, end);
 			}
 			fp3_neg(b, b);
-			TEST_ASSERT(fp3_cmp(a, b) == CMP_EQ, end);
+			TEST_ASSERT(fp3_cmp(a, b) == RLC_EQ, end);
 		}
 		TEST_END;
 
@@ -871,8 +882,8 @@ static int util3(void) {
 				fp3_rand(a);
 			} while (fp3_is_zero(a));
 			fp3_zero(c);
-			TEST_ASSERT(fp3_cmp(a, c) == CMP_NE, end);
-			TEST_ASSERT(fp3_cmp(c, a) == CMP_NE, end);
+			TEST_ASSERT(fp3_cmp(a, c) == RLC_NE, end);
+			TEST_ASSERT(fp3_cmp(c, a) == RLC_NE, end);
 		}
 		TEST_END;
 
@@ -881,7 +892,7 @@ static int util3(void) {
 				fp3_rand(a);
 			} while (fp3_is_zero(a));
 			fp3_zero(c);
-			TEST_ASSERT(fp3_cmp(a, c) == CMP_NE, end);
+			TEST_ASSERT(fp3_cmp(a, c) == RLC_NE, end);
 		}
 		TEST_END;
 
@@ -892,9 +903,9 @@ static int util3(void) {
 		TEST_END;
 
 		TEST_BEGIN("assignment to a constant and comparison are consistent") {
-			rand_bytes((uint8_t *)&d, (FP_DIGIT / 8));
+			rand_bytes((uint8_t *)&d, (RLC_DIG / 8));
 			fp3_set_dig(a, d);
-			TEST_ASSERT(fp3_cmp_dig(a, d) == CMP_EQ, end);
+			TEST_ASSERT(fp3_cmp_dig(a, d) == RLC_EQ, end);
 		}
 		TEST_END;
 
@@ -902,20 +913,20 @@ static int util3(void) {
 			fp3_rand(a);
 			fp3_write_bin(bin, sizeof(bin), a);
 			fp3_read_bin(b, bin, sizeof(bin));
-			TEST_ASSERT(fp3_cmp(a, b) == CMP_EQ, end);
+			TEST_ASSERT(fp3_cmp(a, b) == RLC_EQ, end);
 		}
 		TEST_END;
 
 		TEST_BEGIN("getting the size of a prime field element is correct") {
 			fp3_rand(a);
-			TEST_ASSERT(fp3_size_bin(a) == 3 * FP_BYTES, end);
+			TEST_ASSERT(fp3_size_bin(a) == 3 * RLC_FP_BYTES, end);
 		}
 		TEST_END;
 	}
 	CATCH_ANY {
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	fp3_free(a);
 	fp3_free(b);
@@ -924,7 +935,7 @@ static int util3(void) {
 }
 
 static int addition3(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	fp3_t a, b, c, d, e;
 
 	fp3_null(a);
@@ -945,7 +956,7 @@ static int addition3(void) {
 			fp3_rand(b);
 			fp3_add(d, a, b);
 			fp3_add(e, b, a);
-			TEST_ASSERT(fp3_cmp(d, e) == CMP_EQ, end);
+			TEST_ASSERT(fp3_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("addition is associative") {
@@ -956,14 +967,14 @@ static int addition3(void) {
 			fp3_add(d, d, c);
 			fp3_add(e, b, c);
 			fp3_add(e, a, e);
-			TEST_ASSERT(fp3_cmp(d, e) == CMP_EQ, end);
+			TEST_ASSERT(fp3_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("addition has identity") {
 			fp3_rand(a);
 			fp3_zero(d);
 			fp3_add(e, a, d);
-			TEST_ASSERT(fp3_cmp(e, a) == CMP_EQ, end);
+			TEST_ASSERT(fp3_cmp(e, a) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("addition has inverse") {
@@ -979,7 +990,7 @@ static int addition3(void) {
 			fp3_rand(b);
 			fp3_add(d, a, b);
 			fp3_add_basic(e, a, b);
-			TEST_ASSERT(fp3_cmp(d, e) == CMP_EQ, end);
+			TEST_ASSERT(fp3_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 #endif
 
@@ -989,7 +1000,7 @@ static int addition3(void) {
 			fp3_rand(b);
 			fp3_add(d, a, b);
 			fp3_add_integ(e, a, b);
-			TEST_ASSERT(fp3_cmp(d, e) == CMP_EQ, end);
+			TEST_ASSERT(fp3_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 #endif
 	}
@@ -997,7 +1008,7 @@ static int addition3(void) {
 		util_print("FATAL ERROR!\n");
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	fp3_free(a);
 	fp3_free(b);
@@ -1008,7 +1019,7 @@ static int addition3(void) {
 }
 
 static int subtraction3(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	fp3_t a, b, c, d;
 
 	fp3_null(a);
@@ -1028,7 +1039,7 @@ static int subtraction3(void) {
 			fp3_sub(c, a, b);
 			fp3_sub(d, b, a);
 			fp3_neg(d, d);
-			TEST_ASSERT(fp3_cmp(c, d) == CMP_EQ, end);
+			TEST_ASSERT(fp3_cmp(c, d) == RLC_EQ, end);
 		}
 		TEST_END;
 
@@ -1036,7 +1047,7 @@ static int subtraction3(void) {
 			fp3_rand(a);
 			fp3_zero(c);
 			fp3_sub(d, a, c);
-			TEST_ASSERT(fp3_cmp(d, a) == CMP_EQ, end);
+			TEST_ASSERT(fp3_cmp(d, a) == RLC_EQ, end);
 		}
 		TEST_END;
 
@@ -1053,7 +1064,7 @@ static int subtraction3(void) {
 			fp3_rand(b);
 			fp3_sub(c, a, b);
 			fp3_sub_basic(d, a, b);
-			TEST_ASSERT(fp3_cmp(c, d) == CMP_EQ, end);
+			TEST_ASSERT(fp3_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
 #endif
 
@@ -1063,7 +1074,7 @@ static int subtraction3(void) {
 			fp3_rand(b);
 			fp3_sub(c, a, b);
 			fp3_sub_integ(d, a, b);
-			TEST_ASSERT(fp3_cmp(c, d) == CMP_EQ, end);
+			TEST_ASSERT(fp3_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
 #endif
 	}
@@ -1071,7 +1082,7 @@ static int subtraction3(void) {
 		util_print("FATAL ERROR!\n");
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	fp3_free(a);
 	fp3_free(b);
@@ -1081,7 +1092,7 @@ static int subtraction3(void) {
 }
 
 static int doubling3(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	fp3_t a, b, c;
 
 	fp3_null(a);
@@ -1097,7 +1108,7 @@ static int doubling3(void) {
 			fp3_rand(a);
 			fp3_dbl(b, a);
 			fp3_add(c, a, a);
-			TEST_ASSERT(fp3_cmp(b, c) == CMP_EQ, end);
+			TEST_ASSERT(fp3_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
 #if PP_CBC == BASIC || !defined(STRIP)
@@ -1105,7 +1116,7 @@ static int doubling3(void) {
 			fp3_rand(a);
 			fp3_dbl(b, a);
 			fp3_dbl_basic(c, a);
-			TEST_ASSERT(fp3_cmp(b, c) == CMP_EQ, end);
+			TEST_ASSERT(fp3_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 #endif
 
@@ -1114,7 +1125,7 @@ static int doubling3(void) {
 			fp3_rand(a);
 			fp3_dbl(b, a);
 			fp3_dbl_integ(c, a);
-			TEST_ASSERT(fp3_cmp(b, c) == CMP_EQ, end);
+			TEST_ASSERT(fp3_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 #endif
 	}
@@ -1122,7 +1133,7 @@ static int doubling3(void) {
 		util_print("FATAL ERROR!\n");
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	fp3_free(a);
 	fp3_free(b);
@@ -1131,7 +1142,7 @@ static int doubling3(void) {
 }
 
 static int multiplication3(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	fp3_t a, b, c, d, e, f;
 	bn_t g;
 
@@ -1157,7 +1168,7 @@ static int multiplication3(void) {
 			fp3_rand(b);
 			fp3_mul(d, a, b);
 			fp3_mul(e, b, a);
-			TEST_ASSERT(fp3_cmp(d, e) == CMP_EQ, end);
+			TEST_ASSERT(fp3_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("multiplication is associative") {
@@ -1168,7 +1179,7 @@ static int multiplication3(void) {
 			fp3_mul(d, d, c);
 			fp3_mul(e, b, c);
 			fp3_mul(e, a, e);
-			TEST_ASSERT(fp3_cmp(d, e) == CMP_EQ, end);
+			TEST_ASSERT(fp3_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("multiplication is distributive") {
@@ -1180,7 +1191,7 @@ static int multiplication3(void) {
 			fp3_mul(e, c, a);
 			fp3_mul(f, c, b);
 			fp3_add(e, e, f);
-			TEST_ASSERT(fp3_cmp(d, e) == CMP_EQ, end);
+			TEST_ASSERT(fp3_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("multiplication has identity") {
@@ -1188,7 +1199,7 @@ static int multiplication3(void) {
 			fp3_zero(d);
 			fp_set_dig(d[0], 1);
 			fp3_mul(e, a, d);
-			TEST_ASSERT(fp3_cmp(e, a) == CMP_EQ, end);
+			TEST_ASSERT(fp3_cmp(e, a) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("multiplication has zero property") {
@@ -1204,14 +1215,14 @@ static int multiplication3(void) {
 			fp_set_dig(b[1], 1);
 			fp3_mul(c, a, b);
 			fp3_mul_art(d, a);
-			TEST_ASSERT(fp3_cmp(c, d) == CMP_EQ, end);
+			TEST_ASSERT(fp3_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("multiplication by quadratic/cubic non-residue is correct") {
 			fp3_rand(a);
 			fp3_mul_nor(b, a);
 			fp3_mul_art(c, a);
-			TEST_ASSERT(fp3_cmp(b, c) == CMP_EQ, end);
+			TEST_ASSERT(fp3_cmp(b, c) == RLC_EQ, end);
 		}
 		TEST_END;
 
@@ -1221,7 +1232,7 @@ static int multiplication3(void) {
 			fp3_rand(b);
 			fp3_mul(d, a, b);
 			fp3_mul_basic(e, b, a);
-			TEST_ASSERT(fp3_cmp(d, e) == CMP_EQ, end);
+			TEST_ASSERT(fp3_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 #endif
 
@@ -1231,7 +1242,7 @@ static int multiplication3(void) {
 			fp3_rand(b);
 			fp3_mul(d, a, b);
 			fp3_mul_integ(e, b, a);
-			TEST_ASSERT(fp3_cmp(d, e) == CMP_EQ, end);
+			TEST_ASSERT(fp3_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 #endif
 
@@ -1241,7 +1252,7 @@ static int multiplication3(void) {
 			fp_set_dig(b[1], 1);
 			fp3_mul(c, a, b);
 			fp3_mul_art(d, a);
-			TEST_ASSERT(fp3_cmp(c, d) == CMP_EQ, end);
+			TEST_ASSERT(fp3_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("multiplication by quadratic/cubic non-residue is correct") {
@@ -1265,7 +1276,7 @@ static int multiplication3(void) {
 					fp3_add(c, c, d);
 					break;
 			}
-			TEST_ASSERT(fp3_cmp(b, c) == CMP_EQ, end);
+			TEST_ASSERT(fp3_cmp(b, c) == RLC_EQ, end);
 		}
 		TEST_END;
 	}
@@ -1273,7 +1284,7 @@ static int multiplication3(void) {
 		util_print("FATAL ERROR!\n");
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	fp3_free(a);
 	fp3_free(b);
@@ -1286,7 +1297,7 @@ static int multiplication3(void) {
 }
 
 static int squaring3(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	fp3_t a, b, c;
 
 	fp3_null(a);
@@ -1302,7 +1313,7 @@ static int squaring3(void) {
 			fp3_rand(a);
 			fp3_mul(b, a, a);
 			fp3_sqr(c, a);
-			TEST_ASSERT(fp3_cmp(b, c) == CMP_EQ, end);
+			TEST_ASSERT(fp3_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
 #if PP_CBC == BASIC || !defined(STRIP)
@@ -1310,7 +1321,7 @@ static int squaring3(void) {
 			fp3_rand(a);
 			fp3_sqr(b, a);
 			fp3_sqr_basic(c, a);
-			TEST_ASSERT(fp3_cmp(b, c) == CMP_EQ, end);
+			TEST_ASSERT(fp3_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 #endif
 
@@ -1319,7 +1330,7 @@ static int squaring3(void) {
 			fp3_rand(a);
 			fp3_sqr(b, a);
 			fp3_sqr_integ(c, a);
-			TEST_ASSERT(fp3_cmp(b, c) == CMP_EQ, end);
+			TEST_ASSERT(fp3_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 #endif
 	}
@@ -1327,7 +1338,7 @@ static int squaring3(void) {
 		util_print("FATAL ERROR!\n");
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	fp3_free(a);
 	fp3_free(b);
@@ -1336,7 +1347,7 @@ static int squaring3(void) {
 }
 
 static int inversion3(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	fp3_t a, b, c, d[2];
 
 	fp3_null(a);
@@ -1353,31 +1364,35 @@ static int inversion3(void) {
 		fp3_new(d[1]);
 
 		TEST_BEGIN("inversion is correct") {
-			fp3_rand(a);
+			do {
+				fp3_rand(a);
+			} while (fp3_is_zero(a));
 			fp3_inv(b, a);
 			fp3_mul(c, a, b);
 			fp3_zero(b);
 			fp_set_dig(b[0], 1);
-			TEST_ASSERT(fp3_cmp(c, b) == CMP_EQ, end);
+			TEST_ASSERT(fp3_cmp(c, b) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("simultaneous inversion is correct") {
-			fp3_rand(a);
-			fp3_rand(b);
+			do {
+				fp3_rand(a);
+				fp3_rand(b);
+			} while (fp2_is_zero(a) || fp2_is_zero(b));
 			fp3_copy(d[0], a);
 			fp3_copy(d[1], b);
 			fp3_inv(a, a);
 			fp3_inv(b, b);
 			fp3_inv_sim(d, d, 2);
-			TEST_ASSERT(fp3_cmp(d[0], a) == CMP_EQ &&
-					fp3_cmp(d[1], b) == CMP_EQ, end);
+			TEST_ASSERT(fp3_cmp(d[0], a) == RLC_EQ &&
+					fp3_cmp(d[1], b) == RLC_EQ, end);
 		} TEST_END;
 	}
 	CATCH_ANY {
 		util_print("FATAL ERROR!\n");
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	fp3_free(a);
 	fp3_free(b);
@@ -1388,7 +1403,7 @@ static int inversion3(void) {
 }
 
 static int exponentiation3(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	fp3_t a, b, c;
 	bn_t d;
 
@@ -1407,28 +1422,28 @@ static int exponentiation3(void) {
 			fp3_rand(a);
 			bn_zero(d);
 			fp3_exp(c, a, d);
-			TEST_ASSERT(fp3_cmp_dig(c, 1) == CMP_EQ, end);
+			TEST_ASSERT(fp3_cmp_dig(c, 1) == RLC_EQ, end);
 			bn_set_dig(d, 1);
 			fp3_exp(c, a, d);
-			TEST_ASSERT(fp3_cmp(c, a) == CMP_EQ, end);
-			bn_rand(d, BN_POS, FP_BITS);
+			TEST_ASSERT(fp3_cmp(c, a) == RLC_EQ, end);
+			bn_rand(d, RLC_POS, RLC_FP_BITS);
 			fp3_exp(b, a, d);
 			bn_neg(d, d);
 			fp3_exp(c, a, d);
 			fp3_inv(c, c);
-			TEST_ASSERT(fp3_cmp(b, c) == CMP_EQ, end);
+			TEST_ASSERT(fp3_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("frobenius and exponentiation are consistent") {
 			fp3_rand(a);
 			fp3_frb(b, a, 0);
-			TEST_ASSERT(fp3_cmp(a, b) == CMP_EQ, end);
+			TEST_ASSERT(fp3_cmp(a, b) == RLC_EQ, end);
 			fp3_frb(b, a, 1);
-			d->sign = BN_POS;
-			d->used = FP_DIGS;
-			dv_copy(d->dp, fp_prime_get(), FP_DIGS);
+			d->sign = RLC_POS;
+			d->used = RLC_FP_DIGS;
+			dv_copy(d->dp, fp_prime_get(), RLC_FP_DIGS);
 			fp3_exp(c, a, d);
-			TEST_ASSERT(fp3_cmp(c, b) == CMP_EQ, end);
+			TEST_ASSERT(fp3_cmp(c, b) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("frobenius and squared frobenius are consistent") {
@@ -1436,7 +1451,7 @@ static int exponentiation3(void) {
 			fp3_frb(b, a, 1);
 			fp3_frb(b, b, 1);
 			fp3_frb(c, a, 2);
-			TEST_ASSERT(fp3_cmp(c, b) == CMP_EQ, end);
+			TEST_ASSERT(fp3_cmp(c, b) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("frobenius and cubed frobenius are consistent") {
@@ -1445,14 +1460,14 @@ static int exponentiation3(void) {
 			fp3_frb(b, b, 1);
 			fp3_frb(b, b, 1);
 			fp3_frb(c, a, 3);
-			TEST_ASSERT(fp3_cmp(c, b) == CMP_EQ, end);
+			TEST_ASSERT(fp3_cmp(c, b) == RLC_EQ, end);
 		} TEST_END;
 	}
 	CATCH_ANY {
 		util_print("FATAL ERROR!\n");
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	fp3_free(a);
 	fp3_free(b);
@@ -1462,7 +1477,7 @@ static int exponentiation3(void) {
 }
 
 static int square_root3(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	fp3_t a, b, c;
 	int r;
 
@@ -1481,14 +1496,14 @@ static int square_root3(void) {
 			r = fp3_srt(b, c);
 			fp3_neg(c, b);
 			TEST_ASSERT(r == 1, end);
-			TEST_ASSERT(fp3_cmp(b, a) == CMP_EQ || fp3_cmp(c, a) == CMP_EQ, end);
+			TEST_ASSERT(fp3_cmp(b, a) == RLC_EQ || fp3_cmp(c, a) == RLC_EQ, end);
 		} TEST_END;
 	}
 	CATCH_ANY {
 		util_print("FATAL ERROR!\n");
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	fp3_free(a);
 	fp3_free(b);
@@ -1498,7 +1513,7 @@ static int square_root3(void) {
 
 static int memory6(void) {
 	err_t e;
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	fp6_t a;
 
 	fp6_null(a);
@@ -1517,14 +1532,14 @@ static int memory6(void) {
 		}
 	}
 	(void)a;
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	return code;
 }
 
 static int util6(void) {
-	int code = STS_ERR;
-	uint8_t bin[6 * FP_BYTES];
+	int code = RLC_ERR;
+	uint8_t bin[6 * RLC_FP_BYTES];
 	fp6_t a, b, c;
 	dig_t d;
 
@@ -1540,8 +1555,8 @@ static int util6(void) {
 		TEST_BEGIN("comparison is consistent") {
 			fp6_rand(a);
 			fp6_rand(b);
-			if (fp6_cmp(a, b) != CMP_EQ) {
-				TEST_ASSERT(fp6_cmp(b, a) == CMP_NE, end);
+			if (fp6_cmp(a, b) != RLC_EQ) {
+				TEST_ASSERT(fp6_cmp(b, a) == RLC_NE, end);
 			}
 		}
 		TEST_END;
@@ -1550,13 +1565,13 @@ static int util6(void) {
 			fp6_rand(a);
 			fp6_rand(b);
 			fp6_rand(c);
-			if (fp6_cmp(a, c) != CMP_EQ) {
+			if (fp6_cmp(a, c) != RLC_EQ) {
 				fp6_copy(c, a);
-				TEST_ASSERT(fp6_cmp(c, a) == CMP_EQ, end);
+				TEST_ASSERT(fp6_cmp(c, a) == RLC_EQ, end);
 			}
-			if (fp6_cmp(b, c) != CMP_EQ) {
+			if (fp6_cmp(b, c) != RLC_EQ) {
 				fp6_copy(c, b);
-				TEST_ASSERT(fp6_cmp(b, c) == CMP_EQ, end);
+				TEST_ASSERT(fp6_cmp(b, c) == RLC_EQ, end);
 			}
 		}
 		TEST_END;
@@ -1564,11 +1579,11 @@ static int util6(void) {
 		TEST_BEGIN("negation is consistent") {
 			fp6_rand(a);
 			fp6_neg(b, a);
-			if (fp6_cmp(a, b) != CMP_EQ) {
-				TEST_ASSERT(fp6_cmp(b, a) == CMP_NE, end);
+			if (fp6_cmp(a, b) != RLC_EQ) {
+				TEST_ASSERT(fp6_cmp(b, a) == RLC_NE, end);
 			}
 			fp6_neg(b, b);
-			TEST_ASSERT(fp6_cmp(a, b) == CMP_EQ, end);
+			TEST_ASSERT(fp6_cmp(a, b) == RLC_EQ, end);
 		}
 		TEST_END;
 
@@ -1577,8 +1592,8 @@ static int util6(void) {
 				fp6_rand(a);
 			} while (fp6_is_zero(a));
 			fp6_zero(c);
-			TEST_ASSERT(fp6_cmp(a, c) == CMP_NE, end);
-			TEST_ASSERT(fp6_cmp(c, a) == CMP_NE, end);
+			TEST_ASSERT(fp6_cmp(a, c) == RLC_NE, end);
+			TEST_ASSERT(fp6_cmp(c, a) == RLC_NE, end);
 		}
 		TEST_END;
 
@@ -1587,7 +1602,7 @@ static int util6(void) {
 				fp6_rand(a);
 			} while (fp6_is_zero(a));
 			fp6_zero(c);
-			TEST_ASSERT(fp6_cmp(a, c) == CMP_NE, end);
+			TEST_ASSERT(fp6_cmp(a, c) == RLC_NE, end);
 		}
 		TEST_END;
 
@@ -1598,9 +1613,9 @@ static int util6(void) {
 		TEST_END;
 
 		TEST_BEGIN("assignment to a constant and comparison are consistent") {
-			rand_bytes((uint8_t *)&d, (FP_DIGIT / 8));
+			rand_bytes((uint8_t *)&d, (RLC_DIG / 8));
 			fp6_set_dig(a, d);
-			TEST_ASSERT(fp6_cmp_dig(a, d) == CMP_EQ, end);
+			TEST_ASSERT(fp6_cmp_dig(a, d) == RLC_EQ, end);
 		}
 		TEST_END;
 
@@ -1608,20 +1623,20 @@ static int util6(void) {
 			fp6_rand(a);
 			fp6_write_bin(bin, sizeof(bin), a);
 			fp6_read_bin(b, bin, sizeof(bin));
-			TEST_ASSERT(fp6_cmp(a, b) == CMP_EQ, end);
+			TEST_ASSERT(fp6_cmp(a, b) == RLC_EQ, end);
 		}
 		TEST_END;
 
 		TEST_BEGIN("getting the size of a prime field element is correct") {
 			fp6_rand(a);
-			TEST_ASSERT(fp6_size_bin(a) == 6 * FP_BYTES, end);
+			TEST_ASSERT(fp6_size_bin(a) == 6 * RLC_FP_BYTES, end);
 		}
 		TEST_END;
 	}
 	CATCH_ANY {
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	fp6_free(a);
 	fp6_free(b);
@@ -1630,7 +1645,7 @@ static int util6(void) {
 }
 
 static int addition6(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	fp6_t a, b, c, d, e;
 
 	fp6_null(a);
@@ -1651,7 +1666,7 @@ static int addition6(void) {
 			fp6_rand(b);
 			fp6_add(d, a, b);
 			fp6_add(e, b, a);
-			TEST_ASSERT(fp6_cmp(d, e) == CMP_EQ, end);
+			TEST_ASSERT(fp6_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("addition is associative") {
@@ -1662,14 +1677,14 @@ static int addition6(void) {
 			fp6_add(d, d, c);
 			fp6_add(e, b, c);
 			fp6_add(e, a, e);
-			TEST_ASSERT(fp6_cmp(d, e) == CMP_EQ, end);
+			TEST_ASSERT(fp6_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("addition has identity") {
 			fp6_rand(a);
 			fp6_zero(d);
 			fp6_add(e, a, d);
-			TEST_ASSERT(fp6_cmp(e, a) == CMP_EQ, end);
+			TEST_ASSERT(fp6_cmp(e, a) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("addition has inverse") {
@@ -1683,7 +1698,7 @@ static int addition6(void) {
 		util_print("FATAL ERROR!\n");
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	fp6_free(a);
 	fp6_free(b);
@@ -1694,7 +1709,7 @@ static int addition6(void) {
 }
 
 static int subtraction6(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	fp6_t a, b, c, d;
 
 	fp6_null(a);
@@ -1714,7 +1729,7 @@ static int subtraction6(void) {
 			fp6_sub(c, a, b);
 			fp6_sub(d, b, a);
 			fp6_neg(d, d);
-			TEST_ASSERT(fp6_cmp(c, d) == CMP_EQ, end);
+			TEST_ASSERT(fp6_cmp(c, d) == RLC_EQ, end);
 		}
 		TEST_END;
 
@@ -1722,7 +1737,7 @@ static int subtraction6(void) {
 			fp6_rand(a);
 			fp6_zero(c);
 			fp6_sub(d, a, c);
-			TEST_ASSERT(fp6_cmp(d, a) == CMP_EQ, end);
+			TEST_ASSERT(fp6_cmp(d, a) == RLC_EQ, end);
 		}
 		TEST_END;
 
@@ -1737,7 +1752,7 @@ static int subtraction6(void) {
 		util_print("FATAL ERROR!\n");
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	fp6_free(a);
 	fp6_free(b);
@@ -1747,7 +1762,7 @@ static int subtraction6(void) {
 }
 
 static int doubling6(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	fp6_t a, b, c;
 
 	fp6_null(a);
@@ -1763,14 +1778,14 @@ static int doubling6(void) {
 			fp6_rand(a);
 			fp6_dbl(b, a);
 			fp6_add(c, a, a);
-			TEST_ASSERT(fp6_cmp(b, c) == CMP_EQ, end);
+			TEST_ASSERT(fp6_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 	}
 	CATCH_ANY {
 		util_print("FATAL ERROR!\n");
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	fp6_free(a);
 	fp6_free(b);
@@ -1779,7 +1794,7 @@ static int doubling6(void) {
 }
 
 static int multiplication6(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	fp6_t a, b, c, d, e, f;
 
 	fp6_null(a);
@@ -1802,7 +1817,7 @@ static int multiplication6(void) {
 			fp6_rand(b);
 			fp6_mul(d, a, b);
 			fp6_mul(e, b, a);
-			TEST_ASSERT(fp6_cmp(d, e) == CMP_EQ, end);
+			TEST_ASSERT(fp6_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("multiplication is associative") {
@@ -1813,7 +1828,7 @@ static int multiplication6(void) {
 			fp6_mul(d, d, c);
 			fp6_mul(e, b, c);
 			fp6_mul(e, a, e);
-			TEST_ASSERT(fp6_cmp(d, e) == CMP_EQ, end);
+			TEST_ASSERT(fp6_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("multiplication is distributive") {
@@ -1825,14 +1840,14 @@ static int multiplication6(void) {
 			fp6_mul(e, c, a);
 			fp6_mul(f, c, b);
 			fp6_add(e, e, f);
-			TEST_ASSERT(fp6_cmp(d, e) == CMP_EQ, end);
+			TEST_ASSERT(fp6_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("multiplication has identity") {
 			fp6_zero(d);
 			fp_set_dig(d[0][0], 1);
 			fp6_mul(e, a, d);
-			TEST_ASSERT(fp6_cmp(e, a) == CMP_EQ, end);
+			TEST_ASSERT(fp6_cmp(e, a) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("multiplication has zero property") {
@@ -1847,7 +1862,7 @@ static int multiplication6(void) {
 			fp_set_dig(b[1][0], 1);
 			fp6_mul(c, a, b);
 			fp6_mul_art(d, a);
-			TEST_ASSERT(fp6_cmp(c, d) == CMP_EQ, end);
+			TEST_ASSERT(fp6_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
 
 #if PP_EXT == BASIC | !defined(STRIP)
@@ -1856,7 +1871,7 @@ static int multiplication6(void) {
 			fp6_rand(b);
 			fp6_mul(c, a, b);
 			fp6_mul_basic(d, a, b);
-			TEST_ASSERT(fp6_cmp(c, d) == CMP_EQ, end);
+			TEST_ASSERT(fp6_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
 #endif
 
@@ -1866,7 +1881,7 @@ static int multiplication6(void) {
 			fp6_rand(b);
 			fp6_mul(c, a, b);
 			fp6_mul_lazyr(d, a, b);
-			TEST_ASSERT(fp6_cmp(c, d) == CMP_EQ, end);
+			TEST_ASSERT(fp6_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
 #endif
 	}
@@ -1874,7 +1889,7 @@ static int multiplication6(void) {
 		util_print("FATAL ERROR!\n");
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	fp6_free(a);
 	fp6_free(b);
@@ -1886,7 +1901,7 @@ static int multiplication6(void) {
 }
 
 static int squaring6(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	fp6_t a, b, c;
 
 	fp6_null(a);
@@ -1902,7 +1917,7 @@ static int squaring6(void) {
 			fp6_rand(a);
 			fp6_mul(b, a, a);
 			fp6_sqr(c, a);
-			TEST_ASSERT(fp6_cmp(b, c) == CMP_EQ, end);
+			TEST_ASSERT(fp6_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
 #if PP_EXT == BASIC | !defined(STRIP)
@@ -1910,7 +1925,7 @@ static int squaring6(void) {
 			fp6_rand(a);
 			fp6_sqr(b, a);
 			fp6_sqr_basic(c, a);
-			TEST_ASSERT(fp6_cmp(b, c) == CMP_EQ, end);
+			TEST_ASSERT(fp6_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 #endif
 
@@ -1919,7 +1934,7 @@ static int squaring6(void) {
 			fp6_rand(a);
 			fp6_sqr(b, a);
 			fp6_sqr_lazyr(c, a);
-			TEST_ASSERT(fp6_cmp(b, c) == CMP_EQ, end);
+			TEST_ASSERT(fp6_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 #endif
 	}
@@ -1927,7 +1942,7 @@ static int squaring6(void) {
 		util_print("FATAL ERROR!\n");
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	fp6_free(a);
 	fp6_free(b);
@@ -1936,7 +1951,7 @@ static int squaring6(void) {
 }
 
 static int inversion6(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	fp6_t a, b, c;
 
 	fp6_null(a);
@@ -1949,19 +1964,21 @@ static int inversion6(void) {
 		fp6_new(c);
 
 		TEST_BEGIN("inversion is correct") {
-			fp6_rand(a);
+			do {
+				fp6_rand(a);
+			} while (fp6_is_zero(a));
 			fp6_inv(b, a);
 			fp6_mul(c, a, b);
 			fp6_zero(b);
 			fp_set_dig(b[0][0], 1);
-			TEST_ASSERT(fp6_cmp(c, b) == CMP_EQ, end);
+			TEST_ASSERT(fp6_cmp(c, b) == RLC_EQ, end);
 		} TEST_END;
 	}
 	CATCH_ANY {
 		util_print("FATAL ERROR!\n");
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	fp6_free(a);
 	fp6_free(b);
@@ -1970,7 +1987,7 @@ static int inversion6(void) {
 }
 
 static int exponentiation6(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	fp6_t a, b, c;
 	bn_t d;
 
@@ -1989,28 +2006,28 @@ static int exponentiation6(void) {
 			fp6_rand(a);
 			bn_zero(d);
 			fp6_exp(c, a, d);
-			TEST_ASSERT(fp6_cmp_dig(c, 1) == CMP_EQ, end);
+			TEST_ASSERT(fp6_cmp_dig(c, 1) == RLC_EQ, end);
 			bn_set_dig(d, 1);
 			fp6_exp(c, a, d);
-			TEST_ASSERT(fp6_cmp(c, a) == CMP_EQ, end);
-			bn_rand(d, BN_POS, FP_BITS);
+			TEST_ASSERT(fp6_cmp(c, a) == RLC_EQ, end);
+			bn_rand(d, RLC_POS, RLC_FP_BITS);
 			fp6_exp(b, a, d);
 			bn_neg(d, d);
 			fp6_exp(c, a, d);
 			fp6_inv(c, c);
-			TEST_ASSERT(fp6_cmp(b, c) == CMP_EQ, end);
+			TEST_ASSERT(fp6_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("frobenius and exponentiation are consistent") {
 			fp6_rand(a);
 			fp6_frb(b, a, 0);
-			TEST_ASSERT(fp6_cmp(a, b) == CMP_EQ, end);
+			TEST_ASSERT(fp6_cmp(a, b) == RLC_EQ, end);
 			fp6_frb(b, a, 1);
-			d->sign = BN_POS;
-			d->used = FP_DIGS;
-			dv_copy(d->dp, fp_prime_get(), FP_DIGS);
+			d->sign = RLC_POS;
+			d->used = RLC_FP_DIGS;
+			dv_copy(d->dp, fp_prime_get(), RLC_FP_DIGS);
 			fp6_exp(c, a, d);
-			TEST_ASSERT(fp6_cmp(c, b) == CMP_EQ, end);
+			TEST_ASSERT(fp6_cmp(c, b) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("frobenius and squared frobenius are consistent") {
@@ -2018,14 +2035,14 @@ static int exponentiation6(void) {
 			fp6_frb(b, a, 1);
 			fp6_frb(b, b, 1);
 			fp6_frb(c, a, 2);
-			TEST_ASSERT(fp6_cmp(c, b) == CMP_EQ, end);
+			TEST_ASSERT(fp6_cmp(c, b) == RLC_EQ, end);
 		} TEST_END;
 	}
 	CATCH_ANY {
 		util_print("FATAL ERROR!\n");
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	fp6_free(a);
 	fp6_free(b);
@@ -2036,7 +2053,7 @@ static int exponentiation6(void) {
 
 static int memory12(void) {
 	err_t e;
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	fp12_t a;
 
 	fp12_null(a);
@@ -2055,14 +2072,14 @@ static int memory12(void) {
 		}
 	}
 	(void)a;
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	return code;
 }
 
 static int util12(void) {
-	int code = STS_ERR;
-	uint8_t bin[12 * FP_BYTES];
+	int code = RLC_ERR;
+	uint8_t bin[12 * RLC_FP_BYTES];
 	fp12_t a, b, c;
 	dig_t d;
 
@@ -2078,8 +2095,8 @@ static int util12(void) {
 		TEST_BEGIN("comparison is consistent") {
 			fp12_rand(a);
 			fp12_rand(b);
-			if (fp12_cmp(a, b) != CMP_EQ) {
-				TEST_ASSERT(fp12_cmp(b, a) == CMP_NE, end);
+			if (fp12_cmp(a, b) != RLC_EQ) {
+				TEST_ASSERT(fp12_cmp(b, a) == RLC_NE, end);
 			}
 		}
 		TEST_END;
@@ -2088,13 +2105,13 @@ static int util12(void) {
 			fp12_rand(a);
 			fp12_rand(b);
 			fp12_rand(c);
-			if (fp12_cmp(a, c) != CMP_EQ) {
+			if (fp12_cmp(a, c) != RLC_EQ) {
 				fp12_copy(c, a);
-				TEST_ASSERT(fp12_cmp(c, a) == CMP_EQ, end);
+				TEST_ASSERT(fp12_cmp(c, a) == RLC_EQ, end);
 			}
-			if (fp12_cmp(b, c) != CMP_EQ) {
+			if (fp12_cmp(b, c) != RLC_EQ) {
 				fp12_copy(c, b);
-				TEST_ASSERT(fp12_cmp(b, c) == CMP_EQ, end);
+				TEST_ASSERT(fp12_cmp(b, c) == RLC_EQ, end);
 			}
 		}
 		TEST_END;
@@ -2102,11 +2119,11 @@ static int util12(void) {
 		TEST_BEGIN("negation is consistent") {
 			fp12_rand(a);
 			fp12_neg(b, a);
-			if (fp12_cmp(a, b) != CMP_EQ) {
-				TEST_ASSERT(fp12_cmp(b, a) == CMP_NE, end);
+			if (fp12_cmp(a, b) != RLC_EQ) {
+				TEST_ASSERT(fp12_cmp(b, a) == RLC_NE, end);
 			}
 			fp12_neg(b, b);
-			TEST_ASSERT(fp12_cmp(a, b) == CMP_EQ, end);
+			TEST_ASSERT(fp12_cmp(a, b) == RLC_EQ, end);
 		}
 		TEST_END;
 
@@ -2115,8 +2132,8 @@ static int util12(void) {
 				fp12_rand(a);
 			} while (fp12_is_zero(a));
 			fp12_zero(c);
-			TEST_ASSERT(fp12_cmp(a, c) == CMP_NE, end);
-			TEST_ASSERT(fp12_cmp(c, a) == CMP_NE, end);
+			TEST_ASSERT(fp12_cmp(a, c) == RLC_NE, end);
+			TEST_ASSERT(fp12_cmp(c, a) == RLC_NE, end);
 		}
 		TEST_END;
 
@@ -2125,7 +2142,7 @@ static int util12(void) {
 				fp12_rand(a);
 			} while (fp12_is_zero(a));
 			fp12_zero(c);
-			TEST_ASSERT(fp12_cmp(a, c) == CMP_NE, end);
+			TEST_ASSERT(fp12_cmp(a, c) == RLC_NE, end);
 		}
 		TEST_END;
 
@@ -2136,9 +2153,9 @@ static int util12(void) {
 		TEST_END;
 
 		TEST_BEGIN("assignment to a constant and comparison are consistent") {
-			rand_bytes((uint8_t *)&d, (FP_DIGIT / 8));
+			rand_bytes((uint8_t *)&d, (RLC_DIG / 8));
 			fp12_set_dig(a, d);
-			TEST_ASSERT(fp12_cmp_dig(a, d) == CMP_EQ, end);
+			TEST_ASSERT(fp12_cmp_dig(a, d) == RLC_EQ, end);
 		}
 		TEST_END;
 
@@ -2146,26 +2163,26 @@ static int util12(void) {
 			fp12_rand(a);
 			fp12_write_bin(bin, sizeof(bin), a, 0);
 			fp12_read_bin(b, bin, sizeof(bin));
-			TEST_ASSERT(fp12_cmp(a, b) == CMP_EQ, end);
+			TEST_ASSERT(fp12_cmp(a, b) == RLC_EQ, end);
 			fp12_conv_cyc(a, a);
-			fp12_write_bin(bin, 8 * FP_BYTES, a, 1);
-			fp12_read_bin(b, bin, 8 * FP_BYTES);
-			TEST_ASSERT(fp12_cmp(a, b) == CMP_EQ, end);
+			fp12_write_bin(bin, 8 * RLC_FP_BYTES, a, 1);
+			fp12_read_bin(b, bin, 8 * RLC_FP_BYTES);
+			TEST_ASSERT(fp12_cmp(a, b) == RLC_EQ, end);
 		}
 		TEST_END;
 
 		TEST_BEGIN("getting the size of a finite field element is correct") {
 			fp12_rand(a);
-			TEST_ASSERT(fp12_size_bin(a, 0) == 12 * FP_BYTES, end);
+			TEST_ASSERT(fp12_size_bin(a, 0) == 12 * RLC_FP_BYTES, end);
 			fp12_conv_cyc(a, a);
-			TEST_ASSERT(fp12_size_bin(a, 1) == 8 * FP_BYTES, end);
+			TEST_ASSERT(fp12_size_bin(a, 1) == 8 * RLC_FP_BYTES, end);
 		}
 		TEST_END;
 	}
 	CATCH_ANY {
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	fp12_free(a);
 	fp12_free(b);
@@ -2174,7 +2191,7 @@ static int util12(void) {
 }
 
 static int addition12(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	fp12_t a, b, c, d, e;
 
 	fp12_null(a);
@@ -2195,7 +2212,7 @@ static int addition12(void) {
 			fp12_rand(b);
 			fp12_add(d, a, b);
 			fp12_add(e, b, a);
-			TEST_ASSERT(fp12_cmp(d, e) == CMP_EQ, end);
+			TEST_ASSERT(fp12_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("addition is associative") {
@@ -2206,14 +2223,14 @@ static int addition12(void) {
 			fp12_add(d, d, c);
 			fp12_add(e, b, c);
 			fp12_add(e, a, e);
-			TEST_ASSERT(fp12_cmp(d, e) == CMP_EQ, end);
+			TEST_ASSERT(fp12_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("addition has identity") {
 			fp12_rand(a);
 			fp12_zero(d);
 			fp12_add(e, a, d);
-			TEST_ASSERT(fp12_cmp(e, a) == CMP_EQ, end);
+			TEST_ASSERT(fp12_cmp(e, a) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("addition has inverse") {
@@ -2227,7 +2244,7 @@ static int addition12(void) {
 		util_print("FATAL ERROR!\n");
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	fp12_free(a);
 	fp12_free(b);
@@ -2238,7 +2255,7 @@ static int addition12(void) {
 }
 
 static int subtraction12(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	fp12_t a, b, c, d;
 
 	fp12_null(a);
@@ -2258,7 +2275,7 @@ static int subtraction12(void) {
 			fp12_sub(c, a, b);
 			fp12_sub(d, b, a);
 			fp12_neg(d, d);
-			TEST_ASSERT(fp12_cmp(c, d) == CMP_EQ, end);
+			TEST_ASSERT(fp12_cmp(c, d) == RLC_EQ, end);
 		}
 		TEST_END;
 
@@ -2266,7 +2283,7 @@ static int subtraction12(void) {
 			fp12_rand(a);
 			fp12_zero(c);
 			fp12_sub(d, a, c);
-			TEST_ASSERT(fp12_cmp(d, a) == CMP_EQ, end);
+			TEST_ASSERT(fp12_cmp(d, a) == RLC_EQ, end);
 		}
 		TEST_END;
 
@@ -2281,7 +2298,7 @@ static int subtraction12(void) {
 		util_print("FATAL ERROR!\n");
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	fp12_free(a);
 	fp12_free(b);
@@ -2291,7 +2308,7 @@ static int subtraction12(void) {
 }
 
 static int multiplication12(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	fp12_t a, b, c, d, e, f;
 
 	fp12_null(a);
@@ -2314,7 +2331,7 @@ static int multiplication12(void) {
 			fp12_rand(b);
 			fp12_mul(d, a, b);
 			fp12_mul(e, b, a);
-			TEST_ASSERT(fp12_cmp(d, e) == CMP_EQ, end);
+			TEST_ASSERT(fp12_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("multiplication is associative") {
@@ -2325,7 +2342,7 @@ static int multiplication12(void) {
 			fp12_mul(d, d, c);
 			fp12_mul(e, b, c);
 			fp12_mul(e, a, e);
-			TEST_ASSERT(fp12_cmp(d, e) == CMP_EQ, end);
+			TEST_ASSERT(fp12_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("multiplication is distributive") {
@@ -2337,14 +2354,14 @@ static int multiplication12(void) {
 			fp12_mul(e, c, a);
 			fp12_mul(f, c, b);
 			fp12_add(e, e, f);
-			TEST_ASSERT(fp12_cmp(d, e) == CMP_EQ, end);
+			TEST_ASSERT(fp12_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("multiplication has identity") {
 			fp12_zero(d);
 			fp_set_dig(d[0][0][0], 1);
 			fp12_mul(e, a, d);
-			TEST_ASSERT(fp12_cmp(e, a) == CMP_EQ, end);
+			TEST_ASSERT(fp12_cmp(e, a) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("multiplication has zero property") {
@@ -2359,7 +2376,7 @@ static int multiplication12(void) {
 			fp12_rand(b);
 			fp12_mul(c, a, b);
 			fp12_mul_basic(d, a, b);
-			TEST_ASSERT(fp12_cmp(c, d) == CMP_EQ, end);
+			TEST_ASSERT(fp12_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
 #endif
 
@@ -2369,7 +2386,7 @@ static int multiplication12(void) {
 			fp12_rand(b);
 			fp12_mul(c, a, b);
 			fp12_mul_lazyr(d, a, b);
-			TEST_ASSERT(fp12_cmp(c, d) == CMP_EQ, end);
+			TEST_ASSERT(fp12_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
 #endif
 
@@ -2385,7 +2402,7 @@ static int multiplication12(void) {
 			fp2_zero(b[1][2]);
 			fp12_mul(c, a, b);
 			fp12_mul_dxs(d, a, b);
-			TEST_ASSERT(fp12_cmp(c, d) == CMP_EQ, end);
+			TEST_ASSERT(fp12_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
 
 #if PP_EXT == BASIC | !defined(STRIP)
@@ -2397,7 +2414,7 @@ static int multiplication12(void) {
 			fp2_zero(b[1][2]);
 			fp12_mul_dxs(c, a, b);
 			fp12_mul_dxs_basic(d, a, b);
-			TEST_ASSERT(fp12_cmp(c, d) == CMP_EQ, end);
+			TEST_ASSERT(fp12_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
 #endif
 
@@ -2410,14 +2427,14 @@ static int multiplication12(void) {
 			fp2_zero(b[1][2]);
 			fp12_mul_dxs(c, a, b);
 			fp12_mul_dxs_lazyr(d, a, b);
-			TEST_ASSERT(fp12_cmp(c, d) == CMP_EQ, end);
+			TEST_ASSERT(fp12_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
 #endif
 	} CATCH_ANY {
 		util_print("FATAL ERROR!\n");
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	fp12_free(a);
 	fp12_free(b);
@@ -2429,7 +2446,7 @@ static int multiplication12(void) {
 }
 
 static int squaring12(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	fp12_t a, b, c;
 
 	fp12_null(a);
@@ -2445,7 +2462,7 @@ static int squaring12(void) {
 			fp12_rand(a);
 			fp12_mul(b, a, a);
 			fp12_sqr(c, a);
-			TEST_ASSERT(fp12_cmp(b, c) == CMP_EQ, end);
+			TEST_ASSERT(fp12_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
 #if PP_EXT == BASIC | !defined(STRIP)
@@ -2453,7 +2470,7 @@ static int squaring12(void) {
 			fp12_rand(a);
 			fp12_sqr(b, a);
 			fp12_sqr_basic(c, a);
-			TEST_ASSERT(fp12_cmp(b, c) == CMP_EQ, end);
+			TEST_ASSERT(fp12_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 #endif
 
@@ -2462,7 +2479,7 @@ static int squaring12(void) {
 			fp12_rand(a);
 			fp12_sqr(b, a);
 			fp12_sqr_lazyr(c, a);
-			TEST_ASSERT(fp12_cmp(b, c) == CMP_EQ, end);
+			TEST_ASSERT(fp12_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 #endif
 	}
@@ -2470,7 +2487,7 @@ static int squaring12(void) {
 		util_print("FATAL ERROR!\n");
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	fp12_free(a);
 	fp12_free(b);
@@ -2479,7 +2496,7 @@ static int squaring12(void) {
 }
 
 static int cyclotomic12(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	fp12_t a, b, c, d[2], e[2];
 	bn_t f;
 
@@ -2511,7 +2528,7 @@ static int cyclotomic12(void) {
 			fp12_rand(a);
 			fp12_conv_cyc(a, a);
 			fp12_back_cyc(c, a);
-			TEST_ASSERT(fp12_cmp(a, c) == CMP_EQ, end);
+			TEST_ASSERT(fp12_cmp(a, c) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("simultaneous compression in cyclotomic subgroup is correct") {
@@ -2520,8 +2537,8 @@ static int cyclotomic12(void) {
 			fp12_conv_cyc(d[0], d[0]);
 			fp12_conv_cyc(d[1], d[1]);
 			fp12_back_cyc_sim(e, d, 2);
-			TEST_ASSERT(fp12_cmp(d[0], e[0]) == CMP_EQ &&
-					fp12_cmp(d[1], e[1]) == CMP_EQ, end);
+			TEST_ASSERT(fp12_cmp(d[0], e[0]) == RLC_EQ &&
+					fp12_cmp(d[1], e[1]) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("cyclotomic squaring is correct") {
@@ -2529,7 +2546,7 @@ static int cyclotomic12(void) {
 			fp12_conv_cyc(a, a);
 			fp12_sqr(b, a);
 			fp12_sqr_cyc(c, a);
-			TEST_ASSERT(fp12_cmp(b, c) == CMP_EQ, end);
+			TEST_ASSERT(fp12_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
 #if PP_EXT == BASIC || !defined(STRIP)
@@ -2538,7 +2555,7 @@ static int cyclotomic12(void) {
 			fp12_conv_cyc(a, a);
 			fp12_sqr_cyc(b, a);
 			fp12_sqr_cyc_basic(c, a);
-			TEST_ASSERT(fp12_cmp(b, c) == CMP_EQ, end);
+			TEST_ASSERT(fp12_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 #endif
 
@@ -2548,7 +2565,7 @@ static int cyclotomic12(void) {
 			fp12_conv_cyc(a, a);
 			fp12_sqr_cyc(b, a);
 			fp12_sqr_cyc_lazyr(c, a);
-			TEST_ASSERT(fp12_cmp(b, c) == CMP_EQ, end);
+			TEST_ASSERT(fp12_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 #endif
 
@@ -2562,7 +2579,7 @@ static int cyclotomic12(void) {
 			fp12_sqr(b, a);
 			fp12_sqr_pck(c, a);
 			fp12_back_cyc(c, c);
-			TEST_ASSERT(fp12_cmp(b, c) == CMP_EQ, end);
+			TEST_ASSERT(fp12_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
 #if PP_EXT == BASIC || !defined(STRIP)
@@ -2575,7 +2592,7 @@ static int cyclotomic12(void) {
 			fp2_zero(c[1][1]);
 			fp12_sqr_pck(b, a);
 			fp12_sqr_pck_basic(c, a);
-			TEST_ASSERT(fp12_cmp(b, c) == CMP_EQ, end);
+			TEST_ASSERT(fp12_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 #endif
 
@@ -2589,7 +2606,7 @@ static int cyclotomic12(void) {
 			fp2_zero(c[1][1]);
 			fp12_sqr_pck(b, a);
 			fp12_sqr_pck_lazyr(c, a);
-			TEST_ASSERT(fp12_cmp(b, c) == CMP_EQ, end);
+			TEST_ASSERT(fp12_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 #endif
 
@@ -2598,54 +2615,54 @@ static int cyclotomic12(void) {
 			fp12_conv_cyc(a, a);
 			bn_zero(f);
 			fp12_exp_cyc(c, a, f);
-			TEST_ASSERT(fp12_cmp_dig(c, 1) == CMP_EQ, end);
+			TEST_ASSERT(fp12_cmp_dig(c, 1) == RLC_EQ, end);
 			bn_set_dig(f, 1);
 			fp12_exp_cyc(c, a, f);
-			TEST_ASSERT(fp12_cmp(c, a) == CMP_EQ, end);
-			bn_rand(f, BN_POS, FP_BITS);
+			TEST_ASSERT(fp12_cmp(c, a) == RLC_EQ, end);
+			bn_rand(f, RLC_POS, RLC_FP_BITS);
 			fp12_exp(b, a, f);
 			fp12_exp_cyc(c, a, f);
-			TEST_ASSERT(fp12_cmp(b, c) == CMP_EQ, end);
-			bn_rand(f, BN_POS, FP_BITS);
+			TEST_ASSERT(fp12_cmp(b, c) == RLC_EQ, end);
+			bn_rand(f, RLC_POS, RLC_FP_BITS);
 			fp12_exp_cyc(b, a, f);
 			bn_neg(f, f);
 			fp12_exp_cyc(c, a, f);
 			fp12_inv_uni(c, c);
-			TEST_ASSERT(fp12_cmp(b, c) == CMP_EQ, end);
+			TEST_ASSERT(fp12_cmp(b, c) == RLC_EQ, end);
         } TEST_END;
 
 		TEST_BEGIN("sparse cyclotomic exponentiation is correct") {
-			int g[3] = {0, 0, FP_BITS - 1};
+			int g[3] = {0, 0, RLC_FP_BITS - 1};
 			do {
-				bn_rand(f, BN_POS, BN_DIGIT);
-				g[1] = f->dp[0] % FP_BITS;
-			} while (g[1] == 0 || g[1] == FP_BITS - 1);
-			bn_set_2b(f, FP_BITS - 1);
+				bn_rand(f, RLC_POS, RLC_DIG);
+				g[1] = f->dp[0] % RLC_FP_BITS;
+			} while (g[1] == 0 || g[1] == RLC_FP_BITS - 1);
+			bn_set_2b(f, RLC_FP_BITS - 1);
 			bn_set_bit(f, g[1], 1);
 			bn_set_bit(f, 0, 1);
 			fp12_rand(a);
 			fp12_conv_cyc(a, a);
 			fp12_exp(b, a, f);
 			fp12_exp_cyc_sps(c, a, g, 3);
-			TEST_ASSERT(fp12_cmp(b, c) == CMP_EQ, end);
+			TEST_ASSERT(fp12_cmp(b, c) == RLC_EQ, end);
 			g[0] = 0;
 			fp12_exp_cyc_sps(c, a, g, 0);
-			TEST_ASSERT(fp12_cmp_dig(c, 1) == CMP_EQ, end);
+			TEST_ASSERT(fp12_cmp_dig(c, 1) == RLC_EQ, end);
 			g[0] = 0;
 			fp12_exp_cyc_sps(c, a, g, 1);
-			TEST_ASSERT(fp12_cmp(c, a) == CMP_EQ, end);
+			TEST_ASSERT(fp12_cmp(c, a) == RLC_EQ, end);
 			g[0] = -1;
 			fp12_exp_cyc_sps(b, a, g, 1);
 			fp12_inv(b, b);
 			fp12_sqr_cyc(c, a);
-			TEST_ASSERT(fp12_cmp(b, c) == CMP_EQ, end);
+			TEST_ASSERT(fp12_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 	}
 	CATCH_ANY {
 		util_print("FATAL ERROR!\n");
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	fp12_free(a);
 	fp12_free(b);
@@ -2659,7 +2676,7 @@ static int cyclotomic12(void) {
 }
 
 static int inversion12(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	fp12_t a, b, c;
 
 	fp12_null(a);
@@ -2672,27 +2689,31 @@ static int inversion12(void) {
 		fp12_new(c);
 
 		TEST_BEGIN("inversion is correct") {
-			fp12_rand(a);
+			do {
+				fp12_rand(a);
+			} while (fp12_is_zero(a));
 			fp12_inv(b, a);
 			fp12_mul(c, a, b);
 			fp12_zero(b);
 			fp_set_dig(b[0][0][0], 1);
-			TEST_ASSERT(fp12_cmp(c, b) == CMP_EQ, end);
+			TEST_ASSERT(fp12_cmp(c, b) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("inversion of a unitary element is correct") {
-			fp12_rand(a);
+			do {
+				fp12_rand(a);
+			} while (fp12_is_zero(a));
 			fp12_conv_uni(a, a);
 			fp12_inv(b, a);
 			fp12_inv_uni(c, a);
-			TEST_ASSERT(fp12_cmp(b, c) == CMP_EQ, end);
+			TEST_ASSERT(fp12_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 	}
 	CATCH_ANY {
 		util_print("FATAL ERROR!\n");
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	fp12_free(a);
 	fp12_free(b);
@@ -2701,7 +2722,7 @@ static int inversion12(void) {
 }
 
 static int exponentiation12(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	fp12_t a, b, c;
 	bn_t d;
 
@@ -2720,28 +2741,28 @@ static int exponentiation12(void) {
 			fp12_rand(a);
 			bn_zero(d);
 			fp12_exp(c, a, d);
-			TEST_ASSERT(fp12_cmp_dig(c, 1) == CMP_EQ, end);
+			TEST_ASSERT(fp12_cmp_dig(c, 1) == RLC_EQ, end);
 			bn_set_dig(d, 1);
 			fp12_exp(c, a, d);
-			TEST_ASSERT(fp12_cmp(c, a) == CMP_EQ, end);
-			bn_rand(d, BN_POS, FP_BITS);
+			TEST_ASSERT(fp12_cmp(c, a) == RLC_EQ, end);
+			bn_rand(d, RLC_POS, RLC_FP_BITS);
 			fp12_exp(b, a, d);
 			bn_neg(d, d);
 			fp12_exp(c, a, d);
 			fp12_inv(c, c);
-			TEST_ASSERT(fp12_cmp(b, c) == CMP_EQ, end);
+			TEST_ASSERT(fp12_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("frobenius and exponentiation are consistent") {
 			fp12_rand(a);
 			fp12_frb(b, a, 0);
-			TEST_ASSERT(fp12_cmp(a, b) == CMP_EQ, end);
+			TEST_ASSERT(fp12_cmp(a, b) == RLC_EQ, end);
 			fp12_frb(b, a, 1);
-			d->sign = BN_POS;
-			d->used = FP_DIGS;
-			dv_copy(d->dp, fp_prime_get(), FP_DIGS);
+			d->sign = RLC_POS;
+			d->used = RLC_FP_DIGS;
+			dv_copy(d->dp, fp_prime_get(), RLC_FP_DIGS);
 			fp12_exp(c, a, d);
-			TEST_ASSERT(fp12_cmp(c, b) == CMP_EQ, end);
+			TEST_ASSERT(fp12_cmp(c, b) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("frobenius and squared frobenius are consistent") {
@@ -2749,7 +2770,7 @@ static int exponentiation12(void) {
 			fp12_frb(b, a, 1);
 			fp12_frb(b, b, 1);
 			fp12_frb(c, a, 2);
-			TEST_ASSERT(fp12_cmp(c, b) == CMP_EQ, end);
+			TEST_ASSERT(fp12_cmp(c, b) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("frobenius and cubed frobenius are consistent") {
@@ -2758,14 +2779,14 @@ static int exponentiation12(void) {
 			fp12_frb(b, b, 1);
 			fp12_frb(b, b, 1);
 			fp12_frb(c, a, 3);
-			TEST_ASSERT(fp12_cmp(c, b) == CMP_EQ, end);
+			TEST_ASSERT(fp12_cmp(c, b) == RLC_EQ, end);
 		} TEST_END;
 	}
 	CATCH_ANY {
 		util_print("FATAL ERROR!\n");
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	fp12_free(a);
 	fp12_free(b);
@@ -2775,7 +2796,7 @@ static int exponentiation12(void) {
 }
 
 static int compression12(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	fp12_t a, b, c;
 
 	fp12_null(a);
@@ -2791,19 +2812,19 @@ static int compression12(void) {
 			fp12_rand(a);
 			fp12_pck(b, a);
 			TEST_ASSERT(fp12_upk(c, b) == 1, end);
-			TEST_ASSERT(fp12_cmp(a, c) == CMP_EQ, end);
+			TEST_ASSERT(fp12_cmp(a, c) == RLC_EQ, end);
 			fp12_rand(a);
 			fp12_conv_cyc(a, a);
 			fp12_pck(b, a);
 			TEST_ASSERT(fp12_upk(c, b) == 1, end);
-			TEST_ASSERT(fp12_cmp(a, c) == CMP_EQ, end);
+			TEST_ASSERT(fp12_cmp(a, c) == RLC_EQ, end);
 		} TEST_END;
 	}
 	CATCH_ANY {
 		util_print("FATAL ERROR!\n");
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	fp12_free(a);
 	fp12_free(b);
@@ -2813,7 +2834,7 @@ static int compression12(void) {
 
 static int memory18(void) {
 	err_t e;
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	fp18_t a;
 
 	fp18_null(a);
@@ -2832,13 +2853,13 @@ static int memory18(void) {
 		}
 	}
 	(void)a;
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	return code;
 }
 
 static int util18(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	fp18_t a, b, c;
 	dig_t d;
 
@@ -2854,8 +2875,8 @@ static int util18(void) {
 		TEST_BEGIN("comparison is consistent") {
 			fp18_rand(a);
 			fp18_rand(b);
-			if (fp18_cmp(a, b) != CMP_EQ) {
-				TEST_ASSERT(fp18_cmp(b, a) == CMP_NE, end);
+			if (fp18_cmp(a, b) != RLC_EQ) {
+				TEST_ASSERT(fp18_cmp(b, a) == RLC_NE, end);
 			}
 		}
 		TEST_END;
@@ -2864,13 +2885,13 @@ static int util18(void) {
 			fp18_rand(a);
 			fp18_rand(b);
 			fp18_rand(c);
-			if (fp18_cmp(a, c) != CMP_EQ) {
+			if (fp18_cmp(a, c) != RLC_EQ) {
 				fp18_copy(c, a);
-				TEST_ASSERT(fp18_cmp(c, a) == CMP_EQ, end);
+				TEST_ASSERT(fp18_cmp(c, a) == RLC_EQ, end);
 			}
-			if (fp18_cmp(b, c) != CMP_EQ) {
+			if (fp18_cmp(b, c) != RLC_EQ) {
 				fp18_copy(c, b);
-				TEST_ASSERT(fp18_cmp(b, c) == CMP_EQ, end);
+				TEST_ASSERT(fp18_cmp(b, c) == RLC_EQ, end);
 			}
 		}
 		TEST_END;
@@ -2878,11 +2899,11 @@ static int util18(void) {
 		TEST_BEGIN("negation is consistent") {
 			fp18_rand(a);
 			fp18_neg(b, a);
-			if (fp18_cmp(a, b) != CMP_EQ) {
-				TEST_ASSERT(fp18_cmp(b, a) == CMP_NE, end);
+			if (fp18_cmp(a, b) != RLC_EQ) {
+				TEST_ASSERT(fp18_cmp(b, a) == RLC_NE, end);
 			}
 			fp18_neg(b, b);
-			TEST_ASSERT(fp18_cmp(a, b) == CMP_EQ, end);
+			TEST_ASSERT(fp18_cmp(a, b) == RLC_EQ, end);
 		}
 		TEST_END;
 
@@ -2893,8 +2914,8 @@ static int util18(void) {
 			fp18_zero(c);
 			fp18_print(a);
 			fp18_print(c);
-			TEST_ASSERT(fp18_cmp(a, c) == CMP_NE, end);
-			TEST_ASSERT(fp18_cmp(c, a) == CMP_NE, end);
+			TEST_ASSERT(fp18_cmp(a, c) == RLC_NE, end);
+			TEST_ASSERT(fp18_cmp(c, a) == RLC_NE, end);
 		}
 		TEST_END;
 
@@ -2903,8 +2924,8 @@ static int util18(void) {
 				fp18_rand(a);
 			} while (fp18_is_zero(a));
 			fp18_zero(c);
-			TEST_ASSERT(fp18_cmp(a, c) == CMP_NE, end);
-			TEST_ASSERT(fp18_cmp(c, a) == CMP_NE, end);
+			TEST_ASSERT(fp18_cmp(a, c) == RLC_NE, end);
+			TEST_ASSERT(fp18_cmp(c, a) == RLC_NE, end);
 		}
 		TEST_END;
 
@@ -2914,7 +2935,7 @@ static int util18(void) {
 				fp18_rand(a);
 			} while (fp18_is_zero(a));
 			fp18_zero(c);
-			TEST_ASSERT(fp18_cmp(a, c) == CMP_NE, end);
+			TEST_ASSERT(fp18_cmp(a, c) == RLC_NE, end);
 		}
 		TEST_END;
 
@@ -2925,16 +2946,16 @@ static int util18(void) {
 		TEST_END;
 
 		TEST_BEGIN("assignment to a constant and comparison are consistent") {
-			rand_bytes((uint8_t *)&d, (FP_DIGIT / 8));
+			rand_bytes((uint8_t *)&d, (RLC_DIG / 8));
 			fp18_set_dig(a, d);
-			TEST_ASSERT(fp18_cmp_dig(a, d) == CMP_EQ, end);
+			TEST_ASSERT(fp18_cmp_dig(a, d) == RLC_EQ, end);
 		}
 		TEST_END;
 	}
 	CATCH_ANY {
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	fp18_free(a);
 	fp18_free(b);
@@ -2943,7 +2964,7 @@ static int util18(void) {
 }
 
 static int addition18(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	fp18_t a, b, c, d, e;
 
 	fp18_null(a);
@@ -2964,7 +2985,7 @@ static int addition18(void) {
 			fp18_rand(b);
 			fp18_add(d, a, b);
 			fp18_add(e, b, a);
-			TEST_ASSERT(fp18_cmp(d, e) == CMP_EQ, end);
+			TEST_ASSERT(fp18_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("addition is associative") {
@@ -2975,14 +2996,14 @@ static int addition18(void) {
 			fp18_add(d, d, c);
 			fp18_add(e, b, c);
 			fp18_add(e, a, e);
-			TEST_ASSERT(fp18_cmp(d, e) == CMP_EQ, end);
+			TEST_ASSERT(fp18_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("addition has identity") {
 			fp18_rand(a);
 			fp18_zero(d);
 			fp18_add(e, a, d);
-			TEST_ASSERT(fp18_cmp(e, a) == CMP_EQ, end);
+			TEST_ASSERT(fp18_cmp(e, a) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("addition has inverse") {
@@ -2996,7 +3017,7 @@ static int addition18(void) {
 		util_print("FATAL ERROR!\n");
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	fp18_free(a);
 	fp18_free(b);
@@ -3007,7 +3028,7 @@ static int addition18(void) {
 }
 
 static int subtraction18(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	fp18_t a, b, c, d;
 
 	TRY {
@@ -3022,7 +3043,7 @@ static int subtraction18(void) {
 			fp18_sub(c, a, b);
 			fp18_sub(d, b, a);
 			fp18_neg(d, d);
-			TEST_ASSERT(fp18_cmp(c, d) == CMP_EQ, end);
+			TEST_ASSERT(fp18_cmp(c, d) == RLC_EQ, end);
 		}
 		TEST_END;
 
@@ -3030,7 +3051,7 @@ static int subtraction18(void) {
 			fp18_rand(a);
 			fp18_zero(c);
 			fp18_sub(d, a, c);
-			TEST_ASSERT(fp18_cmp(d, a) == CMP_EQ, end);
+			TEST_ASSERT(fp18_cmp(d, a) == RLC_EQ, end);
 		}
 		TEST_END;
 
@@ -3045,7 +3066,7 @@ static int subtraction18(void) {
 		util_print("FATAL ERROR!\n");
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	fp18_free(a);
 	fp18_free(b);
@@ -3055,7 +3076,7 @@ static int subtraction18(void) {
 }
 
 static int multiplication18(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	fp18_t a, b, c, d, e, f;
 
 	TRY {
@@ -3071,7 +3092,7 @@ static int multiplication18(void) {
 			fp18_rand(b);
 			fp18_mul(d, a, b);
 			fp18_mul(e, b, a);
-			TEST_ASSERT(fp18_cmp(d, e) == CMP_EQ, end);
+			TEST_ASSERT(fp18_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("multiplication is associative") {
@@ -3082,7 +3103,7 @@ static int multiplication18(void) {
 			fp18_mul(d, d, c);
 			fp18_mul(e, b, c);
 			fp18_mul(e, a, e);
-			TEST_ASSERT(fp18_cmp(d, e) == CMP_EQ, end);
+			TEST_ASSERT(fp18_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("multiplication is distributive") {
@@ -3094,14 +3115,14 @@ static int multiplication18(void) {
 			fp18_mul(e, c, a);
 			fp18_mul(f, c, b);
 			fp18_add(e, e, f);
-			TEST_ASSERT(fp18_cmp(d, e) == CMP_EQ, end);
+			TEST_ASSERT(fp18_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("multiplication has identity") {
 			fp18_zero(d);
 			fp_set_dig(d[0][0][0], 1);
 			fp18_mul(e, a, d);
-			TEST_ASSERT(fp18_cmp(e, a) == CMP_EQ, end);
+			TEST_ASSERT(fp18_cmp(e, a) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("multiplication has zero property") {
@@ -3116,7 +3137,7 @@ static int multiplication18(void) {
 			fp18_rand(b);
 			fp18_mul(c, a, b);
 			fp18_mul_basic(d, a, b);
-			TEST_ASSERT(fp18_cmp(c, d) == CMP_EQ, end);
+			TEST_ASSERT(fp18_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
 #endif
 
@@ -3126,14 +3147,14 @@ static int multiplication18(void) {
 			fp18_rand(b);
 			fp18_mul(c, a, b);
 			fp18_mul_lazyr(d, a, b);
-			TEST_ASSERT(fp18_cmp(c, d) == CMP_EQ, end);
+			TEST_ASSERT(fp18_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
 #endif
 	} CATCH_ANY {
 		util_print("FATAL ERROR!\n");
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	fp18_free(a);
 	fp18_free(b);
@@ -3145,7 +3166,7 @@ static int multiplication18(void) {
 }
 
 static int squaring18(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	fp18_t a, b, c;
 
 	fp18_null(a);
@@ -3161,7 +3182,7 @@ static int squaring18(void) {
 			fp18_rand(a);
 			fp18_mul(b, a, a);
 			fp18_sqr(c, a);
-			TEST_ASSERT(fp18_cmp(b, c) == CMP_EQ, end);
+			TEST_ASSERT(fp18_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
 #if PP_EXT == BASIC | !defined(STRIP)
@@ -3169,7 +3190,7 @@ static int squaring18(void) {
 			fp18_rand(a);
 			fp18_sqr(b, a);
 			fp18_sqr_basic(c, a);
-			TEST_ASSERT(fp18_cmp(b, c) == CMP_EQ, end);
+			TEST_ASSERT(fp18_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 #endif
 
@@ -3178,7 +3199,7 @@ static int squaring18(void) {
 			fp18_rand(a);
 			fp18_sqr(b, a);
 			fp18_sqr_lazyr(c, a);
-			TEST_ASSERT(fp18_cmp(b, c) == CMP_EQ, end);
+			TEST_ASSERT(fp18_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 #endif
 	}
@@ -3186,7 +3207,7 @@ static int squaring18(void) {
 		util_print("FATAL ERROR!\n");
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	fp18_free(a);
 	fp18_free(b);
@@ -3195,7 +3216,7 @@ static int squaring18(void) {
 }
 
 static int cyclotomic18(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	fp18_t a, b, c, d[2], e[2];
 	bn_t f;
 
@@ -3228,7 +3249,7 @@ static int cyclotomic18(void) {
 			fp18_rand(a);
 			fp18_conv_cyc(a, a);
 			fp18_back_cyc(c, a);
-			TEST_ASSERT(fp18_cmp(a, c) == CMP_EQ, end);
+			TEST_ASSERT(fp18_cmp(a, c) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("simultaneous compression in cyclotomic subgroup is correct") {
@@ -3237,8 +3258,8 @@ static int cyclotomic18(void) {
 			fp18_conv_cyc(d[0], d[0]);
 			fp18_conv_cyc(d[1], d[1]);
 			fp18_back_cyc_sim(e, d, 2);
-			TEST_ASSERT(fp18_cmp(d[0], e[0]) == CMP_EQ &&
-					fp18_cmp(d[1], e[1]) == CMP_EQ, end);
+			TEST_ASSERT(fp18_cmp(d[0], e[0]) == RLC_EQ &&
+					fp18_cmp(d[1], e[1]) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("cyclotomic squaring is correct") {
@@ -3246,7 +3267,7 @@ static int cyclotomic18(void) {
 			fp18_conv_cyc(a, a);
 			fp18_sqr(b, a);
 			fp18_sqr_cyc(c, a);
-			TEST_ASSERT(fp18_cmp(b, c) == CMP_EQ, end);
+			TEST_ASSERT(fp18_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("compressed squaring is correct") {
@@ -3259,62 +3280,62 @@ static int cyclotomic18(void) {
 			fp18_sqr(b, a);
 			fp18_sqr_pck(c, a);
 			fp18_back_cyc(c, c);
-			TEST_ASSERT(fp18_cmp(b, c) == CMP_EQ, end);
+			TEST_ASSERT(fp18_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
         TEST_BEGIN("cyclotomic exponentiation is correct") {
-			bn_rand(f, BN_POS, FP_BITS);
+			bn_rand(f, RLC_POS, RLC_FP_BITS);
 			fp18_rand(a);
 			fp18_conv_cyc(a, a);
 			fp18_exp(b, a, f);
 			fp18_exp_cyc(c, a, f);
-			TEST_ASSERT(fp18_cmp(b, c) == CMP_EQ, end);
+			TEST_ASSERT(fp18_cmp(b, c) == RLC_EQ, end);
 			bn_zero(f);
 			fp18_exp_cyc(c, a, f);
-			TEST_ASSERT(fp18_cmp_dig(c, 1) == CMP_EQ, end);
+			TEST_ASSERT(fp18_cmp_dig(c, 1) == RLC_EQ, end);
 			bn_set_dig(f, 1);
 			fp18_exp_cyc(c, a, f);
-			TEST_ASSERT(fp18_cmp(c, a) == CMP_EQ, end);
-			bn_rand(f, BN_POS, FP_BITS);
+			TEST_ASSERT(fp18_cmp(c, a) == RLC_EQ, end);
+			bn_rand(f, RLC_POS, RLC_FP_BITS);
 			fp18_exp_cyc(b, a, f);
 			bn_neg(f, f);
 			fp18_exp_cyc(c, a, f);
 			fp18_inv(c, c);
-			TEST_ASSERT(fp18_cmp(b, c) == CMP_EQ, end);
+			TEST_ASSERT(fp18_cmp(b, c) == RLC_EQ, end);
         } TEST_END;
 
 		TEST_BEGIN("sparse cyclotomic exponentiation is correct") {
-			int g[3] = {0, 0, FP_BITS - 1};
+			int g[3] = {0, 0, RLC_FP_BITS - 1};
 			do {
-				bn_rand(f, BN_POS, BN_DIGIT);
-				g[1] = f->dp[0] % FP_BITS;
-			} while (g[1] == 0 || g[1] == FP_BITS - 1);
-			bn_set_2b(f, FP_BITS - 1);
+				bn_rand(f, RLC_POS, RLC_DIG);
+				g[1] = f->dp[0] % RLC_FP_BITS;
+			} while (g[1] == 0 || g[1] == RLC_FP_BITS - 1);
+			bn_set_2b(f, RLC_FP_BITS - 1);
 			bn_set_bit(f, g[1], 1);
 			bn_set_bit(f, 0, 1);
 			fp18_rand(a);
 			fp18_conv_cyc(a, a);
 			fp18_exp(b, a, f);
 			fp18_exp_cyc_sps(c, a, g, 3);
-			TEST_ASSERT(fp18_cmp(b, c) == CMP_EQ, end);
+			TEST_ASSERT(fp18_cmp(b, c) == RLC_EQ, end);
 			g[0] = 0;
 			fp18_exp_cyc_sps(c, a, g, 0);
-			TEST_ASSERT(fp18_cmp_dig(c, 1) == CMP_EQ, end);
+			TEST_ASSERT(fp18_cmp_dig(c, 1) == RLC_EQ, end);
 			g[0] = 0;
 			fp18_exp_cyc_sps(c, a, g, 1);
-			TEST_ASSERT(fp18_cmp(c, a) == CMP_EQ, end);
+			TEST_ASSERT(fp18_cmp(c, a) == RLC_EQ, end);
 			g[0] = -1;
 			fp18_exp_cyc_sps(b, a, g, 1);
 			fp18_inv(b, b);
 			fp18_sqr_cyc(c, a);
-			TEST_ASSERT(fp18_cmp(b, c) == CMP_EQ, end);
+			TEST_ASSERT(fp18_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 	}
 	CATCH_ANY {
 		util_print("FATAL ERROR!\n");
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	fp18_free(a);
 	fp18_free(b);
@@ -3328,7 +3349,7 @@ static int cyclotomic18(void) {
 }
 
 static int inversion18(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	fp18_t a, b, c;
 
 	fp18_null(a);
@@ -3341,27 +3362,31 @@ static int inversion18(void) {
 		fp18_new(c);
 
 		TEST_BEGIN("inversion is correct") {
-			fp18_rand(a);
+			do {
+				fp18_rand(a);
+			} while (fp18_is_zero(a));
 			fp18_inv(b, a);
 			fp18_mul(c, a, b);
 			fp18_zero(b);
 			fp_set_dig(b[0][0][0], 1);
-			TEST_ASSERT(fp18_cmp(c, b) == CMP_EQ, end);
+			TEST_ASSERT(fp18_cmp(c, b) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("inversion of a unitary element is correct") {
-			fp18_rand(a);
+			do {
+				fp18_rand(a);
+			} while (fp18_is_zero(a));
 			fp18_conv_uni(a, a);
 			fp18_inv(b, a);
 			fp18_inv_uni(c, a);
-			TEST_ASSERT(fp18_cmp(b, c) == CMP_EQ, end);
+			TEST_ASSERT(fp18_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 	}
 	CATCH_ANY {
 		util_print("FATAL ERROR!\n");
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	fp18_free(a);
 	fp18_free(b);
@@ -3370,7 +3395,7 @@ static int inversion18(void) {
 }
 
 static int exponentiation18(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	fp18_t a, b, c;
 	bn_t d;
 
@@ -3389,28 +3414,28 @@ static int exponentiation18(void) {
 			fp18_rand(a);
 			bn_zero(d);
 			fp18_exp(c, a, d);
-			TEST_ASSERT(fp18_cmp_dig(c, 1) == CMP_EQ, end);
+			TEST_ASSERT(fp18_cmp_dig(c, 1) == RLC_EQ, end);
 			bn_set_dig(d, 1);
 			fp18_exp(c, a, d);
-			TEST_ASSERT(fp18_cmp(c, a) == CMP_EQ, end);
-			bn_rand(d, BN_POS, FP_BITS);
+			TEST_ASSERT(fp18_cmp(c, a) == RLC_EQ, end);
+			bn_rand(d, RLC_POS, RLC_FP_BITS);
 			fp18_exp(b, a, d);
 			bn_neg(d, d);
 			fp18_exp(c, a, d);
 			fp18_inv(c, c);
-			TEST_ASSERT(fp12_cmp(b, c) == CMP_EQ, end);
+			TEST_ASSERT(fp12_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("frobenius and exponentiation are consistent") {
 			fp18_rand(a);
 			fp18_frb(b, a, 0);
-			TEST_ASSERT(fp18_cmp(a, b) == CMP_EQ, end);
+			TEST_ASSERT(fp18_cmp(a, b) == RLC_EQ, end);
 			fp18_frb(b, a, 1);
-			d->sign = BN_POS;
-			d->used = FP_DIGS;
-			dv_copy(d->dp, fp_prime_get(), FP_DIGS);
+			d->sign = RLC_POS;
+			d->used = RLC_FP_DIGS;
+			dv_copy(d->dp, fp_prime_get(), RLC_FP_DIGS);
 			fp18_exp(c, a, d);
-			TEST_ASSERT(fp18_cmp(c, b) == CMP_EQ, end);
+			TEST_ASSERT(fp18_cmp(c, b) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("frobenius and squared frobenius are consistent") {
@@ -3418,7 +3443,7 @@ static int exponentiation18(void) {
 			fp18_frb(b, a, 1);
 			fp18_frb(b, b, 1);
 			fp18_frb(c, a, 2);
-			TEST_ASSERT(fp18_cmp(c, b) == CMP_EQ, end);
+			TEST_ASSERT(fp18_cmp(c, b) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("frobenius and cubed frobenius are consistent") {
@@ -3427,7 +3452,7 @@ static int exponentiation18(void) {
 			fp18_frb(b, b, 1);
 			fp18_frb(b, b, 1);
 			fp18_frb(c, a, 3);
-			TEST_ASSERT(fp18_cmp(c, b) == CMP_EQ, end);
+			TEST_ASSERT(fp18_cmp(c, b) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("frobenius and quartered frobenius are consistent") {
@@ -3437,7 +3462,7 @@ static int exponentiation18(void) {
 			fp18_frb(b, b, 1);
 			fp18_frb(b, b, 1);
 			fp18_frb(c, a, 4);
-			TEST_ASSERT(fp18_cmp(c, b) == CMP_EQ, end);
+			TEST_ASSERT(fp18_cmp(c, b) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("frobenius and quintered frobenius are consistent") {
@@ -3448,14 +3473,14 @@ static int exponentiation18(void) {
 			fp18_frb(b, b, 1);
 			fp18_frb(b, b, 1);
 			fp18_frb(c, a, 5);
-			TEST_ASSERT(fp18_cmp(c, b) == CMP_EQ, end);
+			TEST_ASSERT(fp18_cmp(c, b) == RLC_EQ, end);
 		} TEST_END;
 	}
 	CATCH_ANY {
 		util_print("FATAL ERROR!\n");
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	fp18_free(a);
 	fp18_free(b);
@@ -3465,7 +3490,7 @@ static int exponentiation18(void) {
 }
 
 int main(void) {
-	if (core_init() != STS_OK) {
+	if (core_init() != RLC_OK) {
 		core_clean();
 		return 1;
 	}
@@ -3473,9 +3498,9 @@ int main(void) {
 	util_banner("Tests for the FPX module", 0);
 
 	/* Try using a pairing-friendly curve for faster exponentiation method. */
-	if (pc_param_set_any() != STS_OK) {
+	if (pc_param_set_any() != RLC_OK) {
 		/* If it does not work, try a tower-friendly field. */
-		if (fp_param_set_any_tower() == STS_ERR) {
+		if (fp_param_set_any_tower() == RLC_ERR) {
 			THROW(ERR_NO_FIELD);
 			core_clean();
 			return 0;
@@ -3487,59 +3512,59 @@ int main(void) {
 		util_banner("Quadratic extension:", 0);
 		util_banner("Utilities:", 1);
 
-		if (memory2() != STS_OK) {
+		if (memory2() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
 
-		if (util2() != STS_OK) {
+		if (util2() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
 
 		util_banner("Arithmetic:", 1);
 
-		if (addition2() != STS_OK) {
+		if (addition2() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
 
-		if (subtraction2() != STS_OK) {
+		if (subtraction2() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
 
-		if (doubling2() != STS_OK) {
+		if (doubling2() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
 
-		if (multiplication2() != STS_OK) {
+		if (multiplication2() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
 
-		if (squaring2() != STS_OK) {
+		if (squaring2() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
 
-		if (inversion2() != STS_OK) {
+		if (inversion2() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
 
-		if (exponentiation2() != STS_OK) {
+		if (exponentiation2() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
 
-		if (compression2() != STS_OK) {
+		if (compression2() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
 
-		if (square_root2() != STS_OK) {
+		if (square_root2() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
@@ -3550,54 +3575,54 @@ int main(void) {
 		util_banner("Cubic extension:", 0);
 		util_banner("Utilities:", 1);
 
-		if (memory3() != STS_OK) {
+		if (memory3() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
 
-		if (util3() != STS_OK) {
+		if (util3() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
 
 		util_banner("Arithmetic:", 1);
 
-		if (addition3() != STS_OK) {
+		if (addition3() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
 
-		if (subtraction3() != STS_OK) {
+		if (subtraction3() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
 
-		if (doubling3() != STS_OK) {
+		if (doubling3() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
 
-		if (multiplication3() != STS_OK) {
+		if (multiplication3() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
 
-		if (squaring3() != STS_OK) {
+		if (squaring3() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
 
-		if (inversion3() != STS_OK) {
+		if (inversion3() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
 
-		if (exponentiation3() != STS_OK) {
+		if (exponentiation3() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
 
-		if (square_root3() != STS_OK) {
+		if (square_root3() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
@@ -3608,49 +3633,49 @@ int main(void) {
 		util_banner("Sextic extension:", 0);
 		util_banner("Utilities:", 1);
 
-		if (memory6() != STS_OK) {
+		if (memory6() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
 
-		if (util6() != STS_OK) {
+		if (util6() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
 
 		util_banner("Arithmetic:", 1);
 
-		if (addition6() != STS_OK) {
+		if (addition6() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
 
-		if (subtraction6() != STS_OK) {
+		if (subtraction6() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
 
-		if (doubling6() != STS_OK) {
+		if (doubling6() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
 
-		if (multiplication6() != STS_OK) {
+		if (multiplication6() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
 
-		if (squaring6() != STS_OK) {
+		if (squaring6() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
 
-		if (inversion6() != STS_OK) {
+		if (inversion6() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
 
-		if (exponentiation6() != STS_OK) {
+		if (exponentiation6() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
@@ -3658,54 +3683,54 @@ int main(void) {
 		util_banner("Dodecic extension:", 0);
 		util_banner("Utilities:", 1);
 
-		if (memory12() != STS_OK) {
+		if (memory12() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
 
-		if (util12() != STS_OK) {
+		if (util12() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
 
 		util_banner("Arithmetic:", 1);
 
-		if (addition12() != STS_OK) {
+		if (addition12() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
 
-		if (subtraction12() != STS_OK) {
+		if (subtraction12() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
 
-		if (multiplication12() != STS_OK) {
+		if (multiplication12() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
 
-		if (squaring12() != STS_OK) {
+		if (squaring12() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
 
-		if (cyclotomic12() != STS_OK) {
+		if (cyclotomic12() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
 
-		if (inversion12() != STS_OK) {
+		if (inversion12() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
 
-		if (exponentiation12() != STS_OK) {
+		if (exponentiation12() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
 
-		if (compression12() != STS_OK) {
+		if (compression12() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
@@ -3721,49 +3746,49 @@ int main(void) {
 		util_banner("Octdecic extension:", 0);
 		util_banner("Utilities:", 1);
 
-		if (memory18() != STS_OK) {
+		if (memory18() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
 
-		if (util18() != STS_OK) {
+		if (util18() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
 
 		util_banner("Arithmetic:", 1);
 
-		if (addition18() != STS_OK) {
+		if (addition18() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
 
-		if (subtraction18() != STS_OK) {
+		if (subtraction18() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
 
-		if (multiplication18() != STS_OK) {
+		if (multiplication18() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
 
-		if (squaring18() != STS_OK) {
+		if (squaring18() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
 
-		if (cyclotomic18() != STS_OK) {
+		if (cyclotomic18() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
 
-		if (inversion18() != STS_OK) {
+		if (inversion18() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
 
-		if (exponentiation18() != STS_OK) {
+		if (exponentiation18() != RLC_OK) {
 			core_clean();
 			return 1;
 		}

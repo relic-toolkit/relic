@@ -1,23 +1,24 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2017 RELIC Authors
+ * Copyright (C) 2007-2019 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
  * for contact information.
  *
- * RELIC is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * RELIC is free software; you can redistribute it and/or modify it under the
+ * terms of the version 2.1 (or later) of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; or version 2.0 of the Apache
+ * License as published by the Apache Software Foundation. See the LICENSE files
+ * for more details.
  *
- * RELIC is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * RELIC is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the LICENSE files for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RELIC. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General Public or the
+ * Apache License along with RELIC. If not, see <https://www.gnu.org/licenses/>
+ * or <https://www.apache.org/licenses/>.
  */
 
 /**
@@ -56,7 +57,7 @@ void fp2_exp(fp2_t c, fp2_t a, bn_t b) {
 			}
 		}
 
-		if (bn_sign(b) == BN_NEG) {
+		if (bn_sign(b) == RLC_NEG) {
 			fp2_inv(c, t);
 		} else {
 			fp2_copy(c, t);
@@ -97,7 +98,7 @@ void fp2_conv_uni(fp2_t c, fp2_t a) {
 void fp2_exp_uni(fp2_t c, fp2_t a, bn_t b) {
 	fp2_t r, s, t[1 << (FP_WIDTH - 2)];
 	int i, l;
-	signed char naf[FP_BITS + 1], *k;
+	signed char naf[RLC_FP_BITS + 1], *k;
 
 	if (bn_is_zero(b)) {
 		fp2_set_dig(c, 1);
@@ -124,7 +125,7 @@ void fp2_exp_uni(fp2_t c, fp2_t a, bn_t b) {
 #endif
 		fp2_copy(t[0], a);
 
-		l = FP_BITS + 1;
+		l = RLC_FP_BITS + 1;
 		fp2_set_dig(r, 1);
 		bn_rec_naf(naf, &l, b, FP_WIDTH);
 
@@ -142,7 +143,7 @@ void fp2_exp_uni(fp2_t c, fp2_t a, bn_t b) {
 			}
 		}
 
-		if (bn_sign(b) == BN_NEG) {
+		if (bn_sign(b) == RLC_NEG) {
 			fp2_inv_uni(c, r);
 		} else {
 			fp2_copy(c, r);
@@ -175,7 +176,7 @@ int fp2_test_uni(fp2_t a) {
 		fp_set_dig(t[1], 2);
 		fp_neg(t[1], t[1]);
 
-		result = ((fp_cmp_dig(t[0], 1) == CMP_EQ) ? 1 : 0);
+		result = ((fp_cmp_dig(t[0], 1) == RLC_EQ) ? 1 : 0);
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
@@ -209,7 +210,7 @@ void fp3_exp(fp3_t c, fp3_t a, bn_t b) {
 			}
 		}
 
-		if (bn_sign(b) == BN_NEG) {
+		if (bn_sign(b) == RLC_NEG) {
 			fp3_inv(c, t);
 		} else {
 			fp3_copy(c, t);
@@ -245,7 +246,7 @@ void fp6_exp(fp6_t c, fp6_t a, bn_t b) {
 			}
 		}
 
-		if (bn_sign(b) == BN_NEG) {
+		if (bn_sign(b) == RLC_NEG) {
 			fp6_inv(c, t);
 		} else {
 			fp6_copy(c, t);
@@ -284,7 +285,7 @@ void fp12_exp(fp12_t c, fp12_t a, bn_t b) {
 				}
 			}
 
-			if (bn_sign(b) == BN_NEG) {
+			if (bn_sign(b) == RLC_NEG) {
 				fp12_inv(c, t);
 			} else {
 				fp12_copy(c, t);
@@ -310,7 +311,7 @@ void fp12_exp_cyc(fp12_t c, fp12_t a, bn_t b) {
 
 	bn_null(n);
 
-	if ((bn_bits(b) > BN_DIGIT) && ((w << 3) > bn_bits(b))) {
+	if ((bn_bits(b) > RLC_DIG) && ((w << 3) > bn_bits(b))) {
 		fp12_t t[4];
 
 		TRY {
@@ -333,13 +334,14 @@ void fp12_exp_cyc(fp12_t c, fp12_t a, bn_t b) {
 				case BN_P254:
 				case BN_P256:
 				case BN_P382:
+				case BN_P446:
 				case BN_P638:
 					ep2_curve_get_vs(v);
 
 					for (i = 0; i < 4; i++) {
 						bn_mul(v[i], v[i], b);
 						bn_div(v[i], v[i], n);
-						if (bn_sign(v[i]) == BN_NEG) {
+						if (bn_sign(v[i]) == RLC_NEG) {
 							bn_add_dig(v[i], v[i], 1);
 						}
 						bn_zero(_b[i]);
@@ -407,9 +409,9 @@ void fp12_exp_cyc(fp12_t c, fp12_t a, bn_t b) {
 						bn_sub(_b[i], n, _b[i]);
 						if (bn_bits(_b[i]) > l) {
 							bn_sub(_b[i], _b[i], n);
-							_b[i]->sign = BN_POS;
+							_b[i]->sign = RLC_POS;
 						} else {
-							_b[i]->sign = BN_NEG;
+							_b[i]->sign = RLC_NEG;
 						}
 					}
 
@@ -422,17 +424,17 @@ void fp12_exp_cyc(fp12_t c, fp12_t a, bn_t b) {
 					fp_param_get_var(u[0]);
 
 					bn_copy(u[1], u[0]);
-					if (bn_sign(u[0]) == BN_NEG) {
+					if (bn_sign(u[0]) == RLC_NEG) {
 						bn_neg(u[0], u[0]);
 					}
 
 					for (i = 0; i < 4; i++) {
 						bn_mod(_b[i], v[0], u[0]);
 						bn_div(v[0], v[0], u[0]);
-						if ((bn_sign(u[1]) == BN_NEG) && (i % 2 != 0)) {
+						if ((bn_sign(u[1]) == RLC_NEG) && (i % 2 != 0)) {
 							bn_neg(_b[i], _b[i]);
 						}
-						if (bn_sign(b) == BN_NEG) {
+						if (bn_sign(b) == RLC_NEG) {
 							bn_neg(_b[i], _b[i]);
 						}
 					}
@@ -444,13 +446,13 @@ void fp12_exp_cyc(fp12_t c, fp12_t a, bn_t b) {
 			if (endom) {
 				for (i = 0; i < 4; i++) {
 					fp12_frb(t[i], a, i);
-					if (bn_sign(_b[i]) == BN_NEG) {
+					if (bn_sign(_b[i]) == RLC_NEG) {
 						fp12_inv_uni(t[i], t[i]);
 					}
 				}
 
-				l = MAX(bn_bits(_b[0]), bn_bits(_b[1]));
-				l = MAX(l, MAX(bn_bits(_b[2]), bn_bits(_b[3])));
+				l = RLC_MAX(bn_bits(_b[0]), bn_bits(_b[1]));
+				l = RLC_MAX(l, RLC_MAX(bn_bits(_b[2]), bn_bits(_b[3])));
 				fp12_set_dig(c, 1);
 				for (i = l - 1; i >= 0; i--) {
 					fp12_sqr_cyc(c, c);
@@ -471,7 +473,7 @@ void fp12_exp_cyc(fp12_t c, fp12_t a, bn_t b) {
 				}
 
 				fp12_copy(c, t[0]);
-				if (bn_sign(b) == BN_NEG) {
+				if (bn_sign(b) == RLC_NEG) {
 					fp12_inv_uni(c, c);
 				}
 			}
@@ -676,7 +678,7 @@ int fp12_test_cyc(fp12_t a) {
 		fp12_new(t);
 
 		fp12_back_cyc(t, a);
-		result = ((fp12_cmp(t, a) == CMP_EQ) ? 1 : 0);
+		result = ((fp12_cmp(t, a) == RLC_EQ) ? 1 : 0);
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
@@ -848,7 +850,7 @@ void fp18_exp(fp18_t c, fp18_t a, bn_t b) {
 				}
 			}
 
-			if (bn_sign(b) == BN_NEG) {
+			if (bn_sign(b) == RLC_NEG) {
 				fp18_inv(c, t);
 			} else {
 				fp18_copy(c, t);
@@ -887,7 +889,7 @@ void fp18_exp_cyc(fp18_t c, fp18_t a, bn_t b) {
 				}
 			}
 
-			if (bn_sign(b) == BN_NEG) {
+			if (bn_sign(b) == RLC_NEG) {
 				fp18_inv_uni(c, t);
 			} else {
 				fp18_copy(c, t);
@@ -1083,7 +1085,7 @@ int fp18_test_cyc(fp18_t a) {
 		fp18_new(t);
 
 		fp18_back_cyc(t, a);
-		result = ((fp18_cmp(t, a) == CMP_EQ) ? 1 : 0);
+		result = ((fp18_cmp(t, a) == RLC_EQ) ? 1 : 0);
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);

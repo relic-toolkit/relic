@@ -1,23 +1,24 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2017 RELIC Authors
+ * Copyright (C) 2007-2019 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
  * for contact information.
  *
- * RELIC is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * RELIC is free software; you can redistribute it and/or modify it under the
+ * terms of the version 2.1 (or later) of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; or version 2.0 of the Apache
+ * License as published by the Apache Software Foundation. See the LICENSE files
+ * for more details.
  *
- * RELIC is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * RELIC is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the LICENSE files for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RELIC. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General Public or the
+ * Apache License along with RELIC. If not, see <https://www.gnu.org/licenses/>
+ * or <https://www.apache.org/licenses/>.
  */
 
 /**
@@ -130,7 +131,7 @@ inline void fp6_mul_unr(dv6_t c, fp6_t a, fp6_t b) {
 		/* v0 = a_0b_0, v1 = a_1b_1, v2 = a_2b_2,
 		 * t0 = a_1 + a_2, t1 = b_1 + b_2,
 		 * u4 = u1 + u2, u5 = u0 + u1, u6 = u0 + u2 */
-#ifdef FP_SPACE
+#ifdef RLC_FP_ROOM
 		fp2_mulc_low(u0, a[0], b[0]);
 		fp2_mulc_low(u1, a[1], b[1]);
 		fp2_mulc_low(u2, a[2], b[2]);
@@ -152,7 +153,7 @@ inline void fp6_mul_unr(dv6_t c, fp6_t a, fp6_t b) {
 		fp2_addc_low(c[0], c[0], u0);
 
 		/* c_1 = (a_0 + a_1)(b_0 + b_1) - v0 - v1 + Ev2 */
-#ifdef FP_SPACE
+#ifdef RLC_FP_ROOM
 		fp2_addn_low(t0, a[0], a[1]);
 		fp2_addn_low(t1, b[0], b[1]);
 		fp2_addd_low(c[1], u0, u1);
@@ -167,7 +168,7 @@ inline void fp6_mul_unr(dv6_t c, fp6_t a, fp6_t b) {
 		fp2_addc_low(c[1], u3, c[2]);
 
 		/* c_2 = (a_0 + a_2)(b_0 + b_2) - v0 + v1 - v2 */
-#ifdef FP_SPACE
+#ifdef RLC_FP_ROOM
 		fp2_addn_low(t0, a[0], a[2]);
 		fp2_addn_low(t1, b[0], b[2]);
 		fp2_addd_low(c[2], u0, u2);

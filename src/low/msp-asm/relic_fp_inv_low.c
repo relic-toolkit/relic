@@ -60,18 +60,18 @@ void fp_invn_low(dig_t *c, const dig_t *a) {
 #if FP_RDC == MONTY
 	fp_prime_back(bna, a);
 #else
-	bna->used = FP_DIGS;
-	dv_copy(bna->dp, a, FP_DIGS);
+	bna->used = RLC_FP_DIGS;
+	dv_copy(bna->dp, a, RLC_FP_DIGS);
 #endif
-	bnp->used = FP_DIGS;
-	dv_copy(bnp->dp, p, FP_DIGS);
+	bnp->used = RLC_FP_DIGS;
+	dv_copy(bnp->dp, p, RLC_FP_DIGS);
 
 	bn_gcd_ext(gcd, bnc, NULL, bna, bnp);
 
-	while (bn_sign(bnc) == BN_NEG) {
+	while (bn_sign(bnc) == RLC_NEG) {
 		bn_add(bnc, bnc, bnp);
 	}
-	while (bn_cmp(bnc, bnp) != CMP_LT) {
+	while (bn_cmp(bnc, bnp) != RLC_LT) {
 		bn_sub(bnc, bnc, bnp);
 	}
 
@@ -79,7 +79,7 @@ void fp_invn_low(dig_t *c, const dig_t *a) {
 	fp_prime_conv(c, bnc);
 #else
 	dv_copy(c, bnc->dp, bnc->used);
-	for (int i = bnc->used; i < FP_DIGS; i++) {
+	for (int i = bnc->used; i < RLC_FP_DIGS; i++) {
 		c[i] = 0;
 	}
 #endif

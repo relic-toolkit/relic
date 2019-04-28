@@ -26,7 +26,6 @@ message("   DEBUG=[off|on] Build with debugging support.")
 message("   PROFL=[off|on] Build with profiling support.")
 message("   CHECK=[off|on] Build with error-checking support.")
 message("   VERBS=[off|on] Build with detailed error messages.")
-message("   TRACE=[off|on] Build with tracing support.")
 message("   OVERH=[off|on] Build with overhead estimation.")
 message("   DOCUM=[off|on] Build documentation.")
 message("   STRIP=[off|on] Build only selected algorithms.")
@@ -42,7 +41,6 @@ option(DEBUG "Build with debugging support" off)
 option(PROFL "Build with profiling support" off)
 option(CHECK "Build with error-checking support" on)
 option(VERBS "Build with detailed error messages" on)
-option(TRACE "Build with tracing support" off)
 option(OVERH "Build with overhead estimation" off)
 option(DOCUM "Build documentation" on)
 option(STRIP "Build only the selected algorithms" off)
@@ -144,11 +142,11 @@ include(cmake/rand.cmake)
 include(cmake/with.cmake)
 
 # Number of tests and benchmarks
-set(BENCH 100 CACHE INTEGER "Number of times each benchmark is ran.")
-set(TESTS 100 CACHE INTEGER "Number of times each test is ran.")
+set(BENCH "100" CACHE STRING "Number of times each benchmark is ran.")
+set(TESTS "100" CACHE STRING "Number of times each test is ran.")
 
 # Number of cores.
-set(CORES 1 CACHE INTEGER "Number of available processor cores.")
+set(CORES "1" CACHE STRING "Number of available processor cores.")
 
 # Choose the arithmetic backend.
 set(ARITH "easy" CACHE STRING "Arithmetic backend")
@@ -235,10 +233,6 @@ if(PROFL)
 else(PROFL)
 	set(PFLAGS "")
 endif(PROFL)
-
-if(TRACE)
-	set(DFLAGS "${DFLAGS} -fPIC -finstrument-functions")
-endif(TRACE)
 
 if(ARITH STREQUAL "gmp" OR ARITH STREQUAL "gmp-sec")
 	include(cmake/gmp.cmake)

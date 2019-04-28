@@ -1,23 +1,24 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2017 RELIC Authors
+ * Copyright (C) 2007-2019 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
  * for contact information.
  *
- * RELIC is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * RELIC is free software; you can redistribute it and/or modify it under the
+ * terms of the version 2.1 (or later) of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; or version 2.0 of the Apache
+ * License as published by the Apache Software Foundation. See the LICENSE files
+ * for more details.
  *
- * RELIC is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * RELIC is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the LICENSE files for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RELIC. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General Public or the
+ * Apache License along with RELIC. If not, see <https://www.gnu.org/licenses/>
+ * or <https://www.apache.org/licenses/>.
  */
 
 /**
@@ -120,6 +121,23 @@
 /** @} */
 #endif
 
+#if defined(EP_ENDOM) && FP_PRIME == 446
+/**
+ * Parameters for a pairing-friendly prime curve over a quadratic extension.
+ */
+/** @{ */
+#define BN_P446_A0		"0"
+#define BN_P446_A1		"0"
+#define BN_P446_B0		"10"
+#define BN_P446_B1		"2400000000000000002400000002D00000000D800000021C0000001800000000870000000B0400000057C00000015C000000132000000066"
+#define BN_P446_X0		"1DFCEBAE017EC74D18BFCF2CABB36B7B53B64AD3DE65B2E1F7991A38ADB90BE52FF2AC01B15EDDAAEB92DE6338A40F24A5052A3BBA1F755D"
+#define BN_P446_X1		"4CC6E0E84FC2FE13FFCB9B6F716AE188D1532B57754CA4FBD9058E3B7C6419933E76D470BA8365E21DAB35662CD74C0A381020DF944CDD2"
+#define BN_P446_Y0		"13043EE14F4BE8FBF314D15D49ACD7928DD6D12CF903D5485F8EDA2B343A2F8E43A61D9FF1FC74788DBA03B064498B143171A0885AD9EC37"
+#define BN_P446_Y1		"91F93BEB46071DEDF410DC5A7662DD8B4BBC8BE5D3A8662009A4C2C0577F82A2337D208379F21C65F90FE1D90482CC48DEC83BFB8AD8E45"
+#define BN_P446_R		"2400000000000000002400000002D00000000D800000021C00000017A0000000870000000AD400000054C000000156000000126000000061"
+/** @} */
+#endif
+
 #if defined(EP_ENDOM) && FP_PRIME == 455
 /**
  * Parameters for a pairing-friendly prime curve over a quadratic extension.
@@ -177,23 +195,23 @@
  * @param[in] CURVE		- the curve parameters to assign.
  */
 #define ASSIGN(CURVE)														\
-	FETCH(str, CURVE##_A0, sizeof(CURVE##_A0));								\
+	RLC_GET(str, CURVE##_A0, sizeof(CURVE##_A0));								\
 	fp_read_str(a[0], str, strlen(str), 16);									\
-	FETCH(str, CURVE##_A1, sizeof(CURVE##_A1));								\
+	RLC_GET(str, CURVE##_A1, sizeof(CURVE##_A1));								\
 	fp_read_str(a[1], str, strlen(str), 16);									\
-	FETCH(str, CURVE##_B0, sizeof(CURVE##_B0));								\
+	RLC_GET(str, CURVE##_B0, sizeof(CURVE##_B0));								\
 	fp_read_str(b[0], str, strlen(str), 16);									\
-	FETCH(str, CURVE##_B1, sizeof(CURVE##_B1));								\
+	RLC_GET(str, CURVE##_B1, sizeof(CURVE##_B1));								\
 	fp_read_str(b[1], str, strlen(str), 16);									\
-	FETCH(str, CURVE##_X0, sizeof(CURVE##_X0));								\
+	RLC_GET(str, CURVE##_X0, sizeof(CURVE##_X0));								\
 	fp_read_str(g->x[0], str, strlen(str), 16);									\
-	FETCH(str, CURVE##_X1, sizeof(CURVE##_X1));								\
+	RLC_GET(str, CURVE##_X1, sizeof(CURVE##_X1));								\
 	fp_read_str(g->x[1], str, strlen(str), 16);									\
-	FETCH(str, CURVE##_Y0, sizeof(CURVE##_Y0));								\
+	RLC_GET(str, CURVE##_Y0, sizeof(CURVE##_Y0));								\
 	fp_read_str(g->y[0], str, strlen(str), 16);									\
-	FETCH(str, CURVE##_Y1, sizeof(CURVE##_Y1));								\
+	RLC_GET(str, CURVE##_Y1, sizeof(CURVE##_Y1));								\
 	fp_read_str(g->y[1], str, strlen(str), 16);									\
-	FETCH(str, CURVE##_R, sizeof(CURVE##_R));								\
+	RLC_GET(str, CURVE##_R, sizeof(CURVE##_R));								\
 	bn_read_str(r, str, strlen(str), 16);									\
 
 /*============================================================================*/
@@ -204,12 +222,12 @@ void ep2_curve_init(void) {
 	ctx_t *ctx = core_get();
 
 #ifdef EP_PRECO
-	for (int i = 0; i < RELIC_EP_TABLE; i++) {
+	for (int i = 0; i < RLC_EP_TABLE; i++) {
 		ctx->ep2_ptr[i] = &(ctx->ep2_pre[i]);
 	}
 #endif
 
-#if ALLOC == STATIC || ALLOC == DYNAMIC || ALLOC == STACK
+#if ALLOC == DYNAMIC || ALLOC == STACK
 	ctx->ep2_g.x[0] = ctx->ep2_gx[0];
 	ctx->ep2_g.x[1] = ctx->ep2_gx[1];
 	ctx->ep2_g.y[0] = ctx->ep2_gy[0];
@@ -219,14 +237,14 @@ void ep2_curve_init(void) {
 #endif
 
 #ifdef EP_PRECO
-#if ALLOC == STATIC || ALLOC == DYNAMIC
-	for (int i = 0; i < RELIC_EP_TABLE; i++) {
+#if ALLOC == DYNAMIC
+	for (int i = 0; i < RLC_EP_TABLE; i++) {
 		fp2_new(ctx->ep2_pre[i].x);
 		fp2_new(ctx->ep2_pre[i].y);
 		fp2_new(ctx->ep2_pre[i].z);
 	}
 #elif ALLOC == STACK
-	for (int i = 0; i < RELIC_EP_TABLE; i++) {
+	for (int i = 0; i < RLC_EP_TABLE; i++) {
 		ctx->ep2_pre[i].x[0] = ctx->_ep2_pre[3 * i][0];
 		ctx->ep2_pre[i].x[1] = ctx->_ep2_pre[3 * i][1];
 		ctx->ep2_pre[i].y[0] = ctx->_ep2_pre[3 * i + 1][0];
@@ -237,14 +255,14 @@ void ep2_curve_init(void) {
 #endif
 #endif
 	ep2_set_infty(&(ctx->ep2_g));
-	bn_init(&(ctx->ep2_r), FP_DIGS);
-	bn_init(&(ctx->ep2_h), FP_DIGS);
+	bn_init(&(ctx->ep2_r), RLC_FP_DIGS);
+	bn_init(&(ctx->ep2_h), RLC_FP_DIGS);
 }
 
 void ep2_curve_clean(void) {
 	ctx_t *ctx = core_get();
 #ifdef EP_PRECO
-	for (int i = 0; i < RELIC_EP_TABLE; i++) {
+	for (int i = 0; i < RLC_EP_TABLE; i++) {
 		fp2_free(ctx->ep2_pre[i].x);
 		fp2_free(ctx->ep2_pre[i].y);
 		fp2_free(ctx->ep2_pre[i].z);
@@ -347,7 +365,7 @@ ep2_t *ep2_curve_get_tab(void) {
 #endif
 
 void ep2_curve_set_twist(int type) {
-	char str[2 * FP_BYTES + 1];
+	char str[2 * RLC_FP_BYTES + 1];
 	ctx_t *ctx = core_get();
 	ep2_t g;
 	fp2_t a;
@@ -392,6 +410,10 @@ void ep2_curve_set_twist(int type) {
 #elif FP_PRIME == 382
 			case BN_P382:
 				ASSIGN(BN_P382);
+				break;
+#elif FP_PRIME == 446
+			case BN_P446:
+				ASSIGN(BN_P446);
 				break;
 #elif FP_PRIME == 455
 			case B12_P455:

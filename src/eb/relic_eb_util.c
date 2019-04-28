@@ -1,23 +1,24 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2017 RELIC Authors
+ * Copyright (C) 2007-2019 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
  * for contact information.
  *
- * RELIC is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * RELIC is free software; you can redistribute it and/or modify it under the
+ * terms of the version 2.1 (or later) of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; or version 2.0 of the Apache
+ * License as published by the Apache Software Foundation. See the LICENSE files
+ * for more details.
  *
- * RELIC is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * RELIC is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the LICENSE files for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RELIC. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General Public or the
+ * Apache License along with RELIC. If not, see <https://www.gnu.org/licenses/>
+ * or <https://www.apache.org/licenses/>.
  */
 
 /**
@@ -56,7 +57,7 @@ void eb_copy(eb_t r, const eb_t p) {
 
 int eb_cmp(const eb_t p, const eb_t q) {
     eb_t r, s;
-    int result = CMP_EQ;
+    int result = RLC_EQ;
 
     eb_null(r);
     eb_null(s);
@@ -88,12 +89,12 @@ int eb_cmp(const eb_t p, const eb_t q) {
             }
         }
 
-        if (fb_cmp(r->x, s->x) != CMP_EQ) {
-            result = CMP_NE;
+        if (fb_cmp(r->x, s->x) != RLC_EQ) {
+            result = RLC_NE;
         }
 
-        if (fb_cmp(r->y, s->y) != CMP_EQ) {
-            result = CMP_NE;
+        if (fb_cmp(r->y, s->y) != RLC_EQ) {
+            result = RLC_NE;
         }
     } CATCH_ANY {
         THROW(ERR_CAUGHT);
@@ -145,12 +146,12 @@ void eb_rhs(fb_t rhs, const eb_t p) {
 
 		/* t1 = x1^3 + a * x1^2 + b. */
 		switch (eb_curve_opt_a()) {
-			case OPT_ZERO:
+			case RLC_ZERO:
 				break;
-			case OPT_ONE:
+			case RLC_ONE:
 				fb_add(t1, t1, t0);
 				break;
-			case OPT_DIGIT:
+			case RLC_TINY:
 				fb_mul_dig(t0, t0, eb_curve_get_a()[0]);
 				fb_add(t1, t1, t0);
 				break;
@@ -161,12 +162,12 @@ void eb_rhs(fb_t rhs, const eb_t p) {
 		}
 
 		switch (eb_curve_opt_b()) {
-			case OPT_ZERO:
+			case RLC_ZERO:
 				break;
-			case OPT_ONE:
+			case RLC_ONE:
 				fb_add_dig(t1, t1, 1);
 				break;
-			case OPT_DIGIT:
+			case RLC_TINY:
 				fb_add_dig(t1, t1, eb_curve_get_b()[0]);
 				break;
 			default:
@@ -203,7 +204,7 @@ int eb_is_valid(const eb_t p) {
 		eb_rhs(t->x, t);
 		fb_sqr(t->y, t->y);
 		fb_add(lhs, lhs, t->y);
-		r = (fb_cmp(lhs, t->x) == CMP_EQ) || eb_is_infty(p);
+		r = (fb_cmp(lhs, t->x) == RLC_EQ) || eb_is_infty(p);
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
@@ -239,7 +240,7 @@ void eb_tab(eb_t *t, const eb_t p, int w) {
 
 #if defined(EB_KBLTZ)
 	if (eb_curve_is_kbltz()) {
-		u = (eb_curve_opt_a() == OPT_ZERO ? -1 : 1);
+		u = (eb_curve_opt_a() == RLC_ZERO ? -1 : 1);
 
 		/* Prepare the precomputation table. */
 		for (int i = 0; i < 1 << (w - 2); i++) {
@@ -515,28 +516,15 @@ void eb_print(const eb_t p) {
 }
 
 int eb_size_bin(const eb_t a, int pack) {
-	eb_t t;
 	int size = 0;
-
-	eb_null(t);
 
 	if (eb_is_infty(a)) {
 		return 1;
 	}
 
-	TRY {
-		eb_new(t);
-
-		eb_norm(t, a);
-
-		size = 1 + FB_BYTES;
-		if (!pack) {
-			size += FB_BYTES;
-		}
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
-		eb_free(t);
+	size = 1 + RLC_FB_BYTES;
+	if (!pack) {
+		size += RLC_FB_BYTES;
 	}
 
 	return size;
@@ -553,15 +541,15 @@ void eb_read_bin(eb_t a, const uint8_t *bin, int len) {
 		}
 	}
 
-	if (len != (FB_BYTES + 1) && len != (2 * FB_BYTES + 1)) {
+	if (len != (RLC_FB_BYTES + 1) && len != (2 * RLC_FB_BYTES + 1)) {
 		THROW(ERR_NO_BUFFER);
 		return;
 	}
 
 	a->norm = 1;
 	fb_set_dig(a->z, 1);
-	fb_read_bin(a->x, bin + 1, FB_BYTES);
-	if (len == FB_BYTES + 1) {
+	fb_read_bin(a->x, bin + 1, RLC_FB_BYTES);
+	if (len == RLC_FB_BYTES + 1) {
 		switch(bin[0]) {
 			case 2:
 				fb_zero(a->y);
@@ -577,9 +565,9 @@ void eb_read_bin(eb_t a, const uint8_t *bin, int len) {
 		eb_upk(a, a);
 	}
 
-	if (len == 2 * FB_BYTES + 1) {
+	if (len == 2 * RLC_FB_BYTES + 1) {
 		if (bin[0] == 4) {
-			fb_read_bin(a->y, bin + FB_BYTES + 1, FB_BYTES);
+			fb_read_bin(a->y, bin + RLC_FB_BYTES + 1, RLC_FB_BYTES);
 		} else {
 			THROW(ERR_NO_VALID);
 		}
@@ -592,7 +580,7 @@ void eb_write_bin(uint8_t *bin, int len, const eb_t a, int pack) {
 	eb_null(t);
 
 	if (eb_is_infty(a)) {
-		if (len != 1) {
+		if (len < 1) {
 			THROW(ERR_NO_BUFFER);
 		} else {
 			bin[0] = 0;
@@ -606,20 +594,20 @@ void eb_write_bin(uint8_t *bin, int len, const eb_t a, int pack) {
 		eb_norm(t, a);
 
 		if (pack) {
-			if (len < FB_BYTES + 1) {
+			if (len < RLC_FB_BYTES + 1) {
 				THROW(ERR_NO_BUFFER);
 			} else {
 				eb_pck(t, t);
 				bin[0] = 2 | fb_get_bit(t->y, 0);
-				fb_write_bin(bin + 1, FB_BYTES, t->x);
+				fb_write_bin(bin + 1, RLC_FB_BYTES, t->x);
 			}
 		} else {
-			if (len < 2 * FB_BYTES + 1) {
+			if (len < 2 * RLC_FB_BYTES + 1) {
 				THROW(ERR_NO_BUFFER);
 			} else {
 				bin[0] = 4;
-				fb_write_bin(bin + 1, FB_BYTES, t->x);
-				fb_write_bin(bin + FB_BYTES + 1, FB_BYTES, t->y);
+				fb_write_bin(bin + 1, RLC_FB_BYTES, t->x);
+				fb_write_bin(bin + RLC_FB_BYTES + 1, RLC_FB_BYTES, t->y);
 			}
 		}
 	} CATCH_ANY {

@@ -1,8 +1,10 @@
-![](https://github.com/relic-toolkit/relic/blob/master/art/logo.png)
+![](https://github.com/relic-toolkit/relic/blob/master/art/rlc_logo.png)
 =====
 
 [![Project stats](https://www.openhub.net/p/relic-toolkit/widgets/project_thin_badge.gif)](https://www.openhub.net/p/relic-toolkit)
 [![Build Status](https://travis-ci.org/relic-toolkit/relic.svg?branch=master)](https://travis-ci.org/relic-toolkit/relic)
+[![Code Quality: Cpp](https://img.shields.io/lgtm/grade/cpp/g/relic-toolkit/relic.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/relic-toolkit/relic/context:cpp)
+[![Total Alerts](https://img.shields.io/lgtm/alerts/g/relic-toolkit/relic.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/relic-toolkit/relic/alerts)
 
 RELIC is a modern cryptographic meta-toolkit with emphasis on efficiency and flexibility. RELIC can be used to build efficient and usable cryptographic toolkits tailored for specific security levels and algorithmic choices.
 
@@ -34,7 +36,7 @@ If you use RELIC, please cite using the template below:
         author = {D. F. Aranha and C. P. L. Gouv\^{e}a},
         title = {{RELIC is an Efficient LIbrary for Cryptography}},
         howpublished = {\url{https://github.com/relic-toolkit/relic}},
-    }`
+    }
 
 ### Build instructions
 

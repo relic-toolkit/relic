@@ -1,23 +1,24 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2017 RELIC Authors
+ * Copyright (C) 2007-2019 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
  * for contact information.
  *
- * RELIC is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * RELIC is free software; you can redistribute it and/or modify it under the
+ * terms of the version 2.1 (or later) of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; or version 2.0 of the Apache
+ * License as published by the Apache Software Foundation. See the LICENSE files
+ * for more details.
  *
- * RELIC is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * RELIC is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the LICENSE files for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RELIC. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General Public or the
+ * Apache License along with RELIC. If not, see <https://www.gnu.org/licenses/>
+ * or <https://www.apache.org/licenses/>.
  */
 
 /**
@@ -327,7 +328,7 @@ uint8_t result2[] = {
 #endif
 
 static int test(void) {
-	int i, len = 2 * MD_LEN, code = STS_ERR;
+	int i, len = 2 * MD_LEN, code = RLC_ERR;
 	uint8_t out[2 * MD_LEN], seed2[(RAND_SIZE - 1) / 2], seed3[(RAND_SIZE - 1) / 2];
 
 	for (i = 0; i < (RAND_SIZE - 1) / 2; i++) {
@@ -361,7 +362,7 @@ static int test(void) {
 	}
 	TEST_END;
 
-	code = STS_OK;
+	code = RLC_OK;
 
   end:
 	return code;
@@ -412,7 +413,7 @@ uint8_t result2[160] = {
 };
 
 static int test(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	uint8_t out[160];
 
 	TEST_ONCE("fips 186-2 (cn1) random generator is correct") {
@@ -425,7 +426,7 @@ static int test(void) {
 	}
 	TEST_END;
 
-	code = STS_OK;
+	code = RLC_OK;
 
   end:
 	return code;
@@ -447,14 +448,14 @@ static int test(void) {
 	}
 	TEST_END;
   end:
-	return STS_OK;
+	return RLC_OK;
 }
 
 #elif RAND == RDRND
 
 static int test(void) {
 	uint8_t out[64];
-	int len = sizeof(out) / 2, code = STS_ERR;
+	int len = sizeof(out) / 2, code = RLC_ERR;
 
 	TEST_ONCE("rdrand hardware generator is non-trivial") {
 		memset(out, 0, 2 * len);
@@ -464,7 +465,7 @@ static int test(void) {
 	}
 	TEST_END;
 
-	code = STS_OK;
+	code = RLC_OK;
 
   end:
 	return code;
@@ -515,20 +516,20 @@ static int test(void) {
 	TEST_END;
   end:
   	close(fd);
-	return STS_OK;
+	return RLC_OK;
 }
 
 #endif
 
 int main(void) {
-	if (core_init() != STS_OK) {
+	if (core_init() != RLC_OK) {
 		core_clean();
 		return 1;
 	}
 
 	util_banner("Tests for the RAND module:\n", 0);
 
-	if (test() != STS_OK) {
+	if (test() != RLC_OK) {
 		core_clean();
 		return 1;
 	}

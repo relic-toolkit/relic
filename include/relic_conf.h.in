@@ -1,23 +1,24 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2017 RELIC Authors
+ * Copyright (C) 2007-2019 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
  * for contact information.
  *
- * RELIC is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * RELIC is free software; you can redistribute it and/or modify it under the
+ * terms of the version 2.1 (or later) of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; or version 2.0 of the Apache
+ * License as published by the Apache Software Foundation. See the LICENSE files
+ * for more details.
  *
- * RELIC is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * RELIC is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the LICENSE files for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RELIC. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General Public or the
+ * Apache License along with RELIC. If not, see <https://www.gnu.org/licenses/>
+ * or <https://www.apache.org/licenses/>.
  */
 
 /**
@@ -29,11 +30,11 @@
  * @ingroup relic
  */
 
-#ifndef RELIC_CONF_H
-#define RELIC_CONF_H
+#ifndef RLC_CONF_H
+#define RLC_CONF_H
 
 /** Project version. */
-#define RELIC_VERSION "@VERSION@"
+#define RLC_VERSION "@VERSION@"
 
 /** Debugging support. */
 #cmakedefine DEBUG
@@ -43,8 +44,6 @@
 #cmakedefine CHECK
 /** Verbose error messages. */
 #cmakedefine VERBS
-/** Trace support. */
-#cmakedefine TRACE
 /** Build with overhead estimation. */
 #cmakedefine OVERH
 /** Build documentation. */
@@ -310,10 +309,6 @@
 #define LODAH	 2
 /** Integrated modular multiplication. */
 #define INTEG	 3
-/** Left-to-right Comb multiplication. */
-#define LCOMB	 4
-/** Right-to-left Comb multiplication. */
-#define RCOMB	 5
 /** Chosen binary field multiplication method. */
 #define FB_MUL   @FB_MUL@
 
@@ -427,16 +422,12 @@
 
 /** Binary point multiplication. */
 #define BASIC	 1
-/** Yao's windowing method. */
-#define YAOWI	 2
-/** NAF windowing method. */
-#define NAFWI	 3
+/** Single-table comb method. */
+#define COMBS	 2
+/** Double-table comb method. */
+#define COMBD    3
 /** Left-to-right Width-w NAF. */
 #define LWNAF	 4
-/** Single-table comb method. */
-#define COMBS	 5
-/** Double-table comb method. */
-#define COMBD    6
 /** Chosen prime elliptic curve point multiplication method. */
 #define EP_FIX	 @EP_FIX@
 
@@ -472,7 +463,7 @@
 
 /** Affine coordinates. */
 #define BASIC	 1
-/** L�pez-Dahab Projective coordinates. */
+/** López-Dahab Projective coordinates. */
 #define PROJC	 2
 /** Chosen binary elliptic curve coordinate method. */
 #define EB_ADD	 @EB_ADD@
@@ -492,16 +483,12 @@
 
 /** Binary point multiplication. */
 #define BASIC	 1
-/** Yao's windowing method. */
-#define YAOWI	 2
-/** NAF windowing method. */
-#define NAFWI	 3
+/** Single-table comb method. */
+#define COMBS	 2
+/** Double-table comb method. */
+#define COMBD    3
 /** Left-to-right Width-w NAF. */
 #define LWNAF	 4
-/** Single-table comb method. */
-#define COMBS	 5
-/** Double-table comb method. */
-#define COMBD    6
 /** Chosen binary elliptic curve point multiplication method. */
 #define EB_FIX	 @EB_FIX@
 
@@ -527,14 +514,10 @@
 #define MONTY	 3
 /** Left-to-right Width-w NAF. */
 #define LWNAF	 4
-/** Left-to-right Width-w NAF with mixed coordinates. */
-#define LWNAF_MIXED	 7
 /** Fixed window. */
 #define FIXWI	 8
 /** Chosen prime elliptic twisted Edwards curve point multiplication method. */
 #define ED_MUL	 @ED_MUL@
-
-#define ED_PLAIN
 
 /** Build precomputation table for generator. */
 #cmakedefine ED_PRECO
@@ -543,6 +526,8 @@
 /** Width of window processing for unknown point methods. */
 #define ED_WIDTH @ED_WIDTH@
 
+/** Affine coordinates. */
+#define BASIC    1
 /** Simple projective twisted Edwards coordinates */
 #define PROJC	 2
 /** Extended projective twisted Edwards coordinates */
@@ -552,16 +537,12 @@
 
 /** Binary point multiplication. */
 #define BASIC	 1
-/** Yao's windowing method. */
-#define YAOWI	 2
-/** NAF windowing method. */
-#define NAFWI	 3
+/** Single-table comb method. */
+#define COMBS	 2
+/** Double-table comb method. */
+#define COMBD    3
 /** Left-to-right Width-w NAF. */
 #define LWNAF	 4
-/** Single-table comb method. */
-#define COMBS	 5
-/** Double-table comb method. */
-#define COMBD    6
 /** Chosen prime elliptic twisted Edwards curve point multiplication method. */
 #define ED_FIX	 @ED_FIX@
 
@@ -575,7 +556,7 @@
 /** Binary curves. */
 #define CHAR2    2
 /** Edwards curves */
-#define EDWARD   3
+#define EDDIE    3
 /** Chosen elliptic curve type. */
 #define EC_CUR	 @EC_CUR@
 
@@ -601,8 +582,6 @@
 #define WEILP    2
 /** Optimal ate pairing. */
 #define OATEP    3
-/** Beta Weil pairing. */
-#define BWEIL    4
 /** Chosen pairing method over prime elliptic curves. */
 #define PP_MAP   @PP_MAP@
 
@@ -651,12 +630,10 @@
 
 /** Automatic memory allocation. */
 #define AUTO     1
-/** Static memory allocation. */
-#define	STATIC   2
 /** Dynamic memory allocation. */
-#define DYNAMIC  3
+#define DYNAMIC  2
 /** Stack memory allocation. */
-#define STACK    4
+#define STACK    3
 /** Chosen memory allocation policy. */
 #define ALLOC    @ALLOC@
 
@@ -739,4 +716,4 @@ void conf_print(void);
 
 #endif /* ASM */
 
-#endif /* !RELIC_CONF_H */
+#endif /* !RLC_CONF_H */

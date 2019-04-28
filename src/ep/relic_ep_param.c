@@ -1,29 +1,30 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2017 RELIC Authors
+ * Copyright (C) 2007-2019 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
  * for contact information.
  *
- * RELIC is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * RELIC is free software; you can redistribute it and/or modify it under the
+ * terms of the version 2.1 (or later) of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; or version 2.0 of the Apache
+ * License as published by the Apache Software Foundation. See the LICENSE files
+ * for more details.
  *
- * RELIC is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * RELIC is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the LICENSE files for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RELIC. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General Public or the
+ * Apache License along with RELIC. If not, see <https://www.gnu.org/licenses/>
+ * or <https://www.apache.org/licenses/>.
  */
 
 /**
  * @file
  *
- * Implementation of the prime elliptic curve utilities.
+ * Implementation of the prime elliptic curve parameters.
  *
  * @ingroup ep
  */
@@ -375,6 +376,21 @@
 /** @} */
 #endif
 
+#if defined(EP_ENDOM) && FP_PRIME == 446
+/**
+ * Parameters for a 455-bit pairing-friendly prime curve at the new 128-bit security level.
+ */
+/** @{ */
+#define BN_P446_A		"0"
+#define BN_P446_B		"101"
+#define BN_P446_X		"2400000000000000002400000002D00000000D800000021C0000001800000000870000000B0400000057C00000015C000000132000000066"
+#define BN_P446_Y		"10"
+#define BN_P446_R		"2400000000000000002400000002D00000000D800000021C00000017A0000000870000000AD400000054C000000156000000126000000061"
+#define BN_P446_H		"1"
+#define BN_P446_BETA	"4800000000000000003600000004800000000D800000024000000019E00000004800000006300000002E"
+#define BN_P446_LAMB	"9000000000000000006C00000007E00000001B00000003F000000027C00000007E00000009600000003D"
+#endif
+
 #if defined(EP_ENDOM) && FP_PRIME == 455
 /**
  * Parameters for a 455-bit pairing-friendly prime curve at the new 128-bit security level.
@@ -479,17 +495,17 @@
  */
 #define ASSIGN(CURVE, FIELD)												\
 	fp_param_set(FIELD);													\
-	FETCH(str, CURVE##_A, sizeof(CURVE##_A));								\
+	RLC_GET(str, CURVE##_A, sizeof(CURVE##_A));								\
 	fp_read_str(a, str, strlen(str), 16);									\
-	FETCH(str, CURVE##_B, sizeof(CURVE##_B));								\
+	RLC_GET(str, CURVE##_B, sizeof(CURVE##_B));								\
 	fp_read_str(b, str, strlen(str), 16);									\
-	FETCH(str, CURVE##_X, sizeof(CURVE##_X));								\
+	RLC_GET(str, CURVE##_X, sizeof(CURVE##_X));								\
 	fp_read_str(g->x, str, strlen(str), 16);								\
-	FETCH(str, CURVE##_Y, sizeof(CURVE##_Y));								\
+	RLC_GET(str, CURVE##_Y, sizeof(CURVE##_Y));								\
 	fp_read_str(g->y, str, strlen(str), 16);								\
-	FETCH(str, CURVE##_R, sizeof(CURVE##_R));								\
+	RLC_GET(str, CURVE##_R, sizeof(CURVE##_R));								\
 	bn_read_str(r, str, strlen(str), 16);									\
-	FETCH(str, CURVE##_H, sizeof(CURVE##_H));								\
+	RLC_GET(str, CURVE##_H, sizeof(CURVE##_H));								\
 	bn_read_str(h, str, strlen(str), 16);									\
 
 /**
@@ -500,9 +516,9 @@
  */
 #define ASSIGNK(CURVE, FIELD)												\
 	ASSIGN(CURVE, FIELD);													\
-	FETCH(str, CURVE##_BETA, sizeof(CURVE##_BETA));							\
+	RLC_GET(str, CURVE##_BETA, sizeof(CURVE##_BETA));						\
 	fp_read_str(beta, str, strlen(str), 16);								\
-	FETCH(str, CURVE##_LAMB, sizeof(CURVE##_LAMB));							\
+	RLC_GET(str, CURVE##_LAMB, sizeof(CURVE##_LAMB));						\
 	bn_read_str(lamb, str, strlen(str), 16);								\
 
 /*============================================================================*/
@@ -515,7 +531,7 @@ int ep_param_get(void) {
 
 void ep_param_set(int param) {
 	int plain = 0, endom = 0, super = 0;
-	char str[2 * FP_BYTES + 2];
+	char str[2 * RLC_FP_BYTES + 2];
 	fp_t a, b, beta;
 	ep_t g;
 	bn_t r, h, lamb;
@@ -662,6 +678,12 @@ void ep_param_set(int param) {
 				plain = 1;
 				break;
 #endif
+#if defined(EP_ENDOM) && FP_PRIME == 446
+			case BN_P446:
+				ASSIGNK(BN_P446, BN_446);
+				endom = 1;
+				break;
+#endif
 #if defined(EP_ENDOM) && FP_PRIME == 455
 			case B12_P455:
 				ASSIGNK(B12_P455, B12_455);
@@ -720,7 +742,6 @@ void ep_param_set(int param) {
 		(void)super;
 		(void)beta;
 
-		fp_zero(g->z);
 		fp_set_dig(g->z, 1);
 		g->norm = 1;
 
@@ -763,20 +784,20 @@ int ep_param_set_any(void) {
 	int r0, r1, r2;
 
 	r0 = ep_param_set_any_plain();
-	if (r0 == STS_ERR) {
+	if (r0 == RLC_ERR) {
 		r1 = ep_param_set_any_endom();
-		if (r1 == STS_ERR) {
+		if (r1 == RLC_ERR) {
 			r2 = ep_param_set_any_pairf();
-			if (r2 == STS_ERR) {
-				return STS_ERR;
+			if (r2 == RLC_ERR) {
+				return RLC_ERR;
 			}
 		}
 	}
-	return STS_OK;
+	return RLC_OK;
 }
 
 int ep_param_set_any_plain(void) {
-	int r = STS_OK;
+	int r = RLC_OK;
 #if defined(EP_PLAIN)
 #if FP_PRIME == 160
 	ep_param_set(SECG_P160);
@@ -805,16 +826,16 @@ int ep_param_set_any_plain(void) {
 #elif FP_PRIME == 521
 	ep_param_set(NIST_P521);
 #else
-	r = STS_ERR;
+	r = RLC_ERR;
 #endif
 #else
-	r = STS_ERR;
+	r = RLC_ERR;
 #endif
 	return r;
 }
 
 int ep_param_set_any_endom(void) {
-	int r = STS_OK;
+	int r = RLC_OK;
 #if defined(EP_ENDOM)
 #if FP_PRIME == 158
 	ep_param_set(BN_P158);
@@ -839,32 +860,32 @@ int ep_param_set_any_endom(void) {
 #elif FP_PRIME == 508
 	ep_param_set(KSS_P508);
 #elif FP_PRIME == 638
-	ep_param_set(B12_P638);
+	ep_param_set(BN_P638);
 #else
-	r = STS_ERR;
+	r = RLC_ERR;
 #endif
 #else
-	r = STS_ERR;
+	r = RLC_ERR;
 #endif
 	return r;
 }
 
 int ep_param_set_any_super(void) {
-	int r = STS_OK;
+	int r = RLC_OK;
 #if defined(EP_SUPER)
 #if FP_PRIME == 1536
 	ep_param_set(SS_P1536);
 #else
-	r = STS_ERR;
+	r = RLC_ERR;
 #endif
 #else
-	r = STS_ERR;
+	r = RLC_ERR;
 #endif
 	return r;
 }
 
 int ep_param_set_any_pairf(void) {
-	int type = 0, degree = 0, r = STS_OK;
+	int type = 0, degree = 0, r = RLC_OK;
 #if defined(EP_ENDOM)
 #if FP_PRIME == 158
 	ep_param_set(BN_P158);
@@ -886,6 +907,10 @@ int ep_param_set_any_pairf(void) {
 	ep_param_set(BN_P382);
 	type = EP_DTYPE;
 	degree = 2;
+#elif FP_PRIME == 446
+	ep_param_set(BN_P446);
+	type = EP_DTYPE;
+	degree = 2;
 #elif FP_PRIME == 455
 	ep_param_set(B12_P455);
 	type = EP_DTYPE;
@@ -899,20 +924,20 @@ int ep_param_set_any_pairf(void) {
 	type = EP_DTYPE;
 	degree = 3;
 #elif FP_PRIME == 638
-	ep_param_set(B12_P638);
+	ep_param_set(BN_P638);
 	type = EP_MTYPE;
 	degree = 2;
 #elif FP_PRIME == 1536
 	ep_param_set(SS_P1536);
 	degree = 0;
 #else
-	r = STS_ERR;
+	r = RLC_ERR;
 #endif
 #else
-	r = STS_ERR;
+	r = RLC_ERR;
 #endif
 #ifdef WITH_PP
-	if (r == STS_OK) {
+	if (r == RLC_OK) {
 		if (degree == 0) {
 			ep2_curve_set_twist(0);
 		}
@@ -920,7 +945,7 @@ int ep_param_set_any_pairf(void) {
 			ep2_curve_set_twist(type);
 		}
 		if (degree == 3 || degree == 4) {
-			r = STS_ERR;
+			r = RLC_ERR;
 		}
 	}
 #else
@@ -980,6 +1005,9 @@ void ep_param_print(void) {
 		case B12_P381:
 			util_banner("Curve B12-P381:", 0);
 			break;
+		case BN_P446:
+			util_banner("Curve BN-P446:", 0);
+			break;
 		case B12_P455:
 			util_banner("Curve B12-P455:", 0);
 			break;
@@ -1032,6 +1060,7 @@ int ep_param_level(void) {
 			return 128;
 		case B12_P381:
 		case BN_P382:
+		case BN_P446:
 		case SS_P1536:
 			return 128;
 		case B12_P455:
@@ -1053,6 +1082,7 @@ int ep_param_embed(void) {
 		case BN_P254:
 		case BN_P256:
 		case BN_P382:
+		case BN_P446:
 		case BN_P638:
 		case B12_P381:
 		case B12_P455:

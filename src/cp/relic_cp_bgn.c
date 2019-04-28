@@ -1,23 +1,24 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2017 RELIC Authors
+ * Copyright (C) 2007-2019 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
  * for contact information.
  *
- * RELIC is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * RELIC is free software; you can redistribute it and/or modify it under the
+ * terms of the version 2.1 (or later) of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; or version 2.0 of the Apache
+ * License as published by the Apache Software Foundation. See the LICENSE files
+ * for more details.
  *
- * RELIC is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * RELIC is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the LICENSE files for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RELIC. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General Public or the
+ * Apache License along with RELIC. If not, see <https://www.gnu.org/licenses/>
+ * or <https://www.apache.org/licenses/>.
  */
 
 /**
@@ -46,7 +47,7 @@
 
 int cp_bgn_gen(bgn_t pub, bgn_t prv) {
 	bn_t n;
-	int result = STS_OK;
+	int result = RLC_OK;
 
 	bn_null(n);
 
@@ -68,7 +69,7 @@ int cp_bgn_gen(bgn_t pub, bgn_t prv) {
 		g2_mul_gen(pub->hz, prv->z);
 	}
 	CATCH_ANY {
-		result = STS_ERR;
+		result = RLC_ERR;
 	}
 	FINALLY {
 		bn_free(n);
@@ -80,7 +81,7 @@ int cp_bgn_gen(bgn_t pub, bgn_t prv) {
 int cp_bgn_enc1(g1_t out[2], dig_t in, bgn_t pub) {
 	bn_t r, n;
 	g1_t t;
-	int result = STS_OK;
+	int result = RLC_OK;
 
 	bn_null(n);
 	bn_null(r);
@@ -108,7 +109,7 @@ int cp_bgn_enc1(g1_t out[2], dig_t in, bgn_t pub) {
 		g1_norm(out[1], out[1]);
 	}
 	CATCH_ANY {
-		result = STS_ERR;
+		result = RLC_ERR;
 	}
 	FINALLY {
 		bn_free(n);
@@ -122,7 +123,7 @@ int cp_bgn_enc1(g1_t out[2], dig_t in, bgn_t pub) {
 int cp_bgn_dec1(dig_t *out, g1_t in[2], bgn_t prv) {
 	bn_t r, n;
 	g1_t s, t, u;
-	int i, result = STS_ERR;
+	int i, result = RLC_ERR;
 
 	bn_null(n);
 	bn_null(r);
@@ -151,12 +152,12 @@ int cp_bgn_dec1(dig_t *out, g1_t in[2], bgn_t prv) {
 
 		if (g1_is_infty(t) == 1){
 			*out = 0;
-			result = STS_OK;
+			result = RLC_OK;
 		} else {
 			for (i = 0; i < INT_MAX; i++) {
-				if (g1_cmp(t, u) == CMP_EQ) {
+				if (g1_cmp(t, u) == RLC_EQ) {
 					*out = i + 1;
-					result = STS_OK;
+					result = RLC_OK;
 					break;
 				}
 				g1_add(u, u, s);
@@ -164,7 +165,7 @@ int cp_bgn_dec1(dig_t *out, g1_t in[2], bgn_t prv) {
 			}
 		}
 	} CATCH_ANY {
-		result = STS_ERR;
+		result = RLC_ERR;
 	}
 	FINALLY {
 		bn_free(n);
@@ -180,7 +181,7 @@ int cp_bgn_dec1(dig_t *out, g1_t in[2], bgn_t prv) {
 int cp_bgn_enc2(g2_t out[2], dig_t in, bgn_t pub) {
 	bn_t r, n;
 	g2_t t;
-	int result = STS_OK;
+	int result = RLC_OK;
 
 	bn_null(n);
 	bn_null(r);
@@ -207,7 +208,7 @@ int cp_bgn_enc2(g2_t out[2], dig_t in, bgn_t pub) {
 		g2_norm(out[1], out[1]);
 	}
 	CATCH_ANY {
-		result = STS_ERR;
+		result = RLC_ERR;
 	}
 	FINALLY {
 		bn_free(n);
@@ -221,7 +222,7 @@ int cp_bgn_enc2(g2_t out[2], dig_t in, bgn_t pub) {
 int cp_bgn_dec2(dig_t *out, g2_t in[2], bgn_t prv) {
 	bn_t r, n;
 	g2_t s, t, u;
-	int i, result = STS_ERR;
+	int i, result = RLC_ERR;
 
 	bn_null(n);
 	bn_null(r);
@@ -250,12 +251,12 @@ int cp_bgn_dec2(dig_t *out, g2_t in[2], bgn_t prv) {
 
 		if (g2_is_infty(t) == 1) {
 			*out = 0;
-			result = STS_OK;
+			result = RLC_OK;
 		} else {
 			for (i = 0; i < INT_MAX; i++) {
-				if (g2_cmp(t, u) == CMP_EQ) {
+				if (g2_cmp(t, u) == RLC_EQ) {
 					*out = i + 1;
-					result = STS_OK;
+					result = RLC_OK;
 					break;
 				}
 				g2_add(u, u, s);
@@ -263,7 +264,7 @@ int cp_bgn_dec2(dig_t *out, g2_t in[2], bgn_t prv) {
 			}
 		}
 	} CATCH_ANY {
-		result = STS_ERR;
+		result = RLC_ERR;
 	}
 	FINALLY {
 		bn_free(n);
@@ -280,7 +281,7 @@ int cp_bgn_add(gt_t e[4], gt_t c[4], gt_t d[4]) {
 	for (int i = 0; i < 4; i++) {
 		gt_mul(e[i], c[i], d[i]);
 	}
-	return STS_OK;
+	return RLC_OK;
 }
 
 int cp_bgn_mul(gt_t e[4], g1_t c[2], g2_t d[2]) {
@@ -289,11 +290,11 @@ int cp_bgn_mul(gt_t e[4], g1_t c[2], g2_t d[2]) {
 			pc_map(e[2*i + j], c[i], d[j]);
 		}
 	}
-	return STS_OK;
+	return RLC_OK;
 }
 
 int cp_bgn_dec(dig_t *out, gt_t in[4], bgn_t prv) {
-	int i, result = STS_ERR;
+	int i, result = RLC_ERR;
 	g1_t g;
 	g2_t h;
 	gt_t t[4];
@@ -348,19 +349,19 @@ int cp_bgn_dec(dig_t *out, gt_t in[4], bgn_t prv) {
 
 		if (gt_is_unity(t[3]) == 1) {
 			*out = 0;
-			result = STS_OK;
+			result = RLC_OK;
 		} else {
 			for (i = 0; i < INT_MAX; i++) {
-				if (gt_cmp(t[2], t[3]) == CMP_EQ) {
+				if (gt_cmp(t[2], t[3]) == RLC_EQ) {
 					*out = i + 1;
-					result = STS_OK;
+					result = RLC_OK;
 					break;
 				}
 				gt_mul(t[2], t[2], t[1]);
 			}
 		}
 	} CATCH_ANY {
-		result = STS_ERR;
+		result = RLC_ERR;
 	} FINALLY {
 		bn_free(n);
 		bn_free(r);

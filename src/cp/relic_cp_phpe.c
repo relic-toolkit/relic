@@ -1,23 +1,24 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2017 RELIC Authors
+ * Copyright (C) 2007-2019 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
  * for contact information.
  *
- * RELIC is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * RELIC is free software; you can redistribute it and/or modify it under the
+ * terms of the version 2.1 (or later) of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; or version 2.0 of the Apache
+ * License as published by the Apache Software Foundation. See the LICENSE files
+ * for more details.
  *
- * RELIC is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * RELIC is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the LICENSE files for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RELIC. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General Public or the
+ * Apache License along with RELIC. If not, see <https://www.gnu.org/licenses/>
+ * or <https://www.apache.org/licenses/>.
  */
 
 /**
@@ -44,7 +45,7 @@
 
 int cp_phpe_gen(bn_t n, bn_t l, int bits) {
 	bn_t p, q;
-	int result = STS_OK;
+	int result = RLC_OK;
 
 	bn_null(p);
 	bn_null(q);
@@ -57,7 +58,7 @@ int cp_phpe_gen(bn_t n, bn_t l, int bits) {
 		do {
 			bn_gen_prime(p, bits / 2);
 			bn_gen_prime(q, bits / 2);
-		} while (bn_cmp(p, q) == CMP_EQ);
+		} while (bn_cmp(p, q) == RLC_EQ);
 
 		/* Compute n = pq and l = \phi(n). */
 		bn_mul(n, p, q);
@@ -66,7 +67,7 @@ int cp_phpe_gen(bn_t n, bn_t l, int bits) {
 		bn_mul(l, p, q);
 	}
 	CATCH_ANY {
-		result = STS_ERR;
+		result = RLC_ERR;
 	}
 	FINALLY {
 		bn_free(p);
@@ -78,7 +79,7 @@ int cp_phpe_gen(bn_t n, bn_t l, int bits) {
 
 int cp_phpe_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len, bn_t n) {
 	bn_t g, m, r, s;
-	int size, result = STS_OK;
+	int size, result = RLC_OK;
 
 	bn_null(g);
 	bn_null(m);
@@ -88,7 +89,7 @@ int cp_phpe_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len, bn_t n) {
 	size = bn_size_bin(n);
 
 	if (n == NULL || in_len <= 0 || in_len > size) {
-		return STS_ERR;
+		return RLC_ERR;
 	}
 
 	TRY {
@@ -115,11 +116,11 @@ int cp_phpe_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len, bn_t n) {
 			memset(out, 0, *out_len);
 			bn_write_bin(out, *out_len, m);
 		} else {
-			result = STS_ERR;
+			result = RLC_ERR;
 		}
 	}
 	CATCH_ANY {
-		result = STS_ERR;
+		result = RLC_ERR;
 	}
 	FINALLY {
 		bn_free(g);
@@ -134,12 +135,12 @@ int cp_phpe_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len, bn_t n) {
 int cp_phpe_dec(uint8_t *out, int out_len, uint8_t *in, int in_len, bn_t n,
 	bn_t l) {
 	bn_t c, u, s;
-	int size, result = STS_OK;
+	int size, result = RLC_OK;
 
 	size = bn_size_bin(n);
 
 	if (in_len < 0 || in_len != 2 * size) {
-		return STS_ERR;
+		return RLC_ERR;
 	}
 
 	bn_null(c);
@@ -158,7 +159,7 @@ int cp_phpe_dec(uint8_t *out, int out_len, uint8_t *in, int in_len, bn_t n,
 		bn_sub_dig(c, c, 1);
 		bn_div(c, c, n);
 		bn_gcd_ext(s, u, NULL, l, n);
-		if (bn_sign(u) == BN_NEG) {
+		if (bn_sign(u) == RLC_NEG) {
 			bn_add(u, u, n);
 		}
 		bn_mul(c, c, u);
@@ -169,10 +170,10 @@ int cp_phpe_dec(uint8_t *out, int out_len, uint8_t *in, int in_len, bn_t n,
 			memset(out, 0, out_len);
 			bn_write_bin(out + (out_len - size), size, c);
 		} else {
-			result = STS_ERR;
+			result = RLC_ERR;
 		}
 	} CATCH_ANY {
-		result = STS_ERR;
+		result = RLC_ERR;
 	}
 	FINALLY {
 		bn_free(c);

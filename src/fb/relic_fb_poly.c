@@ -1,23 +1,24 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2017 RELIC Authors
+ * Copyright (C) 2007-2019 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
  * for contact information.
  *
- * RELIC is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * RELIC is free software; you can redistribute it and/or modify it under the
+ * terms of the version 2.1 (or later) of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; or version 2.0 of the Apache
+ * License as published by the Apache Software Foundation. See the LICENSE files
+ * for more details.
  *
- * RELIC is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * RELIC is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the LICENSE files for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RELIC. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General Public or the
+ * Apache License along with RELIC. If not, see <https://www.gnu.org/licenses/>
+ * or <https://www.apache.org/licenses/>.
  */
 
 /**
@@ -65,11 +66,11 @@ static void find_trace(void) {
 		fb_new(t1);
 
 		counter = 0;
-		for (int i = 0; i < FB_BITS; i++) {
+		for (int i = 0; i < RLC_FB_BITS; i++) {
 			fb_zero(t0);
 			fb_set_bit(t0, i, 1);
 			fb_copy(t1, t0);
-			for (int j = 1; j < FB_BITS; j++) {
+			for (int j = 1; j < RLC_FB_BITS; j++) {
 				fb_sqr(t1, t1);
 				fb_add(t0, t0, t1);
 			}
@@ -123,7 +124,7 @@ static void find_solve(void) {
 		fb_new(t0);
 
 		l = 0;
-		for (i = 0; i < FB_BITS; i += 8, l++) {
+		for (i = 0; i < RLC_FB_BITS; i += 8, l++) {
 			for (j = 0; j < 16; j++) {
 				fb_zero(t0);
 				for (k = 0; k < 4; k++) {
@@ -132,7 +133,7 @@ static void find_solve(void) {
 					}
 				}
 				fb_copy(ctx->fb_half[l][j], t0);
-				for (k = 0; k < (FB_BITS - 1) / 2; k++) {
+				for (k = 0; k < (RLC_FB_BITS - 1) / 2; k++) {
 					fb_sqr(ctx->fb_half[l][j], ctx->fb_half[l][j]);
 					fb_sqr(ctx->fb_half[l][j], ctx->fb_half[l][j]);
 					fb_add(ctx->fb_half[l][j], ctx->fb_half[l][j], t0);
@@ -161,7 +162,7 @@ static void find_srz(void) {
 
 	fb_set_dig(ctx->fb_srz, 2);
 
-	for (int i = 1; i < FB_BITS; i++) {
+	for (int i = 1; i < RLC_FB_BITS; i++) {
 		fb_sqr(ctx->fb_srz, ctx->fb_srz);
 	}
 
@@ -177,17 +178,17 @@ static void find_srz(void) {
 #if FB_INV == ITOHT || !defined(STRIP)
 
 /**
- * Finds an addition chain for (FB_BITS - 1).
+ * Finds an addition chain for (RLC_FB_BITS - 1).
  */
 static void find_chain(void) {
 	int i, j, k, l;
 	ctx_t *ctx = core_get();
 
 	ctx->chain_len = -1;
-	for (int i = 0; i < MAX_TERMS; i++) {
+	for (int i = 0; i < RLC_TERMS; i++) {
 		ctx->chain[i] = (i << 8) + i;
 	}
-	switch (FB_BITS) {
+	switch (RLC_FB_BITS) {
 		case 127:
 			ctx->chain[1] = (1 << 8) + 0;
 			ctx->chain[4] = (4 << 8) + 2;
@@ -242,7 +243,7 @@ static void find_chain(void) {
 			break;
 		default:
 			l = 0;
-			j = (FB_BITS - 1);
+			j = (RLC_FB_BITS - 1);
 			for (k = 16; k >= 0; k--) {
 				if (j & (1 << k)) {
 					break;
@@ -268,8 +269,8 @@ static void find_chain(void) {
 
 	int x, y, *u = RELIC_ALLOCA(int, ctx->chain_len + 1);
 
-	for (i = 0; i < MAX_TERMS; i++) {
-		for (j = 0; j < RELIC_FB_TABLE; j++) {
+	for (i = 0; i < RLC_TERMS; i++) {
+		for (j = 0; j < RLC_FB_TABLE; j++) {
 			ctx->fb_tab_ptr[i][j] = &(ctx->fb_tab_sqr[i][j]);
 		}
 	}
@@ -341,8 +342,8 @@ void fb_poly_add(fb_t c, const fb_t a) {
 	}
 
 	if (ctx->fb_pa != 0) {
-		c[FB_DIGS - 1] ^= ctx->fb_poly[FB_DIGS - 1];
-		if (ctx->fb_na != FB_DIGS - 1) {
+		c[RLC_FB_DIGS - 1] ^= ctx->fb_poly[RLC_FB_DIGS - 1];
+		if (ctx->fb_na != RLC_FB_DIGS - 1) {
 			c[ctx->fb_na] ^= ctx->fb_poly[ctx->fb_na];
 		}
 		if (ctx->fb_pb != 0 && ctx->fb_pc != 0) {
@@ -359,10 +360,6 @@ void fb_poly_add(fb_t c, const fb_t a) {
 	} else {
 		fb_add(c, a, ctx->fb_poly);
 	}
-}
-
-void fb_poly_sub(fb_t c, const fb_t a) {
-	fb_poly_add(c, a);
 }
 
 void fb_poly_set_dense(const fb_t f) {
@@ -382,12 +379,12 @@ void fb_poly_set_trino(int a) {
 		ctx->fb_pa = a;
 		ctx->fb_pb = ctx->fb_pc = 0;
 
-		ctx->fb_na = ctx->fb_pa >> FB_DIG_LOG;
+		ctx->fb_na = ctx->fb_pa >> RLC_DIG_LOG;
 		ctx->fb_nb = ctx->fb_nc = -1;
 
 		fb_new(f);
 		fb_zero(f);
-		fb_set_bit(f, FB_BITS, 1);
+		fb_set_bit(f, RLC_FB_BITS, 1);
 		fb_set_bit(f, a, 1);
 		fb_set_bit(f, 0, 1);
 		fb_poly_set(f);
@@ -413,12 +410,12 @@ void fb_poly_set_penta(int a, int b, int c) {
 		ctx->fb_pb = b;
 		ctx->fb_pc = c;
 
-		ctx->fb_na = ctx->fb_pa >> FB_DIG_LOG;
-		ctx->fb_nb = ctx->fb_pb >> FB_DIG_LOG;
-		ctx->fb_nc = ctx->fb_pc >> FB_DIG_LOG;
+		ctx->fb_na = ctx->fb_pa >> RLC_DIG_LOG;
+		ctx->fb_nb = ctx->fb_pb >> RLC_DIG_LOG;
+		ctx->fb_nc = ctx->fb_pc >> RLC_DIG_LOG;
 
 		fb_zero(f);
-		fb_set_bit(f, FB_BITS, 1);
+		fb_set_bit(f, RLC_FB_BITS, 1);
 		fb_set_bit(f, a, 1);
 		fb_set_bit(f, b, 1);
 		fb_set_bit(f, c, 1);
@@ -498,7 +495,7 @@ const dig_t *fb_poly_get_slv(void) {
 const int *fb_poly_get_chain(int *len) {
 #if FB_INV == ITOHT || !defined(STRIP)
 	ctx_t *ctx = core_get();
-	if (ctx->chain_len > 0 && ctx->chain_len < MAX_TERMS) {
+	if (ctx->chain_len > 0 && ctx->chain_len < RLC_TERMS) {
 		if (len != NULL) {
 			*len = ctx->chain_len;
 		}

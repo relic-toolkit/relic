@@ -1,23 +1,24 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2017 RELIC Authors
+ * Copyright (C) 2007-2019 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
  * for contact information.
  *
- * RELIC is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * RELIC is free software; you can redistribute it and/or modify it under the
+ * terms of the version 2.1 (or later) of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; or version 2.0 of the Apache
+ * License as published by the Apache Software Foundation. See the LICENSE files
+ * for more details.
  *
- * RELIC is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * RELIC is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the LICENSE files for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RELIC. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General Public or the
+ * Apache License along with RELIC. If not, see <https://www.gnu.org/licenses/>
+ * or <https://www.apache.org/licenses/>.
  */
 
 /**
@@ -32,8 +33,8 @@
  * @ingroup fpx
  */
 
-#ifndef RELIC_FPX_H
-#define RELIC_FPX_H
+#ifndef RLC_FPX_H
+#define RLC_FPX_H
 
 #include "relic_fp.h"
 #include "relic_types.h"
@@ -657,7 +658,7 @@ int fp2_size_bin(fp2_t a, int pack);
  * @param[in] len			- the buffer capacity.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is not correct.
  */
-void fp2_read_bin(fp2_t a, uint8_t *bin, int len);
+void fp2_read_bin(fp2_t a, const uint8_t *bin, int len);
 
 /**
  * Writes a quadratic extension field element to a byte vector in big-endian
@@ -677,7 +678,7 @@ void fp2_write_bin(uint8_t *bin, int len, fp2_t a, int pack);
  *
  * @param[in] A				- the first quadratic extension field element.
  * @param[in] B				- the second quadratic extension field element.
- * @return CMP_LT if a < b, CMP_EQ if a == b and CMP_GT if a > b.
+ * @return RLC_EQ if a == b, and RLC_NE otherwise.
  */
 int fp2_cmp(fp2_t a, fp2_t b);
 
@@ -687,7 +688,7 @@ int fp2_cmp(fp2_t a, fp2_t b);
  *
  * @param[in] a				- the quadratic extension field element.
  * @param[in] b				- the digit.
- * @return CMP_LT if a < b, CMP_EQ if a == b and CMP_GT if a > b.
+ * @return RLC_EQ if a == b, and RLC_NE otherwise.
  */
 int fp2_cmp_dig(fp2_t a, dig_t b);
 
@@ -991,7 +992,7 @@ int fp3_size_bin(fp3_t a);
  * @param[in] len			- the buffer capacity.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is not correct.
  */
-void fp3_read_bin(fp3_t a, uint8_t *bin, int len);
+void fp3_read_bin(fp3_t a, const uint8_t *bin, int len);
 
 /**
  * Writes a cubic extension field element to a byte vector in big-endian
@@ -1010,7 +1011,7 @@ void fp3_write_bin(uint8_t *bin, int len, fp3_t a);
  *
  * @param[in] A				- the first cubic extension field element.
  * @param[in] B				- the second cubic extension field element.
- * @return CMP_LT if a < b, CMP_EQ if a == b and CMP_GT if a > b.
+ * @return RLC_EQ if a == b, and RLC_NE otherwise.
  */
 int fp3_cmp(fp3_t a, fp3_t b);
 
@@ -1020,7 +1021,7 @@ int fp3_cmp(fp3_t a, fp3_t b);
  *
  * @param[in] a				- the cubic extension field element.
  * @param[in] b				- the digit.
- * @return CMP_LT if a < b, CMP_EQ if a == b and CMP_GT if a > b.
+ * @return RLC_EQ if a == b, and RLC_NE otherwise.
  */
 int fp3_cmp_dig(fp3_t a, dig_t b);
 
@@ -1271,7 +1272,7 @@ int fp6_size_bin(fp6_t a);
  * @param[in] len			- the buffer capacity.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is not correct.
  */
-void fp6_read_bin(fp6_t a, uint8_t *bin, int len);
+void fp6_read_bin(fp6_t a, const uint8_t *bin, int len);
 
 /**
  * Writes a setix extension field element to a byte vector in big-endian
@@ -1290,7 +1291,7 @@ void fp6_write_bin(uint8_t *bin, int len, fp6_t a);
  *
  * @param[in] A				- the first sextic extension field element.
  * @param[in] B				- the second sextic extension field element.
- * @return CMP_LT if a < b, CMP_EQ if a == b and CMP_GT if a > b.
+ * @return RLC_EQ if a == b, and RLC_NE otherwise.
  */
 int fp6_cmp(fp6_t a, fp6_t b);
 
@@ -1300,7 +1301,7 @@ int fp6_cmp(fp6_t a, fp6_t b);
  *
  * @param[in] a				- the sextic extension field element.
  * @param[in] b				- the digit.
- * @return CMP_LT if a < b, CMP_EQ if a == b and CMP_GT if a > b.
+ * @return RLC_EQ if a == b, and RLC_NE otherwise.
  */
 int fp6_cmp_dig(fp6_t a, dig_t b);
 
@@ -1503,7 +1504,7 @@ int fp12_size_bin(fp12_t a, int pack);
  * @param[in] len			- the buffer capacity.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is not correct.
  */
-void fp12_read_bin(fp12_t a, uint8_t *bin, int len);
+void fp12_read_bin(fp12_t a, const uint8_t *bin, int len);
 
 /**
  * Writes a setix extension field element to a byte vector in big-endian
@@ -1523,7 +1524,7 @@ void fp12_write_bin(uint8_t *bin, int len, fp12_t a, int pack);
  *
  * @param[in] a				- the first dodecic extension field element.
  * @param[in] b				- the second dodecic extension field element.
- * @return CMP_LT if a < b, CMP_EQ if a == b and CMP_GT if a > b.
+ * @return RLC_EQ if a == b, and RLC_NE otherwise.
  */
 int fp12_cmp(fp12_t a, fp12_t b);
 
@@ -1533,7 +1534,7 @@ int fp12_cmp(fp12_t a, fp12_t b);
  *
  * @param[in] a				- the dodecic extension field element.
  * @param[in] b				- the digit.
- * @return CMP_LT if a < b, CMP_EQ if a == b and CMP_GT if a > b.
+ * @return RLC_EQ if a == b, and RLC_NE otherwise.
  */
 int fp12_cmp_dig(fp12_t a, dig_t b);
 
@@ -1846,7 +1847,7 @@ void fp18_print(fp18_t a);
  *
  * @param[in] a				- the first octodecic extension field element.
  * @param[in] b				- the second octodecic extension field element.
- * @return CMP_LT if a < b, CMP_EQ if a == b and CMP_GT if a > b.
+ * @return RLC_EQ if a == b, and RLC_NE otherwise.
  */
 int fp18_cmp(fp18_t a, fp18_t b);
 
@@ -1856,7 +1857,7 @@ int fp18_cmp(fp18_t a, fp18_t b);
  *
  * @param[in] a				- the octodecic extension field element.
  * @param[in] b				- the digit.
- * @return CMP_LT if a < b, CMP_EQ if a == b and CMP_GT if a > b.
+ * @return RLC_EQ if a == b, and RLC_NE otherwise.
  */
 int fp18_cmp_dig(fp18_t a, dig_t b);
 
@@ -2071,4 +2072,4 @@ void fp18_exp_cyc(fp18_t c, fp18_t a, bn_t b);
  */
 void fp18_exp_cyc_sps(fp18_t c, fp18_t a, int *b, int l);
 
-#endif /* !RELIC_FPX_H */
+#endif /* !RLC_FPX_H */

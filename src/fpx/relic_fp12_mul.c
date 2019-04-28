@@ -1,23 +1,24 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2017 RELIC Authors
+ * Copyright (C) 2007-2019 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
  * for contact information.
  *
- * RELIC is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * RELIC is free software; you can redistribute it and/or modify it under the
+ * terms of the version 2.1 (or later) of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; or version 2.0 of the Apache
+ * License as published by the Apache Software Foundation. See the LICENSE files
+ * for more details.
  *
- * RELIC is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * RELIC is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the LICENSE files for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RELIC. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General Public or the
+ * Apache License along with RELIC. If not, see <https://www.gnu.org/licenses/>
+ * or <https://www.apache.org/licenses/>.
  */
 
 /**
@@ -57,7 +58,7 @@ inline static void fp6_mul_dxs_unr_lazyr(dv6_t c, fp6_t a, fp6_t b) {
 		fp2_new(t0);
 		fp2_new(t1);
 
-#ifdef FP_SPACE
+#ifdef RLC_FP_ROOM
 		fp2_mulc_low(u0, a[0], b[0]);
 		fp2_mulc_low(u1, a[1], b[1]);
 		fp2_addn_low(t0, a[0], a[1]);
@@ -97,7 +98,7 @@ inline static void fp6_mul_dxs_unr_lazyr(dv6_t c, fp6_t a, fp6_t b) {
 		fp2_addc_low(c[2], u1, u2);
 #endif
 
-#ifdef FP_SPACE
+#ifdef RLC_FP_ROOM
 
 #else
 
@@ -290,10 +291,10 @@ void fp12_mul_lazyr(fp12_t c, fp12_t a, fp12_t b) {
 		}
 		/* c_0 = a_0b_0 + v * a_1b_1. */
 		fp2_nord_low(u2[0], u1[2]);
-		dv_copy(u2[1][0], u1[0][0], 2 * FP_DIGS);
-		dv_copy(u2[1][1], u1[0][1], 2 * FP_DIGS);
-		dv_copy(u2[2][0], u1[1][0], 2 * FP_DIGS);
-		dv_copy(u2[2][1], u1[1][1], 2 * FP_DIGS);
+		dv_copy(u2[1][0], u1[0][0], 2 * RLC_FP_DIGS);
+		dv_copy(u2[1][1], u1[0][1], 2 * RLC_FP_DIGS);
+		dv_copy(u2[2][0], u1[1][0], 2 * RLC_FP_DIGS);
+		dv_copy(u2[2][1], u1[1][1], 2 * RLC_FP_DIGS);
 		for (int i = 0; i < 3; i++) {
 			fp2_addc_low(u2[i], u0[i], u2[i]);
 			fp2_rdcn_low(c[0][i], u2[i]);
@@ -340,7 +341,7 @@ void fp12_mul_dxs_lazyr(fp12_t c, fp12_t a, fp12_t b) {
 			fp2_copy(t0[1], b[1][1]);
 #elif EP_ADD == PROJC
 			/* t0 = a_0 * b_0. */
-#ifdef FP_SPACE
+#ifdef RLC_FP_ROOM
 			fp2_mulc_low(u0[0], a[0][0], b[0][0]);
 			fp2_mulc_low(u0[1], a[0][1], b[0][0]);
 			fp2_mulc_low(u0[2], a[0][2], b[0][0]);

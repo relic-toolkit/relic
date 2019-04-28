@@ -1,23 +1,24 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2017 RELIC Authors
+ * Copyright (C) 2007-2019 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
  * for contact information.
  *
- * RELIC is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * RELIC is free software; you can redistribute it and/or modify it under the
+ * terms of the version 2.1 (or later) of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; or version 2.0 of the Apache
+ * License as published by the Apache Software Foundation. See the LICENSE files
+ * for more details.
  *
- * RELIC is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * RELIC is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the LICENSE files for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RELIC. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General Public or the
+ * Apache License along with RELIC. If not, see <https://www.gnu.org/licenses/>
+ * or <https://www.apache.org/licenses/>.
  */
 
 /**
@@ -49,10 +50,10 @@
  */
 static void eb_mul_ltnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 	int i, l, n;
-	int8_t tnaf[FB_BITS + 8], u;
+	int8_t tnaf[RLC_FB_BITS + 8], u;
 	eb_t t[1 << (EB_WIDTH - 2)];
 
-	if (eb_curve_opt_a() == OPT_ZERO) {
+	if (eb_curve_opt_a() == RLC_ZERO) {
 		u = -1;
 	} else {
 		u = 1;
@@ -69,7 +70,7 @@ static void eb_mul_ltnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 
 		/* Compute the w-TNAF representation of k. */
 		l = sizeof(tnaf);
-		bn_rec_tnaf(tnaf, &l, k, u, FB_BITS, EB_WIDTH);
+		bn_rec_tnaf(tnaf, &l, k, u, RLC_FB_BITS, EB_WIDTH);
 
 		n = tnaf[l - 1];
 		if (n > 0) {
@@ -91,7 +92,7 @@ static void eb_mul_ltnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 		}
 		/* Convert r to affine coordinates. */
 		eb_norm(r, r);
-		if (bn_sign(k) == BN_NEG) {
+		if (bn_sign(k) == RLC_NEG) {
 			eb_neg(r, r);
 		}
 	}
@@ -120,7 +121,7 @@ static void eb_mul_ltnaf_imp(eb_t r, const eb_t p, const bn_t k) {
  */
 static void eb_mul_lnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 	int i, l, n;
-	int8_t naf[FB_BITS + 1];
+	int8_t naf[RLC_FB_BITS + 1];
 	eb_t t[1 << (EB_WIDTH - 2)];
 
 	TRY {
@@ -158,7 +159,7 @@ static void eb_mul_lnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 		}
 		/* Convert r to affine coordinates. */
 		eb_norm(r, r);
-		if (bn_sign(k) == BN_NEG) {
+		if (bn_sign(k) == RLC_NEG) {
 			eb_neg(r, r);
 		}
 	}
@@ -190,10 +191,10 @@ static void eb_mul_lnaf_imp(eb_t r, const eb_t p, const bn_t k) {
  */
 static void eb_mul_rtnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 	int i, l, n;
-	int8_t tnaf[FB_BITS + 8], u;
+	int8_t tnaf[RLC_FB_BITS + 8], u;
 	eb_t t[1 << (EB_WIDTH - 2)];
 
-	if (eb_curve_opt_a() == OPT_ZERO) {
+	if (eb_curve_opt_a() == RLC_ZERO) {
 		u = -1;
 	} else {
 		u = 1;
@@ -209,7 +210,7 @@ static void eb_mul_rtnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 
 		/* Compute the w-TNAF representation of k. */
 		l = sizeof(tnaf);
-		bn_rec_tnaf(tnaf, &l, k, u, FB_BITS, EB_WIDTH);
+		bn_rec_tnaf(tnaf, &l, k, u, RLC_FB_BITS, EB_WIDTH);
 
 		eb_copy(r, p);
 		for (i = 0; i < l; i++) {
@@ -460,7 +461,7 @@ static void eb_mul_rtnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 		}
 		/* Convert r to affine coordinates. */
 		eb_norm(r, r);
-		if (bn_sign(k) == BN_NEG) {
+		if (bn_sign(k) == RLC_NEG) {
 			eb_neg(r, r);
 		}
 	}
@@ -489,7 +490,7 @@ static void eb_mul_rtnaf_imp(eb_t r, const eb_t p, const bn_t k) {
  */
 static void eb_mul_rnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 	int i, l, n;
-	int8_t naf[FB_BITS + 1];
+	int8_t naf[RLC_FB_BITS + 1];
 	eb_t t[1 << (EB_WIDTH - 2)];
 
 	TRY {
@@ -586,7 +587,7 @@ static void eb_mul_rnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 		}
 		/* Convert r to affine coordinates. */
 		eb_norm(r, r);
-		if (bn_sign(k) == BN_NEG) {
+		if (bn_sign(k) == RLC_NEG) {
 			eb_neg(r, r);
 		}
 	}
@@ -632,7 +633,7 @@ void eb_mul_basic(eb_t r, const eb_t p, const bn_t k) {
 		}
 
 		eb_norm(r, t);
-		if (bn_sign(k) == BN_NEG) {
+		if (bn_sign(k) == RLC_NEG) {
 			eb_neg(r, r);
 		}
 	}
@@ -684,17 +685,17 @@ void eb_mul_lodah(eb_t r, const eb_t p, const bn_t k) {
 		fb_set_bit(z1, 0, 1);
 		fb_sqr(z2, p->x);
 		fb_sqr(x2, z2);
-		dv_zero(r5, 2 * FB_DIGS);
+		dv_zero(r5, 2 * RLC_FB_DIGS);
 
 		b = eb_curve_get_b();
 
 		switch (eb_curve_opt_b()) {
-			case OPT_ZERO:
+			case RLC_ZERO:
 				break;
-			case OPT_ONE:
+			case RLC_ONE:
 				fb_add_dig(x2, x2, (dig_t)1);
 				break;
-			case OPT_DIGIT:
+			case RLC_TINY:
 				fb_add_dig(x2, x2, b[0]);
 				break;
 			default:
@@ -708,40 +709,40 @@ void eb_mul_lodah(eb_t r, const eb_t p, const bn_t k) {
 			fb_add(r3, r1, r2);
 			fb_muln_low(r4, r1, r2);
 			t = bn_get_bit(k, i);
-			dv_swap_cond(x1, x2, FB_DIGS, t ^ 1);
-			dv_swap_cond(z1, z2, FB_DIGS, t ^ 1);
+			dv_swap_cond(x1, x2, RLC_FB_DIGS, t ^ 1);
+			dv_swap_cond(z1, z2, RLC_FB_DIGS, t ^ 1);
 			fb_sqr(z1, r3);
 			fb_muln_low(r1, z1, p->x);
-			fb_addd_low(x1, r1, r4, 2 * FB_DIGS);
+			fb_addd_low(x1, r1, r4, 2 * RLC_FB_DIGS);
 			fb_rdcn_low(x1, x1);
 			fb_sqr(r1, z2);
 			fb_sqr(r2, x2);
 			fb_mul(z2, r1, r2);
 			switch (eb_curve_opt_b()) {
-				case OPT_ZERO:
+				case RLC_ZERO:
 					fb_sqr(x2, r2);
 					break;
-				case OPT_ONE:
+				case RLC_ONE:
 					fb_add(r1, r1, r2);
 					fb_sqr(x2, r1);
 					break;
-				case OPT_DIGIT:
+				case RLC_TINY:
 					fb_sqr(r1, r1);
 					fb_sqrl_low(x2, r2);
 					fb_mul1_low(r5, r1, b[0]);
-					fb_addd_low(x2, x2, r5, FB_DIGS + 1);
+					fb_addd_low(x2, x2, r5, RLC_FB_DIGS + 1);
 					fb_rdcn_low(x2, x2);
 					break;
 				default:
 					fb_sqr(r1, r1);
 					fb_sqrl_low(x2, r2);
 					fb_muln_low(r5, r1, b);
-					fb_addd_low(x2, x2, r5, 2 * FB_DIGS);
+					fb_addd_low(x2, x2, r5, 2 * RLC_FB_DIGS);
 					fb_rdcn_low(x2, x2);
 					break;
 			}
-			dv_swap_cond(x1, x2, FB_DIGS, t ^ 1);
-			dv_swap_cond(z1, z2, FB_DIGS, t ^ 1);
+			dv_swap_cond(x1, x2, RLC_FB_DIGS, t ^ 1);
+			dv_swap_cond(z1, z2, RLC_FB_DIGS, t ^ 1);
 		}
 
 		if (fb_is_zero(z1)) {
@@ -796,7 +797,7 @@ void eb_mul_lodah(eb_t r, const eb_t p, const bn_t k) {
 			}
 		}
 
-		if (bn_sign(k) == BN_NEG) {
+		if (bn_sign(k) == RLC_NEG) {
 			eb_neg(r, r);
 		}
 	}
@@ -872,7 +873,7 @@ void eb_mul_rwnaf(eb_t r, const eb_t p, const bn_t k) {
 
 void eb_mul_halve(eb_t r, const eb_t p, const bn_t k) {
 	int i, j, l, trc, cof;
-	int8_t naf[FB_BITS + 1] = { 0 }, *_k;
+	int8_t naf[RLC_FB_BITS + 1] = { 0 }, *_k;
 	eb_t q, s, t[1 << (EB_WIDTH - 2)];
 	bn_t n, m;
 	fb_t u, v, w, z;
@@ -932,7 +933,7 @@ void eb_mul_halve(eb_t r, const eb_t p, const bn_t k) {
 		eb_curve_get_cof(n);
 
 		/* Test if curve has a cofactor bigger than 2. */
-		if (bn_cmp_dig(n, 2) == CMP_GT) {
+		if (bn_cmp_dig(n, 2) == RLC_GT) {
 			cof = 1;
 		} else {
 			cof = 0;
@@ -945,7 +946,7 @@ void eb_mul_halve(eb_t r, const eb_t p, const bn_t k) {
 			fb_srt(u, eb_curve_get_a());
 			fb_slv(v, u);
 
-			bn_rand(n, BN_POS, l);
+			bn_rand(n, RLC_POS, l);
 
 			for (i = l - 1; i >= 0; i--, _k--) {
 				j = *_k;

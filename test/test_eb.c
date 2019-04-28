@@ -1,23 +1,24 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2017 RELIC Authors
+ * Copyright (C) 2007-2019 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
  * for contact information.
  *
- * RELIC is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * RELIC is free software; you can redistribute it and/or modify it under the
+ * terms of the version 2.1 (or later) of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; or version 2.0 of the Apache
+ * License as published by the Apache Software Foundation. See the LICENSE files
+ * for more details.
  *
- * RELIC is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * RELIC is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the LICENSE files for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RELIC. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General Public or the
+ * Apache License along with RELIC. If not, see <https://www.gnu.org/licenses/>
+ * or <https://www.apache.org/licenses/>.
  */
 
 /**
@@ -35,7 +36,7 @@
 
 static int memory(void) {
 	err_t e;
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	eb_t a;
 
 	eb_null(a);
@@ -54,15 +55,15 @@ static int memory(void) {
 		}
 	}
 	(void)a;
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	return code;
 }
 
 static int util(void) {
-	int l, code = STS_ERR;
+	int l, code = RLC_ERR;
 	eb_t a, b, c;
-	uint8_t bin[2 * FB_BYTES + 1];
+	uint8_t bin[2 * RLC_FB_BYTES + 1];
 
 	eb_null(a);
 	eb_null(b);
@@ -78,42 +79,42 @@ static int util(void) {
 			eb_rand(b);
 			eb_rand(c);
 			/* Compare points in affine coordinates. */
-			if (eb_cmp(a, c) != CMP_EQ) {
+			if (eb_cmp(a, c) != RLC_EQ) {
 				eb_copy(c, a);
-				TEST_ASSERT(eb_cmp(c, a) == CMP_EQ, end);
+				TEST_ASSERT(eb_cmp(c, a) == RLC_EQ, end);
 			}
-			if (eb_cmp(b, c) != CMP_EQ) {
+			if (eb_cmp(b, c) != RLC_EQ) {
 				eb_copy(c, b);
-				TEST_ASSERT(eb_cmp(b, c) == CMP_EQ, end);
+				TEST_ASSERT(eb_cmp(b, c) == RLC_EQ, end);
 			}
 			/* Compare with one point in projective. */
 			eb_dbl(c, a);
 			eb_norm(c, c);
 			eb_dbl(a, a);
-			TEST_ASSERT(eb_cmp(c, a) == CMP_EQ, end);
-			TEST_ASSERT(eb_cmp(a, c) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(c, a) == RLC_EQ, end);
+			TEST_ASSERT(eb_cmp(a, c) == RLC_EQ, end);
 			/* Compare with two points in projective. */
 			eb_dbl(c, c);
 			eb_dbl(a, a);
-			TEST_ASSERT(eb_cmp(c, a) == CMP_EQ, end);
-			TEST_ASSERT(eb_cmp(a, c) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(c, a) == RLC_EQ, end);
+			TEST_ASSERT(eb_cmp(a, c) == RLC_EQ, end);
 		}
 		TEST_END;
 
 		TEST_BEGIN("negation is consistent") {
 			eb_rand(a);
 			eb_neg(b, a);
-			TEST_ASSERT(eb_cmp(a, b) != CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(a, b) != RLC_EQ, end);
 			eb_neg(b, b);
-			TEST_ASSERT(eb_cmp(a, b) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(a, b) == RLC_EQ, end);
 		}
 		TEST_END;
 
 		TEST_BEGIN("assignment to random and comparison are consistent") {
 			eb_rand(a);
 			eb_set_infty(c);
-			TEST_ASSERT(eb_cmp(a, c) != CMP_EQ, end);
-			TEST_ASSERT(eb_cmp(c, a) != CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(a, c) != RLC_EQ, end);
+			TEST_ASSERT(eb_cmp(c, a) != RLC_EQ, end);
 		}
 		TEST_END;
 
@@ -124,6 +125,8 @@ static int util(void) {
 		TEST_END;
 
 		TEST_BEGIN("validity test is correct") {
+			eb_set_infty(a);
+			TEST_ASSERT(eb_is_valid(a), end);
 			eb_rand(a);
 			TEST_ASSERT(eb_is_valid(a), end);
 			fb_rand(a->x);
@@ -137,19 +140,19 @@ static int util(void) {
 				l = eb_size_bin(a, j);
 				eb_write_bin(bin, l, a, j);
 				eb_read_bin(b, bin, l);
-				TEST_ASSERT(eb_cmp(a, b) == CMP_EQ, end);
+				TEST_ASSERT(eb_cmp(a, b) == RLC_EQ, end);
 				eb_rand(a);
 				l = eb_size_bin(a, j);
 				eb_write_bin(bin, l, a, j);
 				eb_read_bin(b, bin, l);
-				TEST_ASSERT(eb_cmp(a, b) == CMP_EQ, end);
+				TEST_ASSERT(eb_cmp(a, b) == RLC_EQ, end);
 				eb_rand(a);
 				eb_dbl(a, a);
 				l = eb_size_bin(a, j);
 				eb_norm(a, a);
 				eb_write_bin(bin, l, a, j);
 				eb_read_bin(b, bin, l);
-				TEST_ASSERT(eb_cmp(a, b) == CMP_EQ, end);
+				TEST_ASSERT(eb_cmp(a, b) == RLC_EQ, end);
 			}
 		}
 		TEST_END;
@@ -157,7 +160,7 @@ static int util(void) {
 	CATCH_ANY {
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	eb_free(a);
 	eb_free(b);
@@ -166,7 +169,7 @@ static int util(void) {
 }
 
 static int addition(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	eb_t a, b, c, d, e;
 
 	eb_null(a);
@@ -187,7 +190,7 @@ static int addition(void) {
 			eb_rand(b);
 			eb_add(d, a, b);
 			eb_add(e, b, a);
-			TEST_ASSERT(eb_cmp(d, e) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("point addition is associative") {
@@ -198,16 +201,16 @@ static int addition(void) {
 			eb_add(d, d, c);
 			eb_add(e, b, c);
 			eb_add(e, e, a);
-			TEST_ASSERT(eb_cmp(d, e) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("point addition has identity") {
 			eb_rand(a);
 			eb_set_infty(d);
 			eb_add(e, a, d);
-			TEST_ASSERT(eb_cmp(e, a) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(e, a) == RLC_EQ, end);
 			eb_add(e, d, a);
-			TEST_ASSERT(eb_cmp(e, a) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(e, a) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("point addition has inverse") {
@@ -224,7 +227,7 @@ static int addition(void) {
 			eb_add(d, a, b);
 			eb_norm(d, d);
 			eb_add_basic(e, a, b);
-			TEST_ASSERT(eb_cmp(e, d) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(e, d) == RLC_EQ, end);
 		} TEST_END;
 #endif
 
@@ -244,7 +247,7 @@ static int addition(void) {
 			eb_norm(b, b);
 			eb_add(e, a, b);
 			eb_norm(e, e);
-			TEST_ASSERT(eb_cmp(e, d) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(e, d) == RLC_EQ, end);
 		} TEST_END;
 #endif
 
@@ -260,7 +263,7 @@ static int addition(void) {
 			eb_norm(a, a);
 			eb_add(e, a, b);
 			eb_norm(e, e);
-			TEST_ASSERT(eb_cmp(e, d) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(e, d) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("point addition in mixed coordinates (z1,z2 = 1) is correct") {
@@ -273,14 +276,14 @@ static int addition(void) {
 			eb_norm(d, d);
 			eb_add_projc(e, a, b);
 			eb_norm(e, e);
-			TEST_ASSERT(eb_cmp(e, d) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(e, d) == RLC_EQ, end);
 		} TEST_END;
 #endif
 	}
 	CATCH_ANY {
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	eb_free(a);
 	eb_free(b);
@@ -291,7 +294,7 @@ static int addition(void) {
 }
 
 static int subtraction(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	eb_t a, b, c, d;
 
 	eb_null(a);
@@ -311,7 +314,7 @@ static int subtraction(void) {
 			eb_sub(c, a, b);
 			eb_sub(d, b, a);
 			eb_neg(d, d);
-			TEST_ASSERT(eb_cmp(c, d) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(c, d) == RLC_EQ, end);
 		}
 		TEST_END;
 
@@ -319,7 +322,7 @@ static int subtraction(void) {
 			eb_rand(a);
 			eb_set_infty(c);
 			eb_sub(d, a, c);
-			TEST_ASSERT(eb_cmp(d, a) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(d, a) == RLC_EQ, end);
 		}
 		TEST_END;
 
@@ -337,7 +340,7 @@ static int subtraction(void) {
 			eb_sub(c, a, b);
 			eb_norm(c, c);
 			eb_sub_basic(d, a, b);
-			TEST_ASSERT(eb_cmp(c, d) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
 #endif
 
@@ -357,7 +360,7 @@ static int subtraction(void) {
 			eb_norm(b, b);
 			eb_sub(d, a, b);
 			eb_norm(d, d);
-			TEST_ASSERT(eb_cmp(c, d) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
 #endif
 
@@ -373,7 +376,7 @@ static int subtraction(void) {
 			eb_norm(a, a);
 			eb_sub(d, a, b);
 			eb_norm(d, d);
-			TEST_ASSERT(eb_cmp(c, d) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN
@@ -388,14 +391,14 @@ static int subtraction(void) {
 			eb_norm(c, c);
 			eb_sub_projc(d, a, b);
 			eb_norm(d, d);
-			TEST_ASSERT(eb_cmp(c, d) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
 #endif
 	}
 	CATCH_ANY {
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	eb_free(a);
 	eb_free(b);
@@ -405,7 +408,7 @@ static int subtraction(void) {
 }
 
 static int doubling(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	eb_t a, b, c;
 
 	eb_null(a);
@@ -423,7 +426,7 @@ static int doubling(void) {
 			eb_norm(b, b);
 			eb_dbl(c, a);
 			eb_norm(c, c);
-			TEST_ASSERT(eb_cmp(b, c) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
 #if EB_ADD == BASIC || !defined(STRIP)
@@ -432,7 +435,7 @@ static int doubling(void) {
 			eb_dbl(b, a);
 			eb_norm(b, b);
 			eb_dbl_basic(c, a);
-			TEST_ASSERT(eb_cmp(b, c) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 #endif
 
@@ -446,7 +449,7 @@ static int doubling(void) {
 			eb_norm(a, a);
 			eb_dbl(c, a);
 			eb_norm(c, c);
-			TEST_ASSERT(eb_cmp(b, c) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("point doubling in mixed coordinates (z1 = 1) is correct") {
@@ -455,14 +458,14 @@ static int doubling(void) {
 			eb_norm(b, b);
 			eb_dbl(c, a);
 			eb_norm(c, c);
-			TEST_ASSERT(eb_cmp(b, c) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 #endif
 	}
 	CATCH_ANY {
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	eb_free(a);
 	eb_free(b);
@@ -471,7 +474,7 @@ static int doubling(void) {
 }
 
 static int halving(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	eb_t a, b, c;
 
 	eb_null(a);
@@ -488,14 +491,14 @@ static int halving(void) {
 			eb_hlv(b, a);
 			eb_norm(b, b);
 			eb_dbl(c, b);
-			TEST_ASSERT(eb_cmp(a, c) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(a, c) == RLC_EQ, end);
 		}
 		TEST_END;
 	}
 	CATCH_ANY {
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	eb_free(a);
 	eb_free(b);
@@ -504,7 +507,7 @@ static int halving(void) {
 }
 
 static int frobenius(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	eb_t a, b, c;
 
 	eb_null(a);
@@ -526,10 +529,10 @@ static int frobenius(void) {
 				eb_dbl(c, a);
 				eb_add(b, c, b);
 				eb_frb(c, a);
-				if (eb_curve_opt_a() == OPT_ZERO) {
+				if (eb_curve_opt_a() == RLC_ZERO) {
 					eb_neg(c, c);
 				}
-				TEST_ASSERT(eb_cmp(b, c) == CMP_EQ, end);
+				TEST_ASSERT(eb_cmp(b, c) == RLC_EQ, end);
 			}
 			TEST_END;
 
@@ -539,7 +542,7 @@ static int frobenius(void) {
 				eb_frb(b, a);
 				eb_norm(b, b);
 				eb_frb_basic(c, a);
-				TEST_ASSERT(eb_cmp(b, c) == CMP_EQ, end);
+				TEST_ASSERT(eb_cmp(b, c) == RLC_EQ, end);
 			}
 			TEST_END;
 #endif
@@ -554,7 +557,7 @@ static int frobenius(void) {
 				eb_norm(a, a);
 				eb_frb(c, a);
 				eb_norm(c, c);
-				TEST_ASSERT(eb_cmp(b, c) == CMP_EQ, end);
+				TEST_ASSERT(eb_cmp(b, c) == RLC_EQ, end);
 			}
 			TEST_END;
 #endif
@@ -567,7 +570,7 @@ static int frobenius(void) {
 	CATCH_ANY {
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	eb_free(a);
 	eb_free(b);
@@ -576,7 +579,7 @@ static int frobenius(void) {
 }
 
 static int multiplication(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	bn_t n, k;
 	eb_t p, q, r;
 
@@ -597,6 +600,7 @@ static int multiplication(void) {
 		eb_curve_get_ord(n);
 
 		TEST_BEGIN("generator has the right order") {
+			TEST_ASSERT(eb_is_valid(p), end);
 			eb_mul(r, p, n);
 			TEST_ASSERT(eb_is_infty(r) == 1, end);
 		} TEST_END;
@@ -607,15 +611,15 @@ static int multiplication(void) {
 			TEST_ASSERT(eb_is_infty(r), end);
 			bn_set_dig(k, 1);
 			eb_mul_gen(r, k);
-			TEST_ASSERT(eb_cmp(p, r) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(p, r) == RLC_EQ, end);
 			bn_rand_mod(k, n);
 			eb_mul(q, p, k);
 			eb_mul_gen(r, k);
-			TEST_ASSERT(eb_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 			bn_neg(k, k);
 			eb_mul_gen(r, k);
 			eb_neg(r, r);
-			TEST_ASSERT(eb_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 
 #if EB_MUL == BASIC || !defined(STRIP)
@@ -625,18 +629,18 @@ static int multiplication(void) {
 			TEST_ASSERT(eb_is_infty(r), end);
 			bn_set_dig(k, 1);
 			eb_mul_basic(r, p, k);
-			TEST_ASSERT(eb_cmp(p, r) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(p, r) == RLC_EQ, end);
 			eb_rand(p);
 			eb_mul(r, p, n);
 			TEST_ASSERT(eb_is_infty(r), end);
 			bn_rand_mod(k, n);
 			eb_mul(q, p, k);
 			eb_mul_basic(r, p, k);
-			TEST_ASSERT(eb_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 			bn_neg(k, k);
 			eb_mul_basic(r, p, k);
 			eb_neg(r, r);
-			TEST_ASSERT(eb_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 #endif
 
@@ -647,18 +651,18 @@ static int multiplication(void) {
 			TEST_ASSERT(eb_is_infty(r), end);
 			bn_set_dig(k, 1);
 			eb_mul_lodah(r, p, k);
-			TEST_ASSERT(eb_cmp(p, r) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(p, r) == RLC_EQ, end);
 			eb_rand(p);
 			eb_mul(r, p, n);
 			TEST_ASSERT(eb_is_infty(r), end);
 			bn_rand_mod(k, n);
 			eb_mul(q, p, k);
 			eb_mul_lodah(r, p, k);
-			TEST_ASSERT(eb_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 			bn_neg(k, k);
 			eb_mul_lodah(r, p, k);
 			eb_neg(r, r);
-			TEST_ASSERT(eb_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 		}
 		TEST_END;
 #endif
@@ -670,18 +674,18 @@ static int multiplication(void) {
 			TEST_ASSERT(eb_is_infty(r), end);
 			bn_set_dig(k, 1);
 			eb_mul_lwnaf(r, p, k);
-			TEST_ASSERT(eb_cmp(p, r) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(p, r) == RLC_EQ, end);
 			eb_rand(p);
 			eb_mul(r, p, n);
 			TEST_ASSERT(eb_is_infty(r), end);
 			bn_rand_mod(k, n);
 			eb_mul(q, p, k);
 			eb_mul_lwnaf(r, p, k);
-			TEST_ASSERT(eb_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 			bn_neg(k, k);
 			eb_mul_lwnaf(r, p, k);
 			eb_neg(r, r);
-			TEST_ASSERT(eb_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 		}
 		TEST_END;
 #endif
@@ -693,18 +697,18 @@ static int multiplication(void) {
 			TEST_ASSERT(eb_is_infty(r), end);
 			bn_set_dig(k, 1);
 			eb_mul_rwnaf(r, p, k);
-			TEST_ASSERT(eb_cmp(p, r) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(p, r) == RLC_EQ, end);
 			eb_rand(p);
 			eb_mul(r, p, n);
 			TEST_ASSERT(eb_is_infty(r), end);
 			bn_rand_mod(k, n);
 			eb_mul(q, p, k);
 			eb_mul_rwnaf(r, p, k);
-			TEST_ASSERT(eb_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 			bn_neg(k, k);
 			eb_mul_rwnaf(r, p, k);
 			eb_neg(r, r);
-			TEST_ASSERT(eb_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 		}
 		TEST_END;
 #endif
@@ -716,18 +720,18 @@ static int multiplication(void) {
 			TEST_ASSERT(eb_is_infty(r), end);
 			bn_set_dig(k, 1);
 			eb_mul_halve(r, p, k);
-			TEST_ASSERT(eb_cmp(p, r) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(p, r) == RLC_EQ, end);
 			eb_rand(p);
 			eb_mul(r, p, n);
 			TEST_ASSERT(eb_is_infty(r), end);
 			bn_rand_mod(k, n);
 			eb_mul(q, p, k);
 			eb_mul_halve(r, p, k);
-			TEST_ASSERT(eb_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 			bn_neg(k, k);
 			eb_mul_halve(r, p, k);
 			eb_neg(r, r);
-			TEST_ASSERT(eb_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 		}
 		TEST_END;
 #endif
@@ -736,11 +740,11 @@ static int multiplication(void) {
 			eb_mul_dig(r, p, 0);
 			TEST_ASSERT(eb_is_infty(r), end);
 			eb_mul_dig(r, p, 1);
-			TEST_ASSERT(eb_cmp(p, r) == CMP_EQ, end);
-			bn_rand(k, BN_POS, BN_DIGIT);
+			TEST_ASSERT(eb_cmp(p, r) == RLC_EQ, end);
+			bn_rand(k, RLC_POS, RLC_DIG);
 			eb_mul(q, p, k);
 			eb_mul_dig(r, p, k->dp[0]);
-			TEST_ASSERT(eb_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 		}
 		TEST_END;
 
@@ -749,7 +753,7 @@ static int multiplication(void) {
 		util_print("FATAL ERROR!\n");
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	bn_free(n);
 	bn_free(k);
@@ -760,9 +764,9 @@ static int multiplication(void) {
 }
 
 static int fixed(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	bn_t n, k;
-	eb_t p, q, r, t[RELIC_EB_TABLE_MAX];
+	eb_t p, q, r, t[RLC_EB_TABLE_MAX];
 
 	bn_null(n);
 	bn_null(k);
@@ -770,7 +774,7 @@ static int fixed(void) {
 	eb_null(q);
 	eb_null(r);
 
-	for (int i = 0; i < RELIC_EB_TABLE_MAX; i++) {
+	for (int i = 0; i < RLC_EB_TABLE_MAX; i++) {
 		eb_null(t[i]);
 	}
 
@@ -783,7 +787,7 @@ static int fixed(void) {
 
 		eb_curve_get_ord(n);
 
-		for (int i = 0; i < RELIC_EB_TABLE; i++) {
+		for (int i = 0; i < RLC_EB_TABLE; i++) {
 			eb_new(t[i]);
 		}
 		TEST_BEGIN("fixed point multiplication is correct") {
@@ -794,23 +798,23 @@ static int fixed(void) {
 			TEST_ASSERT(eb_is_infty(r), end);
 			bn_set_dig(k, 1);
 			eb_mul_fix(r, (const eb_t *)t, k);
-			TEST_ASSERT(eb_cmp(p, r) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(p, r) == RLC_EQ, end);
 			bn_rand_mod(k, n);
 			eb_mul(q, p, k);
 			eb_mul_fix(q, (const eb_t *)t, k);
 			eb_mul(r, p, k);
-			TEST_ASSERT(eb_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 			bn_neg(k, k);
 			eb_mul_fix(r, (const eb_t *)t, k);
 			eb_neg(r, r);
-			TEST_ASSERT(eb_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
-		for (int i = 0; i < RELIC_EB_TABLE; i++) {
+		for (int i = 0; i < RLC_EB_TABLE; i++) {
 			eb_free(t[i]);
 		}
 
 #if EB_FIX == BASIC || !defined(STRIP)
-		for (int i = 0; i < RELIC_EB_TABLE_BASIC; i++) {
+		for (int i = 0; i < RLC_EB_TABLE_BASIC; i++) {
 			eb_new(t[i]);
 		}
 		TEST_BEGIN("binary fixed point multiplication is correct") {
@@ -821,77 +825,23 @@ static int fixed(void) {
 			TEST_ASSERT(eb_is_infty(r), end);
 			bn_set_dig(k, 1);
 			eb_mul_fix_basic(r, (const eb_t *)t, k);
-			TEST_ASSERT(eb_cmp(p, r) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(p, r) == RLC_EQ, end);
 			bn_rand_mod(k, n);
 			eb_mul(r, p, k);
 			eb_mul_fix_basic(q, (const eb_t *)t, k);
-			TEST_ASSERT(eb_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 			bn_neg(k, k);
 			eb_mul_fix_basic(r, (const eb_t *)t, k);
 			eb_neg(r, r);
-			TEST_ASSERT(eb_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
-		for (int i = 0; i < RELIC_EB_TABLE_BASIC; i++) {
-			eb_free(t[i]);
-		}
-#endif
-
-#if EB_FIX == YAOWI || !defined(STRIP)
-		for (int i = 0; i < RELIC_EB_TABLE_YAOWI; i++) {
-			eb_new(t[i]);
-		}
-		TEST_BEGIN("yao windowing fixed point multiplication is correct") {
-			eb_rand(p);
-			eb_mul_pre_yaowi(t, p);
-			bn_zero(k);
-			eb_mul_fix_yaowi(r, (const eb_t *)t, k);
-			TEST_ASSERT(eb_is_infty(r), end);
-			bn_set_dig(k, 1);
-			eb_mul_fix_yaowi(r, (const eb_t *)t, k);
-			TEST_ASSERT(eb_cmp(p, r) == CMP_EQ, end);
-			bn_rand_mod(k, n);
-			eb_mul(r, p, k);
-			eb_mul_fix_yaowi(q, (const eb_t *)t, k);
-			TEST_ASSERT(eb_cmp(q, r) == CMP_EQ, end);
-			bn_neg(k, k);
-			eb_mul_fix_yaowi(r, (const eb_t *)t, k);
-			eb_neg(r, r);
-			TEST_ASSERT(eb_cmp(q, r) == CMP_EQ, end);
-		} TEST_END;
-		for (int i = 0; i < RELIC_EB_TABLE_YAOWI; i++) {
-			eb_free(t[i]);
-		}
-#endif
-
-#if EB_FIX == NAFWI || !defined(STRIP)
-		for (int i = 0; i < RELIC_EB_TABLE_NAFWI; i++) {
-			eb_new(t[i]);
-		}
-		TEST_BEGIN("naf windowing fixed point multiplication is correct") {
-			eb_rand(p);
-			eb_mul_pre_nafwi(t, p);
-			bn_zero(k);
-			eb_mul_fix_nafwi(r, (const eb_t *)t, k);
-			TEST_ASSERT(eb_is_infty(r), end);
-			bn_set_dig(k, 1);
-			eb_mul_fix_nafwi(r, (const eb_t *)t, k);
-			TEST_ASSERT(eb_cmp(p, r) == CMP_EQ, end);
-			bn_rand_mod(k, n);
-			eb_mul(r, p, k);
-			eb_mul_fix_nafwi(q, (const eb_t *)t, k);
-			TEST_ASSERT(eb_cmp(q, r) == CMP_EQ, end);
-			bn_neg(k, k);
-			eb_mul_fix_nafwi(r, (const eb_t *)t, k);
-			eb_neg(r, r);
-			TEST_ASSERT(eb_cmp(q, r) == CMP_EQ, end);
-		} TEST_END;
-		for (int i = 0; i < RELIC_EB_TABLE_NAFWI; i++) {
+		for (int i = 0; i < RLC_EB_TABLE_BASIC; i++) {
 			eb_free(t[i]);
 		}
 #endif
 
 #if EB_FIX == COMBS || !defined(STRIP)
-		for (int i = 0; i < RELIC_EB_TABLE_COMBS; i++) {
+		for (int i = 0; i < RLC_EB_TABLE_COMBS; i++) {
 			eb_new(t[i]);
 		}
 		TEST_BEGIN("single-table comb fixed point multiplication is correct") {
@@ -902,23 +852,23 @@ static int fixed(void) {
 			TEST_ASSERT(eb_is_infty(r), end);
 			bn_set_dig(k, 1);
 			eb_mul_fix_combs(r, (const eb_t *)t, k);
-			TEST_ASSERT(eb_cmp(p, r) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(p, r) == RLC_EQ, end);
 			bn_rand_mod(k, n);
 			eb_mul(r, p, k);
 			eb_mul_fix_combs(q, (const eb_t *)t, k);
-			TEST_ASSERT(eb_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 			bn_neg(k, k);
 			eb_mul_fix_combs(r, (const eb_t *)t, k);
 			eb_neg(r, r);
-			TEST_ASSERT(eb_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
-		for (int i = 0; i < RELIC_EB_TABLE_COMBS; i++) {
+		for (int i = 0; i < RLC_EB_TABLE_COMBS; i++) {
 			eb_free(t[i]);
 		}
 #endif
 
 #if EB_FIX == COMBD || !defined(STRIP)
-		for (int i = 0; i < RELIC_EB_TABLE_COMBD; i++) {
+		for (int i = 0; i < RLC_EB_TABLE_COMBD; i++) {
 			eb_new(t[i]);
 		}
 		TEST_BEGIN("double-table comb fixed point multiplication is correct") {
@@ -929,23 +879,23 @@ static int fixed(void) {
 			TEST_ASSERT(eb_is_infty(r), end);
 			bn_set_dig(k, 1);
 			eb_mul_fix_combd(r, (const eb_t *)t, k);
-			TEST_ASSERT(eb_cmp(p, r) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(p, r) == RLC_EQ, end);
 			bn_rand_mod(k, n);
 			eb_mul(r, p, k);
 			eb_mul_fix_combd(q, (const eb_t *)t, k);
-			TEST_ASSERT(eb_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 			bn_neg(k, k);
 			eb_mul_fix_combd(r, (const eb_t *)t, k);
 			eb_neg(r, r);
-			TEST_ASSERT(eb_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
-		for (int i = 0; i < RELIC_EB_TABLE_COMBD; i++) {
+		for (int i = 0; i < RLC_EB_TABLE_COMBD; i++) {
 			eb_free(t[i]);
 		}
 #endif
 
 #if EB_FIX == LWNAF || !defined(STRIP)
-		for (int i = 0; i < RELIC_EB_TABLE_LWNAF; i++) {
+		for (int i = 0; i < RLC_EB_TABLE_LWNAF; i++) {
 			eb_new(t[i]);
 		}
 		TEST_BEGIN("left-to-right w(t)naf fixed point multiplication is correct") {
@@ -956,17 +906,17 @@ static int fixed(void) {
 			TEST_ASSERT(eb_is_infty(r), end);
 			bn_set_dig(k, 1);
 			eb_mul_fix_lwnaf(r, (const eb_t *)t, k);
-			TEST_ASSERT(eb_cmp(p, r) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(p, r) == RLC_EQ, end);
 			bn_rand_mod(k, n);
 			eb_mul(r, p, k);
 			eb_mul_fix_lwnaf(q, (const eb_t *)t, k);
-			TEST_ASSERT(eb_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 			bn_neg(k, k);
 			eb_mul_fix_lwnaf(r, (const eb_t *)t, k);
 			eb_neg(r, r);
-			TEST_ASSERT(eb_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
-		for (int i = 0; i < RELIC_EB_TABLE_LWNAF; i++) {
+		for (int i = 0; i < RLC_EB_TABLE_LWNAF; i++) {
 			eb_free(t[i]);
 		}
 #endif
@@ -975,7 +925,7 @@ static int fixed(void) {
 		util_print("FATAL ERROR!\n");
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	bn_free(n);
 	bn_free(k);
@@ -986,7 +936,7 @@ static int fixed(void) {
 }
 
 static int simultaneous(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	bn_t n, k, l;
 	eb_t p, q, r;
 
@@ -1014,31 +964,31 @@ static int simultaneous(void) {
 			bn_rand_mod(l, n);
 			eb_mul(q, p, l);
 			eb_mul_sim(r, p, k, p, l);
-			TEST_ASSERT(eb_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 			bn_rand_mod(k, n);
 			bn_zero(l);
 			eb_mul(q, p, k);
 			eb_mul_sim(r, p, k, p, l);
-			TEST_ASSERT(eb_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 			bn_rand_mod(k, n);
 			bn_rand_mod(l, n);
 			eb_mul_sim(r, p, k, q, l);
 			eb_mul(p, p, k);
 			eb_mul(q, q, l);
 			eb_add(q, q, p);
-			TEST_ASSERT(eb_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 			bn_neg(k, k);
 			eb_mul_sim(r, p, k, q, l);
 			eb_mul(p, p, k);
 			eb_mul(q, q, l);
 			eb_add(q, q, p);
-			TEST_ASSERT(eb_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 			bn_neg(l, l);
 			eb_mul_sim(r, p, k, q, l);
 			eb_mul(p, p, k);
 			eb_mul(q, q, l);
 			eb_add(q, q, p);
-			TEST_ASSERT(eb_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 
 #if EB_SIM == BASIC || !defined(STRIP)
@@ -1047,31 +997,31 @@ static int simultaneous(void) {
 			bn_rand_mod(l, n);
 			eb_mul(q, p, l);
 			eb_mul_sim_basic(r, p, k, p, l);
-			TEST_ASSERT(eb_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 			bn_rand_mod(k, n);
 			bn_zero(l);
 			eb_mul(q, p, k);
 			eb_mul_sim_basic(r, p, k, p, l);
-			TEST_ASSERT(eb_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 			bn_rand_mod(k, n);
 			bn_rand_mod(l, n);
 			eb_mul_sim_basic(r, p, k, q, l);
 			eb_mul(p, p, k);
 			eb_mul(q, q, l);
 			eb_add(q, q, p);
-			TEST_ASSERT(eb_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 			bn_neg(k, k);
 			eb_mul_sim_basic(r, p, k, q, l);
 			eb_mul(p, p, k);
 			eb_mul(q, q, l);
 			eb_add(q, q, p);
-			TEST_ASSERT(eb_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 			bn_neg(l, l);
 			eb_mul_sim_basic(r, p, k, q, l);
 			eb_mul(p, p, k);
 			eb_mul(q, q, l);
 			eb_add(q, q, p);
-			TEST_ASSERT(eb_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 #endif
 
@@ -1081,31 +1031,31 @@ static int simultaneous(void) {
 			bn_rand_mod(l, n);
 			eb_mul(q, p, l);
 			eb_mul_sim_trick(r, p, k, p, l);
-			TEST_ASSERT(eb_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 			bn_rand_mod(k, n);
 			bn_zero(l);
 			eb_mul(q, p, k);
 			eb_mul_sim_trick(r, p, k, p, l);
-			TEST_ASSERT(eb_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 			bn_rand_mod(k, n);
 			bn_rand_mod(l, n);
 			eb_mul_sim_trick(r, p, k, q, l);
 			eb_mul(p, p, k);
 			eb_mul(q, q, l);
 			eb_add(q, q, p);
-			TEST_ASSERT(eb_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 			bn_neg(k, k);
 			eb_mul_sim_trick(r, p, k, q, l);
 			eb_mul(p, p, k);
 			eb_mul(q, q, l);
 			eb_add(q, q, p);
-			TEST_ASSERT(eb_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 			bn_neg(l, l);
 			eb_mul_sim_trick(r, p, k, q, l);
 			eb_mul(p, p, k);
 			eb_mul(q, q, l);
 			eb_add(q, q, p);
-			TEST_ASSERT(eb_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 #endif
 
@@ -1115,31 +1065,31 @@ static int simultaneous(void) {
 			bn_rand_mod(l, n);
 			eb_mul(q, p, l);
 			eb_mul_sim_inter(r, p, k, p, l);
-			TEST_ASSERT(eb_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 			bn_rand_mod(k, n);
 			bn_zero(l);
 			eb_mul(q, p, k);
 			eb_mul_sim_inter(r, p, k, p, l);
-			TEST_ASSERT(eb_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 			bn_rand_mod(k, n);
 			bn_rand_mod(l, n);
 			eb_mul_sim_inter(r, p, k, q, l);
 			eb_mul(p, p, k);
 			eb_mul(q, q, l);
 			eb_add(q, q, p);
-			TEST_ASSERT(eb_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 			bn_neg(k, k);
 			eb_mul_sim_inter(r, p, k, q, l);
 			eb_mul(p, p, k);
 			eb_mul(q, q, l);
 			eb_add(q, q, p);
-			TEST_ASSERT(eb_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 			bn_neg(l, l);
 			eb_mul_sim_inter(r, p, k, q, l);
 			eb_mul(p, p, k);
 			eb_mul(q, q, l);
 			eb_add(q, q, p);
-			TEST_ASSERT(eb_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 #endif
 
@@ -1149,31 +1099,31 @@ static int simultaneous(void) {
 			bn_rand_mod(l, n);
 			eb_mul(q, p, l);
 			eb_mul_sim_joint(r, p, k, p, l);
-			TEST_ASSERT(eb_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 			bn_rand_mod(k, n);
 			bn_zero(l);
 			eb_mul(q, p, k);
 			eb_mul_sim_joint(r, p, k, p, l);
-			TEST_ASSERT(eb_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 			bn_rand_mod(k, n);
 			bn_rand_mod(l, n);
 			eb_mul_sim_joint(r, p, k, q, l);
 			eb_mul(p, p, k);
 			eb_mul(q, q, l);
 			eb_add(q, q, p);
-			TEST_ASSERT(eb_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 			bn_neg(k, k);
 			eb_mul_sim_joint(r, p, k, q, l);
 			eb_mul(p, p, k);
 			eb_mul(q, q, l);
 			eb_add(q, q, p);
-			TEST_ASSERT(eb_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 			bn_neg(l, l);
 			eb_mul_sim_joint(r, p, k, q, l);
 			eb_mul(p, p, k);
 			eb_mul(q, q, l);
 			eb_add(q, q, p);
-			TEST_ASSERT(eb_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 #endif
 
@@ -1182,35 +1132,35 @@ static int simultaneous(void) {
 			bn_rand_mod(l, n);
 			eb_mul(q, p, l);
 			eb_mul_sim_gen(r, k, p, l);
-			TEST_ASSERT(eb_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 			bn_rand_mod(k, n);
 			bn_zero(l);
 			eb_mul_gen(q, k);
 			eb_mul_sim_gen(r, k, p, l);
-			TEST_ASSERT(eb_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 			bn_rand_mod(k, n);
 			bn_rand_mod(l, n);
 			eb_mul_sim_gen(r, k, q, l);
 			eb_curve_get_gen(p);
 			eb_mul_sim(q, p, k, q, l);
-			TEST_ASSERT(eb_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 			bn_neg(k, k);
 			eb_mul_sim_gen(r, k, q, l);
 			eb_curve_get_gen(p);
 			eb_mul_sim(q, p, k, q, l);
-			TEST_ASSERT(eb_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 			bn_neg(l, l);
 			eb_mul_sim_gen(r, k, q, l);
 			eb_curve_get_gen(p);
 			eb_mul_sim(q, p, k, q, l);
-			TEST_ASSERT(eb_cmp(q, r) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 	}
 	CATCH_ANY {
 		util_print("FATAL ERROR!\n");
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	bn_free(n);
 	bn_free(k);
@@ -1222,7 +1172,7 @@ static int simultaneous(void) {
 }
 
 static int compression(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	eb_t a, b, c;
 
 	eb_null(a);
@@ -1238,7 +1188,7 @@ static int compression(void) {
 			eb_rand(a);
 			eb_pck(b, a);
 			TEST_ASSERT(eb_upk(c, b) == 1, end);
-			TEST_ASSERT(eb_cmp(a, c) == CMP_EQ, end);
+			TEST_ASSERT(eb_cmp(a, c) == RLC_EQ, end);
 		}
 		TEST_END;
 
@@ -1246,7 +1196,7 @@ static int compression(void) {
 	CATCH_ANY {
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	eb_free(a);
 	eb_free(b);
@@ -1255,7 +1205,7 @@ static int compression(void) {
 }
 
 static int hashing(void) {
-	int code = STS_ERR;
+	int code = RLC_ERR;
 	eb_t a;
 	bn_t n;
 	uint8_t msg[5];
@@ -1281,7 +1231,7 @@ static int hashing(void) {
 	CATCH_ANY {
 		ERROR(end);
 	}
-	code = STS_OK;
+	code = RLC_OK;
   end:
 	eb_free(a);
 	bn_free(n);
@@ -1293,64 +1243,64 @@ static int test(void) {
 
 	util_banner("Utilities:", 1);
 
-	if (memory() != STS_OK) {
+	if (memory() != RLC_OK) {
 		core_clean();
 		return 1;
 	}
 
-	if (util() != STS_OK) {
-		return STS_ERR;
+	if (util() != RLC_OK) {
+		return RLC_ERR;
 	}
 
 	util_banner("Arithmetic:", 1);
 
-	if (addition() != STS_OK) {
-		return STS_ERR;
+	if (addition() != RLC_OK) {
+		return RLC_ERR;
 	}
 
-	if (subtraction() != STS_OK) {
-		return STS_ERR;
+	if (subtraction() != RLC_OK) {
+		return RLC_ERR;
 	}
 
-	if (doubling() != STS_OK) {
-		return STS_ERR;
+	if (doubling() != RLC_OK) {
+		return RLC_ERR;
 	}
 
-	if (halving() != STS_OK) {
-		return STS_ERR;
+	if (halving() != RLC_OK) {
+		return RLC_ERR;
 	}
 
-	if (frobenius() != STS_OK) {
-		return STS_ERR;
+	if (frobenius() != RLC_OK) {
+		return RLC_ERR;
 	}
 
-	if (multiplication() != STS_OK) {
-		return STS_ERR;
+	if (multiplication() != RLC_OK) {
+		return RLC_ERR;
 	}
 
-	if (fixed() != STS_OK) {
-		return STS_ERR;
+	if (fixed() != RLC_OK) {
+		return RLC_ERR;
 	}
 
-	if (simultaneous() != STS_OK) {
-		return STS_ERR;
+	if (simultaneous() != RLC_OK) {
+		return RLC_ERR;
 	}
 
-	if (compression() != STS_OK) {
-		return STS_ERR;
+	if (compression() != RLC_OK) {
+		return RLC_ERR;
 	}
 
-	if (hashing() != STS_OK) {
-		return STS_ERR;
+	if (hashing() != RLC_OK) {
+		return RLC_ERR;
 	}
 
-	return STS_OK;
+	return RLC_OK;
 }
 
 int main(void) {
-	int r0 = STS_ERR, r1 = STS_ERR;
+	int r0 = RLC_ERR, r1 = RLC_ERR;
 
-	if (core_init() != STS_OK) {
+	if (core_init() != RLC_OK) {
 		core_clean();
 		return 1;
 	}
@@ -1358,8 +1308,8 @@ int main(void) {
 	util_banner("Tests for the EB module:", 0);
 
 	r0 = eb_param_set_any_plain();
-	if (r0 == STS_OK) {
-		if (test() != STS_OK) {
+	if (r0 == RLC_OK) {
+		if (test() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
@@ -1367,21 +1317,21 @@ int main(void) {
 
 #if defined(EB_KBLTZ)
 	r1 = eb_param_set_any_kbltz();
-	if (r1 == STS_OK) {
-		if (test() != STS_OK) {
+	if (r1 == RLC_OK) {
+		if (test() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
 	}
 #endif
 
-	if (r0 == STS_ERR && r1 == STS_ERR) {
-		if (eb_param_set_any() == STS_ERR) {
+	if (r0 == RLC_ERR && r1 == RLC_ERR) {
+		if (eb_param_set_any() == RLC_ERR) {
 			THROW(ERR_NO_CURVE);
 			core_clean();
 			return 0;
 		} else {
-			if (test() != STS_OK) {
+			if (test() != RLC_OK) {
 				core_clean();
 				return 1;
 			}

@@ -1,23 +1,24 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2017 RELIC Authors
+ * Copyright (C) 2007-2019 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
  * for contact information.
  *
- * RELIC is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * RELIC is free software; you can redistribute it and/or modify it under the
+ * terms of the version 2.1 (or later) of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; or version 2.0 of the Apache
+ * License as published by the Apache Software Foundation. See the LICENSE files
+ * for more details.
  *
- * RELIC is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * RELIC is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the LICENSE files for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RELIC. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General Public or the
+ * Apache License along with RELIC. If not, see <https://www.gnu.org/licenses/>
+ * or <https://www.apache.org/licenses/>.
  */
 
 /**
@@ -32,8 +33,8 @@
  * @ingroup ep
  */
 
-#ifndef RELIC_EP_H
-#define RELIC_EP_H
+#ifndef RLC_EP_H
+#define RLC_EP_H
 
 #include "relic_fp.h"
 #include "relic_bn.h"
@@ -90,10 +91,12 @@ enum {
 	BN_P254,
 	/** Barreto-Naehrig curve with negative x. */
 	BN_P256,
-	/** Barreto-Lynn-Scott curve with embedding degree 12. */
+	/** Barreto-Lynn-Scott curve with embedding degree 12 (ZCash curve). */
 	B12_P381,
 	/** Barreto-Naehrig curve with negative x. */
 	BN_P382,
+	/** Barreto-Naehrig curve with embedding degree 12. */
+	BN_P446,
 	/** Barreto-Lynn-Scott curve with embedding degree 12. */
 	B12_P455,
 	/** Barreto-Lynn-Scott curve with embedding degree 24. */
@@ -125,57 +128,43 @@ enum {
 /**
  * Size of a precomputation table using the binary method.
  */
-#define RELIC_EP_TABLE_BASIC		(FP_BITS + 1)
-
-/**
- * Size of a precomputation table using Yao's windowing method.
- */
-#define RELIC_EP_TABLE_YAOWI      (FP_BITS / EP_DEPTH + 1)
-
-/**
- * Size of a precomputation table using the NAF windowing method.
- */
-#define RELIC_EP_TABLE_NAFWI      (FP_BITS / EP_DEPTH + 1)
+#define RLC_EP_TABLE_BASIC		(RLC_FP_BITS + 1)
 
 /**
  * Size of a precomputation table using the single-table comb method.
  */
-#define RELIC_EP_TABLE_COMBS      (1 << EP_DEPTH)
+#define RLC_EP_TABLE_COMBS      (1 << EP_DEPTH)
 
 /**
  * Size of a precomputation table using the double-table comb method.
  */
-#define RELIC_EP_TABLE_COMBD		(1 << (EP_DEPTH + 1))
+#define RLC_EP_TABLE_COMBD		(1 << (EP_DEPTH + 1))
 
 /**
  * Size of a precomputation table using the w-(T)NAF method.
  */
-#define RELIC_EP_TABLE_LWNAF		(1 << (EP_DEPTH - 2))
+#define RLC_EP_TABLE_LWNAF		(1 << (EP_DEPTH - 2))
 
 /**
  * Size of a precomputation table using the chosen algorithm.
  */
 #if EP_FIX == BASIC
-#define RELIC_EP_TABLE			RELIC_EP_TABLE_BASIC
-#elif EP_FIX == YAOWI
-#define RELIC_EP_TABLE			RELIC_EP_TABLE_YAOWI
-#elif EP_FIX == NAFWI
-#define RELIC_EP_TABLE			RELIC_EP_TABLE_NAFWI
+#define RLC_EP_TABLE			RLC_EP_TABLE_BASIC
 #elif EP_FIX == COMBS
-#define RELIC_EP_TABLE			RELIC_EP_TABLE_COMBS
+#define RLC_EP_TABLE			RLC_EP_TABLE_COMBS
 #elif EP_FIX == COMBD
-#define RELIC_EP_TABLE			RELIC_EP_TABLE_COMBD
+#define RLC_EP_TABLE			RLC_EP_TABLE_COMBD
 #elif EP_FIX == LWNAF
-#define RELIC_EP_TABLE			RELIC_EP_TABLE_LWNAF
+#define RLC_EP_TABLE			RLC_EP_TABLE_LWNAF
 #endif
 
 /**
  * Maximum size of a precomputation table.
  */
 #ifdef STRIP
-#define RELIC_EP_TABLE_MAX RELIC_EP_TABLE
+#define RLC_EP_TABLE_MAX 	RLC_EP_TABLE
 #else
-#define RELIC_EP_TABLE_MAX MAX(RELIC_EP_TABLE_BASIC, RELIC_EP_TABLE_COMBD)
+#define RLC_EP_TABLE_MAX 	RLC_MAX(RLC_EP_TABLE_BASIC, RLC_EP_TABLE_COMBD)
 #endif
 
 /*============================================================================*/
@@ -186,21 +175,12 @@ enum {
  * Represents an elliptic curve point over a prime field.
  */
 typedef struct {
-#if ALLOC == STATIC
-	/** The first coordinate. */
-	fp_t x;
-	/** The second coordinate. */
-	fp_t y;
-	/** The third coordinate (projective representation). */
-	fp_t z;
-#elif ALLOC == DYNAMIC || ALLOC == STACK || ALLOC == AUTO
 	/** The first coordinate. */
 	fp_st x;
 	/** The second coordinate. */
 	fp_st y;
 	/** The third coordinate (projective representation). */
 	fp_st z;
-#endif
 	/** Flag to indicate that this point is normalized. */
 	int norm;
 } ep_st;
@@ -242,19 +222,6 @@ typedef ep_st *ep_t;
 		THROW(ERR_NO_MEMORY);												\
 	}																		\
 
-#elif ALLOC == STATIC
-#define ep_new(A)															\
-	A = (ep_t)alloca(sizeof(ep_st));										\
-	if (A == NULL) {														\
-		THROW(ERR_NO_MEMORY);												\
-	}																		\
-	fp_null((A)->x);														\
-	fp_null((A)->y);														\
-	fp_null((A)->z);														\
-	fp_new((A)->x);															\
-	fp_new((A)->y);															\
-	fp_new((A)->z);															\
-
 #elif ALLOC == AUTO
 #define ep_new(A)				/* empty */
 
@@ -275,15 +242,6 @@ typedef ep_st *ep_t;
 		free(A);															\
 		A = NULL;															\
 	}
-
-#elif ALLOC == STATIC
-#define ep_free(A)															\
-	if (A != NULL) {														\
-		fp_free((A)->x);													\
-		fp_free((A)->y);													\
-		fp_free((A)->z);													\
-		A = NULL;															\
-	}																		\
 
 #elif ALLOC == AUTO
 #define ep_free(A)				/* empty */
@@ -314,9 +272,9 @@ typedef ep_st *ep_t;
  * @param[in] Q				- the second point to add.
  */
 #if EP_ADD == BASIC
-#define ep_add(R, P, Q)		ep_add_basic(R, P, Q);
+#define ep_add(R, P, Q)		ep_add_basic(R, P, Q)
 #elif EP_ADD == PROJC
-#define ep_add(R, P, Q)		ep_add_projc(R, P, Q);
+#define ep_add(R, P, Q)		ep_add_projc(R, P, Q)
 #endif
 
 /**
@@ -339,9 +297,9 @@ typedef ep_st *ep_t;
  * @param[in] P				- the point to double.
  */
 #if EP_ADD == BASIC
-#define ep_dbl(R, P)		ep_dbl_basic(R, P);
+#define ep_dbl(R, P)		ep_dbl_basic(R, P)
 #elif EP_ADD == PROJC
-#define ep_dbl(R, P)		ep_dbl_projc(R, P);
+#define ep_dbl(R, P)		ep_dbl_projc(R, P)
 #endif
 
 /**
@@ -369,10 +327,6 @@ typedef ep_st *ep_t;
  */
 #if EP_FIX == BASIC
 #define ep_mul_pre(T, P)		ep_mul_pre_basic(T, P)
-#elif EP_FIX == YAOWI
-#define ep_mul_pre(T, P)		ep_mul_pre_yaowi(T, P)
-#elif EP_FIX == NAFWI
-#define ep_mul_pre(T, P)		ep_mul_pre_nafwi(T, P)
 #elif EP_FIX == COMBS
 #define ep_mul_pre(T, P)		ep_mul_pre_combs(T, P)
 #elif EP_FIX == COMBD
@@ -391,10 +345,6 @@ typedef ep_st *ep_t;
  */
 #if EP_FIX == BASIC
 #define ep_mul_fix(R, T, K)		ep_mul_fix_basic(R, T, K)
-#elif EP_FIX == YAOWI
-#define ep_mul_fix(R, T, K)		ep_mul_fix_yaowi(R, T, K)
-#elif EP_FIX == NAFWI
-#define ep_mul_fix(R, T, K)		ep_mul_fix_nafwi(R, T, K)
 #elif EP_FIX == COMBS
 #define ep_mul_fix(R, T, K)		ep_mul_fix_combs(R, T, K)
 #elif EP_FIX == COMBD
@@ -578,7 +528,7 @@ int ep_param_set_any(void);
  * Configures some set of ordinary curve parameters for the current security
  * level.
  *
- * @return STS_OK if there is a curve at this security level, STS_ERR otherwise.
+ * @return RLC_OK if there is a curve at this security level, RLC_ERR otherwise.
  */
 int ep_param_set_any_plain(void);
 
@@ -586,7 +536,7 @@ int ep_param_set_any_plain(void);
  * Configures some set of Koblitz curve parameters for the current security
  * level.
  *
- * @return STS_OK if there is a curve at this security level, STS_ERR otherwise.
+ * @return RLC_OK if there is a curve at this security level, RLC_ERR otherwise.
  */
 int ep_param_set_any_endom(void);
 
@@ -594,7 +544,7 @@ int ep_param_set_any_endom(void);
  * Configures some set of supersingular curve parameters for the current
  * security level.
  *
- * @return STS_OK if there is a curve at this security level, STS_ERR otherwise.
+ * @return RLC_OK if there is a curve at this security level, RLC_ERR otherwise.
  */
 int ep_param_set_any_super(void);
 
@@ -602,7 +552,7 @@ int ep_param_set_any_super(void);
  * Configures some set of pairing-friendly curve parameters for the current
  * security level.
  *
- * @return STS_OK if there is a curve at this security level, STS_ERR otherwise.
+ * @return RLC_OK if there is a curve at this security level, RLC_ERR otherwise.
  */
 int ep_param_set_any_pairf(void);
 
@@ -657,7 +607,7 @@ void ep_copy(ep_t r, const ep_t p);
  *
  * @param[in] p				- the first prime elliptic curve point.
  * @param[in] q				- the second prime elliptic curve point.
- * @return CMP_EQ if p == q and CMP_NE if p != q.
+ * @return RLC_EQ if p == q and RLC_NE if p != q.
  */
 int ep_cmp(const ep_t p, const ep_t q);
 
@@ -670,7 +620,7 @@ void ep_rand(ep_t p);
 
 /**
  * Computes the right-hand side of the elliptic curve equation at a certain
- * elliptic curve point.
+ * prime elliptic curve point.
  *
  * @param[out] rhs			- the result.
  * @param[in] p				- the point.
@@ -780,7 +730,7 @@ void ep_add_projc(ep_t r, const ep_t p, const ep_t q);
 
 /**
  * Subtracts a prime elliptic curve point from another, both points represented
- * by affine coordinates..
+ * in affine coordinates.
  *
  * @param[out] r			- the result.
  * @param[in] p				- the first point.
@@ -790,7 +740,7 @@ void ep_sub_basic(ep_t r, const ep_t p, const ep_t q);
 
 /**
  * Subtracts a prime elliptic curve point from another, both points represented
- * by projective coordinates..
+ * in projective coordinates.
  *
  * @param[out] r			- the result.
  * @param[in] p				- the first point.
@@ -1108,4 +1058,4 @@ void ep_pck(ep_t r, const ep_t p);
  */
 int ep_upk(ep_t r, const ep_t p);
 
-#endif /* !RELIC_EP_H */
+#endif /* !RLC_EP_H */

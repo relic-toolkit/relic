@@ -1,23 +1,24 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2017 RELIC Authors
+ * Copyright (C) 2007-2019 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
  * for contact information.
  *
- * RELIC is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * RELIC is free software; you can redistribute it and/or modify it under the
+ * terms of the version 2.1 (or later) of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; or version 2.0 of the Apache
+ * License as published by the Apache Software Foundation. See the LICENSE files
+ * for more details.
  *
- * RELIC is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * RELIC is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the LICENSE files for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RELIC. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General Public or the
+ * Apache License along with RELIC. If not, see <https://www.gnu.org/licenses/>
+ * or <https://www.apache.org/licenses/>.
  */
 
 #include "relic_fp_low.h"
@@ -60,7 +61,7 @@ cdecl(fp_add1_low):
 	addq	%rdx, %r10
 	movq	%r10, 0(%rdi)
 
-	ADD1_STEP 1, (FP_DIGS - 1)
+	ADD1_STEP 1, (RLC_FP_DIGS - 1)
 
 	ret
 
@@ -74,7 +75,7 @@ cdecl(fp_addn_low):
 	addq	0(%rsi), %r11
 	movq	%r11, 0(%rdi)
 
-	ADDN_STEP 1, (FP_DIGS - 1)
+	ADDN_STEP 1, (RLC_FP_DIGS - 1)
 
 	xorq	%rax, %rax
 
@@ -129,7 +130,7 @@ cdecl(fp_addd_low):
 	addq	0(%rsi), %r11
 	movq	%r11, 0(%rdi)
 
-	ADDN_STEP 1, (2 * FP_DIGS - 1)
+	ADDN_STEP 1, (2 * RLC_FP_DIGS - 1)
 
 	ret
 
@@ -194,7 +195,7 @@ cdecl(fp_sub1_low):
 	subq	%rdx, %r10
 	movq	%r10,0(%rdi)
 
-	SUB1_STEP 1, (FP_DIGS - 1)
+	SUB1_STEP 1, (RLC_FP_DIGS - 1)
 
 	ret
 
@@ -209,7 +210,7 @@ cdecl(fp_subn_low):
 	subq	0(%rdx), %r11
 	movq	%r11, 0(%rdi)
 
-	SUBN_STEP 1, (FP_DIGS - 1)
+	SUBN_STEP 1, (RLC_FP_DIGS - 1)
 
 	adcq	$0, %rax
 
@@ -255,7 +256,7 @@ cdecl(fp_subc_low):
 	subq    0(%rdx), %r8
 	movq    %r8, 0(%rdi)
 
-	SUBN_STEP 1, (2 * FP_DIGS - 1)
+	SUBN_STEP 1, (2 * RLC_FP_DIGS - 1)
 
 	movq	$0, %rsi
 	movq	$0, %rdx
@@ -279,7 +280,7 @@ cdecl(fp_subd_low):
 	subq	0(%rdx), %r8
 	movq	%r8, 0(%rdi)
 
-	SUBN_STEP 1, (2 * FP_DIGS - 1)
+	SUBN_STEP 1, (2 * RLC_FP_DIGS - 1)
 
 	ret
 
@@ -303,7 +304,7 @@ cdecl(fp_dbln_low):
 	addq	%r8, %r8
 	movq	%r8, 0(%rdi)
 
-	DBLN_STEP 1, (FP_DIGS - 1)
+	DBLN_STEP 1, (RLC_FP_DIGS - 1)
 
 	xorq	%rax,%rax
 	ret

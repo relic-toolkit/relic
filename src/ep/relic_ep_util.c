@@ -1,23 +1,24 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2017 RELIC Authors
+ * Copyright (C) 2007-2019 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
  * for contact information.
  *
- * RELIC is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * RELIC is free software; you can redistribute it and/or modify it under the
+ * terms of the version 2.1 (or later) of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; or version 2.0 of the Apache
+ * License as published by the Apache Software Foundation. See the LICENSE files
+ * for more details.
  *
- * RELIC is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * RELIC is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the LICENSE files for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RELIC. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General Public or the
+ * Apache License along with RELIC. If not, see <https://www.gnu.org/licenses/>
+ * or <https://www.apache.org/licenses/>.
  */
 
 /**
@@ -55,7 +56,7 @@ void ep_copy(ep_t r, const ep_t p) {
 
 int ep_cmp(const ep_t p, const ep_t q) {
     ep_t r, s;
-    int result = CMP_EQ;
+    int result = RLC_EQ;
 
     ep_null(r);
     ep_null(s);
@@ -76,25 +77,21 @@ int ep_cmp(const ep_t p, const ep_t q) {
             fp_mul(r->y, p->y, s->z);
             fp_mul(s->y, q->y, r->z);
         } else {
+			ep_copy(r, p);
+            ep_copy(s, q);
             if (!p->norm) {
                 ep_norm(r, p);
-            } else {
-                ep_copy(r, p);
             }
-
             if (!q->norm) {
                 ep_norm(s, q);
-            } else {
-                ep_copy(s, q);
             }
         }
 
-        if (fp_cmp(r->x, s->x) != CMP_EQ) {
-            result = CMP_NE;
+        if (fp_cmp(r->x, s->x) != RLC_EQ) {
+            result = RLC_NE;
         }
-
-        if (fp_cmp(r->y, s->y) != CMP_EQ) {
-            result = CMP_NE;
+        if (fp_cmp(r->y, s->y) != RLC_EQ) {
+            result = RLC_NE;
         }
     } CATCH_ANY {
         THROW(ERR_CAUGHT);
@@ -146,13 +143,13 @@ void ep_rhs(fp_t rhs, const ep_t p) {
 
 		/* t1 = x1^3 + a * x1 + b. */
 		switch (ep_curve_opt_a()) {
-			case OPT_ZERO:
+			case RLC_ZERO:
 				break;
-			case OPT_ONE:
+			case RLC_ONE:
 				fp_add(t1, t1, p->x);
 				break;
 #if FP_RDC != MONTY
-			case OPT_DIGIT:
+			case RLC_TINY:
 				fp_mul_dig(t0, p->x, ep_curve_get_a()[0]);
 				fp_add(t1, t1, t0);
 				break;
@@ -164,13 +161,13 @@ void ep_rhs(fp_t rhs, const ep_t p) {
 		}
 
 		switch (ep_curve_opt_b()) {
-			case OPT_ZERO:
+			case RLC_ZERO:
 				break;
-			case OPT_ONE:
+			case RLC_ONE:
 				fp_add_dig(t1, t1, 1);
 				break;
 #if FP_RDC != MONTY
-			case OPT_DIGIT:
+			case RLC_TINY:
 				fp_add_dig(t1, t1, ep_curve_get_b()[0]);
 				break;
 #endif
@@ -199,10 +196,9 @@ int ep_is_valid(const ep_t p) {
 		ep_new(t);
 
 		ep_norm(t, p);
-
 		ep_rhs(t->x, t);
 		fp_sqr(t->y, t->y);
-		r = (fp_cmp(t->x, t->y) == CMP_EQ) || ep_is_infty(p);
+		r = (fp_cmp(t->x, t->y) == RLC_EQ) || ep_is_infty(p);
 	} CATCH_ANY {
 		THROW(ERR_CAUGHT);
 	} FINALLY {
@@ -235,28 +231,15 @@ void ep_print(const ep_t p) {
 }
 
 int ep_size_bin(const ep_t a, int pack) {
-	ep_t t;
 	int size = 0;
-
-	ep_null(t);
 
 	if (ep_is_infty(a)) {
 		return 1;
 	}
 
-	TRY {
-		ep_new(t);
-
-		ep_norm(t, a);
-
-		size = 1 + FP_BYTES;
-		if (!pack) {
-			size += FP_BYTES;
-		}
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
-		ep_free(t);
+	size = 1 + RLC_FP_BYTES;
+	if (!pack) {
+		size += RLC_FP_BYTES;
 	}
 
 	return size;
@@ -273,15 +256,15 @@ void ep_read_bin(ep_t a, const uint8_t *bin, int len) {
 		}
 	}
 
-	if (len != (FP_BYTES + 1) && len != (2 * FP_BYTES + 1)) {
+	if (len != (RLC_FP_BYTES + 1) && len != (2 * RLC_FP_BYTES + 1)) {
 		THROW(ERR_NO_BUFFER);
 		return;
 	}
 
 	a->norm = 1;
 	fp_set_dig(a->z, 1);
-	fp_read_bin(a->x, bin + 1, FP_BYTES);
-	if (len == FP_BYTES + 1) {
+	fp_read_bin(a->x, bin + 1, RLC_FP_BYTES);
+	if (len == RLC_FP_BYTES + 1) {
 		switch(bin[0]) {
 			case 2:
 				fp_zero(a->y);
@@ -297,9 +280,9 @@ void ep_read_bin(ep_t a, const uint8_t *bin, int len) {
 		ep_upk(a, a);
 	}
 
-	if (len == 2 * FP_BYTES + 1) {
+	if (len == 2 * RLC_FP_BYTES + 1) {
 		if (bin[0] == 4) {
-			fp_read_bin(a->y, bin + FP_BYTES + 1, FP_BYTES);
+			fp_read_bin(a->y, bin + RLC_FP_BYTES + 1, RLC_FP_BYTES);
 		} else {
 			THROW(ERR_NO_VALID);
 		}
@@ -312,7 +295,7 @@ void ep_write_bin(uint8_t *bin, int len, const ep_t a, int pack) {
 	ep_null(t);
 
 	if (ep_is_infty(a)) {
-		if (len != 1) {
+		if (len < 1) {
 			THROW(ERR_NO_BUFFER);
 		} else {
 			bin[0] = 0;
@@ -326,20 +309,20 @@ void ep_write_bin(uint8_t *bin, int len, const ep_t a, int pack) {
 		ep_norm(t, a);
 
 		if (pack) {
-			if (len < FP_BYTES + 1) {
+			if (len < RLC_FP_BYTES + 1) {
 				THROW(ERR_NO_BUFFER);
 			} else {
 				ep_pck(t, t);
 				bin[0] = 2 | fp_get_bit(t->y, 0);
-				fp_write_bin(bin + 1, FP_BYTES, t->x);
+				fp_write_bin(bin + 1, RLC_FP_BYTES, t->x);
 			}
 		} else {
-			if (len < 2 * FP_BYTES + 1) {
+			if (len < 2 * RLC_FP_BYTES + 1) {
 				THROW(ERR_NO_BUFFER);
 			} else {
 				bin[0] = 4;
-				fp_write_bin(bin + 1, FP_BYTES, t->x);
-				fp_write_bin(bin + FP_BYTES + 1, FP_BYTES, t->y);
+				fp_write_bin(bin + 1, RLC_FP_BYTES, t->x);
+				fp_write_bin(bin + RLC_FP_BYTES + 1, RLC_FP_BYTES, t->y);
 			}
 		}
 	} CATCH_ANY {

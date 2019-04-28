@@ -1,23 +1,24 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2017 RELIC Authors
+ * Copyright (C) 2007-2019 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
  * for contact information.
  *
- * RELIC is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * RELIC is free software; you can redistribute it and/or modify it under the
+ * terms of the version 2.1 (or later) of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; or version 2.0 of the Apache
+ * License as published by the Apache Software Foundation. See the LICENSE files
+ * for more details.
  *
- * RELIC is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * RELIC is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the LICENSE files for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RELIC. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General Public or the
+ * Apache License along with RELIC. If not, see <https://www.gnu.org/licenses/>
+ * or <https://www.apache.org/licenses/>.
  */
 
 /**
@@ -45,7 +46,7 @@
  */
 static void pp_exp_bn(fp12_t c, fp12_t a) {
 	fp12_t t0, t1, t2, t3;
-	int l = MAX_TERMS + 1, b[MAX_TERMS + 1];
+	int l = RLC_TERMS + 1, b[RLC_TERMS + 1];
 	bn_t x;
 
 	fp12_null(t0);
@@ -84,7 +85,7 @@ static void pp_exp_bn(fp12_t c, fp12_t a) {
 		fp12_sqr_cyc(t3, t2);
 		fp12_exp_cyc_sps(t3, t3, b, l);
 
-		if (bn_sign(x) == BN_NEG) {
+		if (bn_sign(x) == RLC_NEG) {
 			fp12_inv_uni(t0, t0);
 			fp12_inv_uni(t1, t1);
 			fp12_inv_uni(t3, t3);
@@ -132,7 +133,7 @@ static void pp_exp_bn(fp12_t c, fp12_t a) {
 static void pp_exp_b12(fp12_t c, fp12_t a) {
 	fp12_t t0, t1, t2, t3;
 	bn_t x;
-	int l = MAX_TERMS + 1, b[MAX_TERMS + 1];
+	int l = RLC_TERMS + 1, b[RLC_TERMS + 1];
 
 	fp12_null(t0);
 	fp12_null(t1);
@@ -163,13 +164,13 @@ static void pp_exp_b12(fp12_t c, fp12_t a) {
 
 		/* t1 = f^x. */
 		fp12_exp_cyc_sps(t1, c, b, l);
-		if (bn_sign(x) == BN_NEG) {
+		if (bn_sign(x) == RLC_NEG) {
 			fp12_inv_uni(t1, t1);
 		}
 
 		/* t2 = f^(x^2). */
 		fp12_exp_cyc_sps(t2, t1, b, l);
-		if (bn_sign(x) == BN_NEG) {
+		if (bn_sign(x) == RLC_NEG) {
 			fp12_inv_uni(t2, t2);
 		}
 
@@ -182,13 +183,13 @@ static void pp_exp_b12(fp12_t c, fp12_t a) {
 
 		/* t2 = t1^x. */
 		fp12_exp_cyc_sps(t2, t1, b, l);
-		if (bn_sign(x) == BN_NEG) {
+		if (bn_sign(x) == RLC_NEG) {
 			fp12_inv_uni(t2, t2);
 		}
 
 		/* t3 = t2^x/t1. */
 		fp12_exp_cyc_sps(t3, t2, b, l);
-		if (bn_sign(x) == BN_NEG) {
+		if (bn_sign(x) == RLC_NEG) {
 			fp12_inv_uni(t3, t3);
 		}
 		fp12_inv_uni(t1, t1);
@@ -202,7 +203,7 @@ static void pp_exp_b12(fp12_t c, fp12_t a) {
 
 		/* t2 = f * f^2 * t3^x. */
 		fp12_exp_cyc_sps(t2, t3, b, l);
-		if (bn_sign(x) == BN_NEG) {
+		if (bn_sign(x) == RLC_NEG) {
 			fp12_inv_uni(t2, t2);
 		}
 		fp12_mul(t2, t2, t0);
@@ -242,9 +243,9 @@ void pp_exp_k2(fp2_t c, fp2_t a) {
 		ep_curve_get_ord(n);
 
 		fp2_conv_uni(c, a);
-		dv_copy(e->dp, fp_prime_get(), FP_DIGS);
-		e->used = FP_DIGS;
-		e->sign = BN_POS;
+		dv_copy(e->dp, fp_prime_get(), RLC_FP_DIGS);
+		e->used = RLC_FP_DIGS;
+		e->sign = RLC_POS;
 		bn_add_dig(e, e, 1);
 		bn_div(e, e, n);
 		fp2_exp_uni(c, c, e);
@@ -262,6 +263,7 @@ void pp_exp_k12(fp12_t c, fp12_t a) {
 		case BN_P254:
 		case BN_P256:
 		case BN_P382:
+		case BN_P446:
 		case BN_P638:
 			pp_exp_bn(c, a);
 			break;

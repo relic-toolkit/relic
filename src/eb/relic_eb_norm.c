@@ -1,29 +1,30 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2017 RELIC Authors
+ * Copyright (C) 2007-2019 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
  * for contact information.
  *
- * RELIC is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * RELIC is free software; you can redistribute it and/or modify it under the
+ * terms of the version 2.1 (or later) of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; or version 2.0 of the Apache
+ * License as published by the Apache Software Foundation. See the LICENSE files
+ * for more details.
  *
- * RELIC is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * RELIC is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the LICENSE files for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RELIC. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General Public or the
+ * Apache License along with RELIC. If not, see <https://www.gnu.org/licenses/>
+ * or <https://www.apache.org/licenses/>.
  */
 
 /**
  * @file
  *
- * Implementation of the point normalization on binary elliptic curves.
+ * Implementation of point normalization on binary elliptic curves.
  *
  * @ingroup eb
  */
@@ -44,11 +45,11 @@
  *
  * @param[out] r		- the result.
  * @param[in] p			- the point to normalize.
- * @param[in] flag		- if the Z coordinate is already inverted.
+ * @param[in] inverted	- if the Z coordinate is already inverted.
  */
-static void eb_norm_imp(eb_t r, const eb_t p, int flag) {
+static void eb_norm_imp(eb_t r, const eb_t p, int inverted) {
 	if (!p->norm) {
-		if (flag) {
+		if (inverted) {
 			fb_copy(r->z, p->z);
 		} else {
 			fb_inv(r->z, p->z);
@@ -88,7 +89,7 @@ void eb_norm(eb_t r, const eb_t p) {
 	}
 
 	if (p->norm == 1) {
-		/* If the point is represented in affine coordinates, we just copy it. */
+		/* If the point is represented in affine coordinates, just copy it. */
 		eb_copy(r, p);
 		return;
 	}
@@ -104,7 +105,6 @@ void eb_norm(eb_t r, const eb_t p) {
 }
 
 void eb_norm_sim(eb_t *r, const eb_t *t, int n) {
-	int i;
 	fb_t *a = RELIC_ALLOCA(fb_t, n);
 
 	if (n == 1) {
@@ -112,12 +112,12 @@ void eb_norm_sim(eb_t *r, const eb_t *t, int n) {
 		return;
 	}
 
-	for (i = 0; i < n; i++) {
+	for (int i = 0; i < n; i++) {
 		fb_null(a[i]);
 	}
 
 	TRY {
-		for (i = 0; i < n; i++) {
+		for (int i = 0; i < n; i++) {
 			fb_new(a[i]);
 			if (!eb_is_infty(t[i])) {
 				fb_copy(a[i], t[i]->z);
@@ -128,24 +128,24 @@ void eb_norm_sim(eb_t *r, const eb_t *t, int n) {
 
 		fb_inv_sim(a, (const fb_t *)a, n);
 
-		for (i = 0; i < n; i++) {
+		for (int i = 0; i < n; i++) {
 			fb_copy(r[i]->x, t[i]->x);
 			fb_copy(r[i]->y, t[i]->y);
 			if (!eb_is_infty(t[i])) {
 				fb_copy(r[i]->z, a[i]);
 			}
 		}
+
+		for (int i = 0; i < n; i++) {
+			eb_norm_imp(r[i], r[i], 1);
+		}
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
 	}
 	FINALLY {
-		for (i = 0; i < n; i++) {
+		for (int i = 0; i < n; i++) {
 			fb_free(a[i]);
 		}
-	}
-
-	for (i = 0; i < n; i++) {
-		eb_norm_imp(r[i], r[i], 1);
 	}
 }

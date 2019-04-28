@@ -1,23 +1,24 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2017 RELIC Authors
+ * Copyright (C) 2007-2019 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
  * for contact information.
  *
- * RELIC is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * RELIC is free software; you can redistribute it and/or modify it under the
+ * terms of the version 2.1 (or later) of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; or version 2.0 of the Apache
+ * License as published by the Apache Software Foundation. See the LICENSE files
+ * for more details.
  *
- * RELIC is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * RELIC is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the LICENSE files for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RELIC. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General Public or the
+ * Apache License along with RELIC. If not, see <https://www.gnu.org/licenses/>
+ * or <https://www.apache.org/licenses/>.
  */
 
 /**
@@ -28,8 +29,8 @@
  * @ingroup core
  */
 
-#ifndef RELIC_LABEL_H
-#define RELIC_LABEL_H
+#ifndef RLC_LABEL_H
+#define RLC_LABEL_H
 
 #include "relic_conf.h"
 
@@ -106,23 +107,11 @@
 #define rand_seed 	PREFIX(rand_seed)
 #define rand_bytes 	PREFIX(rand_bytes)
 
-#undef pool_get
-#undef pool_put
-
-#define pool_get 	PREFIX(pool_get)
-#define pool_put 	PREFIX(pool_put)
-
 #undef test_fail
 #undef test_pass
 
 #define test_fail 	PREFIX(test_fail)
 #define test_pass 	PREFIX(test_pass)
-
-#undef trace_enter
-#undef trace_exit
-
-#define trace_enter 	PREFIX(trace_enter)
-#define trace_exit 	PREFIX(trace_exit)
 
 #undef util_conv_endian
 #undef util_conv_big
@@ -153,22 +142,20 @@
 #undef dv_copy
 #undef dv_copy_cond
 #undef dv_swap_cond
+#undef dv_cmp
 #undef dv_cmp_const
 #undef dv_new_dynam
-#undef dv_new_statc
 #undef dv_free_dynam
-#undef dv_free_statc
 
 #define dv_print 	PREFIX(dv_print)
 #define dv_zero 	PREFIX(dv_zero)
 #define dv_copy 	PREFIX(dv_copy)
 #define dv_copy_cond 	PREFIX(dv_copy_cond)
 #define dv_swap_cond 	PREFIX(dv_swap_cond)
+#define dv_cmp 	PREFIX(dv_cmp)
 #define dv_cmp_const 	PREFIX(dv_cmp_const)
 #define dv_new_dynam 	PREFIX(dv_new_dynam)
-#define dv_new_statc 	PREFIX(dv_new_statc)
 #define dv_free_dynam 	PREFIX(dv_free_dynam)
-#define dv_free_statc 	PREFIX(dv_free_statc)
 
 
 
@@ -605,8 +592,6 @@
 #undef fp_dblm_low
 #undef fp_hlvm_low
 #undef fp_hlvd_low
-#undef fp_cmp1_low
-#undef fp_cmpn_low
 #undef fp_lsh1_low
 #undef fp_lshb_low
 #undef fp_lshd_low
@@ -638,8 +623,6 @@
 #define fp_dblm_low 	PREFIX(fp_dblm_low)
 #define fp_hlvm_low 	PREFIX(fp_hlvm_low)
 #define fp_hlvd_low 	PREFIX(fp_hlvd_low)
-#define fp_cmp1_low 	PREFIX(fp_cmp1_low)
-#define fp_cmpn_low 	PREFIX(fp_cmpn_low)
 #define fp_lsh1_low 	PREFIX(fp_lsh1_low)
 #define fp_lshb_low 	PREFIX(fp_lshb_low)
 #define fp_lshd_low 	PREFIX(fp_lshd_low)
@@ -678,7 +661,6 @@
 #undef fb_param_set_any
 #undef fb_param_print
 #undef fb_poly_add
-#undef fb_poly_sub
 #undef fb_copy
 #undef fb_neg
 #undef fb_zero
@@ -698,12 +680,8 @@
 #undef fb_cmp_dig
 #undef fb_add
 #undef fb_add_dig
-#undef fb_sub
-#undef fb_sub_dig
 #undef fb_mul_basic
 #undef fb_mul_integ
-#undef fb_mul_lcomb
-#undef fb_mul_rcomb
 #undef fb_mul_lodah
 #undef fb_mul_dig
 #undef fb_mul_karat
@@ -754,7 +732,6 @@
 #define fb_param_set_any 	PREFIX(fb_param_set_any)
 #define fb_param_print 	PREFIX(fb_param_print)
 #define fb_poly_add 	PREFIX(fb_poly_add)
-#define fb_poly_sub 	PREFIX(fb_poly_sub)
 #define fb_copy 	PREFIX(fb_copy)
 #define fb_neg 	PREFIX(fb_neg)
 #define fb_zero 	PREFIX(fb_zero)
@@ -774,12 +751,8 @@
 #define fb_cmp_dig 	PREFIX(fb_cmp_dig)
 #define fb_add 	PREFIX(fb_add)
 #define fb_add_dig 	PREFIX(fb_add_dig)
-#define fb_sub 	PREFIX(fb_sub)
-#define fb_sub_dig 	PREFIX(fb_sub_dig)
 #define fb_mul_basic 	PREFIX(fb_mul_basic)
 #define fb_mul_integ 	PREFIX(fb_mul_integ)
-#define fb_mul_lcomb 	PREFIX(fb_mul_lcomb)
-#define fb_mul_rcomb 	PREFIX(fb_mul_rcomb)
 #define fb_mul_lodah 	PREFIX(fb_mul_lodah)
 #define fb_mul_dig 	PREFIX(fb_mul_dig)
 #define fb_mul_karat 	PREFIX(fb_mul_karat)
@@ -816,8 +789,6 @@
 #undef fb_add1_low
 #undef fb_addn_low
 #undef fb_addd_low
-#undef fb_cmp1_low
-#undef fb_cmpn_low
 #undef fb_lsh1_low
 #undef fb_lshb_low
 #undef fb_lshd_low
@@ -843,8 +814,6 @@
 #define fb_add1_low 	PREFIX(fb_add1_low)
 #define fb_addn_low 	PREFIX(fb_addn_low)
 #define fb_addd_low 	PREFIX(fb_addd_low)
-#define fb_cmp1_low 	PREFIX(fb_cmp1_low)
-#define fb_cmpn_low 	PREFIX(fb_cmpn_low)
 #define fb_lsh1_low 	PREFIX(fb_lsh1_low)
 #define fb_lshb_low 	PREFIX(fb_lshb_low)
 #define fb_lshd_low 	PREFIX(fb_lshd_low)
@@ -1048,15 +1017,22 @@
 #undef ed_param_level
 #undef ed_projc_to_extnd
 #undef ed_rand
+#undef ed_rhs
 #undef ed_copy
 #undef ed_cmp
 #undef ed_set_infty
 #undef ed_is_infty
-#undef ed_neg
-#undef ed_add
-#undef ed_sub
-#undef ed_dbl
-#undef ed_dbl_short
+#undef ed_neg_basic
+#undef ed_neg_projc
+#undef ed_add_basic
+#undef ed_add_projc
+#undef ed_add_extnd
+#undef ed_sub_basic
+#undef ed_sub_projc
+#undef ed_sub_extnd
+#undef ed_dbl_basic
+#undef ed_dbl_projc
+#undef ed_dbl_extnd
 #undef ed_norm
 #undef ed_norm_sim
 #undef ed_map
@@ -1109,15 +1085,22 @@
 #define ed_param_level 	PREFIX(ed_param_level)
 #define ed_projc_to_extnd 	PREFIX(ed_projc_to_extnd)
 #define ed_rand 	PREFIX(ed_rand)
+#define ed_rhs 	PREFIX(ed_rhs)
 #define ed_copy 	PREFIX(ed_copy)
 #define ed_cmp 	PREFIX(ed_cmp)
 #define ed_set_infty 	PREFIX(ed_set_infty)
 #define ed_is_infty 	PREFIX(ed_is_infty)
-#define ed_neg 	PREFIX(ed_neg)
-#define ed_add 	PREFIX(ed_add)
-#define ed_sub 	PREFIX(ed_sub)
-#define ed_dbl 	PREFIX(ed_dbl)
-#define ed_dbl_short 	PREFIX(ed_dbl_short)
+#define ed_neg_basic 	PREFIX(ed_neg_basic)
+#define ed_neg_projc 	PREFIX(ed_neg_projc)
+#define ed_add_basic 	PREFIX(ed_add_basic)
+#define ed_add_projc 	PREFIX(ed_add_projc)
+#define ed_add_extnd 	PREFIX(ed_add_extnd)
+#define ed_sub_basic 	PREFIX(ed_sub_basic)
+#define ed_sub_projc 	PREFIX(ed_sub_projc)
+#define ed_sub_extnd 	PREFIX(ed_sub_extnd)
+#define ed_dbl_basic 	PREFIX(ed_dbl_basic)
+#define ed_dbl_projc 	PREFIX(ed_dbl_projc)
+#define ed_dbl_extnd 	PREFIX(ed_dbl_extnd)
 #define ed_norm 	PREFIX(ed_norm)
 #define ed_norm_sim 	PREFIX(ed_norm_sim)
 #define ed_map 	PREFIX(ed_map)
@@ -1311,7 +1294,7 @@
 #undef ep2_st
 #undef ep2_t
 #define ep2_st	PREFIX(ep2_st)
-#define ep2_t		PREFIX(ep2_t)
+#define ep2_t	PREFIX(ep2_t)
 
 #undef ep2_curve_init
 #undef ep2_curve_clean
@@ -1975,7 +1958,6 @@
 #undef cp_sokaka_gen
 #undef cp_sokaka_gen_prv
 #undef cp_sokaka_key
-#undef cp_ibe_gen
 #undef cp_bgn_gen
 #undef cp_bgn_enc1
 #undef cp_bgn_dec1
@@ -1984,6 +1966,7 @@
 #undef cp_bgn_add
 #undef cp_bgn_mul
 #undef cp_bgn_dec
+#undef cp_ibe_gen
 #undef cp_ibe_gen_prv
 #undef cp_ibe_enc
 #undef cp_ibe_dec
@@ -1993,13 +1976,28 @@
 #undef cp_bbs_gen
 #undef cp_bbs_sig
 #undef cp_bbs_ver
+#undef cp_cls_gen
+#undef cp_cls_sig
+#undef cp_cls_ver
+#undef cp_cli_gen
+#undef cp_cli_sig
+#undef cp_cli_ver
+#undef cp_clb_gen
+#undef cp_clb_sig
+#undef cp_clb_ver
+#undef cp_pss_gen
+#undef cp_pss_sig
+#undef cp_pss_ver
+#undef cp_psb_gen
+#undef cp_psb_sig
+#undef cp_psb_ver
 #undef cp_zss_gen
 #undef cp_zss_sig
 #undef cp_zss_ver
-#undef cp_vbnn_ibs_kgc_gen
-#undef cp_vbnn_ibs_kgc_extract_key
-#undef cp_vbnn_ibs_user_sign
-#undef cp_vbnn_ibs_user_verify
+#undef cp_vbnn_gen
+#undef cp_vbnn_gen_prv
+#undef cp_vbnn_sig
+#undef cp_vbnn_ver
 
 #define cp_rsa_gen_basic 	PREFIX(cp_rsa_gen_basic)
 #define cp_rsa_gen_quick 	PREFIX(cp_rsa_gen_quick)
@@ -2034,7 +2032,6 @@
 #define cp_sokaka_gen 	PREFIX(cp_sokaka_gen)
 #define cp_sokaka_gen_prv 	PREFIX(cp_sokaka_gen_prv)
 #define cp_sokaka_key 	PREFIX(cp_sokaka_key)
-#define cp_ibe_gen 	PREFIX(cp_ibe_gen)
 #define cp_bgn_gen 	PREFIX(cp_bgn_gen)
 #define cp_bgn_enc1 	PREFIX(cp_bgn_enc1)
 #define cp_bgn_dec1 	PREFIX(cp_bgn_dec1)
@@ -2043,6 +2040,7 @@
 #define cp_bgn_add 	PREFIX(cp_bgn_add)
 #define cp_bgn_mul 	PREFIX(cp_bgn_mul)
 #define cp_bgn_dec 	PREFIX(cp_bgn_dec)
+#define cp_ibe_gen 	PREFIX(cp_ibe_gen)
 #define cp_ibe_gen_prv 	PREFIX(cp_ibe_gen_prv)
 #define cp_ibe_enc 	PREFIX(cp_ibe_enc)
 #define cp_ibe_dec 	PREFIX(cp_ibe_dec)
@@ -2052,14 +2050,29 @@
 #define cp_bbs_gen 	PREFIX(cp_bbs_gen)
 #define cp_bbs_sig 	PREFIX(cp_bbs_sig)
 #define cp_bbs_ver 	PREFIX(cp_bbs_ver)
+#define cp_cls_gen 	PREFIX(cp_cls_gen)
+#define cp_cls_sig 	PREFIX(cp_cls_sig)
+#define cp_cls_ver 	PREFIX(cp_cls_ver)
+#define cp_cli_gen 	PREFIX(cp_cli_gen)
+#define cp_cli_sig 	PREFIX(cp_cli_sig)
+#define cp_cli_ver 	PREFIX(cp_cli_ver)
+#define cp_clb_gen 	PREFIX(cp_clb_gen)
+#define cp_clb_sig 	PREFIX(cp_clb_sig)
+#define cp_clb_ver 	PREFIX(cp_clb_ver)
+#define cp_pss_gen 	PREFIX(cp_pss_gen)
+#define cp_pss_sig 	PREFIX(cp_pss_sig)
+#define cp_pss_ver 	PREFIX(cp_pss_ver)
+#define cp_psb_gen 	PREFIX(cp_psb_gen)
+#define cp_psb_sig 	PREFIX(cp_psb_sig)
+#define cp_psb_ver 	PREFIX(cp_psb_ver)
 #define cp_zss_gen 	PREFIX(cp_zss_gen)
 #define cp_zss_sig 	PREFIX(cp_zss_sig)
 #define cp_zss_ver 	PREFIX(cp_zss_ver)
-#define cp_vbnn_ibs_kgc_gen 	PREFIX(cp_vbnn_ibs_kgc_gen)
-#define cp_vbnn_ibs_kgc_extract_key 	PREFIX(cp_vbnn_ibs_kgc_extract_key)
-#define cp_vbnn_ibs_user_sign 	PREFIX(cp_vbnn_ibs_user_sign)
-#define cp_vbnn_ibs_user_verify 	PREFIX(cp_vbnn_ibs_user_verify)
+#define cp_vbnn_gen 	PREFIX(cp_vbnn_gen)
+#define cp_vbnn_gen_prv 	PREFIX(cp_vbnn_gen_prv)
+#define cp_vbnn_sig 	PREFIX(cp_vbnn_sig)
+#define cp_vbnn_ver 	PREFIX(cp_vbnn_ver)
 
 #endif /* LABEL */
 
-#endif /* !RELIC_LABEL_H */
+#endif /* !RLC_LABEL_H */

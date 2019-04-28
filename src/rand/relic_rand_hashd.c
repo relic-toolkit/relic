@@ -1,23 +1,24 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2017 RELIC Authors
+ * Copyright (C) 2007-2019 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
  * for contact information.
  *
- * RELIC is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * RELIC is free software; you can redistribute it and/or modify it under the
+ * terms of the version 2.1 (or later) of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; or version 2.0 of the Apache
+ * License as published by the Apache Software Foundation. See the LICENSE files
+ * for more details.
  *
- * RELIC is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * RELIC is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the LICENSE files for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RELIC. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General Public or the
+ * Apache License along with RELIC. If not, see <https://www.gnu.org/licenses/>
+ * or <https://www.apache.org/licenses/>.
  */
 
 /**
@@ -54,7 +55,7 @@
  */
 static void rand_hash(uint8_t *out, int out_len, uint8_t *in, int in_len) {
 	uint32_t j = util_conv_big(8 * out_len);
-	int len = CEIL(out_len, MD_LEN);
+	int len = RLC_CEIL(out_len, MD_LEN);
     uint8_t* buf = RELIC_ALLOCA(uint8_t, 1 + sizeof(uint32_t) + in_len);
 	uint8_t hash[MD_LEN];
 
@@ -66,7 +67,7 @@ static void rand_hash(uint8_t *out, int out_len, uint8_t *in, int in_len) {
 		/* h = Hash(counter || bits_to_return || input_string) */
 		md_map(hash, buf, 1 + sizeof(uint32_t) + in_len);
 		/* temp = temp || h */
-		memcpy(out, hash, MIN(MD_LEN, out_len));
+		memcpy(out, hash, RLC_MIN(MD_LEN, out_len));
 		out += MD_LEN;
 		out_len -= MD_LEN;
 		/* counter = counter + 1 */
@@ -116,7 +117,7 @@ static int rand_add(uint8_t *state, uint8_t *hash, int size) {
  * @param[in] out_len		- the number of bytes to write.
  */
 static void rand_gen(uint8_t *out, int out_len) {
-	int m = CEIL(out_len, MD_LEN);
+	int m = RLC_CEIL(out_len, MD_LEN);
 	uint8_t hash[MD_LEN], data[(RAND_SIZE - 1)/2];
 	ctx_t *ctx = core_get();
 
@@ -126,7 +127,7 @@ static void rand_gen(uint8_t *out, int out_len) {
 		/* w_i = Hash(data) */
 		md_map(hash, data, sizeof(data));
 		/* W = W || w_i */
-		memcpy(out, hash, MIN(MD_LEN, out_len));
+		memcpy(out, hash, RLC_MIN(MD_LEN, out_len));
 		out += MD_LEN;
 		out_len -= MD_LEN;
 		/* data = data + 1 mod 2^b. */

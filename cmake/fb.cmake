@@ -14,8 +14,6 @@ message("   ** Available binary field arithmetic methods (default = LODAH;QUICK;
 message("      Field multiplication:")
 message("      FB_METHD=BASIC    Right-to-left shift-and-add multiplication.")
 message("      FB_METHD=INTEG    Integrated modular multiplication.")
-message("      FB_METHD=RCOMB    Right-to-left comb multiplication.")
-message("      FB_METHD=LCOMB    Left-to-right comb multiplication.")
 message("      FB_METHD=LODAH    L�pez-Dahab comb multiplication with window of width 4.\n")
 
 message("      Field squaring:")

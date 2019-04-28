@@ -1,23 +1,24 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2017 RELIC Authors
+ * Copyright (C) 2007-2019 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
  * for contact information.
  *
- * RELIC is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * RELIC is free software; you can redistribute it and/or modify it under the
+ * terms of the version 2.1 (or later) of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; or version 2.0 of the Apache
+ * License as published by the Apache Software Foundation. See the LICENSE files
+ * for more details.
  *
- * RELIC is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * RELIC is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the LICENSE files for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RELIC. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General Public or the
+ * Apache License along with RELIC. If not, see <https://www.gnu.org/licenses/>
+ * or <https://www.apache.org/licenses/>.
  */
 
 /**
@@ -32,8 +33,8 @@
  * @ingroup eb
  */
 
-#ifndef RELIC_EB_H
-#define RELIC_EB_H
+#ifndef RLC_EB_H
+#define RLC_EB_H
 
 #include "relic_fb.h"
 #include "relic_bn.h"
@@ -80,57 +81,43 @@ enum {
 /**
  * Size of a precomputation table using the binary method.
  */
-#define RELIC_EB_TABLE_BASIC		(FB_BITS)
-
-/**
- * Size of a precomputation table using Yao's windowing method.
- */
-#define RELIC_EB_TABLE_YAOWI      (FB_BITS / EB_DEPTH + 1)
-
-/**
- * Size of a precomputation table using the NAF windowing method.
- */
-#define RELIC_EB_TABLE_NAFWI      (FB_BITS / EB_DEPTH + 1)
+#define RLC_EB_TABLE_BASIC		(RLC_FB_BITS)
 
 /**
  * Size of a precomputation table using the single-table comb method.
  */
-#define RELIC_EB_TABLE_COMBS      (1 << EB_DEPTH)
+#define RLC_EB_TABLE_COMBS      (1 << EB_DEPTH)
 
 /**
  * Size of a precomputation table using the double-table comb method.
  */
-#define RELIC_EB_TABLE_COMBD		(1 << (EB_DEPTH + 1))
+#define RLC_EB_TABLE_COMBD		(1 << (EB_DEPTH + 1))
 
 /**
  * Size of a precomputation table using the w-(T)NAF method.
  */
-#define RELIC_EB_TABLE_LWNAF		(1 << (EB_DEPTH - 2))
+#define RLC_EB_TABLE_LWNAF		(1 << (EB_DEPTH - 2))
 
 /**
  * Size of a precomputation table using the chosen algorithm.
  */
 #if EB_FIX == BASIC
-#define RELIC_EB_TABLE			RELIC_EB_TABLE_BASIC
-#elif EB_FIX == YAOWI
-#define RELIC_EB_TABLE			RELIC_EB_TABLE_YAOWI
-#elif EB_FIX == NAFWI
-#define RELIC_EB_TABLE			RELIC_EB_TABLE_NAFWI
+#define RLC_EB_TABLE			RLC_EB_TABLE_BASIC
 #elif EB_FIX == COMBS
-#define RELIC_EB_TABLE			RELIC_EB_TABLE_COMBS
+#define RLC_EB_TABLE			RLC_EB_TABLE_COMBS
 #elif EB_FIX == COMBD
-#define RELIC_EB_TABLE			RELIC_EB_TABLE_COMBD
+#define RLC_EB_TABLE			RLC_EB_TABLE_COMBD
 #elif EB_FIX == LWNAF
-#define RELIC_EB_TABLE			RELIC_EB_TABLE_LWNAF
+#define RLC_EB_TABLE			RLC_EB_TABLE_LWNAF
 #endif
 
 /**
  * Maximum size of a precomputation table.
  */
 #ifdef STRIP
-#define RELIC_EB_TABLE_MAX 		RELIC_EB_TABLE
+#define RLC_EB_TABLE_MAX 		RLC_EB_TABLE
 #else
-#define RELIC_EB_TABLE_MAX 		MAX(RELIC_EB_TABLE_BASIC, RELIC_EB_TABLE_COMBD)
+#define RLC_EB_TABLE_MAX 		RLC_MAX(RLC_EB_TABLE_BASIC, RLC_EB_TABLE_COMBD)
 #endif
 
 /*============================================================================*/
@@ -141,21 +128,12 @@ enum {
  * Represents an elliptic curve point over a binary field.
  */
 typedef struct {
-#if ALLOC == STATIC
-	/** The first coordinate. */
-	fb_t x;
-	/** The second coordinate. */
-	fb_t y;
-	/** The third coordinate (projective representation). */
-	fb_t z;
-#elif ALLOC == DYNAMIC || ALLOC == STACK || ALLOC == AUTO
 	/** The first coordinate. */
 	fb_st x;
 	/** The second coordinate. */
 	fb_st y;
 	/** The third coordinate (projective representation). */
 	fb_st z;
-#endif
 	/** Flag to indicate that this point is normalized. */
 	int norm;
 } eb_st;
@@ -197,19 +175,6 @@ typedef eb_st *eb_t;
 		THROW(ERR_NO_MEMORY);												\
 	}																		\
 
-#elif ALLOC == STATIC
-#define eb_new(A)															\
-	A = (eb_t)alloca(sizeof(eb_st));										\
-	if (A == NULL) {														\
-		THROW(ERR_NO_MEMORY);												\
-	}																		\
-	fb_null((A)->x);														\
-	fb_null((A)->y);														\
-	fb_null((A)->z);														\
-	fb_new((A)->x);															\
-	fb_new((A)->y);															\
-	fb_new((A)->z);															\
-
 #elif ALLOC == AUTO
 #define eb_new(A)				/* empty */
 
@@ -228,15 +193,6 @@ typedef eb_st *eb_t;
 #define eb_free(A)															\
 	if (A != NULL) {														\
 		free(A);															\
-		A = NULL;															\
-	}																		\
-
-#elif ALLOC == STATIC
-#define eb_free(A)															\
-	if (A != NULL) {														\
-		fb_free((A)->x);													\
-		fb_free((A)->y);													\
-		fb_free((A)->z);													\
 		A = NULL;															\
 	}																		\
 
@@ -340,10 +296,6 @@ typedef eb_st *eb_t;
  */
 #if EB_FIX == BASIC
 #define eb_mul_pre(T, P)		eb_mul_pre_basic(T, P)
-#elif EB_FIX == YAOWI
-#define eb_mul_pre(T, P)		eb_mul_pre_yaowi(T, P)
-#elif EB_FIX == NAFWI
-#define eb_mul_pre(T, P)		eb_mul_pre_nafwi(T, P)
 #elif EB_FIX == COMBS
 #define eb_mul_pre(T, P)		eb_mul_pre_combs(T, P)
 #elif EB_FIX == COMBD
@@ -362,10 +314,6 @@ typedef eb_st *eb_t;
  */
 #if EB_FIX == BASIC
 #define eb_mul_fix(R, T, K)		eb_mul_fix_basic(R, T, K)
-#elif EB_FIX == YAOWI
-#define eb_mul_fix(R, T, K)		eb_mul_fix_yaowi(R, T, K)
-#elif EB_FIX == NAFWI
-#define eb_mul_fix(R, T, K)		eb_mul_fix_nafwi(R, T, K)
 #elif EB_FIX == COMBS
 #define eb_mul_fix(R, T, K)		eb_mul_fix_combs(R, T, K)
 #elif EB_FIX == COMBD
@@ -502,14 +450,14 @@ int eb_param_set_any(void);
  * Configures a set of curve parameters without endormorphisms for the current
  * security level.
  *
- * @return STS_OK if there is a curve at this security level, STS_ERR otherwise.
+ * @return RLC_OK if there is a curve at this security level, RLC_ERR otherwise.
  */
 int eb_param_set_any_plain(void);
 
 /**
  * Configures a set of Koblitz curve parameters for the current security level.
  *
- * @return STS_OK if there is a curve at this security level, STS_ERR otherwise.
+ * @return RLC_OK if there is a curve at this security level, RLC_ERR otherwise.
  */
 int eb_param_set_any_kbltz(void);
 
@@ -559,7 +507,7 @@ void eb_copy(eb_t r, const eb_t p);
  *
  * @param[in] p				- the first binary elliptic curve point.
  * @param[in] q				- the second binary elliptic curve point.
- * @return CMP_EQ if p == q and CMP_NE if p != q.
+ * @return RLC_EQ if p == q and RLC_NE if p != q.
  */
 int eb_cmp(const eb_t p, const eb_t q);
 
@@ -1016,4 +964,4 @@ void eb_pck(eb_t r, const eb_t p);
  */
 int eb_upk(eb_t r, const eb_t p);
 
-#endif /* !RELIC_EB_H */
+#endif /* !RLC_EB_H */
