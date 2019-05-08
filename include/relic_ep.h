@@ -317,6 +317,8 @@ typedef ep_st *ep_t;
 #define ep_mul(R, P, K)		ep_mul_monty(R, P, K)
 #elif EP_MUL == LWNAF
 #define ep_mul(R, P, K)		ep_mul_lwnaf(R, P, K)
+#elif EP_MUL == LWREG
+#define ep_mul(R, P, K)		ep_mul_lwreg(R, P, K)
 #endif
 
 /**

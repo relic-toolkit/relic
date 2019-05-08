@@ -275,7 +275,7 @@ typedef ep3_st *ep3_t;
 #define ep2_mul(R, P, K)		ep2_mul_slide(R, P, K)
 #elif EP_MUL == MONTY
 #define ep2_mul(R, P, K)		ep2_mul_monty(R, P, K)
-#elif EP_MUL == LWNAF
+#elif EP_MUL == LWNAF || EP2_MUL == LWREG
 #define ep2_mul(R, P, K)		ep2_mul_lwnaf(R, P, K)
 #endif
 
