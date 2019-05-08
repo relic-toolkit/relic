@@ -463,7 +463,7 @@ void ep_mul_sim_trick(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 		if (bn_sign(m) == RLC_NEG) {
 			ep_neg(t1[1], t1[1]);
 		}
-		for (int i = 1; i < (1 << w); i++) {
+		for (int i = 2; i < (1 << w); i++) {
 			ep_add(t1[i], t1[i - 1], t1[1]);
 		}
 
@@ -473,14 +473,13 @@ void ep_mul_sim_trick(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 			}
 		}
 
-#if defined(EP_MIXED)
-		ep_norm_sim(t + 1, (const ep_t *)t + 1, (1 << (EP_WIDTH)) - 1);
+#if EP_WIDTH > 2 && defined(EP_MIXED)
+		ep_norm_sim(t + 1, (const ep_t *)(t + 1), (1 << EP_WIDTH) - 1);
 #endif
 
-		l0 = l1 = RLC_CEIL(RLC_FP_BITS, w);
+		l0 = l1 = RLC_CEIL(RLC_FP_BITS + 1, w);
 		bn_rec_win(w0, &l0, k, w);
 		bn_rec_win(w1, &l1, m, w);
-
 		for (int i = l0; i < l1; i++) {
 			w0[i] = 0;
 		}
