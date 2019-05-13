@@ -338,13 +338,13 @@ void eb_mul_sim_trick(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 
 		eb_curve_get_ord(n);
 
-		for (i =  0; i < (1 << w); i++) {
+		for (int i = 0; i < (1 << w); i++) {
 			eb_null(t0[i]);
 			eb_null(t1[i]);
 			eb_new(t0[i]);
 			eb_new(t1[i]);
 		}
-		for (i =  0; i < (1 << EB_WIDTH); i++) {
+		for (int i = 0; i < (1 << EB_WIDTH); i++) {
 			eb_null(t[i]);
 			eb_new(t[i]);
 		}
@@ -354,7 +354,7 @@ void eb_mul_sim_trick(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 		if (bn_sign(k) == RLC_NEG) {
 			eb_neg(t0[1], t0[1]);
 		}
-		for (i =  2; i < (1 << w); i++) {
+		for (int i = 2; i < (1 << w); i++) {
 			eb_add(t0[i], t0[i - 1], t0[1]);
 		}
 
@@ -363,11 +363,11 @@ void eb_mul_sim_trick(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 		if (bn_sign(m) == RLC_NEG) {
 			eb_neg(t1[1], t1[1]);
 		}
-		for (i =  2; i < (1 << w); i++) {
+		for (int i = 2; i < (1 << w); i++) {
 			eb_add(t1[i], t1[i - 1], t1[1]);
 		}
 
-		for (i =  0; i < (1 << w); i++) {
+		for (int i = 0; i < (1 << w); i++) {
 			for (int j = 0; j < (1 << w); j++) {
 				eb_add(t[(i << w) + j], t0[i], t1[j]);
 			}
@@ -377,18 +377,18 @@ void eb_mul_sim_trick(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 		eb_norm_sim(t + 1, (const eb_t *)(t + 1), (1 << EB_WIDTH) - 1);
 #endif
 
-		l0 = l1 = RLC_CEIL(RLC_FB_BITS, w);
+		l0 = l1 = RLC_CEIL(RLC_FB_BITS + 1, w);
 		bn_rec_win(w0, &l0, k, w);
 		bn_rec_win(w1, &l1, m, w);
-		for (i =  l0; i < l1; i++) {
+		for (int i = l0; i < l1; i++) {
 			w0[i] = 0;
 		}
-		for (i =  l1; i < l0; i++) {
+		for (int i = l1; i < l0; i++) {
 			w1[i] = 0;
 		}
 
 		eb_set_infty(r);
-		for (i =  RLC_MAX(l0, l1) - 1; i >= 0; i--) {
+		for (int i = RLC_MAX(l0, l1) - 1; i >= 0; i--) {
 			for (int j = 0; j < w; j++) {
 				eb_dbl(r, r);
 			}
@@ -400,11 +400,11 @@ void eb_mul_sim_trick(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 	}
 	FINALLY {
 		bn_free(n);
-		for (i =  0; i < (1 << w); i++) {
+		for (int i = 0; i < (1 << w); i++) {
 			eb_free(t0[i]);
 			eb_free(t1[i]);
 		}
-		for (i =  0; i < (1 << EB_WIDTH); i++) {
+		for (int i = 0; i < (1 << EB_WIDTH); i++) {
 			eb_free(t[i]);
 		}
 	}
