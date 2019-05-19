@@ -641,16 +641,12 @@ cdecl(fp2_norm_low):
 	cmovc 	%r12, %r13
 	movq	P3, %r12
 	cmovc 	%r12, %r14
-	addq	%rax, %r8
-	movq	%r8, 0(%rdi)
-	adcq	%rcx, %r9
-	movq	%r9, 8(%rdi)
-	adcq	%r13, %r10
-	movq	%r10, 16(%rdi)
-	adcq	%r14, %r11
-	movq	%r11, 24(%rdi)
 
-	xorq	%rax, %rax
+	addq	%r8, %rax
+	adcq	%r9, %rcx
+	adcq	%r10, %r13
+	adcq	%r11, %r14
+
 	movq	0(%rsi), %r8
 	addq	8*RLC_FP_DIGS(%rsi), %r8
 	movq	8(%rsi), %r9
@@ -659,6 +655,11 @@ cdecl(fp2_norm_low):
 	adcq	8*RLC_FP_DIGS+16(%rsi), %r10
 	movq	24(%rsi), %r11
 	adcq	8*RLC_FP_DIGS+24(%rsi), %r11
+
+    movq	%rax, 0(%rdi)
+    movq	%rcx, 8(%rdi)
+    movq	%r13, 16(%rdi)
+    movq	%r14, 24(%rdi)
 
 	movq 	%r8, %rax
 	movq 	%r9, %rcx
