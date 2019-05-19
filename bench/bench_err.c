@@ -40,11 +40,13 @@ static void dummy2(void) {
 
 static void dummy(void) {
 	TRY {
-
+		/* Empty block just to test overhead of error triggering mechanism. */
 	}
 	CATCH_ANY {
+		/* Exceptions are thrown here. */
 	}
 	FINALLY {
+		/* This is executed after exception handling. */
 	}
 }
 
