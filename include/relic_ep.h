@@ -105,7 +105,7 @@ enum {
 	B24_P477,
 	/** Kachisa-Schafer-Scott with negative x. */
 	KSS_P508,
-	/** Jacobi Quartic curve with embedding degree 8. */
+	/** Optimal TNFS-secure curve with embedding degree 8. */
 	OT8_P511,
 	/** Barreto-Naehrig curve with positive x. */
 	BN_P638,
