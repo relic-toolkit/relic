@@ -895,7 +895,11 @@ int ep_param_set_any_endom(void) {
 #elif FP_PRIME == 382
 	ep_param_set(BN_P382);
 #elif FP_PRIME == 446
+#ifdef FP_QNRES
 	ep_param_set(B12_P446);
+#else
+	ep_param_set(BN_P446);
+#endif
 #elif FP_PRIME == 455
 	ep_param_set(B12_P455);
 #elif FP_PRIME == 477
@@ -953,9 +957,15 @@ int ep_param_set_any_pairf(void) {
 	type = EP_DTYPE;
 	degree = 2;
 #elif FP_PRIME == 446
+#ifdef FP_QNRES
 	ep_param_set(B12_P446);
 	type = EP_MTYPE;
 	degree = 2;
+#else
+	ep_param_set(BN_P446);
+	type = EP_DTYPE;
+	degree = 2;
+#endif
 #elif FP_PRIME == 455
 	ep_param_set(B12_P455);
 	type = EP_DTYPE;
