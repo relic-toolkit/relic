@@ -296,9 +296,6 @@ void fp_prime_set_pairf(const bn_t x, int pairf) {
 				ctx->x_sps[ctx->x_len++] = -i;
 			}
 		}
-		if (ctx->x_len == RLC_TERMS) {
-			THROW(ERR_NO_VALID);
-		}
 	} CATCH_ANY {
 		THROW(ERR_CAUGHT);
 	} FINALLY {
