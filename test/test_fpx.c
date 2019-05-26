@@ -3047,19 +3047,12 @@ static int cyclotomic8(void) {
 	fp8_null(a);
 	fp8_null(b);
 	fp8_null(c);
-	fp8_null(d[0]);
-	fp8_null(d[1])
-	fp8_null(e[0]);
 	bn_null(f);
 
 	TRY {
 		fp8_new(a);
 		fp8_new(b);
 		fp8_new(c);
-		fp8_new(d[0]);
-		fp8_new(d[1]);
-		fp8_new(e[0]);
-		fp8_new(e[1]);
 		bn_new(f);
 
 		TEST_BEGIN("cyclotomic test is correct") {
@@ -3106,10 +3099,6 @@ static int cyclotomic8(void) {
 	fp8_free(a);
 	fp8_free(b);
 	fp8_free(c);
-	fp8_free(d[0]);
-	fp8_free(d[1]);
-	fp8_free(e[0]);
-	fp8_free(e[1]);
 	bn_free(f);
 	return code;
 }

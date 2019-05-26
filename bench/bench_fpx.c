@@ -1321,8 +1321,6 @@ static void arith8(void) {
 	fp8_new(a);
 	fp8_new(b);
 	fp8_new(c);
-	fp8_new(d[0]);
-	fp8_new(d[1]);
 	bn_new(e);
 
 	BENCH_BEGIN("fp8_add") {
@@ -1472,8 +1470,6 @@ static void arith8(void) {
 	fp8_free(a);
 	fp8_free(b);
 	fp8_free(c);
-	fp8_free(d[0]);
-	fp8_free(d[1]);
 	bn_free(e);
 }
 

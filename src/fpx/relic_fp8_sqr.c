@@ -113,10 +113,10 @@ void fp8_sqr_lazyr(fp8_t c, fp8_t a) {
 	} CATCH_ANY {
 		THROW(ERR_CAUGHT);
 	} FINALLY {
-		fp2_free(t);
-		dv2_free(u0);
-		dv2_free(u1);
-		dv2_free(u2);
+		fp4_free(t);
+		dv4_free(u0);
+		dv4_free(u1);
+		dv4_free(u2);
 	}
 }
 

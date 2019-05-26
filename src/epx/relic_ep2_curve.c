@@ -509,8 +509,10 @@ void ep2_curve_set(fp2_t a, fp2_t b, ep2_t g, bn_t r, bn_t h) {
 	ctx_t *ctx = core_get();
 	ctx->ep2_is_twist = 0;
 
-	fp2_copy(ctx->ep2_a, a);
-	fp2_copy(ctx->ep2_b, b);
+	fp_copy(ctx->ep2_a[0], a[0]);
+	fp_copy(ctx->ep2_a[1], a[1]);
+	fp_copy(ctx->ep2_b[0], b[0]);
+	fp_copy(ctx->ep2_b[1], b[1]);
 
 	ep2_norm(&(ctx->ep2_g), g);
 	bn_copy(&(ctx->ep2_r), r);
