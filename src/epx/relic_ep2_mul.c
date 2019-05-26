@@ -62,13 +62,8 @@ static void ep2_mul_glv_imp(ep2_t r, ep2_t p, const bn_t k) {
 
 		ep2_curve_get_ord(n);
 
-		switch (ep_param_get()) {
-			case BN_P158:
-			case BN_P254:
-			case BN_P256:
-			case BN_P382:
-			case BN_P446:
-			case BN_P638:
+		switch (ep_curve_is_pairf()) {
+			case EP_BN:
 				ep2_curve_get_vs(v);
 
 				for (i = 0; i < 4; i++) {
@@ -152,11 +147,8 @@ static void ep2_mul_glv_imp(ep2_t r, ep2_t p, const bn_t k) {
 					}
 				}
 				break;
-			case OT8_P511:
-			case B12_P381:
-			case B12_P446:
-			case B12_P455:
-			case B12_P638:
+			case EP_OT:
+			case EP_B12:
 				bn_abs(v[0], k);
 				fp_param_get_var(u[0]);
 				bn_copy(u[1], u[0]);

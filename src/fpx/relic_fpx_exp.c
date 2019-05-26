@@ -518,13 +518,8 @@ void fp12_exp_cyc(fp12_t c, fp12_t a, bn_t b) {
 
 			ep2_curve_get_ord(n);
 
-			switch (ep_param_get()) {
-				case BN_P158:
-				case BN_P254:
-				case BN_P256:
-				case BN_P382:
-				case BN_P446:
-				case BN_P638:
+			switch (ep_curve_is_pairf()) {
+				case EP_BN:
 					ep2_curve_get_vs(v);
 
 					for (i = 0; i < 4; i++) {
@@ -606,9 +601,7 @@ void fp12_exp_cyc(fp12_t c, fp12_t a, bn_t b) {
 
 					endom = 1;
 					break;
-				case B12_P381:
-				case B12_P455:
-				case B12_P638:
+				case EP_B12:
 					bn_abs(v[0], b);
 					fp_param_get_var(u[0]);
 
@@ -1371,7 +1364,7 @@ void fp18_back_cyc(fp18_t c, fp18_t a) {
 
 void fp18_back_cyc_sim(fp18_t c[], fp18_t a[], int n) {
     fp3_t *t = RLC_ALLOCA(fp3_t, n * 7);
-    fp3_t 
+    fp3_t
         *t0 = t + 0 * n,
         *t1 = t + 1 * n,
         *t2 = t + 2 * n,

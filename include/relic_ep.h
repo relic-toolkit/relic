@@ -115,6 +115,23 @@ enum {
 	SS_P1536,
 };
 
+/**
+ * Pairing-friendly elliptic curve identifiers.
+ */
+enum {
+	/** Barreto-Naehrig. */
+	EP_BN = 1,
+	/* Barreto-Lynn-Scott with embedding degree 12. */
+	EP_B12,
+	/* Optimal TNFS-secure. */
+	EP_OT,
+	/* Kachisa-Schafer-Scott with embedding degree 16. */
+	EP_KSS,
+	/* Barreto-Lynn-Scott with embedding degree 24. */
+	EP_B24,
+
+};
+
 /*============================================================================*/
 /* Constant definitions                                                       */
 /*============================================================================*/
@@ -449,6 +466,14 @@ int ep_curve_is_endom(void);
  * @return 1 if the prime elliptic curve is supersingular, 0 otherwise.
  */
 int ep_curve_is_super(void);
+
+/**
+ * Tests if the configured prime elliptic curve is pairing-friendly.
+ *
+ * @return 0 if the prime elliptic curve is not pairing-friendly, and the
+ * family identifier otherwise.
+ */
+int ep_curve_is_pairf(void);
 
 /**
  * Returns the generator of the group of points in the prime elliptic curve.

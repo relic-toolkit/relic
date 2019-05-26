@@ -162,6 +162,10 @@ int ep_curve_is_super(void) {
 	return core_get()->ep_is_super;
 }
 
+int ep_curve_is_pairf(void) {
+	return core_get()->ep_is_pairf;
+}
+
 void ep_curve_get_gen(ep_t g) {
 	ep_copy(g, &core_get()->ep_g);
 }

@@ -558,7 +558,7 @@ int ep_param_get(void) {
 }
 
 void ep_param_set(int param) {
-	int plain = 0, endom = 0, super = 0;
+	int plain = 0, endom = 0, super = 0, pairf = 0;
 	char str[2 * RLC_FP_BYTES + 2];
 	fp_t a, b, beta;
 	ep_t g;
@@ -588,6 +588,7 @@ void ep_param_set(int param) {
 			case BN_P158:
 				ASSIGNK(BN_P158, BN_158);
 				endom = 1;
+				pairf = EP_BN;
 				break;
 #endif
 #if defined(EP_PLAIN) && FP_PRIME == 160
@@ -642,6 +643,7 @@ void ep_param_set(int param) {
 			case BN_P254:
 				ASSIGNK(BN_P254, BN_254);
 				endom = 1;
+				pairf = EP_BN;
 				break;
 #endif
 #if defined(EP_PLAIN) && FP_PRIME == 251
@@ -674,6 +676,7 @@ void ep_param_set(int param) {
 			case BN_P256:
 				ASSIGNK(BN_P256, BN_256);
 				endom = 1;
+				pairf = EP_BN;
 				break;
 #endif
 #if defined(EP_PLAIN) & FP_PRIME == 382
@@ -686,12 +689,14 @@ void ep_param_set(int param) {
 			case B12_P381:
 				ASSIGNK(B12_P381, B12_381);
 				endom = 1;
+				pairf = EP_B12;
 				break;
 #endif
 #if defined(EP_ENDOM) & FP_PRIME == 382
 			case BN_P382:
 				ASSIGNK(BN_P382, BN_382);
 				endom = 1;
+				pairf = EP_BN;
 				break;
 #endif
 #if defined(EP_PLAIN) && FP_PRIME == 383
@@ -710,16 +715,19 @@ void ep_param_set(int param) {
 			case BN_P446:
 				ASSIGNK(BN_P446, BN_446);
 				endom = 1;
+				pairf = EP_BN;
 				break;
 			case B12_P446:
 				ASSIGNK(B12_P446, B12_446);
 				endom = 1;
+				pairf = EP_B12;
 				break;
 #endif
 #if defined(EP_ENDOM) && FP_PRIME == 455
 			case B12_P455:
 				ASSIGNK(B12_P455, B12_455);
 				endom = 1;
+				pairf = EP_B12;
 				break;
 #endif
 #if defined(EP_ENDOM) && FP_PRIME == 477
@@ -756,10 +764,12 @@ void ep_param_set(int param) {
 			case BN_P638:
 				ASSIGNK(BN_P638, BN_638);
 				endom = 1;
+				pairf = EP_BN;
 				break;
 			case B12_P638:
 				ASSIGNK(B12_P638, B12_638);
 				endom = 1;
+				pairf = EP_B12;
 				break;
 #endif
 #if defined(EP_SUPER) && FP_PRIME == 1536
@@ -778,6 +788,7 @@ void ep_param_set(int param) {
 		(void)endom;
 		(void)plain;
 		(void)super;
+		(void)pairf;
 		(void)beta;
 
 		fp_set_dig(g->z, 1);
@@ -794,6 +805,7 @@ void ep_param_set(int param) {
 		if (endom) {
 			ep_curve_set_endom(a, b, g, r, h, beta, lamb);
 			core_get()->ep_id = param;
+			core_get()->ep_is_pairf = pairf;
 		}
 #endif
 

@@ -180,19 +180,11 @@ void ep2_map(ep2_t p, const uint8_t *msg, int len) {
 			fp_add_dig(p->x[0], p->x[0], 1);
 		}
 
-		switch (ep_param_get()) {
-			case BN_P158:
-			case BN_P254:
-			case BN_P256:
-			case BN_P382:
-			case BN_P446:
-			case BN_P638:
+		switch (ep_curve_is_pairf()) {
+			case EP_BN:
 				ep2_mul_cof_bn(p, p);
 				break;
-			case B12_P381:
-			case B12_P446:
-			case B12_P455:
-			case B12_P638:
+			case EP_B12:
 				ep2_mul_cof_b12(p, p);
 				break;
 			default:
