@@ -97,7 +97,7 @@ void fp2_exp_dig(fp2_t c, fp2_t a, dig_t b) {
 		THROW(ERR_CAUGHT);
 	}
 	FINALLY {
-		fp12_free(t);
+		fp2_free(t);
 	}
 }
 
