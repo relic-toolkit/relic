@@ -145,19 +145,12 @@ static int util2(void) {
 			fp2_write_bin(bin, sizeof(bin), a, 0);
 			fp2_read_bin(b, bin, sizeof(bin));
 			TEST_ASSERT(fp2_cmp(a, b) == RLC_EQ, end);
-			fp2_conv_uni(a, a);
-			fp2_write_bin(bin, RLC_FP_BYTES + 1, a, 1);
-			fp2_read_bin(b, bin, RLC_FP_BYTES + 1);
-			TEST_ASSERT(fp2_cmp(a, b) == RLC_EQ, end);
 		}
 		TEST_END;
 
 		TEST_BEGIN("getting the size of a prime field element is correct") {
 			fp2_rand(a);
 			TEST_ASSERT(fp2_size_bin(a, 0) == 2 * RLC_FP_BYTES, end);
-			fp2_conv_uni(a, a);
-			TEST_ASSERT(fp2_size_bin(a, 0) == 2 * RLC_FP_BYTES, end);
-			TEST_ASSERT(fp2_size_bin(a, 1) == RLC_FP_BYTES + 1, end);
 		}
 		TEST_END;
 	}
@@ -489,11 +482,7 @@ static int multiplication2(void) {
 					fp2_mul(c, a, c);
 					break;
 				case 7:
-#if FP_PRIME == 256
-					fp_set_dig(c[0], 4);
-#else
-					fp_set_dig(c[0], 16);
-#endif
+					fp_set_dig(c[0], fp2_field_get_qnr());
 					fp_set_dig(c[1], 1);
 					fp2_mul(c, a, c);
 					break;
@@ -728,6 +717,7 @@ static int exponentiation2(void) {
 static int compression2(void) {
 	int code = RLC_ERR;
 	fp2_t a, b, c, d;
+	uint8_t bin[2 * RLC_FP_BYTES];
 
 	fp2_null(a);
 	fp2_null(b);
@@ -751,6 +741,23 @@ static int compression2(void) {
 			TEST_ASSERT(fp2_upk(d, c) == 1, end);
 			TEST_ASSERT(fp2_cmp(b, d) == RLC_EQ, end);
 		} TEST_END;
+
+		TEST_BEGIN("compression is consitent with reading and writing") {
+			fp2_rand(a);
+			fp2_conv_uni(a, a);
+			fp2_write_bin(bin, RLC_FP_BYTES + 1, a, 1);
+			fp2_read_bin(b, bin, RLC_FP_BYTES + 1);
+			TEST_ASSERT(fp2_cmp(a, b) == RLC_EQ, end);
+		}
+		TEST_END;
+
+		TEST_BEGIN("getting the size of a compressed field element is correct") {
+			fp2_rand(a);
+			fp2_conv_uni(a, a);
+			TEST_ASSERT(fp2_size_bin(a, 0) == 2 * RLC_FP_BYTES, end);
+			TEST_ASSERT(fp2_size_bin(a, 1) == RLC_FP_BYTES + 1, end);
+		}
+		TEST_END;
 	}
 	CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -1511,6 +1518,546 @@ static int square_root3(void) {
 	return code;
 }
 
+static int memory4(void) {
+	err_t e;
+	int code = RLC_ERR;
+	fp4_t a;
+
+	fp4_null(a);
+
+	TRY {
+		TEST_BEGIN("memory can be allocated") {
+			fp4_new(a);
+			fp4_free(a);
+		} TEST_END;
+	} CATCH(e) {
+		switch (e) {
+			case ERR_NO_MEMORY:
+				util_print("FATAL ERROR!\n");
+				ERROR(end);
+				break;
+		}
+	}
+	(void)a;
+	code = RLC_OK;
+  end:
+	return code;
+}
+
+static int util4(void) {
+	int code = RLC_ERR;
+	uint8_t bin[4 * RLC_FP_BYTES];
+	fp4_t a, b, c;
+	dig_t d;
+
+	fp4_null(a);
+	fp4_null(b);
+	fp4_null(c);
+
+	TRY {
+		fp4_new(a);
+		fp4_new(b);
+		fp4_new(c);
+
+		TEST_BEGIN("comparison is consistent") {
+			fp4_rand(a);
+			fp4_rand(b);
+			if (fp4_cmp(a, b) != RLC_EQ) {
+				TEST_ASSERT(fp4_cmp(b, a) == RLC_NE, end);
+			}
+		}
+		TEST_END;
+
+		TEST_BEGIN("copy and comparison are consistent") {
+			fp4_rand(a);
+			fp4_rand(b);
+			fp4_rand(c);
+			if (fp4_cmp(a, c) != RLC_EQ) {
+				fp4_copy(c, a);
+				TEST_ASSERT(fp4_cmp(c, a) == RLC_EQ, end);
+			}
+			if (fp4_cmp(b, c) != RLC_EQ) {
+				fp4_copy(c, b);
+				TEST_ASSERT(fp4_cmp(b, c) == RLC_EQ, end);
+			}
+		}
+		TEST_END;
+
+		TEST_BEGIN("negation is consistent") {
+			fp4_rand(a);
+			fp4_neg(b, a);
+			if (fp4_cmp(a, b) != RLC_EQ) {
+				TEST_ASSERT(fp4_cmp(b, a) == RLC_NE, end);
+			}
+			fp4_neg(b, b);
+			TEST_ASSERT(fp4_cmp(a, b) == RLC_EQ, end);
+		}
+		TEST_END;
+
+		TEST_BEGIN("assignment to zero and comparison are consistent") {
+			do {
+				fp4_rand(a);
+			} while (fp4_is_zero(a));
+			fp4_zero(c);
+			TEST_ASSERT(fp4_cmp(a, c) == RLC_NE, end);
+			TEST_ASSERT(fp4_cmp(c, a) == RLC_NE, end);
+		}
+		TEST_END;
+
+		TEST_BEGIN("assignment to random and comparison are consistent") {
+			do {
+				fp4_rand(a);
+			} while (fp4_is_zero(a));
+			fp4_zero(c);
+			TEST_ASSERT(fp4_cmp(a, c) == RLC_NE, end);
+		}
+		TEST_END;
+
+		TEST_BEGIN("assignment to zero and zero test are consistent") {
+			fp4_zero(a);
+			TEST_ASSERT(fp4_is_zero(a), end);
+		}
+		TEST_END;
+
+		TEST_BEGIN("assignment to a constant and comparison are consistent") {
+			rand_bytes((uint8_t *)&d, (RLC_DIG / 8));
+			fp4_set_dig(a, d);
+			TEST_ASSERT(fp4_cmp_dig(a, d) == RLC_EQ, end);
+		}
+		TEST_END;
+
+		TEST_BEGIN("reading and writing a finite field element are consistent") {
+			fp4_rand(a);
+			fp4_write_bin(bin, sizeof(bin), a);
+			fp4_read_bin(b, bin, sizeof(bin));
+			TEST_ASSERT(fp4_cmp(a, b) == RLC_EQ, end);
+		}
+		TEST_END;
+
+		TEST_BEGIN("getting the size of a prime field element is correct") {
+			fp4_rand(a);
+			TEST_ASSERT(fp4_size_bin(a) == 4 * RLC_FP_BYTES, end);
+		}
+		TEST_END;
+	}
+	CATCH_ANY {
+		ERROR(end);
+	}
+	code = RLC_OK;
+  end:
+	fp4_free(a);
+	fp4_free(b);
+	fp4_free(c);
+	return code;
+}
+
+static int addition4(void) {
+	int code = RLC_ERR;
+	fp4_t a, b, c, d, e;
+
+	fp4_null(a);
+	fp4_null(b);
+	fp4_null(c);
+	fp4_null(d);
+	fp4_null(e);
+
+	TRY {
+		fp4_new(a);
+		fp4_new(b);
+		fp4_new(c);
+		fp4_new(d);
+		fp4_new(e);
+
+		TEST_BEGIN("addition is commutative") {
+			fp4_rand(a);
+			fp4_rand(b);
+			fp4_add(d, a, b);
+			fp4_add(e, b, a);
+			TEST_ASSERT(fp4_cmp(d, e) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_BEGIN("addition is associative") {
+			fp4_rand(a);
+			fp4_rand(b);
+			fp4_rand(c);
+			fp4_add(d, a, b);
+			fp4_add(d, d, c);
+			fp4_add(e, b, c);
+			fp4_add(e, a, e);
+			TEST_ASSERT(fp4_cmp(d, e) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_BEGIN("addition has identity") {
+			fp4_rand(a);
+			fp4_zero(d);
+			fp4_add(e, a, d);
+			TEST_ASSERT(fp4_cmp(e, a) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_BEGIN("addition has inverse") {
+			fp4_rand(a);
+			fp4_neg(d, a);
+			fp4_add(e, a, d);
+			TEST_ASSERT(fp4_is_zero(e), end);
+		} TEST_END;
+	}
+	CATCH_ANY {
+		util_print("FATAL ERROR!\n");
+		ERROR(end);
+	}
+	code = RLC_OK;
+  end:
+	fp4_free(a);
+	fp4_free(b);
+	fp4_free(c);
+	fp4_free(d);
+	fp4_free(e);
+	return code;
+}
+
+static int subtraction4(void) {
+	int code = RLC_ERR;
+	fp4_t a, b, c, d;
+
+	fp4_null(a);
+	fp4_null(b);
+	fp4_null(c);
+	fp4_null(d);
+
+	TRY {
+		fp4_new(a);
+		fp4_new(b);
+		fp4_new(c);
+		fp4_new(d);
+
+		TEST_BEGIN("subtraction is anti-commutative") {
+			fp4_rand(a);
+			fp4_rand(b);
+			fp4_sub(c, a, b);
+			fp4_sub(d, b, a);
+			fp4_neg(d, d);
+			TEST_ASSERT(fp4_cmp(c, d) == RLC_EQ, end);
+		}
+		TEST_END;
+
+		TEST_BEGIN("subtraction has identity") {
+			fp4_rand(a);
+			fp4_zero(c);
+			fp4_sub(d, a, c);
+			TEST_ASSERT(fp4_cmp(d, a) == RLC_EQ, end);
+		}
+		TEST_END;
+
+		TEST_BEGIN("subtraction has inverse") {
+			fp4_rand(a);
+			fp4_sub(c, a, a);
+			TEST_ASSERT(fp4_is_zero(c), end);
+		}
+		TEST_END;
+	}
+	CATCH_ANY {
+		util_print("FATAL ERROR!\n");
+		ERROR(end);
+	}
+	code = RLC_OK;
+  end:
+	fp4_free(a);
+	fp4_free(b);
+	fp4_free(c);
+	fp4_free(d);
+	return code;
+}
+
+static int doubling4(void) {
+	int code = RLC_ERR;
+	fp4_t a, b, c;
+
+	fp4_null(a);
+	fp4_null(b);
+	fp4_null(c);
+
+	TRY {
+		fp4_new(a);
+		fp4_new(b);
+		fp4_new(c);
+
+		TEST_BEGIN("doubling is correct") {
+			fp4_rand(a);
+			fp4_dbl(b, a);
+			fp4_add(c, a, a);
+			TEST_ASSERT(fp4_cmp(b, c) == RLC_EQ, end);
+		} TEST_END;
+	}
+	CATCH_ANY {
+		util_print("FATAL ERROR!\n");
+		ERROR(end);
+	}
+	code = RLC_OK;
+  end:
+	fp4_free(a);
+	fp4_free(b);
+	fp4_free(c);
+	return code;
+}
+
+static int multiplication4(void) {
+	int code = RLC_ERR;
+	fp4_t a, b, c, d, e, f;
+
+	fp4_null(a);
+	fp4_null(b);
+	fp4_null(c);
+	fp4_null(d);
+	fp4_null(e);
+	fp4_null(f);
+
+	TRY {
+		fp4_new(a);
+		fp4_new(b);
+		fp4_new(c);
+		fp4_new(d);
+		fp4_new(e);
+		fp4_new(f);
+
+		TEST_BEGIN("multiplication is commutative") {
+			fp4_rand(a);
+			fp4_rand(b);
+			fp4_mul(d, a, b);
+			fp4_mul(e, b, a);
+			TEST_ASSERT(fp4_cmp(d, e) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_BEGIN("multiplication is associative") {
+			fp4_rand(a);
+			fp4_rand(b);
+			fp4_rand(c);
+			fp4_mul(d, a, b);
+			fp4_mul(d, d, c);
+			fp4_mul(e, b, c);
+			fp4_mul(e, a, e);
+			TEST_ASSERT(fp4_cmp(d, e) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_BEGIN("multiplication is distributive") {
+			fp4_rand(a);
+			fp4_rand(b);
+			fp4_rand(c);
+			fp4_add(d, a, b);
+			fp4_mul(d, c, d);
+			fp4_mul(e, c, a);
+			fp4_mul(f, c, b);
+			fp4_add(e, e, f);
+			TEST_ASSERT(fp4_cmp(d, e) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_BEGIN("multiplication has identity") {
+			fp4_zero(d);
+			fp_set_dig(d[0][0], 1);
+			fp4_mul(e, a, d);
+			TEST_ASSERT(fp4_cmp(e, a) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_BEGIN("multiplication has zero property") {
+			fp4_zero(d);
+			fp4_mul(e, a, d);
+			TEST_ASSERT(fp4_is_zero(e), end);
+		} TEST_END;
+
+		TEST_BEGIN("multiplication by adjoined root is correct") {
+			fp4_rand(a);
+			fp4_zero(b);
+			fp_set_dig(b[1][0], 1);
+			fp4_mul(c, a, b);
+			fp4_mul_art(d, a);
+			TEST_ASSERT(fp4_cmp(c, d) == RLC_EQ, end);
+		} TEST_END;
+
+#if PP_EXT == BASIC | !defined(STRIP)
+		TEST_BEGIN("basic multiplication is correct") {
+			fp4_rand(a);
+			fp4_rand(b);
+			fp4_mul(c, a, b);
+			fp4_mul_basic(d, a, b);
+			TEST_ASSERT(fp4_cmp(c, d) == RLC_EQ, end);
+		} TEST_END;
+#endif
+
+#if PP_EXT == LAZYR || !defined(STRIP)
+		TEST_BEGIN("lazy reduced multiplication is correct") {
+			fp4_rand(a);
+			fp4_rand(b);
+			fp4_mul(c, a, b);
+			fp4_mul_lazyr(d, a, b);
+			TEST_ASSERT(fp4_cmp(c, d) == RLC_EQ, end);
+		} TEST_END;
+#endif
+	}
+	CATCH_ANY {
+		util_print("FATAL ERROR!\n");
+		ERROR(end);
+	}
+	code = RLC_OK;
+  end:
+	fp4_free(a);
+	fp4_free(b);
+	fp4_free(c);
+	fp4_free(d);
+	fp4_free(e);
+	fp4_free(f);
+	return code;
+}
+
+static int squaring4(void) {
+	int code = RLC_ERR;
+	fp4_t a, b, c;
+
+	fp4_null(a);
+	fp4_null(b);
+	fp4_null(c);
+
+	TRY {
+		fp4_new(a);
+		fp4_new(b);
+		fp4_new(c);
+
+		TEST_BEGIN("squaring is correct") {
+			fp4_rand(a);
+			fp4_mul(b, a, a);
+			fp4_sqr(c, a);
+			TEST_ASSERT(fp4_cmp(b, c) == RLC_EQ, end);
+		} TEST_END;
+
+#if PP_EXT == BASIC | !defined(STRIP)
+		TEST_BEGIN("basic squaring is correct") {
+			fp4_rand(a);
+			fp4_sqr(b, a);
+			fp4_sqr_basic(c, a);
+			TEST_ASSERT(fp4_cmp(b, c) == RLC_EQ, end);
+		} TEST_END;
+#endif
+
+#if PP_EXT == LAZYR || !defined(STRIP)
+		TEST_BEGIN("lazy reduced squaring is correct") {
+			fp4_rand(a);
+			fp4_sqr(b, a);
+			fp4_sqr_lazyr(c, a);
+			TEST_ASSERT(fp4_cmp(b, c) == RLC_EQ, end);
+		} TEST_END;
+#endif
+	}
+	CATCH_ANY {
+		util_print("FATAL ERROR!\n");
+		ERROR(end);
+	}
+	code = RLC_OK;
+  end:
+	fp4_free(a);
+	fp4_free(b);
+	fp4_free(c);
+	return code;
+}
+
+static int inversion4(void) {
+	int code = RLC_ERR;
+	fp4_t a, b, c;
+
+	fp4_null(a);
+	fp4_null(b);
+	fp4_null(c);
+
+	TRY {
+		fp4_new(a);
+		fp4_new(b);
+		fp4_new(c);
+
+		TEST_BEGIN("inversion is correct") {
+			do {
+				fp4_rand(a);
+			} while (fp4_is_zero(a));
+			fp4_inv(b, a);
+			fp4_mul(c, a, b);
+			fp4_zero(b);
+			fp_set_dig(b[0][0], 1);
+			TEST_ASSERT(fp4_cmp(c, b) == RLC_EQ, end);
+		} TEST_END;
+	}
+	CATCH_ANY {
+		util_print("FATAL ERROR!\n");
+		ERROR(end);
+	}
+	code = RLC_OK;
+  end:
+	fp4_free(a);
+	fp4_free(b);
+	fp4_free(c);
+	return code;
+}
+
+static int exponentiation4(void) {
+	int code = RLC_ERR;
+	fp4_t a, b, c;
+	bn_t d;
+
+	fp4_null(a);
+	fp4_null(b);
+	fp4_null(c);
+	bn_null(d);
+
+	TRY {
+		fp4_new(a);
+		fp4_new(b);
+		fp4_new(c);
+		bn_new(d);
+
+		TEST_BEGIN("exponentiation is correct") {
+			fp4_rand(a);
+			bn_zero(d);
+			fp4_exp(c, a, d);
+			TEST_ASSERT(fp4_cmp_dig(c, 1) == RLC_EQ, end);
+			bn_set_dig(d, 1);
+			fp4_exp(c, a, d);
+			TEST_ASSERT(fp4_cmp(c, a) == RLC_EQ, end);
+			bn_rand(d, RLC_POS, RLC_FP_BITS);
+			fp4_exp(b, a, d);
+			bn_neg(d, d);
+			fp4_exp(c, a, d);
+			fp4_inv(c, c);
+			TEST_ASSERT(fp4_cmp(b, c) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_BEGIN("frobenius and exponentiation are consistent") {
+			fp4_rand(a);
+			fp4_frb(b, a, 0);
+			TEST_ASSERT(fp4_cmp(a, b) == RLC_EQ, end);
+			fp4_frb(b, a, 1);
+			d->sign = RLC_POS;
+			d->used = RLC_FP_DIGS;
+			dv_copy(d->dp, fp_prime_get(), RLC_FP_DIGS);
+			fp4_exp(c, a, d);
+			TEST_ASSERT(fp4_cmp(c, b) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_BEGIN("frobenius and squared frobenius are consistent") {
+			fp4_rand(a);
+			fp4_frb(b, a, 1);
+			fp4_frb(b, b, 1);
+			fp4_frb(c, a, 2);
+			TEST_ASSERT(fp4_cmp(c, b) == RLC_EQ, end);
+		} TEST_END;
+	}
+	CATCH_ANY {
+		util_print("FATAL ERROR!\n");
+		ERROR(end);
+	}
+	code = RLC_OK;
+  end:
+	fp4_free(a);
+	fp4_free(b);
+	fp4_free(c);
+	bn_free(d);
+	return code;
+}
+
 static int memory6(void) {
 	err_t e;
 	int code = RLC_ERR;
@@ -2050,6 +2597,636 @@ static int exponentiation6(void) {
 	bn_free(d);
 	return code;
 }
+
+static int memory8(void) {
+	err_t e;
+	int code = RLC_ERR;
+	fp8_t a;
+
+	fp8_null(a);
+
+	TRY {
+		TEST_BEGIN("memory can be allocated") {
+			fp8_new(a);
+			fp8_free(a);
+		} TEST_END;
+	} CATCH(e) {
+		switch (e) {
+			case ERR_NO_MEMORY:
+				util_print("FATAL ERROR!\n");
+				ERROR(end);
+				break;
+		}
+	}
+	(void)a;
+	code = RLC_OK;
+  end:
+	return code;
+}
+
+static int util8(void) {
+	int code = RLC_ERR;
+	uint8_t bin[8 * RLC_FP_BYTES];
+	fp8_t a, b, c;
+	dig_t d;
+
+	fp8_null(a);
+	fp8_null(b);
+	fp8_null(c);
+
+	TRY {
+		fp8_new(a);
+		fp8_new(b);
+		fp8_new(c);
+
+		TEST_BEGIN("comparison is consistent") {
+			fp8_rand(a);
+			fp8_rand(b);
+			if (fp8_cmp(a, b) != RLC_EQ) {
+				TEST_ASSERT(fp8_cmp(b, a) == RLC_NE, end);
+			}
+		}
+		TEST_END;
+
+		TEST_BEGIN("copy and comparison are consistent") {
+			fp8_rand(a);
+			fp8_rand(b);
+			fp8_rand(c);
+			if (fp8_cmp(a, c) != RLC_EQ) {
+				fp8_copy(c, a);
+				TEST_ASSERT(fp8_cmp(c, a) == RLC_EQ, end);
+			}
+			if (fp8_cmp(b, c) != RLC_EQ) {
+				fp8_copy(c, b);
+				TEST_ASSERT(fp8_cmp(b, c) == RLC_EQ, end);
+			}
+		}
+		TEST_END;
+
+		TEST_BEGIN("negation is consistent") {
+			fp8_rand(a);
+			fp8_neg(b, a);
+			if (fp8_cmp(a, b) != RLC_EQ) {
+				TEST_ASSERT(fp8_cmp(b, a) == RLC_NE, end);
+			}
+			fp8_neg(b, b);
+			TEST_ASSERT(fp8_cmp(a, b) == RLC_EQ, end);
+		}
+		TEST_END;
+
+		TEST_BEGIN("assignment to zero and comparison are consistent") {
+			do {
+				fp8_rand(a);
+			} while (fp8_is_zero(a));
+			fp8_zero(c);
+			TEST_ASSERT(fp8_cmp(a, c) == RLC_NE, end);
+			TEST_ASSERT(fp8_cmp(c, a) == RLC_NE, end);
+		}
+		TEST_END;
+
+		TEST_BEGIN("assignment to random and comparison are consistent") {
+			do {
+				fp8_rand(a);
+			} while (fp8_is_zero(a));
+			fp8_zero(c);
+			TEST_ASSERT(fp8_cmp(a, c) == RLC_NE, end);
+		}
+		TEST_END;
+
+		TEST_BEGIN("assignment to zero and zero test are consistent") {
+			fp8_zero(a);
+			TEST_ASSERT(fp8_is_zero(a), end);
+		}
+		TEST_END;
+
+		TEST_BEGIN("assignment to a constant and comparison are consistent") {
+			rand_bytes((uint8_t *)&d, (RLC_DIG / 8));
+			fp8_set_dig(a, d);
+			TEST_ASSERT(fp8_cmp_dig(a, d) == RLC_EQ, end);
+		}
+		TEST_END;
+
+		TEST_BEGIN("reading and writing a finite field element are consistent") {
+			fp8_rand(a);
+			fp8_write_bin(bin, sizeof(bin), a);
+			fp8_read_bin(b, bin, sizeof(bin));
+			TEST_ASSERT(fp8_cmp(a, b) == RLC_EQ, end);
+		}
+		TEST_END;
+
+		TEST_BEGIN("getting the size of a finite field element is correct") {
+			fp8_rand(a);
+			TEST_ASSERT(fp8_size_bin(a, 0) == 8 * RLC_FP_BYTES, end);
+			fp8_conv_uni(a, a);
+			TEST_ASSERT(fp8_size_bin(a, 1) == 4 * RLC_FP_BYTES, end);
+		}
+		TEST_END;
+	}
+	CATCH_ANY {
+		ERROR(end);
+	}
+	code = RLC_OK;
+  end:
+	fp8_free(a);
+	fp8_free(b);
+	fp8_free(c);
+	return code;
+}
+
+static int addition8(void) {
+	int code = RLC_ERR;
+	fp8_t a, b, c, d, e;
+
+	fp8_null(a);
+	fp8_null(b);
+	fp8_null(c);
+	fp8_null(d);
+	fp8_null(e);
+
+	TRY {
+		fp8_new(a);
+		fp8_new(b);
+		fp8_new(c);
+		fp8_new(d);
+		fp8_new(e);
+
+		TEST_BEGIN("addition is commutative") {
+			fp8_rand(a);
+			fp8_rand(b);
+			fp8_add(d, a, b);
+			fp8_add(e, b, a);
+			TEST_ASSERT(fp8_cmp(d, e) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_BEGIN("addition is associative") {
+			fp8_rand(a);
+			fp8_rand(b);
+			fp8_rand(c);
+			fp8_add(d, a, b);
+			fp8_add(d, d, c);
+			fp8_add(e, b, c);
+			fp8_add(e, a, e);
+			TEST_ASSERT(fp8_cmp(d, e) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_BEGIN("addition has identity") {
+			fp8_rand(a);
+			fp8_zero(d);
+			fp8_add(e, a, d);
+			TEST_ASSERT(fp8_cmp(e, a) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_BEGIN("addition has inverse") {
+			fp8_rand(a);
+			fp8_neg(d, a);
+			fp8_add(e, a, d);
+			TEST_ASSERT(fp8_is_zero(e), end);
+		} TEST_END;
+	}
+	CATCH_ANY {
+		util_print("FATAL ERROR!\n");
+		ERROR(end);
+	}
+	code = RLC_OK;
+  end:
+	fp8_free(a);
+	fp8_free(b);
+	fp8_free(c);
+	fp8_free(d);
+	fp8_free(e);
+	return code;
+}
+
+static int subtraction8(void) {
+	int code = RLC_ERR;
+	fp8_t a, b, c, d;
+
+	fp8_null(a);
+	fp8_null(b);
+	fp8_null(c);
+	fp8_null(d);
+
+	TRY {
+		fp8_new(a);
+		fp8_new(b);
+		fp8_new(c);
+		fp8_new(d);
+
+		TEST_BEGIN("subtraction is anti-commutative") {
+			fp8_rand(a);
+			fp8_rand(b);
+			fp8_sub(c, a, b);
+			fp8_sub(d, b, a);
+			fp8_neg(d, d);
+			TEST_ASSERT(fp8_cmp(c, d) == RLC_EQ, end);
+		}
+		TEST_END;
+
+		TEST_BEGIN("subtraction has identity") {
+			fp8_rand(a);
+			fp8_zero(c);
+			fp8_sub(d, a, c);
+			TEST_ASSERT(fp8_cmp(d, a) == RLC_EQ, end);
+		}
+		TEST_END;
+
+		TEST_BEGIN("subtraction has inverse") {
+			fp8_rand(a);
+			fp8_sub(c, a, a);
+			TEST_ASSERT(fp8_is_zero(c), end);
+		}
+		TEST_END;
+	}
+	CATCH_ANY {
+		util_print("FATAL ERROR!\n");
+		ERROR(end);
+	}
+	code = RLC_OK;
+  end:
+	fp8_free(a);
+	fp8_free(b);
+	fp8_free(c);
+	fp8_free(d);
+	return code;
+}
+
+static int doubling8(void) {
+	int code = RLC_ERR;
+	fp8_t a, b, c;
+
+	fp8_null(a);
+	fp8_null(b);
+	fp8_null(c);
+
+	TRY {
+		fp8_new(a);
+		fp8_new(b);
+		fp8_new(c);
+
+		TEST_BEGIN("doubling is correct") {
+			fp8_rand(a);
+			fp8_dbl(b, a);
+			fp8_add(c, a, a);
+			TEST_ASSERT(fp8_cmp(b, c) == RLC_EQ, end);
+		} TEST_END;
+	}
+	CATCH_ANY {
+		util_print("FATAL ERROR!\n");
+		ERROR(end);
+	}
+	code = RLC_OK;
+  end:
+	fp8_free(a);
+	fp8_free(b);
+	fp8_free(c);
+	return code;
+}
+
+static int multiplication8(void) {
+	int code = RLC_ERR;
+	fp8_t a, b, c, d, e, f;
+
+	fp8_null(a);
+	fp8_null(b);
+	fp8_null(c);
+	fp8_null(d);
+	fp8_null(e);
+	fp8_null(f);
+
+	TRY {
+		fp8_new(a);
+		fp8_new(b);
+		fp8_new(c);
+		fp8_new(d);
+		fp8_new(e);
+		fp8_new(f);
+
+		TEST_BEGIN("multiplication is commutative") {
+			fp8_rand(a);
+			fp8_rand(b);
+			fp8_mul(d, a, b);
+			fp8_mul(e, b, a);
+			TEST_ASSERT(fp8_cmp(d, e) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_BEGIN("multiplication is associative") {
+			fp8_rand(a);
+			fp8_rand(b);
+			fp8_rand(c);
+			fp8_mul(d, a, b);
+			fp8_mul(d, d, c);
+			fp8_mul(e, b, c);
+			fp8_mul(e, a, e);
+			TEST_ASSERT(fp8_cmp(d, e) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_BEGIN("multiplication is distributive") {
+			fp8_rand(a);
+			fp8_rand(b);
+			fp8_rand(c);
+			fp8_add(d, a, b);
+			fp8_mul(d, c, d);
+			fp8_mul(e, c, a);
+			fp8_mul(f, c, b);
+			fp8_add(e, e, f);
+			TEST_ASSERT(fp8_cmp(d, e) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_BEGIN("multiplication has identity") {
+			fp8_zero(d);
+			fp_set_dig(d[0][0][0], 1);
+			fp8_mul(e, a, d);
+			TEST_ASSERT(fp8_cmp(e, a) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_BEGIN("multiplication has zero property") {
+			fp8_zero(d);
+			fp8_mul(e, a, d);
+			TEST_ASSERT(fp8_is_zero(e), end);
+		} TEST_END;
+
+		TEST_BEGIN("multiplication by adjoined root is correct") {
+			fp8_rand(a);
+			fp8_zero(b);
+			fp_set_dig(b[1][0][0], 1);
+			fp8_mul(c, a, b);
+			fp8_mul_art(d, a);
+			TEST_ASSERT(fp8_cmp(c, d) == RLC_EQ, end);
+		} TEST_END;
+
+#if PP_EXT == BASIC | !defined(STRIP)
+		TEST_BEGIN("basic multiplication is correct") {
+			fp8_rand(a);
+			fp8_rand(b);
+			fp8_mul(c, a, b);
+			fp8_mul_basic(d, a, b);
+			TEST_ASSERT(fp8_cmp(c, d) == RLC_EQ, end);
+		} TEST_END;
+#endif
+
+#if PP_EXT == LAZYR || !defined(STRIP)
+		TEST_BEGIN("lazy reduced multiplication is correct") {
+			fp8_rand(a);
+			fp8_rand(b);
+			fp8_mul(c, a, b);
+			fp8_mul_lazyr(d, a, b);
+			TEST_ASSERT(fp8_cmp(c, d) == RLC_EQ, end);
+		} TEST_END;
+#endif
+	}
+	CATCH_ANY {
+		util_print("FATAL ERROR!\n");
+		ERROR(end);
+	}
+	code = RLC_OK;
+  end:
+	fp8_free(a);
+	fp8_free(b);
+	fp8_free(c);
+	fp8_free(d);
+	fp8_free(e);
+	fp8_free(f);
+	return code;
+}
+
+static int squaring8(void) {
+	int code = RLC_ERR;
+	fp8_t a, b, c;
+
+	fp8_null(a);
+	fp8_null(b);
+	fp8_null(c);
+
+	TRY {
+		fp8_new(a);
+		fp8_new(b);
+		fp8_new(c);
+
+		TEST_BEGIN("squaring is correct") {
+			fp8_rand(a);
+			fp8_mul(b, a, a);
+			fp8_sqr(c, a);
+			TEST_ASSERT(fp8_cmp(b, c) == RLC_EQ, end);
+		} TEST_END;
+
+#if PP_EXT == BASIC | !defined(STRIP)
+		TEST_BEGIN("basic squaring is correct") {
+			fp8_rand(a);
+			fp8_sqr(b, a);
+			fp8_sqr_basic(c, a);
+			TEST_ASSERT(fp8_cmp(b, c) == RLC_EQ, end);
+		} TEST_END;
+#endif
+
+#if PP_EXT == LAZYR || !defined(STRIP)
+		TEST_BEGIN("lazy reduced squaring is correct") {
+			fp8_rand(a);
+			fp8_sqr(b, a);
+			fp8_sqr_lazyr(c, a);
+			TEST_ASSERT(fp8_cmp(b, c) == RLC_EQ, end);
+		} TEST_END;
+#endif
+	}
+	CATCH_ANY {
+		util_print("FATAL ERROR!\n");
+		ERROR(end);
+	}
+	code = RLC_OK;
+  end:
+	fp8_free(a);
+	fp8_free(b);
+	fp8_free(c);
+	return code;
+}
+
+static int cyclotomic8(void) {
+	int code = RLC_ERR;
+	fp8_t a, b, c;
+	bn_t f;
+
+	fp8_null(a);
+	fp8_null(b);
+	fp8_null(c);
+	fp8_null(d[0]);
+	fp8_null(d[1])
+	fp8_null(e[0]);
+	bn_null(f);
+
+	TRY {
+		fp8_new(a);
+		fp8_new(b);
+		fp8_new(c);
+		fp8_new(d[0]);
+		fp8_new(d[1]);
+		fp8_new(e[0]);
+		fp8_new(e[1]);
+		bn_new(f);
+
+		TEST_BEGIN("cyclotomic test is correct") {
+			fp8_rand(a);
+			fp8_conv_uni(a, a);
+			TEST_ASSERT(fp8_test_uni(a) == 1, end);
+		} TEST_END;
+
+		TEST_BEGIN("cyclotomic squaring is correct") {
+			fp8_rand(a);
+			fp8_conv_uni(a, a);
+			fp8_sqr(b, a);
+			fp8_sqr_uni(c, a);
+			TEST_ASSERT(fp8_cmp(b, c) == RLC_EQ, end);
+		} TEST_END;
+
+        TEST_BEGIN("cyclotomic exponentiation is correct") {
+			fp8_rand(a);
+			fp8_conv_uni(a, a);
+			bn_zero(f);
+			fp8_exp_uni(c, a, f);
+			TEST_ASSERT(fp8_cmp_dig(c, 1) == RLC_EQ, end);
+			bn_set_dig(f, 1);
+			fp8_exp_uni(c, a, f);
+			TEST_ASSERT(fp8_cmp(c, a) == RLC_EQ, end);
+			bn_rand(f, RLC_POS, RLC_FP_BITS);
+			fp8_exp(b, a, f);
+			fp8_exp_uni(c, a, f);
+			TEST_ASSERT(fp8_cmp(b, c) == RLC_EQ, end);
+			bn_rand(f, RLC_POS, RLC_FP_BITS);
+			fp8_exp_uni(b, a, f);
+			bn_neg(f, f);
+			fp8_exp_uni(c, a, f);
+			fp8_inv_uni(c, c);
+			TEST_ASSERT(fp8_cmp(b, c) == RLC_EQ, end);
+        } TEST_END;
+	}
+	CATCH_ANY {
+		util_print("FATAL ERROR!\n");
+		ERROR(end);
+	}
+	code = RLC_OK;
+  end:
+	fp8_free(a);
+	fp8_free(b);
+	fp8_free(c);
+	fp8_free(d[0]);
+	fp8_free(d[1]);
+	fp8_free(e[0]);
+	fp8_free(e[1]);
+	bn_free(f);
+	return code;
+}
+
+static int inversion8(void) {
+	int code = RLC_ERR;
+	fp8_t a, b, c;
+
+	fp8_null(a);
+	fp8_null(b);
+	fp8_null(c);
+
+	TRY {
+		fp8_new(a);
+		fp8_new(b);
+		fp8_new(c);
+
+		TEST_BEGIN("inversion is correct") {
+			do {
+				fp8_rand(a);
+			} while (fp8_is_zero(a));
+			fp8_inv(b, a);
+			fp8_mul(c, a, b);
+			fp8_zero(b);
+			fp_set_dig(b[0][0][0], 1);
+			TEST_ASSERT(fp8_cmp(c, b) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_BEGIN("inversion of a unitary element is correct") {
+			do {
+				fp8_rand(a);
+			} while (fp8_is_zero(a));
+			fp8_conv_uni(a, a);
+			fp8_inv(b, a);
+			fp8_inv_uni(c, a);
+			TEST_ASSERT(fp8_cmp(b, c) == RLC_EQ, end);
+		} TEST_END;
+	}
+	CATCH_ANY {
+		util_print("FATAL ERROR!\n");
+		ERROR(end);
+	}
+	code = RLC_OK;
+  end:
+	fp8_free(a);
+	fp8_free(b);
+	fp8_free(c);
+	return code;
+}
+
+static int exponentiation8(void) {
+	int code = RLC_ERR;
+	fp8_t a, b, c;
+	bn_t d;
+
+	fp8_null(a);
+	fp8_null(b);
+	fp8_null(c);
+	bn_null(d);
+
+	TRY {
+		fp8_new(a);
+		fp8_new(b);
+		fp8_new(c);
+		bn_new(d);
+
+		TEST_BEGIN("exponentiation is correct") {
+			fp8_rand(a);
+			bn_zero(d);
+			fp8_exp(c, a, d);
+			TEST_ASSERT(fp8_cmp_dig(c, 1) == RLC_EQ, end);
+			bn_set_dig(d, 1);
+			fp8_exp(c, a, d);
+			TEST_ASSERT(fp8_cmp(c, a) == RLC_EQ, end);
+			bn_rand(d, RLC_POS, RLC_FP_BITS);
+			fp8_exp(b, a, d);
+			bn_neg(d, d);
+			fp8_exp(c, a, d);
+			fp8_inv(c, c);
+			TEST_ASSERT(fp8_cmp(b, c) == RLC_EQ, end);
+		} TEST_END;
+
+		if (fp_prime_get_mod8() == 1) {
+			TEST_BEGIN("frobenius and exponentiation are consistent") {
+				fp8_rand(a);
+				fp8_frb(b, a, 0);
+				TEST_ASSERT(fp8_cmp(a, b) == RLC_EQ, end);
+				fp8_frb(b, a, 1);
+				d->sign = RLC_POS;
+				d->used = RLC_FP_DIGS;
+				dv_copy(d->dp, fp_prime_get(), RLC_FP_DIGS);
+				fp8_exp(c, a, d);
+				TEST_ASSERT(fp8_cmp(c, b) == RLC_EQ, end);
+			} TEST_END;
+
+			TEST_BEGIN("frobenius and squared frobenius are consistent") {
+				fp8_rand(a);
+				fp8_frb(b, a, 1);
+				fp8_frb(b, b, 1);
+				fp8_frb(c, a, 2);
+				TEST_ASSERT(fp8_cmp(c, b) == RLC_EQ, end);
+			} TEST_END;
+		}
+	}
+	CATCH_ANY {
+		util_print("FATAL ERROR!\n");
+		ERROR(end);
+	}
+	code = RLC_OK;
+  end:
+	fp8_free(a);
+	fp8_free(b);
+	fp8_free(c);
+	bn_free(d);
+	return code;
+}
+
 
 static int memory12(void) {
 	err_t e;
@@ -2751,6 +3928,10 @@ static int exponentiation12(void) {
 			fp12_exp(c, a, d);
 			fp12_inv(c, c);
 			TEST_ASSERT(fp12_cmp(b, c) == RLC_EQ, end);
+			bn_rand(d, RLC_POS, RLC_DIG);
+			fp12_exp_dig(b, a, d->dp[0]);
+			fp12_exp(c, a, d);
+			TEST_ASSERT(fp12_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("frobenius and exponentiation are consistent") {
@@ -2912,8 +4093,6 @@ static int util18(void) {
 				fp18_rand(a);
 			} while (fp18_is_zero(a));
 			fp18_zero(c);
-			fp18_print(a);
-			fp18_print(c);
 			TEST_ASSERT(fp18_cmp(a, c) == RLC_NE, end);
 			TEST_ASSERT(fp18_cmp(c, a) == RLC_NE, end);
 		}
@@ -3509,7 +4688,7 @@ int main(void) {
 
 	/* Only execute these if there is an assigned quadratic non-residue. */
 	if (fp_prime_get_qnr()) {
-		util_banner("Quadratic extension:", 0);
+		util_print("\n-- Quadratic extension: %d as QNR\n", fp_prime_get_qnr());
 		util_banner("Utilities:", 1);
 
 		if (memory2() != RLC_OK) {
@@ -3559,10 +4738,13 @@ int main(void) {
 			return 1;
 		}
 
+#ifdef FP_QNRES
+		/* Restrict compression to p = 3 mod 4 for the moment. */
 		if (compression2() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
+#endif
 
 		if (square_root2() != RLC_OK) {
 			core_clean();
@@ -3572,7 +4754,7 @@ int main(void) {
 
 	/* Only execute these if there is an assigned cubic non-residue. */
 	if (fp_prime_get_cnr()) {
-		util_banner("Cubic extension:", 0);
+		util_print("\n-- Cubic extension: %d as CNR\n", fp_prime_get_cnr());
 		util_banner("Utilities:", 1);
 
 		if (memory3() != RLC_OK) {
@@ -3628,9 +4810,64 @@ int main(void) {
 		}
 	}
 
+	/* Fp^4 is defined as a quadratic extension of Fp^2. */
+	if (fp_prime_get_qnr()) {
+		util_print("\n-- Quartic extension: (i + %d) as QNR\n",
+				fp2_field_get_qnr());
+		util_banner("Utilities:", 1);
+
+		if (memory4() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (util4() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		util_banner("Arithmetic:", 1);
+
+		if (addition4() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (subtraction4() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (doubling4() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (multiplication4() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (squaring4() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (inversion4() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (exponentiation4() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+	}
+
 	/* Fp^6 is defined as a cubic extension of Fp^2. */
 	if (fp_prime_get_qnr()) {
-		util_banner("Sextic extension:", 0);
+		util_print("\n-- Sextic extension: (i + %d) as QNR\n",
+				fp2_field_get_qnr());
 		util_banner("Utilities:", 1);
 
 		if (memory6() != RLC_OK) {
@@ -3676,6 +4913,61 @@ int main(void) {
 		}
 
 		if (exponentiation6() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		util_banner("Octic extension:", 0);
+		util_banner("Utilities:", 1);
+
+		if (memory8() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (util8() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		util_banner("Arithmetic:", 1);
+
+		if (addition8() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (subtraction8() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (doubling8() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (multiplication8() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (squaring8() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (cyclotomic8() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (inversion8() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (exponentiation8() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
