@@ -32,82 +32,60 @@
  * @ingroup fp
  */
 
-#ifdef FP_QNRES
-#define P0	0xAAAAAAAABEAB000B
-#define P1	0xEAF3FF000AAAAAAA
-#define P2	0xAAAAAAAAAAAAAA93
-#define P3	0x00000AC79600D2AB
-#define P4	0x5C75D6C2AB000000
-#define P5	0x3955555555529C00
-#define P6	0x00631BBD42171501
-#define P7	0xFC01DCDE95D40000
-#define P8	0xE80015554DD25DB0
-#define P9	0x3CB868653D300B3F
-#define U0	0xFAD7AB621D14745D
-#else
-#define P0	0x0000000000000067
-#define P1	0xFFFFFFFFFFFFECE0
-#define P2	0x0000004C80015ACD
-#define P3	0xFFFFF51FFFF4EB80
-#define P4	0xC00086520021E55B
-#define P5	0xFFFDD0E00008DE55
-#define P6	0x3FFF94870000D52F
-#define P7	0xFFFFF942D000165E
-#define P8	0x7FFFFFB8000001D3
-#define P9	0x23FFFFFDC000000D
-#define U0	0x254813E22CBCE4A9
-#endif
-
-#if defined(__APPLE__)
-#define cdecl(S) _PREFIX(,S)
-#else
-#define cdecl(S) S
-#endif
+#define P0	0x84DD401C8E4AB001
+#define P1	0x98707BD8B8D7F1F5
+#define P2	0x9BF81D9D036E1774
+#define P3	0xF876F2BD37381003
+#define P4	0x441981CA1F41B974
+#define P5	0x82C290A0001383DF
+#define P6	0x0000031F8F000000
+#define P7	0x4000000000156000
+#define U0	0xDF085042554AAFFF
 
 .text
 
-.macro ADD1 i, j
+.macro ADD1 i j
 	movq	8*\i(%rsi), %r10
 	adcq	$0, %r10
 	movq	%r10, 8*\i(%rdi)
 	.if \i - \j
-		ADD1 "(\i + 1)", \j
+		ADD1 "(\i + 1)" \j
 	.endif
 .endm
 
-.macro ADDN i, j
+.macro ADDN i j
 	movq	8*\i(%rdx), %r11
 	adcq	8*\i(%rsi), %r11
 	movq	%r11, 8*\i(%rdi)
 	.if \i - \j
-		ADDN "(\i + 1)", \j
+		ADDN "(\i + 1)" \j
 	.endif
 .endm
 
-.macro SUB1 i, j
+.macro SUB1 i j
 	movq	8*\i(%rsi),%r10
 	sbbq	$0, %r10
 	movq	%r10,8*\i(%rdi)
 	.if \i - \j
-		SUB1 "(\i + 1)", \j
+		SUB1 "(\i + 1)" \j
 	.endif
 .endm
 
-.macro SUBN i, j
+.macro SUBN i j
 	movq	8*\i(%rsi), %r8
 	sbbq	8*\i(%rdx), %r8
 	movq	%r8, 8*\i(%rdi)
 	.if \i - \j
-		SUBN "(\i + 1)", \j
+		SUBN "(\i + 1)" \j
 	.endif
 .endm
 
-.macro DBLN i, j
+.macro DBLN i j
 	movq	8*\i(%rsi), %r8
 	adcq	%r8, %r8
 	movq	%r8, 8*\i(%rdi)
 	.if \i - \j
-		DBLN "(\i + 1)", \j
+		DBLN "(\i + 1)" \j
 	.endif
 .endm
 
@@ -151,32 +129,24 @@
 	xorq 	\R2,\R2
 	MULN	0, 7, 0, \C, \R0, \R1, \R2, \A, \B
 	xorq 	\R0,\R0
-	MULN	0, 8, 0, \C, \R1, \R2, \R0, \A, \B
+	MULN	1, 7, 1, \C, \R1, \R2, \R0, \A, \B
 	xorq 	\R1,\R1
-	MULN	0, 9, 0, \C, \R2, \R0, \R1, \A, \B
+	MULN	2, 7, 2, \C, \R2, \R0, \R1, \A, \B
 	xorq 	\R2,\R2
-	MULN	1, 9, 1, \C, \R0, \R1, \R2, \A, \B
+	MULN	3, 7, 3, \C, \R0, \R1, \R2, \A, \B
 	xorq 	\R0,\R0
-	MULN	2, 9, 2, \C, \R1, \R2, \R0, \A, \B
+	MULN	4, 7, 4, \C, \R1, \R2, \R0, \A, \B
 	xorq 	\R1,\R1
-	MULN	3, 9, 3, \C, \R2, \R0, \R1, \A, \B
+	MULN	5, 7, 5, \C, \R2, \R0, \R1, \A, \B
 	xorq 	\R2,\R2
-	MULN	4, 9, 4, \C, \R0, \R1, \R2, \A, \B
-	xorq 	\R0,\R0
-	MULN	5, 9, 5, \C, \R1, \R2, \R0, \A, \B
-	xorq 	\R1,\R1
-	MULN	6, 9, 6, \C, \R2, \R0, \R1, \A, \B
-	xorq 	\R2,\R2
-	MULN	7, 9, 7, \C, \R0, \R1, \R2, \A, \B
-	xorq 	\R0,\R0
-	MULN	8, 9, 8, \C, \R1, \R2, \R0, \A, \B
+	MULN	6, 7, 6, \C, \R0, \R1, \R2, \A, \B
 
-	movq	72(\A),%rax
-	mulq	72(\B)
-	addq	%rax  ,\R2
-	movq	\R2   ,144(\C)
-	adcq	%rdx  ,\R0
-	movq	\R0   ,152(\C)
+	movq	56(\A),%rax
+	mulq	56(\B)
+	addq	%rax  ,\R1
+	movq	\R1   ,112(\C)
+	adcq	%rdx  ,\R2
+	movq	\R2   ,120(\C)
 .endm
 
 .macro _RDCN0 i, j, k, R0, R1, R2 A, P
@@ -249,30 +219,24 @@
 	RDCN0	0, 5, \R2, \R0, \R1, \A, \P
 	RDCN0	0, 6, \R0, \R1, \R2, \A, \P
 	RDCN0	0, 7, \R1, \R2, \R0, \A, \P
-	RDCN0	0, 8, \R2, \R0, \R1, \A, \P
-	RDCN0	0, 9, \R0, \R1, \R2, \A, \P
-	RDCN1	1, 9, \R1, \R2, \R0, \A, \P
-	RDCN1	2, 9, \R2, \R0, \R1, \A, \P
-	RDCN1	3, 9, \R0, \R1, \R2, \A, \P
-	RDCN1	4, 9, \R1, \R2, \R0, \A, \P
-	RDCN1	5, 9, \R2, \R0, \R1, \A, \P
-	RDCN1	6, 9, \R0, \R1, \R2, \A, \P
-	RDCN1	7, 9, \R1, \R2, \R0, \A, \P
-	RDCN1	8, 9, \R2, \R0, \R1, \A, \P
-	RDCN1	9, 9, \R0, \R1, \R2, \A, \P
-	addq	152(\A), \R1
-	movq	\R1, 152(\A)
+	RDCN1	1, 7, \R2, \R0, \R1, \A, \P
+	RDCN1	2, 7, \R0, \R1, \R2, \A, \P
+	RDCN1	3, 7, \R1, \R2, \R0, \A, \P
+	RDCN1	4, 7, \R2, \R0, \R1, \A, \P
+	RDCN1	5, 7, \R0, \R1, \R2, \A, \P
+	RDCN1	6, 7, \R1, \R2, \R0, \A, \P
+	RDCN1	7, 7, \R2, \R0, \R1, \A, \P
+	addq	8*15(\A), \R0
+	movq	\R0, 120(\A)
 
-	movq	80(\A), %r11
-	movq	88(\A), %r12
-	movq	96(\A), %r13
-	movq	104(\A), %r14
-	movq	112(\A), %r15
-	movq	120(\A), %rcx
-	movq	128(\A), %rbp
-	movq	136(\A), %rdx
-	movq	144(\A), %r8
-	movq	152(\A), %r9
+	movq	64(\A), %r11
+	movq	72(\A), %r12
+	movq	80(\A), %r13
+	movq	88(\A), %r14
+	movq	96(\A), %r15
+	movq	104(\A), %rcx
+	movq	112(\A), %rbp
+	movq	120(\A), %rdx
 
 	subq	p0(%rip), %r11
 	sbbq	p1(%rip), %r12
@@ -282,19 +246,15 @@
 	sbbq	p5(%rip), %rcx
 	sbbq	p6(%rip), %rbp
 	sbbq	p7(%rip), %rdx
-	sbbq	p8(%rip), %r8
-	sbbq	p9(%rip), %r9
 
-	cmovc	80(\A), %r11
-	cmovc	88(\A), %r12
-	cmovc	96(\A), %r13
-	cmovc	104(\A), %r14
-	cmovc	112(\A), %r15
-	cmovc	120(\A), %rcx
-	cmovc	128(\A), %rbp
-	cmovc	136(\A), %rdx
-	cmovc	144(\A), %r8
-	cmovc	152(\A), %r9
+	cmovc	64(\A), %r11
+	cmovc	72(\A), %r12
+	cmovc	80(\A), %r13
+	cmovc	88(\A), %r14
+	cmovc	96(\A), %r15
+	cmovc	104(\A), %rcx
+	cmovc	112(\A), %rbp
+	cmovc	120(\A), %rdx
 	movq	%r11,0(\C)
 	movq	%r12,8(\C)
 	movq	%r13,16(\C)
@@ -303,6 +263,4 @@
 	movq	%rcx,40(\C)
 	movq	%rbp,48(\C)
 	movq	%rdx,56(\C)
-	movq	%r8,64(\C)
-	movq	%r9,72(\C)
 .endm
