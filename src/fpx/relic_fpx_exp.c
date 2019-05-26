@@ -49,7 +49,6 @@ void fp2_exp(fp2_t c, fp2_t a, bn_t b) {
 		fp2_new(t);
 
 		fp2_copy(t, a);
-
 		for (int i = bn_bits(b) - 2; i >= 0; i--) {
 			fp2_sqr(t, t);
 			if (bn_get_bit(b, i)) {
@@ -68,6 +67,37 @@ void fp2_exp(fp2_t c, fp2_t a, bn_t b) {
 	}
 	FINALLY {
 		fp2_free(t);
+	}
+}
+
+void fp2_exp_dig(fp2_t c, fp2_t a, dig_t b) {
+	fp2_t t;
+
+	if (b == 0) {
+		fp2_set_dig(c, 1);
+		return;
+	}
+
+	fp2_null(t);
+
+	TRY {
+		fp2_new(t);
+
+		fp2_copy(t, a);
+		for (int i = util_bits_dig(b) - 2; i >= 0; i--) {
+			fp2_sqr(t, t);
+			if (b & ((dig_t)1 << i)) {
+				fp2_mul(t, t, a);
+			}
+		}
+
+		fp2_copy(c, t);
+	}
+	CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	}
+	FINALLY {
+		fp12_free(t);
 	}
 }
 
@@ -487,7 +517,6 @@ void fp12_exp_dig(fp12_t c, fp12_t a, dig_t b) {
 		fp12_free(t);
 	}
 }
-
 
 void fp12_exp_cyc(fp12_t c, fp12_t a, bn_t b) {
 	int i, j, k, l, w = bn_ham(b), endom = 0;

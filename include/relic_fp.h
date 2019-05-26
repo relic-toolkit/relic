@@ -545,18 +545,6 @@ void fp_param_get_var(bn_t x);
 void fp_param_get_sps(int *s, int *len);
 
 /**
- * Returns the value of the parameter used to construct the optimal ate pairing
- * on the currently configured elliptic curve. The first argument must be an
- * array of size RLC_FP_BITS.
- *
- * @param[out] s			- the parameter in sparse form.
- * @param[out] len			- the length of the parameter in sparse form.
- * @throw ERR_NO_BUFFER		- if the buffer capacity is insufficient.
- * @throw ERR_NO_VALID		- if the current configuration is invalid.
- */
-void fp_param_get_map(int *s, int *len);
-
-/**
  * Copies the second argument to the first argument.
  *
  * @param[out] c			- the result.

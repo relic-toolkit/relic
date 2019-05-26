@@ -218,6 +218,8 @@ void fp_param_get_sps(int *s, int *len) {
 
 		*len = 0;
 
+		fp_param_get_var(a);
+
 		switch (fp_param_get()) {
 			case BN_158:
 			case BN_254:
@@ -283,84 +285,6 @@ void fp_param_get_sps(int *s, int *len) {
 	}
 	FINALLY {
 		bn_free(a);
-	}
-}
-
-void fp_param_get_map(int *s, int *len) {
-	if (*len < RLC_FP_BITS) {
-		THROW(ERR_NO_BUFFER);
-	}
-
-	for (int i = 0; i < RLC_FP_BITS; i++) {
-		s[i] = 0;
-	}
-
-	switch (fp_param_get()) {
-		case BN_158:
-			s[3] = s[5] = s[8] = s[39] = s[40] = 1;
-			*len = 41;
-			break;
-		case BN_254:
-			s[2] = s[56] = s[57] = s[63] = s[64] = 1;
-			*len = 65;
-			break;
-		case BN_256:
-			s[5] = s[7] = s[8] = s[11] = s[14] = s[15] = s[62] = s[65] = 1;
-			*len = 66;
-			break;
-		case B12_381:
-			s[16] = s[48] = s[57] = s[60] = s[62] = s[63] = 1;
-			*len = 64;
-			break;
-		case BN_382:
-			s[2] = s[49] = s[50] = s[65] = s[66] = s[68] = 1;
-			s[69] = s[79] = s[80] = s[95] = s[96] = 1;
-			*len = 97;
-			break;
-		case BN_446:
-			s[3] = s[37] = s[38] = s[111] = s[112] = 1;
-			*len = 113;
-			break;
-		case B12_446:
-			s[0] = s[17] = s[50] = s[57] = s[63] = s[75] = 1;
-			s[73] = -1;
-			*len = 76;
-			break;
-		case B12_455:
-			s[11] = s[31] = s[53] = s[76] = 1;
-			*len = 77;
-			break;
-		case B24_477:
-			s[7] = s[48] = 1;
-			s[31] = s[45] = -1;
-			*len = 49;
-			break;
-		case KSS_508:
-			s[64] = s[51] = 1;
-			s[12] = s[46] = -1;
-			*len = 65;
-			break;
-		case OT_511:
-			s[12] = s[13] = s[15] = s[17] = s[19] = s[64] = 1;
-			*len = 65;
-			break;
-		case BN_638:
-			s[3] = s[159] = s[160] = 1;
-			s[69] = s[70] = s[129] = s[130] = -1;
-			*len = 161;
-			break;
-		case B12_638:
-			s[5] = s[93] = s[105] = -1;
-			s[107] = 1;
-			*len = 108;
-			break;
-		case SS_1536:
-			s[0] = s[41] = s[255] = 1;
-			*len = 256;
-			break;
-		default:
-			THROW(ERR_NO_VALID);
-			break;
 	}
 }
 

@@ -362,6 +362,13 @@ static void arith2(void) {
 	}
 	BENCH_END;
 
+	BENCH_BEGIN("fp2_exp_dig") {
+		fp2_rand(a);
+		bn_rand(e, RLC_POS, RLC_DIG);
+		BENCH_ADD(fp2_exp_dig(c, a, e->dp[0]));
+	}
+	BENCH_END;
+
 	BENCH_BEGIN("fp2_exp_uni") {
 		fp2_rand(a);
 		e->used = RLC_FP_DIGS;
@@ -1806,6 +1813,13 @@ static void arith12(void) {
 		fp_param_get_sps(k, &l);
 		fp12_rand(a);
 		BENCH_ADD(fp12_exp_cyc_sps(c, a, k, l));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp12_exp_dig") {
+		fp12_rand(a);
+		bn_rand(e, RLC_POS, RLC_DIG);
+		BENCH_ADD(fp12_exp_dig(c, a, e->dp[0]));
 	}
 	BENCH_END;
 

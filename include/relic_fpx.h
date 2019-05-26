@@ -1078,6 +1078,15 @@ void fp2_conv_uni(fp2_t c, fp2_t a);
 void fp2_exp(fp2_t c, fp2_t a, bn_t b);
 
 /**
+ * Computes a power of a quadratic extension field element by a small exponent.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the basis.
+ * @param[in] b				- the exponent.
+ */
+void fp2_exp_dig(fp2_t c, fp2_t a, dig_t b);
+
+/**
  * Computes a power of a unitary quadratic extension field element.
  *
  * @param[out] c			- the result.
