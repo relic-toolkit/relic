@@ -41,7 +41,7 @@ void eb_map(eb_t p, const uint8_t *msg, int len) {
 	bn_t k;
 	fb_t t0, t1;
 	int i;
-	uint8_t digest[MD_LEN];
+	uint8_t digest[RLC_MD_LEN];
 
 	bn_null(k);
 	fb_null(t0);
@@ -53,7 +53,7 @@ void eb_map(eb_t p, const uint8_t *msg, int len) {
 		fb_new(t1);
 
 		md_map(digest, msg, len);
-		bn_read_bin(k, digest, RLC_MIN(RLC_FB_BYTES, MD_LEN));
+		bn_read_bin(k, digest, RLC_MIN(RLC_FB_BYTES, RLC_MD_LEN));
 		fb_set_dig(p->z, 1);
 
 		i = 0;

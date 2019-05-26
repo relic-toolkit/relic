@@ -47,13 +47,13 @@ void md_hmac(uint8_t *mac, const uint8_t *in, int in_len, const uint8_t *key,
 #elif MD_MAP == SH384 || MD_MAP == SH512
 	int block_size = 128;
 #endif
-	uint8_t opad[block_size + MD_LEN], ipad[block_size + in_len];
-	uint8_t _key[RLC_MAX(MD_LEN, block_size)];
+	uint8_t opad[block_size + RLC_MD_LEN], ipad[block_size + in_len];
+	uint8_t _key[RLC_MAX(RLC_MD_LEN, block_size)];
 
 	if (key_len > block_size) {
 		md_map(_key, key, key_len);
 		key = _key;
-		key_len = MD_LEN;
+		key_len = RLC_MD_LEN;
 	}
 	if (key_len <= block_size) {
 		memcpy(_key, key, key_len);
@@ -66,5 +66,5 @@ void md_hmac(uint8_t *mac, const uint8_t *in, int in_len, const uint8_t *key,
 	}
 	memcpy(ipad + block_size, in, in_len);
 	md_map(opad + block_size, ipad, block_size + in_len);
-	md_map(mac, opad, block_size + MD_LEN);
+	md_map(mac, opad, block_size + RLC_MD_LEN);
 }

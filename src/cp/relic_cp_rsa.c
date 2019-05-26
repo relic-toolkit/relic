@@ -49,7 +49,7 @@
 #if CP_RSAPD == PKCS1
 #define RSA_PAD_LEN		(11)
 #elif CP_RSAPD == PKCS2
-#define RSA_PAD_LEN		(2 * MD_LEN + 2)
+#define RSA_PAD_LEN		(2 * RLC_MD_LEN + 2)
 #else
 #define RSA_PAD_LEN		(2)
 #endif
@@ -432,7 +432,7 @@ static int pad_pkcs1(bn_t m, int *p_len, int m_len, int k_len, int operation) {
  * @return RLC_ERR if errors occurred, RLC_OK otherwise.
  */
 static int pad_pkcs2(bn_t m, int *p_len, int m_len, int k_len, int operation) {
-	uint8_t pad, h1[MD_LEN], h2[MD_LEN], mask[k_len];
+	uint8_t pad, h1[RLC_MD_LEN], h2[RLC_MD_LEN], mask[k_len];
 	int result = RLC_OK;
 	bn_t t;
 
@@ -445,8 +445,8 @@ static int pad_pkcs2(bn_t m, int *p_len, int m_len, int k_len, int operation) {
 			case RSA_ENC:
 				/* DB = lHash | PS | 01 | D. */
 				md_map(h1, NULL, 0);
-				bn_read_bin(m, h1, MD_LEN);
-				*p_len = k_len - 2 * MD_LEN - 2 - m_len;
+				bn_read_bin(m, h1, RLC_MD_LEN);
+				*p_len = k_len - 2 * RLC_MD_LEN - 2 - m_len;
 				bn_lsh(m, m, *p_len * 8);
 				bn_lsh(m, m, 8);
 				bn_add_dig(m, m, 0x01);
@@ -455,19 +455,19 @@ static int pad_pkcs2(bn_t m, int *p_len, int m_len, int k_len, int operation) {
 				break;
 			case RSA_ENC_FIN:
 				/* EB = 00 | maskedSeed | maskedDB. */
-				rand_bytes(h1, MD_LEN);
-				md_mgf1(mask, k_len - MD_LEN - 1, h1, MD_LEN);
-				bn_read_bin(t, mask, k_len - MD_LEN - 1);
+				rand_bytes(h1, RLC_MD_LEN);
+				md_mgf1(mask, k_len - RLC_MD_LEN - 1, h1, RLC_MD_LEN);
+				bn_read_bin(t, mask, k_len - RLC_MD_LEN - 1);
 				for (int i = 0; i < t->used; i++) {
 					m->dp[i] ^= t->dp[i];
 				}
-				bn_write_bin(mask, k_len - MD_LEN - 1, m);
-				md_mgf1(h2, MD_LEN, mask, k_len - MD_LEN - 1);
-				for (int i = 0; i < MD_LEN; i++) {
+				bn_write_bin(mask, k_len - RLC_MD_LEN - 1, m);
+				md_mgf1(h2, RLC_MD_LEN, mask, k_len - RLC_MD_LEN - 1);
+				for (int i = 0; i < RLC_MD_LEN; i++) {
 					h1[i] ^= h2[i];
 				}
-				bn_read_bin(t, h1, MD_LEN);
-				bn_lsh(t, t, 8 * (k_len - MD_LEN - 1));
+				bn_read_bin(t, h1, RLC_MD_LEN);
+				bn_lsh(t, t, 8 * (k_len - RLC_MD_LEN - 1));
 				bn_add(t, t, m);
 				bn_copy(m, t);
 				break;
@@ -477,26 +477,26 @@ static int pad_pkcs2(bn_t m, int *p_len, int m_len, int k_len, int operation) {
 				if (!bn_is_zero(t)) {
 					result = RLC_ERR;
 				}
-				m_len -= MD_LEN;
+				m_len -= RLC_MD_LEN;
 				bn_rsh(t, m, 8 * m_len);
-				bn_write_bin(h1, MD_LEN, t);
+				bn_write_bin(h1, RLC_MD_LEN, t);
 				bn_mod_2b(m, m, 8 * m_len);
 				bn_write_bin(mask, m_len, m);
-				md_mgf1(h2, MD_LEN, mask, m_len);
-				for (int i = 0; i < MD_LEN; i++) {
+				md_mgf1(h2, RLC_MD_LEN, mask, m_len);
+				for (int i = 0; i < RLC_MD_LEN; i++) {
 					h1[i] ^= h2[i];
 				}
-				md_mgf1(mask, k_len - MD_LEN - 1, h1, MD_LEN);
-				bn_read_bin(t, mask, k_len - MD_LEN - 1);
+				md_mgf1(mask, k_len - RLC_MD_LEN - 1, h1, RLC_MD_LEN);
+				bn_read_bin(t, mask, k_len - RLC_MD_LEN - 1);
 				for (int i = 0; i < t->used; i++) {
 					m->dp[i] ^= t->dp[i];
 				}
-				m_len -= MD_LEN;
+				m_len -= RLC_MD_LEN;
 				bn_rsh(t, m, 8 * m_len);
-				bn_write_bin(h2, MD_LEN, t);
+				bn_write_bin(h2, RLC_MD_LEN, t);
 				md_map(h1, NULL, 0);
 				pad = 0;
-				for (int i = 0; i < MD_LEN; i++) {
+				for (int i = 0; i < RLC_MD_LEN; i++) {
 					pad |= h1[i] - h2[i];
 				}
 				if (result == RLC_OK) {
@@ -518,18 +518,18 @@ static int pad_pkcs2(bn_t m, int *p_len, int m_len, int k_len, int operation) {
 				bn_zero(m);
 				bn_lsh(m, m, 64);
 				/* Make room for the real message. */
-				bn_lsh(m, m, MD_LEN * 8);
+				bn_lsh(m, m, RLC_MD_LEN * 8);
 				break;
 			case RSA_SIG_FIN:
 				memset(mask, 0, 8);
-				bn_write_bin(mask + 8, MD_LEN, m);
-				md_map(h1, mask, MD_LEN + 8);
-				bn_read_bin(m, h1, MD_LEN);
-				md_mgf1(mask, k_len - MD_LEN - 1, h1, MD_LEN);
-				bn_read_bin(t, mask, k_len - MD_LEN - 1);
+				bn_write_bin(mask + 8, RLC_MD_LEN, m);
+				md_map(h1, mask, RLC_MD_LEN + 8);
+				bn_read_bin(m, h1, RLC_MD_LEN);
+				md_mgf1(mask, k_len - RLC_MD_LEN - 1, h1, RLC_MD_LEN);
+				bn_read_bin(t, mask, k_len - RLC_MD_LEN - 1);
 				t->dp[0] ^= 0x01;
 				/* m_len is now the size in bits of the modulus. */
-				bn_lsh(t, t, 8 * MD_LEN);
+				bn_lsh(t, t, 8 * RLC_MD_LEN);
 				bn_add(m, t, m);
 				bn_lsh(m, m, 8);
 				bn_add_dig(m, m, RSA_PSS);
@@ -549,24 +549,24 @@ static int pad_pkcs2(bn_t m, int *p_len, int m_len, int k_len, int operation) {
 						}
 					}
 					bn_rsh(m, m, 8);
-					bn_mod_2b(t, m, 8 * MD_LEN);
-					bn_write_bin(h2, MD_LEN, t);
-					bn_rsh(m, m, 8 * MD_LEN);
-					bn_write_bin(h1, MD_LEN, t);
-					md_mgf1(mask, k_len - MD_LEN - 1, h1, MD_LEN);
-					bn_read_bin(t, mask, k_len - MD_LEN - 1);
+					bn_mod_2b(t, m, 8 * RLC_MD_LEN);
+					bn_write_bin(h2, RLC_MD_LEN, t);
+					bn_rsh(m, m, 8 * RLC_MD_LEN);
+					bn_write_bin(h1, RLC_MD_LEN, t);
+					md_mgf1(mask, k_len - RLC_MD_LEN - 1, h1, RLC_MD_LEN);
+					bn_read_bin(t, mask, k_len - RLC_MD_LEN - 1);
 					for (int i = 0; i < t->used; i++) {
 						m->dp[i] ^= t->dp[i];
 					}
 					m->dp[0] ^= 0x01;
 					for (int i = m_len - 1; i < 8 * k_len; i++) {
-						bn_set_bit(m, i - ((MD_LEN + 1) * 8), 0);
+						bn_set_bit(m, i - ((RLC_MD_LEN + 1) * 8), 0);
 					}
 					if (!bn_is_zero(m)) {
 						result = RLC_ERR;
 					}
-					bn_read_bin(m, h2, MD_LEN);
-					*p_len = k_len - MD_LEN;
+					bn_read_bin(m, h2, RLC_MD_LEN);
+					*p_len = k_len - RLC_MD_LEN;
 				}
 				break;
 		}
@@ -927,13 +927,13 @@ int cp_rsa_dec_quick(uint8_t *out, int *out_len, uint8_t *in, int in_len, rsa_t 
 int cp_rsa_sig_basic(uint8_t *sig, int *sig_len, uint8_t *msg, int msg_len, int hash, rsa_t prv) {
 	bn_t m, eb;
 	int size, pad_len, result = RLC_OK;
-	uint8_t h[MD_LEN];
+	uint8_t h[RLC_MD_LEN];
 
 	if (prv == NULL || msg_len < 0) {
 		return RLC_ERR;
 	}
 
-	pad_len = (!hash ? MD_LEN : msg_len);
+	pad_len = (!hash ? RLC_MD_LEN : msg_len);
 
 #if CP_RSAPD == PKCS2
 	size = bn_bits(prv->n) - 1;
@@ -969,7 +969,7 @@ int cp_rsa_sig_basic(uint8_t *sig, int *sig_len, uint8_t *msg, int msg_len, int 
 #endif
 			if (!hash) {
 				md_map(h, msg, msg_len);
-				bn_read_bin(m, h, MD_LEN);
+				bn_read_bin(m, h, RLC_MD_LEN);
 				bn_add(eb, eb, m);
 			} else {
 				bn_read_bin(m, msg, msg_len);
@@ -1013,13 +1013,13 @@ int cp_rsa_sig_basic(uint8_t *sig, int *sig_len, uint8_t *msg, int msg_len, int 
 int cp_rsa_sig_quick(uint8_t *sig, int *sig_len, uint8_t *msg, int msg_len, int hash, rsa_t prv) {
 	bn_t m, eb;
 	int pad_len, size, result = RLC_OK;
-	uint8_t h[MD_LEN];
+	uint8_t h[RLC_MD_LEN];
 
 	if (prv == NULL || msg_len < 0) {
 		return RLC_ERR;
 	}
 
-	pad_len = (!hash ? MD_LEN : msg_len);
+	pad_len = (!hash ? RLC_MD_LEN : msg_len);
 
 #if CP_RSAPD == PKCS2
 	size = bn_bits(prv->n) - 1;
@@ -1055,7 +1055,7 @@ int cp_rsa_sig_quick(uint8_t *sig, int *sig_len, uint8_t *msg, int msg_len, int 
 #endif
 			if (!hash) {
 				md_map(h, msg, msg_len);
-				bn_read_bin(m, h, MD_LEN);
+				bn_read_bin(m, h, RLC_MD_LEN);
 				bn_add(eb, eb, m);
 			} else {
 				bn_read_bin(m, msg, msg_len);
@@ -1117,7 +1117,7 @@ int cp_rsa_sig_quick(uint8_t *sig, int *sig_len, uint8_t *msg, int msg_len, int 
 int cp_rsa_ver(uint8_t *sig, int sig_len, uint8_t *msg, int msg_len, int hash, rsa_t pub) {
 	bn_t m, eb;
 	int size, pad_len, result;
-	uint8_t h1[RLC_MAX(msg_len, MD_LEN) + 8], h2[RLC_MAX(msg_len, MD_LEN)];
+	uint8_t h1[RLC_MAX(msg_len, RLC_MD_LEN) + 8], h2[RLC_MAX(msg_len, RLC_MD_LEN)];
 
 	/* We suppose that the signature is invalid. */
 	result = 0;
@@ -1126,7 +1126,7 @@ int cp_rsa_ver(uint8_t *sig, int sig_len, uint8_t *msg, int msg_len, int hash, r
 		return 0;
 	}
 
-	pad_len = (!hash ? MD_LEN : msg_len);
+	pad_len = (!hash ? RLC_MD_LEN : msg_len);
 
 #if CP_RSAPD == PKCS2
 	size = bn_bits(pub->n) - 1;
@@ -1159,9 +1159,9 @@ int cp_rsa_ver(uint8_t *sig, int sig_len, uint8_t *msg, int msg_len, int hash, r
 		int operation = (!hash ? RSA_VER : RSA_VER_HASH);
 
 #if CP_RSAPD == BASIC
-		if (pad_basic(eb, &pad_len, MD_LEN, size, operation) == RLC_OK) {
+		if (pad_basic(eb, &pad_len, RLC_MD_LEN, size, operation) == RLC_OK) {
 #elif CP_RSAPD == PKCS1
-		if (pad_pkcs1(eb, &pad_len, MD_LEN, size, operation) == RLC_OK) {
+		if (pad_pkcs1(eb, &pad_len, RLC_MD_LEN, size, operation) == RLC_OK) {
 #elif CP_RSAPD == PKCS2
 		if (pad_pkcs2(eb, &pad_len, bn_bits(pub->n), size, operation) == RLC_OK) {
 #endif
@@ -1171,15 +1171,15 @@ int cp_rsa_ver(uint8_t *sig, int sig_len, uint8_t *msg, int msg_len, int hash, r
 
 			if (!hash) {
 				md_map(h1 + 8, msg, msg_len);
-				md_map(h2, h1, MD_LEN + 8);
+				md_map(h2, h1, RLC_MD_LEN + 8);
 
-				memset(h1, 0, MD_LEN);
+				memset(h1, 0, RLC_MD_LEN);
 				bn_write_bin(h1, size - pad_len, eb);
 				/* Everything went ok, so signature status is changed. */
-				result = util_cmp_const(h1, h2, MD_LEN);
+				result = util_cmp_const(h1, h2, RLC_MD_LEN);
 			} else {
 				memcpy(h1 + 8, msg, msg_len);
-				md_map(h2, h1, MD_LEN + 8);
+				md_map(h2, h1, RLC_MD_LEN + 8);
 
 				memset(h1, 0, msg_len);
 				bn_write_bin(h1, size - pad_len, eb);
@@ -1188,13 +1188,13 @@ int cp_rsa_ver(uint8_t *sig, int sig_len, uint8_t *msg, int msg_len, int hash, r
 				result = util_cmp_const(h1, h2, msg_len);
 			}
 #else
-			memset(h1, 0, RLC_MAX(msg_len, MD_LEN));
+			memset(h1, 0, RLC_MAX(msg_len, RLC_MD_LEN));
 			bn_write_bin(h1, size - pad_len, eb);
 
 			if (!hash) {
 				md_map(h2, msg, msg_len);
 				/* Everything went ok, so signature status is changed. */
-				result = util_cmp_const(h1, h2, MD_LEN);
+				result = util_cmp_const(h1, h2, RLC_MD_LEN);
 			} else {
 				/* Everything went ok, so signature status is changed. */
 				result = util_cmp_const(h1, msg, msg_len);

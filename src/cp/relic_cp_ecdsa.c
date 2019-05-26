@@ -62,7 +62,7 @@ int cp_ecdsa_gen(bn_t d, ec_t q) {
 int cp_ecdsa_sig(bn_t r, bn_t s, uint8_t *msg, int len, int hash, bn_t d) {
 	bn_t n, k, x, e;
 	ec_t p;
-	uint8_t h[MD_LEN];
+	uint8_t h[RLC_MD_LEN];
 	int result = RLC_OK;
 
 	bn_null(n);
@@ -90,7 +90,7 @@ int cp_ecdsa_sig(bn_t r, bn_t s, uint8_t *msg, int len, int hash, bn_t d) {
 			if (!hash) {
 				md_map(h, msg, len);
 				msg = h;
-				len = MD_LEN;
+				len = RLC_MD_LEN;
 			}
 			if (8 * len > bn_bits(n)) {
 				len = RLC_CEIL(bn_bits(n), 8);
@@ -128,7 +128,7 @@ int cp_ecdsa_sig(bn_t r, bn_t s, uint8_t *msg, int len, int hash, bn_t d) {
 int cp_ecdsa_ver(bn_t r, bn_t s, uint8_t *msg, int len, int hash, ec_t q) {
 	bn_t n, k, e, v;
 	ec_t p;
-	uint8_t h[MD_LEN];
+	uint8_t h[RLC_MD_LEN];
 	int result = 0;
 
 	bn_null(n);
@@ -157,7 +157,7 @@ int cp_ecdsa_ver(bn_t r, bn_t s, uint8_t *msg, int len, int hash, ec_t q) {
 				if (!hash) {
 					md_map(h, msg, len);
 					msg = h;
-					len = MD_LEN;
+					len = RLC_MD_LEN;
 				}
 				if (8 * len > bn_bits(n)) {
 					len = RLC_CEIL(bn_bits(n), 8);

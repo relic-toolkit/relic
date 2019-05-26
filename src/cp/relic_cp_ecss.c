@@ -61,7 +61,7 @@ int cp_ecss_gen(bn_t d, ec_t q) {
 int cp_ecss_sig(bn_t e, bn_t s, uint8_t *msg, int len, bn_t d) {
 	bn_t n, k, x, r;
 	ec_t p;
-	uint8_t hash[MD_LEN];
+	uint8_t hash[RLC_MD_LEN];
 	uint8_t m[len + FC_BYTES];
 	int result = RLC_OK;
 
@@ -90,12 +90,12 @@ int cp_ecss_sig(bn_t e, bn_t s, uint8_t *msg, int len, bn_t d) {
 		bn_write_bin(m + len, FC_BYTES, r);
 		md_map(hash, m, len + FC_BYTES);
 
-		if (8 * MD_LEN > bn_bits(n)) {
+		if (8 * RLC_MD_LEN > bn_bits(n)) {
 			len = RLC_CEIL(bn_bits(n), 8);
 			bn_read_bin(e, hash, len);
-			bn_rsh(e, e, 8 * MD_LEN - bn_bits(n));
+			bn_rsh(e, e, 8 * RLC_MD_LEN - bn_bits(n));
 		} else {
-			bn_read_bin(e, hash, MD_LEN);
+			bn_read_bin(e, hash, RLC_MD_LEN);
 		}
 
 		bn_mod(e, e, n);
@@ -122,7 +122,7 @@ int cp_ecss_sig(bn_t e, bn_t s, uint8_t *msg, int len, bn_t d) {
 int cp_ecss_ver(bn_t e, bn_t s, uint8_t *msg, int len, ec_t q) {
 	bn_t n, ev, rv;
 	ec_t p;
-	uint8_t hash[MD_LEN];
+	uint8_t hash[RLC_MD_LEN];
 	uint8_t m[len + FC_BYTES];
 	int result = 0;
 
@@ -150,12 +150,12 @@ int cp_ecss_ver(bn_t e, bn_t s, uint8_t *msg, int len, ec_t q) {
 				bn_write_bin(m + len, FC_BYTES, rv);
 				md_map(hash, m, len + FC_BYTES);
 
-				if (8 * MD_LEN > bn_bits(n)) {
+				if (8 * RLC_MD_LEN > bn_bits(n)) {
 					len = RLC_CEIL(bn_bits(n), 8);
 					bn_read_bin(ev, hash, len);
-					bn_rsh(ev, ev, 8 * MD_LEN - bn_bits(n));
+					bn_rsh(ev, ev, 8 * RLC_MD_LEN - bn_bits(n));
 				} else {
-					bn_read_bin(ev, hash, MD_LEN);
+					bn_read_bin(ev, hash, RLC_MD_LEN);
 				}
 
 				bn_mod(ev, ev, n);

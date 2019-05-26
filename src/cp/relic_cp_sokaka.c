@@ -104,7 +104,7 @@ int cp_sokaka_key(uint8_t *key, unsigned int key_len, char *id1,
 				if (strncmp(id1, id2, len1) == 0) {
 					first = 1;
 				} else {
-					first = (strncmp(id1, id2, len2) < 0 ? 1 : 2);
+					first = (strncmp(id1, id2, len1) < 0 ? 1 : 2);
 				}
 			} else {
 				if (strncmp(id1, id2, len2) == 0) {
