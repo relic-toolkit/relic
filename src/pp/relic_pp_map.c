@@ -454,8 +454,8 @@ void pp_map_tatep_k2(fp2_t r, ep_t p, ep_t q) {
 }
 
 void pp_map_sim_tatep_k2(fp2_t r, ep_t *p, ep_t *q, int m) {
-	ep_t *_p =RLC_ALLOCA(ep_t, m), 
-        *_q = RLC_ALLOCA(ep_t, m), 
+	ep_t *_p =RLC_ALLOCA(ep_t, m),
+        *_q = RLC_ALLOCA(ep_t, m),
         *t = RLC_ALLOCA(ep_t, m);
 	bn_t n;
 	int i, j;
@@ -649,8 +649,8 @@ void pp_map_weilp_k2(fp2_t r, ep_t p, ep_t q) {
 }
 
 void pp_map_sim_weilp_k2(fp2_t r, ep_t *p, ep_t *q, int m) {
-	ep_t *_p = RLC_ALLOCA(ep_t, m), 
-        *_q = RLC_ALLOCA(ep_t, m), 
+	ep_t *_p = RLC_ALLOCA(ep_t, m),
+        *_q = RLC_ALLOCA(ep_t, m),
         *t0 = RLC_ALLOCA(ep_t, m),
         *t1 = RLC_ALLOCA(ep_t, m);
 	fp2_t r0, r1;
@@ -963,6 +963,7 @@ void pp_map_sim_oatep_k12(fp12_t r, ep_t *p, ep2_t *q, int m) {
 					pp_exp_k12(r, r);
 					break;
 				case B12_P381:
+				case B12_P446:
 				case B12_P455:
 				case B12_P638:
 					/* r = f_{|a|,Q}(P). */
