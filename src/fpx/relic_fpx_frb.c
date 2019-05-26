@@ -74,7 +74,8 @@ void fp4_frb(fp4_t c, fp4_t a, int i) {
 		case 1:
 			fp2_frb(c[0], a[0], 1);
 			fp2_frb(c[1], a[1], 1);
-			fp2_copy(t0, core_get()->fp2_p[0]);
+			fp_copy(t0[0], core_get()->fp2_p[0][0]);
+			fp_copy(t0[1], core_get()->fp2_p[0][1]);
 			fp2_sqr(t1, t0);
 			fp2_mul(t1, t1, t0);
 			fp2_mul(c[1], c[1], t1);
@@ -82,7 +83,8 @@ void fp4_frb(fp4_t c, fp4_t a, int i) {
 		case 2:
 			fp2_frb(c[0], a[0], 1);
 			fp2_frb(c[1], a[1], 1);
-			fp2_copy(t0, core_get()->fp2_p[0]);
+			fp_copy(t0[0], core_get()->fp2_p[0][0]);
+			fp_copy(t0[1], core_get()->fp2_p[0][1]);
 			fp2_sqr(t1, t0);
 			fp2_mul(t1, t1, t0);
 			fp2_mul(c[1], c[1], t1);
