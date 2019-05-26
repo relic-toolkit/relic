@@ -434,7 +434,7 @@ uint8_t result[] = {
 
 static int ecdh(void) {
 	int code = RLC_ERR;
-	char str[2 * FC_BYTES + 1];
+	char str[2 * RLC_FC_BYTES + 1];
 	bn_t da, d_b;
 	ec_t qa, q_b;
 	uint8_t key[RLC_MD_LEN], k1[RLC_MD_LEN], k2[RLC_MD_LEN];
@@ -608,7 +608,7 @@ static int ecies(void) {
 		}
 #if MD_MAP == SH256
 		uint8_t msg[RLC_BC_LEN + RLC_MD_LEN];
-		char str[2 * FC_BYTES + 1];
+		char str[2 * RLC_FC_BYTES + 1];
 
 		switch (ec_param_get()) {
 
