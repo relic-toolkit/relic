@@ -191,7 +191,12 @@ static void ep_mul_sim_endom(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 			n = *t1;
 			if (n > 0) {
 				ep_copy(u, t[n / 2]);
-				fp_mul(u->x, u->x, ep_curve_get_beta());
+				if (ep_curve_opt_a() == RLC_ZERO) {
+					fp_mul(u->x, u->x, ep_curve_get_beta());
+				} else {
+					fp_neg(u->x, u->x);
+					fp_mul(u->y, u->y, ep_curve_get_beta());
+				}
 				if (sk1 == RLC_NEG) {
 					ep_neg(u, u);
 				}
@@ -199,7 +204,12 @@ static void ep_mul_sim_endom(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 			}
 			if (n < 0) {
 				ep_copy(u, t[-n / 2]);
-				fp_mul(u->x, u->x, ep_curve_get_beta());
+				if (ep_curve_opt_a() == RLC_ZERO) {
+					fp_mul(u->x, u->x, ep_curve_get_beta());
+				} else {
+					fp_neg(u->x, u->x);
+					fp_mul(u->y, u->y, ep_curve_get_beta());
+				}
 				if (sk1 == RLC_NEG) {
 					ep_neg(u, u);
 				}
@@ -224,7 +234,12 @@ static void ep_mul_sim_endom(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 			n = *t3;
 			if (n > 0) {
 				ep_copy(u, tab1[n / 2]);
-				fp_mul(u->x, u->x, ep_curve_get_beta());
+				if (ep_curve_opt_a() == RLC_ZERO) {
+					fp_mul(u->x, u->x, ep_curve_get_beta());
+				} else {
+					fp_neg(u->x, u->x);
+					fp_mul(u->y, u->y, ep_curve_get_beta());
+				}
 				if (sl1 == RLC_NEG) {
 					ep_neg(u, u);
 				}
@@ -232,7 +247,12 @@ static void ep_mul_sim_endom(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 			}
 			if (n < 0) {
 				ep_copy(u, tab1[-n / 2]);
-				fp_mul(u->x, u->x, ep_curve_get_beta());
+				if (ep_curve_opt_a() == RLC_ZERO) {
+					fp_mul(u->x, u->x, ep_curve_get_beta());
+				} else {
+					fp_neg(u->x, u->x);
+					fp_mul(u->y, u->y, ep_curve_get_beta());
+				}
 				if (sl1 == RLC_NEG) {
 					ep_neg(u, u);
 				}

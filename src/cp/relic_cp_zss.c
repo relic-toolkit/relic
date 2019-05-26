@@ -73,7 +73,7 @@ int cp_zss_gen(bn_t d, g1_t q, gt_t z) {
 
 int cp_zss_sig(g2_t s, uint8_t *msg, int len, int hash, bn_t d) {
 	bn_t m, n, r, t;
-	uint8_t h[MD_LEN];
+	uint8_t h[RLC_MD_LEN];
 	int result = RLC_OK;
 
 	bn_null(m);
@@ -94,7 +94,7 @@ int cp_zss_sig(g2_t s, uint8_t *msg, int len, int hash, bn_t d) {
 			bn_read_bin(m, msg, len);
 		} else {
 			md_map(h, msg, len);
-			bn_read_bin(m, h, MD_LEN);
+			bn_read_bin(m, h, RLC_MD_LEN);
 		}
 		bn_mod(m, m, n);
 
@@ -125,7 +125,7 @@ int cp_zss_ver(g2_t s, uint8_t *msg, int len, int hash, g1_t q, gt_t z) {
 	bn_t m, n;
 	g1_t g;
 	gt_t e;
-	uint8_t h[MD_LEN];
+	uint8_t h[RLC_MD_LEN];
 	int result = 0;
 
 	bn_null(m);
@@ -146,7 +146,7 @@ int cp_zss_ver(g2_t s, uint8_t *msg, int len, int hash, g1_t q, gt_t z) {
 			bn_read_bin(m, msg, len);
 		} else {
 			md_map(h, msg, len);
-			bn_read_bin(m, h, MD_LEN);
+			bn_read_bin(m, h, RLC_MD_LEN);
 		}
 		bn_mod(m, m, n);
 

@@ -98,11 +98,15 @@ enum {
 	/** Barreto-Naehrig curve with embedding degree 12. */
 	BN_P446,
 	/** Barreto-Lynn-Scott curve with embedding degree 12. */
+	B12_P446,
+	/** Barreto-Lynn-Scott curve with embedding degree 12. */
 	B12_P455,
 	/** Barreto-Lynn-Scott curve with embedding degree 24. */
 	B24_P477,
 	/** Kachisa-Schafer-Scott with negative x. */
 	KSS_P508,
+	/** Optimal TNFS-secure curve with embedding degree 8. */
+	OT8_P511,
 	/** Barreto-Naehrig curve with positive x. */
 	BN_P638,
 	/** Barreto-Lynn-Scott curve with embedding degree 12. */
@@ -504,6 +508,7 @@ void ep_curve_set_super(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
  * Configures a prime elliptic curve with endomorphisms by its coefficients and
  * generator.
  *
+ * @param[in] a			- the 'a' coefficient of the curve.
  * @param[in] b			- the 'b' coefficient of the curve.
  * @param[in] g			- the generator.
  * @param[in] r			- the order of the group of points.
@@ -511,8 +516,8 @@ void ep_curve_set_super(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
  * @param[in] l			- the exponent corresponding to the endomorphism.
  * @param[in] h			- the cofactor of the group order.
  */
-void ep_curve_set_endom(const fp_t b, const ep_t g, const bn_t r, const bn_t h,
-		const fp_t beta, const bn_t l);
+void ep_curve_set_endom(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
+		const bn_t h, const fp_t beta, const bn_t l);
 
 /**
  * Configures a prime elliptic curve by its parameter identifier.

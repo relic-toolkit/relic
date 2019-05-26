@@ -100,7 +100,6 @@ void ed_param_set(int param) {
 		}
 		fp_set_dig(g->z, 1);
 		fp_neg(g->z, g->z);
-		fp_srt(core_get()->srm1, g->z);
 		fp_neg(g->z, g->z);
 #if ED_ADD == EXTND
 		fp_mul(g->t, g->x, g->y);

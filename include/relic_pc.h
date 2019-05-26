@@ -638,6 +638,15 @@ typedef RLC_CAT(GT_LOWER, t) gt_t;
 #define g2_mul_dig(R, P, K)		RLC_CAT(G2_LOWER, mul_dig)(R, P, K)
 
 /**
+ * Exponentiates an element from G_T by a small integer. Computes c = a^b.
+ *
+ * @param[out] R			- the result.
+ * @param[in] P				- the element to multiply.
+ * @param[in] K				- the small integer.
+ */
+#define gt_exp_dig(C, A, B)		RLC_CAT(GT_LOWER, exp_dig)(C, A, B)
+
+/**
  * Multiplies the generator of G_1 by an integer.
  *
  * @param[out] R			- the result.
@@ -804,7 +813,7 @@ typedef RLC_CAT(GT_LOWER, t) gt_t;
 void gt_rand(gt_t a);
 
 /**
- * Computes the exponentiation of an element form G_T.
+ * Computes the exponentiation of an element from G_T.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the element to exponentiate.

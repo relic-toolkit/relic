@@ -169,7 +169,12 @@ static void ep_mul_combs_endom(ep_t r, const ep_t *t, const bn_t k) {
 			}
 			if (w1 > 0) {
 				ep_copy(u, t[w1]);
-				fp_mul(u->x, u->x, ep_curve_get_beta());
+				if (ep_curve_opt_a() == RLC_ZERO) {
+					fp_mul(u->x, u->x, ep_curve_get_beta());
+				} else {
+					fp_neg(u->x, u->x);
+					fp_mul(u->y, u->y, ep_curve_get_beta());
+				}
 				if (s1 == RLC_NEG) {
 					ep_neg(u, u);
 				}

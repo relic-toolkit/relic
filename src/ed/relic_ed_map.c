@@ -40,7 +40,7 @@
 void ed_map(ed_t p, const uint8_t *msg, int len) {
 	bn_t h;
 	fp_t t, u, v;
-	uint8_t digest[MD_LEN];
+	uint8_t digest[RLC_MD_LEN];
 
 	bn_null(h);
 	fp_null(t);
@@ -54,7 +54,7 @@ void ed_map(ed_t p, const uint8_t *msg, int len) {
 		fp_new(v);
 
 		md_map(digest, msg, len);
-		bn_read_bin(h, digest, RLC_MIN(RLC_FP_BYTES, MD_LEN));
+		bn_read_bin(h, digest, RLC_MIN(RLC_FP_BYTES, RLC_MD_LEN));
 
 		fp_prime_conv(p->y, h);
 		fp_set_dig(p->z, 1);

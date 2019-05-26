@@ -1959,11 +1959,19 @@ static int recoding(void) {
 				bn_rec_glv(b, c, a, b, (const bn_t *)v1, (const bn_t *)v2);
 				ep_curve_get_ord(v2[0]);
 				/* Recover lambda parameter. */
-				bn_gcd_ext(v1[0], v2[1], NULL, v1[2], v2[0]);
+				if (bn_cmp_dig(v1[2], 1) == RLC_EQ) {
+					bn_gcd_ext(v1[0], v2[1], NULL, v1[1], v2[0]);
+				} else {
+					bn_gcd_ext(v1[0], v2[1], NULL, v1[2], v2[0]);
+				}
 				if (bn_sign(v2[1]) == RLC_NEG) {
 					bn_add(v2[1], v2[1], v2[0]);
 				}
-				bn_mul(v1[0], v2[1], v1[1]);
+				if (bn_cmp_dig(v1[2], 1) == RLC_EQ) {
+					bn_sub(v1[0], v2[1], v1[2]);
+				} else {
+					bn_mul(v1[0], v2[1], v1[1]);
+				}
 				bn_mod(v1[0], v1[0], v2[0]);
 				/* Check if b + c * lambda = k (mod n). */
 				bn_mul(c, c, v1[0]);

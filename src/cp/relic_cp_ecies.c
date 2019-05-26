@@ -99,11 +99,11 @@ int cp_ecies_enc(ec_t r, uint8_t *out, int *out_len, uint8_t *in, int in_len,
 		md_kdf2(key, 2 * size, _x, l);
 		l = *out_len;
 		if (bc_aes_cbc_enc(out, out_len, in, in_len, key, size, iv)
-				!= RLC_OK || (*out_len + MD_LEN) > l) {
+				!= RLC_OK || (*out_len + RLC_MD_LEN) > l) {
 			result = RLC_ERR;
 		} else {
 			md_hmac(out + *out_len, out, *out_len, key + size, size);
-			*out_len += MD_LEN;
+			*out_len += RLC_MD_LEN;
 		}
 	}
 	CATCH_ANY {
@@ -123,9 +123,10 @@ int cp_ecies_dec(uint8_t *out, int *out_len, ec_t r, uint8_t *in, int in_len,
 		bn_t d) {
 	ec_t p;
 	bn_t x;
-    int l, result = RLC_OK, size = RLC_CEIL(ec_param_level(), 8);
+
+  int l, result = RLC_OK, size = RLC_CEIL(ec_param_level(), 8);
 	uint8_t _x[FC_BYTES + 1], h[MD_LEN], iv[RLC_BC_LEN] = { 0 };
-    uint8_t * key = RLC_ALLOCA(uint8_t, 2 * size);
+  uint8_t * key = RLC_ALLOCA(uint8_t, 2 * size);
 
 	bn_null(x);
 	ec_null(p);
@@ -143,11 +144,11 @@ int cp_ecies_dec(uint8_t *out, int *out_len, ec_t r, uint8_t *in, int in_len,
 		}
 		bn_write_bin(_x, l, x);
 		md_kdf2(key, 2 * size, _x, l);
-		md_hmac(h, in, in_len - MD_LEN, key + size, size);
-		if (util_cmp_const(h, in + in_len - MD_LEN, MD_LEN)) {
+		md_hmac(h, in, in_len - RLC_MD_LEN, key + size, size);
+		if (util_cmp_const(h, in + in_len - RLC_MD_LEN, RLC_MD_LEN)) {
 			result = RLC_ERR;
 		} else {
-			if (bc_aes_cbc_dec(out, out_len, in, in_len - MD_LEN, key, size, iv)
+			if (bc_aes_cbc_dec(out, out_len, in, in_len - RLC_MD_LEN, key, size, iv)
 					!= RLC_OK) {
 				result = RLC_ERR;
 			}

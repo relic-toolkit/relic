@@ -64,7 +64,7 @@ option(FP_QNRES "Use -1 as quadratic non-residue." off)
 
 # Choose the arithmetic methods.
 if (NOT FP_METHD)
-	set(FP_METHD "BASIC;COMBA;COMBA;MONTY;MONTY;SLIDE")
+	set(FP_METHD "INTEG;INTEG;INTEG;MONTY;MONTY;SLIDE")
 endif(NOT FP_METHD)
 list(LENGTH FP_METHD FP_LEN)
 if (FP_LEN LESS 6)

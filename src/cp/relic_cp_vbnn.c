@@ -73,7 +73,7 @@ int cp_vbnn_gen(vbnn_kgc_t kgc) {
 }
 
 int cp_vbnn_gen_prv(vbnn_user_t user, vbnn_kgc_t kgc, uint8_t *id, int id_len) {
-	uint8_t hash[MD_LEN];
+	uint8_t hash[RLC_MD_LEN];
 	int len;
 	int result = RLC_OK;
 
@@ -106,7 +106,7 @@ int cp_vbnn_gen_prv(vbnn_user_t user, vbnn_kgc_t kgc, uint8_t *id, int id_len) {
 		ec_write_bin(buffer + id_len, ec_size_bin(user->R, 1), user->R, 1);
 
 		md_map(hash, buffer, len);
-		len = MD_LEN;
+		len = RLC_MD_LEN;
 
 		if (8 * len > bn_bits(n)) {
 			len = RLC_CEIL(bn_bits(n), 8);
@@ -138,7 +138,7 @@ int cp_vbnn_sig(ec_t sig_R, bn_t sig_z, bn_t sig_h, uint8_t *id, int id_len,
 	uint8_t *buffer = NULL;
 	uint8_t *buffer_i = NULL;
 	int len;
-	uint8_t hash[MD_LEN];
+	uint8_t hash[RLC_MD_LEN];
 
 	/* order of the ECC group */
 	bn_t n;
@@ -178,7 +178,7 @@ int cp_vbnn_sig(ec_t sig_R, bn_t sig_z, bn_t sig_h, uint8_t *id, int id_len,
 		ec_write_bin(buffer_i, ec_size_bin(Y, 1), Y, 1);
 
 		md_map(hash, buffer, len);
-		len = MD_LEN;
+		len = RLC_MD_LEN;
 
 		if (8 * len > bn_bits(n)) {
 			len = RLC_CEIL(bn_bits(n), 8);
@@ -217,7 +217,7 @@ int cp_vbnn_ver(ec_t sig_R, bn_t sig_z, bn_t sig_h, uint8_t *id, int id_len,
 	uint8_t *buffer;
 	uint8_t *buffer_i;
 	int len;
-	uint8_t hash[MD_LEN];
+	uint8_t hash[RLC_MD_LEN];
 
 	/* order of the ECC group */
 	bn_t n;
@@ -254,7 +254,7 @@ int cp_vbnn_ver(ec_t sig_R, bn_t sig_z, bn_t sig_h, uint8_t *id, int id_len,
 		ec_write_bin(buffer_i, ec_size_bin(sig_R, 1), sig_R, 1);
 
 		md_map(hash, buffer, len);
-		len = MD_LEN;
+		len = RLC_MD_LEN;
 
 		if (8 * len > bn_bits(n)) {
 			len = RLC_CEIL(bn_bits(n), 8);
@@ -288,7 +288,7 @@ int cp_vbnn_ver(ec_t sig_R, bn_t sig_z, bn_t sig_h, uint8_t *id, int id_len,
 		ec_write_bin(buffer_i, ec_size_bin(Z, 1), Z, 1);
 
 		md_map(hash, buffer, len);
-		len = MD_LEN;
+		len = RLC_MD_LEN;
 
 		if (8 * len > bn_bits(n)) {
 			len = RLC_CEIL(bn_bits(n), 8);

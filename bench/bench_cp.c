@@ -39,7 +39,7 @@
 
 static void rsa(void) {
 	rsa_t pub, prv;
-	uint8_t in[10], new[10], h[MD_LEN], out[RLC_BN_BITS / 8 + 1];
+	uint8_t in[10], new[10], h[RLC_MD_LEN], out[RLC_BN_BITS / 8 + 1];
 	int out_len, new_len;
 
 	rsa_null(pub);
@@ -104,7 +104,7 @@ static void rsa(void) {
 		new_len = out_len;
 		rand_bytes(in, sizeof(in));
 		md_map(h, in, sizeof(in));
-		BENCH_ADD(cp_rsa_sig(out, &out_len, h, MD_LEN, 1, prv));
+		BENCH_ADD(cp_rsa_sig(out, &out_len, h, RLC_MD_LEN, 1, prv));
 	} BENCH_END;
 
 	BENCH_BEGIN("cp_rsa_ver (h = 0)") {
@@ -120,8 +120,8 @@ static void rsa(void) {
 		new_len = out_len;
 		rand_bytes(in, sizeof(in));
 		md_map(h, in, sizeof(in));
-		cp_rsa_sig(out, &out_len, h, MD_LEN, 1, prv);
-		BENCH_ADD(cp_rsa_ver(out, out_len, h, MD_LEN, 1, pub));
+		cp_rsa_sig(out, &out_len, h, RLC_MD_LEN, 1, prv);
+		BENCH_ADD(cp_rsa_ver(out, out_len, h, RLC_MD_LEN, 1, pub));
 	} BENCH_END;
 
 #if CP_RSA == BASIC || !defined(STRIP)
@@ -139,7 +139,7 @@ static void rsa(void) {
 		new_len = out_len;
 		rand_bytes(in, sizeof(in));
 		md_map(h, in, sizeof(in));
-		BENCH_ADD(cp_rsa_sig_basic(out, &out_len, h, MD_LEN, 1, prv));
+		BENCH_ADD(cp_rsa_sig_basic(out, &out_len, h, RLC_MD_LEN, 1, prv));
 	} BENCH_END;
 #endif
 
@@ -276,7 +276,7 @@ static void paillier(void) {
 static void ecdh(void) {
 	bn_t d;
 	ec_t p;
-	uint8_t key[MD_LEN];
+	uint8_t key[RLC_MD_LEN];
 
 	bn_null(d);
 	ec_null(p);
@@ -290,7 +290,7 @@ static void ecdh(void) {
 	BENCH_END;
 
 	BENCH_BEGIN("cp_ecdh_key") {
-		BENCH_ADD(cp_ecdh_key(key, MD_LEN, d, p));
+		BENCH_ADD(cp_ecdh_key(key, RLC_MD_LEN, d, p));
 	}
 	BENCH_END;
 
@@ -301,7 +301,7 @@ static void ecdh(void) {
 static void ecmqv(void) {
 	bn_t d1, d2;
 	ec_t p1, p2;
-	uint8_t key[MD_LEN];
+	uint8_t key[RLC_MD_LEN];
 
 	bn_null(d1);
 	bn_null(d2);
@@ -321,7 +321,7 @@ static void ecmqv(void) {
 	cp_ecmqv_gen(d2, p2);
 
 	BENCH_BEGIN("cp_ecmqv_key") {
-		BENCH_ADD(cp_ecmqv_key(key, MD_LEN, d1, d2, p1, p1, p2));
+		BENCH_ADD(cp_ecmqv_key(key, RLC_MD_LEN, d1, d2, p1, p1, p2));
 	}
 	BENCH_END;
 
@@ -334,7 +334,7 @@ static void ecmqv(void) {
 static void ecies(void) {
 	ec_t q, r;
 	bn_t d;
-	uint8_t in[10], out[16 + MD_LEN];
+	uint8_t in[10], out[16 + RLC_MD_LEN];
 	int in_len, out_len;
 
 	bn_null(d);
@@ -374,7 +374,7 @@ static void ecies(void) {
 }
 
 static void ecdsa(void) {
-	uint8_t msg[5] = { 0, 1, 2, 3, 4 }, h[MD_LEN];
+	uint8_t msg[5] = { 0, 1, 2, 3, 4 }, h[RLC_MD_LEN];
 	bn_t r, s, d;
 	ec_t p;
 
@@ -400,7 +400,7 @@ static void ecdsa(void) {
 
 	BENCH_BEGIN("cp_ecdsa_sign (h = 1)") {
 		md_map(h, msg, 5);
-		BENCH_ADD(cp_ecdsa_sig(r, s, h, MD_LEN, 1, d));
+		BENCH_ADD(cp_ecdsa_sig(r, s, h, RLC_MD_LEN, 1, d));
 	}
 	BENCH_END;
 
@@ -411,7 +411,7 @@ static void ecdsa(void) {
 
 	BENCH_BEGIN("cp_ecdsa_ver (h = 1)") {
 		md_map(h, msg, 5);
-		BENCH_ADD(cp_ecdsa_ver(r, s, h, MD_LEN, 1, p));
+		BENCH_ADD(cp_ecdsa_ver(r, s, h, RLC_MD_LEN, 1, p));
 	}
 	BENCH_END;
 
@@ -517,14 +517,14 @@ static void vbnn(void) {
 	vbnn_user_free(b);
 }
 
-#endif
+#endif /* WITH_EC */
 
 #if defined(WITH_PC)
 
 static void sokaka(void) {
 	sokaka_t k;
 	bn_t s;
-	uint8_t key1[MD_LEN];
+	uint8_t key1[RLC_MD_LEN];
 	char id_a[5] = { 'A', 'l', 'i', 'c', 'e' };
 	char id_b[3] = { 'B', 'o', 'b' };
 
@@ -544,7 +544,7 @@ static void sokaka(void) {
 	BENCH_END;
 
 	BENCH_BEGIN("cp_sokaka_key (g1)") {
-		BENCH_ADD(cp_sokaka_key(key1, MD_LEN, id_b, sizeof(id_b), k, id_a,
+		BENCH_ADD(cp_sokaka_key(key1, RLC_MD_LEN, id_b, sizeof(id_b), k, id_a,
 						sizeof(id_a)));
 	}
 	BENCH_END;
@@ -553,7 +553,7 @@ static void sokaka(void) {
 		cp_sokaka_gen_prv(k, id_a, sizeof(id_a), s);
 
 		BENCH_BEGIN("cp_sokaka_key (g2)") {
-			BENCH_ADD(cp_sokaka_key(key1, MD_LEN, id_a, sizeof(id_a), k, id_b,
+			BENCH_ADD(cp_sokaka_key(key1, RLC_MD_LEN, id_a, sizeof(id_a), k, id_b,
 							sizeof(id_b)));
 		}
 		BENCH_END;
@@ -723,7 +723,7 @@ static void bls(void) {
 }
 
 static void bbs(void) {
-	uint8_t msg[5] = { 0, 1, 2, 3, 4 }, h[MD_LEN];
+	uint8_t msg[5] = { 0, 1, 2, 3, 4 }, h[RLC_MD_LEN];
 	g1_t s;
 	g2_t p;
 	gt_t z;
@@ -751,7 +751,7 @@ static void bbs(void) {
 
 	BENCH_BEGIN("cp_bbs_sign (h = 1)") {
 		md_map(h, msg, 5);
-		BENCH_ADD(cp_bbs_sig(s, h, MD_LEN, 1, d));
+		BENCH_ADD(cp_bbs_sig(s, h, RLC_MD_LEN, 1, d));
 	}
 	BENCH_END;
 
@@ -762,7 +762,7 @@ static void bbs(void) {
 
 	BENCH_BEGIN("cp_bbs_ver (h = 1)") {
 		md_map(h, msg, 5);
-		BENCH_ADD(cp_bbs_ver(s, h, MD_LEN, 1, p, z));
+		BENCH_ADD(cp_bbs_ver(s, h, RLC_MD_LEN, 1, p, z));
 	}
 	BENCH_END;
 
@@ -948,7 +948,7 @@ static int pss(void) {
 }
 
 static void zss(void) {
-	uint8_t msg[5] = { 0, 1, 2, 3, 4 }, h[MD_LEN];
+	uint8_t msg[5] = { 0, 1, 2, 3, 4 }, h[RLC_MD_LEN];
 	g1_t p;
 	g2_t s;
 	gt_t z;
@@ -976,7 +976,7 @@ static void zss(void) {
 
 	BENCH_BEGIN("cp_zss_sign (h = 1)") {
 		md_map(h, msg, 5);
-		BENCH_ADD(cp_zss_sig(s, h, MD_LEN, 1, d));
+		BENCH_ADD(cp_zss_sig(s, h, RLC_MD_LEN, 1, d));
 	}
 	BENCH_END;
 
@@ -987,7 +987,7 @@ static void zss(void) {
 
 	BENCH_BEGIN("cp_zss_ver (h = 1)") {
 		md_map(h, msg, 5);
-		BENCH_ADD(cp_zss_ver(s, h, MD_LEN, 1, p, z));
+		BENCH_ADD(cp_zss_ver(s, h, RLC_MD_LEN, 1, p, z));
 	}
 	BENCH_END;
 
@@ -996,7 +996,7 @@ static void zss(void) {
 	g2_free(s);
 }
 
-#endif
+#endif /* WITH_PC */
 
 int main(void) {
 	if (core_init() != RLC_OK) {

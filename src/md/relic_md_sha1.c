@@ -63,7 +63,7 @@ void md_map_shone(uint8_t *hash, const uint8_t *msg, int len) {
 
 void md_map_shone_mid(uint8_t *state, uint8_t *msg, int len) {
 	SHA1Context ctx;
-	uint8_t dummy[64 - MD_LEN_SHONE] = { 0 };
+	uint8_t dummy[64 - RLC_MD_LEN_SHONE] = { 0 };
 
 	if (SHA1Reset(&ctx) != shaSuccess) {
 		THROW(ERR_NO_VALID);

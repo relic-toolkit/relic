@@ -24,64 +24,25 @@
 /**
  * @file
  *
- * Implementation of the low-level multiple precision bit shifting functions.
+ * Implementation of the low-level prime field multiplication functions.
  *
+ * @version $Id: relic_fp_mul_low.c 683 2011-03-10 23:51:23Z dfaranha $
  * @ingroup bn
  */
 
 #include <gmp.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
 
-#include "relic_bn.h"
-#include "relic_bn_low.h"
+#include "relic_fp.h"
+#include "relic_fp_low.h"
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
-dig_t bn_lsh1_low(dig_t *c, const dig_t *a, int size) {
-	return mpn_lshift(c, a, size, 1);
+dig_t fp_mula_low(dig_t *c, const dig_t *a, dig_t digit) {
+	return mpn_addmul_1(c, a, RLC_FP_DIGS, digit);
 }
 
-dig_t bn_lshb_low(dig_t *c, const dig_t *a, int size, int bits) {
-	return mpn_lshift(c, a, size, bits);
-}
-
-void bn_lshd_low(dig_t *c, const dig_t *a, int size, int digits) {
-	dig_t *top;
-	const dig_t *bot;
-	int i;
-
-	top = c + size + digits - 1;
-	bot = a + size - 1;
-
-	for (i = 0; i < size; i++, top--, bot--) {
-		*top = *bot;
-	}
-	for (i = 0; i < digits; i++, c++) {
-		*c = 0;
-	}
-}
-
-dig_t bn_rsh1_low(dig_t *c, const dig_t *a, int size) {
-	return mpn_rshift(c, a, size, 1);
-}
-
-dig_t bn_rshb_low(dig_t *c, const dig_t *a, int size, int bits) {
-	return mpn_rshift(c, a, size, bits);
-}
-
-void bn_rshd_low(dig_t *c, const dig_t *a, int size, int digits) {
-	const dig_t *top;
-	dig_t *bot;
-	int i;
-
-	top = a + digits;
-	bot = c;
-
-	for (i = 0; i < size - digits; i++, top++, bot++) {
-		*bot = *top;
-	}
+dig_t fp_mul1_low(dig_t *c, const dig_t *a, dig_t digit) {
+	return mpn_mul_1(c, a, RLC_FP_DIGS, digit);
 }

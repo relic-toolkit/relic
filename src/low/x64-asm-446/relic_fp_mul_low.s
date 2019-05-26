@@ -24,33 +24,45 @@
 /**
  * @file
  *
- * Implementation of the low-level multiple precision addition and subtraction
- * functions.
+ * Implementation of the low-level prime field multiplication functions.
  *
  * @ingroup bn
  */
 
-#include <gmp.h>
+#include "macro.s"
 
-#include "relic_bn.h"
-#include "relic_bn_low.h"
+.text
 
-/*============================================================================*/
-/* Public definitions                                                         */
-/*============================================================================*/
+.global fp_muln_low
+.global fp_mulm_low
 
-dig_t bn_add1_low(dig_t *c, const dig_t *a, dig_t digit, int size) {
-	return mpn_add_1(c, a, size, digit);
-}
+fp_muln_low:
+	movq %rdx,%rcx
+	FP_MULN_LOW %rdi, %r8, %r9, %r10, %rsi, %rcx
+	ret
 
-dig_t bn_addn_low(dig_t *c, const dig_t *a, const dig_t *b, int size) {
-	return mpn_add_n(c, a, b, size);
-}
+fp_mulm_low:
+	push	%r12
+	push	%r13
+	push	%r14
+	push	%r15
+	push 	%rbx
+	push	%rbp
+	subq 	$128, %rsp
 
-dig_t bn_sub1_low(dig_t *c, const dig_t *a, dig_t digit, int size) {
-	return mpn_sub_1(c, a, size, digit);
-}
+	movq 	%rdx,%rcx
+	leaq 	p0(%rip), %rbx
 
-dig_t bn_subn_low(dig_t *c, const dig_t *a, const dig_t *b, int size) {
-	return mpn_sub_n(c, a, b, size);
-}
+	FP_MULN_LOW %rsp, %r8, %r9, %r10, %rsi, %rcx
+
+	FP_RDCN_LOW %rdi, %r8, %r9, %r10, %rsp, %rbx
+
+	addq	$128, %rsp
+
+	pop		%rbp
+	pop		%rbx
+	pop		%r15
+	pop		%r14
+	pop		%r13
+	pop		%r12
+	ret

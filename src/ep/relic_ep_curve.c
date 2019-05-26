@@ -242,14 +242,14 @@ void ep_curve_set_super(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
 
 #if defined(EP_ENDOM)
 
-void ep_curve_set_endom(const fp_t b, const ep_t g, const bn_t r, const bn_t h,
-		const fp_t beta, const bn_t l) {
+void ep_curve_set_endom(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
+		const bn_t h, const fp_t beta, const bn_t l) {
 	int bits = bn_bits(r);
 	ctx_t *ctx = core_get();
 	ctx->ep_is_endom = 1;
 	ctx->ep_is_super = 0;
 
-	fp_zero(ctx->ep_a);
+	fp_copy(ctx->ep_a, a);
 	fp_copy(ctx->ep_b, b);
 
 	detect_opt(&(ctx->ep_opt_a), ctx->ep_a);
@@ -259,7 +259,7 @@ void ep_curve_set_endom(const fp_t b, const ep_t g, const bn_t r, const bn_t h,
 	fp_copy(ctx->beta, beta);
 	bn_gcd_ext_mid(&(ctx->ep_v1[1]), &(ctx->ep_v1[2]), &(ctx->ep_v2[1]),
 			&(ctx->ep_v2[2]), l, r);
-	/* l = v1[1] * v2[2] - v1[2] * v2[1], r = l / 2. */
+	/* r = (v1[1] * v2[2] - v1[2] * v2[1]) / 2. */
 	bn_mul(&(ctx->ep_v1[0]), &(ctx->ep_v1[1]), &(ctx->ep_v2[2]));
 	bn_mul(&(ctx->ep_v2[0]), &(ctx->ep_v1[2]), &(ctx->ep_v2[1]));
 	bn_sub(&(ctx->ep_r), &(ctx->ep_v1[0]), &(ctx->ep_v2[0]));

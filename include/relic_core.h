@@ -255,6 +255,8 @@ typedef struct _ctx_t {
 	fp_st ep_a;
 	/** The 'b' coefficient of the elliptic curve. */
 	fp_st ep_b;
+	/** The square root of -3 needed for hashing. */
+	fp_st srm3;
 	/** The generator of the elliptic curve. */
 	ep_st ep_g;
 	/** The order of the group of points in the elliptic curve. */
@@ -326,7 +328,7 @@ typedef struct _ctx_t {
 	fp_st ed_a;
 	/** The 'd' coefficient of the Edwards elliptic curve. */
 	fp_st ed_d;
-	/** The squre root of -1 needed for hashing. */
+	/** The square root of -1 needed for hashing. */
 	fp_st srm1;
 	/** The generator of the Edwards elliptic curve. */
 	ed_st ed_g;
@@ -343,10 +345,12 @@ typedef struct _ctx_t {
 #endif /* ED_PRECO */
 #endif
 
-#ifdef WITH_PP
+#if defined(WITH_FPX) || defined(WITH_PP)
+	/** Integer part of the quadratic non-residue. */
+	int qnr2;
 	/** Constants for computing Frobenius maps in higher extensions. @{ */
 	fp2_st fp2_p[5];
-	fp_st fp2_p2[4];
+	fp_st fp2_p2[5];
 	fp2_st fp2_p3[5];
 	/** @} */
 	/** Constants for computing Frobenius maps in higher extensions. @{ */

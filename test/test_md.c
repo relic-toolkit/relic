@@ -352,7 +352,7 @@ static int mgf(void) {
 
 static int hmac(void) {
 	int code = RLC_ERR;
-	uint8_t mac[MD_LEN];
+	uint8_t mac[RLC_MD_LEN];
 
 #if MD_MAP == SH256
 	uint8_t key[131];
@@ -390,28 +390,28 @@ static int hmac(void) {
 	TEST_ONCE("hmac (sha256) is correct") {
 		memset(key, 0x0B, 20);
 		md_hmac(mac, (uint8_t *)msg[0], strlen(msg[0]), key, 20);
-		TEST_ASSERT(memcmp(mac, result[0], MD_LEN) == 0, end);
+		TEST_ASSERT(memcmp(mac, result[0], RLC_MD_LEN) == 0, end);
 		strncpy((char *)key, "Jefe", 5);
 		md_hmac(mac, (uint8_t *)msg[1], strlen(msg[1]), key, 4);
-		TEST_ASSERT(memcmp(mac, result[1], MD_LEN) == 0, end);
+		TEST_ASSERT(memcmp(mac, result[1], RLC_MD_LEN) == 0, end);
 		memset(key, 0xAA, 20);
 		memset(key + 20, 0xDD, 50);
 		md_hmac(mac, key + 20, 50, key, 20);
-		TEST_ASSERT(memcmp(mac, result[2], MD_LEN) == 0, end);
+		TEST_ASSERT(memcmp(mac, result[2], RLC_MD_LEN) == 0, end);
 		for (int j = 0; j < 25; j++) {
 			key[j] = j + 1;
 		}
 		memset(key + 25, 0xCD, 50);
 		md_hmac(mac, key + 25, 50, key, 25);
-		TEST_ASSERT(memcmp(mac, result[3], MD_LEN) == 0, end);
+		TEST_ASSERT(memcmp(mac, result[3], RLC_MD_LEN) == 0, end);
 		memset(key, 0x0C, 20);
 		md_hmac(mac, (uint8_t *)msg[2], strlen(msg[2]), key, 20);
 		TEST_ASSERT(memcmp(mac, result[4], 16) == 0, end);
 		memset(key, 0xAA, 131);
 		md_hmac(mac, (uint8_t *)msg[3], strlen(msg[3]), key, 131);
-		TEST_ASSERT(memcmp(mac, result[5], MD_LEN) == 0, end);
+		TEST_ASSERT(memcmp(mac, result[5], RLC_MD_LEN) == 0, end);
 		md_hmac(mac, (uint8_t *)msg[4], strlen(msg[4]), key, 131);
-		TEST_ASSERT(memcmp(mac, result[6], MD_LEN) == 0, end);
+		TEST_ASSERT(memcmp(mac, result[6], RLC_MD_LEN) == 0, end);
 	}
 	TEST_END;
 #endif
@@ -435,17 +435,17 @@ static int hmac(void) {
 			k1[j] = j;
 		}
 		md_hmac(mac, (uint8_t *)msg[0], strlen(msg[0]), k1, sizeof(k1));
-		TEST_ASSERT(memcmp(mac, result[0], MD_LEN) == 0, end);
+		TEST_ASSERT(memcmp(mac, result[0], RLC_MD_LEN) == 0, end);
 		for (int j = 0; j < sizeof(k2); j++) {
 			k2[j] = j + 0x30;
 		}
 		md_hmac(mac, (uint8_t *)msg[1], strlen(msg[1]), k2, sizeof(k2));
-		TEST_ASSERT(memcmp(mac, result[1], MD_LEN) == 0, end);
+		TEST_ASSERT(memcmp(mac, result[1], RLC_MD_LEN) == 0, end);
 		for (int j = 0; j < sizeof(k3); j++) {
 			k3[j] = j + 0x50;
 		}
 		md_hmac(mac, (uint8_t *)msg[2], strlen(msg[2]), k3, sizeof(k3));
-		TEST_ASSERT(memcmp(mac, result[2], MD_LEN) == 0, end);
+		TEST_ASSERT(memcmp(mac, result[2], RLC_MD_LEN) == 0, end);
 		for (int j = 0; j < sizeof(k4); j++) {
 			k4[j] = j + 0x70;
 		}

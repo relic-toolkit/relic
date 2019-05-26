@@ -78,7 +78,7 @@ int cp_bbs_gen(bn_t d, g2_t q, gt_t z) {
 
 int cp_bbs_sig(g1_t s, uint8_t *msg, int len, int hash, bn_t d) {
 	bn_t m, n, r;
-	uint8_t h[MD_LEN];
+	uint8_t h[RLC_MD_LEN];
 	int result = RLC_OK;
 
 	bn_null(m);
@@ -97,7 +97,7 @@ int cp_bbs_sig(g1_t s, uint8_t *msg, int len, int hash, bn_t d) {
 			bn_read_bin(m, msg, len);
 		} else {
 			md_map(h, msg, len);
-			bn_read_bin(m, h, MD_LEN);
+			bn_read_bin(m, h, RLC_MD_LEN);
 		}
 		bn_mod(m, m, n);
 
@@ -125,7 +125,7 @@ int cp_bbs_ver(g1_t s, uint8_t *msg, int len, int hash, g2_t q, gt_t z) {
 	bn_t m, n;
 	g2_t g;
 	gt_t e;
-	uint8_t h[MD_LEN];
+	uint8_t h[RLC_MD_LEN];
 	int result = 0;
 
 	bn_null(m);
@@ -150,7 +150,7 @@ int cp_bbs_ver(g1_t s, uint8_t *msg, int len, int hash, g2_t q, gt_t z) {
 			bn_read_bin(m, msg, len);
 		} else {
 			md_map(h, msg, len);
-			bn_read_bin(m, h, MD_LEN);
+			bn_read_bin(m, h, RLC_MD_LEN);
 		}
 		bn_mod(m, m, n);
 

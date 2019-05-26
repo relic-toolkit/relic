@@ -138,6 +138,23 @@
 /** @} */
 #endif
 
+#if defined(EP_ENDOM) && FP_PRIME == 446
+/**
+ * Parameters for a pairing-friendly prime curve over a quadratic extension.
+ */
+/** @{ */
+#define B12_P446_A0		"0"
+#define B12_P446_A1		"0"
+#define B12_P446_B0		"1"
+#define B12_P446_B1		"1"
+#define B12_P446_X0		"2B416CB07EA30312C0465130F59E1598732EE5DEC92F52F521F9D90CEEDA7E5F97208A5EAEE7DA3F56CFCF3DF403C5E2D96E929C8C064CA6"
+#define B12_P446_X1		"1378EBE7D0BE6234B9702E4361DD1432B2965B29F82169693815DB423EE5030F1C78A0137885E737D2C242C8C9CA2704347EB3F1F6D84C57"
+#define B12_P446_Y0		"26392FFC4FB772DE4C4D2A8A61AE00E74FEF64D573EA3D06DF741E666688E83495610E4CE1B9C7EAB270A57C8F82D9B459F2392065EEEAF3"
+#define B12_P446_Y1		"10ACDEBE52C1499796809283C38E100C4BA9FA0699696BF9F8647CB18EE632A4DDDAA771A78C031F868FAFA07E8642CCA633FE6F99B744C4"
+#define B12_P446_R		"511B70539F27995B34995830FA4D04C98CCC4C050BC7BB9B0E8D8CA34610428001400040001"
+/** @} */
+#endif
+
 #if defined(EP_ENDOM) && FP_PRIME == 455
 /**
  * Parameters for a pairing-friendly prime curve over a quadratic extension.
@@ -152,6 +169,24 @@
 #define B12_P455_Y0		"29C445A3809D96184EB3E76193ABBE3688B68B4123ABCC9F31A81F42D2420B1B4D653673CEAC2A0543347EE3B1A56591F3496626F8763EEADB"
 #define B12_P455_Y1		"24AC244C6F31FDAC1214CA62AB4DB7BA9B5F0D54D56A3D5C680044225C3AAF9815C272A15AA1D28FB6AC9EB7B0BE6916450794A617AFFB4EF9"
 #define B12_P455_R		"10000080000380002E0000F10004F00025E000750001D1000A00000400001C00007FFFFC00001"
+/** @} */
+#endif
+
+#if defined(EP_ENDOM) && FP_PRIME == 511
+/**
+ * Parameters for a pairing-friendly prime curve over a quadratic extension.
+ */
+/** @{ */
+#define OT8_P511_A0		"0"
+#define OT8_P511_A1		"1"
+#define OT8_P511_B0		"0"
+#define OT8_P511_B1		"0"
+#define OT8_P511_X0		"09541B7BB446EBE58277E0183B448E09D567ACFAAA07F2D3C01967088544C6FA844B803CFC8C8A91D0DFFAB5F55B95372C5AB5DD38E13EE92DAA6882535A1244"
+#define OT8_P511_X1		"332FBBD88DA3493CAF2F082C9C43E463523C8611AC52AB498F1D28D7844E42C67AF62A9BF0F4D9DDD38F79F51C9DBDB10735AC3CD69FF7867E27EBD65DD8D3EF"
+#define OT8_P511_Y0		"2E298CA6C71CE0C6CABA9208E6350B73B0E8BF3EE7CC1777C64BD3680AC857D1823993C8877CBD0203CD3A9835A053F5549BDF7DC206EE1B40BA43A2BD59B793"
+#define OT8_P511_Y1		"109CF99B6C312D74CEFF87959789AF53D231988B0E77FF424C8738C20EA91E7F634399A3899E101EBF5C6A0DBE2E40ACA8D0DBCE0F2C6A0300987BBABD9097DC"
+#define OT8_P511_R		"100000000002AC000000002AD56000000131304C0000032F6D0B1000000000001"
+#define OT8_P511_H		"1000000000080400000001D72B20000061916054001384B3D863F2EBD23CF44774A8836D060A488CB13701DF690F23AF2A5394A1F9EE0B564F725AD505A8F75463E3DBDF97FBE852B96A19E4477DB82D7C260034DEDA6C75853BB18EE3956002"
 /** @} */
 #endif
 
@@ -195,22 +230,22 @@
  * @param[in] CURVE		- the curve parameters to assign.
  */
 #define ASSIGN(CURVE)														\
-	RLC_GET(str, CURVE##_A0, sizeof(CURVE##_A0));								\
-	fp_read_str(a[0], str, strlen(str), 16);									\
-	RLC_GET(str, CURVE##_A1, sizeof(CURVE##_A1));								\
-	fp_read_str(a[1], str, strlen(str), 16);									\
-	RLC_GET(str, CURVE##_B0, sizeof(CURVE##_B0));								\
-	fp_read_str(b[0], str, strlen(str), 16);									\
-	RLC_GET(str, CURVE##_B1, sizeof(CURVE##_B1));								\
-	fp_read_str(b[1], str, strlen(str), 16);									\
-	RLC_GET(str, CURVE##_X0, sizeof(CURVE##_X0));								\
-	fp_read_str(g->x[0], str, strlen(str), 16);									\
-	RLC_GET(str, CURVE##_X1, sizeof(CURVE##_X1));								\
-	fp_read_str(g->x[1], str, strlen(str), 16);									\
-	RLC_GET(str, CURVE##_Y0, sizeof(CURVE##_Y0));								\
-	fp_read_str(g->y[0], str, strlen(str), 16);									\
-	RLC_GET(str, CURVE##_Y1, sizeof(CURVE##_Y1));								\
-	fp_read_str(g->y[1], str, strlen(str), 16);									\
+	RLC_GET(str, CURVE##_A0, sizeof(CURVE##_A0));							\
+	fp_read_str(a[0], str, strlen(str), 16);								\
+	RLC_GET(str, CURVE##_A1, sizeof(CURVE##_A1));							\
+	fp_read_str(a[1], str, strlen(str), 16);								\
+	RLC_GET(str, CURVE##_B0, sizeof(CURVE##_B0));							\
+	fp_read_str(b[0], str, strlen(str), 16);								\
+	RLC_GET(str, CURVE##_B1, sizeof(CURVE##_B1));							\
+	fp_read_str(b[1], str, strlen(str), 16);								\
+	RLC_GET(str, CURVE##_X0, sizeof(CURVE##_X0));							\
+	fp_read_str(g->x[0], str, strlen(str), 16);								\
+	RLC_GET(str, CURVE##_X1, sizeof(CURVE##_X1));							\
+	fp_read_str(g->x[1], str, strlen(str), 16);								\
+	RLC_GET(str, CURVE##_Y0, sizeof(CURVE##_Y0));							\
+	fp_read_str(g->y[0], str, strlen(str), 16);								\
+	RLC_GET(str, CURVE##_Y1, sizeof(CURVE##_Y1));							\
+	fp_read_str(g->y[1], str, strlen(str), 16);								\
 	RLC_GET(str, CURVE##_R, sizeof(CURVE##_R));								\
 	bn_read_str(r, str, strlen(str), 16);									\
 
@@ -415,9 +450,16 @@ void ep2_curve_set_twist(int type) {
 			case BN_P446:
 				ASSIGN(BN_P446);
 				break;
+			case B12_P446:
+				ASSIGN(B12_P446);
+				break;
 #elif FP_PRIME == 455
 			case B12_P455:
 				ASSIGN(B12_P455);
+				break;
+#elif FP_PRIME == 511
+			case OT8_P511:
+				ASSIGN(OT8_P511);
 				break;
 #elif FP_PRIME == 638
 			case BN_P638:
@@ -443,8 +485,8 @@ void ep2_curve_set_twist(int type) {
 		fp_copy(ctx->ep2_b[0], b[0]);
 		fp_copy(ctx->ep2_b[1], b[1]);
 		bn_copy(&(ctx->ep2_r), r);
+		/* TODO: support non-trivial cofactors. */
 		bn_set_dig(&(ctx->ep2_h), 1);
-
 		/* I don't have a better place for this. */
 		fp_prime_calc();
 
@@ -467,8 +509,10 @@ void ep2_curve_set(fp2_t a, fp2_t b, ep2_t g, bn_t r, bn_t h) {
 	ctx_t *ctx = core_get();
 	ctx->ep2_is_twist = 0;
 
-	fp2_copy(ctx->ep2_a, a);
-	fp2_copy(ctx->ep2_b, b);
+	fp_copy(ctx->ep2_a[0], a[0]);
+	fp_copy(ctx->ep2_a[1], a[1]);
+	fp_copy(ctx->ep2_b[0], b[0]);
+	fp_copy(ctx->ep2_b[1], b[1]);
 
 	ep2_norm(&(ctx->ep2_g), g);
 	bn_copy(&(ctx->ep2_r), r);

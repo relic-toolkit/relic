@@ -240,7 +240,7 @@ static void ep_dbl_projc_imp(ep_t r, const ep_t p) {
 				/* t3 = z1^2. */
 				fp_sqr(t3, p->z);
 
-				if (ep_curve_get_a() == RLC_ZERO) {
+				if (ep_curve_opt_a() == RLC_ZERO) {
 					/* z3 = 2 * y1 * z1. */
 					fp_mul(r->z, p->y, p->z);
 					fp_dbl(r->z, r->z);
@@ -272,14 +272,14 @@ static void ep_dbl_projc_imp(ep_t r, const ep_t p) {
 					case RLC_ZERO:
 						break;
 					case RLC_ONE:
-						fp_add(t5, t5, ep_curve_get_a());
+						fp_add(t5, t5, t3);
 						break;
 					case RLC_TINY:
 						fp_mul_dig(t1, t3, ep_curve_get_a()[0]);
 						fp_add(t5, t5, t1);
 						break;
 					default:
-						fp_mul(t1, ep_curve_get_a(), t3);
+						fp_mul(t1, t3, ep_curve_get_a());
 						fp_add(t5, t5, t1);
 						break;
 				}

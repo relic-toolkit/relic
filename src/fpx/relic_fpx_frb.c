@@ -64,6 +64,25 @@ void fp3_frb(fp3_t c, fp3_t a, int i) {
 	}
 }
 
+void fp4_frb(fp4_t c, fp4_t a, int i) {
+	switch (i) {
+		case 0:
+			fp4_copy(c, a);
+			break;
+		case 1:
+			fp2_frb(c[0], a[0], 1);
+			fp2_frb(c[1], a[1], 1);
+			fp2_mul_frb(c[1], c[1], 1, 1);
+			fp2_mul_frb(c[1], c[1], 1, 1);
+			fp2_mul_frb(c[1], c[1], 1, 1);
+			break;
+		case 2:
+			fp4_frb(c, a, 1);
+			fp4_frb(c, c, 1);
+			break;
+	}
+}
+
 void fp6_frb(fp6_t c, fp6_t a, int i) {
 	switch (i) {
 		case 0:
@@ -81,6 +100,30 @@ void fp6_frb(fp6_t c, fp6_t a, int i) {
 			fp2_mul_frb(c[1], a[1], 2, 2);
 			fp2_mul_frb(c[2], a[2], 2, 1);
 			fp2_neg(c[2], c[2]);
+			break;
+	}
+}
+
+void fp8_frb(fp8_t c, fp8_t a, int i) {
+	switch (i) {
+		case 0:
+			fp8_copy(c, a);
+			break;
+		case 1:
+			fp4_frb(c[0], a[0], 1);
+			fp4_frb(c[1], a[1], 1);
+			fp_mul(c[1][0][0], c[1][0][0], core_get()->fp2_p2[4]);
+			fp_mul(c[1][0][1], c[1][0][1], core_get()->fp2_p2[4]);
+			fp_mul(c[1][1][0], c[1][1][0], core_get()->fp2_p2[4]);
+			fp_mul(c[1][1][1], c[1][1][1], core_get()->fp2_p2[4]);
+			break;
+		case 2:
+			fp8_frb(c, a, 1);
+			fp8_frb(c, c, 1);
+			break;
+		case 3:
+			fp8_frb(c, a, 1);
+			fp8_frb(c, c, 2);
 			break;
 	}
 }
