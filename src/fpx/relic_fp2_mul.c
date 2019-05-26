@@ -159,6 +159,8 @@ void fp2_mul_nor_basic(fp2_t c, fp2_t a) {
 		fp_add(c[1], a[0], a[1]);
 		fp_add(c[0], t[0], a[0]);
 #else
+		int qnr = fp2_field_get_qnr();
+
 		switch (fp_prime_get_mod8()) {
 			case 3:
 				/* If p = 3 mod 8, (1 + u) is a QNR/CNR. */
@@ -172,14 +174,13 @@ void fp2_mul_nor_basic(fp2_t c, fp2_t a) {
 				fp2_mul_art(c, a);
 				break;
 			case 7:
-				/* If p = 7 mod 8, we choose (16 + u) as a QNR/CNR. */
+				/* If p = 7 mod 8, we choose (2^k + u) as a QNR/CNR. */
 				fp2_mul_art(t, a);
-				fp2_dbl(c, a);
-				fp2_dbl(c, c);
-#if FP_PRIME == 446
-				fp2_dbl(c, c);
-				fp2_dbl(c, c);
-#endif
+				fp2_copy(c, a);
+				while (qnr > 1) {
+					fp2_dbl(c, c);
+					qnr = qnr >> 1;
+				}
 				fp2_add(c, c, t);
 				break;
 			default:
@@ -225,7 +226,7 @@ void fp2_mul_art(fp2_t c, fp2_t a) {
 		fp_neg(c[0], a[1]);
 		fp_copy(c[1], t);
 #else
-		/* (a_0 + a_1 * u) * u = (a_1 * u^2) + a_0 * u. */
+		/* (a_0 + a_1 * i) * i = (a_1 * i^2) + a_0 * i. */
 		fp_copy(t, a[0]);
 		fp_neg(c[0], a[1]);
 		for (int i = -1; i > fp_prime_get_qnr(); i--) {

@@ -122,6 +122,27 @@ void fp3_dbl_integ(fp2_t c, fp2_t a) {
 
 #endif
 
+void fp4_add(fp4_t c, fp4_t a, fp4_t b) {
+	fp2_add(c[0], a[0], b[0]);
+	fp2_add(c[1], a[1], b[1]);
+}
+
+void fp4_sub(fp4_t c, fp4_t a, fp4_t b) {
+	fp2_sub(c[0], a[0], b[0]);
+	fp2_sub(c[1], a[1], b[1]);
+}
+
+void fp4_dbl(fp4_t c, fp4_t a) {
+	/* 2 * (a_0 + a_1 * v + a_2 * v^2) = 2 * a_0 + 2 * a_1 * v + 2 * a_2 * v^2. */
+	fp2_dbl(c[0], a[0]);
+	fp2_dbl(c[1], a[1]);
+}
+
+void fp4_neg(fp4_t c, fp4_t a) {
+	fp2_neg(c[0], a[0]);
+	fp2_neg(c[1], a[1]);
+}
+
 void fp6_add(fp6_t c, fp6_t a, fp6_t b) {
 	fp2_add(c[0], a[0], b[0]);
 	fp2_add(c[1], a[1], b[1]);
@@ -145,6 +166,27 @@ void fp6_neg(fp6_t c, fp6_t a) {
 	fp2_neg(c[0], a[0]);
 	fp2_neg(c[1], a[1]);
 	fp2_neg(c[2], a[2]);
+}
+
+void fp8_add(fp8_t c, fp8_t a, fp8_t b) {
+	fp4_add(c[0], a[0], b[0]);
+	fp4_add(c[1], a[1], b[1]);
+}
+
+void fp8_sub(fp8_t c, fp8_t a, fp8_t b) {
+	fp4_sub(c[0], a[0], b[0]);
+	fp4_sub(c[1], a[1], b[1]);
+}
+
+void fp8_dbl(fp8_t c, fp8_t a) {
+	/* 2 * (a_0 + a_1 * v + a_2 * v^2) = 2 * a_0 + 2 * a_1 * v + 2 * a_2 * v^2. */
+	fp4_dbl(c[0], a[0]);
+	fp4_dbl(c[1], a[1]);
+}
+
+void fp8_neg(fp8_t c, fp8_t a) {
+	fp4_neg(c[0], a[0]);
+	fp4_neg(c[1], a[1]);
 }
 
 void fp12_add(fp12_t c, fp12_t a, fp12_t b) {

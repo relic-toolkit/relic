@@ -249,6 +249,40 @@ void fp3_inv_sim(fp3_t * c, fp3_t * a, int n) {
 	}
 }
 
+void fp4_inv_uni(fp4_t c, fp4_t a) {
+	/* In this case, it's a simple conjugate. */
+	fp2_copy(c[0], a[0]);
+	fp2_neg(c[1], a[1]);
+}
+
+void fp4_inv(fp4_t c, fp4_t a) {
+	fp2_t t0;
+	fp2_t t1;
+
+	fp2_null(t0);
+	fp2_null(t1);
+
+	TRY {
+		fp2_new(t0);
+		fp2_new(t1);
+
+		fp2_sqr(t0, a[0]);
+		fp2_sqr(t1, a[1]);
+		fp2_mul_nor(t1, t1);
+		fp2_sub(t0, t0, t1);
+		fp2_inv(t0, t0);
+
+		fp2_mul(c[0], a[0], t0);
+		fp2_neg(c[1], a[1]);
+		fp2_mul(c[1], c[1], t0);
+	} CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	} FINALLY {
+		fp2_free(t0);
+		fp2_free(t1);
+	}
+}
+
 void fp6_inv(fp6_t c, fp6_t a) {
 	fp2_t v0;
 	fp2_t v1;
@@ -305,6 +339,40 @@ void fp6_inv(fp6_t c, fp6_t a) {
 		fp2_free(v1);
 		fp2_free(v2);
 		fp2_free(t0);
+	}
+}
+
+void fp8_inv_uni(fp8_t c, fp8_t a) {
+	/* In this case, it's a simple conjugate. */
+	fp4_copy(c[0], a[0]);
+	fp4_neg(c[1], a[1]);
+}
+
+void fp8_inv(fp8_t c, fp8_t a) {
+	fp4_t t0;
+	fp4_t t1;
+
+	fp4_null(t0);
+	fp4_null(t1);
+
+	TRY {
+		fp4_new(t0);
+		fp4_new(t1);
+
+		fp4_sqr(t0, a[0]);
+		fp4_sqr(t1, a[1]);
+		fp4_mul_art(t1, t1);
+		fp4_sub(t0, t0, t1);
+		fp4_inv(t0, t0);
+
+		fp4_mul(c[0], a[0], t0);
+		fp4_neg(c[1], a[1]);
+		fp4_mul(c[1], c[1], t0);
+	} CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	} FINALLY {
+		fp4_free(t0);
+		fp4_free(t1);
 	}
 }
 

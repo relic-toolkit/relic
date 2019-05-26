@@ -766,6 +766,224 @@ static void arith3(void) {
 	bn_free(e);
 }
 
+static void memory4(void) {
+	fp4_t a[BENCH];
+
+	BENCH_SMALL("fp4_null", fp4_null(a[i]));
+
+	BENCH_SMALL("fp4_new", fp4_new(a[i]));
+	for (int i = 0; i < BENCH; i++) {
+		fp4_free(a[i]);
+	}
+
+	for (int i = 0; i < BENCH; i++) {
+		fp4_new(a[i]);
+	}
+	BENCH_SMALL("fp4_free", fp4_free(a[i]));
+
+	(void)a;
+}
+
+static void util4(void) {
+	uint8_t bin[4 * RLC_FP_BYTES];
+	fp4_t a, b;
+
+	fp4_null(a);
+	fp4_null(b);
+
+	fp4_new(a);
+	fp4_new(b);
+
+	BENCH_BEGIN("fp4_copy") {
+		fp4_rand(a);
+		BENCH_ADD(fp4_copy(b, a));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp4_neg") {
+		fp4_rand(a);
+		BENCH_ADD(fp4_neg(b, a));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp4_zero") {
+		fp4_rand(a);
+		BENCH_ADD(fp4_zero(a));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp4_is_zero") {
+		fp4_rand(a);
+		BENCH_ADD((void)fp4_is_zero(a));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp4_set_dig (1)") {
+		fp4_rand(a);
+		BENCH_ADD(fp4_set_dig(a, 1));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp4_set_dig") {
+		fp4_rand(a);
+		BENCH_ADD(fp4_set_dig(a, a[0][0][0]));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp4_rand") {
+		BENCH_ADD(fp4_rand(a));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp4_size_bin") {
+		fp4_rand(a);
+		BENCH_ADD(fp4_size_bin(a));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp4_write_bin") {
+		fp4_rand(a);
+		BENCH_ADD(fp4_write_bin(bin, sizeof(bin), a));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp4_read_bin") {
+		fp4_rand(a);
+		fp4_write_bin(bin, sizeof(bin), a);
+		BENCH_ADD(fp4_read_bin(a, bin, sizeof(bin)));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp4_cmp") {
+		fp4_rand(a);
+		fp4_rand(b);
+		BENCH_ADD(fp4_cmp(b, a));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp4_cmp_dig") {
+		fp4_rand(a);
+		BENCH_ADD(fp4_cmp_dig(a, (dig_t)0));
+	}
+	BENCH_END;
+
+	fp4_free(a);
+	fp4_free(b);
+}
+
+static void arith4(void) {
+	fp4_t a, b, c;
+	bn_t d;
+
+	fp4_new(a);
+	fp4_new(b);
+	fp4_new(c);
+	bn_new(d);
+
+	BENCH_BEGIN("fp4_add") {
+		fp4_rand(a);
+		fp4_rand(b);
+		BENCH_ADD(fp4_add(c, a, b));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp4_sub") {
+		fp4_rand(a);
+		fp4_rand(b);
+		BENCH_ADD(fp4_sub(c, a, b));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp4_dbl") {
+		fp4_rand(a);
+		BENCH_ADD(fp4_dbl(c, a));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp4_mul") {
+		fp4_rand(a);
+		fp4_rand(b);
+		BENCH_ADD(fp4_mul(c, a, b));
+	}
+	BENCH_END;
+
+#if PP_EXT == BASIC || !defined(STRIP)
+	BENCH_BEGIN("fp4_mul_basic") {
+		fp4_rand(a);
+		fp4_rand(b);
+		BENCH_ADD(fp4_mul_basic(c, a, b));
+	}
+	BENCH_END;
+#endif
+
+#if PP_EXT == LAZYR || !defined(STRIP)
+	BENCH_BEGIN("fp4_mul_lazyr") {
+		fp4_rand(a);
+		fp4_rand(b);
+		BENCH_ADD(fp4_mul_lazyr(c, a, b));
+	}
+	BENCH_END;
+#endif
+
+	BENCH_BEGIN("fp4_mul_art") {
+		fp4_rand(a);
+		BENCH_ADD(fp4_mul_art(c, a));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp4_sqr") {
+		fp4_rand(a);
+		BENCH_ADD(fp4_sqr(c, a));
+	}
+	BENCH_END;
+
+#if PP_EXT == BASIC || !defined(STRIP)
+	BENCH_BEGIN("fp4_sqr_basic") {
+		fp4_rand(a);
+		BENCH_ADD(fp4_sqr_basic(c, a));
+	}
+	BENCH_END;
+#endif
+
+#if PP_EXT == LAZYR || !defined(STRIP)
+	BENCH_BEGIN("fp4_sqr_lazyr") {
+		fp4_rand(a);
+		BENCH_ADD(fp4_sqr_lazyr(c, a));
+	}
+	BENCH_END;
+#endif
+
+	BENCH_BEGIN("fp4_inv") {
+		fp4_rand(a);
+		BENCH_ADD(fp4_inv(c, a));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp4_exp") {
+		fp4_rand(a);
+		d->used = RLC_FP_DIGS;
+		dv_copy(d->dp, fp_prime_get(), RLC_FP_DIGS);
+		BENCH_ADD(fp4_exp(c, a, d));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp4_frb (1)") {
+		fp4_rand(a);
+		BENCH_ADD(fp4_frb(c, a, 1));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp4_frb (2)") {
+		fp4_rand(a);
+		BENCH_ADD(fp4_frb(c, a, 2));
+	}
+	BENCH_END;
+
+	fp4_free(a);
+	fp4_free(b);
+	fp4_free(c);
+}
+
 static void memory6(void) {
 	fp6_t a[BENCH];
 
@@ -982,6 +1200,281 @@ static void arith6(void) {
 	fp6_free(a);
 	fp6_free(b);
 	fp6_free(c);
+}
+
+static void memory8(void) {
+	fp8_t a[BENCH];
+
+	BENCH_SMALL("fp8_null", fp8_null(a[i]));
+
+	BENCH_SMALL("fp8_new", fp8_new(a[i]));
+	for (int i = 0; i < BENCH; i++) {
+		fp8_free(a[i]);
+	}
+
+	for (int i = 0; i < BENCH; i++) {
+		fp8_new(a[i]);
+	}
+	BENCH_SMALL("fp8_free", fp8_free(a[i]));
+
+	(void)a;
+}
+
+static void util8(void) {
+	fp8_t a, b;
+	uint8_t bin[8 * RLC_FP_BYTES];
+
+	fp8_null(a);
+	fp8_null(b);
+
+	fp8_new(a);
+	fp8_new(b);
+
+	BENCH_BEGIN("fp8_copy") {
+		fp8_rand(a);
+		BENCH_ADD(fp8_copy(b, a));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp8_neg") {
+		fp8_rand(a);
+		BENCH_ADD(fp8_neg(b, a));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp8_zero") {
+		fp8_rand(a);
+		BENCH_ADD(fp8_zero(a));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp8_is_zero") {
+		fp8_rand(a);
+		BENCH_ADD((void)fp8_is_zero(a));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp8_set_dig (1)") {
+		fp8_rand(a);
+		BENCH_ADD(fp8_set_dig(a, 1));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp8_set_dig") {
+		fp8_rand(a);
+		BENCH_ADD(fp8_set_dig(a, a[0][0][0][0]));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp8_rand") {
+		BENCH_ADD(fp8_rand(a));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp8_size_bin (0)") {
+		fp8_rand(a);
+		BENCH_ADD(fp8_size_bin(a, 0));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp8_size_bin (1)") {
+		fp8_rand(a);
+		fp8_conv_uni(a, a);
+		BENCH_ADD(fp8_size_bin(a, 1));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp8_write_bin") {
+		fp8_rand(a);
+		BENCH_ADD(fp8_write_bin(bin, sizeof(bin), a));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp8_read_bin") {
+		fp8_rand(a);
+		fp8_write_bin(bin, sizeof(bin), a);
+		BENCH_ADD(fp8_read_bin(a, bin, sizeof(bin)));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp8_cmp") {
+		fp8_rand(a);
+		fp8_rand(b);
+		BENCH_ADD(fp8_cmp(b, a));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp8_cmp_dig") {
+		fp8_rand(a);
+		BENCH_ADD(fp8_cmp_dig(a, (dig_t)0));
+	}
+	BENCH_END;
+
+	fp8_free(a);
+	fp8_free(b);
+}
+
+static void arith8(void) {
+	fp8_t a, b, c;
+	bn_t e;
+
+	fp8_new(a);
+	fp8_new(b);
+	fp8_new(c);
+	fp8_new(d[0]);
+	fp8_new(d[1]);
+	bn_new(e);
+
+	BENCH_BEGIN("fp8_add") {
+		fp8_rand(a);
+		fp8_rand(b);
+		BENCH_ADD(fp8_add(c, a, b));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp8_sub") {
+		fp8_rand(a);
+		fp8_rand(b);
+		BENCH_ADD(fp8_sub(c, a, b));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp8_mul") {
+		fp8_rand(a);
+		fp8_rand(b);
+		BENCH_ADD(fp8_mul(c, a, b));
+	}
+	BENCH_END;
+
+#if PP_EXT == BASIC || !defined(STRIP)
+	BENCH_BEGIN("fp8_mul_basic") {
+		fp8_rand(a);
+		fp8_rand(b);
+		BENCH_ADD(fp8_mul_basic(c, a, b));
+	}
+	BENCH_END;
+#endif
+
+#if PP_EXT == LAZYR || !defined(STRIP)
+	BENCH_BEGIN("fp8_mul_lazyr") {
+		fp8_rand(a);
+		fp8_rand(b);
+		BENCH_ADD(fp8_mul_lazyr(c, a, b));
+	}
+	BENCH_END;
+#endif
+
+	BENCH_BEGIN("fp8_mul_dxs") {
+		fp8_rand(a);
+		fp8_rand(b);
+		BENCH_ADD(fp8_mul_dxs(c, a, b));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp8_conv_uni") {
+		fp8_rand(a);
+		BENCH_ADD(fp8_conv_uni(c, a));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp8_sqr") {
+		fp8_rand(a);
+		BENCH_ADD(fp8_sqr(c, a));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp8_sqr_uni") {
+		fp8_rand(a);
+		BENCH_ADD(fp8_sqr_uni(c, a));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp8_test_uni") {
+		fp8_rand(a);
+		fp8_conv_uni(a, a);
+		BENCH_ADD(fp8_test_uni(a));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp8_conv_uni") {
+		fp8_rand(a);
+		BENCH_ADD(fp8_conv_uni(c, a));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp8_inv") {
+		fp8_rand(a);
+		BENCH_ADD(fp8_inv(c, a));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp8_inv_uni") {
+		fp8_rand(a);
+		BENCH_ADD(fp8_inv_uni(c, a));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp8_exp") {
+		fp8_rand(a);
+		bn_rand(e, RLC_POS, RLC_FP_BITS);
+		BENCH_ADD(fp8_exp(c, a, e));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp8_exp (cyc)") {
+		fp8_rand(a);
+		fp8_conv_uni(a, a);
+		bn_rand(e, RLC_POS, RLC_FP_BITS);
+		BENCH_ADD(fp8_exp(c, a, e));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp8_exp_cyc (param or sparse)") {
+		fp8_rand(a);
+		fp8_conv_uni(a, a);
+		bn_zero(e);
+		fp_param_get_var(e);
+		if (bn_is_zero(e)) {
+			bn_set_2b(e, RLC_FP_BITS - 1);
+			bn_set_bit(e, RLC_FP_BITS / 2, 1);
+			bn_set_bit(e, 0, 1);
+		}
+		BENCH_ADD(fp8_exp_uni(c, a, e));
+	}
+	BENCH_END;
+#if 0
+	BENCH_BEGIN("fp8_exp_cyc_sps (param)") {
+		int l = RLC_TERMS + 1, k[RLC_TERMS + 1];
+		fp_param_get_sps(k, &l);
+		fp8_rand(a);
+		BENCH_ADD(fp8_exp_cyc_sps(c, a, k, l));
+	}
+	BENCH_END;
+#endif
+	BENCH_BEGIN("fp8_frb (1)") {
+		fp8_rand(a);
+		BENCH_ADD(fp8_frb(c, a, 1));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp8_frb (2)") {
+		fp8_rand(a);
+		BENCH_ADD(fp8_frb(c, a, 2));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp8_frb (3)") {
+		fp8_rand(a);
+		BENCH_ADD(fp8_frb(c, a, 3));
+	}
+	BENCH_END;
+
+	fp8_free(a);
+	fp8_free(b);
+	fp8_free(c);
+	fp8_free(d[0]);
+	fp8_free(d[1]);
+	bn_free(e);
 }
 
 static void memory12(void) {
@@ -1719,19 +2212,31 @@ int main(void) {
 	}
 
 	if (fp_prime_get_qnr()) {
+		util_banner("Quartic extension:", 0);
+		util_banner("Utilities:", 1);
+		memory4();
+		util4();
+		util_banner("Arithmetic:", 1);
+		arith4();
+
 		util_banner("Sextic extension:", 0);
 		util_banner("Utilities:", 1);
 		memory6();
 		util6();
-
 		util_banner("Arithmetic:", 1);
 		arith6();
+
+		util_banner("Octic extension:", 0);
+		util_banner("Utilities:", 1);
+		memory8();
+		util8();
+		util_banner("Arithmetic:", 1);
+		arith8();
 
 		util_banner("Dodecic extension:", 0);
 		util_banner("Utilities:", 1);
 		memory12();
 		util12();
-
 		util_banner("Arithmetic:", 1);
 		arith12();
 	}

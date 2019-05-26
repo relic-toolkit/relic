@@ -94,7 +94,6 @@ void fp2_conv_uni(fp2_t c, fp2_t a) {
 	}
 }
 
-
 void fp2_exp_uni(fp2_t c, fp2_t a, bn_t b) {
 	fp2_t r, s, t[1 << (FP_WIDTH - 2)];
 	int i, l;
@@ -169,14 +168,9 @@ int fp2_test_uni(fp2_t a) {
 
 	TRY {
 		fp2_new(t);
-
-		fp_sqr(t[0], a[0]);
-		fp_sqr(t[1], a[1]);
-		fp_add(t[0], t[0], t[1]);
-		fp_set_dig(t[1], 2);
-		fp_neg(t[1], t[1]);
-
-		result = ((fp_cmp_dig(t[0], 1) == RLC_EQ) ? 1 : 0);
+		fp2_frb(t, a, 1);
+		fp2_mul(t, t, a);
+		result = ((fp2_cmp_dig(t, 1) == RLC_EQ) ? 1 : 0);
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
@@ -224,6 +218,42 @@ void fp3_exp(fp3_t c, fp3_t a, bn_t b) {
 	}
 }
 
+void fp4_exp(fp4_t c, fp4_t a, bn_t b) {
+	fp4_t t;
+
+	if (bn_is_zero(b)) {
+		fp4_set_dig(c, 1);
+		return;
+	}
+
+	fp4_null(t);
+
+	TRY {
+		fp4_new(t);
+
+		fp4_copy(t, a);
+
+		for (int i = bn_bits(b) - 2; i >= 0; i--) {
+			fp4_sqr(t, t);
+			if (bn_get_bit(b, i)) {
+				fp4_mul(t, t, a);
+			}
+		}
+
+		if (bn_sign(b) == RLC_NEG) {
+			fp4_inv(c, t);
+		} else {
+			fp4_copy(c, t);
+		}
+	}
+	CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	}
+	FINALLY {
+		fp4_free(t);
+	}
+}
+
 void fp6_exp(fp6_t c, fp6_t a, bn_t b) {
 	fp6_t t;
 
@@ -258,6 +288,123 @@ void fp6_exp(fp6_t c, fp6_t a, bn_t b) {
 	FINALLY {
 		fp6_free(t);
 	}
+}
+
+void fp8_exp(fp8_t c, fp8_t a, bn_t b) {
+	fp8_t t;
+
+	if (bn_is_zero(b)) {
+		fp8_set_dig(c, 1);
+		return;
+	}
+
+	fp8_null(t);
+
+	TRY {
+		fp8_new(t);
+
+		fp8_copy(t, a);
+
+		for (int i = bn_bits(b) - 2; i >= 0; i--) {
+			fp8_sqr(t, t);
+			if (bn_get_bit(b, i)) {
+				fp8_mul(t, t, a);
+			}
+		}
+
+		if (bn_sign(b) == RLC_NEG) {
+			fp8_inv(c, t);
+		} else {
+			fp8_copy(c, t);
+		}
+	}
+	CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	}
+	FINALLY {
+		fp8_free(t);
+	}
+}
+
+void fp8_exp_uni(fp8_t c, fp8_t a, bn_t b) {
+	fp8_t t;
+
+	if (bn_is_zero(b)) {
+		fp8_set_dig(c, 1);
+		return;
+	}
+
+	fp8_null(t);
+
+	TRY {
+		fp8_new(t);
+
+		fp8_copy(t, a);
+
+		for (int i = bn_bits(b) - 2; i >= 0; i--) {
+			fp8_sqr_uni(t, t);
+			if (bn_get_bit(b, i)) {
+				fp8_mul(t, t, a);
+			}
+		}
+
+		if (bn_sign(b) == RLC_NEG) {
+			fp8_inv(c, t);
+		} else {
+			fp8_copy(c, t);
+		}
+	}
+	CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	}
+	FINALLY {
+		fp8_free(t);
+	}
+}
+
+void fp8_conv_uni(fp8_t c, fp8_t a) {
+	fp8_t t;
+
+	fp8_null(t);
+
+	TRY {
+		fp8_new(t);
+
+		/* t = a^{-1}. */
+		fp8_inv(t, a);
+		/* c = a^(p^4). */
+		fp8_inv_uni(c, a);
+		/* c = a^(p^4 - 1). */
+		fp8_mul(c, c, t);
+	}
+	CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	}
+	FINALLY {
+		fp8_free(t);
+	}
+}
+
+int fp8_test_uni(fp8_t a) {
+	fp8_t t;
+	int result = 0;
+
+	fp8_null(t);
+
+	TRY {
+		fp8_new(t);
+		fp8_inv_uni(t, a);
+		fp8_mul(t, t, a);
+		result = ((fp8_cmp_dig(t, 1) == RLC_EQ) ? 1 : 0);
+	}
+	CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	}
+	FINALLY {
+		fp8_free(t);
+	}
+
+	return result;
 }
 
 void fp12_exp(fp12_t c, fp12_t a, bn_t b) {
@@ -299,6 +446,48 @@ void fp12_exp(fp12_t c, fp12_t a, bn_t b) {
 		fp12_free(t);
 	}
 }
+
+void fp12_exp_dig(fp12_t c, fp12_t a, dig_t b) {
+	fp12_t t;
+
+	if (b == 0) {
+		fp12_set_dig(c, 1);
+		return;
+	}
+
+	fp12_null(t);
+
+	TRY {
+		fp12_new(t);
+
+		fp12_copy(t, a);
+
+		if (fp12_test_cyc(a)) {
+			for (int i = util_bits_dig(b) - 2; i >= 0; i--) {
+				fp12_sqr_cyc(t, t);
+				if (b & ((dig_t)1 << i)) {
+					fp12_mul(t, t, a);
+				}
+			}
+		} else {
+			for (int i = util_bits_dig(b) - 2; i >= 0; i--) {
+				fp12_sqr(t, t);
+				if (b & ((dig_t)1 << i)) {
+					fp12_mul(t, t, a);
+				}
+			}
+		}
+
+		fp12_copy(c, t);
+	}
+	CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	}
+	FINALLY {
+		fp12_free(t);
+	}
+}
+
 
 void fp12_exp_cyc(fp12_t c, fp12_t a, bn_t b) {
 	int i, j, k, l, w = bn_ham(b), endom = 0;
@@ -645,17 +834,11 @@ void fp12_conv_cyc(fp12_t c, fp12_t a) {
 		fp12_new(t);
 
 		/* First, compute c = a^(p^6 - 1). */
-		/* t = a^{-1}. */
-		fp12_inv(t, a);
-		/* c = a^(p^6). */
-		fp12_inv_uni(c, a);
-		/* c = a^(p^6 - 1). */
-		fp12_mul(c, c, t);
+		fp12_conv_uni(c, a);
 
 		/* Second, compute c^(p^2 + 1). */
 		/* t = c^(p^2). */
-		fp12_frb(t, c, 1);
-		fp12_frb(t, t, 1);
+		fp12_frb(t, c, 2);
 
 		/* c = c^(p^2 + 1). */
 		fp12_mul(c, c, t);

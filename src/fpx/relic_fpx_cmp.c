@@ -56,6 +56,16 @@ int fp3_cmp_dig(fp3_t a, dig_t b) {
 			fp_is_zero(a[2]) ? RLC_EQ : RLC_NE;
 }
 
+int fp4_cmp(fp4_t a, fp4_t b) {
+	return (fp2_cmp(a[0], b[0]) == RLC_EQ) && (fp2_cmp(a[1], b[1]) == RLC_EQ) ?
+			RLC_EQ : RLC_NE;
+}
+
+int fp4_cmp_dig(fp4_t a, dig_t b) {
+	return (fp2_cmp_dig(a[0], b) == RLC_EQ) && fp2_is_zero(a[1]) ?
+			RLC_EQ : RLC_NE;
+}
+
 int fp6_cmp(fp6_t a, fp6_t b) {
 	return (fp2_cmp(a[0], b[0]) == RLC_EQ) && (fp2_cmp(a[1], b[1]) == RLC_EQ) &&
 			(fp2_cmp(a[2], b[2]) == RLC_EQ) ? RLC_EQ : RLC_NE;
@@ -64,6 +74,16 @@ int fp6_cmp(fp6_t a, fp6_t b) {
 int fp6_cmp_dig(fp6_t a, dig_t b) {
 	return (fp2_cmp_dig(a[0], b) == RLC_EQ) && fp2_is_zero(a[1]) &&
 			fp2_is_zero(a[2]) ?	RLC_EQ : RLC_NE;
+}
+
+int fp8_cmp(fp8_t a, fp8_t b) {
+	return (fp4_cmp(a[0], b[0]) == RLC_EQ) && (fp4_cmp(a[1], b[1]) == RLC_EQ) ?
+			RLC_EQ : RLC_NE;
+}
+
+int fp8_cmp_dig(fp8_t a, dig_t b) {
+	return (fp4_cmp_dig(a[0], b) == RLC_EQ) && fp4_is_zero(a[1]) ?
+			RLC_EQ : RLC_NE;
 }
 
 int fp12_cmp(fp12_t a, fp12_t b) {
