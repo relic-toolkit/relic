@@ -44,7 +44,7 @@ void md_kdf1(uint8_t *key, int key_len, const uint8_t *in,
 		int in_len) {
 	uint32_t i, j, d;
 	uint8_t* buffer = RLC_ALLOCA(uint8_t, in_len + sizeof(uint32_t));
-	uint8_t* t = RLC_ALLOCA(uint8_t, key_len + MD_LEN);
+	uint8_t* t = RLC_ALLOCA(uint8_t, key_len + RLC_MD_LEN);
 
 	/* d = ceil(kLen/hLen). */
 	d = RLC_CEIL(key_len, RLC_MD_LEN);
@@ -62,8 +62,8 @@ void md_kdf1(uint8_t *key, int key_len, const uint8_t *in,
 void md_kdf2(uint8_t *key, int key_len, const uint8_t *in,
 		int in_len) {
 	uint32_t i, j, d;
-  uint8_t* buffer = RLC_ALLOCA(uint8_t, in_len + sizeof(uint32_t));
-  uint8_t* t = RLC_ALLOCA(uint8_t, key_len + MD_LEN);
+	uint8_t* buffer = RLC_ALLOCA(uint8_t, in_len + sizeof(uint32_t));
+	uint8_t* t = RLC_ALLOCA(uint8_t, key_len + RLC_MD_LEN);
 
 	/* d = ceil(kLen/hLen). */
 	d = RLC_CEIL(key_len, RLC_MD_LEN);
