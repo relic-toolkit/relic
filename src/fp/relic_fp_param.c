@@ -395,22 +395,7 @@ void fp_param_set(int param) {
 			case BN_254:
 				/* x = 4000000031. */
 				fp_param_get_var(t0);
-				/* p = 36 * x^4 + 36 * x^3 + 24 * x^2 + 6 * x + 1. */
-				bn_set_dig(p, 1);
-				bn_mul_dig(t1, t0, 6);
-				bn_add(p, p, t1);
-				bn_mul(t1, t0, t0);
-				bn_mul_dig(t1, t1, 24);
-				bn_add(p, p, t1);
-				bn_mul(t1, t0, t0);
-				bn_mul(t1, t1, t0);
-				bn_mul_dig(t1, t1, 36);
-				bn_add(p, p, t1);
-				bn_mul(t0, t0, t0);
-				bn_mul(t1, t0, t0);
-				bn_mul_dig(t1, t1, 36);
-				bn_add(p, p, t1);
-				fp_prime_set_dense(p);
+				fp_prime_set_pairf(t0, EP_BN);
 				break;
 #elif FP_PRIME == 255
 			case PRIME_25519:
@@ -447,38 +432,12 @@ void fp_param_set(int param) {
 			case BN_256:
 				/* x = -0x600000000000219B. */
 				fp_param_get_var(t0);
-				/* p = 36 * x^4 + 36 * x^3 + 24 * x^2 + 6 * x + 1. */
-				bn_set_dig(p, 1);
-				bn_mul_dig(t1, t0, 6);
-				bn_add(p, p, t1);
-				bn_mul(t1, t0, t0);
-				bn_mul_dig(t1, t1, 24);
-				bn_add(p, p, t1);
-				bn_mul(t1, t0, t0);
-				bn_mul(t1, t1, t0);
-				bn_mul_dig(t1, t1, 36);
-				bn_add(p, p, t1);
-				bn_mul(t0, t0, t0);
-				bn_mul(t1, t0, t0);
-				bn_mul_dig(t1, t1, 36);
-				bn_add(p, p, t1);
-				fp_prime_set_dense(p);
+				fp_prime_set_pairf(t0, EP_BN);
 				break;
 #elif FP_PRIME == 381
 			case B12_381:
 				fp_param_get_var(t0);
-				/* p = (x^2 - 2x + 1) * (x^4 - x^2 + 1)/3 + x. */
-				bn_sqr(t1, t0);
-				bn_sqr(p, t1);
-				bn_sub(p, p, t1);
-				bn_add_dig(p, p, 1);
-				bn_sub(t1, t1, t0);
-				bn_sub(t1, t1, t0);
-				bn_add_dig(t1, t1, 1);
-				bn_mul(p, p, t1);
-				bn_div_dig(p, p, 3);
-				bn_add(p, p, t0);
-				fp_prime_set_dense(p);
+				fp_prime_set_pairf(t0, EP_B12);
 				break;
 #elif FP_PRIME == 382
 			case PRIME_382105:
@@ -489,22 +448,7 @@ void fp_param_set(int param) {
 			case BN_382:
 				/* x = -400040090001000000000001. */
 				fp_param_get_var(t0);
-				/* p = 36 * x^4 + 36 * x^3 + 24 * x^2 + 6 * x + 1. */
-				bn_set_dig(p, 1);
-				bn_mul_dig(t1, t0, 6);
-				bn_add(p, p, t1);
-				bn_mul(t1, t0, t0);
-				bn_mul_dig(t1, t1, 24);
-				bn_add(p, p, t1);
-				bn_mul(t1, t0, t0);
-				bn_mul(t1, t1, t0);
-				bn_mul_dig(t1, t1, 36);
-				bn_add(p, p, t1);
-				bn_mul(t0, t0, t0);
-				bn_mul(t1, t0, t0);
-				bn_mul_dig(t1, t1, 36);
-				bn_add(p, p, t1);
-				fp_prime_set_dense(p);
+				fp_prime_set_pairf(t0, EP_BN);
 				break;
 #elif FP_PRIME == 383
 			case PRIME_383187:
@@ -525,53 +469,16 @@ void fp_param_set(int param) {
 #elif FP_PRIME == 446
 			case BN_446:
 				fp_param_get_var(t0);
-				/* p = 36 * x^4 + 36 * x^3 + 24 * x^2 + 6 * x + 1. */
-				bn_set_dig(p, 1);
-				bn_mul_dig(t1, t0, 6);
-				bn_add(p, p, t1);
-				bn_mul(t1, t0, t0);
-				bn_mul_dig(t1, t1, 24);
-				bn_add(p, p, t1);
-				bn_mul(t1, t0, t0);
-				bn_mul(t1, t1, t0);
-				bn_mul_dig(t1, t1, 36);
-				bn_add(p, p, t1);
-				bn_mul(t0, t0, t0);
-				bn_mul(t1, t0, t0);
-				bn_mul_dig(t1, t1, 36);
-				bn_add(p, p, t1);
-				fp_prime_set_dense(p);
+				fp_prime_set_pairf(t0, EP_BN);
 				break;
 			case B12_446:
 				fp_param_get_var(t0);
-				/* p = (x^2 - 2x + 1) * (x^4 - x^2 + 1)/3 + x. */
-				bn_sqr(t1, t0);
-				bn_sqr(p, t1);
-				bn_sub(p, p, t1);
-				bn_add_dig(p, p, 1);
-				bn_sub(t1, t1, t0);
-				bn_sub(t1, t1, t0);
-				bn_add_dig(t1, t1, 1);
-				bn_mul(p, p, t1);
-				bn_div_dig(p, p, 3);
-				bn_add(p, p, t0);
-				fp_prime_set_dense(p);
+				fp_prime_set_pairf(t0, EP_B12);
 				break;
 #elif FP_PRIME == 455
 			case B12_455:
 				fp_param_get_var(t0);
-				/* p = (x^2 - 2x + 1) * (x^4 - x^2 + 1)/3 + x. */
-				bn_sqr(t1, t0);
-				bn_sqr(p, t1);
-				bn_sub(p, p, t1);
-				bn_add_dig(p, p, 1);
-				bn_sub(t1, t1, t0);
-				bn_sub(t1, t1, t0);
-				bn_add_dig(t1, t1, 1);
-				bn_mul(p, p, t1);
-				bn_div_dig(p, p, 3);
-				bn_add(p, p, t0);
-				fp_prime_set_dense(p);
+				fp_prime_set_pairf(t0, EP_B12);
 				break;
 #elif FP_PRIME == 477
 			case B24_477:
@@ -624,24 +531,7 @@ void fp_param_set(int param) {
 #elif FP_PRIME == 511
 			case OT_511:
 				fp_param_get_var(t0);
-				/* p = (x^8 + x^6 + 5*x^4 + x^2 + 4*x + 4) / 4. */
-				bn_set_dig(p, 4);
-				bn_mul_dig(t1, t0, 4);
-				bn_add(p, p, t1);
-				bn_sqr(t0, t0);
-				bn_add(p, p, t0);
-				bn_sqr(t1, t0);
-				bn_add(p, p, t1);
-				bn_add(p, p, t1);
-				bn_add(p, p, t1);
-				bn_add(p, p, t1);
-				bn_add(p, p, t1);
-				bn_mul(t1, t1, t0);
-				bn_add(p, p, t1);
-				bn_mul(t1, t1, t0);
-				bn_add(p, p, t1);
-				bn_div_dig(p, p, 4);
-				fp_prime_set_dense(p);
+				fp_prime_set_pairf(t0, EP_OT);
 				break;
 			case PRIME_511187:
 				bn_set_2b(p, 511);
@@ -658,37 +548,11 @@ void fp_param_set(int param) {
 #elif FP_PRIME == 638
 			case BN_638:
 				fp_param_get_var(t0);
-				/* p = 36 * x^4 + 36 * x^3 + 24 * x^2 + 6 * x + 1. */
-				bn_set_dig(p, 1);
-				bn_mul_dig(t1, t0, 6);
-				bn_add(p, p, t1);
-				bn_mul(t1, t0, t0);
-				bn_mul_dig(t1, t1, 24);
-				bn_add(p, p, t1);
-				bn_mul(t1, t0, t0);
-				bn_mul(t1, t1, t0);
-				bn_mul_dig(t1, t1, 36);
-				bn_add(p, p, t1);
-				bn_mul(t0, t0, t0);
-				bn_mul(t1, t0, t0);
-				bn_mul_dig(t1, t1, 36);
-				bn_add(p, p, t1);
-				fp_prime_set_dense(p);
+				fp_prime_set_pairf(t0, EP_BN);
 				break;
 			case B12_638:
 				fp_param_get_var(t0);
-				/* p = (x^2 - 2x + 1) * (x^4 - x^2 + 1)/3 + x. */
-				bn_sqr(t1, t0);
-				bn_sqr(p, t1);
-				bn_sub(p, p, t1);
-				bn_add_dig(p, p, 1);
-				bn_sub(t1, t1, t0);
-				bn_sub(t1, t1, t0);
-				bn_add_dig(t1, t1, 1);
-				bn_mul(p, p, t1);
-				bn_div_dig(p, p, 3);
-				bn_add(p, p, t0);
-				fp_prime_set_dense(p);
+				fp_prime_set_pairf(t0, EP_B12);
 				break;
 #elif FP_PRIME == 1536
 			case SS_1536:

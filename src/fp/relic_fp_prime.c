@@ -30,6 +30,7 @@
  */
 
 #include "relic_core.h"
+#include "relic_ep.h"
 #include "relic_fpx.h"
 #include "relic_bn_low.h"
 #include "relic_fp_low.h"
@@ -211,6 +212,86 @@ void fp_prime_set_dense(const bn_t p) {
 #if FP_RDC == QUICK
 	THROW(ERR_NO_CONFIG);
 #endif
+}
+
+void fp_prime_set_pairf(const bn_t x, int pairf) {
+	bn_t p, t0, t1;
+	ctx_t *ctx = core_get();
+	int len = bn_bits(x) + 1;
+	int8_t *s = RLC_ALLOCA(int8_t, len);
+
+	bn_null(p);
+	bn_null(t0);
+	bn_null(t1);
+
+	TRY {
+		bn_new(p);
+		bn_new(t0);
+		bn_new(t1);
+
+		bn_copy(&(ctx->x), x);
+		bn_copy(t0, x);
+		if (pairf == EP_BN) {
+			/* p = 36 * x^4 + 36 * x^3 + 24 * x^2 + 6 * x + 1. */
+			bn_set_dig(p, 1);
+			bn_mul_dig(t1, t0, 6);
+			bn_add(p, p, t1);
+			bn_mul(t1, t0, t0);
+			bn_mul_dig(t1, t1, 24);
+			bn_add(p, p, t1);
+			bn_mul(t1, t0, t0);
+			bn_mul(t1, t1, t0);
+			bn_mul_dig(t1, t1, 36);
+			bn_add(p, p, t1);
+			bn_mul(t0, t0, t0);
+			bn_mul(t1, t0, t0);
+			bn_mul_dig(t1, t1, 36);
+			bn_add(p, p, t1);
+			fp_prime_set_dense(p);
+		}
+
+		if (pairf == EP_B12) {
+			/* p = (x^2 - 2x + 1) * (x^4 - x^2 + 1)/3 + x. */
+			bn_sqr(t1, t0);
+			bn_sqr(p, t1);
+			bn_sub(p, p, t1);
+			bn_add_dig(p, p, 1);
+			bn_sub(t1, t1, t0);
+			bn_sub(t1, t1, t0);
+			bn_add_dig(t1, t1, 1);
+			bn_mul(p, p, t1);
+			bn_div_dig(p, p, 3);
+			bn_add(p, p, t0);
+			fp_prime_set_dense(p);
+		}
+
+		if (pairf == EP_OT) {
+			/* p = (x^8 + x^6 + 5*x^4 + x^2 + 4*x + 4) / 4. */
+			bn_set_dig(p, 4);
+			bn_mul_dig(t1, t0, 4);
+			bn_add(p, p, t1);
+			bn_sqr(t0, t0);
+			bn_add(p, p, t0);
+			bn_sqr(t1, t0);
+			bn_add(p, p, t1);
+			bn_add(p, p, t1);
+			bn_add(p, p, t1);
+			bn_add(p, p, t1);
+			bn_add(p, p, t1);
+			bn_mul(t1, t1, t0);
+			bn_add(p, p, t1);
+			bn_mul(t1, t1, t0);
+			bn_add(p, p, t1);
+			bn_div_dig(p, p, 4);
+			fp_prime_set_dense(p);
+		}
+	} CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	} FINALLY {
+		bn_free(p);
+		bn_free(t0);
+		bn_free(t1);
+	}
 }
 
 void fp_prime_set_pmers(const int *f, int len) {

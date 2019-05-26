@@ -258,18 +258,11 @@ void pp_exp_k2(fp2_t c, fp2_t a) {
 }
 
 void pp_exp_k12(fp12_t c, fp12_t a) {
-	switch (ep_param_get()) {
-		case BN_P158:
-		case BN_P254:
-		case BN_P256:
-		case BN_P382:
-		case BN_P446:
-		case BN_P638:
+	switch (ep_curve_is_pairf()) {
+		case EP_BN:
 			pp_exp_bn(c, a);
 			break;
-		case B12_P381:
-		case B12_P455:
-		case B12_P638:
+		case EP_B12:
 			pp_exp_b12(c, a);
 			break;
 	}
