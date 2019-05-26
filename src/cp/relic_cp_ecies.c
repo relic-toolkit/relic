@@ -70,7 +70,7 @@ int cp_ecies_enc(ec_t r, uint8_t *out, int *out_len, uint8_t *in, int in_len,
 	bn_t k, n, x;
 	ec_t p;
     int l, result = RLC_OK, size = RLC_CEIL(ec_param_level(), 8);
-	uint8_t _x[FC_BYTES + 1], iv[RLC_BC_LEN] = { 0 };
+	uint8_t _x[RLC_FC_BYTES + 1], iv[RLC_BC_LEN] = { 0 };
     uint8_t *key = RLC_ALLOCA(uint8_t, 2 * size);
 
 	bn_null(k);
@@ -125,7 +125,7 @@ int cp_ecies_dec(uint8_t *out, int *out_len, ec_t r, uint8_t *in, int in_len,
 	bn_t x;
 
 	int l, result = RLC_OK, size = RLC_CEIL(ec_param_level(), 8);
-	uint8_t _x[FC_BYTES + 1], h[RLC_MD_LEN], iv[RLC_BC_LEN] = { 0 };
+	uint8_t _x[RLC_FC_BYTES + 1], h[RLC_MD_LEN], iv[RLC_BC_LEN] = { 0 };
 	uint8_t *key = RLC_ALLOCA(uint8_t, 2 * size);
 
 	bn_null(x);

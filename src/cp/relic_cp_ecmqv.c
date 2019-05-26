@@ -65,7 +65,7 @@ int cp_ecmqv_key(uint8_t *key, int key_len, bn_t d1, bn_t d2, ec_t q2u,
 	ec_t p;
 	bn_t x, n, s;
 	int l, result = RLC_OK;
-	uint8_t _x[FC_BYTES];
+	uint8_t _x[RLC_FC_BYTES];
 
 	ec_null(p);
 	bn_null(x);

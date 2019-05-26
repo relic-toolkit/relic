@@ -64,7 +64,7 @@ int cp_ecdh_key(uint8_t *key, int key_len, bn_t d, ec_t q) {
 	ec_t p;
 	bn_t x, h;
 	int l, result = RLC_OK;
-	uint8_t _x[FC_BYTES];
+	uint8_t _x[RLC_FC_BYTES];
 
 	ec_null(p);
 	bn_null(x);

@@ -62,7 +62,7 @@ int cp_ecss_sig(bn_t e, bn_t s, uint8_t *msg, int len, bn_t d) {
 	bn_t n, k, x, r;
 	ec_t p;
 	uint8_t hash[RLC_MD_LEN];
-	uint8_t *m = RLC_ALLOCA(uint8_t, len + FC_BYTES);
+	uint8_t *m = RLC_ALLOCA(uint8_t, len + RLC_FC_BYTES);
 	int result = RLC_OK;
 
 	bn_null(n);
@@ -87,8 +87,8 @@ int cp_ecss_sig(bn_t e, bn_t s, uint8_t *msg, int len, bn_t d) {
 		} while (bn_is_zero(r));
 
 		memcpy(m, msg, len);
-		bn_write_bin(m + len, FC_BYTES, r);
-		md_map(hash, m, len + FC_BYTES);
+		bn_write_bin(m + len, RLC_FC_BYTES, r);
+		md_map(hash, m, len + RLC_FC_BYTES);
 
 		if (8 * RLC_MD_LEN > bn_bits(n)) {
 			len = RLC_CEIL(bn_bits(n), 8);
@@ -123,7 +123,7 @@ int cp_ecss_ver(bn_t e, bn_t s, uint8_t *msg, int len, ec_t q) {
 	bn_t n, ev, rv;
 	ec_t p;
 	uint8_t hash[RLC_MD_LEN];
-	uint8_t *m = RLC_ALLOCA(uint8_t, len + FC_BYTES);
+	uint8_t *m = RLC_ALLOCA(uint8_t, len + RLC_FC_BYTES);
 	int result = 0;
 
 	bn_null(n);
@@ -147,8 +147,8 @@ int cp_ecss_ver(bn_t e, bn_t s, uint8_t *msg, int len, ec_t q) {
 				bn_mod(rv, rv, n);
 
 				memcpy(m, msg, len);
-				bn_write_bin(m + len, FC_BYTES, rv);
-				md_map(hash, m, len + FC_BYTES);
+				bn_write_bin(m + len, RLC_FC_BYTES, rv);
+				md_map(hash, m, len + RLC_FC_BYTES);
 
 				if (8 * RLC_MD_LEN > bn_bits(n)) {
 					len = RLC_CEIL(bn_bits(n), 8);

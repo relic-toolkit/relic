@@ -71,14 +71,9 @@
 /** @} */
 
 /**
- * Prefix for constant mappings.
- */
-#define PC_UPPER				PP_
-
-/**
  * Represents the size in bytes of the order of G_1 and G_2.
  */
-#define PC_BYTES				RLC_FP_BYTES
+#define RLC_PC_BYTES			RLC_FP_BYTES
 
 /**
  * Represents a G_1 precomputable table.

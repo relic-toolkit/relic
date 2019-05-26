@@ -107,11 +107,11 @@
  * Size of a field element in bytes.
  */
 #if EC_CUR == PRIME
-#define FC_BYTES				RLC_FP_BYTES
+#define RLC_FC_BYTES				RLC_FP_BYTES
 #elif EC_CUR == CHAR2
-#define FC_BYTES				RLC_FB_BYTES
+#define RLC_FC_BYTES				RLC_FB_BYTES
 #elif EC_CUR == EDDIE
-#define FC_BYTES 				RLC_FP_BYTES
+#define RLC_FC_BYTES 				RLC_FP_BYTES
 #endif
 
 /*============================================================================*/

@@ -54,7 +54,7 @@ static void memory1(void) {
 
 static void util1(void) {
 	g1_t p, q;
-	uint8_t bin[2 * PC_BYTES + 1];
+	uint8_t bin[2 * RLC_PC_BYTES + 1];
 	int l;
 
 	g1_null(p);
@@ -303,7 +303,7 @@ static void memory2(void) {
 
 static void util2(void) {
 	g2_t p, q;
-	uint8_t bin[4 * PC_BYTES + 1];
+	uint8_t bin[4 * RLC_PC_BYTES + 1];
 	int l;
 
 	g2_null(p);
@@ -555,7 +555,7 @@ static void memory(void) {
 
 static void util(void) {
 	gt_t a, b;
-	uint8_t bin[12 * PC_BYTES];
+	uint8_t bin[12 * RLC_PC_BYTES];
 	int l;
 
 	gt_null(a);

@@ -280,6 +280,8 @@ typedef struct _ctx_t {
 	int ep_is_endom;
 	/** Flag that stores if the prime curve is supersingular. */
 	int ep_is_super;
+	/** Flag that stores if the prime curve is pairing-friendly. */
+	int ep_is_pairf;
 #ifdef EP_PRECO
 	/** Precomputation table for generator multiplication. */
 	ep_st ep_pre[RLC_EP_TABLE];

@@ -63,7 +63,7 @@ static int memory1(void) {
 int util1(void) {
 	int l, code = RLC_ERR;
 	g1_t a, b, c;
-	uint8_t bin[2 * PC_BYTES + 1];
+	uint8_t bin[2 * RLC_PC_BYTES + 1];
 
 	g1_null(a);
 	g1_null(b);
@@ -605,7 +605,7 @@ static int memory2(void) {
 int util2(void) {
 	int l, code = RLC_ERR;
 	g2_t a, b, c;
-	uint8_t bin[4 * PC_BYTES + 1];
+	uint8_t bin[4 * RLC_PC_BYTES + 1];
 
 	g2_null(a);
 	g2_null(b);

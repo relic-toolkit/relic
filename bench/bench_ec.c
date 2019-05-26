@@ -54,7 +54,7 @@ static void memory(void) {
 
 static void util(void) {
 	ec_t p, q;
-	uint8_t bin[2 * FC_BYTES + 1];
+	uint8_t bin[2 * RLC_FC_BYTES + 1];
 	int l;
 
 	ec_null(p);
