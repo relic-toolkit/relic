@@ -152,7 +152,9 @@ static void ep2_mul_glv_imp(ep2_t r, ep2_t p, const bn_t k) {
 					}
 				}
 				break;
+			case OT8_P511:
 			case B12_P381:
+			case B12_P446:
 			case B12_P455:
 			case B12_P638:
 				bn_abs(v[0], k);

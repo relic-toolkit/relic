@@ -485,8 +485,8 @@ void ep2_curve_set_twist(int type) {
 		fp_copy(ctx->ep2_b[0], b[0]);
 		fp_copy(ctx->ep2_b[1], b[1]);
 		bn_copy(&(ctx->ep2_r), r);
+		/* TODO: support non-trivial cofactors. */
 		bn_set_dig(&(ctx->ep2_h), 1);
-
 		/* I don't have a better place for this. */
 		fp_prime_calc();
 

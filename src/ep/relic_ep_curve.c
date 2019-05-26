@@ -259,7 +259,7 @@ void ep_curve_set_endom(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
 	fp_copy(ctx->beta, beta);
 	bn_gcd_ext_mid(&(ctx->ep_v1[1]), &(ctx->ep_v1[2]), &(ctx->ep_v2[1]),
 			&(ctx->ep_v2[2]), l, r);
-	/* l = v1[1] * v2[2] - v1[2] * v2[1], r = l / 2. */
+	/* r = (v1[1] * v2[2] - v1[2] * v2[1]) / 2. */
 	bn_mul(&(ctx->ep_v1[0]), &(ctx->ep_v1[1]), &(ctx->ep_v2[2]));
 	bn_mul(&(ctx->ep_v2[0]), &(ctx->ep_v1[2]), &(ctx->ep_v2[1]));
 	bn_sub(&(ctx->ep_r), &(ctx->ep_v1[0]), &(ctx->ep_v2[0]));

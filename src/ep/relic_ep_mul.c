@@ -113,7 +113,12 @@ static void ep_mul_glv_imp(ep_t r, const ep_t p, const bn_t k) {
 			}
 			if (n1 > 0) {
 				ep_copy(q, t[n1 / 2]);
-				fp_mul(q->x, q->x, ep_curve_get_beta());
+				if (ep_curve_opt_a() == RLC_ZERO) {
+					fp_mul(q->x, q->x, ep_curve_get_beta());
+				} else {
+					fp_neg(q->x, q->x);
+					fp_mul(q->y, q->y, ep_curve_get_beta());
+				}
 				if (s0 != s1) {
 					ep_neg(q, q);
 				}
@@ -121,7 +126,13 @@ static void ep_mul_glv_imp(ep_t r, const ep_t p, const bn_t k) {
 			}
 			if (n1 < 0) {
 				ep_copy(q, t[-n1 / 2]);
-				fp_mul(q->x, q->x, ep_curve_get_beta());
+				if (ep_curve_opt_a() == RLC_ZERO) {
+					fp_mul(q->x, q->x, ep_curve_get_beta());
+				} else {
+					fp_neg(q->x, q->x);
+					fp_mul(q->y, q->y, ep_curve_get_beta());
+				}
+
 				if (s0 != s1) {
 					ep_neg(q, q);
 				}
@@ -312,7 +323,12 @@ static void ep_mul_reg_glv(ep_t r, const ep_t p, const bn_t k) {
 			dv_copy_cond(u->y, v->y, RLC_FP_DIGS, _s0 != 0);
 			ep_add(r, r, u);
 
-			fp_mul(w->x, w->x, ep_curve_get_beta());
+			if (ep_curve_opt_a() == RLC_ZERO) {
+				fp_mul(w->x, w->x, ep_curve_get_beta());
+			} else {
+				fp_neg(w->x, w->x);
+				fp_mul(w->y, w->y, ep_curve_get_beta());
+			}
 			ep_neg(q, w);
 			dv_copy_cond(w->y, q->y, RLC_FP_DIGS, s0 != s1);
 			ep_neg(q, w);
@@ -327,7 +343,12 @@ static void ep_mul_reg_glv(ep_t r, const ep_t p, const bn_t k) {
 		dv_copy_cond(r->z, u->z, RLC_FP_DIGS, b0);
 
 		ep_copy(w, t[0]);
-		fp_mul(w->x, w->x, ep_curve_get_beta());
+		if (ep_curve_opt_a() == RLC_ZERO) {
+			fp_mul(w->x, w->x, ep_curve_get_beta());
+		} else {
+			fp_neg(w->x, w->x);
+			fp_mul(w->y, w->y, ep_curve_get_beta());
+		}
 		ep_neg(q, w);
 		dv_copy_cond(w->y, q->y, RLC_FP_DIGS, s0 != s1);
 		ep_sub(u, r, w);
