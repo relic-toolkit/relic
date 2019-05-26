@@ -680,7 +680,7 @@ void fp12_exp_cyc(fp12_t c, fp12_t a, bn_t b) {
 			}
 		}
 	} else {
-		fp12_t t, u[w];
+		fp12_t t, *u = RLC_ALLOCA(fp12_t, w);
 
 		fp12_null(t);
 
@@ -734,7 +734,7 @@ void fp12_exp_cyc(fp12_t c, fp12_t a, bn_t b) {
 
 void fp12_exp_cyc_sps(fp12_t c, fp12_t a, int *b, int len) {
 	int i, j, k, w = len;
-	fp12_t t, u[w];
+    fp12_t t, *u = RLC_ALLOCA(fp12_t, w);
 
 	if (len == 0) {
 		fp12_set_dig(c, 1);
@@ -932,7 +932,11 @@ void fp12_back_cyc(fp12_t c, fp12_t a) {
 }
 
 void fp12_back_cyc_sim(fp12_t c[], fp12_t a[], int n) {
-	fp2_t t0[n], t1[n], t2[n];
+    fp2_t *t = RLC_ALLOCA(fp2_t, n * 3);
+    fp2_t
+        *t0 = t + 0 * n,
+        *t1 = t + 1 * n,
+        *t2 = t + 2 * n;
 
 	if (n == 0) {
 		return;
@@ -1081,7 +1085,7 @@ void fp18_exp_cyc(fp18_t c, fp18_t a, bn_t b) {
 			fp18_free(t);
 		}
 	} else {
-		fp18_t u[w];
+		fp18_t *u = RLC_ALLOCA(fp18_t, w);
 
 		TRY {
 			for (i = 0; i < w; i++) {
@@ -1133,7 +1137,7 @@ void fp18_exp_cyc(fp18_t c, fp18_t a, bn_t b) {
 
 void fp18_exp_cyc_sps(fp18_t c, fp18_t a, int *b, int len) {
 	int i, j, k, w = len;
-	fp18_t t, u[w];
+	fp18_t t, *u = RLC_ALLOCA(fp18_t, w);
 
 	if (len == 0) {
 		fp12_set_dig(c, 1);
@@ -1366,7 +1370,15 @@ void fp18_back_cyc(fp18_t c, fp18_t a) {
 }
 
 void fp18_back_cyc_sim(fp18_t c[], fp18_t a[], int n) {
-	fp3_t t0[n], t1[n], t2[n], t3[n], t4[n], t5[n], t6[n];
+    fp3_t *t = RLC_ALLOCA(fp3_t, n * 7);
+    fp3_t 
+        *t0 = t + 0 * n,
+        *t1 = t + 1 * n,
+        *t2 = t + 2 * n,
+        *t3 = t + 3 * n,
+        *t4 = t + 4 * n,
+        *t5 = t + 5 * n,
+        *t6 = t + 6 * n;
 
 	if (n == 0) {
 		return;

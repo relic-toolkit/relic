@@ -267,7 +267,7 @@ static void find_chain(void) {
 			break;
 	}
 
-	int x, y, u[ctx->chain_len + 1];
+	int x, y, *u = RLC_ALLOCA(int, ctx->chain_len + 1);
 
 	for (i = 0; i < RLC_TERMS; i++) {
 		for (j = 0; j < RLC_FB_TABLE; j++) {

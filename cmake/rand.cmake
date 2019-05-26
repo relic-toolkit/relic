@@ -18,5 +18,14 @@ message("   SEED=RDRND     Use Intel RdRand instruction.\n")
 # Choose the pseudo-random number generator.
 set(RAND "HASHD" CACHE STRING "Pseudo-random number generator")
 
-# Choose the pseudo-random number generator.
-set(SEED "UDEV" CACHE STRING "Random number generator seeder")
+if (MSVC)
+
+    # Choose the pseudo-random number generator.
+    set(SEED "WCGR" CACHE STRING "Random number generator seeder")
+    
+else (MSVC)
+
+    # Choose the pseudo-random number generator.
+    set(SEED "UDEV" CACHE STRING "Random number generator seeder")
+
+endif (MSVC)

@@ -412,7 +412,7 @@ void bn_rec_tnaf_mod(bn_t r0, bn_t r1, const bn_t k, int u, int m) {
 void bn_rec_tnaf(int8_t *tnaf, int *len, const bn_t k, int8_t u, int m, int w) {
 	int i, l;
 	bn_t tmp, r0, r1;
-	int8_t beta[1 << (w - 2)], gama[1 << (w - 2)];
+	int8_t* beta = RLC_ALLOCA(int8_t, 1 << (w - 2)), *gama = RLC_ALLOCA(int8_t, 1 << (w - 2));
 	uint8_t t_w;
 	dig_t t0, t1, mask;
 	int s, t, u_i;
@@ -538,7 +538,7 @@ void bn_rec_tnaf(int8_t *tnaf, int *len, const bn_t k, int8_t u, int m, int w) {
 void bn_rec_rtnaf(int8_t *tnaf, int *len, const bn_t k, int8_t u, int m, int w) {
 	int i, l;
 	bn_t tmp, r0, r1;
-	int8_t beta[1 << (w - 2)], gama[1 << (w - 2)];
+	int8_t *beta = RLC_ALLOCA(int8_t, 1 << (w - 2)), *gama = RLC_ALLOCA(int8_t, 1 << (w - 2));
 	uint8_t t_w;
 	dig_t t0, t1, mask;
 	int s, t, u_i;

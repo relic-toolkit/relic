@@ -50,7 +50,7 @@
  */
 static void pp_mil_k2(fp2_t r, ep_t *t, ep_t *p, ep_t *q, int m, bn_t a) {
 	fp2_t l;
-	ep_t _q[m];
+	ep_t *_q = RLC_ALLOCA(ep_t, m);
 	int i, j;
 
 	fp2_null(l);
@@ -101,7 +101,7 @@ static void pp_mil_k2(fp2_t r, ep_t *t, ep_t *p, ep_t *q, int m, bn_t a) {
  */
 static void pp_mil_lit_k2(fp2_t r, ep_t *t, ep_t *p, ep_t *q, int m, bn_t a) {
 	fp2_t l, _l;
-	ep_t _q[m];
+	ep_t *_q = RLC_ALLOCA(ep_t, m);
 	int i, j;
 
 	fp2_null(l);
@@ -158,7 +158,7 @@ static void pp_mil_lit_k2(fp2_t r, ep_t *t, ep_t *p, ep_t *q, int m, bn_t a) {
  */
 static void pp_mil_k12(fp12_t r, ep2_t *t, ep2_t *q, ep_t *p, int m, bn_t a) {
 	fp12_t l;
-	ep_t _p[m];
+    ep_t *_p = RLC_ALLOCA(ep_t, m);
 	int i, j;
 
 	if (m == 0) {
@@ -232,8 +232,8 @@ static void pp_mil_k12(fp12_t r, ep2_t *t, ep2_t *q, ep_t *p, int m, bn_t a) {
 static void pp_mil_sps_k12(fp12_t r, ep2_t *t, ep2_t *q, ep_t *p, int m, int *s,
 		int len) {
 	fp12_t l;
-	ep_t _p[m];
-	ep2_t _q[m];
+	ep_t *_p = RLC_ALLOCA(ep_t, m);
+	ep2_t *_q = RLC_ALLOCA(ep2_t, m);
 	int i, j;
 
 	if (m == 0) {
@@ -321,7 +321,7 @@ static void pp_mil_sps_k12(fp12_t r, ep2_t *t, ep2_t *q, ep_t *p, int m, int *s,
  */
 static void pp_mil_lit_k12(fp12_t r, ep_t *t, ep_t *p, ep2_t *q, int m, bn_t a) {
 	fp12_t l;
-	ep2_t _q[m];
+	ep2_t *_q = RLC_ALLOCA(ep2_t, m);
 	int j;
 
 	fp12_null(l);
@@ -454,7 +454,9 @@ void pp_map_tatep_k2(fp2_t r, ep_t p, ep_t q) {
 }
 
 void pp_map_sim_tatep_k2(fp2_t r, ep_t *p, ep_t *q, int m) {
-	ep_t _p[m], _q[m], t[m];
+	ep_t *_p =RLC_ALLOCA(ep_t, m), 
+        *_q = RLC_ALLOCA(ep_t, m), 
+        *t = RLC_ALLOCA(ep_t, m);
 	bn_t n;
 	int i, j;
 
@@ -542,8 +544,8 @@ void pp_map_tatep_k12(fp12_t r, ep_t p, ep2_t q) {
 }
 
 void pp_map_sim_tatep_k12(fp12_t r, ep_t *p, ep2_t *q, int m) {
-	ep_t _p[m], t[m];
-	ep2_t _q[m];
+	ep_t *_p = RLC_ALLOCA(ep_t, m), *t = RLC_ALLOCA(ep_t, m);
+	ep2_t *_q = RLC_ALLOCA(ep2_t, m);
 	bn_t n;
 	int i, j;
 
@@ -647,7 +649,10 @@ void pp_map_weilp_k2(fp2_t r, ep_t p, ep_t q) {
 }
 
 void pp_map_sim_weilp_k2(fp2_t r, ep_t *p, ep_t *q, int m) {
-	ep_t _p[m], _q[m], t0[m], t1[m];
+	ep_t *_p = RLC_ALLOCA(ep_t, m), 
+        *_q = RLC_ALLOCA(ep_t, m), 
+        *t0 = RLC_ALLOCA(ep_t, m),
+        *t1 = RLC_ALLOCA(ep_t, m);
 	fp2_t r0, r1;
 	bn_t n;
 	int i, j;
@@ -765,8 +770,8 @@ void pp_map_weilp_k12(fp12_t r, ep_t p, ep2_t q) {
 }
 
 void pp_map_sim_weilp_k12(fp12_t r, ep_t *p, ep2_t *q, int m) {
-	ep_t _p[m], t0[m];
-	ep2_t _q[m], t1[m];
+	ep_t *_p = RLC_ALLOCA(ep_t, m), *t0 = RLC_ALLOCA(ep_t, m);
+	ep2_t *_q = RLC_ALLOCA(ep2_t, m), *t1 = RLC_ALLOCA(ep2_t, m);
 	fp12_t r0, r1;
 	bn_t n;
 	int i, j;
@@ -904,8 +909,8 @@ void pp_map_oatep_k12(fp12_t r, ep_t p, ep2_t q) {
 }
 
 void pp_map_sim_oatep_k12(fp12_t r, ep_t *p, ep2_t *q, int m) {
-	ep_t _p[m];
-	ep2_t t[m], _q[m];
+	ep_t *_p = RLC_ALLOCA(ep_t, m);
+	ep2_t* t = RLC_ALLOCA(ep2_t, m), *_q = RLC_ALLOCA(ep2_t, m);
 	bn_t a;
 	int i, j, len = RLC_FP_BITS, s[RLC_FP_BITS];
 

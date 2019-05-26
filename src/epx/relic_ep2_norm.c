@@ -102,7 +102,7 @@ void ep2_norm(ep2_t r, ep2_t p) {
 
 void ep2_norm_sim(ep2_t *r, ep2_t *t, int n) {
 	int i;
-	fp2_t a[n];
+	fp2_t *a = RLC_ALLOCA(fp2_t, n);
 
 	for (i = 0; i < n; i++) {
 		fp2_null(a[i]);

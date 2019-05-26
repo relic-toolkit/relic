@@ -109,12 +109,12 @@ int cp_ibe_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len,
 
 		/* Allocate size for storing the output. */
 		l = gt_size_bin(e, 0);
-		uint8_t buf[l];
+		uint8_t *buf = RLC_ALLOCA(uint8_t, l);
 
 		/* h = H_2(e^r). */
 		bn_rand_mod(r, n);
 		gt_exp(e, e, r);
-		gt_write_bin(buf, sizeof(buf), e, 0);
+		gt_write_bin(buf, l, e, 0);
 		md_map(h, buf, l);
 
 		/* P = kG. */
@@ -166,8 +166,8 @@ int cp_ibe_dec(uint8_t *out, int *out_len, uint8_t *in, int in_len, g2_t prv) {
 		l = gt_size_bin(e, 0);
 
 		/* Allocate size for storing the output. */
-		uint8_t buf[l];
-		gt_write_bin(buf, sizeof(buf), e, 0);
+		uint8_t *buf = RLC_ALLOCA(uint8_t, l);
+		gt_write_bin(buf, l, e, 0);
 		md_map(h, buf, l);
 
 		for (l = 0; l < RLC_MIN(in_len, RLC_MD_LEN); l++) {

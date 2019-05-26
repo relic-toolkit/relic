@@ -184,7 +184,8 @@ void ed_mul_sim_trick(ed_t r, const ed_t p, const bn_t k, const ed_t q,
 	ed_t t0[1 << (ED_WIDTH / 2)], t1[1 << (ED_WIDTH / 2)], t[1 << ED_WIDTH];
 	bn_t n;
 	int l0, l1, w = ED_WIDTH / 2;
-	uint8_t w0[RLC_CEIL(RLC_FP_BITS + 1, w)], w1[RLC_CEIL(RLC_FP_BITS + 1, w)];
+	uint8_t *w0 = RLC_ALLOCA(uint8_t, RLC_CEIL(RLC_FP_BITS + 1, w)),
+        *w1 = RLC_ALLOCA(uint8_t, RLC_CEIL(RLC_FP_BITS + 1, w));
 
 	bn_null(n);
 

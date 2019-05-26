@@ -318,8 +318,9 @@ void eb_mul_sim_trick(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 		const bn_t m) {
 	eb_t t0[1 << (EB_WIDTH / 2)], t1[1 << (EB_WIDTH / 2)], t[1 << EB_WIDTH];
 	bn_t n;
-	int l0, l1, w = EB_WIDTH / 2;
-	uint8_t w0[RLC_CEIL(RLC_FB_BITS, w)], w1[RLC_CEIL(RLC_FB_BITS, w)];
+	int i, l0, l1, w = EB_WIDTH / 2;
+	uint8_t *w0 = RLC_ALLOCA(uint8_t, RLC_CEIL(RLC_FB_BITS, w)),
+        *w1 = RLC_ALLOCA(uint8_t, RLC_CEIL(RLC_FB_BITS, w));
 
 	bn_null(n);
 

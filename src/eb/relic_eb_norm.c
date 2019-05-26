@@ -105,7 +105,7 @@ void eb_norm(eb_t r, const eb_t p) {
 }
 
 void eb_norm_sim(eb_t *r, const eb_t *t, int n) {
-	fb_t a[n];
+	fb_t *a = RLC_ALLOCA(fb_t, n);
 
 	if (n == 1) {
 		eb_norm(r[0], t[0]);

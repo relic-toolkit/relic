@@ -43,7 +43,11 @@ if(ARCH STREQUAL X64)
 endif(ARCH STREQUAL X64)
 
 if(NOT WSIZE)
-	set(WSIZE 64)
+    if(MSVC)
+	    set(WSIZE 32)
+    else(MSVC)
+	    set(WSIZE 64)
+    endif(MSVC)
 endif(NOT WSIZE)
 set(WSIZE ${WSIZE} CACHE INTEGER "Processor word size")
 

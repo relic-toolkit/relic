@@ -43,6 +43,10 @@
 #include <android/log.h>
 #endif
 
+#ifdef _MSC_VER
+#include <intrin.h>
+#endif
+
 /*============================================================================*/
 /* Private definitions                                                        */
 /*============================================================================*/
@@ -163,9 +167,17 @@ int util_bits_dig(dig_t a) {
 	}
 	return 0;
 #elif WSIZE == 32
+#ifdef _MSC_VER
+    return RLC_DIG - __lzcnt(a);
+#else
 	return RLC_DIG - __builtin_clz(a);
+#endif
 #elif WSIZE == 64
+#ifdef _MSC_VER
+    return RLC_DIG - __lzcnt64(a);
+#else
 	return RLC_DIG - __builtin_clzll(a);
+#endif
 #endif
 }
 
