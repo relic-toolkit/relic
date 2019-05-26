@@ -55,9 +55,9 @@
  */
 static void rand_hash(uint8_t *out, int out_len, uint8_t *in, int in_len) {
 	uint32_t j = util_conv_big(8 * out_len);
-	int len = RLC_CEIL(out_len, MD_LEN);
-  uint8_t* buf = RLC_ALLOCA(uint8_t, 1 + sizeof(uint32_t) + in_len);
-	uint8_t hash[MD_LEN];
+	int len = RLC_CEIL(out_len, RLC_MD_LEN);
+	uint8_t* buf = RLC_ALLOCA(uint8_t, 1 + sizeof(uint32_t) + in_len);
+	uint8_t hash[RLC_MD_LEN];
 
 	buf[0] = 1;
 	memcpy(buf + 1, &j, sizeof(uint32_t));
