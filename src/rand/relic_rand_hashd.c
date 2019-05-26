@@ -55,8 +55,8 @@
  */
 static void rand_hash(uint8_t *out, int out_len, uint8_t *in, int in_len) {
 	uint32_t j = util_conv_big(8 * out_len);
-	int len = RLC_CEIL(out_len, MD_LEN);
-	uint8_t buf[1 + sizeof(uint32_t) + in_len], hash[MD_LEN];
+	int len = RLC_CEIL(out_len, RLC_MD_LEN);
+	uint8_t buf[1 + sizeof(uint32_t) + in_len], hash[RLC_MD_LEN];
 
 	buf[0] = 1;
 	memcpy(buf + 1, &j, sizeof(uint32_t));
@@ -66,9 +66,9 @@ static void rand_hash(uint8_t *out, int out_len, uint8_t *in, int in_len) {
 		/* h = Hash(counter || bits_to_return || input_string) */
 		md_map(hash, buf, 1 + sizeof(uint32_t) + in_len);
 		/* temp = temp || h */
-		memcpy(out, hash, RLC_MIN(MD_LEN, out_len));
-		out += MD_LEN;
-		out_len -= MD_LEN;
+		memcpy(out, hash, RLC_MIN(RLC_MD_LEN, out_len));
+		out += RLC_MD_LEN;
+		out_len -= RLC_MD_LEN;
 		/* counter = counter + 1 */
 		buf[0]++;
 	}
@@ -116,8 +116,8 @@ static int rand_add(uint8_t *state, uint8_t *hash, int size) {
  * @param[in] out_len		- the number of bytes to write.
  */
 static void rand_gen(uint8_t *out, int out_len) {
-	int m = RLC_CEIL(out_len, MD_LEN);
-	uint8_t hash[MD_LEN], data[(RAND_SIZE - 1)/2];
+	int m = RLC_CEIL(out_len, RLC_MD_LEN);
+	uint8_t hash[RLC_MD_LEN], data[(RAND_SIZE - 1)/2];
 	ctx_t *ctx = core_get();
 
 	/* data = V */
@@ -126,9 +126,9 @@ static void rand_gen(uint8_t *out, int out_len) {
 		/* w_i = Hash(data) */
 		md_map(hash, data, sizeof(data));
 		/* W = W || w_i */
-		memcpy(out, hash, RLC_MIN(MD_LEN, out_len));
-		out += MD_LEN;
-		out_len -= MD_LEN;
+		memcpy(out, hash, RLC_MIN(RLC_MD_LEN, out_len));
+		out += RLC_MD_LEN;
+		out_len -= RLC_MD_LEN;
 		/* data = data + 1 mod 2^b. */
 		rand_inc(data, (RAND_SIZE - 1)/2, 1);
 	}
@@ -143,7 +143,7 @@ static void rand_gen(uint8_t *out, int out_len) {
 #if RAND == HASHD
 
 void rand_bytes(uint8_t *buf, int size) {
-	uint8_t hash[MD_LEN];
+	uint8_t hash[RLC_MD_LEN];
 	int carry, len  = (RAND_SIZE - 1)/2;
 	ctx_t *ctx = core_get();
 
@@ -158,8 +158,8 @@ void rand_bytes(uint8_t *buf, int size) {
 	md_map(hash, ctx->rand, 1 + len);
 	/* V = V + H + C  + reseed_counter. */
 	rand_add(ctx->rand + 1, ctx->rand + 1 + len, len);
-	carry = rand_add(ctx->rand + 1 + (len - MD_LEN), hash, MD_LEN);
-	rand_inc(ctx->rand, len - MD_LEN + 1, carry);
+	carry = rand_add(ctx->rand + 1 + (len - RLC_MD_LEN), hash, RLC_MD_LEN);
+	rand_inc(ctx->rand, len - RLC_MD_LEN + 1, carry);
 	rand_inc(ctx->rand, len + 1, ctx->counter);
 	ctx->counter = ctx->counter + 1;
 }

@@ -52,7 +52,7 @@
  */
 static void rand_add_inc(uint8_t *state, uint8_t *hash) {
 	int carry = 1;
-	for (int i = MD_LEN_SHONE - 1; i >= 0; i--) {
+	for (int i = RLC_MD_LEN_SHONE - 1; i >= 0; i--) {
 		int16_t s;
 		s = (state[i] + hash[i] + carry);
 		state[i] = s & 0xFF;
@@ -69,7 +69,7 @@ static void rand_add_inc(uint8_t *state, uint8_t *hash) {
 #if RAND == FIPS
 
 void rand_bytes(uint8_t *buf, int size) {
-	uint8_t hash[MD_LEN_SHONE];
+	uint8_t hash[RLC_MD_LEN_SHONE];
 	ctx_t *ctx = core_get();
 
 	while (size > 0) {
@@ -78,20 +78,20 @@ void rand_bytes(uint8_t *buf, int size) {
 		/* XKEY = (XKEY + w_0 + 1) mod 2^b */
 		rand_add_inc(ctx->rand, hash);
 
-		memcpy(buf, hash, RLC_MIN(size, MD_LEN_SHONE));
-		buf += MD_LEN_SHONE;
-		size -= MD_LEN_SHONE;
+		memcpy(buf, hash, RLC_MIN(size, RLC_MD_LEN_SHONE));
+		buf += RLC_MD_LEN_SHONE;
+		size -= RLC_MD_LEN_SHONE;
 
 		/* w_1 = G(t, XKEY) */
 		md_map_shone_mid(hash, ctx->rand, RAND_SIZE);
 		/* XKEY = (XKEY + w_1 + 1) mod 2^b */
 		rand_add_inc(ctx->rand, hash);
 
-		for (int i = RLC_MIN(size - 1, MD_LEN_SHONE); i >= 0 ; i--) {
+		for (int i = RLC_MIN(size - 1, RLC_MD_LEN_SHONE); i >= 0 ; i--) {
 			buf[i] = hash[i];
 		}
-		buf += MD_LEN_SHONE;
-		size -= MD_LEN_SHONE;
+		buf += RLC_MD_LEN_SHONE;
+		size -= RLC_MD_LEN_SHONE;
 	}
 }
 
@@ -99,12 +99,12 @@ void rand_seed(uint8_t *buf, int size) {
 	int i;
 	ctx_t *ctx = core_get();
 
-	if (size < MD_LEN_SHONE) {
+	if (size < RLC_MD_LEN_SHONE) {
 		THROW(ERR_NO_VALID);
 	}
 
 	/* XKEY = SEED, throws away additional bytes. */
-	for (i = 0; i < MD_LEN_SHONE; i++) {
+	for (i = 0; i < RLC_MD_LEN_SHONE; i++) {
 		ctx->rand[i] = buf[i];
 	}
 	ctx->seeded = 1;

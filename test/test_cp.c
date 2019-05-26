@@ -791,7 +791,7 @@ end:
 	return code;
 }
 
-#endif
+#endif /* WITH_EC */
 
 #if defined(WITH_PC)
 
@@ -1285,6 +1285,8 @@ static int zss(void) {
 	gt_free(z);
 	return code;
 }
+
+#endif
 
 int main(void) {
 	if (core_init() != RLC_OK) {

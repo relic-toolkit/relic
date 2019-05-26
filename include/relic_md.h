@@ -46,38 +46,38 @@
 
 enum {
 	/** Hash length for SHA-1 function. */
-	MD_LEN_SHONE = 20,
+	RLC_MD_LEN_SHONE = 20,
 	/** Hash length for SHA-224 function. */
-	MD_LEN_SH224 = 28,
+	RLC_MD_LEN_SH224 = 28,
 	/** Hash length for SHA-256 function. */
-	MD_LEN_SH256 = 32,
+	RLC_MD_LEN_SH256 = 32,
 	/** Hash length for SHA-384 function. */
-	MD_LEN_SH384 = 48,
+	RLC_MD_LEN_SH384 = 48,
 	/** Hash length for SHA-512 function. */
-	MD_LEN_SH512 = 64,
+	RLC_MD_LEN_SH512 = 64,
 	/** Hash length for BLAKE2s-160 function. */
-	MD_LEN_B2S160 = 20,
+	RLC_MD_LEN_B2S160 = 20,
 	/** Hash length for BLAKE2s-256 function. */
-	MD_LEN_B2S256 = 32
+	RLC_MD_LEN_B2S256 = 32
 };
 
 /**
  * Length in bytes of default hash function output.
  */
 #if MD_MAP == SHONE
-#define MD_LEN					MD_LEN_SHONE
+#define RLC_MD_LEN					RLC_MD_LEN_SHONE
 #elif MD_MAP == SH224
-#define MD_LEN					MD_LEN_SH224
+#define RLC_MD_LEN					RLC_MD_LEN_SH224
 #elif MD_MAP == SH256
-#define MD_LEN					MD_LEN_SH256
+#define RLC_MD_LEN					RLC_MD_LEN_SH256
 #elif MD_MAP == SH384
-#define MD_LEN					MD_LEN_SH384
+#define RLC_MD_LEN					RLC_MD_LEN_SH384
 #elif MD_MAP == SH512
-#define MD_LEN					MD_LEN_SH512
+#define RLC_MD_LEN					RLC_MD_LEN_SH512
 #elif MD_MAP == B2S160
-#define MD_LEN					MD_LEN_B2S160
+#define RLC_MD_LEN					RLC_MD_LEN_B2S160
 #elif MD_MAP == B2S256
-#define MD_LEN					MD_LEN_B2S256
+#define RLC_MD_LEN					RLC_MD_LEN_B2S256
 #endif
 
 /*============================================================================*/
