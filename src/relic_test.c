@@ -45,14 +45,20 @@
 /**
  * Color of the string printed when the test fails (red).
  */
+#ifdef _MSC_VER
+#define FAIL_COLOR      12
+#else
 #define FAIL_COLOR		31
-#define FAIL_COLOR_WIN  12
+#endif
 
 /**
  * Color of the string printed when the test passes (green).
  */
+#ifdef _MSC_VER
+#define PASS_COLOR      10
+#else
 #define PASS_COLOR		32
-#define PASS_COLOR_WIN	10
+#endif
 
 /**
  * Command to set terminal colors.
@@ -69,71 +75,74 @@
  */
 #define CMD_ATTR		1
 
+/**
+ * Copies default color to global variable.
+ */
+static void cache_default_color(void) {
+#ifdef _MSC_VER
+	CONSOLE_SCREEN_BUFFER_INFO csbi;
+	HANDLE m_hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+	GetConsoleScreenBufferInfo(m_hConsole, &csbi);
+	static int default_color = (csbi.wAttributes & 255);
+#endif
+}
+
+/**
+ * Changes font to test failure mode.
+ */
+static void fail_font(void) {
+    cache_default_color();
+#ifdef COLOR
+#ifdef _MSC_VER
+	HANDLE m_hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+	SetConsoleTextAttribute(m_hConsole, FAIL_COLOR);
+#else
+	util_print("%c[%d;%dm", CMD_SET, CMD_ATTR, FAIL_COLOR);
+#endif
+#endif
+}
+
+/**
+ * Changes font to test pass mode.
+ */
+static void pass_font(void) {
+    cache_default_color();
+#ifdef COLOR
+#ifdef _MSC_VER
+	HANDLE m_hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+	SetConsoleTextAttribute(m_hConsole, PASS_COLOR);
+#else
+	util_print("%c[%d;%dm", CMD_SET, CMD_ATTR, PASS_COLOR);
+#endif
+#endif
+}
+
+/**
+ * Resets font to default.
+ */
+static void reset_font(void) {
+#ifdef COLOR
+#ifdef _MSC_VER
+	HANDLE m_hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+	SetConsoleTextAttribute(m_hConsole, default_color);
+#else
+	util_print("%c[%dm", CMD_SET, CMD_RESET);
+#endif
+#endif
+}
+
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
-
-int default_color;
-void cache_default_color(void)
-{
-#ifdef _MSC_VER
-    CONSOLE_SCREEN_BUFFER_INFO   csbi;
-    HANDLE m_hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-    GetConsoleScreenBufferInfo(m_hConsole, &csbi);
-    default_color = (csbi.wAttributes & 255);
-#endif
-}
-
-void fail_font(void)
-{
-#ifdef COLOR
-#ifdef _MSC_VER
-    cache_default_color();
-    HANDLE m_hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-    SetConsoleTextAttribute(m_hConsole, FAIL_COLOR_WIN);
-#else
-    util_print("[%c[%d;%dm", CMD_SET, CMD_ATTR, FAIL_COLOR);
-#endif
-#endif
-}
-
-void pass_font(void)
-{
-#ifdef COLOR
-#ifdef _MSC_VER
-    cache_default_color();
-    HANDLE m_hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-    SetConsoleTextAttribute(m_hConsole, PASS_COLOR_WIN);
-#else
-    util_print("[%c[%d;%dm", CMD_SET, CMD_ATTR, PASS_COLOR);
-#endif
-#endif
-}
-
-void reset_font(void)
-{
-#ifdef COLOR
-#ifdef _MSC_VER
-    HANDLE m_hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-    SetConsoleTextAttribute(m_hConsole, default_color);
-#else
-    util_print("%c[%dm]\n", CMD_SET, CMD_RESET);
-#endif
-#endif
-}
-
-
-
 void test_fail(void) {
-    
-    fail_font();
-    util_print("[FAIL]\n");
-    reset_font();
+	fail_font();
+	util_print("[FAIL]\n");
+	reset_font();
 }
 
 void test_pass(void) {
-    pass_font();
+	pass_font();
 	util_print("[PASS]\n");
-    reset_font();
+	reset_font();
 }
