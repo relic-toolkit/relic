@@ -387,7 +387,7 @@ cdecl(fp_hlvd_low):
 	movq	P1, %r9
 	movq	P2, %r10
 	movq	P3, %r11
-  	movq 	0(%rdi),%rcx
+  	movq 	0(%rsi),%rcx
   	test 	$1,%rcx
 	cmovz	%rdx,%r8
 	cmovz	%rdx,%r9
@@ -395,19 +395,19 @@ cdecl(fp_hlvd_low):
 	cmovz	%rdx,%r11
 
 	addq	%rcx, %r8
-	movq	8(%rdi), %rdx
+	movq	8(%rsi), %rdx
 	adcq	%rdx, %r9
-	movq	16(%rdi), %rdx
+	movq	16(%rsi), %rdx
 	adcq	%rdx, %r10
-	movq	24(%rdi), %rdx
+	movq	24(%rsi), %rdx
 	adcq	%rdx, %r11
-	movq	32(%rdi), %rax
+	movq	32(%rsi), %rax
 	adcq	$0, %rax
-	movq	40(%rdi), %rcx
+	movq	40(%rsi), %rcx
 	adcq	$0, %rcx
-	movq	48(%rdi), %rdx
+	movq	48(%rsi), %rdx
 	adcq	$0, %rdx
-	movq	56(%rdi), %rsi
+	movq	56(%rsi), %rsi
 	adcq	$0, %rsi
 
 	shrd    $1, %r9, %r8
