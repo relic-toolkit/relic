@@ -543,7 +543,8 @@ fp_hlvd_low:
 	adcq	32(%rsi) , %r12
 	adcq	40(%rsi) , %r13
 	adcq	48(%rsi) , %r14
-	adcq	56(%rsi) , %r15
+    movq	56(%rsi) , %r15
+    adcq	$0       , %r15
 	movq	64(%rsi) , %rax
 	adcq	$0       , %rax
 	movq	72(%rsi) , %rbx
@@ -554,16 +555,10 @@ fp_hlvd_low:
 	adcq	$0       , %rdx
 	movq	96(%rsi) , %rbp
 	adcq	$0       , %rbp
+	movq	104(%rsi), %rsi
+	adcq	$0       , %rsi
 
-	push	%rbp
-
-	movq	104(%rsi), %rbp
-	adcq	$0       , %rbp
-	movq	%rbp     , 104(%rdi)
-
-	pop		%rbp
-
-	rcrq	$1, 104(%rdi)
+	rcrq	$1, %rsi
   	rcrq	$1, %rbp
   	rcrq 	$1, %rdx
   	rcrq 	$1, %rcx
@@ -578,6 +573,7 @@ fp_hlvd_low:
   	rcrq 	$1, %r9
   	rcrq 	$1, %r8
 
+    movq 	%rsi, 104(%rdi)
   	movq 	%rbp, 96(%rdi)
   	movq 	%rdx, 88(%rdi)
   	movq 	%rcx, 80(%rdi)

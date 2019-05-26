@@ -32,6 +32,17 @@
  * @ingroup fp
  */
 
+/* We use the towering to decide between BN-446 and B12-446. */
+#ifdef FP_QNRES
+#define P0 0x311c0026aab0aaab
+#define P1 0x56ee4528c573b5cc
+#define P2 0x824e6dc3e23acdee
+#define P3 0x0f75a64bbac71602
+#define P4 0x0095a4b78a02fe32
+#define P5 0x200fc34965aad640
+#define P6 0x3cdee0fb28c5e535
+#define U0 0xcd63fd900035fffd
+#else
 #define P0	0x0000132000000067
 #define P1	0x0057C00000015C00
 #define P2	0x870000000B040000
@@ -40,6 +51,7 @@
 #define P5	0x002400000002D000
 #define P6	0x2400000000000000
 #define U0	0x6BD6C9022CBCE4A9
+#endif
 
 .text
 
