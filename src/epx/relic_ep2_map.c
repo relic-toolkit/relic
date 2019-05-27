@@ -58,7 +58,7 @@ void ep2_mul_cof_bn(ep2_t r, ep2_t p) {
 		ep2_new(t2);
 		bn_new(x);
 
-		fp_param_get_var(x);
+		fp_prime_get_par(x);
 
 		/* Compute t0 = xP. */
 		ep2_mul_basic(t0, p, x);
@@ -113,7 +113,7 @@ void ep2_mul_cof_b12(ep2_t r, ep2_t p) {
 		ep2_new(t3);
 		bn_new(x);
 
-		fp_param_get_var(x);
+		fp_prime_get_par(x);
 
 		/* Compute t0 = xP. */
 		ep2_mul_basic(t0, p, x);

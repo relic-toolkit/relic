@@ -439,7 +439,7 @@
 #undef fp_param_set_any_pmers
 #undef fp_param_set_any_tower
 #undef fp_param_print
-#undef fp_param_get_var
+#undef fp_prime_get_par
 #undef fp_param_get_sps
 #undef fp_param_get_map
 #undef fp_copy
@@ -519,7 +519,7 @@
 #define fp_param_set_any_pmers 	PREFIX(fp_param_set_any_pmers)
 #define fp_param_set_any_tower 	PREFIX(fp_param_set_any_tower)
 #define fp_param_print 	PREFIX(fp_param_print)
-#define fp_param_get_var 	PREFIX(fp_param_get_var)
+#define fp_prime_get_par 	PREFIX(fp_prime_get_par)
 #define fp_param_get_sps 	PREFIX(fp_param_get_sps)
 #define fp_param_get_map 	PREFIX(fp_param_get_map)
 #define fp_copy 	PREFIX(fp_copy)

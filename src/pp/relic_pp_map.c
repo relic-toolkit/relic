@@ -782,7 +782,7 @@ void pp_map_oatep_k12(fp12_t r, ep_t p, ep2_t q) {
 		ep2_new(t[0]);
 		bn_new(a);
 
-		fp_param_get_var(a);
+		fp_prime_get_par(a);
 		fp12_set_dig(r, 1);
 
 		ep_norm(_p[0], p);
@@ -852,7 +852,7 @@ void pp_map_sim_oatep_k12(fp12_t r, ep_t *p, ep2_t *q, int m) {
 			}
 		}
 
-		fp_param_get_var(a);
+		fp_prime_get_par(a);
 		fp12_set_dig(r, 1);
 
 		if (j > 0) {

@@ -66,7 +66,7 @@ static void pp_exp_bn(fp12_t c, fp12_t a) {
 		 * New final exponentiation following Fuentes-Castañeda, Knapp and
 		 * Rodríguez-Henríquez: Fast Hashing to G_2.
 		 */
-		fp_param_get_var(x);
+		fp_prime_get_par(x);
 		fp_param_get_sps(b, &l);
 
 		/* First, compute m = f^(p^6 - 1)(p^2 + 1). */
@@ -152,7 +152,7 @@ static void pp_exp_b12(fp12_t c, fp12_t a) {
 		 * Final exponentiation following Ghammam and Fouotsa:
 		 * On the Computation of Optimal Ate Pairing at the 192-bit Level.
 		 */
-		fp_param_get_var(x);
+		fp_prime_get_par(x);
 		fp_param_get_sps(b, &l);
 
 		/* First, compute m^(p^6 - 1)(p^2 + 1). */

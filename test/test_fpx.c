@@ -670,6 +670,10 @@ static int exponentiation2(void) {
 			fp2_exp(c, a, d);
 			fp2_inv(c, c);
 			TEST_ASSERT(fp2_cmp(b, c) == RLC_EQ, end);
+			bn_rand(d, RLC_POS, RLC_DIG);
+			fp2_exp_dig(b, a, d->dp[0]);
+			fp2_exp(c, a, d);
+			TEST_ASSERT(fp2_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("frobenius and exponentiation are consistent") {

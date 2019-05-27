@@ -560,7 +560,7 @@ void fp12_exp_cyc(fp12_t c, fp12_t a, bn_t b) {
 						bn_zero(_b[i]);
 					}
 
-					fp_param_get_var(u[0]);
+					fp_prime_get_par(u[0]);
 					bn_dbl(u[2], u[0]);
 					bn_add_dig(u[1], u[2], 1);
 					bn_sub_dig(u[3], u[0], 1);
@@ -574,7 +574,7 @@ void fp12_exp_cyc(fp12_t c, fp12_t a, bn_t b) {
 						bn_mod(_b[0], _b[0], n);
 					}
 
-					fp_param_get_var(u[0]);
+					fp_prime_get_par(u[0]);
 					bn_neg(u[1], u[0]);
 					bn_dbl(u[2], u[0]);
 					bn_add_dig(u[2], u[2], 1);
@@ -587,7 +587,7 @@ void fp12_exp_cyc(fp12_t c, fp12_t a, bn_t b) {
 						bn_mod(_b[1], _b[1], n);
 					}
 
-					fp_param_get_var(u[0]);
+					fp_prime_get_par(u[0]);
 					bn_add_dig(u[1], u[0], 1);
 					bn_neg(u[1], u[1]);
 					bn_dbl(u[2], u[0]);
@@ -602,7 +602,7 @@ void fp12_exp_cyc(fp12_t c, fp12_t a, bn_t b) {
 						bn_mod(_b[2], _b[2], n);
 					}
 
-					fp_param_get_var(u[1]);
+					fp_prime_get_par(u[1]);
 					bn_dbl(u[0], u[1]);
 					bn_neg(u[0], u[0]);
 					bn_dbl(u[2], u[1]);
@@ -632,7 +632,7 @@ void fp12_exp_cyc(fp12_t c, fp12_t a, bn_t b) {
 					break;
 				case EP_B12:
 					bn_abs(v[0], b);
-					fp_param_get_var(u[0]);
+					fp_prime_get_par(u[0]);
 
 					bn_copy(u[1], u[0]);
 					if (bn_sign(u[0]) == RLC_NEG) {
@@ -754,7 +754,7 @@ void fp12_exp_cyc(fp12_t c, fp12_t a, bn_t b) {
 	}
 }
 
-void fp12_exp_cyc_sps(fp12_t c, fp12_t a, int *b, int len) {
+void fp12_exp_cyc_sps(fp12_t c, fp12_t a, const int *b, int len) {
 	int i, j, k, w = len;
     fp12_t t, *u = RLC_ALLOCA(fp12_t, w);
 

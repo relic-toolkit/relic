@@ -1438,7 +1438,7 @@ static void arith8(void) {
 		fp8_rand(a);
 		fp8_conv_uni(a, a);
 		bn_zero(e);
-		fp_param_get_var(e);
+		fp_prime_get_par(e);
 		if (bn_is_zero(e)) {
 			bn_set_2b(e, RLC_FP_BITS - 1);
 			bn_set_bit(e, RLC_FP_BITS / 2, 1);
@@ -1798,7 +1798,7 @@ static void arith12(void) {
 		fp12_rand(a);
 		fp12_conv_cyc(a, a);
 		bn_zero(e);
-		fp_param_get_var(e);
+		fp_prime_get_par(e);
 		if (bn_is_zero(e)) {
 			bn_set_2b(e, RLC_FP_BITS - 1);
 			bn_set_bit(e, RLC_FP_BITS / 2, 1);
@@ -2123,7 +2123,7 @@ static void arith18(void) {
 		fp18_rand(a);
 		fp18_conv_cyc(a, a);
 		bn_zero(e);
-		fp_param_get_var(e);
+		fp_prime_get_par(e);
 		if (bn_is_zero(e)) {
 			bn_set_2b(e, RLC_FP_BITS - 1);
 			bn_set_bit(e, RLC_FP_BITS / 2, 1);

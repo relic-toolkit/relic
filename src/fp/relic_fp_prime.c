@@ -168,6 +168,24 @@ const dig_t *fp_prime_get_rdc(void) {
 	return &(core_get()->u);
 }
 
+void fp_prime_get_par(bn_t x) {
+	bn_copy(x, &core_get()->par);
+}
+
+const int *fp_prime_get_par_sps(int *len) {
+	ctx_t *ctx = core_get();
+	if (ctx->par_len > 0) {
+		if (len != NULL) {
+			*len = ctx->par_len;
+		}
+		return ctx->par_sps;
+	}
+	if (len != NULL) {
+		*len = 0;
+	}
+	return NULL;
+}
+
 const int *fp_prime_get_sps(int *len) {
 #if FP_RDC == QUICK || !defined(STRIP)
 	ctx_t *ctx = core_get();
@@ -229,7 +247,7 @@ void fp_prime_set_pairf(const bn_t x, int pairf) {
 		bn_new(t0);
 		bn_new(t1);
 
-		bn_copy(&(ctx->x), x);
+		bn_copy(&(ctx->par), x);
 		bn_copy(t0, x);
 		if (pairf == EP_BN) {
 			/* p = 36 * x^4 + 36 * x^3 + 24 * x^2 + 6 * x + 1. */
@@ -286,15 +304,19 @@ void fp_prime_set_pairf(const bn_t x, int pairf) {
 			fp_prime_set_dense(p);
 		}
 
-		ctx->x_len = 0;
-		bn_rec_naf(s, &len, x, 2);
-		for (int i = 0; i < len || ctx->x_len < RLC_TERMS; i++) {
+		/* Store parameter in NAF form. */
+		ctx->par_len = 0;
+		bn_rec_naf(s, &len, &(ctx->par), 2);
+		for (int i = 0; i < len && ctx->par_len < RLC_TERMS; i++) {
 			if (s[i] > 0) {
-				ctx->x_sps[ctx->x_len++] = i;
+				ctx->par_sps[ctx->par_len++] = i;
 			}
 			if (s[i] < 0) {
-				ctx->x_sps[ctx->x_len++] = -i;
+				ctx->par_sps[ctx->par_len++] = -i;
 			}
+		}
+		if (ctx->par_len == RLC_TERMS) {
+			THROW(ERR_NO_VALID);
 		}
 	} CATCH_ANY {
 		THROW(ERR_CAUGHT);

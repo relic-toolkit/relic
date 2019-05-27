@@ -76,7 +76,7 @@ static void ep2_mul_glv_imp(ep2_t r, ep2_t p, const bn_t k) {
 				}
 
 				/* u0 = x + 1, u1 = 2x + 1, u2 = 2x, u3 = x - 1. */
-				fp_param_get_var(u[0]);
+				fp_prime_get_par(u[0]);
 				bn_dbl(u[2], u[0]);
 				bn_add_dig(u[1], u[2], 1);
 				bn_sub_dig(u[3], u[0], 1);
@@ -91,7 +91,7 @@ static void ep2_mul_glv_imp(ep2_t r, ep2_t p, const bn_t k) {
 				}
 
 				/* u0 = x, u1 = -x, u2 = 2x + 1, u3 = 4x + 2. */
-				fp_param_get_var(u[0]);
+				fp_prime_get_par(u[0]);
 				bn_neg(u[1], u[0]);
 				bn_dbl(u[2], u[0]);
 				bn_add_dig(u[2], u[2], 1);
@@ -105,7 +105,7 @@ static void ep2_mul_glv_imp(ep2_t r, ep2_t p, const bn_t k) {
 				}
 
 				/* u0 = x, u1 = -(x + 1), u2 = 2x + 1, u3 = -(2x - 1). */
-				fp_param_get_var(u[0]);
+				fp_prime_get_par(u[0]);
 				bn_add_dig(u[1], u[0], 1);
 				bn_neg(u[1], u[1]);
 				bn_dbl(u[2], u[0]);
@@ -121,7 +121,7 @@ static void ep2_mul_glv_imp(ep2_t r, ep2_t p, const bn_t k) {
 				}
 
 				/* u0 = -2x, u1 = -x, u2 = 2x + 1, u3 = x - 1. */
-				fp_param_get_var(u[1]);
+				fp_prime_get_par(u[1]);
 				bn_dbl(u[0], u[1]);
 				bn_neg(u[0], u[0]);
 				bn_dbl(u[2], u[1]);
@@ -150,7 +150,7 @@ static void ep2_mul_glv_imp(ep2_t r, ep2_t p, const bn_t k) {
 			case EP_OT:
 			case EP_B12:
 				bn_abs(v[0], k);
-				fp_param_get_var(u[0]);
+				fp_prime_get_par(u[0]);
 				bn_copy(u[1], u[0]);
 				if (bn_sign(u[0]) == RLC_NEG) {
 					bn_neg(u[0], u[0]);

@@ -337,7 +337,7 @@ void ep2_curve_get_vs(bn_t *v) {
 		bn_new(x);
 		bn_new(t);
 
-		fp_param_get_var(x);
+		fp_prime_get_par(x);
 		bn_copy(v[1], x);
 		bn_copy(v[2], x);
 		bn_copy(v[3], x);

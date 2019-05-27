@@ -227,11 +227,11 @@ typedef struct _ctx_t {
 	/** Prime modulus. */
 	bn_st prime;
 	/** Parameter for generating prime. */
-	bn_st x;
+	bn_st par;
 	/** Parameter in sparse form. */
-	int x_sps[2 * RLC_TERMS + 1];
+	int par_sps[RLC_TERMS + 1];
 	/** Length of sparse prime representation. */
-	int x_len;
+	int par_len;
 #if FP_RDC == MONTY || !defined(STRIP)
 	/** Value (R^2 mod p) for converting small integers to Montgomery form. */
 	bn_st conv;

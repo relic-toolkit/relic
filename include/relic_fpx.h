@@ -2501,7 +2501,7 @@ void fp12_exp_cyc(fp12_t c, fp12_t a, bn_t b);
  * @param[in] b				- the exponent in sparse form.
  * @param[in] l				- the length of the exponent in sparse form.
  */
-void fp12_exp_cyc_sps(fp12_t c, fp12_t a, int *b, int l);
+void fp12_exp_cyc_sps(fp12_t c, fp12_t a, const int *b, int l);
 
 /**
  * Compresses a dodecic extension field element.

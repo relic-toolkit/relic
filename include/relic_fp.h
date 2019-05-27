@@ -529,7 +529,7 @@ void fp_param_print(void);
  *
  * @param[out] x			- the integer parameter.
  */
-void fp_param_get_var(bn_t x);
+void fp_prime_get_par(bn_t x);
 
 /**
  * Returns the absolute value of the variable used to parameterize the currently
