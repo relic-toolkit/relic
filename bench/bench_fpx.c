@@ -1447,15 +1447,7 @@ static void arith8(void) {
 		BENCH_ADD(fp8_exp_uni(c, a, e));
 	}
 	BENCH_END;
-#if 0
-	BENCH_BEGIN("fp8_exp_cyc_sps (param)") {
-		int l = RLC_TERMS + 1, k[RLC_TERMS + 1];
-		fp_param_get_sps(k, &l);
-		fp8_rand(a);
-		BENCH_ADD(fp8_exp_cyc_sps(c, a, k, l));
-	}
-	BENCH_END;
-#endif
+
 	BENCH_BEGIN("fp8_frb (1)") {
 		fp8_rand(a);
 		BENCH_ADD(fp8_frb(c, a, 1));
@@ -1809,8 +1801,9 @@ static void arith12(void) {
 	BENCH_END;
 
 	BENCH_BEGIN("fp12_exp_cyc_sps (param)") {
-		int l = RLC_TERMS + 1, k[RLC_TERMS + 1];
-		fp_param_get_sps(k, &l);
+		const int *k;
+		int l;
+		k = fp_prime_get_par_sps(&l);
 		fp12_rand(a);
 		BENCH_ADD(fp12_exp_cyc_sps(c, a, k, l));
 	}
@@ -2134,8 +2127,9 @@ static void arith18(void) {
 	BENCH_END;
 
 	BENCH_BEGIN("fp18_exp_cyc_sps (param)") {
-		int l = RLC_TERMS + 1, k[RLC_TERMS + 1];
-		fp_param_get_sps(k, &l);
+		const int *k;
+		int l;
+		k = fp_prime_get_par_sps(&l);
 		fp18_rand(a);
 		BENCH_ADD(fp18_exp_cyc_sps(c, a, k, l));
 	}

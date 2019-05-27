@@ -454,6 +454,12 @@ void fp_prime_set_dense(const bn_t p);
 void fp_prime_set_pmers(const int *spars, int len);
 
 /**
+* Assigns the prime field modulus to a parametrization from a family of
+ * pairing-friendly curves.
+ */
+void fp_prime_set_pairf(const bn_t x, int pairf);
+
+/**
  * Computes the constants needed for evaluating Frobenius maps in higher
  * extension fields.
  */
@@ -525,15 +531,15 @@ int fp_param_set_any_tower(void);
 void fp_param_print(void);
 
 /**
- * Returns the variable used to parameterize the given prime modulus.
+ * Returns the variable used to parametrize the given prime modulus.
  *
  * @param[out] x			- the integer parameter.
  */
 void fp_prime_get_par(bn_t x);
 
 /**
- * Returns the variable used to parameterize the given prime modulus in sparse
- * form.
+ * Returns the absolute value of the variable used to parameterize the given
+ * prime modulus in sparse form.
  *
  * @param[out] len			- the length of the representation.
  */

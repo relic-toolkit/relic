@@ -2782,6 +2782,6 @@ void fp18_exp_cyc(fp18_t c, fp18_t a, bn_t b);
  * @param[in] b				- the exponent in sparse form.
  * @param[in] l				- the length of the exponent in sparse form.
  */
-void fp18_exp_cyc_sps(fp18_t c, fp18_t a, int *b, int l);
+void fp18_exp_cyc_sps(fp18_t c, fp18_t a, const int *b, int l);
 
 #endif /* !RLC_FPX_H */

@@ -1157,7 +1157,7 @@ void fp18_exp_cyc(fp18_t c, fp18_t a, bn_t b) {
 	}
 }
 
-void fp18_exp_cyc_sps(fp18_t c, fp18_t a, int *b, int len) {
+void fp18_exp_cyc_sps(fp18_t c, fp18_t a, const int *b, int len) {
 	int i, j, k, w = len;
 	fp18_t t, *u = RLC_ALLOCA(fp18_t, w);
 

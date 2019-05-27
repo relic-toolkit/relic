@@ -307,6 +307,11 @@ void fp_prime_set_pairf(const bn_t x, int pairf) {
 		/* Store parameter in NAF form. */
 		ctx->par_len = 0;
 		bn_rec_naf(s, &len, &(ctx->par), 2);
+		/* Fix corner case to avoid problems with sparse representation. */
+		if (s[0] == -1) {
+			s[0] = 1;
+			s[1] = -1;
+		}
 		for (int i = 0; i < len && ctx->par_len < RLC_TERMS; i++) {
 			if (s[i] > 0) {
 				ctx->par_sps[ctx->par_len++] = i;
