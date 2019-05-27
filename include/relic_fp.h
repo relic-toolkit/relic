@@ -532,6 +532,14 @@ void fp_param_print(void);
 void fp_prime_get_par(bn_t x);
 
 /**
+ * Returns the variable used to parameterize the given prime modulus in sparse
+ * form.
+ *
+ * @param[out] len			- the length of the representation.
+ */
+const int *fp_prime_get_par_sps(int *len);
+
+/**
  * Returns the absolute value of the variable used to parameterize the currently
  * configured prime modulus in sparse form. The first argument must be an array
  * of size (RLC_TERMS + 1).

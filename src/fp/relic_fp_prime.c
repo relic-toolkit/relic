@@ -169,7 +169,7 @@ const dig_t *fp_prime_get_rdc(void) {
 }
 
 void fp_prime_get_par(bn_t x) {
-	bn_copy(x, &core_get()->par);
+	bn_copy(x, &(core_get()->par));
 }
 
 const int *fp_prime_get_par_sps(int *len) {

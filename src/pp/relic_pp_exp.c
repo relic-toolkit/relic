@@ -46,8 +46,9 @@
  */
 static void pp_exp_bn(fp12_t c, fp12_t a) {
 	fp12_t t0, t1, t2, t3;
-	int l = RLC_TERMS + 1, b[RLC_TERMS + 1];
 	bn_t x;
+	const int *b;
+	int l;
 
 	fp12_null(t0);
 	fp12_null(t1);
@@ -67,7 +68,7 @@ static void pp_exp_bn(fp12_t c, fp12_t a) {
 		 * Rodríguez-Henríquez: Fast Hashing to G_2.
 		 */
 		fp_prime_get_par(x);
-		fp_param_get_sps(b, &l);
+		b = fp_prime_get_par_sps(&l);
 
 		/* First, compute m = f^(p^6 - 1)(p^2 + 1). */
 		fp12_conv_cyc(c, a);
@@ -133,7 +134,8 @@ static void pp_exp_bn(fp12_t c, fp12_t a) {
 static void pp_exp_b12(fp12_t c, fp12_t a) {
 	fp12_t t0, t1, t2, t3;
 	bn_t x;
-	int l = RLC_TERMS + 1, b[RLC_TERMS + 1];
+	const int *b;
+	int l;
 
 	fp12_null(t0);
 	fp12_null(t1);
@@ -153,7 +155,7 @@ static void pp_exp_b12(fp12_t c, fp12_t a) {
 		 * On the Computation of Optimal Ate Pairing at the 192-bit Level.
 		 */
 		fp_prime_get_par(x);
-		fp_param_get_sps(b, &l);
+		b = fp_prime_get_par_sps(&l);
 
 		/* First, compute m^(p^6 - 1)(p^2 + 1). */
 		fp12_conv_cyc(c, a);
