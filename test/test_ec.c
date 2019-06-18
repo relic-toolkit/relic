@@ -504,12 +504,14 @@ static int simultaneous(void) {
 			ec_mul(p, p, k);
 			ec_mul(q, q, l);
 			ec_add(q, q, p);
+			ec_norm(q, q);
 			TEST_ASSERT(ec_cmp(q, r) == RLC_EQ, end);
 			bn_neg(k, k);
 			ec_mul_sim(r, p, k, q, l);
 			ec_mul(p, p, k);
 			ec_mul(q, q, l);
 			ec_add(q, q, p);
+			ec_norm(q, q);
 			TEST_ASSERT(ec_cmp(q, r) == RLC_EQ, end);
 			bn_neg(l, l);
 			ec_mul_sim(r, p, k, q, l);
