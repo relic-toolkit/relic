@@ -53,7 +53,6 @@ void fb_mulh_low(dig_t *c, const dig_t *a) {
 	uint8_t ta;
 	int j;
 	rlc_align dig_t x[2];
-	dig_t *tab;
 
 #define LSHIFT8(m2,m1,m0)\
 	m2=_mm_alignr_epi8(m2,m1,15);\
@@ -61,7 +60,7 @@ void fb_mulh_low(dig_t *c, const dig_t *a) {
 	m0=_mm_slli_si128(m0,1);
 
 #define M(m1,m0,ta)\
-	tab = fb_poly_tab_srz(ta);\
+	const dig_t *tab = fb_poly_tab_srz(ta);\
 	m0=_mm_xor_si128(m0, ((__m128i *)tab)[0]);\
 	m1=_mm_xor_si128(m1, ((__m128i *)tab)[1]);\
 

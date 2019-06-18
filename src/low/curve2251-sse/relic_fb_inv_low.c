@@ -38,10 +38,8 @@
 /*============================================================================*/
 
 void fb_invn_low(dig_t *c, const dig_t *a) {
-	int i, j, x, y;
-	int *chain, len;
-
-	chain = fb_poly_get_chain(&len);
+	int i, j, x, y, len;
+	const int *chain = fb_poly_get_chain(&len);
 
 	int u[len + 1];
 	fb_t table[len + 1];

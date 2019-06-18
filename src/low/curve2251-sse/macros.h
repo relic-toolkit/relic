@@ -93,3 +93,4 @@
 	m0 = _mm_xor_si128(m0,_mm_srli_epi64(m9,57));						\
 	m0 = _mm_xor_si128(m0,_mm_srli_epi64(m9,55));						\
 	m0 = _mm_xor_si128(m0,_mm_srli_epi64(m9,52));						\
+
