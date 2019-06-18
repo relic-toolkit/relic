@@ -752,8 +752,7 @@ void eb_mul_lodah(eb_t r, const eb_t p, const bn_t k) {
 			if (fb_is_zero(z2)) {
 				fb_copy(r->x, p->x);
 				fb_add(r->y, p->x, p->y);
-				fb_zero(r->z);
-				fb_set_bit(r->z, 0, 1);
+				fb_set_dig(r->z, 1);
 			} else {
 				/* r3 = z1 * z2. */
 				fb_mul(r3, z1, z2);
@@ -790,12 +789,11 @@ void eb_mul_lodah(eb_t r, const eb_t p, const bn_t k) {
 
 				fb_copy(r->x, x2);
 				fb_copy(r->y, z2);
-				fb_zero(r->z);
-				fb_set_bit(r->z, 0, 1);
-
-				r->norm = 1;
+				fb_set_dig(r->z, 1);
 			}
 		}
+
+		r->norm = 1;
 
 		if (bn_sign(k) == RLC_NEG) {
 			eb_neg(r, r);

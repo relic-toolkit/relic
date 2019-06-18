@@ -222,8 +222,6 @@ static void eb_mul_sim_plain(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 		bn_rec_naf(naf1, &l1, m, EB_WIDTH);
 
 		l = RLC_MAX(l0, l1);
-		_k = naf0 + l - 1;
-		_m = naf1 + l - 1;
 		for (i =  l0; i < l; i++) {
 			naf0[i] = 0;
 		}
@@ -242,6 +240,8 @@ static void eb_mul_sim_plain(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 			}
 		}
 
+		_k = naf0 + l - 1;
+		_m = naf1 + l - 1;
 		eb_set_infty(r);
 		for (i =  l - 1; i >= 0; i--, _k--, _m--) {
 			eb_dbl(r, r);
