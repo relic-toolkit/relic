@@ -157,8 +157,9 @@ void fb_muld_low(dig_t *c, const dig_t *a, const dig_t *b, int size) {
 	const dig_t *tmpa;
 	int i, j;
 
-    for(i =0; i < 16; i++)
+    for(i = 0; i < 16; i++) {
         t[i] = tt + i * (size + 1);
+	}
 
 	dv_zero(c, 2 * size);
 
