@@ -147,8 +147,7 @@ static void ep2_mul_glv_imp(ep2_t r, ep2_t p, const bn_t k) {
 					}
 				}
 				break;
-			case EP_OT:
-			case EP_B12:
+			default:
 				bn_abs(v[0], k);
 				fp_prime_get_par(u[0]);
 				bn_copy(u[1], u[0]);
