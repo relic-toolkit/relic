@@ -107,6 +107,8 @@ enum {
 	KSS_P508,
 	/** Optimal TNFS-secure curve with embedding degree 8. */
 	OT8_P511,
+	/** Cocks-pinch curve with embedding degree 8. */
+	CP8_P544,
 	/** Barreto-Naehrig curve with positive x. */
 	BN_P638,
 	/** Barreto-Lynn-Scott curve with embedding degree 12. */
@@ -1046,6 +1048,17 @@ void ep_mul_sim_joint(ep_t r, const ep_t p, const bn_t k, const ep_t q,
  * @param[in] m				- the second integer.
  */
 void ep_mul_sim_gen(ep_t r, const bn_t k, const ep_t q, const bn_t m);
+
+/**
+ * Multiplies prime elliptic curve points by small scalars.
+ * Computes R = \sum k_iP_i.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the points to multiply.
+ * @param[in] k				- the small scalars.
+ * @param[in] len			- the number of points to multiply.
+ */
+void ep_mul_sim_dig(ep_t r, const ep_t p[], dig_t k[], int len);
 
 /**
  * Converts a point to affine coordinates.

@@ -261,14 +261,14 @@ typedef struct _ctx_t {
 	fp_st ep_a;
 	/** The 'b' coefficient of the elliptic curve. */
 	fp_st ep_b;
-	/** The square root of -3 needed for hashing. */
-	fp_st srm3;
 	/** The generator of the elliptic curve. */
 	ep_st ep_g;
 	/** The order of the group of points in the elliptic curve. */
 	bn_st ep_r;
 	/** The cofactor of the group order in the elliptic curve. */
 	bn_st ep_h;
+	/** The square root of -3 needed for hashing. */
+	fp_st srm3;
 #ifdef EP_ENDOM
 #if EP_MUL == LWNAF || EP_FIX == COMBS || EP_FIX == LWNAF || EP_SIM == INTER || !defined(STRIP)
 	/** Parameters required by the GLV method. @{ */

@@ -693,6 +693,15 @@ void ep2_mul_lwreg(ep2_t r, ep2_t p, const bn_t k);
 void ep2_mul_gen(ep2_t r, bn_t k);
 
 /**
+ * Multiplies a prime elliptic point by a small integer.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to multiply.
+ * @param[in] k				- the integer.
+ */
+void ep2_mul_dig(ep2_t r, ep2_t p, dig_t k);
+
+/**
  * Builds a precomputation table for multiplying a fixed prime elliptic point
  * using the binary method.
  *
@@ -866,13 +875,15 @@ void ep2_mul_sim_joint(ep2_t r, ep2_t p, bn_t k, ep2_t q, bn_t m);
 void ep2_mul_sim_gen(ep2_t r, bn_t k, ep2_t q, bn_t m);
 
 /**
- * Multiplies a prime elliptic point by a small integer.
+ * Multiplies prime elliptic curve points by small scalars.
+ * Computes R = \sum k_iP_i.
  *
  * @param[out] r			- the result.
- * @param[in] p				- the point to multiply.
- * @param[in] k				- the integer.
+ * @param[in] p				- the points to multiply.
+ * @param[in] k				- the small scalars.
+ * @param[in] len			- the number of points to multiply.
  */
-void ep2_mul_dig(ep2_t r, ep2_t p, dig_t k);
+void ep2_mul_sim_dig(ep2_t r, const ep2_t p[], dig_t k[], int len);
 
 /**
  * Converts a point to affine coordinates.
