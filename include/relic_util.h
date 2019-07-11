@@ -115,20 +115,28 @@
 #define RLC_HIGH(D)				(D >> (RLC_DIG >> 1))
 
 /**
- * Selects between two values depending on the value of a flag.
+ * Selects between two values based on the value of a given flag.
  *
  * @param[in] A			- the first argument.
  * @param[in] B			- the second argument.
  * @param[in] C			- the selection flag.
  */
-#define RLC_SEL(A, B, C) ((-(C) & ((A) ^ (B))) ^ (A))
+#define RLC_SEL(A, B, C) 		((-(C) & ((A) ^ (B))) ^ (A))
+
+/**
+ * Swaps two values.
+ *
+ * @param[in] A			- the first argument.
+ * @param[in] B			- the second argument.
+ */
+#define RLC_SWAP(A, B) 			((A) ^= (B), (B) ^= (A), (A) ^= (B))
 
 /**
  * Returns the given character in upper case.
  *
  * @param[in] C			- the character.
  */
-#define RLC_UPP(C)			((C) - 0x20 * (((C) >= 'a') && ((C) <= 'z')))
+#define RLC_UPP(C)				((C) - 0x20 * (((C) >= 'a') && ((C) <= 'z')))
 
 /**
   *  Indirection to help some compilers expand symbols.
