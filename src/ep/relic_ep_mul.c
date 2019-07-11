@@ -368,7 +368,7 @@ static void ep_mul_reg_glv(ep_t r, const ep_t p, const bn_t k) {
 		bn_free(n);
 		bn_free(k0);
 		bn_free(k1);
-		bn_free(n)
+		bn_free(n);
 		ep_free(q);
 		ep_free(u);
 		ep_free(v);

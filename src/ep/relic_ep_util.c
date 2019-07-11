@@ -177,7 +177,6 @@ void ep_rhs(fp_t rhs, const ep_t p) {
 		}
 
 		fp_copy(rhs, t1);
-
 	} CATCH_ANY {
 		THROW(ERR_CAUGHT);
 	} FINALLY {

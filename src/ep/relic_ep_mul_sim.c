@@ -686,3 +686,37 @@ void ep_mul_sim_gen(ep_t r, const bn_t k, const ep_t q, const bn_t m) {
 		ep_free(g);
 	}
 }
+
+void ep_mul_sim_dig(ep_t r, const ep_t p[], dig_t k[], int len) {
+	ep_t t;
+	int max;
+
+	ep_null(t);
+
+	max = util_bits_dig(k[0]);
+	for (int i = 1; i < len; i++) {
+		max = RLC_MAX(max, util_bits_dig(k[i]));
+	}
+
+	TRY {
+		ep_new(t);
+
+		ep_set_infty(t);
+		for (int i = max - 1; i >= 0; i--) {
+			ep_dbl(t, t);
+			for (int j = 0; j < len; j++) {
+				if (k[j] & ((dig_t)1 << i)) {
+					ep_add(t, t, p[j]);
+				}
+			}
+		}
+
+		ep_norm(r, t);
+	}
+	CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	}
+	FINALLY {
+		ep_free(t);
+	}
+}
