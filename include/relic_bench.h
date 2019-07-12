@@ -84,14 +84,24 @@
 #define BENCH_BEGIN(LABEL)													\
 	bench_reset();															\
 	util_print("BENCH: " LABEL "%*c = ", (int)(32 - strlen(LABEL)), ' ');	\
-	for (int i = 0; i < BENCH; i++)	{										\
+	for (int _b = 0; _b < BENCH; _b++)	{									\
 
 /**
- * Prints the mean timing of each execution in nanoseconds.
+ * Prints the average timing of each execution in the chosen metric.
  */
 #define BENCH_END															\
 	}																		\
 	bench_compute(BENCH * BENCH);											\
+	bench_print()															\
+
+/**
+ * Prints the average timing of each execution amortized by N.
+ *
+ * @param N				- the amortization factor.
+ */
+#define BENCH_DIV(N)														\
+	}																		\
+	bench_compute(BENCH * BENCH * N);										\
 	bench_print()															\
 
 /**
@@ -102,7 +112,7 @@
 #define BENCH_ADD(FUNCTION)													\
 	FUNCTION;																\
 	bench_before();															\
-	for (int j = 0; j < BENCH; j++) {										\
+	for (int _b = 0; _b < BENCH; _b++) {										\
 		FUNCTION;															\
 	}																		\
 	bench_after();															\
