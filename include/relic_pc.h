@@ -606,6 +606,15 @@ typedef RLC_CAT(GT_LOWER, t) gt_t;
 #define g1_mul(R, P, K)		RLC_CAT(G1_LOWER, mul)(R, P, K)
 
 /**
+ * Multiplies an element from G_1 by a secret scalar. Computes R = kP.
+ *
+ * @param[out] R				- the result.
+ * @param[in] P					- the element to multiply.
+ * @param[in] K					- the secret scalar.
+ */
+#define g1_mul_key(R, P, K)		RLC_CAT(G1_LOWER, mul_lwreg)(R, P, K)
+
+/**
  * Multiplies an element from G_1 by a small integer. Computes R = kP.
  *
  * @param[out] R			- the result.
@@ -705,6 +714,16 @@ typedef RLC_CAT(GT_LOWER, t) gt_t;
 #define g1_mul_sim(R, P, K, Q, L)	RLC_CAT(G1_LOWER, mul_sim)(R, P, K, Q, L)
 
 /**
+ * Multiplies elements from G_1 by small scalars. Computes R = \sum k_iP_i.
+ *
+ * @param[out] R			- the result.
+ * @param[in] P				- the elements to multiply.
+ * @param[in] K				- the small scalars.
+ * @param[in] L				- the number of points to multiply.
+ */
+#define g1_mul_sim_dig(R, P, K, L)	RLC_CAT(G1_LOWER, mul_sim_dig)(R, P, K, L)
+
+/**
  * Multiplies simultaneously two elements from G_2. Computes R = kP + lQ.
  *
  * @param[out] R			- the result.
@@ -714,6 +733,16 @@ typedef RLC_CAT(GT_LOWER, t) gt_t;
  * @param[out] Q			- the second integer scalar.
  */
 #define g2_mul_sim(R, P, K, Q, L)	RLC_CAT(G2_LOWER, mul_sim)(R, P, K, Q, L)
+
+/**
+ * Multiplies elements from G_2 by small scalars. Computes R = \sum k_iP_i.
+ *
+ * @param[out] R			- the result.
+ * @param[in] P				- the elements to multiply.
+ * @param[in] K				- the small scalars.
+ * @param[in] L				- the number of points to multiply.
+ */
+#define g2_mul_sim_dig(R, P, K, L)	RLC_CAT(G2_LOWER, mul_sim_dig)(R, P, K, L)
 
 /**
  * Multiplies simultaneously two elements from G_1, where one of the is the

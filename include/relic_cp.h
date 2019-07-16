@@ -1640,6 +1640,7 @@ int cp_zss_gen(bn_t d, g1_t q, gt_t z);
  * @param[in] len			- the message length in bytes.
  * @param[in] hash			- the flag to indicate the message format.
  * @param[in] d				- the private key.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_zss_sig(g2_t s, uint8_t *msg, int len, int hash, bn_t d);
 
@@ -1660,6 +1661,7 @@ int cp_zss_ver(g2_t s, uint8_t *msg, int len, int hash, g1_t q, gt_t z);
  * Generates a vBNN-IBS key generation center.
  *
  * @param[out] kgc 			- the key generation center.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_vbnn_gen(vbnn_kgc_t kgc);
 
@@ -1670,6 +1672,7 @@ int cp_vbnn_gen(vbnn_kgc_t kgc);
  * @param[in]  kgc 			- the key generation center.
  * @param[in]  id			- the identity used for extraction.
  * @param[in]  id_len		- the identity length in bytes.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_vbnn_gen_prv(vbnn_user_t user, vbnn_kgc_t kgc, uint8_t *id, int id_len);
 
@@ -1684,6 +1687,7 @@ int cp_vbnn_gen_prv(vbnn_user_t user, vbnn_kgc_t kgc, uint8_t *id, int id_len);
  * @param[in] 	msg 		- the message buffer to sign.
  * @param[in] 	msg_len 	- the size of message buffer.
  * @param[in] 	user 		- the user who creates the signature.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_vbnn_sig(ec_t r, bn_t z, bn_t h, uint8_t *id, int id_len, uint8_t *msg,
 		int msg_len, vbnn_user_t user);
@@ -1698,9 +1702,172 @@ int cp_vbnn_sig(ec_t r, bn_t z, bn_t h, uint8_t *id, int id_len, uint8_t *msg,
  * @param[in] 	id_len 		- the size of identity buffer.
  * @param[in] 	msg 		- the message buffer to sign.
  * @param[in] 	msg_len 	- the size of message buffer.
- * @param[in] 	mpk			- the master public key of the key generation center.
+ * @param[in] 	mpk			- the master public key of the generation center.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_vbnn_ver(ec_t r, bn_t z, bn_t h, uint8_t *id, int id_len, uint8_t *msg,
 		int msg_len, ec_t mpk);
+
+/**
+ * Initialize the Context-hiding Multi-key Homomorphic Signature scheme (CMLHS).
+ * The scheme due to Schabhuser et al. signs a vector of messages.
+ *
+ * @param[out] h			- the random element (message as one component).
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int cp_cmlhs_init(g1_t h);
+
+/**
+ * Generates a key pair for the CMLHS scheme using BLS as underlying signature.
+ *
+ * @param[out] x 			- the exponent values, one per label.
+ * @param[out] hs 			- the hash values, one per label.
+ * @param[in] len			- the number of possible labels.
+ * @param[out] prf 			- the key for the pseudo-random function (PRF).
+ * @param[out] plen 		- the PRF key length.
+ * @param[out] sk 			- the private key for the BLS signature scheme.
+ * @param[out] pk 			- the public key for the BLS signature scheme.
+ * @param[out] d 			- the secret exponent.
+ * @param[out] y 			- the corresponding public element.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int cp_cmlhs_gen(bn_t x[], gt_t hs[], int len, uint8_t prf[], int plen,
+		bn_t sk, g2_t pk, bn_t d, g2_t y);
+
+/**
+ * Signs a message vector using the CMLHS.
+ *
+ * @param[out] sig 			- the resulting BLS signature.
+ * @param[out] z 			- the power of the output of the PRF.
+ * @param[out] a 			- the first component of the signature.
+ * @param[out] c 			- the second component of the signature.
+ * @param[out] r 			- the third component of the signature.
+ * @param[out] s 			- the fourth component of the signature.
+ * @param[in] msg 			- the message vector to sign (one component).
+ * @param[in] data 			- the dataset identifier.
+ * @param[in] dlen 			- the length of the dataset identifier.
+ * @param[in] label 		- the integer label.
+ * @param[in] x 			- the exponent value for the label.
+ * @param[in] h 			- the random value (message has one component).
+ * @param[in] prf 			- the key for the pseudo-random function (PRF).
+ * @param[in] plen 			- the PRF key length.
+ * @param[in] sk 			- the private key for the BLS signature scheme.
+ * @param[out] d 			- the secret exponent.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int cp_cmlhs_sig(g1_t sig, g2_t z, g1_t a, g1_t c, g1_t r, g2_t s, bn_t msg,
+		char *data, int dlen, int label, bn_t x, g1_t h,
+		uint8_t prf[], int plen, bn_t sk, bn_t d);
+
+/**
+ * Applies a function over a set of CMLHS signatures from the same user.
+ *
+ * @param[out] a			- the resulting first component of the signature.
+ * @param[out] c			- the resulting second component of the signature.
+ * @param[in] as			- the vector of first components of the signatures.
+ * @param[in] cs			- the vector of second components of the signatures.
+ * @param[in] f 			- the linear coefficients in the function.
+ * @param[in] len			- the number of coefficients.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int cp_cmlhs_fun(g1_t a, g1_t c, g1_t as[], g1_t cs[], dig_t f[], int len);
+
+/**
+ * Evaluates a function over a set of CMLHS signatures.
+ *
+ * @param[out] r			- the resulting third component of the signature.
+ * @param[out] s			- the resulting fourth component of the signature.
+ * @param[in] rs			- the vector of third components of the signatures.
+ * @param[in] ss			- the vector of fourth components of the signatures.
+ * @param[in] f 			- the linear coefficients in the function.
+ * @param[in] len			- the number of coefficients.
+ */
+int cp_cmlhs_evl(g1_t r, g2_t s, g1_t rs[], g2_t ss[], dig_t f[], int len);
+
+/**
+ * Verifies a CMLHS signature over a set of messages.
+ *
+ * @param[in] r 			- the first component of the homomorphic signature.
+ * @param[in] s 			- the second component of the homomorphic signature.
+ * @param[in] sig 			- the BLS signatures.
+ * @param[in] z 			- the powers of the outputs of the PRF.
+ * @param[in] a				- the vector of first components of the signatures.
+ * @param[in] c				- the vector of second components of the signatures.
+ * @param[in] msg 			- the combined message.
+ * @param[in] data 			- the dataset identifier.
+ * @param[in] dlen 			- the length of the dataset identifier.
+ * @param[in] label 		- the integer labels.
+ * @param[in] h				- the random element (message has one component).
+ * @param[in] hs 			- the hash values, one per label.
+ * @param[in] f 			- the linear coefficients in the function.
+ * @param[in] flen			- the number of coefficients.
+ * @param[in] y 			- the public elements of the users.
+ * @param[in] pk 			- the public keys of the users.
+ * @param[in] slen 			- the number of signatures.
+ * @return a boolean value indicating the verification result.
+ */
+int cp_cmlhs_ver(g1_t r, g2_t s, g1_t sig[], g2_t z[], g1_t a[], g1_t c[],
+		bn_t m, char *data, int dlen, int label[], g1_t h,
+		gt_t hs[][RLC_TERMS], dig_t f[][RLC_TERMS], int flen[], g2_t y[],
+		g2_t pk[], int slen);
+
+/**
+ * Generates a key pair for the Multi-Key Homomorphic Signature (MKLHS) scheme.
+ *
+ * @param[out] sk 			- the private key for the signature scheme.
+ * @param[out] pk 			- the public key for the signature scheme.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int cp_mklhs_gen(bn_t sk, g2_t pk);
+
+/**
+ * Signs a message using the MKLHS.
+ *
+ * @param[out] s 			- the resulting signature.
+ * @param[in] m 			- the message to sign.
+ * @param[in] label 		- the label.
+ * @param[in] len 			- the length of the label.
+ * @param[in] sk 			- the private key for the signature scheme.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int cp_mklhs_sig(g1_t s, bn_t m, char *label, int len, bn_t sk);
+
+/**
+ * Applies a function over a set of messages from the same user.
+ *
+ * @param[out] mu			- the combined message.
+ * @param[in] m				- the vector of individual messages.
+ * @param[in] f 			- the linear coefficients in the function.
+ * @param[in] len			- the number of coefficients.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int cp_mklhs_fun(bn_t mu, bn_t m[], dig_t f[], int len);
+
+/**
+ * Evaluates a function over a set of MKLHS signatures.
+ *
+ * @param[out] sig			- the resulting signature
+ * @param[in] s				- the set of signatures.
+ * @param[in] f 			- the linear coefficients in the function.
+ * @param[in] len			- the number of coefficients.
+ */
+int cp_mklhs_evl(g1_t sig, g1_t s[], dig_t f[], int len);
+
+/**
+ * Verifies a MKLHS signature over a set of messages.
+ *
+ * @param[in] sig 			- the homomorphic signature to verify.
+ * @param[in] m 			- the signed message.
+ * @param[in] mu			- the vector of signed messages per user.
+ * @param[in] label 		- the vector of labels.
+ * @param[in] llen 			- the vector of label lengths.
+ * @param[in] f 			- the linear coefficients in the function.
+ * @param[in] flen			- the number of coefficients.
+ * @param[in] pk 			- the public keys of the users.
+ * @param[in] slen 			- the number of signatures.
+ * @return a boolean value indicating the verification result.
+ */
+int cp_mklhs_ver(g1_t sig, bn_t m, bn_t mu[], char *label[], int llen[],
+		dig_t f[][RLC_TERMS], int flen[], g2_t pk[], int slen);
 
 #endif /* !RLC_CP_H */

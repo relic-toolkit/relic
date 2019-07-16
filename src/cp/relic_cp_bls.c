@@ -66,7 +66,7 @@ int cp_bls_sig(g1_t s, uint8_t *msg, int len, bn_t d) {
 	TRY {
 		g1_new(p);
 		g1_map(p, msg, len);
-		g1_mul(s, p, d);
+		g1_mul_key(s, p, d);
 	}
 	CATCH_ANY {
 		result = RLC_ERR;

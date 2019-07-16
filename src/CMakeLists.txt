@@ -131,6 +131,8 @@ if (WITH_CP)
 		list(APPEND RELIC_SRCS "cp/relic_cp_pss.c")
 		list(APPEND RELIC_SRCS "cp/relic_cp_bbs.c")
 		list(APPEND RELIC_SRCS "cp/relic_cp_zss.c")
+		list(APPEND RELIC_SRCS "cp/relic_cp_cmlhs.c")
+		list(APPEND RELIC_SRCS "cp/relic_cp_mklhs.c")
 	endif(WITH_PP)
 endif(WITH_CP)
 

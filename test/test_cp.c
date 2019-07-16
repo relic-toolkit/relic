@@ -402,16 +402,16 @@ uint8_t result[] = {
 	RLC_GET(str, CURVE##_A, sizeof(CURVE##_A));								\
 	bn_read_str(da, str, strlen(str), 16);									\
 	RLC_GET(str, CURVE##_A_X, sizeof(CURVE##_A_X));							\
-	fp_read_str(qa->x, str, strlen(str), 16);									\
+	fp_read_str(qa->x, str, strlen(str), 16);								\
 	RLC_GET(str, CURVE##_A_Y, sizeof(CURVE##_A_Y));							\
-	fp_read_str(qa->y, str, strlen(str), 16);									\
+	fp_read_str(qa->y, str, strlen(str), 16);								\
 	fp_set_dig(qa->z, 1);													\
 	RLC_GET(str, CURVE##_B, sizeof(CURVE##_B));								\
 	bn_read_str(d_b, str, strlen(str), 16);									\
 	RLC_GET(str, CURVE##_B_X, sizeof(CURVE##_B_X));							\
-	fp_read_str(q_b->x, str, strlen(str), 16);									\
+	fp_read_str(q_b->x, str, strlen(str), 16);								\
 	RLC_GET(str, CURVE##_B_Y, sizeof(CURVE##_B_Y));							\
-	fp_read_str(q_b->y, str, strlen(str), 16);									\
+	fp_read_str(q_b->y, str, strlen(str), 16);								\
 	fp_set_dig(q_b->z, 1);													\
 	qa->norm = q_b->norm = 1;												\
 
@@ -419,16 +419,16 @@ uint8_t result[] = {
 	RLC_GET(str, CURVE##_A, sizeof(CURVE##_A));								\
 	bn_read_str(da, str, strlen(str), 16);									\
 	RLC_GET(str, CURVE##_A_X, sizeof(CURVE##_A_X));							\
-	fb_read_str(qa->x, str, strlen(str), 16);									\
+	fb_read_str(qa->x, str, strlen(str), 16);								\
 	RLC_GET(str, CURVE##_A_Y, sizeof(CURVE##_A_Y));							\
-	fb_read_str(qa->y, str, strlen(str), 16);									\
+	fb_read_str(qa->y, str, strlen(str), 16);								\
 	fb_set_dig(qa->z, 1);													\
 	RLC_GET(str, CURVE##_B, sizeof(CURVE##_B));								\
 	bn_read_str(d_b, str, strlen(str), 16);									\
 	RLC_GET(str, CURVE##_B_X, sizeof(CURVE##_B_X));							\
-	fb_read_str(q_b->x, str, strlen(str), 16);									\
+	fb_read_str(q_b->x, str, strlen(str), 16);								\
 	RLC_GET(str, CURVE##_B_Y, sizeof(CURVE##_B_Y));							\
-	fb_read_str(q_b->y, str, strlen(str), 16);									\
+	fb_read_str(q_b->y, str, strlen(str), 16);								\
 	fb_set_dig(q_b->z, 1);													\
 	qa->norm = q_b->norm = 1;												\
 
@@ -1286,7 +1286,200 @@ static int zss(void) {
 	return code;
 }
 
-#endif
+#define S	2			/* Number of signers. */
+#define L	4			/* Number of labels. */
+#define K	RLC_MD_LEN	/* Size of PRF key. */
+
+static int lhs(void) {
+	int code = RLC_ERR;
+	uint8_t k[S][K];
+	bn_t m, n, msg[S][L], sk[S], d[S], x[S][L];
+	g1_t _r, h, as[S], cs[S], sig[S];
+	g1_t a[S][L], c[S][L], r[S][L];
+	g2_t _s, s[S][L], pk[S], y[S], z[S];
+	gt_t hs[S][RLC_TERMS];
+	char *id = "id";
+
+	bn_null(m);
+	bn_null(n);
+	g1_null(h);
+	g1_null(_r);
+	g2_null(_s);
+
+	TRY {
+		bn_new(m);
+		bn_new(n);
+		g1_new(h);
+		g1_new(_r);
+		g2_new(_s);
+
+		g1_get_ord(n);
+		for (int i = 0; i < S; i++) {
+			for (int j = 0; j < RLC_TERMS; j++) {
+				gt_null(hs[i][j]);
+				gt_new(hs[i][j]);
+			}
+			for (int j = 0; j < L; j++) {
+				bn_null(x[i][j]);
+				bn_null(msg[i][j]);
+				g1_null(a[i][j]);
+				g1_null(c[i][j]);
+				g1_null(r[i][j]);
+				g2_null(s[i][j]);
+				bn_new(x[i][j]);
+				bn_new(msg[i][j]);
+				g1_new(a[i][j]);
+				g1_new(c[i][j]);
+				g1_new(r[i][j]);
+				g2_new(s[i][j]);
+			}
+			bn_null(sk[i]);
+			bn_null(d[i]);
+			g1_null(sig[i]);
+			g1_null(as[i]);
+			g1_null(cs[i]);
+			g2_null(y[i]);
+			g2_null(z[i]);
+			g2_null(pk[i]);
+
+			bn_new(sk[i]);
+			bn_new(d[i]);
+			g1_new(sig[i]);
+			g1_new(as[i]);
+			g1_new(cs[i]);
+			g2_new(y[i]);
+			g2_new(z[i]);
+			g2_new(pk[i]);
+		}
+
+		/* Define linear function. */
+		dig_t f[S][RLC_TERMS];
+		int flen[S];
+		for (int i = 0; i < S; i++) {
+			for (int j = 0; j < RLC_TERMS; j++) {
+				rand_bytes((uint8_t *)&f[i][j], sizeof(uint32_t));
+			}
+			flen[i] = L;
+		}
+
+		/* Initialize scheme for messages of single components. */
+		cp_cmlhs_init(h);
+		for (int j = 0; j < S; j++) {
+			cp_cmlhs_gen(x[j], hs[j], L, k[j], K, sk[j], pk[j], d[j], y[j]);
+		}
+
+		TEST_BEGIN("context-hiding linear homomorphic signature is correct") {
+			int label[L];
+			/* Compute all signatures. */
+			for (int j = 0; j < S; j++) {
+				for (int l = 0; l < L; l++) {
+					label[l] = l;
+					bn_rand_mod(msg[j][l], n);
+					cp_cmlhs_sig(sig[j], z[j], a[j][l], c[j][l], r[j][l], s[j][l],
+						msg[j][l], id, sizeof(id), label[l], x[j][l], h, k[j], K,
+						d[j], sk[j]);
+				}
+			}
+			/* Apply linear function over signatures. */
+			for (int j = 0; j < S; j++) {
+				cp_cmlhs_fun(as[j], cs[j], a[j], c[j], f[j], L);
+			}
+			cp_cmlhs_evl(_r, _s, r[0], s[0], f[0], L);
+			for (int j = 1; j < S; j++) {
+				cp_cmlhs_evl(r[0][0], s[0][0], r[j], s[j], f[j], L);
+				g1_add(_r, _r, r[0][0]);
+				g2_add(_s, _s, s[0][0]);
+			}
+			g1_norm(_r, _r);
+			g2_norm(_s, _s);
+			/* We share messages between users to simplify tests. */
+			bn_zero(m);
+			for (int j = 0; j < S; j++) {
+				for (int l = 0; l < L; l++) {
+					bn_mul_dig(msg[j][l], msg[j][l], f[j][l]);
+					bn_add(m, m, msg[j][l]);
+					bn_mod(m, m, n);
+				}
+			}
+			TEST_ASSERT(cp_cmlhs_ver(_r, _s, sig, z, as, cs, m, id,
+				sizeof(id), label, h, hs, f, flen, y, pk, S) == 1, end);
+		}
+		TEST_END;
+
+		char *ls[L] = { "l" };
+		int lens[L] = { sizeof(ls[0]) };
+
+		TEST_BEGIN("simple linear multi-key homomorphic signature is correct") {
+			for (int j = 0; j < S; j++) {
+				cp_mklhs_gen(sk[j], pk[j]);
+				for (int l = 0; l < L; l++) {
+					bn_rand_mod(msg[j][l], n);
+					cp_mklhs_sig(a[j][l], msg[j][l], ls[l], lens[l], sk[j]);
+				}
+			}
+
+			for (int j = 0; j < S; j++) {
+				cp_mklhs_fun(d[j], msg[j], f[j], L);
+			}
+
+			g1_set_infty(_r);
+			for (int j = 0; j < S; j++) {
+				cp_mklhs_evl(r[0][j], a[j], f[j], L);
+				g1_add(_r, _r, r[0][j]);
+			}
+			g1_norm(_r, _r);
+
+			bn_zero(m);
+			for (int j = 0; j < S; j++) {
+				for (int l = 0; l < L; l++) {
+					bn_mul_dig(msg[j][l], msg[j][l], f[j][l]);
+					bn_add(m, m, msg[j][l]);
+					bn_mod(m, m, n);
+				}
+			}
+
+			TEST_ASSERT(cp_mklhs_ver(_r, m, d, ls, lens, f, flen, pk, S) == 1,
+				end);
+		}
+		TEST_END;
+	}
+	CATCH_ANY {
+		ERROR(end);
+	}
+	code = RLC_OK;
+
+  end:
+	  bn_free(n);
+	  bn_free(m);
+	  g1_free(h);
+	  g1_free(_r);
+	  g2_free(_s);
+
+	  for (int i = 0; i < S; i++) {
+		  for (int j = 0; j < RLC_TERMS; j++) {
+			  gt_free(hs[i][j]);
+		  }
+		  for (int j = 0; j < L; j++) {
+			  bn_free(x[i][j]);
+			  bn_free(msg[i][j]);
+			  g1_free(a[i][j]);
+			  g1_free(c[i][j]);
+			  g1_free(r[i][j]);
+			  g2_free(s[i][j]);
+		  }
+		  bn_free(sk[i]);
+		  bn_free(d[i]);
+		  g1_free(sig[i]);
+		  g1_free(as[i]);
+		  g1_free(cs[i]);
+		  g2_free(y[i]);
+		  g2_free(z[i]);
+		  g2_free(pk[i]);
+	  }
+	return code;
+}
+
+#endif /* WITH_PC */
 
 int main(void) {
 	if (core_init() != RLC_OK) {
@@ -1364,6 +1557,7 @@ int main(void) {
 #if defined(WITH_PC)
 	util_banner("Protocols based on pairings:\n", 0);
 	if (pc_param_set_any() == RLC_OK) {
+
 		if (sokaka() != RLC_OK) {
 			core_clean();
 			return 1;
@@ -1400,6 +1594,11 @@ int main(void) {
 		}
 
 		if (zss() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (lhs() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
