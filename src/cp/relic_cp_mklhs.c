@@ -127,7 +127,7 @@ int cp_mklhs_evl(g1_t sig, g1_t s[], dig_t f[], int len) {
 int cp_mklhs_ver(g1_t sig, bn_t m, bn_t mu[], char *label[], int llen[],
 		dig_t f[][RLC_TERMS], int flen[], g2_t pk[], int slen) {
 	bn_t t, n;
-	g1_t g[slen];
+	g1_t *g = RLC_ALLOCA(g1_t, slen);
 	g2_t g2;
 	gt_t c, e;
 	int ver1 = 0, ver2 = 0;
@@ -159,7 +159,7 @@ int cp_mklhs_ver(g1_t sig, bn_t m, bn_t mu[], char *label[], int llen[],
 		}
 
 		for (int i = 0; i < slen; i++) {
-			g1_t h[flen[i]];
+			g1_t *h = RLC_ALLOCA(g1_t, flen[i]);
 			for (int j = 0; j < flen[i]; j++) {
 				g1_null(h[j]);
 				g1_new(h[j]);
