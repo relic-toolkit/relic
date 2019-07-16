@@ -130,11 +130,10 @@ int g1_is_valid(g1_t a) {
 			/* Otherwise, check order explicitly. */
 			g1_get_ord(n);
 			/* Multiply by (n-1)/2 to prevent weird interactions with recoding. */
-			bn_sub_dig(n, n, 1);
+			bn_add_dig(n, n, 1);
 			bn_hlv(n, n);
 			g1_mul(u, a, n);
 			g1_dbl(u, u);
-			g1_neg(u, u);
 			r = (g1_cmp(u, a) == RLC_EQ);
 		}
 	} CATCH_ANY {
@@ -165,20 +164,32 @@ int g2_is_valid(g2_t a) {
 
 		g2_get_ord(n);
 		ep_curve_get_cof(p);
-		bn_mul(n, n, p);
-		dv_copy(p->dp, fp_prime_get(), RLC_FP_DIGS);
-		p->used = RLC_FP_DIGS;
-		p->sign = RLC_POS;
-		/* Compute trace t = p - n + 1. */
-		bn_sub(n, p, n);
-		bn_add_dig(n, n, 1);
-		/* Compute u = a^t. */
-		g2_mul(u, a, n);
-		/* Compute v = a^(p + 1). */
-		ep2_frb(v, a, 1);
-		g2_add(v, v, a);
-		/* Check if a^(p + 1) = a^t. */
-		r = (g2_cmp(u, v) == RLC_EQ);
+
+		if (bn_cmp_dig(p, 1) == RLC_EQ) {
+			/* Trick for curves of prime order or subgroup-secure. */
+			bn_mul(n, n, p);
+			dv_copy(p->dp, fp_prime_get(), RLC_FP_DIGS);
+			p->used = RLC_FP_DIGS;
+			p->sign = RLC_POS;
+			/* Compute trace t = p - n + 1. */
+			bn_sub(n, p, n);
+			bn_add_dig(n, n, 1);
+			/* Compute u = a^t. */
+			g2_mul(u, a, n);
+			/* Compute v = a^(p + 1). */
+			ep2_frb(v, a, 1);
+			g2_add(v, v, a);
+			/* Check if a^(p + 1) = a^t. */
+			r = (g2_cmp(u, v) == RLC_EQ);
+		} else {
+			/* Common case. */
+			bn_sub_dig(n, n, 1);
+			bn_hlv(n, n);
+			g2_mul(u, a, n);
+			g2_dbl(u, u);
+			g2_neg(u, u);
+			r = (g2_cmp(u, a) == RLC_EQ);
+		}
 	} CATCH_ANY {
 		THROW(ERR_CAUGHT);
 	} FINALLY {
@@ -208,19 +219,31 @@ int gt_is_valid(gt_t a) {
 		gt_new(v);
 
 		gt_get_ord(n);
-		dv_copy(p->dp, fp_prime_get(), RLC_FP_DIGS);
-		p->used = RLC_FP_DIGS;
-		p->sign = RLC_POS;
-		/* Compute trace t = p - n + 1. */
-		bn_sub(n, p, n);
-		bn_add_dig(n, n, 1);
-		/* Compute u = a^t. */
-		gt_exp(u, a, n);
-		/* Compute v = a^(p + 1). */
-		fp12_frb(v, a, 1);
-		gt_mul(v, v, a);
-		/* Check if a^(p + 1) = a^t. */
-		r = (gt_cmp(u, v) == RLC_EQ);
+		ep_curve_get_cof(p);
+
+		if (bn_cmp_dig(p, 1) == RLC_EQ) {
+			dv_copy(p->dp, fp_prime_get(), RLC_FP_DIGS);
+			p->used = RLC_FP_DIGS;
+			p->sign = RLC_POS;
+			/* Compute trace t = p - n + 1. */
+			bn_sub(n, p, n);
+			bn_add_dig(n, n, 1);
+			/* Compute u = a^t. */
+			gt_exp(u, a, n);
+			/* Compute v = a^(p + 1). */
+			fp12_frb(v, a, 1);
+			gt_mul(v, v, a);
+			/* Check if a^(p + 1) = a^t. */
+			r = (gt_cmp(u, v) == RLC_EQ);
+		} else {
+			/* Common case. */
+			bn_sub_dig(n, n, 1);
+			bn_hlv(n, n);
+			gt_exp(u, a, n);
+			gt_sqr(u, u);
+			gt_inv(u, u);
+			r = (gt_cmp(u, a) == RLC_EQ);
+		}
 	} CATCH_ANY {
 		THROW(ERR_CAUGHT);
 	} FINALLY {
