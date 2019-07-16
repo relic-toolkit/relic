@@ -903,7 +903,7 @@ static void pss(void) {
 	g2_new(g);
 	g2_new(x);
 	g2_new(y);
-	for (i = 0; i < 4; i++) {
+	for (i = 0; i < 5; i++) {
 		bn_new(_v[i]);
 		g2_new(_y[i]);
 	}
