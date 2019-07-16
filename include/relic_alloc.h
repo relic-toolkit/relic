@@ -29,6 +29,8 @@
  * @ingroup utils
  */
 
+#include "relic_conf.h"
+
 #ifdef _MSC_VER
     #include <malloc.h>
 
