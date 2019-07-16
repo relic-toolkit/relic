@@ -998,7 +998,7 @@ static void zss(void) {
 #define S	10			/* Number of signers. */
 #define L	16			/* Number of labels, must be <= RLC_TERMS. */
 #define K	RLC_MD_LEN	/* Size of PRF key. */
-#define BENCH_LHS		/* Uncomment for fine-grained benchmarking. */
+//#define BENCH_LHS		/* Uncomment for fine-grained benchmarking. */
 
 static void lhs(void) {
 	uint8_t k[S][K];
@@ -1113,25 +1113,28 @@ static void lhs(void) {
 		g2_norm(_s, _s);
 	} BENCH_DIV(S);
 
+	bn_zero(m);
 	for (int j = 0; j < L; j++) {
 		dig_t sum = 0;
 		for (int l = 0; l < S; l++) {
 			sum += f[l][j];
 		}
 		bn_mul_dig(msg[j], msg[j], sum);
+		bn_add(m, m, msg[j]);
+		bn_mod(m, m, n);
 	}
 
 	BENCH_BEGIN("cp_cmlhs_ver") {
-		BENCH_ADD(cp_cmlhs_ver(_r, _s, sig, z, as, cs, msg, id,
-			sizeof(id), label, h, hs, f, flen, y, pk, S));
+		BENCH_ADD(cp_cmlhs_ver(_r, _s, sig, z, as, cs, m, id, sizeof(id),
+			label, h, hs, f, flen, y, pk, S));
 	} BENCH_DIV(S);
 
 #ifdef BENCH_LHS
 	for (int t = 1; t <= S; t++) {
 		util_print("(%2d ids) ", t);
 		BENCH_BEGIN("cp_cmlhs_ver") {
-			BENCH_ADD(cp_cmlhs_ver(_r, _s, sig, z, as, cs, msg, id,
-				sizeof(id), label, h, hs, f, flen, y, pk, t));
+			BENCH_ADD(cp_cmlhs_ver(_r, _s, sig, z, as, cs, m, id, sizeof(id),
+				label, h, hs, f, flen, y, pk, t));
 		} BENCH_END;
 	}
 
@@ -1141,11 +1144,11 @@ static void lhs(void) {
 			flen[u] = t;
 		}
 		BENCH_BEGIN("cp_cmlhs_ver") {
-			BENCH_ADD(cp_cmlhs_ver(_r, _s, sig, z, as, cs, msg, id,
-				sizeof(id), label, h, hs, f, flen, y, pk, S));
+			BENCH_ADD(cp_cmlhs_ver(_r, _s, sig, z, as, cs, m, id, sizeof(id),
+				label, h, hs, f, flen, y, pk, S));
 		} BENCH_END;
 	}
-#endif
+#endif  /* BENCH_LHS */
 
 	char *ls[L] = { "l" };
 	int lens[L] = { sizeof(ls[0]) };
@@ -1215,7 +1218,7 @@ static void lhs(void) {
 			BENCH_ADD(cp_mklhs_ver(_r, m, d, ls, lens, f, flen, pk, S));
 		} BENCH_END;
 	}
-#endif BENCH_LHS
+#endif /* BENCH_LHS */
 
 	bn_free(n);
 	bn_free(m);
@@ -1259,7 +1262,7 @@ int main(void) {
 	conf_print();
 
 	util_banner("Benchmarks for the CP module:", 0);
-#if 0
+
 #if defined(WITH_BN)
 	util_banner("Protocols based on integer factorization:\n", 0);
 	rsa();
@@ -1281,18 +1284,18 @@ int main(void) {
 		THROW(ERR_NO_CURVE);
 	}
 #endif
-#endif
+
 #if defined(WITH_PC)
 	util_banner("Protocols based on pairings:\n", 0);
 	if (pc_param_set_any() == RLC_OK) {
-		//sokaka();
-		//ibe();
-		//bgn();
-		//bls();
-		//bbs();
-		//cls();
-		//pss();
-		//zss();
+		sokaka();
+		ibe();
+		bgn();
+		bls();
+		bbs();
+		cls();
+		pss();
+		zss();
 		lhs();
 	} else {
 		THROW(ERR_NO_CURVE);
