@@ -40,91 +40,84 @@
  * Optimized Shallue–van de Woestijne encoding from Section 3 of
  * "Fast and simple constant-time hashing to the BLS12-381 elliptic curve".
  */
- static void ep_sw_b12(ep_t p, const fp_t t, int u, int negate) {
-	 fp_t t0, t1, t2, t3, t4, t5, t6;
+static void ep_sw_b12(ep_t p, const fp_t t, int u, int negate) {
+	fp_t t0, t1, t2, t3;
 
-	 fp_null(t0);
-	 fp_null(t1);
-	 fp_null(t2);
-	 fp_null(t3);
-	 fp_null(t4);
-	 fp_null(t5);
-	 fp_null(t6);
+	fp_null(t0);
+	fp_null(t1);
+	fp_null(t2);
+	fp_null(t3);
 
-	 TRY {
-		 fp_new(t0);
-		 fp_new(t1);
-		 fp_new(t2);
-		 fp_new(t3);
-		 fp_new(t4);
-		 fp_new(t5);
-		 fp_new(t6);
+	TRY {
+		fp_new(t0);
+		fp_new(t1);
+		fp_new(t2);
+		fp_new(t3);
 
-		 /* t0 = t^2. */
-		 fp_sqr(t0, t);
-		 /* Compute f(u) such that u^3 + b is a square. */
-		 fp_set_dig(p->x, -u);
-		 fp_neg(p->x, p->x);
-		 ep_rhs(t1, p);
-		 /* Compute t1 = (-f(u) + t^2), t2 = t1 * t^2 and invert if non-zero. */
-		 fp_add(t1, t1, t0);
-		 fp_mul(t2, t1, t0);
-		 if (!fp_is_zero(t2)) {
-			 /* Compute inverse of u^3 * t2 and fix later. */
-			 fp_mul(t2, t2, p->x);
-			 fp_mul(t2, t2, p->x);
-			 fp_mul(t2, t2, p->x);
-			 fp_inv(t2, t2);
-		 }
-		 /* Compute t0 = t^4 * u * sqrt(-3)/t2. */
-		 fp_sqr(t0, t0);
-		 fp_mul(t0, t0, t2);
-		 fp_mul(t0, t0, p->x);
-		 fp_mul(t0, t0, p->x);
-		 fp_mul(t0, t0, p->x);
-		 /* Compute constant u * sqrt(-3). */
-		 fp_copy(t6, core_get()->srm3);
-		 for (int i = 1; i < -u; i++) {
-			 fp_add(t6, t6, core_get()->srm3);
-		 }
-		 fp_mul(t0, t0, t6);
-		 /* Compute (u * sqrt(-3) + u)/2 - t0. */
-		 fp_add_dig(p->x, t6, -u);
-		 fp_hlv(p->y, p->x);
-		 fp_sub(p->x, p->y, t0);
-		 ep_rhs(p->y, p);
-		 if (!fp_srt(p->y, p->y)) {
-			 /* Now try t0 - (u * sqrt(-3) - u)/2. */
-			 fp_sub_dig(p->x, t6, -u);
-			 fp_hlv(p->y, p->x);
-			 fp_sub(p->x, t0, p->y);
-			 ep_rhs(p->y, p);
-			 if (!fp_srt(p->y, p->y)) {
-				 /* Finally, try (u - t1^2 / t2). */
-				 fp_sqr(p->x, t1);
-				 fp_mul(p->x, p->x, t1);
-				 fp_mul(p->x, p->x, t2);
-				 fp_sub_dig(p->x, p->x, -u);
-				 ep_rhs(p->y, p);
-				 fp_srt(p->y, p->y);
-			 }
-		 }
-		 if (negate) {
-			 fp_neg(p->y, p->y);
-		 }
-		 fp_set_dig(p->z, 1);
-		 p->norm = 1;
-	 } CATCH_ANY {
-		 THROW(ERR_CAUGHT);
-	 } FINALLY {
-		 fp_free(t0);
-		 fp_free(t1);
-		 fp_free(t2);
-		 fp_free(t3);
-		 fp_free(t4);
-		 fp_free(t5);
-		 fp_free(t6);
-	 }
+		/* t0 = t^2. */
+		fp_sqr(t0, t);
+		/* Compute f(u) such that u^3 + b is a square. */
+		fp_set_dig(p->x, -u);
+		fp_neg(p->x, p->x);
+		ep_rhs(t1, p);
+		/* Compute t1 = (-f(u) + t^2), t2 = t1 * t^2 and invert if non-zero. */
+		fp_add(t1, t1, t0);
+		fp_mul(t2, t1, t0);
+		if (!fp_is_zero(t2)) {
+			/* Compute inverse of u^3 * t2 and fix later. */
+			fp_mul(t2, t2, p->x);
+			fp_mul(t2, t2, p->x);
+			fp_mul(t2, t2, p->x);
+			fp_inv(t2, t2);
+		}
+		/* Compute t0 = t^4 * u * sqrt(-3)/t2. */
+		fp_sqr(t0, t0);
+		fp_mul(t0, t0, t2);
+		fp_mul(t0, t0, p->x);
+		fp_mul(t0, t0, p->x);
+		fp_mul(t0, t0, p->x);
+		/* Compute constant u * sqrt(-3). */
+		fp_copy(t3, core_get()->srm3);
+		for (int i = 1; i < -u; i++) {
+			fp_add(t3, t3, core_get()->srm3);
+		}
+		fp_mul(t0, t0, t3);
+		/* Compute (u * sqrt(-3) + u)/2 - t0. */
+		fp_add_dig(p->x, t3, -u);
+		fp_hlv(p->y, p->x);
+		fp_sub(p->x, p->y, t0);
+		ep_rhs(p->y, p);
+		if (!fp_srt(p->y, p->y)) {
+			/* Now try t0 - (u * sqrt(-3) - u)/2. */
+			fp_sub_dig(p->x, t3, -u);
+			fp_hlv(p->y, p->x);
+			fp_sub(p->x, t0, p->y);
+			ep_rhs(p->y, p);
+			if (!fp_srt(p->y, p->y)) {
+				/* Finally, try (u - t1^2 / t2). */
+				fp_sqr(p->x, t1);
+				fp_mul(p->x, p->x, t1);
+				fp_mul(p->x, p->x, t2);
+				fp_sub_dig(p->x, p->x, -u);
+				ep_rhs(p->y, p);
+				fp_srt(p->y, p->y);
+			}
+		}
+		if (negate) {
+			fp_neg(p->y, p->y);
+		}
+		fp_set_dig(p->z, 1);
+		p->norm = 1;
+	}
+	CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	}
+	FINALLY {
+		fp_free(t0);
+		fp_free(t1);
+		fp_free(t2);
+		fp_free(t3);
+	}
 }
 
 /**
@@ -193,9 +186,11 @@ static void ep_sw_bn(ep_t p, const fp_t t, int u, int negate) {
 		}
 		fp_set_dig(p->z, 1);
 		p->norm = 1;
-	} CATCH_ANY {
+	}
+	CATCH_ANY {
 		THROW(ERR_CAUGHT);
-	} FINALLY {
+	}
+	FINALLY {
 		fp_free(t0);
 		fp_free(t1);
 	}
@@ -261,32 +256,32 @@ void ep_map(ep_t p, const uint8_t *msg, int len) {
 				if (bn_bits(k) < RLC_DIG) {
 					ep_mul_dig(p, p, k->dp[0]);
 				} else {
-					ep_mul_basic(p, p, k);
-				}
-				break;
-			default: {
-				fp_prime_conv(p->x, k);
-				fp_zero(p->y);
-				fp_set_dig(p->z, 1);
-
-				while (1) {
-					ep_rhs(t, p);
-
-					if (fp_srt(p->y, t)) {
-						p->norm = 1;
-						break;
-					}
-					fp_add_dig(p->x, p->x, 1);
-				}
-
-				/* Now, multiply by cofactor to get the correct group. */
-				ep_curve_get_cof(k);
-				if (bn_bits(k) < RLC_DIG) {
-					ep_mul_dig(p, p, k->dp[0]);
-				} else {
 					ep_mul(p, p, k);
 				}
-			}
+				break;
+			default:{
+					fp_prime_conv(p->x, k);
+					fp_zero(p->y);
+					fp_set_dig(p->z, 1);
+
+					while (1) {
+						ep_rhs(t, p);
+
+						if (fp_srt(p->y, t)) {
+							p->norm = 1;
+							break;
+						}
+						fp_add_dig(p->x, p->x, 1);
+					}
+
+					/* Now, multiply by cofactor to get the correct group. */
+					ep_curve_get_cof(k);
+					if (bn_bits(k) < RLC_DIG) {
+						ep_mul_dig(p, p, k->dp[0]);
+					} else {
+						ep_mul(p, p, k);
+					}
+				}
 		}
 	}
 	CATCH_ANY {
