@@ -32,35 +32,52 @@
 #include "relic_conf.h"
 
 #ifdef _MSC_VER
-    #include <malloc.h>
 
-    /* Dynamiclly allocates an array of "Type" with the specified size on the stack.
-     * This memory will be automaticlly deallocated from the stack when the function
-     * frame is returned from.
-     * Note: This is the Windows specific implementation.
-     *
-     * @param[in] T                 - the type of each object.
-     * @param[in] S                 - the number of obecs to allocate.
-     */
-    #if ALLOC == DYNAMIC
-        #define RLC_ALLOCA(T, S)(T*) malloc((S) * sizeof(T))
-    #else
-        #define RLC_ALLOCA(T, S)(T*) _alloca((S) * sizeof(T))
-    #endif
+#include <malloc.h>
+
+/*
+ * Dynamiclly allocates an array of "Type" with the specified size on the stack.
+ * This memory will be automaticlly deallocated from the stack when the function
+ * frame is returned from.
+ * Note: This is the Windows specific implementation.
+ *
+ * @param[in] T                 - the type of each object.
+ * @param[in] S                 - the number of obecs to allocate.
+ */
+#if ALLOC == DYNAMIC
+#define RLC_ALLOCA(T, S)		(T*) malloc((S) * sizeof(T))
 #else
-    #include <alloca.h>
+#define RLC_ALLOCA(T, S)		(T*) _alloca((S) * sizeof(T))
+#endif
 
-    /* Dynamiclly allocates an array of "Type" with the specified size on the stack.
-     * This memory will be automaticlly deallocated from the stack when the function
-     * frame is returned from.
-     * Note: This is the POSIX specific implementation.
-     *
-     * @param[in] T                 - the type of each object.
-     * @param[in] S                 - the number of obecs to allocate.
-     */
-    #if ALLOC == DYNAMIC
-        #define RLC_ALLOCA(T, S)(T*) malloc((S) * sizeof(T))
-    #else
-        #define RLC_ALLOCA(T, S)(T*) alloca((S) * sizeof(T))
-    #endif
+#else /* _MSC_VER */
+
+#include <alloca.h>
+
+/*
+ * Dynamiclly allocates an array of "Type" with the specified size on the stack.
+ * This memory will be automaticlly deallocated from the stack when the function
+ * frame is returned from.
+ * Note: This is the POSIX specific implementation.
+ *
+ * @param[in] T                 - the type of each object.
+ * @param[in] S                 - the number of obecs to allocate.
+ */
+#if ALLOC == DYNAMIC
+#define RLC_ALLOCA(T, S)		(T*) malloc((S) * sizeof(T))
+#else
+#define RLC_ALLOCA(T, S)		(T*) alloca((S) * sizeof(T))
+#endif
+
+#endif
+
+/*
+ * Free memory allocated with RLC_ALLOCA.
+ *
+ * @param[in] A					- the variable to free.
+ */
+#if ALLOC == DYNAMIC
+#define RLC_FREE(A)         	free(A)
+#else
+#define RLC_FREE(A)         	(void)A;
 #endif

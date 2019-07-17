@@ -459,10 +459,9 @@ static void ecss(void) {
 
 static void vbnn(void) {
 	uint8_t ida[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
-	vbnn_kgc_t s;
 	uint8_t idb[] = { 5, 6, 7, 8, 9, 0, 1, 2, 3, 4 };
-	vbnn_user_t a;
-	vbnn_user_t b;
+	bn_t msk, ska, skb;
+	ec_t mpk, pka, pkb;
 
 	uint8_t m[] = "Thrice the brinded cat hath mew'd.";
 
@@ -470,51 +469,56 @@ static void vbnn(void) {
 	bn_t z;
 	bn_t h;
 
-	vbnn_kgc_null(s);
-	vbnn_user_null(a);
-	vbnn_user_null(b);
-
-	ec_null(r);
 	bn_null(z);
 	bn_null(h);
+	bn_null(msk);
+	bn_null(ska);
+	bn_null(skb);
+	ec_null(r);
+	ec_null(mpk);
+	bn_null(pka);
+	bn_null(pkb);
 
-	vbnn_kgc_new(s);
-	vbnn_user_new(a);
-	vbnn_user_new(b);
-
-	ec_new(r);
 	bn_new(z);
 	bn_new(h);
+	bn_new(msk);
+	bn_new(ska);
+	bn_new(skb);
+	ec_new(r);
+	ec_new(mpk);
+	ec_new(pka);
+	ec_new(pkb);
 
 	BENCH_BEGIN("cp_vbnn_gen") {
-		BENCH_ADD(cp_vbnn_gen(s));
+		BENCH_ADD(cp_vbnn_gen(msk, mpk));
 	}
 	BENCH_END;
 
 	BENCH_BEGIN("cp_vbnn_gen_prv") {
-		BENCH_ADD(cp_vbnn_gen_prv(a, s, ida, sizeof(ida)));
+		BENCH_ADD(cp_vbnn_gen_prv(ska, pka, msk, ida, sizeof(ida)));
 	}
 	BENCH_END;
 
-	cp_vbnn_gen_prv(b, s, idb, sizeof(idb));
+	cp_vbnn_gen_prv(skb, pkb, msk, idb, sizeof(idb));
 
 	BENCH_BEGIN("cp_vbnn_sig") {
-		BENCH_ADD(cp_vbnn_sig(r, z, h, ida, sizeof(ida), m, sizeof(m), a));
+		BENCH_ADD(cp_vbnn_sig(r, z, h, ida, sizeof(ida), m, sizeof(m), ska, pka));
 	}
 	BENCH_END;
 
 	BENCH_BEGIN("cp_vbnn_ver") {
-		BENCH_ADD(cp_vbnn_ver(r, z, h, ida, sizeof(ida), m, sizeof(m), s->mpk));
+		BENCH_ADD(cp_vbnn_ver(r, z, h, ida, sizeof(ida), m, sizeof(m), mpk));
 	}
 	BENCH_END;
 
-	ec_free(r);
-	bn_free(z);
 	bn_free(h);
-
-	vbnn_kgc_free(s);
-	vbnn_user_free(a);
-	vbnn_user_free(b);
+	bn_free(msk);
+	bn_free(ska);
+	bn_free(skb);
+	ec_free(r);
+	ec_free(mpk);
+	ec_free(pka);
+	ec_free(pkb);
 }
 
 #endif /* WITH_EC */

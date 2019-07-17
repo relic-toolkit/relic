@@ -739,39 +739,43 @@ static int vbnn(void) {
 	int code = RLC_ERR;
 	uint8_t ida[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
 	uint8_t idb[] = { 5, 6, 7, 8, 9, 0, 1, 2, 3, 4 };
-	vbnn_user_t a;
-	vbnn_user_t b;
-	vbnn_kgc_t s;
+	bn_t ska, skb;
+	ec_t pka, pkb;
+	bn_t msk, z, h;
+	ec_t r, mpk;
 
 	uint8_t m[] = "Thrice the brinded cat hath mew'd.";
 
-	ec_t r;
-	bn_t z;
-	bn_t h;
-
-	ec_null(r);
 	bn_null(z);
 	bn_null(h);
+	bn_null(msk);
+	bn_null(ska);
+	bn_null(skb);
+	ec_null(r);
+	ec_null(mpk);
+	bn_null(pka);
+	bn_null(pkb);
 
 	TRY {
-		vbnn_kgc_new(s);
-
-		vbnn_user_new(a);
-		vbnn_user_new(b);
-
-		ec_new(r);
 		bn_new(z);
 		bn_new(h);
+		bn_new(msk);
+		bn_new(ska);
+		bn_new(skb);
+		ec_new(r);
+		ec_new(mpk);
+		ec_new(pka);
+		ec_new(pkb);
 
 		TEST_BEGIN("vbnn is correct") {
-			TEST_ASSERT(cp_vbnn_gen(s) == RLC_OK, end);
-			TEST_ASSERT(cp_vbnn_gen_prv(a, s, ida, sizeof(ida)) == RLC_OK, end);
-			TEST_ASSERT(cp_vbnn_gen_prv(b, s, idb, sizeof(idb)) == RLC_OK, end);
-			TEST_ASSERT(cp_vbnn_sig(r, z, h, ida, sizeof(ida), m, sizeof(m), a) == RLC_OK, end);
-			TEST_ASSERT(cp_vbnn_ver(r, z, h, ida, sizeof(ida), m, sizeof(m), s->mpk) == 1, end);
-			TEST_ASSERT(cp_vbnn_ver(r, z, h, idb, sizeof(idb), m, sizeof(m), s->mpk) == 0, end);
-			TEST_ASSERT(cp_vbnn_sig(r, z, h, ida, sizeof(ida), m, sizeof(m), b) == RLC_OK, end);
-			TEST_ASSERT(cp_vbnn_ver(r, z, h, ida, sizeof(ida), m, sizeof(m), s->mpk) == 0, end);
+			TEST_ASSERT(cp_vbnn_gen(msk, mpk) == RLC_OK, end);
+			TEST_ASSERT(cp_vbnn_gen_prv(ska, pka, msk, ida, sizeof(ida)) == RLC_OK, end);
+			TEST_ASSERT(cp_vbnn_gen_prv(skb, pkb, msk, idb, sizeof(idb)) == RLC_OK, end);
+			TEST_ASSERT(cp_vbnn_sig(r, z, h, ida, sizeof(ida), m, sizeof(m), ska, pka) == RLC_OK, end);
+			TEST_ASSERT(cp_vbnn_ver(r, z, h, ida, sizeof(ida), m, sizeof(m), mpk) == 1, end);
+			TEST_ASSERT(cp_vbnn_ver(r, z, h, idb, sizeof(idb), m, sizeof(m), mpk) == 0, end);
+			TEST_ASSERT(cp_vbnn_sig(r, z, h, ida, sizeof(ida), m, sizeof(m), skb, pkb) == RLC_OK, end);
+			TEST_ASSERT(cp_vbnn_ver(r, z, h, ida, sizeof(ida), m, sizeof(m), mpk) == 0, end);
 		}
 		TEST_END;
 	}
@@ -781,13 +785,14 @@ static int vbnn(void) {
 	code = RLC_OK;
 
 end:
-	ec_free(r);
-	bn_free(z);
 	bn_free(h);
-
-	vbnn_kgc_free(s);
-	vbnn_user_free(a);
-	vbnn_user_free(b);
+	bn_free(msk);
+	bn_free(ska);
+	bn_free(skb);
+	ec_free(r);
+	ec_free(mpk);
+	ec_free(pka);
+	ec_free(pkb);
 	return code;
 }
 

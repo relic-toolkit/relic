@@ -171,7 +171,8 @@ static void ep_mul_glv_imp(ep_t r, const ep_t p, const bn_t k) {
 
 static void ep_mul_naf_imp(ep_t r, const ep_t p, const bn_t k) {
 	int i, l, n;
-	int8_t naf[RLC_FP_BITS + 1];
+	/* Some of the supported prime curves have order > field. */
+	int8_t naf[RLC_FP_BITS + 2];
 	ep_t t[1 << (EP_WIDTH - 2)];
 
 	if (bn_is_zero(k)) {
@@ -189,7 +190,7 @@ static void ep_mul_naf_imp(ep_t r, const ep_t p, const bn_t k) {
 		ep_tab(t, p, EP_WIDTH);
 
 		/* Compute the w-NAF representation of k. */
-		l = sizeof(naf);
+		l = RLC_FP_BITS + 2;
 		bn_rec_naf(naf, &l, k, EP_WIDTH);
 
 		ep_set_infty(r);
