@@ -543,6 +543,31 @@ static int simultaneous1(void) {
 	return code;
 }
 
+static int validity1(void) {
+	int code = RLC_ERR;
+	g1_t a;
+
+	g1_null(a);
+
+	TRY {
+		g1_new(a);
+
+		TEST_BEGIN("validity check is correct") {
+			g1_rand(a);
+			TEST_ASSERT(g1_is_valid(a) == 1, end);
+		}
+		TEST_END;
+
+	}
+	CATCH_ANY {
+		ERROR(end);
+	}
+	code = RLC_OK;
+  end:
+	g1_free(a);
+	return code;
+}
+
 static int hashing1(void) {
 	int code = RLC_ERR;
 	g1_t a;
@@ -1085,6 +1110,31 @@ static int simultaneous2(void) {
 	return code;
 }
 
+static int validity2(void) {
+	int code = RLC_ERR;
+	g2_t a;
+
+	g2_null(a);
+
+	TRY {
+		g2_new(a);
+
+		TEST_BEGIN("validity check is correct") {
+			g2_rand(a);
+			TEST_ASSERT(g2_is_valid(a) == 1, end);
+		}
+		TEST_END;
+
+	}
+	CATCH_ANY {
+		ERROR(end);
+	}
+	code = RLC_OK;
+  end:
+	g2_free(a);
+	return code;
+}
+
 static int hashing2(void) {
 	int code = RLC_ERR;
 	g2_t a;
@@ -1357,11 +1407,6 @@ int exponentiation(void) {
 			TEST_ASSERT(gt_is_unity(c), end);
 		} TEST_END;
 
-		TEST_BEGIN("random element has the right order") {
-			gt_rand(a);
-			TEST_ASSERT(gt_is_valid(a), end);
-		} TEST_END;
-
 		TEST_BEGIN("exponentiation is correct") {
 			gt_rand(a);
 			bn_zero(d);
@@ -1394,6 +1439,31 @@ int exponentiation(void) {
 	gt_free(c);
 	bn_free(d);
 	bn_free(n);
+	return code;
+}
+
+static int validity(void) {
+	int code = RLC_ERR;
+	gt_t a;
+
+	gt_null(a);
+
+	TRY {
+		gt_new(a);
+
+		TEST_BEGIN("validity check is correct") {
+			gt_rand(a);
+			TEST_ASSERT(gt_is_valid(a) == 1, end);
+		}
+		TEST_END;
+
+	}
+	CATCH_ANY {
+		ERROR(end);
+	}
+	code = RLC_OK;
+  end:
+	gt_free(a);
 	return code;
 }
 
@@ -1544,6 +1614,10 @@ int test1(void) {
 		return RLC_ERR;
 	}
 
+	if (validity1() != RLC_OK) {
+		return RLC_ERR;
+	}
+
 	if (hashing1() != RLC_OK) {
 		return RLC_ERR;
 	}
@@ -1589,6 +1663,10 @@ int test2(void) {
 		return RLC_ERR;
 	}
 
+	if (validity2() != RLC_OK) {
+		return RLC_ERR;
+	}
+
 	if (hashing2() != RLC_OK) {
 		return RLC_ERR;
 	}
@@ -1623,6 +1701,10 @@ int test(void) {
 	}
 
 	if (exponentiation() != RLC_OK) {
+		return RLC_ERR;
+	}
+
+	if (validity() != RLC_OK) {
 		return RLC_ERR;
 	}
 
