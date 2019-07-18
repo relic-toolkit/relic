@@ -504,6 +504,14 @@ static void arith(void) {
 	BENCH_END;
 #endif
 
+#if FP_INV == DIVST || !defined(STRIP)
+	BENCH_BEGIN("fp_inv_divst") {
+		fp_rand(a);
+		BENCH_ADD(fp_inv_divst(c, a));
+	}
+	BENCH_END;
+#endif
+
 #if FP_INV == LOWER || !defined(STRIP)
 	BENCH_BEGIN("fp_inv_lower") {
 		fp_rand(a);

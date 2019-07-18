@@ -816,6 +816,17 @@ static int inversion(void) {
 		} TEST_END;
 #endif
 
+#if FP_INV == DIVST || !defined(STRIP)
+		TEST_BEGIN("division step inversion is correct") {
+			do {
+				fp_rand(a);
+			} while (fp_is_zero(a));
+			fp_inv(b, a);
+			fp_inv_divst(c, a);
+			TEST_ASSERT(fp_cmp(c, b) == RLC_EQ, end);
+		} TEST_END;
+#endif
+
 #if FP_INV == LOWER || !defined(STRIP)
 		TEST_BEGIN("lower inversion is correct") {
 			do {

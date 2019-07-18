@@ -377,11 +377,7 @@ void fp_inv_exgcd(fp_t c, const fp_t a) {
 		if (bn_sign(g1) == RLC_NEG) {
 			bn_add(g1, g1, p);
 		}
-#if FP_RDC == MONTY
 		fp_prime_conv(c, g1);
-#else
-		dv_copy(c, g1->dp, RLC_FP_DIGS);
-#endif
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
@@ -394,6 +390,147 @@ void fp_inv_exgcd(fp_t c, const fp_t a) {
 		bn_free(p);
 		bn_free(q);
 		bn_free(r);
+	}
+}
+
+#endif
+
+#include "assert.h"
+
+#if FP_INV == DIVST || !defined(STRIP)
+
+#define RLC_FP_DIGS 	((int)RLC_CEIL(RLC_FP_BITS, RLC_DIG))
+
+void fp_inv_divst(fp_t c, const fp_t a) {
+	/* Compute number of iteratios based on modulus size. */
+#if FP_PRIME < 46
+	int d = (49 * FP_PRIME + 80)/17;
+#else
+	int d = (49 * FP_PRIME + 57)/17;
+#endif
+	int delta = 1, g0, d0;
+	dig_t r1, v1, fs, gs;
+	bn_t t, v0, r0;
+	dv_t f, g, z, _v0, _r0, _t, u;
+	fp_t precomp;
+
+	bn_null(t);
+	dv_null(f);
+	dv_null(g);
+	dv_null(z);
+	bn_null(v0);
+	bn_null(r0);
+	dv_null(_v0);
+	dv_null(_r0);
+	dv_null(_t);
+	dv_null(u);
+	fp_null(precomp);
+
+	if (fp_is_zero(a)) {
+		THROW(ERR_NO_VALID);
+	}
+
+	TRY {
+		bn_new(t);
+		dv_new(f);
+		dv_new(g);
+		dv_new(z);
+		bn_new(v0);
+		bn_new(r0);
+		dv_new(_v0);
+		dv_new(_r0);
+		dv_new(_t);
+		dv_new(u);
+		fp_new(precomp);
+
+		bn_set_dig(t, d - 1);
+		fp_set_dig(precomp, 1);
+		fp_hlv(precomp, precomp);
+		fp_exp(precomp, precomp, t);
+
+		bn_zero(v0);
+		bn_set_dig(r0, 1);
+		dv_zero(_v0, RLC_FP_DIGS + 2);
+		dv_zero(_r0, RLC_FP_DIGS + 2);
+		_r0[0] = 1;
+		v1 = r1 = 0;
+		fp_prime_back(t, a);
+		dv_zero(g, RLC_FP_DIGS);
+		dv_copy(g, t->dp, t->used);
+		dv_copy(f, fp_prime_get(), RLC_FP_DIGS);
+		fs = gs = RLC_POS;
+		int flag = 0;
+
+		for (int i = 0; i < d; i++) {
+			g0 = g[0] & 1;
+			d0 = g0 & (delta > 0);
+			dv_swap_cond(_r0, _v0, RLC_FP_DIGS + 2, d0);
+			dv_swap_cond(f, g, RLC_FP_DIGS, d0);
+			delta = RLC_SEL(delta, -delta, d0);
+			/* Conditionally invert r0 and g based on d0. */
+			for (int j = 0; j < RLC_FP_DIGS + 2; j++) {
+				_r0[j] = RLC_SEL(_r0[j], ~_r0[j], d0);
+			}
+			bn_add1_low(_r0, _r0, d0, RLC_FP_DIGS + 2);
+			for (int j = 0; j < RLC_FP_DIGS; j++) {
+				g[j] = RLC_SEL(g[j], ~g[j], d0);
+			}
+			bn_add1_low(g, g, d0, RLC_FP_DIGS);
+			dv_swap_cond(&fs, &gs, 1, d0);
+			gs ^= d0;
+
+			delta++;
+			g0 = g[0] & 1;
+			dv_copy(_t, _v0, RLC_FP_DIGS + 2);
+			dv_copy_cond(_t, _r0, RLC_FP_DIGS + 2, d0);
+			bn_lshb_low(_t, _t, RLC_FP_DIGS + 2, r1 - v1);
+			dv_copy(u, _v0, RLC_FP_DIGS + 2);
+			dv_copy_cond(u, _r0, RLC_FP_DIGS + 2, (d0 ^ 1) & g0);
+			bn_addn_low(_t, _t, u, RLC_FP_DIGS + 2);
+
+			dv_copy_cond(_r0, _t, RLC_FP_DIGS + 2, g0);
+
+			/* We delay the conditional swaps to simplify the code above. */
+			dv_swap_cond(&r1, &v1, 1, d0);
+
+			/* We only increment r1 if g is non-zero. */
+			r1 = RLC_SEL(r1, (RLC_SEL(r1, v1, r1 < v1) + 1), g[0] != 0);
+			/* Compute g = (g + g0*f) div 2 by conditionally copying f to z and
+			 * updating the sign of g. */
+			for (int j = 0; j < RLC_FP_DIGS; j++) {
+				z[j] = f[j] & (-g0);
+			}
+			gs ^= g0 & (fs ^ bn_addn_low(g, g, z, RLC_FP_DIGS));
+			/* Shift and restore the sign. */
+			fp_rsh1_low(g, g);
+			g[RLC_FP_DIGS - 1] |= (dig_t)gs << (RLC_DIG - 1);
+		}
+		d0 = _v0[RLC_FP_DIGS + 1] >> (RLC_DIG - 1);
+		for (int j = 0; j < RLC_FP_DIGS + 2; j++) {
+			_v0[j] = RLC_SEL(_v0[j], ~_v0[j], d0);
+		}
+		bn_add1_low(_v0, _v0, d0, RLC_FP_DIGS + 2);
+		v0->used = RLC_FP_DIGS + 2;
+		v0->sign = d0;
+		dv_copy(v0->dp, _v0, RLC_FP_DIGS + 2);
+		bn_lsh(v0, v0, d - v1 - 1);
+		v0->sign ^= fs;
+		fp_prime_conv(c, v0);
+		fp_mul(c, c, precomp);
+	} CATCH_ANY {
+		THROW(ERR_CAUGHT)
+	} FINALLY {
+		bn_free(t);
+		bn_free(v0);
+		bn_free(r0);
+		dv_free(f);
+		dv_free(g);
+		dv_free(z);
+		dv_free(_v0);
+		dv_free(_r0);
+		dv_free(_t);
+		dv_free(u);
+		fp_free(precomp);
 	}
 }
 

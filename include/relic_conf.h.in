@@ -249,6 +249,8 @@
 #define MONTY    3
 /** Extended Euclidean algorithm. */
 #define EXGCD    4
+/** Constant-time inversion by Bernstein-Yang division steps. */
+#define DIVST    5
 /** Use implementation provided by the lower layer. */
 #define LOWER    8
 /** Chosen prime field inversion method. */
