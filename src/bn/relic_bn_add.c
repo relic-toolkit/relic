@@ -53,6 +53,11 @@ static void bn_add_imp(bn_t c, const bn_t a, const bn_t b) {
 	/* Grow the result. */
 	bn_grow(c, max);
 
+	if (min == 0) {
+		bn_copy(c, a);
+		return;
+	}
+
 	if (a->used == b->used) {
 		carry = bn_addn_low(c->dp, a->dp, b->dp, max);
 	} else {
@@ -80,6 +85,11 @@ static void bn_sub_imp(bn_t c, const bn_t a, const bn_t b) {
 
 	max = a->used;
 	min = b->used;
+
+	if (min == 0) {
+		bn_copy(c, a);
+		return;
+	}
 
 	/* Grow the destination to accomodate the result. */
 	bn_grow(c, max);
