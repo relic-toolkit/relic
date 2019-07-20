@@ -36,19 +36,23 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-#if FP_PRIME == 1536
-/**
- * Cofactor description of 1536-bit prime modulus.
- */
-#define SS_P1536	"83093742908D4D529CEF06C72191A05D5E6073FE861E637D7747C3E52FBB92DAA5DDF3EF1C61F5F70B256802481A36CAFE995FE33CD54014B846751364C0D3B8327D9E45366EA08F1B3446AC23C9D4B656886731A8D05618CFA1A3B202A2445ABA0E77C5F4F00CA1239975A05377084F256DEAA07D21C4CF2A4279BC117603ACB7B10228C3AB8F8C1742D674395701BB02071A88683041D9C4231E8EE982B8DA"
-#endif
-
 #if FP_PRIME == 256
-
 /**
  * Random prime modulus for the Brainpool P256r1.
  */
-#define BSI_P256		"A9FB57DBA1EEA9BC3E660A909D838D726E3BF623D52620282013481D1F6E5377"
+#define STR_P256	"A9FB57DBA1EEA9BC3E660A909D838D726E3BF623D52620282013481D1F6E5377"
+
+#elif FP_PRIME == 544
+/**
+ * Random prime modulus for the Cocks-Pinch curve of embedding degree 8.
+ */
+#define STR_P544	"B4910005E588FDE4023747293D3A6E3D41B42AFE599CF6ED3E0192D99FE38524365563D4DD1749878641CDE159AFDB73B758C3BAA70C8C1FA842A7142D6A5981846ABA09"
+
+#elif FP_PRIME == 1536
+/**
+ * Cofactor description of 1536-bit prime modulus.
+ */
+#define STR_P1536	"83093742908D4D529CEF06C72191A05D5E6073FE861E637D7747C3E52FBB92DAA5DDF3EF1C61F5F70B256802481A36CAFE995FE33CD54014B846751364C0D3B8327D9E45366EA08F1B3446AC23C9D4B656886731A8D05618CFA1A3B202A2445ABA0E77C5F4F00CA1239975A05377084F256DEAA07D21C4CF2A4279BC117603ACB7B10228C3AB8F8C1742D674395701BB02071A88683041D9C4231E8EE982B8DA"
 
 #endif
 
@@ -195,7 +199,7 @@ void fp_param_set(int param) {
 				fp_prime_set_pmers(f, 5);
 				break;
 			case BSI_256:
-				bn_read_str(p, BSI_P256, strlen(BSI_P256), 16);
+				bn_read_str(p, STR_P256, strlen(STR_P256), 16);
 				fp_prime_set_dense(p);
 				break;
 			case SECG_256:
@@ -379,6 +383,11 @@ void fp_param_set(int param) {
 				f[1] = 521;
 				fp_prime_set_pmers(f, 2);
 				break;
+#elif FP_PRIME == 544
+			case CP8_544:
+				bn_read_str(p, STR_P544, strlen(STR_P544), 16);
+				fp_prime_set_dense(p);
+				break;
 #elif FP_PRIME == 638
 			case BN_638:
 				/* x = 2^158 - 2^128 - 2^68 + 1. */
@@ -408,7 +417,7 @@ void fp_param_set(int param) {
 				bn_set_2b(t0, 255);
 				bn_set_bit(t0, 41, 1);
 				bn_add_dig(t0, t0, 1);
-				bn_read_str(p, SS_P1536, strlen(SS_P1536), 16);
+				bn_read_str(p, STR_P1536, strlen(STR_P1536), 16);
 				bn_mul(p, p, t0);
 				bn_dbl(p, p);
 				bn_sub_dig(p, p, 1);
@@ -480,6 +489,8 @@ int fp_param_set_any(void) {
 	fp_param_set(KSS_508);
 #elif FP_PRIME == 511
 	fp_param_set(OT_511);
+#elif FP_PRIME == 544
+	fp_param_set(CP8_544);
 #elif FP_PRIME == 521
 	fp_param_set(NIST_521);
 #elif FP_PRIME == 638
@@ -570,6 +581,8 @@ int fp_param_set_any_tower(void) {
 	fp_param_set(KSS_508);
 #elif FP_PRIME == 511
 	fp_param_set(OT_511);
+#elif FP_PRIME == 544
+	fp_param_set(CP8_544);
 #elif FP_PRIME == 638
 #ifdef FP_QNRES
 	fp_param_set(B12_638);

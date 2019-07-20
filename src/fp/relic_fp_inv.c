@@ -459,7 +459,6 @@ void fp_inv_divst(fp_t c, const fp_t a) {
 		dv_copy(g, t->dp, t->used);
 		dv_copy(f, fp_prime_get(), RLC_FP_DIGS);
 		fs = gs = RLC_POS;
-		int flag = 0;
 
 		for (int i = 0; i < d; i++) {
 			g0 = g[0] & 1;

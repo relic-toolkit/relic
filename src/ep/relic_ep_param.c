@@ -469,6 +469,22 @@
 /** @} */
 #endif
 
+#if defined(EP_ENDOM) && FP_PRIME == 544
+/**
+ * Parameters for the 544-bit Cocks-Pinch curve.
+ */
+/** @{ */
+#define CP8_P544_A		"121"
+#define CP8_P544_B		"0"
+#define CP8_P544_X		"355DF0E918A9EDE73207C59CF710621D8E8AACD165866679BF80CCDE7EAAC8D74D67517410AEE0124880776C21A93081EE926844ED31B96CB9142283C92E52394A6B25F1"
+#define CP8_P544_Y		"4F52096E583AE7E4E4EF4E332D7E1767FEF5334CD490AF79C9BE37CA22E6ABD34E6E76179DC8366617A4CF2E02508D42A3005385BE367C0EDBA83C657337B3C17E916F4E"
+#define CP8_P544_R		"FFFFFFFFBFDF08000606301799D79CE503FE520538262507B940781000000001"
+#define CP8_P544_H		"B491000612C47EF1FB70DE51FB3092692A3ECFC82033520B477E73EF39DE60F174627C04"
+#define CP8_P544_BETA	"AB3B4B3FD9A4688D3C2FEF90E556F1F95A682866A1EBA3BD942E459CF35894F8E3F94238C47CBD37A759C33BFF6DEAC41B68F6C91B3A7B2F97A53E3A94ED22F06E739E39"
+#define CP8_P544_LAMB	"FFFFFFFFBFDF08000606301799D79CE403FE52055836A107B83F700C10FC0001"
+/** @} */
+#endif
+
 #if defined(EP_ENDOM) && FP_PRIME == 638
 /**
  * Parameters for a 638-bit pairing-friendly prime curve.
@@ -760,6 +776,12 @@ void ep_param_set(int param) {
 				plain = 1;
 				break;
 #endif
+#if defined(EP_ENDOM) && FP_PRIME == 544
+			case CP8_P544:
+				ASSIGNK(CP8_P544, CP8_544);
+				endom = 1;
+				break;
+#endif
 #if defined(EP_ENDOM) && FP_PRIME == 638
 			case BN_P638:
 				ASSIGNK(BN_P638, BN_638);
@@ -875,6 +897,8 @@ int ep_param_set_any_plain(void) {
 	ep_param_set(OT8_P511);
 #elif FP_PRIME == 521
 	ep_param_set(NIST_P521);
+#elif FP_PRIME == 544
+	ep_param_set(CP8_P544);
 #else
 	r = RLC_ERR;
 #endif
@@ -917,6 +941,8 @@ int ep_param_set_any_endom(void) {
 	ep_param_set(KSS_P508);
 #elif FP_PRIME == 511
 	ep_param_set(OT8_P511);
+#elif FP_PRIME == 544
+	ep_param_set(CP8_P544);
 #elif FP_PRIME == 638
 #ifdef FP_QNRES
 	ep_param_set(B12_P638);
@@ -993,6 +1019,10 @@ int ep_param_set_any_pairf(void) {
 	degree = 3;
 #elif FP_PRIME == 511
 	ep_param_set(OT8_P511);
+	type = EP_DTYPE;
+	degree = 2;
+#elif FP_PRIME == 544
+	ep_param_set(CP8_P544);
 	type = EP_DTYPE;
 	degree = 2;
 #elif FP_PRIME == 638
@@ -1083,6 +1113,9 @@ void ep_param_print(void) {
 		case B12_P381:
 			util_banner("Curve B12-P381:", 0);
 			break;
+		case CP8_P544:
+			util_banner("Curve CP8-P344:", 0);
+			break;
 		case BN_P446:
 			util_banner("Curve BN-P446:", 0);
 			break;
@@ -1148,6 +1181,7 @@ int ep_param_level(void) {
 		case B12_P381:
 		case BN_P382:
 		case BN_P446:
+		case CP8_544:
 		case SS_P1536:
 			return 128;
 		case B12_P455:
