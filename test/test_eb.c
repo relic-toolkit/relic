@@ -1025,7 +1025,6 @@ static int simultaneous(void) {
 			eb_mul(p, p, k);
 			eb_mul(q, q, l);
 			eb_add(q, q, p);
-			eb_norm(q, q);
 			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 #endif
@@ -1062,7 +1061,6 @@ static int simultaneous(void) {
 			eb_mul(p, p, k);
 			eb_mul(q, q, l);
 			eb_add(q, q, p);
-			eb_norm(q, q);
 			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 #endif
@@ -1099,7 +1097,6 @@ static int simultaneous(void) {
 			eb_mul(p, p, k);
 			eb_mul(q, q, l);
 			eb_add(q, q, p);
-			eb_norm(q, q);
 			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 #endif
@@ -1136,7 +1133,6 @@ static int simultaneous(void) {
 			eb_mul(p, p, k);
 			eb_mul(q, q, l);
 			eb_add(q, q, p);
-			eb_norm(q, q);
 			TEST_ASSERT(eb_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 #endif

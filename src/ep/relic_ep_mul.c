@@ -395,10 +395,6 @@ static void ep_mul_reg_imp(ep_t r, const ep_t p, const bn_t k) {
 	ep_t t[1 << (EP_WIDTH - 2)], u, v;
 
 	bn_null(_k);
-	for (i = 0; i < (1 << (EP_WIDTH - 2)); i++) {
-		ep_null(t[i]);
-	}
-
 	if (bn_is_zero(k)) {
 		ep_set_infty(r);
 		return;
@@ -410,6 +406,7 @@ static void ep_mul_reg_imp(ep_t r, const ep_t p, const bn_t k) {
 		ep_new(v);
 		/* Prepare the precomputation table. */
 		for (i = 0; i < (1 << (EP_WIDTH - 2)); i++) {
+			ep_null(t[i]);
 			ep_new(t[i]);
 		}
 		/* Compute the precomputation table. */

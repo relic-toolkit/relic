@@ -873,7 +873,6 @@ static int simultaneous(void) {
 			ep2_mul(p, p, k);
 			ep2_mul(q, q, l);
 			ep2_add(q, q, p);
-			ep2_norm(q, q);
 			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 
@@ -909,7 +908,6 @@ static int simultaneous(void) {
 			ep2_mul(p, p, k);
 			ep2_mul(q, q, l);
 			ep2_add(q, q, p);
-			ep2_norm(q, q);
 			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 #endif
@@ -946,7 +944,6 @@ static int simultaneous(void) {
 			ep2_mul(p, p, k);
 			ep2_mul(q, q, l);
 			ep2_add(q, q, p);
-			ep2_norm(q, q);
 			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 #endif
@@ -983,7 +980,6 @@ static int simultaneous(void) {
 			ep2_mul(p, p, k);
 			ep2_mul(q, q, l);
 			ep2_add(q, q, p);
-			ep2_norm(q, q);
 			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 #endif
@@ -1020,7 +1016,6 @@ static int simultaneous(void) {
 			ep2_mul(p, p, k);
 			ep2_mul(q, q, l);
 			ep2_add(q, q, p);
-			ep2_norm(q, q);
 			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 #endif

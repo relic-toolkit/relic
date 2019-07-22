@@ -919,7 +919,6 @@ static int simultaneous(void) {
 			ep_mul(p, p, k);
 			ep_mul(q, q, l);
 			ep_add(q, q, p);
-			ep_norm(q, q);
 			TEST_ASSERT(ep_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 #endif
@@ -956,7 +955,6 @@ static int simultaneous(void) {
 			ep_mul(p, p, k);
 			ep_mul(q, q, l);
 			ep_add(q, q, p);
-			ep_norm(q, q);
 			TEST_ASSERT(ep_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 #endif
@@ -993,7 +991,6 @@ static int simultaneous(void) {
 			ep_mul(p, p, k);
 			ep_mul(q, q, l);
 			ep_add(q, q, p);
-			ep_norm(q, q);
 			TEST_ASSERT(ep_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 #endif
