@@ -231,7 +231,7 @@ int addition(void) {
 		} TEST_END;
 #endif
 
-#if ED_ADD == PROJC
+#if ED_ADD == PROJC && !defined(STRIP)
 		TEST_BEGIN("point addition in projective coordinates is correct") {
 			ed_rand(a);
 			ed_rand(b);
@@ -242,19 +242,14 @@ int addition(void) {
 			/* a and b in projective coordinates. */
 			ed_add_projc(d, a, b);
 			ed_norm(d, d);
-			ed_print(d);
 			ed_norm(a, a);
 			ed_norm(b, b);
-			printf("\n");
-			ed_print(a);
-			ed_print(b);
-			printf("\n");
-			ed_add_extnd(e, a, b);
+			ed_add(e, a, b);
 			ed_norm(e, e);
-			ed_print(e);
 			TEST_ASSERT(ed_cmp(e, d) == RLC_EQ, end);
 		} TEST_END;
-#elif ED_ADD == EXTND
+
+#elif ED_ADD == EXTND && !defined(STRIP)
 		TEST_BEGIN("point addition in extended coordinates is correct") {
 			ed_rand(a);
 			ed_rand(b);
@@ -451,7 +446,7 @@ int doubling(void) {
 			TEST_ASSERT(ed_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("point extended in mixed coordinates (z1 = 1) is correct") {
+		TEST_BEGIN("point doubling in mixed coordinates (z1 = 1) is correct") {
 			ed_rand(a);
 			ed_dbl_extnd(b, a);
 			ed_norm(b, b);
@@ -601,6 +596,29 @@ static int multiplication(void) {
 			TEST_ASSERT(ed_cmp(q, r) == RLC_EQ, end);
 			bn_neg(k, k);
 			ed_mul_lwnaf(r, p, k);
+			ed_neg(r, r);
+			TEST_ASSERT(ed_cmp(q, r) == RLC_EQ, end);
+		}
+		TEST_END;
+#endif
+
+#if ED_MUL == LWREG || !defined(STRIP)
+		TEST_BEGIN("left-to-right regular point multiplication is correct") {
+			bn_zero(k);
+			ed_mul_lwreg(r, p, k);
+			TEST_ASSERT(ed_is_infty(r), end);
+			bn_set_dig(k, 1);
+			ed_mul_lwreg(r, p, k);
+			TEST_ASSERT(ed_cmp(p, r) == RLC_EQ, end);
+			ed_rand(p);
+			ed_mul_lwreg(r, p, n);
+			TEST_ASSERT(ed_is_infty(r), end);
+			bn_rand_mod(k, n);
+			ed_mul(q, p, k);
+			ed_mul_lwreg(r, p, k);
+			TEST_ASSERT(ed_cmp(q, r) == RLC_EQ, end);
+			bn_neg(k, k);
+			ed_mul_lwreg(r, p, k);
 			ed_neg(r, r);
 			TEST_ASSERT(ed_cmp(q, r) == RLC_EQ, end);
 		}
@@ -846,12 +864,14 @@ static int simultaneous(void) {
 			ed_mul(p, p, k);
 			ed_mul(q, q, l);
 			ed_add(q, q, p);
+			ed_norm(q, q);
 			TEST_ASSERT(ed_cmp(q, r) == RLC_EQ, end);
 			bn_neg(k, k);
 			ed_mul_sim(r, p, k, q, l);
 			ed_mul(p, p, k);
 			ed_mul(q, q, l);
 			ed_add(q, q, p);
+			ed_norm(q, q);
 			TEST_ASSERT(ed_cmp(q, r) == RLC_EQ, end);
 			bn_neg(l, l);
 			ed_mul_sim(r, p, k, q, l);
@@ -879,6 +899,7 @@ static int simultaneous(void) {
 			ed_mul(p, p, k);
 			ed_mul(q, q, l);
 			ed_add(q, q, p);
+			ed_norm(q, q);
 			TEST_ASSERT(ed_cmp(q, r) == RLC_EQ, end);
 			bn_neg(k, k);
 			ed_mul_sim_basic(r, p, k, q, l);
@@ -913,12 +934,14 @@ static int simultaneous(void) {
 			ed_mul(p, p, k);
 			ed_mul(q, q, l);
 			ed_add(q, q, p);
+			ed_norm(q, q);
 			TEST_ASSERT(ed_cmp(q, r) == RLC_EQ, end);
 			bn_neg(k, k);
 			ed_mul_sim_trick(r, p, k, q, l);
 			ed_mul(p, p, k);
 			ed_mul(q, q, l);
 			ed_add(q, q, p);
+			ed_norm(q, q);
 			TEST_ASSERT(ed_cmp(q, r) == RLC_EQ, end);
 			bn_neg(l, l);
 			ed_mul_sim_trick(r, p, k, q, l);
@@ -947,12 +970,14 @@ static int simultaneous(void) {
 			ed_mul(p, p, k);
 			ed_mul(q, q, l);
 			ed_add(q, q, p);
+			ed_norm(q, q);
 			TEST_ASSERT(ed_cmp(q, r) == RLC_EQ, end);
 			bn_neg(k, k);
 			ed_mul_sim_inter(r, p, k, q, l);
 			ed_mul(p, p, k);
 			ed_mul(q, q, l);
 			ed_add(q, q, p);
+			ed_norm(q, q);
 			TEST_ASSERT(ed_cmp(q, r) == RLC_EQ, end);
 			bn_neg(l, l);
 			ed_mul_sim_inter(r, p, k, q, l);
@@ -981,12 +1006,14 @@ static int simultaneous(void) {
 			ed_mul(p, p, k);
 			ed_mul(q, q, l);
 			ed_add(q, q, p);
+			ed_norm(q, q);
 			TEST_ASSERT(ed_cmp(q, r) == RLC_EQ, end);
 			bn_neg(k, k);
 			ed_mul_sim_joint(r, p, k, q, l);
 			ed_mul(p, p, k);
 			ed_mul(q, q, l);
 			ed_add(q, q, p);
+			ed_norm(q, q);
 			TEST_ASSERT(ed_cmp(q, r) == RLC_EQ, end);
 			bn_neg(l, l);
 			ed_mul_sim_joint(r, p, k, q, l);
