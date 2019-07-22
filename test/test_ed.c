@@ -905,6 +905,7 @@ static int simultaneous(void) {
 			ed_mul(p, p, k);
 			ed_mul(q, q, l);
 			ed_add(q, q, p);
+			ed_norm(q, q);
 			TEST_ASSERT(ed_cmp(q, r) == RLC_EQ, end);
 			bn_neg(l, l);
 			ed_mul_sim_basic(r, p, k, q, l);
