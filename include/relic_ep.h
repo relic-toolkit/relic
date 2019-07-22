@@ -864,7 +864,7 @@ void ep_mul_lwreg(ep_t r, const ep_t p, const bn_t k);
 void ep_mul_gen(ep_t r, const bn_t k);
 
 /**
- * Multiplies a prime elliptic point by a small integer.
+ * Multiplies a prime elliptic point by a small positive integer.
  *
  * @param[out] r			- the result.
  * @param[in] p				- the point to multiply.

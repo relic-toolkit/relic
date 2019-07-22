@@ -736,7 +736,7 @@ void eb_mul_halve(eb_t r, const eb_t p, const bn_t k);
 void eb_mul_gen(eb_t r, const bn_t k);
 
 /**
- * Multiplies a binary elliptic point by a small integer.
+ * Multiplies a binary elliptic point by a small positive integer.
  *
  * @param[out] r			- the result.
  * @param[in] p				- the point to multiply.

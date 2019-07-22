@@ -419,6 +419,8 @@
 #define MONTY	 3
 /** Left-to-right Width-w NAF. */
 #define LWNAF	 4
+/** Left-to-right Width-w NAF. */
+#define LWREG	 5
 /** Chosen prime elliptic curve point multiplication method. */
 #define EP_MUL	 @EP_MUL@
 
@@ -505,28 +507,15 @@
 /** Chosen binary elliptic curve simulteanous point multiplication method. */
 #define EB_SIM   @EB_SIM@
 
-/** Prefer curves with efficient endomorphisms. */
-#cmakedefine EC_ENDOM
-
-/** Binary point multiplication. */
-#define BASIC	 1
-/** Sliding window. */
-#define SLIDE    2
-/** Montgomery powering ladder. */
-#define MONTY	 3
-/** Left-to-right Width-w NAF. */
-#define LWNAF	 4
-/** Fixed window. */
-#define FIXWI	 8
-/** Chosen prime elliptic twisted Edwards curve point multiplication method. */
-#define ED_MUL	 @ED_MUL@
-
 /** Build precomputation table for generator. */
 #cmakedefine ED_PRECO
 /** Width of precomputation table for fixed point methods. */
 #define ED_DEPTH @ED_DEPTH@
 /** Width of window processing for unknown point methods. */
 #define ED_WIDTH @ED_WIDTH@
+
+/** Edwards elliptic curve arithmetic method. */
+#define ED_METHD "@ED_METHD@"
 
 /** Affine coordinates. */
 #define BASIC    1
@@ -539,6 +528,19 @@
 
 /** Binary point multiplication. */
 #define BASIC	 1
+/** Sliding window. */
+#define SLIDE    2
+/** Montgomery powering ladder. */
+#define MONTY	 3
+/** Left-to-right Width-w NAF. */
+#define LWNAF	 4
+/** Left-to-right Width-w NAF. */
+#define LWREG	 5
+/** Chosen prime elliptic twisted Edwards curve point multiplication method. */
+#define ED_MUL	 @ED_MUL@
+
+/** Binary point multiplication. */
+#define BASIC	 1
 /** Single-table comb method. */
 #define COMBS	 2
 /** Double-table comb method. */
@@ -548,10 +550,16 @@
 /** Chosen prime elliptic twisted Edwards curve point multiplication method. */
 #define ED_FIX	 @ED_FIX@
 
+/** Basic simultaneouns point multiplication. */
+#define BASIC    1
+/** Shamir's trick. */
+#define TRICK    2
+/** Interleaving of w-(T)NAFs. */
+#define INTER    3
+/** Joint sparse form. */
+#define JOINT    4
 /** Chosen prime elliptic curve simulteanous point multiplication method. */
 #define ED_SIM   @ED_SIM@
-
-#define ED_METHD "@ED_METHD@"
 
 /** Prime curves. */
 #define PRIME    1
@@ -564,9 +572,8 @@
 
 /** Chosen elliptic curve cryptography method. */
 #define EC_METHD "@EC_METHD@"
-
-/** Parallel implementation. */
-#cmakedefine PP_PARAL
+/** Prefer curves with efficient endomorphisms. */
+#cmakedefine EC_ENDOM
 
 /** Basic quadratic extension field arithmetic. */
 #define BASIC    1

@@ -28,7 +28,7 @@
 /**
  * @file
  *
- * Interface of the module for arithmetic on elliptic twisted Edwards curves.
+ * Interface of the module for arithmetic on elliptic curves.
  *
  * @ingroup ed
  */
@@ -46,7 +46,7 @@
 /*============================================================================*/
 
 /**
- * Prime elliptic twisted Edwards curve identifiers.
+ * Prime elliptic curve identifiers.
  */
 enum {
     /** ED25519 Edwards curve. */
@@ -103,7 +103,7 @@ enum {
 /*============================================================================*/
 
 /**
- * Represents an elliptic curve point over a Edwards field.
+ * Represents an elliptic curve point over an Edwards field.
  */
 typedef struct {
     /** The first coordinate. */
@@ -113,7 +113,7 @@ typedef struct {
     /** The third coordinate (projective representation). */
     fp_st z;
 #if ED_ADD == EXTND || !defined(STRIP)
-    /** The forth coordinate (extended twisted Edwards coordinates) */
+    /** The forth coordinate (extended coordinates) */
     fp_st t;
 #endif
     /** Flag to indicate that this point is normalized. */
@@ -134,7 +134,7 @@ typedef ed_st *ed_t;
 /*============================================================================*/
 
 /**
- * Initializes a point on a twisted Edwards Edwards curve with a null value.
+ * Initializes a point on an Edwards curve with a null value.
  *
  * @param[out] A      - the point to initialize.
  */
@@ -145,7 +145,7 @@ typedef ed_st *ed_t;
 #endif
 
 /**
- * Calls a function to allocate a point on a twisted Edwards Edwards curve.
+ * Calls a function to allocate a point on an Edwards curve.
  *
  * @param[out] A      - the new point.
  * @throw ERR_NO_MEMORY   - if there is no available memory.
@@ -167,7 +167,7 @@ typedef ed_st *ed_t;
 #endif
 
 /**
- * Calls a function to clean and free a point on a twisted Edwards Edwards curve.
+ * Calls a function to clean and free a point on an Edwards curve.
  *
  * @param[out] A      - the point to free.
  */
@@ -215,7 +215,7 @@ typedef ed_st *ed_t;
 #endif
 
 /**
- * Subtracts a Edwards elliptic curve point from another. Computes R = P - Q.
+ * Subtracts an Edwards elliptic curve point from another. Computes R = P - Q.
  *
  * @param[out] R			- the result.
  * @param[in] P				- the first point.
@@ -245,7 +245,7 @@ typedef ed_st *ed_t;
 
 
 /**
- * Configures a twisted Edwards Edwards curve by its parameter identifier.
+ * Configures an Edwards curve by its parameter identifier.
  *
  * @param				- the parameter identifier.
  */
@@ -265,14 +265,14 @@ int ed_param_set_any(void);
 int ed_param_get(void);
 
 /**
- * Returns the order of the group of points in the twisted Edwards Edwards curve.
+ * Returns the order of the group of points in the Edwards curve.
  *
  * @param[out] r      - the returned order.
  */
 void ed_curve_get_ord(bn_t r);
 
 /**
- * Returns the generator of the group of points in the twisted Edwards curve.
+ * Returns the generator of the group of points in the curve.
  *
  * @param[out] g      - the returned generator.
  */
@@ -286,14 +286,14 @@ void ed_curve_get_gen(ed_t g);
 const ed_t *ed_curve_get_tab(void);
 
 /**
- * Returns the cofactor of the twisted Edwards Edwards elliptic curve.
+ * Returns the cofactor of the Edwards elliptic curve.
  *
  * @param[out] n      - the returned cofactor.
  */
 void ed_curve_get_cof(bn_t h);
 
 /**
- * Prints the current configured twisted Edwards Edwards elliptic curve.
+ * Prints the current configured Edwards elliptic curve.
  */
 void ed_param_print(void);
 
@@ -304,15 +304,15 @@ int ed_param_level(void);
 
 #if ED_ADD == EXTND
 /**
- * Converts projective twisted Edwards point into extended twisted Edwards point.
+ * Converts projective point into extended point.
  */
 void ed_projc_to_extnd(ed_t r, const fp_t x, const fp_t y, const fp_t z);
 #endif
 
 /**
- * Assigns a random value to a Edwards elliptic twisted Edwards curve point.
+ * Assigns a random value to an Edwards elliptic curve point.
  *
- * @param[out] p	- the Edwards elliptic twisted Edwards curve point to assign.
+ * @param[out] p	- the Edwards elliptic curve point to assign.
  */
 void ed_rand(ed_t p);
 
@@ -334,7 +334,7 @@ void ed_rhs(fp_t rhs, const ed_t p);
 void ed_copy(ed_t r, const ed_t p);
 
 /**
- * Compares two Edwards elliptic twisted Edwards curve points.
+ * Compares two Edwards elliptic curve points.
  *
  * @param[in] p		- the first Edwards elliptic curve point.
  * @param[in] q		- the second Edwards elliptic curve point.
@@ -343,14 +343,14 @@ void ed_copy(ed_t r, const ed_t p);
 int ed_cmp(const ed_t p, const ed_t q);
 
 /**
- * Assigns a Edwards elliptic curve point to a point at the infinity.
+ * Assigns an Edwards elliptic curve point to a point at the infinity.
  *
  * @param[out] p	- the point to assign.
  */
 void ed_set_infty(ed_t p);
 
 /**
- * Tests if a point on a Edwards elliptic curve is at the infinity.
+ * Tests if a point on an Edwards elliptic curve is at the infinity.
  *
  * @param[in] p		- the point to test.
  * @return 1 if the point is at infinity, 0 otherise.
@@ -358,7 +358,7 @@ void ed_set_infty(ed_t p);
 int ed_is_infty(const ed_t p);
 
 /**
- * Negates a Edwards elliptic curve point represented by affine coordinates.
+ * Negates an Edwards elliptic curve point represented by affine coordinates.
  *
  * @param[out] r			- the result.
  * @param[in] p				- the point to negate.
@@ -366,7 +366,7 @@ int ed_is_infty(const ed_t p);
 void ed_neg_basic(ed_t r, const ed_t p);
 
 /**
- * Negates a Edwards elliptic curve point represented by projective coordinates.
+ * Negates an Edwards elliptic curve point represented by projective coordinates.
  *
  * @param[out] r			- the result.
  * @param[in] p				- the point to negate.
@@ -401,7 +401,7 @@ void ed_add_projc(ed_t r, const ed_t p, const ed_t q);
 void ed_add_extnd(ed_t r, const ed_t p, const ed_t q);
 
 /**
- * Subtracts a Edwards elliptic curve point from another, both points represented
+ * Subtracts an Edwards elliptic curve point from another, both points represented
  * by affine coordinates..
  *
  * @param[out] r			- the result.
@@ -411,7 +411,7 @@ void ed_add_extnd(ed_t r, const ed_t p, const ed_t q);
 void ed_sub_basic(ed_t r, const ed_t p, const ed_t q);
 
 /**
- * Subtracts a Edwards elliptic curve point from another, both represented
+ * Subtracts an Edwards elliptic curve point from another, both represented
  * by projective coordinates.
  *
  * @param[out] r			- the result.
@@ -421,7 +421,7 @@ void ed_sub_basic(ed_t r, const ed_t p, const ed_t q);
 void ed_sub_projc(ed_t r, const ed_t p, const ed_t q);
 
 /**
- * Subtracts a Edwards elliptic curve point from another, both represented
+ * Subtracts an Edwards elliptic curve point from another, both represented
  * by extended coordinates.
  *
  * @param[out] r			- the result.
@@ -431,7 +431,7 @@ void ed_sub_projc(ed_t r, const ed_t p, const ed_t q);
 void ed_sub_extnd(ed_t r, const ed_t p, const ed_t q);
 
 /**
- * Doubles a Edwards elliptic curve point represented in affine coordinates.
+ * Doubles an Edwards elliptic curve point represented in affine coordinates.
  *
  * @param[out] r			- the result.
  * @param[in] p				- the point to double.
@@ -439,7 +439,7 @@ void ed_sub_extnd(ed_t r, const ed_t p, const ed_t q);
 void ed_dbl_basic(ed_t r, const ed_t p);
 
 /**
- * Doubles a Edwards elliptic curve point represented in projective coordinates.
+ * Doubles an Edwards elliptic curve point represented in projective coordinates.
  *
  * @param[out] r			- the result.
  * @param[in] p				- the point to double.
@@ -447,7 +447,7 @@ void ed_dbl_basic(ed_t r, const ed_t p);
 void ed_dbl_projc(ed_t r, const ed_t p);
 
 /**
- * Doubles a Edwards elliptic curve point represented in extended coordinates.
+ * Doubles an Edwards elliptic curve point represented in extended coordinates.
  *
  * @param[out] r			- the result.
  * @param[in] p				- the point to double.
@@ -472,7 +472,7 @@ void ed_norm(ed_t r, const ed_t p);
 void ed_norm_sim(ed_t *r, const ed_t *t, int n);
 
 /**
- * Maps a byte array to a point in a Edwards elliptic twisted Edwards curve.
+ * Maps a byte array to a point in an Edwards elliptic curve.
  *
  * @param[out] p			- the result.
  * @param[in] msg			- the byte array to map.
@@ -481,7 +481,7 @@ void ed_norm_sim(ed_t *r, const ed_t *t, int n);
 void ed_map(ed_t p, const uint8_t *msg, int len);
 
 /**
- * Multiplies a Edwards elliptic curve point by an integer. Computes R = kP.
+ * Multiplies an Edwards elliptic curve point by an integer. Computes R = kP.
  *
  * @param[out] R		- the result.
  * @param[in] P			- the point to multiply.
@@ -493,10 +493,10 @@ void ed_map(ed_t p, const uint8_t *msg, int len);
 #define ed_mul(R, P, K)   ed_mul_slide(R, P, K)
 #elif ED_MUL == MONTY
 #define ed_mul(R, P, K)   ed_mul_monty(R, P, K)
-#elif ED_MUL == FIXWI
-#define ed_mul(R, P, K)   ed_mul_fixed(R, P, K)
 #elif ED_MUL == LWNAF
 #define ed_mul(R, P, K)   ed_mul_lwnaf(R, P, K)
+#elif ED_MUL == LWREG
+#define ed_mul(R, P, K)   ed_mul_lwreg(R, P, K)
 #endif
 
 /**
@@ -692,7 +692,7 @@ void ed_mul_fix_lwnaf(ed_t r, const ed_t *t, const bn_t k);
 void ed_mul_fix_lwnaf_mixed(ed_t r, const ed_t *t, const bn_t k);
 
 /**
- * Multiplies the generator of a Edwards elliptic twisted Edwards curve by an integer.
+ * Multiplies the generator of an Edwards elliptic curve by an integer.
  *
  * @param[out] r      - the result.
  * @param[in] k       - the integer.
@@ -700,7 +700,7 @@ void ed_mul_fix_lwnaf_mixed(ed_t r, const ed_t *t, const bn_t k);
 void ed_mul_gen(ed_t r, const bn_t k);
 
 /**
- * Multiplies a Edwards elliptic twisted Edwards curve point by a small integer.
+ * Multiplies an Edwards elliptic curve point by a small positive integer.
  *
  * @param[out] r      - the result.
  * @param[in] p       - the point to multiply.
@@ -761,7 +761,7 @@ void ed_mul_sim_joint(ed_t r, const ed_t p, const bn_t k, const ed_t q,
     const bn_t m);
 
 /**
- * Multiplies and adds the generator and a Edwards elliptic curve point
+ * Multiplies and adds the generator and an Edwards elliptic curve point
  * simultaneously. Computes R = kG + mQ.
  *
  * @param[out] r      - the result.
@@ -772,7 +772,7 @@ void ed_mul_sim_joint(ed_t r, const ed_t p, const bn_t k, const ed_t q,
 void ed_mul_sim_gen(ed_t r, const bn_t k, const ed_t q, const bn_t m);
 
 /**
- * Builds a precomputation table for multiplying a random Edwards elliptic twisted Edwards point.
+ * Builds a precomputation table for multiplying a random Edwards elliptic point.
  *
  * @param[out] t			- the precomputation table.
  * @param[in] p				- the point to multiply.
@@ -781,7 +781,7 @@ void ed_mul_sim_gen(ed_t r, const bn_t k, const ed_t q, const bn_t m);
 void ed_tab(ed_t *t, const ed_t p, int w);
 
 /**
- * Prints a Edwards elliptic twisted Edwards curve point.
+ * Prints an Edwards elliptic curve point.
  *
  * @param[in] p       - the Edwards elliptic curve point to print.
  */
@@ -795,7 +795,7 @@ void ed_print(const ed_t p);
 int ed_is_valid(const ed_t p);
 
 /**
- * Returns the number of bytes necessary to store a Edwards elliptic twisted Edwards curve point
+ * Returns the number of bytes necessary to store an Edwards elliptic curve point
  * with optional point compression.
  *
  * @param[in] a       - the Edwards field element.
@@ -805,7 +805,7 @@ int ed_is_valid(const ed_t p);
 int ed_size_bin(const ed_t a, int pack);
 
 /**
- * Reads a Edwards elliptic twisted Edwards curve point from a byte vector in big-endian format.
+ * Reads an Edwards elliptic curve point from a byte vector in big-endian format.
  *
  * @param[out] a      - the result.
  * @param[in] bin     - the byte vector.
@@ -816,7 +816,7 @@ int ed_size_bin(const ed_t a, int pack);
 void ed_read_bin(ed_t a, const uint8_t *bin, int len);
 
 /**
- * Writes a Edwards elliptic twisted Edwards curve point to a byte vector in big-endian format
+ * Writes an Edwards elliptic curve point to a byte vector in big-endian format
  * with optional point compression.
  *
  * @param[out] bin      - the byte vector.
@@ -828,7 +828,7 @@ void ed_read_bin(ed_t a, const uint8_t *bin, int len);
 void ed_write_bin(uint8_t *bin, int len, const ed_t a, int pack);
 
 /**
- * Multiplies a Edwards elliptic point by an integer using the binary method.
+ * Multiplies an Edwards elliptic point by an integer using the binary method.
  *
  * @param[out] r			- the result.
  * @param[in] p				- the point to multiply.
@@ -837,7 +837,7 @@ void ed_write_bin(uint8_t *bin, int len, const ed_t a, int pack);
 void ed_mul_basic(ed_t r, const ed_t p, const bn_t k);
 
 /**
- * Multiplies a Edwards elliptic point by an integer using the sliding window
+ * Multiplies an Edwards elliptic point by an integer using the sliding window
  * method.
  *
  * @param[out] r			- the result.
@@ -847,7 +847,7 @@ void ed_mul_basic(ed_t r, const ed_t p, const bn_t k);
 void ed_mul_slide(ed_t r, const ed_t p, const bn_t k);
 
 /**
- * Multiplies a Edwards elliptic point by an integer using the constant-time
+ * Multiplies an Edwards elliptic point by an integer using the constant-time
  * Montgomery laddering point multiplication method.
  *
  * @param[out] r			- the result.
@@ -857,17 +857,7 @@ void ed_mul_slide(ed_t r, const ed_t p, const bn_t k);
 void ed_mul_monty(ed_t r, const ed_t p, const bn_t k);
 
 /**
- * Multiplies a Edwards elliptic point by an integer using the constant-time
- * fixed window method.
- *
- * @param[out] r      - the result.
- * @param[in] p       - the point to multiply.
- * @param[in] k       - the integer.
- */
-void ed_mul_fixed(ed_t r, const ed_t p, const bn_t k);
-
-/**
- * Multiplies a Edwards elliptic point by an integer using the w-NAF method.
+ * Multiplies an Edwards elliptic point by an integer using the w-NAF method.
  *
  * @param[out] r			- the result.
  * @param[in] p				- the point to multiply.
@@ -876,16 +866,7 @@ void ed_mul_fixed(ed_t r, const ed_t p, const bn_t k);
 void ed_mul_lwnaf(ed_t r, const ed_t p, const bn_t k);
 
 /**
- * Multiplies a Edwards elliptic point by an integer using the w-NAF mixed coordinate method.
- *
- * @param[out] r      - the result.
- * @param[in] p       - the point to multiply.
- * @param[in] k       - the integer.
- */
-void ed_mul_lwnaf_mixed(ed_t r, const ed_t p, const bn_t k);
-
-/**
- * Multiplies a Edwards elliptic point by an integer using a regular method.
+ * Multiplies an Edwards elliptic point by an integer using a regular method.
  *
  * @param[out] r			- the result.
  * @param[in] p				- the point to multiply.

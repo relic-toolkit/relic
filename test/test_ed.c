@@ -231,7 +231,7 @@ int addition(void) {
 		} TEST_END;
 #endif
 
-#if ED_ADD == PROJC && !defined(STRIP)
+#if ED_ADD == PROJC
 		TEST_BEGIN("point addition in projective coordinates is correct") {
 			ed_rand(a);
 			ed_rand(b);
@@ -248,7 +248,6 @@ int addition(void) {
 			ed_norm(e, e);
 			TEST_ASSERT(ed_cmp(e, d) == RLC_EQ, end);
 		} TEST_END;
-
 #elif ED_ADD == EXTND && !defined(STRIP)
 		TEST_BEGIN("point addition in extended coordinates is correct") {
 			ed_rand(a);
@@ -349,7 +348,7 @@ int subtraction(void) {
 			ed_norm(d, d);
 			TEST_ASSERT(ed_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
-#elif ED_ADD == EXTND
+#elif ED_ADD == EXTND && !defined(STRIP)
 		TEST_BEGIN("point subtraction in extended coordinates is correct") {
 			ed_rand(a);
 			ed_rand(b);
