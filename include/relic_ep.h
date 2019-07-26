@@ -109,6 +109,8 @@ enum {
 	OT8_P511,
 	/** Cocks-pinch curve with embedding degree 8. */
 	CP8_P544,
+	/** Barreto-Lynn-Scott curve with embedding degree 48. */
+	B48_P575,
 	/** Barreto-Naehrig curve with positive x. */
 	BN_P638,
 	/** Barreto-Lynn-Scott curve with embedding degree 12. */
@@ -131,7 +133,8 @@ enum {
 	EP_KSS,
 	/* Barreto-Lynn-Scott with embedding degree 24. */
 	EP_B24,
-
+	/* Barreto-Lynn-Scott with embedding degree 48. */
+	EP_B48,
 };
 
 /*============================================================================*/

@@ -88,13 +88,7 @@ void fp2_field_init(void) {
 		bn_sub_dig(e, e, 1);
 		bn_div_dig(e, e, 6);
 		fp2_exp(t0, t0, e);
-#if ALLOC == AUTO
-		fp2_copy(ctx->fp2_p[0], t0);
-		fp2_sqr(ctx->fp2_p[1], ctx->fp2_p[0]);
-		fp2_mul(ctx->fp2_p[2], ctx->fp2_p[1], ctx->fp2_p[0]);
-		fp2_sqr(ctx->fp2_p[3], ctx->fp2_p[1]);
-		fp2_mul(ctx->fp2_p[4], ctx->fp2_p[3], ctx->fp2_p[0]);
-#else
+
 		fp_copy(ctx->fp2_p[0][0], t0[0]);
 		fp_copy(ctx->fp2_p[0][1], t0[1]);
 		fp2_sqr(t1, t0);
@@ -110,7 +104,7 @@ void fp2_field_init(void) {
 		fp2_mul(t1, t1, t0);
 		fp_copy(ctx->fp2_p[4][0], t1[0]);
 		fp_copy(ctx->fp2_p[4][1], t1[1]);
-#endif
+
 		fp2_frb(t1, t0, 1);
 		fp2_mul(t0, t1, t0);
 		fp_copy(ctx->fp2_p2[0], t0[0]);
@@ -127,14 +121,28 @@ void fp2_field_init(void) {
 		fp2_mul_nor(t0, t1);
 		e->used = RLC_FP_DIGS;
 		dv_copy(e->dp, fp_prime_get(), RLC_FP_DIGS);
-		bn_sub_dig(e, e, 1);
 		bn_div_dig(e, e, 4);
 		fp2_exp(t0, t0, e);
-		if (fp_is_zero(t0[0])) {
-			fp_copy(ctx->fp2_p2[4], t0[1]);
-		} else {
-			fp_copy(ctx->fp2_p2[4], t0[0]);
-		}
+		fp_copy(ctx->fp2_p4[0][0], t0[0]);
+		fp_copy(ctx->fp2_p4[0][1], t0[1]);
+
+		fp2_set_dig(t1, 1);
+		fp2_mul_nor(t0, t1);
+		e->used = RLC_FP_DIGS;
+		dv_copy(e->dp, fp_prime_get(), RLC_FP_DIGS);
+		bn_div_dig(e, e, 12);
+		fp2_exp(t0, t0, e);
+		fp_copy(ctx->fp2_p4[1][0], t0[0]);
+		fp_copy(ctx->fp2_p4[1][1], t0[1]);
+
+		fp2_set_dig(t1, 1);
+		fp2_mul_nor(t0, t1);
+		e->used = RLC_FP_DIGS;
+		dv_copy(e->dp, fp_prime_get(), RLC_FP_DIGS);
+		bn_div_dig(e, e, 24);
+		fp2_exp(t0, t0, e);
+		fp_copy(ctx->fp2_p4[2][0], t0[0]);
+		fp_copy(ctx->fp2_p4[2][1], t0[1]);
 	} CATCH_ANY {
 		THROW(ERR_CAUGHT);
 	} FINALLY {

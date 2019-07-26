@@ -85,7 +85,7 @@ typedef fp_st fp3_st[3];
  * Represents a quartic extension prime field element.
  *
  * This extension is constructed with the basis {1, v}, where v^2 = E is an
- * adjoined square root in the underlying quadratic extension.
+ * adjoined root in the underlying quadratic extension.
  */
 typedef fp2_t fp4_t[2];
 
@@ -104,7 +104,7 @@ typedef fp2_st fp4_st[2];
  * Represents a sextic extension field element.
  *
  * This extension is constructed with the basis {1, v, v^2}, where v^3 = E is an
- * adjoined cube root in the underlying quadratic extension.
+ * adjoined root in the underlying quadratic extension.
  */
 typedef fp2_t fp6_t[3];
 
@@ -117,7 +117,7 @@ typedef dv2_t dv6_t[3];
  * Represents an octic extension prime field element.
  *
  * This extension is constructed with the basis {1, w}, where w^2 = v is an
- * adjoined square root in the underlying quadratic extension.
+ * adjoined root in the underlying quadratic extension.
  */
 typedef fp4_t fp8_t[2];
 
@@ -133,32 +133,60 @@ typedef dv4_t dv8_t[2];
 typedef fp4_st fp8_st[2];
 
 /**
+ * Represents a double-precision dodecic extension field element.
+ */
+typedef dv6_t dv12_t[2];
+
+/**
  * Represents a dodecic extension field element.
  *
  * This extension is constructed with the basis {1, w}, where w^2 = v is an
- * adjoined square root in the underlying sextic extension.
+ * adjoined root in the underlying sextic extension.
  */
 typedef fp6_t fp12_t[2];
 
 /**
+ * Represents a double-precision octdecic extension field element.
+ */
+typedef dv6_t dv18_t[3];
+
+/**
  * Represents an octdecic extension field element.
  *
- * This extension is constructed with the basis {1, w}, where w^3 = v is an
- * adjoined cube root in the underlying sextic extension.
+ * This extension is constructed with the basis {1, w, w^2}, where w^3 = v is an
+ * adjoined root in the underlying sextic extension.
  */
 typedef fp6_t fp18_t[3];
+
+/**
+ * Represents a double-precision 24-degree extension field element.
+ */
+typedef dv8_t dv24_t[3];
+
+/**
+ * Represents a 24-degree extension field element.
+ *
+ * This extension is constructed with the basis {1, t}, where t^2 = w is an
+ * adjoined root in the underlying dodecic extension.
+ */
+typedef fp8_t fp24_t[3];
+
+/**
+ * Represents a double-precision 48-degree extension field element.
+ */
+typedef dv24_t dv48_t[2];
+
+/**
+ * Represents a 48-degree extension field element.
+ *
+ * This extension is constructed with the basis {1, u}, where u^2 = t is an
+ * adjoined root in the underlying dodecic extension.
+ */
+typedef fp24_t fp48_t[2];
 
 /*============================================================================*/
 /* Macro definitions                                                          */
 /*============================================================================*/
-
-/**
- * Initializes a quadratic extension field element with null.
- *
-* @param[out] A			- the quadratic extension element to initialize.
- */
-#define fp2_null(A)															\
-		fp_null(A[0]); fp_null(A[1]);										\
 
 /**
  * Initializes a double-precision quadratic extension field element with null.
@@ -168,13 +196,6 @@ typedef fp6_t fp18_t[3];
 #define dv2_null(A)															\
 		dv_null(A[0]); dv_null(A[1]);										\
 
-/**
- * Allocates a quadratic extension field element.
- *
- * @param[out] A			- the new quadratic extension field element.
- */
-#define fp2_new(A)															\
-		fp_new(A[0]); fp_new(A[1]);											\
 
 /**
  * Allocates a double-precision quadratic extension field element.
@@ -185,20 +206,36 @@ typedef fp6_t fp18_t[3];
 		dv_new(A[0]); dv_new(A[1]);											\
 
 /**
- * Frees a quadratic extension field element.
- *
- * @param[out] A			- the quadratic extension field element to free.
- */
-#define fp2_free(A)															\
-		fp_free(A[0]); fp_free(A[1]); 										\
-
-/**
  * Frees a double-precision quadratic extension field element.
  *
  * @param[out] A			- the quadratic extension field element to free.
  */
 #define dv2_free(A)															\
 		dv_free(A[0]); dv_free(A[1]); 										\
+
+/**
+ * Initializes a quadratic extension field element with null.
+ *
+* @param[out] A			- the quadratic extension element to initialize.
+ */
+#define fp2_null(A)															\
+		fp_null(A[0]); fp_null(A[1]);										\
+
+/**
+ * Allocates a quadratic extension field element.
+ *
+ * @param[out] A			- the new quadratic extension field element.
+ */
+#define fp2_new(A)															\
+		fp_new(A[0]); fp_new(A[1]);											\
+
+/**
+ * Frees a quadratic extension field element.
+ *
+ * @param[out] A			- the quadratic extension field element to free.
+ */
+#define fp2_free(A)															\
+		fp_free(A[0]); fp_free(A[1]); 										\
 
 /**
  * Adds two quadratic extension field elements. Computes C = A + B.
@@ -279,14 +316,6 @@ typedef fp6_t fp18_t[3];
 #endif
 
 /**
- * Initializes a cubic extension field element with null
- *
-* @param[out] A			- the cubic extension element to initialize.
- */
-#define fp3_null(A)															\
-		fp_null(A[0]); fp_null(A[1]); fp_null(A[2]);						\
-
-/**
  * Initializes a double-precision cubic extension field element with a null
  * value.
  *
@@ -294,14 +323,6 @@ typedef fp6_t fp18_t[3];
  */
 #define dv3_null(A)															\
 		dv_null(A[0]); dv_null(A[1]); dv_null(A[2]);						\
-
-/**
- * Allocates a cubic extension field element.
- *
- * @param[out] A			- the new cubic extension field element.
- */
-#define fp3_new(A)															\
-		fp_new(A[0]); fp_new(A[1]);	fp_new(A[2]);							\
 
 /**
  * Allocates a double-precision cubic extension field element.
@@ -312,20 +333,36 @@ typedef fp6_t fp18_t[3];
 		dv_new(A[0]); dv_new(A[1]);	dv_new(A[2]);							\
 
 /**
- * Frees a cubic extension field element.
- *
- * @param[out] A			- the cubic extension field element to free.
- */
-#define fp3_free(A)															\
-		fp_free(A[0]); fp_free(A[1]); fp_free(A[2]);						\
-
-/**
  * Frees a double-precision cubic extension field element.
  *
  * @param[out] A			- the cubic extension field element to free.
  */
 #define dv3_free(A)															\
 		dv_free(A[0]); dv_free(A[1]); dv_free(A[2]);						\
+
+/**
+ * Initializes a cubic extension field element with null.
+ *
+* @param[out] A			- the cubic extension element to initialize.
+ */
+#define fp3_null(A)															\
+		fp_null(A[0]); fp_null(A[1]); fp_null(A[2]);						\
+
+/**
+ * Allocates a cubic extension field element.
+ *
+ * @param[out] A			- the new cubic extension field element.
+ */
+#define fp3_new(A)															\
+		fp_new(A[0]); fp_new(A[1]);	fp_new(A[2]);							\
+
+/**
+ * Frees a cubic extension field element.
+ *
+ * @param[out] A			- the cubic extension field element to free.
+ */
+#define fp3_free(A)															\
+		fp_free(A[0]); fp_free(A[1]); fp_free(A[2]);						\
 
 /**
  * Adds two cubic extension field elements. Computes C = A + B.
@@ -405,36 +442,12 @@ typedef fp6_t fp18_t[3];
 #endif
 
 /**
- * Initializes a quartic extension field with null
- *
- * @param[out] A			- the quartic extension element to initialize.
- */
-#define fp4_null(A)															\
-		fp2_null(A[0]); fp2_null(A[1]);										\
-
-/**
- * Initializes a double-precision quartic extension field with null
+ * Initializes a double-precision quartic extension field with null.
  *
  * @param[out] A			- the quartic extension element to initialize.
  */
 #define dv4_null(A)															\
 		dv2_null(A[0]); dv2_null(A[1]);										\
-
-/**
- * Allocates a quartic extension field element.
- *
- * @param[out] A			- the new quartic extension field element.
- */
-#define fp4_new(A)															\
-		fp2_new(A[0]); fp2_new(A[1]);										\
-
-/**
- * Frees a quartic extension field element.
- *
- * @param[out] A			- the quartic extension field element to free.
- */
-#define fp4_free(A)															\
-		fp2_free(A[0]); fp2_free(A[1]);										\
 
 /**
  * Allocates a double-precision quartic extension field element.
@@ -451,6 +464,30 @@ typedef fp6_t fp18_t[3];
  */
 #define dv4_free(A)															\
 		dv2_free(A[0]); dv2_free(A[1]);										\
+
+/**
+ * Initializes a quartic extension field with null.
+ *
+ * @param[out] A			- the quartic extension element to initialize.
+ */
+#define fp4_null(A)															\
+		fp2_null(A[0]); fp2_null(A[1]);										\
+
+/**
+ * Allocates a quartic extension field element.
+ *
+ * @param[out] A			- the new quartic extension field element.
+ */
+#define fp4_new(A)															\
+		fp2_new(A[0]); fp2_new(A[1]);										\
+
+/**
+ * Frees a quartic extension field element.
+ *
+ * @param[out] A			- the quartic extension field element to free.
+ */
+#define fp4_free(A)															\
+		fp2_free(A[0]); fp2_free(A[1]);										\
 
 /**
  * Multiplies two quartic extension field elements. Computes C = A * B.
@@ -478,36 +515,12 @@ typedef fp6_t fp18_t[3];
 #endif
 
 /**
- * Initializes a sextic extension field with null
- *
- * @param[out] A			- the sextic extension element to initialize.
- */
-#define fp6_null(A)															\
-		fp2_null(A[0]); fp2_null(A[1]); fp2_null(A[2]);						\
-
-/**
- * Initializes a double-precision sextic extension field with null
+ * Initializes a double-precision sextic extension field with null.
  *
  * @param[out] A			- the sextic extension element to initialize.
  */
 #define dv6_null(A)															\
 		dv2_null(A[0]); dv2_null(A[1]); dv2_null(A[2]);						\
-
-/**
- * Allocates a sextic extension field element.
- *
- * @param[out] A			- the new sextic extension field element.
- */
-#define fp6_new(A)															\
-		fp2_new(A[0]); fp2_new(A[1]); fp2_new(A[2]);						\
-
-/**
- * Frees a sextic extension field element.
- *
- * @param[out] A			- the sextic extension field element to free.
- */
-#define fp6_free(A)															\
-		fp2_free(A[0]); fp2_free(A[1]); fp2_free(A[2]); 					\
 
 /**
  * Allocates a double-precision sextic extension field element.
@@ -524,6 +537,30 @@ typedef fp6_t fp18_t[3];
  */
 #define dv6_free(A)															\
 		dv2_free(A[0]); dv2_free(A[1]); dv2_free(A[2]); 					\
+
+/**
+ * Initializes a sextic extension field with null.
+ *
+ * @param[out] A			- the sextic extension element to initialize.
+ */
+#define fp6_null(A)															\
+		fp2_null(A[0]); fp2_null(A[1]); fp2_null(A[2]);						\
+
+/**
+ * Allocates a sextic extension field element.
+ *
+ * @param[out] A			- the new sextic extension field element.
+ */
+#define fp6_new(A)															\
+		fp2_new(A[0]); fp2_new(A[1]); fp2_new(A[2]);						\
+
+/**
+ * Frees a sextic extension field element.
+ *
+ * @param[out] A			- the sextic extension field element to free.
+ */
+#define fp6_free(A)															\
+		fp2_free(A[0]); fp2_free(A[1]); fp2_free(A[2]); 					\
 
 /**
  * Multiplies two sextic extension field elements. Computes C = A * B.
@@ -551,36 +588,12 @@ typedef fp6_t fp18_t[3];
 #endif
 
 /**
- * Initializes an octic extension field with null
- *
- * @param[out] A			- the quartic extension element to initialize.
- */
-#define fp8_null(A)															\
-		fp4_null(A[0]); fp4_null(A[1]);										\
-
-/**
- * Initializes a double-precision octic extension field with null
+ * Initializes a double-precision octic extension field with null.
  *
  * @param[out] A			- the octic extension element to initialize.
  */
 #define dv8_null(A)															\
 		dv4_null(A[0]); dv4_null(A[1]);										\
-
-/**
- * Allocates an octic extension field element.
- *
- * @param[out] A			- the new octic extension field element.
- */
-#define fp8_new(A)															\
-		fp4_new(A[0]); fp4_new(A[1]);										\
-
-/**
- * Frees an octic extension field element.
- *
- * @param[out] A			- the octic extension field element to free.
- */
-#define fp8_free(A)															\
-		fp4_free(A[0]); fp4_free(A[1]);										\
 
 /**
  * Allocates a double-precision octic extension field element.
@@ -597,6 +610,30 @@ typedef fp6_t fp18_t[3];
  */
 #define dv8_free(A)															\
 		dv4_free(A[0]); dv4_free(A[1]);										\
+
+/**
+ * Initializes an octic extension field with null.
+ *
+ * @param[out] A			- the quartic extension element to initialize.
+ */
+#define fp8_null(A)															\
+		fp4_null(A[0]); fp4_null(A[1]);										\
+
+/**
+ * Allocates an octic extension field element.
+ *
+ * @param[out] A			- the new octic extension field element.
+ */
+#define fp8_new(A)															\
+		fp4_new(A[0]); fp4_new(A[1]);										\
+
+/**
+ * Frees an octic extension field element.
+ *
+ * @param[out] A			- the octic extension field element to free.
+ */
+#define fp8_free(A)															\
+		fp4_free(A[0]); fp4_free(A[1]);										\
 
 /**
  * Multiplies two octic extension field elements. Computes C = A * B.
@@ -624,7 +661,31 @@ typedef fp6_t fp18_t[3];
 #endif
 
 /**
- * Initializes a dodecic extension field with null
+ * Initializes a double-precision dodecic extension field with null.
+ *
+ * @param[out] A			- the dodecic extension element to initialize.
+ */
+#define dv12_null(A)														\
+		dv6_null(A[0]); dv6_null(A[1]);										\
+
+/**
+ * Allocates a double-precision dodecic extension field element.
+ *
+ * @param[out] A			- the new dodecic extension field element.
+ */
+#define dv12_new(A)															\
+		dv6_new(A[0]); dv6_new(A[1]);										\
+
+/**
+ * Frees a double-precision dodecic extension field element.
+ *
+ * @param[out] A			- the dodecic extension field element to free.
+ */
+#define dv12_free(A)														\
+		dv6_free(A[0]); dv6_free(A[1]);										\
+
+/**
+ * Initializes a dodecic extension field with null.
  *
  * @param[out] A			- the dodecic extension element to initialize.
  */
@@ -713,7 +774,31 @@ typedef fp6_t fp18_t[3];
 #endif
 
 /**
- * Initializes an octdecic extension field with null
+ * Initializes a double-precision sextic extension field with null.
+ *
+ * @param[out] A			- the sextic extension element to initialize.
+ */
+#define dv18_null(A)														\
+		dv6_null(A[0]); dv6_null(A[1]); dv6_null(A[6]);						\
+
+/**
+ * Allocates a double-precision sextic extension field element.
+ *
+ * @param[out] A			- the new sextic extension field element.
+ */
+#define dv18_new(A)															\
+		dv6_new(A[0]); dv6_new(A[1]); dv6_new(A[6]);						\
+
+/**
+ * Frees a double-precision sextic extension field element.
+ *
+ * @param[out] A			- the sextic extension field element to free.
+ */
+#define dv18_free(A)														\
+		dv6_free(A[0]); dv6_free(A[1]); dv6_free(A[6]); 					\
+
+/**
+ * Initializes an octdecic extension field with null.
  *
  * @param[out] A			- the octdecic extension element to initialize.
  */
@@ -773,6 +858,192 @@ typedef fp6_t fp18_t[3];
 #define fp18_sqr(C, A)			fp18_sqr_basic(C, A)
 #elif FPX_RDC == LAZYR
 #define fp18_sqr(C, A)			fp18_sqr_lazyr(C, A)
+#endif
+
+/**
+ * Initializes a double-precision 24-degree extension field with null.
+ *
+ * @param[out] A			- the 24-degree extension element to initialize.
+ */
+#define dv24_null(A)														\
+		dv8_null(A[0]); dv8_null(A[1]); dv8_null(A[2]);						\
+
+/**
+ * Allocates a double-precision 24-degree extension field element.
+ *
+ * @param[out] A			- the new 24-degree extension field element.
+ */
+#define dv24_new(A)															\
+		dv8_new(A[0]); dv8_new(A[1]); dv8_new(A[2]);						\
+
+/**
+ * Frees a double-precision 24-degree extension field element.
+ *
+ * @param[out] A			- the 24-degree extension field element to free.
+ */
+#define dv24_free(A)														\
+		dv8_free(A[0]); dv8_free(A[1]); dv8_free(A[2]); 					\
+
+/**
+ * Initializes a 24-degree extension field with null.
+ *
+ * @param[out] A			- the 24-degree extension element to initialize.
+ */
+#define fp24_null(A)														\
+		fp8_null(A[0]); fp8_null(A[1]); fp8_null(A[2]);						\
+
+/**
+ * Allocates a 24-degree extension field element.
+ *
+ * @param[out] A			- the new 24-degree extension field element.
+ */
+#define fp24_new(A)															\
+		fp8_new(A[0]); fp8_new(A[1]); fp8_new(A[2]);						\
+
+/**
+ * Frees a 24-degree extension field element.
+ *
+ * @param[out] A			- the 24-degree extension field element to free.
+ */
+#define fp24_free(A)														\
+		fp8_free(A[0]); fp8_free(A[1]); fp8_free(A[2]); 					\
+
+/**
+ * Multiplies two 24-degree extension field elements. Computes C = A * B.
+ *
+ * @param[out] C			- the result.
+ * @param[in] A				- the first 24-degree extension field element.
+ * @param[in] B				- the second 24-degree extension field element.
+ */
+#if FPX_RDC == BASIC
+#define fp24_mul(C, A, B)		fp24_mul_basic(C, A, B)
+#elif FPX_RDC == LAZYR
+#define fp24_mul(C, A, B)		fp24_mul_lazyr(C, A, B)
+#endif
+
+/**
+ * Squares a 24-degree extension field element. Computes C = A * A.
+ *
+ * @param[out] C			- the result.
+ * @param[in] A				- the 24-degree extension field element to square.
+ */
+#if FPX_RDC == BASIC
+#define fp24_sqr(C, A)			fp24_sqr_basic(C, A)
+#elif FPX_RDC == LAZYR
+#define fp24_sqr(C, A)			fp24_sqr_lazyr(C, A)
+#endif
+
+/**
+ * Initializes a double-precision 48-degree extension field with null.
+ *
+ * @param[out] A			- the 48-degree extension element to initialize.
+ */
+#define dv48_null(A)														\
+		dv24_null(A[0]); dv24_null(A[1]);									\
+
+/**
+ * Allocates a double-precision 48-degree extension field element.
+ *
+ * @param[out] A			- the new 48-degree extension field element.
+ */
+#define dv48_new(A)															\
+		dv24_new(A[0]); dv24_new(A[1]);										\
+
+/**
+ * Frees a double-precision 48-degree extension field element.
+ *
+ * @param[out] A			- the 48-degree extension field element to free.
+ */
+#define dv48_free(A)														\
+		dv24_free(A[0]); dv24_free(A[1]);									\
+
+/**
+ * Initializes a 48-degree extension field with null.
+ *
+ * @param[out] A			- the 48-degree extension element to initialize.
+ */
+#define fp48_null(A)														\
+		fp24_null(A[0]); fp24_null(A[1]);									\
+
+/**
+ * Allocates a 48-degree extension field element.
+ *
+ * @param[out] A			- the new 48-degree extension field element.
+ */
+#define fp48_new(A)															\
+		fp24_new(A[0]); fp24_new(A[1]);										\
+
+/**
+ * Frees a 48-degree extension field element.
+ *
+ * @param[out] A			- the 48-degree extension field element to free.
+ */
+#define fp48_free(A)														\
+		fp24_free(A[0]); fp24_free(A[1]); 									\
+
+/**
+ * Multiplies two 48-degree extension field elements. Computes C = A * B.
+ *
+ * @param[out] C			- the result.
+ * @param[in] A				- the first 48-degree extension field element.
+ * @param[in] B				- the second 48-degree extension field element.
+ */
+#if FPX_RDC == BASIC
+#define fp48_mul(C, A, B)		fp48_mul_basic(C, A, B)
+#elif FPX_RDC == LAZYR
+#define fp48_mul(C, A, B)		fp48_mul_lazyr(C, A, B)
+#endif
+
+/**
+ * Multiplies a dense and a sparse 48-degree extension field elements. Computes
+ * C = A * B.
+ *
+ * @param[out] C			- the result.
+ * @param[in] A				- the dense 48-degree extension field element.
+ * @param[in] B				- the sparse 48-degree extension field element.
+ */
+#if FPX_RDC == BASIC
+#define fp48_mul_dxs(C, A, B)	fp48_mul_dxs_basic(C, A, B)
+#elif FPX_RDC == LAZYR
+#define fp48_mul_dxs(C, A, B)	fp48_mul_dxs_lazyr(C, A, B)
+#endif
+
+/**
+ * Squares a 48-degree extension field element. Computes C = A * A.
+ *
+ * @param[out] C			- the result.
+ * @param[in] A				- the 48-degree extension field element to square.
+ */
+#if FPX_RDC == BASIC
+#define fp48_sqr(C, A)			fp48_sqr_basic(C, A)
+#elif FPX_RDC == LAZYR
+#define fp48_sqr(C, A)			fp48_sqr_lazyr(C, A)
+#endif
+
+/**
+ * Squares a 48-degree extension field element in the cyclotomic subgroup.
+ * Computes C = A * A.
+ *
+ * @param[out] C			- the result.
+ * @param[in] A				- the 48-degree extension field element to square.
+ */
+#if FPX_RDC == BASIC
+#define fp48_sqr_cyc(C, A)		fp48_sqr_cyc_basic(C, A)
+#elif FPX_RDC == LAZYR
+#define fp48_sqr_cyc(C, A)		fp48_sqr_cyc_lazyr(C, A)
+#endif
+
+/**
+ * Squares a 48-degree extension field element in the cyclotomic subgroup in
+ * compressed form. Computes C = A * A.
+ *
+ * @param[out] C			- the result.
+ * @param[in] A				- the 48-degree extension field element to square.
+ */
+#if FPX_RDC == BASIC
+#define fp48_sqr_pck(C, A)		fp48_sqr_pck_basic(C, A)
+#elif FPX_RDC == LAZYR
+#define fp48_sqr_pck(C, A)		fp48_sqr_pck_lazyr(C, A)
 #endif
 
 /*============================================================================*/
@@ -971,7 +1242,7 @@ void fp2_mul_basic(fp2_t c, fp2_t a, fp2_t b);
 void fp2_mul_integ(fp2_t c, fp2_t a, fp2_t b);
 
 /**
- * Multiplies a quadratic extension field element by the adjoined square root.
+ * Multiplies a quadratic extension field element by the adjoined root.
  * Computes c = a * u.
  *
  * @param[out] c			- the result.
@@ -1578,7 +1849,7 @@ void fp4_mul_basic(fp4_t c, fp4_t a, fp4_t b);
 void fp4_mul_lazyr(fp4_t c, fp4_t a, fp4_t b);
 
 /**
- * Multiplies a quartic extension field element by the adjoined cube root.
+ * Multiplies a quartic extension field element by the adjoined root.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the quartic extension field element to multiply.
@@ -1809,7 +2080,7 @@ void fp6_mul_basic(fp6_t c, fp6_t a, fp6_t b);
 void fp6_mul_lazyr(fp6_t c, fp6_t a, fp6_t b);
 
 /**
- * Multiplies a sextic extension field element by the adjoined cube root.
+ * Multiplies a sextic extension field element by the adjoined root.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the sextic extension field element to multiply.
@@ -2041,7 +2312,7 @@ void fp8_mul_basic(fp8_t c, fp8_t a, fp8_t b);
 void fp8_mul_lazyr(fp8_t c, fp8_t a, fp8_t b);
 
 /**
- * Multiplies an octic extension field element by the adjoined cube root.
+ * Multiplies an octic extension field element by the adjoined root.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the octic extension field element to multiply.
@@ -2066,7 +2337,7 @@ void fp8_mul_dxs(fp8_t c, fp8_t a, fp8_t b);
  * @param[out] c			- the result.
  * @param[in] a				- the octic extension field element to square.
  */
-void fp8_sqr_unr(dv6_t c, fp8_t a);
+void fp8_sqr_unr(dv8_t c, fp8_t a);
 
 /**
  * Computes the squares of an octic extension field element using basic
@@ -2111,6 +2382,15 @@ void fp8_inv(fp8_t c, fp8_t a);
  * @param[in] a				- the octic extension field element to invert.
  */
 void fp8_inv_uni(fp8_t c, fp8_t a);
+
+/**
+ * Inverts multiple octic extension field elements simultaneously.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the octic extension field elements to invert.
+ * @param[in] n				- the number of elements.
+ */
+void fp8_inv_sim(fp8_t *c, fp8_t *a, int n);
 
 /**
  * Tests if an octic extension field element is unitary.
@@ -2283,6 +2563,14 @@ void fp12_sub(fp12_t c, fp12_t a, fp12_t b);
 void fp12_neg(fp12_t c, fp12_t a);
 
 /**
+ * Doubles a dodecic extension field element. Computes c = 2 * a.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the dodecic extension field element to double.
+ */
+void fp12_dbl(fp12_t c, fp12_t a);
+
+/**
  * Multiples two dodecic extension field elements without performing modular
  * reduction.
  *
@@ -2290,7 +2578,7 @@ void fp12_neg(fp12_t c, fp12_t a);
  * @param[in] a				- the dodecic extension field element.
  * @param[in] b				- the dodecic extension field element.
  */
-void fp12_mul_unr(dv6_t c, fp12_t a, fp12_t b);
+void fp12_mul_unr(dv12_t c, fp12_t a, fp12_t b);
 
 /**
  * Multiples two dodecic extension field elements using basic arithmetic.
@@ -2311,6 +2599,14 @@ void fp12_mul_basic(fp12_t c, fp12_t a, fp12_t b);
 void fp12_mul_lazyr(fp12_t c, fp12_t a, fp12_t b);
 
 /**
+ * Multiplies a dodecic extension field element by the adjoined root.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the dodecic extension field element to multiply.
+ */
+void fp12_mul_art(fp12_t c, fp12_t a);
+
+/**
  * Multiples a dense dodecic extension field element by a sparse element using
  * basic arithmetic.
  *
@@ -2329,6 +2625,15 @@ void fp12_mul_dxs_basic(fp12_t c, fp12_t a, fp12_t b);
  * @param[in] b				- the sparse dodecic extension field element.
  */
 void fp12_mul_dxs_lazyr(fp12_t c, fp12_t a, fp12_t b);
+
+/**
+ * Computes the square of a dodecic extension field element without performing
+ * modular reduction.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the dodecic extension field element to square.
+ */
+void fp12_sqr_unr(dv12_t c, fp12_t a);
 
 /**
  * Computes the square of a dodecic extension field element using basic
@@ -2613,6 +2918,16 @@ void fp18_sub(fp18_t c, fp18_t a, fp18_t b);
 void fp18_neg(fp18_t c, fp18_t a);
 
 /**
+ * Multiples two octdecic extension field elements without performing modular
+ * reduction.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the octdecic extension field element.
+ * @param[in] b				- the octdecic extension field element.
+ */
+void fp18_mul_unr(dv18_t c, fp18_t a, fp18_t b);
+
+/**
  * Multiples two octdecic extension field elements using basic arithmetic.
  *
  * @param[out] c			- the result.
@@ -2783,5 +3098,615 @@ void fp18_exp_cyc(fp18_t c, fp18_t a, bn_t b);
  * @param[in] l				- the length of the exponent in sparse form.
  */
 void fp18_exp_cyc_sps(fp18_t c, fp18_t a, const int *b, int l);
+
+/**
+ * Copies the second argument to the first argument.
+ *
+ * @param[out] C			- the result.
+ * @param[in] A				- the 24-degree extension field element to copy.
+ */
+void fp24_copy(fp24_t c, fp24_t a);
+
+/**
+ * Assigns zero to a 24-degree extension field element.
+ *
+ * @param[out] A			- the 24-degree extension field element to zero.
+ */
+void fp24_zero(fp24_t a);
+
+/**
+ * Tests if a 24-degree extension field element is zero or not.
+ *
+ * @param[in] A				- the 24-degree extension field element to test.
+ * @return 1 if the argument is zero, 0 otherwise.
+ */
+int fp24_is_zero(fp24_t a);
+
+/**
+ * Assigns a random value to a 24-degree extension field element.
+ *
+ * @param[out] A			- the 24-degree extension field element to assign.
+ */
+void fp24_rand(fp24_t a);
+
+/**
+ * Prints a 24-degree extension field element to standard output.
+ *
+ * @param[in] A				- the 24-degree extension field element to print.
+ */
+void fp24_print(fp24_t a);
+
+/**
+ * Returns the number of bytes necessary to store a 24-degree extension field
+ * element.
+ *
+ * @param[in] a				- the extension field element.
+ * @return the number of bytes.
+ */
+int fp24_size_bin(fp24_t a);
+
+/**
+ * Reads a 24-degree extension field element from a byte vector in big-endian
+ * format.
+ *
+ * @param[out] a			- the result.
+ * @param[in] bin			- the byte vector.
+ * @param[in] len			- the buffer capacity.
+ * @throw ERR_NO_BUFFER		- if the buffer capacity is not correct.
+ */
+void fp24_read_bin(fp24_t a, const uint8_t *bin, int len);
+
+/**
+ * Writes a 24-degree extension field element to a byte vector in big-endian
+ * format.
+ *
+ * @param[out] bin			- the byte vector.
+ * @param[in] len			- the buffer capacity.
+ * @param[in] a				- the extension field element to write.
+ * @throw ERR_NO_BUFFER		- if the buffer capacity is not correct.
+ */
+void fp24_write_bin(uint8_t *bin, int len, fp24_t a);
+
+/**
+ * Returns the result of a comparison between two 24-degree extension field
+ * elements.
+ *
+ * @param[in] a				- the first 24-degree extension field element.
+ * @param[in] b				- the second 24-degree extension field element.
+ * @return RLC_EQ if a == b, and RLC_NE otherwise.
+ */
+int fp24_cmp(fp24_t a, fp24_t b);
+
+/**
+ * Returns the result of a signed comparison between a 24-degree extension field
+ * element and a digit.
+ *
+ * @param[in] a				- the 24-degree extension field element.
+ * @param[in] b				- the digit.
+ * @return RLC_EQ if a == b, and RLC_NE otherwise.
+ */
+int fp24_cmp_dig(fp24_t a, dig_t b);
+
+/**
+ * Assigns a 24-degree extension field element to a digit.
+ *
+ * @param[in] a				- the 24-degree extension field element.
+ * @param[in] b				- the digit.
+ */
+void fp24_set_dig(fp24_t a, dig_t b);
+
+/**
+ * Adds two 24-degree extension field elements. Computes C = A + B.
+ *
+ * @param[out] C			- the result.
+ * @param[in] A				- the first 24-degree extension field element.
+ * @param[in] B				- the second 24-degree extension field element.
+ */
+void fp24_add(fp24_t c, fp24_t a, fp24_t b);
+
+/**
+ * Subtracts a 24-degree extension field element from another. Computes
+ * C = A - B.
+ *
+ * @param[out] C			- the result.
+ * @param[in] A				- the first 24-degree extension field element.
+ * @param[in] B				- the second 24-degree extension field element.
+ */
+void fp24_sub(fp24_t c, fp24_t a, fp24_t b);
+
+/**
+ * Negates a 24-degree extension field element.
+ *
+ * @param[out] C			- the result.
+ * @param[out] A			- the 24-degree extension field element to negate.
+ */
+void fp24_neg(fp24_t c, fp24_t a);
+
+/**
+ * Doubles a 24-degree extension field element. Computes c = 2 * a.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the octic extension field element to double.
+ */
+void fp24_dbl(fp24_t c, fp24_t a);
+
+/**
+ * Multiples two 24-degree extension field elements without performing modular
+ * reduction.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the 24-degree extension field element.
+ * @param[in] b				- the 24-degree extension field element.
+ */
+void fp24_mul_unr(dv24_t c, fp24_t a, fp24_t b);
+
+/**
+ * Multiples two 24-degree extension field elements using basic arithmetic.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the 24-degree extension field element.
+ * @param[in] b				- the 24-degree extension field element.
+ */
+void fp24_mul_basic(fp24_t c, fp24_t a, fp24_t b);
+
+/**
+ * Multiples two 24-degree extension field elements using lazy reduction.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the 24-degree extension field element.
+ * @param[in] b				- the 24-degree extension field element.
+ */
+void fp24_mul_lazyr(fp24_t c, fp24_t a, fp24_t b);
+
+/**
+ * Multiplies a 24-degree extension field element by the adjoined root.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the dodecic extension field element to multiply.
+ */
+void fp24_mul_art(fp24_t c, fp24_t a);
+
+/**
+ * Computes the square of a 24-degree extension field element without performing
+ * modular reduction.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the 24-degree extension field element to square.
+ */
+void fp24_sqr_unr(dv24_t c, fp24_t a);
+
+/**
+ * Computes the square of a 24-degree extension field element using basic
+ * arithmetic.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the 24-degree extension field element to square.
+ */
+void fp24_sqr_basic(fp24_t c, fp24_t a);
+
+/**
+ * Computes the square of a 24-degree extension field element using lazy
+ * reduction.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the 24-degree extension field element to square.
+ */
+void fp24_sqr_lazyr(fp24_t c, fp24_t a);
+
+/**
+ * Inverts a 24-degree extension field element. Computes c = 1/a.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the 24-degree extension field element to invert.
+ */
+void fp24_inv(fp24_t c, fp24_t a);
+
+/**
+ * Computes the Frobenius endomorphism of a 24-degree extension element.
+ * Computes c = a^p.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- a 24-degree extension field element.
+ * @param[in] i				- the power of the Frobenius map.
+ */
+void fp24_frb(fp24_t c, fp24_t a, int i);
+
+/**
+ * Computes a power of a 24-degree extension field element.
+ * Faster formulas are used if the extension field element is cyclotomic.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the basis.
+ * @param[in] b				- the exponent.
+ */
+void fp24_exp(fp24_t c, fp24_t a, bn_t b);
+
+/**
+ * Copies the second argument to the first argument.
+ *
+ * @param[out] C			- the result.
+ * @param[in] A				- the 48 extension field element to copy.
+ */
+void fp48_copy(fp48_t c, fp48_t a);
+
+/**
+ * Assigns zero to a 48 extension field element.
+ *
+ * @param[out] A			- the 48 extension field element to zero.
+ */
+void fp48_zero(fp48_t a);
+
+/**
+ * Tests if a 48 extension field element is zero or not.
+ *
+ * @param[in] A				- the 48 extension field element to test.
+ * @return 1 if the argument is zero, 0 otherwise.
+ */
+int fp48_is_zero(fp48_t a);
+
+/**
+ * Assigns a random value to a 48 extension field element.
+ *
+ * @param[out] A			- the 48 extension field element to assign.
+ */
+void fp48_rand(fp48_t a);
+
+/**
+ * Prints a 48 extension field element to standard output.
+ *
+ * @param[in] A				- the 48 extension field element to print.
+ */
+void fp48_print(fp48_t a);
+
+/**
+ * Returns the number of bytes necessary to store a 48 extension field
+ * element.
+ *
+ * @param[in] a				- the extension field element.
+ * @param[in] pack			- the flag to indicate compression.
+ * @return the number of bytes.
+ */
+int fp48_size_bin(fp48_t a, int pack);
+
+/**
+ * Reads a 48 extension field element from a byte vector in big-endian
+ * format.
+ *
+ * @param[out] a			- the result.
+ * @param[in] bin			- the byte vector.
+ * @param[in] len			- the buffer capacity.
+ * @throw ERR_NO_BUFFER		- if the buffer capacity is not correct.
+ */
+void fp48_read_bin(fp48_t a, const uint8_t *bin, int len);
+
+/**
+ * Writes a 48 extension field element to a byte vector in big-endian
+ * format.
+ *
+ * @param[out] bin			- the byte vector.
+ * @param[in] len			- the buffer capacity.
+ * @param[in] a				- the extension field element to write.
+ * @param[in] pack			- the flag to indicate compression.
+ * @throw ERR_NO_BUFFER		- if the buffer capacity is not correct.
+ */
+void fp48_write_bin(uint8_t *bin, int len, fp48_t a, int pack);
+
+/**
+ * Returns the result of a comparison between two 48 extension field
+ * elements.
+ *
+ * @param[in] a				- the first 48 extension field element.
+ * @param[in] b				- the second 48 extension field element.
+ * @return RLC_EQ if a == b, and RLC_NE otherwise.
+ */
+int fp48_cmp(fp48_t a, fp48_t b);
+
+/**
+ * Returns the result of a signed comparison between a 48 extension field
+ * element and a digit.
+ *
+ * @param[in] a				- the 48 extension field element.
+ * @param[in] b				- the digit.
+ * @return RLC_EQ if a == b, and RLC_NE otherwise.
+ */
+int fp48_cmp_dig(fp48_t a, dig_t b);
+
+/**
+ * Assigns a 48 extension field element to a digit.
+ *
+ * @param[in] a				- the 48 extension field element.
+ * @param[in] b				- the digit.
+ */
+void fp48_set_dig(fp48_t a, dig_t b);
+
+/**
+ * Adds two 48 extension field elements. Computes C = A + B.
+ *
+ * @param[out] C			- the result.
+ * @param[in] A				- the first 48 extension field element.
+ * @param[in] B				- the second 48 extension field element.
+ */
+void fp48_add(fp48_t c, fp48_t a, fp48_t b);
+
+/**
+ * Subtracts a 48 extension field element from another. Computes
+ * C = A - B.
+ *
+ * @param[out] C			- the result.
+ * @param[in] A				- the first 48 extension field element.
+ * @param[in] B				- the second 48 extension field element.
+ */
+void fp48_sub(fp48_t c, fp48_t a, fp48_t b);
+
+/**
+ * Negates a 48 extension field element.
+ *
+ * @param[out] C			- the result.
+ * @param[out] A			- the 48 extension field element to negate.
+ */
+void fp48_neg(fp48_t c, fp48_t a);
+
+/**
+ * Doubles a 48 extension field element. Computes c = 2 * a.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the 48 extension field element to double.
+ */
+void fp48_dbl(fp48_t c, fp48_t a);
+
+/**
+ * Multiples two 48 extension field elements without performing modular
+ * reduction.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the 48 extension field element.
+ * @param[in] b				- the 48 extension field element.
+ */
+void fp48_mul_unr(dv48_t c, fp48_t a, fp48_t b);
+
+/**
+ * Multiples two 48 extension field elements using basic arithmetic.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the 48 extension field element.
+ * @param[in] b				- the 48 extension field element.
+ */
+void fp48_mul_basic(fp48_t c, fp48_t a, fp48_t b);
+
+/**
+ * Multiples two 48 extension field elements using lazy reduction.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the 48 extension field element.
+ * @param[in] b				- the 48 extension field element.
+ */
+void fp48_mul_lazyr(fp48_t c, fp48_t a, fp48_t b);
+
+/**
+ * Multiplies a 48 extension field element by the adjoined root.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the 48 extension field element to multiply.
+ */
+void fp48_mul_art(fp48_t c, fp48_t a);
+
+/**
+ * Multiples a dense 48 extension field element by a sparse element using
+ * basic arithmetic.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the dense 48 extension field element.
+ * @param[in] b				- the sparse 48 extension field element.
+ */
+void fp48_mul_dxs_basic(fp48_t c, fp48_t a, fp48_t b);
+
+/**
+ * Multiples a dense 48 extension field element by a sparse element using
+ * lazy reduction.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the dense 48 extension field element.
+ * @param[in] b				- the sparse 48 extension field element.
+ */
+void fp48_mul_dxs_lazyr(fp48_t c, fp48_t a, fp48_t b);
+
+/**
+ * Computes the square of a 48 extension field element without performing
+ * modular reduction.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the 48 extension field element to square.
+ */
+void fp48_sqr_unr(dv48_t c, fp48_t a);
+
+/**
+ * Computes the square of a 48 extension field element using basic
+ * arithmetic.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the 48 extension field element to square.
+ */
+void fp48_sqr_basic(fp48_t c, fp48_t a);
+
+/**
+ * Computes the square of a 48 extension field element using lazy
+ * reduction.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the 48 extension field element to square.
+ */
+void fp48_sqr_lazyr(fp48_t c, fp48_t a);
+
+/**
+ * Computes the square of a cyclotomic 48 extension field element using
+ * basic arithmetic.
+ *
+ * A cyclotomic element is one raised to the (p^6 - 1)(p^2 + 1)-th power.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the cyclotomic extension element to square.
+ */
+void fp48_sqr_cyc_basic(fp48_t c, fp48_t a);
+
+/**
+ * Computes the square of a cyclotomic 48 extension field element using
+ * lazy reduction.
+ *
+ * A cyclotomic element is one raised to the (p^6 - 1)(p^2 + 1)-th power.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the cyclotomic extension element to square.
+ */
+void fp48_sqr_cyc_lazyr(fp48_t c, fp48_t a);
+
+/**
+ * Computes the square of a compressed cyclotomic extension field element.
+ *
+ * A cyclotomic element is one raised to the (p^6 - 1)(p^2 + 1)-th power.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the cyclotomic extension element to square.
+ */
+void fp48_sqr_pck_basic(fp48_t c, fp48_t a);
+
+/**
+ * Computes the square of a compressed cyclotomic extension field element using
+ * lazy reduction.
+ *
+ * A cyclotomic element is one raised to the (p^6 - 1)(p^2 + 1)-th power.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the cyclotomic extension element to square.
+ */
+void fp48_sqr_pck_lazyr(fp48_t c, fp48_t a);
+
+/**
+ * Tests if a 48 extension field element belongs to the cyclotomic
+ * subgroup.
+ *
+ * @param[in] a				- the 48 extension field element to test.
+ * @return 1 if the extension field element is in the subgroup, 0 otherwise.
+ */
+int fp48_test_cyc(fp48_t a);
+
+/**
+ * Converts a 48 extension field element to a cyclotomic element.
+ * Computes c = a^(p^6 - 1)*(p^2 + 1).
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- a 48 extension field element.
+ */
+void fp48_conv_cyc(fp48_t c, fp48_t a);
+
+/**
+ * Decompresses a compressed cyclotomic extension field element.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the 48 extension field element to decompress.
+ */
+void fp48_back_cyc(fp48_t c, fp48_t a);
+
+/**
+ * Decompresses multiple compressed cyclotomic extension field elements.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the 48 field elements to decompress.
+ * @param[in] n				- the number of field elements to decompress.
+ */
+void fp48_back_cyc_sim(fp48_t *c, fp48_t *a, int n);
+
+/**
+ * Inverts a 48 extension field element. Computes c = 1/a.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the 48 extension field element to invert.
+ */
+void fp48_inv(fp48_t c, fp48_t a);
+
+/**
+ * Computes the inverse of a unitary 48 extension field element.
+ *
+ * For unitary elements, this is equivalent to computing the conjugate.
+ * A unitary element is one previously raised to the (p^6 - 1)-th power.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the 48 extension field element to invert.
+ */
+void fp48_inv_uni(fp48_t c, fp48_t a);
+
+/**
+ * Converts a 48 extension field element to a unitary element. Computes
+ * c = a^(p^6 - 1).
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the 48 extension field element.
+ */
+void fp48_conv_uni(fp48_t c, fp48_t a);
+
+/**
+ * Computes the Frobenius endomorphism of a 48 extension element.
+ * Computes c = a^p.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- a 48 extension field element.
+ * @param[in] i				- the power of the Frobenius map.
+ */
+void fp48_frb(fp48_t c, fp48_t a, int i);
+
+/**
+ * Computes a power of a 48 extension field element.
+ * Faster formulas are used if the extension field element is cyclotomic.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the basis.
+ * @param[in] b				- the exponent.
+ */
+void fp48_exp(fp48_t c, fp48_t a, bn_t b);
+
+/**
+ * Computes a power of a 48 extension field element by a small exponent.
+ * Faster formulas are used if the extension field element is cyclotomic.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the basis.
+ * @param[in] b				- the exponent.
+ */
+void fp48_exp_dig(fp48_t c, fp48_t a, dig_t b);
+
+/**
+ * Computes a power of a cyclotomic 48 extension field element.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the basis.
+ * @param[in] b				- the exponent.
+ */
+void fp48_exp_cyc(fp48_t c, fp48_t a, bn_t b);
+
+/**
+ * Computes a power of a cyclotomic 48 extension field element.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the basis.
+ * @param[in] b				- the exponent in sparse form.
+ * @param[in] l				- the length of the exponent in sparse form.
+ */
+void fp48_exp_cyc_sps(fp48_t c, fp48_t a, const int *b, int l);
+
+/**
+ * Compresses a 48 extension field element.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the 48 extension field element to compress.
+ */
+void fp48_pck(fp48_t c, fp48_t a);
+
+/**
+ * Decompresses a 48 extension field element.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the 48 extension field element to decompress.
+ * @return if the decompression was successful
+ */
+int fp48_upk(fp48_t c, fp48_t a);
 
 #endif /* !RLC_FPX_H */

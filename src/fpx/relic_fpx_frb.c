@@ -49,7 +49,6 @@ void fp2_frb(fp2_t c, fp2_t a, int i) {
 	}
 }
 
-
 void fp3_frb(fp3_t c, fp3_t a, int i) {
 	switch (i % 3) {
 		case 0:
@@ -65,112 +64,52 @@ void fp3_frb(fp3_t c, fp3_t a, int i) {
 }
 
 void fp4_frb(fp4_t c, fp4_t a, int i) {
-	switch (i) {
-		case 0:
-			fp4_copy(c, a);
-			break;
-		case 1:
-			fp2_frb(c[0], a[0], 1);
-			fp2_frb(c[1], a[1], 1);
-			fp2_mul_frb(c[1], c[1], 1, 1);
-			fp2_mul_frb(c[1], c[1], 1, 1);
-			fp2_mul_frb(c[1], c[1], 1, 1);
-			break;
-		case 2:
-			fp4_frb(c, a, 1);
-			fp4_frb(c, c, 1);
-			break;
+	/* Cost of a single multiplication in Fp^2 per Frobenius. */
+	fp4_copy(c, a);
+	for (; i > 0; i--) {
+		fp2_frb(c[0], c[0], 1);
+		fp2_frb(c[1], c[1], 1);
+		fp2_mul_frb(c[1], c[1], 1, 3);
 	}
 }
 
 void fp6_frb(fp6_t c, fp6_t a, int i) {
-	switch (i) {
-		case 0:
-			fp6_copy(c, a);
-			break;
-		case 1:
-			fp2_frb(c[0], a[0], 1);
-			fp2_frb(c[1], a[1], 1);
-			fp2_frb(c[2], a[2], 1);
-			fp2_mul_frb(c[1], c[1], 1, 2);
-			fp2_mul_frb(c[2], c[2], 1, 4);
-			break;
-		case 2:
-			fp2_copy(c[0], a[0]);
-			fp2_mul_frb(c[1], a[1], 2, 2);
-			fp2_mul_frb(c[2], a[2], 2, 1);
-			fp2_neg(c[2], c[2]);
-			break;
+	/* Cost of two multiplication in Fp^2 per Frobenius. */
+	fp6_copy(c, a);
+	for (; i > 0; i--) {
+		fp2_frb(c[0], c[0], 1);
+		fp2_frb(c[1], c[1], 1);
+		fp2_frb(c[2], c[2], 1);
+		fp2_mul_frb(c[1], c[1], 1, 2);
+		fp2_mul_frb(c[2], c[2], 1, 4);
 	}
 }
 
 void fp8_frb(fp8_t c, fp8_t a, int i) {
-	switch (i) {
-		case 0:
-			fp8_copy(c, a);
-			break;
-		case 1:
-			fp4_frb(c[0], a[0], 1);
-			fp4_frb(c[1], a[1], 1);
-			fp_mul(c[1][0][0], c[1][0][0], core_get()->fp2_p2[4]);
-			fp_mul(c[1][0][1], c[1][0][1], core_get()->fp2_p2[4]);
-			fp_mul(c[1][1][0], c[1][1][0], core_get()->fp2_p2[4]);
-			fp_mul(c[1][1][1], c[1][1][1], core_get()->fp2_p2[4]);
-			break;
-		case 2:
-			fp8_frb(c, a, 1);
-			fp8_frb(c, c, 1);
-			break;
-		case 3:
-			fp8_frb(c, a, 1);
-			fp8_frb(c, c, 2);
-			break;
+	/* Cost of four multiplication in Fp^2 per Frobenius. */
+	fp8_copy(c, a);
+	for (; i > 0; i--) {
+		fp4_frb(c[0], c[0], 1);
+		fp4_frb(c[1], c[1], 1);
+		fp2_mul_frb(c[1][0], c[1][0], 4, 1);
+		fp2_mul_frb(c[1][1], c[1][1], 4, 1);
+		if (fp_prime_get_mod8() != 1) {
+			fp4_mul_art(c[1], c[1]);
+		}
 	}
 }
 
 void fp12_frb(fp12_t c, fp12_t a, int i) {
-	switch (i) {
-		case 0:
-			fp12_copy(c, a);
-			break;
-		case 1:
-			fp2_frb(c[0][0], a[0][0], 1);
-			fp2_frb(c[1][0], a[1][0], 1);
-			fp2_frb(c[0][1], a[0][1], 1);
-			fp2_frb(c[1][1], a[1][1], 1);
-			fp2_frb(c[0][2], a[0][2], 1);
-			fp2_frb(c[1][2], a[1][2], 1);
-			fp2_mul_frb(c[1][0], c[1][0], 1, 1);
-			fp2_mul_frb(c[0][1], c[0][1], 1, 2);
-			fp2_mul_frb(c[1][1], c[1][1], 1, 3);
-			fp2_mul_frb(c[0][2], c[0][2], 1, 4);
-			fp2_mul_frb(c[1][2], c[1][2], 1, 5);
-			break;
-		case 2:
-			fp2_copy(c[0][0], a[0][0]);
-			fp2_mul_frb(c[0][2], a[0][2], 2, 1);
-			fp2_mul_frb(c[0][1], a[0][1], 2, 2);
-			fp2_neg(c[0][2], c[0][2]);
-			fp2_mul_frb(c[1][0], a[1][0], 2, 1);
-			fp2_mul_frb(c[1][2], a[1][2], 2, 2);
-			fp2_mul_frb(c[1][1], a[1][1], 2, 3);
-			fp2_neg(c[1][2], c[1][2]);
-			break;
-		case 3:
-			fp2_frb(c[0][0], a[0][0], 1);
-			fp2_frb(c[1][0], a[1][0], 1);
-			fp2_frb(c[0][1], a[0][1], 1);
-			fp2_frb(c[1][1], a[1][1], 1);
-			fp2_frb(c[0][2], a[0][2], 1);
-			fp2_frb(c[1][2], a[1][2], 1);
-			fp2_mul_frb(c[0][1], c[0][1], 3, 2);
-			fp2_mul_frb(c[0][2], c[0][2], 3, 4);
-			fp2_neg(c[0][2], c[0][2]);
-			fp2_mul_frb(c[1][0], c[1][0], 3, 1);
-			fp2_mul_frb(c[1][1], c[1][1], 3, 3);
-			fp2_mul_frb(c[1][2], c[1][2], 3, 5);
-			fp2_neg(c[1][2], c[1][2]);
-			break;
+	/* Cost of five multiplication in Fp^2 per Frobenius. */
+	fp12_copy(c, a);
+	for (; i > 0; i--) {
+		fp6_frb(c[0], c[0], 1);
+		fp2_frb(c[1][0], c[1][0], 1);
+		fp2_frb(c[1][1], c[1][1], 1);
+		fp2_frb(c[1][2], c[1][2], 1);
+		fp2_mul_frb(c[1][0], c[1][0], 1, 1);
+		fp2_mul_frb(c[1][1], c[1][1], 1, 3);
+		fp2_mul_frb(c[1][2], c[1][2], 1, 5);
 	}
 }
 
@@ -210,5 +149,46 @@ void fp18_frb(fp18_t c, fp18_t a, int i) {
 	}
 	FINALLY {
 		fp3_free(t);
+	}
+}
+
+void fp24_frb(fp24_t c, fp24_t a, int i) {
+	/* Cost of 20 multiplication in Fp^2 per Frobenius. */
+	fp24_copy(c, a);
+	for (; i > 0; i--) {
+		fp8_frb(c[0], c[0], 1);
+		fp8_frb(c[1], c[1], 1);
+		fp8_frb(c[2], c[2], 1);
+		for (int j = 0; j < 2; j++) {
+			for (int l = 0; l < 2; l++) {
+				fp2_mul_frb(c[1][j][l], c[1][j][l], 4, 2);
+				fp2_mul_frb(c[2][j][l], c[2][j][l], 1, 1);
+			}
+			if ((fp_prime_get_mod8() % 4) == 3) {
+				fp4_mul_art(c[1][j], c[1][j]);
+			}
+		}
+	}
+}
+
+void fp48_frb(fp48_t c, fp48_t a, int i) {
+	/* Cost of 52 multiplication in Fp^2 per Frobenius. */
+	fp48_copy(c, a);
+	for (; i > 0; i--) {
+		fp24_frb(c[0], c[0], 1);
+		fp24_frb(c[1], c[1], 1);
+		for (int j = 0; j < 3; j++) {
+			for (int k = 0; k < 2; k++) {
+				for (int l = 0; l < 2; l++) {
+					fp2_mul_frb(c[1][j][k][l], c[1][j][k][l], 4, 3);
+				}
+				if (fp_prime_get_mod8() == 3) {
+					fp4_mul_art(c[1][j][k], c[1][j][k]);
+				}
+			}
+			if ((fp_prime_get_mod8() % 4) == 3) {
+				fp8_mul_art(c[1][j], c[1][j]);
+			}
+		}
 	}
 }

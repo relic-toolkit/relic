@@ -1502,3 +1502,546 @@ void fp18_back_cyc_sim(fp18_t c[], fp18_t a[], int n) {
 		}
 	}
 }
+
+void fp24_exp(fp24_t c, fp24_t a, bn_t b) {
+	fp24_t t;
+
+	if (bn_is_zero(b)) {
+		fp24_set_dig(c, 1);
+		return;
+	}
+
+	fp24_null(t);
+
+	TRY {
+		fp24_new(t);
+
+		fp24_copy(t, a);
+
+		for (int i = bn_bits(b) - 2; i >= 0; i--) {
+			fp24_sqr(t, t);
+			if (bn_get_bit(b, i)) {
+				fp24_mul(t, t, a);
+			}
+		}
+
+		if (bn_sign(b) == RLC_NEG) {
+			fp24_inv(c, t);
+		} else {
+			fp24_copy(c, t);
+		}
+	}
+	CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	}
+	FINALLY {
+		fp24_free(t);
+	}
+}
+
+void fp48_exp(fp48_t c, fp48_t a, bn_t b) {
+	fp48_t t;
+
+	if (bn_is_zero(b)) {
+		fp48_set_dig(c, 1);
+		return;
+	}
+
+	fp48_null(t);
+
+	TRY {
+		fp48_new(t);
+
+		fp48_copy(t, a);
+
+		for (int i = bn_bits(b) - 2; i >= 0; i--) {
+			fp48_sqr(t, t);
+			if (bn_get_bit(b, i)) {
+				fp48_mul(t, t, a);
+			}
+		}
+
+		if (bn_sign(b) == RLC_NEG) {
+			fp48_inv(c, t);
+		} else {
+			fp48_copy(c, t);
+		}
+	}
+	CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	}
+	FINALLY {
+		fp48_free(t);
+	}
+}
+
+void fp48_exp_dig(fp48_t c, fp48_t a, dig_t b) {
+	fp48_t t;
+
+	if (b == 0) {
+		fp48_set_dig(c, 1);
+		return;
+	}
+
+	fp48_null(t);
+
+	TRY {
+		fp48_new(t);
+
+		fp48_copy(t, a);
+
+		if (fp48_test_cyc(a)) {
+			for (int i = util_bits_dig(b) - 2; i >= 0; i--) {
+				fp48_sqr_cyc(t, t);
+				if (b & ((dig_t)1 << i)) {
+					fp48_mul(t, t, a);
+				}
+			}
+		} else {
+			for (int i = util_bits_dig(b) - 2; i >= 0; i--) {
+				fp48_sqr(t, t);
+				if (b & ((dig_t)1 << i)) {
+					fp48_mul(t, t, a);
+				}
+			}
+		}
+
+		fp48_copy(c, t);
+	}
+	CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	}
+	FINALLY {
+		fp48_free(t);
+	}
+}
+
+void fp48_exp_cyc(fp48_t c, fp48_t a, bn_t b) {
+	int i, j, k, l, w = bn_ham(b), endom = 0;
+	bn_t n, _b[4], u[4], v[4];
+
+	if (bn_is_zero(b)) {
+		fp48_set_dig(c, 1);
+		return;
+	}
+
+	bn_null(n);
+
+	if ((bn_bits(b) > RLC_DIG) && ((w << 3) > bn_bits(b))) {
+		fp48_t t[4];
+
+		TRY {
+			bn_new(n);
+			for (i = 0; i < 4; i++) {
+				bn_null(u[i]);
+				bn_null(v[i]);
+				bn_null(_b[i]);
+				fp48_null(t[i]);
+				bn_new(u[i]);
+				bn_new(v[i]);
+				bn_new(_b[i]);
+				fp48_new(t[i]);
+			}
+
+			ep2_curve_get_ord(n);
+
+			switch (ep_curve_is_pairf()) {
+				case EP_B48:
+					bn_abs(v[0], b);
+					fp_prime_get_par(u[0]);
+
+					bn_copy(u[1], u[0]);
+					if (bn_sign(u[0]) == RLC_NEG) {
+						bn_neg(u[0], u[0]);
+					}
+
+					for (i = 0; i < 4; i++) {
+						bn_mod(_b[i], v[0], u[0]);
+						bn_div(v[0], v[0], u[0]);
+						if ((bn_sign(u[1]) == RLC_NEG) && (i % 2 != 0)) {
+							bn_neg(_b[i], _b[i]);
+						}
+						if (bn_sign(b) == RLC_NEG) {
+							bn_neg(_b[i], _b[i]);
+						}
+					}
+
+					endom = 1;
+					break;
+			}
+
+			if (endom) {
+				for (i = 0; i < 4; i++) {
+					fp48_frb(t[i], a, i);
+					if (bn_sign(_b[i]) == RLC_NEG) {
+						fp48_inv_uni(t[i], t[i]);
+					}
+				}
+
+				l = RLC_MAX(bn_bits(_b[0]), bn_bits(_b[1]));
+				l = RLC_MAX(l, RLC_MAX(bn_bits(_b[2]), bn_bits(_b[3])));
+				fp48_set_dig(c, 1);
+				for (i = l - 1; i >= 0; i--) {
+					fp48_sqr_cyc(c, c);
+					for (j = 0; j < 4; j++) {
+						if (bn_get_bit(_b[j], i)) {
+							fp48_mul(c, c, t[j]);
+						}
+					}
+				}
+			} else {
+				fp48_copy(t[0], a);
+
+				for (i = bn_bits(b) - 2; i >= 0; i--) {
+					fp48_sqr_cyc(t[0], t[0]);
+					if (bn_get_bit(b, i)) {
+						fp48_mul(t[0], t[0], a);
+					}
+				}
+
+				fp48_copy(c, t[0]);
+				if (bn_sign(b) == RLC_NEG) {
+					fp48_inv_uni(c, c);
+				}
+			}
+		}
+		CATCH_ANY {
+			THROW(ERR_CAUGHT);
+		}
+		FINALLY {
+			bn_free(n);
+			for (i = 0; i < 4; i++) {
+				bn_free(u[i]);
+				bn_free(v[i]);
+				bn_free(_b[i]);
+				fp48_free(t[i]);
+			}
+		}
+	} else {
+		fp48_t t, *u = RLC_ALLOCA(fp48_t, w);
+
+		fp48_null(t);
+
+		TRY {
+			for (i = 0; i < w; i++) {
+				fp48_null(u[i]);
+				fp48_new(u[i]);
+			}
+			fp48_new(t);
+
+			j = 0;
+			fp48_copy(t, a);
+			for (i = 1; i < bn_bits(b); i++) {
+				fp48_sqr_pck(t, t);
+				if (bn_get_bit(b, i)) {
+					fp48_copy(u[j++], t);
+				}
+			}
+
+			if (!bn_is_even(b)) {
+				j = 0;
+				k = w - 1;
+			} else {
+				j = 1;
+				k = w;
+			}
+
+			fp48_back_cyc_sim(u, u, k);
+
+			if (!bn_is_even(b)) {
+				fp48_copy(c, a);
+			} else {
+				fp48_copy(c, u[0]);
+			}
+
+			for (i = j; i < k; i++) {
+				fp48_mul(c, c, u[i]);
+			}
+		}
+		CATCH_ANY {
+			THROW(ERR_CAUGHT);
+		}
+		FINALLY {
+			for (i = 0; i < w; i++) {
+				fp48_free(u[i]);
+			}
+			fp48_free(t);
+		}
+	}
+}
+
+void fp48_exp_cyc_sps(fp48_t c, fp48_t a, const int *b, int len) {
+	int i, j, k, w = len;
+    fp48_t t, *u = RLC_ALLOCA(fp48_t, w);
+
+	if (len == 0) {
+		fp48_set_dig(c, 1);
+		return;
+	}
+
+	fp48_null(t);
+
+	TRY {
+		for (i = 0; i < w; i++) {
+			fp48_null(u[i]);
+			fp48_new(u[i]);
+		}
+		fp48_new(t);
+
+		fp48_copy(t, a);
+		if (b[0] == 0) {
+			for (j = 0, i = 1; i < len; i++) {
+				k = (b[i] < 0 ? -b[i] : b[i]);
+				for (; j < k; j++) {
+					fp48_sqr_pck(t, t);
+				}
+				if (b[i] < 0) {
+					fp48_inv_uni(u[i - 1], t);
+				} else {
+					fp48_copy(u[i - 1], t);
+				}
+			}
+
+			fp48_back_cyc_sim(u, u, w - 1);
+
+			fp48_copy(c, a);
+			for (i = 0; i < w - 1; i++) {
+				fp48_mul(c, c, u[i]);
+			}
+		} else {
+			for (j = 0, i = 0; i < len; i++) {
+				k = (b[i] < 0 ? -b[i] : b[i]);
+				for (; j < k; j++) {
+					fp48_sqr_pck(t, t);
+				}
+				if (b[i] < 0) {
+					fp48_inv_uni(u[i], t);
+				} else {
+					fp48_copy(u[i], t);
+				}
+			}
+
+			fp48_back_cyc_sim(u, u, w);
+
+			fp48_copy(c, u[0]);
+			for (i = 1; i < w; i++) {
+				fp48_mul(c, c, u[i]);
+			}
+		}
+	}
+	CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	}
+	FINALLY {
+		for (i = 0; i < w; i++) {
+			fp48_free(u[i]);
+		}
+		fp48_free(t);
+	}
+}
+
+void fp48_conv_uni(fp48_t c, fp48_t a) {
+	fp48_t t;
+
+	fp48_null(t);
+
+	TRY {
+		fp48_new(t);
+
+		/* t = a^{-1}. */
+		fp48_inv(t, a);
+		/* c = a^(p^24). */
+		fp48_inv_uni(c, a);
+		/* c = a^(p^24 - 1). */
+		fp48_mul(c, c, t);
+	}
+	CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	}
+	FINALLY {
+		fp48_free(t);
+	}
+}
+
+void fp48_conv_cyc(fp48_t c, fp48_t a) {
+	fp48_t t;
+
+	fp48_null(t);
+
+	TRY {
+		fp48_new(t);
+
+		/* First, compute c = a^(p^24 - 1). */
+		fp48_conv_uni(c, a);
+
+		/* Second, compute c^(p^8 + 1). */
+		/* t = c^(p^8). */
+		fp48_frb(t, c, 8);
+
+		/* c = c^(p^8 + 1). */
+		fp48_mul(c, c, t);
+	}
+	CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	}
+	FINALLY {
+		fp48_free(t);
+	}
+}
+
+int fp48_test_cyc(fp48_t a) {
+	fp48_t t;
+	int result = 0;
+
+	fp48_null(t);
+
+	TRY {
+		fp48_new(t);
+
+		fp48_back_cyc(t, a);
+		result = ((fp48_cmp(t, a) == RLC_EQ) ? 1 : 0);
+	}
+	CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	}
+	FINALLY {
+		fp48_free(t);
+	}
+
+	return result;
+}
+
+void fp48_back_cyc(fp48_t c, fp48_t a) {
+	fp8_t t0, t1, t2;
+
+	fp8_null(t0);
+	fp8_null(t1);
+	fp8_null(t2);
+
+	TRY {
+		fp8_new(t0);
+		fp8_new(t1);
+		fp8_new(t2);
+
+		/* t0 = g4^2. */
+		fp8_sqr(t0, a[0][1]);
+		/* t1 = 3 * g4^2 - 2 * g3. */
+		fp8_sub(t1, t0, a[0][2]);
+		fp8_dbl(t1, t1);
+		fp8_add(t1, t1, t0);
+		/* t0 = E * g5^2 + t1. */
+		fp8_sqr(t2, a[1][2]);
+		fp8_mul_art(t0, t2);
+		fp8_add(t0, t0, t1);
+		/* t1 = 1/(4 * g2). */
+		fp8_dbl(t1, a[1][0]);
+		fp8_dbl(t1, t1);
+		fp8_inv(t1, t1);
+		/* c_1 = g1. */
+		fp8_mul(c[1][1], t0, t1);
+
+		/* t1 = g3 * g4. */
+		fp8_mul(t1, a[0][2], a[0][1]);
+		/* t2 = 2 * g1^2 - 3 * g3 * g4. */
+		fp8_sqr(t2, c[1][1]);
+		fp8_sub(t2, t2, t1);
+		fp8_dbl(t2, t2);
+		fp8_sub(t2, t2, t1);
+		/* t1 = g2 * g5. */
+		fp8_mul(t1, a[1][0], a[1][2]);
+		/* c_0 = E * (2 * g1^2 + g2 * g5 - 3 * g3 * g4) + 1. */
+		fp8_add(t2, t2, t1);
+		fp8_mul_art(c[0][0], t2);
+		fp_add_dig(c[0][0][0][0][0], c[0][0][0][0][0], 1);
+
+		fp8_copy(c[0][1], a[0][1]);
+		fp8_copy(c[0][2], a[0][2]);
+		fp8_copy(c[1][0], a[1][0]);
+		fp8_copy(c[1][2], a[1][2]);
+	}
+	CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	}
+	FINALLY {
+		fp2_free(t0);
+		fp2_free(t1);
+		fp2_free(t2);
+	}
+}
+
+void fp48_back_cyc_sim(fp48_t c[], fp48_t a[], int n) {
+    fp8_t *t = RLC_ALLOCA(fp8_t, n * 3);
+    fp8_t
+        *t0 = t + 0 * n,
+        *t1 = t + 1 * n,
+        *t2 = t + 2 * n;
+
+	if (n == 0) {
+		return;
+	}
+
+	for (int i = 0; i < n; i++) {
+		fp8_null(t0[i]);
+		fp8_null(t1[i]);
+		fp8_null(t2[i]);
+	}
+
+	TRY {
+		for (int i = 0; i < n; i++) {
+			fp8_new(t0[i]);
+			fp8_new(t1[i]);
+			fp8_new(t2[i]);
+		}
+
+		for (int i = 0; i < n; i++) {
+			/* t0 = g4^2. */
+			fp8_sqr(t0[i], a[i][0][1]);
+			/* t1 = 3 * g4^2 - 2 * g3. */
+			fp8_sub(t1[i], t0[i], a[i][0][2]);
+			fp8_dbl(t1[i], t1[i]);
+			fp8_add(t1[i], t1[i], t0[i]);
+			/* t0 = E * g5^2 + t1. */
+			fp8_sqr(t2[i], a[i][1][2]);
+			fp8_mul_art(t0[i], t2[i]);
+			fp8_add(t0[i], t0[i], t1[i]);
+			/* t1 = (4 * g2). */
+			fp8_dbl(t1[i], a[i][1][0]);
+			fp8_dbl(t1[i], t1[i]);
+		}
+
+		/* t1 = 1 / t1. */
+		fp8_inv_sim(t1, t1, n);
+
+		for (int i = 0; i < n; i++) {
+			/* t0 = g1. */
+			fp8_mul(c[i][1][1], t0[i], t1[i]);
+
+			/* t1 = g3 * g4. */
+			fp8_mul(t1[i], a[i][0][2], a[i][0][1]);
+			/* t2 = 2 * g1^2 - 3 * g3 * g4. */
+			fp8_sqr(t2[i], c[i][1][1]);
+			fp8_sub(t2[i], t2[i], t1[i]);
+			fp8_dbl(t2[i], t2[i]);
+			fp8_sub(t2[i], t2[i], t1[i]);
+			/* t1 = g2 * g5. */
+			fp8_mul(t1[i], a[i][1][0], a[i][1][2]);
+			/* t2 = E * (2 * g1^2 + g2 * g5 - 3 * g3 * g4) + 1. */
+			fp8_add(t2[i], t2[i], t1[i]);
+			fp8_mul_art(c[i][0][0], t2[i]);
+			fp_add_dig(c[i][0][0][0][0][0], c[i][0][0][0][0][0], 1);
+
+			fp8_copy(c[i][0][1], a[i][0][1]);
+			fp8_copy(c[i][0][2], a[i][0][2]);
+			fp8_copy(c[i][1][0], a[i][1][0]);
+			fp8_copy(c[i][1][2], a[i][1][2]);
+		}
+	} CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	} FINALLY {
+		for (int i = 0; i < n; i++) {
+			fp8_free(t0[i]);
+			fp8_free(t1[i]);
+			fp8_free(t2[i]);
+		}
+	}
+}

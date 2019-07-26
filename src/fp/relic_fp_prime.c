@@ -304,6 +304,22 @@ void fp_prime_set_pairf(const bn_t x, int pairf) {
 			fp_prime_set_dense(p);
 		}
 
+		if (pairf == EP_B48) {
+			/* p = (x - 1)^2*(x^16 - x^8 + 1) / 3 + x. */
+			bn_sqr(t1, t0);
+			bn_sqr(t1, t1);
+			bn_sqr(p, t1);
+			bn_sqr(t1, p);
+			bn_sub(t1, t1, p);
+			bn_add_dig(t1, t1, 1);
+			bn_sub_dig(p, t0, 1);
+			bn_sqr(p, p);
+			bn_mul(p, p, t1);
+			bn_div_dig(p, p, 3);
+			bn_add(p, p, t0);
+			fp_prime_set_dense(p);
+		}
+
 		/* Store parameter in NAF form. */
 		ctx->par_len = 0;
 		bn_rec_naf(s, &len, &(ctx->par), 2);

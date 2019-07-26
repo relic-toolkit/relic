@@ -37,7 +37,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-#if PP_EXT == BASIC || !defined(STRIP)
+#if FPX_RDC == BASIC || !defined(STRIP)
 
 void fp18_sqr_basic(fp18_t c, fp18_t a) {
 	fp6_t t0, t1, t2, t3, t4;
@@ -112,7 +112,7 @@ void fp18_sqr_basic(fp18_t c, fp18_t a) {
 
 #endif
 
-#if PP_EXT == LAZYR || !defined(STRIP)
+#if FPX_RDC == LAZYR || !defined(STRIP)
 
 void fp18_sqr_lazyr(fp18_t c, fp18_t a) {
 	dv6_t u0, u1, u2, u3, u4;

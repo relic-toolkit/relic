@@ -37,7 +37,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-#if PP_EXT == BASIC || !defined(STRIP)
+#if FPX_RDC == BASIC || !defined(STRIP)
 
 void fp4_sqr_basic(fp4_t c, fp4_t a) {
 	fp2_t t0, t1;

@@ -37,7 +37,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-#if PP_EXT == BASIC || !defined(STRIP)
+#if FPX_RDC == BASIC || !defined(STRIP)
 
 void fp8_mul_basic(fp8_t c, fp8_t a, fp8_t b) {
 	fp4_t t0, t1, t4;
@@ -179,7 +179,7 @@ void fp8_mul_dxs(fp8_t c, fp8_t a, fp8_t b) {
 	}
 }
 
-void fp8_mul_lazyr(fp8_t c, fp8_t a, fp8_t b) {
+void fp8_mul_unr(dv8_t c, fp8_t a, fp8_t b) {
 	fp4_t t0, t1;
 	dv4_t u0, u1, u2, u3;
 
@@ -213,26 +213,43 @@ void fp8_mul_lazyr(fp8_t c, fp8_t a, fp8_t b) {
 		/* c_1 = u2 - a_0b_0 - a_1b_1. */
 		for (int i = 0; i < 2; i++) {
 			fp2_addc_low(u3[i], u0[i], u1[i]);
-			fp2_subc_low(u2[i], u2[i], u3[i]);
-			fp2_rdcn_low(c[1][i], u2[i]);
+			fp2_subc_low(c[1][i], u2[i], u3[i]);
 		}
 		/* c_0 = a_0b_0 + v * a_1b_1. */
 		fp2_nord_low(u2[0], u1[1]);
 		dv_copy(u2[1][0], u1[0][0], 2 * RLC_FP_DIGS);
 		dv_copy(u2[1][1], u1[0][1], 2 * RLC_FP_DIGS);
 		for (int i = 0; i < 2; i++) {
-			fp2_addc_low(u2[i], u0[i], u2[i]);
-			fp2_rdcn_low(c[0][i], u2[i]);
+			fp2_addc_low(c[0][i], u0[i], u2[i]);
 		}
 	} CATCH_ANY {
 		THROW(ERR_CAUGHT);
 	} FINALLY {
 		fp4_free(t0);
-		dv4_free(t1);
+		fp4_free(t1);
 		dv4_free(u0);
 		dv4_free(u1);
 		dv4_free(u2);
 		dv4_free(u3);
+	}
+}
+
+void fp8_mul_lazyr(fp8_t c, fp8_t a, fp8_t b) {
+	dv8_t t;
+
+	dv8_null(t);
+
+	TRY {
+		dv8_new(t);
+		fp8_mul_unr(t, a, b);
+		fp2_rdcn_low(c[0][0], t[0][0]);
+		fp2_rdcn_low(c[0][1], t[0][1]);
+		fp2_rdcn_low(c[1][0], t[1][0]);
+		fp2_rdcn_low(c[1][1], t[1][1]);
+	} CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	} FINALLY {
+		dv8_free(t);
 	}
 }
 

@@ -37,7 +37,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-#if PP_EXT == BASIC || !defined(STRIP)
+#if FPX_RDC == BASIC || !defined(STRIP)
 
 void fp8_sqr_basic(fp8_t c, fp8_t a) {
 	fp4_t t0, t1;
@@ -70,7 +70,7 @@ void fp8_sqr_basic(fp8_t c, fp8_t a) {
 
 #if PP_EXT == LAZYR || !defined(STRIP)
 
-void fp8_sqr_lazyr(fp8_t c, fp8_t a) {
+void fp8_sqr_unr(dv8_t c, fp8_t a) {
 	fp4_t t;
 	dv4_t u0, u1, u2;
 
@@ -96,20 +96,16 @@ void fp8_sqr_lazyr(fp8_t c, fp8_t a) {
 		dv_copy(u2[1][0], u1[0][0], 2 * RLC_FP_DIGS);
 		dv_copy(u2[1][1], u1[0][1], 2 * RLC_FP_DIGS);
 		fp2_nord_low(u2[0], u1[1]);
-		fp2_addc_low(u2[0], u2[0], u0[0]);
-		fp2_addc_low(u2[1], u2[1], u0[1]);
+		fp2_addc_low(c[0][0], u2[0], u0[0]);
+		fp2_addc_low(c[0][1], u2[1], u0[1]);
 
 		/* d = (a + b)^2 - a^2 - b^2 = 2 * a * b. */
 		fp2_addc_low(u1[0], u1[0], u0[0]);
 		fp2_addc_low(u1[1], u1[1], u0[1]);
 
 		fp4_sqr_unr(u0, t);
-		fp2_subc_low(u0[0], u0[0], u1[0]);
-		fp2_subc_low(u0[1], u0[1], u1[1]);
-		fp2_rdcn_low(c[0][0], u2[0]);
-		fp2_rdcn_low(c[0][1], u2[1]);
-		fp2_rdcn_low(c[1][0], u0[0]);
-		fp2_rdcn_low(c[1][1], u0[1]);
+		fp2_subc_low(c[1][0], u0[0], u1[0]);
+		fp2_subc_low(c[1][1], u0[1], u1[1]);
 	} CATCH_ANY {
 		THROW(ERR_CAUGHT);
 	} FINALLY {
@@ -117,6 +113,25 @@ void fp8_sqr_lazyr(fp8_t c, fp8_t a) {
 		dv4_free(u0);
 		dv4_free(u1);
 		dv4_free(u2);
+	}
+}
+
+void fp8_sqr_lazyr(fp8_t c, fp8_t a) {
+	dv8_t t;
+
+	dv8_null(t);
+
+	TRY {
+		dv8_new(t);
+		fp8_sqr_unr(t, a);
+		fp2_rdcn_low(c[0][0], t[0][0]);
+		fp2_rdcn_low(c[0][1], t[0][1]);
+		fp2_rdcn_low(c[1][0], t[1][0]);
+		fp2_rdcn_low(c[1][1], t[1][1]);
+	} CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	} FINALLY {
+		dv8_free(t);
 	}
 }
 

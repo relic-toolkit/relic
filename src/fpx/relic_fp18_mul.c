@@ -37,7 +37,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-#if PP_EXT == BASIC || !defined(STRIP)
+#if FPX_RDC == BASIC || !defined(STRIP)
 
 void fp18_mul_basic(fp18_t c, fp18_t a, fp18_t b) {
 	fp6_t t0, t1, t2, t3, t4, t5;
@@ -402,7 +402,7 @@ void fp18_mul_dxs_basic(fp18_t c, fp18_t a, fp18_t b) {
 
 #endif
 
-#if PP_EXT == LAZYR || !defined(STRIP)
+#if FPX_RDC == LAZYR || !defined(STRIP)
 
 static void fp6_mul_dxs_unr(dv6_t c, fp6_t a, fp6_t b) {
 	fp3_t t0, t1, t2;
@@ -463,7 +463,7 @@ static void fp6_mul_dxs_unr(dv6_t c, fp6_t a, fp6_t b) {
 	}
 }
 
-void fp18_mul_lazyr(fp18_t c, fp18_t a, fp18_t b) {
+void fp18_mul_unr(dv18_t c, fp18_t a, fp18_t b) {
 	dv6_t u0, u1, u2, u3, u4, u5;
 	fp6_t t0, t1;
 
@@ -503,9 +503,9 @@ void fp18_mul_lazyr(fp18_t c, fp18_t a, fp18_t b) {
 			fp2_subc_low(u3[i], u3[i], u2[i]);
 		}
 		fp2_nord_low(u4[0], u3[2]);
-		fp2_addc_low(u3[2], u3[1], u0[2]);
-		fp2_addc_low(u3[1], u3[0], u0[1]);
-		fp2_addc_low(u3[0], u4[0], u0[0]);
+		fp2_addc_low(c[0][2], u3[1], u0[2]);
+		fp2_addc_low(c[0][1], u3[0], u0[1]);
+		fp2_addc_low(c[0][0], u4[0], u0[0]);
 
 		fp6_add(t0, a[0], a[1]);
 		fp6_add(t1, b[0], b[1]);
@@ -520,8 +520,7 @@ void fp18_mul_lazyr(fp18_t c, fp18_t a, fp18_t b) {
 		dv_copy(u5[2][0], u2[1][0], 2 * RLC_FP_DIGS);
 		dv_copy(u5[2][1], u2[1][1], 2 * RLC_FP_DIGS);
 		for (int i = 0; i < 3; i++) {
-			fp2_addc_low(u4[i], u4[i], u5[i]);
-			fp2_rdcn_low(c[1][i], u4[i]);
+			fp2_addc_low(c[1][i], u4[i], u5[i]);
 		}
 
 		fp6_add(t0, a[0], a[2]);
@@ -530,9 +529,7 @@ void fp18_mul_lazyr(fp18_t c, fp18_t a, fp18_t b) {
 		for (int i = 0; i < 3; i++) {
 			fp2_subc_low(u4[i], u4[i], u0[i]);
 			fp2_addc_low(u4[i], u4[i], u1[i]);
-			fp2_subc_low(u4[i], u4[i], u2[i]);
-			fp2_rdcn_low(c[2][i], u4[i]);
-			fp2_rdcn_low(c[0][i], u3[i]);
+			fp2_subc_low(c[2][i], u4[i], u2[i]);
 		}
 	} CATCH_ANY {
 		THROW(ERR_CAUGHT);
@@ -545,6 +542,26 @@ void fp18_mul_lazyr(fp18_t c, fp18_t a, fp18_t b) {
 		dv6_free(u5);
 		fp6_free(t0);
 		fp6_free(t1);
+	}
+}
+
+void fp18_mul_lazyr(fp18_t c, fp18_t a, fp18_t b) {
+	dv18_t t;
+
+	dv18_null(t);
+
+	TRY {
+		dv18_new(t);
+		fp18_mul_unr(t, a, b);
+		for (int i = 0; i < 3; i++) {
+			for (int j = 0; j < 2; j++) {
+				fp2_rdcn_low(c[i][j], t[i][j]);
+			}
+		}
+	} CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	} FINALLY {
+		dv18_free(t);
 	}
 }
 

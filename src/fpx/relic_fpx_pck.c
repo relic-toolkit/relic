@@ -105,3 +105,25 @@ int fp12_upk(fp12_t c, fp12_t a) {
 		return 1;
 	}
 }
+
+void fp48_pck(fp48_t c, fp48_t a) {
+	fp48_copy(c, a);
+	if (fp48_test_cyc(c)) {
+		fp8_zero(c[0][0]);
+		fp8_zero(c[1][1]);
+	}
+}
+
+int fp48_upk(fp48_t c, fp48_t a) {
+	if (fp8_is_zero(a[0][0]) && fp8_is_zero(a[1][1])) {
+		fp48_back_cyc(c, a);
+		if (fp48_test_cyc(c)) {
+			return 1;
+		} else {
+			return 0;
+		}
+	} else {
+		fp48_copy(c, a);
+		return 1;
+	}
+}

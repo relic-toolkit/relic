@@ -45,11 +45,17 @@ void fp2_mul_frb(fp2_t c, fp2_t a, int i, int j) {
 		fp_mul(c[1], a[1], ctx->fp2_p2[j - 1]);
 	} else {
 #if ALLOC == AUTO
-		if (i == 1) {
+	switch(i) {
+		case 1:
 			fp2_mul(c, a, ctx->fp2_p[j - 1]);
-		} else {
+			break;
+		case 3:
 			fp2_mul(c, a, ctx->fp2_p3[j - 1]);
-		}
+			break;
+		case 4:
+			fp2_mul(c, a, ctx->fp2_p4[j - 1]);
+			break;
+	}
 #else
 		fp2_t t;
 
@@ -57,13 +63,22 @@ void fp2_mul_frb(fp2_t c, fp2_t a, int i, int j) {
 
 		TRY {
 			fp2_new(t);
-			if (i == 1) {
-				fp_copy(t[0], ctx->fp2_p[j - 1][0]);
-				fp_copy(t[1], ctx->fp2_p[j - 1][1]);
-			} else {
-				fp_copy(t[0], ctx->fp2_p3[j - 1][0]);
-				fp_copy(t[1], ctx->fp2_p3[j - 1][1]);
+
+			switch(i) {
+				case 1:
+					fp_copy(t[0], ctx->fp2_p[j - 1][0]);
+					fp_copy(t[1], ctx->fp2_p[j - 1][1]);
+					break;
+				case 3:
+					fp_copy(t[0], ctx->fp2_p3[j - 1][0]);
+					fp_copy(t[1], ctx->fp2_p3[j - 1][1]);
+					break;
+				case 4:
+					fp_copy(t[0], ctx->fp2_p4[j - 1][0]);
+					fp_copy(t[1], ctx->fp2_p4[j - 1][1]);
+					break;
 			}
+
 			fp2_mul(c, a, t);
 		}
 		CATCH_ANY {
