@@ -37,7 +37,7 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-#if PP_EXT == LAZYR || !defined(STRIP)
+#if FPX_RDC == LAZYR || !defined(STRIP)
 
 inline static void fp6_mul_dxs_unr_lazyr(dv6_t c, fp6_t a, fp6_t b) {
 	dv2_t u0, u1, u2, u3;
@@ -121,7 +121,7 @@ inline static void fp6_mul_dxs_unr_lazyr(dv6_t c, fp6_t a, fp6_t b) {
 /* Public definitions                                                         */
 /*============================================================================*/
 
-#if PP_EXT == BASIC || !defined(STRIP)
+#if FPX_RDC == BASIC || !defined(STRIP)
 
 void fp12_mul_basic(fp12_t c, fp12_t a, fp12_t b) {
 	fp6_t t0, t1, t2;
@@ -249,17 +249,16 @@ void fp12_mul_dxs_basic(fp12_t c, fp12_t a, fp12_t b) {
 
 #endif
 
-#if PP_EXT == LAZYR || !defined(STRIP)
+#if FPX_RDC == LAZYR || !defined(STRIP)
 
-void fp12_mul_lazyr(fp12_t c, fp12_t a, fp12_t b) {
-	dv6_t u0, u1, u2, u3;
+void fp12_mul_unr(dv12_t c, fp12_t a, fp12_t b) {
 	fp6_t t0, t1;
+	dv6_t u0, u1, u2, u3;
 
 	dv6_null(u0);
 	dv6_null(u1);
 	dv6_null(u2);
 	dv6_null(u3);
-	fp6_null(t0);
 	fp6_null(t0);
 	fp6_null(t1);
 
@@ -286,19 +285,13 @@ void fp12_mul_lazyr(fp12_t c, fp12_t a, fp12_t b) {
 		/* c_1 = u2 - a_0b_0 - a_1b_1. */
 		for (int i = 0; i < 3; i++) {
 			fp2_addc_low(u3[i], u0[i], u1[i]);
-			fp2_subc_low(u2[i], u2[i], u3[i]);
-			fp2_rdcn_low(c[1][i], u2[i]);
+			fp2_subc_low(c[1][i], u2[i], u3[i]);
 		}
 		/* c_0 = a_0b_0 + v * a_1b_1. */
 		fp2_nord_low(u2[0], u1[2]);
-		dv_copy(u2[1][0], u1[0][0], 2 * RLC_FP_DIGS);
-		dv_copy(u2[1][1], u1[0][1], 2 * RLC_FP_DIGS);
-		dv_copy(u2[2][0], u1[1][0], 2 * RLC_FP_DIGS);
-		dv_copy(u2[2][1], u1[1][1], 2 * RLC_FP_DIGS);
-		for (int i = 0; i < 3; i++) {
-			fp2_addc_low(u2[i], u0[i], u2[i]);
-			fp2_rdcn_low(c[0][i], u2[i]);
-		}
+		fp2_addc_low(c[0][0], u0[0], u2[0]);
+		fp2_addc_low(c[0][1], u0[1], u1[0]);
+		fp2_addc_low(c[0][2], u0[2], u1[1]);
 	} CATCH_ANY {
 		THROW(ERR_CAUGHT);
 	} FINALLY {
@@ -308,6 +301,25 @@ void fp12_mul_lazyr(fp12_t c, fp12_t a, fp12_t b) {
 		dv6_free(u3);
 		fp6_free(t0);
 		fp6_free(t1);
+	}
+}
+
+void fp12_mul_lazyr(fp12_t c, fp12_t a, fp12_t b) {
+	dv12_t t;
+
+	dv12_null(t);
+
+	TRY {
+		dv12_new(t);
+		fp12_mul_unr(t, a, b);
+		for (int i = 0; i < 3; i++) {
+			fp2_rdcn_low(c[0][i], t[0][i]);
+			fp2_rdcn_low(c[1][i], t[1][i]);
+		}
+	} CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	} FINALLY {
+		dv12_free(t);
 	}
 }
 
@@ -414,3 +426,22 @@ void fp12_mul_dxs_lazyr(fp12_t c, fp12_t a, fp12_t b) {
 }
 
 #endif
+
+void fp12_mul_art(fp12_t c, fp12_t a) {
+	fp6_t t0;
+
+	fp6_null(t0);
+
+	TRY {
+		fp6_new(t0);
+
+		/* (a_0 + a_1 * v) * v = a_0 * v + a_1 * v^2 */
+		fp6_copy(t0, a[0]);
+		fp6_mul_art(c[0], a[1]);
+		fp6_copy(c[1], t0);
+	} CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	} FINALLY {
+		fp6_free(t0);
+	}
+}

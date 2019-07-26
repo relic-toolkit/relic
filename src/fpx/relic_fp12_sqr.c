@@ -37,7 +37,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-#if PP_EXT == BASIC || !defined(STRIP)
+#if FPX_RDC == BASIC || !defined(STRIP)
 
 void fp12_sqr_basic(fp12_t c, fp12_t a) {
 	fp6_t t0, t1;
@@ -232,9 +232,9 @@ void fp12_sqr_pck_basic(fp12_t c, fp12_t a) {
 
 #endif
 
-#if PP_EXT == LAZYR || !defined(STRIP)
+#if FPX_RDC == LAZYR || !defined(STRIP)
 
-void fp12_sqr_lazyr(fp12_t c, fp12_t a) {
+void fp12_sqr_unr(dv12_t c, fp12_t a) {
 	fp4_t t0, t1;
 	dv4_t u0, u1, u2, u3, u4;
 
@@ -312,24 +312,18 @@ void fp12_sqr_lazyr(fp12_t c, fp12_t a) {
 		/* c2 = c2 - (t0,t1) - (t4,t5). */
 		fp2_subc_low(u4[0], u4[0], u0[0]);
 		fp2_subc_low(u4[1], u4[1], u0[1]);
-		fp2_subc_low(u4[0], u4[0], u2[0]);
-		fp2_subc_low(u4[1], u4[1], u2[1]);
-		fp2_rdcn_low(c[0][1], u4[0]);
-		fp2_rdcn_low(c[1][2], u4[1]);
+		fp2_subc_low(c[0][1], u4[0], u2[0]);
+		fp2_subc_low(c[1][2], u4[1], u2[1]);
 
 		/* c1 = (t6,t7) + (t4,t5) * E. */
 		fp2_nord_low(u4[1], u2[1]);
-		fp2_addc_low(u3[0], u3[0], u4[1]);
-		fp2_addc_low(u3[1], u3[1], u2[0]);
-		fp2_rdcn_low(c[1][0], u3[0]);
-		fp2_rdcn_low(c[0][2], u3[1]);
+		fp2_addc_low(c[1][0], u3[0], u4[1]);
+		fp2_addc_low(c[0][2], u3[1], u2[0]);
 
 		/* c0 = (t0,t1) + (t2,t3) * E. */
 		fp2_nord_low(u4[1], u1[1]);
-		fp2_addc_low(u0[0], u0[0], u4[1]);
-		fp2_addc_low(u0[1], u0[1], u1[0]);
-		fp2_rdcn_low(c[0][0], u0[0]);
-		fp2_rdcn_low(c[1][1], u0[1]);
+		fp2_addc_low(c[0][0], u0[0], u4[1]);
+		fp2_addc_low(c[1][1], u0[1], u1[0]);
 	} CATCH_ANY {
 		THROW(ERR_CAUGHT);
 	} FINALLY {
@@ -340,6 +334,25 @@ void fp12_sqr_lazyr(fp12_t c, fp12_t a) {
 		dv4_free(u2);
 		dv4_free(u3);
 		dv4_free(u4);
+	}
+}
+
+void fp12_sqr_lazyr(fp12_t c, fp12_t a) {
+	dv12_t t;
+
+	dv12_null(t);
+
+	TRY {
+		dv12_new(t);
+		fp12_sqr_unr(t, a);
+		for (int i = 0; i < 3; i++) {
+			fp2_rdcn_low(c[0][i], t[0][i]);
+			fp2_rdcn_low(c[1][i], t[1][i]);
+		}
+	} CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	} FINALLY {
+		dv12_free(t);
 	}
 }
 
