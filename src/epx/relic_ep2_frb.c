@@ -66,8 +66,7 @@ void ep2_frb(ep2_t r, ep2_t p, int i) {
 				fp2_frb(r->x, r->x, 1);
 				fp2_frb(r->y, r->y, 1);
 				fp2_frb(r->z, r->z, 1);
-				fp2_mul_frb(r->x, r->x, 1, 4);
-				fp2_mul_frb(r->x, r->x, 2, 4);
+				fp2_mul_frb(r->x, r->x, 3, 4);
 				fp2_mul_art(r->x, r->x);
 				fp2_mul_frb(r->y, r->y, 1, 3);
 				fp2_mul_art(r->y, r->y);
