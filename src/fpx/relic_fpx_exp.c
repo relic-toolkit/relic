@@ -1617,8 +1617,7 @@ void fp48_exp_dig(fp48_t c, fp48_t a, dig_t b) {
 }
 
 void fp48_exp_cyc(fp48_t c, fp48_t a, bn_t b) {
-	int i, j, k, l, w = bn_ham(b), endom = 0;
-	bn_t n, _b[4], u[4], v[4];
+	int i, j, k, w = bn_ham(b);
 
 	if (bn_is_zero(b)) {
 		fp48_set_dig(c, 1);
@@ -1628,94 +1627,32 @@ void fp48_exp_cyc(fp48_t c, fp48_t a, bn_t b) {
 	bn_null(n);
 
 	if ((bn_bits(b) > RLC_DIG) && ((w << 3) > bn_bits(b))) {
-		fp48_t t[4];
+		fp48_t t;
+
+		fp48_null(t)
 
 		TRY {
-			bn_new(n);
-			for (i = 0; i < 4; i++) {
-				bn_null(u[i]);
-				bn_null(v[i]);
-				bn_null(_b[i]);
-				fp48_null(t[i]);
-				bn_new(u[i]);
-				bn_new(v[i]);
-				bn_new(_b[i]);
-				fp48_new(t[i]);
+			fp48_new(n);
+
+			fp48_copy(t, a);
+
+			for (i = bn_bits(b) - 2; i >= 0; i--) {
+				fp48_sqr_cyc(t, t);
+				if (bn_get_bit(b, i)) {
+					fp48_mul(t, t, a);
+				}
 			}
 
-			ep2_curve_get_ord(n);
-
-			switch (ep_curve_is_pairf()) {
-				case EP_B48:
-					bn_abs(v[0], b);
-					fp_prime_get_par(u[0]);
-
-					bn_copy(u[1], u[0]);
-					if (bn_sign(u[0]) == RLC_NEG) {
-						bn_neg(u[0], u[0]);
-					}
-
-					for (i = 0; i < 4; i++) {
-						bn_mod(_b[i], v[0], u[0]);
-						bn_div(v[0], v[0], u[0]);
-						if ((bn_sign(u[1]) == RLC_NEG) && (i % 2 != 0)) {
-							bn_neg(_b[i], _b[i]);
-						}
-						if (bn_sign(b) == RLC_NEG) {
-							bn_neg(_b[i], _b[i]);
-						}
-					}
-
-					endom = 1;
-					break;
-			}
-
-			if (endom) {
-				for (i = 0; i < 4; i++) {
-					fp48_frb(t[i], a, i);
-					if (bn_sign(_b[i]) == RLC_NEG) {
-						fp48_inv_uni(t[i], t[i]);
-					}
-				}
-
-				l = RLC_MAX(bn_bits(_b[0]), bn_bits(_b[1]));
-				l = RLC_MAX(l, RLC_MAX(bn_bits(_b[2]), bn_bits(_b[3])));
-				fp48_set_dig(c, 1);
-				for (i = l - 1; i >= 0; i--) {
-					fp48_sqr_cyc(c, c);
-					for (j = 0; j < 4; j++) {
-						if (bn_get_bit(_b[j], i)) {
-							fp48_mul(c, c, t[j]);
-						}
-					}
-				}
-			} else {
-				fp48_copy(t[0], a);
-
-				for (i = bn_bits(b) - 2; i >= 0; i--) {
-					fp48_sqr_cyc(t[0], t[0]);
-					if (bn_get_bit(b, i)) {
-						fp48_mul(t[0], t[0], a);
-					}
-				}
-
-				fp48_copy(c, t[0]);
-				if (bn_sign(b) == RLC_NEG) {
-					fp48_inv_uni(c, c);
-				}
+			fp48_copy(c, t);
+			if (bn_sign(b) == RLC_NEG) {
+				fp48_inv_uni(c, c);
 			}
 		}
 		CATCH_ANY {
 			THROW(ERR_CAUGHT);
 		}
 		FINALLY {
-			bn_free(n);
-			for (i = 0; i < 4; i++) {
-				bn_free(u[i]);
-				bn_free(v[i]);
-				bn_free(_b[i]);
-				fp48_free(t[i]);
-			}
+			fp48_free(t);
 		}
 	} else {
 		fp48_t t, *u = RLC_ALLOCA(fp48_t, w);

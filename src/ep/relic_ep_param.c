@@ -485,6 +485,22 @@
 /** @} */
 #endif
 
+#if defined(EP_ENDOM) && FP_PRIME == 575
+/**
+ * Parameters for a 638-bit pairing-friendly prime curve.
+ */
+/** @{ */
+#define B48_P575_A		"0"
+#define B48_P575_B		"4"
+#define B48_P575_X		"259F58760BBAF5EE9988E2DD032EAB1E69E0BF14C425A57DEA4159D76471A8CA1A95C3762F6AA220C6C93A33C1BFC7264F7B4B1EA9A81889B2E173882AD2A0163B73BC78F8A54AA2"
+#define B48_P575_Y		"4E0AB4BE01EEA9C4A3EA81C84E2081B03934596D846AC24862A851F811CBE5078CD4AF03DECAD5571C4BB90F502155F462E23D3180562EED28C72882F3F538893BD643EDE63C4567"
+#define B48_P575_R		"FFBFC68EB6176EFB58025E547BF4EBACB1315C184DC37EAAF67BBCCE069D07F425050E765ABB8B40D5E6D7AE8A2A5698B771DDBD6E109D56D59C3DFF00000001"
+#define B48_P575_H		"5552A7FA0ADD830B"
+#define B48_P575_BETA	"553D4029E31A213E97A55EA0799DBBAF4EA0E188589B1EA7389B619839079171707532F84447C1DEC2EF5880F5836913CA803793A4BD5DAA4AAF924B07853D413FDB55BA1F7A58E9"
+#define B48_P575_LAMB	"FFBFC68EB6176EFB58025E547BF4EBACB1315C184DC37EAAF67BBCCE069D07F325252D32D917FB84F2A33D6628A6CB22E753639EE855B6ACAB387BFE00000001"
+/** @} */
+#endif
+
 #if defined(EP_ENDOM) && FP_PRIME == 638
 /**
  * Parameters for a 638-bit pairing-friendly prime curve.
@@ -782,6 +798,13 @@ void ep_param_set(int param) {
 				endom = 1;
 				break;
 #endif
+#if defined(EP_ENDOM) && FP_PRIME == 575
+			case B48_P575:
+				ASSIGNK(B48_P575, B48_575);
+				endom = 1;
+				pairf = EP_B48;
+				break;
+#endif
 #if defined(EP_ENDOM) && FP_PRIME == 638
 			case BN_P638:
 				ASSIGNK(BN_P638, BN_638);
@@ -1025,6 +1048,10 @@ int ep_param_set_any_pairf(void) {
 	ep_param_set(CP8_P544);
 	type = EP_DTYPE;
 	degree = 2;
+#elif FP_PRIME == 575
+	ep_param_set(B48_P575);
+	type = EP_MTYPE;
+	degree = 8;
 #elif FP_PRIME == 638
 #ifdef FP_QNRES
 	ep_param_set(B12_P638);
@@ -1046,14 +1073,13 @@ int ep_param_set_any_pairf(void) {
 #endif
 #ifdef WITH_PP
 	if (r == RLC_OK) {
-		if (degree == 0) {
-			ep2_curve_set_twist(0);
-		}
-		if (degree == 2) {
-			ep2_curve_set_twist(type);
-		}
-		if (degree == 3 || degree == 4) {
-			r = RLC_ERR;
+		switch (degree) {
+			case 0:
+				ep2_curve_set_twist(0);
+				break;
+			case 2:
+				ep2_curve_set_twist(type);
+				break;
 		}
 	}
 #else
@@ -1114,7 +1140,7 @@ void ep_param_print(void) {
 			util_banner("Curve B12-P381:", 0);
 			break;
 		case CP8_P544:
-			util_banner("Curve CP8-P344:", 0);
+			util_banner("Curve CP8-P544:", 0);
 			break;
 		case BN_P446:
 			util_banner("Curve BN-P446:", 0);
@@ -1133,6 +1159,9 @@ void ep_param_print(void) {
 			break;
 		case OT8_P511:
 			util_banner("Curve OT8-P511:", 0);
+			break;
+		case B48_P575:
+			util_banner("Curve B48-P575:", 0);
 			break;
 		case BN_P638:
 			util_banner("Curve BN-P638:", 0);
