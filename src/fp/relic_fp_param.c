@@ -387,7 +387,6 @@ void fp_param_set(int param) {
 			case CP8_544:
 				bn_read_str(p, STR_P544, strlen(STR_P544), 16);
 				fp_prime_set_dense(p);
-				bn_print(p);
 				break;
 #elif FP_PRIME == 575
 			case B48_575:
