@@ -279,7 +279,7 @@ void ep_map(ep_t p, const uint8_t *msg, int len) {
 					if (bn_bits(k) < RLC_DIG) {
 						ep_mul_dig(p, p, k->dp[0]);
 					} else {
-						ep_mul(p, p, k);
+						ep_mul_basic(p, p, k);
 					}
 				}
 		}
