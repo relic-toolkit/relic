@@ -693,6 +693,7 @@ cdecl(fp_hlvd_low):
 	adcq	56(%rsi) , %r15
 	adcq	64(%rsi) , %rax
 	adcq	72(%rsi) , %rbx
+    adcq	$0       , %rbx
 	movq	80(%rsi) , %rcx
 	adcq	$0       , %rcx
 	movq	88(%rsi) , %rdx

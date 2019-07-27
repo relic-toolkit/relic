@@ -80,6 +80,53 @@ void fp48_mul_basic(fp48_t c, fp48_t a, fp48_t b) {
 	}
 }
 
+void fp48_mul_dxs_basic(fp48_t c, fp48_t a, fp48_t b) {
+	fp24_t t0, t1, t2;
+
+	fp24_null(t0);
+	fp24_null(t1);
+	fp24_null(t2);
+
+	TRY {
+		fp24_new(t0);
+		fp24_new(t1);
+		fp24_new(t2);
+
+		/* Karatsuba algorithm. */
+
+		/* t0 = a_0 * b_0. */
+		fp24_mul_dxs(t0, a[0], b[0]);
+		/* t1 = a_1 * b_1. */
+		fp24_mul(t1, a[1], b[1]);
+		fp8_mul(t1[0], a[1][0], b[1][1]);
+		fp8_mul(t1[1], a[1][1], b[1][1]);
+		fp8_mul(t1[2], a[1][2], b[1][1]);
+		fp24_mul_art(t1, t1);
+		/* t2 = b_0 + b_1. */
+		fp8_copy(t2[0], b[0][0]);
+		fp8_add(t2[1], b[0][1], b[1][1]);
+		fp8_copy(t2[2], b[0][2]);
+
+		/* c_1 = a_0 + a_1. */
+		fp24_add(c[1], a[0], a[1]);
+
+		/* c_1 = (a_0 + a_1) * (b_0 + b_1) */
+		fp24_mul_dxs(c[1], c[1], t2);
+		fp24_sub(c[1], c[1], t0);
+		fp24_sub(c[1], c[1], t1);
+
+		/* c_0 = a_0b_0 + v * a_1b_1. */
+		fp24_mul_art(t1, t1);
+		fp24_add(c[0], t0, t1);
+	} CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	} FINALLY {
+		fp24_free(t0);
+		fp24_free(t1);
+		fp24_free(t2);
+	}
+}
+
 #endif
 
 #if FPX_RDC == LAZYR || !defined(STRIP)
@@ -87,6 +134,11 @@ void fp48_mul_basic(fp48_t c, fp48_t a, fp48_t b) {
 void fp48_mul_lazyr(fp48_t c, fp48_t a, fp48_t b) {
 	/* TODO: implement lazy reduction. */
 	fp48_mul_basic(c, a, b);
+}
+
+void fp48_mul_dxs_lazyr(fp48_t c, fp48_t a, fp48_t b) {
+	/* TODO: implement lazy reduction. */
+	fp48_mul_dxs_basic(c, a, b);
 }
 
 #endif
