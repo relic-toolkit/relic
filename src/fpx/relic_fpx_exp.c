@@ -1624,15 +1624,13 @@ void fp48_exp_cyc(fp48_t c, fp48_t a, bn_t b) {
 		return;
 	}
 
-	bn_null(n);
-
 	if ((bn_bits(b) > RLC_DIG) && ((w << 3) > bn_bits(b))) {
 		fp48_t t;
 
 		fp48_null(t)
 
 		TRY {
-			fp48_new(n);
+			fp48_new(t);
 
 			fp48_copy(t, a);
 
