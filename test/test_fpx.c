@@ -6391,6 +6391,10 @@ int main(void) {
 			return 1;
 		}
 
+		if (compression48() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
 	}
 
 	/*
