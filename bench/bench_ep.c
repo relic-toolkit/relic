@@ -577,7 +577,7 @@ static void bench(void) {
 }
 
 int main(void) {
-	int r0 = RLC_ERR, r1 = RLC_ERR, r2 = RLC_ERR;
+	int r0 = RLC_ERR, r1 = RLC_ERR, r2 = RLC_ERR, r3 = RLC_ERR;;
 
 	if (core_init() != RLC_OK) {
 		core_clean();
@@ -601,14 +601,19 @@ int main(void) {
 	}
 #endif
 
-#if defined(EP_SUPER)
-	r2 = ep_param_set_any_super();
+	r2 = ep_param_set_any_pairf();
 	if (r2 == RLC_OK) {
+		bench();
+	}
+
+#if defined(EP_SUPER)
+	r3 = ep_param_set_any_super();
+	if (r3 == RLC_OK) {
 		bench();
 	}
 #endif
 
-	if (r0 == RLC_ERR && r1 == RLC_ERR && r2 == RLC_ERR) {
+	if (r0 == RLC_ERR && r1 == RLC_ERR && r2 == RLC_ERR && r3 == RLC_ERR) {
 		if (ep_param_set_any() == RLC_ERR) {
 			THROW(ERR_NO_CURVE);
 		}
