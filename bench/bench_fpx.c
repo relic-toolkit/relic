@@ -53,7 +53,6 @@ static void memory2(void) {
 static void util2(void) {
 	uint8_t bin[2 * RLC_FP_BYTES];
 	fp2_t a, b;
-	int l;
 
 	fp2_null(a);
 	fp2_null(b);
@@ -117,33 +116,29 @@ static void util2(void) {
 
 	BENCH_BEGIN("fp2_write_bin (0)") {
 		fp2_rand(a);
-		l = fp2_size_bin(a, 1);
-		BENCH_ADD(fp2_write_bin(bin, l, a, 0));
+		BENCH_ADD(fp2_write_bin(bin, sizeof(bin), a, 0));
 	}
 	BENCH_END;
 
 	BENCH_BEGIN("fp2_write_bin (1)") {
 		fp2_rand(a);
 		fp2_conv_cyc(a, a);
-		l = fp2_size_bin(a, 1);
-		BENCH_ADD(fp2_write_bin(bin, l, a, 1));
+		BENCH_ADD(fp2_write_bin(bin, sizeof(bin), a, 1));
 	}
 	BENCH_END;
 
 	BENCH_BEGIN("fp2_read_bin (0)") {
 		fp2_rand(a);
-		l = fp2_size_bin(a, 0);
-		fp2_write_bin(bin, l, a, 0);
-		BENCH_ADD(fp2_read_bin(a, bin, l));
+		fp2_write_bin(bin, sizeof(bin), a, 0);
+		BENCH_ADD(fp2_read_bin(a, bin, sizeof(bin)));
 	}
 	BENCH_END;
 
 	BENCH_BEGIN("fp2_read_bin") {
 		fp2_rand(a);
 		fp2_conv_cyc(a, a);
-		l = fp2_size_bin(a, 1);
-		fp2_write_bin(bin, l, a, 1);
-		BENCH_ADD(fp2_read_bin(a, bin, l));
+		fp2_write_bin(bin, sizeof(bin), a, 1);
+		BENCH_ADD(fp2_read_bin(a, bin, sizeof(bin)));
 	}
 	BENCH_END;
 
@@ -377,15 +372,9 @@ static void arith2(void) {
 	}
 	BENCH_END;
 
-	BENCH_BEGIN("fp2_frb (1)") {
+	BENCH_BEGIN("fp2_frb") {
 		fp2_rand(a);
 		BENCH_ADD(fp2_frb(c, a, 1));
-	}
-	BENCH_END;
-
-	BENCH_BEGIN("fp2_frb (2)") {
-		fp2_rand(a);
-		BENCH_ADD(fp2_frb(c, a, 2));
 	}
 	BENCH_END;
 
@@ -705,33 +694,9 @@ static void arith3(void) {
 	}
 	BENCH_END;
 
-	BENCH_BEGIN("fp3_frb (1)") {
+	BENCH_BEGIN("fp3_frb") {
 		fp3_rand(a);
 		BENCH_ADD(fp3_frb(c, a, 1));
-	}
-	BENCH_END;
-
-	BENCH_BEGIN("fp3_frb (2)") {
-		fp3_rand(a);
-		BENCH_ADD(fp3_frb(c, a, 2));
-	}
-	BENCH_END;
-
-	BENCH_BEGIN("fp3_frb (3)") {
-		fp3_rand(a);
-		BENCH_ADD(fp3_frb(c, a, 3));
-	}
-	BENCH_END;
-
-	BENCH_BEGIN("fp3_frb (4)") {
-		fp3_rand(a);
-		BENCH_ADD(fp3_frb(c, a, 4));
-	}
-	BENCH_END;
-
-	BENCH_BEGIN("fp3_frb (5)") {
-		fp3_rand(a);
-		BENCH_ADD(fp3_frb(c, a, 5));
 	}
 	BENCH_END;
 
@@ -974,15 +939,9 @@ static void arith4(void) {
 	}
 	BENCH_END;
 
-	BENCH_BEGIN("fp4_frb (1)") {
+	BENCH_BEGIN("fp4_frb") {
 		fp4_rand(a);
 		BENCH_ADD(fp4_frb(c, a, 1));
-	}
-	BENCH_END;
-
-	BENCH_BEGIN("fp4_frb (2)") {
-		fp4_rand(a);
-		BENCH_ADD(fp4_frb(c, a, 2));
 	}
 	BENCH_END;
 
@@ -1192,15 +1151,9 @@ static void arith6(void) {
 	}
 	BENCH_END;
 
-	BENCH_BEGIN("fp6_frb (1)") {
+	BENCH_BEGIN("fp6_frb") {
 		fp6_rand(a);
 		BENCH_ADD(fp6_frb(c, a, 1));
-	}
-	BENCH_END;
-
-	BENCH_BEGIN("fp6_frb (2)") {
-		fp6_rand(a);
-		BENCH_ADD(fp6_frb(c, a, 2));
 	}
 	BENCH_END;
 
@@ -1442,21 +1395,9 @@ static void arith8(void) {
 	}
 	BENCH_END;
 
-	BENCH_BEGIN("fp8_frb (1)") {
+	BENCH_BEGIN("fp8_frb") {
 		fp8_rand(a);
 		BENCH_ADD(fp8_frb(c, a, 1));
-	}
-	BENCH_END;
-
-	BENCH_BEGIN("fp8_frb (2)") {
-		fp8_rand(a);
-		BENCH_ADD(fp8_frb(c, a, 2));
-	}
-	BENCH_END;
-
-	BENCH_BEGIN("fp8_frb (3)") {
-		fp8_rand(a);
-		BENCH_ADD(fp8_frb(c, a, 3));
 	}
 	BENCH_END;
 
@@ -1570,8 +1511,9 @@ static void util12(void) {
 
 	BENCH_BEGIN("fp12_read_bin (1)") {
 		fp12_rand(a);
-		fp12_write_bin(bin, 8 * RLC_FP_BYTES, a, 1);
-		BENCH_ADD(fp12_read_bin(a, bin, sizeof(bin)));
+		fp12_conv_cyc(a, a);
+		fp12_write_bin(bin, fp12_size_bin(a, 1), a, 1);
+		BENCH_ADD(fp12_read_bin(a, bin, 8 * RLC_FP_BYTES));
 	}
 	BENCH_END;
 
@@ -1810,21 +1752,9 @@ static void arith12(void) {
 	}
 	BENCH_END;
 
-	BENCH_BEGIN("fp12_frb (1)") {
+	BENCH_BEGIN("fp12_frb") {
 		fp12_rand(a);
 		BENCH_ADD(fp12_frb(c, a, 1));
-	}
-	BENCH_END;
-
-	BENCH_BEGIN("fp12_frb (2)") {
-		fp12_rand(a);
-		BENCH_ADD(fp12_frb(c, a, 2));
-	}
-	BENCH_END;
-
-	BENCH_BEGIN("fp12_frb (3)") {
-		fp12_rand(a);
-		BENCH_ADD(fp12_frb(c, a, 3));
 	}
 	BENCH_END;
 
@@ -2129,33 +2059,9 @@ static void arith18(void) {
 	}
 	BENCH_END;
 
-	BENCH_BEGIN("fp18_frb (1)") {
+	BENCH_BEGIN("fp18_frb") {
 		fp18_rand(a);
 		BENCH_ADD(fp18_frb(c, a, 1));
-	}
-	BENCH_END;
-
-	BENCH_BEGIN("fp18_frb (2)") {
-		fp18_rand(a);
-		BENCH_ADD(fp18_frb(c, a, 2));
-	}
-	BENCH_END;
-
-	BENCH_BEGIN("fp18_frb (3)") {
-		fp18_rand(a);
-		BENCH_ADD(fp18_frb(c, a, 3));
-	}
-	BENCH_END;
-
-	BENCH_BEGIN("fp18_frb (4)") {
-		fp18_rand(a);
-		BENCH_ADD(fp18_frb(c, a, 4));
-	}
-	BENCH_END;
-
-	BENCH_BEGIN("fp18_frb (5)") {
-		fp18_rand(a);
-		BENCH_ADD(fp18_frb(c, a, 5));
 	}
 	BENCH_END;
 
@@ -2339,21 +2245,9 @@ static void arith24(void) {
 	}
 	BENCH_END;
 
-	BENCH_BEGIN("fp24_frb (1)") {
+	BENCH_BEGIN("fp24_frb") {
 		fp24_rand(a);
 		BENCH_ADD(fp24_frb(c, a, 1));
-	}
-	BENCH_END;
-
-	BENCH_BEGIN("fp24_frb (2)") {
-		fp24_rand(a);
-		BENCH_ADD(fp24_frb(c, a, 2));
-	}
-	BENCH_END;
-
-	BENCH_BEGIN("fp24_frb (3)") {
-		fp24_rand(a);
-		BENCH_ADD(fp24_frb(c, a, 3));
 	}
 	BENCH_END;
 
@@ -2454,7 +2348,7 @@ static void util48(void) {
 	BENCH_BEGIN("fp48_write_bin (1)") {
 		fp48_rand(a);
 		fp48_conv_cyc(a, a);
-		BENCH_ADD(fp48_write_bin(bin, 8 * RLC_FP_BYTES, a, 1));
+		BENCH_ADD(fp48_write_bin(bin, 32 * RLC_FP_BYTES, a, 1));
 	}
 	BENCH_END;
 
@@ -2467,8 +2361,9 @@ static void util48(void) {
 
 	BENCH_BEGIN("fp48_read_bin (1)") {
 		fp48_rand(a);
-		fp48_write_bin(bin, 8 * RLC_FP_BYTES, a, 1);
-		BENCH_ADD(fp48_read_bin(a, bin, sizeof(bin)));
+		fp48_conv_cyc(a, a);
+		fp48_write_bin(bin, fp48_size_bin(a, 1), a, 1);
+		BENCH_ADD(fp48_read_bin(a, bin, 32 * RLC_FP_BYTES));
 	}
 	BENCH_END;
 
@@ -2707,21 +2602,9 @@ static void arith48(void) {
 	}
 	BENCH_END;
 
-	BENCH_BEGIN("fp48_frb (1)") {
+	BENCH_BEGIN("fp48_frb") {
 		fp48_rand(a);
 		BENCH_ADD(fp48_frb(c, a, 1));
-	}
-	BENCH_END;
-
-	BENCH_BEGIN("fp48_frb (2)") {
-		fp48_rand(a);
-		BENCH_ADD(fp48_frb(c, a, 2));
-	}
-	BENCH_END;
-
-	BENCH_BEGIN("fp48_frb (3)") {
-		fp48_rand(a);
-		BENCH_ADD(fp48_frb(c, a, 3));
 	}
 	BENCH_END;
 

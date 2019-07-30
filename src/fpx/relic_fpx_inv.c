@@ -250,7 +250,6 @@ void fp3_inv_sim(fp3_t * c, fp3_t * a, int n) {
 }
 
 void fp4_inv_cyc(fp4_t c, fp4_t a) {
-	/* In this case, it's a simple conjugate. */
 	fp2_copy(c[0], a[0]);
 	fp2_neg(c[1], a[1]);
 }
@@ -343,7 +342,6 @@ void fp6_inv(fp6_t c, fp6_t a) {
 }
 
 void fp8_inv_cyc(fp8_t c, fp8_t a) {
-	/* In this case, it's a simple conjugate. */
 	fp4_copy(c[0], a[0]);
 	fp4_neg(c[1], a[1]);
 }
@@ -447,7 +445,6 @@ void fp12_inv(fp12_t c, fp12_t a) {
 }
 
 void fp12_inv_cyc(fp12_t c, fp12_t a) {
-	/* In this case, it's a simple conjugate. */
 	fp6_copy(c[0], a[0]);
 	fp6_neg(c[1], a[1]);
 }
@@ -622,7 +619,6 @@ void fp48_inv(fp48_t c, fp48_t a) {
 }
 
 void fp48_inv_cyc(fp48_t c, fp48_t a) {
-	/* In this case, it's a simple conjugate. */
 	fp24_copy(c[0], a[0]);
 	fp24_neg(c[1], a[1]);
 }

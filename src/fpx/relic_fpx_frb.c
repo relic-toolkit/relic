@@ -50,15 +50,13 @@ void fp2_frb(fp2_t c, fp2_t a, int i) {
 }
 
 void fp3_frb(fp3_t c, fp3_t a, int i) {
+	fp3_copy(c, a);
 	switch (i % 3) {
-		case 0:
-			fp3_copy(c, a);
-			break;
 		case 1:
-			fp3_mul_frb(c, a, 0, 1, 1);
+			fp3_mul_frb(c, c, 0, 1, 1);
 			break;
 		case 2:
-			fp3_mul_frb(c, a, 0, 2, 1);
+			fp3_mul_frb(c, c, 0, 2, 1);
 			break;
 	}
 }
@@ -66,7 +64,7 @@ void fp3_frb(fp3_t c, fp3_t a, int i) {
 void fp4_frb(fp4_t c, fp4_t a, int i) {
 	/* Cost of a single multiplication in Fp^2 per Frobenius. */
 	fp4_copy(c, a);
-	for (; i > 0; i--) {
+	for (; i % 4 > 0; i--) {
 		fp2_frb(c[0], c[0], 1);
 		fp2_frb(c[1], c[1], 1);
 		fp2_mul_frb(c[1], c[1], 1, 3);
@@ -76,7 +74,7 @@ void fp4_frb(fp4_t c, fp4_t a, int i) {
 void fp6_frb(fp6_t c, fp6_t a, int i) {
 	/* Cost of two multiplication in Fp^2 per Frobenius. */
 	fp6_copy(c, a);
-	for (; i > 0; i--) {
+	for (; i % 6 > 0; i--) {
 		fp2_frb(c[0], c[0], 1);
 		fp2_frb(c[1], c[1], 1);
 		fp2_frb(c[2], c[2], 1);
@@ -88,7 +86,7 @@ void fp6_frb(fp6_t c, fp6_t a, int i) {
 void fp8_frb(fp8_t c, fp8_t a, int i) {
 	/* Cost of four multiplication in Fp^2 per Frobenius. */
 	fp8_copy(c, a);
-	for (; i > 0; i--) {
+	for (; i % 8 > 0; i--) {
 		fp4_frb(c[0], c[0], 1);
 		fp4_frb(c[1], c[1], 1);
 		fp2_mul_frb(c[1][0], c[1][0], 4, 1);
@@ -102,7 +100,7 @@ void fp8_frb(fp8_t c, fp8_t a, int i) {
 void fp12_frb(fp12_t c, fp12_t a, int i) {
 	/* Cost of five multiplication in Fp^2 per Frobenius. */
 	fp12_copy(c, a);
-	for (; i > 0; i--) {
+	for (; i % 12 > 0; i--) {
 		fp6_frb(c[0], c[0], 1);
 		fp2_frb(c[1][0], c[1][0], 1);
 		fp2_frb(c[1][1], c[1][1], 1);
@@ -155,7 +153,7 @@ void fp18_frb(fp18_t c, fp18_t a, int i) {
 void fp24_frb(fp24_t c, fp24_t a, int i) {
 	/* Cost of 20 multiplication in Fp^2 per Frobenius. */
 	fp24_copy(c, a);
-	for (; i > 0; i--) {
+	for (; i % 24 > 0; i--) {
 		fp8_frb(c[0], c[0], 1);
 		fp8_frb(c[1], c[1], 1);
 		fp8_frb(c[2], c[2], 1);
@@ -174,7 +172,7 @@ void fp24_frb(fp24_t c, fp24_t a, int i) {
 void fp48_frb(fp48_t c, fp48_t a, int i) {
 	/* Cost of 52 multiplication in Fp^2 per Frobenius. */
 	fp48_copy(c, a);
-	for (; i > 0; i--) {
+	for (; i % 48 > 0; i--) {
 		fp24_frb(c[0], c[0], 1);
 		fp24_frb(c[1], c[1], 1);
 		for (int j = 0; j < 3; j++) {

@@ -555,6 +555,11 @@ static void arith(void) {
 		BENCH_ADD(ep2_mul_sim_gen(r, k, q, l));
 	} BENCH_END;
 
+	BENCH_BEGIN("ep2_frb") {
+		ep2_rand(q);
+		BENCH_ADD(ep2_frb(r, q, 1));
+	} BENCH_END;
+
 	BENCH_BEGIN("ep2_map") {
 		uint8_t msg[5];
 		rand_bytes(msg, 5);

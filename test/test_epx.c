@@ -1159,23 +1159,6 @@ static int frobenius(void) {
 			ep2_mul(c, a, d);
 			TEST_ASSERT(ep2_cmp(c, b) == RLC_EQ, end);
 		} TEST_END;
-
-		TEST_BEGIN("squared frobenius is consistent") {
-			ep2_rand(a);
-			ep2_frb(b, a, 1);
-			ep2_frb(b, b, 1);
-			ep2_frb(c, a, 2);
-			TEST_ASSERT(ep2_cmp(c, b) == RLC_EQ, end);
-		} TEST_END;
-
-		TEST_BEGIN("cubed frobenius is consistent") {
-			ep2_rand(a);
-			ep2_frb(b, a, 1);
-			ep2_frb(b, b, 1);
-			ep2_frb(b, b, 1);
-			ep2_frb(c, a, 3);
-			TEST_ASSERT(ep2_cmp(c, b) == RLC_EQ, end);
-		} TEST_END;
 	}
 	CATCH_ANY {
 		util_print("FATAL ERROR!\n");
