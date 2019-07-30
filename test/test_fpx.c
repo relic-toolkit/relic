@@ -6249,10 +6249,10 @@ int main(void) {
 			return 1;
 		}
 
-/*		if (cyclotomic48() != RLC_OK) {
+		if (cyclotomic48() != RLC_OK) {
 			core_clean();
 			return 1;
-		}*/
+		}
 
 		if (inversion48() != RLC_OK) {
 			core_clean();
