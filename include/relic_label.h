@@ -1467,10 +1467,10 @@
 #undef fp2_sqr_basic
 #undef fp2_sqr_integ
 #undef fp2_inv
-#undef fp2_inv_uni
+#undef fp2_inv_cyc
 #undef fp2_inv_sim
 #undef fp2_test_uni
-#undef fp2_conv_uni
+#undef fp2_conv_cyc
 #undef fp2_exp
 #undef fp2_exp_uni
 #undef fp2_frb
@@ -1505,10 +1505,10 @@
 #define fp2_sqr_basic 	PREFIX(fp2_sqr_basic)
 #define fp2_sqr_integ 	PREFIX(fp2_sqr_integ)
 #define fp2_inv 	PREFIX(fp2_inv)
-#define fp2_inv_uni 	PREFIX(fp2_inv_uni)
+#define fp2_inv_cyc 	PREFIX(fp2_inv_cyc)
 #define fp2_inv_sim 	PREFIX(fp2_inv_sim)
 #define fp2_test_uni 	PREFIX(fp2_test_uni)
-#define fp2_conv_uni 	PREFIX(fp2_conv_uni)
+#define fp2_conv_cyc 	PREFIX(fp2_conv_cyc)
 #define fp2_exp 	PREFIX(fp2_exp)
 #define fp2_exp_uni 	PREFIX(fp2_exp_uni)
 #define fp2_frb 	PREFIX(fp2_frb)
@@ -1730,8 +1730,8 @@
 #undef fp12_back_cyc
 #undef fp12_back_cyc_sim
 #undef fp12_inv
-#undef fp12_inv_uni
-#undef fp12_conv_uni
+#undef fp12_inv_cyc
+#undef fp12_conv_cyc
 #undef fp12_frb
 #undef fp12_exp
 #undef fp12_exp_cyc
@@ -1769,8 +1769,8 @@
 #define fp12_back_cyc 	PREFIX(fp12_back_cyc)
 #define fp12_back_cyc_sim 	PREFIX(fp12_back_cyc_sim)
 #define fp12_inv 	PREFIX(fp12_inv)
-#define fp12_inv_uni 	PREFIX(fp12_inv_uni)
-#define fp12_conv_uni 	PREFIX(fp12_conv_uni)
+#define fp12_inv_cyc 	PREFIX(fp12_inv_cyc)
+#define fp12_conv_cyc 	PREFIX(fp12_conv_cyc)
 #define fp12_frb 	PREFIX(fp12_frb)
 #define fp12_exp 	PREFIX(fp12_exp)
 #define fp12_exp_cyc 	PREFIX(fp12_exp_cyc)
@@ -1802,8 +1802,8 @@
 #undef fp18_back_cyc
 #undef fp18_back_cyc_sim
 #undef fp18_inv
-#undef fp18_inv_uni
-#undef fp18_conv_uni
+#undef fp18_inv_cyc
+#undef fp18_conv_cyc
 #undef fp18_frb
 #undef fp18_exp
 #undef fp18_exp_cyc
@@ -1833,8 +1833,8 @@
 #define fp18_back_cyc 	PREFIX(fp18_back_cyc)
 #define fp18_back_cyc_sim 	PREFIX(fp18_back_cyc_sim)
 #define fp18_inv 	PREFIX(fp18_inv)
-#define fp18_inv_uni 	PREFIX(fp18_inv_uni)
-#define fp18_conv_uni 	PREFIX(fp18_conv_uni)
+#define fp18_inv_cyc 	PREFIX(fp18_inv_cyc)
+#define fp18_conv_cyc 	PREFIX(fp18_conv_cyc)
 #define fp18_frb 	PREFIX(fp18_frb)
 #define fp18_exp 	PREFIX(fp18_exp)
 #define fp18_exp_cyc 	PREFIX(fp18_exp_cyc)

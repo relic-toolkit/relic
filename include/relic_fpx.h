@@ -1306,12 +1306,12 @@ void fp2_sqr_integ(fp2_t c, fp2_t a);
 void fp2_inv(fp2_t c, fp2_t a);
 
 /**
- * Computes the inverse of a unitary quadratic extension field element.
+ * Computes the inverse of a cyclotomic quadratic extension field element.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the quadratic extension field element to invert.
  */
-void fp2_inv_uni(fp2_t c, fp2_t a);
+void fp2_inv_cyc(fp2_t c, fp2_t a);
 
 /**
  * Inverts multiple quadratic extension field elements simultaneously.
@@ -1323,21 +1323,21 @@ void fp2_inv_uni(fp2_t c, fp2_t a);
 void fp2_inv_sim(fp2_t *c, fp2_t *a, int n);
 
 /**
- * Tests if a quadratic extension field element is unitary.
+ * Tests if a quadratic extension field element is cyclotomic.
  *
  * @param[in] a				- the quadratic extension field element to test.
- * @return 1 if the extension field element is unitary, 0 otherwise.
+ * @return 1 if the extension field element is cyclotomic, 0 otherwise.
  */
-int fp2_test_uni(fp2_t a);
+int fp2_test_cyc(fp2_t a);
 
 /**
- * Converts a quadratic extension field element to a unitary element. Computes
- * c = a^(p - 1).
+ * Converts a quadratic extension field element to a cyclotomic element.
+ * Computes c = a^(p - 1).
  *
  * @param[out] c			- the result.
  * @param[in] a				- the quadratic extension field element.
  */
-void fp2_conv_uni(fp2_t c, fp2_t a);
+void fp2_conv_cyc(fp2_t c, fp2_t a);
 
 /**
  * Computes a power of a quadratic extension field element.
@@ -1358,13 +1358,13 @@ void fp2_exp(fp2_t c, fp2_t a, bn_t b);
 void fp2_exp_dig(fp2_t c, fp2_t a, dig_t b);
 
 /**
- * Computes a power of a unitary quadratic extension field element.
+ * Computes a power of a cyclotomic quadratic extension field element.
  *
  * @param[out] c			- the result.
- * @param[in] a				- the unitary element to exponentiate.
+ * @param[in] a				- the cyclotomic element to exponentiate.
  * @param[in] b				- the exponent.
  */
-void fp2_exp_uni(fp2_t c, fp2_t a, bn_t b);
+void fp2_exp_cyc(fp2_t c, fp2_t a, bn_t b);
 
 /**
  * Computes a power of the Frobenius map of a quadratic extension field element.
@@ -2357,12 +2357,12 @@ void fp8_sqr_basic(fp8_t c, fp8_t a);
 void fp8_sqr_lazyr(fp8_t c, fp8_t a);
 
 /**
- * Computes the square of an unitary octic extension field element.
+ * Computes the square of a cyclotomic octic extension field element.
  *
  * @param[out] c			- the result.
- * @param[in] a				- the unitary extension element to square.
+ * @param[in] a				- the cyclotomic extension element to square.
  */
-void fp8_sqr_uni(fp8_t c, fp8_t a);
+void fp8_sqr_cyc(fp8_t c, fp8_t a);
 
 /**
  * Inverts an octic extension field element. Computes c = 1/a.
@@ -2373,15 +2373,15 @@ void fp8_sqr_uni(fp8_t c, fp8_t a);
 void fp8_inv(fp8_t c, fp8_t a);
 
 /**
- * Computes the inverse of a unitary octic extension field element.
+ * Computes the inverse of a cyclotomic octic extension field element.
  *
- * For unitary elements, this is equivalent to computing the conjugate.
- * A unitary element is one previously raised to the (p^4 - 1)-th power.
+ * For cyclotomic elements, this is equivalent to computing the conjugate.
+ * A cyclotomic element is one previously raised to the (p^4 - 1)-th power.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the octic extension field element to invert.
  */
-void fp8_inv_uni(fp8_t c, fp8_t a);
+void fp8_inv_cyc(fp8_t c, fp8_t a);
 
 /**
  * Inverts multiple octic extension field elements simultaneously.
@@ -2393,21 +2393,21 @@ void fp8_inv_uni(fp8_t c, fp8_t a);
 void fp8_inv_sim(fp8_t *c, fp8_t *a, int n);
 
 /**
- * Tests if an octic extension field element is unitary.
+ * Tests if an octic extension field element is cyclotomic.
  *
  * @param[in] a				- the octic extension field element to test.
- * @return 1 if the extension field element is unitary, 0 otherwise.
+ * @return 1 if the extension field element is cyclotomic, 0 otherwise.
  */
-int fp8_test_uni(fp8_t a);
+int fp8_test_cyc(fp8_t a);
 
 /**
- * Converts an octic extension field element to a unitary element. Computes
+ * Converts an octic extension field element to a cyclotomic element. Computes
  * c = a^(p^4 - 1).
  *
  * @param[out] c			- the result.
  * @param[in] a				- the octic extension field element.
  */
-void fp8_conv_uni(fp8_t c, fp8_t a);
+void fp8_conv_cyc(fp8_t c, fp8_t a);
 
 /**
  * Computes a power of an octic extension field element. Computes c = a^b.
@@ -2419,13 +2419,13 @@ void fp8_conv_uni(fp8_t c, fp8_t a);
 void fp8_exp(fp8_t c, fp8_t a, bn_t b);
 
 /**
- * Computes a power of a unitary octic extension field element.
+ * Computes a power of a cyclotomic octic extension field element.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the basis.
  * @param[in] b				- the exponent.
  */
-void fp8_exp_uni(fp8_t c, fp8_t a, bn_t b);
+void fp8_exp_cyc(fp8_t c, fp8_t a, bn_t b);
 
 /**
  * Computes a power of the Frobenius endomorphism of an octic extension field
@@ -2740,24 +2740,14 @@ void fp12_back_cyc_sim(fp12_t *c, fp12_t *a, int n);
 void fp12_inv(fp12_t c, fp12_t a);
 
 /**
- * Computes the inverse of a unitary dodecic extension field element.
- *
+ * Computes the inverse of a cyclotomic dodecic extension field element.
  * For unitary elements, this is equivalent to computing the conjugate.
  * A unitary element is one previously raised to the (p^6 - 1)-th power.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the dodecic extension field element to invert.
  */
-void fp12_inv_uni(fp12_t c, fp12_t a);
-
-/**
- * Converts a dodecic extension field element to a unitary element. Computes
- * c = a^(p^6 - 1).
- *
- * @param[out] c			- the result.
- * @param[in] a				- the dodecic extension field element.
- */
-void fp12_conv_uni(fp12_t c, fp12_t a);
+void fp12_inv_cyc(fp12_t c, fp12_t a);
 
 /**
  * Computes the Frobenius endomorphism of a dodecic extension element.
@@ -3043,22 +3033,23 @@ void fp18_back_cyc_sim(fp18_t *c, fp18_t *a, int n);
 void fp18_inv(fp18_t c, fp18_t a);
 
 /**
- * Computes the inverse of a unitary octdecic extension field element.
+ * Computes the inverse of a cyclotomic octdecic extension field element.
  * For unitary elements, this is equivalent to computing the conjugate.
+ * A unitary element is one previously raised to the (p^9 - 1)-th power.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the octdecic extension field element to invert.
  */
-void fp18_inv_uni(fp18_t c, fp18_t a);
+void fp18_inv_cyc(fp18_t c, fp18_t a);
 
 /**
- * Converts an octdecic extension field element to a unitary element. Computes
- * c = a^(p^9 - 1).
+ * Converts an octdecic extension field element to a cyclotomic element.
+ * Computes c = a^(p^9 - 1).
  *
  * @param[out] c			- the result.
  * @param[in] a				- an octdecic extension field element.
  */
-void fp18_conv_uni(fp18_t c, fp18_t a);
+void fp18_conv_cyc(fp18_t c, fp18_t a);
 
 /**
  * Computes the Frobenius endomorphism of an octdecic extension element.
@@ -3624,24 +3615,24 @@ void fp48_back_cyc_sim(fp48_t *c, fp48_t *a, int n);
 void fp48_inv(fp48_t c, fp48_t a);
 
 /**
- * Computes the inverse of a unitary 48 extension field element.
+ * Computes the inverse of a cyclotomic 48 extension field element.
  *
  * For unitary elements, this is equivalent to computing the conjugate.
- * A unitary element is one previously raised to the (p^6 - 1)-th power.
+ * A unitary element is one previously raised to the (p^24 - 1)-th power.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the 48 extension field element to invert.
  */
-void fp48_inv_uni(fp48_t c, fp48_t a);
+void fp48_inv_cyc(fp48_t c, fp48_t a);
 
 /**
- * Converts a 48 extension field element to a unitary element. Computes
+ * Converts a 48 extension field element to a cyclotomic element. Computes
  * c = a^(p^6 - 1).
  *
  * @param[out] c			- the result.
  * @param[in] a				- the 48 extension field element.
  */
-void fp48_conv_uni(fp48_t c, fp48_t a);
+void fp48_conv_cyc(fp48_t c, fp48_t a);
 
 /**
  * Computes the Frobenius endomorphism of a 48 extension element.

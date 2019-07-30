@@ -603,9 +603,9 @@ static int inversion2(void) {
 			do {
 				fp2_rand(a);
 			} while (fp2_is_zero(a));
-			fp2_conv_uni(a, a);
+			fp2_conv_cyc(a, a);
 			fp2_inv(b, a);
-			fp2_inv_uni(c, a);
+			fp2_inv_cyc(c, a);
 			TEST_ASSERT(fp2_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
@@ -696,9 +696,9 @@ static int exponentiation2(void) {
         TEST_BEGIN("exponentiation of unitary element is correct") {
 			bn_rand(d, RLC_POS, RLC_FP_BITS);
 			fp2_rand(a);
-			fp2_conv_uni(a, a);
+			fp2_conv_cyc(a, a);
 			fp2_exp(b, a, d);
-			fp2_exp_uni(c, a, d);
+			fp2_exp_cyc(c, a, d);
 			TEST_ASSERT(fp2_cmp(b, c) == RLC_EQ, end);
         } TEST_END;
 	}
@@ -739,7 +739,7 @@ static int compression2(void) {
 			TEST_ASSERT(fp2_upk(c, b) == 1, end);
 			TEST_ASSERT(fp2_cmp(a, c) == RLC_EQ, end);
 			fp2_rand(a);
-			fp2_conv_uni(b, a);
+			fp2_conv_cyc(b, a);
 			fp2_pck(c, b);
 			TEST_ASSERT(fp2_upk(d, c) == 1, end);
 			TEST_ASSERT(fp2_cmp(b, d) == RLC_EQ, end);
@@ -747,7 +747,7 @@ static int compression2(void) {
 
 		TEST_BEGIN("compression is consistent with reading and writing") {
 			fp2_rand(a);
-			fp2_conv_uni(a, a);
+			fp2_conv_cyc(a, a);
 			fp2_write_bin(bin, RLC_FP_BYTES + 1, a, 1);
 			fp2_read_bin(b, bin, RLC_FP_BYTES + 1);
 			TEST_ASSERT(fp2_cmp(a, b) == RLC_EQ, end);
@@ -757,7 +757,7 @@ static int compression2(void) {
 		TEST_BEGIN("getting the size of a compressed field element is correct") {
 			fp2_rand(a);
 			TEST_ASSERT(fp2_size_bin(a, 0) == 2 * RLC_FP_BYTES, end);
-			fp2_conv_uni(a, a);
+			fp2_conv_cyc(a, a);
 			TEST_ASSERT(fp2_size_bin(a, 1) == RLC_FP_BYTES + 1, end);
 		}
 		TEST_END;
@@ -2713,7 +2713,7 @@ static int util8(void) {
 		TEST_BEGIN("getting the size of a finite field element is correct") {
 			fp8_rand(a);
 			TEST_ASSERT(fp8_size_bin(a, 0) == 8 * RLC_FP_BYTES, end);
-			fp8_conv_uni(a, a);
+			fp8_conv_cyc(a, a);
 			TEST_ASSERT(fp8_size_bin(a, 1) == 4 * RLC_FP_BYTES, end);
 		}
 		TEST_END;
@@ -3052,36 +3052,36 @@ static int cyclotomic8(void) {
 
 		TEST_BEGIN("cyclotomic test is correct") {
 			fp8_rand(a);
-			fp8_conv_uni(a, a);
-			TEST_ASSERT(fp8_test_uni(a) == 1, end);
+			fp8_conv_cyc(a, a);
+			TEST_ASSERT(fp8_test_cyc(a) == 1, end);
 		} TEST_END;
 
 		TEST_BEGIN("cyclotomic squaring is correct") {
 			fp8_rand(a);
-			fp8_conv_uni(a, a);
+			fp8_conv_cyc(a, a);
 			fp8_sqr(b, a);
-			fp8_sqr_uni(c, a);
+			fp8_sqr_cyc(c, a);
 			TEST_ASSERT(fp8_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
         TEST_BEGIN("cyclotomic exponentiation is correct") {
 			fp8_rand(a);
-			fp8_conv_uni(a, a);
+			fp8_conv_cyc(a, a);
 			bn_zero(f);
-			fp8_exp_uni(c, a, f);
+			fp8_exp_cyc(c, a, f);
 			TEST_ASSERT(fp8_cmp_dig(c, 1) == RLC_EQ, end);
 			bn_set_dig(f, 1);
-			fp8_exp_uni(c, a, f);
+			fp8_exp_cyc(c, a, f);
 			TEST_ASSERT(fp8_cmp(c, a) == RLC_EQ, end);
 			bn_rand(f, RLC_POS, RLC_FP_BITS);
 			fp8_exp(b, a, f);
-			fp8_exp_uni(c, a, f);
+			fp8_exp_cyc(c, a, f);
 			TEST_ASSERT(fp8_cmp(b, c) == RLC_EQ, end);
 			bn_rand(f, RLC_POS, RLC_FP_BITS);
-			fp8_exp_uni(b, a, f);
+			fp8_exp_cyc(b, a, f);
 			bn_neg(f, f);
-			fp8_exp_uni(c, a, f);
-			fp8_inv_uni(c, c);
+			fp8_exp_cyc(c, a, f);
+			fp8_inv_cyc(c, c);
 			TEST_ASSERT(fp8_cmp(b, c) == RLC_EQ, end);
         } TEST_END;
 	}
@@ -3128,9 +3128,9 @@ static int inversion8(void) {
 			do {
 				fp8_rand(a);
 			} while (fp8_is_zero(a));
-			fp8_conv_uni(a, a);
+			fp8_conv_cyc(a, a);
 			fp8_inv(b, a);
-			fp8_inv_uni(c, a);
+			fp8_inv_cyc(c, a);
 			TEST_ASSERT(fp8_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
@@ -3805,7 +3805,7 @@ static int cyclotomic12(void) {
 			fp12_exp_cyc(b, a, f);
 			bn_neg(f, f);
 			fp12_exp_cyc(c, a, f);
-			fp12_inv_uni(c, c);
+			fp12_inv_cyc(c, c);
 			TEST_ASSERT(fp12_cmp(b, c) == RLC_EQ, end);
         } TEST_END;
 
@@ -3879,9 +3879,9 @@ static int inversion12(void) {
 			do {
 				fp12_rand(a);
 			} while (fp12_is_zero(a));
-			fp12_conv_uni(a, a);
+			fp12_conv_cyc(a, a);
 			fp12_inv(b, a);
-			fp12_inv_uni(c, a);
+			fp12_inv_cyc(c, a);
 			TEST_ASSERT(fp12_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 	}
@@ -4624,9 +4624,9 @@ static int inversion18(void) {
 			do {
 				fp18_rand(a);
 			} while (fp18_is_zero(a));
-			fp18_conv_uni(a, a);
+			fp18_conv_cyc(a, a);
 			fp18_inv(b, a);
-			fp18_inv_uni(c, a);
+			fp18_inv_cyc(c, a);
 			TEST_ASSERT(fp18_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 	}
@@ -5784,7 +5784,7 @@ static int cyclotomic48(void) {
 			fp48_exp_cyc(b, a, f);
 			bn_neg(f, f);
 			fp48_exp_cyc(c, a, f);
-			fp48_inv_uni(c, c);
+			fp48_inv_cyc(c, c);
 			TEST_ASSERT(fp48_cmp(b, c) == RLC_EQ, end);
         } TEST_END;
 
@@ -5858,9 +5858,9 @@ static int inversion48(void) {
 			do {
 				fp48_rand(a);
 			} while (fp48_is_zero(a));
-			fp48_conv_uni(a, a);
+			fp48_conv_cyc(a, a);
 			fp48_inv(b, a);
-			fp48_inv_uni(c, a);
+			fp48_inv_cyc(c, a);
 			TEST_ASSERT(fp48_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 	}

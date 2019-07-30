@@ -509,7 +509,7 @@ typedef RLC_CAT(GT_LOWER, t) gt_t;
  * @param[out] C			- the result.
  * @param[in] A				- the element to invert.
  */
-#define gt_inv(C, A)		RLC_CAT(GT_LOWER, inv_uni)(C, A)
+#define gt_inv(C, A)		RLC_CAT(GT_LOWER, inv_cyc)(C, A)
 
 /**
  * Adds two elliptic elements from G_1. Computes R = P + Q.
@@ -640,6 +640,15 @@ typedef RLC_CAT(GT_LOWER, t) gt_t;
  * @param[in] K				- the small integer.
  */
 #define g2_mul_dig(R, P, K)		RLC_CAT(G2_LOWER, mul_dig)(R, P, K)
+
+/**
+ * Exponentiates an element from G_T by an integer. Computes C = A^B.
+ *
+ * @param[out] C			- the result.
+ * @param[in] A				- the element to exponentiate.
+ * @param[in] B				- the integer exponent.
+ */
+#define gt_exp(C, A, B)			RLC_CAT(GT_LOWER, exp_cyc)(C, A, B);
 
 /**
  * Exponentiates an element from G_T by a small integer. Computes c = a^b.
@@ -835,15 +844,6 @@ typedef RLC_CAT(GT_LOWER, t) gt_t;
  * @param[out] a			- the element to assign.
  */
 void gt_rand(gt_t a);
-
-/**
- * Computes the exponentiation of an element from G_T.
- *
- * @param[out] c			- the result.
- * @param[in] a				- the element to exponentiate.
- * @param[in] b				- the integer exponent.
- */
-void gt_exp(gt_t c, gt_t a, bn_t b);
 
  /**
   * Returns the generator for the group G_T.

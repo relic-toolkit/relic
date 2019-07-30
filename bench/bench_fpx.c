@@ -110,7 +110,7 @@ static void util2(void) {
 
 	BENCH_BEGIN("fp2_size_bin (1)") {
 		fp2_rand(a);
-		fp2_conv_uni(a, a);
+		fp2_conv_cyc(a, a);
 		BENCH_ADD(fp2_size_bin(a, 1));
 	}
 	BENCH_END;
@@ -124,7 +124,7 @@ static void util2(void) {
 
 	BENCH_BEGIN("fp2_write_bin (1)") {
 		fp2_rand(a);
-		fp2_conv_uni(a, a);
+		fp2_conv_cyc(a, a);
 		l = fp2_size_bin(a, 1);
 		BENCH_ADD(fp2_write_bin(bin, l, a, 1));
 	}
@@ -140,7 +140,7 @@ static void util2(void) {
 
 	BENCH_BEGIN("fp2_read_bin") {
 		fp2_rand(a);
-		fp2_conv_uni(a, a);
+		fp2_conv_cyc(a, a);
 		l = fp2_size_bin(a, 1);
 		fp2_write_bin(bin, l, a, 1);
 		BENCH_ADD(fp2_read_bin(a, bin, l));
@@ -322,16 +322,16 @@ static void arith2(void) {
 	BENCH_END;
 #endif
 
-	BENCH_BEGIN("fp2_test_uni") {
+	BENCH_BEGIN("fp2_test_cyc") {
 		fp2_rand(a);
-		fp2_conv_uni(a, a);
-		BENCH_ADD(fp2_test_uni(a));
+		fp2_conv_cyc(a, a);
+		BENCH_ADD(fp2_test_cyc(a));
 	}
 	BENCH_END;
 
-	BENCH_BEGIN("fp2_conv_uni") {
+	BENCH_BEGIN("fp2_conv_cyc") {
 		fp2_rand(a);
-		BENCH_ADD(fp2_conv_uni(c, a));
+		BENCH_ADD(fp2_conv_cyc(c, a));
 	}
 	BENCH_END;
 
@@ -341,9 +341,9 @@ static void arith2(void) {
 	}
 	BENCH_END;
 
-	BENCH_BEGIN("fp2_inv_uni") {
+	BENCH_BEGIN("fp2_inv_cyc") {
 		fp2_rand(a);
-		BENCH_ADD(fp2_inv_uni(c, a));
+		BENCH_ADD(fp2_inv_cyc(c, a));
 	}
 	BENCH_END;
 
@@ -369,11 +369,11 @@ static void arith2(void) {
 	}
 	BENCH_END;
 
-	BENCH_BEGIN("fp2_exp_uni") {
+	BENCH_BEGIN("fp2_exp_cyc") {
 		fp2_rand(a);
 		e->used = RLC_FP_DIGS;
 		dv_copy(e->dp, fp_prime_get(), RLC_FP_DIGS);
-		BENCH_ADD(fp2_exp_uni(c, a, e));
+		BENCH_ADD(fp2_exp_cyc(c, a, e));
 	}
 	BENCH_END;
 
@@ -416,14 +416,14 @@ static void arith2(void) {
 
 	BENCH_BEGIN("fp2_pck") {
 		fp2_rand(a);
-		fp2_conv_uni(a, a);
+		fp2_conv_cyc(a, a);
 		BENCH_ADD(fp2_pck(c, a));
 	}
 	BENCH_END;
 
 	BENCH_BEGIN("fp2_upk") {
 		fp2_rand(a);
-		fp2_conv_uni(a, a);
+		fp2_conv_cyc(a, a);
 		fp2_pck(a, a);
 		BENCH_ADD(fp2_upk(c, a));
 	}
@@ -1286,7 +1286,7 @@ static void util8(void) {
 
 	BENCH_BEGIN("fp8_size_bin (1)") {
 		fp8_rand(a);
-		fp8_conv_uni(a, a);
+		fp8_conv_cyc(a, a);
 		BENCH_ADD(fp8_size_bin(a, 1));
 	}
 	BENCH_END;
@@ -1376,34 +1376,28 @@ static void arith8(void) {
 	}
 	BENCH_END;
 
-	BENCH_BEGIN("fp8_conv_uni") {
-		fp8_rand(a);
-		BENCH_ADD(fp8_conv_uni(c, a));
-	}
-	BENCH_END;
-
 	BENCH_BEGIN("fp8_sqr") {
 		fp8_rand(a);
 		BENCH_ADD(fp8_sqr(c, a));
 	}
 	BENCH_END;
 
-	BENCH_BEGIN("fp8_sqr_uni") {
+	BENCH_BEGIN("fp8_sqr_cyc") {
 		fp8_rand(a);
-		BENCH_ADD(fp8_sqr_uni(c, a));
+		BENCH_ADD(fp8_sqr_cyc(c, a));
 	}
 	BENCH_END;
 
-	BENCH_BEGIN("fp8_test_uni") {
+	BENCH_BEGIN("fp8_test_cyc") {
 		fp8_rand(a);
-		fp8_conv_uni(a, a);
-		BENCH_ADD(fp8_test_uni(a));
+		fp8_conv_cyc(a, a);
+		BENCH_ADD(fp8_test_cyc(a));
 	}
 	BENCH_END;
 
-	BENCH_BEGIN("fp8_conv_uni") {
+	BENCH_BEGIN("fp8_conv_cyc") {
 		fp8_rand(a);
-		BENCH_ADD(fp8_conv_uni(c, a));
+		BENCH_ADD(fp8_conv_cyc(c, a));
 	}
 	BENCH_END;
 
@@ -1413,9 +1407,9 @@ static void arith8(void) {
 	}
 	BENCH_END;
 
-	BENCH_BEGIN("fp8_inv_uni") {
+	BENCH_BEGIN("fp8_inv_cyc") {
 		fp8_rand(a);
-		BENCH_ADD(fp8_inv_uni(c, a));
+		BENCH_ADD(fp8_inv_cyc(c, a));
 	}
 	BENCH_END;
 
@@ -1428,7 +1422,7 @@ static void arith8(void) {
 
 	BENCH_BEGIN("fp8_exp (cyc)") {
 		fp8_rand(a);
-		fp8_conv_uni(a, a);
+		fp8_conv_cyc(a, a);
 		bn_rand(e, RLC_POS, RLC_FP_BITS);
 		BENCH_ADD(fp8_exp(c, a, e));
 	}
@@ -1436,7 +1430,7 @@ static void arith8(void) {
 
 	BENCH_BEGIN("fp8_exp_cyc (param or sparse)") {
 		fp8_rand(a);
-		fp8_conv_uni(a, a);
+		fp8_conv_cyc(a, a);
 		bn_zero(e);
 		fp_prime_get_par(e);
 		if (bn_is_zero(e)) {
@@ -1444,7 +1438,7 @@ static void arith8(void) {
 			bn_set_bit(e, RLC_FP_BITS / 2, 1);
 			bn_set_bit(e, 0, 1);
 		}
-		BENCH_ADD(fp8_exp_uni(c, a, e));
+		BENCH_ADD(fp8_exp_cyc(c, a, e));
 	}
 	BENCH_END;
 
@@ -1753,9 +1747,9 @@ static void arith12(void) {
 	}
 	BENCH_END;
 
-	BENCH_BEGIN("fp12_conv_uni") {
+	BENCH_BEGIN("fp12_conv_cyc") {
 		fp12_rand(a);
-		BENCH_ADD(fp12_conv_uni(c, a));
+		BENCH_ADD(fp12_conv_cyc(c, a));
 	}
 	BENCH_END;
 
@@ -1765,9 +1759,9 @@ static void arith12(void) {
 	}
 	BENCH_END;
 
-	BENCH_BEGIN("fp12_inv_uni") {
+	BENCH_BEGIN("fp12_inv_cyc") {
 		fp12_rand(a);
-		BENCH_ADD(fp12_inv_uni(c, a));
+		BENCH_ADD(fp12_inv_cyc(c, a));
 	}
 	BENCH_END;
 
@@ -2077,9 +2071,9 @@ static void arith18(void) {
 	}
 	BENCH_END;
 
-	BENCH_BEGIN("fp18_conv_uni") {
+	BENCH_BEGIN("fp18_conv_cyc") {
 		fp18_rand(a);
-		BENCH_ADD(fp18_conv_uni(c, a));
+		BENCH_ADD(fp18_conv_cyc(c, a));
 	}
 	BENCH_END;
 
@@ -2089,9 +2083,9 @@ static void arith18(void) {
 	}
 	BENCH_END;
 
-	BENCH_BEGIN("fp18_inv_uni") {
+	BENCH_BEGIN("fp18_inv_cyc") {
 		fp18_rand(a);
-		BENCH_ADD(fp18_inv_uni(c, a));
+		BENCH_ADD(fp18_inv_cyc(c, a));
 	}
 	BENCH_END;
 
@@ -2650,9 +2644,9 @@ static void arith48(void) {
 	}
 	BENCH_END;
 
-	BENCH_BEGIN("fp48_conv_uni") {
+	BENCH_BEGIN("fp48_conv_cyc") {
 		fp48_rand(a);
-		BENCH_ADD(fp48_conv_uni(c, a));
+		BENCH_ADD(fp48_conv_cyc(c, a));
 	}
 	BENCH_END;
 
@@ -2662,9 +2656,9 @@ static void arith48(void) {
 	}
 	BENCH_END;
 
-	BENCH_BEGIN("fp48_inv_uni") {
+	BENCH_BEGIN("fp48_inv_cyc") {
 		fp48_rand(a);
-		BENCH_ADD(fp48_inv_uni(c, a));
+		BENCH_ADD(fp48_inv_cyc(c, a));
 	}
 	BENCH_END;
 

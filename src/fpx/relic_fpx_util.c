@@ -62,7 +62,7 @@ void fp2_print(fp2_t a) {
 
 int fp2_size_bin(fp2_t a, int pack) {
 	if (pack) {
-		if (fp2_test_uni(a)) {
+		if (fp2_test_cyc(a)) {
 			return RLC_FP_BYTES + 1;
 		} else {
 			return 2 * RLC_FP_BYTES;
@@ -96,7 +96,7 @@ void fp2_write_bin(uint8_t *bin, int len, fp2_t a, int pack) {
 	TRY {
 		fp2_new(t);
 
-		if (pack && fp2_test_uni(a)) {
+		if (pack && fp2_test_cyc(a)) {
 			if (len < RLC_FP_BYTES + 1) {
 				THROW(ERR_NO_BUFFER);
 			} else {
@@ -312,7 +312,7 @@ void fp8_print(fp8_t a) {
 
 int fp8_size_bin(fp8_t a, int pack) {
 	if (pack) {
-		if (fp8_test_uni(a)) {
+		if (fp8_test_cyc(a)) {
 			return 4 * RLC_FP_BYTES;
 		} else {
 			return 8 * RLC_FP_BYTES;

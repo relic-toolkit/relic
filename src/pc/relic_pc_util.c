@@ -43,19 +43,6 @@
  */
 #define gt_rand_imp(A)			RLC_CAT(GT_LOWER, rand)(A)
 
-/**
- * Internal macro to power an element from G_T. Computes C = A^B.
- *
- * @param[out] C			- the result.
- * @param[in] A				- the element to exponentiate.
- * @param[in] B				- the integer exponent.
- */
-#if FP_PRIME < 1536
-#define gt_exp_imp(C, A, B)		RLC_CAT(GT_LOWER, exp_cyc)(C, A, B);
-#else
-#define gt_exp_imp(C, A, B)		RLC_CAT(GT_LOWER, exp_uni)(C, A, B);
-#endif
-
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
@@ -89,24 +76,6 @@ void gt_get_gen(gt_t g) {
 	} FINALLY {
 		g1_free(g1);
 		g2_free(g2);
-	}
-}
-
-void gt_exp(gt_t c, gt_t a, bn_t b) {
-	bn_t n;
-
-	bn_null(n);
-
-	TRY {
-		bn_new(n);
-
-		gt_get_ord(n);
-		bn_mod(n, b, n);
-		gt_exp_imp(c, a, n);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
-		bn_free(n);
 	}
 }
 

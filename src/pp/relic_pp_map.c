@@ -558,7 +558,7 @@ void pp_map_weilp_k2(fp2_t r, ep_t p, ep_t q) {
 			fp2_inv(r1, r1);
 			fp2_mul(r0, r0, r1);
 			fp2_inv(r1, r0);
-			fp2_inv_uni(r0, r0);
+			fp2_inv_cyc(r0, r0);
 		}
 		fp2_mul(r, r0, r1);
 	}
@@ -623,7 +623,7 @@ void pp_map_sim_weilp_k2(fp2_t r, ep_t *p, ep_t *q, int m) {
 			fp2_inv(r1, r1);
 			fp2_mul(r0, r0, r1);
 			fp2_inv(r1, r0);
-			fp2_inv_uni(r0, r0);
+			fp2_inv_cyc(r0, r0);
 		}
 		fp2_mul(r, r0, r1);
 	}
@@ -679,7 +679,7 @@ void pp_map_weilp_k12(fp12_t r, ep_t p, ep2_t q) {
 			fp12_inv(r1, r1);
 			fp12_mul(r0, r0, r1);
 			fp12_inv(r1, r0);
-			fp12_inv_uni(r0, r0);
+			fp12_inv_cyc(r0, r0);
 		}
 		fp12_mul(r, r0, r1);
 	}
@@ -742,7 +742,7 @@ void pp_map_sim_weilp_k12(fp12_t r, ep_t *p, ep2_t *q, int m) {
 			fp12_inv(r1, r1);
 			fp12_mul(r0, r0, r1);
 			fp12_inv(r1, r0);
-			fp12_inv_uni(r0, r0);
+			fp12_inv_cyc(r0, r0);
 		}
 		fp12_mul(r, r0, r1);
 	}
@@ -797,7 +797,7 @@ void pp_map_oatep_k12(fp12_t r, ep_t p, ep2_t q) {
 					pp_mil_k12(r, t, _q, _p, 1, a);
 					if (bn_sign(a) == RLC_NEG) {
 						/* f_{-a,Q}(P) = 1/f_{a,Q}(P). */
-						fp12_inv_uni(r, r);
+						fp12_inv_cyc(r, r);
 						ep2_neg(t[0], t[0]);
 					}
 					pp_fin_k12_oatep(r, t[0], _q[0], _p[0]);
@@ -807,7 +807,7 @@ void pp_map_oatep_k12(fp12_t r, ep_t p, ep2_t q) {
 					/* r = f_{|a|,Q}(P). */
 					pp_mil_k12(r, t, _q, _p, 1, a);
 					if (bn_sign(a) == RLC_NEG) {
-						fp12_inv_uni(r, r);
+						fp12_inv_cyc(r, r);
 						ep2_neg(t[0], t[0]);
 					}
 					pp_exp_k12(r, r);
@@ -864,7 +864,7 @@ void pp_map_sim_oatep_k12(fp12_t r, ep_t *p, ep2_t *q, int m) {
 					pp_mil_k12(r, t, _q, _p, j, a);
 					if (bn_sign(a) == RLC_NEG) {
 						/* f_{-a,Q}(P) = 1/f_{a,Q}(P). */
-						fp12_inv_uni(r, r);
+						fp12_inv_cyc(r, r);
 					}
 					for (i = 0; i < j; i++) {
 						if (bn_sign(a) == RLC_NEG) {
@@ -878,7 +878,7 @@ void pp_map_sim_oatep_k12(fp12_t r, ep_t *p, ep2_t *q, int m) {
 					/* r = f_{|a|,Q}(P). */
 					pp_mil_k12(r, t, _q, _p, j, a);
 					if (bn_sign(a) == RLC_NEG) {
-						fp12_inv_uni(r, r);
+						fp12_inv_cyc(r, r);
 					}
 					pp_exp_k12(r, r);
 					break;

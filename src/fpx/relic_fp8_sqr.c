@@ -137,7 +137,7 @@ void fp8_sqr_lazyr(fp8_t c, fp8_t a) {
 
 #endif
 
-void fp8_sqr_uni(fp8_t c, fp8_t a) {
+void fp8_sqr_cyc(fp8_t c, fp8_t a) {
 	fp4_t t0, t1, t2;
 
 	fp4_null(t0);

@@ -38,7 +38,7 @@
 void fp2_pck(fp2_t c, fp2_t a) {
 	int b = fp_get_bit(a[1], 0);
 	fp2_copy(c, a);
-	if (fp2_test_uni(a)) {
+	if (fp2_test_cyc(a)) {
 		fp_copy(c[0], a[0]);
 		fp_zero(c[1]);
 		fp_set_bit(c[1], 0, b);
