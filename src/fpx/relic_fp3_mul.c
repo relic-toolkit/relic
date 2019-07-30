@@ -185,9 +185,9 @@ void fp3_mul_frb(fp3_t c, fp3_t a, int i, int j, int k) {
 				fp3_copy(c, a);
 				break;
 			case 1:
-				fp_mul(c[0], a[0], ctx->fp3_p[k - 1]);
-				fp_mul(c[1], a[1], ctx->fp3_p[k - 1]);
-				fp_mul(c[2], a[2], ctx->fp3_p[k - 1]);
+				fp_mul(c[0], a[0], ctx->fp3_p1[k - 1]);
+				fp_mul(c[1], a[1], ctx->fp3_p1[k - 1]);
+				fp_mul(c[2], a[2], ctx->fp3_p1[k - 1]);
 				if (k != 3) {
 					for (int l = 0; l < 3 - (k % 3); l++) {
 						fp3_mul_art(c, c);

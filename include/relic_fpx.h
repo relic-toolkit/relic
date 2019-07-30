@@ -166,7 +166,7 @@ typedef dv8_t dv24_t[3];
 /**
  * Represents a 24-degree extension field element.
  *
- * This extension is constructed with the basis {1, t}, where t^2 = w is an
+ * This extension is constructed with the basis {1, t, t^2}, where t^3 = w is an
  * adjoined root in the underlying dodecic extension.
  */
 typedef fp8_t fp24_t[3];
@@ -1859,8 +1859,6 @@ void fp4_mul_art(fp4_t c, fp4_t a);
 /**
  * Multiples a dense quartic extension field element by a sparse element.
  *
- * The sparse element must have a[2] = 0.
- *
  * @param[out] c			- the result.
  * @param[in] a				- a quartic extension field element.
  * @param[in] b				- a sparse quartic extension field element.
@@ -2089,8 +2087,6 @@ void fp6_mul_art(fp6_t c, fp6_t a);
 
 /**
  * Multiples a dense sextic extension field element by a sparse element.
- *
- * The sparse element must have a[2] = 0.
  *
  * @param[out] c			- the result.
  * @param[in] a				- a sextic extension field element.
@@ -2321,8 +2317,6 @@ void fp8_mul_art(fp8_t c, fp8_t a);
 
 /**
  * Multiples a dense octic extension field element by a sparse element.
- *
- * The sparse element must have a[2] = 0.
  *
  * @param[out] c			- the result.
  * @param[in] a				- an octic extension field element.
@@ -3256,6 +3250,15 @@ void fp24_mul_lazyr(fp24_t c, fp24_t a, fp24_t b);
  * @param[in] a				- the dodecic extension field element to multiply.
  */
 void fp24_mul_art(fp24_t c, fp24_t a);
+
+/**
+ * Multiples a dense 24-degree extension field element by a sparse element.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- a 24-degree extension field element.
+ * @param[in] b				- a 24-degree quartic extension field element.
+ */
+void fp24_mul_dxs(fp24_t c, fp24_t a, fp24_t b);
 
 /**
  * Computes the square of a 24-degree extension field element without performing

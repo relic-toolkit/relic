@@ -86,11 +86,6 @@ void fp48_sqr_cyc_basic(fp48_t c, fp48_t a) {
 		fp8_new(t5);
 		fp8_new(t6);
 
-		/* Define z = sqrt(E) */
-
-		/* Now a is seen as (t0,t1) + (t2,t3) * w + (t4,t5) * w^2 */
-
-		/* (t0, t1) = (a00 + a11*z)^2. */
 		fp8_sqr(t2, a[0][0]);
 		fp8_sqr(t3, a[1][1]);
 		fp8_add(t1, a[0][0], a[1][1]);
@@ -259,11 +254,6 @@ void fp48_sqr_cyc_lazyr(fp48_t c, fp48_t a) {
 		fp8_new(t5);
 		fp8_new(t6);
 
-		/* Define z = sqrt(E) */
-
-		/* Now a is seen as (t0,t1) + (t2,t3) * w + (t4,t5) * w^2 */
-
-		/* (t0, t1) = (a00 + a11*z)^2. */
 		fp8_sqr(t2, a[0][0]);
 		fp8_sqr(t3, a[1][1]);
 		fp8_add(t1, a[0][0], a[1][1]);

@@ -40,55 +40,43 @@
 void fp2_mul_frb(fp2_t c, fp2_t a, int i, int j) {
 	ctx_t *ctx = core_get();
 
-	if (i == 2) {
-		fp_mul(c[0], a[0], ctx->fp2_p2[j - 1]);
-		fp_mul(c[1], a[1], ctx->fp2_p2[j - 1]);
-	} else {
 #if ALLOC == AUTO
 	switch(i) {
 		case 1:
-			fp2_mul(c, a, ctx->fp2_p[j - 1]);
+			fp2_mul(c, a, ctx->fp2_p1[j - 1]);
 			break;
-		case 3:
-			fp2_mul(c, a, ctx->fp2_p3[j - 1]);
-			break;
-		case 4:
-			fp2_mul(c, a, ctx->fp2_p4[j - 1]);
+		case 2:
+			fp2_mul(c, a, ctx->fp2_p2[j - 1]);
 			break;
 	}
 #else
-		fp2_t t;
+	fp2_t t;
 
-		fp2_null(t);
+	fp2_null(t);
 
-		TRY {
-			fp2_new(t);
+	TRY {
+		fp2_new(t);
 
-			switch(i) {
-				case 1:
-					fp_copy(t[0], ctx->fp2_p[j - 1][0]);
-					fp_copy(t[1], ctx->fp2_p[j - 1][1]);
-					break;
-				case 3:
-					fp_copy(t[0], ctx->fp2_p3[j - 1][0]);
-					fp_copy(t[1], ctx->fp2_p3[j - 1][1]);
-					break;
-				case 4:
-					fp_copy(t[0], ctx->fp2_p4[j - 1][0]);
-					fp_copy(t[1], ctx->fp2_p4[j - 1][1]);
-					break;
-			}
-
-			fp2_mul(c, a, t);
+		switch(i) {
+			case 1:
+				fp_copy(t[0], ctx->fp2_p1[j - 1][0]);
+				fp_copy(t[1], ctx->fp2_p1[j - 1][1]);
+				break;
+			case 2:
+				fp_copy(t[0], ctx->fp2_p2[j - 1][0]);
+				fp_copy(t[1], ctx->fp2_p2[j - 1][1]);
+				break;
 		}
-		CATCH_ANY {
-			THROW(ERR_CAUGHT);
-		}
-		FINALLY {
-			fp2_free(t);
-		}
-#endif
+
+		fp2_mul(c, a, t);
 	}
+	CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	}
+	FINALLY {
+		fp2_free(t);
+	}
+#endif
 }
 
 #if FPX_QDR == BASIC || !defined(STRIP)
@@ -125,7 +113,7 @@ void fp2_mul_basic(fp2_t c, fp2_t a, fp2_t b) {
 		/* t2 = (a_0 * b_0) + (a_1 * b_1). */
 		fp_addc_low(t2, t0, t4);
 
-		/* t1 = (a_0 * b_0) + u^2 * (a_1 * b_1). */
+		/* t1 = (a_0 * b_0) + i^2 * (a_1 * b_1). */
 		fp_subc_low(t1, t0, t4);
 
 		/* t1 = u^2 * (a_1 * b_1). */
@@ -178,18 +166,18 @@ void fp2_mul_nor_basic(fp2_t c, fp2_t a) {
 
 		switch (fp_prime_get_mod8()) {
 			case 3:
-				/* If p = 3 mod 8, (1 + u) is a QNR/CNR. */
+				/* If p = 3 mod 8, (1 + i) is a QNR/CNR. */
 				fp_neg(t[0], a[1]);
 				fp_add(c[1], a[0], a[1]);
 				fp_add(c[0], t[0], a[0]);
 				break;
 			case 1:
 			case 5:
-				/* If p = 1,5 mod 8, (u) is a QNR/CNR. */
+				/* If p = 1,5 mod 8, (i) is a QNR/CNR. */
 				fp2_mul_art(c, a);
 				break;
 			case 7:
-				/* If p = 7 mod 8, we choose (2^k + u) as a QNR/CNR. */
+				/* If p = 7 mod 8, we choose (2^k + i) as a QNR/CNR. */
 				fp2_mul_art(t, a);
 				fp2_copy(c, a);
 				while (qnr > 1) {

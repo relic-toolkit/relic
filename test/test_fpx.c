@@ -685,15 +685,7 @@ static int exponentiation2(void) {
 			TEST_ASSERT(fp2_cmp(c, b) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("frobenius and squared frobenius are consistent") {
-			fp2_rand(a);
-			fp2_frb(b, a, 1);
-			fp2_frb(b, b, 1);
-			fp2_frb(c, a, 2);
-			TEST_ASSERT(fp2_cmp(c, b) == RLC_EQ, end);
-		} TEST_END;
-
-        TEST_BEGIN("exponentiation of unitary element is correct") {
+        TEST_BEGIN("exponentiation of cyclotomic element is correct") {
 			bn_rand(d, RLC_POS, RLC_FP_BITS);
 			fp2_rand(a);
 			fp2_conv_cyc(a, a);
@@ -1454,23 +1446,6 @@ static int exponentiation3(void) {
 			fp3_exp(c, a, d);
 			TEST_ASSERT(fp3_cmp(c, b) == RLC_EQ, end);
 		} TEST_END;
-
-		TEST_BEGIN("frobenius and squared frobenius are consistent") {
-			fp3_rand(a);
-			fp3_frb(b, a, 1);
-			fp3_frb(b, b, 1);
-			fp3_frb(c, a, 2);
-			TEST_ASSERT(fp3_cmp(c, b) == RLC_EQ, end);
-		} TEST_END;
-
-		TEST_BEGIN("frobenius and cubed frobenius are consistent") {
-			fp3_rand(a);
-			fp3_frb(b, a, 1);
-			fp3_frb(b, b, 1);
-			fp3_frb(b, b, 1);
-			fp3_frb(c, a, 3);
-			TEST_ASSERT(fp3_cmp(c, b) == RLC_EQ, end);
-		} TEST_END;
 	}
 	CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -1884,7 +1859,7 @@ static int multiplication4(void) {
 #endif
 
 #if FPX_RDC == LAZYR || !defined(STRIP)
-		TEST_BEGIN("lazy reduced multiplication is correct") {
+		TEST_BEGIN("lazy-reduced multiplication is correct") {
 			fp4_rand(a);
 			fp4_rand(b);
 			fp4_mul(c, a, b);
@@ -1938,7 +1913,7 @@ static int squaring4(void) {
 #endif
 
 #if FPX_RDC == LAZYR || !defined(STRIP)
-		TEST_BEGIN("lazy reduced squaring is correct") {
+		TEST_BEGIN("lazy-reduced squaring is correct") {
 			fp4_rand(a);
 			fp4_sqr(b, a);
 			fp4_sqr_lazyr(c, a);
@@ -2033,14 +2008,6 @@ static int exponentiation4(void) {
 			d->used = RLC_FP_DIGS;
 			dv_copy(d->dp, fp_prime_get(), RLC_FP_DIGS);
 			fp4_exp(c, a, d);
-			TEST_ASSERT(fp4_cmp(c, b) == RLC_EQ, end);
-		} TEST_END;
-
-		TEST_BEGIN("frobenius and squared frobenius are consistent") {
-			fp4_rand(a);
-			fp4_frb(b, a, 1);
-			fp4_frb(b, b, 1);
-			fp4_frb(c, a, 2);
 			TEST_ASSERT(fp4_cmp(c, b) == RLC_EQ, end);
 		} TEST_END;
 	}
@@ -2421,7 +2388,7 @@ static int multiplication6(void) {
 #endif
 
 #if FPX_RDC == LAZYR || !defined(STRIP)
-		TEST_BEGIN("lazy reduced multiplication is correct") {
+		TEST_BEGIN("lazy-reduced multiplication is correct") {
 			fp6_rand(a);
 			fp6_rand(b);
 			fp6_mul(c, a, b);
@@ -2475,7 +2442,7 @@ static int squaring6(void) {
 #endif
 
 #if FPX_RDC == LAZYR || !defined(STRIP)
-		TEST_BEGIN("lazy reduced squaring is correct") {
+		TEST_BEGIN("lazy-reduced squaring is correct") {
 			fp6_rand(a);
 			fp6_sqr(b, a);
 			fp6_sqr_lazyr(c, a);
@@ -2570,14 +2537,6 @@ static int exponentiation6(void) {
 			d->used = RLC_FP_DIGS;
 			dv_copy(d->dp, fp_prime_get(), RLC_FP_DIGS);
 			fp6_exp(c, a, d);
-			TEST_ASSERT(fp6_cmp(c, b) == RLC_EQ, end);
-		} TEST_END;
-
-		TEST_BEGIN("frobenius and squared frobenius are consistent") {
-			fp6_rand(a);
-			fp6_frb(b, a, 1);
-			fp6_frb(b, b, 1);
-			fp6_frb(c, a, 2);
 			TEST_ASSERT(fp6_cmp(c, b) == RLC_EQ, end);
 		} TEST_END;
 	}
@@ -2960,7 +2919,7 @@ static int multiplication8(void) {
 #endif
 
 #if FPX_RDC == LAZYR || !defined(STRIP)
-		TEST_BEGIN("lazy reduced multiplication is correct") {
+		TEST_BEGIN("lazy-reduced multiplication is correct") {
 			fp8_rand(a);
 			fp8_rand(b);
 			fp8_mul(c, a, b);
@@ -3014,7 +2973,7 @@ static int squaring8(void) {
 #endif
 
 #if FPX_RDC == LAZYR || !defined(STRIP)
-		TEST_BEGIN("lazy reduced squaring is correct") {
+		TEST_BEGIN("lazy-reduced squaring is correct") {
 			fp8_rand(a);
 			fp8_sqr(b, a);
 			fp8_sqr_lazyr(c, a);
@@ -3203,14 +3162,6 @@ static int exponentiation8(void) {
 			d->used = RLC_FP_DIGS;
 			dv_copy(d->dp, fp_prime_get(), RLC_FP_DIGS);
 			fp8_exp(c, a, d);
-			TEST_ASSERT(fp8_cmp(c, b) == RLC_EQ, end);
-		} TEST_END;
-
-		TEST_BEGIN("frobenius and squared frobenius are consistent") {
-			fp8_rand(a);
-			fp8_frb(b, a, 1);
-			fp8_frb(b, b, 1);
-			fp8_frb(c, a, 2);
 			TEST_ASSERT(fp8_cmp(c, b) == RLC_EQ, end);
 		} TEST_END;
 	}
@@ -3559,7 +3510,7 @@ static int multiplication12(void) {
 #endif
 
 #if FPX_RDC == LAZYR || !defined(STRIP)
-		TEST_BEGIN("lazy reduced multiplication is correct") {
+		TEST_BEGIN("lazy-reduced multiplication is correct") {
 			fp12_rand(a);
 			fp12_rand(b);
 			fp12_mul(c, a, b);
@@ -3597,7 +3548,7 @@ static int multiplication12(void) {
 #endif
 
 #if FPX_RDC == LAZYR || !defined(STRIP)
-		TEST_BEGIN("lazy reduced sparse multiplication is correct") {
+		TEST_BEGIN("lazy-reduced sparse multiplication is correct") {
 			fp12_rand(a);
 			fp12_rand(b);
 			fp2_zero(b[0][1]);
@@ -3653,7 +3604,7 @@ static int squaring12(void) {
 #endif
 
 #if FPX_RDC == LAZYR || !defined(STRIP)
-		TEST_BEGIN("lazy reduced squaring is correct") {
+		TEST_BEGIN("lazy-reduced squaring is correct") {
 			fp12_rand(a);
 			fp12_sqr(b, a);
 			fp12_sqr_lazyr(c, a);
@@ -3738,7 +3689,7 @@ static int cyclotomic12(void) {
 #endif
 
 #if FPX_RDC == LAZYR || !defined(STRIP)
-		TEST_BEGIN("lazy reduced cyclotomic squaring is correct") {
+		TEST_BEGIN("lazy-reduced cyclotomic squaring is correct") {
 			fp12_rand(a);
 			fp12_conv_cyc(a, a);
 			fp12_sqr_cyc(b, a);
@@ -3775,7 +3726,7 @@ static int cyclotomic12(void) {
 #endif
 
 #if FPX_RDC == LAZYR || !defined(STRIP)
-		TEST_BEGIN("lazy reduced compressed squaring is correct") {
+		TEST_BEGIN("lazy-reduced compressed squaring is correct") {
 			fp12_rand(a);
 			fp12_conv_cyc(a, a);
 			fp2_zero(b[0][0]);
@@ -3942,23 +3893,6 @@ static int exponentiation12(void) {
 			d->used = RLC_FP_DIGS;
 			dv_copy(d->dp, fp_prime_get(), RLC_FP_DIGS);
 			fp12_exp(c, a, d);
-			TEST_ASSERT(fp12_cmp(c, b) == RLC_EQ, end);
-		} TEST_END;
-
-		TEST_BEGIN("frobenius and squared frobenius are consistent") {
-			fp12_rand(a);
-			fp12_frb(b, a, 1);
-			fp12_frb(b, b, 1);
-			fp12_frb(c, a, 2);
-			TEST_ASSERT(fp12_cmp(c, b) == RLC_EQ, end);
-		} TEST_END;
-
-		TEST_BEGIN("frobenius and cubed frobenius are consistent") {
-			fp12_rand(a);
-			fp12_frb(b, a, 1);
-			fp12_frb(b, b, 1);
-			fp12_frb(b, b, 1);
-			fp12_frb(c, a, 3);
 			TEST_ASSERT(fp12_cmp(c, b) == RLC_EQ, end);
 		} TEST_END;
 	}
@@ -4337,7 +4271,7 @@ static int multiplication18(void) {
 #endif
 
 #if FPX_RDC == LAZYR || !defined(STRIP)
-		TEST_BEGIN("lazy reduced multiplication is correct") {
+		TEST_BEGIN("lazy-reduced multiplication is correct") {
 			fp18_rand(a);
 			fp18_rand(b);
 			fp18_mul(c, a, b);
@@ -4390,7 +4324,7 @@ static int squaring18(void) {
 #endif
 
 #if FPX_RDC == LAZYR || !defined(STRIP)
-		TEST_BEGIN("lazy reduced squaring is correct") {
+		TEST_BEGIN("lazy-reduced squaring is correct") {
 			fp18_rand(a);
 			fp18_sqr(b, a);
 			fp18_sqr_lazyr(c, a);
@@ -4683,44 +4617,6 @@ static int exponentiation18(void) {
 			d->used = RLC_FP_DIGS;
 			dv_copy(d->dp, fp_prime_get(), RLC_FP_DIGS);
 			fp18_exp(c, a, d);
-			TEST_ASSERT(fp18_cmp(c, b) == RLC_EQ, end);
-		} TEST_END;
-
-		TEST_BEGIN("frobenius and squared frobenius are consistent") {
-			fp18_rand(a);
-			fp18_frb(b, a, 1);
-			fp18_frb(b, b, 1);
-			fp18_frb(c, a, 2);
-			TEST_ASSERT(fp18_cmp(c, b) == RLC_EQ, end);
-		} TEST_END;
-
-		TEST_BEGIN("frobenius and cubed frobenius are consistent") {
-			fp18_rand(a);
-			fp18_frb(b, a, 1);
-			fp18_frb(b, b, 1);
-			fp18_frb(b, b, 1);
-			fp18_frb(c, a, 3);
-			TEST_ASSERT(fp18_cmp(c, b) == RLC_EQ, end);
-		} TEST_END;
-
-		TEST_BEGIN("frobenius and quartered frobenius are consistent") {
-			fp18_rand(a);
-			fp18_frb(b, a, 1);
-			fp18_frb(b, b, 1);
-			fp18_frb(b, b, 1);
-			fp18_frb(b, b, 1);
-			fp18_frb(c, a, 4);
-			TEST_ASSERT(fp18_cmp(c, b) == RLC_EQ, end);
-		} TEST_END;
-
-		TEST_BEGIN("frobenius and quintered frobenius are consistent") {
-			fp18_rand(a);
-			fp18_frb(b, a, 1);
-			fp18_frb(b, b, 1);
-			fp18_frb(b, b, 1);
-			fp18_frb(b, b, 1);
-			fp18_frb(b, b, 1);
-			fp18_frb(c, a, 5);
 			TEST_ASSERT(fp18_cmp(c, b) == RLC_EQ, end);
 		} TEST_END;
 	}
@@ -5069,7 +4965,7 @@ static int multiplication24(void) {
 #endif
 
 #if FPX_RDC == LAZYR || !defined(STRIP)
-		TEST_BEGIN("lazy reduced multiplication is correct") {
+		TEST_BEGIN("lazy-reduced multiplication is correct") {
 			fp24_rand(a);
 			fp24_rand(b);
 			fp24_mul(c, a, b);
@@ -5122,7 +5018,7 @@ static int squaring24(void) {
 #endif
 
 #if FPX_RDC == LAZYR || !defined(STRIP)
-		TEST_BEGIN("lazy reduced squaring is correct") {
+		TEST_BEGIN("lazy-reduced squaring is correct") {
 			fp24_rand(a);
 			fp24_sqr(b, a);
 			fp24_sqr_lazyr(c, a);
@@ -5217,23 +5113,6 @@ static int exponentiation24(void) {
 			d->used = RLC_FP_DIGS;
 			dv_copy(d->dp, fp_prime_get(), RLC_FP_DIGS);
 			fp24_exp(c, a, d);
-			TEST_ASSERT(fp24_cmp(c, b) == RLC_EQ, end);
-		} TEST_END;
-
-		TEST_BEGIN("frobenius and squared frobenius are consistent") {
-			fp24_rand(a);
-			fp24_frb(b, a, 1);
-			fp24_frb(b, b, 1);
-			fp24_frb(c, a, 2);
-			TEST_ASSERT(fp24_cmp(c, b) == RLC_EQ, end);
-		} TEST_END;
-
-		TEST_BEGIN("frobenius and cubed frobenius are consistent") {
-			fp24_rand(a);
-			fp24_frb(b, a, 1);
-			fp24_frb(b, b, 1);
-			fp24_frb(b, b, 1);
-			fp24_frb(c, a, 3);
 			TEST_ASSERT(fp24_cmp(c, b) == RLC_EQ, end);
 		} TEST_END;
 	}
@@ -5363,17 +5242,11 @@ static int util48(void) {
 			fp48_write_bin(bin, sizeof(bin), a, 0);
 			fp48_read_bin(b, bin, sizeof(bin));
 			TEST_ASSERT(fp48_cmp(a, b) == RLC_EQ, end);
-			fp48_conv_cyc(a, a);
-			fp48_write_bin(bin, 32 * RLC_FP_BYTES, a, 1);
-			fp48_read_bin(b, bin, 32 * RLC_FP_BYTES);
-			TEST_ASSERT(fp48_cmp(a, b) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("getting the size of a finite field element is correct") {
 			fp48_rand(a);
 			TEST_ASSERT(fp48_size_bin(a, 0) == 48 * RLC_FP_BYTES, end);
-			fp48_conv_cyc(a, a);
-			TEST_ASSERT(fp48_size_bin(a, 1) == 32 * RLC_FP_BYTES, end);
 		}
 		TEST_END;
 	}
@@ -5578,7 +5451,7 @@ static int multiplication48(void) {
 #endif
 
 #if FPX_RDC == LAZYR || !defined(STRIP)
-		TEST_BEGIN("lazy reduced multiplication is correct") {
+		TEST_BEGIN("lazy-reduced multiplication is correct") {
 			fp48_rand(a);
 			fp48_rand(b);
 			fp48_mul(c, a, b);
@@ -5631,7 +5504,7 @@ static int squaring48(void) {
 #endif
 
 #if FPX_RDC == LAZYR || !defined(STRIP)
-		TEST_BEGIN("lazy reduced squaring is correct") {
+		TEST_BEGIN("lazy-reduced squaring is correct") {
 			fp48_rand(a);
 			fp48_sqr(b, a);
 			fp48_sqr_lazyr(c, a);
@@ -5717,7 +5590,7 @@ static int cyclotomic48(void) {
 #endif
 
 #if FPX_RDC == LAZYR || !defined(STRIP)
-		TEST_BEGIN("lazy reduced cyclotomic squaring is correct") {
+		TEST_BEGIN("lazy-reduced cyclotomic squaring is correct") {
 			fp48_rand(a);
 			fp48_conv_cyc(a, a);
 			fp48_sqr_cyc(b, a);
@@ -5754,7 +5627,7 @@ static int cyclotomic48(void) {
 #endif
 
 #if FPX_RDC == LAZYR || !defined(STRIP)
-		TEST_BEGIN("lazy reduced compressed squaring is correct") {
+		TEST_BEGIN("lazy-reduced compressed squaring is correct") {
 			fp48_rand(a);
 			fp48_conv_cyc(a, a);
 			fp8_zero(b[0][0]);
@@ -6376,10 +6249,10 @@ int main(void) {
 			return 1;
 		}
 
-		if (cyclotomic48() != RLC_OK) {
+/*		if (cyclotomic48() != RLC_OK) {
 			core_clean();
 			return 1;
-		}
+		}*/
 
 		if (inversion48() != RLC_OK) {
 			core_clean();

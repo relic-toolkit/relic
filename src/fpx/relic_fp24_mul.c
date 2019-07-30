@@ -238,7 +238,7 @@ void fp24_mul_art(fp24_t c, fp24_t a) {
 }
 
 void fp24_mul_dxs(fp24_t c, fp24_t a, fp24_t b) {
-	fp8_t t0, t1, t2, t3, t4, t5;
+	fp8_t t0, t1, t2, t3, t4;
 
 	fp8_null(t0);
 	fp8_null(t1);

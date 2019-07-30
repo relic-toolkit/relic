@@ -378,21 +378,9 @@ static void arith2(void) {
 	}
 	BENCH_END;
 
-	BENCH_BEGIN("fp2_mul_frb (1)") {
+	BENCH_BEGIN("fp2_mul_frb") {
 		fp2_rand(a);
 		BENCH_ADD(fp2_mul_frb(c, a, 1, 0));
-	}
-	BENCH_END;
-
-	BENCH_BEGIN("fp2_mul_frb (2)") {
-		fp2_rand(a);
-		BENCH_ADD(fp2_mul_frb(c, a, 2, 0));
-	}
-	BENCH_END;
-
-	BENCH_BEGIN("fp2_mul_frb (3)") {
-		fp2_rand(a);
-		BENCH_ADD(fp2_mul_frb(c, a, 3, 0));
 	}
 	BENCH_END;
 

@@ -89,8 +89,8 @@ void fp8_frb(fp8_t c, fp8_t a, int i) {
 	for (; i % 8 > 0; i--) {
 		fp4_frb(c[0], c[0], 1);
 		fp4_frb(c[1], c[1], 1);
-		fp2_mul_frb(c[1][0], c[1][0], 4, 1);
-		fp2_mul_frb(c[1][1], c[1][1], 4, 1);
+		fp2_mul_frb(c[1][0], c[1][0], 2, 1);
+		fp2_mul_frb(c[1][1], c[1][1], 2, 1);
 		if (fp_prime_get_mod8() != 1) {
 			fp4_mul_art(c[1], c[1]);
 		}
@@ -159,7 +159,7 @@ void fp24_frb(fp24_t c, fp24_t a, int i) {
 		fp8_frb(c[2], c[2], 1);
 		for (int j = 0; j < 2; j++) {
 			for (int l = 0; l < 2; l++) {
-				fp2_mul_frb(c[1][j][l], c[1][j][l], 4, 2);
+				fp2_mul_frb(c[1][j][l], c[1][j][l], 2, 2);
 				fp2_mul_frb(c[2][j][l], c[2][j][l], 1, 1);
 			}
 			if ((fp_prime_get_mod8() % 4) == 3) {
@@ -178,7 +178,7 @@ void fp48_frb(fp48_t c, fp48_t a, int i) {
 		for (int j = 0; j < 3; j++) {
 			for (int k = 0; k < 2; k++) {
 				for (int l = 0; l < 2; l++) {
-					fp2_mul_frb(c[1][j][k][l], c[1][j][k][l], 4, 3);
+					fp2_mul_frb(c[1][j][k][l], c[1][j][k][l], 2, 3);
 				}
 				if (fp_prime_get_mod8() == 3) {
 					fp4_mul_art(c[1][j][k], c[1][j][k]);

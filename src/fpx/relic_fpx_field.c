@@ -81,6 +81,7 @@ void fp2_field_init(void) {
 		}
 #endif /* !FP_QNRES */
 
+		/* Compute QNR^(p - 1)/6 and consecutive powers. */
 		fp2_set_dig(t1, 1);
 		fp2_mul_nor(t0, t1);
 		e->used = RLC_FP_DIGS;
@@ -88,61 +89,51 @@ void fp2_field_init(void) {
 		bn_sub_dig(e, e, 1);
 		bn_div_dig(e, e, 6);
 		fp2_exp(t0, t0, e);
-
-		fp_copy(ctx->fp2_p[0][0], t0[0]);
-		fp_copy(ctx->fp2_p[0][1], t0[1]);
+		fp_copy(ctx->fp2_p1[0][0], t0[0]);
+		fp_copy(ctx->fp2_p1[0][1], t0[1]);
 		fp2_sqr(t1, t0);
-		fp_copy(ctx->fp2_p[1][0], t1[0]);
-		fp_copy(ctx->fp2_p[1][1], t1[1]);
+		fp_copy(ctx->fp2_p1[1][0], t1[0]);
+		fp_copy(ctx->fp2_p1[1][1], t1[1]);
 		fp2_mul(t1, t1, t0);
-		fp_copy(ctx->fp2_p[2][0], t1[0]);
-		fp_copy(ctx->fp2_p[2][1], t1[1]);
+		fp_copy(ctx->fp2_p1[2][0], t1[0]);
+		fp_copy(ctx->fp2_p1[2][1], t1[1]);
 		fp2_sqr(t1, t0);
 		fp2_sqr(t1, t1);
-		fp_copy(ctx->fp2_p[3][0], t1[0]);
-		fp_copy(ctx->fp2_p[3][1], t1[1]);
+		fp_copy(ctx->fp2_p1[3][0], t1[0]);
+		fp_copy(ctx->fp2_p1[3][1], t1[1]);
 		fp2_mul(t1, t1, t0);
-		fp_copy(ctx->fp2_p[4][0], t1[0]);
-		fp_copy(ctx->fp2_p[4][1], t1[1]);
+		fp_copy(ctx->fp2_p1[4][0], t1[0]);
+		fp_copy(ctx->fp2_p1[4][1], t1[1]);
 
-		fp2_frb(t1, t0, 1);
-		fp2_mul(t0, t1, t0);
-		fp_copy(ctx->fp2_p2[0], t0[0]);
-		fp_sqr(ctx->fp2_p2[1], ctx->fp2_p2[0]);
-		fp_mul(ctx->fp2_p2[2], ctx->fp2_p2[1], ctx->fp2_p2[0]);
-		fp_sqr(ctx->fp2_p2[3], ctx->fp2_p2[1]);
-
-		for (int i = 0; i < 5; i++) {
-			fp_mul(ctx->fp2_p3[i][0], ctx->fp2_p2[i % 3], ctx->fp2_p[i][0]);
-			fp_mul(ctx->fp2_p3[i][1], ctx->fp2_p2[i % 3], ctx->fp2_p[i][1]);
-		}
-
+		/* Compute QNR^(p - (p mod 4))/4. */
 		fp2_set_dig(t1, 1);
 		fp2_mul_nor(t0, t1);
 		e->used = RLC_FP_DIGS;
 		dv_copy(e->dp, fp_prime_get(), RLC_FP_DIGS);
 		bn_div_dig(e, e, 4);
 		fp2_exp(t0, t0, e);
-		fp_copy(ctx->fp2_p4[0][0], t0[0]);
-		fp_copy(ctx->fp2_p4[0][1], t0[1]);
+		fp_copy(ctx->fp2_p2[0][0], t0[0]);
+		fp_copy(ctx->fp2_p2[0][1], t0[1]);
 
+		/* Compute QNR^(p - (p mod 12))/12. */
 		fp2_set_dig(t1, 1);
 		fp2_mul_nor(t0, t1);
 		e->used = RLC_FP_DIGS;
 		dv_copy(e->dp, fp_prime_get(), RLC_FP_DIGS);
 		bn_div_dig(e, e, 12);
 		fp2_exp(t0, t0, e);
-		fp_copy(ctx->fp2_p4[1][0], t0[0]);
-		fp_copy(ctx->fp2_p4[1][1], t0[1]);
+		fp_copy(ctx->fp2_p2[1][0], t0[0]);
+		fp_copy(ctx->fp2_p2[1][1], t0[1]);
 
+		/* Compute QNR^(p - (p mod 24))/24. */
 		fp2_set_dig(t1, 1);
 		fp2_mul_nor(t0, t1);
 		e->used = RLC_FP_DIGS;
 		dv_copy(e->dp, fp_prime_get(), RLC_FP_DIGS);
 		bn_div_dig(e, e, 24);
 		fp2_exp(t0, t0, e);
-		fp_copy(ctx->fp2_p4[2][0], t0[0]);
-		fp_copy(ctx->fp2_p4[2][1], t0[1]);
+		fp_copy(ctx->fp2_p2[2][0], t0[0]);
+		fp_copy(ctx->fp2_p2[2][1], t0[1]);
 	} CATCH_ANY {
 		THROW(ERR_CAUGHT);
 	} FINALLY {
@@ -185,61 +176,61 @@ void fp3_field_init(void) {
 
 		/* t0 = u^((p-1)/6). */
 		fp3_exp(t0, t0, e);
-		fp_copy(ctx->fp3_p[0], t0[2]);
+		fp_copy(ctx->fp3_p1[0], t0[2]);
 		fp3_sqr(t1, t0);
-		fp_copy(ctx->fp3_p[1], t1[1]);
+		fp_copy(ctx->fp3_p1[1], t1[1]);
 		fp3_mul(t2, t1, t0);
-		fp_copy(ctx->fp3_p[2], t2[0]);
+		fp_copy(ctx->fp3_p1[2], t2[0]);
 		fp3_sqr(t2, t1);
-		fp_copy(ctx->fp3_p[3], t2[2]);
+		fp_copy(ctx->fp3_p1[3], t2[2]);
 		fp3_mul(t2, t2, t0);
-		fp_copy(ctx->fp3_p[4], t2[1]);
+		fp_copy(ctx->fp3_p1[4], t2[1]);
 
-		fp_mul(ctx->fp3_p2[0], ctx->fp3_p[0], ctx->fp3_base[1]);
-		fp_mul(t0[0], ctx->fp3_p2[0], ctx->fp3_p[0]);
+		fp_mul(ctx->fp3_p2[0], ctx->fp3_p1[0], ctx->fp3_base[1]);
+		fp_mul(t0[0], ctx->fp3_p2[0], ctx->fp3_p1[0]);
 		fp_neg(ctx->fp3_p2[0], t0[0]);
 		for (int i = -1; i > fp_prime_get_cnr(); i--) {
 			fp_sub(ctx->fp3_p2[0], ctx->fp3_p2[0], t0[0]);
 		}
-		fp_mul(ctx->fp3_p2[1], ctx->fp3_p[1], ctx->fp3_base[0]);
-		fp_mul(ctx->fp3_p2[1], ctx->fp3_p2[1], ctx->fp3_p[1]);
-		fp_sqr(ctx->fp3_p2[2], ctx->fp3_p[2]);
-		fp_mul(ctx->fp3_p2[3], ctx->fp3_p[3], ctx->fp3_base[1]);
-		fp_mul(t0[0], ctx->fp3_p2[3], ctx->fp3_p[3]);
+		fp_mul(ctx->fp3_p2[1], ctx->fp3_p1[1], ctx->fp3_base[0]);
+		fp_mul(ctx->fp3_p2[1], ctx->fp3_p2[1], ctx->fp3_p1[1]);
+		fp_sqr(ctx->fp3_p2[2], ctx->fp3_p1[2]);
+		fp_mul(ctx->fp3_p2[3], ctx->fp3_p1[3], ctx->fp3_base[1]);
+		fp_mul(t0[0], ctx->fp3_p2[3], ctx->fp3_p1[3]);
 		fp_neg(ctx->fp3_p2[3], t0[0]);
 		for (int i = -1; i > fp_prime_get_cnr(); i--) {
 			fp_sub(ctx->fp3_p2[3], ctx->fp3_p2[3], t0[0]);
 		}
-		fp_mul(ctx->fp3_p2[4], ctx->fp3_p[4], ctx->fp3_base[0]);
-		fp_mul(ctx->fp3_p2[4], ctx->fp3_p2[4], ctx->fp3_p[4]);
+		fp_mul(ctx->fp3_p2[4], ctx->fp3_p1[4], ctx->fp3_base[0]);
+		fp_mul(ctx->fp3_p2[4], ctx->fp3_p2[4], ctx->fp3_p1[4]);
 
-		fp_mul(ctx->fp3_p3[0], ctx->fp3_p[0], ctx->fp3_base[0]);
+		fp_mul(ctx->fp3_p3[0], ctx->fp3_p1[0], ctx->fp3_base[0]);
 		fp_mul(t0[0], ctx->fp3_p3[0], ctx->fp3_p2[0]);
 		fp_neg(ctx->fp3_p3[0], t0[0]);
 		for (int i = -1; i > fp_prime_get_cnr(); i--) {
 			fp_sub(ctx->fp3_p3[0], ctx->fp3_p3[0], t0[0]);
 		}
-		fp_mul(ctx->fp3_p3[1], ctx->fp3_p[1], ctx->fp3_base[1]);
+		fp_mul(ctx->fp3_p3[1], ctx->fp3_p1[1], ctx->fp3_base[1]);
 		fp_mul(t0[0], ctx->fp3_p3[1], ctx->fp3_p2[1]);
 		fp_neg(ctx->fp3_p3[1], t0[0]);
 		for (int i = -1; i > fp_prime_get_cnr(); i--) {
 			fp_sub(ctx->fp3_p3[1], ctx->fp3_p3[1], t0[0]);
 		}
-		fp_mul(ctx->fp3_p3[2], ctx->fp3_p[2], ctx->fp3_p2[2]);
-		fp_mul(ctx->fp3_p3[3], ctx->fp3_p[3], ctx->fp3_base[0]);
+		fp_mul(ctx->fp3_p3[2], ctx->fp3_p1[2], ctx->fp3_p2[2]);
+		fp_mul(ctx->fp3_p3[3], ctx->fp3_p1[3], ctx->fp3_base[0]);
 		fp_mul(t0[0], ctx->fp3_p3[3], ctx->fp3_p2[3]);
 		fp_neg(ctx->fp3_p3[3], t0[0]);
 		for (int i = -1; i > fp_prime_get_cnr(); i--) {
 			fp_sub(ctx->fp3_p3[3], ctx->fp3_p3[3], t0[0]);
 		}
-		fp_mul(ctx->fp3_p3[4], ctx->fp3_p[4], ctx->fp3_base[1]);
+		fp_mul(ctx->fp3_p3[4], ctx->fp3_p1[4], ctx->fp3_base[1]);
 		fp_mul(t0[0], ctx->fp3_p3[4], ctx->fp3_p2[4]);
 		fp_neg(ctx->fp3_p3[4], t0[0]);
 		for (int i = -1; i > fp_prime_get_cnr(); i--) {
 			fp_sub(ctx->fp3_p3[4], ctx->fp3_p3[4], t0[0]);
 		}
 		for (int i = 0; i < 5; i++) {
-			fp_mul(ctx->fp3_p4[i], ctx->fp3_p[i], ctx->fp3_p3[i]);
+			fp_mul(ctx->fp3_p4[i], ctx->fp3_p1[i], ctx->fp3_p3[i]);
 			fp_mul(ctx->fp3_p5[i], ctx->fp3_p2[i], ctx->fp3_p3[i]);
 		}
 	} CATCH_ANY {

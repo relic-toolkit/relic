@@ -161,7 +161,7 @@ void fp2_nord_low(dv2_t c, dv2_t a) {
 		int qnr = fp2_field_get_qnr();
 		switch (fp_prime_get_mod8()) {
 			case 3:
-				/* If p = 3 mod 8, (1 + i) is a QNR, u^2 = -1. */
+				/* If p = 3 mod 8, (1 + i) is a QNR, i^2 = -1. */
 				/* (a_0 + a_1 * i) * (1 + i) = (a_0 - a_1) + (a_0 + a_1) * i. */
 				dv_copy(t[0], a[1], 2 * RLC_FP_DIGS);
 				fp_addc_low(c[1], a[0], a[1]);
