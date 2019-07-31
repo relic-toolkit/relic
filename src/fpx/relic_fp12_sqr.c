@@ -371,6 +371,7 @@ void fp12_sqr_cyc_lazyr(fp12_t c, fp12_t a) {
 	TRY {
 		fp2_new(t0);
 		fp2_new(t1);
+		fp2_new(t2);
 		dv2_new(u0);
 		dv2_new(u1);
 		dv2_new(u2);

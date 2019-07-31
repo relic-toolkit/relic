@@ -779,7 +779,7 @@ typedef fp24_t fp48_t[2];
  * @param[out] A			- the sextic extension element to initialize.
  */
 #define dv18_null(A)														\
-		dv6_null(A[0]); dv6_null(A[1]); dv6_null(A[6]);						\
+		dv6_null(A[0]); dv6_null(A[1]); dv6_null(A[2]);						\
 
 /**
  * Allocates a double-precision sextic extension field element.
@@ -787,7 +787,7 @@ typedef fp24_t fp48_t[2];
  * @param[out] A			- the new sextic extension field element.
  */
 #define dv18_new(A)															\
-		dv6_new(A[0]); dv6_new(A[1]); dv6_new(A[6]);						\
+		dv6_new(A[0]); dv6_new(A[1]); dv6_new(A[2]);						\
 
 /**
  * Frees a double-precision sextic extension field element.
@@ -795,7 +795,7 @@ typedef fp24_t fp48_t[2];
  * @param[out] A			- the sextic extension field element to free.
  */
 #define dv18_free(A)														\
-		dv6_free(A[0]); dv6_free(A[1]); dv6_free(A[6]); 					\
+		dv6_free(A[0]); dv6_free(A[1]); dv6_free(A[2]); 					\
 
 /**
  * Initializes an octdecic extension field with null.
