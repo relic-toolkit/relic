@@ -75,7 +75,11 @@ void fp3_sqr_basic(fp3_t c, fp3_t a) {
 		fp_sqrn_low(t4, t5);
 
 		/* t4 = (t4 + t3)/2. */
+#ifdef RLC_FP_ROOM
 		fp_addd_low(t4, t4, t3);
+#else
+		fp_addc_low(t4, t4, t3);
+#endif
 		fp_hlvd_low(t4, t4);
 
 		/* t3 = t3 - t4 - t1. */
