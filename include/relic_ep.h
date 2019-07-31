@@ -109,6 +109,8 @@ enum {
 	OT8_P511,
 	/** Cocks-pinch curve with embedding degree 8. */
 	CP8_P544,
+	/** Kachisa-Scott-Schaefer curve with embedding degree 54. */
+	K54_P569,
 	/** Barreto-Lynn-Scott curve with embedding degree 48. */
 	B48_P575,
 	/** Barreto-Naehrig curve with positive x. */
@@ -135,6 +137,8 @@ enum {
 	EP_B24,
 	/* Barreto-Lynn-Scott with embedding degree 48. */
 	EP_B48,
+	/** Kachisa-Scott-Schaefer curve with embedding degree 54. */
+	EP_K54,
 };
 
 /*============================================================================*/

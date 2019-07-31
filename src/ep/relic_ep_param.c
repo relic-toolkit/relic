@@ -1243,8 +1243,10 @@ int ep_param_embed(void) {
 			return 2;
 		case OT8_P511:
 			return 8;
-		case B48_575:
+		case B48_P575:
 			return 48;
+		case K54_P569:
+			return 54;
 	}
 	return 0;
 }

@@ -124,6 +124,8 @@ enum {
 	OT_511,
 	/** Random 544-bit prime for Cocks-Pinch curve with embedding degree 8. */
 	CP8_544,
+	/** 569-bit prime for KSS curve with embedding degree 54. */
+	K54_569,
 	/** 575-bit prime for BLS curve with embedding degree 48. */
 	B48_575,
 	/** 638-bit prime provided in Barreto et al. for BN curve. */
