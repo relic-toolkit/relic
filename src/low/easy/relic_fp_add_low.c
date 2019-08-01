@@ -158,9 +158,7 @@ void fp_subm_low(dig_t *c, const dig_t *a, const dig_t *b) {
 }
 
 void fp_subc_low(dig_t *c, const dig_t *a, const dig_t *b) {
-	dig_t carry = fp_subd_low(c, a, b);
-
-	if (carry) {
+	if (fp_subd_low(c, a, b)) {
 		fp_addn_low(c + RLC_FP_DIGS, c + RLC_FP_DIGS, fp_prime_get());
 	}
 }
