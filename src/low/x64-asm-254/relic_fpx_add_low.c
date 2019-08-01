@@ -48,6 +48,18 @@ void fp3_addm_low(fp3_t c, fp3_t a, fp3_t b) {
 	fp_addm_low(c[2], a[2], b[2]);
 }
 
+void fp3_addd_low(dv3_t c, dv3_t a, dv3_t b) {
+	fp_addd_low(c[0], a[0], b[0]);
+	fp_addd_low(c[1], a[1], b[1]);
+	fp_addd_low(c[2], a[2], b[2]);
+}
+
+void fp3_addc_low(dv3_t c, dv3_t a, dv3_t b) {
+	fp_addc_low(c[0], a[0], b[0]);
+	fp_addc_low(c[1], a[1], b[1]);
+	fp_addc_low(c[2], a[2], b[2]);
+}
+
 void fp3_subn_low(fp3_t c, fp3_t a, fp3_t b) {
 	fp_subn_low(c[0], a[0], b[0]);
 	fp_subn_low(c[1], a[1], b[1]);
@@ -60,10 +72,10 @@ void fp3_subm_low(fp3_t c, fp3_t a, fp3_t b) {
 	fp_subm_low(c[2], a[2], b[2]);
 }
 
-void fp3_dbln_low(fp3_t c, fp3_t a) {
-	fp_dbln_low(c[0], a[0]);
-	fp_dbln_low(c[1], a[1]);
-	fp_dbln_low(c[2], a[2]);
+void fp3_subd_low(dv3_t c, dv3_t a, dv3_t b) {
+	fp_subd_low(c[0], a[0], b[0]);
+	fp_subd_low(c[1], a[1], b[1]);
+	fp_subd_low(c[2], a[2], b[2]);
 }
 
 void fp3_subc_low(dv3_t c, dv3_t a, dv3_t b) {
@@ -72,8 +84,36 @@ void fp3_subc_low(dv3_t c, dv3_t a, dv3_t b) {
 	fp_subc_low(c[2], a[2], b[2]);
 }
 
+void fp3_dbln_low(fp3_t c, fp3_t a) {
+	fp_dbln_low(c[0], a[0]);
+	fp_dbln_low(c[1], a[1]);
+	fp_dbln_low(c[2], a[2]);
+}
+
 void fp3_dblm_low(fp3_t c, fp3_t a) {
 	fp_dblm_low(c[0], a[0]);
 	fp_dblm_low(c[1], a[1]);
 	fp_dblm_low(c[2], a[2]);
+}
+
+void fp3_nord_low(dv3_t c, dv3_t a) {
+	dv2_t t;
+
+	dv2_null(t);
+
+	TRY {
+		dv3_new(t);
+
+		dv_copy(t[0], a[0], 2 * RLC_FP_DIGS);
+		fp_addc_low(c[0], a[2], a[2]);
+		dv_zero(t[1], RLC_FP_DIGS);
+		dv_copy(t[1] + RLC_FP_DIGS, fp_prime_get(), RLC_FP_DIGS);
+		fp_subc_low(c[0], t[1], c[0]);
+		dv_copy(c[2], a[1], 2 * RLC_FP_DIGS);
+		dv_copy(c[1], t[0], 2 * RLC_FP_DIGS);
+	} CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	} FINALLY {
+		dv2_free(t);
+	}
 }
