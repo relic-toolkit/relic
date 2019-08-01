@@ -72,9 +72,6 @@ void fp2_muln_low(dv2_t c, fp2_t a, fp2_t b) {
 	for (int i = -1; i > fp_prime_get_qnr(); i--) {
 		fp_subc_low(c[0], c[0], c[1]);
 	}
-	for (int i = 0; i <= fp_prime_get_qnr(); i++) {
-		fp_addc_low(c[0], c[0], c[1]);
-	}
 #endif
 
 	/* c_1 = t2 - t0. */
@@ -109,10 +106,6 @@ void fp2_mulc_low(dv2_t c, fp2_t a, fp2_t b) {
 	/* t1 = u^2 * (a_1 * b_1). */
 	for (int i = -1; i > fp_prime_get_qnr(); i--) {
 		fp_subd_low(c[0], c[0], c[1]);
-	}
-	/* t1 = u^2 * (a_1 * b_1). */
-	for (int i = 0; i <= fp_prime_get_qnr(); i++) {
-		fp_addd_low(c[0], c[0], c[1]);
 	}
 #endif
 
@@ -161,7 +154,11 @@ void fp3_muln_low(dv3_t c, fp3_t a, fp3_t b) {
 	fp_addm_low(t4, b[1], b[2]);
 #endif
 	fp_muln_low(t5, t3, t4);
-	fp_addd_low(t6, t1, t2);
+#ifdef RLC_FP_ROOM
+	fp_addc_low(t6, t1, t2);
+#else
+	fp_addc_low(t6, t1, t2);
+#endif
 	fp_subc_low(t4, t5, t6);
 	fp_subc_low(c[0], t0, t4);
 	for (int i = -1; i > fp_prime_get_cnr(); i--) {
@@ -176,7 +173,11 @@ void fp3_muln_low(dv3_t c, fp3_t a, fp3_t b) {
 	fp_addm_low(t5, b[0], b[1]);
 #endif
 	fp_muln_low(t6, t4, t5);
-	fp_addd_low(t4, t0, t1);
+#ifdef RLC_FP_ROOM
+	fp_addc_low(t4, t0, t1);
+#else
+	fp_addc_low(t4, t0, t1);
+#endif
 	fp_subc_low(t4, t6, t4);
 	fp_subc_low(c[1], t4, t2);
 	for (int i = -1; i > fp_prime_get_cnr(); i--) {
@@ -191,7 +192,11 @@ void fp3_muln_low(dv3_t c, fp3_t a, fp3_t b) {
 	fp_addm_low(t6, b[0], b[2]);
 #endif
 	fp_muln_low(t4, t5, t6);
-	fp_addd_low(t6, t0, t2);
+#ifdef RLC_FP_ROOM
+	fp_addc_low(t6, t0, t2);
+#else
+	fp_addc_low(t6, t0, t2);
+#endif
 	fp_subc_low(t5, t4, t6);
 	fp_addc_low(c[2], t5, t1);
 }

@@ -67,12 +67,6 @@ void fp2_subm_low(fp2_t c, fp2_t a, fp2_t b) {
 	fp_subm_low(c[1], a[1], b[1]);
 }
 
-void fp2_dbln_low(fp2_t c, fp2_t a) {
-	/* 2 * (a0 + a1 * u) = 2 * a0 + 2 * a1 * u. */
-	fp_dbln_low(c[0], a[0]);
-	fp_dbln_low(c[1], a[1]);
-}
-
 void fp2_subd_low(dv2_t c, dv2_t a, dv2_t b) {
 	fp_subd_low(c[0], a[0], b[0]);
 	fp_subd_low(c[1], a[1], b[1]);
@@ -83,6 +77,12 @@ void fp2_subc_low(dv2_t c, dv2_t a, dv2_t b) {
 	fp_subc_low(c[1], a[1], b[1]);
 }
 
+void fp2_dbln_low(fp2_t c, fp2_t a) {
+	/* 2 * (a0 + a1 * u) = 2 * a0 + 2 * a1 * u. */
+	fp_dbln_low(c[0], a[0]);
+	fp_dbln_low(c[1], a[1]);
+}
+
 void fp2_dblm_low(fp2_t c, fp2_t a) {
 	fp_dblm_low(c[0], a[0]);
 	fp_dblm_low(c[1], a[1]);
@@ -90,14 +90,11 @@ void fp2_dblm_low(fp2_t c, fp2_t a) {
 
 void fp2_norm_low(fp2_t c, fp2_t a) {
 	fp2_t t;
-	bn_t b;
 
 	fp2_null(t);
-	bn_null(b);
 
 	TRY {
 		fp2_new(t);
-		bn_new(b);
 
 #ifdef FP_QNRES
 		/* If p = 3 mod 8, (1 + i) is a QNR/CNR. */
@@ -136,20 +133,16 @@ void fp2_norm_low(fp2_t c, fp2_t a) {
 	}
 	FINALLY {
 		fp2_free(t);
-		bn_free(b);
 	}
 }
 
 void fp2_nord_low(dv2_t c, dv2_t a) {
 	dv2_t t;
-	bn_t b;
 
 	dv2_null(t);
-	bn_null(b);
 
 	TRY {
 		dv2_new(t);
-		bn_new(b);
 
 #ifdef FP_QNRES
 		/* If p = 3 mod 8, (1 + i) is a QNR/CNR. */
@@ -198,20 +191,16 @@ void fp2_nord_low(dv2_t c, dv2_t a) {
 	}
 	FINALLY {
 		dv2_free(t);
-		bn_free(b);
 	}
 }
 
 void fp2_norh_low(dv2_t c, dv2_t a) {
 	dv2_t t;
-	bn_t b;
 
 	dv2_null(t);
-	bn_null(b);
 
 	TRY {
 		dv2_new(t);
-		bn_new(b);
 
 #ifdef FP_QNRES
 		/* If p = 3 mod 8, (1 + i) is a QNR/CNR. */
@@ -265,7 +254,6 @@ void fp2_norh_low(dv2_t c, dv2_t a) {
 	}
 	FINALLY {
 		dv2_free(t);
-		bn_free(b);
 	}
 }
 
@@ -281,6 +269,18 @@ void fp3_addm_low(fp3_t c, fp3_t a, fp3_t b) {
 	fp_addm_low(c[2], a[2], b[2]);
 }
 
+void fp3_addd_low(dv3_t c, dv3_t a, dv3_t b) {
+	fp_addd_low(c[0], a[0], b[0]);
+	fp_addd_low(c[1], a[1], b[1]);
+	fp_addd_low(c[2], a[2], b[2]);
+}
+
+void fp3_addc_low(dv3_t c, dv3_t a, dv3_t b) {
+	fp_addc_low(c[0], a[0], b[0]);
+	fp_addc_low(c[1], a[1], b[1]);
+	fp_addc_low(c[2], a[2], b[2]);
+}
+
 void fp3_subn_low(fp3_t c, fp3_t a, fp3_t b) {
 	fp_subn_low(c[0], a[0], b[0]);
 	fp_subn_low(c[1], a[1], b[1]);
@@ -293,10 +293,10 @@ void fp3_subm_low(fp3_t c, fp3_t a, fp3_t b) {
 	fp_subm_low(c[2], a[2], b[2]);
 }
 
-void fp3_dbln_low(fp3_t c, fp3_t a) {
-	fp_dbln_low(c[0], a[0]);
-	fp_dbln_low(c[1], a[1]);
-	fp_dbln_low(c[2], a[2]);
+void fp3_subd_low(dv3_t c, dv3_t a, dv3_t b) {
+	fp_subd_low(c[0], a[0], b[0]);
+	fp_subd_low(c[1], a[1], b[1]);
+	fp_subd_low(c[2], a[2], b[2]);
 }
 
 void fp3_subc_low(dv3_t c, dv3_t a, dv3_t b) {
@@ -305,8 +305,35 @@ void fp3_subc_low(dv3_t c, dv3_t a, dv3_t b) {
 	fp_subc_low(c[2], a[2], b[2]);
 }
 
+void fp3_dbln_low(fp3_t c, fp3_t a) {
+	fp_dbln_low(c[0], a[0]);
+	fp_dbln_low(c[1], a[1]);
+	fp_dbln_low(c[2], a[2]);
+}
+
 void fp3_dblm_low(fp3_t c, fp3_t a) {
 	fp_dblm_low(c[0], a[0]);
 	fp_dblm_low(c[1], a[1]);
 	fp_dblm_low(c[2], a[2]);
+}
+
+void fp3_nord_low(dv3_t c, dv3_t a) {
+	dv_t t;
+
+	dv_null(t);
+
+	TRY {
+		dv_new(t);
+		dv_copy(t, a[0], 2 * RLC_FP_DIGS);
+		dv_zero(c[0], 2 * RLC_FP_DIGS);
+		for (int i = -1; i >= fp_prime_get_cnr(); i--) {
+			fp_subc_low(c[0], c[0], a[2]);
+		}
+		dv_copy(c[2], a[1], 2 * RLC_FP_DIGS);
+		dv_copy(c[1], t, 2 * RLC_FP_DIGS);
+	} CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	} FINALLY {
+		dv_free(t);
+	}
 }
