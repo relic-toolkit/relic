@@ -76,6 +76,16 @@ int fp6_cmp_dig(fp6_t a, dig_t b) {
 			fp2_is_zero(a[2]) ?	RLC_EQ : RLC_NE;
 }
 
+int fp9_cmp(fp9_t a, fp9_t b) {
+	return (fp3_cmp(a[0], b[0]) == RLC_EQ) && (fp3_cmp(a[1], b[1]) == RLC_EQ) &&
+			(fp3_cmp(a[2], b[2]) == RLC_EQ) ? RLC_EQ : RLC_NE;
+}
+
+int fp9_cmp_dig(fp9_t a, dig_t b) {
+	return (fp3_cmp_dig(a[0], b) == RLC_EQ) && fp3_is_zero(a[1]) &&
+			fp3_is_zero(a[2]) ?	RLC_EQ : RLC_NE;
+}
+
 int fp8_cmp(fp8_t a, fp8_t b) {
 	return (fp4_cmp(a[0], b[0]) == RLC_EQ) && (fp4_cmp(a[1], b[1]) == RLC_EQ) ?
 			RLC_EQ : RLC_NE;

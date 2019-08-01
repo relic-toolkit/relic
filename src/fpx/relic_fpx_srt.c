@@ -57,9 +57,6 @@ int fp2_srt(fp2_t c, fp2_t a) {
 		for (int i = -1; i > fp_prime_get_qnr(); i--) {
 			fp_add(t1, t1, t2);
 		}
-		for (int i = 0; i <= fp_prime_get_qnr(); i++) {
-			fp_sub(t1, t1, t2);
-		}
 		fp_add(t1, t1, t2);
 
 		if (fp_srt(t2, t1)) {
@@ -115,31 +112,54 @@ int fp3_srt(fp3_t c, fp3_t a) {
 		fp3_new(t3);
 		bn_new(e);
 
-		fp3_dbl(t3, a);
-		fp3_frb(t0, t3, 1);
+		switch (fp_prime_get_mod8()) {
+			case 5:
+				fp3_dbl(t3, a);
+				fp3_frb(t0, t3, 1);
 
-		fp3_sqr(t1, t0);
-		fp3_mul(t2, t1, t0);
-		fp3_mul(t1, t1, t2);
+				fp3_sqr(t1, t0);
+				fp3_mul(t2, t1, t0);
+				fp3_mul(t1, t1, t2);
 
-		fp3_frb(t0, t0, 1);
-		fp3_mul(t3, t3, t1);
-		fp3_mul(t0, t0, t3);
+				fp3_frb(t0, t0, 1);
+				fp3_mul(t3, t3, t1);
+				fp3_mul(t0, t0, t3);
 
-		e->used = RLC_FP_DIGS;
-		dv_copy(e->dp, fp_prime_get(), RLC_FP_DIGS);
-		bn_sub_dig(e, e, 5);
-		bn_div_dig(e, e, 8);
-		fp3_exp(t0, t0, e);
+				e->used = RLC_FP_DIGS;
+				dv_copy(e->dp, fp_prime_get(), RLC_FP_DIGS);
+				bn_div_dig(e, e, 8);
+				fp3_exp(t0, t0, e);
 
-		fp3_mul(t0, t0, t2);
-		fp3_sqr(t1, t0);
-		fp3_mul(t1, t1, a);
-		fp3_dbl(t1, t1);
+				fp3_mul(t0, t0, t2);
+				fp3_sqr(t1, t0);
+				fp3_mul(t1, t1, a);
+				fp3_dbl(t1, t1);
 
-		fp3_mul(t0, t0, a);
-		fp_sub_dig(t1[0], t1[0], 1);
-		fp3_mul(c, t0, t1);
+				fp3_mul(t0, t0, a);
+				fp_sub_dig(t1[0], t1[0], 1);
+				fp3_mul(c, t0, t1);
+				break;
+			case 3:
+			case 7:
+				fp3_frb(t0, a, 1);
+				fp3_sqr(t1, t0);
+				fp3_mul(t2, t1, t0);
+				fp3_frb(t0, t0, 1);
+				fp3_mul(t3, t2, a);
+				fp3_mul(t0, t0, t3);
+
+				e->used = RLC_FP_DIGS;
+				dv_copy(e->dp, fp_prime_get(), RLC_FP_DIGS);
+				bn_div_dig(e, e, 4);
+				fp3_exp(t0, t0, e);
+
+				fp3_mul(t0, t0, a);
+				fp3_mul(c, t0, t1);
+				break;
+			default:
+				fp3_zero(c);
+				break;
+		}
 
 		fp3_sqr(t0, c);
 		if (fp3_cmp(t0, a) == RLC_EQ) {

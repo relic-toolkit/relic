@@ -133,6 +133,25 @@ typedef dv4_t dv8_t[2];
 typedef fp4_st fp8_st[2];
 
 /**
+ * Represents an octic extension prime field element.
+ *
+ * This extension is constructed with the basis {1, w, w^2}, where w^3 = v is an
+ * adjoined root in the underlying quadratic extension.
+ */
+typedef fp3_t fp9_t[3];
+
+/**
+ * Represents a double-precision octic extension field element.
+ */
+typedef dv3_t dv9_t[3];
+
+/**
+ * Represents an octic extension field element with automatic memory
+ * allocation.
+ */
+typedef fp3_st fp9_st[3];
+
+/**
  * Represents a double-precision dodecic extension field element.
  */
 typedef dv6_t dv12_t[2];
@@ -417,19 +436,6 @@ typedef fp24_t fp48_t[2];
 #endif
 
 /**
- * Multiplies a cubic extension field by the cubic non-residue. Computes
- * C = A * E, where E is a non-square/non-cube in the cubic extension.
- *
- * @param[out] C			- the result.
- * @param[in] A				- the cubic extension field element to multiply.
- */
-#if FPX_CBC == BASIC
-#define fp3_mul_nor(C, A)	fp3_mul_nor_basic(C, A)
-#elif FPX_CBC == INTEG
-#define fp3_mul_nor(C, A)	fp3_mul_nor_integ(C, A)
-#endif
-
-/**
  * Squares a cubic extension field element. Computes C = A * A.
  *
  * @param[out] C			- the result.
@@ -614,7 +620,7 @@ typedef fp24_t fp48_t[2];
 /**
  * Initializes an octic extension field with null.
  *
- * @param[out] A			- the quartic extension element to initialize.
+ * @param[out] A			- the octic extension element to initialize.
  */
 #define fp8_null(A)															\
 		fp4_null(A[0]); fp4_null(A[1]);										\
@@ -658,6 +664,79 @@ typedef fp24_t fp48_t[2];
 #define fp8_sqr(C, A)		fp8_sqr_basic(C, A)
 #elif FPX_RDC == LAZYR
 #define fp8_sqr(C, A)		fp8_sqr_lazyr(C, A)
+#endif
+
+/**
+ * Initializes a double-precision nonic extension field with null.
+ *
+ * @param[out] A			- the octic extension element to initialize.
+ */
+#define dv9_null(A)															\
+		dv3_null(A[0]); dv3_null(A[1]);	dv3_null(A[2]);						\
+
+/**
+ * Allocates a double-precision nonic extension field element.
+ *
+ * @param[out] A			- the new nonic extension field element.
+ */
+#define dv9_new(A)															\
+		dv3_new(A[0]); dv3_new(A[1]); dv3_new(A[2]);						\
+
+/**
+ * Frees a double-precision nonic extension field element.
+ *
+ * @param[out] A			- the nonic extension field element to free.
+ */
+#define dv9_free(A)															\
+		dv3_free(A[0]); dv3_free(A[1]); dv3_free(A[2]);						\
+
+/**
+ * Initializes a nonic extension field with null.
+ *
+ * @param[out] A			- the nonic extension element to initialize.
+ */
+#define fp9_null(A)															\
+		fp3_null(A[0]); fp3_null(A[1]); fp3_null(A[2]);						\
+
+/**
+ * Allocates a nonic extension field element.
+ *
+ * @param[out] A			- the new nonic extension field element.
+ */
+#define fp9_new(A)															\
+		fp3_new(A[0]); fp3_new(A[1]); fp3_null(A[2]);						\
+
+/**
+ * Frees a nonic extension field element.
+ *
+ * @param[out] A			- the nonic extension field element to free.
+ */
+#define fp9_free(A)															\
+		fp3_free(A[0]); fp3_free(A[1]); fp3_free(A[2]);						\
+
+/**
+ * Multiplies two nonic extension field elements. Computes C = A * B.
+ *
+ * @param[out] C			- the result.
+ * @param[in] A				- the first nonic extension field element.
+ * @param[in] B				- the second nonic extension field element.
+ */
+#if FPX_RDC == BASIC
+#define fp9_mul(C, A, B)	fp9_mul_basic(C, A, B)
+#elif FPX_RDC == LAZYR
+#define fp9_mul(C, A, B)	fp9_mul_lazyr(C, A, B)
+#endif
+
+/**
+ * Squares a nonic extension field element. Computes C = A * A.
+ *
+ * @param[out] C			- the result.
+ * @param[in] A				- the nonic extension field element to square.
+ */
+#if FPX_RDC == BASIC
+#define fp9_sqr(C, A)		fp9_sqr_basic(C, A)
+#elif FPX_RDC == LAZYR
+#define fp9_sqr(C, A)		fp9_sqr_lazyr(C, A)
 #endif
 
 /**
@@ -1601,16 +1680,7 @@ void fp3_mul_art(fp3_t c, fp3_t a);
  * @param[out] c			- the result.
  * @param[in] a				- the cubic extension field element to multiply.
  */
-void fp3_mul_nor_basic(fp3_t c, fp3_t a);
-
-/**
- * Multiplies a cubic extension field element by a cubic non-residue using
- * integrated modular reduction.
- *
- * @param[out] c			- the result.
- * @param[in] a				- the cubic extension field element to multiply.
- */
-void fp3_mul_nor_integ(fp3_t c, fp3_t a);
+void fp3_mul_nor(fp3_t c, fp3_t a);
 
 /**
  * Multiplies a cubic extension field element by a power of the constant
@@ -2430,6 +2500,244 @@ void fp8_exp_cyc(fp8_t c, fp8_t a, bn_t b);
  * @param[in] i				- the power of the Frobenius map.
  */
 void fp8_frb(fp8_t c, fp8_t a, int i);
+
+/**
+ * Copies the second argument to the first argument.
+ *
+ * @param[out] C			- the result.
+ * @param[in] A				- the nonic extension field element to copy.
+ */
+void fp9_copy(fp9_t c, fp9_t a);
+
+/**
+ * Assigns zero to a nonic extension field element.
+ *
+ * @param[out] A			- the nonic extension field element to zero.
+ */
+void fp9_zero(fp9_t a);
+
+/**
+ * Tests if a nonic extension field element is zero or not.
+ *
+ * @param[in] A				- the nonic extension field element to test.
+ * @return 1 if the argument is zero, 0 otherwise.
+ */
+int fp9_is_zero(fp9_t a);
+
+/**
+ * Assigns a random value to a nonic extension field element.
+ *
+ * @param[out] A			- the nonic extension field element to assign.
+ */
+void fp9_rand(fp9_t a);
+
+/**
+ * Prints a nonic extension field element to standard output.
+ *
+ * @param[in] A				- the nonic extension field element to print.
+ */
+void fp9_print(fp9_t a);
+
+/**
+ * Returns the number of bytes necessary to store a quadratic extension field
+ * element.
+ *
+ * @param[out] size			- the result.
+ * @param[in] a				- the extension field element.
+ */
+int fp9_size_bin(fp9_t a);
+
+/**
+ * Reads a quadratic extension field element from a byte vector in big-endian
+ * format.
+ *
+ * @param[out] a			- the result.
+ * @param[in] bin			- the byte vector.
+ * @param[in] len			- the buffer capacity.
+ * @throw ERR_NO_BUFFER		- if the buffer capacity is not correct.
+ */
+void fp9_read_bin(fp9_t a, const uint8_t *bin, int len);
+
+/**
+ * Writes a nonic extension field element to a byte vector in big-endian
+ * format.
+ *
+ * @param[out] bin			- the byte vector.
+ * @param[in] len			- the buffer capacity.
+ * @param[in] a				- the extension field element to write.
+ * @throw ERR_NO_BUFFER		- if the buffer capacity is not correct.
+ */
+void fp9_write_bin(uint8_t *bin, int len, fp9_t a);
+
+/**
+ * Returns the result of a comparison between two nonic extension field
+ * elements.
+ *
+ * @param[in] A				- the first nonic extension field element.
+ * @param[in] B				- the second nonic extension field element.
+ * @return RLC_EQ if a == b, and RLC_NE otherwise.
+ */
+int fp9_cmp(fp9_t a, fp9_t b);
+
+/**
+ * Returns the result of a signed comparison between a nonic extension field
+ * element and a digit.
+ *
+ * @param[in] a				- the nonic extension field element.
+ * @param[in] b				- the digit.
+ * @return RLC_EQ if a == b, and RLC_NE otherwise.
+ */
+int fp9_cmp_dig(fp9_t a, dig_t b);
+
+/**
+ * Assigns a nonic extension field element to a digit.
+ *
+ * @param[in] a				- the nonic extension field element.
+ * @param[in] b				- the digit.
+ */
+void fp9_set_dig(fp9_t a, dig_t b);
+
+/**
+ * Adds two nonic extension field elements. Computes c = a + b.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the first nonic extension field element.
+ * @param[in] b				- the second nonic extension field element.
+ */
+void fp9_add(fp9_t c, fp9_t a, fp9_t b);
+
+/**
+ * Subtracts a nonic extension field element from another. Computes
+ * c = a - b.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the nonic extension field element.
+ * @param[in] b				- the nonic extension field element.
+ */
+void fp9_sub(fp9_t c, fp9_t a, fp9_t b);
+
+/**
+ * Negates a nonic extension field element. Computes c = -a.
+ *
+ * @param[out] C			- the result.
+ * @param[out] A			- the nonic extension field element to negate.
+ */
+void fp9_neg(fp9_t c, fp9_t a);
+
+/**
+ * Doubles a nonic extension field element. Computes c = 2 * a.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the nonic extension field element to double.
+ */
+void fp9_dbl(fp9_t c, fp9_t a);
+
+/**
+ * Multiples two nonic extension field elements without performing modular
+ * reduction.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the nonic extension field element.
+ * @param[in] b				- the nonic extension field element.
+ */
+void fp9_mul_unr(dv9_t c, fp9_t a, fp9_t b);
+
+/**
+ * Multiples two nonic extension field elements.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the nonic extension field element.
+ * @param[in] b				- the nonic extension field element.
+ */
+void fp9_mul_basic(fp9_t c, fp9_t a, fp9_t b);
+
+/**
+ * Multiples two nonic extension field elements using lazy reduction.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the nonic extension field element.
+ * @param[in] b				- the nonic extension field element.
+ */
+void fp9_mul_lazyr(fp9_t c, fp9_t a, fp9_t b);
+
+/**
+ * Multiplies a nonic extension field element by the adjoined root.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the nonic extension field element to multiply.
+ */
+void fp9_mul_art(fp9_t c, fp9_t a);
+
+/**
+ * Multiples a dense nonic extension field element by a sparse element.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- a nonic extension field element.
+ * @param[in] b				- a sparse nonic extension field element.
+ */
+void fp9_mul_dxs(fp9_t c, fp9_t a, fp9_t b);
+
+/**
+ * Computes the square of a nonic extension field element without performing
+ * modular reduction.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the nonic extension field element to square.
+ */
+void fp9_sqr_unr(dv9_t c, fp9_t a);
+
+/**
+ * Computes the squares of a nonic extension field element using basic
+ * arithmetic.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the nonic extension field element to square.
+ */
+void fp9_sqr_basic(fp9_t c, fp9_t a);
+
+/**
+ * Computes the square of a nonic extension field element using lazy reduction.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the nonic extension field element to square.
+ */
+void fp9_sqr_lazyr(fp9_t c, fp9_t a);
+
+/**
+ * Inverts a nonic extension field element. Computes c = 1/a.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the nonic extension field element to invert.
+ */
+void fp9_inv(fp9_t c, fp9_t a);
+
+/**
+ * Inverts multiple noinc extension field elements simultaneously.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the nonic extension field elements to invert.
+ * @param[in] n				- the number of elements.
+ */
+void fp9_inv_sim(fp9_t *c, fp9_t *a, int n);
+
+/**
+ * Computes a power of a nonic extension field element. Computes c = a^b.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the nonic extension element to exponentiate.
+ * @param[in] b				- the exponent.
+ */
+void fp9_exp(fp9_t c, fp9_t a, bn_t b);
+
+/**
+ * Computes a power of the Frobenius endomorphism of a nonic extension field
+ * element. Computes c = a^p^i.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- a nonic extension field element.
+ * @param[in] i				- the power of the Frobenius map.
+ */
+void fp9_frb(fp9_t c, fp9_t a, int i);
 
 /**
  * Copies the second argument to the first argument.

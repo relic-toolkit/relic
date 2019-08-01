@@ -468,7 +468,7 @@ static int multiplication2(void) {
 			TEST_ASSERT(fp2_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("multiplication by quadratic/cubic non-residue is correct") {
+		TEST_BEGIN("multiplication by quadratic non-residue is correct") {
 			fp2_rand(a);
 			fp2_mul_nor(b, a);
 			switch (fp_prime_get_mod8()) {
@@ -1221,7 +1221,7 @@ static int multiplication3(void) {
 			TEST_ASSERT(fp3_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("multiplication by quadratic/cubic non-residue is correct") {
+		TEST_BEGIN("multiplication by cubic non-residue is correct") {
 			fp3_rand(a);
 			fp3_mul_nor(b, a);
 			fp3_mul_art(c, a);
@@ -1257,31 +1257,6 @@ static int multiplication3(void) {
 			fp3_mul_art(d, a);
 			TEST_ASSERT(fp3_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
-
-		TEST_BEGIN("multiplication by quadratic/cubic non-residue is correct") {
-			fp3_rand(a);
-			fp3_mul_nor(b, a);
-			switch (fp_prime_get_mod8()) {
-				case 5:
-					fp3_mul_art(c, a);
-					break;
-				case 3:
-					fp3_mul_art(c, a);
-					fp3_add(c, c, a);
-					break;
-				case 7:
-					fp3_mul_art(d, a);
-					fp3_dbl(c, a);
-					fp_prime_back(g, ep_curve_get_b());
-					for (int i = 1; i < bn_bits(g) / 2; i++) {
-						fp3_dbl(c, c);
-					}
-					fp3_add(c, c, d);
-					break;
-			}
-			TEST_ASSERT(fp3_cmp(b, c) == RLC_EQ, end);
-		}
-		TEST_END;
 	}
 	CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -1478,9 +1453,9 @@ static int square_root3(void) {
 			fp3_rand(a);
 			fp3_sqr(c, a);
 			r = fp3_srt(b, c);
-			fp3_neg(c, b);
+			fp3_sqr(b, b);
 			TEST_ASSERT(r == 1, end);
-			TEST_ASSERT(fp3_cmp(b, a) == RLC_EQ || fp3_cmp(c, a) == RLC_EQ, end);
+			TEST_ASSERT(fp3_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 	}
 	CATCH_ANY {
@@ -3201,6 +3176,555 @@ static int memory12(void) {
 	(void)a;
 	code = RLC_OK;
   end:
+	return code;
+}
+
+static int memory9(void) {
+	err_t e;
+	int code = RLC_ERR;
+	fp9_t a;
+
+	fp9_null(a);
+
+	TRY {
+		TEST_BEGIN("memory can be allocated") {
+			fp9_new(a);
+			fp9_free(a);
+		} TEST_END;
+	} CATCH(e) {
+		switch (e) {
+			case ERR_NO_MEMORY:
+				util_print("FATAL ERROR!\n");
+				ERROR(end);
+				break;
+		}
+	}
+	(void)a;
+	code = RLC_OK;
+  end:
+	return code;
+}
+
+static int util9(void) {
+	int code = RLC_ERR;
+	uint8_t bin[9 * RLC_FP_BYTES];
+	fp9_t a, b, c;
+	dig_t d;
+
+	fp9_null(a);
+	fp9_null(b);
+	fp9_null(c);
+
+	TRY {
+		fp9_new(a);
+		fp9_new(b);
+		fp9_new(c);
+
+		TEST_BEGIN("comparison is consistent") {
+			fp9_rand(a);
+			fp9_rand(b);
+			if (fp9_cmp(a, b) != RLC_EQ) {
+				TEST_ASSERT(fp9_cmp(b, a) == RLC_NE, end);
+			}
+		}
+		TEST_END;
+
+		TEST_BEGIN("copy and comparison are consistent") {
+			fp9_rand(a);
+			fp9_rand(b);
+			fp9_rand(c);
+			if (fp9_cmp(a, c) != RLC_EQ) {
+				fp9_copy(c, a);
+				TEST_ASSERT(fp9_cmp(c, a) == RLC_EQ, end);
+			}
+			if (fp9_cmp(b, c) != RLC_EQ) {
+				fp9_copy(c, b);
+				TEST_ASSERT(fp9_cmp(b, c) == RLC_EQ, end);
+			}
+		}
+		TEST_END;
+
+		TEST_BEGIN("negation is consistent") {
+			fp9_rand(a);
+			fp9_neg(b, a);
+			if (fp9_cmp(a, b) != RLC_EQ) {
+				TEST_ASSERT(fp9_cmp(b, a) == RLC_NE, end);
+			}
+			fp9_neg(b, b);
+			TEST_ASSERT(fp9_cmp(a, b) == RLC_EQ, end);
+		}
+		TEST_END;
+
+		TEST_BEGIN("assignment to zero and comparison are consistent") {
+			do {
+				fp9_rand(a);
+			} while (fp9_is_zero(a));
+			fp9_zero(c);
+			TEST_ASSERT(fp9_cmp(a, c) == RLC_NE, end);
+			TEST_ASSERT(fp9_cmp(c, a) == RLC_NE, end);
+		}
+		TEST_END;
+
+		TEST_BEGIN("assignment to random and comparison are consistent") {
+			do {
+				fp9_rand(a);
+			} while (fp9_is_zero(a));
+			fp9_zero(c);
+			TEST_ASSERT(fp9_cmp(a, c) == RLC_NE, end);
+		}
+		TEST_END;
+
+		TEST_BEGIN("assignment to zero and zero test are consistent") {
+			fp9_zero(a);
+			TEST_ASSERT(fp9_is_zero(a), end);
+		}
+		TEST_END;
+
+		TEST_BEGIN("assignment to a constant and comparison are consistent") {
+			rand_bytes((uint8_t *)&d, (RLC_DIG / 8));
+			fp9_set_dig(a, d);
+			TEST_ASSERT(fp9_cmp_dig(a, d) == RLC_EQ, end);
+		}
+		TEST_END;
+
+		TEST_BEGIN("reading and writing a finite field element are consistent") {
+			fp9_rand(a);
+			fp9_write_bin(bin, sizeof(bin), a);
+			fp9_read_bin(b, bin, sizeof(bin));
+			TEST_ASSERT(fp9_cmp(a, b) == RLC_EQ, end);
+		}
+		TEST_END;
+
+		TEST_BEGIN("getting the size of a prime field element is correct") {
+			fp9_rand(a);
+			TEST_ASSERT(fp9_size_bin(a) == 9 * RLC_FP_BYTES, end);
+		}
+		TEST_END;
+	}
+	CATCH_ANY {
+		ERROR(end);
+	}
+	code = RLC_OK;
+  end:
+	fp9_free(a);
+	fp9_free(b);
+	fp9_free(c);
+	return code;
+}
+
+static int addition9(void) {
+	int code = RLC_ERR;
+	fp9_t a, b, c, d, e;
+
+	fp9_null(a);
+	fp9_null(b);
+	fp9_null(c);
+	fp9_null(d);
+	fp9_null(e);
+
+	TRY {
+		fp9_new(a);
+		fp9_new(b);
+		fp9_new(c);
+		fp9_new(d);
+		fp9_new(e);
+
+		TEST_BEGIN("addition is commutative") {
+			fp9_rand(a);
+			fp9_rand(b);
+			fp9_add(d, a, b);
+			fp9_add(e, b, a);
+			TEST_ASSERT(fp9_cmp(d, e) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_BEGIN("addition is associative") {
+			fp9_rand(a);
+			fp9_rand(b);
+			fp9_rand(c);
+			fp9_add(d, a, b);
+			fp9_add(d, d, c);
+			fp9_add(e, b, c);
+			fp9_add(e, a, e);
+			TEST_ASSERT(fp9_cmp(d, e) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_BEGIN("addition has identity") {
+			fp9_rand(a);
+			fp9_zero(d);
+			fp9_add(e, a, d);
+			TEST_ASSERT(fp9_cmp(e, a) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_BEGIN("addition has inverse") {
+			fp9_rand(a);
+			fp9_neg(d, a);
+			fp9_add(e, a, d);
+			TEST_ASSERT(fp9_is_zero(e), end);
+		} TEST_END;
+	}
+	CATCH_ANY {
+		util_print("FATAL ERROR!\n");
+		ERROR(end);
+	}
+	code = RLC_OK;
+  end:
+	fp9_free(a);
+	fp9_free(b);
+	fp9_free(c);
+	fp9_free(d);
+	fp9_free(e);
+	return code;
+}
+
+static int subtraction9(void) {
+	int code = RLC_ERR;
+	fp9_t a, b, c, d;
+
+	fp9_null(a);
+	fp9_null(b);
+	fp9_null(c);
+	fp9_null(d);
+
+	TRY {
+		fp9_new(a);
+		fp9_new(b);
+		fp9_new(c);
+		fp9_new(d);
+
+		TEST_BEGIN("subtraction is anti-commutative") {
+			fp9_rand(a);
+			fp9_rand(b);
+			fp9_sub(c, a, b);
+			fp9_sub(d, b, a);
+			fp9_neg(d, d);
+			TEST_ASSERT(fp9_cmp(c, d) == RLC_EQ, end);
+		}
+		TEST_END;
+
+		TEST_BEGIN("subtraction has identity") {
+			fp9_rand(a);
+			fp9_zero(c);
+			fp9_sub(d, a, c);
+			TEST_ASSERT(fp9_cmp(d, a) == RLC_EQ, end);
+		}
+		TEST_END;
+
+		TEST_BEGIN("subtraction has inverse") {
+			fp9_rand(a);
+			fp9_sub(c, a, a);
+			TEST_ASSERT(fp9_is_zero(c), end);
+		}
+		TEST_END;
+	}
+	CATCH_ANY {
+		util_print("FATAL ERROR!\n");
+		ERROR(end);
+	}
+	code = RLC_OK;
+  end:
+	fp9_free(a);
+	fp9_free(b);
+	fp9_free(c);
+	fp9_free(d);
+	return code;
+}
+
+static int doubling9(void) {
+	int code = RLC_ERR;
+	fp9_t a, b, c;
+
+	fp9_null(a);
+	fp9_null(b);
+	fp9_null(c);
+
+	TRY {
+		fp9_new(a);
+		fp9_new(b);
+		fp9_new(c);
+
+		TEST_BEGIN("doubling is correct") {
+			fp9_rand(a);
+			fp9_dbl(b, a);
+			fp9_add(c, a, a);
+			TEST_ASSERT(fp9_cmp(b, c) == RLC_EQ, end);
+		} TEST_END;
+	}
+	CATCH_ANY {
+		util_print("FATAL ERROR!\n");
+		ERROR(end);
+	}
+	code = RLC_OK;
+  end:
+	fp9_free(a);
+	fp9_free(b);
+	fp9_free(c);
+	return code;
+}
+
+static int multiplication9(void) {
+	int code = RLC_ERR;
+	fp9_t a, b, c, d, e, f;
+
+	fp9_null(a);
+	fp9_null(b);
+	fp9_null(c);
+	fp9_null(d);
+	fp9_null(e);
+	fp9_null(f);
+
+	TRY {
+		fp9_new(a);
+		fp9_new(b);
+		fp9_new(c);
+		fp9_new(d);
+		fp9_new(e);
+		fp9_new(f);
+
+		TEST_BEGIN("multiplication is commutative") {
+			fp9_rand(a);
+			fp9_rand(b);
+			fp9_mul(d, a, b);
+			fp9_mul(e, b, a);
+			TEST_ASSERT(fp9_cmp(d, e) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_BEGIN("multiplication is associative") {
+			fp9_rand(a);
+			fp9_rand(b);
+			fp9_rand(c);
+			fp9_mul(d, a, b);
+			fp9_mul(d, d, c);
+			fp9_mul(e, b, c);
+			fp9_mul(e, a, e);
+			TEST_ASSERT(fp9_cmp(d, e) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_BEGIN("multiplication is distributive") {
+			fp9_rand(a);
+			fp9_rand(b);
+			fp9_rand(c);
+			fp9_add(d, a, b);
+			fp9_mul(d, c, d);
+			fp9_mul(e, c, a);
+			fp9_mul(f, c, b);
+			fp9_add(e, e, f);
+			TEST_ASSERT(fp9_cmp(d, e) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_BEGIN("multiplication has identity") {
+			fp9_set_dig(d, 1);
+			fp9_mul(e, a, d);
+			TEST_ASSERT(fp9_cmp(e, a) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_BEGIN("multiplication has zero property") {
+			fp9_zero(d);
+			fp9_mul(e, a, d);
+			TEST_ASSERT(fp9_is_zero(e), end);
+		} TEST_END;
+
+		TEST_BEGIN("multiplication by adjoined root is correct") {
+			fp9_rand(a);
+			fp9_zero(b);
+			fp2_set_dig(b[1], 1);
+			fp9_mul(c, a, b);
+			fp9_mul_art(d, a);
+			TEST_ASSERT(fp9_cmp(c, d) == RLC_EQ, end);
+		} TEST_END;
+
+#if FPX_RDC == BASIC | !defined(STRIP)
+		TEST_BEGIN("basic multiplication is correct") {
+			fp9_rand(a);
+			fp9_rand(b);
+			fp9_mul(c, a, b);
+			fp9_mul_basic(d, a, b);
+			TEST_ASSERT(fp9_cmp(c, d) == RLC_EQ, end);
+		} TEST_END;
+#endif
+
+#if FPX_RDC == LAZYR || !defined(STRIP)
+		TEST_BEGIN("lazy-reduced multiplication is correct") {
+			fp9_rand(a);
+			fp9_rand(b);
+			fp9_mul(c, a, b);
+			fp9_mul_lazyr(d, a, b);
+			TEST_ASSERT(fp9_cmp(c, d) == RLC_EQ, end);
+		} TEST_END;
+#endif
+	}
+	CATCH_ANY {
+		util_print("FATAL ERROR!\n");
+		ERROR(end);
+	}
+	code = RLC_OK;
+  end:
+	fp9_free(a);
+	fp9_free(b);
+	fp9_free(c);
+	fp9_free(d);
+	fp9_free(e);
+	fp9_free(f);
+	return code;
+}
+
+static int squaring9(void) {
+	int code = RLC_ERR;
+	fp9_t a, b, c;
+
+	fp9_null(a);
+	fp9_null(b);
+	fp9_null(c);
+
+	TRY {
+		fp9_new(a);
+		fp9_new(b);
+		fp9_new(c);
+
+		TEST_BEGIN("squaring is correct") {
+			fp9_rand(a);
+			fp9_mul(b, a, a);
+			fp9_sqr(c, a);
+			TEST_ASSERT(fp9_cmp(b, c) == RLC_EQ, end);
+		} TEST_END;
+
+#if FPX_RDC == BASIC | !defined(STRIP)
+		TEST_BEGIN("basic squaring is correct") {
+			fp9_rand(a);
+			fp9_sqr(b, a);
+			fp9_sqr_basic(c, a);
+			TEST_ASSERT(fp9_cmp(b, c) == RLC_EQ, end);
+		} TEST_END;
+#endif
+
+#if FPX_RDC == LAZYR || !defined(STRIP)
+		TEST_BEGIN("lazy-reduced squaring is correct") {
+			fp9_rand(a);
+			fp9_sqr(b, a);
+			fp9_sqr_lazyr(c, a);
+			TEST_ASSERT(fp9_cmp(b, c) == RLC_EQ, end);
+		} TEST_END;
+#endif
+	}
+	CATCH_ANY {
+		util_print("FATAL ERROR!\n");
+		ERROR(end);
+	}
+	code = RLC_OK;
+  end:
+	fp9_free(a);
+	fp9_free(b);
+	fp9_free(c);
+	return code;
+}
+
+static int inversion9(void) {
+	int code = RLC_ERR;
+	fp9_t a, b, c, d[2];
+
+	fp9_null(a);
+	fp9_null(b);
+	fp9_null(c);
+	fp9_null(d[0]);
+	fp9_null(d[1]);
+
+	TRY {
+		fp9_new(a);
+		fp9_new(b);
+		fp9_new(c);
+		fp9_new(d[0]);
+		fp9_new(d[1]);
+
+		TEST_BEGIN("inversion is correct") {
+			do {
+				fp9_rand(a);
+			} while (fp9_is_zero(a));
+			fp9_inv(b, a);
+			fp9_mul(c, a, b);
+			TEST_ASSERT(fp9_cmp_dig(c, 1) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_BEGIN("simultaneous inversion is correct") {
+			do {
+				fp9_rand(a);
+				fp9_rand(b);
+			} while (fp9_is_zero(a) || fp9_is_zero(b));
+			fp9_copy(d[0], a);
+			fp9_copy(d[1], b);
+			fp9_inv(a, a);
+			fp9_inv(b, b);
+			fp9_inv_sim(d, d, 2);
+			TEST_ASSERT(fp9_cmp(d[0], a) == RLC_EQ &&
+					fp9_cmp(d[1], b) == RLC_EQ, end);
+		} TEST_END;
+	}
+	CATCH_ANY {
+		util_print("FATAL ERROR!\n");
+		ERROR(end);
+	}
+	code = RLC_OK;
+  end:
+	fp9_free(a);
+	fp9_free(b);
+	fp9_free(c);
+	fp9_free(d[0]);
+	fp9_free(d[1]);
+	return code;
+}
+
+static int exponentiation9(void) {
+	int code = RLC_ERR;
+	fp9_t a, b, c;
+	bn_t d;
+
+	fp9_null(a);
+	fp9_null(b);
+	fp9_null(c);
+	bn_null(d);
+
+	TRY {
+		fp9_new(a);
+		fp9_new(b);
+		fp9_new(c);
+		bn_new(d);
+
+		TEST_BEGIN("exponentiation is correct") {
+			fp9_rand(a);
+			bn_zero(d);
+			fp9_exp(c, a, d);
+			TEST_ASSERT(fp9_cmp_dig(c, 1) == RLC_EQ, end);
+			bn_set_dig(d, 1);
+			fp9_exp(c, a, d);
+			TEST_ASSERT(fp9_cmp(c, a) == RLC_EQ, end);
+			bn_rand(d, RLC_POS, RLC_FP_BITS);
+			fp9_exp(b, a, d);
+			bn_neg(d, d);
+			fp9_exp(c, a, d);
+			fp9_inv(c, c);
+			TEST_ASSERT(fp9_cmp(b, c) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_BEGIN("frobenius and exponentiation are consistent") {
+			fp9_rand(a);
+			fp9_frb(b, a, 0);
+			TEST_ASSERT(fp9_cmp(a, b) == RLC_EQ, end);
+			fp9_frb(b, a, 1);
+			d->sign = RLC_POS;
+			d->used = RLC_FP_DIGS;
+			dv_copy(d->dp, fp_prime_get(), RLC_FP_DIGS);
+			fp9_exp(c, a, d);
+			TEST_ASSERT(fp9_cmp(c, b) == RLC_EQ, end);
+		} TEST_END;
+	}
+	CATCH_ANY {
+		util_print("FATAL ERROR!\n");
+		ERROR(end);
+	}
+	code = RLC_OK;
+  end:
+	fp9_free(a);
+	fp9_free(b);
+	fp9_free(c);
+	bn_free(d);
 	return code;
 }
 
@@ -6113,7 +6637,62 @@ int main(void) {
 			core_clean();
 			return 1;
 		}
+	}
 
+	/* Only execute these if there is an assigned cubic non-residue. */
+	if (fp_prime_get_cnr()) {
+		util_print("\n-- Nonic extension: (j) as CNR\n");
+		util_banner("Utilities:", 1);
+
+		if (memory9() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (util9() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		util_banner("Arithmetic:", 1);
+
+		if (addition9() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (subtraction9() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (doubling9() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (multiplication9() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (squaring9() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (inversion9() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (exponentiation9() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+	}
+
+	if (fp_prime_get_qnr()) {
 		util_banner("Dodecic extension:", 0);
 		util_banner("Utilities:", 1);
 

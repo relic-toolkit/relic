@@ -361,7 +361,8 @@ typedef struct _ctx_t {
 	fp2_st fp2_p2[3];
 	/** @} */
 	/** Constants for computing Frobenius maps in higher extensions. @{ */
-	fp_st fp3_base[2];
+	int frb3;
+	fp_st fp3_p0[2];
 	fp_st fp3_p1[5];
 	fp_st fp3_p2[5];
 	fp_st fp3_p3[5];

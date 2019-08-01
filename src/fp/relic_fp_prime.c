@@ -90,9 +90,8 @@ static void fp_prime_set(const bn_t p) {
 			case 3:
 			case 7:
 				ctx->qnr = -1;
-				/* The current code for extensions of Fp^3 relies on qnr being
-				 * also a cubic non-residue, so avoid that. */
-				ctx->cnr = 0;
+				/* The current code for Fp^3 relies on cnr = -2. */
+				ctx->cnr = -2;
 				break;
 			case 1:
 			case 5:
@@ -249,75 +248,111 @@ void fp_prime_set_pairf(const bn_t x, int pairf) {
 
 		bn_copy(&(ctx->par), x);
 		bn_copy(t0, x);
-		if (pairf == EP_BN) {
-			/* p = 36 * x^4 + 36 * x^3 + 24 * x^2 + 6 * x + 1. */
-			bn_set_dig(p, 1);
-			bn_mul_dig(t1, t0, 6);
-			bn_add(p, p, t1);
-			bn_mul(t1, t0, t0);
-			bn_mul_dig(t1, t1, 24);
-			bn_add(p, p, t1);
-			bn_mul(t1, t0, t0);
-			bn_mul(t1, t1, t0);
-			bn_mul_dig(t1, t1, 36);
-			bn_add(p, p, t1);
-			bn_mul(t0, t0, t0);
-			bn_mul(t1, t0, t0);
-			bn_mul_dig(t1, t1, 36);
-			bn_add(p, p, t1);
-			fp_prime_set_dense(p);
-		}
 
-		if (pairf == EP_B12) {
-			/* p = (x^2 - 2x + 1) * (x^4 - x^2 + 1)/3 + x. */
-			bn_sqr(t1, t0);
-			bn_sqr(p, t1);
-			bn_sub(p, p, t1);
-			bn_add_dig(p, p, 1);
-			bn_sub(t1, t1, t0);
-			bn_sub(t1, t1, t0);
-			bn_add_dig(t1, t1, 1);
-			bn_mul(p, p, t1);
-			bn_div_dig(p, p, 3);
-			bn_add(p, p, t0);
-			fp_prime_set_dense(p);
-		}
-
-		if (pairf == EP_OT) {
-			/* p = (x^8 + x^6 + 5*x^4 + x^2 + 4*x + 4) / 4. */
-			bn_set_dig(p, 4);
-			bn_mul_dig(t1, t0, 4);
-			bn_add(p, p, t1);
-			bn_sqr(t0, t0);
-			bn_add(p, p, t0);
-			bn_sqr(t1, t0);
-			bn_add(p, p, t1);
-			bn_add(p, p, t1);
-			bn_add(p, p, t1);
-			bn_add(p, p, t1);
-			bn_add(p, p, t1);
-			bn_mul(t1, t1, t0);
-			bn_add(p, p, t1);
-			bn_mul(t1, t1, t0);
-			bn_add(p, p, t1);
-			bn_div_dig(p, p, 4);
-			fp_prime_set_dense(p);
-		}
-
-		if (pairf == EP_B48) {
-			/* p = (x - 1)^2*(x^16 - x^8 + 1) / 3 + x. */
-			bn_sqr(t1, t0);
-			bn_sqr(t1, t1);
-			bn_sqr(p, t1);
-			bn_sqr(t1, p);
-			bn_sub(t1, t1, p);
-			bn_add_dig(t1, t1, 1);
-			bn_sub_dig(p, t0, 1);
-			bn_sqr(p, p);
-			bn_mul(p, p, t1);
-			bn_div_dig(p, p, 3);
-			bn_add(p, p, t0);
-			fp_prime_set_dense(p);
+		switch (pairf) {
+			case EP_BN:
+				/* p = 36 * x^4 + 36 * x^3 + 24 * x^2 + 6 * x + 1. */
+				bn_set_dig(p, 1);
+				bn_mul_dig(t1, t0, 6);
+				bn_add(p, p, t1);
+				bn_mul(t1, t0, t0);
+				bn_mul_dig(t1, t1, 24);
+				bn_add(p, p, t1);
+				bn_mul(t1, t0, t0);
+				bn_mul(t1, t1, t0);
+				bn_mul_dig(t1, t1, 36);
+				bn_add(p, p, t1);
+				bn_mul(t0, t0, t0);
+				bn_mul(t1, t0, t0);
+				bn_mul_dig(t1, t1, 36);
+				bn_add(p, p, t1);
+				fp_prime_set_dense(p);
+				break;
+			case EP_B12:
+				/* p = (x^2 - 2x + 1) * (x^4 - x^2 + 1)/3 + x. */
+				bn_sqr(t1, t0);
+				bn_sqr(p, t1);
+				bn_sub(p, p, t1);
+				bn_add_dig(p, p, 1);
+				bn_sub(t1, t1, t0);
+				bn_sub(t1, t1, t0);
+				bn_add_dig(t1, t1, 1);
+				bn_mul(p, p, t1);
+				bn_div_dig(p, p, 3);
+				bn_add(p, p, t0);
+				fp_prime_set_dense(p);
+				break;
+			case EP_OT:
+				/* p = (x^8 + x^6 + 5*x^4 + x^2 + 4*x + 4) / 4. */
+				bn_set_dig(p, 4);
+				bn_mul_dig(t1, t0, 4);
+				bn_add(p, p, t1);
+				bn_sqr(t0, t0);
+				bn_add(p, p, t0);
+				bn_sqr(t1, t0);
+				bn_add(p, p, t1);
+				bn_add(p, p, t1);
+				bn_add(p, p, t1);
+				bn_add(p, p, t1);
+				bn_add(p, p, t1);
+				bn_mul(t1, t1, t0);
+				bn_add(p, p, t1);
+				bn_mul(t1, t1, t0);
+				bn_add(p, p, t1);
+				bn_div_dig(p, p, 4);
+				fp_prime_set_dense(p);
+				break;
+			case EP_B48:
+				/* p = (x - 1)^2*(x^16 - x^8 + 1) / 3 + x. */
+				bn_sqr(t1, t0);
+				bn_sqr(t1, t1);
+				bn_sqr(p, t1);
+				bn_sqr(t1, p);
+				bn_sub(t1, t1, p);
+				bn_add_dig(t1, t1, 1);
+				bn_sub_dig(p, t0, 1);
+				bn_sqr(p, p);
+				bn_mul(p, p, t1);
+				bn_div_dig(p, p, 3);
+				bn_add(p, p, t0);
+				fp_prime_set_dense(p);
+				break;
+			case EP_K54:
+				/* p = (1+3*x+3*x^2+(3^5)*x^9+(3^5)*x^10+(3^6)*x^10+(3^6)*x^11+(3^9)*x^18+(3^10)*x^19+(3^10)*x^20) */
+				bn_set_dig(p, 1);
+				bn_mul_dig(t1, t0, 3);
+				bn_add(p, p, t1);
+				bn_sqr(t1, t0);
+				bn_add(p, p, t1);
+				bn_add(p, p, t1);
+				bn_add(p, p, t1);
+				bn_sqr(t1, t1);
+				bn_sqr(t1, t1);
+				bn_mul(t1, t1, t0);
+				bn_mul_dig(t1, t1, 243);
+				bn_add(p, p, t1);
+				bn_mul(t1, t1, t0);
+				bn_add(p, p, t1);
+				bn_mul_dig(t1, t1, 3);
+				bn_add(p, p, t1);
+				bn_mul(t1, t1, t0);
+				bn_add(p, p, t1);
+				bn_mul_dig(t1, t1, 27);
+				bn_mul(t1, t1, t0);
+				bn_mul(t1, t1, t0);
+				bn_mul(t1, t1, t0);
+				bn_mul(t1, t1, t0);
+				bn_mul(t1, t1, t0);
+				bn_mul(t1, t1, t0);
+				bn_mul(t1, t1, t0);
+				bn_add(p, p, t1);
+				bn_mul_dig(t1, t1, 3);
+				bn_mul(t1, t1, t0);
+				bn_add(p, p, t1);
+				bn_mul(t1, t1, t0);
+				bn_add(p, p, t1);
+				fp_prime_set_dense(p);
+				break;
 		}
 
 		/* Store parameter in NAF form. */

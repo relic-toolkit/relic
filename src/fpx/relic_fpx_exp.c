@@ -245,6 +245,42 @@ void fp8_exp(fp8_t c, fp8_t a, bn_t b) {
 	}
 }
 
+void fp9_exp(fp9_t c, fp9_t a, bn_t b) {
+	fp9_t t;
+
+	if (bn_is_zero(b)) {
+		fp9_set_dig(c, 1);
+		return;
+	}
+
+	fp9_null(t);
+
+	TRY {
+		fp9_new(t);
+
+		fp9_copy(t, a);
+
+		for (int i = bn_bits(b) - 2; i >= 0; i--) {
+			fp9_sqr(t, t);
+			if (bn_get_bit(b, i)) {
+				fp9_mul(t, t, a);
+			}
+		}
+
+		if (bn_sign(b) == RLC_NEG) {
+			fp9_inv(c, t);
+		} else {
+			fp9_copy(c, t);
+		}
+	}
+	CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	}
+	FINALLY {
+		fp9_free(t);
+	}
+}
+
 void fp12_exp(fp12_t c, fp12_t a, bn_t b) {
 	fp12_t t;
 

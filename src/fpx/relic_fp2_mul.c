@@ -37,48 +37,6 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void fp2_mul_frb(fp2_t c, fp2_t a, int i, int j) {
-	ctx_t *ctx = core_get();
-
-#if ALLOC == AUTO
-	switch(i) {
-		case 1:
-			fp2_mul(c, a, ctx->fp2_p1[j - 1]);
-			break;
-		case 2:
-			fp2_mul(c, a, ctx->fp2_p2[j - 1]);
-			break;
-	}
-#else
-	fp2_t t;
-
-	fp2_null(t);
-
-	TRY {
-		fp2_new(t);
-
-		switch(i) {
-			case 1:
-				fp_copy(t[0], ctx->fp2_p1[j - 1][0]);
-				fp_copy(t[1], ctx->fp2_p1[j - 1][1]);
-				break;
-			case 2:
-				fp_copy(t[0], ctx->fp2_p2[j - 1][0]);
-				fp_copy(t[1], ctx->fp2_p2[j - 1][1]);
-				break;
-		}
-
-		fp2_mul(c, a, t);
-	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	}
-	FINALLY {
-		fp2_free(t);
-	}
-#endif
-}
-
 #if FPX_QDR == BASIC || !defined(STRIP)
 
 void fp2_mul_basic(fp2_t c, fp2_t a, fp2_t b) {
@@ -119,9 +77,6 @@ void fp2_mul_basic(fp2_t c, fp2_t a, fp2_t b) {
 		/* t1 = u^2 * (a_1 * b_1). */
 		for (int i = -1; i > fp_prime_get_qnr(); i--) {
 			fp_subc_low(t1, t1, t4);
-		}
-		for (int i = 0; i <= fp_prime_get_qnr(); i++) {
-			fp_addc_low(t1, t1, t4);
 		}
 
 		/* c_0 = t1 mod p. */
@@ -235,9 +190,6 @@ void fp2_mul_art(fp2_t c, fp2_t a) {
 		for (int i = -1; i > fp_prime_get_qnr(); i--) {
 			fp_sub(c[0], c[0], a[1]);
 		}
-		for (int i = 1; i <= fp_prime_get_qnr() + 1; i++) {
-			fp_add(c[0], c[0], a[1]);
-		}
 		fp_copy(c[1], t);
 #endif
 	}
@@ -247,4 +199,46 @@ void fp2_mul_art(fp2_t c, fp2_t a) {
 	FINALLY {
 		fp_free(t);
 	}
+}
+
+void fp2_mul_frb(fp2_t c, fp2_t a, int i, int j) {
+	ctx_t *ctx = core_get();
+
+#if ALLOC == AUTO
+	switch(i) {
+		case 1:
+			fp2_mul(c, a, ctx->fp2_p1[j - 1]);
+			break;
+		case 2:
+			fp2_mul(c, a, ctx->fp2_p2[j - 1]);
+			break;
+	}
+#else
+	fp2_t t;
+
+	fp2_null(t);
+
+	TRY {
+		fp2_new(t);
+
+		switch(i) {
+			case 1:
+				fp_copy(t[0], ctx->fp2_p1[j - 1][0]);
+				fp_copy(t[1], ctx->fp2_p1[j - 1][1]);
+				break;
+			case 2:
+				fp_copy(t[0], ctx->fp2_p2[j - 1][0]);
+				fp_copy(t[1], ctx->fp2_p2[j - 1][1]);
+				break;
+		}
+
+		fp2_mul(c, a, t);
+	}
+	CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	}
+	FINALLY {
+		fp2_free(t);
+	}
+#endif
 }

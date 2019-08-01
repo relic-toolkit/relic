@@ -343,6 +343,62 @@ void fp8_set_dig(fp8_t a, dig_t b) {
 	fp4_zero(a[1]);
 }
 
+void fp9_copy(fp9_t c, fp9_t a) {
+	fp3_copy(c[0], a[0]);
+	fp3_copy(c[1], a[1]);
+	fp3_copy(c[2], a[2]);
+}
+
+void fp9_zero(fp9_t a) {
+	fp3_zero(a[0]);
+	fp3_zero(a[1]);
+	fp3_zero(a[2]);
+}
+
+int fp9_is_zero(fp9_t a) {
+	return fp3_is_zero(a[0]) && fp3_is_zero(a[1]) && fp3_is_zero(a[2]);
+}
+
+void fp9_rand(fp9_t a) {
+	fp3_rand(a[0]);
+	fp3_rand(a[1]);
+	fp3_rand(a[2]);
+}
+
+void fp9_print(fp9_t a) {
+	fp3_print(a[0]);
+	fp3_print(a[1]);
+	fp3_print(a[2]);
+}
+
+int fp9_size_bin(fp9_t a) {
+	return 9 * RLC_FP_BYTES;
+}
+
+void fp9_read_bin(fp9_t a, const uint8_t *bin, int len) {
+	if (len != 9 * RLC_FP_BYTES) {
+		THROW(ERR_NO_BUFFER);
+	}
+	fp3_read_bin(a[0], bin, 3 * RLC_FP_BYTES);
+	fp3_read_bin(a[1], bin + 3 * RLC_FP_BYTES, 3 * RLC_FP_BYTES);
+	fp3_read_bin(a[2], bin + 6 * RLC_FP_BYTES, 3 * RLC_FP_BYTES);
+}
+
+void fp9_write_bin(uint8_t *bin, int len, fp9_t a) {
+	if (len != 9 * RLC_FP_BYTES) {
+		THROW(ERR_NO_BUFFER);
+	}
+	fp3_write_bin(bin, 3 * RLC_FP_BYTES, a[0]);
+	fp3_write_bin(bin + 3 * RLC_FP_BYTES, 3 * RLC_FP_BYTES, a[1]);
+	fp3_write_bin(bin + 6 * RLC_FP_BYTES, 3 * RLC_FP_BYTES, a[2]);
+}
+
+void fp9_set_dig(fp9_t a, dig_t b) {
+	fp3_set_dig(a[0], b);
+	fp3_zero(a[1]);
+	fp3_zero(a[2]);
+}
+
 void fp12_copy(fp12_t c, fp12_t a) {
 	fp6_copy(c[0], a[0]);
 	fp6_copy(c[1], a[1]);

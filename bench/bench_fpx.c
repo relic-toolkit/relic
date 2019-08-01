@@ -1263,12 +1263,14 @@ static void util8(void) {
 }
 
 static void arith8(void) {
-	fp8_t a, b, c;
+	fp8_t a, b, c, d[2];
 	bn_t e;
 
 	fp8_new(a);
 	fp8_new(b);
 	fp8_new(c);
+	fp8_new(d[0]);
+	fp8_new(d[1]);
 	bn_new(e);
 
 	BENCH_BEGIN("fp8_add") {
@@ -1348,6 +1350,13 @@ static void arith8(void) {
 	}
 	BENCH_END;
 
+	BENCH_BEGIN("fp8_inv_sim (2)") {
+		fp8_rand(d[0]);
+		fp8_rand(d[1]);
+		BENCH_ADD(fp8_inv_sim(d, d, 2));
+	}
+	BENCH_END;
+
 	BENCH_BEGIN("fp8_inv_cyc") {
 		fp8_rand(a);
 		BENCH_ADD(fp8_inv_cyc(c, a));
@@ -1392,7 +1401,221 @@ static void arith8(void) {
 	fp8_free(a);
 	fp8_free(b);
 	fp8_free(c);
+	fp8_free(d[0]);
+	fp8_free(d[1]);
 	bn_free(e);
+}
+
+static void memory9(void) {
+	fp9_t a[BENCH];
+
+	BENCH_SMALL("fp9_null", fp9_null(a[i]));
+
+	BENCH_SMALL("fp9_new", fp9_new(a[i]));
+	for (int i = 0; i < BENCH; i++) {
+		fp9_free(a[i]);
+	}
+
+	for (int i = 0; i < BENCH; i++) {
+		fp9_new(a[i]);
+	}
+	BENCH_SMALL("fp9_free", fp9_free(a[i]));
+
+	(void)a;
+}
+
+static void util9(void) {
+	uint8_t bin[9 * RLC_FP_BYTES];
+	fp9_t a, b;
+
+	fp9_null(a);
+	fp9_null(b);
+
+	fp9_new(a);
+	fp9_new(b);
+
+	BENCH_BEGIN("fp9_copy") {
+		fp9_rand(a);
+		BENCH_ADD(fp9_copy(b, a));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp9_neg") {
+		fp9_rand(a);
+		BENCH_ADD(fp9_neg(b, a));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp9_zero") {
+		fp9_rand(a);
+		BENCH_ADD(fp9_zero(a));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp9_is_zero") {
+		fp9_rand(a);
+		BENCH_ADD((void)fp9_is_zero(a));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp9_set_dig (1)") {
+		fp9_rand(a);
+		BENCH_ADD(fp9_set_dig(a, 1));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp9_set_dig") {
+		fp9_rand(a);
+		BENCH_ADD(fp9_set_dig(a, a[0][0][0]));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp9_rand") {
+		BENCH_ADD(fp9_rand(a));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp9_size_bin") {
+		fp9_rand(a);
+		BENCH_ADD(fp9_size_bin(a));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp9_write_bin") {
+		fp9_rand(a);
+		BENCH_ADD(fp9_write_bin(bin, sizeof(bin), a));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp9_read_bin") {
+		fp9_rand(a);
+		fp9_write_bin(bin, sizeof(bin), a);
+		BENCH_ADD(fp9_read_bin(a, bin, sizeof(bin)));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp9_cmp") {
+		fp9_rand(a);
+		fp9_rand(b);
+		BENCH_ADD(fp9_cmp(b, a));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp9_cmp_dig") {
+		fp9_rand(a);
+		BENCH_ADD(fp9_cmp_dig(a, (dig_t)0));
+	}
+	BENCH_END;
+
+	fp9_free(a);
+	fp9_free(b);
+}
+
+static void arith9(void) {
+	fp9_t a, b, c;
+	bn_t d;
+
+	fp9_new(a);
+	fp9_new(b);
+	fp9_new(c);
+	bn_new(d);
+
+	BENCH_BEGIN("fp9_add") {
+		fp9_rand(a);
+		fp9_rand(b);
+		BENCH_ADD(fp9_add(c, a, b));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp9_sub") {
+		fp9_rand(a);
+		fp9_rand(b);
+		BENCH_ADD(fp9_sub(c, a, b));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp9_dbl") {
+		fp9_rand(a);
+		BENCH_ADD(fp9_dbl(c, a));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp9_mul") {
+		fp9_rand(a);
+		fp9_rand(b);
+		BENCH_ADD(fp9_mul(c, a, b));
+	}
+	BENCH_END;
+
+#if FPX_RDC == BASIC || !defined(STRIP)
+	BENCH_BEGIN("fp9_mul_basic") {
+		fp9_rand(a);
+		fp9_rand(b);
+		BENCH_ADD(fp9_mul_basic(c, a, b));
+	}
+	BENCH_END;
+#endif
+
+#if FPX_RDC == LAZYR || !defined(STRIP)
+	BENCH_BEGIN("fp9_mul_lazyr") {
+		fp9_rand(a);
+		fp9_rand(b);
+		BENCH_ADD(fp9_mul_lazyr(c, a, b));
+	}
+	BENCH_END;
+#endif
+
+	BENCH_BEGIN("fp9_mul_art") {
+		fp9_rand(a);
+		BENCH_ADD(fp9_mul_art(c, a));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp9_sqr") {
+		fp9_rand(a);
+		BENCH_ADD(fp9_sqr(c, a));
+	}
+	BENCH_END;
+
+#if FPX_RDC == BASIC || !defined(STRIP)
+	BENCH_BEGIN("fp9_sqr_basic") {
+		fp9_rand(a);
+		BENCH_ADD(fp9_sqr_basic(c, a));
+	}
+	BENCH_END;
+#endif
+
+#if FPX_RDC == LAZYR || !defined(STRIP)
+	BENCH_BEGIN("fp9_sqr_lazyr") {
+		fp9_rand(a);
+		BENCH_ADD(fp9_sqr_lazyr(c, a));
+	}
+	BENCH_END;
+#endif
+
+	BENCH_BEGIN("fp9_inv") {
+		fp9_rand(a);
+		BENCH_ADD(fp9_inv(c, a));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp9_exp") {
+		fp9_rand(a);
+		d->used = RLC_FP_DIGS;
+		dv_copy(d->dp, fp_prime_get(), RLC_FP_DIGS);
+		BENCH_ADD(fp9_exp(c, a, d));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp9_frb") {
+		fp9_rand(a);
+		BENCH_ADD(fp9_frb(c, a, 1));
+	}
+	BENCH_END;
+
+	fp9_free(a);
+	fp9_free(b);
+	fp9_free(c);
 }
 
 static void memory12(void) {
@@ -2656,7 +2879,6 @@ int main(void) {
 		util_banner("Utilities:", 1);
 		memory3();
 		util3();
-
 		util_banner("Arithmetic:", 1);
 		arith3();
 	}
@@ -2682,7 +2904,18 @@ int main(void) {
 		util8();
 		util_banner("Arithmetic:", 1);
 		arith8();
+	}
 
+	if (fp_prime_get_cnr()) {
+		util_banner("Nonic extension:", 0);
+		util_banner("Utilities:", 1);
+		memory9();
+		util9();
+		util_banner("Arithmetic:", 1);
+		arith9();
+	}
+
+	if (fp_prime_get_qnr()) {
 		util_banner("Dodecic extension:", 0);
 		util_banner("Utilities:", 1);
 		memory12();

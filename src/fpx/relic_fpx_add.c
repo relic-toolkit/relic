@@ -187,6 +187,30 @@ void fp8_neg(fp8_t c, fp8_t a) {
 	fp4_neg(c[1], a[1]);
 }
 
+void fp9_add(fp9_t c, fp9_t a, fp9_t b) {
+	fp3_add(c[0], a[0], b[0]);
+	fp3_add(c[1], a[1], b[1]);
+	fp3_add(c[2], a[2], b[2]);
+}
+
+void fp9_sub(fp9_t c, fp9_t a, fp9_t b) {
+	fp3_sub(c[0], a[0], b[0]);
+	fp3_sub(c[1], a[1], b[1]);
+	fp3_sub(c[2], a[2], b[2]);
+}
+
+void fp9_dbl(fp9_t c, fp9_t a) {
+	fp3_dbl(c[0], a[0]);
+	fp3_dbl(c[1], a[1]);
+	fp3_dbl(c[2], a[2]);
+}
+
+void fp9_neg(fp9_t c, fp9_t a) {
+	fp3_neg(c[0], a[0]);
+	fp3_neg(c[1], a[1]);
+	fp3_neg(c[2], a[2]);
+}
+
 void fp12_add(fp12_t c, fp12_t a, fp12_t b) {
 	fp6_add(c[0], a[0], b[0]);
 	fp6_add(c[1], a[1], b[1]);

@@ -416,6 +416,107 @@ void fp8_inv_sim(fp8_t *c, fp8_t *a, int n) {
 	}
 }
 
+void fp9_inv(fp9_t c, fp9_t a) {
+	fp3_t v0;
+	fp3_t v1;
+	fp3_t v2;
+	fp3_t t0;
+
+	fp3_null(v0);
+	fp3_null(v1);
+	fp3_null(v2);
+	fp3_null(t0);
+
+	TRY {
+		fp3_new(v0);
+		fp3_new(v1);
+		fp3_new(v2);
+		fp3_new(t0);
+
+		/* v0 = a_0^2 - E * a_1 * a_2. */
+		fp3_sqr(t0, a[0]);
+		fp3_mul(v0, a[1], a[2]);
+		fp3_mul_nor(v2, v0);
+		fp3_sub(v0, t0, v2);
+
+		/* v1 = E * a_2^2 - a_0 * a_1. */
+		fp3_sqr(t0, a[2]);
+		fp3_mul_nor(v2, t0);
+		fp3_mul(v1, a[0], a[1]);
+		fp3_sub(v1, v2, v1);
+
+		/* v2 = a_1^2 - a_0 * a_2. */
+		fp3_sqr(t0, a[1]);
+		fp3_mul(v2, a[0], a[2]);
+		fp3_sub(v2, t0, v2);
+
+		fp3_mul(t0, a[1], v2);
+		fp3_mul_nor(c[1], t0);
+
+		fp3_mul(c[0], a[0], v0);
+
+		fp3_mul(t0, a[2], v1);
+		fp3_mul_nor(c[2], t0);
+
+		fp3_add(t0, c[0], c[1]);
+		fp3_add(t0, t0, c[2]);
+		fp3_inv(t0, t0);
+
+		fp3_mul(c[0], v0, t0);
+		fp3_mul(c[1], v1, t0);
+		fp3_mul(c[2], v2, t0);
+	} CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	} FINALLY {
+		fp3_free(v0);
+		fp3_free(v1);
+		fp3_free(v2);
+		fp3_free(t0);
+	}
+}
+
+void fp9_inv_sim(fp9_t * c, fp9_t * a, int n) {
+	int i;
+	fp9_t u, *t = RLC_ALLOCA(fp9_t, n);
+
+	for (i = 0; i < n; i++) {
+		fp9_null(t[i]);
+	}
+	fp9_null(u);
+
+	TRY {
+		for (i = 0; i < n; i++) {
+			fp9_new(t[i]);
+		}
+		fp9_new(u);
+
+		fp9_copy(c[0], a[0]);
+		fp9_copy(t[0], a[0]);
+
+		for (i = 1; i < n; i++) {
+			fp9_copy(t[i], a[i]);
+			fp9_mul(c[i], c[i - 1], t[i]);
+		}
+
+		fp9_inv(u, c[n - 1]);
+
+		for (i = n - 1; i > 0; i--) {
+			fp9_mul(c[i], c[i - 1], u);
+			fp9_mul(u, u, t[i]);
+		}
+		fp9_copy(c[0], u);
+	}
+	CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	}
+	FINALLY {
+		for (i = 0; i < n; i++) {
+			fp9_free(t[i]);
+		}
+		fp9_free(u);
+	}
+}
+
 void fp12_inv(fp12_t c, fp12_t a) {
 	fp6_t t0;
 	fp6_t t1;

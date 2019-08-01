@@ -138,7 +138,7 @@ void fp2_dbln_low(fp2_t c, fp2_t a);
 void fp2_dblm_low(fp2_t c, fp2_t a);
 
 /**
- * Multiplies a quadratic extension field element by the quadratic/cubic
+ * Multiplies a quadratic extension field element by the quadratic
  * non-residue. Computes c = a * E.
  *
  * @param[out] c			- the result.
@@ -148,7 +148,7 @@ void fp2_norm_low(fp2_t c, fp2_t a);
 
 /**
  * Multiplies a double-precision quadratic extension field element by the
- * quadratic/cubic non-residue, reducing only half of the result. Computes
+ * quadratic non-residue, reducing only half of the result. Computes
  * c = a * E.
  *
  * @param[out] c			- the result.
@@ -158,7 +158,7 @@ void fp2_norh_low(dv2_t c, dv2_t a);
 
 /**
  * Multiplies a double-precision quadratic extension field element by the
- * quadratic/cubic non-residue. Computes c = a * E.
+ * quadratic non-residue. Computes c = a * E.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the field element to multiply.
@@ -177,7 +177,7 @@ void fp2_muln_low(dv2_t c, fp2_t a, fp2_t b);
 
 /**
  * Multiplies two quadratic extension elements of the same size and corrects
- * the result by adding (2^(RLC_FP_DIGS * WSIZE) * p)/4. This function should only
+ * the result by adding (2^(RLC_FP_DIGS * WSIZE) * p)/4. This function should
  * be used when the RLC_FP_ROOM optimization is detected. Computes c = a * b.
  *
  * @param[out] c			- the result.
@@ -243,6 +243,27 @@ void fp3_addn_low(fp3_t c, fp3_t a, fp3_t b);
 void fp3_addm_low(fp3_t c, fp3_t a, fp3_t b);
 
 /**
+ * Adds two double-precision cubic extension field elements of the same
+ * size. Computes c = a + b.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the first field element to add.
+ * @param[in] b				- the second field element to add.
+ */
+void fp3_addd_low(dv3_t c, dv3_t a, dv3_t b);
+
+/**
+ * Adds two double-precision cubic extension field elements of the same size
+ * and corrects the result by conditionally adding 3^(RLC_FP_DIGS * WSIZE) * p.
+ * Computes c = a + b.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the first field element to add.
+ * @param[in] b				- the second field element to add.
+ */
+void fp3_addc_low(dv3_t c, dv3_t a, dv3_t b);
+
+/**
  * Subtracts a cubic extension field element from another of the same size.
  * Computes c = a - b.
  *
@@ -264,8 +285,18 @@ void fp3_subm_low(fp3_t c, fp3_t a, fp3_t b);
 
 /**
  * Subtracts a double-precision cubic extension field element from another
- * of the same size and corrects the result by conditionally adding
- * 2^(RLC_FP_DIGS * WSIZE) * p. Computes c = a - b.
+ * of the same size. Computes c = a - b.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the first field element to add.
+ * @param[in] b				- the second field element to add.
+ */
+void fp3_subd_low(dv3_t c, dv3_t a, dv3_t b);
+
+/**
+ * Subtracts a double-precision cubic extension field element from another
+ * of the same size and  corrects the result by conditionally adding
+ * 3^(RLC_FP_DIGS * WSIZE) * p. Computes c = a - b.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the first field element to add.
@@ -291,6 +322,15 @@ void fp3_dbln_low(fp3_t c, fp3_t a);
 void fp3_dblm_low(fp3_t c, fp3_t a);
 
 /**
+ * Multiplies a double-precision cubic extension field element by the
+ * cubic non-residue. Computes c = a * E.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the field element to multiply.
+ */
+void fp3_nord_low(dv3_t c, dv3_t a);
+
+/**
  * Multiplies two cubic extension field elements of the same size.
  * Computes c = a * b.
  *
@@ -299,6 +339,17 @@ void fp3_dblm_low(fp3_t c, fp3_t a);
  * @param[in] b				- the second field element to multiply.
  */
 void fp3_muln_low(dv3_t c, fp3_t a, fp3_t b);
+
+/**
+ * Multiplies two cubic extension elements of the same size and corrects
+ * the result by adding (2^(RLC_FP_DIGS * WSIZE) * p)/4. This function should
+ * be used when the RLC_FP_ROOM optimization is detected. Computes c = a * b.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the first field element to multiply.
+ * @param[in] b				- the second field element to multiply.
+ */
+void fp3_mulc_low(dv3_t c, fp3_t a, fp3_t b);
 
 /**
  * Multiplies two cubic extension field elements of the same size with

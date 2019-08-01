@@ -97,6 +97,18 @@ void fp8_frb(fp8_t c, fp8_t a, int i) {
 	}
 }
 
+void fp9_frb(fp9_t c, fp9_t a, int i) {
+	/* Cost of two multiplication in Fp^3 per Frobenius. */
+	fp9_copy(c, a);
+	for (; i % 9 > 0; i--) {
+		fp3_frb(c[0], c[0], 1);
+		fp3_frb(c[1], c[1], 1);
+		fp3_frb(c[2], c[2], 1);
+		fp3_mul_frb(c[1], c[1], 1, 1, 2);
+		fp3_mul_frb(c[2], c[2], 1, 1, 4);
+	}
+}
+
 void fp12_frb(fp12_t c, fp12_t a, int i) {
 	/* Cost of five multiplication in Fp^2 per Frobenius. */
 	fp12_copy(c, a);

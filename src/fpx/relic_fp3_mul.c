@@ -72,7 +72,11 @@ void fp3_mul_basic(fp3_t c, fp3_t a, fp3_t b) {
 		fp_add(t3, a[1], a[2]);
 		fp_add(t4, b[1], b[2]);
 		fp_muln_low(t, t3, t4);
+#ifdef RLC_FP_ROOM
 		fp_addd_low(t6, t1, t2);
+#else
+		fp_addc_low(t6, t1, t2);
+#endif
 		fp_subc_low(t4, t, t6);
 		fp_subc_low(t3, t0, t4);
 		for (int i = -1; i > fp_prime_get_cnr(); i--) {
@@ -82,7 +86,11 @@ void fp3_mul_basic(fp3_t c, fp3_t a, fp3_t b) {
 		fp_add(t4, a[0], a[1]);
 		fp_add(t5, b[0], b[1]);
 		fp_muln_low(t, t4, t5);
+#ifdef RLC_FP_ROOM
 		fp_addd_low(t4, t0, t1);
+#else
+		fp_addc_low(t4, t0, t1);
+#endif
 		fp_subc_low(t4, t, t4);
 		fp_subc_low(t4, t4, t2);
 		for (int i = -1; i > fp_prime_get_cnr(); i--) {
@@ -92,7 +100,12 @@ void fp3_mul_basic(fp3_t c, fp3_t a, fp3_t b) {
 		fp_add(t5, a[0], a[2]);
 		fp_add(t6, b[0], b[2]);
 		fp_muln_low(t, t5, t6);
+#ifdef RLC_FP_ROOM
 		fp_addd_low(t6, t0, t2);
+#else
+		fp_addc_low(t6, t0, t2);
+#endif
+		fp_addc_low(t6, t0, t2);
 		fp_subc_low(t5, t, t6);
 		fp_addc_low(t5, t5, t1);
 
@@ -132,8 +145,10 @@ void fp3_mul_integ(fp3_t c, fp3_t a, fp3_t b) {
 
 void fp3_mul_nor(fp3_t c, fp3_t a) {
 	fp_copy(c[1], a[0]);
-	fp_dbl(c[0], a[2]);
-	fp_neg(c[0], c[0]);
+	fp_neg(c[0], a[2]);
+	for (int i = -1; i > fp_prime_get_cnr(); i--) {
+		fp_sub(c[0], c[0], a[2]);
+	}
 	fp_copy(c[2], a[1]);
 }
 
@@ -145,10 +160,12 @@ void fp3_mul_art(fp3_t c, fp3_t a) {
 	TRY {
 		fp_new(t);
 
-		/* (a_0 + a_1 * u + a_1 * u^2) * u = a_0 * u + a_1 * u^2 + a_1 * u^3. */
+		/* (a_0 + a_1 * u + a_2 * u^2) * u = a_0 * u + a_1 * u^2 + a_2 * u^3. */
 		fp_copy(t, a[0]);
-		fp_dbl(c[0], a[2]);
-		fp_neg(c[0], c[0]);
+		fp_neg(c[0], a[2]);
+		for (int i = -1; i > fp_prime_get_cnr(); i--) {
+			fp_sub(c[0], c[0], a[2]);
+		}
 		fp_copy(c[2], a[1]);
 		fp_copy(c[1], t);
 	}
@@ -162,65 +179,51 @@ void fp3_mul_art(fp3_t c, fp3_t a) {
 
 void fp3_mul_frb(fp3_t c, fp3_t a, int i, int j, int k) {
 	ctx_t *ctx = core_get();
-
+	fp3_copy(c, a);
 	if (i == 0) {
 		switch (j % 3) {
-		case 0:
-			fp3_copy(c, a);
-			break;
-		case 1:
-			fp_copy(c[0], a[0]);
-			fp_mul(c[1], a[1], ctx->fp3_base[0]);
-			fp_mul(c[2], a[2], ctx->fp3_base[1]);
-			break;
-		case 2:
-			fp_copy(c[0], a[0]);
-			fp_mul(c[1], a[1], ctx->fp3_base[1]);
-			fp_mul(c[2], a[2], ctx->fp3_base[0]);
-			break;
+			case 1:
+				fp_mul(c[1], c[1], ctx->fp3_p0[0]);
+				fp_mul(c[2], c[2], ctx->fp3_p0[1]);
+				break;
+			case 2:
+				fp_mul(c[1], c[1], ctx->fp3_p0[1]);
+				fp_mul(c[2], c[2], ctx->fp3_p0[0]);
+				break;
 		}
 	} else {
 		switch (j % 6) {
-			case 0:
-				fp3_copy(c, a);
-				break;
 			case 1:
-				fp_mul(c[0], a[0], ctx->fp3_p1[k - 1]);
-				fp_mul(c[1], a[1], ctx->fp3_p1[k - 1]);
-				fp_mul(c[2], a[2], ctx->fp3_p1[k - 1]);
-				if (k != 3) {
-					for (int l = 0; l < 3 - (k % 3); l++) {
-						fp3_mul_art(c, c);
-					}
-				}
-				break;
-			case 2:
-				fp_mul(c[0], a[0], ctx->fp3_p2[k - 1]);
-				fp_mul(c[1], a[1], ctx->fp3_p2[k - 1]);
-				fp_mul(c[2], a[2], ctx->fp3_p2[k - 1]);
-				for (int l = 0; l < (k % 3); l++) {
+				fp_mul(c[0], c[0], ctx->fp3_p1[k - 1]);
+				fp_mul(c[1], c[1], ctx->fp3_p1[k - 1]);
+				fp_mul(c[2], c[2], ctx->fp3_p1[k - 1]);
+				for (int l = 0; l < (k * ctx->frb3) % 3; l++) {
 					fp3_mul_art(c, c);
 				}
 				break;
+			case 2:
+				fp_mul(c[0], c[0], ctx->fp3_p2[k - 1]);
+				fp_mul(c[1], c[1], ctx->fp3_p2[k - 1]);
+				fp_mul(c[2], c[2], ctx->fp3_p2[k - 1]);
+				fp3_mul_art(c, c);
+
 			case 3:
-				fp_mul(c[0], a[0], ctx->fp3_p3[k - 1]);
-				fp_mul(c[1], a[1], ctx->fp3_p3[k - 1]);
-				fp_mul(c[2], a[2], ctx->fp3_p3[k - 1]);
+				fp_mul(c[0], c[0], ctx->fp3_p3[k - 1]);
+				fp_mul(c[1], c[1], ctx->fp3_p3[k - 1]);
+				fp_mul(c[2], c[2], ctx->fp3_p3[k - 1]);
 				break;
 			case 4:
-				fp_mul(c[0], a[0], ctx->fp3_p4[k - 1]);
-				fp_mul(c[1], a[1], ctx->fp3_p4[k - 1]);
-				fp_mul(c[2], a[2], ctx->fp3_p4[k - 1]);
-				if (k != 3) {
-					for (int l = 0; l < 3 - (k % 3); l++) {
-						fp3_mul_art(c, c);
-					}
+				fp_mul(c[0], c[0], ctx->fp3_p4[k - 1]);
+				fp_mul(c[1], c[1], ctx->fp3_p4[k - 1]);
+				fp_mul(c[2], c[2], ctx->fp3_p4[k - 1]);
+				for (int l = 0; l < 3 - (k % 3); l++) {
+					fp3_mul_art(c, c);
 				}
 				break;
 			case 5:
-				fp_mul(c[0], a[0], ctx->fp3_p5[k - 1]);
-				fp_mul(c[1], a[1], ctx->fp3_p5[k - 1]);
-				fp_mul(c[2], a[2], ctx->fp3_p5[k - 1]);
+				fp_mul(c[0], c[0], ctx->fp3_p5[k - 1]);
+				fp_mul(c[1], c[1], ctx->fp3_p5[k - 1]);
+				fp_mul(c[2], c[2], ctx->fp3_p5[k - 1]);
 				for (int l = 0; l < (k % 3); l++) {
 					fp3_mul_art(c, c);
 				}
