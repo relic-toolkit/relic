@@ -207,7 +207,7 @@ void fp9_sqr_lazyr(fp9_t c, fp9_t a) {
 	dv9_null(t);
 
 	TRY {
-		dv6_new(t);
+		dv9_new(t);
 		fp9_sqr_unr(t, a);
 		fp3_rdcn_low(c[0], t[0]);
 		fp3_rdcn_low(c[1], t[1]);

@@ -704,7 +704,7 @@ typedef fp24_t fp48_t[2];
  * @param[out] A			- the new nonic extension field element.
  */
 #define fp9_new(A)															\
-		fp3_new(A[0]); fp3_new(A[1]); fp3_null(A[2]);						\
+		fp3_new(A[0]); fp3_new(A[1]); fp3_new(A[2]);						\
 
 /**
  * Frees a nonic extension field element.

@@ -188,7 +188,7 @@ void fp9_mul_lazyr(fp9_t c, fp9_t a, fp9_t b) {
 	dv9_null(t);
 
 	TRY {
-		dv6_new(t);
+		dv9_new(t);
 		fp9_mul_unr(t, a, b);
 		fp3_rdcn_low(c[0], t[0]);
 		fp3_rdcn_low(c[1], t[1]);
