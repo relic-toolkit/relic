@@ -290,7 +290,7 @@ void bn_read_str(bn_t a, const char *str, int len, int radix) {
 		sign = RLC_POS;
 	}
 
-	while (j < len && str[j]) {
+	while (j < len) {
 		if (str[j] == 0) {
 			break;
 		}
