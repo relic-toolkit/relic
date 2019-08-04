@@ -130,7 +130,13 @@ int cp_mklhs_ver(g1_t sig, bn_t m, bn_t mu[], char *label[], int llen[],
 	g1_t *g = RLC_ALLOCA(g1_t, slen);
 	g2_t g2;
 	gt_t c, e;
-	int ver1 = 0, ver2 = 0;
+	int fmax, ver1 = 0, ver2 = 0;
+
+	fmax = 0;
+	for (int i = 0; i < slen; i++) {
+		fmax = RLC_MAX(fmax, flen[i]);
+	}
+	g1_t *h = RLC_ALLOCA(g1_t, fmax);
 
 	bn_null(t);
 	bn_null(n);
@@ -144,7 +150,9 @@ int cp_mklhs_ver(g1_t sig, bn_t m, bn_t mu[], char *label[], int llen[],
 		g2_new(g2);
 		gt_new(c);
 		gt_new(e);
-		if (g == NULL) {
+		if (g == NULL || h == NULL) {
+			RLC_FREE(g);
+			RLC_FREE(h);
 			THROW(ERR_NO_MEMORY);
 		}
 
@@ -156,28 +164,22 @@ int cp_mklhs_ver(g1_t sig, bn_t m, bn_t mu[], char *label[], int llen[],
 			bn_add(t, t, mu[j]);
 			bn_mod(t, t, n);
 		}
+		for (int j = 0; j < fmax; j++) {
+			g1_null(h[j]);
+			g1_new(h[j]);
+		}
 
 		if (bn_cmp(m, t) == RLC_EQ) {
 			ver1 = 1;
 		}
 
 		for (int i = 0; i < slen; i++) {
-			g1_t *h = RLC_ALLOCA(g1_t, flen[i]);
-			if (h == NULL) {
-				THROW(ERR_NO_MEMORY);
-			}
 			for (int j = 0; j < flen[i]; j++) {
-				g1_null(h[j]);
-				g1_new(h[j]);
 				g1_map(h[j], (uint8_t *)label[j], llen[j]);
 			}
 			g1_mul_sim_dig(g[i], h, f[i], flen[i]);
 			g1_mul_gen(h[0], mu[i]);
 			g1_add(g[i], g[i], h[0]);
-			for (int j = 0; j < flen[i]; j++) {
-				g1_free(h[j]);
-			}
-			RLC_FREE(h);
 		}
 
 		g2_get_gen(g2);
@@ -196,7 +198,14 @@ int cp_mklhs_ver(g1_t sig, bn_t m, bn_t mu[], char *label[], int llen[],
 		g2_free(g2);
 		gt_free(c);
 		gt_free(e);
+		for (int j = 0; j < slen; j++) {
+			g1_free(g[j]);
+		}
+		for (int j = 0; j < fmax; j++) {
+			g1_free(h[j]);
+		}
 		RLC_FREE(g);
+		RLC_FREE(h);
 	}
 	return (ver1 && ver2);
 }
