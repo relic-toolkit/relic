@@ -85,22 +85,22 @@
  * Size of a field element in words.
  */
 #if EC_CUR == PRIME
-#define FC_DIGS					RLC_FP_DIGS
+#define RLC_FC_DIGS					RLC_FP_DIGS
 #elif EC_CUR == CHAR2
-#define FC_DIGS					RLC_FB_DIGS
+#define RLC_FC_DIGS					RLC_FB_DIGS
 #elif EC_CUR == EDDIE
-#define FC_DIGS					RLC_FP_DIGS
+#define RLC_FC_DIGS					RLC_FP_DIGS
 #endif
 
 /**
  * Size of a field element in bits.
  */
 #if EC_CUR == PRIME
-#define FC_BITS					RLC_FP_BITS
+#define RLC_FC_BITS					RLC_FP_BITS
 #elif EC_CUR == CHAR2
-#define FC_BITS					RLC_FB_BITS
+#define RLC_FC_BITS					RLC_FB_BITS
 #elif EC_CUR == EDDIE
-#define FC_BITS					RLC_FP_BITS
+#define RLC_FC_BITS					RLC_FP_BITS
 #endif
 
 /**
@@ -436,7 +436,7 @@ typedef RLC_CAT(EC_LOWER, t) ec_t;
 #if EC_CUR == PRIME || EC_CUR == EDDIE
 #define ec_get_x(X, P)			fp_prime_back(X, P->x)
 #else
-#define ec_get_x(X, P)			bn_read_raw(X, P->x, FC_DIGS)
+#define ec_get_x(X, P)			bn_read_raw(X, P->x, RLC_FC_DIGS)
 #endif
 
 /**
@@ -449,7 +449,7 @@ typedef RLC_CAT(EC_LOWER, t) ec_t;
 #if EC_CUR == PRIME || EC_CUR == EDDIE
 #define ec_get_y(Y, P)			fp_prime_back(Y, (P)->y)
 #else
-#define ec_get_y(Y, P)			bn_read_raw(Y, (P)->y, FC_DIGS)
+#define ec_get_y(Y, P)			bn_read_raw(Y, (P)->y, RLC_FC_DIGS)
 #endif
 
 #endif /* !RLC_EC_H */

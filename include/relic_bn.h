@@ -144,16 +144,16 @@ typedef bn_st *bn_t;
 	if ((A) == NULL) {														\
 		THROW(ERR_NO_MEMORY);												\
 	}																		\
-	bn_init(A, RLC_BN_SIZE);													\
+	bn_init(A, RLC_BN_SIZE);												\
 
 #elif ALLOC == AUTO
 #define bn_new(A)															\
-	bn_init(A, RLC_BN_SIZE);													\
+	bn_init(A, RLC_BN_SIZE);												\
 
 #elif ALLOC == STACK
 #define bn_new(A)															\
 	A = (bn_t)alloca(sizeof(bn_st));										\
-	bn_init(A, RLC_BN_SIZE);													\
+	bn_init(A, RLC_BN_SIZE);												\
 
 #endif
 
