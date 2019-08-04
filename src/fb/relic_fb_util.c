@@ -200,7 +200,10 @@ void fb_read_str(fb_t a, const char *str, int len, int radix) {
 	}
 
 	j = 0;
-	while (str[j] && j < len) {
+	while (j < len) {
+		if (str[j] == 0) {
+			break;
+		}
 		c = (char)((radix < 36) ? RLC_UPP(str[j]) : str[j]);
 		for (i = 0; i < 64; i++) {
 			if (c == util_conv_char(i)) {
