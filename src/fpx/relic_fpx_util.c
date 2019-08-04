@@ -732,11 +732,11 @@ void fp54_read_bin(fp54_t a, const uint8_t *bin, int len) {
 	}
 	if (len == 36 * RLC_FP_BYTES) {
 		fp9_zero(a[0][0]);
-		fp9_read_bin(a[0][1], bin, 9 * RLC_FP_BYTES);
-		fp9_read_bin(a[0][2], bin + 9 * RLC_FP_BYTES, 9 * RLC_FP_BYTES);
-		fp9_read_bin(a[1][0], bin + 18 * RLC_FP_BYTES, 9 * RLC_FP_BYTES);
-		fp9_zero(a[1][1]);
-		fp9_read_bin(a[1][2], bin + 27 * RLC_FP_BYTES, 9 * RLC_FP_BYTES);
+		fp9_zero(a[0][1]);
+		fp9_read_bin(a[1][0], bin, 9 * RLC_FP_BYTES);
+		fp9_read_bin(a[1][1], bin + 9 * RLC_FP_BYTES, 9 * RLC_FP_BYTES);
+		fp9_read_bin(a[2][0], bin + 18 * RLC_FP_BYTES, 9 * RLC_FP_BYTES);
+		fp9_read_bin(a[2][1], bin + 27 * RLC_FP_BYTES, 9 * RLC_FP_BYTES);
 		fp54_back_cyc(a, a);
 	}
 	if (len == 54 * RLC_FP_BYTES) {
@@ -759,10 +759,10 @@ void fp54_write_bin(uint8_t *bin, int len, fp54_t a, int pack) {
 				THROW(ERR_NO_BUFFER);
 			}
 			fp54_pck(t, a);
-			fp9_write_bin(bin, 9 * RLC_FP_BYTES, a[0][1]);
-			fp9_write_bin(bin + 9 * RLC_FP_BYTES, 9 * RLC_FP_BYTES, a[0][2]);
-			fp9_write_bin(bin + 18 * RLC_FP_BYTES, 9 * RLC_FP_BYTES, a[1][0]);
-			fp9_write_bin(bin + 27 * RLC_FP_BYTES, 9 * RLC_FP_BYTES, a[1][2]);
+			fp9_write_bin(bin, 9 * RLC_FP_BYTES, a[1][0]);
+			fp9_write_bin(bin + 9 * RLC_FP_BYTES, 9 * RLC_FP_BYTES, a[1][1]);
+			fp9_write_bin(bin + 18 * RLC_FP_BYTES, 9 * RLC_FP_BYTES, a[2][0]);
+			fp9_write_bin(bin + 27 * RLC_FP_BYTES, 9 * RLC_FP_BYTES, a[2][1]);
 		} else {
 			if (len != 54 * RLC_FP_BYTES) {
 				THROW(ERR_NO_BUFFER);

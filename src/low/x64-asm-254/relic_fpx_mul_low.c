@@ -39,8 +39,8 @@
 /*============================================================================*/
 
 void fp3_muln_low(dv3_t c, fp3_t a, fp3_t b) {
-	dig_t t0[2 * RLC_FP_DIGS], t1[2 * RLC_FP_DIGS], t2[2 * RLC_FP_DIGS], t3[2 * RLC_FP_DIGS];
-	dig_t t4[2 * RLC_FP_DIGS], t5[2 * RLC_FP_DIGS], t6[2 * RLC_FP_DIGS];
+	rlc_align dig_t t0[2 * RLC_FP_DIGS], t1[2 * RLC_FP_DIGS], t2[2 * RLC_FP_DIGS], t3[2 * RLC_FP_DIGS];
+	rlc_align dig_t t4[2 * RLC_FP_DIGS], t5[2 * RLC_FP_DIGS], t6[2 * RLC_FP_DIGS];
 
 	/* Karatsuba algorithm. */
 
@@ -58,10 +58,17 @@ void fp3_muln_low(dv3_t c, fp3_t a, fp3_t b) {
 	fp_addm_low(t4, b[1], b[2]);
 #endif
 	fp_muln_low(t5, t3, t4);
-	fp_addd_low(t6, t1, t2);
+#ifdef RLC_FP_ROOM
+	fp_addc_low(t6, t1, t2);
+#else
+	fp_addc_low(t6, t1, t2);
+#endif
 	fp_subc_low(t4, t5, t6);
-	fp_subc_low(c[0], t0, t4);
-	for (int i = -1; i > fp_prime_get_cnr(); i--) {
+	fp_addc_low(c[0], t0, t4);
+	for (int i = 1; i < fp_prime_get_cnr(); i++) {
+		fp_addc_low(c[0], c[0], t4);
+	}
+	for (int i = 0; i >= fp_prime_get_cnr(); i--) {
 		fp_subc_low(c[0], c[0], t4);
 	}
 
@@ -73,10 +80,17 @@ void fp3_muln_low(dv3_t c, fp3_t a, fp3_t b) {
 	fp_addm_low(t5, b[0], b[1]);
 #endif
 	fp_muln_low(t6, t4, t5);
-	fp_addd_low(t4, t0, t1);
+#ifdef RLC_FP_ROOM
+	fp_addc_low(t4, t0, t1);
+#else
+	fp_addc_low(t4, t0, t1);
+#endif
 	fp_subc_low(t4, t6, t4);
-	fp_subc_low(c[1], t4, t2);
-	for (int i = -1; i > fp_prime_get_cnr(); i--) {
+	fp_addc_low(c[1], t4, t2);
+	for (int i = 1; i < fp_prime_get_cnr(); i++) {
+		fp_addc_low(c[1], c[1], t2);
+	}
+	for (int i = 0; i >= fp_prime_get_cnr(); i--) {
 		fp_subc_low(c[1], c[1], t2);
 	}
 
@@ -88,7 +102,11 @@ void fp3_muln_low(dv3_t c, fp3_t a, fp3_t b) {
 	fp_addm_low(t6, b[0], b[2]);
 #endif
 	fp_muln_low(t4, t5, t6);
-	fp_addd_low(t6, t0, t2);
+#ifdef RLC_FP_ROOM
+	fp_addc_low(t6, t0, t2);
+#else
+	fp_addc_low(t6, t0, t2);
+#endif
 	fp_subc_low(t5, t4, t6);
 	fp_addc_low(c[2], t5, t1);
 }

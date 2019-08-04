@@ -190,6 +190,18 @@ void fp54_frb(fp54_t c, fp54_t a, int i) {
 				fp3_mul_frb(c[1][j][l], c[1][j][l], 2, 2);
 				fp3_mul_frb(c[2][j][l], c[2][j][l], 2, 1);
 			}
+			/* This is not genreal enough, so hard code parameters needing the
+			tweak. */
+#if FP_PRIME == 256
+			fp9_mul_art(c[1][j], c[1][j]);
+			fp9_mul_art(c[1][j], c[1][j]);
+			fp9_mul_art(c[2][j], c[2][j]);
+#endif
+#if FP_PRIME == 446
+			fp9_mul_art(c[1][j], c[1][j]);
+			fp9_mul_art(c[2][j], c[2][j]);
+			fp9_mul_art(c[2][j], c[2][j]);
+#endif
 		}
 	}
 }

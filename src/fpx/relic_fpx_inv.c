@@ -160,6 +160,9 @@ void fp3_inv(fp3_t c, fp3_t a) {
 		for (int i = 1; i < fp_prime_get_cnr(); i++) {
 			fp_add(v2, v2, v0);
 		}
+		for (int i = 0; i >= fp_prime_get_cnr(); i--) {
+			fp_sub(v2, v2, v0);
+		}
 		fp_sub(v0, t0, v2);
 
 		/* v1 = B * a_2^2 - a_0 * a_1. */
@@ -167,6 +170,9 @@ void fp3_inv(fp3_t c, fp3_t a) {
 		fp_copy(v2, t0);
 		for (int i = 1; i < fp_prime_get_cnr(); i++) {
 			fp_add(v2, v2, t0);
+		}
+		for (int i = 0; i >= fp_prime_get_cnr(); i--) {
+			fp_sub(v2, v2, t0);
 		}
 		fp_mul(v1, a[0], a[1]);
 		fp_sub(v1, v2, v1);
@@ -181,6 +187,9 @@ void fp3_inv(fp3_t c, fp3_t a) {
 		for (int i = 1; i < fp_prime_get_cnr(); i++) {
 			fp_add(c[1], c[1], t0);
 		}
+		for (int i = 0; i >= fp_prime_get_cnr(); i--) {
+			fp_sub(c[1], c[1], t0);
+		}
 
 		fp_mul(c[0], a[0], v0);
 
@@ -188,6 +197,9 @@ void fp3_inv(fp3_t c, fp3_t a) {
 		fp_copy(c[2], t0);
 		for (int i = 1; i < fp_prime_get_cnr(); i++) {
 			fp_add(c[2], c[2], t0);
+		}
+		for (int i = 0; i >= fp_prime_get_cnr(); i--) {
+			fp_sub(c[2], c[2], t0);
 		}
 
 		fp_add(t0, c[0], c[1]);

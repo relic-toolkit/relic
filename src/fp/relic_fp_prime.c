@@ -88,10 +88,12 @@ static void fp_prime_set(const bn_t p) {
 
 		switch (ctx->mod8) {
 			case 3:
+				ctx->qnr = -1;
+				ctx->cnr = 2;
+				break;
 			case 7:
 				ctx->qnr = -1;
-				/* The current code for Fp^3 relies on cnr = 2. */
-				ctx->cnr = 2;
+				ctx->cnr = -2;
 				break;
 			case 1:
 			case 5:

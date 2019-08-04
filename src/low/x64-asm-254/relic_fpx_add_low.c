@@ -97,23 +97,25 @@ void fp3_dblm_low(fp3_t c, fp3_t a) {
 }
 
 void fp3_nord_low(dv3_t c, dv3_t a) {
-	dv2_t t;
+	dv_t t;
 
-	dv2_null(t);
+	dv_null(t);
 
 	TRY {
-		dv3_new(t);
-
-		dv_copy(t[0], a[0], 2 * RLC_FP_DIGS);
-		fp_addc_low(c[0], a[2], a[2]);
-		dv_zero(t[1], RLC_FP_DIGS);
-		dv_copy(t[1] + RLC_FP_DIGS, fp_prime_get(), RLC_FP_DIGS);
-		fp_subc_low(c[0], t[1], c[0]);
+		dv_new(t);
+		dv_copy(t, a[0], 2 * RLC_FP_DIGS);
+		dv_copy(c[0], a[2], 2 * RLC_FP_DIGS);
+		for (int i = 1; i < fp_prime_get_cnr(); i++) {
+			fp_addc_low(c[0], c[0], a[2]);
+		}
+		for (int i = 0; i >= fp_prime_get_cnr(); i--) {
+			fp_subc_low(c[0], c[0], a[2]);
+		}
 		dv_copy(c[2], a[1], 2 * RLC_FP_DIGS);
-		dv_copy(c[1], t[0], 2 * RLC_FP_DIGS);
+		dv_copy(c[1], t, 2 * RLC_FP_DIGS);
 	} CATCH_ANY {
 		THROW(ERR_CAUGHT);
 	} FINALLY {
-		dv2_free(t);
+		dv_free(t);
 	}
 }

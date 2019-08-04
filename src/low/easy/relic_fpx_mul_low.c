@@ -164,6 +164,9 @@ void fp3_muln_low(dv3_t c, fp3_t a, fp3_t b) {
 	for (int i = 1; i < fp_prime_get_cnr(); i++) {
 		fp_addc_low(c[0], c[0], t4);
 	}
+	for (int i = 0; i >= fp_prime_get_cnr(); i--) {
+		fp_subc_low(c[0], c[0], t4);
+	}
 
 #ifdef RLC_FP_ROOM
 	fp_addn_low(t4, a[0], a[1]);
@@ -182,6 +185,9 @@ void fp3_muln_low(dv3_t c, fp3_t a, fp3_t b) {
 	fp_addc_low(c[1], t4, t2);
 	for (int i = 1; i < fp_prime_get_cnr(); i++) {
 		fp_addc_low(c[1], c[1], t2);
+	}
+	for (int i = 0; i >= fp_prime_get_cnr(); i--) {
+		fp_subc_low(c[1], c[1], t2);
 	}
 
 #ifdef RLC_FP_ROOM

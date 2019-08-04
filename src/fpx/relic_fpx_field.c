@@ -175,18 +175,18 @@ void fp3_field_init(void) {
 		fp3_exp(t0, t0, e);
 
 		/* Look for a non-trivial subfield element.. */
-		ctx->frb3 = 0;
-		while (fp_is_zero(t0[ctx->frb3++]));
+		ctx->frb3[0] = 0;
+		while (fp_is_zero(t0[ctx->frb3[0]++]));
 		/* Fill rest of table with powers of constant. */
-		fp_copy(ctx->fp3_p1[0], t0[--ctx->frb3 % 3]);
+		fp_copy(ctx->fp3_p1[0], t0[--ctx->frb3[0] % 3]);
 		fp3_sqr(t1, t0);
-		fp_copy(ctx->fp3_p1[1], t1[(2 * ctx->frb3) % 3]);
+		fp_copy(ctx->fp3_p1[1], t1[(2 * ctx->frb3[0]) % 3]);
 		fp3_mul(t2, t1, t0);
-		fp_copy(ctx->fp3_p1[2], t2[(3 * ctx->frb3) % 3]);
+		fp_copy(ctx->fp3_p1[2], t2[(3 * ctx->frb3[0]) % 3]);
 		fp3_sqr(t2, t1);
-		fp_copy(ctx->fp3_p1[3], t2[(4 * ctx->frb3) % 3]);
+		fp_copy(ctx->fp3_p1[3], t2[(4 * ctx->frb3[0]) % 3]);
 		fp3_mul(t2, t2, t0);
-		fp_copy(ctx->fp3_p1[4], t2[(5 * ctx->frb3) % 3]);
+		fp_copy(ctx->fp3_p1[4], t2[(5 * ctx->frb3[0]) % 3]);
 
 		/* Compute t0 = u^((p - (p mod 9))/9). */
 		fp3_zero(t0);
@@ -194,7 +194,10 @@ void fp3_field_init(void) {
 		dv_copy(e->dp, fp_prime_get(), RLC_FP_DIGS);
 		bn_div_dig(e, e, 9);
 		fp3_exp(t0, t0, e);
-		fp_copy(ctx->fp3_p2[0], t0[0]);
+		/* Look for a non-trivial subfield element.. */
+		ctx->frb3[1] = 0;
+		while (fp_is_zero(t0[ctx->frb3[1]++]));
+		fp_copy(ctx->fp3_p2[0], t0[--ctx->frb3[1]]);
 
 		/* Compute t0 = u^((p - (p mod 18))/18). */
 		fp3_zero(t0);
@@ -202,7 +205,11 @@ void fp3_field_init(void) {
 		dv_copy(e->dp, fp_prime_get(), RLC_FP_DIGS);
 		bn_div_dig(e, e, 18);
 		fp3_exp(t0, t0, e);
-		fp_copy(ctx->fp3_p2[1], t0[0]);
+		fp3_print(t0);
+		/* Look for a non-trivial subfield element.. */
+		ctx->frb3[2] = 0;
+		while (fp_is_zero(t0[ctx->frb3[2]++]));
+		fp_copy(ctx->fp3_p2[1], t0[--ctx->frb3[2]]);
 	} CATCH_ANY {
 		THROW(ERR_CAUGHT);
 	} FINALLY {

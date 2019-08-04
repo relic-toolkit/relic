@@ -68,6 +68,9 @@ void fp2_sqrn_low(dv2_t c, fp2_t a) {
 	for (int i = -1; i > fp_prime_get_qnr(); i--) {
 		fp_subm_low(t1, t1, a[1]);
 	}
+	for (int i = 1; i < fp_prime_get_qnr(); i++) {
+		fp_addm_low(t1, t1, a[1]);
+	}
 
 	if (fp_prime_get_qnr() == -1) {
 		/* t2 = 2 * a0. */
@@ -86,11 +89,17 @@ void fp2_sqrn_low(dv2_t c, fp2_t a) {
 		for (int i = -1; i > fp_prime_get_qnr(); i--) {
 			fp_addd_low(c[0], c[0], c[1]);
 		}
+		for (int i = 1; i < fp_prime_get_qnr(); i++) {
+			fp_subd_low(c[0], c[0], c[1]);
+		}
 		/* c1 = 2 * a0 * a1. */
 		fp_addd_low(c[1], c[1], c[1]);
 #else
 		for (int i = -1; i > fp_prime_get_qnr(); i--) {
 			fp_addc_low(c[0], c[0], c[1]);
+		}
+		for (int i = 1; i < fp_prime_get_qnr(); i++) {
+			fp_subc_low(c[0], c[0], c[1]);
 		}
 		/* c1 = 2 * a0 * a1. */
 		fp_addc_low(c[1], c[1], c[1]);
@@ -168,11 +177,17 @@ void fp3_sqrn_low(dv3_t c, fp3_t a) {
 	for (int i = 1; i < fp_prime_get_cnr(); i++) {
 		fp_addc_low(c[0], c[0], t1);
 	}
+	for (int i = 0; i >= fp_prime_get_cnr(); i--) {
+		fp_subc_low(c[0], c[0], t1);
+	}
 
 	/* c_1 = t3 + t2 * B. */
 	fp_addc_low(c[1], t3, t2);
 	for (int i = 1; i < fp_prime_get_cnr(); i++) {
 		fp_addc_low(c[1], c[1], t2);
+	}
+	for (int i = 0; i >= fp_prime_get_cnr(); i--) {
+		fp_subc_low(c[1], c[1], t2);
 	}
 }
 

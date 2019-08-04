@@ -6630,8 +6630,8 @@ static int compression54(void) {
 		TEST_BEGIN("compression is consistent with reading and writing") {
 			fp54_rand(a);
 			fp54_conv_cyc(a, a);
-			fp54_write_bin(bin, 32 * RLC_FP_BYTES, a, 1);
-			fp54_read_bin(b, bin, 32 * RLC_FP_BYTES);
+			fp54_write_bin(bin, 36 * RLC_FP_BYTES, a, 1);
+			fp54_read_bin(b, bin, 36 * RLC_FP_BYTES);
 			TEST_ASSERT(fp54_cmp(a, b) == RLC_EQ, end);
 		}
 		TEST_END;
@@ -6640,7 +6640,7 @@ static int compression54(void) {
 			fp54_rand(a);
 			TEST_ASSERT(fp54_size_bin(a, 0) == 54 * RLC_FP_BYTES, end);
 			fp54_conv_cyc(a, a);
-			TEST_ASSERT(fp54_size_bin(a, 1) == 32 * RLC_FP_BYTES, end);
+			TEST_ASSERT(fp54_size_bin(a, 1) == 36 * RLC_FP_BYTES, end);
 		}
 		TEST_END;
 	}
@@ -7299,7 +7299,7 @@ int main(void) {
 			return 1;
 		}
 	}
-#if 0
+
 	if (fp_prime_get_qnr()) {
 		util_banner("Dodecic extension:", 0);
 		util_banner("Utilities:", 1);
@@ -7505,7 +7505,7 @@ int main(void) {
 			return 1;
 		}
 	}
-#endif
+
 	if (fp_prime_get_cnr()) {
 		util_banner("Extension of degree 54:", 0);
 		util_banner("Utilities:", 1);
