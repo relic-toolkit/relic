@@ -97,12 +97,6 @@ inline static void fp6_mul_dxs_unr_lazyr(dv6_t c, fp6_t a, fp6_t b) {
 		fp2_muln_low(u2, a[2], b[0]);
 		fp2_addc_low(c[2], u1, u2);
 #endif
-
-#ifdef RLC_FP_ROOM
-
-#else
-
-#endif
 	} CATCH_ANY {
 		THROW(ERR_CAUGHT);
 	} FINALLY {

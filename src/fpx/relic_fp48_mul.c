@@ -80,7 +80,18 @@ void fp48_mul_basic(fp48_t c, fp48_t a, fp48_t b) {
 	}
 }
 
-void fp48_mul_dxs_basic(fp48_t c, fp48_t a, fp48_t b) {
+#endif
+
+#if FPX_RDC == LAZYR || !defined(STRIP)
+
+void fp48_mul_lazyr(fp48_t c, fp48_t a, fp48_t b) {
+	/* TODO: implement lazy reduction. */
+	fp48_mul_basic(c, a, b);
+}
+
+#endif
+
+void fp48_mul_dxs(fp48_t c, fp48_t a, fp48_t b) {
 	fp24_t t0, t1, t2;
 
 	fp24_null(t0);
@@ -126,22 +137,6 @@ void fp48_mul_dxs_basic(fp48_t c, fp48_t a, fp48_t b) {
 		fp24_free(t2);
 	}
 }
-
-#endif
-
-#if FPX_RDC == LAZYR || !defined(STRIP)
-
-void fp48_mul_lazyr(fp48_t c, fp48_t a, fp48_t b) {
-	/* TODO: implement lazy reduction. */
-	fp48_mul_basic(c, a, b);
-}
-
-void fp48_mul_dxs_lazyr(fp48_t c, fp48_t a, fp48_t b) {
-	/* TODO: implement lazy reduction. */
-	fp48_mul_dxs_basic(c, a, b);
-}
-
-#endif
 
 void fp48_mul_art(fp48_t c, fp48_t a) {
 	fp24_t t0;

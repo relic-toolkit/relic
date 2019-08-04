@@ -364,10 +364,7 @@ typedef struct _ctx_t {
 	int frb3;
 	fp_st fp3_p0[2];
 	fp_st fp3_p1[5];
-	fp_st fp3_p2[5];
-	fp_st fp3_p3[5];
-	fp_st fp3_p4[5];
-	fp_st fp3_p5[5];
+	fp_st fp3_p2[2];
 	/** @} */
 #endif /* WITH_PP */
 

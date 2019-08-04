@@ -90,16 +90,16 @@ void fp3_sqr_basic(fp3_t c, fp3_t a) {
 		fp_rdc(c[2], t4);
 
 		/* c_0 = t0 + t1 * B. */
-		fp_subc_low(t0, t0, t1);
-		for (int i = -1; i > fp_prime_get_cnr(); i--) {
-			fp_subc_low(t0, t0, t1);
+		fp_addc_low(t0, t0, t1);
+		for (int i = 1; i < fp_prime_get_cnr(); i++) {
+			fp_addc_low(t0, t0, t1);
 		}
 		fp_rdc(c[0], t0);
 
 		/* c_1 = t3 + t2 * B. */
-		fp_subc_low(t3, t3, t2);
-		for (int i = -1; i > fp_prime_get_cnr(); i--) {
-			fp_subc_low(t3, t3, t2);
+		fp_addc_low(t3, t3, t2);
+		for (int i = 1; i < fp_prime_get_cnr(); i++) {
+			fp_addc_low(t3, t3, t2);
 		}
 		fp_rdc(c[1], t3);
 	}

@@ -491,37 +491,52 @@ void fp12_set_dig(fp12_t a, dig_t b) {
 }
 
 void fp18_copy(fp18_t c, fp18_t a) {
-	fp6_copy(c[0], a[0]);
-	fp6_copy(c[1], a[1]);
-	fp6_copy(c[2], a[2]);
+	fp9_copy(c[0], a[0]);
+	fp9_copy(c[1], a[1]);
 }
 
 void fp18_zero(fp18_t a) {
-	fp6_zero(a[0]);
-	fp6_zero(a[1]);
-	fp6_zero(a[2]);
+	fp9_zero(a[0]);
+	fp9_zero(a[1]);
 }
 
 int fp18_is_zero(fp18_t a) {
-	return (fp6_is_zero(a[0]) && fp6_is_zero(a[1]) && fp6_is_zero(a[2]));
+	return (fp9_is_zero(a[0]) && fp9_is_zero(a[1]));
 }
 
 void fp18_rand(fp18_t a) {
-	fp6_rand(a[0]);
-	fp6_rand(a[1]);
-	fp6_rand(a[2]);
+	fp9_rand(a[0]);
+	fp9_rand(a[1]);
 }
 
 void fp18_print(fp18_t a) {
-	fp6_print(a[0]);
-	fp6_print(a[1]);
-	fp6_print(a[2]);
+	fp9_print(a[0]);
+	fp9_print(a[1]);
+}
+
+int fp18_size_bin(fp18_t a) {
+	return 18 * RLC_FP_BYTES;
+}
+
+void fp18_read_bin(fp18_t a, const uint8_t *bin, int len) {
+	if (len != 18 * RLC_FP_BYTES) {
+		THROW(ERR_NO_BUFFER);
+	}
+	fp9_read_bin(a[0], bin, 9 * RLC_FP_BYTES);
+	fp9_read_bin(a[1], bin + 9 * RLC_FP_BYTES, 9 * RLC_FP_BYTES);
+}
+
+void fp18_write_bin(uint8_t *bin, int len, fp18_t a) {
+	if (len != 18 * RLC_FP_BYTES) {
+		THROW(ERR_NO_BUFFER);
+	}
+	fp9_write_bin(bin, 9 * RLC_FP_BYTES, a[0]);
+	fp9_write_bin(bin + 9 * RLC_FP_BYTES, 9 * RLC_FP_BYTES, a[1]);
 }
 
 void fp18_set_dig(fp18_t a, dig_t b) {
-	fp6_set_dig(a[0], b);
-	fp6_zero(a[1]);
-	fp6_zero(a[2]);
+	fp9_set_dig(a[0], b);
+	fp9_zero(a[1]);
 }
 
 void fp24_copy(fp24_t c, fp24_t a) {
@@ -669,4 +684,102 @@ void fp48_write_bin(uint8_t *bin, int len, fp48_t a, int pack) {
 void fp48_set_dig(fp48_t a, dig_t b) {
 	fp24_set_dig(a[0], b);
 	fp24_zero(a[1]);
+}
+
+void fp54_copy(fp54_t c, fp54_t a) {
+	fp18_copy(c[0], a[0]);
+	fp18_copy(c[1], a[1]);
+	fp18_copy(c[2], a[2]);
+}
+
+void fp54_zero(fp54_t a) {
+	fp18_zero(a[0]);
+	fp18_zero(a[1]);
+	fp18_zero(a[2]);
+}
+
+int fp54_is_zero(fp54_t a) {
+	return (fp18_is_zero(a[0]) && fp18_is_zero(a[1]) && fp18_is_zero(a[2]));
+}
+
+void fp54_rand(fp54_t a) {
+	fp18_rand(a[0]);
+	fp18_rand(a[1]);
+	fp18_rand(a[2]);
+}
+
+void fp54_print(fp54_t a) {
+	fp18_print(a[0]);
+	fp18_print(a[1]);
+	fp18_print(a[2]);
+}
+
+int fp54_size_bin(fp54_t a, int pack) {
+	if (pack) {
+		if (fp54_test_cyc(a)) {
+			return 36 * RLC_FP_BYTES;
+		} else {
+			return 54 * RLC_FP_BYTES;
+		}
+	} else {
+		return 54 * RLC_FP_BYTES;
+	}
+}
+
+void fp54_read_bin(fp54_t a, const uint8_t *bin, int len) {
+	if (len != 36 * RLC_FP_BYTES && len != 54 * RLC_FP_BYTES) {
+		THROW(ERR_NO_BUFFER);
+	}
+	if (len == 36 * RLC_FP_BYTES) {
+		fp9_zero(a[0][0]);
+		fp9_read_bin(a[0][1], bin, 9 * RLC_FP_BYTES);
+		fp9_read_bin(a[0][2], bin + 9 * RLC_FP_BYTES, 9 * RLC_FP_BYTES);
+		fp9_read_bin(a[1][0], bin + 18 * RLC_FP_BYTES, 9 * RLC_FP_BYTES);
+		fp9_zero(a[1][1]);
+		fp9_read_bin(a[1][2], bin + 27 * RLC_FP_BYTES, 9 * RLC_FP_BYTES);
+		fp54_back_cyc(a, a);
+	}
+	if (len == 54 * RLC_FP_BYTES) {
+		fp18_read_bin(a[0], bin, 18 * RLC_FP_BYTES);
+		fp18_read_bin(a[1], bin + 18 * RLC_FP_BYTES, 18 * RLC_FP_BYTES);
+		fp18_read_bin(a[2], bin + 36 * RLC_FP_BYTES, 18 * RLC_FP_BYTES);
+	}
+}
+
+void fp54_write_bin(uint8_t *bin, int len, fp54_t a, int pack) {
+	fp54_t t;
+
+	fp54_null(t);
+
+	TRY {
+		fp54_new(t);
+
+		if (pack) {
+			if (len != 36 * RLC_FP_BYTES) {
+				THROW(ERR_NO_BUFFER);
+			}
+			fp54_pck(t, a);
+			fp9_write_bin(bin, 9 * RLC_FP_BYTES, a[0][1]);
+			fp9_write_bin(bin + 9 * RLC_FP_BYTES, 9 * RLC_FP_BYTES, a[0][2]);
+			fp9_write_bin(bin + 18 * RLC_FP_BYTES, 9 * RLC_FP_BYTES, a[1][0]);
+			fp9_write_bin(bin + 27 * RLC_FP_BYTES, 9 * RLC_FP_BYTES, a[1][2]);
+		} else {
+			if (len != 54 * RLC_FP_BYTES) {
+				THROW(ERR_NO_BUFFER);
+			}
+			fp18_write_bin(bin, 18 * RLC_FP_BYTES, a[0]);
+			fp18_write_bin(bin + 18 * RLC_FP_BYTES, 18 * RLC_FP_BYTES, a[1]);
+			fp18_write_bin(bin + 36 * RLC_FP_BYTES, 18 * RLC_FP_BYTES, a[2]);
+		}
+	} CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	} FINALLY {
+		fp54_free(t);
+	}
+}
+
+void fp54_set_dig(fp54_t a, dig_t b) {
+	fp18_set_dig(a[0], b);
+	fp18_zero(a[1]);
+	fp18_zero(a[2]);
 }

@@ -160,8 +160,7 @@ void fp3_field_init(void) {
 		fp3_new(t2);
 
 		/* Compute t0 = u^((p - (p mod 3))/3). */
-		fp_set_dig(ctx->fp3_p0[0], -fp_prime_get_cnr());
-		fp_neg(ctx->fp3_p0[0], ctx->fp3_p0[0]);
+		fp_set_dig(ctx->fp3_p0[0], fp_prime_get_cnr());
 		e->used = RLC_FP_DIGS;
 		dv_copy(e->dp, fp_prime_get(), RLC_FP_DIGS);
 		bn_div_dig(e, e, 3);
@@ -189,53 +188,21 @@ void fp3_field_init(void) {
 		fp3_mul(t2, t2, t0);
 		fp_copy(ctx->fp3_p1[4], t2[(5 * ctx->frb3) % 3]);
 
-		fp_mul(ctx->fp3_p2[0], ctx->fp3_p1[0], ctx->fp3_p0[1]);
-		fp_mul(t0[0], ctx->fp3_p2[0], ctx->fp3_p1[0]);
-		fp_neg(ctx->fp3_p2[0], t0[0]);
-		for (int i = -1; i > fp_prime_get_cnr(); i--) {
-			fp_sub(ctx->fp3_p2[0], ctx->fp3_p2[0], t0[0]);
-		}
-		fp_mul(ctx->fp3_p2[1], ctx->fp3_p1[1], ctx->fp3_p0[0]);
-		fp_mul(ctx->fp3_p2[1], ctx->fp3_p2[1], ctx->fp3_p1[1]);
-		fp_sqr(ctx->fp3_p2[2], ctx->fp3_p1[2]);
-		fp_mul(ctx->fp3_p2[3], ctx->fp3_p1[3], ctx->fp3_p0[1]);
-		fp_mul(t0[0], ctx->fp3_p2[3], ctx->fp3_p1[3]);
-		fp_neg(ctx->fp3_p2[3], t0[0]);
-		for (int i = -1; i > fp_prime_get_cnr(); i--) {
-			fp_sub(ctx->fp3_p2[3], ctx->fp3_p2[3], t0[0]);
-		}
-		fp_mul(ctx->fp3_p2[4], ctx->fp3_p1[4], ctx->fp3_p0[0]);
-		fp_mul(ctx->fp3_p2[4], ctx->fp3_p2[4], ctx->fp3_p1[4]);
+		/* Compute t0 = u^((p - (p mod 9))/9). */
+		fp3_zero(t0);
+		fp_set_dig(t0[1], 1);
+		dv_copy(e->dp, fp_prime_get(), RLC_FP_DIGS);
+		bn_div_dig(e, e, 9);
+		fp3_exp(t0, t0, e);
+		fp_copy(ctx->fp3_p2[0], t0[0]);
 
-		fp_mul(ctx->fp3_p3[0], ctx->fp3_p1[0], ctx->fp3_p0[0]);
-		fp_mul(t0[0], ctx->fp3_p3[0], ctx->fp3_p2[0]);
-		fp_neg(ctx->fp3_p3[0], t0[0]);
-		for (int i = -1; i > fp_prime_get_cnr(); i--) {
-			fp_sub(ctx->fp3_p3[0], ctx->fp3_p3[0], t0[0]);
-		}
-		fp_mul(ctx->fp3_p3[1], ctx->fp3_p1[1], ctx->fp3_p0[1]);
-		fp_mul(t0[0], ctx->fp3_p3[1], ctx->fp3_p2[1]);
-		fp_neg(ctx->fp3_p3[1], t0[0]);
-		for (int i = -1; i > fp_prime_get_cnr(); i--) {
-			fp_sub(ctx->fp3_p3[1], ctx->fp3_p3[1], t0[0]);
-		}
-		fp_mul(ctx->fp3_p3[2], ctx->fp3_p1[2], ctx->fp3_p2[2]);
-		fp_mul(ctx->fp3_p3[3], ctx->fp3_p1[3], ctx->fp3_p0[0]);
-		fp_mul(t0[0], ctx->fp3_p3[3], ctx->fp3_p2[3]);
-		fp_neg(ctx->fp3_p3[3], t0[0]);
-		for (int i = -1; i > fp_prime_get_cnr(); i--) {
-			fp_sub(ctx->fp3_p3[3], ctx->fp3_p3[3], t0[0]);
-		}
-		fp_mul(ctx->fp3_p3[4], ctx->fp3_p1[4], ctx->fp3_p0[1]);
-		fp_mul(t0[0], ctx->fp3_p3[4], ctx->fp3_p2[4]);
-		fp_neg(ctx->fp3_p3[4], t0[0]);
-		for (int i = -1; i > fp_prime_get_cnr(); i--) {
-			fp_sub(ctx->fp3_p3[4], ctx->fp3_p3[4], t0[0]);
-		}
-		for (int i = 0; i < 5; i++) {
-			fp_mul(ctx->fp3_p4[i], ctx->fp3_p1[i], ctx->fp3_p3[i]);
-			fp_mul(ctx->fp3_p5[i], ctx->fp3_p2[i], ctx->fp3_p3[i]);
-		}
+		/* Compute t0 = u^((p - (p mod 18))/18). */
+		fp3_zero(t0);
+		fp_set_dig(t0[1], 1);
+		dv_copy(e->dp, fp_prime_get(), RLC_FP_DIGS);
+		bn_div_dig(e, e, 18);
+		fp3_exp(t0, t0, e);
+		fp_copy(ctx->fp3_p2[1], t0[0]);
 	} CATCH_ANY {
 		THROW(ERR_CAUGHT);
 	} FINALLY {

@@ -90,12 +90,13 @@ static void fp_prime_set(const bn_t p) {
 			case 3:
 			case 7:
 				ctx->qnr = -1;
-				/* The current code for Fp^3 relies on cnr = -2. */
-				ctx->cnr = -2;
+				/* The current code for Fp^3 relies on cnr = 2. */
+				ctx->cnr = 2;
 				break;
 			case 1:
 			case 5:
-				ctx->qnr = ctx->cnr = -2;
+				ctx->qnr = -2;
+				ctx->cnr = 2;
 				/* Check if it is a quadratic non-residue or find another. */
 				fp_set_dig(r, -ctx->qnr);
 				fp_neg(r, r);

@@ -232,21 +232,23 @@ void fp12_dbl(fp12_t c, fp12_t a) {
 }
 
 void fp18_add(fp18_t c, fp18_t a, fp18_t b) {
-	fp6_add(c[0], a[0], b[0]);
-	fp6_add(c[1], a[1], b[1]);
-	fp6_add(c[2], a[2], b[2]);
+	fp9_add(c[0], a[0], b[0]);
+	fp9_add(c[1], a[1], b[1]);
 }
 
 void fp18_sub(fp18_t c, fp18_t a, fp18_t b) {
-	fp6_sub(c[0], a[0], b[0]);
-	fp6_sub(c[1], a[1], b[1]);
-	fp6_sub(c[2], a[2], b[2]);
+	fp9_sub(c[0], a[0], b[0]);
+	fp9_sub(c[1], a[1], b[1]);
+}
+
+void fp18_dbl(fp18_t c, fp18_t a) {
+	fp9_dbl(c[0], a[0]);
+	fp9_dbl(c[1], a[1]);
 }
 
 void fp18_neg(fp18_t c, fp18_t a) {
-	fp6_neg(c[0], a[0]);
-	fp6_neg(c[1], a[1]);
-	fp6_neg(c[2], a[2]);
+	fp9_neg(c[0], a[0]);
+	fp9_neg(c[1], a[1]);
 }
 
 void fp24_add(fp24_t c, fp24_t a, fp24_t b) {
@@ -291,4 +293,28 @@ void fp48_neg(fp48_t c, fp48_t a) {
 void fp48_dbl(fp48_t c, fp48_t a) {
 	fp24_dbl(c[0], a[0]);
 	fp24_dbl(c[1], a[1]);
+}
+
+void fp54_add(fp54_t c, fp54_t a, fp54_t b) {
+	fp18_add(c[0], a[0], b[0]);
+	fp18_add(c[1], a[1], b[1]);
+    fp18_add(c[2], a[2], b[2]);
+}
+
+void fp54_sub(fp54_t c, fp54_t a, fp54_t b) {
+	fp18_sub(c[0], a[0], b[0]);
+	fp18_sub(c[1], a[1], b[1]);
+    fp18_sub(c[2], a[2], b[2]);
+}
+
+void fp54_neg(fp54_t c, fp54_t a) {
+	fp18_neg(c[0], a[0]);
+	fp18_neg(c[1], a[1]);
+    fp18_neg(c[2], a[2]);
+}
+
+void fp54_dbl(fp54_t c, fp54_t a) {
+	fp18_dbl(c[0], a[0]);
+	fp18_dbl(c[1], a[1]);
+    fp18_dbl(c[2], a[2]);
 }

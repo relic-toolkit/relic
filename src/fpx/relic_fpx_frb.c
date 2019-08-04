@@ -53,10 +53,10 @@ void fp3_frb(fp3_t c, fp3_t a, int i) {
 	fp3_copy(c, a);
 	switch (i % 3) {
 		case 1:
-			fp3_mul_frb(c, c, 0, 1, 1);
+			fp3_mul_frb(c, c, 0, 1);
 			break;
 		case 2:
-			fp3_mul_frb(c, c, 0, 2, 1);
+			fp3_mul_frb(c, c, 0, 2);
 			break;
 	}
 }
@@ -104,8 +104,8 @@ void fp9_frb(fp9_t c, fp9_t a, int i) {
 		fp3_frb(c[0], c[0], 1);
 		fp3_frb(c[1], c[1], 1);
 		fp3_frb(c[2], c[2], 1);
-		fp3_mul_frb(c[1], c[1], 1, 1, 2);
-		fp3_mul_frb(c[2], c[2], 1, 1, 4);
+		fp3_mul_frb(c[1], c[1], 1, 2);
+		fp3_mul_frb(c[2], c[2], 1, 4);
 	}
 }
 
@@ -124,41 +124,16 @@ void fp12_frb(fp12_t c, fp12_t a, int i) {
 }
 
 void fp18_frb(fp18_t c, fp18_t a, int i) {
-	fp3_t t;
-
-	fp3_null(t);
-
-	TRY {
-		fp3_new(t);
-
-		fp18_copy(c, a);
-		for (int j = 0; j < 3; j++) {
-			fp_copy(t[0], a[j][0][0]);
-			fp_copy(t[1], a[j][2][0]);
-			fp_copy(t[2], a[j][1][1]);
-			fp3_frb(t, t, i % 3);
-			if (j != 0) {
-				fp3_mul_frb(t, t, 1, i, j);
-			}
-			fp_copy(c[j][0][0], t[0]);
-			fp_copy(c[j][2][0], t[1]);
-			fp_copy(c[j][1][1], t[2]);
-
-			fp_copy(t[0], a[j][1][0]);
-			fp_copy(t[1], a[j][0][1]);
-			fp_copy(t[2], a[j][2][1]);
-			fp3_frb(t, t, i % 3);
-			fp3_mul_frb(t, t, 1, i, j + 3);
-			fp_copy(c[j][1][0], t[0]);
-			fp_copy(c[j][0][1], t[1]);
-			fp_copy(c[j][2][1], t[2]);
-		}
-	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	}
-	FINALLY {
-		fp3_free(t);
+	/* Cost of five multiplication in Fp^2 per Frobenius. */
+	fp18_copy(c, a);
+	for (; i % 18 > 0; i--) {
+		fp9_frb(c[0], c[0], 1);
+		fp3_frb(c[1][0], c[1][0], 1);
+		fp3_frb(c[1][1], c[1][1], 1);
+		fp3_frb(c[1][2], c[1][2], 1);
+		fp3_mul_frb(c[1][0], c[1][0], 1, 1);
+		fp3_mul_frb(c[1][1], c[1][1], 1, 3);
+		fp3_mul_frb(c[1][2], c[1][2], 1, 5);
 	}
 }
 
@@ -198,6 +173,22 @@ void fp48_frb(fp48_t c, fp48_t a, int i) {
 			}
 			if ((fp_prime_get_mod8() % 4) == 3) {
 				fp8_mul_art(c[1][j], c[1][j]);
+			}
+		}
+	}
+}
+
+void fp54_frb(fp54_t c, fp54_t a, int i) {
+	/* Cost of 20 multiplication in Fp^2 per Frobenius. */
+	fp54_copy(c, a);
+	for (; i % 54 > 0; i--) {
+		fp18_frb(c[0], c[0], 1);
+		fp18_frb(c[1], c[1], 1);
+		fp18_frb(c[2], c[2], 1);
+		for (int j = 0; j < 2; j++) {
+			for (int l = 0; l < 3; l++) {
+				fp3_mul_frb(c[1][j][l], c[1][j][l], 2, 2);
+				fp3_mul_frb(c[2][j][l], c[2][j][l], 2, 1);
 			}
 		}
 	}

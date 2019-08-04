@@ -690,31 +690,13 @@ static void arith3(void) {
 
 	BENCH_BEGIN("fp3_mul_frb (0,1)") {
 		fp3_rand(a);
-		BENCH_ADD(fp3_mul_frb(c, a, 0, 1, 1));
-	}
-	BENCH_END;
-
-	BENCH_BEGIN("fp3_mul_frb (0,2)") {
-		fp3_rand(a);
-		BENCH_ADD(fp3_mul_frb(c, a, 0, 2, 1));
+		BENCH_ADD(fp3_mul_frb(c, a, 0, 1));
 	}
 	BENCH_END;
 
 	BENCH_BEGIN("fp3_mul_frb (1,1)") {
 		fp3_rand(a);
-		BENCH_ADD(fp3_mul_frb(c, a, 1, 1, 0));
-	}
-	BENCH_END;
-
-	BENCH_BEGIN("fp3_mul_frb (1,2)") {
-		fp3_rand(a);
-		BENCH_ADD(fp3_mul_frb(c, a, 1, 2, 0));
-	}
-	BENCH_END;
-
-	BENCH_BEGIN("fp3_mul_frb (1,3)") {
-		fp3_rand(a);
-		BENCH_ADD(fp3_mul_frb(c, a, 1, 3, 0));
+		BENCH_ADD(fp3_mul_frb(c, a, 1, 1));
 	}
 	BENCH_END;
 
@@ -1325,6 +1307,22 @@ static void arith8(void) {
 	}
 	BENCH_END;
 
+#if FPX_RDC == BASIC || !defined(STRIP)
+	BENCH_BEGIN("fp8_sqr_basic") {
+		fp8_rand(a);
+		BENCH_ADD(fp8_sqr_basic(c, a));
+	}
+	BENCH_END;
+#endif
+
+#if FPX_RDC == LAZYR || !defined(STRIP)
+	BENCH_BEGIN("fp8_sqr_lazyr") {
+		fp8_rand(a);
+		BENCH_ADD(fp8_sqr_lazyr(c, a));
+	}
+	BENCH_END;
+#endif
+
 	BENCH_BEGIN("fp8_sqr_cyc") {
 		fp8_rand(a);
 		BENCH_ADD(fp8_sqr_cyc(c, a));
@@ -1347,6 +1345,13 @@ static void arith8(void) {
 	BENCH_BEGIN("fp8_inv") {
 		fp8_rand(a);
 		BENCH_ADD(fp8_inv(c, a));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp8_inv_sim (2)") {
+		fp8_rand(d[0]);
+		fp8_rand(d[1]);
+		BENCH_ADD(fp8_inv_sim(d, d, 2));
 	}
 	BENCH_END;
 
@@ -2078,14 +2083,12 @@ static void util18(void) {
 }
 
 static void arith18(void) {
-	fp18_t a, b, c, d[2];
+	fp18_t a, b, c;
 	bn_t e;
 
 	fp18_new(a);
 	fp18_new(b);
 	fp18_new(c);
-	fp18_new(d[0]);
-	fp18_new(d[1]);
 	bn_new(e);
 
 	BENCH_BEGIN("fp18_add") {
@@ -2127,31 +2130,6 @@ static void arith18(void) {
 	BENCH_END;
 #endif
 
-	BENCH_BEGIN("fp18_mul_dxs") {
-		fp18_rand(a);
-		fp18_rand(b);
-		BENCH_ADD(fp18_mul_dxs(c, a, b));
-	}
-	BENCH_END;
-
-#if FPX_RDC == BASIC || !defined(STRIP)
-	BENCH_BEGIN("fp18_mul_dxs_basic") {
-		fp18_rand(a);
-		fp18_rand(b);
-		BENCH_ADD(fp18_mul_dxs_basic(c, a, b));
-	}
-	BENCH_END;
-#endif
-
-#if FPX_RDC == LAZYR || !defined(STRIP)
-	BENCH_BEGIN("fp18_mul_dxs_lazyr") {
-		fp18_rand(a);
-		fp18_rand(b);
-		BENCH_ADD(fp18_mul_dxs_lazyr(c, a, b));
-	}
-	BENCH_END;
-#endif
-
 	BENCH_BEGIN("fp18_sqr") {
 		fp18_rand(a);
 		BENCH_ADD(fp18_sqr(c, a));
@@ -2174,59 +2152,9 @@ static void arith18(void) {
 	BENCH_END;
 #endif
 
-	BENCH_BEGIN("fp18_sqr_cyc") {
-		fp18_rand(a);
-		BENCH_ADD(fp18_sqr_cyc(c, a));
-	}
-	BENCH_END;
-
-	BENCH_BEGIN("fp18_sqr_pck") {
-		fp18_rand(a);
-		BENCH_ADD(fp18_sqr_pck(c, a));
-	}
-	BENCH_END;
-
-	BENCH_BEGIN("fp18_test_cyc") {
-		fp18_rand(a);
-		fp18_conv_cyc(a, a);
-		BENCH_ADD(fp18_test_cyc(a));
-	}
-	BENCH_END;
-
-	BENCH_BEGIN("fp18_conv_cyc") {
-		fp18_rand(a);
-		BENCH_ADD(fp18_conv_cyc(c, a));
-	}
-	BENCH_END;
-
-	BENCH_BEGIN("fp18_back_cyc") {
-		fp18_rand(a);
-		BENCH_ADD(fp18_back_cyc(c, a));
-	}
-	BENCH_END;
-
-	BENCH_BEGIN("fp18_back_cyc (2)") {
-		fp18_rand(d[0]);
-		fp18_rand(d[1]);
-		BENCH_ADD(fp18_back_cyc_sim(d, d, 2));
-	}
-	BENCH_END;
-
-	BENCH_BEGIN("fp18_conv_cyc") {
-		fp18_rand(a);
-		BENCH_ADD(fp18_conv_cyc(c, a));
-	}
-	BENCH_END;
-
 	BENCH_BEGIN("fp18_inv") {
 		fp18_rand(a);
 		BENCH_ADD(fp18_inv(c, a));
-	}
-	BENCH_END;
-
-	BENCH_BEGIN("fp18_inv_cyc") {
-		fp18_rand(a);
-		BENCH_ADD(fp18_inv_cyc(c, a));
 	}
 	BENCH_END;
 
@@ -2235,38 +2163,6 @@ static void arith18(void) {
 		e->used = RLC_FP_DIGS;
 		dv_copy(e->dp, fp_prime_get(), RLC_FP_DIGS);
 		BENCH_ADD(fp18_exp(c, a, e));
-	}
-	BENCH_END;
-
-	BENCH_BEGIN("fp18_exp (cyc)") {
-		fp18_rand(a);
-		fp18_conv_cyc(a, a);
-		e->used = RLC_FP_DIGS;
-		dv_copy(e->dp, fp_prime_get(), RLC_FP_DIGS);
-		BENCH_ADD(fp18_exp(c, a, e));
-	}
-	BENCH_END;
-
-	BENCH_BEGIN("fp18_exp_cyc (param or sparse)") {
-		fp18_rand(a);
-		fp18_conv_cyc(a, a);
-		bn_zero(e);
-		fp_prime_get_par(e);
-		if (bn_is_zero(e)) {
-			bn_set_2b(e, RLC_FP_BITS - 1);
-			bn_set_bit(e, RLC_FP_BITS / 2, 1);
-			bn_set_bit(e, 0, 1);
-		}
-		BENCH_ADD(fp18_exp(c, a, e));
-	}
-	BENCH_END;
-
-	BENCH_BEGIN("fp18_exp_cyc_sps (param)") {
-		const int *k;
-		int l;
-		k = fp_prime_get_par_sps(&l);
-		fp18_rand(a);
-		BENCH_ADD(fp18_exp_cyc_sps(c, a, k, l));
 	}
 	BENCH_END;
 
@@ -2279,8 +2175,6 @@ static void arith18(void) {
 	fp18_free(a);
 	fp18_free(b);
 	fp18_free(c);
-	fp18_free(d[0]);
-	fp18_free(d[1]);
 	bn_free(e);
 }
 
@@ -2442,6 +2336,22 @@ static void arith24(void) {
 		BENCH_ADD(fp24_sqr(c, a));
 	}
 	BENCH_END;
+
+#if FPX_RDC == BASIC || !defined(STRIP)
+	BENCH_BEGIN("fp24_sqr_basic") {
+		fp24_rand(a);
+		BENCH_ADD(fp24_sqr_basic(c, a));
+	}
+	BENCH_END;
+#endif
+
+#if FPX_RDC == LAZYR || !defined(STRIP)
+	BENCH_BEGIN("fp24_sqr_lazyr") {
+		fp24_rand(a);
+		BENCH_ADD(fp24_sqr_lazyr(c, a));
+	}
+	BENCH_END;
+#endif
 
 	BENCH_BEGIN("fp24_inv") {
 		fp24_rand(a);
@@ -2652,24 +2562,6 @@ static void arith48(void) {
 	}
 	BENCH_END;
 
-#if FPX_RDC == BASIC || !defined(STRIP)
-	BENCH_BEGIN("fp48_mul_dxs_basic") {
-		fp48_rand(a);
-		fp48_rand(b);
-		BENCH_ADD(fp48_mul_dxs_basic(c, a, b));
-	}
-	BENCH_END;
-#endif
-
-#if FPX_RDC == LAZYR || !defined(STRIP)
-	BENCH_BEGIN("fp48_mul_dxs_lazyr") {
-		fp48_rand(a);
-		fp48_rand(b);
-		BENCH_ADD(fp48_mul_dxs_lazyr(c, a, b));
-	}
-	BENCH_END;
-#endif
-
 	BENCH_BEGIN("fp48_sqr") {
 		fp48_rand(a);
 		BENCH_ADD(fp48_sqr(c, a));
@@ -2842,6 +2734,362 @@ static void arith48(void) {
 	bn_free(e);
 }
 
+static void memory54(void) {
+	fp54_t a[BENCH];
+
+	BENCH_SMALL("fp54_null", fp54_null(a[i]));
+
+	BENCH_SMALL("fp54_new", fp54_new(a[i]));
+	for (int i = 0; i < BENCH; i++) {
+		fp54_free(a[i]);
+	}
+
+	for (int i = 0; i < BENCH; i++) {
+		fp54_new(a[i]);
+	}
+	BENCH_SMALL("fp54_free", fp54_free(a[i]));
+
+	(void)a;
+}
+
+static void util54(void) {
+	fp54_t a, b;
+	uint8_t bin[54 * RLC_FP_BYTES];
+
+	fp54_null(a);
+	fp54_null(b);
+
+	fp54_new(a);
+	fp54_new(b);
+
+	BENCH_BEGIN("fp54_copy") {
+		fp54_rand(a);
+		BENCH_ADD(fp54_copy(b, a));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp54_neg") {
+		fp54_rand(a);
+		BENCH_ADD(fp54_neg(b, a));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp54_zero") {
+		fp54_rand(a);
+		BENCH_ADD(fp54_zero(a));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp54_is_zero") {
+		fp54_rand(a);
+		BENCH_ADD((void)fp54_is_zero(a));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp54_set_dig (1)") {
+		fp54_rand(a);
+		BENCH_ADD(fp54_set_dig(a, 1));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp54_set_dig") {
+		fp54_rand(a);
+		BENCH_ADD(fp54_set_dig(a, a[0][0][0][0][0]));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp54_rand") {
+		BENCH_ADD(fp54_rand(a));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp54_size_bin (0)") {
+		fp54_rand(a);
+		BENCH_ADD(fp54_size_bin(a, 0));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp54_size_bin (1)") {
+		fp54_rand(a);
+		fp54_conv_cyc(a, a);
+		BENCH_ADD(fp54_size_bin(a, 1));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp54_write_bin (0)") {
+		fp54_rand(a);
+		BENCH_ADD(fp54_write_bin(bin, sizeof(bin), a, 0));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp54_write_bin (1)") {
+		fp54_rand(a);
+		fp54_conv_cyc(a, a);
+		BENCH_ADD(fp54_write_bin(bin, 32 * RLC_FP_BYTES, a, 1));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp54_read_bin (0)") {
+		fp54_rand(a);
+		fp54_write_bin(bin, sizeof(bin), a, 0);
+		BENCH_ADD(fp54_read_bin(a, bin, sizeof(bin)));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp54_read_bin (1)") {
+		fp54_rand(a);
+		fp54_conv_cyc(a, a);
+		fp54_write_bin(bin, fp54_size_bin(a, 1), a, 1);
+		BENCH_ADD(fp54_read_bin(a, bin, 32 * RLC_FP_BYTES));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp54_cmp") {
+		fp54_rand(a);
+		fp54_rand(b);
+		BENCH_ADD(fp54_cmp(b, a));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp54_cmp_dig") {
+		fp54_rand(a);
+		BENCH_ADD(fp54_cmp_dig(a, (dig_t)0));
+	}
+	BENCH_END;
+
+	fp54_free(a);
+	fp54_free(b);
+}
+
+static void arith54(void) {
+	fp54_t a, b, c, d[2];
+	bn_t e;
+
+	fp54_new(a);
+	fp54_new(b);
+	fp54_new(c);
+	fp54_new(d[0]);
+	fp54_new(d[1]);
+	bn_new(e);
+
+	BENCH_BEGIN("fp54_add") {
+		fp54_rand(a);
+		fp54_rand(b);
+		BENCH_ADD(fp54_add(c, a, b));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp54_sub") {
+		fp54_rand(a);
+		fp54_rand(b);
+		BENCH_ADD(fp54_sub(c, a, b));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp54_mul") {
+		fp54_rand(a);
+		fp54_rand(b);
+		BENCH_ADD(fp54_mul(c, a, b));
+	}
+	BENCH_END;
+
+#if FPX_RDC == BASIC || !defined(STRIP)
+	BENCH_BEGIN("fp54_mul_basic") {
+		fp54_rand(a);
+		fp54_rand(b);
+		BENCH_ADD(fp54_mul_basic(c, a, b));
+	}
+	BENCH_END;
+#endif
+
+#if FPX_RDC == LAZYR || !defined(STRIP)
+	BENCH_BEGIN("fp54_mul_lazyr") {
+		fp54_rand(a);
+		fp54_rand(b);
+		BENCH_ADD(fp54_mul_lazyr(c, a, b));
+	}
+	BENCH_END;
+#endif
+
+	BENCH_BEGIN("fp54_mul_dxs") {
+		fp54_rand(a);
+		fp54_rand(b);
+		BENCH_ADD(fp54_mul_dxs(c, a, b));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp54_sqr") {
+		fp54_rand(a);
+		BENCH_ADD(fp54_sqr(c, a));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp54_sqr_cyc") {
+		fp54_rand(a);
+		BENCH_ADD(fp54_sqr_cyc(c, a));
+	}
+	BENCH_END;
+
+#if FPX_RDC == BASIC || !defined(STRIP)
+	BENCH_BEGIN("fp54_sqr_cyc_basic") {
+		fp54_rand(a);
+		fp54_rand(b);
+		BENCH_ADD(fp54_sqr_cyc_basic(c, a));
+	}
+	BENCH_END;
+#endif
+
+#if FPX_RDC == LAZYR || !defined(STRIP)
+	BENCH_BEGIN("fp54_sqr_cyc_lazyr") {
+		fp54_rand(a);
+		fp54_rand(b);
+		BENCH_ADD(fp54_sqr_cyc_lazyr(c, a));
+	}
+	BENCH_END;
+#endif
+
+	BENCH_BEGIN("fp54_sqr_pck") {
+		fp54_rand(a);
+		BENCH_ADD(fp54_sqr_pck(c, a));
+	}
+	BENCH_END;
+
+#if FPX_RDC == BASIC || !defined(STRIP)
+	BENCH_BEGIN("fp54_sqr_pck_basic") {
+		fp54_rand(a);
+		fp54_rand(b);
+		BENCH_ADD(fp54_sqr_pck_basic(c, a));
+	}
+	BENCH_END;
+#endif
+
+#if FPX_RDC == LAZYR || !defined(STRIP)
+	BENCH_BEGIN("fp54_sqr_pck_lazyr") {
+		fp54_rand(a);
+		fp54_rand(b);
+		BENCH_ADD(fp54_sqr_pck_lazyr(c, a));
+	}
+	BENCH_END;
+#endif
+
+	BENCH_BEGIN("fp54_test_cyc") {
+		fp54_rand(a);
+		fp54_conv_cyc(a, a);
+		BENCH_ADD(fp54_test_cyc(a));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp54_conv_cyc") {
+		fp54_rand(a);
+		BENCH_ADD(fp54_conv_cyc(c, a));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp54_back_cyc") {
+		fp54_rand(a);
+		BENCH_ADD(fp54_back_cyc(c, a));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp54_back_cyc (2)") {
+		fp54_rand(d[0]);
+		fp54_rand(d[1]);
+		BENCH_ADD(fp54_back_cyc_sim(d, d, 2));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp54_conv_cyc") {
+		fp54_rand(a);
+		BENCH_ADD(fp54_conv_cyc(c, a));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp54_inv") {
+		fp54_rand(a);
+		BENCH_ADD(fp54_inv(c, a));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp54_inv_cyc") {
+		fp54_rand(a);
+		BENCH_ADD(fp54_inv_cyc(c, a));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp54_exp") {
+		fp54_rand(a);
+		bn_rand(e, RLC_POS, RLC_FP_BITS);
+		BENCH_ADD(fp54_exp(c, a, e));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp54_exp (cyc)") {
+		fp54_rand(a);
+		fp54_conv_cyc(a, a);
+		bn_rand(e, RLC_POS, RLC_FP_BITS);
+		BENCH_ADD(fp54_exp(c, a, e));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp54_exp_cyc (param or sparse)") {
+		fp54_rand(a);
+		fp54_conv_cyc(a, a);
+		bn_zero(e);
+		fp_prime_get_par(e);
+		if (bn_is_zero(e)) {
+			bn_set_2b(e, RLC_FP_BITS - 1);
+			bn_set_bit(e, RLC_FP_BITS / 2, 1);
+			bn_set_bit(e, 0, 1);
+		}
+		BENCH_ADD(fp54_exp_cyc(c, a, e));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp54_exp_cyc_sps (param)") {
+		const int *k;
+		int l;
+		k = fp_prime_get_par_sps(&l);
+		fp54_rand(a);
+		BENCH_ADD(fp54_exp_cyc_sps(c, a, k, l));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp54_exp_dig") {
+		fp54_rand(a);
+		bn_rand(e, RLC_POS, RLC_DIG);
+		BENCH_ADD(fp54_exp_dig(c, a, e->dp[0]));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp54_frb") {
+		fp54_rand(a);
+		BENCH_ADD(fp54_frb(c, a, 1));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp54_pck") {
+		fp54_rand(a);
+		fp54_conv_cyc(a, a);
+		BENCH_ADD(fp54_pck(c, a));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp54_upk") {
+		fp54_rand(a);
+		fp54_conv_cyc(a, a);
+		fp54_pck(a, a);
+		BENCH_ADD(fp54_upk(c, a));
+	}
+	BENCH_END;
+
+	fp54_free(a);
+	fp54_free(b);
+	fp54_free(c);
+	fp54_free(d[0]);
+	fp54_free(d[1]);
+	bn_free(e);
+}
+
 int main(void) {
 	if (core_init() != RLC_OK) {
 		core_clean();
@@ -2922,7 +3170,19 @@ int main(void) {
 		util12();
 		util_banner("Arithmetic:", 1);
 		arith12();
+	}
 
+	if (fp_prime_get_cnr()) {
+		util_banner("Octodecic extension:", 0);
+		util_banner("Utilities:", 1);
+		memory18();
+		util18();
+
+		util_banner("Arithmetic:", 1);
+		arith18();
+	}
+
+	if (fp_prime_get_qnr()) {
 		util_banner("Extension of degree 24:", 0);
 		util_banner("Utilities:", 1);
 		memory24();
@@ -2938,14 +3198,13 @@ int main(void) {
 		arith48();
 	}
 
-	if (fp_prime_get_qnr() == fp_prime_get_cnr()) {
-		util_banner("Octodecic extension:", 0);
+	if (fp_prime_get_cnr()) {
+		util_banner("Extension of degree 54:", 0);
 		util_banner("Utilities:", 1);
-		memory18();
-		util18();
-
+		memory54();
+		util54();
 		util_banner("Arithmetic:", 1);
-		arith18();
+		arith54();
 	}
 
 	core_clean();

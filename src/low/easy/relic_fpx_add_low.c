@@ -325,9 +325,9 @@ void fp3_nord_low(dv3_t c, dv3_t a) {
 	TRY {
 		dv_new(t);
 		dv_copy(t, a[0], 2 * RLC_FP_DIGS);
-		dv_zero(c[0], 2 * RLC_FP_DIGS);
-		for (int i = -1; i >= fp_prime_get_cnr(); i--) {
-			fp_subc_low(c[0], c[0], a[2]);
+		dv_copy(c[0], a[2], 2 * RLC_FP_DIGS);
+		for (int i = 1; i < fp_prime_get_cnr(); i++) {
+			fp_addc_low(c[0], c[0], a[2]);
 		}
 		dv_copy(c[2], a[1], 2 * RLC_FP_DIGS);
 		dv_copy(c[1], t, 2 * RLC_FP_DIGS);
