@@ -75,6 +75,7 @@ int cp_vbnn_gen(bn_t msk, ec_t mpk) {
 int cp_vbnn_gen_prv(bn_t sk, ec_t pk, bn_t msk, uint8_t *id, int id_len) {
 	uint8_t hash[RLC_MD_LEN];
 	int len, result = RLC_OK;
+	uint8_t *buf = NULL;
 	bn_t n, r;
 
 	/* zero variables */
@@ -97,18 +98,19 @@ int cp_vbnn_gen_prv(bn_t sk, ec_t pk, bn_t msk, uint8_t *id, int id_len) {
 
 		/* calculate s part of the user key */
 		len = id_len + ec_size_bin(pk, 1);
-		uint8_t *buffer = RLC_ALLOCA(uint8_t, len);
-		memcpy(buffer, id, id_len);
-		ec_write_bin(buffer + id_len, ec_size_bin(pk, 1), pk, 1);
+		buf = RLC_ALLOCA(uint8_t, len);
+		if (buf == NULL) {
+			THROW(ERR_NO_MEMORY);
+		}
+		memcpy(buf, id, id_len);
+		ec_write_bin(buf + id_len, ec_size_bin(pk, 1), pk, 1);
 
-		md_map(hash, buffer, len);
+		md_map(hash, buf, len);
 		bn_read_bin(sk, hash, RLC_MD_LEN);
 		bn_mod(sk, sk, n);
 		bn_mul(sk, sk, msk);
 		bn_add(sk, sk, r);
 		bn_mod(sk, sk, n);
-
-		RLC_FREE(buffer);
 	}
 	CATCH_ANY {
 		result = RLC_ERR;
@@ -117,6 +119,7 @@ int cp_vbnn_gen_prv(bn_t sk, ec_t pk, bn_t msk, uint8_t *id, int id_len) {
 		/* free variables */
 		bn_free(n);
 		bn_free(r);
+		RLC_FREE(buf);
 	}
 	return result;
 }
@@ -124,7 +127,7 @@ int cp_vbnn_gen_prv(bn_t sk, ec_t pk, bn_t msk, uint8_t *id, int id_len) {
 int cp_vbnn_sig(ec_t r, bn_t z, bn_t h, uint8_t *id, int id_len,
 		uint8_t *msg, int msg_len, bn_t sk, ec_t pk) {
 	int len, result = RLC_OK;
-	uint8_t *buffer, *buffer_i, hash[RLC_MD_LEN];
+	uint8_t *buf = NULL, *buf_i, hash[RLC_MD_LEN];
 	bn_t n, y;
 	ec_t t;
 
@@ -146,18 +149,21 @@ int cp_vbnn_sig(ec_t r, bn_t z, bn_t h, uint8_t *id, int id_len,
 
 		/* calculate h part of the signature */
 		len = id_len + msg_len + ec_size_bin(t, 1) + ec_size_bin(pk, 1);
-		buffer = RLC_ALLOCA(uint8_t, len);
+		buf = RLC_ALLOCA(uint8_t, len);
+		if (buf == NULL) {
+			THROW(ERR_NO_MEMORY);
+		}
 
-		buffer_i = buffer;
-		memcpy(buffer_i, id, id_len);
-		buffer_i += id_len;
-		memcpy(buffer_i, msg, msg_len);
-		buffer_i += msg_len;
-		ec_write_bin(buffer_i, ec_size_bin(pk, 1), pk, 1);
-		buffer_i += ec_size_bin(pk, 1);
-		ec_write_bin(buffer_i, ec_size_bin(t, 1), t, 1);
+		buf_i = buf;
+		memcpy(buf_i, id, id_len);
+		buf_i += id_len;
+		memcpy(buf_i, msg, msg_len);
+		buf_i += msg_len;
+		ec_write_bin(buf_i, ec_size_bin(pk, 1), pk, 1);
+		buf_i += ec_size_bin(pk, 1);
+		ec_write_bin(buf_i, ec_size_bin(t, 1), t, 1);
 
-		md_map(hash, buffer, len);
+		md_map(hash, buf, len);
 		bn_read_bin(h, hash, RLC_MD_LEN);
 		bn_mod(h, h, n);
 
@@ -168,8 +174,6 @@ int cp_vbnn_sig(ec_t r, bn_t z, bn_t h, uint8_t *id, int id_len,
 
 		/* calculate R part of the signature */
 		ec_copy(r, pk);
-
-		RLC_FREE(buffer);
 	}
 	CATCH_ANY {
 		result = RLC_ERR;
@@ -179,6 +183,7 @@ int cp_vbnn_sig(ec_t r, bn_t z, bn_t h, uint8_t *id, int id_len,
 		bn_free(n);
 		bn_free(y);
 		ec_free(t);
+		RLC_FREE(buf);
 	}
 	return result;
 }
@@ -186,7 +191,7 @@ int cp_vbnn_sig(ec_t r, bn_t z, bn_t h, uint8_t *id, int id_len,
 int cp_vbnn_ver(ec_t r, bn_t z, bn_t h, uint8_t *id, int id_len,
 		uint8_t *msg, int msg_len, ec_t mpk) {
 	int len, result = 0;
-	uint8_t *buffer, *buffer_i, hash[RLC_MD_LEN];
+	uint8_t *buf = NULL, *buf_i, hash[RLC_MD_LEN];
 	bn_t n, c, _h;
 	ec_t Z;
 	ec_t t;
@@ -205,24 +210,25 @@ int cp_vbnn_ver(ec_t r, bn_t z, bn_t h, uint8_t *id, int id_len,
 		ec_new(Z);
 		ec_new(t);
 
+		/* calculate c */
+		len = id_len + msg_len + 2 * ec_size_bin(r, 1);
+		buf = RLC_ALLOCA(uint8_t, len);
+		if (buf == NULL) {
+			THROW(ERR_NO_MEMORY);
+		}
+		
 		/* get order of ECC group */
 		ec_curve_get_ord(n);
 
-		/* calculate c */
+		buf_i = buf;
+		memcpy(buf_i, id, id_len);
+		buf_i += id_len;
+		ec_write_bin(buf_i, ec_size_bin(r, 1), r, 1);
+
 		len = id_len + ec_size_bin(r, 1);
-		buffer = RLC_ALLOCA(uint8_t, len);
-
-		buffer_i = buffer;
-		memcpy(buffer_i, id, id_len);
-		buffer_i += id_len;
-		ec_write_bin(buffer_i, ec_size_bin(r, 1), r, 1);
-
-		md_map(hash, buffer, len);
+		md_map(hash, buf, len);
 		bn_read_bin(c, hash, RLC_MD_LEN);
 		bn_mod(c, c, n);
-
-		RLC_FREE(buffer);
-		buffer = NULL;
 
 		/* calculate Z */
 		ec_mul_gen(Z, z);
@@ -234,22 +240,20 @@ int cp_vbnn_ver(ec_t r, bn_t z, bn_t h, uint8_t *id, int id_len,
 		ec_norm(Z, Z);
 
 		/* calculate h_verify */
+		buf_i = buf;
+		memcpy(buf_i, id, id_len);
+		buf_i += id_len;
+		memcpy(buf_i, msg, msg_len);
+		buf_i += msg_len;
+		ec_write_bin(buf_i, ec_size_bin(r, 1), r, 1);
+		buf_i += ec_size_bin(r, 1);
+		ec_write_bin(buf_i, ec_size_bin(Z, 1), Z, 1);
+
 		len = id_len + msg_len + ec_size_bin(r, 1) + ec_size_bin(Z, 1);
-		buffer = RLC_ALLOCA(uint8_t, len);
-
-		buffer_i = buffer;
-		memcpy(buffer_i, id, id_len);
-		buffer_i += id_len;
-		memcpy(buffer_i, msg, msg_len);
-		buffer_i += msg_len;
-		ec_write_bin(buffer_i, ec_size_bin(r, 1), r, 1);
-		buffer_i += ec_size_bin(r, 1);
-		ec_write_bin(buffer_i, ec_size_bin(Z, 1), Z, 1);
-
-		md_map(hash, buffer, len);
+		md_map(hash, buf, len);
 		bn_read_bin(_h, hash, RLC_MD_LEN);
 		bn_mod(_h, _h, n);
-		RLC_FREE(buffer);
+		RLC_FREE(buf);
 
 		if (bn_cmp(h, _h) == RLC_EQ) {
 			result = 1;
@@ -267,6 +271,7 @@ int cp_vbnn_ver(ec_t r, bn_t z, bn_t h, uint8_t *id, int id_len,
 		bn_free(_h);
 		ec_free(Z);
 		ec_free(t);
+		RLC_FREE(buf);
 	}
 	return result;
 }

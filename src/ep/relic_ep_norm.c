@@ -101,12 +101,12 @@ void ep_norm_sim(ep_t *r, const ep_t *t, int n) {
 	int i;
 	fp_t* a = RLC_ALLOCA(fp_t, n);
 
-	for (i = 0; i < n; i++) {
-		fp_null(a[i]);
-	}
-
 	TRY {
+		if (a == NULL) {
+			THROW(ERR_NO_MEMORY);
+		}
 		for (i = 0; i < n; i++) {
+			fp_null(a[i]);
 			fp_new(a[i]);
 			fp_copy(a[i], t[i]->z);
 		}
@@ -132,5 +132,6 @@ void ep_norm_sim(ep_t *r, const ep_t *t, int n) {
 		for (i = 0; i < n; i++) {
 			fp_free(a[i]);
 		}
+		RLC_FREE(a);
 	}
 }

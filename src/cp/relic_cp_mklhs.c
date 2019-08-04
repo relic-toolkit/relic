@@ -144,6 +144,9 @@ int cp_mklhs_ver(g1_t sig, bn_t m, bn_t mu[], char *label[], int llen[],
 		g2_new(g2);
 		gt_new(c);
 		gt_new(e);
+		if (g == NULL) {
+			THROW(ERR_NO_MEMORY);
+		}
 
 		bn_zero(t);
 		g1_get_ord(n);
@@ -160,6 +163,9 @@ int cp_mklhs_ver(g1_t sig, bn_t m, bn_t mu[], char *label[], int llen[],
 
 		for (int i = 0; i < slen; i++) {
 			g1_t *h = RLC_ALLOCA(g1_t, flen[i]);
+			if (h == NULL) {
+				THROW(ERR_NO_MEMORY);
+			}
 			for (int j = 0; j < flen[i]; j++) {
 				g1_null(h[j]);
 				g1_new(h[j]);
@@ -171,6 +177,7 @@ int cp_mklhs_ver(g1_t sig, bn_t m, bn_t mu[], char *label[], int llen[],
 			for (int j = 0; j < flen[i]; j++) {
 				g1_free(h[j]);
 			}
+			RLC_FREE(h);
 		}
 
 		g2_get_gen(g2);
@@ -189,6 +196,7 @@ int cp_mklhs_ver(g1_t sig, bn_t m, bn_t mu[], char *label[], int llen[],
 		g2_free(g2);
 		gt_free(c);
 		gt_free(e);
+		RLC_FREE(g);
 	}
 	return (ver1 && ver2);
 }

@@ -108,6 +108,9 @@ int cp_cmlhs_sig(g1_t sig, g2_t z, g1_t a, g1_t c, g1_t r, g2_t s, bn_t msg,
 		bn_new(n);
 		bn_new(k);
 		g1_new(t);
+		if (buf == NULL) {
+			THROW(ERR_NO_MEMORY);
+		}
 
 		g1_get_ord(n);
 
@@ -163,6 +166,7 @@ int cp_cmlhs_sig(g1_t sig, g2_t z, g1_t a, g1_t c, g1_t r, g2_t s, bn_t msg,
 		bn_free(m);
 		bn_free(n);
 		g1_free(t);
+		RLC_FREE(buf);
 	}
 	return result;
 }
@@ -212,6 +216,9 @@ int cp_cmlhs_ver(g1_t r, g2_t s, g1_t sig[], g2_t z[], g1_t a[], g1_t c[],
 		gt_new(v);
 		bn_new(k);
 		bn_new(n);
+		if (buf == NULL) {
+			THROW(ERR_NO_MEMORY);
+		}
 
 		g1_get_ord(n);
 		g1_get_gen(g1);
@@ -266,6 +273,7 @@ int cp_cmlhs_ver(g1_t r, g2_t s, g1_t sig[], g2_t z[], g1_t a[], g1_t c[],
 		gt_free(v);
 		bn_free(k);
 		bn_free(n);
+		RLC_FREE(buf);
 	}
 	return result;
 }

@@ -70,7 +70,7 @@ int cp_ibe_gen_prv(g2_t prv, char *id, int len, bn_t master) {
 int cp_ibe_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len,
 		char *id, int len, g1_t pub) {
 	int l, result = RLC_OK;
-	uint8_t h[RLC_MD_LEN];
+	uint8_t *buf = NULL, h[RLC_MD_LEN];
 	bn_t n;
 	bn_t r;
 	g1_t p;
@@ -99,6 +99,13 @@ int cp_ibe_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len,
 		g2_new(q);
 		gt_new(e);
 
+		/* Allocate size for storing the output. */
+		l = gt_size_bin(e, 0);
+		buf = RLC_ALLOCA(uint8_t, l);
+		if (buf == NULL) {
+			THROW(ERR_NO_MEMORY);
+		}
+
 		g1_get_ord(n);
 
 		/* q = H_1(ID). */
@@ -106,10 +113,6 @@ int cp_ibe_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len,
 
 		/* e = e(K_pub, q). */
 		pc_map(e, pub, q);
-
-		/* Allocate size for storing the output. */
-		l = gt_size_bin(e, 0);
-		uint8_t *buf = RLC_ALLOCA(uint8_t, l);
 
 		/* h = H_2(e^r). */
 		bn_rand_mod(r, n);
@@ -134,13 +137,14 @@ int cp_ibe_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len,
 		g1_free(p);
 		g2_free(q);
 		gt_free(e);
+		RLC_FREE(buf);
 	}
 	return result;
 }
 
 int cp_ibe_dec(uint8_t *out, int *out_len, uint8_t *in, int in_len, g2_t prv) {
 	int l, result = RLC_OK;
-	uint8_t h[RLC_MD_LEN];
+	uint8_t *buf = NULL, h[RLC_MD_LEN];
 	g1_t p;
 	gt_t e;
 
@@ -163,10 +167,13 @@ int cp_ibe_dec(uint8_t *out, int *out_len, uint8_t *in, int in_len, g2_t prv) {
 		g1_read_bin(p, in, l);
 
 		pc_map(e, p, prv);
-		l = gt_size_bin(e, 0);
-
+		
 		/* Allocate size for storing the output. */
-		uint8_t *buf = RLC_ALLOCA(uint8_t, l);
+		l = gt_size_bin(e, 0);
+		buf = RLC_ALLOCA(uint8_t, l);
+		if (buf == NULL) {
+			THROW(ERR_NO_MEMORY);
+		}
 		gt_write_bin(buf, l, e, 0);
 		md_map(h, buf, l);
 
@@ -180,6 +187,7 @@ int cp_ibe_dec(uint8_t *out, int *out_len, uint8_t *in, int in_len, g2_t prv) {
 	} FINALLY {
 		g1_free(p);
 		gt_free(e);
+		RLC_FREE(buf);
 	}
 
 	return result;

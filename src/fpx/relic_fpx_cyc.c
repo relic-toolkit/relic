@@ -350,14 +350,14 @@ void fp12_back_cyc_sim(fp12_t c[], fp12_t a[], int n) {
 		return;
 	}
 
-	for (int i = 0; i < n; i++) {
-		fp2_null(t0[i]);
-		fp2_null(t1[i]);
-		fp2_null(t2[i]);
-	}
-
 	TRY {
+		if (t == NULL) {
+			THROW(ERR_NO_MEMORY);
+		}
 		for (int i = 0; i < n; i++) {
+			fp2_null(t0[i]);
+			fp2_null(t1[i]);
+			fp2_null(t2[i]);
 			fp2_new(t0[i]);
 			fp2_new(t1[i]);
 			fp2_new(t2[i]);
@@ -413,6 +413,7 @@ void fp12_back_cyc_sim(fp12_t c[], fp12_t a[], int n) {
 			fp2_free(t1[i]);
 			fp2_free(t2[i]);
 		}
+		RLC_FREE(t);
 	}
 }
 
@@ -605,6 +606,9 @@ void fp12_exp_cyc(fp12_t c, fp12_t a, bn_t b) {
 		fp12_null(t);
 
 		TRY {
+			if (u == NULL) {
+				THROW(ERR_NO_MEMORY);
+			}
 			for (i = 0; i < w; i++) {
 				fp12_null(u[i]);
 				fp12_new(u[i]);
@@ -648,6 +652,7 @@ void fp12_exp_cyc(fp12_t c, fp12_t a, bn_t b) {
 				fp12_free(u[i]);
 			}
 			fp12_free(t);
+			RLC_FREE(u);
 		}
 	}
 }
@@ -664,6 +669,9 @@ void fp12_exp_cyc_sps(fp12_t c, fp12_t a, const int *b, int len) {
 	fp12_null(t);
 
 	TRY {
+		if (u == NULL) {
+			THROW(ERR_NO_MEMORY);
+		}
 		for (i = 0; i < w; i++) {
 			fp12_null(u[i]);
 			fp12_new(u[i]);
@@ -719,6 +727,7 @@ void fp12_exp_cyc_sps(fp12_t c, fp12_t a, const int *b, int len) {
 			fp12_free(u[i]);
 		}
 		fp12_free(t);
+		RLC_FREE(u);
 	}
 }
 
@@ -844,14 +853,14 @@ void fp48_back_cyc_sim(fp48_t c[], fp48_t a[], int n) {
 		return;
 	}
 
-	for (int i = 0; i < n; i++) {
-		fp8_null(t0[i]);
-		fp8_null(t1[i]);
-		fp8_null(t2[i]);
-	}
-
 	TRY {
+		if (t == NULL) {
+			THROW(ERR_NO_MEMORY);
+		}
 		for (int i = 0; i < n; i++) {
+			fp8_null(t0[i]);
+			fp8_null(t1[i]);
+			fp8_null(t2[i]);
 			fp8_new(t0[i]);
 			fp8_new(t1[i]);
 			fp8_new(t2[i]);
@@ -907,6 +916,7 @@ void fp48_back_cyc_sim(fp48_t c[], fp48_t a[], int n) {
 			fp8_free(t1[i]);
 			fp8_free(t2[i]);
 		}
+		RLC_FREE(t);
 	}
 }
 
@@ -952,6 +962,9 @@ void fp48_exp_cyc(fp48_t c, fp48_t a, bn_t b) {
 		fp48_null(t);
 
 		TRY {
+			if (u == NULL) {
+				THROW(ERR_NO_MEMORY);
+			}
 			for (i = 0; i < w; i++) {
 				fp48_null(u[i]);
 				fp48_new(u[i]);
@@ -995,6 +1008,7 @@ void fp48_exp_cyc(fp48_t c, fp48_t a, bn_t b) {
 				fp48_free(u[i]);
 			}
 			fp48_free(t);
+			RLC_FREE(u);
 		}
 	}
 }
@@ -1011,6 +1025,9 @@ void fp48_exp_cyc_sps(fp48_t c, fp48_t a, const int *b, int len) {
 	fp48_null(t);
 
 	TRY {
+		if (u == NULL) {
+			THROW(ERR_NO_MEMORY);
+		}
 		for (i = 0; i < w; i++) {
 			fp48_null(u[i]);
 			fp48_new(u[i]);
@@ -1066,6 +1083,7 @@ void fp48_exp_cyc_sps(fp48_t c, fp48_t a, const int *b, int len) {
 			fp48_free(u[i]);
 		}
 		fp48_free(t);
+		RLC_FREE(u);
 	}
 }
 
@@ -1191,14 +1209,14 @@ void fp54_back_cyc_sim(fp54_t c[], fp54_t a[], int n) {
 		return;
 	}
 
-	for (int i = 0; i < n; i++) {
-		fp9_null(t0[i]);
-		fp9_null(t1[i]);
-		fp9_null(t2[i]);
-	}
-
 	TRY {
+		if (t == NULL) {
+			THROW(ERR_NO_MEMORY);
+		}
 		for (int i = 0; i < n; i++) {
+			fp9_null(t0[i]);
+			fp9_null(t1[i]);
+			fp9_null(t2[i]);
 			fp9_new(t0[i]);
 			fp9_new(t1[i]);
 			fp9_new(t2[i]);
@@ -1254,6 +1272,7 @@ void fp54_back_cyc_sim(fp54_t c[], fp54_t a[], int n) {
 			fp9_free(t1[i]);
 			fp9_free(t2[i]);
 		}
+		RLC_FREE(t);
 	}
 }
 
@@ -1299,6 +1318,9 @@ void fp54_exp_cyc(fp54_t c, fp54_t a, bn_t b) {
 		fp54_null(t);
 
 		TRY {
+			if (u == NULL) {
+				THROW(ERR_NO_MEMORY)
+			}
 			for (i = 0; i < w; i++) {
 				fp54_null(u[i]);
 				fp54_new(u[i]);
@@ -1342,6 +1364,7 @@ void fp54_exp_cyc(fp54_t c, fp54_t a, bn_t b) {
 				fp54_free(u[i]);
 			}
 			fp54_free(t);
+			RLC_FREE(u);
 		}
 	}
 }
@@ -1358,6 +1381,9 @@ void fp54_exp_cyc_sps(fp54_t c, fp54_t a, const int *b, int len) {
 	fp54_null(t);
 
 	TRY {
+		if (u == NULL) {
+			THROW(ERR_NO_MEMORY);
+		}
 		for (i = 0; i < w; i++) {
 			fp54_null(u[i]);
 			fp54_new(u[i]);
@@ -1413,5 +1439,6 @@ void fp54_exp_cyc_sps(fp54_t c, fp54_t a, const int *b, int len) {
 			fp54_free(u[i]);
 		}
 		fp54_free(t);
+		RLC_FREE(u);
 	}
 }

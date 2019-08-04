@@ -112,12 +112,12 @@ void eb_norm_sim(eb_t *r, const eb_t *t, int n) {
 		return;
 	}
 
-	for (int i = 0; i < n; i++) {
-		fb_null(a[i]);
-	}
-
 	TRY {
+		if (a == NULL) {
+			THROW(ERR_NO_MEMORY);
+		}
 		for (int i = 0; i < n; i++) {
+			fb_null(a[i]);
 			fb_new(a[i]);
 			if (!eb_is_infty(t[i])) {
 				fb_copy(a[i], t[i]->z);
@@ -147,5 +147,6 @@ void eb_norm_sim(eb_t *r, const eb_t *t, int n) {
 		for (int i = 0; i < n; i++) {
 			fb_free(a[i]);
 		}
+		RLC_FREE(a);
 	}
 }

@@ -428,8 +428,8 @@ void fb_inv_almos(fb_t c, const fb_t a) {
 void fb_inv_itoht(fb_t c, const fb_t a) {
 	int i, x, y, len;
 	const int *chain = fb_poly_get_chain(&len);
-	int* u = RLC_ALLOCA(int, len + 1);
-	fb_t* table = RLC_ALLOCA(fb_t, len + 1);
+	int *u = RLC_ALLOCA(int, len + 1);
+	fb_t *table = RLC_ALLOCA(fb_t, len + 1);
 
 	for (i = 0; i <= len; i++) {
 		fb_null(table[i]);
@@ -440,6 +440,9 @@ void fb_inv_itoht(fb_t c, const fb_t a) {
 	}
 
 	TRY {
+		if (u == NULL || table == NULL) {
+			THROW(ERR_NO_MEMORY);
+		}
 		for (i = 0; i <= len; i++) {
 			fb_new(table[i]);
 		}
@@ -481,6 +484,8 @@ void fb_inv_itoht(fb_t c, const fb_t a) {
 		for (i = 0; i <= len; i++) {
 			fb_free(table[i]);
 		}
+		RLC_FREE(u);
+		RLC_FREE(table);
 	}
 }
 
@@ -640,13 +645,15 @@ void fb_inv_sim(fb_t *c, const fb_t *a, int n) {
 	int i;
 	fb_t u, *t = RLC_ALLOCA(fb_t, n);
 
-	for (i = 0; i < n; i++) {
-		fb_null(t[i]);
+	if (t == NULL) {
+		THROW(ERR_NO_MEMORY);
 	}
+
 	fb_null(u);
 
 	TRY {
 		for (i = 0; i < n; i++) {
+			fb_null(t[i]);
 			fb_new(t[i]);
 		}
 		fb_new(u);
@@ -675,5 +682,6 @@ void fb_inv_sim(fb_t *c, const fb_t *a, int n) {
 			fb_free(t[i]);
 		}
 		fb_free(u);
+		RLC_FREE(t);
 	}
 }

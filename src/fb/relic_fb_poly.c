@@ -181,7 +181,7 @@ static void find_srz(void) {
  * Finds an addition chain for (RLC_FB_BITS - 1).
  */
 static void find_chain(void) {
-	int i, j, k, l;
+	int i, j, k, l, x, y, u[RLC_TERMS + 1];
 	ctx_t *ctx = core_get();
 
 	ctx->chain_len = -1;
@@ -266,8 +266,6 @@ static void find_chain(void) {
 			}
 			break;
 	}
-
-	int x, y, *u = RLC_ALLOCA(int, ctx->chain_len + 1);
 
 	for (i = 0; i < RLC_TERMS; i++) {
 		for (j = 0; j < RLC_FB_TABLE; j++) {

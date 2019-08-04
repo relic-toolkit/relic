@@ -104,12 +104,12 @@ void ep2_norm_sim(ep2_t *r, ep2_t *t, int n) {
 	int i;
 	fp2_t *a = RLC_ALLOCA(fp2_t, n);
 
-	for (i = 0; i < n; i++) {
-		fp2_null(a[i]);
-	}
-
 	TRY {
+		if (a == NULL) {
+			THROW(ERR_NO_MEMORY);
+		}
 		for (i = 0; i < n; i++) {
+			fp2_null(a[i]);
 			fp2_new(a[i]);
 			fp2_copy(a[i], t[i]->z);
 		}
@@ -133,5 +133,6 @@ void ep2_norm_sim(ep2_t *r, ep2_t *t, int n) {
 		for (i = 0; i < n; i++) {
 			fp2_free(a[i]);
 		}
+		RLC_FREE(a);
 	}
 }

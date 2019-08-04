@@ -1123,6 +1123,12 @@ int cp_rsa_ver(uint8_t *sig, int sig_len, uint8_t *msg, int msg_len, int hash, r
 	/* We suppose that the signature is invalid. */
 	result = 0;
 
+	if (h1 == NULL || h2 == NULL) {
+		RLC_FREE(h1);
+		RLC_FREE(h2);
+		return 0;
+	}
+
 	if (pub == NULL || msg_len < 0) {
 		return 0;
 	}
@@ -1212,6 +1218,8 @@ int cp_rsa_ver(uint8_t *sig, int sig_len, uint8_t *msg, int msg_len, int hash, r
 	FINALLY {
 		bn_free(m);
 		bn_free(eb);
+		RLC_FREE(h1);
+		RLC_FREE(h2);
 	}
 
 	return result;

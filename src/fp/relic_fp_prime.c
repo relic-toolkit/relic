@@ -238,7 +238,7 @@ void fp_prime_set_pairf(const bn_t x, int pairf) {
 	bn_t p, t0, t1;
 	ctx_t *ctx = core_get();
 	int len = bn_bits(x) + 1;
-	int8_t *s = RLC_ALLOCA(int8_t, len);
+	int8_t s[RLC_FP_BITS + 1];
 
 	bn_null(p);
 	bn_null(t0);

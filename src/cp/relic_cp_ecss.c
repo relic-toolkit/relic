@@ -77,6 +77,9 @@ int cp_ecss_sig(bn_t e, bn_t s, uint8_t *msg, int len, bn_t d) {
 		bn_new(x);
 		bn_new(r);
 		ec_new(p);
+		if (m == NULL) {
+			THROW(ERR_NO_MEMORY);
+		}
 
 		ec_curve_get_ord(n);
 		do {
@@ -115,6 +118,7 @@ int cp_ecss_sig(bn_t e, bn_t s, uint8_t *msg, int len, bn_t d) {
 		bn_free(x);
 		bn_free(r);
 		ec_free(p);
+		RLC_FREE(m);
 	}
 	return result;
 }
@@ -136,6 +140,9 @@ int cp_ecss_ver(bn_t e, bn_t s, uint8_t *msg, int len, ec_t q) {
 		bn_new(ev);
 		bn_new(rv);
 		ec_new(p);
+		if (m == NULL) {
+			THROW(ERR_NO_MEMORY);
+		}
 
 		ec_curve_get_ord(n);
 
@@ -177,7 +184,7 @@ int cp_ecss_ver(bn_t e, bn_t s, uint8_t *msg, int len, ec_t q) {
 		bn_free(ev);
 		bn_free(rv);
 		ec_free(p);
+		RLC_FREE(m);
 	}
 	return result;
 }
-

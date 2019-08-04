@@ -45,7 +45,7 @@
  * @param[in] S                 - the number of obecs to allocate.
  */
 #if ALLOC == DYNAMIC
-#define RLC_ALLOCA(T, S)		(T*) malloc((S) * sizeof(T))
+#define RLC_ALLOCA(T, S)		(T*) calloc((S), sizeof(T))
 #else
 #define RLC_ALLOCA(T, S)		(T*) _alloca((S) * sizeof(T))
 #endif
@@ -77,7 +77,11 @@
  * @param[in] A					- the variable to free.
  */
 #if ALLOC == DYNAMIC
-#define RLC_FREE(A)         	free(A)
+#define RLC_FREE(A)															\
+	if (A != NULL) {														\
+		free(A);															\
+		A = NULL;															\
+	}
 #else
 #define RLC_FREE(A)         	(void)A;
 #endif

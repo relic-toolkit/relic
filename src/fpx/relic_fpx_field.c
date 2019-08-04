@@ -205,7 +205,6 @@ void fp3_field_init(void) {
 		dv_copy(e->dp, fp_prime_get(), RLC_FP_DIGS);
 		bn_div_dig(e, e, 18);
 		fp3_exp(t0, t0, e);
-		fp3_print(t0);
 		/* Look for a non-trivial subfield element.. */
 		ctx->frb3[2] = 0;
 		while (fp_is_zero(t0[ctx->frb3[2]++]));

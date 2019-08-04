@@ -89,12 +89,12 @@ void ed_norm(ed_t r, const ed_t p) {
 void ed_norm_sim(ed_t *r, const ed_t *t, int n) {
 	fp_t* a = RLC_ALLOCA(fp_t, n);
 
-	for (int i = 0; i < n; i++) {
-		fp_null(a[i]);
-	}
-
 	TRY {
+		if (a == NULL) {
+			THROW(ERR_NO_MEMORY);
+		}
 		for (int i = 0; i < n; i++) {
+			fp_null(a[i]);
 			fp_new(a[i]);
 			fp_copy(a[i], t[i]->z);
 		}
@@ -123,5 +123,6 @@ void ed_norm_sim(ed_t *r, const ed_t *t, int n) {
 		for (int i = 0; i < n; i++) {
 			fp_free(a[i]);
 		}
+		RLC_FREE(a);
 	}
 }

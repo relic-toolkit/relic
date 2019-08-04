@@ -59,6 +59,10 @@ static void rand_hash(uint8_t *out, int out_len, uint8_t *in, int in_len) {
 	uint8_t* buf = RLC_ALLOCA(uint8_t, 1 + sizeof(uint32_t) + in_len);
 	uint8_t hash[RLC_MD_LEN];
 
+	if (buf == NULL) {
+		THROW(ERR_NO_MEMORY);
+	}
+
 	buf[0] = 1;
 	memcpy(buf + 1, &j, sizeof(uint32_t));
 	memcpy(buf + 1 + sizeof(uint32_t), in, in_len);
@@ -73,6 +77,8 @@ static void rand_hash(uint8_t *out, int out_len, uint8_t *in, int in_len) {
 		/* counter = counter + 1 */
 		buf[0]++;
 	}
+
+	RLC_FREE(buf);
 }
 
 /**
@@ -187,12 +193,16 @@ void rand_seed(uint8_t *buf, int size) {
 		/* V = hash_df(01 || V || seed). */
         int tmp_size = 1 + len + size;
 		uint8_t* tmp = RLC_ALLOCA(uint8_t, tmp_size);
+		if (tmp == NULL) {
+			THROW(ERR_NO_MEMORY);
+		}
 		tmp[0] = 1;
 		memcpy(tmp + 1, ctx->rand + 1, len);
 		memcpy(tmp + 1 + len, buf, size);
 		rand_hash(ctx->rand + 1, len, tmp, tmp_size);
 		/* C = hash_df(00 || V). */
 		rand_hash(ctx->rand + 1 + len, len, ctx->rand, len + 1);
+		RLC_FREE(tmp);
 	}
 	ctx->counter = ctx->seeded = 1;
 }

@@ -80,7 +80,8 @@ int cp_sokaka_gen_prv(sokaka_t k, char *id, int len, bn_t master) {
 
 int cp_sokaka_key(uint8_t *key, unsigned int key_len, char *id1,
 		int len1, sokaka_t k, char *id2, int len2) {
-	int first = 0, result = RLC_OK;
+	int size, first = 0, result = RLC_OK;
+	uint8_t *buf;
 	g1_t p;
 	g2_t q;
 	gt_t e;
@@ -93,6 +94,11 @@ int cp_sokaka_key(uint8_t *key, unsigned int key_len, char *id1,
 		g1_new(p);
 		g2_new(q);
 		gt_new(e);
+		size = gt_size_bin(e, 0);
+		buf = RLC_ALLOCA(uint8_t, size);
+		if (buf == NULL) {
+			THROW(ERR_NO_MEMORY);
+		}
 
 		if (len1 == len2) {
 			if (strncmp(id1, id2, len1) == 0) {
@@ -129,10 +135,8 @@ int cp_sokaka_key(uint8_t *key, unsigned int key_len, char *id1,
 		}
 
 		/* Allocate size for storing the output. */
-        int buf_size = gt_size_bin(e, 0);
-		uint8_t *buf = RLC_ALLOCA(uint8_t, buf_size);
-		gt_write_bin(buf, buf_size, e, 0);
-		md_kdf1(key, key_len, buf, buf_size);
+		gt_write_bin(buf, size, e, 0);
+		md_kdf1(key, key_len, buf, size);
 	}
 	CATCH_ANY {
 		result = RLC_ERR;
@@ -141,6 +145,7 @@ int cp_sokaka_key(uint8_t *key, unsigned int key_len, char *id1,
 		g1_free(p);
 		g2_free(q);
 		gt_free(e);
+		RLC_FREE(buf);
 	}
 	return result;
 }

@@ -51,6 +51,10 @@ void md_hmac(uint8_t *mac, const uint8_t *in, int in_len, const uint8_t *key,
     uint8_t *ipad = RLC_ALLOCA(uint8_t, block_size + in_len);
 	uint8_t _key[RLC_MAX(RLC_MD_LEN, block_size)];
 
+    if (ipad == NULL) {
+        THROW(ERR_NO_MEMORY);
+    }
+
 	if (key_len > block_size) {
 		md_map(_key, key, key_len);
 		key = _key;
@@ -68,4 +72,6 @@ void md_hmac(uint8_t *mac, const uint8_t *in, int in_len, const uint8_t *key,
 	memcpy(ipad + block_size, in, in_len);
 	md_map(opad + block_size, ipad, block_size + in_len);
 	md_map(mac, opad, block_size + RLC_MD_LEN);
+
+    RLC_FREE(ipad);
 }

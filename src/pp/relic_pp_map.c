@@ -56,6 +56,9 @@ static void pp_mil_k2(fp2_t r, ep_t *t, ep_t *p, ep_t *q, int m, bn_t a) {
 	fp2_null(l);
 
 	TRY {
+		if (_q == NULL) {
+			THROW(ERR_NO_MEMORY);
+		}
 		fp2_new(l);
 		for (j = 0; j < m; j++) {
 			ep_null(_q[j]);
@@ -86,6 +89,7 @@ static void pp_mil_k2(fp2_t r, ep_t *t, ep_t *p, ep_t *q, int m, bn_t a) {
 		for (j = 0; j < m; j++) {
 			ep_free(_q[j]);
 		}
+		RLC_FREE(_q);
 	}
 }
 
@@ -108,6 +112,9 @@ static void pp_mil_lit_k2(fp2_t r, ep_t *t, ep_t *p, ep_t *q, int m, bn_t a) {
 	fp2_null(_l);
 
 	TRY {
+		if (_q == NULL) {
+			THROW(ERR_NO_MEMORY);
+		}
 		fp2_new(l);
 		fp2_new(_l);
 		for (j = 0; j < m; j++) {
@@ -142,6 +149,7 @@ static void pp_mil_lit_k2(fp2_t r, ep_t *t, ep_t *p, ep_t *q, int m, bn_t a) {
 		for (j = 0; j < m; j++) {
 			ep_null(_q[j]);
 		}
+		RLC_FREE(_q);
 	}
 }
 
@@ -161,7 +169,7 @@ static void pp_mil_k12(fp12_t r, ep2_t *t, ep2_t *q, ep_t *p, int m, bn_t a) {
 	ep_t *_p = RLC_ALLOCA(ep_t, m);
 	ep2_t *_q = RLC_ALLOCA(ep2_t, m);
 	int i, j, len = bn_bits(a) + 1;
-	int8_t *s = RLC_ALLOCA(int8_t, len);
+	int8_t s[RLC_FP_BITS + 1];
 
 	if (m == 0) {
 		return;
@@ -171,8 +179,9 @@ static void pp_mil_k12(fp12_t r, ep2_t *t, ep2_t *q, ep_t *p, int m, bn_t a) {
 
 	TRY {
 		fp12_new(l);
-		fp12_zero(l);
-
+		if (_p == NULL || _q == NULL) {
+			THROW(ERR_NO_MEMORY);
+		}
 		for (j = 0; j < m; j++) {
 			ep_null(_p[j]);
 			ep2_null(_q[j]);
@@ -189,6 +198,7 @@ static void pp_mil_k12(fp12_t r, ep2_t *t, ep2_t *q, ep_t *p, int m, bn_t a) {
 #endif
 		}
 
+		fp12_zero(l);
 		bn_rec_naf(s, &len, a, 2);
 		pp_dbl_k12(r, t[0], t[0], _p[0]);
 		for (j = 1; j < m; j++) {
@@ -233,6 +243,8 @@ static void pp_mil_k12(fp12_t r, ep2_t *t, ep2_t *q, ep_t *p, int m, bn_t a) {
 			ep_free(_p[j]);
 			ep2_free(_q[j]);
 		}
+		RLC_FREE(_p);
+		RLC_FREE(_q);
 	}
 }
 
@@ -255,6 +267,9 @@ static void pp_mil_lit_k12(fp12_t r, ep_t *t, ep_t *p, ep2_t *q, int m, bn_t a) 
 	fp12_null(l);
 
 	TRY {
+		if (_q == NULL) {
+			THROW(ERR_NO_MEMORY);
+		}
 		fp12_new(l);
 		for (j = 0; j < m; j++) {
 			ep2_null(_q[j]);
@@ -284,6 +299,7 @@ static void pp_mil_lit_k12(fp12_t r, ep_t *t, ep_t *p, ep2_t *q, int m, bn_t a) 
 		for (j = 0; j < m; j++) {
 			ep2_free(_q[j]);
 		}
+		RLC_FREE(_q);
 	}
 }
 
@@ -392,6 +408,9 @@ void pp_map_sim_tatep_k2(fp2_t r, ep_t *p, ep_t *q, int m) {
 
 	TRY {
 		bn_new(n);
+		if (_p == NULL || _q == NULL || t == NULL) {
+			THROW(ERR_NO_MEMORY);
+		}
 		for (i = 0; i < m; i++) {
 			ep_null(_p[i]);
 			ep_null(_q[i]);
@@ -427,6 +446,9 @@ void pp_map_sim_tatep_k2(fp2_t r, ep_t *p, ep_t *q, int m) {
 			ep_free(_q[i]);
 			ep_free(t[i]);
 		}
+		RLC_FREE(_p);
+		RLC_FREE(_q);
+		RLC_FREE(t);
 	}
 }
 
@@ -481,6 +503,9 @@ void pp_map_sim_tatep_k12(fp12_t r, ep_t *p, ep2_t *q, int m) {
 
 	TRY {
 		bn_new(n);
+		if (_p == NULL || _q == NULL || t == NULL) {
+			THROW(ERR_NO_MEMORY);
+		}
 		for (i = 0; i < m; i++) {
 			ep_null(_p[i]);
 			ep_null(t[i]);
@@ -515,6 +540,9 @@ void pp_map_sim_tatep_k12(fp12_t r, ep_t *p, ep2_t *q, int m) {
 			ep_free(t[i]);
 			ep2_free(_q[i]);
 		}
+		RLC_FREE(_p);
+		RLC_FREE(t);
+		RLC_FREE(_q);
 	}
 }
 
@@ -593,6 +621,9 @@ void pp_map_sim_weilp_k2(fp2_t r, ep_t *p, ep_t *q, int m) {
 		fp2_new(r0);
 		fp2_new(r1);
 		bn_new(n);
+		if (_p == NULL || _q == NULL || t0 == NULL || t1 == NULL) {
+			THROW(ERR_NO_MEMORY);
+		}
 		for (i = 0; i < m; i++) {
 			ep_null(_p[i]);
 			ep_null(_q[i]);
@@ -640,6 +671,10 @@ void pp_map_sim_weilp_k2(fp2_t r, ep_t *p, ep_t *q, int m) {
 			ep_free(t0[i]);
 			ep_free(t1[i]);
 		}
+		RLC_FREE(_p);
+		RLC_FREE(_q);
+		RLC_FREE(t0);
+		RLC_FREE(t1);
 	}
 }
 
@@ -712,6 +747,9 @@ void pp_map_sim_weilp_k12(fp12_t r, ep_t *p, ep2_t *q, int m) {
 		fp12_new(r0);
 		fp12_new(r1);
 		bn_new(n);
+		if (_p == NULL || _q == NULL || t0 == NULL || t1 == NULL) {
+			THROW(ERR_NO_MEMORY);
+		}
 		for (i = 0; i < m; i++) {
 			ep_null(_p[i]);
 			ep_null(t0[i]);
@@ -759,6 +797,10 @@ void pp_map_sim_weilp_k12(fp12_t r, ep_t *p, ep2_t *q, int m) {
 			ep2_free(_q[i]);
 			ep2_free(t1[i]);
 		}
+		RLC_FREE(_p);
+		RLC_FREE(_q);
+		RLC_FREE(t0);
+		RLC_FREE(t1);
 	}
 }
 
@@ -835,6 +877,9 @@ void pp_map_sim_oatep_k12(fp12_t r, ep_t *p, ep2_t *q, int m) {
 	TRY {
 		bn_null(a);
 		bn_new(a);
+		if (_p == NULL || _q == NULL || t == NULL) {
+			THROW(ERR_NO_MEMORY);
+		}
 		for (i = 0; i < m; i++) {
 			ep_null(_p[i]);
 			ep2_null(_q[i]);
@@ -895,6 +940,9 @@ void pp_map_sim_oatep_k12(fp12_t r, ep_t *p, ep2_t *q, int m) {
 			ep2_free(_q[i]);
 			ep2_free(t[i]);
 		}
+		RLC_FREE(_p);
+		RLC_FREE(_q);
+		RLC_FREE(t);
 	}
 }
 
