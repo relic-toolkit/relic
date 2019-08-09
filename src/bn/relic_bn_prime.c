@@ -217,7 +217,7 @@ int bn_is_prime_basic(const bn_t a) {
 
 int bn_is_prime_rabin(const bn_t a) {
 	bn_t t, n1, y, r;
-	int i, s, j, result, b, tests = 0;
+	int i, s, j, result, b, tests = 0, cmp2;
 
 	tests = 0;
 	result = 1;
@@ -227,8 +227,14 @@ int bn_is_prime_rabin(const bn_t a) {
 	bn_null(y);
 	bn_null(r);
 
-	if (bn_cmp_dig(a, 1) == RLC_EQ) {
+	cmp2 = bn_cmp_dig(a, 2);
+	if (cmp2 == RLC_LT) {
+		/* Numbers 1 or smaller are not prime */
 		return 0;
+	}
+	if (cmp2 == RLC_EQ) {
+		/* The number 2 is prime */
+		return 1;
 	}
 
 	TRY {
