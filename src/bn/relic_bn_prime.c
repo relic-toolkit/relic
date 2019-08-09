@@ -217,7 +217,7 @@ int bn_is_prime_basic(const bn_t a) {
 
 int bn_is_prime_rabin(const bn_t a) {
 	bn_t t, n1, y, r;
-	int i, s, j, result, b, tests = 0;
+	int i, s, j, result, b, tests = 0, cmp2;
 
 	tests = 0;
 	result = 1;
@@ -227,7 +227,18 @@ int bn_is_prime_rabin(const bn_t a) {
 	bn_null(y);
 	bn_null(r);
 
-	if (bn_cmp_dig(a, 1) == RLC_EQ) {
+	cmp2 = bn_cmp_dig(a, 2);
+	if (cmp2 == RLC_LT) {
+		/* Numbers 1 or smaller are not prime */
+		return 0;
+	}
+	if (cmp2 == RLC_EQ) {
+		/* The number 2 is prime */
+		return 1;
+	}
+
+	if (bn_is_even(a) == 1) {
+		/* Even numbers > 2 are not prime */
 		return 0;
 	}
 
@@ -270,16 +281,22 @@ int bn_is_prime_rabin(const bn_t a) {
 
 		/* r = (n - 1)/2^s. */
 		bn_sub_dig(n1, a, 1);
+		bn_copy(r, n1);
 		s = 0;
-		while (bn_is_even(n1)) {
+		while (bn_is_even(r)) {
 			s++;
-			bn_rsh(n1, n1, 1);
+			bn_rsh(r, r, 1);
 		}
-		bn_lsh(r, n1, s);
 
 		for (i = 0; i < tests; i++) {
 			/* Fix the basis as the first few primes. */
 			bn_set_dig(t, primes[i]);
+
+			/* Ensure t <= n - 2 as per HAC */
+			if( bn_cmp(t, n1) != RLC_LT ) {
+				result = 1;
+				break;
+			}
 
 			/* y = b^r mod a. */
 #if BN_MOD != PMERS
