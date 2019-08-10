@@ -818,6 +818,7 @@ void ep_param_set(int param) {
 			case K54_P569:
 				ASSIGNK(K54_P569, K54_569);
 				endom = 1;
+				pairf = EP_K54;
 				break;
 #endif
 #if defined(EP_ENDOM) && FP_PRIME == 575
