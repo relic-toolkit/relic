@@ -75,16 +75,16 @@ static void pp_exp_bn(fp12_t c, fp12_t a) {
 
 		/* Now compute m^((p^4 - p^2 + 1) / r). */
 		/* t0 = m^2x. */
-		fp12_exp_cyc_sps(t0, c, b, l);
+		fp12_exp_cyc_sps(t0, c, b, l, RLC_POS);
 		fp12_sqr_cyc(t0, t0);
 		/* t1 = m^6x. */
 		fp12_sqr_cyc(t1, t0);
 		fp12_mul(t1, t1, t0);
 		/* t2 = m^6x^2. */
-		fp12_exp_cyc_sps(t2, t1, b, l);
+		fp12_exp_cyc_sps(t2, t1, b, l, RLC_POS);
 		/* t3 = m^12x^3. */
 		fp12_sqr_cyc(t3, t2);
-		fp12_exp_cyc_sps(t3, t3, b, l);
+		fp12_exp_cyc_sps(t3, t3, b, l, RLC_POS);
 
 		if (bn_sign(x) == RLC_NEG) {
 			fp12_inv_cyc(t0, t0);
@@ -165,16 +165,10 @@ static void pp_exp_b12(fp12_t c, fp12_t a) {
 		fp12_sqr_cyc(t0, c);
 
 		/* t1 = f^x. */
-		fp12_exp_cyc_sps(t1, c, b, l);
-		if (bn_sign(x) == RLC_NEG) {
-			fp12_inv_cyc(t1, t1);
-		}
+		fp12_exp_cyc_sps(t1, c, b, l, bn_sign(x));
 
 		/* t2 = f^(x^2). */
-		fp12_exp_cyc_sps(t2, t1, b, l);
-		if (bn_sign(x) == RLC_NEG) {
-			fp12_inv_cyc(t2, t2);
-		}
+		fp12_exp_cyc_sps(t2, t1, b, l, bn_sign(x));
 
 		/* t1 = t2/(t1^2 * f). */
 		fp12_inv_cyc(t3, c);
@@ -184,16 +178,10 @@ static void pp_exp_b12(fp12_t c, fp12_t a) {
 		fp12_mul(t1, t1, t2);
 
 		/* t2 = t1^x. */
-		fp12_exp_cyc_sps(t2, t1, b, l);
-		if (bn_sign(x) == RLC_NEG) {
-			fp12_inv_cyc(t2, t2);
-		}
+		fp12_exp_cyc_sps(t2, t1, b, l, bn_sign(x));
 
 		/* t3 = t2^x/t1. */
-		fp12_exp_cyc_sps(t3, t2, b, l);
-		if (bn_sign(x) == RLC_NEG) {
-			fp12_inv_cyc(t3, t3);
-		}
+		fp12_exp_cyc_sps(t3, t2, b, l, bn_sign(x));
 		fp12_inv_cyc(t1, t1);
 		fp12_mul(t3, t1, t3);
 
@@ -204,10 +192,7 @@ static void pp_exp_b12(fp12_t c, fp12_t a) {
 		fp12_mul(t1, t1, t2);
 
 		/* t2 = f * f^2 * t3^x. */
-		fp12_exp_cyc_sps(t2, t3, b, l);
-		if (bn_sign(x) == RLC_NEG) {
-			fp12_inv_cyc(t2, t2);
-		}
+		fp12_exp_cyc_sps(t2, t3, b, l, bn_sign(x));
 		fp12_mul(t2, t2, t0);
 		fp12_mul(t2, t2, c);
 

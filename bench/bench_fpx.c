@@ -1957,7 +1957,7 @@ static void arith12(void) {
 		int l;
 		k = fp_prime_get_par_sps(&l);
 		fp12_rand(a);
-		BENCH_ADD(fp12_exp_cyc_sps(c, a, k, l));
+		BENCH_ADD(fp12_exp_cyc_sps(c, a, k, l, RLC_POS));
 	}
 	BENCH_END;
 
@@ -2694,7 +2694,7 @@ static void arith48(void) {
 		int l;
 		k = fp_prime_get_par_sps(&l);
 		fp48_rand(a);
-		BENCH_ADD(fp48_exp_cyc_sps(c, a, k, l));
+		BENCH_ADD(fp48_exp_cyc_sps(c, a, k, l, RLC_POS));
 	}
 	BENCH_END;
 
@@ -3050,7 +3050,7 @@ static void arith54(void) {
 		int l;
 		k = fp_prime_get_par_sps(&l);
 		fp54_rand(a);
-		BENCH_ADD(fp54_exp_cyc_sps(c, a, k, l));
+		BENCH_ADD(fp54_exp_cyc_sps(c, a, k, l, RLC_POS));
 	}
 	BENCH_END;
 

@@ -3208,8 +3208,9 @@ void fp12_exp_cyc(fp12_t c, fp12_t a, bn_t b);
  * @param[in] a				- the basis.
  * @param[in] b				- the exponent in sparse form.
  * @param[in] l				- the length of the exponent in sparse form.
+ * @param[in] s				- the sign of the exponent.
  */
-void fp12_exp_cyc_sps(fp12_t c, fp12_t a, const int *b, int l);
+void fp12_exp_cyc_sps(fp12_t c, fp12_t a, const int *b, int l, int s);
 
 /**
  * Compresses a dodecic extension field element.
@@ -3488,25 +3489,6 @@ void fp18_frb(fp18_t c, fp18_t a, int i);
  * @param[in] b				- the exponent.
  */
 void fp18_exp(fp18_t c, fp18_t a, bn_t b);
-
-/**
- * Computes a power of a cyclotomic octdecic extension field element.
- *
- * @param[out] c			- the result.
- * @param[in] a				- the basis.
- * @param[in] b				- the exponent.
- */
-void fp18_exp_cyc(fp18_t c, fp18_t a, bn_t b);
-
-/**
- * Computes a power of a cyclotomic octdecic extension field element.
- *
- * @param[out] c			- the result.
- * @param[in] a				- the basis.
- * @param[in] b				- the exponent in sparse form.
- * @param[in] l				- the length of the exponent in sparse form.
- */
-void fp18_exp_cyc_sps(fp18_t c, fp18_t a, const int *b, int l);
 
 /**
  * Copies the second argument to the first argument.
@@ -4097,8 +4079,9 @@ void fp48_exp_cyc(fp48_t c, fp48_t a, bn_t b);
  * @param[in] a				- the basis.
  * @param[in] b				- the exponent in sparse form.
  * @param[in] l				- the length of the exponent in sparse form.
+ * @param[in] s				- the sign of the exponent.
  */
-void fp48_exp_cyc_sps(fp48_t c, fp48_t a, const int *b, int l);
+void fp48_exp_cyc_sps(fp48_t c, fp48_t a, const int *b, int l, int s);
 
 /**
  * Compresses a 48-extension field element.
@@ -4475,8 +4458,9 @@ void fp54_exp_cyc(fp54_t c, fp54_t a, bn_t b);
  * @param[in] a				- the basis.
  * @param[in] b				- the exponent in sparse form.
  * @param[in] l				- the length of the exponent in sparse form.
+ * @param[in] s				- the sign of the exponent.
  */
-void fp54_exp_cyc_sps(fp54_t c, fp54_t a, const int *b, int l);
+void fp54_exp_cyc_sps(fp54_t c, fp54_t a, const int *b, int l, int s);
 
 /**
  * Compresses a 54-extension field element.

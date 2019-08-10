@@ -657,7 +657,7 @@ void fp12_exp_cyc(fp12_t c, fp12_t a, bn_t b) {
 	}
 }
 
-void fp12_exp_cyc_sps(fp12_t c, fp12_t a, const int *b, int len) {
+void fp12_exp_cyc_sps(fp12_t c, fp12_t a, const int *b, int len, int sign) {
 	int i, j, k, w = len;
     fp12_t t, *u = RLC_ALLOCA(fp12_t, w);
 
@@ -717,6 +717,10 @@ void fp12_exp_cyc_sps(fp12_t c, fp12_t a, const int *b, int len) {
 			for (i = 1; i < w; i++) {
 				fp12_mul(c, c, u[i]);
 			}
+		}
+
+		if (sign == RLC_NEG) {
+			fp12_inv_cyc(c, c);
 		}
 	}
 	CATCH_ANY {
@@ -1013,7 +1017,7 @@ void fp48_exp_cyc(fp48_t c, fp48_t a, bn_t b) {
 	}
 }
 
-void fp48_exp_cyc_sps(fp48_t c, fp48_t a, const int *b, int len) {
+void fp48_exp_cyc_sps(fp48_t c, fp48_t a, const int *b, int len, int sign) {
 	int i, j, k, w = len;
     fp48_t t, *u = RLC_ALLOCA(fp48_t, w);
 
@@ -1073,6 +1077,10 @@ void fp48_exp_cyc_sps(fp48_t c, fp48_t a, const int *b, int len) {
 			for (i = 1; i < w; i++) {
 				fp48_mul(c, c, u[i]);
 			}
+		}
+
+		if (sign == RLC_NEG) {
+			fp48_inv_cyc(c, c);
 		}
 	}
 	CATCH_ANY {
@@ -1369,7 +1377,7 @@ void fp54_exp_cyc(fp54_t c, fp54_t a, bn_t b) {
 	}
 }
 
-void fp54_exp_cyc_sps(fp54_t c, fp54_t a, const int *b, int len) {
+void fp54_exp_cyc_sps(fp54_t c, fp54_t a, const int *b, int len, int sign) {
 	int i, j, k, w = len;
     fp54_t t, *u = RLC_ALLOCA(fp54_t, w);
 
@@ -1429,6 +1437,10 @@ void fp54_exp_cyc_sps(fp54_t c, fp54_t a, const int *b, int len) {
 			for (i = 1; i < w; i++) {
 				fp54_mul(c, c, u[i]);
 			}
+		}
+
+		if (sign == RLC_NEG) {
+			fp54_inv_cyc(c, c);
 		}
 	}
 	CATCH_ANY {
