@@ -68,7 +68,7 @@ static void ep2_add_basic_imp(ep2_t r, fp2_t s, ep2_t p, ep2_t q) {
 		if (fp2_is_zero(t0)) {
 			if (fp2_is_zero(t1)) {
 				/* If t1 is zero, q = p, should have doubled. */
-				ep2_dbl_basic(r, p);
+				ep2_dbl_slp_basic(r, s, p);
 			} else {
 				/* If t1 is not zero and t0 is zero, q = -p and r = infty. */
 				ep2_set_infty(r);
