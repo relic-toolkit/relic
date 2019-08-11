@@ -159,6 +159,52 @@ void fp18_mul_lazyr(fp18_t c, fp18_t a, fp18_t b) {
 
 #endif
 
+void fp18_mul_dxs(fp18_t c, fp18_t a, fp18_t b) {
+	fp9_t t0, t1, t2;
+
+	fp9_null(t0);
+	fp9_null(t1);
+	fp9_null(t2);
+
+	TRY {
+		fp9_new(t0);
+		fp9_new(t1);
+		fp9_new(t2);
+
+		/* Karatsuba algorithm. */
+
+		/* t0 = a_0 * b_0. */
+		fp9_mul(t0, a[0], b[0]);
+		/* t1 = a_1 * b_1. */
+		for (int i = 0; i < 3; i++) {
+			for (int j = 0; j < 3; j++) {
+				fp_mul(t1[i][j], a[1][i][j], b[1][0][0]);
+			}
+		}
+		/* t2 = b_0 + b_1. */
+		fp9_copy(t2, b[0]);
+		fp_add(t2[0][0], b[0][0][0], b[1][0][0]);
+
+		/* c_1 = a_0 + a_1. */
+		fp9_add(c[1], a[0], a[1]);
+
+		/* c_1 = (a_0 + a_1) * (b_0 + b_1) */
+		fp9_mul(c[1], c[1], t2);
+		fp9_sub(c[1], c[1], t0);
+		fp9_sub(c[1], c[1], t1);
+
+		/* c_0 = a_0b_0 + v * a_1b_1. */
+		fp9_mul_art(t1, t1);
+		fp9_add(c[0], t0, t1);
+	} CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	} FINALLY {
+		fp9_free(t0);
+		fp9_free(t1);
+		fp9_free(t2);
+	}
+}
+
 void fp18_mul_art(fp18_t c, fp18_t a) {
 	fp9_t t0;
 

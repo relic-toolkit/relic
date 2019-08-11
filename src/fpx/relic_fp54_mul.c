@@ -132,27 +132,42 @@ void fp54_mul_dxs(fp54_t c, fp54_t a, fp54_t b) {
 		/* Karatsuba algorithm. */
 
 		/* t0 = a_0 * b_0. */
+#if EP_ADD == BASIC
+		fp18_mul_dxs(t0, a[0], b[0]);
+#else
 		fp18_mul(t0, a[0], b[0]);
-		/* t1 = a_1 * b_1. */
-		fp18_mul(t1, a[1], b[1]);
-		/* b_2 = 0. */
+#endif
+		/* t2 = a_2 * b_2. */
+		fp9_mul(t2[0], a[2][0], b[2][0]);
+		fp9_mul(t2[1], a[2][1], b[2][0]);
 
 		fp18_add(t3, a[1], a[2]);
-		fp18_mul(t3, t3, b[1]);
-		fp18_sub(t3, t3, t1);
+		fp9_mul(t3[0], t3[0], b[2][0]);
+		fp9_mul(t3[1], t3[1], b[2][0]);
+		fp18_sub(t3, t3, t2);
 		fp18_mul_art(t3, t3);
 		fp18_add(t3, t3, t0);
 
 		fp18_add(t4, a[0], a[1]);
-		fp18_add(t2, b[0], b[1]);
-		fp18_mul(t4, t4, t2);
+#if EP_ADD == BASIC
+		fp18_mul_dxs(t4, t4, b[0]);
+#else
+		fp18_mul(t4, t4, b[0]);
+#endif
 		fp18_sub(t4, t4, t0);
-		fp18_sub(c[1], t4, t1);
+		fp18_mul_art(t1, t2);
+		fp18_add(c[1], t4, t1);
 
 		fp18_add(t4, a[0], a[2]);
-		fp18_mul(c[2], t4, b[0]);
+		fp9_add(t1[0], b[0][0], b[2][0]);
+		fp9_copy(t1[1], b[0][1]);
+#if EP_ADD == BASIC
+		fp18_mul_dxs(c[2], t4, t1);
+#else
+		fp18_mul(c[2], t4, t1);
+#endif
 		fp18_sub(c[2], c[2], t0);
-		fp18_add(c[2], c[2], t1);
+		fp18_sub(c[2], c[2], t2);
 
 		fp18_copy(c[0], t3);
 	} CATCH_ANY {
