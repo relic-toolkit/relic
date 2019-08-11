@@ -108,14 +108,30 @@ void fp48_mul_dxs(fp48_t c, fp48_t a, fp48_t b) {
 		/* t0 = a_0 * b_0. */
 		fp24_mul_dxs(t0, a[0], b[0]);
 		/* t1 = a_1 * b_1. */
-		fp24_mul(t1, a[1], b[1]);
+#if EP_ADD == BASIC
+		for (int i = 0; i < 2; i++) {
+			for (int j = 0; j < 2; j++) {
+				for (int k = 0; k < 2; k++) {
+					fp8_mul(t1[0][i][j][k], a[1][0][i][j][k], b[1][1][0][0][0]);
+					fp8_mul(t1[1][i][j][k], a[1][1][i][j][k], b[1][1][0][0][0]);
+					fp8_mul(t1[2][i][j][k], a[1][2][i][j][k], b[1][1][0][0][0]);
+				}
+			}
+		}
+#else
 		fp8_mul(t1[0], a[1][0], b[1][1]);
 		fp8_mul(t1[1], a[1][1], b[1][1]);
 		fp8_mul(t1[2], a[1][2], b[1][1]);
+#endif
 		fp24_mul_art(t1, t1);
 		/* t2 = b_0 + b_1. */
 		fp8_copy(t2[0], b[0][0]);
+#if EP_ADD == BASIC
+		fp8_copy(t2[1], b[0][1]);
+		fp_add(t2[1][0][0][0], t2[1][0][0][0], b[1][1][0][0][0]);
+#else
 		fp8_add(t2[1], b[0][1], b[1][1]);
+#endif
 		fp8_copy(t2[2], b[0][2]);
 
 		/* c_1 = a_0 + a_1. */
