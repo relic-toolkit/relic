@@ -93,6 +93,36 @@
 
 /**
  * Adds two points and evaluates the corresponding line function at another
+ * point on an elliptic curve with embedding degree 48.
+ *
+ * @param[out] L			- the result of the evaluation.
+ * @param[in, out] R		- the resulting point and first point to add.
+ * @param[in] Q				- the second point to add.
+ * @param[in] P				- the affine point to evaluate the line function.
+ */
+#if EP_ADD == BASIC
+#define pp_add_k48(L, RX, RY, RZ, QX, QY, P)	pp_add_k48_basic(L, RX, RY, QX, QY, P)
+#elif EP_ADD == PROJC
+#define pp_add_k48(L, RX, RY, RZ, QX, QY, P)	pp_add_k48_projc(L, RX, RY, RZ, QX, QY, P)
+#endif
+
+/**
+ * Adds two points and evaluates the corresponding line function at another
+ * point on an elliptic curve with embedding degree 54.
+ *
+ * @param[out] L			- the result of the evaluation.
+ * @param[in, out] R		- the resulting point and first point to add.
+ * @param[in] Q				- the second point to add.
+ * @param[in] P				- the affine point to evaluate the line function.
+ */
+#if EP_ADD == BASIC
+#define pp_add_k54(L, RX, RY, RZ, QX, QY, P)	pp_add_k54_basic(L, RX, RY, QX, QY, P)
+#elif EP_ADD == PROJC
+#define pp_add_k54(L, RX, RY, RZ, QX, QY, P)	pp_add_k54_projc(L, RX, RY, RZ, QX, QY, P)
+#endif
+
+/**
+ * Adds two points and evaluates the corresponding line function at another
  * point on an elliptic curve with embedding degree 12 using projective
  * coordinates.
  *
@@ -167,6 +197,36 @@
 #define pp_dbl_k12_projc(L, R, Q, P)	pp_dbl_k12_projc_basic(L, R, Q, P)
 #elif PP_EXT == LAZYR
 #define pp_dbl_k12_projc(L, R, Q, P)	pp_dbl_k12_projc_lazyr(L, R, Q, P)
+#endif
+
+/**
+ * Doubles a point and evaluates the corresponding line function at another
+ * point on an elliptic curve with embedding degree 48.
+ *
+ * @param[out] L			- the result of the evaluation.
+ * @param[out] R			- the resulting point.
+ * @param[in] Q				- the point to double.
+ * @param[in] P				- the affine point to evaluate the line function.
+ */
+#if EP_ADD == BASIC
+#define pp_dbl_k48(L, RX, RY, RZ, P)	pp_dbl_k48_basic(L, RX, RY, P)
+#elif EP_ADD == PROJC
+#define pp_dbl_k48(L, RX, RY, RZ, P)	pp_dbl_k48_projc(L, RX, RY, RZ, P)
+#endif
+
+/**
+ * Doubles a point and evaluates the corresponding line function at another
+ * point on an elliptic curve with embedding degree 54.
+ *
+ * @param[out] L			- the result of the evaluation.
+ * @param[out] R			- the resulting point.
+ * @param[in] Q				- the point to double.
+ * @param[in] P				- the affine point to evaluate the line function.
+ */
+#if EP_ADD == BASIC
+#define pp_dbl_k54(L, RX, RY, RZ, P)	pp_dbl_k54_basic(L, RX, RY, P)
+#elif EP_ADD == PROJC
+#define pp_dbl_k54(L, RX, RY, RZ, P)	pp_dbl_k54_projc(L, RX, RY, RZ, P)
 #endif
 
 /**
