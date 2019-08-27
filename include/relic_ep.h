@@ -127,12 +127,14 @@ enum {
 enum {
 	/** Barreto-Naehrig. */
 	EP_BN = 1,
+	/* Optimal TNFS-secure. */
+	EP_OT8,
+	/* Cocks-Pinch curve. */
+	EP_CP8,
 	/* Barreto-Lynn-Scott with embedding degree 12. */
 	EP_B12,
-	/* Optimal TNFS-secure. */
-	EP_OT,
 	/* Kachisa-Schafer-Scott with embedding degree 16. */
-	EP_KSS,
+	EP_K16,
 	/* Barreto-Lynn-Scott with embedding degree 24. */
 	EP_B24,
 	/* Barreto-Lynn-Scott with embedding degree 48. */
