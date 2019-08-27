@@ -1212,23 +1212,6 @@ static int multiplication3(void) {
 			TEST_ASSERT(fp3_is_zero(e), end);
 		} TEST_END;
 
-		TEST_BEGIN("multiplication by adjoined root is correct") {
-			fp3_rand(a);
-			fp3_zero(b);
-			fp_set_dig(b[1], 1);
-			fp3_mul(c, a, b);
-			fp3_mul_art(d, a);
-			TEST_ASSERT(fp3_cmp(c, d) == RLC_EQ, end);
-		} TEST_END;
-
-		TEST_BEGIN("multiplication by cubic non-residue is correct") {
-			fp3_rand(a);
-			fp3_mul_nor(b, a);
-			fp3_mul_art(c, a);
-			TEST_ASSERT(fp3_cmp(b, c) == RLC_EQ, end);
-		}
-		TEST_END;
-
 #if PP_CBC == BASIC || !defined(STRIP)
 		TEST_BEGIN("basic multiplication is correct") {
 			fp3_rand(a);
@@ -1249,12 +1232,12 @@ static int multiplication3(void) {
 		} TEST_END;
 #endif
 
-		TEST_BEGIN("multiplication by adjoined root is correct") {
+		TEST_BEGIN("multiplication by cubic non-residue is correct") {
 			fp3_rand(a);
 			fp3_zero(b);
 			fp_set_dig(b[1], 1);
 			fp3_mul(c, a, b);
-			fp3_mul_art(d, a);
+			fp3_mul_nor(d, a);
 			TEST_ASSERT(fp3_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
 	}

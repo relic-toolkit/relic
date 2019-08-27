@@ -627,12 +627,6 @@ static void arith3(void) {
 	BENCH_END;
 #endif
 
-	BENCH_BEGIN("fp3_mul_art") {
-		fp3_rand(a);
-		BENCH_ADD(fp3_mul_art(c, a));
-	}
-	BENCH_END;
-
 	BENCH_BEGIN("fp3_mul_nor") {
 		fp3_rand(a);
 		BENCH_ADD(fp3_mul_nor(c, a));

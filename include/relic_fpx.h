@@ -1778,15 +1778,6 @@ void fp3_mul_basic(fp3_t c, fp3_t a, fp3_t b);
 void fp3_mul_integ(fp3_t c, fp3_t a, fp3_t b);
 
 /**
- * Multiplies a cubic extension field element by the adjoined cubic root.
- * Computes c = a * u.
- *
- * @param[out] c			- the result.
- * @param[in] a				- the cubic extension field element to multiply.
- */
-void fp3_mul_art(fp3_t c, fp3_t a);
-
-/**
  * Multiplies a cubic extension field element by a cubic non-residue.
  *
  * @param[out] c			- the result.

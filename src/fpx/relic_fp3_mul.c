@@ -150,18 +150,6 @@ void fp3_mul_integ(fp3_t c, fp3_t a, fp3_t b) {
 #endif
 
 void fp3_mul_nor(fp3_t c, fp3_t a) {
-	fp_copy(c[1], a[0]);
-	fp_copy(c[0], a[2]);
-	for (int i = 1; i < fp_prime_get_cnr(); i++) {
-		fp_add(c[0], c[0], a[2]);
-	}
-	for (int i = 0; i >= fp_prime_get_cnr(); i--) {
-		fp_sub(c[0], c[0], a[2]);
-	}
-	fp_copy(c[2], a[1]);
-}
-
-void fp3_mul_art(fp3_t c, fp3_t a) {
 	fp_t t;
 
 	fp_null(t);
@@ -208,7 +196,7 @@ void fp3_mul_frb(fp3_t c, fp3_t a, int i, int j) {
 			fp_mul(c[1], c[1], ctx->fp3_p1[j - 1]);
 			fp_mul(c[2], c[2], ctx->fp3_p1[j - 1]);
 			for (int k = 0; k < (j * ctx->frb3[0]) % 3; k++) {
-				fp3_mul_art(c, c);
+				fp3_mul_nor(c, c);
 			}
 			break;
 		case 2:
@@ -216,7 +204,7 @@ void fp3_mul_frb(fp3_t c, fp3_t a, int i, int j) {
 			fp_mul(c[1], c[1], ctx->fp3_p2[j - 1]);
 			fp_mul(c[2], c[2], ctx->fp3_p2[j - 1]);
 			for (int k = 0; k < ctx->frb3[j]; k++) {
-				fp3_mul_art(c, c);
+				fp3_mul_nor(c, c);
 			}
 			break;
 	}
