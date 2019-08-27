@@ -215,7 +215,7 @@ void fp8_exp_cyc(fp8_t c, fp8_t a, bn_t b) {
 		}
 
 		if (bn_sign(b) == RLC_NEG) {
-			fp8_inv(c, t);
+			fp8_inv_cyc(c, t);
 		} else {
 			fp8_copy(c, t);
 		}
