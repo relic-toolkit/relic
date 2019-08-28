@@ -161,6 +161,9 @@ void fp3_field_init(void) {
 
 		/* Compute t0 = u^((p - (p mod 3))/3). */
 		fp_set_dig(ctx->fp3_p0[0], fp_prime_get_cnr());
+		if (fp_prime_get_cnr() < 0) {
+			fp_neg(ctx->fp3_p0[0], ctx->fp3_p0[0]);
+		}
 		e->used = RLC_FP_DIGS;
 		dv_copy(e->dp, fp_prime_get(), RLC_FP_DIGS);
 		bn_div_dig(e, e, 3);
