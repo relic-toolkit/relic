@@ -64,7 +64,7 @@ void fp2_sqrn_low(dv2_t c, fp2_t a) {
 
 #else /* !FP_QNRES */
 
-	/* t1 = u^2 * (a1 * b1). */
+	/* t1 = a0 - a1 * u^2. */
 	for (int i = -1; i > fp_prime_get_qnr(); i--) {
 		fp_subm_low(t1, t1, a[1]);
 	}
@@ -77,7 +77,7 @@ void fp2_sqrn_low(dv2_t c, fp2_t a) {
 		fp_dbl(t2, a[0]);
 		/* c1 = 2 * a0 * a1. */
 		fp_muln_low(c[1], t2, a[1]);
-		/* c0 = a0^2 + b_0^2 * u^2. */
+		/* c0 = a0^2 + a_1^2 * u^2. */
 		fp_muln_low(c[0], t0, t1);
 	} else {
 		/* c1 = a0 * a1. */
