@@ -125,8 +125,10 @@ enum {
  * Pairing-friendly elliptic curve identifiers.
  */
 enum {
+	/** Supersingular curves with embedding degree 2. */
+	EP_SS2 = 1,
 	/** Barreto-Naehrig. */
-	EP_BN = 1,
+	EP_BN,
 	/* Optimal TNFS-secure. */
 	EP_OT8,
 	/* Cocks-Pinch curve. */
