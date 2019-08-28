@@ -369,7 +369,7 @@ void fp_param_set(int param) {
 				bn_set_2b(t0, 52);
 				bn_add_dig(t0, t0, 0xAB);
 				bn_lsh(t0, t0, 12);
-				fp_prime_set_pairf(t0, EP_OT);
+				fp_prime_set_pairf(t0, EP_OT8);
 				break;
 			case PRIME_511187:
 				bn_set_2b(p, 511);
@@ -386,6 +386,15 @@ void fp_param_set(int param) {
 #elif FP_PRIME == 544
 			case CP8_544:
 				bn_read_str(p, STR_P544, strlen(STR_P544), 16);
+				bn_set_2b(t0, 64);
+				bn_set_dig(t1, 0x10);
+				bn_lsh(t1, t1, 8);
+				bn_add_dig(t1, t1, 0x08);
+				bn_lsh(t1, t1, 8);
+				bn_add_dig(t1, t1, 0x3E);
+				bn_lsh(t1, t1, 8);
+				bn_sub(t0, t0, t1);
+				fp_prime_set_pairf(t0, EP_CP8);
 				fp_prime_set_dense(p);
 				break;
 #elif FP_PRIME == 569
@@ -446,6 +455,7 @@ void fp_param_set(int param) {
 				bn_dbl(p, p);
 				bn_sub_dig(p, p, 1);
 				fp_prime_set_dense(p);
+				fp_prime_set_pairf(t0, EP_SS2);
 				break;
 #else
 			default:
