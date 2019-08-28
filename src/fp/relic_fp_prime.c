@@ -94,6 +94,10 @@ static void fp_prime_set(const bn_t p) {
 			case 7:
 				ctx->qnr = -1;
 				ctx->cnr = -2;
+				/* TODO: implement cube root to handle this better. */
+#if FP_PRIME == 638
+				ctx->cnr = -3;
+#endif
 				break;
 			case 1:
 			case 5:
