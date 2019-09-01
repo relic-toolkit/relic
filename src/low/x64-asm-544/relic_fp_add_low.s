@@ -575,6 +575,7 @@ cdecl(fp_hlvm_low):
 	push	%r14
 	push	%r15
 	push	%rbp
+    push	%rbx
 
 	xorq	%rdx, %rdx
 
@@ -642,6 +643,7 @@ cdecl(fp_hlvm_low):
 	movq	%rbp, 64(%rdi)
 	xorq	%rax, %rax
 
+    pop %rbx
 	pop	%rbp
 	pop	%r15
 	pop	%r14
@@ -692,7 +694,7 @@ cdecl(fp_hlvd_low):
 	adcq	48(%rsi) , %r14
 	adcq	56(%rsi) , %r15
 	adcq	64(%rsi) , %rax
-	adcq	72(%rsi) , %rbx
+	movq	72(%rsi) , %rbx
     adcq	$0       , %rbx
 	movq	80(%rsi) , %rcx
 	adcq	$0       , %rcx
