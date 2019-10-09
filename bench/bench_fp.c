@@ -213,6 +213,13 @@ static void arith(void) {
 	BENCH_END;
 #endif
 
+	BENCH_BEGIN("fp_add_dig (1)") {
+		fp_rand(a);
+		fp_rand(b);
+		BENCH_ADD(fp_add_dig(c, a, 1));
+	}
+	BENCH_END;
+
 	BENCH_BEGIN("fp_add_dig") {
 		fp_rand(a);
 		fp_rand(b);
@@ -244,6 +251,13 @@ static void arith(void) {
 	}
 	BENCH_END;
 #endif
+
+	BENCH_BEGIN("fp_sub_dig (1)") {
+		fp_rand(a);
+		fp_rand(b);
+		BENCH_ADD(fp_sub_dig(c, a, 1));
+	}
+	BENCH_END;
 
 	BENCH_BEGIN("fp_sub_dig") {
 		fp_rand(a);

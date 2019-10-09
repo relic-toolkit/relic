@@ -59,19 +59,23 @@ void fp_add_integ(fp_t c, const fp_t a, const fp_t b) {
 
 void fp_add_dig(fp_t c, const fp_t a, dig_t b) {
 #if FP_RDC == MONTY
-	fp_t t;
+	if (b == 1) {
+		fp_add(c, a, core_get()->one.dp);
+	} else {
+		fp_t t;
 
-	fp_null(t);
+		fp_null(t);
 
-	TRY {
-		fp_new(t);
+		TRY {
+			fp_new(t);
 
-		fp_set_dig(t, b);
-		fp_add(c, a, t);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
-		fp_free(t);
+			fp_set_dig(t, b);
+			fp_add(c, a, t);
+		} CATCH_ANY {
+			THROW(ERR_CAUGHT);
+		} FINALLY {
+			fp_free(t);
+		}
 	}
 #else
 	dig_t carry;
@@ -106,19 +110,23 @@ void fp_sub_integ(fp_t c, const fp_t a, const fp_t b) {
 
 void fp_sub_dig(fp_t c, const fp_t a, dig_t b) {
 #if FP_RDC == MONTY
-	fp_t t;
+	if (b == 1) {
+		fp_sub(c, a, core_get()->one.dp);
+	} else {
+		fp_t t;
 
-	fp_null(t);
+		fp_null(t);
 
-	TRY {
-		fp_new(t);
+		TRY {
+			fp_new(t);
 
-		fp_set_dig(t, b);
-		fp_sub(c, a, t);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
-		fp_free(t);
+			fp_set_dig(t, b);
+			fp_sub(c, a, t);
+		} CATCH_ANY {
+			THROW(ERR_CAUGHT);
+		} FINALLY {
+			fp_free(t);
+		}
 	}
 #else
 	dig_t carry;
