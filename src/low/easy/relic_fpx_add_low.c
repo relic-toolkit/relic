@@ -195,6 +195,7 @@ void fp2_nord_low(dv2_t c, dv2_t a) {
 }
 
 void fp2_norh_low(dv2_t c, dv2_t a) {
+#ifdef FP_QNRES
 	dv2_t t;
 
 	dv2_null(t);
@@ -202,7 +203,6 @@ void fp2_norh_low(dv2_t c, dv2_t a) {
 	TRY {
 		dv2_new(t);
 
-#ifdef FP_QNRES
 		/* If p = 3 mod 8, (1 + i) is a QNR/CNR. */
 		/* (a_0 + a_1 * i) * (1 + i) = (a_0 - a_1) + (a_0 + a_1) * u. */
 		dv_copy(t[1], a[1], 2 * RLC_FP_DIGS);
@@ -213,41 +213,6 @@ void fp2_norh_low(dv2_t c, dv2_t a) {
 		fp_addn_low(t[0] + RLC_FP_DIGS, t[0] + RLC_FP_DIGS, fp_prime_get());
 		bn_rshb_low(t[0] + RLC_FP_DIGS - 1, t[0] + RLC_FP_DIGS - 1, RLC_FP_DIGS + 1, 1);
 		fp_subd_low(c[0], t[0], t[1]);
-#else
-		int qnr = fp2_field_get_qnr();
-		switch (fp_prime_get_mod8()) {
-			case 3:
-				/* If p = 3 mod 8, (1 + i) is a QNR, u^2 = -1. */
-				/* (a_0 + a_1 * u) * (1 + i) = (a_0 - a_1) + (a_0 + a_1) * i. */
-				dv_copy(t[0], a[1], 2 * RLC_FP_DIGS);
-				fp_addc_low(c[1], a[0], a[1]);
-				fp_subc_low(c[0], a[0], t[0]);
-				break;
-			case 1:
-			case 5:
-				/* If p = 1,5 mod 8, (i) is a QNR. */
-				dv_copy(t[0], a[0], 2 * RLC_FP_DIGS);
-				dv_zero(t[1], RLC_FP_DIGS);
-				dv_copy(t[1] + RLC_FP_DIGS, fp_prime_get(), RLC_FP_DIGS);
-				fp_subc_low(c[0], t[1], a[1]);
-				for (int i = -1; i > fp_prime_get_qnr(); i--) {
-					fp_subc_low(c[0], c[0], a[1]);
-				}
-				dv_copy(c[1], t[0], 2 * RLC_FP_DIGS);
-				break;
-			case 7:
-				/* If p = 7 mod 8, (2^k + i) is a QNR/CNR.   */
-				dv_copy(t[0], a[0], 2 * RLC_FP_DIGS);
-				dv_copy(t[1], a[1], 2 * RLC_FP_DIGS);
-				while (qnr > 1) {
-					fp2_addc_low(t, t, t);
-					qnr = qnr >> 1;
-				}
-				fp_subc_low(c[0], t[0], a[1]);
-				fp_addc_low(c[1], t[1], a[0]);
-				break;
-		}
-#endif
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
@@ -255,6 +220,9 @@ void fp2_norh_low(dv2_t c, dv2_t a) {
 	FINALLY {
 		dv2_free(t);
 	}
+#else
+		fp2_nord_low(c, a);
+#endif
 }
 
 void fp3_addn_low(fp3_t c, fp3_t a, fp3_t b) {
