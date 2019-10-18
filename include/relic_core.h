@@ -109,7 +109,7 @@
 #define RLC_ONE			1
 
 /**
- * Optimization identifer for the case where a coefficient is 1.
+ * Optimization identifer for the case where a coefficient is 2.
  */
 #define RLC_TWO			2
 
