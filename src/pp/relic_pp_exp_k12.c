@@ -24,7 +24,7 @@
 /**
  * @file
  *
- * Implementation of the final exponentiation for pairings over prime curves.
+ * Implementation of the final exponentiation for curves of embedding degree 12.
  *
  * @ingroup pp
  */
@@ -216,33 +216,6 @@ static void pp_exp_b12(fp12_t c, fp12_t a) {
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
-
-void pp_exp_k2(fp2_t c, fp2_t a) {
-	bn_t e, n;
-
-	bn_null(n);
-	bn_null(e);
-
-	TRY {
-		bn_new(n);
-		bn_new(e);
-
-		ep_curve_get_ord(n);
-
-		fp2_conv_cyc(c, a);
-		dv_copy(e->dp, fp_prime_get(), RLC_FP_DIGS);
-		e->used = RLC_FP_DIGS;
-		e->sign = RLC_POS;
-		bn_add_dig(e, e, 1);
-		bn_div(e, e, n);
-		fp2_exp_cyc(c, c, e);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
-		bn_free(n);
-		bn_free(e);
-	}
-}
 
 void pp_exp_k12(fp12_t c, fp12_t a) {
 	switch (ep_curve_is_pairf()) {

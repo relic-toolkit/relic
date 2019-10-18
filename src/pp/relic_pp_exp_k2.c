@@ -24,61 +24,42 @@
 /**
  * @file
  *
- * Implementation of point normalization for points used in pairing computation.
+ * Implementation of the final exponentiation for curves of embedding degree 2.
  *
  * @ingroup pp
  */
 
 #include "relic_core.h"
-#include "relic_md.h"
 #include "relic_pp.h"
-#include "relic_conf.h"
-#include "relic_fp_low.h"
+#include "relic_util.h"
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void pp_norm_k2(ep_t r, ep_t p) {
-	ep_norm(r, p);
-}
+void pp_exp_k2(fp2_t c, fp2_t a) {
+	bn_t e, n;
 
-void pp_norm_k8(ep2_t r, ep2_t p) {
-	if (ep2_is_infty(p)) {
-		ep2_set_infty(r);
-		return;
-	}
+	bn_null(n);
+	bn_null(e);
 
-	if (p->norm) {
-		/* If the point is represented in affine coordinates, we just copy it. */
-		ep2_copy(r, p);
-	}
-#if EP_ADD == PROJC || !defined(STRIP)
-	fp2_inv(r->z, p->z);
-	fp2_mul(r->x, p->x, r->z);
-	fp2_mul(r->y, p->y, r->z);
-	fp2_mul(r->y, r->y, r->z);
-	fp2_set_dig(r->z, 1);
-	r->norm = 1;
-#endif
-}
+	TRY {
+		bn_new(n);
+		bn_new(e);
 
-void pp_norm_k12(ep2_t r, ep2_t p) {
-	if (ep2_is_infty(p)) {
-		ep2_set_infty(r);
-		return;
-	}
+		ep_curve_get_ord(n);
 
-	if (p->norm) {
-		/* If the point is represented in affine coordinates, we just copy it. */
-		ep2_copy(r, p);
+		fp2_conv_cyc(c, a);
+		dv_copy(e->dp, fp_prime_get(), RLC_FP_DIGS);
+		e->used = RLC_FP_DIGS;
+		e->sign = RLC_POS;
+		bn_add_dig(e, e, 1);
+		bn_div(e, e, n);
+		fp2_exp_cyc(c, c, e);
+	} CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	} FINALLY {
+		bn_free(n);
+		bn_free(e);
 	}
-#if EP_ADD == PROJC || !defined(STRIP)
-	fp2_inv(r->z, p->z);
-	fp2_mul(r->x, p->x, r->z);
-	fp2_mul(r->y, p->y, r->z);
-	fp_set_dig(r->z[0], 1);
-	fp_zero(r->z[1]);
-	r->norm = 1;
-#endif
 }
