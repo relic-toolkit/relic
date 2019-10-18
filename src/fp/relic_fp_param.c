@@ -46,7 +46,7 @@
 /**
  * Random prime modulus for the Cocks-Pinch curve of embedding degree 8.
  */
-#define STR_P544	"B4910005E588FDE4023747293D3A6E3D41B42AFE599CF6ED3E0192D99FE38524365563D4DD1749878641CDE159AFDB73B758C3BAA70C8C1FA842A7142D6A5981846ABA09"
+#define STR_P544	"BB9DFD549299F1C803DDD5D7C05E7CC0373D9B1AC15B47AA5AA84626F33E58FE66943943049031AE4CA1D2719B3A84FA363BCD2539A5CD02C6F4B6B645A58C1085E14411"
 
 #elif FP_PRIME == 1536
 /**
@@ -386,14 +386,15 @@ void fp_param_set(int param) {
 #elif FP_PRIME == 544
 			case CP8_544:
 				bn_read_str(p, STR_P544, strlen(STR_P544), 16);
+				/* T = 2^64 - 2^54 + 2^37 + 2^32 - 4 */
 				bn_set_2b(t0, 64);
-				bn_set_dig(t1, 0x10);
-				bn_lsh(t1, t1, 8);
-				bn_add_dig(t1, t1, 0x08);
-				bn_lsh(t1, t1, 8);
-				bn_add_dig(t1, t1, 0x3E);
-				bn_lsh(t1, t1, 8);
+				bn_set_2b(t1, 54);
 				bn_sub(t0, t0, t1);
+				bn_set_2b(t1, 37);
+				bn_add(t0, t0, t1);
+				bn_set_2b(t1, 32);
+				bn_add(t0, t0, t1);
+				bn_sub_dig(t0, t0, 4);
 				fp_prime_set_pairf(t0, EP_CP8);
 				fp_prime_set_dense(p);
 				break;

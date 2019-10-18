@@ -36,10 +36,10 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-#if defined(EP_ENDOM) && FP_PRIME == 158
 /**
  * Parameters for a pairing-friendly prime curve over a quadratic extension.
  */
+#if defined(EP_ENDOM) && FP_PRIME == 158
 /** @{ */
 #define BN_P158_A0		"0"
 #define BN_P158_A1		"0"
@@ -54,9 +54,6 @@
 #endif
 
 #if defined(EP_ENDOM) && FP_PRIME == 254
-/**
- * Parameters for a pairing-friendly prime curve over a quadratic extension.
- */
 /** @{ */
 #define BN_P254_A0		"0"
 #define BN_P254_A1		"0"
@@ -71,9 +68,6 @@
 #endif
 
 #if defined(EP_ENDOM) && FP_PRIME == 256
-/**
- * Parameters for a pairing-friendly prime curve over a quadratic extension.
- */
 /** @{ */
 #define BN_P256_A0		"0"
 #define BN_P256_A1		"0"
@@ -88,9 +82,6 @@
 #endif
 
 #if defined(EP_ENDOM) && FP_PRIME == 381
-/**
- * Parameters for a pairing-friendly prime curve over a quadratic extension.
- */
 /** @{ */
 #define B12_P381_A0		"0"
 #define B12_P381_A1		"0"
@@ -105,9 +96,6 @@
 #endif
 
 #if defined(EP_ENDOM) && FP_PRIME == 382
-/**
- * Parameters for a pairing-friendly prime curve over a quadratic extension.
- */
 /** @{ */
 #define BN_P382_A0		"0"
 #define BN_P382_A1		"0"
@@ -122,9 +110,6 @@
 #endif
 
 #if defined(EP_ENDOM) && FP_PRIME == 446
-/**
- * Parameters for a pairing-friendly prime curve over a quadratic extension.
- */
 /** @{ */
 #define BN_P446_A0		"0"
 #define BN_P446_A1		"0"
@@ -139,9 +124,6 @@
 #endif
 
 #if defined(EP_ENDOM) && FP_PRIME == 446
-/**
- * Parameters for a pairing-friendly prime curve over a quadratic extension.
- */
 /** @{ */
 #define B12_P446_A0		"0"
 #define B12_P446_A1		"0"
@@ -156,9 +138,6 @@
 #endif
 
 #if defined(EP_ENDOM) && FP_PRIME == 455
-/**
- * Parameters for a pairing-friendly prime curve over a quadratic extension.
- */
 /** @{ */
 #define B12_P455_A0		"0"
 #define B12_P455_A1		"0"
@@ -173,9 +152,6 @@
 #endif
 
 #if defined(EP_ENDOM) && FP_PRIME == 511
-/**
- * Parameters for a pairing-friendly prime curve over a quadratic extension.
- */
 /** @{ */
 #define OT8_P511_A0		"0"
 #define OT8_P511_A1		"1"
@@ -190,10 +166,22 @@
 /** @} */
 #endif
 
+#if defined(EP_ENDOM) && FP_PRIME == 544
+/** @{ */
+#define CP8_P544_A0		"0"
+#define CP8_P544_A1		"2"
+#define CP8_P544_B0		"0"
+#define CP8_P544_B1		"0"
+#define CP8_P544_X0		"1EE84A939A46EAE4287805E2FFABBCED3605B74F5FD7E545F390D2E3D34AD0C60851EA65A18CF92396B9318FCAB3205D79C8D03E928590F719E4086A1C42AF2D40EB6C3A"
+#define CP8_P544_X1		"065F721D63381C07D1BF556D65A3A82B0E969BA031FB3812F49709926D5159324DFB685048D4EAFC914F893A0D5382868D1D252619AA964149258DCC1A86B68775F36A82"
+#define CP8_P544_Y0		"9B80046683050F459F48D7CE4C83992D5B044718326AEE2DD86F3E5557BD240441A763BC40030F21FC3A64483B450330930BAFA62E7B573B565404A9DB2A5BFF7D6994D4"
+#define CP8_P544_Y1		"AB457A64E140799D3D9B77ECEA828957F3AEADB3278FEE32E9AD77F068DD2F95B469607E8CE3CE5705276F869CFB18270C0A8FC8D8AD0D17545F4DCCC9E599853A7BAB76"
+#define CP8_P544_R		"FF0060739E18D7594A978B0AB6AE4CE3DBFD52A9D00197603FFFDF0000000101"
+#define CP8_P544_H		"8A0A079FC7C3D421A4986FAAA10A6593F60BC94E32AEE8067E35551B86D59F0F61BD6A750917746236DD39CB4710BD44B7BE86F0A8E5324DFE802973060F04BF37C018705B78072182D139A8D2BD338A630511676FDAFD47C60DB5393F9DFC96089B1FFB60B78FB2"
+/** @} */
+#endif
+
 #if defined(EP_ENDOM) && FP_PRIME == 638
-/**
- * Parameters for a pairing-friendly prime curve over a quadratic extension.
- */
 /** @{ */
 #define BN_P638_A0		"0"
 #define BN_P638_A1		"0"
@@ -208,9 +196,6 @@
 #endif
 
 #if defined(EP_ENDOM) && FP_PRIME == 638
-/**
- * Parameters for a pairing-friendly prime curve over a quadratic extension.
- */
 /** @{ */
 #define B12_P638_A0		"0"
 #define B12_P638_A1		"0"
@@ -460,6 +445,10 @@ void ep2_curve_set_twist(int type) {
 #elif FP_PRIME == 511
 			case OT8_P511:
 				ASSIGN(OT8_P511);
+				break;
+#elif FP_PRIME == 544
+			case CP8_P544:
+				ASSIGN(CP8_P544);
 				break;
 #elif FP_PRIME == 638
 			case BN_P638:
