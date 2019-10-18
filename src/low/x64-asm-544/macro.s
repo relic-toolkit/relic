@@ -32,18 +32,26 @@
  * @ingroup fp
  */
 
+#define P0 0x45a58c1085e14411
+#define P1 0x39a5cd02c6f4b6b6
+#define P2 0x9b3a84fa363bcd25
+#define P3 0x049031ae4ca1d271
+#define P4 0xf33e58fe66943943
+#define P5 0xc15b47aa5aa84626
+#define P6 0xc05e7cc0373d9b1a
+#define P7 0x9299f1c803ddd5d7
+#define P8 0x00000000bb9dfd54
+#define U0 0x9935f6572883d30f
 
-
-#define P0	0x2D6A5981846ABA09
-#define P1	0xA70C8C1FA842A714
-#define P2	0x59AFDB73B758C3BA
-#define P3	0xDD1749878641CDE1
-#define P4	0x9FE38524365563D4
-#define P5	0x599CF6ED3E0192D9
-#define P6	0x3D3A6E3D41B42AFE
-#define P7	0xE588FDE402374729
-#define P8	0x00000000B4910005
-#define U0	0xBDEF643EE1730BC7
+#define _P0 0x85E1441100000000
+#define _P1 0xC6F4B6B645A58C10
+#define _P2 0x363BCD2539A5CD02
+#define _P3 0x4CA1D2719B3A84FA
+#define _P4 0x66943943049031AE
+#define _P5 0x5AA84626F33E58FE
+#define _P6 0x373D9B1AC15B47AA
+#define _P7 0x03DDD5D7C05E7CC0
+#define _P8 0xBB9DFD549299F1C8
 
 #if defined(__APPLE__)
 #define cdecl(S) _PREFIX(,S)
@@ -158,8 +166,6 @@
 	mulq	64(\B)
 	addq	%rax  ,\R0
 	movq	\R0   ,128(\C)
-	adcq	%rdx  ,\R1
-	movq	\R1   ,136(\C)
 .endm
 
 .macro _RDCN0 i, j, k, R0, R1, R2 A, P
@@ -241,7 +247,6 @@
 	RDCN1	6, 8, \R2, \R0, \R1, \A, \P
 	RDCN1	7, 8, \R0, \R1, \R2, \A, \P
 	RDCN1	8, 8, \R1, \R2, \R0, \A, \P
-	addq	136(\A), \R2
 	movq	\R2, 136(\A)
 
 	movq	72(\A), %r11

@@ -100,8 +100,6 @@ void fp2_norm_low(fp2_t c, fp2_t a) {
 		fp_negm_low(c[0], a[1]);
 		fp_dblm_low(t[1], a[1]);
 		fp_dblm_low(t[1], t[1]);
-		fp_dblm_low(t[1], t[1]);
-		fp_dblm_low(t[1], t[1]);
 		fp_subm_low(c[0], c[0], t[1]);
 		fp_copy(c[1], t[0]);
 	}
@@ -122,17 +120,14 @@ void fp2_nord_low(dv2_t c, dv2_t a) {
 		dv2_new(t);
 
 		/* If p = 1,5 mod 8, (i) is a QNR. */
-		dv_copy(t[0], a[0], 2 * RLC_FP_DIGS);
-		dv_zero(t[1], RLC_FP_DIGS);
-		dv_copy(t[1] + RLC_FP_DIGS, fp_prime_get(), RLC_FP_DIGS);
+		dv_copy(t[0], a[0], 2 * RLC_FP_DIGS - 1);
+		dv_zero(t[1], RLC_FP_DIGS - 1);
+		fp_lshb_low(t[1] + RLC_FP_DIGS - 1, fp_prime_get(), 32);
 		fp_subc_low(c[0], t[1], a[1]);
-		//fp_lshb_low(t[1], a[1], 4);
 		fp_addc_low(t[1], a[1], a[1]);
 		fp_addc_low(t[1], t[1], t[1]);
-		fp_addc_low(t[1], t[1], t[1]);
-		fp_addc_low(t[1], t[1], t[1]);
 		fp_subc_low(c[0], c[0], t[1]);
-		dv_copy(c[1], t[0], 2 * RLC_FP_DIGS);
+		dv_copy(c[1], t[0], 2 * RLC_FP_DIGS - 1);
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
@@ -213,16 +208,16 @@ void fp3_nord_low(dv3_t c, dv3_t a) {
 
 	TRY {
 		dv_new(t);
-		dv_copy(t, a[0], 2 * RLC_FP_DIGS);
-		dv_copy(c[0], a[2], 2 * RLC_FP_DIGS);
+		dv_copy(t, a[0], 2 * RLC_FP_DIGS - 1);
+		dv_copy(c[0], a[2], 2 * RLC_FP_DIGS - 1);
 		for (int i = 1; i < fp_prime_get_cnr(); i++) {
 			fp_addc_low(c[0], c[0], a[2]);
 		}
 		for (int i = 0; i >= fp_prime_get_cnr(); i--) {
 			fp_subc_low(c[0], c[0], a[2]);
 		}
-		dv_copy(c[2], a[1], 2 * RLC_FP_DIGS);
-		dv_copy(c[1], t, 2 * RLC_FP_DIGS);
+		dv_copy(c[2], a[1], 2 * RLC_FP_DIGS - 1);
+		dv_copy(c[1], t, 2 * RLC_FP_DIGS - 1);
 	} CATCH_ANY {
 		THROW(ERR_CAUGHT);
 	} FINALLY {

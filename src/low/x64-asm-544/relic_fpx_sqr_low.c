@@ -41,14 +41,17 @@ void fp2_sqrn_low(dv2_t c, fp2_t a) {
 	rlc_align dig_t t0[2 * RLC_FP_DIGS], t1[2 * RLC_FP_DIGS], t2[2 * RLC_FP_DIGS];
 
 	/* t0 = (a0 + a1). */
+#if RLC_FP_ROOM
 	fp_addn_low(t0, a[0], a[1]);
+#else
+	fp_addm_low(t0, a[0], a[1]);
+#endif
+
 	/* t1 = (a0 - a1). */
 	fp_subm_low(t1, a[0], a[1]);
 
 	/* t1 = a0 - a1 * u^2. */
 	fp_dblm_low(t2, a[1]);
-	fp_dblm_low(t2, t2);
-	fp_dblm_low(t2, t2);
 	fp_dblm_low(t2, t2);
 	fp_subm_low(t1, t1, t2);
 
@@ -58,11 +61,15 @@ void fp2_sqrn_low(dv2_t c, fp2_t a) {
 	fp_muln_low(c[0], t0, t1);
 
 	/* c1 = 2 * a0 * a1. */
+#if RLC_FP_ROOM
 	fp_addd_low(c[1], c[1], c[1]);
 	fp_addd_low(t2, c[1], c[1]);
-	fp_addd_low(t2, t2, t2);
-	fp_addd_low(t2, t2, t2);
 	fp_addd_low(c[0], c[0], t2);
+#else
+	fp_addc_low(c[1], c[1], c[1]);
+	fp_addc_low(t2, c[1], c[1]);
+	fp_addc_low(c[0], c[0], t2);
+#endif
 	/* c = c0 + c1 * u. */
 }
 
