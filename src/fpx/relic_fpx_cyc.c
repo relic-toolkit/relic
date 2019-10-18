@@ -214,7 +214,7 @@ void fp8_exp_cyc(fp8_t c, fp8_t a, bn_t b) {
 		}
 
 #if FP_WIDTH > 2
-		fp8_sqr(t[0], a);
+		fp8_sqr_cyc(t[0], a);
 		fp8_mul(t[1], t[0], a);
 		for (int i = 2; i < (1 << (FP_WIDTH - 2)); i++) {
 			fp8_mul(t[i], t[i - 1], t[0]);
@@ -229,7 +229,7 @@ void fp8_exp_cyc(fp8_t c, fp8_t a, bn_t b) {
 		k = naf + l - 1;
 
 		for (i = l - 1; i >= 0; i--, k--) {
-			fp8_sqr(r, r);
+			fp8_sqr_cyc(r, r);
 
 			if (*k > 0) {
 				fp8_mul(r, r, t[*k / 2]);
@@ -299,6 +299,7 @@ int fp12_test_cyc(fp12_t a) {
 		fp12_new(t);
 
 		fp12_back_cyc(t, a);
+
 		result = ((fp12_cmp(t, a) == RLC_EQ) ? 1 : 0);
 	}
 	CATCH_ANY {

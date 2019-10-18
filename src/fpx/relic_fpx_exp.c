@@ -222,19 +222,23 @@ void fp8_exp(fp8_t c, fp8_t a, bn_t b) {
 	TRY {
 		fp8_new(t);
 
-		fp8_copy(t, a);
-
-		for (int i = bn_bits(b) - 2; i >= 0; i--) {
-			fp8_sqr(t, t);
-			if (bn_get_bit(b, i)) {
-				fp8_mul(t, t, a);
-			}
-		}
-
-		if (bn_sign(b) == RLC_NEG) {
-			fp8_inv(c, t);
+		if (fp8_test_cyc(a)) {
+			fp8_exp_cyc(c, a, b);
 		} else {
-			fp8_copy(c, t);
+			fp8_copy(t, a);
+
+			for (int i = bn_bits(b) - 2; i >= 0; i--) {
+				fp8_sqr(t, t);
+				if (bn_get_bit(b, i)) {
+					fp8_mul(t, t, a);
+				}
+			}
+
+			if (bn_sign(b) == RLC_NEG) {
+				fp8_inv(c, t);
+			} else {
+				fp8_copy(c, t);
+			}
 		}
 	}
 	CATCH_ANY {
