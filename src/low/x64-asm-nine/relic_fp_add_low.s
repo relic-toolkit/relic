@@ -241,10 +241,10 @@ cdecl(fp_addc_low):
 	adcq    128(%rdx), %r15
 	movq	%r15    , 72(%rdi)
 	movq	%r15    , 80(%rdi)
-    movq	136(%rdx), %rax
-    adcq	136(%rsi), %rax
-    movq	%rax    , 88(%rdi)
-    movq	%rax    , 96(%rdi)
+	movq	136(%rdx), %rax
+	adcq	136(%rsi), %rax
+	movq	%rax    , 88(%rdi)
+	movq	%rax    , 96(%rdi)
 
 	movq	%rdi, %r15
 
@@ -298,8 +298,7 @@ cdecl(fp_addc_low):
 	movq	%r13, 112(%rdi)
 	movq	%r14, 120(%rdi)
 	movq	%r15, 128(%rdi)
-    movq	%r15, 128(%rdi)
-    movq	%rax, 136(%rdi)
+	movq	%rax, 136(%rdi)
 	xorq	%rax, %rax
 
 	pop		%r15
@@ -575,7 +574,7 @@ cdecl(fp_hlvm_low):
 	push	%r14
 	push	%r15
 	push	%rbp
-    push	%rbx
+	push	%rbx
 
 	xorq	%rdx, %rdx
 
@@ -643,7 +642,7 @@ cdecl(fp_hlvm_low):
 	movq	%rbp, 64(%rdi)
 	xorq	%rax, %rax
 
-    pop %rbx
+	pop %rbx
 	pop	%rbp
 	pop	%r15
 	pop	%r14
@@ -695,7 +694,7 @@ cdecl(fp_hlvd_low):
 	adcq	56(%rsi) , %r15
 	adcq	64(%rsi) , %rax
 	movq	72(%rsi) , %rbx
-    adcq	$0       , %rbx
+	adcq	$0       , %rbx
 	movq	80(%rsi) , %rcx
 	adcq	$0       , %rcx
 	movq	88(%rsi) , %rdx
@@ -728,33 +727,33 @@ cdecl(fp_hlvd_low):
 	rcrq	$1, 120(%rdi)
 	rcrq	$1, 112(%rdi)
 	rcrq	$1, 104(%rdi)
-  	rcrq	$1, %rbp
-  	rcrq 	$1, %rdx
-  	rcrq 	$1, %rcx
-  	rcrq 	$1, %rbx
-  	rcrq 	$1, %rax
+	rcrq	$1, %rbp
+	rcrq 	$1, %rdx
+	rcrq 	$1, %rcx
+	rcrq 	$1, %rbx
+	rcrq 	$1, %rax
 	rcrq 	$1, %r15
 	rcrq 	$1, %r14
 	rcrq 	$1, %r13
 	rcrq 	$1, %r12
-  	rcrq 	$1, %r11
-  	rcrq 	$1, %r10
-  	rcrq 	$1, %r9
-  	rcrq 	$1, %r8
+	rcrq 	$1, %r11
+	rcrq 	$1, %r10
+	rcrq 	$1, %r9
+	rcrq 	$1, %r8
 
-  	movq 	%rbp, 96(%rdi)
-  	movq 	%rdx, 88(%rdi)
-  	movq 	%rcx, 80(%rdi)
-  	movq 	%rbx, 72(%rdi)
-  	movq 	%rax, 64(%rdi)
-  	movq 	%r15, 56(%rdi)
-  	movq 	%r14, 48(%rdi)
-  	movq 	%r13, 40(%rdi)
-  	movq 	%r12, 32(%rdi)
-  	movq 	%r11, 24(%rdi)
-  	movq 	%r10, 16(%rdi)
-  	movq 	%r9 ,  8(%rdi)
-  	movq 	%r8 ,  0(%rdi)
+	movq 	%rbp, 96(%rdi)
+	movq 	%rdx, 88(%rdi)
+	movq 	%rcx, 80(%rdi)
+	movq 	%rbx, 72(%rdi)
+	movq 	%rax, 64(%rdi)
+	movq 	%r15, 56(%rdi)
+	movq 	%r14, 48(%rdi)
+	movq 	%r13, 40(%rdi)
+	movq 	%r12, 32(%rdi)
+	movq 	%r11, 24(%rdi)
+	movq 	%r10, 16(%rdi)
+	movq 	%r9 ,  8(%rdi)
+	movq 	%r8 ,  0(%rdi)
 
 	pop		%r15
 	pop		%r14
