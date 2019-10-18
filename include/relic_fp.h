@@ -141,7 +141,11 @@ enum {
  * prime field elements. This can be used to avoid carries.
  */
 #if ((FP_PRIME % WSIZE) != 0) && ((FP_PRIME % WSIZE) <= (WSIZE - 2))
+#if ((2 * FP_PRIME % WSIZE) != 0) && ((2 * FP_PRIME % WSIZE) <= (WSIZE - 2))
 #define RLC_FP_ROOM
+#else
+#undef RLC_FP_ROOM
+#endif
 #else
 #undef RLC_FP_ROOM
 #endif
