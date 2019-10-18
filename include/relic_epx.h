@@ -883,7 +883,7 @@ void ep2_mul_sim_gen(ep2_t r, bn_t k, ep2_t q, bn_t m);
  * @param[in] k				- the small scalars.
  * @param[in] len			- the number of points to multiply.
  */
-void ep2_mul_sim_dig(ep2_t r, const ep2_t p[], dig_t k[], int len);
+void ep2_mul_sim_dig(ep2_t r, ep2_t p[], dig_t k[], int len);
 
 /**
  * Converts a point to affine coordinates.
