@@ -1236,6 +1236,7 @@ int ep_param_level(void) {
 		case B12_P381:
 		case BN_P382:
 		case BN_P446:
+		case B12_P446:
 		case CP8_544:
 		case SS_P1536:
 			return 128;

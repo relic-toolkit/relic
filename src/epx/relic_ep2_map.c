@@ -192,11 +192,8 @@ void ep2_map(ep2_t p, const uint8_t *msg, int len) {
 				ep2_curve_get_cof(x);
 				if (bn_bits(x) < RLC_DIG) {
 					ep2_mul_dig(p, p, x->dp[0]);
-					if (bn_sign(x) == RLC_NEG) {
-						ep2_neg(p, p);
-					}
 				} else {
-					ep2_mul(p, p, x);
+					ep2_mul_basic(p, p, x);
 				}
 				break;
 		}
