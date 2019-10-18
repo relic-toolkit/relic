@@ -62,16 +62,12 @@ int fp2_srt(fp2_t c, fp2_t a) {
 		if (fp_srt(t2, t1)) {
 			/* t1 = (a_0 + sqrt(t1)) / 2 */
 			fp_add(t1, a[0], t2);
-			fp_set_dig(t3, 2);
-			fp_inv(t3, t3);
-			fp_mul(t1, t1, t3);
+			fp_hlv(t1, t1);
 
 			if (!fp_srt(t3, t1)) {
 				/* t1 = (a_0 - sqrt(t1)) / 2 */
 				fp_sub(t1, a[0], t2);
-				fp_set_dig(t3, 2);
-				fp_inv(t3, t3);
-				fp_mul(t1, t1, t3);
+				fp_hlv(t1, t1);
 				fp_srt(t3, t1);
 			}
 			/* c_0 = sqrt(t1) */
