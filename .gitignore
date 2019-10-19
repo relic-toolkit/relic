@@ -2,8 +2,6 @@ relic-all.c
 target-*
 *.o
 
-
-
 */x64/
 *.vcxproj*
 .vs/
@@ -31,3 +29,5 @@ CMakeSettings.json
 Testing/
 include/relic_conf.h
 install_manifest.txt
+
+src/low/fiat-crypto/*.c

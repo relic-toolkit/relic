@@ -605,21 +605,10 @@ static void util(void) {
 		BENCH_ADD(gt_size_bin(a, 0));
 	} BENCH_END;
 
-	BENCH_BEGIN("gt_size_bin (1)") {
-		gt_rand(a);
-		BENCH_ADD(gt_size_bin(a, 1));
-	} BENCH_END;
-
 	BENCH_BEGIN("gt_write_bin (0)") {
 		gt_rand(a);
 		l = gt_size_bin(a, 0);
 		BENCH_ADD(gt_write_bin(bin, l, a, 0));
-	} BENCH_END;
-
-	BENCH_BEGIN("gt_write_bin (1)") {
-		gt_rand(a);
-		l = gt_size_bin(a, 1);
-		BENCH_ADD(gt_write_bin(bin, l, a, 1));
 	} BENCH_END;
 
 	BENCH_BEGIN("gt_read_bin (0)") {
@@ -629,12 +618,25 @@ static void util(void) {
 		BENCH_ADD(gt_read_bin(a, bin, l));
 	} BENCH_END;
 
-	BENCH_BEGIN("gt_read_bin (1)") {
-		gt_rand(a);
-		l = gt_size_bin(a, 1);
-		gt_write_bin(bin, l, a, 1);
-		BENCH_ADD(gt_read_bin(a, bin, l));
-	} BENCH_END;
+	if (ep_param_embed() == 12) {
+		BENCH_BEGIN("gt_size_bin (1)") {
+			gt_rand(a);
+			BENCH_ADD(gt_size_bin(a, 1));
+		} BENCH_END;
+
+		BENCH_BEGIN("gt_write_bin (1)") {
+			gt_rand(a);
+			l = gt_size_bin(a, 1);
+			BENCH_ADD(gt_write_bin(bin, l, a, 1));
+		} BENCH_END;
+
+		BENCH_BEGIN("gt_read_bin (1)") {
+			gt_rand(a);
+			l = gt_size_bin(a, 1);
+			gt_write_bin(bin, l, a, 1);
+			BENCH_ADD(gt_read_bin(a, bin, l));
+		} BENCH_END;
+	}
 
 	BENCH_BEGIN("gt_is_valid") {
 		gt_rand(a);
