@@ -1912,11 +1912,14 @@ static int doubling54(void) {
 	bn_free(n);
 	bn_free(k);
 	ep_free(p);
-	ep2_free(q);
-	ep2_free(r);
-	ep2_free(s);
-	fp12_free(e1);
-	fp12_free(e2);
+	fp9_free(qx);
+	fp9_free(qy);
+	fp9_free(qz);
+	fp9_free(rx);
+	fp9_free(ry);
+	fp9_free(rz);
+	fp54_free(e1);
+	fp54_free(e2);
 	return code;
 }
 

@@ -656,15 +656,15 @@ static void pairing54(void) {
 	fp54_t e;
 
 	ep_null(p);
-	fp8_null(qx);
-	fp8_null(qy);
-	fp8_null(qz);
+	fp9_null(qx);
+	fp9_null(qy);
+	fp9_null(qz);
 	fp54_null(e);
 
 	ep_new(p);
-	fp8_new(qx);
-	fp8_new(qy);
-	fp8_new(qz);
+	fp9_new(qx);
+	fp9_new(qy);
+	fp9_new(qz);
 	fp54_new(e);
 
 	BENCH_BEGIN("pp_add_k54") {
