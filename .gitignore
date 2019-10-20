@@ -30,4 +30,4 @@ Testing/
 include/relic_conf.h
 install_manifest.txt
 
-src/low/fiat-crypto/*.c
+src/low/fiat/*.c

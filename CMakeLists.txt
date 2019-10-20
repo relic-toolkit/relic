@@ -85,6 +85,7 @@ message("   Note: the programmer is responsible for not using unselected modules
 message(STATUS "Available arithmetic backends (default = easy):\n")
 
 message("   ARITH=easy     Easy-to-understand and portable, but slow backend.")
+message("   ARITH=fiat     Backend based on code generated from Fiat-Crypto.")
 message("   ARITH=gmp      Backend based on GNU Multiple Precision library.\n")
 message("   ARITH=gmp-sec  Same as above, but using constant-time code.\n")
 
@@ -241,6 +242,10 @@ if(ARITH STREQUAL "gmp" OR ARITH STREQUAL "gmp-sec")
 	endif()
 endif()
 
+if(ARITH STREQUAL "fiat")
+	message(STATUS "Configured Fiat-Crypto: After build completes, set FIAT_CRYPTO to root folder and run: make fiat; cmake; make.")
+endif()
+
 set(CMAKE_C_FLAGS "-pipe -std=c99 ${AFLAGS} ${WFLAGS} ${DFLAGS} ${PFLAGS} ${CFLAGS}")
 set(CMAKE_EXE_LINKER_FLAGS ${LFLAGS})
 
@@ -286,7 +291,3 @@ endif(TESTS GREATER 0)
 if(BENCH GREATER 0)
 	add_subdirectory(bench)
 endif(BENCH GREATER 0)
-
-if(ARITH STREQUAL "fiat-crypto")
-	message(STATUS "Configured Fiat-crypto: After build completes, set FIAT_CRYPTO to root folder and run: make fiat; cmake; make.")
-endif()

@@ -1,4 +1,4 @@
-set(INHERIT "gmp")
+set(INHERIT "gmp-sec")
 include(../cmake/gmp.cmake)
 if(GMP_FOUND)
 	include_directories(${GMP_INCLUDE_DIR})
