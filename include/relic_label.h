@@ -429,6 +429,7 @@
 #undef fp_param_get
 #undef fp_prime_set_dense
 #undef fp_prime_set_pmers
+#undef fp_prime_set_pairf
 #undef fp_prime_calc
 #undef fp_prime_conv
 #undef fp_prime_conv_dig
@@ -440,8 +441,8 @@
 #undef fp_param_set_any_tower
 #undef fp_param_print
 #undef fp_prime_get_par
+#undef fp_prime_get_par_sps
 #undef fp_param_get_sps
-#undef fp_param_get_map
 #undef fp_copy
 #undef fp_zero
 #undef fp_is_zero
@@ -490,6 +491,7 @@
 #undef fp_inv_binar
 #undef fp_inv_monty
 #undef fp_inv_exgcd
+#undef fp_inv_divst
 #undef fp_inv_lower
 #undef fp_inv_sim
 #undef fp_exp_basic
@@ -509,6 +511,7 @@
 #define fp_param_get 	PREFIX(fp_param_get)
 #define fp_prime_set_dense 	PREFIX(fp_prime_set_dense)
 #define fp_prime_set_pmers 	PREFIX(fp_prime_set_pmers)
+#define fp_prime_set_pairf 	PREFIX(fp_prime_set_pairf)
 #define fp_prime_calc 	PREFIX(fp_prime_calc)
 #define fp_prime_conv 	PREFIX(fp_prime_conv)
 #define fp_prime_conv_dig 	PREFIX(fp_prime_conv_dig)
@@ -520,8 +523,8 @@
 #define fp_param_set_any_tower 	PREFIX(fp_param_set_any_tower)
 #define fp_param_print 	PREFIX(fp_param_print)
 #define fp_prime_get_par 	PREFIX(fp_prime_get_par)
+#define fp_prime_get_par_sps 	PREFIX(fp_prime_get_par_sps)
 #define fp_param_get_sps 	PREFIX(fp_param_get_sps)
-#define fp_param_get_map 	PREFIX(fp_param_get_map)
 #define fp_copy 	PREFIX(fp_copy)
 #define fp_zero 	PREFIX(fp_zero)
 #define fp_is_zero 	PREFIX(fp_is_zero)
@@ -570,6 +573,7 @@
 #define fp_inv_binar 	PREFIX(fp_inv_binar)
 #define fp_inv_monty 	PREFIX(fp_inv_monty)
 #define fp_inv_exgcd 	PREFIX(fp_inv_exgcd)
+#define fp_inv_divst 	PREFIX(fp_inv_divst)
 #define fp_inv_lower 	PREFIX(fp_inv_lower)
 #define fp_inv_sim 	PREFIX(fp_inv_sim)
 #define fp_exp_basic 	PREFIX(fp_exp_basic)
@@ -852,6 +856,7 @@
 #undef ep_curve_opt_b
 #undef ep_curve_is_endom
 #undef ep_curve_is_super
+#undef ep_curve_is_pairf
 #undef ep_curve_get_gen
 #undef ep_curve_get_tab
 #undef ep_curve_get_ord
@@ -915,6 +920,7 @@
 #undef ep_mul_sim_inter
 #undef ep_mul_sim_joint
 #undef ep_mul_sim_gen
+#undef ep_mul_sim_dig
 #undef ep_norm
 #undef ep_norm_sim
 #undef ep_map
@@ -932,6 +938,7 @@
 #define ep_curve_opt_b 	PREFIX(ep_curve_opt_b)
 #define ep_curve_is_endom 	PREFIX(ep_curve_is_endom)
 #define ep_curve_is_super 	PREFIX(ep_curve_is_super)
+#define ep_curve_is_pairf 	PREFIX(ep_curve_is_pairf)
 #define ep_curve_get_gen 	PREFIX(ep_curve_get_gen)
 #define ep_curve_get_tab 	PREFIX(ep_curve_get_tab)
 #define ep_curve_get_ord 	PREFIX(ep_curve_get_ord)
@@ -995,6 +1002,7 @@
 #define ep_mul_sim_inter 	PREFIX(ep_mul_sim_inter)
 #define ep_mul_sim_joint 	PREFIX(ep_mul_sim_joint)
 #define ep_mul_sim_gen 	PREFIX(ep_mul_sim_gen)
+#define ep_mul_sim_dig 	PREFIX(ep_mul_sim_dig)
 #define ep_norm 	PREFIX(ep_norm)
 #define ep_norm_sim 	PREFIX(ep_norm_sim)
 #define ep_map 	PREFIX(ep_map)
@@ -1067,9 +1075,7 @@
 #undef ed_mul_basic
 #undef ed_mul_slide
 #undef ed_mul_monty
-#undef ed_mul_fixed
 #undef ed_mul_lwnaf
-#undef ed_mul_lwnaf_mixed
 #undef ed_mul_lwreg
 #undef ed_pck
 #undef ed_upk
@@ -1135,9 +1141,7 @@
 #define ed_mul_basic 	PREFIX(ed_mul_basic)
 #define ed_mul_slide 	PREFIX(ed_mul_slide)
 #define ed_mul_monty 	PREFIX(ed_mul_monty)
-#define ed_mul_fixed 	PREFIX(ed_mul_fixed)
 #define ed_mul_lwnaf 	PREFIX(ed_mul_lwnaf)
-#define ed_mul_lwnaf_mixed 	PREFIX(ed_mul_lwnaf_mixed)
 #define ed_mul_lwreg 	PREFIX(ed_mul_lwreg)
 #define ed_pck 	PREFIX(ed_pck)
 #define ed_upk 	PREFIX(ed_upk)
@@ -1337,6 +1341,7 @@
 #undef ep2_mul_lwnaf
 #undef ep2_mul_lwreg
 #undef ep2_mul_gen
+#undef ep2_mul_dig
 #undef ep2_mul_pre_basic
 #undef ep2_mul_pre_yaowi
 #undef ep2_mul_pre_nafwi
@@ -1354,7 +1359,7 @@
 #undef ep2_mul_sim_inter
 #undef ep2_mul_sim_joint
 #undef ep2_mul_sim_gen
-#undef ep2_mul_dig
+#undef ep2_mul_sim_dig
 #undef ep2_norm
 #undef ep2_norm_sim
 #undef ep2_map
@@ -1403,6 +1408,7 @@
 #define ep2_mul_lwnaf 	PREFIX(ep2_mul_lwnaf)
 #define ep2_mul_lwreg 	PREFIX(ep2_mul_lwreg)
 #define ep2_mul_gen 	PREFIX(ep2_mul_gen)
+#define ep2_mul_dig 	PREFIX(ep2_mul_dig)
 #define ep2_mul_pre_basic 	PREFIX(ep2_mul_pre_basic)
 #define ep2_mul_pre_yaowi 	PREFIX(ep2_mul_pre_yaowi)
 #define ep2_mul_pre_nafwi 	PREFIX(ep2_mul_pre_nafwi)
@@ -1420,7 +1426,7 @@
 #define ep2_mul_sim_inter 	PREFIX(ep2_mul_sim_inter)
 #define ep2_mul_sim_joint 	PREFIX(ep2_mul_sim_joint)
 #define ep2_mul_sim_gen 	PREFIX(ep2_mul_sim_gen)
-#define ep2_mul_dig 	PREFIX(ep2_mul_dig)
+#define ep2_mul_sim_dig 	PREFIX(ep2_mul_sim_dig)
 #define ep2_norm 	PREFIX(ep2_norm)
 #define ep2_norm_sim 	PREFIX(ep2_norm_sim)
 #define ep2_map 	PREFIX(ep2_map)
@@ -1440,6 +1446,8 @@
 #undef fp12_t
 #undef fp18_t
 
+#undef fp2_field_init
+#undef fp2_field_get_qnr
 #undef fp2_copy
 #undef fp2_zero
 #undef fp2_is_zero
@@ -1469,15 +1477,18 @@
 #undef fp2_inv
 #undef fp2_inv_cyc
 #undef fp2_inv_sim
-#undef fp2_test_uni
+#undef fp2_test_cyc
 #undef fp2_conv_cyc
 #undef fp2_exp
-#undef fp2_exp_uni
+#undef fp2_exp_dig
+#undef fp2_exp_cyc
 #undef fp2_frb
 #undef fp2_srt
 #undef fp2_pck
 #undef fp2_upk
 
+#define fp2_field_init 	PREFIX(fp2_field_init)
+#define fp2_field_get_qnr 	PREFIX(fp2_field_get_qnr)
 #define fp2_copy 	PREFIX(fp2_copy)
 #define fp2_zero 	PREFIX(fp2_zero)
 #define fp2_is_zero 	PREFIX(fp2_is_zero)
@@ -1507,10 +1518,11 @@
 #define fp2_inv 	PREFIX(fp2_inv)
 #define fp2_inv_cyc 	PREFIX(fp2_inv_cyc)
 #define fp2_inv_sim 	PREFIX(fp2_inv_sim)
-#define fp2_test_uni 	PREFIX(fp2_test_uni)
+#define fp2_test_cyc 	PREFIX(fp2_test_cyc)
 #define fp2_conv_cyc 	PREFIX(fp2_conv_cyc)
 #define fp2_exp 	PREFIX(fp2_exp)
-#define fp2_exp_uni 	PREFIX(fp2_exp_uni)
+#define fp2_exp_dig 	PREFIX(fp2_exp_dig)
+#define fp2_exp_cyc 	PREFIX(fp2_exp_cyc)
 #define fp2_frb 	PREFIX(fp2_frb)
 #define fp2_srt 	PREFIX(fp2_srt)
 #define fp2_pck 	PREFIX(fp2_pck)
@@ -1556,6 +1568,7 @@
 #define fp2_sqrm_low 	PREFIX(fp2_sqrm_low)
 #define fp2_rdcn_low 	PREFIX(fp2_rdcn_low)
 
+#undef fp3_field_init
 #undef fp3_copy
 #undef fp3_zero
 #undef fp3_is_zero
@@ -1576,9 +1589,7 @@
 #undef fp3_dbl_integ
 #undef fp3_mul_basic
 #undef fp3_mul_integ
-#undef fp3_mul_art
-#undef fp3_mul_nor_basic
-#undef fp3_mul_nor_integ
+#undef fp3_mul_nor
 #undef fp3_mul_frb
 #undef fp3_sqr_basic
 #undef fp3_sqr_integ
@@ -1588,6 +1599,7 @@
 #undef fp3_frb
 #undef fp3_srt
 
+#define fp3_field_init 	PREFIX(fp3_field_init)
 #define fp3_copy 	PREFIX(fp3_copy)
 #define fp3_zero 	PREFIX(fp3_zero)
 #define fp3_is_zero 	PREFIX(fp3_is_zero)
@@ -1608,9 +1620,7 @@
 #define fp3_dbl_integ 	PREFIX(fp3_dbl_integ)
 #define fp3_mul_basic 	PREFIX(fp3_mul_basic)
 #define fp3_mul_integ 	PREFIX(fp3_mul_integ)
-#define fp3_mul_art 	PREFIX(fp3_mul_art)
-#define fp3_mul_nor_basic 	PREFIX(fp3_mul_nor_basic)
-#define fp3_mul_nor_integ 	PREFIX(fp3_mul_nor_integ)
+#define fp3_mul_nor 	PREFIX(fp3_mul_nor)
 #define fp3_mul_frb 	PREFIX(fp3_mul_frb)
 #define fp3_sqr_basic 	PREFIX(fp3_sqr_basic)
 #define fp3_sqr_integ 	PREFIX(fp3_sqr_integ)
@@ -1622,12 +1632,17 @@
 
 #undef fp3_addn_low
 #undef fp3_addm_low
+#undef fp3_addd_low
+#undef fp3_addc_low
 #undef fp3_subn_low
 #undef fp3_subm_low
+#undef fp3_subd_low
 #undef fp3_subc_low
 #undef fp3_dbln_low
 #undef fp3_dblm_low
+#undef fp3_nord_low
 #undef fp3_muln_low
+#undef fp3_mulc_low
 #undef fp3_mulm_low
 #undef fp3_sqrn_low
 #undef fp3_sqrm_low
@@ -1635,12 +1650,17 @@
 
 #define fp3_addn_low 	PREFIX(fp3_addn_low)
 #define fp3_addm_low 	PREFIX(fp3_addm_low)
+#define fp3_addd_low 	PREFIX(fp3_addd_low)
+#define fp3_addc_low 	PREFIX(fp3_addc_low)
 #define fp3_subn_low 	PREFIX(fp3_subn_low)
 #define fp3_subm_low 	PREFIX(fp3_subm_low)
+#define fp3_subd_low 	PREFIX(fp3_subd_low)
 #define fp3_subc_low 	PREFIX(fp3_subc_low)
 #define fp3_dbln_low 	PREFIX(fp3_dbln_low)
 #define fp3_dblm_low 	PREFIX(fp3_dblm_low)
+#define fp3_nord_low 	PREFIX(fp3_nord_low)
 #define fp3_muln_low 	PREFIX(fp3_muln_low)
+#define fp3_mulc_low 	PREFIX(fp3_mulc_low)
 #define fp3_mulm_low 	PREFIX(fp3_mulm_low)
 #define fp3_sqrn_low 	PREFIX(fp3_sqrn_low)
 #define fp3_sqrm_low 	PREFIX(fp3_sqrm_low)
@@ -1714,11 +1734,14 @@
 #undef fp12_add
 #undef fp12_sub
 #undef fp12_neg
+#undef fp12_dbl
 #undef fp12_mul_unr
 #undef fp12_mul_basic
 #undef fp12_mul_lazyr
+#undef fp12_mul_art
 #undef fp12_mul_dxs_basic
 #undef fp12_mul_dxs_lazyr
+#undef fp12_sqr_unr
 #undef fp12_sqr_basic
 #undef fp12_sqr_lazyr
 #undef fp12_sqr_cyc_basic
@@ -1731,9 +1754,9 @@
 #undef fp12_back_cyc_sim
 #undef fp12_inv
 #undef fp12_inv_cyc
-#undef fp12_conv_cyc
 #undef fp12_frb
 #undef fp12_exp
+#undef fp12_exp_dig
 #undef fp12_exp_cyc
 #undef fp12_exp_cyc_sps
 #undef fp12_pck
@@ -1753,11 +1776,14 @@
 #define fp12_add 	PREFIX(fp12_add)
 #define fp12_sub 	PREFIX(fp12_sub)
 #define fp12_neg 	PREFIX(fp12_neg)
+#define fp12_dbl 	PREFIX(fp12_dbl)
 #define fp12_mul_unr 	PREFIX(fp12_mul_unr)
 #define fp12_mul_basic 	PREFIX(fp12_mul_basic)
 #define fp12_mul_lazyr 	PREFIX(fp12_mul_lazyr)
+#define fp12_mul_art 	PREFIX(fp12_mul_art)
 #define fp12_mul_dxs_basic 	PREFIX(fp12_mul_dxs_basic)
 #define fp12_mul_dxs_lazyr 	PREFIX(fp12_mul_dxs_lazyr)
+#define fp12_sqr_unr 	PREFIX(fp12_sqr_unr)
 #define fp12_sqr_basic 	PREFIX(fp12_sqr_basic)
 #define fp12_sqr_lazyr 	PREFIX(fp12_sqr_lazyr)
 #define fp12_sqr_cyc_basic 	PREFIX(fp12_sqr_cyc_basic)
@@ -1770,9 +1796,9 @@
 #define fp12_back_cyc_sim 	PREFIX(fp12_back_cyc_sim)
 #define fp12_inv 	PREFIX(fp12_inv)
 #define fp12_inv_cyc 	PREFIX(fp12_inv_cyc)
-#define fp12_conv_cyc 	PREFIX(fp12_conv_cyc)
 #define fp12_frb 	PREFIX(fp12_frb)
 #define fp12_exp 	PREFIX(fp12_exp)
+#define fp12_exp_dig 	PREFIX(fp12_exp_dig)
 #define fp12_exp_cyc 	PREFIX(fp12_exp_cyc)
 #define fp12_exp_cyc_sps 	PREFIX(fp12_exp_cyc_sps)
 #define fp12_pck 	PREFIX(fp12_pck)
@@ -1783,62 +1809,60 @@
 #undef fp18_is_zero
 #undef fp18_rand
 #undef fp18_print
+#undef fp18_size_bin
+#undef fp18_read_bin
+#undef fp18_write_bin
 #undef fp18_cmp
 #undef fp18_cmp_dig
 #undef fp18_set_dig
 #undef fp18_add
 #undef fp18_sub
 #undef fp18_neg
+#undef fp18_dbl
+#undef fp18_mul_unr
 #undef fp18_mul_basic
 #undef fp18_mul_lazyr
+#undef fp18_mul_art
 #undef fp18_mul_dxs_basic
 #undef fp18_mul_dxs_lazyr
+#undef fp18_sqr_unr
 #undef fp18_sqr_basic
 #undef fp18_sqr_lazyr
-#undef fp18_sqr_cyc
-#undef fp18_sqr_pck
-#undef fp18_test_cyc
-#undef fp18_conv_cyc
-#undef fp18_back_cyc
-#undef fp18_back_cyc_sim
 #undef fp18_inv
 #undef fp18_inv_cyc
 #undef fp18_conv_cyc
 #undef fp18_frb
 #undef fp18_exp
-#undef fp18_exp_cyc
-#undef fp18_exp_cyc_sps
 
 #define fp18_copy 	PREFIX(fp18_copy)
 #define fp18_zero 	PREFIX(fp18_zero)
 #define fp18_is_zero 	PREFIX(fp18_is_zero)
 #define fp18_rand 	PREFIX(fp18_rand)
 #define fp18_print 	PREFIX(fp18_print)
+#define fp18_size_bin 	PREFIX(fp18_size_bin)
+#define fp18_read_bin 	PREFIX(fp18_read_bin)
+#define fp18_write_bin 	PREFIX(fp18_write_bin)
 #define fp18_cmp 	PREFIX(fp18_cmp)
 #define fp18_cmp_dig 	PREFIX(fp18_cmp_dig)
 #define fp18_set_dig 	PREFIX(fp18_set_dig)
 #define fp18_add 	PREFIX(fp18_add)
 #define fp18_sub 	PREFIX(fp18_sub)
 #define fp18_neg 	PREFIX(fp18_neg)
+#define fp18_dbl 	PREFIX(fp18_dbl)
+#define fp18_mul_unr 	PREFIX(fp18_mul_unr)
 #define fp18_mul_basic 	PREFIX(fp18_mul_basic)
 #define fp18_mul_lazyr 	PREFIX(fp18_mul_lazyr)
+#define fp18_mul_art 	PREFIX(fp18_mul_art)
 #define fp18_mul_dxs_basic 	PREFIX(fp18_mul_dxs_basic)
 #define fp18_mul_dxs_lazyr 	PREFIX(fp18_mul_dxs_lazyr)
+#define fp18_sqr_unr 	PREFIX(fp18_sqr_unr)
 #define fp18_sqr_basic 	PREFIX(fp18_sqr_basic)
 #define fp18_sqr_lazyr 	PREFIX(fp18_sqr_lazyr)
-#define fp18_sqr_cyc 	PREFIX(fp18_sqr_cyc)
-#define fp18_sqr_pck 	PREFIX(fp18_sqr_pck)
-#define fp18_test_cyc 	PREFIX(fp18_test_cyc)
-#define fp18_conv_cyc 	PREFIX(fp18_conv_cyc)
-#define fp18_back_cyc 	PREFIX(fp18_back_cyc)
-#define fp18_back_cyc_sim 	PREFIX(fp18_back_cyc_sim)
 #define fp18_inv 	PREFIX(fp18_inv)
 #define fp18_inv_cyc 	PREFIX(fp18_inv_cyc)
 #define fp18_conv_cyc 	PREFIX(fp18_conv_cyc)
 #define fp18_frb 	PREFIX(fp18_frb)
 #define fp18_exp 	PREFIX(fp18_exp)
-#define fp18_exp_cyc 	PREFIX(fp18_exp_cyc)
-#define fp18_exp_cyc_sps 	PREFIX(fp18_exp_cyc_sps)
 
 #undef fb2_mul
  #undef fb2_mul_nor
@@ -1859,24 +1883,43 @@
 #undef pp_add_k2_basic
 #undef pp_add_k2_projc_basic
 #undef pp_add_k2_projc_lazyr
+#undef pp_add_k8_basic
+#undef pp_add_k8_projc_basic
+#undef pp_add_k8_projc_lazyr
 #undef pp_add_k12_basic
 #undef pp_add_k12_projc_basic
 #undef pp_add_k12_projc_lazyr
 #undef pp_add_lit_k12
+#undef pp_add_k48_basic
+#undef pp_add_k48_projc
+#undef pp_add_k54_basic
+#undef pp_add_k54_projc
 #undef pp_dbl_k2_basic
 #undef pp_dbl_k2_projc_basic
 #undef pp_dbl_k2_projc_lazyr
+#undef pp_dbl_k8_basic
+#undef pp_dbl_k8_projc_basic
+#undef pp_dbl_k8_projc_lazyr
 #undef pp_dbl_k12_basic
 #undef pp_dbl_k12_projc_basic
 #undef pp_dbl_k12_projc_lazyr
+#undef pp_dbl_k48_basic
+#undef pp_dbl_k48_projc
+#undef pp_dbl_k54_basic
+#undef pp_dbl_k54_projc
 #undef pp_dbl_lit_k12
 #undef pp_exp_k2
+#undef pp_exp_k8
 #undef pp_exp_k12
+#undef pp_exp_k48
+#undef pp_exp_k54
 #undef pp_norm_k2
+#undef pp_norm_k8
 #undef pp_norm_k12
 #undef pp_map_tatep_k2
 #undef pp_map_sim_tatep_k2
 #undef pp_map_weilp_k2
+#undef pp_map_oatep_k8
 #undef pp_map_sim_weilp_k2
 #undef pp_map_tatep_k12
 #undef pp_map_sim_tatep_k12
@@ -1884,30 +1927,51 @@
 #undef pp_map_sim_weilp_k12
 #undef pp_map_oatep_k12
 #undef pp_map_sim_oatep_k12
+#undef pp_map_k48
+#undef pp_map_k54
 
 #define pp_map_init 	PREFIX(pp_map_init)
 #define pp_map_clean 	PREFIX(pp_map_clean)
 #define pp_add_k2_basic 	PREFIX(pp_add_k2_basic)
 #define pp_add_k2_projc_basic 	PREFIX(pp_add_k2_projc_basic)
 #define pp_add_k2_projc_lazyr 	PREFIX(pp_add_k2_projc_lazyr)
+#define pp_add_k8_basic 	PREFIX(pp_add_k8_basic)
+#define pp_add_k8_projc_basic 	PREFIX(pp_add_k8_projc_basic)
+#define pp_add_k8_projc_lazyr 	PREFIX(pp_add_k8_projc_lazyr)
 #define pp_add_k12_basic 	PREFIX(pp_add_k12_basic)
 #define pp_add_k12_projc_basic 	PREFIX(pp_add_k12_projc_basic)
 #define pp_add_k12_projc_lazyr 	PREFIX(pp_add_k12_projc_lazyr)
 #define pp_add_lit_k12 	PREFIX(pp_add_lit_k12)
+#define pp_add_k48_basic 	PREFIX(pp_add_k48_basic)
+#define pp_add_k48_projc 	PREFIX(pp_add_k48_projc)
+#define pp_add_k54_basic 	PREFIX(pp_add_k54_basic)
+#define pp_add_k54_projc 	PREFIX(pp_add_k54_projc)
 #define pp_dbl_k2_basic 	PREFIX(pp_dbl_k2_basic)
 #define pp_dbl_k2_projc_basic 	PREFIX(pp_dbl_k2_projc_basic)
 #define pp_dbl_k2_projc_lazyr 	PREFIX(pp_dbl_k2_projc_lazyr)
+#define pp_dbl_k8_basic 	PREFIX(pp_dbl_k8_basic)
+#define pp_dbl_k8_projc_basic 	PREFIX(pp_dbl_k8_projc_basic)
+#define pp_dbl_k8_projc_lazyr 	PREFIX(pp_dbl_k8_projc_lazyr)
 #define pp_dbl_k12_basic 	PREFIX(pp_dbl_k12_basic)
 #define pp_dbl_k12_projc_basic 	PREFIX(pp_dbl_k12_projc_basic)
 #define pp_dbl_k12_projc_lazyr 	PREFIX(pp_dbl_k12_projc_lazyr)
+#define pp_dbl_k48_basic 	PREFIX(pp_dbl_k48_basic)
+#define pp_dbl_k48_projc 	PREFIX(pp_dbl_k48_projc)
+#define pp_dbl_k54_basic 	PREFIX(pp_dbl_k54_basic)
+#define pp_dbl_k54_projc 	PREFIX(pp_dbl_k54_projc)
 #define pp_dbl_lit_k12 	PREFIX(pp_dbl_lit_k12)
 #define pp_exp_k2 	PREFIX(pp_exp_k2)
+#define pp_exp_k8 	PREFIX(pp_exp_k8)
 #define pp_exp_k12 	PREFIX(pp_exp_k12)
+#define pp_exp_k48 	PREFIX(pp_exp_k48)
+#define pp_exp_k54 	PREFIX(pp_exp_k54)
 #define pp_norm_k2 	PREFIX(pp_norm_k2)
+#define pp_norm_k8 	PREFIX(pp_norm_k8)
 #define pp_norm_k12 	PREFIX(pp_norm_k12)
 #define pp_map_tatep_k2 	PREFIX(pp_map_tatep_k2)
 #define pp_map_sim_tatep_k2 	PREFIX(pp_map_sim_tatep_k2)
 #define pp_map_weilp_k2 	PREFIX(pp_map_weilp_k2)
+#define pp_map_oatep_k8 	PREFIX(pp_map_oatep_k8)
 #define pp_map_sim_weilp_k2 	PREFIX(pp_map_sim_weilp_k2)
 #define pp_map_tatep_k12 	PREFIX(pp_map_tatep_k12)
 #define pp_map_sim_tatep_k12 	PREFIX(pp_map_sim_tatep_k12)
@@ -1915,6 +1979,8 @@
 #define pp_map_sim_weilp_k12 	PREFIX(pp_map_sim_weilp_k12)
 #define pp_map_oatep_k12 	PREFIX(pp_map_oatep_k12)
 #define pp_map_sim_oatep_k12 	PREFIX(pp_map_sim_oatep_k12)
+#define pp_map_k48 	PREFIX(pp_map_k48)
+#define pp_map_k54 	PREFIX(pp_map_k54)
 
 #undef rsa_t
 #undef rabin_t
@@ -1998,6 +2064,17 @@
 #undef cp_vbnn_gen_prv
 #undef cp_vbnn_sig
 #undef cp_vbnn_ver
+#undef cp_cmlhs_init
+#undef cp_cmlhs_gen
+#undef cp_cmlhs_sig
+#undef cp_cmlhs_fun
+#undef cp_cmlhs_evl
+#undef cp_cmlhs_ver
+#undef cp_mklhs_gen
+#undef cp_mklhs_sig
+#undef cp_mklhs_fun
+#undef cp_mklhs_evl
+#undef cp_mklhs_ver
 
 #define cp_rsa_gen_basic 	PREFIX(cp_rsa_gen_basic)
 #define cp_rsa_gen_quick 	PREFIX(cp_rsa_gen_quick)
@@ -2072,6 +2149,17 @@
 #define cp_vbnn_gen_prv 	PREFIX(cp_vbnn_gen_prv)
 #define cp_vbnn_sig 	PREFIX(cp_vbnn_sig)
 #define cp_vbnn_ver 	PREFIX(cp_vbnn_ver)
+#define cp_cmlhs_init 	PREFIX(cp_cmlhs_init)
+#define cp_cmlhs_gen 	PREFIX(cp_cmlhs_gen)
+#define cp_cmlhs_sig 	PREFIX(cp_cmlhs_sig)
+#define cp_cmlhs_fun 	PREFIX(cp_cmlhs_fun)
+#define cp_cmlhs_evl 	PREFIX(cp_cmlhs_evl)
+#define cp_cmlhs_ver 	PREFIX(cp_cmlhs_ver)
+#define cp_mklhs_gen 	PREFIX(cp_mklhs_gen)
+#define cp_mklhs_sig 	PREFIX(cp_mklhs_sig)
+#define cp_mklhs_fun 	PREFIX(cp_mklhs_fun)
+#define cp_mklhs_evl 	PREFIX(cp_mklhs_evl)
+#define cp_mklhs_ver 	PREFIX(cp_mklhs_ver)
 
 #endif /* LABEL */
 
