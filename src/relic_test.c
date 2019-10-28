@@ -78,12 +78,13 @@
 /**
  * Copies default color to global variable.
  */
+static int default_color;
 static void cache_default_color(void) {
 #ifdef _MSC_VER
 	CONSOLE_SCREEN_BUFFER_INFO csbi;
 	HANDLE m_hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 	GetConsoleScreenBufferInfo(m_hConsole, &csbi);
-	static int default_color = (csbi.wAttributes & 255);
+	default_color = (csbi.wAttributes & 255);
 #endif
 }
 
