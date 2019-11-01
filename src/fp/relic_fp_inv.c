@@ -466,7 +466,7 @@ void fp_inv_divst(fp_t c, const fp_t a) {
 			dv_swap_cond(_r0, _v0, RLC_FP_DIGS + 2, d0);
 			dv_swap_cond(f, g, RLC_FP_DIGS, d0);
 			delta = RLC_SEL(delta, -delta, d0);
-			/* Conditionally invert r0 and g based on d0. */
+			/* Conditionally swap r0 and g based on d0. */
 			for (int j = 0; j < RLC_FP_DIGS + 2; j++) {
 				_r0[j] = RLC_SEL(_r0[j], ~_r0[j], d0);
 			}
