@@ -87,13 +87,14 @@ fp_add1_low:
 	ret
 
 fp_addn_low:
+	xorq	%rax, %rax
 	movq	0(%rdx), %r11
 	addq	0(%rsi), %r11
 	movq	%r11   , 0(%rdi)
 
 	ADDN 	1 (RLC_FP_DIGS - 1)
 
-	xorq	%rax, %rax
+    adcq    $0, %rax
 
 	ret
 
