@@ -94,7 +94,7 @@ fp_addn_low:
 
 	ADDN 	1 (RLC_FP_DIGS - 1)
 
-    adcq    $0, %rax
+	adcq    $0, %rax
 
 	ret
 
