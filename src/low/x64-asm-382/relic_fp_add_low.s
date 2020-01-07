@@ -144,7 +144,6 @@ fp_addm_low:
 	movq	%r11, 24(%rdi)
 	movq	%r12, 32(%rdi)
 	movq	%r13, 40(%rdi)
-	xorq	%rax, %rax
 
 	pop		%r13
 	pop		%r12
