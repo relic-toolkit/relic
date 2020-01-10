@@ -161,7 +161,7 @@ static int pad_basic(bn_t m, int *p_len, int m_len, int k_len, int operation) {
 					m_len--;
 					bn_rsh(t, m, 8 * m_len);
 					pad = (uint8_t)t->dp[0];
-				} while (pad == 0);
+				} while (pad == 0 && m_len > 0);
 				if (pad != RSA_PAD) {
 					result = RLC_ERR;
 				}
@@ -306,7 +306,7 @@ static int pad_pkcs1(bn_t m, int *p_len, int m_len, int k_len, int operation) {
 					m_len--;
 					bn_rsh(t, m, 8 * m_len);
 					pad = (uint8_t)t->dp[0];
-				} while (pad != 0);
+				} while (pad != 0 && m_len > 0);
 				/* Remove padding and trailing zero. */
 				*p_len -= (m_len - 1);
 				bn_mod_2b(m, m, (k_len - *p_len) * 8);
