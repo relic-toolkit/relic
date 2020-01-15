@@ -1680,7 +1680,6 @@ static int pairing48(void) {
 	bn_null(k);
 	bn_null(n);
 	ep_null(p);
-	fp8_null(t);
 	fp8_null(qx);
 	fp8_null(qy);
 	fp8_null(qz);
@@ -1691,7 +1690,6 @@ static int pairing48(void) {
 		bn_new(n);
 		bn_new(k);
 		ep_new(p);
-		fp8_new(t);
 		fp8_new(qx);
 		fp8_new(qy);
 		fp8_new(qz);
@@ -1752,7 +1750,6 @@ static int pairing48(void) {
 	bn_free(n);
 	bn_free(k);
 	ep_free(p);
-	fp8_free(t);
 	fp8_free(qx);
 	fp8_free(qy);
 	fp8_free(qz);
@@ -2081,7 +2078,6 @@ static int pairing54(void) {
 	bn_null(k);
 	bn_null(n);
 	ep_null(p);
-	fp9_null(t);
 	fp9_null(qx);
 	fp9_null(qy);
 	fp9_null(qz);
@@ -2092,7 +2088,6 @@ static int pairing54(void) {
 		bn_new(n);
 		bn_new(k);
 		ep_new(p);
-		fp9_new(t);
 		fp9_new(qx);
 		fp9_new(qy);
 		fp9_new(qz);
@@ -2155,7 +2150,6 @@ static int pairing54(void) {
 	bn_free(n);
 	bn_free(k);
 	ep_free(p);
-	fp9_free(t);
 	fp9_free(qx);
 	fp9_free(qy);
 	fp9_free(qz);
