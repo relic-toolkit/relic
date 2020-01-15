@@ -399,19 +399,6 @@ void fp_inv_exgcd(fp_t c, const fp_t a) {
 
 #if FP_INV == DIVST || !defined(STRIP)
 
-void dv_swap_neg_cond(dig_t *c, dig_t *a, int digits, dig_t cond) {
-	dig_t mask, t;
-
-	mask = -cond;
-	for (int i = 0; i < digits; i++) {
-		t = (a[i] ^ c[i]) & mask;
-		a[i] ^= t;
-		c[i] ^= t;
-		c[i] = RLC_SEL(c[i], ~c[i], cond);
-	}
-	fp_add1_low(c, c, cond);
-}
-
 void fp_inv_divst(fp_t c, const fp_t a) {
 	/* Compute number of iteratios based on modulus size. */
 #if FP_PRIME < 46

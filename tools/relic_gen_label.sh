@@ -168,9 +168,15 @@ REDEF2 fpx fp2
 REDEF2_LOW fpx fp2
 REDEF2 fpx fp3
 REDEF2_LOW fpx fp3
+REDEF2 fpx fp4
 REDEF2 fpx fp6
+REDEF2 fpx fp8
+REDEF2 fpx fp9
 REDEF2 fpx fp12
 REDEF2 fpx fp18
+REDEF2 fpx fp24
+REDEF2 fpx fp48
+REDEF2 fpx fp54
 
 REDEF2 fbx fb2
 REDEF2 fbx fb4

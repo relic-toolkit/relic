@@ -1671,10 +1671,10 @@ static int addition48(void) {
 }
 
 static int pairing48(void) {
-	int j, code = RLC_ERR;
+	int code = RLC_ERR;
 	bn_t k, n;
 	ep_t p;
-	fp8_t t, qx, qy, qz;
+	fp8_t qx, qy, qz;
 	fp48_t e1, e2;
 
 	bn_null(k);
@@ -2072,10 +2072,10 @@ static int addition54(void) {
 }
 
 static int pairing54(void) {
-	int j, code = RLC_ERR;
+	int code = RLC_ERR;
 	bn_t k, n;
 	ep_t p;
-	fp9_t t, qx, qy, qz;
+	fp9_t qx, qy, qz;
 	fp54_t e1, e2;
 
 	bn_null(k);

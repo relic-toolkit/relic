@@ -1186,20 +1186,6 @@ typedef fp18_t fp54_t[3];
 #endif
 
 /**
- * Multiplies a dense and a sparse 54-degree extension field elements. Computes
- * C = A * B.
- *
- * @param[out] C			- the result.
- * @param[in] A				- the dense 54-degree extension field element.
- * @param[in] B				- the sparse 54-degree extension field element.
- */
-#if FPX_RDC == BASIC
-#define fp54_mul_dxs(C, A, B)	fp54_mul_dxs_basic(C, A, B)
-#elif FPX_RDC == LAZYR
-#define fp54_mul_dxs(C, A, B)	fp54_mul_dxs_lazyr(C, A, B)
-#endif
-
-/**
  * Squares a 54-degree extension field element. Computes C = A * A.
  *
  * @param[out] C			- the result.
@@ -2070,6 +2056,17 @@ void fp4_sqr_lazyr(fp4_t c, fp4_t a);
  * @param[in] a				- the quartic extension field element to invert.
  */
 void fp4_inv(fp4_t c, fp4_t a);
+
+/**
+ * Computes the inverse of a cyclotomic quartic extension field element.
+ *
+ * For cyclotomic elements, this is equivalent to computing the conjugate.
+ * A cyclotomic element is one previously raised to the (p^2 - 1)-th power.
+ *
+ * @param[out] c                        - the result.
+ * @param[in] a                         - the quartic extension field element to invert.
+ */
+void fp4_inv_cyc(fp4_t c, fp4_t a);
 
 /**
  * Computes a power of a quartic extension field element. Computes c = a^b.
