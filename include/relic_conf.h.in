@@ -594,8 +594,6 @@
 /** Chosen pairing method over prime elliptic curves. */
 #define PP_MAP   @PP_MAP@
 
-/** SHA-1 hash function. */
-#define SHONE          1
 /** SHA-224 hash function. */
 #define SH224          2
 /** SHA-256 hash function. */
@@ -648,29 +646,23 @@
 
 /** NIST HASH-DRBG generator. */
 #define HASHD    1
-/** NIST HMAC-DRBG generator. */
-#define HMACD    2
+/** Intel RdRand instruction. */
+#define RDRND    2
 /** Operating system underlying generator. */
 #define UDEV     3
-/** FIPS 186-2 (CN1) SHA-1 based generator. */
-#define FIPS     4
-/** Intel RdRand instruction. */
-#define RDRND    5
 /** Override library generator with the callback. */
-#define CALL     6
+#define CALL     4
 /** Chosen random generator. */
 #define RAND     @RAND@
 
 /** Standard C library generator. */
 #define LIBC     1
-/** Use Windows' CryptGenRandom. */
-#define WCGR     2
+/** Intel RdRand instruction. */
+#define RDRND    2
 /** Device node generator. */
 #define UDEV     3
-/** Device node generator. */
-#define DEV      4
-/** Intel RdRand instruction. */
-#define RDRND    5
+/** Use Windows' CryptGenRandom. */
+#define WCGR     4
 /** Chosen random generator seeder. */
 #cmakedefine SEED     @SEED@
 
