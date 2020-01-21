@@ -47,7 +47,7 @@
  */
 #if RAND == HASHD
 
-#if MD_MAP == SHONE || MD_MAP == SH224 || MD_MAP == SH256 || MD_MAP == BLAKE2S_160 || MD_MAP == BLAKE2S_256
+#if MD_MAP == SH224 || MD_MAP == SH256 || MD_MAP == BLAKE2S_160 || MD_MAP == BLAKE2S_256
 #define RAND_SIZE		(1 + 2*440/8)
 #elif MD_MAP == SH384 || MD_MAP == SH512
 #define RAND_SIZE		(1 + 2*888/8)
@@ -55,8 +55,6 @@
 
 #elif RAND == UDEV
 #define RAND_SIZE		(sizeof(int))
-#elif RAND == FIPS
-#define RAND_SIZE	    20
 #elif RAND == CALL
 #define RAND_SIZE		(sizeof(void (*)(uint8_t *, int)))
 #elif RAND == RDRND
