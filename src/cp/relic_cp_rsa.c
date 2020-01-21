@@ -183,13 +183,6 @@ static int pad_basic(bn_t m, int *p_len, int m_len, int k_len, int operation) {
 #if CP_RSAPD == PKCS1
 
 /**
- * ASN.1 identifier of the hash function SHA-1.
- */
-static const uint8_t shone_id[] =
-		{ 0x30, 0x21, 0x30, 0x09, 0x06, 0x05, 0x2b, 0x0e, 0x03, 0x02, 0x1a,
-			0x05, 0x00, 0x04, 0x14 };
-
-/**
  * ASN.1 identifier of the hash function SHA-224.
  */
 static const uint8_t sh224_id[] =
@@ -227,9 +220,6 @@ static const uint8_t sh512_id[] =
  */
 static uint8_t *hash_id(int md, int *len) {
 	switch (md) {
-		case SHONE:
-			*len = sizeof(shone_id);
-			return (uint8_t *)shone_id;
 		case SH224:
 			*len = sizeof(sh224_id);
 			return (uint8_t *)sh224_id;

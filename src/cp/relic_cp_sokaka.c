@@ -136,7 +136,7 @@ int cp_sokaka_key(uint8_t *key, unsigned int key_len, char *id1,
 
 		/* Allocate size for storing the output. */
 		gt_write_bin(buf, size, e, 0);
-		md_kdf1(key, key_len, buf, size);
+		md_kdf(key, key_len, buf, size);
 	}
 	CATCH_ANY {
 		result = RLC_ERR;

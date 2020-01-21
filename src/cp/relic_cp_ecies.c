@@ -96,7 +96,7 @@ int cp_ecies_enc(ec_t r, uint8_t *out, int *out_len, uint8_t *in, int in_len,
 			l = l + 1;
 		}
 		bn_write_bin(_x, l, x);
-		md_kdf2(key, 2 * size, _x, l);
+		md_kdf(key, 2 * size, _x, l);
 		l = *out_len;
 		if (bc_aes_cbc_enc(out, out_len, in, in_len, key, size, iv)
 				!= RLC_OK || (*out_len + RLC_MD_LEN) > l) {
@@ -143,7 +143,7 @@ int cp_ecies_dec(uint8_t *out, int *out_len, ec_t r, uint8_t *in, int in_len,
 			l = l + 1;
 		}
 		bn_write_bin(_x, l, x);
-		md_kdf2(key, 2 * size, _x, l);
+		md_kdf(key, 2 * size, _x, l);
 		md_hmac(h, in, in_len - RLC_MD_LEN, key + size, size);
 		if (util_cmp_const(h, in + in_len - RLC_MD_LEN, RLC_MD_LEN)) {
 			result = RLC_ERR;

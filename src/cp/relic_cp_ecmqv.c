@@ -105,7 +105,7 @@ int cp_ecmqv_key(uint8_t *key, int key_len, bn_t d1, bn_t d2, ec_t q2u,
 		ec_get_x(x, p);
 		l = bn_size_bin(x);
 		bn_write_bin(_x, l, x);
-		md_kdf2(key, key_len, _x, l);
+		md_kdf(key, key_len, _x, l);
 	}
 	CATCH_ANY {
 		result = RLC_ERR;
