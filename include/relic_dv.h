@@ -150,8 +150,8 @@ typedef dig_t *dv_t;
 #define dv_new(A)			/* empty */
 #elif ALLOC == STACK
 #define dv_new(A)															\
-	A = (dig_t *)alloca(DV_BYTES + RLC_PAD(DV_BYTES));						\
-	A = (dig_t *)ALIGNED(A);												\
+	A = (dig_t *)alloca(RLC_DV_BYTES + RLC_PAD(RLC_DV_BYTES));				\
+	A = (dig_t *)RLC_ALIGN(A);												\
 
 #endif
 

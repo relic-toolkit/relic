@@ -135,4 +135,32 @@ typedef unsigned long long ull_t;
 #define rlc_align 		/* empty*/
 #endif
 
+/**
+ * Size of padding to be added so that digit vectors are aligned.
+ */
+#if ALIGN > 1
+#define RLC_PAD(A)		((A) % ALIGN == 0 ? 0 : ALIGN - ((A) % ALIGN))
+#else
+#define RLC_PAD(A)		(0)
+#endif
+
+/**
+ * Align digit vector pointer to specified byte-boundary.
+ *
+ * @param[in,out] A		- the pointer to align.
+ */
+#if ALIGN > 1
+#if ARCH == AVR || ARCH == MSP || ARCH == X86 || ARCH == ARM
+#define RLC_ALIGN(A)														\
+	((unsigned int)(A) + RLC_PAD((unsigned int)(A)));						\
+
+#elif ARCH  == X64
+#define RLC_ALIGN(A)														\
+	((unsigned long)(A) + RLC_PAD((unsigned long)(A)));						\
+
+#endif
+#else
+#define RLC_ALIGN(A)		(A)
+#endif
+
 #endif /* !RLC_TYPES_H */
