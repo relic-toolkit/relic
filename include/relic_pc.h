@@ -76,12 +76,12 @@
 #define RLC_PC_BYTES			RLC_FP_BYTES
 
 /**
- * Represents a G_1 precomputable table.
+ * Represents a G_1 precomputed table.
  */
 #define RLC_G1_TABLE			RLC_CAT(RLC_CAT(RLC_, G1_UPPER), _TABLE_MAX)
 
 /**
- * Represents a G_2 precomputable table.
+ * Represents a G_2 precomputed table.
  */
 #define RLC_G2_TABLE			RLC_CAT(RLC_CAT(RLC_, G2_UPPER), _TABLE_MAX)
 
@@ -589,12 +589,30 @@ typedef RLC_CAT(GT_LOWER, t) gt_t;
 #define g1_norm(R, P)		RLC_CAT(G1_LOWER, norm)(R, P)
 
 /**
+ * Normalizes a vector of G_1 elements.
+ *
+ * @param[out] R			- the result.
+ * @param[in] P				- the elements to normalize.
+ * @param[in] N				- the number of elements to normalize.
+ */
+#define g1_norm_sim(R, P, N)	RLC_CAT(G1_LOWER, norm_sim)(R, P, N)
+
+/**
  * Normalizes an element of G_2.
  *
  * @param[out] R			- the result.
  * @param[in] P				- the element to normalize.
  */
 #define g2_norm(R, P)		RLC_CAT(G2_LOWER, norm)(R, P)
+
+/**
+ * Normalizes a vector of G_2 elements.
+ *
+ * @param[out] R			- the result.
+ * @param[in] P				- the elements to normalize.
+ * @param[in] N				- the number of elements to normalize.
+ */
+#define g2_norm_sim(R, P, N)	RLC_CAT(G2_LOWER, norm_sim)(R, P, N)
 
 /**
  * Multiplies an element from G_1 by an integer. Computes R = kP.
