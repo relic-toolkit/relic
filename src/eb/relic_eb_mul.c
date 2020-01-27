@@ -650,15 +650,17 @@ void eb_mul_basic(eb_t r, const eb_t p, const bn_t k) {
 #if EB_MUL == LODAH || !defined(STRIP)
 
 void eb_mul_lodah(eb_t r, const eb_t p, const bn_t k) {
-	int i, t;
 	dv_t x1, z1, x2, z2, r1, r2, r3, r4, r5;
 	const dig_t *b;
+	bn_t t, n;
 
 	if (bn_is_zero(k)) {
 		eb_set_infty(r);
 		return;
 	}
 
+	bn_null(n);
+	bn_null(t);
 	dv_null(x1);
 	dv_null(z1);
 	dv_null(x2);
@@ -670,6 +672,8 @@ void eb_mul_lodah(eb_t r, const eb_t p, const bn_t k) {
 	dv_null(r5);
 
 	TRY {
+		bn_new(n);
+		bn_new(t);
 		dv_new(x1);
 		dv_new(z1);
 		dv_new(x2);
@@ -680,14 +684,19 @@ void eb_mul_lodah(eb_t r, const eb_t p, const bn_t k) {
 		dv_new(r4);
 		dv_new(r5);
 
-		fb_copy(x1, p->x);
-		fb_zero(z1);
-		fb_set_bit(z1, 0, 1);
+		fb_rand(z1);
+		fb_mul(x1, z1, p->x);
 		fb_sqr(z2, p->x);
 		fb_sqr(x2, z2);
 		dv_zero(r5, 2 * RLC_FB_DIGS);
 
 		b = eb_curve_get_b();
+		eb_curve_get_ord(n);
+
+		bn_abs(t, k);
+		while (bn_bits(t) <= bn_bits(n)) {
+			bn_add(t, t, n);
+		}
 
 		switch (eb_curve_opt_b()) {
 			case RLC_ZERO:
@@ -703,14 +712,14 @@ void eb_mul_lodah(eb_t r, const eb_t p, const bn_t k) {
 				break;
 		}
 
-		for (i = bn_bits(k) - 2; i >= 0; i--) {
+		for (int i = bn_bits(n) - 1; i >= 0; i--) {
 			fb_mul(r1, x1, z2);
 			fb_mul(r2, x2, z1);
 			fb_add(r3, r1, r2);
 			fb_muln_low(r4, r1, r2);
-			t = bn_get_bit(k, i);
-			dv_swap_cond(x1, x2, RLC_FB_DIGS, t ^ 1);
-			dv_swap_cond(z1, z2, RLC_FB_DIGS, t ^ 1);
+			int j = bn_get_bit(t, i);
+			dv_swap_cond(x1, x2, RLC_FB_DIGS, j ^ 1);
+			dv_swap_cond(z1, z2, RLC_FB_DIGS, j ^ 1);
 			fb_sqr(z1, r3);
 			fb_muln_low(r1, z1, p->x);
 			fb_addd_low(x1, r1, r4, 2 * RLC_FB_DIGS);
@@ -741,8 +750,8 @@ void eb_mul_lodah(eb_t r, const eb_t p, const bn_t k) {
 					fb_rdcn_low(x2, x2);
 					break;
 			}
-			dv_swap_cond(x1, x2, RLC_FB_DIGS, t ^ 1);
-			dv_swap_cond(z1, z2, RLC_FB_DIGS, t ^ 1);
+			dv_swap_cond(x1, x2, RLC_FB_DIGS, j ^ 1);
+			dv_swap_cond(z1, z2, RLC_FB_DIGS, j ^ 1);
 		}
 
 		if (fb_is_zero(z1)) {
@@ -794,7 +803,6 @@ void eb_mul_lodah(eb_t r, const eb_t p, const bn_t k) {
 		}
 
 		r->norm = 1;
-
 		if (bn_sign(k) == RLC_NEG) {
 			eb_neg(r, r);
 		}
@@ -803,6 +811,8 @@ void eb_mul_lodah(eb_t r, const eb_t p, const bn_t k) {
 		THROW(ERR_CAUGHT);
 	}
 	FINALLY {
+		bn_free(n);
+		bn_free(t);
 		dv_free(x1);
 		dv_free(z1);
 		dv_free(x2);

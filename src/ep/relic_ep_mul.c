@@ -593,7 +593,10 @@ void ep_mul_slide(ep_t r, const ep_t p, const bn_t k) {
 
 void ep_mul_monty(ep_t r, const ep_t p, const bn_t k) {
 	ep_t t[2];
+	bn_t n, l;
 
+	bn_null(n);
+	bn_null(l);
 	ep_null(t[0]);
 	ep_null(t[1]);
 
@@ -603,14 +606,30 @@ void ep_mul_monty(ep_t r, const ep_t p, const bn_t k) {
 	}
 
 	TRY {
+		bn_new(n);
+		bn_new(l);
 		ep_new(t[0]);
 		ep_new(t[1]);
 
-		ep_set_infty(t[0]);
-		ep_copy(t[1], p);
+		ep_curve_get_ord(n);
+		ep_norm(t[0], p);
+		ep_dbl(t[1], t[0]);
 
-		for (int i = bn_bits(k) - 1; i >= 0; i--) {
-			int j = bn_get_bit(k, i);
+		bn_abs(l, k);
+		while (bn_bits(l) <= bn_bits(n)) {
+			bn_add(l, l, n);
+		}
+
+#if EP_ADD == PROJC
+		fp_rand(t[0]->z);
+		fp_sqr(t[0]->x, t[0]->z);
+		fp_mul(t[0]->y, t[0]->x, t[0]->z);
+		fp_mul(t[0]->x, t[0]->x, p->x);
+		fp_mul(t[0]->y, t[0]->y, p->y);
+#endif
+
+		for (int i = bn_bits(n) - 1; i >= 0; i--) {
+			int j = bn_get_bit(l, i);
 			dv_swap_cond(t[0]->x, t[1]->x, RLC_FP_DIGS, j ^ 1);
 			dv_swap_cond(t[0]->y, t[1]->y, RLC_FP_DIGS, j ^ 1);
 			dv_swap_cond(t[0]->z, t[1]->z, RLC_FP_DIGS, j ^ 1);
@@ -629,6 +648,8 @@ void ep_mul_monty(ep_t r, const ep_t p, const bn_t k) {
 		THROW(ERR_CAUGHT);
 	}
 	FINALLY {
+		bn_free(n);
+		bn_free(l);
 		ep_free(t[1]);
 		ep_free(t[0]);
 	}

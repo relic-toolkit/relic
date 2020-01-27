@@ -175,7 +175,7 @@ static void ep_add_projc_mix(ep_t r, const ep_t p, const ep_t q) {
 		/* t2 = HH = H^2. */
 		fp_sqr(t2, t3);
 
-		/* If E is zero. */
+		/* If H is zero. */
 		if (fp_is_zero(t3)) {
 			if (fp_is_zero(t1)) {
 				/* If I is zero, p = q, should have doubled. */
