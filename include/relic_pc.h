@@ -78,12 +78,12 @@
 /**
  * Represents a G_1 precomputed table.
  */
-#define RLC_G1_TABLE			RLC_CAT(RLC_CAT(RLC_, G1_UPPER), _TABLE_MAX)
+#define RLC_G1_TABLE			RLC_CAT(RLC_CAT(RLC_, G1_UPPER), _TABLE)
 
 /**
  * Represents a G_2 precomputed table.
  */
-#define RLC_G2_TABLE			RLC_CAT(RLC_CAT(RLC_, G2_UPPER), _TABLE_MAX)
+#define RLC_G2_TABLE			RLC_CAT(RLC_CAT(RLC_, G2_UPPER), _TABLE)
 
 /*============================================================================*/
 /* Type definitions                                                           */
