@@ -22,7 +22,7 @@
  */
 
 /**
- * @defgroup ed Edwards curves over Edwards fields
+ * @defgroup ed Edwards curves over prime fields.
  */
 
 /**
