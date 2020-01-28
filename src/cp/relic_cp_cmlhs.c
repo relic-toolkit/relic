@@ -104,19 +104,19 @@ int cp_cmlhs_sig(g1_t sig, g2_t z, g1_t a, g1_t c, g1_t r, g2_t s, bn_t msg,
 	g1_null(t);
 
 	TRY {
+		bn_new(k);
 		bn_new(m);
 		bn_new(n);
-		bn_new(k);
 		g1_new(t);
 		if (buf == NULL) {
 			THROW(ERR_NO_MEMORY);
 		}
 
 		g1_get_ord(n);
-
 		/* Generate r and s. */
 		bn_rand_mod(k, n);
 		bn_rand_mod(m, n);
+
 		/* Compute S = -g2^s, C = g1^s. */
 		g2_mul_gen(s, m);
 		g2_neg(s, s);

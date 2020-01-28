@@ -1238,7 +1238,6 @@ static int lhs(void) {
 		g1_new(_r);
 		g2_new(_s);
 
-		g1_get_ord(n);
 		for (int i = 0; i < S; i++) {
 			for (int j = 0; j < RLC_TERMS; j++) {
 				gt_null(hs[i][j]);
@@ -1282,12 +1281,15 @@ static int lhs(void) {
 		int flen[S];
 		for (int i = 0; i < S; i++) {
 			for (int j = 0; j < RLC_TERMS; j++) {
-				rand_bytes((uint8_t *)&f[i][j], sizeof(uint32_t));
+				uint32_t t;
+				rand_bytes((uint8_t *)&t, sizeof(uint32_t));
+				f[i][j] = t;
 			}
 			flen[i] = L;
 		}
 
 		/* Initialize scheme for messages of single components. */
+		g1_get_ord(n);
 		cp_cmlhs_init(h);
 		for (int j = 0; j < S; j++) {
 			cp_cmlhs_gen(x[j], hs[j], L, k[j], K, sk[j], pk[j], d[j], y[j]);
@@ -1307,11 +1309,12 @@ static int lhs(void) {
 			}
 			/* Apply linear function over signatures. */
 			for (int j = 0; j < S; j++) {
-				cp_cmlhs_fun(as[j], cs[j], a[j], c[j], f[j], L);
+				cp_cmlhs_fun(as[j], cs[j], a[j], c[j], f[j], flen[j]);
 			}
-			cp_cmlhs_evl(_r, _s, r[0], s[0], f[0], L);
+
+			cp_cmlhs_evl(_r, _s, r[0], s[0], f[0], flen[0]);
 			for (int j = 1; j < S; j++) {
-				cp_cmlhs_evl(r[0][0], s[0][0], r[j], s[j], f[j], L);
+				cp_cmlhs_evl(r[0][0], s[0][0], r[j], s[j], f[j], flen[j]);
 				g1_add(_r, _r, r[0][0]);
 				g2_add(_s, _s, s[0][0]);
 			}
@@ -1333,13 +1336,15 @@ static int lhs(void) {
 
 		char *ls[L] = { "l" };
 		int lens[L] = { sizeof(ls[0]) };
+		dig_t ft[S];
 
 		TEST_BEGIN("simple linear multi-key homomorphic signature is correct") {
 			for (int j = 0; j < S; j++) {
 				cp_mklhs_gen(sk[j], pk[j]);
 				for (int l = 0; l < L; l++) {
 					bn_rand_mod(msg[j][l], n);
-					cp_mklhs_sig(a[j][l], msg[j][l], ls[l], lens[l], sk[j]);
+					cp_mklhs_sig(a[j][l], msg[j][l], id, sizeof(id), ls[l],
+						lens[l], sk[j]);
 				}
 			}
 
@@ -1363,8 +1368,45 @@ static int lhs(void) {
 				}
 			}
 
-			TEST_ASSERT(cp_mklhs_ver(_r, m, d, ls, lens, f, flen, pk, S) == 1,
-				end);
+			TEST_ASSERT(cp_mklhs_ver(_r, m, d, id, sizeof(id), ls, lens, f,
+				flen, pk, S) == 1, end);
+		}
+		TEST_END;
+
+		TEST_BEGIN("on/off simple linear multi-key homomorphic signature is correct") {
+			for (int j = 0; j < S; j++) {
+				cp_mklhs_gen(sk[j], pk[j]);
+				for (int l = 0; l < L; l++) {
+					bn_rand_mod(msg[j][l], n);
+					cp_mklhs_sig(a[j][l], msg[j][l], id, sizeof(id), ls[l],
+						lens[l], sk[j]);
+				}
+			}
+
+			for (int j = 0; j < S; j++) {
+				cp_mklhs_fun(d[j], msg[j], f[j], L);
+			}
+
+			g1_set_infty(_r);
+			for (int j = 0; j < S; j++) {
+				cp_mklhs_evl(r[0][j], a[j], f[j], L);
+				g1_add(_r, _r, r[0][j]);
+			}
+			g1_norm(_r, _r);
+
+			bn_zero(m);
+			for (int j = 0; j < S; j++) {
+				for (int l = 0; l < L; l++) {
+					bn_mul_dig(msg[j][l], msg[j][l], f[j][l]);
+					bn_add(m, m, msg[j][l]);
+					bn_mod(m, m, n);
+				}
+			}
+
+			cp_mklhs_off(as, ft, ls, lens, f, flen, S);
+			TEST_ASSERT(cp_mklhs_onv(_r, m, d, id, sizeof(id), as, ft,
+					pk, S) == 1, end);
+
 		}
 		TEST_END;
 	}

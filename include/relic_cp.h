@@ -1617,6 +1617,7 @@ int cp_cmlhs_fun(g1_t a, g1_t c, g1_t as[], g1_t cs[], dig_t f[], int len);
  * @param[in] ss			- the vector of fourth components of the signatures.
  * @param[in] f 			- the linear coefficients in the function.
  * @param[in] len			- the number of coefficients.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_cmlhs_evl(g1_t r, g2_t s, g1_t rs[], g2_t ss[], dig_t f[], int len);
 
@@ -1661,12 +1662,15 @@ int cp_mklhs_gen(bn_t sk, g2_t pk);
  *
  * @param[out] s 			- the resulting signature.
  * @param[in] m 			- the message to sign.
+ * @param[in] data 			- the dataset identifier.
+ * @param[in] dlen 			- the length of the dataset identifier.
  * @param[in] label 		- the label.
- * @param[in] len 			- the length of the label.
+ * @param[in] llen 			- the length of the label.
  * @param[in] sk 			- the private key for the signature scheme.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_mklhs_sig(g1_t s, bn_t m, char *label, int len, bn_t sk);
+int cp_mklhs_sig(g1_t s, bn_t m, char *data, int dlen, char *label, int llen,
+		bn_t sk);
 
 /**
  * Applies a function over a set of messages from the same user.
@@ -1686,6 +1690,7 @@ int cp_mklhs_fun(bn_t mu, bn_t m[], dig_t f[], int len);
  * @param[in] s				- the set of signatures.
  * @param[in] f 			- the linear coefficients in the function.
  * @param[in] len			- the number of coefficients.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_mklhs_evl(g1_t sig, g1_t s[], dig_t f[], int len);
 
@@ -1695,6 +1700,8 @@ int cp_mklhs_evl(g1_t sig, g1_t s[], dig_t f[], int len);
  * @param[in] sig 			- the homomorphic signature to verify.
  * @param[in] m 			- the signed message.
  * @param[in] mu			- the vector of signed messages per user.
+ * @param[in] data 			- the dataset identifier.
+ * @param[in] dlen 			- the length of the dataset identifier.
  * @param[in] label 		- the vector of labels.
  * @param[in] llen 			- the vector of label lengths.
  * @param[in] f 			- the linear coefficients in the function.
@@ -1703,7 +1710,42 @@ int cp_mklhs_evl(g1_t sig, g1_t s[], dig_t f[], int len);
  * @param[in] slen 			- the number of signatures.
  * @return a boolean value indicating the verification result.
  */
-int cp_mklhs_ver(g1_t sig, bn_t m, bn_t mu[], char *label[], int llen[],
-		dig_t f[][RLC_TERMS], int flen[], g2_t pk[], int slen);
+int cp_mklhs_ver(g1_t sig, bn_t m, bn_t mu[], char *data, int dlen,
+		char *label[], int llen[], dig_t f[][RLC_TERMS], int flen[], g2_t pk[],
+		int slen);
+
+/**
+ * Computes the offline part of veryfying a MKLHS signature over a set of
+ * messages.
+ *
+ * @param[out] h 			- the hashes of labels
+ * @param[out] ft 			- the precomputed linear coefficients.
+ * @param[in] label 		- the vector of labels.
+ * @param[in] llen 			- the vector of label lengths.
+ * @param[in] f 			- the linear coefficients in the function.
+ * @param[in] flen			- the number of coefficients.
+ * @param[in] slen 			- the number of signatures.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int cp_mklhs_off(g1_t h[], dig_t ft[], char *label[], int llen[],
+	dig_t f[][RLC_TERMS], int flen[], int slen);
+
+/**
+ * Computes the online part of veryfying a MKLHS signature over a set of
+ * messages.
+ *
+ * @param[in] sig 			- the homomorphic signature to verify.
+ * @param[in] m 			- the signed message.
+ * @param[in] mu			- the vector of signed messages per user.
+ * @param[in] data 			- the dataset identifier.
+ * @param[in] dlen 			- the length of the dataset identifier.
+ * @param[in] d 			- the hashes of labels.
+ * @param[in] ft 			- the precomputed linear coefficients.
+ * @param[in] pk 			- the public keys of the users.
+ * @param[in] slen 			- the number of signatures.
+ * @return a boolean value indicating the verification result.
+ */
+int cp_mklhs_onv(g1_t sig, bn_t m, bn_t mu[], char *data, int dlen,
+		g1_t h[], dig_t ft[], g2_t pk[], int slen);
 
 #endif /* !RLC_CP_H */

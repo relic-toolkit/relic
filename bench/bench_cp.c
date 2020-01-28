@@ -1012,6 +1012,7 @@ static void lhs(void) {
 	g2_t _s, s[S][L], pk[S], y[S], z[S];
 	gt_t hs[S][RLC_TERMS];
 	char *id = "id";
+	dig_t ft[S];
 
 	bn_null(m);
 	bn_null(n);
@@ -1072,7 +1073,9 @@ static void lhs(void) {
 	int flen[S];
 	for (int i = 0; i < S; i++) {
 		for (int j = 0; j < RLC_TERMS; j++) {
-			rand_bytes((uint8_t *)&f[i][j], sizeof(uint32_t));
+			uint32_t t;
+			rand_bytes((uint8_t *)&t, sizeof(uint32_t));
+			f[i][j] = t;
 		}
 		flen[i] = L;
 	}
@@ -1167,7 +1170,8 @@ static void lhs(void) {
 		for (int j = 0; j < S; j++) {
 			for (int l = 0; l < L; l++) {
 				bn_mod(msg[l], msg[l], n);
-				BENCH_ADD(cp_mklhs_sig(a[j][l], msg[l], ls[l], lens[l], sk[j]));
+				BENCH_ADD(cp_mklhs_sig(a[j][l], msg[l], id, sizeof(id),
+					ls[l], lens[l], sk[j]));
 			}
 		}
 	} BENCH_DIV(S * L);
@@ -1202,14 +1206,24 @@ static void lhs(void) {
 	}
 
 	BENCH_BEGIN("cp_mklhs_ver") {
-		BENCH_ADD(cp_mklhs_ver(_r, m, d, ls, lens, f, flen, pk, S));
+		BENCH_ADD(cp_mklhs_ver(_r, m, d, id, sizeof(id), ls, lens, f, flen,
+			pk, S));
+	} BENCH_DIV(S);
+
+	BENCH_BEGIN("cp_mklhs_off") {
+		BENCH_ADD(cp_mklhs_off(cs, ft, ls, lens, f, flen, S));
+	} BENCH_DIV(S);
+
+	BENCH_BEGIN("cp_mklhs_onv") {
+		BENCH_ADD(cp_mklhs_onv(_r, m, d, id, sizeof(id), cs, ft, pk, S));
 	} BENCH_DIV(S);
 
 #ifdef BENCH_LHS
 	for (int t = 1; t <= S; t++) {
 		util_print("(%2d ids) ", t);
 		BENCH_BEGIN("cp_mklhs_ver") {
-			BENCH_ADD(cp_mklhs_ver(_r, m, d, ls, lens, f, flen, pk, t));
+			BENCH_ADD(cp_mklhs_ver(_r, m, d, id, sizeof(id), ls, lens, f, flen,
+				pk, t));
 		} BENCH_END;
 	}
 
@@ -1219,7 +1233,33 @@ static void lhs(void) {
 			flen[u] = t;
 		}
 		BENCH_BEGIN("cp_mklhs_ver") {
-			BENCH_ADD(cp_mklhs_ver(_r, m, d, ls, lens, f, flen, pk, S));
+			BENCH_ADD(cp_mklhs_ver(_r, m, d, id, sizeof(id), ls, lens, f, flen,
+				pk, S));
+		} BENCH_END;
+	}
+
+	for (int t = 1; t <= S; t++) {
+		util_print("(%2d ids) ", t);
+		BENCH_BEGIN("cp_mklhs_off") {
+			BENCH_ADD(cp_mklhs_off(cs, ft, ls, lens, f, flen, t));
+		} BENCH_END;
+
+		BENCH_BEGIN("cp_mklhs_onv") {
+			BENCH_ADD(cp_mklhs_onv(_r, m, d, id, sizeof(id), cs, ft, pk, t));
+		} BENCH_END;
+	}
+
+	for (int t = 1; t <= L; t++) {
+		util_print("(%2d lbs) ", t);
+		for (int u = 0; u < S; u++) {
+			flen[u] = t;
+		}
+		BENCH_BEGIN("cp_mklhs_off") {
+			BENCH_ADD(cp_mklhs_off(cs, ft, ls, lens, f, flen, S));
+		} BENCH_END;
+
+		BENCH_BEGIN("cp_mklhs_onv") {
+			BENCH_ADD(cp_mklhs_onv(_r, m, d, id, sizeof(id), cs, ft, pk, S));
 		} BENCH_END;
 	}
 #endif /* BENCH_LHS */
