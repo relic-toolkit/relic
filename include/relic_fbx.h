@@ -22,7 +22,7 @@
  */
 
 /**
- * @defgroup fbx Extensions of binary fields
+ * @defgroup fbx Binary field extensions.
  */
 
 /**
