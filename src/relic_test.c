@@ -36,6 +36,10 @@
 #ifdef _MSC_VER
 #undef DOUBLE
 #include <Windows.h>
+/**
+ * Stores the default color used in the console.
+ */
+static int default_color;
 #endif
 
 /*============================================================================*/
@@ -78,7 +82,6 @@
 /**
  * Copies default color to global variable.
  */
-static int default_color;
 static void cache_default_color(void) {
 #ifdef _MSC_VER
 	CONSOLE_SCREEN_BUFFER_INFO csbi;
