@@ -2475,6 +2475,8 @@
 #undef cp_mklhs_fun
 #undef cp_mklhs_evl
 #undef cp_mklhs_ver
+#undef cp_mklhs_off
+#undef cp_mklhs_onv
 
 #define cp_rsa_gen_basic 	PREFIX(cp_rsa_gen_basic)
 #define cp_rsa_gen_quick 	PREFIX(cp_rsa_gen_quick)
@@ -2560,6 +2562,8 @@
 #define cp_mklhs_fun 	PREFIX(cp_mklhs_fun)
 #define cp_mklhs_evl 	PREFIX(cp_mklhs_evl)
 #define cp_mklhs_ver 	PREFIX(cp_mklhs_ver)
+#define cp_mklhs_off 	PREFIX(cp_mklhs_off)
+#define cp_mklhs_onv 	PREFIX(cp_mklhs_onv)
 
 #endif /* LABEL */
 
