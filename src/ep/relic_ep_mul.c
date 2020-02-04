@@ -588,10 +588,11 @@ void ep_mul_slide(ep_t r, const ep_t p, const bn_t k) {
 }
 
 #endif
-
+#include "assert.h"
 #if EP_MUL == MONTY || !defined(STRIP)
 
 void ep_mul_monty(ep_t r, const ep_t p, const bn_t k) {
+	int i, j, bits;
 	ep_t t[2];
 	bn_t n, l;
 
@@ -612,13 +613,16 @@ void ep_mul_monty(ep_t r, const ep_t p, const bn_t k) {
 		ep_new(t[1]);
 
 		ep_curve_get_ord(n);
+		bits = bn_bits(n);
+		bn_abs(l, k);
+		bn_add(l, l, n);
+		bn_add(n, l, n);
+		dv_swap_cond(l->dp, n->dp, RLC_MAX(l->used, n->used),
+			bn_get_bit(l, bits) == 0);
+		l->used = RLC_SEL(l->used, n->used, bn_get_bit(l, bits) == 0);
+
 		ep_norm(t[0], p);
 		ep_dbl(t[1], t[0]);
-
-		bn_abs(l, k);
-		while (bn_bits(l) <= bn_bits(n)) {
-			bn_add(l, l, n);
-		}
 
 #if EP_ADD == PROJC
 		fp_rand(t[0]->z);
@@ -628,8 +632,8 @@ void ep_mul_monty(ep_t r, const ep_t p, const bn_t k) {
 		fp_mul(t[0]->y, t[0]->y, p->y);
 #endif
 
-		for (int i = bn_bits(n) - 1; i >= 0; i--) {
-			int j = bn_get_bit(l, i);
+		for (i = bits - 1; i >= 0; i--) {
+			j = bn_get_bit(l, i);
 			dv_swap_cond(t[0]->x, t[1]->x, RLC_FP_DIGS, j ^ 1);
 			dv_swap_cond(t[0]->y, t[1]->y, RLC_FP_DIGS, j ^ 1);
 			dv_swap_cond(t[0]->z, t[1]->z, RLC_FP_DIGS, j ^ 1);

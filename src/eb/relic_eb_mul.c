@@ -650,6 +650,7 @@ void eb_mul_basic(eb_t r, const eb_t p, const bn_t k) {
 #if EB_MUL == LODAH || !defined(STRIP)
 
 void eb_mul_lodah(eb_t r, const eb_t p, const bn_t k) {
+	int bits, i, j;
 	dv_t x1, z1, x2, z2, r1, r2, r3, r4, r5;
 	const dig_t *b;
 	bn_t t, n;
@@ -692,11 +693,14 @@ void eb_mul_lodah(eb_t r, const eb_t p, const bn_t k) {
 
 		b = eb_curve_get_b();
 		eb_curve_get_ord(n);
+		bits = bn_bits(n);
 
 		bn_abs(t, k);
-		while (bn_bits(t) <= bn_bits(n)) {
-			bn_add(t, t, n);
-		}
+		bn_add(t, t, n);
+		bn_add(n, t, n);
+		dv_swap_cond(t->dp, n->dp, RLC_MAX(t->used, n->used),
+			bn_get_bit(t, bits) == 0);
+		t->used = RLC_SEL(t->used, n->used, bn_get_bit(t, bits) == 0);
 
 		switch (eb_curve_opt_b()) {
 			case RLC_ZERO:
@@ -712,12 +716,12 @@ void eb_mul_lodah(eb_t r, const eb_t p, const bn_t k) {
 				break;
 		}
 
-		for (int i = bn_bits(n) - 1; i >= 0; i--) {
+		for (i = bits - 1; i >= 0; i--) {
+			j = bn_get_bit(t, i);
 			fb_mul(r1, x1, z2);
 			fb_mul(r2, x2, z1);
 			fb_add(r3, r1, r2);
 			fb_muln_low(r4, r1, r2);
-			int j = bn_get_bit(t, i);
 			dv_swap_cond(x1, x2, RLC_FB_DIGS, j ^ 1);
 			dv_swap_cond(z1, z2, RLC_FB_DIGS, j ^ 1);
 			fb_sqr(z1, r3);
