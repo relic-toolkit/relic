@@ -202,6 +202,28 @@ else()
 	set(TIMER "ANSI" CACHE STRING "Timer")
 endif()
 
+if(MSVC)
+	#defaults to the DLL runtime library.
+	set(RUNTIME "MD" CACHE STRING "MSVC runtime libraries")
+	message(STATUS "Supported MSVC runtime libraries (default = MD):\n")
+	message("   RUNTIME=MD     DLL runtime library (/MD,/MDd).")
+	message("   RUNTIME=MT     Static runtime library (/MT,/MTd).\n")
+	
+	#loop over the compile flags to swap /MD and /MT.
+	set(CompilerFlags 
+		CMAKE_C_FLAGS_DEBUG 
+		CMAKE_C_FLAGS_RELEASE 
+		CMAKE_C_FLAGS_RELWITHDEBINFO 
+		CMAKE_C_FLAGS_MINSIZEREL)
+	foreach(CompilerFlag ${CompilerFlags})
+		if(RUNTIME STREQUAL MT)
+			string(REPLACE "/MD" "/MT" ${CompilerFlag} "${${CompilerFlag}}")
+		else()
+			string(REPLACE "/MT" "/MD" ${CompilerFlag} "${${CompilerFlag}}")			
+		endif()
+	endforeach()
+endif()
+
 if(DEBUG)
 	# If the user did not specify compile flags, we turn off all optimizations.
 	set(CFLAGS "-O0 -fno-omit-frame-pointer")
