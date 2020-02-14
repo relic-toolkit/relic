@@ -36,28 +36,6 @@
 .text
 .global cdecl(fp_sqrn_low)
 
-.macro COMBA_STEP a, b
-	movq	\a, %rax
-	mulq	\b
-	addq	%rax,%rax
-	adcq	%rdx,%rdx
-	adcq	$0, %r10
-	addq	%rax,%r8
-	adcq	%rdx,%r9
-	adcq	$0,%r10
-.endm
-
-.macro COMBA_FINAL i
-	movq	8*\i(%rsi), %rax
-	mulq	8*\i(%rsi)
-	addq	%rax,%r8
-	adcq	%rdx,%r9
-	adcq	$0,%r10
-.endm
-
-.macro SQRN_STEP i, j
-	COMBA_STEP 8*\i(%rsi), 8*\j(%rsi)
-.endm
 /*
  * Function: fp_sqrn_low
  * Inputs: rdi = c, rsi = a
@@ -79,6 +57,7 @@ cdecl(fp_sqrn_low):
 	addq %rdx,%r8
 	movq %r8,8(%rdi)
 	adcq $0,%r9
+	adcq $0,%r10
 
 	xorq %rcx,%rcx
 	movq 0(%rsi),%rax
