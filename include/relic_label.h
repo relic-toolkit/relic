@@ -610,7 +610,7 @@
 #undef fp_sqrm_low
 #undef fp_rdcs_low
 #undef fp_rdcn_low
-#undef fp_invn_low
+#undef fp_invm_low
 
 #define fp_add1_low 	PREFIX(fp_add1_low)
 #define fp_addn_low 	PREFIX(fp_addn_low)
@@ -641,7 +641,7 @@
 #define fp_sqrm_low 	PREFIX(fp_sqrm_low)
 #define fp_rdcs_low 	PREFIX(fp_rdcs_low)
 #define fp_rdcn_low 	PREFIX(fp_rdcn_low)
-#define fp_invn_low 	PREFIX(fp_invn_low)
+#define fp_invm_low 	PREFIX(fp_invm_low)
 
 #undef fp_st
 #undef fp_t

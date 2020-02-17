@@ -41,7 +41,7 @@
 
 int fp_invn_asm(dig_t *, const dig_t *, const dig_t *);
 
-void fp_invn_low(dig_t *c, const dig_t *a) {
+void fp_invm_low(dig_t *c, const dig_t *a) {
 	fp_t t, x1;
 	int j, k;
 

@@ -339,7 +339,7 @@ void fp_rdcn_low(dig_t *c, dig_t *a);
  * @param[out] c			- the result.
  * @param[in] a				- the digit vector to invert.
  */
-void fp_invn_low(dig_t *c, const dig_t *a);
+void fp_invm_low(dig_t *c, const dig_t *a);
 
 #endif /* ASM */
 

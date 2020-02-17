@@ -504,7 +504,7 @@ void fp_inv_divst(fp_t c, const fp_t a) {
 #if FP_INV == LOWER || !defined(STRIP)
 
 void fp_inv_lower(fp_t c, const fp_t a) {
-	fp_invn_low(c, a);
+	fp_invm_low(c, a);
 }
 
 #endif

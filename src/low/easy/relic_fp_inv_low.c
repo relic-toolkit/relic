@@ -40,7 +40,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void fp_invn_low(dig_t *c, const dig_t *a) {
+void fp_invm_low(dig_t *c, const dig_t *a) {
 	bn_st e;
 
 	bn_init(&e, RLC_FP_DIGS);

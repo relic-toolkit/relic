@@ -40,7 +40,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void fp_invn_low(dig_t *c, const dig_t *a) {
+void fp_invm_low(dig_t *c, const dig_t *a) {
 	mp_size_t cn;
 	rlc_align dig_t s[RLC_FP_DIGS], t[2 * RLC_FP_DIGS], u[RLC_FP_DIGS + 1];
 

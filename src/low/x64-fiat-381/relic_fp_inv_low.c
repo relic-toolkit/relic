@@ -49,7 +49,7 @@ uint64_t pre[] = { 0x58B20FBD4742924F, 0x60DC92E7F4C2F437, 0x3F4FAC6A70C73C60,
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void fp_invn_low(dig_t *c, const dig_t *a) {
+void fp_invm_low(dig_t *c, const dig_t *a) {
 	/* Compute number of iteratios based on modulus size. */
 #if FP_PRIME < 46
 	int i, iterations = (49 * 381 + 80)/17;
