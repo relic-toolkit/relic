@@ -243,35 +243,57 @@ fp_subn_low:
 	ret
 
 fp_subm_low:
-	xorq	%rax, %rax
-	xorq	%rcx, %rcx
+    push	%rbx
+    push	%rbp
+    push	%r12
+    push	%r13
 
-	movq	0(%rsi), %r8
-	subq	0(%rdx), %r8
-	movq	%r8    , 0(%rdi)
+    movq	 0(%rsi), %r8
+    subq	 0(%rdx), %r8
+    movq	 8(%rsi), %r9
+    sbbq	 8(%rdx), %r9
+    movq	16(%rsi), %r10
+    sbbq	16(%rdx), %r10
+    movq	24(%rsi), %r11
+    sbbq	24(%rdx), %r11
+    movq	32(%rsi), %r12
+    sbbq	32(%rdx), %r12
+    movq	40(%rsi), %r13
+    sbbq	40(%rdx), %r13
 
-	SUBN	1 (RLC_FP_DIGS - 1)
+    movq 	$0, %rax
+    movq 	$0, %rcx
+    movq 	$0, %rdx
+    movq 	$0, %rsi
+    movq	$0, %rbx
+    movq	$0, %rbp
 
-	movq	$0, %r8
-	movq	$0, %r9
-	movq	$0, %r10
-	movq	$0, %r11
+    cmovc	p0(%rip), %rax
+    cmovc	p1(%rip), %rcx
+    cmovc	p2(%rip), %rdx
+    cmovc	p3(%rip), %rsi
+    cmovc	p4(%rip), %rbx
+    cmovc	p5(%rip), %rbp
 
-	cmovc	p0(%rip), %rax
-	cmovc	p1(%rip), %rcx
-	cmovc	p2(%rip), %r8
-	cmovc	p3(%rip), %r9
-	cmovc	p4(%rip), %r10
-	cmovc	p5(%rip), %r11
+    addq	%rax, %r8
+    adcq	%rcx, %r9
+    adcq	%rdx, %r10
+    adcq	%rsi, %r11
+    adcq	%rbx, %r12
+    adcq	%rbp, %r13
 
-	addq	%rax,  0(%rdi)
-	adcq	%rcx,  8(%rdi)
-	adcq	%r8,  16(%rdi)
-	adcq	%r9,  24(%rdi)
-	adcq	%r10, 32(%rdi)
-	adcq	%r11, 40(%rdi)
+    movq	%r8 ,  0(%rdi)
+    movq	%r9 ,  8(%rdi)
+    movq	%r10, 16(%rdi)
+    movq	%r11, 24(%rdi)
+    movq	%r12, 32(%rdi)
+    movq	%r13, 40(%rdi)
 
-	ret
+    pop		%r13
+    pop		%r12
+    pop		%rbp
+    pop		%rbx
+    ret
 
 fp_subd_low:
 	movq	0(%rsi), %r8
