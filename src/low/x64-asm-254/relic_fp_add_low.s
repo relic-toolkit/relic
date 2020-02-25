@@ -57,11 +57,14 @@
  * Output: rax
  */
 cdecl(fp_add1_low):
+    xorq	%rax, %rax
 	movq	0(%rsi), %r10
 	addq	%rdx, %r10
 	movq	%r10, 0(%rdi)
 
 	ADD1_STEP 1, (RLC_FP_DIGS - 1)
+
+    adcq    $0, %rax
 
 	ret
 
@@ -71,13 +74,14 @@ cdecl(fp_add1_low):
  * Output: rax
  */
 cdecl(fp_addn_low):
+    xorq	%rax, %rax
 	movq	0(%rdx), %r11
 	addq	0(%rsi), %r11
 	movq	%r11, 0(%rdi)
 
 	ADDN_STEP 1, (RLC_FP_DIGS - 1)
 
-	xorq	%rax, %rax
+	adcq    $0, %rax
 
 	ret
 

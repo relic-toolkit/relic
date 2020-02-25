@@ -473,7 +473,7 @@ void fp_inv_divst(fp_t c, const fp_t a) {
 				u[j] = f[j] & (-g0);
 			}
 			fp_addm_low(r, r, t);
-			fp_dbl(v, v);
+			fp_dblm_low(v, v);
 
 			/* Compute g = (g + g0*f) div 2 by conditionally copying f to u and
 			 * updating the sign of g. */

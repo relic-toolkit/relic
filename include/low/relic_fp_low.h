@@ -63,7 +63,7 @@
 dig_t fp_add1_low(dig_t *c, const dig_t *a, dig_t digit);
 
 /**
- * Adds to digit vectors of the same size. Computes c = a + b.
+ * Adds two digit vectors of the same size. Computes c = a + b.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the first digit vector to add.
@@ -73,7 +73,7 @@ dig_t fp_add1_low(dig_t *c, const dig_t *a, dig_t digit);
 dig_t fp_addn_low(dig_t *c, const dig_t *a, const dig_t *b);
 
 /**
- * Adds to digit vectors of the same size with integrated modular reduction.
+ * Adds two digit vectors of the same size with integrated modular reduction.
  * Computes c = a + b.
  *
  * @param[out] c			- the result.
@@ -83,7 +83,7 @@ dig_t fp_addn_low(dig_t *c, const dig_t *a, const dig_t *b);
 void fp_addm_low(dig_t *c, const dig_t *a, const dig_t *b);
 
 /**
- * Adds to double-length digit vectors. Computes c = a + b.
+ * Adds two double-length digit vectors. Computes c = a + b.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the first digit vector to add.
@@ -93,7 +93,7 @@ void fp_addm_low(dig_t *c, const dig_t *a, const dig_t *b);
 dig_t fp_addd_low(dig_t *c, const dig_t *a, const dig_t *b);
 
 /**
- * Adds to double-length digit vectors and reduces modulo p * R. Computes
+ * Adds two double-length digit vectors and reduces modulo p * R. Computes
  * c = a + b.
  *
  * @param[out] c			- the result.
@@ -123,7 +123,7 @@ dig_t fp_sub1_low(dig_t *c, const dig_t *a, dig_t digit);
 dig_t fp_subn_low(dig_t *c, const dig_t *a, const dig_t *b);
 
 /**
- * Subtracts to digit vectors of the same size with integrated modular
+ * Subtracts two digit vectors of the same size with integrated modular
  * reduction.
  * Computes c = a - b.
  *

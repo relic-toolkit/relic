@@ -259,28 +259,27 @@ void ep_map(ep_t p, const uint8_t *msg, int len) {
 					ep_mul(p, p, k);
 				}
 				break;
-			default:{
-					fp_prime_conv(p->x, k);
-					fp_zero(p->y);
-					fp_set_dig(p->z, 1);
+			default:
+				fp_prime_conv(p->x, k);
+				fp_zero(p->y);
+				fp_set_dig(p->z, 1);
 
-					while (1) {
-						ep_rhs(t, p);
+				while (1) {
+					ep_rhs(t, p);
 
-						if (fp_srt(p->y, t)) {
-							p->norm = 1;
-							break;
-						}
-						fp_add_dig(p->x, p->x, 1);
+					if (fp_srt(p->y, t)) {
+						p->norm = 1;
+						break;
 					}
+					fp_add_dig(p->x, p->x, 1);
+				}
 
-					/* Now, multiply by cofactor to get the correct group. */
-					ep_curve_get_cof(k);
-					if (bn_bits(k) < RLC_DIG) {
-						ep_mul_dig(p, p, k->dp[0]);
-					} else {
-						ep_mul_basic(p, p, k);
-					}
+				/* Now, multiply by cofactor to get the correct group. */
+				ep_curve_get_cof(k);
+				if (bn_bits(k) < RLC_DIG) {
+					ep_mul_dig(p, p, k->dp[0]);
+				} else {
+					ep_mul_basic(p, p, k);
 				}
 		}
 	}
