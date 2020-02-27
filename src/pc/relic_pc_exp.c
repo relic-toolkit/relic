@@ -35,6 +35,50 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
+void g1_mul(g1_t c, g1_t a, bn_t b) {
+	bn_t n, _b;
+
+	bn_null(n);
+	bn_null(_b);
+
+	TRY {
+		bn_new(n);
+		bn_new(_b);
+
+		g1_get_ord(n);
+		bn_mod(_b, b, n);
+
+		RLC_CAT(G1_LOWER, mul)(c, a, _b);
+	} CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	} FINALLY {
+		bn_free(n);
+		bn_free(_b);
+	}
+}
+
+void g2_mul(g2_t c, g2_t a, bn_t b) {
+	bn_t n, _b;
+
+	bn_null(n);
+	bn_null(_b);
+
+	TRY {
+		bn_new(n);
+		bn_new(_b);
+
+		g2_get_ord(n);
+		bn_mod(_b, b, n);
+
+		RLC_CAT(G2_LOWER, mul)(c, a, _b);
+	} CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	} FINALLY {
+		bn_free(n);
+		bn_free(_b);
+	}
+}
+
 void gt_exp(gt_t c, gt_t a, bn_t b) {
 	bn_t n, _b;
 
