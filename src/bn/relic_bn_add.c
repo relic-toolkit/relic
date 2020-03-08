@@ -125,11 +125,11 @@ void bn_add(bn_t c, const bn_t a, const bn_t b) {
 	} else {
 		/* If the signs are different, subtract. */
 		if (bn_cmp_abs(a, b) == RLC_LT) {
-			c->sign = sb;
 			bn_sub_imp(c, b, a);
+			c->sign = sb;
 		} else {
-			c->sign = sa;
 			bn_sub_imp(c, a, b);
+			c->sign = sa;
 		}
 	}
 }
@@ -185,11 +185,11 @@ void bn_sub(bn_t c, const bn_t a, const bn_t b) {
 	} else {
 		/* If the signs are equal, adjust the sign and subtract. */
 		if (bn_cmp_abs(a, b) != RLC_LT) {
-			c->sign = sa;
 			bn_sub_imp(c, a, b);
+			c->sign = sa;
 		} else {
-			c->sign = (sa == RLC_POS) ? RLC_NEG : RLC_POS;
 			bn_sub_imp(c, b, a);
+			c->sign = (sa == RLC_POS) ? RLC_NEG : RLC_POS;
 		}
 	}
 }
