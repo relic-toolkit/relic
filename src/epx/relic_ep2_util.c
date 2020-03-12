@@ -77,17 +77,8 @@ int ep2_cmp(ep2_t p, ep2_t q) {
             fp2_mul(r->y, p->y, s->z);
             fp2_mul(s->y, q->y, r->z);
         } else {
-            if (!p->norm) {
-                ep2_norm(r, p);
-            } else {
-                ep2_copy(r, p);
-            }
-
-            if (!q->norm) {
-                ep2_norm(s, q);
-            } else {
-                ep2_copy(s, q);
-            }
+			ep2_norm(r, p);
+            ep2_norm(s, q);
         }
 
         if (fp2_cmp(r->x, s->x) != RLC_EQ) {

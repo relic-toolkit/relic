@@ -77,14 +77,8 @@ int ep_cmp(const ep_t p, const ep_t q) {
             fp_mul(r->y, p->y, s->z);
             fp_mul(s->y, q->y, r->z);
         } else {
-			ep_copy(r, p);
-            ep_copy(s, q);
-            if (!p->norm) {
-                ep_norm(r, p);
-            }
-            if (!q->norm) {
-                ep_norm(s, q);
-            }
+			ep_norm(r, p);
+			ep_norm(s, q);
         }
 
         if (fp_cmp(r->x, s->x) != RLC_EQ) {
