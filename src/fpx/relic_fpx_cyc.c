@@ -290,23 +290,29 @@ void fp12_conv_cyc(fp12_t c, fp12_t a) {
 }
 
 int fp12_test_cyc(fp12_t a) {
-	fp12_t t;
+	fp12_t t0, t1;
 	int result = 0;
 
-	fp12_null(t);
+	fp12_null(t0);
+	fp12_null(t1);
 
 	TRY {
-		fp12_new(t);
+		fp12_new(t0);
+		fp12_new(t1);
 
-		fp12_back_cyc(t, a);
+		/* Check if a^(p^4 - p^2 + 1) == 1. */
+		fp12_frb(t0, a, 4);
+		fp12_mul(t0, t0, a);
+		fp12_frb(t1, a, 2);
 
-		result = ((fp12_cmp(t, a) == RLC_EQ) ? 1 : 0);
+		result = ((fp12_cmp(t0, t1) == RLC_EQ) ? 1 : 0);
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
 	}
 	FINALLY {
-		fp12_free(t);
+		fp12_free(t0);
+		fp12_free(t1);
 	}
 
 	return result;
@@ -800,22 +806,29 @@ void fp48_conv_cyc(fp48_t c, fp48_t a) {
 }
 
 int fp48_test_cyc(fp48_t a) {
-	fp48_t t;
+	fp48_t t0, t1;
 	int result = 0;
 
-	fp48_null(t);
+	fp48_null(t0);
+	fp48_null(t1);
 
 	TRY {
-		fp48_new(t);
+		fp48_new(t0);
+		fp48_new(t1);
 
-		fp48_back_cyc(t, a);
-		result = ((fp48_cmp(t, a) == RLC_EQ) ? 1 : 0);
+		/* Check if a^(p^16 - p^8 + 1) == 1. */
+		fp48_frb(t0, a, 16);
+		fp48_mul(t0, t0, a);
+		fp48_frb(t1, a, 8);
+
+		result = ((fp48_cmp(t0, t1) == RLC_EQ) ? 1 : 0);
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
 	}
 	FINALLY {
-		fp48_free(t);
+		fp48_free(t0);
+		fp48_free(t1);
 	}
 
 	return result;
@@ -1164,22 +1177,28 @@ void fp54_conv_cyc(fp54_t c, fp54_t a) {
 }
 
 int fp54_test_cyc(fp54_t a) {
-	fp54_t t;
+	fp54_t t0, t1;
 	int result = 0;
 
-	fp54_null(t);
+	fp54_null(t0);
+	fp54_null(t1);
 
 	TRY {
-		fp54_new(t);
+		fp54_new(t0);
+		fp54_new(t1);
 
-		fp54_back_cyc(t, a);
-		result = ((fp54_cmp(t, a) == RLC_EQ) ? 1 : 0);
+		/* Check if a^(p^18 - p^9 + 1) == 1. */
+		fp54_frb(t0, a, 18);
+		fp54_mul(t0, t0, a);
+		fp54_frb(t1, a, 9);
+		result = ((fp54_cmp(t0, t1) == RLC_EQ) ? 1 : 0);
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
 	}
 	FINALLY {
-		fp54_free(t);
+		fp54_free(t0);
+		fp54_free(t1);
 	}
 
 	return result;
