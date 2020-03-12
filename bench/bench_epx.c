@@ -53,15 +53,19 @@ static void memory(void) {
 }
 
 static void util(void) {
-	ep2_t p, q;
+	ep2_t p, q, t[2];
 	uint8_t bin[4 * RLC_FP_BYTES + 1];
 	int l;
 
 	ep2_null(p);
 	ep2_null(q);
+	ep2_null(t[0]);
+	ep2_null(t[1]);
 
 	ep2_new(p);
 	ep2_new(q);
+	ep2_new(t[0]);
+	ep2_new(t[1]);
 
 	BENCH_BEGIN("ep2_is_infty") {
 		ep2_rand(p);
@@ -88,6 +92,20 @@ static void util(void) {
 		ep2_rand(q);
 		ep2_dbl(q, q);
 		BENCH_ADD(ep2_cmp(p, q));
+	} BENCH_END;
+
+	BENCH_BEGIN("ep2_norm") {
+		ep2_rand(p);
+		ep2_dbl(p, p);
+		BENCH_ADD(ep2_norm(p, p));
+	} BENCH_END;
+
+	BENCH_BEGIN("ep2_norm_sim (2)") {
+		ep2_rand(t[0]);
+		ep2_rand(t[1]);
+		ep2_dbl(t[0], t[0]);
+		ep2_dbl(t[1], t[1]);
+		BENCH_ADD(ep2_norm_sim(t, t, 2));
 	} BENCH_END;
 
 	BENCH_BEGIN("ep2_cmp (1 norm)") {
@@ -151,6 +169,8 @@ static void util(void) {
 
 	ep2_free(p);
 	ep2_free(q);
+	ep2_free(t[0]);
+	ep2_free(t[1]);
 }
 
 static void arith(void) {

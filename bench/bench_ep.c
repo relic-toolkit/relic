@@ -85,6 +85,20 @@ static void util(void) {
 		BENCH_ADD(ep_copy(p, q));
 	} BENCH_END;
 
+	BENCH_BEGIN("ep_norm") {
+		ep_rand(p);
+		ep_dbl(p, p);
+		BENCH_ADD(ep_norm(p, p));
+	} BENCH_END;
+
+	BENCH_BEGIN("ep_norm_sim (2)") {
+		ep_rand(t[0]);
+		ep_rand(t[1]);
+		ep_dbl(t[0], t[0]);
+		ep_dbl(t[1], t[1]);
+		BENCH_ADD(ep_norm_sim(t, t, 2));
+	} BENCH_END;
+
 	BENCH_BEGIN("ep_cmp") {
 		ep_rand(p);
 		ep_dbl(p, p);
