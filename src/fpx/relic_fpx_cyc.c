@@ -565,9 +565,7 @@ void fp12_exp_cyc(fp12_t c, fp12_t a, bn_t b) {
 					fp_prime_get_par(u[0]);
 
 					bn_copy(u[1], u[0]);
-					if (bn_sign(u[0]) == RLC_NEG) {
-						bn_neg(u[0], u[0]);
-					}
+					bn_abs(u[0], u[0]);
 
 					for (i = 0; i < 4; i++) {
 						bn_mod(_b[i], v[0], u[0]);
@@ -673,6 +671,10 @@ void fp12_exp_cyc(fp12_t c, fp12_t a, bn_t b) {
 
 			for (i = j; i < k; i++) {
 				fp12_mul(c, c, u[i]);
+			}
+
+			if (bn_sign(b) == RLC_NEG) {
+				fp12_inv_cyc(c, c);
 			}
 		}
 		CATCH_ANY {
@@ -1034,6 +1036,10 @@ void fp48_exp_cyc(fp48_t c, fp48_t a, bn_t b) {
 			for (i = j; i < k; i++) {
 				fp48_mul(c, c, u[i]);
 			}
+
+			if (bn_sign(b) == RLC_NEG) {
+				fp48_inv_cyc(c, c);
+			}
 		}
 		CATCH_ANY {
 			THROW(ERR_CAUGHT);
@@ -1393,6 +1399,10 @@ void fp54_exp_cyc(fp54_t c, fp54_t a, bn_t b) {
 
 			for (i = j; i < k; i++) {
 				fp54_mul(c, c, u[i]);
+			}
+
+			if (bn_sign(b) == RLC_NEG) {
+				fp54_inv_cyc(c, c);
 			}
 		}
 		CATCH_ANY {
