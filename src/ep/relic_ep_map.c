@@ -125,86 +125,86 @@ static void ep_sw_b12(ep_t p, const fp_t t, int u, int negate) {
  * "Fast and simple constant-time hashing to the BLS12-381 Elliptic Curve"
  */
 static void ep_sswu_abNeq0(ep_t p, const fp_t t, int u, int negate) {
-    fp_t t0, t1, t2, t3, t4;
-    fp_null(t0);
-    fp_null(t1);
-    fp_null(t2);
-    fp_null(t3);
-    fp_null(t4);
+	fp_t t0, t1, t2, t3, t4;
+	fp_null(t0);
+	fp_null(t1);
+	fp_null(t2);
+	fp_null(t3);
+	fp_null(t4);
 
-    TRY {
-        fp_new(t0);
-        fp_new(t1);
-        fp_new(t2);
-        fp_new(t3);
-        fp_new(t4);
-        if (ep_curve_opt_a() == RLC_ZERO || ep_curve_opt_b() == RLC_ZERO) {
-            THROW(ERR_NO_VALID);
-        }
+	TRY {
+		fp_new(t0);
+		fp_new(t1);
+		fp_new(t2);
+		fp_new(t3);
+		fp_new(t4);
+		if (ep_curve_opt_a() == RLC_ZERO || ep_curve_opt_b() == RLC_ZERO) {
+			THROW(ERR_NO_VALID);
+		}
 
-        /* compute u and -u as field elms */
-        const int e0 = u < 0;
-        u = e0 ? -u : u;
-        fp_set_dig(t3, u);                      /* t3 = abs(u) */
-        fp_neg(t4, t3);                         /* t4 = - abs(u) */
-        dv_swap_cond(t3, t4, RLC_FP_DIGS, e0);  /* t3 = u, t4 = -u */
+		/* compute u and -u as field elms */
+		const int e0 = u < 0;
+		u = e0 ? -u : u;
+		fp_set_dig(t3, u);                      /* t3 = abs(u) */
+		fp_neg(t4, t3);                         /* t4 = - abs(u) */
+		dv_swap_cond(t3, t4, RLC_FP_DIGS, e0);  /* t3 = u, t4 = -u */
 
-        /* start computing the map */
-        fp_sqr(t0, t);
-        fp_mul(t0, t0, t3);                     /* t0 = u * t^2 */
-        fp_sqr(t1, t0);                         /* t1 = u^2 * t^4 */
-        fp_add(t2, t1, t0);                     /* t2 = u^2 * t^4 + u * t^2 */
+		/* start computing the map */
+		fp_sqr(t0, t);
+		fp_mul(t0, t0, t3);                     /* t0 = u * t^2 */
+		fp_sqr(t1, t0);                         /* t1 = u^2 * t^4 */
+		fp_add(t2, t1, t0);                     /* t2 = u^2 * t^4 + u * t^2 */
 
-        /* handle the exceptional cases and simultaneously invert a */
-        const int e1 = fp_is_zero(t2);
-        dv_copy_cond(t2, t4, RLC_FP_DIGS, e1);  /* exceptional case: -u instead of u^2t^4 + ut^2 */
-        fp_mul(t3, t2, ep_curve_get_a());       /* t3 = t2 * a */
-        fp_inv(t4, t3);                         /* t4 is either -1/au or 1/a(u^2 * t^4 + u * t^2) */
-        fp_mul(t3, t4, t2);                     /* t3 = 1/a */
-        fp_mul(t2, t4, ep_curve_get_a());       /* t2 = -1/u or 1/(u^2 * t^4 + u*t^2) */
-        fp_add_dig(t4, t2, 1);                  /* t4 = 1 + t2 */
-        dv_copy_cond(t2, t4, RLC_FP_DIGS, e1 == 0); /* only add 1 if t2 != -1/u */
+		/* handle the exceptional cases and simultaneously invert a */
+		const int e1 = fp_is_zero(t2);
+		dv_copy_cond(t2, t4, RLC_FP_DIGS, e1);  /* exceptional case: -u instead of u^2t^4 + ut^2 */
+		fp_mul(t3, t2, ep_curve_get_a());       /* t3 = t2 * a */
+		fp_inv(t4, t3);                         /* t4 is either -1/au or 1/a(u^2 * t^4 + u * t^2) */
+		fp_mul(t3, t4, t2);                     /* t3 = 1/a */
+		fp_mul(t2, t4, ep_curve_get_a());       /* t2 = -1/u or 1/(u^2 * t^4 + u*t^2) */
+		fp_add_dig(t4, t2, 1);                  /* t4 = 1 + t2 */
+		dv_copy_cond(t2, t4, RLC_FP_DIGS, e1 == 0); /* only add 1 if t2 != -1/u */
 
-        /* compute -B / A */
-        fp_neg(t3, t3);                     /* t3 = -1 / A */
-        fp_mul(t3, t3, ep_curve_get_b());   /* t3 = -B / A */
+		/* compute -B / A */
+		fp_neg(t3, t3);                     /* t3 = -1 / A */
+		fp_mul(t3, t3, ep_curve_get_b());   /* t3 = -B / A */
 
-        /* compute x1, g(x1) */
-        fp_mul(p->x, t2, t3);       /* p->x = -B / A * (1 + 1 / (u^2 * t^4 + u * t^2)) */
-        ep_rhs(p->y, p);            /* p->y = g(t2) */
+		/* compute x1, g(x1) */
+		fp_mul(p->x, t2, t3);       /* p->x = -B / A * (1 + 1 / (u^2 * t^4 + u * t^2)) */
+		ep_rhs(p->y, p);            /* p->y = g(t2) */
 
-        /* compute x2, g(x2) */
-        fp_mul(t2, t0, p->x);       /* t2 = u * t^2 * x1 */
-        fp_mul(t1, t0, t1);         /* t1 = u^3 * t^6 */
-        fp_mul(t3, t1, p->y);       /* t5 = g(t2) = u^3 * t^6 * g(p->x) */
+		/* compute x2, g(x2) */
+		fp_mul(t2, t0, p->x);       /* t2 = u * t^2 * x1 */
+		fp_mul(t1, t0, t1);         /* t1 = u^3 * t^6 */
+		fp_mul(t3, t1, p->y);       /* t5 = g(t2) = u^3 * t^6 * g(p->x) */
 
-        /* XXX(rsw)
-         * This should be done in constant time and without computing 2 sqrts.
-         * Avoiding a second sqrt relies on knowing the 2-adicity of the modulus.
-         */
-        if (!fp_srt(p->y, p->y)) {
-            /* try x2, g(x2) */
-            fp_copy(p->x, t2);
-            if (!fp_srt(p->y, t3)) {
-                THROW(ERR_NO_VALID);
-            }
-        }
-        if (negate) {
-            fp_neg(p->y, p->y);
-        }
-        fp_set_dig(p->z, 1);
-        p->norm = 1;
-    }
-    CATCH_ANY {
-        THROW(ERR_CAUGHT);
-    }
-    FINALLY {
-        fp_free(t0);
-        fp_free(t1);
-        fp_free(t2);
-        fp_free(t3);
-        fp_free(t4);
-    }
+		/* XXX(rsw)
+		 * This should be done in constant time and without computing 2 sqrts.
+		 * Avoiding a second sqrt relies on knowing the 2-adicity of the modulus.
+		 */
+		if (!fp_srt(p->y, p->y)) {
+			/* try x2, g(x2) */
+			fp_copy(p->x, t2);
+			if (!fp_srt(p->y, t3)) {
+				THROW(ERR_NO_VALID);
+			}
+		}
+		if (negate) {
+			fp_neg(p->y, p->y);
+		}
+		fp_set_dig(p->z, 1);
+		p->norm = 1;
+	}
+	CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	}
+	FINALLY {
+		fp_free(t0);
+		fp_free(t1);
+		fp_free(t2);
+		fp_free(t3);
+		fp_free(t4);
+	}
 }
 
 /**
