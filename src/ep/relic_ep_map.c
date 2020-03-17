@@ -139,51 +139,72 @@ static void ep_sswu_abNeq0(ep_t p, const fp_t t, int u, int negate) {
 		fp_new(t3);
 		fp_new(t4);
 
-		const int iso = ep_curve_is_isomap();
-		dig_t *a = iso ? ep_curve_get_iso_a() : ep_curve_get_a();
-		dig_t *b = iso ? ep_curve_get_iso_b() : ep_curve_get_b();
-		if (fp_is_zero(a) || fp_is_zero(b)) {
+		dig_t *a = NULL;
+		dig_t *b = NULL;
+#if defined(EP_ISOMAP)
+		{
+			const int iso = ep_curve_is_isomap();
+			a = iso ? ep_curve_get_iso_a() : ep_curve_get_a();
+			b = iso ? ep_curve_get_iso_b() : ep_curve_get_b();
+			const int i_z = fp_is_zero(a) || fp_is_zero(b);
+			const int ni_z = ep_curve_opt_a() == RLC_ZERO || ep_curve_opt_b() == RLC_ZERO;
+			if ((iso && i_z) || (!iso && ni_z)) {
+				THROW(ERR_NO_VALID);
+			}
+		}
+#else  /* !defined(EP_ISOMAP) */
+		a = ep_curve_get_a();
+		b = ep_curve_get_b();
+		if (ep_curve_opt_a() == RLC_ZERO || ep_curve_opt_b() == RLC_ZERO) {
 			THROW(ERR_NO_VALID);
 		}
+#endif /* EP_ISOMAP */
 
 		/* compute u and -u as field elms */
-		const int e0 = u < 0;
-		u = e0 ? -u : u;
-		fp_set_dig(t3, u);                      /* t3 = abs(u) */
-		fp_neg(t4, t3);                         /* t4 = - abs(u) */
-		dv_swap_cond(t3, t4, RLC_FP_DIGS, e0);  /* t3 = u, t4 = -u */
+		{
+			const int e0 = u < 0;
+			u = e0 ? -u : u;
+			fp_set_dig(t3, u);                     /* t3 = abs(u) */
+			fp_neg(t4, t3);                        /* t4 = - abs(u) */
+			dv_swap_cond(t3, t4, RLC_FP_DIGS, e0); /* t3 = u, t4 = -u */
+		}
+		/* e0 goes out of scope */
 
 		/* start computing the map */
 		fp_sqr(t0, t);
-		fp_mul(t0, t0, t3);                     /* t0 = u * t^2 */
-		fp_sqr(t1, t0);                         /* t1 = u^2 * t^4 */
-		fp_add(t2, t1, t0);                     /* t2 = u^2 * t^4 + u * t^2 */
+		fp_mul(t0, t0, t3); /* t0 = u * t^2 */
+		fp_sqr(t1, t0);     /* t1 = u^2 * t^4 */
+		fp_add(t2, t1, t0); /* t2 = u^2 * t^4 + u * t^2 */
 
 		/* handle the exceptional cases and simultaneously invert a */
-		const int e1 = fp_is_zero(t2);
-		dv_copy_cond(t2, t4, RLC_FP_DIGS, e1);  /* exceptional case: -u instead of u^2t^4 + ut^2 */
-		fp_mul(t3, t2, a);                      /* t3 = t2 * a */
-		fp_inv(t4, t3);                         /* t4 is either -1/au or 1/a(u^2 * t^4 + u * t^2) */
-		fp_mul(t3, t4, t2);                     /* t3 = 1/a */
-		fp_mul(t2, t4, a);                      /* t2 = -1/u or 1/(u^2 * t^4 + u*t^2) */
-		fp_add_dig(t4, t2, 1);                  /* t4 = 1 + t2 */
-		dv_copy_cond(t2, t4, RLC_FP_DIGS, e1 == 0); /* only add 1 if t2 != -1/u */
+		/* XXX(rsw) should be done projectively */
+		{
+			const int e1 = fp_is_zero(t2);
+			dv_copy_cond(t2, t4, RLC_FP_DIGS, e1);      /* exceptional case: -u instead of u^2t^4 + ut^2 */
+			fp_mul(t3, t2, a);                          /* t3 = t2 * a */
+			fp_inv(t4, t3);                             /* t4 is either -1/au or 1/a(u^2 * t^4 + u * t^2) */
+			fp_mul(t3, t4, t2);                         /* t3 = 1/a */
+			fp_mul(t2, t4, a);                          /* t2 = -1/u or 1/(u^2 * t^4 + u*t^2) */
+			fp_add_dig(t4, t2, 1);                      /* t4 = 1 + t2 */
+			dv_copy_cond(t2, t4, RLC_FP_DIGS, e1 == 0); /* only add 1 if t2 != -1/u */
+		}
+		/* e1 goes out of scope */
 
 		/* compute -B / A */
-		fp_neg(t3, t3);             /* t3 = -1 / A */
-		fp_mul(t3, t3, b);          /* t3 = -B / A */
+		fp_neg(t3, t3);    /* t3 = -1 / A */
+		fp_mul(t3, t3, b); /* t3 = -B / A */
 
 		/* compute x1, g(x1) */
-		fp_mul(p->x, t2, t3);       /* p->x = -B / A * (1 + 1 / (u^2 * t^4 + u * t^2)) */
-		fp_sqr(p->y, p->x);         /* x^2 */
-		fp_add(p->y, p->y, a);      /* x^2 + a */
-		fp_mul(p->y, p->y, p->x);   /* x^3 + a x */
-		fp_add(p->y, p->y, b);      /* x^3 + a x + b */
+		fp_mul(p->x, t2, t3);     /* p->x = -B / A * (1 + 1 / (u^2 * t^4 + u * t^2)) */
+		fp_sqr(p->y, p->x);       /* x^2 */
+		fp_add(p->y, p->y, a);    /* x^2 + a */
+		fp_mul(p->y, p->y, p->x); /* x^3 + a x */
+		fp_add(p->y, p->y, b);    /* x^3 + a x + b */
 
 		/* compute x2, g(x2) */
-		fp_mul(t2, t0, p->x);       /* t2 = u * t^2 * x1 */
-		fp_mul(t1, t0, t1);         /* t1 = u^3 * t^6 */
-		fp_mul(t3, t1, p->y);       /* t5 = g(t2) = u^3 * t^6 * g(p->x) */
+		fp_mul(t2, t0, p->x); /* t2 = u * t^2 * x1 */
+		fp_mul(t1, t0, t1);   /* t1 = u^3 * t^6 */
+		fp_mul(t3, t1, p->y); /* t5 = g(t2) = u^3 * t^6 * g(p->x) */
 
 		/* XXX(rsw)
 		 * This should be done in constant time and without computing 2 sqrts.
@@ -215,15 +236,15 @@ static void ep_sswu_abNeq0(ep_t p, const fp_t t, int u, int negate) {
 }
 
 #ifdef EP_ISOMAP
-static void ep_iso_map(ep_t q, const ep_t p) {
+static void ep_iso_map(ep_t q, ep_t p) {
 	if (!ep_curve_is_isomap()) {
 		ep_copy(q, p);
 		return;
 	}
 
-	/* XXX need to support projective points eventually */
+	/* XXX need to add real support for projective points */
 	if (!p->norm) {
-		THROW(ERR_NO_VALID);
+		ep_norm(p, p);
 	}
 
 	fp_t t0, t1, t2, t3;
@@ -240,14 +261,14 @@ static void ep_iso_map(ep_t q, const ep_t p) {
 
 		isomap_t coeffs = ep_curve_get_iso_coeffs();
 
-#define HORNER_EVAL(OUT, COEFFS, CLEN)                 \
-        do {                                           \
-            fp_copy(OUT, COEFFS[CLEN]);                \
-            for (int idx = CLEN; idx > 0; --idx) {     \
-                fp_mul(OUT, OUT, p->x);                \
-                fp_add(OUT, OUT, COEFFS[idx - 1]);     \
-            }                                          \
-        } while (0)
+#define HORNER_EVAL(OUT, COEFFS, CLEN)                                         \
+	do {                                                                       \
+		fp_copy(OUT, COEFFS[CLEN]);                                            \
+		for (int idx = CLEN; idx > 0; --idx) {                                 \
+			fp_mul(OUT, OUT, p->x);                                            \
+			fp_add(OUT, OUT, COEFFS[idx - 1]);                                 \
+		}                                                                      \
+	} while (0)
 
 		/* denominators */
 		/* XXX(rsw) should do this projectively */
@@ -255,7 +276,7 @@ static void ep_iso_map(ep_t q, const ep_t p) {
 		HORNER_EVAL(t2, coeffs->xd, coeffs->deg_xd);
 		fp_mul(t0, t1, t2);
 		fp_inv(t0, t0);
-		fp_mul(t1, t1, t0);	/* x denominator */
+		fp_mul(t1, t1, t0); /* x denominator */
 		fp_mul(t2, t2, t0); /* y denominator */
 
 		/* numerators */
