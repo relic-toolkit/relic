@@ -269,6 +269,8 @@ typedef struct _ctx_t {
 	bn_st ep_h;
 	/** The square root of -3 needed for hashing. */
 	fp_st srm3;
+	/** The distinguished non-square used by the mapping function */
+	fp_st ep_map_u;
 #ifdef EP_ENDOM
 #if EP_MUL == LWNAF || EP_FIX == COMBS || EP_FIX == LWNAF || EP_SIM == INTER || !defined(STRIP)
 	/** Parameters required by the GLV method. @{ */

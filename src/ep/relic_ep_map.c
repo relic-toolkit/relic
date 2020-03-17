@@ -124,7 +124,7 @@ static void ep_sw_b12(ep_t p, const fp_t t, int u, int negate) {
  * Simplified SWU mapping from Section 4 of
  * "Fast and simple constant-time hashing to the BLS12-381 Elliptic Curve"
  */
-static void ep_sswu_abNeq0(ep_t p, const fp_t t, int u, int negate) {
+static void ep_map_sswu(ep_t p, const fp_t t, int negate) {
 	fp_t t0, t1, t2, t3, t4;
 	fp_null(t0);
 	fp_null(t1);
@@ -160,26 +160,17 @@ static void ep_sswu_abNeq0(ep_t p, const fp_t t, int u, int negate) {
 		}
 #endif /* EP_ISOMAP */
 
-		/* compute u and -u as field elms */
-		{
-			const int e0 = u < 0;
-			u = e0 ? -u : u;
-			fp_set_dig(t3, u);                     /* t3 = abs(u) */
-			fp_neg(t4, t3);                        /* t4 = - abs(u) */
-			dv_swap_cond(t3, t4, RLC_FP_DIGS, e0); /* t3 = u, t4 = -u */
-		}
-		/* e0 goes out of scope */
-
 		/* start computing the map */
 		fp_sqr(t0, t);
-		fp_mul(t0, t0, t3); /* t0 = u * t^2 */
-		fp_sqr(t1, t0);     /* t1 = u^2 * t^4 */
-		fp_add(t2, t1, t0); /* t2 = u^2 * t^4 + u * t^2 */
+		fp_mul(t0, t0, core_get()->ep_map_u); /* t0 = u * t^2 */
+		fp_sqr(t1, t0);                       /* t1 = u^2 * t^4 */
+		fp_add(t2, t1, t0);                   /* t2 = u^2 * t^4 + u * t^2 */
 
 		/* handle the exceptional cases and simultaneously invert a */
 		/* XXX(rsw) should be done projectively */
 		{
 			const int e1 = fp_is_zero(t2);
+			fp_neg(t4, core_get()->ep_map_u);           /* t4 = -u */
 			dv_copy_cond(t2, t4, RLC_FP_DIGS, e1);      /* exceptional case: -u instead of u^2t^4 + ut^2 */
 			fp_mul(t3, t2, a);                          /* t3 = t2 * a */
 			fp_inv(t4, t3);                             /* t4 is either -1/au or 1/a(u^2 * t^4 + u * t^2) */

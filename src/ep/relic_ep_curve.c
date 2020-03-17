@@ -215,13 +215,14 @@ const ep_t *ep_curve_get_tab(void) {
 #if defined(EP_PLAIN)
 
 void ep_curve_set_plain(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
-		const bn_t h) {
+		const bn_t h, const fp_t u) {
 	ctx_t *ctx = core_get();
 	ctx->ep_is_endom = 0;
 	ctx->ep_is_super = 0;
 
 	fp_copy(ctx->ep_a, a);
 	fp_copy(ctx->ep_b, b);
+	fp_copy(ctx->ep_map_u, u);
 
 	detect_opt(&(ctx->ep_opt_a), ctx->ep_a);
 	detect_opt(&(ctx->ep_opt_b), ctx->ep_b);
@@ -240,13 +241,14 @@ void ep_curve_set_plain(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
 #if defined(EP_SUPER)
 
 void ep_curve_set_super(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
-		const bn_t h) {
+		const bn_t h, const fp_t u) {
 	ctx_t *ctx = core_get();
 	ctx->ep_is_endom = 0;
 	ctx->ep_is_super = 1;
 
 	fp_copy(ctx->ep_a, a);
 	fp_copy(ctx->ep_b, b);
+	fp_copy(ctx->ep_map_u, u);
 
 	detect_opt(&(ctx->ep_opt_a), ctx->ep_a);
 	detect_opt(&(ctx->ep_opt_b), ctx->ep_b);
@@ -265,7 +267,7 @@ void ep_curve_set_super(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
 #if defined(EP_ENDOM)
 
 void ep_curve_set_endom(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
-		const bn_t h, const fp_t beta, const bn_t l) {
+		const bn_t h, const fp_t beta, const bn_t l, const fp_t u) {
 	int bits = bn_bits(r);
 	ctx_t *ctx = core_get();
 	ctx->ep_is_endom = 1;
@@ -273,6 +275,7 @@ void ep_curve_set_endom(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
 
 	fp_copy(ctx->ep_a, a);
 	fp_copy(ctx->ep_b, b);
+	fp_copy(ctx->ep_map_u, u);
 
 	detect_opt(&(ctx->ep_opt_a), ctx->ep_a);
 	detect_opt(&(ctx->ep_opt_b), ctx->ep_b);

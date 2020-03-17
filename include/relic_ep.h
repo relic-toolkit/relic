@@ -588,9 +588,10 @@ void ep_curve_get_cof(bn_t h);
  * @param[in] g			- the generator.
  * @param[in] r			- the order of the group of points.
  * @param[in] h			- the cofactor of the group order.
+ * @param[in] u			- the non-square used for hashing to this curve.
  */
 void ep_curve_set_plain(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
-		const bn_t h);
+		const bn_t h, const fp_t u);
 
 /**
  * Configures a supersingular prime elliptic curve by its coefficients and
@@ -601,9 +602,10 @@ void ep_curve_set_plain(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
  * @param[in] g			- the generator.
  * @param[in] r			- the order of the group of points.
  * @param[in] h			- the cofactor of the group order.
+ * @param[in] u			- the non-square used for hashing to this curve.
  */
 void ep_curve_set_super(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
-		const bn_t h);
+		const bn_t h, const fp_t u);
 
 /**
  * Configures a prime elliptic curve with endomorphisms by its coefficients and
@@ -616,9 +618,10 @@ void ep_curve_set_super(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
  * @param[in] beta		- the constant associated with the endomorphism.
  * @param[in] l			- the exponent corresponding to the endomorphism.
  * @param[in] h			- the cofactor of the group order.
+ * @param[in] u			- the non-square used for hashing to this curve.
  */
 void ep_curve_set_endom(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
-		const bn_t h, const fp_t beta, const bn_t l);
+		const bn_t h, const fp_t beta, const bn_t l, const fp_t u);
 
 /**
  * Configures a prime elliptic curve by its parameter identifier.
