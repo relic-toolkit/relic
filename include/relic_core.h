@@ -276,8 +276,8 @@ typedef struct _ctx_t {
 	bn_st ep_v1[3];
 	bn_st ep_v2[3];
 	/** @} */
-#endif /* EP_ENDOM */
 #endif /* EP_MUL */
+#endif /* EP_ENDOM */
 	/** Optimization identifier for the a-coefficient. */
 	int ep_opt_a;
 	/** Optimization identifier for the b-coefficient. */
@@ -288,12 +288,22 @@ typedef struct _ctx_t {
 	int ep_is_super;
 	/** Flag that stores if the prime curve is pairing-friendly. */
 	int ep_is_pairf;
+	/** Flag that indicates whether this curve uses an isogeny for the SSWU mapping. */
+	int ep_is_isomap;
 #ifdef EP_PRECO
 	/** Precomputation table for generator multiplication. */
 	ep_st ep_pre[RLC_EP_TABLE];
 	/** Array of pointers to the precomputation table. */
 	ep_st *ep_ptr[RLC_EP_TABLE];
 #endif /* EP_PRECO */
+#ifdef EP_ISOMAP
+	/** The 'a' coefficient of the isogenous elliptic curve used for SSWU mapping. */
+	fp_st ep_iso_a;
+	/** The 'b' coefficient of the isogenous elliptic curve used for SSWU mapping. */
+	fp_st ep_iso_b;
+	/** The isogeny map coefficients for the SSWU mapping. */
+	isomap_st ep_iso_coeffs;
+#endif /* EP_ISOMAP */
 #endif /* WITH_EP */
 
 #ifdef WITH_EPX

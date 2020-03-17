@@ -5,8 +5,9 @@ message("   ** Options for the prime elliptic curve module (default = all on):\n
 message("      EP_PLAIN=[off|on] Support for ordinary curves without endomorphisms.")
 message("      EP_SUPER=[off|on] Support for supersingular curves.")
 message("      EP_ENDOM=[off|on] Support for ordinary curves with endomorphisms.")
-message("      EP_MIXED=[off|on] Use mixed coordinates.\n")
-message("      EP_PRECO=[off|on] Build precomputation table for generator.")
+message("      EP_MIXED=[off|on] Use mixed coordinates.")
+message("      EP_PRECO=[off|on] Build precomputation table for generator.\n")
+message("      EP_ISOMAP=[off|on] Use SSWU and isogeny map for hashing.")
 message("      EP_DEPTH=w        Width w in [2,8] of precomputation table for fixed point methods.")
 message("      EP_WIDTH=w        Width w in [2,6] of window processing for unknown point methods.\n")
 
@@ -47,6 +48,7 @@ option(EP_SUPER "Support for supersingular curves" on)
 option(EP_MIXED "Use mixed coordinates" on)
 option(EP_ENDOM "Support for ordinary curves with endomorphisms" on)
 option(EP_PRECO "Build precomputation table for generator" on)
+option(EP_ISOMAP "Use SSWU and isogeny map for hashing" on)
 
 # Choose the arithmetic methods.
 if (NOT EP_METHD)

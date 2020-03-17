@@ -201,6 +201,14 @@ enum {
 #define RLC_EP_TABLE_MAX 	RLC_MAX(RLC_EP_TABLE_BASIC, RLC_EP_TABLE_COMBD)
 #endif
 
+#ifdef EP_ISOMAP
+/**
+ * Maximum number of coefficients of an isogeny map polynomial.
+ */
+#define RLC_EP_ISOMAP_MAX   16
+/* 16 is sufficient for a degree-11 isogeny polynomial */
+#endif /* EP_ISOMAP */
+
 /*============================================================================*/
 /* Type definitions                                                           */
 /*============================================================================*/
@@ -219,6 +227,30 @@ typedef struct {
 	int norm;
 } ep_st;
 
+#ifdef EP_ISOMAP
+/**
+ * Data structure representing an isogeny map.
+ */
+typedef struct {
+	/** Degree of x numerator */
+	int deg_xn;
+	/** Degree of x denominator */
+	int deg_xd;
+	/** Degree of y numerator */
+	int deg_yn;
+	/** Degree of y denominator */
+	int deg_yd;
+	/** x numerator coefficients */
+	fp_st xn[RLC_EP_ISOMAP_MAX];
+	/** x denominator coefficients */
+	fp_st xd[RLC_EP_ISOMAP_MAX];
+	/** y numerator coefficients */
+	fp_st yn[RLC_EP_ISOMAP_MAX];
+	/** y denominator coefficients */
+	fp_st yd[RLC_EP_ISOMAP_MAX];
+} isomap_st;
+#endif /* EP_ISOMAP */
+
 /**
  * Pointer to an elliptic curve point.
  */
@@ -227,6 +259,13 @@ typedef ep_st ep_t[1];
 #else
 typedef ep_st *ep_t;
 #endif
+
+#ifdef EP_ISOMAP
+/**
+ * Pointer to isogeny map coefficients.
+ */
+typedef isomap_st *isomap_t;
+#endif /* EP_ISOMAP */
 
 /*============================================================================*/
 /* Macro definitions                                                          */
@@ -487,6 +526,30 @@ int ep_curve_is_super(void);
  * family identifier otherwise.
  */
 int ep_curve_is_pairf(void);
+
+/**
+ * Tests if the current curve should use an isogeny map for the SSWU map.
+ *
+ * @return 1 if the curve uses an isogeny, and 0 otherwise.
+ */
+int ep_curve_is_isomap(void);
+
+#ifdef EP_ISOMAP
+/**
+ * Returns the 'b' coefficient of the curve isogenous to the current curve for use with the SSWU map.
+ */
+dig_t *ep_curve_get_iso_a(void);
+
+/**
+ * Returns the 'b' coefficient of the curve isogenous to the current curve for use with the SSWU map.
+ */
+dig_t *ep_curve_get_iso_b(void);
+
+/**
+ * Returns the isogeny map coefficients for use with the SSWU map.
+ */
+isomap_t ep_curve_get_iso_coeffs(void);
+#endif
 
 /**
  * Returns the generator of the group of points in the prime elliptic curve.

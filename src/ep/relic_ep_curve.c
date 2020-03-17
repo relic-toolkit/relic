@@ -166,6 +166,24 @@ int ep_curve_is_pairf(void) {
 	return core_get()->ep_is_pairf;
 }
 
+int ep_curve_is_isomap(void) {
+	return core_get()->ep_is_isomap;
+}
+
+#ifdef EP_ISOMAP
+dig_t *ep_curve_get_iso_a(void) {
+	return core_get()->ep_iso_a;
+}
+
+dig_t *ep_curve_get_iso_b(void) {
+	return core_get()->ep_iso_b;
+}
+
+isomap_t ep_curve_get_iso_coeffs(void) {
+	return &core_get()->ep_iso_coeffs;
+}
+#endif /* EP_ISOMAP */
+
 void ep_curve_get_gen(ep_t g) {
 	ep_copy(g, &core_get()->ep_g);
 }

@@ -138,7 +138,11 @@ static void ep_sswu_abNeq0(ep_t p, const fp_t t, int u, int negate) {
 		fp_new(t2);
 		fp_new(t3);
 		fp_new(t4);
-		if (ep_curve_opt_a() == RLC_ZERO || ep_curve_opt_b() == RLC_ZERO) {
+
+		const int iso = ep_curve_is_isomap();
+		dig_t *a = iso ? ep_curve_get_iso_a() : ep_curve_get_a();
+		dig_t *b = iso ? ep_curve_get_iso_b() : ep_curve_get_b();
+		if (fp_is_zero(a) || fp_is_zero(b)) {
 			THROW(ERR_NO_VALID);
 		}
 
@@ -158,20 +162,23 @@ static void ep_sswu_abNeq0(ep_t p, const fp_t t, int u, int negate) {
 		/* handle the exceptional cases and simultaneously invert a */
 		const int e1 = fp_is_zero(t2);
 		dv_copy_cond(t2, t4, RLC_FP_DIGS, e1);  /* exceptional case: -u instead of u^2t^4 + ut^2 */
-		fp_mul(t3, t2, ep_curve_get_a());       /* t3 = t2 * a */
+		fp_mul(t3, t2, a);                      /* t3 = t2 * a */
 		fp_inv(t4, t3);                         /* t4 is either -1/au or 1/a(u^2 * t^4 + u * t^2) */
 		fp_mul(t3, t4, t2);                     /* t3 = 1/a */
-		fp_mul(t2, t4, ep_curve_get_a());       /* t2 = -1/u or 1/(u^2 * t^4 + u*t^2) */
+		fp_mul(t2, t4, a);                      /* t2 = -1/u or 1/(u^2 * t^4 + u*t^2) */
 		fp_add_dig(t4, t2, 1);                  /* t4 = 1 + t2 */
 		dv_copy_cond(t2, t4, RLC_FP_DIGS, e1 == 0); /* only add 1 if t2 != -1/u */
 
 		/* compute -B / A */
-		fp_neg(t3, t3);                     /* t3 = -1 / A */
-		fp_mul(t3, t3, ep_curve_get_b());   /* t3 = -B / A */
+		fp_neg(t3, t3);             /* t3 = -1 / A */
+		fp_mul(t3, t3, b);          /* t3 = -B / A */
 
 		/* compute x1, g(x1) */
 		fp_mul(p->x, t2, t3);       /* p->x = -B / A * (1 + 1 / (u^2 * t^4 + u * t^2)) */
-		ep_rhs(p->y, p);            /* p->y = g(t2) */
+		fp_sqr(p->y, p->x);         /* x^2 */
+		fp_add(p->y, p->y, a);      /* x^2 + a */
+		fp_mul(p->y, p->y, p->x);   /* x^3 + a x */
+		fp_add(p->y, p->y, b);      /* x^3 + a x + b */
 
 		/* compute x2, g(x2) */
 		fp_mul(t2, t0, p->x);       /* t2 = u * t^2 * x1 */
@@ -206,6 +213,74 @@ static void ep_sswu_abNeq0(ep_t p, const fp_t t, int u, int negate) {
 		fp_free(t4);
 	}
 }
+
+#ifdef EP_ISOMAP
+static void ep_iso_map(ep_t q, const ep_t p) {
+	if (!ep_curve_is_isomap()) {
+		ep_copy(q, p);
+		return;
+	}
+
+	/* XXX need to support projective points eventually */
+	if (!p->norm) {
+		THROW(ERR_NO_VALID);
+	}
+
+	fp_t t0, t1, t2, t3;
+	fp_null(t0);
+	fp_null(t1);
+	fp_null(t2);
+	fp_null(t3);
+
+	TRY {
+		fp_new(t0);
+		fp_new(t1);
+		fp_new(t2);
+		fp_new(t3);
+
+		isomap_t coeffs = ep_curve_get_iso_coeffs();
+
+#define HORNER_EVAL(OUT, COEFFS, CLEN)                 \
+        do {                                           \
+            fp_copy(OUT, COEFFS[CLEN]);                \
+            for (int idx = CLEN; idx > 0; --idx) {     \
+                fp_mul(OUT, OUT, p->x);                \
+                fp_add(OUT, OUT, COEFFS[idx - 1]);     \
+            }                                          \
+        } while (0)
+
+		/* denominators */
+		/* XXX(rsw) should do this projectively */
+		HORNER_EVAL(t1, coeffs->yd, coeffs->deg_yd);
+		HORNER_EVAL(t2, coeffs->xd, coeffs->deg_xd);
+		fp_mul(t0, t1, t2);
+		fp_inv(t0, t0);
+		fp_mul(t1, t1, t0);	/* x denominator */
+		fp_mul(t2, t2, t0); /* y denominator */
+
+		/* numerators */
+		HORNER_EVAL(t0, coeffs->xn, coeffs->deg_xn);
+		HORNER_EVAL(t3, coeffs->yn, coeffs->deg_yn);
+
+#undef HORNER_EVAL
+
+		fp_mul(q->y, p->y, t3);
+		fp_mul(q->y, q->y, t2);
+		fp_mul(q->x, t0, t1);
+		fp_set_dig(q->z, 1);
+		q->norm = 1;
+	}
+	CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	}
+	FINALLY {
+		fp_free(t0);
+		fp_free(t1);
+		fp_free(t2);
+		fp_free(t3);
+	}
+}
+#endif /* EP_ISOMAP */
 
 /**
  * Based on the rust implementation of pairings, zkcrypto/pairing.
