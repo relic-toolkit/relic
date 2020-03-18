@@ -156,7 +156,7 @@ static void ep_map_sswu(ep_t p, const fp_t t, int negate) {
 			fp_neg(t3, u);                              /* t3 = -u */
 			dv_copy_cond(t2, t3, RLC_FP_DIGS, e1);      /* exceptional case: -u instead of u^2t^4 + ut^2 */
 			fp_inv(t2, t2);                             /* t2 = -1/u or 1/(u^2 * t^4 + u*t^2) */
-			fp_add_dig(t3, t2, 1);                      /* t4 = 1 + t2 */
+			fp_add_dig(t3, t2, 1);                      /* t3 = 1 + t2 */
 			dv_copy_cond(t2, t3, RLC_FP_DIGS, e1 == 0); /* only add 1 if t2 != -1/u */
 		}
 		/* e1 goes out of scope */
@@ -268,6 +268,90 @@ static void ep_iso_map(ep_t q, ep_t p) {
 	}
 }
 #endif /* EP_ISOMAP */
+
+/**
+ * Shallue--van de Woestijne map, based on the definition from
+ * draft-irtf-cfrg-hash-to-curve-06, Section 6.6.1
+ */
+static void ep_map_svdw(ep_t p, const fp_t t, int negate) {
+	fp_t t1, t2, t3, t4;
+	fp_null(t1);
+	fp_null(t2);
+	fp_null(t3);
+	fp_null(t4);
+
+	TRY {
+		fp_new(t1);
+		fp_new(t2);
+		fp_new(t3);
+		fp_new(t4);
+
+		ctx_t *ctx = core_get();
+		dig_t *gU = ctx->ep_map_c1;
+		dig_t *mUover2 = ctx->ep_map_c2;
+		dig_t *c3 = ctx->ep_map_c3;
+		dig_t *c4 = ctx->ep_map_c4;
+		dig_t *u = ctx->ep_map_u;
+
+		/* start computing the map */
+		fp_sqr(t1, t);
+		fp_mul(t1, t1, gU);
+		fp_add_dig(t2, t1, 1); /* 1 + t^2 * g(u) */
+		fp_sub_dig(t1, t1, 1);
+		fp_neg(t1, t1);     /* 1 - t^2 * g(u) */
+		fp_mul(t3, t1, t2); /* (1 + t^2 * g(u)) * (1 - t^2 * g(u)) */
+
+		/* handle exceptional case */
+		{
+			/* compute inv0(t3), i.e., 0 if t3 == 0, 1/t3 otherwise */
+			const int e0 = fp_is_zero(t3);
+			dv_copy_cond(t3, gU, RLC_FP_DIGS, e0); /* g(u) is guaranteed to be nonzero */
+			fp_inv(t3, t3);
+			fp_zero(t4);
+			dv_copy_cond(t3, t4, RLC_FP_DIGS, e0);
+		}
+		/* e0 goes out of scope */
+		fp_mul(t4, t, t1);
+		fp_mul(t4, t4, t3);
+		fp_mul(t4, t4, c3);
+
+		/* XXX(rsw) this should be constant time */
+		/* compute x1 and g(x1) */
+		fp_sub(p->x, mUover2, t4);
+		fp_rhs(p->y, p);
+		if (!fp_srt(p->y, p->y)) {
+			/* compute x2 and g(x2) */
+			fp_add(p->x, mUover2, t4);
+			fp_rhs(p->y, p);
+			if (!fp_srt(p->y, p->y)) {
+				/* compute x3 and g(x3) */
+				fp_sqr(p->x, t2);
+				fp_mul(p->x, p->x, t3);
+				fp_sqr(p->x, p->x);
+				fp_mul(p->x, p->x, c4);
+				fp_add(p->x, p->x, u);
+				fp_rhs(p->y, p);
+				if (!fp_srt(p->y, p->y)) {
+					THROW(ERR_NO_VALID);
+				}
+			}
+		}
+		if (negate) {
+			fp_neg(p->y, p->y);
+		}
+		fp_set_dig(p->z, 1);
+		p->norm = 1;
+	}
+	CATCH_ANY {
+		THROW(ERR_CAUGHT)
+	}
+	FINALLY {
+		fp_free(t1);
+		fp_free(t2);
+		fp_free(t3);
+		fp_free(t4);
+	}
+}
 
 /**
  * Based on the rust implementation of pairings, zkcrypto/pairing.
