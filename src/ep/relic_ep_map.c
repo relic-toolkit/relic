@@ -36,13 +36,22 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
+#ifdef EP_ISOMAP
 /**
- * Optimized Shallue–van de Woestijne encoding from Section 3 of
- * "Fast and simple constant-time hashing to the BLS12-381 elliptic curve".
+ * Generic isogeny map evaluation for use with SSWU map.
  */
-static void ep_sw_b12(ep_t p, const fp_t t, int u, int negate) {
-	fp_t t0, t1, t2, t3;
+static void ep_iso_map(ep_t q, ep_t p) {
+	if (!ep_curve_is_isomap()) {
+		ep_copy(q, p);
+		return;
+	}
 
+	/* XXX need to add real support for projective points */
+	if (!p->norm) {
+		ep_norm(p, p);
+	}
+
+	fp_t t0, t1, t2, t3;
 	fp_null(t0);
 	fp_null(t1);
 	fp_null(t2);
@@ -54,60 +63,37 @@ static void ep_sw_b12(ep_t p, const fp_t t, int u, int negate) {
 		fp_new(t2);
 		fp_new(t3);
 
-		/* t0 = t^2. */
-		fp_sqr(t0, t);
-		/* Compute f(u) such that u^3 + b is a square. */
-		fp_set_dig(p->x, -u);
-		fp_neg(p->x, p->x);
-		ep_rhs(t1, p);
-		/* Compute t1 = (-f(u) + t^2), t2 = t1 * t^2 and invert if non-zero. */
-		fp_add(t1, t1, t0);
-		fp_mul(t2, t1, t0);
-		if (!fp_is_zero(t2)) {
-			/* Compute inverse of u^3 * t2 and fix later. */
-			fp_mul(t2, t2, p->x);
-			fp_mul(t2, t2, p->x);
-			fp_mul(t2, t2, p->x);
-			fp_inv(t2, t2);
-		}
-		/* Compute t0 = t^4 * u * sqrt(-3)/t2. */
-		fp_sqr(t0, t0);
-		fp_mul(t0, t0, t2);
-		fp_mul(t0, t0, p->x);
-		fp_mul(t0, t0, p->x);
-		fp_mul(t0, t0, p->x);
-		/* Compute constant u * sqrt(-3). */
-		fp_copy(t3, core_get()->srm3);
-		for (int i = 1; i < -u; i++) {
-			fp_add(t3, t3, core_get()->srm3);
-		}
-		fp_mul(t0, t0, t3);
-		/* Compute (u * sqrt(-3) + u)/2 - t0. */
-		fp_add_dig(p->x, t3, -u);
-		fp_hlv(p->y, p->x);
-		fp_sub(p->x, p->y, t0);
-		ep_rhs(p->y, p);
-		if (!fp_srt(p->y, p->y)) {
-			/* Now try t0 - (u * sqrt(-3) - u)/2. */
-			fp_sub_dig(p->x, t3, -u);
-			fp_hlv(p->y, p->x);
-			fp_sub(p->x, t0, p->y);
-			ep_rhs(p->y, p);
-			if (!fp_srt(p->y, p->y)) {
-				/* Finally, try (u - t1^2 / t2). */
-				fp_sqr(p->x, t1);
-				fp_mul(p->x, p->x, t1);
-				fp_mul(p->x, p->x, t2);
-				fp_sub_dig(p->x, p->x, -u);
-				ep_rhs(p->y, p);
-				fp_srt(p->y, p->y);
-			}
-		}
-		if (negate) {
-			fp_neg(p->y, p->y);
-		}
-		fp_set_dig(p->z, 1);
-		p->norm = 1;
+		isomap_t coeffs = ep_curve_get_iso_coeffs();
+
+#define HORNER_EVAL(OUT, COEFFS, CLEN)                                         \
+	do {                                                                       \
+		fp_copy(OUT, COEFFS[CLEN]);                                            \
+		for (int idx = CLEN; idx > 0; --idx) {                                 \
+			fp_mul(OUT, OUT, p->x);                                            \
+			fp_add(OUT, OUT, COEFFS[idx - 1]);                                 \
+		}                                                                      \
+	} while (0)
+
+		/* denominators */
+		/* XXX(rsw) should do this projectively */
+		HORNER_EVAL(t1, coeffs->yd, coeffs->deg_yd);
+		HORNER_EVAL(t2, coeffs->xd, coeffs->deg_xd);
+		fp_mul(t0, t1, t2);
+		fp_inv(t0, t0);
+		fp_mul(t1, t1, t0); /* x denominator */
+		fp_mul(t2, t2, t0); /* y denominator */
+
+		/* numerators */
+		HORNER_EVAL(t0, coeffs->xn, coeffs->deg_xn);
+		HORNER_EVAL(t3, coeffs->yn, coeffs->deg_yn);
+
+#undef HORNER_EVAL
+
+		fp_mul(q->y, p->y, t3);
+		fp_mul(q->y, q->y, t2);
+		fp_mul(q->x, t0, t1);
+		fp_set_dig(q->z, 1);
+		q->norm = 1;
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
@@ -119,6 +105,7 @@ static void ep_sw_b12(ep_t p, const fp_t t, int u, int negate) {
 		fp_free(t3);
 	}
 }
+#endif /* EP_ISOMAP */
 
 /**
  * Simplified SWU mapping from Section 4 of
@@ -189,73 +176,12 @@ static void ep_map_sswu(ep_t p, const fp_t t, int negate) {
 		}
 		fp_set_dig(p->z, 1);
 		p->norm = 1;
-	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	}
-	FINALLY {
-		fp_free(t0);
-		fp_free(t1);
-		fp_free(t2);
-		fp_free(t3);
-	}
-}
 
 #ifdef EP_ISOMAP
-static void ep_iso_map(ep_t q, ep_t p) {
-	if (!ep_curve_is_isomap()) {
-		ep_copy(q, p);
-		return;
-	}
-
-	/* XXX need to add real support for projective points */
-	if (!p->norm) {
-		ep_norm(p, p);
-	}
-
-	fp_t t0, t1, t2, t3;
-	fp_null(t0);
-	fp_null(t1);
-	fp_null(t2);
-	fp_null(t3);
-
-	TRY {
-		fp_new(t0);
-		fp_new(t1);
-		fp_new(t2);
-		fp_new(t3);
-
-		isomap_t coeffs = ep_curve_get_iso_coeffs();
-
-#define HORNER_EVAL(OUT, COEFFS, CLEN)                                         \
-	do {                                                                       \
-		fp_copy(OUT, COEFFS[CLEN]);                                            \
-		for (int idx = CLEN; idx > 0; --idx) {                                 \
-			fp_mul(OUT, OUT, p->x);                                            \
-			fp_add(OUT, OUT, COEFFS[idx - 1]);                                 \
-		}                                                                      \
-	} while (0)
-
-		/* denominators */
-		/* XXX(rsw) should do this projectively */
-		HORNER_EVAL(t1, coeffs->yd, coeffs->deg_yd);
-		HORNER_EVAL(t2, coeffs->xd, coeffs->deg_xd);
-		fp_mul(t0, t1, t2);
-		fp_inv(t0, t0);
-		fp_mul(t1, t1, t0); /* x denominator */
-		fp_mul(t2, t2, t0); /* y denominator */
-
-		/* numerators */
-		HORNER_EVAL(t0, coeffs->xn, coeffs->deg_xn);
-		HORNER_EVAL(t3, coeffs->yn, coeffs->deg_yn);
-
-#undef HORNER_EVAL
-
-		fp_mul(q->y, p->y, t3);
-		fp_mul(q->y, q->y, t2);
-		fp_mul(q->x, t0, t1);
-		fp_set_dig(q->z, 1);
-		q->norm = 1;
+		if (ep_curve_is_isomap()) {
+			ep_iso_map(p, p);
+		}
+#endif
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
@@ -267,7 +193,6 @@ static void ep_iso_map(ep_t q, ep_t p) {
 		fp_free(t3);
 	}
 }
-#endif /* EP_ISOMAP */
 
 /**
  * Shallue--van de Woestijne map, based on the definition from
@@ -353,82 +278,6 @@ static void ep_map_svdw(ep_t p, const fp_t t, int negate) {
 	}
 }
 
-/**
- * Based on the rust implementation of pairings, zkcrypto/pairing.
- * The algorithm is Shallue–van de Woestijne encoding from
- * Section 3 of "Indifferentiable Hashing to Barreto–Naehrig Curves"
- * from Fouque-Tibouchi: <https://www.di.ens.fr/~fouque/pub/latincrypt12.pdf>
- */
-static void ep_sw_bn(ep_t p, const fp_t t, int u, int negate) {
-	fp_t t0;
-	fp_t t1;
-	if (fp_is_zero(t)) {
-		ep_set_infty(p);
-		return;
-	}
-
-	fp_null(t0);
-	fp_null(t1);
-
-	TRY {
-		fp_new(t0);
-		fp_new(t1);
-
-		/* w = t^2 + b + 1 */
-		fp_sqr(t0, t);
-		fp_add(t0, t0, ep_curve_get_b());
-		fp_add_dig(t0, t0, 1);
-
-		if (fp_is_zero(t0)) {
-			ep_curve_get_gen(p);
-			return;
-		}
-
-		/* (sqrt(-3) - u) / 2 */
-		fp_copy(t1, core_get()->srm3);
-		fp_sub_dig(t1, t1, -u);
-		fp_hlv(t1, t1);
-
-		fp_inv(t0, t0);
-		fp_mul(t0, t0, core_get()->srm3);
-		fp_mul(t0, t0, t);
-
-		/* x1 = -wt + sqrt(-3) */
-		fp_neg(p->x, t0);
-		fp_mul(p->x, p->x, t);
-		fp_add(p->x, p->x, t1);
-		ep_rhs(p->y, p);
-		if (!fp_srt(p->y, p->y)) {
-			/* x2 = - x1 - u */
-			fp_neg(p->x, p->x);
-			fp_sub_dig(p->x, p->x, -u);
-			ep_rhs(p->y, p);
-			if (!fp_srt(p->y, p->y)) {
-				/* x3 = (w^2 + u)/w^2 */
-				fp_sqr(p->x, t0);
-				fp_inv(p->x, p->x);
-				fp_add_dig(p->x, p->x, -u);
-				ep_rhs(p->y, p);
-				fp_srt(p->y, p->y);
-				p->norm = 0;
-			}
-		}
-
-		if (negate) {
-			fp_neg(p->y, p->y);
-		}
-		fp_set_dig(p->z, 1);
-		p->norm = 1;
-	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	}
-	FINALLY {
-		fp_free(t0);
-		fp_free(t1);
-	}
-}
-
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
@@ -451,38 +300,55 @@ void ep_map(ep_t p, const uint8_t *msg, int len) {
 		fp_new(t);
 		ep_new(q);
 
+		/* figure out which hash function to use */
+		const int abNeq0 = (ep_curve_opt_a() != RLC_ZERO) && (ep_curve_opt_b() != RLC_ZERO);
+		void (*map_fn)(ep_t, const fp_t, int);
+		if (ep_curve_is_isomap() || abNeq0) {
+			map_fn = ep_map_sswu;
+		} else {
+			map_fn = ep_map_svdw;
+		}
+
+		/* XXX(rsw) should hash to field in a more conservative way.
+		 *          The method below is probably not indifferentiable,
+		 *          especially for large fields / small hash functions.
+		 */
 		pm1o2->sign = RLC_POS;
 		pm1o2->used = RLC_FP_DIGS;
 		dv_copy(pm1o2->dp, fp_prime_get(), RLC_FP_DIGS);
 		bn_hlv(pm1o2, pm1o2);
+
+		/* first map invocation */
 		md_map(digest, msg, len);
 		bn_read_bin(k, digest, RLC_MIN(RLC_FP_BYTES, RLC_MD_LEN));
 		fp_prime_conv(t, k);
 		fp_prime_back(k, t);
 		neg = (bn_cmp(k, pm1o2) == RLC_LT ? 0 : 1);
+		map_fn(p, t, neg);
 
+		/* second map invocation */
+		md_map(digest, digest, RLC_MD_LEN);
+		bn_read_bin(k, digest, RLC_MIN(RLC_FP_BYTES, RLC_MD_LEN));
+		fp_prime_conv(t, k);
+		fp_prime_back(k, t);
+		neg = (bn_cmp(k, pm1o2) == RLC_LT ? 0 : 1);
+		map_fn(q, t, neg);
+
+		/* sum the result */
+		ep_add(p, p, q);
+		ep_norm(p, p);
+
+		/* clear cofactor */
 		switch (ep_curve_is_pairf()) {
 			case EP_BN:
-				ep_sw_bn(p, t, -1, neg);
-				md_map(digest, digest, RLC_MD_LEN);
-				bn_read_bin(k, digest, RLC_MIN(RLC_FP_BYTES, RLC_MD_LEN));
-				fp_prime_conv(t, k);
-				fp_prime_back(k, t);
-				neg = (bn_cmp(k, pm1o2) == RLC_LT ? 0 : 1);
-				ep_sw_bn(q, t, -1, neg);
-				ep_add(p, p, q);
-				ep_norm(p, p);
+				/* h = 1 */
 				break;
 			case EP_B12:
-				ep_sw_b12(p, t, -3, neg);
-				md_map(digest, digest, RLC_MD_LEN);
-				bn_read_bin(k, digest, RLC_MIN(RLC_FP_BYTES, RLC_MD_LEN));
-				fp_prime_conv(t, k);
-				neg = (bn_cmp(k, pm1o2) == RLC_LT ? 0 : 1);
-				ep_sw_b12(q, t, -3, neg);
-				ep_add(p, p, q);
-				ep_norm(p, p);
-				/* Now, multiply by cofactor to get the correct group. */
+				/* multiply by 1-x (x the BLS parameter) to get the correct group. */
+				/* XXX(rsw) is this guaranteed to work? It could fail if one
+				 *          of the prime-squared subgroups is cyclic, but
+				 *          maybe there's an argument that this is never the case...
+				 */
 				fp_prime_get_par(k);
 				bn_neg(k, k);
 				bn_add_dig(k, k, 1);
@@ -493,21 +359,7 @@ void ep_map(ep_t p, const uint8_t *msg, int len) {
 				}
 				break;
 			default:
-				fp_prime_conv(p->x, k);
-				fp_zero(p->y);
-				fp_set_dig(p->z, 1);
-
-				while (1) {
-					ep_rhs(t, p);
-
-					if (fp_srt(p->y, t)) {
-						p->norm = 1;
-						break;
-					}
-					fp_add_dig(p->x, p->x, 1);
-				}
-
-				/* Now, multiply by cofactor to get the correct group. */
+				/* multiply by cofactor to get the correct group. */
 				ep_curve_get_cof(k);
 				if (bn_bits(k) < RLC_DIG) {
 					ep_mul_dig(p, p, k->dp[0]);
