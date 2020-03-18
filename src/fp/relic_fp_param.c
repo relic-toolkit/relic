@@ -94,14 +94,14 @@ void fp_param_set(int param) {
 				break;
 #elif FP_PRIME == 160
 			case SECG_160:
-				/* p = 2^160 - 2^31 + 1. */
+				/* p = 2^160 - 2^31 - 1. */
 				f[0] = -1;
 				f[1] = -31;
 				f[2] = 160;
 				fp_prime_set_pmers(f, 3);
 				break;
 			case SECG_160D:
-				/* p = 2^160 - 2^32 - 2^14 - 2^12 - 2^9 - 2^8 - 2^7 - 2^3 - 2^2 - 1.*/
+				/* p = 2^160 - 2^32 - 2^14 - 2^12 - 2^9 - 2^8 - 2^7 - 2^3 - 2^2 - 1. */
 				f[0] = -1;
 				f[1] = -2;
 				f[2] = -3;
@@ -123,7 +123,7 @@ void fp_param_set(int param) {
 				fp_prime_set_pmers(f, 3);
 				break;
 			case SECG_192:
-				/* p = 2^192 - 2^32 - 2^12 - 2^8 - 2^7 - 2^6 - 2^3 - 1.*/
+				/* p = 2^192 - 2^32 - 2^12 - 2^8 - 2^7 - 2^6 - 2^3 - 1. */
 				f[0] = -1;
 				f[1] = -3;
 				f[2] = -6;
@@ -334,7 +334,7 @@ void fp_param_set(int param) {
 				bn_sub(t0, t0, t1);
 				bn_set_2b(t1, 12);
 				bn_sub(t0, t0, t1);
-				bn_neg(t1, t1);
+				bn_neg(t0, t0);
 				/* h = (49*u^2 + 245 * u + 343)/3 */
 				bn_mul_dig(p, t0, 245);
 				bn_add_dig(p, p, 200);
