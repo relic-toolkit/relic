@@ -271,6 +271,14 @@ typedef struct _ctx_t {
 	fp_st srm3;
 	/** The distinguished non-square used by the mapping function */
 	fp_st ep_map_u;
+	/** The first constant needed for hashing. */
+	fp_st ep_map_c1;
+	/** The second constant needed for hashing. */
+	fp_st ep_map_c2;
+	/** The third constant needed for hashing. */
+	fp_st ep_map_c3;
+	/** The fourth constant needed for hashing. */
+	fp_st ep_map_c4;
 #ifdef EP_ENDOM
 #if EP_MUL == LWNAF || EP_FIX == COMBS || EP_FIX == LWNAF || EP_SIM == INTER || !defined(STRIP)
 	/** Parameters required by the GLV method. @{ */

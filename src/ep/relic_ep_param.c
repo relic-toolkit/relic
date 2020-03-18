@@ -975,26 +975,23 @@ void ep_param_set(int param) {
 
 #if defined(EP_PLAIN)
 		if (plain) {
-			ep_curve_set_plain(a, b, g, r, h, u);
+			ep_curve_set_plain(a, b, g, r, h, u, isomap);
 			core_get()->ep_id = param;
-			core_get()->ep_is_isomap = isomap;
 		}
 #endif
 
 #if defined(EP_ENDOM)
 		if (endom) {
-			ep_curve_set_endom(a, b, g, r, h, beta, lamb, u);
+			ep_curve_set_endom(a, b, g, r, h, beta, lamb, u, isomap);
 			core_get()->ep_id = param;
 			core_get()->ep_is_pairf = pairf;
-			core_get()->ep_is_isomap = isomap;
 		}
 #endif
 
 #if defined(EP_SUPER)
 		if (super) {
-			ep_curve_set_super(a, b, g, r, h, u);
+			ep_curve_set_super(a, b, g, r, h, u, isomap);
 			core_get()->ep_id = param;
-			core_get()->ep_is_isomap = isomap;
 		}
 #endif
 	}

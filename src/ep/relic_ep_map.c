@@ -125,72 +125,48 @@ static void ep_sw_b12(ep_t p, const fp_t t, int u, int negate) {
  * "Fast and simple constant-time hashing to the BLS12-381 Elliptic Curve"
  */
 static void ep_map_sswu(ep_t p, const fp_t t, int negate) {
-	fp_t t0, t1, t2, t3, t4;
+	fp_t t0, t1, t2, t3;
 	fp_null(t0);
 	fp_null(t1);
 	fp_null(t2);
 	fp_null(t3);
-	fp_null(t4);
 
 	TRY {
 		fp_new(t0);
 		fp_new(t1);
 		fp_new(t2);
 		fp_new(t3);
-		fp_new(t4);
 
-		dig_t *a = NULL;
-		dig_t *b = NULL;
-#if defined(EP_ISOMAP)
-		{
-			const int iso = ep_curve_is_isomap();
-			a = iso ? ep_curve_get_iso_a() : ep_curve_get_a();
-			b = iso ? ep_curve_get_iso_b() : ep_curve_get_b();
-			const int i_z = fp_is_zero(a) || fp_is_zero(b);
-			const int ni_z = ep_curve_opt_a() == RLC_ZERO || ep_curve_opt_b() == RLC_ZERO;
-			if ((iso && i_z) || (!iso && ni_z)) {
-				THROW(ERR_NO_VALID);
-			}
-		}
-#else  /* !defined(EP_ISOMAP) */
-		a = ep_curve_get_a();
-		b = ep_curve_get_b();
-		if (ep_curve_opt_a() == RLC_ZERO || ep_curve_opt_b() == RLC_ZERO) {
-			THROW(ERR_NO_VALID);
-		}
-#endif /* EP_ISOMAP */
+		ctx_t *ctx = core_get();
+		dig_t *mBoverA = ctx->ep_map_c1;
+		dig_t *a = ctx->ep_map_c3;
+		dig_t *b = ctx->ep_map_c4;
+		dig_t *u = ctx->ep_map_u;
 
 		/* start computing the map */
 		fp_sqr(t0, t);
-		fp_mul(t0, t0, core_get()->ep_map_u); /* t0 = u * t^2 */
-		fp_sqr(t1, t0);                       /* t1 = u^2 * t^4 */
-		fp_add(t2, t1, t0);                   /* t2 = u^2 * t^4 + u * t^2 */
+		fp_mul(t0, t0, u);  /* t0 = u * t^2 */
+		fp_sqr(t1, t0);     /* t1 = u^2 * t^4 */
+		fp_add(t2, t1, t0); /* t2 = u^2 * t^4 + u * t^2 */
 
-		/* handle the exceptional cases and simultaneously invert a */
+		/* handle the exceptional cases */
 		/* XXX(rsw) should be done projectively */
 		{
 			const int e1 = fp_is_zero(t2);
-			fp_neg(t4, core_get()->ep_map_u);           /* t4 = -u */
-			dv_copy_cond(t2, t4, RLC_FP_DIGS, e1);      /* exceptional case: -u instead of u^2t^4 + ut^2 */
-			fp_mul(t3, t2, a);                          /* t3 = t2 * a */
-			fp_inv(t4, t3);                             /* t4 is either -1/au or 1/a(u^2 * t^4 + u * t^2) */
-			fp_mul(t3, t4, t2);                         /* t3 = 1/a */
-			fp_mul(t2, t4, a);                          /* t2 = -1/u or 1/(u^2 * t^4 + u*t^2) */
-			fp_add_dig(t4, t2, 1);                      /* t4 = 1 + t2 */
-			dv_copy_cond(t2, t4, RLC_FP_DIGS, e1 == 0); /* only add 1 if t2 != -1/u */
+			fp_neg(t3, u);                              /* t3 = -u */
+			dv_copy_cond(t2, t3, RLC_FP_DIGS, e1);      /* exceptional case: -u instead of u^2t^4 + ut^2 */
+			fp_inv(t2, t2);                             /* t2 = -1/u or 1/(u^2 * t^4 + u*t^2) */
+			fp_add_dig(t3, t2, 1);                      /* t4 = 1 + t2 */
+			dv_copy_cond(t2, t3, RLC_FP_DIGS, e1 == 0); /* only add 1 if t2 != -1/u */
 		}
 		/* e1 goes out of scope */
 
-		/* compute -B / A */
-		fp_neg(t3, t3);    /* t3 = -1 / A */
-		fp_mul(t3, t3, b); /* t3 = -B / A */
-
 		/* compute x1, g(x1) */
-		fp_mul(p->x, t2, t3);     /* p->x = -B / A * (1 + 1 / (u^2 * t^4 + u * t^2)) */
-		fp_sqr(p->y, p->x);       /* x^2 */
-		fp_add(p->y, p->y, a);    /* x^2 + a */
-		fp_mul(p->y, p->y, p->x); /* x^3 + a x */
-		fp_add(p->y, p->y, b);    /* x^3 + a x + b */
+		fp_mul(p->x, t2, mBoverA); /* p->x = -B / A * (1 + 1 / (u^2 * t^4 + u * t^2)) */
+		fp_sqr(p->y, p->x);        /* x^2 */
+		fp_add(p->y, p->y, a);     /* x^2 + a */
+		fp_mul(p->y, p->y, p->x);  /* x^3 + a x */
+		fp_add(p->y, p->y, b);     /* x^3 + a x + b */
 
 		/* compute x2, g(x2) */
 		fp_mul(t2, t0, p->x); /* t2 = u * t^2 * x1 */
@@ -222,7 +198,6 @@ static void ep_map_sswu(ep_t p, const fp_t t, int negate) {
 		fp_free(t1);
 		fp_free(t2);
 		fp_free(t3);
-		fp_free(t4);
 	}
 }
 
