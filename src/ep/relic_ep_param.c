@@ -36,6 +36,23 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
+/*
+ * A note on the MAP_U values below.
+ *
+ * These values were generated using the methods recommended in
+ * draft-irtf-cfrg-hash-to-curve-06, Appendix E. In particular,
+ * for any curve with j-invariant 0 or 1728 (i.e., a = 0 or b = 0),
+ * the MAP_U value is the output of the find_z_svdw function.
+ * For all other curves, the MAP_U value was calculated using the
+ * find_z_sswu function.
+ *
+ * Note that for the BLS12-381 curve (B12_P381) when using an
+ * isogeny map (defined(EP_ISOMAP)), the MAP_U value is from the
+ * find_z_sswu function for the isogenous curve. Similarly, when
+ * specifying isogeny maps for other curves one should specify
+ * the MAP_U value for the isogenous curve.
+ */
+
 #if defined(EP_PLAIN) && FP_PRIME == 160
 /**
  * Parameters for the SECG P-160 prime elliptic curve.
