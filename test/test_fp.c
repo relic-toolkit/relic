@@ -63,7 +63,8 @@ static int memory(void) {
 
 static int util(void) {
 	int bits, code = RLC_ERR;
-	char str[RLC_FP_BITS + 1];
+	/* Allocate two extra for sign and null terminator. */
+	char str[RLC_FP_BITS + 2];
 	uint8_t bin[RLC_FP_BYTES];
 	fp_t a, b;
 	bn_t c;
@@ -143,6 +144,11 @@ static int util(void) {
 				bits = fp_size_str(a, j);
 				fp_write_str(str, bits, a, j);
 				fp_read_str(b, str, bits, j);
+				/* Test also negative integers. */
+				memcpy(str + 1, str, strlen(str));
+				str[0] = '-';
+				fp_read_str(b, str, bits, j);
+				fp_neg(a, a);
 				TEST_ASSERT(fp_cmp(a, b) == RLC_EQ, end);
 			}
 			fp_write_bin(bin, sizeof(bin), a);
