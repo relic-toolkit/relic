@@ -135,6 +135,7 @@ static void ep_curve_set_map_consts(void) {
 		if (!fp_srt(c3, c3)) {		  /* c3 = sqrt(-g(u) * (3 * u^2 + 4 * a)) */
 			THROW(ERR_NO_VALID);
 		}
+		/* XXX(rsw): sgn0(c3) should be set to 1 */
 
 		/* constant 4: -4 * g(u) / (3 * u^2 + 4 * a) */
 		fp_inv(c4, c4);        /* c4 = -1 / (3 * u^2 + 4 * a) */

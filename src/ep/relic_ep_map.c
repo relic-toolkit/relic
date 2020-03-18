@@ -318,11 +318,11 @@ static void ep_map_svdw(ep_t p, const fp_t t, int negate) {
 		/* XXX(rsw) this should be constant time */
 		/* compute x1 and g(x1) */
 		fp_sub(p->x, mUover2, t4);
-		fp_rhs(p->y, p);
+		ep_rhs(p->y, p);
 		if (!fp_srt(p->y, p->y)) {
 			/* compute x2 and g(x2) */
 			fp_add(p->x, mUover2, t4);
-			fp_rhs(p->y, p);
+			ep_rhs(p->y, p);
 			if (!fp_srt(p->y, p->y)) {
 				/* compute x3 and g(x3) */
 				fp_sqr(p->x, t2);
@@ -330,7 +330,7 @@ static void ep_map_svdw(ep_t p, const fp_t t, int negate) {
 				fp_sqr(p->x, p->x);
 				fp_mul(p->x, p->x, c4);
 				fp_add(p->x, p->x, u);
-				fp_rhs(p->y, p);
+				ep_rhs(p->y, p);
 				if (!fp_srt(p->y, p->y)) {
 					THROW(ERR_NO_VALID);
 				}
