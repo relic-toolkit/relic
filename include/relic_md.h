@@ -102,6 +102,27 @@ enum {
 #define md_map(H, M, L)			md_map_b2s256(H, M, L)
 #endif
 
+/**
+ * Map a byte vector and optional domain separation tag to an arbitrary-length
+ * pseudorandom output using the chosen hash function.
+ *
+ * @param[out] B					- the output buffer.
+ * @param[in] BL					- the requested size of the output.
+ * @param[in] I						- the message to hash.
+ * @param[in] IL					- the message length in bytes.
+ * @param[in] D						- the domain separation tag.
+ * @param[in] DL					- the domain separation tag length in bytes.
+ */
+#if MD_MAP == SH224
+#define md_xmd(B, BL, I, IL, D, DL) 	md_xmd_sh224(B, BL, I, IL, D, DL)
+#elif MD_MAP == SH256
+#define md_xmd(B, BL, I, IL, D, DL) 	md_xmd_sh256(B, BL, I, IL, D, DL)
+#elif MD_MAP == SH384
+#define md_xmd(B, BL, I, IL, D, DL) 	md_xmd_sh384(B, BL, I, IL, D, DL)
+#elif MD_MAP == SH512
+#define md_xmd(B, BL, I, IL, D, DL) 	md_xmd_sh512(B, BL, I, IL, D, DL)
+#endif
+
 /*============================================================================*/
 /* Function prototypes                                                        */
 /*============================================================================*/
@@ -193,5 +214,61 @@ void md_mgf(uint8_t *mask, int mask_len, const uint8_t *in, int in_len);
  */
 void md_hmac(uint8_t *mac, const uint8_t *in, int in_len, const uint8_t *key,
 		int key_len);
+
+/**
+ * Map a byte vector and optional domain separation tag to an arbitrary-length
+ * pseudorandom output using the SHA-224 hash function.
+ *
+ * @param[out] buf					- the output buffer.
+ * @param[in] buf_len				- the requested size of the output.
+ * @param[in] in					- the message to hash.
+ * @param[in] in_len				- the message length in bytes.
+ * @param[in] dst					- the domain separation tag.
+ * @param[in] dst_len				- the domain separation tag length in bytes.
+ */
+void md_xmd_sh224(uint8_t *buf, int buf_len, uint8_t *in, int in_len,
+		uint8_t *dst, int dst_len);
+
+/**
+ * Map a byte vector and optional domain separation tag to an arbitrary-length
+ * pseudorandom output using the SHA-256 hash function.
+ *
+ * @param[out] buf					- the output buffer.
+ * @param[in] buf_len				- the requested size of the output.
+ * @param[in] in					- the message to hash.
+ * @param[in] in_len				- the message length in bytes.
+ * @param[in] dst					- the domain separation tag.
+ * @param[in] dst_len				- the domain separation tag length in bytes.
+ */
+void md_xmd_sh256(uint8_t *buf, int buf_len, uint8_t *in, int in_len,
+		uint8_t *dst, int dst_len);
+
+/**
+ * Map a byte vector and optional domain separation tag to an arbitrary-length
+ * pseudorandom output using the SHA-384 hash function.
+ *
+ * @param[out] buf					- the output buffer.
+ * @param[in] buf_len				- the requested size of the output.
+ * @param[in] in					- the message to hash.
+ * @param[in] in_len				- the message length in bytes.
+ * @param[in] dst					- the domain separation tag.
+ * @param[in] dst_len				- the domain separation tag length in bytes.
+ */
+void md_xmd_sh384(uint8_t *buf, int buf_len, uint8_t *in, int in_len,
+		uint8_t *dst, int dst_len);
+
+/**
+ * Map a byte vector and optional domain separation tag to an arbitrary-length
+ * pseudorandom output using the SHA-512 hash function.
+ *
+ * @param[out] buf					- the output buffer.
+ * @param[in] buf_len				- the requested size of the output.
+ * @param[in] in					- the message to hash.
+ * @param[in] in_len				- the message length in bytes.
+ * @param[in] dst					- the domain separation tag.
+ * @param[in] dst_len				- the domain separation tag length in bytes.
+ */
+void md_xmd_sh512(uint8_t *buf, int buf_len, uint8_t *in, int in_len,
+		uint8_t *dst, int dst_len);
 
 #endif /* !RLC_MD_H */
