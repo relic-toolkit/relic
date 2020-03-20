@@ -61,7 +61,7 @@
  * Helper for make_md_xmd
  */
 #define _make_md_xmd(HName, HBlockSize, HHashSize, HContext, HReset, HInput, HResult)                             \
-	void HName(uint8_t *buf, int buf_len, uint8_t *in, int in_len, uint8_t *dst, int dst_len) {                   \
+	void HName(uint8_t *buf, int buf_len, const uint8_t *in, int in_len, const uint8_t *dst, int dst_len) {       \
 		const int ell = (buf_len + HHashSize - 1) / HHashSize;                                                    \
 		if (ell > 255 || buf_len < 0) {                                                                           \
 			THROW(ERR_NO_VALID);                                                                                  \

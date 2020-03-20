@@ -301,7 +301,7 @@ void ep_map_dst(ep_t p, const uint8_t *msg, int len, const uint8_t *dst, int dst
 
 		/* figure out which hash function to use */
 		const int abNeq0 = (ep_curve_opt_a() != RLC_ZERO) && (ep_curve_opt_b() != RLC_ZERO);
-		const void (*map_fn)(ep_t, const fp_t) = (ep_curve_is_isomap() || abNeq0) ? ep_map_sswu : ep_map_svdw;
+		void (*const map_fn)(ep_t, const fp_t) = (ep_curve_is_isomap() || abNeq0) ? ep_map_sswu : ep_map_svdw;
 
 		/* XXX(rsw) Using (p-1)/2 for sign of y is the sgn0_be variant from
 		 *          draft-irtf-cfrg-hash-to-curve-06. Not all curves want to
@@ -332,16 +332,15 @@ void ep_map_dst(ep_t p, const uint8_t *msg, int len, const uint8_t *dst, int dst
 #define EP_MAP_CONVERT_BYTES(IDX)                                                        \
 	do {                                                                                 \
 		/* not in MONTY mode, need to convert values smaller than p */                   \
-		const int half_elm = len_per_elm / 2;                                            \
-		const int rest_elm = len_per_elm - half_elm;                                     \
 		bn_read_bin(k, pseudo_random_bytes + IDX * len_per_elm, half_elm);               \
-		fp_prime_conv(t, k);                                                             \
-		fp_lsh(t, t, 8 * rest_elm);                                                      \
+		fp_prime_conv(q->x, k);                                                          \
+		fp_mul(t, q->x, q->y);                                                           \
 		bn_read_bin(k, pseudo_random_bytes + IDX * len_per_elm + half_elm, rest_elm);    \
 		fp_prime_conv(q->x, k);                                                          \
 		fp_add(t, t, q->x);                                                              \
 	} while (0)
 #endif
+
 #define EP_MAP_APPLY_MAP(PT)                                                             \
 	do {                                                                                 \
 		/* check sign of t */                                                            \
@@ -354,6 +353,15 @@ void ep_map_dst(ep_t p, const uint8_t *msg, int len, const uint8_t *dst, int dst
 		fp_neg(t, PT->y);                                                                \
 		dv_copy_cond(PT->y, t, RLC_FP_DIGS, neg != bn_cmp(k, pm1o2));                    \
 	} while (0)
+
+#if FP_RDC != MONTY
+		/* set up values for CONVERT_BYTES_NOMONTY */
+		const int half_elm = len_per_elm / 2;
+		const int rest_elm = len_per_elm - half_elm;
+		bn_zero(k);
+		bn_set_bit(k, 8 * rest_elm, 1);
+		fp_prime_conv(q->y, k);
+#endif
 
 		/* first map invocation */
 		EP_MAP_CONVERT_BYTES(0);

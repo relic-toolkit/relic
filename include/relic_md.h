@@ -226,8 +226,8 @@ void md_hmac(uint8_t *mac, const uint8_t *in, int in_len, const uint8_t *key,
  * @param[in] dst					- the domain separation tag.
  * @param[in] dst_len				- the domain separation tag length in bytes.
  */
-void md_xmd_sh224(uint8_t *buf, int buf_len, uint8_t *in, int in_len,
-		uint8_t *dst, int dst_len);
+void md_xmd_sh224(uint8_t *buf, int buf_len, const uint8_t *in, int in_len,
+		const uint8_t *dst, int dst_len);
 
 /**
  * Map a byte vector and optional domain separation tag to an arbitrary-length
@@ -240,8 +240,8 @@ void md_xmd_sh224(uint8_t *buf, int buf_len, uint8_t *in, int in_len,
  * @param[in] dst					- the domain separation tag.
  * @param[in] dst_len				- the domain separation tag length in bytes.
  */
-void md_xmd_sh256(uint8_t *buf, int buf_len, uint8_t *in, int in_len,
-		uint8_t *dst, int dst_len);
+void md_xmd_sh256(uint8_t *buf, int buf_len, const uint8_t *in, int in_len,
+		const uint8_t *dst, int dst_len);
 
 /**
  * Map a byte vector and optional domain separation tag to an arbitrary-length
@@ -254,8 +254,8 @@ void md_xmd_sh256(uint8_t *buf, int buf_len, uint8_t *in, int in_len,
  * @param[in] dst					- the domain separation tag.
  * @param[in] dst_len				- the domain separation tag length in bytes.
  */
-void md_xmd_sh384(uint8_t *buf, int buf_len, uint8_t *in, int in_len,
-		uint8_t *dst, int dst_len);
+void md_xmd_sh384(uint8_t *buf, int buf_len, const uint8_t *in, int in_len,
+		const uint8_t *dst, int dst_len);
 
 /**
  * Map a byte vector and optional domain separation tag to an arbitrary-length
@@ -268,7 +268,7 @@ void md_xmd_sh384(uint8_t *buf, int buf_len, uint8_t *in, int in_len,
  * @param[in] dst					- the domain separation tag.
  * @param[in] dst_len				- the domain separation tag length in bytes.
  */
-void md_xmd_sh512(uint8_t *buf, int buf_len, uint8_t *in, int in_len,
-		uint8_t *dst, int dst_len);
+void md_xmd_sh512(uint8_t *buf, int buf_len, const uint8_t *in, int in_len,
+		const uint8_t *dst, int dst_len);
 
 #endif /* !RLC_MD_H */
