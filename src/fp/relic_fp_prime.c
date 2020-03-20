@@ -454,12 +454,6 @@ void fp_prime_calc(void) {
 			fp_srt(core_get()->srm1, t);
 		#endif
 
-		#ifdef WITH_EP
-			fp_set_dig(t, 3);
-			fp_neg(t, t);
-			fp_srt(core_get()->srm3, t);
-		#endif
-
 		#ifdef WITH_FPX
 			if (fp_prime_get_qnr() != 0) {
 				fp2_field_init();
