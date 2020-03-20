@@ -65,7 +65,7 @@ static void ep_iso_map(ep_t q, ep_t p) {
 
 		isomap_t coeffs = ep_curve_get_iso_coeffs();
 
-#define HORNER_EVAL(OUT, COEFFS, CLEN)                                         \
+#define EP_MAP_HORNER_EVAL(OUT, COEFFS, CLEN)                                  \
 	do {                                                                       \
 		fp_copy(OUT, COEFFS[CLEN]);                                            \
 		for (int idx = CLEN; idx > 0; --idx) {                                 \
@@ -76,18 +76,18 @@ static void ep_iso_map(ep_t q, ep_t p) {
 
 		/* denominators */
 		/* XXX(rsw) should do this projectively */
-		HORNER_EVAL(t1, coeffs->yd, coeffs->deg_yd);
-		HORNER_EVAL(t2, coeffs->xd, coeffs->deg_xd);
+		EP_MAP_HORNER_EVAL(t1, coeffs->yd, coeffs->deg_yd);
+		EP_MAP_HORNER_EVAL(t2, coeffs->xd, coeffs->deg_xd);
 		fp_mul(t0, t1, t2);
 		fp_inv(t0, t0);
 		fp_mul(t1, t1, t0); /* x denominator */
 		fp_mul(t2, t2, t0); /* y denominator */
 
 		/* numerators */
-		HORNER_EVAL(t0, coeffs->xn, coeffs->deg_xn);
-		HORNER_EVAL(t3, coeffs->yn, coeffs->deg_yn);
+		EP_MAP_HORNER_EVAL(t0, coeffs->xn, coeffs->deg_xn);
+		EP_MAP_HORNER_EVAL(t3, coeffs->yn, coeffs->deg_yn);
 
-#undef HORNER_EVAL
+#undef EP_MAP_HORNER_EVAL
 
 		fp_mul(q->y, p->y, t3);
 		fp_mul(q->y, q->y, t2);
@@ -111,7 +111,7 @@ static void ep_iso_map(ep_t q, ep_t p) {
  * Simplified SWU mapping from Section 4 of
  * "Fast and simple constant-time hashing to the BLS12-381 Elliptic Curve"
  */
-static void ep_map_sswu(ep_t p, const fp_t t, int negate) {
+static void ep_map_sswu(ep_t p, const fp_t t) {
 	fp_t t0, t1, t2, t3;
 	fp_null(t0);
 	fp_null(t1);
@@ -171,9 +171,6 @@ static void ep_map_sswu(ep_t p, const fp_t t, int negate) {
 				THROW(ERR_NO_VALID);
 			}
 		}
-		if (negate) {
-			fp_neg(p->y, p->y);
-		}
 		fp_set_dig(p->z, 1);
 		p->norm = 1;
 
@@ -198,7 +195,7 @@ static void ep_map_sswu(ep_t p, const fp_t t, int negate) {
  * Shallue--van de Woestijne map, based on the definition from
  * draft-irtf-cfrg-hash-to-curve-06, Section 6.6.1
  */
-static void ep_map_svdw(ep_t p, const fp_t t, int negate) {
+static void ep_map_svdw(ep_t p, const fp_t t) {
 	fp_t t1, t2, t3, t4;
 	fp_null(t1);
 	fp_null(t2);
@@ -261,9 +258,6 @@ static void ep_map_svdw(ep_t p, const fp_t t, int negate) {
 				}
 			}
 		}
-		if (negate) {
-			fp_neg(p->y, p->y);
-		}
 		fp_set_dig(p->z, 1);
 		p->norm = 1;
 	}
@@ -283,11 +277,16 @@ static void ep_map_svdw(ep_t p, const fp_t t, int negate) {
 /*============================================================================*/
 
 void ep_map(ep_t p, const uint8_t *msg, int len) {
+	ep_map_dst(p, msg, len, (const uint8_t *)"RELIC_TOOLKIT", 13);
+}
+
+void ep_map_dst(ep_t p, const uint8_t *msg, int len, const uint8_t *dst, int dst_len) {
 	bn_t k, pm1o2;
 	fp_t t;
 	ep_t q;
-	uint8_t digest[RLC_MD_LEN];
 	int neg;
+	/* enough space for two field elements plus extra bytes for uniformity */
+	uint8_t pseudo_random_bytes[66 + 2 * (FP_PRIME + 7) / 8] = {0,};
 
 	bn_null(k);
 	bn_null(pm1o2);
@@ -302,37 +301,70 @@ void ep_map(ep_t p, const uint8_t *msg, int len) {
 
 		/* figure out which hash function to use */
 		const int abNeq0 = (ep_curve_opt_a() != RLC_ZERO) && (ep_curve_opt_b() != RLC_ZERO);
-		void (*map_fn)(ep_t, const fp_t, int);
-		if (ep_curve_is_isomap() || abNeq0) {
-			map_fn = ep_map_sswu;
-		} else {
-			map_fn = ep_map_svdw;
-		}
+		const void (*map_fn)(ep_t, const fp_t) = (ep_curve_is_isomap() || abNeq0) ? ep_map_sswu : ep_map_svdw;
 
-		/* XXX(rsw) should hash to field in a more conservative way.
-		 *          The method below is probably not indifferentiable,
-		 *          especially for large fields / small hash functions.
+		/* XXX(rsw) Using (p-1)/2 for sign of y is the sgn0_be variant from
+		 *          draft-irtf-cfrg-hash-to-curve-06. Not all curves want to
+		 *          use this variant! This should be fixed per-curve, probably
+		 *          using a separate sgn0 function.
 		 */
+		/* need (p-1)/2 for fixing sign of y */
 		pm1o2->sign = RLC_POS;
 		pm1o2->used = RLC_FP_DIGS;
 		dv_copy(pm1o2->dp, fp_prime_get(), RLC_FP_DIGS);
 		bn_hlv(pm1o2, pm1o2);
 
+		/* for hash_to_field, need to hash to a pseudorandom string */
+		/* XXX(rsw) the below assumes that we want to use MD_MAP for hashing.
+		 *          Consider making the hash function a per-curve option!
+		 */
+		const int len_per_elm = (FP_PRIME + core_get()->ep_extra_bits + 7) / 8;
+		md_xmd(pseudo_random_bytes, 2 * len_per_elm, msg, len, dst, dst_len);
+
+#if FP_RDC == MONTY
+#define EP_MAP_CONVERT_BYTES(IDX)                                                        \
+	do {                                                                                 \
+		/* in MONTY mode, can convert values larger than p */                            \
+		bn_read_bin(k, pseudo_random_bytes + IDX * len_per_elm, len_per_elm);            \
+		fp_prime_conv(t, k);                                                             \
+	} while (0)
+#else /* FP_RDC != MONTY */
+#define EP_MAP_CONVERT_BYTES(IDX)                                                        \
+	do {                                                                                 \
+		/* not in MONTY mode, need to convert values smaller than p */                   \
+		const int half_elm = len_per_elm / 2;                                            \
+		const int rest_elm = len_per_elm - half_elm;                                     \
+		bn_read_bin(k, pseudo_random_bytes + IDX * len_per_elm, half_elm);               \
+		fp_prime_conv(t, k);                                                             \
+		fp_lsh(t, t, 8 * rest_elm);                                                      \
+		bn_read_bin(k, pseudo_random_bytes + IDX * len_per_elm + half_elm, rest_elm);    \
+		fp_prime_conv(q->x, k);                                                          \
+		fp_add(t, t, q->x);                                                              \
+	} while (0)
+#endif
+#define EP_MAP_APPLY_MAP(PT)                                                             \
+	do {                                                                                 \
+		/* check sign of t */                                                            \
+		fp_prime_back(k, t);                                                             \
+		neg = bn_cmp(k, pm1o2);                                                          \
+		/* convert */                                                                    \
+		map_fn(PT, t);                                                                   \
+		/* fix sign of y */                                                              \
+		fp_prime_back(k, PT->y);                                                         \
+		fp_neg(t, PT->y);                                                                \
+		dv_copy_cond(PT->y, t, RLC_FP_DIGS, neg != bn_cmp(k, pm1o2));                    \
+	} while (0)
+
 		/* first map invocation */
-		md_map(digest, msg, len);
-		bn_read_bin(k, digest, RLC_MIN(RLC_FP_BYTES, RLC_MD_LEN));
-		fp_prime_conv(t, k);
-		fp_prime_back(k, t);
-		neg = (bn_cmp(k, pm1o2) == RLC_LT ? 0 : 1);
-		map_fn(p, t, neg);
+		EP_MAP_CONVERT_BYTES(0);
+		EP_MAP_APPLY_MAP(p);
 
 		/* second map invocation */
-		md_map(digest, digest, RLC_MD_LEN);
-		bn_read_bin(k, digest, RLC_MIN(RLC_FP_BYTES, RLC_MD_LEN));
-		fp_prime_conv(t, k);
-		fp_prime_back(k, t);
-		neg = (bn_cmp(k, pm1o2) == RLC_LT ? 0 : 1);
-		map_fn(q, t, neg);
+		EP_MAP_CONVERT_BYTES(1);
+		EP_MAP_APPLY_MAP(q);
+
+#undef EP_MAP_CONVERT_BYTES
+#undef EP_MAP_APPLY_MAP
 
 		/* sum the result */
 		ep_add(p, p, q);

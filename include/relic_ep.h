@@ -1172,6 +1172,18 @@ void ep_norm_sim(ep_t *r, const ep_t *t, int n);
 void ep_map(ep_t p, const uint8_t *msg, int len);
 
 /**
+ * Maps a byte array to a point in a prime elliptic curve with specified
+ * domain separation tag (aka personalization string).
+ *
+ * @param[out] p			- the result.
+ * @param[in] msg			- the byte array to map.
+ * @param[in] len			- the array length in bytes.
+ * @param[in] dst			- the domain separation tag.
+ * @param[in] dst_len		- the domain separation tag length in bytes.
+ */
+void ep_map_dst(ep_t p, const uint8_t *msg, int len, const uint8_t *dst, int dst_len);
+
+/**
  * Compresses a point.
  *
  * @param[out] r			- the result.

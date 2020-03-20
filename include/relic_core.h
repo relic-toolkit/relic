@@ -277,6 +277,8 @@ typedef struct _ctx_t {
 	fp_st ep_map_c3;
 	/** The fourth constant needed for hashing. */
 	fp_st ep_map_c4;
+	/** The number of excess bits to use when choosing a random field element. */
+	int ep_extra_bits;
 #ifdef EP_ENDOM
 #if EP_MUL == LWNAF || EP_FIX == COMBS || EP_FIX == LWNAF || EP_SIM == INTER || !defined(STRIP)
 	/** Parameters required by the GLV method. @{ */
