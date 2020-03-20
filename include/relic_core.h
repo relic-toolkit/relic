@@ -267,8 +267,18 @@ typedef struct _ctx_t {
 	bn_st ep_r;
 	/** The cofactor of the group order in the elliptic curve. */
 	bn_st ep_h;
-	/** The square root of -3 needed for hashing. */
-	fp_st srm3;
+	/** The distinguished non-square used by the mapping function */
+	fp_st ep_map_u;
+	/** The first constant needed for hashing. */
+	fp_st ep_map_c1;
+	/** The second constant needed for hashing. */
+	fp_st ep_map_c2;
+	/** The third constant needed for hashing. */
+	fp_st ep_map_c3;
+	/** The fourth constant needed for hashing. */
+	fp_st ep_map_c4;
+	/** The number of excess bits to use when choosing a random field element. */
+	int ep_extra_bits;
 #ifdef EP_ENDOM
 #if EP_MUL == LWNAF || EP_FIX == COMBS || EP_FIX == LWNAF || EP_SIM == INTER || !defined(STRIP)
 	/** Parameters required by the GLV method. @{ */
@@ -276,8 +286,8 @@ typedef struct _ctx_t {
 	bn_st ep_v1[3];
 	bn_st ep_v2[3];
 	/** @} */
-#endif /* EP_ENDOM */
 #endif /* EP_MUL */
+#endif /* EP_ENDOM */
 	/** Optimization identifier for the a-coefficient. */
 	int ep_opt_a;
 	/** Optimization identifier for the b-coefficient. */
@@ -288,12 +298,22 @@ typedef struct _ctx_t {
 	int ep_is_super;
 	/** Flag that stores if the prime curve is pairing-friendly. */
 	int ep_is_pairf;
+	/** Flag that indicates whether this curve uses an isogeny for the SSWU mapping. */
+	int ep_is_isomap;
 #ifdef EP_PRECO
 	/** Precomputation table for generator multiplication. */
 	ep_st ep_pre[RLC_EP_TABLE];
 	/** Array of pointers to the precomputation table. */
 	ep_st *ep_ptr[RLC_EP_TABLE];
 #endif /* EP_PRECO */
+#ifdef EP_ISOMAP
+	/** The 'a' coefficient of the isogenous elliptic curve used for SSWU mapping. */
+	fp_st ep_iso_a;
+	/** The 'b' coefficient of the isogenous elliptic curve used for SSWU mapping. */
+	fp_st ep_iso_b;
+	/** The isogeny map coefficients for the SSWU mapping. */
+	isomap_st ep_iso_coeffs;
+#endif /* EP_ISOMAP */
 #endif /* WITH_EP */
 
 #ifdef WITH_EPX

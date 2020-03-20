@@ -399,6 +399,8 @@
 #cmakedefine EP_MIXED
 /** Build precomputation table for generator. */
 #cmakedefine EP_PRECO
+/** Enable isogeny map for SSWU map-to-curve. */
+#cmakedefine EP_ISOMAP
 /** Width of precomputation table for fixed point methods. */
 #define EP_DEPTH @EP_DEPTH@
 /** Width of window processing for unknown point methods. */
