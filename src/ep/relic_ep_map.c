@@ -319,7 +319,7 @@ void ep_map_dst(ep_t p, const uint8_t *msg, int len, const uint8_t *dst, int dst
 		 *          Consider making the hash function a per-curve option!
 		 */
 		const int len_per_elm = (FP_PRIME + core_get()->ep_extra_bits + 7) / 8;
-		md_xmd(pseudo_random_bytes, 2 * len_per_elm, msg, len, dst, dst_len);
+		md_xof(pseudo_random_bytes, 2 * len_per_elm, msg, len, dst, dst_len);
 
 #define EP_MAP_CONVERT_BYTES(IDX)                                                        \
 	do {                                                                                 \
