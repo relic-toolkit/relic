@@ -62,7 +62,7 @@
  */
 #define _make_md_xof(HName, HBlockSize, HHashSize, HContext, HReset, HInput, HResult)                             \
 	void HName(uint8_t *buf, int buf_len, const uint8_t *in, int in_len, const uint8_t *dst, int dst_len) {       \
-		const int ell = (buf_len + HHashSize - 1) / HHashSize;                                                    \
+		const unsigned ell = (buf_len + HHashSize - 1) / HHashSize;                                               \
 		if (ell > 255 || buf_len < 0) {                                                                           \
 			THROW(ERR_NO_VALID);                                                                                  \
 		}                                                                                                         \
