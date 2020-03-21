@@ -478,18 +478,12 @@ void fp_prime_conv(fp_t c, const bn_t a) {
 	TRY {
 		bn_new(t);
 
-#if FP_RDC == MONTY
 		bn_mod(t, a, &(core_get()->prime));
+#if FP_RDC == MONTY
 		bn_lsh(t, t, RLC_FP_DIGS * RLC_DIG);
 		bn_mod(t, t, &(core_get()->prime));
 		dv_copy(c, t->dp, RLC_FP_DIGS);
 #else
-		if (a->used > RLC_FP_DIGS) {
-			THROW(ERR_NO_PRECI);
-		}
-
-		bn_mod(t, a, &(core_get()->prime));
-
 		if (bn_is_zero(t)) {
 			fp_zero(c);
 		} else {

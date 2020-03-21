@@ -143,11 +143,13 @@ static int util(void) {
 			for (int j = 2; j <= 64; j++) {
 				bits = fp_size_str(a, j);
 				fp_write_str(str, bits, a, j);
-				fp_read_str(b, str, bits, j);
+				fp_read_str(b, str, strlen(str), j);
 				/* Test also negative integers. */
-				memcpy(str + 1, str, strlen(str));
+				for (int k = strlen(str); k >= 0; k--) {
+					str[k + 1] = str[k];
+				}
 				str[0] = '-';
-				fp_read_str(b, str, bits, j);
+				fp_read_str(b, str, strlen(str), j);
 				fp_neg(a, a);
 				TEST_ASSERT(fp_cmp(a, b) == RLC_EQ, end);
 			}
