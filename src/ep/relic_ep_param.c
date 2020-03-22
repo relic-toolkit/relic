@@ -742,15 +742,15 @@ static void ep_param_set_isomap(const char *a_str, const char *b_str,
 								const char *xn_str, const char *xd_str,
 								const char *yn_str, const char *yd_str) {
 	/* coefficients of isogenous curve */
-	fp_read_str(ep_curve_get_iso_a(), a_str, strlen(a_str), 16);
-	fp_read_str(ep_curve_get_iso_b(), b_str, strlen(b_str), 16);
+	fp_read_str(ep_curve_get_iso()->a, a_str, strlen(a_str), 16);
+	fp_read_str(ep_curve_get_iso()->b, b_str, strlen(b_str), 16);
 
 	/* isogeny map coeffs */
-	isomap_t iso_coeffs = ep_curve_get_iso_coeffs();
-	iso_coeffs->deg_xn = ep_param_get_coeffs(iso_coeffs->xn, xn_str);
-	iso_coeffs->deg_xd = ep_param_get_coeffs(iso_coeffs->xd, xd_str);
-	iso_coeffs->deg_yn = ep_param_get_coeffs(iso_coeffs->yn, yn_str);
-	iso_coeffs->deg_yd = ep_param_get_coeffs(iso_coeffs->yd, yd_str);
+	iso_t coeffs = ep_curve_get_iso();
+	coeffs->deg_xn = ep_param_get_coeffs(coeffs->xn, xn_str);
+	coeffs->deg_xd = ep_param_get_coeffs(coeffs->xd, xd_str);
+	coeffs->deg_yn = ep_param_get_coeffs(coeffs->yn, yn_str);
+	coeffs->deg_yd = ep_param_get_coeffs(coeffs->yd, yd_str);
 }
 #endif /* EP_ISOMAP */
 
@@ -1447,4 +1447,3 @@ int ep_param_embed(void) {
 	}
 	return 0;
 }
-

@@ -96,8 +96,8 @@ static void ep_curve_set_map_consts(void) {
 		/* constants 3 and 4: a and b for either the curve or the isogeny */
 #ifdef EP_ISOMAP
 		if (ep_curve_is_isomap()) {
-			fp_copy(c3, ctx->ep_iso_a);
-			fp_copy(c4, ctx->ep_iso_b);
+			fp_copy(c3, ctx->ep_iso.a);
+			fp_copy(c4, ctx->ep_iso.b);
 		} else {
 #endif
 			fp_copy(c3, ctx->ep_a);
@@ -232,20 +232,6 @@ int ep_curve_is_isomap(void) {
 	return core_get()->ep_is_isomap;
 }
 
-#ifdef EP_ISOMAP
-dig_t *ep_curve_get_iso_a(void) {
-	return core_get()->ep_iso_a;
-}
-
-dig_t *ep_curve_get_iso_b(void) {
-	return core_get()->ep_iso_b;
-}
-
-isomap_t ep_curve_get_iso_coeffs(void) {
-	return &core_get()->ep_iso_coeffs;
-}
-#endif /* EP_ISOMAP */
-
 void ep_curve_get_gen(ep_t g) {
 	ep_copy(g, &core_get()->ep_g);
 }
@@ -272,6 +258,15 @@ const ep_t *ep_curve_get_tab(void) {
 	/* Return a null pointer. */
 	return NULL;
 #endif
+}
+
+
+iso_t ep_curve_get_iso() {
+#ifdef EP_ISOMAP
+	return &core_get()->ep_iso;
+#else
+	return NULL;
+#endif /* EP_ISOMAP */
 }
 
 #if defined(EP_PLAIN)

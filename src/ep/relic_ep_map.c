@@ -63,7 +63,7 @@ static void ep_iso_map(ep_t q, ep_t p) {
 		fp_new(t2);
 		fp_new(t3);
 
-		isomap_t coeffs = ep_curve_get_iso_coeffs();
+		iso_t coeffs = ep_curve_get_iso();
 
 #define EP_MAP_HORNER_EVAL(OUT, COEFFS, CLEN)                                  \
 	do {                                                                       \

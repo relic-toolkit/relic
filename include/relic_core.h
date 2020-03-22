@@ -301,12 +301,8 @@ typedef struct _ctx_t {
 	ep_st *ep_ptr[RLC_EP_TABLE];
 #endif /* EP_PRECO */
 #ifdef EP_ISOMAP
-	/** The 'a' coefficient of the isogenous elliptic curve used for SSWU mapping. */
-	fp_st ep_iso_a;
-	/** The 'b' coefficient of the isogenous elliptic curve used for SSWU mapping. */
-	fp_st ep_iso_b;
 	/** The isogeny map coefficients for the SSWU mapping. */
-	isomap_st ep_iso_coeffs;
+	iso_st ep_iso;
 #endif /* EP_ISOMAP */
 #endif /* WITH_EP */
 
