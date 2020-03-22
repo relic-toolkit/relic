@@ -683,9 +683,9 @@ void bn_rec_reg(int8_t *naf, int *len, const bn_t k, int n, int w) {
 	bn_null(t);
 
 	mask = RLC_MASK(w);
-	l = RLC_CEIL(n, (w - 1));
+	l = RLC_CEIL(n, w - 1);
 
-	if (*len < l) {
+	if (*len <= l) {
 		THROW(ERR_NO_BUFFER);
 	}
 
@@ -695,23 +695,23 @@ void bn_rec_reg(int8_t *naf, int *len, const bn_t k, int n, int w) {
 
 		i = 0;
 		if (w == 2) {
-			for (i = 0; i < l; i++, naf++) {
+			for (i = 0; i < l; i++) {
 				u_i = (t->dp[0] & mask) - 2;
 				t->dp[0] -= u_i;
-				*naf = u_i;
+				naf[i] = u_i;
 				bn_hlv(t, t);
 			}
 			bn_get_dig(&t0, t);
 			*naf = t0;
 		} else {
-			for (i = 0; i < l; i++, naf++) {
+			for (i = 0; i < l; i++) {
 				u_i = (t->dp[0] & mask) - (1 << (w - 1));
 				t->dp[0] -= u_i;
-				*naf = u_i;
+				naf[i] = u_i;
 				bn_rsh(t, t, w - 1);
 			}
 			bn_get_dig(&t0, t);
-			*naf = t0;
+			naf[i] = t0;
 		}
 		*len = l + 1;
 	}
