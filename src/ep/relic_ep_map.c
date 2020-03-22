@@ -125,9 +125,9 @@ static void ep_map_sswu(ep_t p, const fp_t t) {
 		fp_new(t3);
 
 		ctx_t *ctx = core_get();
-		dig_t *mBoverA = ctx->ep_map_c1;
-		dig_t *a = ctx->ep_map_c3;
-		dig_t *b = ctx->ep_map_c4;
+		dig_t *mBoverA = ctx->ep_map_c[0];
+		dig_t *a = ctx->ep_map_c[2];
+		dig_t *b = ctx->ep_map_c[3];
 		dig_t *u = ctx->ep_map_u;
 
 		/* start computing the map */
@@ -209,10 +209,10 @@ static void ep_map_svdw(ep_t p, const fp_t t) {
 		fp_new(t4);
 
 		ctx_t *ctx = core_get();
-		dig_t *gU = ctx->ep_map_c1;
-		dig_t *mUover2 = ctx->ep_map_c2;
-		dig_t *c3 = ctx->ep_map_c3;
-		dig_t *c4 = ctx->ep_map_c4;
+		dig_t *gU = ctx->ep_map_c[0];
+		dig_t *mUover2 = ctx->ep_map_c[1];
+		dig_t *c3 = ctx->ep_map_c[2];
+		dig_t *c4 = ctx->ep_map_c[3];
 		dig_t *u = ctx->ep_map_u;
 
 		/* start computing the map */

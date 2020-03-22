@@ -86,10 +86,10 @@ static void ep_curve_set_map_consts(void) {
 	const int abNeq0 = (ep_curve_opt_a() != RLC_ZERO) && (ep_curve_opt_b() != RLC_ZERO);
 
 	ctx_t *ctx = core_get();
-	dig_t *c1 = ctx->ep_map_c1;
-	dig_t *c2 = ctx->ep_map_c2;
-	dig_t *c3 = ctx->ep_map_c3;
-	dig_t *c4 = ctx->ep_map_c4;
+	dig_t *c1 = ctx->ep_map_c[0];
+	dig_t *c2 = ctx->ep_map_c[1];
+	dig_t *c3 = ctx->ep_map_c[2];
+	dig_t *c4 = ctx->ep_map_c[3];
 
 	if (ep_curve_is_isomap() || abNeq0) {
 		/* SSWU map constants */
