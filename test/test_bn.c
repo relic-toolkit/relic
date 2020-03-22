@@ -1964,11 +1964,12 @@ static int recoding(void) {
 #endif
 
 		TEST_BEGIN("regular recoding is correct") {
+			/* Recode same scalar with different widths. */
+			bn_rand(a, RLC_POS, RLC_BN_BITS);
+			if (bn_is_even(a)) {
+				bn_add_dig(a, a, 1);
+			}
 			for (w = 2; w <= 8; w++) {
-				bn_rand(a, RLC_POS, RLC_BN_BITS);
-				if (bn_is_even(a)) {
-					bn_add_dig(a, a, 1);
-				}
 				l = RLC_BN_BITS + 1;
 				bn_rec_reg(e, &l, a, RLC_BN_BITS, w);
 				bn_zero(b);

@@ -702,7 +702,7 @@ void bn_rec_reg(int8_t *naf, int *len, const bn_t k, int n, int w) {
 				bn_hlv(t, t);
 			}
 			bn_get_dig(&t0, t);
-			*naf = t0;
+			naf[i] = t0;
 		} else {
 			for (i = 0; i < l; i++) {
 				u_i = (t->dp[0] & mask) - (1 << (w - 1));
