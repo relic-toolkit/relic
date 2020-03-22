@@ -54,10 +54,10 @@ static char get_bits(const bn_t a, int from, int to) {
 		/* Same digit. */
 
 		mf = RLC_MASK(from);
-		mt = RLC_MASK(to + 1);
-
-		if (to + 1 == RLC_DIG) {
+		if (to + 1 >= RLC_DIG) {
 			mt = RLC_DMASK;
+		} else {
+			mt = RLC_MASK(to + 1);
 		}
 
 		mf = mf ^ mt;

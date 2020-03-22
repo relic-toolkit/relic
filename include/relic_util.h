@@ -68,7 +68,7 @@
  * @param[out] V		- the bit count.
  */
 #define RLC_RIP(B, D, V)													\
-	D = (V) >> (RLC_DIG_LOG); B = (V) - ((D) << (RLC_DIG_LOG));
+	D = (V) >> (RLC_DIG_LOG); B = (V) - ((D) * (1 << RLC_DIG_LOG));
 
 /**
  * Computes the ceiling function of an integer division.
