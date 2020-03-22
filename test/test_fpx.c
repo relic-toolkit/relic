@@ -7153,7 +7153,7 @@ int main(void) {
 
 	/* Fp^6 is defined as a cubic extension of Fp^2. */
 	if (fp_prime_get_qnr()) {
-		util_print("\n-- Sextic extension: (i + %d) as QNR\n",
+		util_print("\n-- Sextic extension: (i + %d) as CNR\n",
 				fp2_field_get_qnr());
 		util_banner("Utilities:", 1);
 
@@ -7204,7 +7204,7 @@ int main(void) {
 			return 1;
 		}
 
-		util_banner("Octic extension:", 0);
+		util_banner("Octic extension: (j) as CNR", 0);
 		util_banner("Utilities:", 1);
 
 		if (memory8() != RLC_OK) {
