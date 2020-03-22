@@ -444,6 +444,13 @@ int fp_prime_get_qnr(void);
 int fp_prime_get_cnr(void);
 
 /**
+ * Returns the 2-adicity of the prime modulus.
+ *
+ * @return the 2-adicity of the modulus.
+ */
+int fp_prime_get_2ad(void);
+
+/**
  * Returns the prime field parameter identifier.
  *
  * @return the parameter identifier.

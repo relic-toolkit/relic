@@ -39,20 +39,37 @@
 #ifdef EP_CTMAP
 
 /**
+ * Evaluate a polynomial represented by its coefficients over a using Horner's
+ * rule. Might promove to an API if needed elsewhere in the future.
+ *
+ * @param[out] c		- the result.
+ * @param[in] a			- the input value.
+ * @param[in] coeffs	- the vector of coefficients in the polynomial.
+ * @param[in] len 		- the number of coefficients.
+ */
+static void fp_eval(fp_t c, fp_t a, fp_t *coeffs, int len) {
+	fp_copy(c, coeffs[len]);
+	for (int i = len; i > 0; --i) {
+		fp_mul(c, c, a);
+		fp_add(c, c, coeffs[i - 1]);
+	}
+}
+
+/**
  * Generic isogeny map evaluation for use with SSWU map.
  */
 static void ep_iso(ep_t q, ep_t p) {
+	fp_t t0, t1, t2, t3;
+
 	if (!ep_curve_is_ctmap()) {
 		ep_copy(q, p);
 		return;
 	}
-
-	/* XXX need to add real support for projective points */
+	/* XXX need to add real support for input projective points */
 	if (!p->norm) {
 		ep_norm(p, p);
 	}
 
-	fp_t t0, t1, t2, t3;
 	fp_null(t0);
 	fp_null(t1);
 	fp_null(t2);
@@ -66,35 +83,24 @@ static void ep_iso(ep_t q, ep_t p) {
 
 		iso_t coeffs = ep_curve_get_iso();
 
-#define EP_MAP_HORNER_EVAL(OUT, COEFFS, CLEN)                                  \
-	do {                                                                       \
-		fp_copy(OUT, COEFFS[CLEN]);                                            \
-		for (int idx = CLEN; idx > 0; --idx) {                                 \
-			fp_mul(OUT, OUT, p->x);                                            \
-			fp_add(OUT, OUT, COEFFS[idx - 1]);                                 \
-		}                                                                      \
-	} while (0)
-
-		/* denominators */
-		/* XXX(rsw) should do this projectively */
-		EP_MAP_HORNER_EVAL(t1, coeffs->yd, coeffs->deg_yd);
-		EP_MAP_HORNER_EVAL(t2, coeffs->xd, coeffs->deg_xd);
-		fp_mul(t0, t1, t2);
-		fp_inv(t0, t0);
-		fp_mul(t1, t1, t0); /* x denominator */
-		fp_mul(t2, t2, t0); /* y denominator */
-
 		/* numerators */
-		EP_MAP_HORNER_EVAL(t0, coeffs->xn, coeffs->deg_xn);
-		EP_MAP_HORNER_EVAL(t3, coeffs->yn, coeffs->deg_yn);
+		fp_eval(t0, p->x, coeffs->xn, coeffs->deg_xn);
+		fp_eval(t1, p->x, coeffs->yn, coeffs->deg_yn);
+		/* denominators */
+		fp_eval(t2, p->x, coeffs->yd, coeffs->deg_yd);
+		fp_eval(t3, p->x, coeffs->xd, coeffs->deg_xd);
 
-#undef EP_MAP_HORNER_EVAL
-
-		fp_mul(q->y, p->y, t3);
-		fp_mul(q->y, q->y, t2);
-		fp_mul(q->x, t0, t1);
-		fp_set_dig(q->z, 1);
-		q->norm = 1;
+		/* Y = Ny * Dx * Z^2. */
+		fp_mul(q->y, p->y, t1);
+		fp_mul(q->y, q->y, t3);
+		/* Z = Dx * Dy, t1 = Z^2. */
+		fp_mul(q->z, t2, t3);
+		fp_sqr(t1, q->z);
+		fp_mul(q->y, q->y, t1);
+		/* X = Nx * Dy * Z. */
+		fp_mul(q->x, t0, t2);
+		fp_mul(q->x, q->x, q->z);
+		q->norm = 0;
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
@@ -114,6 +120,12 @@ static void ep_iso(ep_t q, ep_t p) {
  */
 static void ep_map_sswu(ep_t p, const fp_t t) {
 	fp_t t0, t1, t2, t3;
+	ctx_t *ctx = core_get();
+	dig_t *mBoverA = ctx->ep_map_c[0];
+	dig_t *a = ctx->ep_map_c[2];
+	dig_t *b = ctx->ep_map_c[3];
+	dig_t *u = ctx->ep_map_u;
+
 	fp_null(t0);
 	fp_null(t1);
 	fp_null(t2);
@@ -124,12 +136,6 @@ static void ep_map_sswu(ep_t p, const fp_t t) {
 		fp_new(t1);
 		fp_new(t2);
 		fp_new(t3);
-
-		ctx_t *ctx = core_get();
-		dig_t *mBoverA = ctx->ep_map_c[0];
-		dig_t *a = ctx->ep_map_c[2];
-		dig_t *b = ctx->ep_map_c[3];
-		dig_t *u = ctx->ep_map_u;
 
 		/* start computing the map */
 		fp_sqr(t0, t);

@@ -246,6 +246,8 @@ typedef struct _ctx_t {
 	int qnr;
 	/** Cubic non-residue. */
 	int cnr;
+	/** 2-adicity. */
+	int ad2;
 #if FP_RDC == QUICK || !defined(STRIP)
 	/** Sparse representation of prime modulus. */
 	int sps[RLC_TERMS + 1];
