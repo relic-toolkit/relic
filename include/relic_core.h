@@ -271,8 +271,6 @@ typedef struct _ctx_t {
 	fp_st ep_map_u;
 	/** Precomputed constants for hashing. */
 	fp_st ep_map_c[4];
-	/** The number of excess bits to use when choosing a random field element. */
-	int ep_extra_bits;
 #ifdef EP_ENDOM
 #if EP_MUL == LWNAF || EP_FIX == COMBS || EP_FIX == LWNAF || EP_SIM == INTER || !defined(STRIP)
 	/** Parameters required by the GLV method. @{ */
@@ -293,17 +291,17 @@ typedef struct _ctx_t {
 	/** Flag that stores if the prime curve is pairing-friendly. */
 	int ep_is_pairf;
 	/** Flag that indicates whether this curve uses an isogeny for the SSWU mapping. */
-	int ep_is_isomap;
+	int ep_is_ctmap;
 #ifdef EP_PRECO
 	/** Precomputation table for generator multiplication. */
 	ep_st ep_pre[RLC_EP_TABLE];
 	/** Array of pointers to the precomputation table. */
 	ep_st *ep_ptr[RLC_EP_TABLE];
 #endif /* EP_PRECO */
-#ifdef EP_ISOMAP
+#ifdef EP_CTMAP
 	/** The isogeny map coefficients for the SSWU mapping. */
 	iso_st ep_iso;
-#endif /* EP_ISOMAP */
+#endif /* EP_CTMAP */
 #endif /* WITH_EP */
 
 #ifdef WITH_EPX

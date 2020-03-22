@@ -36,12 +36,13 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-#ifdef EP_ISOMAP
+#ifdef EP_CTMAP
+
 /**
  * Generic isogeny map evaluation for use with SSWU map.
  */
-static void ep_iso_map(ep_t q, ep_t p) {
-	if (!ep_curve_is_isomap()) {
+static void ep_iso(ep_t q, ep_t p) {
+	if (!ep_curve_is_ctmap()) {
 		ep_copy(q, p);
 		return;
 	}
@@ -105,7 +106,7 @@ static void ep_iso_map(ep_t q, ep_t p) {
 		fp_free(t3);
 	}
 }
-#endif /* EP_ISOMAP */
+#endif /* EP_CTMAP */
 
 /**
  * Simplified SWU mapping from Section 4 of
@@ -174,9 +175,9 @@ static void ep_map_sswu(ep_t p, const fp_t t) {
 		fp_set_dig(p->z, 1);
 		p->norm = 1;
 
-#ifdef EP_ISOMAP
-		if (ep_curve_is_isomap()) {
-			ep_iso_map(p, p);
+#ifdef EP_CTMAP
+		if (ep_curve_is_ctmap()) {
+			ep_iso(p, p);
 		}
 #endif
 	}
@@ -272,15 +273,7 @@ static void ep_map_svdw(ep_t p, const fp_t t) {
 	}
 }
 
-/*============================================================================*/
-/* Public definitions                                                         */
-/*============================================================================*/
-
-void ep_map(ep_t p, const uint8_t *msg, int len) {
-	ep_map_dst(p, msg, len, (const uint8_t *)"RELIC_TOOLKIT", 13);
-}
-
-void ep_map_dst(ep_t p, const uint8_t *msg, int len, const uint8_t *dst, int dst_len) {
+void ep_map_impl(ep_t p, const uint8_t *msg, int len, const uint8_t *dst, int dst_len) {
 	bn_t k, pm1o2;
 	fp_t t;
 	ep_t q;
@@ -301,7 +294,7 @@ void ep_map_dst(ep_t p, const uint8_t *msg, int len, const uint8_t *dst, int dst
 
 		/* figure out which hash function to use */
 		const int abNeq0 = (ep_curve_opt_a() != RLC_ZERO) && (ep_curve_opt_b() != RLC_ZERO);
-		void (*const map_fn)(ep_t, const fp_t) = (ep_curve_is_isomap() || abNeq0) ? ep_map_sswu : ep_map_svdw;
+		void (*const map_fn)(ep_t, const fp_t) = (ep_curve_is_ctmap() || abNeq0) ? ep_map_sswu : ep_map_svdw;
 
 		/* XXX(rsw) Using (p-1)/2 for sign of y is the sgn0_be variant from
 		 *          draft-irtf-cfrg-hash-to-curve-06. Not all curves want to
@@ -318,7 +311,7 @@ void ep_map_dst(ep_t p, const uint8_t *msg, int len, const uint8_t *dst, int dst
 		/* XXX(rsw) the below assumes that we want to use MD_MAP for hashing.
 		 *          Consider making the hash function a per-curve option!
 		 */
-		const int len_per_elm = (FP_PRIME + core_get()->ep_extra_bits + 7) / 8;
+		const int len_per_elm = (FP_PRIME + ep_param_level() + 7) / 8;
 		md_xof(pseudo_random_bytes, 2 * len_per_elm, msg, len, dst, dst_len);
 
 #define EP_MAP_CONVERT_BYTES(IDX)                                                        \
@@ -394,4 +387,12 @@ void ep_map_dst(ep_t p, const uint8_t *msg, int len, const uint8_t *dst, int dst
 		fp_free(t);
 		ep_free(q);
 	}
+}
+
+/*============================================================================*/
+/* Public definitions                                                         */
+/*============================================================================*/
+
+void ep_map(ep_t p, const uint8_t *msg, int len) {
+	ep_map_impl(p, msg, len, (const uint8_t *)"RELIC", 5);
 }

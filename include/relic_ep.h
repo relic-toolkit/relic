@@ -205,7 +205,7 @@ enum {
  * Maximum number of coefficients of an isogeny map polynomial.
  * RLC_TERMS of value 16 is sufficient for a degree-11 isogeny polynomial.
  */
-#define RLC_EP_ISOMAP_MAX   16
+#define RLC_EP_CTMAP_MAX   16
 
 /*============================================================================*/
 /* Type definitions                                                           */
@@ -252,13 +252,13 @@ typedef struct {
 	/** Degree of y denominator */
 	int deg_yd;
 	/** x numerator coefficients */
-	fp_st xn[RLC_EP_ISOMAP_MAX];
+	fp_st xn[RLC_EP_CTMAP_MAX];
 	/** x denominator coefficients */
-	fp_st xd[RLC_EP_ISOMAP_MAX];
+	fp_st xd[RLC_EP_CTMAP_MAX];
 	/** y numerator coefficients */
-	fp_st yn[RLC_EP_ISOMAP_MAX];
+	fp_st yn[RLC_EP_CTMAP_MAX];
 	/** y denominator coefficients */
-	fp_st yd[RLC_EP_ISOMAP_MAX];
+	fp_st yd[RLC_EP_CTMAP_MAX];
 } iso_st;
 
 /**
@@ -481,11 +481,6 @@ dig_t *ep_curve_get_b(void);
 dig_t *ep_curve_get_beta(void);
 
 /**
- * Returns the value 'u' used by the mapping function.
- */
-dig_t *ep_curve_get_map_u(void);
-
-/**
  * Returns the parameter V1 of the prime curve.
  */
 void ep_curve_get_v1(bn_t v[]);
@@ -536,7 +531,7 @@ int ep_curve_is_pairf(void);
  *
  * @return 1 if the curve uses an isogeny, and 0 otherwise.
  */
-int ep_curve_is_isomap(void);
+int ep_curve_is_ctmap(void);
 
 /**
  * Returns the generator of the group of points in the prime elliptic curve.
@@ -581,10 +576,10 @@ iso_t ep_curve_get_iso(void);
  * @param[in] r			- the order of the group of points.
  * @param[in] h			- the cofactor of the group order.
  * @param[in] u			- the non-square used for hashing to this curve.
- * @param[in] isomap	- true if this curve will use an isogeny for mapping.
+ * @param[in] ctmap	- true if this curve will use an isogeny for mapping.
  */
 void ep_curve_set_plain(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
-		const bn_t h, const fp_t u, int isomap);
+		const bn_t h, const fp_t u, int ctmap);
 
 /**
  * Configures a supersingular prime elliptic curve by its coefficients and
@@ -596,10 +591,10 @@ void ep_curve_set_plain(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
  * @param[in] r			- the order of the group of points.
  * @param[in] h			- the cofactor of the group order.
  * @param[in] u			- the non-square used for hashing to this curve.
- * @param[in] isomap	- true if this curve will use an isogeny for mapping.
+ * @param[in] ctmap	- true if this curve will use an isogeny for mapping.
  */
 void ep_curve_set_super(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
-		const bn_t h, const fp_t u, int isomap);
+		const bn_t h, const fp_t u, int ctmap);
 
 /**
  * Configures a prime elliptic curve with endomorphisms by its coefficients and
@@ -613,10 +608,10 @@ void ep_curve_set_super(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
  * @param[in] l			- the exponent corresponding to the endomorphism.
  * @param[in] h			- the cofactor of the group order.
  * @param[in] u			- the non-square used for hashing to this curve.
- * @param[in] isomap	- true if this curve will use an isogeny for mapping.
+ * @param[in] ctmap	- true if this curve will use an isogeny for mapping.
  */
 void ep_curve_set_endom(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
-		const bn_t h, const fp_t beta, const bn_t l, const fp_t u, int isomap);
+		const bn_t h, const fp_t beta, const bn_t l, const fp_t u, int ctmap);
 
 /**
  * Configures a prime elliptic curve by its parameter identifier.

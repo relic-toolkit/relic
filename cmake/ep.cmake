@@ -6,7 +6,7 @@ message("      EP_PLAIN=[off|on] Support for ordinary curves without endomorphis
 message("      EP_SUPER=[off|on] Support for supersingular curves.")
 message("      EP_ENDOM=[off|on] Support for ordinary curves with endomorphisms.")
 message("      EP_MIXED=[off|on] Use mixed coordinates.")
-message("      EP_ISOMAP=[off|on] Use SSWU and isogeny map for hashing.\n")
+message("      EP_CTMAP=[off|on] Use contant-time SSWU and isogeny map for hashing.\n")
 
 message("      EP_PRECO=[off|on] Build precomputation table for generator.")
 message("      EP_DEPTH=w        Width w in [2,8] of precomputation table for fixed point methods.")
@@ -49,7 +49,7 @@ option(EP_SUPER "Support for supersingular curves" on)
 option(EP_MIXED "Use mixed coordinates" on)
 option(EP_ENDOM "Support for ordinary curves with endomorphisms" on)
 option(EP_PRECO "Build precomputation table for generator" on)
-option(EP_ISOMAP "Use SSWU and isogeny map for hashing" on)
+option(EP_CTMAP "Use contant-time SSWU and isogeny map for hashing" on)
 
 # Choose the arithmetic methods.
 if (NOT EP_METHD)

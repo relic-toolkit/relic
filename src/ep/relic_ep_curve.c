@@ -82,7 +82,7 @@ static void detect_opt(int *opt, fp_t a) {
 	}
 }
 
-static void ep_curve_set_map_consts(void) {
+static void ep_curve_set_map(void) {
 	const int abNeq0 = (ep_curve_opt_a() != RLC_ZERO) && (ep_curve_opt_b() != RLC_ZERO);
 
 	ctx_t *ctx = core_get();
@@ -91,18 +91,18 @@ static void ep_curve_set_map_consts(void) {
 	dig_t *c3 = ctx->ep_map_c[2];
 	dig_t *c4 = ctx->ep_map_c[3];
 
-	if (ep_curve_is_isomap() || abNeq0) {
+	if (ep_curve_is_ctmap() || abNeq0) {
 		/* SSWU map constants */
 		/* constants 3 and 4: a and b for either the curve or the isogeny */
-#ifdef EP_ISOMAP
-		if (ep_curve_is_isomap()) {
+#ifdef EP_CTMAP
+		if (ep_curve_is_ctmap()) {
 			fp_copy(c3, ctx->ep_iso.a);
 			fp_copy(c4, ctx->ep_iso.b);
 		} else {
 #endif
 			fp_copy(c3, ctx->ep_a);
 			fp_copy(c4, ctx->ep_b);
-#ifdef EP_ISOMAP
+#ifdef EP_CTMAP
 		}
 #endif
 		/* constant 1: -b / a */
@@ -120,9 +120,9 @@ static void ep_curve_set_map_consts(void) {
 		fp_add(c1, c1, ctx->ep_b);
 
 		/* start computing constant 2: -u / 2 */
-		fp_set_dig(c2, 2);
+		fp_set_dig(c2, 1);
 		fp_neg(c2, c2);                /* -2 */
-		fp_inv(c2, c2);                /* -1/2 */
+		fp_hlv(c2, c2);                /* -1/2 */
 		fp_mul(c2, c2, ctx->ep_map_u); /* c2 = -1/2 * u */
 
 		/* constant 3: sqrt(-g(u) * (3 * u^2 + 4 * a)) */
@@ -228,8 +228,8 @@ int ep_curve_is_pairf(void) {
 	return core_get()->ep_is_pairf;
 }
 
-int ep_curve_is_isomap(void) {
-	return core_get()->ep_is_isomap;
+int ep_curve_is_ctmap(void) {
+	return core_get()->ep_is_ctmap;
 }
 
 void ep_curve_get_gen(ep_t g) {
@@ -262,21 +262,21 @@ const ep_t *ep_curve_get_tab(void) {
 
 
 iso_t ep_curve_get_iso() {
-#ifdef EP_ISOMAP
+#ifdef EP_CTMAP
 	return &core_get()->ep_iso;
 #else
 	return NULL;
-#endif /* EP_ISOMAP */
+#endif /* EP_CTMAP */
 }
 
 #if defined(EP_PLAIN)
 
 void ep_curve_set_plain(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
-		const bn_t h, const fp_t u, int isomap) {
+		const bn_t h, const fp_t u, int ctmap) {
 	ctx_t *ctx = core_get();
 	ctx->ep_is_endom = 0;
 	ctx->ep_is_super = 0;
-	ctx->ep_is_isomap = isomap;
+	ctx->ep_is_ctmap = ctmap;
 
 	fp_copy(ctx->ep_a, a);
 	fp_copy(ctx->ep_b, b);
@@ -285,7 +285,7 @@ void ep_curve_set_plain(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
 	detect_opt(&(ctx->ep_opt_a), ctx->ep_a);
 	detect_opt(&(ctx->ep_opt_b), ctx->ep_b);
 
-	ep_curve_set_map_consts();
+	ep_curve_set_map();
 
 	ep_norm(&(ctx->ep_g), g);
 	bn_copy(&(ctx->ep_r), r);
@@ -301,11 +301,11 @@ void ep_curve_set_plain(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
 #if defined(EP_SUPER)
 
 void ep_curve_set_super(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
-		const bn_t h, const fp_t u, int isomap) {
+		const bn_t h, const fp_t u, int ctmap) {
 	ctx_t *ctx = core_get();
 	ctx->ep_is_endom = 0;
 	ctx->ep_is_super = 1;
-	ctx->ep_is_isomap = isomap;
+	ctx->ep_is_ctmap = ctmap;
 
 	fp_copy(ctx->ep_a, a);
 	fp_copy(ctx->ep_b, b);
@@ -314,7 +314,7 @@ void ep_curve_set_super(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
 	detect_opt(&(ctx->ep_opt_a), ctx->ep_a);
 	detect_opt(&(ctx->ep_opt_b), ctx->ep_b);
 
-	ep_curve_set_map_consts();
+	ep_curve_set_map();
 
 	ep_norm(&(ctx->ep_g), g);
 	bn_copy(&(ctx->ep_r), r);
@@ -330,12 +330,12 @@ void ep_curve_set_super(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
 #if defined(EP_ENDOM)
 
 void ep_curve_set_endom(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
-		const bn_t h, const fp_t beta, const bn_t l, const fp_t u, int isomap) {
+		const bn_t h, const fp_t beta, const bn_t l, const fp_t u, int ctmap) {
 	int bits = bn_bits(r);
 	ctx_t *ctx = core_get();
 	ctx->ep_is_endom = 1;
 	ctx->ep_is_super = 0;
-	ctx->ep_is_isomap = isomap;
+	ctx->ep_is_ctmap = ctmap;
 
 	fp_copy(ctx->ep_a, a);
 	fp_copy(ctx->ep_b, b);
@@ -344,7 +344,7 @@ void ep_curve_set_endom(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
 	detect_opt(&(ctx->ep_opt_a), ctx->ep_a);
 	detect_opt(&(ctx->ep_opt_b), ctx->ep_b);
 
-	ep_curve_set_map_consts();
+	ep_curve_set_map();
 
 #if EP_MUL == LWNAF || EP_FIX == COMBS || EP_FIX == LWNAF || EP_SIM == INTER || !defined(STRIP)
 	fp_copy(ctx->beta, beta);
