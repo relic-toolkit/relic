@@ -113,7 +113,7 @@ dig_t bn_rshb_low(dig_t *c, const dig_t *a, int size, int bits) {
 	c += size - 1;
 	a += size - 1;
 	/* Prepare the bit mask. */
-	shift = RLC_DIG - bits;
+	shift = (RLC_DIG - bits) % RLC_DIG;
 	carry = 0;
 	mask = RLC_MASK(bits);
 	for (i = size - 1; i >= 0; i--, a--, c--) {
