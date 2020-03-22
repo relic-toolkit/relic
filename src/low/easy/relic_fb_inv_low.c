@@ -119,7 +119,11 @@ void fb_invn_low(dig_t *c, const dig_t *a) {
 
 		/* j = deg(u) - deg(v). */
 		lt = util_bits_dig(u[lu - 1]) - util_bits_dig(v[lv - 1]);
-		j = ((lu - lv) << RLC_DIG_LOG) + lt;
+		if (lv > lu) {
+			j = -((lv - lu) << RLC_DIG_LOG) + lt;
+		} else {
+			j = ((lu - lv) << RLC_DIG_LOG) + lt;
+		}
 	}
 	/* Return g1. */
 	fb_copy(c, g1);
