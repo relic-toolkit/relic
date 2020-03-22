@@ -686,7 +686,7 @@
  * @param[in] str 		- the string to parse.
  * @param[in] out		- the resulting coefficient.
  */
-static int ep_param_get_coeffs(fp_t *coeffs, const char *str) {
+static int ep_param_get_coeffs(fp_st *coeffs, const char *str) {
 	if (str[0] == '\0') {
 		/* need nonzero strlen */
 		THROW(ERR_NO_VALID);
