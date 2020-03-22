@@ -86,10 +86,10 @@ static void ep_curve_set_map_consts(void) {
 	const int abNeq0 = (ep_curve_opt_a() != RLC_ZERO) && (ep_curve_opt_b() != RLC_ZERO);
 
 	ctx_t *ctx = core_get();
-	dig_t *c1 = ctx->ep_map_c1;
-	dig_t *c2 = ctx->ep_map_c2;
-	dig_t *c3 = ctx->ep_map_c3;
-	dig_t *c4 = ctx->ep_map_c4;
+	dig_t *c1 = ctx->ep_map_c[0];
+	dig_t *c2 = ctx->ep_map_c[1];
+	dig_t *c3 = ctx->ep_map_c[2];
+	dig_t *c4 = ctx->ep_map_c[3];
 
 	if (ep_curve_is_isomap() || abNeq0) {
 		/* SSWU map constants */
@@ -120,9 +120,9 @@ static void ep_curve_set_map_consts(void) {
 		fp_add(c1, c1, ctx->ep_b);
 
 		/* start computing constant 2: -u / 2 */
-		fp_set_dig(c2, 1);
-		fp_neg(c2, c2);                /* -1 is always even... */
-		fp_rsh(c2, c2, 1);             /* ...so this is -1/2 */
+		fp_set_dig(c2, 2);
+		fp_neg(c2, c2);                /* -2 */
+		fp_inv(c2, c2);                /* -1/2 */
 		fp_mul(c2, c2, ctx->ep_map_u); /* c2 = -1/2 * u */
 
 		/* constant 3: sqrt(-g(u) * (3 * u^2 + 4 * a)) */
