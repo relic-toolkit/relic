@@ -120,9 +120,9 @@ static void ep_curve_set_map_consts(void) {
 		fp_add(c1, c1, ctx->ep_b);
 
 		/* start computing constant 2: -u / 2 */
-		fp_set_dig(c2, 1);
-		fp_neg(c2, c2);                /* -1 is always even... */
-		fp_rsh(c2, c2, 1);             /* ...so this is -1/2 */
+		fp_set_dig(c2, 2);
+		fp_neg(c2, c2);                /* -2 */
+		fp_inv(c2, c2);                /* -1/2 */
 		fp_mul(c2, c2, ctx->ep_map_u); /* c2 = -1/2 * u */
 
 		/* constant 3: sqrt(-g(u) * (3 * u^2 + 4 * a)) */
