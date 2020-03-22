@@ -78,7 +78,7 @@ uint8_t result224[3][28] = {
 			0xB2, 0xEE, 0x4E, 0xE7, 0xAD, 0x67},
 };
 
-uint8_t result_xof_sha224[4][75] = {
+uint8_t result_xmd_sha224[4][75] = {
 	{0x8A, 0x96, 0x42, 0x30, 0x80, 0x8F, 0xC6, 0xC7, 0xB3, 0xD9, 0xC4,
 	 0x85, 0xC6, 0x84, 0xEC, 0xEE, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 	 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -128,14 +128,14 @@ static int sha224(void) {
 
 	TEST_ONCE("sha224 xof function is correct") {
 		uint8_t buf[75] = {0,};
-		md_xof_sh224(buf, 16, (uint8_t *)TEST1, strlen(TEST1), (uint8_t *)"", 0);
-		TEST_ASSERT(memcmp(buf, result_xof_sha224[0], 16) == 0, end);
-		md_xof_sh224(buf, 37, (uint8_t *)TEST2a, strlen(TEST2a), (uint8_t *)TEST2b, strlen(TEST2b));
-		TEST_ASSERT(memcmp(buf, result_xof_sha224[1], 37) == 0, end);
-		md_xof_sh224(buf, 57, (uint8_t *)TEST3a, strlen(TEST3a), (uint8_t *)TEST3b, strlen(TEST3b));
-		TEST_ASSERT(memcmp(buf, result_xof_sha224[2], 57) == 0, end);
-		md_xof_sh224(buf, 75, (uint8_t *)TEST4a, strlen(TEST4a), (uint8_t *)TEST4b, strlen(TEST4b));
-		TEST_ASSERT(memcmp(buf, result_xof_sha224[3], 75) == 0, end);
+		md_xmd_sh224(buf, 16, (uint8_t *)TEST1, strlen(TEST1), (uint8_t *)"", 0);
+		TEST_ASSERT(memcmp(buf, result_xmd_sha224[0], 16) == 0, end);
+		md_xmd_sh224(buf, 37, (uint8_t *)TEST2a, strlen(TEST2a), (uint8_t *)TEST2b, strlen(TEST2b));
+		TEST_ASSERT(memcmp(buf, result_xmd_sha224[1], 37) == 0, end);
+		md_xmd_sh224(buf, 57, (uint8_t *)TEST3a, strlen(TEST3a), (uint8_t *)TEST3b, strlen(TEST3b));
+		TEST_ASSERT(memcmp(buf, result_xmd_sha224[2], 57) == 0, end);
+		md_xmd_sh224(buf, 75, (uint8_t *)TEST4a, strlen(TEST4a), (uint8_t *)TEST4b, strlen(TEST4b));
+		TEST_ASSERT(memcmp(buf, result_xmd_sha224[3], 75) == 0, end);
 	}
 	TEST_END;
 
@@ -161,7 +161,7 @@ uint8_t result256[3][32] = {
 			0x20, 0x0E, 0x04, 0x6D, 0x39, 0xCC, 0xC7, 0x11, 0x2C, 0xD0}
 };
 
-uint8_t result_xof_sha256[4][75] = {
+uint8_t result_xmd_sha256[4][75] = {
 	{0x94, 0x77, 0xB7, 0xE5, 0xCA, 0x5E, 0xF7, 0x57, 0x6C, 0xF8, 0xF1,
 	 0x18, 0x26, 0xAA, 0x86, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 	 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -211,14 +211,14 @@ static int sha256(void) {
 
 	TEST_ONCE("sha256 xof function is correct") {
 		uint8_t buf[75] = {0,};
-		md_xof_sh256(buf, 16, (uint8_t *)TEST1, strlen(TEST1), (uint8_t *)"", 0);
-		TEST_ASSERT(memcmp(buf, result_xof_sha256[0], 16) == 0, end);
-		md_xof_sh256(buf, 37, (uint8_t *)TEST2a, strlen(TEST2a), (uint8_t *)TEST2b, strlen(TEST2b));
-		TEST_ASSERT(memcmp(buf, result_xof_sha256[1], 37) == 0, end);
-		md_xof_sh256(buf, 57, (uint8_t *)TEST3a, strlen(TEST3a), (uint8_t *)TEST3b, strlen(TEST3b));
-		TEST_ASSERT(memcmp(buf, result_xof_sha256[2], 57) == 0, end);
-		md_xof_sh256(buf, 75, (uint8_t *)TEST4a, strlen(TEST4a), (uint8_t *)TEST4b, strlen(TEST4b));
-		TEST_ASSERT(memcmp(buf, result_xof_sha256[3], 75) == 0, end);
+		md_xmd_sh256(buf, 16, (uint8_t *)TEST1, strlen(TEST1), (uint8_t *)"", 0);
+		TEST_ASSERT(memcmp(buf, result_xmd_sha256[0], 16) == 0, end);
+		md_xmd_sh256(buf, 37, (uint8_t *)TEST2a, strlen(TEST2a), (uint8_t *)TEST2b, strlen(TEST2b));
+		TEST_ASSERT(memcmp(buf, result_xmd_sha256[1], 37) == 0, end);
+		md_xmd_sh256(buf, 57, (uint8_t *)TEST3a, strlen(TEST3a), (uint8_t *)TEST3b, strlen(TEST3b));
+		TEST_ASSERT(memcmp(buf, result_xmd_sha256[2], 57) == 0, end);
+		md_xmd_sh256(buf, 75, (uint8_t *)TEST4a, strlen(TEST4a), (uint8_t *)TEST4b, strlen(TEST4b));
+		TEST_ASSERT(memcmp(buf, result_xmd_sha256[3], 75) == 0, end);
 	}
 	TEST_END;
 
@@ -258,7 +258,7 @@ uint8_t result384[4][48] = {
 			0xDD, 0xD8, 0x7F, 0x3D, 0x89, 0x85},
 };
 
-uint8_t result_xof_sha384[4][75] = {
+uint8_t result_xmd_sha384[4][75] = {
 	{0x08, 0xB9, 0x33, 0x36, 0xAE, 0x29, 0x19, 0x5A, 0x13, 0x4F, 0x70,
 	 0x7C, 0x96, 0x60, 0x3A, 0x8E, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 	 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -308,14 +308,14 @@ static int sha384(void) {
 
 	TEST_ONCE("sha384 xof function is correct") {
 		uint8_t buf[75] = {0,};
-		md_xof_sh384(buf, 16, (uint8_t *)TEST1, strlen(TEST1), (uint8_t *)"", 0);
-		TEST_ASSERT(memcmp(buf, result_xof_sha384[0], 16) == 0, end);
-		md_xof_sh384(buf, 37, (uint8_t *)TEST2a, strlen(TEST2a), (uint8_t *)TEST2b, strlen(TEST2b));
-		TEST_ASSERT(memcmp(buf, result_xof_sha384[1], 37) == 0, end);
-		md_xof_sh384(buf, 57, (uint8_t *)TEST3a, strlen(TEST3a), (uint8_t *)TEST3b, strlen(TEST3b));
-		TEST_ASSERT(memcmp(buf, result_xof_sha384[2], 57) == 0, end);
-		md_xof_sh384(buf, 75, (uint8_t *)TEST4a, strlen(TEST4a), (uint8_t *)TEST4b, strlen(TEST4b));
-		TEST_ASSERT(memcmp(buf, result_xof_sha384[3], 75) == 0, end);
+		md_xmd_sh384(buf, 16, (uint8_t *)TEST1, strlen(TEST1), (uint8_t *)"", 0);
+		TEST_ASSERT(memcmp(buf, result_xmd_sha384[0], 16) == 0, end);
+		md_xmd_sh384(buf, 37, (uint8_t *)TEST2a, strlen(TEST2a), (uint8_t *)TEST2b, strlen(TEST2b));
+		TEST_ASSERT(memcmp(buf, result_xmd_sha384[1], 37) == 0, end);
+		md_xmd_sh384(buf, 57, (uint8_t *)TEST3a, strlen(TEST3a), (uint8_t *)TEST3b, strlen(TEST3b));
+		TEST_ASSERT(memcmp(buf, result_xmd_sha384[2], 57) == 0, end);
+		md_xmd_sh384(buf, 75, (uint8_t *)TEST4a, strlen(TEST4a), (uint8_t *)TEST4b, strlen(TEST4b));
+		TEST_ASSERT(memcmp(buf, result_xmd_sha384[3], 75) == 0, end);
 	}
 	TEST_END;
 
@@ -353,7 +353,7 @@ uint8_t result512[4][64] = {
 			0xC0, 0x9B},
 };
 
-uint8_t result_xof_sha512[4][75] = {
+uint8_t result_xmd_sha512[4][75] = {
 	{0x59, 0xDB, 0xF2, 0x0C, 0x8A, 0x4C, 0xCA, 0xA9, 0x92, 0xA9, 0x69,
 	 0xEE, 0xFA, 0x7B, 0x75, 0x25, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 	 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -403,14 +403,14 @@ static int sha512(void) {
 
 	TEST_ONCE("sha512 xof function is correct") {
 		uint8_t buf[75] = {0,};
-		md_xof_sh512(buf, 16, (uint8_t *)TEST1, strlen(TEST1), (uint8_t *)"", 0);
-		TEST_ASSERT(memcmp(buf, result_xof_sha512[0], 16) == 0, end);
-		md_xof_sh512(buf, 37, (uint8_t *)TEST2a, strlen(TEST2a), (uint8_t *)TEST2b, strlen(TEST2b));
-		TEST_ASSERT(memcmp(buf, result_xof_sha512[1], 37) == 0, end);
-		md_xof_sh512(buf, 57, (uint8_t *)TEST3a, strlen(TEST3a), (uint8_t *)TEST3b, strlen(TEST3b));
-		TEST_ASSERT(memcmp(buf, result_xof_sha512[2], 57) == 0, end);
-		md_xof_sh512(buf, 75, (uint8_t *)TEST4a, strlen(TEST4a), (uint8_t *)TEST4b, strlen(TEST4b));
-		TEST_ASSERT(memcmp(buf, result_xof_sha512[3], 75) == 0, end);
+		md_xmd_sh512(buf, 16, (uint8_t *)TEST1, strlen(TEST1), (uint8_t *)"", 0);
+		TEST_ASSERT(memcmp(buf, result_xmd_sha512[0], 16) == 0, end);
+		md_xmd_sh512(buf, 37, (uint8_t *)TEST2a, strlen(TEST2a), (uint8_t *)TEST2b, strlen(TEST2b));
+		TEST_ASSERT(memcmp(buf, result_xmd_sha512[1], 37) == 0, end);
+		md_xmd_sh512(buf, 57, (uint8_t *)TEST3a, strlen(TEST3a), (uint8_t *)TEST3b, strlen(TEST3b));
+		TEST_ASSERT(memcmp(buf, result_xmd_sha512[2], 57) == 0, end);
+		md_xmd_sh512(buf, 75, (uint8_t *)TEST4a, strlen(TEST4a), (uint8_t *)TEST4b, strlen(TEST4b));
+		TEST_ASSERT(memcmp(buf, result_xmd_sha512[3], 75) == 0, end);
 	}
 	TEST_END;
 

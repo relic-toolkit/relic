@@ -53,14 +53,14 @@
  * Construct an extensible-output function based on HASH, which must be
  * one of SHA224, SHA256, SHA384, or SHA512.
  */
-#define make_md_xof(HASH, HNAME)                                               \
-	_make_md_xof(md_xof_##HNAME, HASH##_Message_Block_Size, HASH##HashSize,    \
+#define make_md_xmd(HASH, HNAME)                                               \
+	_make_md_xmd(md_xmd_##HNAME, HASH##_Message_Block_Size, HASH##HashSize,    \
 				 HASH##Context, HASH##Reset, HASH##Input, HASH##Result)
 
 /**
- * Helper for make_md_xof
+ * Helper for make_md_xmd
  */
-#define _make_md_xof(HName, HBlockSize, HHashSize, HContext, HReset, HInput, HResult)                             \
+#define _make_md_xmd(HName, HBlockSize, HHashSize, HContext, HReset, HInput, HResult)                             \
 	void HName(uint8_t *buf, int buf_len, const uint8_t *in, int in_len, const uint8_t *dst, int dst_len) {       \
 		const unsigned ell = (buf_len + HHashSize - 1) / HHashSize;                                               \
 		if (ell > 255 || buf_len < 0) {                                                                           \
@@ -112,17 +112,17 @@
 /*============================================================================*/
 
 #if MD_MAP == SH224 || !defined(STRIP)
-make_md_xof(SHA224, sh224)
+make_md_xmd(SHA224, sh224)
 #endif
 
 #if MD_MAP == SH256 || !defined(STRIP)
-make_md_xof(SHA256, sh256)
+make_md_xmd(SHA256, sh256)
 #endif
 
 #if MD_MAP == SH384 || !defined(STRIP)
-make_md_xof(SHA384, sh384)
+make_md_xmd(SHA384, sh384)
 #endif
 
 #if MD_MAP == SH512 || !defined(STRIP)
-make_md_xof(SHA512, sh512)
+make_md_xmd(SHA512, sh512)
 #endif

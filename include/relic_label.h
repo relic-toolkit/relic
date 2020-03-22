@@ -426,6 +426,7 @@
 #undef fp_prime_get_sps
 #undef fp_prime_get_qnr
 #undef fp_prime_get_cnr
+#undef fp_prime_get_2ad
 #undef fp_param_get
 #undef fp_prime_set_dense
 #undef fp_prime_set_pmers
@@ -508,6 +509,7 @@
 #define fp_prime_get_sps 	PREFIX(fp_prime_get_sps)
 #define fp_prime_get_qnr 	PREFIX(fp_prime_get_qnr)
 #define fp_prime_get_cnr 	PREFIX(fp_prime_get_cnr)
+#define fp_prime_get_2ad 	PREFIX(fp_prime_get_2ad)
 #define fp_param_get 	PREFIX(fp_param_get)
 #define fp_prime_set_dense 	PREFIX(fp_prime_set_dense)
 #define fp_prime_set_pmers 	PREFIX(fp_prime_set_pmers)
@@ -2629,10 +2631,10 @@
 #undef md_kdf
 #undef md_mgf
 #undef md_hmac
-#undef md_xof_sh224
-#undef md_xof_sh256
-#undef md_xof_sh384
-#undef md_xof_sh512
+#undef md_xmd_sh224
+#undef md_xmd_sh256
+#undef md_xmd_sh384
+#undef md_xmd_sh512
 
 #define md_map_sh224 	PREFIX(md_map_sh224)
 #define md_map_sh256 	PREFIX(md_map_sh256)
@@ -2643,10 +2645,10 @@
 #define md_kdf 	PREFIX(md_kdf)
 #define md_mgf 	PREFIX(md_mgf)
 #define md_hmac 	PREFIX(md_hmac)
-#define md_xof_sh224 	PREFIX(md_xof_sh224)
-#define md_xof_sh256 	PREFIX(md_xof_sh256)
-#define md_xof_sh384 	PREFIX(md_xof_sh384)
-#define md_xof_sh512 	PREFIX(md_xof_sh512)
+#define md_xmd_sh224 	PREFIX(md_xmd_sh224)
+#define md_xmd_sh256 	PREFIX(md_xmd_sh256)
+#define md_xmd_sh384 	PREFIX(md_xmd_sh384)
+#define md_xmd_sh512 	PREFIX(md_xmd_sh512)
 
 #endif /* LABEL */
 
