@@ -1335,7 +1335,7 @@ static int lhs(void) {
 		TEST_END;
 
 		char *ls[L] = { "l" };
-		int lens[L] = { sizeof(ls[0]) };
+		int lens[L] = { strlen(ls[0]) };
 		dig_t ft[S];
 
 		TEST_BEGIN("simple linear multi-key homomorphic signature is correct") {
