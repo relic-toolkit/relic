@@ -87,6 +87,11 @@
 #define RLC_EPX_TABLE_MAX 	RLC_MAX(RLC_EPX_TABLE_BASIC, RLC_EPX_TABLE_COMBD)
 #endif
 
+/**
+ * Maximum number of coefficients of an isogeny map polynomial.
+ * 4 is sufficient for a degree-3 isogeny polynomial.
+ */
+#define RLC_EPX_CTMAP_MAX	4
 
 /*============================================================================*/
 /* Type definitions                                                           */
@@ -139,6 +144,37 @@ typedef ep3_st ep3_t[1];
 #else
 typedef ep3_st *ep3_t;
 #endif
+
+/**
+ * Coefficients of an isogeny map for a curve over a quadratic extension.
+ */
+typedef struct {
+	/** The a-coefficient of the isogenous curve used for SSWU mapping. */
+	fp2_st a;
+	/** The b-coefficient of the isogenous curve used for SSWU mapping. */
+	fp2_st b;
+	/** Degree of x numerator */
+	int deg_xn;
+	/** Degree of x denominator */
+	int deg_xd;
+	/** Degree of y numerator */
+	int deg_yn;
+	/** Degree of y denominator */
+	int deg_yd;
+	/** x numerator coefficients */
+	fp2_st xn[RLC_EPX_CTMAP_MAX];
+	/** x denominator coefficients */
+	fp2_st xd[RLC_EPX_CTMAP_MAX];
+	/** y numerator coefficients */
+	fp2_st yn[RLC_EPX_CTMAP_MAX];
+	/** y denominator coefficients */
+	fp2_st yd[RLC_EPX_CTMAP_MAX];
+} iso2_st;
+
+/**
+ * Pointer to isogeny map coefficients.
+ */
+typedef iso2_st *iso2_t;
 
 /*============================================================================*/
 /* Macro definitions                                                          */

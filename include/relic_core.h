@@ -325,8 +325,14 @@ typedef struct _ctx_t {
 	bn_st ep2_r;
 	/** The cofactor of the group order in the elliptic curve. */
 	bn_st ep2_h;
+	/** The distinguished non-square used by the mapping function */
+	fp2_st ep2_map_u;
+	/** The constants needed for hashing. */
+	fp2_st ep2_map_c[4];
 	/** Flag that stores if the prime curve is a twist. */
 	int ep2_is_twist;
+	/** Flag that indicates whether this curve uses an isogeny for the SSWU mapping. */
+	int ep2_is_ctmap;
 #ifdef EP_PRECO
 	/** Precomputation table for generator multiplication.*/
 	ep2_st ep2_pre[RLC_EP_TABLE];
@@ -337,6 +343,10 @@ typedef struct _ctx_t {
 /** In case of stack allocation, we need to get global memory for the table. */
 	fp2_st _ep2_pre[3 * RLC_EP_TABLE];
 #endif /* ALLOC == STACK */
+#ifdef EP_CTMAP
+	/** The isogeny map coefficients for the SSWU mapping. */
+	iso2_st ep2_iso;
+#endif /* EP_CTMAP */
 #endif /* WITH_EPX */
 
 #ifdef WITH_ED
