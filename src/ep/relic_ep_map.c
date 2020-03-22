@@ -125,9 +125,9 @@ static void ep_map_sswu(ep_t p, const fp_t t) {
 		fp_new(t3);
 
 		ctx_t *ctx = core_get();
-		dig_t *mBoverA = ctx->ep_map_c1;
-		dig_t *a = ctx->ep_map_c3;
-		dig_t *b = ctx->ep_map_c4;
+		dig_t *mBoverA = ctx->ep_map_c[0];
+		dig_t *a = ctx->ep_map_c[2];
+		dig_t *b = ctx->ep_map_c[3];
 		dig_t *u = ctx->ep_map_u;
 
 		/* start computing the map */
@@ -209,10 +209,10 @@ static void ep_map_svdw(ep_t p, const fp_t t) {
 		fp_new(t4);
 
 		ctx_t *ctx = core_get();
-		dig_t *gU = ctx->ep_map_c1;
-		dig_t *mUover2 = ctx->ep_map_c2;
-		dig_t *c3 = ctx->ep_map_c3;
-		dig_t *c4 = ctx->ep_map_c4;
+		dig_t *gU = ctx->ep_map_c[0];
+		dig_t *mUover2 = ctx->ep_map_c[1];
+		dig_t *c3 = ctx->ep_map_c[2];
+		dig_t *c4 = ctx->ep_map_c[3];
 		dig_t *u = ctx->ep_map_u;
 
 		/* start computing the map */
@@ -319,27 +319,13 @@ void ep_map_dst(ep_t p, const uint8_t *msg, int len, const uint8_t *dst, int dst
 		 *          Consider making the hash function a per-curve option!
 		 */
 		const int len_per_elm = (FP_PRIME + core_get()->ep_extra_bits + 7) / 8;
-		md_xmd(pseudo_random_bytes, 2 * len_per_elm, msg, len, dst, dst_len);
+		md_xof(pseudo_random_bytes, 2 * len_per_elm, msg, len, dst, dst_len);
 
-#if FP_RDC == MONTY
 #define EP_MAP_CONVERT_BYTES(IDX)                                                        \
 	do {                                                                                 \
-		/* in MONTY mode, can convert values larger than p */                            \
 		bn_read_bin(k, pseudo_random_bytes + IDX * len_per_elm, len_per_elm);            \
 		fp_prime_conv(t, k);                                                             \
 	} while (0)
-#else /* FP_RDC != MONTY */
-#define EP_MAP_CONVERT_BYTES(IDX)                                                        \
-	do {                                                                                 \
-		/* not in MONTY mode, need to convert values smaller than p */                   \
-		bn_read_bin(k, pseudo_random_bytes + IDX * len_per_elm, half_elm);               \
-		fp_prime_conv(q->x, k);                                                          \
-		fp_mul(t, q->x, q->y);                                                           \
-		bn_read_bin(k, pseudo_random_bytes + IDX * len_per_elm + half_elm, rest_elm);    \
-		fp_prime_conv(q->x, k);                                                          \
-		fp_add(t, t, q->x);                                                              \
-	} while (0)
-#endif
 
 #define EP_MAP_APPLY_MAP(PT)                                                             \
 	do {                                                                                 \
@@ -353,15 +339,6 @@ void ep_map_dst(ep_t p, const uint8_t *msg, int len, const uint8_t *dst, int dst
 		fp_neg(t, PT->y);                                                                \
 		dv_copy_cond(PT->y, t, RLC_FP_DIGS, neg != bn_cmp(k, pm1o2));                    \
 	} while (0)
-
-#if FP_RDC != MONTY
-		/* set up values for CONVERT_BYTES_NOMONTY */
-		const int half_elm = len_per_elm / 2;
-		const int rest_elm = len_per_elm - half_elm;
-		bn_zero(k);
-		bn_set_bit(k, 8 * rest_elm, 1);
-		fp_prime_conv(q->y, k);
-#endif
 
 		/* first map invocation */
 		EP_MAP_CONVERT_BYTES(0);

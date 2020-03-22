@@ -145,9 +145,7 @@ static int util(void) {
 				fp_write_str(str, bits, a, j);
 				fp_read_str(b, str, strlen(str), j);
 				/* Test also negative integers. */
-				for (int k = strlen(str); k >= 0; k--) {
-					str[k + 1] = str[k];
-				}
+				memmove(str + 1, str, strlen(str) + 1);
 				str[0] = '-';
 				fp_read_str(b, str, strlen(str), j);
 				fp_neg(a, a);

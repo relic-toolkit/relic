@@ -269,14 +269,8 @@ typedef struct _ctx_t {
 	bn_st ep_h;
 	/** The distinguished non-square used by the mapping function */
 	fp_st ep_map_u;
-	/** The first constant needed for hashing. */
-	fp_st ep_map_c1;
-	/** The second constant needed for hashing. */
-	fp_st ep_map_c2;
-	/** The third constant needed for hashing. */
-	fp_st ep_map_c3;
-	/** The fourth constant needed for hashing. */
-	fp_st ep_map_c4;
+	/** Precomputed constants for hashing. */
+	fp_st ep_map_c[4];
 	/** The number of excess bits to use when choosing a random field element. */
 	int ep_extra_bits;
 #ifdef EP_ENDOM
