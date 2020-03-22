@@ -126,7 +126,7 @@ static int sha224(void) {
 	}
 	TEST_END;
 
-	TEST_ONCE("sha224 xof function is correct") {
+	TEST_ONCE("sha224 xmd function is correct") {
 		uint8_t buf[75] = {0,};
 		md_xmd_sh224(buf, 16, (uint8_t *)TEST1, strlen(TEST1), (uint8_t *)"", 0);
 		TEST_ASSERT(memcmp(buf, result_xmd_sha224[0], 16) == 0, end);
@@ -209,7 +209,7 @@ static int sha256(void) {
 	}
 	TEST_END;
 
-	TEST_ONCE("sha256 xof function is correct") {
+	TEST_ONCE("sha256 xmd function is correct") {
 		uint8_t buf[75] = {0,};
 		md_xmd_sh256(buf, 16, (uint8_t *)TEST1, strlen(TEST1), (uint8_t *)"", 0);
 		TEST_ASSERT(memcmp(buf, result_xmd_sha256[0], 16) == 0, end);
@@ -306,7 +306,7 @@ static int sha384(void) {
 	}
 	TEST_END;
 
-	TEST_ONCE("sha384 xof function is correct") {
+	TEST_ONCE("sha384 xmd function is correct") {
 		uint8_t buf[75] = {0,};
 		md_xmd_sh384(buf, 16, (uint8_t *)TEST1, strlen(TEST1), (uint8_t *)"", 0);
 		TEST_ASSERT(memcmp(buf, result_xmd_sha384[0], 16) == 0, end);
@@ -401,7 +401,7 @@ static int sha512(void) {
 	}
 	TEST_END;
 
-	TEST_ONCE("sha512 xof function is correct") {
+	TEST_ONCE("sha512 xmd function is correct") {
 		uint8_t buf[75] = {0,};
 		md_xmd_sh512(buf, 16, (uint8_t *)TEST1, strlen(TEST1), (uint8_t *)"", 0);
 		TEST_ASSERT(memcmp(buf, result_xmd_sha512[0], 16) == 0, end);
