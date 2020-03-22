@@ -454,6 +454,11 @@ void ep2_curve_get_ord(bn_t n);
 void ep2_curve_get_cof(bn_t h);
 
 /**
+ * Returns the isogeny map coefficients for use with the SSWU map.
+ */
+iso2_t ep2_curve_get_iso(void);
+
+/**
  * Configures an elliptic curve over a quadratic extension by its coefficients.
  *
  * @param[in] a			- the 'a' coefficient of the curve.

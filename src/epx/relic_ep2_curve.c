@@ -104,8 +104,21 @@
 #define B12_P381_Y1		"0606C4A02EA734CC32ACD2B02BC28B99CB3E287E85A763AF267492AB572E99AB3F370D275CEC1DA1AAA9075FF05F79BE"
 #define B12_P381_R		"73EDA753299D7D483339D80809A1D80553BDA402FFFE5BFEFFFFFFFF00000001"
 #define B12_P381_H		"5D543A95414E7F1091D50792876A202CD91DE4547085ABAA68A205B2E5A7DDFA628F1CB4D9E82EF21537E293A6691AE1616EC6E786F0C70CF1C38E31C7238E5"
+#if defined(EP_CTMAP)
+#define B12_P381_ISO_A0 "0"
+#define B12_P381_ISO_A1 "F0"
+#define B12_P381_ISO_B0 "3F4"
+#define B12_P381_ISO_B1 "3F4"
+#define B12_P381_ISO_XN "5c759507e8e333ebb5b7a9a47d7ed8532c52d39fd3a042a88b58423c50ae15d5c2638e343d9c71c6238aaaaaaaa97d6,5c759507e8e333ebb5b7a9a47d7ed8532c52d39fd3a042a88b58423c50ae15d5c2638e343d9c71c6238aaaaaaaa97d6;0,11560bf17baa99bc32126fced787c88f984f87adf7ae0c7f9a208c6b4f20a4181472aaa9cb8d555526a9ffffffffc71a;11560bf17baa99bc32126fced787c88f984f87adf7ae0c7f9a208c6b4f20a4181472aaa9cb8d555526a9ffffffffc71e,8ab05f8bdd54cde190937e76bc3e447cc27c3d6fbd7063fcd104635a790520c0a395554e5c6aaaa9354ffffffffe38d;171d6541fa38ccfaed6dea691f5fb614cb14b4e7f4e810aa22d6108f142b85757098e38d0f671c7188e2aaaaaaaa5ed1,0"
+#define B12_P381_ISO_XD "0,1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaa63;c,1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaa9f;1,0"
+#define B12_P381_ISO_YN "1530477c7ab4113b59a4c18b076d11930f7da5d4a07f649bf54439d87d27e500fc8c25ebf8c92f6812cfc71c71c6d706,1530477c7ab4113b59a4c18b076d11930f7da5d4a07f649bf54439d87d27e500fc8c25ebf8c92f6812cfc71c71c6d706;0,5c759507e8e333ebb5b7a9a47d7ed8532c52d39fd3a042a88b58423c50ae15d5c2638e343d9c71c6238aaaaaaaa97be;11560bf17baa99bc32126fced787c88f984f87adf7ae0c7f9a208c6b4f20a4181472aaa9cb8d555526a9ffffffffc71c,8ab05f8bdd54cde190937e76bc3e447cc27c3d6fbd7063fcd104635a790520c0a395554e5c6aaaa9354ffffffffe38f;124c9ad43b6cf79bfbf7043de3811ad0761b0f37a1e26286b0e977c69aa274524e79097a56dc4bd9e1b371c71c718b10,0"
+#define B12_P381_ISO_YD "1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffa8fb,1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffa8fb;0,1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffa9d3;12,1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaa99;1,0"
+#define B12_P381_MAPU0 "-2"
+#define B12_P381_MAPU1 "-2"
+#else /* !defined(EP_CTMAP) */
 #define B12_P381_MAPU0 "0"
 #define B12_P381_MAPU1 "1"
+#endif
 /** @} */
 #endif
 
@@ -271,6 +284,84 @@
 	bn_read_str(r, str, strlen(str), 16);									\
 	RLC_GET(str, CURVE##_H, sizeof(CURVE##_H));								\
 	bn_read_str(h, str, strlen(str), 16);									\
+	RLC_GET(str, CURVE##_MAPU0, sizeof(CURVE##_MAPU0));						\
+	fp_read_str(u[0], str, strlen(str), 16);								\
+	RLC_GET(str, CURVE##_MAPU1, sizeof(CURVE##_MAPU1));						\
+	fp_read_str(u[1], str, strlen(str), 16);
+
+#if defined(EP_CTMAP)
+
+/**
+ * Assigns the isogeny map parameters for hashing with SSWU map.
+ *
+ * @param[in] CURVE		- the curve parameters to assign.
+ */
+#define ASSIGNM(CURVE)														\
+    ep2_curve_set_ctmap(CURVE##_ISO_A0, CURVE##_ISO_A1, CURVE##_ISO_B0,		\
+                        CURVE##_ISO_B1, CURVE##_ISO_XN, CURVE##_ISO_XD,		\
+						CURVE##_ISO_YN, CURVE##_ISO_YD)
+
+#endif /* EP_CTMAP */
+
+/*============================================================================*/
+/* Private definitions                                                        */
+/*============================================================================*/
+
+#if defined(EP_CTMAP)
+static int ep2_curve_get_coeffs(fp2_t *coeffs, const char *str) {
+	if (str[0] == '\0') {
+		/* need nonzero strlen */
+		THROW(ERR_NO_VALID);
+	}
+	int degree = 0;
+	unsigned offset = 0;
+	for (; degree < RLC_EPX_CTMAP_MAX; ++degree) {
+		/* first coeff */
+		const char *end = strchr(str + offset, ',');
+		if (end == NULL) {
+			/* should not happen --- means there's no second coeff */
+			THROW(ERR_NO_VALID);
+		}
+		unsigned len = end - str - offset;
+		fp_read_str(coeffs[degree][0], str + offset, len, 16);
+		offset += len + 1; /* move to after ',' */
+
+		/* second coeff */
+		end = strchr(str + offset, ';');
+		if (end == NULL) {
+			/* last one */
+			fp_read_str(coeffs[degree][1], str + offset, strlen(str + offset), 16);
+			break;
+		}
+		len = end - str - offset;
+		fp_read_str(coeffs[degree][1], str + offset, len, 16);
+		offset += len + 1; /* move to after ';' */
+	}
+	if (degree == RLC_EPX_CTMAP_MAX) {
+		/* ran out of space before converting all coeffs */
+		THROW(ERR_NO_VALID);
+	}
+	return degree;
+}
+
+static void ep2_curve_set_ctmap(const char *a0_str, const char *a1_str,
+								const char *b0_str, const char *b1_str,
+								const char *xn_str, const char *xd_str,
+								const char *yn_str, const char *yd_str) {
+	/* coefficients of isogenous curve */
+	fp_read_str(ep2_curve_get_iso()->a[0], a0_str, strlen(a0_str), 16);
+	fp_read_str(ep2_curve_get_iso()->a[1], a1_str, strlen(a1_str), 16);
+	fp_read_str(ep2_curve_get_iso()->b[0], b0_str, strlen(b0_str), 16);
+	fp_read_str(ep2_curve_get_iso()->b[1], b1_str, strlen(b1_str), 16);
+
+	/* isogeny map coeffs */
+	iso2_t coeffs = ep2_curve_get_iso();
+	coeffs->deg_xn = ep2_curve_get_coeffs(coeffs->xn, xn_str);
+	coeffs->deg_xd = ep2_curve_get_coeffs(coeffs->xd, xd_str);
+	coeffs->deg_yn = ep2_curve_get_coeffs(coeffs->yn, yn_str);
+	coeffs->deg_yd = ep2_curve_get_coeffs(coeffs->yd, yd_str);
+}
+#endif /* EP_CTMAP */
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -410,6 +501,14 @@ void ep2_curve_get_cof(bn_t h) {
 	bn_copy(h, &(core_get()->ep2_h));
 }
 
+iso2_t ep2_curve_get_iso() {
+#ifdef EP_CTMAP
+	return &core_get()->ep2_iso;
+#else
+	return NULL;
+#endif /* EP_CTMAP */
+}
+
 #if defined(EP_PRECO)
 
 ep2_t *ep2_curve_get_tab(void) {
@@ -423,16 +522,18 @@ ep2_t *ep2_curve_get_tab(void) {
 #endif
 
 void ep2_curve_set_twist(int type) {
+	int ctmap = 0;
 	char str[4 * RLC_FP_BYTES + 1];
 	ctx_t *ctx = core_get();
 	ep2_t g;
 	fp2_t a;
-	fp2_t b;
+	fp2_t b, u;
 	bn_t r, h;
 
 	ep2_null(g);
 	fp2_null(a);
 	fp2_null(b);
+	fp2_null(u);
 	bn_null(r);
 	bn_null(h);
 
@@ -447,6 +548,7 @@ void ep2_curve_set_twist(int type) {
 		ep2_new(g);
 		fp2_new(a);
 		fp2_new(b);
+		fp2_new(u);
 		bn_new(r);
 		bn_new(h);
 
@@ -466,6 +568,10 @@ void ep2_curve_set_twist(int type) {
 #elif FP_PRIME == 381
 			case B12_P381:
 				ASSIGN(B12_P381);
+#if defined(EP_CTMAP)
+				ctmap = 1;
+				ASSIGNM(B12_P381);
+#endif /* EP_CTMAP */
 				break;
 #elif FP_PRIME == 382
 			case BN_P382:
@@ -513,8 +619,11 @@ void ep2_curve_set_twist(int type) {
 		fp_copy(ctx->ep2_a[1], a[1]);
 		fp_copy(ctx->ep2_b[0], b[0]);
 		fp_copy(ctx->ep2_b[1], b[1]);
+		fp_copy(ctx->ep2_map_u[0], u[0]);
+		fp_copy(ctx->ep2_map_u[1], u[1]);
 		bn_copy(&(ctx->ep2_r), r);
 		bn_copy(&(ctx->ep2_h), h);
+		ctx->ep2_is_ctmap = ctmap;
 		/* I don't have a better place for this. */
 		fp_prime_calc();
 
@@ -529,6 +638,7 @@ void ep2_curve_set_twist(int type) {
 		ep2_free(g);
 		fp2_free(a);
 		fp2_free(b);
+		fp2_free(u);
 		bn_free(r);
 		bn_free(h);
 	}
