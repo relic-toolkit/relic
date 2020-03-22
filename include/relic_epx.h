@@ -426,6 +426,13 @@ int ep2_curve_opt_a(void);
 int ep2_curve_is_twist(void);
 
 /**
+ * Tests if the current curve should use an isogeny map for the SSWU map.
+ *
+ * @return 1 if the curve uses an isogeny, and 0 otherwise.
+ */
+int ep2_curve_is_ctmap(void);
+
+/**
  * Returns the generator of the group of points in the elliptic curve.
  *
  * @param[out] g			- the returned generator.

@@ -119,9 +119,9 @@ static void ep_curve_set_map(void) {
 		fp_mul(c1, c1, ctx->ep_map_u);
 		fp_add(c1, c1, ctx->ep_b);
 
-		/* start computing constant 2: -u / 2 */
+		/* constant 2: -u / 2 */
 		fp_set_dig(c2, 1);
-		fp_neg(c2, c2);                /* -2 */
+		fp_neg(c2, c2);                /* -1 */
 		fp_hlv(c2, c2);                /* -1/2 */
 		fp_mul(c2, c2, ctx->ep_map_u); /* c2 = -1/2 * u */
 

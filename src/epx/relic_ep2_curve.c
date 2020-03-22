@@ -308,7 +308,7 @@
 /*============================================================================*/
 
 #if defined(EP_CTMAP)
-static int ep2_curve_get_coeffs(fp2_t *coeffs, const char *str) {
+static int ep2_curve_get_coeffs(fp2_st *coeffs, const char *str) {
 	if (str[0] == '\0') {
 		/* need nonzero strlen */
 		THROW(ERR_NO_VALID);
@@ -362,6 +362,106 @@ static void ep2_curve_set_ctmap(const char *a0_str, const char *a1_str,
 	coeffs->deg_yd = ep2_curve_get_coeffs(coeffs->yd, yd_str);
 }
 #endif /* EP_CTMAP */
+
+static void ep2_curve_set_map(void) {
+	fp2_t t1, t2, t3, t4;
+
+	fp2_null(t1);
+	fp2_null(t2);
+	fp2_null(t3);
+	fp2_null(t4);
+
+	TRY {
+		fp2_new(t1);
+		fp2_new(t2);
+		fp2_new(t3);
+		fp2_new(t4);
+
+		ctx_t *ctx = core_get();
+
+		/* check if both a and b are nonzero */
+		const int aNeq0 = fp_is_zero(ctx->ep2_a[0]) + fp_is_zero(ctx->ep2_a[1]);
+		const int bNeq0 = fp_is_zero(ctx->ep2_b[0]) + fp_is_zero(ctx->ep2_b[1]);
+		const int abNeq0 = (aNeq0 != 0) && (bNeq0 != 0);
+
+#define FP2_T_FROM_ST(O, I)				\
+		do {							\
+			fp_copy(O[0], I[0]);		\
+			fp_copy(O[1], I[1]);		\
+		} while (0)
+
+		if (ep2_curve_is_ctmap() || abNeq0) {
+			/* SSWU map constants */
+			/* constants 3 and 4 are a and b for the curve on which SSWU map operates */
+#ifdef EP_CTMAP
+			if (ep2_curve_is_ctmap()) {
+				FP2_T_FROM_ST(t3, ctx->ep2_iso.a);
+				FP2_T_FROM_ST(t4, ctx->ep2_iso.b);
+			} else {
+#endif
+				ep2_curve_get_a(t3);
+				ep2_curve_get_b(t3);
+#ifdef EP_CTMAP
+			}
+#endif
+			/* constant 1: -b / a */
+			fp2_neg(t1, t3);     /* c1 = -a */
+			fp2_inv(t1, t1);     /* c1 = -1 / a */
+			fp2_mul(t1, t1, t4); /* c1 = -b / a */
+
+			/* constant 2 is unused in this case */
+		} else {
+			/* SvdW map constants */
+			/* constant 1: g(u) = u^3 + a * u + b */
+			FP2_T_FROM_ST(t3, ctx->ep2_map_u);
+			ep2_curve_get_a(t4);
+			ep2_curve_get_b(t2);
+			fp2_sqr(t1, t3);
+			fp2_add(t1, t1, t4);
+			fp2_mul(t1, t1, t3);
+			fp2_add(t1, t1, t2);
+
+			/* constant 2: -u / 2 */
+			fp2_set_dig(t2, 2);
+			fp2_neg(t2, t2);     /* -2 */
+			fp2_inv(t2, t2);     /* -1 / 2 */
+			fp2_mul(t2, t2, t3); /* -u / 2 */
+
+			/* constant 3: sqrt(-g(u) * (3 * u^2 + 4 * a)) */
+			fp2_sqr(t3, t3);        /* u^2 */
+			fp2_mul_dig(t3, t3, 3); /* 3 * u^2 */
+			fp2_mul_dig(t4, t4, 4); /* 4 * a */
+			fp2_add(t4, t3, t4);    /* 3 * u^2 + 4 * a */
+			fp2_neg(t4, t4);        /* -(3 * u^2 + 4 * a) */
+			fp2_mul(t3, t4, t1);    /* -g(u) * (3 * u^2 + 4 * a) */
+			if (!fp2_srt(t3, t3)) {
+				THROW(ERR_NO_VALID);
+			}
+			/* XXX(rsw): sgn0(c3) should be set to 1 */
+
+			/* constant 4: -4 * g(u) / (3 * u^2 + 4 * a) */
+			fp2_inv(t4, t4);        /* -1 / (3 * u^2 + 4 * a */
+			fp2_mul(t4, t4, t1);    /* -g(u) / (3 * u^2 + 4 * a) */
+			fp2_mul_dig(t4, t4, 4); /* -4 * g(u) / (3 * u^2 + 4 * a) */
+		}
+
+		FP2_T_FROM_ST(ctx->ep2_map_c[0], t1);
+		FP2_T_FROM_ST(ctx->ep2_map_c[1], t2);
+		FP2_T_FROM_ST(ctx->ep2_map_c[2], t3);
+		FP2_T_FROM_ST(ctx->ep2_map_c[3], t4);
+#undef FP2_T_FROM_ST
+	}
+	CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	}
+	FINALLY {
+		fp2_free(t1);
+		fp2_free(t2);
+		fp2_free(t3);
+		fp2_free(t4);
+		fp2_free(u);
+	}
+}
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -423,6 +523,10 @@ void ep2_curve_clean(void) {
 
 int ep2_curve_is_twist(void) {
 	return core_get()->ep2_is_twist;
+}
+
+int ep2_curve_is_ctmap(void) {
+	return core_get()->ep2_is_ctmap;
 }
 
 void ep2_curve_get_gen(ep2_t g) {
@@ -624,6 +728,7 @@ void ep2_curve_set_twist(int type) {
 		bn_copy(&(ctx->ep2_r), r);
 		bn_copy(&(ctx->ep2_h), h);
 		ctx->ep2_is_ctmap = ctmap;
+		ep2_curve_set_map();
 		/* I don't have a better place for this. */
 		fp_prime_calc();
 
