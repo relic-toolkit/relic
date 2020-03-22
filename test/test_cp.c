@@ -781,8 +781,8 @@ static int ibe(void) {
 
 		TEST_BEGIN("boneh-franklin identity-based encryption/decryption is correct") {
 			TEST_ASSERT(result == RLC_OK, end);
-			il = ol = 10;
-			ol += 1 + 2 * RLC_FP_BYTES;
+			il = 10;
+			ol = il + 2 * RLC_FP_BYTES + 1;
 			rand_bytes(in, il);
 			TEST_ASSERT(cp_ibe_gen_prv(prv, id, 5, s) == RLC_OK, end);
 			TEST_ASSERT(cp_ibe_enc(out, &ol, in, il, id, 5, pub) == RLC_OK, end);
@@ -1303,7 +1303,7 @@ static int lhs(void) {
 					label[l] = l;
 					bn_rand_mod(msg[j][l], n);
 					cp_cmlhs_sig(sig[j], z[j], a[j][l], c[j][l], r[j][l], s[j][l],
-						msg[j][l], id, sizeof(id), label[l], x[j][l], h, k[j], K,
+						msg[j][l], id, strlen(id), label[l], x[j][l], h, k[j], K,
 						d[j], sk[j]);
 				}
 			}
@@ -1330,7 +1330,7 @@ static int lhs(void) {
 				}
 			}
 			TEST_ASSERT(cp_cmlhs_ver(_r, _s, sig, z, as, cs, m, id,
-				sizeof(id), label, h, hs, f, flen, y, pk, S) == 1, end);
+				strlen(id), label, h, hs, f, flen, y, pk, S) == 1, end);
 		}
 		TEST_END;
 
@@ -1343,7 +1343,7 @@ static int lhs(void) {
 				cp_mklhs_gen(sk[j], pk[j]);
 				for (int l = 0; l < L; l++) {
 					bn_rand_mod(msg[j][l], n);
-					cp_mklhs_sig(a[j][l], msg[j][l], id, sizeof(id), ls[l],
+					cp_mklhs_sig(a[j][l], msg[j][l], id, strlen(id), ls[l],
 						lens[l], sk[j]);
 				}
 			}
@@ -1368,7 +1368,7 @@ static int lhs(void) {
 				}
 			}
 
-			TEST_ASSERT(cp_mklhs_ver(_r, m, d, id, sizeof(id), ls, lens, f,
+			TEST_ASSERT(cp_mklhs_ver(_r, m, d, id, strlen(id), ls, lens, f,
 				flen, pk, S) == 1, end);
 		}
 		TEST_END;
@@ -1378,7 +1378,7 @@ static int lhs(void) {
 				cp_mklhs_gen(sk[j], pk[j]);
 				for (int l = 0; l < L; l++) {
 					bn_rand_mod(msg[j][l], n);
-					cp_mklhs_sig(a[j][l], msg[j][l], id, sizeof(id), ls[l],
+					cp_mklhs_sig(a[j][l], msg[j][l], id, strlen(id), ls[l],
 						lens[l], sk[j]);
 				}
 			}
@@ -1404,7 +1404,7 @@ static int lhs(void) {
 			}
 
 			cp_mklhs_off(as, ft, ls, lens, f, flen, S);
-			TEST_ASSERT(cp_mklhs_onv(_r, m, d, id, sizeof(id), as, ft,
+			TEST_ASSERT(cp_mklhs_onv(_r, m, d, id, strlen(id), as, ft,
 					pk, S) == 1, end);
 
 		}

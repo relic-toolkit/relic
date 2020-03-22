@@ -139,7 +139,7 @@ int cp_cmlhs_sig(g1_t sig, g2_t z, g1_t a, g1_t c, g1_t r, g2_t s, bn_t msg,
 		g1_norm(a, a);
 		/* Compute z = F_K(delta), Z = g2^z, A = A^(1/z). */
 		md_hmac(mac, (const uint8_t *)data, dlen, prf, plen);
-		bn_read_bin(k, mac, sizeof(mac));
+		bn_read_bin(k, mac, RLC_MD_LEN);
 		bn_mod(k, k, n);
 		g2_mul_gen(z, k);
 		bn_gcd_ext(m, k, NULL, k, n);

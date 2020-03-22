@@ -167,7 +167,7 @@ int cp_ibe_dec(uint8_t *out, int *out_len, uint8_t *in, int in_len, g2_t prv) {
 		g1_read_bin(p, in, l);
 
 		pc_map(e, p, prv);
-		
+
 		/* Allocate size for storing the output. */
 		l = gt_size_bin(e, 0);
 		buf = RLC_ALLOCA(uint8_t, l);
@@ -177,11 +177,12 @@ int cp_ibe_dec(uint8_t *out, int *out_len, uint8_t *in, int in_len, g2_t prv) {
 		gt_write_bin(buf, l, e, 0);
 		md_map(h, buf, l);
 
+		in_len -= (2 * RLC_FP_BYTES + 1);
 		for (l = 0; l < RLC_MIN(in_len, RLC_MD_LEN); l++) {
 			out[l] = in[l + (2 * RLC_FP_BYTES + 1)] ^ h[l];
 		}
 
-		*out_len = in_len - (2 * RLC_FP_BYTES + 1);
+		*out_len = in_len;
 	} CATCH_ANY {
 		result = RLC_ERR;
 	} FINALLY {
