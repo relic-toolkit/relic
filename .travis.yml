@@ -17,6 +17,8 @@ env:
   - CONFIG="-DALLOC=DYNAMIC -DSEED= -DBENCH=0" TEST=""
   # Build for Edwards curves
   - CONFIG="-DSEED= -DBENCH=0 -DFP_PRIME=255 -FP_QNRES=FALSE -DEC_METHD=EDDIE -DED_METHD='PROJC;LWNAF;LWNAF;BASIC'" TEST="-E test_bn|test_fp|test_ed|test_ec|test_cp"
+  # Build with Address Sanityzer
+  - CONFIG="DAUSAN=on -DSEED= -DBENCH=0" TEST=""
 
 script:
   - mkdir build && cd build
