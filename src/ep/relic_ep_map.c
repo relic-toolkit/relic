@@ -31,6 +31,7 @@
 
 #include "relic_core.h"
 #include "relic_md.h"
+#include "relic_tmpl_map.h"
 
 /*============================================================================*/
 /* Private definitions                                                        */
@@ -47,71 +48,12 @@
  * @param[in] coeffs	- the vector of coefficients in the polynomial.
  * @param[in] deg 		- the degree of the polynomial.
  */
-static void fp_eval(fp_t c, fp_t a, fp_st *coeffs, int deg) {
-	fp_copy(c, coeffs[deg]);
-	for (int i = deg; i > 0; --i) {
-		fp_mul(c, c, a);
-		fp_add(c, c, coeffs[i - 1]);
-	}
-}
+TMPL_MAP_HORNER(fp, fp_st)
 
 /**
  * Generic isogeny map evaluation for use with SSWU map.
  */
-static void ep_iso(ep_t q, ep_t p) {
-	fp_t t0, t1, t2, t3;
-
-	if (!ep_curve_is_ctmap()) {
-		ep_copy(q, p);
-		return;
-	}
-	/* XXX need to add real support for input projective points */
-	if (!p->norm) {
-		ep_norm(p, p);
-	}
-
-	fp_null(t0);
-	fp_null(t1);
-	fp_null(t2);
-	fp_null(t3);
-
-	TRY {
-		fp_new(t0);
-		fp_new(t1);
-		fp_new(t2);
-		fp_new(t3);
-
-		iso_t coeffs = ep_curve_get_iso();
-
-		/* numerators */
-		fp_eval(t0, p->x, coeffs->xn, coeffs->deg_xn);
-		fp_eval(t1, p->x, coeffs->yn, coeffs->deg_yn);
-		/* denominators */
-		fp_eval(t2, p->x, coeffs->yd, coeffs->deg_yd);
-		fp_eval(t3, p->x, coeffs->xd, coeffs->deg_xd);
-
-		/* Y = Ny * Dx * Z^2. */
-		fp_mul(q->y, p->y, t1);
-		fp_mul(q->y, q->y, t3);
-		/* Z = Dx * Dy, t1 = Z^2. */
-		fp_mul(q->z, t2, t3);
-		fp_sqr(t1, q->z);
-		fp_mul(q->y, q->y, t1);
-		/* X = Nx * Dy * Z. */
-		fp_mul(q->x, t0, t2);
-		fp_mul(q->x, q->x, q->z);
-		q->norm = 0;
-	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	}
-	FINALLY {
-		fp_free(t0);
-		fp_free(t1);
-		fp_free(t2);
-		fp_free(t3);
-	}
-}
+TMPL_MAP_ISOGENY_MAP()
 #endif /* EP_CTMAP */
 
 /**
