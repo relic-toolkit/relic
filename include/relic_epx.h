@@ -170,7 +170,7 @@ typedef struct {
 	/** y denominator coefficients */
 	fp2_t yd[RLC_EPX_CTMAP_MAX];
 #if ALLOC == STACK
-	/** Storage for the fp2_t above */
+	/** In case of stack allocation, storage for the values in this struct. */
 	/* a, b, and the elms in xn, xd, yn, yd */
 	fp2_st storage[2 + 4 * RLC_EPX_CTMAP_MAX];
 #endif /* ALLOC == DYNAMIC or STACK */

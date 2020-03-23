@@ -308,27 +308,19 @@ typedef struct _ctx_t {
 
 #ifdef WITH_EPX
 	/** The generator of the elliptic curve. */
-	ep2_st ep2_g;
-#if ALLOC == DYNAMIC || ALLOC == STACK
-	/** The first coordinate of the generator. */
-	fp2_st ep2_gx;
-	/** The second coordinate of the generator. */
-	fp2_st ep2_gy;
-	/** The third coordinate of the generator. */
-	fp2_st ep2_gz;
-#endif
+	ep2_t ep2_g;
 	/** The 'a' coefficient of the curve. */
-	fp2_st ep2_a;
+	fp2_t ep2_a;
 	/** The 'b' coefficient of the curve. */
-	fp2_st ep2_b;
+	fp2_t ep2_b;
 	/** The order of the group of points in the elliptic curve. */
 	bn_st ep2_r;
 	/** The cofactor of the group order in the elliptic curve. */
 	bn_st ep2_h;
 	/** The distinguished non-square used by the mapping function */
-	fp2_st ep2_map_u;
+	fp2_t ep2_map_u;
 	/** The constants needed for hashing. */
-	fp2_st ep2_map_c[4];
+	fp2_t ep2_map_c[4];
 	/** Flag that stores if the prime curve is a twist. */
 	int ep2_is_twist;
 	/** Flag that indicates whether this curve uses an isogeny for the SSWU mapping. */
@@ -340,8 +332,12 @@ typedef struct _ctx_t {
 	ep2_st *ep2_ptr[RLC_EP_TABLE];
 #endif /* EP_PRECO */
 #if ALLOC == STACK
-/** In case of stack allocation, we need to get global memory for the table. */
+	/** In case of stack allocation, we need to get global memory for the table. */
 	fp2_st _ep2_pre[3 * RLC_EP_TABLE];
+	/** In case of stack allocation, storage for the EPX constants. */
+	ep2_st _ep2_g;
+	/* 3 for ep2_g, plus ep2_a, ep2_b, ep2_map_u, and ep2_map_c[4] */
+	fp2_st _ep2_storage[10];
 #endif /* ALLOC == STACK */
 #ifdef EP_CTMAP
 	/** The isogeny map coefficients for the SSWU mapping. */
