@@ -308,7 +308,7 @@
 /*============================================================================*/
 
 #if defined(EP_CTMAP)
-static int ep2_curve_get_coeffs(fp2_st *coeffs, const char *str) {
+static int ep2_curve_get_coeffs(fp2_t *coeffs, const char *str) {
 	if (str[0] == '\0') {
 		/* need nonzero strlen */
 		THROW(ERR_NO_VALID);
@@ -348,18 +348,19 @@ static void ep2_curve_set_ctmap(const char *a0_str, const char *a1_str,
 								const char *b0_str, const char *b1_str,
 								const char *xn_str, const char *xd_str,
 								const char *yn_str, const char *yd_str) {
+	iso2_t iso = ep2_curve_get_iso();
+
 	/* coefficients of isogenous curve */
-	fp_read_str(ep2_curve_get_iso()->a[0], a0_str, strlen(a0_str), 16);
-	fp_read_str(ep2_curve_get_iso()->a[1], a1_str, strlen(a1_str), 16);
-	fp_read_str(ep2_curve_get_iso()->b[0], b0_str, strlen(b0_str), 16);
-	fp_read_str(ep2_curve_get_iso()->b[1], b1_str, strlen(b1_str), 16);
+	fp_read_str(iso->a[0], a0_str, strlen(a0_str), 16);
+	fp_read_str(iso->a[1], a1_str, strlen(a1_str), 16);
+	fp_read_str(iso->b[0], b0_str, strlen(b0_str), 16);
+	fp_read_str(iso->b[1], b1_str, strlen(b1_str), 16);
 
 	/* isogeny map coeffs */
-	iso2_t coeffs = ep2_curve_get_iso();
-	coeffs->deg_xn = ep2_curve_get_coeffs(coeffs->xn, xn_str);
-	coeffs->deg_xd = ep2_curve_get_coeffs(coeffs->xd, xd_str);
-	coeffs->deg_yn = ep2_curve_get_coeffs(coeffs->yn, yn_str);
-	coeffs->deg_yd = ep2_curve_get_coeffs(coeffs->yd, yd_str);
+	iso->deg_xn = ep2_curve_get_coeffs(iso->xn, xn_str);
+	iso->deg_xd = ep2_curve_get_coeffs(iso->xd, xd_str);
+	iso->deg_yn = ep2_curve_get_coeffs(iso->yn, yn_str);
+	iso->deg_yd = ep2_curve_get_coeffs(iso->yd, yd_str);
 }
 #endif /* EP_CTMAP */
 
@@ -505,6 +506,43 @@ void ep2_curve_init(void) {
 	ep2_set_infty(&(ctx->ep2_g));
 	bn_init(&(ctx->ep2_r), RLC_FP_DIGS);
 	bn_init(&(ctx->ep2_h), RLC_FP_DIGS);
+
+#ifdef EP_CTMAP
+	iso2_t iso = ep2_curve_get_iso();
+#if ALLOC == STACK
+	iso->a[0] = iso->storage[0][0];
+	iso->a[1] = iso->storage[0][1];
+	iso->b[0] = iso->storage[1][0];
+	iso->b[1] = iso->storage[1][1];
+	for (unsigned i = 0; i < RLC_EPX_CTMAP_MAX; ++i) {
+		/* lay out contiguously */
+		iso->xn[i][0] = iso->storage[2 + i][0];
+		iso->xn[i][1] = iso->storage[2 + i][1];
+
+		iso->xd[i][0] = iso->storage[2 + RLC_EPX_CTMAP_MAX + i][0];
+		iso->xd[i][1] = iso->storage[2 + RLC_EPX_CTMAP_MAX + i][1];
+
+		iso->yn[i][0] = iso->storage[2 + 2 * RLC_EPX_CTMAP_MAX + i][0];
+		iso->yn[i][1] = iso->storage[2 + 2 * RLC_EPX_CTMAP_MAX + i][1];
+
+		iso->yd[i][0] = iso->storage[2 + 3 * RLC_EPX_CTMAP_MAX + i][0];
+		iso->yd[i][1] = iso->storage[2 + 3 * RLC_EPX_CTMAP_MAX + i][1];
+	}
+#elif ALLOC == DYNAMIC
+	fp2_new(iso->a);
+	fp2_new(iso->b);
+	for (unsigned i = 0; i < RLC_EPX_CTMAP_MAX; ++i) {
+		/* XXX(rsw) this doesn't result in contiguous layout for
+		 * coeffs of a given polynomial. Is this worth fixing? */
+		fp2_new(iso->xn[i]);
+		fp2_new(iso->xd[i]);
+		fp2_new(iso->yn[i]);
+		fp2_new(iso->yd[i]);
+	}
+#else
+	(void)iso; /* suppress unused warning when ALLOC == AUTO */
+#endif /* ALLOC */
+#endif /* EP_CTMAP */
 }
 
 void ep2_curve_clean(void) {
@@ -518,6 +556,19 @@ void ep2_curve_clean(void) {
 #endif
 	bn_clean(&(ctx->ep2_r));
 	bn_clean(&(ctx->ep2_h));
+
+#ifdef EP_CTMAP
+	iso2_t iso = ep2_curve_get_iso();
+	(void)iso; /* suppress unused warning when ALLOC == AUTO */
+	fp2_free(iso->a);
+	fp2_free(iso->b);
+	for (unsigned i = 0; i < RLC_EPX_CTMAP_MAX; ++i) {
+		fp2_free(iso->xn[i]);
+		fp2_free(iso->xd[i]);
+		fp2_free(iso->yn[i]);
+		fp2_free(iso->yd[i]);
+	}
+#endif
 }
 
 int ep2_curve_is_twist(void) {

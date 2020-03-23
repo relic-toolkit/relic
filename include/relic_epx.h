@@ -150,9 +150,9 @@ typedef ep3_st *ep3_t;
  */
 typedef struct {
 	/** The a-coefficient of the isogenous curve used for SSWU mapping. */
-	fp2_st a;
+	fp2_t a;
 	/** The b-coefficient of the isogenous curve used for SSWU mapping. */
-	fp2_st b;
+	fp2_t b;
 	/** Degree of x numerator */
 	int deg_xn;
 	/** Degree of x denominator */
@@ -162,13 +162,18 @@ typedef struct {
 	/** Degree of y denominator */
 	int deg_yd;
 	/** x numerator coefficients */
-	fp2_st xn[RLC_EPX_CTMAP_MAX];
+	fp2_t xn[RLC_EPX_CTMAP_MAX];
 	/** x denominator coefficients */
-	fp2_st xd[RLC_EPX_CTMAP_MAX];
+	fp2_t xd[RLC_EPX_CTMAP_MAX];
 	/** y numerator coefficients */
-	fp2_st yn[RLC_EPX_CTMAP_MAX];
+	fp2_t yn[RLC_EPX_CTMAP_MAX];
 	/** y denominator coefficients */
-	fp2_st yd[RLC_EPX_CTMAP_MAX];
+	fp2_t yd[RLC_EPX_CTMAP_MAX];
+#if ALLOC == STACK
+	/** Storage for the fp2_t above */
+	/* a, b, and the elms in xn, xd, yn, yd */
+	fp2_st storage[2 + 4 * RLC_EPX_CTMAP_MAX];
+#endif /* ALLOC == DYNAMIC or STACK */
 } iso2_st;
 
 /**
