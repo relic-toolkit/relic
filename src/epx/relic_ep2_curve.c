@@ -459,7 +459,6 @@ static void ep2_curve_set_map(void) {
 		fp2_free(t2);
 		fp2_free(t3);
 		fp2_free(t4);
-		fp2_free(u);
 	}
 }
 
