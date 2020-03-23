@@ -45,11 +45,11 @@
  * @param[out] c		- the result.
  * @param[in] a			- the input value.
  * @param[in] coeffs	- the vector of coefficients in the polynomial.
- * @param[in] len 		- the number of coefficients.
+ * @param[in] deg 		- the degree of the polynomial.
  */
-static void fp_eval(fp_t c, fp_t a, fp_t *coeffs, int len) {
-	fp_copy(c, coeffs[len]);
-	for (int i = len; i > 0; --i) {
+static void fp_eval(fp_t c, fp_t a, fp_st *coeffs, int deg) {
+	fp_copy(c, coeffs[deg]);
+	for (int i = deg; i > 0; --i) {
 		fp_mul(c, c, a);
 		fp_add(c, c, coeffs[i - 1]);
 	}

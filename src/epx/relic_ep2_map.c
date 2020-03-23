@@ -37,6 +37,26 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
+#ifdef EP_CTMAP
+
+/**
+ * Evaluate a polynomial represented by its coefficients using Horner's rule.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the input value.
+ * @param[in] coeffs		- the vector of coefficients in the polynomial.
+ * @param[in] len			- the degree of the polynomial.
+ */
+static void fp2_eval(fp2_t c, fp2_t a, fp2_t *coeffs, int deg) {
+	fp2_copy(c, coeffs[deg]);
+	for (int i = deg; i > 0; --i) {
+		fp2_mul(c, c, a);
+		fp2_add(c, c, coeffs[i - 1]);
+	}
+}
+
+#endif /* EP_CTMAP */
+
 /**
  * Multiplies a point by the cofactor in a Barreto-Naehrig curve.
  *
