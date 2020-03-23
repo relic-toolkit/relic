@@ -133,6 +133,7 @@ void fp2_inv_sim(fp2_t *c, fp2_t *a, int n) {
 			fp2_free(t[i]);
 		}
 		fp2_free(u);
+		RLC_FREE(t);
 	}
 }
 
