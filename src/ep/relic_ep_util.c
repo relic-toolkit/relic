@@ -121,61 +121,69 @@ void ep_rand(ep_t p) {
 
 void ep_rhs(fp_t rhs, const ep_t p) {
 	fp_t t0;
-	fp_t t1;
 
 	fp_null(t0);
-	fp_null(t1);
 
 	TRY {
 		fp_new(t0);
-		fp_new(t1);
 
 		/* t0 = x1^2. */
 		fp_sqr(t0, p->x);
-		/* t1 = x1^3. */
-		fp_mul(t1, t0, p->x);
 
-		/* t1 = x1^3 + a * x1 + b. */
+		/* t0 = x1^2 + a */
 		switch (ep_curve_opt_a()) {
 			case RLC_ZERO:
 				break;
-			case RLC_ONE:
-				fp_add(t1, t1, p->x);
-				break;
 #if FP_RDC != MONTY
+			case RLC_MIN3:
+				fp_sub_dig(t0, t0, 3);
+				break;
+			case RLC_ONE:
+				fp_add_dig(t0, t0, 1);
+				break;
+			case RLC_TWO:
+				fp_add_dig(t0, t0, 2);
+				break;
 			case RLC_TINY:
-				fp_mul_dig(t0, p->x, ep_curve_get_a()[0]);
-				fp_add(t1, t1, t0);
+				fp_add_dig(t0, t0, ep_curve_get_a()[0]);
 				break;
 #endif
 			default:
-				fp_mul(t0, p->x, ep_curve_get_a());
-				fp_add(t1, t1, t0);
+				fp_add(t0, t0, ep_curve_get_a());
 				break;
 		}
 
+		/* t0 = x1^3 + a * x */
+		fp_mul(t0, t0, p->x);
+
+		/* t0 = x1^3 + a * x + b */
 		switch (ep_curve_opt_b()) {
 			case RLC_ZERO:
 				break;
-			case RLC_ONE:
-				fp_add_dig(t1, t1, 1);
-				break;
 #if FP_RDC != MONTY
+			case RLC_MIN3:
+				fp_sub_dig(t0, t0, 3);
+				break;
+			case RLC_ONE:
+				fp_add_dig(t0, t0, 1);
+				break;
+			case RLC_TWO:
+				fp_add_dig(t0, t0, 2);
+				break;
 			case RLC_TINY:
-				fp_add_dig(t1, t1, ep_curve_get_b()[0]);
+				fp_add_dig(t0, t0, ep_curve_get_b()[0]);
 				break;
 #endif
 			default:
-				fp_add(t1, t1, ep_curve_get_b());
+				fp_add(t0, t0, ep_curve_get_b());
 				break;
 		}
 
-		fp_copy(rhs, t1);
+		fp_copy(rhs, t0);
 	} CATCH_ANY {
 		THROW(ERR_CAUGHT);
 	} FINALLY {
 		fp_free(t0);
-		fp_free(t1);
 	}
 }
 

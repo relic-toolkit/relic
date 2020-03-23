@@ -556,16 +556,12 @@ void ep2_curve_get_gen(ep2_t g) {
 	ep2_copy(g, core_get()->ep2_g);
 }
 
-void ep2_curve_get_a(fp2_t a) {
-	ctx_t *ctx = core_get();
-	fp_copy(a[0], ctx->ep2_a[0]);
-	fp_copy(a[1], ctx->ep2_a[1]);
+fp_t *ep2_curve_get_a(void) {
+	return core_get()->ep2_a;
 }
 
-void ep2_curve_get_b(fp2_t b) {
-	ctx_t *ctx = core_get();
-	fp_copy(b[0], ctx->ep2_b[0]);
-	fp_copy(b[1], ctx->ep2_b[1]);
+fp_t *ep2_curve_get_b(void) {
+	return core_get()->ep2_b;
 }
 
 void ep2_curve_get_vs(bn_t *v) {

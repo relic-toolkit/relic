@@ -57,7 +57,6 @@ static void detect_opt(int *opt, fp_t a) {
 			if (fp_is_zero(a)) {
 				*opt = RLC_ZERO;
 			} else {
-				fp_set_dig(t, 1);
 				if (fp_cmp_dig(a, 1) == RLC_EQ) {
 					*opt = RLC_ONE;
 				} else {

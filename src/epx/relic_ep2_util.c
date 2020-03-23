@@ -124,34 +124,22 @@ void ep2_rand(ep2_t p) {
 
 void ep2_rhs(fp2_t rhs, ep2_t p) {
 	fp2_t t0;
-	fp2_t t1;
 
 	fp2_null(t0);
-	fp2_null(t1);
 
 	TRY {
 		fp2_new(t0);
-		fp2_new(t1);
 
-		/* t0 = x1^2. */
-		fp2_sqr(t0, p->x);
-		/* t1 = x1^3. */
-		fp2_mul(t1, t0, p->x);
-
-		ep2_curve_get_a(t0);
-		fp2_mul(t0, p->x, t0);
-		fp2_add(t1, t1, t0);
-
-		ep2_curve_get_b(t0);
-		fp2_add(t1, t1, t0);
-
-		fp2_copy(rhs, t1);
+		fp2_sqr(t0, p->x);                  /* x1^2 */
+		fp2_add(t0, t0, ep2_curve_get_a()); /* x1^2 + a */
+		fp2_mul(t0, t0, p->x);				/* x1^3 + a * x */
+		fp2_add(t0, t0, ep2_curve_get_b()); /* x1^3 + a * x + b */
+		fp2_copy(rhs, t0);
 
 	} CATCH_ANY {
 		THROW(ERR_CAUGHT);
 	} FINALLY {
 		fp2_free(t0);
-		fp2_free(t1);
 	}
 }
 

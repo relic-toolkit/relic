@@ -398,16 +398,16 @@ void ep2_curve_clean(void);
 /**
  * Returns the 'a' coefficient of the currently configured elliptic curve.
  *
- * @param[out] a			- the 'a' coefficient of the elliptic curve.
+ * @return the 'a' coefficient of the elliptic curve.
  */
-void ep2_curve_get_a(fp2_t a);
+fp_t *ep2_curve_get_a(void);
 
 /**
  * Returns the 'b' coefficient of the currently configured elliptic curve.
  *
  * @param[out] b			- the 'b' coefficient of the elliptic curve.
  */
-void ep2_curve_get_b(fp2_t b);
+fp_t *ep2_curve_get_b(void);
 
 /**
  * Returns the vector of coefficients required to perform GLV method.
