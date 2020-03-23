@@ -38,7 +38,6 @@
 /*============================================================================*/
 
 #ifdef EP_CTMAP
-
 /**
  * Evaluate a polynomial represented by its coefficients using Horner's rule.
  *
@@ -55,6 +54,64 @@ static void fp2_eval(fp2_t c, fp2_t a, fp2_t *coeffs, int deg) {
 	}
 }
 
+/**
+ * Generic isogeny map evaluation for use with SSWU map.
+ */
+/* declaring this function inline suppresses "unused function" warnings */
+static inline void ep2_iso(ep2_t q, ep2_t p) {
+	fp2_t t0, t1, t2, t3;
+
+	if (!ep2_curve_is_ctmap()) {
+		ep2_copy(q, p);
+		return;
+	}
+	/* XXX add real support for input points in projective form */
+	if (!p->norm) {
+		ep2_norm(p, p);
+	}
+
+	fp2_null(t0);
+	fp2_null(t1);
+	fp2_null(t2);
+	fp2_null(t3);
+
+	TRY {
+		fp2_new(t0);
+		fp2_new(t1);
+		fp2_new(t2);
+		fp2_new(t3);
+
+		iso2_t coeffs = ep2_curve_get_iso();
+
+		/* numerators */
+		fp2_eval(t0, p->x, coeffs->xn, coeffs->deg_xn);
+		fp2_eval(t1, p->x, coeffs->yn, coeffs->deg_yn);
+		/* denominators */
+		fp2_eval(t2, p->x, coeffs->yd, coeffs->deg_yd);
+		fp2_eval(t3, p->x, coeffs->xd, coeffs->deg_xd);
+
+		/* Y = Ny * Dx * Z^2. */
+		fp2_mul(q->y, p->y, t1);
+		fp2_mul(q->y, q->y, t3);
+		/* Z = Dx * Dy, t1 = Z^2. */
+		fp2_mul(q->z, t2, t3);
+		fp2_sqr(t1, q->z);
+		fp2_mul(q->y, q->y, t1);
+		/* X = Nx * Dy * Z. */
+		fp2_mul(q->x, t0, t2);
+		fp2_mul(q->x, q->x, q->z);
+		q->norm = 0;
+	}
+	CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	}
+	FINALLY {
+		fp2_free(t0);
+		fp2_free(t1);
+		fp2_free(t2);
+		fp2_free(t3);
+	}
+}
 #endif /* EP_CTMAP */
 
 /**
