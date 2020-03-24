@@ -424,6 +424,13 @@ void ep2_curve_get_vs(bn_t *v);
 int ep2_curve_opt_a(void);
 
 /**
+ * Returns b optimization identifier based on the 'b' coefficient of the curve.
+ *
+ * @return the optimization identifier.
+ */
+int ep2_curve_opt_b(void);
+
+/**
  * Tests if the configured elliptic curve is a twist.
  *
  * @return the type of the elliptic curve twist, 0 if non-twisted curve.
