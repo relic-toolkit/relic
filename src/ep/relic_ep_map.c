@@ -111,23 +111,23 @@ void ep_map_impl(ep_t p, const uint8_t *msg, int len, const uint8_t *dst, int ds
 		const int len_per_elm = (FP_PRIME + ep_param_level() + 7) / 8;
 		md_xmd(pseudo_random_bytes, 2 * len_per_elm, msg, len, dst, dst_len);
 
-#define EP_MAP_CONVERT_BYTES(IDX)                                                        \
-	do {                                                                                 \
-		bn_read_bin(k, pseudo_random_bytes + IDX * len_per_elm, len_per_elm);            \
-		fp_prime_conv(t, k);                                                             \
+#define EP_MAP_CONVERT_BYTES(IDX)                                              \
+	do {                                                                       \
+		bn_read_bin(k, pseudo_random_bytes + IDX * len_per_elm, len_per_elm);  \
+		fp_prime_conv(t, k);                                                   \
 	} while (0)
 
-#define EP_MAP_APPLY_MAP(PT)                                                             \
-	do {                                                                                 \
-		/* check sign of t */                                                            \
-		fp_prime_back(k, t);                                                             \
-		neg = bn_cmp(k, pm1o2);                                                          \
-		/* convert */                                                                    \
-		map_fn(PT, t);                                                                   \
-		/* fix sign of y */                                                              \
-		fp_prime_back(k, PT->y);                                                         \
-		fp_neg(t, PT->y);                                                                \
-		dv_copy_cond(PT->y, t, RLC_FP_DIGS, neg != bn_cmp(k, pm1o2));                    \
+#define EP_MAP_APPLY_MAP(PT)                                                   \
+	do {                                                                       \
+		/* check sign of t */                                                  \
+		fp_prime_back(k, t);                                                   \
+		neg = bn_cmp(k, pm1o2);                                                \
+		/* convert */                                                          \
+		map_fn(PT, t);                                                         \
+		/* fix sign of y */                                                    \
+		fp_prime_back(k, PT->y);                                               \
+		fp_neg(t, PT->y);                                                      \
+		dv_copy_cond(PT->y, t, RLC_FP_DIGS, neg != bn_cmp(k, pm1o2));          \
 	} while (0)
 
 		/* first map invocation */
