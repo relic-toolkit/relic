@@ -76,7 +76,8 @@ void ep_map_impl(ep_t p, const uint8_t *msg, int len, const uint8_t *dst, int ds
 	ep_t q;
 	int neg;
 	/* enough space for two field elements plus extra bytes for uniformity */
-	uint8_t *pseudo_random_bytes = RLC_ALLOCA(uint8_t, 66 + 2 * (FP_PRIME + 7) / 8);
+	const int len_per_elm = (FP_PRIME + ep_param_level() + 7) / 8;
+	uint8_t *pseudo_random_bytes = RLC_ALLOCA(uint8_t, 4 * len_per_elm);
 
 	bn_null(k);
 	bn_null(pm1o2);
@@ -108,7 +109,6 @@ void ep_map_impl(ep_t p, const uint8_t *msg, int len, const uint8_t *dst, int ds
 		/* XXX(rsw) the below assumes that we want to use MD_MAP for hashing.
 		 *          Consider making the hash function a per-curve option!
 		 */
-		const int len_per_elm = (FP_PRIME + ep_param_level() + 7) / 8;
 		md_xmd(pseudo_random_bytes, 2 * len_per_elm, msg, len, dst, dst_len);
 
 #define EP_MAP_CONVERT_BYTES(IDX)                                              \

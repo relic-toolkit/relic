@@ -198,7 +198,8 @@ void ep2_map_impl(ep2_t p, const uint8_t *msg, int len, const uint8_t *dst, int 
 	ep2_t q;
 	int neg;
 	/* enough space for two extension field elements plus extra bytes for uniformity */
-	uint8_t *pseudo_random_bytes = RLC_ALLOCA(uint8_t, 132 + 4 * (FP_PRIME + 7) / 8);
+	const int len_per_elm = (FP_PRIME + ep_param_level() + 7) / 8;
+	uint8_t *pseudo_random_bytes = RLC_ALLOCA(uint8_t, 4 * len_per_elm);
 
 	bn_null(k);
 	bn_null(pm1o2);
@@ -224,7 +225,6 @@ void ep2_map_impl(ep2_t p, const uint8_t *msg, int len, const uint8_t *dst, int 
 
 		/* XXX(rsw) See note in ep/relic_ep_map.c about using MD_MAP. */
 		/* hash to a pseudorandom string using md_xmd */
-		const int len_per_elm = (FP_PRIME + ep_param_level() + 7) / 8;
 		md_xmd(pseudo_random_bytes, 4 * len_per_elm, msg, len, dst, dst_len);
 
 #define EP2_MAP_CONVERT_BYTES(IDX)                                                       \
