@@ -304,6 +304,12 @@
 #endif /* EP_CTMAP */
 
 #if defined(EP_CTMAP)
+/**
+ * Reads a sequence of polynomial coefficients from semicolon separated string.
+ *
+ * @param[out] coeffs		- the resulting coefficients.
+ * @param[in] str			- the input string.
+ */
 static int ep2_curve_get_coeffs(fp2_t *coeffs, const char *str) {
 	if (str[0] == '\0') {
 		/* need nonzero strlen */
@@ -340,10 +346,23 @@ static int ep2_curve_get_coeffs(fp2_t *coeffs, const char *str) {
 	return degree;
 }
 
-static void ep2_curve_set_ctmap(const char *a0_str, const char *a1_str,
-								const char *b0_str, const char *b1_str,
-								const char *xn_str, const char *xd_str,
-								const char *yn_str, const char *yd_str) {
+/**
+ * Configures a constant-time hash-to-curve function based on an isogeny map.
+ *
+ * @param[in] a0_str			- the string representing the 1st element of the 'a' coefficient.
+ * @param[in] a1_str			- the string representing the 2nd element of the 'a' coefficient.
+ * @param[in] b0_str			- the string representing the 1st element of the 'b' coefficient.
+ * @param[in] b1_str			- the string representing the 2nd element of the 'b' coefficient.
+ * @param[in] xn_str			- the string representing the x numerator coefficients.
+ * @param[in] xd_str			- the string representing the x denominator coefficients.
+ * @param[in] yn_str			- the string representing the y numerator coefficients.
+ * @param[in] yd_str			- the string representing the y denominator coefficients.
+ */
+/* declaring this function inline suppresses unused function warnings */
+static inline void ep2_curve_set_ctmap(const char *a0_str, const char *a1_str,
+									   const char *b0_str, const char *b1_str,
+									   const char *xn_str, const char *xd_str,
+									   const char *yn_str, const char *yd_str) {
 	iso2_t iso = ep2_curve_get_iso();
 
 	/* coefficients of isogenous curve */
@@ -360,6 +379,9 @@ static void ep2_curve_set_ctmap(const char *a0_str, const char *a1_str,
 }
 #endif /* EP_CTMAP */
 
+/**
+ * Precomputes constants used by the ep2_map function.
+ */
 static void ep2_curve_set_map(void) {
 	const int abNeq0 = (ep2_curve_opt_a() != RLC_ZERO) && (ep2_curve_opt_b() != RLC_ZERO);
 
@@ -787,9 +809,11 @@ void ep2_curve_set_twist(int type) {
 		bn_copy(&(ctx->ep2_r), r);
 		bn_copy(&(ctx->ep2_h), h);
 		ctx->ep2_is_ctmap = ctmap;
-		ep2_curve_set_map();
 		/* I don't have a better place for this. */
 		fp_prime_calc();
+
+		/* compute constants for hash-to-curve */
+		ep2_curve_set_map();
 
 #if defined(EP_PRECO)
 		ep2_mul_pre((ep2_t *)ep2_curve_get_tab(), ctx->ep2_g);

@@ -680,11 +680,11 @@
 
 #if defined(EP_CTMAP)
 
-/*
+/**
  * Reads a sequence of polynomial coefficients from semicolon separated string.
  *
- * @param[in] str 		- the string to parse.
- * @param[in] out		- the resulting coefficient.
+ * @param[out] coeffs 		- the resulting coefficients.
+ * @param[in] str			- the string to parse.
  */
 static int ep_param_get_coeffs(fp_st *coeffs, const char *str) {
 	if (str[0] == '\0') {
@@ -713,10 +713,18 @@ static int ep_param_get_coeffs(fp_st *coeffs, const char *str) {
 
 /**
  * Configures a constant-time hash-to-curve function based on an isogeny map.
+ *
+ * @param[in] a_str				- the string representing the 'a' coefficient.
+ * @param[in] b_str				- the string representing the 'b' coefficient.
+ * @param[in] xn_str			- the string representing the x numerator coefficients.
+ * @param[in] xd_str			- the string representing the x denominator coefficients.
+ * @param[in] yn_str			- the string representing the y numerator coefficients.
+ * @param[in] yd_str			- the string representing the y denominator coefficients.
  */
-static void ep_param_set_ctmap(const char *a_str, const char *b_str,
-								const char *xn_str, const char *xd_str,
-								const char *yn_str, const char *yd_str) {
+/* declaring this function inline suppresses unused function warnings */
+static inline void ep_param_set_ctmap(const char *a_str, const char *b_str,
+									  const char *xn_str, const char *xd_str,
+									  const char *yn_str, const char *yd_str) {
 	/* coefficients of isogenous curve */
 	fp_read_str(ep_curve_get_iso()->a, a_str, strlen(a_str), 16);
 	fp_read_str(ep_curve_get_iso()->b, b_str, strlen(b_str), 16);
