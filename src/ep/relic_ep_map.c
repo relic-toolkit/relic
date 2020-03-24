@@ -76,7 +76,7 @@ void ep_map_impl(ep_t p, const uint8_t *msg, int len, const uint8_t *dst, int ds
 	ep_t q;
 	int neg;
 	/* enough space for two field elements plus extra bytes for uniformity */
-	uint8_t pseudo_random_bytes[66 + 2 * (FP_PRIME + 7) / 8] = {0,};
+	uint8_t *pseudo_random_bytes = RLC_ALLOCA(uint8_t, 66 + 2 * (FP_PRIME + 7) / 8);
 
 	bn_null(k);
 	bn_null(pm1o2);
@@ -183,6 +183,7 @@ void ep_map_impl(ep_t p, const uint8_t *msg, int len, const uint8_t *dst, int ds
 		bn_free(pm1o2);
 		fp_free(t);
 		ep_free(q);
+		RLC_FREE(pseudo_random_bytes);
 	}
 }
 
