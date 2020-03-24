@@ -303,10 +303,6 @@
 
 #endif /* EP_CTMAP */
 
-/*============================================================================*/
-/* Private definitions                                                        */
-/*============================================================================*/
-
 #if defined(EP_CTMAP)
 static int ep2_curve_get_coeffs(fp2_t *coeffs, const char *str) {
 	if (str[0] == '\0') {
@@ -365,13 +361,14 @@ static void ep2_curve_set_ctmap(const char *a0_str, const char *a1_str,
 #endif /* EP_CTMAP */
 
 static void ep2_curve_set_map(void) {
+	const int abNeq0 = (ep2_curve_opt_a() != RLC_ZERO) && (ep2_curve_opt_b() != RLC_ZERO);
+
 	ctx_t *ctx = core_get();
 	fp_t *c1 = ctx->ep2_map_c[0];
 	fp_t *c2 = ctx->ep2_map_c[1];
 	fp_t *c3 = ctx->ep2_map_c[2];
 	fp_t *c4 = ctx->ep2_map_c[3];
 
-	const int abNeq0 = !(fp2_is_zero(ctx->ep2_a) || fp2_is_zero(ctx->ep2_b));
 	if (ep2_curve_is_ctmap() || abNeq0) {
 		/* SSWU map constants */
 		/* constants 3 and 4 are a and b for the curve or isogeny */
@@ -422,6 +419,40 @@ static void ep2_curve_set_map(void) {
 		fp2_inv(c4, c4);        /* -1 / (3 * u^2 + 4 * a */
 		fp2_mul(c4, c4, c1);    /* -g(u) / (3 * u^2 + 4 * a) */
 		fp2_mul_dig(c4, c4, 4); /* -4 * g(u) / (3 * u^2 + 4 * a) */
+	}
+}
+
+/**
+ * Detects an optimization based on the curve coefficients.
+ */
+static void detect_opt(int *opt, fp2_t a) {
+	fp2_t t;
+	fp2_null(t);
+
+	TRY {
+		fp2_new(t);
+		fp2_set_dig(t, 3);
+		fp_neg(t[0], t[0]);
+
+		if (fp2_cmp(a, t) == RLC_EQ) {
+			*opt = RLC_MIN3;
+		} else if (fp2_is_zero(a)) {
+			*opt = RLC_ZERO;
+		} else if (fp2_cmp_dig(a, 1) == RLC_EQ) {
+			*opt = RLC_ONE;
+		} else if (fp2_cmp_dig(a, 2) == RLC_EQ) {
+			*opt = RLC_TWO;
+		} else if ((fp_bits(a[0]) <= RLC_DIG) && fp_is_zero(a[1])) {
+			*opt = RLC_TINY;
+		} else {
+			*opt = RLC_HUGE;
+		}
+	}
+	CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	}
+	FINALLY {
+		fp2_free(t);
 	}
 }
 
@@ -542,6 +573,14 @@ void ep2_curve_clean(void) {
 		fp2_free(iso->yd[i]);
 	}
 #endif
+}
+
+int ep2_curve_opt_a(void) {
+	return core_get()->ep2_opt_a;
+}
+
+int ep2_curve_opt_b(void) {
+	return core_get()->ep2_opt_b;
 }
 
 int ep2_curve_is_twist(void) {
@@ -740,6 +779,10 @@ void ep2_curve_set_twist(int type) {
 		ep2_copy(ctx->ep2_g, g);
 		fp2_copy(ctx->ep2_a, a);
 		fp2_copy(ctx->ep2_b, b);
+
+		detect_opt(&(ctx->ep2_opt_a), ctx->ep2_a);
+		detect_opt(&(ctx->ep2_opt_b), ctx->ep2_b);
+
 		fp2_copy(ctx->ep2_map_u, u);
 		bn_copy(&(ctx->ep2_r), r);
 		bn_copy(&(ctx->ep2_h), h);

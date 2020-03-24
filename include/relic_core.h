@@ -321,6 +321,10 @@ typedef struct _ctx_t {
 	fp2_t ep2_map_u;
 	/** The constants needed for hashing. */
 	fp2_t ep2_map_c[4];
+	/** Optimization identifier for the a-coefficient. */
+	int ep2_opt_a;
+	/** Optimization identifier for the b-coefficient. */
+	int ep2_opt_b;
 	/** Flag that stores if the prime curve is a twist. */
 	int ep2_is_twist;
 	/** Flag that indicates whether this curve uses an isogeny for the SSWU mapping. */

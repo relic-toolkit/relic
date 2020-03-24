@@ -53,24 +53,16 @@ static void detect_opt(int *opt, fp_t a) {
 
 		if (fp_cmp(a, t) == RLC_EQ) {
 			*opt = RLC_MIN3;
+		} else if (fp_is_zero(a)) {
+			*opt = RLC_ZERO;
+		} else if (fp_cmp_dig(a, 1) == RLC_EQ) {
+			*opt = RLC_ONE;
+		} else if (fp_cmp_dig(a, 2) == RLC_EQ) {
+			*opt = RLC_TWO;
+		} else if (fp_bits(a) <= RLC_DIG) {
+			*opt = RLC_TINY;
 		} else {
-			if (fp_is_zero(a)) {
-				*opt = RLC_ZERO;
-			} else {
-				if (fp_cmp_dig(a, 1) == RLC_EQ) {
-					*opt = RLC_ONE;
-				} else {
-					if (fp_cmp_dig(a, 2) == RLC_EQ) {
-						*opt = RLC_TWO;
-					} else {
-						if (fp_bits(a) <= RLC_DIG) {
-							*opt = RLC_TINY;
-						} else {
-							*opt = RLC_HUGE;
-						}
-					}
-				}
-			}
+			*opt = RLC_HUGE;
 		}
 	}
 	CATCH_ANY {
