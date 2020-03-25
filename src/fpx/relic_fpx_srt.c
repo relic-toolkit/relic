@@ -59,9 +59,8 @@ int fp2_srt(fp2_t c, fp2_t a) {
 				fp_copy(c[0], t1);
 				fp_zero(c[1]);
 			} else {
-				fp_set_dig(t1, -fp_prime_get_qnr());
+				fp_mul_dig(t1, a[0], -fp_prime_get_qnr());
 				fp_neg(t1, t1);
-				fp_mul(t1, t1, a[0]);
 				fp_zero(c[0]);
 				if (!fp_srt(c[1], t1)) {
 					/* should never happen! */
