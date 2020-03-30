@@ -46,6 +46,13 @@
 		}                                                                                \
 	}
 
+/* conditionally normalize result of isogeny map when not using projective coords */
+#if EP_ADD != PROJC
+#define TMPL_MAP_ISOMAP_NORM(EXTDEG) ep##EXTDEG##_norm(q, q)
+#else
+#define TMPL_MAP_ISOMAP_NORM(EXTDEG) (void)q
+#endif
+
 /**
  * Generic isogeny map evaluation for use with SSWU map.
  */
@@ -94,6 +101,9 @@
 			fp##EXTDEG##_mul(q->x, t0, t2);                                              \
 			fp##EXTDEG##_mul(q->x, q->x, q->z);                                          \
 			q->norm = 0;                                                                 \
+                                                                                         \
+			/* normalize if necessary */                                                 \
+			TMPL_MAP_ISOMAP_NORM(EXTDEG);                                                \
 		}                                                                                \
 		CATCH_ANY { THROW(ERR_CAUGHT); }                                                 \
 		FINALLY {                                                                        \
@@ -265,7 +275,8 @@
 			fp##EXTDEG##_set_dig(p->z, 1);                                                         \
 			p->norm = 1;                                                                           \
 		}                                                                                          \
-		CATCH_ANY{THROW(ERR_CAUGHT)} FINALLY {                                                     \
+		CATCH_ANY { THROW(ERR_CAUGHT); }                                                           \
+		FINALLY {                                                                                  \
 			fp##EXTDEG##_free(t1);                                                                 \
 			fp##EXTDEG##_free(t2);                                                                 \
 			fp##EXTDEG##_free(t3);                                                                 \
