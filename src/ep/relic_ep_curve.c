@@ -53,25 +53,16 @@ static void detect_opt(int *opt, fp_t a) {
 
 		if (fp_cmp(a, t) == RLC_EQ) {
 			*opt = RLC_MIN3;
+		} else if (fp_is_zero(a)) {
+			*opt = RLC_ZERO;
+		} else if (fp_cmp_dig(a, 1) == RLC_EQ) {
+			*opt = RLC_ONE;
+		} else if (fp_cmp_dig(a, 2) == RLC_EQ) {
+			*opt = RLC_TWO;
+		} else if (fp_bits(a) <= RLC_DIG) {
+			*opt = RLC_TINY;
 		} else {
-			if (fp_is_zero(a)) {
-				*opt = RLC_ZERO;
-			} else {
-				fp_set_dig(t, 1);
-				if (fp_cmp_dig(a, 1) == RLC_EQ) {
-					*opt = RLC_ONE;
-				} else {
-					if (fp_cmp_dig(a, 2) == RLC_EQ) {
-						*opt = RLC_TWO;
-					} else {
-						if (fp_bits(a) <= RLC_DIG) {
-							*opt = RLC_TINY;
-						} else {
-							*opt = RLC_HUGE;
-						}
-					}
-				}
-			}
+			*opt = RLC_HUGE;
 		}
 	}
 	CATCH_ANY {
@@ -119,9 +110,9 @@ static void ep_curve_set_map(void) {
 		fp_mul(c1, c1, ctx->ep_map_u);
 		fp_add(c1, c1, ctx->ep_b);
 
-		/* start computing constant 2: -u / 2 */
+		/* constant 2: -u / 2 */
 		fp_set_dig(c2, 1);
-		fp_neg(c2, c2);                /* -2 */
+		fp_neg(c2, c2);                /* -1 */
 		fp_hlv(c2, c2);                /* -1/2 */
 		fp_mul(c2, c2, ctx->ep_map_u); /* c2 = -1/2 * u */
 

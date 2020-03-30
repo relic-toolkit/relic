@@ -51,32 +51,50 @@ int fp2_srt(fp2_t c, fp2_t a) {
 		fp_new(t2);
 		fp_new(t3);
 
-		/* t1 = a[0]^2 - u^2 * a[1]^2 */
-		fp_sqr(t1, a[0]);
-		fp_sqr(t2, a[1]);
-		for (int i = -1; i > fp_prime_get_qnr(); i--) {
-			fp_add(t1, t1, t2);
-		}
-		fp_add(t1, t1, t2);
-
-		if (fp_srt(t2, t1)) {
-			/* t1 = (a_0 + sqrt(t1)) / 2 */
-			fp_add(t1, a[0], t2);
-			fp_hlv(t1, t1);
-
-			if (!fp_srt(t3, t1)) {
-				/* t1 = (a_0 - sqrt(t1)) / 2 */
-				fp_sub(t1, a[0], t2);
-				fp_hlv(t1, t1);
-				fp_srt(t3, t1);
-			}
-			/* c_0 = sqrt(t1) */
-			fp_copy(c[0], t3);
-			/* c_1 = a_1 / (2 * sqrt(t1)) */
-			fp_dbl(t3, t3);
-			fp_inv(t3, t3);
-			fp_mul(c[1], a[1], t3);
+		if (fp_is_zero(a[1])) {
+			/* special case: either a[0] is square and sqrt is purely 'real'
+			 * or a[0] is non-square and sqrt is purely 'imaginary' */
 			r = 1;
+			if (fp_srt(t1, a[0])) {
+				fp_copy(c[0], t1);
+				fp_zero(c[1]);
+			} else {
+				fp_mul_dig(t1, a[0], -fp_prime_get_qnr());
+				fp_neg(t1, t1);
+				fp_zero(c[0]);
+				if (!fp_srt(c[1], t1)) {
+					/* should never happen! */
+					THROW(ERR_NO_VALID);
+				}
+			}
+		} else {
+			/* t1 = a[0]^2 - u^2 * a[1]^2 */
+			fp_sqr(t1, a[0]);
+			fp_sqr(t2, a[1]);
+			for (int i = -1; i > fp_prime_get_qnr(); i--) {
+				fp_add(t1, t1, t2);
+			}
+			fp_add(t1, t1, t2);
+
+			if (fp_srt(t2, t1)) {
+				/* t1 = (a_0 + sqrt(t1)) / 2 */
+				fp_add(t1, a[0], t2);
+				fp_hlv(t1, t1);
+
+				if (!fp_srt(t3, t1)) {
+					/* t1 = (a_0 - sqrt(t1)) / 2 */
+					fp_sub(t1, a[0], t2);
+					fp_hlv(t1, t1);
+					fp_srt(t3, t1);
+				}
+				/* c_0 = sqrt(t1) */
+				fp_copy(c[0], t3);
+				/* c_1 = a_1 / (2 * sqrt(t1)) */
+				fp_dbl(t3, t3);
+				fp_inv(t3, t3);
+				fp_mul(c[1], a[1], t3);
+				r = 1;
+			}
 		}
 	}
 	CATCH_ANY {

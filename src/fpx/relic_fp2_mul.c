@@ -248,3 +248,8 @@ void fp2_mul_frb(fp2_t c, fp2_t a, int i, int j) {
 	}
 #endif
 }
+
+void fp2_mul_dig(fp2_t c, const fp2_t a, dig_t b) {
+	fp_mul_dig(c[0], a[0], b);
+	fp_mul_dig(c[1], a[1], b);
+}

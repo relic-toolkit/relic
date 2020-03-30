@@ -309,6 +309,24 @@ typedef fp18_t fp54_t[3];
 #endif
 
 /**
+ * Adds a quadratic extension field element and a digit. Computes c = a + b.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the quadratic extension field element.
+ * @param[in] b				- the digit to add.
+ */
+void fp2_add_dig(fp2_t c, const fp2_t a, dig_t b);
+
+/**
+ * Subtracts a quadratic extension field element and a digit. Computes c = a - b.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the quadratic extension field element.
+ * @param[in] b				- the digit to subtract.
+ */
+void fp2_sub_dig(fp2_t c, const fp2_t a, dig_t b);
+
+/**
  * Multiplies two quadratic extension field elements. Computes C = A * B.
  *
  * @param[out] C			- the result.
@@ -1455,6 +1473,15 @@ void fp2_mul_nor_integ(fp2_t c, fp2_t a);
  * @param[in] j				- the power of the constant.
  */
 void fp2_mul_frb(fp2_t c, fp2_t a, int i, int j);
+
+/**
+ * Multiplies a quadratic extension field element by a digit. Computes c = a * b.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the quadratic extension field element.
+ * @param[in] b				- the digit to multiply.
+ */
+void fp2_mul_dig(fp2_t c, const fp2_t a, dig_t b);
 
 /**
  * Computes the square of a quadratic extension field element using basic

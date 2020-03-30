@@ -68,8 +68,7 @@ static void ep2_dbl_basic_imp(ep2_t r, fp2_t s, ep2_t p) {
 		fp2_dbl(t1, t1);
 		fp2_add(t1, t1, t2);
 
-		ep2_curve_get_a(t2);
-		fp2_add(t1, t1, t2);
+		fp2_add(t1, t1, ep2_curve_get_a());
 
 		/* t1 = (3 * x1^2 + a)/(2 * y1). */
 		fp2_mul(t1, t1, t0);
@@ -195,13 +194,12 @@ static void ep2_dbl_projc_imp(ep2_t r, ep2_t p) {
 			/* t5 = M = 3 * x1^2 + a * z1^4. */
 			fp2_dbl(t5, t0);
 			fp2_add(t5, t5, t0);
-			ep2_curve_get_a(t0);
 			if (!p->norm) {
 				fp2_sqr(t3, t3);
-				fp2_mul(t1, t0, t3);
+				fp2_mul(t1, t3, ep2_curve_get_a());
 				fp2_add(t5, t5, t1);
 			} else {
-				fp2_add(t5, t5, t0);
+				fp2_add(t5, t5, ep2_curve_get_a());
 			}
 
 			/* x3 = T = M^2 - 2 * S. */
