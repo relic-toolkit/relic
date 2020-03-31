@@ -116,14 +116,14 @@
 
 /* Conditionally call isogeny mapping function depending on whether EP_CTMAP is defined */
 #ifdef EP_CTMAP
-#define TMPL_MAP_CALL_ISOMAP(EXTDEG)                                                     \
+#define TMPL_MAP_CALL_ISOMAP(EXTDEG,PT)                                                     \
 	do {                                                                                 \
 		if (ep##EXTDEG##_curve_is_ctmap()) {                                             \
-			ep##EXTDEG##_iso(p, p);                                                      \
+			ep##EXTDEG##_iso(PT, PT);                                                      \
 		}                                                                                \
 	} while (0)
 #else
-#define TMPL_MAP_CALL_ISOMAP(EXTDEG)  /* No isogeny map call in this case. */
+#define TMPL_MAP_CALL_ISOMAP(EXTDEG,PT)  /* No isogeny map call in this case. */
 #endif
 
 /**
@@ -192,8 +192,6 @@
 			}                                                                                      \
 			fp##EXTDEG##_set_dig(p->z, 1);                                                         \
 			p->norm = 1;                                                                           \
-                                                                                                   \
-			TMPL_MAP_CALL_ISOMAP(EXTDEG);                                                          \
 		}                                                                                          \
 		CATCH_ANY { THROW(ERR_CAUGHT); }                                                           \
 		FINALLY {                                                                                  \

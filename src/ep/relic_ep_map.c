@@ -125,10 +125,15 @@ void ep_map_impl(ep_t p, const uint8_t *msg, int len, const uint8_t *dst, int ds
 		/* first map invocation */
 		EP_MAP_CONVERT_BYTES(0);
 		EP_MAP_APPLY_MAP(p);
+		TMPL_MAP_CALL_ISOMAP(,p);
 
 		/* second map invocation */
 		EP_MAP_CONVERT_BYTES(1);
 		EP_MAP_APPLY_MAP(q);
+		TMPL_MAP_CALL_ISOMAP(,q);
+
+		/* XXX(rsw) could add p and q and then apply isomap,
+		 * but need ep_add to support addition on isogeny curves */
 
 #undef EP_MAP_CONVERT_BYTES
 #undef EP_MAP_APPLY_MAP
