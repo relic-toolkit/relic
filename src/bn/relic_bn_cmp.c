@@ -37,6 +37,10 @@
 /*============================================================================*/
 
 int bn_cmp_abs(const bn_t a, const bn_t b) {
+	if (bn_is_zero(a) && bn_is_zero(b)) {
+		return RLC_EQ;
+	}
+
 	if (a->used > b->used) {
 		return RLC_GT;
 	}
