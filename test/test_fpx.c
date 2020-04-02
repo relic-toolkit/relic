@@ -784,6 +784,28 @@ static int square_root2(void) {
 		fp2_new(c);
 
 		TEST_BEGIN("square root extraction is correct") {
+			fp2_zero(a);
+			fp2_sqr(c, a);
+			r = fp2_srt(b, c);
+			TEST_ASSERT(r, end);
+			TEST_ASSERT(fp2_cmp(b, a) == RLC_EQ ||
+					fp2_cmp(c, a) == RLC_EQ, end);
+			fp_rand(a[0]);
+			fp_zero(a[1]);
+			fp2_sqr(c, a);
+			r = fp2_srt(b, c);
+			fp2_neg(c, b);
+			TEST_ASSERT(r, end);
+			TEST_ASSERT(fp2_cmp(b, a) == RLC_EQ ||
+					fp2_cmp(c, a) == RLC_EQ, end);
+			fp_rand(a[1]);
+			fp_zero(a[0]);
+			fp2_sqr(c, a);
+			r = fp2_srt(b, c);
+			fp2_neg(c, b);
+			TEST_ASSERT(r, end);
+			TEST_ASSERT(fp2_cmp(b, a) == RLC_EQ ||
+					fp2_cmp(c, a) == RLC_EQ, end);
 			fp2_rand(a);
 			fp2_sqr(c, a);
 			r = fp2_srt(b, c);
