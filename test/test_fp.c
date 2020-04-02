@@ -90,6 +90,9 @@ static int util(void) {
 		TEST_END;
 
 		TEST_BEGIN("negation is consistent") {
+			fp_zero(a);
+			fp_neg(b, a);
+			TEST_ASSERT(dv_cmp(a, b, RLC_FP_DIGS) == RLC_EQ, end);
 			fp_rand(a);
 			fp_neg(b, a);
 			if (fp_cmp(a, b) != RLC_EQ) {
