@@ -60,6 +60,9 @@ int fp2_srt(fp2_t c, fp2_t a) {
 				fp_zero(c[1]);
 			} else {
 				/* Compute a[0]/u^2. */
+#ifdef FP_QNRES
+				fp_copy(t1, a[0]);
+#else
 				if (fp_prime_get_qnr() == -2) {
 					fp_hlv(t1, a[0]);
 				} else {
@@ -67,6 +70,7 @@ int fp2_srt(fp2_t c, fp2_t a) {
 					fp_inv(t1, t1);
 					fp_mul(t1, t1, a[0]);
 				}
+#endif
 				fp_neg(t1, t1);
 				fp_zero(c[0]);
 				if (!fp_srt(c[1], t1)) {
