@@ -383,6 +383,9 @@ static inline void ep2_curve_set_ctmap(const char *a0_str, const char *a1_str,
  * Precomputes constants used by the ep2_map function.
  */
 static void ep2_curve_set_map(void) {
+	bn_t t;
+	bn_null(t);
+
 	const int abNeq0 = (ep2_curve_opt_a() != RLC_ZERO) && (ep2_curve_opt_b() != RLC_ZERO);
 
 	ctx_t *ctx = core_get();
@@ -391,56 +394,75 @@ static void ep2_curve_set_map(void) {
 	fp_t *c3 = ctx->ep2_map_c[2];
 	fp_t *c4 = ctx->ep2_map_c[3];
 
-	if (ep2_curve_is_ctmap() || abNeq0) {
-		/* SSWU map constants */
-		/* constants 3 and 4 are a and b for the curve or isogeny */
+	TRY {
+		bn_new(t);
+
+		if (ep2_curve_is_ctmap() || abNeq0) {
+			/* SSWU map constants */
+			/* constants 3 and 4 are a and b for the curve or isogeny */
 #ifdef EP_CTMAP
-		if (ep2_curve_is_ctmap()) {
-			fp2_copy(c3, ctx->ep2_iso.a);
-			fp2_copy(c4, ctx->ep2_iso.b);
+			if (ep2_curve_is_ctmap()) {
+				fp2_copy(c3, ctx->ep2_iso.a);
+				fp2_copy(c4, ctx->ep2_iso.b);
+			} else {
+#endif
+				fp2_copy(c3, ctx->ep2_a);
+				fp2_copy(c4, ctx->ep2_b);
+#ifdef EP_CTMAP
+			}
+#endif
+			/* constant 1: -b / a */
+			fp2_neg(c1, c3);     /* c1 = -a */
+			fp2_inv(c1, c1);     /* c1 = -1 / a */
+			fp2_mul(c1, c1, c4); /* c1 = -b / a */
+
+			/* constant 2 is unused in this case */
 		} else {
-#endif
-			fp2_copy(c3, ctx->ep2_a);
-			fp2_copy(c4, ctx->ep2_b);
-#ifdef EP_CTMAP
+			/* SvdW map constants */
+			/* constant 1: g(u) = u^3 + a * u + b */
+			fp2_sqr(c1, ctx->ep2_map_u);
+			fp2_add(c1, c1, ctx->ep2_a);
+			fp2_mul(c1, c1, ctx->ep2_map_u);
+			fp2_add(c1, c1, ctx->ep2_b);
+
+			/* constant 2: -u / 2 */
+			fp2_set_dig(c2, 2);
+			fp2_neg(c2, c2);                 /* -2 */
+			fp2_inv(c2, c2);                 /* -1 / 2 */
+			fp2_mul(c2, c2, ctx->ep2_map_u); /* -u / 2 */
+
+			/* constant 3: sqrt(-g(u) * (3 * u^2 + 4 * a)) */
+			fp2_sqr(c3, ctx->ep2_map_u);    /* u^2 */
+			fp2_mul_dig(c3, c3, 3);         /* 3 * u^2 */
+			fp2_mul_dig(c4, ctx->ep2_a, 4); /* 4 * a */
+			fp2_add(c4, c3, c4);            /* 3 * u^2 + 4 * a */
+			fp2_neg(c4, c4);                /* -(3 * u^2 + 4 * a) */
+			fp2_mul(c3, c4, c1);            /* -g(u) * (3 * u^2 + 4 * a) */
+			if (!fp2_srt(c3, c3)) {
+				THROW(ERR_NO_VALID);
+			}
+			/* make sure sgn0(c3) == 0 */
+			const int c30_z = fp_is_zero(c3[0]);
+			fp_prime_back(t, c3[0]);
+			const int c30_n = bn_get_bit(t, 0);
+			fp_prime_back(t, c3[1]);
+			const int c31_n = bn_get_bit(t, 0);
+			if (c30_n | (c30_z & c31_n)) {
+				/* set sgn0(c3) == 0 */
+				fp2_neg(c3, c3);
+			}
+
+			/* constant 4: -4 * g(u) / (3 * u^2 + 4 * a) */
+			fp2_inv(c4, c4);        /* -1 / (3 * u^2 + 4 * a */
+			fp2_mul(c4, c4, c1);    /* -g(u) / (3 * u^2 + 4 * a) */
+			fp2_mul_dig(c4, c4, 4); /* -4 * g(u) / (3 * u^2 + 4 * a) */
 		}
-#endif
-		/* constant 1: -b / a */
-		fp2_neg(c1, c3);     /* c1 = -a */
-		fp2_inv(c1, c1);     /* c1 = -1 / a */
-		fp2_mul(c1, c1, c4); /* c1 = -b / a */
-
-		/* constant 2 is unused in this case */
-	} else {
-		/* SvdW map constants */
-		/* constant 1: g(u) = u^3 + a * u + b */
-		fp2_sqr(c1, ctx->ep2_map_u);
-		fp2_add(c1, c1, ctx->ep2_a);
-		fp2_mul(c1, c1, ctx->ep2_map_u);
-		fp2_add(c1, c1, ctx->ep2_b);
-
-		/* constant 2: -u / 2 */
-		fp2_set_dig(c2, 2);
-		fp2_neg(c2, c2);                 /* -2 */
-		fp2_inv(c2, c2);                 /* -1 / 2 */
-		fp2_mul(c2, c2, ctx->ep2_map_u); /* -u / 2 */
-
-		/* constant 3: sqrt(-g(u) * (3 * u^2 + 4 * a)) */
-		fp2_sqr(c3, ctx->ep2_map_u);    /* u^2 */
-		fp2_mul_dig(c3, c3, 3);         /* 3 * u^2 */
-		fp2_mul_dig(c4, ctx->ep2_a, 4); /* 4 * a */
-		fp2_add(c4, c3, c4);            /* 3 * u^2 + 4 * a */
-		fp2_neg(c4, c4);                /* -(3 * u^2 + 4 * a) */
-		fp2_mul(c3, c4, c1);            /* -g(u) * (3 * u^2 + 4 * a) */
-		if (!fp2_srt(c3, c3)) {
-			THROW(ERR_NO_VALID);
-		}
-		/* XXX(rsw): sgn0(c3) should be set to 1 */
-
-		/* constant 4: -4 * g(u) / (3 * u^2 + 4 * a) */
-		fp2_inv(c4, c4);        /* -1 / (3 * u^2 + 4 * a */
-		fp2_mul(c4, c4, c1);    /* -g(u) / (3 * u^2 + 4 * a) */
-		fp2_mul_dig(c4, c4, 4); /* -4 * g(u) / (3 * u^2 + 4 * a) */
+	}
+	CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	}
+	FINALLY {
+		bn_free(t);
 	}
 }
 

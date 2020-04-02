@@ -70,8 +70,14 @@ TMPL_MAP_SSWU(,dig_t,EP_MAP_COPY_COND)
 TMPL_MAP_SVDW(,dig_t,EP_MAP_COPY_COND)
 #undef EP_MAP_COPY_COND
 
+/* caution: this function overwrites k, which it uses as an auxiliary variable */
+static inline int fp_sgn0(const fp_t t, bn_t k) {
+	fp_prime_back(k, t);
+	return bn_get_bit(k, 0);
+}
+
 void ep_map_impl(ep_t p, const uint8_t *msg, int len, const uint8_t *dst, int dst_len) {
-	bn_t k, pm1o2;
+	bn_t k;
 	fp_t t;
 	ep_t q;
 	int neg;
@@ -80,30 +86,17 @@ void ep_map_impl(ep_t p, const uint8_t *msg, int len, const uint8_t *dst, int ds
 	uint8_t *pseudo_random_bytes = RLC_ALLOCA(uint8_t, 4 * len_per_elm);
 
 	bn_null(k);
-	bn_null(pm1o2);
 	fp_null(t);
 	ep_null(q);
 
 	TRY {
 		bn_new(k);
-		bn_new(pm1o2);
 		fp_new(t);
 		ep_new(q);
 
 		/* figure out which hash function to use */
 		const int abNeq0 = (ep_curve_opt_a() != RLC_ZERO) && (ep_curve_opt_b() != RLC_ZERO);
 		void (*const map_fn)(ep_t, fp_t) = (ep_curve_is_ctmap() || abNeq0) ? ep_map_sswu : ep_map_svdw;
-
-		/* XXX(rsw) Using (p-1)/2 for sign of y is the sgn0_be variant from
-		 *          draft-irtf-cfrg-hash-to-curve-06. Not all curves want to
-		 *          use this variant! This should be fixed per-curve, probably
-		 *          using a separate sgn0 function.
-		 */
-		/* need (p-1)/2 for fixing sign of y */
-		pm1o2->sign = RLC_POS;
-		pm1o2->used = RLC_FP_DIGS;
-		dv_copy(pm1o2->dp, fp_prime_get(), RLC_FP_DIGS);
-		bn_hlv(pm1o2, pm1o2);
 
 		/* for hash_to_field, need to hash to a pseudorandom string */
 		/* XXX(rsw) the below assumes that we want to use MD_MAP for hashing.
@@ -120,23 +113,27 @@ void ep_map_impl(ep_t p, const uint8_t *msg, int len, const uint8_t *dst, int ds
 #define EP_MAP_APPLY_MAP(PT)                                                   \
 	do {                                                                       \
 		/* check sign of t */                                                  \
-		fp_prime_back(k, t);                                                   \
-		neg = bn_cmp(k, pm1o2);                                                \
+		neg = fp_sgn0(t, k);                                                   \
 		/* convert */                                                          \
 		map_fn(PT, t);                                                         \
-		/* fix sign of y */                                                    \
-		fp_prime_back(k, PT->y);                                               \
+		/* compare sign of y and sign of t; fix if necessary */                \
+		neg = neg != fp_sgn0(PT->y, k);                                        \
 		fp_neg(t, PT->y);                                                      \
-		dv_copy_cond(PT->y, t, RLC_FP_DIGS, neg != bn_cmp(k, pm1o2));          \
+		dv_copy_cond(PT->y, t, RLC_FP_DIGS, neg);                              \
 	} while (0)
 
 		/* first map invocation */
 		EP_MAP_CONVERT_BYTES(0);
 		EP_MAP_APPLY_MAP(p);
+		TMPL_MAP_CALL_ISOMAP(,p);
 
 		/* second map invocation */
 		EP_MAP_CONVERT_BYTES(1);
 		EP_MAP_APPLY_MAP(q);
+		TMPL_MAP_CALL_ISOMAP(,q);
+
+		/* XXX(rsw) could add p and q and then apply isomap,
+		 * but need ep_add to support addition on isogeny curves */
 
 #undef EP_MAP_CONVERT_BYTES
 #undef EP_MAP_APPLY_MAP
@@ -180,7 +177,6 @@ void ep_map_impl(ep_t p, const uint8_t *msg, int len, const uint8_t *dst, int ds
 	}
 	FINALLY {
 		bn_free(k);
-		bn_free(pm1o2);
 		fp_free(t);
 		ep_free(q);
 		RLC_FREE(pseudo_random_bytes);

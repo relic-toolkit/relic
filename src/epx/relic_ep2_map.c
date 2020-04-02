@@ -179,21 +179,22 @@ static void ep2_mul_cof_b12(ep2_t r, ep2_t p) {
 	}
 }
 
-static inline int fp2_sgn0(const fp2_t t, bn_t k, const bn_t pm1o2) {
+/* caution: this function overwrites k, which it uses as an auxiliary variable */
+static inline int fp2_sgn0(const fp2_t t, bn_t k) {
 	const int t_0_zero = fp_is_zero(t[0]);
 
 	fp_prime_back(k, t[0]);
-	const int t_0_neg = bn_cmp(k, pm1o2);
+	const int t_0_neg = bn_get_bit(k, 0);
 
 	fp_prime_back(k, t[1]);
-	const int t_1_neg = bn_cmp(k, pm1o2);
+	const int t_1_neg = bn_get_bit(k, 0);
 
 	/* t[0] == 0 ? sgn0(t[1]) : sgn0(t[0]) */
-	return (!t_0_zero) * t_0_neg + t_0_zero * t_1_neg;
+	return t_0_neg | (t_0_zero & t_1_neg);
 }
 
 void ep2_map_impl(ep2_t p, const uint8_t *msg, int len, const uint8_t *dst, int dst_len) {
-	bn_t k, pm1o2;
+	bn_t k;
 	fp2_t t;
 	ep2_t q;
 	int neg;
@@ -202,26 +203,17 @@ void ep2_map_impl(ep2_t p, const uint8_t *msg, int len, const uint8_t *dst, int 
 	uint8_t *pseudo_random_bytes = RLC_ALLOCA(uint8_t, 4 * len_per_elm);
 
 	bn_null(k);
-	bn_null(pm1o2);
 	fp2_null(t);
 	ep2_null(q);
 
 	TRY {
 		bn_new(k);
-		bn_new(pm1o2);
 		fp2_new(t);
 		ep2_new(q);
 
 		/* which hash function should we use? */
 		const int abNeq0 = (ep2_curve_opt_a() != RLC_ZERO) && (ep2_curve_opt_b() != RLC_ZERO);
 		void (*const map_fn)(ep2_t, fp2_t) = (ep2_curve_is_ctmap() || abNeq0) ? ep2_map_sswu : ep2_map_svdw;
-
-		/* XXX(rsw) See note in ep/relic_ep_map.c about sgn0 variants. */
-		/* (p-1)/2 for detecting sign of y */
-		pm1o2->sign = RLC_POS;
-		pm1o2->used = RLC_FP_DIGS;
-		dv_copy(pm1o2->dp, fp_prime_get(), RLC_FP_DIGS);
-		bn_hlv(pm1o2, pm1o2);
 
 		/* XXX(rsw) See note in ep/relic_ep_map.c about using MD_MAP. */
 		/* hash to a pseudorandom string using md_xmd */
@@ -238,11 +230,11 @@ void ep2_map_impl(ep2_t p, const uint8_t *msg, int len, const uint8_t *dst, int 
 #define EP2_MAP_APPLY_MAP(PT)                                                            \
 	do {                                                                                 \
 		/* sign of t */                                                                  \
-		neg = fp2_sgn0(t, k, pm1o2);                                                     \
+		neg = fp2_sgn0(t, k);                                                            \
 		/* convert */                                                                    \
 		map_fn(PT, t);                                                                   \
 		/* compare sign of y to sign of t; fix if necessary */                           \
-		neg = neg != fp2_sgn0(PT->y, k, pm1o2);                                          \
+		neg = neg != fp2_sgn0(PT->y, k);                                                 \
 		fp2_neg(t, PT->y);                                                               \
 		dv_copy_cond(PT->y[0], t[0], RLC_FP_DIGS, neg);                                  \
 		dv_copy_cond(PT->y[1], t[1], RLC_FP_DIGS, neg);                                  \
@@ -251,10 +243,15 @@ void ep2_map_impl(ep2_t p, const uint8_t *msg, int len, const uint8_t *dst, int 
 		/* first map invocation */
 		EP2_MAP_CONVERT_BYTES(0);
 		EP2_MAP_APPLY_MAP(p);
+		TMPL_MAP_CALL_ISOMAP(2,p);
 
 		/* second map invocation */
 		EP2_MAP_CONVERT_BYTES(1);
 		EP2_MAP_APPLY_MAP(q);
+		TMPL_MAP_CALL_ISOMAP(2,q);
+
+		/* XXX(rsw) could add p and q and then apply isomap,
+		 * but need ep_add to support addition on isogeny curves */
 
 #undef EP2_MAP_CONVERT_BYTES
 #undef EP2_MAP_APPLY_MAP
@@ -287,7 +284,6 @@ void ep2_map_impl(ep2_t p, const uint8_t *msg, int len, const uint8_t *dst, int 
 	}
 	FINALLY {
 		bn_free(k);
-		bn_free(pm1o2);
 		fp2_free(t);
 		ep2_free(q);
 		RLC_FREE(pseudo_random_bytes);
