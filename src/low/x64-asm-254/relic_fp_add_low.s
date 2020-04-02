@@ -289,19 +289,28 @@ cdecl(fp_subd_low):
 	ret
 
 cdecl(fp_negm_low):
-  	movq 	P0,%r8
-  	subq 	0(%rsi),%r8
-  	movq 	%r8,0(%rdi)
-  	movq 	P1,%r9
-  	sbbq 	8(%rsi),%r9
-  	movq 	%r9,8(%rdi)
-  	movq 	P2,%r10
-  	sbbq 	16(%rsi),%r10
- 	movq 	%r10,16(%rdi)
-  	movq 	P3,%r11
-  	sbbq 	24(%rsi),%r11
-  	movq 	%r11,24(%rdi)
-  	ret
+    movq    0(%rsi) , %r8
+    or 	    8(%rsi) , %r8
+    or 	    16(%rsi), %r8
+    or 	    24(%rsi), %r8
+    mov     P0, %rcx
+    mov     P1, %r9
+    mov     P2, %r10
+    mov     P3, %r11
+    test    %r8, %r8
+    cmovnz 	%rcx    , %r8
+    subq 	0(%rsi) , %r8
+    movq 	%r8     , 0(%rdi)
+    cmovnz 	%r9     , %r8
+    sbbq 	8(%rsi) , %r8
+    movq 	%r8     , 8(%rdi)
+    cmovnz 	%r10    , %r8
+    sbbq 	16(%rsi), %r8
+    movq 	%r8     , 16(%rdi)
+    cmovnz 	%r11    , %r8
+    sbbq 	24(%rsi), %r8
+    movq 	%r8     , 24(%rdi)
+    ret
 
 cdecl(fp_dbln_low):
 	movq	0(%rsi), %r8

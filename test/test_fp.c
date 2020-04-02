@@ -142,11 +142,12 @@ static int util(void) {
 		TEST_END;
 
 		TEST_BEGIN("reading and writing a prime field element are consistent") {
-			fp_rand(a);
 			for (int j = 2; j <= 64; j++) {
+				fp_rand(a);
 				bits = fp_size_str(a, j);
 				fp_write_str(str, bits, a, j);
 				fp_read_str(b, str, strlen(str), j);
+				TEST_ASSERT(fp_cmp(a, b) == RLC_EQ, end);
 				/* Test also negative integers. */
 				memmove(str + 1, str, strlen(str) + 1);
 				str[0] = '-';

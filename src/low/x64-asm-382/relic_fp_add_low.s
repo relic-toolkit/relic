@@ -336,12 +336,12 @@ fp_subc_low:
 	ret
 
 fp_negm_low:
-    movq    0(%rsi)  , %r8
+    movq    0(%rsi) , %r8
     or 	    8(%rsi) , %r8
-    or 	    16(%rsi) , %r8
-    or 	    24(%rsi) , %r8
-    or 	    32(%rsi) , %r8
-    or 	    40(%rsi) , %r8
+    or 	    16(%rsi), %r8
+    or 	    24(%rsi), %r8
+    or 	    32(%rsi), %r8
+    or 	    40(%rsi), %r8
     test    %r8, %r8
 	cmovnz 	p0(%rip), %r8
 	subq 	0(%rsi) , %r8

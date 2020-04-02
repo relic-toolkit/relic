@@ -455,34 +455,44 @@ cdecl(fp_subc_low):
 	ret
 
 cdecl(fp_negm_low):
-	movq 	$P0      , %r8
+    movq    0(%rsi) , %r8
+    or 	    8(%rsi) , %r8
+    or 	    16(%rsi), %r8
+    or 	    24(%rsi), %r8
+    or 	    32(%rsi), %r8
+    or 	    40(%rsi), %r8
+    or 	    48(%rsi), %r8
+    or 	    56(%rsi), %r8
+    or 	    64(%rsi), %r8
+    test    %r8, %r8
+	cmovnz 	p0(%rip), %r8
 	subq 	0(%rsi) , %r8
 	movq 	%r8     , 0(%rdi)
-	movq 	$P1      , %r8
+	cmovnz 	p1(%rip), %r8
 	sbbq 	8(%rsi) , %r8
 	movq 	%r8     , 8(%rdi)
-	movq 	$P2      , %r8
+	cmovnz 	p2(%rip), %r8
 	sbbq 	16(%rsi), %r8
 	movq 	%r8     , 16(%rdi)
-	movq 	$P3      , %r8
+	cmovnz 	p3(%rip), %r8
 	sbbq 	24(%rsi), %r8
 	movq 	%r8     , 24(%rdi)
-	movq 	$P4      , %r8
+	cmovnz 	p4(%rip), %r8
 	sbbq 	32(%rsi), %r8
 	movq 	%r8     , 32(%rdi)
-	movq 	$P5      , %r8
+	cmovnz 	p5(%rip), %r8
 	sbbq 	40(%rsi), %r8
 	movq 	%r8     , 40(%rdi)
-	movq 	$P6      , %r8
+    cmovnz 	p6(%rip), %r8
 	sbbq 	48(%rsi), %r8
 	movq 	%r8     , 48(%rdi)
-	movq 	$P7      , %r8
+    cmovnz 	p7(%rip), %r8
 	sbbq 	56(%rsi), %r8
 	movq 	%r8     , 56(%rdi)
-	movq 	$P8      , %r8
+    cmovnz 	p8(%rip), %r8
 	sbbq 	64(%rsi), %r8
 	movq 	%r8     , 64(%rdi)
-	movq 	$P9      , %r8
+    cmovnz 	p9(%rip), %r8
 	sbbq 	72(%rsi), %r8
 	movq 	%r8     , 72(%rdi)
   	ret
