@@ -45,6 +45,11 @@ int fp_srt(fp_t c, const fp_t a) {
 	fp_null(t0);
 	fp_null(t1);
 
+	if (fp_is_zero(a)) {
+		fp_zero(c);
+		return 1;
+	}
+
 	TRY {
 		bn_new(e);
 		fp_new(t0);
