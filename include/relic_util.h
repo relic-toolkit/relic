@@ -83,7 +83,8 @@
  *
  * @param[in] B			- the number of bits to isolate.
  */
-#define RLC_MASK(B)				(((dig_t)1 << (B)) - 1)
+#define RLC_MASK(B)															\
+	((-(dig_t)((B) >= WSIZE)) | (((dig_t)1 << ((B) % WSIZE)) - 1))
 
 /**
  * Returns a bit mask to isolate the lowest half of a digit.
