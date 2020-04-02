@@ -87,6 +87,11 @@
 #define RLC_EPX_TABLE_MAX 	RLC_MAX(RLC_EPX_TABLE_BASIC, RLC_EPX_TABLE_COMBD)
 #endif
 
+/**
+ * Maximum number of coefficients of an isogeny map polynomial.
+ * 4 is sufficient for a degree-3 isogeny polynomial.
+ */
+#define RLC_EPX_CTMAP_MAX	4
 
 /*============================================================================*/
 /* Type definitions                                                           */
@@ -139,6 +144,42 @@ typedef ep3_st ep3_t[1];
 #else
 typedef ep3_st *ep3_t;
 #endif
+
+/**
+ * Coefficients of an isogeny map for a curve over a quadratic extension.
+ */
+typedef struct {
+	/** The a-coefficient of the isogenous curve used for SSWU mapping. */
+	fp2_t a;
+	/** The b-coefficient of the isogenous curve used for SSWU mapping. */
+	fp2_t b;
+	/** Degree of x numerator */
+	int deg_xn;
+	/** Degree of x denominator */
+	int deg_xd;
+	/** Degree of y numerator */
+	int deg_yn;
+	/** Degree of y denominator */
+	int deg_yd;
+	/** x numerator coefficients */
+	fp2_t xn[RLC_EPX_CTMAP_MAX];
+	/** x denominator coefficients */
+	fp2_t xd[RLC_EPX_CTMAP_MAX];
+	/** y numerator coefficients */
+	fp2_t yn[RLC_EPX_CTMAP_MAX];
+	/** y denominator coefficients */
+	fp2_t yd[RLC_EPX_CTMAP_MAX];
+#if ALLOC == STACK
+	/** In case of stack allocation, storage for the values in this struct. */
+	/* a, b, and the elms in xn, xd, yn, yd */
+	fp2_st storage[2 + 4 * RLC_EPX_CTMAP_MAX];
+#endif /* ALLOC == DYNAMIC or STACK */
+} iso2_st;
+
+/**
+ * Pointer to isogeny map coefficients.
+ */
+typedef iso2_st *iso2_t;
 
 /*============================================================================*/
 /* Macro definitions                                                          */
@@ -357,16 +398,16 @@ void ep2_curve_clean(void);
 /**
  * Returns the 'a' coefficient of the currently configured elliptic curve.
  *
- * @param[out] a			- the 'a' coefficient of the elliptic curve.
+ * @return the 'a' coefficient of the elliptic curve.
  */
-void ep2_curve_get_a(fp2_t a);
+fp_t *ep2_curve_get_a(void);
 
 /**
  * Returns the 'b' coefficient of the currently configured elliptic curve.
  *
  * @param[out] b			- the 'b' coefficient of the elliptic curve.
  */
-void ep2_curve_get_b(fp2_t b);
+fp_t *ep2_curve_get_b(void);
 
 /**
  * Returns the vector of coefficients required to perform GLV method.
@@ -383,11 +424,25 @@ void ep2_curve_get_vs(bn_t *v);
 int ep2_curve_opt_a(void);
 
 /**
+ * Returns b optimization identifier based on the 'b' coefficient of the curve.
+ *
+ * @return the optimization identifier.
+ */
+int ep2_curve_opt_b(void);
+
+/**
  * Tests if the configured elliptic curve is a twist.
  *
  * @return the type of the elliptic curve twist, 0 if non-twisted curve.
  */
 int ep2_curve_is_twist(void);
+
+/**
+ * Tests if the current curve should use an isogeny map for the SSWU map.
+ *
+ * @return 1 if the curve uses an isogeny, and 0 otherwise.
+ */
+int ep2_curve_is_ctmap(void);
 
 /**
  * Returns the generator of the group of points in the elliptic curve.
@@ -416,6 +471,11 @@ void ep2_curve_get_ord(bn_t n);
  * @param[out] h			- the returned cofactor.
  */
 void ep2_curve_get_cof(bn_t h);
+
+/**
+ * Returns the isogeny map coefficients for use with the SSWU map.
+ */
+iso2_t ep2_curve_get_iso(void);
 
 /**
  * Configures an elliptic curve over a quadratic extension by its coefficients.

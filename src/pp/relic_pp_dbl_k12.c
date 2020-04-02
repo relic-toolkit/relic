@@ -168,8 +168,7 @@ void pp_dbl_k12_projc_basic(fp12_t l, ep2_t r, ep2_t q, ep_t p) {
 			/* D = 3bC, general b. */
 			fp2_dbl(t3, t2);
 			fp2_add(t3, t3, t2);
-			ep2_curve_get_b(t4);
-			fp2_mul(t3, t3, t4);
+			fp2_mul(t3, t3, ep2_curve_get_b());
 			/* E = (x1 + y1)^2 - A - B. */
 			fp2_add(t4, q->x, q->y);
 			fp2_sqr(t4, t4);
@@ -335,8 +334,7 @@ void pp_dbl_k12_projc_lazyr(fp12_t l, ep2_t r, ep2_t q, ep_t p) {
 			/* D = 3bC, for general b. */
 			fp2_dbl(t3, t2);
 			fp2_add(t3, t3, t2);
-			ep2_curve_get_b(t4);
-			fp2_mul(t3, t3, t4);
+			fp2_mul(t3, t3, ep2_curve_get_b());
 			/* E = (x1 + y1)^2 - A - B. */
 			fp2_add(t4, q->x, q->y);
 			fp2_sqr(t4, t4);

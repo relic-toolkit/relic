@@ -1314,11 +1314,14 @@
 #undef ep2_curve_get_b
 #undef ep2_curve_get_vs
 #undef ep2_curve_opt_a
+#undef ep2_curve_opt_b
 #undef ep2_curve_is_twist
+#undef ep2_curve_is_ctmap
 #undef ep2_curve_get_gen
 #undef ep2_curve_get_tab
 #undef ep2_curve_get_ord
 #undef ep2_curve_get_cof
+#undef ep2_curve_get_iso
 #undef ep2_curve_set
 #undef ep2_curve_set_twist
 #undef ep2_is_infty
@@ -1381,11 +1384,14 @@
 #define ep2_curve_get_b 	PREFIX(ep2_curve_get_b)
 #define ep2_curve_get_vs 	PREFIX(ep2_curve_get_vs)
 #define ep2_curve_opt_a 	PREFIX(ep2_curve_opt_a)
+#define ep2_curve_opt_b 	PREFIX(ep2_curve_opt_b)
 #define ep2_curve_is_twist 	PREFIX(ep2_curve_is_twist)
+#define ep2_curve_is_ctmap	PREFIX(ep2_curve_is_ctmap)
 #define ep2_curve_get_gen 	PREFIX(ep2_curve_get_gen)
 #define ep2_curve_get_tab 	PREFIX(ep2_curve_get_tab)
 #define ep2_curve_get_ord 	PREFIX(ep2_curve_get_ord)
 #define ep2_curve_get_cof 	PREFIX(ep2_curve_get_cof)
+#define ep2_curve_get_iso	PREFIX(ep2_curve_get_iso)
 #define ep2_curve_set 	PREFIX(ep2_curve_set)
 #define ep2_curve_set_twist 	PREFIX(ep2_curve_set_twist)
 #define ep2_is_infty 	PREFIX(ep2_is_infty)
@@ -1518,8 +1524,10 @@
 #undef fp2_set_dig
 #undef fp2_add_basic
 #undef fp2_add_integ
+#undef fp2_add_dig
 #undef fp2_sub_basic
 #undef fp2_sub_integ
+#undef fpt_sub_dig
 #undef fp2_neg
 #undef fp2_dbl_basic
 #undef fp2_dbl_integ
@@ -1529,6 +1537,7 @@
 #undef fp2_mul_nor_basic
 #undef fp2_mul_nor_integ
 #undef fp2_mul_frb
+#undef fp2_mul_dig
 #undef fp2_sqr_basic
 #undef fp2_sqr_integ
 #undef fp2_inv
@@ -1559,8 +1568,10 @@
 #define fp2_set_dig 	PREFIX(fp2_set_dig)
 #define fp2_add_basic 	PREFIX(fp2_add_basic)
 #define fp2_add_integ 	PREFIX(fp2_add_integ)
+#define fp2_add_dig		PREFIX(fp2_add_dig)
 #define fp2_sub_basic 	PREFIX(fp2_sub_basic)
 #define fp2_sub_integ 	PREFIX(fp2_sub_integ)
+#define fp2_sub_dig		PREFIX(fp2_sub_dig)
 #define fp2_neg 	PREFIX(fp2_neg)
 #define fp2_dbl_basic 	PREFIX(fp2_dbl_basic)
 #define fp2_dbl_integ 	PREFIX(fp2_dbl_integ)
@@ -1570,6 +1581,7 @@
 #define fp2_mul_nor_basic 	PREFIX(fp2_mul_nor_basic)
 #define fp2_mul_nor_integ 	PREFIX(fp2_mul_nor_integ)
 #define fp2_mul_frb 	PREFIX(fp2_mul_frb)
+#define fp2_mul_dig		PREFIX(fp2_mul_dig)
 #define fp2_sqr_basic 	PREFIX(fp2_sqr_basic)
 #define fp2_sqr_integ 	PREFIX(fp2_sqr_integ)
 #define fp2_inv 	PREFIX(fp2_inv)

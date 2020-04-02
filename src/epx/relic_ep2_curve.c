@@ -36,6 +36,8 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
+/* See ep/relic_ep_param.c for discussion of MAP_U parameters. */
+
 /**
  * Parameters for a pairing-friendly prime curve over a quadratic extension.
  */
@@ -51,6 +53,8 @@
 #define BN_P158_Y1		"074866EA7BD0AB4C67C77F70E0467F1FF32D800D"
 #define BN_P158_R		"240000006ED000007FE96000419F59800C9FFD81"
 #define BN_P158_H		"240000006ED000007FEA200041A07F800CA06E0D"
+#define BN_P158_MAPU0 "0"
+#define BN_P158_MAPU1 "-1"
 /** @} */
 #endif
 
@@ -66,6 +70,8 @@
 #define BN_P254_Y1		"0EBB2B0E7C8B15268F6D4456F5F38D37B09006FFD739C9578A2D1AEC6B3ACE9B"
 #define BN_P254_R		"2523648240000001BA344D8000000007FF9F800000000010A10000000000000D"
 #define BN_P254_H		"2523648240000001BA344D8000000008C2A2800000000016AD00000000000019"
+#define BN_P254_MAPU0 "0"
+#define BN_P254_MAPU1 "-1"
 /** @} */
 #endif
 
@@ -81,7 +87,8 @@
 #define BN_P256_Y1		"A033144CA161E3E3271624B3F0CC1CE607ACD2CBCE9E9253C732CF3E1016DEE7"
 #define BN_P256_R		"B64000000000FF2F2200000085FD547FD8001F44B6B7F4B7C2BC818F7B6BEF99"
 #define BN_P256_H		"B64000000000FF2F2200000085FD548188001F44B6B9232AC2BC818FB05BDDC5"
-
+#define BN_P256_MAPU0 "0"
+#define BN_P256_MAPU1 "-1"
 /** @} */
 #endif
 
@@ -97,6 +104,21 @@
 #define B12_P381_Y1		"0606C4A02EA734CC32ACD2B02BC28B99CB3E287E85A763AF267492AB572E99AB3F370D275CEC1DA1AAA9075FF05F79BE"
 #define B12_P381_R		"73EDA753299D7D483339D80809A1D80553BDA402FFFE5BFEFFFFFFFF00000001"
 #define B12_P381_H		"5D543A95414E7F1091D50792876A202CD91DE4547085ABAA68A205B2E5A7DDFA628F1CB4D9E82EF21537E293A6691AE1616EC6E786F0C70CF1C38E31C7238E5"
+#if defined(EP_CTMAP)
+#define B12_P381_ISO_A0 "0"
+#define B12_P381_ISO_A1 "F0"
+#define B12_P381_ISO_B0 "3F4"
+#define B12_P381_ISO_B1 "3F4"
+#define B12_P381_ISO_XN "5c759507e8e333ebb5b7a9a47d7ed8532c52d39fd3a042a88b58423c50ae15d5c2638e343d9c71c6238aaaaaaaa97d6,5c759507e8e333ebb5b7a9a47d7ed8532c52d39fd3a042a88b58423c50ae15d5c2638e343d9c71c6238aaaaaaaa97d6;0,11560bf17baa99bc32126fced787c88f984f87adf7ae0c7f9a208c6b4f20a4181472aaa9cb8d555526a9ffffffffc71a;11560bf17baa99bc32126fced787c88f984f87adf7ae0c7f9a208c6b4f20a4181472aaa9cb8d555526a9ffffffffc71e,8ab05f8bdd54cde190937e76bc3e447cc27c3d6fbd7063fcd104635a790520c0a395554e5c6aaaa9354ffffffffe38d;171d6541fa38ccfaed6dea691f5fb614cb14b4e7f4e810aa22d6108f142b85757098e38d0f671c7188e2aaaaaaaa5ed1,0"
+#define B12_P381_ISO_XD "0,1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaa63;c,1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaa9f;1,0"
+#define B12_P381_ISO_YN "1530477c7ab4113b59a4c18b076d11930f7da5d4a07f649bf54439d87d27e500fc8c25ebf8c92f6812cfc71c71c6d706,1530477c7ab4113b59a4c18b076d11930f7da5d4a07f649bf54439d87d27e500fc8c25ebf8c92f6812cfc71c71c6d706;0,5c759507e8e333ebb5b7a9a47d7ed8532c52d39fd3a042a88b58423c50ae15d5c2638e343d9c71c6238aaaaaaaa97be;11560bf17baa99bc32126fced787c88f984f87adf7ae0c7f9a208c6b4f20a4181472aaa9cb8d555526a9ffffffffc71c,8ab05f8bdd54cde190937e76bc3e447cc27c3d6fbd7063fcd104635a790520c0a395554e5c6aaaa9354ffffffffe38f;124c9ad43b6cf79bfbf7043de3811ad0761b0f37a1e26286b0e977c69aa274524e79097a56dc4bd9e1b371c71c718b10,0"
+#define B12_P381_ISO_YD "1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffa8fb,1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffa8fb;0,1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffa9d3;12,1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaa99;1,0"
+#define B12_P381_MAPU0 "-2"
+#define B12_P381_MAPU1 "-1"
+#else /* !defined(EP_CTMAP) */
+#define B12_P381_MAPU0 "0"
+#define B12_P381_MAPU1 "1"
+#endif
 /** @} */
 #endif
 
@@ -112,7 +134,8 @@
 #define BN_P382_Y1		"09CAC2932F3C894CCE129ECBB49AFD4BFF94C10B5DF37AB469E3455F16EFDD304721F689BFF864A92ACB3F4DF52678ED"
 #define BN_P382_R		"24009015183F94892D996CC179C6D1666F82CEFBE47879BB46E4CDA2E2E2281D08DC008E80108252004200000000000D"
 #define BN_P382_H		"24009015183F94892D996CC179C6D1666F82CEFBE47879BC06E64DD9A31E2BEF09B400A08016832A005A000000000019"
-
+#define BN_P382_MAPU0 "0"
+#define BN_P382_MAPU1 "-1"
 /** @} */
 #endif
 
@@ -128,6 +151,8 @@
 #define BN_P446_Y1		"91F93BEB46071DEDF410DC5A7662DD8B4BBC8BE5D3A8662009A4C2C0577F82A2337D208379F21C65F90FE1D90482CC48DEC83BFB8AD8E45"
 #define BN_P446_R		"2400000000000000002400000002D00000000D800000021C00000017A0000000870000000AD400000054C000000156000000126000000061"
 #define BN_P446_H		"2400000000000000002400000002D00000000D800000021C0000001860000000870000000B340000005AC00000016200000013E00000006D"
+#define BN_P446_MAPU0 "0"
+#define BN_P446_MAPU1 "1"
 /** @} */
 #endif
 
@@ -143,6 +168,8 @@
 #define B12_P446_Y1		"10ACDEBE52C1499796809283C38E100C4BA9FA0699696BF9F8647CB18EE632A4DDDAA771A78C031F868FAFA07E8642CCA633FE6F99B744C4"
 #define B12_P446_R		"511B70539F27995B34995830FA4D04C98CCC4C050BC7BB9B0E8D8CA34610428001400040001"
 #define B12_P446_H		"2DAEE3988A06F1BB3444D5780484639BF731D657742BF556901567CEFE5C3DD2555CB74C3560CED298D5147F8E24B79369C54C81E026DD55B51D6A75088593E6A92EFCE555594000638E5"
+#define B12_P446_MAPU0 "0"
+#define B12_P446_MAPU1 "1"
 /** @} */
 #endif
 
@@ -158,6 +185,8 @@
 #define B12_P455_Y1		"24AC244C6F31FDAC1214CA62AB4DB7BA9B5F0D54D56A3D5C680044225C3AAF9815C272A15AA1D28FB6AC9EB7B0BE6916450794A617AFFB4EF9"
 #define B12_P455_R		"10000080000380002E0000F10004F00025E000750001D1000A00000400001C00007FFFFC00001"
 #define B12_P455_H		"1C71C8E38E4C71C8238726432AFAC33B9D05A24A43A2531F1F9DE9B4C688A0B7A2716C48868F7C7D716F8AB8D45A1B9B21F9EB90E83876E4E18AD09613EC7DCAF8B8E238558711C838C718E5"
+#define B12_P455_MAPU0 "0"
+#define B12_P455_MAPU1 "1"
 /** @} */
 #endif
 
@@ -173,6 +202,8 @@
 #define OT8_P511_Y1		"109CF99B6C312D74CEFF87959789AF53D231988B0E77FF424C8738C20EA91E7F634399A3899E101EBF5C6A0DBE2E40ACA8D0DBCE0F2C6A0300987BBABD9097DC"
 #define OT8_P511_R		"100000000002AC000000002AD56000000131304C0000032F6D0B1000000000001"
 #define OT8_P511_H		"1000000000080400000001D72B20000061916054001384B3D863F2EBD23CF44774A8836D060A488CB13701DF690F23AF2A5394A1F9EE0B564F725AD505A8F75463E3DBDF97FBE852B96A19E4477DB82D7C260034DEDA6C75853BB18EE3956002"
+#define OT8_P511_MAPU0 "0"
+#define OT8_P511_MAPU1 "1"
 /** @} */
 #endif
 
@@ -188,6 +219,8 @@
 #define CP8_P544_Y1		"AB457A64E140799D3D9B77ECEA828957F3AEADB3278FEE32E9AD77F068DD2F95B469607E8CE3CE5705276F869CFB18270C0A8FC8D8AD0D17545F4DCCC9E599853A7BAB76"
 #define CP8_P544_R		"FF0060739E18D7594A978B0AB6AE4CE3DBFD52A9D00197603FFFDF0000000101"
 #define CP8_P544_H		"8A0A079FC7C3D421A4986FAAA10A6593F60BC94E32AEE8067E35551B86D59F0F61BD6A750917746236DD39CB4710BD44B7BE86F0A8E5324DFE802973060F04BF37C018705B78072182D139A8D2BD338A630511676FDAFD47C60DB5393F9DFC96089B1FFB60B78FB2"
+#define CP8_P544_MAPU0 "0"
+#define CP8_P544_MAPU1 "1"
 /** @} */
 #endif
 
@@ -203,6 +236,8 @@
 #define BN_P638_Y1		"1A650343ACEF6895FE4EC59B49F40E043DEB05DEF170DFD71B44CAB9496E2EADD034EC0E9238544556902D2D51AB93D224DC757AD720F4DE8ED3BFA4E22DB0ECE92369F681543F23A908A9B319D5FAEF"
 #define BN_P638_R		"23FFFFFDC000000D7FFFFFB8000001D3FFFFF942D000165E3FFF94870000D52FFFFDD0E00008DE55600086550021E555FFFFF54FFFF4EAC000000049800154D9FFFFFFFFFFFFEDA00000000000000061"
 #define BN_P638_H		"23FFFFFDC000000D7FFFFFB8000001D3FFFFF942D000165E3FFF94870000D52FFFFDD0E00008DE562000864F0021E561FFFFF4EFFFF4EC400000004F800160C1FFFFFFFFFFFFEC20000000000000006D"
+#define BN_P638_MAPU0 "0"
+#define BN_P638_MAPU1 "1"
 /** @} */
 #endif
 
@@ -218,6 +253,8 @@
 #define B12_P638_Y1		"3795191221DB4917EEE4B7B85BC7D7CA0C60E82116064463FED0892BA82ACECF905E6DB8083C5F589F04DB80E3203C1B2BEB52ACDED6DF96FC515F36761E7152AEED13369A504FE38C4FF93860B89550"
 #define B12_P638_R		"50F94035FF4000FFFFFFFFFFF9406BFDC0040000000000000035FB801DFFBFFFFFFFFFFFFFFF401BFF80000000000000000000FFC01"
 #define B12_P638_H		"2D88688DBA18275F5801BFFD4DDE93725697788C46C7B4BC8050639BA17EA2158B6784CCACDDECE490643943E5376D29C71C96B894056CCCC13C3DC6AAAAAA0F89601DC2979B3721C71C71C8B38CB8AEFEEB9E1C71C71C71C4B9FED17AE51B8E38E38E38E38FC954E8C65"
+#define B12_P638_MAPU0 "0"
+#define B12_P638_MAPU1 "1"
 /** @} */
 #endif
 
@@ -247,6 +284,221 @@
 	bn_read_str(r, str, strlen(str), 16);									\
 	RLC_GET(str, CURVE##_H, sizeof(CURVE##_H));								\
 	bn_read_str(h, str, strlen(str), 16);									\
+	RLC_GET(str, CURVE##_MAPU0, sizeof(CURVE##_MAPU0));						\
+	fp_read_str(u[0], str, strlen(str), 16);								\
+	RLC_GET(str, CURVE##_MAPU1, sizeof(CURVE##_MAPU1));						\
+	fp_read_str(u[1], str, strlen(str), 16);
+
+#if defined(EP_CTMAP)
+
+/**
+ * Assigns the isogeny map parameters for hashing with SSWU map.
+ *
+ * @param[in] CURVE		- the curve parameters to assign.
+ */
+#define ASSIGNM(CURVE)														\
+    ep2_curve_set_ctmap(CURVE##_ISO_A0, CURVE##_ISO_A1, CURVE##_ISO_B0,		\
+                        CURVE##_ISO_B1, CURVE##_ISO_XN, CURVE##_ISO_XD,		\
+						CURVE##_ISO_YN, CURVE##_ISO_YD)
+
+#endif /* EP_CTMAP */
+
+#if defined(EP_CTMAP)
+/**
+ * Reads a sequence of polynomial coefficients from semicolon separated string.
+ *
+ * @param[out] coeffs		- the resulting coefficients.
+ * @param[in] str			- the input string.
+ */
+static int ep2_curve_get_coeffs(fp2_t *coeffs, const char *str) {
+	if (str[0] == '\0') {
+		/* need nonzero strlen */
+		THROW(ERR_NO_VALID);
+	}
+	int degree = 0;
+	unsigned offset = 0;
+	for (; degree < RLC_EPX_CTMAP_MAX; ++degree) {
+		/* first coeff */
+		const char *end = strchr(str + offset, ',');
+		if (end == NULL) {
+			/* should not happen --- means there's no second coeff */
+			THROW(ERR_NO_VALID);
+		}
+		unsigned len = end - str - offset;
+		fp_read_str(coeffs[degree][0], str + offset, len, 16);
+		offset += len + 1; /* move to after ',' */
+
+		/* second coeff */
+		end = strchr(str + offset, ';');
+		if (end == NULL) {
+			/* last one */
+			fp_read_str(coeffs[degree][1], str + offset, strlen(str + offset), 16);
+			break;
+		}
+		len = end - str - offset;
+		fp_read_str(coeffs[degree][1], str + offset, len, 16);
+		offset += len + 1; /* move to after ';' */
+	}
+	if (degree == RLC_EPX_CTMAP_MAX) {
+		/* ran out of space before converting all coeffs */
+		THROW(ERR_NO_VALID);
+	}
+	return degree;
+}
+
+/**
+ * Configures a constant-time hash-to-curve function based on an isogeny map.
+ *
+ * @param[in] a0_str			- the string representing the 1st element of the 'a' coefficient.
+ * @param[in] a1_str			- the string representing the 2nd element of the 'a' coefficient.
+ * @param[in] b0_str			- the string representing the 1st element of the 'b' coefficient.
+ * @param[in] b1_str			- the string representing the 2nd element of the 'b' coefficient.
+ * @param[in] xn_str			- the string representing the x numerator coefficients.
+ * @param[in] xd_str			- the string representing the x denominator coefficients.
+ * @param[in] yn_str			- the string representing the y numerator coefficients.
+ * @param[in] yd_str			- the string representing the y denominator coefficients.
+ */
+/* declaring this function inline suppresses unused function warnings */
+static inline void ep2_curve_set_ctmap(const char *a0_str, const char *a1_str,
+									   const char *b0_str, const char *b1_str,
+									   const char *xn_str, const char *xd_str,
+									   const char *yn_str, const char *yd_str) {
+	iso2_t iso = ep2_curve_get_iso();
+
+	/* coefficients of isogenous curve */
+	fp_read_str(iso->a[0], a0_str, strlen(a0_str), 16);
+	fp_read_str(iso->a[1], a1_str, strlen(a1_str), 16);
+	fp_read_str(iso->b[0], b0_str, strlen(b0_str), 16);
+	fp_read_str(iso->b[1], b1_str, strlen(b1_str), 16);
+
+	/* isogeny map coeffs */
+	iso->deg_xn = ep2_curve_get_coeffs(iso->xn, xn_str);
+	iso->deg_xd = ep2_curve_get_coeffs(iso->xd, xd_str);
+	iso->deg_yn = ep2_curve_get_coeffs(iso->yn, yn_str);
+	iso->deg_yd = ep2_curve_get_coeffs(iso->yd, yd_str);
+}
+#endif /* EP_CTMAP */
+
+/**
+ * Precomputes constants used by the ep2_map function.
+ */
+static void ep2_curve_set_map(void) {
+	bn_t t;
+	bn_null(t);
+
+	const int abNeq0 = (ep2_curve_opt_a() != RLC_ZERO) && (ep2_curve_opt_b() != RLC_ZERO);
+
+	ctx_t *ctx = core_get();
+	fp_t *c1 = ctx->ep2_map_c[0];
+	fp_t *c2 = ctx->ep2_map_c[1];
+	fp_t *c3 = ctx->ep2_map_c[2];
+	fp_t *c4 = ctx->ep2_map_c[3];
+
+	TRY {
+		bn_new(t);
+
+		if (ep2_curve_is_ctmap() || abNeq0) {
+			/* SSWU map constants */
+			/* constants 3 and 4 are a and b for the curve or isogeny */
+#ifdef EP_CTMAP
+			if (ep2_curve_is_ctmap()) {
+				fp2_copy(c3, ctx->ep2_iso.a);
+				fp2_copy(c4, ctx->ep2_iso.b);
+			} else {
+#endif
+				fp2_copy(c3, ctx->ep2_a);
+				fp2_copy(c4, ctx->ep2_b);
+#ifdef EP_CTMAP
+			}
+#endif
+			/* constant 1: -b / a */
+			fp2_neg(c1, c3);     /* c1 = -a */
+			fp2_inv(c1, c1);     /* c1 = -1 / a */
+			fp2_mul(c1, c1, c4); /* c1 = -b / a */
+
+			/* constant 2 is unused in this case */
+		} else {
+			/* SvdW map constants */
+			/* constant 1: g(u) = u^3 + a * u + b */
+			fp2_sqr(c1, ctx->ep2_map_u);
+			fp2_add(c1, c1, ctx->ep2_a);
+			fp2_mul(c1, c1, ctx->ep2_map_u);
+			fp2_add(c1, c1, ctx->ep2_b);
+
+			/* constant 2: -u / 2 */
+			fp2_set_dig(c2, 2);
+			fp2_neg(c2, c2);                 /* -2 */
+			fp2_inv(c2, c2);                 /* -1 / 2 */
+			fp2_mul(c2, c2, ctx->ep2_map_u); /* -u / 2 */
+
+			/* constant 3: sqrt(-g(u) * (3 * u^2 + 4 * a)) */
+			fp2_sqr(c3, ctx->ep2_map_u);    /* u^2 */
+			fp2_mul_dig(c3, c3, 3);         /* 3 * u^2 */
+			fp2_mul_dig(c4, ctx->ep2_a, 4); /* 4 * a */
+			fp2_add(c4, c3, c4);            /* 3 * u^2 + 4 * a */
+			fp2_neg(c4, c4);                /* -(3 * u^2 + 4 * a) */
+			fp2_mul(c3, c4, c1);            /* -g(u) * (3 * u^2 + 4 * a) */
+			if (!fp2_srt(c3, c3)) {
+				THROW(ERR_NO_VALID);
+			}
+			/* make sure sgn0(c3) == 0 */
+			const int c30_z = fp_is_zero(c3[0]);
+			fp_prime_back(t, c3[0]);
+			const int c30_n = bn_get_bit(t, 0);
+			fp_prime_back(t, c3[1]);
+			const int c31_n = bn_get_bit(t, 0);
+			if (c30_n | (c30_z & c31_n)) {
+				/* set sgn0(c3) == 0 */
+				fp2_neg(c3, c3);
+			}
+
+			/* constant 4: -4 * g(u) / (3 * u^2 + 4 * a) */
+			fp2_inv(c4, c4);        /* -1 / (3 * u^2 + 4 * a */
+			fp2_mul(c4, c4, c1);    /* -g(u) / (3 * u^2 + 4 * a) */
+			fp2_mul_dig(c4, c4, 4); /* -4 * g(u) / (3 * u^2 + 4 * a) */
+		}
+	}
+	CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	}
+	FINALLY {
+		bn_free(t);
+	}
+}
+
+/**
+ * Detects an optimization based on the curve coefficients.
+ */
+static void detect_opt(int *opt, fp2_t a) {
+	fp2_t t;
+	fp2_null(t);
+
+	TRY {
+		fp2_new(t);
+		fp2_set_dig(t, 3);
+		fp_neg(t[0], t[0]);
+
+		if (fp2_cmp(a, t) == RLC_EQ) {
+			*opt = RLC_MIN3;
+		} else if (fp2_is_zero(a)) {
+			*opt = RLC_ZERO;
+		} else if (fp2_cmp_dig(a, 1) == RLC_EQ) {
+			*opt = RLC_ONE;
+		} else if (fp2_cmp_dig(a, 2) == RLC_EQ) {
+			*opt = RLC_TWO;
+		} else if ((fp_bits(a[0]) <= RLC_DIG) && fp_is_zero(a[1])) {
+			*opt = RLC_TINY;
+		} else {
+			*opt = RLC_HUGE;
+		}
+	}
+	CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	}
+	FINALLY {
+		fp2_free(t);
+	}
+}
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -261,13 +513,32 @@ void ep2_curve_init(void) {
 	}
 #endif
 
-#if ALLOC == DYNAMIC || ALLOC == STACK
-	ctx->ep2_g.x[0] = ctx->ep2_gx[0];
-	ctx->ep2_g.x[1] = ctx->ep2_gx[1];
-	ctx->ep2_g.y[0] = ctx->ep2_gy[0];
-	ctx->ep2_g.y[1] = ctx->ep2_gy[1];
-	ctx->ep2_g.z[0] = ctx->ep2_gz[0];
-	ctx->ep2_g.z[1] = ctx->ep2_gz[1];
+	/* initialize stack-allocated fp2_t from fp2_st */
+#define EP2_CURVE_INIT_FP2(O, I)                                               \
+	do {                                                                       \
+		O[0] = I[0];                                                           \
+		O[1] = I[1];                                                           \
+	} while (0)
+
+#if ALLOC == DYNAMIC
+	ep2_new(ctx->ep2_g);
+	fp2_new(ctx->ep2_a);
+	fp2_new(ctx->ep2_b);
+	fp2_new(ctx->ep2_map_u);
+	for (unsigned i = 0; i < 4; ++i) {
+		fp2_new(ctx->ep2_map_c[i]);
+	}
+#elif ALLOC == STACK
+	ctx->ep2_g = &ctx->_ep2_g;
+	EP2_CURVE_INIT_FP2(ctx->ep2_g->x, ctx->_ep2_storage[0]);
+	EP2_CURVE_INIT_FP2(ctx->ep2_g->y, ctx->_ep2_storage[1]);
+	EP2_CURVE_INIT_FP2(ctx->ep2_g->z, ctx->_ep2_storage[2]);
+	EP2_CURVE_INIT_FP2(ctx->ep2_a, ctx->_ep2_storage[3]);
+	EP2_CURVE_INIT_FP2(ctx->ep2_b, ctx->_ep2_storage[4]);
+	EP2_CURVE_INIT_FP2(ctx->ep2_map_u, ctx->_ep2_storage[5]);
+	for (unsigned i = 0; i < 4; ++i) {
+		EP2_CURVE_INIT_FP2(ctx->ep2_map_c[i], ctx->_ep2_storage[6 + i]);
+	}
 #endif
 
 #ifdef EP_PRECO
@@ -288,9 +559,38 @@ void ep2_curve_init(void) {
 	}
 #endif
 #endif
-	ep2_set_infty(&(ctx->ep2_g));
+	ep2_set_infty(ctx->ep2_g);
 	bn_init(&(ctx->ep2_r), RLC_FP_DIGS);
 	bn_init(&(ctx->ep2_h), RLC_FP_DIGS);
+
+#ifdef EP_CTMAP
+	iso2_t iso = ep2_curve_get_iso();
+#if ALLOC == STACK
+	EP2_CURVE_INIT_FP2(iso->a, iso->storage[0]);
+	EP2_CURVE_INIT_FP2(iso->b, iso->storage[1]);
+	for (unsigned i = 0; i < RLC_EPX_CTMAP_MAX; ++i) {
+		/* lay out contiguously */
+		EP2_CURVE_INIT_FP2(iso->xn[i], iso->storage[2 + i]);
+		EP2_CURVE_INIT_FP2(iso->xd[i], iso->storage[2 + RLC_EPX_CTMAP_MAX + i]);
+		EP2_CURVE_INIT_FP2(iso->yn[i], iso->storage[2 + 2 * RLC_EPX_CTMAP_MAX + i]);
+		EP2_CURVE_INIT_FP2(iso->yd[i], iso->storage[2 + 3 * RLC_EPX_CTMAP_MAX + i]);
+	}
+#elif ALLOC == DYNAMIC
+	fp2_new(iso->a);
+	fp2_new(iso->b);
+	for (unsigned i = 0; i < RLC_EPX_CTMAP_MAX; ++i) {
+		/* XXX(rsw) this doesn't result in contiguous layout for
+		 * coeffs of a given polynomial. Is this worth fixing? */
+		fp2_new(iso->xn[i]);
+		fp2_new(iso->xd[i]);
+		fp2_new(iso->yn[i]);
+		fp2_new(iso->yd[i]);
+	}
+#else
+	(void)iso; /* suppress unused warning when ALLOC == AUTO */
+#endif /* ALLOC */
+#endif /* EP_CTMAP */
+#undef EP_CURVE_INIT_FP2
 }
 
 void ep2_curve_clean(void) {
@@ -304,26 +604,47 @@ void ep2_curve_clean(void) {
 #endif
 	bn_clean(&(ctx->ep2_r));
 	bn_clean(&(ctx->ep2_h));
+
+#ifdef EP_CTMAP
+	iso2_t iso = ep2_curve_get_iso();
+	(void)iso; /* suppress unused warning when ALLOC == AUTO */
+	fp2_free(iso->a);
+	fp2_free(iso->b);
+	for (unsigned i = 0; i < RLC_EPX_CTMAP_MAX; ++i) {
+		fp2_free(iso->xn[i]);
+		fp2_free(iso->xd[i]);
+		fp2_free(iso->yn[i]);
+		fp2_free(iso->yd[i]);
+	}
+#endif
+}
+
+int ep2_curve_opt_a(void) {
+	return core_get()->ep2_opt_a;
+}
+
+int ep2_curve_opt_b(void) {
+	return core_get()->ep2_opt_b;
 }
 
 int ep2_curve_is_twist(void) {
 	return core_get()->ep2_is_twist;
 }
 
+int ep2_curve_is_ctmap(void) {
+	return core_get()->ep2_is_ctmap;
+}
+
 void ep2_curve_get_gen(ep2_t g) {
-	ep2_copy(g, &(core_get()->ep2_g));
+	ep2_copy(g, core_get()->ep2_g);
 }
 
-void ep2_curve_get_a(fp2_t a) {
-	ctx_t *ctx = core_get();
-	fp_copy(a[0], ctx->ep2_a[0]);
-	fp_copy(a[1], ctx->ep2_a[1]);
+fp_t *ep2_curve_get_a(void) {
+	return core_get()->ep2_a;
 }
 
-void ep2_curve_get_b(fp2_t b) {
-	ctx_t *ctx = core_get();
-	fp_copy(b[0], ctx->ep2_b[0]);
-	fp_copy(b[1], ctx->ep2_b[1]);
+fp_t *ep2_curve_get_b(void) {
+	return core_get()->ep2_b;
 }
 
 void ep2_curve_get_vs(bn_t *v) {
@@ -386,6 +707,14 @@ void ep2_curve_get_cof(bn_t h) {
 	bn_copy(h, &(core_get()->ep2_h));
 }
 
+iso2_t ep2_curve_get_iso() {
+#ifdef EP_CTMAP
+	return &core_get()->ep2_iso;
+#else
+	return NULL;
+#endif /* EP_CTMAP */
+}
+
 #if defined(EP_PRECO)
 
 ep2_t *ep2_curve_get_tab(void) {
@@ -399,16 +728,18 @@ ep2_t *ep2_curve_get_tab(void) {
 #endif
 
 void ep2_curve_set_twist(int type) {
+	int ctmap = 0;
 	char str[4 * RLC_FP_BYTES + 1];
 	ctx_t *ctx = core_get();
 	ep2_t g;
 	fp2_t a;
-	fp2_t b;
+	fp2_t b, u;
 	bn_t r, h;
 
 	ep2_null(g);
 	fp2_null(a);
 	fp2_null(b);
+	fp2_null(u);
 	bn_null(r);
 	bn_null(h);
 
@@ -423,6 +754,7 @@ void ep2_curve_set_twist(int type) {
 		ep2_new(g);
 		fp2_new(a);
 		fp2_new(b);
+		fp2_new(u);
 		bn_new(r);
 		bn_new(h);
 
@@ -442,6 +774,10 @@ void ep2_curve_set_twist(int type) {
 #elif FP_PRIME == 381
 			case B12_P381:
 				ASSIGN(B12_P381);
+#if defined(EP_CTMAP)
+				ctmap = 1;
+				ASSIGNM(B12_P381);
+#endif /* EP_CTMAP */
 				break;
 #elif FP_PRIME == 382
 			case BN_P382:
@@ -484,18 +820,25 @@ void ep2_curve_set_twist(int type) {
 		fp_set_dig(g->z[0], 1);
 		g->norm = 1;
 
-		ep2_copy(&(ctx->ep2_g), g);
-		fp_copy(ctx->ep2_a[0], a[0]);
-		fp_copy(ctx->ep2_a[1], a[1]);
-		fp_copy(ctx->ep2_b[0], b[0]);
-		fp_copy(ctx->ep2_b[1], b[1]);
+		ep2_copy(ctx->ep2_g, g);
+		fp2_copy(ctx->ep2_a, a);
+		fp2_copy(ctx->ep2_b, b);
+
+		detect_opt(&(ctx->ep2_opt_a), ctx->ep2_a);
+		detect_opt(&(ctx->ep2_opt_b), ctx->ep2_b);
+
+		fp2_copy(ctx->ep2_map_u, u);
 		bn_copy(&(ctx->ep2_r), r);
 		bn_copy(&(ctx->ep2_h), h);
+		ctx->ep2_is_ctmap = ctmap;
 		/* I don't have a better place for this. */
 		fp_prime_calc();
 
+		/* compute constants for hash-to-curve */
+		ep2_curve_set_map();
+
 #if defined(EP_PRECO)
-		ep2_mul_pre((ep2_t *)ep2_curve_get_tab(), &(ctx->ep2_g));
+		ep2_mul_pre((ep2_t *)ep2_curve_get_tab(), ctx->ep2_g);
 #endif
 	}
 	CATCH_ANY {
@@ -505,6 +848,7 @@ void ep2_curve_set_twist(int type) {
 		ep2_free(g);
 		fp2_free(a);
 		fp2_free(b);
+		fp2_free(u);
 		bn_free(r);
 		bn_free(h);
 	}
@@ -519,11 +863,11 @@ void ep2_curve_set(fp2_t a, fp2_t b, ep2_t g, bn_t r, bn_t h) {
 	fp_copy(ctx->ep2_b[0], b[0]);
 	fp_copy(ctx->ep2_b[1], b[1]);
 
-	ep2_norm(&(ctx->ep2_g), g);
+	ep2_norm(ctx->ep2_g, g);
 	bn_copy(&(ctx->ep2_r), r);
 	bn_copy(&(ctx->ep2_h), h);
 
 #if defined(EP_PRECO)
-	ep2_mul_pre((ep2_t *)ep2_curve_get_tab(), &(ctx->ep2_g));
+	ep2_mul_pre((ep2_t *)ep2_curve_get_tab(), ctx->ep2_g);
 #endif
 }

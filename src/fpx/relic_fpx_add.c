@@ -72,6 +72,16 @@ void fp2_dbl_integ(fp2_t c, fp2_t a) {
 
 #endif
 
+void fp2_add_dig(fp2_t c, const fp2_t a, dig_t dig) {
+	fp_add_dig(c[0], a[0], dig);
+	fp_copy(c[1], a[1]);
+}
+
+void fp2_sub_dig(fp2_t c, const fp2_t a, dig_t dig) {
+	fp_sub_dig(c[0], a[0], dig);
+	fp_copy(c[1], a[1]);
+}
+
 void fp2_neg(fp2_t c, fp2_t a) {
 	fp_neg(c[0], a[0]);
 	fp_neg(c[1], a[1]);
