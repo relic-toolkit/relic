@@ -168,9 +168,9 @@ void ed_map_ell2_5mod8(ed_t p, fp_t t) {
 #endif /* EP_ADD */
 	}
 	CATCH_ANY {
-		THROW(ERR_CAUGHT)
+		RLC_THROW(ERR_CAUGHT)
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(h);
 		fp_free(tv1);
 		fp_free(tv2);
@@ -180,89 +180,77 @@ void ed_map_ell2_5mod8(ed_t p, fp_t t) {
 	}
 }
 
-/*============================================================================*/
-/* Public definitions                                                         */
-/*============================================================================*/
+/* caution: this function overwrites k, which it uses as an auxiliary variable */
+static inline int fp_sgn0(const fp_t t, bn_t k) {
+	fp_prime_back(k, t);
+	return bn_get_bit(k, 0);
+}
 
-void ed_map(ed_t p, const uint8_t *msg, int len) {
-	bn_t h;
-	fp_t t, u, v;
-	uint8_t digest[RLC_MD_LEN];
+static void ed_map_impl(ed_t p, const uint8_t *msg, int len, const uint8_t *dst, int dst_len) {
+	bn_t k;
+	fp_t t;
+	ed_t q;
+	int neg;
+	/* enough space for two field elements plus extra bytes for uniformity */
+	const int len_per_elm = (FP_PRIME + ed_param_level() + 7) / 8;
+	uint8_t *pseudo_random_bytes = RLC_ALLOCA(uint8_t, 2 * len_per_elm);
 
-	bn_null(h);
+	bn_null(k);
 	fp_null(t);
-	fp_null(u);
-	fp_null(v);
+	ed_null(q);
 
-	RLC_TRY {
-		bn_new(h);
+	TRY {
+		bn_new(k);
 		fp_new(t);
-		fp_new(u);
-		fp_new(v);
+		ed_new(q);
 
-		md_map(digest, msg, len);
-		bn_read_bin(h, digest, RLC_MIN(RLC_FP_BYTES, RLC_MD_LEN));
+		/* pseudorandom string */
+		md_xmd(pseudo_random_bytes, 2 * len_per_elm, msg, len, dst, dst_len);
 
-		fp_prime_conv(p->y, h);
-		fp_set_dig(p->z, 1);
+#define ED_MAP_CONVERT_BYTES(IDX)                                                        \
+	do {                                                                                 \
+		bn_read_bin(k, pseudo_random_bytes + IDX * len_per_elm, len_per_elm);            \
+		fp_prime_conv(t, k);                                                             \
+	} while (0)
 
-		/* Make e = p. */
-		h->used = RLC_FP_DIGS;
-		dv_copy(h->dp, fp_prime_get(), RLC_FP_DIGS);
+#define ED_MAP_APPLY_MAP(PT)                                                             \
+	do {                                                                                 \
+		/* check sign of t */                                                            \
+		neg = fp_sgn0(t, k);                                                             \
+		/* convert */                                                                    \
+		ed_map_ell2_5mod8(PT, t);                                                        \
+		/* compare sign of y and sign of t; fix if necessary */                          \
+		neg = neg != fp_sgn0(PT->y, k);                                                  \
+		fp_neg(t, PT->y);                                                                \
+		dv_copy_cond(PT->y, t, RLC_FP_DIGS, neg);                                        \
+	} while (0)
 
-		/* Compute a^((p - 5)/8). */
-		bn_sub_dig(h, h, 5);
-		bn_rsh(h, h, 3);
+		/* first map invocation */
+		ED_MAP_CONVERT_BYTES(0);
+		ED_MAP_APPLY_MAP(p);
 
-		/* Decode using Elligator 2. */
-		while (1) {
-			/* u = y^2 - 1, v = d * y^2 + 1. */
-			fp_sqr(u, p->y);
-			fp_mul(v, u, core_get()->ed_d);
-			fp_sub_dig(u, u, 1);
-			fp_add_dig(v, v, 1);
+		/* second map invocation */
+		ED_MAP_CONVERT_BYTES(1);
+		ED_MAP_APPLY_MAP(q);
 
-			/* t = v^3, x = uv^7. */
-			fp_sqr(t, v);
-			fp_mul(t, t, v);
-			fp_sqr(p->x, t);
-			fp_mul(p->x, p->x, v);
-			fp_mul(p->x, p->x, u);
+#undef ED_MAP_CONVERT_BYTES
+#undef ED_MAP_APPLY_MAP
 
-			/* x = uv^3 * (uv^7)^((p - 5)/8). */
-			fp_exp(p->x, p->x, h);
-			fp_mul(p->x, p->x, t);
-			fp_mul(p->x, p->x, u);
+		ed_add(p, p, q);
 
-			/* Check if vx^2 == u. */
-			fp_sqr(t, p->x);
-			fp_mul(t, t, v);
-
-			if (fp_cmp(t, u) != RLC_EQ) {
-				fp_neg(u, u);
-				/* Check if vx^2 == -u. */
-				if (fp_cmp(t, u) != RLC_EQ) {
-					fp_add_dig(p->y, p->y, 1);
-				} else {
-					fp_mul(p->x, p->x, core_get()->srm1);
-					break;
-				}
-			} else {
+		/* clear cofactor */
+		switch (ed_param_get()) {
+			case CURVE_ED25519:
+				ed_dbl(p, p);
+				ed_dbl(p, p);
+				ed_dbl(p, p);
 				break;
-			}
+			default:
+				RLC_THROW(ERR_NO_VALID);
+				break;
 		}
 
-		/* By Elligator convention. */
-		if (p->x[RLC_FP_DIGS - 1] >> (RLC_DIG - 1) == 1) {
-			fp_neg(p->x, p->x);
-		}
-
-		/* Multiply by cofactor. */
-		ed_dbl(p, p);
-		ed_dbl(p, p);
-		ed_dbl(p, p);
 		ed_norm(p, p);
-
 #if ED_ADD == EXTND
 		fp_mul(p->t, p->x, p->y);
 #endif
@@ -272,9 +260,17 @@ void ed_map(ed_t p, const uint8_t *msg, int len) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(h);
+		bn_free(k);
 		fp_free(t);
-		fp_free(u);
-		fp_free(v);
+		ed_free(q);
+		RLC_FREE(pseudo_random_bytes);
 	}
+}
+
+/*============================================================================*/
+/* Public definitions                                                         */
+/*============================================================================*/
+
+void ed_map(ed_t p, const uint8_t *msg, int len) {
+	ed_map_impl(p, msg, len, (const uint8_t *)"RELIC", 5);
 }

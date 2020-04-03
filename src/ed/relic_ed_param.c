@@ -134,7 +134,7 @@ void ed_param_set(int param) {
 			fp_neg(ctx->ed_map_c[1], ctx->ed_map_c[1]);
 			if (!fp_srt(ctx->ed_map_c[1], ctx->ed_map_c[1])) {
 				/* should never happen because 2adicity > 1 */
-				THROW(ERR_NO_VALID);
+				RLC_THROW(ERR_NO_VALID);
 			}
 
 			if (param == CURVE_ED25519) {
@@ -143,7 +143,7 @@ void ed_param_set(int param) {
 				fp_add_dig(ctx->ed_map_c[2], ctx->ed_map_c[3], 2);
 				fp_neg(ctx->ed_map_c[2], ctx->ed_map_c[2]);
 				if (!fp_srt(ctx->ed_map_c[2], ctx->ed_map_c[2])) {
-					THROW(ERR_NO_VALID);
+					RLC_THROW(ERR_NO_VALID);
 				}
 				fp_prime_back(h, ctx->ed_map_c[2]);
 				/* make sure sgn0(ctx->ed_map_c[2]) == 0 */
@@ -152,11 +152,11 @@ void ed_param_set(int param) {
 				}
 			} else {
 				/* don't know how to compute remaining constants for other curves */
-				THROW(ERR_NO_VALID);
+				RLC_THROW(ERR_NO_VALID);
 			}
 		} else {
 			/* map impl only supports p = 5 mod 8! */
-			THROW(ERR_NO_VALID);
+			RLC_THROW(ERR_NO_VALID);
 		}
 	}
 	RLC_CATCH_ANY {
