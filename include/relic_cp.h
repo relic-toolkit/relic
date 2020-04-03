@@ -171,7 +171,7 @@ typedef struct _bgn_t {
 } bgn_st;
 
 /**
- * Pointer to a a Boneh-Goh-Nissim cryptosystem key pair.
+ * Pointer to a Boneh-Goh-Nissim cryptosystem key pair.
  */
 #if ALLOC == AUTO
 typedef bgn_st bgn_t[1];
@@ -1412,6 +1412,16 @@ int cp_pss_sig(g1_t a, g1_t b, uint8_t *msg, int len, bn_t u, bn_t v);
  * @return a boolean value indicating the verification result.
  */
 int cp_pss_ver(g1_t a, g1_t b, uint8_t *msg, int len, g2_t g, g2_t x, g2_t y);
+
+int cp_mpss_gen(bn_t q[2], bn_t s[2], g2_t g, g2_t x[2], g2_t y[2]);
+
+int cp_mpss_sig(g1_t b, g1_t a, uint8_t *msg, int len, bn_t r, bn_t s);
+
+int cp_mpss_lcl(g1_t d, g2_t e, g1_t a, uint8_t *msg, int len, g2_t x, g2_t y, pt_t t);
+
+int cp_mpss_ofv(gt_t r, g1_t a, g1_t b, uint8_t *msg, int len, g2_t g, g2_t x, g2_t y, pt_t t, g1_t d, g2_t e, int party);
+
+int cp_mpss_onv(gt_t e1, gt_t e2);
 
 /**
  * Generates a key pair for the Pointcheval-Sanders block signature (PSB)
