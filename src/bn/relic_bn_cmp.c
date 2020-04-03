@@ -73,6 +73,10 @@ int bn_cmp_dig(const bn_t a, dig_t b) {
 }
 
 int bn_cmp(const bn_t a, const bn_t b) {
+	if (bn_is_zero(a) && bn_is_zero(b)) {
+		return RLC_EQ;
+	}
+
 	if (a->sign == RLC_POS && b->sign == RLC_NEG) {
 		return RLC_GT;
 	}
