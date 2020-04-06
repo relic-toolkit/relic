@@ -252,8 +252,8 @@ void ed_add_extnd(ed_t r, const ed_t p, const ed_t q) {
 		fp_mul(t1, p->y, q->y);
 
 		/* C = d * t1 * t2 */
-		fp_mul(r->t, core_get()->ed_d, p->t);
-		fp_mul(r->t, r->t, q->t);
+		fp_mul(t2, core_get()->ed_d, p->t);
+		fp_mul(r->t, t2, q->t);
 
 		/* D = z1 * z2 */
 		fp_mul(r->z, p->z, q->z);

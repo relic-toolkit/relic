@@ -37,6 +37,12 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
+/* caution: this function overwrites k, which it uses as an auxiliary variable */
+static inline int fp_sgn0(const fp_t t, bn_t k) {
+	fp_prime_back(k, t);
+	return bn_get_bit(k, 0);
+}
+
 void ed_map_ell2_5mod8(ed_t p, fp_t t) {
 	bn_t h;
 	fp_t tv1, tv2, tv3, tv4, tv5;
@@ -129,10 +135,8 @@ void ed_map_ell2_5mod8(ed_t p, fp_t t) {
 
 		/* fix sign of y */
 		fp_neg(tv2, p->y);
-		fp_prime_back(h, t);
-		const int neg_t = bn_get_bit(h, 0);
-		fp_prime_back(h, p->y);
-		dv_copy_cond(p->y, tv2, RLC_FP_DIGS, neg_t != bn_get_bit(h, 0));
+		const int neg = fp_sgn0(t, h);
+		dv_copy_cond(p->y, tv2, RLC_FP_DIGS, neg != fp_sgn0(p->y, h));
 
 		/* convert to an Edwards point */
 		/* tmp1 = xnumerator = sqrt_M486664 * x */
@@ -148,24 +152,28 @@ void ed_map_ell2_5mod8(ed_t p, fp_t t) {
 			/* exceptional case: either denominator == 0 */
 			const int e4 = fp_is_zero(p->z);
 			fp_set_dig(tv5, 1);
-			dv_copy_cond(p->x, p->z, RLC_FP_DIGS, e4 == RLC_EQ);
-			dv_copy_cond(p->y, tv5, RLC_FP_DIGS, e4 == RLC_EQ);
-			dv_copy_cond(p->z, tv5, RLC_FP_DIGS, e4 == RLC_EQ);
+			dv_copy_cond(p->x, p->z, RLC_FP_DIGS, e4); /* set x to 0 */
+			dv_copy_cond(p->y, tv5, RLC_FP_DIGS, e4);
+			dv_copy_cond(p->z, tv5, RLC_FP_DIGS, e4);
 		} /* e4 goes out of scope */
 
-		/* clear denominator if necessary */
-#if EP_ADD == EXTND || EP_ADD == PROJC
+		/* clear denominator / compute extended coordinates if necessary */
+#if ED_ADD == EXTND || ED_ADD == PROJC
 		p->norm = 0;
-#if EP_ADD == EXTND
+#if ED_ADD == EXTND
+		/* extended coordinates: T * Z == X * Y */
 		fp_mul(p->t, p->x, p->y);
-#endif /* EP_ADD == EXTND */
-#else  /* EP_ADD == BASIC */
+		fp_mul(p->x, p->x, p->z);
+		fp_mul(p->y, p->y, p->z);
+		fp_sqr(p->z, p->z);
+#endif /* ED_ADD == EXTND */
+#else  /* ED_ADD == BASIC */
 		fp_inv(tv1, p->z);
 		fp_mul(p->x, p->x, tv1);
 		fp_mul(p->y, p->y, tv1);
 		fp_set_dig(p->z, 1);
 		p->norm = 1;
-#endif /* EP_ADD */
+#endif /* ED_ADD */
 	}
 	CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT)
@@ -180,17 +188,10 @@ void ed_map_ell2_5mod8(ed_t p, fp_t t) {
 	}
 }
 
-/* caution: this function overwrites k, which it uses as an auxiliary variable */
-static inline int fp_sgn0(const fp_t t, bn_t k) {
-	fp_prime_back(k, t);
-	return bn_get_bit(k, 0);
-}
-
 static void ed_map_impl(ed_t p, const uint8_t *msg, int len, const uint8_t *dst, int dst_len) {
 	bn_t k;
 	fp_t t;
 	ed_t q;
-	int neg;
 	/* enough space for two field elements plus extra bytes for uniformity */
 	const int len_per_elm = (FP_PRIME + ed_param_level() + 7) / 8;
 	uint8_t *pseudo_random_bytes = RLC_ALLOCA(uint8_t, 2 * len_per_elm);
@@ -213,28 +214,15 @@ static void ed_map_impl(ed_t p, const uint8_t *msg, int len, const uint8_t *dst,
 		fp_prime_conv(t, k);                                                             \
 	} while (0)
 
-#define ED_MAP_APPLY_MAP(PT)                                                             \
-	do {                                                                                 \
-		/* check sign of t */                                                            \
-		neg = fp_sgn0(t, k);                                                             \
-		/* convert */                                                                    \
-		ed_map_ell2_5mod8(PT, t);                                                        \
-		/* compare sign of y and sign of t; fix if necessary */                          \
-		neg = neg != fp_sgn0(PT->y, k);                                                  \
-		fp_neg(t, PT->y);                                                                \
-		dv_copy_cond(PT->y, t, RLC_FP_DIGS, neg);                                        \
-	} while (0)
-
 		/* first map invocation */
 		ED_MAP_CONVERT_BYTES(0);
-		ED_MAP_APPLY_MAP(p);
+		ed_map_ell2_5mod8(p, t);
 
 		/* second map invocation */
 		ED_MAP_CONVERT_BYTES(1);
-		ED_MAP_APPLY_MAP(q);
+		ed_map_ell2_5mod8(q, t);
 
 #undef ED_MAP_CONVERT_BYTES
-#undef ED_MAP_APPLY_MAP
 
 		ed_add(p, p, q);
 
