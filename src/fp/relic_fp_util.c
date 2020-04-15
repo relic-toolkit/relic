@@ -115,7 +115,7 @@ void fp_rand(fp_t a) {
 	}
 
 	while (dv_cmp(a, fp_prime_get(), RLC_FP_DIGS) != RLC_LT) {
-		fp_subn_low(a, a, fp_prime_get());
+		fp_subm_low(a, a, fp_prime_get());
 	}
 }
 
