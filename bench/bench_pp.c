@@ -355,8 +355,8 @@ static void pairing12(void) {
 	for (j = 0; j < 2; j++) {
 		ep2_null(p[j]);
 		ep_null(q[j]);
-		ep2_new(p[0]);
-		ep_new(q[0]);
+		ep2_new(p[j]);
+		ep_new(q[j]);
 	}
 
 	ep2_curve_get_ord(n);
