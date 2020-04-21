@@ -45,7 +45,7 @@
  * @param[in] A				- the first digit to multiply.
  * @param[in] B				- the second digit to multiply.
  */
-#define COMBA_STEP_SQR(R2, R1, R0, A, B)								\
+#define COMBA_STEP_SQR(R2, R1, R0, A, B)									\
 	dbl_t r = (dbl_t)(A) * (dbl_t)(B);										\
 	dbl_t s = r + r;														\
 	dig_t _r = (R1);														\

@@ -45,13 +45,13 @@
  * @param[in] A				- the first digit to multiply.
  * @param[in] B				- the second digit to multiply.
  */
-#define COMBA_STEP_MUL(R2, R1, R0, A, B)								\
+#define COMBA_STEP_MUL(R2, R1, R0, A, B)									\
 	dbl_t r = (dbl_t)(A) * (dbl_t)(B);										\
 	dig_t _r = (R1);														\
 	(R0) += (dig_t)(r);														\
 	(R1) += (R0) < (dig_t)(r);												\
 	(R2) += (R1) < _r;														\
-	(R1) += (dig_t)((r) >> (dbl_t)RLC_DIG);								\
+	(R1) += (dig_t)((r) >> (dbl_t)RLC_DIG);									\
 	(R2) += (R1) < (dig_t)((r) >> (dbl_t)RLC_DIG);							\
 
 /*============================================================================*/
