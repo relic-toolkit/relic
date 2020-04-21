@@ -45,7 +45,7 @@
  * @param[in] A				- the first digit to multiply.
  * @param[in] B				- the second digit to multiply.
  */
-#define COMBA_STEP_FP_SQR_LOW(R2, R1, R0, A, B)								\
+#define COMBA_STEP_SQR(R2, R1, R0, A, B)								\
 	dbl_t r = (dbl_t)(A) * (dbl_t)(B);										\
 	dbl_t s = r + r;														\
 	dig_t _r = (R1);														\
@@ -92,7 +92,7 @@ void fp_sqrn_low(dig_t *c, const dig_t *a) {
 
 		/* Compute the number of additions in this column. */
 		for (j = 0; j < (i + 1) / 2; j++, tmpa++, tmpb--) {
-			COMBA_STEP_FP_SQR_LOW(r2, r1, r0, *tmpa, *tmpb);
+			COMBA_STEP_SQR(r2, r1, r0, *tmpa, *tmpb);
 		}
 		if (!(i & 0x01)) {
 			COMBA_FINAL(r2, r1, r0, *tmpa);
@@ -108,7 +108,7 @@ void fp_sqrn_low(dig_t *c, const dig_t *a) {
 
 		/* Compute the number of additions in this column. */
 		for (j = 0; j < (RLC_FP_DIGS - 1 - i) / 2; j++, tmpa++, tmpb--) {
-			COMBA_STEP_FP_SQR_LOW(r2, r1, r0, *tmpa, *tmpb);
+			COMBA_STEP_SQR(r2, r1, r0, *tmpa, *tmpb);
 		}
 		if (!((RLC_FP_DIGS - i) & 0x01)) {
 			COMBA_FINAL(r2, r1, r0, *tmpa);
