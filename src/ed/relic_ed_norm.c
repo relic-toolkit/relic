@@ -56,7 +56,6 @@ static void ed_norm_imp(ed_t r, const ed_t p, int inverted) {
 		fp_mul(r->y, p->y, r->z);
 #if ED_ADD == EXTND
 		fp_mul(r->t, p->t, r->z);
-		fp_mul(r->z, r->x, r->y);
 #endif
 		fp_set_dig(r->z, 1);
 
