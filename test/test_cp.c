@@ -1119,13 +1119,14 @@ static int pss(void) {
 
 static int mpss(void) {
 	int i, code = RLC_ERR;
-	bn_t u[2], v[2], n;
+	bn_t u[2], v[2], m, n;
 	g1_t h, s[2], d[2];
 	g2_t g, x[2], y[2], e[2];
 	gt_t e1, e2;
 	pt_t t0[2], t1[2];
-	uint8_t m[5] = { 0, 1, 2, 3, 4 };
+	char msg[5] = { 0, 1, 2, 3, 4 };
 
+	bn_null(m);
 	bn_null(n);
 	g1_null(h);
 	g2_null(g);
@@ -1133,6 +1134,7 @@ static int mpss(void) {
 	gt_null(e2);
 
 	TRY {
+		bn_new(m);
 		bn_new(n);
 		g1_new(h);
 		g2_new(g);
@@ -1165,26 +1167,28 @@ static int mpss(void) {
 			TEST_ASSERT(cp_mpss_gen(u, v, g, x, y) == RLC_OK, end);
 			g1_get_ord(n);
 			g1_rand(h);
-			TEST_ASSERT(cp_mpss_sig(s[0], h, m, sizeof(m), u[0], v[0]) == RLC_OK, end);
-			TEST_ASSERT(cp_mpss_sig(s[1], h, m, sizeof(m), u[1], v[1]) == RLC_OK, end);
+			bn_read_bin(m, msg, strlen(msg));
+			bn_mod(m, m, n);
+			TEST_ASSERT(cp_mpss_sig(s[0], h, m, u[0], v[0]) == RLC_OK, end);
+			TEST_ASSERT(cp_mpss_sig(s[1], h, m, u[1], v[1]) == RLC_OK, end);
 			/* Compute Alice's part. */
-			TEST_ASSERT(cp_mpss_lcl(d[0], e[0], h, m, sizeof(m), x[0], y[0], t0[0]) == RLC_OK, end);
+			TEST_ASSERT(cp_mpss_lcl(d[0], e[0], h, m, x[0], y[0], t0[0]) == RLC_OK, end);
 			/* Compute Bob's part. */
-			TEST_ASSERT(cp_mpss_lcl(d[1], e[1], h, m, sizeof(m), x[1], y[1], t0[1]) == RLC_OK, end);
+			TEST_ASSERT(cp_mpss_lcl(d[1], e[1], h, m, x[1], y[1], t0[1]) == RLC_OK, end);
 			/* Broadcast shares. */
 			pc_map_bct(d, e);
 			/* Recompute signature. */
 			g1_add(s[0], s[0], s[1]);
 			g1_norm(s[0], s[0]);
-			TEST_ASSERT(cp_mpss_ofv(e1, h, s[0], m, sizeof(m), g, x[0], y[0], t0[0], d[0], e[0], 0) == RLC_OK, end);
-			TEST_ASSERT(cp_mpss_ofv(e2, h, s[0], m, sizeof(m), g, x[1], y[1], t0[1], d[1], e[1], 1) == RLC_OK, end);
+			TEST_ASSERT(cp_mpss_ofv(e1, h, s[0], m, g, x[0], y[0], t0[0], d[0], e[0], 0) == RLC_OK, end);
+			TEST_ASSERT(cp_mpss_ofv(e2, h, s[0], m, g, x[1], y[1], t0[1], d[1], e[1], 1) == RLC_OK, end);
 			TEST_ASSERT(cp_mpss_onv(e1, e2) == 1, end);
-			/* Check that signature is valid for conventional scheme. */
+			/* Check that signature is also valid for conventional scheme. */
 			g2_add(x[0], x[0], x[1]);
 			g2_norm(x[0], x[0]);
 			g2_add(y[0], y[0], y[1]);
 			g2_norm(y[0], y[0]);
-			TEST_ASSERT(cp_pss_ver(h, s[0], m, sizeof(m), g, x[0], y[0]) == 1, end);
+			TEST_ASSERT(cp_pss_ver(h, s[0], msg, strlen(msg), g, x[0], y[0]) == 1, end);
 		}
 		TEST_END;
 	}
@@ -1194,13 +1198,13 @@ static int mpss(void) {
 	code = RLC_OK;
 
   end:
+    bn_free(m);
   	bn_free(n);
   	g1_free(h);
 	g2_free(g);
 	gt_free(e1);
 	gt_free(e2);
 	for (i = 0; i < 2; i++) {
-		bn_free(n);
 		bn_free(u[i]);
 		bn_free(v[i]);
 		g1_free(d[i]);

@@ -73,59 +73,49 @@ int cp_mpss_gen(bn_t q[2], bn_t s[2], g2_t g, g2_t x[2], g2_t y[2]) {
 	return result;
 }
 
-int cp_mpss_sig(g1_t b, g1_t a, uint8_t *msg, int len, bn_t r, bn_t s) {
-	bn_t m, n;
+int cp_mpss_sig(g1_t b, g1_t a, bn_t m, bn_t r, bn_t s) {
+	bn_t t, n;
 	int result = RLC_OK;
 
-	bn_null(m);
+	bn_null(t);
 	bn_null(n);
 
 	TRY {
-		bn_new(m);
+		bn_new(t);
 		bn_new(n);
 
 		/* Same as the PS signature scheme, but random G1 generator comes from
 		 * the outside. */
 		g1_get_ord(n);
-		bn_read_bin(m, msg, len);
-		bn_mul(m, m, s);
-		bn_mod(m, m, n);
-		bn_add(m, m, r);
-		bn_mod(m, m, n);
-		g1_mul(b, a, m);
+		bn_mul(t, m, s);
+		bn_mod(t, t, n);
+		bn_add(t, t, r);
+		bn_mod(t, t, n);
+		g1_mul(b, a, t);
 	}
 	CATCH_ANY {
 		result = RLC_ERR;
 	}
 	FINALLY {
-		bn_free(m);
+		bn_free(t);
 		bn_free(n);
 	}
 	return result;
 }
 
-int cp_mpss_lcl(g1_t d, g2_t e, g1_t a, uint8_t *msg, int len, g2_t x, g2_t y, pt_t t) {
+int cp_mpss_lcl(g1_t d, g2_t e, g1_t a, bn_t m, g2_t x, g2_t y, pt_t t) {
 	g2_t q;
-	bn_t m, n;
 	int result = RLC_OK;
 
-	bn_null(m);
-	bn_null(n);
 	g2_null(q);
 
 	TRY {
-		bn_new(m);
-		bn_new(n);
 		g2_new(q);
 		gt_new(s);
 
 		if (g1_is_infty(a)) {
 			result = RLC_ERR;
 		}
-
-		g1_get_ord(n);
-		bn_read_bin(m, msg, len);
-		bn_mod(m, m, n);
 
 		g2_mul(q, y, m);
 		g2_add(q, q, x);
@@ -138,37 +128,26 @@ int cp_mpss_lcl(g1_t d, g2_t e, g1_t a, uint8_t *msg, int len, g2_t x, g2_t y, p
 		THROW(ERR_CAUGHT);
 	}
 	FINALLY {
-		bn_free(m);
-		bn_free(n);
 		g2_free(q);
 	}
 	return result;
 }
 
-int cp_mpss_ofv(gt_t r, g1_t a, g1_t b, uint8_t *msg, int len, g2_t g, g2_t x, g2_t y, pt_t t, g1_t d, g2_t e, int party) {
+int cp_mpss_ofv(gt_t r, g1_t a, g1_t b, bn_t m, g2_t g, g2_t x, g2_t y, pt_t t, g1_t d, g2_t e, int party) {
 	g2_t q;
 	gt_t s;
-	bn_t m, n;
 	int result = RLC_OK;
 
-	bn_null(m);
-	bn_null(n);
 	g2_null(q);
 	gt_null(s);
 
 	TRY {
-		bn_new(m);
-		bn_new(n);
 		g2_new(q);
 		gt_new(s);
 
 		if (g1_is_infty(a)) {
 			result = RLC_ERR;
 		}
-
-		g1_get_ord(n);
-		bn_read_bin(m, msg, len);
-		bn_mod(m, m, n);
 
 		g2_mul(q, y, m);
 		g2_add(q, q, x);
@@ -185,8 +164,6 @@ int cp_mpss_ofv(gt_t r, g1_t a, g1_t b, uint8_t *msg, int len, g2_t g, g2_t x, g
 	FINALLY {
 		g2_free(q);
 		gt_free(s);
-		bn_free(m);
-		bn_free(n);
 	}
 	return result;
 }
