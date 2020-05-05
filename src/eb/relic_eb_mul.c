@@ -685,8 +685,6 @@ void eb_mul_lodah(eb_t r, const eb_t p, const bn_t k) {
 		dv_new(r4);
 		dv_new(r5);
 
-		fb_rand(z1);
-		fb_mul(x1, z1, p->x);
 		fb_sqr(z2, p->x);
 		fb_sqr(x2, z2);
 		dv_zero(r5, 2 * RLC_FB_DIGS);
@@ -715,6 +713,13 @@ void eb_mul_lodah(eb_t r, const eb_t p, const bn_t k) {
 				fb_addn_low(x2, x2, b);
 				break;
 		}
+
+		/* Blind both points independently. */
+		fb_rand(z1);
+		fb_mul(x1, z1, p->x);
+		fb_rand(r1);
+		fb_mul(z2, z2, r1);
+		fb_mul(x2, x2, r1);
 
 		for (i = bits - 1; i >= 0; i--) {
 			j = bn_get_bit(t, i);
