@@ -430,6 +430,7 @@ unsigned int lzcnt64_soft(unsigned long long x)
 #endif
 }
 
+#if 0
 
 unsigned int lzcnt32(unsigned int x)
 {
@@ -443,7 +444,7 @@ unsigned int lzcnt32(unsigned int x)
     }
 }
 
-unsigned int lzcnt64(unsigned int x)
+unsigned int lzcnt64(unsigned long long x)
 {
 #if defined(HAS_LZCNT64_HARD)
     if (has_lzcnt_hard()) {
@@ -454,8 +455,6 @@ unsigned int lzcnt64(unsigned int x)
         return lzcnt64_soft(x);
     }
 }
-
-#if 0
 
 #include <stdio.h>
 int do_test32(unsigned int (* lzcnt32proc)(unsigned int), const char* procName)
