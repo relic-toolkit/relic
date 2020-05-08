@@ -55,11 +55,7 @@ static unsigned int (*lzcnt_ptr)(ull_t);
 /*============================================================================*/
 
 void arch_init(void) {
-#if WSIZE < 32
-	lzcnt_ptr = (has_lzcnt_hard() ? lzcnt32_hard : lzcnt32_soft);
-#elif WSIZE == 64
 	lzcnt_ptr = (has_lzcnt_hard() ? lzcnt64_hard : lzcnt64_soft);
-#endif
 }
 
 void arch_clean(void) {
@@ -79,5 +75,5 @@ ull_t arch_cycles(void) {
 }
 
 unsigned int arch_lzcnt(dig_t x) {
-	return lzcnt_ptr((ull_t)x);
+	return lzcnt_ptr((ull_t)x) - (8 * sizeof(ull_t) - WSIZE);
 }
