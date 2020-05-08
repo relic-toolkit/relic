@@ -183,10 +183,11 @@ int util_bits_dig(dig_t a) {
     if (hasLZCHW!=0)
         return RLC_DIG - lzcnt32_hard(a);
     return RLC_DIG - lzcnt32_soft(a);
-#endif
+#else // WSIZE == 64
     if (hasLZCHW!=0)
         return RLC_DIG - lzcnt64_hard(a);
     return RLC_DIG - lzcnt64_soft(a);
+#endif
 #endif
 }
 
