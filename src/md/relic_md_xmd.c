@@ -63,7 +63,7 @@
 #define _make_md_xmd(HName, HBlockSize, HHashSize, HContext, HReset, HInput, HResult)                             \
 	void HName(uint8_t *buf, int buf_len, const uint8_t *in, int in_len, const uint8_t *dst, int dst_len) {       \
 		const unsigned ell = (buf_len + HHashSize - 1) / HHashSize;                                               \
-		if (ell > 255 || buf_len < 0) {                                                                           \
+		if (buf_len < 0 || ell > 255 || dst_len > 255) {                                                          \
 			THROW(ERR_NO_VALID);                                                                                  \
 		}                                                                                                         \
                                                                                                                   \
@@ -71,23 +71,24 @@
 		const uint8_t Z_pad[HBlockSize] = {                                                                       \
 			0,                                                                                                    \
 		};                                                                                                        \
-		const uint8_t l_i_b_0_dstlen_str[] = {buf_len >> 8, buf_len & 0xff, 0, dst_len};                          \
+		const uint8_t l_i_b_0_str[] = {buf_len >> 8, buf_len & 0xff, 0, dst_len};                                 \
+		const uint8_t *dstlen_str = l_i_b_0_str + 3;                                                              \
                                                                                                                   \
 		/* now compute b_0 */                                                                                     \
 		uint8_t b_0[HHashSize];                                                                                   \
 		HContext ctx;                                                                                             \
 		_check_md(HReset(&ctx));                                                                                  \
-		_check_md(HInput(&ctx, Z_pad, HBlockSize));     /* Z_pad */                                               \
-		_check_md(HInput(&ctx, in, in_len));            /* msg */                                                 \
-		_check_md(HInput(&ctx, l_i_b_0_dstlen_str, 4)); /* l_i_b_str || I2OSP(0, 1) || I2OSP(DST, 1) */           \
-		_check_md(HInput(&ctx, dst, dst_len));          /* DST */                                                 \
-		_check_md(HResult(&ctx, b_0));                  /* finalize computation */                                \
+		_check_md(HInput(&ctx, Z_pad, HBlockSize)); /* Z_pad */                                                   \
+		_check_md(HInput(&ctx, in, in_len));        /* msg */                                                     \
+		_check_md(HInput(&ctx, l_i_b_0_str, 3));    /* l_i_b_str || I2OSP(0, 1) */                                \
+		_check_md(HInput(&ctx, dst, dst_len));      /* DST */                                                     \
+		_check_md(HInput(&ctx, dstlen_str, 1));     /* I2OSP(len(dst), 1) */                                      \
+		_check_md(HResult(&ctx, b_0));              /* finalize computation */                                    \
                                                                                                                   \
 		/* now compute b_i */                                                                                     \
-		uint8_t b_i[HHashSize + 2] = {                                                                            \
+		uint8_t b_i[HHashSize + 1] = {                                                                            \
 			0,                                                                                                    \
 		};                                                                                                        \
-		b_i[HHashSize + 1] = dst_len;                                                                             \
 		for (unsigned i = 1; i <= ell; ++i) {                                                                     \
 			/* compute b_0 XOR b_(i-1) */                                                                         \
 			for (unsigned j = 0; j < HHashSize; ++j) {                                                            \
@@ -96,8 +97,9 @@
 			b_i[HHashSize] = i;                                                                                   \
                                                                                                                   \
 			_check_md(HReset(&ctx));                                                                              \
-			_check_md(HInput(&ctx, b_i, HHashSize + 2)); /* b_0 ^ b_(i-1) || I2OSP(i, 1) || I2OSP(len(DST), 1) */ \
+			_check_md(HInput(&ctx, b_i, HHashSize + 1)); /* b_0 ^ b_(i-1) || I2OSP(i, 1) */                       \
 			_check_md(HInput(&ctx, dst, dst_len));       /* DST */                                                \
+			_check_md(HInput(&ctx, dstlen_str, 1));      /* I2OSP(len(dst), 1) */                                 \
 			_check_md(HResult(&ctx, b_i));               /* finalize computation */                               \
                                                                                                                   \
 			/* copy into output buffer */                                                                         \
