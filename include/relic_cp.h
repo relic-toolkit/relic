@@ -171,7 +171,7 @@ typedef struct _bgn_t {
 } bgn_st;
 
 /**
- * Pointer to a a Boneh-Goh-Nissim cryptosystem key pair.
+ * Pointer to a Boneh-Goh-Nissim cryptosystem key pair.
  */
 #if ALLOC == AUTO
 typedef bgn_st bgn_t[1];

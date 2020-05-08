@@ -687,7 +687,7 @@ static int vbnn(void) {
 		ec_new(pka);
 		ec_new(pkb);
 
-		TEST_BEGIN("vbnn is correct") {
+		TEST_BEGIN("vbnn signature is correct") {
 			TEST_ASSERT(cp_vbnn_gen(msk, mpk) == RLC_OK, end);
 			TEST_ASSERT(cp_vbnn_gen_prv(ska, pka, msk, ida, sizeof(ida)) == RLC_OK, end);
 			TEST_ASSERT(cp_vbnn_gen_prv(skb, pkb, msk, idb, sizeof(idb)) == RLC_OK, end);
@@ -1113,10 +1113,6 @@ static int pss(void) {
 	g2_null(g);
 	g2_null(x);
 	g2_null(y);
-	for (i = 0; i < 5; i++) {
-		bn_null(_v[i]);
-		g2_null(_y[i]);
-	}
 
 	TRY {
 		bn_new(u);
@@ -1127,6 +1123,8 @@ static int pss(void) {
 		g2_new(x);
 		g2_new(y);
 		for (i = 0; i < 5; i++) {
+			bn_null(_v[i]);
+			g2_null(_y[i]);
 			bn_new(_v[i]);
 			g2_new(_y[i]);
 		}

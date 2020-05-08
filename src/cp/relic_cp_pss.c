@@ -222,7 +222,7 @@ int cp_psb_ver(g1_t a, g1_t b, uint8_t *msgs[], int lens[], g2_t g, g2_t x,
 	g2_t q[2];
 	gt_t e;
 	bn_t m, n;
-	int i, result = 1;
+	int i, result = 0;
 
 	g1_null(p[0]);
 	g1_null(p[1]);
@@ -241,10 +241,6 @@ int cp_psb_ver(g1_t a, g1_t b, uint8_t *msgs[], int lens[], g2_t g, g2_t x,
 		bn_new(m);
 		bn_new(n);
 
-		if (g1_is_infty(a)) {
-			result = 0;
-		}
-
 		/* Check that e(a, x \prod y_i^m_i) = e(b, g). */
 		g1_copy(p[0], a);
 		g1_copy(p[1], b);
@@ -260,8 +256,8 @@ int cp_psb_ver(g1_t a, g1_t b, uint8_t *msgs[], int lens[], g2_t g, g2_t x,
 		g2_copy(q[1], g);
 		g2_neg(q[1], q[1]);
 		pc_map_sim(e, p, q, 2);
-		if (!gt_is_unity(e)) {
-			result = 0;
+		if (!g1_is_infty(a) && gt_is_unity(e)) {
+			result = 1;
 		}
 	}
 	CATCH_ANY {

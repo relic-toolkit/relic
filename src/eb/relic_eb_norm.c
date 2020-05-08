@@ -45,11 +45,11 @@
  *
  * @param[out] r		- the result.
  * @param[in] p			- the point to normalize.
- * @param[in] inverted	- if the Z coordinate is already inverted.
+ * @param inv			- the flag to indicate if z is already inverted.
  */
-static void eb_norm_imp(eb_t r, const eb_t p, int inverted) {
+static void eb_norm_imp(eb_t r, const eb_t p, int inv) {
 	if (!p->norm) {
-		if (inverted) {
+		if (inv) {
 			fb_copy(r->z, p->z);
 		} else {
 			fb_inv(r->z, p->z);

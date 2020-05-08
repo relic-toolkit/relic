@@ -29,8 +29,12 @@
  * @ingroup arch
  */
 
+#include <stdio.h>
+
 #include "relic_types.h"
 #include "relic_arch.h"
+
+#include "lzcnt.inc"
 
 /**
  * Renames the inline assembly macro to a prettier name.
@@ -38,13 +42,28 @@
 #define asm					__asm__ volatile
 
 /*============================================================================*/
+/* Private definitions                                                        */
+/*============================================================================*/
+
+/**
+ * Function pointer to underlying lznct implementation.
+ */
+static unsigned int (*lzcnt_ptr)(ull_t);
+
+/*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
 void arch_init(void) {
+#if WSIZE < 32
+	lzcnt_ptr = (has_lzcnt_hard() ? lzcnt32_hard : lzcnt32_soft);
+#elif WSIZE == 64
+	lzcnt_ptr = (has_lzcnt_hard() ? lzcnt64_hard : lzcnt64_soft);
+#endif
 }
 
 void arch_clean(void) {
+	lzcnt_ptr = NULL;
 }
 
 ull_t arch_cycles(void) {
@@ -57,4 +76,8 @@ ull_t arch_cycles(void) {
 		: "=r" (hi), "=r" (lo):: "%rax", "%rbx", "%rcx", "%rdx"
 	);
 	return ((ull_t) lo) | (((ull_t) hi) << 32);
+}
+
+unsigned int arch_lzcnt(dig_t x) {
+	return lzcnt_ptr((ull_t)x);
 }
