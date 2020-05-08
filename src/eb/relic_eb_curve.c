@@ -145,9 +145,11 @@ void eb_curve_set(const fb_t a, const fb_t b, const eb_t g, const bn_t r,
 	} else {
 		ctx->eb_is_kbltz = 0;
 	}
+
 	eb_norm(&(ctx->eb_g), g);
 	bn_copy(&(ctx->eb_r), r);
 	bn_copy(&(ctx->eb_h), h);
+	
 #if defined(EB_PRECO)
 	eb_mul_pre((eb_t *)eb_curve_get_tab(), &(ctx->eb_g));
 #endif
