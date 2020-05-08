@@ -138,11 +138,11 @@ char util_conv_char(dig_t i) {
 #endif
 }
 
-int LZCHasHW = 0;
-int LZCChecked = 0;
+int hasLZCHW = 0;
+int checkedLZC = 0;
 int has_lzcnt_hard();
-unsigned int lzcnt32_soft(unsigned int x)
-unsigned int lzcnt32_hard(unsigned int x)
+unsigned int lzcnt32_soft(unsigned int x);
+unsigned int lzcnt32_hard(unsigned int x);
 unsigned int lzcnt64_soft(unsigned long long x);
 unsigned int lzcnt64_hard(unsigned long long x);
 
@@ -176,10 +176,10 @@ int util_bits_dig(dig_t a) {
 	return 0;
 #else // WSIZE == 32 or WSIZE == 64
     if (checkedLZC == 0) {
-        hasLCZHW = has_lzcnt_hard();
+        hasLZCHW = has_lzcnt_hard();
         checkedLZC = 1;
     }
-if WSIZE == 32
+#if WSIZE == 32
     if (hasLZCHW!=0)
         return RLC_DIG - lzcnt32_hard(a);
     return RLC_DIG - lzcnt32_soft(a);
