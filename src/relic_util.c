@@ -134,57 +134,8 @@ char util_conv_char(dig_t i) {
 #endif
 }
 
-int hasLZCHW = 0;
-int checkedLZC = 0;
-int has_lzcnt_hard();
-unsigned int lzcnt32_soft(unsigned int x);
-unsigned int lzcnt32_hard(unsigned int x);
-unsigned int lzcnt64_soft(unsigned long long x);
-unsigned int lzcnt64_hard(unsigned long long x);
-
 int util_bits_dig(dig_t a) {
-#if WSIZE == 8 || WSIZE == 16
-	static const uint8_t table[16] = {
-		0, 1, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4
-	};
-#endif
-#if WSIZE == 8
-	if (a >> 4 == 0) {
-		return table[a & 0xF];
-	} else {
-		return table[a >> 4] + 4;
-	}
-	return 0;
-#elif WSIZE == 16
-	int offset;
-
-	if (a >= ((dig_t)1 << 8)) {
-		offset = 8;
-	} else {
-		offset = 0;
-	}
-	a = a >> offset;
-	if (a >> 4 == 0) {
-		return table[a & 0xF] + offset;
-	} else {
-		return table[a >> 4] + 4 + offset;
-	}
-	return 0;
-#else // WSIZE == 32 or WSIZE == 64
-    if (checkedLZC == 0) {
-        hasLZCHW = has_lzcnt_hard();
-        checkedLZC = 1;
-    }
-#if WSIZE == 32
-    if (hasLZCHW!=0)
-        return RLC_DIG - lzcnt32_hard(a);
-    return RLC_DIG - lzcnt32_soft(a);
-#else // WSIZE == 64
-    if (hasLZCHW!=0)
-        return RLC_DIG - lzcnt64_hard(a);
-    return RLC_DIG - lzcnt64_soft(a);
-#endif
-#endif
+    return RLC_DIG - arch_lzcnt(a);
 }
 
 int util_cmp_const(const void *a, const void *b, int size) {

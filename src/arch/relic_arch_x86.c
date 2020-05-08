@@ -24,13 +24,17 @@
 /**
  * @file
  *
- * Implementation of Intel x86-dependent routines.
+ * Implementation of AMD64-dependent routines.
  *
  * @ingroup arch
  */
 
+#include <stdio.h>
+
 #include "relic_types.h"
-#include "relic_label.h"
+#include "relic_arch.h"
+
+#include "lzcnt.inc"
 
 /**
  * Renames the inline assembly macro to a prettier name.
@@ -38,17 +42,38 @@
 #define asm					__asm__ volatile
 
 /*============================================================================*/
+/* Private definitions                                                        */
+/*============================================================================*/
+
+/**
+ * Function pointer to underlying lznct implementation.
+ */
+static unsigned int (*lzcnt_ptr)(unsigned int);
+
+/*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
 void arch_init(void) {
+	lzcnt_ptr = (has_lzcnt_hard() ? lzcnt32_hard : lzcnt32_soft);
 }
 
 void arch_clean(void) {
+	lzcnt_ptr = NULL;
 }
 
 ull_t arch_cycles(void) {
-	ull_t value;
-	asm(".byte 0x0f, 0x31\n\t":"=A" (value));
-	return value;
+	unsigned int hi, lo;
+	asm (
+		"cpuid\n\t"/*serialize*/
+		"rdtsc\n\t"/*read the clock*/
+		"mov %%edx, %0\n\t"
+		"mov %%eax, %1\n\t"
+		: "=r" (hi), "=r" (lo):: "%rax", "%rbx", "%rcx", "%rdx"
+	);
+	return ((ull_t) lo) | (((ull_t) hi) << 32);
+}
+
+unsigned int arch_lzcnt(dig_t x) {
+	return lzcnt_ptr((unsigned int)x) - (8 * sizeof(unsigned int) - WSIZE);
 }

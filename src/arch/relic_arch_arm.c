@@ -31,6 +31,8 @@
 
 #include "relic_types.h"
 
+#include "lzcnt.inc"
+
 /**
  * Renames the inline assembly macro to a prettier name.
  */
@@ -100,4 +102,12 @@ ull_t arch_cycles(void) {
 #endif /* TIMER = CYCLE */
 
 	return value;
+}
+
+unsigned int arch_lzcnt(unsigned int x) {
+#ifdef WSIZE == 32
+	return lzcnt32_gcc_arm(x);
+#elif WSIZE == 64
+	return lzcnt64_gcc_arm(x);
+#endif
 }

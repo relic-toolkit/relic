@@ -50,3 +50,15 @@ void arch_copy_rom(char *dest, const char *src, int len) {
 	}
 	*dest = 0;
 }
+
+unsigned int arch_lzcnt() {
+	static const uint8_t table[16] = {
+		0, 1, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4
+	};
+	if (a >> 4 == 0) {
+		return table[a & 0xF];
+	} else {
+		return table[a >> 4] + 4;
+	}
+	return 0;
+}

@@ -185,7 +185,9 @@ static int util(void) {
 			TEST_ASSERT(bn_sign(a) == bn_sign(b), end);
 			TEST_ASSERT(bn_is_zero(a) == 0, end);
 			TEST_ASSERT(bn_cmp(a, b) == RLC_LT, end);
-			bn_rand(b, RLC_NEG, RLC_DIG);
+			do {
+				bn_rand(b, RLC_NEG, RLC_BN_BITS);
+			} while (bn_is_zero(b));
 			bn_rand_mod(a, b);
 			TEST_ASSERT(bn_sign(a) == bn_sign(b), end);
 			TEST_ASSERT(bn_is_zero(a) == 0, end);
