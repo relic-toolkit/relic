@@ -293,9 +293,9 @@ static void ep_mul_reg_glv(ep_t r, const ep_t p, const bn_t k) {
 #if defined(EP_MIXED)
 		fp_set_dig(u->z, 1);
 		fp_set_dig(w->z, 1);
-		u->norm = w->norm = 1;
+		u->coord = w->coord = BASIC;
 #else
-		u->norm = w->norm = 0;
+		u->coord = w->coord = EP_ADD;
 #endif
 		ep_set_infty(r);
 		for (i = l - 1; i >= 0; i--) {
@@ -425,9 +425,9 @@ static void ep_mul_reg_imp(ep_t r, const ep_t p, const bn_t k) {
 
 #if defined(EP_MIXED)
 		fp_set_dig(u->z, 1);
-		u->norm = 1;
+		u->coord = BASIC;
 #else
-		u->norm = 0;
+		u->coord = EP_ADD;
 #endif
 		ep_set_infty(r);
 		for (i = l - 1; i >= 0; i--) {
@@ -629,8 +629,15 @@ void ep_mul_monty(ep_t r, const ep_t p, const bn_t k) {
 		ep_norm(t[0], p);
 		ep_dbl(t[1], t[0]);
 
-#if EP_ADD == PROJC
 		/* Blind both points independently. */
+#if EP_ADD == PROJC
+		for (i = 0; i < 2; i++) {
+			fp_rand(rand);
+			fp_mul(t[i]->x, t[i]->x, rand);
+			fp_mul(t[i]->y, t[i]->y, rand);
+			fp_mul(t[i]->z, t[i]->z, rand);
+		}
+#elif EP_ADD == JACOB
 		for (i = 0; i < 2; i++) {
 			fp_rand(rand);
 			fp_mul(t[i]->z, t[i]->z, rand);

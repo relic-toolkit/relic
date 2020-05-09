@@ -49,7 +49,7 @@ void pp_norm_k8(ep2_t r, ep2_t p) {
 		return;
 	}
 
-	if (p->norm) {
+	if (p->coord) {
 		/* If the point is represented in affine coordinates, we just copy it. */
 		ep2_copy(r, p);
 	}
@@ -59,7 +59,7 @@ void pp_norm_k8(ep2_t r, ep2_t p) {
 	fp2_mul(r->y, p->y, r->z);
 	fp2_mul(r->y, r->y, r->z);
 	fp2_set_dig(r->z, 1);
-	r->norm = 1;
+	r->coord = BASIC;
 #endif
 }
 
@@ -69,7 +69,7 @@ void pp_norm_k12(ep2_t r, ep2_t p) {
 		return;
 	}
 
-	if (p->norm) {
+	if (p->coord) {
 		/* If the point is represented in affine coordinates, we just copy it. */
 		ep2_copy(r, p);
 	}
@@ -79,6 +79,6 @@ void pp_norm_k12(ep2_t r, ep2_t p) {
 	fp2_mul(r->y, p->y, r->z);
 	fp_set_dig(r->z[0], 1);
 	fp_zero(r->z[1]);
-	r->norm = 1;
+	r->coord = BASIC;
 #endif
 }

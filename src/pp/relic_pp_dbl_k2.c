@@ -142,7 +142,7 @@ void pp_dbl_k2_projc_basic(fp2_t l, ep_t r, ep_t p, ep_t q) {
 		fp_mul(l[1], r->z, t0);
 		fp_mul(l[1], l[1], q->y);
 
-		r->norm = 0;
+		r->coord = PROJC;
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
@@ -238,7 +238,7 @@ void pp_dbl_k2_projc_lazyr(fp2_t l, ep_t r, ep_t p, ep_t q) {
 		fp_mul(l[1], r->z, t0);
 		fp_mul(l[1], l[1], q->y);
 
-		r->norm = 0;
+		r->coord = PROJC;
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);

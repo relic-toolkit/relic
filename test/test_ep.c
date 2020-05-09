@@ -60,7 +60,7 @@ static int memory(void) {
 	return code;
 }
 
-int util(void) {
+static int util(void) {
 	int l, code = RLC_ERR;
 	ep_t a, b, c;
 	uint8_t bin[2 * RLC_FP_BYTES + 1];
@@ -105,6 +105,8 @@ int util(void) {
 			ep_rand(a);
 			ep_neg(b, a);
 			TEST_ASSERT(ep_cmp(a, b) != RLC_EQ, end);
+			ep_neg(b, b);
+			TEST_ASSERT(ep_cmp(a, b) == RLC_EQ, end);
 		}
 		TEST_END;
 
@@ -167,7 +169,7 @@ int util(void) {
 	return code;
 }
 
-int addition(void) {
+static int addition(void) {
 	int code = RLC_ERR;
 	ep_t a, b, c, d, e;
 
@@ -189,8 +191,6 @@ int addition(void) {
 			ep_rand(b);
 			ep_add(d, a, b);
 			ep_add(e, b, a);
-			ep_norm(d, d);
-			ep_norm(e, e);
 			TEST_ASSERT(ep_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
@@ -209,9 +209,9 @@ int addition(void) {
 			ep_rand(a);
 			ep_set_infty(d);
 			ep_add(e, a, d);
-			TEST_ASSERT(ep_cmp(e, a) == RLC_EQ, end);
+			TEST_ASSERT(ep_cmp(a, e) == RLC_EQ, end);
 			ep_add(e, d, a);
-			TEST_ASSERT(ep_cmp(e, a) == RLC_EQ, end);
+			TEST_ASSERT(ep_cmp(a, e) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("point addition has inverse") {
@@ -226,9 +226,8 @@ int addition(void) {
 			ep_rand(a);
 			ep_rand(b);
 			ep_add(d, a, b);
-			ep_norm(d, d);
 			ep_add_basic(e, a, b);
-			TEST_ASSERT(ep_cmp(e, d) == RLC_EQ, end);
+			TEST_ASSERT(ep_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 #endif
 
@@ -237,34 +236,68 @@ int addition(void) {
 		TEST_BEGIN("point addition in projective coordinates is correct") {
 			ep_rand(a);
 			ep_rand(b);
-			ep_add_projc(a, a, b);
-			ep_rand(b);
 			ep_rand(c);
+			ep_add_projc(a, a, b);
 			ep_add_projc(b, b, c);
 			/* a and b in projective coordinates. */
 			ep_add_projc(d, a, b);
-			ep_norm(d, d);
+			/* normalize before mixing coordinates. */
 			ep_norm(a, a);
 			ep_norm(b, b);
 			ep_add(e, a, b);
-			ep_norm(e, e);
-			TEST_ASSERT(ep_cmp(e, d) == RLC_EQ, end);
+			TEST_ASSERT(ep_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 #endif
 
 		TEST_BEGIN("point addition in mixed coordinates (z2 = 1) is correct") {
 			ep_rand(a);
 			ep_rand(b);
+			/* a in projective, b in affine coordinates. */
 			ep_add_projc(a, a, b);
-			ep_rand(b);
-			/* a and b in projective coordinates. */
 			ep_add_projc(d, a, b);
-			ep_norm(d, d);
 			/* a in affine coordinates. */
 			ep_norm(a, a);
 			ep_add(e, a, b);
-			ep_norm(e, e);
-			TEST_ASSERT(ep_cmp(e, d) == RLC_EQ, end);
+			TEST_ASSERT(ep_cmp(d, e) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_BEGIN("point addition in mixed coordinates (z1,z2 = 1) is correct") {
+			ep_rand(a);
+			ep_rand(b);
+			/* a and b in affine coordinates. */
+			ep_add(d, a, b);
+			ep_add_projc(e, a, b);
+			TEST_ASSERT(ep_cmp(d, e) == RLC_EQ, end);
+		} TEST_END;
+#endif
+
+#if EP_ADD == JACOB || !defined(STRIP)
+#if !defined(EP_MIXED) || !defined(STRIP)
+		TEST_BEGIN("point addition in jacobian coordinates is correct") {
+			ep_rand(a);
+			ep_rand(b);
+			ep_rand(c);
+			ep_add_jacob(a, a, b);
+			ep_add_jacob(b, b, c);
+			/* a and b in projective coordinates. */
+			ep_add_jacob(d, a, b);
+			ep_norm(a, a);
+			ep_norm(b, b);
+			ep_add(e, a, b);
+			TEST_ASSERT(ep_cmp(d, e) == RLC_EQ, end);
+		} TEST_END;
+#endif
+
+		TEST_BEGIN("point addition in mixed coordinates (z2 = 1) is correct") {
+			ep_rand(a);
+			ep_rand(b);
+			/* a in projective, b in affine coordinates. */
+			ep_add_jacob(a, a, b);
+			ep_add_jacob(d, a, b);
+			/* a in affine coordinates. */
+			ep_norm(a, a);
+			ep_add(e, a, b);
+			TEST_ASSERT(ep_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("point addition in mixed coordinates (z1,z2 = 1) is correct") {
@@ -274,13 +307,10 @@ int addition(void) {
 			ep_norm(b, b);
 			/* a and b in affine coordinates. */
 			ep_add(d, a, b);
-			ep_norm(d, d);
-			ep_add_projc(e, a, b);
-			ep_norm(e, e);
-			TEST_ASSERT(ep_cmp(e, d) == RLC_EQ, end);
+			ep_add_jacob(e, a, b);
+			TEST_ASSERT(ep_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 #endif
-
 	}
 	CATCH_ANY {
 		ERROR(end);
@@ -295,7 +325,7 @@ int addition(void) {
 	return code;
 }
 
-int subtraction(void) {
+static int subtraction(void) {
 	int code = RLC_ERR;
 	ep_t a, b, c, d;
 
@@ -334,68 +364,6 @@ int subtraction(void) {
 			TEST_ASSERT(ep_is_infty(c), end);
 		}
 		TEST_END;
-
-#if EP_ADD == BASIC || !defined(STRIP)
-		TEST_BEGIN("point subtraction in affine coordinates is correct") {
-			ep_rand(a);
-			ep_rand(b);
-			ep_sub(c, a, b);
-			ep_norm(c, c);
-			ep_sub_basic(d, a, b);
-			TEST_ASSERT(ep_cmp(c, d) == RLC_EQ, end);
-		} TEST_END;
-#endif
-
-#if EP_ADD == PROJC || !defined(STRIP)
-#if !defined(EP_MIXED) || !defined(STRIP)
-		TEST_BEGIN("point subtraction in projective coordinates is correct") {
-			ep_rand(a);
-			ep_rand(b);
-			ep_add_projc(a, a, b);
-			ep_rand(b);
-			ep_rand(c);
-			ep_add_projc(b, b, c);
-			/* a and b in projective coordinates. */
-			ep_sub_projc(c, a, b);
-			ep_norm(c, c);
-			ep_norm(a, a);
-			ep_norm(b, b);
-			ep_sub(d, a, b);
-			ep_norm(d, d);
-			TEST_ASSERT(ep_cmp(c, d) == RLC_EQ, end);
-		} TEST_END;
-#endif
-
-		TEST_BEGIN("point subtraction in mixed coordinates (z2 = 1) is correct") {
-			ep_rand(a);
-			ep_rand(b);
-			ep_add_projc(a, a, b);
-			ep_rand(b);
-			/* a and b in projective coordinates. */
-			ep_sub_projc(c, a, b);
-			ep_norm(c, c);
-			/* a in affine coordinates. */
-			ep_norm(a, a);
-			ep_sub(d, a, b);
-			ep_norm(d, d);
-			TEST_ASSERT(ep_cmp(c, d) == RLC_EQ, end);
-		} TEST_END;
-
-		TEST_BEGIN
-				("point subtraction in mixed coordinates (z1,z2 = 1) is correct")
-		{
-			ep_rand(a);
-			ep_rand(b);
-			ep_norm(a, a);
-			ep_norm(b, b);
-			/* a and b in affine coordinates. */
-			ep_sub(c, a, b);
-			ep_norm(c, c);
-			ep_sub_projc(d, a, b);
-			ep_norm(d, d);
-			TEST_ASSERT(ep_cmp(c, d) == RLC_EQ, end);
-		} TEST_END;
-#endif
 	}
 	CATCH_ANY {
 		ERROR(end);
@@ -409,7 +377,7 @@ int subtraction(void) {
 	return code;
 }
 
-int doubling(void) {
+static int doubling(void) {
 	int code = RLC_ERR;
 	ep_t a, b, c;
 
@@ -433,7 +401,6 @@ int doubling(void) {
 		TEST_BEGIN("point doubling in affine coordinates is correct") {
 			ep_rand(a);
 			ep_dbl(b, a);
-			ep_norm(b, b);
 			ep_dbl_basic(c, a);
 			TEST_ASSERT(ep_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
@@ -442,13 +409,11 @@ int doubling(void) {
 #if EP_ADD == PROJC || !defined(STRIP)
 		TEST_BEGIN("point doubling in projective coordinates is correct") {
 			ep_rand(a);
-			ep_dbl_projc(a, a);
 			/* a in projective coordinates. */
+			ep_dbl_projc(a, a);
 			ep_dbl_projc(b, a);
-			ep_norm(b, b);
 			ep_norm(a, a);
 			ep_dbl(c, a);
-			ep_norm(c, c);
 			TEST_ASSERT(ep_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
@@ -457,7 +422,26 @@ int doubling(void) {
 			ep_dbl_projc(b, a);
 			ep_norm(b, b);
 			ep_dbl(c, a);
-			ep_norm(c, c);
+			TEST_ASSERT(ep_cmp(b, c) == RLC_EQ, end);
+		} TEST_END;
+#endif
+
+#if EP_ADD == PROJC || !defined(STRIP)
+		TEST_BEGIN("point doubling in jacobian coordinates is correct") {
+			ep_rand(a);
+			/* a in projective coordinates. */
+			ep_dbl_jacob(a, a);
+			ep_dbl_jacob(b, a);
+			ep_norm(a, a);
+			ep_dbl(c, a);
+			TEST_ASSERT(ep_cmp(b, c) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_BEGIN("point doubling in mixed coordinates (z1 = 1) is correct") {
+			ep_rand(a);
+			ep_dbl_jacob(b, a);
+			ep_norm(b, b);
+			ep_dbl(c, a);
 			TEST_ASSERT(ep_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 #endif
@@ -563,7 +547,7 @@ static int multiplication(void) {
 #endif
 
 #if EP_MUL == MONTY || !defined(STRIP)
-		TEST_BEGIN("montgomery laddering point multiplication is correct") {
+		TEST_BEGIN("montgomery ladder point multiplication is correct") {
 			bn_zero(k);
 			ep_mul_monty(r, p, k);
 			TEST_ASSERT(ep_is_infty(r), end);

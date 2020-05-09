@@ -56,7 +56,7 @@
  */
 #if EP_ADD == BASIC
 #define pp_add_k2(L, R, P, Q)		pp_add_k2_basic(L, R, P, Q)
-#elif EP_ADD == PROJC
+#else
 #define pp_add_k2(L, R, P, Q)		pp_add_k2_projc(L, R, P, Q)
 #endif
 
@@ -72,7 +72,7 @@
  */
 #if PP_EXT == BASIC
 #define pp_add_k2_projc(L, R, P, Q)		pp_add_k2_projc_basic(L, R, P, Q)
-#elif PP_EXT == LAZYR
+#else
 #define pp_add_k2_projc(L, R, P, Q)		pp_add_k2_projc_lazyr(L, R, P, Q)
 #endif
 
@@ -87,7 +87,7 @@
  */
 #if EP_ADD == BASIC
 #define pp_add_k8(L, R, Q, P)		pp_add_k8_basic(L, R, Q, P)
-#elif EP_ADD == PROJC
+#else
 #define pp_add_k8(L, R, Q, P)		pp_add_k8_projc(L, R, Q, P)
 #endif
 
@@ -118,7 +118,7 @@
  */
 #if EP_ADD == BASIC
 #define pp_add_k12(L, R, Q, P)		pp_add_k12_basic(L, R, Q, P)
-#elif EP_ADD == PROJC
+#else
 #define pp_add_k12(L, R, Q, P)		pp_add_k12_projc(L, R, Q, P)
 #endif
 
@@ -149,7 +149,7 @@
  */
 #if EP_ADD == BASIC
 #define pp_add_k48(L, RX, RY, RZ, QX, QY, P)	pp_add_k48_basic(L, RX, RY, QX, QY, P)
-#elif EP_ADD == PROJC
+#else
 #define pp_add_k48(L, RX, RY, RZ, QX, QY, P)	pp_add_k48_projc(L, RX, RY, RZ, QX, QY, P)
 #endif
 
@@ -164,7 +164,7 @@
  */
 #if EP_ADD == BASIC
 #define pp_add_k54(L, RX, RY, RZ, QX, QY, P)	pp_add_k54_basic(L, RX, RY, QX, QY, P)
-#elif EP_ADD == PROJC
+#else
 #define pp_add_k54(L, RX, RY, RZ, QX, QY, P)	pp_add_k54_projc(L, RX, RY, RZ, QX, QY, P)
 #endif
 
@@ -179,7 +179,7 @@
  */
 #if EP_ADD == BASIC
 #define pp_dbl_k2(L, R, P, Q)			pp_dbl_k2_basic(L, R, P, Q)
-#elif EP_ADD == PROJC
+#else
 #define pp_dbl_k2(L, R, P, Q)			pp_dbl_k2_projc(L, R, P, Q)
 #endif
 
@@ -194,7 +194,7 @@
  */
 #if EP_ADD == BASIC
 #define pp_dbl_k8(L, R, Q, P)			pp_dbl_k8_basic(L, R, Q, P)
-#elif EP_ADD == PROJC
+#else
 #define pp_dbl_k8(L, R, Q, P)			pp_dbl_k8_projc(L, R, Q, P)
 #endif
 
@@ -209,7 +209,7 @@
  */
 #if EP_ADD == BASIC
 #define pp_dbl_k12(L, R, Q, P)			pp_dbl_k12_basic(L, R, Q, P)
-#elif EP_ADD == PROJC
+#else
 #define pp_dbl_k12(L, R, Q, P)			pp_dbl_k12_projc(L, R, Q, P)
 #endif
 
@@ -272,7 +272,7 @@
  */
 #if EP_ADD == BASIC
 #define pp_dbl_k48(L, RX, RY, RZ, P)	pp_dbl_k48_basic(L, RX, RY, P)
-#elif EP_ADD == PROJC
+#else
 #define pp_dbl_k48(L, RX, RY, RZ, P)	pp_dbl_k48_projc(L, RX, RY, RZ, P)
 #endif
 
@@ -287,7 +287,7 @@
  */
 #if EP_ADD == BASIC
 #define pp_dbl_k54(L, RX, RY, RZ, P)	pp_dbl_k54_basic(L, RX, RY, P)
-#elif EP_ADD == PROJC
+#else
 #define pp_dbl_k54(L, RX, RY, RZ, P)	pp_dbl_k54_projc(L, RX, RY, RZ, P)
 #endif
 

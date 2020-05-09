@@ -76,7 +76,7 @@ static inline int fp_sgn0(const fp_t t, bn_t k) {
 	return bn_get_bit(k, 0);
 }
 
-void ep_map_impl(ep_t p, const uint8_t *msg, int len, const uint8_t *dst, int dst_len) {
+static void ep_map_impl(ep_t p, const uint8_t *msg, int len, const uint8_t *dst, int dst_len) {
 	bn_t k;
 	fp_t t;
 	ep_t q;

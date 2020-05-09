@@ -215,7 +215,7 @@ void pp_dbl_k12_projc_basic(fp12_t l, ep2_t r, ep2_t q, ep_t p) {
 			fp_mul(l[zero][zero][0], t5[0], p->y);
 			fp_mul(l[zero][zero][1], t5[1], p->y);
 		}
-		r->norm = 0;
+		r->coord = PROJC;
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
@@ -381,7 +381,7 @@ void pp_dbl_k12_projc_lazyr(fp12_t l, ep2_t r, ep2_t q, ep_t p) {
 			fp_mul(l[zero][zero][0], t5[0], p->y);
 			fp_mul(l[zero][zero][1], t5[1], p->y);
 		}
-		r->norm = 0;
+		r->coord = PROJC;
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
@@ -456,7 +456,7 @@ void pp_dbl_lit_k12(fp12_t l, ep_t r, ep_t p, ep2_t q) {
 		fp_mul(r->z, t1, t5);
 		fp_dbl(r->z, r->z);
 		fp_dbl(r->z, r->z);
-		r->norm = 0;
+		r->coord = PROJC;
 
 		if (ep2_curve_is_twist() == EP_MTYPE) {
 			one ^= 1;

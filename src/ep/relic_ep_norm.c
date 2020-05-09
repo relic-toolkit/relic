@@ -35,33 +35,45 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-#if EP_ADD == PROJC || !defined(STRIP)
+#if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
 
 /**
  * Normalizes a point represented in projective coordinates.
  *
  * @param r			- the result.
  * @param p			- the point to normalize.
+ * @param inv		- the flag to indicate if z is already inverted.
  */
-static void ep_norm_imp(ep_t r, const ep_t p, int inverted) {
-	if (!p->norm) {
+static void ep_norm_imp(ep_t r, const ep_t p, int inv) {
+	if (p->coord != BASIC) {
 		fp_t t;
 
 		fp_null(t);
 
 		TRY {
-
 			fp_new(t);
 
-			if (inverted) {
+			if (inv) {
 				fp_copy(r->z, p->z);
 			} else {
 				fp_inv(r->z, p->z);
 			}
-			fp_sqr(t, r->z);
-			fp_mul(r->x, p->x, t);
-			fp_mul(t, t, r->z);
-			fp_mul(r->y, p->y, t);
+
+			switch (p->coord) {
+				case PROJC:
+					fp_mul(r->x, p->x, r->z);
+					fp_mul(r->y, p->y, r->z);
+					break;
+				case JACOB:
+					fp_sqr(t, r->z);
+					fp_mul(r->x, p->x, t);
+					fp_mul(t, t, r->z);
+					fp_mul(r->y, p->y, t);
+					break;
+				default:
+					ep_copy(r, p);
+					break;
+			}
 			fp_set_dig(r->z, 1);
 		}
 		CATCH_ANY {
@@ -72,7 +84,7 @@ static void ep_norm_imp(ep_t r, const ep_t p, int inverted) {
 		}
 	}
 
-	r->norm = 1;
+	r->coord = BASIC;
 }
 
 #endif /* EP_ADD == PROJC */
@@ -87,12 +99,12 @@ void ep_norm(ep_t r, const ep_t p) {
 		return;
 	}
 
-	if (p->norm) {
+	if (p->coord == BASIC) {
 		/* If the point is represented in affine coordinates, just copy it. */
 		ep_copy(r, p);
 		return;
 	}
-#if EP_ADD == PROJC || !defined(STRIP)
+#if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
 	ep_norm_imp(r, p, 0);
 #endif /* EP_ADD == PROJC */
 }
