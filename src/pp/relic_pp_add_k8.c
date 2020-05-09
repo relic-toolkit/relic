@@ -156,7 +156,7 @@ void pp_add_k8_projc_basic(fp8_t l, ep2_t r, ep2_t q, ep_t p) {
 		fp2_dbl(r->z, r->z);
 		fp2_copy(r->x, t5);
 
-		r->norm = 0;
+		r->coord = PROJC;
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
@@ -249,7 +249,7 @@ void pp_add_k8_projc_lazyr(fp8_t l, ep2_t r, ep2_t q, ep_t p) {
 		fp2_dbl(r->z, r->z);
 		fp2_copy(r->x, t5);
 
-		r->norm = 0;
+		r->coord = PROJC;
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);

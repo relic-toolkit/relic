@@ -135,7 +135,7 @@ void pp_add_k2_projc_basic(fp2_t l, ep_t r, ep_t p, ep_t q) {
 
 		fp_hlv(r->y, t1);
 
-		r->norm = 0;
+		r->coord = PROJC;
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
@@ -223,7 +223,7 @@ void pp_add_k2_projc_lazyr(fp2_t l, ep_t r, ep_t p, ep_t q) {
 
 		fp_hlv(r->y, t1);
 
-		r->norm = 0;
+		r->coord = PROJC;
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);

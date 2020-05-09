@@ -46,7 +46,7 @@
  * @param p			- the point to normalize.
  */
 static void ed_norm_imp(ed_t r, const ed_t p, int inverted) {
-	if (!p->norm) {
+	if (!p->coord) {
 		if (inverted) {
 			fp_copy(r->z, p->z);
 		} else {
@@ -59,7 +59,7 @@ static void ed_norm_imp(ed_t r, const ed_t p, int inverted) {
 #endif
 		fp_set_dig(r->z, 1);
 
-		r->norm = 1;
+		r->coord = BASIC;
 	}
 }
 
@@ -75,7 +75,7 @@ void ed_norm(ed_t r, const ed_t p) {
 		return;
 	}
 
-	if (p->norm) {
+	if (p->coord) {
 		/* If the point is represented in affine coordinates, just copy it. */
 		ed_copy(r, p);
 		return;

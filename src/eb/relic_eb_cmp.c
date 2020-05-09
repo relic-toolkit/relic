@@ -24,59 +24,66 @@
 /**
  * @file
  *
- * Implementation of the Frobenius map on binary elliptic curves.
+ * Implementation of the binary elliptic curve point comparison.
  *
  * @ingroup eb
  */
 
-#include "string.h"
-
 #include "relic_core.h"
 #include "relic_eb.h"
+#include "relic_conf.h"
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
-#if defined(EB_KBLTZ)
+int eb_cmp(const eb_t p, const eb_t q) {
+    eb_t r, s;
+    int result = RLC_EQ;
 
-#if EB_ADD == BASIC || !defined(STRIP)
+    eb_null(r);
+    eb_null(s);
 
-void eb_frb_basic(eb_t r, const eb_t p) {
-	if (eb_is_infty(p)) {
-		eb_set_infty(r);
-		return;
-	}
+    TRY {
+        eb_new(r);
+        eb_new(s);
 
-	fb_sqr(r->x, p->x);
-	fb_sqr(r->y, p->y);
-	fb_zero(r->z);
-	fb_set_bit(r->z, 0, 1);
+        if ((p->coord == PROJC) && (q->coord == PROJC)) {
+            /* If the two points are not normalized, it is faster to compare
+             * x1 * z2 == x2 * z1 and y1 * z2^2 == y2 * z1^2. */
+            fb_mul(r->x, p->x, q->z);
+            fb_mul(s->x, q->x, p->z);
+            fb_sqr(r->z, p->z);
+            fb_sqr(s->z, q->z);
+            fb_mul(r->y, p->y, s->z);
+            fb_mul(s->y, q->y, r->z);
+        } else {
+            if (p->coord == BASIC) {
+                eb_copy(r, p);
+            } else {
+                eb_norm(r, p);
+            }
 
-	r->coord = BASIC;
+            if (q->coord == BASIC) {
+                eb_copy(s, q);
+            } else {
+                eb_norm(s, q);
+            }
+        }
+
+        if (fb_cmp(r->x, s->x) != RLC_EQ) {
+            result = RLC_NE;
+        }
+
+        if (fb_cmp(r->y, s->y) != RLC_EQ) {
+            result = RLC_NE;
+        }
+    } CATCH_ANY {
+        THROW(ERR_CAUGHT);
+    } FINALLY {
+        eb_free(r);
+        eb_free(s);
+    }
+
+    return result;
 }
-
-#endif
-
-#if EB_ADD == PROJC || !defined(STRIP)
-
-void eb_frb_projc(eb_t r, const eb_t p) {
-	if (eb_is_infty(p)) {
-		eb_set_infty(r);
-		return;
-	}
-
-	fb_sqr(r->x, p->x);
-	fb_sqr(r->y, p->y);
-	if (p->coord != BASIC) {
-		fb_sqr(r->z, p->z);
-	} else {
-		fb_set_dig(r->z, 1);
-	}
-
-	r->coord = p->coord;
-}
-
-#endif
-
-#endif

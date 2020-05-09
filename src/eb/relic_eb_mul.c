@@ -131,7 +131,7 @@ static void eb_mul_lnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 			eb_new(t[i]);
 			eb_set_infty(t[i]);
 			fb_set_dig(t[i]->z, 1);
-			t[i]->norm = 1;
+			t[i]->coord = BASIC;
 		}
 
 		/* Compute the precomputation table. */
@@ -453,7 +453,7 @@ static void eb_mul_rtnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 
 		/* Add accumulators */
 		for (i = 1; i < (1 << (EB_WIDTH - 2)); i++) {
-			if (r->norm) {
+			if (r->coord == BASIC) {
 				eb_add(r, t[i], r);
 			} else {
 				eb_add(r, r, t[i]);
@@ -579,7 +579,7 @@ static void eb_mul_rnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 
 		/* Add accumulators */
 		for (i = 1; i < (1 << (EB_WIDTH - 2)); i++) {
-			if (r->norm) {
+			if (r->coord == BASIC) {
 				eb_add(r, t[i], r);
 			} else {
 				eb_add(r, r, t[i]);
@@ -811,7 +811,7 @@ void eb_mul_lodah(eb_t r, const eb_t p, const bn_t k) {
 			}
 		}
 
-		r->norm = 1;
+		r->coord = BASIC;
 		if (bn_sign(k) == RLC_NEG) {
 			eb_neg(r, r);
 		}
@@ -998,7 +998,7 @@ void eb_mul_halve(eb_t r, const eb_t p, const bn_t k) {
 					fb_mul(w, w, z);
 					fb_srt(s->x, w);
 					fb_set_dig(s->z, 1);
-					s->norm = 2;
+					s->coord = HALVE;
 				}
 				eb_copy(q, s);
 			}

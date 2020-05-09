@@ -268,47 +268,6 @@ static void arith(void) {
 	}
 	BENCH_END;
 
-#if EP_ADD == BASIC || !defined(STRIP)
-	BENCH_BEGIN("ep2_sub_basic") {
-		ep2_rand(p);
-		ep2_rand(q);
-		BENCH_ADD(ep2_sub_basic(r, p, q));
-	}
-	BENCH_END;
-#endif
-
-#if EP_ADD == PROJC || !defined(STRIP)
-	BENCH_BEGIN("ep2_sub_projc") {
-		ep2_rand(p);
-		ep2_rand(q);
-		ep2_add_projc(p, p, q);
-		ep2_rand(q);
-		ep2_rand(p);
-		ep2_add_projc(q, q, p);
-		BENCH_ADD(ep2_sub_projc(r, p, q));
-	}
-	BENCH_END;
-
-	BENCH_BEGIN("ep2_sub_projc (z2 = 1)") {
-		ep2_rand(p);
-		ep2_rand(q);
-		ep2_add_projc(p, p, q);
-		ep2_rand(q);
-		ep2_norm(q, q);
-		BENCH_ADD(ep2_sub_projc(r, p, q));
-	}
-	BENCH_END;
-
-	BENCH_BEGIN("ep2_sub_projc (z1,z2 = 1)") {
-		ep2_rand(p);
-		ep2_norm(p, p);
-		ep2_rand(q);
-		ep2_norm(q, q);
-		BENCH_ADD(ep2_sub_projc(r, p, q));
-	}
-	BENCH_END;
-#endif
-
 	BENCH_BEGIN("ep2_dbl") {
 		ep2_rand(p);
 		ep2_rand(q);
@@ -355,24 +314,6 @@ static void arith(void) {
 		BENCH_ADD(ep2_neg(r, p));
 	}
 	BENCH_END;
-
-#if EP_ADD == BASIC || !defined(STRIP)
-	BENCH_BEGIN("ep2_neg_basic") {
-		ep2_rand(p);
-		BENCH_ADD(ep2_neg_basic(r, p));
-	}
-	BENCH_END;
-#endif
-
-#if EP_ADD == PROJC || !defined(STRIP)
-	BENCH_BEGIN("ep2_neg_projc") {
-		ep2_rand(p);
-		ep2_rand(q);
-		ep2_add_projc(p, p, q);
-		BENCH_ADD(ep2_neg_projc(r, p));
-	}
-	BENCH_END;
-#endif
 
 	BENCH_BEGIN("ep2_mul") {
 		bn_rand_mod(k, n);

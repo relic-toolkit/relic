@@ -96,7 +96,7 @@ static void ep2_add_basic_imp(ep2_t r, fp2_t s, ep2_t p, ep2_t q) {
 				fp2_copy(s, t2);
 			}
 
-			r->norm = 1;
+			r->coord = BASIC;
 		}
 	}
 	CATCH_ANY {
@@ -144,7 +144,7 @@ static void ep2_add_projc_mix(ep2_t r, ep2_t p, ep2_t q) {
 		fp2_new(t5);
 		fp2_new(t6);
 
-		if (!p->norm) {
+		if (p->coord != BASIC) {
 			/* t0 = z1^2. */
 			fp2_sqr(t0, p->z);
 
@@ -199,7 +199,7 @@ static void ep2_add_projc_mix(ep2_t r, ep2_t p, ep2_t q) {
 			fp2_mul(t1, p->y, t5);
 			fp2_sub(r->y, t4, t1);
 
-			if (!p->norm) {
+			if (p->coord != BASIC) {
 				/* z3 = z1 * H. */
 				fp2_mul(r->z, p->z, t3);
 			} else {
@@ -207,7 +207,7 @@ static void ep2_add_projc_mix(ep2_t r, ep2_t p, ep2_t q) {
 				fp2_copy(r->z, t3);
 			}
 		}
-		r->norm = 0;
+		r->coord = PROJC;
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
@@ -256,7 +256,7 @@ static void ep2_add_projc_imp(ep2_t r, ep2_t p, ep2_t q) {
 		fp2_new(t5);
 		fp2_new(t6);
 
-		if (q->norm) {
+		if (q->coord == BASIC) {
 			ep2_add_projc_mix(r, p, q);
 		} else {
 			/* t0 = z1^2. */
@@ -330,7 +330,7 @@ static void ep2_add_projc_imp(ep2_t r, ep2_t p, ep2_t q) {
 				fp2_mul(r->z, r->z, t3);
 			}
 		}
-		r->norm = 0;
+		r->coord = PROJC;
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
@@ -383,32 +383,6 @@ void ep2_add_slp_basic(ep2_t r, fp2_t s, ep2_t p, ep2_t q) {
 	ep2_add_basic_imp(r, s, p, q);
 }
 
-void ep2_sub_basic(ep2_t r, ep2_t p, ep2_t q) {
-	ep2_t t;
-
-	ep2_null(t);
-
-	if (p == q) {
-		ep2_set_infty(r);
-		return;
-	}
-
-	TRY {
-		ep2_new(t);
-
-		ep2_neg_basic(t, q);
-		ep2_add_basic(r, p, t);
-
-		r->norm = 1;
-	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	}
-	FINALLY {
-		ep2_free(t);
-	}
-}
-
 #endif
 
 #if EP_ADD == PROJC || !defined(STRIP)
@@ -433,7 +407,9 @@ void ep2_add_projc(ep2_t r, ep2_t p, ep2_t q) {
 	ep2_add_projc_imp(r, p, q);
 }
 
-void ep2_sub_projc(ep2_t r, ep2_t p, ep2_t q) {
+#endif
+
+void ep2_sub(ep2_t r, ep2_t p, ep2_t q) {
 	ep2_t t;
 
 	ep2_null(t);
@@ -446,8 +422,8 @@ void ep2_sub_projc(ep2_t r, ep2_t p, ep2_t q) {
 	TRY {
 		ep2_new(t);
 
-		ep2_neg_projc(t, q);
-		ep2_add_projc(r, p, t);
+		ep2_neg(t, q);
+		ep2_add(r, p, t);
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
@@ -456,5 +432,3 @@ void ep2_sub_projc(ep2_t r, ep2_t p, ep2_t q) {
 		ep2_free(t);
 	}
 }
-
-#endif

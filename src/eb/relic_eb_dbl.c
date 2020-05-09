@@ -98,7 +98,7 @@ static void eb_dbl_basic_imp(eb_t r, const eb_t p) {
 
 		fb_copy(r->z, p->z);
 
-		r->norm = 1;
+		r->coord = BASIC;
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
@@ -136,7 +136,7 @@ static void eb_dbl_projc_imp(eb_t r, const eb_t p) {
 		/* C = B + y1. */
 		fb_add(r->y, t0, p->y);
 
-		if (!p->norm) {
+		if (p->coord != BASIC) {
 			/* A = x1 * z1. */
 			fb_mul(t1, p->x, p->z);
 			/* z3 = A^2. */
@@ -182,7 +182,7 @@ static void eb_dbl_projc_imp(eb_t r, const eb_t p) {
 		fb_mul(r->y, t1, r->x);
 		fb_add(r->y, r->y, t0);
 
-		r->norm = 0;
+		r->coord = PROJC;
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);

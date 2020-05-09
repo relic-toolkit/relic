@@ -78,7 +78,7 @@ static void eb_mul_sim_kbltz(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 				eb_new(t0[i]);
 				eb_set_infty(t0[i]);
 				fb_set_bit(t0[i]->z, 0, 1);
-				t0[i]->norm = 1;
+				t0[i]->coord = BASIC;
 			}
 			eb_tab(t0, p, EB_WIDTH);
 			t = (const eb_t *)t0;
@@ -89,7 +89,7 @@ static void eb_mul_sim_kbltz(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 			eb_new(t1[i]);
 			eb_set_infty(t1[i]);
 			fb_set_bit(t1[i]->z, 0, 1);
-			t1[i]->norm = 1;
+			t1[i]->coord = BASIC;
 		}
 		/* Compute the precomputation table. */
 		eb_tab(t1, q, EB_WIDTH);

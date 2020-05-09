@@ -41,7 +41,7 @@ void ep_pck(ep_t r, const ep_t p) {
 	fp_zero(r->y);
 	fp_set_bit(r->y, 0, b);
 	fp_set_dig(r->z, 1);
-	r->norm = 1;
+	r->coord = BASIC;
 }
 
 int ep_upk(ep_t r, const ep_t p) {
@@ -67,7 +67,7 @@ int ep_upk(ep_t r, const ep_t p) {
 			fp_copy(r->x, p->x);
 			fp_copy(r->y, t);
 			fp_set_dig(r->z, 1);
-			r->norm = 1;
+			r->coord = BASIC;
 		}
 	}
 	CATCH_ANY {

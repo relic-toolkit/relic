@@ -221,8 +221,8 @@ typedef struct {
 	fp_st y;
 	/** The third coordinate (projective representation). */
 	fp_st z;
-	/** Flag to indicate that this point is normalized. */
-	int norm;
+	/** Flag to indicate the coordinate system of this point. */
+	int coord;
 } ep_st;
 
 
@@ -325,18 +325,6 @@ typedef iso_st *iso_t;
 #endif
 
 /**
- * Negates a prime elliptic curve point. Computes R = -P.
- *
- * @param[out] R			- the result.
- * @param[in] P				- the point to negate.
- */
-#if EP_ADD == BASIC
-#define ep_neg(R, P)		ep_neg_basic(R, P)
-#elif EP_ADD == PROJC
-#define ep_neg(R, P)		ep_neg_projc(R, P)
-#endif
-
-/**
  * Adds two prime elliptic curve points. Computes R = P + Q.
  *
  * @param[out] R			- the result.
@@ -347,19 +335,8 @@ typedef iso_st *iso_t;
 #define ep_add(R, P, Q)		ep_add_basic(R, P, Q)
 #elif EP_ADD == PROJC
 #define ep_add(R, P, Q)		ep_add_projc(R, P, Q)
-#endif
-
-/**
- * Subtracts a prime elliptic curve point from another. Computes R = P - Q.
- *
- * @param[out] R			- the result.
- * @param[in] P				- the first point.
- * @param[in] Q				- the second point.
- */
-#if EP_ADD == BASIC
-#define ep_sub(R, P, Q)		ep_sub_basic(R, P, Q)
-#elif EP_ADD == PROJC
-#define ep_sub(R, P, Q)		ep_sub_projc(R, P, Q)
+#elif EP_ADD == JACOB
+#define ep_add(R, P, Q)		ep_add_jacob(R, P, Q)
 #endif
 
 /**
@@ -372,6 +349,8 @@ typedef iso_st *iso_t;
 #define ep_dbl(R, P)		ep_dbl_basic(R, P)
 #elif EP_ADD == PROJC
 #define ep_dbl(R, P)		ep_dbl_projc(R, P)
+#elif EP_ADD == JACOB
+#define ep_dbl(R, P)		ep_dbl_jacob(R, P)
 #endif
 
 /**
@@ -462,18 +441,25 @@ void ep_curve_init(void);
 void ep_curve_clean(void);
 
 /**
- * Returns the 'a' coefficient of the currently configured prime elliptic curve.
+ * Returns the a-coefficient of the currently configured prime elliptic curve.
  *
- * @return the 'a' coefficient of the elliptic curve.
+ * @return the a-coefficient of the elliptic curve.
  */
 dig_t *ep_curve_get_a(void);
 
 /**
- * Returns the 'b' coefficient of the currently configured prime elliptic curve.
+ * Returns the b-coefficient of the currently configured prime elliptic curve.
  *
- * @return the 'b' coefficient of the elliptic curve.
+ * @return the b-coefficient of the elliptic curve.
  */
 dig_t *ep_curve_get_b(void);
+
+/**
+ * Returns the b3 = 3*b value used in elliptic curve arithmetic.
+ *
+ * @return the value b3 used in elliptic curve arithmetic.
+ */
+dig_t *ep_curve_get_b3(void);
 
 /**
  * Returns the efficient endormorphism associated with the prime curve.
@@ -491,19 +477,49 @@ void ep_curve_get_v1(bn_t v[]);
 void ep_curve_get_v2(bn_t v[]);
 
 /**
- * Returns a optimization identifier based on the 'a' coefficient of the curve.
+ * Returns a optimization identifier based on the a-coefficient of the curve.
  *
  * @return the optimization identifier.
  */
 int ep_curve_opt_a(void);
 
 /**
- * Returns a optimization identifier based on the 'b' coefficient of the curve.
+ * Returns a optimization identifier based on the b-coefficient of the curve.
  *
  * @return the optimization identifier.
  */
 int ep_curve_opt_b(void);
 
+/**
+ * Returns a optimization identifier based on the b-coefficient of the curve.
+ *
+ * @return the optimization identifier.
+ */
+int ep_curve_opt_b3(void);
+
+/**
+ * Multiplies a field element by the a-coefficient of the curve.
+ *
+ * @param[out] c				- the result.
+ * @param[in] a					- the field element to multiply.
+ */
+void ep_curve_mul_a(fp_t c, const fp_t a);
+
+/**
+ * Multiplies a field element by the b-coefficient of the curve.
+ *
+ * @param[out] c				- the result.
+ * @param[in] a					- the field element to multiply.
+ */
+void ep_curve_mul_b(fp_t c, const fp_t a);
+
+/**
+ * Multiplies a field element by the b3 value of the curve.
+ *
+ * @param[out] c				- the result.
+ * @param[in] a					- the field element to multiply.
+ */
+void ep_curve_mul_b3(fp_t c, const fp_t a);
 /**
  * Tests if the configured prime elliptic curve is a Koblitz curve.
  *
@@ -570,8 +586,8 @@ iso_t ep_curve_get_iso(void);
  * Configures a prime elliptic curve without endomorphisms by its coefficients
  * and generator.
  *
- * @param[in] a			- the 'a' coefficient of the curve.
- * @param[in] b			- the 'b' coefficient of the curve.
+ * @param[in] a			- the a-coefficient of the curve.
+ * @param[in] b			- the b-coefficient of the curve.
  * @param[in] g			- the generator.
  * @param[in] r			- the order of the group of points.
  * @param[in] h			- the cofactor of the group order.
@@ -585,8 +601,8 @@ void ep_curve_set_plain(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
  * Configures a supersingular prime elliptic curve by its coefficients and
  * generator.
  *
- * @param[in] a			- the 'a' coefficient of the curve.
- * @param[in] b			- the 'b' coefficient of the curve.
+ * @param[in] a			- the a-coefficient of the curve.
+ * @param[in] b			- the b-coefficient of the curve.
  * @param[in] g			- the generator.
  * @param[in] r			- the order of the group of points.
  * @param[in] h			- the cofactor of the group order.
@@ -600,8 +616,8 @@ void ep_curve_set_super(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
  * Configures a prime elliptic curve with endomorphisms by its coefficients and
  * generator.
  *
- * @param[in] a			- the 'a' coefficient of the curve.
- * @param[in] b			- the 'b' coefficient of the curve.
+ * @param[in] a			- the a-coefficient of the curve.
+ * @param[in] b			- the b-coefficient of the curve.
  * @param[in] g			- the generator.
  * @param[in] r			- the order of the group of points.
  * @param[in] beta		- the constant associated with the endomorphism.
@@ -785,20 +801,12 @@ void ep_read_bin(ep_t a, const uint8_t *bin, int len);
 void ep_write_bin(uint8_t *bin, int len, const ep_t a, int pack);
 
 /**
- * Negates a prime elliptic curve point represented by affine coordinates.
+ * Negates a prime elliptic curve point.
  *
  * @param[out] r			- the result.
  * @param[in] p				- the point to negate.
  */
-void ep_neg_basic(ep_t r, const ep_t p);
-
-/**
- * Negates a prime elliptic curve point represented by projective coordinates.
- *
- * @param[out] r			- the result.
- * @param[in] p				- the point to negate.
- */
-void ep_neg_projc(ep_t r, const ep_t p);
+void ep_neg(ep_t r, const ep_t p);
 
 /**
  * Adds two prime elliptic curve points represented in affine coordinates.
@@ -830,24 +838,22 @@ void ep_add_slp_basic(ep_t r, fp_t s, const ep_t p, const ep_t q);
 void ep_add_projc(ep_t r, const ep_t p, const ep_t q);
 
 /**
- * Subtracts a prime elliptic curve point from another, both points represented
- * in affine coordinates.
+ * Adds two prime elliptic curve points represented in Jacobian coordinates.
  *
  * @param[out] r			- the result.
- * @param[in] p				- the first point.
- * @param[in] q				- the second point.
+ * @param[in] p				- the first point to add.
+ * @param[in] q				- the second point to add.
  */
-void ep_sub_basic(ep_t r, const ep_t p, const ep_t q);
+void ep_add_jacob(ep_t r, const ep_t p, const ep_t q);
 
 /**
- * Subtracts a prime elliptic curve point from another, both points represented
- * in projective coordinates.
+ * Subtracts a prime elliptic curve point from another.
  *
  * @param[out] r			- the result.
  * @param[in] p				- the first point.
  * @param[in] q				- the second point.
  */
-void ep_sub_projc(ep_t r, const ep_t p, const ep_t q);
+void ep_sub(ep_t r, const ep_t p, const ep_t q);
 
 /**
  * Doubles a prime elliptic curve point represented in affine coordinates.
@@ -876,6 +882,15 @@ void ep_dbl_slp_basic(ep_t r, fp_t s, const ep_t p);
 void ep_dbl_projc(ep_t r, const ep_t p);
 
 /**
+ * Doubles a prime elliptic curve point represented in Jacobian projective
+ * coordinates.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to double.
+ */
+void ep_dbl_jacob(ep_t r, const ep_t p);
+
+/**
  * Multiplies a prime elliptic point by an integer using the binary method.
  *
  * @param[out] r			- the result.
@@ -896,7 +911,7 @@ void ep_mul_slide(ep_t r, const ep_t p, const bn_t k);
 
 /**
  * Multiplies a prime elliptic point by an integer using the constant-time
- * Montgomery laddering point multiplication method.
+ * Montgomery ladder point multiplication method.
  *
  * @param[out] r			- the result.
  * @param[in] p				- the point to multiply.

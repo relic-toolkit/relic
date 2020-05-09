@@ -16,7 +16,8 @@ message("   ** Available prime elliptic curve methods (default = PROJC;LWNAF;COM
 
 message("      Point representation:")
 message("      EP_METHD=BASIC    Affine coordinates.")
-message("      EP_METHD=PROJC    Jacobian projective coordinates.\n")
+message("      EP_METHD=PROJC    Homogeneous projective coordinates (complete formula).")
+message("      EP_METHD=JACOB    Jacobian projective coordinates.\n")
 
 message("      Variable-base scalar multiplication:")
 message("      EP_METHD=BASIC    Binary method.")

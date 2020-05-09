@@ -108,8 +108,8 @@ typedef struct {
 	fp2_t y;
 	/** The third coordinate (projective representation). */
 	fp2_t z;
-	/** Flag to indicate that this point is normalized. */
-	int norm;
+	/** Flag to indicate the coordinate system of this point. */
+	int coord;
 } ep2_st;
 
 /**
@@ -249,19 +249,6 @@ typedef iso2_st *iso2_t;
 #endif
 
 /**
- * Negates a point in an elliptic curve over a quadratic extension field.
- * Computes R = -P.
- *
- * @param[out] R				- the result.
- * @param[in] P					- the point to negate.
- */
-#if EP_ADD == BASIC
-#define ep2_neg(R, P)			ep2_neg_basic(R, P)
-#elif EP_ADD == PROJC
-#define ep2_neg(R, P)			ep2_neg_projc(R, P)
-#endif
-
-/**
  * Adds two points in an elliptic curve over a quadratic extension field.
  * Computes R = P + Q.
  *
@@ -271,22 +258,8 @@ typedef iso2_st *iso2_t;
  */
 #if EP_ADD == BASIC
 #define ep2_add(R, P, Q)		ep2_add_basic(R, P, Q);
-#elif EP_ADD == PROJC
+#elif EP_ADD == PROJC || EP_ADD == JACOB
 #define ep2_add(R, P, Q)		ep2_add_projc(R, P, Q);
-#endif
-
-/**
- * Subtracts a point in an elliptic curve over a quadratic extension field from
- * another point in this curve. Computes R = P - Q.
- *
- * @param[out] R				- the result.
- * @param[in] P					- the first point.
- * @param[in] Q					- the second point.
- */
-#if EP_ADD == BASIC
-#define ep2_sub(R, P, Q)		ep2_sub_basic(R, P, Q)
-#elif EP_ADD == PROJC
-#define ep2_sub(R, P, Q)		ep2_sub_projc(R, P, Q)
 #endif
 
 /**
@@ -298,7 +271,7 @@ typedef iso2_st *iso2_t;
  */
 #if EP_ADD == BASIC
 #define ep2_dbl(R, P)			ep2_dbl_basic(R, P);
-#elif EP_ADD == PROJC
+#elif EP_ADD == PROJC || EP_ADD == JACOB
 #define ep2_dbl(R, P)			ep2_dbl_projc(R, P);
 #endif
 
@@ -607,16 +580,7 @@ void ep2_write_bin(uint8_t *bin, int len, ep2_t a, int pack);
  * @param[out] r			- the result.
  * @param[out] p			- the point to negate.
  */
-void ep2_neg_basic(ep2_t r, ep2_t p);
-
-/**
- * Negates a point represented in projective coordinates in an elliptic curve
- * over a quadratic exyension.
- *
- * @param[out] r			- the result.
- * @param[out] p			- the point to negate.
- */
-void ep2_neg_projc(ep2_t r, ep2_t p);
+void ep2_neg(ep2_t r, ep2_t p);
 
 /**
  * Adds to points represented in affine coordinates in an elliptic curve over a
@@ -640,16 +604,6 @@ void ep2_add_basic(ep2_t r, ep2_t p, ep2_t q);
 void ep2_add_slp_basic(ep2_t r, fp2_t s, ep2_t p, ep2_t q);
 
 /**
- * Subtracts a points represented in affine coordinates in an elliptic curve
- * over a quadratic extension from another point.
- *
- * @param[out] r			- the result.
- * @param[in] p				- the first point.
- * @param[in] q				- the point to subtract.
- */
-void ep2_sub_basic(ep2_t r, ep2_t p, ep2_t q);
-
-/**
  * Adds two points represented in projective coordinates in an elliptic curve
  * over a quadratic extension.
  *
@@ -659,15 +613,15 @@ void ep2_sub_basic(ep2_t r, ep2_t p, ep2_t q);
  */
 void ep2_add_projc(ep2_t r, ep2_t p, ep2_t q);
 
-/**
- * Subtracts a points represented in projective coordinates in an elliptic curve
- * over a quadratic extension from another point.
- *
- * @param[out] r			- the result.
- * @param[in] p				- the first point.
- * @param[in] q				- the point to subtract.
- */
-void ep2_sub_projc(ep2_t r, ep2_t p, ep2_t q);
+ /**
+  * Subtracts a point i an elliptic curve over a quadratic extension from
+  * another.
+  *
+  * @param[out] r			- the result.
+  * @param[in] p			- the first point.
+  * @param[in] q			- the point to subtract.
+  */
+ void ep2_sub(ep2_t r, ep2_t p, ep2_t q);
 
 /**
  * Doubles a points represented in affine coordinates in an elliptic curve over
@@ -718,7 +672,7 @@ void ep2_mul_slide(ep2_t r, ep2_t p, const bn_t k);
 
 /**
  * Multiplies a prime elliptic point by an integer using the constant-time
- * Montgomery laddering point multiplication method.
+ * Montgomery ladder point multiplication method.
  *
  * @param[out] r			- the result.
  * @param[in] p				- the point to multiply.

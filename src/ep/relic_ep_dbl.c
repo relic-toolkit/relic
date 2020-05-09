@@ -105,7 +105,7 @@ static void ep_dbl_basic_imp(ep_t r, fp_t s, const ep_t p) {
 		fp_copy(r->x, t0);
 		fp_copy(r->z, p->z);
 
-		r->norm = 1;
+		r->coord = BASIC;
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
@@ -131,6 +131,7 @@ static void ep_dbl_basic_imp(ep_t r, fp_t s, const ep_t p) {
 static void ep_dbl_projc_imp(ep_t r, const ep_t p) {
 	fp_t t0, t1, t2, t3, t4, t5;
 
+	fp_null(t0);
 	fp_null(t1);
 	fp_null(t2);
 	fp_null(t3);
@@ -145,7 +146,156 @@ static void ep_dbl_projc_imp(ep_t r, const ep_t p) {
 		fp_new(t4);
 		fp_new(t5);
 
-		if (!p->norm && ep_curve_opt_a() == RLC_MIN3) {
+		/* Formulas for point doubling from
+		 * "Complete addition formulas for prime order elliptic curves"
+		 * by Joost Renes, Craig Costello, and Lejla Batina
+		 * https://eprint.iacr.org/2015/1060.pdf
+		 */
+		 if (ep_curve_opt_a() == RLC_ZERO) {
+			/* Cost of 6M + 2S + 1m_3b + 9a. */
+			fp_sqr(t0, p->y);
+			fp_mul(t3, p->x, p->y);
+
+ 			if (p->coord == BASIC) {
+				/* Save 1M + 1S + 1m_b3 if z1 = 1. */
+				fp_copy(t1, p->y);
+				fp_copy(t2, ep_curve_get_b3());
+ 			} else {
+				fp_mul(t1, p->y, p->z);
+				fp_sqr(t2, p->z);
+				ep_curve_mul_b3(t2, t2);
+ 			}
+			fp_dbl(r->z, t0);
+			fp_dbl(r->z, r->z);
+			fp_dbl(r->z, r->z);
+ 			fp_mul(r->x, t2, r->z);
+			fp_add(r->y, t0, t2);
+			fp_mul(r->z, t1, r->z);
+			fp_dbl(t1, t2);
+			fp_add(t2, t1, t2);
+			fp_sub(t0, t0, t2);
+			fp_mul(r->y, t0, r->y);
+			fp_add(r->y, r->x, r->y);
+			fp_mul(r->x, t0, t3);
+			fp_dbl(r->x, r->x);
+		} else {
+			fp_sqr(t0, p->x);
+			fp_sqr(t1, p->y);
+			fp_mul(t3, p->x, p->y);
+			fp_dbl(t3, t3);
+			fp_mul(t4, p->y, p->z);
+
+			if (ep_curve_opt_a() == RLC_MIN3) {
+				/* Cost of 8M + 3S + 2mb + 21a. */
+				if (p->coord == BASIC) {
+					/* Save 1S + 1m_b + 2a if z1 = 1. */
+					fp_set_dig(t2, 3);
+					fp_copy(r->y, ep_curve_get_b());
+				} else {
+					fp_sqr(t2, p->z);
+					ep_curve_mul_b(r->y, t2);
+					fp_dbl(t5, t2);
+					fp_add(t2, t2, t5);
+				}
+				fp_mul(r->z, p->x, p->z);
+				fp_dbl(r->z, r->z);
+				fp_sub(r->y, r->y, r->z);
+				fp_dbl(r->x, r->y);
+				fp_add(r->y, r->x, r->y);
+				fp_sub(r->x, t1, r->y);
+				fp_add(r->y, t1, r->y);
+				fp_mul(r->y, r->x, r->y);
+				fp_mul(r->x, t3, r->x);
+				ep_curve_mul_b(r->z, r->z);
+				fp_sub(t3, r->z, t2);
+				fp_sub(t3, t3, t0);
+				fp_dbl(r->z, t3);
+				fp_add(t3, t3, r->z);
+				fp_dbl(r->z, t0);
+				fp_add(t0, t0, r->z);
+				fp_sub(t0, t0, t2);
+			} else {
+				/* Common cost of 8M + 3S + 3m_a + 2m_3b + 15a. */
+				if (p->coord == BASIC) {
+					/* Save 1S + 1m_b + 1m_a if z1 = 1. */
+					fp_copy(r->y, ep_curve_get_b3());
+					fp_copy(t2, ep_curve_get_a());
+				} else {
+					fp_sqr(t2, p->z);
+					ep_curve_mul_b3(r->y, t2);
+					ep_curve_mul_a(t2, t2);
+				}
+				fp_mul(r->z, p->x, p->z);
+				fp_dbl(r->z, r->z);
+				ep_curve_mul_a(r->x, r->z);
+				fp_add(r->y, r->x, r->y);
+				fp_sub(r->x, t1, r->y);
+				fp_add(r->y, t1, r->y);
+				fp_mul(r->y, r->x, r->y);
+				fp_mul(r->x, t3, r->x);
+				ep_curve_mul_b3(r->z, r->z);
+				fp_sub(t3, t0, t2);
+				ep_curve_mul_a(t3, t3);
+				fp_add(t3, t3, r->z);
+				fp_dbl(r->z, t0);
+				fp_add(t0, t0, r->z);
+				fp_add(t0, t0, t2);
+			}
+			/* Common part with renamed variables. */
+			fp_mul(t0, t0, t3);
+			fp_add(r->y, r->y, t0);
+			fp_dbl(t2, t4);
+			fp_mul(t0, t2, t3);
+			fp_sub(r->x, r->x, t0);
+			fp_mul(r->z, t2, t1);
+			fp_dbl(r->z, r->z);
+			fp_dbl(r->z, r->z);
+		}
+
+		r->coord = PROJC;
+	}
+	CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	}
+	FINALLY {
+		fp_free(t0);
+		fp_free(t1);
+		fp_free(t2);
+		fp_free(t3);
+		fp_free(t4);
+		fp_free(t5);
+	}
+}
+
+#endif /* EP_ADD == PROJC */
+
+#if EP_ADD == JACOB || !defined(STRIP)
+
+/**
+ * Doubles a point represented in Jacobian coordinates on an ordinary prime
+ * elliptic curve.
+ *
+ * @param r					- the result.
+ * @param p					- the point to double.
+ */
+static void ep_dbl_jacob_imp(ep_t r, const ep_t p) {
+	fp_t t0, t1, t2, t3, t4, t5;
+
+	fp_null(t1);
+	fp_null(t2);
+	fp_null(t3);
+	fp_null(t4);
+	fp_null(t5);
+
+	TRY {
+		fp_new(t0);
+		fp_new(t1);
+		fp_new(t2);
+		fp_new(t3);
+		fp_new(t4);
+		fp_new(t5);
+
+		if (p->coord != BASIC && ep_curve_opt_a() == RLC_MIN3) {
 			/* dbl-2001-b formulas: 3M + 5S + 8add + 1*4 + 2*8 + 1*3 */
 			/* http://www.hyperelliptic.org/EFD/g1p/auto-shortw-jacobian-3.html#doubling-dbl-2001-b */
 
@@ -236,7 +386,7 @@ static void ep_dbl_projc_imp(ep_t r, const ep_t p) {
 			fp_sqr(t1, p->y);
 			fp_sqr(t2, t1);
 
-			if (!p->norm) {
+			if (p->coord != BASIC) {
 				/* t3 = z1^2. */
 				fp_sqr(t3, p->z);
 
@@ -266,7 +416,7 @@ static void ep_dbl_projc_imp(ep_t r, const ep_t p) {
 			/* t5 = M = 3 * x1^2 + a * z1^4. */
 			fp_dbl(t5, t0);
 			fp_add(t5, t5, t0);
-			if (!p->norm) {
+			if (p->coord != BASIC) {
 				fp_sqr(t3, t3);
 				switch (ep_curve_opt_a()) {
 					case RLC_ZERO:
@@ -313,7 +463,7 @@ static void ep_dbl_projc_imp(ep_t r, const ep_t p) {
 			fp_sub(r->y, t5, t2);
 		}
 
-		r->norm = 0;
+		r->coord = JACOB;
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
@@ -328,7 +478,7 @@ static void ep_dbl_projc_imp(ep_t r, const ep_t p) {
 	}
 }
 
-#endif /* EP_ADD == PROJC */
+#endif /* EP_ADD == JACOB */
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -368,6 +518,23 @@ void ep_dbl_projc(ep_t r, const ep_t p) {
 		return;
 	}
 	ep_dbl_projc_imp(r, p);
+}
+
+#endif
+
+#if EP_ADD == JACOB || !defined(STRIP)
+
+void ep_dbl_jacob(ep_t r, const ep_t p) {
+	if (ep_is_infty(p)) {
+		ep_set_infty(r);
+		return;
+	}
+
+	if (fp_is_zero(p->x)) {
+		ep_set_infty(r);
+		return;
+	}
+	ep_dbl_jacob_imp(r, p);
 }
 
 #endif

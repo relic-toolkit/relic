@@ -119,7 +119,7 @@ void ed_map(ed_t p, const uint8_t *msg, int len) {
 #if ED_ADD == EXTND
 		fp_mul(p->t, p->x, p->y);
 #endif
-		p->norm = 1;
+		p->coord = BASIC;
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);

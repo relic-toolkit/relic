@@ -93,7 +93,7 @@ static void ep2_dbl_basic_imp(ep2_t r, fp2_t s, ep2_t p) {
 		fp2_copy(r->x, t0);
 		fp2_copy(r->z, p->z);
 
-		r->norm = 1;
+		r->coord = BASIC;
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
@@ -164,7 +164,7 @@ static void ep2_dbl_projc_imp(ep2_t r, ep2_t p) {
 			fp2_sqr(t1, p->y);
 			fp2_sqr(t2, t1);
 
-			if (!p->norm) {
+			if (p->coord != BASIC) {
 				/* t3 = z1^2. */
 				fp2_sqr(t3, p->z);
 
@@ -194,7 +194,7 @@ static void ep2_dbl_projc_imp(ep2_t r, ep2_t p) {
 			/* t5 = M = 3 * x1^2 + a * z1^4. */
 			fp2_dbl(t5, t0);
 			fp2_add(t5, t5, t0);
-			if (!p->norm) {
+			if (p->coord != BASIC) {
 				fp2_sqr(t3, t3);
 				fp2_mul(t1, t3, ep2_curve_get_a());
 				fp2_add(t5, t5, t1);
@@ -216,10 +216,7 @@ static void ep2_dbl_projc_imp(ep2_t r, ep2_t p) {
 			fp2_sub(r->y, t5, t2);
 		}
 
-		r->norm = 0;
-
-
-		r->norm = 0;
+		r->coord = PROJC;
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);

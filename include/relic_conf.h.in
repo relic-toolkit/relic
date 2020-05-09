@@ -65,7 +65,6 @@
 #define TESTS    @TESTS@
 /** Number of times each benchmark is ran. */
 #define BENCH    @BENCH@
-
 /** Number of available cores. */
 #define CORES    @CORES@
 
@@ -410,6 +409,8 @@
 #define BASIC	 1
 /** Projective coordinates. */
 #define PROJC	 2
+/** Jacobian coordinates. */
+#define JACOB	 3
 /** Chosen prime elliptic curve coordinate method. */
 #define EP_ADD	 @EP_ADD@
 

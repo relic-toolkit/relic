@@ -35,9 +35,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-#if EP_ADD == BASIC || !defined(STRIP)
-
-void ep_neg_basic(ep_t r, const ep_t p) {
+void ep_neg(ep_t r, const ep_t p) {
 	if (ep_is_infty(p)) {
 		ep_set_infty(r);
 		return;
@@ -50,27 +48,5 @@ void ep_neg_basic(ep_t r, const ep_t p) {
 
 	fp_neg(r->y, p->y);
 
-	r->norm = 1;
+	r->coord = p->coord;
 }
-
-#endif
-
-#if EP_ADD == PROJC || !defined(STRIP)
-
-void ep_neg_projc(ep_t r, const ep_t p) {
-	if (ep_is_infty(p)) {
-		ep_set_infty(r);
-		return;
-	}
-
-	if (r != p) {
-		fp_copy(r->x, p->x);
-		fp_copy(r->z, p->z);
-	}
-
-	fp_neg(r->y, p->y);
-
-	r->norm = p->norm;
-}
-
-#endif

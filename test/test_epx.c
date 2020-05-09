@@ -60,29 +60,19 @@ static int memory(void) {
 	return code;
 }
 
-int util(void) {
+static int util(void) {
 	int l, code = RLC_ERR;
 	ep2_t a, b, c;
-	bn_t n;
 	uint8_t bin[4 * RLC_FP_BYTES + 1];
 
 	ep2_null(a);
 	ep2_null(b);
 	ep2_null(c);
-	bn_null(n);
 
 	TRY {
 		ep2_new(a);
 		ep2_new(b);
 		ep2_new(c);
-		bn_new(n);
-
-		TEST_BEGIN("comparison is consistent") {
-			ep2_rand(a);
-			ep2_rand(b);
-			TEST_ASSERT(ep2_cmp(a, b) != RLC_EQ, end);
-		}
-		TEST_END;
 
 		TEST_BEGIN("copy and comparison are consistent") {
 			ep2_rand(a);
@@ -115,12 +105,12 @@ int util(void) {
 			ep2_rand(a);
 			ep2_neg(b, a);
 			TEST_ASSERT(ep2_cmp(a, b) != RLC_EQ, end);
+			ep2_neg(b, b);
+			TEST_ASSERT(ep2_cmp(a, b) == RLC_EQ, end);
 		}
 		TEST_END;
 
-		TEST_BEGIN
-				("assignment to random/infinity and comparison are consistent")
-		{
+		TEST_BEGIN("assignment to random and comparison are consistent") {
 			ep2_rand(a);
 			ep2_set_infty(c);
 			TEST_ASSERT(ep2_cmp(a, c) != RLC_EQ, end);
@@ -176,11 +166,10 @@ int util(void) {
 	ep2_free(a);
 	ep2_free(b);
 	ep2_free(c);
-	bn_free(n);
 	return code;
 }
 
-int addition(void) {
+static int addition(void) {
 	int code = RLC_ERR;
 	ep2_t a, b, c, d, e;
 
@@ -237,7 +226,6 @@ int addition(void) {
 			ep2_rand(a);
 			ep2_rand(b);
 			ep2_add(d, a, b);
-			ep2_norm(d, d);
 			ep2_add_basic(e, a, b);
 			TEST_ASSERT(ep2_cmp(e, d) == RLC_EQ, end);
 		} TEST_END;
@@ -248,48 +236,38 @@ int addition(void) {
 		TEST_BEGIN("point addition in projective coordinates is correct") {
 			ep2_rand(a);
 			ep2_rand(b);
-			ep2_add_projc(a, a, b);
-			ep2_rand(b);
 			ep2_rand(c);
+			ep2_add_projc(a, a, b);
 			ep2_add_projc(b, b, c);
-			ep2_norm(b, b);
 			/* a and b in projective coordinates. */
 			ep2_add_projc(d, a, b);
-			ep2_norm(d, d);
+			/* normalize before mixing coordinates. */
 			ep2_norm(a, a);
 			ep2_norm(b, b);
 			ep2_add(e, a, b);
-			ep2_norm(e, e);
-			TEST_ASSERT(ep2_cmp(e, d) == RLC_EQ, end);
+			TEST_ASSERT(ep2_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 #endif
 
 		TEST_BEGIN("point addition in mixed coordinates (z2 = 1) is correct") {
 			ep2_rand(a);
 			ep2_rand(b);
+			/* a in projective, b in affine coordinates. */
 			ep2_add_projc(a, a, b);
-			ep2_rand(b);
-			/* a and b in projective coordinates. */
 			ep2_add_projc(d, a, b);
-			ep2_norm(d, d);
 			/* a in affine coordinates. */
 			ep2_norm(a, a);
 			ep2_add(e, a, b);
-			ep2_norm(e, e);
-			TEST_ASSERT(ep2_cmp(e, d) == RLC_EQ, end);
+			TEST_ASSERT(ep2_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("point addition in mixed coordinates (z1,z2 = 1) is correct") {
 			ep2_rand(a);
 			ep2_rand(b);
-			ep2_norm(a, a);
-			ep2_norm(b, b);
 			/* a and b in affine coordinates. */
 			ep2_add(d, a, b);
-			ep2_norm(d, d);
 			ep2_add_projc(e, a, b);
-			ep2_norm(e, e);
-			TEST_ASSERT(ep2_cmp(e, d) == RLC_EQ, end);
+			TEST_ASSERT(ep2_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 #endif
 
@@ -307,7 +285,7 @@ int addition(void) {
 	return code;
 }
 
-int subtraction(void) {
+static int subtraction(void) {
 	int code = RLC_ERR;
 	ep2_t a, b, c, d;
 
@@ -346,68 +324,6 @@ int subtraction(void) {
 			TEST_ASSERT(ep2_is_infty(c), end);
 		}
 		TEST_END;
-
-#if EP_ADD == BASIC || !defined(STRIP)
-		TEST_BEGIN("point subtraction in affine coordinates is correct") {
-			ep2_rand(a);
-			ep2_rand(b);
-			ep2_sub(c, a, b);
-			ep2_norm(c, c);
-			ep2_sub_basic(d, a, b);
-			TEST_ASSERT(ep2_cmp(c, d) == RLC_EQ, end);
-		} TEST_END;
-#endif
-
-#if EP_ADD == PROJC || !defined(STRIP)
-#if !defined(EP_MIXED) || !defined(STRIP)
-		TEST_BEGIN("point subtraction in projective coordinates is correct") {
-			ep2_rand(a);
-			ep2_rand(b);
-			ep2_add_projc(a, a, b);
-			ep2_rand(b);
-			ep2_rand(c);
-			ep2_add_projc(b, b, c);
-			/* a and b in projective coordinates. */
-			ep2_sub_projc(c, a, b);
-			ep2_norm(c, c);
-			ep2_norm(a, a);
-			ep2_norm(b, b);
-			ep2_sub(d, a, b);
-			ep2_norm(d, d);
-			TEST_ASSERT(ep2_cmp(c, d) == RLC_EQ, end);
-		} TEST_END;
-#endif
-
-		TEST_BEGIN("point subtraction in mixed coordinates (z2 = 1) is correct") {
-			ep2_rand(a);
-			ep2_rand(b);
-			ep2_add_projc(a, a, b);
-			ep2_rand(b);
-			/* a and b in projective coordinates. */
-			ep2_sub_projc(c, a, b);
-			ep2_norm(c, c);
-			/* a in affine coordinates. */
-			ep2_norm(a, a);
-			ep2_sub(d, a, b);
-			ep2_norm(d, d);
-			TEST_ASSERT(ep2_cmp(c, d) == RLC_EQ, end);
-		} TEST_END;
-
-		TEST_BEGIN
-				("point subtraction in mixed coordinates (z1,z2 = 1) is correct")
-		{
-			ep2_rand(a);
-			ep2_rand(b);
-			ep2_norm(a, a);
-			ep2_norm(b, b);
-			/* a and b in affine coordinates. */
-			ep2_sub(c, a, b);
-			ep2_norm(c, c);
-			ep2_sub_projc(d, a, b);
-			ep2_norm(d, d);
-			TEST_ASSERT(ep2_cmp(c, d) == RLC_EQ, end);
-		} TEST_END;
-#endif
 	}
 	CATCH_ANY {
 		ERROR(end);
@@ -421,7 +337,7 @@ int subtraction(void) {
 	return code;
 }
 
-int doubling(void) {
+static int doubling(void) {
 	int code = RLC_ERR;
 	ep2_t a, b, c;
 
@@ -445,7 +361,6 @@ int doubling(void) {
 		TEST_BEGIN("point doubling in affine coordinates is correct") {
 			ep2_rand(a);
 			ep2_dbl(b, a);
-			ep2_norm(b, b);
 			ep2_dbl_basic(c, a);
 			TEST_ASSERT(ep2_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
@@ -454,13 +369,11 @@ int doubling(void) {
 #if EP_ADD == PROJC || !defined(STRIP)
 		TEST_BEGIN("point doubling in projective coordinates is correct") {
 			ep2_rand(a);
-			ep2_dbl_projc(a, a);
 			/* a in projective coordinates. */
+			ep2_dbl_projc(a, a);
 			ep2_dbl_projc(b, a);
-			ep2_norm(b, b);
 			ep2_norm(a, a);
 			ep2_dbl(c, a);
-			ep2_norm(c, c);
 			TEST_ASSERT(ep2_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
@@ -469,7 +382,6 @@ int doubling(void) {
 			ep2_dbl_projc(b, a);
 			ep2_norm(b, b);
 			ep2_dbl(c, a);
-			ep2_norm(c, c);
 			TEST_ASSERT(ep2_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 #endif
@@ -575,7 +487,7 @@ static int multiplication(void) {
 #endif
 
 #if EP_MUL == MONTY || !defined(STRIP)
-		TEST_BEGIN("montgomery laddering point multiplication is correct") {
+		TEST_BEGIN("montgomery ladder point multiplication is correct") {
 			bn_zero(k);
 			ep2_mul_monty(r, p, k);
 			TEST_ASSERT(ep2_is_infty(r), end);

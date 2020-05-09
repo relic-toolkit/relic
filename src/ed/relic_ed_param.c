@@ -104,7 +104,7 @@ void ed_param_set(int param) {
 #if ED_ADD == EXTND
 		fp_mul(g->t, g->x, g->y);
 #endif
-		g->norm = 1;
+		g->coord = BASIC;
 
 		bn_copy(&ctx->ed_h, h);
 		bn_copy(&ctx->ed_r, r);

@@ -44,57 +44,14 @@ void ep_set_infty(ep_t p) {
 	fp_zero(p->x);
 	fp_zero(p->y);
 	fp_zero(p->z);
-	p->norm = 1;
+	p->coord = BASIC;
 }
 
 void ep_copy(ep_t r, const ep_t p) {
 	fp_copy(r->x, p->x);
 	fp_copy(r->y, p->y);
 	fp_copy(r->z, p->z);
-	r->norm = p->norm;
-}
-
-int ep_cmp(const ep_t p, const ep_t q) {
-    ep_t r, s;
-    int result = RLC_EQ;
-
-    ep_null(r);
-    ep_null(s);
-
-    TRY {
-        ep_new(r);
-        ep_new(s);
-
-        if ((!p->norm) && (!q->norm)) {
-            /* If the two points are not normalized, it is faster to compare
-             * x1 * z2^2 == x2 * z1^2 and y1 * z2^3 == y2 * z1^3. */
-            fp_sqr(r->z, p->z);
-            fp_sqr(s->z, q->z);
-            fp_mul(r->x, p->x, s->z);
-            fp_mul(s->x, q->x, r->z);
-            fp_mul(r->z, r->z, p->z);
-            fp_mul(s->z, s->z, q->z);
-            fp_mul(r->y, p->y, s->z);
-            fp_mul(s->y, q->y, r->z);
-        } else {
-			ep_norm(r, p);
-			ep_norm(s, q);
-        }
-
-        if (fp_cmp(r->x, s->x) != RLC_EQ) {
-            result = RLC_NE;
-        }
-        if (fp_cmp(r->y, s->y) != RLC_EQ) {
-            result = RLC_NE;
-        }
-    } CATCH_ANY {
-        THROW(ERR_CAUGHT);
-    } FINALLY {
-        ep_free(r);
-        ep_free(s);
-    }
-
-    return result;
+	r->coord = p->coord;
 }
 
 void ep_rand(ep_t p) {
@@ -262,7 +219,7 @@ void ep_read_bin(ep_t a, const uint8_t *bin, int len) {
 		return;
 	}
 
-	a->norm = 1;
+	a->coord = BASIC;
 	fp_set_dig(a->z, 1);
 	fp_read_bin(a->x, bin + 1, RLC_FP_BYTES);
 	if (len == RLC_FP_BYTES + 1) {

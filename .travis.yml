@@ -15,6 +15,8 @@ env:
   - CONFIG="-DSEED= -DBENCH=0" TEST=""
   # Dynamic allocation
   - CONFIG="-DALLOC=DYNAMIC -DSEED= -DBENCH=0" TEST=""
+  # Jacobian coordinates
+  - CONFIG="-DSEED= -DBENCH=0 -DEP_METHD='JACOB;LWNAF;COMBS;INTER' TEST="-E test_bn|test_fp|test_ep|test_ec|test_cp"
   # Build for Edwards curves
   - CONFIG="-DSEED= -DBENCH=0 -DFP_PRIME=255 -FP_QNRES=FALSE -DEC_METHD=EDDIE -DED_METHD='PROJC;LWNAF;LWNAF;BASIC'" TEST="-E test_bn|test_fp|test_ed|test_ec|test_cp"
   # Build with Address Sanityzer

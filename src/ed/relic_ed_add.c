@@ -81,7 +81,7 @@ void ed_add_basic(ed_t r, const ed_t p, const ed_t q) {
 		fp_copy(r->x, t0);
 		fp_copy(r->z, p->z);
 
-		r->norm = 1;
+		r->coord = BASIC;
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
@@ -108,7 +108,7 @@ void ed_sub_basic(ed_t r, const ed_t p, const ed_t q) {
 
 		ed_neg_basic(t, q);
 		ed_add_basic(r, p, t);
-		r->norm = 1;
+		r->coord = BASIC;
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
@@ -180,7 +180,7 @@ void ed_add_projc(ed_t r, const ed_t p, const ed_t q) {
 		/* z3 = F * G */
 		fp_mul(r->z, t5, t6);
 
-		r->norm = 0;
+		r->coord = PROJC;
 	} CATCH_ANY {
 		THROW(ERR_CAUGHT)
 	} FINALLY {
@@ -281,7 +281,7 @@ void ed_add_extnd(ed_t r, const ed_t p, const ed_t q) {
 		fp_mul(r->t, t2, r->z);
 		fp_mul(r->z, t3, t4);
 
-		r->norm = 0;
+		r->coord = PROJC;
 	} CATCH_ANY {
 		THROW(ERR_CAUGHT)
 	} FINALLY {

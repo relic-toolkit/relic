@@ -24,59 +24,58 @@
 /**
  * @file
  *
- * Implementation of the Frobenius map on binary elliptic curves.
+ * Implementation of utilities for prime elliptic curves over quadratic
+ * extensions.
  *
- * @ingroup eb
+ * @ingroup epx
  */
 
-#include "string.h"
-
 #include "relic_core.h"
-#include "relic_eb.h"
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
-#if defined(EB_KBLTZ)
+int ep2_cmp(ep2_t p, ep2_t q) {
+    ep2_t r, s;
+    int result = RLC_EQ;
 
-#if EB_ADD == BASIC || !defined(STRIP)
+    ep2_null(r);
+    ep2_null(s);
 
-void eb_frb_basic(eb_t r, const eb_t p) {
-	if (eb_is_infty(p)) {
-		eb_set_infty(r);
-		return;
-	}
+    TRY {
+        ep2_new(r);
+        ep2_new(s);
 
-	fb_sqr(r->x, p->x);
-	fb_sqr(r->y, p->y);
-	fb_zero(r->z);
-	fb_set_bit(r->z, 0, 1);
+        if ((p->coord != BASIC) && (q->coord != BASIC)) {
+            /* If the two points are not normalized, it is faster to compare
+             * x1 * z2^2 == x2 * z1^2 and y1 * z2^3 == y2 * z1^3. */
+            fp2_sqr(r->z, p->z);
+            fp2_sqr(s->z, q->z);
+            fp2_mul(r->x, p->x, s->z);
+            fp2_mul(s->x, q->x, r->z);
+            fp2_mul(r->z, r->z, p->z);
+            fp2_mul(s->z, s->z, q->z);
+            fp2_mul(r->y, p->y, s->z);
+            fp2_mul(s->y, q->y, r->z);
+        } else {
+			ep2_norm(r, p);
+            ep2_norm(s, q);
+        }
 
-	r->coord = BASIC;
+        if (fp2_cmp(r->x, s->x) != RLC_EQ) {
+            result = RLC_NE;
+        }
+
+        if (fp2_cmp(r->y, s->y) != RLC_EQ) {
+            result = RLC_NE;
+        }
+    } CATCH_ANY {
+        THROW(ERR_CAUGHT);
+    } FINALLY {
+        ep2_free(r);
+        ep2_free(s);
+    }
+
+    return result;
 }
-
-#endif
-
-#if EB_ADD == PROJC || !defined(STRIP)
-
-void eb_frb_projc(eb_t r, const eb_t p) {
-	if (eb_is_infty(p)) {
-		eb_set_infty(r);
-		return;
-	}
-
-	fb_sqr(r->x, p->x);
-	fb_sqr(r->y, p->y);
-	if (p->coord != BASIC) {
-		fb_sqr(r->z, p->z);
-	} else {
-		fb_set_dig(r->z, 1);
-	}
-
-	r->coord = p->coord;
-}
-
-#endif
-
-#endif

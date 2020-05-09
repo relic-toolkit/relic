@@ -116,8 +116,8 @@ typedef struct {
     /** The forth coordinate (extended coordinates) */
     fp_st t;
 #endif
-    /** Flag to indicate that this point is normalized. */
-    int norm;
+    /** Flag to indicate the coordinate system of this point. */
+    int coord;
 } ed_st;
 
 /**
@@ -848,7 +848,7 @@ void ed_mul_slide(ed_t r, const ed_t p, const bn_t k);
 
 /**
  * Multiplies an Edwards elliptic point by an integer using the constant-time
- * Montgomery laddering point multiplication method.
+ * Montgomery ladder point multiplication method.
  *
  * @param[out] r			- the result.
  * @param[in] p				- the point to multiply.

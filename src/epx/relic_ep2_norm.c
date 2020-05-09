@@ -45,7 +45,7 @@
  * @param p			- the point to normalize.
  */
 static void ep2_norm_imp(ep2_t r, ep2_t p, int inverted) {
-	if (!p->norm) {
+	if (p->coord != BASIC) {
 		fp2_t t0, t1;
 
 		fp2_null(t0);
@@ -76,7 +76,7 @@ static void ep2_norm_imp(ep2_t r, ep2_t p, int inverted) {
 		}
 	}
 
-	r->norm = 1;
+	r->coord = BASIC;
 }
 
 #endif /* EP_ADD == PROJC */
@@ -91,7 +91,7 @@ void ep2_norm(ep2_t r, ep2_t p) {
 		return;
 	}
 
-	if (p->norm) {
+	if (p->coord == BASIC) {
 		/* If the point is represented in affine coordinates, we just copy it. */
 		ep2_copy(r, p);
 	}
