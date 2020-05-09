@@ -68,19 +68,21 @@ static void fp_prime_set(const bn_t p) {
 		bn_copy(&(ctx->prime), p);
 
 		#if FP_RDC == MONTY || !defined(STRIP)
-				bn_mod_pre_monty(t, &(ctx->prime));
-				ctx->u = t->dp[0];
-				dv_zero(s, 2 * RLC_FP_DIGS);
-				s[2 * RLC_FP_DIGS] = 1;
-				dv_zero(q, 2 * RLC_FP_DIGS + 1);
-				dv_copy(q, ctx->prime.dp, RLC_FP_DIGS);
-				bn_divn_low(t->dp, ctx->conv.dp, s, 2 * RLC_FP_DIGS + 1, q, RLC_FP_DIGS);
-				ctx->conv.used = RLC_FP_DIGS;
-				bn_trim(&(ctx->conv));
-				bn_set_dig(&(ctx->one), 1);
-				bn_lsh(&(ctx->one), &(ctx->one), ctx->prime.used * RLC_DIG);
-				bn_mod(&(ctx->one), &(ctx->one), &(ctx->prime));
-		#endif
+
+		bn_mod_pre_monty(t, &(ctx->prime));
+		ctx->u = t->dp[0];
+		dv_zero(s, 2 * RLC_FP_DIGS);
+		s[2 * RLC_FP_DIGS] = 1;
+		dv_zero(q, 2 * RLC_FP_DIGS + 1);
+		dv_copy(q, ctx->prime.dp, RLC_FP_DIGS);
+		bn_divn_low(t->dp, ctx->conv.dp, s, 2 * RLC_FP_DIGS + 1, q, RLC_FP_DIGS);
+		ctx->conv.used = RLC_FP_DIGS;
+		bn_trim(&(ctx->conv));
+		bn_set_dig(&(ctx->one), 1);
+		bn_lsh(&(ctx->one), &(ctx->one), ctx->prime.used * RLC_DIG);
+		bn_mod(&(ctx->one), &(ctx->one), &(ctx->prime));
+
+		#endif /* FP_RDC == MONTY */
 
 		/* Now look for proper quadratic/cubic non-residues. */
 		ctx->qnr = ctx->cnr = 0;
