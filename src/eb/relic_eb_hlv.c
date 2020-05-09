@@ -66,7 +66,7 @@ void eb_hlv(eb_t r, const eb_t p) {
 
 		fb_slv(l, t);
 
-		if (p->norm == 1) {
+		if (p->coord == BASIC) {
 			/* Compute t = v + u * lambda. */
 			fb_mul(t, l, p->x);
 			fb_add(t, t, p->y);
@@ -88,7 +88,7 @@ void eb_hlv(eb_t r, const eb_t p) {
 			fb_srt(r->x, t);
 		}
 		fb_set_dig(r->z, 1);
-		r->norm = 2;
+		r->coord = HALVE;
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);

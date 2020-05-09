@@ -41,7 +41,7 @@ void ed_pck(ed_t r, const ed_t p) {
 	fp_zero(r->x);
 	fp_set_bit(r->x, 0, b);
 	fp_set_dig(r->z, 1);
-	r->norm = 1;
+	r->coord = BASIC;
 }
 
 int ed_upk(ed_t r, const ed_t p) {
@@ -75,7 +75,7 @@ int ed_upk(ed_t r, const ed_t p) {
 		fp_mul(r->t, r->x, r->y);
 #endif
 		fp_set_dig(r->z, 1);
-		r->norm = 1;
+		r->coord = BASIC;
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);

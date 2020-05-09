@@ -158,6 +158,7 @@ static int util(void) {
 		TEST_END;
 	}
 	CATCH_ANY {
+		util_print("FATAL ERROR!\n");
 		ERROR(end);
 	}
 	code = RLC_OK;
@@ -225,7 +226,6 @@ static int addition(void) {
 			eb_rand(a);
 			eb_rand(b);
 			eb_add(d, a, b);
-			eb_norm(d, d);
 			eb_add_basic(e, a, b);
 			TEST_ASSERT(eb_cmp(e, d) == RLC_EQ, end);
 		} TEST_END;
@@ -236,47 +236,38 @@ static int addition(void) {
 		TEST_BEGIN("point addition in projective coordinates is correct") {
 			eb_rand(a);
 			eb_rand(b);
-			eb_add_projc(a, a, b);
-			eb_rand(b);
 			eb_rand(c);
+			eb_add_projc(a, a, b);
 			eb_add_projc(b, b, c);
 			/* a and b in projective coordinates. */
 			eb_add_projc(d, a, b);
-			eb_norm(d, d);
+			/* normalize before mixing coordinates. */
 			eb_norm(a, a);
 			eb_norm(b, b);
 			eb_add(e, a, b);
-			eb_norm(e, e);
-			TEST_ASSERT(eb_cmp(e, d) == RLC_EQ, end);
+			TEST_ASSERT(eb_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 #endif
 
 		TEST_BEGIN("point addition in mixed coordinates (z2 = 1) is correct") {
 			eb_rand(a);
 			eb_rand(b);
+			/* a in projective, b in affine coordinates. */
 			eb_add_projc(a, a, b);
-			eb_rand(b);
-			/* a and b in projective coordinates. */
 			eb_add_projc(d, a, b);
-			eb_norm(d, d);
 			/* a in affine coordinates. */
 			eb_norm(a, a);
 			eb_add(e, a, b);
-			eb_norm(e, e);
-			TEST_ASSERT(eb_cmp(e, d) == RLC_EQ, end);
+			TEST_ASSERT(eb_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("point addition in mixed coordinates (z1,z2 = 1) is correct") {
 			eb_rand(a);
 			eb_rand(b);
-			eb_norm(a, a);
-			eb_norm(b, b);
 			/* a and b in affine coordinates. */
 			eb_add(d, a, b);
-			eb_norm(d, d);
 			eb_add_projc(e, a, b);
-			eb_norm(e, e);
-			TEST_ASSERT(eb_cmp(e, d) == RLC_EQ, end);
+			TEST_ASSERT(eb_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 #endif
 	}
@@ -433,7 +424,6 @@ static int doubling(void) {
 		TEST_BEGIN("point doubling in affine coordinates is correct") {
 			eb_rand(a);
 			eb_dbl(b, a);
-			eb_norm(b, b);
 			eb_dbl_basic(c, a);
 			TEST_ASSERT(eb_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
@@ -442,13 +432,11 @@ static int doubling(void) {
 #if EB_ADD == PROJC || !defined(STRIP)
 		TEST_BEGIN("point doubling in projective coordinates is correct") {
 			eb_rand(a);
-			eb_dbl_projc(a, a);
 			/* a in projective coordinates. */
+			eb_dbl_projc(a, a);
 			eb_dbl_projc(b, a);
-			eb_norm(b, b);
 			eb_norm(a, a);
 			eb_dbl(c, a);
-			eb_norm(c, c);
 			TEST_ASSERT(eb_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
@@ -457,7 +445,6 @@ static int doubling(void) {
 			eb_dbl_projc(b, a);
 			eb_norm(b, b);
 			eb_dbl(c, a);
-			eb_norm(c, c);
 			TEST_ASSERT(eb_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 #endif

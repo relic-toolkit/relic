@@ -78,7 +78,7 @@ void eb_map(eb_t p, const uint8_t *msg, int len) {
 				fb_mul(p->y, t1, p->x);
 				fb_set_dig(p->z, 1);
 
-				p->norm = 1;
+				p->coord = BASIC;
 				break;
 			}
 		}

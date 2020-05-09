@@ -109,7 +109,7 @@ static void eb_add_basic_imp(eb_t r, const eb_t p, const eb_t q) {
 			fb_copy(r->x, t2);
 			fb_copy(r->z, p->z);
 
-			r->norm = 1;
+			r->coord = BASIC;
 		}
 	}
 	CATCH_ANY {
@@ -157,7 +157,7 @@ static void eb_add_projc_mix(eb_t r, const eb_t p, const eb_t q) {
 		/* madd-2005-dl formulas: 7M + 4S + 9add + 1*4 + 3*2. */
 		/* http://www.hyperelliptic.org/EFD/g12o/auto-shortw-lopezdahab-1.html#addition-madd-2005-dl */
 
-		if (!p->norm) {
+		if (p->coord != BASIC) {
 			/* A = y1 + y2 * z1^2. */
 			fb_sqr(t0, p->z);
 			fb_mul(t0, t0, q->y);
@@ -181,7 +181,7 @@ static void eb_add_projc_mix(eb_t r, const eb_t p, const eb_t q) {
 				eb_set_infty(r);
 			}
 		} else {
-			if (!p->norm) {
+			if (p->coord != BASIC) {
 				/* t2 = C = B * z1. */
 				fb_mul(t2, p->z, t1);
 				/* z3 = C^2. */
@@ -247,7 +247,7 @@ static void eb_add_projc_mix(eb_t r, const eb_t p, const eb_t q) {
 			fb_add(r->y, r->y, t0);
 		}
 
-		r->norm = 0;
+		r->coord = PROJC;
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
@@ -280,7 +280,7 @@ static void eb_add_projc_imp(eb_t r, const eb_t p, const eb_t q) {
 
 #if defined(EB_MIXED) || !defined(STRIP)
 	/* Test if z2 = 1 only if mixed coordinates are turned on. */
-	if (q->norm) {
+	if (q->coord == BASIC) {
 		eb_add_projc_mix(r, p, q);
 		return;
 	}
@@ -373,7 +373,7 @@ static void eb_add_projc_imp(eb_t r, const eb_t p, const eb_t q) {
 			fb_add(r->y, r->y, t7);
 		}
 
-		r->norm = 0;
+		r->coord = PROJC;
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
@@ -429,7 +429,7 @@ void eb_sub_basic(eb_t r, const eb_t p, const eb_t q) {
 		eb_neg_basic(t, q);
 		eb_add_basic(r, p, t);
 
-		r->norm = 1;
+		r->coord = BASIC;
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);

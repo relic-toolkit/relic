@@ -49,7 +49,7 @@ void eb_pck(eb_t r, const eb_t p) {
 	/* z3 = 1. */
 	fb_set_dig(r->z, 1);
 
-	r->norm = 1;
+	r->coord = BASIC;
 }
 
 int eb_upk(eb_t r, const eb_t p) {
@@ -83,7 +83,7 @@ int eb_upk(eb_t r, const eb_t p) {
 
 			fb_copy(r->x, p->x);
 			fb_set_dig(r->z, 1);
-			r->norm = 1;
+			r->coord = BASIC;
 		}
 	}
 	CATCH_ANY {

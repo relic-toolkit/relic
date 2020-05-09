@@ -45,65 +45,14 @@ void eb_set_infty(eb_t p) {
 	fb_zero(p->x);
 	fb_zero(p->y);
 	fb_zero(p->z);
-	p->norm = 1;
+	p->coord = BASIC;
 }
 
 void eb_copy(eb_t r, const eb_t p) {
 	fb_copy(r->x, p->x);
 	fb_copy(r->y, p->y);
 	fb_copy(r->z, p->z);
-	r->norm = p->norm;
-}
-
-int eb_cmp(const eb_t p, const eb_t q) {
-    eb_t r, s;
-    int result = RLC_EQ;
-
-    eb_null(r);
-    eb_null(s);
-
-    TRY {
-        eb_new(r);
-        eb_new(s);
-
-        if ((p->norm == 0) && (q->norm == 0)) {
-            /* If the two points are not normalized, it is faster to compare
-             * x1 * z2 == x2 * z1 and y1 * z2^2 == y2 * z1^2. */
-            fb_mul(r->x, p->x, q->z);
-            fb_mul(s->x, q->x, p->z);
-            fb_sqr(r->z, p->z);
-            fb_sqr(s->z, q->z);
-            fb_mul(r->y, p->y, s->z);
-            fb_mul(s->y, q->y, r->z);
-        } else {
-            if (p->norm == 1) {
-                eb_copy(r, p);
-            } else {
-                eb_norm(r, p);
-            }
-
-            if (q->norm == 1) {
-                eb_copy(s, q);
-            } else {
-                eb_norm(s, q);
-            }
-        }
-
-        if (fb_cmp(r->x, s->x) != RLC_EQ) {
-            result = RLC_NE;
-        }
-
-        if (fb_cmp(r->y, s->y) != RLC_EQ) {
-            result = RLC_NE;
-        }
-    } CATCH_ANY {
-        THROW(ERR_CAUGHT);
-    } FINALLY {
-        eb_free(r);
-        eb_free(s);
-    }
-
-    return result;
+	r->coord = p->coord;
 }
 
 void eb_rand(eb_t p) {
@@ -246,7 +195,7 @@ void eb_tab(eb_t *t, const eb_t p, int w) {
 		for (int i = 0; i < 1 << (w - 2); i++) {
 			eb_set_infty(t[i]);
 			fb_set_dig(t[i]->z, 1);
-			t[i]->norm = 1;
+			t[i]->coord = BASIC;
 		}
 
 		switch (w) {
@@ -546,7 +495,7 @@ void eb_read_bin(eb_t a, const uint8_t *bin, int len) {
 		return;
 	}
 
-	a->norm = 1;
+	a->coord = BASIC;
 	fb_set_dig(a->z, 1);
 	fb_read_bin(a->x, bin + 1, RLC_FB_BYTES);
 	if (len == RLC_FB_BYTES + 1) {

@@ -556,7 +556,7 @@ static int multiplication(void) {
 #endif
 
 #if ED_MUL == MONTY || !defined(STRIP)
-		TEST_BEGIN("montgomery laddering point multiplication is correct") {
+		TEST_BEGIN("montgomery ladder point multiplication is correct") {
 			bn_zero(k);
 			ed_mul_monty(r, p, k);
 			TEST_ASSERT(ed_is_infty(r), end);

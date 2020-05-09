@@ -134,8 +134,8 @@ typedef struct {
 	fb_st y;
 	/** The third coordinate (projective representation). */
 	fb_st z;
-	/** Flag to indicate that this point is normalized. */
-	int norm;
+	/** Flag to indicate the coordinate system of this point. */
+	int coord;
 } eb_st;
 
 /**
@@ -357,30 +357,30 @@ void eb_curve_init(void);
 void eb_curve_clean(void);
 
 /**
- * Returns the 'a' coefficient of the currently configured binary elliptic
+ * Returns the a-coefficient of the currently configured binary elliptic
  * curve.
  *
- * @return the 'a' coefficient of the elliptic curve.
+ * @return the a-coefficient of the elliptic curve.
  */
 dig_t *eb_curve_get_a(void);
 
 /**
- * Returns the 'b' coefficient of the currently configured binary elliptic
+ * Returns the b-coefficient of the currently configured binary elliptic
  * curve.
  *
- * @return the 'b' coefficient of the elliptic curve.
+ * @return the b-coefficient of the elliptic curve.
  */
 dig_t *eb_curve_get_b(void);
 
 /**
- * Returns a optimization identifier based on the 'a' coefficient of the curve.
+ * Returns a optimization identifier based on the a-coefficient of the curve.
  *
  * @return the optimization identifier.
  */
 int eb_curve_opt_a(void);
 
 /**
- * Returns a optimization identifier based on the 'b' coefficient of the curve.
+ * Returns a optimization identifier based on the b-coefficient of the curve.
  *
  * @return the optimization identifier.
  */
@@ -425,8 +425,8 @@ void eb_curve_get_cof(bn_t h);
  * Configures an ordinary binary elliptic curve by its coefficients and
  * generator.
  *
- * @param[in] a				- the 'a' coefficient of the curve.
- * @param[in] b				- the 'b' coefficient of the curve.
+ * @param[in] a				- the a-coefficient of the curve.
+ * @param[in] b				- the b-coefficient of the curve.
  * @param[in] g				- the generator.
  * @param[in] n				- the order of the generator.
  * @param[in] h				- the cofactor of the group order.
