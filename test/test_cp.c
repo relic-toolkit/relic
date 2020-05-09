@@ -377,7 +377,7 @@ uint8_t result[] = {
 	RLC_GET(str, CURVE##_B_Y, sizeof(CURVE##_B_Y));							\
 	fp_read_str(q_b->y, str, strlen(str), 16);								\
 	fp_set_dig(q_b->z, 1);													\
-	qa->norm = q_b->norm = 1;												\
+	qa->coord = q_b->coord = BASIC;											\
 
 #define ASSIGNK(CURVE)														\
 	RLC_GET(str, CURVE##_A, sizeof(CURVE##_A));								\
@@ -394,7 +394,7 @@ uint8_t result[] = {
 	RLC_GET(str, CURVE##_B_Y, sizeof(CURVE##_B_Y));							\
 	fb_read_str(q_b->y, str, strlen(str), 16);								\
 	fb_set_dig(q_b->z, 1);													\
-	qa->norm = q_b->norm = 1;												\
+	qa->coord = q_b->coord = BASIC;											\
 
 static int ecdh(void) {
 	int code = RLC_ERR;
