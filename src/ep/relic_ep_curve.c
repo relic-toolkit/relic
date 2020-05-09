@@ -79,7 +79,7 @@ static void detect_opt(int *opt, fp_t a) {
  * @param[in] u			- the non-square used for hashing to this curve.
  * @param[in] ctmap	- true if this curve will use an isogeny for mapping.
  */
-static void ep_curve_set_map(fp_t u) {
+static void ep_curve_set_map(const fp_t u) {
 	bn_t t;
 	bn_null(t);
 
