@@ -47,18 +47,18 @@ message("      FP_METHD=MONTY    Constant-time Montgomery powering ladder.\n")
 if (NOT FP_PRIME)
 	set(FP_PRIME 256)
 endif(NOT FP_PRIME)
-set(FP_PRIME ${FP_PRIME} CACHE INTEGER "Prime modulus size")
+set(FP_PRIME ${FP_PRIME} CACHE STRING "Prime modulus size")
 
 # Fix the number of Karatsuba instances
 if (NOT FP_KARAT)
 	set(FP_KARAT 0)
 endif(NOT FP_KARAT)
-set(FP_KARAT ${FP_KARAT} CACHE INTEGER "Number of Karatsuba levels.")
+set(FP_KARAT ${FP_KARAT} CACHE STRING "Number of Karatsuba levels.")
 
 if (NOT FP_WIDTH)
 	set(FP_WIDTH 4)
 endif(NOT FP_WIDTH)
-set(FP_WIDTH ${FP_WIDTH} CACHE INTEGER "Width of window processing for exponentiation methods.")
+set(FP_WIDTH ${FP_WIDTH} CACHE STRING "Width of window processing for exponentiation methods.")
 
 option(FP_PMERS "Prefer special form primes over random primes." off)
 option(FP_QNRES "Use -1 as quadratic non-residue." off)

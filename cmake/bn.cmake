@@ -44,13 +44,13 @@ message("      BN_METHD=STRON    Strong prime generation.\n")
 if (NOT BN_PRECI)
 	set(BN_PRECI 1024)
 endif(NOT BN_PRECI)
-set(BN_PRECI ${BN_PRECI} CACHE INTEGER "Arithmetic precision in bits")
+set(BN_PRECI ${BN_PRECI} CACHE STRING "Arithmetic precision in bits")
 
 # Fix the number of Karatsuba instances
 if (NOT BN_KARAT)
 	set(BN_KARAT 0)
 endif(NOT BN_KARAT)
-set(BN_KARAT ${BN_KARAT} CACHE INTEGER "Number of Karatsuba levels.")
+set(BN_KARAT ${BN_KARAT} CACHE STRING "Number of Karatsuba levels.")
 
 if (NOT BN_MAGNI)
 	set(BN_MAGNI "DOUBLE")
