@@ -593,13 +593,12 @@ void ep_mul_slide(ep_t r, const ep_t p, const bn_t k) {
 
 void ep_mul_monty(ep_t r, const ep_t p, const bn_t k) {
 	int i, j, bits;
-	fp_t tmp, rand;
+	fp_t rand;
 	ep_t t[2];
 	bn_t n, l;
 
 	bn_null(n);
 	bn_null(l);
-	fp_null(tmp);
 	fp_null(rand);
 	ep_null(t[0]);
 	ep_null(t[1]);
@@ -612,7 +611,6 @@ void ep_mul_monty(ep_t r, const ep_t p, const bn_t k) {
 	TRY {
 		bn_new(n);
 		bn_new(l);
-		fp_new(tmp);
 		fp_new(rand);
 		ep_new(t[0]);
 		ep_new(t[1]);
@@ -641,9 +639,9 @@ void ep_mul_monty(ep_t r, const ep_t p, const bn_t k) {
 		for (i = 0; i < 2; i++) {
 			fp_rand(rand);
 			fp_mul(t[i]->z, t[i]->z, rand);
-			fp_sqr(tmp, rand);
-			fp_mul(t[i]->x, t[i]->x, tmp);
-			fp_mul(rand, rand, tmp);
+			fp_mul(t[i]->y, t[i]->y, rand);
+			fp_sqr(rand, rand);
+			fp_mul(t[i]->x, t[i]->x, rand);
 			fp_mul(t[i]->y, t[i]->y, rand);
 		}
 #endif
@@ -670,7 +668,6 @@ void ep_mul_monty(ep_t r, const ep_t p, const bn_t k) {
 	FINALLY {
 		bn_free(n);
 		bn_free(l);
-		fp_free(tmp);
 		fp_free(rand);
 		ep_free(t[1]);
 		ep_free(t[0]);
