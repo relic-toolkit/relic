@@ -61,7 +61,7 @@ message("   BENCH=n        If n > 0, build automated benchmarks and run them n *
 
 message(STATUS "Number of available processor cores (default = 1):\n")
 
-message("   CORES=n        If n > 1, please enable multithreading support.\n")
+message("   CORES=n        If n > 1, enable multithreading support.\n")
 
 message(STATUS "Available modules (default = ALL)\n")
 
@@ -114,7 +114,7 @@ message("   MULTI=         No multithreading support.")
 message("   MULTI=OPENMP   Open Multi-Processing.")
 message("   MULTI=PTHREAD  POSIX threads.\n")
 
-message(STATUS "Supported timers (default = HPROC):\n")
+message(STATUS "Supported timers (default = HREAL):\n")
 
 message("   TIMER=         No timer.")
 message("   TIMER=HREAL    GNU/Linux realtime high-resolution timer.")
@@ -199,7 +199,7 @@ endif()
 message(STATUS "Configured operating system: ${OPSYS}")
 
 if(OPSYS STREQUAL LINUX)
-	set(TIMER "HPROC" CACHE STRING "Timer")
+	set(TIMER "HREAL" CACHE STRING "Timer")
 else()
 	set(TIMER "ANSI" CACHE STRING "Timer")
 endif()
@@ -210,18 +210,18 @@ if(MSVC)
 	message(STATUS "Supported MSVC runtime libraries (default = MD):\n")
 	message("   RUNTIME=MD     DLL runtime library (/MD,/MDd).")
 	message("   RUNTIME=MT     Static runtime library (/MT,/MTd).\n")
-	
+
 	#loop over the compile flags to swap /MD and /MT.
-	set(CompilerFlags 
-		CMAKE_C_FLAGS_DEBUG 
-		CMAKE_C_FLAGS_RELEASE 
-		CMAKE_C_FLAGS_RELWITHDEBINFO 
+	set(CompilerFlags
+		CMAKE_C_FLAGS_DEBUG
+		CMAKE_C_FLAGS_RELEASE
+		CMAKE_C_FLAGS_RELWITHDEBINFO
 		CMAKE_C_FLAGS_MINSIZEREL)
 	foreach(CompilerFlag ${CompilerFlags})
 		if(RUNTIME STREQUAL MT)
 			string(REPLACE "/MD" "/MT" ${CompilerFlag} "${${CompilerFlag}}")
 		else()
-			string(REPLACE "/MT" "/MD" ${CompilerFlag} "${${CompilerFlag}}")			
+			string(REPLACE "/MT" "/MD" ${CompilerFlag} "${${CompilerFlag}}")
 		endif()
 	endforeach()
 endif()
