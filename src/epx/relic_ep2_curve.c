@@ -818,7 +818,7 @@ void ep2_curve_set_twist(int type) {
 
 		fp2_zero(g->z);
 		fp_set_dig(g->z[0], 1);
-		g->norm = 1;
+		g->coord = BASIC;
 
 		ep2_copy(ctx->ep2_g, g);
 		fp2_copy(ctx->ep2_a, a);

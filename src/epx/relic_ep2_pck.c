@@ -44,7 +44,7 @@ void ep2_pck(ep2_t r, ep2_t p) {
 	fp_zero(r->y[1]);
 	fp_set_dig(r->z[0], 1);
 	fp_zero(r->z[1]);
-	r->norm = 1;
+	r->coord = BASIC;
 }
 
 int ep2_upk(ep2_t r, ep2_t p) {
@@ -71,7 +71,7 @@ int ep2_upk(ep2_t r, ep2_t p) {
 			fp2_copy(r->y, t);
 			fp_set_dig(r->z[0], 1);
 			fp_zero(r->z[1]);
-			r->norm = 1;
+			r->coord = BASIC;
 		}
 	}
 	CATCH_ANY {

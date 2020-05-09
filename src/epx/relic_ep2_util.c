@@ -24,8 +24,8 @@
 /**
  * @file
  *
- * Implementation of utilities for prime elliptic curves over quadratic
- * extensions.
+ * Implementation of comparison for points on prime elliptic curves over
+ * quadratic extensions.
  *
  * @ingroup epx
  */
@@ -44,58 +44,14 @@ void ep2_set_infty(ep2_t p) {
 	fp2_zero(p->x);
 	fp2_zero(p->y);
 	fp2_zero(p->z);
-	p->norm = 1;
+	p->coord = BASIC;
 }
 
 void ep2_copy(ep2_t r, ep2_t p) {
 	fp2_copy(r->x, p->x);
 	fp2_copy(r->y, p->y);
 	fp2_copy(r->z, p->z);
-	r->norm = p->norm;
-}
-
-int ep2_cmp(ep2_t p, ep2_t q) {
-    ep2_t r, s;
-    int result = RLC_EQ;
-
-    ep2_null(r);
-    ep2_null(s);
-
-    TRY {
-        ep2_new(r);
-        ep2_new(s);
-
-        if ((!p->norm) && (!q->norm)) {
-            /* If the two points are not normalized, it is faster to compare
-             * x1 * z2^2 == x2 * z1^2 and y1 * z2^3 == y2 * z1^3. */
-            fp2_sqr(r->z, p->z);
-            fp2_sqr(s->z, q->z);
-            fp2_mul(r->x, p->x, s->z);
-            fp2_mul(s->x, q->x, r->z);
-            fp2_mul(r->z, r->z, p->z);
-            fp2_mul(s->z, s->z, q->z);
-            fp2_mul(r->y, p->y, s->z);
-            fp2_mul(s->y, q->y, r->z);
-        } else {
-			ep2_norm(r, p);
-            ep2_norm(s, q);
-        }
-
-        if (fp2_cmp(r->x, s->x) != RLC_EQ) {
-            result = RLC_NE;
-        }
-
-        if (fp2_cmp(r->y, s->y) != RLC_EQ) {
-            result = RLC_NE;
-        }
-    } CATCH_ANY {
-        THROW(ERR_CAUGHT);
-    } FINALLY {
-        ep2_free(r);
-        ep2_free(s);
-    }
-
-    return result;
+	r->coord = p->coord;
 }
 
 void ep2_rand(ep2_t p) {
@@ -277,7 +233,7 @@ void ep2_read_bin(ep2_t a, const uint8_t *bin, int len) {
 		return;
 	}
 
-	a->norm = 1;
+	a->coord = BASIC;
 	fp_set_dig(a->z[0], 1);
 	fp_zero(a->z[1]);
 	fp2_read_bin(a->x, bin + 1, 2 * RLC_FP_BYTES);
