@@ -221,14 +221,16 @@ void ep_curve_init(void) {
 
 void ep_curve_clean(void) {
 	ctx_t *ctx = core_get();
-	bn_clean(&ctx->ep_r);
-	bn_clean(&ctx->ep_h);
+	if (ctx != NULL) {
+		bn_clean(&ctx->ep_r);
+		bn_clean(&ctx->ep_h);
 #if defined(EP_ENDOM) && (EP_MUL == LWNAF || EP_FIX == LWNAF || !defined(STRIP))
-	for (int i = 0; i < 3; i++) {
-		bn_clean(&(ctx->ep_v1[i]));
-		bn_clean(&(ctx->ep_v2[i]));
-	}
+		for (int i = 0; i < 3; i++) {
+			bn_clean(&(ctx->ep_v1[i]));
+			bn_clean(&(ctx->ep_v2[i]));
+		}
 #endif
+	}
 }
 
 dig_t *ep_curve_get_a(void) {

@@ -46,8 +46,10 @@ void ed_curve_init(void) {
 
 void ed_curve_clean(void) {
 	ctx_t *ctx = core_get();
-	bn_clean(&ctx->ed_r);
-	bn_clean(&ctx->ed_h);
+	if (ctx != NULL) {
+		bn_clean(&ctx->ed_r);
+		bn_clean(&ctx->ed_h);		
+	}
 }
 
 void ed_curve_get_gen(ed_t g) {

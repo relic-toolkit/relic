@@ -79,8 +79,10 @@ void eb_curve_init(void) {
 
 void eb_curve_clean(void) {
 	ctx_t *ctx = core_get();
-	bn_clean(&(ctx->eb_r));
-	bn_clean(&(ctx->eb_h));
+	if (ctx != NULL) {
+		bn_clean(&(ctx->eb_r));
+		bn_clean(&(ctx->eb_h));
+	}
 }
 
 dig_t *eb_curve_get_a(void) {
@@ -149,7 +151,7 @@ void eb_curve_set(const fb_t a, const fb_t b, const eb_t g, const bn_t r,
 	eb_norm(&(ctx->eb_g), g);
 	bn_copy(&(ctx->eb_r), r);
 	bn_copy(&(ctx->eb_h), h);
-	
+
 #if defined(EB_PRECO)
 	eb_mul_pre((eb_t *)eb_curve_get_tab(), &(ctx->eb_g));
 #endif

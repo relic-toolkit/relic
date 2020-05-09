@@ -175,17 +175,18 @@ void rand_init(void) {
 }
 
 void rand_clean(void) {
-
+	ctx_t *ctx = core_get();
+	if (ctx != NULL) {
 #if RAND == UDEV
-	int *fd = (int *)&(core_get()->rand);
-	close(*fd);
+		int *fd = (int *)&(ctx->rand);
+		close(*fd);
 #endif
-
 #if RAND != CALL
-	memset(core_get()->rand, 0, sizeof(core_get()->rand));
+		memset(ctx->rand, 0, sizeof(ctx->rand));
 #else
-	core_get()->rand_call = NULL;
-	core_get()->rand_args = NULL;
+		ctx->rand_call = NULL;
+		ctx->rand_args = NULL;
 #endif
-	core_get()->seeded = 0;
+		ctx->seeded = 0;
+	}
 }
