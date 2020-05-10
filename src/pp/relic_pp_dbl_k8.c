@@ -77,7 +77,7 @@ void pp_dbl_k8_basic(fp8_t l, ep2_t r, ep2_t q, ep_t p) {
 
 #endif
 
-#if EP_ADD == PROJC || !defined(STRIP)
+#if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
 
 #if PP_EXT == BASIC || !defined(STRIP)
 

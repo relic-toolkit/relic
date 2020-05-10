@@ -78,7 +78,7 @@ void pp_dbl_k12_basic(fp12_t l, ep2_t r, ep2_t q, ep_t p) {
 
 #endif
 
-#if EP_ADD == PROJC || !defined(STRIP)
+#if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
 
 #if PP_EXT == BASIC || !defined(STRIP)
 
