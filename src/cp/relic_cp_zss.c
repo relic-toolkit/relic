@@ -101,10 +101,7 @@ int cp_zss_sig(g2_t s, uint8_t *msg, int len, int hash, bn_t d) {
         /* Compute (H(m) + d) and invert. */
         bn_add(t, m, d);
         bn_mod(t, t, n);
-        bn_gcd_ext(r, t, NULL, t, n);
-		if (bn_sign(t) == RLC_NEG) {
-			bn_add(t, t, n);
-		}
+		bn_mod_inv(t, t, n);
 
 		/* Compute the sinature. */
 		g2_mul_gen(s, t);

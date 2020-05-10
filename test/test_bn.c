@@ -185,9 +185,7 @@ static int util(void) {
 			TEST_ASSERT(bn_sign(a) == bn_sign(b), end);
 			TEST_ASSERT(bn_is_zero(a) == 0, end);
 			TEST_ASSERT(bn_cmp(a, b) == RLC_LT, end);
-			do {
-				bn_rand(b, RLC_NEG, RLC_BN_BITS);
-			} while (bn_is_zero(b));
+			bn_rand(b, RLC_NEG, RLC_DIG);
 			bn_rand_mod(a, b);
 			TEST_ASSERT(bn_sign(a) == bn_sign(b), end);
 			TEST_ASSERT(bn_is_zero(a) == 0, end);
@@ -1720,6 +1718,42 @@ static int small_primes(void) {
 	return code;
 }
 
+static int inversion(void) {
+	int code = RLC_ERR;
+	bn_t a, b, c;
+
+	bn_null(a);
+	bn_null(b);
+	bn_null(c);
+
+	TRY {
+		bn_new(a);
+		bn_new(b);
+		bn_new(c);
+
+		bn_gen_prime(a, RLC_BN_BITS);
+
+		TEST_BEGIN("modular inversion is correct") {
+			bn_rand_mod(b, a);
+			bn_mod_inv(c, b, a);
+			TEST_ASSERT(bn_cmp_dig(c, 1) != RLC_EQ, end);
+			bn_mul(c, b, c);
+			bn_mod(c, c, a);
+			TEST_ASSERT(bn_cmp_dig(c, 1) == RLC_EQ, end);
+		} TEST_END;
+	}
+	CATCH_ANY {
+		ERROR(end);
+	}
+	code = RLC_OK;
+  end:
+	bn_free(a);
+	bn_free(b);
+	bn_free(c);
+	bn_free(d);
+	bn_free(e);
+	return code;
+}
 
 static int factor(void) {
 	int code = RLC_ERR;
@@ -2164,6 +2198,11 @@ int main(void) {
 	}
 
 	if (small_primes() != RLC_OK) {
+		core_clean();
+		return 1;
+	}
+
+	if (inversion() != RLC_OK) {
 		core_clean();
 		return 1;
 	}

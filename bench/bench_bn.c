@@ -805,6 +805,13 @@ static void arith(void) {
 
 	BENCH_ONCE("bn_is_prime_solov", bn_is_prime_solov(a));
 
+	/* It should be the case that a is prime here. */
+	BENCH_BEGIN("bn_mod_inv") {
+		bn_rand(b, RLC_POS, RLC_BN_BITS);
+		BENCH_ADD(bn_mod_inv(c, b, a));
+	}
+	BENCH_END;
+
 	bn_rand(a, RLC_POS, RLC_BN_BITS);
 
 	BENCH_ONCE("bn_factor", bn_factor(c, a));

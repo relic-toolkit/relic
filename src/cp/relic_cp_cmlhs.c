@@ -142,10 +142,7 @@ int cp_cmlhs_sig(g1_t sig, g2_t z, g1_t a, g1_t c, g1_t r, g2_t s, bn_t msg,
 		bn_read_bin(k, mac, RLC_MD_LEN);
 		bn_mod(k, k, n);
 		g2_mul_gen(z, k);
-		bn_gcd_ext(m, k, NULL, k, n);
-		if (bn_sign(k) == RLC_NEG) {
-			bn_add(k, k, n);
-		}
+		bn_mod_inv(k, k, n);
 		g1_mul(a, a, k);
 
 		/* Compute C = C * sum H_j^m_j. */
