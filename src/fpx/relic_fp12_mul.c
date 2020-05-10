@@ -183,7 +183,7 @@ void fp12_mul_dxs_basic(fp12_t c, fp12_t a, fp12_t b) {
 			fp_add(t2[0][0], b[0][0][0], b[1][0][0]);
 			fp_copy(t2[0][1], b[1][0][1]);
 			fp2_copy(t2[1], b[1][1]);
-#elif EP_ADD == PROJC
+#elif EP_ADD == PROJC || EP_ADD == JACOB
 			/* t0 = a_0 * b_0 */
 			fp2_mul(t0[0], a[0][0], b[0][0]);
 			fp2_mul(t0[1], a[0][1], b[0][0]);
@@ -210,7 +210,7 @@ void fp12_mul_dxs_basic(fp12_t c, fp12_t a, fp12_t b) {
 			fp2_copy(t2[0], b[0][0]);
 			fp_add(t2[1][0], b[0][1][0], b[1][1][0]);
 			fp_copy(t2[1][1], b[0][1][1]);
-#elif EP_ADD == PROJC
+#elif EP_ADD == PROJC || EP_ADD == JACOB
 			/* t1 = a_1 * b_1. */
 			fp2_mul(t2[0], a[1][2], b[1][1]);
 			fp2_mul_nor(t1[0], t2[0]);
@@ -345,7 +345,7 @@ void fp12_mul_dxs_lazyr(fp12_t c, fp12_t a, fp12_t b) {
 			fp_add(t0[0][0], b[0][0][0], b[1][0][0]);
 			fp_copy(t0[0][1], b[1][0][1]);
 			fp2_copy(t0[1], b[1][1]);
-#elif EP_ADD == PROJC
+#elif EP_ADD == PROJC || EP_ADD == JACOB
 			/* t0 = a_0 * b_0. */
 #ifdef RLC_FP_ROOM
 			fp2_mulc_low(u0[0], a[0][0], b[0][0]);
@@ -378,7 +378,7 @@ void fp12_mul_dxs_lazyr(fp12_t c, fp12_t a, fp12_t b) {
 			fp2_copy(t0[0], b[0][0]);
 			fp_add(t0[1][0], b[0][1][0], b[1][1][0]);
 			fp_copy(t0[1][1], b[0][1][1]);
-#elif EP_ADD == PROJC
+#elif EP_ADD == PROJC || EP_ADD == JACOB
 			/* t1 = a_1 * b_1. */
 			fp2_muln_low(u1[1], a[1][2], b[1][1]);
 			fp2_nord_low(u1[0], u1[1]);
