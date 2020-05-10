@@ -22,7 +22,7 @@
  */
 
 /**
- * @defgroup bn multiple precision integer arithmetic
+ * @defgroup bn Multiple precision integer arithmetic
  */
 
 /**
