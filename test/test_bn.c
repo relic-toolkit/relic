@@ -1750,8 +1750,6 @@ static int inversion(void) {
 	bn_free(a);
 	bn_free(b);
 	bn_free(c);
-	bn_free(d);
-	bn_free(e);
 	return code;
 }
 
