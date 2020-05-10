@@ -51,7 +51,7 @@ void bn_mod_inv(bn_t a, const bn_t b, const bn_t c) {
 			THROW(ERR_NO_VALID);
 		}
 	} CATCH_ANY {
-
+		THROW(ERR_CAUGHT);
 	} FINALLY {
 		bn_free(t);
 	}
