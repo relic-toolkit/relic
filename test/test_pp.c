@@ -90,7 +90,7 @@ static int addition2(void) {
 		} TEST_END;
 #endif
 
-#if EP_ADD == PROJC || !defined(STRIP)
+#if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
 		TEST_BEGIN("miller addition in projective coordinates is correct") {
 			ep_rand(p);
 			ep_rand(q);
@@ -204,7 +204,7 @@ static int doubling2(void) {
 		} TEST_END;
 #endif
 
-#if EP_ADD == PROJC || !defined(STRIP)
+#if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
 		TEST_BEGIN("miller doubling in projective coordinates is correct") {
 			ep_rand(p);
 			ep_rand(q);
@@ -560,7 +560,7 @@ static int doubling8(void) {
 		} TEST_END;
 #endif
 
-#if EP_ADD == PROJC || !defined(STRIP)
+#if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
 		TEST_BEGIN("miller doubling in projective coordinates is correct") {
 			ep_rand(p);
 			ep2_curve_get_gen(q);
@@ -694,7 +694,7 @@ static int addition8(void) {
 		} TEST_END;
 #endif
 
-#if EP_ADD == PROJC || !defined(STRIP)
+#if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
 		TEST_BEGIN("miller addition in projective coordinates is correct") {
 			ep_rand(p);
 			ep2_curve_get_gen(q);
@@ -871,7 +871,7 @@ static int doubling12(void) {
 			fp_neg(p->y, p->y);
 			pp_dbl_k12_basic(e2, r, q, p);
 			pp_exp_k12(e2, e2);
-#if EP_ADD == PROJC
+#if EP_ADD == PROJC || EP_ADD == JACOB
 			/* Precompute. */
 			fp_dbl(p->z, p->x);
 			fp_add(p->x, p->z, p->x);
@@ -882,7 +882,7 @@ static int doubling12(void) {
 		} TEST_END;
 #endif
 
-#if EP_ADD == PROJC || !defined(STRIP)
+#if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
 		TEST_BEGIN("miller doubling in projective coordinates is correct") {
 			ep_rand(p);
 			ep2_rand(q);
@@ -1004,7 +1004,7 @@ static int addition12(void) {
 		} TEST_END;
 #endif
 
-#if EP_ADD == PROJC || !defined(STRIP)
+#if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
 		TEST_BEGIN("miller addition in projective coordinates is correct") {
 			ep_rand(p);
 			ep2_rand(q);
@@ -1477,7 +1477,7 @@ static int doubling48(void) {
 		} TEST_END;
 #endif
 
-#if EP_ADD == PROJC || !defined(STRIP)
+#if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
 		TEST_BEGIN("miller doubling in projective coordinates is correct") {
 			ep_rand(p);
 			fp8_copy(rx, qx);
@@ -1873,7 +1873,7 @@ static int doubling54(void) {
 		} TEST_END;
 #endif
 
-#if EP_ADD == PROJC || !defined(STRIP)
+#if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
 		TEST_BEGIN("miller doubling in projective coordinates is correct") {
 			ep_rand(p);
 			fp9_copy(rx, qx);
