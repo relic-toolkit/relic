@@ -104,10 +104,7 @@ int cp_ecdsa_sig(bn_t r, bn_t s, uint8_t *msg, int len, int hash, bn_t d) {
 			bn_mod(s, s, n);
 			bn_add(s, s, e);
 			bn_mod(s, s, n);
-			bn_gcd_ext(x, k, NULL, k, n);
-			if (bn_sign(k) == RLC_NEG) {
-				bn_add(k, k, n);
-			}
+			bn_mod_inv(k, k, n);
 			bn_mul(s, s, k);
 			bn_mod(s, s, n);
 		} while (bn_is_zero(s));
@@ -149,10 +146,7 @@ int cp_ecdsa_ver(bn_t r, bn_t s, uint8_t *msg, int len, int hash, ec_t q) {
 		if (bn_sign(r) == RLC_POS && bn_sign(s) == RLC_POS &&
 				!bn_is_zero(r) && !bn_is_zero(s)) {
 			if (bn_cmp(r, n) == RLC_LT && bn_cmp(s, n) == RLC_LT) {
-				bn_gcd_ext(e, k, NULL, s, n);
-				if (bn_sign(k) == RLC_NEG) {
-					bn_add(k, k, n);
-				}
+				bn_mod_inv(k, s, n);
 
 				if (!hash) {
 					md_map(h, msg, len);

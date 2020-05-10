@@ -158,10 +158,7 @@ int cp_phpe_dec(uint8_t *out, int out_len, uint8_t *in, int in_len, bn_t n,
 		bn_mxp(c, c, l, s);
 		bn_sub_dig(c, c, 1);
 		bn_div(c, c, n);
-		bn_gcd_ext(s, u, NULL, l, n);
-		if (bn_sign(u) == RLC_NEG) {
-			bn_add(u, u, n);
-		}
+		bn_mod_inv(u, l, n);
 		bn_mul(c, c, u);
 		bn_mod(c, c, n);
 

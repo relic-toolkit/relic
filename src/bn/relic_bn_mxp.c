@@ -90,16 +90,7 @@ void bn_mxp_basic(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 #endif
 
 		if (bn_sign(b) == RLC_NEG) {
-			bn_gcd_ext(t, r, NULL, r, m);
-			if (bn_sign(r) == RLC_NEG) {
-				bn_add(r, r, m);
-			}
-			if (bn_cmp_dig(t, 1) == RLC_EQ) {
-				bn_copy(c, r);
-			} else {
-				bn_zero(c);
-				THROW(ERR_NO_VALID);
-			}
+			bn_mod_inv(c, r, m);
 		} else {
 			bn_copy(c, r);
 		}
@@ -199,16 +190,7 @@ void bn_mxp_slide(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 #endif
 
 		if (bn_sign(b) == RLC_NEG) {
-			bn_gcd_ext(t, r, NULL, r, m);
-			if (bn_sign(r) == RLC_NEG) {
-				bn_add(r, r, m);
-			}
-			if (bn_cmp_dig(t, 1) == RLC_EQ) {
-				bn_copy(c, r);
-			} else {
-				bn_zero(c);
-				THROW(ERR_NO_VALID);
-			}
+			bn_mod_inv(c, r, m);
 		} else {
 			bn_copy(c, r);
 		}
@@ -285,7 +267,7 @@ void bn_mxp_monty(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 #endif
 
 		/* Silly branchless code, since called functions not constant-time. */
-		bn_gcd_ext(tab[1], tab[0], NULL, u, m);
+		bn_mod_inv(tab[0], u, m);
 		dv_swap_cond(u->dp, tab[0]->dp, RLC_BN_DIGS, bn_sign(b) == RLC_NEG);
 		if (bn_sign(b) == RLC_NEG) {
 			u->sign = tab[0]->sign;

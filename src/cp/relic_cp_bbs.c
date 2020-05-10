@@ -103,10 +103,7 @@ int cp_bbs_sig(g1_t s, uint8_t *msg, int len, int hash, bn_t d) {
 
 		/* m = 1/(m + d) mod n. */
 		bn_add(m, m, d);
-		bn_gcd_ext(r, m, NULL, m, n);
-		if (bn_sign(m) == RLC_NEG) {
-			bn_add(m, m, n);
-		}
+		bn_mod_inv(m, m, n);
 		/* s = 1/(m+d) * g1. */
 		g1_mul_gen(s, m);
 	}
