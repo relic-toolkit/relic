@@ -34,6 +34,7 @@
 #include <string.h>
 
 #include "relic_core.h"
+#include "relic_multi.h"
 #include "relic_rand.h"
 #include "relic_types.h"
 #include "relic_err.h"
@@ -73,26 +74,21 @@
 /*============================================================================*/
 
 /**
- * If multi-threading is enabled, assigns each thread a local copy of the data.
- */
-#if MULTI == PTHREAD
-#define thread 	__thread
-#else
-#define thread /* */
-#endif
-
-/**
  * Default library context.
  */
+#if MULTI
 thread ctx_t first_ctx;
+#else
+static ctx_t first_ctx;
+#endif
 
 /**
  * Active library context.
  */
+#if MULTI
 thread ctx_t *core_ctx = NULL;
-
-#if MULTI == OPENMP
-#pragma omp threadprivate(first_ctx, core_ctx)
+#else
+static ctx_t *core_ctx = NULL;
 #endif
 
 int core_init(void) {

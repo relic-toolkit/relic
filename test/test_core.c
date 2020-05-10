@@ -119,6 +119,16 @@ int main(void) {
 			}
 		}
 		TEST_ASSERT(code == RLC_OK, end);
+
+		core_init();
+#pragma omp parallel copyin(core_ctx) shared(code)
+		{
+			if (core_get() == NULL) {
+				code = RLC_ERR;
+			}
+		}
+		TEST_ASSERT(code == RLC_OK, end);
+		core_clean();
 	} TEST_END;
 #endif
 
@@ -151,7 +161,7 @@ int main(void) {
 #endif
 
 	util_banner("All tests have passed.\n", 0);
-	  end:
+  end:
 	core_clean();
 	return code;
 }

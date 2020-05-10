@@ -38,6 +38,7 @@
 #include "relic_util.h"
 #include "relic_cp.h"
 #include "relic_md.h"
+#include "relic_multi.h"
 
 /*============================================================================*/
 /* Private definitions                                                        */
@@ -857,12 +858,31 @@ int cp_rsa_dec_quick(uint8_t *out, int *out_len, uint8_t *in, int in_len, rsa_t 
 
 		bn_copy(m, eb);
 
-		/* m1 = c^dP mod p. */
-		bn_mxp(eb, eb, prv->dp, prv->p);
+#if MULTI == OPENMP
+		omp_set_num_threads(CORES);
+		#pragma omp parallel copyin(core_ctx) firstprivate(prv)
+		{
+			#pragma omp sections
+			{
+				#pragma omp section
+				{
+#endif
+					/* m1 = c^dP mod p. */
+					bn_mxp(eb, eb, prv->dp, prv->p);
 
-		/* m2 = c^dQ mod q. */
-		bn_mxp(m, m, prv->dq, prv->q);
+#if MULTI == OPENMP
+				}
+				#pragma omp section
+				{
+#endif
+					/* m2 = c^dQ mod q. */
+					bn_mxp(m, m, prv->dq, prv->q);
 
+#if MULTI == OPENMP
+				}
+			}
+		}
+#endif
 		/* m1 = m1 - m2 mod p. */
 		bn_sub(eb, eb, m);
 		while (bn_sign(eb) == RLC_NEG) {
@@ -1058,12 +1078,29 @@ int cp_rsa_sig_quick(uint8_t *sig, int *sig_len, uint8_t *msg, int msg_len, int 
 
 			bn_copy(m, eb);
 
-			/* m1 = c^dP mod p. */
-			bn_mxp(eb, eb, prv->dp, prv->p);
-
-			/* m2 = c^dQ mod q. */
-			bn_mxp(m, m, prv->dq, prv->q);
-
+#if MULTI == OPENMP
+			omp_set_num_threads(CORES);
+			#pragma omp parallel copyin(core_ctx) firstprivate(prv)
+			{
+				#pragma omp sections
+				{
+					#pragma omp section
+					{
+#endif
+						/* m1 = c^dP mod p. */
+						bn_mxp(eb, eb, prv->dp, prv->p);
+#if MULTI == OPENMP
+					}
+					#pragma omp section
+					{
+#endif
+						/* m2 = c^dQ mod q. */
+						bn_mxp(m, m, prv->dq, prv->q);
+#if MULTI == OPENMP
+					}
+				}
+			}
+#endif
 			/* m1 = m1 - m2 mod p. */
 			bn_sub(eb, eb, m);
 			while (bn_sign(eb) == RLC_NEG) {

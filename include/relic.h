@@ -81,6 +81,7 @@
 #include "relic_arch.h"
 #include "relic_conf.h"
 #include "relic_core.h"
+#include "relic_multi.h"
 #include "relic_types.h"
 #include "relic_bn.h"
 #include "relic_dv.h"
