@@ -43,36 +43,17 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-int cp_phpe_gen(bn_t n, bn_t l, int bits) {
-	bn_t p, q;
+int cp_phpe_gen(bn_t n, bn_t p, bn_t q, int bits) {
 	int result = RLC_OK;
 
-	bn_null(p);
-	bn_null(q);
+	/* Generate primes p and q of equivalent length. */
+	do {
+		bn_gen_prime(p, bits / 2);
+		bn_gen_prime(q, bits / 2);
+	} while (bn_cmp(p, q) == RLC_EQ);
 
-	TRY {
-		bn_new(p);
-		bn_new(q);
-
-		/* Generate primes p and q of equivalent length. */
-		do {
-			bn_gen_prime(p, bits / 2);
-			bn_gen_prime(q, bits / 2);
-		} while (bn_cmp(p, q) == RLC_EQ);
-
-		/* Compute n = pq and l = \phi(n). */
-		bn_mul(n, p, q);
-		bn_sub_dig(p, p, 1);
-		bn_sub_dig(q, q, 1);
-		bn_mul(l, p, q);
-	}
-	CATCH_ANY {
-		result = RLC_ERR;
-	}
-	FINALLY {
-		bn_free(p);
-		bn_free(q);
-	}
+	/* Compute n = pq and l = \phi(n). */
+	bn_mul(n, p, q);
 
 	return result;
 }
@@ -133,8 +114,8 @@ int cp_phpe_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len, bn_t n) {
 }
 
 int cp_phpe_dec(uint8_t *out, int out_len, uint8_t *in, int in_len, bn_t n,
-	bn_t l) {
-	bn_t c, u, s;
+	bn_t p, bn_t q) {
+	bn_t c, l, u, s;
 	int size, result = RLC_OK;
 
 	size = bn_size_bin(n);
@@ -144,18 +125,25 @@ int cp_phpe_dec(uint8_t *out, int out_len, uint8_t *in, int in_len, bn_t n,
 	}
 
 	bn_null(c);
+	bn_null(l);
 	bn_null(u);
 	bn_null(s);
 
 	TRY {
 		bn_new(c);
+		bn_new(l);
 		bn_new(u);
 		bn_new(s);
+
+		bn_sub_dig(c, p, 1);
+		bn_sub_dig(l, q, 1);
+		bn_mul(l, l, c);
 
 		/* Compute (c^l mod n^2) * u mod n. */
 		bn_sqr(s, n);
 		bn_read_bin(c, in, in_len);
 		bn_mxp(c, c, l, s);
+
 		bn_sub_dig(c, c, 1);
 		bn_div(c, c, n);
 		bn_mod_inv(u, l, n);
@@ -174,6 +162,7 @@ int cp_phpe_dec(uint8_t *out, int out_len, uint8_t *in, int in_len, bn_t n,
 	}
 	FINALLY {
 		bn_free(c);
+		bn_free(l);
 		bn_free(u);
 		bn_free(s);
 	}

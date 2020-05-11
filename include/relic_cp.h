@@ -47,40 +47,9 @@
 /*============================================================================*/
 
 /**
- * Represents an RSA key pair.
+ * Represents a pair of moduli for using the Chinese Remainder Theorem (CRT).
  */
-typedef struct _rsa_t {
-	/** The modulus n = pq. */
-	bn_t n;
-	/** The public exponent. */
-	bn_t e;
-	/** The private exponent. */
-	bn_t d;
-	/** The first prime p. */
-	bn_t p;
-	/** The second prime q. */
-	bn_t q;
-	/** The inverse of e modulo (p-1). */
-	bn_t dp;
-	/** The inverse of e modulo (q-1). */
-	bn_t dq;
-	/** The inverse of q modulo p. */
-	bn_t qi;
-} _rsa_st;
-
-/**
- * Pointer to an RSA key pair.
- */
-#if ALLOC == AUTO
-typedef _rsa_st rsa_t[1];
-#else
-typedef _rsa_st *rsa_t;
-#endif
-
-/**
- * Represents a Rabin key pair.
- */
-typedef struct _rabin_t {
+typedef struct _crt_t {
 	/** The modulus n = pq. */
 	bn_t n;
 	/** The first prime p. */
@@ -91,15 +60,49 @@ typedef struct _rabin_t {
 	bn_t dp;
 	/** The cofactor of the second prime. */
 	bn_t dq;
-} rabin_st;
+} crt_st;
+
+#if ALLOC == AUTO
+typedef crt_st crt_t[1];
+#else
+typedef crt_st *crt_t;
+#endif
+
+/**
+ * Rabin key pair type.
+ */
+typedef crt_st rabin_st;
 
 /**
  * Pointer to a Rabin key pair.
  */
 #if ALLOC == AUTO
-typedef rabin_st rabin_t[1];
+typedef crt_st rabin_t[1];
 #else
-typedef rabin_st *rabin_t;
+typedef crt_st *rabin_t;
+#endif
+
+/**
+ * Represents an RSA key pair.
+ */
+typedef struct _rsa_t {
+	/** The private exponent. */
+	bn_t d;
+	/** The public exponent. */
+	bn_t e;
+	/** The inverse of q modulo p. */
+	bn_t qi;
+	/** The pair of moduli. */
+	crt_t crt;
+} _rsa_st;
+
+/**
+ * Pointer to an RSA key pair.
+ */
+#if ALLOC == AUTO
+typedef _rsa_st rsa_t[1];
+#else
+typedef _rsa_st *rsa_t;
 #endif
 
 /**
@@ -184,6 +187,84 @@ typedef bgn_st *bgn_t;
 /*============================================================================*/
 
 /**
+ * Initializes a CRT moduli set with a null value.
+ *
+ * @param[out] A			- the moduli to initialize.
+ */
+#if ALLOC == AUTO
+#define crt_null(A)				/* empty */
+#else
+#define crt_null(A)			A = NULL;
+#endif
+
+/**
+ * Calls a function to allocate and initialize a Rabin key pair.
+ *
+ * @param[out] A			- the new key pair.
+ */
+#if ALLOC == DYNAMIC
+#define crt_new(A)														\
+	A = (crt_t)calloc(1, sizeof(crt_st));								\
+	if (A == NULL) {														\
+		THROW(ERR_NO_MEMORY);												\
+	}																		\
+	bn_new((A)->n);															\
+	bn_new((A)->dp);														\
+	bn_new((A)->dq);														\
+	bn_new((A)->p);															\
+	bn_new((A)->q);															\
+
+#elif ALLOC == AUTO
+#define crt_new(A)															\
+	bn_new((A)->n);															\
+	bn_new((A)->dp);														\
+	bn_new((A)->dq);														\
+	bn_new((A)->p);															\
+	bn_new((A)->q);															\
+
+#elif ALLOC == STACK
+#define crt_new(A)															\
+	A = (crt_t)alloca(sizeof(crt_st));										\
+	bn_new((A)->n);															\
+	bn_new((A)->dp);														\
+	bn_new((A)->dq);														\
+	bn_new((A)->p);															\
+	bn_new((A)->q);															\
+
+#endif
+
+/**
+ * Calls a function to clean and free a Rabin key pair.
+ *
+ * @param[out] A			- the key pair to clean and free.
+ */
+#if ALLOC == DYNAMIC
+#define crt_free(A)															\
+	if (A != NULL) {														\
+		bn_free((A)->n);													\
+		bn_free((A)->dp);													\
+		bn_free((A)->dq);													\
+		bn_free((A)->p);													\
+		bn_free((A)->q);													\
+		free(A);															\
+		A = NULL;															\
+	}
+
+#elif ALLOC == AUTO
+#define crt_free(A)			/* empty */
+
+#elif ALLOC == STACK
+#define crt_free(A)															\
+	bn_free((A)->n);														\
+	bn_free((A)->dp);														\
+	bn_free((A)->dq);														\
+	bn_free((A)->p);														\
+	bn_free((A)->q);														\
+	A = NULL;																\
+
+#endif
+
+/**
  * Initializes an RSA key pair with a null value.
  *
  * @param[out] A			- the key pair to initialize.
@@ -205,45 +286,28 @@ typedef bgn_st *bgn_t;
 	if (A == NULL) {														\
 		THROW(ERR_NO_MEMORY);												\
 	}																		\
-	bn_null((A)->e);														\
-	bn_null((A)->n);														\
 	bn_null((A)->d);														\
-	bn_null((A)->dp);														\
-	bn_null((A)->dq);														\
-	bn_null((A)->p);														\
-	bn_null((A)->q);														\
+	bn_null((A)->e);														\
 	bn_null((A)->qi);														\
-	bn_new((A)->e);															\
-	bn_new((A)->n);															\
 	bn_new((A)->d);															\
-	bn_new((A)->dp);														\
-	bn_new((A)->dq);														\
-	bn_new((A)->p);															\
-	bn_new((A)->q);															\
+	bn_new((A)->e);															\
 	bn_new((A)->qi);														\
+	crt_new((A)->crt);														\
 
 #elif ALLOC == AUTO
 #define rsa_new(A)															\
-	bn_new((A)->e);															\
-	bn_new((A)->n);															\
 	bn_new((A)->d);															\
-	bn_new((A)->dp);														\
-	bn_new((A)->dq);														\
-	bn_new((A)->p);															\
-	bn_new((A)->q);															\
+	bn_new((A)->e);															\
 	bn_new((A)->qi);														\
+	crt_new((A)->crt);														\
 
 #elif ALLOC == STACK
 #define rsa_new(A)															\
 	A = (rsa_t)alloca(sizeof(_rsa_st));										\
 	bn_new((A)->e);															\
-	bn_new((A)->n);															\
 	bn_new((A)->d);															\
-	bn_new((A)->dp);														\
-	bn_new((A)->dq);														\
-	bn_new((A)->p);															\
-	bn_new((A)->q);															\
 	bn_new((A)->qi);														\
+	crt_new((A)->crt);														\
 
 #endif
 
@@ -255,14 +319,10 @@ typedef bgn_st *bgn_t;
 #if ALLOC == DYNAMIC
 #define rsa_free(A)															\
 	if (A != NULL) {														\
-		bn_free((A)->e);													\
-		bn_free((A)->n);													\
 		bn_free((A)->d);													\
-		bn_free((A)->dp);													\
-		bn_free((A)->dq);													\
-		bn_free((A)->p);													\
-		bn_free((A)->q);													\
+		bn_free((A)->e);													\
 		bn_free((A)->qi);													\
+		crt_free((A)->crt);													\
 		free(A);															\
 		A = NULL;															\
 	}
@@ -272,14 +332,10 @@ typedef bgn_st *bgn_t;
 
 #elif ALLOC == STACK
 #define rsa_free(A)															\
-	bn_free((A)->e);														\
-	bn_free((A)->n);														\
 	bn_free((A)->d);														\
-	bn_free((A)->dp);														\
-	bn_free((A)->dq);														\
-	bn_free((A)->p);														\
-	bn_free((A)->q);														\
+	bn_free((A)->e);														\
 	bn_free((A)->qi);														\
+	crt_free((A)->crt);														\
 	A = NULL;																\
 
 #endif
@@ -300,67 +356,13 @@ typedef bgn_st *bgn_t;
  *
  * @param[out] A			- the new key pair.
  */
-#if ALLOC == DYNAMIC
-#define rabin_new(A)														\
-	A = (rabin_t)calloc(1, sizeof(rabin_st));								\
-	if (A == NULL) {														\
-		THROW(ERR_NO_MEMORY);												\
-	}																		\
-	bn_new((A)->n);															\
-	bn_new((A)->dp);														\
-	bn_new((A)->dq);														\
-	bn_new((A)->p);															\
-	bn_new((A)->q);															\
-
-#elif ALLOC == AUTO
-#define rabin_new(A)														\
-	bn_new((A)->n);															\
-	bn_new((A)->dp);														\
-	bn_new((A)->dq);														\
-	bn_new((A)->p);															\
-	bn_new((A)->q);															\
-
-#elif ALLOC == STACK
-#define rabin_new(A)														\
-	A = (rabin_t)alloca(sizeof(rabin_st));									\
-	bn_new((A)->n);															\
-	bn_new((A)->dp);														\
-	bn_new((A)->dq);														\
-	bn_new((A)->p);															\
-	bn_new((A)->q);															\
-
-#endif
-
+#define rabin_new(A)		crt_new(A)
 /**
  * Calls a function to clean and free a Rabin key pair.
  *
  * @param[out] A			- the key pair to clean and free.
  */
-#if ALLOC == DYNAMIC
-#define rabin_free(A)														\
-	if (A != NULL) {														\
-		bn_free((A)->n);													\
-		bn_free((A)->dp);													\
-		bn_free((A)->dq);													\
-		bn_free((A)->p);													\
-		bn_free((A)->q);													\
-		free(A);															\
-		A = NULL;															\
-	}
-
-#elif ALLOC == AUTO
-#define rabin_free(A)			/* empty */
-
-#elif ALLOC == STACK
-#define rabin_free(A)														\
-	bn_free((A)->n);														\
-	bn_free((A)->dp);														\
-	bn_free((A)->dq);														\
-	bn_free((A)->p);														\
-	bn_free((A)->q);														\
-	A = NULL;																\
-
-#endif
+#define rabin_free(A)		crt_free(A)
 
 /**
  * Initializes a Benaloh's key pair with a null value.
@@ -816,11 +818,12 @@ int cp_bdpe_dec(dig_t *out, uint8_t *in, int in_len, bdpe_t prv);
  * Generates a key pair for Paillier's Homomorphic Probabilistic Encryption.
  *
  * @param[out] n			- the public key.
- * @param[out] l			- the private key.
+ * @param[out] p			- the first prime in the private key.
+ * @param[out] q			- the second prime in the private key.
  * @param[in] bits			- the key length in bits.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_phpe_gen(bn_t n, bn_t l, int bits);
+int cp_phpe_gen(bn_t n, bn_t p, bn_t q, int bits);
 
 /**
  * Encrypts using the Paillier cryptosystem.
@@ -843,11 +846,12 @@ int cp_phpe_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len, bn_t n);
  * @param[out] out_len		- the number of bytes to write in the output buffer.
  * @param[in] in_len		- the number of bytes to decrypt.
  * @param[in] n				- the public key.
- * @param[in] l				- the private key.
+ * @param[out] p			- the first prime in the private key.
+ * @param[out] q			- the second prime in the private key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_phpe_dec(uint8_t *out, int out_len, uint8_t *in, int in_len, bn_t n,
-		bn_t l);
+		bn_t p, bn_t q);
 
 /**
  * Generates an ECDH key pair.

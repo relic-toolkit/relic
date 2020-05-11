@@ -256,7 +256,7 @@ static int benaloh(void) {
 
 static int paillier(void) {
 	int code = RLC_ERR;
-	bn_t a, b, c, d, n, l, s;
+	bn_t a, b, c, d, n, p, q, s;
 	uint8_t in[RLC_BN_BITS / 8 + 1], out[RLC_BN_BITS / 8 + 1];
 	int in_len, out_len;
 	int result;
@@ -266,7 +266,8 @@ static int paillier(void) {
 	bn_null(c);
 	bn_null(d);
 	bn_null(n);
-	bn_null(l);
+	bn_null(p);
+	bn_null(q);
 	bn_null(s);
 
 	TRY {
@@ -275,10 +276,11 @@ static int paillier(void) {
 		bn_new(c);
 		bn_new(d);
 		bn_new(n);
-		bn_new(l);
+		bn_new(p);
+		bn_new(q);
 		bn_new(s);
 
-		result = cp_phpe_gen(n, l, RLC_BN_BITS / 2);
+		result = cp_phpe_gen(n, p, q, RLC_BN_BITS / 2);
 
 		TEST_BEGIN("paillier encryption/decryption is correct") {
 			TEST_ASSERT(result == RLC_OK, end);
@@ -288,7 +290,7 @@ static int paillier(void) {
 			rand_bytes(in + (in_len - 10), 10);
 			TEST_ASSERT(cp_phpe_enc(out, &out_len, in, in_len, n) == RLC_OK,
 					end);
-			TEST_ASSERT(cp_phpe_dec(out, in_len, out, out_len, n, l) == RLC_OK,
+			TEST_ASSERT(cp_phpe_dec(out, in_len, out, out_len, n, p, q) == RLC_OK,
 					end);
 			TEST_ASSERT(memcmp(in, out, in_len) == 0, end);
 		}
@@ -315,7 +317,7 @@ static int paillier(void) {
 			bn_sqr(s, n);
 			bn_mod(b, b, s);
 			bn_write_bin(out, out_len, b);
-			TEST_ASSERT(cp_phpe_dec(out, in_len, out, out_len, n, l) == RLC_OK,
+			TEST_ASSERT(cp_phpe_dec(out, in_len, out, out_len, n, p, q) == RLC_OK,
 					end);
 			bn_add(a, a, c);
 			bn_write_bin(in, in_len, a);
@@ -335,7 +337,8 @@ static int paillier(void) {
 	bn_free(c);
 	bn_free(d);
 	bn_free(n);
-	bn_free(l);
+	bn_free(p);
+	bn_free(q);
 	bn_free(s);
 	return code;
 }
