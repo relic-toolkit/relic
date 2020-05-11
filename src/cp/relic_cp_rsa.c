@@ -646,10 +646,7 @@ int cp_rsa_gen(rsa_t pub, rsa_t prv, int bits) {
 			bn_add_dig(prv->crt->p, prv->crt->p, 1);
 			bn_add_dig(prv->crt->q, prv->crt->q, 1);
 			/* qInv = q^(-1) mod p. */
-			bn_gcd_ext(r, prv->qi, NULL, prv->crt->q, prv->crt->p);
-			if (bn_sign(prv->qi) == RLC_NEG) {
-				bn_add(prv->qi, prv->qi, prv->crt->p);
-			}
+			bn_mod_inv(prv->crt->qi, prv->crt->q, prv->crt->p);
 
 			result = RLC_OK;
 		}
@@ -779,7 +776,7 @@ int cp_rsa_dec(uint8_t *out, int *out_len, uint8_t *in, int in_len, rsa_t prv) {
 		}
 		bn_mod(eb, eb, prv->crt->p);
 		/* m1 = qInv(m1 - m2) mod p. */
-		bn_mul(eb, eb, prv->qi);
+		bn_mul(eb, eb, prv->crt->qi);
 		bn_mod(eb, eb, prv->crt->p);
 		/* m = m2 + m1 * q. */
 		bn_mul(eb, eb, prv->crt->q);
@@ -913,7 +910,7 @@ int cp_rsa_sig(uint8_t *sig, int *sig_len, uint8_t *msg, int msg_len, int hash, 
 			}
 			bn_mod(eb, eb, prv->crt->p);
 			/* m1 = qInv(m1 - m2) mod p. */
-			bn_mul(eb, eb, prv->qi);
+			bn_mul(eb, eb, prv->crt->qi);
 			bn_mod(eb, eb, prv->crt->p);
 			/* m = m2 + m1 * q. */
 			bn_mul(eb, eb, prv->crt->q);

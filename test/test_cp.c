@@ -190,7 +190,8 @@ static int benaloh(void) {
 
 static int paillier(void) {
 	int code = RLC_ERR;
-	bn_t a, b, c, d, n, p, q, s;
+	bn_t a, b, c, d, s, pub;
+	phpe_t prv;
 	uint8_t in[RLC_BN_BITS / 8 + 1], out[RLC_BN_BITS / 8 + 1];
 	int in_len, out_len;
 	int result;
@@ -199,32 +200,30 @@ static int paillier(void) {
 	bn_null(b);
 	bn_null(c);
 	bn_null(d);
-	bn_null(n);
-	bn_null(p);
-	bn_null(q);
 	bn_null(s);
+	bn_null(pub);
+	phpe_null(prv);
 
 	TRY {
 		bn_new(a);
 		bn_new(b);
 		bn_new(c);
 		bn_new(d);
-		bn_new(n);
-		bn_new(p);
-		bn_new(q);
 		bn_new(s);
+		bn_new(pub);
+		phpe_new(prv);
 
-		result = cp_phpe_gen(n, p, q, RLC_BN_BITS / 2);
+		result = cp_phpe_gen(pub, prv, RLC_BN_BITS / 2);
 
 		TEST_BEGIN("paillier encryption/decryption is correct") {
 			TEST_ASSERT(result == RLC_OK, end);
-			in_len = bn_size_bin(n);
+			in_len = bn_size_bin(pub);
 			out_len = RLC_BN_BITS / 8 + 1;
 			memset(in, 0, sizeof(in));
 			rand_bytes(in + (in_len - 10), 10);
-			TEST_ASSERT(cp_phpe_enc(out, &out_len, in, in_len, n) == RLC_OK,
+			TEST_ASSERT(cp_phpe_enc(out, &out_len, in, in_len, pub) == RLC_OK,
 					end);
-			TEST_ASSERT(cp_phpe_dec(out, in_len, out, out_len, n, p, q) == RLC_OK,
+			TEST_ASSERT(cp_phpe_dec(out, in_len, out, out_len, prv) == RLC_OK,
 					end);
 			TEST_ASSERT(memcmp(in, out, in_len) == 0, end);
 		}
@@ -232,26 +231,26 @@ static int paillier(void) {
 
 		TEST_BEGIN("paillier encryption/decryption is homomorphic") {
 			TEST_ASSERT(result == RLC_OK, end);
-			in_len = bn_size_bin(n);
+			in_len = bn_size_bin(pub);
 			out_len = RLC_BN_BITS / 8 + 1;
 			memset(in, 0, sizeof(in));
 			rand_bytes(in + (in_len - 10), 10);
 			bn_read_bin(a, in, in_len);
-			TEST_ASSERT(cp_phpe_enc(out, &out_len, in, in_len, n) == RLC_OK,
+			TEST_ASSERT(cp_phpe_enc(out, &out_len, in, in_len, pub) == RLC_OK,
 					end);
 			bn_read_bin(b, out, out_len);
 			memset(in, 0, sizeof(in));
 			rand_bytes(in + (in_len - 10), 10);
 			bn_read_bin(c, in, in_len);
 			out_len = RLC_BN_BITS / 8 + 1;
-			TEST_ASSERT(cp_phpe_enc(out, &out_len, in, in_len, n) == RLC_OK,
+			TEST_ASSERT(cp_phpe_enc(out, &out_len, in, in_len, pub) == RLC_OK,
 					end);
 			bn_read_bin(d, out, out_len);
 			bn_mul(b, b, d);
-			bn_sqr(s, n);
+			bn_sqr(s, pub);
 			bn_mod(b, b, s);
 			bn_write_bin(out, out_len, b);
-			TEST_ASSERT(cp_phpe_dec(out, in_len, out, out_len, n, p, q) == RLC_OK,
+			TEST_ASSERT(cp_phpe_dec(out, in_len, out, out_len, prv) == RLC_OK,
 					end);
 			bn_add(a, a, c);
 			bn_write_bin(in, in_len, a);
@@ -270,10 +269,9 @@ static int paillier(void) {
 	bn_free(b);
 	bn_free(c);
 	bn_free(d);
-	bn_free(n);
-	bn_free(p);
-	bn_free(q);
 	bn_free(s);
+	bn_free(pub);
+	phpe_free(prv);
 	return code;
 }
 

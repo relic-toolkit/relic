@@ -49,17 +49,19 @@
 /**
  * Represents a pair of moduli for using the Chinese Remainder Theorem (CRT).
  */
-typedef struct _crt_t {
+typedef struct {
 	/** The modulus n = pq. */
 	bn_t n;
 	/** The first prime p. */
 	bn_t p;
 	/** The second prime q. */
 	bn_t q;
-	/** The cofactor of the first prime. */
+	/** The precomputed costant for the first prime. */
 	bn_t dp;
-	/** The cofactor of the second prime. */
+	/** The precomputed costant for the second prime. */
 	bn_t dq;
+	/** The inverse of q modulo p. */
+	bn_t qi;
 } crt_st;
 
 #if ALLOC == AUTO
@@ -69,29 +71,13 @@ typedef crt_st *crt_t;
 #endif
 
 /**
- * Rabin key pair type.
- */
-typedef crt_st rabin_st;
-
-/**
- * Pointer to a Rabin key pair.
- */
-#if ALLOC == AUTO
-typedef crt_st rabin_t[1];
-#else
-typedef crt_st *rabin_t;
-#endif
-
-/**
  * Represents an RSA key pair.
  */
-typedef struct _rsa_t {
+typedef struct {
 	/** The private exponent. */
 	bn_t d;
 	/** The public exponent. */
 	bn_t e;
-	/** The inverse of q modulo p. */
-	bn_t qi;
 	/** The pair of moduli. */
 	crt_t crt;
 } _rsa_st;
@@ -106,9 +92,27 @@ typedef _rsa_st *rsa_t;
 #endif
 
 /**
+ * Pointer to a Rabin key pair.
+ */
+#if ALLOC == AUTO
+typedef crt_st rabin_t[1];
+#else
+typedef crt_st *rabin_t;
+#endif
+
+/**
+ * Pointer to a Paillier key pair.
+ */
+#if ALLOC == AUTO
+typedef crt_st phpe_t[1];
+#else
+typedef crt_st *phpe_t;
+#endif
+
+/**
  * Represents a Benaloh's Dense Probabilistic Encryption key pair.
  */
-typedef struct _bdpe_t {
+typedef struct {
 	/** The modulus n = pq. */
 	bn_t n;
 	/** The first prime p. */
@@ -152,7 +156,7 @@ typedef sokaka_st *sokaka_t;
 /**
  * Represents a Boneh-Goh-Nissim cryptosystem key pair.
  */
-typedef struct _bgn_t {
+typedef struct {
 	/** The first exponent. */
 	bn_t x;
 	/** The second exponent. */
@@ -213,6 +217,7 @@ typedef bgn_st *bgn_t;
 	bn_new((A)->dq);														\
 	bn_new((A)->p);															\
 	bn_new((A)->q);															\
+	bn_new((A)->qi);														\
 
 #elif ALLOC == AUTO
 #define crt_new(A)															\
@@ -221,6 +226,7 @@ typedef bgn_st *bgn_t;
 	bn_new((A)->dq);														\
 	bn_new((A)->p);															\
 	bn_new((A)->q);															\
+	bn_new((A)->qi);														\
 
 #elif ALLOC == STACK
 #define crt_new(A)															\
@@ -230,6 +236,7 @@ typedef bgn_st *bgn_t;
 	bn_new((A)->dq);														\
 	bn_new((A)->p);															\
 	bn_new((A)->q);															\
+	bn_new((A)->qi);														\
 
 #endif
 
@@ -288,17 +295,14 @@ typedef bgn_st *bgn_t;
 	}																		\
 	bn_null((A)->d);														\
 	bn_null((A)->e);														\
-	bn_null((A)->qi);														\
 	bn_new((A)->d);															\
 	bn_new((A)->e);															\
-	bn_new((A)->qi);														\
 	crt_new((A)->crt);														\
 
 #elif ALLOC == AUTO
 #define rsa_new(A)															\
 	bn_new((A)->d);															\
 	bn_new((A)->e);															\
-	bn_new((A)->qi);														\
 	crt_new((A)->crt);														\
 
 #elif ALLOC == STACK
@@ -306,7 +310,6 @@ typedef bgn_st *bgn_t;
 	A = (rsa_t)alloca(sizeof(_rsa_st));										\
 	bn_new((A)->e);															\
 	bn_new((A)->d);															\
-	bn_new((A)->qi);														\
 	crt_new((A)->crt);														\
 
 #endif
@@ -321,7 +324,6 @@ typedef bgn_st *bgn_t;
 	if (A != NULL) {														\
 		bn_free((A)->d);													\
 		bn_free((A)->e);													\
-		bn_free((A)->qi);													\
 		crt_free((A)->crt);													\
 		free(A);															\
 		A = NULL;															\
@@ -334,7 +336,6 @@ typedef bgn_st *bgn_t;
 #define rsa_free(A)															\
 	bn_free((A)->d);														\
 	bn_free((A)->e);														\
-	bn_free((A)->qi);														\
 	crt_free((A)->crt);														\
 	A = NULL;																\
 
@@ -346,7 +347,7 @@ typedef bgn_st *bgn_t;
  * @param[out] A			- the key pair to initialize.
  */
 #if ALLOC == AUTO
-#define rabin_null(A)			/* empty */
+#define rabin_null(A)		/* empty */
 #else
 #define rabin_null(A)		A = NULL;
 #endif
@@ -357,6 +358,7 @@ typedef bgn_st *bgn_t;
  * @param[out] A			- the new key pair.
  */
 #define rabin_new(A)		crt_new(A)
+
 /**
  * Calls a function to clean and free a Rabin key pair.
  *
@@ -364,6 +366,30 @@ typedef bgn_st *bgn_t;
  */
 #define rabin_free(A)		crt_free(A)
 
+/**
+ * Initializes a Paillier key pair with a null value.
+ *
+ * @param[out] A			- the key pair to initialize.
+ */
+#if ALLOC == AUTO
+#define phpe_null(A)		/* empty */
+#else
+#define phpe_null(A)		A = NULL;
+#endif
+
+/**
+ * Calls a function to allocate and initialize a Paillier key pair.
+ *
+ * @param[out] A			- the new key pair.
+ */
+#define phpe_new(A)			crt_new(A)
+
+/**
+ * Calls a function to clean and free a Paillier key pair.
+ *
+ * @param[out] A			- the key pair to clean and free.
+ */
+#define phpe_free(A)		crt_free(A)
 /**
  * Initializes a Benaloh's key pair with a null value.
  *
@@ -735,13 +761,12 @@ int cp_bdpe_dec(dig_t *out, uint8_t *in, int in_len, bdpe_t prv);
 /**
  * Generates a key pair for Paillier's Homomorphic Probabilistic Encryption.
  *
- * @param[out] n			- the public key.
- * @param[out] p			- the first prime in the private key.
- * @param[out] q			- the second prime in the private key.
+ * @param[out] pub			- the public key.
+ * @param[out] prv			- the private key.
  * @param[in] bits			- the key length in bits.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_phpe_gen(bn_t n, bn_t p, bn_t q, int bits);
+int cp_phpe_gen(bn_t pub, phpe_t prv, int bits);
 
 /**
  * Encrypts using the Paillier cryptosystem.
@@ -750,10 +775,10 @@ int cp_phpe_gen(bn_t n, bn_t p, bn_t q, int bits);
  * @param[in, out] out_len	- the buffer capacity and number of bytes written.
  * @param[in] in			- the input buffer.
  * @param[in] in_len		- the number of bytes to encrypt.
- * @param[in] n				- the public key.
+ * @param[in] pub				- the public key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_phpe_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len, bn_t n);
+int cp_phpe_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len, bn_t pub);
 
 /**
  * Decrypts using the Paillier cryptosystem. Since this system is homomorphic,
@@ -764,12 +789,10 @@ int cp_phpe_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len, bn_t n);
  * @param[out] out_len		- the number of bytes to write in the output buffer.
  * @param[in] in_len		- the number of bytes to decrypt.
  * @param[in] n				- the public key.
- * @param[out] p			- the first prime in the private key.
- * @param[out] q			- the second prime in the private key.
+ * @param[out] prv			- the private key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_phpe_dec(uint8_t *out, int out_len, uint8_t *in, int in_len, bn_t n,
-		bn_t p, bn_t q);
+int cp_phpe_dec(uint8_t *out, int out_len, uint8_t *in, int in_len, phpe_t prv);
 
 /**
  * Generates an ECDH key pair.

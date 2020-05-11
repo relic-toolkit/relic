@@ -171,41 +171,39 @@ static void benaloh(void) {
 }
 
 static void paillier(void) {
-	bn_t n, p, q;
+	bn_t pub;
+	phpe_t prv;
 	uint8_t in[1000], new[1000], out[RLC_BN_BITS / 8 + 1];
 	int in_len, out_len;
 
-	bn_null(n);
-	bn_null(p);
-	bn_null(q);
+	bn_null(pub);
+	phpe_null(prv);
 
-	bn_new(n);
-	bn_new(p);
-	bn_new(q);
+	bn_new(pub);
+	phpe_new(prv);
 
-	BENCH_ONCE("cp_phpe_gen", cp_phpe_gen(n, p, q, RLC_BN_BITS / 2));
+	BENCH_ONCE("cp_phpe_gen", cp_phpe_gen(pub, prv, RLC_BN_BITS / 2));
 
 	BENCH_BEGIN("cp_phpe_enc") {
-		in_len = bn_size_bin(n);
+		in_len = bn_size_bin(pub);
 		out_len = RLC_BN_BITS / 8 + 1;
 		memset(in, 0, sizeof(in));
 		rand_bytes(in + 1, in_len - 1);
-		BENCH_ADD(cp_phpe_enc(out, &out_len, in, in_len, n));
-		cp_phpe_dec(new, in_len, out, out_len, n, p, q);
+		BENCH_ADD(cp_phpe_enc(out, &out_len, in, in_len, pub));
+		cp_phpe_dec(new, in_len, out, out_len, prv);
 	} BENCH_END;
 
 	BENCH_BEGIN("cp_phpe_dec") {
-		in_len = bn_size_bin(n);
+		in_len = bn_size_bin(pub);
 		out_len = RLC_BN_BITS / 8 + 1;
 		memset(in, 0, sizeof(in));
 		rand_bytes(in + 1, in_len - 1);
-		cp_phpe_enc(out, &out_len, in, in_len, n);
-		BENCH_ADD(cp_phpe_dec(new, in_len, out, out_len, n, p, q));
+		cp_phpe_enc(out, &out_len, in, in_len, pub);
+		BENCH_ADD(cp_phpe_dec(new, in_len, out, out_len, prv));
 	} BENCH_END;
 
-	bn_free(n);
-	bn_free(p);
-	bn_free(q);
+	bn_free(pub);
+	phpe_free(prv);
 }
 
 #endif
