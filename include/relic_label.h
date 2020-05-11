@@ -62,11 +62,13 @@
 #undef arch_init
 #undef arch_clean
 #undef arch_cycles
+#undef arch_lzcnt
 #undef arch_copy_rom
 
 #define arch_init 	PREFIX(arch_init)
 #define arch_clean 	PREFIX(arch_clean)
 #define arch_cycles 	PREFIX(arch_cycles)
+#define arch_lzcnt 	PREFIX(arch_lzcnt)
 #define arch_copy_rom 	PREFIX(arch_copy_rom)
 
 #undef bench_overhead
@@ -216,6 +218,7 @@
 #undef bn_div_rem
 #undef bn_div_dig
 #undef bn_div_rem_dig
+#undef bn_mod_inv
 #undef bn_mod_2b
 #undef bn_mod_dig
 #undef bn_mod_basic
@@ -318,6 +321,7 @@
 #define bn_div_rem 	PREFIX(bn_div_rem)
 #define bn_div_dig 	PREFIX(bn_div_dig)
 #define bn_div_rem_dig 	PREFIX(bn_div_rem_dig)
+#define bn_mod_inv 	PREFIX(bn_mod_inv)
 #define bn_mod_2b 	PREFIX(bn_mod_2b)
 #define bn_mod_dig 	PREFIX(bn_mod_dig)
 #define bn_mod_basic 	PREFIX(bn_mod_basic)
@@ -851,11 +855,16 @@
 #undef ep_curve_clean
 #undef ep_curve_get_a
 #undef ep_curve_get_b
+#undef ep_curve_get_b3
 #undef ep_curve_get_beta
 #undef ep_curve_get_v1
 #undef ep_curve_get_v2
 #undef ep_curve_opt_a
 #undef ep_curve_opt_b
+#undef ep_curve_opt_b3
+#undef ep_curve_mul_a
+#undef ep_curve_mul_b
+#undef ep_curve_mul_b3
 #undef ep_curve_is_endom
 #undef ep_curve_is_super
 #undef ep_curve_is_pairf
@@ -890,16 +899,16 @@
 #undef ep_size_bin
 #undef ep_read_bin
 #undef ep_write_bin
-#undef ep_neg_basic
-#undef ep_neg_projc
+#undef ep_neg
 #undef ep_add_basic
 #undef ep_add_slp_basic
 #undef ep_add_projc
-#undef ep_sub_basic
-#undef ep_sub_projc
+#undef ep_add_jacob
+#undef ep_sub
 #undef ep_dbl_basic
 #undef ep_dbl_slp_basic
 #undef ep_dbl_projc
+#undef ep_dbl_jacob
 #undef ep_mul_basic
 #undef ep_mul_slide
 #undef ep_mul_monty
@@ -936,11 +945,16 @@
 #define ep_curve_clean 	PREFIX(ep_curve_clean)
 #define ep_curve_get_a 	PREFIX(ep_curve_get_a)
 #define ep_curve_get_b 	PREFIX(ep_curve_get_b)
+#define ep_curve_get_b3 	PREFIX(ep_curve_get_b3)
 #define ep_curve_get_beta 	PREFIX(ep_curve_get_beta)
 #define ep_curve_get_v1 	PREFIX(ep_curve_get_v1)
 #define ep_curve_get_v2 	PREFIX(ep_curve_get_v2)
 #define ep_curve_opt_a 	PREFIX(ep_curve_opt_a)
 #define ep_curve_opt_b 	PREFIX(ep_curve_opt_b)
+#define ep_curve_opt_b3 	PREFIX(ep_curve_opt_b3)
+#define ep_curve_mul_a 	PREFIX(ep_curve_mul_a)
+#define ep_curve_mul_b 	PREFIX(ep_curve_mul_b)
+#define ep_curve_mul_b3 	PREFIX(ep_curve_mul_b3)
 #define ep_curve_is_endom 	PREFIX(ep_curve_is_endom)
 #define ep_curve_is_super 	PREFIX(ep_curve_is_super)
 #define ep_curve_is_pairf 	PREFIX(ep_curve_is_pairf)
@@ -975,16 +989,16 @@
 #define ep_size_bin 	PREFIX(ep_size_bin)
 #define ep_read_bin 	PREFIX(ep_read_bin)
 #define ep_write_bin 	PREFIX(ep_write_bin)
-#define ep_neg_basic 	PREFIX(ep_neg_basic)
-#define ep_neg_projc 	PREFIX(ep_neg_projc)
+#define ep_neg 	PREFIX(ep_neg)
 #define ep_add_basic 	PREFIX(ep_add_basic)
 #define ep_add_slp_basic 	PREFIX(ep_add_slp_basic)
 #define ep_add_projc 	PREFIX(ep_add_projc)
-#define ep_sub_basic 	PREFIX(ep_sub_basic)
-#define ep_sub_projc 	PREFIX(ep_sub_projc)
+#define ep_add_jacob 	PREFIX(ep_add_jacob)
+#define ep_sub 	PREFIX(ep_sub)
 #define ep_dbl_basic 	PREFIX(ep_dbl_basic)
 #define ep_dbl_slp_basic 	PREFIX(ep_dbl_slp_basic)
 #define ep_dbl_projc 	PREFIX(ep_dbl_projc)
+#define ep_dbl_jacob 	PREFIX(ep_dbl_jacob)
 #define ep_mul_basic 	PREFIX(ep_mul_basic)
 #define ep_mul_slide 	PREFIX(ep_mul_slide)
 #define ep_mul_monty 	PREFIX(ep_mul_monty)
@@ -1336,13 +1350,11 @@
 #undef ep2_size_bin
 #undef ep2_read_bin
 #undef ep2_write_bin
-#undef ep2_neg_basic
-#undef ep2_neg_projc
+#undef ep2_neg
 #undef ep2_add_basic
 #undef ep2_add_slp_basic
-#undef ep2_sub_basic
 #undef ep2_add_projc
-#undef ep2_sub_projc
+ #undef ep2_sub
 #undef ep2_dbl_basic
 #undef ep2_dbl_slp_basic
 #undef ep2_dbl_projc
@@ -1386,12 +1398,12 @@
 #define ep2_curve_opt_a 	PREFIX(ep2_curve_opt_a)
 #define ep2_curve_opt_b 	PREFIX(ep2_curve_opt_b)
 #define ep2_curve_is_twist 	PREFIX(ep2_curve_is_twist)
-#define ep2_curve_is_ctmap	PREFIX(ep2_curve_is_ctmap)
+#define ep2_curve_is_ctmap 	PREFIX(ep2_curve_is_ctmap)
 #define ep2_curve_get_gen 	PREFIX(ep2_curve_get_gen)
 #define ep2_curve_get_tab 	PREFIX(ep2_curve_get_tab)
 #define ep2_curve_get_ord 	PREFIX(ep2_curve_get_ord)
 #define ep2_curve_get_cof 	PREFIX(ep2_curve_get_cof)
-#define ep2_curve_get_iso	PREFIX(ep2_curve_get_iso)
+#define ep2_curve_get_iso 	PREFIX(ep2_curve_get_iso)
 #define ep2_curve_set 	PREFIX(ep2_curve_set)
 #define ep2_curve_set_twist 	PREFIX(ep2_curve_set_twist)
 #define ep2_is_infty 	PREFIX(ep2_is_infty)
@@ -1406,13 +1418,11 @@
 #define ep2_size_bin 	PREFIX(ep2_size_bin)
 #define ep2_read_bin 	PREFIX(ep2_read_bin)
 #define ep2_write_bin 	PREFIX(ep2_write_bin)
-#define ep2_neg_basic 	PREFIX(ep2_neg_basic)
-#define ep2_neg_projc 	PREFIX(ep2_neg_projc)
+#define ep2_neg 	PREFIX(ep2_neg)
 #define ep2_add_basic 	PREFIX(ep2_add_basic)
 #define ep2_add_slp_basic 	PREFIX(ep2_add_slp_basic)
-#define ep2_sub_basic 	PREFIX(ep2_sub_basic)
 #define ep2_add_projc 	PREFIX(ep2_add_projc)
-#define ep2_sub_projc 	PREFIX(ep2_sub_projc)
+ #define ep2_sub 	PREFIX(ep2_sub)
 #define ep2_dbl_basic 	PREFIX(ep2_dbl_basic)
 #define ep2_dbl_slp_basic 	PREFIX(ep2_dbl_slp_basic)
 #define ep2_dbl_projc 	PREFIX(ep2_dbl_projc)
@@ -1509,6 +1519,8 @@
 #define fp54_t         PREFIX(fp54_t)
 #define dv54_t         PREFIX(dv54_t)
 
+#undef fp2_add_dig
+#undef fp2_sub_dig
 #undef fp2_field_init
 #undef fp2_field_get_qnr
 #undef fp2_copy
@@ -1524,10 +1536,8 @@
 #undef fp2_set_dig
 #undef fp2_add_basic
 #undef fp2_add_integ
-#undef fp2_add_dig
 #undef fp2_sub_basic
 #undef fp2_sub_integ
-#undef fpt_sub_dig
 #undef fp2_neg
 #undef fp2_dbl_basic
 #undef fp2_dbl_integ
@@ -1553,6 +1563,8 @@
 #undef fp2_pck
 #undef fp2_upk
 
+#define fp2_add_dig 	PREFIX(fp2_add_dig)
+#define fp2_sub_dig 	PREFIX(fp2_sub_dig)
 #define fp2_field_init 	PREFIX(fp2_field_init)
 #define fp2_field_get_qnr 	PREFIX(fp2_field_get_qnr)
 #define fp2_copy 	PREFIX(fp2_copy)
@@ -1568,10 +1580,8 @@
 #define fp2_set_dig 	PREFIX(fp2_set_dig)
 #define fp2_add_basic 	PREFIX(fp2_add_basic)
 #define fp2_add_integ 	PREFIX(fp2_add_integ)
-#define fp2_add_dig		PREFIX(fp2_add_dig)
 #define fp2_sub_basic 	PREFIX(fp2_sub_basic)
 #define fp2_sub_integ 	PREFIX(fp2_sub_integ)
-#define fp2_sub_dig		PREFIX(fp2_sub_dig)
 #define fp2_neg 	PREFIX(fp2_neg)
 #define fp2_dbl_basic 	PREFIX(fp2_dbl_basic)
 #define fp2_dbl_integ 	PREFIX(fp2_dbl_integ)
@@ -1581,7 +1591,7 @@
 #define fp2_mul_nor_basic 	PREFIX(fp2_mul_nor_basic)
 #define fp2_mul_nor_integ 	PREFIX(fp2_mul_nor_integ)
 #define fp2_mul_frb 	PREFIX(fp2_mul_frb)
-#define fp2_mul_dig		PREFIX(fp2_mul_dig)
+#define fp2_mul_dig 	PREFIX(fp2_mul_dig)
 #define fp2_sqr_basic 	PREFIX(fp2_sqr_basic)
 #define fp2_sqr_integ 	PREFIX(fp2_sqr_integ)
 #define fp2_inv 	PREFIX(fp2_inv)
@@ -2460,13 +2470,10 @@
 #define bdpe_t	PREFIX(bdpe_t)
 #define sokaka_t	PREFIX(sokaka_t)
 
-#undef cp_rsa_gen_basic
-#undef cp_rsa_gen_quick
+#undef cp_rsa_gen
 #undef cp_rsa_enc
-#undef cp_rsa_dec_basic
-#undef cp_rsa_dec_quick
-#undef cp_rsa_sig_basic
-#undef cp_rsa_sig_quick
+#undef cp_rsa_dec
+#undef cp_rsa_sig
 #undef cp_rsa_ver
 #undef cp_rabin_gen
 #undef cp_rabin_enc
@@ -2547,13 +2554,10 @@
 #undef cp_mklhs_off
 #undef cp_mklhs_onv
 
-#define cp_rsa_gen_basic 	PREFIX(cp_rsa_gen_basic)
-#define cp_rsa_gen_quick 	PREFIX(cp_rsa_gen_quick)
+#define cp_rsa_gen 	PREFIX(cp_rsa_gen)
 #define cp_rsa_enc 	PREFIX(cp_rsa_enc)
-#define cp_rsa_dec_basic 	PREFIX(cp_rsa_dec_basic)
-#define cp_rsa_dec_quick 	PREFIX(cp_rsa_dec_quick)
-#define cp_rsa_sig_basic 	PREFIX(cp_rsa_sig_basic)
-#define cp_rsa_sig_quick 	PREFIX(cp_rsa_sig_quick)
+#define cp_rsa_dec 	PREFIX(cp_rsa_dec)
+#define cp_rsa_sig 	PREFIX(cp_rsa_sig)
 #define cp_rsa_ver 	PREFIX(cp_rsa_ver)
 #define cp_rabin_gen 	PREFIX(cp_rabin_gen)
 #define cp_rabin_enc 	PREFIX(cp_rabin_enc)

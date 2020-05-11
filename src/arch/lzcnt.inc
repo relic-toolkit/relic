@@ -140,7 +140,7 @@ has_lzcnt_hard
     #endif
 #endif
 
-unsigned int lzcnt32_generic(unsigned int x)
+static unsigned int lzcnt32_generic(unsigned int x)
 {
     unsigned int n;
     static unsigned int clz_table_4[] = {
@@ -166,7 +166,7 @@ unsigned int lzcnt32_generic(unsigned int x)
     return n - 1;
 }
 
-unsigned int lzcnt64_generic(unsigned long long x)
+static unsigned int lzcnt64_generic(unsigned long long x)
 {
     unsigned int n;
     static unsigned int clz_table_4[] = {
@@ -195,7 +195,7 @@ unsigned int lzcnt64_generic(unsigned long long x)
 
 /* Generic compiler specific intrinsics. */
 #if defined(_MSC_VER)
-unsigned int lzcnt32_msvc_bsr(unsigned int x)
+static unsigned int lzcnt32_msvc_bsr(unsigned int x)
 {
     unsigned long n;
 
@@ -210,7 +210,7 @@ unsigned int lzcnt32_msvc_bsr(unsigned int x)
 
 /* _BitScanReverse64() is only available on 64-bit builds. */
 #if defined(ARCH_64BIT)
-unsigned int lzcnt64_msvc_bsr(unsigned long long x)
+static unsigned int lzcnt64_msvc_bsr(unsigned long long x)
 {
     unsigned long n;
 
@@ -224,7 +224,7 @@ unsigned int lzcnt64_msvc_bsr(unsigned long long x)
 }
 #endif  /* ARCH_64BIT */
 #elif (defined(__GNUC__) || defined(__clang__)) && defined(HAS_LZCNT_INTRINSIC)
-unsigned int lzcnt32_gcc_builtin(unsigned int x)
+static unsigned int lzcnt32_gcc_builtin(unsigned int x)
 {
     if (x == 0) {
         return 32;
@@ -233,7 +233,7 @@ unsigned int lzcnt32_gcc_builtin(unsigned int x)
     return (unsigned int)__builtin_clzl((unsigned long)x);
 }
 
-unsigned int lzcnt64_gcc_builtin(unsigned long long x)
+static unsigned int lzcnt64_gcc_builtin(unsigned long long x)
 {
     if (x == 0) {
         return 64;
@@ -243,7 +243,7 @@ unsigned int lzcnt64_gcc_builtin(unsigned long long x)
 }
 #endif
 
-int has_lzcnt_hard()
+static int has_lzcnt_hard()
 {
 #if defined(ARCH_X86) || defined(ARCH_X64)
     int info[4] = {0};
@@ -284,12 +284,12 @@ int has_lzcnt_hard()
 #if defined(HAS_LZCNT32_HARD)
     #if defined(ARCH_X86) || defined(ARCH_X64)
         #if defined(_MSC_VER) && !defined(__clang__)
-            unsigned int lzcnt32_msvc_x86(unsigned int x)
+            static unsigned int lzcnt32_msvc_x86(unsigned int x)
             {
                 return __lzcnt(x);
             }
         #elif defined(__GNUC__) || defined(__clang__)
-            unsigned int lzcnt32_gcc_x86(unsigned int x)
+            static unsigned int lzcnt32_gcc_x86(unsigned int x)
             {
                 /*
                 att:   lzcntl [out], [in]
@@ -306,7 +306,7 @@ int has_lzcnt_hard()
     #endif
     #if defined(ARCH_ARM)
         #if defined(__GNUC__) || defined(__clang__)
-            unsigned int lzcnt32_gcc_arm(unsigned int x)
+            static unsigned int lzcnt32_gcc_arm(unsigned int x)
             {
                 unsigned int r;
                 __asm__ __volatile__ (
@@ -316,13 +316,13 @@ int has_lzcnt_hard()
                     "clz %w[out], %w[in]" : [out]"=r"(r) : [in]"r"(x)
                 #endif
                 );
-                
+
                 return r;
             }
         #endif
     #endif
 
-    unsigned int lzcnt32_hard(unsigned int x)
+    static unsigned int lzcnt32_hard(unsigned int x)
     {
         #if defined(ARCH_X86) || defined(ARCH_X64)
             #if defined(_MSC_VER) && !defined(__clang__)
@@ -347,12 +347,12 @@ int has_lzcnt_hard()
 #if defined(HAS_LZCNT64_HARD)
     #if defined(ARCH_X86) || defined(ARCH_X64)
         #if defined(_MSC_VER) && !defined(__clang__)
-            unsigned int lzcnt64_msvc_x64(unsigned long long x)
+            static unsigned int lzcnt64_msvc_x64(unsigned long long x)
             {
                 return (unsigned int)__lzcnt64(x);
             }
         #elif defined(__GNUC__) || defined(__clang__)
-            unsigned int lzcnt64_gcc_x64(unsigned long long x)
+            static unsigned int lzcnt64_gcc_x64(unsigned long long x)
             {
                 /*
                 att:   lzcnt [out], [in]
@@ -369,19 +369,19 @@ int has_lzcnt_hard()
     #endif
     #if defined(ARCH_ARM)
         #if defined(__GNUC__) || defined(__clang__)
-            unsigned int lzcnt64_gcc_arm(unsigned long long x)
+            static unsigned int lzcnt64_gcc_arm(unsigned long long x)
             {
                 unsigned long long r;
                 __asm__ __volatile__ (
                     "clz %[out], %[in]" : [out]"=r"(r) : [in]"r"(x)
                 );
-                
+
                 return r;
             }
         #endif
     #endif
 
-    unsigned int lzcnt64_hard(unsigned long long x)
+    static unsigned int lzcnt64_hard(unsigned long long x)
     {
     #if defined(ARCH_X64)
         #if defined(_MSC_VER) && !defined(__clang__)
@@ -404,7 +404,7 @@ int has_lzcnt_hard()
 #endif
 
 
-unsigned int lzcnt32_soft(unsigned int x)
+static unsigned int lzcnt32_soft(unsigned int x)
 {
 #if defined(_MSC_VER)
     return lzcnt32_msvc_bsr(x);
@@ -415,7 +415,7 @@ unsigned int lzcnt32_soft(unsigned int x)
 #endif
 }
 
-unsigned int lzcnt64_soft(unsigned long long x)
+static unsigned int lzcnt64_soft(unsigned long long x)
 {
 #if defined(ARCH_64BIT)
     #if defined(_MSC_VER)
@@ -429,195 +429,3 @@ unsigned int lzcnt64_soft(unsigned long long x)
     return lzcnt64_generic(x);
 #endif
 }
-
-#if 0
-
-unsigned int lzcnt32(unsigned int x)
-{
-#if defined(HAS_LZCNT32_HARD)
-    if (has_lzcnt_hard()) {
-        return lzcnt32_hard(x);
-    } else
-#endif
-    {
-        return lzcnt32_soft(x);
-    }
-}
-
-unsigned int lzcnt64(unsigned long long x)
-{
-#if defined(HAS_LZCNT64_HARD)
-    if (has_lzcnt_hard()) {
-        return lzcnt64_hard(x);
-    } else
-#endif
-    {
-        return lzcnt64_soft(x);
-    }
-}
-
-#include <stdio.h>
-int do_test32(unsigned int (* lzcnt32proc)(unsigned int), const char* procName)
-{
-    int testResult = 0;
-    unsigned int i;
-    
-    printf("%s: ", procName);
-    for (i = 0; i <= 32; ++i) {
-        unsigned int x = (0x80000000 >> i);
-        unsigned int r;
-        
-        // Need a special case for the i=32 case because shifting by more than 31 is undefined. 
-        if (i == 32) {
-            x = 0;
-        }
-        
-        r = lzcnt32proc(x);
-        if (r != i) {
-            printf("\n  Failed: x=%u r=%u", x, r);
-            testResult = -1;
-        }
-    }
-    
-    if (testResult == 0) {
-        printf("Passed");
-    }
-    printf("\n");
-    
-    return testResult;
-}
-
-int do_test64(unsigned int (* lzcnt64proc)(unsigned long long), const char* procName)
-{
-    int testResult = 0;
-    unsigned int i;
-    
-    printf("%s: ", procName);
-    for (i = 0; i <= 64; ++i) {
-        unsigned long long x = (0x8000000000000000ULL >> i);
-        unsigned int r;
-        
-        // Need a special case for the i=64 case because shifting by more than 63 is undefined. 
-        if (i == 64) {
-            x = 0;
-        }
-        
-        r = lzcnt64proc(x);
-        if (r != i) {
-            printf("\n  Failed: x=%llu r=%u", x, r);
-            testResult = -1;
-        }
-    }
-    
-    if (testResult == 0) {
-        printf("Passed");
-    }
-    printf("\n");
-    
-    return testResult;
-}
-
-int main(int argc, char** argv)
-{
-    int exitCode = 0;
-
-    // has_lzcnt_hard() 
-#if defined(_WIN64) || defined(_LP64) || defined(__LP64__)
-    printf("64 bit\n");
-#else
-    printf("32 bit\n");
-#endif
-    printf("has_lzcnt_hard()=%d\n", has_lzcnt_hard());
-
-
-    // lzcnt32 
-    
-    // Hardware. 
-#if defined(HAS_LZCNT32_HARD)
-    if (has_lzcnt_hard()) {
-    #if defined(ARCH_X86) || defined(ARCH_X64)
-        #if defined(_MSC_VER) && !defined(__clang__)
-            if (do_test32(lzcnt32_msvc_x86, "lzcnt32_msvc_x86") != 0) {
-                exitCode = -1;
-            }
-        #elif defined(__GNUC__) || defined(__clang__)
-            if (do_test32(lzcnt32_gcc_x86, "lzcnt32_gcc_x86") != 0) {
-                exitCode = -1;
-            }
-        #endif
-    #endif
-    #if defined(ARCH_ARM)
-        #if defined(__GNUC__) || defined(__clang__)
-            if (do_test32(lzcnt32_gcc_arm, "lzcnt32_gcc_arm") != 0) {
-                exitCode = -1;
-            }
-        #endif
-    #endif
-    }
-#endif
-
-    // Software 
-#if defined(_MSC_VER)
-    if (do_test32(lzcnt32_msvc_bsr, "lzcnt32_msvc_bsr") != 0) {
-        exitCode = -1;
-    }
-#elif defined(HAS_LZCNT_INTRINSIC)
-    if (do_test32(lzcnt32_gcc_builtin, "lzcnt32_gcc_builtin") != 0) {
-        exitCode = -1;
-    }
-#endif
-    if (do_test32(lzcnt32_generic, "lzcnt32_generic") != 0) {
-        exitCode = -1;
-    }
-
-
-    // lzcnt64 
-    
-    // Hardware. 
-#if defined(HAS_LZCNT64_HARD)
-    if (has_lzcnt_hard()) {
-    #if defined(ARCH_X64)
-        #if defined(_MSC_VER) && !defined(__clang__)
-            if (do_test64(lzcnt64_msvc_x64, "lzcnt64_msvc_x64") != 0) {
-                exitCode = -1;
-            }
-        #elif defined(__GNUC__) || defined(__clang__)
-            if (do_test64(lzcnt64_gcc_x64, "lzcnt64_gcc_x64") != 0) {
-                exitCode = -1;
-            }
-        #endif
-    #endif
-    #if defined(ARCH_ARM)
-        #if defined(__GNUC__) || defined(__clang__)
-            if (do_test64(lzcnt64_gcc_arm, "lzcnt64_gcc_arm") != 0) {
-                exitCode = -1;
-            }
-        #endif
-    #endif
-    }
-#endif
-
-    // Software 
-#if defined(ARCH_64BIT)
-    #if defined(_MSC_VER)
-        if (do_test64(lzcnt64_msvc_bsr, "lzcnt64_msvc_bsr") != 0) {
-            exitCode = -1;
-        }
-    #elif defined(HAS_LZCNT_INTRINSIC)
-        if (do_test64(lzcnt64_gcc_builtin, "lzcnt64_gcc_builtin") != 0) {
-            exitCode = -1;
-        }
-    #endif
-#endif
-    if (do_test64(lzcnt64_generic, "lzcnt64_generic") != 0) {
-        exitCode = -1;
-    }
-    
-
-    (void)argc;
-    (void)argv;
-    return exitCode;
-}
-
-#endif // 0
-

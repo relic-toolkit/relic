@@ -122,6 +122,11 @@ typedef __uint128_t dbl_t;
  */
 typedef unsigned long long ull_t;
 
+/*
+ * Represents the unsigned integer with maximum precision.
+ */
+typedef unsigned int uint_t;
+
 /*============================================================================*/
 /* Macro definitions                                                          */
 /*============================================================================*/

@@ -93,7 +93,7 @@ ull_t arch_cycles(void);
 /**
  * Return the number of leading zeros in an integer.
  */
-unsigned int arch_lzcnt(dig_t);
+uint_t arch_lzcnt(dig_t);
 
 #if ARCH == AVR
 
