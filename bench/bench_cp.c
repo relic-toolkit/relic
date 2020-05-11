@@ -66,32 +66,6 @@ static void rsa(void) {
 		BENCH_ADD(cp_rsa_dec(new, &new_len, out, out_len, prv));
 	} BENCH_END;
 
-#if CP_RSA == BASIC || !defined(STRIP)
-	BENCH_ONCE("cp_rsa_gen_basic", cp_rsa_gen_basic(pub, prv, RLC_BN_BITS));
-
-	BENCH_BEGIN("cp_rsa_dec_basic") {
-		out_len = RLC_BN_BITS / 8 + 1;
-		new_len =out_len;
-		rand_bytes(in, sizeof(in));
-		cp_rsa_enc(out, &out_len, in, sizeof(in), pub);
-		BENCH_ADD(cp_rsa_dec_basic(new, &new_len, out, out_len, prv));
-	} BENCH_END;
-#endif
-
-#if CP_RSA == QUICK || !defined(STRIP)
-	BENCH_ONCE("cp_rsa_gen_quick", cp_rsa_gen_quick(pub, prv, RLC_BN_BITS));
-
-	BENCH_BEGIN("cp_rsa_dec_quick") {
-		out_len = RLC_BN_BITS / 8 + 1;
-		new_len =out_len;
-		rand_bytes(in, sizeof(in));
-		cp_rsa_enc(out, &out_len, in, sizeof(in), pub);
-		BENCH_ADD(cp_rsa_dec_quick(new, &new_len, out, out_len, prv));
-	} BENCH_END;
-#endif
-
-	BENCH_ONCE("cp_rsa_gen", cp_rsa_gen(pub, prv, RLC_BN_BITS));
-
 	BENCH_BEGIN("cp_rsa_sig (h = 0)") {
 		out_len = RLC_BN_BITS / 8 + 1;
 		new_len = out_len;
@@ -123,44 +97,6 @@ static void rsa(void) {
 		cp_rsa_sig(out, &out_len, h, RLC_MD_LEN, 1, prv);
 		BENCH_ADD(cp_rsa_ver(out, out_len, h, RLC_MD_LEN, 1, pub));
 	} BENCH_END;
-
-#if CP_RSA == BASIC || !defined(STRIP)
-	BENCH_ONCE("cp_rsa_gen_basic", cp_rsa_gen_basic(pub, prv, RLC_BN_BITS));
-
-	BENCH_BEGIN("cp_rsa_sig_basic (h = 0)") {
-		out_len = RLC_BN_BITS / 8 + 1;
-		new_len = out_len;
-		rand_bytes(in, sizeof(in));
-		BENCH_ADD(cp_rsa_sig_basic(out, &out_len, in, sizeof(in), 0, prv));
-	} BENCH_END;
-
-	BENCH_BEGIN("cp_rsa_sig_basic (h = 1)") {
-		out_len = RLC_BN_BITS / 8 + 1;
-		new_len = out_len;
-		rand_bytes(in, sizeof(in));
-		md_map(h, in, sizeof(in));
-		BENCH_ADD(cp_rsa_sig_basic(out, &out_len, h, RLC_MD_LEN, 1, prv));
-	} BENCH_END;
-#endif
-
-#if CP_RSA == QUICK || !defined(STRIP)
-	BENCH_ONCE("cp_rsa_gen_quick", cp_rsa_gen_quick(pub, prv, RLC_BN_BITS));
-
-	BENCH_BEGIN("cp_rsa_sig_quick (h = 0)") {
-		out_len = RLC_BN_BITS / 8 + 1;
-		new_len = out_len;
-		rand_bytes(in, sizeof(in));
-		BENCH_ADD(cp_rsa_sig_quick(out, &out_len, in, sizeof(in), 0, prv));
-	} BENCH_END;
-
-	BENCH_BEGIN("cp_rsa_sig_quick (h = 1)") {
-		out_len = RLC_BN_BITS / 8 + 1;
-		new_len = out_len;
-		rand_bytes(in, sizeof(in));
-		md_map(h, in, sizeof(in));
-		BENCH_ADD(cp_rsa_sig_quick(out, &out_len, in, sizeof(in), 1, prv));
-	} BENCH_END;
-#endif
 
 	rsa_free(pub);
 	rsa_free(prv);

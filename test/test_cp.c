@@ -61,36 +61,6 @@ static int rsa(void) {
 			TEST_ASSERT(memcmp(in, out, ol) == 0, end);
 		} TEST_END;
 
-#if CP_RSA == BASIC || !defined(STRIP)
-		result = cp_rsa_gen_basic(pub, prv, RLC_BN_BITS);
-
-		TEST_BEGIN("basic rsa encryption/decryption is correct") {
-			TEST_ASSERT(result == RLC_OK, end);
-			il = 10;
-			ol = RLC_BN_BITS / 8 + 1;
-			rand_bytes(in, il);
-			TEST_ASSERT(cp_rsa_enc(out, &ol, in, il, pub) == RLC_OK, end);
-			TEST_ASSERT(cp_rsa_dec_basic(out, &ol, out, ol, prv) == RLC_OK,
-					end);
-			TEST_ASSERT(memcmp(in, out, ol) == 0, end);
-		} TEST_END;
-#endif
-
-#if CP_RSA == QUICK || !defined(STRIP)
-		result = cp_rsa_gen_quick(pub, prv, RLC_BN_BITS);
-
-		TEST_BEGIN("fast rsa encryption/decryption is correct") {
-			TEST_ASSERT(result == RLC_OK, end);
-			il = 10;
-			ol = RLC_BN_BITS / 8 + 1;
-			rand_bytes(in, il);
-			TEST_ASSERT(cp_rsa_enc(out, &ol, in, il, pub) == RLC_OK, end);
-			TEST_ASSERT(cp_rsa_dec_quick(out, &ol, out, ol, prv) == RLC_OK,
-					end);
-			TEST_ASSERT(memcmp(in, out, ol) == 0, end);
-		} TEST_END;
-#endif
-
 		result = cp_rsa_gen(pub, prv, RLC_BN_BITS);
 
 		TEST_BEGIN("rsa signature/verification is correct") {
@@ -104,42 +74,6 @@ static int rsa(void) {
 			TEST_ASSERT(cp_rsa_sig(out, &ol, h, RLC_MD_LEN, 1, prv) == RLC_OK, end);
 			TEST_ASSERT(cp_rsa_ver(out, ol, h, RLC_MD_LEN, 1, pub) == 1, end);
 		} TEST_END;
-
-#if CP_RSA == BASIC || !defined(STRIP)
-		result = cp_rsa_gen_basic(pub, prv, RLC_BN_BITS);
-
-		TEST_BEGIN("basic rsa signature/verification is correct") {
-			TEST_ASSERT(result == RLC_OK, end);
-			il = 10;
-			ol = RLC_BN_BITS / 8 + 1;
-			rand_bytes(in, il);
-			TEST_ASSERT(cp_rsa_sig_basic(out, &ol, in, il, 0, prv) == RLC_OK,
-					end);
-			TEST_ASSERT(cp_rsa_ver(out, ol, in, il, 0, pub) == 1, end);
-			md_map(h, in, il);
-			TEST_ASSERT(cp_rsa_sig_basic(out, &ol, h, RLC_MD_LEN, 1, prv) == RLC_OK,
-					end);
-			TEST_ASSERT(cp_rsa_ver(out, ol, h, RLC_MD_LEN, 1, pub) == 1, end);
-		} TEST_END;
-#endif
-
-#if CP_RSA == QUICK || !defined(STRIP)
-		result = cp_rsa_gen_quick(pub, prv, RLC_BN_BITS);
-
-		TEST_BEGIN("fast rsa signature/verification is correct") {
-			TEST_ASSERT(result == RLC_OK, end);
-			il = 10;
-			ol = RLC_BN_BITS / 8 + 1;
-			rand_bytes(in, il);
-			TEST_ASSERT(cp_rsa_sig_quick(out, &ol, in, il, 0, prv) == RLC_OK,
-					end);
-			TEST_ASSERT(cp_rsa_ver(out, ol, in, il, 0, pub) == 1, end);
-			md_map(h, in, il);
-			TEST_ASSERT(cp_rsa_sig_quick(out, &ol, h, RLC_MD_LEN, 1, prv) == RLC_OK,
-					end);
-			TEST_ASSERT(cp_rsa_ver(out, ol, h, RLC_MD_LEN, 1, pub) == 1, end);
-		} TEST_END;
-#endif
 	} CATCH_ANY {
 		ERROR(end);
 	}

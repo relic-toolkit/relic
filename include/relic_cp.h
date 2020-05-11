@@ -591,76 +591,20 @@ typedef bgn_st *bgn_t;
 
 #endif
 
-/**
- * Generates a new RSA key pair.
- *
- * @param[out] PB			- the public key.
- * @param[out] PV			- the private key.
- * @param[in] B				- the key length in bits.
- * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
- */
-#if CP_RSA == BASIC
-#define cp_rsa_gen(PB, PV, B)				cp_rsa_gen_basic(PB, PV, B)
-#elif CP_RSA == QUICK
-#define cp_rsa_gen(PB, PV, B)				cp_rsa_gen_quick(PB, PV, B)
-#endif
-
-/**
- * Decrypts using RSA.
- *
- * @param[out] O			- the output buffer.
- * @param[out] OL			- the number of bytes written in the output buffer.
- * @param[in] I				- the input buffer.
- * @param[in] IL			- the number of bytes to encrypt.
- * @param[in] K				- the private key.
- * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
- */
-#if CP_RSA == BASIC
-#define cp_rsa_dec(O, OL, I, IL, K)			cp_rsa_dec_basic(O, OL, I, IL, K)
-#elif CP_RSA == QUICK
-#define cp_rsa_dec(O, OL, I, IL, K)			cp_rsa_dec_quick(O, OL, I, IL, K)
-#endif
-
-/**
- * Signs a message using the RSA cryptosystem.
- *
- * @param[out] O			- the output buffer.
- * @param[out] OL			- the number of bytes written in the output buffer.
- * @param[in] I				- the input buffer.
- * @param[in] IL			- the number of bytes to sign.
- * @param[in] H				- the flag to indicate the message format.
- * @param[in] K				- the private key.
- * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
- */
-#if CP_RSA == BASIC
-#define cp_rsa_sig(O, OL, I, IL, H, K)	cp_rsa_sig_basic(O, OL, I, IL, H, K)
-#elif CP_RSA == QUICK
-#define cp_rsa_sig(O, OL, I, IL, H, K)	cp_rsa_sig_quick(O, OL, I, IL, H, K)
-#endif
-
 /*============================================================================*/
 /* Function prototypes                                                        */
 /*============================================================================*/
 
 /**
- * Generates a key pair for the basic RSA algorithm.
+ * Generates a key pair for the RSA cryptosystem. Generates additional values
+ * for the CRT optimization if CP_CRT is on.
  *
  * @param[out] pub			- the public key.
  * @param[out] prv			- the private key.
  * @param[in] bits			- the key length in bits.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_rsa_gen_basic(rsa_t pub, rsa_t prv, int bits);
-
-/**
- * Generates a key pair for fast RSA operations with the CRT optimization.
- *
- * @param[out] pub			- the public key.
- * @param[out] prv			- the private key.
- * @param[in] bits			- the key length in bits.
- * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
- */
-int cp_rsa_gen_quick(rsa_t pub, rsa_t prv, int bits);
+int cp_rsa_gen(rsa_t pub, rsa_t prv, int bits);
 
 /**
  * Encrypts using the RSA cryptosystem.
@@ -675,7 +619,8 @@ int cp_rsa_gen_quick(rsa_t pub, rsa_t prv, int bits);
 int cp_rsa_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len, rsa_t pub);
 
 /**
- * Decrypts using the basic RSA decryption method.
+ * Decrypts using the RSA cryptosystem. Uses the CRT optimization if
+ * CP_CRT is on.
  *
  * @param[out] out			- the output buffer.
  * @param[in, out] out_len	- the buffer capacity and number of bytes written.
@@ -684,25 +629,13 @@ int cp_rsa_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len, rsa_t pub);
  * @param[in] prv			- the private key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_rsa_dec_basic(uint8_t *out, int *out_len, uint8_t *in, int in_len,
-		rsa_t prv);
-
-/**
- * Decrypts using the fast RSA decryption with CRT optimization.
- *
- * @param[out] out			- the output buffer.
- * @param[in, out] out_len	- the buffer capacity and number of bytes written.
- * @param[in] in			- the input buffer.
- * @param[in] in_len		- the number of bytes to decrypt.
- * @param[in] prv			- the private key.
- * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
- */
-int cp_rsa_dec_quick(uint8_t *out, int *out_len, uint8_t *in, int in_len,
+int cp_rsa_dec(uint8_t *out, int *out_len, uint8_t *in, int in_len,
 		rsa_t prv);
 
 /**
  * Signs using the basic RSA signature algorithm. The flag must be non-zero if
- * the message being signed is already a hash value.
+ * the message being signed is already a hash value. Uses the CRT optimization
+ * if CP_CRT is on.
  *
  * @param[out] sig			- the signature
  * @param[out] sig_len		- the number of bytes written in the signature.
@@ -712,22 +645,7 @@ int cp_rsa_dec_quick(uint8_t *out, int *out_len, uint8_t *in, int in_len,
  * @param[in] prv			- the private key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_rsa_sig_basic(uint8_t *sig, int *sig_len, uint8_t *msg, int msg_len,
-		int hash, rsa_t prv);
-
-/**
- * Signs using the fast RSA signature algorithm with CRT optimization. The flag
- * must be non-zero if the message being signed is already a hash value.
- *
- * @param[out] sig			- the signature
- * @param[out] sig_len		- the number of bytes written in the signature.
- * @param[in] msg			- the message to sign.
- * @param[in] msg_len		- the number of bytes to sign.
- * @param[in] hash			- the flag to indicate the message format.
- * @param[in] prv			- the private key.
- * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
- */
-int cp_rsa_sig_quick(uint8_t *sig, int *sig_len, uint8_t *msg, int msg_len,
+int cp_rsa_sig(uint8_t *sig, int *sig_len, uint8_t *msg, int msg_len,
 		int hash, rsa_t prv);
 
 /**
