@@ -34,8 +34,27 @@
 #include "relic.h"
 #include "relic_bench.h"
 
-static int triple(void) {
-	
+static void triple(void) {
+	bn_t order;
+	mt_t tri[2];
+
+	bn_null(order);
+	mt_null(tri[0]);
+	mt_null(tri[1]);
+
+	bn_new(order);
+	mt_new(tri[0]);
+	mt_new(tri[1]);
+
+	bn_gen_prime(order, RLC_BN_BITS);
+
+	BENCH_BEGIN("mt_gen") {
+		BENCH_ADD(mt_gen(tri, order));
+	} BENCH_END;
+
+	bn_free(order);
+	mt_free(order);
+	mt_free(order);
 }
 
 int main(void) {
@@ -46,6 +65,7 @@ int main(void) {
 
 	conf_print();
 	util_banner("Benchmarks for the MPC module:", 0);
+	util_banner("Utilities:\n", 0);
 	triple();
 	core_clean();
 	return 0;

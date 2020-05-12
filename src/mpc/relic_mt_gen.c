@@ -48,8 +48,10 @@ void mt_gen(mt_t tri[2], bn_t order) {
 	bn_add(tri[1]->c, tri[0]->b, tri[1]->b);
 	bn_mod(tri[1]->c, tri[1]->c, order);
 	bn_mul(tri[0]->c, tri[0]->c, tri[1]->c);
+	bn_mod(tri[0]->c, tri[0]->c, order);
 	bn_rand_mod(tri[1]->c, order);
 	bn_mod_inv(tri[1]->c, tri[1]->c, order);
 	bn_mul(tri[0]->c, tri[0]->c, tri[1]->c);
+	bn_mod_inv(tri[1]->c, tri[1]->c, order);
 	bn_mod(tri[0]->c, tri[0]->c, order);
 }
