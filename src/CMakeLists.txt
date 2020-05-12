@@ -40,6 +40,7 @@ file(GLOB BC_SRCS bc/*.c)
 file(GLOB MD_SRCS md/*.c)
 file(GLOB EC_SRCS ec/*.c)
 file(GLOB PC_SRCS pc/*.c)
+file(GLOB MPC_SRCS mpc/*.c)
 
 set(RELIC_SRCS ${CORE_SRCS})
 
@@ -145,6 +146,10 @@ endif(WITH_BC)
 if (WITH_MD)
 	list(APPEND RELIC_SRCS ${MD_SRCS})
 endif(WITH_MD)
+
+if (WITH_MPC)
+	list(APPEND RELIC_SRCS ${MPC_SRCS})
+endif(WITH_MPC)
 
 foreach(SRC ${LOW_SRCS})
 	get_filename_component(SRC ${SRC} NAME_WE)

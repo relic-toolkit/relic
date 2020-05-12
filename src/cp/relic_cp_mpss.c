@@ -35,7 +35,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-int cp_mpss_gen(bn_t q[2], bn_t s[2], g2_t g, g2_t x[2], g2_t y[2]) {
+int cp_mpss_gen(bn_t r[2], bn_t s[2], g2_t g, g2_t x[2], g2_t y[2]) {
 	bn_t n;
 	int result = RLC_OK;
 
@@ -48,21 +48,15 @@ int cp_mpss_gen(bn_t q[2], bn_t s[2], g2_t g, g2_t x[2], g2_t y[2]) {
 		g2_rand(g);
 		g2_get_ord(n);
 
-		bn_rand_mod(q[0], n);
-		g2_mul(x[0], g, q[0]);
-		bn_rand_mod(q[1], n);
-		bn_sub(q[0], q[0], q[1]);
-		g2_rand(x[1]);
-		g2_sub(x[0], x[0], x[1]);
-		g2_norm(x[0], x[0]);
+		bn_rand_mod(r[0], n);
+		bn_rand_mod(r[1], n);
+		g2_mul(x[0], g, r[0]);
+		g2_mul(x[1], g, r[1]);
 
 		bn_rand_mod(s[0], n);
-		g2_mul(y[0], g, s[0]);
 		bn_rand_mod(s[1], n);
-		bn_sub(s[0], s[0], s[1]);
-		g2_rand(y[1]);
-		g2_sub(y[0], y[0], y[1]);
-		g2_norm(y[0], y[0]);
+		g2_mul(y[0], g, s[0]);
+		g2_mul(y[1], g, s[1]);
 	}
 	CATCH_ANY {
 		result = RLC_ERR;

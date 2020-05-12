@@ -98,6 +98,7 @@
 #include "relic_cp.h"
 #include "relic_bc.h"
 #include "relic_md.h"
+#include "relic_mpc.h"
 #include "relic_err.h"
 #include "relic_rand.h"
 #include "relic_util.h"

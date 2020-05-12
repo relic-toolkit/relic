@@ -81,6 +81,7 @@ message("   WTTH=PC       Pairing-based cryptography.")
 message("   WITH=BC       Block ciphers (symmetric encryption).")
 message("   WITH=MD       Message digests (hash functions).")
 message("   WITH=CP       Cryptographic protocols.")
+message("   WITH=MPC      Multi-party computation primitives.")
 message("   WITH=ALL      All of the above.")
 message("   Note: the programmer is responsible for not using unselected modules.\n")
 

@@ -74,5 +74,9 @@ if (WITH_CP)
 	ADD_MODULE(cp)
 endif(WITH_CP)
 
+if (WITH_MPC)
+	ADD_MODULE(mpc)
+endif(WITH_MPC)
+
 ADD_MODULE(rand)
 ADD_MODULE(core)
