@@ -90,15 +90,16 @@ static void bn_div_imp(bn_t c, bn_t d, const bn_t a, const bn_t b) {
 
 		bn_divn_low(q->dp, r->dp, x->dp, a->used, y->dp, b->used);
 
+		q->used = a->used + 1;
+		q->sign = sign;
+		bn_trim(q);
+
 		r->used = b->used;
 		r->sign = b->sign;
 		bn_trim(r);
 
 		/* We have the quotient in q and the remainder in r. */
 		if (c != NULL) {
-			q->used = a->used + 1;
-			q->sign = sign;
-			bn_trim(q);
 			if ((bn_is_zero(r)) || (bn_sign(a) == bn_sign(b))) {
 				bn_copy(c, q);
 			} else {

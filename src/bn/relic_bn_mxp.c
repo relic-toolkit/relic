@@ -138,11 +138,13 @@ void bn_mxp_slide(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 			w = 4;
 		} else if (i <= 256) {
 			w = 5;
-		} else {
+		} else if (i <= 512) {
 			w = 6;
+		} else {
+			w = 7;
 		}
 
-		for (i = 1; i < (1 << w); i += 2) {
+		for (i = 0; i < (1 << (w - 1)); i ++) {
 			bn_new(tab[i]);
 		}
 
@@ -160,13 +162,13 @@ void bn_mxp_slide(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 		bn_copy(t, a);
 #endif
 
-		bn_copy(tab[1], t);
-		bn_sqr(t, tab[1]);
+		bn_copy(tab[0], t);
+		bn_sqr(t, tab[0]);
 		bn_mod(t, t, m, u);
 		/* Create table. */
 		for (i = 1; i < 1 << (w - 1); i++) {
-			bn_mul(tab[2 * i + 1], tab[2 * i - 1], t);
-			bn_mod(tab[2 * i + 1], tab[2 * i + 1], m, u);
+			bn_mul(tab[i], tab[i - 1], t);
+			bn_mod(tab[i], tab[i], m, u);
 		}
 
 		l = RLC_BN_BITS + 1;
@@ -180,7 +182,7 @@ void bn_mxp_slide(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 					bn_sqr(r, r);
 					bn_mod(r, r, m, u);
 				}
-				bn_mul(r, r, tab[win[i]]);
+				bn_mul(r, r, tab[win[i] >> 1]);
 				bn_mod(r, r, m, u);
 			}
 		}
@@ -199,7 +201,7 @@ void bn_mxp_slide(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 		THROW(ERR_CAUGHT);
 	}
 	FINALLY {
-		for (i = 1; i < (1 << w); i++) {
+		for (i = 0; i < (1 << (w - 1)); i++) {
 			bn_free(tab[i]);
 		}
 		bn_free(u);
