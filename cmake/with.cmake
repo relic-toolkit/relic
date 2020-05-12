@@ -20,6 +20,7 @@ if(TEMP GREATER -1)
 	set(WITH_BC 1)
 	set(WITH_MD 1)
 	set(WITH_CP 1)
+	set(WITH_MPC 1)
 endif(TEMP GREATER -1)
 
 # Check if multiple precision integer arithmetic is required.
@@ -118,8 +119,14 @@ if(TEMP GREATER -1)
 	set(WITH_MD 1)
 endif(TEMP GREATER -1)
 
-# Check if support for crptographic protocols is required.
+# Check if support for cryptographic protocols is required.
 list(FIND WITH "CP" TEMP)
 if(TEMP GREATER -1)
 	set(WITH_CP 1)
+endif(TEMP GREATER -1)
+
+# Check if support for cryptographic protocols is required.
+list(FIND WITH "MPC" TEMP)
+if(TEMP GREATER -1)
+	set(WITH_MPC 1)
 endif(TEMP GREATER -1)

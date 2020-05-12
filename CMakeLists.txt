@@ -81,6 +81,7 @@ message("   WTTH=PC       Pairing-based cryptography.")
 message("   WITH=BC       Block ciphers (symmetric encryption).")
 message("   WITH=MD       Message digests (hash functions).")
 message("   WITH=CP       Cryptographic protocols.")
+message("   WITH=MPC      Multi-party computation primitives.")
 message("   WITH=ALL      All of the above.")
 message("   Note: the programmer is responsible for not using unselected modules.\n")
 
@@ -210,18 +211,18 @@ if(MSVC)
 	message(STATUS "Supported MSVC runtime libraries (default = MD):\n")
 	message("   RUNTIME=MD     DLL runtime library (/MD,/MDd).")
 	message("   RUNTIME=MT     Static runtime library (/MT,/MTd).\n")
-	
+
 	#loop over the compile flags to swap /MD and /MT.
-	set(CompilerFlags 
-		CMAKE_C_FLAGS_DEBUG 
-		CMAKE_C_FLAGS_RELEASE 
-		CMAKE_C_FLAGS_RELWITHDEBINFO 
+	set(CompilerFlags
+		CMAKE_C_FLAGS_DEBUG
+		CMAKE_C_FLAGS_RELEASE
+		CMAKE_C_FLAGS_RELWITHDEBINFO
 		CMAKE_C_FLAGS_MINSIZEREL)
 	foreach(CompilerFlag ${CompilerFlags})
 		if(RUNTIME STREQUAL MT)
 			string(REPLACE "/MD" "/MT" ${CompilerFlag} "${${CompilerFlag}}")
 		else()
-			string(REPLACE "/MT" "/MD" ${CompilerFlag} "${${CompilerFlag}}")			
+			string(REPLACE "/MT" "/MD" ${CompilerFlag} "${${CompilerFlag}}")
 		endif()
 	endforeach()
 endif()
