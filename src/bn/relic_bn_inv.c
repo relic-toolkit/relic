@@ -37,15 +37,18 @@
 /*============================================================================*/
 
 void bn_mod_inv(bn_t a, const bn_t b, const bn_t c) {
-	bn_t t;
+	bn_t t, u;
 
 	bn_null(t);
+	bn_null(u);
 
 	TRY {
 		bn_new(t);
+		bn_new(u);
+		bn_copy(u, c);
 		bn_gcd_ext(t, a, NULL, b, c);
 		if (bn_sign(a) == RLC_NEG) {
-			bn_add(a, a, c);
+			bn_add(a, a, u);
 		}
 		if (bn_cmp_dig(t, 1) != RLC_EQ) {
 			THROW(ERR_NO_VALID);
@@ -54,6 +57,7 @@ void bn_mod_inv(bn_t a, const bn_t b, const bn_t c) {
 		THROW(ERR_CAUGHT);
 	} FINALLY {
 		bn_free(t);
+		bn_free(u);
 	}
 
 }
