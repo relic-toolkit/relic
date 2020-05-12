@@ -78,10 +78,10 @@ static void bn_div_imp(bn_t c, bn_t d, const bn_t a, const bn_t b) {
 	TRY {
 		bn_new(x);
 		bn_new_size(y, a->used);
-		bn_new_size(q, a->used - b->used + 1);
-		bn_new(r);
-		bn_zero(q);
+		bn_new_size(q, a->used + 1);
 		bn_new_size(r, b->used);
+		bn_zero(q);
+		bn_zero(r);
 		bn_abs(x, a);
 		bn_abs(y, b);
 
@@ -90,7 +90,7 @@ static void bn_div_imp(bn_t c, bn_t d, const bn_t a, const bn_t b) {
 
 		bn_divn_low(q->dp, r->dp, x->dp, a->used, y->dp, b->used);
 
-		q->used = a->used + 1;
+		q->used = a->used - b->used + 1;
 		q->sign = sign;
 		bn_trim(q);
 
