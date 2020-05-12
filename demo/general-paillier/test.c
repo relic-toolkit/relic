@@ -1,6 +1,8 @@
+#include <stdio.h>
+#include <assert.h>
+
 #include "relic.h"
 #include "relic_test.h"
-#include "assert.h"
 
 static int paillier(void) {
 	int code = RLC_ERR;
@@ -27,6 +29,11 @@ static int paillier(void) {
 		/* Generate 2048-bit public and private keys (both integers). */
 		result = cp_ghpe_gen(pub, prv, 2048);
 		assert(result == RLC_OK);
+
+		printf("Public key:\n");
+		bn_print(pub);
+		printf("Private key:\n");
+		bn_print(prv);
 
 		for (int s = 1; s <= 2; s++) {
 			util_print("Testing generalized paillier for (s = %d)\n", s);
