@@ -173,7 +173,7 @@ static void benaloh(void) {
 static void paillier(void) {
 	bn_t pub;
 	phpe_t prv;
-	uint8_t in[1000], new[1000], out[RLC_BN_BITS / 8 + 1];
+	uint8_t in[1000], new[1000], out[RLC_BN_BITS / 8];
 	int in_len, out_len;
 
 	bn_null(pub);
@@ -186,7 +186,7 @@ static void paillier(void) {
 
 	BENCH_BEGIN("cp_phpe_enc") {
 		in_len = bn_size_bin(pub);
-		out_len = RLC_BN_BITS / 8 + 1;
+		out_len = RLC_BN_BITS / 8;
 		memset(in, 0, sizeof(in));
 		rand_bytes(in + 1, in_len - 1);
 		BENCH_ADD(cp_phpe_enc(out, &out_len, in, in_len, pub));
@@ -195,11 +195,31 @@ static void paillier(void) {
 
 	BENCH_BEGIN("cp_phpe_dec") {
 		in_len = bn_size_bin(pub);
-		out_len = RLC_BN_BITS / 8 + 1;
+		out_len = RLC_BN_BITS / 8;
 		memset(in, 0, sizeof(in));
 		rand_bytes(in + 1, in_len - 1);
 		cp_phpe_enc(out, &out_len, in, in_len, pub);
 		BENCH_ADD(cp_phpe_dec(new, in_len, out, out_len, prv));
+	} BENCH_END;
+
+	BENCH_ONCE("cp_ghpe_gen", cp_ghpe_gen(pub, prv->n, RLC_BN_BITS / 2));
+
+	BENCH_BEGIN("cp_ghpe_enc") {
+		in_len = bn_size_bin(pub);
+		out_len = RLC_BN_BITS / 8;
+		memset(in, 0, sizeof(in));
+		rand_bytes(in + 1, in_len - 1);
+		BENCH_ADD(cp_ghpe_enc(out, &out_len, in, in_len, pub));
+		cp_ghpe_dec(new, in_len, out, out_len, pub, prv->n);
+	} BENCH_END;
+
+	BENCH_BEGIN("cp_phpe_dec") {
+		in_len = bn_size_bin(pub);
+		out_len = RLC_BN_BITS / 8;
+		memset(in, 0, sizeof(in));
+		rand_bytes(in + 1, in_len - 1);
+		cp_ghpe_enc(out, &out_len, in, in_len, pub);
+		BENCH_ADD(cp_ghpe_dec(new, in_len, out, out_len, pub, prv->n));
 	} BENCH_END;
 
 	bn_free(pub);

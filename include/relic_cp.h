@@ -101,7 +101,7 @@ typedef crt_st *rabin_t;
 #endif
 
 /**
- * Pointer to a Paillier key pair.
+ * Pointer to a Paillier's Homomorphic Probabilistic Encryption key pair.
  */
 #if ALLOC == AUTO
 typedef crt_st phpe_t[1];

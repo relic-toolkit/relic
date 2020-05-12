@@ -8,7 +8,7 @@ message("      BN_MAGNI=CARRY    A multiple precision integer can store w+1 word
 message("      BN_MAGNI=SINGLE   A multiple precision integer can store w words.")
 message("      BN_KARAT=n        The number of Karatsuba steps.\n")
 
-message("   ** Available multiple precision arithmetic methods (default = COMBA;COMBA;MONTY;SLIDE;STEIN;BASIC):\n")
+message("   ** Available multiple precision arithmetic methods (default = COMBA;COMBA;MONTY;SLIDE;BASIC;BASIC):\n")
 
 message("      Integer multiplication:")
 message("      BN_METHD=BASIC    Schoolbook multiplication.")
