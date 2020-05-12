@@ -54,9 +54,11 @@ void dv_print(dig_t *a, int digits) {
 void dv_zero(dig_t *a, int digits) {
 	int i;
 
+#if ALLOC != DYNAMIC
 	if (digits > RLC_DV_DIGS) {
 		THROW(ERR_NO_PRECI);
 	}
+#endif
 
 	for (i = 0; i < digits; i++, a++) {
 		(*a) = 0;

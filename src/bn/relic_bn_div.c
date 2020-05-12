@@ -77,11 +77,11 @@ static void bn_div_imp(bn_t c, bn_t d, const bn_t a, const bn_t b) {
 
 	TRY {
 		bn_new(x);
-		bn_new(y);
-		bn_new_size(q, a->used + 1);
+		bn_new_size(y, a->used);
+		bn_new_size(q, a->used - b->used + 1);
 		bn_new(r);
 		bn_zero(q);
-		bn_zero(r);
+		bn_new_size(r, b->used);
 		bn_abs(x, a);
 		bn_abs(y, b);
 
@@ -90,9 +90,13 @@ static void bn_div_imp(bn_t c, bn_t d, const bn_t a, const bn_t b) {
 
 		bn_divn_low(q->dp, r->dp, x->dp, a->used, y->dp, b->used);
 
+		r->used = b->used;
+		r->sign = b->sign;
+		bn_trim(r);
+
 		/* We have the quotient in q and the remainder in r. */
 		if (c != NULL) {
-			q->used = a->used - b->used + 1;
+			q->used = a->used + 1;
 			q->sign = sign;
 			bn_trim(q);
 			if ((bn_is_zero(r)) || (bn_sign(a) == bn_sign(b))) {
@@ -103,9 +107,6 @@ static void bn_div_imp(bn_t c, bn_t d, const bn_t a, const bn_t b) {
 		}
 
 		if (d != NULL) {
-			r->used = b->used;
-			r->sign = b->sign;
-			bn_trim(r);
 			if ((bn_is_zero(r)) || (bn_sign(a) == bn_sign(b))) {
 				bn_copy(d, r);
 			} else {
@@ -160,7 +161,7 @@ void bn_div_dig(bn_t c, const bn_t a, dig_t b) {
 	}
 
 	TRY {
-		bn_new(q);
+		bn_new_size(q, a->used);
 		int size = a->used;
 		const dig_t *ap = a->dp;
 
