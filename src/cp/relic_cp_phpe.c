@@ -87,52 +87,38 @@ int cp_phpe_gen(bn_t pub, phpe_t prv, int bits) {
 	return result;
 }
 
-int cp_phpe_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len, bn_t pub) {
-	bn_t g, m, r, s;
-	int size, result = RLC_OK;
+int cp_phpe_enc(bn_t c, bn_t m, bn_t pub) {
+	bn_t g, r, s;
+	int result = RLC_OK;
 
 	bn_null(g);
-	bn_null(m);
 	bn_null(r);
 	bn_null(s);
 
-	size = bn_size_bin(pub);
-
-	if (pub == NULL || in_len <= 0 || in_len > size) {
+	if (pub == NULL || bn_bits(m) > bn_bits(pub)) {
 		return RLC_ERR;
 	}
 
 	TRY {
 		bn_new(g);
-		bn_new(m);
 		bn_new(r);
 		bn_new(s);
 
-		/* Represent m as a padded element of Z_n. */
-		bn_read_bin(m, in, in_len);
 		/* Generate r in Z_n^*. */
 		bn_rand_mod(r, pub);
 		/* Compute c = (g^m)(r^n) mod n^2. */
 		bn_add_dig(g, pub, 1);
 		bn_sqr(s, pub);
-		bn_mxp(m, g, m, s);
+		bn_mxp(c, g, m, s);
 		bn_mxp(r, r, pub, s);
-		bn_mul(m, m, r);
-		bn_mod(m, m, s);
-		if (2 * size <= *out_len) {
-			*out_len = 2 * size;
-			memset(out, 0, *out_len);
-			bn_write_bin(out, *out_len, m);
-		} else {
-			result = RLC_ERR;
-		}
+		bn_mul(c, c, r);
+		bn_mod(c, c, s);
 	}
 	CATCH_ANY {
 		result = RLC_ERR;
 	}
 	FINALLY {
 		bn_free(g);
-		bn_free(m);
 		bn_free(r);
 		bn_free(s);
 	}
@@ -140,30 +126,24 @@ int cp_phpe_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len, bn_t pub) {
 	return result;
 }
 
-int cp_phpe_dec(uint8_t *out, int out_len, uint8_t *in, int in_len, phpe_t prv) {
-	bn_t c, s, t, u, v;
-	int size, result = RLC_OK;
+int cp_phpe_dec(bn_t m, bn_t c, phpe_t prv) {
+	bn_t s, t, u, v;
+	int result = RLC_OK;
 
-	size = bn_size_bin(prv->n);
-
-	if (in_len < 0 || in_len != 2 * size) {
+	if (prv == NULL || bn_bits(c) > 2 * bn_bits(prv->n)) {
 		return RLC_ERR;
 	}
 
-	bn_null(c);
 	bn_null(s);
 	bn_null(t);
 	bn_null(u);
 	bn_null(v);
 
 	TRY {
-		bn_new(c);
 		bn_new(s);
 		bn_new(t);
 		bn_new(u);
 		bn_new(v);
-
-		bn_read_bin(c, in, in_len);
 
 #if !defined(CP_CRT)
 		bn_sub_dig(s, prv->p, 1);
@@ -171,13 +151,13 @@ int cp_phpe_dec(uint8_t *out, int out_len, uint8_t *in, int in_len, phpe_t prv) 
 		bn_mul(s, s, t);
 		/* Compute (c^l mod n^2) * u mod n. */
 		bn_sqr(t, prv->n);
-		bn_mxp(c, c, s, t);
+		bn_mxp(m, c, s, t);
 
-		bn_sub_dig(c, c, 1);
-		bn_div(c, c, prv->n);
+		bn_sub_dig(m, m, 1);
+		bn_div(m, m, prv->n);
 		bn_mod_inv(t, s, prv->n);
-		bn_mul(c, c, t);
-		bn_mod(c, c, prv->n);
+		bn_mul(m, m, t);
+		bn_mod(m, m, prv->n);
 #else
 
 #if MULTI == OPENMP
@@ -217,32 +197,23 @@ int cp_phpe_dec(uint8_t *out, int out_len, uint8_t *in, int in_len, phpe_t prv) 
 #endif
 
 		/* m = (m_p - m_q) mod p. */
-		bn_sub(c, s, u);
-		while (bn_sign(c) == RLC_NEG) {
-			bn_add(c, c, prv->p);
+		bn_sub(m, s, u);
+		while (bn_sign(m) == RLC_NEG) {
+			bn_add(m, m, prv->p);
 		}
-		bn_mod(c, c, prv->p);
+		bn_mod(m, m, prv->p);
 		/* m1 = qInv(m_p - m_q) mod p. */
-		bn_mul(c, c, prv->qi);
-		bn_mod(c, c, prv->p);
+		bn_mul(m, m, prv->qi);
+		bn_mod(m, m, prv->p);
 		/* m = m2 + m1 * q. */
-		bn_mul(c, c, prv->q);
-		bn_add(c, c, u);
-		bn_mod(c, c, prv->n);
+		bn_mul(m, m, prv->q);
+		bn_add(m, m, u);
+		bn_mod(m, m, prv->n);
 #endif
-
-		size = bn_size_bin(c);
-		if (size <= out_len) {
-			memset(out, 0, out_len);
-			bn_write_bin(out + (out_len - size), size, c);
-		} else {
-			result = RLC_ERR;
-		}
 	} CATCH_ANY {
 		result = RLC_ERR;
 	}
 	FINALLY {
-		bn_free(c);
 		bn_free(s);
 		bn_free(t);
 		bn_free(u);

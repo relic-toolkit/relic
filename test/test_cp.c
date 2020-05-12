@@ -192,8 +192,6 @@ static int paillier(void) {
 	int code = RLC_ERR;
 	bn_t a, b, c, d, s, pub;
 	phpe_t prv;
-	uint8_t in[RLC_BN_BITS / 8], out[RLC_BN_BITS / 8];
-	int in_len, out_len;
 	int result;
 
 	bn_null(a);
@@ -217,94 +215,61 @@ static int paillier(void) {
 
 		TEST_BEGIN("paillier encryption/decryption is correct") {
 			TEST_ASSERT(result == RLC_OK, end);
-			in_len = bn_size_bin(pub);
-			out_len = RLC_BN_BITS / 8;
-			memset(in, 0, sizeof(in));
-			rand_bytes(in + 1, (in_len - 1));
-			TEST_ASSERT(cp_phpe_enc(out, &out_len, in, in_len, pub) == RLC_OK,
-					end);
-			TEST_ASSERT(cp_phpe_dec(out, in_len, out, out_len, prv) == RLC_OK,
-					end);
-			TEST_ASSERT(memcmp(in, out, in_len) == 0, end);
+			bn_rand_mod(a, pub);
+			TEST_ASSERT(cp_phpe_enc(c, a, pub) == RLC_OK, end);
+			TEST_ASSERT(cp_phpe_dec(b, c, prv) == RLC_OK, end);
+			TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
 		}
 		TEST_END;
 
 		TEST_BEGIN("paillier encryption/decryption is homomorphic") {
 			TEST_ASSERT(result == RLC_OK, end);
-			in_len = bn_size_bin(pub);
-			out_len = RLC_BN_BITS / 8;
-			memset(in, 0, sizeof(in));
-			rand_bytes(in + 1, (in_len - 1));
-			bn_read_bin(a, in, in_len);
-			TEST_ASSERT(cp_phpe_enc(out, &out_len, in, in_len, pub) == RLC_OK,
-					end);
-			bn_read_bin(b, out, out_len);
-			memset(in, 0, sizeof(in));
-			rand_bytes(in + 1, (in_len - 1));
-			bn_read_bin(c, in, in_len);
-			out_len = RLC_BN_BITS / 8 + 1;
-			TEST_ASSERT(cp_phpe_enc(out, &out_len, in, in_len, pub) == RLC_OK,
-					end);
-			bn_read_bin(d, out, out_len);
-			bn_mul(b, b, d);
+			bn_rand_mod(a, pub);
+			bn_rand_mod(b, pub);
+			TEST_ASSERT(cp_phpe_enc(c, a, pub) == RLC_OK, end);
+			TEST_ASSERT(cp_phpe_enc(d, b, pub) == RLC_OK, end);
+			bn_mul(c, c, d);
 			bn_sqr(d, pub);
-			bn_mod(b, b, d);
-			bn_write_bin(out, out_len, b);
-			TEST_ASSERT(cp_phpe_dec(out, in_len, out, out_len, prv) == RLC_OK,
-					end);
-			bn_add(a, a, c);
-			bn_write_bin(in, in_len, a);
-			bn_read_bin(a, out, in_len);
-			TEST_ASSERT(memcmp(in, out, in_len) == 0, end);
+			bn_mod(c, c, d);
+			TEST_ASSERT(cp_phpe_dec(d, c, prv) == RLC_OK, end);
+			bn_add(a, a, b);
+			bn_mod(a, a, pub);
+			TEST_ASSERT(bn_cmp(a, d) == RLC_EQ, end);
 		}
 		TEST_END;
 
-		for (int k = 2; k <= 8; k++) {
-			result = cp_ghpe_gen(pub, s, RLC_BN_BITS / k);
+		for (int k = 1; k <= 2; k++) {
+			result = cp_ghpe_gen(pub, s, RLC_BN_BITS / (2 * k));
+			util_print("(s = %d) ", k);
 			TEST_BEGIN("generalized paillier encryption/decryption is correct") {
 				TEST_ASSERT(result == RLC_OK, end);
-				in_len = bn_size_bin(pub);
-				out_len = RLC_BN_BITS / 8;
-				memset(in, 0, sizeof(in));
-				rand_bytes(in + 1, (in_len - 1));
-				TEST_ASSERT(cp_ghpe_enc(out, &out_len, in, in_len, pub) == RLC_OK,
-						end);
-				TEST_ASSERT(cp_ghpe_dec(out, in_len, out, out_len, pub, s) == RLC_OK,
-						end);
-				TEST_ASSERT(memcmp(in, out, in_len) == 0, end);
+				bn_rand(a, RLC_POS, k * (bn_bits(pub) - 1));
+				TEST_ASSERT(cp_ghpe_enc(c, a, pub, k) == RLC_OK, end);
+				TEST_ASSERT(cp_ghpe_dec(b, c, pub, s, k) == RLC_OK, end);
+				TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
 			}  TEST_END;
-		}
 
-		for (int k = 2; k <= 8; k++) {
-			result = cp_ghpe_gen(pub, s, RLC_BN_BITS / k);
+			util_print("(s = %d) ", k);
 			TEST_BEGIN("generalized paillier encryption/decryption is homomorphic") {
 				TEST_ASSERT(result == RLC_OK, end);
-				in_len = bn_size_bin(pub);
-				out_len = RLC_BN_BITS / 8;
-				memset(in, 0, sizeof(in));
-				rand_bytes(in + 1, (in_len - 1));
-				bn_read_bin(a, in, in_len);
-				TEST_ASSERT(cp_ghpe_enc(out, &out_len, in, in_len, pub) == RLC_OK,
-						end);
-				bn_read_bin(b, out, out_len);
-				memset(in, 0, sizeof(in));
-				rand_bytes(in + 1, (in_len - 1));
-				bn_read_bin(c, in, in_len);
-				out_len = RLC_BN_BITS / 8;
-				TEST_ASSERT(cp_ghpe_enc(out, &out_len, in, in_len, pub) == RLC_OK,
-						end);
-				bn_read_bin(d, out, out_len);
-				bn_mul(b, b, d);
+				bn_rand(a, RLC_POS, k * (bn_bits(pub) - 1));
+				bn_rand(b, RLC_POS, k * (bn_bits(pub) - 1));
+				TEST_ASSERT(cp_ghpe_enc(c, a, pub, k) == RLC_OK, end);
+				TEST_ASSERT(cp_ghpe_enc(d, b, pub, k) == RLC_OK, end);
+				bn_mul(c, c, d);
 				bn_sqr(d, pub);
-				bn_mod(b, b, d);
-				bn_write_bin(out, out_len, b);
-				TEST_ASSERT(cp_ghpe_dec(out, in_len, out, out_len, pub, s) == RLC_OK,
-						end);
-				bn_add(a, a, c);
+				if (k == 2) {
+					bn_mul(d, d, pub);
+				}
+				bn_mod(c, c, d);
+				TEST_ASSERT(cp_ghpe_dec(c, c, pub, s, k) == RLC_OK, end);
+				bn_add(a, a, b);
+				bn_copy(d, pub);
+				if (k == 2) {
+					bn_mul(d, d, pub);
+				}
 				bn_mod(a, a, d);
-				bn_write_bin(in, in_len, a);
-				bn_read_bin(a, out, in_len);
-				TEST_ASSERT(memcmp(in, out, in_len) == 0, end);
+				TEST_ASSERT(bn_cmp(a, c) == RLC_EQ, end);
 			}
 			TEST_END;
 		}

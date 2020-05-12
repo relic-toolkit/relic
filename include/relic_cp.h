@@ -771,28 +771,54 @@ int cp_phpe_gen(bn_t pub, phpe_t prv, int bits);
 /**
  * Encrypts using the Paillier cryptosystem.
  *
- * @param[out] out			- the output buffer.
- * @param[in, out] out_len	- the buffer capacity and number of bytes written.
- * @param[in] in			- the input buffer.
- * @param[in] in_len		- the number of bytes to encrypt.
- * @param[in] pub				- the public key.
+ * @param[out] c			- the ciphertex, represented as an integer.
+ * @param[in] m				- the plaintext as an integer.
+ * @param[in] pub			- the public key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_phpe_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len, bn_t pub);
+int cp_phpe_enc(bn_t c, bn_t m, bn_t pub);
 
 /**
- * Decrypts using the Paillier cryptosystem. Since this system is homomorphic,
- * no padding can be applied and the user is responsible for specifying the
- * resulting plaintext size.
+ * Decrypts using the Paillier cryptosystem.
  *
- * @param[out] out			- the output buffer.
- * @param[out] out_len		- the number of bytes to write in the output buffer.
- * @param[in] in_len		- the number of bytes to decrypt.
- * @param[in] n				- the public key.
- * @param[out] prv			- the private key.
+ * @param[out] m			- the plaintext, represented as an integer.
+ * @param[in] c				- the ciphertex as an integer.
+ * @param[in] prv			- the private key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_phpe_dec(uint8_t *out, int out_len, uint8_t *in, int in_len, phpe_t prv);
+int cp_phpe_dec(bn_t m, bn_t c, phpe_t prv);
+
+/**
+ * Generates a key pair for Genealized Homomorphic Probabilistic Encryption.
+ *
+ * @param[out] pub			- the public key.
+ * @param[out] prv			- the private key.
+ * @param[in] bits			- the key length in bits.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int cp_ghpe_gen(bn_t pub, bn_t prv, int bits);
+
+/**
+ * Encrypts using the Generalized Paillier cryptosystem.
+ *
+ * @param[out] c			- the ciphertext.
+ * @param[in] m				- the plaintext.
+ * @param[in] pub			- the public key.
+ * @param[in] s 			- the block length parameter.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int cp_ghpe_enc(bn_t c, bn_t m, bn_t pub, int s);
+
+/**
+ * Decrypts using the Generalized Paillier cryptosystem.
+ *
+ * @param[out] m			- the plaintext.
+ * @param[in] c				- the ciphertext.
+ * @param[in] pub			- the public key.
+ * @param[in] s 			- the block length parameter.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int cp_ghpe_dec(bn_t m, bn_t c, bn_t pub, bn_t prv, int s);
 
 /**
  * Generates an ECDH key pair.

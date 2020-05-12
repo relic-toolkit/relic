@@ -86,30 +86,23 @@ int cp_ghpe_gen(bn_t pub, bn_t prv, int bits) {
 	return result;
 }
 
-int cp_ghpe_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len, bn_t pub) {
-	bn_t g, m, r, t;
-	int s, size, result = RLC_OK;
+int cp_ghpe_enc(bn_t c, bn_t m, bn_t pub, int s) {
+	bn_t g, r, t;
+	int result = RLC_OK;
 
 	bn_null(g);
-	bn_null(m);
 	bn_null(r);
-	bn_null(s);
+	bn_null(t);
 
-	size = bn_size_bin(pub);
-	s = RLC_CEIL(in_len, size);
-
-	if (pub == NULL || in_len <= 0 || s < 1) {
+	if (pub == NULL || bn_bits(m) > s * bn_bits(pub)) {
 		return RLC_ERR;
 	}
 
 	TRY {
 		bn_new(g);
-		bn_new(m);
 		bn_new(r);
 		bn_new(t);
 
-		/* Represent m as a padded element of Z_n^s. */
-		bn_read_bin(m, in, in_len);
 		/* Generate r in Z_n^*. */
 		bn_rand_mod(r, pub);
 		/* Compute c = (g^m)(r^n) mod n^2. */
@@ -121,27 +114,19 @@ int cp_ghpe_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len, bn_t pub) {
 			bn_mul(t, t, pub);
 		}
 
-		bn_mxp(m, g, m, t);
+		bn_mxp(c, g, m, t);
 		for (int i = 0; i < s; i++) {
 			bn_mxp(r, r, pub, t);
 		}
 
-		bn_mul(m, m, r);
-		bn_mod(m, m, t);
-		if ((s + 1) * size <= *out_len) {
-			*out_len = (s + 1) * size;
-			memset(out, 0, *out_len);
-			bn_write_bin(out, *out_len, m);
-		} else {
-			result = RLC_ERR;
-		}
+		bn_mul(c, c, r);
+		bn_mod(c, c, t);
 	}
 	CATCH_ANY {
 		result = RLC_ERR;
 	}
 	FINALLY {
 		bn_free(g);
-		bn_free(m);
 		bn_free(r);
 		bn_free(t);
 	}
@@ -149,36 +134,31 @@ int cp_ghpe_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len, bn_t pub) {
 	return result;
 }
 
-int cp_ghpe_dec(uint8_t *out, int out_len, uint8_t *in, int in_len, bn_t pub, bn_t prv) {
-	bn_t c, i, l, r, t, u, v;
-	int s, size, result = RLC_OK;
+int cp_ghpe_dec(bn_t m, bn_t c, bn_t pub, bn_t prv, int s) {
+	bn_t i, l, r, t, u, v, x;
+	int result = RLC_OK;
 	dig_t fk;
 
-	size = bn_size_bin(pub);
-	s = RLC_CEIL(in_len, size) - 1;
-
-	if (in_len < 0 || s < 1) {
+	if (bn_bits(c) > (s + 1) * bn_bits(pub)) {
 		return RLC_ERR;
 	}
 
-	bn_null(c);
 	bn_null(i);
 	bn_null(l);
 	bn_null(r);
 	bn_null(t);
 	bn_null(u);
 	bn_null(v);
+	bn_null(x);
 
 	TRY {
-		bn_new(c);
 		bn_new(i);
 		bn_new(l);
 		bn_new(r);
 		bn_new(t);
 		bn_new(u);
 		bn_new(v);
-
-		bn_read_bin(c, in, in_len);
+		bn_new(x);
 
 		/* t = n^(s + 1). */
 		bn_copy(t, pub);
@@ -187,14 +167,14 @@ int cp_ghpe_dec(uint8_t *out, int out_len, uint8_t *in, int in_len, bn_t pub, bn
 		}
 
 		/* Compute (c^l mod n^(s + 1)) * u mod n. */
-		bn_mxp(c, c, prv, t);
+		bn_mxp(m, c, prv, t);
 
 		bn_zero(i);
 		bn_copy(t, pub);
 		for (int j = 1; j <= s; j++) {
 			/* u = t1 = L(c mod n^(j+1)). */
 			bn_mul(r, t, pub);
-			bn_mod(u, c, r);
+			bn_mod(u, m, r);
 			bn_sub_dig(u, u, 1);
 			bn_div(u, u, pub);
 			/* v = t2 = i. */
@@ -208,10 +188,14 @@ int cp_ghpe_dec(uint8_t *out, int out_len, uint8_t *in, int in_len, bn_t pub, bn
 				/* t2 = t2 * i mod n^j. */
 				bn_mul(v, v, i);
 				bn_mod(v, v, t);
-				/* t2 = t1 - t2 * n^(k-1)/k! mod n^j. */
-				bn_mul(v, v, l);
-				bn_div_dig(v, v, fk);
-				bn_sub(u, u, v);
+				/* t1 = t1 - t2 * n^(k-1)/k! mod n^j. */
+				bn_mul(x, v, l);
+				bn_div_dig(x, x, fk);
+				bn_mod(x, x, t);
+				bn_sub(u, u, x);
+				while (bn_sign(u) == RLC_NEG) {
+					bn_add(u, u, t);
+				}
 				bn_mod(u, u, t);
 				bn_mul(l, l, pub);
 			}
@@ -220,29 +204,20 @@ int cp_ghpe_dec(uint8_t *out, int out_len, uint8_t *in, int in_len, bn_t pub, bn
 				bn_copy(i, u);
 			}
 		}
-
-		bn_mod_inv(t, prv, t);
-		bn_mul(c, u, t);
-		bn_mod(c, c, pub);
-
-		size = bn_size_bin(c);
-		if (size <= out_len) {
-			memset(out, 0, out_len);
-			bn_write_bin(out + (out_len - size), size, c);
-		} else {
-			result = RLC_ERR;
-		}
+		bn_mod_inv(v, prv, t);
+		bn_mul(m, u, v);
+		bn_mod(m, m, t);
 	} CATCH_ANY {
 		result = RLC_ERR;
 	}
 	FINALLY {
-		bn_free(c);
 		bn_free(i);
 		bn_free(l);
 		bn_free(r);
 		bn_free(t);
 		bn_free(u);
 		bn_free(v);
+		bn_free(x);
 	}
 
 	return result;
