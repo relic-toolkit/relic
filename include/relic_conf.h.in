@@ -115,6 +115,8 @@
 #cmakedefine WITH_MD
 /** Build cryptographic protocols. */
 #cmakedefine WITH_CP
+/** Build Multi-party computation primitives. */
+#cmakedefine WITH_MPC
 
 /** Easy C-only backend. */
 #define EASY	 1

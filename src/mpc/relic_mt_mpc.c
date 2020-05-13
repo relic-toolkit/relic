@@ -57,3 +57,69 @@ void mt_gen(mt_t tri[2], bn_t order) {
 		bn_add(tri[0]->c, tri[0]->c, order);
 	}
 }
+
+void mt_mul_lcl(bn_t d, bn_t e, bn_t x, bn_t y, bn_t n, mt_t tri) {
+	bn_t t;
+
+	bn_null(t);
+
+	TRY {
+		bn_new(t);
+
+		/* Compute public values for transmission. */
+		bn_sub(d, x, tri->a);
+		if (bn_sign(d) == RLC_NEG) {
+			bn_add(d, d, n);
+		}
+		bn_mod(d, d, n);
+		bn_sub(e, y, tri->b);
+		if (bn_sign(e) == RLC_NEG) {
+			bn_add(e, e, n);
+		}
+		bn_mod(e, e, n);
+	} CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	} FINALLY {
+		g1_free(t);
+	}
+}
+
+void mt_mul_bct(bn_t d[2], bn_t e[2], bn_t n) {
+	bn_add(d[0], d[0], d[1]);
+	bn_mod(d[0], d[0], n);
+	bn_copy(d[1], d[0]);
+	bn_add(e[0], e[0], e[1]);
+	bn_mod(e[0], e[0], n);
+	bn_copy(e[1], e[0]);
+}
+
+void mt_mul_mpc(bn_t r, bn_t x, bn_t y, mt_t tri, bn_t d, bn_t e, bn_t n, int party) {
+	bn_t t;
+
+	bn_null(t);
+
+	TRY {
+		bn_new(t);
+
+		if (party == 0) {
+			bn_sub(t, y, e);
+			if (bn_sign(t) == RLC_NEG) {
+				bn_add(t, t, n);
+			}
+			bn_mod(t, t, n);
+		} else {
+			bn_copy(t, y);
+		}
+		bn_mul(t, t, d);
+		bn_mod(t, t, n);
+		bn_mul(r, e, x);
+		bn_mod(r, r, n);
+		bn_add(r, r, t);
+		bn_add(r, r, tri->c);
+		bn_mod(r, r, n);
+	} CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	} FINALLY {
+		bn_free(t);
+	}
+}

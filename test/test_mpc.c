@@ -38,6 +38,7 @@
 static int triple(void) {
 	int code = RLC_ERR;
 	bn_t n, t, u;
+	bn_t d[2], e[2], x[2], y[2];
 	mt_t tri[2];
 
 	bn_null(n);
@@ -53,6 +54,17 @@ static int triple(void) {
 		mt_new(tri[0]);
 		mt_new(tri[1]);
 
+		for (int j = 0; j < 2; j++) {
+			bn_null(d[j]);
+			bn_null(e[j]);
+			bn_null(x[j]);
+			bn_null(y[j]);
+			bn_new(d[j]);
+			bn_new(e[j]);
+			bn_new(x[j]);
+			bn_new(y[j]);
+		}
+
 		bn_gen_prime(n, RLC_BN_BITS);
 
 		TEST_BEGIN("multiplication triples are generated correctly") {
@@ -67,6 +79,41 @@ static int triple(void) {
 			bn_mod(u, u, n);
 			TEST_ASSERT(bn_cmp(t, u) == RLC_EQ, end);
 		} TEST_END;
+
+		TEST_BEGIN("multiplication triples are consistent") {
+			mt_gen(tri, n);
+			/* Generate random inputs. */
+			bn_rand_mod(x[0], n);
+			bn_rand_mod(y[0], n);
+			bn_mul(t, x[0], y[0]);
+			bn_mod(t, t, n);
+			/* Secret share inputs. */
+			bn_rand_mod(x[1], n);
+			bn_sub(x[0], x[0], x[1]);
+			if (bn_sign(x[0]) == RLC_NEG) {
+				bn_add(x[0], x[0], n);
+			}
+			bn_mod(x[0], x[0], n);
+			bn_rand_mod(y[1], n);
+			bn_sub(y[0], y[0], y[1]);
+			if (bn_sign(y[0]) == RLC_NEG) {
+				bn_add(y[0], y[0], n);
+			}
+			bn_mod(y[0], y[0], n);
+
+			/* Compute public values locally. */
+			mt_mul_lcl(d[0], e[0], x[0], y[0], n, tri[0]);
+			mt_mul_lcl(d[1], e[1], x[1], y[1], n, tri[1]);
+			/* Broadcast public values. */
+			mt_mul_bct(d, e, n);
+			TEST_ASSERT(bn_cmp(d[0], d[1]) == RLC_EQ, end);
+			TEST_ASSERT(bn_cmp(e[0], e[1]) == RLC_EQ, end);
+			mt_mul_mpc(d[0], x[0], y[0], tri[0], d[0], e[0], n, 0);
+			mt_mul_mpc(d[1], x[1], y[1], tri[1], d[1], e[1], n, 1);
+			bn_add(d[0], d[0], d[1]);
+			bn_mod(d[0], d[0], n);
+			TEST_ASSERT(bn_cmp(t, d[0]) == RLC_EQ, end);
+		} TEST_END;
 	} CATCH_ANY {
 		THROW(ERR_CAUGHT);
 	} FINALLY {
@@ -75,6 +122,12 @@ static int triple(void) {
 		bn_free(u);
 		mt_free(tri[0]);
 		mt_free(tri[1]);
+		for (int j = 0; j < 2; j++) {
+			bn_free(d[j]);
+			bn_free(e[j]);
+			bn_free(x[j]);
+			bn_free(y[j]);
+		}
 	}
 
 	code = RLC_OK;
