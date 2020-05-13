@@ -67,11 +67,15 @@ void mt_mul_lcl(bn_t d, bn_t e, bn_t x, bn_t y, bn_t n, mt_t tri) {
 		bn_new(t);
 
 		/* Compute public values for transmission. */
+
+		/* [d] = [x] - [a]. */
 		bn_sub(d, x, tri->a);
 		if (bn_sign(d) == RLC_NEG) {
 			bn_add(d, d, n);
 		}
 		bn_mod(d, d, n);
+
+		/* [e] = [y] - [b]. */
 		bn_sub(e, y, tri->b);
 		if (bn_sign(e) == RLC_NEG) {
 			bn_add(e, e, n);
@@ -85,6 +89,7 @@ void mt_mul_lcl(bn_t d, bn_t e, bn_t x, bn_t y, bn_t n, mt_t tri) {
 }
 
 void mt_mul_bct(bn_t d[2], bn_t e[2], bn_t n) {
+	/* Open values d and e. */
 	bn_add(d[0], d[0], d[1]);
 	bn_mod(d[0], d[0], n);
 	bn_copy(d[1], d[0]);
@@ -93,7 +98,7 @@ void mt_mul_bct(bn_t d[2], bn_t e[2], bn_t n) {
 	bn_copy(e[1], e[0]);
 }
 
-void mt_mul_mpc(bn_t r, bn_t x, bn_t y, mt_t tri, bn_t d, bn_t e, bn_t n, int party) {
+void mt_mul_mpc(bn_t r, bn_t d, bn_t e, mt_t tri, bn_t n, int party) {
 	bn_t t;
 
 	bn_null(t);
@@ -101,20 +106,23 @@ void mt_mul_mpc(bn_t r, bn_t x, bn_t y, mt_t tri, bn_t d, bn_t e, bn_t n, int pa
 	TRY {
 		bn_new(t);
 
+		/* One party computes public value d*([b] + e), the other just d[b]. */
 		if (party == 0) {
-			bn_sub(t, y, e);
+			bn_add(t, tri->b, e);
 			if (bn_sign(t) == RLC_NEG) {
 				bn_add(t, t, n);
 			}
 			bn_mod(t, t, n);
 		} else {
-			bn_copy(t, y);
+			bn_copy(t, tri->b);
 		}
 		bn_mul(t, t, d);
 		bn_mod(t, t, n);
-		bn_mul(r, e, x);
+		/* Compute r = [a]*e*/
+		bn_mul(r, tri->a, e);
 		bn_mod(r, r, n);
 		bn_add(r, r, t);
+		/* r = [a][e] + d[b] + de + c = [xy] */
 		bn_add(r, r, tri->c);
 		bn_mod(r, r, n);
 	} CATCH_ANY {

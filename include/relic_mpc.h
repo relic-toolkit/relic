@@ -154,10 +154,10 @@ typedef pt_st *pt_t;
 
 #elif ALLOC == STACK
 #define mt_free(A)															\
-	A = NULL;																\
 	bn_free(A)->a);															\
 	bn_free((A)->b);														\
 	bn_free((A)->c);														\
+	A = NULL;																\
 
 #endif
 
@@ -239,18 +239,17 @@ typedef pt_st *pt_t;
  */
 void mt_gen(mt_t triple[2], bn_t order);
 
-void g1_mul_lcl(bn_t d, g1_t q, bn_t x, g1_t p, mt_t tri);
+void g1_mul_lcl(bn_t d, g1_t q, g1_t b, bn_t x, g1_t p, mt_t tri);
 
 void g1_mul_bct(bn_t d[2], g1_t q[2]);
 
-void g1_mul_mpc(g1_t r, bn_t x, g1_t p, mt_t tri, bn_t d, g1_t q, int party);
+void g1_mul_mpc(g1_t r, bn_t d, g1_t q, mt_t tri, g1_t b, int party);
 
-void g2_mul_lcl(bn_t d, g2_t q, bn_t x, g2_t p, mt_t tri);
+void g2_mul_lcl(bn_t d, g2_t q, g2_t b, bn_t x, g2_t p, mt_t tri);
 
 void g2_mul_bct(bn_t d[2], g2_t q[2]);
 
-void g2_mul_mpc(g2_t r, bn_t x, g2_t p, mt_t tri, bn_t d, g2_t q, int party);
-
+void g2_mul_mpc(g2_t r, bn_t d, g2_t q, mt_t tri, g2_t b, int party);
 /**
  * Generates a pairing triple.
  *
@@ -281,13 +280,11 @@ void pc_map_bct(g1_t d[2], g2_t e[2]);
  * Computes a pairing using a pairing triple.
  *
  * @param[out] r 			- the pairing result.
- * @param[in] p				- the share of the first pairnig argument.
- * @param[in] q				- the share of the second pairing argument.
+ * @param[in] d1				- the first public value.
+ * @param[in] d2				- the second public value.
  * @param[in] triple		- the pairing triple.
- * @param[in] d				- the first public value.
- * @param[in] e				- the second public value.
  * @param[in] party			- the number of the party executing the computation.
  */
-void pc_map_mpc(gt_t r, g1_t p, g2_t q, pt_t triple, g1_t d, g2_t e, int party);
+void pc_map_mpc(gt_t r, g1_t d1, g2_t d2, pt_t triple, int party);
 
 #endif /* !RLC_MPC_H */

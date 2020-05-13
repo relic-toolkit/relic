@@ -37,26 +37,29 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void g1_mul_lcl(bn_t d, g1_t q, bn_t x, g1_t p, mt_t tri) {
+void g1_mul_lcl(bn_t d, g1_t q, g1_t b, bn_t x, g1_t p, mt_t tri) {
 	bn_t n;
-	g1_t t;
 
 	bn_null(n);
-	g1_null(t);
 
 	TRY {
 		bn_new(n);
-		g1_new(t);
 
 		/* Compute public values for transmission. */
+
+		/* [d] = [x] - [a]. */
 		g1_get_ord(n);
 		bn_sub(d, x, tri->a);
 		if (bn_sign(d) == RLC_NEG) {
 			bn_add(d, d, n);
 		}
 		bn_mod(d, d, n);
-		g1_mul_gen(t, tri->b);
-		g1_sub(q, p, t);
+
+		/* [Q] = [P] - [B] = [b]G. */
+		/* Copy first to avoid overwriting P. */
+		g1_copy(q, p);
+		g1_mul_gen(b, tri->b);
+		g1_sub(q, q, b);
 		g1_norm(q, q);
 	} CATCH_ANY {
 		THROW(ERR_CAUGHT);
@@ -73,7 +76,7 @@ void g1_mul_bct(bn_t d[2], g1_t q[2]) {
 
 	TRY {
 		bn_new(n);
-
+		/* Open values d and Q. */
 		g1_get_ord(n);
 		bn_add(d[0], d[0], d[1]);
 		bn_mod(d[0], d[0], n);
@@ -88,25 +91,26 @@ void g1_mul_bct(bn_t d[2], g1_t q[2]) {
 	}
 }
 
-void g1_mul_mpc(g1_t r, bn_t x, g1_t p, mt_t tri, bn_t d, g1_t q, int party) {
+void g1_mul_mpc(g1_t r, bn_t d, g1_t q, mt_t tri, g1_t b, int party) {
 	g1_t t;
 
 	g1_null(t);
 
 	TRY {
 		g1_new(t);
-		g1_new(u);
 
 		if (party == 0) {
-			g1_sub(t, p, q);
+			/* For one party, compute [B] + Q. */
+			g1_add(t, b, q);
 			g1_norm(t, t);
 		} else {
-			g1_copy(t, p);
+			g1_copy(t, b);
 		}
-		g1_mul(r, q, x);
-		g1_mul(t, t, d);
-		g1_add(r, r, t);
+		/* Compute [a]Q + d([B] + Q) or d[B]. */
+		g1_mul_sim(r, q, tri->a, t, d);
+		/* Compute [C] = [ab]G. */
 		g1_mul_gen(t, tri->c);
+		/* R = [a]Q + d[B] + dQ + [C] = [xy] */
 		g1_add(r, r, t);
 		g1_norm(r, r);
 	} CATCH_ANY {
@@ -116,26 +120,29 @@ void g1_mul_mpc(g1_t r, bn_t x, g1_t p, mt_t tri, bn_t d, g1_t q, int party) {
 	}
 }
 
-void g2_mul_lcl(bn_t d, g2_t q, bn_t x, g2_t p, mt_t tri) {
+void g2_mul_lcl(bn_t d, g2_t q, g2_t b, bn_t x, g2_t p, mt_t tri) {
 	bn_t n;
-	g2_t t;
 
 	bn_null(n);
-	g2_null(t);
 
 	TRY {
 		bn_new(n);
-		g2_new(t);
 
 		/* Compute public values for transmission. */
+
+		/* [d] = [x] - [a]. */
 		g2_get_ord(n);
 		bn_sub(d, x, tri->a);
 		if (bn_sign(d) == RLC_NEG) {
 			bn_add(d, d, n);
 		}
 		bn_mod(d, d, n);
-		g2_mul_gen(t, tri->b);
-		g2_sub(q, p, t);
+
+		/* [Q] = [P] - [B] = [b]G. */
+		/* Copy first to avoid overwriting P. */
+		g2_copy(q, p);
+		g2_mul_gen(b, tri->b);
+		g2_sub(q, q, b);
 		g2_norm(q, q);
 	} CATCH_ANY {
 		THROW(ERR_CAUGHT);
@@ -152,7 +159,7 @@ void g2_mul_bct(bn_t d[2], g2_t q[2]) {
 
 	TRY {
 		bn_new(n);
-
+		/* Open values d and Q. */
 		g2_get_ord(n);
 		bn_add(d[0], d[0], d[1]);
 		bn_mod(d[0], d[0], n);
@@ -167,25 +174,26 @@ void g2_mul_bct(bn_t d[2], g2_t q[2]) {
 	}
 }
 
-void g2_mul_mpc(g2_t r, bn_t x, g2_t p, mt_t tri, bn_t d, g2_t q, int party) {
+void g2_mul_mpc(g2_t r, bn_t d, g2_t q, mt_t tri, g2_t b, int party) {
 	g2_t t;
 
 	g2_null(t);
 
 	TRY {
 		g2_new(t);
-		g2_new(u);
 
 		if (party == 0) {
-			g2_sub(t, p, q);
+			/* For one party, compute [B] + Q. */
+			g2_add(t, b, q);
 			g2_norm(t, t);
 		} else {
-			g2_copy(t, p);
+			g2_copy(t, b);
 		}
-		g2_mul(r, q, x);
-		g2_mul(t, t, d);
-		g2_add(r, r, t);
+		/* Compute [a]Q + d([B] + Q) or d[B]. */
+		g2_mul_sim(r, q, tri->a, t, d);
+		/* Compute [C] = [ab]G. */
 		g2_mul_gen(t, tri->c);
+		/* R = [a]Q + d[B] + dQ + [C] = [xy] */
 		g2_add(r, r, t);
 		g2_norm(r, r);
 	} CATCH_ANY {
@@ -244,7 +252,7 @@ void pc_map_bct(g1_t d[2], g2_t e[2]) {
 	g2_copy(e[1], e[0]);
 }
 
-void pc_map_mpc(gt_t r, g1_t p, g2_t q, pt_t triple, g1_t d, g2_t e, int party) {
+void pc_map_mpc(gt_t r, g1_t d1, g2_t d2, pt_t triple, int party) {
 	gt_t t;
 	g1_t _p[2];
 	g2_t _q[2];
@@ -262,18 +270,18 @@ void pc_map_mpc(gt_t r, g1_t p, g2_t q, pt_t triple, g1_t d, g2_t e, int party) 
 
 		/* Compute the pairing in MPC. */
 		if (party == 0) {
-			g1_copy(_p[0], p);
-			g2_copy(_q[0], e);
-			g1_copy(_p[1], d);
-			g2_sub(_q[1], q, e);
-			g2_norm(_q[1], _q[1]);
+			g1_add(_p[0], triple->a, d1);
+			g1_norm(_p[0], _p[0]);
+			g2_copy(_q[0], d2);
+			g1_copy(_p[1], d1);
+			g2_copy(_q[1], triple->b);
 			pc_map_sim(t, _p, _q, 2);
 			gt_mul(r, triple->c, t);
 		} else {
-			g1_copy(_p[0], p);
-			g2_copy(_q[0], e);
-			g1_copy(_p[1], d);
-			g2_copy(_q[1], q);
+			g1_copy(_p[0], triple->a);
+			g2_copy(_q[0], d2);
+			g1_copy(_p[1], d1);
+			g2_copy(_q[1], triple->b);
 			pc_map_sim(t, _p, _q, 2);
 			gt_mul(r, triple->c, t);
 		}

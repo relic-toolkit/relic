@@ -1387,7 +1387,7 @@ int cp_pss_ver(g1_t a, g1_t b, uint8_t *msg, int len, g2_t g, g2_t x, g2_t y);
 
 int cp_mpss_gen(bn_t q[2], bn_t s[2], g2_t g, g2_t x[2], g2_t y[2]);
 
-int cp_mpss_sig(g1_t b, g1_t a, bn_t m, bn_t r, bn_t s);
+int cp_mpss_sig(g1_t b, g1_t a, bn_t m, bn_t r, bn_t s, mt_t m_t, mt_t s_t);
 
 int cp_mpss_lcl(g1_t d, g2_t e, g1_t a, bn_t m, g2_t x, g2_t y, pt_t t);
 

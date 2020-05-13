@@ -108,8 +108,8 @@ static int triple(void) {
 			mt_mul_bct(d, e, n);
 			TEST_ASSERT(bn_cmp(d[0], d[1]) == RLC_EQ, end);
 			TEST_ASSERT(bn_cmp(e[0], e[1]) == RLC_EQ, end);
-			mt_mul_mpc(d[0], x[0], y[0], tri[0], d[0], e[0], n, 0);
-			mt_mul_mpc(d[1], x[1], y[1], tri[1], d[1], e[1], n, 1);
+			mt_mul_mpc(d[0], d[0], e[0], tri[0], n, 0);
+			mt_mul_mpc(d[1], d[1], e[1], tri[1], n, 1);
 			bn_add(d[0], d[0], d[1]);
 			bn_mod(d[0], d[0], n);
 			TEST_ASSERT(bn_cmp(t, d[0]) == RLC_EQ, end);
@@ -198,14 +198,14 @@ static int pairing(void) {
 			bn_mod(k[0], k[0], n);
 
 			/* Compute public values locally. */
-			g1_mul_lcl(l[0], d[0], k[0], p[0], tri[0]);
-			g1_mul_lcl(l[1], d[1], k[1], p[1], tri[1]);
+			g1_mul_lcl(l[0], d[0], p[0], k[0], p[0], tri[0]);
+			g1_mul_lcl(l[1], d[1], p[1], k[1], p[1], tri[1]);
 			/* Broadcast public values. */
 			g1_mul_bct(l, d);
 			TEST_ASSERT(bn_cmp(l[0], l[1]) == RLC_EQ, end);
 			TEST_ASSERT(g1_cmp(d[0], d[1]) == RLC_EQ, end);
-			g1_mul_mpc(d[0], k[0], p[0], tri[0], l[0], d[0], 0);
-			g1_mul_mpc(d[1], k[1], p[1], tri[1], l[1], d[1], 1);
+			g1_mul_mpc(d[0], l[0], d[0], tri[0], p[0], 0);
+			g1_mul_mpc(d[1], l[1], d[1], tri[1], p[1], 1);
 			g1_add(d[0], d[0], d[1]);
 			g1_norm(d[0], d[0]);
 			TEST_ASSERT(g1_cmp(_p, d[0]) == RLC_EQ, end);
@@ -226,14 +226,14 @@ static int pairing(void) {
 			bn_mod(k[0], k[0], n);
 
 			/* Compute public values locally. */
-			g2_mul_lcl(l[0], e[0], k[0], q[0], tri[0]);
-			g2_mul_lcl(l[1], e[1], k[1], q[1], tri[1]);
+			g2_mul_lcl(l[0], e[0], q[0], k[0], q[0], tri[0]);
+			g2_mul_lcl(l[1], e[1], q[1], k[1], q[1], tri[1]);
 			/* Broadcast public values. */
 			g2_mul_bct(l, e);
 			TEST_ASSERT(bn_cmp(l[0], l[1]) == RLC_EQ, end);
 			TEST_ASSERT(g2_cmp(e[0], e[1]) == RLC_EQ, end);
-			g2_mul_mpc(e[0], k[0], q[0], tri[0], l[0], e[0], 0);
-			g2_mul_mpc(e[1], k[1], q[1], tri[1], l[1], e[1], 1);
+			g2_mul_mpc(e[0], l[0], e[0], tri[0], q[0], 0);
+			g2_mul_mpc(e[1], l[1], e[1], tri[1], q[1], 1);
 			g2_add(e[0], e[0], e[1]);
 			g2_norm(e[0], e[0]);
 			TEST_ASSERT(g2_cmp(_q, e[0]) == RLC_EQ, end);
@@ -268,8 +268,8 @@ static int pairing(void) {
 			pc_map_bct(d, e);
 			TEST_ASSERT(g1_cmp(d[0], d[1]) == RLC_EQ, end);
 			TEST_ASSERT(g2_cmp(e[0], e[1]) == RLC_EQ, end);
-			pc_map_mpc(r[0], p[0], q[0], t[0], d[0], e[0], 0);
-			pc_map_mpc(r[1], p[1], q[1], t[1], d[1], e[1], 1);
+			pc_map_mpc(r[0], d[0], e[0], t[0], 0);
+			pc_map_mpc(r[1], d[1], e[1], t[1], 1);
 			gt_mul(e2, r[0], r[1]);
 			TEST_ASSERT(gt_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
