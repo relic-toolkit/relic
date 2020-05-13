@@ -63,7 +63,11 @@ static int triple(void) {
 			bn_mod(u, u, n);
 			bn_mul(t, t, u);
 			bn_mod(t, t, n);
+<<<<<<< HEAD
 			bn_add(u, tri[0]->c, tri[1]->c);
+=======
+			bn_mul(u, tri[0]->c, tri[1]->c);
+>>>>>>> aed8579eac2dedddf8e1478237772192ca959d90
 			bn_mod(u, u, n);
 			TEST_ASSERT(bn_cmp(t, u) == RLC_EQ, end);
 		} TEST_END;
@@ -82,6 +86,7 @@ static int triple(void) {
 	return code;
 }
 
+<<<<<<< HEAD
 static int pairing(void) {
 	int j, code = RLC_ERR;
 	g1_t d[2], p[2];
@@ -176,6 +181,8 @@ static int pairing(void) {
 }
 
 
+=======
+>>>>>>> aed8579eac2dedddf8e1478237772192ca959d90
 int main(void) {
 
 	if (core_init() != RLC_OK) {
@@ -184,13 +191,18 @@ int main(void) {
 	}
 
 	util_banner("Tests for the MPC module:\n", 0);
+<<<<<<< HEAD
 	util_banner("Utilities:", 1);
 
 #if defined(WITH_BN)
+=======
+
+>>>>>>> aed8579eac2dedddf8e1478237772192ca959d90
 	if (triple()) {
 		core_clean();
 		return 1;
 	}
+<<<<<<< HEAD
 #endif
 
 #if defined(WITH_PC)
@@ -209,6 +221,8 @@ int main(void) {
 		return 1;
 	}
 #endif
+=======
+>>>>>>> aed8579eac2dedddf8e1478237772192ca959d90
 
 	util_banner("All tests have passed.\n", 0);
 
