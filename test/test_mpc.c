@@ -84,40 +84,107 @@ static int triple(void) {
 
 static int pairing(void) {
 	int j, code = RLC_ERR;
-	g1_t d[2], p[2];
-	g2_t e[2], q[2];
+	g1_t d[2], p[2], _p;
+	g2_t e[2], q[2], _q;
 	gt_t e1, e2, r[2];
-	bn_t k, n;
+	bn_t k[2], l[2], n;
+	mt_t tri[2];
 	pt_t t[2];
 
+	g1_null(_p);
+	g2_null(_q);
 	gt_null(e1);
 	gt_null(e2);
-	bn_null(k);
 	bn_null(n);
 
 	TRY {
+		g1_new(_p);
+		g2_new(_q);
 		gt_new(e1);
 		gt_new(e2);
-		bn_new(k);
 		bn_new(n);
 
 		for (j = 0; j < 2; j++) {
 			g1_null(d[j]);
 			g2_null(e[j]);
+			bn_null(k[j]);
+			bn_null(l[j]);
 			g1_null(p[j]);
 			g2_null(q[j]);
 			gt_null(r[j]);
-			pt_null(t[j]);
+			mt_null(tri[j]);
 			pt_null(t[j]);
 			g1_new(d[j]);
 			g2_new(e[j]);
+			bn_new(k[j]);
+			bn_new(l[j]);
 			g1_new(p[j]);
 			g2_new(q[j]);
 			gt_new(r[j]);
+			mt_new(tri[j]);
 			pt_new(t[j]);
 		}
 
 		g1_get_ord(n);
+
+		TEST_BEGIN("scalar multiplication triples are consistent") {
+			mt_gen(tri, n);
+			/* Generate random inputs. */
+			g1_rand(p[0]);
+			bn_rand_mod(k[0], n);
+			g1_mul(_p, p[0], k[0]);
+			/* Secret share inputs. */
+			g1_rand(p[1]);
+			g1_sub(p[0], p[0], p[1]);
+			g1_norm(p[0], p[0]);
+			bn_rand_mod(k[1], n);
+			bn_sub(k[0], k[0], k[1]);
+			if (bn_sign(k[0]) == RLC_NEG) {
+				bn_add(k[0], k[0], n);
+			}
+			bn_mod(k[0], k[0], n);
+
+			/* Compute public values locally. */
+			g1_mul_lcl(l[0], d[0], k[0], p[0], tri[0]);
+			g1_mul_lcl(l[1], d[1], k[1], p[1], tri[1]);
+			/* Broadcast public values. */
+			g1_mul_bct(l, d);
+			TEST_ASSERT(bn_cmp(l[0], l[1]) == RLC_EQ, end);
+			TEST_ASSERT(g1_cmp(d[0], d[1]) == RLC_EQ, end);
+			g1_mul_mpc(d[0], k[0], p[0], tri[0], l[0], d[0], 0);
+			g1_mul_mpc(d[1], k[1], p[1], tri[1], l[1], d[1], 1);
+			g1_add(d[0], d[0], d[1]);
+			g1_norm(d[0], d[0]);
+			TEST_ASSERT(g1_cmp(_p, d[0]) == RLC_EQ, end);
+
+			/* Generate random inputs. */
+			g2_rand(q[0]);
+			bn_rand_mod(k[0], n);
+			g2_mul(_q, q[0], k[0]);
+			/* Secret share inputs. */
+			g2_rand(q[1]);
+			g2_sub(q[0], q[0], q[1]);
+			g2_norm(q[0], q[0]);
+			bn_rand_mod(k[1], n);
+			bn_sub(k[0], k[0], k[1]);
+			if (bn_sign(k[0]) == RLC_NEG) {
+				bn_add(k[0], k[0], n);
+			}
+			bn_mod(k[0], k[0], n);
+
+			/* Compute public values locally. */
+			g2_mul_lcl(l[0], e[0], k[0], q[0], tri[0]);
+			g2_mul_lcl(l[1], e[1], k[1], q[1], tri[1]);
+			/* Broadcast public values. */
+			g2_mul_bct(l, e);
+			TEST_ASSERT(bn_cmp(l[0], l[1]) == RLC_EQ, end);
+			TEST_ASSERT(g2_cmp(e[0], e[1]) == RLC_EQ, end);
+			g2_mul_mpc(e[0], k[0], q[0], tri[0], l[0], e[0], 0);
+			g2_mul_mpc(e[1], k[1], q[1], tri[1], l[1], e[1], 1);
+			g2_add(e[0], e[0], e[1]);
+			g2_norm(e[0], e[0]);
+			TEST_ASSERT(g2_cmp(_q, e[0]) == RLC_EQ, end);
+		} TEST_END;
 
 		TEST_BEGIN("pairing triples are consistent") {
 			pc_map_tri(t);
@@ -160,6 +227,8 @@ static int pairing(void) {
 	}
 	code = RLC_OK;
   end:
+	g1_free(_p);
+	g2_free(_q);
 	gt_free(e1);
 	gt_free(e2);
 	bn_free(k);
@@ -167,10 +236,13 @@ static int pairing(void) {
 	for (j = 0; j < 2; j++) {
 		g1_free(d[j]);
 		g2_free(e[j]);
+		bn_free(k[j]);
+		bn_free(l[j]);
 		g1_free(p[j]);
 		g2_free(q[j]);
 		gt_free(r[j]);
 		pt_free(t[j]);
+		mt_free(tri[j]);
 	}
 	return code;
 }

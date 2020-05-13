@@ -36,7 +36,165 @@
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
-#include <assert.h>
+
+void g1_mul_lcl(bn_t d, g1_t q, bn_t x, g1_t p, mt_t tri) {
+	bn_t n;
+	g1_t t;
+
+	bn_null(n);
+	g1_null(t);
+
+	TRY {
+		bn_new(n);
+		g1_new(t);
+
+		/* Compute public values for transmission. */
+		g1_get_ord(n);
+		bn_sub(d, x, tri->a);
+		if (bn_sign(d) == RLC_NEG) {
+			bn_add(d, d, n);
+		}
+		bn_mod(d, d, n);
+		g1_mul_gen(t, tri->b);
+		g1_sub(q, p, t);
+		g1_norm(q, q);
+	} CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	} FINALLY {
+		bn_free(n);
+		g1_free(t);
+	}
+}
+
+void g1_mul_bct(bn_t d[2], g1_t q[2]) {
+	bn_t n;
+
+	bn_null(n);
+
+	TRY {
+		bn_new(n);
+
+		g1_get_ord(n);
+		bn_add(d[0], d[0], d[1]);
+		bn_mod(d[0], d[0], n);
+		bn_copy(d[1], d[0]);
+		g1_add(q[0], q[0], q[1]);
+		g1_norm(q[0], q[0]);
+		g1_copy(q[1], q[0]);
+	} CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	} FINALLY {
+		bn_free(n);
+	}
+}
+
+void g1_mul_mpc(g1_t r, bn_t x, g1_t p, mt_t tri, bn_t d, g1_t q, int party) {
+	g1_t t;
+
+	g1_null(t);
+
+	TRY {
+		g1_new(t);
+		g1_new(u);
+
+		if (party == 0) {
+			g1_sub(t, p, q);
+			g1_norm(t, t);
+		} else {
+			g1_copy(t, p);
+		}
+		g1_mul(r, q, x);
+		g1_mul(t, t, d);
+		g1_add(r, r, t);
+		g1_mul_gen(t, tri->c);
+		g1_add(r, r, t);
+		g1_norm(r, r);
+	} CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	} FINALLY {
+		g1_free(t);
+	}
+}
+
+void g2_mul_lcl(bn_t d, g2_t q, bn_t x, g2_t p, mt_t tri) {
+	bn_t n;
+	g2_t t;
+
+	bn_null(n);
+	g2_null(t);
+
+	TRY {
+		bn_new(n);
+		g2_new(t);
+
+		/* Compute public values for transmission. */
+		g2_get_ord(n);
+		bn_sub(d, x, tri->a);
+		if (bn_sign(d) == RLC_NEG) {
+			bn_add(d, d, n);
+		}
+		bn_mod(d, d, n);
+		g2_mul_gen(t, tri->b);
+		g2_sub(q, p, t);
+		g2_norm(q, q);
+	} CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	} FINALLY {
+		bn_free(n);
+		g2_free(t);
+	}
+}
+
+void g2_mul_bct(bn_t d[2], g2_t q[2]) {
+	bn_t n;
+
+	bn_null(n);
+
+	TRY {
+		bn_new(n);
+
+		g2_get_ord(n);
+		bn_add(d[0], d[0], d[1]);
+		bn_mod(d[0], d[0], n);
+		bn_copy(d[1], d[0]);
+		g2_add(q[0], q[0], q[1]);
+		g2_norm(q[0], q[0]);
+		g2_copy(q[1], q[0]);
+	} CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	} FINALLY {
+		bn_free(n);
+	}
+}
+
+void g2_mul_mpc(g2_t r, bn_t x, g2_t p, mt_t tri, bn_t d, g2_t q, int party) {
+	g2_t t;
+
+	g2_null(t);
+
+	TRY {
+		g2_new(t);
+		g2_new(u);
+
+		if (party == 0) {
+			g2_sub(t, p, q);
+			g2_norm(t, t);
+		} else {
+			g2_copy(t, p);
+		}
+		g2_mul(r, q, x);
+		g2_mul(t, t, d);
+		g2_add(r, r, t);
+		g2_mul_gen(t, tri->c);
+		g2_add(r, r, t);
+		g2_norm(r, r);
+	} CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	} FINALLY {
+		g2_free(t);
+	}
+}
+
 void pc_map_tri(pt_t t[2]) {
 	bn_t n;
 	mt_t tri[2];

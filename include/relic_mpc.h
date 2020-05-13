@@ -239,6 +239,18 @@ typedef pt_st *pt_t;
  */
 void mt_gen(mt_t triple[2], bn_t order);
 
+void g1_mul_lcl(bn_t d, g1_t q, bn_t x, g1_t p, mt_t tri);
+
+void g1_mul_bct(bn_t d[2], g1_t q[2]);
+
+void g1_mul_mpc(g1_t r, bn_t x, g1_t p, mt_t tri, bn_t d, g1_t q, int party);
+
+void g2_mul_lcl(bn_t d, g2_t q, bn_t x, g2_t p, mt_t tri);
+
+void g2_mul_bct(bn_t d[2], g2_t q[2]);
+
+void g2_mul_mpc(g2_t r, bn_t x, g2_t p, mt_t tri, bn_t d, g2_t q, int party);
+
 /**
  * Generates a pairing triple.
  *
