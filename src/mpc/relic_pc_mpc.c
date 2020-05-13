@@ -30,30 +30,42 @@
  */
 
 #include "relic_core.h"
-#include "relic_pc.h"
+#include "relic_mpc.h"
 #include "relic_util.h"
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
-
+#include <assert.h>
 void pc_map_tri(pt_t t[2]) {
-	/* Generate a pairing triple. */
-	g1_rand(t[0]->a);
-	g2_rand(t[0]->b);
-	pc_map(t[0]->c, t[0]->a, t[0]->b);
+	bn_t n;
+	mt_t tri[2];
 
-	/* Secret share the triple. */
-	g1_rand(t[1]->a);
-	g1_sub(t[0]->a, t[0]->a, t[1]->a);
-	g1_norm(t[0]->a, t[0]->a);
-	g2_rand(t[1]->b);
-	g2_sub(t[0]->b, t[0]->b, t[1]->b);
-	g2_norm(t[0]->b, t[0]->b);
-	gt_rand(t[1]->c);
-	gt_inv(t[1]->c, t[1]->c);
-	gt_mul(t[0]->c, t[0]->c, t[1]->c);
-	gt_inv(t[1]->c, t[1]->c);
+	bn_null(n);
+	mt_null(tri[0]);
+	mt_null(tri[1]);
+
+	TRY {
+		bn_new(n);
+		mt_new(tri[0]);
+		mt_new(tri[1]);
+
+		g1_get_ord(n);
+		mt_gen(tri, n);
+
+		for (int i = 0; i < 2; i++) {
+			g1_mul_gen(t[i]->a, tri[i]->a);
+			g2_mul_gen(t[i]->b, tri[i]->b);
+			gt_get_gen(t[i]->c);
+			gt_exp(t[i]->c, t[i]->c, tri[i]->c);
+		}
+	} CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	} FINALLY {
+		bn_free(n);
+		mt_free(t[0]);
+		mt_free(t[1]);
+	}
 }
 
 void pc_map_lcl(g1_t d, g2_t e, g1_t p, g2_t q, pt_t t) {

@@ -63,7 +63,7 @@ static int triple(void) {
 			bn_mod(u, u, n);
 			bn_mul(t, t, u);
 			bn_mod(t, t, n);
-			bn_mul(u, tri[0]->c, tri[1]->c);
+			bn_add(u, tri[0]->c, tri[1]->c);
 			bn_mod(u, u, n);
 			TEST_ASSERT(bn_cmp(t, u) == RLC_EQ, end);
 		} TEST_END;
@@ -82,6 +82,100 @@ static int triple(void) {
 	return code;
 }
 
+static int pairing(void) {
+	int j, code = RLC_ERR;
+	g1_t d[2], p[2];
+	g2_t e[2], q[2];
+	gt_t e1, e2, r[2];
+	bn_t k, n;
+	pt_t t[2];
+
+	gt_null(e1);
+	gt_null(e2);
+	bn_null(k);
+	bn_null(n);
+
+	TRY {
+		gt_new(e1);
+		gt_new(e2);
+		bn_new(k);
+		bn_new(n);
+
+		for (j = 0; j < 2; j++) {
+			g1_null(d[j]);
+			g2_null(e[j]);
+			g1_null(p[j]);
+			g2_null(q[j]);
+			gt_null(r[j]);
+			pt_null(t[j]);
+			pt_null(t[j]);
+			g1_new(d[j]);
+			g2_new(e[j]);
+			g1_new(p[j]);
+			g2_new(q[j]);
+			gt_new(r[j]);
+			pt_new(t[j]);
+		}
+
+		g1_get_ord(n);
+
+		TEST_BEGIN("pairing triples are consistent") {
+			pc_map_tri(t);
+			g1_add(t[0]->a, t[0]->a, t[1]->a);
+			g1_norm(t[0]->a, t[0]->a);
+			g2_add(t[0]->b, t[0]->b, t[1]->b);
+			g2_norm(t[0]->b, t[0]->b);
+			gt_mul(t[1]->c, t[0]->c, t[1]->c);
+			pc_map(t[0]->c, t[0]->a, t[0]->b);
+			TEST_ASSERT(gt_cmp(t[0]->c, t[1]->c) == RLC_EQ, end);
+			/* Regenerate triple. */
+			pc_map_tri(t);
+			/* Generate random inputs. */
+			g1_rand(p[0]);
+			g2_rand(q[0]);
+			pc_map(e1, p[0], q[0]);
+			/* Secret share inputs. */
+			g1_rand(p[1]);
+			g1_sub(p[0], p[0], p[1]);
+			g1_norm(p[0], p[0]);
+			g2_rand(q[1]);
+			g2_sub(q[0], q[0], q[1]);
+			g2_norm(q[0], q[0]);
+			/* Compute public values locally. */
+			pc_map_lcl(d[0], e[0], p[0], q[0], t[0]);
+			pc_map_lcl(d[1], e[1], p[1], q[1], t[1]);
+			/* Broadcast public values. */
+			pc_map_bct(d, e);
+			TEST_ASSERT(g1_cmp(d[0], d[1]) == RLC_EQ, end);
+			TEST_ASSERT(g2_cmp(e[0], e[1]) == RLC_EQ, end);
+			pc_map_mpc(r[0], p[0], q[0], t[0], d[0], e[0], 0);
+			pc_map_mpc(r[1], p[1], q[1], t[1], d[1], e[1], 1);
+			gt_mul(e2, r[0], r[1]);
+			TEST_ASSERT(gt_cmp(e1, e2) == RLC_EQ, end);
+		} TEST_END;
+	}
+	CATCH_ANY {
+		util_print("FATAL ERROR!\n");
+		ERROR(end);
+	}
+	code = RLC_OK;
+  end:
+	gt_free(e1);
+	gt_free(e2);
+	bn_free(k);
+	bn_free(n);
+	for (j = 0; j < 2; j++) {
+		g1_free(d[j]);
+		g2_free(e[j]);
+		g1_free(p[j]);
+		g2_free(q[j]);
+		gt_free(r[j]);
+		pt_free(t[j]);
+	}
+	return code;
+}
+
+
 int main(void) {
 
 	if (core_init() != RLC_OK) {
@@ -90,11 +184,31 @@ int main(void) {
 	}
 
 	util_banner("Tests for the MPC module:\n", 0);
+	util_banner("Utilities:", 1);
 
+#if defined(WITH_BN)
 	if (triple()) {
 		core_clean();
 		return 1;
 	}
+#endif
+
+#if defined(WITH_PC)
+	if (pc_param_set_any() != RLC_OK) {
+		THROW(ERR_NO_CURVE);
+		core_clean();
+		return 0;
+	}
+
+	pc_param_print();
+
+	util_banner("Arithmetic:", 1);
+
+	if (pairing()) {
+		core_clean();
+		return 1;
+	}
+#endif
 
 	util_banner("All tests have passed.\n", 0);
 

@@ -41,6 +41,7 @@
 #include "relic_bn.h"
 #include "relic_ec.h"
 #include "relic_pc.h"
+#include "relic_mpc.h"
 
 /*============================================================================*/
 /* Type definitions.                                                          */

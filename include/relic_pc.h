@@ -114,27 +114,6 @@ typedef RLC_CAT(G2_LOWER, st) g2_st;
  */
 typedef RLC_CAT(GT_LOWER, t) gt_t;
 
-/**
- * Represents a pairing triple.
- */
-typedef struct _pt_st {
-	/** The shares of the G1 element a. */
-	g1_t a;
-	/** The shares of the G2 element b. */
-	g2_t b;
-	/** The shares of the GT element c = e(a,b). */
-	gt_t c;
-} pt_st;
-
-/**
- * Pointer to a pairing triple.
- */
-#if ALLOC == AUTO
-typedef pt_st pt_t[1];
-#else
-typedef pt_st *pt_t;
-#endif
-
 /*============================================================================*/
 /* Macro definitions                                                          */
 /*============================================================================*/
@@ -204,71 +183,6 @@ typedef pt_st *pt_t;
  * @param[out] A			- the element to clean and free.
  */
 #define gt_free(A)			RLC_CAT(GT_LOWER, free)(A)
-
-/**
- * Initializes a pairing triple with a null value.
- *
- * @param[out] A			- the key pair to initialize.
- */
-#if ALLOC == AUTO
-#define pt_null(A)				/* empty */
-#else
-#define pt_null(A)			A = NULL;
-#endif
-
-/**
- * Calls a function to allocate and initialize a pairing triple.
- *
- * @param[out] A			- the new pairing triple.
- */
-#if ALLOC == DYNAMIC
-#define pt_new(A)															\
-	A = (pt_t)calloc(1, sizeof(pt_st));										\
-	if (A == NULL) {														\
-		THROW(ERR_NO_MEMORY);												\
-	}																		\
-	g1_new((A)->a);															\
-	g2_new((A)->b);															\
-	gt_new((A)->c);															\
-
-#elif ALLOC == AUTO
-#define pt_new(A)				/* empty */
-
-#elif ALLOC == STACK
-#define pt_new(A)															\
-	A = (pt_t)alloca(sizeof(pt_st));										\
-	g1_new((A)->a);															\
-	g2_new((A)->b);															\
-	g2_new((A)->c);															\
-
-#endif
-
-/**
- * Calls a function to clean and free a pairing triple.
- *
- * @param[out] A			- the pairing triple to clean and free.
- */
-#if ALLOC == DYNAMIC
-#define pt_free(A)															\
-	if (A != NULL) {														\
-		g1_free((A)->a);													\
-		g2_free((A)->b);													\
-		gt_free((A)->c);													\
-		free(A);															\
-		A = NULL;															\
-	}
-
-#elif ALLOC == AUTO
-#define pt_free(A)				/* empty */
-
-#elif ALLOC == STACK
-#define pt_free(A)															\
-	g1_free((A)->a);														\
-	g2_free((A)->b);														\
-	gt_free((A)->c);														\
-	A = NULL;																\
-
-#endif
 
 /**
  * Returns the generator of the group G_1.
@@ -976,44 +890,5 @@ int g2_is_valid(g2_t a);
  * @param[in] a             - the element to check.
  */
 int gt_is_valid(gt_t a);
-
-/**
- * Generates a pairing triple.
- *
- * @param[out] t			- the pairing triple to generate.
- */
-void pc_map_tri(pt_t t[2]);
-
-/**
- * Computes the public values from the pairing inputs and triple.
- *
- * @param[out] d			- the share of the first public value.
- * @param[out] e			- the share of the second public value.
- * @param[in] p				- the share of the first pairnig argument.
- * @param[in] q				- the share of the second pairing argument.
- * @param[in] t				- the pairing triple.
- */
-void pc_map_lcl(g1_t d, g2_t e, g1_t p, g2_t q, pt_t t);
-
-/**
- * Broadcasts the public values for pairing computation.
- *
- * @param[out] d			- the first set of public values.
- * @param[out] e			- the second set of public values.
- */
-void pc_map_bct(g1_t d[2], g2_t e[2]);
-
-/**
- * Computes a pairing using a pairing triple.
- *
- * @param[out] r 			- the pairing result.
- * @param[in] p				- the share of the first pairnig argument.
- * @param[in] q				- the share of the second pairing argument.
- * @param[in] triple		- the pairing triple.
- * @param[in] d				- the first public value.
- * @param[in] e				- the second public value.
- * @param[in] party			- the number of the party executing the computation.
- */
-void pc_map_mpc(gt_t r, g1_t p, g2_t q, pt_t triple, g1_t d, g2_t e, int party);
 
 #endif /* !RLC_PC_H */
