@@ -273,18 +273,14 @@ void pc_map_mpc(gt_t r, g1_t d1, g2_t d2, pt_t triple, int party) {
 			g1_add(_p[0], triple->a, d1);
 			g1_norm(_p[0], _p[0]);
 			g2_copy(_q[0], d2);
-			g1_copy(_p[1], d1);
-			g2_copy(_q[1], triple->b);
-			pc_map_sim(t, _p, _q, 2);
-			gt_mul(r, triple->c, t);
 		} else {
 			g1_copy(_p[0], triple->a);
 			g2_copy(_q[0], d2);
-			g1_copy(_p[1], d1);
-			g2_copy(_q[1], triple->b);
-			pc_map_sim(t, _p, _q, 2);
-			gt_mul(r, triple->c, t);
 		}
+		g1_copy(_p[1], d1);
+		g2_copy(_q[1], triple->b);
+		pc_map_sim(t, _p, _q, 2);
+		gt_mul(r, triple->c, t);
 	} CATCH_ANY {
 		THROW(ERR_CAUGHT);
 	} FINALLY {

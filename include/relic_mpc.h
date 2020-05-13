@@ -239,6 +239,12 @@ typedef pt_st *pt_t;
  */
 void mt_gen(mt_t triple[2], bn_t order);
 
+void mt_mul_lcl(bn_t d, bn_t e, bn_t x, bn_t y, bn_t n, mt_t tri);
+
+void mt_mul_bct(bn_t d[2], bn_t e[2], bn_t n);
+
+void mt_mul_mpc(bn_t r, bn_t d, bn_t e, mt_t tri, bn_t n, int party);
+
 void g1_mul_lcl(bn_t d, g1_t q, g1_t b, bn_t x, g1_t p, mt_t tri);
 
 void g1_mul_bct(bn_t d[2], g1_t q[2]);

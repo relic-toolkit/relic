@@ -841,13 +841,11 @@ static int cls(void) {
 }
 
 static void pss(void) {
-	bn_t u, v, _v[5];
+	bn_t ms[5], n, u, v, _v[5];
 	g1_t a, b;
 	g2_t g, x, y, _y[5];
-	uint8_t m[5] = { 0, 1, 2, 3, 4 };
-	uint8_t *msgs[5] = {m, m, m, m, m};
-	int i, lens[5] = {sizeof(m), sizeof(m), sizeof(m), sizeof(m), sizeof(m)};
 
+	bn_null(n);
 	bn_null(u);
 	bn_null(v);
 	g1_null(a);
@@ -855,11 +853,7 @@ static void pss(void) {
 	g2_null(g);
 	g2_null(x);
 	g2_null(y);
-	for (i = 0; i < 5; i++) {
-		bn_null(_v[i]);
-		g2_null(_y[i]);
-	}
-
+	bn_new(n);
 	bn_new(u);
 	bn_new(v);
 	g1_new(a);
@@ -867,7 +861,14 @@ static void pss(void) {
 	g2_new(g);
 	g2_new(x);
 	g2_new(y);
-	for (i = 0; i < 5; i++) {
+
+	g1_get_ord(n);
+	for (int i = 0; i < 5; i++) {
+		bn_null(ms[i]);
+		bn_null(_v[i]);
+		g2_null(_y[i]);
+		bn_new(ms[i]);
+		bn_rand_mod(ms[i], n);
 		bn_new(_v[i]);
 		g2_new(_y[i]);
 	}
@@ -877,11 +878,11 @@ static void pss(void) {
 	} BENCH_END;
 
 	BENCH_BEGIN("cp_pss_sig") {
-		BENCH_ADD(cp_pss_sig(a, b, m, sizeof(m), u, v));
+		BENCH_ADD(cp_pss_sig(a, b, ms[0], u, v));
 	} BENCH_END;
 
 	BENCH_BEGIN("cp_pss_ver") {
-		BENCH_ADD(cp_pss_ver(a, b, m, sizeof(m), g, x, y));
+		BENCH_ADD(cp_pss_ver(a, b, ms[0], g, x, y));
 	} BENCH_END;
 
 	BENCH_BEGIN("cp_psb_gen (5)") {
@@ -889,11 +890,11 @@ static void pss(void) {
 	} BENCH_END;
 
 	BENCH_BEGIN("cp_psb_sig (5)") {
-		BENCH_ADD(cp_psb_sig(a, b, msgs, lens, u, _v, 5));
+		BENCH_ADD(cp_psb_sig(a, b, ms, u, _v, 5));
 	} BENCH_END;
 
 	BENCH_BEGIN("cp_psb_ver (5)") {
-		BENCH_ADD(cp_psb_ver(a, b, msgs, lens, g, x, _y, 5));
+		BENCH_ADD(cp_psb_ver(a, b, ms, g, x, _y, 5));
 	} BENCH_END;
 
 	bn_free(u);
@@ -903,7 +904,8 @@ static void pss(void) {
 	g2_free(g);
 	g2_free(x);
 	g2_free(y);
-	for (i = 0; i < 5; i++) {
+	for (int i = 0; i < 5; i++) {
+		bn_free(ms[i]);
 		bn_free(_v[i]);
 		g1_free(_y[i]);
 	}

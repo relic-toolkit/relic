@@ -1363,13 +1363,12 @@ int cp_pss_gen(bn_t u, bn_t v, g2_t g, g2_t x, g2_t y);
  *
  * @param[out] a			- the first part of the signature.
  * @param[out] b			- the second part of the signature.
- * @param[in] msg			- the message to sign.
- * @param[in] len			- the message length in bytes.
+ * @param[in] m			- the message to sign.
  * @param[in] u				- the first part of the private key.
  * @param[in] v				- the second part of the private key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_pss_sig(g1_t a, g1_t b, uint8_t *msg, int len, bn_t u, bn_t v);
+int cp_pss_sig(g1_t a, g1_t b, bn_t m, bn_t u, bn_t v);
 
 /**
  ** Verifies a signature using the PSS protocol.
@@ -1377,23 +1376,14 @@ int cp_pss_sig(g1_t a, g1_t b, uint8_t *msg, int len, bn_t u, bn_t v);
  * @param[in] a				- the first part of the signature.
  * @param[in] b				- the second part of the signature.
  * @param[in] msg			- the message to sign.
- * @param[in] len			- the message length in bytes.
  * @param[in] g				- the first part of the public key.
  * @param[in] u				- the second part of the public key.
  * @param[in] v				- the third part of the public key.
  * @return a boolean value indicating the verification result.
  */
-int cp_pss_ver(g1_t a, g1_t b, uint8_t *msg, int len, g2_t g, g2_t x, g2_t y);
+int cp_pss_ver(g1_t a, g1_t b, bn_t m, g2_t g, g2_t x, g2_t y);
 
 int cp_mpss_gen(bn_t q[2], bn_t s[2], g2_t g, g2_t x[2], g2_t y[2]);
-
-int cp_mpss_sig(g1_t b, g1_t a, bn_t m, bn_t r, bn_t s, mt_t m_t, mt_t s_t);
-
-int cp_mpss_lcl(g1_t d, g2_t e, g1_t a, bn_t m, g2_t x, g2_t y, pt_t t);
-
-int cp_mpss_ofv(gt_t r, g1_t a, g1_t b, bn_t m, g2_t g, g2_t x, g2_t y, pt_t t, g1_t d, g2_t e, int party);
-
-int cp_mpss_onv(gt_t e1, gt_t e2);
 
 /**
  * Generates a key pair for the Pointcheval-Sanders block signature (PSB)
@@ -1413,31 +1403,27 @@ int cp_psb_gen(bn_t r, bn_t s[], g2_t g, g2_t x, g2_t y[], int l);
  *
  * @param[out] a			- the first component of the signature.
  * @param[out] b			- the second component of the signature.
- * @param[in] msgs			- the l messages to sign.
- * @param[in] lens			- the l message lengths in bytes.
+ * @param[in] ms			- the l messages to sign.
  * @param[in] r				- the first part of the private key.
  * @param[in] s				- the remaining l part of the private key.
  * @param[in] l 			- the number of messages to sign.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_psb_sig(g1_t a, g1_t b, uint8_t *msgs[], int lens[], bn_t r, bn_t s[],
-		int l);
+int cp_psb_sig(g1_t a, g1_t b, bn_t ms[], bn_t r, bn_t s[],	int l);
 
 /**
  * Verifies a block of messages signed using the PSB protocol.
  *
  * @param[out] a			- the first component of the signature.
  * @param[out] b			- the seconed component of the signature.
- * @param[in] msgs			- the l messages to sign.
- * @param[in] lens			- the l message lengths in bytes.
+ * @param[in] ms			- the l messages to sign.
  * @param[in] g				- the first part of the public key.
  * @param[in] x				- the second part of the public key.
  * @param[in] y				- the remaining l parts of the public key.
  * @param[in] l 			- the number of messages to sign.
  * @return a boolean value indicating the verification result.
  */
-int cp_psb_ver(g1_t a, g1_t b, uint8_t *msgs[], int lens[], g2_t g, g2_t x,
-		g2_t y[], int l);
+int cp_psb_ver(g1_t a, g1_t b, bn_t ms[], g2_t g, g2_t x, g2_t y[], int l);
 
 /**
  * Generates a Zhang-Safavi-Naini-Susilo (ZSS) key pair.
