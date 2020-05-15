@@ -67,7 +67,7 @@ static void ed_mul_naf_imp(ed_t r, const ed_t p, const bn_t k) {
 			if (n == 0) {
 				/* This point will be doubled in the next iteration. */
 #if ED_ADD == EXTND
-				r->coord = 2;
+				r->coord = EXTND;
 #endif
 			}
 			ed_dbl(r, r);
@@ -144,7 +144,7 @@ static void ed_mul_reg_imp(ed_t r, const ed_t p, const bn_t k) {
 		for (i = l - 1; i >= 0; i--) {
 			for (j = 0; j < ED_WIDTH - 1; j++) {
 #if ED_ADD == EXTND
-				r->coord = 2;
+				r->coord = EXTND;
 #endif
 				ed_dbl(r, r);
 			}

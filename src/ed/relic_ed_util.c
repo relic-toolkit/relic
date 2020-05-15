@@ -47,7 +47,7 @@ int ed_is_infty(const ed_t p) {
 
 	fp_null(t);
 
-	if (p->coord) {
+	if (p->coord == BASIC) {
 		return (fp_is_zero(p->x) && (fp_cmp_dig(p->y, 1) == RLC_EQ));
 	}
 

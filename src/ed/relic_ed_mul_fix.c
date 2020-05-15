@@ -61,7 +61,7 @@ static void ed_mul_fix_plain(ed_t r, const ed_t * t, const bn_t k) {
 		if (n == 0) {
 			/* doubling is followed by another doubling */
 			if (i > 0) {
-				r->coord = 2;
+				r->coord = EXTND;
 				ed_dbl(r, r);
 			} else {
 				/* use full extended coordinate doubling for last step */
