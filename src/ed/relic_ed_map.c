@@ -159,7 +159,7 @@ void ed_map_ell2_5mod8(ed_t p, fp_t t) {
 
 		/* clear denominator / compute extended coordinates if necessary */
 #if ED_ADD == EXTND || ED_ADD == PROJC
-		p->norm = 0;
+		p->coord = PROJC;
 #if ED_ADD == EXTND
 		/* extended coordinates: T * Z == X * Y */
 		fp_mul(p->t, p->x, p->y);
@@ -172,7 +172,7 @@ void ed_map_ell2_5mod8(ed_t p, fp_t t) {
 		fp_mul(p->x, p->x, tv1);
 		fp_mul(p->y, p->y, tv1);
 		fp_set_dig(p->z, 1);
-		p->norm = 1;
+		p->coord = BASIC;
 #endif /* ED_ADD */
 	}
 	CATCH_ANY {
