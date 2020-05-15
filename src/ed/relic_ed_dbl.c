@@ -88,7 +88,7 @@ void ed_dbl_basic(ed_t r, const ed_t p) {
 	}
 }
 
-#endif /* EP_ADD == BASIC */
+#endif /* ED_ADD == BASIC */
 
 #if ED_ADD == PROJC || !defined(STRIP)
 
