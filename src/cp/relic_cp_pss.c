@@ -69,6 +69,7 @@ int cp_pss_sig(g1_t a, g1_t b, bn_t m, bn_t r, bn_t s) {
 
 	TRY {
 		bn_new(n);
+		bn_new(t);
 
 		g1_get_ord(n);
 		bn_mul(t, m, s);

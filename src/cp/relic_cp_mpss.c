@@ -102,8 +102,8 @@ int cp_mpss_sig(g1_t a[2], g1_t b[2], bn_t m[2], bn_t r[2], bn_t s[2], mt_t mul_
 		mt_mul_lcl(d[0], e[0], m[0], s[0], n, mul_tri[0]);
 		mt_mul_lcl(d[1], e[1], m[1], s[1], n, mul_tri[1]);
 		mt_mul_bct(d, e, n);
-		mt_mul_mpc(d[0], d[0], e[0], mul_tri[0], n, 0);
-		mt_mul_mpc(d[1], d[1], e[1], mul_tri[1], n, 1);
+		mt_mul_mpc(d[0], d[0], e[0], n, mul_tri[0], 0);
+		mt_mul_mpc(d[1], d[1], e[1], n, mul_tri[1], 1);
 		bn_add(d[0], d[0], r[0]);
 		bn_mod(d[0], d[0], n);
 		bn_add(d[1], d[1], r[1]);
@@ -131,7 +131,7 @@ int cp_mpss_sig(g1_t a[2], g1_t b[2], bn_t m[2], bn_t r[2], bn_t s[2], mt_t mul_
 	return result;
 }
 
-int cp_mpss_ver(g1_t a[2], g1_t b[2], bn_t m[2], g2_t h, g2_t x, g2_t y, mt_t sm_tri[2], mt_t xp_tri[2], pt_t pc_tri[2]) {
+int cp_mpss_ver(g1_t a[2], g1_t b[2], bn_t m[2], g2_t h, g2_t x, g2_t y, mt_t sm_tri[2], pt_t pc_tri[2]) {
 	int result = 0;
 	bn_t n, d[2], r[2];
 	g1_t p[2], q[2];
@@ -150,8 +150,8 @@ int cp_mpss_ver(g1_t a[2], g1_t b[2], bn_t m[2], g2_t h, g2_t x, g2_t y, mt_t sm
 			g2_null(z[i]);
 			gt_null(alpha[i]);
 			gt_null(beta[i]);
+			bn_new(d[i]);
 			bn_new(r[i]);
-			g1_new(d[i]);
 			g1_new(p[i]);
 			g1_new(q[i]);
 			g2_new(z[i]);

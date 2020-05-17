@@ -655,6 +655,7 @@ static int vbnn(void) {
 	code = RLC_OK;
 
 end:
+	bn_free(z);
 	bn_free(h);
 	bn_free(msk);
 	bn_free(ska);
@@ -1108,7 +1109,6 @@ static int pss(void) {
 	code = RLC_OK;
 
   end:
-  	bn_free(m);
 	bn_free(n);
 	bn_free(u);
 	bn_free(v);
@@ -1128,12 +1128,12 @@ static int pss(void) {
 static int mpss(void) {
 	int i, code = RLC_ERR;
 	bn_t m[2], n, u[2], v[2];
-	g1_t g[2], p[2], q[2], s[2];
-	g2_t h, x[2], y[2], e[2];
+	g1_t g[2], s[2];
+	g2_t h, x[2], y[2];
 	gt_t e1, e2;
-	mt_t tri0[2], tri1[2];
-	pt_t t0[2], t1[2];
-	char msg[5] = { 0, 1, 2, 3, 4 };
+	mt_t tri[3][2];
+	pt_t t[2];
+	uint8_t msg[5] = { 0, 1, 2, 3, 4 };
 
 	bn_null(n);
 	g2_null(h);
@@ -1151,37 +1151,33 @@ static int mpss(void) {
 			bn_null(v[i]);
 			g1_null(g[i]);
 			g1_null(s[i]);
-			g1_null(p[i]);
-			g2_null(q[i]);
 			g2_null(x[i]);
 			g2_null(y[i]);
-			mt_null(tri0[i]);
-			mt_null(tri1[i]);
-			pt_null(t0[i]);
-			pt_null(t1[i]);
+			mt_null(tri[0][i]);
+			mt_null(tri[1][i]);
+			mt_null(tri[2][i]);
+			pt_null(t[i]);
 			bn_new(m[i]);
 			bn_new(u[i]);
 			bn_new(v[i]);
-			g1_new(d[i]);
 			g1_new(g[i]);
-			g2_new(e[i]);
 			g1_new(s[i]);
 			g2_new(x[i]);
 			g2_new(y[i]);
-			mt_new(tri0[i]);
-			mt_new(tri1[i]);
-			pt_new(t0[i]);
-			pt_new(t1[i]);
+			mt_new(tri[0][i]);
+			mt_new(tri[1][i]);
+			mt_new(tri[2][i]);
+			pt_new(t[i]);
 		}
 
 		TEST_BEGIN("multi-party pointcheval-sanders simple signature is correct") {
 			g1_get_ord(n);
-			pc_map_tri(t0);
-			pc_map_tri(t1);
-			mt_gen(tri0, n);
-			mt_gen(tri1, n);
+			pc_map_tri(t);
+			mt_gen(tri[0], n);
+			mt_gen(tri[1], n);
+			mt_gen(tri[2], n);
 			TEST_ASSERT(cp_mpss_gen(u, v, h, x, y) == RLC_OK, end);
-			bn_read_bin(m[0], msg, strlen(msg));
+			bn_read_bin(m[0], msg, sizeof(msg));
 			bn_mod(m[0], m[0], n);
 			bn_rand_mod(m[1], n);
 			bn_sub(m[0], m[1], m[0]);
@@ -1190,9 +1186,9 @@ static int mpss(void) {
 			}
 			TEST_ASSERT(cp_mpss_bct(x, y) == RLC_OK, end);
 			/* Compute signature in MPC. */
-			TEST_ASSERT(cp_mpss_sig(g, s, m, u, v, tri0, tri1) == RLC_OK, end);
+			TEST_ASSERT(cp_mpss_sig(g, s, m, u, v, tri[0], tri[1]) == RLC_OK, end);
 			/* Verify signature in MPC. */
-			TEST_ASSERT(cp_mpss_ver(g, s, m, h, x[0], y[0], tri0, tri1, t0) == 1, end);
+			TEST_ASSERT(cp_mpss_ver(g, s, m, h, x[0], y[0], tri[2], t) == 1, end);
 			/* Check that signature is also valid for conventional scheme. */
 			bn_add(m[0], m[0], m[1]);
 			bn_mod(m[0], m[0], n);
@@ -1218,16 +1214,14 @@ static int mpss(void) {
 		bn_free(m[i]);
 		bn_free(u[i]);
 		bn_free(v[i]);
-		g1_free(d[i]);
 		g1_free(g[i]);
 		g1_free(s[i]);
-		g2_free(e[i]);
 		g2_free(x[i]);
 		g2_free(y[i]);
-		pt_free(t0[i]);
-		pt_free(t1[i]);
-		mt_free(tri0[i]);
-		mt_free(tri1[i]);
+		mt_free(tri[0][i]);
+		mt_free(tri[1][i]);
+		mt_free(tri[2][i]);
+		pt_free(t[i]);
 	}
   	return code;
 }
@@ -1518,7 +1512,7 @@ int main(void) {
 	}
 
 	util_banner("Tests for the CP module", 0);
-#if 0
+
 #if defined(WITH_BN)
 	util_banner("Protocols based on integer factorization:\n", 0);
 
@@ -1583,11 +1577,11 @@ int main(void) {
 		THROW(ERR_NO_CURVE);
 	}
 #endif
-#endif
+
 #if defined(WITH_PC)
 	util_banner("Protocols based on pairings:\n", 0);
 	if (pc_param_set_any() == RLC_OK) {
-#if 0
+
 		if (sokaka() != RLC_OK) {
 			core_clean();
 			return 1;
@@ -1617,7 +1611,7 @@ int main(void) {
 			core_clean();
 			return 1;
 		}
-#endif
+
 		if (pss() != RLC_OK) {
 			core_clean();
 			return 1;
