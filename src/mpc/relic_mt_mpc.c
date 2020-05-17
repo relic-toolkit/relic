@@ -84,7 +84,7 @@ void mt_mul_lcl(bn_t d, bn_t e, bn_t x, bn_t y, bn_t n, mt_t tri) {
 	} CATCH_ANY {
 		THROW(ERR_CAUGHT);
 	} FINALLY {
-		g1_free(t);
+		bn_free(t);
 	}
 }
 
@@ -98,7 +98,7 @@ void mt_mul_bct(bn_t d[2], bn_t e[2], bn_t n) {
 	bn_copy(e[1], e[0]);
 }
 
-void mt_mul_mpc(bn_t r, bn_t d, bn_t e, mt_t tri, bn_t n, int party) {
+void mt_mul_mpc(bn_t r, bn_t d, bn_t e, bn_t n, mt_t tri, int party) {
 	bn_t t;
 
 	bn_null(t);

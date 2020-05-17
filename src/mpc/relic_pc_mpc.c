@@ -65,7 +65,6 @@ void g1_mul_lcl(bn_t d, g1_t q, g1_t b, bn_t x, g1_t p, mt_t tri) {
 		THROW(ERR_CAUGHT);
 	} FINALLY {
 		bn_free(n);
-		g1_free(t);
 	}
 }
 
@@ -148,7 +147,6 @@ void g2_mul_lcl(bn_t d, g2_t q, g2_t b, bn_t x, g2_t p, mt_t tri) {
 		THROW(ERR_CAUGHT);
 	} FINALLY {
 		bn_free(n);
-		g2_free(t);
 	}
 }
 
@@ -229,8 +227,8 @@ void pc_map_tri(pt_t t[2]) {
 		THROW(ERR_CAUGHT);
 	} FINALLY {
 		bn_free(n);
-		mt_free(t[0]);
-		mt_free(t[1]);
+		mt_free(tri[0]);
+		mt_free(tri[1]);
 	}
 }
 
@@ -286,10 +284,10 @@ void pc_map_mpc(gt_t r, g1_t d1, g2_t d2, pt_t triple, int party) {
 	} FINALLY {
 		gt_free(t);
 		for (int i = 0; i < 2; i++) {
-			g1_null(_p[i]);
-			g2_null(_q[i]);
-			g1_new(_p[i]);
-			g2_new(_q[i]);
+			g1_free(_p[i]);
+			g2_free(_q[i]);
+			g1_free(_p[i]);
+			g2_free(_q[i]);
 		}
 	}
 }

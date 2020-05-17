@@ -108,8 +108,8 @@ static int triple(void) {
 			mt_mul_bct(d, e, n);
 			TEST_ASSERT(bn_cmp(d[0], d[1]) == RLC_EQ, end);
 			TEST_ASSERT(bn_cmp(e[0], e[1]) == RLC_EQ, end);
-			mt_mul_mpc(d[0], d[0], e[0], tri[0], n, 0);
-			mt_mul_mpc(d[1], d[1], e[1], tri[1], n, 1);
+			mt_mul_mpc(d[0], d[0], e[0], n, tri[0], 0);
+			mt_mul_mpc(d[1], d[1], e[1], n, tri[1], 1);
 			bn_add(d[0], d[0], d[1]);
 			bn_mod(d[0], d[0], n);
 			TEST_ASSERT(bn_cmp(t, d[0]) == RLC_EQ, end);
@@ -284,7 +284,6 @@ static int pairing(void) {
 	g2_free(_q);
 	gt_free(e1);
 	gt_free(e2);
-	bn_free(k);
 	bn_free(n);
 	for (j = 0; j < 2; j++) {
 		g1_free(d[j]);

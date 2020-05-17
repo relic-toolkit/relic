@@ -142,7 +142,7 @@ typedef pt_st *pt_t;
 #if ALLOC == DYNAMIC
 #define mt_free(A)															\
 	if (A != NULL) {														\
-		bn_free(A)->a);														\
+		bn_free((A)->a);													\
 		bn_free((A)->b);													\
 		bn_free((A)->c);													\
 		free(A);															\
@@ -234,28 +234,110 @@ typedef pt_st *pt_t;
  * Generates a pair of multiplication triples for use in MPC protocols such that
  * [a] * [b] = [c] modulo a certain order.
  *
- * @param[out] triple				- the multiplication triples to generate.
- * @param[in] order					- the underlying order.
+ * @param[out] tri				- the multiplication triples to generate.
+ * @param[in] order				- the order.
  */
-void mt_gen(mt_t triple[2], bn_t order);
+void mt_gen(mt_t tri[2], bn_t order);
 
+/**
+ * Performs the local work for a MPC multiplication.
+ *
+ * @param[out] d 				- the masked first multiplication operand.
+ * @param[out] e 				- the masked second multiplication operand.
+ * @param[in] x 				- the first multiplication operand.
+ * @param[in] y 				- the second multiplication operand.
+ * @param[in] n 				- the order.
+ * @param[in] tri 				- the multiplication triple.
+*/
 void mt_mul_lcl(bn_t d, bn_t e, bn_t x, bn_t y, bn_t n, mt_t tri);
 
+/**
+ * Opens the public values in an MPC multiplication.
+ *
+ * @param[out] d 				- the first public value.
+ * @param[out] e 				- the second public value.
+ * @param[in] n 				- the order.
+*/
 void mt_mul_bct(bn_t d[2], bn_t e[2], bn_t n);
 
-void mt_mul_mpc(bn_t r, bn_t d, bn_t e, mt_t tri, bn_t n, int party);
+/**
+ * Finishes an MPC multiplication by computing the multiplication result.
+ *
+ * @param[out] r 				- the share of the multiplication result.
+ * @param[in] d 				- the first public value.
+ * @param[in] e 				- the second public value.
+ * @param[in] n 				- the order.
+ * @param[in] tri 				- the multiplication triple.
+ * @param[in] party				- the party performing the computation.
+ */
+void mt_mul_mpc(bn_t r, bn_t d, bn_t e, bn_t n, mt_t tri, int party);
 
+/**
+ * Performs the local work for a MPC scalar multiplication in G1.
+ *
+ * @param[out] d 				- the share of the masked scalar.
+ * @param[out] q 				- the share of the masked point to multiply.
+ * @param[out] b 				- the cached value of the local computation.
+ * @param[in] x 				- the scalar.
+ * @param[in] p 				- the point to multiply.
+ * @param[in] tri 				- the multiplication triple.
+*/
 void g1_mul_lcl(bn_t d, g1_t q, g1_t b, bn_t x, g1_t p, mt_t tri);
 
+/**
+ * Opens the public values in an MPC scalar multiplication in G1.
+ *
+ * @param[out] d 				- the first public value (masked scalar).
+ * @param[out] q 				- the second public value (masked point).
+ * @param[in] n 				- the order.
+*/
 void g1_mul_bct(bn_t d[2], g1_t q[2]);
 
+/**
+ * Finishes an MPC scalar multiplication in G1 by computing the result.
+ *
+ * @param[out] r 				- the share of the result.
+ * @param[in] d 				- the first public value.
+ * @param[in] q 				- the second public value.
+ * @param[in] tri 				- the multiplication triple.
+ * @param[in] b 				- the cached value from the local computation.
+ * @param[in] party				- the party performing the computation.
+ */
 void g1_mul_mpc(g1_t r, bn_t d, g1_t q, mt_t tri, g1_t b, int party);
 
+/**
+ * Performs the local work for a MPC scalar multiplication in G2.
+ *
+ * @param[out] d 				- the share of the masked scalar.
+ * @param[out] q 				- the share of the masked point to multiply.
+ * @param[out] b 				- the cached value of the local computation.
+ * @param[in] x 				- the scalar.
+ * @param[in] p 				- the point to multiply.
+ * @param[in] tri 				- the multiplication triple.
+*/
 void g2_mul_lcl(bn_t d, g2_t q, g2_t b, bn_t x, g2_t p, mt_t tri);
 
+/**
+ * Opens the public values in an MPC scalar multiplication in G2.
+ *
+ * @param[out] d 				- the first public value (masked scalar).
+ * @param[out] q 				- the second public value (masked point).
+ * @param[in] n 				- the order.
+*/
 void g2_mul_bct(bn_t d[2], g2_t q[2]);
 
+/**
+ * Finishes an MPC scalar multiplication in G2 by computing the result.
+ *
+ * @param[out] r 				- the share of the result.
+ * @param[in] d 				- the first public value.
+ * @param[in] q 				- the second public value.
+ * @param[in] tri 				- the multiplication triple.
+ * @param[in] b 				- the cached value from the local computation.
+ * @param[in] party				- the party performing the computation.
+ */
 void g2_mul_mpc(g2_t r, bn_t d, g2_t q, mt_t tri, g2_t b, int party);
+
 /**
  * Generates a pairing triple.
  *
