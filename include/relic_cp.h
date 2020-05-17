@@ -254,6 +254,7 @@ typedef bgn_st *bgn_t;
 		bn_free((A)->dq);													\
 		bn_free((A)->p);													\
 		bn_free((A)->q);													\
+		bn_free((A)->qi);													\
 		free(A);															\
 		A = NULL;															\
 	}
@@ -268,6 +269,7 @@ typedef bgn_st *bgn_t;
 	bn_free((A)->dq);														\
 	bn_free((A)->p);														\
 	bn_free((A)->q);														\
+	bn_free((A)->qi);														\
 	A = NULL;																\
 
 #endif
@@ -1375,7 +1377,7 @@ int cp_pss_sig(g1_t a, g1_t b, bn_t m, bn_t u, bn_t v);
  *
  * @param[in] a				- the first part of the signature.
  * @param[in] b				- the second part of the signature.
- * @param[in] msg			- the message to sign.
+ * @param[in] m				- the message to sign.
  * @param[in] g				- the first part of the public key.
  * @param[in] u				- the second part of the public key.
  * @param[in] v				- the third part of the public key.
@@ -1383,7 +1385,59 @@ int cp_pss_sig(g1_t a, g1_t b, bn_t m, bn_t u, bn_t v);
  */
 int cp_pss_ver(g1_t a, g1_t b, bn_t m, g2_t g, g2_t x, g2_t y);
 
-int cp_mpss_gen(bn_t q[2], bn_t s[2], g2_t g, g2_t x[2], g2_t y[2]);
+/**
+ * Generates a key pair for the multi-part version of the Pointcheval-Sanders
+ * simple signature (MPSS) protocol.
+ *
+ * @param[out] r			- the first part of the private key.
+ * @param[out] s			- the second part of the private key.
+ * @param[out] g			- the first part of the public key.
+ * @param[out] x			- the second part of the public key.
+ * @param[out] y			- the third part of the public key.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int cp_mpss_gen(bn_t r[2], bn_t s[2], g2_t g, g2_t x[2], g2_t y[2]);
+
+/**
+ * Signs a message using the MPSS protocol operating over shares using triples.
+ *
+ * @param[out] a			- the first part of the signature.
+ * @param[out] b			- the second part of the signature.
+ * @param[in] m				- the message to sign.
+ * @param[in] r				- the first part of the private key.
+ * @param[in] s				- the second part of the private key.
+ * @param[in] mul_tri 		- the triple for the multiplication.
+ * @param[in] sm_tri 		- the triple for the scalar multiplication.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int cp_mpss_sig(g1_t a[2], g1_t b[2], bn_t m[2], bn_t r[2], bn_t s[2],
+		mt_t mul_tri[2], mt_t sm_tri[2]);
+
+/**
+ * Opens public values in the MPSS protocols, in this case public keys.
+ *
+ * @param[in,out] x			- the shares of the second part of the public key.
+ * @param[in,out] y			- the shares of the third part of the public key.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int cp_mpss_bct(g2_t x[2], g2_t y[2]);
+
+/**
+ * Verifies a signature using the MPSS protocol operating over shares using
+ * triples.
+ *
+ * @param[in] a				- the first part of the signature.
+ * @param[in] b				- the second part of the signature.
+ * @param[in] m				- the message to sign.
+ * @param[in] g				- the first part of the public key.
+ * @param[in] x				- the second part of the public key.
+ * @param[in] y				- the third part of the public key.
+ * @param[in] sm_tri 		- the triple for the scalar multiplication.
+ * @param[in] pc_tri 		- the triple for the pairing computation.
+ * @return a boolean value indicating the verification result.
+ */
+int cp_mpss_ver(g1_t a[2], g1_t b[2], bn_t m[2], g2_t h, g2_t x, g2_t y,
+		mt_t sm_tri[2], pt_t pc_tri[2]);
 
 /**
  * Generates a key pair for the Pointcheval-Sanders block signature (PSB)
