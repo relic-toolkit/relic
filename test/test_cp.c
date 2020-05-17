@@ -1191,16 +1191,8 @@ static int mpss(void) {
 			TEST_ASSERT(cp_mpss_bct(x, y) == RLC_OK, end);
 			/* Compute signature in MPC. */
 			TEST_ASSERT(cp_mpss_sig(g, s, m, u, v, tri0, tri1) == RLC_OK, end);
-			/* Compute Alice's part. */
-			//TEST_ASSERT(cp_mpss_lcl(d[0], e[0], g, m[0], x[0], y[0], t0[0]) == RLC_OK, end);
-			/* Compute Bob's part. */
-			//TEST_ASSERT(cp_mpss_lcl(d[1], e[1], g, m[1], x[1], y[1], t0[1]) == RLC_OK, end);
-			/* Broadcast shares. */
-			//pc_map_bct(d, e);
-			/* Recompute signature. */
-			//TEST_ASSERT(cp_mpss_ofv(e1, g, s[0], m, h, x[0], y[0], t0[0], d[0], e[0], 0) == RLC_OK, end);
-			//TEST_ASSERT(cp_mpss_ofv(e2, g, s[1], m, h, x[1], y[1], t0[1], d[1], e[1], 1) == RLC_OK, end);
-			//TEST_ASSERT(cp_mpss_onv(e1, e2) == 1, end);
+			/* Verify signature in MPC. */
+			TEST_ASSERT(cp_mpss_ver(g, s, m, h, x[0], y[0], tri0, tri1, t0) == 1, end);
 			/* Check that signature is also valid for conventional scheme. */
 			bn_add(m[0], m[0], m[1]);
 			bn_mod(m[0], m[0], n);
