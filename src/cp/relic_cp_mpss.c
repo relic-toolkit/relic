@@ -419,6 +419,9 @@ int cp_mpsb_ver(gt_t e, g1_t a[2], g1_t b[2], bn_t m[][2], g2_t h, g2_t x,
 		pc_map_mpc(beta[1], p[1], z[0][1], pc_tri[1], 1);
 
 		/* Compute [alpha] = e([r] * [sigma_2, H]).  */
+		bn_rand_mod(r[0], n);
+		bn_rand_mod(r[1], n);
+		
 		g1_mul_lcl(d[0], q[0], p[0], r[0], b[0], sm_tri[0]);
 		g1_mul_lcl(d[1], q[1], p[1], r[1], b[1], sm_tri[1]);
 		/* Broadcast public values. */
