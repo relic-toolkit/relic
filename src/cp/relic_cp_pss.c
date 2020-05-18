@@ -180,7 +180,7 @@ int cp_psb_sig(g1_t a, g1_t b, bn_t ms[], bn_t r, bn_t s[], int l) {
 
 		/* Choose random a in G1. */
 		g1_rand(a);
-		/* Compute b = a^x+\sum y_im_i. */
+		/* Compute b = a^(x+\sum y_im_i). */
 		g1_get_ord(n);
 		bn_copy(t, r);
 		for (i = 0; i < l; i++) {

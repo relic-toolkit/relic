@@ -1480,6 +1480,65 @@ int cp_psb_sig(g1_t a, g1_t b, bn_t ms[], bn_t r, bn_t s[],	int l);
 int cp_psb_ver(g1_t a, g1_t b, bn_t ms[], g2_t g, g2_t x, g2_t y[], int l);
 
 /**
+ * Generates a key pair for the multi-part version of the Pointcheval-Sanders
+ * simple signature (MPSS) protocol.
+ *
+ * @param[out] r			- the first part of the private key.
+ * @param[out] s			- the second part of the private key.
+ * @param[out] g			- the first part of the public key.
+ * @param[out] x			- the second part of the public key.
+ * @param[out] y			- the third part of the public key.
+ * @param[in] l 			- the number of messages to sign.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int cp_mpsb_gen(bn_t r[2], bn_t s[][2], g2_t h, g2_t x[2], g2_t y[][2], int l);
+
+/**
+ * Signs a message using the MPSS protocol operating over shares using triples.
+ *
+ * @param[out] a			- the first part of the signature.
+ * @param[out] b			- the second part of the signature.
+ * @param[in] m				- the messages to sign.
+ * @param[in] r				- the first part of the private key.
+ * @param[in] s				- the second parts of the private key.
+ * @param[in] mul_tri 		- the triple for the multiplication.
+ * @param[in] sm_tri 		- the triple for the scalar multiplication.
+ * @param[in] l 			- the number of messages to sign.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+ int cp_mpsb_sig(g1_t a[2], g1_t b[2], bn_t m[][2], bn_t r[2], bn_t s[][2],
+ 		mt_t mul_tri[2], mt_t sm_tri[2], int l);
+
+/**
+ * Opens public values in the MPSS protocols, in this case public keys.
+ *
+ * @param[in,out] x			- the shares of the second part of the public key.
+ * @param[in,out] y			- the shares of the third part of the public key.
+ * @param[in] l 			- the number of messages to sign.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int cp_mpsb_bct(g2_t x[2], g2_t y[][2], int l);
+
+/**
+ * Verifies a signature using the MPSS protocol operating over shares using
+ * triples.
+ *
+ * @param[in] a				- the first part of the signature.
+ * @param[in] b				- the second part of the signature.
+ * @param[in] m				- the messages to sign.
+ * @param[in] g				- the first part of the public key.
+ * @param[in] x				- the second part of the public key.
+ * @param[in] y				- the third parts of the public key.
+ * @param[in] sm_tri 		- the triple for the scalar multiplication.
+ * @param[in] pc_tri 		- the triple for the pairing computation.
+ * @param[in] v 			- the private keys, can be NULL.
+ * @param[in] l 			- the number of messages to sign.
+ * @return a boolean value indicating the verification result.
+ */
+int cp_mpsb_ver(g1_t a[2], g1_t b[2], bn_t m[][2], g2_t h, g2_t x, g2_t y[][2],
+ 		bn_t v[][2], mt_t sm_tri[2], pt_t pc_tri[2], int l);
+
+/**
  * Generates a Zhang-Safavi-Naini-Susilo (ZSS) key pair.
  *
  * @param[out] d			- the private key.

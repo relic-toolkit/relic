@@ -911,6 +911,137 @@ static void pss(void) {
 	}
 }
 
+static void mpss(void) {
+	bn_t m[2], n, u[2], v[2], ms[5][2], _v[5][2];
+	g1_t g[2], s[2];
+	g2_t h, x[2], y[2], _y[5][2];
+	gt_t e1, e2;
+	mt_t tri[3][2];
+	pt_t t[2];
+
+	bn_null(n);
+	g2_null(h);
+	gt_null(e1);
+	gt_null(e2);
+
+	bn_new(n);
+	g2_new(h);
+	gt_new(e1);
+	gt_new(e2);
+	for (int i = 0; i < 2; i++) {
+		bn_null(m[i]);
+		bn_null(u[i]);
+		bn_null(v[i]);
+		g1_null(g[i]);
+		g1_null(s[i]);
+		g2_null(x[i]);
+		g2_null(y[i]);
+		mt_null(tri[0][i]);
+		mt_null(tri[1][i]);
+		mt_null(tri[2][i]);
+		pt_null(t[i]);
+		bn_new(m[i]);
+		bn_new(u[i]);
+		bn_new(v[i]);
+		g1_new(g[i]);
+		g1_new(s[i]);
+		g2_new(x[i]);
+		g2_new(y[i]);
+		mt_new(tri[0][i]);
+		mt_new(tri[1][i]);
+		mt_new(tri[2][i]);
+		pt_new(t[i]);
+
+		g1_get_ord(n);
+		for (int j = 0; j < 5; j++) {
+			bn_null(ms[j][i]);
+			bn_null(_v[j][i]);
+			g2_null(_y[j][i]);
+			bn_new(ms[j][i]);
+			bn_rand_mod(ms[j][i], n);
+			bn_new(_v[j][i]);
+			g2_new(_y[j][i]);
+		}
+	}
+
+	pc_map_tri(t);
+	mt_gen(tri[0], n);
+	mt_gen(tri[1], n);
+	mt_gen(tri[2], n);
+
+	bn_rand_mod(m[0], n);
+	bn_rand_mod(m[1], n);
+	bn_sub(m[0], m[1], m[0]);
+	if (bn_sign(m[0]) == RLC_NEG) {
+		bn_add(m[0], m[0], n);
+	}
+
+	BENCH_BEGIN("cp_mpss_gen") {
+		BENCH_ADD(cp_mpss_gen(u, v, h, x, y));
+	} BENCH_END;
+
+	BENCH_BEGIN("cp_mpss_bct") {
+		BENCH_ADD(cp_mpss_bct(x, y));
+	} BENCH_END;
+
+	BENCH_BEGIN("cp_mpss_sig") {
+		BENCH_ADD(cp_mpss_sig(g, s, m, u, v, tri[0], tri[1]));
+	} BENCH_DIV(2);
+
+	BENCH_BEGIN("cp_mpss_ver") {
+		BENCH_ADD(cp_mpss_ver(g, s, m, h, x[0], y[0], tri[2], t));
+	} BENCH_DIV(2);
+
+	g1_get_ord(n);
+	pc_map_tri(t);
+	mt_gen(tri[0], n);
+	mt_gen(tri[1], n);
+	mt_gen(tri[2], n);
+
+	BENCH_BEGIN("cp_mpsb_gen (5)") {
+		BENCH_ADD(cp_mpsb_gen(u, _v, h, x, _y, 5));
+	} BENCH_END;
+
+	BENCH_BEGIN("cp_mpsb_bct (5)") {
+		BENCH_ADD(cp_mpsb_bct(x, _y, 5));
+	} BENCH_END;
+
+	BENCH_BEGIN("cp_mpsb_sig (5)") {
+		BENCH_ADD(cp_mpsb_sig(g, s, ms, u, _v, tri[0], tri[1], 5));
+	} BENCH_DIV(2);
+
+	BENCH_BEGIN("cp_mpsb_ver (5)") {
+		BENCH_ADD(cp_mpsb_ver(g, s, ms, h, x[0], _y, NULL, tri[2], t, 5));
+	} BENCH_DIV(2);
+
+	BENCH_BEGIN("cp_mpsb_ver (5,sk)") {
+		BENCH_ADD(cp_mpsb_ver(g, s, ms, h, x[0], _y, _v, tri[2], t, 5));
+	} BENCH_DIV(2);
+
+  	bn_free(n);
+	g2_free(h);
+	gt_free(e1);
+	gt_free(e2);
+	for (int i = 0; i < 2; i++) {
+		bn_free(m[i]);
+		bn_free(u[i]);
+		bn_free(v[i]);
+		g1_free(g[i]);
+		g1_free(s[i]);
+		g2_free(x[i]);
+		g2_free(y[i]);
+		mt_free(tri[0][i]);
+		mt_free(tri[1][i]);
+		mt_free(tri[2][i]);
+		pt_free(t[i]);
+		for (int j = 0; j < 5; j++) {
+			bn_free(ms[j][i]);
+			bn_free(_v[j][i]);
+			g2_free(_y[j][i]);
+		}
+	}
+}
+
 static void zss(void) {
 	uint8_t msg[5] = { 0, 1, 2, 3, 4 }, h[RLC_MD_LEN];
 	g1_t p;
@@ -1301,6 +1432,9 @@ int main(void) {
 		bbs();
 		cls();
 		pss();
+#if defined(WITH_MPC)
+		mpss();
+#endif
 		zss();
 		lhs();
 	} else {

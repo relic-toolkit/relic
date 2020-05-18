@@ -1096,7 +1096,7 @@ static int pss(void) {
 		}
 		TEST_END;
 
-		TEST_BEGIN("pointcheval-sanders message-block signature is correct") {
+		TEST_BEGIN("pointcheval-sanders block signature is correct") {
 			TEST_ASSERT(cp_psb_gen(u, _v, g, x, _y, 5) == RLC_OK, end);
 			TEST_ASSERT(cp_psb_sig(a, b, ms, u, _v, 5) == RLC_OK, end);
 			TEST_ASSERT(cp_psb_ver(a, b, ms, g, x, _y, 5) == 1, end);
@@ -1126,14 +1126,12 @@ static int pss(void) {
 }
 
 static int mpss(void) {
-	int i, code = RLC_ERR;
-	bn_t m[2], n, u[2], v[2];
+	int i, j, code = RLC_ERR;
+	bn_t m[2], n, u[2], v[2], ms[5][2], _v[5][2];
 	g1_t g[2], s[2];
-	g2_t h, x[2], y[2];
-	gt_t e1, e2;
+	g2_t h, x[2], y[2], _y[5][2];
 	mt_t tri[3][2];
 	pt_t t[2];
-	uint8_t msg[5] = { 0, 1, 2, 3, 4 };
 
 	bn_null(n);
 	g2_null(h);
@@ -1145,6 +1143,7 @@ static int mpss(void) {
 		g2_new(h);
 		gt_new(e1);
 		gt_new(e2);
+		g1_get_ord(n);
 		for (i = 0; i < 2; i++) {
 			bn_null(m[i]);
 			bn_null(u[i]);
@@ -1158,6 +1157,7 @@ static int mpss(void) {
 			mt_null(tri[2][i]);
 			pt_null(t[i]);
 			bn_new(m[i]);
+			bn_rand_mod(m[i], n);
 			bn_new(u[i]);
 			bn_new(v[i]);
 			g1_new(g[i]);
@@ -1168,22 +1168,23 @@ static int mpss(void) {
 			mt_new(tri[1][i]);
 			mt_new(tri[2][i]);
 			pt_new(t[i]);
+			for (j = 0; j < 5; j++) {
+				bn_null(ms[j][i]);
+				bn_null(_v[j][i]);
+				g2_null(_y[j][i]);
+				bn_new(ms[j][i]);
+				bn_rand_mod(ms[j][i], n);
+				bn_new(_v[j][i]);
+				g2_new(_y[j][i]);
+			}
 		}
 
 		TEST_BEGIN("multi-party pointcheval-sanders simple signature is correct") {
-			g1_get_ord(n);
 			pc_map_tri(t);
 			mt_gen(tri[0], n);
 			mt_gen(tri[1], n);
 			mt_gen(tri[2], n);
 			TEST_ASSERT(cp_mpss_gen(u, v, h, x, y) == RLC_OK, end);
-			bn_read_bin(m[0], msg, sizeof(msg));
-			bn_mod(m[0], m[0], n);
-			bn_rand_mod(m[1], n);
-			bn_sub(m[0], m[1], m[0]);
-			if (bn_sign(m[0]) == RLC_NEG) {
-				bn_add(m[0], m[0], n);
-			}
 			TEST_ASSERT(cp_mpss_bct(x, y) == RLC_OK, end);
 			/* Compute signature in MPC. */
 			TEST_ASSERT(cp_mpss_sig(g, s, m, u, v, tri[0], tri[1]) == RLC_OK, end);
@@ -1197,6 +1198,22 @@ static int mpss(void) {
 			g1_add(s[0], s[0], s[1]);
 			g1_norm(s[0], s[0]);
 			TEST_ASSERT(cp_pss_ver(g[0], s[0], m[0], h, x[0], y[0]) == 1, end);
+		}
+		TEST_END;
+
+		TEST_BEGIN("multi-party pointcheval-sanders block signature is correct") {
+			g1_get_ord(n);
+			pc_map_tri(t);
+			mt_gen(tri[0], n);
+			mt_gen(tri[1], n);
+			mt_gen(tri[2], n);
+			TEST_ASSERT(cp_mpsb_gen(u, _v, h, x, _y, 5) == RLC_OK, end);
+			TEST_ASSERT(cp_mpsb_bct(x, _y, 5) == RLC_OK, end);
+			/* Compute signature in MPC. */
+			TEST_ASSERT(cp_mpsb_sig(g, s, ms, u, _v, tri[0], tri[1], 5) == RLC_OK, end);
+			/* Verify signature in MPC. */
+			TEST_ASSERT(cp_mpsb_ver(g, s, ms, h, x[0], _y, NULL, tri[2], t, 5) == 1, end);
+			TEST_ASSERT(cp_mpsb_ver(g, s, ms, h, x[0], _y, _v, tri[2], t, 5) == 1, end);
 		}
 		TEST_END;
 	}
@@ -1222,6 +1239,11 @@ static int mpss(void) {
 		mt_free(tri[1][i]);
 		mt_free(tri[2][i]);
 		pt_free(t[i]);
+		for (j = 0; j < 5; j++) {
+			bn_free(ms[j][i]);
+			bn_free(_v[j][i]);
+			g2_free(_y[j][i]);
+		}
 	}
   	return code;
 }
