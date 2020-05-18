@@ -131,7 +131,8 @@ int cp_mpss_sig(g1_t a[2], g1_t b[2], bn_t m[2], bn_t r[2], bn_t s[2], mt_t mul_
 	return result;
 }
 
-int cp_mpss_ver(g1_t a[2], g1_t b[2], bn_t m[2], g2_t h, g2_t x, g2_t y, mt_t sm_tri[2], pt_t pc_tri[2]) {
+int cp_mpss_ver(gt_t e, g1_t a[2], g1_t b[2], bn_t m[2], g2_t h, g2_t x, g2_t y,
+		mt_t sm_tri[2], pt_t pc_tri[2]) {
 	int result = 0;
 	bn_t n, d[2], r[2];
 	g1_t p[2], q[2];
@@ -200,10 +201,7 @@ int cp_mpss_ver(g1_t a[2], g1_t b[2], bn_t m[2], g2_t h, g2_t x, g2_t y, mt_t sm
 		}
 
 		/* Now combine shares and multiply. */
-		gt_mul(beta[0], beta[0], beta[1]);
-		if (gt_is_unity(beta[0])) {
-			result = 1;
-		}
+		gt_mul(e, beta[0], beta[1]);
 	} CATCH_ANY {
 		result = RLC_ERR;
 	} FINALLY {
@@ -334,8 +332,8 @@ int cp_mpsb_sig(g1_t a[2], g1_t b[2], bn_t m[][2], bn_t r[2], bn_t s[][2],
 	return result;
 }
 
-int cp_mpsb_ver(g1_t a[2], g1_t b[2], bn_t m[][2], g2_t h, g2_t x, g2_t y[][2],
-		bn_t v[][2], mt_t sm_tri[2], pt_t pc_tri[2], int l) {
+int cp_mpsb_ver(gt_t e, g1_t a[2], g1_t b[2], bn_t m[][2], g2_t h, g2_t x,
+		g2_t y[][2], bn_t v[][2], mt_t sm_tri[2], pt_t pc_tri[2], int l) {
 	int result = 0;
 	bn_t n, _t, t[2], d[2], r[2];
 	g1_t p[2], q[2];
@@ -435,10 +433,7 @@ int cp_mpsb_ver(g1_t a[2], g1_t b[2], bn_t m[][2], g2_t h, g2_t x, g2_t y[][2],
 		}
 
 		/* Now combine shares and multiply. */
-		gt_mul(beta[0], beta[0], beta[1]);
-		if (gt_is_unity(beta[0])) {
-			result = 1;
-		}
+		gt_mul(e, beta[0], beta[1]);
 	} CATCH_ANY {
 		result = RLC_ERR;
 	} FINALLY {

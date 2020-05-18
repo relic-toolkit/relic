@@ -90,21 +90,17 @@ static void mul_triple(void) {
 static void pair_triple(void) {
 	g1_t d[2], p[2], _p;
 	g2_t e[2], q[2], _q;
-	gt_t e1, e2, r[2];
+	gt_t r[2];
 	bn_t k[2], l[2], n;
 	mt_t tri[2];
 	pt_t t[2];
 
 	g1_null(_p);
 	g2_null(_q);
-	gt_null(e1);
-	gt_null(e2);
 	bn_null(n);
 
 	g1_new(_p);
 	g2_new(_q);
-	gt_new(e1);
-	gt_new(e2);
 	bn_new(n);
 	for (int j = 0; j < 2; j++) {
 		g1_null(d[j]);
@@ -199,7 +195,7 @@ static void pair_triple(void) {
 	BENCH_BEGIN("pc_map") {
 		g1_rand(p[0]);
 		g2_rand(q[0]);
-		BENCH_ADD(pc_map(e1, p[0], q[0]));
+		BENCH_ADD(pc_map(r, p[0], q[0]));
 	} BENCH_END;
 	/* Secret share inputs. */
 	g1_rand(p[1]);
@@ -225,8 +221,6 @@ static void pair_triple(void) {
 
 	g1_free(_p);
 	g2_free(_q);
-	gt_free(e1);
-	gt_free(e2);
 	bn_free(n);
 	for (int j = 0; j < 2; j++) {
 		g1_free(d[j]);

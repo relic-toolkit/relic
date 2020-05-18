@@ -1426,6 +1426,7 @@ int cp_mpss_bct(g2_t x[2], g2_t y[2]);
  * Verifies a signature using the MPSS protocol operating over shares using
  * triples.
  *
+ * @param[out] e			- the result of the verification.
  * @param[in] a				- the first part of the signature.
  * @param[in] b				- the second part of the signature.
  * @param[in] m				- the message to sign.
@@ -1436,7 +1437,7 @@ int cp_mpss_bct(g2_t x[2], g2_t y[2]);
  * @param[in] pc_tri 		- the triple for the pairing computation.
  * @return a boolean value indicating the verification result.
  */
-int cp_mpss_ver(g1_t a[2], g1_t b[2], bn_t m[2], g2_t h, g2_t x, g2_t y,
+int cp_mpss_ver(gt_t e, g1_t a[2], g1_t b[2], bn_t m[2], g2_t h, g2_t x, g2_t y,
 		mt_t sm_tri[2], pt_t pc_tri[2]);
 
 /**
@@ -1523,6 +1524,7 @@ int cp_mpsb_bct(g2_t x[2], g2_t y[][2], int l);
  * Verifies a signature using the MPSS protocol operating over shares using
  * triples.
  *
+ * @param[out] e			- the result of the verification.
  * @param[in] a				- the first part of the signature.
  * @param[in] b				- the second part of the signature.
  * @param[in] m				- the messages to sign.
@@ -1535,8 +1537,8 @@ int cp_mpsb_bct(g2_t x[2], g2_t y[][2], int l);
  * @param[in] l 			- the number of messages to sign.
  * @return a boolean value indicating the verification result.
  */
-int cp_mpsb_ver(g1_t a[2], g1_t b[2], bn_t m[][2], g2_t h, g2_t x, g2_t y[][2],
- 		bn_t v[][2], mt_t sm_tri[2], pt_t pc_tri[2], int l);
+int cp_mpsb_ver(gt_t e, g1_t a[2], g1_t b[2], bn_t m[][2], g2_t h, g2_t x,
+		g2_t y[][2], bn_t v[][2], mt_t sm_tri[2], pt_t pc_tri[2], int l);
 
 /**
  * Generates a Zhang-Safavi-Naini-Susilo (ZSS) key pair.

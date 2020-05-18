@@ -915,19 +915,17 @@ static void mpss(void) {
 	bn_t m[2], n, u[2], v[2], ms[5][2], _v[5][2];
 	g1_t g[2], s[2];
 	g2_t h, x[2], y[2], _y[5][2];
-	gt_t e1, e2;
+	gt_t r;
 	mt_t tri[3][2];
 	pt_t t[2];
 
 	bn_null(n);
 	g2_null(h);
-	gt_null(e1);
-	gt_null(e2);
+	gt_null(r);
 
 	bn_new(n);
 	g2_new(h);
-	gt_new(e1);
-	gt_new(e2);
+	gt_new(r);
 	for (int i = 0; i < 2; i++) {
 		bn_null(m[i]);
 		bn_null(u[i]);
@@ -989,7 +987,7 @@ static void mpss(void) {
 	} BENCH_DIV(2);
 
 	BENCH_BEGIN("cp_mpss_ver") {
-		BENCH_ADD(cp_mpss_ver(g, s, m, h, x[0], y[0], tri[2], t));
+		BENCH_ADD(cp_mpss_ver(r, g, s, m, h, x[0], y[0], tri[2], t));
 	} BENCH_DIV(2);
 
 	g1_get_ord(n);
@@ -1011,17 +1009,16 @@ static void mpss(void) {
 	} BENCH_DIV(2);
 
 	BENCH_BEGIN("cp_mpsb_ver (5)") {
-		BENCH_ADD(cp_mpsb_ver(g, s, ms, h, x[0], _y, NULL, tri[2], t, 5));
+		BENCH_ADD(cp_mpsb_ver(r, g, s, ms, h, x[0], _y, NULL, tri[2], t, 5));
 	} BENCH_DIV(2);
 
 	BENCH_BEGIN("cp_mpsb_ver (5,sk)") {
-		BENCH_ADD(cp_mpsb_ver(g, s, ms, h, x[0], _y, _v, tri[2], t, 5));
+		BENCH_ADD(cp_mpsb_ver(r, g, s, ms, h, x[0], _y, _v, tri[2], t, 5));
 	} BENCH_DIV(2);
 
   	bn_free(n);
 	g2_free(h);
-	gt_free(e1);
-	gt_free(e2);
+	gt_free(e);
 	for (int i = 0; i < 2; i++) {
 		bn_free(m[i]);
 		bn_free(u[i]);

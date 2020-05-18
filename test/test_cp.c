@@ -1130,19 +1130,18 @@ static int mpss(void) {
 	bn_t m[2], n, u[2], v[2], ms[5][2], _v[5][2];
 	g1_t g[2], s[2];
 	g2_t h, x[2], y[2], _y[5][2];
+	gt_t e;
 	mt_t tri[3][2];
 	pt_t t[2];
 
 	bn_null(n);
 	g2_null(h);
-	gt_null(e1);
-	gt_null(e2);
+	gt_null(e);
 
 	TRY {
 		bn_new(n);
 		g2_new(h);
-		gt_new(e1);
-		gt_new(e2);
+		gt_new(e);
 		g1_get_ord(n);
 		for (i = 0; i < 2; i++) {
 			bn_null(m[i]);
@@ -1189,7 +1188,8 @@ static int mpss(void) {
 			/* Compute signature in MPC. */
 			TEST_ASSERT(cp_mpss_sig(g, s, m, u, v, tri[0], tri[1]) == RLC_OK, end);
 			/* Verify signature in MPC. */
-			TEST_ASSERT(cp_mpss_ver(g, s, m, h, x[0], y[0], tri[2], t) == 1, end);
+			cp_mpss_ver(e, g, s, m, h, x[0], y[0], tri[2], t);
+			TEST_ASSERT(gt_is_unity(e) == 1, end);
 			/* Check that signature is also valid for conventional scheme. */
 			bn_add(m[0], m[0], m[1]);
 			bn_mod(m[0], m[0], n);
@@ -1212,8 +1212,13 @@ static int mpss(void) {
 			/* Compute signature in MPC. */
 			TEST_ASSERT(cp_mpsb_sig(g, s, ms, u, _v, tri[0], tri[1], 5) == RLC_OK, end);
 			/* Verify signature in MPC. */
-			TEST_ASSERT(cp_mpsb_ver(g, s, ms, h, x[0], _y, NULL, tri[2], t, 5) == 1, end);
-			TEST_ASSERT(cp_mpsb_ver(g, s, ms, h, x[0], _y, _v, tri[2], t, 5) == 1, end);
+			cp_mpsb_ver(e, g, s, ms, h, x[0], _y, NULL, tri[2], t, 5);
+			TEST_ASSERT(gt_is_unity(e) == 1, end);
+			cp_mpsb_ver(e, g, s, ms, h, x[0], _y, _v, tri[2], t, 5);
+			TEST_ASSERT(gt_is_unity(e) == 1, end);
+			bn_sub_dig(ms[0][0], ms[0][0], 1);
+			cp_mpsb_ver(e, g, s, ms, h, x[0], _y, _v, tri[2], t, 5);
+			TEST_ASSERT(gt_is_unity(e) == 0, end);
 		}
 		TEST_END;
 	}
@@ -1225,8 +1230,7 @@ static int mpss(void) {
   end:
   	bn_free(n);
 	g2_free(h);
-	gt_free(e1);
-	gt_free(e2);
+	gt_free(e);
 	for (i = 0; i < 2; i++) {
 		bn_free(m[i]);
 		bn_free(u[i]);
