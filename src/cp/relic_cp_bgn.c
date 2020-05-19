@@ -54,7 +54,7 @@ int cp_bgn_gen(bgn_t pub, bgn_t prv) {
 	TRY {
 		bn_new(n);
 
-		g1_get_ord(n);
+		pc_get_ord(n);
 
 		bn_rand_mod(prv->x, n);
 		bn_rand_mod(prv->y, n);
@@ -92,7 +92,7 @@ int cp_bgn_enc1(g1_t out[2], dig_t in, bgn_t pub) {
 		bn_new(r);
 		g1_new(t);
 
-		g1_get_ord(n);
+		pc_get_ord(n);
 		bn_rand_mod(r, n);
 
 		/* Compute c0 = (ym + r)G. */
@@ -138,7 +138,7 @@ int cp_bgn_dec1(dig_t *out, g1_t in[2], bgn_t prv) {
 		g1_new(t);
 		g1_new(u);
 
-		g1_get_ord(n);
+		pc_get_ord(n);
 		/* Compute T = x(ym + r)G - (zm + xr)G = m(xy - z)G. */
 		g1_mul(t, in[0], prv->x);
 		g1_sub(t, t, in[1]);
@@ -192,7 +192,7 @@ int cp_bgn_enc2(g2_t out[2], dig_t in, bgn_t pub) {
 		bn_new(r);
 		g2_new(t);
 
-		g2_get_ord(n);
+		pc_get_ord(n);
 		bn_rand_mod(r, n);
 
 		/* Compute c0 = (ym + r)G. */
@@ -237,7 +237,7 @@ int cp_bgn_dec2(dig_t *out, g2_t in[2], bgn_t prv) {
 		g2_new(t);
 		g2_new(u);
 
-		g2_get_ord(n);
+		pc_get_ord(n);
 		/* Compute T = x(ym + r)G - (zm + xr)G = m(xy - z)G. */
 		g2_mul(t, in[0], prv->x);
 		g2_sub(t, t, in[1]);
@@ -327,7 +327,7 @@ int cp_bgn_dec(dig_t *out, gt_t in[4], bgn_t prv) {
 		gt_mul(t[3], in[3], t[1]);
 		gt_mul(t[3], t[3], t[0]);
 
-		gt_get_ord(n);
+		pc_get_ord(n);
 		g1_get_gen(g);
 		g2_get_gen(h);
 

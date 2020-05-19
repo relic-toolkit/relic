@@ -45,10 +45,32 @@ void g1_mul(g1_t c, g1_t a, bn_t b) {
 		bn_new(n);
 		bn_new(_b);
 
-		g1_get_ord(n);
+		pc_get_ord(n);
 		bn_mod(_b, b, n);
 
 		RLC_CAT(G1_LOWER, mul)(c, a, _b);
+	} CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	} FINALLY {
+		bn_free(n);
+		bn_free(_b);
+	}
+}
+
+void g1_mul_gen(g1_t c, bn_t b) {
+	bn_t n, _b;
+
+	bn_null(n);
+	bn_null(_b);
+
+	TRY {
+		bn_new(n);
+		bn_new(_b);
+
+		pc_get_ord(n);
+		bn_mod(_b, b, n);
+
+		RLC_CAT(G1_LOWER, mul_gen)(c, _b);
 	} CATCH_ANY {
 		THROW(ERR_CAUGHT);
 	} FINALLY {
@@ -67,10 +89,32 @@ void g2_mul(g2_t c, g2_t a, bn_t b) {
 		bn_new(n);
 		bn_new(_b);
 
-		g2_get_ord(n);
+		pc_get_ord(n);
 		bn_mod(_b, b, n);
 
 		RLC_CAT(G2_LOWER, mul)(c, a, _b);
+	} CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	} FINALLY {
+		bn_free(n);
+		bn_free(_b);
+	}
+}
+
+void g2_mul_gen(g2_t c, bn_t b) {
+	bn_t n, _b;
+
+	bn_null(n);
+	bn_null(_b);
+
+	TRY {
+		bn_new(n);
+		bn_new(_b);
+
+		pc_get_ord(n);
+		bn_mod(_b, b, n);
+
+		RLC_CAT(G2_LOWER, mul_gen)(c, _b);
 	} CATCH_ANY {
 		THROW(ERR_CAUGHT);
 	} FINALLY {
@@ -89,7 +133,7 @@ void gt_exp(gt_t c, gt_t a, bn_t b) {
 		bn_new(n);
 		bn_new(_b);
 
-		gt_get_ord(n);
+		pc_get_ord(n);
 		bn_mod(_b, b, n);
 
 		RLC_CAT(GT_LOWER, exp_cyc)(c, a, _b);

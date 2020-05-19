@@ -53,7 +53,7 @@ int cp_sokaka_gen(bn_t master) {
 	TRY {
 		bn_new(n);
 
-		g1_get_ord(n);
+		pc_get_ord(n);
 		bn_rand_mod(master, n);
 	}
 	CATCH_ANY {

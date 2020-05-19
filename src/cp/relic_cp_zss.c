@@ -56,7 +56,7 @@ int cp_zss_gen(bn_t d, g1_t q, gt_t z) {
 		/* z = e(g1, g2). */
 		pc_map(z, q, g);
 
-		g2_get_ord(n);
+		pc_get_ord(n);
 
 		bn_rand_mod(d, n);
 		g1_mul_gen(q, d);
@@ -87,7 +87,7 @@ int cp_zss_sig(g2_t s, uint8_t *msg, int len, int hash, bn_t d) {
 		bn_new(r);
 		bn_new(t);
 
-		g1_get_ord(n);
+		pc_get_ord(n);
 
 		/* m = H(msg). */
 		if (hash) {
@@ -136,7 +136,7 @@ int cp_zss_ver(g2_t s, uint8_t *msg, int len, int hash, g1_t q, gt_t z) {
 		g1_new(g);
 		gt_new(e);
 
-		g1_get_ord(n);
+		pc_get_ord(n);
 
 		/* m = H(msg). */
 		if (hash) {

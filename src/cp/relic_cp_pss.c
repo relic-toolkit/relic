@@ -44,7 +44,7 @@ int cp_pss_gen(bn_t r, bn_t s, g2_t g, g2_t x, g2_t y) {
 	TRY {
 		bn_new(n);
 
-		g2_get_ord(n);
+		pc_get_ord(n);
 		bn_rand_mod(r, n);
 		bn_rand_mod(s, n);
 		g2_rand(g);
@@ -71,7 +71,7 @@ int cp_pss_sig(g1_t a, g1_t b, uint8_t *msg, int len, bn_t r, bn_t s) {
 		bn_new(m);
 		bn_new(n);
 
-		g1_get_ord(n);
+		pc_get_ord(n);
 		bn_read_bin(m, msg, len);
 		bn_mul(m, m, s);
 		bn_mod(m, m, n);
@@ -122,7 +122,7 @@ int cp_pss_ver(g1_t a, g1_t b, uint8_t *msg, int len, g2_t g, g2_t x, g2_t y) {
 		g1_copy(p[1], b);
 		g2_copy(r[1], g);
 		g2_neg(r[1], r[1]);
-		g1_get_ord(n);
+		pc_get_ord(n);
 		bn_read_bin(m, msg, len);
 		bn_mod(m, m, n);
 		g2_mul(r[0], y, m);
@@ -158,7 +158,7 @@ int cp_psb_gen(bn_t r, bn_t s[], g2_t g, g2_t x, g2_t y[], int l) {
 	TRY {
 		bn_new(n);
 
-		g2_get_ord(n);
+		pc_get_ord(n);
 		bn_rand_mod(r, n);
 		g2_rand(g);
 		g2_mul(x, g, r);
@@ -193,7 +193,7 @@ int cp_psb_sig(g1_t a, g1_t b, uint8_t *msgs[], int lens[], bn_t r, bn_t s[],
 		/* Choose random a in G1. */
 		g1_rand(a);
 		/* Compute b = a^x+\sum y_im_i. */
-		g1_get_ord(n);
+		pc_get_ord(n);
 		bn_copy(t, r);
 		for (i = 0; i < l; i++) {
 			bn_read_bin(m, msgs[i], lens[i]);
@@ -245,7 +245,7 @@ int cp_psb_ver(g1_t a, g1_t b, uint8_t *msgs[], int lens[], g2_t g, g2_t x,
 		g1_copy(p[0], a);
 		g1_copy(p[1], b);
 		g2_copy(q[0], x);
-		g1_get_ord(n);
+		pc_get_ord(n);
 		for (i = 0; i < l; i++) {
 			bn_read_bin(m, msgs[i], lens[i]);
 			bn_mod(m, m, n);

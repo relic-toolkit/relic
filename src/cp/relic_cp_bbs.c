@@ -55,7 +55,7 @@ int cp_bbs_gen(bn_t d, g2_t q, gt_t z) {
 		/* z = e(g1, g2). */
 		pc_map(z, g, q);
 
-		g2_get_ord(n);
+		pc_get_ord(n);
 
 		/* Use short scalars. */
 		do {
@@ -90,7 +90,7 @@ int cp_bbs_sig(g1_t s, uint8_t *msg, int len, int hash, bn_t d) {
 		bn_new(n);
 		bn_new(r);
 
-		g1_get_ord(n);
+		pc_get_ord(n);
 
 		/* m = H(msg). */
 		if (hash) {
@@ -140,7 +140,7 @@ int cp_bbs_ver(g1_t s, uint8_t *msg, int len, int hash, g2_t q, gt_t z) {
 		g2_new(g);
 		gt_new(e);
 
-		g2_get_ord(n);
+		pc_get_ord(n);
 
 		/* m = H(msg). */
 		if (hash) {

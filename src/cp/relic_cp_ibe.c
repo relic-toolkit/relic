@@ -46,7 +46,7 @@ int cp_ibe_gen(bn_t master, g1_t pub) {
 	TRY {
 		bn_new(n);
 
-		g1_get_ord(n);
+		pc_get_ord(n);
 		bn_rand_mod(master, n);
 
 		/* K_pub = sG. */
@@ -106,7 +106,7 @@ int cp_ibe_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len,
 			THROW(ERR_NO_MEMORY);
 		}
 
-		g1_get_ord(n);
+		pc_get_ord(n);
 
 		/* q = H_1(ID). */
 		g2_map(q, (uint8_t *)id, len);

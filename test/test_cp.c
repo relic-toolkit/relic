@@ -1237,7 +1237,7 @@ static int lhs(void) {
 		}
 
 		/* Initialize scheme for messages of single components. */
-		g1_get_ord(n);
+		pc_get_ord(n);
 		cp_cmlhs_init(h);
 		for (int j = 0; j < S; j++) {
 			cp_cmlhs_gen(x[j], hs[j], L, k[j], K, sk[j], pk[j], d[j], y[j]);

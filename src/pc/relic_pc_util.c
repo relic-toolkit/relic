@@ -97,7 +97,7 @@ int g1_is_valid(g1_t a) {
 			return ep_is_valid(a);
 		} else {
 			/* Otherwise, check order explicitly. */
-			g1_get_ord(n);
+			pc_get_ord(n);
 			/* Multiply by (n-1)/2 to prevent weird interactions with recoding. */
 			bn_add_dig(n, n, 1);
 			bn_hlv(n, n);
@@ -131,7 +131,7 @@ int g2_is_valid(g2_t a) {
 		g2_new(u);
 		g2_new(v);
 
-		g2_get_ord(n);
+		pc_get_ord(n);
 		ep_curve_get_cof(p);
 
 		if (bn_cmp_dig(p, 1) == RLC_EQ) {
@@ -187,7 +187,7 @@ int gt_is_valid(gt_t a) {
 		gt_new(u);
 		gt_new(v);
 
-		gt_get_ord(n);
+		pc_get_ord(n);
 		ep_curve_get_cof(p);
 
 		if (bn_cmp_dig(p, 1) == RLC_EQ) {

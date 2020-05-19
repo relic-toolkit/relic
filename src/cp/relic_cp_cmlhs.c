@@ -59,7 +59,7 @@ int cp_cmlhs_gen(bn_t x[], gt_t hs[], int len, uint8_t prf[], int plen,
 		g2_new(g2);
 		gt_new(gt);
 
-		g1_get_ord(n);
+		pc_get_ord(n);
 		g1_get_gen(g1);
 		g2_get_gen(g2);
 		pc_map(gt, g1, g2);
@@ -67,7 +67,7 @@ int cp_cmlhs_gen(bn_t x[], gt_t hs[], int len, uint8_t prf[], int plen,
 		rand_bytes(prf, plen);
 		cp_bls_gen(sk, pk);
 
-		g1_get_ord(n);
+		pc_get_ord(n);
 		/* Generate elements for n tags. */
 		for (int i = 0; i < len; i++) {
 			bn_rand_mod(x[i], n);
@@ -112,7 +112,7 @@ int cp_cmlhs_sig(g1_t sig, g2_t z, g1_t a, g1_t c, g1_t r, g2_t s, bn_t msg,
 			THROW(ERR_NO_MEMORY);
 		}
 
-		g1_get_ord(n);
+		pc_get_ord(n);
 		/* Generate r and s. */
 		bn_rand_mod(k, n);
 		bn_rand_mod(m, n);
@@ -217,7 +217,7 @@ int cp_cmlhs_ver(g1_t r, g2_t s, g1_t sig[], g2_t z[], g1_t a[], g1_t c[],
 			THROW(ERR_NO_MEMORY);
 		}
 
-		g1_get_ord(n);
+		pc_get_ord(n);
 		g1_get_gen(g1);
 		g2_get_gen(g2);
 

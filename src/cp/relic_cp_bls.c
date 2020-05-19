@@ -44,7 +44,7 @@ int cp_bls_gen(bn_t d, g2_t q) {
 	TRY {
 		bn_new(n);
 
-		g2_get_ord(n);
+		pc_get_ord(n);
 		bn_rand_mod(d, n);
 		g2_mul_gen(q, d);
 	}

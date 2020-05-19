@@ -986,7 +986,7 @@ static void lhs(void) {
 	g1_new(_r);
 	g2_new(_s);
 
-	g1_get_ord(n);
+	pc_get_ord(n);
 	for (int i = 0; i < L; i++) {
 		bn_null(msg[i]);
 		bn_new(msg[i]);

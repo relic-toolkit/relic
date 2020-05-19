@@ -44,7 +44,7 @@ int cp_mklhs_gen(bn_t sk, g2_t pk) {
 	TRY {
 		bn_new(n);
 
-		g2_get_ord(n);
+		pc_get_ord(n);
 		bn_rand_mod(sk, n);
 		g2_mul_gen(pk, sk);
 	}
@@ -70,7 +70,7 @@ int cp_mklhs_sig(g1_t s, bn_t m, char *data, int dlen, char *label, int llen,
 		bn_new(n);
 		g1_new(a);
 
-		g1_get_ord(n);
+		pc_get_ord(n);
 		g1_mul_gen(a, m);
 
 		g1_map(s, (uint8_t *)data, dlen);
@@ -101,7 +101,7 @@ int cp_mklhs_fun(bn_t mu, bn_t m[], dig_t f[], int len) {
 		bn_new(n);
 		bn_new(t);
 
-		g1_get_ord(n);
+		pc_get_ord(n);
 		bn_zero(mu);
 		for (int i = 0; i < len; i++) {
 			bn_mul_dig(t, m[i], f[i]);
@@ -161,7 +161,7 @@ int cp_mklhs_ver(g1_t sig, bn_t m, bn_t mu[], char *data, int dlen,
 		}
 
 		bn_zero(t);
-		g1_get_ord(n);
+		pc_get_ord(n);
 		for (int j = 0; j < slen; j++) {
 			g1_null(g[j]);
 			g1_new(g[j]);
@@ -289,7 +289,7 @@ int cp_mklhs_onv(g1_t sig, bn_t m, bn_t mu[], char *data, int dlen,
 		}
 
 		bn_zero(t);
-		g1_get_ord(n);
+		pc_get_ord(n);
 		for (int j = 0; j < slen; j++) {
 			g1_null(g[j]);
 			g1_new(g[j]);

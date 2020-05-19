@@ -199,25 +199,19 @@ typedef RLC_CAT(GT_LOWER, t) gt_t;
 #define g2_get_gen(G)		RLC_CAT(G2_LOWER, curve_get_gen)(G)
 
 /**
- * Returns the order of the group G_1.
+ * Returns the order of the groups G_1, G_2 and G_T.
  *
  * @param[out] N			0 the returned order.
  */
-#define g1_get_ord(N)		RLC_CAT(G1_LOWER, curve_get_ord)(N)
+#define pc_get_ord(N)		RLC_CAT(G1_LOWER, curve_get_ord)(N)
 
 /**
- * Returns the order of the group G_2.
- *
- * @param[out] N			0 the returned order.
+ * Old macros to preserve interface.
+ * @{
  */
-#define g2_get_ord(N)		RLC_CAT(G2_LOWER, curve_get_ord)(N)
-
-/**
- * Returns the order of the group G_T.
- *
- * @param[out] N			0 the returned order.
- */
-#define gt_get_ord(N)		RLC_CAT(G1_LOWER, curve_get_ord)(N)
+#define g1_get_ord			pc_get_ord
+#define g2_get_ord			pc_get_ord
+#define gt_get_ord			pc_get_ord
 
 /**
  * Configures some set of curve parameters for the current security level.
@@ -226,7 +220,6 @@ typedef RLC_CAT(GT_LOWER, t) gt_t;
 
 /**
  * Returns the type of the configured pairing.
- *
  * @{
  */
 #if FP_PRIME < 1536
@@ -651,22 +644,6 @@ typedef RLC_CAT(GT_LOWER, t) gt_t;
 #define gt_exp_dig(C, A, B)		RLC_CAT(GT_LOWER, exp_dig)(C, A, B)
 
 /**
- * Multiplies the generator of G_1 by an integer.
- *
- * @param[out] R			- the result.
- * @param[in] K				- the integer.
- */
-#define g1_mul_gen(R, K)	RLC_CAT(G1_LOWER, mul_gen)(R, K)
-
-/**
- * Multiplies the generator of G_2 by an integer.
- *
- * @param[out] R			- the result.
- * @param[in] K				- the integer.
- */
-#define g2_mul_gen(R, K)	RLC_CAT(G2_LOWER, mul_gen)(R, K)
-
-/**
  * Builds a precomputation table for multiplying an element from G_1.
  *
  * @param[out] T			- the precomputation table.
@@ -853,6 +830,22 @@ void g1_mul(g1_t r, g1_t p, bn_t k);
  * @param[in] k				- the integer.
  */
 void g2_mul(g2_t r, g2_t p, bn_t k);
+
+/**
+ * Multiplies the generator of G_1 by an integer.
+ *
+ * @param[out] r			- the result.
+ * @param[in] k				- the integer.
+ */
+void g1_mul_gen(g1_t r, bn_t k);
+
+/**
+ * Multiplies the generator of G_2 by an integer.
+ *
+ * @param[out] r			- the result.
+ * @param[in] k				- the integer.
+ */
+void g2_mul_gen(g2_t r, bn_t k);
 
 /**
  * Exponentiates an element from G_T by an integer. Computes c = a^b.

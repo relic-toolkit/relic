@@ -44,7 +44,7 @@ int cp_cls_gen(bn_t r, bn_t s, g2_t x, g2_t y) {
 	TRY {
 		bn_new(n);
 
-		g2_get_ord(n);
+		pc_get_ord(n);
 		bn_rand_mod(r, n);
 		bn_rand_mod(s, n);
 		g2_mul_gen(x, r);
@@ -71,7 +71,7 @@ int cp_cls_sig(g1_t a, g1_t b, g1_t c, uint8_t *msg, int len, bn_t r, bn_t s) {
 		bn_new(n);
 
 		g1_rand(a);
-		g1_get_ord(n);
+		pc_get_ord(n);
 		bn_mul(m, r, s);
 		bn_mod(m, m, n);
 		g1_mul(b, a, s);
@@ -134,7 +134,7 @@ int cp_cls_ver(g1_t a, g1_t b, g1_t c, uint8_t *msg, int len, g2_t x, g2_t y) {
 			result = 0;
 		}
 
-		g1_get_ord(n);
+		pc_get_ord(n);
 		bn_read_bin(m, msg, len);
 		bn_mod(m, m, n);
 		g1_mul(p[0], b, m);
@@ -172,7 +172,7 @@ int cp_cli_gen(bn_t t, bn_t u, bn_t v, g2_t x, g2_t y, g2_t z) {
 	TRY {
 		bn_new(n);
 
-		g2_get_ord(n);
+		pc_get_ord(n);
 		bn_rand_mod(t, n);
 		bn_rand_mod(u, n);
 		bn_rand_mod(v, n);
@@ -208,7 +208,7 @@ int cp_cli_sig(g1_t a, g1_t A, g1_t b, g1_t B, g1_t c, uint8_t *msg, int len,
 		g1_mul(b, a, u);
 		g1_mul(B, A, u);
 		/* Compute c = A^(xyr) = B^{xr}. */
-		g1_get_ord(n);
+		pc_get_ord(n);
 		bn_mul(m, t, r);
 		bn_mod(m, m, n);
 		g1_mul(b, B, m);
@@ -295,7 +295,7 @@ int cp_cli_ver(g1_t a, g1_t A, g1_t b, g1_t B, g1_t c, uint8_t *msg, int len,
 		}
 
 		/* Check that e(a, X)e(mb, X)e(rB, X) = e(c, g). */
-		g1_get_ord(n);
+		pc_get_ord(n);
 		bn_read_bin(m, msg, len);
 		bn_mod(m, m, n);
 		g1_mul(p[0], b, m);
@@ -334,7 +334,7 @@ int cp_clb_gen(bn_t t, bn_t u, bn_t v[], g2_t x, g2_t y, g2_t z[], int l) {
 	TRY {
 		bn_new(n);
 
-		g2_get_ord(n);
+		pc_get_ord(n);
 		bn_rand_mod(t, n);
 		bn_rand_mod(u, n);
 		g2_mul_gen(x, t);
@@ -373,7 +373,7 @@ int cp_clb_sig(g1_t a, g1_t A[], g1_t b, g1_t B[], g1_t c, uint8_t *msgs[],
 			g1_mul(B[i - 1], A[i - 1], u);
 		}
 		/* Compute c = a^(x+xym_0)\prod A_i^(xym_i) = B_i^(xm_i). */
-		g1_get_ord(n);
+		pc_get_ord(n);
 		bn_read_bin(m, msgs[0], lens[0]);
 		bn_mod(m, m, n);
 		bn_mul(m, m, t);
@@ -469,7 +469,7 @@ int cp_clb_ver(g1_t a, g1_t A[], g1_t b, g1_t B[], g1_t c, uint8_t *msgs[],
 		}
 
 		/* Check that e(a, X)e(m_0b, X)\prod e(m_iB, X) = e(c, g). */
-		g1_get_ord(n);
+		pc_get_ord(n);
 		bn_read_bin(m, msgs[0], lens[0]);
 		bn_mod(m, m, n);
 		g1_mul(p[0], b, m);
