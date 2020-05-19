@@ -1407,25 +1407,30 @@ int exponentiation(void) {
 			TEST_ASSERT(gt_is_unity(c), end);
 		} TEST_END;
 
-		TEST_BEGIN("exponentiation is correct") {
-			gt_rand(a);
+		TEST_BEGIN("generator exponentiation is correct") {
 			bn_zero(d);
-			gt_exp(c, a, d);
+			gt_exp_gen(c, d);
 			TEST_ASSERT(gt_is_unity(c), end);
 			bn_set_dig(d, 1);
-			gt_exp(c, a, d);
+			gt_exp_gen(c, d);
 			TEST_ASSERT(gt_cmp(c, a) == RLC_EQ, end);
 			bn_add_dig(d, n, 1);
-			gt_exp(c, a, d);
+			gt_exp_gen(c, d);
 			TEST_ASSERT(gt_cmp(c, a) == RLC_EQ, end);
-			gt_exp(c, a, n);
+			gt_exp_gen(c, n);
 			TEST_ASSERT(gt_is_unity(c), end);
 			bn_rand_mod(d, n);
-			gt_exp(b, a, d);
+			gt_exp_gen(b, d);
 			bn_neg(d, d);
-			gt_exp(c, a, d);
+			gt_exp_gen(c, d);
 			gt_inv(c, c);
 			TEST_ASSERT(gt_cmp(b, c) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_BEGIN("random element has the right order") {
+			gt_rand(a);
+			gt_exp(c, a, n);
+			TEST_ASSERT(gt_is_unity(c) == 1, end);
 		} TEST_END;
 	}
 	CATCH_ANY {

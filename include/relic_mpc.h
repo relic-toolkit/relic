@@ -339,6 +339,39 @@ void g2_mul_bct(bn_t d[2], g2_t q[2]);
 void g2_mul_mpc(g2_t r, bn_t d, g2_t q, mt_t tri, g2_t b, int party);
 
 /**
+ * Performs the local work for a MPC scalar multiplication in G2.
+ *
+ * @param[out] d 				- the share of the masked scalar.
+ * @param[out] q 				- the share of the masked point to multiply.
+ * @param[out] b 				- the cached value of the local computation.
+ * @param[in] x 				- the scalar.
+ * @param[in] p 				- the point to multiply.
+ * @param[in] tri 				- the multiplication triple.
+*/
+void gt_exp_lcl(bn_t d, gt_t q, gt_t b, bn_t x, gt_t p, mt_t tri);
+
+/**
+ * Opens the public values in an MPC scalar multiplication in G2.
+ *
+ * @param[out] d 				- the first public value (masked scalar).
+ * @param[out] q 				- the second public value (masked point).
+ * @param[in] n 				- the order.
+*/
+void gt_exp_bct(bn_t d[2], gt_t q[2]);
+
+/**
+ * Finishes an MPC scalar multiplication in G2 by computing the result.
+ *
+ * @param[out] r 				- the share of the result.
+ * @param[in] d 				- the first public value.
+ * @param[in] q 				- the second public value.
+ * @param[in] tri 				- the multiplication triple.
+ * @param[in] b 				- the cached value from the local computation.
+ * @param[in] party				- the party performing the computation.
+ */
+void gt_exp_mpc(gt_t r, bn_t d, gt_t q, mt_t tri, gt_t b, int party);
+
+/**
  * Generates a pairing triple.
  *
  * @param[out] t			- the pairing triple to generate.

@@ -839,6 +839,11 @@ void ep2_curve_set_twist(int type) {
 		/* compute constants for hash-to-curve */
 		ep2_curve_set_map();
 
+#if defined(WITH_PC)
+		/* Compute pairing generator. */
+		pc_core_calc();
+#endif
+
 #if defined(EP_PRECO)
 		ep2_mul_pre((ep2_t *)ep2_curve_get_tab(), ctx->ep2_g);
 #endif

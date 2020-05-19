@@ -124,9 +124,6 @@ int core_init(void) {
 #ifdef WITH_FB
 		fb_poly_init();
 #endif
-#ifdef WITH_FT
-		ft_poly_init();
-#endif
 #ifdef WITH_EP
 		ep_curve_init();
 #endif
@@ -138,6 +135,9 @@ int core_init(void) {
 #endif
 #ifdef WITH_PP
 		pp_map_init();
+#endif
+#ifdef WITH_PC
+		pc_core_init();
 #endif
 	}
 	CATCH_ANY {
@@ -155,9 +155,6 @@ int core_clean(void) {
 #ifdef WITH_FB
 	fb_poly_clean();
 #endif
-#ifdef WITH_FT
-	ft_poly_clean();
-#endif
 #ifdef WITH_EP
 	ep_curve_clean();
 #endif
@@ -170,6 +167,10 @@ int core_clean(void) {
 #ifdef WITH_PP
 	pp_map_clean();
 #endif
+#ifdef WITH_PC
+	pc_core_clean();
+#endif
+
 	arch_clean();
 	core_ctx = NULL;
 	return RLC_OK;

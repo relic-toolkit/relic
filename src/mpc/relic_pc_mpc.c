@@ -201,6 +201,88 @@ void g2_mul_mpc(g2_t r, bn_t d, g2_t q, mt_t tri, g2_t b, int party) {
 	}
 }
 
+void gt_exp_lcl(bn_t d, gt_t q, gt_t b, bn_t x, gt_t p, mt_t tri) {
+	bn_t n;
+
+	bn_null(n);
+
+	TRY {
+		bn_new(n);
+
+		/* Compute public values for transmission. */
+
+		/* [d] = [x] - [a]. */
+		gt_get_ord(n);
+		bn_sub(d, x, tri->a);
+		if (bn_sign(d) == RLC_NEG) {
+			bn_add(d, d, n);
+		}
+		bn_mod(d, d, n);
+
+		/* [Q] = [P] - [B] = [b]G. */
+		/* Copy first to avoid overwriting P. */
+		gt_copy(q, p);
+		gt_exp_gen(b, tri->b);
+		gt_inv(b, b);
+		gt_mul(q, q, b);
+		gt_inv(b, b);
+	} CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	} FINALLY {
+		bn_free(n);
+	}
+}
+
+void gt_exp_bct(bn_t d[2], gt_t q[2]) {
+	bn_t n;
+
+	bn_null(n);
+
+	TRY {
+		bn_new(n);
+		/* Open values d and Q. */
+		gt_get_ord(n);
+		bn_add(d[0], d[0], d[1]);
+		bn_mod(d[0], d[0], n);
+		bn_copy(d[1], d[0]);
+		gt_mul(q[0], q[0], q[1]);
+		gt_copy(q[1], q[0]);
+	} CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	} FINALLY {
+		bn_free(n);
+	}
+}
+
+void gt_exp_mpc(gt_t r, bn_t d, gt_t q, mt_t tri, gt_t b, int party) {
+	gt_t t;
+
+	gt_null(t);
+
+	TRY {
+		gt_new(t);
+
+		if (party == 0) {
+			/* For one party, compute [B] + Q. */
+			gt_mul(t, b, q);
+		} else {
+			gt_copy(t, b);
+		}
+		/* Compute [a]Q + d([B] + Q) or d[B]. */
+		gt_exp(r, q, tri->a);
+		gt_exp(t, t, d);
+		gt_mul(r, r, t);
+		/* Compute [C] = [ab]G. */
+		gt_exp_gen(t, tri->c);
+		/* R = [a]Q + d[B] + dQ + [C] = [xy] */
+		gt_mul(r, r, t);
+	} CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	} FINALLY {
+		gt_free(t);
+	}
+}
+
 void pc_map_tri(pt_t t[2]) {
 	bn_t n;
 	mt_t tri[2];

@@ -114,6 +114,11 @@ typedef fp2_t fp6_t[3];
 typedef dv2_t dv6_t[3];
 
 /**
+ * Represents a sextic extension field element with automatic memory allocation.
+ */
+typedef fp2_st fp6_st[3];
+
+/**
  * Represents an octic extension prime field element.
  *
  * This extension is constructed with the basis {1, w}, where w^2 = v is an
@@ -152,11 +157,6 @@ typedef dv3_t dv9_t[3];
 typedef fp3_st fp9_st[3];
 
 /**
- * Represents a double-precision dodecic extension field element.
- */
-typedef dv6_t dv12_t[2];
-
-/**
  * Represents a dodecic extension field element.
  *
  * This extension is constructed with the basis {1, w}, where w^2 = v is an
@@ -165,9 +165,9 @@ typedef dv6_t dv12_t[2];
 typedef fp6_t fp12_t[2];
 
 /**
- * Represents a double-precision octdecic extension field element.
+ * Represents a double-precision dodecic extension field element.
  */
-typedef dv9_t dv18_t[2];
+typedef dv6_t dv12_t[2];
 
 /**
  * Represents an octdecic extension field element.
@@ -178,9 +178,9 @@ typedef dv9_t dv18_t[2];
 typedef fp9_t fp18_t[2];
 
 /**
- * Represents a double-precision 24-degree extension field element.
+ * Represents a double-precision octdecic extension field element.
  */
-typedef dv8_t dv24_t[3];
+typedef dv9_t dv18_t[2];
 
 /**
  * Represents a 24-degree extension field element.
@@ -191,9 +191,9 @@ typedef dv8_t dv24_t[3];
 typedef fp8_t fp24_t[3];
 
 /**
- * Represents a double-precision 48-degree extension field element.
+ * Represents a double-precision 24-degree extension field element.
  */
-typedef dv24_t dv48_t[2];
+typedef dv8_t dv24_t[3];
 
 /**
  * Represents a 48-degree extension field element.
@@ -204,14 +204,9 @@ typedef dv24_t dv48_t[2];
 typedef fp24_t fp48_t[2];
 
 /**
- * Represents a double-precision 48-degree extension field element.
- */
-typedef dv18_t dv54_t[3];
-
-/**
  * Represents a 54-degree extension field element.
  *
- * This extension is constructed with the basis {1, t, t^2}, where u^3 = w is an
+ * This extension is constructed with the basis {1, u, u^2}, where u^3 = t is an
  * adjoined root in the underlying dodecic extension.
  */
 typedef fp18_t fp54_t[3];
@@ -3870,16 +3865,6 @@ void fp48_neg(fp48_t c, fp48_t a);
 void fp48_dbl(fp48_t c, fp48_t a);
 
 /**
- * Multiples two 48-extension field elements without performing modular
- * reduction.
- *
- * @param[out] c			- the result.
- * @param[in] a				- the 48-extension field element.
- * @param[in] b				- the 48-extension field element.
- */
-void fp48_mul_unr(dv48_t c, fp48_t a, fp48_t b);
-
-/**
  * Multiples two 48-extension field elements using basic arithmetic.
  *
  * @param[out] c			- the result.
@@ -3914,15 +3899,6 @@ void fp48_mul_art(fp48_t c, fp48_t a);
  * @param[in] b				- the sparse 48-extension field element.
  */
 void fp48_mul_dxs(fp48_t c, fp48_t a, fp48_t b);
-
-/**
- * Computes the square of a 48-extension field element without performing
- * modular reduction.
- *
- * @param[out] c			- the result.
- * @param[in] a				- the 48-extension field element to square.
- */
-void fp48_sqr_unr(dv48_t c, fp48_t a);
 
 /**
  * Computes the square of a 48-extension field element using basic
@@ -4249,16 +4225,6 @@ void fp54_neg(fp54_t c, fp54_t a);
 void fp54_dbl(fp54_t c, fp54_t a);
 
 /**
- * Multiples two 54-extension field elements without performing modular
- * reduction.
- *
- * @param[out] c			- the result.
- * @param[in] a				- the 54-extension field element.
- * @param[in] b				- the 54-extension field element.
- */
-void fp54_mul_unr(dv54_t c, fp54_t a, fp54_t b);
-
-/**
  * Multiples two 54-extension field elements using basic arithmetic.
  *
  * @param[out] c			- the result.
@@ -4293,15 +4259,6 @@ void fp54_mul_art(fp54_t c, fp54_t a);
  * @param[in] b				- the sparse 54-extension field element.
  */
 void fp54_mul_dxs(fp54_t c, fp54_t a, fp54_t b);
-
-/**
- * Computes the square of a 54-extension field element without performing
- * modular reduction.
- *
- * @param[out] c			- the result.
- * @param[in] a				- the 54-extension field element to square.
- */
-void fp54_sqr_unr(dv54_t c, fp54_t a);
 
 /**
  * Computes the square of a 54-extension field element using basic

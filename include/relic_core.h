@@ -46,6 +46,7 @@
 #include "relic_eb.h"
 #include "relic_epx.h"
 #include "relic_ed.h"
+#include "relic_pc.h"
 #include "relic_conf.h"
 #include "relic_bench.h"
 #include "relic_rand.h"
@@ -382,6 +383,10 @@ typedef struct _ctx_t {
 	fp_st fp3_p2[2];
 	/** @} */
 #endif /* WITH_PP */
+
+#if defined(WITH_PC)
+	gt_t gt_g;
+#endif
 
 #if BENCH > 0
 	/** Stores the time measured before the execution of the benchmark. */

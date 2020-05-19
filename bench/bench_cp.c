@@ -1018,7 +1018,6 @@ static void mpss(void) {
 
   	bn_free(n);
 	g2_free(h);
-	gt_free(e);
 	for (int i = 0; i < 2; i++) {
 		bn_free(m[i]);
 		bn_free(u[i]);

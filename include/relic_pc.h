@@ -832,6 +832,22 @@ typedef RLC_CAT(GT_LOWER, t) gt_t;
 /*============================================================================*/
 
 /**
+ * Initializes the cryptographic protocol module.
+ */
+void pc_core_init(void);
+
+/**
+ * Computes constants internal to the cryptographic protocol module.
+ */
+void pc_core_calc(void);
+
+/**
+ * Finalizes the cryptographic protocol module.
+ */
+void pc_core_clean(void);
+
+
+/**
  * Assigns a random value to an element from G_T.
  *
  * @param[out] a			- the element to assign.
@@ -864,6 +880,14 @@ void g2_mul(g2_t r, g2_t p, bn_t k);
  * @param[in] b				- the integer exponent.
  */
 void gt_exp(gt_t c, gt_t a, bn_t b);
+
+/**
+ * Exponentiates a generator from G_T by an integer. Computes c = a^b.
+ *
+ * @param[out] c			- the result.
+ * @param[in] b				- the integer exponent.
+ */
+void gt_exp_gen(gt_t c, bn_t b);
 
  /**
   * Returns the generator for the group G_T.

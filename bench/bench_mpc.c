@@ -195,7 +195,7 @@ static void pair_triple(void) {
 	BENCH_BEGIN("pc_map") {
 		g1_rand(p[0]);
 		g2_rand(q[0]);
-		BENCH_ADD(pc_map(r, p[0], q[0]));
+		BENCH_ADD(pc_map(r[0], p[0], q[0]));
 	} BENCH_END;
 	/* Secret share inputs. */
 	g1_rand(p[1]);

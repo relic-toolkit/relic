@@ -139,22 +139,20 @@ static int pairing(void) {
 	int j, code = RLC_ERR;
 	g1_t d[2], p[2], _p;
 	g2_t e[2], q[2], _q;
-	gt_t e1, e2, r[2];
+	gt_t f[2], r[2], _r;
 	bn_t k[2], l[2], n;
 	mt_t tri[2];
 	pt_t t[2];
 
 	g1_null(_p);
 	g2_null(_q);
-	gt_null(e1);
-	gt_null(e2);
+	gt_null(_r);
 	bn_null(n);
 
 	TRY {
 		g1_new(_p);
 		g2_new(_q);
-		gt_new(e1);
-		gt_new(e2);
+		gt_new(_r);
 		bn_new(n);
 
 		for (j = 0; j < 2; j++) {
@@ -165,6 +163,7 @@ static int pairing(void) {
 			g1_null(p[j]);
 			g2_null(q[j]);
 			gt_null(r[j]);
+			gt_null(f[j]);
 			mt_null(tri[j]);
 			pt_null(t[j]);
 			g1_new(d[j]);
@@ -174,13 +173,14 @@ static int pairing(void) {
 			g1_new(p[j]);
 			g2_new(q[j]);
 			gt_new(r[j]);
+			gt_new(f[j]);
 			mt_new(tri[j]);
 			pt_new(t[j]);
 		}
 
 		g1_get_ord(n);
 
-		TEST_BEGIN("scalar multiplication triples are consistent") {
+		TEST_BEGIN("scalar multiplication triples in g1 are consistent") {
 			mt_gen(tri, n);
 			/* Generate random inputs. */
 			g1_rand(p[0]);
@@ -209,7 +209,9 @@ static int pairing(void) {
 			g1_add(d[0], d[0], d[1]);
 			g1_norm(d[0], d[0]);
 			TEST_ASSERT(g1_cmp(_p, d[0]) == RLC_EQ, end);
+		} TEST_END;
 
+		TEST_BEGIN("scalar multiplication triples in g2 are consistent") {
 			/* Generate random inputs. */
 			g2_rand(q[0]);
 			bn_rand_mod(k[0], n);
@@ -239,6 +241,35 @@ static int pairing(void) {
 			TEST_ASSERT(g2_cmp(_q, e[0]) == RLC_EQ, end);
 		} TEST_END;
 
+		TEST_BEGIN("exponentiation triples in target group are consistent") {
+			/* Generate random inputs. */
+			gt_rand(r[0]);
+			bn_rand_mod(k[0], n);
+			gt_exp(_r, r[0], k[0]);
+			/* Secret share inputs. */
+			gt_rand(r[1]);
+			gt_mul(r[0], r[0], r[1]);
+			gt_inv(r[1], r[1]);
+			bn_rand_mod(k[1], n);
+			bn_sub(k[0], k[0], k[1]);
+			if (bn_sign(k[0]) == RLC_NEG) {
+				bn_add(k[0], k[0], n);
+			}
+			bn_mod(k[0], k[0], n);
+
+			/* Compute public values locally. */
+			gt_exp_lcl(l[0], f[0], r[0], k[0], r[0], tri[0]);
+			gt_exp_lcl(l[1], f[1], r[1], k[1], r[1], tri[1]);
+			/* Broadcast public values. */
+			gt_exp_bct(l, f);
+			TEST_ASSERT(bn_cmp(l[0], l[1]) == RLC_EQ, end);
+			TEST_ASSERT(gt_cmp(f[0], f[1]) == RLC_EQ, end);
+			gt_exp_mpc(f[0], l[0], f[0], tri[0], r[0], 0);
+			gt_exp_mpc(f[1], l[1], f[1], tri[1], r[1], 1);
+			gt_mul(f[0], f[0], f[1]);
+			TEST_ASSERT(gt_cmp(_r, f[0]) == RLC_EQ, end);
+		} TEST_END;
+
 		TEST_BEGIN("pairing triples are consistent") {
 			pc_map_tri(t);
 			g1_add(t[0]->a, t[0]->a, t[1]->a);
@@ -253,7 +284,7 @@ static int pairing(void) {
 			/* Generate random inputs. */
 			g1_rand(p[0]);
 			g2_rand(q[0]);
-			pc_map(e1, p[0], q[0]);
+			pc_map(f[0], p[0], q[0]);
 			/* Secret share inputs. */
 			g1_rand(p[1]);
 			g1_sub(p[0], p[0], p[1]);
@@ -270,8 +301,8 @@ static int pairing(void) {
 			TEST_ASSERT(g2_cmp(e[0], e[1]) == RLC_EQ, end);
 			pc_map_mpc(r[0], d[0], e[0], t[0], 0);
 			pc_map_mpc(r[1], d[1], e[1], t[1], 1);
-			gt_mul(e2, r[0], r[1]);
-			TEST_ASSERT(gt_cmp(e1, e2) == RLC_EQ, end);
+			gt_mul(f[1], r[0], r[1]);
+			TEST_ASSERT(gt_cmp(f[0], f[1]) == RLC_EQ, end);
 		} TEST_END;
 	}
 	CATCH_ANY {
@@ -282,8 +313,7 @@ static int pairing(void) {
   end:
 	g1_free(_p);
 	g2_free(_q);
-	gt_free(e1);
-	gt_free(e2);
+	gt_free(_r);
 	bn_free(n);
 	for (j = 0; j < 2; j++) {
 		g1_free(d[j]);
@@ -293,6 +323,7 @@ static int pairing(void) {
 		g1_free(p[j]);
 		g2_free(q[j]);
 		gt_free(r[j]);
+		gt_free(f[j]);
 		pt_free(t[j]);
 		mt_free(tri[j]);
 	}
