@@ -77,7 +77,7 @@
  * Default library context.
  */
 #if MULTI
-thread ctx_t first_ctx;
+RLC_THREAD ctx_t first_ctx;
 #else
 static ctx_t first_ctx;
 #endif
@@ -86,7 +86,7 @@ static ctx_t first_ctx;
  * Active library context.
  */
 #if MULTI
-thread ctx_t *core_ctx = NULL;
+RLC_THREAD ctx_t *core_ctx = NULL;
 #else
 static ctx_t *core_ctx = NULL;
 #endif
