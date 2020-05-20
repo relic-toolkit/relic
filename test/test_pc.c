@@ -216,6 +216,7 @@ int addition1(void) {
 			g1_rand(a);
 			g1_neg(d, a);
 			g1_add(e, a, d);
+			TEST_ASSERT(g1_is_valid(e), end);
 			TEST_ASSERT(g1_is_infty(e), end);
 		} TEST_END;
 	}
@@ -268,6 +269,7 @@ int subtraction1(void) {
 		TEST_BEGIN("point subtraction has inverse") {
 			g1_rand(a);
 			g1_sub(c, a, a);
+			TEST_ASSERT(g1_is_valid(c), end);
 			TEST_ASSERT(g1_is_infty(c), end);
 		}
 		TEST_END;
@@ -783,6 +785,7 @@ int addition2(void) {
 			g2_rand(a);
 			g2_neg(d, a);
 			g2_add(e, a, d);
+			TEST_ASSERT(g2_is_valid(e), end);
 			TEST_ASSERT(g2_is_infty(e), end);
 		} TEST_END;
 	}
@@ -835,6 +838,7 @@ int subtraction2(void) {
 		TEST_BEGIN("point subtraction has inverse") {
 			g2_rand(a);
 			g2_sub(c, a, a);
+			TEST_ASSERT(g2_is_valid(c), end);
 			TEST_ASSERT(g2_is_infty(c), end);
 		}
 		TEST_END;
