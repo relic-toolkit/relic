@@ -78,10 +78,9 @@ int cp_mpss_bct(g2_t x[2], g2_t y[2]) {
 	return RLC_OK;
 }
 
-int cp_mpss_sig(g1_t a[2], g1_t b[2], bn_t m[2], bn_t r[2], bn_t s[2], mt_t mul_tri[2], mt_t sm_tri[2]) {
+int cp_mpss_sig(g1_t a, g1_t b[2], bn_t m[2], bn_t r[2], bn_t s[2], mt_t mul_tri[2], mt_t sm_tri[2]) {
 	int result = RLC_OK;
 	bn_t n, d[2], e[2];
-	g1_t p[2], q[2];
 
 	bn_null(n);
 
@@ -90,12 +89,8 @@ int cp_mpss_sig(g1_t a[2], g1_t b[2], bn_t m[2], bn_t r[2], bn_t s[2], mt_t mul_
 		for (int i = 0; i < 2; i++) {
 			bn_null(d[i]);
 			bn_null(e[i]);
-			g1_null(p[i]);
-			g1_null(q[i]);
 			bn_new(d[i]);
 			bn_new(e[i]);
-			g1_new(p[i]);
-			g1_new(q[i]);
 		}
 		/* Compute d = (xm + y) in MPC. */
 		g1_get_ord(n);
@@ -109,14 +104,9 @@ int cp_mpss_sig(g1_t a[2], g1_t b[2], bn_t m[2], bn_t r[2], bn_t s[2], mt_t mul_
 		bn_add(d[1], d[1], r[1]);
 		bn_mod(d[1], d[1], n);
 		/* Compute signature in MPC. */
-		g1_rand(a[0]);
-		g1_rand(a[1]);
-		g1_mul_lcl(d[0], q[0], p[0], d[0], a[0], sm_tri[0]);
-		g1_mul_lcl(d[1], q[1], p[1], d[1], a[1], sm_tri[1]);
-		/* Broadcast public values. */
-		g1_mul_bct(d, q);
-		g1_mul_mpc(b[0], d[0], q[0], sm_tri[0], p[0], 0);
-		g1_mul_mpc(b[1], d[1], q[1], sm_tri[1], p[1], 1);
+		g1_rand(a);
+		g1_mul(b[0], a, d[0]);
+		g1_mul(b[1], a, d[1]);
 	} CATCH_ANY {
 		result = RLC_ERR;
 	} FINALLY {
@@ -124,20 +114,20 @@ int cp_mpss_sig(g1_t a[2], g1_t b[2], bn_t m[2], bn_t r[2], bn_t s[2], mt_t mul_
 		for (int i = 0; i < 2; i++) {
 			bn_free(d[i]);
 			bn_free(e[i]);
-			g1_free(p[i]);
-			g1_free(q[i]);
 		}
 	}
 	return result;
 }
 
-int cp_mpss_ver(gt_t e, g1_t a[2], g1_t b[2], bn_t m[2], g2_t h, g2_t x, g2_t y,
+//#define PERF_TRICK
+
+int cp_mpss_ver(gt_t e, g1_t a, g1_t b[2], bn_t m[2], g2_t h, g2_t x, g2_t y,
 		mt_t sm_tri[2], pt_t pc_tri[2]) {
 	int result = 0;
 	bn_t n, d[2], r[2];
 	g1_t p[2], q[2];
-	g2_t z[2];
-	gt_t alpha[2], beta[2];
+	g2_t z[2], w[2];
+	gt_t alpha[2], beta[2], gamma[2];
 
 	bn_null(n);
 
@@ -149,15 +139,19 @@ int cp_mpss_ver(gt_t e, g1_t a[2], g1_t b[2], bn_t m[2], g2_t h, g2_t x, g2_t y,
 			g1_null(p[i]);
 			g1_null(q[i]);
 			g2_null(z[i]);
+			g2_null(w[i]);
 			gt_null(alpha[i]);
 			gt_null(beta[i]);
+			gt_null(gamma[i]);
 			bn_new(d[i]);
 			bn_new(r[i]);
 			g1_new(p[i]);
 			g1_new(q[i]);
 			g2_new(z[i]);
+			g2_new(w[i]);
 			gt_new(alpha[i]);
 			gt_new(beta[i]);
+			gt_new(gamma[i]);
 		}
 		g1_get_ord(n);
 		/* Compute Z = X + [m] * Y. */
@@ -168,15 +162,13 @@ int cp_mpss_ver(gt_t e, g1_t a[2], g1_t b[2], bn_t m[2], g2_t h, g2_t x, g2_t y,
 		g2_norm(z[0], z[0]);
 
 		/* Compute [P] = [sigma_1'] = [r] * [sigma_1] in MPC. */
+
 		bn_rand_mod(r[0], n);
 		bn_rand_mod(r[1], n);
 
-		g1_mul_lcl(d[0], q[0], p[0], r[0], a[0], sm_tri[0]);
-		g1_mul_lcl(d[1], q[1], p[1], r[1], a[1], sm_tri[1]);
-		/* Broadcast public values. */
-		g1_mul_bct(d, q);
-		g1_mul_mpc(p[0], d[0], q[0], sm_tri[0], p[0], 0);
-		g1_mul_mpc(p[1], d[1], q[1], sm_tri[1], p[1], 1);
+#if PERF_TRICK
+		g1_mul(p[0], a, r[0]);
+		g1_mul(p[1], a, r[1]);
 
 		/* Compute [beta] = e([sigma_1'],[z]). */
 		pc_map_lcl(p[0], z[0], p[0], z[0], pc_tri[0]);
@@ -199,9 +191,34 @@ int cp_mpss_ver(gt_t e, g1_t a[2], g1_t b[2], bn_t m[2], g2_t h, g2_t x, g2_t y,
 			gt_inv(beta[i], beta[i]);
 			gt_mul(beta[i], alpha[i], beta[i]);
 		}
+#else
+		g1_neg(p[0], a);
+		g1_copy(p[1], b[0]);
+		g2_copy(w[0], z[0]);
+		g2_copy(w[1], h);
+		pc_map_sim(beta[0], p, w, 2);
 
-		/* Now combine shares and multiply. */
-		gt_mul(e, beta[0], beta[1]);
+		g1_neg(q[0], a);
+		g1_copy(q[1], b[1]);
+		g2_copy(w[0], z[1]);
+		g2_copy(w[1], h);
+		pc_map_sim(beta[1], q, w, 2);
+
+		/* Compute [alpha] = e([r] * [sigma_2, H]).  */
+		gt_exp_lcl(d[0], alpha[0], gamma[0], r[0], beta[0], sm_tri[0]);
+		gt_exp_lcl(d[1], alpha[1], gamma[1], r[1], beta[1], sm_tri[1]);
+		/* Broadcast public values. */
+		gt_exp_bct(d, alpha);
+		gt_exp_mpc(beta[0], d[0], alpha[0], sm_tri[0], gamma[0], 0);
+		gt_exp_mpc(beta[1], d[1], alpha[1], sm_tri[1], gamma[1], 1);
+#endif
+
+		if (g1_is_infty(a)) {
+			gt_rand(e);
+		} else {
+			/* Now combine shares and multiply. */
+			gt_mul(e, beta[0], beta[1]);
+		}
 	} CATCH_ANY {
 		result = RLC_ERR;
 	} FINALLY {
@@ -212,8 +229,10 @@ int cp_mpss_ver(gt_t e, g1_t a[2], g1_t b[2], bn_t m[2], g2_t h, g2_t x, g2_t y,
 			g1_free(p[i]);
 			g1_free(q[i]);
 			g2_free(z[i]);
+			g2_free(w[i]);
 			gt_free(alpha[i]);
 			gt_free(beta[i]);
+			gt_free(gamma[i]);
 		}
 	}
 	return result;
@@ -266,7 +285,7 @@ int cp_mpsb_bct(g2_t x[2], g2_t y[][2], int l) {
 	return RLC_OK;
 }
 
-int cp_mpsb_sig(g1_t a[2], g1_t b[2], bn_t m[][2], bn_t r[2], bn_t s[][2],
+int cp_mpsb_sig(g1_t a, g1_t b[2], bn_t m[][2], bn_t r[2], bn_t s[][2],
 		mt_t mul_tri[2], mt_t sm_tri[2], int l) {
 	int result = RLC_OK;
 	bn_t n, d[2], e[2], t[2];
@@ -309,14 +328,9 @@ int cp_mpsb_sig(g1_t a[2], g1_t b[2], bn_t m[][2], bn_t r[2], bn_t s[][2],
 		bn_add(d[1], t[1], r[1]);
 		bn_mod(d[1], d[1], n);
 		/* Compute signature in MPC. */
-		g1_rand(a[0]);
-		g1_rand(a[1]);
-		g1_mul_lcl(d[0], q[0], p[0], d[0], a[0], sm_tri[0]);
-		g1_mul_lcl(d[1], q[1], p[1], d[1], a[1], sm_tri[1]);
-		/* Broadcast public values. */
-		g1_mul_bct(d, q);
-		g1_mul_mpc(b[0], d[0], q[0], sm_tri[0], p[0], 0);
-		g1_mul_mpc(b[1], d[1], q[1], sm_tri[1], p[1], 1);
+		g1_rand(a);
+		g1_mul(b[0], a, d[0]);
+		g1_mul(b[1], a, d[1]);
 	} CATCH_ANY {
 		result = RLC_ERR;
 	} FINALLY {
@@ -332,13 +346,13 @@ int cp_mpsb_sig(g1_t a[2], g1_t b[2], bn_t m[][2], bn_t r[2], bn_t s[][2],
 	return result;
 }
 
-int cp_mpsb_ver(gt_t e, g1_t a[2], g1_t b[2], bn_t m[][2], g2_t h, g2_t x,
+int cp_mpsb_ver(gt_t e, g1_t a, g1_t b[2], bn_t m[][2], g2_t h, g2_t x,
 		g2_t y[][2], bn_t v[][2], mt_t sm_tri[2], pt_t pc_tri[2], int l) {
 	int result = 0;
 	bn_t n, _t, t[2], d[2], r[2];
 	g1_t p[2], q[2];
-	g2_t z[l][2];
-	gt_t alpha[2], beta[2];
+	g2_t z[l][2], w[2];
+	gt_t alpha[2], beta[2], gamma[2];
 
 	bn_null(n);
 	bn_null(_t);
@@ -352,15 +366,19 @@ int cp_mpsb_ver(gt_t e, g1_t a[2], g1_t b[2], bn_t m[][2], g2_t h, g2_t x,
 			bn_null(t[i]);
 			g1_null(p[i]);
 			g1_null(q[i]);
+			g2_null(w[i]);
 			gt_null(alpha[i]);
 			gt_null(beta[i]);
+			gt_null(gamma[i]);
 			bn_new(d[i]);
 			bn_new(r[i]);
 			bn_new(t[i]);
 			g1_new(p[i]);
 			g1_new(q[i]);
+			g2_new(w[i]);
 			gt_new(alpha[i]);
 			gt_new(beta[i]);
+			gt_new(gamma[i]);
 			for (int j = 0; j < l; j++) {
 				g2_null(z[j][i]);
 				g2_new(z[j][i]);
@@ -403,37 +421,32 @@ int cp_mpsb_ver(gt_t e, g1_t a[2], g1_t b[2], bn_t m[][2], g2_t h, g2_t x,
 		bn_rand_mod(r[0], n);
 		bn_rand_mod(r[1], n);
 
-		g1_mul_lcl(d[0], q[0], p[0], r[0], a[0], sm_tri[0]);
-		g1_mul_lcl(d[1], q[1], p[1], r[1], a[1], sm_tri[1]);
-		/* Broadcast public values. */
-		g1_mul_bct(d, q);
-		g1_mul_mpc(p[0], d[0], q[0], sm_tri[0], p[0], 0);
-		g1_mul_mpc(p[1], d[1], q[1], sm_tri[1], p[1], 1);
+		g1_neg(p[0], a);
+		g1_copy(p[1], b[0]);
+		g2_copy(w[0], z[0][0]);
+		g2_copy(w[1], h);
+		pc_map_sim(beta[0], p, w, 2);
 
-		/* Compute [beta] = e([sigma_1'],[z]). */
-		pc_map_lcl(p[0], z[0][0], a[0], z[0][0], pc_tri[0]);
-		pc_map_lcl(p[1], z[0][1], a[1], z[0][1], pc_tri[1]);
-		/* Broadcast public values. */
-		pc_map_bct(p, z[0]);
-		pc_map_mpc(beta[0], p[0], z[0][0], pc_tri[0], 0);
-		pc_map_mpc(beta[1], p[1], z[0][1], pc_tri[1], 1);
+		g1_neg(q[0], a);
+		g1_copy(q[1], b[1]);
+		g2_copy(w[0], z[0][1]);
+		g2_copy(w[1], h);
+		pc_map_sim(beta[1], q, w, 2);
 
 		/* Compute [alpha] = e([r] * [sigma_2, H]).  */
-		g1_mul_lcl(d[0], q[0], p[0], r[0], b[0], sm_tri[0]);
-		g1_mul_lcl(d[1], q[1], p[1], r[1], b[1], sm_tri[1]);
+		gt_exp_lcl(d[0], alpha[0], gamma[0], r[0], beta[0], sm_tri[0]);
+		gt_exp_lcl(d[1], alpha[1], gamma[1], r[1], beta[1], sm_tri[1]);
 		/* Broadcast public values. */
-		g1_mul_bct(d, q);
-		g1_mul_mpc(p[0], d[0], q[0], sm_tri[0], p[0], 0);
-		g1_mul_mpc(p[1], d[1], q[1], sm_tri[1], p[1], 1);
+		gt_exp_bct(d, alpha);
+		gt_exp_mpc(beta[0], d[0], alpha[0], sm_tri[0], gamma[0], 0);
+		gt_exp_mpc(beta[1], d[1], alpha[1], sm_tri[1], gamma[1], 1);
 
-		for (int i = 0; i < 2; i++) {
-			pc_map(alpha[i], b[i], h);
-			gt_inv(beta[i], beta[i]);
-			gt_mul(beta[i], alpha[i], beta[i]);
+		if (g1_is_infty(a)) {
+			gt_rand(e);
+		} else {
+			/* Now combine shares and multiply. */
+			gt_mul(e, beta[0], beta[1]);
 		}
-
-		/* Now combine shares and multiply. */
-		gt_mul(e, beta[0], beta[1]);
 	} CATCH_ANY {
 		result = RLC_ERR;
 	} FINALLY {
@@ -445,8 +458,10 @@ int cp_mpsb_ver(gt_t e, g1_t a[2], g1_t b[2], bn_t m[][2], g2_t h, g2_t x,
 			bn_free(t[i]);
 			g1_free(p[i]);
 			g1_free(q[i]);
+			g2_free(w[i]);
 			gt_free(alpha[i]);
 			gt_free(beta[i]);
+			gt_free(gamma[i]);
 			for (int j = 0; j < l; j++) {
 				g2_free(z[j][i]);
 			}

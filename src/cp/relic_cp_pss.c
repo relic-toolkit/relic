@@ -93,7 +93,7 @@ int cp_pss_ver(g1_t a, g1_t b, bn_t m, g2_t g, g2_t x, g2_t y) {
 	g1_t p[2];
 	g2_t r[2];
 	gt_t e;
-	int result = 1;
+	int result = 0;
 
 	g1_null(p[0]);
 	g1_null(p[1]);
@@ -108,10 +108,6 @@ int cp_pss_ver(g1_t a, g1_t b, bn_t m, g2_t g, g2_t x, g2_t y) {
 		g2_new(r[1]);
 		gt_new(e);
 
-		if (g1_is_infty(a)) {
-			result = 0;
-		}
-
 		g1_copy(p[0], a);
 		g1_copy(p[1], b);
 		g2_copy(r[1], g);
@@ -121,8 +117,8 @@ int cp_pss_ver(g1_t a, g1_t b, bn_t m, g2_t g, g2_t x, g2_t y) {
 		g2_norm(r[0], r[0]);
 
 		pc_map_sim(e, p, r, 2);
-		if (!gt_is_unity(e)) {
-			result = 0;
+		if (gt_is_unity(e) && !g1_is_infty(a)) {
+			result = 1;
 		}
 	}
 	CATCH_ANY {

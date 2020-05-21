@@ -1410,7 +1410,7 @@ int cp_mpss_gen(bn_t r[2], bn_t s[2], g2_t g, g2_t x[2], g2_t y[2]);
  * @param[in] sm_tri 		- the triple for the scalar multiplication.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_mpss_sig(g1_t a[2], g1_t b[2], bn_t m[2], bn_t r[2], bn_t s[2],
+int cp_mpss_sig(g1_t a, g1_t b[2], bn_t m[2], bn_t r[2], bn_t s[2],
 		mt_t mul_tri[2], mt_t sm_tri[2]);
 
 /**
@@ -1437,7 +1437,7 @@ int cp_mpss_bct(g2_t x[2], g2_t y[2]);
  * @param[in] pc_tri 		- the triple for the pairing computation.
  * @return a boolean value indicating the verification result.
  */
-int cp_mpss_ver(gt_t e, g1_t a[2], g1_t b[2], bn_t m[2], g2_t h, g2_t x, g2_t y,
+int cp_mpss_ver(gt_t e, g1_t a, g1_t b[2], bn_t m[2], g2_t h, g2_t x, g2_t y,
 		mt_t sm_tri[2], pt_t pc_tri[2]);
 
 /**
@@ -1507,7 +1507,7 @@ int cp_mpsb_gen(bn_t r[2], bn_t s[][2], g2_t h, g2_t x[2], g2_t y[][2], int l);
  * @param[in] l 			- the number of messages to sign.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
- int cp_mpsb_sig(g1_t a[2], g1_t b[2], bn_t m[][2], bn_t r[2], bn_t s[][2],
+ int cp_mpsb_sig(g1_t a, g1_t b[2], bn_t m[][2], bn_t r[2], bn_t s[][2],
  		mt_t mul_tri[2], mt_t sm_tri[2], int l);
 
 /**
@@ -1537,7 +1537,7 @@ int cp_mpsb_bct(g2_t x[2], g2_t y[][2], int l);
  * @param[in] l 			- the number of messages to sign.
  * @return a boolean value indicating the verification result.
  */
-int cp_mpsb_ver(gt_t e, g1_t a[2], g1_t b[2], bn_t m[][2], g2_t h, g2_t x,
+int cp_mpsb_ver(gt_t e, g1_t a, g1_t b[2], bn_t m[][2], g2_t h, g2_t x,
 		g2_t y[][2], bn_t v[][2], mt_t sm_tri[2], pt_t pc_tri[2], int l);
 
 /**

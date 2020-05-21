@@ -1128,18 +1128,20 @@ static int pss(void) {
 static int mpss(void) {
 	int i, j, code = RLC_ERR;
 	bn_t m[2], n, u[2], v[2], ms[5][2], _v[5][2];
-	g1_t g[2], s[2];
+	g1_t g, s[2];
 	g2_t h, x[2], y[2], _y[5][2];
 	gt_t e;
 	mt_t tri[3][2];
 	pt_t t[2];
 
 	bn_null(n);
+	g1_null(g);
 	g2_null(h);
 	gt_null(e);
 
 	TRY {
 		bn_new(n);
+		g1_new(g);
 		g2_new(h);
 		gt_new(e);
 		g1_get_ord(n);
@@ -1147,7 +1149,6 @@ static int mpss(void) {
 			bn_null(m[i]);
 			bn_null(u[i]);
 			bn_null(v[i]);
-			g1_null(g[i]);
 			g1_null(s[i]);
 			g2_null(x[i]);
 			g2_null(y[i]);
@@ -1159,7 +1160,6 @@ static int mpss(void) {
 			bn_rand_mod(m[i], n);
 			bn_new(u[i]);
 			bn_new(v[i]);
-			g1_new(g[i]);
 			g1_new(s[i]);
 			g2_new(x[i]);
 			g2_new(y[i]);
@@ -1193,11 +1193,9 @@ static int mpss(void) {
 			/* Check that signature is also valid for conventional scheme. */
 			bn_add(m[0], m[0], m[1]);
 			bn_mod(m[0], m[0], n);
-			g1_add(g[0], g[0], g[1]);
-			g1_norm(g[0], g[0]);
 			g1_add(s[0], s[0], s[1]);
 			g1_norm(s[0], s[0]);
-			TEST_ASSERT(cp_pss_ver(g[0], s[0], m[0], h, x[0], y[0]) == 1, end);
+			TEST_ASSERT(cp_pss_ver(g, s[0], m[0], h, x[0], y[0]) == 1, end);
 		}
 		TEST_END;
 
@@ -1229,13 +1227,13 @@ static int mpss(void) {
 
   end:
   	bn_free(n);
+	g1_free(g);
 	g2_free(h);
 	gt_free(e);
 	for (i = 0; i < 2; i++) {
 		bn_free(m[i]);
 		bn_free(u[i]);
 		bn_free(v[i]);
-		g1_free(g[i]);
 		g1_free(s[i]);
 		g2_free(x[i]);
 		g2_free(y[i]);
