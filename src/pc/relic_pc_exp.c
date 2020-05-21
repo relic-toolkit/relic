@@ -100,3 +100,29 @@ void gt_exp(gt_t c, gt_t a, bn_t b) {
 		bn_free(_b);
 	}
 }
+
+void gt_exp_sim(gt_t e, gt_t a, bn_t b, gt_t c, bn_t d) {
+	bn_t n, _b, _d;
+
+	bn_null(n);
+	bn_null(_b);
+	bn_null(_d);
+
+	TRY {
+		bn_new(n);
+		bn_new(_b);
+		bn_new(_d);
+
+		gt_get_ord(n);
+		bn_mod(_b, b, n);
+		bn_mod(_d, d, n);
+
+		RLC_CAT(GT_LOWER, exp_cyc_sim)(e, a, _b, c, _d);
+	} CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	} FINALLY {
+		bn_free(n);
+		bn_free(_b);
+		bn_free(_d);
+	}
+}

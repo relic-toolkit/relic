@@ -841,9 +841,9 @@ static int cls(void) {
 }
 
 static void pss(void) {
-	bn_t ms[5], n, u, v, _v[5];
+	bn_t ms[10], n, u, v, _v[10];
 	g1_t a, b;
-	g2_t g, x, y, _y[5];
+	g2_t g, x, y, _y[10];
 
 	bn_null(n);
 	bn_null(u);
@@ -863,7 +863,7 @@ static void pss(void) {
 	g2_new(y);
 
 	g1_get_ord(n);
-	for (int i = 0; i < 5; i++) {
+	for (int i = 0; i < 10; i++) {
 		bn_null(ms[i]);
 		bn_null(_v[i]);
 		g2_null(_y[i]);
@@ -885,16 +885,16 @@ static void pss(void) {
 		BENCH_ADD(cp_pss_ver(a, b, ms[0], g, x, y));
 	} BENCH_END;
 
-	BENCH_BEGIN("cp_psb_gen (5)") {
-		BENCH_ADD(cp_psb_gen(u, _v, g, x, _y, 5));
+	BENCH_BEGIN("cp_psb_gen (10)") {
+		BENCH_ADD(cp_psb_gen(u, _v, g, x, _y, 10));
 	} BENCH_END;
 
-	BENCH_BEGIN("cp_psb_sig (5)") {
-		BENCH_ADD(cp_psb_sig(a, b, ms, u, _v, 5));
+	BENCH_BEGIN("cp_psb_sig (10)") {
+		BENCH_ADD(cp_psb_sig(a, b, ms, u, _v, 10));
 	} BENCH_END;
 
-	BENCH_BEGIN("cp_psb_ver (5)") {
-		BENCH_ADD(cp_psb_ver(a, b, ms, g, x, _y, 5));
+	BENCH_BEGIN("cp_psb_ver (10)") {
+		BENCH_ADD(cp_psb_ver(a, b, ms, g, x, _y, 10));
 	} BENCH_END;
 
 	bn_free(u);
@@ -904,7 +904,7 @@ static void pss(void) {
 	g2_free(g);
 	g2_free(x);
 	g2_free(y);
-	for (int i = 0; i < 5; i++) {
+	for (int i = 0; i < 10; i++) {
 		bn_free(ms[i]);
 		bn_free(_v[i]);
 		g1_free(_y[i]);
@@ -912,9 +912,9 @@ static void pss(void) {
 }
 
 static void mpss(void) {
-	bn_t m[2], n, u[2], v[2], ms[5][2], _v[5][2];
+	bn_t m[2], n, u[2], v[2], ms[10][2], _v[10][2];
 	g1_t g, s[2];
-	g2_t h, x[2], y[2], _y[5][2];
+	g2_t h, x[2], y[2], _y[10][2];
 	gt_t r;
 	mt_t tri[3][2];
 	pt_t t[2];
@@ -951,7 +951,7 @@ static void mpss(void) {
 		pt_new(t[i]);
 
 		g1_get_ord(n);
-		for (int j = 0; j < 5; j++) {
+		for (int j = 0; j < 10; j++) {
 			bn_null(ms[j][i]);
 			bn_null(_v[j][i]);
 			g2_null(_y[j][i]);
@@ -996,24 +996,24 @@ static void mpss(void) {
 	mt_gen(tri[1], n);
 	mt_gen(tri[2], n);
 
-	BENCH_BEGIN("cp_mpsb_gen (5)") {
-		BENCH_ADD(cp_mpsb_gen(u, _v, h, x, _y, 5));
+	BENCH_BEGIN("cp_mpsb_gen (10)") {
+		BENCH_ADD(cp_mpsb_gen(u, _v, h, x, _y, 10));
 	} BENCH_END;
 
-	BENCH_BEGIN("cp_mpsb_bct (5)") {
-		BENCH_ADD(cp_mpsb_bct(x, _y, 5));
+	BENCH_BEGIN("cp_mpsb_bct (10)") {
+		BENCH_ADD(cp_mpsb_bct(x, _y, 10));
 	} BENCH_END;
 
-	BENCH_BEGIN("cp_mpsb_sig (5)") {
-		BENCH_ADD(cp_mpsb_sig(g, s, ms, u, _v, tri[0], tri[1], 5));
+	BENCH_BEGIN("cp_mpsb_sig (10)") {
+		BENCH_ADD(cp_mpsb_sig(g, s, ms, u, _v, tri[0], tri[1], 10));
 	} BENCH_DIV(2);
 
-	BENCH_BEGIN("cp_mpsb_ver (5)") {
-		BENCH_ADD(cp_mpsb_ver(r, g, s, ms, h, x[0], _y, NULL, tri[2], t, 5));
+	BENCH_BEGIN("cp_mpsb_ver (10)") {
+		BENCH_ADD(cp_mpsb_ver(r, g, s, ms, h, x[0], _y, NULL, tri[2], t, 10));
 	} BENCH_DIV(2);
 
-	BENCH_BEGIN("cp_mpsb_ver (5,sk)") {
-		BENCH_ADD(cp_mpsb_ver(r, g, s, ms, h, x[0], _y, _v, tri[2], t, 5));
+	BENCH_BEGIN("cp_mpsb_ver (10,sk)") {
+		BENCH_ADD(cp_mpsb_ver(r, g, s, ms, h, x[0], _y, _v, tri[2], t, 10));
 	} BENCH_DIV(2);
 
   	bn_free(n);
@@ -1030,7 +1030,7 @@ static void mpss(void) {
 		mt_free(tri[1][i]);
 		mt_free(tri[2][i]);
 		pt_free(t[i]);
-		for (int j = 0; j < 5; j++) {
+		for (int j = 0; j < 10; j++) {
 			bn_free(ms[j][i]);
 			bn_free(_v[j][i]);
 			g2_free(_y[j][i]);
@@ -1395,7 +1395,7 @@ int main(void) {
 	conf_print();
 
 	util_banner("Benchmarks for the CP module:", 0);
-
+#if 0
 #if defined(WITH_BN)
 	util_banner("Protocols based on integer factorization:\n", 0);
 	rsa();
@@ -1417,16 +1417,16 @@ int main(void) {
 		THROW(ERR_NO_CURVE);
 	}
 #endif
-
+#endif
 #if defined(WITH_PC)
 	util_banner("Protocols based on pairings:\n", 0);
 	if (pc_param_set_any() == RLC_OK) {
-		sokaka();
-		ibe();
-		bgn();
-		bls();
-		bbs();
-		cls();
+		//sokaka();
+		//ibe();
+		//bgn();
+		//bls();
+		//bbs();
+		//cls();
 		pss();
 #if defined(WITH_MPC)
 		mpss();

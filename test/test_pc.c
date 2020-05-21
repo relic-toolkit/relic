@@ -1386,10 +1386,13 @@ static int inversion(void) {
 int exponentiation(void) {
 	int code = RLC_ERR;
 	gt_t a, b, c;
-	bn_t n, d;
+	bn_t n, d, e;
 
 	gt_null(a);
+	gt_null(b);
 	gt_null(c);
+	bn_null(d);
+	bn_null(e);
 	bn_null(n);
 
 	TRY {
@@ -1397,6 +1400,7 @@ int exponentiation(void) {
 		gt_new(b);
 		gt_new(c);
 		bn_new(d);
+		bn_new(e);
 		bn_new(n);
 
 		gt_get_gen(a);
@@ -1432,6 +1436,18 @@ int exponentiation(void) {
 			gt_exp(c, a, n);
 			TEST_ASSERT(gt_is_unity(c) == 1, end);
 		} TEST_END;
+
+		TEST_BEGIN("exponentiation is correct") {
+			gt_rand(a);
+			gt_rand(b);
+			bn_rand_mod(d, n);
+			bn_rand_mod(e, n);
+			gt_exp_sim(c, a, d, b, e);
+			gt_exp(a, a, d);
+			gt_exp(b, b, e);
+			gt_mul(b, a, b);
+			TEST_ASSERT(gt_cmp(b, c) == RLC_EQ, end);
+		} TEST_END;
 	}
 	CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -1443,6 +1459,7 @@ int exponentiation(void) {
 	gt_free(b);
 	gt_free(c);
 	bn_free(d);
+	bn_free(e);
 	bn_free(n);
 	return code;
 }

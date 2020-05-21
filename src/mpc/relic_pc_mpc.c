@@ -269,9 +269,7 @@ void gt_exp_mpc(gt_t r, bn_t d, gt_t q, mt_t tri, gt_t b, int party) {
 			gt_copy(t, b);
 		}
 		/* Compute [a]Q + d([B] + Q) or d[B]. */
-		gt_exp(r, q, tri->a);
-		gt_exp(t, t, d);
-		gt_mul(r, r, t);
+		gt_exp_sim(r, q, tri->a, t, d);
 		/* Compute [C] = [ab]G. */
 		gt_exp_gen(t, tri->c);
 		/* R = [a]Q + d[B] + dQ + [C] = [xy] */

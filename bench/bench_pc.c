@@ -685,6 +685,16 @@ static void arith(void) {
 	}
 	BENCH_END;
 
+	BENCH_BEGIN("gt_exp_sim") {
+		gt_rand(a);
+		gt_rand(b);
+		gt_get_ord(d);
+		bn_rand_mod(e, d);
+		bn_rand_mod(d, d);
+		BENCH_ADD(gt_exp_sim(c, a, d, b, e));
+	}
+	BENCH_END;
+
 	BENCH_BEGIN("gt_exp_dig") {
 		gt_rand(a);
 		gt_get_ord(d);

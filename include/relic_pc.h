@@ -882,6 +882,18 @@ void g2_mul(g2_t r, g2_t p, bn_t k);
 void gt_exp(gt_t c, gt_t a, bn_t b);
 
 /**
+ * Exponentiates two element from G_T by integers simultaneously. Computes
+ * e = a^b * c^d.
+ *
+ * @param[out] e			- the result.
+ * @param[in] a				- the first element to exponentiate.
+ * @param[in] b				- the first integer exponent.
+ * @param[in] a				- the second element to exponentiate.
+ * @param[in] b				- the second integer exponent.
+ */
+void gt_exp_sim(gt_t e, gt_t a, bn_t b, gt_t c, bn_t d);
+
+/**
  * Exponentiates a generator from G_T by an integer. Computes c = a^b.
  *
  * @param[out] c			- the result.
