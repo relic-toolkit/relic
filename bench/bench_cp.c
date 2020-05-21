@@ -1395,7 +1395,7 @@ int main(void) {
 	conf_print();
 
 	util_banner("Benchmarks for the CP module:", 0);
-#if 0
+
 #if defined(WITH_BN)
 	util_banner("Protocols based on integer factorization:\n", 0);
 	rsa();
@@ -1417,16 +1417,16 @@ int main(void) {
 		THROW(ERR_NO_CURVE);
 	}
 #endif
-#endif
+
 #if defined(WITH_PC)
 	util_banner("Protocols based on pairings:\n", 0);
 	if (pc_param_set_any() == RLC_OK) {
-		//sokaka();
-		//ibe();
-		//bgn();
-		//bls();
-		//bbs();
-		//cls();
+		sokaka();
+		ibe();
+		bgn();
+		bls();
+		bbs();
+		cls();
 		pss();
 #if defined(WITH_MPC)
 		mpss();
