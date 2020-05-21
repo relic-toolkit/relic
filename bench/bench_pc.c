@@ -403,13 +403,13 @@ static void util2(void) {
 }
 
 static void arith2(void) {
-	g2_t p, q, r, t[RLC_G1_TABLE];
+	g2_t p, q, r, t[RLC_G2_TABLE];
 	bn_t k, l, n;
 
 	g2_null(p);
 	g2_null(q);
 	g2_null(r);
-	for (int i = 0; i < RLC_G1_TABLE; i++) {
+	for (int i = 0; i < RLC_G2_TABLE; i++) {
 		g2_null(t[i]);
 	}
 
