@@ -300,8 +300,7 @@ void pc_map_tri(pt_t t[2]) {
 		for (int i = 0; i < 2; i++) {
 			g1_mul_gen(t[i]->a, tri[i]->a);
 			g2_mul_gen(t[i]->b, tri[i]->b);
-			gt_get_gen(t[i]->c);
-			gt_exp(t[i]->c, t[i]->c, tri[i]->c);
+			gt_exp_gen(t[i]->c, tri[i]->c);
 		}
 	} CATCH_ANY {
 		THROW(ERR_CAUGHT);
