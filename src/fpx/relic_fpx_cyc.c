@@ -154,6 +154,7 @@ void fp12_glv(bn_t _b[4], bn_t b) {
 	} CATCH_ANY {
 		THROW(ERR_CAUGHT);
 	} FINALLY {
+		bn_free(n);
 		for (i = 0; i < 4; i++) {
 			bn_free(u[i]);
 			bn_free(v[i]);
