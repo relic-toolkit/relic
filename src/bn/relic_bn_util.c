@@ -199,10 +199,23 @@ void bn_rand(bn_t a, int sign, int bits) {
 }
 
 void bn_rand_mod(bn_t a, bn_t b) {
-	do {
-		bn_rand(a, bn_sign(b), bn_bits(b) + RAND_DIST);
-		bn_mod(a, a, b);
-	} while (bn_is_zero(a) || bn_cmp_abs(a, b) != RLC_LT);
+	bn_t t;
+
+	bn_null(t);
+
+	TRY {
+		bn_new(t);
+
+		bn_copy(t, b);
+		do {
+			bn_rand(a, bn_sign(t), bn_bits(t) + RAND_DIST);
+			bn_mod(a, a, t);
+		} while (bn_is_zero(a) || bn_cmp_abs(a, t) != RLC_LT);
+	} CATCH_ANY {
+		THROW(ERR_CAUGHT);
+	} FINALLY {
+		bn_free(t);
+	}
 }
 
 void bn_print(const bn_t a) {
