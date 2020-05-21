@@ -46,6 +46,7 @@
 		}																	\
 	}
 
+/* TODO: remove the ugly hack due to lack of support for JACOB in ep2. */
 /* conditionally normalize result of isogeny map when not using projective coords */
 #if EP_ADD == JACOB
 #define TMPL_MAP_ISOMAP_NORM(EXT)											\
@@ -64,7 +65,19 @@
 	} while (0)
 #elif EP_ADD == PROJC
 #define TMPL_MAP_ISOMAP_NORM(EXT)											\
-	do {																	\
+	if (#EXT[0] == '2') {													\
+		/* Y = Ny * Dx * Z^2. */											\
+		fp##EXT##_mul(q->y, p->y, t1);										\
+		fp##EXT##_mul(q->y, q->y, t3);										\
+		/* Z = Dx * Dy, t1 = Z^2. */										\
+		fp##EXT##_mul(q->z, t2, t3);										\
+		fp##EXT##_sqr(t1, q->z);											\
+		fp##EXT##_mul(q->y, q->y, t1);										\
+		/* X = Nx * Dy * Z. */												\
+		fp##EXT##_mul(q->x, t0, t2);										\
+		fp##EXT##_mul(q->x, q->x, q->z);									\
+		q->coord = PROJC;													\
+	} else {																\
 		/* Z = Dx * Dy. */													\
 		fp##EXT##_mul(q->z, t2, t3);										\
 		/* X = Nx * Dy. */													\
@@ -73,7 +86,7 @@
 		fp##EXT##_mul(q->y, p->y, t1);										\
 		fp##EXT##_mul(q->y, q->y, t3);										\
 		q->coord = PROJC;													\
-	} while (0)
+	}
 #else
 #define TMPL_MAP_ISOMAP_NORM(EXT)											\
 	do {																	\
