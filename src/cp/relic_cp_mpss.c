@@ -155,9 +155,8 @@ int cp_mpss_ver(gt_t e, g1_t a, g1_t b[2], bn_t m[2], g2_t h, g2_t x, g2_t y,
 		}
 		g1_get_ord(n);
 		/* Compute Z = X + [m] * Y. */
-		for (int i = 0; i < 2; i++) {
-			g2_mul(z[i], y, m[i]);
-		}
+		g2_mul(z[0], y, m[0]);
+		g2_mul(z[1], y, m[1]);
 		g2_add(z[0], z[0], x);
 		g2_norm(z[0], z[0]);
 
@@ -166,32 +165,6 @@ int cp_mpss_ver(gt_t e, g1_t a, g1_t b[2], bn_t m[2], g2_t h, g2_t x, g2_t y,
 		bn_rand_mod(r[0], n);
 		bn_rand_mod(r[1], n);
 
-#if PERF_TRICK
-		g1_mul(p[0], a, r[0]);
-		g1_mul(p[1], a, r[1]);
-
-		/* Compute [beta] = e([sigma_1'],[z]). */
-		pc_map_lcl(p[0], z[0], p[0], z[0], pc_tri[0]);
-		pc_map_lcl(p[1], z[1], p[1], z[1], pc_tri[1]);
-		/* Broadcast public values. */
-		pc_map_bct(p, z);
-		pc_map_mpc(beta[0], p[0], z[0], pc_tri[0], 0);
-		pc_map_mpc(beta[1], p[1], z[1], pc_tri[1], 1);
-
-		/* Compute [alpha] = e([r] * [sigma_2, H]).  */
-		g1_mul_lcl(d[0], q[0], p[0], r[0], b[0], sm_tri[0]);
-		g1_mul_lcl(d[1], q[1], p[1], r[1], b[1], sm_tri[1]);
-		/* Broadcast public values. */
-		g1_mul_bct(d, q);
-		g1_mul_mpc(p[0], d[0], q[0], sm_tri[0], p[0], 0);
-		g1_mul_mpc(p[1], d[1], q[1], sm_tri[1], p[1], 1);
-
-		for (int i = 0; i < 2; i++) {
-			pc_map(alpha[i], p[i], h);
-			gt_inv(beta[i], beta[i]);
-			gt_mul(beta[i], alpha[i], beta[i]);
-		}
-#else
 		g1_neg(p[0], a);
 		g1_copy(p[1], b[0]);
 		g2_copy(w[0], z[0]);
@@ -211,7 +184,6 @@ int cp_mpss_ver(gt_t e, g1_t a, g1_t b[2], bn_t m[2], g2_t h, g2_t x, g2_t y,
 		gt_exp_bct(d, alpha);
 		gt_exp_mpc(beta[0], d[0], alpha[0], sm_tri[0], gamma[0], 0);
 		gt_exp_mpc(beta[1], d[1], alpha[1], sm_tri[1], gamma[1], 1);
-#endif
 
 		if (g1_is_infty(a)) {
 			gt_rand(e);
@@ -289,7 +261,6 @@ int cp_mpsb_sig(g1_t a, g1_t b[2], bn_t m[][2], bn_t r[2], bn_t s[][2],
 		mt_t mul_tri[2], mt_t sm_tri[2], int l) {
 	int result = RLC_OK;
 	bn_t n, d[2], e[2], t[2];
-	g1_t p[2], q[2];
 
 	bn_null(n);
 
@@ -299,13 +270,9 @@ int cp_mpsb_sig(g1_t a, g1_t b[2], bn_t m[][2], bn_t r[2], bn_t s[][2],
 			bn_null(d[i]);
 			bn_null(e[i]);
 			bn_null(t[i]);
-			g1_null(p[i]);
-			g1_null(q[i]);
 			bn_new(d[i]);
 			bn_new(e[i]);
 			bn_new(t[i]);
-			g1_new(p[i]);
-			g1_new(q[i]);
 		}
 		/* Compute d = (y_im_i + x) in MPC. */
 		g1_get_ord(n);
@@ -339,8 +306,6 @@ int cp_mpsb_sig(g1_t a, g1_t b[2], bn_t m[][2], bn_t r[2], bn_t s[][2],
 			bn_free(d[i]);
 			bn_free(e[i]);
 			bn_free(t[i]);
-			g1_free(p[i]);
-			g1_free(q[i]);
 		}
 	}
 	return result;
