@@ -47,10 +47,8 @@ void fp12_glv(bn_t _b[4], bn_t b) {
 		for (i = 0; i < 4; i++) {
 			bn_null(u[i]);
 			bn_null(v[i]);
-			bn_null(_b[i]);
 			bn_new(u[i]);
 			bn_new(v[i]);
-			bn_new(_b[i]);
 		}
 
 		switch (ep_curve_is_pairf()) {
@@ -159,7 +157,6 @@ void fp12_glv(bn_t _b[4], bn_t b) {
 		for (i = 0; i < 4; i++) {
 			bn_free(u[i]);
 			bn_free(v[i]);
-			bn_free(_b[i]);
 		}
 	}
 }
@@ -601,8 +598,8 @@ void fp12_exp_cyc(fp12_t c, fp12_t a, bn_t b) {
 		TRY {
 			for (i = 0; i < 4; i++) {
 				bn_null(_b[i]);
-				fp12_null(t[i]);
 				bn_new(_b[i]);
+				fp12_null(t[i]);
 				fp12_new(t[i]);
 			}
 
