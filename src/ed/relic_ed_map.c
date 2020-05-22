@@ -37,12 +37,6 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-/* caution: this function overwrites k, which it uses as an auxiliary variable */
-static inline int fp_sgn0(const fp_t t, bn_t k) {
-	fp_prime_back(k, t);
-	return bn_get_bit(k, 0);
-}
-
 void ed_map_ell2_5mod8(ed_t p, fp_t t) {
 	bn_t h;
 	fp_t tv1, tv2, tv3, tv4, tv5;
@@ -130,13 +124,14 @@ void ed_map_ell2_5mod8(ed_t p, fp_t t) {
 			fp_mul(p->x, p->x, c_486662);
 			fp_neg(p->x, p->x);
 			dv_copy_cond(p->y, tv5, RLC_FP_DIGS, e3 != RLC_EQ);
-		} /* e3 goes out of scope */
-		fp_add_dig(p->z, tv1, 1);
 
-		/* fix sign of y */
-		fp_neg(tv2, p->y);
-		const int neg = fp_sgn0(t, h);
-		dv_copy_cond(p->y, tv2, RLC_FP_DIGS, neg != fp_sgn0(p->y, h));
+			/* fix sign of y */
+			fp_prime_back(h, p->y);
+			const int e4 = bn_get_bit(h, 0);
+			fp_neg(tv2, p->y);
+			dv_copy_cond(p->y, tv2, RLC_FP_DIGS, (e3 == RLC_EQ) ^ (e4 == 1));
+		} /* e3 and e4 go out of scope */
+		fp_add_dig(p->z, tv1, 1);
 
 		/* convert to an Edwards point */
 		/* tmp1 = xnumerator = sqrt_M486664 * x */
