@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -59,7 +59,7 @@ static void eb_mul_ltnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 		u = 1;
 	}
 
-	TRY {
+	RLC_TRY {
 		/* Prepare the precomputation table. */
 		for (i = 0; i < (1 << (EB_WIDTH - 2)); i++) {
 			eb_null(t[i]);
@@ -96,10 +96,10 @@ static void eb_mul_ltnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 			eb_neg(r, r);
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		/* Free the precomputation table. */
 		for (i = 0; i < (1 << (EB_WIDTH - 2)); i++) {
 			eb_free(t[i]);
@@ -124,7 +124,7 @@ static void eb_mul_lnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 	int8_t naf[RLC_FB_BITS + 1];
 	eb_t t[1 << (EB_WIDTH - 2)];
 
-	TRY {
+	RLC_TRY {
 		/* Prepare the precomputation table. */
 		for (i = 0; i < (1 << (EB_WIDTH - 2)); i++) {
 			eb_null(t[i]);
@@ -163,10 +163,10 @@ static void eb_mul_lnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 			eb_neg(r, r);
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		/* Free the precomputation table. */
 		for (i = 0; i < (1 << (EB_WIDTH - 2)); i++) {
 			eb_free(t[i]);
@@ -200,7 +200,7 @@ static void eb_mul_rtnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 		u = 1;
 	}
 
-	TRY {
+	RLC_TRY {
 		/* Prepare the precomputation table. */
 		for (i = 0; i < (1 << (EB_WIDTH - 2)); i++) {
 			eb_null(t[i]);
@@ -465,10 +465,10 @@ static void eb_mul_rtnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 			eb_neg(r, r);
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		/* Free the precomputation table. */
 		for (i = 0; i < (1 << (EB_WIDTH - 2)); i++) {
 			eb_free(t[i]);
@@ -493,7 +493,7 @@ static void eb_mul_rnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 	int8_t naf[RLC_FB_BITS + 1];
 	eb_t t[1 << (EB_WIDTH - 2)];
 
-	TRY {
+	RLC_TRY {
 		/* Prepare the accumulator table. */
 		for (i = 0; i < (1 << (EB_WIDTH - 2)); i++) {
 			eb_null(t[i]);
@@ -591,10 +591,10 @@ static void eb_mul_rnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 			eb_neg(r, r);
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		/* Free the accumulator table. */
 		for (i = 0; i < (1 << (EB_WIDTH - 2)); i++) {
 			eb_free(t[i]);
@@ -621,7 +621,7 @@ void eb_mul_basic(eb_t r, const eb_t p, const bn_t k) {
 
 	eb_null(t);
 
-	TRY {
+	RLC_TRY {
 		eb_new(t);
 
 		eb_copy(t, p);
@@ -637,10 +637,10 @@ void eb_mul_basic(eb_t r, const eb_t p, const bn_t k) {
 			eb_neg(r, r);
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		eb_free(t);
 	}
 }
@@ -672,7 +672,7 @@ void eb_mul_lodah(eb_t r, const eb_t p, const bn_t k) {
 	dv_null(r4);
 	dv_null(r5);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 		bn_new(t);
 		dv_new(x1);
@@ -816,10 +816,10 @@ void eb_mul_lodah(eb_t r, const eb_t p, const bn_t k) {
 			eb_neg(r, r);
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(n);
 		bn_free(t);
 		dv_free(x1);
@@ -877,7 +877,7 @@ void eb_mul_rwnaf(eb_t r, const eb_t p, const bn_t k) {
 #if defined(EB_MIXED) && defined(STRIP)
 	/* It is impossible to run a right-to-left algorithm using ordinary curves
 	 * and only mixed additions. */
-	THROW(ERR_NO_CONFIG);
+	RLC_THROW(ERR_NO_CONFIG);
 #else
 	eb_mul_rnaf_imp(r, p, k);
 #endif
@@ -912,7 +912,7 @@ void eb_mul_halve(eb_t r, const eb_t p, const bn_t k) {
 	fb_null(w);
 	fb_null(z);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 		bn_new(m);
 		eb_new(q);
@@ -1047,10 +1047,10 @@ void eb_mul_halve(eb_t r, const eb_t p, const bn_t k) {
 			}
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		/* Free the precomputation table. */
 		for (i = 0; i < (1 << (EB_WIDTH - 2)); i++) {
 			eb_free(t[i]);
@@ -1076,15 +1076,15 @@ void eb_mul_gen(eb_t r, const bn_t k) {
 
 	eb_null(g);
 
-	TRY {
+	RLC_TRY {
 		eb_new(g);
 		eb_curve_get_gen(g);
 		eb_mul(r, g, k);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		eb_free(g);
 	}
 #endif
@@ -1100,7 +1100,7 @@ void eb_mul_dig(eb_t r, const eb_t p, dig_t k) {
 
 	eb_null(t);
 
-	TRY {
+	RLC_TRY {
 		eb_new(t);
 
 		eb_copy(t, p);
@@ -1113,10 +1113,10 @@ void eb_mul_dig(eb_t r, const eb_t p, dig_t k) {
 
 		eb_norm(r, t);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		eb_free(t);
 	}
 }

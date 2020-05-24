@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -48,7 +48,7 @@ static void rand_stub(uint8_t *buf, int size, void *args) {
 	int c, l, fd = open("/dev/urandom", O_RDONLY);
 
 	if (fd == -1) {
-		THROW(ERR_NO_FILE);
+		RLC_THROW(ERR_NO_FILE);
 	}
 
 	l = 0;
@@ -56,7 +56,7 @@ static void rand_stub(uint8_t *buf, int size, void *args) {
 		c = read(fd, buf + l, size - l);
 		l += c;
 		if (c == -1) {
-			THROW(ERR_NO_READ);
+			RLC_THROW(ERR_NO_READ);
 		}
 	} while (l < size);
 

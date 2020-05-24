@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -43,7 +43,7 @@ void pp_exp_k2(fp2_t c, fp2_t a) {
 	bn_null(n);
 	bn_null(e);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 		bn_new(e);
 
@@ -56,9 +56,9 @@ void pp_exp_k2(fp2_t c, fp2_t a) {
 		bn_add_dig(e, e, 1);
 		bn_div(e, e, n);
 		fp2_exp_cyc(c, c, e);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		bn_free(n);
 		bn_free(e);
 	}

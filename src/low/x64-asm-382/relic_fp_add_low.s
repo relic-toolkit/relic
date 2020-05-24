@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -93,6 +93,29 @@ fp_addn_low:
 	movq	%r11   , 0(%rdi)
 
 	ADDN 	1 (RLC_FP_DIGS - 1)
+
+	adcq    $0, %rax
+
+	ret
+
+bn_incp_low:
+	movq	0(%rsi), %r10
+	addq	%rdx   , %r10
+	movq	%r10   , 0(%rdi)
+
+	ADD1 1 (RLC_FP_DIGS)
+	xorq	%rax, %rax
+
+	ret
+
+.global bn_addp_low
+bn_addp_low:
+	xorq	%rax, %rax
+	movq	0(%rdx), %r11
+	addq	0(%rsi), %r11
+	movq	%r11   , 0(%rdi)
+
+	ADDN 	1 (RLC_FP_DIGS)
 
 	adcq    $0, %rax
 

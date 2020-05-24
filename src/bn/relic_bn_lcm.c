@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -41,7 +41,7 @@ void bn_lcm(bn_t c, const bn_t a, const bn_t b) {
 	bn_null(u);
 	bn_null(v);
 
-	TRY {
+	RLC_TRY {
 		bn_new(u);
 		bn_new(v);
 
@@ -56,10 +56,10 @@ void bn_lcm(bn_t c, const bn_t a, const bn_t b) {
 		}
 		c->sign = RLC_POS;
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(u);
 		bn_free(v);
 	}

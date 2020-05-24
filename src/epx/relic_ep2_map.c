@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -86,7 +86,7 @@ static void ep2_mul_cof_bn(ep2_t r, ep2_t p) {
 	ep2_null(t2);
 	bn_null(x);
 
-	TRY {
+	RLC_TRY {
 		ep2_new(t0);
 		ep2_new(t1);
 		ep2_new(t2);
@@ -113,10 +113,10 @@ static void ep2_mul_cof_bn(ep2_t r, ep2_t p) {
 
 		ep2_norm(r, t2);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		ep2_free(t0);
 		ep2_free(t1);
 		ep2_free(t2);
@@ -140,7 +140,7 @@ static void ep2_mul_cof_b12(ep2_t r, ep2_t p) {
 	ep2_null(t3);
 	bn_null(x);
 
-	TRY {
+	RLC_TRY {
 		ep2_new(t0);
 		ep2_new(t1);
 		ep2_new(t2);
@@ -167,10 +167,10 @@ static void ep2_mul_cof_b12(ep2_t r, ep2_t p) {
 		ep2_add(t2, t2, t3);
 		ep2_norm(r, t2);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		ep2_free(t0);
 		ep2_free(t1);
 		ep2_free(t2);
@@ -206,7 +206,7 @@ void ep2_map_impl(ep2_t p, const uint8_t *msg, int len, const uint8_t *dst, int 
 	fp2_null(t);
 	ep2_null(q);
 
-	TRY {
+	RLC_TRY {
 		bn_new(k);
 		fp2_new(t);
 		ep2_new(q);
@@ -279,10 +279,10 @@ void ep2_map_impl(ep2_t p, const uint8_t *msg, int len, const uint8_t *dst, int 
 				break;
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(k);
 		fp2_free(t);
 		ep2_free(q);

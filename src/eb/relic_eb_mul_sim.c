@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -64,7 +64,7 @@ static void eb_mul_sim_kbltz(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 		eb_null(t1[i]);
 	}
 
-	TRY {
+	RLC_TRY {
 		/* Compute the w-TNAF representation of k. */
 		if (eb_curve_opt_a() == RLC_ZERO) {
 			u = -1;
@@ -150,10 +150,10 @@ static void eb_mul_sim_kbltz(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 		/* Convert r to affine coordinates. */
 		eb_norm(r, r);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		if (!g) {
 			for (i =  0; i < (1 << (EB_WIDTH - 2)); i++) {
 				eb_free(t0[i]);
@@ -193,7 +193,7 @@ static void eb_mul_sim_plain(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 		eb_null(t1[i]);
 	}
 
-	TRY {
+	RLC_TRY {
 		g = (t == NULL ? 0 : 1);
 		if (!g) {
 			for (i =  0; i < (1 << (EB_WIDTH - 2)); i++) {
@@ -264,10 +264,10 @@ static void eb_mul_sim_plain(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 		/* Convert r to affine coordinates. */
 		eb_norm(r, r);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		/* Free the precomputation tables. */
 		if (!g) {
 			for (i =  0; i < 1 << (EB_WIDTH - 2); i++) {
@@ -296,16 +296,16 @@ void eb_mul_sim_basic(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 
 	eb_null(t);
 
-	TRY {
+	RLC_TRY {
 		eb_new(t);
 		eb_mul(t, q, m);
 		eb_mul(r, p, k);
 		eb_add(t, t, r);
 		eb_norm(r, t);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		eb_free(t);
 	}
 }
@@ -332,7 +332,7 @@ void eb_mul_sim_trick(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 		return;
 	}
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 
 		eb_curve_get_ord(n);
@@ -394,10 +394,10 @@ void eb_mul_sim_trick(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 			eb_add(r, r, t[(w0[i] << w) + w1[i]]);
 		}
 		eb_norm(r, r);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(n);
 		for (int i = 0; i < (1 << w); i++) {
 			eb_free(t0[i]);
@@ -455,7 +455,7 @@ void eb_mul_sim_joint(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 		return;
 	}
 
-	TRY {
+	RLC_TRY {
 		for (i =  0; i < 5; i++) {
 			eb_null(t[i]);
 			eb_new(t[i]);
@@ -501,10 +501,10 @@ void eb_mul_sim_joint(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 		}
 		eb_norm(r, r);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		for (i =  0; i < 5; i++) {
 			eb_free(t[i]);
 		}
@@ -527,7 +527,7 @@ void eb_mul_sim_gen(eb_t r, const bn_t k, const eb_t q, const bn_t m) {
 		return;
 	}
 
-	TRY {
+	RLC_TRY {
 		eb_new(g);
 
 		eb_curve_get_gen(g);
@@ -556,10 +556,10 @@ void eb_mul_sim_gen(eb_t r, const bn_t k, const eb_t q, const bn_t m) {
 #endif
 #endif
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		eb_free(g);
 	}
 }

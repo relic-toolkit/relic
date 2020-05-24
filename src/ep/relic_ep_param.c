@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -689,7 +689,7 @@
 static int ep_param_get_coeffs(fp_st *coeffs, const char *str) {
 	if (str[0] == '\0') {
 		/* need nonzero strlen */
-		THROW(ERR_NO_VALID);
+		RLC_THROW(ERR_NO_VALID);
 	}
 	int degree = 0;
 	unsigned offset = 0;
@@ -706,7 +706,7 @@ static int ep_param_get_coeffs(fp_st *coeffs, const char *str) {
 	}
 	if (degree == RLC_EP_CTMAP_MAX) {
 		/* ran out of space before converting all coeffs */
-		THROW(ERR_NO_VALID);
+		RLC_THROW(ERR_NO_VALID);
 	}
 	return degree;
 }
@@ -762,7 +762,7 @@ void ep_param_set(int param) {
 	bn_null(r);
 	bn_null(h);
 
-	TRY {
+	RLC_TRY {
 		fp_new(a);
 		fp_new(b);
 		fp_new(beta);
@@ -995,7 +995,7 @@ void ep_param_set(int param) {
 #endif
 			default:
 				(void)str;
-				THROW(ERR_NO_VALID);
+				RLC_THROW(ERR_NO_VALID);
 				break;
 		}
 
@@ -1032,10 +1032,10 @@ void ep_param_set(int param) {
 		}
 #endif
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fp_free(a);
 		fp_free(b);
 		fp_free(beta);

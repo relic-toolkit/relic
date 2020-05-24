@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -41,16 +41,16 @@ static int memory2(void) {
 
 	fb2_null(a);
 
-	TRY {
+	RLC_TRY {
 		TEST_BEGIN("memory can be allocated") {
 			fb2_new(a);
 			fb2_free(a);
 		} TEST_END;
-	} CATCH(e) {
+	} RLC_CATCH(e) {
 		switch (e) {
 			case ERR_NO_MEMORY:
 				util_print("FATAL ERROR!\n");
-				ERROR(end);
+				RLC_ERROR(end);
 				break;
 		}
 	}
@@ -67,7 +67,7 @@ static int util2(void) {
 	fb2_null(a);
 	fb2_null(b);
 
-	TRY {
+	RLC_TRY {
 		fb2_new(a);
 		fb2_new(b);
 
@@ -101,8 +101,8 @@ static int util2(void) {
 		}
 		TEST_END;
 	}
-	CATCH_ANY {
-		ERROR(end);
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -121,7 +121,7 @@ static int addition2(void) {
 	fb2_null(d);
 	fb2_null(e);
 
-	TRY {
+	RLC_TRY {
 		fb2_new(a);
 		fb2_new(b);
 		fb2_new(c);
@@ -161,9 +161,9 @@ static int addition2(void) {
 			TEST_ASSERT(fb2_is_zero(e), end);
 		} TEST_END;
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -186,7 +186,7 @@ static int multiplication2(void) {
 	fb2_null(e);
 	fb2_null(f);
 
-	TRY {
+	RLC_TRY {
 		fb2_new(a);
 		fb2_new(b);
 		fb2_new(c);
@@ -240,9 +240,9 @@ static int multiplication2(void) {
 			TEST_ASSERT(fb2_is_zero(e), end);
 		} TEST_END;
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -263,7 +263,7 @@ static int squaring2(void) {
 	fb2_null(b);
 	fb2_null(c);
 
-	TRY {
+	RLC_TRY {
 		fb2_new(a);
 		fb2_new(b);
 		fb2_new(c);
@@ -275,9 +275,9 @@ static int squaring2(void) {
 			TEST_ASSERT(fb2_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -295,7 +295,7 @@ static int solve2(void) {
 	fb2_null(b);
 	fb2_null(c);
 
-	TRY {
+	RLC_TRY {
 		fb2_new(a);
 		fb2_new(b);
 		fb2_new(c);
@@ -313,8 +313,8 @@ static int solve2(void) {
 			TEST_ASSERT(fb2_cmp(c, a) == RLC_EQ, end);
 		} TEST_END;
 	}
-	CATCH_ANY {
-		ERROR(end);
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -332,7 +332,7 @@ static int inversion2(void) {
 	fb2_null(b);
 	fb2_null(c);
 
-	TRY {
+	RLC_TRY {
 		fb2_new(a);
 		fb2_new(b);
 		fb2_new(c);
@@ -346,9 +346,9 @@ static int inversion2(void) {
 			TEST_ASSERT(fb_cmp_dig(c[0], 1) == RLC_EQ, end);
 		} TEST_END;
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -366,9 +366,9 @@ int main(void) {
 
 	util_banner("Tests for the FBX module", 0);
 
-	TRY {
+	RLC_TRY {
 		fb_param_set_any();
-	} CATCH_ANY {
+	} RLC_CATCH_ANY {
 		core_clean();
 		return 0;
 	}

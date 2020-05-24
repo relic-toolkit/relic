@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -52,19 +52,19 @@ int ed_is_infty(const ed_t p) {
 	}
 
 	if (fp_is_zero(p->z)) {
-		THROW(ERR_NO_VALID);
+		RLC_THROW(ERR_NO_VALID);
 	}
 
-	TRY {
+	RLC_TRY {
 		fp_new(t);
 		fp_inv(t, p->z);
 		fp_mul(t, p->y, t);
 		if (fp_is_zero(p->x) && (fp_cmp_dig(t, 1) == RLC_EQ)) {
 			r = 1;
 		}
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		fp_free(t);
 	}
 
@@ -98,7 +98,7 @@ void ed_rand(ed_t p) {
 	bn_null(k);
 	bn_null(n);
 
-	TRY {
+	RLC_TRY {
 		bn_new(k);
 		bn_new(n);
 
@@ -106,9 +106,9 @@ void ed_rand(ed_t p) {
 		bn_rand_mod(k, n);
 
 		ed_mul_gen(p, k);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		bn_free(k);
 		bn_free(n);
 	}
@@ -120,7 +120,7 @@ void ed_rhs(fp_t rhs, const ed_t p) {
 	fp_null(t0);
 	fp_null(t1);
 
-	TRY {
+	RLC_TRY {
 		fp_new(t0);
 		fp_new(t1);
 
@@ -133,9 +133,9 @@ void ed_rhs(fp_t rhs, const ed_t p) {
 		fp_sqr(t0, t0);
 		fp_mul(t0, t0, core_get()->ed_d);
 		fp_sub(rhs, t1, t0);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		fp_free(t0);
 		fp_free(t1);
 	}
@@ -150,7 +150,7 @@ int ed_is_valid(const ed_t p) {
 	if (fp_is_zero(p->z)) {
 		r = 0;
 	} else {
-		TRY {
+		RLC_TRY {
 			ed_new(t);
 			ed_norm(t, p);
 
@@ -163,10 +163,10 @@ int ed_is_valid(const ed_t p) {
 			r = (fp_cmp_dig(t->z, 1) == RLC_EQ) || ed_is_infty(p);
 #endif
 		}
-		CATCH_ANY {
-			THROW(ERR_CAUGHT);
+		RLC_CATCH_ANY {
+			RLC_THROW(ERR_CAUGHT);
 		}
-		FINALLY {
+		RLC_FINALLY {
 			ed_free(t);
 		}
 	}
@@ -220,13 +220,13 @@ void ed_read_bin(ed_t a, const uint8_t *bin, int len) {
 			ed_set_infty(a);
 			return;
 		} else {
-			THROW(ERR_NO_BUFFER);
+			RLC_THROW(ERR_NO_BUFFER);
 			return;
 		}
 	}
 
 	if (len != (RLC_FP_BYTES + 1) && len != (2 * RLC_FP_BYTES + 1)) {
-		THROW(ERR_NO_BUFFER);
+		RLC_THROW(ERR_NO_BUFFER);
 		return;
 	}
 
@@ -243,7 +243,7 @@ void ed_read_bin(ed_t a, const uint8_t *bin, int len) {
 				fp_set_bit(a->x, 0, 1);
 				break;
 			default:
-				THROW(ERR_NO_VALID);
+				RLC_THROW(ERR_NO_VALID);
 				break;
 		}
 		ed_upk(a, a);
@@ -253,7 +253,7 @@ void ed_read_bin(ed_t a, const uint8_t *bin, int len) {
 		if (bin[0] == 4) {
 			fp_read_bin(a->x, bin + RLC_FP_BYTES + 1, RLC_FP_BYTES);
 		} else {
-			THROW(ERR_NO_VALID);
+			RLC_THROW(ERR_NO_VALID);
 		}
 	}
 #if ED_ADD == EXTND
@@ -271,21 +271,21 @@ void ed_write_bin(uint8_t *bin, int len, const ed_t a, int pack) {
 
 	if (ed_is_infty(a)) {
 		if (len < 1) {
-			THROW(ERR_NO_BUFFER);
+			RLC_THROW(ERR_NO_BUFFER);
 		} else {
 			bin[0] = 0;
 			return;
 		}
 	}
 
-	TRY {
+	RLC_TRY {
 		ed_new(t);
 
 		ed_norm(t, a);
 
 		if (pack) {
 			if (len != RLC_FP_BYTES + 1) {
-				THROW(ERR_NO_BUFFER);
+				RLC_THROW(ERR_NO_BUFFER);
 			} else {
 				ed_pck(t, t);
 				bin[0] = 2 | fp_get_bit(t->x, 0);
@@ -293,7 +293,7 @@ void ed_write_bin(uint8_t *bin, int len, const ed_t a, int pack) {
 			}
 		} else {
 			if (len != 2 * RLC_FP_BYTES + 1) {
-				THROW(ERR_NO_BUFFER);
+				RLC_THROW(ERR_NO_BUFFER);
 			} else {
 				bin[0] = 4;
 				fp_write_bin(bin + 1, RLC_FP_BYTES, t->y);
@@ -301,10 +301,10 @@ void ed_write_bin(uint8_t *bin, int len, const ed_t a, int pack) {
 			}
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		ed_free(t);
 	}
 }

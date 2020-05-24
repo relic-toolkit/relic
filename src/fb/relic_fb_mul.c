@@ -1,6 +1,6 @@
 /*f
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -57,7 +57,7 @@ static void fb_mul_basic_imp(dig_t *c, const dig_t *a, const dig_t *b, int size)
 
 	dv_null(s);
 
-	TRY {
+	RLC_TRY {
 		/* We need a temporary variable so that c can be a or b. */
 		dv_new(s);
 		dv_zero(s, 2 * RLC_FB_DIGS);
@@ -76,10 +76,10 @@ static void fb_mul_basic_imp(dig_t *c, const dig_t *a, const dig_t *b, int size)
 			}
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		dv_free(s);
 	}
 }
@@ -110,7 +110,7 @@ static void fb_mul_karat_imp(dv_t c, const fb_t a, const fb_t b, int size,
 	h = size >> 1;
 	h1 = size - h;
 
-	TRY {
+	RLC_TRY {
 		/* Allocate the temp variables. */
 		dv_new(a1);
 		dv_new(b1);
@@ -167,10 +167,10 @@ static void fb_mul_karat_imp(dv_t c, const fb_t a, const fb_t b, int size,
 		/* c = c + [(a1 + a0)*(b1 + b0) << digits] */
 		fb_addd_low(c + h, c + h, a1b1, 2 * h1);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		dv_free(a1);
 		dv_free(b1);
 		dv_free(ab);
@@ -193,7 +193,7 @@ void fb_mul_basic(fb_t c, const fb_t a, const fb_t b) {
 	dv_null(s);
 	fb_null(t);
 
-	TRY {
+	RLC_TRY {
 		/* We need a temporary variable so that c can be a or b. */
 		fb_new(t);
 		dv_new(s);
@@ -220,10 +220,10 @@ void fb_mul_basic(fb_t c, const fb_t a, const fb_t b) {
 			fb_copy(c, t);
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fb_free(t);
 		fb_free(s);
 	}
@@ -246,16 +246,16 @@ void fb_mul_lodah(fb_t c, const fb_t a, const fb_t b) {
 
 	dv_null(t);
 
-	TRY {
+	RLC_TRY {
 		dv_new(t);
 
 		fb_muln_low(t, a, b);
 
 		fb_rdc(c, t);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		dv_free(t);
 	}
 }
@@ -269,7 +269,7 @@ void fb_mul_karat(fb_t c, const fb_t a, const fb_t b) {
 
 	dv_null(t);
 
-	TRY {
+	RLC_TRY {
 		/* We need a temporary variable so that c can be a or b. */
 		dv_new(t);
 		dv_zero(t, 2 * RLC_FB_DIGS);
@@ -277,10 +277,10 @@ void fb_mul_karat(fb_t c, const fb_t a, const fb_t b) {
 		fb_mul_karat_imp(t, a, b, RLC_FB_DIGS, FB_KARAT);
 
 		fb_rdc(c, t);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		dv_free(t);
 	}
 }
@@ -292,17 +292,17 @@ void fb_mul_dig(fb_t c, const fb_t a, dig_t b) {
 
 	dv_null(t);
 
-	TRY {
+	RLC_TRY {
 		/* We need a temporary variable so that c can be a or b. */
 		dv_new(t);
 
 		fb_mul1_low(t, a, b);
 
 		fb_rdc1_low(c, t);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		dv_free(t);
 	}
 }

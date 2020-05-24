@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -43,17 +43,17 @@ int cp_ecdh_gen(bn_t d, ec_t q) {
 
 	bn_null(n);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 
 		ec_curve_get_ord(n);
 		bn_rand_mod(d, n);
 		ec_mul_gen(q, d);
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		result = RLC_ERR;
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(n);
 	}
 
@@ -70,7 +70,7 @@ int cp_ecdh_key(uint8_t *key, int key_len, bn_t d, ec_t q) {
 	bn_null(x);
 	bn_null(h);
 
-	TRY {
+	RLC_TRY {
 		ec_new(p);
 		bn_new(x);
 		bn_new(h);
@@ -90,10 +90,10 @@ int cp_ecdh_key(uint8_t *key, int key_len, bn_t d, ec_t q) {
 		bn_write_bin(_x, l, x);
 		md_kdf(key, key_len, _x, l);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		ec_free(p);
 		bn_free(x);
 		bn_free(h);

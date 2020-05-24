@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -116,13 +116,13 @@ void fp3_mulm_low(fp3_t c, fp3_t a, fp3_t b) {
 
 	dv3_null(t);
 
-	TRY {
+	RLC_TRY {
 		dv3_new(t);
 		fp3_muln_low(t, a, b);
 		fp3_rdcn_low(c, t);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		dv3_free(t);
 	}
 }

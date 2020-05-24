@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -101,7 +101,7 @@ static void ed_mul_combs_plain(ed_t r, const ed_t * t, const bn_t k) {
 
 	bn_null(n);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 
 		ed_curve_get_ord(n);
@@ -142,10 +142,10 @@ static void ed_mul_combs_plain(ed_t r, const ed_t * t, const bn_t k) {
 			ed_neg(r, r);
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(n);
 	}
 }
@@ -163,7 +163,7 @@ void ed_mul_pre_basic(ed_t * t, const ed_t p) {
 
 	bn_null(n);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 
 		ed_curve_get_ord(n);
@@ -175,10 +175,10 @@ void ed_mul_pre_basic(ed_t * t, const ed_t p) {
 
 		ed_norm_sim(t + 1, (const ed_t *)t + 1, bn_bits(n) - 1);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(n);
 	}
 }
@@ -212,7 +212,7 @@ void ed_mul_pre_combs(ed_t * t, const ed_t p) {
 
 	bn_null(n);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 
 		ed_curve_get_ord(n);
@@ -237,10 +237,10 @@ void ed_mul_pre_combs(ed_t * t, const ed_t p) {
 
 		ed_norm_sim(t + 2, (const ed_t *)t + 2, RLC_ED_TABLE_COMBS - 2);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(n);
 	}
 }
@@ -258,7 +258,7 @@ void ed_mul_pre_combd(ed_t * t, const ed_t p) {
 
 	bn_null(n);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 
 		ed_curve_get_ord(n);
@@ -292,10 +292,10 @@ void ed_mul_pre_combd(ed_t * t, const ed_t p) {
 		ed_norm_sim(t + (1 << ED_DEPTH) + 1,
 				(const ed_t *)t + (1 << ED_DEPTH) + 1, (1 << ED_DEPTH) - 1);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(n);
 	}
 }
@@ -306,7 +306,7 @@ void ed_mul_fix_combd(ed_t r, const ed_t * t, const bn_t k) {
 
 	bn_null(n);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 
 		ed_curve_get_ord(n);
@@ -347,10 +347,10 @@ void ed_mul_fix_combd(ed_t r, const ed_t * t, const bn_t k) {
 			ed_neg(r, r);
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(n);
 	}
 }

@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -51,7 +51,7 @@ static void dummy2(void) {
 	if (j < 5)
 		dummy();
 	else {
-		THROW(ERR_NO_MEMORY);
+		RLC_THROW(ERR_NO_MEMORY);
 	}
 }
 
@@ -79,14 +79,14 @@ int main(void) {
 	j = 0;
 
 	TEST_ONCE("try-catch is correct and error message is printed");
-	TRY {
+	RLC_TRY {
 		dummy();
 	}
-	CATCH(e) {
+	RLC_CATCH(e) {
 		switch (e) {
 			case ERR_NO_MEMORY:
 				TEST_END;
-				ERROR(end);
+				RLC_ERROR(end);
 				break;
 		}
 	}

@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -60,7 +60,7 @@ static void rand_hash(uint8_t *out, int out_len, uint8_t *in, int in_len) {
 	uint8_t hash[RLC_MD_LEN];
 
 	if (buf == NULL) {
-		THROW(ERR_NO_MEMORY);
+		RLC_THROW(ERR_NO_MEMORY);
 	}
 
 	buf[0] = 1;
@@ -155,7 +155,7 @@ void rand_bytes(uint8_t *buf, int size) {
 	ctx_t *ctx = core_get();
 
 	if (sizeof(int) > 2 && size > (1 << 16)) {
-		THROW(ERR_NO_VALID);
+		RLC_THROW(ERR_NO_VALID);
 	}
 
 	/* buf = hash_gen(size) */
@@ -176,11 +176,11 @@ void rand_seed(uint8_t *buf, int size) {
 	int len = (RAND_SIZE - 1) / 2;
 
 	if (size <= 0) {
-		THROW(ERR_NO_VALID);
+		RLC_THROW(ERR_NO_VALID);
 	}
 
 	if (sizeof(int) > 4 && size > (1 << 32)) {
-		THROW(ERR_NO_VALID);
+		RLC_THROW(ERR_NO_VALID);
 	}
 
 	ctx->rand[0] = 0x0;
@@ -194,7 +194,7 @@ void rand_seed(uint8_t *buf, int size) {
         int tmp_size = 1 + len + size;
 		uint8_t* tmp = RLC_ALLOCA(uint8_t, tmp_size);
 		if (tmp == NULL) {
-			THROW(ERR_NO_MEMORY);
+			RLC_THROW(ERR_NO_MEMORY);
 		}
 		tmp[0] = 1;
 		memcpy(tmp + 1, ctx->rand + 1, len);

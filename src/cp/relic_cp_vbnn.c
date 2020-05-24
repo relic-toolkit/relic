@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -49,7 +49,7 @@ int cp_vbnn_gen(bn_t msk, ec_t mpk) {
 	/* zero variables */
 	bn_null(n);
 
-	TRY {
+	RLC_TRY {
 		/* initialize variables */
 		bn_new(n);
 
@@ -62,10 +62,10 @@ int cp_vbnn_gen(bn_t msk, ec_t mpk) {
 		/* calculate master public key */
 		ec_mul_gen(mpk, msk);
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		result = RLC_ERR;
 	}
-	FINALLY {
+	RLC_FINALLY {
 		/* free variables */
 		bn_free(n);
 	}
@@ -82,7 +82,7 @@ int cp_vbnn_gen_prv(bn_t sk, ec_t pk, bn_t msk, uint8_t *id, int id_len) {
 	bn_null(n);
 	bn_null(r);
 
-	TRY {
+	RLC_TRY {
 		/* initialize variables */
 		bn_new(n);
 		bn_new(r);
@@ -100,7 +100,7 @@ int cp_vbnn_gen_prv(bn_t sk, ec_t pk, bn_t msk, uint8_t *id, int id_len) {
 		len = id_len + ec_size_bin(pk, 1);
 		buf = RLC_ALLOCA(uint8_t, len);
 		if (buf == NULL) {
-			THROW(ERR_NO_MEMORY);
+			RLC_THROW(ERR_NO_MEMORY);
 		}
 		memcpy(buf, id, id_len);
 		ec_write_bin(buf + id_len, ec_size_bin(pk, 1), pk, 1);
@@ -112,10 +112,10 @@ int cp_vbnn_gen_prv(bn_t sk, ec_t pk, bn_t msk, uint8_t *id, int id_len) {
 		bn_add(sk, sk, r);
 		bn_mod(sk, sk, n);
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		result = RLC_ERR;
 	}
-	FINALLY {
+	RLC_FINALLY {
 		/* free variables */
 		bn_free(n);
 		bn_free(r);
@@ -136,7 +136,7 @@ int cp_vbnn_sig(ec_t r, bn_t z, bn_t h, uint8_t *id, int id_len,
 	bn_null(y);
 	ec_null(t);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 		bn_new(y);
 		ec_new(t);
@@ -151,7 +151,7 @@ int cp_vbnn_sig(ec_t r, bn_t z, bn_t h, uint8_t *id, int id_len,
 		len = id_len + msg_len + ec_size_bin(t, 1) + ec_size_bin(pk, 1);
 		buf = RLC_ALLOCA(uint8_t, len);
 		if (buf == NULL) {
-			THROW(ERR_NO_MEMORY);
+			RLC_THROW(ERR_NO_MEMORY);
 		}
 
 		buf_i = buf;
@@ -175,10 +175,10 @@ int cp_vbnn_sig(ec_t r, bn_t z, bn_t h, uint8_t *id, int id_len,
 		/* calculate R part of the signature */
 		ec_copy(r, pk);
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		result = RLC_ERR;
 	}
-	FINALLY {
+	RLC_FINALLY {
 		/* free variables */
 		bn_free(n);
 		bn_free(y);
@@ -203,7 +203,7 @@ int cp_vbnn_ver(ec_t r, bn_t z, bn_t h, uint8_t *id, int id_len,
 	ec_null(Z);
 	ec_null(t);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 		bn_new(c);
 		bn_new(_h);
@@ -214,7 +214,7 @@ int cp_vbnn_ver(ec_t r, bn_t z, bn_t h, uint8_t *id, int id_len,
 		len = id_len + msg_len + 2 * ec_size_bin(r, 1);
 		buf = RLC_ALLOCA(uint8_t, len);
 		if (buf == NULL) {
-			THROW(ERR_NO_MEMORY);
+			RLC_THROW(ERR_NO_MEMORY);
 		}
 		
 		/* get order of ECC group */
@@ -261,10 +261,10 @@ int cp_vbnn_ver(ec_t r, bn_t z, bn_t h, uint8_t *id, int id_len,
 			result = 0;
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		/* free variables */
 		bn_free(n);
 		bn_free(c);

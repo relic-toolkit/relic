@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -48,7 +48,7 @@ void fp54_sqr_basic(fp54_t c, fp54_t a) {
 	fp18_null(t3);
 	fp18_null(t4);
 
-	TRY {
+	RLC_TRY {
 		fp18_new(t0);
 		fp18_new(t1);
 		fp18_new(t2);
@@ -100,9 +100,9 @@ void fp54_sqr_basic(fp54_t c, fp54_t a) {
 		/* c_1 = t3 + t2 * E. */
 		fp18_mul_art(t4, t2);
 		fp18_add(c[1], t3, t4);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		fp18_free(t0);
 		fp18_free(t1);
 		fp18_free(t2);
@@ -122,7 +122,7 @@ void fp54_sqr_cyc_basic(fp54_t c, fp54_t a) {
 	fp9_null(t5);
 	fp9_null(t6);
 
-	TRY {
+	RLC_TRY {
 		fp9_new(t0);
 		fp9_new(t1);
 		fp9_new(t2);
@@ -187,9 +187,9 @@ void fp54_sqr_cyc_basic(fp54_t c, fp54_t a) {
 		fp9_add(t6, t5, a[2][1]);
 		fp9_dbl(t6, t6);
 		fp9_add(c[2][1], t5, t6);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		fp9_free(t0);
 		fp9_free(t1);
 		fp9_free(t2);
@@ -211,7 +211,7 @@ void fp54_sqr_pck_basic(fp54_t c, fp54_t a) {
 	fp9_null(t5);
 	fp9_null(t6);
 
-	TRY {
+	RLC_TRY {
 		fp9_new(t0);
 		fp9_new(t1);
 		fp9_new(t2);
@@ -257,9 +257,9 @@ void fp54_sqr_pck_basic(fp54_t c, fp54_t a) {
 		fp9_add(t6, t5, a[2][1]);
 		fp9_dbl(t6, t6);
 		fp9_add(c[2][1], t5, t6);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		fp9_free(t0);
 		fp9_free(t1);
 		fp9_free(t2);
@@ -296,7 +296,7 @@ void fp54_sqr_pck_lazyr(fp54_t c, fp54_t a) {
 	dv9_null(u2);
 	dv9_null(u3);
 
-	TRY {
+	RLC_TRY {
 		fp9_new(t0);
 		fp9_new(t1);
 		fp9_new(t2);
@@ -356,9 +356,9 @@ void fp54_sqr_pck_lazyr(fp54_t c, fp54_t a) {
 		fp9_sub(t1, t0, a[2][0]);
 		fp9_dbl(t1, t1);
 		fp9_add(c[2][0], t1, t0);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		fp9_free(t0);
 		fp9_free(t1);
 		fp9_free(t2);

@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -56,7 +56,7 @@ static void pp_exp_bn(fp12_t c, fp12_t a) {
 	fp12_null(t3);
 	bn_null(x);
 
-	TRY {
+	RLC_TRY {
 		fp12_new(t0);
 		fp12_new(t1);
 		fp12_new(t2);
@@ -112,10 +112,10 @@ static void pp_exp_bn(fp12_t c, fp12_t a) {
 		fp12_frb(t3, t3, 2);
 		fp12_mul(c, c, t3);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fp12_free(t0);
 		fp12_free(t1);
 		fp12_free(t2);
@@ -143,7 +143,7 @@ static void pp_exp_b12(fp12_t c, fp12_t a) {
 	fp12_null(t3);
 	bn_null(x);
 
-	TRY {
+	RLC_TRY {
 		fp12_new(t0);
 		fp12_new(t1);
 		fp12_new(t2);
@@ -201,10 +201,10 @@ static void pp_exp_b12(fp12_t c, fp12_t a) {
 		fp12_frb(t2, t3, 1);
 		fp12_mul(c, t1, t2);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fp12_free(t0);
 		fp12_free(t1);
 		fp12_free(t2);

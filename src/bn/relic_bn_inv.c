@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -42,7 +42,7 @@ void bn_mod_inv(bn_t a, const bn_t b, const bn_t c) {
 	bn_null(t);
 	bn_null(u);
 
-	TRY {
+	RLC_TRY {
 		bn_new(t);
 		bn_new(u);
 		bn_copy(u, c);
@@ -51,11 +51,11 @@ void bn_mod_inv(bn_t a, const bn_t b, const bn_t c) {
 			bn_add(a, a, u);
 		}
 		if (bn_cmp_dig(t, 1) != RLC_EQ) {
-			THROW(ERR_NO_VALID);
+			RLC_THROW(ERR_NO_VALID);
 		}
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		bn_free(t);
 		bn_free(u);
 	}

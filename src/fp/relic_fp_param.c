@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -76,7 +76,7 @@ void fp_param_set(int param) {
 	/* Suppress possible unused parameter warning. */
 	(void) f;
 
-	TRY {
+	RLC_TRY {
 		bn_new(t0);
 		bn_new(t1);
 		bn_new(t2);
@@ -466,10 +466,10 @@ void fp_param_set(int param) {
 #endif
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(t0);
 		bn_free(t1);
 		bn_free(t2);
@@ -552,7 +552,7 @@ int fp_param_set_any_dense(void) {
 
 	bn_null(p);
 
-	TRY {
+	RLC_TRY {
 		bn_new(p);
 #ifdef FP_QNRES
 		do {
@@ -567,10 +567,10 @@ int fp_param_set_any_dense(void) {
 			fp_prime_set_dense(p);
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(p);
 	}
 	return result;

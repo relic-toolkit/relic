@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -45,10 +45,10 @@ void fp_inv_basic(fp_t c, const fp_t a) {
 	bn_null(e);
 
 	if (fp_is_zero(a)) {
-		THROW(ERR_NO_VALID);
+		RLC_THROW(ERR_NO_VALID);
 	}
 
-	TRY {
+	RLC_TRY {
 		bn_new(e);
 
 		e->used = RLC_FP_DIGS;
@@ -57,10 +57,10 @@ void fp_inv_basic(fp_t c, const fp_t a) {
 
 		fp_exp(c, a, e);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(e);
 	}
 }
@@ -79,10 +79,10 @@ void fp_inv_binar(fp_t c, const fp_t a) {
 	bn_null(p);
 
 	if (fp_is_zero(a)) {
-		THROW(ERR_NO_VALID);
+		RLC_THROW(ERR_NO_VALID);
 	}
 
-	TRY {
+	RLC_TRY {
 		bn_new(u);
 		bn_new(v);
 		bn_new(g1);
@@ -169,10 +169,10 @@ void fp_inv_binar(fp_t c, const fp_t a) {
 #endif
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(u);
 		bn_free(v);
 		bn_free(g1);
@@ -199,10 +199,10 @@ void fp_inv_monty(fp_t c, const fp_t a) {
 	bn_null(x2);
 
 	if (fp_is_zero(a)) {
-		THROW(ERR_NO_VALID);
+		RLC_THROW(ERR_NO_VALID);
 	}
 
-	TRY {
+	RLC_TRY {
 		bn_new(_a);
 		bn_new(_p);
 		bn_new(u);
@@ -310,10 +310,10 @@ void fp_inv_monty(fp_t c, const fp_t a) {
 #endif
 		(void)flag;
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(_a);
 		bn_free(_p);
 		bn_free(u);
@@ -339,10 +339,10 @@ void fp_inv_exgcd(fp_t c, const fp_t a) {
 	bn_null(r);
 
 	if (fp_is_zero(a)) {
-		THROW(ERR_NO_VALID);
+		RLC_THROW(ERR_NO_VALID);
 	}
 
-	TRY {
+	RLC_TRY {
 		bn_new(u);
 		bn_new(v);
 		bn_new(g1);
@@ -379,10 +379,10 @@ void fp_inv_exgcd(fp_t c, const fp_t a) {
 		}
 		fp_prime_conv(c, g1);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(u);
 		bn_free(v);
 		bn_free(g1);
@@ -422,10 +422,10 @@ void fp_inv_divst(fp_t c, const fp_t a) {
 	fp_null(precomp);
 
 	if (fp_is_zero(a)) {
-		THROW(ERR_NO_VALID);
+		RLC_THROW(ERR_NO_VALID);
 	}
 
-	TRY {
+	RLC_TRY {
 		bn_new(_t);
 		dv_new(f);
 		dv_new(g);
@@ -485,9 +485,9 @@ void fp_inv_divst(fp_t c, const fp_t a) {
 		fp_neg(t, v);
 		dv_copy_cond(v, t, RLC_FP_DIGS, fs);
 		fp_mul(c, v, precomp);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT)
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT)
+	} RLC_FINALLY {
 		bn_free(_t);
 		dv_free(f);
 		dv_free(g);
@@ -515,9 +515,9 @@ void fp_inv_sim(fp_t *c, const fp_t *a, int n) {
 
 	fp_null(u);
 
-	TRY {
+	RLC_TRY {
 		if (t == NULL) {
-			THROW(ERR_NO_MEMORY);
+			RLC_THROW(ERR_NO_MEMORY);
 		}
 		for (i = 0; i < n; i++) {
 			fp_null(t[i]);
@@ -541,10 +541,10 @@ void fp_inv_sim(fp_t *c, const fp_t *a, int n) {
 		}
 		fp_copy(c[0], u);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		for (i = 0; i < n; i++) {
 			fp_free(t[i]);
 		}

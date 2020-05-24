@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -45,7 +45,7 @@ void fp12_sqr_basic(fp12_t c, fp12_t a) {
 	fp6_null(t0);
 	fp6_null(t1);
 
-	TRY {
+	RLC_TRY {
 		fp6_new(t0);
 		fp6_new(t1);
 
@@ -58,9 +58,9 @@ void fp12_sqr_basic(fp12_t c, fp12_t a) {
 		fp6_mul_art(t1, c[1]);
 		fp6_sub(c[0], c[0], t1);
 		fp6_dbl(c[1], c[1]);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		fp6_free(t0);
 		fp6_free(t1);
 	}
@@ -77,7 +77,7 @@ void fp12_sqr_cyc_basic(fp12_t c, fp12_t a) {
 	fp2_null(t5);
 	fp2_null(t6);
 
-	TRY {
+	RLC_TRY {
 		fp2_new(t0);
 		fp2_new(t1);
 		fp2_new(t2);
@@ -147,9 +147,9 @@ void fp12_sqr_cyc_basic(fp12_t c, fp12_t a) {
 		fp2_add(t6, t5, a[1][2]);
 		fp2_dbl(t6, t6);
 		fp2_add(c[1][2], t5, t6);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		fp2_free(t0);
 		fp2_free(t1);
 		fp2_free(t2);
@@ -171,7 +171,7 @@ void fp12_sqr_pck_basic(fp12_t c, fp12_t a) {
 	fp2_null(t5);
 	fp2_null(t6);
 
-	TRY {
+	RLC_TRY {
 		fp2_new(t0);
 		fp2_new(t1);
 		fp2_new(t2);
@@ -217,9 +217,9 @@ void fp12_sqr_pck_basic(fp12_t c, fp12_t a) {
 		fp2_add(t6, t5, a[1][2]);
 		fp2_dbl(t6, t6);
 		fp2_add(c[1][2], t5, t6);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		fp2_free(t0);
 		fp2_free(t1);
 		fp2_free(t2);
@@ -246,7 +246,7 @@ void fp12_sqr_unr(dv12_t c, fp12_t a) {
 	dv4_null(u3);
 	dv4_null(u4);
 
-	TRY {
+	RLC_TRY {
 		fp4_new(t0);
 		fp4_new(t1);
 		dv4_new(u0);
@@ -324,9 +324,9 @@ void fp12_sqr_unr(dv12_t c, fp12_t a) {
 		fp2_nord_low(u4[1], u1[1]);
 		fp2_addc_low(c[0][0], u0[0], u4[1]);
 		fp2_addc_low(c[1][1], u0[1], u1[0]);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		fp4_free(t0);
 		fp4_free(t1);
 		dv4_free(u0);
@@ -342,16 +342,16 @@ void fp12_sqr_lazyr(fp12_t c, fp12_t a) {
 
 	dv12_null(t);
 
-	TRY {
+	RLC_TRY {
 		dv12_new(t);
 		fp12_sqr_unr(t, a);
 		for (int i = 0; i < 3; i++) {
 			fp2_rdcn_low(c[0][i], t[0][i]);
 			fp2_rdcn_low(c[1][i], t[1][i]);
 		}
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		dv12_free(t);
 	}
 }
@@ -368,7 +368,7 @@ void fp12_sqr_cyc_lazyr(fp12_t c, fp12_t a) {
 	dv2_null(u2);
 	dv2_null(u3);
 
-	TRY {
+	RLC_TRY {
 		fp2_new(t0);
 		fp2_new(t1);
 		fp2_new(t2);
@@ -439,9 +439,9 @@ void fp12_sqr_cyc_lazyr(fp12_t c, fp12_t a) {
 		fp2_addm_low(t1, t0, a[1][2]);
 		fp2_dblm_low(t1, t1);
 		fp2_addm_low(c[1][2], t0, t1);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		fp2_free(t0);
 		fp2_free(t1);
 		fp2_free(t2);
@@ -464,7 +464,7 @@ void fp12_sqr_pck_lazyr(fp12_t c, fp12_t a) {
 	dv2_null(u2);
 	dv2_null(u3);
 
-	TRY {
+	RLC_TRY {
 		fp2_new(t0);
 		fp2_new(t1);
 		fp2_new(t2);
@@ -512,9 +512,9 @@ void fp12_sqr_pck_lazyr(fp12_t c, fp12_t a) {
 		fp2_subm_low(t1, t0, a[0][1]);
 		fp2_dblm_low(t1, t1);
 		fp2_addm_low(c[0][1], t1, t0);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		fp2_free(t0);
 		fp2_free(t1);
 		fp2_free(t2);

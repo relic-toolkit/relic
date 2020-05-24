@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -53,7 +53,7 @@ static void ep2_dbl_basic_imp(ep2_t r, fp2_t s, ep2_t p) {
 	fp2_null(t1);
 	fp2_null(t2);
 
-	TRY {
+	RLC_TRY {
 		fp2_new(t0);
 		fp2_new(t1);
 		fp2_new(t2);
@@ -95,10 +95,10 @@ static void ep2_dbl_basic_imp(ep2_t r, fp2_t s, ep2_t p) {
 
 		r->coord = BASIC;
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fp2_free(t0);
 		fp2_free(t1);
 		fp2_free(t2);
@@ -126,7 +126,7 @@ static void ep2_dbl_projc_imp(ep2_t r, ep2_t p) {
 	fp2_null(t4);
 	fp2_null(t5);
 
-	TRY {
+	RLC_TRY {
 		if (ep_curve_opt_a() == RLC_ZERO) {
 			fp2_new(t0);
 			fp2_new(t1);
@@ -218,10 +218,10 @@ static void ep2_dbl_projc_imp(ep2_t r, ep2_t p) {
 
 		r->coord = PROJC;
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fp2_free(t0);
 		fp2_free(t1);
 		fp2_free(t2);

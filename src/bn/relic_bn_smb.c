@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -45,11 +45,11 @@ void bn_smb_leg(bn_t c, const bn_t a, const bn_t b) {
 		return;
 	}
 
-	TRY {
+	RLC_TRY {
 		bn_new(t);
 
 		if (bn_sign(b) == RLC_NEG) {
-			THROW(ERR_NO_VALID);
+			RLC_THROW(ERR_NO_VALID);
 		}
 
 		/* t = (b - 1)/2. */
@@ -62,10 +62,10 @@ void bn_smb_leg(bn_t c, const bn_t a, const bn_t b) {
 			bn_neg(c, c);
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(t);
 	}
 }
@@ -78,7 +78,7 @@ void bn_smb_jac(bn_t c, const bn_t a, const bn_t b) {
 	bn_null(t1);
 	bn_null(r);
 
-	TRY {
+	RLC_TRY {
 		bn_new(t0);
 		bn_new(t1);
 		bn_new(r);
@@ -86,7 +86,7 @@ void bn_smb_jac(bn_t c, const bn_t a, const bn_t b) {
 
 		/* Argument b must be odd. */
 		if (bn_is_even(b) || bn_sign(b) == RLC_NEG) {
-			THROW(ERR_NO_VALID);
+			RLC_THROW(ERR_NO_VALID);
 		}
 
 		if (bn_sign(a) == RLC_NEG) {
@@ -137,10 +137,10 @@ void bn_smb_jac(bn_t c, const bn_t a, const bn_t b) {
 			bn_copy(t1, r);
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(t0);
 		bn_free(t1);
 		bn_free(r);

@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -39,7 +39,7 @@
 void *master(void *ptr) {
 	int *code = (int *)ptr;
 	core_init();
-	THROW(ERR_NO_MEMORY);
+	RLC_THROW(ERR_NO_MEMORY);
 	if (err_get_code() != RLC_ERR) {
 		*code = RLC_ERR;
 	} else {
@@ -87,7 +87,7 @@ int main(void) {
 		/* Reinitialize library with new context. */
 		core_init();
 		/* Run function to manipulate the library context. */
-		THROW(ERR_NO_MEMORY);
+		RLC_THROW(ERR_NO_MEMORY);
 		core_set(old_ctx);
 		TEST_ASSERT(err_get_code() == RLC_OK, end);
 		core_set(&new_ctx);
@@ -106,7 +106,7 @@ int main(void) {
 #pragma omp parallel shared(code)
 		{
 			if (omp_get_thread_num() == 0) {
-				THROW(ERR_NO_MEMORY);
+				RLC_THROW(ERR_NO_MEMORY);
 				if (err_get_code() != RLC_ERR) {
 					code = RLC_ERR;
 				}

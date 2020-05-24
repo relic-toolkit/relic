@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -46,7 +46,7 @@ void fp48_mul_basic(fp48_t c, fp48_t a, fp48_t b) {
 	fp24_null(t1);
 	fp24_null(t2);
 
-	TRY {
+	RLC_TRY {
 		fp24_new(t0);
 		fp24_new(t1);
 		fp24_new(t2);
@@ -71,9 +71,9 @@ void fp48_mul_basic(fp48_t c, fp48_t a, fp48_t b) {
 		/* c_0 = a_0b_0 + v * a_1b_1. */
 		fp24_mul_art(t1, t1);
 		fp24_add(c[0], t0, t1);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		fp24_free(t0);
 		fp24_free(t1);
 		fp24_free(t2);
@@ -98,7 +98,7 @@ void fp48_mul_dxs(fp48_t c, fp48_t a, fp48_t b) {
 	fp24_null(t1);
 	fp24_null(t2);
 
-	TRY {
+	RLC_TRY {
 		fp24_new(t0);
 		fp24_new(t1);
 		fp24_new(t2);
@@ -145,9 +145,9 @@ void fp48_mul_dxs(fp48_t c, fp48_t a, fp48_t b) {
 		/* c_0 = a_0b_0 + v * a_1b_1. */
 		fp24_mul_art(t1, t1);
 		fp24_add(c[0], t0, t1);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		fp24_free(t0);
 		fp24_free(t1);
 		fp24_free(t2);
@@ -159,16 +159,16 @@ void fp48_mul_art(fp48_t c, fp48_t a) {
 
 	fp24_null(t0);
 
-	TRY {
+	RLC_TRY {
 		fp24_new(t0);
 
 		/* (a_0 + a_1 * v) * v = a_0 * v + a_1 * v^2 */
 		fp24_copy(t0, a[0]);
 		fp24_mul_art(c[0], a[1]);
 		fp24_copy(c[1], t0);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		fp24_free(t0);
 	}
 }

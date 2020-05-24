@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -63,7 +63,7 @@ int cp_rabin_gen(rabin_t pub, rabin_t prv, int bits) {
 
 	bn_null(r);
 
-	TRY {
+	RLC_TRY {
 		bn_new(r);
 
 		/* Generate different primes p and q. */
@@ -93,10 +93,10 @@ int cp_rabin_gen(rabin_t pub, rabin_t prv, int bits) {
 		bn_mul(prv->n, prv->p, prv->q);
 		bn_copy(pub->n, prv->n);
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		result = RLC_ERR;
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(r);
 	}
 
@@ -117,7 +117,7 @@ int cp_rabin_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len,
 		return RLC_ERR;
 	}
 
-	TRY {
+	RLC_TRY {
 		bn_new(m);
 		bn_new(t);
 		bn_zero(m);
@@ -143,10 +143,10 @@ int cp_rabin_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len,
 			result = RLC_ERR;
 		}
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		result = RLC_ERR;
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(m);
 		bn_free(t);
 	}
@@ -170,7 +170,7 @@ int cp_rabin_dec(uint8_t *out, int *out_len, uint8_t *in, int in_len,
 	bn_null(n);
 	bn_null(t);
 
-	TRY {
+	RLC_TRY {
 		bn_new(m);
 		bn_new(m0);
 		bn_new(m1);
@@ -264,10 +264,10 @@ int cp_rabin_dec(uint8_t *out, int *out_len, uint8_t *in, int in_len,
 			}
 		}
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		result = RLC_ERR;
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(m);
 		bn_free(m0);
 		bn_free(m1);

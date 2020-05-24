@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -44,7 +44,7 @@ static void ep8_add_basic(fp8_t s, fp8_t rx, fp8_t ry, fp8_t qx, fp8_t qy) {
 	fp8_null(t1);
 	fp8_null(t2);
 
-	TRY {
+	RLC_TRY {
 		fp8_new(t0);
 		fp8_new(t1);
 		fp8_new(t2);
@@ -59,7 +59,7 @@ static void ep8_add_basic(fp8_t s, fp8_t rx, fp8_t ry, fp8_t qx, fp8_t qy) {
 			if (fp8_is_zero(t1)) {
 				/* If t1 is zero, q = p, should have doubled. */
 				//ep8_dbl_basic(s, rx, ry);
-				THROW(ERR_NO_VALID);
+				RLC_THROW(ERR_NO_VALID);
 			} else {
 				/* If t1 is not zero and t0 is zero, q = -p and r = infty. */
 				fp8_zero(rx);
@@ -88,10 +88,10 @@ static void ep8_add_basic(fp8_t s, fp8_t rx, fp8_t ry, fp8_t qx, fp8_t qy) {
 			}
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fp8_free(t0);
 		fp8_free(t1);
 		fp8_free(t2);
@@ -111,7 +111,7 @@ void pp_add_k48_basic(fp48_t l, fp8_t rx, fp8_t ry, fp8_t qx, fp8_t qy, ep_t p) 
 	fp8_null(tx);
 	fp8_null(ty);
 
-	TRY {
+	RLC_TRY {
 		fp8_new(s);
 		fp8_new(tx);
 		fp8_new(ty);
@@ -135,10 +135,10 @@ void pp_add_k48_basic(fp48_t l, fp8_t rx, fp8_t ry, fp8_t qx, fp8_t qy, ep_t p) 
 
 		fp_neg(l[1][1][0][0][0], p->y);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fp8_free(s);
 		fp8_free(tx);
 		fp8_free(ty);
@@ -159,7 +159,7 @@ void pp_add_k48_projc(fp48_t l, fp8_t rx, fp8_t ry, fp8_t rz, fp8_t qx,
 	fp8_null(t3);
 	fp8_null(t4);
 
-	TRY {
+	RLC_TRY {
 		fp8_new(t0);
 		fp8_new(t1);
 		fp8_new(t2);
@@ -226,9 +226,9 @@ void pp_add_k48_projc(fp48_t l, fp8_t rx, fp8_t ry, fp8_t rz, fp8_t qx,
 		fp_mul(l[1][1][1][1][0], p->y, t0[1][1][0]);
 		fp_mul(l[1][1][1][1][1], p->y, t0[1][1][1]);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		fp8_free(t0);
 		fp8_free(t1);
 		fp8_free(t2);

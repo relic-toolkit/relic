@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -45,7 +45,7 @@ void fp8_sqr_basic(fp8_t c, fp8_t a) {
 	fp4_null(t0);
 	fp4_null(t1);
 
-	TRY {
+	RLC_TRY {
 		fp4_new(t0);
 		fp4_new(t1);
 
@@ -58,9 +58,9 @@ void fp8_sqr_basic(fp8_t c, fp8_t a) {
 		fp4_mul_art(t1, c[1]);
 		fp4_sub(c[0], c[0], t1);
 		fp4_dbl(c[1], c[1]);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		fp4_free(t0);
 		fp4_free(t1);
 	}
@@ -79,7 +79,7 @@ void fp8_sqr_unr(dv8_t c, fp8_t a) {
 	dv4_null(u1);
 	dv4_null(u2);
 
-	TRY {
+	RLC_TRY {
 		fp4_new(t);
 		dv4_new(u0);
 		dv4_new(u1);
@@ -106,9 +106,9 @@ void fp8_sqr_unr(dv8_t c, fp8_t a) {
 		fp4_sqr_unr(u0, t);
 		fp2_subc_low(c[1][0], u0[0], u1[0]);
 		fp2_subc_low(c[1][1], u0[1], u1[1]);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		fp4_free(t);
 		dv4_free(u0);
 		dv4_free(u1);
@@ -121,16 +121,16 @@ void fp8_sqr_lazyr(fp8_t c, fp8_t a) {
 
 	dv8_null(t);
 
-	TRY {
+	RLC_TRY {
 		dv8_new(t);
 		fp8_sqr_unr(t, a);
 		fp2_rdcn_low(c[0][0], t[0][0]);
 		fp2_rdcn_low(c[0][1], t[0][1]);
 		fp2_rdcn_low(c[1][0], t[1][0]);
 		fp2_rdcn_low(c[1][1], t[1][1]);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		dv8_free(t);
 	}
 }
@@ -144,7 +144,7 @@ void fp8_sqr_cyc(fp8_t c, fp8_t a) {
 	fp4_null(t1);
 	fp4_null(t2);
 
-	TRY {
+	RLC_TRY {
 		fp4_new(t0);
 		fp4_new(t1);
 		fp4_new(t2);
@@ -158,9 +158,9 @@ void fp8_sqr_cyc(fp8_t c, fp8_t a) {
 		fp4_dbl(c[0], c[0]);
 		fp_add_dig(c[0][0][0], c[0][0][0], 1);
 		fp_sub_dig(c[1][0][0], c[1][0][0], 1);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		fp4_free(t0);
 		fp4_free(t1);
 		fp4_free(t2);

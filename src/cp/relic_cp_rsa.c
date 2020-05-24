@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -132,7 +132,7 @@ static int pad_basic(bn_t m, int *p_len, int m_len, int k_len, int operation) {
 	int result = RLC_OK;
 	bn_t t;
 
-	TRY {
+	RLC_TRY {
 		bn_null(t);
 		bn_new(t);
 
@@ -170,10 +170,10 @@ static int pad_basic(bn_t m, int *p_len, int m_len, int k_len, int operation) {
 				break;
 		}
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		result = RLC_ERR;
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(t);
 	}
 	return result;
@@ -234,7 +234,7 @@ static uint8_t *hash_id(int md, int *len) {
 			*len = sizeof(sh512_id);
 			return (uint8_t *)sh512_id;
 		default:
-			THROW(ERR_NO_VALID);
+			RLC_THROW(ERR_NO_VALID);
 			return NULL;
 	}
 }
@@ -256,7 +256,7 @@ static int pad_pkcs1(bn_t m, int *p_len, int m_len, int k_len, int operation) {
 
 	bn_null(t);
 
-	TRY {
+	RLC_TRY {
 		bn_new(t);
 
 		switch (operation) {
@@ -399,10 +399,10 @@ static int pad_pkcs1(bn_t m, int *p_len, int m_len, int k_len, int operation) {
 				break;
 		}
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		result = RLC_ERR;
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(t);
 	}
 	return result;
@@ -429,7 +429,7 @@ static int pad_pkcs2(bn_t m, int *p_len, int m_len, int k_len, int operation) {
 
 	bn_null(t);
 
-	TRY {
+	RLC_TRY {
 		bn_new(t);
 
 		switch (operation) {
@@ -562,10 +562,10 @@ static int pad_pkcs2(bn_t m, int *p_len, int m_len, int k_len, int operation) {
 				break;
 		}
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		result = RLC_ERR;
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(t);
 	}
 
@@ -589,7 +589,7 @@ int cp_rsa_gen(rsa_t pub, rsa_t prv, int bits) {
 	bn_null(t);
 	bn_null(r);
 
-	TRY {
+	RLC_TRY {
 		bn_new(t);
 		bn_new(r);
 
@@ -652,10 +652,10 @@ int cp_rsa_gen(rsa_t pub, rsa_t prv, int bits) {
 		}
 #endif /* CP_CRT */
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		result = RLC_ERR;
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(t);
 		bn_free(r);
 	}
@@ -676,7 +676,7 @@ int cp_rsa_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len, rsa_t pub) {
 		return RLC_ERR;
 	}
 
-	TRY {
+	RLC_TRY {
 		bn_new(m);
 		bn_new(eb);
 
@@ -709,10 +709,10 @@ int cp_rsa_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len, rsa_t pub) {
 			result = RLC_ERR;
 		}
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		result = RLC_ERR;
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(m);
 		bn_free(eb);
 	}
@@ -733,7 +733,7 @@ int cp_rsa_dec(uint8_t *out, int *out_len, uint8_t *in, int in_len, rsa_t prv) {
 		return RLC_ERR;
 	}
 
-	TRY {
+	RLC_TRY {
 		bn_new(m);
 		bn_new(eb);
 
@@ -807,10 +807,10 @@ int cp_rsa_dec(uint8_t *out, int *out_len, uint8_t *in, int in_len, rsa_t prv) {
 			result = RLC_ERR;
 		}
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		result = RLC_ERR;
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(m);
 		bn_free(eb);
 	}
@@ -845,7 +845,7 @@ int cp_rsa_sig(uint8_t *sig, int *sig_len, uint8_t *msg, int msg_len, int hash, 
 	bn_null(m);
 	bn_null(eb);
 
-	TRY {
+	RLC_TRY {
 		bn_new(m);
 		bn_new(eb);
 
@@ -932,10 +932,10 @@ int cp_rsa_sig(uint8_t *sig, int *sig_len, uint8_t *msg, int msg_len, int hash, 
 			result = RLC_ERR;
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(m);
 		bn_free(eb);
 	}
@@ -984,7 +984,7 @@ int cp_rsa_ver(uint8_t *sig, int sig_len, uint8_t *msg, int msg_len, int hash, r
 	bn_null(m);
 	bn_null(eb);
 
-	TRY {
+	RLC_TRY {
 		bn_new(m);
 		bn_new(eb);
 
@@ -1041,10 +1041,10 @@ int cp_rsa_ver(uint8_t *sig, int sig_len, uint8_t *msg, int msg_len, int hash, r
 			result = 0;
 		}
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		result = 0;
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(m);
 		bn_free(eb);
 		RLC_FREE(h1);

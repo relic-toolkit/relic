@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -115,7 +115,7 @@ int core_init(void) {
 
 	core_ctx->code = RLC_OK;
 
-	TRY {
+	RLC_TRY {
 		arch_init();
 		rand_init();
 #ifdef WITH_FP
@@ -139,8 +139,7 @@ int core_init(void) {
 #ifdef WITH_PP
 		pp_map_init();
 #endif
-	}
-	CATCH_ANY {
+	} RLC_CATCH_ANY {
 		return RLC_ERR;
 	}
 

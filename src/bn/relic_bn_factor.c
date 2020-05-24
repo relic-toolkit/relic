@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -50,7 +50,7 @@ int bn_factor(bn_t c, const bn_t a) {
 		return 1;
 	}
 
-	TRY {
+	RLC_TRY {
 		bn_new(t0);
 		bn_new(t1);
 
@@ -73,9 +73,9 @@ int bn_factor(bn_t c, const bn_t a) {
 		} else {
 			result = 0;
 		}
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		bn_free(t0);
 		bn_free(t1);
 	}
@@ -89,7 +89,7 @@ int bn_is_factor(bn_t c, const bn_t a) {
 	bn_null(t);
 	result = 1;
 
-	TRY {
+	RLC_TRY {
 		bn_new(t);
 
 		bn_mod(t, a, c);
@@ -97,9 +97,9 @@ int bn_is_factor(bn_t c, const bn_t a) {
 		if (!bn_is_zero(t)) {
 			result = 0;
 		}
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		bn_free(t);
 	}
 	return result;

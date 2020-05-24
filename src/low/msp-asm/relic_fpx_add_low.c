@@ -96,7 +96,7 @@ void fp2_norm_low(fp2_t c, fp2_t a) {
 	fp2_null(t);
 	bn_null(b);
 
-	TRY {
+	RLC_TRY {
 		fp2_new(t);
 		bn_new(b);
 
@@ -136,15 +136,15 @@ void fp2_norm_low(fp2_t c, fp2_t a) {
 				fp2_add(c, c, t);
 				break;
 			default:
-				THROW(ERR_NO_VALID);
+				RLC_THROW(ERR_NO_VALID);
 				break;
 		}
 #endif
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fp2_free(t);
 		bn_free(b);
 	}
@@ -157,7 +157,7 @@ void fp2_nord_low(dv2_t c, dv2_t a) {
 	dv2_null(t);
 	bn_null(b);
 
-	TRY {
+	RLC_TRY {
 		dv2_new(t);
 		bn_new(b);
 
@@ -208,15 +208,15 @@ void fp2_nord_low(dv2_t c, dv2_t a) {
 				fp_addc_low(c[1], t[1], a[0]);
 				break;
 			default:
-				THROW(ERR_NO_VALID);
+				RLC_THROW(ERR_NO_VALID);
 				break;
 		}
 #endif
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		dv2_free(t);
 		bn_free(b);
 	}

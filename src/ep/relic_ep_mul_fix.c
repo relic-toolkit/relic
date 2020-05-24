@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -112,7 +112,7 @@ static void ep_mul_combs_endom(ep_t r, const ep_t *t, const bn_t k) {
 	bn_null(k1);
 	ep_null(u);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 		bn_new(k0);
 		bn_new(k1);
@@ -186,10 +186,10 @@ static void ep_mul_combs_endom(ep_t r, const ep_t *t, const bn_t k) {
 			ep_neg(r, r);
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(n);
 		bn_free(k0);
 		bn_free(k1);
@@ -223,7 +223,7 @@ static void ep_mul_combs_plain(ep_t r, const ep_t *t, const bn_t k) {
 
 	bn_null(n);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 
 		ep_curve_get_ord(n);
@@ -262,10 +262,10 @@ static void ep_mul_combs_plain(ep_t r, const ep_t *t, const bn_t k) {
 			ep_neg(r, r);
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(n);
 	}
 }
@@ -285,7 +285,7 @@ void ep_mul_pre_basic(ep_t *t, const ep_t p) {
 
 	bn_null(n);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 
 		ep_curve_get_ord(n);
@@ -297,10 +297,10 @@ void ep_mul_pre_basic(ep_t *t, const ep_t p) {
 
 		ep_norm_sim(t + 1, (const ep_t *)t + 1, bn_bits(n) - 1);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(n);
 	}
 }
@@ -334,7 +334,7 @@ void ep_mul_pre_combs(ep_t *t, const ep_t p) {
 
 	bn_null(n);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 
 		ep_curve_get_ord(n);
@@ -366,10 +366,10 @@ void ep_mul_pre_combs(ep_t *t, const ep_t p) {
 
 		ep_norm_sim(t + 2, (const ep_t *)t + 2, RLC_EP_TABLE_COMBS - 2);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(n);
 	}
 }
@@ -396,7 +396,7 @@ void ep_mul_pre_combd(ep_t *t, const ep_t p) {
 
 	bn_null(n);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 
 		ep_curve_get_ord(n);
@@ -429,10 +429,10 @@ void ep_mul_pre_combd(ep_t *t, const ep_t p) {
 		ep_norm_sim(t + (1 << EP_DEPTH) + 1,
 				(const ep_t *)t + (1 << EP_DEPTH) + 1, (1 << EP_DEPTH) - 1);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(n);
 	}
 }
@@ -448,7 +448,7 @@ void ep_mul_fix_combd(ep_t r, const ep_t *t, const bn_t k) {
 
 	bn_null(n);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 
 		ep_curve_get_ord(n);
@@ -488,10 +488,10 @@ void ep_mul_fix_combd(ep_t r, const ep_t *t, const bn_t k) {
 			ep_neg(r, r);
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(n);
 	}
 }

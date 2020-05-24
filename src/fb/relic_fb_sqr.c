@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -49,15 +49,15 @@ void fb_sqr_basic(fb_t c, const fb_t a) {
 
 	dv_null(t);
 
-	TRY {
+	RLC_TRY {
 		/* We need a temporary variable so that c can be a or b. */
 		dv_new(t);
 		fb_sqrn_low(t, a);
 		fb_rdc(c, t);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		dv_free(t);
 	}
 }
@@ -71,15 +71,15 @@ void fb_sqr_quick(fb_t c, const fb_t a) {
 
 	dv_null(t);
 
-	TRY {
+	RLC_TRY {
 		/* We need a temporary variable so that c can be a or b. */
 		dv_new(t);
 		fb_sqrl_low(t, a);
 		fb_rdc(c, t);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		dv_free(t);
 	}
 }

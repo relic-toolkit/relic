@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -65,7 +65,7 @@ static void bn_mul_karat_imp(bn_t c, const bn_t a, const bn_t b, int level) {
 	/* Compute half the digits of a or b. */
 	h = RLC_MIN(a->used, b->used) >> 1;
 
-	TRY {
+	RLC_TRY {
 		/* Allocate the temp variables. */
 		bn_new(a0);
 		bn_new(a1);
@@ -154,10 +154,10 @@ static void bn_mul_karat_imp(bn_t c, const bn_t a, const bn_t b, int level) {
 		bn_copy(c, t);
 		bn_trim(c);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(a0);
 		bn_free(a1);
 		bn_free(b0);
@@ -191,7 +191,7 @@ void bn_mul_basic(bn_t c, const bn_t a, const bn_t b) {
 
 	bn_null(t);
 
-	TRY {
+	RLC_TRY {
 		/* We need a temporary variable so that c can be a or b. */
 		bn_new_size(t, a->used + b->used);
 		bn_zero(t);
@@ -207,10 +207,10 @@ void bn_mul_basic(bn_t c, const bn_t a, const bn_t b) {
 		/* Swap c and t. */
 		bn_copy(c, t);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(t);
 	}
 }
@@ -225,7 +225,7 @@ void bn_mul_comba(bn_t c, const bn_t a, const bn_t b) {
 
 	bn_null(t);
 
-	TRY {
+	RLC_TRY {
 		digits = a->used + b->used;
 
 		/* We need a temporary variable so that c can be a or b. */
@@ -248,10 +248,10 @@ void bn_mul_comba(bn_t c, const bn_t a, const bn_t b) {
 		bn_trim(t);
 		bn_copy(c, t);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(t);
 	}
 }

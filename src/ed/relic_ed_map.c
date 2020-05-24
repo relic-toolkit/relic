@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -47,7 +47,7 @@ void ed_map(ed_t p, const uint8_t *msg, int len) {
 	fp_null(u);
 	fp_null(v);
 
-	TRY {
+	RLC_TRY {
 		bn_new(h);
 		fp_new(t);
 		fp_new(u);
@@ -121,10 +121,10 @@ void ed_map(ed_t p, const uint8_t *msg, int len) {
 #endif
 		p->coord = BASIC;
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(h);
 		fp_free(t);
 		fp_free(u);

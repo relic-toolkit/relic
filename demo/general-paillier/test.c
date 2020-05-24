@@ -17,7 +17,7 @@ static int paillier(void) {
 	bn_null(pub);
 	bn_null(prv);
 
-	TRY {
+	RLC_TRY {
 		bn_new(a);
 		bn_new(b);
 		bn_new(c);
@@ -69,7 +69,7 @@ static int paillier(void) {
 			assert(bn_cmp(a, c) == RLC_EQ);
 		}
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		ERROR(end);
 	}
 	code = RLC_OK;

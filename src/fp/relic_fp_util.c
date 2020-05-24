@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -125,7 +125,7 @@ void fp_print(const fp_t a) {
 
 	bn_null(t);
 
-	TRY {
+	RLC_TRY {
 		bn_new(t);
 
 #if FP_RDC == MONTY
@@ -149,10 +149,10 @@ void fp_print(const fp_t a) {
 		util_print_dig(t->dp[0], 1);
 		util_print("\n");
 
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(t);
 	}
 }
@@ -163,16 +163,16 @@ int fp_size_str(const fp_t a, int radix) {
 
 	bn_null(t);
 
-	TRY {
+	RLC_TRY {
 		bn_new(t);
 
 		fp_prime_back(t, a);
 
 		digits = bn_size_str(t, radix);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(t);
 	}
 
@@ -184,7 +184,7 @@ void fp_read_str(fp_t a, const char *str, int len, int radix) {
 
 	bn_null(t);
 
-	TRY {
+	RLC_TRY {
 		bn_new(t);
 		bn_read_str(t, str, len, radix);
 		if (bn_is_zero(t)) {
@@ -200,10 +200,10 @@ void fp_read_str(fp_t a, const char *str, int len, int radix) {
 			}
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(t);
 	}
 }
@@ -213,16 +213,16 @@ void fp_write_str(char *str, int len, const fp_t a, int radix) {
 
 	bn_null(t);
 
-	TRY {
+	RLC_TRY {
 		bn_new(t);
 
 		fp_prime_back(t, a);
 
 		bn_write_str(str, len, t, radix);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(t);
 	}
 }
@@ -233,10 +233,10 @@ void fp_read_bin(fp_t a, const uint8_t *bin, int len) {
 	bn_null(t);
 
 	if (len != RLC_FP_BYTES) {
-		THROW(ERR_NO_BUFFER);
+		RLC_THROW(ERR_NO_BUFFER);
 	}
 
-	TRY {
+	RLC_TRY {
 		bn_new(t);
 		bn_read_bin(t, bin, len);
 		if (bn_is_zero(t)) {
@@ -249,10 +249,10 @@ void fp_read_bin(fp_t a, const uint8_t *bin, int len) {
 			}
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(t);
 	}
 }
@@ -263,19 +263,19 @@ void fp_write_bin(uint8_t *bin, int len, const fp_t a) {
 	bn_null(t);
 
 	if (len != RLC_FP_BYTES) {
-		THROW(ERR_NO_BUFFER);
+		RLC_THROW(ERR_NO_BUFFER);
 	}
 
-	TRY {
+	RLC_TRY {
 		bn_new(t);
 
 		fp_prime_back(t, a);
 
 		bn_write_bin(bin, len, t);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(t);
 	}
 }

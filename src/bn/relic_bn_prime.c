@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -138,7 +138,7 @@ static void bn_exp(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 
 	bn_null(t);
 
-	TRY {
+	RLC_TRY {
 		bn_new(t);
 
 		l = bn_bits(b);
@@ -156,10 +156,10 @@ static void bn_exp(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 
 		bn_copy(c, t);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(t);
 	}
 }
@@ -242,7 +242,7 @@ int bn_is_prime_rabin(const bn_t a) {
 		return 0;
 	}
 
-	TRY {
+	RLC_TRY {
 		/*
 		 * These values are taken from Table 4.4 inside Handbook of Applied
 		 * Cryptography.
@@ -327,11 +327,11 @@ int bn_is_prime_rabin(const bn_t a) {
 			}
 		}
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		result = 0;
-		THROW(ERR_CAUGHT);
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(r);
 		bn_free(y);
 		bn_free(n1);
@@ -350,7 +350,7 @@ int bn_is_prime_solov(const bn_t a) {
 
 	result = 1;
 
-	TRY {
+	RLC_TRY {
 		bn_new(t0);
 		bn_new(t1);
 		bn_new(t2);
@@ -392,11 +392,11 @@ int bn_is_prime_solov(const bn_t a) {
 			}
 		}
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		result = 0;
-		THROW(ERR_CAUGHT);
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(t0);
 		bn_free(t1);
 		bn_free(t2);
@@ -454,7 +454,7 @@ void bn_gen_prime_stron(bn_t a, int bits) {
 	bn_null(s);
 	bn_null(t);
 
-	TRY {
+	RLC_TRY {
 		bn_new(r);
 		bn_new(s);
 		bn_new(t);
@@ -512,10 +512,10 @@ void bn_gen_prime_stron(bn_t a, int bits) {
 			} while (!bn_is_prime(a));
 		} while (found == 0 && bn_bits(a) != bits);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(r);
 		bn_free(s);
 		bn_free(t);

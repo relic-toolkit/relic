@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -45,7 +45,7 @@ static int rsa(void) {
 	rsa_null(pub);
 	rsa_null(prv);
 
-	TRY {
+	RLC_TRY {
 		rsa_new(pub);
 		rsa_new(prv);
 
@@ -74,8 +74,8 @@ static int rsa(void) {
 			TEST_ASSERT(cp_rsa_sig(out, &ol, h, RLC_MD_LEN, 1, prv) == RLC_OK, end);
 			TEST_ASSERT(cp_rsa_ver(out, ol, h, RLC_MD_LEN, 1, pub) == 1, end);
 		} TEST_END;
-	} CATCH_ANY {
-		ERROR(end);
+	} RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
 
@@ -96,7 +96,7 @@ static int rabin(void) {
 	rabin_null(pub);
 	rabin_null(prv);
 
-	TRY {
+	RLC_TRY {
 		rabin_new(pub);
 		rabin_new(prv);
 
@@ -113,8 +113,8 @@ static int rabin(void) {
 							prv) == RLC_OK, end);
 			TEST_ASSERT(memcmp(in, out, out_len) == 0, end);
 		} TEST_END;
-	} CATCH_ANY {
-		ERROR(end);
+	} RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
 
@@ -138,7 +138,7 @@ static int benaloh(void) {
 	bdpe_null(pub);
 	bdpe_null(prv);
 
-	TRY {
+	RLC_TRY {
 		bn_new(a);
 		bn_new(b);
 		bdpe_new(pub);
@@ -175,8 +175,8 @@ static int benaloh(void) {
 			TEST_ASSERT(cp_bdpe_dec(&out, buf, len, prv) == RLC_OK, end);
 			TEST_ASSERT(in == out, end);
 		} TEST_END;
-	} CATCH_ANY {
-		ERROR(end);
+	} RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
 
@@ -202,7 +202,7 @@ static int paillier(void) {
 	bn_null(pub);
 	phpe_null(prv);
 
-	TRY {
+	RLC_TRY {
 		bn_new(a);
 		bn_new(b);
 		bn_new(c);
@@ -274,8 +274,8 @@ static int paillier(void) {
 			TEST_END;
 		}
 	}
-	CATCH_ANY {
-		ERROR(end);
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
 
@@ -357,7 +357,7 @@ static int ecdh(void) {
 	ec_null(qa);
 	ec_null(q_b);
 
-	TRY {
+	RLC_TRY {
 		bn_new(da);
 		bn_new(d_b);
 		ec_new(qa);
@@ -371,8 +371,8 @@ static int ecdh(void) {
 			TEST_ASSERT(memcmp(k1, k2, RLC_MD_LEN) == 0, end);
 		} TEST_END;
 	}
-	CATCH_ANY {
-		ERROR(end);
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
 
@@ -401,7 +401,7 @@ static int ecmqv(void) {
 	ec_null(q2a);
 	ec_null(q2_b);
 
-	TRY {
+	RLC_TRY {
 		bn_new(d1a);
 		bn_new(d1_b);
 		ec_new(q1a);
@@ -423,8 +423,8 @@ static int ecmqv(void) {
 			TEST_ASSERT(memcmp(key1, key2, RLC_MD_LEN) == 0, end);
 		} TEST_END;
 	}
-	CATCH_ANY {
-		ERROR(end);
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
 
@@ -454,7 +454,7 @@ static int ecies(void) {
 	ec_null(qa);
 	ec_null(q_b);
 
-	TRY {
+	RLC_TRY {
 		ec_new(r);
 		bn_new(da);
 		bn_new(d_b);
@@ -517,8 +517,8 @@ static int ecies(void) {
 		}
 #endif
 	}
-	CATCH_ANY {
-		ERROR(end);
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
 
@@ -542,7 +542,7 @@ static int ecdsa(void) {
 	bn_null(s);
 	ec_null(q);
 
-	TRY {
+	RLC_TRY {
 		bn_new(d);
 		bn_new(r);
 		bn_new(s);
@@ -558,8 +558,8 @@ static int ecdsa(void) {
 		}
 		TEST_END;
 	}
-	CATCH_ANY {
-		ERROR(end);
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
 
@@ -581,7 +581,7 @@ static int ecss(void) {
 	bn_null(r);
 	ec_null(q);
 
-	TRY {
+	RLC_TRY {
 		bn_new(d);
 		bn_new(r);
 		ec_new(q);
@@ -593,8 +593,8 @@ static int ecss(void) {
 		}
 		TEST_END;
 	}
-	CATCH_ANY {
-		ERROR(end);
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
 
@@ -626,7 +626,7 @@ static int vbnn(void) {
 	bn_null(pka);
 	bn_null(pkb);
 
-	TRY {
+	RLC_TRY {
 		bn_new(z);
 		bn_new(h);
 		bn_new(msk);
@@ -649,8 +649,8 @@ static int vbnn(void) {
 		}
 		TEST_END;
 	}
-	CATCH_ANY {
-		ERROR(end);
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
 
@@ -681,7 +681,7 @@ static int sokaka(void) {
 	sokaka_null(k);
 	bn_null(s);
 
-	TRY {
+	RLC_TRY {
 		sokaka_new(k);
 		bn_new(s);
 
@@ -697,8 +697,8 @@ static int sokaka(void) {
 			TEST_ASSERT(memcmp(k1, k2, l) == 0, end);
 		} TEST_END;
 
-	} CATCH_ANY {
-		ERROR(end);
+	} RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
 
@@ -722,7 +722,7 @@ static int ibe(void) {
 	g1_null(pub);
 	g2_null(prv);
 
-	TRY {
+	RLC_TRY {
 		bn_new(s);
 		g1_new(pub);
 		g2_new(prv);
@@ -739,8 +739,8 @@ static int ibe(void) {
 			TEST_ASSERT(cp_ibe_dec(out, &il, out, ol, prv) == RLC_OK, end);
 			TEST_ASSERT(memcmp(in, out, il) == 0, end);
 		} TEST_END;
-	} CATCH_ANY {
-		ERROR(end);
+	} RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
 
@@ -770,7 +770,7 @@ static int bgn(void) {
 	bgn_null(pub);
 	bgn_null(prv);
 
-	TRY {
+	RLC_TRY {
 		g1_new(c[0]);
 		g1_new(c[1]);
 		g1_new(d[0]);
@@ -839,8 +839,8 @@ static int bgn(void) {
 			TEST_ASSERT(in + in == t, end);
 		} TEST_END;
 
-	} CATCH_ANY {
-		ERROR(end);
+	} RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
 
@@ -872,7 +872,7 @@ static int bls(void) {
 	g1_null(s);
 	g2_null(q);
 
-	TRY {
+	RLC_TRY {
 		bn_new(d);
 		g1_new(s);
 		g2_new(q);
@@ -884,8 +884,8 @@ static int bls(void) {
 		}
 		TEST_END;
 	}
-	CATCH_ANY {
-		ERROR(end);
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
 
@@ -909,7 +909,7 @@ static int bbs(void) {
 	g2_null(q);
 	gt_null(z);
 
-	TRY {
+	RLC_TRY {
 		bn_new(d);
 		g1_new(s);
 		g2_new(q);
@@ -925,8 +925,8 @@ static int bbs(void) {
 		}
 		TEST_END;
 	}
-	CATCH_ANY {
-		ERROR(end);
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
 
@@ -966,7 +966,7 @@ static int cls(void) {
 		g2_null(zs[i]);
 	}
 
-	TRY {
+	RLC_TRY {
 		bn_new(r);
 		bn_new(t);
 		bn_new(u);
@@ -1020,8 +1020,8 @@ static int cls(void) {
 		}
 		TEST_END;
 	}
-	CATCH_ANY {
-		ERROR(end);
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
 
@@ -1064,7 +1064,7 @@ static int pss(void) {
 	g2_null(x);
 	g2_null(y);
 
-	TRY {
+	RLC_TRY {
 		bn_new(u);
 		bn_new(v);
 		g1_new(a);
@@ -1097,8 +1097,8 @@ static int pss(void) {
 		}
 		TEST_END;
 	}
-	CATCH_ANY {
-		ERROR(end);
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
 
@@ -1130,7 +1130,7 @@ static int zss(void) {
 	g2_null(s);
 	gt_null(z);
 
-	TRY {
+	RLC_TRY {
 		bn_new(d);
 		g1_new(q);
 		g2_new(s);
@@ -1146,8 +1146,8 @@ static int zss(void) {
 		}
 		TEST_END;
 	}
-	CATCH_ANY {
-		ERROR(end);
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
 
@@ -1179,7 +1179,7 @@ static int lhs(void) {
 	g1_null(_r);
 	g2_null(_s);
 
-	TRY {
+	RLC_TRY {
 		bn_new(m);
 		bn_new(n);
 		g1_new(h);
@@ -1358,8 +1358,8 @@ static int lhs(void) {
 		}
 		TEST_END;
 	}
-	CATCH_ANY {
-		ERROR(end);
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
 
@@ -1465,7 +1465,7 @@ int main(void) {
 		}
 
 	} else {
-		THROW(ERR_NO_CURVE);
+		RLC_THROW(ERR_NO_CURVE);
 	}
 #endif
 
@@ -1518,7 +1518,7 @@ int main(void) {
 			return 1;
 		}
 	} else {
-		THROW(ERR_NO_CURVE);
+		RLC_THROW(ERR_NO_CURVE);
 	}
 #endif
 

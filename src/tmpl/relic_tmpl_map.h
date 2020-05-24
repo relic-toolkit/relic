@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -128,7 +128,7 @@
 		fp##EXT##_null(t2);													\
 		fp##EXT##_null(t3);													\
                                                                     		\
-		TRY {																\
+		RLC_TRY {																\
 			fp##EXT##_new(t0);												\
 			fp##EXT##_new(t1);												\
 			fp##EXT##_new(t2);												\
@@ -146,8 +146,8 @@
 			/* normalize if necessary */									\
 			TMPL_MAP_ISOMAP_NORM(EXT);										\
 		}																	\
-		CATCH_ANY { THROW(ERR_CAUGHT); }									\
-		FINALLY {															\
+		RLC_CATCH_ANY { RLC_THROW(ERR_CAUGHT); }									\
+		RLC_FINALLY {															\
 			fp##EXT##_free(t0);												\
 			fp##EXT##_free(t1);												\
 			fp##EXT##_free(t2);												\
@@ -185,7 +185,7 @@
 		fp##EXT##_null(t2);													\
 		fp##EXT##_null(t3);													\
 																			\
-		TRY {																\
+		RLC_TRY {																\
 			fp##EXT##_new(t0);												\
 			fp##EXT##_new(t1);												\
 			fp##EXT##_new(t2);												\
@@ -228,14 +228,14 @@
 				/* try x2, g(x2) */															\
 				fp##EXT##_copy(p->x, t2);													\
 				if (!fp##EXT##_srt(p->y, t3)) {												\
-					THROW(ERR_NO_VALID);													\
+					RLC_THROW(ERR_NO_VALID);													\
 				}																			\
 			}																				\
 			fp##EXT##_set_dig(p->z, 1);										\
 			p->coord = BASIC;												\
 		}																	\
-		CATCH_ANY { THROW(ERR_CAUGHT); }									\
-		FINALLY {															\
+		RLC_CATCH_ANY { RLC_THROW(ERR_CAUGHT); }									\
+		RLC_FINALLY {															\
 			fp##EXT##_free(t0);												\
 			fp##EXT##_free(t1);												\
 			fp##EXT##_free(t2);												\
@@ -255,7 +255,7 @@
 		fp##EXT##_null(t3);													\
 		fp##EXT##_null(t4);													\
                                                                             \
-		TRY {																\
+		RLC_TRY {																\
 			fp##EXT##_new(t1);												\
 			fp##EXT##_new(t2);												\
 			fp##EXT##_new(t3);												\
@@ -307,15 +307,15 @@
 					fp##EXT##_add(p->x, p->x, u);							\
 					ep##EXT##_rhs(p->y, p);									\
 					if (!fp##EXT##_srt(p->y, p->y)) {						\
-						THROW(ERR_NO_VALID);								\
+						RLC_THROW(ERR_NO_VALID);								\
 					}														\
 				}															\
 			}																\
 			fp##EXT##_set_dig(p->z, 1);										\
 			p->coord = BASIC;												\
 		}																	\
-		CATCH_ANY { THROW(ERR_CAUGHT); }									\
-		FINALLY {															\
+		RLC_CATCH_ANY { RLC_THROW(ERR_CAUGHT); }									\
+		RLC_FINALLY {															\
 			fp##EXT##_free(t1);												\
 			fp##EXT##_free(t2);												\
 			fp##EXT##_free(t3);												\

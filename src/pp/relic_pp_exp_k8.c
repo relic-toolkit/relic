@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -48,7 +48,7 @@ void pp_exp_k8(fp8_t c, fp8_t a) {
 	bn_null(x);
 	bn_null(t);
 
-	TRY {
+	RLC_TRY {
 		fp8_new(t0);
 		fp8_new(t1);
 		fp8_new(t2);
@@ -117,10 +117,10 @@ void pp_exp_k8(fp8_t c, fp8_t a) {
 		/* return f^(p^4 - 1)*(1 + (p + T)(p^2 + T^2)(p + T)/r) */
 		fp8_mul(c, c, t4);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fp8_free(t0);
 		fp8_free(t1);
 		fp8_free(t2);

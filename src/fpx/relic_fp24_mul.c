@@ -49,7 +49,7 @@ void fp24_mul_basic(fp24_t c, fp24_t a, fp24_t b) {
 	fp8_null(t4);
 	fp8_null(t5);
 
-	TRY {
+	RLC_TRY {
 		fp8_new(t0);
 		fp8_new(t1);
 		fp8_new(t2);
@@ -90,9 +90,9 @@ void fp24_mul_basic(fp24_t c, fp24_t a, fp24_t b) {
 		fp8_sub(c[2], c[2], t2);
 
 		fp8_copy(c[0], t3);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		fp8_free(t0);
 		fp8_free(t1);
 		fp8_free(t2);
@@ -118,7 +118,7 @@ void fp24_mul_unr(dv24_t c, fp24_t a, fp24_t b) {
 	fp8_null(t0);
 	fp8_null(t1);
 
-	TRY {
+	RLC_TRY {
 		dv8_new(u0);
 		dv8_new(u1);
 		dv8_new(u2);
@@ -181,9 +181,9 @@ void fp24_mul_unr(dv24_t c, fp24_t a, fp24_t b) {
 				fp2_subc_low(c[2][i][j], u4[i][j], u2[i][j]);
 			}
 		}
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		dv8_free(u0);
 		dv8_free(u1);
 		dv8_free(u2);
@@ -199,7 +199,7 @@ void fp24_mul_lazyr(fp24_t c, fp24_t a, fp24_t b) {
 
 	dv24_null(t);
 
-	TRY {
+	RLC_TRY {
 		dv24_new(t);
 		fp24_mul_unr(t, a, b);
 		for (int i = 0; i < 3; i++) {
@@ -208,9 +208,9 @@ void fp24_mul_lazyr(fp24_t c, fp24_t a, fp24_t b) {
 				fp2_rdcn_low(c[i][j][1], t[i][j][1]);
 			}
 		}
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		dv24_free(t);
 	}
 }
@@ -222,7 +222,7 @@ void fp24_mul_art(fp24_t c, fp24_t a) {
 
 	fp8_null(t0);
 
-	TRY {
+	RLC_TRY {
 		fp8_new(t0);
 
 		/* (a_0 + a_1 * v + a_2 * v^2) * v = a_2 + a_0 * v + a_1 * v^2 */
@@ -230,9 +230,9 @@ void fp24_mul_art(fp24_t c, fp24_t a) {
 		fp8_mul_art(c[0], a[2]);
 		fp8_copy(c[2], a[1]);
 		fp8_copy(c[1], t0);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		fp8_free(t0);
 	}
 }
@@ -246,7 +246,7 @@ void fp24_mul_dxs(fp24_t c, fp24_t a, fp24_t b) {
 	fp8_null(t3);
 	fp8_null(t4);
 
-	TRY {
+	RLC_TRY {
 		fp8_new(t0);
 		fp8_new(t1);
 		fp8_new(t2);
@@ -279,9 +279,9 @@ void fp24_mul_dxs(fp24_t c, fp24_t a, fp24_t b) {
 		fp8_add(c[2], c[2], t1);
 
 		fp8_copy(c[0], t3);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		fp8_free(t0);
 		fp8_free(t1);
 		fp8_free(t2);

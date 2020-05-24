@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -52,7 +52,7 @@ static void ep_dbl_basic_imp(ep_t r, fp_t s, const ep_t p) {
 	fp_null(t1);
 	fp_null(t2);
 
-	TRY {
+	RLC_TRY {
 		fp_new(t0);
 		fp_new(t1);
 		fp_new(t2);
@@ -107,10 +107,10 @@ static void ep_dbl_basic_imp(ep_t r, fp_t s, const ep_t p) {
 
 		r->coord = BASIC;
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fp_free(t0);
 		fp_free(t1);
 		fp_free(t2);
@@ -138,7 +138,7 @@ static void ep_dbl_projc_imp(ep_t r, const ep_t p) {
 	fp_null(t4);
 	fp_null(t5);
 
-	TRY {
+	RLC_TRY {
 		fp_new(t0);
 		fp_new(t1);
 		fp_new(t2);
@@ -254,10 +254,10 @@ static void ep_dbl_projc_imp(ep_t r, const ep_t p) {
 
 		r->coord = PROJC;
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fp_free(t0);
 		fp_free(t1);
 		fp_free(t2);
@@ -287,7 +287,7 @@ static void ep_dbl_jacob_imp(ep_t r, const ep_t p) {
 	fp_null(t4);
 	fp_null(t5);
 
-	TRY {
+	RLC_TRY {
 		fp_new(t0);
 		fp_new(t1);
 		fp_new(t2);
@@ -465,10 +465,10 @@ static void ep_dbl_jacob_imp(ep_t r, const ep_t p) {
 
 		r->coord = JACOB;
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fp_free(t0);
 		fp_free(t1);
 		fp_free(t2);

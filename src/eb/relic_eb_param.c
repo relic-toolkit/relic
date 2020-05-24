@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -263,7 +263,7 @@ void eb_param_set(int param) {
 	bn_null(r);
 	bn_null(h);
 
-	TRY {
+	RLC_TRY {
 		fb_new(a);
 		fb_new(b);
 		eb_new(g);
@@ -340,7 +340,7 @@ void eb_param_set(int param) {
 #endif
 			default:
 				(void)str;
-				THROW(ERR_NO_VALID);
+				RLC_THROW(ERR_NO_VALID);
 				break;
 		}
 		fb_zero(g->z);
@@ -350,10 +350,10 @@ void eb_param_set(int param) {
 		eb_curve_set(a, b, g, r, h);
 		core_get()->eb_id = param;
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fb_free(a);
 		fb_free(b);
 		eb_free(g);

@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -51,7 +51,7 @@ int cp_bgn_gen(bgn_t pub, bgn_t prv) {
 
 	bn_null(n);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 
 		pc_get_ord(n);
@@ -68,10 +68,10 @@ int cp_bgn_gen(bgn_t pub, bgn_t prv) {
 		g2_mul_gen(pub->hy, prv->y);
 		g2_mul_gen(pub->hz, prv->z);
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		result = RLC_ERR;
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(n);
 	}
 
@@ -87,7 +87,7 @@ int cp_bgn_enc1(g1_t out[2], dig_t in, bgn_t pub) {
 	bn_null(r);
 	g1_null(t);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 		bn_new(r);
 		g1_new(t);
@@ -108,10 +108,10 @@ int cp_bgn_enc1(g1_t out[2], dig_t in, bgn_t pub) {
 		g1_add(out[1], out[1], t);
 		g1_norm(out[1], out[1]);
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		result = RLC_ERR;
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(n);
 		bn_free(r);
 		g1_free(t);
@@ -131,7 +131,7 @@ int cp_bgn_dec1(dig_t *out, g1_t in[2], bgn_t prv) {
 	g1_null(t);
 	g1_null(u);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 		bn_new(r);
 		g1_new(s);
@@ -164,10 +164,10 @@ int cp_bgn_dec1(dig_t *out, g1_t in[2], bgn_t prv) {
 				g1_norm(u, u);
 			}
 		}
-	} CATCH_ANY {
+	} RLC_CATCH_ANY {
 		result = RLC_ERR;
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(n);
 		bn_free(r);
 		g1_free(s);
@@ -187,7 +187,7 @@ int cp_bgn_enc2(g2_t out[2], dig_t in, bgn_t pub) {
 	bn_null(r);
 	g2_null(t);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 		bn_new(r);
 		g2_new(t);
@@ -207,10 +207,10 @@ int cp_bgn_enc2(g2_t out[2], dig_t in, bgn_t pub) {
 		g2_add(out[1], out[1], t);
 		g2_norm(out[1], out[1]);
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		result = RLC_ERR;
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(n);
 		bn_free(r);
 		g2_free(t);
@@ -230,7 +230,7 @@ int cp_bgn_dec2(dig_t *out, g2_t in[2], bgn_t prv) {
 	g2_null(t);
 	g2_null(u);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 		bn_new(r);
 		g2_new(s);
@@ -263,10 +263,10 @@ int cp_bgn_dec2(dig_t *out, g2_t in[2], bgn_t prv) {
 				g2_norm(u, u);
 			}
 		}
-	} CATCH_ANY {
+	} RLC_CATCH_ANY {
 		result = RLC_ERR;
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(n);
 		bn_free(r);
 		g2_free(s);
@@ -306,7 +306,7 @@ int cp_bgn_dec(dig_t *out, gt_t in[4], bgn_t prv) {
 	g1_null(g);
 	g2_null(h);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 		bn_new(r);
 		bn_new(s);
@@ -360,9 +360,9 @@ int cp_bgn_dec(dig_t *out, gt_t in[4], bgn_t prv) {
 				gt_mul(t[2], t[2], t[1]);
 			}
 		}
-	} CATCH_ANY {
+	} RLC_CATCH_ANY {
 		result = RLC_ERR;
-	} FINALLY {
+	} RLC_FINALLY {
 		bn_free(n);
 		bn_free(r);
 		bn_free(s);

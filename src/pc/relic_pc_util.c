@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -63,7 +63,7 @@ void gt_get_gen(gt_t g) {
 	g1_null(g1);
 	g2_null(g2);
 
-	TRY {
+	RLC_TRY {
 		g1_new(g1);
 		g2_new(g2);
 
@@ -71,9 +71,9 @@ void gt_get_gen(gt_t g) {
 		g2_get_gen(g2);
 
 		pc_map(g, g1, g2);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		g1_free(g1);
 		g2_free(g2);
 	}
@@ -87,7 +87,7 @@ int g1_is_valid(g1_t a) {
 	bn_null(n);
 	g1_null(u);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 		g1_new(u);
 
@@ -105,9 +105,9 @@ int g1_is_valid(g1_t a) {
 			g1_dbl(u, u);
 			r = (g1_cmp(u, a) == RLC_EQ);
 		}
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		bn_free(n);
 		g1_free(u);
 	}
@@ -125,7 +125,7 @@ int g2_is_valid(g2_t a) {
 	g2_null(u);
 	g2_null(v);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 		bn_new(p);
 		g2_new(u);
@@ -159,9 +159,9 @@ int g2_is_valid(g2_t a) {
 			g2_neg(u, u);
 			r = (g2_cmp(u, a) == RLC_EQ);
 		}
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		bn_free(p);
 		bn_free(n);
 		g2_free(u);
@@ -181,7 +181,7 @@ int gt_is_valid(gt_t a) {
 	gt_null(u);
 	gt_null(v);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 		bn_new(p);
 		gt_new(u);
@@ -213,9 +213,9 @@ int gt_is_valid(gt_t a) {
 			gt_inv(u, u);
 			r = (gt_cmp(u, a) == RLC_EQ);
 		}
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		bn_free(p);
 		bn_free(n);
 		gt_free(u);

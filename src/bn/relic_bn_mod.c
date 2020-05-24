@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -89,7 +89,7 @@ void bn_mod_barrt(bn_t c, const bn_t a, const bn_t m, const bn_t u) {
 		bn_copy(c, a);
 		return;
 	}
-	TRY {
+	RLC_TRY {
 		bn_new(q);
 		bn_new(t);
 		bn_zero(t);
@@ -138,10 +138,10 @@ void bn_mod_barrt(bn_t c, const bn_t a, const bn_t m, const bn_t u) {
 
 		bn_copy(c, t);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(q);
 		bn_free(t);
 
@@ -157,7 +157,7 @@ void bn_mod_pre_monty(bn_t u, const bn_t m) {
 	b = m->dp[0];
 
 	if ((b & 0x01) == 0) {
-		THROW(ERR_NO_VALID);
+		RLC_THROW(ERR_NO_VALID);
 	}
 
 	x = (((b + 2) & 4) << 1) + b;	/* here x*a==1 mod 2**4 */
@@ -189,14 +189,14 @@ void bn_mod_monty_back(bn_t c, const bn_t a, const bn_t m) {
 
 	bn_null(u);
 
-	TRY {
+	RLC_TRY {
 		bn_new(u);
 
 		bn_mod_pre_monty(u, m);
 		bn_mod_monty(c, a, m, u);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		bn_free(u);
 	}
 }
@@ -211,7 +211,7 @@ void bn_mod_monty_basic(bn_t c, const bn_t a, const bn_t m, const bn_t u) {
 	bn_null(t);
 	digits = 2 * m->used;
 
-	TRY {
+	RLC_TRY {
 		bn_new_size(t, digits);
 		bn_zero(t);
 		bn_copy(t, a);
@@ -235,10 +235,10 @@ void bn_mod_monty_basic(bn_t c, const bn_t a, const bn_t m, const bn_t u) {
 
 		bn_copy(c, t);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(t);
 	}
 }
@@ -254,7 +254,7 @@ void bn_mod_monty_comba(bn_t c, const bn_t a, const bn_t m, const bn_t u) {
 	bn_null(t);
 	digits = 2 * m->used;
 
-	TRY {
+	RLC_TRY {
 		bn_new_size(t, digits);
 		bn_zero(t);
 
@@ -267,10 +267,10 @@ void bn_mod_monty_comba(bn_t c, const bn_t a, const bn_t m, const bn_t u) {
 		}
 		bn_copy(c, t);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(t);
 	}
 }
@@ -298,7 +298,7 @@ void bn_mod_pmers(bn_t c, const bn_t a, const bn_t m, const bn_t u) {
 	bn_null(t);
 	bn_null(r);
 
-	TRY {
+	RLC_TRY {
 		bn_new(q);
 		bn_new(t);
 		bn_new(r);
@@ -327,10 +327,10 @@ void bn_mod_pmers(bn_t c, const bn_t a, const bn_t m, const bn_t u) {
 
 		bn_copy(c, r);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(t);
 		bn_free(q);
 		bn_free(r);

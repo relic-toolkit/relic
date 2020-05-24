@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -46,7 +46,7 @@ void fp4_mul_basic(fp4_t c, fp4_t a, fp4_t b) {
 	fp2_null(t1);
 	fp2_null(t2);
 
-	TRY {
+	RLC_TRY {
 		fp2_new(t0);
 		fp2_new(t1);
 		fp2_new(t2);
@@ -71,9 +71,9 @@ void fp4_mul_basic(fp4_t c, fp4_t a, fp4_t b) {
 		/* c_0 = a_0b_0 + v * a_1b_1. */
 		fp2_mul_nor(t2, t1);
 		fp2_add(c[0], t0, t2);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		fp2_free(t0);
 		fp2_free(t1);
 		fp2_free(t2);
@@ -93,7 +93,7 @@ void fp4_mul_unr(dv4_t c, fp4_t a, fp4_t b) {
 	dv2_null(u0);
 	dv2_null(u1);
 
-	TRY {
+	RLC_TRY {
 		fp2_new(t0);
 		fp2_new(t1);
 		dv2_new(u0);
@@ -119,9 +119,9 @@ void fp4_mul_unr(dv4_t c, fp4_t a, fp4_t b) {
 		fp2_nord_low(c[0], u1);
 #endif
 		fp2_addc_low(c[0], c[0], u0);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		fp2_free(t0);
 		dv2_free(t1);
 		dv2_free(u0);
@@ -134,14 +134,14 @@ void fp4_mul_lazyr(fp4_t c, fp4_t a, fp4_t b) {
 
 	dv4_null(t);
 
-	TRY {
+	RLC_TRY {
 		dv4_new(t);
 		fp4_mul_unr(t, a, b);
 		fp2_rdcn_low(c[0], t[0]);
 		fp2_rdcn_low(c[1], t[1]);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		dv4_free(t);
 	}
 }
@@ -153,16 +153,16 @@ void fp4_mul_art(fp4_t c, fp4_t a) {
 
 	fp2_null(t0);
 
-	TRY {
+	RLC_TRY {
 		fp2_new(t0);
 
 		/* (a_0 + a_1 * v) * v = a_0 * v + a_1 * v^2 */
 		fp2_copy(t0, a[0]);
 		fp2_mul_nor(c[0], a[1]);
 		fp2_copy(c[1], t0);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		fp2_free(t0);
 	}
 }

@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -203,24 +203,24 @@ typedef struct _sts_t {
 /**
  * Implements a TRY clause.
  */
-#define TRY					ERR_TRY
+#define RLC_TRY					ERR_TRY
 #else
 /**
  * Stub for the TRY clause.
  */
-#define TRY					if (1)
+#define RLC_TRY					if (1)
 #endif
 
 #ifdef CHECK
 /**
  * Implements a CATCH clause.
  */
-#define CATCH(E)			ERR_CATCH(&(E))
+#define RLC_CATCH(E)			ERR_CATCH(&(E))
 #else
 /**
  * Stub for the CATCH clause.
  */
-#define CATCH(E)			else
+#define RLC_CATCH(E)			else
 #endif
 
 #ifdef CHECK
@@ -230,36 +230,36 @@ typedef struct _sts_t {
  * If this macro is used the error type is not available inside the CATCH
  * block.
  */
-#define CATCH_ANY			ERR_CATCH(NULL)
+#define RLC_CATCH_ANY			ERR_CATCH(NULL)
 #else
 /**
- * Stub for the CATCH_ANY clause.
+ * Stub for the RLC_CATCH_ANY clause.
  */
-#define CATCH_ANY			if (0)
+#define RLC_CATCH_ANY			if (0)
 #endif
 
 #ifdef CHECK
 /**
- * Implements a FINALLY clause.
+ * Implements a RLC_FINALLY clause.
  */
-#define FINALLY				else if (_z == 0)
+#define RLC_FINALLY				else if (_z == 0)
 #else
-#define FINALLY				if (1)
+#define RLC_FINALLY				if (1)
 #endif
 
 #ifdef CHECK
 /**
  * Implements a THROW clause.
  */
-#define THROW				ERR_THROW
+#define RLC_THROW				ERR_THROW
 #else
 /**
  * Stub for the THROW clause.
  */
 #ifdef QUIET
-#define THROW(E)			core_get()->code = RLC_ERR;
+#define RLC_THROW(E)			core_get()->code = RLC_ERR;
 #else
-#define THROW(E)															\
+#define RLC_THROW(E)														\
 	core_get()->code = RLC_ERR; 											\
 	util_print("FATAL ERROR in %s:%d\n", ERR_FILE, __LINE__);				\
 
@@ -271,7 +271,7 @@ typedef struct _sts_t {
  *
  * @param[in] LABEL			- the label to jump
  */
-#define ERROR(LABEL)		goto LABEL
+#define RLC_ERROR(LABEL)		goto LABEL
 
 #ifdef VERBS
 

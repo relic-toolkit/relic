@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -53,7 +53,7 @@ int cp_cmlhs_gen(bn_t x[], gt_t hs[], int len, uint8_t prf[], int plen,
 	gt_null(gt);
 	bn_null(n);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 		g1_new(g1);
 		g2_new(g2);
@@ -77,10 +77,10 @@ int cp_cmlhs_gen(bn_t x[], gt_t hs[], int len, uint8_t prf[], int plen,
 		bn_rand_mod(d, n);
 		g2_mul_gen(y, d);
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		result = RLC_ERR;
 	}
-	FINALLY {
+	RLC_FINALLY {
 		g1_free(g1);
 		g2_free(g2);
 		gt_free(gt);
@@ -103,13 +103,13 @@ int cp_cmlhs_sig(g1_t sig, g2_t z, g1_t a, g1_t c, g1_t r, g2_t s, bn_t msg,
 	bn_null(n);
 	g1_null(t);
 
-	TRY {
+	RLC_TRY {
 		bn_new(k);
 		bn_new(m);
 		bn_new(n);
 		g1_new(t);
 		if (buf == NULL) {
-			THROW(ERR_NO_MEMORY);
+			RLC_THROW(ERR_NO_MEMORY);
 		}
 
 		pc_get_ord(n);
@@ -155,10 +155,10 @@ int cp_cmlhs_sig(g1_t sig, g2_t z, g1_t a, g1_t c, g1_t r, g2_t s, bn_t msg,
 		memcpy(buf + 4 * RLC_FP_BYTES + 1, data, dlen);
 		cp_bls_sig(sig, buf, 4 * RLC_FP_BYTES + 1 + dlen, sk);
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		result = RLC_ERR;
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(k);
 		bn_free(m);
 		bn_free(n);
@@ -205,7 +205,7 @@ int cp_cmlhs_ver(g1_t r, g2_t s, g1_t sig[], g2_t z[], g1_t a[], g1_t c[],
 	bn_null(k);
 	bn_null(n);
 
-	TRY {
+	RLC_TRY {
 		g1_new(g1);
 		g2_new(g2);
 		gt_new(e);
@@ -214,7 +214,7 @@ int cp_cmlhs_ver(g1_t r, g2_t s, g1_t sig[], g2_t z[], g1_t a[], g1_t c[],
 		bn_new(k);
 		bn_new(n);
 		if (buf == NULL) {
-			THROW(ERR_NO_MEMORY);
+			RLC_THROW(ERR_NO_MEMORY);
 		}
 
 		pc_get_ord(n);
@@ -259,10 +259,10 @@ int cp_cmlhs_ver(g1_t r, g2_t s, g1_t sig[], g2_t z[], g1_t a[], g1_t c[],
 			result = 0;
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		g1_free(g1);
 		g2_free(g2);
 		gt_free(e);

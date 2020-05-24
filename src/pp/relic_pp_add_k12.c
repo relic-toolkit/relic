@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -49,7 +49,7 @@ void pp_add_k12_basic(fp12_t l, ep2_t r, ep2_t q, ep_t p) {
 	fp2_null(s);
 	ep2_null(t);
 
-	TRY {
+	RLC_TRY {
 		fp2_new(s);
 		ep2_new(t);
 
@@ -67,10 +67,10 @@ void pp_add_k12_basic(fp12_t l, ep2_t r, ep2_t q, ep_t p) {
 		fp2_sub(l[one][one], t->y, l[one][one]);
 		fp_neg(l[zero][zero][0], p->y);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fp2_free(s);
 		ep2_free(t);
 	}
@@ -92,7 +92,7 @@ void pp_add_k12_projc_basic(fp12_t l, ep2_t r, ep2_t q, ep_t p) {
 	fp2_null(t3);
 	fp2_null(t4);
 
-	TRY {
+	RLC_TRY {
 		fp2_new(t0);
 		fp2_new(t1);
 		fp2_new(t2);
@@ -154,10 +154,10 @@ void pp_add_k12_projc_basic(fp12_t l, ep2_t r, ep2_t q, ep_t p) {
 
 		r->coord = PROJC;
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fp2_free(t0);
 		fp2_free(t1);
 		fp2_free(t2);
@@ -182,7 +182,7 @@ void pp_add_k12_projc_lazyr(fp12_t l, ep2_t r, ep2_t q, ep_t p) {
 	dv2_null(u1);
 	dv2_null(u2);
 
-	TRY {
+	RLC_TRY {
 		fp2_new(t1);
 		fp2_new(t2);
 		fp2_new(t3);
@@ -241,10 +241,10 @@ void pp_add_k12_projc_lazyr(fp12_t l, ep2_t r, ep2_t q, ep_t p) {
 
 		r->coord = PROJC;
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fp2_free(t1);
 		fp2_free(t2);
 		fp2_free(t3);
@@ -267,7 +267,7 @@ void pp_add_lit_k12(fp12_t l, ep_t r, ep_t p, ep2_t q) {
 	fp_null(t2);
 	fp_null(t3);
 
-	TRY {
+	RLC_TRY {
 		fp_new(t0);
 		fp_new(t1);
 		fp_new(t2);
@@ -310,10 +310,10 @@ void pp_add_lit_k12(fp12_t l, ep_t r, ep_t p, ep2_t q) {
 		fp_mul(r->x, t0, t3);
 		fp_mul(r->z, r->z, t2);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fp_free(t0);
 		fp_free(t1);
 		fp_free(t2);

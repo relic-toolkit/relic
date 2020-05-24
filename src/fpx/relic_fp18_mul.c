@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -46,7 +46,7 @@ void fp18_mul_basic(fp18_t c, fp18_t a, fp18_t b) {
 	fp9_null(t1);
 	fp9_null(t2);
 
-	TRY {
+	RLC_TRY {
 		fp9_new(t0);
 		fp9_new(t1);
 		fp9_new(t2);
@@ -71,9 +71,9 @@ void fp18_mul_basic(fp18_t c, fp18_t a, fp18_t b) {
 		/* c_0 = a_0b_0 + v * a_1b_1. */
 		fp9_mul_art(t1, t1);
 		fp9_add(c[0], t0, t1);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		fp9_free(t0);
 		fp9_free(t1);
 		fp9_free(t2);
@@ -95,7 +95,7 @@ void fp18_mul_unr(dv18_t c, fp18_t a, fp18_t b) {
 	fp9_null(t0);
 	fp9_null(t1);
 
-	TRY {
+	RLC_TRY {
 		dv9_new(u0);
 		dv9_new(u1);
 		dv9_new(u2);
@@ -125,9 +125,9 @@ void fp18_mul_unr(dv18_t c, fp18_t a, fp18_t b) {
 		fp3_addc_low(c[0][0], u0[0], u2[0]);
 		fp3_addc_low(c[0][1], u0[1], u1[0]);
 		fp3_addc_low(c[0][2], u0[2], u1[1]);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		dv9_free(u0);
 		dv9_free(u1);
 		dv9_free(u2);
@@ -142,7 +142,7 @@ void fp18_mul_lazyr(fp18_t c, fp18_t a, fp18_t b) {
 
 	dv18_null(t);
 
-	TRY {
+	RLC_TRY {
 		dv18_new(t);
 		fp18_mul_unr(t, a, b);
 		for (int i = 0; i < 2; i++) {
@@ -150,9 +150,9 @@ void fp18_mul_lazyr(fp18_t c, fp18_t a, fp18_t b) {
 				fp3_rdcn_low(c[i][j], t[i][j]);
 			}
 		}
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		dv18_free(t);
 	}
 }
@@ -166,7 +166,7 @@ void fp18_mul_dxs(fp18_t c, fp18_t a, fp18_t b) {
 	fp9_null(t1);
 	fp9_null(t2);
 
-	TRY {
+	RLC_TRY {
 		fp9_new(t0);
 		fp9_new(t1);
 		fp9_new(t2);
@@ -196,9 +196,9 @@ void fp18_mul_dxs(fp18_t c, fp18_t a, fp18_t b) {
 		/* c_0 = a_0b_0 + v * a_1b_1. */
 		fp9_mul_art(t1, t1);
 		fp9_add(c[0], t0, t1);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		fp9_free(t0);
 		fp9_free(t1);
 		fp9_free(t2);
@@ -210,16 +210,16 @@ void fp18_mul_art(fp18_t c, fp18_t a) {
 
 	fp9_null(t0);
 
-	TRY {
+	RLC_TRY {
 		fp9_new(t0);
 
 		/* (a_0 + a_1 * v) * v = a_0 * v + a_1 * v^9 */
 		fp9_copy(t0, a[0]);
 		fp9_mul_art(c[0], a[1]);
 		fp9_copy(c[1], t0);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		fp9_free(t0);
 	}
 }

@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -48,7 +48,7 @@ static void ed_mul_naf_imp(ed_t r, const ed_t p, const bn_t k) {
 		return;
 	}
 
-	TRY {
+	RLC_TRY {
 		/* Prepare the precomputation table. */
 		for (i = 0; i < (1 << (ED_WIDTH - 2)); i++) {
 			ed_null(t[i]);
@@ -93,10 +93,10 @@ static void ed_mul_naf_imp(ed_t r, const ed_t p, const bn_t k) {
 			ed_neg(r, r);
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		/* Free the precomputation table. */
 		for (i = 0; i < (1 << (ED_WIDTH - 2)); i++) {
 			ed_free(t[i]);
@@ -120,7 +120,7 @@ static void ed_mul_reg_imp(ed_t r, const ed_t p, const bn_t k) {
 		return;
 	}
 
-	TRY {
+	RLC_TRY {
 		bn_new(_k);
 		ed_new(u);
 		ed_new(v);
@@ -173,10 +173,10 @@ static void ed_mul_reg_imp(ed_t r, const ed_t p, const bn_t k) {
 		ed_neg(u, r);
 		dv_copy_cond(r->x, u->x, RLC_FP_DIGS, bn_sign(k) == RLC_NEG);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		/* Free the precomputation table. */
 		for (i = 0; i < (1 << (ED_WIDTH - 2)); i++) {
 			ed_free(t[i]);
@@ -203,7 +203,7 @@ void ed_mul_basic(ed_t r, const ed_t p, const bn_t k) {
 		return;
 	}
 
-	TRY {
+	RLC_TRY {
 		ed_new(t);
 
 		ed_copy(t, p);
@@ -219,10 +219,10 @@ void ed_mul_basic(ed_t r, const ed_t p, const bn_t k) {
 			ed_neg(r, r);
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		ed_free(t);
 	}
 }
@@ -243,7 +243,7 @@ void ed_mul_slide(ed_t r, const ed_t p, const bn_t k) {
 		return;
 	}
 
-	TRY {
+	RLC_TRY {
 		for (i = 0; i < (1 << (EP_WIDTH - 1)); i ++) {
 			ed_null(t[i]);
 			ed_new(t[i]);
@@ -286,10 +286,10 @@ void ed_mul_slide(ed_t r, const ed_t p, const bn_t k) {
 			ed_neg(r, r);
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		for (i = 0; i < (1 << (EP_WIDTH - 1)); i++) {
 			ed_free(t[i]);
 		}
@@ -312,7 +312,7 @@ void ed_mul_monty(ed_t r, const ed_t p, const bn_t k) {
 		return;
 	}
 
-	TRY {
+	RLC_TRY {
 		ed_new(t[0]);
 		ed_new(t[1]);
 
@@ -342,10 +342,10 @@ void ed_mul_monty(ed_t r, const ed_t p, const bn_t k) {
 		if (bn_sign(k) == RLC_NEG) {
 			ed_neg(r, r);
 		}
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		ed_free(t[1]);
 		ed_free(t[0]);
 	}
@@ -391,15 +391,15 @@ void ed_mul_gen(ed_t r, const bn_t k) {
 
 	ed_null(g);
 
-	TRY {
+	RLC_TRY {
 		ed_new(g);
 		ed_curve_get_gen(g);
 		ed_mul(r, g, k);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		ed_free(g);
 	}
 #endif
@@ -416,7 +416,7 @@ void ed_mul_dig(ed_t r, const ed_t p, dig_t k) {
 		return;
 	}
 
-	TRY {
+	RLC_TRY {
 		ed_new(t);
 
 		l = util_bits_dig(k);
@@ -432,10 +432,10 @@ void ed_mul_dig(ed_t r, const ed_t p, dig_t k) {
 
 		ed_norm(r, t);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		ed_free(t);
 	}
 }

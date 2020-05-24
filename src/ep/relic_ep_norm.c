@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -50,7 +50,7 @@ static void ep_norm_imp(ep_t r, const ep_t p, int inv) {
 
 		fp_null(t);
 
-		TRY {
+		RLC_TRY {
 			fp_new(t);
 
 			if (inv) {
@@ -76,10 +76,10 @@ static void ep_norm_imp(ep_t r, const ep_t p, int inv) {
 			}
 			fp_set_dig(r->z, 1);
 		}
-		CATCH_ANY {
-			THROW(ERR_CAUGHT);
+		RLC_CATCH_ANY {
+			RLC_THROW(ERR_CAUGHT);
 		}
-		FINALLY {
+		RLC_FINALLY {
 			fp_free(t);
 		}
 	}
@@ -113,9 +113,9 @@ void ep_norm_sim(ep_t *r, const ep_t *t, int n) {
 	int i;
 	fp_t* a = RLC_ALLOCA(fp_t, n);
 
-	TRY {
+	RLC_TRY {
 		if (a == NULL) {
-			THROW(ERR_NO_MEMORY);
+			RLC_THROW(ERR_NO_MEMORY);
 		}
 		for (i = 0; i < n; i++) {
 			fp_null(a[i]);
@@ -137,10 +137,10 @@ void ep_norm_sim(ep_t *r, const ep_t *t, int n) {
 			ep_norm_imp(r[i], r[i], 1);
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		for (i = 0; i < n; i++) {
 			fp_free(a[i]);
 		}

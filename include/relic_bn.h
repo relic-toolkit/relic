@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -142,7 +142,7 @@ typedef bn_st *bn_t;
 #define bn_new(A)															\
 	A = (bn_t)calloc(1, sizeof(bn_st));										\
 	if ((A) == NULL) {														\
-		THROW(ERR_NO_MEMORY);												\
+		RLC_THROW(ERR_NO_MEMORY);												\
 	}																		\
 	bn_init(A, RLC_BN_SIZE);												\
 
@@ -171,7 +171,7 @@ typedef bn_st *bn_t;
 #define bn_new_size(A, D)													\
 	A = (bn_t)calloc(1, sizeof(bn_st));										\
 	if (A == NULL) {														\
-		THROW(ERR_NO_MEMORY);												\
+		RLC_THROW(ERR_NO_MEMORY);												\
 	}																		\
 	bn_init(A, D);															\
 

@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -42,17 +42,17 @@ int cp_ecss_gen(bn_t d, ec_t q) {
 
 	bn_null(n);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 
 		ec_curve_get_ord(n);
 		bn_rand_mod(d, n);
 		ec_mul_gen(q, d);
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		result = RLC_ERR;
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(n);
 	}
 	return result;
@@ -71,14 +71,14 @@ int cp_ecss_sig(bn_t e, bn_t s, uint8_t *msg, int len, bn_t d) {
 	bn_null(r);
 	ec_null(p);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 		bn_new(k);
 		bn_new(x);
 		bn_new(r);
 		ec_new(p);
 		if (m == NULL) {
-			THROW(ERR_NO_MEMORY);
+			RLC_THROW(ERR_NO_MEMORY);
 		}
 
 		ec_curve_get_ord(n);
@@ -109,10 +109,10 @@ int cp_ecss_sig(bn_t e, bn_t s, uint8_t *msg, int len, bn_t d) {
 		bn_add(s, s, k);
 		bn_mod(s, s, n);
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		result = RLC_ERR;
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(n);
 		bn_free(k);
 		bn_free(x);
@@ -135,13 +135,13 @@ int cp_ecss_ver(bn_t e, bn_t s, uint8_t *msg, int len, ec_t q) {
 	bn_null(rv);
 	ec_null(p);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 		bn_new(ev);
 		bn_new(rv);
 		ec_new(p);
 		if (m == NULL) {
-			THROW(ERR_NO_MEMORY);
+			RLC_THROW(ERR_NO_MEMORY);
 		}
 
 		ec_curve_get_ord(n);
@@ -176,10 +176,10 @@ int cp_ecss_ver(bn_t e, bn_t s, uint8_t *msg, int len, ec_t q) {
 			}
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(n);
 		bn_free(ev);
 		bn_free(rv);

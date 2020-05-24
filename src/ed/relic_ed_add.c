@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -48,7 +48,7 @@ void ed_add_basic(ed_t r, const ed_t p, const ed_t q) {
 	fp_null(t1);
 	fp_null(t2);
 
-	TRY {
+	RLC_TRY {
 		fp_new(t0);
 		fp_new(t1);
 		fp_new(t2);
@@ -83,10 +83,10 @@ void ed_add_basic(ed_t r, const ed_t p, const ed_t q) {
 
 		r->coord = BASIC;
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fp_free(t0);
 		fp_free(t1);
 		fp_free(t2);
@@ -103,17 +103,17 @@ void ed_sub_basic(ed_t r, const ed_t p, const ed_t q) {
 		return;
 	}
 
-	TRY {
+	RLC_TRY {
 		ed_new(t);
 
 		ed_neg_basic(t, q);
 		ed_add_basic(r, p, t);
 		r->coord = BASIC;
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		ed_free(t);
 	}
 }
@@ -134,7 +134,7 @@ void ed_add_projc(ed_t r, const ed_t p, const ed_t q) {
 	fp_null(t6);
 	fp_null(t7);
 
-	TRY {
+	RLC_TRY {
 		fp_new(t0);
 		fp_new(t1);
 		fp_new(t2);
@@ -181,9 +181,9 @@ void ed_add_projc(ed_t r, const ed_t p, const ed_t q) {
 		fp_mul(r->z, t5, t6);
 
 		r->coord = PROJC;
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT)
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT)
+	} RLC_FINALLY {
 		fp_free(t0);
 		fp_free(t1);
 		fp_free(t2);
@@ -209,16 +209,16 @@ void ed_sub_projc(ed_t r, const ed_t p, const ed_t q) {
 		return;
 	}
 
-	TRY {
+	RLC_TRY {
 		ed_new(t);
 
 		ed_neg_projc(t, q);
 		ed_add_projc(r, p, t);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		ed_free(t);
 	}
 }
@@ -240,7 +240,7 @@ void ed_add_extnd(ed_t r, const ed_t p, const ed_t q) {
 	fp_null(t3);
 	fp_null(t4);
 
-	TRY {
+	RLC_TRY {
 		fp_new(t0);
 		fp_new(t1);
 		fp_new(t2);
@@ -282,9 +282,9 @@ void ed_add_extnd(ed_t r, const ed_t p, const ed_t q) {
 		fp_mul(r->z, t3, t4);
 
 		r->coord = PROJC;
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT)
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT)
+	} RLC_FINALLY {
 		fp_free(t0);
 		fp_free(t1);
 		fp_free(t2);
@@ -303,16 +303,16 @@ void ed_sub_extnd(ed_t r, const ed_t p, const ed_t q) {
 		return;
 	}
 
-	TRY {
+	RLC_TRY {
 		ed_new(t);
 
 		ed_neg_projc(t, q);
 		ed_add_extnd(r, p, t);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		ed_free(t);
 	}
 }

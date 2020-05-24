@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -43,7 +43,7 @@ int ep2_cmp(ep2_t p, ep2_t q) {
     ep2_null(r);
     ep2_null(s);
 
-    TRY {
+    RLC_TRY {
         ep2_new(r);
         ep2_new(s);
 
@@ -70,9 +70,9 @@ int ep2_cmp(ep2_t p, ep2_t q) {
         if (fp2_cmp(r->y, s->y) != RLC_EQ) {
             result = RLC_NE;
         }
-    } CATCH_ANY {
-        THROW(ERR_CAUGHT);
-    } FINALLY {
+    } RLC_CATCH_ANY {
+        RLC_THROW(ERR_CAUGHT);
+    } RLC_FINALLY {
         ep2_free(r);
         ep2_free(s);
     }

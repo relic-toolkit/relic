@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -50,16 +50,16 @@ int cp_sokaka_gen(bn_t master) {
 
 	bn_null(n);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 
 		pc_get_ord(n);
 		bn_rand_mod(master, n);
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		result = RLC_ERR;
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(n);
 	}
 	return result;
@@ -90,19 +90,19 @@ int cp_sokaka_key(uint8_t *key, unsigned int key_len, char *id1,
 	g2_null(q);
 	gt_null(e);
 
-	TRY {
+	RLC_TRY {
 		g1_new(p);
 		g2_new(q);
 		gt_new(e);
 		size = gt_size_bin(e, 0);
 		buf = RLC_ALLOCA(uint8_t, size);
 		if (buf == NULL) {
-			THROW(ERR_NO_MEMORY);
+			RLC_THROW(ERR_NO_MEMORY);
 		}
 
 		if (len1 == len2) {
 			if (strncmp(id1, id2, len1) == 0) {
-				THROW(ERR_NO_VALID);
+				RLC_THROW(ERR_NO_VALID);
 			}
 			first = (strncmp(id1, id2, len1) < 0 ? 1 : 2);
 		} else {
@@ -138,10 +138,10 @@ int cp_sokaka_key(uint8_t *key, unsigned int key_len, char *id1,
 		gt_write_bin(buf, size, e, 0);
 		md_kdf(key, key_len, buf, size);
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		result = RLC_ERR;
 	}
-	FINALLY {
+	RLC_FINALLY {
 		g1_free(p);
 		g2_free(q);
 		gt_free(e);

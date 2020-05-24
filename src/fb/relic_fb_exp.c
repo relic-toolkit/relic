@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -54,7 +54,7 @@ void fb_exp_basic(fb_t c, const fb_t a, const bn_t b) {
 
 	fb_null(r);
 
-	TRY {
+	RLC_TRY {
 		fb_new(r);
 
 		l = bn_bits(b);
@@ -74,10 +74,10 @@ void fb_exp_basic(fb_t c, const fb_t a, const bn_t b) {
 			fb_copy(c, r);
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fb_free(r);
 	}
 }
@@ -104,7 +104,7 @@ void fb_exp_slide(fb_t c, const fb_t a, const bn_t b) {
 		fb_null(t[i]);
 	}
 
-	TRY {
+	RLC_TRY {
 		for (i = 0; i < (1 << (FB_WIDTH - 1)); i ++) {
 			fb_new(t[i]);
 		}
@@ -138,10 +138,10 @@ void fb_exp_slide(fb_t c, const fb_t a, const bn_t b) {
 			fb_copy(c, r);
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		for (i = 0; i < (1 << (FB_WIDTH - 1)); i++) {
 			fb_free(t[i]);
 		}
@@ -164,7 +164,7 @@ void fb_exp_monty(fb_t c, const fb_t a, const bn_t b) {
 	fb_null(t[0]);
 	fb_null(t[1]);
 
-	TRY {
+	RLC_TRY {
 		fb_new(t[0]);
 		fb_new(t[1]);
 
@@ -184,10 +184,10 @@ void fb_exp_monty(fb_t c, const fb_t a, const bn_t b) {
 		} else {
 			fb_copy(c, t[0]);
 		}
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fb_free(t[1]);
 		fb_free(t[0]);
 	}

@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -41,16 +41,16 @@ static int memory(void) {
 
 	ep_null(a);
 
-	TRY {
+	RLC_TRY {
 		TEST_BEGIN("memory can be allocated") {
 			ep_new(a);
 			ep_free(a);
 		} TEST_END;
-	} CATCH(e) {
+	} RLC_CATCH(e) {
 		switch (e) {
 			case ERR_NO_MEMORY:
 				util_print("FATAL ERROR!\n");
-				ERROR(end);
+				RLC_ERROR(end);
 				break;
 		}
 	}
@@ -69,7 +69,7 @@ static int util(void) {
 	ep_null(b);
 	ep_null(c);
 
-	TRY {
+	RLC_TRY {
 		ep_new(a);
 		ep_new(b);
 		ep_new(c);
@@ -157,9 +157,9 @@ static int util(void) {
 		}
 		TEST_END;
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -179,7 +179,7 @@ static int addition(void) {
 	ep_null(d);
 	ep_null(e);
 
-	TRY {
+	RLC_TRY {
 		ep_new(a);
 		ep_new(b);
 		ep_new(c);
@@ -312,8 +312,8 @@ static int addition(void) {
 		} TEST_END;
 #endif
 	}
-	CATCH_ANY {
-		ERROR(end);
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -334,7 +334,7 @@ static int subtraction(void) {
 	ep_null(c);
 	ep_null(d);
 
-	TRY {
+	RLC_TRY {
 		ep_new(a);
 		ep_new(b);
 		ep_new(c);
@@ -365,8 +365,8 @@ static int subtraction(void) {
 		}
 		TEST_END;
 	}
-	CATCH_ANY {
-		ERROR(end);
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -385,7 +385,7 @@ static int doubling(void) {
 	ep_null(b);
 	ep_null(c);
 
-	TRY {
+	RLC_TRY {
 		ep_new(a);
 		ep_new(b);
 		ep_new(c);
@@ -446,8 +446,8 @@ static int doubling(void) {
 		} TEST_END;
 #endif
 	}
-	CATCH_ANY {
-		ERROR(end);
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -468,7 +468,7 @@ static int multiplication(void) {
 	ep_null(q);
 	ep_null(r);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 		bn_new(k);
 		ep_new(p);
@@ -627,9 +627,9 @@ static int multiplication(void) {
 		}
 		TEST_END;
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -656,7 +656,7 @@ static int fixed(void) {
 		ep_null(t[i]);
 	}
 
-	TRY {
+	RLC_TRY {
 		ep_new(p);
 		ep_new(q);
 		ep_new(r);
@@ -800,9 +800,9 @@ static int fixed(void) {
 		}
 #endif
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -826,7 +826,7 @@ static int simultaneous(void) {
 	ep_null(q);
 	ep_null(r);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 		bn_new(k);
 		bn_new(l);
@@ -1044,9 +1044,9 @@ static int simultaneous(void) {
 			TEST_ASSERT(ep_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -1067,7 +1067,7 @@ static int compression(void) {
 	ep_null(b);
 	ep_null(c);
 
-	TRY {
+	RLC_TRY {
 		ep_new(a);
 		ep_new(b);
 		ep_new(c);
@@ -1080,8 +1080,8 @@ static int compression(void) {
 		}
 		TEST_END;
 	}
-	CATCH_ANY {
-		ERROR(end);
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -1100,7 +1100,7 @@ static int hashing(void) {
 	ep_null(a);
 	bn_null(n);
 
-	TRY {
+	RLC_TRY {
 		ep_new(a);
 		bn_new(n);
 
@@ -1115,8 +1115,8 @@ static int hashing(void) {
 		}
 		TEST_END;
 	}
-	CATCH_ANY {
-		ERROR(end);
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -1226,7 +1226,7 @@ int main(void) {
 
 	if (r0 == RLC_ERR && r1 == RLC_ERR && r2 == RLC_ERR && r3 == RLC_ERR) {
 		if (ep_param_set_any() == RLC_ERR) {
-			THROW(ERR_NO_CURVE);
+			RLC_THROW(ERR_NO_CURVE);
 			core_clean();
 			return 0;
 		} else {

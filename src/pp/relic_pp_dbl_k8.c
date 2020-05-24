@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -49,7 +49,7 @@ void pp_dbl_k8_basic(fp8_t l, ep2_t r, ep2_t q, ep_t p) {
 	fp2_null(s);
 	ep2_null(t);
 
-	TRY {
+	RLC_TRY {
 		fp2_new(s);
 		ep2_new(t);
 		ep2_copy(t, q);
@@ -66,10 +66,10 @@ void pp_dbl_k8_basic(fp8_t l, ep2_t r, ep2_t q, ep_t p) {
 		fp2_sub(l[one][one], t->y, l[one][one]);
 		fp_copy(l[zero][zero][0], p->y);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fp2_free(s);
 		ep2_free(t);
 	}
@@ -91,7 +91,7 @@ void pp_dbl_k8_projc_new(fp8_t l, ep2_t r, ep2_t q, ep_t p) {
 	fp2_null(t3);
 	fp2_null(t4);
 
-	TRY {
+	RLC_TRY {
 		fp2_new(t0);
 		fp2_new(t1);
 		fp2_new(t2);
@@ -138,10 +138,10 @@ void pp_dbl_k8_projc_new(fp8_t l, ep2_t r, ep2_t q, ep_t p) {
 		fp2_sqr(t1, t1);
 		fp2_sub(r->y, r->y, t1);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fp2_free(t0);
 		fp2_free(t1);
 		fp2_free(t2);
@@ -162,7 +162,7 @@ void pp_dbl_k8_projc_basic(fp8_t l, ep2_t r, ep2_t q, ep_t p) {
 	fp2_null(t5);
 	fp2_null(t6);
 
-	TRY {
+	RLC_TRY {
 		fp2_new(t0);
 		fp2_new(t1);
 		fp2_new(t2);
@@ -240,10 +240,10 @@ void pp_dbl_k8_projc_basic(fp8_t l, ep2_t r, ep2_t q, ep_t p) {
 		fp2_dbl(r->z, t1);
 		fp2_dbl(r->z, r->z);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fp2_free(t0);
 		fp2_free(t1);
 		fp2_free(t2);
@@ -273,7 +273,7 @@ void pp_dbl_k8_projc_lazyr(fp8_t l, ep2_t r, ep2_t q, ep_t p) {
 	dv2_null(u0);
 	dv2_null(u1);
 
-	TRY {
+	RLC_TRY {
 		fp2_new(t0);
 		fp2_new(t1);
 		fp2_new(t2);
@@ -356,10 +356,10 @@ void pp_dbl_k8_projc_lazyr(fp8_t l, ep2_t r, ep2_t q, ep_t p) {
 		fp2_dbl(r->z, t1);
 		fp2_dbl(r->z, r->z);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fp2_free(t0);
 		fp2_free(t1);
 		fp2_free(t2);
@@ -384,7 +384,7 @@ void pp_dbl_k8_projc_lazyr_new(fp8_t l, ep2_t r, ep2_t q, ep_t p) {
 	dv2_null(u2);
 	dv2_null(u3);
 
-	TRY {
+	RLC_TRY {
 		fp2_new(t0);
 		fp2_new(t1);
 		fp2_new(t2);
@@ -438,10 +438,10 @@ void pp_dbl_k8_projc_lazyr_new(fp8_t l, ep2_t r, ep2_t q, ep_t p) {
 
 		//t2 - x3 = t3*(3*t2 - t3^2)
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fp2_free(t0);
 		fp2_free(t1);
 		fp2_free(t2);

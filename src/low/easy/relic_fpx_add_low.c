@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -93,7 +93,7 @@ void fp2_norm_low(fp2_t c, fp2_t a) {
 
 	fp2_null(t);
 
-	TRY {
+	RLC_TRY {
 		fp2_new(t);
 
 #ifdef FP_QNRES
@@ -128,10 +128,10 @@ void fp2_norm_low(fp2_t c, fp2_t a) {
 		}
 #endif
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fp2_free(t);
 	}
 }
@@ -141,7 +141,7 @@ void fp2_nord_low(dv2_t c, dv2_t a) {
 
 	dv2_null(t);
 
-	TRY {
+	RLC_TRY {
 		dv2_new(t);
 
 #ifdef FP_QNRES
@@ -186,10 +186,10 @@ void fp2_nord_low(dv2_t c, dv2_t a) {
 		}
 #endif
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		dv2_free(t);
 	}
 }
@@ -200,7 +200,7 @@ void fp2_norh_low(dv2_t c, dv2_t a) {
 
 	dv2_null(t);
 
-	TRY {
+	RLC_TRY {
 		dv2_new(t);
 
 		/* If p = 3 mod 8, (1 + i) is a QNR/CNR. */
@@ -214,10 +214,10 @@ void fp2_norh_low(dv2_t c, dv2_t a) {
 		bn_rshb_low(t[0] + RLC_FP_DIGS - 1, t[0] + RLC_FP_DIGS - 1, RLC_FP_DIGS + 1, 1);
 		fp_subd_low(c[0], t[0], t[1]);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		dv2_free(t);
 	}
 #else
@@ -290,7 +290,7 @@ void fp3_nord_low(dv3_t c, dv3_t a) {
 
 	dv_null(t);
 
-	TRY {
+	RLC_TRY {
 		dv_new(t);
 		dv_copy(t, a[0], 2 * RLC_FP_DIGS);
 		dv_copy(c[0], a[2], 2 * RLC_FP_DIGS);
@@ -302,9 +302,9 @@ void fp3_nord_low(dv3_t c, dv3_t a) {
 		}
 		dv_copy(c[2], a[1], 2 * RLC_FP_DIGS);
 		dv_copy(c[1], t, 2 * RLC_FP_DIGS);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		dv_free(t);
 	}
 }

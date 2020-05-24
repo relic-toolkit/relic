@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -112,9 +112,9 @@ void eb_norm_sim(eb_t *r, const eb_t *t, int n) {
 		return;
 	}
 
-	TRY {
+	RLC_TRY {
 		if (a == NULL) {
-			THROW(ERR_NO_MEMORY);
+			RLC_THROW(ERR_NO_MEMORY);
 		}
 		for (int i = 0; i < n; i++) {
 			fb_null(a[i]);
@@ -140,10 +140,10 @@ void eb_norm_sim(eb_t *r, const eb_t *t, int n) {
 			eb_norm_imp(r[i], r[i], 1);
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		for (int i = 0; i < n; i++) {
 			fb_free(a[i]);
 		}

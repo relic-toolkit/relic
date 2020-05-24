@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -242,7 +242,7 @@ int bn_size_str(const bn_t a, int radix) {
 
 	/* Check the radix. */
 	if (radix < 2 || radix > 64) {
-		THROW(ERR_NO_VALID);
+		RLC_THROW(ERR_NO_VALID);
 	}
 
 	if (bn_is_zero(a)) {
@@ -253,7 +253,7 @@ int bn_size_str(const bn_t a, int radix) {
 		digits++;
 	}
 
-	TRY {
+	RLC_TRY {
 		bn_new(t);
 		bn_copy(t, a);
 
@@ -263,9 +263,9 @@ int bn_size_str(const bn_t a, int radix) {
 			bn_div_dig(t, t, (dig_t)radix);
 			digits++;
 		}
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		bn_free(t);
 	}
 
@@ -279,7 +279,7 @@ void bn_read_str(bn_t a, const char *str, int len, int radix) {
 	bn_zero(a);
 
 	if (radix < 2 || radix > 64) {
-		THROW(ERR_NO_VALID)
+		RLC_THROW(ERR_NO_VALID)
 	}
 
 	j = 0;
@@ -323,11 +323,11 @@ void bn_write_str(char *str, int len, const bn_t a, int radix) {
 
 	l = bn_size_str(a, radix);
 	if (len < l) {
-		THROW(ERR_NO_BUFFER);
+		RLC_THROW(ERR_NO_BUFFER);
 	}
 
 	if (radix < 2 || radix > 64) {
-		THROW(ERR_NO_VALID)
+		RLC_THROW(ERR_NO_VALID)
 	}
 
 	if (bn_is_zero(a) == 1) {
@@ -336,7 +336,7 @@ void bn_write_str(char *str, int len, const bn_t a, int radix) {
 		return;
 	}
 
-	TRY {
+	RLC_TRY {
 		bn_new(t);
 		bn_copy(t, a);
 
@@ -372,10 +372,10 @@ void bn_write_str(char *str, int len, const bn_t a, int radix) {
 
 		str[l - 1] = '\0';
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(t);
 	}
 }
@@ -431,7 +431,7 @@ void bn_write_bin(uint8_t *bin, int len, const bn_t a) {
 	size = bn_size_bin(a);
 
 	if (len < size) {
-		THROW(ERR_NO_BUFFER);
+		RLC_THROW(ERR_NO_BUFFER);
 	}
 
 	k = 0;
@@ -459,14 +459,14 @@ int bn_size_raw(const bn_t a) {
 }
 
 void bn_read_raw(bn_t a, const dig_t *raw, int len) {
-	TRY {
+	RLC_TRY {
 		bn_grow(a, len);
 		a->used = len;
 		a->sign = RLC_POS;
 		dv_copy(a->dp, raw, len);
 		bn_trim(a);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
 }
 
@@ -476,7 +476,7 @@ void bn_write_raw(dig_t *raw, int len, const bn_t a) {
 	size = a->used;
 
 	if (len < size) {
-		THROW(ERR_NO_BUFFER);
+		RLC_THROW(ERR_NO_BUFFER);
 	}
 
 	for (i = 0; i < size; i++) {

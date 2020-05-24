@@ -46,7 +46,7 @@ void fp8_mul_basic(fp8_t c, fp8_t a, fp8_t b) {
 	fp4_null(t1);
 	fp4_null(t4);
 
-	TRY {
+	RLC_TRY {
 		fp4_new(t0);
 		fp4_new(t1);
 		fp4_new(t4);
@@ -71,9 +71,9 @@ void fp8_mul_basic(fp8_t c, fp8_t a, fp8_t b) {
 		/* c_0 = a_0b_0 + v * a_1b_1. */
 		fp4_mul_art(t4, t1);
 		fp4_add(c[0], t0, t4);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		fp4_free(t0);
 		fp4_free(t1);
 		fp4_free(t4);
@@ -93,7 +93,7 @@ static void fp4_mul_dxs_unr(dv4_t c, fp4_t a, fp4_t b) {
 	dv2_null(u0);
 	dv2_null(u1);
 
-	TRY {
+	RLC_TRY {
 		fp2_new(t0);
 		fp2_new(t1);
 		dv2_new(u0);
@@ -111,9 +111,9 @@ static void fp4_mul_dxs_unr(dv4_t c, fp4_t a, fp4_t b) {
 		fp2_muln_low(c[1], t1, t0);
 		fp2_subc_low(c[1], c[1], u1);
 		fp2_norh_low(c[0], u1);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		fp2_free(t0);
 		dv2_free(t1);
 		dv2_free(u0);
@@ -132,7 +132,7 @@ void fp8_mul_dxs(fp8_t c, fp8_t a, fp8_t b) {
 	dv4_null(u2);
 	dv4_null(u3);
 
-	TRY {
+	RLC_TRY {
 		fp4_new(t0);
 		fp4_new(t1);
 		dv4_new(u0);
@@ -167,9 +167,9 @@ void fp8_mul_dxs(fp8_t c, fp8_t a, fp8_t b) {
 			fp2_addc_low(u2[i], u0[i], u2[i]);
 			fp2_rdcn_low(c[0][i], u2[i]);
 		}
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		fp4_free(t0);
 		dv4_free(t1);
 		dv4_free(u0);
@@ -190,7 +190,7 @@ void fp8_mul_unr(dv8_t c, fp8_t a, fp8_t b) {
 	dv4_null(u2);
 	dv4_null(u3);
 
-	TRY {
+	RLC_TRY {
 		fp4_new(t0);
 		fp4_new(t1);
 		dv4_new(u0);
@@ -222,9 +222,9 @@ void fp8_mul_unr(dv8_t c, fp8_t a, fp8_t b) {
 		for (int i = 0; i < 2; i++) {
 			fp2_addc_low(c[0][i], u0[i], u2[i]);
 		}
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		fp4_free(t0);
 		fp4_free(t1);
 		dv4_free(u0);
@@ -239,16 +239,16 @@ void fp8_mul_lazyr(fp8_t c, fp8_t a, fp8_t b) {
 
 	dv8_null(t);
 
-	TRY {
+	RLC_TRY {
 		dv8_new(t);
 		fp8_mul_unr(t, a, b);
 		fp2_rdcn_low(c[0][0], t[0][0]);
 		fp2_rdcn_low(c[0][1], t[0][1]);
 		fp2_rdcn_low(c[1][0], t[1][0]);
 		fp2_rdcn_low(c[1][1], t[1][1]);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		dv8_free(t);
 	}
 }
@@ -260,16 +260,16 @@ void fp8_mul_art(fp8_t c, fp8_t a) {
 
 	fp4_null(t0);
 
-	TRY {
+	RLC_TRY {
 		fp4_new(t0);
 
 		/* (a_0 + a_1 * v) * v = a_0 * v + a_1 * v^4 */
 		fp4_copy(t0, a[0]);
 		fp4_mul_art(c[0], a[1]);
 		fp4_copy(c[1], t0);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		fp4_free(t0);
 	}
 }

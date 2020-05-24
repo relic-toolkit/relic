@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -41,16 +41,16 @@ static int memory(void) {
 
 	dv_null(a);
 
-	TRY {
+	RLC_TRY {
 		TEST_BEGIN("temporary memory can be allocated") {
 			dv_new(a);
 			dv_free(a);
 		} TEST_END;
-	} CATCH(e) {
+	} RLC_CATCH(e) {
 		switch (e) {
 			case ERR_NO_MEMORY:
 				util_print("FATAL ERROR!\n");
-				ERROR(end);
+				RLC_ERROR(end);
 				break;
 		}
 	}
@@ -66,7 +66,7 @@ static int copy(void) {
 	dv_null(a);
 	dv_null(b);
 
-	TRY {
+	RLC_TRY {
 		dv_new(a);
 		dv_new(b);
 
@@ -94,8 +94,8 @@ static int copy(void) {
 			TEST_ASSERT(dv_cmp_const(a, b, RLC_DV_DIGS) == RLC_EQ, end);
 		}
 		TEST_END;
-	} CATCH_ANY {
-		ERROR(end);
+	} RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -113,7 +113,7 @@ static int swap(void) {
 	dv_null(c);
 	dv_null(d);
 
-	TRY {
+	RLC_TRY {
 		dv_new(a);
 		dv_new(b);
 		dv_new(c);
@@ -145,8 +145,8 @@ static int swap(void) {
 			TEST_ASSERT(dv_cmp_const(d, b, RLC_DV_DIGS) == RLC_NE, end);
 		}
 		TEST_END;
-	} CATCH_ANY {
-		ERROR(end);
+	} RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:

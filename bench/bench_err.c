@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -39,13 +39,13 @@ static void dummy2(void) {
 }
 
 static void dummy(void) {
-	TRY {
+	RLC_TRY {
 		/* Empty block just to test overhead of error triggering mechanism. */
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		/* Exceptions are thrown here. */
 	}
-	FINALLY {
+	RLC_FINALLY {
 		/* This is executed after exception handling. */
 	}
 }

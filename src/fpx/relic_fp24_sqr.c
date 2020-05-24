@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -48,7 +48,7 @@ void fp24_sqr_basic(fp24_t c, fp24_t a) {
 	fp8_null(t3);
 	fp8_null(t4);
 
-	TRY {
+	RLC_TRY {
 		fp8_new(t0);
 		fp8_new(t1);
 		fp8_new(t2);
@@ -100,9 +100,9 @@ void fp24_sqr_basic(fp24_t c, fp24_t a) {
 		/* c_1 = t3 + t2 * E. */
 		fp8_mul_art(t4, t2);
 		fp8_add(c[1], t3, t4);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		fp8_free(t0);
 		fp8_free(t1);
 		fp8_free(t2);
@@ -128,7 +128,7 @@ void fp24_sqr_unr(dv24_t c, fp24_t a) {
 	fp8_null(t0);
 	fp8_null(t1);
 
-	TRY {
+	RLC_TRY {
 		dv8_new(u0);
 		dv8_new(u1);
 		dv8_new(u2);
@@ -205,9 +205,9 @@ void fp24_sqr_unr(dv24_t c, fp24_t a) {
 			fp2_addc_low(c[1][1][j], u2[0][j], u3[1][j]);
 		}
 
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		dv8_free(u0);
 		dv8_free(u1);
 		dv8_free(u2);
@@ -223,7 +223,7 @@ void fp24_sqr_lazyr(fp24_t c, fp24_t a) {
 
 	dv24_null(t);
 
-	TRY {
+	RLC_TRY {
 		dv24_new(t);
 		fp24_sqr_unr(t, a);
 		for (int i = 0; i < 3; i++) {
@@ -232,9 +232,9 @@ void fp24_sqr_lazyr(fp24_t c, fp24_t a) {
 				fp2_rdcn_low(c[i][j][1], t[i][j][1]);
 			}
 		}
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		dv24_free(t);
 	}
 }

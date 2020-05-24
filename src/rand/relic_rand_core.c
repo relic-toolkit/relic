@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -87,7 +87,7 @@ void rand_init(void) {
 
 	*fd = open(RAND_PATH, O_RDONLY);
 	if (*fd == -1) {
-		THROW(ERR_NO_FILE);
+		RLC_THROW(ERR_NO_FILE);
 	}
 #else
 
@@ -100,7 +100,7 @@ void rand_init(void) {
 
 	fd = open(RAND_PATH, O_RDONLY);
 	if (fd == -1) {
-		THROW(ERR_NO_FILE);
+		RLC_THROW(ERR_NO_FILE);
 	}
 
 	l = 0;
@@ -108,7 +108,7 @@ void rand_init(void) {
 		c = read(fd, buf + l, SEED_SIZE - l);
 		l += c;
 		if (c == -1) {
-			THROW(ERR_NO_READ);
+			RLC_THROW(ERR_NO_READ);
 		}
 	} while (l < SEED_SIZE);
 
@@ -137,13 +137,13 @@ void rand_init(void) {
 
 	if (!CryptAcquireContext(&hCryptProv, NULL, NULL, PROV_RSA_FULL,
 					CRYPT_VERIFYCONTEXT | CRYPT_SILENT)) {
-		THROW(ERR_NO_FILE);
+		RLC_THROW(ERR_NO_FILE);
 	}
 	if (hCryptProv && !CryptGenRandom(hCryptProv, SEED_SIZE, buf)) {
-		THROW(ERR_NO_READ);
+		RLC_THROW(ERR_NO_READ);
 	}
 	if (hCryptProv && !CryptReleaseContext(hCryptProv, 0)) {
-		THROW(ERR_NO_READ);
+		RLC_THROW(ERR_NO_READ);
 	}
 
 #elif SEED == RDRND

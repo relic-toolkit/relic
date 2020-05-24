@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -122,7 +122,7 @@ void ep2_mul_pre_basic(ep2_t *t, ep2_t p) {
 
 	bn_null(n);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 
 		ep2_curve_get_ord(n);
@@ -132,10 +132,10 @@ void ep2_mul_pre_basic(ep2_t *t, ep2_t p) {
 			ep2_dbl(t[i], t[i - 1]);
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(n);
 	}
 }
@@ -169,7 +169,7 @@ void ep2_mul_pre_combs(ep2_t *t, ep2_t p) {
 
 	bn_null(n);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 
 		ep2_curve_get_ord(n);
@@ -197,10 +197,10 @@ void ep2_mul_pre_combs(ep2_t *t, ep2_t p) {
 		}
 #endif
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(n);
 	}
 }
@@ -216,7 +216,7 @@ void ep2_mul_fix_combs(ep2_t r, ep2_t *t, bn_t k) {
 
 	bn_null(n);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 
 		ep2_curve_get_ord(n);
@@ -257,10 +257,10 @@ void ep2_mul_fix_combs(ep2_t r, ep2_t *t, bn_t k) {
 			ep2_neg(r, r);
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(n);
 	}
 }
@@ -275,7 +275,7 @@ void ep2_mul_pre_combd(ep2_t *t, ep2_t p) {
 
 	bn_null(n);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 
 		ep2_curve_get_ord(n);
@@ -310,10 +310,10 @@ void ep2_mul_pre_combd(ep2_t *t, ep2_t p) {
 		}
 #endif
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(n);
 	}
 }
@@ -329,7 +329,7 @@ void ep2_mul_fix_combd(ep2_t r, ep2_t *t, bn_t k) {
 
 	bn_null(n);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 
 		ep2_curve_get_ord(n);
@@ -370,10 +370,10 @@ void ep2_mul_fix_combd(ep2_t r, ep2_t *t, bn_t k) {
 			ep2_neg(r, r);
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(n);
 	}
 }

@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -43,7 +43,7 @@ int cp_ibe_gen(bn_t master, g1_t pub) {
 
 	bn_null(n);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 
 		pc_get_ord(n);
@@ -52,10 +52,10 @@ int cp_ibe_gen(bn_t master, g1_t pub) {
 		/* K_pub = sG. */
 		g1_mul_gen(pub, master);
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		result = RLC_ERR;
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(n);
 	}
 	return result;
@@ -92,7 +92,7 @@ int cp_ibe_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len,
 		return RLC_ERR;
 	}
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 		bn_new(r);
 		g1_new(p);
@@ -103,7 +103,7 @@ int cp_ibe_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len,
 		l = gt_size_bin(e, 0);
 		buf = RLC_ALLOCA(uint8_t, l);
 		if (buf == NULL) {
-			THROW(ERR_NO_MEMORY);
+			RLC_THROW(ERR_NO_MEMORY);
 		}
 
 		pc_get_ord(n);
@@ -129,9 +129,9 @@ int cp_ibe_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len,
 		}
 
 		*out_len = in_len + (2 * RLC_FP_BYTES + 1);
-	} CATCH_ANY {
+	} RLC_CATCH_ANY {
 		result = RLC_ERR;
-	} FINALLY {
+	} RLC_FINALLY {
 		bn_free(n);
 		bn_free(r);
 		g1_free(p);
@@ -160,7 +160,7 @@ int cp_ibe_dec(uint8_t *out, int *out_len, uint8_t *in, int in_len, g2_t prv) {
 		return RLC_ERR;
 	}
 
-	TRY {
+	RLC_TRY {
 		g1_new(p);
 		gt_new(e);
 
@@ -172,7 +172,7 @@ int cp_ibe_dec(uint8_t *out, int *out_len, uint8_t *in, int in_len, g2_t prv) {
 		l = gt_size_bin(e, 0);
 		buf = RLC_ALLOCA(uint8_t, l);
 		if (buf == NULL) {
-			THROW(ERR_NO_MEMORY);
+			RLC_THROW(ERR_NO_MEMORY);
 		}
 		gt_write_bin(buf, l, e, 0);
 		md_map(h, buf, l);
@@ -183,9 +183,9 @@ int cp_ibe_dec(uint8_t *out, int *out_len, uint8_t *in, int in_len, g2_t prv) {
 		}
 
 		*out_len = in_len;
-	} CATCH_ANY {
+	} RLC_CATCH_ANY {
 		result = RLC_ERR;
-	} FINALLY {
+	} RLC_FINALLY {
 		g1_free(p);
 		gt_free(e);
 		RLC_FREE(buf);

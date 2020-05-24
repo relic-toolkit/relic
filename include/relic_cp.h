@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -210,7 +210,7 @@ typedef bgn_st *bgn_t;
 #define crt_new(A)														\
 	A = (crt_t)calloc(1, sizeof(crt_st));								\
 	if (A == NULL) {														\
-		THROW(ERR_NO_MEMORY);												\
+		RLC_THROW(ERR_NO_MEMORY);												\
 	}																		\
 	bn_new((A)->n);															\
 	bn_new((A)->dp);														\
@@ -291,7 +291,7 @@ typedef bgn_st *bgn_t;
 #define rsa_new(A)															\
 	A = (rsa_t)calloc(1, sizeof(_rsa_st));									\
 	if (A == NULL) {														\
-		THROW(ERR_NO_MEMORY);												\
+		RLC_THROW(ERR_NO_MEMORY);												\
 	}																		\
 	bn_null((A)->d);														\
 	bn_null((A)->e);														\
@@ -410,7 +410,7 @@ typedef bgn_st *bgn_t;
 #define bdpe_new(A)															\
 	A = (bdpe_t)calloc(1, sizeof(bdpe_st));									\
 	if (A == NULL) {														\
-		THROW(ERR_NO_MEMORY);												\
+		RLC_THROW(ERR_NO_MEMORY);												\
 	}																		\
 	bn_new((A)->n);															\
 	bn_new((A)->y);															\
@@ -487,7 +487,7 @@ typedef bgn_st *bgn_t;
 #define sokaka_new(A)														\
 	A = (sokaka_t)calloc(1, sizeof(sokaka_st));								\
 	if (A == NULL) {														\
-		THROW(ERR_NO_MEMORY);												\
+		RLC_THROW(ERR_NO_MEMORY);												\
 	}																		\
 	g1_new((A)->s1);														\
 	g2_new((A)->s2);														\
@@ -548,7 +548,7 @@ typedef bgn_st *bgn_t;
 #define bgn_new(A)															\
 	A = (bgn_t)calloc(1, sizeof(bgn_st));									\
 	if (A == NULL) {														\
-		THROW(ERR_NO_MEMORY);												\
+		RLC_THROW(ERR_NO_MEMORY);												\
 	}																		\
 	bn_new((A)->x);															\
 	bn_new((A)->y);															\

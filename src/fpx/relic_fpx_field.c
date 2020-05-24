@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -56,7 +56,7 @@ void fp2_field_init(void) {
 	fp2_null(t0);
 	fp2_null(t1);
 
-	TRY {
+	RLC_TRY {
 		bn_new(e);
 		fp2_new(t0);
 		fp2_new(t1);
@@ -134,9 +134,9 @@ void fp2_field_init(void) {
 		fp2_exp(t0, t0, e);
 		fp_copy(ctx->fp2_p2[2][0], t0[0]);
 		fp_copy(ctx->fp2_p2[2][1], t0[1]);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		bn_free(e);
 		fp2_free(t0);
 		fp2_free(t1);
@@ -153,7 +153,7 @@ void fp3_field_init(void) {
 	fp3_null(t1);
 	fp3_null(t2);
 
-	TRY {
+	RLC_TRY {
 		bn_new(e);
 		fp3_new(t0);
 		fp3_new(t1);
@@ -212,9 +212,9 @@ void fp3_field_init(void) {
 		ctx->frb3[2] = 0;
 		while (fp_is_zero(t0[ctx->frb3[2]++]));
 		fp_copy(ctx->fp3_p2[1], t0[--ctx->frb3[2]]);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		bn_free(e);
 		fp3_free(t0);
 		fp3_free(t1);
