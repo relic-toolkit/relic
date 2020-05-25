@@ -33,8 +33,8 @@
  * @ingroup rand
  */
 
-#ifndef RLC_RAND_H
-#define RLC_RAND_H
+#ifndef RLC_RLC_RAND_H
+#define RLC_RLC_RAND_H
 
 #include "relic_rand.h"
 
@@ -48,23 +48,23 @@
 #if RAND == HASHD
 
 #if MD_MAP == SH224 || MD_MAP == SH256 || MD_MAP == BLAKE2S_160 || MD_MAP == BLAKE2S_256
-#define RAND_SIZE		(1 + 2*440/8)
+#define RLC_RAND_SIZE		(1 + 2*440/8)
 #elif MD_MAP == SH384 || MD_MAP == SH512
-#define RAND_SIZE		(1 + 2*888/8)
+#define RLC_RAND_SIZE		(1 + 2*888/8)
 #endif
 
 #elif RAND == UDEV
-#define RAND_SIZE		(sizeof(int))
+#define RLC_RAND_SIZE		(sizeof(int))
 #elif RAND == CALL
-#define RAND_SIZE		(sizeof(void (*)(uint8_t *, int)))
+#define RLC_RAND_SIZE		(sizeof(void (*)(uint8_t *, int)))
 #elif RAND == RDRND
-#define RAND_SIZE      0
+#define RLC_RAND_SIZE      0
 #endif
 
 /**
  * Minimum size of the PRNG seed.
  */
-#define SEED_SIZE	    64
+#define RLC_RAND_SEED	    64
 
 /*============================================================================*/
 /* Function prototypes                                                        */
@@ -115,4 +115,4 @@ void rand_seed(void (*callback)(uint8_t *, int, void *), void *arg);
  */
 void rand_bytes(uint8_t *buf, int size);
 
-#endif /* !RLC_RAND_H */
+#endif /* !RLC_RLC_RAND_H */
