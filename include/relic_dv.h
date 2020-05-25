@@ -82,36 +82,6 @@
 #define RLC_DV_BYTES	(RLC_DV_DIGS * (RLC_DIG / 8))
 
 /*============================================================================*/
-/* Macro definitions                                                          */
-/*============================================================================*/
-
-/**
- * Size of padding to be added so that digit vectors are aligned.
- */
-#if ALIGN > 1
-#define RLC_PAD(A)		((A) % ALIGN == 0 ? 0 : ALIGN - ((A) % ALIGN))
-#else
-#define RLC_PAD(A)		(0)
-#endif
-
-/**
- * Align digit vector pointer to specified byte-boundary.
- *
- * @param[in,out] A		- the pointer to align.
- */
-#if ALIGN > 1
-#if ARCH == AVR || ARCH == MSP || ARCH == X86 || ARCH == ARM
-#define ALIGNED(A)		((unsigned int)(A) + RLC_PAD((unsigned int)(A)));
-
-#elif ARCH  == X64
-#define ALIGNED(A)		((unsigned long)(A) + RLC_PAD((unsigned long)(A)));
-
-#endif
-#else
-#define ALIGNED(A)		(A)
-#endif
-
-/*============================================================================*/
 /* Type definitions                                                           */
 /*============================================================================*/
 
