@@ -152,12 +152,12 @@ enum {
 /**
  * Denotes a divisive twist.
  */
-#define EP_DTYPE		1
+#define RLC_EP_DTYPE		1
 
 /**
  * Denotes a multiplicative twist.
  */
-#define EP_MTYPE		2
+#define RLC_EP_MTYPE		2
 
 /**
  * Size of a precomputation table using the binary method.

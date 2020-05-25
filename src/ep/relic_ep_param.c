@@ -1168,70 +1168,70 @@ int ep_param_set_any_pairf(void) {
 #if defined(EP_ENDOM)
 #if FP_PRIME == 158
 	ep_param_set(BN_P158);
-	type = EP_DTYPE;
+	type = RLC_EP_DTYPE;
 	degree = 2;
 #elif FP_PRIME == 254
 	ep_param_set(BN_P254);
-	type = EP_DTYPE;
+	type = RLC_EP_DTYPE;
 	degree = 2;
 #elif FP_PRIME == 256
 	ep_param_set(BN_P256);
-	type = EP_DTYPE;
+	type = RLC_EP_DTYPE;
 	degree = 2;
 #elif FP_PRIME == 381
 	ep_param_set(B12_P381);
-	type = EP_MTYPE;
+	type = RLC_EP_MTYPE;
 	degree = 2;
 #elif FP_PRIME == 382
 	ep_param_set(BN_P382);
-	type = EP_DTYPE;
+	type = RLC_EP_DTYPE;
 	degree = 2;
 #elif FP_PRIME == 446
 #ifdef FP_QNRES
 	ep_param_set(B12_P446);
-	type = EP_MTYPE;
+	type = RLC_EP_MTYPE;
 	degree = 2;
 #else
 	ep_param_set(BN_P446);
-	type = EP_DTYPE;
+	type = RLC_EP_DTYPE;
 	degree = 2;
 #endif
 #elif FP_PRIME == 455
 	ep_param_set(B12_P455);
-	type = EP_DTYPE;
+	type = RLC_EP_DTYPE;
 	degree = 2;
 #elif FP_PRIME == 477
 	ep_param_set(B24_P477);
-	type = EP_MTYPE;
+	type = RLC_EP_MTYPE;
 	degree = 4;
 #elif FP_PRIME == 508
 	ep_param_set(KSS_P508);
-	type = EP_DTYPE;
+	type = RLC_EP_DTYPE;
 	degree = 3;
 #elif FP_PRIME == 511
 	ep_param_set(OT8_P511);
-	type = EP_DTYPE;
+	type = RLC_EP_DTYPE;
 	degree = 2;
 #elif FP_PRIME == 544
 	ep_param_set(CP8_P544);
-	type = EP_MTYPE;
+	type = RLC_EP_MTYPE;
 	degree = 2;
 #elif FP_PRIME == 569
 	ep_param_set(K54_P569);
-	type = EP_MTYPE;
+	type = RLC_EP_MTYPE;
 	degree = 9;
 #elif FP_PRIME == 575
 	ep_param_set(B48_P575);
-	type = EP_MTYPE;
+	type = RLC_EP_MTYPE;
 	degree = 8;
 #elif FP_PRIME == 638
 #ifdef FP_QNRES
 	ep_param_set(B12_P638);
-	type = EP_MTYPE;
+	type = RLC_EP_MTYPE;
 	degree = 2;
 #else
 	ep_param_set(BN_P638);
-	type = EP_DTYPE;
+	type = RLC_EP_DTYPE;
 	degree = 2;
 #endif
 #elif FP_PRIME == 1536

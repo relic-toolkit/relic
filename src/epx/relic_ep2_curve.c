@@ -746,7 +746,7 @@ void ep2_curve_set_twist(int type) {
 	bn_null(h);
 
 	ctx->ep2_is_twist = 0;
-	if (type == EP_MTYPE || type == EP_DTYPE) {
+	if (type == RLC_EP_MTYPE || type == RLC_EP_DTYPE) {
 		ctx->ep2_is_twist = type;
 	} else {
 		return;

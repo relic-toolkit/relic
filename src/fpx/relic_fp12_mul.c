@@ -170,7 +170,7 @@ void fp12_mul_dxs_basic(fp12_t c, fp12_t a, fp12_t b) {
 		fp6_new(t1);
 		fp6_new(t2);
 
-		if (ep2_curve_is_twist() == EP_DTYPE) {
+		if (ep2_curve_is_twist() == RLC_EP_DTYPE) {
 #if EP_ADD == BASIC
 			/* t0 = a_0 * b_0 */
 			fp_mul(t0[0][0], a[0][0][0], b[0][0][0]);
@@ -332,7 +332,7 @@ void fp12_mul_dxs_lazyr(fp12_t c, fp12_t a, fp12_t b) {
 		dv6_new(u1);
 		dv6_new(u2);
 
-		if (ep2_curve_is_twist() == EP_DTYPE) {
+		if (ep2_curve_is_twist() == RLC_EP_DTYPE) {
 #if EP_ADD == BASIC
 			/* t0 = a_0 * b_0. */
 			fp_muln_low(u0[0][0], a[0][0][0], b[0][0][0]);

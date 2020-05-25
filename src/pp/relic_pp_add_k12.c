@@ -56,7 +56,7 @@ void pp_add_k12_basic(fp12_t l, ep2_t r, ep2_t q, ep_t p) {
 		ep2_copy(t, r);
 		ep2_add_slp_basic(r, s, r, q);
 
-		if (ep2_curve_is_twist() == EP_MTYPE) {
+		if (ep2_curve_is_twist() == RLC_EP_MTYPE) {
 			one ^= 1;
 			zero ^= 1;
 		}
@@ -118,7 +118,7 @@ void pp_add_k12_projc_basic(fp12_t l, ep2_t r, ep2_t q, ep_t p) {
 		fp2_mul(t3, t3, r->z);
 		fp2_add(t3, t2, t3);
 
-		if (ep2_curve_is_twist() == EP_MTYPE) {
+		if (ep2_curve_is_twist() == RLC_EP_MTYPE) {
 			one ^= 1;
 			zero ^= 1;
 		}
@@ -217,7 +217,7 @@ void pp_add_k12_projc_lazyr(fp12_t l, ep2_t r, ep2_t q, ep_t p) {
 		fp2_mul(r->x, t1, t4);
 		fp2_mul(r->z, r->z, t3);
 
-		if (ep2_curve_is_twist() == EP_MTYPE) {
+		if (ep2_curve_is_twist() == RLC_EP_MTYPE) {
 			one ^= 1;
 			zero ^= 1;
 		}
@@ -280,7 +280,7 @@ void pp_add_lit_k12(fp12_t l, ep_t r, ep_t p, ep2_t q) {
 		fp_mul(t2, p->x, t1);
 		r->coord = PROJC;
 
-		if (ep2_curve_is_twist() == EP_MTYPE) {
+		if (ep2_curve_is_twist() == RLC_EP_MTYPE) {
 			one ^= 1;
 			zero ^= 1;
 		}

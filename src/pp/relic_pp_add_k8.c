@@ -56,7 +56,7 @@ void pp_add_k8_basic(fp8_t l, ep2_t r, ep2_t q, ep_t p) {
 		ep2_copy(t, r);
 		ep2_add_slp_basic(r, s, r, q);
 
-		if (ep2_curve_is_twist() == EP_MTYPE) {
+		if (ep2_curve_is_twist() == RLC_EP_MTYPE) {
 			one ^= 1;
 			zero ^= 1;
 		}
@@ -100,7 +100,7 @@ void pp_add_k8_projc_basic(fp8_t l, ep2_t r, ep2_t q, ep_t p) {
 		fp2_new(t4);
 		fp2_new(t5);
 
-		if (ep2_curve_is_twist() == EP_MTYPE) {
+		if (ep2_curve_is_twist() == RLC_EP_MTYPE) {
 			one ^= 1;
 			zero ^= 1;
 		}
@@ -193,7 +193,7 @@ void pp_add_k8_projc_lazyr(fp8_t l, ep2_t r, ep2_t q, ep_t p) {
 		fp2_new(t4);
 		fp2_new(t5);
 
-		if (ep2_curve_is_twist() == EP_MTYPE) {
+		if (ep2_curve_is_twist() == RLC_EP_MTYPE) {
 			one ^= 1;
 			zero ^= 1;
 		}

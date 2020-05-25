@@ -55,7 +55,7 @@ void pp_dbl_k8_basic(fp8_t l, ep2_t r, ep2_t q, ep_t p) {
 		ep2_copy(t, q);
 		ep2_dbl_slp_basic(r, s, q);
 
-		if (ep2_curve_is_twist() == EP_MTYPE) {
+		if (ep2_curve_is_twist() == RLC_EP_MTYPE) {
 			one ^= 1;
 			zero ^= 1;
 		}
@@ -98,7 +98,7 @@ void pp_dbl_k8_projc_new(fp8_t l, ep2_t r, ep2_t q, ep_t p) {
 		fp2_new(t3);
 		fp2_new(t4);
 
-		if (ep2_curve_is_twist() == EP_MTYPE) {
+		if (ep2_curve_is_twist() == RLC_EP_MTYPE) {
 			one ^= 1;
 			zero ^= 1;
 		}
@@ -171,7 +171,7 @@ void pp_dbl_k8_projc_basic(fp8_t l, ep2_t r, ep2_t q, ep_t p) {
 		fp2_new(t5);
 		fp2_new(t6);
 
-		if (ep2_curve_is_twist() == EP_MTYPE) {
+		if (ep2_curve_is_twist() == RLC_EP_MTYPE) {
 			one ^= 1;
 			zero ^= 1;
 		}
@@ -284,7 +284,7 @@ void pp_dbl_k8_projc_lazyr(fp8_t l, ep2_t r, ep2_t q, ep_t p) {
 		dv2_new(u0);
 		dv2_new(u1);
 
-		if (ep2_curve_is_twist() == EP_MTYPE) {
+		if (ep2_curve_is_twist() == RLC_EP_MTYPE) {
 			one ^= 1;
 			zero ^= 1;
 		}
@@ -392,7 +392,7 @@ void pp_dbl_k8_projc_lazyr_new(fp8_t l, ep2_t r, ep2_t q, ep_t p) {
 		dv2_new(u2);
 		dv2_new(u3);
 
-		if (ep2_curve_is_twist() == EP_MTYPE) {
+		if (ep2_curve_is_twist() == RLC_EP_MTYPE) {
 			one ^= 1;
 			zero ^= 1;
 		}

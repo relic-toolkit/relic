@@ -36,12 +36,12 @@
 /*============================================================================*/
 
 /**
- * Internal macro to map GT_T function to basic FPX implementation. The final
+ * Internal macro to map GT function to basic FPX implementation. The final
  * exponentiation from the pairing is used to move element to subgroup.
  *
  * @param[out] A 				- the element to assign.
  */
-#define gt_rand_imp(A)			RLC_CAT(GT_LOWER, rand)(A)
+#define gt_rand_imp(A)			RLC_CAT(RLC_GT_LOWER, rand)(A)
 
 /*============================================================================*/
 /* Public definitions                                                         */
