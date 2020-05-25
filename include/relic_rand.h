@@ -33,8 +33,8 @@
  * @ingroup rand
  */
 
-#ifndef RLC_RLC_RAND_H
-#define RLC_RLC_RAND_H
+#ifndef RLC_RAND_H
+#define RLC_RAND_H
 
 #include "relic_rand.h"
 
@@ -115,4 +115,4 @@ void rand_seed(void (*callback)(uint8_t *, int, void *), void *arg);
  */
 void rand_bytes(uint8_t *buf, int size);
 
-#endif /* !RLC_RLC_RAND_H */
+#endif /* !RLC_RAND_H */

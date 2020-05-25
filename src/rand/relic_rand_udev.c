@@ -43,7 +43,7 @@
 /**
  * The path to the char device that supplies entropy.
  */
-#define RAND_PATH		"/dev/urandom"
+#define RLC_RAND_PATH		"/dev/urandom"
 
 /*============================================================================*/
 /* Public definitions                                                         */
