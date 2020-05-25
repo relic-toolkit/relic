@@ -398,7 +398,7 @@ typedef struct _ctx_t {
 
 #if RAND != CALL
 	/** Internal state of the PRNG. */
-	uint8_t rand[RAND_SIZE];
+	uint8_t rand[RLC_RAND_SIZE];
 #else
 	void (*rand_call)(uint8_t *, int, void *);
 	void *rand_args;
