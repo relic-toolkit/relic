@@ -153,6 +153,19 @@ int util1(void) {
 			}
 		}
 		TEST_END;
+
+		TEST_BEGIN("comparison is consistent for non-normalized points") {
+			g1_get_gen(a);
+			g1_neg(b, a);
+			// Produce a non-normalized point in the current implementation
+			// corresponding to the neutral element of g1.
+			g1_add(a, a, b);
+
+			g1_set_infty(b);
+
+			TEST_ASSERT(g1_cmp(a, b) == RLC_EQ, end);
+		}
+		TEST_END;
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
