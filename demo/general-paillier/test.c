@@ -70,7 +70,7 @@ static int paillier(void) {
 		}
 	}
 	RLC_CATCH_ANY {
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
 
