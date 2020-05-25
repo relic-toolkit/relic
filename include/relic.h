@@ -75,8 +75,8 @@
  *
  */
 
-#ifndef RLC_H
-#define RLC_H
+#ifndef RELIC_H
+#define RELIC_H
 
 #include "relic_arch.h"
 #include "relic_conf.h"
@@ -102,4 +102,4 @@
 #include "relic_rand.h"
 #include "relic_util.h"
 
-#endif /* !RLC_H */
+#endif /* !RELIC_H */
