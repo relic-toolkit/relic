@@ -347,6 +347,9 @@ void fb_inv_almos(fb_t c, const fb_t a) {
 		RLC_THROW(ERR_NO_VALID);
 	}
 
+	/* This is actually the binary version of the Extended Euclidean algorithm
+ 	 * discussed in the Almost Inverse paper, so a rename is needed. */
+
 	RLC_TRY {
 		dv_new(_b);
 		dv_new(_d);
