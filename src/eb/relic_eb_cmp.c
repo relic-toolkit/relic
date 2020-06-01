@@ -39,7 +39,11 @@
 
 int eb_cmp(const eb_t p, const eb_t q) {
     eb_t r, s;
-    int result = RLC_EQ;
+    int result = RLC_NE;
+
+	if (eb_is_infty(p) && eb_is_infty(q)) {
+		return RLC_EQ;
+	}
 
     eb_null(r);
     eb_null(s);
@@ -71,12 +75,8 @@ int eb_cmp(const eb_t p, const eb_t q) {
             }
         }
 
-        if (fb_cmp(r->x, s->x) != RLC_EQ) {
-            result = RLC_NE;
-        }
-
-        if (fb_cmp(r->y, s->y) != RLC_EQ) {
-            result = RLC_NE;
+        if ((fb_cmp(r->x, s->x) == RLC_EQ) && (fb_cmp(r->y, s->y) == RLC_EQ)) {
+            result = RLC_EQ;
         }
     } RLC_CATCH_ANY {
         RLC_THROW(ERR_CAUGHT);

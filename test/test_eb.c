@@ -98,6 +98,10 @@ static int util(void) {
 			eb_dbl(a, a);
 			TEST_ASSERT(eb_cmp(c, a) == RLC_EQ, end);
 			TEST_ASSERT(eb_cmp(a, c) == RLC_EQ, end);
+			eb_neg(b, a);
+			eb_add(a, a, b);
+			eb_set_infty(b);
+			TEST_ASSERT(eb_cmp(a, b) == RLC_EQ, end);
 		}
 		TEST_END;
 

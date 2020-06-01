@@ -38,7 +38,11 @@
 
 int ep2_cmp(ep2_t p, ep2_t q) {
     ep2_t r, s;
-    int result = RLC_EQ;
+    int result = RLC_NE;
+
+	if (ep2_is_infty(p) && ep2_is_infty(q)) {
+		return RLC_EQ;
+	}
 
     ep2_null(r);
     ep2_null(s);
@@ -63,12 +67,9 @@ int ep2_cmp(ep2_t p, ep2_t q) {
             ep2_norm(s, q);
         }
 
-        if (fp2_cmp(r->x, s->x) != RLC_EQ) {
-            result = RLC_NE;
-        }
-
-        if (fp2_cmp(r->y, s->y) != RLC_EQ) {
-            result = RLC_NE;
+        if ((fp2_cmp(r->x, s->x) == RLC_EQ) &&
+				(fp2_cmp(r->y, s->y) == RLC_EQ)) {
+            result = RLC_EQ;
         }
     } RLC_CATCH_ANY {
         RLC_THROW(ERR_CAUGHT);

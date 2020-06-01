@@ -105,6 +105,10 @@ int util1(void) {
 			g1_dbl(a, a);
 			TEST_ASSERT(g1_cmp(c, a) == RLC_EQ, end);
 			TEST_ASSERT(g1_cmp(a, c) == RLC_EQ, end);
+			g1_neg(b, a);
+			g1_add(a, a, b);
+			g1_set_infty(b);
+			TEST_ASSERT(g1_cmp(a, b) == RLC_EQ, end);
 		}
 		TEST_END;
 
@@ -151,19 +155,6 @@ int util1(void) {
 				g1_read_bin(b, bin, l);
 				TEST_ASSERT(g1_cmp(a, b) == RLC_EQ, end);
 			}
-		}
-		TEST_END;
-
-		TEST_BEGIN("comparison is consistent for non-normalized points") {
-			g1_get_gen(a);
-			g1_neg(b, a);
-			// Produce a non-normalized point in the current implementation
-			// corresponding to the neutral element of g1.
-			g1_add(a, a, b);
-
-			g1_set_infty(b);
-
-			TEST_ASSERT(g1_cmp(a, b) == RLC_EQ, end);
 		}
 		TEST_END;
 	}
@@ -687,6 +678,10 @@ int util2(void) {
 			g2_dbl(a, a);
 			TEST_ASSERT(g2_cmp(c, a) == RLC_EQ, end);
 			TEST_ASSERT(g2_cmp(a, c) == RLC_EQ, end);
+			g2_neg(b, a);
+			g2_add(a, a, b);
+			g2_set_infty(b);
+			TEST_ASSERT(g2_cmp(a, b) == RLC_EQ, end);
 		}
 		TEST_END;
 
