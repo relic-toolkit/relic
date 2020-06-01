@@ -406,8 +406,8 @@ void fp_inv_divst(fp_t c, const fp_t a) {
 #else
 	int d = (49 * FP_PRIME + 57)/17;
 #endif
-	int delta = 1, g0, d0;
-	dig_t fs, gs;
+	int g0, d0;
+	dig_t fs, gs, delta = 1;
 	bn_t _t;
 	dv_t f, g, t, u;
 	fp_t precomp, v, r;
@@ -451,8 +451,10 @@ void fp_inv_divst(fp_t c, const fp_t a) {
 
 		for (int i = 0; i < d; i++) {
 			g0 = g[0] & 1;
-			d0 = g0 & (delta > 0);
-			delta = RLC_SEL(delta, -delta, d0);
+			d0 = delta >> (RLC_DIG - 1);
+			d0 = g0 & ~d0;
+			/* Conditionally negate delta if d0 is set. */
+			delta = (delta ^ -d0) + d0;
 			/* Conditionally swap based on d0. */
 			dv_swap_cond(r, v, RLC_FP_DIGS, d0);
 			fp_negm_low(t, r);
