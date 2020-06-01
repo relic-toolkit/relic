@@ -678,10 +678,6 @@ int util2(void) {
 			g2_dbl(a, a);
 			TEST_ASSERT(g2_cmp(c, a) == RLC_EQ, end);
 			TEST_ASSERT(g2_cmp(a, c) == RLC_EQ, end);
-			g2_neg(b, a);
-			g2_add(a, a, b);
-			g2_set_infty(b);
-			TEST_ASSERT(g2_cmp(a, b) == RLC_EQ, end);
 		}
 		TEST_END;
 
@@ -689,6 +685,10 @@ int util2(void) {
 			g2_rand(a);
 			g2_neg(b, a);
 			TEST_ASSERT(g2_cmp(a, b) != RLC_EQ, end);
+			g2_neg(b, a);
+			g2_add(a, a, b);
+			g2_set_infty(b);
+			TEST_ASSERT(g2_cmp(a, b) == RLC_EQ, end);
 		}
 		TEST_END;
 

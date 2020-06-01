@@ -98,10 +98,6 @@ static int util(void) {
 			ep_dbl(a, a);
 			TEST_ASSERT(ep_cmp(c, a) == RLC_EQ, end);
 			TEST_ASSERT(ep_cmp(a, c) == RLC_EQ, end);
-			ep_neg(b, a);
-			ep_add(a, a, b);
-			ep_set_infty(b);
-			TEST_ASSERT(ep_cmp(a, b) == RLC_EQ, end);
 		}
 		TEST_END;
 
@@ -110,6 +106,11 @@ static int util(void) {
 			ep_neg(b, a);
 			TEST_ASSERT(ep_cmp(a, b) != RLC_EQ, end);
 			ep_neg(b, b);
+			TEST_ASSERT(ep_cmp(a, b) == RLC_EQ, end);
+			/* Compare with infinity. */
+			ep_neg(b, a);
+			ep_add(a, a, b);
+			ep_set_infty(b);
 			TEST_ASSERT(ep_cmp(a, b) == RLC_EQ, end);
 		}
 		TEST_END;
