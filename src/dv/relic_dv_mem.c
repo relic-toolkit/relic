@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -49,7 +49,7 @@
 
 void dv_new_dynam(dv_t *a, int digits) {
 	if (digits > RLC_DV_DIGS) {
-		THROW(ERR_NO_PRECI);
+		RLC_THROW(ERR_NO_PRECI);
 	}
 #if ALIGN == 1
 	*a = malloc(digits * (RLC_DIG / 8));
@@ -58,15 +58,15 @@ void dv_new_dynam(dv_t *a, int digits) {
 #else
 	int r = posix_memalign((void **)a, ALIGN, digits * (RLC_DIG / 8));
 	if (r == ENOMEM) {
-		THROW(ERR_NO_MEMORY);
+		RLC_THROW(ERR_NO_MEMORY);
 	}
 	if (r == EINVAL) {
-		THROW(ERR_NO_CONFIG);
+		RLC_THROW(ERR_NO_CONFIG);
 	}
 #endif
 
 	if (*a == NULL) {
-		THROW(ERR_NO_MEMORY);
+		RLC_THROW(ERR_NO_MEMORY);
 	}
 }
 

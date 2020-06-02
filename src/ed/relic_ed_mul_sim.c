@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -58,7 +58,7 @@ static void ed_mul_sim_plain(ed_t r, const ed_t p, const bn_t k, const ed_t q,
 	ed_t t0[1 << (ED_WIDTH - 2)];
 	ed_t t1[1 << (ED_WIDTH - 2)];
 
-	TRY {
+	RLC_TRY {
 		gen = (t == NULL ? 0 : 1);
 		if (!gen) {
 			for (i = 0; i < (1 << (ED_WIDTH - 2)); i++) {
@@ -130,10 +130,10 @@ static void ed_mul_sim_plain(ed_t r, const ed_t p, const bn_t k, const ed_t q,
 		/* Convert r to affine coordinates. */
 		ed_norm(r, r);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		/* Free the precomputation tables. */
 		if (!gen) {
 			for (i = 0; i < 1 << (ED_WIDTH - 2); i++) {
@@ -160,17 +160,17 @@ void ed_mul_sim_basic(ed_t r, const ed_t p, const bn_t k, const ed_t q,
 
 	ed_null(t);
 
-	TRY {
+	RLC_TRY {
 		ed_new(t);
 		ed_mul(t, q, m);
 		ed_mul(r, p, k);
 		ed_add(t, t, r);
 		ed_norm(r, t);
 
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		ed_free(t);
 	}
 }
@@ -197,7 +197,7 @@ void ed_mul_sim_trick(ed_t r, const ed_t p, const bn_t k, const ed_t q,
 		return;
 	}
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 
 		ed_curve_get_ord(n);
@@ -260,10 +260,10 @@ void ed_mul_sim_trick(ed_t r, const ed_t p, const bn_t k, const ed_t q,
 			ed_add(r, r, t[(w0[i] << w) + w1[i]]);
 		}
 		ed_norm(r, r);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(n);
 		for (int i = 0; i < (1 << w); i++) {
 			ed_free(t0[i]);
@@ -312,7 +312,7 @@ void ed_mul_sim_joint(ed_t r, const ed_t p, const bn_t k, const ed_t q,
 		return;
 	}
 
-	TRY {
+	RLC_TRY {
 		for (i = 0; i < 5; i++) {
 			ed_null(t[i]);
 			ed_new(t[i]);
@@ -359,10 +359,10 @@ void ed_mul_sim_joint(ed_t r, const ed_t p, const bn_t k, const ed_t q,
 		}
 		ed_norm(r, r);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		for (i = 0; i < 5; i++) {
 			ed_free(t[i]);
 		}
@@ -385,7 +385,7 @@ void ed_mul_sim_gen(ed_t r, const bn_t k, const ed_t q, const bn_t m) {
 		return;
 	}
 
-	TRY {
+	RLC_TRY {
 		ed_new(g);
 
 		ed_curve_get_gen(g);
@@ -396,10 +396,10 @@ void ed_mul_sim_gen(ed_t r, const bn_t k, const ed_t q, const bn_t m) {
 		ed_mul_sim(r, g, k, q, m);
 #endif
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		ed_free(g);
 	}
 }

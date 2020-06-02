@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -59,7 +59,7 @@ void bn_mxp_basic(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 	bn_null(u);
 	bn_null(r);
 
-	TRY {
+	RLC_TRY {
 		bn_new(t);
 		bn_new(u);
 		bn_new(r);
@@ -95,10 +95,10 @@ void bn_mxp_basic(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 			bn_copy(c, r);
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(t);
 		bn_free(u);
 		bn_free(r);
@@ -127,7 +127,7 @@ void bn_mxp_slide(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 		bn_null(tab[i]);
 	}
 
-	TRY {
+	RLC_TRY {
 		/* Find window size. */
 		i = bn_bits(b);
 		if (i <= 21) {
@@ -197,10 +197,10 @@ void bn_mxp_slide(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 			bn_copy(c, r);
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		for (i = 0; i < (1 << (w - 1)); i++) {
 			bn_free(tab[i]);
 		}
@@ -228,7 +228,7 @@ void bn_mxp_monty(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 	bn_null(tab[1]);
 	bn_null(u);
 
-	TRY {
+	RLC_TRY {
 		bn_new(u);
 		bn_mod_pre(u, m);
 
@@ -275,7 +275,7 @@ void bn_mxp_monty(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 			u->sign = tab[0]->sign;
 			if (bn_cmp_dig(tab[1], 1) != RLC_EQ) {
 				bn_zero(c);
-				THROW(ERR_NO_VALID);
+				RLC_THROW(ERR_NO_VALID);
 			}
 		}
 		bn_add(tab[1], u, m);
@@ -283,10 +283,10 @@ void bn_mxp_monty(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 		u->sign = RLC_POS;
 		bn_copy(c, u);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(tab[1]);
 		bn_free(tab[0]);
 		bn_free(u);
@@ -308,7 +308,7 @@ void bn_mxp_dig(bn_t c, const bn_t a, dig_t b, const bn_t m) {
 	bn_null(u);
 	bn_null(r);
 
-	TRY {
+	RLC_TRY {
 		bn_new(t);
 		bn_new(u);
 		bn_new(r);
@@ -340,10 +340,10 @@ void bn_mxp_dig(bn_t c, const bn_t a, dig_t b, const bn_t m) {
 		bn_copy(c, r);
 #endif
 		/* Exponent is unsigned, so no need to invert if negative. */
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(t);
 		bn_free(u);
 		bn_free(r);

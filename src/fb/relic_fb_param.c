@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -135,7 +135,7 @@ void fb_param_set(int param) {
 			fb_poly_set_trino(255);
 			break;
 		default:
-			THROW(ERR_NO_VALID);
+			RLC_THROW(ERR_NO_VALID);
 			break;
 	}
 	core_get()->fb_id = param;
@@ -230,7 +230,7 @@ void fb_param_set_any(void) {
 #elif FB_POLYN == 1223
 	fb_param_set(TRINO_1223);
 #else
-	THROW(ERR_NO_FIELD);
+	RLC_THROW(ERR_NO_FIELD);
 #endif
 }
 

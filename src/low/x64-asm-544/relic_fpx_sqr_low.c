@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -78,13 +78,13 @@ void fp2_sqrm_low(fp2_t c, fp2_t a) {
 
 	dv2_null(t);
 
-	TRY {
+	RLC_TRY {
 		dv2_new(t);
 		fp2_sqrn_low(t, a);
 		fp2_rdcn_low(c, t);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		dv2_free(t);
 	}
 }
@@ -160,13 +160,13 @@ void fp3_sqrm_low(fp3_t c, fp3_t a) {
 
 	dv3_null(t);
 
-	TRY {
+	RLC_TRY {
 		dv3_new(t);
 		fp3_sqrn_low(t, a);
 		fp3_rdcn_low(c, t);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		dv3_free(t);
 	}
 }

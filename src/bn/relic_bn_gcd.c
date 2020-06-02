@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -53,7 +53,7 @@ void bn_gcd_basic(bn_t c, const bn_t a, const bn_t b) {
 	bn_null(u);
 	bn_null(v);
 
-	TRY {
+	RLC_TRY {
 		bn_new(u);
 		bn_new(v);
 
@@ -65,10 +65,10 @@ void bn_gcd_basic(bn_t c, const bn_t a, const bn_t b) {
 			bn_copy(u, c);
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(u);
 		bn_free(v);
 	}
@@ -102,7 +102,7 @@ void bn_gcd_ext_basic(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 	bn_null(q);
 	bn_null(r);
 
-	TRY {
+	RLC_TRY {
 		bn_new(u);
 		bn_new(v);
 		bn_new(x_1);
@@ -153,10 +153,10 @@ void bn_gcd_ext_basic(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 		}
 		bn_copy(c, u);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(u);
 		bn_free(v);
 		bn_free(x_1);
@@ -197,7 +197,7 @@ void bn_gcd_lehme(bn_t c, const bn_t a, const bn_t b) {
 	/*
 	 * Taken from Handbook of Hyperelliptic and Elliptic Cryptography.
 	 */
-	TRY {
+	RLC_TRY {
 		bn_new(x);
 		bn_new(y);
 		bn_new(u);
@@ -336,10 +336,10 @@ void bn_gcd_lehme(bn_t c, const bn_t a, const bn_t b) {
 		}
 		bn_gcd_ext_dig(c, u, v, x, y->dp[0]);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(x);
 		bn_free(y);
 		bn_free(u);
@@ -388,7 +388,7 @@ void bn_gcd_ext_lehme(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 	/*
 	 * Taken from Handbook of Hyperelliptic and Elliptic Cryptography.
 	 */
-	TRY {
+	RLC_TRY {
 		bn_new(x);
 		bn_new(y);
 		bn_new(u);
@@ -583,10 +583,10 @@ void bn_gcd_ext_lehme(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 			bn_copy(e, t4);
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(x);
 		bn_free(y);
 		bn_free(u);
@@ -621,7 +621,7 @@ void bn_gcd_stein(bn_t c, const bn_t a, const bn_t b) {
 	bn_null(v);
 	bn_null(t);
 
-	TRY {
+	RLC_TRY {
 		bn_new(u);
 		bn_new(v);
 		bn_new(t);
@@ -653,10 +653,10 @@ void bn_gcd_stein(bn_t c, const bn_t a, const bn_t b) {
 		}
 		bn_lsh(c, v, shift);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(u);
 		bn_free(v);
 		bn_free(t);
@@ -693,7 +693,7 @@ void bn_gcd_ext_stein(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 	bn_null(_b);
 	bn_null(_e);
 
-	TRY {
+	RLC_TRY {
 		bn_new(x);
 		bn_new(y);
 		bn_new(u);
@@ -776,10 +776,10 @@ void bn_gcd_ext_stein(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 			bn_copy(e, _e);
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(x);
 		bn_free(y);
 		bn_free(u);
@@ -820,7 +820,7 @@ void bn_gcd_ext_mid(bn_t c, bn_t d, bn_t e, bn_t f, const bn_t a, const bn_t b) 
 	bn_null(y);
 	bn_null(z);
 
-	TRY {
+	RLC_TRY {
 		bn_new(p);
 		bn_new(q);
 		bn_new(r);
@@ -887,10 +887,10 @@ void bn_gcd_ext_mid(bn_t c, bn_t d, bn_t e, bn_t f, const bn_t a, const bn_t b) 
 			bn_copy(f, y);
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(p);
 		bn_free(q);
 		bn_free(r);
@@ -963,7 +963,7 @@ void bn_gcd_ext_dig(bn_t c, bn_t d, bn_t e, const bn_t a, const dig_t b) {
 	bn_null(q);
 	bn_null(r);
 
-	TRY {
+	RLC_TRY {
 		bn_new(u);
 		bn_new(v);
 		bn_new(x1);
@@ -1022,10 +1022,10 @@ void bn_gcd_ext_dig(bn_t c, bn_t d, bn_t e, const bn_t a, const dig_t b) {
 		}
 		bn_set_dig(c, _u);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(u);
 		bn_free(v);
 		bn_free(x1);

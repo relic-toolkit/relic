@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -51,10 +51,10 @@ void fb_inv_basic(fb_t c, const fb_t a) {
 	fb_null(v);
 
 	if (fb_is_zero(a)) {
-		THROW(ERR_NO_VALID);
+		RLC_THROW(ERR_NO_VALID);
 	}
 
-	TRY {
+	RLC_TRY {
 		fb_new(t);
 		fb_new(u);
 		fb_new(v);
@@ -94,10 +94,10 @@ void fb_inv_basic(fb_t c, const fb_t a) {
 #endif
 		fb_copy(c, v);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fb_free(t);
 		fb_free(u);
 		fb_free(v);
@@ -118,10 +118,10 @@ void fb_inv_binar(fb_t c, const fb_t a) {
 	dv_null(g2);
 
 	if (fb_is_zero(a)) {
-		THROW(ERR_NO_VALID);
+		RLC_THROW(ERR_NO_VALID);
 	}
 
-	TRY {
+	RLC_TRY {
 		dv_new(u);
 		dv_new(v);
 		dv_new(g1);
@@ -198,10 +198,10 @@ void fb_inv_binar(fb_t c, const fb_t a) {
 			fb_copy(c, g2);
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		dv_free(u);
 		dv_free(v);
 		dv_free(g1);
@@ -224,10 +224,10 @@ void fb_inv_exgcd(fb_t c, const fb_t a) {
 	fb_null(_g2);
 
 	if (fb_is_zero(a)) {
-		THROW(ERR_NO_VALID);
+		RLC_THROW(ERR_NO_VALID);
 	}
 
-	TRY {
+	RLC_TRY {
 		dv_new(_u);
 		dv_new(_v);
 		dv_new(_g1);
@@ -318,10 +318,10 @@ void fb_inv_exgcd(fb_t c, const fb_t a) {
 		/* Return g1. */
 		fb_copy(c, g1);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		dv_free(_u);
 		dv_free(_v);
 		dv_free(_g1);
@@ -344,10 +344,13 @@ void fb_inv_almos(fb_t c, const fb_t a) {
 	dv_null(_v);
 
 	if (fb_is_zero(a)) {
-		THROW(ERR_NO_VALID);
+		RLC_THROW(ERR_NO_VALID);
 	}
 
-	TRY {
+	/* This is actually the binary version of the Extended Euclidean algorithm
+ 	 * discussed in the Almost Inverse paper, so a rename is needed. */
+
+	RLC_TRY {
 		dv_new(_b);
 		dv_new(_d);
 		dv_new(_u);
@@ -413,10 +416,10 @@ void fb_inv_almos(fb_t c, const fb_t a) {
 			fb_addn_low(b, b, d);
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fb_copy(c, b);
 		dv_free(_b);
 		dv_free(_d);
@@ -440,12 +443,12 @@ void fb_inv_itoht(fb_t c, const fb_t a) {
 	}
 
 	if (fb_is_zero(a)) {
-		THROW(ERR_NO_VALID);
+		RLC_THROW(ERR_NO_VALID);
 	}
 
-	TRY {
+	RLC_TRY {
 		if (u == NULL || table == NULL) {
-			THROW(ERR_NO_MEMORY);
+			RLC_THROW(ERR_NO_MEMORY);
 		}
 		for (i = 0; i <= len; i++) {
 			fb_new(table[i]);
@@ -481,10 +484,10 @@ void fb_inv_itoht(fb_t c, const fb_t a) {
 		fb_sqr(c, table[len]);
 #endif
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		for (i = 0; i <= len; i++) {
 			fb_free(table[i]);
 		}
@@ -508,10 +511,10 @@ void fb_inv_bruch(fb_t c, const fb_t a) {
 	fb_null(_v);
 
 	if (fb_is_zero(a)) {
-		THROW(ERR_NO_VALID);
+		RLC_THROW(ERR_NO_VALID);
 	}
 
-	TRY {
+	RLC_TRY {
 		fb_new(_r);
 		fb_new(_s);
 		fb_new(_u);
@@ -554,9 +557,9 @@ void fb_inv_bruch(fb_t c, const fb_t a) {
 			}
 		}
 		fb_copy(c, u);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		fb_free(_r);
 		fb_free(_s);
 		fb_free(_u);
@@ -579,10 +582,10 @@ void fb_inv_ctaia(fb_t c, const fb_t a) {
 	fb_null(v);
 
 	if (fb_is_zero(a)) {
-		THROW(ERR_NO_VALID);
+		RLC_THROW(ERR_NO_VALID);
 	}
 
-	TRY {
+	RLC_TRY {
 		fb_new(r);
 		fb_new(s);
 		fb_new(t);
@@ -621,9 +624,9 @@ void fb_inv_ctaia(fb_t c, const fb_t a) {
 		}
 
 		fb_copy(c, v);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		fb_free(r);
 		fb_free(s);
 		fb_free(t);
@@ -638,7 +641,7 @@ void fb_inv_ctaia(fb_t c, const fb_t a) {
 
 void fb_inv_lower(fb_t c, const fb_t a) {
 	if (fb_is_zero(a)) {
-		THROW(ERR_NO_VALID);
+		RLC_THROW(ERR_NO_VALID);
 	}
 
 	fb_invn_low(c, a);
@@ -650,12 +653,12 @@ void fb_inv_sim(fb_t *c, const fb_t *a, int n) {
 	fb_t u, *t = RLC_ALLOCA(fb_t, n);
 
 	if (t == NULL) {
-		THROW(ERR_NO_MEMORY);
+		RLC_THROW(ERR_NO_MEMORY);
 	}
 
 	fb_null(u);
 
-	TRY {
+	RLC_TRY {
 		for (i = 0; i < n; i++) {
 			fb_null(t[i]);
 			fb_new(t[i]);
@@ -678,10 +681,10 @@ void fb_inv_sim(fb_t *c, const fb_t *a, int n) {
 		}
 		fb_copy(c[0], u);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		for (i = 0; i < n; i++) {
 			fb_free(t[i]);
 		}

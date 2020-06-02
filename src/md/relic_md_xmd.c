@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -45,7 +45,7 @@
 #define _check_md(EXPR)                                                        \
 	do {                                                                       \
 		if ((EXPR) != shaSuccess) {                                            \
-			THROW(ERR_NO_VALID);                                               \
+			RLC_THROW(ERR_NO_VALID);                                               \
 		}                                                                      \
 	} while (0)
 
@@ -64,7 +64,7 @@
 	void HName(uint8_t *buf, int buf_len, const uint8_t *in, int in_len, const uint8_t *dst, int dst_len) {       \
 		const unsigned ell = (buf_len + HHashSize - 1) / HHashSize;                                               \
 		if (buf_len < 0 || ell > 255 || dst_len > 255) {                                                          \
-			THROW(ERR_NO_VALID);                                                                                  \
+			RLC_THROW(ERR_NO_VALID);                                                                                  \
 		}                                                                                                         \
                                                                                                                   \
 		/* info needed for hashing: zero padding and some lengths */                                              \

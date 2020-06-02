@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -50,7 +50,7 @@ int fp_srt(fp_t c, const fp_t a) {
 		return 1;
 	}
 
-	TRY {
+	RLC_TRY {
 		bn_new(e);
 		fp_new(t0);
 		fp_new(t1);
@@ -125,10 +125,10 @@ int fp_srt(fp_t c, const fp_t a) {
 			}
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(e);
 		fp_free(t0);
 		fp_free(t1);

@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -49,7 +49,7 @@ void pp_exp_k48(fp48_t c, fp48_t a) {
 	fp48_null(t3);
 	bn_null(x);
 
-	TRY {
+	RLC_TRY {
 		fp48_new(t0);
 		fp48_new(t1);
 		fp48_new(t2);
@@ -163,10 +163,10 @@ void pp_exp_k48(fp48_t c, fp48_t a) {
 		fp48_exp_cyc_sps(t0, t1, b, l, bn_sign(x));
 		fp48_mul(c, c, t0);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fp48_free(t0);
 		fp48_free(t1);
 		fp48_free(t2);

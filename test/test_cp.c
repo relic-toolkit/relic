@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -45,7 +45,7 @@ static int rsa(void) {
 	rsa_null(pub);
 	rsa_null(prv);
 
-	TRY {
+	RLC_TRY {
 		rsa_new(pub);
 		rsa_new(prv);
 
@@ -74,8 +74,8 @@ static int rsa(void) {
 			TEST_ASSERT(cp_rsa_sig(out, &ol, h, RLC_MD_LEN, 1, prv) == RLC_OK, end);
 			TEST_ASSERT(cp_rsa_ver(out, ol, h, RLC_MD_LEN, 1, pub) == 1, end);
 		} TEST_END;
-	} CATCH_ANY {
-		ERROR(end);
+	} RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
 
@@ -96,7 +96,7 @@ static int rabin(void) {
 	rabin_null(pub);
 	rabin_null(prv);
 
-	TRY {
+	RLC_TRY {
 		rabin_new(pub);
 		rabin_new(prv);
 
@@ -113,8 +113,8 @@ static int rabin(void) {
 							prv) == RLC_OK, end);
 			TEST_ASSERT(memcmp(in, out, out_len) == 0, end);
 		} TEST_END;
-	} CATCH_ANY {
-		ERROR(end);
+	} RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
 
@@ -138,7 +138,7 @@ static int benaloh(void) {
 	bdpe_null(pub);
 	bdpe_null(prv);
 
-	TRY {
+	RLC_TRY {
 		bn_new(a);
 		bn_new(b);
 		bdpe_new(pub);
@@ -175,8 +175,8 @@ static int benaloh(void) {
 			TEST_ASSERT(cp_bdpe_dec(&out, buf, len, prv) == RLC_OK, end);
 			TEST_ASSERT(in == out, end);
 		} TEST_END;
-	} CATCH_ANY {
-		ERROR(end);
+	} RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
 
@@ -202,7 +202,7 @@ static int paillier(void) {
 	bn_null(pub);
 	phpe_null(prv);
 
-	TRY {
+	RLC_TRY {
 		bn_new(a);
 		bn_new(b);
 		bn_new(c);
@@ -274,8 +274,8 @@ static int paillier(void) {
 			TEST_END;
 		}
 	}
-	CATCH_ANY {
-		ERROR(end);
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
 
@@ -357,7 +357,7 @@ static int ecdh(void) {
 	ec_null(qa);
 	ec_null(q_b);
 
-	TRY {
+	RLC_TRY {
 		bn_new(da);
 		bn_new(d_b);
 		ec_new(qa);
@@ -371,8 +371,8 @@ static int ecdh(void) {
 			TEST_ASSERT(memcmp(k1, k2, RLC_MD_LEN) == 0, end);
 		} TEST_END;
 	}
-	CATCH_ANY {
-		ERROR(end);
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
 
@@ -401,7 +401,7 @@ static int ecmqv(void) {
 	ec_null(q2a);
 	ec_null(q2_b);
 
-	TRY {
+	RLC_TRY {
 		bn_new(d1a);
 		bn_new(d1_b);
 		ec_new(q1a);
@@ -423,8 +423,8 @@ static int ecmqv(void) {
 			TEST_ASSERT(memcmp(key1, key2, RLC_MD_LEN) == 0, end);
 		} TEST_END;
 	}
-	CATCH_ANY {
-		ERROR(end);
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
 
@@ -454,7 +454,7 @@ static int ecies(void) {
 	ec_null(qa);
 	ec_null(q_b);
 
-	TRY {
+	RLC_TRY {
 		ec_new(r);
 		bn_new(da);
 		bn_new(d_b);
@@ -517,8 +517,8 @@ static int ecies(void) {
 		}
 #endif
 	}
-	CATCH_ANY {
-		ERROR(end);
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
 
@@ -542,7 +542,7 @@ static int ecdsa(void) {
 	bn_null(s);
 	ec_null(q);
 
-	TRY {
+	RLC_TRY {
 		bn_new(d);
 		bn_new(r);
 		bn_new(s);
@@ -558,8 +558,8 @@ static int ecdsa(void) {
 		}
 		TEST_END;
 	}
-	CATCH_ANY {
-		ERROR(end);
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
 
@@ -581,7 +581,7 @@ static int ecss(void) {
 	bn_null(r);
 	ec_null(q);
 
-	TRY {
+	RLC_TRY {
 		bn_new(d);
 		bn_new(r);
 		ec_new(q);
@@ -593,8 +593,8 @@ static int ecss(void) {
 		}
 		TEST_END;
 	}
-	CATCH_ANY {
-		ERROR(end);
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
 
@@ -626,7 +626,7 @@ static int vbnn(void) {
 	bn_null(pka);
 	bn_null(pkb);
 
-	TRY {
+	RLC_TRY {
 		bn_new(z);
 		bn_new(h);
 		bn_new(msk);
@@ -649,13 +649,12 @@ static int vbnn(void) {
 		}
 		TEST_END;
 	}
-	CATCH_ANY {
-		ERROR(end);
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
 
 end:
-	bn_free(z);
 	bn_free(h);
 	bn_free(msk);
 	bn_free(ska);
@@ -682,7 +681,7 @@ static int sokaka(void) {
 	sokaka_null(k);
 	bn_null(s);
 
-	TRY {
+	RLC_TRY {
 		sokaka_new(k);
 		bn_new(s);
 
@@ -698,8 +697,8 @@ static int sokaka(void) {
 			TEST_ASSERT(memcmp(k1, k2, l) == 0, end);
 		} TEST_END;
 
-	} CATCH_ANY {
-		ERROR(end);
+	} RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
 
@@ -723,7 +722,7 @@ static int ibe(void) {
 	g1_null(pub);
 	g2_null(prv);
 
-	TRY {
+	RLC_TRY {
 		bn_new(s);
 		g1_new(pub);
 		g2_new(prv);
@@ -740,8 +739,8 @@ static int ibe(void) {
 			TEST_ASSERT(cp_ibe_dec(out, &il, out, ol, prv) == RLC_OK, end);
 			TEST_ASSERT(memcmp(in, out, il) == 0, end);
 		} TEST_END;
-	} CATCH_ANY {
-		ERROR(end);
+	} RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
 
@@ -771,7 +770,7 @@ static int bgn(void) {
 	bgn_null(pub);
 	bgn_null(prv);
 
-	TRY {
+	RLC_TRY {
 		g1_new(c[0]);
 		g1_new(c[1]);
 		g1_new(d[0]);
@@ -840,8 +839,8 @@ static int bgn(void) {
 			TEST_ASSERT(in + in == t, end);
 		} TEST_END;
 
-	} CATCH_ANY {
-		ERROR(end);
+	} RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
 
@@ -873,7 +872,7 @@ static int bls(void) {
 	g1_null(s);
 	g2_null(q);
 
-	TRY {
+	RLC_TRY {
 		bn_new(d);
 		g1_new(s);
 		g2_new(q);
@@ -885,8 +884,8 @@ static int bls(void) {
 		}
 		TEST_END;
 	}
-	CATCH_ANY {
-		ERROR(end);
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
 
@@ -910,7 +909,7 @@ static int bbs(void) {
 	g2_null(q);
 	gt_null(z);
 
-	TRY {
+	RLC_TRY {
 		bn_new(d);
 		g1_new(s);
 		g2_new(q);
@@ -926,8 +925,8 @@ static int bbs(void) {
 		}
 		TEST_END;
 	}
-	CATCH_ANY {
-		ERROR(end);
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
 
@@ -967,7 +966,7 @@ static int cls(void) {
 		g2_null(zs[i]);
 	}
 
-	TRY {
+	RLC_TRY {
 		bn_new(r);
 		bn_new(t);
 		bn_new(u);
@@ -1021,8 +1020,8 @@ static int cls(void) {
 		}
 		TEST_END;
 	}
-	CATCH_ANY {
-		ERROR(end);
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
 
@@ -1050,11 +1049,13 @@ static int cls(void) {
 
 static int pss(void) {
 	int i, code = RLC_ERR;
-	bn_t ms[5], n, u, v, _v[5];
+	bn_t u, v, _v[5];
 	g1_t a, b;
 	g2_t g, x, y, _y[5];
+	uint8_t m[5] = { 0, 1, 2, 3, 4 };
+	uint8_t *msgs[5] = {m, m, m, m, m};
+	int lens[5] = {sizeof(m), sizeof(m), sizeof(m), sizeof(m), sizeof(m)};
 
-	bn_null(n);
 	bn_null(u);
 	bn_null(v);
 	g1_null(a);
@@ -1063,8 +1064,7 @@ static int pss(void) {
 	g2_null(x);
 	g2_null(y);
 
-	TRY {
-		bn_new(n);
+	RLC_TRY {
 		bn_new(u);
 		bn_new(v);
 		g1_new(a);
@@ -1072,44 +1072,37 @@ static int pss(void) {
 		g2_new(g);
 		g2_new(x);
 		g2_new(y);
-
-		g1_get_ord(n);
-
 		for (i = 0; i < 5; i++) {
-			bn_null(ms[i]);
 			bn_null(_v[i]);
 			g2_null(_y[i]);
-			bn_new(ms[i]);
-			bn_rand_mod(ms[i], n);
 			bn_new(_v[i]);
 			g2_new(_y[i]);
 		}
 
 		TEST_BEGIN("pointcheval-sanders simple signature is correct") {
 			TEST_ASSERT(cp_pss_gen(u, v, g, x, y) == RLC_OK, end);
-			TEST_ASSERT(cp_pss_sig(a, b, ms[0], u, v) == RLC_OK, end);
-			TEST_ASSERT(cp_pss_ver(a, b, ms[0], g, x, y) == 1, end);
+			TEST_ASSERT(cp_pss_sig(a, b, m, sizeof(m), u, v) == RLC_OK, end);
+			TEST_ASSERT(cp_pss_ver(a, b, m, sizeof(m), g, x, y) == 1, end);
 			/* Check adversarial signature. */
 			g1_set_infty(a);
 			g1_set_infty(b);
-			TEST_ASSERT(cp_pss_ver(a, b, ms[0], g, x, y) == 0, end);
+			TEST_ASSERT(cp_pss_ver(a, b, m, sizeof(m), g, x, y) == 0, end);
 		}
 		TEST_END;
 
-		TEST_BEGIN("pointcheval-sanders block signature is correct") {
+		TEST_BEGIN("pointcheval-sanders message-block signature is correct") {
 			TEST_ASSERT(cp_psb_gen(u, _v, g, x, _y, 5) == RLC_OK, end);
-			TEST_ASSERT(cp_psb_sig(a, b, ms, u, _v, 5) == RLC_OK, end);
-			TEST_ASSERT(cp_psb_ver(a, b, ms, g, x, _y, 5) == 1, end);
+			TEST_ASSERT(cp_psb_sig(a, b, msgs, lens, u, _v, 5) == RLC_OK, end);
+			TEST_ASSERT(cp_psb_ver(a, b, msgs, lens, g, x, _y, 5) == 1, end);
 		}
 		TEST_END;
 	}
-	CATCH_ANY {
-		ERROR(end);
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
 
   end:
-	bn_free(n);
 	bn_free(u);
 	bn_free(v);
 	g1_free(a);
@@ -1118,134 +1111,8 @@ static int pss(void) {
 	g2_free(x);
 	g2_free(y);
 	for (i = 0; i < 5; i++) {
-		bn_free(ms[i]);
 		bn_free(_v[i]);
 		g2_free(_y[i]);
-	}
-  	return code;
-}
-
-static int mpss(void) {
-	int i, j, code = RLC_ERR;
-	bn_t m[2], n, u[2], v[2], ms[5][2], _v[5][2];
-	g1_t g, s[2];
-	g2_t h, x[2], y[2], _y[5][2];
-	gt_t e;
-	mt_t tri[3][2];
-	pt_t t[2];
-
-	bn_null(n);
-	g1_null(g);
-	g2_null(h);
-	gt_null(e);
-
-	TRY {
-		bn_new(n);
-		g1_new(g);
-		g2_new(h);
-		gt_new(e);
-		g1_get_ord(n);
-		for (i = 0; i < 2; i++) {
-			bn_null(m[i]);
-			bn_null(u[i]);
-			bn_null(v[i]);
-			g1_null(s[i]);
-			g2_null(x[i]);
-			g2_null(y[i]);
-			mt_null(tri[0][i]);
-			mt_null(tri[1][i]);
-			mt_null(tri[2][i]);
-			pt_null(t[i]);
-			bn_new(m[i]);
-			bn_rand_mod(m[i], n);
-			bn_new(u[i]);
-			bn_new(v[i]);
-			g1_new(s[i]);
-			g2_new(x[i]);
-			g2_new(y[i]);
-			mt_new(tri[0][i]);
-			mt_new(tri[1][i]);
-			mt_new(tri[2][i]);
-			pt_new(t[i]);
-			for (j = 0; j < 5; j++) {
-				bn_null(ms[j][i]);
-				bn_null(_v[j][i]);
-				g2_null(_y[j][i]);
-				bn_new(ms[j][i]);
-				bn_rand_mod(ms[j][i], n);
-				bn_new(_v[j][i]);
-				g2_new(_y[j][i]);
-			}
-		}
-
-		TEST_BEGIN("multi-party pointcheval-sanders simple signature is correct") {
-			pc_map_tri(t);
-			mt_gen(tri[0], n);
-			mt_gen(tri[1], n);
-			mt_gen(tri[2], n);
-			TEST_ASSERT(cp_mpss_gen(u, v, h, x, y) == RLC_OK, end);
-			TEST_ASSERT(cp_mpss_bct(x, y) == RLC_OK, end);
-			/* Compute signature in MPC. */
-			TEST_ASSERT(cp_mpss_sig(g, s, m, u, v, tri[0], tri[1]) == RLC_OK, end);
-			/* Verify signature in MPC. */
-			cp_mpss_ver(e, g, s, m, h, x[0], y[0], tri[2], t);
-			TEST_ASSERT(gt_is_unity(e) == 1, end);
-			/* Check that signature is also valid for conventional scheme. */
-			bn_add(m[0], m[0], m[1]);
-			bn_mod(m[0], m[0], n);
-			g1_add(s[0], s[0], s[1]);
-			g1_norm(s[0], s[0]);
-			TEST_ASSERT(cp_pss_ver(g, s[0], m[0], h, x[0], y[0]) == 1, end);
-		}
-		TEST_END;
-
-		TEST_BEGIN("multi-party pointcheval-sanders block signature is correct") {
-			g1_get_ord(n);
-			pc_map_tri(t);
-			mt_gen(tri[0], n);
-			mt_gen(tri[1], n);
-			mt_gen(tri[2], n);
-			TEST_ASSERT(cp_mpsb_gen(u, _v, h, x, _y, 5) == RLC_OK, end);
-			TEST_ASSERT(cp_mpsb_bct(x, _y, 5) == RLC_OK, end);
-			/* Compute signature in MPC. */
-			TEST_ASSERT(cp_mpsb_sig(g, s, ms, u, _v, tri[0], tri[1], 5) == RLC_OK, end);
-			/* Verify signature in MPC. */
-			cp_mpsb_ver(e, g, s, ms, h, x[0], _y, NULL, tri[2], t, 5);
-			TEST_ASSERT(gt_is_unity(e) == 1, end);
-			cp_mpsb_ver(e, g, s, ms, h, x[0], _y, _v, tri[2], t, 5);
-			TEST_ASSERT(gt_is_unity(e) == 1, end);
-			bn_sub_dig(ms[0][0], ms[0][0], 1);
-			cp_mpsb_ver(e, g, s, ms, h, x[0], _y, _v, tri[2], t, 5);
-			TEST_ASSERT(gt_is_unity(e) == 0, end);
-		}
-		TEST_END;
-	}
-	CATCH_ANY {
-		ERROR(end);
-	}
-	code = RLC_OK;
-
-  end:
-  	bn_free(n);
-	g1_free(g);
-	g2_free(h);
-	gt_free(e);
-	for (i = 0; i < 2; i++) {
-		bn_free(m[i]);
-		bn_free(u[i]);
-		bn_free(v[i]);
-		g1_free(s[i]);
-		g2_free(x[i]);
-		g2_free(y[i]);
-		mt_free(tri[0][i]);
-		mt_free(tri[1][i]);
-		mt_free(tri[2][i]);
-		pt_free(t[i]);
-		for (j = 0; j < 5; j++) {
-			bn_free(ms[j][i]);
-			bn_free(_v[j][i]);
-			g2_free(_y[j][i]);
-		}
 	}
   	return code;
 }
@@ -1263,7 +1130,7 @@ static int zss(void) {
 	g2_null(s);
 	gt_null(z);
 
-	TRY {
+	RLC_TRY {
 		bn_new(d);
 		g1_new(q);
 		g2_new(s);
@@ -1279,8 +1146,8 @@ static int zss(void) {
 		}
 		TEST_END;
 	}
-	CATCH_ANY {
-		ERROR(end);
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
 
@@ -1312,7 +1179,7 @@ static int lhs(void) {
 	g1_null(_r);
 	g2_null(_s);
 
-	TRY {
+	RLC_TRY {
 		bn_new(m);
 		bn_new(n);
 		g1_new(h);
@@ -1370,7 +1237,7 @@ static int lhs(void) {
 		}
 
 		/* Initialize scheme for messages of single components. */
-		g1_get_ord(n);
+		pc_get_ord(n);
 		cp_cmlhs_init(h);
 		for (int j = 0; j < S; j++) {
 			cp_cmlhs_gen(x[j], hs[j], L, k[j], K, sk[j], pk[j], d[j], y[j]);
@@ -1491,8 +1358,8 @@ static int lhs(void) {
 		}
 		TEST_END;
 	}
-	CATCH_ANY {
-		ERROR(end);
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
 
@@ -1598,7 +1465,7 @@ int main(void) {
 		}
 
 	} else {
-		THROW(ERR_NO_CURVE);
+		RLC_THROW(ERR_NO_CURVE);
 	}
 #endif
 
@@ -1641,13 +1508,6 @@ int main(void) {
 			return 1;
 		}
 
-#if defined(WITH_MPC)
-		if (mpss() != RLC_OK) {
-			core_clean();
-			return 1;
-		}
-#endif
-
 		if (zss() != RLC_OK) {
 			core_clean();
 			return 1;
@@ -1658,7 +1518,7 @@ int main(void) {
 			return 1;
 		}
 	} else {
-		THROW(ERR_NO_CURVE);
+		RLC_THROW(ERR_NO_CURVE);
 	}
 #endif
 

@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -44,7 +44,7 @@ void fb2_mul(fb2_t c, fb2_t a, fb2_t b) {
 	fb_null(t1);
 	fb_null(t2);
 
-	TRY {
+	RLC_TRY {
 		fb_new(t0);
 		fb_new(t1);
 		fb_new(t2);
@@ -58,9 +58,9 @@ void fb2_mul(fb2_t c, fb2_t a, fb2_t b) {
 
 		fb_add(c[0], t1, t2);
 		fb_add(c[1], t0, t1);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		fb_free(t0);
 		fb_free(t1);
 		fb_free(t2);
@@ -72,15 +72,15 @@ void fb2_mul_nor(fb2_t c, fb2_t a) {
 
 	fb_null(t);
 
-	TRY {
+	RLC_TRY {
 		fb_new(t);
 
 		fb_copy(t, a[1]);
 		fb_add(c[1], a[0], a[1]);
 		fb_copy(c[0], t);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		fb_free(t);
 	}
 }

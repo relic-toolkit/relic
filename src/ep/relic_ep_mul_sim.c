@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -82,7 +82,7 @@ static void ep_mul_sim_endom(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 	bn_new(m1);
 	ep_new(u);
 
-	TRY {
+	RLC_TRY {
 		for (i = 0; i < 3; i++) {
 			bn_null(v1[i]);
 			bn_null(v2[i]);
@@ -262,10 +262,10 @@ static void ep_mul_sim_endom(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 		/* Convert r to affine coordinates. */
 		ep_norm(r, r);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(ord);
 		bn_free(k0);
 		bn_free(k1);
@@ -312,7 +312,7 @@ static void ep_mul_sim_plain(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 	ep_t t0[1 << (EP_WIDTH - 2)];
 	ep_t t1[1 << (EP_WIDTH - 2)];
 
-	TRY {
+	RLC_TRY {
 		gen = (t == NULL ? 0 : 1);
 		if (!gen) {
 			for (i = 0; i < (1 << (EP_WIDTH - 2)); i++) {
@@ -384,10 +384,10 @@ static void ep_mul_sim_plain(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 		/* Convert r to affine coordinates. */
 		ep_norm(r, r);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		/* Free the precomputation tables. */
 		if (!gen) {
 			for (i = 0; i < 1 << (EP_WIDTH - 2); i++) {
@@ -416,17 +416,17 @@ void ep_mul_sim_basic(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 
 	ep_null(t);
 
-	TRY {
+	RLC_TRY {
 		ep_new(t);
 		ep_mul(t, q, m);
 		ep_mul(r, p, k);
 		ep_add(t, t, r);
 		ep_norm(r, t);
 
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		ep_free(t);
 	}
 }
@@ -453,7 +453,7 @@ void ep_mul_sim_trick(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 		return;
 	}
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 
 		ep_curve_get_ord(n);
@@ -515,10 +515,10 @@ void ep_mul_sim_trick(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 			ep_add(r, r, t[(w0[i] << w) + w1[i]]);
 		}
 		ep_norm(r, r);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(n);
 		for (int i = 0; i < (1 << w); i++) {
 			ep_free(t0[i]);
@@ -576,7 +576,7 @@ void ep_mul_sim_joint(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 		return;
 	}
 
-	TRY {
+	RLC_TRY {
 		for (i = 0; i < 5; i++) {
 			ep_null(t[i]);
 			ep_new(t[i]);
@@ -623,10 +623,10 @@ void ep_mul_sim_joint(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 		}
 		ep_norm(r, r);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		for (i = 0; i < 5; i++) {
 			ep_free(t[i]);
 		}
@@ -649,7 +649,7 @@ void ep_mul_sim_gen(ep_t r, const bn_t k, const ep_t q, const bn_t m) {
 		return;
 	}
 
-	TRY {
+	RLC_TRY {
 		ep_new(g);
 
 		ep_curve_get_gen(g);
@@ -678,10 +678,10 @@ void ep_mul_sim_gen(ep_t r, const bn_t k, const ep_t q, const bn_t m) {
 #endif
 #endif
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		ep_free(g);
 	}
 }
@@ -697,7 +697,7 @@ void ep_mul_sim_dig(ep_t r, const ep_t p[], const dig_t k[], int len) {
 		max = RLC_MAX(max, util_bits_dig(k[i]));
 	}
 
-	TRY {
+	RLC_TRY {
 		ep_new(t);
 
 		ep_set_infty(t);
@@ -712,10 +712,10 @@ void ep_mul_sim_dig(ep_t r, const ep_t p[], const dig_t k[], int len) {
 
 		ep_norm(r, t);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		ep_free(t);
 	}
 }

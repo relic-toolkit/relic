@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -80,7 +80,7 @@ void ed_param_set(int param) {
 	bn_null(r);
 	bn_null(h);
 
-	TRY {
+	RLC_TRY {
 		ed_new(g);
 		bn_new(r);
 		bn_new(h);
@@ -95,7 +95,7 @@ void ed_param_set(int param) {
 #endif
 			default:
 				(void)str;
-				THROW(ERR_NO_VALID);
+				RLC_THROW(ERR_NO_VALID);
 				break;
 		}
 		fp_set_dig(g->z, 1);
@@ -121,10 +121,10 @@ void ed_param_set(int param) {
 #endif
 		ctx->ed_id = param;
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(r);
 		bn_free(h);
 		ed_free(g);

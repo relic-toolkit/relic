@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -50,7 +50,7 @@ static void pp_mil_k48(fp48_t r, fp8_t qx, fp8_t qy, ep_t p, bn_t a) {
 	fp8_null(ry);
 	fp8_null(rz);
 
-	TRY {
+	RLC_TRY {
 		fp48_new(l);
 		ep_new(_p);
 		fp8_new(rx);
@@ -86,10 +86,10 @@ static void pp_mil_k48(fp48_t r, fp8_t qx, fp8_t qy, ep_t p, bn_t a) {
 			}
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fp48_free(l);
 		ep_free(_p);
 		fp8_free(rx);
@@ -107,7 +107,7 @@ void pp_map_k48(fp48_t r, ep_t p, fp8_t qx, fp8_t qy) {
 
 	bn_null(a);
 
-	TRY {
+	RLC_TRY {
 		bn_new(a);
 
 		fp_prime_get_par(a);
@@ -126,10 +126,10 @@ void pp_map_k48(fp48_t r, ep_t p, fp8_t qx, fp8_t qy) {
 			}
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(a);
 	}
 }

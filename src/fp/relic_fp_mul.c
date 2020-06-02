@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -63,7 +63,7 @@ static void fp_mul_karat_imp(dv_t c, const fp_t a, const fp_t b, int size,
 	dv_null(a0b0);
 	dv_null(a1b1);
 
-	TRY {
+	RLC_TRY {
 		/* Allocate the temp variables. */
 		dv_new(a1);
 		dv_new(b1);
@@ -145,10 +145,10 @@ static void fp_mul_karat_imp(dv_t c, const fp_t a, const fp_t b, int size,
 		c += 2 * (h1 + 1);
 		bn_add1_low(c, c, carry, 2 * size - h - 2 * (h1 + 1));
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		dv_free(a1);
 		dv_free(b1);
 		dv_free(a0b0);
@@ -168,14 +168,14 @@ void fp_mul_dig(fp_t c, const fp_t a, dig_t b) {
 
 	dv_null(t);
 
-	TRY {
+	RLC_TRY {
 		dv_new(t);
 		fp_prime_conv_dig(t, b);
 		fp_mul(c, a, t);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		dv_free(t);
 	}
 }
@@ -189,7 +189,7 @@ void fp_mul_basic(fp_t c, const fp_t a, const fp_t b) {
 
 	dv_null(t);
 
-	TRY {
+	RLC_TRY {
 		/* We need a temporary variable so that c can be a or b. */
 		dv_new(t);
 		dv_zero(t, 2 * RLC_FP_DIGS);
@@ -200,10 +200,10 @@ void fp_mul_basic(fp_t c, const fp_t a, const fp_t b) {
 
 		fp_rdc(c, t);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		dv_free(t);
 	}
 }
@@ -217,17 +217,17 @@ void fp_mul_comba(fp_t c, const fp_t a, const fp_t b) {
 
 	dv_null(t);
 
-	TRY {
+	RLC_TRY {
 		/* We need a temporary variable so that c can be a or b. */
 		dv_new(t);
 
 		fp_muln_low(t, a, b);
 		fp_rdc(c, t);
 		dv_free(t);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		dv_free(t);
 	}
 }
@@ -249,7 +249,7 @@ void fp_mul_karat(fp_t c, const fp_t a, const fp_t b) {
 
 	dv_null(t);
 
-	TRY {
+	RLC_TRY {
 		/* We need a temporary variable so that c can be a or b. */
 		dv_new(t);
 
@@ -262,10 +262,10 @@ void fp_mul_karat(fp_t c, const fp_t a, const fp_t b) {
 		}
 
 		fp_rdc(c, t);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		dv_free(t);
 	}
 }

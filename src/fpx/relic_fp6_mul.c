@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -48,7 +48,7 @@ void fp6_mul_basic(fp6_t c, fp6_t a, fp6_t b) {
 	fp2_null(t1);
 	fp2_null(t2);
 
-	TRY {
+	RLC_TRY {
 		fp2_new(v0);
 		fp2_new(v1);
 		fp2_new(v2);
@@ -93,9 +93,9 @@ void fp6_mul_basic(fp6_t c, fp6_t a, fp6_t b) {
 
 		/* c_0 = t2 */
 		fp2_copy(c[0], t2);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		fp2_free(t2);
 		fp2_free(t1);
 		fp2_free(t0);
@@ -120,7 +120,7 @@ inline void fp6_mul_unr(dv6_t c, fp6_t a, fp6_t b) {
 	fp2_null(t0);
 	fp2_null(t1);
 
-	TRY {
+	RLC_TRY {
 		dv2_new(u0);
 		dv2_new(u1);
 		dv2_new(u2);
@@ -188,9 +188,9 @@ inline void fp6_mul_unr(dv6_t c, fp6_t a, fp6_t b) {
 		fp2_muln_low(u3, t0, t1);
 		fp2_subc_low(u3, u3, c[2]);
 		fp2_addc_low(c[2], u3, u1);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		dv2_free(u0);
 		dv2_free(u1);
 		dv2_free(u2);
@@ -205,15 +205,15 @@ void fp6_mul_lazyr(fp6_t c, fp6_t a, fp6_t b) {
 
 	dv6_null(t);
 
-	TRY {
+	RLC_TRY {
 		dv6_new(t);
 		fp6_mul_unr(t, a, b);
 		fp2_rdcn_low(c[0], t[0]);
 		fp2_rdcn_low(c[1], t[1]);
 		fp2_rdcn_low(c[2], t[2]);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		dv6_free(t);
 	}
 }
@@ -229,7 +229,7 @@ void fp6_mul_dxs(fp6_t c, fp6_t a, fp6_t b) {
 	fp2_null(t1);
 	fp2_null(t2);
 
-	TRY {
+	RLC_TRY {
 		fp2_new(v0);
 		fp2_new(v1);
 		fp2_new(t0);
@@ -266,9 +266,9 @@ void fp6_mul_dxs(fp6_t c, fp6_t a, fp6_t b) {
 
 		/* c0 = t2 */
 		fp2_copy(c[0], t2);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		fp2_free(v0);
 		fp2_free(v1);
 		fp2_free(t0);
@@ -282,7 +282,7 @@ void fp6_mul_art(fp6_t c, fp6_t a) {
 
 	fp2_null(t0);
 
-	TRY {
+	RLC_TRY {
 		fp2_new(t0);
 
 		/* (a_0 + a_1 * v + a_2 * v^2) * v = a_2 + a_0 * v + a_1 * v^2 */
@@ -290,9 +290,9 @@ void fp6_mul_art(fp6_t c, fp6_t a) {
 		fp2_mul_nor(c[0], a[2]);
 		fp2_copy(c[2], a[1]);
 		fp2_copy(c[1], t0);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		fp2_free(t0);
 	}
 }

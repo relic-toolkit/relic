@@ -140,7 +140,7 @@ has_lzcnt_hard
     #endif
 #endif
 
-static unsigned int lzcnt32_generic(unsigned int x)
+inline static unsigned int lzcnt32_generic(unsigned int x)
 {
     unsigned int n;
     static unsigned int clz_table_4[] = {
@@ -166,7 +166,7 @@ static unsigned int lzcnt32_generic(unsigned int x)
     return n - 1;
 }
 
-static unsigned int lzcnt64_generic(unsigned long long x)
+inline static unsigned int lzcnt64_generic(unsigned long long x)
 {
     unsigned int n;
     static unsigned int clz_table_4[] = {
@@ -322,7 +322,7 @@ static int has_lzcnt_hard()
         #endif
     #endif
 
-    static unsigned int lzcnt32_hard(unsigned int x)
+    inline static unsigned int lzcnt32_hard(unsigned int x)
     {
         #if defined(ARCH_X86) || defined(ARCH_X64)
             #if defined(_MSC_VER) && !defined(__clang__)
@@ -404,7 +404,7 @@ static int has_lzcnt_hard()
 #endif
 
 
-static unsigned int lzcnt32_soft(unsigned int x)
+inline static unsigned int lzcnt32_soft(unsigned int x)
 {
 #if defined(_MSC_VER)
     return lzcnt32_msvc_bsr(x);
@@ -415,7 +415,7 @@ static unsigned int lzcnt32_soft(unsigned int x)
 #endif
 }
 
-static unsigned int lzcnt64_soft(unsigned long long x)
+inline static unsigned int lzcnt64_soft(unsigned long long x)
 {
 #if defined(ARCH_64BIT)
     #if defined(_MSC_VER)

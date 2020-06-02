@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -42,7 +42,7 @@ void fp2_inv(fp2_t c, fp2_t a) {
 	fp_null(t0);
 	fp_null(t1);
 
-	TRY {
+	RLC_TRY {
 		fp_new(t0);
 		fp_new(t1);
 
@@ -80,10 +80,10 @@ void fp2_inv(fp2_t c, fp2_t a) {
 		fp_mul(c[1], a[1], t1);
 		fp_neg(c[1], c[1]);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fp_free(t0);
 		fp_free(t1);
 	}
@@ -103,7 +103,7 @@ void fp2_inv_sim(fp2_t *c, fp2_t *a, int n) {
 	}
 	fp2_null(u);
 
-	TRY {
+	RLC_TRY {
 		for (i = 0; i < n; i++) {
 			fp2_new(t[i]);
 		}
@@ -125,10 +125,10 @@ void fp2_inv_sim(fp2_t *c, fp2_t *a, int n) {
 		}
 		fp2_copy(c[0], u);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		for (i = 0; i < n; i++) {
 			fp2_free(t[i]);
 		}
@@ -148,7 +148,7 @@ void fp3_inv(fp3_t c, fp3_t a) {
 	fp_null(v2);
 	fp_null(t0);
 
-	TRY {
+	RLC_TRY {
 		fp_new(v0);
 		fp_new(v1);
 		fp_new(v2);
@@ -210,9 +210,9 @@ void fp3_inv(fp3_t c, fp3_t a) {
 		fp_mul(c[0], v0, t0);
 		fp_mul(c[1], v1, t0);
 		fp_mul(c[2], v2, t0);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		fp_free(v0);
 		fp_free(v1);
 		fp_free(v2);
@@ -229,7 +229,7 @@ void fp3_inv_sim(fp3_t * c, fp3_t * a, int n) {
 	}
 	fp3_null(u);
 
-	TRY {
+	RLC_TRY {
 		for (i = 0; i < n; i++) {
 			fp3_new(t[i]);
 		}
@@ -251,10 +251,10 @@ void fp3_inv_sim(fp3_t * c, fp3_t * a, int n) {
 		}
 		fp3_copy(c[0], u);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		for (i = 0; i < n; i++) {
 			fp3_free(t[i]);
 		}
@@ -274,7 +274,7 @@ void fp4_inv(fp4_t c, fp4_t a) {
 	fp2_null(t0);
 	fp2_null(t1);
 
-	TRY {
+	RLC_TRY {
 		fp2_new(t0);
 		fp2_new(t1);
 
@@ -287,9 +287,9 @@ void fp4_inv(fp4_t c, fp4_t a) {
 		fp2_mul(c[0], a[0], t0);
 		fp2_neg(c[1], a[1]);
 		fp2_mul(c[1], c[1], t0);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		fp2_free(t0);
 		fp2_free(t1);
 	}
@@ -306,7 +306,7 @@ void fp6_inv(fp6_t c, fp6_t a) {
 	fp2_null(v2);
 	fp2_null(t0);
 
-	TRY {
+	RLC_TRY {
 		fp2_new(v0);
 		fp2_new(v1);
 		fp2_new(v2);
@@ -344,9 +344,9 @@ void fp6_inv(fp6_t c, fp6_t a) {
 		fp2_mul(c[0], v0, t0);
 		fp2_mul(c[1], v1, t0);
 		fp2_mul(c[2], v2, t0);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		fp2_free(v0);
 		fp2_free(v1);
 		fp2_free(v2);
@@ -366,7 +366,7 @@ void fp8_inv(fp8_t c, fp8_t a) {
 	fp4_null(t0);
 	fp4_null(t1);
 
-	TRY {
+	RLC_TRY {
 		fp4_new(t0);
 		fp4_new(t1);
 
@@ -379,9 +379,9 @@ void fp8_inv(fp8_t c, fp8_t a) {
 		fp4_mul(c[0], a[0], t0);
 		fp4_neg(c[1], a[1]);
 		fp4_mul(c[1], c[1], t0);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		fp4_free(t0);
 		fp4_free(t1);
 	}
@@ -396,7 +396,7 @@ void fp8_inv_sim(fp8_t *c, fp8_t *a, int n) {
 	}
 	fp8_null(u);
 
-	TRY {
+	RLC_TRY {
 		for (i = 0; i < n; i++) {
 			fp8_new(t[i]);
 		}
@@ -418,10 +418,10 @@ void fp8_inv_sim(fp8_t *c, fp8_t *a, int n) {
 		}
 		fp8_copy(c[0], u);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		for (i = 0; i < n; i++) {
 			fp8_free(t[i]);
 		}
@@ -440,7 +440,7 @@ void fp9_inv(fp9_t c, fp9_t a) {
 	fp3_null(v2);
 	fp3_null(t0);
 
-	TRY {
+	RLC_TRY {
 		fp3_new(v0);
 		fp3_new(v1);
 		fp3_new(v2);
@@ -478,9 +478,9 @@ void fp9_inv(fp9_t c, fp9_t a) {
 		fp3_mul(c[0], v0, t0);
 		fp3_mul(c[1], v1, t0);
 		fp3_mul(c[2], v2, t0);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		fp3_free(v0);
 		fp3_free(v1);
 		fp3_free(v2);
@@ -497,7 +497,7 @@ void fp9_inv_sim(fp9_t * c, fp9_t * a, int n) {
 	}
 	fp9_null(u);
 
-	TRY {
+	RLC_TRY {
 		for (i = 0; i < n; i++) {
 			fp9_new(t[i]);
 		}
@@ -519,10 +519,10 @@ void fp9_inv_sim(fp9_t * c, fp9_t * a, int n) {
 		}
 		fp9_copy(c[0], u);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		for (i = 0; i < n; i++) {
 			fp9_free(t[i]);
 		}
@@ -537,7 +537,7 @@ void fp12_inv(fp12_t c, fp12_t a) {
 	fp6_null(t0);
 	fp6_null(t1);
 
-	TRY {
+	RLC_TRY {
 		fp6_new(t0);
 		fp6_new(t1);
 
@@ -550,9 +550,9 @@ void fp12_inv(fp12_t c, fp12_t a) {
 		fp6_mul(c[0], a[0], t0);
 		fp6_neg(c[1], a[1]);
 		fp6_mul(c[1], c[1], t0);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		fp6_free(t0);
 		fp6_free(t1);
 	}
@@ -570,7 +570,7 @@ void fp18_inv(fp18_t c, fp18_t a) {
 	fp9_null(t0);
 	fp9_null(t1);
 
-	TRY {
+	RLC_TRY {
 		fp9_new(t0);
 		fp9_new(t1);
 
@@ -583,9 +583,9 @@ void fp18_inv(fp18_t c, fp18_t a) {
 		fp9_mul(c[0], a[0], t0);
 		fp9_neg(c[1], a[1]);
 		fp9_mul(c[1], c[1], t0);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		fp9_free(t0);
 		fp9_free(t1);
 	}
@@ -607,7 +607,7 @@ void fp24_inv(fp24_t c, fp24_t a) {
 	fp8_null(v2);
 	fp8_null(t0);
 
-	TRY {
+	RLC_TRY {
 		fp8_new(v0);
 		fp8_new(v1);
 		fp8_new(v2);
@@ -645,9 +645,9 @@ void fp24_inv(fp24_t c, fp24_t a) {
 		fp8_mul(c[0], v0, t0);
 		fp8_mul(c[1], v1, t0);
 		fp8_mul(c[2], v2, t0);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		fp8_free(v0);
 		fp8_free(v1);
 		fp8_free(v2);
@@ -662,7 +662,7 @@ void fp48_inv(fp48_t c, fp48_t a) {
 	fp24_null(t0);
 	fp24_null(t1);
 
-	TRY {
+	RLC_TRY {
 		fp24_new(t0);
 		fp24_new(t1);
 
@@ -675,9 +675,9 @@ void fp48_inv(fp48_t c, fp48_t a) {
 		fp24_mul(c[0], a[0], t0);
 		fp24_neg(c[1], a[1]);
 		fp24_mul(c[1], c[1], t0);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		fp24_free(t0);
 		fp24_free(t1);
 	}
@@ -699,7 +699,7 @@ void fp54_inv(fp54_t c, fp54_t a) {
 	fp18_null(v2);
 	fp18_null(t0);
 
-	TRY {
+	RLC_TRY {
 		fp18_new(v0);
 		fp18_new(v1);
 		fp18_new(v2);
@@ -737,9 +737,9 @@ void fp54_inv(fp54_t c, fp54_t a) {
 		fp18_mul(c[0], v0, t0);
 		fp18_mul(c[1], v1, t0);
 		fp18_mul(c[2], v2, t0);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		fp18_free(v0);
 		fp18_free(v1);
 		fp18_free(v2);

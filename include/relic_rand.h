@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -48,23 +48,23 @@
 #if RAND == HASHD
 
 #if MD_MAP == SH224 || MD_MAP == SH256 || MD_MAP == BLAKE2S_160 || MD_MAP == BLAKE2S_256
-#define RAND_SIZE		(1 + 2*440/8)
+#define RLC_RAND_SIZE		(1 + 2*440/8)
 #elif MD_MAP == SH384 || MD_MAP == SH512
-#define RAND_SIZE		(1 + 2*888/8)
+#define RLC_RAND_SIZE		(1 + 2*888/8)
 #endif
 
 #elif RAND == UDEV
-#define RAND_SIZE		(sizeof(int))
+#define RLC_RAND_SIZE		(sizeof(int))
 #elif RAND == CALL
-#define RAND_SIZE		(sizeof(void (*)(uint8_t *, int)))
+#define RLC_RAND_SIZE		(sizeof(void (*)(uint8_t *, int)))
 #elif RAND == RDRND
-#define RAND_SIZE      0
+#define RLC_RAND_SIZE      0
 #endif
 
 /**
  * Minimum size of the PRNG seed.
  */
-#define SEED_SIZE	    64
+#define RLC_RAND_SEED	    64
 
 /*============================================================================*/
 /* Function prototypes                                                        */

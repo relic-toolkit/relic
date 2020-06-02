@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -44,7 +44,7 @@ static void ep9_dbl_basic(fp9_t s, fp9_t rx, fp9_t ry) {
 	fp9_null(t1);
 	fp9_null(t2);
 
-	TRY {
+	RLC_TRY {
 		fp9_new(t0);
 		fp9_new(t1);
 		fp9_new(t2);
@@ -82,10 +82,10 @@ static void ep9_dbl_basic(fp9_t s, fp9_t rx, fp9_t ry) {
 
 		fp9_copy(rx, t0);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fp9_free(t0);
 		fp9_free(t1);
 		fp9_free(t2);
@@ -105,7 +105,7 @@ void pp_dbl_k54_basic(fp54_t l, fp9_t rx, fp9_t ry, ep_t p) {
 	fp9_null(tx);
 	fp9_null(ty);
 
-	TRY {
+	RLC_TRY {
 		fp9_new(s);
 		fp9_new(tx);
 		fp9_new(ty);
@@ -129,10 +129,10 @@ void pp_dbl_k54_basic(fp54_t l, fp9_t rx, fp9_t ry, ep_t p) {
 		fp9_sub(l[0][0], ty, l[0][0]);
 
 		fp_copy(l[0][1][0][0], p->y);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fp9_free(s);
 		fp9_free(tx);
 		fp9_free(ty);
@@ -154,7 +154,7 @@ void pp_dbl_k54_projc(fp54_t l, fp9_t rx, fp9_t ry, fp9_t rz, ep_t p) {
 	fp9_null(t5);
 	fp9_null(t6);
 
-	TRY {
+	RLC_TRY {
 		fp9_new(t0);
 		fp9_new(t1);
 		fp9_new(t2);
@@ -236,10 +236,10 @@ void pp_dbl_k54_projc(fp54_t l, fp9_t rx, fp9_t ry, fp9_t rz, ep_t p) {
 		fp_mul(l[0][1][2][1], p->y, t5[2][1]);
 		fp_mul(l[0][1][2][2], p->y, t5[2][2]);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fp9_free(t0);
 		fp9_free(t1);
 		fp9_free(t2);

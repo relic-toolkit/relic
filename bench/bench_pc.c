@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -168,7 +168,7 @@ static void arith1(void) {
 	bn_new(n);
 	bn_new(l);
 
-	g1_get_ord(n);
+	pc_get_ord(n);
 
 	BENCH_BEGIN("g1_add") {
 		g1_rand(p);
@@ -420,7 +420,7 @@ static void arith2(void) {
 	bn_new(n);
 	bn_new(l);
 
-	g2_get_ord(n);
+	pc_get_ord(n);
 
 	BENCH_BEGIN("g2_add") {
 		g2_rand(p);
@@ -680,7 +680,7 @@ static void arith(void) {
 
 	BENCH_BEGIN("gt_exp") {
 		gt_rand(a);
-		gt_get_ord(d);
+		pc_get_ord(d);
 		bn_rand_mod(e, d);
 		BENCH_ADD(gt_exp(c, a, e));
 	}
@@ -698,7 +698,7 @@ static void arith(void) {
 
 	BENCH_BEGIN("gt_exp_dig") {
 		gt_rand(a);
-		gt_get_ord(d);
+		pc_get_ord(d);
 		bn_rand(e, RLC_POS, bn_bits(d));
 		BENCH_ADD(gt_exp_dig(c, a, e->dp[0]));
 	}
@@ -760,7 +760,7 @@ int main(void) {
 	util_banner("Benchmarks for the PC module:", 0);
 
 	if (pc_param_set_any() != RLC_OK) {
-		THROW(ERR_NO_CURVE);
+		RLC_THROW(ERR_NO_CURVE);
 		core_clean();
 		return 0;
 	}

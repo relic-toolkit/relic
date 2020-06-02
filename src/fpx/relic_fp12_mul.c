@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -50,7 +50,7 @@ inline static void fp6_mul_dxs_unr_lazyr(dv6_t c, fp6_t a, fp6_t b) {
 	fp2_null(t0);
 	fp2_null(t1);
 
-	TRY {
+	RLC_TRY {
 		dv2_new(u0);
 		dv2_new(u1);
 		dv2_new(u2);
@@ -97,9 +97,9 @@ inline static void fp6_mul_dxs_unr_lazyr(dv6_t c, fp6_t a, fp6_t b) {
 		fp2_muln_low(u2, a[2], b[0]);
 		fp2_addc_low(c[2], u1, u2);
 #endif
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		dv2_free(u0);
 		dv2_free(u1);
 		dv2_free(u2);
@@ -124,7 +124,7 @@ void fp12_mul_basic(fp12_t c, fp12_t a, fp12_t b) {
 	fp6_null(t1);
 	fp6_null(t2);
 
-	TRY {
+	RLC_TRY {
 		fp6_new(t0);
 		fp6_new(t1);
 		fp6_new(t2);
@@ -149,9 +149,9 @@ void fp12_mul_basic(fp12_t c, fp12_t a, fp12_t b) {
 		/* c_0 = a_0b_0 + v * a_1b_1. */
 		fp6_mul_art(t1, t1);
 		fp6_add(c[0], t0, t1);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		fp6_free(t0);
 		fp6_free(t1);
 		fp6_free(t2);
@@ -165,12 +165,12 @@ void fp12_mul_dxs_basic(fp12_t c, fp12_t a, fp12_t b) {
 	fp6_null(t1);
 	fp6_null(t2);
 
-	TRY {
+	RLC_TRY {
 		fp6_new(t0);
 		fp6_new(t1);
 		fp6_new(t2);
 
-		if (ep2_curve_is_twist() == EP_DTYPE) {
+		if (ep2_curve_is_twist() == RLC_EP_DTYPE) {
 #if EP_ADD == BASIC
 			/* t0 = a_0 * b_0 */
 			fp_mul(t0[0][0], a[0][0][0], b[0][0][0]);
@@ -231,10 +231,10 @@ void fp12_mul_dxs_basic(fp12_t c, fp12_t a, fp12_t b) {
 		fp6_mul_art(t1, t1);
 		fp6_add(c[0], t0, t1);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fp6_free(t0);
 		fp6_free(t1);
 		fp6_free(t2);
@@ -256,7 +256,7 @@ void fp12_mul_unr(dv12_t c, fp12_t a, fp12_t b) {
 	fp6_null(t0);
 	fp6_null(t1);
 
-	TRY {
+	RLC_TRY {
 		dv6_new(u0);
 		dv6_new(u1);
 		dv6_new(u2);
@@ -286,9 +286,9 @@ void fp12_mul_unr(dv12_t c, fp12_t a, fp12_t b) {
 		fp2_addc_low(c[0][0], u0[0], u2[0]);
 		fp2_addc_low(c[0][1], u0[1], u1[0]);
 		fp2_addc_low(c[0][2], u0[2], u1[1]);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		dv6_free(u0);
 		dv6_free(u1);
 		dv6_free(u2);
@@ -303,16 +303,16 @@ void fp12_mul_lazyr(fp12_t c, fp12_t a, fp12_t b) {
 
 	dv12_null(t);
 
-	TRY {
+	RLC_TRY {
 		dv12_new(t);
 		fp12_mul_unr(t, a, b);
 		for (int i = 0; i < 3; i++) {
 			fp2_rdcn_low(c[0][i], t[0][i]);
 			fp2_rdcn_low(c[1][i], t[1][i]);
 		}
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		dv12_free(t);
 	}
 }
@@ -326,13 +326,13 @@ void fp12_mul_dxs_lazyr(fp12_t c, fp12_t a, fp12_t b) {
 	dv6_null(u1);
 	dv6_null(u2);
 
-	TRY {
+	RLC_TRY {
 		fp6_new(t0);
 		dv6_new(u0);
 		dv6_new(u1);
 		dv6_new(u2);
 
-		if (ep2_curve_is_twist() == EP_DTYPE) {
+		if (ep2_curve_is_twist() == RLC_EP_DTYPE) {
 #if EP_ADD == BASIC
 			/* t0 = a_0 * b_0. */
 			fp_muln_low(u0[0][0], a[0][0][0], b[0][0][0]);
@@ -409,9 +409,9 @@ void fp12_mul_dxs_lazyr(fp12_t c, fp12_t a, fp12_t b) {
 		fp2_rdcn_low(c[0][0], u0[0]);
 		fp2_rdcn_low(c[0][1], u0[1]);
 		fp2_rdcn_low(c[0][2], u0[2]);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		fp6_free(t0);
 		dv6_free(u0);
 		dv6_free(u1);
@@ -426,16 +426,16 @@ void fp12_mul_art(fp12_t c, fp12_t a) {
 
 	fp6_null(t0);
 
-	TRY {
+	RLC_TRY {
 		fp6_new(t0);
 
 		/* (a_0 + a_1 * v) * v = a_0 * v + a_1 * v^2 */
 		fp6_copy(t0, a[0]);
 		fp6_mul_art(c[0], a[1]);
 		fp6_copy(c[1], t0);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		fp6_free(t0);
 	}
 }

@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -66,14 +66,14 @@ void fp_add_dig(fp_t c, const fp_t a, dig_t b) {
 
 		fp_null(t);
 
-		TRY {
+		RLC_TRY {
 			fp_new(t);
 
 			fp_set_dig(t, b);
 			fp_add(c, a, t);
-		} CATCH_ANY {
-			THROW(ERR_CAUGHT);
-		} FINALLY {
+		} RLC_CATCH_ANY {
+			RLC_THROW(ERR_CAUGHT);
+		} RLC_FINALLY {
 			fp_free(t);
 		}
 	}
@@ -117,14 +117,14 @@ void fp_sub_dig(fp_t c, const fp_t a, dig_t b) {
 
 		fp_null(t);
 
-		TRY {
+		RLC_TRY {
 			fp_new(t);
 
 			fp_set_dig(t, b);
 			fp_sub(c, a, t);
-		} CATCH_ANY {
-			THROW(ERR_CAUGHT);
-		} FINALLY {
+		} RLC_CATCH_ANY {
+			RLC_THROW(ERR_CAUGHT);
+		} RLC_FINALLY {
 			fp_free(t);
 		}
 	}

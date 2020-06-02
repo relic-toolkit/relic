@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -167,20 +167,20 @@ int fb_size_str(const fb_t a, int radix) {
 	bn_null(t);
 
 	if (!valid_radix(radix)) {
-		THROW(ERR_NO_VALID);
+		RLC_THROW(ERR_NO_VALID);
 	}
 
-	TRY {
+	RLC_TRY {
 		bn_new(t);
 
 		bn_read_raw(t, a, RLC_FB_DIGS);
 
 		digits = bn_size_str(t, radix);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(t);
 	}
 
@@ -196,7 +196,7 @@ void fb_read_str(fb_t a, const char *str, int len, int radix) {
 
 	l = log_radix(radix);
 	if (!valid_radix(radix)) {
-		THROW(ERR_NO_VALID);
+		RLC_THROW(ERR_NO_VALID);
 	}
 
 	j = 0;
@@ -214,7 +214,7 @@ void fb_read_str(fb_t a, const char *str, int len, int radix) {
 		if (i < radix) {
 			carry = fb_lshb_low(a, a, l);
 			if (carry != 0) {
-				THROW(ERR_NO_BUFFER);
+				RLC_THROW(ERR_NO_BUFFER);
 			}
 			fb_add_dig(a, a, (dig_t)i);
 		} else {
@@ -233,13 +233,13 @@ void fb_write_str(char *str, int len, const fb_t a, int radix) {
 
 	l = fb_size_str(a, radix);
 	if (len < l) {
-		THROW(ERR_NO_BUFFER);
+		RLC_THROW(ERR_NO_BUFFER);
 	}
 	len = l;
 
 	l = log_radix(radix);
 	if (!valid_radix(radix)) {
-		THROW(ERR_NO_VALID)
+		RLC_THROW(ERR_NO_VALID)
 	}
 
 	if (fb_is_zero(a) == 1) {
@@ -248,7 +248,7 @@ void fb_write_str(char *str, int len, const fb_t a, int radix) {
 		return;
 	}
 
-	TRY {
+	RLC_TRY {
 		fb_new(t);
 		fb_copy(t, a);
 
@@ -273,10 +273,10 @@ void fb_write_str(char *str, int len, const fb_t a, int radix) {
 
 		str[len - 1] = '\0';
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fb_free(t);
 	}
 }
@@ -287,20 +287,20 @@ void fb_read_bin(fb_t a, const uint8_t *bin, int len) {
 	bn_null(t);
 
 	if (len != RLC_FB_BYTES) {
-		THROW(ERR_NO_BUFFER);
+		RLC_THROW(ERR_NO_BUFFER);
 	}
 
-	TRY {
+	RLC_TRY {
 		bn_new(t);
 
 		bn_read_bin(t, bin, len);
 
 		fb_copy(a, t->dp);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(t);
 	}
 }
@@ -311,19 +311,19 @@ void fb_write_bin(uint8_t *bin, int len, const fb_t a) {
 	bn_null(t);
 
 	if (len != RLC_FB_BYTES) {
-		THROW(ERR_NO_BUFFER);
+		RLC_THROW(ERR_NO_BUFFER);
 	}
 
-	TRY {
+	RLC_TRY {
 		bn_new(t);
 
 		bn_read_raw(t, a, RLC_FB_DIGS);
 
 		bn_write_bin(bin, len, t);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(t);
 	}
 }

@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -172,7 +172,7 @@ typedef eb_st *eb_t;
 #define eb_new(A)															\
 	A = (eb_t)calloc(1, sizeof(eb_st));										\
 	if (A == NULL) {														\
-		THROW(ERR_NO_MEMORY);												\
+		RLC_THROW(ERR_NO_MEMORY);												\
 	}																		\
 
 #elif ALLOC == AUTO

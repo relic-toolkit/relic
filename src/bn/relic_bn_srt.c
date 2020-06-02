@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -41,7 +41,7 @@ void bn_srt(bn_t c, bn_t a) {
 	int bits, cmp;
 
 	if (bn_sign(a) == RLC_NEG) {
-		THROW(ERR_NO_VALID);
+		RLC_THROW(ERR_NO_VALID);
 	}
 
 	bits = bn_bits(a);
@@ -52,7 +52,7 @@ void bn_srt(bn_t c, bn_t a) {
 	bn_null(m);
 	bn_null(t);
 
-	TRY{
+	RLC_TRY {
 		bn_new(h);
 		bn_new(l);
 		bn_new(m);
@@ -78,10 +78,10 @@ void bn_srt(bn_t c, bn_t a) {
 
 		bn_copy(c, m);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(h);
 		bn_free(l);
 		bn_free(m);

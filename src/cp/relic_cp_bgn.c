@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -51,10 +51,10 @@ int cp_bgn_gen(bgn_t pub, bgn_t prv) {
 
 	bn_null(n);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 
-		g1_get_ord(n);
+		pc_get_ord(n);
 
 		bn_rand_mod(prv->x, n);
 		bn_rand_mod(prv->y, n);
@@ -68,10 +68,10 @@ int cp_bgn_gen(bgn_t pub, bgn_t prv) {
 		g2_mul_gen(pub->hy, prv->y);
 		g2_mul_gen(pub->hz, prv->z);
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		result = RLC_ERR;
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(n);
 	}
 
@@ -87,12 +87,12 @@ int cp_bgn_enc1(g1_t out[2], dig_t in, bgn_t pub) {
 	bn_null(r);
 	g1_null(t);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 		bn_new(r);
 		g1_new(t);
 
-		g1_get_ord(n);
+		pc_get_ord(n);
 		bn_rand_mod(r, n);
 
 		/* Compute c0 = (ym + r)G. */
@@ -108,10 +108,10 @@ int cp_bgn_enc1(g1_t out[2], dig_t in, bgn_t pub) {
 		g1_add(out[1], out[1], t);
 		g1_norm(out[1], out[1]);
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		result = RLC_ERR;
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(n);
 		bn_free(r);
 		g1_free(t);
@@ -131,14 +131,14 @@ int cp_bgn_dec1(dig_t *out, g1_t in[2], bgn_t prv) {
 	g1_null(t);
 	g1_null(u);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 		bn_new(r);
 		g1_new(s);
 		g1_new(t);
 		g1_new(u);
 
-		g1_get_ord(n);
+		pc_get_ord(n);
 		/* Compute T = x(ym + r)G - (zm + xr)G = m(xy - z)G. */
 		g1_mul(t, in[0], prv->x);
 		g1_sub(t, t, in[1]);
@@ -164,10 +164,10 @@ int cp_bgn_dec1(dig_t *out, g1_t in[2], bgn_t prv) {
 				g1_norm(u, u);
 			}
 		}
-	} CATCH_ANY {
+	} RLC_CATCH_ANY {
 		result = RLC_ERR;
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(n);
 		bn_free(r);
 		g1_free(s);
@@ -187,12 +187,12 @@ int cp_bgn_enc2(g2_t out[2], dig_t in, bgn_t pub) {
 	bn_null(r);
 	g2_null(t);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 		bn_new(r);
 		g2_new(t);
 
-		g2_get_ord(n);
+		pc_get_ord(n);
 		bn_rand_mod(r, n);
 
 		/* Compute c0 = (ym + r)G. */
@@ -207,10 +207,10 @@ int cp_bgn_enc2(g2_t out[2], dig_t in, bgn_t pub) {
 		g2_add(out[1], out[1], t);
 		g2_norm(out[1], out[1]);
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		result = RLC_ERR;
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(n);
 		bn_free(r);
 		g2_free(t);
@@ -230,14 +230,14 @@ int cp_bgn_dec2(dig_t *out, g2_t in[2], bgn_t prv) {
 	g2_null(t);
 	g2_null(u);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 		bn_new(r);
 		g2_new(s);
 		g2_new(t);
 		g2_new(u);
 
-		g2_get_ord(n);
+		pc_get_ord(n);
 		/* Compute T = x(ym + r)G - (zm + xr)G = m(xy - z)G. */
 		g2_mul(t, in[0], prv->x);
 		g2_sub(t, t, in[1]);
@@ -263,10 +263,10 @@ int cp_bgn_dec2(dig_t *out, g2_t in[2], bgn_t prv) {
 				g2_norm(u, u);
 			}
 		}
-	} CATCH_ANY {
+	} RLC_CATCH_ANY {
 		result = RLC_ERR;
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(n);
 		bn_free(r);
 		g2_free(s);
@@ -306,7 +306,7 @@ int cp_bgn_dec(dig_t *out, gt_t in[4], bgn_t prv) {
 	g1_null(g);
 	g2_null(h);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 		bn_new(r);
 		bn_new(s);
@@ -327,7 +327,7 @@ int cp_bgn_dec(dig_t *out, gt_t in[4], bgn_t prv) {
 		gt_mul(t[3], in[3], t[1]);
 		gt_mul(t[3], t[3], t[0]);
 
-		gt_get_ord(n);
+		pc_get_ord(n);
 		g1_get_gen(g);
 		g2_get_gen(h);
 
@@ -360,9 +360,9 @@ int cp_bgn_dec(dig_t *out, gt_t in[4], bgn_t prv) {
 				gt_mul(t[2], t[2], t[1]);
 			}
 		}
-	} CATCH_ANY {
+	} RLC_CATCH_ANY {
 		result = RLC_ERR;
-	} FINALLY {
+	} RLC_FINALLY {
 		bn_free(n);
 		bn_free(r);
 		bn_free(s);

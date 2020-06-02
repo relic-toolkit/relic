@@ -11,7 +11,7 @@ void function2() {
 
 	core_init();
 
-	TRY {
+	RLC_TRY {
 		core_init();
 		pc_param_set_any();
 		pc_param_print();
@@ -27,8 +27,8 @@ void function2() {
 		gt_print(e);
 		printf("Is pairing symmetric? %d\n", pc_map_is_type1() == 1);
 		printf("Is pairing asymmetric? %d\n", pc_map_is_type3() == 1);
-	} CATCH_ANY {
-	} FINALLY {
+	} RLC_CATCH_ANY {
+	} RLC_FINALLY {
 		g1_free(p);
 		g2_free(q);
 		gt_free(e);

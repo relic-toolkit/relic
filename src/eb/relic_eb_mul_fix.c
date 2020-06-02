@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -156,7 +156,7 @@ void eb_mul_pre_basic(eb_t *t, const eb_t p) {
 
 	bn_null(n);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 
 		eb_curve_get_ord(n);
@@ -168,10 +168,10 @@ void eb_mul_pre_basic(eb_t *t, const eb_t p) {
 
 		eb_norm_sim(t + 1, (const eb_t *)t + 1, bn_bits(n) - 1);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(n);
 	}
 }
@@ -204,7 +204,7 @@ void eb_mul_pre_combs(eb_t *t, const eb_t p) {
 
 	bn_null(ord);
 
-	TRY {
+	RLC_TRY {
 		bn_new(ord);
 
 		eb_curve_get_ord(ord);
@@ -228,10 +228,10 @@ void eb_mul_pre_combs(eb_t *t, const eb_t p) {
 
 		eb_norm_sim(t + 2, (const eb_t *)t + 2, RLC_EB_TABLE_COMBS - 2);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(ord);
 	}
 }
@@ -247,7 +247,7 @@ void eb_mul_fix_combs(eb_t r, const eb_t *t, const bn_t k) {
 
 	bn_null(ord);
 
-	TRY {
+	RLC_TRY {
 		bn_new(ord);
 
 		eb_curve_get_ord(ord);
@@ -286,10 +286,10 @@ void eb_mul_fix_combs(eb_t r, const eb_t *t, const bn_t k) {
 			eb_neg(r, r);
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(ord);
 	}
 }
@@ -304,7 +304,7 @@ void eb_mul_pre_combd(eb_t *t, const eb_t p) {
 
 	bn_null(n);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 
 		eb_curve_get_ord(n);
@@ -334,10 +334,10 @@ void eb_mul_pre_combd(eb_t *t, const eb_t p) {
 		eb_norm_sim(t + (1 << EB_DEPTH) + 1,
 				(const eb_t *)t + (1 << EB_DEPTH) + 1, (1 << EB_DEPTH) - 1);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(n);
 	}
 }
@@ -353,7 +353,7 @@ void eb_mul_fix_combd(eb_t r, const eb_t *t, const bn_t k) {
 
 	bn_null(n);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 
 		eb_curve_get_ord(n);
@@ -394,10 +394,10 @@ void eb_mul_fix_combd(eb_t r, const eb_t *t, const bn_t k) {
 			eb_neg(r, r);
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(n);
 	}
 }

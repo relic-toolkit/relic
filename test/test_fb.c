@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -42,16 +42,16 @@ static int memory(void) {
 
 	fb_null(a);
 
-	TRY {
+	RLC_TRY {
 		TEST_BEGIN("memory can be allocated") {
 			fb_new(a);
 			fb_free(a);
 		} TEST_END;
-	} CATCH(e) {
+	} RLC_CATCH(e) {
 		switch (e) {
 			case ERR_NO_MEMORY:
 				util_print("FATAL ERROR!\n");
-				ERROR(end);
+				RLC_ERROR(end);
 				break;
 		}
 	}
@@ -71,7 +71,7 @@ static int util(void) {
 	fb_null(a);
 	fb_null(b);
 
-	TRY {
+	RLC_TRY {
 		fb_new(a);
 		fb_new(b);
 
@@ -139,8 +139,8 @@ static int util(void) {
 		}
 		TEST_END;
 	}
-	CATCH_ANY {
-		ERROR(end);
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -159,7 +159,7 @@ static int addition(void) {
 	fb_null(d);
 	fb_null(e);
 
-	TRY {
+	RLC_TRY {
 		fb_new(a);
 		fb_new(b);
 		fb_new(c);
@@ -206,8 +206,8 @@ static int addition(void) {
 			TEST_ASSERT(fb_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 	}
-	CATCH_ANY {
-		ERROR(end);
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -228,7 +228,7 @@ static int multiplication(void) {
 	fb_null(c);
 	fb_null(d);
 
-	TRY {
+	RLC_TRY {
 		fb_new(a);
 		fb_new(b);
 		fb_new(c);
@@ -324,8 +324,8 @@ static int multiplication(void) {
 		TEST_END;
 #endif
 	}
-	CATCH_ANY {
-		ERROR(end);
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -344,7 +344,7 @@ static int squaring(void) {
 	fb_null(b);
 	fb_null(c);
 
-	TRY {
+	RLC_TRY {
 		fb_new(a);
 		fb_new(b);
 		fb_new(c);
@@ -384,8 +384,8 @@ static int squaring(void) {
 #endif
 
 	}
-	CATCH_ANY {
-		ERROR(end);
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -403,7 +403,7 @@ static int square_root(void) {
 	fb_null(b);
 	fb_null(c);
 
-	TRY {
+	RLC_TRY {
 		fb_new(a);
 		fb_new(b);
 		fb_new(c);
@@ -434,8 +434,8 @@ static int square_root(void) {
 		TEST_END;
 #endif
 	}
-	CATCH_ANY {
-		ERROR(end);
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -453,7 +453,7 @@ static int shifting(void) {
 	fb_null(b);
 	fb_null(c);
 
-	TRY {
+	RLC_TRY {
 		fb_new(a);
 		fb_new(b);
 		fb_new(c);
@@ -510,8 +510,8 @@ static int shifting(void) {
 			} TEST_END;
 		}
 	}
-	CATCH_ANY {
-		ERROR(end);
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -533,7 +533,7 @@ static int reduction(void) {
 	dv_null(t0);
 	dv_null(t1);
 
-	TRY {
+	RLC_TRY {
 		fb_new(a);
 		fb_new(b);
 		fb_new(c);
@@ -588,8 +588,8 @@ static int reduction(void) {
 		TEST_END;
 #endif
 	}
-	CATCH_ANY {
-		ERROR(end);
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -609,7 +609,7 @@ static int trace(void) {
 	fb_null(b);
 	fb_null(c);
 
-	TRY {
+	RLC_TRY {
 		fb_new(a);
 		fb_new(b);
 		fb_new(c);
@@ -635,8 +635,8 @@ static int trace(void) {
 		} TEST_END;
 #endif
 	}
-	CATCH_ANY {
-		ERROR(end);
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -654,7 +654,7 @@ static int solve(void) {
 	fb_null(b);
 	fb_null(c);
 
-	TRY {
+	RLC_TRY {
 		fb_new(a);
 		fb_new(b);
 		fb_new(c);
@@ -693,8 +693,8 @@ static int solve(void) {
 		} TEST_END;
 #endif
 	}
-	CATCH_ANY {
-		ERROR(end);
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -714,7 +714,7 @@ static int inversion(void) {
 	fb_null(d[0]);
 	fb_null(d[1]);
 
-	TRY {
+	RLC_TRY {
 		fb_new(a);
 		fb_new(b);
 		fb_new(c);
@@ -832,8 +832,8 @@ static int inversion(void) {
 					fb_cmp(d[1], b) == RLC_EQ, end);
 		} TEST_END;
 	}
-	CATCH_ANY {
-		ERROR(end);
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -858,7 +858,7 @@ static int exponentiation(void) {
 	}
 	bn_null(d);
 
-	TRY {
+	RLC_TRY {
 		fb_new(a);
 		fb_new(b);
 		fb_new(c);
@@ -997,8 +997,8 @@ static int exponentiation(void) {
 		}
 #endif
 	}
-	CATCH_ANY {
-		ERROR(end);
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -1019,7 +1019,7 @@ static int digit(void) {
 	fb_null(c);
 	fb_null(d);
 
-	TRY {
+	RLC_TRY {
 		fb_new(a);
 		fb_new(b);
 		fb_new(c);
@@ -1048,8 +1048,8 @@ static int digit(void) {
 			TEST_ASSERT(fb_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
 	}
-	CATCH_ANY {
-		ERROR(end);
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -1068,11 +1068,11 @@ int main(void) {
 
 	util_banner("Tests for the FB module", 0);
 
-	TRY {
+	RLC_TRY {
 		fb_param_set_any();
 		fb_param_print();
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		core_clean();
 		return 0;
 	}

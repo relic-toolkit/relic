@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -48,17 +48,17 @@ int cp_ecies_gen(bn_t d, ec_t q) {
 
 	bn_null(n);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 
 		ec_curve_get_ord(n);
 		bn_rand_mod(d, n);
 		ec_mul_gen(q, d);
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		result = RLC_ERR;
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(n);
 	}
 
@@ -78,7 +78,7 @@ int cp_ecies_enc(ec_t r, uint8_t *out, int *out_len, uint8_t *in, int in_len,
 	bn_null(x);
 	ec_null(p);
 
-	TRY {
+	RLC_TRY {
 		bn_new(k);
 		bn_new(n);
 		bn_new(x);
@@ -106,10 +106,10 @@ int cp_ecies_enc(ec_t r, uint8_t *out, int *out_len, uint8_t *in, int in_len,
 			*out_len += RLC_MD_LEN;
 		}
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		result = RLC_ERR;
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(k);
 		bn_free(n);
 		bn_free(x);
@@ -131,7 +131,7 @@ int cp_ecies_dec(uint8_t *out, int *out_len, ec_t r, uint8_t *in, int in_len,
 	bn_null(x);
 	ec_null(p);
 
-	TRY {
+	RLC_TRY {
 		bn_new(x);
 		ec_new(p);
 
@@ -154,10 +154,10 @@ int cp_ecies_dec(uint8_t *out, int *out_len, ec_t r, uint8_t *in, int in_len,
 			}
 		}
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		result = RLC_ERR;
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(x);
 		ec_free(p);
 	}

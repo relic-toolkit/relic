@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -54,7 +54,7 @@ void fb_rdc_basic(fb_t c, dv_t a) {
 
 	dv_null(r);
 
-	TRY {
+	RLC_TRY {
 		dv_new(r);
 
 		tmpa = a + RLC_FB_DIGS;
@@ -85,10 +85,10 @@ void fb_rdc_basic(fb_t c, dv_t a) {
 
 		fb_copy(c, a);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fb_free(r);
 	}
 }

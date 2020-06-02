@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -97,7 +97,7 @@ void bn_rec_win(uint8_t *win, int *len, const bn_t k, int w) {
 	l = bn_bits(k);
 
 	if (*len < RLC_CEIL(l, w)) {
-		THROW(ERR_NO_BUFFER);
+		RLC_THROW(ERR_NO_BUFFER);
 	}
 
 	j = 0;
@@ -114,7 +114,7 @@ void bn_rec_slw(uint8_t *win, int *len, const bn_t k, int w) {
 	l = bn_bits(k);
 
 	if (*len < RLC_CEIL(l, w)) {
-		THROW(ERR_NO_BUFFER);
+		RLC_THROW(ERR_NO_BUFFER);
 	}
 
 	i = l - 1;
@@ -142,12 +142,12 @@ void bn_rec_naf(int8_t *naf, int *len, const bn_t k, int w) {
 	int8_t u_i;
 
 	if (*len < (bn_bits(k) + 1)) {
-		THROW(ERR_NO_BUFFER);
+		RLC_THROW(ERR_NO_BUFFER);
 	}
 
 	bn_null(t);
 
-	TRY {
+	RLC_TRY {
 		bn_new(t);
 		bn_abs(t, k);
 
@@ -197,10 +197,10 @@ void bn_rec_naf(int8_t *naf, int *len, const bn_t k, int w) {
 		}
 		*len = i;
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(t);
 	}
 }
@@ -346,7 +346,7 @@ void bn_rec_tnaf_mod(bn_t r0, bn_t r1, const bn_t k, int u, int m) {
 	bn_null(t2);
 	bn_null(t3);
 
-	TRY {
+	RLC_TRY {
 		bn_new(t);
 		bn_new(t0);
 		bn_new(t1);
@@ -397,10 +397,10 @@ void bn_rec_tnaf_mod(bn_t r0, bn_t r1, const bn_t k, int u, int m) {
 		bn_add(r0, r0, t2);
 		bn_add(r1, r1, t3);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(t);
 		bn_free(t0);
 		bn_free(t1);
@@ -422,10 +422,10 @@ void bn_rec_tnaf(int8_t *tnaf, int *len, const bn_t k, int8_t u, int m, int w) {
 	bn_null(tmp);
 
 	if (*len < (bn_bits(k) + 1)) {
-		THROW(ERR_NO_BUFFER);
+		RLC_THROW(ERR_NO_BUFFER);
 	}
 
-	TRY {
+	RLC_TRY {
 		bn_new(r0);
 		bn_new(r1);
 		bn_new(tmp);
@@ -525,10 +525,10 @@ void bn_rec_tnaf(int8_t *tnaf, int *len, const bn_t k, int8_t u, int m, int w) {
 		}
 		*len = i;
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(r0);
 		bn_free(r1);
 		bn_free(tmp);
@@ -548,10 +548,10 @@ void bn_rec_rtnaf(int8_t *tnaf, int *len, const bn_t k, int8_t u, int m, int w) 
 	bn_null(tmp);
 
 	if (*len < (bn_bits(k) + 1)) {
-		THROW(ERR_NO_BUFFER);
+		RLC_THROW(ERR_NO_BUFFER);
 	}
 
-	TRY {
+	RLC_TRY {
 		bn_new(r0);
 		bn_new(r1);
 		bn_new(tmp);
@@ -664,10 +664,10 @@ void bn_rec_rtnaf(int8_t *tnaf, int *len, const bn_t k, int8_t u, int m, int w) 
 		}
 		*len = i;
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(r0);
 		bn_free(r1);
 		bn_free(tmp);
@@ -686,10 +686,10 @@ void bn_rec_reg(int8_t *naf, int *len, const bn_t k, int n, int w) {
 	l = RLC_CEIL(n, w - 1);
 
 	if (*len <= l) {
-		THROW(ERR_NO_BUFFER);
+		RLC_THROW(ERR_NO_BUFFER);
 	}
 
-	TRY {
+	RLC_TRY {
 		bn_new(t);
 		bn_abs(t, k);
 
@@ -715,10 +715,10 @@ void bn_rec_reg(int8_t *naf, int *len, const bn_t k, int n, int w) {
 		}
 		*len = l + 1;
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(t);
 	}
 }
@@ -733,10 +733,10 @@ void bn_rec_jsf(int8_t *jsf, int *len, const bn_t k, const bn_t l) {
 	bn_null(n1);
 
 	if (*len < (2 * bn_bits(k) + 1)) {
-		THROW(ERR_NO_BUFFER);
+		RLC_THROW(ERR_NO_BUFFER);
 	}
 
-	TRY {
+	RLC_TRY {
 		bn_new(n0);
 		bn_new(n1);
 
@@ -788,10 +788,10 @@ void bn_rec_jsf(int8_t *jsf, int *len, const bn_t k, const bn_t l) {
 		}
 		*len = i;
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(n0);
 		bn_free(n1);
 	}
@@ -807,7 +807,7 @@ void bn_rec_glv(bn_t k0, bn_t k1, const bn_t k, const bn_t n, const bn_t *v1,
 	bn_null(b2);
 	bn_null(t);
 
-	TRY {
+	RLC_TRY {
 		bn_new(b1);
 		bn_new(b2);
 		bn_new(t);
@@ -836,10 +836,10 @@ void bn_rec_glv(bn_t k0, bn_t k1, const bn_t k, const bn_t n, const bn_t *v1,
 
 		bn_neg(k1, k1);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(b1);
 		bn_free(b2);
 		bn_free(t);

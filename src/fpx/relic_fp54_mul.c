@@ -49,7 +49,7 @@ void fp54_mul_basic(fp54_t c, fp54_t a, fp54_t b) {
 	fp18_null(t4);
 	fp18_null(t5);
 
-	TRY {
+	RLC_TRY {
 		fp18_new(t0);
 		fp18_new(t1);
 		fp18_new(t2);
@@ -90,9 +90,9 @@ void fp54_mul_basic(fp54_t c, fp54_t a, fp54_t b) {
 		fp18_sub(c[2], c[2], t2);
 
 		fp18_copy(c[0], t3);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		fp18_free(t0);
 		fp18_free(t1);
 		fp18_free(t2);
@@ -122,7 +122,7 @@ void fp54_mul_dxs(fp54_t c, fp54_t a, fp54_t b) {
 	fp18_null(t3);
 	fp18_null(t4);
 
-	TRY {
+	RLC_TRY {
 		fp18_new(t0);
 		fp18_new(t1);
 		fp18_new(t2);
@@ -170,9 +170,9 @@ void fp54_mul_dxs(fp54_t c, fp54_t a, fp54_t b) {
 		fp18_sub(c[2], c[2], t2);
 
 		fp18_copy(c[0], t3);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		fp18_free(t0);
 		fp18_free(t1);
 		fp18_free(t2);
@@ -186,7 +186,7 @@ void fp54_mul_art(fp54_t c, fp54_t a) {
 
 	fp18_null(t0);
 
-	TRY {
+	RLC_TRY {
 		fp18_new(t0);
 
 		/* (a_0 + a_1 * v + a_2 * v^2) * v = a_2 + a_0 * v + a_1 * v^2 */
@@ -194,9 +194,9 @@ void fp54_mul_art(fp54_t c, fp54_t a) {
 		fp18_mul_art(c[0], a[2]);
 		fp18_copy(c[2], a[1]);
 		fp18_copy(c[1], t0);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		fp18_free(t0);
 	}
 }

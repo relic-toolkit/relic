@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -36,12 +36,12 @@
 /*============================================================================*/
 
 /**
- * Internal macro to map GT_T function to basic FPX implementation. The final
+ * Internal macro to map GT function to basic FPX implementation. The final
  * exponentiation from the pairing is used to move element to subgroup.
  *
  * @param[out] A 				- the element to assign.
  */
-#define gt_rand_imp(A)			RLC_CAT(GT_LOWER, rand)(A)
+#define gt_rand_imp(A)			RLC_CAT(RLC_GT_LOWER, rand)(A)
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -57,11 +57,26 @@ void gt_rand(gt_t a) {
 }
 
 void gt_get_gen(gt_t g) {
-	gt_copy(g, core_get()->gt_g);
-}
+	g1_t g1;
+	g2_t g2;
 
-void gt_exp_gen(gt_t g, bn_t k) {
-	gt_exp(g, core_get()->gt_g, k);
+	g1_null(g1);
+	g2_null(g2);
+
+	RLC_TRY {
+		g1_new(g1);
+		g2_new(g2);
+
+		g1_get_gen(g1);
+		g2_get_gen(g2);
+
+		pc_map(g, g1, g2);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		g1_free(g1);
+		g2_free(g2);
+	}
 }
 
 int g1_is_valid(g1_t a) {
@@ -72,7 +87,7 @@ int g1_is_valid(g1_t a) {
 	bn_null(n);
 	g1_null(u);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 		g1_new(u);
 
@@ -82,7 +97,7 @@ int g1_is_valid(g1_t a) {
 			return ep_is_valid(a);
 		} else {
 			/* Otherwise, check order explicitly. */
-			g1_get_ord(n);
+			pc_get_ord(n);
 			/* Multiply by (n-1)/2 to prevent weird interactions with recoding. */
 			bn_add_dig(n, n, 1);
 			bn_hlv(n, n);
@@ -90,9 +105,9 @@ int g1_is_valid(g1_t a) {
 			g1_dbl(u, u);
 			r = (g1_cmp(u, a) == RLC_EQ);
 		}
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		bn_free(n);
 		g1_free(u);
 	}
@@ -110,13 +125,13 @@ int g2_is_valid(g2_t a) {
 	g2_null(u);
 	g2_null(v);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 		bn_new(p);
 		g2_new(u);
 		g2_new(v);
 
-		g2_get_ord(n);
+		pc_get_ord(n);
 		ep_curve_get_cof(p);
 
 		if (bn_cmp_dig(p, 1) == RLC_EQ) {
@@ -144,9 +159,9 @@ int g2_is_valid(g2_t a) {
 			g2_neg(u, u);
 			r = (g2_cmp(u, a) == RLC_EQ);
 		}
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		bn_free(p);
 		bn_free(n);
 		g2_free(u);
@@ -166,13 +181,13 @@ int gt_is_valid(gt_t a) {
 	gt_null(u);
 	gt_null(v);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 		bn_new(p);
 		gt_new(u);
 		gt_new(v);
 
-		gt_get_ord(n);
+		pc_get_ord(n);
 		ep_curve_get_cof(p);
 
 		if (bn_cmp_dig(p, 1) == RLC_EQ) {
@@ -198,9 +213,9 @@ int gt_is_valid(gt_t a) {
 			gt_inv(u, u);
 			r = (gt_cmp(u, a) == RLC_EQ);
 		}
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		bn_free(p);
 		bn_free(n);
 		gt_free(u);

@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -50,7 +50,7 @@ int cp_bdpe_gen(bdpe_t pub, bdpe_t prv, dig_t block, int bits) {
 	bn_null(t);
 	bn_null(r);
 
-	TRY {
+	RLC_TRY {
 		bn_new(t);
 		bn_new(r);
 
@@ -59,7 +59,7 @@ int cp_bdpe_gen(bdpe_t pub, bdpe_t prv, dig_t block, int bits) {
 		/* Make sure that block size is prime. */
 		bn_set_dig(t, block);
 		if (bn_is_prime_basic(t) == 0) {
-			THROW(ERR_NO_VALID);
+			RLC_THROW(ERR_NO_VALID);
 		}
 
 		/* Generate prime q such that gcd(block, (q - 1)) = 1. */
@@ -104,10 +104,10 @@ int cp_bdpe_gen(bdpe_t pub, bdpe_t prv, dig_t block, int bits) {
 
 		bn_copy(prv->y, pub->y);
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		result = RLC_ERR;
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(t);
 		bn_free(r);
 	}
@@ -128,7 +128,7 @@ int cp_bdpe_enc(uint8_t *out, int *out_len, dig_t in, bdpe_t pub) {
 		return RLC_ERR;
 	}
 
-	TRY {
+	RLC_TRY {
 		bn_new(m);
 		bn_new(u);
 
@@ -148,10 +148,10 @@ int cp_bdpe_enc(uint8_t *out, int *out_len, dig_t in, bdpe_t pub) {
 			result = RLC_ERR;
 		}
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		result = RLC_ERR;
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(m);
 		bn_free(u);
 	}
@@ -174,7 +174,7 @@ int cp_bdpe_dec(dig_t *out, uint8_t *in, int in_len, bdpe_t prv) {
 	bn_null(t);
 	bn_null(z);
 
-	TRY {
+	RLC_TRY {
 		bn_new(m);
 		bn_new(t);
 		bn_new(z);
@@ -200,10 +200,10 @@ int cp_bdpe_dec(dig_t *out, uint8_t *in, int in_len, bdpe_t prv) {
 		if (i == prv->t) {
 			result = RLC_ERR;
 		}
-	} CATCH_ANY {
+	} RLC_CATCH_ANY {
 		result = RLC_ERR;
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(m);
 		bn_free(t);
 		bn_free(z);

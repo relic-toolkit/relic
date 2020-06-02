@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -51,7 +51,7 @@ int ed_upk(ed_t r, const ed_t p) {
 	fp_null(t);
 	fp_null(u);
 
-	TRY {
+	RLC_TRY {
 		fp_new(t);
 		fp_new(u);
 
@@ -77,10 +77,10 @@ int ed_upk(ed_t r, const ed_t p) {
 		fp_set_dig(r->z, 1);
 		r->coord = BASIC;
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fp_free(t);
 	}
 	return result;

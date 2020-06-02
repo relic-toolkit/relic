@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -313,7 +313,7 @@
 static int ep2_curve_get_coeffs(fp2_t *coeffs, const char *str) {
 	if (str[0] == '\0') {
 		/* need nonzero strlen */
-		THROW(ERR_NO_VALID);
+		RLC_THROW(ERR_NO_VALID);
 	}
 	int degree = 0;
 	unsigned offset = 0;
@@ -322,7 +322,7 @@ static int ep2_curve_get_coeffs(fp2_t *coeffs, const char *str) {
 		const char *end = strchr(str + offset, ',');
 		if (end == NULL) {
 			/* should not happen --- means there's no second coeff */
-			THROW(ERR_NO_VALID);
+			RLC_THROW(ERR_NO_VALID);
 		}
 		unsigned len = end - str - offset;
 		fp_read_str(coeffs[degree][0], str + offset, len, 16);
@@ -341,7 +341,7 @@ static int ep2_curve_get_coeffs(fp2_t *coeffs, const char *str) {
 	}
 	if (degree == RLC_EPX_CTMAP_MAX) {
 		/* ran out of space before converting all coeffs */
-		THROW(ERR_NO_VALID);
+		RLC_THROW(ERR_NO_VALID);
 	}
 	return degree;
 }
@@ -394,7 +394,7 @@ static void ep2_curve_set_map(void) {
 	fp_t *c3 = ctx->ep2_map_c[2];
 	fp_t *c4 = ctx->ep2_map_c[3];
 
-	TRY {
+	RLC_TRY {
 		bn_new(t);
 
 		if (ep2_curve_is_ctmap() || abNeq0) {
@@ -439,7 +439,7 @@ static void ep2_curve_set_map(void) {
 			fp2_neg(c4, c4);                /* -(3 * u^2 + 4 * a) */
 			fp2_mul(c3, c4, c1);            /* -g(u) * (3 * u^2 + 4 * a) */
 			if (!fp2_srt(c3, c3)) {
-				THROW(ERR_NO_VALID);
+				RLC_THROW(ERR_NO_VALID);
 			}
 			/* make sure sgn0(c3) == 0 */
 			const int c30_z = fp_is_zero(c3[0]);
@@ -458,10 +458,10 @@ static void ep2_curve_set_map(void) {
 			fp2_mul_dig(c4, c4, 4); /* -4 * g(u) / (3 * u^2 + 4 * a) */
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(t);
 	}
 }
@@ -473,7 +473,7 @@ static void detect_opt(int *opt, fp2_t a) {
 	fp2_t t;
 	fp2_null(t);
 
-	TRY {
+	RLC_TRY {
 		fp2_new(t);
 		fp2_set_dig(t, 3);
 		fp_neg(t[0], t[0]);
@@ -492,10 +492,10 @@ static void detect_opt(int *opt, fp2_t a) {
 			*opt = RLC_HUGE;
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fp2_free(t);
 	}
 }
@@ -655,7 +655,7 @@ void ep2_curve_get_vs(bn_t *v) {
 	bn_null(x);
 	bn_null(t);
 
-	TRY {
+	RLC_TRY {
 		bn_new(x);
 		bn_new(t);
 
@@ -688,9 +688,9 @@ void ep2_curve_get_vs(bn_t *v) {
 		bn_add(v[2], v[2], t);
 		bn_dbl(t, t);
 		bn_add(v[1], v[1], t);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		bn_free(x);
 		bn_free(t);
 	}
@@ -746,13 +746,13 @@ void ep2_curve_set_twist(int type) {
 	bn_null(h);
 
 	ctx->ep2_is_twist = 0;
-	if (type == EP_MTYPE || type == EP_DTYPE) {
+	if (type == RLC_EP_MTYPE || type == RLC_EP_DTYPE) {
 		ctx->ep2_is_twist = type;
 	} else {
 		return;
 	}
 
-	TRY {
+	RLC_TRY {
 		ep2_new(g);
 		fp2_new(a);
 		fp2_new(b);
@@ -814,7 +814,7 @@ void ep2_curve_set_twist(int type) {
 #endif
 			default:
 				(void)str;
-				THROW(ERR_NO_VALID);
+				RLC_THROW(ERR_NO_VALID);
 				break;
 		}
 
@@ -848,10 +848,10 @@ void ep2_curve_set_twist(int type) {
 		ep2_mul_pre((ep2_t *)ep2_curve_get_tab(), ctx->ep2_g);
 #endif
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		ep2_free(g);
 		fp2_free(a);
 		fp2_free(b);

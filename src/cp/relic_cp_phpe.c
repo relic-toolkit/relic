@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -99,7 +99,7 @@ int cp_phpe_enc(bn_t c, bn_t m, bn_t pub) {
 		return RLC_ERR;
 	}
 
-	TRY {
+	RLC_TRY {
 		bn_new(g);
 		bn_new(r);
 		bn_new(s);
@@ -114,10 +114,10 @@ int cp_phpe_enc(bn_t c, bn_t m, bn_t pub) {
 		bn_mul(c, c, r);
 		bn_mod(c, c, s);
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		result = RLC_ERR;
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(g);
 		bn_free(r);
 		bn_free(s);
@@ -139,7 +139,7 @@ int cp_phpe_dec(bn_t m, bn_t c, phpe_t prv) {
 	bn_null(u);
 	bn_null(v);
 
-	TRY {
+	RLC_TRY {
 		bn_new(s);
 		bn_new(t);
 		bn_new(u);
@@ -210,10 +210,10 @@ int cp_phpe_dec(bn_t m, bn_t c, phpe_t prv) {
 		bn_add(m, m, u);
 		bn_mod(m, m, prv->n);
 #endif
-	} CATCH_ANY {
+	} RLC_CATCH_ANY {
 		result = RLC_ERR;
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(s);
 		bn_free(t);
 		bn_free(u);

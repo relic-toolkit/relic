@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -41,17 +41,17 @@ int cp_bls_gen(bn_t d, g2_t q) {
 
 	bn_null(n);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 
-		g2_get_ord(n);
+		pc_get_ord(n);
 		bn_rand_mod(d, n);
 		g2_mul_gen(q, d);
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		result = RLC_ERR;
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(n);
 	}
 	return result;
@@ -63,15 +63,15 @@ int cp_bls_sig(g1_t s, uint8_t *msg, int len, bn_t d) {
 
 	g1_null(p);
 
-	TRY {
+	RLC_TRY {
 		g1_new(p);
 		g1_map(p, msg, len);
 		g1_mul_key(s, p, d);
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		result = RLC_ERR;
 	}
-	FINALLY {
+	RLC_FINALLY {
 		g1_free(p);
 	}
 	return result;
@@ -89,7 +89,7 @@ int cp_bls_ver(g1_t s, uint8_t *msg, int len, g2_t q) {
 	g2_null(r[1]);
 	gt_null(e);
 
-	TRY {
+	RLC_TRY {
 		g1_new(p[0]);
 		g1_new(p[1]);
 		g2_new(r[0]);
@@ -107,10 +107,10 @@ int cp_bls_ver(g1_t s, uint8_t *msg, int len, g2_t q) {
 			result = 1;
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		g1_free(p[0]);
 		g1_free(p[1]);
 		g2_free(r[0]);

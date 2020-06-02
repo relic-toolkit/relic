@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -101,7 +101,7 @@ void fp3_nord_low(dv3_t c, dv3_t a) {
 
 	dv_null(t);
 
-	TRY {
+	RLC_TRY {
 		dv_new(t);
 		dv_copy(t, a[0], 2 * RLC_FP_DIGS);
 		dv_copy(c[0], a[2], 2 * RLC_FP_DIGS);
@@ -113,9 +113,9 @@ void fp3_nord_low(dv3_t c, dv3_t a) {
 		}
 		dv_copy(c[2], a[1], 2 * RLC_FP_DIGS);
 		dv_copy(c[1], t, 2 * RLC_FP_DIGS);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		dv_free(t);
 	}
 }

@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -77,7 +77,7 @@
  * Default library context.
  */
 #if MULTI
-thread ctx_t first_ctx;
+rlc_thread ctx_t first_ctx;
 #else
 static ctx_t first_ctx;
 #endif
@@ -86,7 +86,7 @@ static ctx_t first_ctx;
  * Active library context.
  */
 #if MULTI
-thread ctx_t *core_ctx = NULL;
+rlc_thread ctx_t *core_ctx = NULL;
 #else
 static ctx_t *core_ctx = NULL;
 #endif
@@ -115,7 +115,7 @@ int core_init(void) {
 
 	core_ctx->code = RLC_OK;
 
-	TRY {
+	RLC_TRY {
 		arch_init();
 		rand_init();
 #ifdef WITH_FP
@@ -136,11 +136,7 @@ int core_init(void) {
 #ifdef WITH_PP
 		pp_map_init();
 #endif
-#ifdef WITH_PC
-		pc_core_init();
-#endif
-	}
-	CATCH_ANY {
+	} RLC_CATCH_ANY {
 		return RLC_ERR;
 	}
 
@@ -167,10 +163,6 @@ int core_clean(void) {
 #ifdef WITH_PP
 	pp_map_clean();
 #endif
-#ifdef WITH_PC
-	pc_core_clean();
-#endif
-
 	arch_clean();
 	core_ctx = NULL;
 	return RLC_OK;

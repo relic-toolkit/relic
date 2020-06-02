@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -62,10 +62,10 @@ static void pp_mil_k8(fp8_t r, ep2_t *t, ep2_t *q, ep_t *p, int m, bn_t a) {
 
 	fp8_null(l);
 
-	TRY {
+	RLC_TRY {
 		fp8_new(l);
 		if (_p == NULL || _q == NULL) {
-			THROW(ERR_NO_MEMORY);
+			RLC_THROW(ERR_NO_MEMORY);
 		}
 
 		for (j = 0; j < m; j++) {
@@ -102,10 +102,10 @@ static void pp_mil_k8(fp8_t r, ep2_t *t, ep2_t *q, ep_t *p, int m, bn_t a) {
 			}
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fp8_free(l);
 		for (j = 0; j < m; j++) {
 			ep_free(_p[j]);
@@ -130,7 +130,7 @@ void pp_map_oatep_k8(fp8_t r, ep_t p, ep2_t q) {
 	ep2_null(t[0]);
 	bn_null(a);
 
-	TRY {
+	RLC_TRY {
 		ep_new(_p[0]);
 		ep2_new(_q[0]);
 		ep2_new(t[0]);
@@ -152,10 +152,10 @@ void pp_map_oatep_k8(fp8_t r, ep_t p, ep2_t q) {
 			pp_exp_k8(r, r);
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		ep_free(_p[0]);
 		ep2_free(_q[0]);
 		ep2_free(t[0]);

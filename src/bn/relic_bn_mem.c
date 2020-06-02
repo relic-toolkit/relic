@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -57,22 +57,22 @@ void bn_init(bn_t a, int digits) {
 #else
 		int r = posix_memalign((void **)&a->dp, ALIGN, digits * sizeof(dig_t));
 		if (r == ENOMEM) {
-			THROW(ERR_NO_MEMORY);
+			RLC_THROW(ERR_NO_MEMORY);
 		}
 		if (r == EINVAL) {
-			THROW(ERR_NO_VALID);
+			RLC_THROW(ERR_NO_VALID);
 		}
 #endif
 	}
 
 	if (a->dp == NULL) {
 		free(a);
-		THROW(ERR_NO_MEMORY);
+		RLC_THROW(ERR_NO_MEMORY);
 	}
 #else
 	/* Verify if the number of digits is sane. */
 	if (digits > RLC_BN_SIZE) {
-		THROW(ERR_NO_PRECI);
+		RLC_THROW(ERR_NO_PRECI);
 	} else {
 		digits = RLC_BN_SIZE;
 	}
@@ -113,7 +113,7 @@ void bn_grow(bn_t a, int digits) {
 		digits += (RLC_BN_SIZE * 2) - (digits % RLC_BN_SIZE);
 		t = (dig_t *)realloc(a->dp, (RLC_DIG / 8) * digits);
 		if (t == NULL) {
-			THROW(ERR_NO_MEMORY);
+			RLC_THROW(ERR_NO_MEMORY);
 		}
 		a->dp = t;
 		/* Set the newly allocated digits to zero. */
@@ -121,7 +121,7 @@ void bn_grow(bn_t a, int digits) {
 	}
 #else /* ALLOC == AUTO || ALLOC == STACK */
 	if (digits > RLC_BN_SIZE) {
-		THROW(ERR_NO_PRECI)
+		RLC_THROW(ERR_NO_PRECI)
 	}
 	(void)a;
 #endif

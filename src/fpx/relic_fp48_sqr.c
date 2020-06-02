@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -45,7 +45,7 @@ void fp48_sqr_basic(fp48_t c, fp48_t a) {
 	fp24_null(t0);
 	fp24_null(t1);
 
-	TRY {
+	RLC_TRY {
 		fp24_new(t0);
 		fp24_new(t1);
 
@@ -58,9 +58,9 @@ void fp48_sqr_basic(fp48_t c, fp48_t a) {
 		fp24_mul_art(t1, c[1]);
 		fp24_sub(c[0], c[0], t1);
 		fp24_dbl(c[1], c[1]);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		fp24_free(t0);
 		fp24_free(t1);
 	}
@@ -77,7 +77,7 @@ void fp48_sqr_cyc_basic(fp48_t c, fp48_t a) {
 	fp8_null(t5);
 	fp8_null(t6);
 
-	TRY {
+	RLC_TRY {
 		fp8_new(t0);
 		fp8_new(t1);
 		fp8_new(t2);
@@ -142,9 +142,9 @@ void fp48_sqr_cyc_basic(fp48_t c, fp48_t a) {
 		fp8_add(t6, t5, a[1][2]);
 		fp8_dbl(t6, t6);
 		fp8_add(c[1][2], t5, t6);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		fp8_free(t0);
 		fp8_free(t1);
 		fp8_free(t2);
@@ -166,7 +166,7 @@ void fp48_sqr_pck_basic(fp48_t c, fp48_t a) {
 	fp8_null(t5);
 	fp8_null(t6);
 
-	TRY {
+	RLC_TRY {
 		fp8_new(t0);
 		fp8_new(t1);
 		fp8_new(t2);
@@ -212,9 +212,9 @@ void fp48_sqr_pck_basic(fp48_t c, fp48_t a) {
 		fp8_add(t6, t5, a[1][2]);
 		fp8_dbl(t6, t6);
 		fp8_add(c[1][2], t5, t6);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		fp8_free(t0);
 		fp8_free(t1);
 		fp8_free(t2);
@@ -245,7 +245,7 @@ void fp48_sqr_cyc_lazyr(fp48_t c, fp48_t a) {
 	fp8_null(t5);
 	fp8_null(t6);
 
-	TRY {
+	RLC_TRY {
 		fp8_new(t0);
 		fp8_new(t1);
 		fp8_new(t2);
@@ -310,9 +310,9 @@ void fp48_sqr_cyc_lazyr(fp48_t c, fp48_t a) {
 		fp8_add(t6, t5, a[1][2]);
 		fp8_dbl(t6, t6);
 		fp8_add(c[1][2], t5, t6);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		fp8_free(t0);
 		fp8_free(t1);
 		fp8_free(t2);
@@ -335,7 +335,7 @@ void fp48_sqr_pck_lazyr(fp48_t c, fp48_t a) {
 	dv8_null(u2);
 	dv8_null(u3);
 
-	TRY {
+	RLC_TRY {
 		fp8_new(t0);
 		fp8_new(t1);
 		fp8_new(t2);
@@ -405,9 +405,9 @@ void fp48_sqr_pck_lazyr(fp48_t c, fp48_t a) {
 		fp8_sub(t1, t0, a[0][1]);
 		fp8_dbl(t1, t1);
 		fp8_add(c[0][1], t1, t0);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		fp8_free(t0);
 		fp8_free(t1);
 		fp8_free(t2);

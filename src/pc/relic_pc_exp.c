@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -41,17 +41,39 @@ void g1_mul(g1_t c, g1_t a, bn_t b) {
 	bn_null(n);
 	bn_null(_b);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 		bn_new(_b);
 
-		g1_get_ord(n);
+		pc_get_ord(n);
 		bn_mod(_b, b, n);
 
-		RLC_CAT(G1_LOWER, mul)(c, a, _b);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+		RLC_CAT(RLC_G1_LOWER, mul)(c, a, _b);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		bn_free(n);
+		bn_free(_b);
+	}
+}
+
+void g1_mul_gen(g1_t c, bn_t b) {
+	bn_t n, _b;
+
+	bn_null(n);
+	bn_null(_b);
+
+	RLC_TRY {
+		bn_new(n);
+		bn_new(_b);
+
+		pc_get_ord(n);
+		bn_mod(_b, b, n);
+
+		RLC_CAT(RLC_G1_LOWER, mul_gen)(c, _b);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		bn_free(n);
 		bn_free(_b);
 	}
@@ -63,17 +85,39 @@ void g2_mul(g2_t c, g2_t a, bn_t b) {
 	bn_null(n);
 	bn_null(_b);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 		bn_new(_b);
 
-		g2_get_ord(n);
+		pc_get_ord(n);
 		bn_mod(_b, b, n);
 
-		RLC_CAT(G2_LOWER, mul)(c, a, _b);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+		RLC_CAT(RLC_G2_LOWER, mul)(c, a, _b);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		bn_free(n);
+		bn_free(_b);
+	}
+}
+
+void g2_mul_gen(g2_t c, bn_t b) {
+	bn_t n, _b;
+
+	bn_null(n);
+	bn_null(_b);
+
+	RLC_TRY {
+		bn_new(n);
+		bn_new(_b);
+
+		pc_get_ord(n);
+		bn_mod(_b, b, n);
+
+		RLC_CAT(RLC_G2_LOWER, mul_gen)(c, _b);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		bn_free(n);
 		bn_free(_b);
 	}
@@ -85,17 +129,17 @@ void gt_exp(gt_t c, gt_t a, bn_t b) {
 	bn_null(n);
 	bn_null(_b);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 		bn_new(_b);
 
-		gt_get_ord(n);
+		pc_get_ord(n);
 		bn_mod(_b, b, n);
 
-		RLC_CAT(GT_LOWER, exp_cyc)(c, a, _b);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+		RLC_CAT(RLC_GT_LOWER, exp_cyc)(c, a, _b);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		bn_free(n);
 		bn_free(_b);
 	}

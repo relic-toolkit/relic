@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -63,7 +63,7 @@ static void fp_sqr_karat_imp(dv_t c, const fp_t a, int size, int level) {
 	dv_null(a0a0);
 	dv_null(a1a1);
 
-	TRY {
+	RLC_TRY {
 		/* Allocate the temp variables. */
 		dv_new(t0);
 		dv_new(t1);
@@ -139,10 +139,10 @@ static void fp_sqr_karat_imp(dv_t c, const fp_t a, int size, int level) {
 		c += 2 * (h1 + 1);
 		carry = bn_add1_low(c, c, carry, 2 * size - h - 2 * (h1 + 1));
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		dv_free(t0);
 		dv_free(t1);
 		dv_free(a0a0);
@@ -163,7 +163,7 @@ void fp_sqr_basic(fp_t c, const fp_t a) {
 
 	dv_null(t);
 
-	TRY {
+	RLC_TRY {
 		dv_new(t);
 		dv_zero(t, 2 * RLC_FP_DIGS);
 
@@ -173,10 +173,10 @@ void fp_sqr_basic(fp_t c, const fp_t a) {
 
 		fp_rdc(c, t);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fp_free(t);
 	}
 }
@@ -190,16 +190,16 @@ void fp_sqr_comba(fp_t c, const fp_t a) {
 
 	dv_null(t);
 
-	TRY {
+	RLC_TRY {
 		dv_new(t);
 
 		fp_sqrn_low(t, a);
 
 		fp_rdc(c, t);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fp_free(t);
 	}
 }
@@ -221,7 +221,7 @@ void fp_sqr_karat(fp_t c, const fp_t a) {
 
 	dv_null(t);
 
-	TRY {
+	RLC_TRY {
 		dv_new(t);
 		dv_zero(t, 2 * RLC_FP_DIGS);
 
@@ -233,10 +233,10 @@ void fp_sqr_karat(fp_t c, const fp_t a) {
 
 
 		fp_rdc(c, t);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		dv_free(t);
 	}
 }

@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -60,7 +60,7 @@ static void rand_hash(uint8_t *out, int out_len, uint8_t *in, int in_len) {
 	uint8_t hash[RLC_MD_LEN];
 
 	if (buf == NULL) {
-		THROW(ERR_NO_MEMORY);
+		RLC_THROW(ERR_NO_MEMORY);
 	}
 
 	buf[0] = 1;
@@ -124,11 +124,11 @@ static int rand_add(uint8_t *state, uint8_t *hash, int size) {
  */
 static void rand_gen(uint8_t *out, int out_len) {
 	int m = RLC_CEIL(out_len, RLC_MD_LEN);
-	uint8_t hash[RLC_MD_LEN], data[(RAND_SIZE - 1)/2];
+	uint8_t hash[RLC_MD_LEN], data[(RLC_RAND_SIZE - 1)/2];
 	ctx_t *ctx = core_get();
 
 	/* data = V */
-	memcpy(data, ctx->rand + 1, (RAND_SIZE - 1)/2);
+	memcpy(data, ctx->rand + 1, (RLC_RAND_SIZE - 1)/2);
 	for (int i = 0; i < m; i++) {
 		/* w_i = Hash(data) */
 		md_map(hash, data, sizeof(data));
@@ -137,7 +137,7 @@ static void rand_gen(uint8_t *out, int out_len) {
 		out += RLC_MD_LEN;
 		out_len -= RLC_MD_LEN;
 		/* data = data + 1 mod 2^b. */
-		rand_inc(data, (RAND_SIZE - 1)/2, 1);
+		rand_inc(data, (RLC_RAND_SIZE - 1)/2, 1);
 	}
 }
 
@@ -151,11 +151,11 @@ static void rand_gen(uint8_t *out, int out_len) {
 
 void rand_bytes(uint8_t *buf, int size) {
 	uint8_t hash[RLC_MD_LEN];
-	int carry, len  = (RAND_SIZE - 1)/2;
+	int carry, len  = (RLC_RAND_SIZE - 1)/2;
 	ctx_t *ctx = core_get();
 
 	if (sizeof(int) > 2 && size > (1 << 16)) {
-		THROW(ERR_NO_VALID);
+		RLC_THROW(ERR_NO_VALID);
 	}
 
 	/* buf = hash_gen(size) */
@@ -173,14 +173,14 @@ void rand_bytes(uint8_t *buf, int size) {
 
 void rand_seed(uint8_t *buf, int size) {
 	ctx_t *ctx = core_get();
-	int len = (RAND_SIZE - 1) / 2;
+	int len = (RLC_RAND_SIZE - 1) / 2;
 
 	if (size <= 0) {
-		THROW(ERR_NO_VALID);
+		RLC_THROW(ERR_NO_VALID);
 	}
 
 	if (sizeof(int) > 4 && size > (1 << 32)) {
-		THROW(ERR_NO_VALID);
+		RLC_THROW(ERR_NO_VALID);
 	}
 
 	ctx->rand[0] = 0x0;
@@ -194,7 +194,7 @@ void rand_seed(uint8_t *buf, int size) {
         int tmp_size = 1 + len + size;
 		uint8_t* tmp = RLC_ALLOCA(uint8_t, tmp_size);
 		if (tmp == NULL) {
-			THROW(ERR_NO_MEMORY);
+			RLC_THROW(ERR_NO_MEMORY);
 		}
 		tmp[0] = 1;
 		memcpy(tmp + 1, ctx->rand + 1, len);

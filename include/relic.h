@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -75,8 +75,8 @@
  *
  */
 
-#ifndef RLC_H
-#define RLC_H
+#ifndef RELIC_H
+#define RELIC_H
 
 #include "relic_arch.h"
 #include "relic_conf.h"
@@ -103,4 +103,4 @@
 #include "relic_rand.h"
 #include "relic_util.h"
 
-#endif /* !RLC_H */
+#endif /* !RELIC_H */

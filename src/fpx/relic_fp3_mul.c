@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -51,7 +51,7 @@ void fp3_mul_basic(fp3_t c, fp3_t a, fp3_t b) {
 	dv_null(t5);
 	dv_null(t6);
 
-	TRY {
+	RLC_TRY {
 		dv_new(t);
 		dv_new(t0);
 		dv_new(t1);
@@ -124,10 +124,10 @@ void fp3_mul_basic(fp3_t c, fp3_t a, fp3_t b) {
 		/* c_2 = t5 mod p. */
 		fp_rdc(c[2], t5);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		dv_free(t);
 		dv_free(t0);
 		dv_free(t1);
@@ -154,7 +154,7 @@ void fp3_mul_nor(fp3_t c, fp3_t a) {
 
 	fp_null(t);
 
-	TRY {
+	RLC_TRY {
 		fp_new(t);
 
 		/* (a_0 + a_1 * u + a_2 * u^2) * u = a_0 * u + a_1 * u^2 + a_2 * u^3. */
@@ -169,10 +169,10 @@ void fp3_mul_nor(fp3_t c, fp3_t a) {
 		fp_copy(c[2], a[1]);
 		fp_copy(c[1], t);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fp_free(t);
 	}
 }

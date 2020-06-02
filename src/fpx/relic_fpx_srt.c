@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -46,7 +46,7 @@ int fp2_srt(fp2_t c, fp2_t a) {
 	fp_null(t2);
 	fp_null(t3);
 
-	TRY {
+	RLC_TRY {
 		fp_new(t1);
 		fp_new(t2);
 		fp_new(t3);
@@ -75,7 +75,7 @@ int fp2_srt(fp2_t c, fp2_t a) {
 				fp_zero(c[0]);
 				if (!fp_srt(c[1], t1)) {
 					/* should never happen! */
-					THROW(ERR_NO_VALID);
+					RLC_THROW(ERR_NO_VALID);
 				}
 			}
 		} else {
@@ -108,10 +108,10 @@ int fp2_srt(fp2_t c, fp2_t a) {
 			}
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fp_free(t1);
 		fp_free(t2);
 		fp_free(t3);
@@ -130,7 +130,7 @@ int fp3_srt(fp3_t c, fp3_t a) {
 	fp3_null(t3);
 	bn_null(e);
 
-	TRY {
+	RLC_TRY {
 		fp3_new(t0);
 		fp3_new(t1);
 		fp3_new(t2);
@@ -190,9 +190,9 @@ int fp3_srt(fp3_t c, fp3_t a) {
 		if (fp3_cmp(t0, a) == RLC_EQ) {
 			r = 1;
 		}
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		fp3_free(t0);
 		fp3_free(t1);
 		fp3_free(t2);

@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -52,22 +52,22 @@
  * Prefix for mappings of functions.
  */
 #if EC_CUR == PRIME
-#define EC_LOWER			ep_
+#define RLC_EC_LOWER			ep_
 #elif EC_CUR == CHAR2
-#define EC_LOWER			eb_
+#define RLC_EC_LOWER			eb_
 #elif EC_CUR == EDDIE
-#define EC_LOWER      		ed_
+#define RLC_EC_LOWER      		ed_
 #endif
 
 /**
  * Prefix for mappings of constant definitions.
  */
 #if EC_CUR == PRIME
-#define EC_UPPER			EP_
+#define RLC_EC_UPPER			EP_
 #elif EC_CUR == CHAR2
-#define EC_UPPER			EB_
+#define RLC_EC_UPPER			EB_
 #elif EC_CUR == EDDIE
-#define EC_UPPER      		ED_
+#define RLC_EC_UPPER      		ED_
 #endif
 
 /**
@@ -85,33 +85,33 @@
  * Size of a field element in words.
  */
 #if EC_CUR == PRIME
-#define RLC_FC_DIGS					RLC_FP_DIGS
+#define RLC_FC_DIGS				RLC_FP_DIGS
 #elif EC_CUR == CHAR2
-#define RLC_FC_DIGS					RLC_FB_DIGS
+#define RLC_FC_DIGS				RLC_FB_DIGS
 #elif EC_CUR == EDDIE
-#define RLC_FC_DIGS					RLC_FP_DIGS
+#define RLC_FC_DIGS				RLC_FP_DIGS
 #endif
 
 /**
  * Size of a field element in bits.
  */
 #if EC_CUR == PRIME
-#define RLC_FC_BITS					RLC_FP_BITS
+#define RLC_FC_BITS				RLC_FP_BITS
 #elif EC_CUR == CHAR2
-#define RLC_FC_BITS					RLC_FB_BITS
+#define RLC_FC_BITS				RLC_FB_BITS
 #elif EC_CUR == EDDIE
-#define RLC_FC_BITS					RLC_FP_BITS
+#define RLC_FC_BITS				RLC_FP_BITS
 #endif
 
 /**
  * Size of a field element in bytes.
  */
 #if EC_CUR == PRIME
-#define RLC_FC_BYTES				RLC_FP_BYTES
+#define RLC_FC_BYTES			RLC_FP_BYTES
 #elif EC_CUR == CHAR2
-#define RLC_FC_BYTES				RLC_FB_BYTES
+#define RLC_FC_BYTES			RLC_FB_BYTES
 #elif EC_CUR == EDDIE
-#define RLC_FC_BYTES 				RLC_FP_BYTES
+#define RLC_FC_BYTES			RLC_FP_BYTES
 #endif
 
 /*============================================================================*/
@@ -121,7 +121,7 @@
 /**
  * Represents an elliptic curve point.
  */
-typedef RLC_CAT(EC_LOWER, t) ec_t;
+typedef RLC_CAT(RLC_EC_LOWER, t) ec_t;
 
 /*============================================================================*/
 /* Macro definitions                                                          */
@@ -132,7 +132,7 @@ typedef RLC_CAT(EC_LOWER, t) ec_t;
  *
  * @param[out] A				- the point to initialize.
  */
-#define ec_null(A)				RLC_CAT(EC_LOWER, null)(A)
+#define ec_null(A)				RLC_CAT(RLC_EC_LOWER, null)(A)
 
 /**
  * Calls a function to allocate a point on an elliptic curve.
@@ -140,42 +140,42 @@ typedef RLC_CAT(EC_LOWER, t) ec_t;
  * @param[out] A				- the new point.
  * @throw ERR_NO_MEMORY			- if there is no available memory.
  */
-#define ec_new(A)				RLC_CAT(EC_LOWER, new)(A)
+#define ec_new(A)				RLC_CAT(RLC_EC_LOWER, new)(A)
 
 /**
  * Calls a function to clean and free a point on an elliptic curve.
  *
  * @param[out] A				- the point to clean and free.
  */
-#define ec_free(A)				RLC_CAT(EC_LOWER, free)(A)
+#define ec_free(A)				RLC_CAT(RLC_EC_LOWER, free)(A)
 
 /**
  * Returns the generator of the group of points in the elliptic curve.
  *
  * @param[out] G				- the returned generator.
  */
-#define ec_curve_get_gen(G)		RLC_CAT(EC_LOWER, curve_get_gen)(G)
+#define ec_curve_get_gen(G)		RLC_CAT(RLC_EC_LOWER, curve_get_gen)(G)
 
 /**
  * Returns the precomputation table for the generator.
  *
  * @return the table.
  */
-#define ec_curve_get_tab()		RLC_CAT(EC_LOWER, curve_get_tab)()
+#define ec_curve_get_tab()		RLC_CAT(RLC_EC_LOWER, curve_get_tab)()
 
 /**
  * Returns the order of the group of points in the elliptic curve.
  *
  * @param[out]	N			- the returned order.
  */
-#define ec_curve_get_ord(N)		RLC_CAT(EC_LOWER, curve_get_ord)(N)
+#define ec_curve_get_ord(N)		RLC_CAT(RLC_EC_LOWER, curve_get_ord)(N)
 
 /**
  * Returns the cofactor of the group of points in the elliptic curve.
  *
  * @param[out]	H			- the returned order.
  */
-#define ec_curve_get_cof(H) 	RLC_CAT(EC_LOWER, curve_get_cof)(H)
+#define ec_curve_get_cof(H) 	RLC_CAT(RLC_EC_LOWER, curve_get_cof)(H)
 
 /**
  * Configures some set of curve parameters for the current security level.
@@ -199,17 +199,17 @@ typedef RLC_CAT(EC_LOWER, t) ec_t;
 /**
  * Prints the current configured elliptic curve.
  */
-#define ec_param_print()		RLC_CAT(EC_LOWER, param_print)()
+#define ec_param_print()		RLC_CAT(RLC_EC_LOWER, param_print)()
 
  /**
   * Returns the current configured elliptic curve.
   */
-#define ec_param_get()			RLC_CAT(EC_LOWER, param_get)()
+#define ec_param_get()			RLC_CAT(RLC_EC_LOWER, param_get)()
 
 /**
  * Returns the current security level.
  */
-#define ec_param_level()		RLC_CAT(EC_LOWER, param_level)()
+#define ec_param_level()		RLC_CAT(RLC_EC_LOWER, param_level)()
 
 /**
  * Tests if a point on a elliptic curve is at the infinity.
@@ -217,14 +217,14 @@ typedef RLC_CAT(EC_LOWER, t) ec_t;
  * @param[in] P					- the point to test.
  * @return 1 if the point is at infinity, 0 otherwise.
  */
-#define ec_is_infty(P)			RLC_CAT(EC_LOWER, is_infty)(P)
+#define ec_is_infty(P)			RLC_CAT(RLC_EC_LOWER, is_infty)(P)
 
 /**
  * Assigns a elliptic curve point to a point at the infinity.
  *
  * @param[out] P				- the point to assign.
  */
-#define ec_set_infty(P)			RLC_CAT(EC_LOWER, set_infty)(P)
+#define ec_set_infty(P)			RLC_CAT(RLC_EC_LOWER, set_infty)(P)
 
 /**
  * Copies the second argument to the first argument.
@@ -232,7 +232,7 @@ typedef RLC_CAT(EC_LOWER, t) ec_t;
  * @param[out] R				- the result.
  * @param[in] P					- the elliptic curve point to copy.
  */
-#define ec_copy(R, P)			RLC_CAT(EC_LOWER, copy)(R, P)
+#define ec_copy(R, P)			RLC_CAT(RLC_EC_LOWER, copy)(R, P)
 
 /**
  * Compares two elliptic curve points.
@@ -241,20 +241,20 @@ typedef RLC_CAT(EC_LOWER, t) ec_t;
  * @param[in] Q					- the second elliptic curve point.
  * @return RLC_EQ if P == Q and RLC_NE if P != Q.
  */
-#define ec_cmp(P, Q)			RLC_CAT(EC_LOWER, cmp)(P, Q)
+#define ec_cmp(P, Q)			RLC_CAT(RLC_EC_LOWER, cmp)(P, Q)
 
 /**
  * Assigns a random value to a elliptic curve point.
  *
  * @param[out] P				- the elliptic curve point to assign.
  */
-#define ec_rand(P)				RLC_CAT(EC_LOWER, rand)(P)
+#define ec_rand(P)				RLC_CAT(RLC_EC_LOWER, rand)(P)
 
 /** Tests if a point is in the curve.
  *
  * @param[in] P					- the point to test.
  */
-#define ec_is_valid(P)			RLC_CAT(EC_LOWER, is_valid)(P)
+#define ec_is_valid(P)			RLC_CAT(RLC_EC_LOWER, is_valid)(P)
 
 /**
  * Returns the number of bytes necessary to store an elliptic curve point with
@@ -263,7 +263,7 @@ typedef RLC_CAT(EC_LOWER, t) ec_t;
  * @param[in] A					- the elliptic curve point.
  * @param[in] P					- the flag to indicate compression.
  */
-#define ec_size_bin(A, P)		RLC_CAT(EC_LOWER, size_bin)(A, P)
+#define ec_size_bin(A, P)		RLC_CAT(RLC_EC_LOWER, size_bin)(A, P)
 
 /**
  * Reads an elliptic curve point from a byte vector in big-endian format.
@@ -272,7 +272,7 @@ typedef RLC_CAT(EC_LOWER, t) ec_t;
  * @param[in] B					- the byte vector.
  * @param[in] L					- the buffer capacity.
  */
-#define ec_read_bin(A, B, L)	RLC_CAT(EC_LOWER, read_bin)(A, B, L)
+#define ec_read_bin(A, B, L)	RLC_CAT(RLC_EC_LOWER, read_bin)(A, B, L)
 
 /**
  * Writes an elliptic curve point to a byte vector in big-endian format with
@@ -283,14 +283,14 @@ typedef RLC_CAT(EC_LOWER, t) ec_t;
  * @param[in] A					- the prime elliptic curve point to write.
  * @param[in] P					- the flag to indicate point compression.
  */
-#define ec_write_bin(B, L, A, P)	RLC_CAT(EC_LOWER, write_bin)(B, L, A, P)
+#define ec_write_bin(B, L, A, P)	RLC_CAT(RLC_EC_LOWER, write_bin)(B, L, A, P)
 
 /**
  * Prints a elliptic curve point.
  *
  * @param[in] P					- the elliptic curve point to print.
  */
-#define ec_print(P)				RLC_CAT(EC_LOWER, print)(P)
+#define ec_print(P)				RLC_CAT(RLC_EC_LOWER, print)(P)
 
 /**
  * Negates an elliptic curve point. Computes R = -P.
@@ -298,7 +298,7 @@ typedef RLC_CAT(EC_LOWER, t) ec_t;
  * @param[out] R				- the result.
  * @param[in] P					- the point to negate.
  */
-#define ec_neg(R, P)			RLC_CAT(EC_LOWER, neg)(R, P)
+#define ec_neg(R, P)			RLC_CAT(RLC_EC_LOWER, neg)(R, P)
 
 /**
  * Adds two elliptic curve points. Computes R = P + Q.
@@ -307,7 +307,7 @@ typedef RLC_CAT(EC_LOWER, t) ec_t;
  * @param[in] P					- the first point to add.
  * @param[in] Q					- the second point to add.
  */
-#define ec_add(R, P, Q)			RLC_CAT(EC_LOWER, add)(R, P, Q)
+#define ec_add(R, P, Q)			RLC_CAT(RLC_EC_LOWER, add)(R, P, Q)
 
 /**
  * Subtracts an elliptic curve point from another. Computes R = P - Q.
@@ -316,7 +316,7 @@ typedef RLC_CAT(EC_LOWER, t) ec_t;
  * @param[in] P					- the first point.
  * @param[in] Q					- the second point.
  */
-#define ec_sub(R, P, Q)			RLC_CAT(EC_LOWER, sub)(R, P, Q)
+#define ec_sub(R, P, Q)			RLC_CAT(RLC_EC_LOWER, sub)(R, P, Q)
 
 /**
  * Doubles an elliptic curve point. Computes R = 2P.
@@ -324,7 +324,7 @@ typedef RLC_CAT(EC_LOWER, t) ec_t;
  * @param[out] R				- the result.
  * @param[in] P					- the point to double.
  */
-#define ec_dbl(R, P)			RLC_CAT(EC_LOWER, dbl)(R, P)
+#define ec_dbl(R, P)			RLC_CAT(RLC_EC_LOWER, dbl)(R, P)
 
 /**
  * Multiplies an elliptic curve point by an integer. Computes R = kP.
@@ -333,7 +333,7 @@ typedef RLC_CAT(EC_LOWER, t) ec_t;
  * @param[in] P					- the point to multiply.
  * @param[in] K					- the integer.
  */
-#define ec_mul(R, P, K)			RLC_CAT(EC_LOWER, mul)(R, P, K)
+#define ec_mul(R, P, K)			RLC_CAT(RLC_EC_LOWER, mul)(R, P, K)
 
 /**
  * Multiplies the generator of a prime elliptic curve by an integer.
@@ -341,7 +341,7 @@ typedef RLC_CAT(EC_LOWER, t) ec_t;
  * @param[out] R				- the result.
  * @param[in] K					- the integer.
  */
-#define ec_mul_gen(R, K)		RLC_CAT(EC_LOWER, mul_gen)(R, K)
+#define ec_mul_gen(R, K)		RLC_CAT(RLC_EC_LOWER, mul_gen)(R, K)
 
 /**
  * Multiplies an elliptic curve point by a small integer. Computes R = kP.
@@ -350,7 +350,7 @@ typedef RLC_CAT(EC_LOWER, t) ec_t;
  * @param[in] P					- the point to multiply.
  * @param[in] K					- the integer.
  */
-#define ec_mul_dig(R, P, K)		RLC_CAT(EC_LOWER, mul_dig)(R, P, K)
+#define ec_mul_dig(R, P, K)		RLC_CAT(RLC_EC_LOWER, mul_dig)(R, P, K)
 
 /**
  * Builds a precomputation table for multiplying a fixed elliptic curve
@@ -359,7 +359,7 @@ typedef RLC_CAT(EC_LOWER, t) ec_t;
  * @param[out] T				- the precomputation table.
  * @param[in] P					- the point to multiply.
  */
-#define ec_mul_pre(T, P)		RLC_CAT(EC_LOWER, mul_pre)(T, P)
+#define ec_mul_pre(T, P)		RLC_CAT(RLC_EC_LOWER, mul_pre)(T, P)
 /**
  * Multiplies a elliptic point using a precomputation table.
  * Computes R = kP.
@@ -368,7 +368,7 @@ typedef RLC_CAT(EC_LOWER, t) ec_t;
  * @param[in] T					- the precomputation table.
  * @param[in] K					- the integer.
  */
-#define ec_mul_fix(R, T, K)		RLC_CAT(EC_LOWER, mul_fix)(R, T, K)
+#define ec_mul_fix(R, T, K)		RLC_CAT(RLC_EC_LOWER, mul_fix)(R, T, K)
 
 /**
  * Multiplies and adds two elliptic curve points simultaneously. Computes
@@ -380,7 +380,7 @@ typedef RLC_CAT(EC_LOWER, t) ec_t;
  * @param[in] Q					- the second point to multiply.
  * @param[in] L					- the second integer,
  */
-#define ec_mul_sim(R, P, K, Q, L)	RLC_CAT(EC_LOWER, mul_sim)(R, P, K, Q, L)
+#define ec_mul_sim(R, P, K, Q, L)	RLC_CAT(RLC_EC_LOWER, mul_sim)(R, P, K, Q, L)
 
 /**
  * Multiplies and adds two elliptic curve points simultaneously. Computes
@@ -391,7 +391,7 @@ typedef RLC_CAT(EC_LOWER, t) ec_t;
  * @param[in] Q					- the second point to multiply.
  * @param[in] L					- the second integer,
  */
-#define ec_mul_sim_gen(R, K, Q, L)	RLC_CAT(EC_LOWER, mul_sim_gen)(R, K, Q, L)
+#define ec_mul_sim_gen(R, K, Q, L)	RLC_CAT(RLC_EC_LOWER, mul_sim_gen)(R, K, Q, L)
 
 /**
  * Converts a point to affine coordinates.
@@ -399,7 +399,7 @@ typedef RLC_CAT(EC_LOWER, t) ec_t;
  * @param[out] R				- the result.
  * @param[in] P					- the point to convert.
  */
-#define ec_norm(R, P)			RLC_CAT(EC_LOWER, norm)(R, P)
+#define ec_norm(R, P)			RLC_CAT(RLC_EC_LOWER, norm)(R, P)
 
 /**
  * Maps a byte array to a point in an elliptic curve.
@@ -408,7 +408,7 @@ typedef RLC_CAT(EC_LOWER, t) ec_t;
  * @param[in] M					- the byte array to map.
  * @param[in] L					- the array length in bytes.
  */
-#define ec_map(P, M, L)			RLC_CAT(EC_LOWER, map)(P, M, L)
+#define ec_map(P, M, L)			RLC_CAT(RLC_EC_LOWER, map)(P, M, L)
 
 /**
  * Compresses a point.
@@ -416,7 +416,7 @@ typedef RLC_CAT(EC_LOWER, t) ec_t;
  * @param[out] R				- the result.
  * @param[in] P					- the point to compress.
  */
-#define ec_pck(R, P)			RLC_CAT(EC_LOWER, pck)(R, P)
+#define ec_pck(R, P)			RLC_CAT(RLC_EC_LOWER, pck)(R, P)
 
 /**
  * Decompresses a point.
@@ -424,7 +424,7 @@ typedef RLC_CAT(EC_LOWER, t) ec_t;
  * @param[out] R				- the result.
  * @param[in] P					- the point to decompress.
  */
-#define ec_upk(R, P)			RLC_CAT(EC_LOWER, upk)(R, P)
+#define ec_upk(R, P)			RLC_CAT(RLC_EC_LOWER, upk)(R, P)
 
 /**
  * Returns the x-coordinate of an elliptic curve point represented as a

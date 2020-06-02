@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -39,16 +39,16 @@ static int memory2(void) {
 
 	fp2_null(a);
 
-	TRY {
+	RLC_TRY {
 		TEST_BEGIN("memory can be allocated") {
 			fp2_new(a);
 			fp2_free(a);
 		} TEST_END;
-	} CATCH(e) {
+	} RLC_CATCH(e) {
 		switch (e) {
 			case ERR_NO_MEMORY:
 				util_print("FATAL ERROR!\n");
-				ERROR(end);
+				RLC_ERROR(end);
 				break;
 		}
 	}
@@ -68,7 +68,7 @@ static int util2(void) {
 	fp2_null(b);
 	fp2_null(c);
 
-	TRY {
+	RLC_TRY {
 		fp2_new(a);
 		fp2_new(b);
 		fp2_new(c);
@@ -154,8 +154,8 @@ static int util2(void) {
 		}
 		TEST_END;
 	}
-	CATCH_ANY {
-		ERROR(end);
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -175,7 +175,7 @@ static int addition2(void) {
 	fp2_null(d);
 	fp2_null(e);
 
-	TRY {
+	RLC_TRY {
 		fp2_new(a);
 		fp2_new(b);
 		fp2_new(c);
@@ -235,9 +235,9 @@ static int addition2(void) {
 		} TEST_END;
 #endif
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -258,7 +258,7 @@ static int subtraction2(void) {
 	fp2_null(c);
 	fp2_null(d);
 
-	TRY {
+	RLC_TRY {
 		fp2_new(a);
 		fp2_new(b);
 		fp2_new(c);
@@ -309,9 +309,9 @@ static int subtraction2(void) {
 		} TEST_END;
 #endif
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -330,7 +330,7 @@ static int doubling2(void) {
 	fp2_null(b);
 	fp2_null(c);
 
-	TRY {
+	RLC_TRY {
 		fp2_new(a);
 		fp2_new(b);
 		fp2_new(c);
@@ -360,9 +360,9 @@ static int doubling2(void) {
 		} TEST_END;
 #endif
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -385,7 +385,7 @@ static int multiplication2(void) {
 	fp2_null(e);
 	fp2_null(f);
 
-	TRY {
+	RLC_TRY {
 		fp2_new(a);
 		fp2_new(b);
 		fp2_new(c);
@@ -513,9 +513,9 @@ static int multiplication2(void) {
 		TEST_END;
 #endif
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -537,7 +537,7 @@ static int squaring2(void) {
 	fp2_null(b);
 	fp2_null(c);
 
-	TRY {
+	RLC_TRY {
 		fp2_new(a);
 		fp2_new(b);
 		fp2_new(c);
@@ -567,9 +567,9 @@ static int squaring2(void) {
 		} TEST_END;
 #endif
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -583,7 +583,7 @@ static int inversion2(void) {
 	int code = RLC_ERR;
 	fp2_t a, b, c, d[2];
 
-	TRY {
+	RLC_TRY {
 		fp2_new(a);
 		fp2_new(b);
 		fp2_new(c);
@@ -623,9 +623,9 @@ static int inversion2(void) {
 					fp2_cmp(d[1], b) == RLC_EQ, end);
 		} TEST_END;
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -647,7 +647,7 @@ static int exponentiation2(void) {
 	fp2_null(c);
 	bn_null(d);
 
-	TRY {
+	RLC_TRY {
 		fp2_new(a);
 		fp2_new(b);
 		fp2_new(c);
@@ -694,9 +694,9 @@ static int exponentiation2(void) {
 			TEST_ASSERT(fp2_cmp(b, c) == RLC_EQ, end);
         } TEST_END;
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -719,7 +719,7 @@ static int compression2(void) {
 	fp2_null(c);
 	fp2_null(d);
 
-	TRY {
+	RLC_TRY {
 		fp2_new(a);
 		fp2_new(b);
 		fp2_new(c);
@@ -754,9 +754,9 @@ static int compression2(void) {
 		}
 		TEST_END;
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -778,7 +778,7 @@ static int square_root2(void) {
 	fp2_null(b);
 	fp2_null(c);
 
-	TRY {
+	RLC_TRY {
 		fp2_new(a);
 		fp2_new(b);
 		fp2_new(c);
@@ -815,9 +815,9 @@ static int square_root2(void) {
 					fp2_cmp(c, a) == RLC_EQ, end);
 		} TEST_END;
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -834,16 +834,16 @@ static int memory3(void) {
 
 	fp3_null(a);
 
-	TRY {
+	RLC_TRY {
 		TEST_BEGIN("memory can be allocated") {
 			fp3_new(a);
 			fp3_free(a);
 		} TEST_END;
-	} CATCH(e) {
+	} RLC_CATCH(e) {
 		switch (e) {
 			case ERR_NO_MEMORY:
 				util_print("FATAL ERROR!\n");
-				ERROR(end);
+				RLC_ERROR(end);
 				break;
 		}
 	}
@@ -863,7 +863,7 @@ static int util3(void) {
 	fp3_null(b);
 	fp3_null(c);
 
-	TRY {
+	RLC_TRY {
 		fp3_new(a);
 		fp3_new(b);
 		fp3_new(c);
@@ -949,8 +949,8 @@ static int util3(void) {
 		}
 		TEST_END;
 	}
-	CATCH_ANY {
-		ERROR(end);
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -970,7 +970,7 @@ static int addition3(void) {
 	fp3_null(d);
 	fp3_null(e);
 
-	TRY {
+	RLC_TRY {
 		fp3_new(a);
 		fp3_new(b);
 		fp3_new(c);
@@ -1030,9 +1030,9 @@ static int addition3(void) {
 		} TEST_END;
 #endif
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -1053,7 +1053,7 @@ static int subtraction3(void) {
 	fp3_null(c);
 	fp3_null(d);
 
-	TRY {
+	RLC_TRY {
 		fp3_new(a);
 		fp3_new(b);
 		fp3_new(c);
@@ -1104,9 +1104,9 @@ static int subtraction3(void) {
 		} TEST_END;
 #endif
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -1125,7 +1125,7 @@ static int doubling3(void) {
 	fp3_null(b);
 	fp3_null(c);
 
-	TRY {
+	RLC_TRY {
 		fp3_new(a);
 		fp3_new(b);
 		fp3_new(c);
@@ -1155,9 +1155,9 @@ static int doubling3(void) {
 		} TEST_END;
 #endif
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -1180,7 +1180,7 @@ static int multiplication3(void) {
 	fp3_null(f);
 	bn_null(g);
 
-	TRY {
+	RLC_TRY {
 		fp3_new(a);
 		fp3_new(b);
 		fp3_new(c);
@@ -1263,9 +1263,9 @@ static int multiplication3(void) {
 			TEST_ASSERT(fp3_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -1287,7 +1287,7 @@ static int squaring3(void) {
 	fp3_null(b);
 	fp3_null(c);
 
-	TRY {
+	RLC_TRY {
 		fp3_new(a);
 		fp3_new(b);
 		fp3_new(c);
@@ -1317,9 +1317,9 @@ static int squaring3(void) {
 		} TEST_END;
 #endif
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -1339,7 +1339,7 @@ static int inversion3(void) {
 	fp3_null(d[0]);
 	fp3_null(d[1]);
 
-	TRY {
+	RLC_TRY {
 		fp3_new(a);
 		fp3_new(b);
 		fp3_new(c);
@@ -1369,9 +1369,9 @@ static int inversion3(void) {
 					fp3_cmp(d[1], b) == RLC_EQ, end);
 		} TEST_END;
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -1393,7 +1393,7 @@ static int exponentiation3(void) {
 	fp3_null(c);
 	bn_null(d);
 
-	TRY {
+	RLC_TRY {
 		fp3_new(a);
 		fp3_new(b);
 		fp3_new(c);
@@ -1427,9 +1427,9 @@ static int exponentiation3(void) {
 			TEST_ASSERT(fp3_cmp(c, b) == RLC_EQ, end);
 		} TEST_END;
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -1449,7 +1449,7 @@ static int square_root3(void) {
 	fp3_null(b);
 	fp3_null(c);
 
-	TRY {
+	RLC_TRY {
 		fp3_new(a);
 		fp3_new(b);
 		fp3_new(c);
@@ -1463,9 +1463,9 @@ static int square_root3(void) {
 			TEST_ASSERT(fp3_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -1482,16 +1482,16 @@ static int memory4(void) {
 
 	fp4_null(a);
 
-	TRY {
+	RLC_TRY {
 		TEST_BEGIN("memory can be allocated") {
 			fp4_new(a);
 			fp4_free(a);
 		} TEST_END;
-	} CATCH(e) {
+	} RLC_CATCH(e) {
 		switch (e) {
 			case ERR_NO_MEMORY:
 				util_print("FATAL ERROR!\n");
-				ERROR(end);
+				RLC_ERROR(end);
 				break;
 		}
 	}
@@ -1511,7 +1511,7 @@ static int util4(void) {
 	fp4_null(b);
 	fp4_null(c);
 
-	TRY {
+	RLC_TRY {
 		fp4_new(a);
 		fp4_new(b);
 		fp4_new(c);
@@ -1597,8 +1597,8 @@ static int util4(void) {
 		}
 		TEST_END;
 	}
-	CATCH_ANY {
-		ERROR(end);
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -1618,7 +1618,7 @@ static int addition4(void) {
 	fp4_null(d);
 	fp4_null(e);
 
-	TRY {
+	RLC_TRY {
 		fp4_new(a);
 		fp4_new(b);
 		fp4_new(c);
@@ -1658,9 +1658,9 @@ static int addition4(void) {
 			TEST_ASSERT(fp4_is_zero(e), end);
 		} TEST_END;
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -1681,7 +1681,7 @@ static int subtraction4(void) {
 	fp4_null(c);
 	fp4_null(d);
 
-	TRY {
+	RLC_TRY {
 		fp4_new(a);
 		fp4_new(b);
 		fp4_new(c);
@@ -1712,9 +1712,9 @@ static int subtraction4(void) {
 		}
 		TEST_END;
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -1733,7 +1733,7 @@ static int doubling4(void) {
 	fp4_null(b);
 	fp4_null(c);
 
-	TRY {
+	RLC_TRY {
 		fp4_new(a);
 		fp4_new(b);
 		fp4_new(c);
@@ -1745,9 +1745,9 @@ static int doubling4(void) {
 			TEST_ASSERT(fp4_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -1768,7 +1768,7 @@ static int multiplication4(void) {
 	fp4_null(e);
 	fp4_null(f);
 
-	TRY {
+	RLC_TRY {
 		fp4_new(a);
 		fp4_new(b);
 		fp4_new(c);
@@ -1848,9 +1848,9 @@ static int multiplication4(void) {
 		} TEST_END;
 #endif
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -1871,7 +1871,7 @@ static int squaring4(void) {
 	fp4_null(b);
 	fp4_null(c);
 
-	TRY {
+	RLC_TRY {
 		fp4_new(a);
 		fp4_new(b);
 		fp4_new(c);
@@ -1901,9 +1901,9 @@ static int squaring4(void) {
 		} TEST_END;
 #endif
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -1921,7 +1921,7 @@ static int inversion4(void) {
 	fp4_null(b);
 	fp4_null(c);
 
-	TRY {
+	RLC_TRY {
 		fp4_new(a);
 		fp4_new(b);
 		fp4_new(c);
@@ -1935,9 +1935,9 @@ static int inversion4(void) {
 			TEST_ASSERT(fp4_cmp_dig(c, 1) == RLC_EQ, end);
 		} TEST_END;
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -1957,7 +1957,7 @@ static int exponentiation4(void) {
 	fp4_null(c);
 	bn_null(d);
 
-	TRY {
+	RLC_TRY {
 		fp4_new(a);
 		fp4_new(b);
 		fp4_new(c);
@@ -1991,9 +1991,9 @@ static int exponentiation4(void) {
 			TEST_ASSERT(fp4_cmp(c, b) == RLC_EQ, end);
 		} TEST_END;
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -2011,16 +2011,16 @@ static int memory6(void) {
 
 	fp6_null(a);
 
-	TRY {
+	RLC_TRY {
 		TEST_BEGIN("memory can be allocated") {
 			fp6_new(a);
 			fp6_free(a);
 		} TEST_END;
-	} CATCH(e) {
+	} RLC_CATCH(e) {
 		switch (e) {
 			case ERR_NO_MEMORY:
 				util_print("FATAL ERROR!\n");
-				ERROR(end);
+				RLC_ERROR(end);
 				break;
 		}
 	}
@@ -2040,7 +2040,7 @@ static int util6(void) {
 	fp6_null(b);
 	fp6_null(c);
 
-	TRY {
+	RLC_TRY {
 		fp6_new(a);
 		fp6_new(b);
 		fp6_new(c);
@@ -2126,8 +2126,8 @@ static int util6(void) {
 		}
 		TEST_END;
 	}
-	CATCH_ANY {
-		ERROR(end);
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -2147,7 +2147,7 @@ static int addition6(void) {
 	fp6_null(d);
 	fp6_null(e);
 
-	TRY {
+	RLC_TRY {
 		fp6_new(a);
 		fp6_new(b);
 		fp6_new(c);
@@ -2187,9 +2187,9 @@ static int addition6(void) {
 			TEST_ASSERT(fp6_is_zero(e), end);
 		} TEST_END;
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -2210,7 +2210,7 @@ static int subtraction6(void) {
 	fp6_null(c);
 	fp6_null(d);
 
-	TRY {
+	RLC_TRY {
 		fp6_new(a);
 		fp6_new(b);
 		fp6_new(c);
@@ -2241,9 +2241,9 @@ static int subtraction6(void) {
 		}
 		TEST_END;
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -2262,7 +2262,7 @@ static int doubling6(void) {
 	fp6_null(b);
 	fp6_null(c);
 
-	TRY {
+	RLC_TRY {
 		fp6_new(a);
 		fp6_new(b);
 		fp6_new(c);
@@ -2274,9 +2274,9 @@ static int doubling6(void) {
 			TEST_ASSERT(fp6_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -2297,7 +2297,7 @@ static int multiplication6(void) {
 	fp6_null(e);
 	fp6_null(f);
 
-	TRY {
+	RLC_TRY {
 		fp6_new(a);
 		fp6_new(b);
 		fp6_new(c);
@@ -2377,9 +2377,9 @@ static int multiplication6(void) {
 		} TEST_END;
 #endif
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -2400,7 +2400,7 @@ static int squaring6(void) {
 	fp6_null(b);
 	fp6_null(c);
 
-	TRY {
+	RLC_TRY {
 		fp6_new(a);
 		fp6_new(b);
 		fp6_new(c);
@@ -2430,9 +2430,9 @@ static int squaring6(void) {
 		} TEST_END;
 #endif
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -2450,7 +2450,7 @@ static int inversion6(void) {
 	fp6_null(b);
 	fp6_null(c);
 
-	TRY {
+	RLC_TRY {
 		fp6_new(a);
 		fp6_new(b);
 		fp6_new(c);
@@ -2464,9 +2464,9 @@ static int inversion6(void) {
 			TEST_ASSERT(fp6_cmp_dig(c, 1) == RLC_EQ, end);
 		} TEST_END;
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -2486,7 +2486,7 @@ static int exponentiation6(void) {
 	fp6_null(c);
 	bn_null(d);
 
-	TRY {
+	RLC_TRY {
 		fp6_new(a);
 		fp6_new(b);
 		fp6_new(c);
@@ -2520,9 +2520,9 @@ static int exponentiation6(void) {
 			TEST_ASSERT(fp6_cmp(c, b) == RLC_EQ, end);
 		} TEST_END;
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -2540,16 +2540,16 @@ static int memory8(void) {
 
 	fp8_null(a);
 
-	TRY {
+	RLC_TRY {
 		TEST_BEGIN("memory can be allocated") {
 			fp8_new(a);
 			fp8_free(a);
 		} TEST_END;
-	} CATCH(e) {
+	} RLC_CATCH(e) {
 		switch (e) {
 			case ERR_NO_MEMORY:
 				util_print("FATAL ERROR!\n");
-				ERROR(end);
+				RLC_ERROR(end);
 				break;
 		}
 	}
@@ -2569,7 +2569,7 @@ static int util8(void) {
 	fp8_null(b);
 	fp8_null(c);
 
-	TRY {
+	RLC_TRY {
 		fp8_new(a);
 		fp8_new(b);
 		fp8_new(c);
@@ -2657,8 +2657,8 @@ static int util8(void) {
 		}
 		TEST_END;
 	}
-	CATCH_ANY {
-		ERROR(end);
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -2678,7 +2678,7 @@ static int addition8(void) {
 	fp8_null(d);
 	fp8_null(e);
 
-	TRY {
+	RLC_TRY {
 		fp8_new(a);
 		fp8_new(b);
 		fp8_new(c);
@@ -2718,9 +2718,9 @@ static int addition8(void) {
 			TEST_ASSERT(fp8_is_zero(e), end);
 		} TEST_END;
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -2741,7 +2741,7 @@ static int subtraction8(void) {
 	fp8_null(c);
 	fp8_null(d);
 
-	TRY {
+	RLC_TRY {
 		fp8_new(a);
 		fp8_new(b);
 		fp8_new(c);
@@ -2772,9 +2772,9 @@ static int subtraction8(void) {
 		}
 		TEST_END;
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -2793,7 +2793,7 @@ static int doubling8(void) {
 	fp8_null(b);
 	fp8_null(c);
 
-	TRY {
+	RLC_TRY {
 		fp8_new(a);
 		fp8_new(b);
 		fp8_new(c);
@@ -2805,9 +2805,9 @@ static int doubling8(void) {
 			TEST_ASSERT(fp8_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -2828,7 +2828,7 @@ static int multiplication8(void) {
 	fp8_null(e);
 	fp8_null(f);
 
-	TRY {
+	RLC_TRY {
 		fp8_new(a);
 		fp8_new(b);
 		fp8_new(c);
@@ -2908,9 +2908,9 @@ static int multiplication8(void) {
 		} TEST_END;
 #endif
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -2931,7 +2931,7 @@ static int squaring8(void) {
 	fp8_null(b);
 	fp8_null(c);
 
-	TRY {
+	RLC_TRY {
 		fp8_new(a);
 		fp8_new(b);
 		fp8_new(c);
@@ -2961,9 +2961,9 @@ static int squaring8(void) {
 		} TEST_END;
 #endif
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -2983,7 +2983,7 @@ static int cyclotomic8(void) {
 	fp8_null(c);
 	bn_null(f);
 
-	TRY {
+	RLC_TRY {
 		fp8_new(a);
 		fp8_new(b);
 		fp8_new(c);
@@ -3024,9 +3024,9 @@ static int cyclotomic8(void) {
 			TEST_ASSERT(fp8_cmp(b, c) == RLC_EQ, end);
         } TEST_END;
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -3047,7 +3047,7 @@ static int inversion8(void) {
 	fp8_null(d[0]);
 	fp8_null(d[1]);
 
-	TRY {
+	RLC_TRY {
 		fp8_new(a);
 		fp8_new(b);
 		fp8_new(c);
@@ -3087,9 +3087,9 @@ static int inversion8(void) {
 					fp8_cmp(d[1], b) == RLC_EQ, end);
 		} TEST_END;
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -3111,7 +3111,7 @@ static int exponentiation8(void) {
 	fp8_null(c);
 	bn_null(d);
 
-	TRY {
+	RLC_TRY {
 		fp8_new(a);
 		fp8_new(b);
 		fp8_new(c);
@@ -3145,9 +3145,9 @@ static int exponentiation8(void) {
 			TEST_ASSERT(fp8_cmp(c, b) == RLC_EQ, end);
 		} TEST_END;
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -3165,16 +3165,16 @@ static int memory12(void) {
 
 	fp12_null(a);
 
-	TRY {
+	RLC_TRY {
 		TEST_BEGIN("memory can be allocated") {
 			fp12_new(a);
 			fp12_free(a);
 		} TEST_END;
-	} CATCH(e) {
+	} RLC_CATCH(e) {
 		switch (e) {
 			case ERR_NO_MEMORY:
 				util_print("FATAL ERROR!\n");
-				ERROR(end);
+				RLC_ERROR(end);
 				break;
 		}
 	}
@@ -3191,16 +3191,16 @@ static int memory9(void) {
 
 	fp9_null(a);
 
-	TRY {
+	RLC_TRY {
 		TEST_BEGIN("memory can be allocated") {
 			fp9_new(a);
 			fp9_free(a);
 		} TEST_END;
-	} CATCH(e) {
+	} RLC_CATCH(e) {
 		switch (e) {
 			case ERR_NO_MEMORY:
 				util_print("FATAL ERROR!\n");
-				ERROR(end);
+				RLC_ERROR(end);
 				break;
 		}
 	}
@@ -3220,7 +3220,7 @@ static int util9(void) {
 	fp9_null(b);
 	fp9_null(c);
 
-	TRY {
+	RLC_TRY {
 		fp9_new(a);
 		fp9_new(b);
 		fp9_new(c);
@@ -3306,8 +3306,8 @@ static int util9(void) {
 		}
 		TEST_END;
 	}
-	CATCH_ANY {
-		ERROR(end);
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -3327,7 +3327,7 @@ static int addition9(void) {
 	fp9_null(d);
 	fp9_null(e);
 
-	TRY {
+	RLC_TRY {
 		fp9_new(a);
 		fp9_new(b);
 		fp9_new(c);
@@ -3367,9 +3367,9 @@ static int addition9(void) {
 			TEST_ASSERT(fp9_is_zero(e), end);
 		} TEST_END;
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -3390,7 +3390,7 @@ static int subtraction9(void) {
 	fp9_null(c);
 	fp9_null(d);
 
-	TRY {
+	RLC_TRY {
 		fp9_new(a);
 		fp9_new(b);
 		fp9_new(c);
@@ -3421,9 +3421,9 @@ static int subtraction9(void) {
 		}
 		TEST_END;
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -3442,7 +3442,7 @@ static int doubling9(void) {
 	fp9_null(b);
 	fp9_null(c);
 
-	TRY {
+	RLC_TRY {
 		fp9_new(a);
 		fp9_new(b);
 		fp9_new(c);
@@ -3454,9 +3454,9 @@ static int doubling9(void) {
 			TEST_ASSERT(fp9_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -3477,7 +3477,7 @@ static int multiplication9(void) {
 	fp9_null(e);
 	fp9_null(f);
 
-	TRY {
+	RLC_TRY {
 		fp9_new(a);
 		fp9_new(b);
 		fp9_new(c);
@@ -3557,9 +3557,9 @@ static int multiplication9(void) {
 		} TEST_END;
 #endif
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -3580,7 +3580,7 @@ static int squaring9(void) {
 	fp9_null(b);
 	fp9_null(c);
 
-	TRY {
+	RLC_TRY {
 		fp9_new(a);
 		fp9_new(b);
 		fp9_new(c);
@@ -3610,9 +3610,9 @@ static int squaring9(void) {
 		} TEST_END;
 #endif
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -3632,7 +3632,7 @@ static int inversion9(void) {
 	fp9_null(d[0]);
 	fp9_null(d[1]);
 
-	TRY {
+	RLC_TRY {
 		fp9_new(a);
 		fp9_new(b);
 		fp9_new(c);
@@ -3662,9 +3662,9 @@ static int inversion9(void) {
 					fp9_cmp(d[1], b) == RLC_EQ, end);
 		} TEST_END;
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -3686,7 +3686,7 @@ static int exponentiation9(void) {
 	fp9_null(c);
 	bn_null(d);
 
-	TRY {
+	RLC_TRY {
 		fp9_new(a);
 		fp9_new(b);
 		fp9_new(c);
@@ -3720,9 +3720,9 @@ static int exponentiation9(void) {
 			TEST_ASSERT(fp9_cmp(c, b) == RLC_EQ, end);
 		} TEST_END;
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -3743,7 +3743,7 @@ static int util12(void) {
 	fp12_null(b);
 	fp12_null(c);
 
-	TRY {
+	RLC_TRY {
 		fp12_new(a);
 		fp12_new(b);
 		fp12_new(c);
@@ -3829,8 +3829,8 @@ static int util12(void) {
 		}
 		TEST_END;
 	}
-	CATCH_ANY {
-		ERROR(end);
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -3850,7 +3850,7 @@ static int addition12(void) {
 	fp12_null(d);
 	fp12_null(e);
 
-	TRY {
+	RLC_TRY {
 		fp12_new(a);
 		fp12_new(b);
 		fp12_new(c);
@@ -3890,9 +3890,9 @@ static int addition12(void) {
 			TEST_ASSERT(fp12_is_zero(e), end);
 		} TEST_END;
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -3913,7 +3913,7 @@ static int subtraction12(void) {
 	fp12_null(c);
 	fp12_null(d);
 
-	TRY {
+	RLC_TRY {
 		fp12_new(a);
 		fp12_new(b);
 		fp12_new(c);
@@ -3944,9 +3944,9 @@ static int subtraction12(void) {
 		}
 		TEST_END;
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -3968,7 +3968,7 @@ static int multiplication12(void) {
 	fp12_null(e);
 	fp12_null(f);
 
-	TRY {
+	RLC_TRY {
 		fp12_new(a);
 		fp12_new(b);
 		fp12_new(c);
@@ -4088,9 +4088,9 @@ static int multiplication12(void) {
 			TEST_ASSERT(fp12_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
 #endif
-	} CATCH_ANY {
+	} RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -4111,7 +4111,7 @@ static int squaring12(void) {
 	fp12_null(b);
 	fp12_null(c);
 
-	TRY {
+	RLC_TRY {
 		fp12_new(a);
 		fp12_new(b);
 		fp12_new(c);
@@ -4141,9 +4141,9 @@ static int squaring12(void) {
 		} TEST_END;
 #endif
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -4166,7 +4166,7 @@ static int cyclotomic12(void) {
 	fp12_null(e[0]);
 	bn_null(f);
 
-	TRY {
+	RLC_TRY {
 		fp12_new(a);
 		fp12_new(b);
 		fp12_new(c);
@@ -4326,9 +4326,9 @@ static int cyclotomic12(void) {
 			TEST_ASSERT(fp12_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -4351,7 +4351,7 @@ static int inversion12(void) {
 	fp12_null(b);
 	fp12_null(c);
 
-	TRY {
+	RLC_TRY {
 		fp12_new(a);
 		fp12_new(b);
 		fp12_new(c);
@@ -4375,9 +4375,9 @@ static int inversion12(void) {
 			TEST_ASSERT(fp12_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -4397,7 +4397,7 @@ static int exponentiation12(void) {
 	fp12_null(c);
 	bn_null(d);
 
-	TRY {
+	RLC_TRY {
 		fp12_new(a);
 		fp12_new(b);
 		fp12_new(c);
@@ -4435,9 +4435,9 @@ static int exponentiation12(void) {
 			TEST_ASSERT(fp12_cmp(c, b) == RLC_EQ, end);
 		} TEST_END;
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -4457,7 +4457,7 @@ static int compression12(void) {
 	fp12_null(b);
 	fp12_null(c);
 
-	TRY {
+	RLC_TRY {
 		fp12_new(a);
 		fp12_new(b);
 		fp12_new(c);
@@ -4491,9 +4491,9 @@ static int compression12(void) {
 		}
 		TEST_END;
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -4510,16 +4510,16 @@ static int memory18(void) {
 
 	fp18_null(a);
 
-	TRY {
+	RLC_TRY {
 		TEST_BEGIN("memory can be allocated") {
 			fp18_new(a);
 			fp18_free(a);
 		} TEST_END;
-	} CATCH(e) {
+	} RLC_CATCH(e) {
 		switch (e) {
 			case ERR_NO_MEMORY:
 				util_print("FATAL ERROR!\n");
-				ERROR(end);
+				RLC_ERROR(end);
 				break;
 		}
 	}
@@ -4539,7 +4539,7 @@ static int util18(void) {
 	fp18_null(b);
 	fp18_null(c);
 
-	TRY {
+	RLC_TRY {
 		fp18_new(a);
 		fp18_new(b);
 		fp18_new(c);
@@ -4636,8 +4636,8 @@ static int util18(void) {
 		}
 		TEST_END;
 	}
-	CATCH_ANY {
-		ERROR(end);
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -4657,7 +4657,7 @@ static int addition18(void) {
 	fp18_null(d);
 	fp18_null(e);
 
-	TRY {
+	RLC_TRY {
 		fp18_new(a);
 		fp18_new(b);
 		fp18_new(c);
@@ -4697,9 +4697,9 @@ static int addition18(void) {
 			TEST_ASSERT(fp18_is_zero(e), end);
 		} TEST_END;
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -4715,7 +4715,7 @@ static int subtraction18(void) {
 	int code = RLC_ERR;
 	fp18_t a, b, c, d;
 
-	TRY {
+	RLC_TRY {
 		fp18_new(a);
 		fp18_new(b);
 		fp18_new(c);
@@ -4746,9 +4746,9 @@ static int subtraction18(void) {
 		}
 		TEST_END;
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -4763,7 +4763,7 @@ static int multiplication18(void) {
 	int code = RLC_ERR;
 	fp18_t a, b, c, d, e, f;
 
-	TRY {
+	RLC_TRY {
 		fp18_new(a);
 		fp18_new(b);
 		fp18_new(c);
@@ -4833,9 +4833,9 @@ static int multiplication18(void) {
 			TEST_ASSERT(fp18_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
 #endif
-	} CATCH_ANY {
+	} RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -4856,7 +4856,7 @@ static int squaring18(void) {
 	fp18_null(b);
 	fp18_null(c);
 
-	TRY {
+	RLC_TRY {
 		fp18_new(a);
 		fp18_new(b);
 		fp18_new(c);
@@ -4886,9 +4886,9 @@ static int squaring18(void) {
 		} TEST_END;
 #endif
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -4906,7 +4906,7 @@ static int inversion18(void) {
 	fp18_null(b);
 	fp18_null(c);
 
-	TRY {
+	RLC_TRY {
 		fp18_new(a);
 		fp18_new(b);
 		fp18_new(c);
@@ -4920,9 +4920,9 @@ static int inversion18(void) {
 			TEST_ASSERT(fp18_cmp_dig(c, 1) == RLC_EQ, end);
 		} TEST_END;
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -4942,7 +4942,7 @@ static int exponentiation18(void) {
 	fp18_null(c);
 	bn_null(d);
 
-	TRY {
+	RLC_TRY {
 		fp18_new(a);
 		fp18_new(b);
 		fp18_new(c);
@@ -4976,9 +4976,9 @@ static int exponentiation18(void) {
 			TEST_ASSERT(fp18_cmp(c, b) == RLC_EQ, end);
 		} TEST_END;
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -4996,16 +4996,16 @@ static int memory24(void) {
 
 	fp24_null(a);
 
-	TRY {
+	RLC_TRY {
 		TEST_BEGIN("memory can be allocated") {
 			fp24_new(a);
 			fp24_free(a);
 		} TEST_END;
-	} CATCH(e) {
+	} RLC_CATCH(e) {
 		switch (e) {
 			case ERR_NO_MEMORY:
 				util_print("FATAL ERROR!\n");
-				ERROR(end);
+				RLC_ERROR(end);
 				break;
 		}
 	}
@@ -5025,7 +5025,7 @@ static int util24(void) {
 	fp24_null(b);
 	fp24_null(c);
 
-	TRY {
+	RLC_TRY {
 		fp24_new(a);
 		fp24_new(b);
 		fp24_new(c);
@@ -5111,8 +5111,8 @@ static int util24(void) {
 		}
 		TEST_END;
 	}
-	CATCH_ANY {
-		ERROR(end);
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -5132,7 +5132,7 @@ static int addition24(void) {
 	fp24_null(d);
 	fp24_null(e);
 
-	TRY {
+	RLC_TRY {
 		fp24_new(a);
 		fp24_new(b);
 		fp24_new(c);
@@ -5172,9 +5172,9 @@ static int addition24(void) {
 			TEST_ASSERT(fp24_is_zero(e), end);
 		} TEST_END;
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -5195,7 +5195,7 @@ static int subtraction24(void) {
 	fp24_null(c);
 	fp24_null(d);
 
-	TRY {
+	RLC_TRY {
 		fp24_new(a);
 		fp24_new(b);
 		fp24_new(c);
@@ -5226,9 +5226,9 @@ static int subtraction24(void) {
 		}
 		TEST_END;
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -5250,7 +5250,7 @@ static int multiplication24(void) {
 	fp24_null(e);
 	fp24_null(f);
 
-	TRY {
+	RLC_TRY {
 		fp24_new(a);
 		fp24_new(b);
 		fp24_new(c);
@@ -5329,9 +5329,9 @@ static int multiplication24(void) {
 			TEST_ASSERT(fp24_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
 #endif
-	} CATCH_ANY {
+	} RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -5352,7 +5352,7 @@ static int squaring24(void) {
 	fp24_null(b);
 	fp24_null(c);
 
-	TRY {
+	RLC_TRY {
 		fp24_new(a);
 		fp24_new(b);
 		fp24_new(c);
@@ -5382,9 +5382,9 @@ static int squaring24(void) {
 		} TEST_END;
 #endif
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -5402,7 +5402,7 @@ static int inversion24(void) {
 	fp24_null(b);
 	fp24_null(c);
 
-	TRY {
+	RLC_TRY {
 		fp24_new(a);
 		fp24_new(b);
 		fp24_new(c);
@@ -5416,9 +5416,9 @@ static int inversion24(void) {
 			TEST_ASSERT(fp24_cmp_dig(c, 1) == RLC_EQ, end);
 		} TEST_END;
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -5438,7 +5438,7 @@ static int exponentiation24(void) {
 	fp24_null(c);
 	bn_null(d);
 
-	TRY {
+	RLC_TRY {
 		fp24_new(a);
 		fp24_new(b);
 		fp24_new(c);
@@ -5472,9 +5472,9 @@ static int exponentiation24(void) {
 			TEST_ASSERT(fp24_cmp(c, b) == RLC_EQ, end);
 		} TEST_END;
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -5492,16 +5492,16 @@ static int memory48(void) {
 
 	fp48_null(a);
 
-	TRY {
+	RLC_TRY {
 		TEST_BEGIN("memory can be allocated") {
 			fp48_new(a);
 			fp48_free(a);
 		} TEST_END;
-	} CATCH(e) {
+	} RLC_CATCH(e) {
 		switch (e) {
 			case ERR_NO_MEMORY:
 				util_print("FATAL ERROR!\n");
-				ERROR(end);
+				RLC_ERROR(end);
 				break;
 		}
 	}
@@ -5521,7 +5521,7 @@ static int util48(void) {
 	fp48_null(b);
 	fp48_null(c);
 
-	TRY {
+	RLC_TRY {
 		fp48_new(a);
 		fp48_new(b);
 		fp48_new(c);
@@ -5606,8 +5606,8 @@ static int util48(void) {
 		}
 		TEST_END;
 	}
-	CATCH_ANY {
-		ERROR(end);
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -5627,7 +5627,7 @@ static int addition48(void) {
 	fp48_null(d);
 	fp48_null(e);
 
-	TRY {
+	RLC_TRY {
 		fp48_new(a);
 		fp48_new(b);
 		fp48_new(c);
@@ -5667,9 +5667,9 @@ static int addition48(void) {
 			TEST_ASSERT(fp48_is_zero(e), end);
 		} TEST_END;
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -5690,7 +5690,7 @@ static int subtraction48(void) {
 	fp48_null(c);
 	fp48_null(d);
 
-	TRY {
+	RLC_TRY {
 		fp48_new(a);
 		fp48_new(b);
 		fp48_new(c);
@@ -5721,9 +5721,9 @@ static int subtraction48(void) {
 		}
 		TEST_END;
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -5745,7 +5745,7 @@ static int multiplication48(void) {
 	fp48_null(e);
 	fp48_null(f);
 
-	TRY {
+	RLC_TRY {
 		fp48_new(a);
 		fp48_new(b);
 		fp48_new(c);
@@ -5815,9 +5815,9 @@ static int multiplication48(void) {
 			TEST_ASSERT(fp48_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
 #endif
-	} CATCH_ANY {
+	} RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -5838,7 +5838,7 @@ static int squaring48(void) {
 	fp48_null(b);
 	fp48_null(c);
 
-	TRY {
+	RLC_TRY {
 		fp48_new(a);
 		fp48_new(b);
 		fp48_new(c);
@@ -5868,9 +5868,9 @@ static int squaring48(void) {
 		} TEST_END;
 #endif
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -5889,7 +5889,7 @@ static int compression48(void) {
 	fp48_null(b);
 	fp48_null(c);
 
-	TRY {
+	RLC_TRY {
 		fp48_new(a);
 		fp48_new(b);
 		fp48_new(c);
@@ -5923,9 +5923,9 @@ static int compression48(void) {
 		}
 		TEST_END;
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -5949,7 +5949,7 @@ static int cyclotomic48(void) {
 	fp48_null(e[1]);
 	bn_null(f);
 
-	TRY {
+	RLC_TRY {
 		fp48_new(a);
 		fp48_new(b);
 		fp48_new(c);
@@ -6109,9 +6109,9 @@ static int cyclotomic48(void) {
 			TEST_ASSERT(fp48_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -6134,7 +6134,7 @@ static int inversion48(void) {
 	fp48_null(b);
 	fp48_null(c);
 
-	TRY {
+	RLC_TRY {
 		fp48_new(a);
 		fp48_new(b);
 		fp48_new(c);
@@ -6158,9 +6158,9 @@ static int inversion48(void) {
 			TEST_ASSERT(fp48_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -6180,7 +6180,7 @@ static int exponentiation48(void) {
 	fp48_null(c);
 	bn_null(d);
 
-	TRY {
+	RLC_TRY {
 		fp48_new(a);
 		fp48_new(b);
 		fp48_new(c);
@@ -6218,9 +6218,9 @@ static int exponentiation48(void) {
 			TEST_ASSERT(fp48_cmp(c, b) == RLC_EQ, end);
 		} TEST_END;
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -6238,16 +6238,16 @@ static int memory54(void) {
 
 	fp54_null(a);
 
-	TRY {
+	RLC_TRY {
 		TEST_BEGIN("memory can be allocated") {
 			fp54_new(a);
 			fp54_free(a);
 		} TEST_END;
-	} CATCH(e) {
+	} RLC_CATCH(e) {
 		switch (e) {
 			case ERR_NO_MEMORY:
 				util_print("FATAL ERROR!\n");
-				ERROR(end);
+				RLC_ERROR(end);
 				break;
 		}
 	}
@@ -6267,7 +6267,7 @@ static int util54(void) {
 	fp54_null(b);
 	fp54_null(c);
 
-	TRY {
+	RLC_TRY {
 		fp54_new(a);
 		fp54_new(b);
 		fp54_new(c);
@@ -6352,8 +6352,8 @@ static int util54(void) {
 		}
 		TEST_END;
 	}
-	CATCH_ANY {
-		ERROR(end);
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -6373,7 +6373,7 @@ static int addition54(void) {
 	fp54_null(d);
 	fp54_null(e);
 
-	TRY {
+	RLC_TRY {
 		fp54_new(a);
 		fp54_new(b);
 		fp54_new(c);
@@ -6413,9 +6413,9 @@ static int addition54(void) {
 			TEST_ASSERT(fp54_is_zero(e), end);
 		} TEST_END;
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -6436,7 +6436,7 @@ static int subtraction54(void) {
 	fp54_null(c);
 	fp54_null(d);
 
-	TRY {
+	RLC_TRY {
 		fp54_new(a);
 		fp54_new(b);
 		fp54_new(c);
@@ -6467,9 +6467,9 @@ static int subtraction54(void) {
 		}
 		TEST_END;
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -6491,7 +6491,7 @@ static int multiplication54(void) {
 	fp54_null(e);
 	fp54_null(f);
 
-	TRY {
+	RLC_TRY {
 		fp54_new(a);
 		fp54_new(b);
 		fp54_new(c);
@@ -6561,9 +6561,9 @@ static int multiplication54(void) {
 			TEST_ASSERT(fp54_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
 #endif
-	} CATCH_ANY {
+	} RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -6584,7 +6584,7 @@ static int squaring54(void) {
 	fp54_null(b);
 	fp54_null(c);
 
-	TRY {
+	RLC_TRY {
 		fp54_new(a);
 		fp54_new(b);
 		fp54_new(c);
@@ -6614,9 +6614,9 @@ static int squaring54(void) {
 		} TEST_END;
 #endif
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -6635,7 +6635,7 @@ static int compression54(void) {
 	fp54_null(b);
 	fp54_null(c);
 
-	TRY {
+	RLC_TRY {
 		fp54_new(a);
 		fp54_new(b);
 		fp54_new(c);
@@ -6669,9 +6669,9 @@ static int compression54(void) {
 		}
 		TEST_END;
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -6695,7 +6695,7 @@ static int cyclotomic54(void) {
 	fp54_null(e[1]);
 	bn_null(f);
 
-	TRY {
+	RLC_TRY {
 		fp54_new(a);
 		fp54_new(b);
 		fp54_new(c);
@@ -6855,9 +6855,9 @@ static int cyclotomic54(void) {
 			TEST_ASSERT(fp54_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -6880,7 +6880,7 @@ static int inversion54(void) {
 	fp54_null(b);
 	fp54_null(c);
 
-	TRY {
+	RLC_TRY {
 		fp54_new(a);
 		fp54_new(b);
 		fp54_new(c);
@@ -6904,9 +6904,9 @@ static int inversion54(void) {
 			//TEST_ASSERT(fp54_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -6926,7 +6926,7 @@ static int exponentiation54(void) {
 	fp54_null(c);
 	bn_null(d);
 
-	TRY {
+	RLC_TRY {
 		fp54_new(a);
 		fp54_new(b);
 		fp54_new(c);
@@ -6964,9 +6964,9 @@ static int exponentiation54(void) {
 			TEST_ASSERT(fp54_cmp(c, b) == RLC_EQ, end);
 		} TEST_END;
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -6989,7 +6989,7 @@ int main(void) {
 	if (pc_param_set_any() != RLC_OK) {
 		/* If it does not work, try a tower-friendly field. */
 		if (fp_param_set_any_tower() == RLC_ERR) {
-			THROW(ERR_NO_FIELD);
+			RLC_THROW(ERR_NO_FIELD);
 			core_clean();
 			return 0;
 		}

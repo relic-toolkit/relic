@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -41,16 +41,16 @@ static int memory(void) {
 
 	ep2_null(a);
 
-	TRY {
+	RLC_TRY {
 		TEST_BEGIN("memory can be allocated") {
 			ep2_new(a);
 			ep2_free(a);
 		} TEST_END;
-	} CATCH(e) {
+	} RLC_CATCH(e) {
 		switch (e) {
 			case ERR_NO_MEMORY:
 				util_print("FATAL ERROR!\n");
-				ERROR(end);
+				RLC_ERROR(end);
 				break;
 		}
 	}
@@ -69,7 +69,7 @@ static int util(void) {
 	ep2_null(b);
 	ep2_null(c);
 
-	TRY {
+	RLC_TRY {
 		ep2_new(a);
 		ep2_new(b);
 		ep2_new(c);
@@ -106,6 +106,10 @@ static int util(void) {
 			ep2_neg(b, a);
 			TEST_ASSERT(ep2_cmp(a, b) != RLC_EQ, end);
 			ep2_neg(b, b);
+			TEST_ASSERT(ep2_cmp(a, b) == RLC_EQ, end);
+			ep2_neg(b, a);
+			ep2_add(a, a, b);
+			ep2_set_infty(b);
 			TEST_ASSERT(ep2_cmp(a, b) == RLC_EQ, end);
 		}
 		TEST_END;
@@ -157,9 +161,9 @@ static int util(void) {
 		}
 		TEST_END;
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -179,7 +183,7 @@ static int addition(void) {
 	ep2_null(d);
 	ep2_null(e);
 
-	TRY {
+	RLC_TRY {
 		ep2_new(a);
 		ep2_new(b);
 		ep2_new(c);
@@ -272,8 +276,8 @@ static int addition(void) {
 #endif
 
 	}
-	CATCH_ANY {
-		ERROR(end);
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -294,7 +298,7 @@ static int subtraction(void) {
 	ep2_null(c);
 	ep2_null(d);
 
-	TRY {
+	RLC_TRY {
 		ep2_new(a);
 		ep2_new(b);
 		ep2_new(c);
@@ -325,8 +329,8 @@ static int subtraction(void) {
 		}
 		TEST_END;
 	}
-	CATCH_ANY {
-		ERROR(end);
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -345,7 +349,7 @@ static int doubling(void) {
 	ep2_null(b);
 	ep2_null(c);
 
-	TRY {
+	RLC_TRY {
 		ep2_new(a);
 		ep2_new(b);
 		ep2_new(c);
@@ -386,8 +390,8 @@ static int doubling(void) {
 		} TEST_END;
 #endif
 	}
-	CATCH_ANY {
-		ERROR(end);
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -408,7 +412,7 @@ static int multiplication(void) {
 	ep2_null(q);
 	ep2_null(r);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 		bn_new(k);
 		ep2_new(p);
@@ -544,9 +548,9 @@ static int multiplication(void) {
 		}
 		TEST_END;
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -573,7 +577,7 @@ static int fixed(void) {
 		ep2_null(t[i]);
 	}
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 		bn_new(k);
 		ep2_new(p);
@@ -717,9 +721,9 @@ static int fixed(void) {
 		}
 #endif
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -743,7 +747,7 @@ static int simultaneous(void) {
 	ep2_null(q);
 	ep2_null(r);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 		bn_new(k);
 		bn_new(l);
@@ -961,9 +965,9 @@ static int simultaneous(void) {
 			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -984,7 +988,7 @@ static int compression(void) {
 	ep2_null(b);
 	ep2_null(c);
 
-	TRY {
+	RLC_TRY {
 		ep2_new(a);
 		ep2_new(b);
 		ep2_new(c);
@@ -997,8 +1001,8 @@ static int compression(void) {
 		}
 		TEST_END;
 	}
-	CATCH_ANY {
-		ERROR(end);
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -1017,7 +1021,7 @@ static int hashing(void) {
 	bn_null(n);
 	ep2_null(p);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 		ep2_new(p);
 
@@ -1031,9 +1035,9 @@ static int hashing(void) {
 		}
 		TEST_END;
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -1053,7 +1057,7 @@ static int frobenius(void) {
 	bn_null(d);
 	bn_null(n);
 
-	TRY {
+	RLC_TRY {
 		ep2_new(a);
 		ep2_new(b);
 		ep2_new(c);
@@ -1072,9 +1076,9 @@ static int frobenius(void) {
 			TEST_ASSERT(ep2_cmp(c, b) == RLC_EQ, end);
 		} TEST_END;
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -1095,13 +1099,13 @@ int main(void) {
 	util_banner("Tests for the EPX module", 0);
 
 	if (ep_param_set_any_pairf() == RLC_ERR) {
-		THROW(ERR_NO_CURVE);
+		RLC_THROW(ERR_NO_CURVE);
 		core_clean();
 		return 0;
 	}
 
 	if (ep2_curve_is_twist() == 0) {
-		THROW(ERR_NO_CURVE);
+		RLC_THROW(ERR_NO_CURVE);
 		core_clean();
 		return 0;
 	}

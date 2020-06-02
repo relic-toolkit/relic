@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -62,7 +62,7 @@ static void bn_sqr_karat_imp(bn_t c, const bn_t a, int level) {
 	/* Compute half the digits of a or b. */
 	h = a->used >> 1;
 
-	TRY {
+	RLC_TRY {
 		/* Allocate the temp variables. */
 		bn_new(a0);
 		bn_new(a1);
@@ -137,10 +137,10 @@ static void bn_sqr_karat_imp(bn_t c, const bn_t a, int level) {
 		t->sign = RLC_POS;
 		bn_copy(c, t);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(a0);
 		bn_free(a1);
 		bn_free(a0a0);
@@ -165,7 +165,7 @@ void bn_sqr_basic(bn_t c, const bn_t a) {
 
 	digits = 2 * a->used;
 
-	TRY {
+	RLC_TRY {
 		bn_new_size(t, digits);
 		bn_zero(t);
 		t->used = digits;
@@ -178,10 +178,10 @@ void bn_sqr_basic(bn_t c, const bn_t a) {
 		bn_trim(t);
 		bn_copy(c, t);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(t);
 	}
 }
@@ -198,7 +198,7 @@ void bn_sqr_comba(bn_t c, const bn_t a) {
 
 	digits = 2 * a->used;
 
-	TRY {
+	RLC_TRY {
 		/* We need a temporary variable so that c can be a or b. */
 		bn_new_size(t, digits);
 		t->used = digits;
@@ -208,10 +208,10 @@ void bn_sqr_comba(bn_t c, const bn_t a) {
 		t->sign = RLC_POS;
 		bn_trim(t);
 		bn_copy(c, t);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(t);
 	}
 }

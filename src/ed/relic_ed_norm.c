@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -46,7 +46,7 @@
  * @param p			- the point to normalize.
  */
 static void ed_norm_imp(ed_t r, const ed_t p, int inverted) {
-	if (!p->coord) {
+	if (p->coord != BASIC) {
 		if (inverted) {
 			fp_copy(r->z, p->z);
 		} else {
@@ -63,7 +63,7 @@ static void ed_norm_imp(ed_t r, const ed_t p, int inverted) {
 	}
 }
 
-#endif /* EP_ADD == PROJC */
+#endif /* ED_ADD == PROJC */
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -75,22 +75,22 @@ void ed_norm(ed_t r, const ed_t p) {
 		return;
 	}
 
-	if (p->coord) {
+	if (p->coord == BASIC) {
 		/* If the point is represented in affine coordinates, just copy it. */
 		ed_copy(r, p);
 		return;
 	}
 #if ED_ADD == PROJC || ED_ADD == EXTND || !defined(STRIP)
 	ed_norm_imp(r, p, 0);
-#endif /* EP_ADD != BASIC*/
+#endif /* ED_ADD != BASIC*/
 }
 
 void ed_norm_sim(ed_t *r, const ed_t *t, int n) {
 	fp_t* a = RLC_ALLOCA(fp_t, n);
 
-	TRY {
+	RLC_TRY {
 		if (a == NULL) {
-			THROW(ERR_NO_MEMORY);
+			RLC_THROW(ERR_NO_MEMORY);
 		}
 		for (int i = 0; i < n; i++) {
 			fp_null(a[i]);
@@ -115,10 +115,10 @@ void ed_norm_sim(ed_t *r, const ed_t *t, int n) {
 			ed_norm_imp(r[i], r[i], 1);
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		for (int i = 0; i < n; i++) {
 			fp_free(a[i]);
 		}

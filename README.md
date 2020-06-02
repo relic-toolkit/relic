@@ -33,7 +33,7 @@ RELIC implements to date:
 If you use RELIC, please cite using the template below:
 
     @misc{relic-toolkit,
-        author = {D. F. Aranha and others},
+        author = {D. F. Aranha and C. P. L. Gouvêa and T. Markmann and R. S. Wahby and K. Liao},        
         title = {{RELIC is an Efficient LIbrary for Cryptography}},
         howpublished = {\url{https://github.com/relic-toolkit/relic}},
     }

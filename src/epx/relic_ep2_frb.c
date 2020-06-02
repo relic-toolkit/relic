@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -42,7 +42,7 @@ void ep2_frb(ep2_t r, ep2_t p, int i) {
 		fp2_frb(r->x, r->x, 1);
 		fp2_frb(r->y, r->y, 1);
 		fp2_frb(r->z, r->z, 1);
-		if (ep2_curve_is_twist() == EP_MTYPE) {
+		if (ep2_curve_is_twist() == RLC_EP_MTYPE) {
 			fp2_mul_frb(r->x, r->x, 1, 4);
 			fp2_mul_art(r->x, r->x);
 			fp2_mul_art(r->y, r->y);

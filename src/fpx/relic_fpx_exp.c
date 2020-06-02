@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -45,7 +45,7 @@ void fp2_exp(fp2_t c, fp2_t a, bn_t b) {
 
 	fp2_null(t);
 
-	TRY {
+	RLC_TRY {
 		fp2_new(t);
 
 		fp2_copy(t, a);
@@ -62,10 +62,10 @@ void fp2_exp(fp2_t c, fp2_t a, bn_t b) {
 			fp2_copy(c, t);
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fp2_free(t);
 	}
 }
@@ -80,7 +80,7 @@ void fp2_exp_dig(fp2_t c, fp2_t a, dig_t b) {
 
 	fp2_null(t);
 
-	TRY {
+	RLC_TRY {
 		fp2_new(t);
 
 		fp2_copy(t, a);
@@ -93,10 +93,10 @@ void fp2_exp_dig(fp2_t c, fp2_t a, dig_t b) {
 
 		fp2_copy(c, t);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fp2_free(t);
 	}
 }
@@ -111,7 +111,7 @@ void fp3_exp(fp3_t c, fp3_t a, bn_t b) {
 
 	fp3_null(t);
 
-	TRY {
+	RLC_TRY {
 		fp3_new(t);
 
 		fp3_copy(t, a);
@@ -129,10 +129,10 @@ void fp3_exp(fp3_t c, fp3_t a, bn_t b) {
 			fp3_copy(c, t);
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fp3_free(t);
 	}
 }
@@ -147,7 +147,7 @@ void fp4_exp(fp4_t c, fp4_t a, bn_t b) {
 
 	fp4_null(t);
 
-	TRY {
+	RLC_TRY {
 		fp4_new(t);
 
 		fp4_copy(t, a);
@@ -165,10 +165,10 @@ void fp4_exp(fp4_t c, fp4_t a, bn_t b) {
 			fp4_copy(c, t);
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fp4_free(t);
 	}
 }
@@ -183,7 +183,7 @@ void fp6_exp(fp6_t c, fp6_t a, bn_t b) {
 
 	fp6_null(t);
 
-	TRY {
+	RLC_TRY {
 		fp6_new(t);
 
 		fp6_copy(t, a);
@@ -201,10 +201,10 @@ void fp6_exp(fp6_t c, fp6_t a, bn_t b) {
 			fp6_copy(c, t);
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fp6_free(t);
 	}
 }
@@ -219,7 +219,7 @@ void fp8_exp(fp8_t c, fp8_t a, bn_t b) {
 
 	fp8_null(t);
 
-	TRY {
+	RLC_TRY {
 		fp8_new(t);
 
 		if (fp8_test_cyc(a)) {
@@ -241,10 +241,10 @@ void fp8_exp(fp8_t c, fp8_t a, bn_t b) {
 			}
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fp8_free(t);
 	}
 }
@@ -259,7 +259,7 @@ void fp9_exp(fp9_t c, fp9_t a, bn_t b) {
 
 	fp9_null(t);
 
-	TRY {
+	RLC_TRY {
 		fp9_new(t);
 
 		fp9_copy(t, a);
@@ -277,10 +277,10 @@ void fp9_exp(fp9_t c, fp9_t a, bn_t b) {
 			fp9_copy(c, t);
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fp9_free(t);
 	}
 }
@@ -295,7 +295,7 @@ void fp12_exp(fp12_t c, fp12_t a, bn_t b) {
 
 	fp12_null(t);
 
-	TRY {
+	RLC_TRY {
 		fp12_new(t);
 
 		if (fp12_test_cyc(a)) {
@@ -317,10 +317,10 @@ void fp12_exp(fp12_t c, fp12_t a, bn_t b) {
 			}
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fp12_free(t);
 	}
 }
@@ -335,7 +335,7 @@ void fp12_exp_dig(fp12_t c, fp12_t a, dig_t b) {
 
 	fp12_null(t);
 
-	TRY {
+	RLC_TRY {
 		fp12_new(t);
 
 		fp12_copy(t, a);
@@ -358,10 +358,10 @@ void fp12_exp_dig(fp12_t c, fp12_t a, dig_t b) {
 
 		fp12_copy(c, t);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fp12_free(t);
 	}
 }
@@ -376,7 +376,7 @@ void fp18_exp(fp18_t c, fp18_t a, bn_t b) {
 
 	fp18_null(t);
 
-	TRY {
+	RLC_TRY {
 		fp18_new(t);
 
 		fp18_copy(t, a);
@@ -394,10 +394,10 @@ void fp18_exp(fp18_t c, fp18_t a, bn_t b) {
 			fp18_copy(c, t);
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fp18_free(t);
 	}
 }
@@ -412,7 +412,7 @@ void fp24_exp(fp24_t c, fp24_t a, bn_t b) {
 
 	fp24_null(t);
 
-	TRY {
+	RLC_TRY {
 		fp24_new(t);
 
 		fp24_copy(t, a);
@@ -430,10 +430,10 @@ void fp24_exp(fp24_t c, fp24_t a, bn_t b) {
 			fp24_copy(c, t);
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fp24_free(t);
 	}
 }
@@ -448,7 +448,7 @@ void fp48_exp(fp48_t c, fp48_t a, bn_t b) {
 
 	fp48_null(t);
 
-	TRY {
+	RLC_TRY {
 		fp48_new(t);
 
 		if (fp48_test_cyc(a)) {
@@ -470,10 +470,10 @@ void fp48_exp(fp48_t c, fp48_t a, bn_t b) {
 			}
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fp48_free(t);
 	}
 }
@@ -488,7 +488,7 @@ void fp48_exp_dig(fp48_t c, fp48_t a, dig_t b) {
 
 	fp48_null(t);
 
-	TRY {
+	RLC_TRY {
 		fp48_new(t);
 
 		fp48_copy(t, a);
@@ -511,10 +511,10 @@ void fp48_exp_dig(fp48_t c, fp48_t a, dig_t b) {
 
 		fp48_copy(c, t);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fp48_free(t);
 	}
 }
@@ -529,7 +529,7 @@ void fp54_exp(fp54_t c, fp54_t a, bn_t b) {
 
 	fp54_null(t);
 
-	TRY {
+	RLC_TRY {
 		fp54_new(t);
 
 		fp54_copy(t, a);
@@ -547,10 +547,10 @@ void fp54_exp(fp54_t c, fp54_t a, bn_t b) {
 			fp54_copy(c, t);
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fp54_free(t);
 	}
 }
@@ -565,7 +565,7 @@ void fp54_exp_dig(fp54_t c, fp54_t a, dig_t b) {
 
 	fp54_null(t);
 
-	TRY {
+	RLC_TRY {
 		fp54_new(t);
 
 		fp54_copy(t, a);
@@ -588,10 +588,10 @@ void fp54_exp_dig(fp54_t c, fp54_t a, dig_t b) {
 
 		fp54_copy(c, t);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fp54_free(t);
 	}
 }

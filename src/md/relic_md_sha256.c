@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -44,13 +44,13 @@ void md_map_sh256(uint8_t *hash, const uint8_t *msg, int len) {
 	SHA256Context ctx;
 
 	if (SHA256Reset(&ctx) != shaSuccess) {
-		THROW(ERR_NO_VALID);
+		RLC_THROW(ERR_NO_VALID);
 	}
 	if (SHA256Input(&ctx, msg, len) != shaSuccess) {
-		THROW(ERR_NO_VALID);
+		RLC_THROW(ERR_NO_VALID);
 	}
 	if (SHA256Result(&ctx, hash) != shaSuccess) {
-		THROW(ERR_NO_VALID);
+		RLC_THROW(ERR_NO_VALID);
 	}
 }
 

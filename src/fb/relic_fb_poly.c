@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -61,7 +61,7 @@ static void find_trace(void) {
 
 	ctx->fb_ta = ctx->fb_tb = ctx->fb_tc = -1;
 
-	TRY {
+	RLC_TRY {
 		fb_new(t0);
 		fb_new(t1);
 
@@ -88,17 +88,17 @@ static void find_trace(void) {
 						ctx->fb_tc = i;
 						break;
 					default:
-						THROW(ERR_NO_VALID);
+						RLC_THROW(ERR_NO_VALID);
 						break;
 				}
 				counter++;
 			}
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fb_free(t0);
 		fb_free(t1);
 	}
@@ -120,7 +120,7 @@ static void find_solve(void) {
 
 	fb_null(t0);
 
-	TRY {
+	RLC_TRY {
 		fb_new(t0);
 
 		l = 0;
@@ -142,10 +142,10 @@ static void find_solve(void) {
 			fb_rsh(ctx->fb_half[l][j], ctx->fb_half[l][j], 1);
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fb_free(t0);
 	}
 }
@@ -373,7 +373,7 @@ void fb_poly_set_trino(int a) {
 
 	fb_null(f);
 
-	TRY {
+	RLC_TRY {
 		ctx->fb_pa = a;
 		ctx->fb_pb = ctx->fb_pc = 0;
 
@@ -387,10 +387,10 @@ void fb_poly_set_trino(int a) {
 		fb_set_bit(f, 0, 1);
 		fb_poly_set(f);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fb_free(f);
 	}
 }
@@ -401,7 +401,7 @@ void fb_poly_set_penta(int a, int b, int c) {
 
 	fb_null(f);
 
-	TRY {
+	RLC_TRY {
 		fb_new(f);
 
 		ctx->fb_pa = a;
@@ -420,10 +420,10 @@ void fb_poly_set_penta(int a, int b, int c) {
 		fb_set_bit(f, 0, 1);
 		fb_poly_set(f);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fb_free(f);
 	}
 }

@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -3098,7 +3098,7 @@ int main(void) {
 	if (pc_param_set_any() != RLC_OK) {
 		/* If it does not work, try a tower-friendly field. */
 		if (fp_param_set_any_tower() == RLC_ERR) {
-			THROW(ERR_NO_FIELD);
+			RLC_THROW(ERR_NO_FIELD);
 			core_clean();
 			return 0;
 		}

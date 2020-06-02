@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -48,7 +48,7 @@ void fp_invm_low(dig_t *c, const dig_t *a) {
 	fp_null(t);
 	fp_null(x1);
 
-	TRY {
+	RLC_TRY {
 		fp_new(t);
 		fp_new(x1);
 
@@ -63,10 +63,10 @@ void fp_invm_low(dig_t *c, const dig_t *a) {
 			fp_mul(c, x1, t);
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fp_free(t);
 		fp_free(x1);
 	}

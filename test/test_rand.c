@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -301,15 +301,15 @@ uint8_t result2[] = {
 
 static int test(void) {
 	int i, len = 2 * RLC_MD_LEN, code = RLC_ERR;
-	uint8_t out[2 * RLC_MD_LEN], seed2[(RAND_SIZE - 1) / 2], seed3[(RAND_SIZE - 1) / 2];
+	uint8_t out[2 * RLC_MD_LEN], seed2[(RLC_RAND_SIZE - 1) / 2], seed3[(RLC_RAND_SIZE - 1) / 2];
 
-	for (i = 0; i < (RAND_SIZE - 1) / 2; i++) {
+	for (i = 0; i < (RLC_RAND_SIZE - 1) / 2; i++) {
 		seed1[i] = i;
 		seed2[i] = 0x80 + i;
 		seed3[i] = 0xC0 + i;
 	}
 	for (; i < sizeof(seed1); i++) {
-		seed1[i] = 0x20 + (i - (RAND_SIZE - 1) / 2);
+		seed1[i] = 0x20 + (i - (RLC_RAND_SIZE - 1) / 2);
 	}
 
 	TEST_ONCE("hash-dbrg (" FUNCTION ") random generator is correct") {
@@ -389,7 +389,7 @@ static void test_bytes(uint8_t *buf, int size, void *args) {
 	int c, l, fd = *(int *)args;
 
 	if (fd == -1) {
-		THROW(ERR_NO_FILE);
+		RLC_THROW(ERR_NO_FILE);
 	}
 
 	l = 0;
@@ -397,7 +397,7 @@ static void test_bytes(uint8_t *buf, int size, void *args) {
 		c = read(fd, buf + l, size - l);
 		l += c;
 		if (c == -1) {
-			THROW(ERR_NO_READ);
+			RLC_THROW(ERR_NO_READ);
 		}
 	} while (l < size);
 }

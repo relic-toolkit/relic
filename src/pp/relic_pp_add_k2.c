@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -48,7 +48,7 @@ void pp_add_k2_basic(fp2_t l, ep_t r, ep_t p, ep_t q) {
 	fp_null(s);
 	ep_null(t);
 
-	TRY {
+	RLC_TRY {
 		fp_new(s);
 		ep_new(t);
 
@@ -58,9 +58,9 @@ void pp_add_k2_basic(fp2_t l, ep_t r, ep_t p, ep_t q) {
 		fp_mul(l[0], l[0], s);
 		fp_sub(l[0], t->y, l[0]);
 		fp_neg(l[1], q->y);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		fp_free(s);
 		ep_free(t);
 	}
@@ -82,7 +82,7 @@ void pp_add_k2_projc_basic(fp2_t l, ep_t r, ep_t p, ep_t q) {
 	fp_null(t4);
 	fp_null(t5);
 
-	TRY {
+	RLC_TRY {
 		fp_new(t0);
 		fp_new(t1);
 		fp_new(t2);
@@ -137,10 +137,10 @@ void pp_add_k2_projc_basic(fp2_t l, ep_t r, ep_t p, ep_t q) {
 
 		r->coord = PROJC;
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fp_free(t0);
 		fp_free(t1);
 		fp_free(t2);
@@ -167,7 +167,7 @@ void pp_add_k2_projc_lazyr(fp2_t l, ep_t r, ep_t p, ep_t q) {
 	dv_null(u0);
 	dv_null(u1);
 
-	TRY {
+	RLC_TRY {
 		fp_new(t0);
 		fp_new(t1);
 		fp_new(t2);
@@ -225,10 +225,10 @@ void pp_add_k2_projc_lazyr(fp2_t l, ep_t r, ep_t p, ep_t q) {
 
 		r->coord = PROJC;
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fp_free(t0);
 		fp_free(t1);
 		fp_free(t2);

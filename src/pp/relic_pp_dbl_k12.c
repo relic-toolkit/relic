@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -49,14 +49,14 @@ void pp_dbl_k12_basic(fp12_t l, ep2_t r, ep2_t q, ep_t p) {
 	fp2_null(s);
 	ep2_null(t);
 
-	TRY {
+	RLC_TRY {
 		fp2_new(s);
 		ep2_new(t);
 		ep2_copy(t, q);
 		ep2_dbl_slp_basic(r, s, q);
 		fp12_zero(l);
 
-		if (ep2_curve_is_twist() == EP_MTYPE) {
+		if (ep2_curve_is_twist() == RLC_EP_MTYPE) {
 			one ^= 1;
 			zero ^= 1;
 		}
@@ -67,10 +67,10 @@ void pp_dbl_k12_basic(fp12_t l, ep2_t r, ep2_t q, ep_t p) {
 		fp2_sub(l[one][one], t->y, l[one][one]);
 		fp_copy(l[zero][zero][0], p->y);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fp2_free(s);
 		ep2_free(t);
 	}
@@ -94,7 +94,7 @@ void pp_dbl_k12_projc_basic(fp12_t l, ep2_t r, ep2_t q, ep_t p) {
 	fp2_null(t5);
 	fp2_null(t6);
 
-	TRY {
+	RLC_TRY {
 		fp2_new(t0);
 		fp2_new(t1);
 		fp2_new(t2);
@@ -103,7 +103,7 @@ void pp_dbl_k12_projc_basic(fp12_t l, ep2_t r, ep2_t q, ep_t p) {
 		fp2_new(t5);
 		fp2_new(t6);
 
-		if (ep2_curve_is_twist() == EP_MTYPE) {
+		if (ep2_curve_is_twist() == RLC_EP_MTYPE) {
 			one ^= 1;
 			zero ^= 1;
 		}
@@ -217,10 +217,10 @@ void pp_dbl_k12_projc_basic(fp12_t l, ep2_t r, ep2_t q, ep_t p) {
 		}
 		r->coord = PROJC;
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fp2_free(t0);
 		fp2_free(t1);
 		fp2_free(t2);
@@ -250,7 +250,7 @@ void pp_dbl_k12_projc_lazyr(fp12_t l, ep2_t r, ep2_t q, ep_t p) {
 	dv2_null(u0);
 	dv2_null(u1);
 
-	TRY {
+	RLC_TRY {
 		fp2_new(t0);
 		fp2_new(t1);
 		fp2_new(t2);
@@ -261,7 +261,7 @@ void pp_dbl_k12_projc_lazyr(fp12_t l, ep2_t r, ep2_t q, ep_t p) {
 		dv2_new(u0);
 		dv2_new(u1);
 
-		if (ep2_curve_is_twist() == EP_MTYPE) {
+		if (ep2_curve_is_twist() == RLC_EP_MTYPE) {
 			one ^= 1;
 			zero ^= 1;
 		}
@@ -383,10 +383,10 @@ void pp_dbl_k12_projc_lazyr(fp12_t l, ep2_t r, ep2_t q, ep_t p) {
 		}
 		r->coord = PROJC;
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fp2_free(t0);
 		fp2_free(t1);
 		fp2_free(t2);
@@ -415,7 +415,7 @@ void pp_dbl_lit_k12(fp12_t l, ep_t r, ep_t p, ep2_t q) {
 	fp_null(t5);
 	fp_null(t6);
 
-	TRY {
+	RLC_TRY {
 		fp_new(t0);
 		fp_new(t1);
 		fp_new(t2);
@@ -458,7 +458,7 @@ void pp_dbl_lit_k12(fp12_t l, ep_t r, ep_t p, ep2_t q) {
 		fp_dbl(r->z, r->z);
 		r->coord = PROJC;
 
-		if (ep2_curve_is_twist() == EP_MTYPE) {
+		if (ep2_curve_is_twist() == RLC_EP_MTYPE) {
 			one ^= 1;
 			zero ^= 1;
 		}
@@ -474,10 +474,10 @@ void pp_dbl_lit_k12(fp12_t l, ep_t r, ep_t p, ep2_t q) {
 		fp_mul(l[one][one][0], q->y[0], t5);
 		fp_mul(l[one][one][1], q->y[1], t5);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fp_free(t0);
 		fp_free(t1);
 		fp_free(t2);

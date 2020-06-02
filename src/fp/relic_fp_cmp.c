@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -41,13 +41,13 @@ int fp_cmp_dig(const fp_t a, dig_t b) {
 
 	fp_null(t);
 
-	TRY {
+	RLC_TRY {
 		fp_new(t);
 		fp_prime_conv_dig(t, b);
 		r = fp_cmp(a, t);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		fp_free(t);
 	}
 

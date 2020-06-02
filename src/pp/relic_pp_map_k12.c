@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -61,10 +61,10 @@ static void pp_mil_k12(fp12_t r, ep2_t *t, ep2_t *q, ep_t *p, int m, bn_t a) {
 
 	fp12_null(l);
 
-	TRY {
+	RLC_TRY {
 		fp12_new(l);
 		if (_p == NULL || _q == NULL) {
-			THROW(ERR_NO_MEMORY);
+			RLC_THROW(ERR_NO_MEMORY);
 		}
 		for (j = 0; j < m; j++) {
 			ep_null(_p[j]);
@@ -118,10 +118,10 @@ static void pp_mil_k12(fp12_t r, ep2_t *t, ep2_t *q, ep_t *p, int m, bn_t a) {
 			}
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fp12_free(l);
 		for (j = 0; j < m; j++) {
 			ep_free(_p[j]);
@@ -150,9 +150,9 @@ static void pp_mil_lit_k12(fp12_t r, ep_t *t, ep_t *p, ep2_t *q, int m, bn_t a) 
 
 	fp12_null(l);
 
-	TRY {
+	RLC_TRY {
 		if (_q == NULL) {
-			THROW(ERR_NO_MEMORY);
+			RLC_THROW(ERR_NO_MEMORY);
 		}
 		fp12_new(l);
 		for (j = 0; j < m; j++) {
@@ -175,10 +175,10 @@ static void pp_mil_lit_k12(fp12_t r, ep_t *t, ep_t *p, ep2_t *q, int m, bn_t a) 
 			}
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fp12_free(l);
 		for (j = 0; j < m; j++) {
 			ep2_free(_q[j]);
@@ -204,7 +204,7 @@ static void pp_fin_k12_oatep(fp12_t r, ep2_t t, ep2_t q, ep_t p) {
 	ep2_null(q1);
 	ep2_null(q2);
 
-	TRY {
+	RLC_TRY {
 		ep2_new(q1);
 		ep2_new(q2);
 		fp12_new(tmp);
@@ -221,9 +221,9 @@ static void pp_fin_k12_oatep(fp12_t r, ep2_t t, ep2_t q, ep_t p) {
 		fp12_mul_dxs(r, r, tmp);
 		pp_add_k12(tmp, t, q2, p);
 		fp12_mul_dxs(r, r, tmp);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		fp12_free(tmp);
 		ep2_free(q1);
 		ep2_free(q2);
@@ -246,7 +246,7 @@ void pp_map_tatep_k12(fp12_t r, ep_t p, ep2_t q) {
 	ep2_null(_q[0]);
 	bn_null(n);
 
-	TRY {
+	RLC_TRY {
 		ep_new(_p[0]);
 		ep_new(t[0]);
 		ep2_new(_q[0]);
@@ -262,10 +262,10 @@ void pp_map_tatep_k12(fp12_t r, ep_t p, ep2_t q) {
 			pp_exp_k12(r, r);
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		ep_free(_p[0]);
 		ep_free(t[0]);
 		ep2_free(_q[0]);
@@ -281,10 +281,10 @@ void pp_map_sim_tatep_k12(fp12_t r, ep_t *p, ep2_t *q, int m) {
 
 	bn_null(n);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 		if (_p == NULL || _q == NULL || t == NULL) {
-			THROW(ERR_NO_MEMORY);
+			RLC_THROW(ERR_NO_MEMORY);
 		}
 		for (i = 0; i < m; i++) {
 			ep_null(_p[i]);
@@ -310,10 +310,10 @@ void pp_map_sim_tatep_k12(fp12_t r, ep_t *p, ep2_t *q, int m) {
 			pp_exp_k12(r, r);
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(n);
 		for (i = 0; i < m; i++) {
 			ep_free(_p[i]);
@@ -344,7 +344,7 @@ void pp_map_weilp_k12(fp12_t r, ep_t p, ep2_t q) {
 	fp12_null(r1);
 	bn_null(n);
 
-	TRY {
+	RLC_TRY {
 		ep_new(_p[0]);
 		ep_new(t0[0]);
 		ep2_new(_q[0]);
@@ -370,10 +370,10 @@ void pp_map_weilp_k12(fp12_t r, ep_t p, ep2_t q) {
 		}
 		fp12_mul(r, r0, r1);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		ep_free(_p[0]);
 		ep_free(t0[0]);
 		ep2_free(_q[0]);
@@ -395,12 +395,12 @@ void pp_map_sim_weilp_k12(fp12_t r, ep_t *p, ep2_t *q, int m) {
 	fp12_null(r1);
 	bn_null(r);
 
-	TRY {
+	RLC_TRY {
 		fp12_new(r0);
 		fp12_new(r1);
 		bn_new(n);
 		if (_p == NULL || _q == NULL || t0 == NULL || t1 == NULL) {
-			THROW(ERR_NO_MEMORY);
+			RLC_THROW(ERR_NO_MEMORY);
 		}
 		for (i = 0; i < m; i++) {
 			ep_null(_p[i]);
@@ -436,10 +436,10 @@ void pp_map_sim_weilp_k12(fp12_t r, ep_t *p, ep2_t *q, int m) {
 		}
 		fp12_mul(r, r0, r1);
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fp12_free(r0);
 		fp12_free(r1);
 		bn_free(n);
@@ -470,7 +470,7 @@ void pp_map_oatep_k12(fp12_t r, ep_t p, ep2_t q) {
 	ep2_null(t[0]);
 	bn_null(a);
 
-	TRY {
+	RLC_TRY {
 		ep_new(_p[0]);
 		ep2_new(_q[0]);
 		ep2_new(t[0]);
@@ -509,10 +509,10 @@ void pp_map_oatep_k12(fp12_t r, ep_t p, ep2_t q) {
 			}
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		ep_free(_p[0]);
 		ep2_free(_q[0]);
 		ep2_free(t[0]);
@@ -526,11 +526,11 @@ void pp_map_sim_oatep_k12(fp12_t r, ep_t *p, ep2_t *q, int m) {
 	bn_t a;
 	int i, j;
 
-	TRY {
+	RLC_TRY {
 		bn_null(a);
 		bn_new(a);
 		if (_p == NULL || _q == NULL || t == NULL) {
-			THROW(ERR_NO_MEMORY);
+			RLC_THROW(ERR_NO_MEMORY);
 		}
 		for (i = 0; i < m; i++) {
 			ep_null(_p[i]);
@@ -582,10 +582,10 @@ void pp_map_sim_oatep_k12(fp12_t r, ep_t *p, ep2_t *q, int m) {
 			}
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(a);
 		for (i = 0; i < m; i++) {
 			ep_free(_p[i]);

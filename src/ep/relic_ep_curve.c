@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -46,7 +46,7 @@ static void detect_opt(int *opt, fp_t a) {
 
 	fp_null(t);
 
-	TRY {
+	RLC_TRY {
 		fp_new(t);
 		fp_prime_conv_dig(t, 3);
 		fp_neg(t, t);
@@ -65,10 +65,10 @@ static void detect_opt(int *opt, fp_t a) {
 			*opt = RLC_HUGE;
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fp_free(t);
 	}
 }
@@ -93,7 +93,7 @@ static void ep_curve_set_map(const fp_t u) {
 
 	fp_copy(ctx->ep_map_u, u);
 
-	TRY {
+	RLC_TRY {
 		bn_new(t);
 
 		if (ep_curve_is_ctmap() || abNeq0) {
@@ -138,7 +138,7 @@ static void ep_curve_set_map(const fp_t u) {
 			fp_neg(c4, c4);               /* c4 = -(3 * u^2 + 4 * a) */
 			fp_mul(c3, c4, c1);           /* c3 = -g(u) * (3 * u^2 + 4 * a) */
 			if (!fp_srt(c3, c3)) {        /* c3 = sqrt(-g(u) * (3 * u^2 + 4 * a)) */
-				THROW(ERR_NO_VALID);
+				RLC_THROW(ERR_NO_VALID);
 			}
 			/* make sure sgn0(c3) == 0 */
 			fp_prime_back(t, c3);
@@ -153,10 +153,10 @@ static void ep_curve_set_map(const fp_t u) {
 			fp_mul_dig(c4, c4, 4); /* c4 *= 4 */
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		bn_free(t);
 	}
 }

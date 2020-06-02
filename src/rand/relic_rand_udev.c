@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -43,7 +43,7 @@
 /**
  * The path to the char device that supplies entropy.
  */
-#define RAND_PATH		"/dev/urandom"
+#define RLC_RAND_PATH		"/dev/urandom"
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -59,7 +59,7 @@ void rand_bytes(uint8_t *buf, int size) {
 		c = read(*fd, buf + l, size - l);
 		l += c;
 		if (c == -1) {
-			THROW(ERR_NO_READ);
+			RLC_THROW(ERR_NO_READ);
 		}
 	} while (l < size);
 }

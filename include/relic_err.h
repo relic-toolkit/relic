@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -77,9 +77,9 @@ enum errors {
 
 /** Truncate file name if verbosity is turned off. */
 #ifdef VERBS
-#define ERR_FILE	RLC_STR(__FILE__)
+#define RLC_FILE	RLC_STR(__FILE__)
 #else
-#define ERR_FILE															\
+#define RLC_FILE															\
 	((strrchr(RLC_STR(__FILE__), '/') ? : RLC_STR(__FILE__) - 1) + 1)
 #endif
 
@@ -120,7 +120,7 @@ typedef struct _sts_t {
  * executed. If an error is thrown inside the program block, the setjmp()
  * function is called again and the return value is non-zero.
  */
-#define ERR_TRY															\
+#define RLC_ERR_TRY														\
 	{																	\
 		sts_t *_last, _this;											\
 		ctx_t *_ctx = core_get();										\
@@ -136,13 +136,13 @@ typedef struct _sts_t {
  * Implements the CATCH clause of the error-handling routines.
  *
  * First, the address of the error is stored and the execution resumes
- * on the ERR_TRY macro. If an error is thrown inside the program block,
+ * on the RLC_ERR_TRY macro. If an error is thrown inside the program block,
  * the caught flag is updated and the last error is restored. If some error
- * was caught, the execution is resumed inside the CATCH block.
+ * was caught, the execution is resumed inside the RLC_CATCH block.
  *
  * @param[in] ADDR	- the address of the exception being caught
  */
-#define ERR_CATCH(ADDR)													\
+#define RLC_ERR_CATCH(ADDR)												\
 					else { } 											\
 					_ctx->caught = 0; 									\
 				} else {												\
@@ -174,7 +174,7 @@ typedef struct _sts_t {
  *
  * @param[in] E		- the exception being caught.
  */
-#define ERR_THROW(E)													\
+#define RLC_ERR_THROW(E)												\
 	{																	\
 		ctx_t *_ctx = core_get();										\
 		_ctx->code = RLC_ERR;											\
@@ -186,10 +186,10 @@ typedef struct _sts_t {
 			_ctx->error.error = &(_ctx->number);						\
 			_ctx->error.block = 0;										\
 			_ctx->number = E;											\
-			ERR_PRINT(E);												\
+			RLC_ERR_PRINT(E);											\
 		} else {														\
 			for (; ; longjmp(_ctx->last->addr, 1)) {					\
-				ERR_PRINT(E);											\
+				RLC_ERR_PRINT(E);										\
 				if (_ctx->last->error) {								\
 					if (E != ERR_CAUGHT) {								\
 						*(_ctx->last->error) = E;						\
@@ -203,24 +203,24 @@ typedef struct _sts_t {
 /**
  * Implements a TRY clause.
  */
-#define TRY					ERR_TRY
+#define RLC_TRY					RLC_ERR_TRY
 #else
 /**
  * Stub for the TRY clause.
  */
-#define TRY					if (1)
+#define RLC_TRY					if (1)
 #endif
 
 #ifdef CHECK
 /**
  * Implements a CATCH clause.
  */
-#define CATCH(E)			ERR_CATCH(&(E))
+#define RLC_CATCH(E)			RLC_ERR_CATCH(&(E))
 #else
 /**
  * Stub for the CATCH clause.
  */
-#define CATCH(E)			else
+#define RLC_CATCH(E)			else
 #endif
 
 #ifdef CHECK
@@ -230,38 +230,38 @@ typedef struct _sts_t {
  * If this macro is used the error type is not available inside the CATCH
  * block.
  */
-#define CATCH_ANY			ERR_CATCH(NULL)
+#define RLC_CATCH_ANY			RLC_ERR_CATCH(NULL)
 #else
 /**
- * Stub for the CATCH_ANY clause.
+ * Stub for the RLC_CATCH_ANY clause.
  */
-#define CATCH_ANY			if (0)
+#define RLC_CATCH_ANY			if (0)
 #endif
 
 #ifdef CHECK
 /**
- * Implements a FINALLY clause.
+ * Implements a RLC_FINALLY clause.
  */
-#define FINALLY				else if (_z == 0)
+#define RLC_FINALLY				else if (_z == 0)
 #else
-#define FINALLY				if (1)
+#define RLC_FINALLY				if (1)
 #endif
 
 #ifdef CHECK
 /**
  * Implements a THROW clause.
  */
-#define THROW				ERR_THROW
+#define RLC_THROW				RLC_ERR_THROW
 #else
 /**
  * Stub for the THROW clause.
  */
 #ifdef QUIET
-#define THROW(E)			core_get()->code = RLC_ERR;
+#define RLC_THROW(E)			core_get()->code = RLC_ERR;
 #else
-#define THROW(E)															\
+#define RLC_THROW(E)														\
 	core_get()->code = RLC_ERR; 											\
-	util_print("FATAL ERROR in %s:%d\n", ERR_FILE, __LINE__);				\
+	util_print("FATAL ERROR in %s:%d\n", RLC_FILE, __LINE__);				\
 
 #endif
 #endif
@@ -271,7 +271,7 @@ typedef struct _sts_t {
  *
  * @param[in] LABEL			- the label to jump
  */
-#define ERROR(LABEL)		goto LABEL
+#define RLC_ERROR(LABEL)		goto LABEL
 
 #ifdef VERBS
 
@@ -280,8 +280,8 @@ typedef struct _sts_t {
  *
  * @param[in] ERROR			- the error code.
  */
-#define ERR_PRINT(ERROR)													\
-	err_full_msg(__func__, ERR_FILE, __LINE__, ERROR)						\
+#define RLC_ERR_PRINT(ERROR)												\
+	err_full_msg(__func__, RLC_FILE, __LINE__, ERROR)						\
 
 #else
 
@@ -290,7 +290,7 @@ typedef struct _sts_t {
  *
  * @param[in] ERROR			- the error code.
  */
-#define ERR_PRINT(ERROR)													\
+#define RLC_ERR_PRINT(ERROR)												\
 	err_simple_msg(ERROR)													\
 
 #endif

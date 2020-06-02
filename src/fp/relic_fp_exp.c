@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -49,7 +49,7 @@ void fp_exp_basic(fp_t c, const fp_t a, const bn_t b) {
 		return;
 	}
 
-	TRY {
+	RLC_TRY {
 		fp_new(r);
 
 		l = bn_bits(b);
@@ -69,10 +69,10 @@ void fp_exp_basic(fp_t c, const fp_t a, const bn_t b) {
 			fp_copy(c, r);
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fp_free(r);
 	}
 }
@@ -99,7 +99,7 @@ void fp_exp_slide(fp_t c, const fp_t a, const bn_t b) {
 		fp_null(t[i]);
 	}
 
-	TRY {
+	RLC_TRY {
 		for (i = 0; i < (1 << (FP_WIDTH - 1)); i ++) {
 			fp_new(t[i]);
 		}
@@ -133,10 +133,10 @@ void fp_exp_slide(fp_t c, const fp_t a, const bn_t b) {
 			fp_copy(c, r);
 		}
 	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		for (i = 0; i < (1 << (FP_WIDTH - 1)); i++) {
 			fp_free(t[i]);
 		}
@@ -159,7 +159,7 @@ void fp_exp_monty(fp_t c, const fp_t a, const bn_t b) {
 		return;
 	}
 
-	TRY {
+	RLC_TRY {
 		fp_new(t[0]);
 		fp_new(t[1]);
 
@@ -179,10 +179,10 @@ void fp_exp_monty(fp_t c, const fp_t a, const bn_t b) {
 		} else {
 			fp_copy(c, t[0]);
 		}
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	FINALLY {
+	RLC_FINALLY {
 		fp_free(t[1]);
 		fp_free(t[0]);
 	}
