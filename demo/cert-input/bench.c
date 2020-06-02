@@ -254,7 +254,7 @@ int main(void) {
 		mpss();
 #endif
 	} else {
-		THROW(ERR_NO_CURVE);
+		RLC_THROW(ERR_NO_CURVE);
 	}
 #endif
 

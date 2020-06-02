@@ -136,6 +136,9 @@ int core_init(void) {
 #ifdef WITH_PP
 		pp_map_init();
 #endif
+#ifdef WITH_PC
+		pc_core_init();
+#endif
 	} RLC_CATCH_ANY {
 		return RLC_ERR;
 	}
@@ -162,6 +165,9 @@ int core_clean(void) {
 #endif
 #ifdef WITH_PP
 	pp_map_clean();
+#endif
+#ifdef WITH_PC
+	pc_core_clean();
 #endif
 	arch_clean();
 	core_ctx = NULL;
