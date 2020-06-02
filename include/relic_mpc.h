@@ -110,7 +110,7 @@ typedef pt_st *pt_t;
 #define mt_new(A)															\
 	A = (mt_t)calloc(1, sizeof(mt_st));										\
 	if ((A) == NULL) {														\
-		THROW(ERR_NO_MEMORY);												\
+		RLC_THROW(ERR_NO_MEMORY);											\
 	}																		\
 	bn_null((A)->a);														\
 	bn_null((A)->b);														\
@@ -181,7 +181,7 @@ typedef pt_st *pt_t;
 #define pt_new(A)															\
 	A = (pt_t)calloc(1, sizeof(pt_st));										\
 	if (A == NULL) {														\
-		THROW(ERR_NO_MEMORY);												\
+		RLC_THROW(ERR_NO_MEMORY);											\
 	}																		\
 	g1_new((A)->a);															\
 	g2_new((A)->b);															\
