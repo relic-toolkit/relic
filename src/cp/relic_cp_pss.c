@@ -226,13 +226,9 @@ int cp_psb_ver(g1_t a, g1_t b, bn_t ms[], g2_t g, g2_t x, g2_t y[], int l) {
 		/* Check that e(a, x \prod y_i^m_i) = e(b, g). */
 		g1_copy(p[0], a);
 		g1_copy(p[1], b);
-		g2_copy(q[0], x);
 		g1_get_ord(n);
-		for (i = 0; i < l; i++) {
-			bn_mod(m, ms[i], n);
-			g2_mul(q[1], y[i], m);
-			g2_add(q[0], q[0], q[1]);
-		}
+		g2_mul_sim_lot(q[0], y, ms, l);
+		g2_add(q[0], q[0], x);
 		g2_norm(q[0], q[0]);
 		g2_copy(q[1], g);
 		g2_neg(q[1], q[1]);
