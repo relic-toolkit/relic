@@ -60,50 +60,45 @@ int cp_pss_gen(bn_t r, bn_t s, g2_t g, g2_t x, g2_t y) {
 	return result;
 }
 
-int cp_pss_sig(g1_t a, g1_t b, uint8_t *msg, int len, bn_t r, bn_t s) {
-	bn_t m, n;
+int cp_pss_sig(g1_t a, g1_t b, bn_t m, bn_t r, bn_t s) {
+	bn_t n, t;
 	int result = RLC_OK;
 
-	bn_null(m);
 	bn_null(n);
+	bn_null(t);
 
 	RLC_TRY {
-		bn_new(m);
 		bn_new(n);
+		bn_new(t);
 
-		pc_get_ord(n);
-		bn_read_bin(m, msg, len);
-		bn_mul(m, m, s);
-		bn_mod(m, m, n);
-		bn_add(m, m, r);
-		bn_mod(m, m, n);
+		g1_get_ord(n);
+		bn_mul(t, m, s);
+		bn_mod(t, t, n);
+		bn_add(t, t, r);
+		bn_mod(t, t, n);
 		g1_rand(a);
-		g1_mul(b, a, m);
+		g1_mul(b, a, t);
 	}
 	RLC_CATCH_ANY {
 		result = RLC_ERR;
-	}
-	RLC_FINALLY {
-		bn_free(m);
+	} RLC_FINALLY {
 		bn_free(n);
+		bn_free(t);
 	}
 	return result;
 }
 
-int cp_pss_ver(g1_t a, g1_t b, uint8_t *msg, int len, g2_t g, g2_t x, g2_t y) {
+int cp_pss_ver(g1_t a, g1_t b, bn_t m, g2_t g, g2_t x, g2_t y) {
 	g1_t p[2];
 	g2_t r[2];
 	gt_t e;
-	bn_t m, n;
-	int result = 1;
+	int result = 0;
 
 	g1_null(p[0]);
 	g1_null(p[1]);
 	g2_null(r[0]);
 	g2_null(r[1]);
 	gt_null(e);
-	bn_null(m);
-	bn_null(n);
 
 	RLC_TRY {
 		g1_new(p[0]);
@@ -111,27 +106,19 @@ int cp_pss_ver(g1_t a, g1_t b, uint8_t *msg, int len, g2_t g, g2_t x, g2_t y) {
 		g2_new(r[0]);
 		g2_new(r[1]);
 		gt_new(e);
-		bn_new(m);
-		bn_new(n);
-
-		if (g1_is_infty(a)) {
-			result = 0;
-		}
 
 		g1_copy(p[0], a);
 		g1_copy(p[1], b);
 		g2_copy(r[1], g);
 		g2_neg(r[1], r[1]);
-		pc_get_ord(n);
-		bn_read_bin(m, msg, len);
-		bn_mod(m, m, n);
+
 		g2_mul(r[0], y, m);
 		g2_add(r[0], r[0], x);
 		g2_norm(r[0], r[0]);
 
 		pc_map_sim(e, p, r, 2);
-		if (!gt_is_unity(e)) {
-			result = 0;
+		if (gt_is_unity(e) && !g1_is_infty(a)) {
+			result = 1;
 		}
 	}
 	RLC_CATCH_ANY {
@@ -143,8 +130,6 @@ int cp_pss_ver(g1_t a, g1_t b, uint8_t *msg, int len, g2_t g, g2_t x, g2_t y) {
 		g2_free(r[0]);
 		g2_free(r[1]);
 		gt_free(e);
-		bn_free(m);
-		bn_free(n);
 	}
 	return result;
 }
@@ -176,8 +161,7 @@ int cp_psb_gen(bn_t r, bn_t s[], g2_t g, g2_t x, g2_t y[], int l) {
 	return result;
 }
 
-int cp_psb_sig(g1_t a, g1_t b, uint8_t *msgs[], int lens[], bn_t r, bn_t s[],
-		int l) {
+int cp_psb_sig(g1_t a, g1_t b, bn_t ms[], bn_t r, bn_t s[], int l) {
 	bn_t m, n, t;
 	int i, result = RLC_OK;
 
@@ -194,10 +178,10 @@ int cp_psb_sig(g1_t a, g1_t b, uint8_t *msgs[], int lens[], bn_t r, bn_t s[],
 		g1_rand(a);
 		/* Compute b = a^x+\sum y_im_i. */
 		pc_get_ord(n);
+
 		bn_copy(t, r);
 		for (i = 0; i < l; i++) {
-			bn_read_bin(m, msgs[i], lens[i]);
-			bn_mod(m, m, n);
+			bn_mod(m, ms[i], n);
 			bn_mul(m, m, s[i]);
 			bn_mod(m, m, n);
 			bn_add(t, t, m);
@@ -216,13 +200,12 @@ int cp_psb_sig(g1_t a, g1_t b, uint8_t *msgs[], int lens[], bn_t r, bn_t s[],
 	return result;
 }
 
-int cp_psb_ver(g1_t a, g1_t b, uint8_t *msgs[], int lens[], g2_t g, g2_t x,
-		g2_t y[], int l) {
+int cp_psb_ver(g1_t a, g1_t b, bn_t ms[], g2_t g, g2_t x, g2_t y[], int l) {
 	g1_t p[2];
 	g2_t q[2];
 	gt_t e;
 	bn_t m, n;
-	int i, result = 0;
+	int result = 0;
 
 	g1_null(p[0]);
 	g1_null(p[1]);
@@ -244,14 +227,10 @@ int cp_psb_ver(g1_t a, g1_t b, uint8_t *msgs[], int lens[], g2_t g, g2_t x,
 		/* Check that e(a, x \prod y_i^m_i) = e(b, g). */
 		g1_copy(p[0], a);
 		g1_copy(p[1], b);
-		g2_copy(q[0], x);
+
 		pc_get_ord(n);
-		for (i = 0; i < l; i++) {
-			bn_read_bin(m, msgs[i], lens[i]);
-			bn_mod(m, m, n);
-			g2_mul(q[1], y[i], m);
-			g2_add(q[0], q[0], q[1]);
-		}
+		g2_mul_sim_lot(q[0], y, ms, l);
+		g2_add(q[0], q[0], x);
 		g2_norm(q[0], q[0]);
 		g2_copy(q[1], g);
 		g2_neg(q[1], q[1]);

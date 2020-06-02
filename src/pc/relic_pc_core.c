@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -50,7 +50,7 @@ void pc_core_calc(void) {
 	g2_null(g2);
 	gt_null(gt);
 
-	TRY {
+	RLC_TRY {
 		g1_new(g1);
 		g2_new(g2);
 		gt_new(gt);
@@ -60,9 +60,9 @@ void pc_core_calc(void) {
 
 		pc_map(gt, g1, g2);
 		gt_copy(core_get()->gt_g, gt);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		g1_free(g1);
 		g2_free(g2);
 		gt_free(gt);

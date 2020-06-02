@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -41,7 +41,7 @@ int cp_mpss_gen(bn_t r[2], bn_t s[2], g2_t h, g2_t x[2], g2_t y[2]) {
 
 	bn_null(n);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 
 		/* Generate keys for PS and secret share them. */
@@ -57,11 +57,9 @@ int cp_mpss_gen(bn_t r[2], bn_t s[2], g2_t h, g2_t x[2], g2_t y[2]) {
 		bn_rand_mod(s[1], n);
 		g2_mul(y[0], h, s[0]);
 		g2_mul(y[1], h, s[1]);
-	}
-	CATCH_ANY {
+	} RLC_CATCH_ANY {
 		result = RLC_ERR;
-	}
-	FINALLY {
+	} RLC_FINALLY {
 		bn_free(n);
 	}
 	return result;
@@ -84,7 +82,7 @@ int cp_mpss_sig(g1_t a, g1_t b[2], bn_t m[2], bn_t r[2], bn_t s[2], mt_t mul_tri
 
 	bn_null(n);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 		for (int i = 0; i < 2; i++) {
 			bn_null(d[i]);
@@ -107,9 +105,9 @@ int cp_mpss_sig(g1_t a, g1_t b[2], bn_t m[2], bn_t r[2], bn_t s[2], mt_t mul_tri
 		g1_rand(a);
 		g1_mul(b[0], a, d[0]);
 		g1_mul(b[1], a, d[1]);
-	} CATCH_ANY {
+	} RLC_CATCH_ANY {
 		result = RLC_ERR;
-	} FINALLY {
+	} RLC_FINALLY {
 		bn_free(n);
 		for (int i = 0; i < 2; i++) {
 			bn_free(d[i]);
@@ -131,7 +129,7 @@ int cp_mpss_ver(gt_t e, g1_t a, g1_t b[2], bn_t m[2], g2_t h, g2_t x, g2_t y,
 
 	bn_null(n);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 		for (int i = 0; i < 2; i++) {
 			bn_null(d[i]);
@@ -191,9 +189,9 @@ int cp_mpss_ver(gt_t e, g1_t a, g1_t b[2], bn_t m[2], g2_t h, g2_t x, g2_t y,
 			/* Now combine shares and multiply. */
 			gt_mul(e, beta[0], beta[1]);
 		}
-	} CATCH_ANY {
+	} RLC_CATCH_ANY {
 		result = RLC_ERR;
-	} FINALLY {
+	} RLC_FINALLY {
 		bn_free(n);
 		for (int i = 0; i < 2; i++) {
 			bn_free(d[i]);
@@ -216,7 +214,7 @@ int cp_mpsb_gen(bn_t r[2], bn_t s[][2], g2_t h, g2_t x[2], g2_t y[][2], int l) {
 
 	bn_null(n);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 
 		/* Generate keys for PS and secret share them. */
@@ -234,11 +232,9 @@ int cp_mpsb_gen(bn_t r[2], bn_t s[][2], g2_t h, g2_t x[2], g2_t y[][2], int l) {
 			g2_mul(y[i][0], h, s[i][0]);
 			g2_mul(y[i][1], h, s[i][1]);
 		}
-	}
-	CATCH_ANY {
+	} RLC_CATCH_ANY {
 		result = RLC_ERR;
-	}
-	FINALLY {
+	} RLC_FINALLY {
 		bn_free(n);
 	}
 	return result;
@@ -264,7 +260,7 @@ int cp_mpsb_sig(g1_t a, g1_t b[2], bn_t m[][2], bn_t r[2], bn_t s[][2],
 
 	bn_null(n);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 		for (int i = 0; i < 2; i++) {
 			bn_null(d[i]);
@@ -298,9 +294,9 @@ int cp_mpsb_sig(g1_t a, g1_t b[2], bn_t m[][2], bn_t r[2], bn_t s[][2],
 		g1_rand(a);
 		g1_mul(b[0], a, d[0]);
 		g1_mul(b[1], a, d[1]);
-	} CATCH_ANY {
+	} RLC_CATCH_ANY {
 		result = RLC_ERR;
-	} FINALLY {
+	} RLC_FINALLY {
 		bn_free(n);
 		for (int i = 0; i < 2; i++) {
 			bn_free(d[i]);
@@ -322,7 +318,7 @@ int cp_mpsb_ver(gt_t e, g1_t a, g1_t b[2], bn_t m[][2], g2_t h, g2_t x,
 	bn_null(n);
 	bn_null(_t);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 		bn_new(_t);
 		for (int i = 0; i < 2; i++) {
@@ -416,9 +412,9 @@ int cp_mpsb_ver(gt_t e, g1_t a, g1_t b[2], bn_t m[][2], g2_t h, g2_t x,
 			/* Now combine shares and multiply. */
 			gt_mul(e, beta[0], beta[1]);
 		}
-	} CATCH_ANY {
+	} RLC_CATCH_ANY {
 		result = RLC_ERR;
-	} FINALLY {
+	} RLC_FINALLY {
 		bn_free(n);
 		bn_free(_t);
 		for (int i = 0; i < 2; i++) {

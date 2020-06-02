@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -47,7 +47,7 @@ static int triple(void) {
 	mt_null(tri[0]);
 	mt_null(tri[1]);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 		bn_new(t);
 		bn_new(u);
@@ -114,24 +114,24 @@ static int triple(void) {
 			bn_mod(d[0], d[0], n);
 			TEST_ASSERT(bn_cmp(t, d[0]) == RLC_EQ, end);
 		} TEST_END;
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
-		bn_free(n);
-		bn_free(t);
-		bn_free(u);
-		mt_free(tri[0]);
-		mt_free(tri[1]);
-		for (int j = 0; j < 2; j++) {
-			bn_free(d[j]);
-			bn_free(e[j]);
-			bn_free(x[j]);
-			bn_free(y[j]);
-		}
+	} RLC_CATCH_ANY {
+		util_print("FATAL ERROR!\n");
+		RLC_ERROR(end);
 	}
 
 	code = RLC_OK;
   end:
+	bn_free(n);
+	bn_free(t);
+	bn_free(u);
+	mt_free(tri[0]);
+	mt_free(tri[1]);
+	for (int j = 0; j < 2; j++) {
+	  bn_free(d[j]);
+	  bn_free(e[j]);
+	  bn_free(x[j]);
+	  bn_free(y[j]);
+	}
 	return code;
 }
 
@@ -149,7 +149,7 @@ static int pairing(void) {
 	gt_null(_r);
 	bn_null(n);
 
-	TRY {
+	RLC_TRY {
 		g1_new(_p);
 		g2_new(_q);
 		gt_new(_r);
@@ -305,9 +305,9 @@ static int pairing(void) {
 			TEST_ASSERT(gt_cmp(f[0], f[1]) == RLC_EQ, end);
 		} TEST_END;
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
-		ERROR(end);
+		RLC_ERROR(end);
 	}
 	code = RLC_OK;
   end:
@@ -349,7 +349,7 @@ int main(void) {
 
 #if defined(WITH_PC)
 	if (pc_param_set_any() != RLC_OK) {
-		THROW(ERR_NO_CURVE);
+		RLC_THROW(ERR_NO_CURVE);
 		core_clean();
 		return 0;
 	}

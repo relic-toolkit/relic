@@ -152,7 +152,7 @@ void gt_exp_sim(gt_t e, gt_t a, bn_t b, gt_t c, bn_t d) {
 	bn_null(_b);
 	bn_null(_d);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 		bn_new(_b);
 		bn_new(_d);
@@ -161,12 +161,38 @@ void gt_exp_sim(gt_t e, gt_t a, bn_t b, gt_t c, bn_t d) {
 		bn_mod(_b, b, n);
 		bn_mod(_d, d, n);
 
-		RLC_CAT(GT_LOWER, exp_cyc_sim)(e, a, _b, c, _d);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+		RLC_CAT(RLC_GT_LOWER, exp_cyc_sim)(e, a, _b, c, _d);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		bn_free(n);
 		bn_free(_b);
 		bn_free(_d);
+	}
+}
+
+void gt_exp_gen(gt_t c, bn_t b) {
+	bn_t n, _b;
+	gt_t g;
+
+	bn_null(n);
+	bn_null(_b);
+	gt_null(g);
+
+	RLC_TRY {
+		bn_new(n);
+		bn_new(_b);
+		gt_new(g);
+
+		pc_get_ord(n);
+		bn_mod(_b, b, n);
+		gt_get_gen(g);
+		gt_exp(c, g, _b);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		bn_free(n);
+		bn_free(_b);
+		gt_free(g);
 	}
 }

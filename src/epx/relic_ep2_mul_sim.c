@@ -42,7 +42,7 @@ void ep2_glv(bn_t _k[4], const bn_t k) {
 
 	bn_null(n);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 		for (i = 0; i < 4; i++) {
 			bn_null(u[i]);
@@ -159,11 +159,9 @@ void ep2_glv(bn_t _k[4], const bn_t k) {
 
 				break;
 		}
-	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	}
-	FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		bn_free(n);
 		for (i = 0; i < 4; i++) {
 			bn_free(u[i]);
@@ -276,7 +274,7 @@ static void ep2_mul_sim_endom(ep2_t r, ep2_t p, const bn_t k, ep2_t q, const bn_
 	bn_t _k[4], _m[4];
 	ep2_t _p[4], _q[4];
 
-	TRY {
+	RLC_TRY {
 		for (i = 0; i < 4; i++) {
 			bn_null(_k[i]);
 			bn_null(_m[i]);
@@ -329,11 +327,9 @@ static void ep2_mul_sim_endom(ep2_t r, ep2_t p, const bn_t k, ep2_t q, const bn_
 
 		/* Convert r to affine coordinates. */
 		ep2_norm(r, r);
-	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	}
-	FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		for (i = 0; i < 4; i++) {
 			bn_free(_k[i]);
 			bn_free(_m[i]);
@@ -649,7 +645,7 @@ void ep2_mul_sim_lot(ep2_t r, ep2_t p[], const bn_t k[], int n) {
 	ep2_t *_p = RLC_ALLOCA(ep2_t, 4 * n);
 	int8_t *naf = RLC_ALLOCA(int8_t, 4 * n * len);
 
-	TRY {
+	RLC_TRY {
 		for (j = 0; j < 4; j++) {
 			bn_null(_k[j]);
 			bn_new(_k[j]);
@@ -704,11 +700,9 @@ void ep2_mul_sim_lot(ep2_t r, ep2_t p[], const bn_t k[], int n) {
 
 		/* Convert r to affine coordinates. */
 		ep2_norm(r, r);
-	}
-	CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	}
-	FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		for (j = 0; j < 4; j++) {
 			bn_free(_k[j]);
 			for (i = 0; i < n; i++) {

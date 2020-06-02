@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -42,7 +42,7 @@ void g1_mul_lcl(bn_t d, g1_t q, g1_t b, bn_t x, g1_t p, mt_t tri) {
 
 	bn_null(n);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 
 		/* Compute public values for transmission. */
@@ -61,9 +61,9 @@ void g1_mul_lcl(bn_t d, g1_t q, g1_t b, bn_t x, g1_t p, mt_t tri) {
 		g1_mul_gen(b, tri->b);
 		g1_sub(q, q, b);
 		g1_norm(q, q);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		bn_free(n);
 	}
 }
@@ -73,7 +73,7 @@ void g1_mul_bct(bn_t d[2], g1_t q[2]) {
 
 	bn_null(n);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 		/* Open values d and Q. */
 		g1_get_ord(n);
@@ -83,9 +83,9 @@ void g1_mul_bct(bn_t d[2], g1_t q[2]) {
 		g1_add(q[0], q[0], q[1]);
 		g1_norm(q[0], q[0]);
 		g1_copy(q[1], q[0]);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		bn_free(n);
 	}
 }
@@ -95,7 +95,7 @@ void g1_mul_mpc(g1_t r, bn_t d, g1_t q, mt_t tri, g1_t b, int party) {
 
 	g1_null(t);
 
-	TRY {
+	RLC_TRY {
 		g1_new(t);
 
 		if (party == 0) {
@@ -112,9 +112,9 @@ void g1_mul_mpc(g1_t r, bn_t d, g1_t q, mt_t tri, g1_t b, int party) {
 		/* R = [a]Q + d[B] + dQ + [C] = [xy] */
 		g1_add(r, r, t);
 		g1_norm(r, r);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		g1_free(t);
 	}
 }
@@ -124,7 +124,7 @@ void g2_mul_lcl(bn_t d, g2_t q, g2_t b, bn_t x, g2_t p, mt_t tri) {
 
 	bn_null(n);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 
 		/* Compute public values for transmission. */
@@ -143,9 +143,9 @@ void g2_mul_lcl(bn_t d, g2_t q, g2_t b, bn_t x, g2_t p, mt_t tri) {
 		g2_mul_gen(b, tri->b);
 		g2_sub(q, q, b);
 		g2_norm(q, q);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		bn_free(n);
 	}
 }
@@ -155,7 +155,7 @@ void g2_mul_bct(bn_t d[2], g2_t q[2]) {
 
 	bn_null(n);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 		/* Open values d and Q. */
 		g2_get_ord(n);
@@ -165,9 +165,9 @@ void g2_mul_bct(bn_t d[2], g2_t q[2]) {
 		g2_add(q[0], q[0], q[1]);
 		g2_norm(q[0], q[0]);
 		g2_copy(q[1], q[0]);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		bn_free(n);
 	}
 }
@@ -177,7 +177,7 @@ void g2_mul_mpc(g2_t r, bn_t d, g2_t q, mt_t tri, g2_t b, int party) {
 
 	g2_null(t);
 
-	TRY {
+	RLC_TRY {
 		g2_new(t);
 
 		if (party == 0) {
@@ -194,9 +194,9 @@ void g2_mul_mpc(g2_t r, bn_t d, g2_t q, mt_t tri, g2_t b, int party) {
 		/* R = [a]Q + d[B] + dQ + [C] = [xy] */
 		g2_add(r, r, t);
 		g2_norm(r, r);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		g2_free(t);
 	}
 }
@@ -206,7 +206,7 @@ void gt_exp_lcl(bn_t d, gt_t q, gt_t b, bn_t x, gt_t p, mt_t tri) {
 
 	bn_null(n);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 
 		/* Compute public values for transmission. */
@@ -226,9 +226,9 @@ void gt_exp_lcl(bn_t d, gt_t q, gt_t b, bn_t x, gt_t p, mt_t tri) {
 		gt_inv(b, b);
 		gt_mul(q, q, b);
 		gt_inv(b, b);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		bn_free(n);
 	}
 }
@@ -238,7 +238,7 @@ void gt_exp_bct(bn_t d[2], gt_t q[2]) {
 
 	bn_null(n);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 		/* Open values d and Q. */
 		gt_get_ord(n);
@@ -247,9 +247,9 @@ void gt_exp_bct(bn_t d[2], gt_t q[2]) {
 		bn_copy(d[1], d[0]);
 		gt_mul(q[0], q[0], q[1]);
 		gt_copy(q[1], q[0]);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		bn_free(n);
 	}
 }
@@ -259,7 +259,7 @@ void gt_exp_mpc(gt_t r, bn_t d, gt_t q, mt_t tri, gt_t b, int party) {
 
 	gt_null(t);
 
-	TRY {
+	RLC_TRY {
 		gt_new(t);
 
 		if (party == 0) {
@@ -274,9 +274,9 @@ void gt_exp_mpc(gt_t r, bn_t d, gt_t q, mt_t tri, gt_t b, int party) {
 		gt_exp_gen(t, tri->c);
 		/* R = [a]Q + d[B] + dQ + [C] = [xy] */
 		gt_mul(r, r, t);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		gt_free(t);
 	}
 }
@@ -289,7 +289,7 @@ void pc_map_tri(pt_t t[2]) {
 	mt_null(tri[0]);
 	mt_null(tri[1]);
 
-	TRY {
+	RLC_TRY {
 		bn_new(n);
 		mt_new(tri[0]);
 		mt_new(tri[1]);
@@ -302,9 +302,9 @@ void pc_map_tri(pt_t t[2]) {
 			g2_mul_gen(t[i]->b, tri[i]->b);
 			gt_exp_gen(t[i]->c, tri[i]->c);
 		}
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		bn_free(n);
 		mt_free(tri[0]);
 		mt_free(tri[1]);
@@ -336,7 +336,7 @@ void pc_map_mpc(gt_t r, g1_t d1, g2_t d2, pt_t triple, int party) {
 
 	gt_null(t);
 
-	TRY {
+	RLC_TRY {
 		gt_new(t);
 		for (int i = 0; i < 2; i++) {
 			g1_null(_p[i]);
@@ -358,9 +358,9 @@ void pc_map_mpc(gt_t r, g1_t d1, g2_t d2, pt_t triple, int party) {
 		g2_copy(_q[1], triple->b);
 		pc_map_sim(t, _p, _q, 2);
 		gt_mul(r, triple->c, t);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		gt_free(t);
 		for (int i = 0; i < 2; i++) {
 			g1_free(_p[i]);

@@ -203,7 +203,7 @@ void bn_rand_mod(bn_t a, bn_t b) {
 
 	bn_null(t);
 
-	TRY {
+	RLC_TRY {
 		bn_new(t);
 
 		bn_copy(t, b);
@@ -211,9 +211,9 @@ void bn_rand_mod(bn_t a, bn_t b) {
 			bn_rand(a, bn_sign(t), bn_bits(t) + RAND_DIST);
 			bn_mod(a, a, t);
 		} while (bn_is_zero(a) || bn_cmp_abs(a, t) != RLC_LT);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		bn_free(t);
 	}
 }

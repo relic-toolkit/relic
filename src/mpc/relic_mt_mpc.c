@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2019 RELIC Authors
+ * Copyright (C) 2007-2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -63,7 +63,7 @@ void mt_mul_lcl(bn_t d, bn_t e, bn_t x, bn_t y, bn_t n, mt_t tri) {
 
 	bn_null(t);
 
-	TRY {
+	RLC_TRY {
 		bn_new(t);
 
 		/* Compute public values for transmission. */
@@ -81,9 +81,9 @@ void mt_mul_lcl(bn_t d, bn_t e, bn_t x, bn_t y, bn_t n, mt_t tri) {
 			bn_add(e, e, n);
 		}
 		bn_mod(e, e, n);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		bn_free(t);
 	}
 }
@@ -103,7 +103,7 @@ void mt_mul_mpc(bn_t r, bn_t d, bn_t e, bn_t n, mt_t tri, int party) {
 
 	bn_null(t);
 
-	TRY {
+	RLC_TRY {
 		bn_new(t);
 
 		/* One party computes public value d*([b] + e), the other just d[b]. */
@@ -125,9 +125,9 @@ void mt_mul_mpc(bn_t r, bn_t d, bn_t e, bn_t n, mt_t tri, int party) {
 		/* r = [a][e] + d[b] + de + c = [xy] */
 		bn_add(r, r, tri->c);
 		bn_mod(r, r, n);
-	} CATCH_ANY {
-		THROW(ERR_CAUGHT);
-	} FINALLY {
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		bn_free(t);
 	}
 }
