@@ -645,7 +645,6 @@ void fp12_exp_cyc(fp12_t c, fp12_t a, bn_t b) {
 			RLC_THROW(ERR_CAUGHT);
 		}
 		RLC_FINALLY {
-			bn_free(n);
 			for (i = 0; i < 4; i++) {
 				bn_free(_b[i]);
 				fp12_free(t[i]);
