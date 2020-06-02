@@ -737,6 +737,16 @@ typedef RLC_CAT(GT_LOWER, t) gt_t;
 #define g2_mul_sim(R, P, K, Q, L)	RLC_CAT(G2_LOWER, mul_sim)(R, P, K, Q, L)
 
 /**
+ * Multiplies simultaneously elements from G_2. Computes R = \Sum_i=0..n k_iP_i.
+ *
+ * @param[out] R			- the result.
+ * @param[out] P			- the G_2 elements to multiply.
+ * @param[out] K			- the integer scalars.
+ * @param[out] N			- the number of elements to multiply.
+ */
+#define g2_mul_sim_lot(R, P, K, N)	RLC_CAT(G2_LOWER, mul_sim_lot)(R, P, K, N)
+
+/**
  * Multiplies elements from G_2 by small scalars. Computes R = \sum k_iP_i.
  *
  * @param[out] R			- the result.

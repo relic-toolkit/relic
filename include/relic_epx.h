@@ -878,6 +878,16 @@ void ep2_mul_sim_inter(ep2_t r, ep2_t p, bn_t k, ep2_t q, bn_t m);
 void ep2_mul_sim_joint(ep2_t r, ep2_t p, bn_t k, ep2_t q, bn_t m);
 
 /**
+ * Multiplies simultaneously elements from G_2. Computes R = \Sum_i=0..n k_iP_i.
+ *
+ * @param[out] r			- the result.
+ * @param[out] p			- the G_2 elements to multiply.
+ * @param[out] k			- the integer scalars.
+ * @param[out] n			- the number of elements to multiply.
+ */
+void ep2_mul_sim_lot(ep2_t r, ep2_t p[], const bn_t k[], int n);
+
+/**
  * Multiplies and adds the generator and a prime elliptic curve point
  * simultaneously. Computes R = kG + lQ.
  *
