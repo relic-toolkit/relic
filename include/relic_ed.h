@@ -481,6 +481,18 @@ void ed_norm_sim(ed_t *r, const ed_t *t, int n);
 void ed_map(ed_t p, const uint8_t *msg, int len);
 
 /**
+ * Maps a byte array to a point in an Edwards elliptic curve using
+ * an explicit domain separation tag.
+ *
+ * @param[out] p			- the result.
+ * @param[in] msg			- the byte array to map.
+ * @param[in] len			- the array length in bytes.
+ * @param[in] dst			- the domain separation tag.
+ * @param[in] dst_len		- the domain separation tag length in bytes.
+ */
+void ed_map_dst(ed_t p, const uint8_t *msg, int len, const uint8_t *dst, int dst_len);
+
+/**
  * Multiplies an Edwards elliptic curve point by an integer. Computes R = kP.
  *
  * @param[out] R		- the result.

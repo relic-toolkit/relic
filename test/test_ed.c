@@ -1163,6 +1163,8 @@ static int hashing(void) {
 			rand_bytes(msg, sizeof(msg));
 			ed_map(a, msg, sizeof(msg));
 			TEST_ASSERT(ed_is_valid(a), end);
+			ed_map_dst(b, msg, sizeof(msg), (const uint8_t *)"RELIC", 5);
+			TEST_ASSERT(ed_cmp(a, b) == RLC_EQ, end);
 			ed_mul(a, a, n);
 			TEST_ASSERT(ed_is_infty(a) == 1, end);
 		}

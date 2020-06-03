@@ -1066,6 +1066,7 @@
 #undef ed_norm
 #undef ed_norm_sim
 #undef ed_map
+#undef ed_map_dst
 #undef ed_curve_init
 #undef ed_curve_clean
 #undef ed_mul_pre_basic
@@ -1132,6 +1133,7 @@
 #define ed_norm 	RLC_PREFIX(ed_norm)
 #define ed_norm_sim 	RLC_PREFIX(ed_norm_sim)
 #define ed_map 	RLC_PREFIX(ed_map)
+#define ed_map_dst 	RLC_PREFIX(ed_map_dst)
 #define ed_curve_init 	RLC_PREFIX(ed_curve_init)
 #define ed_curve_clean 	RLC_PREFIX(ed_curve_clean)
 #define ed_mul_pre_basic 	RLC_PREFIX(ed_mul_pre_basic)
