@@ -54,7 +54,7 @@ void ed_map_ell2_5mod8(ed_t p, fp_t t) {
 	dig_t *sqrt_M486664 = ctx->ed_map_c[2];
 	dig_t *c_486662 = ctx->ed_map_c[3];
 
-	TRY {
+	RLC_TRY {
 		bn_new(h);
 		fp_new(tv1);
 		fp_new(tv2);
@@ -195,7 +195,7 @@ static void ed_map_impl(ed_t p, const uint8_t *msg, int len, const uint8_t *dst,
 	fp_null(t);
 	ed_null(q);
 
-	TRY {
+	RLC_TRY {
 		bn_new(k);
 		fp_new(t);
 		ed_new(q);
