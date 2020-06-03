@@ -170,7 +170,7 @@ void ed_map_ell2_5mod8(ed_t p, fp_t t) {
 		p->coord = BASIC;
 #endif /* ED_ADD */
 	}
-	CATCH_ANY {
+	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT)
 	}
 	RLC_FINALLY {
