@@ -195,7 +195,7 @@ typedef pt_st *pt_t;
 	A = (pt_t)alloca(sizeof(pt_st));										\
 	g1_new((A)->a);															\
 	g2_new((A)->b);															\
-	g2_new((A)->c);															\
+	gt_new((A)->c);															\
 
 #endif
 
