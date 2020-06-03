@@ -51,6 +51,8 @@ void fp12_glv(bn_t _b[4], bn_t b) {
 			bn_new(v[i]);
 		}
 
+		ep_curve_get_ord(n);
+		
 		switch (ep_curve_is_pairf()) {
 			case EP_BN:
 				ep2_curve_get_vs(v);
