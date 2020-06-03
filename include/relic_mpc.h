@@ -127,7 +127,7 @@ typedef pt_st *pt_t;
 
 #elif ALLOC == STACK
 #define mt_new(A)															\
-	A = (bn_t)alloca(sizeof(mt_st));										\
+	A = (mt_t)alloca(sizeof(mt_st));										\
 	bn_new((A)->a);															\
 	bn_new((A)->b);															\
 	bn_new((A)->c);															\
@@ -154,7 +154,7 @@ typedef pt_st *pt_t;
 
 #elif ALLOC == STACK
 #define mt_free(A)															\
-	bn_free(A)->a);															\
+	bn_free((A)->a);															\
 	bn_free((A)->b);														\
 	bn_free((A)->c);														\
 	A = NULL;																\
