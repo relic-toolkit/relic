@@ -24,7 +24,8 @@
 /**
  * @file
  *
- * Implementation of the Generalized Homomorphic Probabilistic Encryption.
+ * Implementation of the Damgård-Jurik-Nielsen Generalized Homomorphic
+ * Probabilistic Encryption.
  *
  * @ingroup cp
  */
@@ -161,8 +162,8 @@ int cp_ghpe_dec(bn_t m, bn_t c, bn_t pub, bn_t prv, int s) {
 		bn_new(x);
 
 		/* t = n^(s + 1). */
-		bn_copy(t, pub);
-		for (int i = 0; i < s; i++) {
+		bn_sqr(t, pub);
+		for (int i = 1; i < s; i++) {
 			bn_mul(t, t, pub);
 		}
 
