@@ -936,6 +936,18 @@ void ep2_norm_sim(ep2_t *r, ep2_t *t, int n);
 void ep2_map(ep2_t p, const uint8_t *msg, int len);
 
 /**
+ * Maps a byte array to a point in an elliptic curve over a quadratic extension
+ * using an explicit domain separation tag.
+ *
+ * @param[out] p			- the result.
+ * @param[in] msg			- the byte array to map.
+ * @param[in] len			- the array length in bytes.
+ * @param[in] dst			- the domain separatoin tag.
+ * @param[in] dst_len		- the domain separation tag length in bytes.
+ */
+void ep2_map_dst(ep2_t p, const uint8_t *msg, int len, const uint8_t *dst, int dst_len);
+
+/**
  * Computes a power of the Gailbraith-Lin-Scott homomorphism of a point
  * represented in affine coordinates on a twisted elliptic curve over a
  * quadratic exension. That is, Psi^i(P) = Twist(P)(Frob^i(unTwist(P)).

@@ -1386,6 +1386,7 @@
 #undef ep2_norm
 #undef ep2_norm_sim
 #undef ep2_map
+#undef ep2_map_dst
 #undef ep2_frb
 #undef ep2_pck
 #undef ep2_upk
@@ -1454,6 +1455,7 @@
 #define ep2_norm 	RLC_PREFIX(ep2_norm)
 #define ep2_norm_sim 	RLC_PREFIX(ep2_norm_sim)
 #define ep2_map 	RLC_PREFIX(ep2_map)
+#define ep2_map_dst 	RLC_PREFIX(ep2_map_dst)
 #define ep2_frb 	RLC_PREFIX(ep2_frb)
 #define ep2_pck 	RLC_PREFIX(ep2_pck)
 #define ep2_upk 	RLC_PREFIX(ep2_upk)
