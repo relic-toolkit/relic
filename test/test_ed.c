@@ -74,6 +74,8 @@ const uint8_t ed_map_output[4][2 * RLC_FP_BYTES + 1] = {
 };
 #else
 const int ed_map_ntst = 0;
+const char **ed_map_input = NULL;
+const uint8_t **ed_map_output = NULL;
 #endif
 
 static int memory(void) {
