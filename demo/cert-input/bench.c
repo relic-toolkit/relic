@@ -35,7 +35,7 @@
 #include "relic.h"
 #include "relic_bench.h"
 
-#define MSGS	100000
+#define MSGS	1000000
 
 static void pss(void) {
 	bn_t ms[MSGS], n, u, v, _v[MSGS];
@@ -245,7 +245,9 @@ int main(void) {
 
 	conf_print();
 
-	util_banner("Benchmarks for the PS signature and two-party PS protocol:", 0);
+	util_banner("Note: If you get a SIGSEGV, try to increase the stack size with ulimit.", 1);
+
+	util_banner("Benchmarks for the PS signature and two-party PS protocol:\n", 0);
 
 #if defined(WITH_PC)
 	if (pc_param_set_any() == RLC_OK) {
