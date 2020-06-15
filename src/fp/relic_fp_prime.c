@@ -456,33 +456,14 @@ void fp_prime_set_pmers(const int *f, int len) {
 }
 
 void fp_prime_calc(void) {
-	fp_t t;
-
-	fp_null(t);
-
-	RLC_TRY {
-		fp_new(t);
-
-		#ifdef WITH_ED
-			fp_set_dig(t, 1);
-			fp_neg(t, t);
-			fp_srt(core_get()->srm1, t);
-		#endif
-
-		#ifdef WITH_FPX
-			if (fp_prime_get_qnr() != 0) {
-				fp2_field_init();
-			}
-			if (fp_prime_get_cnr() != 0) {
-				fp3_field_init();
-			}
-		#endif
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
+#ifdef WITH_FPX
+	if (fp_prime_get_qnr() != 0) {
+		fp2_field_init();
 	}
-	RLC_FINALLY {
-		fp_free(t);
+	if (fp_prime_get_cnr() != 0) {
+		fp3_field_init();
 	}
+#endif
 }
 
 void fp_prime_conv(fp_t c, const bn_t a) {

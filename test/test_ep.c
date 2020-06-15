@@ -1099,14 +1099,17 @@ static int compression(void) {
 static int hashing(void) {
 	int code = RLC_ERR;
 	ep_t a;
+	ep_t b;
 	bn_t n;
 	uint8_t msg[5];
 
 	ep_null(a);
+	ep_null(b);
 	bn_null(n);
 
 	RLC_TRY {
 		ep_new(a);
+		ep_new(b);
 		bn_new(n);
 
 		ep_curve_get_ord(n);
@@ -1115,6 +1118,8 @@ static int hashing(void) {
 			rand_bytes(msg, sizeof(msg));
 			ep_map(a, msg, sizeof(msg));
 			TEST_ASSERT(ep_is_infty(a) == 0, end);
+			ep_map_dst(b, msg, sizeof(msg), (const uint8_t *)"RELIC", 5);
+			TEST_ASSERT(ep_cmp(a, b) == RLC_EQ, end);
 			ep_mul(a, a, n);
 			TEST_ASSERT(ep_is_infty(a) == 1, end);
 		}
@@ -1126,6 +1131,7 @@ static int hashing(void) {
 	code = RLC_OK;
   end:
 	ep_free(a);
+	ep_free(b);
 	bn_free(n);
 	return code;
 }

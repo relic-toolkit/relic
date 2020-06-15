@@ -76,14 +76,18 @@ static inline int fp_sgn0(const fp_t t, bn_t k) {
 	return bn_get_bit(k, 0);
 }
 
-static void ep_map_impl(ep_t p, const uint8_t *msg, int len, const uint8_t *dst, int dst_len) {
+/*============================================================================*/
+/* Public definitions                                                         */
+/*============================================================================*/
+
+void ep_map_dst(ep_t p, const uint8_t *msg, int len, const uint8_t *dst, int dst_len) {
 	bn_t k;
 	fp_t t;
 	ep_t q;
 	int neg;
 	/* enough space for two field elements plus extra bytes for uniformity */
 	const int len_per_elm = (FP_PRIME + ep_param_level() + 7) / 8;
-	uint8_t *pseudo_random_bytes = RLC_ALLOCA(uint8_t, 4 * len_per_elm);
+	uint8_t *pseudo_random_bytes = RLC_ALLOCA(uint8_t, 2 * len_per_elm);
 
 	bn_null(k);
 	fp_null(t);
@@ -183,10 +187,6 @@ static void ep_map_impl(ep_t p, const uint8_t *msg, int len, const uint8_t *dst,
 	}
 }
 
-/*============================================================================*/
-/* Public definitions                                                         */
-/*============================================================================*/
-
 void ep_map(ep_t p, const uint8_t *msg, int len) {
-	ep_map_impl(p, msg, len, (const uint8_t *)"RELIC", 5);
+	ep_map_dst(p, msg, len, (const uint8_t *)"RELIC", 5);
 }
