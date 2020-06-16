@@ -79,7 +79,7 @@ int cp_rabin_gen(rabin_t pub, rabin_t prv, int bits) {
 				bn_cmp_dig(r, 3) != RLC_EQ);
 
 		/* Swap p and q so that p is smaller. */
-		if (bn_cmp(prv->p, prv->q) == RLC_LT) {
+		if (bn_cmp(prv->p, prv->q) != RLC_LT) {
 			bn_copy(r, prv->p);
 			bn_copy(prv->p, prv->q);
 			bn_copy(prv->q, r);
