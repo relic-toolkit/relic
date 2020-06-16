@@ -10,4 +10,4 @@ lib:
 	cd target; ${RELIC_ROOT}/../preset/x64-pbc-bls12-381.sh ${RELIC_ROOT}/../; cmake -DEP_METHD='JACOB;LWNAF;COMBS;INTER' .; make
 
 clean:
-	rm -rf target *.o test
+	rm -rf target *.o bench 
