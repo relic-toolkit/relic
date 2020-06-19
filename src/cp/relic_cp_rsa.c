@@ -600,7 +600,7 @@ int cp_rsa_gen(rsa_t pub, rsa_t prv, int bits) {
 		} while (bn_cmp(prv->crt->p, prv->crt->q) == RLC_EQ);
 
 		/* Swap p and q so that p is smaller. */
-		if (bn_cmp(prv->crt->p, prv->crt->q) == RLC_LT) {
+		if (bn_cmp(prv->crt->p, prv->crt->q) != RLC_LT) {
 			bn_copy(t, prv->crt->p);
 			bn_copy(prv->crt->p, prv->crt->q);
 			bn_copy(prv->crt->q, t);
