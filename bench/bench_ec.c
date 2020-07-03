@@ -108,9 +108,9 @@ static void util(void) {
 	}
 	BENCH_END;
 
-	BENCH_BEGIN("ec_is_valid") {
+	BENCH_BEGIN("ec_on_curve") {
 		ec_rand(p);
-		BENCH_ADD(ec_is_valid(p));
+		BENCH_ADD(ec_on_curve(p));
 	} BENCH_END;
 
 	BENCH_BEGIN("ec_size_bin (0)") {

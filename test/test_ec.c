@@ -133,9 +133,9 @@ int util(void) {
 
 		TEST_BEGIN("validity test is correct") {
 			ec_rand(a);
-			TEST_ASSERT(ec_is_valid(a), end);
+			TEST_ASSERT(ec_on_curve(a), end);
 			dv_zero(a->x, RLC_FC_DIGS);
-			TEST_ASSERT(!ec_is_valid(a), end);
+			TEST_ASSERT(!ec_on_curve(a), end);
 		}
 		TEST_END;
 

@@ -254,7 +254,7 @@ typedef RLC_CAT(RLC_EC_LOWER, t) ec_t;
  *
  * @param[in] P					- the point to test.
  */
-#define ec_is_valid(P)			RLC_CAT(RLC_EC_LOWER, is_valid)(P)
+#define ec_on_curve(P)			RLC_CAT(RLC_EC_LOWER, on_curve)(P)
 
 /**
  * Returns the number of bytes necessary to store an elliptic curve point with
