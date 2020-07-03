@@ -317,6 +317,14 @@ void ed_projc_to_extnd(ed_t r, const fp_t x, const fp_t y, const fp_t z);
 void ed_rand(ed_t p);
 
 /**
+ * Randomizes coordinates of a prime elliptic curve point.
+ *
+ * @param[out] r			- the blinded Edwards elliptic curve point.
+ * @param[in] p				- the Edwards elliptic curve point to blind.
+ */
+void ed_blind(ed_t r, const ed_t p);
+
+/**
  * Computes the right-hand side of the elliptic curve equation at a certain
  * Edwards elliptic curve point.
  *

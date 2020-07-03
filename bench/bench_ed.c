@@ -110,6 +110,10 @@ static void util(void) {
 		BENCH_ADD(ed_rand(p));
 	} BENCH_END;
 
+	BENCH_BEGIN("ed_blind") {
+		BENCH_ADD(ed_blind(p, p));
+	} BENCH_END;
+
 	BENCH_BEGIN("ed_rhs") {
 		ed_rand(p);
 		BENCH_ADD(ed_rhs(q->x, p));

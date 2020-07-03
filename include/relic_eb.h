@@ -519,6 +519,14 @@ int eb_cmp(const eb_t p, const eb_t q);
 void eb_rand(eb_t p);
 
 /**
+ * Randomizes coordinates of a binary elliptic curve point.
+ *
+ * @param[out] r			- the blinded binary elliptic curve point.
+ * @param[in] p				- the binary elliptic curve point to blind.
+ */
+void eb_blind(eb_t r, const eb_t p);
+
+/**
  * Computes the right-hand side of the elliptic curve equation at a certain
  * elliptic curve point.
  *

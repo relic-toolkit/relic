@@ -593,13 +593,11 @@ void ep_mul_slide(ep_t r, const ep_t p, const bn_t k) {
 
 void ep_mul_monty(ep_t r, const ep_t p, const bn_t k) {
 	int i, j, bits;
-	fp_t rand;
 	ep_t t[2];
 	bn_t n, l;
 
 	bn_null(n);
 	bn_null(l);
-	fp_null(rand);
 	ep_null(t[0]);
 	ep_null(t[1]);
 
@@ -611,7 +609,6 @@ void ep_mul_monty(ep_t r, const ep_t p, const bn_t k) {
 	RLC_TRY {
 		bn_new(n);
 		bn_new(l);
-		fp_new(rand);
 		ep_new(t[0]);
 		ep_new(t[1]);
 
@@ -628,23 +625,8 @@ void ep_mul_monty(ep_t r, const ep_t p, const bn_t k) {
 		ep_dbl(t[1], t[0]);
 
 		/* Blind both points independently. */
-#if EP_ADD == PROJC
-		for (i = 0; i < 2; i++) {
-			fp_rand(rand);
-			fp_mul(t[i]->x, t[i]->x, rand);
-			fp_mul(t[i]->y, t[i]->y, rand);
-			fp_mul(t[i]->z, t[i]->z, rand);
-		}
-#elif EP_ADD == JACOB
-		for (i = 0; i < 2; i++) {
-			fp_rand(rand);
-			fp_mul(t[i]->z, t[i]->z, rand);
-			fp_mul(t[i]->y, t[i]->y, rand);
-			fp_sqr(rand, rand);
-			fp_mul(t[i]->x, t[i]->x, rand);
-			fp_mul(t[i]->y, t[i]->y, rand);
-		}
-#endif
+		ep_blind(t[0], t[0]);
+		ep_blind(t[1], t[1]);
 
 		for (i = bits - 1; i >= 0; i--) {
 			j = bn_get_bit(l, i);
@@ -668,7 +650,6 @@ void ep_mul_monty(ep_t r, const ep_t p, const bn_t k) {
 	RLC_FINALLY {
 		bn_free(n);
 		bn_free(l);
-		fp_free(rand);
 		ep_free(t[1]);
 		ep_free(t[0]);
 	}

@@ -76,6 +76,35 @@ void ep_rand(ep_t p) {
 	}
 }
 
+void ep_blind(ep_t r, const ep_t p) {
+	fp_t rand;
+
+	fp_null(rand);
+
+	RLC_TRY {
+		fp_new(rand);
+
+		fp_rand(rand);
+#if EP_ADD == PROJC
+		fp_mul(r->x, p->x, rand);
+		fp_mul(r->y, p->y, rand);
+		fp_mul(r->z, p->z, rand);
+		r->coord = PROJC;
+#elif EP_ADD == JACOB
+		fp_mul(r->z, p->z, rand);
+		fp_mul(r->y, p->y, rand);
+		fp_sqr(rand, rand);
+		fp_mul(r->x, r->x, rand);
+		fp_mul(r->y, r->y, rand);
+		r->coord = JACOB;
+#endif
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		fp_free(rand);
+	}
+}
+
 void ep_rhs(fp_t rhs, const ep_t p) {
 	fp_t t0;
 

@@ -212,7 +212,7 @@ typedef RLC_CAT(RLC_EC_LOWER, t) ec_t;
 #define ec_param_level()		RLC_CAT(RLC_EC_LOWER, param_level)()
 
 /**
- * Tests if a point on a elliptic curve is at the infinity.
+ * Tests if a point on an elliptic curve is at the infinity.
  *
  * @param[in] P					- the point to test.
  * @return 1 if the point is at infinity, 0 otherwise.
@@ -220,7 +220,7 @@ typedef RLC_CAT(RLC_EC_LOWER, t) ec_t;
 #define ec_is_infty(P)			RLC_CAT(RLC_EC_LOWER, is_infty)(P)
 
 /**
- * Assigns a elliptic curve point to a point at the infinity.
+ * Assigns an elliptic curve point to a point at the infinity.
  *
  * @param[out] P				- the point to assign.
  */
@@ -244,13 +244,21 @@ typedef RLC_CAT(RLC_EC_LOWER, t) ec_t;
 #define ec_cmp(P, Q)			RLC_CAT(RLC_EC_LOWER, cmp)(P, Q)
 
 /**
- * Assigns a random value to a elliptic curve point.
+ * Assigns a random value to an elliptic curve point.
  *
  * @param[out] P				- the elliptic curve point to assign.
  */
 #define ec_rand(P)				RLC_CAT(RLC_EC_LOWER, rand)(P)
 
-/** Tests if a point is in the curve.
+/**
+ * Randomizes coordinates of an elliptic curve point.
+ *
+ * @param[out] R			- the blinded elliptic curve point.
+ * @param[in] P				- the elliptic curve point to blind.
+ */
+#define ec_blind(R, P)				RLC_CAT(RLC_EC_LOWER, blind)(R, P)
+
+/** Tests if a point is on the curve.
  *
  * @param[in] P					- the point to test.
  */
@@ -286,7 +294,7 @@ typedef RLC_CAT(RLC_EC_LOWER, t) ec_t;
 #define ec_write_bin(B, L, A, P)	RLC_CAT(RLC_EC_LOWER, write_bin)(B, L, A, P)
 
 /**
- * Prints a elliptic curve point.
+ * Prints an elliptic curve point.
  *
  * @param[in] P					- the elliptic curve point to print.
  */
@@ -361,7 +369,7 @@ typedef RLC_CAT(RLC_EC_LOWER, t) ec_t;
  */
 #define ec_mul_pre(T, P)		RLC_CAT(RLC_EC_LOWER, mul_pre)(T, P)
 /**
- * Multiplies a elliptic point using a precomputation table.
+ * Multiplies an elliptic point using a precomputation table.
  * Computes R = kP.
  *
  * @param[out] R				- the result.

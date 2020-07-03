@@ -114,6 +114,29 @@ void ed_rand(ed_t p) {
 	}
 }
 
+void ed_blind(ed_t r, const ed_t p) {
+	fp_t rand;
+
+	fp_null(rand);
+
+	RLC_TRY {
+		fp_new(rand);
+
+		fp_rand(rand);
+		fp_mul(r->x, p->x, rand);
+		fp_mul(r->y, p->y, rand);
+		fp_mul(r->z, p->z, rand);
+		r->coord = PROJC;
+#if ED_ADD == EXTND
+		fp_mul(r->t, p->t, rand);
+#endif
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		fp_free(rand);
+	}
+}
+
 void ed_rhs(fp_t rhs, const ed_t p) {
 	fp_t t0, t1;
 

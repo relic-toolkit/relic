@@ -736,6 +736,14 @@ int ep_cmp(const ep_t p, const ep_t q);
 void ep_rand(ep_t p);
 
 /**
+ * Randomizes coordinates of a prime elliptic curve point.
+ *
+ * @param[out] r			- the blinded prime elliptic curve point.
+ * @param[in] p				- the prime elliptic curve point to blind.
+ */
+void ep_blind(ep_t r, const ep_t p);
+
+/**
  * Computes the right-hand side of the elliptic curve equation at a certain
  * prime elliptic curve point.
  *

@@ -176,6 +176,12 @@ int util(void) {
 		}
 		TEST_END;
 
+		TEST_BEGIN("blinding is consistent") {
+			ed_rand(a);
+			ed_blind(a, a);
+			TEST_ASSERT(ed_on_curve(a), end);
+		} TEST_END;
+
 		TEST_BEGIN("reading and writing a point are consistent") {
 			for (int j = 0; j < 2; j++) {
 				ed_set_infty(a);

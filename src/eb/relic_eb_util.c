@@ -135,6 +135,27 @@ void eb_rhs(fb_t rhs, const eb_t p) {
 	}
 }
 
+void eb_blind(eb_t r, const eb_t p) {
+	fb_t rand;
+
+	fb_null(rand);
+
+	RLC_TRY {
+		fb_new(rand);
+
+		fb_rand(rand);
+		fb_mul(r->z, p->z, rand);
+		fb_mul(r->x, p->x, rand);
+		fb_sqr(rand, rand);
+		fb_mul(r->y, p->y, rand);
+		r->coord = PROJC;
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		fb_free(rand);
+	}
+}
+
 int eb_on_curve(const eb_t p) {
 	eb_t t;
 	fb_t lhs;
