@@ -126,9 +126,14 @@ static void util(void) {
 	}
 	BENCH_END;
 
-	BENCH_BEGIN("ep2_is_valid") {
+	BENCH_BEGIN("ep2_blind") {
+		BENCH_ADD(ep2_blind(p, p));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("ep2_on_curve") {
 		ep2_rand(p);
-		BENCH_ADD(ep2_is_valid(p));
+		BENCH_ADD(ep2_on_curve(p));
 	} BENCH_END;
 
 	BENCH_BEGIN("ep2_size_bin (0)") {

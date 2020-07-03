@@ -372,6 +372,22 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
 #define g2_rand(P)			RLC_CAT(RLC_G2_LOWER, rand)(P)
 
 /**
+ * Randomizes coordinates of a G_1 element.
+ *
+ * @param[out] R			- the blinded G_1 element.
+ * @param[in] P				- the G_1 element to blind.
+ */
+ #define g1_blind(R, P)		RLC_CAT(RLC_G1_LOWER, blind)(R, P)
+
+ /**
+  * Randomizes coordinates of a G_2 element.
+  *
+  * @param[out] R			- the blinded G_2 element.
+  * @param[in] P			- the G_2 element to blind.
+  */
+#define g2_blind(R, P)		RLC_CAT(RLC_G2_LOWER, blind)(R, P)
+
+/**
  * Prints a G_1 element.
  *
  * @param[in] P				- the element to print.

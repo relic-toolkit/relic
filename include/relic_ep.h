@@ -705,7 +705,7 @@ int ep_param_embed(void);
 int ep_is_infty(const ep_t p);
 
 /**
- * Assigns a prime elliptic curve point to a point at the infinity.
+ * Assigns a prime elliptic curve point to the point at infinity.
  *
  * @param[out] p			- the point to assign.
  */

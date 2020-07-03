@@ -558,12 +558,19 @@ static int validity1(void) {
 	RLC_TRY {
 		g1_new(a);
 
-		TEST_BEGIN("validity check is correct") {
+		TEST_BEGIN("validity test is correct") {
+			g1_set_infty(a);
+			TEST_ASSERT(g1_is_valid(a), end);
 			g1_rand(a);
-			TEST_ASSERT(g1_is_valid(a) == 1, end);
+			TEST_ASSERT(g1_is_valid(a), end);
 		}
 		TEST_END;
 
+		TEST_BEGIN("blinding is consistent") {
+			g1_rand(a);
+			g1_blind(a, a);
+			TEST_ASSERT(g1_is_valid(a), end);
+		} TEST_END;
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);
@@ -1131,12 +1138,19 @@ static int validity2(void) {
 	RLC_TRY {
 		g2_new(a);
 
-		TEST_BEGIN("validity check is correct") {
+		TEST_BEGIN("validity test is correct") {
+			g2_set_infty(a);
+			TEST_ASSERT(g2_is_valid(a), end);
 			g2_rand(a);
-			TEST_ASSERT(g2_is_valid(a) == 1, end);
+			TEST_ASSERT(g2_is_valid(a), end);
 		}
 		TEST_END;
 
+		TEST_BEGIN("blinding is consistent") {
+			g2_rand(a);
+			g2_blind(a, a);
+			TEST_ASSERT(g2_is_valid(a), end);
+		} TEST_END;
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);
@@ -1490,7 +1504,6 @@ static int validity(void) {
 			TEST_ASSERT(gt_is_valid(a) == 1, end);
 		}
 		TEST_END;
-
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);

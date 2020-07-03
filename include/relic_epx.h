@@ -186,7 +186,7 @@ typedef iso2_st *iso2_t;
 /*============================================================================*/
 
 /**
- * Initializes a point on a elliptic curve with a null value.
+ * Initializes a point on an elliptic curve with a null value.
  *
  * @param[out] A				- the point to initialize.
  */
@@ -197,7 +197,7 @@ typedef iso2_st *iso2_t;
 #endif
 
 /**
- * Calls a function to allocate a point on a elliptic curve.
+ * Calls a function to allocate a point on an elliptic curve.
  *
  * @param[out] A				- the new point.
  * @throw ERR_NO_MEMORY			- if there is no available memory.
@@ -228,7 +228,7 @@ typedef iso2_st *iso2_t;
 #endif
 
 /**
- * Calls a function to clean and free a point on a elliptic curve.
+ * Calls a function to clean and free a point on an elliptic curve.
  *
  * @param[out] A				- the point to free.
  */
@@ -469,7 +469,7 @@ void ep2_curve_set(fp2_t a, fp2_t b, ep2_t g, bn_t r, bn_t h);
 void ep2_curve_set_twist(int type);
 
 /**
- * Tests if a point on a elliptic curve is at the infinity.
+ * Tests if a point on an elliptic curve is at the infinity.
  *
  * @param[in] p				- the point to test.
  * @return 1 if the point is at infinity, 0 otherise.
@@ -477,7 +477,7 @@ void ep2_curve_set_twist(int type);
 int ep2_is_infty(ep2_t p);
 
 /**
- * Assigns a elliptic curve point to a point at the infinity.
+ * Assigns an elliptic curve point to the point at infinity.
  *
  * @param[out] p			- the point to assign.
  */
@@ -508,6 +508,14 @@ int ep2_cmp(ep2_t p, ep2_t q);
 void ep2_rand(ep2_t p);
 
 /**
+ * Randomizes coordinates of an elliptic curve point.
+ *
+ * @param[out] r			- the blinded prime elliptic curve point.
+ * @param[in] p				- the prime elliptic curve point to blind.
+ */
+void ep2_blind(ep2_t r, ep2_t p);
+
+/**
  * Computes the right-hand side of the elliptic curve equation at a certain
  * elliptic curve point.
  *
@@ -521,7 +529,7 @@ void ep2_rhs(fp2_t rhs, ep2_t p);
  *
  * @param[in] p				- the point to test.
  */
-int ep2_is_valid(ep2_t p);
+int ep2_on_curve(ep2_t p);
 
 /**
  * Builds a precomputation table for multiplying a random prime elliptic point.
@@ -533,7 +541,7 @@ int ep2_is_valid(ep2_t p);
 void ep2_tab(ep2_t *t, ep2_t p, int w);
 
 /**
- * Prints a elliptic curve point.
+ * Prints an elliptic curve point.
  *
  * @param[in] p				- the elliptic curve point to print.
  */

@@ -130,13 +130,19 @@ static int util(void) {
 
 		TEST_BEGIN("validity test is correct") {
 			ep2_set_infty(a);
-			TEST_ASSERT(ep2_is_valid(a), end);
+			TEST_ASSERT(ep2_on_curve(a), end);
 			ep2_rand(a);
-			TEST_ASSERT(ep2_is_valid(a), end);
+			TEST_ASSERT(ep2_on_curve(a), end);
 			fp2_rand(a->x);
-			TEST_ASSERT(!ep2_is_valid(a), end);
+			TEST_ASSERT(!ep2_on_curve(a), end);
 		}
 		TEST_END;
+
+		TEST_BEGIN("blinding is consistent") {
+			ep2_rand(a);
+			ep2_blind(a, a);
+			TEST_ASSERT(ep2_on_curve(a), end);
+		} TEST_END;
 
 		TEST_BEGIN("reading and writing a point are consistent") {
 			for (int j = 0; j < 2; j++) {
@@ -423,7 +429,7 @@ static int multiplication(void) {
 		ep2_curve_get_ord(n);
 
 		TEST_BEGIN("generator has the right order") {
-			TEST_ASSERT(ep2_is_valid(p), end);
+			TEST_ASSERT(ep2_on_curve(p), end);
 			ep2_mul(r, p, n);
 			TEST_ASSERT(ep2_is_infty(r) == 1, end);
 		} TEST_END;

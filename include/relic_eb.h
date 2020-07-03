@@ -488,7 +488,7 @@ int eb_param_level(void);
 int eb_is_infty(const eb_t p);
 
 /**
- * Assigns a binary elliptic curve point to a point at the infinity.
+ * Assigns a binary elliptic curve point to the point at infinity.
  *
  * @param[out] p			- the point to assign.
  */

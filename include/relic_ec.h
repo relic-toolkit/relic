@@ -220,7 +220,7 @@ typedef RLC_CAT(RLC_EC_LOWER, t) ec_t;
 #define ec_is_infty(P)			RLC_CAT(RLC_EC_LOWER, is_infty)(P)
 
 /**
- * Assigns an elliptic curve point to a point at the infinity.
+ * Assigns an elliptic curve point to the point at infinity.
  *
  * @param[out] P				- the point to assign.
  */

@@ -1346,7 +1346,7 @@
 #undef ep2_cmp
 #undef ep2_rand
 #undef ep2_rhs
-#undef ep2_is_valid
+#undef ep2_on_curve
 #undef ep2_tab
 #undef ep2_print
 #undef ep2_size_bin
@@ -1415,7 +1415,7 @@
 #define ep2_cmp 	RLC_PREFIX(ep2_cmp)
 #define ep2_rand 	RLC_PREFIX(ep2_rand)
 #define ep2_rhs 	RLC_PREFIX(ep2_rhs)
-#define ep2_is_valid 	RLC_PREFIX(ep2_is_valid)
+#define ep2_on_curve 	RLC_PREFIX(ep2_on_curve)
 #define ep2_tab 	RLC_PREFIX(ep2_tab)
 #define ep2_print 	RLC_PREFIX(ep2_print)
 #define ep2_size_bin 	RLC_PREFIX(ep2_size_bin)

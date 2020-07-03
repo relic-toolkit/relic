@@ -351,7 +351,7 @@ void ed_copy(ed_t r, const ed_t p);
 int ed_cmp(const ed_t p, const ed_t q);
 
 /**
- * Assigns an Edwards elliptic curve point to a point at the infinity.
+ * Assigns an Edwards elliptic curve point to the point at infinity.
  *
  * @param[out] p	- the point to assign.
  */

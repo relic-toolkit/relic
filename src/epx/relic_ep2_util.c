@@ -78,6 +78,28 @@ void ep2_rand(ep2_t p) {
 	}
 }
 
+void ep2_blind(ep2_t r, ep2_t p) {
+	fp2_t rand;
+
+	fp2_null(rand);
+
+	RLC_TRY {
+		fp2_new(rand);
+
+		fp2_rand(rand);
+		fp2_mul(r->z, p->z, rand);
+		fp2_mul(r->y, p->y, rand);
+		fp2_sqr(rand, rand);
+		fp2_mul(r->x, r->x, rand);
+		fp2_mul(r->y, r->y, rand);
+		r->coord = PROJC;
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		fp2_free(rand);
+	}
+}
+
 void ep2_rhs(fp2_t rhs, ep2_t p) {
 	fp2_t t0;
 
@@ -143,7 +165,7 @@ void ep2_rhs(fp2_t rhs, ep2_t p) {
 }
 
 
-int ep2_is_valid(ep2_t p) {
+int ep2_on_curve(ep2_t p) {
 	ep2_t t;
 	int r = 0;
 
