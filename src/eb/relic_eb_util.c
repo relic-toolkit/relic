@@ -135,7 +135,7 @@ void eb_rhs(fb_t rhs, const eb_t p) {
 	}
 }
 
-int eb_is_valid(const eb_t p) {
+int eb_on_curve(const eb_t p) {
 	eb_t t;
 	fb_t lhs;
 	int r = 0;

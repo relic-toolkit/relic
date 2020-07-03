@@ -893,7 +893,7 @@
 #undef ep_cmp
 #undef ep_rand
 #undef ep_rhs
-#undef ep_is_valid
+#undef ep_on_curve
 #undef ep_tab
 #undef ep_print
 #undef ep_size_bin
@@ -983,7 +983,7 @@
 #define ep_cmp 	RLC_PREFIX(ep_cmp)
 #define ep_rand 	RLC_PREFIX(ep_rand)
 #define ep_rhs 	RLC_PREFIX(ep_rhs)
-#define ep_is_valid 	RLC_PREFIX(ep_is_valid)
+#define ep_on_curve 	RLC_PREFIX(ep_on_curve)
 #define ep_tab 	RLC_PREFIX(ep_tab)
 #define ep_print 	RLC_PREFIX(ep_print)
 #define ep_size_bin 	RLC_PREFIX(ep_size_bin)
@@ -1091,7 +1091,7 @@
 #undef ed_mul_sim_gen
 #undef ed_tab
 #undef ed_print
-#undef ed_is_valid
+#undef ed_on_curve
 #undef ed_size_bin
 #undef ed_read_bin
 #undef ed_write_bin
@@ -1158,7 +1158,7 @@
 #define ed_mul_sim_gen 	RLC_PREFIX(ed_mul_sim_gen)
 #define ed_tab 	RLC_PREFIX(ed_tab)
 #define ed_print 	RLC_PREFIX(ed_print)
-#define ed_is_valid 	RLC_PREFIX(ed_is_valid)
+#define ed_on_curve 	RLC_PREFIX(ed_on_curve)
 #define ed_size_bin 	RLC_PREFIX(ed_size_bin)
 #define ed_read_bin 	RLC_PREFIX(ed_read_bin)
 #define ed_write_bin 	RLC_PREFIX(ed_write_bin)
@@ -1200,7 +1200,7 @@
 #undef eb_cmp
 #undef eb_rand
 #undef eb_rhs
-#undef eb_is_valid
+#undef eb_on_curve
 #undef eb_tab
 #undef eb_print
 #undef eb_size_bin
@@ -1272,7 +1272,7 @@
 #define eb_cmp 	RLC_PREFIX(eb_cmp)
 #define eb_rand 	RLC_PREFIX(eb_rand)
 #define eb_rhs 	RLC_PREFIX(eb_rhs)
-#define eb_is_valid 	RLC_PREFIX(eb_is_valid)
+#define eb_on_curve 	RLC_PREFIX(eb_on_curve)
 #define eb_tab 	RLC_PREFIX(eb_tab)
 #define eb_print 	RLC_PREFIX(eb_print)
 #define eb_size_bin 	RLC_PREFIX(eb_size_bin)

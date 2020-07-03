@@ -120,9 +120,9 @@ static void util(void) {
 		BENCH_ADD(ed_tab(t, p, 4));
 	} BENCH_END;
 
-	BENCH_BEGIN("ed_is_valid") {
+	BENCH_BEGIN("ed_on_curve") {
 		ed_rand(p);
-		BENCH_ADD(ed_is_valid(p));
+		BENCH_ADD(ed_on_curve(p));
 	} BENCH_END;
 
 	BENCH_BEGIN("ed_size_bin (0)") {

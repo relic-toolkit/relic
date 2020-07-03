@@ -749,7 +749,7 @@ void ep_rhs(fp_t rhs, const ep_t p);
  *
  * @param[in] p				- the point to test.
  */
-int ep_is_valid(const ep_t p);
+int ep_on_curve(const ep_t p);
 
 /**
  * Builds a precomputation table for multiplying a random prime elliptic point.

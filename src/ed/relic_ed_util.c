@@ -141,7 +141,7 @@ void ed_rhs(fp_t rhs, const ed_t p) {
 	}
 }
 
-int ed_is_valid(const ed_t p) {
+int ed_on_curve(const ed_t p) {
 	ed_t t;
 	int r = 0;
 

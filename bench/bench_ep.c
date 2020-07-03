@@ -134,9 +134,9 @@ static void util(void) {
 		BENCH_ADD(ep_tab(t, p, 4));
 	} BENCH_END;
 
-	BENCH_BEGIN("ep_is_valid") {
+	BENCH_BEGIN("ep_on_curve") {
 		ep_rand(p);
-		BENCH_ADD(ep_is_valid(p));
+		BENCH_ADD(ep_on_curve(p));
 	} BENCH_END;
 
 	BENCH_BEGIN("ep_size_bin (0)") {

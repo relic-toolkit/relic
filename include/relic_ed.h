@@ -804,7 +804,7 @@ void ed_print(const ed_t p);
  *
  * @param[in] p       - the point to test.
  */
-int ed_is_valid(const ed_t p);
+int ed_on_curve(const ed_t p);
 
 /**
  * Returns the number of bytes necessary to store an Edwards elliptic curve point

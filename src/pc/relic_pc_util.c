@@ -94,7 +94,7 @@ int g1_is_valid(g1_t a) {
 		ep_curve_get_cof(n);
 		if (bn_cmp_dig(n, 1) == RLC_EQ) {
 			/* If curve has prime order, simpler to check if point on curve. */
-			return ep_is_valid(a);
+			return ep_on_curve(a);
 		} else {
 			/* Otherwise, check order explicitly. */
 			pc_get_ord(n);

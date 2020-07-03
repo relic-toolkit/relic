@@ -531,7 +531,7 @@ void eb_rhs(fb_t rhs, const eb_t p);
  *
  * @param[in] p				- the point to test.
  */
-int eb_is_valid(const eb_t p);
+int eb_on_curve(const eb_t p);
 
 /**
  * Builds a precomputation table for multiplying a random binary elliptic point.

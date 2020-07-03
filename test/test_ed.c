@@ -168,11 +168,11 @@ int util(void) {
 
 		TEST_BEGIN("validity test is correct") {
 			ed_set_infty(a);
-			TEST_ASSERT(ed_is_valid(a), end);
+			TEST_ASSERT(ed_on_curve(a), end);
 			ed_rand(a);
-			TEST_ASSERT(ed_is_valid(a), end);
+			TEST_ASSERT(ed_on_curve(a), end);
 			fp_rand(a->x);
-			TEST_ASSERT(!ed_is_valid(a), end);
+			TEST_ASSERT(!ed_on_curve(a), end);
 		}
 		TEST_END;
 
@@ -531,7 +531,7 @@ static int multiplication(void) {
 		ed_curve_get_ord(n);
 
 		TEST_BEGIN("generator has the right order") {
-			TEST_ASSERT(ed_is_valid(p), end);
+			TEST_ASSERT(ed_on_curve(p), end);
 			ed_mul(r, p, n);
 			TEST_ASSERT(ed_is_infty(r) == 1, end);
 		} TEST_END;
@@ -1164,7 +1164,7 @@ static int hashing(void) {
 		TEST_BEGIN("point hashing is correct") {
 			rand_bytes(msg, sizeof(msg));
 			ed_map(a, msg, sizeof(msg));
-			TEST_ASSERT(ed_is_valid(a), end);
+			TEST_ASSERT(ed_on_curve(a), end);
 			ed_map_dst(b, msg, sizeof(msg), (const uint8_t *)"RELIC", 5);
 			TEST_ASSERT(ed_cmp(a, b) == RLC_EQ, end);
 			ed_mul(a, a, n);
@@ -1174,8 +1174,8 @@ static int hashing(void) {
 		for (int j = 0; j < ed_map_ntst; ++j) {
 			ed_map(a, (const uint8_t *)ed_map_input[j], strlen(ed_map_input[j]));
 			ed_read_bin(b, ed_map_output[j], 2 * RLC_FP_BYTES + 1);
-			TEST_ASSERT(ed_is_valid(a), end);
-			TEST_ASSERT(ed_is_valid(b), end);
+			TEST_ASSERT(ed_on_curve(a), end);
+			TEST_ASSERT(ed_on_curve(b), end);
 			TEST_ASSERT(ed_cmp(a, b) == RLC_EQ, end);
 		}
 		TEST_END;

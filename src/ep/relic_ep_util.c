@@ -144,7 +144,7 @@ void ep_rhs(fp_t rhs, const ep_t p) {
 	}
 }
 
-int ep_is_valid(const ep_t p) {
+int ep_on_curve(const ep_t p) {
 	ep_t t;
 	int r = 0;
 
