@@ -500,8 +500,8 @@ static int ecies(void) {
 				uint8_t in[] = {
 					0x12, 0x34, 0x56, 0x78, 0x90, 0xAB, 0xCD, 0xEF
 				};
-				TEST_ASSERT(ec_is_valid(qa) == 1, end);
-				TEST_ASSERT(ec_is_valid(q_b) == 1, end);
+				TEST_ASSERT(ec_on_curve(qa) == 1, end);
+				TEST_ASSERT(ec_on_curve(q_b) == 1, end);
 				out_len = 16;
 				TEST_ASSERT(cp_ecies_dec(out, &out_len, q_b, msg, sizeof(msg),
 								da) == RLC_OK, end);
