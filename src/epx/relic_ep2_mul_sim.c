@@ -36,7 +36,17 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-void ep2_glv(bn_t _k[4], const bn_t k) {
+#if EP_SIM == INTER || !defined(STRIP)
+
+#if defined(EP_ENDOM)
+
+/**
+ * Recodes a scalar in subscalars according to Frobenius endomorphism.
+ *
+ * @param[out] _k			- the recoded subscalars.
+ * @param[in] k				- the scalar to recode.
+ */
+static void ep2_glv(bn_t _k[4], const bn_t k) {
 	int i, l;
 	bn_t n, u[4], v[4];
 
@@ -170,8 +180,103 @@ void ep2_glv(bn_t _k[4], const bn_t k) {
 	}
 }
 
-#if EP_SIM == INTER || !defined(STRIP)
+/**
+ * Multiplies and adds two prime elliptic curve points simultaneously,
+ * optionally choosing the first point as the generator depending on an optional
+ * table of precomputed points.
+ *
+ * @param[out] r 				- the result.
+ * @param[in] p					- the first point to multiply.
+ * @param[in] k					- the first integer.
+ * @param[in] q					- the second point to multiply.
+ * @param[in] m					- the second integer.
+ * @param[in] t					- the pointer to the precomputed table.
+ */
+static void ep2_mul_sim_endom(ep2_t r, ep2_t p, const bn_t k, ep2_t q, const bn_t m) {
+	int i, j, l;
+	bn_t _k[4], _m[4];
+	ep2_t _p[4], _q[4];
 
+	RLC_TRY {
+		for (i = 0; i < 4; i++) {
+			bn_null(_k[i]);
+			bn_null(_m[i]);
+			ep2_null(_p[i]);
+			ep2_null(_q[i]);
+			bn_new(_k[i]);
+			bn_new(_m[i]);
+			ep2_new(_p[i]);
+			ep2_new(_q[i]);
+		}
+
+		ep2_glv(_k, k);
+		ep2_glv(_m, m);
+
+		ep2_norm(_p[0], p);
+		ep2_frb(_p[1], _p[0], 1);
+		ep2_frb(_p[2], _p[1], 1);
+		ep2_frb(_p[3], _p[2], 1);
+		ep2_norm(_q[0], q);
+		ep2_frb(_q[1], _q[0], 1);
+		ep2_frb(_q[2], _q[1], 1);
+		ep2_frb(_q[3], _q[2], 1);
+
+		for (i = 0; i < 4; i++) {
+			if (bn_sign(_k[i]) == RLC_NEG) {
+				ep2_neg(_p[i], _p[i]);
+			}
+			if (bn_sign(_m[i]) == RLC_NEG) {
+				ep2_neg(_q[i], _q[i]);
+			}
+		}
+
+		l = RLC_MAX(bn_bits(_k[0]), bn_bits(_k[1]));
+		l = RLC_MAX(l, RLC_MAX(bn_bits(_k[2]), bn_bits(_k[3])));
+		l = RLC_MAX(l, RLC_MAX(bn_bits(_m[0]), bn_bits(_m[1])));
+		l = RLC_MAX(l, RLC_MAX(bn_bits(_m[2]), bn_bits(_m[3])));
+
+		ep2_set_infty(r);
+		for (i = l - 1; i >= 0; i--) {
+			ep2_dbl(r, r);
+			for (j = 0; j < 4; j++) {
+				if (bn_get_bit(_k[j], i)) {
+					ep2_add(r, r, _p[j]);
+				}
+				if (bn_get_bit(_m[j], i)) {
+					ep2_add(r, r, _q[j]);
+				}
+			}
+		}
+
+		/* Convert r to affine coordinates. */
+		ep2_norm(r, r);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		for (i = 0; i < 4; i++) {
+			bn_free(_k[i]);
+			bn_free(_m[i]);
+			ep2_free(_p[i]);
+			ep2_free(_q[i]);
+		}
+	}
+}
+
+#endif /* EP_ENDOM */
+
+#if defined(EP_PLAIN) || defined(EP_SUPER)
+/**
+ * Multiplies and adds two prime elliptic curve points simultaneously,
+ * optionally choosing the first point as the generator depending on an optional
+ * table of precomputed points.
+ *
+ * @param[out] r 				- the result.
+ * @param[in] p					- the first point to multiply.
+ * @param[in] k					- the first integer.
+ * @param[in] q					- the second point to multiply.
+ * @param[in] m					- the second integer.
+ * @param[in] t					- the pointer to the precomputed table.
+ */
 static void ep2_mul_sim_plain(ep2_t r, ep2_t p, bn_t k, ep2_t q, bn_t m,
 		ep2_t *t) {
 	int i, l, l0, l1, n0, n1, w, gen;
@@ -267,79 +372,7 @@ static void ep2_mul_sim_plain(ep2_t r, ep2_t p, bn_t k, ep2_t q, bn_t m,
 	}
 }
 
-#if defined(EP_ENDOM)
-
-static void ep2_mul_sim_endom(ep2_t r, ep2_t p, const bn_t k, ep2_t q, const bn_t m) {
-	int i, j, l;
-	bn_t _k[4], _m[4];
-	ep2_t _p[4], _q[4];
-
-	RLC_TRY {
-		for (i = 0; i < 4; i++) {
-			bn_null(_k[i]);
-			bn_null(_m[i]);
-			ep2_null(_p[i]);
-			ep2_null(_q[i]);
-			bn_new(_k[i]);
-			bn_new(_m[i]);
-			ep2_new(_p[i]);
-			ep2_new(_q[i]);
-		}
-
-		ep2_glv(_k, k);
-		ep2_glv(_m, m);
-
-		ep2_norm(_p[0], p);
-		ep2_frb(_p[1], _p[0], 1);
-		ep2_frb(_p[2], _p[1], 1);
-		ep2_frb(_p[3], _p[2], 1);
-		ep2_norm(_q[0], q);
-		ep2_frb(_q[1], _q[0], 1);
-		ep2_frb(_q[2], _q[1], 1);
-		ep2_frb(_q[3], _q[2], 1);
-
-		for (i = 0; i < 4; i++) {
-			if (bn_sign(_k[i]) == RLC_NEG) {
-				ep2_neg(_p[i], _p[i]);
-			}
-			if (bn_sign(_m[i]) == RLC_NEG) {
-				ep2_neg(_q[i], _q[i]);
-			}
-		}
-
-		l = RLC_MAX(bn_bits(_k[0]), bn_bits(_k[1]));
-		l = RLC_MAX(l, RLC_MAX(bn_bits(_k[2]), bn_bits(_k[3])));
-		l = RLC_MAX(l, RLC_MAX(bn_bits(_m[0]), bn_bits(_m[1])));
-		l = RLC_MAX(l, RLC_MAX(bn_bits(_m[2]), bn_bits(_m[3])));
-
-		ep2_set_infty(r);
-		for (i = l - 1; i >= 0; i--) {
-			ep2_dbl(r, r);
-			for (j = 0; j < 4; j++) {
-				if (bn_get_bit(_k[j], i)) {
-					ep2_add(r, r, _p[j]);
-				}
-				if (bn_get_bit(_m[j], i)) {
-					ep2_add(r, r, _q[j]);
-				}
-			}
-		}
-
-		/* Convert r to affine coordinates. */
-		ep2_norm(r, r);
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		for (i = 0; i < 4; i++) {
-			bn_free(_k[i]);
-			bn_free(_m[i]);
-			ep2_free(_p[i]);
-			ep2_free(_q[i]);
-		}
-	}
-}
-
-#endif /* EP_ENDOM */
+#endif /* EP_PLAIN || EP_SUPER */
 
 #endif /* EP_SIM == INTER */
 
@@ -642,75 +675,178 @@ void ep2_mul_sim_lot(ep2_t r, ep2_t p[], const bn_t k[], int n) {
 	const int len = RLC_FP_BITS + 1;
 	int i, j, m, l, *_l = RLC_ALLOCA(int, 4 * n);
 	bn_t _k[4];
-	ep2_t *_p = RLC_ALLOCA(ep2_t, 4 * n);
 	int8_t *naf = RLC_ALLOCA(int8_t, 4 * n * len);
 
-	RLC_TRY {
-		for (j = 0; j < 4; j++) {
-			bn_null(_k[j]);
-			bn_new(_k[j]);
+	if (n <= 10) {
+		ep2_t *_p = RLC_ALLOCA(ep2_t, 4 * n);
+
+		RLC_TRY {
+			for (j = 0; j < 4; j++) {
+				bn_null(_k[j]);
+				bn_new(_k[j]);
+				for (i = 0; i < n; i++) {
+					ep2_null(_p[4*i + j]);
+					ep2_new(_p[4*i + j]);
+				}
+			}
+
+			for (int i = 0; i < n; i++) {
+				ep2_norm(_p[4*i], p[i]);
+				ep2_frb(_p[4*i + 1], _p[4*i], 1);
+				ep2_frb(_p[4*i + 2], _p[4*i + 1], 1);
+				ep2_frb(_p[4*i + 3], _p[4*i + 2], 1);
+			}
+
+			l = 0;
 			for (i = 0; i < n; i++) {
-				ep2_null(_p[4*i + j]);
-				ep2_new(_p[4*i + j]);
-			}
-		}
-
-		for (int i = 0; i < n; i++) {
-			ep2_norm(_p[4*i], p[i]);
-			ep2_frb(_p[4*i + 1], _p[4*i], 1);
-			ep2_frb(_p[4*i + 2], _p[4*i + 1], 1);
-			ep2_frb(_p[4*i + 3], _p[4*i + 2], 1);
-		}
-
-		l = 0;
-		for (i = 0; i < n; i++) {
-			ep2_glv(_k, k[i]);
-			for (j = 0; j < 4; j++) {
-				_l[4*i + j] = len;
-				bn_rec_naf(&naf[(4*i + j)*len], &_l[4*i + j], _k[j], 2);
-				if (bn_sign(_k[j]) == RLC_NEG) {
-					ep2_neg(_p[4*i + j], _p[4*i + j]);
-				}
-				l = RLC_MAX(l, _l[4*i + j]);
-			}
-		}
-
-		for (i = 0; i < n; i++) {
-			for (j = 0; j < 4; j++) {
-				for (m = _l[4*i + j]; m < l; m++) {
-					naf[(4*i + j)*len + m] = 0;
-				}
-			}
-		}
-
-		ep2_set_infty(r);
-		for (i = l - 1; i >= 0; i--) {
-			ep2_dbl(r, r);
-			for (j = 0; j < n; j++) {
-				for (m = 0; m < 4; m++) {
-					if (naf[(4*j + m)*len + i] > 0) {
-						ep2_add(r, r, _p[4*j + m]);
+				ep2_glv(_k, k[i]);
+				for (j = 0; j < 4; j++) {
+					_l[4*i + j] = len;
+					bn_rec_naf(&naf[(4*i + j)*len], &_l[4*i + j], _k[j], 2);
+					if (bn_sign(_k[j]) == RLC_NEG) {
+						ep2_neg(_p[4*i + j], _p[4*i + j]);
 					}
-					if (naf[(4*j + m)*len + i] < 0) {
-						ep2_sub(r, r, _p[4*j + m]);
+					l = RLC_MAX(l, _l[4*i + j]);
+				}
+			}
+
+			for (i = 0; i < n; i++) {
+				for (j = 0; j < 4; j++) {
+					for (m = _l[4*i + j]; m < l; m++) {
+						naf[(4*i + j)*len + m] = 0;
 					}
 				}
 			}
-		}
 
-		/* Convert r to affine coordinates. */
-		ep2_norm(r, r);
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		for (j = 0; j < 4; j++) {
-			bn_free(_k[j]);
-			for (i = 0; i < n; i++) {
-				ep2_free(_p[4*i + j]);
+			ep2_set_infty(r);
+			for (i = l - 1; i >= 0; i--) {
+				ep2_dbl(r, r);
+				for (j = 0; j < n; j++) {
+					for (m = 0; m < 4; m++) {
+						if (naf[(4*j + m)*len + i] > 0) {
+							ep2_add(r, r, _p[4*j + m]);
+						}
+						if (naf[(4*j + m)*len + i] < 0) {
+							ep2_sub(r, r, _p[4*j + m]);
+						}
+					}
+				}
+			}
+
+			/* Convert r to affine coordinates. */
+			ep2_norm(r, r);
+		} RLC_CATCH_ANY {
+			RLC_THROW(ERR_CAUGHT);
+		} RLC_FINALLY {
+			for (j = 0; j < 4; j++) {
+				bn_free(_k[j]);
+				for (i = 0; i < n; i++) {
+					ep2_free(_p[4*i + j]);
+				}
 			}
 		}
+		RLC_FREE(_l);
+		RLC_FREE(_p);
+		RLC_FREE(naf);
+	} else {
+		int w = RLC_MAX(2, util_bits_dig(n) - 2), c = (1 << (w - 2));
+		ep2_t s, t, u, v, *_p = RLC_ALLOCA(ep2_t, 4 * c);
+		int8_t ptr;
+
+		RLC_TRY {
+			ep2_null(s);
+			ep2_null(t);
+			ep2_null(u);
+			ep2_null(v);
+			ep2_new(s);
+			ep2_new(t);
+			ep2_new(u);
+			ep2_new(v);
+			for (i = 0; i < 4; i++) {
+				bn_null(_k[i]);
+				bn_new(_k[i]);
+				for (j = 0; j < c; j++) {
+					ep2_null(_p[i*c + j]);
+					ep2_new(_p[i*c + j]);
+					ep2_set_infty(_p[i*c + j]);
+				}
+			}
+
+			l = 0;
+			for (i = 0; i < n; i++) {
+				ep2_glv(_k, k[i]);
+				for (j = 0; j < 4; j++) {
+					_l[4*i + j] = len;
+					bn_rec_naf(&naf[(4*i + j)*len], &_l[4*i + j], _k[j], w);
+					l = RLC_MAX(l, _l[4*i + j]);
+				}
+			}
+
+			for (i = 0; i < n; i++) {
+				for (j = 0; j < 4; j++) {
+					for (m = _l[4*i + j]; m < l; m++) {
+						naf[(4*i + j)*len + m] = 0;
+					}
+				}
+			}
+
+			ep2_set_infty(s);
+			for (i = l - 1; i >= 0; i--) {
+				for (j = 0; j < n; j++) {
+					for (m = 0; m < 4; m++) {
+						ptr = naf[(4*j + m)*len + i];
+						if (ptr != 0) {
+							ep2_copy(t, p[j]);
+							if (ptr < 0) {
+								ptr = -ptr;
+								ep2_neg(t, t);
+							}
+							if (bn_sign(_k[m]) == RLC_NEG) {
+								ep2_neg(t, t);
+							}
+							ep2_add(_p[m*c + (ptr >> 1)], _p[m*c + (ptr >> 1)], t);
+						}
+					}
+				}
+
+				ep2_set_infty(t);
+				for (m = 3; m >= 0; m--) {
+					ep2_frb(t, t, 1);
+					ep2_set_infty(u);
+					ep2_set_infty(v);
+					for (j = c - 1; j > 0; j--) {
+						ep2_add(u, u, _p[m*c + j]);
+						ep2_add(v, v, u);
+						ep2_set_infty(_p[m*c + j]);
+					}
+					ep2_add(u, u, _p[m*c]);
+					ep2_set_infty(_p[m*c]);
+					ep2_dbl(v, v);
+					ep2_add(v, v, u);
+					ep2_add(t, t, v);
+				}
+				ep2_dbl(s, s);
+				ep2_add(s, s, t);
+			}
+
+			/* Convert r to affine coordinates. */
+			ep2_norm(r, s);
+		} RLC_CATCH_ANY {
+			RLC_THROW(ERR_CAUGHT);
+		} RLC_FINALLY {
+			ep2_free(s);
+			ep2_free(t);
+			ep2_free(u);
+			ep2_free(v);
+			for (i = 0; i < 4; i++) {
+				bn_free(_k[i]);
+				for (j = 0; j < c; j++) {
+					ep2_free(_p[i*c + j]);
+				}
+			}
+		}
+		RLC_FREE(_l);
+		RLC_FREE(_p);
+		RLC_FREE(naf);
 	}
-	RLC_FREE(_l);
-	RLC_FREE(_p);
-	RLC_FREE(naf);
 }
