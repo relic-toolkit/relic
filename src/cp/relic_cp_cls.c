@@ -298,10 +298,8 @@ int cp_cli_ver(g1_t a, g1_t A, g1_t b, g1_t B, g1_t c, uint8_t *msg, int len,
 		pc_get_ord(n);
 		bn_read_bin(m, msg, len);
 		bn_mod(m, m, n);
-		g1_mul(p[0], b, m);
+		g1_mul_sim(p[0], b, m, B, r);
 		g1_add(p[0], p[0], a);
-		g1_mul(p[1], B, r);
-		g1_add(p[0], p[0], p[1]);
 		g1_norm(p[0], p[0]);
 		g1_copy(p[1], c);
 		g2_copy(q[0], x);

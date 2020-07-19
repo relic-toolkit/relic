@@ -53,7 +53,7 @@ int cp_bbs_gen(bn_t d, g2_t q, gt_t z) {
 		g2_get_gen(q);
 
 		/* z = e(g1, g2). */
-		pc_map(z, g, q);
+		gt_get_gen(z);
 
 		pc_get_ord(n);
 
