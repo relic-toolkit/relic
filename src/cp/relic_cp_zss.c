@@ -40,21 +40,15 @@
 
 int cp_zss_gen(bn_t d, g1_t q, gt_t z) {
 	bn_t n;
-	g2_t g;
 	int result = RLC_OK;
 
 	bn_null(n);
-	g2_null(g);
 
 	RLC_TRY {
 		bn_new(n);
-		g2_new(g);
-
-		g1_get_gen(q);
-		g2_get_gen(g);
 
 		/* z = e(g1, g2). */
-		pc_map(z, q, g);
+		gt_get_gen(z);
 
 		pc_get_ord(n);
 
@@ -66,7 +60,6 @@ int cp_zss_gen(bn_t d, g1_t q, gt_t z) {
 	}
 	RLC_FINALLY {
 		bn_free(n);
-		g2_free(g);
 	}
 	return result;
 }

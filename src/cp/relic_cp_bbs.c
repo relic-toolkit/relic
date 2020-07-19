@@ -39,18 +39,12 @@
 
 int cp_bbs_gen(bn_t d, g2_t q, gt_t z) {
 	bn_t n;
-	g1_t g;
 	int result = RLC_OK;
 
 	bn_null(n);
-	g1_null(g);
 
 	RLC_TRY {
 		bn_new(n);
-		g1_new(g);
-
-		g1_get_gen(g);
-		g2_get_gen(q);
 
 		/* z = e(g1, g2). */
 		gt_get_gen(z);
@@ -71,7 +65,6 @@ int cp_bbs_gen(bn_t d, g2_t q, gt_t z) {
 	}
 	RLC_FINALLY {
 		bn_free(n);
-		g1_free(g);
 	}
 	return result;
 }
