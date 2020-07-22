@@ -87,6 +87,19 @@
 		fp##EXT##_mul(q->y, q->y, t3);										\
 		q->coord = PROJC;													\
 	}
+
+/* Chia - MSVC does not allow passing empty as macro param, so define new paramless macro */
+#define TMPL_MAP_ISOMAP_NORM_EMPTYPARAM()											\
+	{																\
+		/* Z = Dx * Dy. */													\
+		fp_mul(q->z, t2, t3);										\
+		/* X = Nx * Dy. */													\
+		fp_mul(q->x, t0, t2);										\
+		/* Y = Ny * Dx. */													\
+		fp_mul(q->y, p->y, t1);										\
+		fp_mul(q->y, q->y, t3);										\
+		q->coord = PROJC;													\
+	}
 #else
 #define TMPL_MAP_ISOMAP_NORM(EXT)											\
 	do {																	\
@@ -152,6 +165,53 @@
 			fp##EXT##_free(t1);												\
 			fp##EXT##_free(t2);												\
 			fp##EXT##_free(t3);												\
+		}																	\
+	}
+
+/* Chia - MSVC does not allow passing empty as macro param, so define new paramless macro */
+#define TMPL_MAP_ISOGENY_MAP_EMPTYPARAM()											\
+	/* declaring this function inline suppresses unused warnings */			\
+	static inline void ep_iso(ep_t q, ep_t p) {		\
+		fp_t t0, t1, t2, t3;											\
+																			\
+		if (!ep_curve_is_ctmap()) {									\
+			ep_copy(q, p);											\
+			return;															\
+		}																	\
+		/* XXX need to add real support for input projective points */		\
+		if (p->coord != BASIC) {											\
+			ep_norm(p, p);											\
+		}																	\
+																			\
+		fp_null(t0);													\
+		fp_null(t1);													\
+		fp_null(t2);													\
+		fp_null(t3);													\
+                                                                    		\
+		RLC_TRY {																\
+			fp_new(t0);												\
+			fp_new(t1);												\
+			fp_new(t2);												\
+			fp_new(t3);												\
+																			\
+			iso_t coeffs = ep_curve_get_iso();				\
+																			\
+			/* numerators */												\
+			fp_eval(t0, p->x, coeffs->xn, coeffs->deg_xn);			\
+			fp_eval(t1, p->x, coeffs->yn, coeffs->deg_yn);			\
+			/* denominators */												\
+			fp_eval(t2, p->x, coeffs->yd, coeffs->deg_yd);			\
+			fp_eval(t3, p->x, coeffs->xd, coeffs->deg_xd);			\
+																			\
+			/* normalize if necessary, Chia - MSVC does not allow passing empty as macro param, so define new paramless macro */		\
+			TMPL_MAP_ISOMAP_NORM_EMPTYPARAM();										\
+		}																	\
+		RLC_CATCH_ANY { RLC_THROW(ERR_CAUGHT); }									\
+		RLC_FINALLY {															\
+			fp_free(t0);												\
+			fp_free(t1);												\
+			fp_free(t2);												\
+			fp_free(t3);												\
 		}																	\
 	}
 
