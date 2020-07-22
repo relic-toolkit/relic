@@ -168,7 +168,7 @@
 		}																	\
 	}
 
-/* Chia - MSVC does not allow passing empty as macro param, so define new paramless macro */
+/* MSVC does not allow passing empty as macro param, so define new paramless macro */
 #define TMPL_MAP_ISOGENY_MAP_EMPTYPARAM()											\
 	/* declaring this function inline suppresses unused warnings */			\
 	static inline void ep_iso(ep_t q, ep_t p) {		\
@@ -203,7 +203,7 @@
 			fp_eval(t2, p->x, coeffs->yd, coeffs->deg_yd);			\
 			fp_eval(t3, p->x, coeffs->xd, coeffs->deg_xd);			\
 																			\
-			/* normalize if necessary, Chia - MSVC does not allow passing empty as macro param, so define new paramless macro */		\
+			/* normalize if necessary, MSVC does not allow passing empty as macro param, so define new paramless macro */		\
 			TMPL_MAP_ISOMAP_NORM_EMPTYPARAM();										\
 		}																	\
 		RLC_CATCH_ANY { RLC_THROW(ERR_CAUGHT); }									\
