@@ -53,7 +53,7 @@ TMPL_MAP_HORNER(fp, fp_st)
 /**
  * Generic isogeny map evaluation for use with SSWU map.
  */
-TMPL_MAP_ISOGENY_MAP()
+TMPL_MAP_ISOGENY_MAP(ep, fp, iso)
 #endif /* EP_CTMAP */
 
 /**
@@ -61,13 +61,13 @@ TMPL_MAP_ISOGENY_MAP()
  * "Fast and simple constant-time hashing to the BLS12-381 Elliptic Curve"
  */
 #define EP_MAP_COPY_COND(O, I, C) dv_copy_cond(O, I, RLC_FP_DIGS, C)
-TMPL_MAP_SSWU(,dig_t,EP_MAP_COPY_COND)
+TMPL_MAP_SSWU(ep, fp, dig_t, EP_MAP_COPY_COND)
 
 /**
  * Shallue--van de Woestijne map, based on the definition from
  * draft-irtf-cfrg-hash-to-curve-06, Section 6.6.1
  */
-TMPL_MAP_SVDW(,dig_t,EP_MAP_COPY_COND)
+TMPL_MAP_SVDW(ep, fp, dig_t, EP_MAP_COPY_COND)
 #undef EP_MAP_COPY_COND
 
 /* caution: this function overwrites k, which it uses as an auxiliary variable */
@@ -129,12 +129,12 @@ void ep_map_dst(ep_t p, const uint8_t *msg, int len, const uint8_t *dst, int dst
 		/* first map invocation */
 		EP_MAP_CONVERT_BYTES(0);
 		EP_MAP_APPLY_MAP(p);
-		TMPL_MAP_CALL_ISOMAP(,p);
+		TMPL_MAP_CALL_ISOMAP(ep, p);
 
 		/* second map invocation */
 		EP_MAP_CONVERT_BYTES(1);
 		EP_MAP_APPLY_MAP(q);
-		TMPL_MAP_CALL_ISOMAP(,q);
+		TMPL_MAP_CALL_ISOMAP(ep, q);
 
 		/* XXX(rsw) could add p and q and then apply isomap,
 		 * but need ep_add to support addition on isogeny curves */

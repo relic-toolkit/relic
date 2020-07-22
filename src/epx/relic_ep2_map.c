@@ -52,7 +52,7 @@ TMPL_MAP_HORNER(fp2, fp2_t)
 /**
  * Generic isogeny map evaluation for use with SSWU map.
  */
-TMPL_MAP_ISOGENY_MAP(2)
+TMPL_MAP_ISOGENY_MAP(ep2, fp2, iso2)
 #endif /* EP_CTMAP */
 
 /**
@@ -63,12 +63,12 @@ TMPL_MAP_ISOGENY_MAP(2)
 		dv_copy_cond(O[0], I[0], RLC_FP_DIGS, C);                                        \
 		dv_copy_cond(O[1], I[1], RLC_FP_DIGS, C);                                        \
 	} while (0)
-TMPL_MAP_SSWU(2,fp_t,EP2_MAP_COPY_COND)
+TMPL_MAP_SSWU(ep2, fp2, fp_t, EP2_MAP_COPY_COND)
 
 /**
  * Shallue--van de Woestijne map.
  */
-TMPL_MAP_SVDW(2,fp_t,EP2_MAP_COPY_COND)
+TMPL_MAP_SVDW(ep2, fp2, fp_t, EP2_MAP_COPY_COND)
 #undef EP2_MAP_COPY_COND
 
 /**
@@ -247,12 +247,12 @@ void ep2_map_dst(ep2_t p, const uint8_t *msg, int len, const uint8_t *dst, int d
 		/* first map invocation */
 		EP2_MAP_CONVERT_BYTES(0);
 		EP2_MAP_APPLY_MAP(p);
-		TMPL_MAP_CALL_ISOMAP(2,p);
+		TMPL_MAP_CALL_ISOMAP(ep2, p);
 
 		/* second map invocation */
 		EP2_MAP_CONVERT_BYTES(1);
 		EP2_MAP_APPLY_MAP(q);
-		TMPL_MAP_CALL_ISOMAP(2,q);
+		TMPL_MAP_CALL_ISOMAP(ep2, q);
 
 		/* XXX(rsw) could add p and q and then apply isomap,
 		 * but need ep_add to support addition on isogeny curves */
