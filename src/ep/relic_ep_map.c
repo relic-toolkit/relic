@@ -52,7 +52,7 @@ TMPL_MAP_HORNER(fp, fp_st)
 
 /**
  * Generic isogeny map evaluation for use with SSWU map.
- * Chia - MSVC does not allow passing empty as macro param, so define new paramless macro
+ * MSVC does not allow passing empty as macro param, so define new paramless macro
  */
 TMPL_MAP_ISOGENY_MAP_EMPTYPARAM()
 #endif /* EP_CTMAP */

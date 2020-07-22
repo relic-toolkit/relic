@@ -109,7 +109,7 @@ void fp6_mul_basic(fp6_t c, fp6_t a, fp6_t b) {
 
 #if PP_EXT == LAZYR || !defined(STRIP)
 
-/* Chia - We need this to be exported, so remove inline */
+/* MSVC needs this to be exported, so remove inline */
 void fp6_mul_unr(dv6_t c, fp6_t a, fp6_t b) {
 	dv2_t u0, u1, u2, u3;
 	fp2_t t0, t1;

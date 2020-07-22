@@ -424,7 +424,7 @@ static int pad_pkcs1(bn_t m, int *p_len, int m_len, int k_len, int operation) {
  */
 static int pad_pkcs2(bn_t m, int *p_len, int m_len, int k_len, int operation) {
         uint8_t pad, h1[RLC_MD_LEN], h2[RLC_MD_LEN];
-        /* Chia - MSVC does not allow dynamic stack arrays */
+        /* MSVC does not allow dynamic stack arrays */
         uint8_t *mask = (uint8_t *)calloc(k_len, sizeof(uint8_t));
 	int result = RLC_OK;
 	bn_t t;

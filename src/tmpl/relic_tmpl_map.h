@@ -88,7 +88,7 @@
 		q->coord = PROJC;													\
 	}
 
-/* Chia - MSVC does not allow passing empty as macro param, so define new paramless macro */
+/* MSVC does not allow passing empty as macro param, so define new paramless macro */
 #define TMPL_MAP_ISOMAP_NORM_EMPTYPARAM()											\
 	{																\
 		/* Z = Dx * Dy. */													\
