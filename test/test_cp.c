@@ -1303,8 +1303,10 @@ static int lhs(void) {
 	g1_t _r, h, as[S], cs[S], sig[S];
 	g1_t a[S][L], c[S][L], r[S][L];
 	g2_t _s, s[S][L], pk[S], y[S], z[S];
-	gt_t hs[S][RLC_TERMS];
+	gt_t *hs[S];
 	char *id = "id";
+	dig_t *f[S] = { NULL };
+	int flen[S];
 
 	bn_null(m);
 	bn_null(n);
@@ -1320,6 +1322,7 @@ static int lhs(void) {
 		g2_new(_s);
 
 		for (int i = 0; i < S; i++) {
+			hs[i] = RLC_ALLOCA(gt_t, RLC_TERMS);
 			for (int j = 0; j < RLC_TERMS; j++) {
 				gt_null(hs[i][j]);
 				gt_new(hs[i][j]);
@@ -1358,9 +1361,8 @@ static int lhs(void) {
 		}
 
 		/* Define linear function. */
-		dig_t f[S][RLC_TERMS];
-		int flen[S];
 		for (int i = 0; i < S; i++) {
+			f[i] = RLC_ALLOCA(dig_t, RLC_TERMS);
 			for (int j = 0; j < RLC_TERMS; j++) {
 				uint32_t t;
 				rand_bytes((uint8_t *)&t, sizeof(uint32_t));
@@ -1500,9 +1502,11 @@ static int lhs(void) {
 	  g2_free(_s);
 
 	  for (int i = 0; i < S; i++) {
+		  RLC_FREE(f[i]);
 		  for (int j = 0; j < RLC_TERMS; j++) {
 			  gt_free(hs[i][j]);
 		  }
+		  RLC_FREE(hs[i]);
 		  for (int j = 0; j < L; j++) {
 			  bn_free(x[i][j]);
 			  bn_free(msg[i][j]);

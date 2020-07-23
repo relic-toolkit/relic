@@ -127,7 +127,7 @@ int cp_mklhs_evl(g1_t sig, g1_t s[], dig_t f[], int len) {
 }
 
 int cp_mklhs_ver(g1_t sig, bn_t m, bn_t mu[], char *data, char *label[],
-		dig_t f[][RLC_TERMS], int flen[], g2_t pk[], int slen) {
+		dig_t *f[], int flen[], g2_t pk[], int slen) {
 	bn_t t, n;
 	g1_t d, *g = RLC_ALLOCA(g1_t, slen);
 	g2_t g2;
@@ -217,8 +217,8 @@ int cp_mklhs_ver(g1_t sig, bn_t m, bn_t mu[], char *data, char *label[],
 	return (ver1 && ver2);
 }
 
-int cp_mklhs_off(g1_t h[], dig_t ft[], char *label[], dig_t f[][RLC_TERMS],
-		int flen[], int slen) {
+int cp_mklhs_off(g1_t h[], dig_t ft[], char *label[], dig_t *f[], int flen[],
+		int slen) {
 	int fmax = 0, result = RLC_OK;;
 	for (int i = 0; i < slen; i++) {
 		fmax = RLC_MAX(fmax, flen[i]);

@@ -1722,8 +1722,8 @@ int cp_cmlhs_evl(g1_t r, g2_t s, g1_t rs[], g2_t ss[], dig_t f[], int len);
  * @return a boolean value indicating the verification result.
  */
 int cp_cmlhs_ver(g1_t r, g2_t s, g1_t sig[], g2_t z[], g1_t a[], g1_t c[],
-		bn_t m, char *data, int label[], g1_t h, gt_t hs[][RLC_TERMS],
-		dig_t f[][RLC_TERMS], int flen[], g2_t y[], g2_t pk[], int slen);
+		bn_t m, char *data, int label[], g1_t h, gt_t *hs[],
+		dig_t *f[], int flen[], g2_t y[], g2_t pk[], int slen);
 
 /**
  * Generates a key pair for the Multi-Key Homomorphic Signature (MKLHS) scheme.
@@ -1760,7 +1760,7 @@ int cp_mklhs_fun(bn_t mu, bn_t m[], dig_t f[], int len);
 /**
  * Evaluates a function over a set of MKLHS signatures.
  *
- * @param[out] sig			- the resulting signature
+ * @param[out] sig			- the resulting signature.
  * @param[in] s				- the set of signatures.
  * @param[in] f 			- the linear coefficients in the function.
  * @param[in] len			- the number of coefficients.
@@ -1783,7 +1783,7 @@ int cp_mklhs_evl(g1_t sig, g1_t s[], dig_t f[], int len);
  * @return a boolean value indicating the verification result.
  */
 int cp_mklhs_ver(g1_t sig, bn_t m, bn_t mu[], char *data, char *label[],
-		dig_t f[][RLC_TERMS], int flen[], g2_t pk[], int slen);
+	dig_t *f[], int flen[], g2_t pk[], int slen);
 
 /**
  * Computes the offline part of veryfying a MKLHS signature over a set of
@@ -1797,8 +1797,8 @@ int cp_mklhs_ver(g1_t sig, bn_t m, bn_t mu[], char *data, char *label[],
  * @param[in] slen 			- the number of signatures.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_mklhs_off(g1_t h[], dig_t ft[], char *label[], dig_t f[][RLC_TERMS],
-		int flen[], int slen);
+int cp_mklhs_off(g1_t h[], dig_t ft[], char *label[], dig_t *f[], int flen[],
+	int slen);
 
 /**
  * Computes the online part of veryfying a MKLHS signature over a set of
@@ -1815,6 +1815,6 @@ int cp_mklhs_off(g1_t h[], dig_t ft[], char *label[], dig_t f[][RLC_TERMS],
  * @return a boolean value indicating the verification result.
  */
 int cp_mklhs_onv(g1_t sig, bn_t m, bn_t mu[], char *data, g1_t h[], dig_t ft[],
-		g2_t pk[], int slen);
+	g2_t pk[], int slen);
 
 #endif /* !RLC_CP_H */

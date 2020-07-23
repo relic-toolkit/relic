@@ -187,8 +187,8 @@ int cp_cmlhs_evl(g1_t r, g2_t s, g1_t rs[], g2_t ss[], dig_t f[], int len) {
 }
 
 int cp_cmlhs_ver(g1_t r, g2_t s, g1_t sig[], g2_t z[], g1_t a[], g1_t c[],
-		bn_t msg, char *data, int label[], g1_t h, gt_t hs[][RLC_TERMS],
-		dig_t f[][RLC_TERMS], int flen[], g2_t y[], g2_t pk[], int slen) {
+		bn_t msg, char *data, int label[], g1_t h, gt_t *hs[],
+		dig_t *f[], int flen[], g2_t y[], g2_t pk[], int slen) {
 	g1_t g1;
 	g2_t g2;
 	gt_t e, u, v;
