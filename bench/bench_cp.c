@@ -1097,9 +1097,11 @@ static void lhs(void) {
 	g1_t _r, h, as[S], cs[S], sig[S];
 	g1_t a[S][L], c[S][L], r[S][L];
 	g2_t _s, s[S][L], pk[S], y[S], z[S];
-	gt_t hs[S][RLC_TERMS];
+	gt_t *hs[S];
 	char *id = "id";
 	dig_t ft[S];
+	dig_t *f[S];
+	int flen[S];
 
 	bn_null(m);
 	bn_null(n);
@@ -1156,9 +1158,9 @@ static void lhs(void) {
 	}
 
 	/* Define linear function. */
-	dig_t f[S][RLC_TERMS];
-	int flen[S];
 	for (int i = 0; i < S; i++) {
+		hs[i] = RLC_ALLOCA(gt_t, RLC_TERMS);
+		f[i] = RLC_ALLOCA(dig_t, RLC_TERMS);
 		for (int j = 0; j < RLC_TERMS; j++) {
 			uint32_t t;
 			rand_bytes((uint8_t *)&t, sizeof(uint32_t));
@@ -1244,7 +1246,7 @@ static void lhs(void) {
 	}
 #endif  /* BENCH_LHS */
 
-	char ls[L][10];
+	char *ls[L];
 
 	BENCH_BEGIN("cp_mklhs_gen") {
 		for (int j = 0; j < S; j++) {
@@ -1255,7 +1257,7 @@ static void lhs(void) {
 	BENCH_BEGIN("cp_mklhs_sig") {
 		for (int j = 0; j < S; j++) {
 			for (int l = 0; l < L; l++) {
-				sprintf(ls[l], "%d", l);
+				ls[l] = "l";
 				bn_mod(msg[l], msg[l], n);
 				BENCH_ADD(cp_mklhs_sig(a[j][l], msg[l], id, ls[l], sk[j]));
 			}
@@ -1357,6 +1359,8 @@ static void lhs(void) {
 		bn_free(msg[i]);
 	}
 	for (int i = 0; i < S; i++) {
+		RLC_FREE(hs[i]);
+		RLC_FREE(f[i]);
 		for (int j = 0; j < RLC_TERMS; j++) {
 			gt_free(hs[i][j]);
 		}
