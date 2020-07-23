@@ -90,13 +90,13 @@ int cp_cmlhs_gen(bn_t x[], gt_t hs[], int len, uint8_t prf[], int plen,
 }
 
 int cp_cmlhs_sig(g1_t sig, g2_t z, g1_t a, g1_t c, g1_t r, g2_t s, bn_t msg,
-		char *data, int dlen, int label, bn_t x, g1_t h,
-		uint8_t prf[], int plen, bn_t d, bn_t sk) {
+		char *data, int label, bn_t x, g1_t h, uint8_t prf[], int plen,
+		bn_t d, bn_t sk) {
 	bn_t k, m, n;
 	g1_t t;
 	uint8_t mac[RLC_MD_LEN];
+	int dlen = strlen(data), result = RLC_OK;
 	uint8_t *buf = RLC_ALLOCA(uint8_t, 1 + 4 * RLC_FP_BYTES + dlen);
-	int result = RLC_OK;
 
 	bn_null(k);
 	bn_null(m);
@@ -187,15 +187,14 @@ int cp_cmlhs_evl(g1_t r, g2_t s, g1_t rs[], g2_t ss[], dig_t f[], int len) {
 }
 
 int cp_cmlhs_ver(g1_t r, g2_t s, g1_t sig[], g2_t z[], g1_t a[], g1_t c[],
-		bn_t msg, char *data, int dlen, int label[], g1_t h,
-		gt_t hs[][RLC_TERMS], dig_t f[][RLC_TERMS], int flen[], g2_t y[],
-		g2_t pk[], int slen) {
+		bn_t msg, char *data, int label[], g1_t h, gt_t hs[][RLC_TERMS],
+		dig_t f[][RLC_TERMS], int flen[], g2_t y[], g2_t pk[], int slen) {
 	g1_t g1;
 	g2_t g2;
 	gt_t e, u, v;
 	bn_t k, n;
+	int dlen = strlen(data), result = 1;
 	uint8_t *buf = RLC_ALLOCA(uint8_t, 1 + 4 * RLC_FP_BYTES + dlen);
-	int result = 1;
 
 	g1_null(g1);
 	g2_null(g2);
