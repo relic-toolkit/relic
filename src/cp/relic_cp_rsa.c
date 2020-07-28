@@ -425,7 +425,7 @@ static int pad_pkcs1(bn_t m, int *p_len, int m_len, int k_len, int operation) {
 static int pad_pkcs2(bn_t m, int *p_len, int m_len, int k_len, int operation) {
         uint8_t pad, h1[RLC_MD_LEN], h2[RLC_MD_LEN];
         /* MSVC does not allow dynamic stack arrays */
-        uint8_t *mask = (uint8_t *)calloc(k_len, sizeof(uint8_t));
+        uint8_t *mask = RLC_ALLOCA(uint8_t, k_len);
 	int result = RLC_OK;
 	bn_t t;
 
@@ -571,7 +571,7 @@ static int pad_pkcs2(bn_t m, int *p_len, int m_len, int k_len, int operation) {
 		bn_free(t);
 	}
 
-        free(mask);
+        RLC_FREE(mask);
 
 	return result;
 }
