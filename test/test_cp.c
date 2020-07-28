@@ -676,8 +676,8 @@ static int sokaka(void) {
 	sokaka_t k;
 	bn_t s;
 	uint8_t k1[RLC_MD_LEN], k2[RLC_MD_LEN];
-	char ia[5] = { 'A', 'l', 'i', 'c', 'e' };
-	char ib[3] = { 'B', 'o', 'b' };
+	char *ia = "Alice";
+	char *ib = "Bob";
 
 	sokaka_null(k);
 	bn_null(s);
@@ -691,10 +691,10 @@ static int sokaka(void) {
 		TEST_BEGIN
 				("sakai-ohgishi-kasahara authenticated key agreement is correct")
 		{
-			TEST_ASSERT(cp_sokaka_gen_prv(k, ia, 5, s) == RLC_OK, end);
-			TEST_ASSERT(cp_sokaka_key(k1, l, ia, 5, k, ib, 3) == RLC_OK, end);
-			TEST_ASSERT(cp_sokaka_gen_prv(k, ib, 3, s) == RLC_OK, end);
-			TEST_ASSERT(cp_sokaka_key(k2, l, ib, 3, k, ia, 5) == RLC_OK, end);
+			TEST_ASSERT(cp_sokaka_gen_prv(k, ia, s) == RLC_OK, end);
+			TEST_ASSERT(cp_sokaka_key(k1, l, ia, k, ib) == RLC_OK, end);
+			TEST_ASSERT(cp_sokaka_gen_prv(k, ib, s) == RLC_OK, end);
+			TEST_ASSERT(cp_sokaka_key(k2, l, ib, k, ia) == RLC_OK, end);
 			TEST_ASSERT(memcmp(k1, k2, l) == 0, end);
 		} TEST_END;
 
@@ -715,7 +715,7 @@ static int ibe(void) {
 	g1_t pub;
 	g2_t prv;
 	uint8_t in[10], out[10 + 2 * RLC_FP_BYTES + 1];
-	char id[5] = { 'A', 'l', 'i', 'c', 'e' };
+	char *id = "Alice";
 	int il, ol;
 	int result;
 
@@ -735,8 +735,8 @@ static int ibe(void) {
 			il = 10;
 			ol = il + 2 * RLC_FP_BYTES + 1;
 			rand_bytes(in, il);
-			TEST_ASSERT(cp_ibe_gen_prv(prv, id, 5, s) == RLC_OK, end);
-			TEST_ASSERT(cp_ibe_enc(out, &ol, in, il, id, 5, pub) == RLC_OK, end);
+			TEST_ASSERT(cp_ibe_gen_prv(prv, id, s) == RLC_OK, end);
+			TEST_ASSERT(cp_ibe_enc(out, &ol, in, il, id, pub) == RLC_OK, end);
 			TEST_ASSERT(cp_ibe_dec(out, &il, out, ol, prv) == RLC_OK, end);
 			TEST_ASSERT(memcmp(in, out, il) == 0, end);
 		} TEST_END;
@@ -1303,8 +1303,10 @@ static int lhs(void) {
 	g1_t _r, h, as[S], cs[S], sig[S];
 	g1_t a[S][L], c[S][L], r[S][L];
 	g2_t _s, s[S][L], pk[S], y[S], z[S];
-	gt_t hs[S][RLC_TERMS];
+	gt_t *hs[S];
 	char *id = "id";
+	dig_t *f[S] = { NULL };
+	int flen[S];
 
 	bn_null(m);
 	bn_null(n);
@@ -1320,6 +1322,7 @@ static int lhs(void) {
 		g2_new(_s);
 
 		for (int i = 0; i < S; i++) {
+			hs[i] = RLC_ALLOCA(gt_t, RLC_TERMS);
 			for (int j = 0; j < RLC_TERMS; j++) {
 				gt_null(hs[i][j]);
 				gt_new(hs[i][j]);
@@ -1358,9 +1361,8 @@ static int lhs(void) {
 		}
 
 		/* Define linear function. */
-		dig_t f[S][RLC_TERMS];
-		int flen[S];
 		for (int i = 0; i < S; i++) {
+			f[i] = RLC_ALLOCA(dig_t, RLC_TERMS);
 			for (int j = 0; j < RLC_TERMS; j++) {
 				uint32_t t;
 				rand_bytes((uint8_t *)&t, sizeof(uint32_t));
@@ -1384,7 +1386,7 @@ static int lhs(void) {
 					label[l] = l;
 					bn_rand_mod(msg[j][l], n);
 					cp_cmlhs_sig(sig[j], z[j], a[j][l], c[j][l], r[j][l], s[j][l],
-						msg[j][l], id, strlen(id), label[l], x[j][l], h, k[j], K,
+						msg[j][l], id, label[l], x[j][l], h, k[j], K,
 						d[j], sk[j]);
 				}
 			}
@@ -1410,22 +1412,21 @@ static int lhs(void) {
 					bn_mod(m, m, n);
 				}
 			}
-			TEST_ASSERT(cp_cmlhs_ver(_r, _s, sig, z, as, cs, m, id,
-				strlen(id), label, h, hs, f, flen, y, pk, S) == 1, end);
+			TEST_ASSERT(cp_cmlhs_ver(_r, _s, sig, z, as, cs, m, id, label,
+				h, hs, f, flen, y, pk, S) == 1, end);
 		}
 		TEST_END;
 
-		char *ls[L] = { "l" };
-		int lens[L] = { strlen(ls[0]) };
+		char *ls[L] = { NULL };
 		dig_t ft[S];
 
 		TEST_BEGIN("simple linear multi-key homomorphic signature is correct") {
 			for (int j = 0; j < S; j++) {
 				cp_mklhs_gen(sk[j], pk[j]);
 				for (int l = 0; l < L; l++) {
+					ls[l] = "l";
 					bn_rand_mod(msg[j][l], n);
-					cp_mklhs_sig(a[j][l], msg[j][l], id, strlen(id), ls[l],
-						lens[l], sk[j]);
+					cp_mklhs_sig(a[j][l], msg[j][l], id, ls[l],	sk[j]);
 				}
 			}
 
@@ -1449,8 +1450,7 @@ static int lhs(void) {
 				}
 			}
 
-			TEST_ASSERT(cp_mklhs_ver(_r, m, d, id, strlen(id), ls, lens, f,
-				flen, pk, S) == 1, end);
+			TEST_ASSERT(cp_mklhs_ver(_r, m, d, id, ls, f, flen, pk, S), end);
 		}
 		TEST_END;
 
@@ -1459,8 +1459,7 @@ static int lhs(void) {
 				cp_mklhs_gen(sk[j], pk[j]);
 				for (int l = 0; l < L; l++) {
 					bn_rand_mod(msg[j][l], n);
-					cp_mklhs_sig(a[j][l], msg[j][l], id, strlen(id), ls[l],
-						lens[l], sk[j]);
+					cp_mklhs_sig(a[j][l], msg[j][l], id, ls[l], sk[j]);
 				}
 			}
 
@@ -1484,9 +1483,8 @@ static int lhs(void) {
 				}
 			}
 
-			cp_mklhs_off(as, ft, ls, lens, f, flen, S);
-			TEST_ASSERT(cp_mklhs_onv(_r, m, d, id, strlen(id), as, ft,
-					pk, S) == 1, end);
+			cp_mklhs_off(as, ft, ls, f, flen, S);
+			TEST_ASSERT(cp_mklhs_onv(_r, m, d, id, as, ft, pk, S), end);
 
 		}
 		TEST_END;
@@ -1504,9 +1502,11 @@ static int lhs(void) {
 	  g2_free(_s);
 
 	  for (int i = 0; i < S; i++) {
+		  RLC_FREE(f[i]);
 		  for (int j = 0; j < RLC_TERMS; j++) {
 			  gt_free(hs[i][j]);
 		  }
+		  RLC_FREE(hs[i]);
 		  for (int j = 0; j < L; j++) {
 			  bn_free(x[i][j]);
 			  bn_free(msg[i][j]);

@@ -57,8 +57,7 @@ int cp_mklhs_gen(bn_t sk, g2_t pk) {
 	return result;
 }
 
-int cp_mklhs_sig(g1_t s, bn_t m, char *data, int dlen, char *label, int llen,
-		bn_t sk) {
+int cp_mklhs_sig(g1_t s, bn_t m, char *data, char *label, bn_t sk) {
 	bn_t n;
 	g1_t a;
 	int result = RLC_OK;
@@ -73,9 +72,9 @@ int cp_mklhs_sig(g1_t s, bn_t m, char *data, int dlen, char *label, int llen,
 		pc_get_ord(n);
 		g1_mul_gen(a, m);
 
-		g1_map(s, (uint8_t *)data, dlen);
+		g1_map(s, (uint8_t *)data, strlen(data));
 		g1_add(s, s, a);
-		g1_map(a, (uint8_t *)label, llen);
+		g1_map(a, (uint8_t *)label, strlen(label));
 		g1_add(s, s, a);
 		g1_norm(s, s);
 		g1_mul_key(s, s, sk);
@@ -127,9 +126,8 @@ int cp_mklhs_evl(g1_t sig, g1_t s[], dig_t f[], int len) {
 	return result;
 }
 
-int cp_mklhs_ver(g1_t sig, bn_t m, bn_t mu[], char *data, int dlen,
-		char *label[], int llen[], dig_t f[][RLC_TERMS], int flen[], g2_t pk[],
-		int slen) {
+int cp_mklhs_ver(g1_t sig, bn_t m, bn_t mu[], char *data, char *label[],
+		dig_t *f[], int flen[], g2_t pk[], int slen) {
 	bn_t t, n;
 	g1_t d, *g = RLC_ALLOCA(g1_t, slen);
 	g2_t g2;
@@ -177,10 +175,10 @@ int cp_mklhs_ver(g1_t sig, bn_t m, bn_t mu[], char *data, int dlen,
 			ver1 = 1;
 		}
 
-		g1_map(d, (uint8_t *)data, dlen);
+		g1_map(d, (uint8_t *)data, strlen(data));
 		for (int i = 0; i < slen; i++) {
 			for (int j = 0; j < flen[i]; j++) {
-				g1_map(h[j], (uint8_t *)label[j], llen[j]);
+				g1_map(h[j], (uint8_t *)label[j], strlen(label[j]));
 				g1_add(h[j], h[j], d);
 			}
 			g1_norm_sim(h, h, slen);
@@ -219,8 +217,8 @@ int cp_mklhs_ver(g1_t sig, bn_t m, bn_t mu[], char *data, int dlen,
 	return (ver1 && ver2);
 }
 
-int cp_mklhs_off(g1_t h[], dig_t ft[], char *label[], int llen[], dig_t f[][RLC_TERMS],
-		int flen[], int slen) {
+int cp_mklhs_off(g1_t h[], dig_t ft[], char *label[], dig_t *f[], int flen[],
+		int slen) {
 	int fmax = 0, result = RLC_OK;;
 	for (int i = 0; i < slen; i++) {
 		fmax = RLC_MAX(fmax, flen[i]);
@@ -241,7 +239,7 @@ int cp_mklhs_off(g1_t h[], dig_t ft[], char *label[], int llen[], dig_t f[][RLC_
 		for (int i = 0; i < slen; i++) {
 			ft[i] = 0;
 			for (int j = 0; j < flen[i]; j++) {
-				g1_map(_h[j], (uint8_t *)label[j], llen[j]);
+				g1_map(_h[j], (uint8_t *)label[j], strlen(label[j]));
 				ft[i] += f[i][j];
 			}
 			g1_mul_sim_dig(h[i], _h, f[i], flen[i]);
@@ -259,8 +257,8 @@ int cp_mklhs_off(g1_t h[], dig_t ft[], char *label[], int llen[], dig_t f[][RLC_
 	return result;
 }
 
-int cp_mklhs_onv(g1_t sig, bn_t m, bn_t mu[], char *data, int dlen,
-		g1_t h[], dig_t ft[], g2_t pk[], int slen) {
+int cp_mklhs_onv(g1_t sig, bn_t m, bn_t mu[], char *data,  g1_t h[], dig_t ft[],
+		g2_t pk[], int slen) {
 	bn_t t, n;
 	g1_t d, g1, *g = RLC_ALLOCA(g1_t, slen);
 	g2_t g2;
@@ -301,7 +299,7 @@ int cp_mklhs_onv(g1_t sig, bn_t m, bn_t mu[], char *data, int dlen,
 			ver1 = 1;
 		}
 
-		g1_map(d, (uint8_t *)data, dlen);
+		g1_map(d, (uint8_t *)data, strlen(data));
 		for (int i = 0; i < slen; i++) {
 			g1_mul_dig(g[i], d, ft[i]);
 			g1_add(g[i], g[i], h[i]);
