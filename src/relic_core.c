@@ -82,9 +82,16 @@ rlc_thread ctx_t first_ctx;
 static ctx_t first_ctx;
 #endif
 
-/**
- * Active library context.
+//[!CHIA_EDIT_START]
+#if MULTI != RELIC_NONE
+/*
+ * Initializer function to call for every thread's context
  */
+void (*core_thread_initializer)(void* init_ptr) = NULL;
+void* core_init_ptr = NULL;
+#endif
+//[!CHIA_EDIT_END]
+
 #if MULTI
 rlc_thread ctx_t *core_ctx = NULL;
 #else
@@ -175,9 +182,25 @@ int core_clean(void) {
 }
 
 ctx_t *core_get(void) {
+//[!CHIA_EDIT_START]
+#if MULTI != RELIC_NONE
+    if (core_ctx == NULL && core_thread_initializer != NULL) {
+        core_thread_initializer(core_init_ptr);
+    }
+#endif
+//[!CHIA_EDIT_END]
 	return core_ctx;
 }
 
 void core_set(ctx_t *ctx) {
 	core_ctx = ctx;
 }
+
+//[!CHIA_EDIT_START]
+#if MULTI != RELIC_NONE
+void core_set_thread_initializer(void(*init)(void *init_ptr), void* init_ptr) {
+    core_thread_initializer = init;
+    core_init_ptr = init_ptr;
+}
+#endif
+//[!CHIA_EDIT_END]
