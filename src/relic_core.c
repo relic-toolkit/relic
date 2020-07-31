@@ -82,7 +82,6 @@ rlc_thread ctx_t first_ctx;
 static ctx_t first_ctx;
 #endif
 
-//[!CHIA_EDIT_START]
 #if MULTI != RELIC_NONE
 /*
  * Initializer function to call for every thread's context
@@ -90,7 +89,6 @@ static ctx_t first_ctx;
 void (*core_thread_initializer)(void* init_ptr) = NULL;
 void* core_init_ptr = NULL;
 #endif
-//[!CHIA_EDIT_END]
 
 #if MULTI
 rlc_thread ctx_t *core_ctx = NULL;

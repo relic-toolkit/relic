@@ -35,7 +35,6 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-//[!CHIA_EDIT_START]
 void ep_pck(ep_t r, const ep_t p) {
 	bn_t halfQ;
 	bn_null(halfQ);
@@ -110,49 +109,3 @@ int ep_upk(ep_t r, const ep_t p) {
 	}
 	return result;
 }
-/*
-void ep_pck(ep_t r, const ep_t p) {
-	int b = fp_get_bit(p->y, 0);
-	fp_copy(r->x, p->x);
-	fp_zero(r->y);
-	fp_set_bit(r->y, 0, b);
-	fp_set_dig(r->z, 1);
-	r->coord = BASIC;
-}
-
-int ep_upk(ep_t r, const ep_t p) {
-	fp_t t;
-	int result = 0;
-
-	fp_null(t);
-
-	RLC_TRY {
-		fp_new(t);
-
-		ep_rhs(t, p);
-
-		// t0 = sqrt(x1^3 + a * x1 + b).
-		result = fp_srt(t, t);
-
-		if (result) {
-			// Verify if least significant bit of the result matches the
-			// compressed y-coordinate.
-			if (fp_get_bit(t, 0) != fp_get_bit(p->y, 0)) {
-				fp_neg(t, t);
-			}
-			fp_copy(r->x, p->x);
-			fp_copy(r->y, t);
-			fp_set_dig(r->z, 1);
-			r->coord = BASIC;
-		}
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		fp_free(t);
-	}
-	return result;
-}
-*/
-//[!CHIA_EDIT_END]

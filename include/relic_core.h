@@ -446,7 +446,6 @@ ctx_t *core_get(void);
  */
 void core_set(ctx_t *ctx);
 
-// [!CHIA_EDIT_START]
 #if MULTI != RELIC_NONE
 /**
  * Set an initializer function which is called when the context
@@ -457,6 +456,5 @@ void core_set(ctx_t *ctx);
  */
 void core_set_thread_initializer(void (*init)(void *init_ptr), void *init_ptr);
 #endif
-// [!CHIA_EDIT_END]
 
 #endif /* !RLC_CORE_H */
