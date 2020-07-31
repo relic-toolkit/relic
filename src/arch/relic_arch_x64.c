@@ -36,10 +36,12 @@
 
 #include "lzcnt.inc"
 
+#if TIMER == CYCLE
 /**
  * Renames the inline assembly macro to a prettier name.
  */
 #define asm					__asm__ volatile
+#endif
 
 /*============================================================================*/
 /* Private definitions                                                        */
@@ -62,6 +64,7 @@ void arch_clean(void) {
 	lzcnt_ptr = NULL;
 }
 
+#if TIMER == CYCLE
 ull_t arch_cycles(void) {
 	unsigned int hi, lo;
 	asm (
@@ -73,6 +76,7 @@ ull_t arch_cycles(void) {
 	);
 	return ((ull_t) lo) | (((ull_t) hi) << 32);
 }
+#endif
 
 unsigned int arch_lzcnt(dig_t x) {
 	return lzcnt_ptr((ull_t)x) - (8 * sizeof(ull_t) - WSIZE);
