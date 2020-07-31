@@ -153,8 +153,9 @@ int main(int argc, char *argv[]) {
 	uint64_t expected[GROUPS] = {0, 0, 0};
 	uint64_t observed[STATES][GROUPS];
 	uint64_t ratios[STATES][GROUPS];
+	dig_t ft[STATES];
 	bn_t res, t[STATES], sk[STATES], m[STATES][3 * GROUPS * DAYS];
-	g1_t u, sig, sigs[STATES][3 * GROUPS * DAYS];
+	g1_t u, sig, sigs[STATES][3 * GROUPS * DAYS], cs[STATES];
 	g2_t pk[STATES];
 	char *l[STATES][3 * GROUPS * DAYS];
 	dig_t *f[STATES];
@@ -187,6 +188,8 @@ int main(int argc, char *argv[]) {
 			bn_new(t[i]);
 			bn_null(sk[i]);
 			bn_new(sk[i]);
+			g1_null(cs[i]);
+			g1_new(cs[i]);
 			g2_null(sk[i]);
 			g2_new(sk[i]);
 			cp_mklhs_gen(sk[i], pk[i]);
@@ -289,9 +292,16 @@ int main(int argc, char *argv[]) {
 			g1_add(sig, sig, u);
 		}
 		g1_norm(sig, sig);
-		assert(cp_mklhs_ver(sig, res, t, DATABASE, &l[0][2 * GROUPS * DAYS], f, flen, pk, STATES));
 
 		printf("Total Observed: %6lu\n", res->dp[0]);
+
+		assert(cp_mklhs_ver(sig, res, t, DATABASE, &l[0][2 * GROUPS * DAYS], f, flen, pk, STATES));
+		BENCH_ONCE("Time elapsed", cp_mklhs_ver(sig, res, t, DATABASE, &l[0][2 * GROUPS * DAYS], f, flen, pk, STATES));
+
+		cp_mklhs_off(cs, ft, &l[0][2 * GROUPS * DAYS], f, flen, STATES);
+		assert(cp_mklhs_onv(sig, res, t, DATABASE, cs, ft, pk, STATES));
+		BENCH_ONCE("Time with precomputation", cp_mklhs_onv(sig, res, t, DATABASE, cs, ft, pk, STATES));
+
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
@@ -302,6 +312,7 @@ int main(int argc, char *argv[]) {
 			RLC_FREE(f[i]);
 			bn_free(t[i]);
 			bn_free(sk[i]);
+			g1_free(cs[i]);
 			g2_free(pk[i]);
 			for (int j = 0; j < GROUPS; j++) {
 				for (int k = 0; k < 3 * DAYS; k++) {
