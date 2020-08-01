@@ -362,7 +362,7 @@ void bn_write_str(char *str, int len, const bn_t a, int radix) {
 		}
 
 		digits = 0;
-		while (!bn_is_zero(t)) {
+		while (!bn_is_zero(t) && j < len) {
 			bn_div_rem_dig(t, &d, t, (dig_t)radix);
 			str[j] = util_conv_char(d);
 			digits++;

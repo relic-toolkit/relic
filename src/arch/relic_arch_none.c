@@ -48,14 +48,14 @@ ull_t arch_cycles(void) {
 unsigned int arch_lzcnt(dig_t a) {
 #if WSIZE == 8 || WSIZE == 16
 	static const uint8_t table[16] = {
-		8, 7, 6, 6, 5, 5, 5, 1, 1, 1, 1, 1, 1, 1, 1, 1
+		4, 3, 2, 2, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0
 	};
 #endif
 #if WSIZE == 8
 	if (a >> 4 == 0) {
-		return table[a & 0xF];
+		return table[a & 0xF] + 4;
 	} else {
-		return table[a >> 4] + 4;
+		return table[a >> 4];
 	}
 	return 0;
 #elif WSIZE == 16
