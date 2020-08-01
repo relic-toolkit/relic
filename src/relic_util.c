@@ -151,8 +151,8 @@ int util_cmp_const(const void *a, const void *b, int size) {
 	return (result == 0 ? RLC_EQ : RLC_NE);
 }
 
-void util_print(const char *format, ...) {
 #ifndef QUIET
+void util_print(const char *format, ...) {
 #if ARCH == AVR && !defined(OPSYS)
 	util_print_ptr = print_buf + 1;
 	va_list list;
@@ -184,8 +184,8 @@ void util_print(const char *format, ...) {
 	fflush(stdout);
 	va_end(list);
 #endif
-#endif
 }
+#endif
 
 void util_print_dig(dig_t a, int pad) {
 #if RLC_DIG == 64

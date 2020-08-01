@@ -36,7 +36,23 @@
 /*============================================================================*/
 
 void ep_pck(ep_t r, const ep_t p) {
-	int b = fp_get_bit(p->y, 0);
+	bn_t halfQ;
+	bn_null(halfQ);
+	bn_new(halfQ);
+	halfQ->used = RLC_FP_DIGS;
+	dv_copy(halfQ->dp, fp_prime_get(), RLC_FP_DIGS);
+	bn_hlv(halfQ, halfQ);
+
+	bn_t yValue;
+	bn_null(yValue);
+	bn_new(yValue);
+	fp_prime_back(yValue, p->y);
+
+	int b = bn_cmp(yValue, halfQ) == RLC_GT;
+
+	bn_free(yValue);
+	bn_free(halfQ);
+
 	fp_copy(r->x, p->x);
 	fp_zero(r->y);
 	fp_set_bit(r->y, 0, b);
@@ -46,9 +62,13 @@ void ep_pck(ep_t r, const ep_t p) {
 
 int ep_upk(ep_t r, const ep_t p) {
 	fp_t t;
+	bn_t halfQ;
+	bn_t yValue;
 	int result = 0;
 
 	fp_null(t);
+	bn_null(halfQ);
+	bn_null(yValue);
 
 	RLC_TRY {
 		fp_new(t);
@@ -59,9 +79,18 @@ int ep_upk(ep_t r, const ep_t p) {
 		result = fp_srt(t, t);
 
 		if (result) {
-			/* Verify if least significant bit of the result matches the
+			/* Verify whether the y coordinate is the larger one, matches the
 			 * compressed y-coordinate. */
-			if (fp_get_bit(t, 0) != fp_get_bit(p->y, 0)) {
+			bn_new(halfQ);
+			halfQ->used = RLC_FP_DIGS;
+			dv_copy(halfQ->dp, fp_prime_get(), RLC_FP_DIGS);
+			bn_hlv(halfQ, halfQ);
+
+			bn_new(yValue);
+			fp_prime_back(yValue, t);
+			int b = bn_cmp(yValue, halfQ) == RLC_GT;
+
+			if (b != fp_get_bit(p->y, 0)) {
 				fp_neg(t, t);
 			}
 			fp_copy(r->x, p->x);
@@ -75,6 +104,8 @@ int ep_upk(ep_t r, const ep_t p) {
 	}
 	RLC_FINALLY {
 		fp_free(t);
+		bn_free(yValue);
+		bn_free(halfQ);
 	}
 	return result;
 }
