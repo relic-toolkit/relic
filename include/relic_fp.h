@@ -82,6 +82,8 @@ enum {
 	PRIME_22605,
 	/* Curve1174 251-bit prime modulus. */
 	PRIME_25109,
+	/** Prime with high 2-adicity for curve Tweedledum. */
+	PRIME_H2ADC,
 	/** Curve25519 255-bit prime modulus. */
 	PRIME_25519,
 	/** NIST 256-bit fast reduction polynomial. */
@@ -543,6 +545,13 @@ int fp_param_set_any_pmers(void);
  * @return RLC_OK if no errors occurred; RLC_ERR otherwise.
  */
 int fp_param_set_any_tower(void);
+
+/**
+ * Assigns the order of the prime field to a prime with high 2-adicity..
+ *
+ * @return RLC_OK if no errors occurred; RLC_ERR otherwise.
+ */
+int fp_param_set_any_h2adc(void);
 
 /**
  * Prints the currently configured prime modulus.

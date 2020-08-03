@@ -363,12 +363,10 @@ void eb_param_set(int param) {
 }
 
 int eb_param_set_any(void) {
-	int r0, r1;
-
-	r0 = eb_param_set_any_plain();
-	if (r0 == RLC_ERR) {
-		r1 = eb_param_set_any_kbltz();
-		if (r1 == RLC_ERR) {
+	int r = eb_param_set_any_plain();
+	if (r == RLC_ERR) {
+		r = eb_param_set_any_kbltz();
+		if (r == RLC_ERR) {
 			return RLC_ERR;
 		}
 	}

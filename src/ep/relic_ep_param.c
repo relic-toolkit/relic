@@ -365,6 +365,23 @@
 /** @} */
 #endif
 
+#if defined(EP_ENDOM) && FP_PRIME == 255
+/**
+ * Parameters for a 255-bit crve with high 2-adicity.
+ */
+/** @{ */
+#define TWEEDLEDUM_A	"0"
+#define TWEEDLEDUM_B	"5"
+#define TWEEDLEDUM_X	"14733B283272574E23931F358A0354B7BCD5C765CC1FCEACC3B3D1A0C495C9E"
+#define TWEEDLEDUM_Y	"D27E5D5B7C3AFAED0754EA62B947B23546EBF597530A7369EDC466E456761D8"
+#define TWEEDLEDUM_R	"40000000000000000000000000000000038AA127696286C9842CAFD400000001"
+#define TWEEDLEDUM_H	"1"
+#define TWEEDLEDUM_BETA	"1508415AB5E97C949BEBC9146EF83D9A7881FB239BA41A268598ABB3A410C9C8"
+#define TWEEDLEDUM_LAMB	"36C66D3A1E049A5887AD8B5FF9731FFE69CF8DE720E52EC14394C2BD148FA4FD"
+#define TWEEDLEDUM_MAPU	"-1"
+/** @} */
+#endif
+
 #if defined(EP_ENDOM) && FP_PRIME == 256
 /**
  * Parameters for a 256-bit pairing-friendly prime curve.
@@ -849,6 +866,12 @@ void ep_param_set(int param) {
 				plain = 1;
 				break;
 #endif
+#if defined(EP_ENDOM) && FP_PRIME == 255
+			case TWEEDLEDUM:
+				ASSIGNK(TWEEDLEDUM, PRIME_H2ADC);
+				endom = 1;
+				break;
+#endif
 #if defined(EP_PLAIN) && FP_PRIME == 256
 			case NIST_P256:
 				ASSIGN(NIST_P256, NIST_256);
@@ -1048,14 +1071,12 @@ void ep_param_set(int param) {
 }
 
 int ep_param_set_any(void) {
-	int r0, r1, r2;
-
-	r0 = ep_param_set_any_plain();
-	if (r0 == RLC_ERR) {
-		r1 = ep_param_set_any_endom();
-		if (r1 == RLC_ERR) {
-			r2 = ep_param_set_any_pairf();
-			if (r2 == RLC_ERR) {
+	int r = ep_param_set_any_plain();
+	if (r == RLC_ERR) {
+		r = ep_param_set_any_endom();
+		if (r == RLC_ERR) {
+			r = ep_param_set_any_pairf();
+			if (r == RLC_ERR) {
 				return RLC_ERR;
 			}
 		}
@@ -1112,6 +1133,8 @@ int ep_param_set_any_endom(void) {
 	ep_param_set(SECG_K224);
 #elif FP_PRIME == 254
 	ep_param_set(BN_P254);
+#elif FP_PRIME == 255
+	ep_param_set(TWEEDLEDUM);
 #elif FP_PRIME == 256
 	ep_param_set(SECG_K256);
 #elif FP_PRIME == 381
@@ -1302,6 +1325,9 @@ void ep_param_print(void) {
 		case BN_P254:
 			util_banner("Curve BN-P254:", 0);
 			break;
+		case TWEEDLEDUM:
+			util_banner("Curve Tweedledum:", 0);
+			break;
 		case BN_P256:
 			util_banner("Curve BN-P256:", 0);
 			break;
@@ -1381,6 +1407,7 @@ int ep_param_level(void) {
 		case NIST_P256:
 		case SECG_K256:
 		case CURVE_25519:
+		case TWEEDLEDUM:
 			return 128;
 		case B12_P381:
 		case BN_P382:

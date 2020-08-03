@@ -36,7 +36,14 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-#if FP_PRIME == 256
+#if FP_PRIME == 255
+
+/**
+ * Primes with high 2-adicity for curves Tweedledum and Tweedledee.
+ */
+#define STR_H2ADC	"38AA1276C3F59B9A14064E2"
+
+#elif FP_PRIME == 256
 /**
  * Random prime modulus for the Brainpool P256r1.
  */
@@ -186,6 +193,14 @@ void fp_param_set(int param) {
 			case PRIME_25519:
 				bn_set_2b(p, 255);
 				bn_sub_dig(p, p, 19);
+				fp_prime_set_dense(p);
+				break;
+			case PRIME_H2ADC:
+				bn_set_2b(p, 222);
+				bn_read_str(t0, STR_H2ADC, strlen(STR_H2ADC), 16);
+				bn_add(p, p, t0);
+				bn_lsh(p, p, 32);
+				bn_add_dig(p, p, 1);
 				fp_prime_set_dense(p);
 				break;
 #elif FP_PRIME == 256
@@ -478,71 +493,19 @@ void fp_param_set(int param) {
 }
 
 int fp_param_set_any(void) {
-#if FP_PRIME == 158
-	fp_param_set(BN_158);
-#elif FP_PRIME == 160
-	fp_param_set(SECG_160);
-#elif FP_PRIME == 192
-	fp_param_set(NIST_192);
-#elif FP_PRIME == 221
-	fp_param_set(PRIME_22103);
-#elif FP_PRIME == 224
-	fp_param_set(NIST_224);
-#elif FP_PRIME == 226
-	fp_param_set(PRIME_22605);
-#elif FP_PRIME == 254
-	fp_param_set(BN_254);
-#elif FP_PRIME == 251
-	fp_param_set(PRIME_25109);
-#elif FP_PRIME == 255
-	fp_param_set(PRIME_25519);
-#elif FP_PRIME == 256
-#ifdef FP_PMERS
-	fp_param_set(SECG_256);
-#else
-	fp_param_set(BN_256);
-#endif
-#elif FP_PRIME == 381
-	fp_param_set(B12_381);
-#elif FP_PRIME == 382
-	fp_param_set(BN_382);
-#elif FP_PRIME == 383
-	fp_param_set(PRIME_383187);
-#elif FP_PRIME == 384
-	fp_param_set(NIST_384);
-#elif FP_PRIME == 446
-#ifdef FP_QNRES
-	fp_param_set(B12_446);
-#else
-	fp_param_set(BN_446);
-#endif
-#elif FP_PRIME == 455
-	fp_param_set(B12_455);
-#elif FP_PRIME == 477
-	fp_param_set(B24_477);
-#elif FP_PRIME == 508
-	fp_param_set(KSS_508);
-#elif FP_PRIME == 511
-	fp_param_set(OT_511);
-#elif FP_PRIME == 544
-	fp_param_set(CP8_544);
-#elif FP_PRIME == 569
-	fp_param_set(K54_569);
-#elif FP_PRIME == 521
-	fp_param_set(NIST_521);
-#elif FP_PRIME == 575
-	fp_param_set(B48_575);
-#elif FP_PRIME == 638
-#ifdef FP_QNRES
-	fp_param_set(B12_638);
-#else
-	fp_param_set(BN_638);
-#endif
-#elif FP_PRIME == 1536
-	fp_param_set(SS_1536);
-#else
-	return fp_param_set_any_dense();
-#endif
+	int r = fp_param_set_any_pmers();
+	if (r == RLC_ERR) {
+		r = fp_param_set_any_h2adc();
+		if (r == RLC_ERR) {
+			r = fp_param_set_any_tower();
+			if (r == RLC_ERR) {
+				r = fp_param_set_any_dense();
+				if (r == RLC_ERR) {
+					return RLC_ERR;
+				}
+			}
+		}
+	}
 	return RLC_OK;
 }
 
@@ -589,6 +552,15 @@ int fp_param_set_any_pmers(void) {
 	fp_param_set(NIST_384);
 #elif FP_PRIME == 521
 	fp_param_set(NIST_521);
+#else
+	return RLC_ERR;
+#endif
+	return RLC_OK;
+}
+
+int fp_param_set_any_h2adc(void) {
+#if FP_PRIME == 255
+	fp_param_set(PRIME_H2ADC);
 #else
 	return RLC_ERR;
 #endif
