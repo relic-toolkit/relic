@@ -179,7 +179,7 @@ dig_t fp_subd_low(dig_t *c, const dig_t *a, const dig_t *b) {
 }
 
 void fp_negm_low(dig_t *c, const dig_t *a) {
-	if (fp_is_zero((const fp_t)a)) {
+	if (fp_is_zero(a)) {
 		fp_zero(c);
 	} else {
 		fp_subn_low(c, fp_prime_get(), a);
