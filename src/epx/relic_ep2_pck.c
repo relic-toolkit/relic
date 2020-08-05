@@ -37,30 +37,37 @@
 /*============================================================================*/
 
 void ep2_pck(ep2_t r, ep2_t p) {
-	bn_t halfQ;
-	bn_null(halfQ);
-	bn_new(halfQ);
-	halfQ->used = RLC_FP_DIGS;
-	dv_copy(halfQ->dp, fp_prime_get(), RLC_FP_DIGS);
-	bn_hlv(halfQ, halfQ);
+	bn_t halfQ, yValue;
 
-	bn_t yValue;
-	bn_null(yValue);
-	bn_new(yValue);
-	fp_prime_back(yValue, p->y[1]);
+        bn_null(halfQ);
+        bn_null(yValue);
 
-	int b = bn_cmp(yValue, halfQ) == RLC_GT;
+	RLC_TRY {
+		bn_new(halfQ);
+		bn_new(yValue);
 
-	fp2_copy(r->x, p->x);
-	fp2_zero(r->y);
-	fp_set_bit(r->y[0], 0, b);
-	fp_zero(r->y[1]);
-	fp_set_dig(r->z[0], 1);
-	fp_zero(r->z[1]);
-	r->coord = BASIC;
+	        halfQ->used = RLC_FP_DIGS;
+	        dv_copy(halfQ->dp, fp_prime_get(), RLC_FP_DIGS);
+	        bn_hlv(halfQ, halfQ);
 
-	bn_free(yValue);
-	bn_free(halfQ);
+	        fp_prime_back(yValue, p->y[1]);
+
+	        int b = bn_cmp(yValue, halfQ) == RLC_GT;
+
+	        fp2_copy(r->x, p->x);
+	        fp2_zero(r->y);
+	        fp_set_bit(r->y[0], 0, b);
+	        fp_zero(r->y[1]);
+	        fp_set_dig(r->z[0], 1);
+	        fp_zero(r->z[1]);
+	        r->coord = BASIC;
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		bn_free(yValue);
+		bn_free(halfQ);
+	}
 }
 
 int ep2_upk(ep2_t r, ep2_t p) {
@@ -75,6 +82,8 @@ int ep2_upk(ep2_t r, ep2_t p) {
 
 	RLC_TRY {
 		fp2_new(t);
+		bn_new(halfQ);
+		bn_new(yValue);
 
 		ep2_rhs(t, p);
 
@@ -84,12 +93,10 @@ int ep2_upk(ep2_t r, ep2_t p) {
 		if (result) {
 			/* Verify whether the y coordinate is the larger one, matches the
 			 * compressed y-coordinate. */
-			bn_new(halfQ);
 			halfQ->used = RLC_FP_DIGS;
 			dv_copy(halfQ->dp, fp_prime_get(), RLC_FP_DIGS);
 			bn_hlv(halfQ, halfQ);
 
-			bn_new(yValue);
 			fp_prime_back(yValue, t[1]);
 
 			int b = bn_cmp(yValue, halfQ) == RLC_GT;
