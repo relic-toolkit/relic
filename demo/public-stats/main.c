@@ -61,47 +61,49 @@ uint64_t populations[STATES] = {
 	2172591, 312719, 84913, 84667
 };
 
-uint64_t pyramid[GROUPS] = {37643844, 4482743, 4566276};
+uint64_t pyramid[GROUPS] = { 37643844, 4482743, 4566276 };
 
 char *acronyms[STATES] = {
 	"AN", "AR", "AS", "IB", "CN", "CB", "CL", "CM", "CT", "VC",
 	"EX", "GA", "MD", "MC", "NC", "PV", "RI", "CE", "ML"
 };
 
-char *regions[STATES] = {
-	"Andalusia", "Aragón", "Asturias", "Balearics", "Canary Islands", "Cantabria", "Castile & León",
-	"Castile-La Mancha", "Catalonia", "Valencia", "Extremadura", "Galicia", "Madrid", "Murcia",
+char *acs[STATES] = {
+	"Andalusia", "Aragón", "Asturias", "Balearics", "Canary Islands",
+	"Cantabria", "Castile & León", "Castile-La Mancha", "Catalonia",
+	"Valencia", "Extremadura", "Galicia", "Madrid", "Murcia",
 	"Navarre", "Basque Country", "La Rioja", "Ceuta", "Melilla"
 };
 
 /* Population pyramids for autonomous communities, taken from countryeconomy.com */
 double pyramids[STATES][GROUPS] = {
-	{15.86+66.98, 9.06, 17.16-9.06},
-	{14.12+64.23, 10.26, 21.65-10.26},
-	{10.97+63.37, 12.82, 25.66-12.82},
-	{14.89+69.29, 8.62, 15.82-8.62},
-	{13.20+70.57, 8.91, 16.22-8.91},
-	{13.29+64.81, 11.11, 21.90-11.11},
-	{11.94+62.83, 11.41, 25.23-11.41},
-	{15.11+65.91, 8.80, 18.99-8.80},
-	{15.53+65.36, 9.69, 19.12-9.69},
-	{14.87+65.62, 10.15, 19.51-10.15},
-	{13.66+65.70, 9.78, 20.64-9.78},
-	{11.87+62.96, 11.90, 25.16-11.90},
-	{15.48+66.66, 9.13, 18.86-9.13},
-	{17.18+67.04, 8.19, 15.78-8.19},
-	{15.51+64.69, 9.88, 19.80-9.88},
-	{13.20+70.57, 8.91, 16.22-8.91},
-	{11.87+62.96, 11.90, 25.16-11.90},
-	{20.42+67.57, 6.58, 12.02-6.58},
-	{15.48+66.66, 9.13, 17.86-9.13},
+	{15.86 + 66.98, 9.06, 17.16 - 9.06},
+	{14.12 + 64.23, 10.26, 21.65 - 10.26},
+	{10.97 + 63.37, 12.82, 25.66 - 12.82},
+	{14.89 + 69.29, 8.62, 15.82 - 8.62},
+	{13.20 + 70.57, 8.91, 16.22 - 8.91},
+	{13.29 + 64.81, 11.11, 21.90 - 11.11},
+	{11.94 + 62.83, 11.41, 25.23 - 11.41},
+	{15.11 + 65.91, 8.80, 18.99 - 8.80},
+	{15.53 + 65.36, 9.69, 19.12 - 9.69},
+	{14.87 + 65.62, 10.15, 19.51 - 10.15},
+	{13.66 + 65.70, 9.78, 20.64 - 9.78},
+	{11.87 + 62.96, 11.90, 25.16 - 11.90},
+	{15.48 + 66.66, 9.13, 18.86 - 9.13},
+	{17.18 + 67.04, 8.19, 15.78 - 8.19},
+	{15.51 + 64.69, 9.88, 19.80 - 9.88},
+	{13.20 + 70.57, 8.91, 16.22 - 8.91},
+	{11.87 + 62.96, 11.90, 25.16 - 11.90},
+	{20.42 + 67.57, 6.58, 12.02 - 6.58},
+	{15.48 + 66.66, 9.13, 17.86 - 9.13},
 	//{80.55, 9.59, 9.77} //Spain
 };
 
 /* Read data from CSV in a given time interval. */
-void read_region(g1_t s[], char *l[], bn_t m[], int *counter, uint64_t metric[3],
-		const char *file, int region, char *start, char *end, bn_t sk) {
-    FILE* stream = fopen(file, "r");
+void read_region(g1_t s[], char *l[], bn_t m[], int *counter,
+		uint64_t metric[3], const char *file, int region, char *start,
+		char *end, bn_t sk) {
+	FILE *stream = fopen(file, "r");
 	int found = 0;
 	char line[1024];
 	char str[3];
@@ -110,17 +112,18 @@ void read_region(g1_t s[], char *l[], bn_t m[], int *counter, uint64_t metric[3]
 
 	found = 0;
 	sprintf(str, "%d", region);
-    while (fgets(line, 1024, stream)) {
+	while (fgets(line, 1024, stream)) {
 		if (strstr(line, start) != NULL) {
 			found = 1;
 		}
 		if (strstr(line, end) != NULL) {
 			found = 0;
 		}
-        char **tmp = parse_csv(line);
+		char **tmp = parse_csv(line);
 		char **ptr = tmp;
 
-		if (found && !strcmp(ptr[2], str) && !strcmp(ptr[5], "todos") && strcmp(ptr[7], "todos")) {
+		if (found && !strcmp(ptr[2], str) && !strcmp(ptr[5], "todos") &&
+				strcmp(ptr[7], "todos")) {
 			n = atoi(ptr[9]);
 			//printf("%s\n", line);
 			if (strcmp(ptr[6], "menos_65") == 0) {
@@ -138,19 +141,20 @@ void read_region(g1_t s[], char *l[], bn_t m[], int *counter, uint64_t metric[3]
 
 			bn_set_dig(m[*counter], n);
 			l[*counter] = strdup(ptr[8]);
-			cp_mklhs_sig(s[*counter], m[*counter], DATABASE, l[*counter], sk);
+			cp_mklhs_sig(s[*counter], m[*counter], DATABASE, acs[region - 1],
+				l[*counter], sk);
 			(*counter)++;
 		}
 
 		free_csv_line(tmp);
-    }
+	}
 	fclose(stream);
 }
 
 int main(int argc, char *argv[]) {
-	uint64_t baseline[GROUPS] = {0, 0, 0};
-	uint64_t mortality[GROUPS] = {0, 0, 0};
-	uint64_t expected[GROUPS] = {0, 0, 0};
+	uint64_t baseline[GROUPS] = { 0, 0, 0 };
+	uint64_t mortality[GROUPS] = { 0, 0, 0 };
+	uint64_t expected[GROUPS] = { 0, 0, 0 };
 	uint64_t observed[STATES][GROUPS];
 	uint64_t ratios[STATES][GROUPS];
 	dig_t ft[STATES];
@@ -195,11 +199,11 @@ int main(int argc, char *argv[]) {
 			cp_mklhs_gen(sk[i], pk[i]);
 			for (int j = 0; j < GROUPS; j++) {
 				for (int k = 0; k < 3 * DAYS; k++) {
-					bn_null(m[i][j*3*DAYS + k]);
-					bn_new(m[i][j*3*DAYS + k]);
-					g1_null(sigs[i][j*3*DAYS + k]);
-					g1_new(sigs[i][j*3*DAYS + k]);
-					l[i][j*3*DAYS + k] = NULL;
+					bn_null(m[i][j * 3 * DAYS + k]);
+					bn_new(m[i][j * 3 * DAYS + k]);
+					g1_null(sigs[i][j * 3 * DAYS + k]);
+					g1_new(sigs[i][j * 3 * DAYS + k]);
+					l[i][j * 3 * DAYS + k] = NULL;
 				}
 			}
 		}
@@ -207,36 +211,43 @@ int main(int argc, char *argv[]) {
 		/* Compute population of every age group in each autonomous community. */
 		for (int i = 0; i < STATES; i++) {
 			for (int j = 0; j < GROUPS; j++) {
-				ratios[i][j] = pyramids[i][j]/100.0 * populations[i];
+				ratios[i][j] = pyramids[i][j] / 100.0 * populations[i];
 			}
 		}
 
 		for (int i = 0; i < STATES; i++) {
 			counter = 0;
 			observed[i][0] = observed[i][1] = observed[i][2] = 0;
-			read_region(sigs[i], l[i], m[i], &counter, baseline, "data_04_13.csv", i+1, BEG_2018, END_2018, sk[i]);
-			read_region(sigs[i], l[i], m[i], &counter, baseline, "data_04_13.csv", i+1, BEG_2019, END_2019, sk[i]);
-			read_region(sigs[i], l[i], m[i], &counter, observed[i], "data.csv", i+1, BEG_2020, END_2020, sk[i]);
+			read_region(sigs[i], l[i], m[i], &counter, baseline,
+					"data_04_13.csv", i + 1, BEG_2018, END_2018, sk[i]);
+			read_region(sigs[i], l[i], m[i], &counter, baseline,
+					"data_04_13.csv", i + 1, BEG_2019, END_2019, sk[i]);
+			read_region(sigs[i], l[i], m[i], &counter, observed[i], "data.csv",
+					i + 1, BEG_2020, END_2020, sk[i]);
 		}
 
 		for (int j = 0; j < GROUPS; j++) {
-			mortality[j] = FIXED*FACTOR/(2*pyramid[j]) * baseline[j];
+			mortality[j] = FIXED * FACTOR / (2 * pyramid[j]) * baseline[j];
 		}
 
 		total = excess = 0;
 		for (int i = 0; i < STATES; i++) {
-			printf("%s -- %s:\n", acronyms[i], regions[i]);
+			printf("%s -- %s:\n", acronyms[i], acs[i]);
 
 			for (int j = 0; j < GROUPS; j++) {
 				//expected[j] = (FIXED * ratios[i][j]/(2*pyramid[j])) * baseline[j];
-				expected[j] = mortality[j] * ratios[i][j]/(FIXED*FACTOR);
+				expected[j] = mortality[j] * ratios[i][j] / (FIXED * FACTOR);
 			}
 
-			printf("\texpected : %lu %lu %lu\n", expected[0], expected[1], expected[2]);
-			printf("\tobserved : %lu %lu %lu\n", observed[i][0], observed[i][1], observed[i][2]);
+			printf("\texpected : %lu %lu %lu\n", expected[0], expected[1],
+					expected[2]);
+			printf("\tobserved : %lu %lu %lu\n", observed[i][0], observed[i][1],
+					observed[i][2]);
 
-			printf("\ttotal expected: %lu\n", (expected[0] + expected[1] + expected[2])/FIXED);
-			printf("\ttotal observed: %lu\n", observed[i][0] + observed[i][1] + observed[i][2]);
+			printf("\ttotal expected: %lu\n",
+					(expected[0] + expected[1] + expected[2]) / FIXED);
+			printf("\ttotal observed: %lu\n",
+					observed[i][0] + observed[i][1] + observed[i][2]);
 
 			total += (expected[0] + expected[1] + expected[2]);
 			excess += (observed[i][0] + observed[i][1] + observed[i][2]);
@@ -244,9 +255,12 @@ int main(int argc, char *argv[]) {
 
 		util_banner("Plaintext computation:", 1);
 
-		printf("Baseline : %6lu %6lu %6lu\n", baseline[0]/2, baseline[1]/2, baseline[2]/2);
-		printf("Demograph: %6lu %6lu %6lu\n", pyramid[0]/FACTOR, pyramid[1]/FACTOR, pyramid[2]/FACTOR);
-		printf("Mortality: %6lu %6lu %6lu\n", mortality[0]/FIXED, mortality[1]/FIXED, mortality[2]/FIXED);
+		printf("Baseline : %6lu %6lu %6lu\n", baseline[0] / 2, baseline[1] / 2,
+				baseline[2] / 2);
+		printf("Demograph: %6lu %6lu %6lu\n", pyramid[0] / FACTOR,
+				pyramid[1] / FACTOR, pyramid[2] / FACTOR);
+		printf("Mortality: %6lu %6lu %6lu\n", mortality[0] / FIXED,
+				mortality[1] / FIXED, mortality[2] / FIXED);
 		printf("Total Expected: %6lu\n", total);
 		printf("Total Observed: %6lu\n", excess);
 
@@ -260,10 +274,11 @@ int main(int argc, char *argv[]) {
 			for (int j = 0; j < GROUPS; j++) {
 				total = 0;
 				for (int k = 0; k < STATES; k++) {
-					total += FIXED * ratios[k][j]/(2*pyramid[j]);
+					total += FIXED * ratios[k][j] / (2 * pyramid[j]);
 				}
 				for (int k = 0; k < DAYS; k++) {
-					f[i][j*DAYS + k] = f[i][j*DAYS + GROUPS*DAYS + k] = total;
+					f[i][j * DAYS + k] = f[i][j * DAYS + GROUPS * DAYS + k] =
+							total;
 				}
 			}
 			cp_mklhs_fun(t[i], m[i], f[i], 2 * GROUPS * DAYS);
@@ -272,9 +287,10 @@ int main(int argc, char *argv[]) {
 			g1_add(sig, sig, u);
 		}
 		g1_norm(sig, sig);
-		assert(cp_mklhs_ver(sig, res, t, DATABASE, l[0], f, flen, pk, STATES));
+		assert(cp_mklhs_ver(sig, res, t, DATABASE, acs, l[0], f, flen,
+			pk, STATES));
 
-		printf("Total Expected: %6lu\n", res->dp[0]/FIXED);
+		printf("Total Expected: %6lu\n", res->dp[0] / FIXED);
 
 		bn_zero(res);
 		g1_set_infty(u);
@@ -283,7 +299,7 @@ int main(int argc, char *argv[]) {
 			flen[i] = GROUPS * DAYS;
 			for (int j = 0; j < GROUPS; j++) {
 				for (int k = 0; k < DAYS; k++) {
-					f[i][j*DAYS + k] = 1;
+					f[i][j * DAYS + k] = 1;
 				}
 			}
 			cp_mklhs_fun(t[i], &m[i][2 * GROUPS * DAYS], f[i], GROUPS * DAYS);
@@ -295,12 +311,15 @@ int main(int argc, char *argv[]) {
 
 		printf("Total Observed: %6lu\n", res->dp[0]);
 
-		assert(cp_mklhs_ver(sig, res, t, DATABASE, &l[0][2 * GROUPS * DAYS], f, flen, pk, STATES));
-		BENCH_ONCE("Time elapsed", cp_mklhs_ver(sig, res, t, DATABASE, &l[0][2 * GROUPS * DAYS], f, flen, pk, STATES));
+		assert(cp_mklhs_ver(sig, res, t, DATABASE, acs,
+				&l[0][2 * GROUPS * DAYS], f, flen, pk, STATES));
+		BENCH_ONCE("Time elapsed", cp_mklhs_ver(sig, res, t, DATABASE, acs,
+				&l[0][2 * GROUPS * DAYS], f, flen, pk, STATES));
 
-		cp_mklhs_off(cs, ft, &l[0][2 * GROUPS * DAYS], f, flen, STATES);
+		cp_mklhs_off(cs, ft, acs, &l[0][2 * GROUPS * DAYS], f, flen, STATES);
 		assert(cp_mklhs_onv(sig, res, t, DATABASE, cs, ft, pk, STATES));
-		BENCH_ONCE("Time with precomputation", cp_mklhs_onv(sig, res, t, DATABASE, cs, ft, pk, STATES));
+		BENCH_ONCE("Time with precomputation", cp_mklhs_onv(sig, res, t,
+			DATABASE, cs, ft, pk, STATES));
 
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -316,9 +335,9 @@ int main(int argc, char *argv[]) {
 			g2_free(pk[i]);
 			for (int j = 0; j < GROUPS; j++) {
 				for (int k = 0; k < 3 * DAYS; k++) {
-					bn_free(m[i][j*3*DAYS + k]);
-					g1_free(sigs[i][j*3*DAYS + k]);
-					free(l[i][j*3*DAYS + k]);
+					bn_free(m[i][j * 3 * DAYS + k]);
+					g1_free(sigs[i][j * 3 * DAYS + k]);
+					free(l[i][j * 3 * DAYS + k]);
 				}
 			}
 		}

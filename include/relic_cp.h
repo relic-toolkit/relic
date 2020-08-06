@@ -1740,11 +1740,12 @@ int cp_mklhs_gen(bn_t sk, g2_t pk);
  * @param[out] s 			- the resulting signature.
  * @param[in] m 			- the message to sign.
  * @param[in] data 			- the dataset identifier.
- * @param[in] label 		- the label.
+ * @param[in] id 			- the user identifier.
+ * @param[in] tag 			- the tag.
  * @param[in] sk 			- the private key for the signature scheme.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_mklhs_sig(g1_t s, bn_t m, char *data, char *label, bn_t sk);
+int cp_mklhs_sig(g1_t s, bn_t m, char *data, char *id, char *tag, bn_t sk);
 
 /**
  * Applies a function over a set of messages from the same user.
@@ -1775,15 +1776,16 @@ int cp_mklhs_evl(g1_t sig, g1_t s[], dig_t f[], int len);
  * @param[in] m 			- the signed message.
  * @param[in] mu			- the vector of signed messages per user.
  * @param[in] data 			- the dataset identifier.
- * @param[in] label 		- the vector of labels.
+ * @param[in] id 			- the vector of user identifiers.
+ * @param[in] tag	 		- the vector of tags.
  * @param[in] f 			- the linear coefficients in the function.
  * @param[in] flen			- the number of coefficients.
  * @param[in] pk 			- the public keys of the users.
  * @param[in] slen 			- the number of signatures.
  * @return a boolean value indicating the verification result.
  */
-int cp_mklhs_ver(g1_t sig, bn_t m, bn_t mu[], char *data, char *label[],
-	dig_t *f[], int flen[], g2_t pk[], int slen);
+int cp_mklhs_ver(g1_t sig, bn_t m, bn_t mu[], char *data, char *id[],
+	char *tag[], dig_t *f[], int flen[], g2_t pk[], int slen);
 
 /**
  * Computes the offline part of veryfying a MKLHS signature over a set of
@@ -1791,14 +1793,15 @@ int cp_mklhs_ver(g1_t sig, bn_t m, bn_t mu[], char *data, char *label[],
  *
  * @param[out] h 			- the hashes of labels
  * @param[out] ft 			- the precomputed linear coefficients.
- * @param[in] label 		- the vector of labels.
+ * @param[in] id 			- the vector of user identifiers.
+ * @param[in] tag 		- the vector of tags.
  * @param[in] f 			- the linear coefficients in the function.
  * @param[in] flen			- the number of coefficients.
  * @param[in] slen 			- the number of signatures.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_mklhs_off(g1_t h[], dig_t ft[], char *label[], dig_t *f[], int flen[],
-	int slen);
+int cp_mklhs_off(g1_t h[], dig_t ft[], char *id[], char *tag[], dig_t *f[],
+	int flen[], int slen);
 
 /**
  * Computes the online part of veryfying a MKLHS signature over a set of

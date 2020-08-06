@@ -1304,7 +1304,8 @@ static int lhs(void) {
 	g1_t a[S][L], c[S][L], r[S][L];
 	g2_t _s, s[S][L], pk[S], y[S], z[S];
 	gt_t *hs[S];
-	char *id = "id";
+	char *data = "database-identifier";
+	char *id[S] = { "Alice", "Bob" };
 	dig_t *f[S] = { NULL };
 	int flen[S];
 
@@ -1386,7 +1387,7 @@ static int lhs(void) {
 					label[l] = l;
 					bn_rand_mod(msg[j][l], n);
 					cp_cmlhs_sig(sig[j], z[j], a[j][l], c[j][l], r[j][l], s[j][l],
-						msg[j][l], id, label[l], x[j][l], h, k[j], K,
+						msg[j][l], data, label[l], x[j][l], h, k[j], K,
 						d[j], sk[j]);
 				}
 			}
@@ -1412,7 +1413,7 @@ static int lhs(void) {
 					bn_mod(m, m, n);
 				}
 			}
-			TEST_ASSERT(cp_cmlhs_ver(_r, _s, sig, z, as, cs, m, id, label,
+			TEST_ASSERT(cp_cmlhs_ver(_r, _s, sig, z, as, cs, m, data, label,
 				h, hs, f, flen, y, pk, S) == 1, end);
 		}
 		TEST_END;
@@ -1426,7 +1427,7 @@ static int lhs(void) {
 				for (int l = 0; l < L; l++) {
 					ls[l] = "l";
 					bn_rand_mod(msg[j][l], n);
-					cp_mklhs_sig(a[j][l], msg[j][l], id, ls[l],	sk[j]);
+					cp_mklhs_sig(a[j][l], msg[j][l], data, id[j], ls[l], sk[j]);
 				}
 			}
 
@@ -1450,7 +1451,7 @@ static int lhs(void) {
 				}
 			}
 
-			TEST_ASSERT(cp_mklhs_ver(_r, m, d, id, ls, f, flen, pk, S), end);
+			TEST_ASSERT(cp_mklhs_ver(_r, m, d, data, id, ls, f, flen, pk, S), end);
 		}
 		TEST_END;
 
@@ -1459,7 +1460,7 @@ static int lhs(void) {
 				cp_mklhs_gen(sk[j], pk[j]);
 				for (int l = 0; l < L; l++) {
 					bn_rand_mod(msg[j][l], n);
-					cp_mklhs_sig(a[j][l], msg[j][l], id, ls[l], sk[j]);
+					cp_mklhs_sig(a[j][l], msg[j][l], data, id[j], ls[l], sk[j]);
 				}
 			}
 
@@ -1483,8 +1484,8 @@ static int lhs(void) {
 				}
 			}
 
-			cp_mklhs_off(as, ft, ls, f, flen, S);
-			TEST_ASSERT(cp_mklhs_onv(_r, m, d, id, as, ft, pk, S), end);
+			cp_mklhs_off(as, ft, id, ls, f, flen, S);
+			TEST_ASSERT(cp_mklhs_onv(_r, m, d, data, as, ft, pk, S), end);
 
 		}
 		TEST_END;
