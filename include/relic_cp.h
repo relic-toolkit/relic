@@ -1740,7 +1740,7 @@ int cp_mklhs_gen(bn_t sk, g2_t pk);
  * @param[out] s 			- the resulting signature.
  * @param[in] m 			- the message to sign.
  * @param[in] data 			- the dataset identifier.
- * @param[in] id 			- the user identifier.
+ * @param[in] id 			- the identity.
  * @param[in] tag 			- the tag.
  * @param[in] sk 			- the private key for the signature scheme.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
@@ -1776,7 +1776,7 @@ int cp_mklhs_evl(g1_t sig, g1_t s[], dig_t f[], int len);
  * @param[in] m 			- the signed message.
  * @param[in] mu			- the vector of signed messages per user.
  * @param[in] data 			- the dataset identifier.
- * @param[in] id 			- the vector of user identifiers.
+ * @param[in] id 			- the vector of identities.
  * @param[in] tag	 		- the vector of tags.
  * @param[in] f 			- the linear coefficients in the function.
  * @param[in] flen			- the number of coefficients.
@@ -1793,7 +1793,7 @@ int cp_mklhs_ver(g1_t sig, bn_t m, bn_t mu[], char *data, char *id[],
  *
  * @param[out] h 			- the hashes of labels
  * @param[out] ft 			- the precomputed linear coefficients.
- * @param[in] id 			- the vector of user identifiers.
+ * @param[in] id 			- the vector of identities.
  * @param[in] tag 		- the vector of tags.
  * @param[in] f 			- the linear coefficients in the function.
  * @param[in] flen			- the number of coefficients.
