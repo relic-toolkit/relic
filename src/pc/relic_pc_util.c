@@ -116,6 +116,11 @@ int g1_is_valid(g1_t a) {
 }
 
 int g2_is_valid(g2_t a) {
+#if FP_PRIME >= 1536
+	if (pc_map_is_type1()) {
+		return g1_is_valid(a);
+	}
+#else
 	bn_t p, n;
 	g2_t u, v;
 	int r;
@@ -169,6 +174,7 @@ int g2_is_valid(g2_t a) {
 	}
 
 	return r;
+#endif
 }
 
 int gt_is_valid(gt_t a) {
@@ -200,7 +206,7 @@ int gt_is_valid(gt_t a) {
 			/* Compute u = a^t. */
 			gt_exp(u, a, n);
 			/* Compute v = a^(p + 1). */
-			fp12_frb(v, a, 1);
+			gt_frb(v, a, 1);
 			gt_mul(v, v, a);
 			/* Check if a^(p + 1) = a^t. */
 			r = (gt_cmp(u, v) == RLC_EQ);

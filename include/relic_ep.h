@@ -121,6 +121,8 @@ enum {
 	B12_P638,
 	/** 1536-bit supersingular curve. */
 	SS_P1536,
+	/** 3072-bit supersingular curve. */
+	SS_P3072,
 };
 
 /**
@@ -1129,6 +1131,16 @@ void ep_mul_sim_inter(ep_t r, const ep_t p, const bn_t k, const ep_t q,
  */
 void ep_mul_sim_joint(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 		const bn_t m);
+
+/**
+ * Multiplies simultaneously elements from G_2. Computes R = \Sum_i=0..n k_iP_i.
+ *
+ * @param[out] r			- the result.
+ * @param[out] p			- the G_2 elements to multiply.
+ * @param[out] k			- the integer scalars.
+ * @param[out] n			- the number of elements to multiply.
+ */
+void ep_mul_sim_lot(ep_t r, ep_t p[], const bn_t k[], int n);
 
 /**
  * Multiplies and adds the generator and a prime elliptic curve point

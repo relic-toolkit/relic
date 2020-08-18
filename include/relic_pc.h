@@ -709,6 +709,16 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
 #define g1_mul_sim(R, P, K, Q, L)	RLC_CAT(RLC_G1_LOWER, mul_sim)(R, P, K, Q, L)
 
 /**
+ * Multiplies simultaneously elements from G_1. Computes R = \Sum_i=0..n k_iP_i.
+ *
+ * @param[out] R			- the result.
+ * @param[out] P			- the G_1 elements to multiply.
+ * @param[out] K			- the integer scalars.
+ * @param[out] N			- the number of elements to multiply.
+ */
+#define g1_mul_sim_lot(R, P, K, N)	RLC_CAT(RLC_G1_LOWER, mul_sim_lot)(R, P, K, N)
+
+/**
  * Multiplies elements from G_1 by small scalars. Computes R = \sum k_iP_i.
  *
  * @param[out] R			- the result.
@@ -770,6 +780,16 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
  * @param[out] Q			- the second integer scalar.
  */
 #define g2_mul_sim_gen(R, K, Q, L)	RLC_CAT(RLC_G2_LOWER, mul_sim_gen)(R, K, Q, L)
+
+/**
+ * Exponetiates a G_T element using the i-th power Frobenius.
+ * Computes C = A^(p^i).
+ *
+ * @param[out] C			- the result.
+ * @param[in] A				- the element to exponentiate.
+ * @param[in] I				- the power of the Frobenius map.
+ */
+#define gt_frb(C, A, I)		RLC_CAT(RLC_GT_LOWER, frb)(C, A, I)
 
 /**
  * Maps a byte array to an element in G_1.

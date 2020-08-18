@@ -744,10 +744,10 @@ void ep2_mul_sim_lot(ep2_t r, ep2_t p[], const bn_t k[], int n) {
 					ep2_free(_p[4*i + j]);
 				}
 			}
+			RLC_FREE(_l);
+			RLC_FREE(_p);
+			RLC_FREE(naf);
 		}
-		RLC_FREE(_l);
-		RLC_FREE(_p);
-		RLC_FREE(naf);
 	} else {
 		const int w = RLC_MAX(2, util_bits_dig(n) - 2), c = (1 << (w - 2));
 		ep2_t s, t, u, v, *_p = RLC_ALLOCA(ep2_t, 4 * c);
@@ -843,9 +843,9 @@ void ep2_mul_sim_lot(ep2_t r, ep2_t p[], const bn_t k[], int n) {
 					ep2_free(_p[i*c + j]);
 				}
 			}
+			RLC_FREE(_l);
+			RLC_FREE(_p);
+			RLC_FREE(naf);
 		}
-		RLC_FREE(_l);
-		RLC_FREE(_p);
-		RLC_FREE(naf);
 	}
 }

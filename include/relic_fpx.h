@@ -3212,6 +3212,17 @@ void fp12_exp_dig(fp12_t c, fp12_t a, dig_t b);
 void fp12_exp_cyc(fp12_t c, fp12_t a, bn_t b);
 
 /**
+ * Computes a power of a cyclotomic quadratic extension field element.
+ *
+ * @param[out] e			- the result.
+ * @param[in] a				- the first element to exponentiate.
+ * @param[in] b				- the first exponent.
+ * @param[in] c				- the second element to exponentiate.
+ * @param[in] d				- the second exponent.
+ */
+void fp2_exp_cyc_sim(fp2_t e, fp2_t a, bn_t b, fp2_t c, bn_t d);
+
+/**
  * Computes a power of a cyclotomic dodecic extension field element.
  *
  * @param[out] e			- the result.
