@@ -1058,7 +1058,7 @@ static int simultaneous(void) {
 	bn_free(k[0]);
 	bn_free(k[1]);
 	ep_free(p[0]);
-	ep_free(q);
+	ep_free(p[1]);
 	ep_free(r);
 	return code;
 }
