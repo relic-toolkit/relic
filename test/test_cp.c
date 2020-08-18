@@ -241,7 +241,7 @@ static int paillier(void) {
 		for (int k = 1; k <= 2; k++) {
 			result = cp_ghpe_gen(pub, s, RLC_BN_BITS / (2 * k));
 			util_print("(s = %d) ", k);
-			TEST_BEGIN("generalized paillier encryption/decryption is correct") {
+			TEST_BEGIN("general paillier encryption/decryption is correct") {
 				TEST_ASSERT(result == RLC_OK, end);
 				bn_rand(a, RLC_POS, k * (bn_bits(pub) - 1));
 				TEST_ASSERT(cp_ghpe_enc(c, a, pub, k) == RLC_OK, end);
@@ -250,7 +250,7 @@ static int paillier(void) {
 			}  TEST_END;
 
 			util_print("(s = %d) ", k);
-			TEST_BEGIN("generalized paillier encryption/decryption is homomorphic") {
+			TEST_BEGIN("general paillier encryption/decryption is homomorphic") {
 				TEST_ASSERT(result == RLC_OK, end);
 				bn_rand(a, RLC_POS, k * (bn_bits(pub) - 1));
 				bn_rand(b, RLC_POS, k * (bn_bits(pub) - 1));
