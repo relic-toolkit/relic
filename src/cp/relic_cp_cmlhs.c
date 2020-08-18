@@ -95,7 +95,7 @@ int cp_cmlhs_sig(g1_t sig, g2_t z, g1_t a, g1_t c, g1_t r, g2_t s, bn_t msg,
 	bn_t k, m, n;
 	g1_t t;
 	uint8_t mac[RLC_MD_LEN];
-	int dlen = strlen(data), result = RLC_OK;
+	int len, dlen = strlen(data), result = RLC_OK;
 	uint8_t *buf = RLC_ALLOCA(uint8_t, 1 + 4 * RLC_FP_BYTES + dlen);
 
 	bn_null(k);
@@ -151,9 +151,15 @@ int cp_cmlhs_sig(g1_t sig, g2_t z, g1_t a, g1_t c, g1_t r, g2_t s, bn_t msg,
 		g1_add(c, c, t);
 		g1_norm(c, c);
 
-		g2_write_bin(buf, 1 + 4 * RLC_FP_BYTES, z, 0);
-		memcpy(buf + 4 * RLC_FP_BYTES + 1, data, dlen);
-		cp_bls_sig(sig, buf, 4 * RLC_FP_BYTES + 1 + dlen, sk);
+		if (pc_map_is_type1()) {
+			len = 2 * RLC_FP_BYTES + 1;
+		} else {
+			len = 4 * RLC_FP_BYTES + 1;
+		}
+
+		g2_write_bin(buf, len, z, 0);
+		memcpy(buf + len, data, dlen);
+		cp_bls_sig(sig, buf, len + dlen, sk);
 	}
 	RLC_CATCH_ANY {
 		result = RLC_ERR;
@@ -193,7 +199,7 @@ int cp_cmlhs_ver(g1_t r, g2_t s, g1_t sig[], g2_t z[], g1_t a[], g1_t c[],
 	g2_t g2;
 	gt_t e, u, v;
 	bn_t k, n;
-	int dlen = strlen(data), result = 1;
+	int len, dlen = strlen(data), result = 1;
 	uint8_t *buf = RLC_ALLOCA(uint8_t, 1 + 4 * RLC_FP_BYTES + dlen);
 
 	g1_null(g1);
@@ -221,9 +227,14 @@ int cp_cmlhs_ver(g1_t r, g2_t s, g1_t sig[], g2_t z[], g1_t a[], g1_t c[],
 		g2_get_gen(g2);
 
 		for (int i = 0; i < slen; i++) {
-			g2_write_bin(buf, 4 * RLC_FP_BYTES + 1, z[i], 0);
-			memcpy(buf + 4 * RLC_FP_BYTES + 1, data, dlen);
-			if (cp_bls_ver(sig[i], buf, 1 + 4 * RLC_FP_BYTES + dlen, pk[i]) == 0) {
+			if (pc_map_is_type1()) {
+				len = 2 * RLC_FP_BYTES + 1;
+			} else {
+				len = 4 * RLC_FP_BYTES + 1;
+			}
+			g2_write_bin(buf, len, z[i], 0);
+			memcpy(buf + len, data, dlen);
+			if (cp_bls_ver(sig[i], buf, len + dlen, pk[i]) == 0) {
 				result = 0;
 			}
 		}
