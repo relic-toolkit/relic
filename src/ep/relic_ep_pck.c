@@ -90,15 +90,18 @@ int ep_upk(ep_t r, const ep_t p) {
 
 		if (result) {
 			/* Verify whether the y coordinate is the larger one, matches the
-			 * compressed y-coordinate. */
+			 * compressed y-coordinate, from IETF pairing friendly spec:
+				sign_F_p(y) :=  { 1 if y > (p - 1) / 2, else
+								{ 0 otherwise.
+			*/
 			halfQ->used = RLC_FP_DIGS;
 			dv_copy(halfQ->dp, fp_prime_get(), RLC_FP_DIGS);
-			bn_hlv(halfQ, halfQ);
+			bn_hlv(halfQ, halfQ);  // This is equivalent to p - 1 / 2, floor division
 
 			fp_prime_back(yValue, t);
-			int b = bn_cmp(yValue, halfQ) == RLC_GT;
+			int sign_fpy = bn_cmp(yValue, halfQ) == RLC_GT;
 
-			if (b != fp_get_bit(p->y, 0)) {
+			if (sign_fpy != fp_get_bit(p->y, 0)) {
 				fp_neg(t, t);
 			}
 			fp_copy(r->x, p->x);
