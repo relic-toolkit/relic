@@ -45,7 +45,7 @@
 #define GROUPS		3
 #define DAYS 		90
 #define FACTOR		(1000000)
-#define FIXED		((uint64_t)10000)
+#define FIXED		((uint64_t)100000)
 #define DATABASE	"COVID19-Spain"
 #define BEG_2018	"27/03/2018"
 #define END_2018	"25/06/2018"
@@ -54,13 +54,14 @@
 #define BEG_2020	"2020-03-27"
 #define END_2020	"2020-06-25"
 
-/* First value is population of Spain in 2019, others are autonomous communities. */
+/* First value is population in each of the autonomous communities in 2020. */
 uint64_t populations[STATES] = {
 	8405294, 1316064, 1024381, 1176627, 2188626, 580997, 2410819,
 	2030807, 7516544, 4948411, 1067272, 2699299, 6587711, 1479098, 646197,
 	2172591, 312719, 84913, 84667
 };
 
+/* Total population per age group in 2019. */
 uint64_t pyramid[GROUPS] = { 37643844, 4482743, 4566276 };
 
 char *acronyms[STATES] = {
@@ -208,7 +209,7 @@ int main(int argc, char *argv[]) {
 			}
 		}
 
-		/* Compute population of every age group in each autonomous community. */
+		/* Compute current population of every age group in each autonomous community. */
 		for (int i = 0; i < STATES; i++) {
 			for (int j = 0; j < GROUPS; j++) {
 				ratios[i][j] = pyramids[i][j] / 100.0 * populations[i];
