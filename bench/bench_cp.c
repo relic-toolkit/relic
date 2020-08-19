@@ -1089,7 +1089,7 @@ static void zss(void) {
 #define S	10			/* Number of signers. */
 #define L	16			/* Number of labels, must be <= RLC_TERMS. */
 #define K	RLC_MD_LEN	/* Size of PRF key. */
-#define BENCH_LHS		/* Uncomment for fine-grained benchmarking. */
+//#define BENCH_LHS		/* Uncomment for fine-grained benchmarking. */
 
 static void lhs(void) {
 	uint8_t k[S][K];
@@ -1245,10 +1245,12 @@ static void lhs(void) {
 				hs, f, flen, y, pk, t));
 		} BENCH_END;
 
+		util_print("(%2d ids) ", t);
 		BENCH_BEGIN("cp_cmlhs_off") {
 			BENCH_ADD(cp_cmlhs_off(vk, h, label, hs, f, flen, y, pk, t));
 		} BENCH_END;
 
+		util_print("(%2d ids) ", t);
 		BENCH_BEGIN("cp_cmlhs_onv") {
 			BENCH_ADD(cp_cmlhs_onv(_r, _s, sig, z, as, cs, m, data, h, vk, y,
 				pk, t));
@@ -1265,10 +1267,12 @@ static void lhs(void) {
 				hs,	f, flen, y, pk, S));
 		} BENCH_END;
 
+		util_print("(%2d lbs) ", t);
 		BENCH_BEGIN("cp_cmlhs_off") {
 			BENCH_ADD(cp_cmlhs_off(vk, h, label, hs, f, flen, y, pk, t));
 		} BENCH_END;
 
+		util_print("(%2d lbs) ", t);
 		BENCH_BEGIN("cp_cmlhs_onv") {
 			BENCH_ADD(cp_cmlhs_onv(_r, _s, sig, z, as, cs, m, data, h, vk, y,
 				pk, t));
@@ -1342,24 +1346,13 @@ static void lhs(void) {
 		BENCH_BEGIN("cp_mklhs_ver") {
 			BENCH_ADD(cp_mklhs_ver(_r, m, d, data, id, ls, f, flen, pk, t));
 		} BENCH_END;
-	}
 
-	for (int t = 1; t <= L; t++) {
-		util_print("(%2d lbs) ", t);
-		for (int u = 0; u < S; u++) {
-			flen[u] = t;
-		}
-		BENCH_BEGIN("cp_mklhs_ver") {
-			BENCH_ADD(cp_mklhs_ver(_r, m, d, data, id, ls, f, flen, pk, S));
-		} BENCH_END;
-	}
-
-	for (int t = 1; t <= S; t++) {
 		util_print("(%2d ids) ", t);
 		BENCH_BEGIN("cp_mklhs_off") {
 			BENCH_ADD(cp_mklhs_off(cs, ft, id, ls, f, flen, t));
 		} BENCH_END;
 
+		util_print("(%2d ids) ", t);
 		BENCH_BEGIN("cp_mklhs_onv") {
 			BENCH_ADD(cp_mklhs_onv(_r, m, d, data, cs, ft, pk, t));
 		} BENCH_END;
@@ -1370,10 +1363,16 @@ static void lhs(void) {
 		for (int u = 0; u < S; u++) {
 			flen[u] = t;
 		}
+		BENCH_BEGIN("cp_mklhs_ver") {
+			BENCH_ADD(cp_mklhs_ver(_r, m, d, data, id, ls, f, flen, pk, S));
+		} BENCH_END;
+
+		util_print("(%2d lbs) ", t);
 		BENCH_BEGIN("cp_mklhs_off") {
 			BENCH_ADD(cp_mklhs_off(cs, ft, id, ls, f, flen, S));
 		} BENCH_END;
 
+		util_print("(%2d lbs) ", t);
 		BENCH_BEGIN("cp_mklhs_onv") {
 			BENCH_ADD(cp_mklhs_onv(_r, m, d, data, cs, ft, pk, S));
 		} BENCH_END;
