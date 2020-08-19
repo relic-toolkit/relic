@@ -367,7 +367,7 @@ static int pad_pkcs1(bn_t m, int *p_len, int m_len, int k_len, int operation) {
 						}
 						*p_len = k_len - m_len;
 						bn_mod_2b(m, m, m_len * 8);
-						if (r && m_len > 0 && counter >= 8) {
+						if (r == 0 && m_len > 0 && counter >= 8) {
 							result = RLC_OK;
 						}
 					}
