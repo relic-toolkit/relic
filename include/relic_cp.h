@@ -1711,8 +1711,8 @@ int cp_cmlhs_evl(g1_t r, g2_t s, g1_t rs[], g2_t ss[], dig_t f[], int len);
  * @param[in] c				- the vector of second components of the signatures.
  * @param[in] msg 			- the combined message.
  * @param[in] data 			- the dataset identifier.
- * @param[in] label 		- the integer labels.
  * @param[in] h				- the random element (message has one component).
+ * @param[in] label 		- the integer labels.
  * @param[in] hs 			- the hash values, one per label.
  * @param[in] f 			- the linear coefficients in the function.
  * @param[in] flen			- the number of coefficients.
@@ -1722,9 +1722,43 @@ int cp_cmlhs_evl(g1_t r, g2_t s, g1_t rs[], g2_t ss[], dig_t f[], int len);
  * @return a boolean value indicating the verification result.
  */
 int cp_cmlhs_ver(g1_t r, g2_t s, g1_t sig[], g2_t z[], g1_t a[], g1_t c[],
-		bn_t m, char *data, int label[], g1_t h, gt_t *hs[],
+		bn_t m, char *data, g1_t h, int label[], gt_t *hs[],
 		dig_t *f[], int flen[], g2_t y[], g2_t pk[], int slen);
 
+/**
+ * Perform the offline verification of a CMLHS signature over a set of messages.
+ *
+ * @param[out] vk			- the verification key.
+ * @param[in] h				- the random element (message has one component).
+ * @param[in] label 		- the integer labels.
+ * @param[in] hs 			- the hash values, one per label.
+ * @param[in] f 			- the linear coefficients in the function.
+ * @param[in] flen			- the number of coefficients.
+ * @param[in] y 			- the public elements of the users.
+ * @param[in] pk 			- the public keys of the users.
+ * @param[in] slen 			- the number of signatures.
+ * @return a boolean value indicating the verification result.
+ */
+void cp_cmlhs_off(gt_t vk, g1_t h, int label[], gt_t *hs[], dig_t *f[],
+		int flen[],	g2_t y[], g2_t pk[], int slen);
+
+/**
+ * Perform the online verification of a CMLHS signature over a set of messages.
+ *
+ * @param[in] r 			- the first component of the homomorphic signature.
+ * @param[in] s 			- the second component of the homomorphic signature.
+ * @param[in] sig 			- the BLS signatures.
+ * @param[in] z 			- the powers of the outputs of the PRF.
+ * @param[in] a				- the vector of first components of the signatures.
+ * @param[in] c				- the vector of second components of the signatures.
+ * @param[in] msg 			- the combined message.
+ * @param[in] data 			- the dataset identifier.
+ * @param[in] h				- the random element (message has one component).
+ * @param[in] vk			- the verification key.
+ * @return a boolean value indicating the verification result.
+ */
+int cp_cmlhs_onv(g1_t r, g2_t s, g1_t sig[], g2_t z[], g1_t a[], g1_t c[],
+		bn_t msg, char *data, g1_t h, gt_t vk, g2_t y[], g2_t pk[], int slen);
 /**
  * Generates a key pair for the Multi-Key Homomorphic Signature (MKLHS) scheme.
  *

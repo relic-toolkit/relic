@@ -1303,7 +1303,7 @@ static int lhs(void) {
 	g1_t _r, h, as[S], cs[S], sig[S];
 	g1_t a[S][L], c[S][L], r[S][L];
 	g2_t _s, s[S][L], pk[S], y[S], z[S];
-	gt_t *hs[S];
+	gt_t *hs[S], vk;
 	char *data = "database-identifier";
 	char *id[S] = { "Alice", "Bob" };
 	dig_t *f[S] = { NULL };
@@ -1314,6 +1314,7 @@ static int lhs(void) {
 	g1_null(h);
 	g1_null(_r);
 	g2_null(_s);
+	gt_null(vk);
 
 	RLC_TRY {
 		bn_new(m);
@@ -1321,6 +1322,7 @@ static int lhs(void) {
 		g1_new(h);
 		g1_new(_r);
 		g2_new(_s);
+		gt_new(vk);
 
 		for (int i = 0; i < S; i++) {
 			hs[i] = RLC_ALLOCA(gt_t, RLC_TERMS);
@@ -1413,8 +1415,13 @@ static int lhs(void) {
 					bn_mod(m, m, n);
 				}
 			}
-			TEST_ASSERT(cp_cmlhs_ver(_r, _s, sig, z, as, cs, m, data, label,
-				h, hs, f, flen, y, pk, S) == 1, end);
+
+			TEST_ASSERT(cp_cmlhs_ver(_r, _s, sig, z, as, cs, m, data, h, label,
+				hs, f, flen, y, pk, S) == 1, end);
+
+			cp_cmlhs_off(vk, h, label, hs, f, flen, y, pk, S);
+			TEST_ASSERT(cp_cmlhs_onv(_r, _s, sig, z, as, cs, m, data, h, vk,
+				y, pk, S) == 1, end);
 		}
 		TEST_END;
 
@@ -1452,41 +1459,9 @@ static int lhs(void) {
 			}
 
 			TEST_ASSERT(cp_mklhs_ver(_r, m, d, data, id, ls, f, flen, pk, S), end);
-		}
-		TEST_END;
-
-		TEST_BEGIN("on/off simple linear multi-key homomorphic signature is correct") {
-			for (int j = 0; j < S; j++) {
-				cp_mklhs_gen(sk[j], pk[j]);
-				for (int l = 0; l < L; l++) {
-					bn_rand_mod(msg[j][l], n);
-					cp_mklhs_sig(a[j][l], msg[j][l], data, id[j], ls[l], sk[j]);
-				}
-			}
-
-			for (int j = 0; j < S; j++) {
-				cp_mklhs_fun(d[j], msg[j], f[j], L);
-			}
-
-			g1_set_infty(_r);
-			for (int j = 0; j < S; j++) {
-				cp_mklhs_evl(r[0][j], a[j], f[j], L);
-				g1_add(_r, _r, r[0][j]);
-			}
-			g1_norm(_r, _r);
-
-			bn_zero(m);
-			for (int j = 0; j < S; j++) {
-				for (int l = 0; l < L; l++) {
-					bn_mul_dig(msg[j][l], msg[j][l], f[j][l]);
-					bn_add(m, m, msg[j][l]);
-					bn_mod(m, m, n);
-				}
-			}
 
 			cp_mklhs_off(as, ft, id, ls, f, flen, S);
 			TEST_ASSERT(cp_mklhs_onv(_r, m, d, data, as, ft, pk, S), end);
-
 		}
 		TEST_END;
 	}
@@ -1501,6 +1476,7 @@ static int lhs(void) {
 	  g1_free(h);
 	  g1_free(_r);
 	  g2_free(_s);
+	  gt_free(vk);
 
 	  for (int i = 0; i < S; i++) {
 		  RLC_FREE(f[i]);

@@ -1097,7 +1097,7 @@ static void lhs(void) {
 	g1_t _r, h, as[S], cs[S], sig[S];
 	g1_t a[S][L], c[S][L], r[S][L];
 	g2_t _s, s[S][L], pk[S], y[S], z[S];
-	gt_t *hs[S];
+	gt_t *hs[S], vk;
 	char *data = "id";
 	char *id[S] = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
 	dig_t ft[S];
@@ -1109,12 +1109,14 @@ static void lhs(void) {
 	g1_null(h);
 	g1_null(_r);
 	g2_null(_s);
+	gt_null(vk);
 
 	bn_new(m);
 	bn_new(n);
 	g1_new(h);
 	g1_new(_r);
 	g2_new(_s);
+	gt_new(vk);
 
 	pc_get_ord(n);
 	for (int i = 0; i < L; i++) {
@@ -1222,16 +1224,34 @@ static void lhs(void) {
 	}
 
 	BENCH_BEGIN("cp_cmlhs_ver") {
-		BENCH_ADD(cp_cmlhs_ver(_r, _s, sig, z, as, cs, m, data, label, h, hs,
+		BENCH_ADD(cp_cmlhs_ver(_r, _s, sig, z, as, cs, m, data, h, label, hs,
 			f, flen, y, pk, S));
+	} BENCH_DIV(S);
+
+	BENCH_BEGIN("cp_cmlhs_off") {
+		BENCH_ADD(cp_cmlhs_off(vk, h, label, hs, f, flen, y, pk, S));
+	} BENCH_DIV(S);
+
+	BENCH_BEGIN("cp_cmlhs_onv") {
+		BENCH_ADD(cp_cmlhs_onv(_r, _s, sig, z, as, cs, m, data, h, vk, y,
+			pk, S));
 	} BENCH_DIV(S);
 
 #ifdef BENCH_LHS
 	for (int t = 1; t <= S; t++) {
 		util_print("(%2d ids) ", t);
 		BENCH_BEGIN("cp_cmlhs_ver") {
-			BENCH_ADD(cp_cmlhs_ver(_r, _s, sig, z, as, cs, m, data, label, h,
+			BENCH_ADD(cp_cmlhs_ver(_r, _s, sig, z, as, cs, m, data, h, label,
 				hs, f, flen, y, pk, t));
+		} BENCH_END;
+
+		BENCH_BEGIN("cp_cmlhs_off") {
+			BENCH_ADD(cp_cmlhs_off(vk, h, label, hs, f, flen, y, pk, t));
+		} BENCH_END;
+
+		BENCH_BEGIN("cp_cmlhs_onv") {
+			BENCH_ADD(cp_cmlhs_onv(_r, _s, sig, z, as, cs, m, data, h, vk, y,
+				pk, t));
 		} BENCH_END;
 	}
 
@@ -1241,8 +1261,17 @@ static void lhs(void) {
 			flen[u] = t;
 		}
 		BENCH_BEGIN("cp_cmlhs_ver") {
-			BENCH_ADD(cp_cmlhs_ver(_r, _s, sig, z, as, cs, m, data, label, h,
+			BENCH_ADD(cp_cmlhs_ver(_r, _s, sig, z, as, cs, m, data, h, label,
 				hs,	f, flen, y, pk, S));
+		} BENCH_END;
+
+		BENCH_BEGIN("cp_cmlhs_off") {
+			BENCH_ADD(cp_cmlhs_off(vk, h, label, hs, f, flen, y, pk, t));
+		} BENCH_END;
+
+		BENCH_BEGIN("cp_cmlhs_onv") {
+			BENCH_ADD(cp_cmlhs_onv(_r, _s, sig, z, as, cs, m, data, h, vk, y,
+				pk, t));
 		} BENCH_END;
 	}
 #endif  /* BENCH_LHS */
@@ -1356,6 +1385,7 @@ static void lhs(void) {
 	g1_free(h);
 	g1_free(_r);
 	g2_free(_s);
+	gt_free(vk);
 
 	for (int i = 0; i < L; i++) {
 		bn_free(msg[i]);

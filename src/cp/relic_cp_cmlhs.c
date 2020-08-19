@@ -193,7 +193,7 @@ int cp_cmlhs_evl(g1_t r, g2_t s, g1_t rs[], g2_t ss[], dig_t f[], int len) {
 }
 
 int cp_cmlhs_ver(g1_t r, g2_t s, g1_t sig[], g2_t z[], g1_t a[], g1_t c[],
-		bn_t msg, char *data, int label[], g1_t h, gt_t *hs[],
+		bn_t msg, char *data, g1_t h, int label[], gt_t *hs[],
 		dig_t *f[], int flen[], g2_t y[], g2_t pk[], int slen) {
 	g1_t g1;
 	g2_t g2;
@@ -227,11 +227,7 @@ int cp_cmlhs_ver(g1_t r, g2_t s, g1_t sig[], g2_t z[], g1_t a[], g1_t c[],
 		g2_get_gen(g2);
 
 		for (int i = 0; i < slen; i++) {
-			if (pc_map_is_type1()) {
-				len = 2 * RLC_FP_BYTES + 1;
-			} else {
-				len = 4 * RLC_FP_BYTES + 1;
-			}
+			len = g2_size_bin(z[i], 0);
 			g2_write_bin(buf, len, z[i], 0);
 			memcpy(buf + len, data, dlen);
 			if (cp_bls_ver(sig[i], buf, len + dlen, pk[i]) == 0) {
@@ -273,6 +269,110 @@ int cp_cmlhs_ver(g1_t r, g2_t s, g1_t sig[], g2_t z[], g1_t a[], g1_t c[],
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
+		g1_free(g1);
+		g2_free(g2);
+		gt_free(e);
+		gt_free(u);
+		gt_free(v);
+		bn_free(k);
+		bn_free(n);
+		RLC_FREE(buf);
+	}
+	return result;
+}
+
+void cp_cmlhs_off(gt_t vk, g1_t h, int label[], gt_t *hs[], dig_t *f[],
+		int flen[], g2_t y[], g2_t pk[], int slen) {
+	gt_t v;
+
+	gt_null(v);
+
+	RLC_TRY {
+		gt_new(v);
+
+		gt_set_unity(vk);
+		for (int i = 0; i < slen; i++) {
+			for (int j = 0; j < flen[i]; j++) {
+				gt_exp_dig(v, hs[i][label[j]], f[i][j]);
+				gt_mul(vk, vk, v);
+			}
+		}
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		gt_free(v);
+	}
+}
+
+int cp_cmlhs_onv(g1_t r, g2_t s, g1_t sig[], g2_t z[], g1_t a[], g1_t c[],
+		bn_t msg, char *data, g1_t h, gt_t vk, g2_t y[], g2_t pk[], int slen) {
+	g1_t g1;
+	g2_t g2;
+	gt_t e, u, v;
+	bn_t k, n;
+	int len, dlen = strlen(data), result = 1;
+	uint8_t *buf = RLC_ALLOCA(uint8_t, 1 + 4 * RLC_FP_BYTES + dlen);
+
+	g1_null(g1);
+	g2_null(g2);
+	gt_null(e);
+	gt_null(u);
+	gt_null(v);
+	bn_null(k);
+	bn_null(n);
+
+	RLC_TRY {
+		g1_new(g1);
+		g2_new(g2);
+		gt_new(e);
+		gt_new(u);
+		gt_new(v);
+		bn_new(k);
+		bn_new(n);
+		if (buf == NULL) {
+			RLC_THROW(ERR_NO_MEMORY);
+		}
+
+		pc_get_ord(n);
+		g1_get_gen(g1);
+		g2_get_gen(g2);
+
+		for (int i = 0; i < slen; i++) {
+			len = g2_size_bin(z[i], 0);
+			g2_write_bin(buf, len, z[i], 0);
+			memcpy(buf + len, data, dlen);
+			if (cp_bls_ver(sig[i], buf, len + dlen, pk[i]) == 0) {
+				result = 0;
+			}
+		}
+
+		pc_map_sim(e, a, z, slen);
+		pc_map_sim(u, c, y, slen);
+		pc_map(v, r, g2);
+		gt_mul(u, u, v);
+		gt_mul(u, u, vk);
+
+		if (gt_cmp(e, u) != RLC_EQ) {
+			result = 0;
+		}
+
+		pc_map(e, g1, s);
+		g1_set_infty(g1);
+		for (int i = 0; i < slen; i++) {
+			g1_add(g1, g1, c[i]);
+		}
+		g1_norm(g1, g1);
+		pc_map(u, g1, g2);
+		gt_mul(e, e, u);
+
+		g1_mul(g1, h, msg);
+		pc_map(v, g1, g2);
+		if (gt_cmp(e, v) != RLC_EQ) {
+			result = 0;
+		}
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
 		g1_free(g1);
 		g2_free(g2);
 		gt_free(e);
