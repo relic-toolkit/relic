@@ -318,9 +318,9 @@ int main(int argc, char *argv[]) {
 				&l[0][2 * GROUPS * DAYS], f, flen, pk, STATES));
 
 		cp_mklhs_off(cs, ft, acs, &l[0][2 * GROUPS * DAYS], f, flen, STATES);
-		assert(cp_mklhs_onv(sig, res, t, DATABASE, cs, ft, pk, STATES));
+		assert(cp_mklhs_onv(sig, res, t, DATABASE, acs, cs, ft, pk, STATES));
 		BENCH_ONCE("Time with precomputation", cp_mklhs_onv(sig, res, t,
-			DATABASE, cs, ft, pk, STATES));
+			DATABASE, acs, cs, ft, pk, STATES));
 
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
