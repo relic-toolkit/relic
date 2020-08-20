@@ -1828,7 +1828,7 @@ int cp_mklhs_ver(g1_t sig, bn_t m, bn_t mu[], char *data, char *id[],
  * @param[out] h 			- the hashes of labels
  * @param[out] ft 			- the precomputed linear coefficients.
  * @param[in] id 			- the vector of identities.
- * @param[in] tag 		- the vector of tags.
+ * @param[in] tag 			- the vector of tags.
  * @param[in] f 			- the linear coefficients in the function.
  * @param[in] flen			- the number of coefficients.
  * @param[in] slen 			- the number of signatures.
@@ -1845,13 +1845,14 @@ int cp_mklhs_off(g1_t h[], dig_t ft[], char *id[], char *tag[], dig_t *f[],
  * @param[in] m 			- the signed message.
  * @param[in] mu			- the vector of signed messages per user.
  * @param[in] data 			- the dataset identifier.
+ * @param[in] id 			- the vector of identities.
  * @param[in] d 			- the hashes of labels.
  * @param[in] ft 			- the precomputed linear coefficients.
  * @param[in] pk 			- the public keys of the users.
  * @param[in] slen 			- the number of signatures.
  * @return a boolean value indicating the verification result.
  */
-int cp_mklhs_onv(g1_t sig, bn_t m, bn_t mu[], char *data, g1_t h[], dig_t ft[],
-	g2_t pk[], int slen);
+int cp_mklhs_onv(g1_t sig, bn_t m, bn_t mu[], char *data, char *id[], g1_t h[],
+	dig_t ft[],	g2_t pk[], int slen);
 
 #endif /* !RLC_CP_H */

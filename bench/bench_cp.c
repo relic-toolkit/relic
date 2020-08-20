@@ -1337,7 +1337,7 @@ static void lhs(void) {
 	} BENCH_DIV(S);
 
 	BENCH_BEGIN("cp_mklhs_onv") {
-		BENCH_ADD(cp_mklhs_onv(_r, m, d, data, cs, ft, pk, S));
+		BENCH_ADD(cp_mklhs_onv(_r, m, d, data, id, cs, ft, pk, S));
 	} BENCH_DIV(S);
 
 #ifdef BENCH_LHS
@@ -1354,7 +1354,7 @@ static void lhs(void) {
 
 		util_print("(%2d ids) ", t);
 		BENCH_BEGIN("cp_mklhs_onv") {
-			BENCH_ADD(cp_mklhs_onv(_r, m, d, data, cs, ft, pk, t));
+			BENCH_ADD(cp_mklhs_onv(_r, m, d, data, id, cs, ft, pk, t));
 		} BENCH_END;
 	}
 
@@ -1374,7 +1374,7 @@ static void lhs(void) {
 
 		util_print("(%2d lbs) ", t);
 		BENCH_BEGIN("cp_mklhs_onv") {
-			BENCH_ADD(cp_mklhs_onv(_r, m, d, data, cs, ft, pk, S));
+			BENCH_ADD(cp_mklhs_onv(_r, m, d, data, id, cs, ft, pk, S));
 		} BENCH_END;
 	}
 #endif /* BENCH_LHS */

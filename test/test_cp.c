@@ -1461,7 +1461,7 @@ static int lhs(void) {
 			TEST_ASSERT(cp_mklhs_ver(_r, m, d, data, id, ls, f, flen, pk, S), end);
 
 			cp_mklhs_off(as, ft, id, ls, f, flen, S);
-			TEST_ASSERT(cp_mklhs_onv(_r, m, d, data, as, ft, pk, S), end);
+			TEST_ASSERT(cp_mklhs_onv(_r, m, d, data, id, as, ft, pk, S), end);
 		}
 		TEST_END;
 	}
