@@ -293,7 +293,7 @@ int cp_mklhs_onv(g1_t sig, bn_t m, bn_t mu[], char *data, char *id[], g1_t h[],
 	for (int i = 0; i < slen; i++) {
 		imax = RLC_MAX(imax, strlen(id[i]));
 	}
-	uint8_t *str = RLC_ALLOCA(uint8_t, imax);
+	uint8_t *str = RLC_ALLOCA(uint8_t, strlen(data) + imax);
 
 	bn_null(t);
 	bn_null(n);
