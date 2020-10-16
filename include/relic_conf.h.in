@@ -122,6 +122,8 @@
 #define EASY	 1
 /** GMP backend. */
 #define GMP      2
+/** GMP constant-time backend. */
+#define GMP_SEC  3
 /** Arithmetic backend. */
 #define ARITH    @ARITH@
 

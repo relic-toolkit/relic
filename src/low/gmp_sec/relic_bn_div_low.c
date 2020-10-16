@@ -24,35 +24,34 @@
 /**
  * @file
  *
- * Implementation of the low-level multiple precision integer modular reduction
- * functions.
+ * Implementation of the low-level multiple precision division functions.
  *
  * @ingroup bn
  */
 
 #include <gmp.h>
-#include <string.h>
 
 #include "relic_bn.h"
 #include "relic_bn_low.h"
-#include "relic_util.h"
+#include "relic_alloc.h"
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void bn_modn_low(dig_t *c, const dig_t *a, int sa, const dig_t *m, int sm,
-		dig_t u) {
-	int i;
-	dig_t r, *tmpc = c, t[sm + 1], scratch[mpn_sec_mul_itch(sm, 1)];
+void bn_divn_low(dig_t *c, dig_t *d, dig_t *a, int sa, dig_t *b, int sb) {
+	dig_t u[sa], *t = RLC_ALLOCA(dig_t, mpn_sec_div_qr_itch(sa, sb));
 
-	mpn_copyd(c, a, sa);
+	mpn_copyd(u, a, sa);
+	c[sa - sb] = mpn_sec_div_qr(c, u, sa, b, sb, t);
+	mpn_copyd(d, u, sa);
+	RLC_FREE(t);
+}
 
-	for (i = 0; i < sm; i++, tmpc++) {
-		r = (dig_t)(*tmpc * u);
-		mpn_sec_mul(t, m, sm, &r, 1, scratch);
-		*tmpc = t[sm] + mpn_add_n(tmpc, tmpc, t, sm);
-	}
-	i = mpn_add_n(c, c, tmpc, sm);
-	mpn_cnd_sub_n(i, c, c, m, sm);
+void bn_div1_low(dig_t *c, dig_t *d, const dig_t *a, int size, dig_t b) {
+	dig_t u[size], *t = RLC_ALLOCA(dig_t, mpn_sec_div_qr_itch(size, 1));
+
+	mpn_copyd(u, a, size);
+	c[size - 1] = mpn_sec_div_qr(c, u, size, &b, 1, t);
+	*d = u[0];
 }

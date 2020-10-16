@@ -24,46 +24,64 @@
 /**
  * @file
  *
- * Implementation of the low-level inversion functions.
+ * Implementation of the low-level prime field shifting functions.
  *
- * @ingroup fp
+ * @ingroup bn
  */
 
 #include <gmp.h>
 
 #include "relic_fp.h"
 #include "relic_fp_low.h"
-#include "relic_core.h"
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void fp_invm_low(dig_t *c, const dig_t *a) {
-	mp_size_t cn;
-	rlc_align dig_t s[RLC_FP_DIGS], t[2 * RLC_FP_DIGS], u[RLC_FP_DIGS + 1];
+dig_t fp_lsh1_low(dig_t *c, const dig_t *a) {
+	return mpn_lshift(c, a, RLC_FP_DIGS, 1);
+}
 
-#if FP_RDC == MONTY
-	dv_zero(t + RLC_FP_DIGS, RLC_FP_DIGS);
-	dv_copy(t, a, RLC_FP_DIGS);
-	fp_rdcn_low(u, t);
-#else
-	fp_copy(u, a);
-#endif
+dig_t fp_lshb_low(dig_t *c, const dig_t *a, int bits) {
+	return mpn_lshift(c, a, RLC_FP_DIGS, bits);
+}
 
-	dv_copy(s, fp_prime_get(), RLC_FP_DIGS);
+void fp_lshd_low(dig_t *c, const dig_t *a, int digits) {
+	dig_t *top;
+	const dig_t *bot;
+	int i;
 
-	mpn_gcdext(t, c, &cn, u, RLC_FP_DIGS, s, RLC_FP_DIGS);
-	if (cn < 0) {
-		dv_zero(c - cn, RLC_FP_DIGS + cn);
-		mpn_sub_n(c, fp_prime_get(), c, RLC_FP_DIGS);
-	} else {
-		dv_zero(c + cn, RLC_FP_DIGS - cn);
+	top = c + RLC_FP_DIGS - 1;
+	bot = a + RLC_FP_DIGS - 1 - digits;
+
+	for (i = 0; i < RLC_FP_DIGS - digits; i++, top--, bot--) {
+		*top = *bot;
 	}
+	for (i = 0; i < digits; i++, c++) {
+		*c = 0;
+	}
+}
 
-#if FP_RDC == MONTY
-	dv_zero(t, RLC_FP_DIGS);
-	dv_copy(t + RLC_FP_DIGS, c, RLC_FP_DIGS);
-	mpn_tdiv_qr(u, c, 0, t, 2 * RLC_FP_DIGS, fp_prime_get(), RLC_FP_DIGS);
-#endif
+dig_t fp_rsh1_low(dig_t *c, const dig_t *a) {
+	return mpn_rshift(c, a, RLC_FP_DIGS, 1);
+}
+
+dig_t fp_rshb_low(dig_t *c, const dig_t *a, int bits) {
+	return mpn_rshift(c, a, RLC_FP_DIGS, bits);
+}
+
+void fp_rshd_low(dig_t *c, const dig_t *a, int digits) {
+	const dig_t *top;
+	dig_t *bot;
+	int i;
+
+	top = a + digits;
+	bot = c;
+
+	for (i = 0; i < RLC_FP_DIGS - digits; i++, top++, bot++) {
+		*bot = *top;
+	}
+	for (; i < RLC_FP_DIGS; i++, bot++) {
+		*bot = 0;
+	}
 }

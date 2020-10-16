@@ -26,7 +26,7 @@
  *
  * Implementation of the low-level prime field multiplication functions.
  *
- * @ingroup bn
+ * @ingroup fp
  */
 
 #include <gmp.h>

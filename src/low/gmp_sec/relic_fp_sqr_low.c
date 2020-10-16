@@ -24,7 +24,7 @@
 /**
  * @file
  *
- * Implementation of the low-level inversion functions.
+ * Implementation of low-level prime field squaring functions.
  *
  * @ingroup fp
  */
@@ -33,37 +33,20 @@
 
 #include "relic_fp.h"
 #include "relic_fp_low.h"
-#include "relic_core.h"
+#include "relic_alloc.h"
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void fp_invm_low(dig_t *c, const dig_t *a) {
-	mp_size_t cn;
-	rlc_align dig_t s[RLC_FP_DIGS], t[2 * RLC_FP_DIGS], u[RLC_FP_DIGS + 1];
+void fp_sqrn_low(dig_t *c, const dig_t *a) {
+	dig_t *t = RLC_ALLOCA(dig_t, mpn_sec_sqr_itch(RLC_FP_DIGS));
+	mpn_sec_sqr(c, a, RLC_FP_DIGS, t);
+	RLC_FREE(t);
+}
 
-#if FP_RDC == MONTY
-	dv_zero(t + RLC_FP_DIGS, RLC_FP_DIGS);
-	dv_copy(t, a, RLC_FP_DIGS);
-	fp_rdcn_low(u, t);
-#else
-	fp_copy(u, a);
-#endif
-
-	dv_copy(s, fp_prime_get(), RLC_FP_DIGS);
-
-	mpn_gcdext(t, c, &cn, u, RLC_FP_DIGS, s, RLC_FP_DIGS);
-	if (cn < 0) {
-		dv_zero(c - cn, RLC_FP_DIGS + cn);
-		mpn_sub_n(c, fp_prime_get(), c, RLC_FP_DIGS);
-	} else {
-		dv_zero(c + cn, RLC_FP_DIGS - cn);
-	}
-
-#if FP_RDC == MONTY
-	dv_zero(t, RLC_FP_DIGS);
-	dv_copy(t + RLC_FP_DIGS, c, RLC_FP_DIGS);
-	mpn_tdiv_qr(u, c, 0, t, 2 * RLC_FP_DIGS, fp_prime_get(), RLC_FP_DIGS);
-#endif
+void fp_sqrm_low(dig_t *c, const dig_t *a) {
+	rlc_align dig_t t[2 * RLC_FP_DIGS];
+	fp_sqrn_low(t, a);
+	fp_rdc(c, t);
 }

@@ -24,44 +24,35 @@
 /**
  * @file
  *
- * Implementation of the multiple precision integer arithmetic multiplication
+ * Implementation of the low-level multiple precision integer modular reduction
  * functions.
  *
  * @ingroup bn
  */
 
 #include <gmp.h>
+#include <string.h>
 
 #include "relic_bn.h"
 #include "relic_bn_low.h"
 #include "relic_util.h"
+#include "relic_alloc.h"
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
-dig_t bn_mula_low(dig_t *c, const dig_t *a, dig_t digit, int size) {
-	dig_t t[size + 1], scratch[mpn_sec_mul_itch(size, 1)];
-	mpn_sec_mul(t, a, size, &digit, 1, scratch);
-	return t[size] + mpn_add_n(c, c, t, size);
-}
+void bn_modn_low(dig_t *c, const dig_t *a, int sa, const dig_t *m, int sm,
+		dig_t u) {
+	dig_t *s = RLC_ALLOCA(dig_t, mpn_sec_mul_itch(sm, 1));
+	dig_t r, *tc = c, t[sm + 1];
 
-dig_t bn_mul1_low(dig_t *c, const dig_t *a, dig_t digit, int size) {
-	dig_t t[size + 1], scratch[mpn_sec_mul_itch(size, 1)];
-	mpn_sec_mul(t, a, size, &digit, 1, scratch);
-	mpn_copyd(c, t, size);
-	return t[size];
-}
-
-void bn_muln_low(dig_t *c, const dig_t *a, const dig_t *b, int size) {
-	dig_t scratch[mpn_sec_mul_itch(size, size)];
-	mpn_sec_mul(c, a, size, b, size, scratch);
-}
-
-void bn_muld_low(dig_t *c, const dig_t *a, int sa, const dig_t *b, int sb,
-		int low, int high) {
-	(void)low;
-	(void)high;
-	dig_t scratch[mpn_sec_mul_itch(sa, sb)];
-	mpn_sec_mul(c, a, sa, b, sb, scratch);
+	mpn_copyd(c, a, sa);
+	for (int i = 0; i < sm; i++, tc++) {
+		r = (dig_t)(*tc * u);
+		mpn_sec_mul(t, m, sm, &r, 1, s);
+		*tc = t[sm] + mpn_add_n(tc, tc, t, sm);
+	}
+	mpn_cnd_sub_n(mpn_add_n(c, c, tc, sm), c, c, m, sm);
+	RLC_FREE(s);
 }

@@ -24,7 +24,8 @@
 /**
  * @file
  *
- * Implementation of the low-level multiple precision division functions.
+ * Implementation of the low-level multiple precision addition and subtraction
+ * functions.
  *
  * @ingroup bn
  */
@@ -33,23 +34,28 @@
 
 #include "relic_bn.h"
 #include "relic_bn_low.h"
+#include "relic_alloc.h"
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void bn_divn_low(dig_t *c, dig_t *d, dig_t *a, int sa, dig_t *b, int sb) {
-	dig_t t[sa],scratch[mpn_sec_div_qr_itch(sa, sb)];
-
-	mpn_copyd(t, a, sa);
-	c[sa - sb] = mpn_sec_div_qr(c, t, sa, b, sb, scratch);
-	mpn_copyd(d, t, sa);
+dig_t bn_add1_low(dig_t *c, const dig_t *a, dig_t digit, int size) {
+	dig_t *t = RLC_ALLOCA(dig_t, mpn_sec_add_1_itch(size));
+	return mpn_sec_add_1(c, a, size, digit, t);
+	RLC_FREE(t);
 }
 
-void bn_div1_low(dig_t *c, dig_t *d, const dig_t *a, int size, dig_t b) {
-	dig_t t[size], scratch[mpn_sec_div_qr_itch(size, 1)];
+dig_t bn_addn_low(dig_t *c, const dig_t *a, const dig_t *b, int size) {
+	return mpn_add_n(c, a, b, size);
+}
 
-	mpn_copyd(t, a, size);
-	c[size - 1] = mpn_sec_div_qr(c, t, size, &b, 1, scratch);
-	*d = t[0];
+dig_t bn_sub1_low(dig_t *c, const dig_t *a, dig_t digit, int size) {
+	dig_t *t = RLC_ALLOCA(dig_t, mpn_sec_sub_1_itch(size));
+	return mpn_sec_sub_1(c, a, size, digit, t);
+	RLC_FREE(t);
+}
+
+dig_t bn_subn_low(dig_t *c, const dig_t *a, const dig_t *b, int size) {
+	return mpn_sub_n(c, a, b, size);
 }

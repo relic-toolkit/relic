@@ -74,6 +74,8 @@ void conf_print(void) {
 	util_print("** Arithmetic backend: easy\n\n");
 #elif ARITH == GMP
 	util_print("** Arithmetic backend: gmp\n\n");
+#elif ARITH == GMP_SEC
+	util_print("** Arithmetic backend: gmp_sec\n\n");
 #else
 	util_print("** Arithmetic backend: " QUOTE(ARITH) "\n\n");
 #endif

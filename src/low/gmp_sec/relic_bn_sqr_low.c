@@ -24,46 +24,36 @@
 /**
  * @file
  *
- * Implementation of the low-level inversion functions.
+ * Implementation of the multiple precision integer arithmetic multiplication
+ * functions.
  *
- * @ingroup fp
+ * @ingroup bn
  */
 
 #include <gmp.h>
 
-#include "relic_fp.h"
-#include "relic_fp_low.h"
-#include "relic_core.h"
+#include "relic_bn.h"
+#include "relic_bn_low.h"
+#include "relic_util.h"
+#include "relic_alloc.h"
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void fp_invm_low(dig_t *c, const dig_t *a) {
-	mp_size_t cn;
-	rlc_align dig_t s[RLC_FP_DIGS], t[2 * RLC_FP_DIGS], u[RLC_FP_DIGS + 1];
+void bn_sqra_low(dig_t *c, const dig_t *a, int size) {
+	dig_t carry, digit = *a;
 
-#if FP_RDC == MONTY
-	dv_zero(t + RLC_FP_DIGS, RLC_FP_DIGS);
-	dv_copy(t, a, RLC_FP_DIGS);
-	fp_rdcn_low(u, t);
-#else
-	fp_copy(u, a);
-#endif
-
-	dv_copy(s, fp_prime_get(), RLC_FP_DIGS);
-
-	mpn_gcdext(t, c, &cn, u, RLC_FP_DIGS, s, RLC_FP_DIGS);
-	if (cn < 0) {
-		dv_zero(c - cn, RLC_FP_DIGS + cn);
-		mpn_sub_n(c, fp_prime_get(), c, RLC_FP_DIGS);
-	} else {
-		dv_zero(c + cn, RLC_FP_DIGS - cn);
+	carry = bn_mula_low(c, a, digit, size);
+	bn_add1_low(c + size, c + size, carry, size);
+	if (size > 1) {
+		carry = bn_mula_low(c + 1, a + 1, digit, size - 1);
+		bn_add1_low(c + size, c + size, carry, size);
 	}
+}
 
-#if FP_RDC == MONTY
-	dv_zero(t, RLC_FP_DIGS);
-	dv_copy(t + RLC_FP_DIGS, c, RLC_FP_DIGS);
-	mpn_tdiv_qr(u, c, 0, t, 2 * RLC_FP_DIGS, fp_prime_get(), RLC_FP_DIGS);
-#endif
+void bn_sqrn_low(dig_t *c, const dig_t *a, int size) {
+	dig_t *t = RLC_ALLOCA(dig_t, mpn_sec_sqr_itch(size));
+	mpn_sec_sqr(c, a, size, t);
+	RLC_FREE(t);
 }

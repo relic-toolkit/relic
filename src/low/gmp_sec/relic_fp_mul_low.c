@@ -24,34 +24,37 @@
 /**
  * @file
  *
- * Implementation of the multiple precision integer arithmetic multiplication
- * functions.
+ * Implementation of the low-level prime field multiplication functions.
  *
  * @ingroup bn
  */
 
 #include <gmp.h>
 
-#include "relic_bn.h"
-#include "relic_bn_low.h"
-#include "relic_util.h"
+#include "relic_fp.h"
+#include "relic_fp_low.h"
+#include "relic_alloc.h"
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void bn_sqra_low(dig_t *c, const dig_t *a, int size) {
-	dig_t carry, digit = *a;
-
-	carry = bn_mula_low(c, a, digit, size);
-	bn_add1_low(c + size, c + size, carry, size);
-	if (size > 1) {
-		carry = bn_mula_low(c + 1, a + 1, digit, size - 1);
-		bn_add1_low(c + size, c + size, carry, size);
-	}
+dig_t fp_mula_low(dig_t *c, const dig_t *a, dig_t digit) {
+	return mpn_addmul_1(c, a, RLC_FP_DIGS, digit);
 }
 
-void bn_sqrn_low(dig_t *c, const dig_t *a, int size) {
-	dig_t scratch[mpn_sec_sqr_itch(size)];
-	mpn_sec_sqr(c, a, size, scratch);
+dig_t fp_mul1_low(dig_t *c, const dig_t *a, dig_t digit) {
+	return mpn_mul_1(c, a, RLC_FP_DIGS, digit);
+}
+
+void fp_muln_low(dig_t *c, const dig_t *a, const dig_t *b) {
+	dig_t *t = RLC_ALLOCA(dig_t, mpn_sec_mul_itch(RLC_FP_DIGS, RLC_FP_DIGS));
+	mpn_sec_mul(c, a, RLC_FP_DIGS, b, RLC_FP_DIGS, t);
+	RLC_FREE(t);
+}
+
+void fp_mulm_low(dig_t *c, const dig_t *a, const dig_t *b) {
+	rlc_align dig_t t[2 * RLC_FP_DIGS];
+	fp_muln_low(t, a, b);
+	fp_rdc(c, t);
 }
