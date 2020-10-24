@@ -476,9 +476,7 @@ void fp_prime_conv(fp_t c, const bn_t a) {
 
 		bn_mod(t, a, &(core_get()->prime));
 #if FP_RDC == MONTY
-		bn_lsh(t, t, RLC_FP_DIGS * RLC_DIG);
-		bn_mod(t, t, &(core_get()->prime));
-		dv_copy(c, t->dp, RLC_FP_DIGS);
+		fp_mul(c, t->dp, (core_get()->conv).dp);
 #else
 		if (bn_is_zero(t)) {
 			fp_zero(c);

@@ -67,7 +67,7 @@ static int util(void) {
 	char str[RLC_FP_BITS + 2];
 	uint8_t bin[RLC_FP_BYTES];
 	fp_t a, b;
-	bn_t c;
+	bn_t c, e;
 	dig_t d;
 
 	fp_null(a);
@@ -78,6 +78,7 @@ static int util(void) {
 		fp_new(a);
 		fp_new(b);
 		bn_new(c);
+		bn_new(e);
 
 		TEST_BEGIN("copy and comparison are consistent") {
 			fp_rand(a);
@@ -167,6 +168,19 @@ static int util(void) {
 			TEST_ASSERT(fp_size_str(a, 2) == (1 + bn_bits(c)), end);
 		}
 		TEST_END;
+
+		TEST_BEGIN("converting to and from a prime field element are consistent") {
+			bn_rand(c, RLC_POS, RLC_FP_DIGS * RLC_DIG);
+			bn_mod_basic(c, c, &core_get()->prime);
+			fp_prime_conv(a, c);
+			fp_prime_back(e, a);
+			TEST_ASSERT(bn_cmp(c, e) == RLC_EQ, end);
+
+			fp_prime_conv_dig(a, c->dp[0]);
+			fp_prime_back(e, a);
+			TEST_ASSERT(bn_cmp_dig(e, c->dp[0]) == RLC_EQ, end);
+		}
+		TEST_END;
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);
@@ -176,6 +190,7 @@ static int util(void) {
 	fp_free(a);
 	fp_free(b);
 	bn_free(c);
+	bn_free(e);
 	return code;
 }
 
