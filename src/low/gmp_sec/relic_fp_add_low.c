@@ -42,8 +42,9 @@
 
 dig_t fp_add1_low(dig_t *c, const dig_t *a, const dig_t digit) {
 	dig_t *t = RLC_ALLOCA(dig_t, mpn_sec_add_1_itch(RLC_FP_DIGS));
-	return mpn_sec_add_1(c, a, RLC_FP_DIGS, digit, t);
+	dig_t r = mpn_sec_add_1(c, a, RLC_FP_DIGS, digit, t);
 	RLC_FREE(t);
+	return r;
 }
 
 dig_t fp_addn_low(dig_t *c, const dig_t *a, const dig_t *b) {
@@ -69,8 +70,9 @@ void fp_addc_low(dig_t *c, const dig_t *a, const dig_t *b) {
 
 dig_t fp_sub1_low(dig_t *c, const dig_t *a, const dig_t digit) {
 	dig_t *t = RLC_ALLOCA(dig_t, mpn_sec_sub_1_itch(RLC_FP_DIGS));
-	return mpn_sec_sub_1(c, a, RLC_FP_DIGS, digit, t);
+	dig_t r = mpn_sec_sub_1(c, a, RLC_FP_DIGS, digit, t);
 	RLC_FREE(t);
+	return r;
 }
 
 dig_t fp_subn_low(dig_t *c, const dig_t *a, const dig_t *b) {
