@@ -45,7 +45,6 @@
  * @param[in] p			- the new prime field modulus.
  */
 static void fp_prime_set(const bn_t p) {
-	dv_t s, q;
 	bn_t t;
 	fp_t r;
 	ctx_t *ctx = core_get();
@@ -54,9 +53,7 @@ static void fp_prime_set(const bn_t p) {
 		RLC_THROW(ERR_NO_VALID);
 	}
 
-	dv_null(s);
 	bn_null(t);
-	dv_null(q);
 	fp_null(r);
 
 	RLC_TRY {
@@ -71,17 +68,19 @@ static void fp_prime_set(const bn_t p) {
 
 		bn_mod_pre_monty(t, &(ctx->prime));
 		ctx->u = t->dp[0];
-		dv_zero(s, 2 * RLC_FP_DIGS);
-		s[2 * RLC_FP_DIGS] = 1;
-		dv_zero(q, 2 * RLC_FP_DIGS + 1);
-		dv_copy(q, ctx->prime.dp, RLC_FP_DIGS);
-		bn_divn_low(t->dp, ctx->conv.dp, s, 2 * RLC_FP_DIGS + 1, q, RLC_FP_DIGS);
-		ctx->conv.used = RLC_FP_DIGS;
-		bn_trim(&(ctx->conv));
+
+		/* compute R mod p */
 		bn_set_dig(&(ctx->one), 1);
 		bn_lsh(&(ctx->one), &(ctx->one), ctx->prime.used * RLC_DIG);
 		bn_mod(&(ctx->one), &(ctx->one), &(ctx->prime));
 
+		/* compute the R^2 mod p */
+		fp_add(r, ctx->one.dp, ctx->one.dp);
+		bn_set_dig(t, RLC_FP_DIGS * RLC_DIG);
+		fp_exp(ctx->conv.dp, r, t );
+		ctx->conv.used = RLC_FP_DIGS;
+		bn_trim(&(ctx->conv));
+	
 		#endif /* FP_RDC == MONTY */
 
 		/* Now look for proper quadratic/cubic non-residues. */
@@ -137,8 +136,6 @@ static void fp_prime_set(const bn_t p) {
 	}
 	RLC_FINALLY {
 		bn_free(t);
-		dv_free(s);
-		dv_free(q);
 		fp_free(r);
 	}
 }
@@ -476,9 +473,7 @@ void fp_prime_conv(fp_t c, const bn_t a) {
 
 		bn_mod(t, a, &(core_get()->prime));
 #if FP_RDC == MONTY
-		bn_lsh(t, t, RLC_FP_DIGS * RLC_DIG);
-		bn_mod(t, t, &(core_get()->prime));
-		dv_copy(c, t->dp, RLC_FP_DIGS);
+		fp_mul(c, t->dp, core_get()->conv.dp);
 #else
 		if (bn_is_zero(t)) {
 			fp_zero(c);
