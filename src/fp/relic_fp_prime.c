@@ -80,7 +80,7 @@ static void fp_prime_set(const bn_t p) {
 		fp_exp(ctx->conv.dp, r, t );
 		ctx->conv.used = RLC_FP_DIGS;
 		bn_trim(&(ctx->conv));
-	
+
 		#endif /* FP_RDC == MONTY */
 
 		/* Now look for proper quadratic/cubic non-residues. */
@@ -471,23 +471,19 @@ void fp_prime_conv(fp_t c, const bn_t a) {
 	RLC_TRY {
 		bn_new(t);
 
+		/* Reduce a modulo the prime to ensure bounds. */
 		bn_mod(t, a, &(core_get()->prime));
-#if FP_RDC == MONTY
-		fp_mul(c, t->dp, core_get()->conv.dp);
-#else
+
 		if (bn_is_zero(t)) {
 			fp_zero(c);
 		} else {
-			int i;
-			for (i = 0; i < t->used; i++) {
-				c[i] = t->dp[i];
-			}
-			for (; i < RLC_FP_DIGS; i++) {
-				c[i] = 0;
-			}
-		}
-		(void)t;
+			/* Copy used digits, fill the rest with zero. */
+			dv_copy(c, t->dp, t->used);
+			dv_zero(c + t->used, RLC_FP_DIGS - t->used);
+#if FP_RDC == MONTY
+			fp_mul(c, c, core_get()->conv.dp);
 #endif
+		}
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);

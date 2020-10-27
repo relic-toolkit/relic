@@ -170,12 +170,16 @@ static int util(void) {
 		TEST_END;
 
 		TEST_BEGIN("converting to and from a prime field element are consistent") {
-			bn_rand(c, RLC_POS, RLC_FP_DIGS * RLC_DIG);
-			bn_mod_basic(c, c, &core_get()->prime);
+			bn_rand(c, RLC_POS, FP_PRIME);
+			bn_mod(c, c, &core_get()->prime);
 			fp_prime_conv(a, c);
 			fp_prime_back(e, a);
 			TEST_ASSERT(bn_cmp(c, e) == RLC_EQ, end);
-
+			bn_rand(c, RLC_POS, FP_PRIME / 2);
+			bn_mod(c, c, &core_get()->prime);
+			fp_prime_conv(a, c);
+			fp_prime_back(e, a);
+			TEST_ASSERT(bn_cmp(c, e) == RLC_EQ, end);
 			fp_prime_conv_dig(a, c->dp[0]);
 			fp_prime_back(e, a);
 			TEST_ASSERT(bn_cmp_dig(e, c->dp[0]) == RLC_EQ, end);
