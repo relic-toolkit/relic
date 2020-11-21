@@ -52,7 +52,11 @@
 
 #else /* _MSC_VER */
 
+#if OPSYS == FREEBSD || OPSYS == NETBSD
+#include <stdlib.h>
+#else
 #include <alloca.h>
+#endif
 
 /*
  * Dynamiclly allocates an array of "Type" with the specified size on the stack.

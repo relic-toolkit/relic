@@ -671,8 +671,10 @@
 #define WINDOWS  4
 /** Android operating system. */
 #define DROID    5
-/* Arduino platform. */
+/** Arduino platform. */
 #define DUINO    6
+/** OpenBSD operating system. */
+#define OPENBSD  7
 /** Detected operation system. */
 #cmakedefine OPSYS    @OPSYS@
 

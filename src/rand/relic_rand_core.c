@@ -117,7 +117,7 @@ void rand_init(void) {
 	}
 #elif SEED == LIBC
 
-#if OPSYS == FREEBSD
+#if OPSYS == FREEBSD || OPSYS == NETBSD
 	/* This is better than using a fixed value. */
 	srandomdev();
 	for (int i = 0; i < RLC_RAND_SEED; i++) {
