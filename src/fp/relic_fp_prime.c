@@ -57,9 +57,7 @@ static void fp_prime_set(const bn_t p) {
 	fp_null(r);
 
 	RLC_TRY {
-		dv_new(s);
 		bn_new(t);
-		dv_new(q);
 		fp_new(r);
 
 		bn_copy(&(ctx->prime), p);
