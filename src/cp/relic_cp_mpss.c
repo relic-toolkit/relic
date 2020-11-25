@@ -105,6 +105,7 @@ int cp_mpss_sig(g1_t a, g1_t b[2], bn_t m[2], bn_t r[2], bn_t s[2], mt_t mul_tri
 		g1_rand(b[0]);
 		g1_rand(b[1]);
 		g1_add(a, b[0], b[1]);
+		g1_norm(a, a);
 		g1_mul(b[0], a, d[0]);
 		g1_mul(b[1], a, d[1]);
 	} RLC_CATCH_ANY {
@@ -291,7 +292,10 @@ int cp_mpsb_sig(g1_t a, g1_t b[2], bn_t m[][2], bn_t r[2], bn_t s[][2],
 		bn_add(d[1], t[1], r[1]);
 		bn_mod(d[1], d[1], n);
 		/* Compute signature in MPC. */
-		g1_rand(a);
+		g1_rand(b[0]);
+		g1_rand(b[1]);
+		g1_add(a, b[0], b[1]);
+		g1_norm(a, a);
 		g1_mul(b[0], a, d[0]);
 		g1_mul(b[1], a, d[1]);
 	} RLC_CATCH_ANY {
