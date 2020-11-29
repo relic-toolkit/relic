@@ -1187,10 +1187,10 @@ static int mpss(void) {
 			mt_gen(tri[2], n);
 			gt_exp_gen(e[0], tri[2][0]->b);
 			gt_exp_gen(e[1], tri[2][1]->b);
-			tri[2][0]->bt = &e[0];
-			tri[2][1]->bt = &e[1];
 			gt_exp_gen(f[0], tri[2][0]->c);
 			gt_exp_gen(f[1], tri[2][1]->c);
+			tri[2][0]->bt = &e[0];
+			tri[2][1]->bt = &e[1];
 			tri[2][0]->ct = &f[0];
 			tri[2][1]->ct = &f[1];
 			TEST_ASSERT(cp_mpss_gen(u, v, h, x, y) == RLC_OK, end);
@@ -1217,10 +1217,10 @@ static int mpss(void) {
 			mt_gen(tri[2], n);
 			gt_exp_gen(e[0], tri[2][0]->b);
 			gt_exp_gen(e[1], tri[2][1]->b);
-			tri[2][0]->bt = &e[0];
-			tri[2][1]->bt = &e[1];
 			gt_exp_gen(f[0], tri[2][0]->c);
 			gt_exp_gen(f[1], tri[2][1]->c);
+			tri[2][0]->bt = &e[0];
+			tri[2][1]->bt = &e[1];
 			tri[2][0]->ct = &f[0];
 			tri[2][1]->ct = &f[1];
 			TEST_ASSERT(cp_mpsb_gen(u, _v, h, x, _y, 5) == RLC_OK, end);

@@ -913,14 +913,13 @@ static void mpss(void) {
 	bn_t m[2], n, u[2], v[2], ms[10][2], _v[10][2];
 	g1_t g, s[2];
 	g2_t h, x[2], y[2], _y[10][2];
-	gt_t r;
+	gt_t r[2];
 	mt_t tri[3][2];
 	pt_t t[2];
 
 	bn_null(n);
 	g1_null(g);
 	g2_null(h);
-	gt_null(r);
 
 	bn_new(n);
 	g1_new(g);
@@ -933,6 +932,7 @@ static void mpss(void) {
 		g1_null(s[i]);
 		g2_null(x[i]);
 		g2_null(y[i]);
+		gt_null(r[i]);
 		mt_null(tri[0][i]);
 		mt_null(tri[1][i]);
 		mt_null(tri[2][i]);
@@ -943,6 +943,7 @@ static void mpss(void) {
 		g1_new(s[i]);
 		g2_new(x[i]);
 		g2_new(y[i]);
+		gt_new(r[i]);
 		mt_new(tri[0][i]);
 		mt_new(tri[1][i]);
 		mt_new(tri[2][i]);
@@ -971,6 +972,12 @@ static void mpss(void) {
 	if (bn_sign(m[0]) == RLC_NEG) {
 		bn_add(m[0], m[0], n);
 	}
+	gt_exp_gen(r[0], tri[2][0]->c);
+	gt_exp_gen(r[1], tri[2][1]->c);
+	tri[2][0]->bt = &r[0];
+	tri[2][1]->bt = &r[1];
+	tri[2][0]->ct = &r[0];
+	tri[2][1]->ct = &r[1];
 
 	BENCH_BEGIN("cp_mpss_gen") {
 		BENCH_ADD(cp_mpss_gen(u, v, h, x, y));
@@ -985,7 +992,7 @@ static void mpss(void) {
 	} BENCH_DIV(2);
 
 	BENCH_BEGIN("cp_mpss_ver") {
-		BENCH_ADD(cp_mpss_ver(r, g, s, m, h, x[0], y[0], tri[2], t));
+		BENCH_ADD(cp_mpss_ver(r[0], g, s, m, h, x[0], y[0], tri[2], t));
 	} BENCH_DIV(2);
 
 	g1_get_ord(n);
@@ -1007,11 +1014,11 @@ static void mpss(void) {
 	} BENCH_DIV(2);
 
 	BENCH_BEGIN("cp_mpsb_ver (10)") {
-		BENCH_ADD(cp_mpsb_ver(r, g, s, ms, h, x[0], _y, NULL, tri[2], t, 10));
+		BENCH_ADD(cp_mpsb_ver(r[1], g, s, ms, h, x[0], _y, NULL, tri[2], t, 10));
 	} BENCH_DIV(2);
 
 	BENCH_BEGIN("cp_mpsb_ver (10,sk)") {
-		BENCH_ADD(cp_mpsb_ver(r, g, s, ms, h, x[0], _y, _v, tri[2], t, 10));
+		BENCH_ADD(cp_mpsb_ver(r[1], g, s, ms, h, x[0], _y, _v, tri[2], t, 10));
 	} BENCH_DIV(2);
 
   	bn_free(n);
@@ -1024,6 +1031,7 @@ static void mpss(void) {
 		g1_free(s[i]);
 		g2_free(x[i]);
 		g2_free(y[i]);
+		gt_null(r[i]);
 		mt_free(tri[0][i]);
 		mt_free(tri[1][i]);
 		mt_free(tri[2][i]);
