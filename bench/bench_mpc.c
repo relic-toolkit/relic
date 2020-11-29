@@ -146,10 +146,12 @@ static void pair_triple(void) {
 		bn_add(k[0], k[0], n);
 	}
 	bn_mod(k[0], k[0], n);
+	tri[0]->b1 = tri[0]->c1 = &p[0];
+	tri[1]->b1 = tri[1]->c1 = &p[1];
 
 	BENCH_BEGIN("g1_mul_lcl") {
-		BENCH_ADD(g1_mul_lcl(l[0], d[0], p[0], k[0], p[0], tri[0]));
-		BENCH_ADD(g1_mul_lcl(l[1], d[1], p[1], k[1], p[1], tri[1]))
+		BENCH_ADD(g1_mul_lcl(l[0], d[0], k[0], p[0], tri[0]));
+		BENCH_ADD(g1_mul_lcl(l[1], d[1], k[1], p[1], tri[1]))
 	} BENCH_DIV(2);
 
 	BENCH_BEGIN("g1_mul_bct") {
@@ -157,8 +159,8 @@ static void pair_triple(void) {
 	} BENCH_END;
 
 	BENCH_BEGIN("g1_mul_mpc") {
-		BENCH_ADD(g1_mul_mpc(d[0], l[0], d[0], tri[0], p[0], 0));
-		BENCH_ADD(g1_mul_mpc(d[1], l[1], d[1], tri[1], p[1], 1));
+		BENCH_ADD(g1_mul_mpc(d[0], l[0], d[0], tri[0], 0));
+		BENCH_ADD(g1_mul_mpc(d[1], l[1], d[1], tri[1], 1));
 	} BENCH_DIV(2);
 
 	mt_gen(tri, n);
@@ -178,10 +180,12 @@ static void pair_triple(void) {
 		bn_add(k[0], k[0], n);
 	}
 	bn_mod(k[0], k[0], n);
+	tri[0]->b2 = tri[0]->c2 = &q[0];
+	tri[1]->b2 = tri[1]->c2 = &q[1];
 
 	BENCH_BEGIN("g2_mul_lcl") {
-		BENCH_ADD(g2_mul_lcl(l[0], e[0], q[0], k[0], q[0], tri[0]));
-		BENCH_ADD(g2_mul_lcl(l[1], e[1], q[1], k[1], q[1], tri[1]));
+		BENCH_ADD(g2_mul_lcl(l[0], e[0], k[0], q[0], tri[0]));
+		BENCH_ADD(g2_mul_lcl(l[1], e[1], k[1], q[1], tri[1]));
 	} BENCH_DIV(2);
 
 	BENCH_BEGIN("g2_mul_bct") {
@@ -189,8 +193,8 @@ static void pair_triple(void) {
 	} BENCH_END;
 
 	BENCH_BEGIN("g2_mul_mpc") {
-		BENCH_ADD(g2_mul_mpc(e[0], l[0], e[0], tri[0], q[0], 0));
-		BENCH_ADD(g2_mul_mpc(e[1], l[1], e[1], tri[1], q[1], 1));
+		BENCH_ADD(g2_mul_mpc(e[0], l[0], e[0], tri[0], 0));
+		BENCH_ADD(g2_mul_mpc(e[1], l[1], e[1], tri[1], 1));
 	} BENCH_DIV(2);
 
 	mt_gen(tri, n);
@@ -210,10 +214,12 @@ static void pair_triple(void) {
 		bn_add(k[0], k[0], n);
 	}
 	bn_mod(k[0], k[0], n);
+	tri[0]->bt = tri[0]->ct = &r[0];
+	tri[1]->bt = tri[1]->ct = &r[1];
 
 	BENCH_BEGIN("gt_exp_lcl") {
-		BENCH_ADD(gt_exp_lcl(l[0], f[0], r[0], k[0], r[0], tri[0]));
-		BENCH_ADD(gt_exp_lcl(l[1], f[1], r[1], k[1], r[1], tri[1]));
+		BENCH_ADD(gt_exp_lcl(l[0], f[0], k[0], r[0], tri[0]));
+		BENCH_ADD(gt_exp_lcl(l[1], f[1], k[1], r[1], tri[1]));
 	} BENCH_DIV(2);
 
 	BENCH_BEGIN("gt_exp_bct") {
@@ -221,8 +227,8 @@ static void pair_triple(void) {
 	} BENCH_END;
 
 	BENCH_BEGIN("gt_exp_mpc") {
-		BENCH_ADD(gt_exp_mpc(f[0], l[0], f[0], tri[0], r[0], 0));
-		BENCH_ADD(gt_exp_mpc(f[1], l[1], f[1], tri[1], r[1], 1));
+		BENCH_ADD(gt_exp_mpc(f[0], l[0], f[0], tri[0], 0));
+		BENCH_ADD(gt_exp_mpc(f[1], l[1], f[1], tri[1], 1));
 	} BENCH_DIV(2);
 
 	/* Generate random inputs and triple. */

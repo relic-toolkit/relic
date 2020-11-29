@@ -137,9 +137,9 @@ static int triple(void) {
 
 static int pairing(void) {
 	int j, code = RLC_ERR;
-	g1_t d[2], p[2], _p;
-	g2_t e[2], q[2], _q;
-	gt_t f[2], r[2], _r;
+	g1_t b1[2], c1[2], d[2], p[2], _p;
+	g2_t b2[2], c2[2], e[2], q[2], _q;
+	gt_t bt[2], ct[2], f[2], r[2], _r;
 	bn_t k[2], l[2], n;
 	mt_t tri[2];
 	pt_t t[2];
@@ -156,6 +156,12 @@ static int pairing(void) {
 		bn_new(n);
 
 		for (j = 0; j < 2; j++) {
+			g1_null(b1[j]);
+			g2_null(b2[j]);
+			gt_null(bt[j]);
+			g1_null(c1[j]);
+			g2_null(c2[j]);
+			gt_null(ct[j]);
 			g1_null(d[j]);
 			g2_null(e[j]);
 			bn_null(k[j]);
@@ -166,6 +172,12 @@ static int pairing(void) {
 			gt_null(f[j]);
 			mt_null(tri[j]);
 			pt_null(t[j]);
+			g1_new(b1[j]);
+			g2_new(b2[j]);
+			gt_new(bt[j]);
+			g1_new(c1[j]);
+			g2_new(c2[j]);
+			gt_new(ct[j]);
 			g1_new(d[j]);
 			g2_new(e[j]);
 			bn_new(k[j]);
@@ -197,15 +209,24 @@ static int pairing(void) {
 			}
 			bn_mod(k[0], k[0], n);
 
+			g1_mul_gen(b1[0], tri[0]->b);
+			g1_mul_gen(b1[1], tri[1]->b);
+			g1_mul_gen(c1[0], tri[0]->c);
+			g1_mul_gen(c1[1], tri[1]->c);
+			tri[0]->b1 = &b1[0];
+			tri[1]->b1 = &b1[1];
+			tri[0]->c1 = &c1[0];
+			tri[1]->c1 = &c1[1];
+
 			/* Compute public values locally. */
-			g1_mul_lcl(l[0], d[0], p[0], k[0], p[0], tri[0]);
-			g1_mul_lcl(l[1], d[1], p[1], k[1], p[1], tri[1]);
+			g1_mul_lcl(l[0], d[0], k[0], p[0], tri[0]);
+			g1_mul_lcl(l[1], d[1], k[1], p[1], tri[1]);
 			/* Broadcast public values. */
 			g1_mul_bct(l, d);
 			TEST_ASSERT(bn_cmp(l[0], l[1]) == RLC_EQ, end);
 			TEST_ASSERT(g1_cmp(d[0], d[1]) == RLC_EQ, end);
-			g1_mul_mpc(d[0], l[0], d[0], tri[0], p[0], 0);
-			g1_mul_mpc(d[1], l[1], d[1], tri[1], p[1], 1);
+			g1_mul_mpc(d[0], l[0], d[0], tri[0], 0);
+			g1_mul_mpc(d[1], l[1], d[1], tri[1], 1);
 			g1_add(d[0], d[0], d[1]);
 			g1_norm(d[0], d[0]);
 			TEST_ASSERT(g1_cmp(_p, d[0]) == RLC_EQ, end);
@@ -227,15 +248,26 @@ static int pairing(void) {
 			}
 			bn_mod(k[0], k[0], n);
 
+			g2_mul_gen(b2[0], tri[0]->b);
+			g2_mul_gen(b2[1], tri[1]->b);
+			g2_mul_gen(c2[0], tri[0]->c);
+			g2_mul_gen(c2[1], tri[1]->c);
+			tri[0]->b2 = &b2[0];
+			tri[1]->b2 = &b2[1];
+			tri[0]->c2 = &c2[0];
+			tri[1]->c2 = &c2[1];
+
 			/* Compute public values locally. */
-			g2_mul_lcl(l[0], e[0], q[0], k[0], q[0], tri[0]);
-			g2_mul_lcl(l[1], e[1], q[1], k[1], q[1], tri[1]);
+			g2_mul_lcl(l[0], e[0], k[0], q[0], tri[0]);
+			g2_mul_lcl(l[1], e[1], k[1], q[1], tri[1]);
 			/* Broadcast public values. */
 			g2_mul_bct(l, e);
 			TEST_ASSERT(bn_cmp(l[0], l[1]) == RLC_EQ, end);
 			TEST_ASSERT(g2_cmp(e[0], e[1]) == RLC_EQ, end);
-			g2_mul_mpc(e[0], l[0], e[0], tri[0], q[0], 0);
-			g2_mul_mpc(e[1], l[1], e[1], tri[1], q[1], 1);
+			g2_mul_gen(c2[0], tri[0]->c);
+			g2_mul_gen(c2[1], tri[1]->c);
+			g2_mul_mpc(e[0], l[0], e[0], tri[0], 0);
+			g2_mul_mpc(e[1], l[1], e[1], tri[1], 1);
 			g2_add(e[0], e[0], e[1]);
 			g2_norm(e[0], e[0]);
 			TEST_ASSERT(g2_cmp(_q, e[0]) == RLC_EQ, end);
@@ -257,15 +289,24 @@ static int pairing(void) {
 			}
 			bn_mod(k[0], k[0], n);
 
+			gt_exp_gen(bt[0], tri[0]->b);
+			gt_exp_gen(bt[1], tri[1]->b);
+			gt_exp_gen(ct[0], tri[0]->c);
+			gt_exp_gen(ct[1], tri[1]->c);
+			tri[0]->bt = &bt[0];
+			tri[1]->bt = &bt[1];
+			tri[0]->ct = &ct[0];
+			tri[1]->ct = &ct[1];
+
 			/* Compute public values locally. */
-			gt_exp_lcl(l[0], f[0], r[0], k[0], r[0], tri[0]);
-			gt_exp_lcl(l[1], f[1], r[1], k[1], r[1], tri[1]);
+			gt_exp_lcl(l[0], f[0], k[0], r[0], tri[0]);
+			gt_exp_lcl(l[1], f[1], k[1], r[1], tri[1]);
 			/* Broadcast public values. */
 			gt_exp_bct(l, f);
 			TEST_ASSERT(bn_cmp(l[0], l[1]) == RLC_EQ, end);
 			TEST_ASSERT(gt_cmp(f[0], f[1]) == RLC_EQ, end);
-			gt_exp_mpc(f[0], l[0], f[0], tri[0], r[0], 0);
-			gt_exp_mpc(f[1], l[1], f[1], tri[1], r[1], 1);
+			gt_exp_mpc(f[0], l[0], f[0], tri[0], 0);
+			gt_exp_mpc(f[1], l[1], f[1], tri[1], 1);
 			gt_mul(f[0], f[0], f[1]);
 			TEST_ASSERT(gt_cmp(_r, f[0]) == RLC_EQ, end);
 		} TEST_END;
@@ -316,6 +357,12 @@ static int pairing(void) {
 	gt_free(_r);
 	bn_free(n);
 	for (j = 0; j < 2; j++) {
+		g1_free(b1[j]);
+		g2_free(b2[j]);
+		gt_free(bt[j]);
+		g1_free(c1[j]);
+		g2_free(c2[j]);
+		gt_free(ct[j]);
 		g1_free(d[j]);
 		g2_free(e[j]);
 		bn_free(k[j]);

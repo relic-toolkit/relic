@@ -51,8 +51,18 @@ typedef struct {
 	bn_t a;
 	/* The share of the second operand. */
 	bn_t b;
+	union {
+		g1_t *b1;
+		g2_t *b2;
+		gt_t *bt;
+	};
 	/* The share of the multiplication. */
 	bn_t c;
+	union {
+		g1_t *c1;
+		g2_t *c2;
+		gt_t *ct;
+	};
 } mt_st;
 
 /**
@@ -154,7 +164,7 @@ typedef pt_st *pt_t;
 
 #elif ALLOC == STACK
 #define mt_free(A)															\
-	bn_free((A)->a);															\
+	bn_free((A)->a);														\
 	bn_free((A)->b);														\
 	bn_free((A)->c);														\
 	A = NULL;																\
@@ -277,12 +287,11 @@ void mt_mul_mpc(bn_t r, bn_t d, bn_t e, bn_t n, mt_t tri, int party);
  *
  * @param[out] d 				- the share of the masked scalar.
  * @param[out] q 				- the share of the masked point to multiply.
- * @param[out] b 				- the cached value of the local computation.
  * @param[in] x 				- the scalar.
  * @param[in] p 				- the point to multiply.
  * @param[in] tri 				- the multiplication triple.
 */
-void g1_mul_lcl(bn_t d, g1_t q, g1_t b, bn_t x, g1_t p, mt_t tri);
+void g1_mul_lcl(bn_t d, g1_t q, bn_t x, g1_t p, mt_t tri);
 
 /**
  * Opens the public values in an MPC scalar multiplication in G1.
@@ -300,22 +309,20 @@ void g1_mul_bct(bn_t d[2], g1_t q[2]);
  * @param[in] d 				- the first public value.
  * @param[in] q 				- the second public value.
  * @param[in] tri 				- the multiplication triple.
- * @param[in] b 				- the cached value from the local computation.
  * @param[in] party				- the party performing the computation.
  */
-void g1_mul_mpc(g1_t r, bn_t d, g1_t q, mt_t tri, g1_t b, int party);
+void g1_mul_mpc(g1_t r, bn_t d, g1_t q, mt_t tri, int party);
 
 /**
  * Performs the local work for a MPC scalar multiplication in G2.
  *
  * @param[out] d 				- the share of the masked scalar.
  * @param[out] q 				- the share of the masked point to multiply.
- * @param[out] b 				- the cached value of the local computation.
  * @param[in] x 				- the scalar.
  * @param[in] p 				- the point to multiply.
  * @param[in] tri 				- the multiplication triple.
 */
-void g2_mul_lcl(bn_t d, g2_t q, g2_t b, bn_t x, g2_t p, mt_t tri);
+void g2_mul_lcl(bn_t d, g2_t q, bn_t x, g2_t p, mt_t tri);
 
 /**
  * Opens the public values in an MPC scalar multiplication in G2.
@@ -333,22 +340,20 @@ void g2_mul_bct(bn_t d[2], g2_t q[2]);
  * @param[in] d 				- the first public value.
  * @param[in] q 				- the second public value.
  * @param[in] tri 				- the multiplication triple.
- * @param[in] b 				- the cached value from the local computation.
  * @param[in] party				- the party performing the computation.
  */
-void g2_mul_mpc(g2_t r, bn_t d, g2_t q, mt_t tri, g2_t b, int party);
+void g2_mul_mpc(g2_t r, bn_t d, g2_t q, mt_t tri, int party);
 
 /**
  * Performs the local work for a MPC scalar multiplication in G2.
  *
  * @param[out] d 				- the share of the masked scalar.
  * @param[out] q 				- the share of the masked point to multiply.
- * @param[out] b 				- the cached value of the local computation.
  * @param[in] x 				- the scalar.
  * @param[in] p 				- the point to multiply.
  * @param[in] tri 				- the multiplication triple.
 */
-void gt_exp_lcl(bn_t d, gt_t q, gt_t b, bn_t x, gt_t p, mt_t tri);
+void gt_exp_lcl(bn_t d, gt_t q, bn_t x, gt_t p, mt_t tri);
 
 /**
  * Opens the public values in an MPC scalar multiplication in G2.
@@ -366,10 +371,9 @@ void gt_exp_bct(bn_t d[2], gt_t q[2]);
  * @param[in] d 				- the first public value.
  * @param[in] q 				- the second public value.
  * @param[in] tri 				- the multiplication triple.
- * @param[in] b 				- the cached value from the local computation.
  * @param[in] party				- the party performing the computation.
  */
-void gt_exp_mpc(gt_t r, bn_t d, gt_t q, mt_t tri, gt_t b, int party);
+void gt_exp_mpc(gt_t r, bn_t d, gt_t q, mt_t tri, int party);
 
 /**
  * Generates a pairing triple.

@@ -37,7 +37,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void g1_mul_lcl(bn_t d, g1_t q, g1_t b, bn_t x, g1_t p, mt_t tri) {
+void g1_mul_lcl(bn_t d, g1_t q, bn_t x, g1_t p, mt_t tri) {
 	bn_t n;
 
 	bn_null(n);
@@ -58,8 +58,7 @@ void g1_mul_lcl(bn_t d, g1_t q, g1_t b, bn_t x, g1_t p, mt_t tri) {
 		/* [Q] = [P] - [B] = [b]G. */
 		/* Copy first to avoid overwriting P. */
 		g1_copy(q, p);
-		g1_mul_gen(b, tri->b);
-		g1_sub(q, q, b);
+		g1_sub(q, q, *tri->b1);
 		g1_norm(q, q);
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -90,7 +89,7 @@ void g1_mul_bct(bn_t d[2], g1_t q[2]) {
 	}
 }
 
-void g1_mul_mpc(g1_t r, bn_t d, g1_t q, mt_t tri, g1_t b, int party) {
+void g1_mul_mpc(g1_t r, bn_t d, g1_t q, mt_t tri, int party) {
 	g1_t t;
 
 	g1_null(t);
@@ -100,17 +99,15 @@ void g1_mul_mpc(g1_t r, bn_t d, g1_t q, mt_t tri, g1_t b, int party) {
 
 		if (party == 0) {
 			/* For one party, compute [B] + Q. */
-			g1_add(t, b, q);
+			g1_add(t, *tri->b1, q);
 			g1_norm(t, t);
 		} else {
-			g1_copy(t, b);
+			g1_copy(t, *tri->b1);
 		}
 		/* Compute [a]Q + d([B] + Q) or d[B]. */
 		g1_mul_sim(r, q, tri->a, t, d);
-		/* Compute [C] = [ab]G. */
-		g1_mul_gen(t, tri->c);
 		/* R = [a]Q + d[B] + dQ + [C] = [xy] */
-		g1_add(r, r, t);
+		g1_add(r, r, *tri->c1);
 		g1_norm(r, r);
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -119,7 +116,7 @@ void g1_mul_mpc(g1_t r, bn_t d, g1_t q, mt_t tri, g1_t b, int party) {
 	}
 }
 
-void g2_mul_lcl(bn_t d, g2_t q, g2_t b, bn_t x, g2_t p, mt_t tri) {
+void g2_mul_lcl(bn_t d, g2_t q, bn_t x, g2_t p, mt_t tri) {
 	bn_t n;
 
 	bn_null(n);
@@ -140,8 +137,7 @@ void g2_mul_lcl(bn_t d, g2_t q, g2_t b, bn_t x, g2_t p, mt_t tri) {
 		/* [Q] = [P] - [B] = [b]G. */
 		/* Copy first to avoid overwriting P. */
 		g2_copy(q, p);
-		g2_mul_gen(b, tri->b);
-		g2_sub(q, q, b);
+		g2_sub(q, q, *tri->b2);
 		g2_norm(q, q);
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -172,7 +168,7 @@ void g2_mul_bct(bn_t d[2], g2_t q[2]) {
 	}
 }
 
-void g2_mul_mpc(g2_t r, bn_t d, g2_t q, mt_t tri, g2_t b, int party) {
+void g2_mul_mpc(g2_t r, bn_t d, g2_t q, mt_t tri, int party) {
 	g2_t t;
 
 	g2_null(t);
@@ -182,17 +178,15 @@ void g2_mul_mpc(g2_t r, bn_t d, g2_t q, mt_t tri, g2_t b, int party) {
 
 		if (party == 0) {
 			/* For one party, compute [B] + Q. */
-			g2_add(t, b, q);
+			g2_add(t, *tri->b2, q);
 			g2_norm(t, t);
 		} else {
-			g2_copy(t, b);
+			g2_copy(t, *tri->b2);
 		}
 		/* Compute [a]Q + d([B] + Q) or d[B]. */
 		g2_mul_sim(r, q, tri->a, t, d);
-		/* Compute [C] = [ab]G. */
-		g2_mul_gen(t, tri->c);
 		/* R = [a]Q + d[B] + dQ + [C] = [xy] */
-		g2_add(r, r, t);
+		g2_add(r, r, *tri->c2);
 		g2_norm(r, r);
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -201,7 +195,7 @@ void g2_mul_mpc(g2_t r, bn_t d, g2_t q, mt_t tri, g2_t b, int party) {
 	}
 }
 
-void gt_exp_lcl(bn_t d, gt_t q, gt_t b, bn_t x, gt_t p, mt_t tri) {
+void gt_exp_lcl(bn_t d, gt_t q, bn_t x, gt_t p, mt_t tri) {
 	bn_t n;
 
 	bn_null(n);
@@ -222,10 +216,9 @@ void gt_exp_lcl(bn_t d, gt_t q, gt_t b, bn_t x, gt_t p, mt_t tri) {
 		/* [Q] = [P] - [B] = [b]G. */
 		/* Copy first to avoid overwriting P. */
 		gt_copy(q, p);
-		gt_exp_gen(b, tri->b);
-		gt_inv(b, b);
-		gt_mul(q, q, b);
-		gt_inv(b, b);
+		gt_inv(*tri->bt, *tri->bt);
+		gt_mul(q, q, *tri->bt);
+		gt_inv(*tri->bt, *tri->bt);
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
@@ -254,7 +247,7 @@ void gt_exp_bct(bn_t d[2], gt_t q[2]) {
 	}
 }
 
-void gt_exp_mpc(gt_t r, bn_t d, gt_t q, mt_t tri, gt_t b, int party) {
+void gt_exp_mpc(gt_t r, bn_t d, gt_t q, mt_t tri, int party) {
 	gt_t t;
 
 	gt_null(t);
@@ -264,16 +257,14 @@ void gt_exp_mpc(gt_t r, bn_t d, gt_t q, mt_t tri, gt_t b, int party) {
 
 		if (party == 0) {
 			/* For one party, compute [B] + Q. */
-			gt_mul(t, b, q);
+			gt_mul(t, *tri->bt, q);
 		} else {
-			gt_copy(t, b);
+			gt_copy(t, *tri->bt);
 		}
 		/* Compute [a]Q + d([B] + Q) or d[B]. */
 		gt_exp_sim(r, q, tri->a, t, d);
-		/* Compute [C] = [ab]G. */
-		gt_exp_gen(t, tri->c);
 		/* R = [a]Q + d[B] + dQ + [C] = [xy] */
-		gt_mul(r, r, t);
+		gt_mul(r, r, *tri->ct);
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {

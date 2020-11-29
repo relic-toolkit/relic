@@ -126,7 +126,7 @@ int cp_mpss_ver(gt_t e, g1_t a, g1_t b[2], bn_t m[2], g2_t h, g2_t x, g2_t y,
 	bn_t n, d[2], r[2];
 	g1_t p[2], q[2];
 	g2_t z[2], w[2];
-	gt_t alpha[2], beta[2], gamma[2];
+	gt_t alpha[2], beta[2];
 
 	bn_null(n);
 
@@ -141,7 +141,6 @@ int cp_mpss_ver(gt_t e, g1_t a, g1_t b[2], bn_t m[2], g2_t h, g2_t x, g2_t y,
 			g2_null(w[i]);
 			gt_null(alpha[i]);
 			gt_null(beta[i]);
-			gt_null(gamma[i]);
 			bn_new(d[i]);
 			bn_new(r[i]);
 			g1_new(p[i]);
@@ -150,7 +149,6 @@ int cp_mpss_ver(gt_t e, g1_t a, g1_t b[2], bn_t m[2], g2_t h, g2_t x, g2_t y,
 			g2_new(w[i]);
 			gt_new(alpha[i]);
 			gt_new(beta[i]);
-			gt_new(gamma[i]);
 		}
 		g1_get_ord(n);
 		/* Compute Z = X + [m] * Y. */
@@ -177,12 +175,12 @@ int cp_mpss_ver(gt_t e, g1_t a, g1_t b[2], bn_t m[2], g2_t h, g2_t x, g2_t y,
 		pc_map_sim(beta[1], q, w, 2);
 
 		/* Compute [alpha] = e([r] * [sigma_2, H]).  */
-		gt_exp_lcl(d[0], alpha[0], gamma[0], r[0], beta[0], sm_tri[0]);
-		gt_exp_lcl(d[1], alpha[1], gamma[1], r[1], beta[1], sm_tri[1]);
+		gt_exp_lcl(d[0], alpha[0], r[0], beta[0], sm_tri[0]);
+		gt_exp_lcl(d[1], alpha[1], r[1], beta[1], sm_tri[1]);
 		/* Broadcast public values. */
 		gt_exp_bct(d, alpha);
-		gt_exp_mpc(beta[0], d[0], alpha[0], sm_tri[0], gamma[0], 0);
-		gt_exp_mpc(beta[1], d[1], alpha[1], sm_tri[1], gamma[1], 1);
+		gt_exp_mpc(beta[0], d[0], alpha[0], sm_tri[0], 0);
+		gt_exp_mpc(beta[1], d[1], alpha[1], sm_tri[1], 1);
 
 		if (g1_is_infty(a)) {
 			gt_rand(e);
@@ -203,7 +201,6 @@ int cp_mpss_ver(gt_t e, g1_t a, g1_t b[2], bn_t m[2], g2_t h, g2_t x, g2_t y,
 			g2_free(w[i]);
 			gt_free(alpha[i]);
 			gt_free(beta[i]);
-			gt_free(gamma[i]);
 		}
 	}
 	return result;
@@ -317,7 +314,7 @@ int cp_mpsb_ver(gt_t e, g1_t a, g1_t b[2], bn_t m[][2], g2_t h, g2_t x,
 	bn_t n, _t, t[2], d[2], r[2], *_m = RLC_ALLOCA(bn_t, 2 * l);
 	g1_t p[2], q[2];
 	g2_t w[2], z[2], *_y = RLC_ALLOCA(g2_t, 2 * l);
-	gt_t alpha[2], beta[2], gamma[2];
+	gt_t alpha[2], beta[2];
 
 	bn_null(n);
 	bn_null(_t);
@@ -334,7 +331,6 @@ int cp_mpsb_ver(gt_t e, g1_t a, g1_t b[2], bn_t m[][2], g2_t h, g2_t x,
 			g2_null(w[i]);
 			gt_null(alpha[i]);
 			gt_null(beta[i]);
-			gt_null(gamma[i]);
 			bn_new(d[i]);
 			bn_new(r[i]);
 			bn_new(t[i]);
@@ -344,7 +340,6 @@ int cp_mpsb_ver(gt_t e, g1_t a, g1_t b[2], bn_t m[][2], g2_t h, g2_t x,
 			g2_new(z[i]);
 			gt_new(alpha[i]);
 			gt_new(beta[i]);
-			gt_new(gamma[i]);
 			for (int j = 0; j < l; j++) {
 				g2_null(_y[l*i + j]);
 				g2_new(_y[l*i + j]);
@@ -403,12 +398,12 @@ int cp_mpsb_ver(gt_t e, g1_t a, g1_t b[2], bn_t m[][2], g2_t h, g2_t x,
 		pc_map_sim(beta[1], q, w, 2);
 
 		/* Compute [alpha] = e([r] * [sigma_2, H]).  */
-		gt_exp_lcl(d[0], alpha[0], gamma[0], r[0], beta[0], sm_tri[0]);
-		gt_exp_lcl(d[1], alpha[1], gamma[1], r[1], beta[1], sm_tri[1]);
+		gt_exp_lcl(d[0], alpha[0], r[0], beta[0], sm_tri[0]);
+		gt_exp_lcl(d[1], alpha[1], r[1], beta[1], sm_tri[1]);
 		/* Broadcast public values. */
 		gt_exp_bct(d, alpha);
-		gt_exp_mpc(beta[0], d[0], alpha[0], sm_tri[0], gamma[0], 0);
-		gt_exp_mpc(beta[1], d[1], alpha[1], sm_tri[1], gamma[1], 1);
+		gt_exp_mpc(beta[0], d[0], alpha[0], sm_tri[0], 0);
+		gt_exp_mpc(beta[1], d[1], alpha[1], sm_tri[1], 1);
 
 		if (g1_is_infty(a)) {
 			gt_rand(e);
@@ -431,7 +426,6 @@ int cp_mpsb_ver(gt_t e, g1_t a, g1_t b[2], bn_t m[][2], g2_t h, g2_t x,
 			g2_free(z[i]);
 			gt_free(alpha[i]);
 			gt_free(beta[i]);
-			gt_free(gamma[i]);
 			for (int j = 0; j < l; j++) {
 				g2_free(_y[l*i + j]);
 				bn_free(_m[l*i + j]);
