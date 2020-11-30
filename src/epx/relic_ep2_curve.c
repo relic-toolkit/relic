@@ -619,6 +619,13 @@ void ep2_curve_clean(void) {
 		}
 #endif
 	}
+	ep2_free(ctx->ep2_g);
+	fp2_free(ctx->ep2_a);
+	fp2_free(ctx->ep2_b);
+	fp2_free(ctx->ep2_map_u);
+	for (unsigned i = 0; i < 4; ++i) {
+		fp2_free(ctx->ep2_map_c[i]);
+	}
 }
 
 int ep2_curve_opt_a(void) {

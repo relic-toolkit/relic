@@ -146,6 +146,7 @@ void fp_prime_init(void) {
 	ctx_t *ctx = core_get();
 	ctx->fp_id = 0;
 	bn_init(&(ctx->prime), RLC_FP_DIGS);
+	bn_init(&(ctx->par), RLC_FP_DIGS);
 #if FP_RDC == QUICK || !defined(STRIP)
 	ctx->sps_len = 0;
 	memset(ctx->sps, 0, sizeof(ctx->sps));
@@ -169,6 +170,7 @@ void fp_prime_clean(void) {
 		bn_clean(&(ctx->conv));
 #endif
 		bn_clean(&(ctx->prime));
+		bn_clean(&(ctx->par));
 	}
 }
 
