@@ -65,8 +65,8 @@ typedef fp_st fp2_st[2];
 /**
  * Represents a cubic extension prime field element.
  *
- * This extension is constructed with the basis {1, j}, where j is an adjoined
- * cube root in the prime field.
+ * This extension is constructed with the basis {1, j, j^2}, where j is an
+ * adjoined cube root in the prime field.
  */
 typedef fp_t fp3_t[3];
 
@@ -84,7 +84,7 @@ typedef fp_st fp3_st[3];
 /**
  * Represents a quartic extension prime field element.
  *
- * This extension is constructed with the basis {1, v}, where v^2 = E is an
+ * This extension is constructed with the basis {1, s}, where s^2 = E is an
  * adjoined root in the underlying quadratic extension.
  */
 typedef fp2_t fp4_t[2];
@@ -121,7 +121,7 @@ typedef fp2_st fp6_st[3];
 /**
  * Represents an octic extension prime field element.
  *
- * This extension is constructed with the basis {1, w}, where w^2 = v is an
+ * This extension is constructed with the basis {1, v}, where v^2 = s is an
  * adjoined root in the underlying quadratic extension.
  */
 typedef fp4_t fp8_t[2];
@@ -140,7 +140,7 @@ typedef fp4_st fp8_st[2];
 /**
  * Represents an octic extension prime field element.
  *
- * This extension is constructed with the basis {1, w, w^2}, where w^3 = v is an
+ * This extension is constructed with the basis {1, v, v^2}, where v^3 = j is an
  * adjoined root in the underlying quadratic extension.
  */
 typedef fp3_t fp9_t[3];
@@ -1276,14 +1276,14 @@ int fp2_is_zero(fp2_t a);
 /**
  * Assigns a random value to a quadratic extension field element.
  *
- * @param[out] A			- the quadratic extension field element to assign.
+ * @param[out] a			- the quadratic extension field element to assign.
  */
 void fp2_rand(fp2_t a);
 
 /**
  * Prints a quadratic extension field element to standard output.
  *
- * @param[in] A				- the quadratic extension field element to print.
+ * @param[in] a				- the quadratic extension field element to print.
  */
 void fp2_print(fp2_t a);
 
@@ -1324,8 +1324,8 @@ void fp2_write_bin(uint8_t *bin, int len, fp2_t a, int pack);
  * Returns the result of a comparison between two quadratic extension field
  * elements.
  *
- * @param[in] A				- the first quadratic extension field element.
- * @param[in] B				- the second quadratic extension field element.
+ * @param[in] a				- the first quadratic extension field element.
+ * @param[in] b				- the second quadratic extension field element.
  * @return RLC_EQ if a == b, and RLC_NE otherwise.
  */
 int fp2_cmp(fp2_t a, fp2_t b);
@@ -1371,9 +1371,9 @@ void fp2_add_integ(fp2_t c, fp2_t a, fp2_t b);
  * Subtracts a quadratic extension field element from another using basic
  * arithmetic.
  *
- * @param[out] C			- the result.
- * @param[in] A				- the first quadratic extension field element.
- * @param[in] B				- the second quadratic extension field element.
+ * @param[out] c			- the result.
+ * @param[in] a				- the first quadratic extension field element.
+ * @param[in] b				- the second quadratic extension field element.
  */
 void fp2_sub_basic(fp2_t c, fp2_t a, fp2_t b);
 
@@ -1381,17 +1381,17 @@ void fp2_sub_basic(fp2_t c, fp2_t a, fp2_t b);
  * Subtracts a quadratic extension field element from another using integrated
  * modular reduction.
  *
- * @param[out] C			- the result.
- * @param[in] A				- the first quadratic extension field element.
- * @param[in] B				- the second quadratic extension field element.
+ * @param[out] c			- the result.
+ * @param[in] a				- the first quadratic extension field element.
+ * @param[in] b				- the second quadratic extension field element.
  */
 void fp2_sub_integ(fp2_t c, fp2_t a, fp2_t b);
 
 /**
  * Negates a quadratic extension field element.
  *
- * @param[out] C			- the result.
- * @param[out] A			- the quadratic extension field element to negate.
+ * @param[out] c			- the result.
+ * @param[out] a			- the quadratic extension field element to negate.
  */
 void fp2_neg(fp2_t c, fp2_t a);
 
@@ -1433,7 +1433,7 @@ void fp2_mul_integ(fp2_t c, fp2_t a, fp2_t b);
 
 /**
  * Multiplies a quadratic extension field element by the adjoined root.
- * Computes c = a * u.
+ * Computes c = a * i.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the quadratic extension field element to multiply.
@@ -1470,7 +1470,8 @@ void fp2_mul_nor_integ(fp2_t c, fp2_t a);
 void fp2_mul_frb(fp2_t c, fp2_t a, int i, int j);
 
 /**
- * Multiplies a quadratic extension field element by a digit. Computes c = a * b.
+ * Multiplies a quadratic extension field element by a digit.
+ * Computes c = a * b.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the quadratic extension field element.
@@ -1589,16 +1590,16 @@ int fp2_srt(fp2_t c, fp2_t a);
 /**
  * Compresses an extension field element.
  *
- * @param[out] r			- the result.
- * @param[in] p				- the extension field element to compress.
+ * @param[out] c			- the result.
+ * @param[in] a				- the extension field element to compress.
  */
 void fp2_pck(fp2_t c, fp2_t a);
 
 /**
  * Decompresses a quadratic extension field element.
  *
- * @param[out] r			- the result.
- * @param[in] p				- the quadratic extension field element.
+ * @param[out] c			- the result.
+ * @param[in] a				- the quadratic extension field element.
  * @return if the decompression was successful
  */
 int fp2_upk(fp2_t c, fp2_t a);
@@ -1611,22 +1612,22 @@ void fp3_field_init(void);
 /**
  * Copies the second argument to the first argument.
  *
- * @param[out] C			- the result.
- * @param[in] A				- the cubic extension field element to copy.
+ * @param[out] c			- the result.
+ * @param[in] a				- the cubic extension field element to copy.
  */
 void fp3_copy(fp3_t c, fp3_t a);
 
 /**
  * Assigns zero to a cubic extension field element.
  *
- * @param[out] A			- the cubic extension field element to zero.
+ * @param[out] a			- the cubic extension field element to zero.
  */
 void fp3_zero(fp3_t a);
 
 /**
  * Tests if a cubic extension field element is zero or not.
  *
- * @param[in] A				- the cubic extension field element to test.
+ * @param[in] a				- the cubic extension field element to test.
  * @return 1 if the argument is zero, 0 otherwise.
  */
 int fp3_is_zero(fp3_t a);
@@ -1634,14 +1635,14 @@ int fp3_is_zero(fp3_t a);
 /**
  * Assigns a random value to a cubic extension field element.
  *
- * @param[out] A			- the cubic extension field element to assign.
+ * @param[out] a			- the cubic extension field element to assign.
  */
 void fp3_rand(fp3_t a);
 
 /**
  * Prints a cubic extension field element to standard output.
  *
- * @param[in] A				- the cubic extension field element to print.
+ * @param[in] a				- the cubic extension field element to print.
  */
 void fp3_print(fp3_t a);
 
@@ -1680,8 +1681,8 @@ void fp3_write_bin(uint8_t *bin, int len, fp3_t a);
  * Returns the result of a comparison between two cubic extension field
  * elements.
  *
- * @param[in] A				- the first cubic extension field element.
- * @param[in] B				- the second cubic extension field element.
+ * @param[in] a				- the first cubic extension field element.
+ * @param[in] b				- the second cubic extension field element.
  * @return RLC_EQ if a == b, and RLC_NE otherwise.
  */
 int fp3_cmp(fp3_t a, fp3_t b);
@@ -1726,9 +1727,9 @@ void fp3_add_integ(fp3_t c, fp3_t a, fp3_t b);
  * Subtracts a cubic extension field element from another using basic
  * arithmetic.
  *
- * @param[out] C			- the result.
- * @param[in] A				- the first cubic extension field element.
- * @param[in] B				- the second cubic extension field element.
+ * @param[out] c			- the result.
+ * @param[in] a				- the first cubic extension field element.
+ * @param[in] b				- the second cubic extension field element.
  */
 void fp3_sub_basic(fp3_t c, fp3_t a, fp3_t b);
 
@@ -1736,17 +1737,17 @@ void fp3_sub_basic(fp3_t c, fp3_t a, fp3_t b);
  * Subtracts a cubic extension field element from another using integrated
  * modular reduction.
  *
- * @param[out] C			- the result.
- * @param[in] A				- the first cubic extension field element.
- * @param[in] B				- the second cubic extension field element.
+ * @param[out] c			- the result.
+ * @param[in] a				- the first cubic extension field element.
+ * @param[in] b				- the second cubic extension field element.
  */
 void fp3_sub_integ(fp3_t c, fp3_t a, fp3_t b);
 
 /**
  * Negates a cubic extension field element. Computes c = -a.
  *
- * @param[out] C			- the result.
- * @param[out] A			- the cubic extension field element to negate.
+ * @param[out] c			- the result.
+ * @param[out] a			- the cubic extension field element to negate.
  */
 void fp3_neg(fp3_t c, fp3_t a);
 
@@ -1872,22 +1873,22 @@ int fp3_srt(fp3_t c, fp3_t a);
 /**
  * Copies the second argument to the first argument.
  *
- * @param[out] C			- the result.
- * @param[in] A				- the sextic extension field element to copy.
+ * @param[out] c			- the result.
+ * @param[in] a				- the sextic extension field element to copy.
  */
 void fp4_copy(fp4_t c, fp4_t a);
 
 /**
  * Assigns zero to a quartic extension field element.
  *
- * @param[out] A			- the quartic extension field element to zero.
+ * @param[out] a			- the quartic extension field element to zero.
  */
 void fp4_zero(fp4_t a);
 
 /**
  * Tests if a quartic extension field element is zero or not.
  *
- * @param[in] A				- the quartic extension field element to test.
+ * @param[in] a				- the quartic extension field element to test.
  * @return 1 if the argument is zero, 0 otherwise.
  */
 int fp4_is_zero(fp4_t a);
@@ -1895,14 +1896,14 @@ int fp4_is_zero(fp4_t a);
 /**
  * Assigns a random value to a quartic extension field element.
  *
- * @param[out] A			- the quartic extension field element to assign.
+ * @param[out] a			- the quartic extension field element to assign.
  */
 void fp4_rand(fp4_t a);
 
 /**
  * Prints a quartic extension field element to standard output.
  *
- * @param[in] A				- the quartic extension field element to print.
+ * @param[in] a				- the quartic extension field element to print.
  */
 void fp4_print(fp4_t a);
 
@@ -1941,8 +1942,8 @@ void fp4_write_bin(uint8_t *bin, int len, fp4_t a);
  * Returns the result of a comparison between two quartic extension field
  * elements.
  *
- * @param[in] A				- the first quartic extension field element.
- * @param[in] B				- the second quartic extension field element.
+ * @param[in] a				- the first quartic extension field element.
+ * @param[in] b				- the second quartic extension field element.
  * @return RLC_EQ if a == b, and RLC_NE otherwise.
  */
 int fp4_cmp(fp4_t a, fp4_t b);
@@ -1987,8 +1988,8 @@ void fp4_sub(fp4_t c, fp4_t a, fp4_t b);
 /**
  * Negates a quartic extension field element. Computes c = -a.
  *
- * @param[out] C			- the result.
- * @param[out] A			- the quartic extension field element to negate.
+ * @param[out] c			- the result.
+ * @param[out] a			- the quartic extension field element to negate.
  */
 void fp4_neg(fp4_t c, fp4_t a);
 
@@ -2112,22 +2113,22 @@ void fp4_frb(fp4_t c, fp4_t a, int i);
 /**
  * Copies the second argument to the first argument.
  *
- * @param[out] C			- the result.
- * @param[in] A				- the sextic extension field element to copy.
+ * @param[out] c			- the result.
+ * @param[in] a				- the sextic extension field element to copy.
  */
 void fp6_copy(fp6_t c, fp6_t a);
 
 /**
  * Assigns zero to a sextic extension field element.
  *
- * @param[out] A			- the sextic extension field element to zero.
+ * @param[out] a			- the sextic extension field element to zero.
  */
 void fp6_zero(fp6_t a);
 
 /**
  * Tests if a sextic extension field element is zero or not.
  *
- * @param[in] A				- the sextic extension field element to test.
+ * @param[in] a				- the sextic extension field element to test.
  * @return 1 if the argument is zero, 0 otherwise.
  */
 int fp6_is_zero(fp6_t a);
@@ -2135,14 +2136,14 @@ int fp6_is_zero(fp6_t a);
 /**
  * Assigns a random value to a sextic extension field element.
  *
- * @param[out] A			- the sextic extension field element to assign.
+ * @param[out] a			- the sextic extension field element to assign.
  */
 void fp6_rand(fp6_t a);
 
 /**
  * Prints a sextic extension field element to standard output.
  *
- * @param[in] A				- the sextic extension field element to print.
+ * @param[in] a				- the sextic extension field element to print.
  */
 void fp6_print(fp6_t a);
 
@@ -2181,8 +2182,8 @@ void fp6_write_bin(uint8_t *bin, int len, fp6_t a);
  * Returns the result of a comparison between two sextic extension field
  * elements.
  *
- * @param[in] A				- the first sextic extension field element.
- * @param[in] B				- the second sextic extension field element.
+ * @param[in] a				- the first sextic extension field element.
+ * @param[in] b				- the second sextic extension field element.
  * @return RLC_EQ if a == b, and RLC_NE otherwise.
  */
 int fp6_cmp(fp6_t a, fp6_t b);
@@ -2227,8 +2228,8 @@ void fp6_sub(fp6_t c, fp6_t a, fp6_t b);
 /**
  * Negates a sextic extension field element. Computes c = -a.
  *
- * @param[out] C			- the result.
- * @param[out] A			- the sextic extension field element to negate.
+ * @param[out] c			- the result.
+ * @param[out] a			- the sextic extension field element to negate.
  */
 void fp6_neg(fp6_t c, fp6_t a);
 
@@ -2341,22 +2342,22 @@ void fp6_frb(fp6_t c, fp6_t a, int i);
 /**
  * Copies the second argument to the first argument.
  *
- * @param[out] C			- the result.
- * @param[in] A				- the octic extension field element to copy.
+ * @param[out] c			- the result.
+ * @param[in] a				- the octic extension field element to copy.
  */
 void fp8_copy(fp8_t c, fp8_t a);
 
 /**
  * Assigns zero to an octic extension field element.
  *
- * @param[out] A			- the octic extension field element to zero.
+ * @param[out] a			- the octic extension field element to zero.
  */
 void fp8_zero(fp8_t a);
 
 /**
  * Tests if an octic extension field element is zero or not.
  *
- * @param[in] A				- the octic extension field element to test.
+ * @param[in] a				- the octic extension field element to test.
  * @return 1 if the argument is zero, 0 otherwise.
  */
 int fp8_is_zero(fp8_t a);
@@ -2364,14 +2365,14 @@ int fp8_is_zero(fp8_t a);
 /**
  * Assigns a random value to an octic extension field element.
  *
- * @param[out] A			- the octic extension field element to assign.
+ * @param[out] a			- the octic extension field element to assign.
  */
 void fp8_rand(fp8_t a);
 
 /**
  * Prints an octic extension field element to standard output.
  *
- * @param[in] A				- the octic extension field element to print.
+ * @param[in] a				- the octic extension field element to print.
  */
 void fp8_print(fp8_t a);
 
@@ -2411,8 +2412,8 @@ void fp8_write_bin(uint8_t *bin, int len, fp8_t a);
  * Returns the result of a comparison between two octic extension field
  * elements.
  *
- * @param[in] A				- the first octic extension field element.
- * @param[in] B				- the second octic extension field element.
+ * @param[in] a				- the first octic extension field element.
+ * @param[in] b				- the second octic extension field element.
  * @return RLC_EQ if a == b, and RLC_NE otherwise.
  */
 int fp8_cmp(fp8_t a, fp8_t b);
@@ -2457,8 +2458,8 @@ void fp8_sub(fp8_t c, fp8_t a, fp8_t b);
 /**
  * Negates an octic extension field element. Computes c = -a.
  *
- * @param[out] C			- the result.
- * @param[out] A			- the octic extension field element to negate.
+ * @param[out] c			- the result.
+ * @param[out] a			- the octic extension field element to negate.
  */
 void fp8_neg(fp8_t c, fp8_t a);
 
@@ -2625,22 +2626,22 @@ void fp8_frb(fp8_t c, fp8_t a, int i);
 /**
  * Copies the second argument to the first argument.
  *
- * @param[out] C			- the result.
- * @param[in] A				- the nonic extension field element to copy.
+ * @param[out] c			- the result.
+ * @param[in] a				- the nonic extension field element to copy.
  */
 void fp9_copy(fp9_t c, fp9_t a);
 
 /**
  * Assigns zero to a nonic extension field element.
  *
- * @param[out] A			- the nonic extension field element to zero.
+ * @param[out] a			- the nonic extension field element to zero.
  */
 void fp9_zero(fp9_t a);
 
 /**
  * Tests if a nonic extension field element is zero or not.
  *
- * @param[in] A				- the nonic extension field element to test.
+ * @param[in] a				- the nonic extension field element to test.
  * @return 1 if the argument is zero, 0 otherwise.
  */
 int fp9_is_zero(fp9_t a);
@@ -2648,14 +2649,14 @@ int fp9_is_zero(fp9_t a);
 /**
  * Assigns a random value to a nonic extension field element.
  *
- * @param[out] A			- the nonic extension field element to assign.
+ * @param[out] a			- the nonic extension field element to assign.
  */
 void fp9_rand(fp9_t a);
 
 /**
  * Prints a nonic extension field element to standard output.
  *
- * @param[in] A				- the nonic extension field element to print.
+ * @param[in] a				- the nonic extension field element to print.
  */
 void fp9_print(fp9_t a);
 
@@ -2694,8 +2695,8 @@ void fp9_write_bin(uint8_t *bin, int len, fp9_t a);
  * Returns the result of a comparison between two nonic extension field
  * elements.
  *
- * @param[in] A				- the first nonic extension field element.
- * @param[in] B				- the second nonic extension field element.
+ * @param[in] a				- the first nonic extension field element.
+ * @param[in] b				- the second nonic extension field element.
  * @return RLC_EQ if a == b, and RLC_NE otherwise.
  */
 int fp9_cmp(fp9_t a, fp9_t b);
@@ -2740,8 +2741,8 @@ void fp9_sub(fp9_t c, fp9_t a, fp9_t b);
 /**
  * Negates a nonic extension field element. Computes c = -a.
  *
- * @param[out] C			- the result.
- * @param[out] A			- the nonic extension field element to negate.
+ * @param[out] c			- the result.
+ * @param[out] a			- the nonic extension field element to negate.
  */
 void fp9_neg(fp9_t c, fp9_t a);
 
@@ -2863,22 +2864,22 @@ void fp9_frb(fp9_t c, fp9_t a, int i);
 /**
  * Copies the second argument to the first argument.
  *
- * @param[out] C			- the result.
- * @param[in] A				- the dodecic extension field element to copy.
+ * @param[out] c			- the result.
+ * @param[in] a				- the dodecic extension field element to copy.
  */
 void fp12_copy(fp12_t c, fp12_t a);
 
 /**
  * Assigns zero to a dodecic extension field element.
  *
- * @param[out] A			- the dodecic extension field element to zero.
+ * @param[out] a			- the dodecic extension field element to zero.
  */
 void fp12_zero(fp12_t a);
 
 /**
  * Tests if a dodecic extension field element is zero or not.
  *
- * @param[in] A				- the dodecic extension field element to test.
+ * @param[in] a				- the dodecic extension field element to test.
  * @return 1 if the argument is zero, 0 otherwise.
  */
 int fp12_is_zero(fp12_t a);
@@ -2886,14 +2887,14 @@ int fp12_is_zero(fp12_t a);
 /**
  * Assigns a random value to a dodecic extension field element.
  *
- * @param[out] A			- the dodecic extension field element to assign.
+ * @param[out] a			- the dodecic extension field element to assign.
  */
 void fp12_rand(fp12_t a);
 
 /**
  * Prints a dodecic extension field element to standard output.
  *
- * @param[in] A				- the dodecic extension field element to print.
+ * @param[in] a				- the dodecic extension field element to print.
  */
 void fp12_print(fp12_t a);
 
@@ -2959,29 +2960,29 @@ int fp12_cmp_dig(fp12_t a, dig_t b);
 void fp12_set_dig(fp12_t a, dig_t b);
 
 /**
- * Adds two dodecic extension field elements. Computes C = A + B.
+ * Adds two dodecic extension field elements. Computes c = a + b.
  *
- * @param[out] C			- the result.
- * @param[in] A				- the first dodecic extension field element.
- * @param[in] B				- the second dodecic extension field element.
+ * @param[out] c			- the result.
+ * @param[in] a				- the first dodecic extension field element.
+ * @param[in] b				- the second dodecic extension field element.
  */
 void fp12_add(fp12_t c, fp12_t a, fp12_t b);
 
 /**
  * Subtracts a dodecic extension field element from another. Computes
- * C = A - B.
+ * c = a - b.
  *
- * @param[out] C			- the result.
- * @param[in] A				- the first dodecic extension field element.
- * @param[in] B				- the second dodecic extension field element.
+ * @param[out] c			- the result.
+ * @param[in] a				- the first dodecic extension field element.
+ * @param[in] b				- the second dodecic extension field element.
  */
 void fp12_sub(fp12_t c, fp12_t a, fp12_t b);
 
 /**
  * Negates a dodecic extension field element.
  *
- * @param[out] C			- the result.
- * @param[out] A			- the dodecic extension field element to negate.
+ * @param[out] c			- the result.
+ * @param[out] a			- the dodecic extension field element to negate.
  */
 void fp12_neg(fp12_t c, fp12_t a);
 
@@ -3358,29 +3359,29 @@ int fp18_cmp_dig(fp18_t a, dig_t b);
 void fp18_set_dig(fp18_t a, dig_t b);
 
 /**
- * Adds two octdecic extension field elements. Computes C = A + B.
+ * Adds two octdecic extension field elements. Computes c = a + b.
  *
- * @param[out] C			- the result.
- * @param[in] A				- the first octdecic extension field element.
- * @param[in] B				- the second octdecic extension field element.
+ * @param[out] c			- the result.
+ * @param[in] a				- the first octdecic extension field element.
+ * @param[in] b				- the second octdecic extension field element.
  */
 void fp18_add(fp18_t c, fp18_t a, fp18_t b);
 
 /**
  * Subtracts an octdecic extension field element from another. Computes
- * C = A - B.
+ * c = a - b.
  *
- * @param[out] C			- the result.
- * @param[in] A				- the first octdecic extension field element.
- * @param[in] B				- the second octdecic extension field element.
+ * @param[out] c			- the result.
+ * @param[in] a				- the first octdecic extension field element.
+ * @param[in] b				- the second octdecic extension field element.
  */
 void fp18_sub(fp18_t c, fp18_t a, fp18_t b);
 
 /**
  * Negates an octdecic extension field element.
  *
- * @param[out] C			- the result.
- * @param[out] A			- the octdecic extension field element to negate.
+ * @param[out] c			- the result.
+ * @param[out] a			- the octdecic extension field element to negate.
  */
 void fp18_neg(fp18_t c, fp18_t a);
 
@@ -3525,22 +3526,22 @@ void fp18_exp(fp18_t c, fp18_t a, bn_t b);
 /**
  * Copies the second argument to the first argument.
  *
- * @param[out] C			- the result.
- * @param[in] A				- the 24-degree extension field element to copy.
+ * @param[out] c			- the result.
+ * @param[in] a				- the 24-degree extension field element to copy.
  */
 void fp24_copy(fp24_t c, fp24_t a);
 
 /**
  * Assigns zero to a 24-degree extension field element.
  *
- * @param[out] A			- the 24-degree extension field element to zero.
+ * @param[out] a			- the 24-degree extension field element to zero.
  */
 void fp24_zero(fp24_t a);
 
 /**
  * Tests if a 24-degree extension field element is zero or not.
  *
- * @param[in] A				- the 24-degree extension field element to test.
+ * @param[in] a				- the 24-degree extension field element to test.
  * @return 1 if the argument is zero, 0 otherwise.
  */
 int fp24_is_zero(fp24_t a);
@@ -3619,29 +3620,29 @@ int fp24_cmp_dig(fp24_t a, dig_t b);
 void fp24_set_dig(fp24_t a, dig_t b);
 
 /**
- * Adds two 24-degree extension field elements. Computes C = A + B.
+ * Adds two 24-degree extension field elements. Computes c = a + b.
  *
- * @param[out] C			- the result.
- * @param[in] A				- the first 24-degree extension field element.
- * @param[in] B				- the second 24-degree extension field element.
+ * @param[out] c			- the result.
+ * @param[in] a				- the first 24-degree extension field element.
+ * @param[in] b				- the second 24-degree extension field element.
  */
 void fp24_add(fp24_t c, fp24_t a, fp24_t b);
 
 /**
  * Subtracts a 24-degree extension field element from another. Computes
- * C = A - B.
+ * c = a - b.
  *
- * @param[out] C			- the result.
- * @param[in] A				- the first 24-degree extension field element.
- * @param[in] B				- the second 24-degree extension field element.
+ * @param[out] c			- the result.
+ * @param[in] a				- the first 24-degree extension field element.
+ * @param[in] b				- the second 24-degree extension field element.
  */
 void fp24_sub(fp24_t c, fp24_t a, fp24_t b);
 
 /**
  * Negates a 24-degree extension field element.
  *
- * @param[out] C			- the result.
- * @param[out] A			- the 24-degree extension field element to negate.
+ * @param[out] c			- the result.
+ * @param[out] a			- the 24-degree extension field element to negate.
  */
 void fp24_neg(fp24_t c, fp24_t a);
 
@@ -3756,22 +3757,22 @@ void fp24_exp(fp24_t c, fp24_t a, bn_t b);
 /**
  * Copies the second argument to the first argument.
  *
- * @param[out] C			- the result.
- * @param[in] A				- the 48-extension field element to copy.
+ * @param[out] c			- the result.
+ * @param[in] a				- the 48-extension field element to copy.
  */
 void fp48_copy(fp48_t c, fp48_t a);
 
 /**
  * Assigns zero to a 48-extension field element.
  *
- * @param[out] A			- the 48-extension field element to zero.
+ * @param[out] a			- the 48-extension field element to zero.
  */
 void fp48_zero(fp48_t a);
 
 /**
  * Tests if a 48-extension field element is zero or not.
  *
- * @param[in] A				- the 48-extension field element to test.
+ * @param[in] a				- the 48-extension field element to test.
  * @return 1 if the argument is zero, 0 otherwise.
  */
 int fp48_is_zero(fp48_t a);
@@ -3779,14 +3780,14 @@ int fp48_is_zero(fp48_t a);
 /**
  * Assigns a random value to a 48-extension field element.
  *
- * @param[out] A			- the 48-extension field element to assign.
+ * @param[out] a			- the 48-extension field element to assign.
  */
 void fp48_rand(fp48_t a);
 
 /**
  * Prints a 48-extension field element to standard output.
  *
- * @param[in] A				- the 48-extension field element to print.
+ * @param[in] a				- the 48-extension field element to print.
  */
 void fp48_print(fp48_t a);
 
@@ -3852,29 +3853,29 @@ int fp48_cmp_dig(fp48_t a, dig_t b);
 void fp48_set_dig(fp48_t a, dig_t b);
 
 /**
- * Adds two 48-extension field elements. Computes C = A + B.
+ * Adds two 48-extension field elements. Computes c = a + b.
  *
- * @param[out] C			- the result.
- * @param[in] A				- the first 48-extension field element.
- * @param[in] B				- the second 48-extension field element.
+ * @param[out] c			- the result.
+ * @param[in] a				- the first 48-extension field element.
+ * @param[in] b				- the second 48-extension field element.
  */
 void fp48_add(fp48_t c, fp48_t a, fp48_t b);
 
 /**
  * Subtracts a 48-extension field element from another. Computes
- * C = A - B.
+ * c = a - b.
  *
- * @param[out] C			- the result.
- * @param[in] A				- the first 48-extension field element.
- * @param[in] B				- the second 48-extension field element.
+ * @param[out] c			- the result.
+ * @param[in] a				- the first 48-extension field element.
+ * @param[in] b				- the second 48-extension field element.
  */
 void fp48_sub(fp48_t c, fp48_t a, fp48_t b);
 
 /**
  * Negates a 48-extension field element.
  *
- * @param[out] C			- the result.
- * @param[out] A			- the 48-extension field element to negate.
+ * @param[out] c			- the result.
+ * @param[out] a			- the 48-extension field element to negate.
  */
 void fp48_neg(fp48_t c, fp48_t a);
 
@@ -4099,16 +4100,16 @@ void fp48_exp_cyc_sps(fp48_t c, fp48_t a, const int *b, int l, int s);
 /**
  * Compresses a 48-extension field element.
  *
- * @param[out] r			- the result.
- * @param[in] p				- the 48-extension field element to compress.
+ * @param[out] c			- the result.
+ * @param[in] a				- the 48-extension field element to compress.
  */
 void fp48_pck(fp48_t c, fp48_t a);
 
 /**
  * Decompresses a 48-extension field element.
  *
- * @param[out] r			- the result.
- * @param[in] p				- the 48-extension field element to decompress.
+ * @param[out] c			- the result.
+ * @param[in] a				- the 48-extension field element to decompress.
  * @return if the decompression was successful
  */
 int fp48_upk(fp48_t c, fp48_t a);
@@ -4116,22 +4117,22 @@ int fp48_upk(fp48_t c, fp48_t a);
 /**
  * Copies the second argument to the first argument.
  *
- * @param[out] C			- the result.
- * @param[in] A				- the 54-extension field element to copy.
+ * @param[out] c			- the result.
+ * @param[in] a				- the 54-extension field element to copy.
  */
 void fp54_copy(fp54_t c, fp54_t a);
 
 /**
  * Assigns zero to a 54-extension field element.
  *
- * @param[out] A			- the 54-extension field element to zero.
+ * @param[out] a			- the 54-extension field element to zero.
  */
 void fp54_zero(fp54_t a);
 
 /**
  * Tests if a 54-extension field element is zero or not.
  *
- * @param[in] A				- the 54-extension field element to test.
+ * @param[in] a				- the 54-extension field element to test.
  * @return 1 if the argument is zero, 0 otherwise.
  */
 int fp54_is_zero(fp54_t a);
@@ -4139,7 +4140,7 @@ int fp54_is_zero(fp54_t a);
 /**
  * Assigns a random value to a 54-extension field element.
  *
- * @param[out] A			- the 54-extension field element to assign.
+ * @param[out] a			- the 54-extension field element to assign.
  */
 void fp54_rand(fp54_t a);
 
@@ -4212,29 +4213,29 @@ int fp54_cmp_dig(fp54_t a, dig_t b);
 void fp54_set_dig(fp54_t a, dig_t b);
 
 /**
- * Adds two 54-extension field elements. Computes C = A + B.
+ * Adds two 54-extension field elements. Computes c = a + b.
  *
- * @param[out] C			- the result.
- * @param[in] A				- the first 54-extension field element.
- * @param[in] B				- the second 54-extension field element.
+ * @param[out] c			- the result.
+ * @param[in] a				- the first 54-extension field element.
+ * @param[in] b				- the second 54-extension field element.
  */
 void fp54_add(fp54_t c, fp54_t a, fp54_t b);
 
 /**
  * Subtracts a 54-extension field element from another. Computes
- * C = A - B.
+ * c = a - b.
  *
- * @param[out] C			- the result.
- * @param[in] A				- the first 54-extension field element.
- * @param[in] B				- the second 54-extension field element.
+ * @param[out] c			- the result.
+ * @param[in] a				- the first 54-extension field element.
+ * @param[in] b				- the second 54-extension field element.
  */
 void fp54_sub(fp54_t c, fp54_t a, fp54_t b);
 
 /**
  * Negates a 54-extension field element.
  *
- * @param[out] C			- the result.
- * @param[out] A			- the 54-extension field element to negate.
+ * @param[out] c			- the result.
+ * @param[out] a			- the 54-extension field element to negate.
  */
 void fp54_neg(fp54_t c, fp54_t a);
 
@@ -4459,16 +4460,16 @@ void fp54_exp_cyc_sps(fp54_t c, fp54_t a, const int *b, int l, int s);
 /**
  * Compresses a 54-extension field element.
  *
- * @param[out] r			- the result.
- * @param[in] p				- the 54-extension field element to compress.
+ * @param[out] c			- the result.
+ * @param[in] a				- the 54-extension field element to compress.
  */
 void fp54_pck(fp54_t c, fp54_t a);
 
 /**
  * Decompresses a 54-extension field element.
  *
- * @param[out] r			- the result.
- * @param[in] p				- the 54-extension field element to decompress.
+ * @param[out] c			- the result.
+ * @param[in] a				- the 54-extension field element to decompress.
  * @return if the decompression was successful
  */
 int fp54_upk(fp54_t c, fp54_t a);
