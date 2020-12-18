@@ -1253,22 +1253,22 @@ int fp2_field_get_qnr(void);
 /**
  * Copies the second argument to the first argument.
  *
- * @param[out] C			- the result.
- * @param[in] A				- the quadratic extension field element to copy.
+ * @param[out] c			- the result.
+ * @param[in] a				- the quadratic extension field element to copy.
  */
 void fp2_copy(fp2_t c, fp2_t a);
 
 /**
  * Assigns zero to a quadratic extension field element.
  *
- * @param[out] A			- the quadratic extension field element to zero.
+ * @param[out] a			- the quadratic extension field element to zero.
  */
 void fp2_zero(fp2_t a);
 
 /**
  * Tests if a quadratic extension field element is zero or not.
  *
- * @param[in] A				- the quadratic extension field element to test.
+ * @param[in] a				- the quadratic extension field element to test.
  * @return 1 if the argument is zero, 0 otherwise.
  */
 int fp2_is_zero(fp2_t a);
@@ -3265,22 +3265,22 @@ int fp12_upk(fp12_t c, fp12_t a);
 /**
  * Copies the second argument to the first argument.
  *
- * @param[out] C			- the result.
- * @param[in] A				- the octdecic extension field element to copy.
+ * @param[out] c			- the result.
+ * @param[in] a				- the octdecic extension field element to copy.
  */
 void fp18_copy(fp18_t c, fp18_t a);
 
 /**
  * Assigns zero to an octdecic extension field element.
  *
- * @param[out] A			- the octdecic extension field element to zero.
+ * @param[out] a			- the octdecic extension field element to zero.
  */
 void fp18_zero(fp18_t a);
 
 /**
  * Tests if an octdecic extension field element is zero or not.
  *
- * @param[in] A				- the octdecic extension field element to test.
+ * @param[in] a				- the octdecic extension field element to test.
  * @return 1 if the argument is zero, 0 otherwise.
  */
 int fp18_is_zero(fp18_t a);
@@ -3288,7 +3288,7 @@ int fp18_is_zero(fp18_t a);
 /**
  * Assigns a random value to an octdecic extension field element.
  *
- * @param[out] A			- the octdecic extension field element to assign.
+ * @param[out] a			- the octdecic extension field element to assign.
  */
 void fp18_rand(fp18_t a);
 
@@ -4147,7 +4147,7 @@ void fp54_rand(fp54_t a);
 /**
  * Prints a 54-extension field element to standard output.
  *
- * @param[in] A				- the 54-extension field element to print.
+ * @param[in] a				- the 54-extension field element to print.
  */
 void fp54_print(fp54_t a);
 
