@@ -106,6 +106,55 @@ int fp12_upk(fp12_t c, fp12_t a) {
 	}
 }
 
+void fp12_pck_max(fp12_t c, fp12_t a) {
+	 fp12_copy(c, a);
+	if (fp12_test_cyc(c)) {
+		/* Use torus-based compression from Section 4.1 in
+		 * "On Compressible Pairings and Their Computation" by Naehrig et al.
+		 */
+		fp2_add_dig(c[0][0], a[0][0], 1);
+		fp6_inv(c[1], a[1]);
+		fp6_mul(c[0], c[0], c[1]);
+		fp6_zero(c[1]);
+	}
+}
+
+int fp12_upk_max(fp12_t c, fp12_t a) {
+	if (fp6_is_zero(a[1])) {
+		fp12_t t;
+
+		fp12_null(t);
+
+		RLC_TRY {
+			fp12_new(t);
+			/* Formula for decompression for the odd q case from Section 2 in
+			 * "Compression in finite fields and torus-based cryptography" by
+			 * Rubin-Silverberg.
+			 */
+			fp6_copy(t[0], a[0]);
+			fp6_zero(t[1]);
+			fp_set_dig(t[1][0][0], 1);
+			fp_neg(t[1][0][0], t[1][0][0]);
+			fp12_inv(t, t);
+			fp6_copy(c[0], a[0]);
+			fp6_set_dig(c[1], 1);
+			fp12_mul(c, c, t);
+		} RLC_CATCH_ANY {
+			RLC_THROW(ERR_CAUGHT);
+		} RLC_FINALLY {
+			fp12_free(t);
+		}
+		if (fp12_test_cyc(c)) {
+			return 1;
+		} else {
+			return 0;
+		}
+	} else {
+		fp12_copy(c, a);
+		return 1;
+	}
+}
+
 void fp48_pck(fp48_t c, fp48_t a) {
 	fp48_copy(c, a);
 	if (fp48_test_cyc(c)) {

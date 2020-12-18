@@ -4472,6 +4472,9 @@ static int compression12(void) {
 			fp12_pck(b, a);
 			TEST_ASSERT(fp12_upk(c, b) == 1, end);
 			TEST_ASSERT(fp12_cmp(a, c) == RLC_EQ, end);
+			fp12_pck_max(b, a);
+			TEST_ASSERT(fp12_upk_max(c, b) == 1, end);
+			TEST_ASSERT(fp12_cmp(a, c) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_BEGIN("compression is consistent with reading and writing") {
