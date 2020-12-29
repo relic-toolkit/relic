@@ -126,31 +126,31 @@
  */
 #if OPSYS == DUINO && TIMER == HREAL
 
-typedef uint32_t bench_t;
+typedef uint32_t ben_t;
 
 #elif TIMER == HREAL || TIMER == HPROC || TIMER == HTHRD
 
 #include <sys/time.h>
 #include <time.h>
-typedef struct timespec bench_t;
+typedef struct timespec ben_t;
 
 #elif TIMER == ANSI
 
 #include <time.h>
-typedef clock_t bench_t;
+typedef clock_t ben_t;
 
 #elif TIMER == POSIX
 
 #include <sys/time.h>
-typedef struct timeval bench_t;
+typedef struct timeval ben_t;
 
 #elif TIMER == CYCLE
 
-typedef unsigned long long bench_t;
+typedef unsigned long long ben_t;
 
 #else
 
-typedef unsigned long long bench_t;
+typedef unsigned long long ben_t;
 
 #endif
 
@@ -197,6 +197,6 @@ void bench_print(void);
  *
  * @return the last benchmark.
  */
-ull_t bench_total(void);
+ull_t ben_total(void);
 
 #endif /* !RLC_BENCH_H */
