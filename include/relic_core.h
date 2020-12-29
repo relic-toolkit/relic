@@ -390,9 +390,9 @@ typedef struct _ctx_t {
 
 #if BENCH > 0
 	/** Stores the time measured before the execution of the benchmark. */
-	bench_t before;
+	ben_t before;
 	/** Stores the time measured after the execution of the benchmark. */
-	bench_t after;
+	ben_t after;
 	/** Stores the sum of timings for the current benchmark. */
 	long long total;
 #ifdef OVERH
