@@ -50,13 +50,11 @@
  */
 static void fp_mul_karat_imp(dv_t c, const fp_t a, const fp_t b, int size,
 		int level) {
-	int i, h, h1;
+	/* Compute half the digits of a or b. */
+	int h = RLC_CEIL(size, 2);
+	int h1 = size - h;
 	dv_t a1, b1, a0b0, a1b1, t;
 	dig_t carry;
-
-	/* Compute half the digits of a or b. */
-	h = size >> 1;
-	h1 = size - h;
 
 	dv_null(a1);
 	dv_null(b1);
@@ -72,18 +70,15 @@ static void fp_mul_karat_imp(dv_t c, const fp_t a, const fp_t b, int size,
 		dv_new(t);
 		dv_zero(a1, h1 + 1);
 		dv_zero(b1, h1 + 1);
-		dv_zero(a0b0, 2 * h);
-		dv_zero(a1b1, 2 * h1);
-		dv_zero(t, 2 * h1 + 1);
 
 		/* a0b0 = a0 * b0 and a1b1 = a1 * b1 */
 		if (level <= 1) {
 #if FP_MUL == BASIC
-			for (i = 0; i < h; i++) {
+			for (int i = 0; i < h; i++) {
 				carry = bn_mula_low(a0b0 + i, a, *(b + i), h);
 				*(a0b0 + i + h) = carry;
 			}
-			for (i = 0; i < h1; i++) {
+			for (int i = 0; i < h1; i++) {
 				carry = bn_mula_low(a1b1 + i, a + h, *(b + h + i), h1);
 				*(a1b1 + i + h1) = carry;
 			}
@@ -96,31 +91,27 @@ static void fp_mul_karat_imp(dv_t c, const fp_t a, const fp_t b, int size,
 			fp_mul_karat_imp(a1b1, a + h, b + h, h1, level - 1);
 		}
 
-		for (i = 0; i < 2 * h; i++) {
-			c[i] = a0b0[i];
-		}
-		for (i = 0; i < 2 * h1 + 1; i++) {
-			c[2 * h + i] = a1b1[i];
-		}
+		dv_copy(c, a0b0, 2 * h);
+		dv_copy(c + 2 * h, a1b1, 2 * h1 + 1);
 
 		/* a1 = (a1 + a0) */
 		carry = bn_addn_low(a1, a, a + h, h);
-		bn_add1_low(a1 + h, a1 + h, carry, 2);
 		if (h1 > h) {
-			bn_add1_low(a1 + h, a1 + h, *(a + 2 * h), 2);
+			a1[h] = a[2 * h];
 		}
+		bn_add1_low(a1 + h, a1 + h, carry, 2);
 
 		/* b1 = (b1 + b0) */
 		carry = bn_addn_low(b1, b, b + h, h);
-		bn_add1_low(b1 + h, b1 + h, carry, 2);
 		if (h1 > h) {
-			bn_add1_low(b1 + h, b1 + h, *(b + 2 * h), 2);
+			b1[h] = b[2 * h];
 		}
+		bn_add1_low(b1 + h, b1 + h, carry, 2);
 
 		if (level <= 1) {
 			/* t = (a1 + a0)*(b1 + b0) */
 #if FP_MUL == BASIC
-			for (i = 0; i < h1 + 1; i++) {
+			for (int i = 0; i < h1 + 1; i++) {
 				carry = bn_mula_low(t + i, a1, *(b1 + i), h1 + 1);
 				*(t + i + h1 + 1) = carry;
 			}
@@ -222,7 +213,7 @@ void fp_mul_comba(fp_t c, const fp_t a, const fp_t b) {
 		dv_new(t);
 
 		fp_muln_low(t, a, b);
-		fp_rdc(c, t);
+		fp_rdcn_low(c, t);
 		dv_free(t);
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
