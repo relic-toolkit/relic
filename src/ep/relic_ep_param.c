@@ -1177,6 +1177,8 @@ int ep_param_set_any_super(void) {
 #if defined(EP_SUPER)
 #if FP_PRIME == 1536
 	ep_param_set(SS_P1536);
+#elif FP_PRIME == 3072
+	ep_param_set(SS_P3072);
 #else
 	r = RLC_ERR;
 #endif
@@ -1259,6 +1261,9 @@ int ep_param_set_any_pairf(void) {
 #endif
 #elif FP_PRIME == 1536
 	ep_param_set(SS_P1536);
+	degree = 0;
+#elif FP_PRIME == 3072
+	ep_param_set(SS_P3072);
 	degree = 0;
 #else
 	r = RLC_ERR;
@@ -1372,6 +1377,9 @@ void ep_param_print(void) {
 			break;
 		case SS_P1536:
 			util_banner("Curve SS-P1536:", 0);
+			break;
+		case SS_P3072:
+			util_banner("Curve SS-3072:", 0);
 			break;
 		case CURVE_1174:
 			util_banner("Curve Curve1174:", 0);

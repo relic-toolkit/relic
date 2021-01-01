@@ -136,6 +136,8 @@ enum {
 	B12_638,
 	/** 1536-bit prime for supersingular curve with embedding degree k = 2. */
 	SS_1536,
+	/** 3072-bit prime for supersingular curve with embedding degree k = 1. */
+	SS_3072,
 };
 
 /**
