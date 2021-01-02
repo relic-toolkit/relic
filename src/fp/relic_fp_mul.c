@@ -51,7 +51,7 @@
 static void fp_mul_karat_imp(dv_t c, const fp_t a, const fp_t b, int size,
 		int level) {
 	/* Compute half the digits of a or b. */
-	int h = RLC_CEIL(size, 2);
+	int h = size >> 1;
 	int h1 = size - h;
 	dv_t a1, b1, a0b0, a1b1, t;
 	dig_t carry;
