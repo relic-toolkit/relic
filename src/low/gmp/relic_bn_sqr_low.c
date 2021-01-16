@@ -40,15 +40,16 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void bn_sqra_low(dig_t *c, const dig_t *a, int size) {
-	dig_t carry, digit = *a;
+dig_t bn_sqra_low(dig_t *c, const dig_t *a, int size) {
+	dig_t carry, digit = a[0];
 
-	carry = mpn_addmul_1(c, a, size, digit);
+	carry = mpn_addmul_1(c, a, size, a[0]);
 	mpn_add_1(c + size, c + size, size, carry);
 	if (size > 1) {
 		carry = mpn_addmul_1(c + 1, a + 1, size - 1, digit);
-		mpn_add_1(c + size, c + size, size, carry);
+		return mpn_add_1(c + size, c + size, size, carry);
 	}
+	return 0;
 }
 
 void bn_sqrn_low(dig_t *c, const dig_t *a, int size) {

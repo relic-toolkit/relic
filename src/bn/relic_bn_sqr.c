@@ -170,9 +170,11 @@ void bn_sqr_basic(bn_t c, const bn_t a) {
 		bn_zero(t);
 		t->used = digits;
 
-		for (i = 0; i < a->used; i++) {
-			bn_sqra_low(t->dp + (2 * i), a->dp + i, a->used - i);
+		for (i = 0; i < a->used - 1; i++) {
+			t->dp[a->used + i + 1] =
+					bn_sqra_low(t->dp + 2 * i, a->dp + i, a->used - i);
 		}
+		bn_sqra_low(t->dp + 2 * i, a->dp + i, 1);
 
 		t->sign = RLC_POS;
 		bn_trim(t);

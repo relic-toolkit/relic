@@ -78,39 +78,33 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void bn_sqra_low(dig_t *c, const dig_t *a, int size) {
+dig_t bn_sqra_low(dig_t *c, const dig_t *a, int size) {
 	int i;
 	dig_t c0, c1;
-	dig_t digit;
 	dbl_t r, r0, r1;
 
-	digit = *a;
-
 	/* Accumulate this column with the square of a->dp[i]. */
-	r = (dbl_t)(*c) + (dbl_t)(digit) * (dbl_t)(digit);
-
-	*c = (dig_t)r;
+	r = (dbl_t)(*c) + (dbl_t)(a[0]) * (dbl_t)(a[0]);
+	c[0] = (dig_t)r;
 
 	/* Update the carry. */
 	c0 = (dig_t)(r >> (dbl_t)RLC_DIG);
 	c1 = 0;
 
-	c++;
-	a++;
-	for (i = 0; i < size - 1; i++, a++, c++) {
-		r = (dbl_t)(digit) * (dbl_t)(*a);
+	for (i = 1; i < size; i++) {
+		r = (dbl_t)(a[0]) * (dbl_t)(a[i]);
 		r0 = r + r;
-		r1 = r0 + (dbl_t)(*c) + (dbl_t)(c0);
-		*c = (dig_t)r1;
+		r1 = r0 + (dbl_t)(c[i]) + (dbl_t)(c0);
+		c[i] = (dig_t)r1;
 
 		/* Accumulate the old delayed carry. */
 		c0 = (dig_t)((r1 >> (dbl_t)RLC_DIG) + c1);
 		/* Compute the new delayed carry. */
 		c1 = (r0 < r) || (r1 < r0) || (c0 < c1);
 	}
-	*c += c0;
-	c1 += (*c++ < c0);
-	*c += c1;
+	c[size] += c0;
+	c1 += (c[size] < c0);
+	return c1;
 }
 
 void bn_sqrn_low(dig_t *c, const dig_t *a, int size) {
