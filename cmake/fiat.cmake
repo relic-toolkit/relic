@@ -1,9 +1,10 @@
-set(TEST_FP "${CMAKE_BINARY_DIR}/../bin/test_fp")
+set(TEST_FP "${CMAKE_BINARY_DIR}/bin/test_fp")
 set(FIAT_TXT "${CMAKE_BINARY_DIR}/test_fp.txt")
-set(FIAT_LOW "${CMAKE_SOURCE_DIR}/../../src/low/fiat/")
+set(FIAT_LOW "${CMAKE_SOURCE_DIR}/src/low/fiat/")
 set(FIAT_FP "${FIAT_LOW}/fiat_fp.c")
-set(MONT "word_by_word_montgomery")
+set(MONT "src/ExtractionOCaml/word_by_word_montgomery")
 
+message(STATUS "Running test_fp to discover prime modulus.")
 execute_process(COMMAND ${TEST_FP} OUTPUT_FILE ${FIAT_TXT})
 file(READ ${FIAT_TXT} OUTPUT_CONTENT)
 string(REGEX MATCHALL "[(0-9)|(A-F)]+[ \n]" MATCHES ${OUTPUT_CONTENT})
