@@ -240,7 +240,7 @@ typedef struct _sts_t {
 
 #ifdef CHECK
 /**
- * Implements a RLC_FINALLY clause.
+ * Implements the RLC_FINALLY clause.
  */
 #define RLC_FINALLY				else if (_z == 0)
 #else
@@ -269,21 +269,32 @@ typedef struct _sts_t {
 /**
  * Treats an error jumping to the argument.
  *
- * @param[in] LABEL			- the label to jump
+ * @param[in] LABEL				- the label to jump
  */
 #define RLC_ERROR(LABEL)		goto LABEL
+
+#ifdef QUIET
+
+/**
+ * Stub for the error printing function.
+ *
+ * @param[in] ERROR				- the error code.
+ */
+#define RLC_ERR_PRINT(ERROR)	/* empty */
+
+#else
 
 #ifdef VERBS
 
 /**
- * Prints the current error message.
+ * Prints the current error message in a complete format.
  *
  * @param[in] ERROR			- the error code.
  */
 #define RLC_ERR_PRINT(ERROR)												\
 	err_full_msg(__func__, RLC_FILE, __LINE__, ERROR)						\
 
-#else
+#else /* VERBS */
 
 /**
  * Prints the current error message.
@@ -293,7 +304,8 @@ typedef struct _sts_t {
 #define RLC_ERR_PRINT(ERROR)												\
 	err_simple_msg(ERROR)													\
 
-#endif
+#endif /* VERBS */
+#endif /* QUIET */
 
 /*============================================================================*/
 /* Function prototypes                                                        */

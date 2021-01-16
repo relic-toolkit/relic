@@ -618,13 +618,13 @@ void ep2_curve_clean(void) {
 			fp2_free(iso->yd[i]);
 		}
 #endif
-	}
-	ep2_free(ctx->ep2_g);
-	fp2_free(ctx->ep2_a);
-	fp2_free(ctx->ep2_b);
-	fp2_free(ctx->ep2_map_u);
-	for (unsigned i = 0; i < 4; ++i) {
-		fp2_free(ctx->ep2_map_c[i]);
+		ep2_free(ctx->ep2_g);
+		fp2_free(ctx->ep2_a);
+		fp2_free(ctx->ep2_b);
+		fp2_free(ctx->ep2_map_u);
+		for (unsigned i = 0; i < 4; ++i) {
+			fp2_free(ctx->ep2_map_c[i]);
+		}
 	}
 }
 

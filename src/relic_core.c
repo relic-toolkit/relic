@@ -175,7 +175,12 @@ int core_clean(void) {
 	pc_core_clean();
 #endif
 	arch_clean();
-	core_ctx = NULL;
+
+	if (core_ctx != NULL) {
+		int result = core_ctx->code;
+		core_ctx = NULL;
+		return result;
+	}
 	return RLC_OK;
 }
 

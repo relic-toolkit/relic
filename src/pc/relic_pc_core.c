@@ -70,5 +70,8 @@ void pc_core_calc(void) {
 }
 
 void pc_core_clean(void) {
-	gt_free(core_get()->gt_g);
+	ctx_t *ctx = core_get();
+	if (ctx != NULL) {
+		gt_free(core_get()->gt_g);
+	}
 }

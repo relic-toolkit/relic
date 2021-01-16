@@ -426,9 +426,9 @@ typedef struct _ctx_t {
 int core_init(void);
 
 /**
- * Finalizes the library.
+ * Finalizes the library with the current error condition.
  *
- * @return RLC_OK if no error occurs, RLC_ERR otherwise.
+ * @return RLC_OK if no error has occurred, RLC_ERR otherwise.
  */
 int core_clean(void);
 
