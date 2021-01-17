@@ -74,7 +74,7 @@ void bn_srt(bn_t c, bn_t a) {
 				bn_copy(l, m);
 			}
 			bn_sub(t, h, l);
-		} while (bn_cmp_dig(t, 1) == RLC_GT && cmp != RLC_EQ);
+		} while (bn_cmp(l, h) == RLC_LT && cmp != RLC_EQ);
 
 		bn_copy(c, m);
 	}

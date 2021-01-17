@@ -1102,6 +1102,16 @@ static int square_root(void) {
 			TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
 		}
 		TEST_END;
+
+		TEST_ONCE("square root of powers of 2 is correct") {
+			for (int bits = 0; bits < RLC_BN_BITS / 2; bits++) {
+				bn_set_2b(a, bits);
+				bn_sqr(c, a);
+				bn_srt(b, c);
+				TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
+			}
+		}
+		TEST_END;
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);
