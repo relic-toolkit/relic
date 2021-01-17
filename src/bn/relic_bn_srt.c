@@ -67,14 +67,14 @@ void bn_srt(bn_t c, bn_t a) {
 			bn_hlv(m, m);
 			bn_sqr(t, m);
 			cmp = bn_cmp(t, a);
+			bn_sub(t, h, l);
 
 			if (cmp == RLC_GT) {
 				bn_copy(h, m);
 			} else if (cmp == RLC_LT) {
 				bn_copy(l, m);
 			}
-			bn_sub(t, h, l);
-		} while (bn_cmp(l, h) == RLC_LT && cmp != RLC_EQ);
+		} while (bn_cmp_dig(t, 1) == RLC_GT && cmp != RLC_EQ);
 
 		bn_copy(c, m);
 	}
