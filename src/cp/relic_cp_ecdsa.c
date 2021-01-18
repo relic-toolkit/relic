@@ -126,7 +126,7 @@ int cp_ecdsa_ver(bn_t r, bn_t s, uint8_t *msg, int len, int hash, ec_t q) {
 	bn_t n, k, e, v;
 	ec_t p;
 	uint8_t h[RLC_MD_LEN];
-	int result = 0;
+	int cmp, result = 0;
 
 	bn_null(n);
 	bn_null(k);
@@ -153,6 +153,7 @@ int cp_ecdsa_ver(bn_t r, bn_t s, uint8_t *msg, int len, int hash, ec_t q) {
 					msg = h;
 					len = RLC_MD_LEN;
 				}
+
 				if (8 * len > bn_bits(n)) {
 					len = RLC_CEIL(bn_bits(n), 8);
 					bn_read_bin(e, msg, len);
@@ -171,8 +172,12 @@ int cp_ecdsa_ver(bn_t r, bn_t s, uint8_t *msg, int len, int hash, ec_t q) {
 
 				bn_mod(v, v, n);
 
-				result = dv_cmp_const(v->dp, r->dp, RLC_MIN(v->used, r->used));
-				result = (result == RLC_NE ? 0 : 1);
+				cmp = dv_cmp_const(v->dp, r->dp, RLC_MIN(v->used, r->used));
+				result = (cmp == RLC_NE ? 0 : 1);
+
+				if (bn_is_zero(e)) {
+					result = 0;
+				}
 
 				if (v->used != r->used) {
 					result = 0;

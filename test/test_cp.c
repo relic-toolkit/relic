@@ -552,9 +552,15 @@ static int ecdsa(void) {
 			TEST_ASSERT(cp_ecdsa_gen(d, q) == RLC_OK, end);
 			TEST_ASSERT(cp_ecdsa_sig(r, s, m, sizeof(m), 0, d) == RLC_OK, end);
 			TEST_ASSERT(cp_ecdsa_ver(r, s, m, sizeof(m), 0, q) == 1, end);
+			m[0] ^= 1;
+			TEST_ASSERT(cp_ecdsa_ver(r, s, m, sizeof(m), 0, q) == 0, end);
 			md_map(h, m, sizeof(m));
 			TEST_ASSERT(cp_ecdsa_sig(r, s, h, RLC_MD_LEN, 1, d) == RLC_OK, end);
 			TEST_ASSERT(cp_ecdsa_ver(r, s, h, RLC_MD_LEN, 1, q) == 1, end);
+			h[0] ^= 1;
+			TEST_ASSERT(cp_ecdsa_ver(r, s, h, RLC_MD_LEN, 1, q) == 0, end);
+			memset(h, 0, RLC_MD_LEN);
+			TEST_ASSERT(cp_ecdsa_ver(r, s, h, RLC_MD_LEN, 1, q) == 0, end);
 		}
 		TEST_END;
 	}
