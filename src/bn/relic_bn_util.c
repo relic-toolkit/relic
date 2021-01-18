@@ -120,6 +120,14 @@ int bn_bits(const bn_t a) {
 int bn_get_bit(const bn_t a, int bit) {
 	int d;
 
+	if (bit < 0) {
+		RLC_THROW(ERR_NO_VALID);
+	}
+
+	if (bit > bn_bits(a)) {
+		return 0;
+	}
+
 	RLC_RIP(bit, d, bit);
 
 	if (d >= a->used) {
@@ -132,7 +140,13 @@ int bn_get_bit(const bn_t a, int bit) {
 void bn_set_bit(bn_t a, int bit, int value) {
 	int d;
 
+	if (bit < 0) {
+		RLC_THROW(ERR_NO_VALID);
+	}
+
 	RLC_RIP(bit, d, bit);
+
+	bn_grow(a, d);
 
 	if (value == 1) {
 		a->dp[d] |= ((dig_t)1 << bit);
