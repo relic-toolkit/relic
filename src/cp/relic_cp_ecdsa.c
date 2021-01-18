@@ -175,7 +175,9 @@ int cp_ecdsa_ver(bn_t r, bn_t s, uint8_t *msg, int len, int hash, ec_t q) {
 				cmp = dv_cmp_const(v->dp, r->dp, RLC_MIN(v->used, r->used));
 				result = (cmp == RLC_NE ? 0 : 1);
 
-				if (bn_is_zero(e)) {
+				/* Reject signatures such that H(m) = 0, but accept those with
+				 * hashes shorter than the currently configured one. */
+				if (bn_is_zero(e) && len >= RLC_MD_LEN) {
 					result = 0;
 				}
 
