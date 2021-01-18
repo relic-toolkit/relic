@@ -253,11 +253,6 @@ int bn_size_str(const bn_t a, int radix) {
 
 	bn_null(t);
 
-	/* Binary case requires the bits, a sign and the null terminator. */
-	if (radix == 2) {
-		return bn_bits(a) + (a->sign == RLC_NEG ? 1 : 0) + 1;
-	}
-
 	/* Check the radix. */
 	if (radix < 2 || radix > 64) {
 		RLC_THROW(ERR_NO_VALID);
@@ -265,6 +260,11 @@ int bn_size_str(const bn_t a, int radix) {
 
 	if (bn_is_zero(a)) {
 		return 2;
+	}
+
+	/* Binary case requires the bits, a sign and the null terminator. */
+	if (radix == 2) {
+		return bn_bits(a) + (a->sign == RLC_NEG ? 1 : 0) + 1;
 	}
 
 	if (a->sign == RLC_NEG) {
