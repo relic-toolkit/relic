@@ -159,13 +159,6 @@ set(ARITH "easy" CACHE STRING "Arithmetic backend")
 # Choose the memory-allocation policy.
 set(ALLOC "AUTO" CACHE STRING "Allocation policy")
 
-# Compiler flags.
-if("$ENV{COMP}" STREQUAL "")
-	set(COMP "-O2 -funroll-loops -fomit-frame-pointer" CACHE STRING "User-chosen compiler flags.")
-else()
-	set(COMP "$ENV{COMP}" CACHE STRING "User-chosen compiler flags.")
-endif()
-
 # Simulator of the target platform.
 set(SIMUL "$ENV{SIMUL}" CACHE STRING "Path to call a simulator of the target platform.")
 set(SIMAR "$ENV{SIMAR}" CACHE STRING "Arguments to call a simulator of the target platform.")
@@ -174,8 +167,7 @@ string(REPLACE " " ";" SIMAR "${SIMAR}")
 # Linker flags.
 string(TOLOWER ${ARITH} LFLAGS)
 set(LFLAGS "-L${CMAKE_CURRENT_SOURCE_DIR}/src/low/${LFLAGS}/")
-set(LINK "$ENV{LINK}" CACHE STRING "User-chosen linker flags.")
-set(LFLAGS "${LFLAGS} ${LINK}")
+set(LFLAGS "${LFLAGS} $ENV{LDFLAGS}")
 
 if(STBIN)
 	set(LFLAGS "${LFLAGS} -static")
@@ -238,7 +230,11 @@ if(DEBUG)
 	set(DFLAGS "-ggdb")
 else()
 	# If the user did not specify compile flags, we use sane defaults.
-	set(CFLAGS "${COMP}")
+	if("$ENV{CFLAGS}" STREQUAL "")
+		set(CFLAGS "-O2 -funroll-loops -fomit-frame-pointer")
+	else()
+		set(CFLAGS "$ENV{CFLAGS}")
+	endif()
 	set(DFLAGS "")
 endif()
 
@@ -281,10 +277,10 @@ if(ARITH STREQUAL "fiat")
 endif()
 
 set(CMAKE_C_FLAGS "-pipe -std=c99 ${AFLAGS} ${WFLAGS} ${DFLAGS} ${PFLAGS} ${CFLAGS}")
-set(CMAKE_EXE_LINKER_FLAGS ${LFLAGS})
+set(CMAKE_EXE_LINKER_FLAGS "${LFLAGS}")
 
 message(STATUS "Compiler flags: ${CMAKE_C_FLAGS}")
-message(STATUS "Linker flags: ${LFLAGS}")
+message(STATUS "Linker flags: ${CMAKE_EXE_LINKER_FLAGS}")
 
 string(TOUPPER ${ARITH} ARITH)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/include/relic_conf.h.in
