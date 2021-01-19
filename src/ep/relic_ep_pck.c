@@ -36,6 +36,7 @@
 /*============================================================================*/
 
 void ep_pck(ep_t r, const ep_t p) {
+	int b;
 	bn_t halfQ, yValue;
 
 	bn_null(halfQ);
@@ -45,15 +46,20 @@ void ep_pck(ep_t r, const ep_t p) {
 		bn_new(halfQ);
 		bn_new(yValue);
 
-		halfQ->used = RLC_FP_DIGS;
-		dv_copy(halfQ->dp, fp_prime_get(), RLC_FP_DIGS);
-		bn_hlv(halfQ, halfQ);
-
-		fp_prime_back(yValue, p->y);
-
-		int b = bn_cmp(yValue, halfQ) == RLC_GT;
-
 		fp_copy(r->x, p->x);
+
+		if (ep_curve_is_pairf()) {
+			halfQ->used = RLC_FP_DIGS;
+			dv_copy(halfQ->dp, fp_prime_get(), RLC_FP_DIGS);
+			bn_hlv(halfQ, halfQ);
+
+			fp_prime_back(yValue, p->y);
+
+			b = bn_cmp(yValue, halfQ) == RLC_GT;
+		} else {
+			b = fp_get_bit(p->y, 0);
+		}
+
 		fp_zero(r->y);
 		fp_set_bit(r->y, 0, b);
 		fp_set_dig(r->z, 1);
@@ -89,20 +95,28 @@ int ep_upk(ep_t r, const ep_t p) {
 		result = fp_srt(t, t);
 
 		if (result) {
-			/* Verify whether the y coordinate is the larger one, matches the
-			 * compressed y-coordinate, from IETF pairing friendly spec:
-				sign_F_p(y) :=  { 1 if y > (p - 1) / 2, else
-								{ 0 otherwise.
-			*/
-			halfQ->used = RLC_FP_DIGS;
-			dv_copy(halfQ->dp, fp_prime_get(), RLC_FP_DIGS);
-			bn_hlv(halfQ, halfQ);  // This is equivalent to p - 1 / 2, floor division
+			if (ep_curve_is_pairf()) {
+				/* Verify whether the y coordinate is the larger one, matches the
+				 * compressed y-coordinate, from IETF pairing friendly spec:
+					sign_F_p(y) :=  { 1 if y > (p - 1) / 2, else
+									{ 0 otherwise.
+				*/
+				halfQ->used = RLC_FP_DIGS;
+				dv_copy(halfQ->dp, fp_prime_get(), RLC_FP_DIGS);
+				bn_hlv(halfQ, halfQ);  // This is equivalent to p - 1 / 2, floor division
 
-			fp_prime_back(yValue, t);
-			int sign_fpy = bn_cmp(yValue, halfQ) == RLC_GT;
+				fp_prime_back(yValue, t);
+				int sign_fpy = bn_cmp(yValue, halfQ) == RLC_GT;
 
-			if (sign_fpy != fp_get_bit(p->y, 0)) {
-				fp_neg(t, t);
+				if (sign_fpy != fp_get_bit(p->y, 0)) {
+					fp_neg(t, t);
+				}
+			} else {
+				/* Verify if least significant bit of the result matches the
+				 * compressed y-coordinate. */
+				if (fp_get_bit(t, 0) != fp_get_bit(p->y, 0)) {
+					fp_neg(t, t);
+				}
 			}
 			fp_copy(r->x, p->x);
 			fp_copy(r->y, t);
