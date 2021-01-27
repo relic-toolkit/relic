@@ -229,13 +229,12 @@ if(DEBUG)
 	set(CFLAGS "-O0 -fno-omit-frame-pointer")
 	set(DFLAGS "-ggdb")
 else()
-	# If the user did not specify compile flags, we use sane defaults.
 	if("$ENV{CFLAGS}" STREQUAL "")
-		set(CFLAGS "-O2 -funroll-loops -fomit-frame-pointer")
+		# If the user did not specify compile flags, we use sane defaults.
+		set(CFLAGS "-O2 -funroll-loops -fomit-frame-pointer" CACHE STRING "User-chosen compiler flags.")
 	else()
-		set(CFLAGS "$ENV{CFLAGS}")
+		set(CFLAGS "$ENV{CFLAGS}" CACHE STRING "User-chosen compiler flags.")
 	endif()
-	set(DFLAGS "")
 endif()
 
 if(AUSAN)
