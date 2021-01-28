@@ -113,7 +113,7 @@ void bn_rec_slw(uint8_t *win, int *len, const bn_t k, int w) {
 
 	l = bn_bits(k);
 
-	if (*len < RLC_CEIL(l, w)) {
+	if (*len < l) {
 		RLC_THROW(ERR_NO_BUFFER);
 	}
 
