@@ -112,7 +112,7 @@ void bn_mxp_basic(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 void bn_mxp_slide(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 	bn_t tab[RLC_TABLE_SIZE], t, u, r;
 	int i, j, l, w = 1;
-	uint8_t win[RLC_BN_BITS];
+	uint8_t *win = RLC_ALLOCA(uint8_t, bn_bits(b));
 
 	if (bn_is_zero(b)) {
 		bn_set_dig(c, 1);
@@ -128,6 +128,10 @@ void bn_mxp_slide(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 	}
 
 	RLC_TRY {
+		if (win == NULL) {
+			RLC_THROW(ERR_NO_MEMORY);
+		}
+
 		/* Find window size. */
 		i = bn_bits(b);
 		if (i <= 21) {
@@ -171,7 +175,7 @@ void bn_mxp_slide(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 			bn_mod(tab[i], tab[i], m, u);
 		}
 
-		l = RLC_BN_BITS + 1;
+		l = bn_bits(b);
 		bn_rec_slw(win, &l, b, w);
 		for (i = 0; i < l; i++) {
 			if (win[i] == 0) {
@@ -207,6 +211,7 @@ void bn_mxp_slide(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 		bn_free(u);
 		bn_free(t);
 		bn_free(r);
+		RLC_FREE(win);
 	}
 }
 
