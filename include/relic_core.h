@@ -412,6 +412,13 @@ typedef struct _ctx_t {
 	int seeded;
 	/** Counter to keep track of number of calls since last seeding. */
 	int counter;
+
+#if TIMER == PERF
+	/** File descriptor for perf system call. */
+	int perf_fd;
+	/** Buffer for storing perf data, */
+	struct perf_event_mmap_page *perf_buf;
+#endif
 } ctx_t;
 
 /*============================================================================*/

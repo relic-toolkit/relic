@@ -88,7 +88,7 @@ void bench_overhead(void) {
 	do {
 		ctx->over = 0;
 		for (int l = 0; l < BENCH; l++) {
-			ctx->total = 0;
+			bench_reset();
 			/* Measure the cost of (n^2 + over). */
 			bench_before();
 			for (int i = 0; i < BENCH; i++) {
@@ -102,7 +102,7 @@ void bench_overhead(void) {
 			ctx->over += ctx->total;
 		}
 		/* Overhead stores the cost of n*(n^2 + over) = n^3 + n*over. */
-		ctx->total = 0;
+		bench_reset();
 		/* Measure the cost of (n^3 + over). */
 		bench_before();
 		for (int i = 0; i < BENCH; i++) {
@@ -128,6 +128,30 @@ void bench_overhead(void) {
 
 #endif /* OVER && TIMER && BENCH > 1 */
 
+void bench_init(void) {
+	ctx_t *ctx = core_get();
+	if (ctx != NULL) {
+#ifdef OVERH
+		ctx->over = 0;
+#endif
+#if TIMER == PERF
+		static struct perf_event_attr attr;
+		attr.type = PERF_TYPE_HARDWARE;
+		attr.config = PERF_COUNT_HW_CPU_CYCLES;
+		attr.exclude_kernel = 1;
+
+		ctx->perf_buf = NULL;
+		ctx->perf_fd = syscall(__NR_perf_event_open, &attr, 0, -1, -1, 0);
+		if (ctx->perf_fd != -1) {
+			ctx->perf_buf = mmap(NULL, sysconf(_SC_PAGESIZE), PROT_READ, MAP_SHARED,
+				ctx->perf_fd, 0);
+		} else {
+			RLC_THROW(ERR_NO_FILE);
+		}
+#endif
+	}
+}
+
 void bench_reset(void) {
 #ifdef TIMER
 	core_get()->total = 0;
@@ -143,7 +167,7 @@ void bench_before(void) {
 	core_get()->before = clock();
 #elif TIMER == POSIX
 	gettimeofday(&(core_get()->before), NULL);
-#elif TIMER == CYCLE
+#elif TIMER == CYCLE || TIMER == PERF
 	core_get()->before = arch_cycles();
 #endif
 }
@@ -166,7 +190,7 @@ void bench_after(void) {
 	gettimeofday(&(ctx->after), NULL);
 	result = ((long)ctx->after.tv_sec - (long)ctx->before.tv_sec) * 1000000;
 	result += (ctx->after.tv_usec - ctx->before.tv_usec);
-#elif TIMER == CYCLE
+#elif TIMER == CYCLE || TIMER == PERF
 	ctx->after = arch_cycles();
   	result = (ctx->after - ctx->before);
 #endif
@@ -197,7 +221,7 @@ void bench_print(void) {
 
 #if TIMER == POSIX || TIMER == ANSI || (OPSYS == DUINO && TIMER == HREAL)
 	util_print("%lld microsec", ctx->total);
-#elif TIMER == CYCLE
+#elif TIMER == CYCLE || TIMER == PERF
 	util_print("%lld cycles", ctx->total);
 #else
 	util_print("%lld nanosec", ctx->total);
@@ -211,4 +235,16 @@ void bench_print(void) {
 
 ull_t bench_total(void) {
 	return core_get()->total;
+}
+
+void bench_clean(void) {
+#if TIMER == PERF
+	ctx_t *ctx = core_get();
+	if (ctx != NULL) {
+		close(ctx->perf_fd);
+		munmap(ctx->perf_buf, sysconf(_SC_PAGESIZE)),
+		ctx->perf_fd = -1;
+		ctx->perf_buf = NULL;
+#endif
+	}
 }

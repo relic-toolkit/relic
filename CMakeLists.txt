@@ -124,7 +124,8 @@ message("   TIMER=HPROC    GNU/Linux per-process high-resolution timer.")
 message("   TIMER=HTHRD    GNU/Linux per-thread high-resolution timer.")
 message("   TIMER=ANSI     ANSI-compatible timer.")
 message("   TIMER=POSIX    POSIX-compatible timer.")
-message("   TIMER=CYCLE    Cycle-counting timer. (architecture-dependant)\n")
+message("   TIMER=CYCLE    Cycle-counting timer. (architecture-dependant)")
+message("   TIMER=PERF     GNU/Linux performance monitoring framework.\n")
 
 message(STATUS "Prefix to identify this build of the library (default = \"\"):\n")
 

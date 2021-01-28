@@ -114,15 +114,12 @@ int core_init(void) {
 	core_ctx->last = NULL;
 #endif /* CHECK */
 
-#ifdef OVERH
-	core_ctx->over = 0;
-#endif
-
 	core_ctx->code = RLC_OK;
 
 	RLC_TRY {
 		arch_init();
 		rand_init();
+		bench_init();
 #ifdef WITH_FP
 		fp_prime_init();
 #endif
@@ -152,7 +149,6 @@ int core_init(void) {
 }
 
 int core_clean(void) {
-	rand_clean();
 #ifdef WITH_FP
 	fp_prime_clean();
 #endif
@@ -174,7 +170,10 @@ int core_clean(void) {
 #ifdef WITH_PC
 	pc_core_clean();
 #endif
+
 	arch_clean();
+	bench_clean();
+	rand_clean();
 
 	if (core_ctx != NULL) {
 		int result = core_ctx->code;

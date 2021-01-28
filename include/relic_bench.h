@@ -40,6 +40,14 @@
 #include "relic_label.h"
 #include "relic_util.h"
 
+#if OPSYS == LINUX && TIMER == PERF
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/mman.h>
+#include <sys/syscall.h>
+#include <linux/perf_event.h>
+#endif
+
 /*============================================================================*/
 /* Macro definitions                                                          */
 /*============================================================================*/
@@ -144,11 +152,7 @@ typedef clock_t ben_t;
 #include <sys/time.h>
 typedef struct timeval ben_t;
 
-#elif TIMER == CYCLE
-
-typedef unsigned long long ben_t;
-
-#else
+#else /* TIMER == CYCLE || TIMER == PERF */
 
 typedef unsigned long long ben_t;
 
@@ -157,6 +161,16 @@ typedef unsigned long long ben_t;
 /*============================================================================*/
 /* Function prototypes                                                        */
 /*============================================================================*/
+
+/**
+ * Initializes the benchmarking module.
+ */
+void bench_init(void);
+
+/**
+ * Finalizes the benchmarking module.
+ */
+void bench_clean(void);
 
 /**
  * Measures and prints benchmarking overhead.

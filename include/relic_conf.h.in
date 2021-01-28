@@ -697,6 +697,8 @@
 #define ANSI     5
 /** Cycle-counting timer. */
 #define CYCLE    6
+/** Performance monitoring framework. */
+#define PERF     7
 /** Chosen timer. */
 #cmakedefine TIMER    @TIMER@
 

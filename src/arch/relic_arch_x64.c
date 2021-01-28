@@ -33,15 +33,9 @@
 
 #include "relic_types.h"
 #include "relic_arch.h"
+#include "relic_core.h"
 
 #include "lzcnt.inc"
-
-#if TIMER == CYCLE
-/**
- * Renames the inline assembly macro to a prettier name.
- */
-#define asm					__asm__ volatile
-#endif
 
 /*============================================================================*/
 /* Private definitions                                                        */
@@ -51,6 +45,13 @@
  * Function pointer to underlying lznct implementation.
  */
 static unsigned int (*lzcnt_ptr)(ull_t);
+
+#if TIMER == CYCLE
+/**
+ * Renames the inline assembly macro to a prettier name.
+ */
+#define asm					__asm__ volatile
+#endif
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -65,6 +66,7 @@ void arch_clean(void) {
 }
 
 #if TIMER == CYCLE
+
 ull_t arch_cycles(void) {
 	unsigned int hi, lo;
 	asm (
@@ -75,6 +77,30 @@ ull_t arch_cycles(void) {
 		: "=r" (hi), "=r" (lo):: "%rax", "%rbx", "%rcx", "%rdx"
 	);
 	return ((ull_t) lo) | (((ull_t) hi) << 32);
+}
+
+#elif TIMER == PERF
+
+ull_t arch_cycles(void) {
+	unsigned int seq;
+	ull_t index, offset, result = 0;
+	if (core_get()->perf_buf != NULL) {
+		do {
+			seq = core_get()->perf_buf->lock;
+			asm("" ::: "memory");
+			index = core_get()->perf_buf->index;
+			offset = core_get()->perf_buf->offset;
+			asm(
+				"rdpmc; shlq $32, %%rdx; orq %%rdx,%%rax"
+				: "=a" (result) : "c" (index - 1) : "%rdx"
+			);
+			asm("" ::: "memory");
+		} while (core_get()->perf_buf->lock != seq);
+
+		result += offset;
+		result &= RLC_MASK(48); /* Get lower 48 bits only. */
+	}
+	return result;
 }
 #endif
 
