@@ -3263,6 +3263,23 @@ void fp12_pck(fp12_t c, fp12_t a);
 int fp12_upk(fp12_t c, fp12_t a);
 
 /**
+ * Compresses a dodecic extension field element at the maximum rate.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the dodecic extension field element to compress.
+ */
+void fp12_pck_max(fp12_t c, fp12_t a);
+
+/**
+ * Decompresses a dodecic extension field element at the maximum rate.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the dodecic extension field element to decompress.
+ * @return if the decompression was successful
+ */
+int fp12_upk_max(fp12_t c, fp12_t a);
+
+/**
  * Copies the second argument to the first argument.
  *
  * @param[out] c			- the result.
