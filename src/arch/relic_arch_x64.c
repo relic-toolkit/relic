@@ -46,7 +46,7 @@
  */
 static unsigned int (*lzcnt_ptr)(ull_t);
 
-#if TIMER == CYCLE
+#if TIMER == CYCLE || TIMER == PERF
 /**
  * Renames the inline assembly macro to a prettier name.
  */

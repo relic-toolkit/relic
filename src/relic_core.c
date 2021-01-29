@@ -119,7 +119,11 @@ int core_init(void) {
 	RLC_TRY {
 		arch_init();
 		rand_init();
+
+#if BENCH > 0
 		bench_init();
+#endif
+
 #ifdef WITH_FP
 		fp_prime_init();
 #endif
@@ -171,8 +175,11 @@ int core_clean(void) {
 	pc_core_clean();
 #endif
 
+#if BENCH > 0
+		bench_clean();
+#endif
+
 	arch_clean();
-	bench_clean();
 	rand_clean();
 
 	if (core_ctx != NULL) {
