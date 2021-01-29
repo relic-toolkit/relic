@@ -115,6 +115,7 @@ void bn_mxp_slide(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 	uint8_t *win = RLC_ALLOCA(uint8_t, bn_bits(b));
 
 	if (bn_is_zero(b)) {
+		RLC_FREE(win);
 		bn_set_dig(c, 1);
 		return;
 	}
@@ -246,25 +247,33 @@ void bn_mxp_monty(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 		bn_mod_monty_conv(tab[1], a, m);
 #else
 		bn_set_dig(tab[0], 1);
-		bn_copy(tab[1], a);
+		bn_mod(tab[1], a, m);
 #endif
 
+		bn_grow(tab[0], m->alloc);
+		bn_grow(tab[1], m->alloc);
 		for (i = bn_bits(b) - 1; i >= 0; i--) {
 			j = bn_get_bit(b, i);
-			dv_swap_cond(tab[0]->dp, tab[1]->dp, RLC_BN_DIGS, j ^ 1);
+			dv_swap_cond(tab[0]->dp, tab[1]->dp, m->alloc, j ^ 1);
 			mask = -(j ^ 1);
 			t = (tab[0]->used ^ tab[1]->used) & mask;
 			tab[0]->used ^= t;
 			tab[1]->used ^= t;
+			t = (tab[0]->sign ^ tab[1]->sign) & mask;
+			tab[0]->sign ^= t;
+			tab[1]->sign ^= t;
 			bn_mul(tab[0], tab[0], tab[1]);
 			bn_mod(tab[0], tab[0], m, u);
 			bn_sqr(tab[1], tab[1]);
 			bn_mod(tab[1], tab[1], m, u);
-			dv_swap_cond(tab[0]->dp, tab[1]->dp, RLC_BN_DIGS, j ^ 1);
+			dv_swap_cond(tab[0]->dp, tab[1]->dp, m->alloc, j ^ 1);
 			mask = -(j ^ 1);
 			t = (tab[0]->used ^ tab[1]->used) & mask;
 			tab[0]->used ^= t;
 			tab[1]->used ^= t;
+			t = (tab[0]->sign ^ tab[1]->sign) & mask;
+			tab[0]->sign ^= t;
+			tab[1]->sign ^= t;
 		}
 
 #if BN_MOD == MONTY
