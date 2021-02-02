@@ -245,6 +245,6 @@ void bench_clean(void) {
 		munmap(ctx->perf_buf, sysconf(_SC_PAGESIZE)),
 		ctx->perf_fd = -1;
 		ctx->perf_buf = NULL;
-#endif
 	}
+#endif
 }
