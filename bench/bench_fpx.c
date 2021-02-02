@@ -1983,6 +1983,21 @@ static void arith12(void) {
 	}
 	BENCH_END;
 
+	BENCH_BEGIN("fp12_pck_max") {
+		fp12_rand(a);
+		fp12_conv_cyc(a, a);
+		BENCH_ADD(fp12_pck_max(c, a));
+	}
+	BENCH_END;
+
+	BENCH_BEGIN("fp12_upk_max") {
+		fp12_rand(a);
+		fp12_conv_cyc(a, a);
+		fp12_pck_max(a, a);
+		BENCH_ADD(fp12_upk_max(c, a));
+	}
+	BENCH_END;
+
 	fp12_free(a);
 	fp12_free(b);
 	fp12_free(c);
