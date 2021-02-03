@@ -540,6 +540,7 @@ void eb_read_bin(eb_t a, const uint8_t *bin, int len) {
 			fb_read_bin(a->y, bin + RLC_FB_BYTES + 1, RLC_FB_BYTES);
 		} else {
 			RLC_THROW(ERR_NO_VALID);
+			return;
 		}
 	}
 }
@@ -552,6 +553,7 @@ void eb_write_bin(uint8_t *bin, int len, const eb_t a, int pack) {
 	if (eb_is_infty(a)) {
 		if (len < 1) {
 			RLC_THROW(ERR_NO_BUFFER);
+			return;
 		} else {
 			bin[0] = 0;
 			return;

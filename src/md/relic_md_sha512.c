@@ -20,7 +20,7 @@
  * Apache License along with RELIC. If not, see <https://www.gnu.org/licenses/>
  * or <https://www.apache.org/licenses/>.
  */
- 
+
 /**
  * @file
  *
@@ -45,12 +45,15 @@ void md_map_sh512(uint8_t *hash, const uint8_t *msg, int len) {
 
 	if (SHA512Reset(&ctx) != shaSuccess) {
 		RLC_THROW(ERR_NO_VALID);
+		return;
 	}
 	if (SHA512Input(&ctx, msg, len) != shaSuccess) {
 		RLC_THROW(ERR_NO_VALID);
+		return;
 	}
 	if (SHA512Result(&ctx, hash) != shaSuccess) {
 		RLC_THROW(ERR_NO_VALID);
+		return;
 	}
 }
 

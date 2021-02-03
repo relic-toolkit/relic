@@ -60,6 +60,7 @@ void rand_bytes(uint8_t *buf, int size) {
 		l += c;
 		if (c == -1) {
 			RLC_THROW(ERR_NO_READ);
+			return;
 		}
 	} while (l < size);
 }

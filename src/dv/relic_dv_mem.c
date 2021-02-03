@@ -50,6 +50,7 @@
 void dv_new_dynam(dv_t *a, int digits) {
 	if (digits > RLC_DV_DIGS) {
 		RLC_THROW(ERR_NO_PRECI);
+		return;
 	}
 #if ALIGN == 1
 	*a = malloc(digits * (RLC_DIG / 8));

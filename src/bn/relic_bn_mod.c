@@ -158,6 +158,7 @@ void bn_mod_pre_monty(bn_t u, const bn_t m) {
 
 	if ((b & 0x01) == 0) {
 		RLC_THROW(ERR_NO_VALID);
+		return;
 	}
 
 	x = (((b + 2) & 4) << 1) + b;	/* here x*a==1 mod 2**4 */

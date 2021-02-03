@@ -234,6 +234,7 @@ void fp_read_bin(fp_t a, const uint8_t *bin, int len) {
 
 	if (len != RLC_FP_BYTES) {
 		RLC_THROW(ERR_NO_BUFFER);
+		return;
 	}
 
 	RLC_TRY {
@@ -264,6 +265,7 @@ void fp_write_bin(uint8_t *bin, int len, const fp_t a) {
 
 	if (len != RLC_FP_BYTES) {
 		RLC_THROW(ERR_NO_BUFFER);
+		return;
 	}
 
 	RLC_TRY {

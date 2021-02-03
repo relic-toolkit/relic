@@ -57,6 +57,7 @@ void dv_zero(dig_t *a, int digits) {
 #if ALLOC != DYNAMIC
 	if (digits > RLC_DV_DIGS) {
 		RLC_THROW(ERR_NO_PRECI);
+		return;
 	}
 #endif
 

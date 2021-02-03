@@ -122,6 +122,7 @@ int bn_get_bit(const bn_t a, int bit) {
 
 	if (bit < 0) {
 		RLC_THROW(ERR_NO_VALID);
+		return 0;
 	}
 
 	if (bit > bn_bits(a)) {
@@ -142,6 +143,7 @@ void bn_set_bit(bn_t a, int bit, int value) {
 
 	if (bit < 0) {
 		RLC_THROW(ERR_NO_VALID);
+		return;
 	}
 
 	RLC_RIP(bit, d, bit);
@@ -270,6 +272,7 @@ int bn_size_str(const bn_t a, int radix) {
 	/* Check the radix. */
 	if (radix < 2 || radix > 64) {
 		RLC_THROW(ERR_NO_VALID);
+		return 0;
 	}
 
 	if (bn_is_zero(a)) {
@@ -311,7 +314,8 @@ void bn_read_str(bn_t a, const char *str, int len, int radix) {
 	bn_zero(a);
 
 	if (radix < 2 || radix > 64) {
-		RLC_THROW(ERR_NO_VALID)
+		RLC_THROW(ERR_NO_VALID);
+		return;
 	}
 
 	j = 0;
@@ -322,27 +326,33 @@ void bn_read_str(bn_t a, const char *str, int len, int radix) {
 		sign = RLC_POS;
 	}
 
-	while (j < len) {
-		if (str[j] == 0) {
-			break;
-		}
-		c = (char)((radix < 36) ? RLC_UPP(str[j]) : str[j]);
-		for (i = 0; i < 64; i++) {
-			if (c == util_conv_char(i)) {
+	RLC_TRY {
+		bn_grow(a, RLC_CEIL(len * util_bits_dig(radix), RLC_DIG));
+
+		while (j < len) {
+			if (str[j] == 0) {
 				break;
 			}
+			c = (char)((radix < 36) ? RLC_UPP(str[j]) : str[j]);
+			for (i = 0; i < 64; i++) {
+				if (c == util_conv_char(i)) {
+					break;
+				}
+			}
+
+			if (i < radix) {
+				bn_mul_dig(a, a, (dig_t)radix);
+				bn_add_dig(a, a, (dig_t)i);
+			} else {
+				break;
+			}
+			j++;
 		}
 
-		if (i < radix) {
-			bn_mul_dig(a, a, (dig_t)radix);
-			bn_add_dig(a, a, (dig_t)i);
-		} else {
-			break;
-		}
-		j++;
+		a->sign = sign;
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-
-	a->sign = sign;
 }
 
 void bn_write_str(char *str, int len, const bn_t a, int radix) {
@@ -356,10 +366,12 @@ void bn_write_str(char *str, int len, const bn_t a, int radix) {
 	l = bn_size_str(a, radix);
 	if (len < l) {
 		RLC_THROW(ERR_NO_BUFFER);
+		return;
 	}
 
 	if (radix < 2 || radix > 64) {
-		RLC_THROW(ERR_NO_VALID)
+		RLC_THROW(ERR_NO_VALID);
+		return;
 	}
 
 	if (bn_is_zero(a) == 1) {
@@ -464,6 +476,7 @@ void bn_write_bin(uint8_t *bin, int len, const bn_t a) {
 
 	if (len < size) {
 		RLC_THROW(ERR_NO_BUFFER);
+		return;
 	}
 
 	k = 0;
@@ -509,6 +522,7 @@ void bn_write_raw(dig_t *raw, int len, const bn_t a) {
 
 	if (len < size) {
 		RLC_THROW(ERR_NO_BUFFER);
+		return;
 	}
 
 	for (i = 0; i < size; i++) {

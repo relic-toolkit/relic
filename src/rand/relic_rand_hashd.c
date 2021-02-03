@@ -61,6 +61,7 @@ static void rand_hash(uint8_t *out, int out_len, uint8_t *in, int in_len) {
 
 	if (buf == NULL) {
 		RLC_THROW(ERR_NO_MEMORY);
+		return;
 	}
 
 	buf[0] = 1;
@@ -156,6 +157,7 @@ void rand_bytes(uint8_t *buf, int size) {
 
 	if (sizeof(int) > 2 && size > (1 << 16)) {
 		RLC_THROW(ERR_NO_VALID);
+		return;
 	}
 
 	/* buf = hash_gen(size) */
@@ -177,10 +179,12 @@ void rand_seed(uint8_t *buf, int size) {
 
 	if (size <= 0) {
 		RLC_THROW(ERR_NO_VALID);
+		return;
 	}
 
 	if (sizeof(int) > 4 && size > (1 << 32)) {
 		RLC_THROW(ERR_NO_VALID);
+		return;
 	}
 
 	ctx->rand[0] = 0x0;
@@ -195,6 +199,7 @@ void rand_seed(uint8_t *buf, int size) {
 		uint8_t* tmp = RLC_ALLOCA(uint8_t, tmp_size);
 		if (tmp == NULL) {
 			RLC_THROW(ERR_NO_MEMORY);
+			return;
 		}
 		tmp[0] = 1;
 		memcpy(tmp + 1, ctx->rand + 1, len);

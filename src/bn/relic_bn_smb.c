@@ -40,6 +40,11 @@ void bn_smb_leg(bn_t c, const bn_t a, const bn_t b) {
 
 	bn_null(t);
 
+	if (bn_sign(b) == RLC_NEG) {
+		RLC_THROW(ERR_NO_VALID);
+		return;
+	}
+
 	if (bn_cmp(a, b) == RLC_EQ) {
 		bn_zero(c);
 		return;
@@ -47,10 +52,6 @@ void bn_smb_leg(bn_t c, const bn_t a, const bn_t b) {
 
 	RLC_TRY {
 		bn_new(t);
-
-		if (bn_sign(b) == RLC_NEG) {
-			RLC_THROW(ERR_NO_VALID);
-		}
 
 		/* t = (b - 1)/2. */
 		bn_sub_dig(t, b, 1);
@@ -78,16 +79,17 @@ void bn_smb_jac(bn_t c, const bn_t a, const bn_t b) {
 	bn_null(t1);
 	bn_null(r);
 
+	/* Argument b must be odd. */
+	if (bn_is_even(b) || bn_sign(b) == RLC_NEG) {
+		RLC_THROW(ERR_NO_VALID);
+		return;
+	}
+
 	RLC_TRY {
 		bn_new(t0);
 		bn_new(t1);
 		bn_new(r);
 		t = 1;
-
-		/* Argument b must be odd. */
-		if (bn_is_even(b) || bn_sign(b) == RLC_NEG) {
-			RLC_THROW(ERR_NO_VALID);
-		}
 
 		if (bn_sign(a) == RLC_NEG) {
 			bn_add(t0, a, b);

@@ -49,6 +49,7 @@ static void rand_stub(uint8_t *buf, int size, void *args) {
 
 	if (fd == -1) {
 		RLC_THROW(ERR_NO_FILE);
+		return;
 	}
 
 	l = 0;
@@ -57,6 +58,7 @@ static void rand_stub(uint8_t *buf, int size, void *args) {
 		l += c;
 		if (c == -1) {
 			RLC_THROW(ERR_NO_READ);
+			return;
 		}
 	} while (l < size);
 

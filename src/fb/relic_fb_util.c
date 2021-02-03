@@ -168,6 +168,7 @@ int fb_size_str(const fb_t a, int radix) {
 
 	if (!valid_radix(radix)) {
 		RLC_THROW(ERR_NO_VALID);
+		return 0;
 	}
 
 	RLC_TRY {
@@ -197,6 +198,12 @@ void fb_read_str(fb_t a, const char *str, int len, int radix) {
 	l = log_radix(radix);
 	if (!valid_radix(radix)) {
 		RLC_THROW(ERR_NO_VALID);
+		return;
+	}
+
+	if (RLC_CEIL(l * len, RLC_DIG) > RLC_FB_DIGS) {
+		RLC_THROW(ERR_NO_BUFFER);
+		return;
 	}
 
 	j = 0;
@@ -215,6 +222,7 @@ void fb_read_str(fb_t a, const char *str, int len, int radix) {
 			carry = fb_lshb_low(a, a, l);
 			if (carry != 0) {
 				RLC_THROW(ERR_NO_BUFFER);
+				break;
 			}
 			fb_add_dig(a, a, (dig_t)i);
 		} else {
@@ -234,12 +242,14 @@ void fb_write_str(char *str, int len, const fb_t a, int radix) {
 	l = fb_size_str(a, radix);
 	if (len < l) {
 		RLC_THROW(ERR_NO_BUFFER);
+		return;
 	}
 	len = l;
 
 	l = log_radix(radix);
 	if (!valid_radix(radix)) {
-		RLC_THROW(ERR_NO_VALID)
+		RLC_THROW(ERR_NO_VALID);
+		return;
 	}
 
 	if (fb_is_zero(a) == 1) {
@@ -288,6 +298,7 @@ void fb_read_bin(fb_t a, const uint8_t *bin, int len) {
 
 	if (len != RLC_FB_BYTES) {
 		RLC_THROW(ERR_NO_BUFFER);
+		return;
 	}
 
 	RLC_TRY {
@@ -312,6 +323,7 @@ void fb_write_bin(uint8_t *bin, int len, const fb_t a) {
 
 	if (len != RLC_FB_BYTES) {
 		RLC_THROW(ERR_NO_BUFFER);
+		return;
 	}
 
 	RLC_TRY {

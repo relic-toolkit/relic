@@ -50,6 +50,7 @@ void md_mgf(uint8_t *key, int key_len, const uint8_t *in,
 		RLC_FREE(buffer);
 		RLC_FREE(t);
 		RLC_THROW(ERR_NO_MEMORY);
+		return;
 	}
 
 	/* d = ceil(kLen/hLen). */

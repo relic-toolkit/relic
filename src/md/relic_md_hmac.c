@@ -53,6 +53,7 @@ void md_hmac(uint8_t *mac, const uint8_t *in, int in_len, const uint8_t *key,
 
     if (ipad == NULL) {
         RLC_THROW(ERR_NO_MEMORY);
+		return;
     }
 
 	if (key_len > block_size) {

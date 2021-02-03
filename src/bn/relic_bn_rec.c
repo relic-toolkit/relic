@@ -97,7 +97,9 @@ void bn_rec_win(uint8_t *win, int *len, const bn_t k, int w) {
 	l = bn_bits(k);
 
 	if (*len < RLC_CEIL(l, w)) {
+		*len = 0;
 		RLC_THROW(ERR_NO_BUFFER);
+		return;
 	}
 
 	j = 0;
@@ -114,7 +116,9 @@ void bn_rec_slw(uint8_t *win, int *len, const bn_t k, int w) {
 	l = bn_bits(k);
 
 	if (*len < l) {
+		*len = 0;
 		RLC_THROW(ERR_NO_BUFFER);
+		return;
 	}
 
 	i = l - 1;
@@ -142,7 +146,9 @@ void bn_rec_naf(int8_t *naf, int *len, const bn_t k, int w) {
 	int8_t u_i;
 
 	if (*len < (bn_bits(k) + 1)) {
+		*len = 0;
 		RLC_THROW(ERR_NO_BUFFER);
+		return;
 	}
 
 	bn_null(t);
@@ -422,7 +428,9 @@ void bn_rec_tnaf(int8_t *tnaf, int *len, const bn_t k, int8_t u, int m, int w) {
 	bn_null(tmp);
 
 	if (*len < (bn_bits(k) + 1)) {
+		*len = 0;
 		RLC_THROW(ERR_NO_BUFFER);
+		return;
 	}
 
 	RLC_TRY {
@@ -549,6 +557,7 @@ void bn_rec_rtnaf(int8_t *tnaf, int *len, const bn_t k, int8_t u, int m, int w) 
 
 	if (*len < (bn_bits(k) + 1)) {
 		RLC_THROW(ERR_NO_BUFFER);
+		return;
 	}
 
 	RLC_TRY {
@@ -686,7 +695,9 @@ void bn_rec_reg(int8_t *naf, int *len, const bn_t k, int n, int w) {
 	l = RLC_CEIL(n, w - 1);
 
 	if (*len <= l) {
+		*len = 0;
 		RLC_THROW(ERR_NO_BUFFER);
+		return;
 	}
 
 	RLC_TRY {
@@ -733,7 +744,9 @@ void bn_rec_jsf(int8_t *jsf, int *len, const bn_t k, const bn_t l) {
 	bn_null(n1);
 
 	if (*len < (2 * bn_bits(k) + 1)) {
+		*len = 0;
 		RLC_THROW(ERR_NO_BUFFER);
+		return;
 	}
 
 	RLC_TRY {

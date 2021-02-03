@@ -73,6 +73,7 @@ void bn_init(bn_t a, int digits) {
 	/* Verify if the number of digits is sane. */
 	if (digits > RLC_BN_SIZE) {
 		RLC_THROW(ERR_NO_PRECI);
+		return;
 	} else {
 		digits = RLC_BN_SIZE;
 	}
@@ -114,6 +115,7 @@ void bn_grow(bn_t a, int digits) {
 		t = (dig_t *)realloc(a->dp, (RLC_DIG / 8) * digits);
 		if (t == NULL) {
 			RLC_THROW(ERR_NO_MEMORY);
+			return;
 		}
 		a->dp = t;
 		/* Set the newly allocated digits to zero. */
@@ -121,7 +123,8 @@ void bn_grow(bn_t a, int digits) {
 	}
 #else /* ALLOC == AUTO || ALLOC == STACK */
 	if (digits > RLC_BN_SIZE) {
-		RLC_THROW(ERR_NO_PRECI)
+		RLC_THROW(ERR_NO_PRECI);
+		return;
 	}
 	(void)a;
 #endif
@@ -137,6 +140,6 @@ void bn_trim(bn_t a) {
 			a->used = 1;
 			a->dp[0] = 0;
 			a->sign = RLC_POS;
-		}		
+		}
 	}
 }

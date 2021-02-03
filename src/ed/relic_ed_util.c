@@ -53,6 +53,7 @@ int ed_is_infty(const ed_t p) {
 
 	if (fp_is_zero(p->z)) {
 		RLC_THROW(ERR_NO_VALID);
+		return 0;
 	}
 
 	RLC_TRY {
@@ -277,6 +278,7 @@ void ed_read_bin(ed_t a, const uint8_t *bin, int len) {
 			fp_read_bin(a->x, bin + RLC_FP_BYTES + 1, RLC_FP_BYTES);
 		} else {
 			RLC_THROW(ERR_NO_VALID);
+			return;
 		}
 	}
 #if ED_ADD == EXTND
@@ -295,6 +297,7 @@ void ed_write_bin(uint8_t *bin, int len, const ed_t a, int pack) {
 	if (ed_is_infty(a)) {
 		if (len < 1) {
 			RLC_THROW(ERR_NO_BUFFER);
+			return;
 		} else {
 			bin[0] = 0;
 			return;

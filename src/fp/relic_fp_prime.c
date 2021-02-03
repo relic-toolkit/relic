@@ -51,6 +51,7 @@ static void fp_prime_set(const bn_t p) {
 
 	if (p->used != RLC_FP_DIGS) {
 		RLC_THROW(ERR_NO_VALID);
+		return;
 	}
 
 	bn_null(t);
@@ -414,6 +415,7 @@ void fp_prime_set_pmers(const int *f, int len) {
 
 		if (len >= RLC_TERMS) {
 			RLC_THROW(ERR_NO_VALID);
+			return;
 		}
 
 		bn_set_2b(p, f[len - 1]);

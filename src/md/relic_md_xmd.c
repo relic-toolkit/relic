@@ -45,7 +45,8 @@
 #define _check_md(EXPR)                                                        \
 	do {                                                                       \
 		if ((EXPR) != shaSuccess) {                                            \
-			RLC_THROW(ERR_NO_VALID);                                               \
+			RLC_THROW(ERR_NO_VALID);                                           \
+			return;                                                            \
 		}                                                                      \
 	} while (0)
 
@@ -64,7 +65,8 @@
 	void HName(uint8_t *buf, int buf_len, const uint8_t *in, int in_len, const uint8_t *dst, int dst_len) {       \
 		const unsigned ell = (buf_len + HHashSize - 1) / HHashSize;                                               \
 		if (buf_len < 0 || ell > 255 || dst_len > 255) {                                                          \
-			RLC_THROW(ERR_NO_VALID);                                                                                  \
+			RLC_THROW(ERR_NO_VALID);                                                                              \
+			return;                                                                                               \
 		}                                                                                                         \
                                                                                                                   \
 		/* info needed for hashing: zero padding and some lengths */                                              \

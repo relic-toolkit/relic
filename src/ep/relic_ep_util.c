@@ -272,6 +272,7 @@ void ep_read_bin(ep_t a, const uint8_t *bin, int len) {
 			fp_read_bin(a->y, bin + RLC_FP_BYTES + 1, RLC_FP_BYTES);
 		} else {
 			RLC_THROW(ERR_NO_VALID);
+			return;
 		}
 	}
 }
@@ -284,6 +285,7 @@ void ep_write_bin(uint8_t *bin, int len, const ep_t a, int pack) {
 	if (ep_is_infty(a)) {
 		if (len < 1) {
 			RLC_THROW(ERR_NO_BUFFER);
+			return;
 		} else {
 			bin[0] = 0;
 			return;

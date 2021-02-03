@@ -311,12 +311,14 @@
  * @param[in] str			- the input string.
  */
 static int ep2_curve_get_coeffs(fp2_t *coeffs, const char *str) {
+	int degree = 0;
+	unsigned offset = 0;
+
 	if (str[0] == '\0') {
 		/* need nonzero strlen */
 		RLC_THROW(ERR_NO_VALID);
+		return 0;
 	}
-	int degree = 0;
-	unsigned offset = 0;
 	for (; degree < RLC_EPX_CTMAP_MAX; ++degree) {
 		/* first coeff */
 		const char *end = strchr(str + offset, ',');

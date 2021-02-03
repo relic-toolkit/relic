@@ -52,6 +52,7 @@ void fb_inv_basic(fb_t c, const fb_t a) {
 
 	if (fb_is_zero(a)) {
 		RLC_THROW(ERR_NO_VALID);
+		return;
 	}
 
 	RLC_TRY {
@@ -119,6 +120,7 @@ void fb_inv_binar(fb_t c, const fb_t a) {
 
 	if (fb_is_zero(a)) {
 		RLC_THROW(ERR_NO_VALID);
+		return;
 	}
 
 	RLC_TRY {
@@ -225,6 +227,7 @@ void fb_inv_exgcd(fb_t c, const fb_t a) {
 
 	if (fb_is_zero(a)) {
 		RLC_THROW(ERR_NO_VALID);
+		return;
 	}
 
 	RLC_TRY {
@@ -345,6 +348,7 @@ void fb_inv_almos(fb_t c, const fb_t a) {
 
 	if (fb_is_zero(a)) {
 		RLC_THROW(ERR_NO_VALID);
+		return;
 	}
 
 	/* This is actually the binary version of the Extended Euclidean algorithm
@@ -444,6 +448,7 @@ void fb_inv_itoht(fb_t c, const fb_t a) {
 
 	if (fb_is_zero(a)) {
 		RLC_THROW(ERR_NO_VALID);
+		return;
 	}
 
 	RLC_TRY {
@@ -512,6 +517,7 @@ void fb_inv_bruch(fb_t c, const fb_t a) {
 
 	if (fb_is_zero(a)) {
 		RLC_THROW(ERR_NO_VALID);
+		return;
 	}
 
 	RLC_TRY {
@@ -583,6 +589,7 @@ void fb_inv_ctaia(fb_t c, const fb_t a) {
 
 	if (fb_is_zero(a)) {
 		RLC_THROW(ERR_NO_VALID);
+		return;
 	}
 
 	RLC_TRY {
@@ -642,6 +649,7 @@ void fb_inv_ctaia(fb_t c, const fb_t a) {
 void fb_inv_lower(fb_t c, const fb_t a) {
 	if (fb_is_zero(a)) {
 		RLC_THROW(ERR_NO_VALID);
+		return;
 	}
 
 	fb_invn_low(c, a);

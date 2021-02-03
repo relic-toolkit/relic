@@ -46,6 +46,7 @@ void fp_inv_basic(fp_t c, const fp_t a) {
 
 	if (fp_is_zero(a)) {
 		RLC_THROW(ERR_NO_VALID);
+		return;
 	}
 
 	RLC_TRY {
@@ -80,6 +81,7 @@ void fp_inv_binar(fp_t c, const fp_t a) {
 
 	if (fp_is_zero(a)) {
 		RLC_THROW(ERR_NO_VALID);
+		return;
 	}
 
 	RLC_TRY {
@@ -200,6 +202,7 @@ void fp_inv_monty(fp_t c, const fp_t a) {
 
 	if (fp_is_zero(a)) {
 		RLC_THROW(ERR_NO_VALID);
+		return;
 	}
 
 	RLC_TRY {
@@ -340,6 +343,7 @@ void fp_inv_exgcd(fp_t c, const fp_t a) {
 
 	if (fp_is_zero(a)) {
 		RLC_THROW(ERR_NO_VALID);
+		return;
 	}
 
 	RLC_TRY {
@@ -423,6 +427,7 @@ void fp_inv_divst(fp_t c, const fp_t a) {
 
 	if (fp_is_zero(a)) {
 		RLC_THROW(ERR_NO_VALID);
+		return;
 	}
 
 	RLC_TRY {

@@ -88,6 +88,7 @@ void rand_init(void) {
 	*fd = open(RLC_RAND_PATH, O_RDONLY);
 	if (*fd == -1) {
 		RLC_THROW(ERR_NO_FILE);
+		return;
 	}
 #else
 
@@ -101,6 +102,7 @@ void rand_init(void) {
 	fd = open(RLC_RAND_PATH, O_RDONLY);
 	if (fd == -1) {
 		RLC_THROW(ERR_NO_FILE);
+		return;
 	}
 
 	l = 0;
@@ -109,6 +111,7 @@ void rand_init(void) {
 		l += c;
 		if (c == -1) {
 			RLC_THROW(ERR_NO_READ);
+			return;
 		}
 	} while (l < RLC_RAND_SEED);
 
@@ -138,12 +141,15 @@ void rand_init(void) {
 	if (!CryptAcquireContext(&hCryptProv, NULL, NULL, PROV_RSA_FULL,
 					CRYPT_VERIFYCONTEXT | CRYPT_SILENT)) {
 		RLC_THROW(ERR_NO_FILE);
+		return;
 	}
 	if (hCryptProv && !CryptGenRandom(hCryptProv, RLC_RAND_SEED, buf)) {
 		RLC_THROW(ERR_NO_READ);
+		return;
 	}
 	if (hCryptProv && !CryptReleaseContext(hCryptProv, 0)) {
 		RLC_THROW(ERR_NO_READ);
+		return;
 	}
 
 #elif SEED == RDRND

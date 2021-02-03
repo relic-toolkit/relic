@@ -133,6 +133,7 @@ static void bn_div_imp(bn_t c, bn_t d, const bn_t a, const bn_t b) {
 void bn_div(bn_t c, const bn_t a, const bn_t b) {
 	if (bn_is_zero(b)) {
 		RLC_THROW(ERR_NO_VALID);
+		return;
 	}
 	bn_div_imp(c, NULL, a, b);
 }
@@ -140,6 +141,7 @@ void bn_div(bn_t c, const bn_t a, const bn_t b) {
 void bn_div_rem(bn_t c, bn_t d, const bn_t a, const bn_t b) {
 	if (bn_is_zero(b)) {
 		RLC_THROW(ERR_NO_VALID);
+		return;
 	}
 	bn_div_imp(c, d, a, b);
 }
@@ -152,6 +154,7 @@ void bn_div_dig(bn_t c, const bn_t a, dig_t b) {
 
 	if (b == 0) {
 		RLC_THROW(ERR_NO_VALID);
+		return;
 	}
 
 	if (b == 1 || bn_is_zero(a) == 1) {
@@ -191,6 +194,7 @@ void bn_div_rem_dig(bn_t c, dig_t *d, const bn_t a, dig_t b) {
 
 	if (b == 0) {
 		RLC_THROW(ERR_NO_VALID);
+		return;
 	}
 
 	if (b == 1 || bn_is_zero(a) == 1) {

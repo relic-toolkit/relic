@@ -114,6 +114,11 @@ void bn_mxp_slide(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 	int i, j, l, w = 1;
 	uint8_t *win = RLC_ALLOCA(uint8_t, bn_bits(b));
 
+	if (win == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
+		return;
+	}
+
 	if (bn_is_zero(b)) {
 		RLC_FREE(win);
 		bn_set_dig(c, 1);
@@ -129,10 +134,6 @@ void bn_mxp_slide(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 	}
 
 	RLC_TRY {
-		if (win == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
-
 		/* Find window size. */
 		i = bn_bits(b);
 		if (i <= 21) {
