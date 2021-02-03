@@ -297,7 +297,7 @@ typedef iso_st *iso_t;
 #define ep_new(A)															\
 	A = (ep_t)calloc(1, sizeof(ep_st));										\
 	if (A == NULL) {														\
-		RLC_THROW(ERR_NO_MEMORY);												\
+		RLC_THROW(ERR_NO_MEMORY);											\
 	}																		\
 
 #elif ALLOC == AUTO

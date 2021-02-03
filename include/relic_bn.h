@@ -142,7 +142,7 @@ typedef bn_st *bn_t;
 #define bn_new(A)															\
 	A = (bn_t)calloc(1, sizeof(bn_st));										\
 	if ((A) == NULL) {														\
-		RLC_THROW(ERR_NO_MEMORY);												\
+		RLC_THROW(ERR_NO_MEMORY);											\
 	}																		\
 	bn_init(A, RLC_BN_SIZE);												\
 
@@ -171,7 +171,7 @@ typedef bn_st *bn_t;
 #define bn_new_size(A, D)													\
 	A = (bn_t)calloc(1, sizeof(bn_st));										\
 	if (A == NULL) {														\
-		RLC_THROW(ERR_NO_MEMORY);												\
+		RLC_THROW(ERR_NO_MEMORY);											\
 	}																		\
 	bn_init(A, D);															\
 

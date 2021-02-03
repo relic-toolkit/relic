@@ -154,7 +154,7 @@ typedef ed_st *ed_t;
 #define ed_new(A)															\
     A = (ed_t)calloc(1, sizeof(ed_st));										\
     if (A == NULL) {														\
-        RLC_THROW(ERR_NO_MEMORY);												\
+        RLC_THROW(ERR_NO_MEMORY);											\
     }
 
 #elif ALLOC == AUTO

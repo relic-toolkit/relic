@@ -206,7 +206,7 @@ typedef iso2_st *iso2_t;
 #define ep2_new(A)															\
 	A = (ep2_t)calloc(1, sizeof(ep2_st));									\
 	if (A == NULL) {														\
-		RLC_THROW(ERR_NO_MEMORY);												\
+		RLC_THROW(ERR_NO_MEMORY);											\
 	}																		\
 	fp2_null((A)->x);														\
 	fp2_null((A)->y);														\

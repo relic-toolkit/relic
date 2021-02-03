@@ -172,7 +172,7 @@ typedef eb_st *eb_t;
 #define eb_new(A)															\
 	A = (eb_t)calloc(1, sizeof(eb_st));										\
 	if (A == NULL) {														\
-		RLC_THROW(ERR_NO_MEMORY);												\
+		RLC_THROW(ERR_NO_MEMORY);											\
 	}																		\
 
 #elif ALLOC == AUTO
