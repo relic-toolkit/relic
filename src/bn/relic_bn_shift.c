@@ -112,6 +112,8 @@ void bn_rsh(bn_t c, const bn_t a, int bits) {
 
 	RLC_RIP(bits, digits, bits);
 
+	bn_grow(c, a->used - digits);
+
 	if (digits > 0) {
 		bn_rshd_low(c->dp, a->dp, a->used, digits);
 	}
