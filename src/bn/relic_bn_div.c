@@ -166,10 +166,7 @@ void bn_div_dig(bn_t c, const bn_t a, dig_t b) {
 
 	RLC_TRY {
 		bn_new_size(q, a->used);
-		int size = a->used;
-		const dig_t *ap = a->dp;
-
-		bn_div1_low(q->dp, &r, ap, size, b);
+		bn_div1_low(q->dp, &r, (const dig_t *)a->dp, a->used, b);
 
 		if (c != NULL) {
 			q->used = a->used;
@@ -208,11 +205,8 @@ void bn_div_rem_dig(bn_t c, dig_t *d, const bn_t a, dig_t b) {
 	}
 
 	RLC_TRY {
-		bn_new(q);
-		int size = a->used;
-		const dig_t *ap = a->dp;
-
-		bn_div1_low(q->dp, &r, ap, size, b);
+		bn_new_size(q, a->used);
+		bn_div1_low(q->dp, &r, (const dig_t *)a->dp, a->used, b);
 
 		if (c != NULL) {
 			q->used = a->used;
