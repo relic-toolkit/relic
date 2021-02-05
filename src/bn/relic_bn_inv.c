@@ -59,5 +59,4 @@ void bn_mod_inv(bn_t a, const bn_t b, const bn_t c) {
 		bn_free(t);
 		bn_free(u);
 	}
-
 }
