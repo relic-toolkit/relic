@@ -55,22 +55,6 @@ dig_t bn_lshb_low(dig_t *c, const dig_t *a, int size, int bits) {
 	return carry;
 }
 
-void bn_lshd_low(dig_t *c, const dig_t *a, int size, int digits) {
-	dig_t *top;
-	const dig_t *bot;
-	int i;
-
-	top = c + size + digits - 1;
-	bot = a + size - 1;
-
-	for (i = 0; i < size; i++, top--, bot--) {
-		*top = *bot;
-	}
-	for (i = 0; i < digits; i++, c++) {
-		*c = 0;
-	}
-}
-
 dig_t bn_rshb_low(dig_t *c, const dig_t *a, int size, int bits) {
 	int i;
 	dig_t r, carry, shift, mask;
@@ -90,17 +74,4 @@ dig_t bn_rshb_low(dig_t *c, const dig_t *a, int size, int bits) {
 		carry = r;
 	}
 	return carry;
-}
-
-void bn_rshd_low(dig_t *c, const dig_t *a, int size, int digits) {
-	const dig_t *top;
-	dig_t *bot;
-	int i;
-
-	top = a + digits;
-	bot = c;
-
-	for (i = 0; i < size - digits; i++, top++, bot++) {
-		*bot = *top;
-	}
 }

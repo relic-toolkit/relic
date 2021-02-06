@@ -157,6 +157,49 @@ static int swap(void) {
 	return code;
 }
 
+static int shifting(void) {
+	int code = RLC_ERR;
+	dv_t a, b, c;
+
+	dv_null(a);
+	dv_null(b);
+	dv_null(c);
+
+	RLC_TRY {
+		dv_new(a);
+		dv_new(b);
+		dv_new(c);
+
+		TEST_BEGIN("shifting by  digit is consistent") {
+			rand_bytes((uint8_t *)a, RLC_DV_DIGS * sizeof(dig_t));
+			a[RLC_DV_DIGS - 1] = 0;
+			dv_lshd(b, a, RLC_DV_DIGS, 1);
+			dv_rshd(c, b, RLC_DV_DIGS, 1);
+			TEST_ASSERT(fb_cmp(c, a) == RLC_EQ, end);
+		} TEST_END;
+
+		if (RLC_DV_DIGS > 1) {
+			TEST_BEGIN("shifting by 2 digits is consistent") {
+				rand_bytes((uint8_t *)a, RLC_DV_DIGS * sizeof(dig_t));
+				a[RLC_DV_DIGS - 1] = 0;
+				a[RLC_DV_DIGS - 2] = 0;
+				dv_lshd(b, a, RLC_DV_DIGS, 2);
+				dv_rshd(c, b, RLC_DV_DIGS, 2);
+				TEST_ASSERT(fb_cmp(c, a) == RLC_EQ, end);
+			} TEST_END;
+		}
+	}
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
+	}
+	code = RLC_OK;
+  end:
+	dv_free(a);
+	dv_free(b);
+	dv_free(c);
+	return code;
+}
+
 int main(void) {
 	if (core_init() != RLC_OK) {
 		core_clean();
@@ -176,6 +219,11 @@ int main(void) {
 	}
 
 	if (swap() != RLC_OK) {
+		core_clean();
+		return 1;
+	}
+
+	if (shifting() != RLC_OK) {
 		core_clean();
 		return 1;
 	}

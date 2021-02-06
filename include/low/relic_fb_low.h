@@ -109,16 +109,6 @@ dig_t fb_lsh1_low(dig_t *c, const dig_t *a);
 dig_t fb_lshb_low(dig_t *c, const dig_t *a, int bits);
 
 /**
- * Shifts a digit vector to the left by some digits.
- * Computes c = a * z^(digits * RLC_DIG).
- *
- * @param[out] c			- the result.
- * @param[in] a				- the multiple precision integer to shift.
- * @param[in] digits		- the shift amount.
- */
-void fb_lshd_low(dig_t *c, const dig_t *a, int digits);
-
-/**
  * Shifts a digit vector to the right by 1 bit. Computes c = a / z.
  *
  * @param[out] c			- the result
@@ -138,16 +128,6 @@ dig_t fb_rsh1_low(dig_t *c, const dig_t *a);
  * @return the carry of the last digit shift.
  */
 dig_t fb_rshb_low(dig_t *c, const dig_t *a, int bits);
-
-/**
- * Shifts a digit vector to the right by some digits.
- * Computes c = a / z^(digits * RLC_DIG).
- *
- * @param[out] c			- the result.
- * @param[in] a				- the multiple precision integer to shift.
- * @param[in] digits		- the shift amount.
- */
-void fb_rshd_low(dig_t *c, const dig_t *a, int digits);
 
 /**
  * Adds a left-shifted digit vector to another digit vector.

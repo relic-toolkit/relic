@@ -44,7 +44,7 @@ void fb_lsh(fb_t c, const fb_t a, int bits) {
 	RLC_RIP(bits, digits, bits);
 
 	if (digits) {
-		fb_lshd_low(c, a, digits);
+		dv_lshd(c, a, RLC_FB_DIGS, digits);
 	} else {
 		if (c != a) {
 			fb_copy(c, a);
@@ -69,7 +69,7 @@ void fb_rsh(fb_t c, const fb_t a, int bits) {
 	RLC_RIP(bits, digits, bits);
 
 	if (digits) {
-		fb_rshd_low(c, a, digits);
+		dv_rshd(c, a, RLC_FB_DIGS, digits);
 	} else {
 		if (c != a) {
 			fb_copy(c, a);

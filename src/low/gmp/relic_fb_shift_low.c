@@ -47,44 +47,12 @@ dig_t fb_lshb_low(dig_t *c, const dig_t *a, int bits) {
 	return mpn_lshift(c, a, RLC_FB_DIGS, bits);
 }
 
-void fb_lshd_low(dig_t *c, const dig_t *a, int digits) {
-	dig_t *top;
-	const dig_t *bot;
-	int i;
-
-	top = c + RLC_FB_DIGS - 1;
-	bot = a + RLC_FB_DIGS - 1 - digits;
-
-	for (i = 0; i < RLC_FB_DIGS - digits; i++, top--, bot--) {
-		*top = *bot;
-	}
-	for (i = 0; i < digits; i++, c++) {
-		*c = 0;
-	}
-}
-
 dig_t fb_rsh1_low(dig_t *c, const dig_t *a) {
 	return mpn_rshift(c, a, RLC_FB_DIGS, 1);
 }
 
 dig_t fb_rshb_low(dig_t *c, const dig_t *a, int bits) {
 	return mpn_rshift(c, a, RLC_FB_DIGS, bits);
-}
-
-void fb_rshd_low(dig_t *c, const dig_t *a, int digits) {
-	const dig_t *top;
-	dig_t *bot;
-	int i;
-
-	top = a + digits;
-	bot = c;
-
-	for (i = 0; i < RLC_FB_DIGS - digits; i++, top++, bot++) {
-		*bot = *top;
-	}
-	for (; i < RLC_FB_DIGS; i++, bot++) {
-		*bot = 0;
-	}
 }
 
 dig_t fb_lsha_low(dig_t *c, const dig_t *a, int bits, int size) {

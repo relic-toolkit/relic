@@ -126,16 +126,3 @@ dig_t bn_rshb_low(dig_t *c, const dig_t *a, int size, int bits) {
 	}
 	return carry;
 }
-
-void bn_rshd_low(dig_t *c, const dig_t *a, int size, int digits) {
-	const dig_t *top;
-	dig_t *bot;
-	int i;
-
-	top = a + digits;
-	bot = c;
-
-	for (i = 0; i < size - digits; i++, top++, bot++) {
-		*bot = *top;
-	}
-}

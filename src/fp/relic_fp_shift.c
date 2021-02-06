@@ -42,7 +42,7 @@ void fp_lsh(fp_t c, const fp_t a, int bits) {
 	RLC_RIP(bits, digits, bits);
 
 	if (digits) {
-		fp_lshd_low(c, a, digits);
+		dv_lshd(c, a, RLC_FP_DIGS, digits);
 	} else {
 		if (c != a) {
 			fp_copy(c, a);
@@ -68,7 +68,7 @@ void fp_rsh(fp_t c, const fp_t a, int bits) {
 	RLC_RIP(bits, digits, bits);
 
 	if (digits) {
-		fp_rshd_low(c, a, digits);
+		dv_rshd(c, a, RLC_FP_DIGS, digits);
 	} else {
 		if (c != a) {
 			fp_copy(c, a);

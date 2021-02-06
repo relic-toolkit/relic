@@ -86,7 +86,7 @@ void fp_rdcs_low(dig_t *c, const dig_t *a, const dig_t *m) {
 
 	/* q = floor(a/b^k) */
 	dv_zero(q, 2 * RLC_FP_DIGS);
-	bn_rshd_low(q, a, 2 * RLC_FP_DIGS, d0);
+	dv_rshd(q, a, 2 * RLC_FP_DIGS, d0);
 	if (b0 > 0) {
 		bn_rshb_low(q, q, 2 * RLC_FP_DIGS, b0);
 	}
@@ -104,7 +104,7 @@ void fp_rdcs_low(dig_t *c, const dig_t *a, const dig_t *m) {
 			j = (sform[i] < 0 ? -sform[i] : sform[i]);
 			RLC_RIP(b1, d1, j);
 			dv_zero(t, 2 * RLC_FP_DIGS);
-			bn_lshd_low(t, q, RLC_FP_DIGS, d1);
+			dv_lshd(t, q, RLC_FP_DIGS, d1);
 			if (b1 > 0) {
 				bn_lshb_low(t, t, 2 * RLC_FP_DIGS, b1);
 			}
@@ -121,7 +121,7 @@ void fp_rdcs_low(dig_t *c, const dig_t *a, const dig_t *m) {
 		} else {
 			bn_subn_low(_q, _q, q, 2 * RLC_FP_DIGS);
 		}
-		bn_rshd_low(q, _q, 2 * RLC_FP_DIGS, d0);
+		dv_rshd(q, _q, 2 * RLC_FP_DIGS, d0);
 		if (b0 > 0) {
 			bn_rshb_low(q, q, 2 * RLC_FP_DIGS, b0);
 		}

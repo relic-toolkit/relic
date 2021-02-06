@@ -371,7 +371,7 @@ typedef struct _ctx_t {
 
 #if defined(WITH_FPX) || defined(WITH_PP)
 	/** Integer part of the quadratic non-residue. */
-	int qnr2;
+	dis_t qnr2;
 	/** Constants for computing Frobenius maps in higher extensions. @{ */
 	fp2_st fp2_p1[5];
 	fp2_st fp2_p2[3];

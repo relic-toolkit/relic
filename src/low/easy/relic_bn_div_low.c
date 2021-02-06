@@ -65,16 +65,16 @@ void bn_divn_low(dig_t *c, dig_t *d, dig_t *a, int sa, dig_t *b, int sb) {
 
 	/* Shift y so that the most significant digit of y is aligned with the
 	 * most significant digit of x. */
-	bn_lshd_low(b, b, sb, (n - t));
+	dv_lshd(b, b, sb + (n - t), (n - t));
 
 	/* Find the most significant digit of the quotient. */
 	while (dv_cmp(a, b, sa) != RLC_LT) {
 		c[n - t]++;
 		bn_subn_low(a, a, b, sa);
 	}
-	/* Shift y back. */
 
-	bn_rshd_low(b, b, sb + (n - t), (n - t));
+	/* Shift y back. */
+	dv_rshd(b, b, sb + (n - t), (n - t));
 
 	/* Find the remaining digits. */
 	for (i = n; i >= (t + 1); i--) {

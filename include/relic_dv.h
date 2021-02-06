@@ -229,4 +229,26 @@ void dv_new_dynam(dv_t *a, int digits);
 void dv_free_dynam(dv_t *a);
 #endif
 
+/**
+ * Shifts a digit vector to the left by some digits.
+ * Computes c = a << (digits * RLC_DIG).
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the digit vector to shift.
+ * @param[in] size			- the number of digits to shift.
+ * @param[in] digits		- the shift amount.
+ */
+void dv_lshd(dig_t *c, const dig_t *a, int size, int digits);
+
+/**
+ * Shifts a digit vector to the right by some digits.
+ * Computes c = a >> (digits * RLC_DIG).
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the digit vector to shift.
+ * @param[in] size			- the number of digits to shift.
+ * @param[in] digits		- the shift amount.
+ */
+void dv_rshd(dig_t *c, const dig_t *a, int size, int digits);
+
 #endif /* !RLC_DV_H */
