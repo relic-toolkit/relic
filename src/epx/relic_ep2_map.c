@@ -71,114 +71,6 @@ TMPL_MAP_SSWU(ep2, fp2, fp_t, EP2_MAP_COPY_COND)
 TMPL_MAP_SVDW(ep2, fp2, fp_t, EP2_MAP_COPY_COND)
 #undef EP2_MAP_COPY_COND
 
-/**
- * Multiplies a point by the cofactor in a Barreto-Naehrig curve.
- *
- * @param[out] r			- the result.
- * @param[in] p				- the point to multiply.
- */
-static void ep2_mul_cof_bn(ep2_t r, ep2_t p) {
-	bn_t x;
-	ep2_t t0, t1, t2;
-
-	ep2_null(t0);
-	ep2_null(t1);
-	ep2_null(t2);
-	bn_null(x);
-
-	RLC_TRY {
-		ep2_new(t0);
-		ep2_new(t1);
-		ep2_new(t2);
-		bn_new(x);
-
-		fp_prime_get_par(x);
-
-		/* Compute t0 = xP. */
-		ep2_mul_basic(t0, p, x);
-
-		/* Compute t1 = \psi(3xP). */
-		ep2_dbl(t1, t0);
-		ep2_add(t1, t1, t0);
-		ep2_norm(t1, t1);
-		ep2_frb(t1, t1, 1);
-
-		/* Compute t2 = \psi^3(P) + t0 + t1 + \psi^2(xP). */
-		ep2_frb(t2, p, 2);
-		ep2_frb(t2, t2, 1);
-		ep2_add(t2, t2, t0);
-		ep2_add(t2, t2, t1);
-		ep2_frb(t1, t0, 2);
-		ep2_add(t2, t2, t1);
-
-		ep2_norm(r, t2);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		ep2_free(t0);
-		ep2_free(t1);
-		ep2_free(t2);
-		bn_free(x);
-	}
-}
-
-/**
- * Multiplies a point by the cofactor in a Barreto-Lynn-Scott curve.
- *
- * @param[out] r			- the result.
- * @param[in] p				- the point to multiply.
- */
-static void ep2_mul_cof_b12(ep2_t r, ep2_t p) {
-	bn_t x;
-	ep2_t t0, t1, t2, t3;
-
-	ep2_null(t0);
-	ep2_null(t1);
-	ep2_null(t2);
-	ep2_null(t3);
-	bn_null(x);
-
-	RLC_TRY {
-		ep2_new(t0);
-		ep2_new(t1);
-		ep2_new(t2);
-		ep2_new(t3);
-		bn_new(x);
-
-		fp_prime_get_par(x);
-
-		/* Compute t0 = xP. */
-		ep2_mul_basic(t0, p, x);
-		/* Compute t1 = [x^2]P. */
-		ep2_mul_basic(t1, t0, x);
-
-		/* t2 = (x^2 - x - 1)P = x^2P - x*P - P. */
-		ep2_sub(t2, t1, t0);
-		ep2_sub(t2, t2, p);
-		/* t3 = \psi(x - 1)P. */
-		ep2_sub(t3, t0, p);
-		ep2_frb(t3, t3, 1);
-		ep2_add(t2, t2, t3);
-		/* t3 = \psi^2(2P). */
-		ep2_dbl(t3, p);
-		ep2_frb(t3, t3, 2);
-		ep2_add(t2, t2, t3);
-		ep2_norm(r, t2);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		ep2_free(t0);
-		ep2_free(t1);
-		ep2_free(t2);
-		ep2_free(t3);
-		bn_free(x);
-	}
-}
-
 /* caution: this function overwrites k, which it uses as an auxiliary variable */
 static inline int fp2_sgn0(const fp2_t t, bn_t k) {
 	const int t_0_zero = fp_is_zero(t[0]);
@@ -263,25 +155,7 @@ void ep2_map_dst(ep2_t p, const uint8_t *msg, int len, const uint8_t *dst, int d
 		/* sum the result */
 		ep2_add(p, p, q);
 		ep2_norm(p, p);
-
-		/* clear cofactor */
-		switch (ep_curve_is_pairf()) {
-			case EP_BN:
-				ep2_mul_cof_bn(p, p);
-				break;
-			case EP_B12:
-				ep2_mul_cof_b12(p, p);
-				break;
-			default:
-				/* Now, multiply by cofactor to get the correct group. */
-				ep2_curve_get_cof(k);
-				if (bn_bits(k) < RLC_DIG) {
-					ep2_mul_dig(p, p, k->dp[0]);
-				} else {
-					ep2_mul_basic(p, p, k);
-				}
-				break;
-		}
+		ep2_mul_cof(p, p);
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);

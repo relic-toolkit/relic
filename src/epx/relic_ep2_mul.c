@@ -268,8 +268,6 @@ static void ep2_mul_naf_imp(ep2_t r, ep2_t p, const bn_t k) {
 /* Public definitions                                                         */
 /*============================================================================*/
 
-#if EP_MUL == BASIC || EP_MUL == LWNAF || !defined(STRIP)
-
 void ep2_mul_basic(ep2_t r, ep2_t p, const bn_t k) {
 	int i, l;
 	ep2_t t;
@@ -311,8 +309,6 @@ void ep2_mul_basic(ep2_t r, ep2_t p, const bn_t k) {
 		ep2_free(t);
 	}
 }
-
-#endif
 
 #if EP_MUL == SLIDE || !defined(STRIP)
 

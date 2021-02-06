@@ -30,6 +30,10 @@
  *
  * Interface of the module for arithmetic on prime elliptic curves defined over
  * extension fields.
+
+ * The scalar multiplication functions are only guaranteed to work
+ * in the prime order subgroup used by pairings. If you need a generic scalar
+ * multiplication function, use \sa ep2_mul_big().
  *
  * @ingroup epx
  */
@@ -276,12 +280,22 @@ typedef iso2_st *iso2_t;
 #endif
 
 /**
- * Multiplies a point in an elliptic curve over a quadratic extension field.
- * Computes R = kP.
+ * Multiplies a point in an elliptic curve over a quadratic extension field by
+ * an unrestricted integer scalar. Computes R = [k]P.
  *
- * @param[out] R			- the result.
- * @param[in] P				- the point to multiply.
- * @param[in] K				- the integer.
+ * @param[out] R				- the result.
+ * @param[in] P					- the point to multiply.
+ * @param[in] K					- the integer.
+ */
+#define ep2_mul_big(R, P, K)	ep2_mul_basic(R, P, K)
+
+/**
+ * Multiplies a point in an elliptic curve over a quadratic extension field.
+ * Computes R = [k]P.
+ *
+ * @param[out] R				- the result.
+ * @param[in] P					- the point to multiply.
+ * @param[in] K					- the integer.
  */
 #if EP_MUL == BASIC
 #define ep2_mul(R, P, K)		ep2_mul_basic(R, P, K)
@@ -307,15 +321,13 @@ typedef iso2_st *iso2_t;
 #elif EP_FIX == COMBD
 #define ep2_mul_pre(T, P)		ep2_mul_pre_combd(T, P)
 #elif EP_FIX == LWNAF
-#define ep2_mul_pre(T, P)		ep2_mul_pre_lwnaf(T, P)
-#elif EP_FIX == GLV
 //TODO: implement ep2_mul_pre_glv
 #define ep2_mul_pre(T, P)		ep2_mul_pre_lwnaf(T, P)
 #endif
 
 /**
  * Multiplies a fixed prime elliptic point over a quadratic extension using a
- * precomputation table. Computes R = kP.
+ * precomputation table. Computes R = [k]P.
  *
  * @param[out] R				- the result.
  * @param[in] T					- the precomputation table.
@@ -328,15 +340,13 @@ typedef iso2_st *iso2_t;
 #elif EP_FIX == COMBD
 #define ep2_mul_fix(R, T, K)	ep2_mul_fix_combd(R, T, K)
 #elif EP_FIX == LWNAF
-#define ep2_mul_fix(R, T, K)	ep2_mul_fix_lwnaf(R, T, K)
-#elif EP_FIX == GLV
-//TODO: implement ep2_mul_pre_glv
+//TODO: implement ep2_mul_fix_glv
 #define ep2_mul_fix(R, T, K)	ep2_mul_fix_lwnaf(R, T, K)
 #endif
 
 /**
  * Multiplies and adds two prime elliptic curve points simultaneously. Computes
- * R = kP + lQ.
+ * R = [k]P + [l]Q.
  *
  * @param[out] R				- the result.
  * @param[in] P					- the first point to multiply.
@@ -723,6 +733,17 @@ void ep2_mul_gen(ep2_t r, bn_t k);
  */
 void ep2_mul_dig(ep2_t r, ep2_t p, dig_t k);
 
+
+/**
+ * Multiplies a point in an elliptic curve over a quadratic extension field by
+ * the curve cofactor or a small multiple for which a short vector exists.
+ * In short, it takes a point in the curve to the large prime-order subgroup.
+ *
+ * @param[out] R				- the result.
+ * @param[in] P					- the point to multiply.
+ */
+void ep2_mul_cof(ep2_t r, ep2_t p);
+
 /**
  * Builds a precomputation table for multiplying a fixed prime elliptic point
  * using the binary method.
@@ -898,7 +919,7 @@ void ep2_mul_sim_lot(ep2_t r, ep2_t p[], const bn_t k[], int n);
 
 /**
  * Multiplies and adds the generator and a prime elliptic curve point
- * simultaneously. Computes R = kG + lQ.
+ * simultaneously. Computes R = [k]G + [l]Q.
  *
  * @param[out] r			- the result.
  * @param[in] k				- the first integer.
