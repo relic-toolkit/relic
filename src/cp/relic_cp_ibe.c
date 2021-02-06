@@ -120,7 +120,7 @@ int cp_ibe_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len, char *id,
 		gt_write_bin(buf, l, e, 0);
 		md_map(h, buf, l);
 
-		/* P = kG. */
+		/* P = [k]G. */
 		g1_mul_gen(p, r);
 		g1_write_bin(out, *out_len, p, 0);
 

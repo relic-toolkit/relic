@@ -30,6 +30,10 @@
  *
  * Interface of the module for arithmetic on prime elliptic curves.
  *
+ * The scalar multiplication functions are only guaranteed to work
+ * in the large prime order subgroup. If you need a generic scalar
+ * multiplication function, use ep_mul_basic().
+ *
  * @ingroup ep
  */
 
@@ -282,9 +286,9 @@ typedef iso_st *iso_t;
  * @param[out] A			- the point to initialize.
  */
 #if ALLOC == AUTO
-#define ep_null(A)				/* empty */
+#define ep_null(A)			/* empty */
 #else
-#define ep_null(A)		A = NULL;
+#define ep_null(A)			A = NULL;
 #endif
 
 /**
@@ -301,7 +305,7 @@ typedef iso_st *iso_t;
 	}																		\
 
 #elif ALLOC == AUTO
-#define ep_new(A)				/* empty */
+#define ep_new(A)			/* empty */
 
 #elif ALLOC == STACK
 #define ep_new(A)															\
@@ -322,7 +326,7 @@ typedef iso_st *iso_t;
 	}
 
 #elif ALLOC == AUTO
-#define ep_free(A)				/* empty */
+#define ep_free(A)			/* empty */
 
 #elif ALLOC == STACK
 #define ep_free(A)															\
@@ -360,7 +364,7 @@ typedef iso_st *iso_t;
 #endif
 
 /**
- * Multiplies a prime elliptic curve point by an integer. Computes R = kP.
+ * Multiplies a prime elliptic curve point by an integer. Computes R = [k]P.
  *
  * @param[out] R			- the result.
  * @param[in] P				- the point to multiply.
@@ -396,7 +400,7 @@ typedef iso_st *iso_t;
 
 /**
  * Multiplies a fixed prime elliptic point using a precomputation table.
- * Computes R = kP.
+ * Computes R = [k]P.
  *
  * @param[out] R			- the result.
  * @param[in] T				- the precomputation table.
@@ -413,8 +417,8 @@ typedef iso_st *iso_t;
 #endif
 
 /**
- * Multiplies and adds two prime elliptic curve points simultaneously. Computes
- * R = kP + mQ.
+ * Multiplies and adds two prime elliptic curve points simultaneously.
+ * Computes R = [k]P + [m]Q.
  *
  * @param[out] R			- the result.
  * @param[in] P				- the first point to multiply.
@@ -906,6 +910,7 @@ void ep_dbl_jacob(ep_t r, const ep_t p);
 
 /**
  * Multiplies a prime elliptic point by an integer using the binary method.
+ * There is no restriction on the scalar.
  *
  * @param[out] r			- the result.
  * @param[in] p				- the point to multiply.
@@ -1146,7 +1151,7 @@ void ep_mul_sim_lot(ep_t r, ep_t p[], const bn_t k[], int n);
 
 /**
  * Multiplies and adds the generator and a prime elliptic curve point
- * simultaneously. Computes R = kG + mQ.
+ * simultaneously. Computes R = [k]G + [m]Q.
  *
  * @param[out] r			- the result.
  * @param[in] k				- the first integer.

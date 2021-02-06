@@ -501,7 +501,7 @@ void ed_map(ed_t p, const uint8_t *msg, int len);
 void ed_map_dst(ed_t p, const uint8_t *msg, int len, const uint8_t *dst, int dst_len);
 
 /**
- * Multiplies an Edwards elliptic curve point by an integer. Computes R = kP.
+ * Multiplies an Edwards elliptic curve point by an integer. Computes R = [k]P.
  *
  * @param[out] R		- the result.
  * @param[in] P			- the point to multiply.
@@ -537,7 +537,7 @@ void ed_map_dst(ed_t p, const uint8_t *msg, int len, const uint8_t *dst, int dst
 
 /**
  * Multiplies a fixed Edwards elliptic point using a precomputation table.
- * Computes R = kP.
+ * Computes R = [k]P.
  *
  * @param[out] R		- the result.
  * @param[in] T			- the precomputation table.
@@ -555,7 +555,7 @@ void ed_map_dst(ed_t p, const uint8_t *msg, int len, const uint8_t *dst, int dst
 
  /**
  * Multiplies and adds two Edwards elliptic curve points simultaneously. Computes
- * R = kP + mQ.
+ * R = [k]P + [m]Q.
  *
  * @param[out] R		- the result.
  * @param[in] P			- the first point to multiply.
@@ -782,7 +782,7 @@ void ed_mul_sim_joint(ed_t r, const ed_t p, const bn_t k, const ed_t q,
 
 /**
  * Multiplies and adds the generator and an Edwards elliptic curve point
- * simultaneously. Computes R = kG + mQ.
+ * simultaneously. Computes R = [k]G + [m]Q.
  *
  * @param[out] r      - the result.
  * @param[in] k       - the first integer.
