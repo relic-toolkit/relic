@@ -62,7 +62,7 @@ void bn_init(bn_t a, int digits) {
 		if (r == EINVAL) {
 			RLC_THROW(ERR_NO_VALID);
 		}
-#endif
+#endif /* ALIGN */
 	}
 
 	if (a->dp == NULL) {

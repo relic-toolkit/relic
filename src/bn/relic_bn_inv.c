@@ -36,7 +36,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void bn_mod_inv(bn_t a, const bn_t b, const bn_t c) {
+void bn_mod_inv(bn_t c, const bn_t a, const bn_t b) {
 	bn_t t, u;
 
 	bn_null(t);
@@ -45,11 +45,14 @@ void bn_mod_inv(bn_t a, const bn_t b, const bn_t c) {
 	RLC_TRY {
 		bn_new(t);
 		bn_new(u);
-		bn_copy(u, c);
-		bn_gcd_ext(t, a, NULL, b, c);
-		if (bn_sign(a) == RLC_NEG) {
-			bn_add(a, a, u);
+
+		bn_copy(u, b);
+		bn_gcd_ext(t, c, NULL, a, b);
+
+		if (bn_sign(c) == RLC_NEG) {
+			bn_add(c, c, u);
 		}
+
 		if (bn_cmp_dig(t, 1) != RLC_EQ) {
 			RLC_THROW(ERR_NO_VALID);
 		}

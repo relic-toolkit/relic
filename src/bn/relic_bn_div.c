@@ -76,7 +76,7 @@ static void bn_div_imp(bn_t c, bn_t d, const bn_t a, const bn_t b) {
 	}
 
 	RLC_TRY {
-		bn_new(x);
+		bn_new_size(x, a->used);
 		bn_new_size(y, a->used);
 		bn_new_size(q, a->used + 1);
 		bn_new_size(r, b->used);
