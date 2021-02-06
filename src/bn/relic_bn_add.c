@@ -50,26 +50,30 @@ static void bn_add_imp(bn_t c, const bn_t a, const bn_t b) {
 	max = a->used;
 	min = b->used;
 
-	/* Grow the result. */
-	bn_grow(c, max);
-
 	if (min == 0) {
 		bn_copy(c, a);
 		return;
 	}
 
-	if (a->used == b->used) {
-		carry = bn_addn_low(c->dp, a->dp, b->dp, max);
-	} else {
-		carry = bn_addn_low(c->dp, a->dp, b->dp, min);
-		carry = bn_add1_low(c->dp + min, a->dp + min, carry, max - min);
+	RLC_TRY {
+		/* Grow the result. */
+		bn_grow(c, max);
+
+		if (a->used == b->used) {
+			carry = bn_addn_low(c->dp, a->dp, b->dp, max);
+		} else {
+			carry = bn_addn_low(c->dp, a->dp, b->dp, min);
+			carry = bn_add1_low(c->dp + min, a->dp + min, carry, max - min);
+		}
+		if (carry) {
+			bn_grow(c, max + 1);
+			c->dp[max] = carry;
+		}
+		c->used = max + carry;
+		bn_trim(c);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	if (carry) {
-		bn_grow(c, max + 1);
-		c->dp[max] = carry;
-	}
-	c->used = max + carry;
-	bn_trim(c);
 }
 
 /**
@@ -91,17 +95,21 @@ static void bn_sub_imp(bn_t c, const bn_t a, const bn_t b) {
 		return;
 	}
 
-	/* Grow the destination to accomodate the result. */
-	bn_grow(c, max);
+	RLC_TRY {
+		/* Grow the destination to accomodate the result. */
+		bn_grow(c, max);
 
-	if (a->used == b->used) {
-		carry = bn_subn_low(c->dp, a->dp, b->dp, min);
-	} else {
-		carry = bn_subn_low(c->dp, a->dp, b->dp, min);
-		carry = bn_sub1_low(c->dp + min, a->dp + min, carry, max - min);
+		if (a->used == b->used) {
+			carry = bn_subn_low(c->dp, a->dp, b->dp, min);
+		} else {
+			carry = bn_subn_low(c->dp, a->dp, b->dp, min);
+			carry = bn_sub1_low(c->dp + min, a->dp + min, carry, max - min);
+		}
+		c->used = max;
+		bn_trim(c);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	c->used = max;
-	bn_trim(c);
 }
 
 /*============================================================================*/
@@ -137,34 +145,38 @@ void bn_add(bn_t c, const bn_t a, const bn_t b) {
 void bn_add_dig(bn_t c, const bn_t a, dig_t b) {
 	dig_t carry;
 
-	bn_grow(c, a->used);
+	RLC_TRY {
+		bn_grow(c, a->used);
 
-	if (a->sign == RLC_POS) {
-		carry = bn_add1_low(c->dp, a->dp, b, a->used);
-		if (carry) {
-			bn_grow(c, a->used + 1);
-			c->dp[a->used] = carry;
-		}
-		c->used = a->used + carry;
-		c->sign = RLC_POS;
-	} else {
-		/* If a < 0 && |a| >= b, compute c = -(|a| - b). */
-		if (a->used > 1 || a->dp[0] >= b) {
-			carry = bn_sub1_low(c->dp, a->dp, b, a->used);
-			c->used = a->used;
-			c->sign = RLC_NEG;
-		} else {
-			/* If a < 0 && |a| < b. */
-			if (a->used == 1) {
-				c->dp[0] = b - a->dp[0];
-			} else {
-				c->dp[0] = b;
+		if (a->sign == RLC_POS) {
+			carry = bn_add1_low(c->dp, a->dp, b, a->used);
+			if (carry) {
+				bn_grow(c, a->used + 1);
+				c->dp[a->used] = carry;
 			}
-			c->used = 1;
+			c->used = a->used + carry;
 			c->sign = RLC_POS;
+		} else {
+			/* If a < 0 && |a| >= b, compute c = -(|a| - b). */
+			if (a->used > 1 || a->dp[0] >= b) {
+				carry = bn_sub1_low(c->dp, a->dp, b, a->used);
+				c->used = a->used;
+				c->sign = RLC_NEG;
+			} else {
+				/* If a < 0 && |a| < b. */
+				if (a->used == 1) {
+					c->dp[0] = b - a->dp[0];
+				} else {
+					c->dp[0] = b;
+				}
+				c->used = 1;
+				c->sign = RLC_POS;
+			}
 		}
+		bn_trim(c);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	bn_trim(c);
 }
 
 void bn_sub(bn_t c, const bn_t a, const bn_t b) {
@@ -197,33 +209,37 @@ void bn_sub(bn_t c, const bn_t a, const bn_t b) {
 void bn_sub_dig(bn_t c, const bn_t a, dig_t b) {
 	dig_t carry;
 
-	bn_grow(c, a->used);
+	RLC_TRY {
+		bn_grow(c, a->used);
 
-	/* If a < 0, compute c = -(|a| + b). */
-	if (a->sign == RLC_NEG) {
-		carry = bn_add1_low(c->dp, a->dp, b, a->used);
-		if (carry) {
-			bn_grow(c, a->used + 1);
-			c->dp[a->used] = carry;
-		}
-		c->used = a->used + carry;
-		c->sign = RLC_NEG;
-	} else {
-		/* If a > 0 && |a| >= b, compute c = (|a| - b). */
-		if (a->used > 1 || a->dp[0] >= b) {
-			carry = bn_sub1_low(c->dp, a->dp, b, a->used);
-			c->used = a->used;
-			c->sign = RLC_POS;
-		} else {
-			/* If a > 0 && a < b. */
-			if (a->used == 1) {
-				c->dp[0] = b - a->dp[0];
-			} else {
-				c->dp[0] = b;
+		/* If a < 0, compute c = -(|a| + b). */
+		if (a->sign == RLC_NEG) {
+			carry = bn_add1_low(c->dp, a->dp, b, a->used);
+			if (carry) {
+				bn_grow(c, a->used + 1);
+				c->dp[a->used] = carry;
 			}
-			c->used = 1;
+			c->used = a->used + carry;
 			c->sign = RLC_NEG;
+		} else {
+			/* If a > 0 && |a| >= b, compute c = (|a| - b). */
+			if (a->used > 1 || a->dp[0] >= b) {
+				carry = bn_sub1_low(c->dp, a->dp, b, a->used);
+				c->used = a->used;
+				c->sign = RLC_POS;
+			} else {
+				/* If a > 0 && a < b. */
+				if (a->used == 1) {
+					c->dp[0] = b - a->dp[0];
+				} else {
+					c->dp[0] = b;
+				}
+				c->used = 1;
+				c->sign = RLC_NEG;
+			}
 		}
+		bn_trim(c);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	bn_trim(c);
 }
