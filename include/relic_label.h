@@ -53,11 +53,13 @@
 #undef core_clean
 #undef core_get
 #undef core_set
+#undef core_set_thread_initializer
 
 #define core_init 	RLC_PREFIX(core_init)
 #define core_clean 	RLC_PREFIX(core_clean)
 #define core_get 	RLC_PREFIX(core_get)
 #define core_set 	RLC_PREFIX(core_set)
+#define core_set_thread_initializer 	RLC_PREFIX(core_set_thread_initializer)
 
 #undef arch_init
 #undef arch_clean
@@ -71,21 +73,23 @@
 #define arch_lzcnt 	RLC_PREFIX(arch_lzcnt)
 #define arch_copy_rom 	RLC_PREFIX(arch_copy_rom)
 
+#undef bench_init
+#undef bench_clean
 #undef bench_overhead
 #undef bench_reset
 #undef bench_before
 #undef bench_after
 #undef bench_compute
 #undef bench_print
-#undef bench_total
 
+#define bench_init 	RLC_PREFIX(bench_init)
+#define bench_clean 	RLC_PREFIX(bench_clean)
 #define bench_overhead 	RLC_PREFIX(bench_overhead)
 #define bench_reset 	RLC_PREFIX(bench_reset)
 #define bench_before 	RLC_PREFIX(bench_before)
 #define bench_after 	RLC_PREFIX(bench_after)
 #define bench_compute 	RLC_PREFIX(bench_compute)
 #define bench_print 	RLC_PREFIX(bench_print)
-#define bench_total 	RLC_PREFIX(bench_total)
 
 #undef err_simple_msg
 #undef err_full_msg
@@ -148,6 +152,8 @@
 #undef dv_cmp_const
 #undef dv_new_dynam
 #undef dv_free_dynam
+#undef dv_lshd
+#undef dv_rshd
 
 #define dv_print 	RLC_PREFIX(dv_print)
 #define dv_zero 	RLC_PREFIX(dv_zero)
@@ -158,6 +164,8 @@
 #define dv_cmp_const 	RLC_PREFIX(dv_cmp_const)
 #define dv_new_dynam 	RLC_PREFIX(dv_new_dynam)
 #define dv_free_dynam 	RLC_PREFIX(dv_free_dynam)
+#define dv_lshd 	RLC_PREFIX(dv_lshd)
+#define dv_rshd 	RLC_PREFIX(dv_rshd)
 
 
 
@@ -380,10 +388,8 @@
 #undef bn_cmpn_low
 #undef bn_lsh1_low
 #undef bn_lshb_low
-#undef bn_lshd_low
 #undef bn_rsh1_low
 #undef bn_rshb_low
-#undef bn_rshd_low
 #undef bn_mula_low
 #undef bn_mul1_low
 #undef bn_muln_low
@@ -402,10 +408,8 @@
 #define bn_cmpn_low 	RLC_PREFIX(bn_cmpn_low)
 #define bn_lsh1_low 	RLC_PREFIX(bn_lsh1_low)
 #define bn_lshb_low 	RLC_PREFIX(bn_lshb_low)
-#define bn_lshd_low 	RLC_PREFIX(bn_lshd_low)
 #define bn_rsh1_low 	RLC_PREFIX(bn_rsh1_low)
 #define bn_rshb_low 	RLC_PREFIX(bn_rshb_low)
-#define bn_rshd_low 	RLC_PREFIX(bn_rshd_low)
 #define bn_mula_low 	RLC_PREFIX(bn_mula_low)
 #define bn_mul1_low 	RLC_PREFIX(bn_mul1_low)
 #define bn_muln_low 	RLC_PREFIX(bn_muln_low)
@@ -444,6 +448,7 @@
 #undef fp_param_set_any_dense
 #undef fp_param_set_any_pmers
 #undef fp_param_set_any_tower
+#undef fp_param_set_any_h2adc
 #undef fp_param_print
 #undef fp_prime_get_par
 #undef fp_prime_get_par_sps
@@ -527,6 +532,7 @@
 #define fp_param_set_any_dense 	RLC_PREFIX(fp_param_set_any_dense)
 #define fp_param_set_any_pmers 	RLC_PREFIX(fp_param_set_any_pmers)
 #define fp_param_set_any_tower 	RLC_PREFIX(fp_param_set_any_tower)
+#define fp_param_set_any_h2adc 	RLC_PREFIX(fp_param_set_any_h2adc)
 #define fp_param_print 	RLC_PREFIX(fp_param_print)
 #define fp_prime_get_par 	RLC_PREFIX(fp_prime_get_par)
 #define fp_prime_get_par_sps 	RLC_PREFIX(fp_prime_get_par_sps)
@@ -604,10 +610,8 @@
 #undef fp_hlvd_low
 #undef fp_lsh1_low
 #undef fp_lshb_low
-#undef fp_lshd_low
 #undef fp_rsh1_low
 #undef fp_rshb_low
-#undef fp_rshd_low
 #undef fp_mula_low
 #undef fp_mul1_low
 #undef fp_muln_low
@@ -635,10 +639,8 @@
 #define fp_hlvd_low 	RLC_PREFIX(fp_hlvd_low)
 #define fp_lsh1_low 	RLC_PREFIX(fp_lsh1_low)
 #define fp_lshb_low 	RLC_PREFIX(fp_lshb_low)
-#define fp_lshd_low 	RLC_PREFIX(fp_lshd_low)
 #define fp_rsh1_low 	RLC_PREFIX(fp_rsh1_low)
 #define fp_rshb_low 	RLC_PREFIX(fp_rshb_low)
-#define fp_rshd_low 	RLC_PREFIX(fp_rshd_low)
 #define fp_mula_low 	RLC_PREFIX(fp_mula_low)
 #define fp_mul1_low 	RLC_PREFIX(fp_mul1_low)
 #define fp_muln_low 	RLC_PREFIX(fp_muln_low)
@@ -801,10 +803,8 @@
 #undef fb_addd_low
 #undef fb_lsh1_low
 #undef fb_lshb_low
-#undef fb_lshd_low
 #undef fb_rsh1_low
 #undef fb_rshb_low
-#undef fb_rshd_low
 #undef fb_lsha_low
 #undef fb_mul1_low
 #undef fb_muln_low
@@ -826,10 +826,8 @@
 #define fb_addd_low 	RLC_PREFIX(fb_addd_low)
 #define fb_lsh1_low 	RLC_PREFIX(fb_lsh1_low)
 #define fb_lshb_low 	RLC_PREFIX(fb_lshb_low)
-#define fb_lshd_low 	RLC_PREFIX(fb_lshd_low)
 #define fb_rsh1_low 	RLC_PREFIX(fb_rsh1_low)
 #define fb_rshb_low 	RLC_PREFIX(fb_rshb_low)
-#define fb_rshd_low 	RLC_PREFIX(fb_rshd_low)
 #define fb_lsha_low 	RLC_PREFIX(fb_lsha_low)
 #define fb_mul1_low 	RLC_PREFIX(fb_mul1_low)
 #define fb_muln_low 	RLC_PREFIX(fb_muln_low)
@@ -892,6 +890,7 @@
 #undef ep_copy
 #undef ep_cmp
 #undef ep_rand
+#undef ep_blind
 #undef ep_rhs
 #undef ep_on_curve
 #undef ep_tab
@@ -932,11 +931,13 @@
 #undef ep_mul_sim_trick
 #undef ep_mul_sim_inter
 #undef ep_mul_sim_joint
+#undef ep_mul_sim_lot
 #undef ep_mul_sim_gen
 #undef ep_mul_sim_dig
 #undef ep_norm
 #undef ep_norm_sim
 #undef ep_map
+#undef ep_map_dst
 #undef ep_map_dst
 #undef ep_pck
 #undef ep_upk
@@ -982,6 +983,7 @@
 #define ep_copy 	RLC_PREFIX(ep_copy)
 #define ep_cmp 	RLC_PREFIX(ep_cmp)
 #define ep_rand 	RLC_PREFIX(ep_rand)
+#define ep_blind 	RLC_PREFIX(ep_blind)
 #define ep_rhs 	RLC_PREFIX(ep_rhs)
 #define ep_on_curve 	RLC_PREFIX(ep_on_curve)
 #define ep_tab 	RLC_PREFIX(ep_tab)
@@ -1022,11 +1024,13 @@
 #define ep_mul_sim_trick 	RLC_PREFIX(ep_mul_sim_trick)
 #define ep_mul_sim_inter 	RLC_PREFIX(ep_mul_sim_inter)
 #define ep_mul_sim_joint 	RLC_PREFIX(ep_mul_sim_joint)
+#define ep_mul_sim_lot 	RLC_PREFIX(ep_mul_sim_lot)
 #define ep_mul_sim_gen 	RLC_PREFIX(ep_mul_sim_gen)
 #define ep_mul_sim_dig 	RLC_PREFIX(ep_mul_sim_dig)
 #define ep_norm 	RLC_PREFIX(ep_norm)
 #define ep_norm_sim 	RLC_PREFIX(ep_norm_sim)
 #define ep_map 	RLC_PREFIX(ep_map)
+#define ep_map_dst 	RLC_PREFIX(ep_map_dst)
 #define ep_map_dst 	RLC_PREFIX(ep_map_dst)
 #define ep_pck 	RLC_PREFIX(ep_pck)
 #define ep_upk 	RLC_PREFIX(ep_upk)
@@ -1047,6 +1051,7 @@
 #undef ed_param_level
 #undef ed_projc_to_extnd
 #undef ed_rand
+#undef ed_blind
 #undef ed_rhs
 #undef ed_copy
 #undef ed_cmp
@@ -1114,6 +1119,7 @@
 #define ed_param_level 	RLC_PREFIX(ed_param_level)
 #define ed_projc_to_extnd 	RLC_PREFIX(ed_projc_to_extnd)
 #define ed_rand 	RLC_PREFIX(ed_rand)
+#define ed_blind 	RLC_PREFIX(ed_blind)
 #define ed_rhs 	RLC_PREFIX(ed_rhs)
 #define ed_copy 	RLC_PREFIX(ed_copy)
 #define ed_cmp 	RLC_PREFIX(ed_cmp)
@@ -1199,6 +1205,7 @@
 #undef eb_copy
 #undef eb_cmp
 #undef eb_rand
+#undef eb_blind
 #undef eb_rhs
 #undef eb_on_curve
 #undef eb_tab
@@ -1271,6 +1278,7 @@
 #define eb_copy 	RLC_PREFIX(eb_copy)
 #define eb_cmp 	RLC_PREFIX(eb_cmp)
 #define eb_rand 	RLC_PREFIX(eb_rand)
+#define eb_blind 	RLC_PREFIX(eb_blind)
 #define eb_rhs 	RLC_PREFIX(eb_rhs)
 #define eb_on_curve 	RLC_PREFIX(eb_on_curve)
 #define eb_tab 	RLC_PREFIX(eb_tab)
@@ -1345,6 +1353,7 @@
 #undef ep2_copy
 #undef ep2_cmp
 #undef ep2_rand
+#undef ep2_blind
 #undef ep2_rhs
 #undef ep2_on_curve
 #undef ep2_tab
@@ -1383,6 +1392,7 @@
 #undef ep2_mul_sim_trick
 #undef ep2_mul_sim_inter
 #undef ep2_mul_sim_joint
+#undef ep2_mul_sim_lot
 #undef ep2_mul_sim_gen
 #undef ep2_mul_sim_dig
 #undef ep2_norm
@@ -1414,6 +1424,7 @@
 #define ep2_copy 	RLC_PREFIX(ep2_copy)
 #define ep2_cmp 	RLC_PREFIX(ep2_cmp)
 #define ep2_rand 	RLC_PREFIX(ep2_rand)
+#define ep2_blind 	RLC_PREFIX(ep2_blind)
 #define ep2_rhs 	RLC_PREFIX(ep2_rhs)
 #define ep2_on_curve 	RLC_PREFIX(ep2_on_curve)
 #define ep2_tab 	RLC_PREFIX(ep2_tab)
@@ -1452,6 +1463,7 @@
 #define ep2_mul_sim_trick 	RLC_PREFIX(ep2_mul_sim_trick)
 #define ep2_mul_sim_inter 	RLC_PREFIX(ep2_mul_sim_inter)
 #define ep2_mul_sim_joint 	RLC_PREFIX(ep2_mul_sim_joint)
+#define ep2_mul_sim_lot 	RLC_PREFIX(ep2_mul_sim_lot)
 #define ep2_mul_sim_gen 	RLC_PREFIX(ep2_mul_sim_gen)
 #define ep2_mul_sim_dig 	RLC_PREFIX(ep2_mul_sim_dig)
 #define ep2_norm 	RLC_PREFIX(ep2_norm)
@@ -1566,6 +1578,7 @@
 #undef fp2_srt
 #undef fp2_pck
 #undef fp2_upk
+#undef fp2_exp_cyc_sim
 
 #define fp2_add_dig 	RLC_PREFIX(fp2_add_dig)
 #define fp2_sub_dig 	RLC_PREFIX(fp2_sub_dig)
@@ -1610,6 +1623,7 @@
 #define fp2_srt 	RLC_PREFIX(fp2_srt)
 #define fp2_pck 	RLC_PREFIX(fp2_pck)
 #define fp2_upk 	RLC_PREFIX(fp2_upk)
+#define fp2_exp_cyc_sim 	RLC_PREFIX(fp2_exp_cyc_sim)
 
 #undef fp2_addn_low
 #undef fp2_addm_low
@@ -2019,9 +2033,12 @@
 #undef fp12_exp
 #undef fp12_exp_dig
 #undef fp12_exp_cyc
+#undef fp12_exp_cyc_sim
 #undef fp12_exp_cyc_sps
 #undef fp12_pck
 #undef fp12_upk
+#undef fp12_pck_max
+#undef fp12_upk_max
 
 #define fp12_copy 	RLC_PREFIX(fp12_copy)
 #define fp12_zero 	RLC_PREFIX(fp12_zero)
@@ -2061,9 +2078,12 @@
 #define fp12_exp 	RLC_PREFIX(fp12_exp)
 #define fp12_exp_dig 	RLC_PREFIX(fp12_exp_dig)
 #define fp12_exp_cyc 	RLC_PREFIX(fp12_exp_cyc)
+#define fp12_exp_cyc_sim 	RLC_PREFIX(fp12_exp_cyc_sim)
 #define fp12_exp_cyc_sps 	RLC_PREFIX(fp12_exp_cyc_sps)
 #define fp12_pck 	RLC_PREFIX(fp12_pck)
 #define fp12_upk 	RLC_PREFIX(fp12_upk)
+#define fp12_pck_max 	RLC_PREFIX(fp12_pck_max)
+#define fp12_upk_max 	RLC_PREFIX(fp12_upk_max)
 
 #undef fp18_copy
 #undef fp18_zero
@@ -2194,12 +2214,10 @@
 #undef fp48_sub
 #undef fp48_neg
 #undef fp48_dbl
-#undef fp48_mul_unr
 #undef fp48_mul_basic
 #undef fp48_mul_lazyr
 #undef fp48_mul_art
 #undef fp48_mul_dxs
-#undef fp48_sqr_unr
 #undef fp48_sqr_basic
 #undef fp48_sqr_lazyr
 #undef fp48_sqr_cyc_basic
@@ -2236,12 +2254,10 @@
 #define fp48_sub 	RLC_PREFIX(fp48_sub)
 #define fp48_neg 	RLC_PREFIX(fp48_neg)
 #define fp48_dbl 	RLC_PREFIX(fp48_dbl)
-#define fp48_mul_unr 	RLC_PREFIX(fp48_mul_unr)
 #define fp48_mul_basic 	RLC_PREFIX(fp48_mul_basic)
 #define fp48_mul_lazyr 	RLC_PREFIX(fp48_mul_lazyr)
 #define fp48_mul_art 	RLC_PREFIX(fp48_mul_art)
 #define fp48_mul_dxs 	RLC_PREFIX(fp48_mul_dxs)
-#define fp48_sqr_unr 	RLC_PREFIX(fp48_sqr_unr)
 #define fp48_sqr_basic 	RLC_PREFIX(fp48_sqr_basic)
 #define fp48_sqr_lazyr 	RLC_PREFIX(fp48_sqr_lazyr)
 #define fp48_sqr_cyc_basic 	RLC_PREFIX(fp48_sqr_cyc_basic)
@@ -2278,12 +2294,10 @@
 #undef fp54_sub
 #undef fp54_neg
 #undef fp54_dbl
-#undef fp54_mul_unr
 #undef fp54_mul_basic
 #undef fp54_mul_lazyr
 #undef fp54_mul_art
 #undef fp54_mul_dxs
-#undef fp54_sqr_unr
 #undef fp54_sqr_basic
 #undef fp54_sqr_lazyr
 #undef fp54_sqr_cyc_basic
@@ -2320,12 +2334,10 @@
 #define fp54_sub 	RLC_PREFIX(fp54_sub)
 #define fp54_neg 	RLC_PREFIX(fp54_neg)
 #define fp54_dbl 	RLC_PREFIX(fp54_dbl)
-#define fp54_mul_unr 	RLC_PREFIX(fp54_mul_unr)
 #define fp54_mul_basic 	RLC_PREFIX(fp54_mul_basic)
 #define fp54_mul_lazyr 	RLC_PREFIX(fp54_mul_lazyr)
 #define fp54_mul_art 	RLC_PREFIX(fp54_mul_art)
 #define fp54_mul_dxs 	RLC_PREFIX(fp54_mul_dxs)
-#define fp54_sqr_unr 	RLC_PREFIX(fp54_sqr_unr)
 #define fp54_sqr_basic 	RLC_PREFIX(fp54_sqr_basic)
 #define fp54_sqr_lazyr 	RLC_PREFIX(fp54_sqr_lazyr)
 #define fp54_sqr_cyc_basic 	RLC_PREFIX(fp54_sqr_cyc_basic)
@@ -2541,9 +2553,17 @@
 #undef cp_pss_gen
 #undef cp_pss_sig
 #undef cp_pss_ver
+#undef cp_mpss_gen
+#undef cp_mpss_sig
+#undef cp_mpss_bct
+#undef cp_mpss_ver
 #undef cp_psb_gen
 #undef cp_psb_sig
 #undef cp_psb_ver
+#undef cp_mpsb_gen
+ #undef cp_mpsb_sig
+#undef cp_mpsb_bct
+#undef cp_mpsb_ver
 #undef cp_zss_gen
 #undef cp_zss_sig
 #undef cp_zss_ver
@@ -2557,6 +2577,8 @@
 #undef cp_cmlhs_fun
 #undef cp_cmlhs_evl
 #undef cp_cmlhs_ver
+#undef cp_cmlhs_off
+#undef cp_cmlhs_onv
 #undef cp_mklhs_gen
 #undef cp_mklhs_sig
 #undef cp_mklhs_fun
@@ -2628,9 +2650,17 @@
 #define cp_pss_gen 	RLC_PREFIX(cp_pss_gen)
 #define cp_pss_sig 	RLC_PREFIX(cp_pss_sig)
 #define cp_pss_ver 	RLC_PREFIX(cp_pss_ver)
+#define cp_mpss_gen 	RLC_PREFIX(cp_mpss_gen)
+#define cp_mpss_sig 	RLC_PREFIX(cp_mpss_sig)
+#define cp_mpss_bct 	RLC_PREFIX(cp_mpss_bct)
+#define cp_mpss_ver 	RLC_PREFIX(cp_mpss_ver)
 #define cp_psb_gen 	RLC_PREFIX(cp_psb_gen)
 #define cp_psb_sig 	RLC_PREFIX(cp_psb_sig)
 #define cp_psb_ver 	RLC_PREFIX(cp_psb_ver)
+#define cp_mpsb_gen 	RLC_PREFIX(cp_mpsb_gen)
+ #define cp_mpsb_sig 	RLC_PREFIX(cp_mpsb_sig)
+#define cp_mpsb_bct 	RLC_PREFIX(cp_mpsb_bct)
+#define cp_mpsb_ver 	RLC_PREFIX(cp_mpsb_ver)
 #define cp_zss_gen 	RLC_PREFIX(cp_zss_gen)
 #define cp_zss_sig 	RLC_PREFIX(cp_zss_sig)
 #define cp_zss_ver 	RLC_PREFIX(cp_zss_ver)
@@ -2644,6 +2674,8 @@
 #define cp_cmlhs_fun 	RLC_PREFIX(cp_cmlhs_fun)
 #define cp_cmlhs_evl 	RLC_PREFIX(cp_cmlhs_evl)
 #define cp_cmlhs_ver 	RLC_PREFIX(cp_cmlhs_ver)
+#define cp_cmlhs_off 	RLC_PREFIX(cp_cmlhs_off)
+#define cp_cmlhs_onv 	RLC_PREFIX(cp_cmlhs_onv)
 #define cp_mklhs_gen 	RLC_PREFIX(cp_mklhs_gen)
 #define cp_mklhs_sig 	RLC_PREFIX(cp_mklhs_sig)
 #define cp_mklhs_fun 	RLC_PREFIX(cp_mklhs_fun)
