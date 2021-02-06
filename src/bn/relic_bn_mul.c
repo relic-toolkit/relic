@@ -175,11 +175,15 @@ static void bn_mul_karat_imp(bn_t c, const bn_t a, const bn_t b, int level) {
 /*============================================================================*/
 
 void bn_mul_dig(bn_t c, const bn_t a, dig_t b) {
-	bn_grow(c, a->used + 1);
-	c->sign = a->sign;
-	c->dp[a->used] = bn_mul1_low(c->dp, a->dp, b, a->used);
-	c->used = a->used + 1;
-	bn_trim(c);
+	RLC_TRY {
+		bn_grow(c, a->used + 1);
+		c->sign = a->sign;
+		c->dp[a->used] = bn_mul1_low(c->dp, a->dp, b, a->used);
+		c->used = a->used + 1;
+		bn_trim(c);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
 }
 
 #if BN_MUL == BASIC || !defined(STRIP)
@@ -220,17 +224,14 @@ void bn_mul_basic(bn_t c, const bn_t a, const bn_t b) {
 #if BN_MUL == COMBA || !defined(STRIP)
 
 void bn_mul_comba(bn_t c, const bn_t a, const bn_t b) {
-	int digits;
 	bn_t t;
 
 	bn_null(t);
 
 	RLC_TRY {
-		digits = a->used + b->used;
-
 		/* We need a temporary variable so that c can be a or b. */
-		bn_new_size(t, digits);
-		t->used = digits;
+		bn_new_size(t, a->used + b->used);
+		t->used = a->used + b->used;
 
 		if (a->used == b->used) {
 			bn_muln_low(t->dp, a->dp, b->dp, a->used);
