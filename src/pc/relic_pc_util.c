@@ -96,13 +96,16 @@ int g1_is_valid(g1_t a) {
 			/* If curve has prime order, simpler to check if point on curve. */
 			return ep_on_curve(a);
 		} else {
-			/* Otherwise, check order explicitly. */
 			pc_get_ord(n);
-			/* Multiply by (n-1)/2 to prevent weird interactions with recoding. */
-			bn_add_dig(n, n, 1);
-			bn_hlv(n, n);
-			g1_mul(u, a, n);
-			g1_dbl(u, u);
+			/* Otherwise, check order explicitly. */
+			bn_sub_dig(n, n, 1);
+			g1_copy(u, a);
+			for (int i = bn_bits(n) - 2; i >= 0; i--) {
+				g1_dbl(u, u);
+				if (bn_get_bit(n, i)) {
+					g1_add(u, u, a);
+				}
+			}
 			r = (g1_cmp(u, a) == RLC_EQ);
 		}
 	} RLC_CATCH_ANY {
@@ -158,10 +161,13 @@ int g2_is_valid(g2_t a) {
 		} else {
 			/* Common case. */
 			bn_sub_dig(n, n, 1);
-			bn_hlv(n, n);
-			g2_mul(u, a, n);
-			g2_dbl(u, u);
-			g2_neg(u, u);
+			g2_copy(u, a);
+			for (int i = bn_bits(n) - 2; i >= 0; i--) {
+				g2_dbl(u, u);
+				if (bn_get_bit(n, i)) {
+					g2_add(u, u, a);
+				}
+			}
 			r = (g2_cmp(u, a) == RLC_EQ);
 		}
 	} RLC_CATCH_ANY {
@@ -213,10 +219,13 @@ int gt_is_valid(gt_t a) {
 		} else {
 			/* Common case. */
 			bn_sub_dig(n, n, 1);
-			bn_hlv(n, n);
-			gt_exp(u, a, n);
-			gt_sqr(u, u);
-			gt_inv(u, u);
+			gt_copy(u, a);
+			for (int i = bn_bits(n) - 2; i >= 0; i--) {
+				gt_sqr(u, u);
+				if (bn_get_bit(n, i)) {
+					gt_mul(u, u, a);
+				}
+			}
 			r = (gt_cmp(u, a) == RLC_EQ);
 		}
 	} RLC_CATCH_ANY {

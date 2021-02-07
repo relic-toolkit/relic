@@ -335,7 +335,7 @@ typedef RLC_CAT(RLC_EC_LOWER, t) ec_t;
 #define ec_dbl(R, P)			RLC_CAT(RLC_EC_LOWER, dbl)(R, P)
 
 /**
- * Multiplies an elliptic curve point by an integer. Computes R = kP.
+ * Multiplies an elliptic curve point by an integer. Computes R = [k]P.
  *
  * @param[out] R				- the result.
  * @param[in] P					- the point to multiply.
@@ -352,7 +352,7 @@ typedef RLC_CAT(RLC_EC_LOWER, t) ec_t;
 #define ec_mul_gen(R, K)		RLC_CAT(RLC_EC_LOWER, mul_gen)(R, K)
 
 /**
- * Multiplies an elliptic curve point by a small integer. Computes R = kP.
+ * Multiplies an elliptic curve point by a small integer. Computes R = [k]P.
  *
  * @param[out] R				- the result.
  * @param[in] P					- the point to multiply.
@@ -370,7 +370,7 @@ typedef RLC_CAT(RLC_EC_LOWER, t) ec_t;
 #define ec_mul_pre(T, P)		RLC_CAT(RLC_EC_LOWER, mul_pre)(T, P)
 /**
  * Multiplies an elliptic point using a precomputation table.
- * Computes R = kP.
+ * Computes R = [k]P.
  *
  * @param[out] R				- the result.
  * @param[in] T					- the precomputation table.
@@ -380,7 +380,7 @@ typedef RLC_CAT(RLC_EC_LOWER, t) ec_t;
 
 /**
  * Multiplies and adds two elliptic curve points simultaneously. Computes
- * R = kP + lQ.
+ * R = [k]P + [l]Q.
  *
  * @param[out] R				- the result.
  * @param[in] P					- the first point to multiply.
@@ -392,7 +392,7 @@ typedef RLC_CAT(RLC_EC_LOWER, t) ec_t;
 
 /**
  * Multiplies and adds two elliptic curve points simultaneously. Computes
- * R = kG + lQ.
+ * R = [k]G + [l]Q.
  *
  * @param[out] R				- the result.
  * @param[in] K					- the first integer.

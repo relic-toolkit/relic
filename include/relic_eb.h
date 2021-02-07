@@ -269,7 +269,7 @@ typedef eb_st *eb_t;
 #endif
 
 /**
- * Multiplies a binary elliptic curve point by an integer. Computes R = kP.
+ * Multiplies a binary elliptic curve point by an integer. Computes R = [k]P.
  *
  * @param[out] R			- the result.
  * @param[in] P				- the point to multiply.
@@ -306,7 +306,7 @@ typedef eb_st *eb_t;
 
 /**
  * Multiplies a fixed binary elliptic point using a precomputation table.
- * Computes R = kP.
+ * Computes R = [k]P.
  *
  * @param[out] R			- the result.
  * @param[in] T				- the precomputation table.
@@ -324,7 +324,7 @@ typedef eb_st *eb_t;
 
 /**
  * Multiplies and adds two binary elliptic curve points simultaneously. Computes
- * R = kP + mQ.
+ * R = [k]P + [m]Q.
  *
  * @param[out] R			- the result.
  * @param[in] P				- the first point to multiply.
@@ -920,7 +920,7 @@ void eb_mul_sim_joint(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 
 /**
  * Multiplies and adds the generator and a binary elliptic curve point
- * simultaneously. Computes R = kG + mQ.
+ * simultaneously. Computes R = [k]G + [m]Q.
  *
  * @param[out] r			- the result.
  * @param[in] k				- the first integer.

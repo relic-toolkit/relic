@@ -626,7 +626,7 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
 #define g2_norm_sim(R, P, N)	RLC_CAT(RLC_G2_LOWER, norm_sim)(R, P, N)
 
 /**
- * Multiplies an element from G_1 by a secret scalar. Computes R = kP.
+ * Multiplies an element from G_1 by a secret scalar. Computes R = [k]P.
  *
  * @param[out] R				- the result.
  * @param[in] P					- the element to multiply.
@@ -635,7 +635,7 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
 #define g1_mul_key(R, P, K)		RLC_CAT(RLC_G1_LOWER, mul_lwreg)(R, P, K)
 
 /**
- * Multiplies an element from G_1 by a small integer. Computes R = kP.
+ * Multiplies an element from G_1 by a small integer. Computes R = [k]P.
  *
  * @param[out] R			- the result.
  * @param[in] P				- the element to multiply.
@@ -644,7 +644,7 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
 #define g1_mul_dig(R, P, K)		RLC_CAT(RLC_G1_LOWER, mul_dig)(R, P, K)
 
 /**
- * Multiplies an element from G_2 by a small integer. Computes R = kP.
+ * Multiplies an element from G_2 by a small integer. Computes R = [k]P.
  *
  * @param[out] R			- the result.
  * @param[in] P				- the element to multiply.
@@ -679,7 +679,7 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
 
 /**
  * Multiplies an element from G_1 using a precomputation table.
- * Computes R = kP.
+ * Computes R = [k]P.
  *
  * @param[out] R			- the result.
  * @param[in] T				- the precomputation table.
@@ -689,7 +689,7 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
 
 /**
  * Multiplies an element from G_2 using a precomputation table.
- * Computes R = kP.
+ * Computes R = [k]P.
  *
  * @param[out] R			- the result.
  * @param[in] T				- the precomputation table.
@@ -698,7 +698,7 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
 #define g2_mul_fix(R, T, K)	RLC_CAT(RLC_G2_LOWER, mul_fix)(R, T, K)
 
 /**
- * Multiplies simultaneously two elements from G_1. Computes R = kP + lQ.
+ * Multiplies simultaneously two elements from G_1. Computes R = [k]P + [l]Q.
  *
  * @param[out] R			- the result.
  * @param[out] P			- the first G_1 element to multiply.
@@ -729,7 +729,7 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
 #define g1_mul_sim_dig(R, P, K, L)	RLC_CAT(RLC_G1_LOWER, mul_sim_dig)(R, P, K, L)
 
 /**
- * Multiplies simultaneously two elements from G_2. Computes R = kP + lQ.
+ * Multiplies simultaneously two elements from G_2. Computes R = [k]P + [l]Q.
  *
  * @param[out] R			- the result.
  * @param[out] P			- the first G_2 element to multiply.
@@ -761,7 +761,7 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
 
 /**
  * Multiplies simultaneously two elements from G_1, where one of the is the
- * generator. Computes R = kG + lQ.
+ * generator. Computes R = [k]G + [l]Q.
  *
  * @param[out] R			- the result.
  * @param[out] K			- the first integer scalar.
@@ -772,7 +772,7 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
 
 /**
  * Multiplies simultaneously two elements from G_1, where one of the is the
- * generator. Computes R = kG + lQ.
+ * generator. Computes R = [k]G + [l]Q.
  *
  * @param[out] R			- the result.
  * @param[out] K			- the first integer scalar.
@@ -878,7 +878,7 @@ void pc_core_clean(void);
 void gt_rand(gt_t a);
 
 /**
- * Multiplies an element from G_1 by an integer. Computes R = kP.
+ * Multiplies an element from G_1 by an integer. Computes R = [k]P.
  *
  * @param[out] r			- the result.
  * @param[in] p				- the element to multiply.
@@ -887,7 +887,7 @@ void gt_rand(gt_t a);
 void g1_mul(g1_t r, g1_t p, bn_t k);
 
 /**
- * Multiplies an element from G_2 by an integer. Computes R = kP.
+ * Multiplies an element from G_2 by an integer. Computes R = [k]P.
  *
  * @param[out] r			- the result.
  * @param[in] p				- the element to multiply.
