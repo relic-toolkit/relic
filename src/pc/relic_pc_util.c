@@ -84,6 +84,10 @@ int g1_is_valid(g1_t a) {
 	g1_t u;
 	int r;
 
+	if (g1_is_infty(a)) {
+		return 0;
+	}
+
 	bn_null(n);
 	g1_null(u);
 
@@ -106,6 +110,7 @@ int g1_is_valid(g1_t a) {
 					g1_add(u, u, a);
 				}
 			}
+			g1_neg(u, u);
 			r = (g1_cmp(u, a) == RLC_EQ);
 		}
 	} RLC_CATCH_ANY {
@@ -124,6 +129,11 @@ int g2_is_valid(g2_t a) {
 		return g1_is_valid(a);
 	}
 #else
+
+	if (g2_is_infty(a)) {
+		return 0;
+	}
+
 	bn_t p, n;
 	g2_t u, v;
 	int r;
@@ -168,6 +178,7 @@ int g2_is_valid(g2_t a) {
 					g2_add(u, u, a);
 				}
 			}
+			g2_neg(u, u);
 			r = (g2_cmp(u, a) == RLC_EQ);
 		}
 	} RLC_CATCH_ANY {
@@ -187,6 +198,10 @@ int gt_is_valid(gt_t a) {
 	bn_t p, n;
 	gt_t u, v;
 	int r;
+
+	if (gt_is_unity(a)) {
+		return 0;
+	}
 
 	bn_null(n);
 	bn_null(p);
@@ -226,6 +241,7 @@ int gt_is_valid(gt_t a) {
 					gt_mul(u, u, a);
 				}
 			}
+			gt_inv(u, u);
 			r = (gt_cmp(u, a) == RLC_EQ);
 		}
 	} RLC_CATCH_ANY {

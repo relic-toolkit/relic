@@ -71,7 +71,7 @@ int ep_cmp(const ep_t p, const ep_t q) {
 		}
 
 		switch (p->coord) {
-            /* Now to the same for the other point. */
+            /* Now do the same for the other point. */
 			case PROJC:
 				fp_mul(s->x, q->x, p->z);
 				fp_mul(s->y, q->y, p->z);

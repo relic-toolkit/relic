@@ -53,7 +53,6 @@ void fp_rdcs_low(dig_t *c, const dig_t *a, const dig_t *m) {
 	first = (d0) + (b0 == 0 ? 0 : 1);
 
 	/* q = floor(a/b^k) */
-	dv_zero(q, 2 * RLC_FP_DIGS);
 	dv_rshd(q, a, 2 * RLC_FP_DIGS, d0);
 	if (b0 > 0) {
 		bn_rshb_low(q, q, 2 * RLC_FP_DIGS, b0);
