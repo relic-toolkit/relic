@@ -42,6 +42,12 @@
 /*============================================================================*/
 
 void bn_init(bn_t a, int digits) {
+	if (digits < 0) {
+		RLC_THROW(ERR_NO_VALID);
+	}
+	/* Allocate at least one digit. */
+	digits = RLC_MAX(digits, 1);
+
 #if ALLOC == DYNAMIC
 	if (digits % RLC_BN_SIZE != 0) {
 		/* Pad the number of digits to a multiple of the block. */
