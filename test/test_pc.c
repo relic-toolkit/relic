@@ -220,7 +220,6 @@ int addition1(void) {
 			g1_rand(a);
 			g1_neg(d, a);
 			g1_add(e, a, d);
-			TEST_ASSERT(g1_is_valid(e), end);
 			TEST_ASSERT(g1_is_infty(e), end);
 		} TEST_END;
 	}
@@ -273,7 +272,6 @@ int subtraction1(void) {
 		TEST_BEGIN("point subtraction has inverse") {
 			g1_rand(a);
 			g1_sub(c, a, a);
-			TEST_ASSERT(g1_is_valid(c), end);
 			TEST_ASSERT(g1_is_infty(c), end);
 		}
 		TEST_END;
@@ -560,7 +558,7 @@ static int validity1(void) {
 
 		TEST_BEGIN("validity test is correct") {
 			g1_set_infty(a);
-			TEST_ASSERT(g1_is_valid(a), end);
+			TEST_ASSERT(!g1_is_valid(a), end);
 			g1_rand(a);
 			TEST_ASSERT(g1_is_valid(a), end);
 		}
@@ -599,7 +597,7 @@ static int hashing1(void) {
 		TEST_BEGIN("point hashing is correct") {
 			rand_bytes(msg, sizeof(msg));
 			g1_map(a, msg, sizeof(msg));
-			TEST_ASSERT(g1_is_valid(a) == 1, end);
+			TEST_ASSERT(g1_is_valid(a), end);
 		}
 		TEST_END;
 
@@ -800,7 +798,6 @@ int addition2(void) {
 			g2_rand(a);
 			g2_neg(d, a);
 			g2_add(e, a, d);
-			TEST_ASSERT(g2_is_valid(e), end);
 			TEST_ASSERT(g2_is_infty(e), end);
 		} TEST_END;
 	}
@@ -853,7 +850,6 @@ int subtraction2(void) {
 		TEST_BEGIN("point subtraction has inverse") {
 			g2_rand(a);
 			g2_sub(c, a, a);
-			TEST_ASSERT(g2_is_valid(c), end);
 			TEST_ASSERT(g2_is_infty(c), end);
 		}
 		TEST_END;
@@ -1140,7 +1136,7 @@ static int validity2(void) {
 
 		TEST_BEGIN("validity test is correct") {
 			g2_set_infty(a);
-			TEST_ASSERT(g2_is_valid(a), end);
+			TEST_ASSERT(!g2_is_valid(a), end);
 			g2_rand(a);
 			TEST_ASSERT(g2_is_valid(a), end);
 		}
@@ -1179,7 +1175,7 @@ static int hashing2(void) {
 		TEST_BEGIN("point hashing is correct") {
 			rand_bytes(msg, sizeof(msg));
 			g2_map(a, msg, sizeof(msg));
-			TEST_ASSERT(g2_is_valid(a) == 1, end);
+			TEST_ASSERT(g2_is_valid(a), end);
 		}
 		TEST_END;
 
@@ -1500,8 +1496,10 @@ static int validity(void) {
 		gt_new(a);
 
 		TEST_BEGIN("validity check is correct") {
+			gt_set_unity(a);
+			TEST_ASSERT(!gt_is_valid(a), end);
 			gt_rand(a);
-			TEST_ASSERT(gt_is_valid(a) == 1, end);
+			TEST_ASSERT(gt_is_valid(a), end);
 		}
 		TEST_END;
 	}
