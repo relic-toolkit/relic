@@ -112,10 +112,11 @@ void bn_rsh(bn_t c, const bn_t a, int bits) {
 
 	RLC_RIP(bits, digits, bits);
 
-	c->used = c->used - digits;
 	if (digits > 0) {
 		dv_rshd(c->dp, a->dp, a->used, digits);
 	}
+	c->used = a->used - digits;
+	c->sign = a->sign;
 
 	if (c->used > 0 && bits > 0) {
 		if (digits == 0 && c != a) {
