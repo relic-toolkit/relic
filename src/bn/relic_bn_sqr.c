@@ -48,10 +48,8 @@
  * @param[in] level			- the number of Karatsuba steps to apply.
  */
 static void bn_sqr_karat_imp(bn_t c, const bn_t a, int level) {
-	int h;
 	bn_t a0, a1, a0a0, a1a1, t;
-	const dig_t *tmpa;
-	dig_t *t0;
+	int h = a->used >> 1;
 
 	bn_null(a0);
 	bn_null(a1);
@@ -59,31 +57,21 @@ static void bn_sqr_karat_imp(bn_t c, const bn_t a, int level) {
 	bn_null(a1a1);
 	bn_null(t);
 
-	/* Compute half the digits of a or b. */
-	h = a->used >> 1;
-
 	RLC_TRY {
 		/* Allocate the temp variables. */
-		bn_new(a0);
-		bn_new(a1);
+		bn_new_size(a0, h);
+		bn_new_size(a1, a->used - h);
 		bn_new(a0a0);
 		bn_new(a1a1);
 		bn_new(t);
 
+		/* a = a1 || a0 */
 		a0->used = h;
 		a1->used = a->used - h;
-
-		tmpa = a->dp;
-
-		/* a = a1 || a0 */
-		t0 = a0->dp;
-		for (int i = 0; i < h; i++, t0++, tmpa++)
-			*t0 = *tmpa;
-		t0 = a1->dp;
-		for (int i = 0; i < a1->used; i++, t0++, tmpa++)
-			*t0 = *tmpa;
-
+		dv_copy(a0->dp, a->dp, h);
+		dv_copy(a1->dp, a->dp + h, a->used - h);
 		bn_trim(a0);
+		bn_trim(a1);
 
 		if (level <= 1) {
 			/* a0a0 = a0 * a0 and a1a1 = a1 * a1 */

@@ -48,11 +48,10 @@
  * @param[in] level			- the number of Karatsuba steps to apply.
  */
 static void bn_mul_karat_imp(bn_t c, const bn_t a, const bn_t b, int level) {
-	int h;
-	bn_t a0, a1, b0, b1, a0b0, a1b1;
-	bn_t t;
-	const dig_t *tmpa, *tmpb;
-	dig_t *t0;
+	bn_t a0, a1, b0, b1, a0b0, a1b1, t;
+
+	/* Compute half the digits of a or b. */
+	int h = RLC_MIN(a->used, b->used) >> 1;
 
 	bn_null(a0);
 	bn_null(a1);
@@ -62,42 +61,24 @@ static void bn_mul_karat_imp(bn_t c, const bn_t a, const bn_t b, int level) {
 	bn_null(a1b1);
 	bn_null(t);
 
-	/* Compute half the digits of a or b. */
-	h = RLC_MIN(a->used, b->used) >> 1;
-
 	RLC_TRY {
 		/* Allocate the temp variables. */
-		bn_new(a0);
-		bn_new(a1);
-		bn_new(b0);
-		bn_new(b1);
+		bn_new_size(a0, h);
+		bn_new_size(a1, h);
+		bn_new_size(b0, a->used - h);
+		bn_new_size(b1, b->used - h);
 		bn_new(a0b0);
 		bn_new(a1b1);
 		bn_new(t);
 
+		/* a = a1 || a0, b = b1 || b0 */
 		a0->used = b0->used = h;
 		a1->used = a->used - h;
 		b1->used = b->used - h;
-
-		tmpa = a->dp;
-		tmpb = b->dp;
-
-		/* a = a1 || a0 */
-		t0 = a0->dp;
-		for (int i = 0; i < h; i++, t0++, tmpa++)
-			*t0 = *tmpa;
-		t0 = a1->dp;
-		for (int i = 0; i < a1->used; i++, t0++, tmpa++)
-			*t0 = *tmpa;
-
-		/* b = b1 || b0 */
-		t0 = b0->dp;
-		for (int i = 0; i < h; i++, t0++, tmpb++)
-			*t0 = *tmpb;
-		t0 = b1->dp;
-		for (int i = 0; i < b1->used; i++, t0++, tmpb++)
-			*t0 = *tmpb;
-
+		dv_copy(a0->dp, a->dp, h);
+		dv_copy(a1->dp, a->dp + h, a->used - h);
+		dv_copy(b0->dp, b->dp, h);
+		dv_copy(b1->dp, b->dp + h, b->used - h);
 		bn_trim(a0);
 		bn_trim(b0);
 		bn_trim(a1);
