@@ -76,10 +76,12 @@ static void bn_div_imp(bn_t c, bn_t d, const bn_t a, const bn_t b) {
 	}
 
 	RLC_TRY {
-		bn_new_size(x, a->used);
-		bn_new_size(y, a->used);
+		/* Be conservative about space for scratch memory, many attempts to
+		 * optimize these had invalid reads. */
+		bn_new_size(x, a->used + 1);
 		bn_new_size(q, a->used + 1);
-		bn_new_size(r, b->used);
+		bn_new_size(y, a->used + 1);
+		bn_new_size(r, a->used + 1);
 		bn_zero(q);
 		bn_zero(r);
 		bn_abs(x, a);
