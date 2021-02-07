@@ -175,7 +175,7 @@ static int shifting(void) {
 			a[RLC_DV_DIGS - 1] = 0;
 			dv_lshd(b, a, RLC_DV_DIGS, 1);
 			dv_rshd(c, b, RLC_DV_DIGS, 1);
-			TEST_ASSERT(fb_cmp(c, a) == RLC_EQ, end);
+			TEST_ASSERT(dv_cmp(c, a, RLC_DV_DIGS) == RLC_EQ, end);
 		} TEST_END;
 
 		if (RLC_DV_DIGS > 1) {
@@ -185,7 +185,7 @@ static int shifting(void) {
 				a[RLC_DV_DIGS - 2] = 0;
 				dv_lshd(b, a, RLC_DV_DIGS, 2);
 				dv_rshd(c, b, RLC_DV_DIGS, 2);
-				TEST_ASSERT(fb_cmp(c, a) == RLC_EQ, end);
+				TEST_ASSERT(dv_cmp(c, a, RLC_DV_DIGS) == RLC_EQ, end);
 			} TEST_END;
 		}
 	}
