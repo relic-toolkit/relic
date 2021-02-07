@@ -1504,7 +1504,7 @@ int cp_mpsb_gen(bn_t r[2], bn_t s[][2], g2_t h, g2_t x[2], g2_t y[][2], int l);
  * @param[in] l 			- the number of messages to sign.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
- int cp_mpsb_sig(g1_t a, g1_t b[2], bn_t m[][2], bn_t r[2], bn_t s[][2],
+int cp_mpsb_sig(g1_t a, g1_t b[2], bn_t m[][2], bn_t r[2], bn_t s[][2],
  		mt_t mul_tri[2], mt_t sm_tri[2], int l);
 
 /**
