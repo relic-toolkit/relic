@@ -64,8 +64,8 @@ static void bn_mul_karat_imp(bn_t c, const bn_t a, const bn_t b, int level) {
 	RLC_TRY {
 		/* Allocate the temp variables. */
 		bn_new_size(a0, h);
-		bn_new_size(a1, h);
-		bn_new_size(b0, a->used - h);
+		bn_new_size(b0, h);
+		bn_new_size(a1, a->used - h);
 		bn_new_size(b1, b->used - h);
 		bn_new(a0b0);
 		bn_new(a1b1);
