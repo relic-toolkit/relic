@@ -325,7 +325,7 @@ static void pairing8(void) {
 	bn_free(k);
 	bn_free(n);
 	bn_free(l);
-	fp12_free(e);
+	fp8_free(e);
 	ep2_free(r);
 	for (j = 0; j < 2; j++) {
 		ep2_free(p[j]);

@@ -924,7 +924,6 @@ static void mpss(void) {
 	bn_new(n);
 	g1_new(g);
 	g2_new(h);
-	gt_new(r);
 	for (int i = 0; i < 2; i++) {
 		bn_null(m[i]);
 		bn_null(u[i]);
