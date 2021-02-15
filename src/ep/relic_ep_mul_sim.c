@@ -591,9 +591,10 @@ void ep_mul_sim_inter(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 
 #if defined(EP_PLAIN) || defined(EP_SUPER)
 		if (!flag) {
-			ep_mul_sim_plain(r, p, _k, q, _m, NULL);			
+			ep_mul_sim_plain(r, p, _k, q, _m, NULL);
 		}
 #endif
+		(void)flag;
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	}

@@ -35,7 +35,7 @@
 
 .text
 .global fp_rsh1_low
-//.global fp_lsh1_low
+.global fp_lsh1_low
 
 fp_rsh1_low:
 	movq	0(%rsi), %r8
@@ -73,14 +73,14 @@ fp_lsh1_low:
 	movq	40(%rsi), %rcx
 	movq	48(%rsi), %rdx
 	movq	56(%rsi), %rsi
-	shld	$1, %r9, %r8
-	shld	$1, %r10, %r9
-	shld	$1, %r11, %r10
-	shld	$1, %rax, %r11
-	shld	$1, %rcx, %rax
-	shld	$1, %rdx, %rcx
-	shld	$1, %rsi, %rdx
-	shl		$1, %rsi
+	shld	$1, %rdx, %rsi
+	shld	$1, %rcx, %rdx
+	shld	$1, %rax, %rcx
+	shld	$1, %r11, %rax
+	shld	$1, %r10, %r11
+	shld	$1, %r9, %r10
+	shld	$1, %r8, %r9
+	shl		$1, %r8
 	movq	%r8,0(%rdi)
 	movq	%r9,8(%rdi)
 	movq	%r10,16(%rdi)
