@@ -146,17 +146,14 @@ static void bn_sqr_karat_imp(bn_t c, const bn_t a, int level) {
 #if BN_SQR == BASIC || !defined(STRIP)
 
 void bn_sqr_basic(bn_t c, const bn_t a) {
-	int i, digits;
+	int i;
 	bn_t t;
 
 	bn_null(t);
 
-	digits = 2 * a->used;
-
 	RLC_TRY {
-		bn_new_size(t, digits);
+		bn_new_size(t, 2 * a->used);
 		bn_zero(t);
-		t->used = digits;
 
 		for (i = 0; i < a->used - 1; i++) {
 			t->dp[a->used + i + 1] =
@@ -164,6 +161,7 @@ void bn_sqr_basic(bn_t c, const bn_t a) {
 		}
 		bn_sqra_low(t->dp + 2 * i, a->dp + i, 1);
 
+		t->used = 2 * a->used;
 		t->sign = RLC_POS;
 		bn_trim(t);
 		bn_copy(c, t);

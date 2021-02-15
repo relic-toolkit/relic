@@ -228,7 +228,7 @@ void bn_muld_low(dig_t *c, const dig_t *a, int sa, const dig_t *b, int sb,
  *
  * @param[out] c			- the result.
  * @param[in] a				- the digit vector to square.
- * @param[in] size			- the number of digitss to square.
+ * @param[in] size			- the number of digits to square.
  * @return the carry of the last addition.
  */
 dig_t bn_sqra_low(dig_t *c, const dig_t *a, int size);

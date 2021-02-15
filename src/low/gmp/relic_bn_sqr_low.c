@@ -41,15 +41,15 @@
 /*============================================================================*/
 
 dig_t bn_sqra_low(dig_t *c, const dig_t *a, int size) {
-	dig_t carry, digit = a[0];
+	dig_t c0, c1, digit = a[0];
 
-	carry = mpn_addmul_1(c, a, size, a[0]);
-	mpn_add_1(c + size, c + size, size, carry);
+	c0 = mpn_addmul_1(c, a, size, a[0]);
+	c1 = mpn_add_1(c + size, c + size, 1, c0);
 	if (size > 1) {
-		carry = mpn_addmul_1(c + 1, a + 1, size - 1, digit);
-		return mpn_add_1(c + size, c + size, size, carry);
+		c0 = mpn_addmul_1(c + 1, a + 1, size - 1, digit);
+		c1 += mpn_add_1(c + size, c + size, 1, c0);
 	}
-	return 0;
+	return c1;
 }
 
 void bn_sqrn_low(dig_t *c, const dig_t *a, int size) {
