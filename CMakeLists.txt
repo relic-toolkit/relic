@@ -264,7 +264,7 @@ else()
 	set(PFLAGS "")
 endif()
 
-if(ARITH STREQUAL "gmp" OR ARITH STREQUAL "gmp_sec")
+if(ARITH STREQUAL "gmp" OR ARITH STREQUAL "gmp-sec")
 	include(cmake/gmp.cmake)
 	if(GMP_FOUND)
 		include_directories(${GMP_INCLUDE_DIR})
