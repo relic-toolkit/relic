@@ -162,12 +162,12 @@ enum {
 /**
  * Denotes a divisive twist.
  */
-#define RLC_EP_DTYPE		1
+#define RLC_EP_DTYPE			1
 
 /**
  * Denotes a multiplicative twist.
  */
-#define RLC_EP_MTYPE		2
+#define RLC_EP_MTYPE			2
 
 /**
  * Size of a precomputation table using the binary method.
@@ -206,16 +206,16 @@ enum {
  * Maximum size of a precomputation table.
  */
 #ifdef STRIP
-#define RLC_EP_TABLE_MAX 	RLC_EP_TABLE
+#define RLC_EP_TABLE_MAX 		RLC_EP_TABLE
 #else
-#define RLC_EP_TABLE_MAX 	RLC_MAX(RLC_EP_TABLE_BASIC, RLC_EP_TABLE_COMBD)
+#define RLC_EP_TABLE_MAX 		RLC_MAX(RLC_EP_TABLE_BASIC, RLC_EP_TABLE_COMBD)
 #endif
 
 /**
  * Maximum number of coefficients of an isogeny map polynomial.
  * RLC_TERMS of value 16 is sufficient for a degree-11 isogeny polynomial.
  */
-#define RLC_EP_CTMAP_MAX   16
+#define RLC_EP_CTMAP_MAX		16
 
 /*============================================================================*/
 /* Type definitions                                                           */
@@ -307,10 +307,6 @@ typedef iso_st *iso_t;
 #elif ALLOC == AUTO
 #define ep_new(A)			/* empty */
 
-#elif ALLOC == STACK
-#define ep_new(A)															\
-	A = (ep_t)alloca(sizeof(ep_st));										\
-
 #endif
 
 /**
@@ -327,10 +323,6 @@ typedef iso_st *iso_t;
 
 #elif ALLOC == AUTO
 #define ep_free(A)			/* empty */
-
-#elif ALLOC == STACK
-#define ep_free(A)															\
-	A = NULL;																\
 
 #endif
 
@@ -389,22 +381,22 @@ typedef iso_st *iso_t;
  * @param[in] P				- the point to multiply.
  */
 #if EP_FIX == BASIC
-#define ep_mul_pre(T, P)		ep_mul_pre_basic(T, P)
+#define ep_mul_pre(T, P)	ep_mul_pre_basic(T, P)
 #elif EP_FIX == COMBS
-#define ep_mul_pre(T, P)		ep_mul_pre_combs(T, P)
+#define ep_mul_pre(T, P)	ep_mul_pre_combs(T, P)
 #elif EP_FIX == COMBD
-#define ep_mul_pre(T, P)		ep_mul_pre_combd(T, P)
+#define ep_mul_pre(T, P)	ep_mul_pre_combd(T, P)
 #elif EP_FIX == LWNAF
-#define ep_mul_pre(T, P)		ep_mul_pre_lwnaf(T, P)
+#define ep_mul_pre(T, P)	ep_mul_pre_lwnaf(T, P)
 #endif
 
 /**
  * Multiplies a fixed prime elliptic point using a precomputation table.
  * Computes R = [k]P.
  *
- * @param[out] R			- the result.
- * @param[in] T				- the precomputation table.
- * @param[in] K				- the integer.
+ * @param[out] R				- the result.
+ * @param[in] T					- the precomputation table.
+ * @param[in] K					- the integer.
  */
 #if EP_FIX == BASIC
 #define ep_mul_fix(R, T, K)		ep_mul_fix_basic(R, T, K)
@@ -510,24 +502,24 @@ int ep_curve_opt_b3(void);
 /**
  * Multiplies a field element by the a-coefficient of the curve.
  *
- * @param[out] c				- the result.
- * @param[in] a					- the field element to multiply.
+ * @param[out] c			- the result.
+ * @param[in] a				- the field element to multiply.
  */
 void ep_curve_mul_a(fp_t c, const fp_t a);
 
 /**
  * Multiplies a field element by the b-coefficient of the curve.
  *
- * @param[out] c				- the result.
- * @param[in] a					- the field element to multiply.
+ * @param[out] c			- the result.
+ * @param[in] a				- the field element to multiply.
  */
 void ep_curve_mul_b(fp_t c, const fp_t a);
 
 /**
  * Multiplies a field element by the b3 value of the curve.
  *
- * @param[out] c				- the result.
- * @param[in] a					- the field element to multiply.
+ * @param[out] c			- the result.
+ * @param[in] a				- the field element to multiply.
  */
 void ep_curve_mul_b3(fp_t c, const fp_t a);
 /**

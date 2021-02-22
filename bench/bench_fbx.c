@@ -87,7 +87,7 @@ static void util2(void) {
 	BENCH_BEGIN("fb2_cmp") {
 		fb2_rand(a);
 		fb2_rand(b);
-		BENCH_ADD(fb2_cmp(b, a));
+		BENCH_ADD((void)fb2_cmp(b, a));
 	}
 	BENCH_END;
 

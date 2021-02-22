@@ -179,7 +179,7 @@ typedef rlc_align dig_t fb_st[RLC_FB_DIGS + RLC_PAD(RLC_FB_BYTES) / (RLC_DIG / 8
  * @param[out] A			- the binary field element to initialize.
  */
 #if ALLOC == AUTO
-#define fb_null(A)				/* empty */
+#define fb_null(A)			/* empty */
 #else
 #define fb_null(A)			A = NULL;
 #endif
@@ -193,12 +193,7 @@ typedef rlc_align dig_t fb_st[RLC_FB_DIGS + RLC_PAD(RLC_FB_BYTES) / (RLC_DIG / 8
 #if ALLOC == DYNAMIC
 #define fb_new(A)			dv_new_dynam((dv_t *)&(A), RLC_FB_DIGS)
 #elif ALLOC == AUTO
-#define fb_new(A)				/* empty */
-#elif ALLOC == STACK
-#define fb_new(A)															\
-	A = (dig_t *)alloca(RLC_FB_BYTES + RLC_PAD(RLC_FB_BYTES));						\
-	A = (dig_t *)RLC_ALIGN(A);												\
-
+#define fb_new(A)			/* empty */
 #endif
 
 /**
@@ -209,9 +204,7 @@ typedef rlc_align dig_t fb_st[RLC_FB_DIGS + RLC_PAD(RLC_FB_BYTES) / (RLC_DIG / 8
 #if ALLOC == DYNAMIC
 #define fb_free(A)			dv_free_dynam((dv_t *)&(A))
 #elif ALLOC == AUTO
-#define fb_free(A)				/* empty */
-#elif ALLOC == STACK
-#define fb_free(A)			A = NULL;
+#define fb_free(A)			/* empty */
 #endif
 
 /**

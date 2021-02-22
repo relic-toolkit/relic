@@ -229,16 +229,6 @@ typedef bgn_st *bgn_t;
 	bn_new((A)->q);															\
 	bn_new((A)->qi);														\
 
-#elif ALLOC == STACK
-#define crt_new(A)															\
-	A = (crt_t)alloca(sizeof(crt_st));										\
-	bn_new((A)->n);															\
-	bn_new((A)->dp);														\
-	bn_new((A)->dq);														\
-	bn_new((A)->p);															\
-	bn_new((A)->q);															\
-	bn_new((A)->qi);														\
-
 #endif
 
 /**
@@ -261,16 +251,6 @@ typedef bgn_st *bgn_t;
 
 #elif ALLOC == AUTO
 #define crt_free(A)			/* empty */
-
-#elif ALLOC == STACK
-#define crt_free(A)															\
-	bn_free((A)->n);														\
-	bn_free((A)->dp);														\
-	bn_free((A)->dq);														\
-	bn_free((A)->p);														\
-	bn_free((A)->q);														\
-	bn_free((A)->qi);														\
-	A = NULL;																\
 
 #endif
 
@@ -308,13 +288,6 @@ typedef bgn_st *bgn_t;
 	bn_new((A)->e);															\
 	crt_new((A)->crt);														\
 
-#elif ALLOC == STACK
-#define rsa_new(A)															\
-	A = (rsa_t)alloca(sizeof(_rsa_st));										\
-	bn_new((A)->e);															\
-	bn_new((A)->d);															\
-	crt_new((A)->crt);														\
-
 #endif
 
 /**
@@ -334,13 +307,6 @@ typedef bgn_st *bgn_t;
 
 #elif ALLOC == AUTO
 #define rsa_free(A)				/* empty */
-
-#elif ALLOC == STACK
-#define rsa_free(A)															\
-	bn_free((A)->d);														\
-	bn_free((A)->e);														\
-	crt_free((A)->crt);														\
-	A = NULL;																\
 
 #endif
 
@@ -429,14 +395,6 @@ typedef bgn_st *bgn_t;
 	bn_new((A)->q);															\
 	(A)->t = 0;																\
 
-#elif ALLOC == STACK
-#define bdpe_new(A)															\
-	A = (bdpe_t)alloca(sizeof(bdpe_st));									\
-	bn_new((A)->n);															\
-	bn_new((A)->y);															\
-	bn_new((A)->p);															\
-	bn_new((A)->q);															\
-
 #endif
 
 /**
@@ -458,15 +416,6 @@ typedef bgn_st *bgn_t;
 
 #elif ALLOC == AUTO
 #define bdpe_free(A)			/* empty */
-
-#elif ALLOC == STACK
-#define bdpe_free(A)														\
-	bn_free((A)->n);														\
-	bn_free((A)->y);														\
-	bn_free((A)->p);														\
-	bn_free((A)->q);														\
-	(A)->t = 0;																\
-	A = NULL;																\
 
 #endif
 
@@ -498,12 +447,6 @@ typedef bgn_st *bgn_t;
 #elif ALLOC == AUTO
 #define sokaka_new(A)			/* empty */
 
-#elif ALLOC == STACK
-#define sokaka_new(A)														\
-	A = (sokaka_t)alloca(sizeof(sokaka_st));								\
-	g1_new((A)->s1);														\
-	g2_new((A)->s2);														\
-
 #endif
 
 /**
@@ -522,12 +465,6 @@ typedef bgn_st *bgn_t;
 
 #elif ALLOC == AUTO
 #define sokaka_free(A)			/* empty */
-
-#elif ALLOC == STACK
-#define sokaka_free(A)														\
-	g1_free((A)->s1);														\
-	g2_free((A)->s2);														\
-	A = NULL;																\
 
 #endif
 
@@ -566,19 +503,6 @@ typedef bgn_st *bgn_t;
 #elif ALLOC == AUTO
 #define bgn_new(A)				/* empty */
 
-#elif ALLOC == STACK
-#define bgn_new(A)															\
-	A = (bgn_t)alloca(sizeof(bgn_st));										\
-	bn_new((A)->x);															\
-	bn_new((A)->y);															\
-	bn_new((A)->z);															\
-	g1_new((A)->gx);														\
-	g1_new((A)->gy);														\
-	g1_new((A)->gz);														\
-	g2_new((A)->hx);														\
-	g2_new((A)->hy);														\
-	g2_new((A)->hz);														\
-
 #endif
 
 /**
@@ -604,19 +528,6 @@ typedef bgn_st *bgn_t;
 
 #elif ALLOC == AUTO
 #define bgn_free(A)				/* empty */
-
-#elif ALLOC == STACK
-#define bgn_free(A)															\
-	bn_free((A)->x);														\
-	bn_free((A)->y);														\
-	bn_free((A)->z);														\
-	g1_free((A)->gx);														\
-	g1_free((A)->gy);														\
-	g1_free((A)->gz);														\
-	g2_free((A)->hx);														\
-	g2_free((A)->hy);														\
-	g2_free((A)->hz);														\
-	A = NULL;																\
 
 #endif
 

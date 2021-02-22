@@ -157,9 +157,9 @@ typedef eb_st *eb_t;
  * @param[out] A			- the point to initialize.
  */
 #if ALLOC == AUTO
-#define eb_null(A)				/* empty */
+#define eb_null(A)			/* empty */
 #else
-#define eb_null(A)		A = NULL;
+#define eb_null(A)			A = NULL;
 #endif
 
 /**
@@ -176,11 +176,7 @@ typedef eb_st *eb_t;
 	}																		\
 
 #elif ALLOC == AUTO
-#define eb_new(A)				/* empty */
-
-#elif ALLOC == STACK
-#define eb_new(A)															\
-	A = (eb_t)alloca(sizeof(eb_st));										\
+#define eb_new(A)			/* empty */
 
 #endif
 
@@ -197,11 +193,7 @@ typedef eb_st *eb_t;
 	}																		\
 
 #elif ALLOC == AUTO
-#define eb_free(A)				/* empty */
-
-#elif ALLOC == STACK
-#define eb_free(A)															\
-	A = NULL;																\
+#define eb_free(A)			/* empty */
 
 #endif
 
@@ -295,13 +287,13 @@ typedef eb_st *eb_t;
  * @param[in] P				- the point to multiply.
  */
 #if EB_FIX == BASIC
-#define eb_mul_pre(T, P)		eb_mul_pre_basic(T, P)
+#define eb_mul_pre(T, P)	eb_mul_pre_basic(T, P)
 #elif EB_FIX == COMBS
-#define eb_mul_pre(T, P)		eb_mul_pre_combs(T, P)
+#define eb_mul_pre(T, P)	eb_mul_pre_combs(T, P)
 #elif EB_FIX == COMBD
-#define eb_mul_pre(T, P)		eb_mul_pre_combd(T, P)
+#define eb_mul_pre(T, P)	eb_mul_pre_combd(T, P)
 #elif EB_FIX == LWNAF
-#define eb_mul_pre(T, P)		eb_mul_pre_lwnaf(T, P)
+#define eb_mul_pre(T, P)	eb_mul_pre_lwnaf(T, P)
 #endif
 
 /**
@@ -313,13 +305,13 @@ typedef eb_st *eb_t;
  * @param[in] K				- the integer.
  */
 #if EB_FIX == BASIC
-#define eb_mul_fix(R, T, K)		eb_mul_fix_basic(R, T, K)
+#define eb_mul_fix(R, T, K)	eb_mul_fix_basic(R, T, K)
 #elif EB_FIX == COMBS
-#define eb_mul_fix(R, T, K)		eb_mul_fix_combs(R, T, K)
+#define eb_mul_fix(R, T, K)	eb_mul_fix_combs(R, T, K)
 #elif EB_FIX == COMBD
-#define eb_mul_fix(R, T, K)		eb_mul_fix_combd(R, T, K)
+#define eb_mul_fix(R, T, K)	eb_mul_fix_combd(R, T, K)
 #elif EB_FIX == LWNAF
-#define eb_mul_fix(R, T, K)		eb_mul_fix_lwnaf(R, T, K)
+#define eb_mul_fix(R, T, K)	eb_mul_fix_lwnaf(R, T, K)
 #endif
 
 /**

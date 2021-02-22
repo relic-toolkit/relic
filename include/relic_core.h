@@ -331,14 +331,6 @@ typedef struct _ctx_t {
 	/** Array of pointers to the precomputation table. */
 	ep2_st *ep2_ptr[RLC_EP_TABLE];
 #endif /* EP_PRECO */
-#if ALLOC == STACK
-	/** In case of stack allocation, we need to get global memory for the table. */
-	fp2_st _ep2_pre[3 * RLC_EP_TABLE];
-	/** In case of stack allocation, storage for the EPX constants. */
-	ep2_st _ep2_g;
-	/* 3 for ep2_g, plus ep2_a, ep2_b, ep2_map_u, and ep2_map_c[4] */
-	fp2_st _ep2_storage[10];
-#endif /* ALLOC == STACK */
 #ifdef EP_CTMAP
 	/** The isogeny map coefficients for the SSWU mapping. */
 	iso2_st ep2_iso;

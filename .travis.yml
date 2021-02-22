@@ -15,8 +15,6 @@ env:
   - CONFIG="-DSEED= -DBENCH=0" TEST=""
   # Dynamic allocation
   - CONFIG="-DALLOC=DYNAMIC -DSEED= -DBENCH=0" TEST=""
-  # Stack allocation
-  - CONFIG="-DALLOC=STACK -DSEED= -DBENCH=0" TEST=""
   # Jacobian coordinates
   - CONFIG="-DSEED= -DBENCH=0 -DEP_METHD='JACOB;LWNAF;COMBS;INTER'" TEST=""
   # Build for Edwards curves

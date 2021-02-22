@@ -102,7 +102,7 @@ typedef struct {
 #if ALLOC == DYNAMIC
 	/** The sequence of contiguous digits that forms this integer. */
 	dig_t *dp;
-#elif ALLOC == STACK || ALLOC == AUTO
+#elif ALLOC == AUTO
 	/** The sequence of contiguous digits that forms this integer. */
 	rlc_align dig_t dp[RLC_BN_SIZE];
 #endif
@@ -113,7 +113,7 @@ typedef struct {
  */
 #if ALLOC == AUTO
 typedef bn_st bn_t[1];
-#else
+#elif ALLOC == DYNAMIC
 #ifdef CHECK
 typedef bn_st *volatile bn_t;
 #else
@@ -132,7 +132,7 @@ typedef bn_st *bn_t;
  */
 #if ALLOC == AUTO
 #define bn_null(A)			/* empty */
-#else
+#elif ALLOC == DYNAMIC
 #define bn_null(A)			A = NULL;
 #endif
 
@@ -152,11 +152,6 @@ typedef bn_st *bn_t;
 
 #elif ALLOC == AUTO
 #define bn_new(A)															\
-	bn_init(A, RLC_BN_SIZE);												\
-
-#elif ALLOC == STACK
-#define bn_new(A)															\
-	A = (bn_t)alloca(sizeof(bn_st));										\
 	bn_init(A, RLC_BN_SIZE);												\
 
 #endif
@@ -183,11 +178,6 @@ typedef bn_st *bn_t;
 #define bn_new_size(A, D)													\
 	bn_init(A, D);															\
 
-#elif ALLOC == STACK
-#define bn_new_size(A, D)													\
-	A = (bn_t)alloca(sizeof(bn_st));										\
-	bn_init(A, D);															\
-
 #endif
 
 /**
@@ -205,10 +195,6 @@ typedef bn_st *bn_t;
 
 #elif ALLOC == AUTO
 #define bn_free(A)			/* empty */										\
-
-#elif ALLOC == STACK
-#define bn_free(A)															\
-	A = NULL;																\
 
 #endif
 

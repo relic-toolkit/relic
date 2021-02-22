@@ -33,8 +33,8 @@
  * @ingroup ed
  */
 
- #ifndef RLC_ED_H
- #define RLC_ED_H
+#ifndef RLC_ED_H
+#define RLC_ED_H
 
 #include "relic_fp.h"
 #include "relic_bn.h"
@@ -42,39 +42,39 @@
 #include "relic_label.h"
 
 /*============================================================================*/
-/* Constant definitions                                                       */
+/* Constant definitions													   */
 /*============================================================================*/
 
 /**
  * Prime elliptic curve identifiers.
  */
 enum {
-    /** ED25519 Edwards curve. */
-    CURVE_ED25519 = 1
+	/** ED25519 Edwards curve. */
+	CURVE_ED25519 = 1
 };
 
 /*============================================================================*/
-/* Precomputaion table                                                        */
+/* Precomputaion table														*/
 /*============================================================================*/
 /**
  * Size of a precomputation table using the binary method.
  */
-#define RLC_ED_TABLE_BASIC    (RLC_FP_BITS + 1)
+#define RLC_ED_TABLE_BASIC	  (RLC_FP_BITS + 1)
 
 /**
  * Size of a precomputation table using the single-table comb method.
  */
-#define RLC_ED_TABLE_COMBS    (1 << ED_DEPTH)
+#define RLC_ED_TABLE_COMBS	  (1 << ED_DEPTH)
 
 /**
  * Size of a precomputation table using the double-table comb method.
  */
-#define RLC_ED_TABLE_COMBD	(1 << (ED_DEPTH + 1))
+#define RLC_ED_TABLE_COMBD	  (1 << (ED_DEPTH + 1))
 
 /**
  * Size of a precomputation table using the w-(T)NAF method.
  */
-#define RLC_ED_TABLE_LWNAF	(1 << (ED_DEPTH - 2))
+#define RLC_ED_TABLE_LWNAF	  (1 << (ED_DEPTH - 2))
 
 /**
  * Size of a precomputation table using the chosen algorithm.
@@ -93,31 +93,31 @@ enum {
  * Maximum size of a precomputation table.
  */
 #ifdef STRIP
-#define RLC_ED_TABLE_MAX    RLC_ED_TABLE
+#define RLC_ED_TABLE_MAX		RLC_ED_TABLE
 #else
-#define RLC_ED_TABLE_MAX    RLC_MAX(RLC_ED_TABLE_BASIC, RLC_ED_TABLE_COMBD)
+#define RLC_ED_TABLE_MAX		RLC_MAX(RLC_ED_TABLE_BASIC, RLC_ED_TABLE_COMBD)
 #endif
 
 /*============================================================================*/
-/* Type definitions                                                           */
+/* Type definitions														   */
 /*============================================================================*/
 
 /**
  * Represents an elliptic curve point over an Edwards field.
  */
 typedef struct {
-    /** The first coordinate. */
-    fp_st x;
-    /** The second coordinate. */
-    fp_st y;
-    /** The third coordinate (projective representation). */
-    fp_st z;
+	/** The first coordinate. */
+	fp_st x;
+	/** The second coordinate. */
+	fp_st y;
+	/** The third coordinate (projective representation). */
+	fp_st z;
 #if ED_ADD == EXTND || !defined(STRIP)
-    /** The forth coordinate (extended coordinates) */
-    fp_st t;
+	/** The forth coordinate (extended coordinates) */
+	fp_st t;
 #endif
-    /** Flag to indicate the coordinate system of this point. */
-    int coord;
+	/** Flag to indicate the coordinate system of this point. */
+	int coord;
 } ed_st;
 
 /**
@@ -130,60 +130,52 @@ typedef ed_st *ed_t;
 #endif
 
 /*============================================================================*/
-/* Macro definitions                                                          */
+/* Macro definitions														  */
 /*============================================================================*/
 
 /**
  * Initializes a point on an Edwards curve with a null value.
  *
- * @param[out] A      - the point to initialize.
+ * @param[out] A			- the point to initialize.
  */
 #if ALLOC == AUTO
-#define ed_null(A)        /* empty */
+#define ed_null(A)			/* empty */
 #else
-#define ed_null(A)    A = NULL;
+#define ed_null(A)			A = NULL;
 #endif
 
 /**
  * Calls a function to allocate a point on an Edwards curve.
  *
- * @param[out] A      - the new point.
- * @throw ERR_NO_MEMORY   - if there is no available memory.
+ * @param[out] A			- the new point.
+ * @throw ERR_NO_MEMORY		- if there is no available memory.
  */
 #if ALLOC == DYNAMIC
 #define ed_new(A)															\
-    A = (ed_t)calloc(1, sizeof(ed_st));										\
-    if (A == NULL) {														\
-        RLC_THROW(ERR_NO_MEMORY);											\
-    }
+	A = (ed_t)calloc(1, sizeof(ed_st));										\
+	if (A == NULL) {														\
+		RLC_THROW(ERR_NO_MEMORY);											\
+	}
 
 #elif ALLOC == AUTO
-#define ed_new(A)       /* empty */
-
-#elif ALLOC == STACK
-#define ed_new(A)															\
-    A = (ed_t)alloca(sizeof(ed_st));										\
+#define ed_new(A)			/* empty */
 
 #endif
 
 /**
  * Calls a function to clean and free a point on an Edwards curve.
  *
- * @param[out] A      - the point to free.
+ * @param[out] A			- the point to free.
  */
 #if ALLOC == DYNAMIC
 #define ed_free(A)															\
 	if (A != NULL) {														\
-    	free(A);															\
-    	A = NULL;															\
+		free(A);															\
+		A = NULL;															\
 	}
 
 #elif ALLOC == AUTO
-#define ed_free(A)        /* empty */
-
-#elif ALLOC == STACK
-#define ed_free(A)															\
-	A = NULL;																\
+#define ed_free(A)			/* empty */
 
 #endif
 
@@ -247,7 +239,7 @@ typedef ed_st *ed_t;
 /**
  * Configures an Edwards curve by its parameter identifier.
  *
- * @param				- the parameter identifier.
+ * @param				   - the parameter identifier.
  */
 void ed_param_set(int param);
 
@@ -267,14 +259,14 @@ int ed_param_get(void);
 /**
  * Returns the order of the group of points in the Edwards curve.
  *
- * @param[out] r      - the returned order.
+ * @param[out] r			- the returned order.
  */
 void ed_curve_get_ord(bn_t r);
 
 /**
  * Returns the generator of the group of points in the curve.
  *
- * @param[out] g      - the returned generator.
+ * @param[out] g			- the returned generator.
  */
 void ed_curve_get_gen(ed_t g);
 
@@ -288,7 +280,7 @@ const ed_t *ed_curve_get_tab(void);
 /**
  * Returns the cofactor of the Edwards elliptic curve.
  *
- * @param[out] n      - the returned cofactor.
+ * @param[out] n			- the returned cofactor.
  */
 void ed_curve_get_cof(bn_t h);
 
@@ -312,7 +304,7 @@ void ed_projc_to_extnd(ed_t r, const fp_t x, const fp_t y, const fp_t z);
 /**
  * Assigns a random value to an Edwards elliptic curve point.
  *
- * @param[out] p	- the Edwards elliptic curve point to assign.
+ * @param[out] p			- the Edwards elliptic curve point to assign.
  */
 void ed_rand(ed_t p);
 
@@ -336,16 +328,16 @@ void ed_rhs(fp_t rhs, const ed_t p);
 /**
  * Copies the second argument to the first argument.
  *
- * @param[out] q	- the result.
- * @param[in] p		- the Edwards elliptic curve point to copy.
+ * @param[out] q		   - the result.
+ * @param[in] p			   - the Edwards elliptic curve point to copy.
  */
 void ed_copy(ed_t r, const ed_t p);
 
 /**
  * Compares two Edwards elliptic curve points.
  *
- * @param[in] p		- the first Edwards elliptic curve point.
- * @param[in] q		- the second Edwards elliptic curve point.
+ * @param[in] p			   - the first Edwards elliptic curve point.
+ * @param[in] q			   - the second Edwards elliptic curve point.
  * @return RLC_EQ if p == q and RLC_NE if p != q.
  */
 int ed_cmp(const ed_t p, const ed_t q);
@@ -353,14 +345,14 @@ int ed_cmp(const ed_t p, const ed_t q);
 /**
  * Assigns an Edwards elliptic curve point to the point at infinity.
  *
- * @param[out] p	- the point to assign.
+ * @param[out] p		   - the point to assign.
  */
 void ed_set_infty(ed_t p);
 
 /**
  * Tests if a point on an Edwards elliptic curve is at the infinity.
  *
- * @param[in] p		- the point to test.
+ * @param[in] p			   - the point to test.
  * @return 1 if the point is at infinity, 0 otherise.
  */
 int ed_is_infty(const ed_t p);
@@ -465,8 +457,8 @@ void ed_dbl_extnd(ed_t r, const ed_t p);
 /**
  * Converts a point to affine coordinates.
  *
- * @param[out] r		- the result.
- * @param[in] p			- the point to convert.
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to convert.
  */
 void ed_norm(ed_t r, const ed_t p);
 
@@ -503,9 +495,9 @@ void ed_map_dst(ed_t p, const uint8_t *msg, int len, const uint8_t *dst, int dst
 /**
  * Multiplies an Edwards elliptic curve point by an integer. Computes R = [k]P.
  *
- * @param[out] R		- the result.
- * @param[in] P			- the point to multiply.
- * @param[in] K			- the integer.
+ * @param[out] R			- the result.
+ * @param[in] P				- the point to multiply.
+ * @param[in] K				- the integer.
  */
 #if ED_MUL == BASIC
 #define ed_mul(R, P, K)   ed_mul_basic(R, P, K)
@@ -522,46 +514,46 @@ void ed_map_dst(ed_t p, const uint8_t *msg, int len, const uint8_t *dst, int dst
 /**
  * Builds a precomputation table for multiplying a fixed Edwards elliptic point.
  *
- * @param[out] T		- the precomputation table.
- * @param[in] P			- the point to multiply.
+ * @param[out] T			- the precomputation table.
+ * @param[in] P			 	- the point to multiply.
  */
 #if ED_FIX == BASIC
-#define ed_mul_pre(T, P)    ed_mul_pre_basic(T, P)
+#define ed_mul_pre(T, P)	ed_mul_pre_basic(T, P)
 #elif ED_FIX == COMBS
-#define ed_mul_pre(T, P)    ed_mul_pre_combs(T, P)
+#define ed_mul_pre(T, P)	ed_mul_pre_combs(T, P)
 #elif ED_FIX == COMBD
-#define ed_mul_pre(T, P)    ed_mul_pre_combd(T, P)
+#define ed_mul_pre(T, P)	ed_mul_pre_combd(T, P)
 #elif ED_FIX == LWNAF
-#define ed_mul_pre(T, P)    ed_mul_pre_lwnaf(T, P)
+#define ed_mul_pre(T, P)	ed_mul_pre_lwnaf(T, P)
 #endif
 
 /**
  * Multiplies a fixed Edwards elliptic point using a precomputation table.
  * Computes R = [k]P.
  *
- * @param[out] R		- the result.
- * @param[in] T			- the precomputation table.
- * @param[in] K			- the integer.
+ * @param[out] R			- the result.
+ * @param[in] T			 	- the precomputation table.
+ * @param[in] K			 	- the integer.
  */
 #if ED_FIX == BASIC
-#define ed_mul_fix(R, T, K)   ed_mul_fix_basic(R, T, K)
+#define ed_mul_fix(R, T, K) ed_mul_fix_basic(R, T, K)
 #elif ED_FIX == COMBS
-#define ed_mul_fix(R, T, K)   ed_mul_fix_combs(R, T, K)
+#define ed_mul_fix(R, T, K) ed_mul_fix_combs(R, T, K)
 #elif ED_FIX == COMBD
-#define ed_mul_fix(R, T, K)   ed_mul_fix_combd(R, T, K)
+#define ed_mul_fix(R, T, K) ed_mul_fix_combd(R, T, K)
 #elif ED_FIX == LWNAF
-#define ed_mul_fix(R, T, K)   ed_mul_fix_lwnaf(R, T, K)
+#define ed_mul_fix(R, T, K) ed_mul_fix_lwnaf(R, T, K)
 #endif
 
  /**
  * Multiplies and adds two Edwards elliptic curve points simultaneously. Computes
  * R = [k]P + [m]Q.
  *
- * @param[out] R		- the result.
- * @param[in] P			- the first point to multiply.
- * @param[in] K			- the first integer.
- * @param[in] Q			- the second point to multiply.
- * @param[in] M			- the second integer,
+ * @param[out] R			- the result.
+ * @param[in] P			 	- the first point to multiply.
+ * @param[in] K			 	- the first integer.
+ * @param[in] Q			 	- the second point to multiply.
+ * @param[in] M			 	- the second integer,
  */
 #if ED_SIM == BASIC
 #define ed_mul_sim(R, P, K, Q, M) ed_mul_sim_basic(R, P, K, Q, M)
@@ -574,7 +566,7 @@ void ed_map_dst(ed_t p, const uint8_t *msg, int len, const uint8_t *dst, int dst
 #endif
 
 /*============================================================================*/
-/* Function prototypes                                                        */
+/* Function prototypes														*/
 /*============================================================================*/
 
 /**
@@ -705,26 +697,26 @@ void ed_mul_fix_lwnaf(ed_t r, const ed_t *t, const bn_t k);
  * Multiplies a fixed Edwards elliptic point using a precomputation table and
  * the w-(T)NAF mixed coordinate method.
  *
- * @param[out] r      - the result.
- * @param[in] t       - the precomputation table.
- * @param[in] k       - the integer.
+ * @param[out] r			- the result.
+ * @param[in] t			 	- the precomputation table.
+ * @param[in] k			 	- the integer.
  */
 void ed_mul_fix_lwnaf_mixed(ed_t r, const ed_t *t, const bn_t k);
 
 /**
  * Multiplies the generator of an Edwards elliptic curve by an integer.
  *
- * @param[out] r      - the result.
- * @param[in] k       - the integer.
+ * @param[out] r			- the result.
+ * @param[in] k			 	- the integer.
  */
 void ed_mul_gen(ed_t r, const bn_t k);
 
 /**
  * Multiplies an Edwards elliptic curve point by a small positive integer.
  *
- * @param[out] r      - the result.
- * @param[in] p       - the point to multiply.
- * @param[in] k       - the integer.
+ * @param[out] r			- the result.
+ * @param[in] p			 	- the point to multiply.
+ * @param[in] k			 	- the integer.
  */
 void ed_mul_dig(ed_t r, const ed_t p, dig_t k);
 
@@ -732,62 +724,62 @@ void ed_mul_dig(ed_t r, const ed_t p, dig_t k);
  * Multiplies and adds two Edwards elliptic curve points simultaneously using
  * scalar multiplication and point addition.
  *
- * @param[out] r      - the result.
- * @param[in] p       - the first point to multiply.
- * @param[in] k       - the first integer.
- * @param[in] q       - the second point to multiply.
- * @param[in] m       - the second integer,
+ * @param[out] r			- the result.
+ * @param[in] p			 	- the first point to multiply.
+ * @param[in] k			 	- the first integer.
+ * @param[in] q			 	- the second point to multiply.
+ * @param[in] m			 	- the second integer,
  */
 void ed_mul_sim_basic(ed_t r, const ed_t p, const bn_t k, const ed_t q,
-    const bn_t m);
+	const bn_t m);
 
 /**
  * Multiplies and adds two Edwards elliptic curve points simultaneously using
  * shamir's trick.
  *
- * @param[out] r      - the result.
- * @param[in] p       - the first point to multiply.
- * @param[in] k       - the first integer.
- * @param[in] q       - the second point to multiply.
- * @param[in] m       - the second integer,
+ * @param[out] r			- the result.
+ * @param[in] p			 	- the first point to multiply.
+ * @param[in] k			 	- the first integer.
+ * @param[in] q			 	- the second point to multiply.
+ * @param[in] m			 	- the second integer,
  */
 void ed_mul_sim_trick(ed_t r, const ed_t p, const bn_t k, const ed_t q,
-    const bn_t m);
+	const bn_t m);
 
 /**
  * Multiplies and adds two Edwards elliptic curve points simultaneously using
  * interleaving of NAFs.
  *
- * @param[out] r      - the result.
- * @param[in] p       - the first point to multiply.
- * @param[in] k       - the first integer.
- * @param[in] q       - the second point to multiply.
- * @param[in] m       - the second integer,
+ * @param[out] r			- the result.
+ * @param[in] p			 	- the first point to multiply.
+ * @param[in] k			 	- the first integer.
+ * @param[in] q			 	- the second point to multiply.
+ * @param[in] m			 	- the second integer,
  */
 void ed_mul_sim_inter(ed_t r, const ed_t p, const bn_t k, const ed_t q,
-    const bn_t m);
+	const bn_t m);
 
 /**
  * Multiplies and adds two Edwards elliptic curve points simultaneously using
  * Solinas' Joint Sparse Form.
  *
- * @param[out] r      - the result.
- * @param[in] p       - the first point to multiply.
- * @param[in] k       - the first integer.
- * @param[in] q       - the second point to multiply.
- * @param[in] m       - the second integer,
+ * @param[out] r			- the result.
+ * @param[in] p			 	- the first point to multiply.
+ * @param[in] k			 	- the first integer.
+ * @param[in] q			 	- the second point to multiply.
+ * @param[in] m			 	- the second integer,
  */
 void ed_mul_sim_joint(ed_t r, const ed_t p, const bn_t k, const ed_t q,
-    const bn_t m);
+	const bn_t m);
 
 /**
  * Multiplies and adds the generator and an Edwards elliptic curve point
  * simultaneously. Computes R = [k]G + [m]Q.
  *
- * @param[out] r      - the result.
- * @param[in] k       - the first integer.
- * @param[in] q       - the second point to multiply.
- * @param[in] m       - the second integer.
+ * @param[out] r			- the result.
+ * @param[in] k			 	- the first integer.
+ * @param[in] q			 	- the second point to multiply.
+ * @param[in] m			 	- the second integer.
  */
 void ed_mul_sim_gen(ed_t r, const bn_t k, const ed_t q, const bn_t m);
 
@@ -803,14 +795,14 @@ void ed_tab(ed_t *t, const ed_t p, int w);
 /**
  * Prints an Edwards elliptic curve point.
  *
- * @param[in] p       - the Edwards elliptic curve point to print.
+ * @param[in] p			 	- the Edwards elliptic curve point to print.
  */
 void ed_print(const ed_t p);
 
 /**
  * Tests if a point is in the curve.
  *
- * @param[in] p       - the point to test.
+ * @param[in] p			 	- the point to test.
  */
 int ed_on_curve(const ed_t p);
 
@@ -818,8 +810,8 @@ int ed_on_curve(const ed_t p);
  * Returns the number of bytes necessary to store an Edwards elliptic curve point
  * with optional point compression.
  *
- * @param[in] a       - the Edwards field element.
- * @param[in] pack      - the flag to indicate compression.
+ * @param[in] a				- the Edwards field element.
+ * @param[in] pack			- the flag to indicate compression.
  * @return the number of bytes.
  */
 int ed_size_bin(const ed_t a, int pack);
@@ -827,11 +819,11 @@ int ed_size_bin(const ed_t a, int pack);
 /**
  * Reads an Edwards elliptic curve point from a byte vector in big-endian format.
  *
- * @param[out] a      - the result.
- * @param[in] bin     - the byte vector.
- * @param[in] len     - the buffer capacity.
- * @throw ERR_NO_VALID    - if the encoded point is invalid.
- * @throw ERR_NO_BUFFER   - if the buffer capacity is invalid.
+ * @param[out] a			- the result.
+ * @param[in] bin			- the byte vector.
+ * @param[in] len			- the buffer capacity.
+ * @throw ERR_NO_VALID		- if the encoded point is invalid.
+ * @throw ERR_NO_BUFFER		- if the buffer capacity is invalid.
  */
 void ed_read_bin(ed_t a, const uint8_t *bin, int len);
 
@@ -839,11 +831,11 @@ void ed_read_bin(ed_t a, const uint8_t *bin, int len);
  * Writes an Edwards elliptic curve point to a byte vector in big-endian format
  * with optional point compression.
  *
- * @param[out] bin      - the byte vector.
- * @param[in] len     - the buffer capacity.
- * @param[in] a       - the Edwards elliptic curve point to write.
- * @param[in] pack      - the flag to indicate point compression.
- * @throw ERR_NO_BUFFER   - if the buffer capacity is invalid.
+ * @param[out] bin			- the byte vector.
+ * @param[in] len			- the buffer capacity.
+ * @param[in] a				- the Edwards elliptic curve point to write.
+ * @param[in] pack			- the flag to indicate point compression.
+ * @throw ERR_NO_BUFFER		- if the buffer capacity is invalid.
  */
 void ed_write_bin(uint8_t *bin, int len, const ed_t a, int pack);
 
