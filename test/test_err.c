@@ -55,6 +55,21 @@ static void dummy2(void) {
 	}
 }
 
+static void dummy3(void) {
+	bn_t a;
+
+	bn_null(a);
+
+	RLC_TRY {
+		bn_new(a);
+		RLC_THROW(ERR_NO_MEMORY);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		bn_free(a);
+	}
+}
+
 int main(void) {
 	err_t e;
 	char *msg = NULL;
@@ -78,18 +93,39 @@ int main(void) {
 
 	j = 0;
 
-	TEST_ONCE("try-catch is correct and error message is printed");
-	RLC_TRY {
-		dummy();
-	}
-	RLC_CATCH(e) {
-		switch (e) {
-			case ERR_NO_MEMORY:
-				TEST_END;
-				RLC_ERROR(end);
-				break;
+	TEST_ONCE("try-catch is correct and error message is printed") {
+		RLC_TRY {
+			dummy();
+		}
+		RLC_CATCH(e) {
+			switch (e) {
+				case ERR_NO_MEMORY:
+					TEST_END;
+					break;
+			}
 		}
 	}
+
+#ifdef WITH_BN
+	TEST_ONCE("throw in try-catch is correct and error message is printed") {
+		bn_t a;
+		bn_null(a);
+
+		RLC_TRY {
+			bn_new(a);
+			dummy3();
+		}
+		RLC_CATCH(e) {
+			bn_free(a);
+			switch (e) {
+				case ERR_NO_MEMORY:
+					TEST_END;
+					RLC_ERROR(end);
+					break;
+			}
+		}
+	}
+#endif
 
 	util_banner("All tests have passed.\n", 0);
 
