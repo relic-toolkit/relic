@@ -264,7 +264,6 @@ static void ep2_mul_sim_endom(ep2_t r, ep2_t p, const bn_t k, ep2_t q, const bn_
 
 #endif /* EP_ENDOM */
 
-#if defined(EP_PLAIN) || defined(EP_SUPER)
 /**
  * Multiplies and adds two prime elliptic curve points simultaneously,
  * optionally choosing the first point as the generator depending on an optional
@@ -371,8 +370,6 @@ static void ep2_mul_sim_plain(ep2_t r, ep2_t p, bn_t k, ep2_t q, bn_t m,
 		}
 	}
 }
-
-#endif /* EP_PLAIN || EP_SUPER */
 
 #endif /* EP_SIM == INTER */
 
@@ -518,7 +515,11 @@ void ep2_mul_sim_inter(ep2_t r, ep2_t p, bn_t k, ep2_t q, bn_t m) {
 
 #if defined(EP_ENDOM)
 	if (ep_curve_is_endom()) {
-		ep2_mul_sim_endom(r, p, k, q, m);
+		if (ep_curve_opt_a() == RLC_ZERO) {
+			ep2_mul_sim_endom(r, p, k, q, m);
+		} else {
+			ep2_mul_sim_plain(r, p, k, q, m, NULL);
+		}
 		return;
 	}
 #endif
