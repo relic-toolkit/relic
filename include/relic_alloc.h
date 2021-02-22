@@ -83,7 +83,7 @@
 #if ALLOC == DYNAMIC
 #define RLC_FREE(A)															\
 	if (A != NULL) {														\
-		free(A);															\
+		free((void *)A);													\
 		A = NULL;															\
 	}
 #else

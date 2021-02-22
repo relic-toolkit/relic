@@ -114,7 +114,11 @@ typedef struct {
 #if ALLOC == AUTO
 typedef bn_st bn_t[1];
 #else
+#ifdef CHECK
+typedef bn_st *volatile bn_t;
+#else
 typedef bn_st *bn_t;
+#endif
 #endif
 
 /*============================================================================*/
@@ -127,7 +131,7 @@ typedef bn_st *bn_t;
  * @param[out] A			- the multiple precision integer to initialize.
  */
 #if ALLOC == AUTO
-#define bn_null(A)				/* empty */
+#define bn_null(A)			/* empty */
 #else
 #define bn_null(A)			A = NULL;
 #endif
@@ -195,7 +199,7 @@ typedef bn_st *bn_t;
 #define bn_free(A)															\
 	if (A != NULL) {														\
 		bn_clean(A);														\
-		free(A);															\
+		free((void *)A);													\
 		A = NULL;															\
 	}
 

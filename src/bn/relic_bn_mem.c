@@ -72,7 +72,7 @@ void bn_init(bn_t a, int digits) {
 	}
 
 	if (a->dp == NULL) {
-		free(a);
+		free((void *)a);
 		RLC_THROW(ERR_NO_MEMORY);
 	}
 #else
