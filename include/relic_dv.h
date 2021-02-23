@@ -118,11 +118,6 @@ typedef dig_t *dv_t;
 #define dv_new(A)			dv_new_dynam(&(A), RLC_DV_DIGS)
 #elif ALLOC == AUTO
 #define dv_new(A)			/* empty */
-#elif ALLOC == STACK
-#define dv_new(A)															\
-	A = (dig_t *)alloca(RLC_DV_BYTES + RLC_PAD(RLC_DV_BYTES));				\
-	A = (dig_t *)RLC_ALIGN(A);												\
-
 #endif
 
 /**
@@ -133,8 +128,6 @@ typedef dig_t *dv_t;
 #if ALLOC == DYNAMIC
 #define dv_free(A)			dv_free_dynam(&(A))
 #elif ALLOC == AUTO
-#define dv_free(A)			(void)A
-#elif ALLOC == STACK
 #define dv_free(A)			(void)A
 #endif
 

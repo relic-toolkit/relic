@@ -64,8 +64,6 @@ void conf_print(void) {
 	util_print("-- RELIC " RLC_VERSION " configuration:\n\n");
 #if ALLOC == DYNAMIC
 	util_print("** Allocation mode: DYNAMIC\n\n");
-#elif ALLOC == STACK
-	util_print("** Allocation mode: STACK\n\n");
 #elif ALLOC == AUTO
 	util_print("** Allocation mode: AUTO\n\n");
 #endif

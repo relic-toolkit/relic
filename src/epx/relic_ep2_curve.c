@@ -515,13 +515,6 @@ void ep2_curve_init(void) {
 	}
 #endif
 
-	/* initialize stack-allocated fp2_t from fp2_st */
-#define EP2_CURVE_INIT_FP2(O, I)                                               \
-	do {                                                                       \
-		O[0] = I[0];                                                           \
-		O[1] = I[1];                                                           \
-	} while (0)
-
 #if ALLOC == DYNAMIC
 	ep2_new(ctx->ep2_g);
 	fp2_new(ctx->ep2_a);
@@ -529,17 +522,6 @@ void ep2_curve_init(void) {
 	fp2_new(ctx->ep2_map_u);
 	for (unsigned i = 0; i < 4; ++i) {
 		fp2_new(ctx->ep2_map_c[i]);
-	}
-#elif ALLOC == STACK
-	ctx->ep2_g = &ctx->_ep2_g;
-	EP2_CURVE_INIT_FP2(ctx->ep2_g->x, ctx->_ep2_storage[0]);
-	EP2_CURVE_INIT_FP2(ctx->ep2_g->y, ctx->_ep2_storage[1]);
-	EP2_CURVE_INIT_FP2(ctx->ep2_g->z, ctx->_ep2_storage[2]);
-	EP2_CURVE_INIT_FP2(ctx->ep2_a, ctx->_ep2_storage[3]);
-	EP2_CURVE_INIT_FP2(ctx->ep2_b, ctx->_ep2_storage[4]);
-	EP2_CURVE_INIT_FP2(ctx->ep2_map_u, ctx->_ep2_storage[5]);
-	for (unsigned i = 0; i < 4; ++i) {
-		EP2_CURVE_INIT_FP2(ctx->ep2_map_c[i], ctx->_ep2_storage[6 + i]);
 	}
 #endif
 
@@ -550,15 +532,6 @@ void ep2_curve_init(void) {
 		fp2_new(ctx->ep2_pre[i].y);
 		fp2_new(ctx->ep2_pre[i].z);
 	}
-#elif ALLOC == STACK
-	for (int i = 0; i < RLC_EP_TABLE; i++) {
-		ctx->ep2_pre[i].x[0] = ctx->_ep2_pre[3 * i][0];
-		ctx->ep2_pre[i].x[1] = ctx->_ep2_pre[3 * i][1];
-		ctx->ep2_pre[i].y[0] = ctx->_ep2_pre[3 * i + 1][0];
-		ctx->ep2_pre[i].y[1] = ctx->_ep2_pre[3 * i + 1][1];
-		ctx->ep2_pre[i].z[0] = ctx->_ep2_pre[3 * i + 2][0];
-		ctx->ep2_pre[i].z[1] = ctx->_ep2_pre[3 * i + 2][1];
-	}
 #endif
 #endif
 	ep2_set_infty(ctx->ep2_g);
@@ -567,17 +540,7 @@ void ep2_curve_init(void) {
 
 #ifdef EP_CTMAP
 	iso2_t iso = ep2_curve_get_iso();
-#if ALLOC == STACK
-	EP2_CURVE_INIT_FP2(iso->a, iso->storage[0]);
-	EP2_CURVE_INIT_FP2(iso->b, iso->storage[1]);
-	for (unsigned i = 0; i < RLC_EPX_CTMAP_MAX; ++i) {
-		/* lay out contiguously */
-		EP2_CURVE_INIT_FP2(iso->xn[i], iso->storage[2 + i]);
-		EP2_CURVE_INIT_FP2(iso->xd[i], iso->storage[2 + RLC_EPX_CTMAP_MAX + i]);
-		EP2_CURVE_INIT_FP2(iso->yn[i], iso->storage[2 + 2 * RLC_EPX_CTMAP_MAX + i]);
-		EP2_CURVE_INIT_FP2(iso->yd[i], iso->storage[2 + 3 * RLC_EPX_CTMAP_MAX + i]);
-	}
-#elif ALLOC == DYNAMIC
+#if ALLOC == DYNAMIC
 	fp2_new(iso->a);
 	fp2_new(iso->b);
 	for (unsigned i = 0; i < RLC_EPX_CTMAP_MAX; ++i) {

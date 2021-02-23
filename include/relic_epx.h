@@ -173,11 +173,6 @@ typedef struct {
 	fp2_t yn[RLC_EPX_CTMAP_MAX];
 	/** y denominator coefficients */
 	fp2_t yd[RLC_EPX_CTMAP_MAX];
-#if ALLOC == STACK
-	/** In case of stack allocation, storage for the values in this struct. */
-	/* a, b, and the elms in xn, xd, yn, yd */
-	fp2_st storage[2 + 4 * RLC_EPX_CTMAP_MAX];
-#endif /* ALLOC == DYNAMIC or STACK */
 } iso2_st;
 
 /**
@@ -222,13 +217,6 @@ typedef iso2_st *iso2_t;
 #elif ALLOC == AUTO
 #define ep2_new(A)				/* empty */
 
-#elif ALLOC == STACK
-#define ep2_new(A)															\
-	A = (ep2_t)alloca(sizeof(ep2_st));										\
-	fp2_new((A)->x);														\
-	fp2_new((A)->y);														\
-	fp2_new((A)->z);														\
-
 #endif
 
 /**
@@ -248,8 +236,6 @@ typedef iso2_st *iso2_t;
 
 #elif ALLOC == AUTO
 #define ep2_free(A)				/* empty */
-#elif ALLOC == STACK
-#define ep2_free(A)				A = NULL;
 #endif
 
 /**

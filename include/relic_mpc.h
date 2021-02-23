@@ -135,13 +135,6 @@ typedef pt_st *pt_t;
 	bn_new((A)->b);															\
 	bn_new((A)->c);															\
 
-#elif ALLOC == STACK
-#define mt_new(A)															\
-	A = (mt_t)alloca(sizeof(mt_st));										\
-	bn_new((A)->a);															\
-	bn_new((A)->b);															\
-	bn_new((A)->c);															\
-
 #endif
 
 /**
@@ -161,13 +154,6 @@ typedef pt_st *pt_t;
 
 #elif ALLOC == AUTO
 #define mt_free(A)			/* empty */										\
-
-#elif ALLOC == STACK
-#define mt_free(A)															\
-	bn_free((A)->a);														\
-	bn_free((A)->b);														\
-	bn_free((A)->c);														\
-	A = NULL;																\
 
 #endif
 
@@ -200,13 +186,6 @@ typedef pt_st *pt_t;
 #elif ALLOC == AUTO
 #define pt_new(A)				/* empty */
 
-#elif ALLOC == STACK
-#define pt_new(A)															\
-	A = (pt_t)alloca(sizeof(pt_st));										\
-	g1_new((A)->a);															\
-	g2_new((A)->b);															\
-	gt_new((A)->c);															\
-
 #endif
 
 /**
@@ -226,13 +205,6 @@ typedef pt_st *pt_t;
 
 #elif ALLOC == AUTO
 #define pt_free(A)				/* empty */
-
-#elif ALLOC == STACK
-#define pt_free(A)															\
-	g1_free((A)->a);														\
-	g2_free((A)->b);														\
-	gt_free((A)->c);														\
-	A = NULL;																\
 
 #endif
 

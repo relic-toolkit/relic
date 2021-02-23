@@ -127,7 +127,7 @@ void bn_grow(bn_t a, int digits) {
 		/* Set the newly allocated digits to zero. */
 		a->alloc = digits;
 	}
-#else /* ALLOC == AUTO || ALLOC == STACK */
+#elif ALLOC == AUTO
 	if (digits > RLC_BN_SIZE) {
 		RLC_THROW(ERR_NO_PRECI);
 		return;

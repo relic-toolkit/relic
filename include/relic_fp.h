@@ -200,11 +200,6 @@ typedef rlc_align dig_t fp_st[RLC_FP_DIGS + RLC_PAD(RLC_FP_BYTES)/(RLC_DIG / 8)]
 #define fp_new(A)			dv_new_dynam((dv_t *)&(A), RLC_FP_DIGS)
 #elif ALLOC == AUTO
 #define fp_new(A)			/* empty */
-#elif ALLOC == STACK
-#define fp_new(A)															\
-	A = (dig_t *)alloca(RLC_FP_BYTES + RLC_PAD(RLC_FP_BYTES));				\
-	A = (dig_t *)RLC_ALIGN(A);												\
-
 #endif
 
 /**
@@ -216,8 +211,6 @@ typedef rlc_align dig_t fp_st[RLC_FP_DIGS + RLC_PAD(RLC_FP_BYTES)/(RLC_DIG / 8)]
 #define fp_free(A)			dv_free_dynam((dv_t *)&(A))
 #elif ALLOC == AUTO
 #define fp_free(A)			/* empty */
-#elif ALLOC == STACK
-#define fp_free(A)			A = NULL;
 #endif
 
 /**

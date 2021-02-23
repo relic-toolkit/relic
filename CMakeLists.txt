@@ -95,9 +95,7 @@ message("   ARITH=gmp-sec  Same as above, but using constant-time code.\n")
 message(STATUS "Available memory-allocation policies (default = AUTO):\n")
 
 message("   ALLOC=AUTO     All memory is automatically allocated.")
-message("   ALLOC=STATIC   All memory is allocated statically once.")
-message("   ALLOC=DYNAMIC  All memory is allocated dynamically on demand.")
-message("   ALLOC=STACK    All memory is allocated from the stack.\n")
+message("   ALLOC=DYNAMIC  All memory is allocated dynamically on demand.\n")
 
 message(STATUS "Supported operating systems (default = LINUX):\n")
 
