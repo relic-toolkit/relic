@@ -133,24 +133,24 @@ void bn_mxp_slide(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 		bn_null(tab[i]);
 	}
 
-	RLC_TRY {
-		/* Find window size. */
-		i = bn_bits(b);
-		if (i <= 21) {
-			w = 2;
-		} else if (i <= 32) {
-			w = 3;
-		} else if (i <= 128) {
-			w = 4;
-		} else if (i <= 256) {
-			w = 5;
-		} else if (i <= 512) {
-			w = 6;
-		} else {
-			w = 7;
-		}
+	/* Find window size. */
+	i = bn_bits(b);
+	if (i <= 21) {
+		w = 2;
+	} else if (i <= 32) {
+		w = 3;
+	} else if (i <= 128) {
+		w = 4;
+	} else if (i <= 256) {
+		w = 5;
+	} else if (i <= 512) {
+		w = 6;
+	} else {
+		w = 7;
+	}
 
-		for (i = 0; i < (1 << (w - 1)); i ++) {
+	RLC_TRY {
+		for (i = 0; i < (1 << (w - 1)); i++) {
 			bn_new(tab[i]);
 		}
 
@@ -207,6 +207,7 @@ void bn_mxp_slide(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
+		printf("eita %p\n", tab[0]);
 		for (i = 0; i < (1 << (w - 1)); i++) {
 			bn_free(tab[i]);
 		}
