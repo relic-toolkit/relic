@@ -48,7 +48,7 @@ static void rsa(void) {
 	rsa_new(pub);
 	rsa_new(prv);
 
-	BENCH_ONE("cp_rsa_gen", cp_rsa_gen(pub, prv, RLC_BN_BITS));
+	BENCH_ONE("cp_rsa_gen", cp_rsa_gen(pub, prv, RLC_BN_BITS), 1);
 
 	BENCH_RUN("cp_rsa_enc") {
 		out_len = RLC_BN_BITS / 8 + 1;
@@ -113,7 +113,7 @@ static void rabin(void) {
 	rabin_new(pub);
 	rabin_new(prv);
 
-	BENCH_ONE("cp_rabin_gen", cp_rabin_gen(pub, prv, RLC_BN_BITS));
+	BENCH_ONE("cp_rabin_gen", cp_rabin_gen(pub, prv, RLC_BN_BITS), 1);
 
 	BENCH_RUN("cp_rabin_enc") {
 		in_len = bn_size_bin(pub->n) - 9;
@@ -148,7 +148,8 @@ static void benaloh(void) {
 	bdpe_new(pub);
 	bdpe_new(prv);
 
-	BENCH_ONE("cp_bdpe_gen", cp_bdpe_gen(pub, prv, bn_get_prime(47), RLC_BN_BITS));
+	BENCH_ONE("cp_bdpe_gen", cp_bdpe_gen(pub, prv, bn_get_prime(47),
+		RLC_BN_BITS), 1);
 
 	BENCH_RUN("cp_bdpe_enc") {
 		out_len = RLC_BN_BITS / 8 + 1;
@@ -184,7 +185,7 @@ static void paillier(void) {
 	bn_new(pub);
 	phpe_new(prv);
 
-	BENCH_ONE("cp_phpe_gen", cp_phpe_gen(pub, prv, RLC_BN_BITS / 2));
+	BENCH_ONE("cp_phpe_gen", cp_phpe_gen(pub, prv, RLC_BN_BITS / 2), 1);
 
 	BENCH_RUN("cp_phpe_enc") {
 		bn_rand_mod(m, pub);
@@ -197,7 +198,7 @@ static void paillier(void) {
 		BENCH_ADD(cp_phpe_dec(m, c, prv));
 	} BENCH_END;
 
-	BENCH_ONE("cp_ghpe_gen", cp_ghpe_gen(pub, prv->n, RLC_BN_BITS / 2));
+	BENCH_ONE("cp_ghpe_gen", cp_ghpe_gen(pub, prv->n, RLC_BN_BITS / 2), 1);
 
 	BENCH_RUN("cp_ghpe_enc (1)") {
 		bn_rand_mod(m, pub);
@@ -210,7 +211,7 @@ static void paillier(void) {
 		BENCH_ADD(cp_ghpe_dec(c, m, pub, prv->n, 1));
 	} BENCH_END;
 
-	BENCH_ONE("cp_ghpe_gen", cp_ghpe_gen(pub, prv->n, RLC_BN_BITS / 4));
+	BENCH_ONE("cp_ghpe_gen", cp_ghpe_gen(pub, prv->n, RLC_BN_BITS / 4), 1);
 
 	BENCH_RUN("cp_ghpe_enc (2)") {
 		bn_rand(m, RLC_POS, 2 * bn_bits(pub) - 1);
@@ -1182,7 +1183,7 @@ static void lhs(void) {
 	/* Initialize scheme for messages of single components. */
 	cp_cmlhs_init(h);
 
-	BENCH_FEW("cp_cmlhs_gen",
+	BENCH_ONE("cp_cmlhs_gen",
 		for (int j = 0; j < S; j++) {
 			BENCH_ADD(cp_cmlhs_gen(x[j], hs[j], L, k[j], K, sk[j], pk[j], d[j], y[j]));
 		},
@@ -1190,7 +1191,7 @@ static void lhs(void) {
 
 	int label[L];
 
-	BENCH_RUN("cp_cmlhs_sig") {
+	BENCH_FEW("cp_cmlhs_sig",
 		/* Compute all signatures. */
 		for (int j = 0; j < S; j++) {
 			for (int l = 0; l < L; l++) {
@@ -1199,8 +1200,8 @@ static void lhs(void) {
 				BENCH_ADD(cp_cmlhs_sig(sig[j], z[j], a[j][l], c[j][l], r[j][l],
 					s[j][l], msg[l], data, label[l], x[j][l], h, k[j], K, d[j], sk[j]));
 			}
-		}
-	} BENCH_DIV(S * L);
+		},
+	S * L);
 
 	BENCH_RUN("cp_cmlhs_fun") {
 		for (int j = 0; j < S; j++) {

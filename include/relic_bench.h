@@ -57,14 +57,15 @@
  *
  * @param[in] LABEL			- the label for this benchmark.
  * @param[in] FUNCTION		- the function to benchmark.
+ * @param[in] N				- the amortization factor.
  */
-#define BENCH_ONE(LABEL, FUNCTION)											\
+#define BENCH_ONE(LABEL, FUNCTION, N)										\
 	bench_reset();															\
 	util_print("BENCH: " LABEL "%*c = ", (int)(32 - strlen(LABEL)), ' ');	\
 	bench_before();															\
 	FUNCTION;																\
 	bench_after();															\
-	bench_compute(1);														\
+	bench_compute(N);														\
 	bench_print();															\
 
 /**

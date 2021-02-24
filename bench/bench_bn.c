@@ -783,27 +783,27 @@ static void arith(void) {
 	}
 	BENCH_END;
 
-	BENCH_ONE("bn_gen_prime", bn_gen_prime(a, RLC_BN_BITS));
+	BENCH_ONE("bn_gen_prime", bn_gen_prime(a, RLC_BN_BITS), 1);
 
 #if BN_GEN == BASIC || !defined(STRIP)
-	BENCH_ONE("bn_gen_prime_basic", bn_gen_prime_basic(a, RLC_BN_BITS));
+	BENCH_ONE("bn_gen_prime_basic", bn_gen_prime_basic(a, RLC_BN_BITS), 1);
 #endif
 
 #if BN_GEN == SAFEP || !defined(STRIP)
-	BENCH_ONE("bn_gen_prime_safep", bn_gen_prime_safep(a, RLC_BN_BITS));
+	BENCH_ONE("bn_gen_prime_safep", bn_gen_prime_safep(a, RLC_BN_BITS), 1);
 #endif
 
 #if BN_GEN == STRON || !defined(STRIP)
-	BENCH_ONE("bn_gen_prime_stron", bn_gen_prime_stron(a, RLC_BN_BITS));
+	BENCH_ONE("bn_gen_prime_stron", bn_gen_prime_stron(a, RLC_BN_BITS), 1);
 #endif
 
-	BENCH_ONE("bn_is_prime", bn_is_prime(a));
+	BENCH_ONE("bn_is_prime", bn_is_prime(a), 1);
 
-	BENCH_ONE("bn_is_prime_basic", bn_is_prime_basic(a));
+	BENCH_ONE("bn_is_prime_basic", bn_is_prime_basic(a), 1);
 
-	BENCH_ONE("bn_is_prime_rabin", bn_is_prime_rabin(a));
+	BENCH_ONE("bn_is_prime_rabin", bn_is_prime_rabin(a), 1);
 
-	BENCH_ONE("bn_is_prime_solov", bn_is_prime_solov(a));
+	BENCH_ONE("bn_is_prime_solov", bn_is_prime_solov(a), 1);
 
 	/* It should be the case that a is prime here. */
 	BENCH_RUN("bn_mod_inv") {
@@ -814,7 +814,7 @@ static void arith(void) {
 
 	bn_rand(a, RLC_POS, RLC_BN_BITS);
 
-	BENCH_ONE("bn_factor", bn_factor(c, a));
+	BENCH_ONE("bn_factor", bn_factor(c, a), 1);
 
 	BENCH_RUN("bn_is_factor") {
 		bn_rand(a, RLC_POS, RLC_BN_BITS);
