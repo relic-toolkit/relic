@@ -1132,6 +1132,7 @@ static void lhs(void) {
 		bn_rand_mod(msg[i], n);
 	}
 	for (int i = 0; i < S; i++) {
+		hs[i] = RLC_ALLOCA(gt_t, RLC_TERMS);
 		for (int j = 0; j < RLC_TERMS; j++) {
 			gt_null(hs[i][j]);
 			gt_new(hs[i][j]);
@@ -1169,7 +1170,6 @@ static void lhs(void) {
 
 	/* Define linear function. */
 	for (int i = 0; i < S; i++) {
-		hs[i] = RLC_ALLOCA(gt_t, RLC_TERMS);
 		f[i] = RLC_ALLOCA(dig_t, RLC_TERMS);
 		for (int j = 0; j < RLC_TERMS; j++) {
 			uint32_t t;
@@ -1397,11 +1397,11 @@ static void lhs(void) {
 		bn_free(msg[i]);
 	}
 	for (int i = 0; i < S; i++) {
-		RLC_FREE(hs[i]);
 		RLC_FREE(f[i]);
 		for (int j = 0; j < RLC_TERMS; j++) {
 			gt_free(hs[i][j]);
 		}
+		RLC_FREE(hs[i]);
 		for (int j = 0; j < L; j++) {
 			bn_free(x[i][j]);
 			g1_free(a[i][j]);
