@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2020 RELIC Authors
+ * Copyright (c) 2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -274,27 +274,27 @@ static void bench_pss(void) {
 		g2_new(_y[i]);
 	}
 
-	BENCH_BEGIN("cp_pss_gen") {
+	BENCH_RUN("cp_pss_gen") {
 		BENCH_ADD(cp_pss_gen(u, v, g, x, y));
 	} BENCH_END;
 
-	BENCH_BEGIN("cp_pss_sig") {
+	BENCH_RUN("cp_pss_sig") {
 		BENCH_ADD(cp_pss_sig(a, b, ms[0], u, v));
 	} BENCH_END;
 
-	BENCH_BEGIN("cp_pss_ver") {
+	BENCH_RUN("cp_pss_ver") {
 		BENCH_ADD(cp_pss_ver(a, b, ms[0], g, x, y));
 	} BENCH_END;
 
-	BENCH_BEGIN("cp_psb_gen") {
+	BENCH_RUN("cp_psb_gen") {
 		BENCH_ADD(cp_psb_gen(u, _v, g, x, _y, MSGS));
 	} BENCH_END;
 
-	BENCH_BEGIN("cp_psb_sig") {
+	BENCH_RUN("cp_psb_sig") {
 		BENCH_ADD(cp_psb_sig(a, b, ms, u, _v, MSGS));
 	} BENCH_END;
 
-	BENCH_BEGIN("cp_psb_ver") {
+	BENCH_RUN("cp_psb_ver") {
 		BENCH_ADD(cp_psb_ver(a, b, ms, g, x, _y, MSGS));
 	} BENCH_END;
 
@@ -375,19 +375,19 @@ static void bench_mpss(void) {
 		bn_add(m[0], m[0], n);
 	}
 
-	BENCH_BEGIN("cp_mpss_gen") {
+	BENCH_RUN("cp_mpss_gen") {
 		BENCH_ADD(cp_mpss_gen(u, v, h, x, y));
 	} BENCH_END;
 
-	BENCH_BEGIN("cp_mpss_bct") {
+	BENCH_RUN("cp_mpss_bct") {
 		BENCH_ADD(cp_mpss_bct(x, y));
 	} BENCH_END;
 
-	BENCH_BEGIN("cp_mpss_sig") {
+	BENCH_RUN("cp_mpss_sig") {
 		BENCH_ADD(cp_mpss_sig(g, s, m, u, v, tri[0], tri[1]));
 	} BENCH_DIV(2);
 
-	BENCH_BEGIN("cp_mpss_ver") {
+	BENCH_RUN("cp_mpss_ver") {
 		BENCH_ADD(cp_mpss_ver(r, g, s, m, h, x[0], y[0], tri[2], t));
 	} BENCH_DIV(2);
 
@@ -397,23 +397,23 @@ static void bench_mpss(void) {
 	mt_gen(tri[1], n);
 	mt_gen(tri[2], n);
 
-	BENCH_BEGIN("cp_mpsb_gen") {
+	BENCH_RUN("cp_mpsb_gen") {
 		BENCH_ADD(cp_mpsb_gen(u, _v, h, x, _y, MSGS));
 	} BENCH_END;
 
-	BENCH_BEGIN("cp_mpsb_bct") {
+	BENCH_RUN("cp_mpsb_bct") {
 		BENCH_ADD(cp_mpsb_bct(x, _y, MSGS));
 	} BENCH_END;
 
-	BENCH_BEGIN("cp_mpsb_sig") {
+	BENCH_RUN("cp_mpsb_sig") {
 		BENCH_ADD(cp_mpsb_sig(g, s, ms, u, _v, tri[0], tri[1], MSGS));
 	} BENCH_DIV(2);
 
-	BENCH_BEGIN("cp_mpsb_ver") {
+	BENCH_RUN("cp_mpsb_ver") {
 		BENCH_ADD(cp_mpsb_ver(r, g, s, ms, h, x[0], _y, NULL, tri[2], t, MSGS));
 	} BENCH_DIV(2);
 
-	BENCH_BEGIN("cp_mpsb_ver (sk)") {
+	BENCH_RUN("cp_mpsb_ver (sk)") {
 		BENCH_ADD(cp_mpsb_ver(r, g, s, ms, h, x[0], _y, _v, tri[2], t, MSGS));
 	} BENCH_DIV(2);
 

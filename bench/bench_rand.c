@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2020 RELIC Authors
+ * Copyright (c) 2014 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -61,13 +61,13 @@ static void rng(void) {
 	uint8_t buffer[64];
 	int fd = open("/dev/urandom", O_RDONLY);
 
-	BENCH_BEGIN("rand_seed") {
+	BENCH_RUN("rand_seed") {
 		rand_bytes(buffer, k);
 		BENCH_ADD(rand_seed(&test_bytes, (void *)&fd));
 	} BENCH_END;
 
 	for (int k = 1; k <= sizeof(buffer); k *= 2) {
-		BENCH_BEGIN("rand_bytes (from 1 to 256)") {
+		BENCH_RUN("rand_bytes (from 1 to 256)") {
 			BENCH_ADD(rand_bytes(buffer, k));
 		} BENCH_END;
 	}
@@ -80,13 +80,13 @@ static void rng(void) {
 static void rng(void) {
 	uint8_t buffer[256];
 
-	BENCH_BEGIN("rand_seed (20)") {
+	BENCH_RUN("rand_seed (20)") {
 		rand_bytes(buffer, 20);
 		BENCH_ADD(rand_seed(buffer, 20));
 	} BENCH_END;
 
 	for (int k = 1; k <= sizeof(buffer); k *= 2) {
-		BENCH_BEGIN("rand_bytes (from 1 to 256)") {
+		BENCH_RUN("rand_bytes (from 1 to 256)") {
 			BENCH_ADD(rand_bytes(buffer, k));
 		} BENCH_END;
 	}

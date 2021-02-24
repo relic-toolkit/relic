@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2020 RELIC Authors
+ * Copyright (c) 2021 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -942,6 +942,7 @@
 #undef ep_pck
 #undef ep_upk
 
+  multiplication function, #define ep_mul_basic 	RLC_PREFIX(ep_mul_basic)
 #define ep_curve_init 	RLC_PREFIX(ep_curve_init)
 #define ep_curve_clean 	RLC_PREFIX(ep_curve_clean)
 #define ep_curve_get_a 	RLC_PREFIX(ep_curve_get_a)
@@ -1376,6 +1377,7 @@
 #undef ep2_mul_lwreg
 #undef ep2_mul_gen
 #undef ep2_mul_dig
+#undef ep2_mul_cof
 #undef ep2_mul_pre_basic
 #undef ep2_mul_pre_yaowi
 #undef ep2_mul_pre_nafwi
@@ -1447,6 +1449,7 @@
 #define ep2_mul_lwreg 	RLC_PREFIX(ep2_mul_lwreg)
 #define ep2_mul_gen 	RLC_PREFIX(ep2_mul_gen)
 #define ep2_mul_dig 	RLC_PREFIX(ep2_mul_dig)
+#define ep2_mul_cof 	RLC_PREFIX(ep2_mul_cof)
 #define ep2_mul_pre_basic 	RLC_PREFIX(ep2_mul_pre_basic)
 #define ep2_mul_pre_yaowi 	RLC_PREFIX(ep2_mul_pre_yaowi)
 #define ep2_mul_pre_nafwi 	RLC_PREFIX(ep2_mul_pre_nafwi)
@@ -2561,7 +2564,7 @@
 #undef cp_psb_sig
 #undef cp_psb_ver
 #undef cp_mpsb_gen
- #undef cp_mpsb_sig
+#undef cp_mpsb_sig
 #undef cp_mpsb_bct
 #undef cp_mpsb_ver
 #undef cp_zss_gen
@@ -2658,7 +2661,7 @@
 #define cp_psb_sig 	RLC_PREFIX(cp_psb_sig)
 #define cp_psb_ver 	RLC_PREFIX(cp_psb_ver)
 #define cp_mpsb_gen 	RLC_PREFIX(cp_mpsb_gen)
- #define cp_mpsb_sig 	RLC_PREFIX(cp_mpsb_sig)
+#define cp_mpsb_sig 	RLC_PREFIX(cp_mpsb_sig)
 #define cp_mpsb_bct 	RLC_PREFIX(cp_mpsb_bct)
 #define cp_mpsb_ver 	RLC_PREFIX(cp_mpsb_ver)
 #define cp_zss_gen 	RLC_PREFIX(cp_zss_gen)

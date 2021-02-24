@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2020 RELIC Authors
+ * Copyright (c) 2009 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -51,12 +51,12 @@ static void dummy(void) {
 }
 
 static void error(void) {
-	BENCH_BEGIN("empty function") {
+	BENCH_RUN("empty function") {
 		BENCH_ADD(dummy2());
 	}
 	BENCH_END;
 
-	BENCH_BEGIN("try-catch-finnaly") {
+	BENCH_RUN("try-catch-finnaly") {
 		BENCH_ADD(dummy());
 	}
 	BENCH_END;

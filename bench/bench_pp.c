@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2020 RELIC Authors
+ * Copyright (c) 2010 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -59,7 +59,7 @@ static void pairing2(void) {
 
 	ep_curve_get_ord(n);
 
-	BENCH_BEGIN("pp_add_k2") {
+	BENCH_RUN("pp_add_k2") {
 		ep_rand(p[0]);
 		ep_rand(q[0]);
 		BENCH_ADD(pp_add_k2(e, p[0], p[0], q[0]));
@@ -67,7 +67,7 @@ static void pairing2(void) {
 	BENCH_END;
 
 #if EP_ADD == BASIC || !defined(STRIP)
-	BENCH_BEGIN("pp_add_k2_basic") {
+	BENCH_RUN("pp_add_k2_basic") {
 		ep_rand(p[0]);
 		ep_rand(q[0]);
 		BENCH_ADD(pp_add_k2_basic(e, p[0], p[0], q[0]));
@@ -77,7 +77,7 @@ static void pairing2(void) {
 
 #if EP_ADD == PROJC || !defined(STRIP)
 
-	BENCH_BEGIN("pp_add_k2_projc") {
+	BENCH_RUN("pp_add_k2_projc") {
 		ep_rand(p[0]);
 		ep_rand(q[0]);
 		BENCH_ADD(pp_add_k2_projc(e, p[0], p[0], q[0]));
@@ -85,7 +85,7 @@ static void pairing2(void) {
 	BENCH_END;
 
 #if PP_EXT == BASIC || !defined(STRIP)
-	BENCH_BEGIN("pp_add_k2_projc_basic") {
+	BENCH_RUN("pp_add_k2_projc_basic") {
 		ep_rand(p[0]);
 		ep_rand(q[0]);
 		BENCH_ADD(pp_add_k2_projc_basic(e, p[0], p[0], q[0]));
@@ -94,7 +94,7 @@ static void pairing2(void) {
 #endif
 
 #if PP_EXT == LAZYR || !defined(STRIP)
-	BENCH_BEGIN("pp_add_k2_projc_lazyr") {
+	BENCH_RUN("pp_add_k2_projc_lazyr") {
 		ep_rand(p[0]);
 		ep_rand(q[0]);
 		BENCH_ADD(pp_add_k2_projc_lazyr(e, p[0], p[0], q[0]));
@@ -104,7 +104,7 @@ static void pairing2(void) {
 
 #endif
 
-	BENCH_BEGIN("pp_dbl_k2") {
+	BENCH_RUN("pp_dbl_k2") {
 		ep_rand(p[0]);
 		ep_rand(q[0]);
 		BENCH_ADD(pp_dbl_k2(e, p[0], p[0], q[0]));
@@ -112,7 +112,7 @@ static void pairing2(void) {
 	BENCH_END;
 
 #if EP_ADD == BASIC || !defined(STRIP)
-	BENCH_BEGIN("pp_dbl_k2_basic") {
+	BENCH_RUN("pp_dbl_k2_basic") {
 		ep_rand(p[0]);
 		ep_rand(q[0]);
 		BENCH_ADD(pp_dbl_k2_basic(e, p[0], p[0], q[0]));
@@ -122,7 +122,7 @@ static void pairing2(void) {
 
 #if EP_ADD == PROJC || !defined(STRIP)
 
-	BENCH_BEGIN("pp_dbl_k2_projc") {
+	BENCH_RUN("pp_dbl_k2_projc") {
 		ep_rand(p[0]);
 		ep_rand(q[0]);
 		BENCH_ADD(pp_dbl_k2_projc(e, p[0], p[0], q[0]));
@@ -130,7 +130,7 @@ static void pairing2(void) {
 	BENCH_END;
 
 #if PP_EXT == BASIC || !defined(STRIP)
-	BENCH_BEGIN("pp_dbl_k2_projc_basic") {
+	BENCH_RUN("pp_dbl_k2_projc_basic") {
 		ep_rand(p[0]);
 		ep_rand(q[0]);
 		BENCH_ADD(pp_dbl_k2_projc_basic(e, p[0], p[0], q[0]));
@@ -139,7 +139,7 @@ static void pairing2(void) {
 #endif
 
 #if PP_EXT == LAZYR || !defined(STRIP)
-	BENCH_BEGIN("pp_dbl_k2_projc_lazyr") {
+	BENCH_RUN("pp_dbl_k2_projc_lazyr") {
 		ep_rand(p[0]);
 		ep_rand(q[0]);
 		BENCH_ADD(pp_dbl_k2_projc_lazyr(e, p[0], p[0], q[0]));
@@ -148,13 +148,13 @@ static void pairing2(void) {
 #endif
 
 #endif
-	BENCH_BEGIN("pp_exp_k2") {
+	BENCH_RUN("pp_exp_k2") {
 		fp2_rand(e);
 		BENCH_ADD(pp_exp_k2(e, e));
 	}
 	BENCH_END;
 
-	BENCH_BEGIN("pp_map_k2") {
+	BENCH_RUN("pp_map_k2") {
 		ep_rand(p[0]);
 		ep_rand(q[0]);
 		BENCH_ADD(pp_map_k2(e, q[0], p[0]));
@@ -162,14 +162,14 @@ static void pairing2(void) {
 	BENCH_END;
 
 #if PP_MAP == TATEP || PP_MAP == OATEP || !defined(STRIP)
-	BENCH_BEGIN("pp_map_tatep_k2") {
+	BENCH_RUN("pp_map_tatep_k2") {
 		ep_rand(p[0]);
 		ep_rand(q[0]);
 		BENCH_ADD(pp_map_tatep_k2(e, q[0], p[0]));
 	}
 	BENCH_END;
 
-	BENCH_BEGIN("pp_map_tatep_sim_k12 (2)") {
+	BENCH_RUN("pp_map_tatep_sim_k12 (2)") {
 		ep_rand(p[0]);
 		ep_rand(q[0]);
 		ep_rand(p[1]);
@@ -180,14 +180,14 @@ static void pairing2(void) {
 #endif
 
 #if PP_MAP == WEILP || !defined(STRIP)
-	BENCH_BEGIN("pp_map_weilp_k2") {
+	BENCH_RUN("pp_map_weilp_k2") {
 		ep_rand(p[0]);
 		ep_rand(q[0]);
 		BENCH_ADD(pp_map_weilp_k2(e, q[0], p[0]));
 	}
 	BENCH_END;
 
-	BENCH_BEGIN("pp_map_weilp_sim_k12 (2)") {
+	BENCH_RUN("pp_map_weilp_sim_k12 (2)") {
 		ep_rand(p[0]);
 		ep_rand(q[0]);
 		ep_rand(p[1]);
@@ -235,7 +235,7 @@ static void pairing8(void) {
 
 	ep2_curve_get_ord(n);
 
-	BENCH_BEGIN("pp_add_k8") {
+	BENCH_RUN("pp_add_k8") {
 		ep2_rand(p[0]);
 		ep2_dbl(r, p[0]);
 		ep2_norm(r, r);
@@ -245,7 +245,7 @@ static void pairing8(void) {
 	BENCH_END;
 
 #if EP_ADD == BASIC || !defined(STRIP)
-	BENCH_BEGIN("pp_add_k8_basic") {
+	BENCH_RUN("pp_add_k8_basic") {
 		ep2_rand(p[0]);
 		ep2_dbl(r, p[0]);
 		ep2_norm(r, r);
@@ -256,7 +256,7 @@ static void pairing8(void) {
 #endif
 
 #if EP_ADD == PROJC || !defined(STRIP)
-	BENCH_BEGIN("pp_add_k8_projc") {
+	BENCH_RUN("pp_add_k8_projc") {
 		ep2_rand(p[0]);
 		ep2_dbl(r, p[0]);
 		ep2_norm(r, r);
@@ -266,7 +266,7 @@ static void pairing8(void) {
 	BENCH_END;
 #endif
 
-	BENCH_BEGIN("pp_dbl_k8") {
+	BENCH_RUN("pp_dbl_k8") {
 		ep2_rand(p[0]);
 		ep_rand(q[0]);
 		BENCH_ADD(pp_dbl_k8(e, p[0], p[0], q[0]));
@@ -274,7 +274,7 @@ static void pairing8(void) {
 	BENCH_END;
 
 #if EP_ADD == BASIC || !defined(STRIP)
-	BENCH_BEGIN("pp_dbl_k8_basic") {
+	BENCH_RUN("pp_dbl_k8_basic") {
 		ep2_rand(p[0]);
 		ep_rand(q[0]);
 		BENCH_ADD(pp_dbl_k8_basic(e, p[0], p[0], q[0]));
@@ -283,7 +283,7 @@ static void pairing8(void) {
 #endif
 
 #if EP_ADD == PROJC || !defined(STRIP)
-	BENCH_BEGIN("pp_dbl_k8_projc") {
+	BENCH_RUN("pp_dbl_k8_projc") {
 		ep2_rand(p[0]);
 		ep_rand(q[0]);
 		BENCH_ADD(pp_dbl_k8_projc(e, p[0], p[0], q[0]));
@@ -291,7 +291,7 @@ static void pairing8(void) {
 	BENCH_END;
 
 	#if PP_EXT == BASIC || !defined(STRIP)
-		BENCH_BEGIN("pp_dbl_k8_projc_basic") {
+		BENCH_RUN("pp_dbl_k8_projc_basic") {
 			ep2_rand(p[0]);
 			ep_rand(q[0]);
 			BENCH_ADD(pp_dbl_k8_projc_basic(e, p[0], p[0], q[0]));
@@ -300,7 +300,7 @@ static void pairing8(void) {
 	#endif
 
 	#if PP_EXT == LAZYR || !defined(STRIP)
-		BENCH_BEGIN("pp_dbl_k8_projc_lazyr") {
+		BENCH_RUN("pp_dbl_k8_projc_lazyr") {
 			ep2_rand(p[0]);
 			ep_rand(q[0]);
 			BENCH_ADD(pp_dbl_k8_projc_lazyr(e, p[0], p[0], q[0]));
@@ -309,13 +309,13 @@ static void pairing8(void) {
 	#endif
 #endif
 
-	BENCH_BEGIN("pp_exp_k8") {
+	BENCH_RUN("pp_exp_k8") {
 		fp8_rand(e);
 		BENCH_ADD(pp_exp_k8(e, e));
 	}
 	BENCH_END;
 
-	BENCH_BEGIN("pp_map_oate_k8") {
+	BENCH_RUN("pp_map_oate_k8") {
 		ep2_rand(p[0]);
 		ep_rand(q[0]);
 		BENCH_ADD(pp_map_oatep_k8(e, q[0], p[0]));
@@ -361,7 +361,7 @@ static void pairing12(void) {
 
 	ep2_curve_get_ord(n);
 
-	BENCH_BEGIN("pp_add_k12") {
+	BENCH_RUN("pp_add_k12") {
 		ep2_rand(p[0]);
 		ep2_dbl(r, p[0]);
 		ep2_norm(r, r);
@@ -371,7 +371,7 @@ static void pairing12(void) {
 	BENCH_END;
 
 #if EP_ADD == BASIC || !defined(STRIP)
-	BENCH_BEGIN("pp_add_k12_basic") {
+	BENCH_RUN("pp_add_k12_basic") {
 		ep2_rand(p[0]);
 		ep2_dbl(r, p[0]);
 		ep2_norm(r, r);
@@ -383,7 +383,7 @@ static void pairing12(void) {
 
 #if EP_ADD == PROJC || !defined(STRIP)
 
-	BENCH_BEGIN("pp_add_k12_projc") {
+	BENCH_RUN("pp_add_k12_projc") {
 		ep2_rand(p[0]);
 		ep2_dbl(r, p[0]);
 		ep2_norm(r, r);
@@ -393,7 +393,7 @@ static void pairing12(void) {
 	BENCH_END;
 
 #if PP_EXT == BASIC || !defined(STRIP)
-	BENCH_BEGIN("pp_add_k12_projc_basic") {
+	BENCH_RUN("pp_add_k12_projc_basic") {
 		ep2_rand(p[0]);
 		ep2_dbl(r, p[0]);
 		ep2_norm(r, r);
@@ -404,7 +404,7 @@ static void pairing12(void) {
 #endif
 
 #if PP_EXT == LAZYR || !defined(STRIP)
-	BENCH_BEGIN("pp_add_k12_projc_lazyr") {
+	BENCH_RUN("pp_add_k12_projc_lazyr") {
 		ep2_rand(p[0]);
 		ep2_dbl(r, p[0]);
 		ep2_norm(r, r);
@@ -416,7 +416,7 @@ static void pairing12(void) {
 
 #endif
 
-	BENCH_BEGIN("pp_dbl_k12") {
+	BENCH_RUN("pp_dbl_k12") {
 		ep2_rand(p[0]);
 		ep_rand(q[0]);
 		BENCH_ADD(pp_dbl_k12(e, p[0], p[0], q[0]));
@@ -424,7 +424,7 @@ static void pairing12(void) {
 	BENCH_END;
 
 #if EP_ADD == BASIC || !defined(STRIP)
-	BENCH_BEGIN("pp_dbl_k12_basic") {
+	BENCH_RUN("pp_dbl_k12_basic") {
 		ep2_rand(p[0]);
 		ep_rand(q[0]);
 		BENCH_ADD(pp_dbl_k12_basic(e, p[0], p[0], q[0]));
@@ -434,7 +434,7 @@ static void pairing12(void) {
 
 #if EP_ADD == PROJC || !defined(STRIP)
 
-	BENCH_BEGIN("pp_dbl_k12_projc") {
+	BENCH_RUN("pp_dbl_k12_projc") {
 		ep2_rand(p[0]);
 		ep_rand(q[0]);
 		BENCH_ADD(pp_dbl_k12_projc(e, p[0], p[0], q[0]));
@@ -442,7 +442,7 @@ static void pairing12(void) {
 	BENCH_END;
 
 #if PP_EXT == BASIC || !defined(STRIP)
-	BENCH_BEGIN("pp_dbl_k12_projc_basic") {
+	BENCH_RUN("pp_dbl_k12_projc_basic") {
 		ep2_rand(p[0]);
 		ep_rand(q[0]);
 		BENCH_ADD(pp_dbl_k12_projc_basic(e, p[0], p[0], q[0]));
@@ -451,7 +451,7 @@ static void pairing12(void) {
 #endif
 
 #if PP_EXT == LAZYR || !defined(STRIP)
-	BENCH_BEGIN("pp_dbl_k12_projc_lazyr") {
+	BENCH_RUN("pp_dbl_k12_projc_lazyr") {
 		ep2_rand(p[0]);
 		ep_rand(q[0]);
 		BENCH_ADD(pp_dbl_k12_projc_lazyr(e, p[0], p[0], q[0]));
@@ -461,20 +461,20 @@ static void pairing12(void) {
 
 #endif
 
-	BENCH_BEGIN("pp_exp_k12") {
+	BENCH_RUN("pp_exp_k12") {
 		fp12_rand(e);
 		BENCH_ADD(pp_exp_k12(e, e));
 	}
 	BENCH_END;
 
-	BENCH_BEGIN("pp_map_k12") {
+	BENCH_RUN("pp_map_k12") {
 		ep2_rand(p[0]);
 		ep_rand(q[0]);
 		BENCH_ADD(pp_map_k12(e, q[0], p[0]));
 	}
 	BENCH_END;
 
-	BENCH_BEGIN("pp_map_sim_k12 (2)") {
+	BENCH_RUN("pp_map_sim_k12 (2)") {
 		ep2_rand(p[0]);
 		ep_rand(q[0]);
 		ep2_rand(p[1]);
@@ -484,14 +484,14 @@ static void pairing12(void) {
 	BENCH_END;
 
 #if PP_MAP == TATEP || !defined(STRIP)
-	BENCH_BEGIN("pp_map_tatep_k12") {
+	BENCH_RUN("pp_map_tatep_k12") {
 		ep2_rand(p[0]);
 		ep_rand(q[0]);
 		BENCH_ADD(pp_map_tatep_k12(e, q[0], p[0]));
 	}
 	BENCH_END;
 
-	BENCH_BEGIN("pp_map_tatep_sim_k12 (2)") {
+	BENCH_RUN("pp_map_tatep_sim_k12 (2)") {
 		ep2_rand(p[0]);
 		ep_rand(q[0]);
 		ep2_rand(p[1]);
@@ -502,14 +502,14 @@ static void pairing12(void) {
 #endif
 
 #if PP_MAP == WEILP || !defined(STRIP)
-	BENCH_BEGIN("pp_map_weilp_k12") {
+	BENCH_RUN("pp_map_weilp_k12") {
 		ep2_rand(p[0]);
 		ep_rand(q[0]);
 		BENCH_ADD(pp_map_weilp_k12(e, q[0], p[0]));
 	}
 	BENCH_END;
 
-	BENCH_BEGIN("pp_map_weilp_sim_k12 (2)") {
+	BENCH_RUN("pp_map_weilp_sim_k12 (2)") {
 		ep2_rand(p[0]);
 		ep_rand(q[0]);
 		ep2_rand(p[1]);
@@ -520,7 +520,7 @@ static void pairing12(void) {
 #endif
 
 #if PP_MAP == OATEP || !defined(STRIP)
-	BENCH_BEGIN("pp_map_oatep_k12") {
+	BENCH_RUN("pp_map_oatep_k12") {
 		ep2_rand(p[0]);
 		ep_rand(q[0]);
 		BENCH_ADD(pp_map_oatep_k12(e, q[0], p[0]));
@@ -529,7 +529,7 @@ static void pairing12(void) {
 #endif
 
 #if PP_MAP == OATEP || !defined(STRIP)
-	BENCH_BEGIN("pp_map_sim_oatep_k12 (2)") {
+	BENCH_RUN("pp_map_sim_oatep_k12 (2)") {
 		ep2_rand(p[0]);
 		ep_rand(q[0]);
 		ep2_rand(p[1]);
@@ -567,7 +567,7 @@ static void pairing48(void) {
 	fp8_new(qz);
 	fp48_new(e);
 
-	BENCH_BEGIN("pp_add_k48") {
+	BENCH_RUN("pp_add_k48") {
 		fp8_rand(qx);
 		fp8_rand(qy);
 		fp8_rand(qz);
@@ -577,7 +577,7 @@ static void pairing48(void) {
 	BENCH_END;
 
 #if EP_ADD == BASIC || !defined(STRIP)
-	BENCH_BEGIN("pp_add_k48_basic") {
+	BENCH_RUN("pp_add_k48_basic") {
 		fp8_rand(qx);
 		fp8_rand(qy);
 		fp8_rand(qz);
@@ -588,7 +588,7 @@ static void pairing48(void) {
 #endif
 
 #if EP_ADD == PROJC || !defined(STRIP)
-	BENCH_BEGIN("pp_add_k48_projc") {
+	BENCH_RUN("pp_add_k48_projc") {
 		fp8_rand(qx);
 		fp8_rand(qy);
 		fp8_rand(qz);
@@ -598,7 +598,7 @@ static void pairing48(void) {
 	BENCH_END;
 #endif
 
-	BENCH_BEGIN("pp_dbl_k48") {
+	BENCH_RUN("pp_dbl_k48") {
 		fp8_rand(qx);
 		fp8_rand(qy);
 		fp8_rand(qz);
@@ -608,7 +608,7 @@ static void pairing48(void) {
 	BENCH_END;
 
 	#if EP_ADD == BASIC || !defined(STRIP)
-		BENCH_BEGIN("pp_dbl_k48_basic") {
+		BENCH_RUN("pp_dbl_k48_basic") {
 			fp8_rand(qx);
 			fp8_rand(qy);
 			ep_rand(p);
@@ -618,7 +618,7 @@ static void pairing48(void) {
 	#endif
 
 	#if EP_ADD == PROJC || !defined(STRIP)
-		BENCH_BEGIN("pp_dbl_k48_projc") {
+		BENCH_RUN("pp_dbl_k48_projc") {
 			fp8_rand(qx);
 			fp8_rand(qy);
 			fp8_rand(qz);
@@ -628,13 +628,13 @@ static void pairing48(void) {
 		BENCH_END;
 	#endif
 
-	BENCH_BEGIN("pp_exp_k48") {
+	BENCH_RUN("pp_exp_k48") {
 		fp48_rand(e);
 		BENCH_ADD(pp_exp_k48(e, e));
 	}
 	BENCH_END;
 
-	BENCH_BEGIN("pp_map_k48") {
+	BENCH_RUN("pp_map_k48") {
 		fp8_rand(qx);
 		fp8_rand(qy);
 		fp8_rand(qz);
@@ -667,7 +667,7 @@ static void pairing54(void) {
 	fp9_new(qz);
 	fp54_new(e);
 
-	BENCH_BEGIN("pp_add_k54") {
+	BENCH_RUN("pp_add_k54") {
 		fp9_rand(qx);
 		fp9_rand(qy);
 		fp9_rand(qz);
@@ -677,7 +677,7 @@ static void pairing54(void) {
 	BENCH_END;
 
 #if EP_ADD == BASIC || !defined(STRIP)
-	BENCH_BEGIN("pp_add_k54_basic") {
+	BENCH_RUN("pp_add_k54_basic") {
 		fp9_rand(qx);
 		fp9_rand(qy);
 		fp9_rand(qz);
@@ -688,7 +688,7 @@ static void pairing54(void) {
 #endif
 
 #if EP_ADD == PROJC || !defined(STRIP)
-	BENCH_BEGIN("pp_add_k54_projc") {
+	BENCH_RUN("pp_add_k54_projc") {
 		fp9_rand(qx);
 		fp9_rand(qy);
 		fp9_rand(qz);
@@ -698,7 +698,7 @@ static void pairing54(void) {
 	BENCH_END;
 #endif
 
-	BENCH_BEGIN("pp_dbl_k54") {
+	BENCH_RUN("pp_dbl_k54") {
 		fp9_rand(qx);
 		fp9_rand(qy);
 		fp9_rand(qz);
@@ -708,7 +708,7 @@ static void pairing54(void) {
 	BENCH_END;
 
 	#if EP_ADD == BASIC || !defined(STRIP)
-		BENCH_BEGIN("pp_dbl_k54_basic") {
+		BENCH_RUN("pp_dbl_k54_basic") {
 			fp9_rand(qx);
 			fp9_rand(qy);
 			ep_rand(p);
@@ -718,7 +718,7 @@ static void pairing54(void) {
 	#endif
 
 	#if EP_ADD == PROJC || !defined(STRIP)
-		BENCH_BEGIN("pp_dbl_k54_projc") {
+		BENCH_RUN("pp_dbl_k54_projc") {
 			fp9_rand(qx);
 			fp9_rand(qy);
 			fp9_rand(qz);
@@ -728,13 +728,13 @@ static void pairing54(void) {
 		BENCH_END;
 	#endif
 
-	BENCH_BEGIN("pp_exp_k54") {
+	BENCH_RUN("pp_exp_k54") {
 		fp54_rand(e);
 		BENCH_ADD(pp_exp_k54(e, e));
 	}
 	BENCH_END;
 
-	BENCH_BEGIN("pp_map_k54") {
+	BENCH_RUN("pp_map_k54") {
 		fp9_rand(qx);
 		fp9_rand(qy);
 		fp9_rand(qz);

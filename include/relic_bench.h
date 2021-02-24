@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2020 RELIC Authors
+ * Copyright (c) 2009 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -58,7 +58,7 @@
  * @param[in] LABEL			- the label for this benchmark.
  * @param[in] FUNCTION		- the function to benchmark.
  */
-#define BENCH_ONCE(LABEL, FUNCTION)											\
+#define BENCH_ONE(LABEL, FUNCTION)											\
 	bench_reset();															\
 	util_print("BENCH: " LABEL "%*c = ", (int)(32 - strlen(LABEL)), ' ');	\
 	bench_before();															\
@@ -68,12 +68,14 @@
 	bench_print();															\
 
 /**
- * Runs a new benchmark a small number of times.
+ * Runs a new benchmark a small number of times and prints the average timing
+ * amortized by N.
  *
  * @param[in] LABEL			- the label for this benchmark.
  * @param[in] FUNCTION		- the function to benchmark.
+ * @param[in] N				- the amortization factor.
  */
-#define BENCH_SMALL(LABEL, FUNCTION)										\
+#define BENCH_FEW(LABEL, FUNCTION, N)										\
 	bench_reset();															\
 	util_print("BENCH: " LABEL "%*c = ", (int)(32 - strlen(LABEL)), ' ');	\
 	bench_before();															\
@@ -81,7 +83,7 @@
 		FUNCTION;															\
 	}																		\
 	bench_after();															\
-	bench_compute(BENCH);													\
+	bench_compute(BENCH * (N));												\
 	bench_print();															\
 
 /**
@@ -89,7 +91,7 @@
  *
  * @param[in] LABEL			- the label for this benchmark.
  */
-#define BENCH_BEGIN(LABEL)													\
+#define BENCH_RUN(LABEL)													\
 	bench_reset();															\
 	util_print("BENCH: " LABEL "%*c = ", (int)(32 - strlen(LABEL)), ' ');	\
 	for (int _b = 0; _b < BENCH; _b++)	{									\
@@ -120,7 +122,7 @@
 #define BENCH_ADD(FUNCTION)													\
 	FUNCTION;																\
 	bench_before();															\
-	for (int _b = 0; _b < BENCH; _b++) {										\
+	for (int _b = 0; _b < BENCH; _b++) {									\
 		FUNCTION;															\
 	}																		\
 	bench_after();															\

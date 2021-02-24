@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2020 RELIC Authors
+ * Copyright (c) 2012 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -37,9 +37,9 @@
 static void memory2(void) {
 	fb2_t a[BENCH];
 
-	BENCH_SMALL("fb2_null", fb2_null(a[i]));
+	BENCH_FEW("fb2_null", fb2_null(a[i]), 1);
 
-	BENCH_SMALL("fb2_new", fb2_new(a[i]));
+	BENCH_FEW("fb2_new", fb2_new(a[i]), 1);
 	for (int i = 0; i < BENCH; i++) {
 		fb2_free(a[i]);
 	}
@@ -47,7 +47,7 @@ static void memory2(void) {
 	for (int i = 0; i < BENCH; i++) {
 		fb2_new(a[i]);
 	}
-	BENCH_SMALL("fb2_free", fb2_free(a[i]));
+	BENCH_FEW("fb2_free", fb2_free(a[i]), 1);
 
 	(void)a;
 }
@@ -61,30 +61,30 @@ static void util2(void) {
 	fb2_new(a);
 	fb2_new(b);
 
-	BENCH_BEGIN("fb2_copy") {
+	BENCH_RUN("fb2_copy") {
 		fb2_rand(a);
 		BENCH_ADD(fb2_copy(b, a));
 	}
 	BENCH_END;
 
-	BENCH_BEGIN("fb2_zero") {
+	BENCH_RUN("fb2_zero") {
 		fb2_rand(a);
 		BENCH_ADD(fb2_zero(a));
 	}
 	BENCH_END;
 
-	BENCH_BEGIN("fb2_is_zero") {
+	BENCH_RUN("fb2_is_zero") {
 		fb2_rand(a);
 		BENCH_ADD((void)fb2_is_zero(a));
 	}
 	BENCH_END;
 
-	BENCH_BEGIN("fb2_rand") {
+	BENCH_RUN("fb2_rand") {
 		BENCH_ADD(fb2_rand(a));
 	}
 	BENCH_END;
 
-	BENCH_BEGIN("fb2_cmp") {
+	BENCH_RUN("fb2_cmp") {
 		fb2_rand(a);
 		fb2_rand(b);
 		BENCH_ADD((void)fb2_cmp(b, a));
@@ -102,33 +102,33 @@ static void arith2(void) {
 	fb2_new(b);
 	fb2_new(c);
 
-	BENCH_BEGIN("fb2_add") {
+	BENCH_RUN("fb2_add") {
 		fb2_rand(a);
 		fb2_rand(b);
 		BENCH_ADD(fb2_add(c, a, b));
 	}
 	BENCH_END;
 
-	BENCH_BEGIN("fb2_mul") {
+	BENCH_RUN("fb2_mul") {
 		fb2_rand(a);
 		fb2_rand(b);
 		BENCH_ADD(fb2_mul(c, a, b));
 	}
 	BENCH_END;
 
-	BENCH_BEGIN("fb2_sqr") {
+	BENCH_RUN("fb2_sqr") {
 		fb2_rand(a);
 		BENCH_ADD(fb2_sqr(c, a));
 	}
 	BENCH_END;
 
-	BENCH_BEGIN("fb2_slv") {
+	BENCH_RUN("fb2_slv") {
 		fb2_rand(a);
 		BENCH_ADD(fb2_slv(c, a));
 	}
 	BENCH_END;
 
-	BENCH_BEGIN("fb2_inv") {
+	BENCH_RUN("fb2_inv") {
 		fb2_rand(a);
 		BENCH_ADD(fb2_inv(c, a));
 	}

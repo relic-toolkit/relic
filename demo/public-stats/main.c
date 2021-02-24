@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2020 RELIC Authors
+ * Copyright (c) 2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -314,12 +314,12 @@ int main(int argc, char *argv[]) {
 
 		assert(cp_mklhs_ver(sig, res, t, DATABASE, acs,
 				&l[0][2 * GROUPS * DAYS], f, flen, pk, STATES));
-		BENCH_ONCE("Time elapsed", cp_mklhs_ver(sig, res, t, DATABASE, acs,
+		BENCH_ONE("Time elapsed", cp_mklhs_ver(sig, res, t, DATABASE, acs,
 				&l[0][2 * GROUPS * DAYS], f, flen, pk, STATES));
 
 		cp_mklhs_off(cs, ft, acs, &l[0][2 * GROUPS * DAYS], f, flen, STATES);
 		assert(cp_mklhs_onv(sig, res, t, DATABASE, acs, cs, ft, pk, STATES));
-		BENCH_ONCE("Time with precomputation", cp_mklhs_onv(sig, res, t,
+		BENCH_ONE("Time with precomputation", cp_mklhs_onv(sig, res, t,
 			DATABASE, acs, cs, ft, pk, STATES));
 
 	} RLC_CATCH_ANY {

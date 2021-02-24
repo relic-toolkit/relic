@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2020 RELIC Authors
+ * Copyright (c) 2020 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -58,20 +58,20 @@ static void mul_triple(void) {
 
 	bn_gen_prime(order, RLC_BN_BITS);
 
-	BENCH_BEGIN("mt_gen") {
+	BENCH_RUN("mt_gen") {
 		BENCH_ADD(mt_gen(tri, order));
 	} BENCH_END;
 
-	BENCH_BEGIN("mt_mul_lcl") {
+	BENCH_RUN("mt_mul_lcl") {
 		BENCH_ADD(mt_mul_lcl(d[0], e[0], x[0], y[0], order, tri[0]));
 		BENCH_ADD(mt_mul_lcl(d[1], e[1], x[1], y[1], order, tri[1]));
 	} BENCH_DIV(2);
 
-	BENCH_BEGIN("mt_mul_bct") {
+	BENCH_RUN("mt_mul_bct") {
 		BENCH_ADD(mt_mul_bct(d, e, order););
 	} BENCH_END;
 
-	BENCH_BEGIN("mt_mul_mpc") {
+	BENCH_RUN("mt_mul_mpc") {
 		BENCH_ADD(mt_mul_mpc(d[0], d[0], e[0], order, tri[0], 0););
 		BENCH_ADD(mt_mul_mpc(d[1], d[1], e[1], order, tri[1], 1););
 	} BENCH_DIV(2);
@@ -129,7 +129,7 @@ static void pair_triple(void) {
 	g1_get_ord(n);
 
 	mt_gen(tri, n);
-	BENCH_BEGIN("g1_mul") {
+	BENCH_RUN("g1_mul") {
 		/* Generate random inputs. */
 		g1_rand(p[0]);
 		bn_rand_mod(k[0], n);
@@ -149,22 +149,22 @@ static void pair_triple(void) {
 	tri[0]->b1 = tri[0]->c1 = &p[0];
 	tri[1]->b1 = tri[1]->c1 = &p[1];
 
-	BENCH_BEGIN("g1_mul_lcl") {
+	BENCH_RUN("g1_mul_lcl") {
 		BENCH_ADD(g1_mul_lcl(l[0], d[0], k[0], p[0], tri[0]));
 		BENCH_ADD(g1_mul_lcl(l[1], d[1], k[1], p[1], tri[1]))
 	} BENCH_DIV(2);
 
-	BENCH_BEGIN("g1_mul_bct") {
+	BENCH_RUN("g1_mul_bct") {
 		BENCH_ADD(g1_mul_bct(l, d));
 	} BENCH_END;
 
-	BENCH_BEGIN("g1_mul_mpc") {
+	BENCH_RUN("g1_mul_mpc") {
 		BENCH_ADD(g1_mul_mpc(d[0], l[0], d[0], tri[0], 0));
 		BENCH_ADD(g1_mul_mpc(d[1], l[1], d[1], tri[1], 1));
 	} BENCH_DIV(2);
 
 	mt_gen(tri, n);
-	BENCH_BEGIN("g2_mul") {
+	BENCH_RUN("g2_mul") {
 		/* Generate random inputs. */
 		g2_rand(q[0]);
 		bn_rand_mod(k[0], n);
@@ -183,22 +183,22 @@ static void pair_triple(void) {
 	tri[0]->b2 = tri[0]->c2 = &q[0];
 	tri[1]->b2 = tri[1]->c2 = &q[1];
 
-	BENCH_BEGIN("g2_mul_lcl") {
+	BENCH_RUN("g2_mul_lcl") {
 		BENCH_ADD(g2_mul_lcl(l[0], e[0], k[0], q[0], tri[0]));
 		BENCH_ADD(g2_mul_lcl(l[1], e[1], k[1], q[1], tri[1]));
 	} BENCH_DIV(2);
 
-	BENCH_BEGIN("g2_mul_bct") {
+	BENCH_RUN("g2_mul_bct") {
 		BENCH_ADD(g2_mul_bct(l, e));
 	} BENCH_END;
 
-	BENCH_BEGIN("g2_mul_mpc") {
+	BENCH_RUN("g2_mul_mpc") {
 		BENCH_ADD(g2_mul_mpc(e[0], l[0], e[0], tri[0], 0));
 		BENCH_ADD(g2_mul_mpc(e[1], l[1], e[1], tri[1], 1));
 	} BENCH_DIV(2);
 
 	mt_gen(tri, n);
-	BENCH_BEGIN("gt_exp") {
+	BENCH_RUN("gt_exp") {
 		/* Generate random inputs. */
 		gt_rand(r[0]);
 		bn_rand_mod(k[0], n);
@@ -217,23 +217,23 @@ static void pair_triple(void) {
 	tri[0]->bt = tri[0]->ct = &r[0];
 	tri[1]->bt = tri[1]->ct = &r[1];
 
-	BENCH_BEGIN("gt_exp_lcl") {
+	BENCH_RUN("gt_exp_lcl") {
 		BENCH_ADD(gt_exp_lcl(l[0], f[0], k[0], r[0], tri[0]));
 		BENCH_ADD(gt_exp_lcl(l[1], f[1], k[1], r[1], tri[1]));
 	} BENCH_DIV(2);
 
-	BENCH_BEGIN("gt_exp_bct") {
+	BENCH_RUN("gt_exp_bct") {
 		BENCH_ADD(gt_exp_bct(l, f));
 	} BENCH_END;
 
-	BENCH_BEGIN("gt_exp_mpc") {
+	BENCH_RUN("gt_exp_mpc") {
 		BENCH_ADD(gt_exp_mpc(f[0], l[0], f[0], tri[0], 0));
 		BENCH_ADD(gt_exp_mpc(f[1], l[1], f[1], tri[1], 1));
 	} BENCH_DIV(2);
 
 	/* Generate random inputs and triple. */
 	pc_map_tri(t);
-	BENCH_BEGIN("pc_map") {
+	BENCH_RUN("pc_map") {
 		g1_rand(p[0]);
 		g2_rand(q[0]);
 		BENCH_ADD(pc_map(r[0], p[0], q[0]));
@@ -246,16 +246,16 @@ static void pair_triple(void) {
 	g2_sub(q[0], q[0], q[1]);
 	g2_norm(q[0], q[0]);
 
-	BENCH_BEGIN("pc_map_lcl") {
+	BENCH_RUN("pc_map_lcl") {
 		BENCH_ADD(pc_map_lcl(d[0], e[0], p[0], q[0], t[0]));
 		BENCH_ADD(pc_map_lcl(d[1], e[1], p[1], q[1], t[1]));
 	} BENCH_DIV(2);
 
-	BENCH_BEGIN("pc_map_bct") {
+	BENCH_RUN("pc_map_bct") {
 		BENCH_ADD(pc_map_bct(d, e));
 	} BENCH_END;
 
-	BENCH_BEGIN("pc_map_mpc") {
+	BENCH_RUN("pc_map_mpc") {
 		BENCH_ADD(pc_map_mpc(r[0], d[0], e[0], t[0], 0));
 		BENCH_ADD(pc_map_mpc(r[1], d[1], e[1], t[1], 1));
 	} BENCH_DIV(2);

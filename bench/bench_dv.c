@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2020 RELIC Authors
+ * Copyright (c) 2009 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -37,9 +37,9 @@
 static void memory(void) {
 	dv_t a[BENCH];
 
-	BENCH_SMALL("dv_null", dv_null(a[i]));
+	BENCH_FEW("dv_null", dv_null(a[i]), 1);
 
-	BENCH_SMALL("dv_new", dv_new(a[i]));
+	BENCH_FEW("dv_new", dv_new(a[i]), 1);
 	for (int i = 0; i < BENCH; i++) {
 		dv_free(a[i]);
 	}
@@ -47,7 +47,7 @@ static void memory(void) {
 	for (int i = 0; i < BENCH; i++) {
 		dv_new(a[i]);
 	}
-	BENCH_SMALL("dv_free", dv_free(a[i]));
+	BENCH_FEW("dv_free", dv_free(a[i]), 1);
 
 	(void)a;
 }
@@ -61,31 +61,31 @@ static void copy(void) {
 	dv_new(a);
 	dv_new(b);
 
-	BENCH_BEGIN("dv_copy") {
+	BENCH_RUN("dv_copy") {
 		rand_bytes((uint8_t *)a, RLC_DV_DIGS * sizeof(dig_t));
 		rand_bytes((uint8_t *)b, RLC_DV_DIGS * sizeof(dig_t));
 		BENCH_ADD(dv_copy(a, b, RLC_DV_DIGS));
 	} BENCH_END;
 
-	BENCH_BEGIN("dv_copy_cond") {
+	BENCH_RUN("dv_copy_cond") {
 		rand_bytes((uint8_t *)a, RLC_DV_DIGS * sizeof(dig_t));
 		rand_bytes((uint8_t *)b, RLC_DV_DIGS * sizeof(dig_t));
 		BENCH_ADD(dv_copy_cond(a, b, RLC_DV_DIGS, 1));
 	} BENCH_END;
 
-	BENCH_BEGIN("dv_swap_cond") {
+	BENCH_RUN("dv_swap_cond") {
 		rand_bytes((uint8_t *)a, RLC_DV_DIGS * sizeof(dig_t));
 		rand_bytes((uint8_t *)b, RLC_DV_DIGS * sizeof(dig_t));
 		BENCH_ADD(dv_swap_cond(a, b, RLC_DV_DIGS, 1));
 	} BENCH_END;
 
-	BENCH_BEGIN("dv_cmp") {
+	BENCH_RUN("dv_cmp") {
 		rand_bytes((uint8_t *)a, RLC_DV_DIGS * sizeof(dig_t));
 		rand_bytes((uint8_t *)b, RLC_DV_DIGS * sizeof(dig_t));
 		BENCH_ADD(dv_cmp(a, b, RLC_DV_DIGS));
 	} BENCH_END;
 
-	BENCH_BEGIN("dv_cmp_const") {
+	BENCH_RUN("dv_cmp_const") {
 		rand_bytes((uint8_t *)a, RLC_DV_DIGS * sizeof(dig_t));
 		rand_bytes((uint8_t *)b, RLC_DV_DIGS * sizeof(dig_t));
 		BENCH_ADD(dv_cmp_const(a, b, RLC_DV_DIGS));

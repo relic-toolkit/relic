@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2020 RELIC Authors
+ * Copyright (c) 2014 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -37,9 +37,9 @@
 static void memory(void) {
 	ed_t a[BENCH];
 
-	BENCH_SMALL("ed_null", ed_null(a[i]));
+	BENCH_FEW("ed_null", ed_null(a[i]), 1);
 
-	BENCH_SMALL("ed_new", ed_new(a[i]));
+	BENCH_FEW("ed_new", ed_new(a[i]), 1);
 	for (int i = 0; i < BENCH; i++) {
 		ed_free(a[i]);
 	}
@@ -47,7 +47,7 @@ static void memory(void) {
 	for (int i = 0; i < BENCH; i++) {
 		ed_new(a[i]);
 	}
-	BENCH_SMALL("ed_free", ed_free(a[i]));
+	BENCH_FEW("ed_free", ed_free(a[i]), 1);
 
 	(void)a;
 }
@@ -69,23 +69,23 @@ static void util(void) {
 		ed_new(t[j]);
 	}
 
-	BENCH_BEGIN("ed_is_infty") {
+	BENCH_RUN("ed_is_infty") {
 		ed_rand(p);
 		BENCH_ADD(ed_is_infty(p));
 	} BENCH_END;
 
-	BENCH_BEGIN("ed_set_infty") {
+	BENCH_RUN("ed_set_infty") {
 		ed_rand(p);
 		BENCH_ADD(ed_set_infty(p));
 	} BENCH_END;
 
-	BENCH_BEGIN("ed_copy") {
+	BENCH_RUN("ed_copy") {
 		ed_rand(p);
 		ed_rand(q);
 		BENCH_ADD(ed_copy(p, q));
 	} BENCH_END;
 
-	BENCH_BEGIN("ed_cmp") {
+	BENCH_RUN("ed_cmp") {
 		ed_rand(p);
 		ed_dbl(p, p);
 		ed_rand(q);
@@ -93,72 +93,72 @@ static void util(void) {
 		BENCH_ADD(ed_cmp(p, q));
 	} BENCH_END;
 
-	BENCH_BEGIN("ed_cmp (1 norm)") {
+	BENCH_RUN("ed_cmp (1 norm)") {
 		ed_rand(p);
 		ed_dbl(p, p);
 		ed_rand(q);
 		BENCH_ADD(ed_cmp(p, q));
 	} BENCH_END;
 
-	BENCH_BEGIN("ed_cmp (2 norm)") {
+	BENCH_RUN("ed_cmp (2 norm)") {
 		ed_rand(p);
 		ed_rand(q);
 		BENCH_ADD(ed_cmp(p, q));
 	} BENCH_END;
 
-	BENCH_BEGIN("ed_rand") {
+	BENCH_RUN("ed_rand") {
 		BENCH_ADD(ed_rand(p));
 	} BENCH_END;
 
-	BENCH_BEGIN("ed_blind") {
+	BENCH_RUN("ed_blind") {
 		BENCH_ADD(ed_blind(p, p));
 	} BENCH_END;
 
-	BENCH_BEGIN("ed_rhs") {
+	BENCH_RUN("ed_rhs") {
 		ed_rand(p);
 		BENCH_ADD(ed_rhs(q->x, p));
 	} BENCH_END;
 
-	BENCH_BEGIN("ed_tab (4)") {
+	BENCH_RUN("ed_tab (4)") {
 		ed_rand(p);
 		BENCH_ADD(ed_tab(t, p, 4));
 	} BENCH_END;
 
-	BENCH_BEGIN("ed_on_curve") {
+	BENCH_RUN("ed_on_curve") {
 		ed_rand(p);
 		BENCH_ADD(ed_on_curve(p));
 	} BENCH_END;
 
-	BENCH_BEGIN("ed_size_bin (0)") {
+	BENCH_RUN("ed_size_bin (0)") {
 		ed_rand(p);
 		BENCH_ADD(ed_size_bin(p, 0));
 	} BENCH_END;
 
-	BENCH_BEGIN("ed_size_bin (1)") {
+	BENCH_RUN("ed_size_bin (1)") {
 		ed_rand(p);
 		BENCH_ADD(ed_size_bin(p, 1));
 	} BENCH_END;
 
-	BENCH_BEGIN("ed_write_bin (0)") {
+	BENCH_RUN("ed_write_bin (0)") {
 		ed_rand(p);
 		l = ed_size_bin(p, 0);
 		BENCH_ADD(ed_write_bin(bin, l, p, 0));
 	} BENCH_END;
 
-	BENCH_BEGIN("ed_write_bin (1)") {
+	BENCH_RUN("ed_write_bin (1)") {
 		ed_rand(p);
 		l = ed_size_bin(p, 1);
 		BENCH_ADD(ed_write_bin(bin, l, p, 1));
 	} BENCH_END;
 
-	BENCH_BEGIN("ed_read_bin (0)") {
+	BENCH_RUN("ed_read_bin (0)") {
 		ed_rand(p);
 		l = ed_size_bin(p, 0);
 		ed_write_bin(bin, l, p, 0);
 		BENCH_ADD(ed_read_bin(p, bin, l));
 	} BENCH_END;
 
-	BENCH_BEGIN("ed_read_bin (1)") {
+	BENCH_RUN("ed_read_bin (1)") {
 		ed_rand(p);
 		l = ed_size_bin(p, 1);
 		ed_write_bin(bin, l, p, 1);
@@ -192,7 +192,7 @@ static void arith(void) {
 
 	ed_curve_get_ord(n);
 
-	BENCH_BEGIN("ed_add") {
+	BENCH_RUN("ed_add") {
 		ed_rand(p);
 		ed_rand(q);
 		ed_add(p, p, q);
@@ -203,7 +203,7 @@ static void arith(void) {
 	} BENCH_END;
 
 #if ED_ADD == BASIC || !defined(STRIP)
-	BENCH_BEGIN("ed_add_basic") {
+	BENCH_RUN("ed_add_basic") {
 		ed_rand(p);
 		ed_rand(q);
 		BENCH_ADD(ed_add_basic(r, p, q));
@@ -211,7 +211,7 @@ static void arith(void) {
 #endif
 
 #if ED_ADD == PROJC || !defined(STRIP)
-	BENCH_BEGIN("ed_add_projc") {
+	BENCH_RUN("ed_add_projc") {
 		ed_rand(p);
 		ed_rand(q);
 		ed_add_projc(p, p, q);
@@ -221,7 +221,7 @@ static void arith(void) {
 		BENCH_ADD(ed_add_projc(r, p, q));
 	} BENCH_END;
 
-	BENCH_BEGIN("ed_add_projc (z2 = 1)") {
+	BENCH_RUN("ed_add_projc (z2 = 1)") {
 		ed_rand(p);
 		ed_rand(q);
 		ed_add_projc(p, p, q);
@@ -230,7 +230,7 @@ static void arith(void) {
 		BENCH_ADD(ed_add_projc(r, p, q));
 	} BENCH_END;
 
-	BENCH_BEGIN("ed_add_projc (z1,z2 = 1)") {
+	BENCH_RUN("ed_add_projc (z1,z2 = 1)") {
 		ed_rand(p);
 		ed_norm(p, p);
 		ed_rand(q);
@@ -240,7 +240,7 @@ static void arith(void) {
 #endif
 
 #if ED_ADD == EXTND || !defined(STRIP)
-	BENCH_BEGIN("ed_add_extnd") {
+	BENCH_RUN("ed_add_extnd") {
 		ed_rand(p);
 		ed_rand(q);
 		ed_add_extnd(p, p, q);
@@ -250,7 +250,7 @@ static void arith(void) {
 		BENCH_ADD(ed_add_extnd(r, p, q));
 	} BENCH_END;
 
-	BENCH_BEGIN("ed_add_extnd (z2 = 1)") {
+	BENCH_RUN("ed_add_extnd (z2 = 1)") {
 		ed_rand(p);
 		ed_rand(q);
 		ed_add_extnd(p, p, q);
@@ -259,7 +259,7 @@ static void arith(void) {
 		BENCH_ADD(ed_add_extnd(r, p, q));
 	} BENCH_END;
 
-	BENCH_BEGIN("ed_add_extnd (z1,z2 = 1)") {
+	BENCH_RUN("ed_add_extnd (z1,z2 = 1)") {
 		ed_rand(p);
 		ed_norm(p, p);
 		ed_rand(q);
@@ -268,7 +268,7 @@ static void arith(void) {
 	} BENCH_END;
 #endif
 
-	BENCH_BEGIN("ed_sub") {
+	BENCH_RUN("ed_sub") {
 		ed_rand(p);
 		ed_rand(q);
 		ed_add(p, p, q);
@@ -279,7 +279,7 @@ static void arith(void) {
 	} BENCH_END;
 
 #if ED_ADD == BASIC || !defined(STRIP)
-	BENCH_BEGIN("ed_sub_basic") {
+	BENCH_RUN("ed_sub_basic") {
 		ed_rand(p);
 		ed_rand(q);
 		BENCH_ADD(ed_sub_basic(r, p, q));
@@ -287,7 +287,7 @@ static void arith(void) {
 #endif
 
 #if ED_ADD == PROJC || !defined(STRIP)
-	BENCH_BEGIN("ed_sub_projc") {
+	BENCH_RUN("ed_sub_projc") {
 		ed_rand(p);
 		ed_rand(q);
 		ed_add_projc(p, p, q);
@@ -297,7 +297,7 @@ static void arith(void) {
 		BENCH_ADD(ed_sub_projc(r, p, q));
 	} BENCH_END;
 
-	BENCH_BEGIN("ed_sub_projc (z2 = 1)") {
+	BENCH_RUN("ed_sub_projc (z2 = 1)") {
 		ed_rand(p);
 		ed_rand(q);
 		ed_add_projc(p, p, q);
@@ -306,7 +306,7 @@ static void arith(void) {
 		BENCH_ADD(ed_sub_projc(r, p, q));
 	} BENCH_END;
 
-	BENCH_BEGIN("ed_sub_projc (z1,z2 = 1)") {
+	BENCH_RUN("ed_sub_projc (z1,z2 = 1)") {
 		ed_rand(p);
 		ed_norm(p, p);
 		ed_rand(q);
@@ -316,7 +316,7 @@ static void arith(void) {
 #endif
 
 #if ED_ADD == EXTND || !defined(STRIP)
-	BENCH_BEGIN("ed_sub_extnd") {
+	BENCH_RUN("ed_sub_extnd") {
 		ed_rand(p);
 		ed_rand(q);
 		ed_add_extnd(p, p, q);
@@ -326,7 +326,7 @@ static void arith(void) {
 		BENCH_ADD(ed_sub_extnd(r, p, q));
 	} BENCH_END;
 
-	BENCH_BEGIN("ed_sub_projc (z2 = 1)") {
+	BENCH_RUN("ed_sub_projc (z2 = 1)") {
 		ed_rand(p);
 		ed_rand(q);
 		ed_add_extnd(p, p, q);
@@ -335,7 +335,7 @@ static void arith(void) {
 		BENCH_ADD(ed_sub_extnd(r, p, q));
 	} BENCH_END;
 
-	BENCH_BEGIN("ed_sub_projc (z1,z2 = 1)") {
+	BENCH_RUN("ed_sub_projc (z1,z2 = 1)") {
 		ed_rand(p);
 		ed_norm(p, p);
 		ed_rand(q);
@@ -344,7 +344,7 @@ static void arith(void) {
 	} BENCH_END;
 #endif
 
-	BENCH_BEGIN("ed_dbl") {
+	BENCH_RUN("ed_dbl") {
 		ed_rand(p);
 		ed_rand(q);
 		ed_add(p, p, q);
@@ -352,21 +352,21 @@ static void arith(void) {
 	} BENCH_END;
 
 #if ED_ADD == BASIC || !defined(STRIP)
-	BENCH_BEGIN("ed_dbl_basic") {
+	BENCH_RUN("ed_dbl_basic") {
 		ed_rand(p);
 		BENCH_ADD(ed_dbl_basic(r, p));
 	} BENCH_END;
 #endif
 
 #if ED_ADD == PROJC || !defined(STRIP)
-	BENCH_BEGIN("ed_dbl_projc") {
+	BENCH_RUN("ed_dbl_projc") {
 		ed_rand(p);
 		ed_rand(q);
 		ed_add_projc(p, p, q);
 		BENCH_ADD(ed_dbl_projc(r, p));
 	} BENCH_END;
 
-	BENCH_BEGIN("ed_dbl_projc (z1 = 1)") {
+	BENCH_RUN("ed_dbl_projc (z1 = 1)") {
 		ed_rand(p);
 		ed_norm(p, p);
 		BENCH_ADD(ed_dbl_projc(r, p));
@@ -374,21 +374,21 @@ static void arith(void) {
 #endif
 
 #if ED_ADD == PROJC || !defined(STRIP)
-	BENCH_BEGIN("ed_dbl_extnd") {
+	BENCH_RUN("ed_dbl_extnd") {
 		ed_rand(p);
 		ed_rand(q);
 		ed_add_extnd(p, p, q);
 		BENCH_ADD(ed_dbl_extnd(r, p));
 	} BENCH_END;
 
-	BENCH_BEGIN("ed_dbl_extnd (z1 = 1)") {
+	BENCH_RUN("ed_dbl_extnd (z1 = 1)") {
 		ed_rand(p);
 		ed_norm(p, p);
 		BENCH_ADD(ed_dbl_extnd(r, p));
 	} BENCH_END;
 #endif
 
-	BENCH_BEGIN("ed_neg") {
+	BENCH_RUN("ed_neg") {
 		ed_rand(p);
 		ed_rand(q);
 		ed_add(p, p, q);
@@ -396,14 +396,14 @@ static void arith(void) {
 	} BENCH_END;
 
 #if ED_ADD == BASIC || !defined(STRIP)
-	BENCH_BEGIN("ed_neg_basic") {
+	BENCH_RUN("ed_neg_basic") {
 		ed_rand(p);
 		BENCH_ADD(ed_neg_basic(r, p));
 	} BENCH_END;
 #endif
 
 #if ED_ADD == PROJC || !defined(STRIP)
-	BENCH_BEGIN("ed_neg_projc") {
+	BENCH_RUN("ed_neg_projc") {
 		ed_rand(p);
 		ed_rand(q);
 		ed_add_projc(p, p, q);
@@ -411,21 +411,21 @@ static void arith(void) {
 	} BENCH_END;
 #endif
 
-	BENCH_BEGIN("ed_mul") {
+	BENCH_RUN("ed_mul") {
 		bn_rand_mod(k, n);
 		ed_rand(p);
 		BENCH_ADD(ed_mul(q, p, k));
 	} BENCH_END;
 
 #if ED_MUL == BASIC || !defined(STRIP)
-	BENCH_BEGIN("ed_mul_basic") {
+	BENCH_RUN("ed_mul_basic") {
 		bn_rand_mod(k, n);
 		BENCH_ADD(ed_mul_basic(q, p, k));
 	} BENCH_END;
 #endif
 
 #if ED_MUL == SLIDE || !defined(STRIP)
-	BENCH_BEGIN("ed_mul_slide") {
+	BENCH_RUN("ed_mul_slide") {
 		bn_rand_mod(k, n);
 		ed_rand(p);
 		BENCH_ADD(ed_mul_slide(q, p, k));
@@ -433,7 +433,7 @@ static void arith(void) {
 #endif
 
 #if ED_MUL == MONTY || !defined(STRIP)
-	BENCH_BEGIN("ed_mul_monty") {
+	BENCH_RUN("ed_mul_monty") {
 		bn_rand_mod(k, n);
 		ed_rand(p);
 		BENCH_ADD(ed_mul_monty(q, p, k));
@@ -441,7 +441,7 @@ static void arith(void) {
 #endif
 
 #if ED_MUL == LWNAF || !defined(STRIP)
-	BENCH_BEGIN("ed_mul_lwnaf") {
+	BENCH_RUN("ed_mul_lwnaf") {
 		bn_rand_mod(k, n);
 		ed_rand(p);
 		BENCH_ADD(ed_mul_lwnaf(q, p, k));
@@ -449,19 +449,19 @@ static void arith(void) {
 #endif
 
 #if ED_MUL == LWREG || !defined(STRIP)
-	BENCH_BEGIN("ed_mul_lwreg") {
+	BENCH_RUN("ed_mul_lwreg") {
 		bn_rand_mod(k, n);
 		ed_rand(p);
 		BENCH_ADD(ed_mul_lwreg(q, p, k));
 	} BENCH_END;
 #endif
 
-	BENCH_BEGIN("ed_mul_gen") {
+	BENCH_RUN("ed_mul_gen") {
 		bn_rand_mod(k, n);
 		BENCH_ADD(ed_mul_gen(q, k));
 	} BENCH_END;
 
-	BENCH_BEGIN("ed_mul_dig") {
+	BENCH_RUN("ed_mul_dig") {
 		bn_rand(k, RLC_POS, RLC_DIG);
 		bn_rand_mod(k, n);
 		BENCH_ADD(ed_mul_dig(p, q, k->dp[0]));
@@ -472,12 +472,12 @@ static void arith(void) {
 		ed_new(t[i]);
 	}
 
-	BENCH_BEGIN("ed_mul_pre") {
+	BENCH_RUN("ed_mul_pre") {
 		ed_rand(p);
 		BENCH_ADD(ed_mul_pre(t, p));
 	} BENCH_END;
 
-	BENCH_BEGIN("ed_mul_fix") {
+	BENCH_RUN("ed_mul_fix") {
 		bn_rand_mod(k, n);
 		ed_rand(p);
 		ed_mul_pre(t, p);
@@ -492,12 +492,12 @@ static void arith(void) {
 	for (int i = 0; i < RLC_ED_TABLE_BASIC; i++) {
 		ed_new(t[i]);
 	}
-	BENCH_BEGIN("ed_mul_pre_basic") {
+	BENCH_RUN("ed_mul_pre_basic") {
 		ed_rand(p);
 		BENCH_ADD(ed_mul_pre_basic(t, p));
 	} BENCH_END;
 
-	BENCH_BEGIN("ed_mul_fix_basic") {
+	BENCH_RUN("ed_mul_fix_basic") {
 		bn_rand_mod(k, n);
 		ed_rand(p);
 		ed_mul_pre_basic(t, p);
@@ -512,12 +512,12 @@ static void arith(void) {
 	for (int i = 0; i < RLC_ED_TABLE_COMBS; i++) {
 		ed_new(t[i]);
 	}
-	BENCH_BEGIN("ed_mul_pre_combs") {
+	BENCH_RUN("ed_mul_pre_combs") {
 		ed_rand(p);
 		BENCH_ADD(ed_mul_pre_combs(t, p));
 	} BENCH_END;
 
-	BENCH_BEGIN("ed_mul_fix_combs") {
+	BENCH_RUN("ed_mul_fix_combs") {
 		bn_rand_mod(k, n);
 		ed_rand(p);
 		ed_mul_pre_combs(t, p);
@@ -532,11 +532,11 @@ static void arith(void) {
 	for (int i = 0; i < RLC_ED_TABLE_COMBD; i++) {
 		ed_new(t[i]);
 	}
-	BENCH_BEGIN("ed_mul_pre_combd") {
+	BENCH_RUN("ed_mul_pre_combd") {
 		BENCH_ADD(ed_mul_pre_combd(t, p));
 	} BENCH_END;
 
-	BENCH_BEGIN("ed_mul_fix_combd") {
+	BENCH_RUN("ed_mul_fix_combd") {
 		bn_rand_mod(k, n);
 		ed_mul_pre_combd(t, p);
 		BENCH_ADD(ed_mul_fix_combd(q, (const ed_t *)t, k));
@@ -550,12 +550,12 @@ static void arith(void) {
 	for (int i = 0; i < RLC_ED_TABLE_LWNAF; i++) {
 		ed_new(t[i]);
 	}
-	BENCH_BEGIN("ed_mul_pre_lwnaf") {
+	BENCH_RUN("ed_mul_pre_lwnaf") {
 		ed_rand(p);
 		BENCH_ADD(ed_mul_pre_lwnaf(t, p));
 	} BENCH_END;
 
-	BENCH_BEGIN("ed_mul_fix_lwnaf") {
+	BENCH_RUN("ed_mul_fix_lwnaf") {
 		bn_rand_mod(k, n);
 		ed_rand(p);
 		ed_mul_pre_lwnaf(t, p);
@@ -565,7 +565,7 @@ static void arith(void) {
 		ed_free(t[i]);
 	}
 #endif
-	BENCH_BEGIN("ed_mul_sim") {
+	BENCH_RUN("ed_mul_sim") {
 		bn_rand_mod(k, n);
 		bn_rand_mod(l, n);
 		ed_rand(p);
@@ -574,7 +574,7 @@ static void arith(void) {
 	} BENCH_END;
 
 #if ED_SIM == BASIC || !defined(STRIP)
-	BENCH_BEGIN("ed_mul_sim_basic") {
+	BENCH_RUN("ed_mul_sim_basic") {
 		bn_rand_mod(k, n);
 		bn_rand_mod(l, n);
 		ed_rand(p);
@@ -584,7 +584,7 @@ static void arith(void) {
 #endif
 
 #if ED_SIM == TRICK || !defined(STRIP)
-	BENCH_BEGIN("ed_mul_sim_trick") {
+	BENCH_RUN("ed_mul_sim_trick") {
 		bn_rand_mod(k, n);
 		bn_rand_mod(l, n);
 		ed_rand(p);
@@ -594,7 +594,7 @@ static void arith(void) {
 #endif
 
 #if ED_SIM == INTER || !defined(STRIP)
-	BENCH_BEGIN("ed_mul_sim_inter") {
+	BENCH_RUN("ed_mul_sim_inter") {
 		bn_rand_mod(k, n);
 		bn_rand_mod(l, n);
 		ed_rand(p);
@@ -604,7 +604,7 @@ static void arith(void) {
 #endif
 
 #if ED_SIM == JOINT || !defined(STRIP)
-	BENCH_BEGIN("ed_mul_sim_joint") {
+	BENCH_RUN("ed_mul_sim_joint") {
 		bn_rand_mod(k, n);
 		bn_rand_mod(l, n);
 		ed_rand(p);
@@ -613,25 +613,25 @@ static void arith(void) {
 	} BENCH_END;
 #endif
 
-	BENCH_BEGIN("ed_mul_sim_gen") {
+	BENCH_RUN("ed_mul_sim_gen") {
 		bn_rand_mod(k, n);
 		bn_rand_mod(l, n);
 		ed_rand(q);
 		BENCH_ADD(ed_mul_sim_gen(r, k, q, l));
 	} BENCH_END;
 
-	BENCH_BEGIN("ed_map") {
+	BENCH_RUN("ed_map") {
 		uint8_t msg[5];
 		rand_bytes(msg, 5);
 		BENCH_ADD(ed_map(p, msg, 5));
 	} BENCH_END;
 
-	BENCH_BEGIN("ed_pck") {
+	BENCH_RUN("ed_pck") {
 		ed_rand(p);
 		BENCH_ADD(ed_pck(q, p));
 	} BENCH_END;
 
-	BENCH_BEGIN("ed_upk") {
+	BENCH_RUN("ed_upk") {
 		ed_rand(p);
 		BENCH_ADD(ed_upk(q, p));
 	} BENCH_END;
