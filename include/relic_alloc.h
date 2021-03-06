@@ -31,7 +31,7 @@
 
 #include "relic_conf.h"
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER) || defined(__MINGW32__)
 
 #include <malloc.h>
 
