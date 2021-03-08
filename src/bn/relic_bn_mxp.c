@@ -50,6 +50,11 @@ void bn_mxp_basic(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 	int i, l;
 	bn_t t, u, r;
 
+	if (bn_cmp_dig(m, 1) == RLC_EQ) {
+		bn_zero(c);
+		return;
+	}
+
 	if (bn_is_zero(b)) {
 		bn_set_dig(c, 1);
 		return;
@@ -116,6 +121,12 @@ void bn_mxp_slide(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 
 	if (win == NULL) {
 		RLC_THROW(ERR_NO_MEMORY);
+		return;
+	}
+
+	if (bn_cmp_dig(m, 1) == RLC_EQ) {
+		RLC_FREE(win);
+		bn_zero(c);
 		return;
 	}
 
@@ -227,6 +238,11 @@ void bn_mxp_monty(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 	dig_t mask;
 	int i, j, t;
 
+	if (bn_cmp_dig(m, 1) == RLC_EQ) {
+		bn_zero(c);
+		return;
+	}
+
 	if (bn_is_zero(b)) {
 		bn_set_dig(c, 1);
 		return;
@@ -314,6 +330,11 @@ void bn_mxp_monty(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 void bn_mxp_dig(bn_t c, const bn_t a, dig_t b, const bn_t m) {
 	int i, l;
 	bn_t t, u, r;
+
+	if (bn_cmp_dig(m, 1) == RLC_EQ) {
+		bn_zero(c);
+		return;
+	}
 
 	if (b == 0) {
 		bn_set_dig(c, 1);
