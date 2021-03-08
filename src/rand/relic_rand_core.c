@@ -54,7 +54,7 @@
 #undef DOUBLE
 
 #include <windows.h>
-#include <Wincrypt.h>
+#include <wincrypt.h>
 
 #elif SEED == RDRND
 
