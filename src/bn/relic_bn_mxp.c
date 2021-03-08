@@ -218,7 +218,6 @@ void bn_mxp_slide(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		printf("eita %p\n", tab[0]);
 		for (i = 0; i < (1 << (w - 1)); i++) {
 			bn_free(tab[i]);
 		}
