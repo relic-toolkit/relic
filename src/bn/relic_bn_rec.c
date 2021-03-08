@@ -846,7 +846,6 @@ void bn_rec_glv(bn_t k0, bn_t k1, const bn_t k, const bn_t n, const bn_t *v1,
 		bn_mul(k1, b1, v1[2]);
 		bn_mul(t, b2, v2[2]);
 		bn_add(k1, k1, t);
-
 		bn_neg(k1, k1);
 	}
 	RLC_CATCH_ANY {
