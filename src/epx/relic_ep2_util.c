@@ -85,7 +85,10 @@ void ep2_blind(ep2_t r, ep2_t p) {
 
 	RLC_TRY {
 		fp2_new(rand);
-
+#if EP_ADD == BASIC
+		(void)rand;
+		ep2_copy(r, p);
+#elif EP_ADD == PROJC
 		fp2_rand(rand);
 		fp2_mul(r->z, p->z, rand);
 		fp2_mul(r->y, p->y, rand);
@@ -93,6 +96,7 @@ void ep2_blind(ep2_t r, ep2_t p) {
 		fp2_mul(r->x, r->x, rand);
 		fp2_mul(r->y, r->y, rand);
 		r->coord = PROJC;
+#endif
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {

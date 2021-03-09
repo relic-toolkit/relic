@@ -85,7 +85,10 @@ void ep_blind(ep_t r, const ep_t p) {
 		fp_new(rand);
 
 		fp_rand(rand);
-#if EP_ADD == PROJC
+#if EP_ADD == BASIC
+		(void)rand;
+		ep_copy(r, p);
+#elif EP_ADD == PROJC
 		fp_mul(r->x, p->x, rand);
 		fp_mul(r->y, p->y, rand);
 		fp_mul(r->z, p->z, rand);
