@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 export XCODE_BASE=/Applications/Xcode.app/Contents
 export SIMULATOR_BASEiOS=$XCODE_BASE/Developer/Platforms/iPhoneOS.platform

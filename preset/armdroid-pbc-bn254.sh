@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # First run /opt/android-ndk/build/tools/make-standalone-toolchain.sh --platform=android-18 --install-dir=/tmp/android-test/
 
