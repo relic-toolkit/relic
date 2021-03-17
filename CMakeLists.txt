@@ -233,6 +233,10 @@ if("$ENV{CFLAGS}" STREQUAL "")
 		set(CFLAGS "-O2 -funroll-loops -fomit-frame-pointer" CACHE STRING "Default compiler flags.")
 	endif()
 else()
+	# Turn on debugging symbols with custom flags.
+	if(DEBUG)
+		set(DFLAGS "-ggdb")
+	endif()
 	set(CFLAGS "$ENV{CFLAGS}" CACHE STRING "User-chosen compiler flags.")
 endif()
 
