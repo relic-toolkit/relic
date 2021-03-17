@@ -245,10 +245,10 @@ void pp_add_k12_projc_lazyr(fp12_t l, ep2_t r, ep2_t q, ep_t p) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
+		fp2_free(t0);
 		fp2_free(t1);
 		fp2_free(t2);
 		fp2_free(t3);
-		fp2_free(t4);
 		dv2_free(u0);
 		dv2_free(u1);
 	}
