@@ -223,17 +223,17 @@ if(MSVC)
 	endforeach()
 endif()
 
-if(DEBUG)
-	# If the user did not specify compile flags, we turn off all optimizations.
-	set(CFLAGS "-O0 -fno-omit-frame-pointer")
-	set(DFLAGS "-ggdb")
-else()
-	if("$ENV{CFLAGS}" STREQUAL "")
-		# If the user did not specify compile flags, we use sane defaults.
-		set(CFLAGS "-O2 -funroll-loops -fomit-frame-pointer" CACHE STRING "User-chosen compiler flags.")
+if("$ENV{CFLAGS}" STREQUAL "")
+	# If the user did not specify compile flags, we use sane defaults.
+	if(DEBUG)
+		# Turn off all optimizations.
+		set(CFLAGS "-O0 -fno-omit-frame-pointer" CACHE STRING "Default compiler flags.")
+		set(DFLAGS "-ggdb")
 	else()
-		set(CFLAGS "$ENV{CFLAGS}" CACHE STRING "User-chosen compiler flags.")
+		set(CFLAGS "-O2 -funroll-loops -fomit-frame-pointer" CACHE STRING "Default compiler flags.")
 	endif()
+else()
+	set(CFLAGS "$ENV{CFLAGS}" CACHE STRING "User-chosen compiler flags.")
 endif()
 
 if(AUSAN)
