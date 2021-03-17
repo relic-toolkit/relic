@@ -171,73 +171,73 @@ void pp_add_k12_projc_basic(fp12_t l, ep2_t r, ep2_t q, ep_t p) {
 #if PP_EXT == LAZYR || !defined(STRIP)
 
 void pp_add_k12_projc_lazyr(fp12_t l, ep2_t r, ep2_t q, ep_t p) {
-	fp2_t t1, t2, t3, t4;
-	dv2_t u1, u2;
+	fp2_t t0, t1, t2, t3;
+	dv2_t u0, u1;
 	int one = 1, zero = 0;
 
+	fp2_null(t0);
 	fp2_null(t1);
 	fp2_null(t2);
 	fp2_null(t3);
-	fp2_null(t4);
+	dv2_null(u0);
 	dv2_null(u1);
-	dv2_null(u2);
 
 	RLC_TRY {
+		fp2_new(t0);
 		fp2_new(t1);
 		fp2_new(t2);
 		fp2_new(t3);
-		fp2_new(t4);
+		dv2_new(u0);
 		dv2_new(u1);
-		dv2_new(u2);
 
-		fp2_mul(t1, r->z, q->x);
-		fp2_sub(t1, r->x, t1);
-		fp2_mul(t2, r->z, q->y);
-		fp2_sub(t2, r->y, t2);
+		fp2_mul(t0, r->z, q->x);
+		fp2_sub(t0, r->x, t0);
+		fp2_mul(t1, r->z, q->y);
+		fp2_sub(t1, r->y, t1);
 
+		fp2_sqr(t2, t0);
+		fp2_mul(r->x, t2, r->x);
+		fp2_mul(t2, t0, t2);
 		fp2_sqr(t3, t1);
-		fp2_mul(r->x, t3, r->x);
-		fp2_mul(t3, t1, t3);
-		fp2_sqr(t4, t2);
-		fp2_mul(t4, t4, r->z);
-		fp2_add(t4, t3, t4);
+		fp2_mul(t3, t3, r->z);
+		fp2_add(t3, t2, t3);
 
-		fp2_sub(t4, t4, r->x);
-		fp2_sub(t4, t4, r->x);
-		fp2_sub(r->x, r->x, t4);
+		fp2_sub(t3, t3, r->x);
+		fp2_sub(t3, t3, r->x);
+		fp2_sub(r->x, r->x, t3);
 #ifdef RLC_FP_ROOM
-		fp2_mulc_low(u1, t2, r->x);
-		fp2_mulc_low(u2, t3, r->y);
+		fp2_mulc_low(u0, t1, r->x);
+		fp2_mulc_low(u1, t2, r->y);
 #else
-		fp2_muln_low(u1, t2, r->x);
-		fp2_muln_low(u2, t3, r->y);
+		fp2_muln_low(u0, t1, r->x);
+		fp2_muln_low(u1, t2, r->y);
 #endif
-		fp2_subc_low(u2, u1, u2);
-		fp2_rdcn_low(r->y, u2);
-		fp2_mul(r->x, t1, t4);
-		fp2_mul(r->z, r->z, t3);
+		fp2_subc_low(u1, u0, u1);
+		fp2_rdcn_low(r->y, u1);
+		fp2_mul(r->x, t0, t3);
+		fp2_mul(r->z, r->z, t2);
 
 		if (ep2_curve_is_twist() == RLC_EP_MTYPE) {
 			one ^= 1;
 			zero ^= 1;
 		}
 
-		fp_mul(l[one][zero][0], t2[0], p->x);
-		fp_mul(l[one][zero][1], t2[1], p->x);
+		fp_mul(l[one][zero][0], t1[0], p->x);
+		fp_mul(l[one][zero][1], t1[1], p->x);
 		fp2_neg(l[one][zero], l[one][zero]);
 
 #ifdef RLC_FP_ROOM
-		fp2_mulc_low(u1, q->x, t2);
-		fp2_mulc_low(u2, q->y, t1);
+		fp2_mulc_low(u0, q->x, t1);
+		fp2_mulc_low(u1, q->y, t0);
 #else
-		fp2_muln_low(u1, q->x, t2);
-		fp2_muln_low(u2, q->y, t1);
+		fp2_muln_low(u0, q->x, t1);
+		fp2_muln_low(u1, q->y, t0);
 #endif
-		fp2_subc_low(u1, u1, u2);
-		fp2_rdcn_low(l[one][one], u1);
+		fp2_subc_low(u0, u0, u1);
+		fp2_rdcn_low(l[one][one], u0);
 
-		fp_mul(l[zero][zero][0], t1[0], p->y);
-		fp_mul(l[zero][zero][1], t1[1], p->y);
+		fp_mul(l[zero][zero][0], t0[0], p->y);
+		fp_mul(l[zero][zero][1], t0[1], p->y);
 
 		r->coord = PROJC;
 	}
@@ -249,8 +249,8 @@ void pp_add_k12_projc_lazyr(fp12_t l, ep2_t r, ep2_t q, ep_t p) {
 		fp2_free(t2);
 		fp2_free(t3);
 		fp2_free(t4);
+		dv2_free(u0);
 		dv2_free(u1);
-		dv2_free(u2);
 	}
 }
 

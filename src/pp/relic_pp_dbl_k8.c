@@ -435,8 +435,7 @@ void pp_dbl_k8_projc_lazyr_new(fp8_t l, ep2_t r, ep2_t q, ep_t p) {
 		fp2_sqrn_low(u2, t1);
 		fp2_subc_low(u3, u3, u2);
 		fp2_rdcn_low(r->y, u3);
-
-		//t2 - x3 = t3*(3*t2 - t3^2)
+		/* t2 - x3 = t3*(3*t2 - t3^2). */
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
