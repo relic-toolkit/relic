@@ -131,7 +131,7 @@ void pp_add_k12_projc_basic(fp12_t l, ep2_t r, ep2_t q, ep_t p) {
 		/* t4 = B * x2. */
 		fp2_mul(t4, q->x, t1);
 
-		/* H = E + F - 2 * G. */
+		/* H = F - 2 * G. */
 		fp2_sub(t3, t3, r->x);
 		fp2_sub(t3, t3, r->x);
 		/* y3 = A * (G - H) - y1 * E. */
@@ -144,7 +144,7 @@ void pp_add_k12_projc_basic(fp12_t l, ep2_t r, ep2_t q, ep_t p) {
 		/* z3 = z1 * E. */
 		fp2_mul(r->z, r->z, t2);
 
-		/* l11 = J = B * x2 - A * y2. */
+		/* l11 = J = A * x2 - B * y2. */
 		fp2_mul(t2, q->y, t0);
 		fp2_sub(l[one][one], t4, t2);
 
