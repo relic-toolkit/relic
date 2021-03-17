@@ -618,8 +618,8 @@ void fp12_exp_cyc(fp12_t c, fp12_t a, bn_t b) {
 
 				l = RLC_MAX(bn_bits(_b[0]), bn_bits(_b[1]));
 				l = RLC_MAX(l, RLC_MAX(bn_bits(_b[2]), bn_bits(_b[3])));
-				fp12_set_dig(c, 1);
-				for (i = l - 1; i >= 0; i--) {
+				fp12_copy(c, a);
+				for (i = l - 2; i >= 0; i--) {
 					fp12_sqr_cyc(c, c);
 					for (j = 0; j < 4; j++) {
 						if (bn_get_bit(_b[j], i)) {
@@ -868,8 +868,8 @@ void fp12_exp_cyc_sim(fp12_t e, fp12_t a, bn_t b, fp12_t c, bn_t d) {
 			l = RLC_MAX(l, RLC_MAX(bn_bits(_d[0]), bn_bits(_d[1])));
 			l = RLC_MAX(l, RLC_MAX(bn_bits(_d[2]), bn_bits(_d[3])));
 
-			fp12_set_dig(e, 1);
-			for (i = l - 1; i >= 0; i--) {
+			fp12_copy(e, a);
+			for (i = l - 2; i >= 0; i--) {
 				fp12_sqr_cyc(e, e);
 				for (j = 0; j < 4; j++) {
 					if (bn_get_bit(_b[j], i)) {
@@ -892,7 +892,7 @@ void fp12_exp_cyc_sim(fp12_t e, fp12_t a, bn_t b, fp12_t c, bn_t d) {
 				fp12_copy(u[0], c);
 			}
 
-			fp12_set_dig(e, 1);
+			fp12_copy(e, a);
 			l = RLC_MAX(bn_bits(b), bn_bits(d));
 			for (i = l - 2; i >= 0; i--) {
 				fp12_sqr_cyc(e, e);
@@ -1208,7 +1208,6 @@ void fp48_exp_cyc(fp48_t c, fp48_t a, bn_t b) {
 			fp48_new(t);
 
 			fp48_copy(t, a);
-
 			for (i = bn_bits(b) - 2; i >= 0; i--) {
 				fp48_sqr_cyc(t, t);
 				if (bn_get_bit(b, i)) {
