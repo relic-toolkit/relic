@@ -163,10 +163,10 @@ void bn_mod_pre_monty(bn_t u, const bn_t m) {
 
 	x = (((b + 2) & 4) << 1) + b;	/* here x*a==1 mod 2**4 */
 	x *= 2 - b * x;				/* here x*a==1 mod 2**8 */
-#if WSIZE != 8
+#if WSIZE > 8
 	x *= 2 - b * x;				/* here x*a==1 mod 2**16 */
 #endif
-#if WSIZE == 64 || WSIZE != 8 || WSIZE == 16
+#if WSIZE > 16
 	x *= 2 - b * x;				/* here x*a==1 mod 2**32 */
 #endif
 #if WSIZE == 64
