@@ -161,16 +161,16 @@ void bn_mod_pre_monty(bn_t u, const bn_t m) {
 		return;
 	}
 
-	x = (((b + 2) & 4) << 1) + b;	/* here x*a==1 mod 2**4 */
-	x *= 2 - b * x;				/* here x*a==1 mod 2**8 */
+	x = (((b + 2) & 4) << 1) + b;				/* here x*a==1 mod 2**4 */
+	x *= (dig_t)2 - b * x;						/* here x*a==1 mod 2**8 */
 #if WSIZE > 8
-	x *= 2 - b * x;				/* here x*a==1 mod 2**16 */
+	x *= (dig_t)2 - b * x;						/* here x*a==1 mod 2**16 */
 #endif
 #if WSIZE > 16
-	x *= 2 - b * x;				/* here x*a==1 mod 2**32 */
+	x *= (dig_t)2 - b * x;						/* here x*a==1 mod 2**32 */
 #endif
 #if WSIZE == 64
-	x *= 2 - b * x;				/* here x*a==1 mod 2**64 */
+	x *= (dig_t)2 - b * x;						/* here x*a==1 mod 2**64 */
 #endif
 	/* u = -1/m0 (mod 2^RLC_DIG) */
 	bn_set_dig(u, -x);
