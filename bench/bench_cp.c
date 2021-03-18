@@ -910,6 +910,8 @@ static void pss(void) {
 	}
 }
 
+#ifdef WITH_MPC
+
 static void mpss(void) {
 	bn_t m[2], n, u[2], v[2], ms[10][2], _v[10][2];
 	g1_t g, s[2];
@@ -1043,6 +1045,8 @@ static void mpss(void) {
 		}
 	}
 }
+
+#endif
 
 static void zss(void) {
 	uint8_t msg[5] = { 0, 1, 2, 3, 4 }, h[RLC_MD_LEN];
