@@ -1131,6 +1131,8 @@ static int pss(void) {
   	return code;
 }
 
+#if defined(WITH_MPC)
+
 static int mpss(void) {
 	int i, j, code = RLC_ERR;
 	bn_t m[2], n, u[2], v[2], ms[5][2], _v[5][2];
@@ -1276,6 +1278,8 @@ static int mpss(void) {
 	}
   	return code;
 }
+
+#endif
 
 static int zss(void) {
 	int code = RLC_ERR;
