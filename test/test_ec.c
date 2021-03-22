@@ -350,7 +350,7 @@ static int multiplication(void) {
 		ec_curve_get_gen(p);
 		ec_curve_get_ord(n);
 
-		TEST_BEGIN("generator has the right order") {
+		TEST_ONCE("generator has the right order") {
 			ec_mul(r, p, n);
 			TEST_ASSERT(ec_is_infty(r) == 1, end);
 		} TEST_END;

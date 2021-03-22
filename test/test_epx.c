@@ -428,7 +428,7 @@ static int multiplication(void) {
 		ep2_curve_get_gen(p);
 		ep2_curve_get_ord(n);
 
-		TEST_BEGIN("generator has the right order") {
+		TEST_ONCE("generator has the right order") {
 			TEST_ASSERT(ep2_on_curve(p), end);
 			ep2_mul(r, p, n);
 			TEST_ASSERT(ep2_is_infty(r) == 1, end);

@@ -247,18 +247,6 @@ typedef eb_st *eb_t;
 #define eb_dbl(R, P)		eb_dbl_projc(R, P);
 #endif
 
-/**
- * Computes the Frobenius map of a binary elliptic curve point on a Koblitz
- * curve. Computes R = t(P).
- *
- * @param[out] R			- the result.
- * @param[in] P				- the point.
- */
-#if EB_ADD == BASIC
-#define eb_frb(R, P)		eb_frb_basic(R, P)
-#elif EB_ADD == PROJC
-#define eb_frb(R, P)		eb_frb_projc(R, P)
-#endif
 
 /**
  * Multiplies a binary elliptic curve point by an integer. Computes R = [k]P.
@@ -662,22 +650,13 @@ void eb_dbl_projc(eb_t r, const eb_t p);
 void eb_hlv(eb_t r, const eb_t p);
 
 /**
- * Computes the Frobenius map of a binary elliptic curve point represented
- * by affine coordinates.
+ * Computes the Frobenius map of a binary elliptic curve point on a Koblitz
+ * curve. Computes R = \tau(P) = \tau(x, y) = (x^2, y^2).
  *
  * @param[out] r			- the result.
  * @param[in] p				- the point.
  */
-void eb_frb_basic(eb_t r, const eb_t p);
-
-/**
- * Computes the Frobenius map of a binary elliptic curve point represented
- * by projective coordinates.
- *
- * @param[out] r			- the result.
- * @param[in] p				- the point.
- */
-void eb_frb_projc(eb_t r, const eb_t p);
+void eb_frb(eb_t r, const eb_t p);
 
 /**
  * Multiplies a binary elliptic point by an integer using the binary method.

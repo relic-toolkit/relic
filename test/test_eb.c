@@ -534,10 +534,18 @@ static int frobenius(void) {
 
 #if EB_ADD == BASIC || !defined(STRIP)
 			TEST_BEGIN("frobenius in affine coordinates is correct") {
+				/* Test if (t^2 + 2)P = utP. */
 				eb_rand(a);
 				eb_frb(b, a);
+				eb_frb(b, b);
+				eb_dbl(c, a);
+				eb_add(b, c, b);
+				/* Convert to affine. */
 				eb_norm(b, b);
-				eb_frb_basic(c, a);
+				eb_frb(c, a);
+				if (eb_curve_opt_a() == RLC_ZERO) {
+					eb_neg(c, c);
+				}
 				TEST_ASSERT(eb_cmp(b, c) == RLC_EQ, end);
 			}
 			TEST_END;
@@ -546,13 +554,11 @@ static int frobenius(void) {
 #if EB_ADD == PROJC || !defined(STRIP)
 			TEST_BEGIN("frobenius in projective coordinates is correct") {
 				eb_rand(a);
-				eb_frb_projc(a, a);
+				eb_dbl_projc(a, a);
 				/* a in projective coordinates. */
-				eb_frb_projc(b, a);
-				eb_norm(b, b);
+				eb_frb(b, a);
 				eb_norm(a, a);
 				eb_frb(c, a);
-				eb_norm(c, c);
 				TEST_ASSERT(eb_cmp(b, c) == RLC_EQ, end);
 			}
 			TEST_END;
@@ -595,7 +601,7 @@ static int multiplication(void) {
 		eb_curve_get_gen(p);
 		eb_curve_get_ord(n);
 
-		TEST_BEGIN("generator has the right order") {
+		TEST_ONCE("generator has the right order") {
 			TEST_ASSERT(eb_on_curve(p), end);
 			eb_mul(r, p, n);
 			TEST_ASSERT(eb_is_infty(r) == 1, end);

@@ -327,7 +327,7 @@ static void arith(void) {
 		BENCH_RUN("eb_frb") {
 			eb_rand(p);
 			eb_rand(q);
-			eb_frb(p, q);
+			eb_add_projc(p, p, q);
 			BENCH_ADD(eb_frb(r, p));
 		}
 		BENCH_END;
@@ -335,21 +335,9 @@ static void arith(void) {
 
 #if EB_ADD == BASIC || !defined(STRIP)
 	if (eb_curve_is_kbltz()) {
-		BENCH_RUN("eb_frb_basic") {
+		BENCH_RUN("eb_frb (z = 1)") {
 			eb_rand(p);
-			BENCH_ADD(eb_frb_basic(r, p));
-		}
-		BENCH_END;
-	}
-#endif
-
-#if EB_ADD == PROJC || !defined(STRIP)
-	if (eb_curve_is_kbltz()) {
-		BENCH_RUN("eb_frb_projc") {
-			eb_rand(p);
-			eb_rand(q);
-			eb_add_projc(p, p, q);
-			BENCH_ADD(eb_frb_projc(r, p));
+			BENCH_ADD(eb_frb(r, p));
 		}
 		BENCH_END;
 	}

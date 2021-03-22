@@ -29,8 +29,6 @@
  * @ingroup eb
  */
 
-#include "string.h"
-
 #include "relic_core.h"
 #include "relic_eb.h"
 
@@ -40,27 +38,7 @@
 
 #if defined(EB_KBLTZ)
 
-#if EB_ADD == BASIC || !defined(STRIP)
-
-void eb_frb_basic(eb_t r, const eb_t p) {
-	if (eb_is_infty(p)) {
-		eb_set_infty(r);
-		return;
-	}
-
-	fb_sqr(r->x, p->x);
-	fb_sqr(r->y, p->y);
-	fb_zero(r->z);
-	fb_set_bit(r->z, 0, 1);
-
-	r->coord = BASIC;
-}
-
-#endif
-
-#if EB_ADD == PROJC || !defined(STRIP)
-
-void eb_frb_projc(eb_t r, const eb_t p) {
+void eb_frb(eb_t r, const eb_t p) {
 	if (eb_is_infty(p)) {
 		eb_set_infty(r);
 		return;
@@ -76,7 +54,5 @@ void eb_frb_projc(eb_t r, const eb_t p) {
 
 	r->coord = p->coord;
 }
-
-#endif
 
 #endif
