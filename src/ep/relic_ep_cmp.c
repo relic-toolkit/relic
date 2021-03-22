@@ -36,34 +36,34 @@
 /*============================================================================*/
 
 int ep_cmp(const ep_t p, const ep_t q) {
-    ep_t r, s;
-    int result = RLC_NE;
+	ep_t r, s;
+	int result = RLC_NE;
 
 	if (ep_is_infty(p) && ep_is_infty(q)) {
 		return RLC_EQ;
 	}
 
-    ep_null(r);
-    ep_null(s);
+	ep_null(r);
+	ep_null(s);
 
-    RLC_TRY {
-        ep_new(r);
-        ep_new(s);
+	RLC_TRY {
+		ep_new(r);
+		ep_new(s);
 
 		switch (q->coord) {
 			case PROJC:
-                /* If q is in homogeneous projective coordinates, compute
+				/* If q is in homogeneous projective coordinates, compute
 				 * x1 * z2 and y1 * z2. */
 				fp_mul(r->x, p->x, q->z);
 				fp_mul(r->y, p->y, q->z);
 				break;
 			case JACOB:
-                /* If q is in Jacobian projective coordinates, compute
-                 * x2 * z1^2 and y2 * z1^3. */
-	            fp_sqr(r->z, q->z);
-	            fp_mul(r->x, p->x, r->z);
-	            fp_mul(r->z, r->z, q->z);
-	            fp_mul(r->y, p->y, r->z);
+				/* If q is in Jacobian projective coordinates, compute
+				 * x2 * z1^2 and y2 * z1^3. */
+				fp_sqr(r->z, q->z);
+				fp_mul(r->x, p->x, r->z);
+				fp_mul(r->z, r->z, q->z);
+				fp_mul(r->y, p->y, r->z);
 				break;
 			default:
 				ep_copy(r, p);
@@ -71,31 +71,33 @@ int ep_cmp(const ep_t p, const ep_t q) {
 		}
 
 		switch (p->coord) {
-            /* Now do the same for the other point. */
+			/* Now do the same for the other point. */
 			case PROJC:
 				fp_mul(s->x, q->x, p->z);
 				fp_mul(s->y, q->y, p->z);
 				break;
 			case JACOB:
-	            fp_sqr(s->z, p->z);
-	            fp_mul(s->x, q->x, s->z);
-	            fp_mul(s->z, s->z, p->z);
-	            fp_mul(s->y, q->y, s->z);
+				fp_sqr(s->z, p->z);
+				fp_mul(s->x, q->x, s->z);
+				fp_mul(s->z, s->z, p->z);
+				fp_mul(s->y, q->y, s->z);
 				break;
 			default:
 				ep_copy(s, q);
 				break;
 		}
 
-        if ((fp_cmp(r->x, s->x) == RLC_EQ) && (fp_cmp(r->y, s->y) == RLC_EQ)) {
-            result = RLC_EQ;
-        }
-    } RLC_CATCH_ANY {
-        RLC_THROW(ERR_CAUGHT);
-    } RLC_FINALLY {
-        ep_free(r);
-        ep_free(s);
-    }
+		if ((fp_cmp(r->x, s->x) == RLC_EQ) && (fp_cmp(r->y, s->y) == RLC_EQ)) {
+			result = RLC_EQ;
+		}
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		ep_free(r);
+		ep_free(s);
+	}
 
-    return result;
+	return result;
 }
