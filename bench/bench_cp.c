@@ -486,6 +486,104 @@ static void vbnn(void) {
 
 #if defined(WITH_PC)
 
+static void pcdel(void) {
+	bn_t r1, r2;
+	g1_t p, u1, v1;
+	g2_t q, u2, v2, w2;
+	gt_t e, r, g[3];
+
+	bn_null(r1);
+	bn_null(r2);
+	g1_null(p);
+	g1_null(u1);
+	g1_null(v1);
+	g2_null(q);
+	g2_null(u2);
+	g2_null(v2);
+	g2_null(w2);
+	gt_null(e);
+	gt_null(r);
+	gt_null(g[0]);
+	gt_null(g[1]);
+	gt_null(g[2]);
+
+	bn_new(r1);
+	bn_new(r2);
+	g1_new(p);
+	g1_new(u1);
+	g1_new(v1);
+	g2_new(q);
+	g2_new(u2);
+	g2_new(v2);
+	g2_new(w2);
+	gt_new(e);
+	gt_new(r);
+	gt_new(g[0]);
+	gt_new(g[1]);
+	gt_new(g[2]);
+
+	BENCH_RUN("cp_pcdel_gen") {
+		BENCH_ADD(cp_pcdel_gen(r1, r2, u1, u2, v2, e));
+	} BENCH_END;
+
+	BENCH_RUN("cp_pcdel_ask") {
+		g1_rand(p);
+		g2_rand(q);
+		BENCH_ADD(cp_pcdel_ask(v1, w2, p, q, r1, r2, u1, u2, v2));
+	} BENCH_END;
+
+	BENCH_RUN("cp_pcdel_ans") {
+		g1_rand(p);
+		g2_rand(q);
+		BENCH_ADD(cp_pcdel_ans(g, p, q, v1, v2, w2));
+	} BENCH_END;
+
+	BENCH_RUN("cp_pcdel_ver") {
+		g1_rand(p);
+		g2_rand(q);
+		pc_map(e, p, q);
+		BENCH_ADD(cp_pcdel_ver(r, g, r1, e));
+	} BENCH_END;
+
+	BENCH_RUN("cp_amore_gen") {
+		BENCH_ADD(cp_amore_gen(r2, u1, u2, v2, e));
+	} BENCH_END;
+
+	BENCH_RUN("cp_amore_ask") {
+		g1_rand(p);
+		g2_rand(q);
+		BENCH_ADD(cp_amore_ask(r1, v1, w2, p, q, r2, u1, u2, v2));
+	} BENCH_END;
+
+	BENCH_RUN("cp_amore_ans") {
+		g1_rand(p);
+		g2_rand(q);
+		BENCH_ADD(cp_amore_ans(g, p, q, v1, v2, w2));
+	} BENCH_END;
+
+	BENCH_RUN("cp_amore_ver") {
+		g1_rand(p);
+		g2_rand(q);
+		pc_map(e, p, q);
+		BENCH_ADD(cp_amore_ver(r, g, r1, e));
+	} BENCH_END;
+
+	bn_free(r1);
+	bn_free(r2);
+	g1_free(p);
+	g1_free(u1);
+	g1_free(v1);
+	g2_free(q);
+	g2_free(u2);
+	g2_free(v2);
+	g2_free(w2);
+	gt_free(e);
+	gt_free(r);
+	gt_free(g[0]);
+	gt_free(g[1]);
+	gt_free(g[2]);
+}
+
 static void sokaka(void) {
 	sokaka_t k;
 	bn_t s;
@@ -1462,6 +1560,7 @@ int main(void) {
 #if defined(WITH_PC)
 	util_banner("Protocols based on pairings:\n", 0);
 	if (pc_param_set_any() == RLC_OK) {
+		pcdel();
 		sokaka();
 		ibe();
 		bgn();
