@@ -206,7 +206,7 @@ int g2_is_valid(g2_t a) {
 				/* Formulas from "Faster Subgroup Checks for BLS12-381" by Bowe.
 				 * https://eprint.iacr.org/2019/814.pdf */
 				case EP_B12:
-					/* Check [z]psi^3(P) - \psi^2(P) + P == \infty. */
+					/* Check [z]psi^3(P) + P == \psi^2(P). */
 					fp_prime_get_par(n);
 					ep2_copy(u, a);
 					for (int i = bn_bits(n) - 2; i >= 0; i--) {
@@ -220,9 +220,8 @@ int g2_is_valid(g2_t a) {
 					}
 					ep2_frb(u, u, 3);
 					ep2_frb(v, a, 2);
-					ep2_sub(u, u, v);
 					ep2_add(u, u, a);
-					r = ep2_is_infty(u);
+					r = ep2_on_curve(a) && (g2_cmp(u, v) == RLC_EQ);
 					break;
 				default:
 					pc_get_ord(n);
