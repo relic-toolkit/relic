@@ -727,12 +727,12 @@ static int pdpub(void) {
 		} TEST_END;
 
 		TEST_CASE("faster delegated pairing with public inputs is correct") {
-			TEST_ASSERT(cp_amore_gen(r2, u1, u2, v2, e) == RLC_OK, end);
+			TEST_ASSERT(cp_ampub_gen(r2, u1, u2, v2, e) == RLC_OK, end);
 			g1_rand(p);
 			g2_rand(q);
-			TEST_ASSERT(cp_amore_ask(r1, v1, w2, p, q, r2, u1, u2, v2) == RLC_OK, end);
-			TEST_ASSERT(cp_amore_ans(g, p, q, v1, v2, w2) == RLC_OK, end);
-			TEST_ASSERT(cp_amore_ver(r, g, r1, e) == 1, end);
+			TEST_ASSERT(cp_ampub_ask(r1, v1, w2, p, q, r2, u1, u2, v2) == RLC_OK, end);
+			TEST_ASSERT(cp_ampub_ans(g, p, q, v1, v2, w2) == RLC_OK, end);
+			TEST_ASSERT(cp_ampub_ver(r, g, r1, e) == 1, end);
 			pc_map(e, p, q);
 			TEST_ASSERT(gt_cmp(r, e) == RLC_EQ, end);
 		} TEST_END;
@@ -811,6 +811,17 @@ static int pdprv(void) {
 			TEST_ASSERT(cp_pdprv_ask(v1, w2, p, q, r1, r2, u1, u2, v2) == RLC_OK, end);
 			TEST_ASSERT(cp_pdprv_ans(g, v1, w2) == RLC_OK, end);
 			TEST_ASSERT(cp_pdprv_ver(r, g, r1, e) == 1, end);
+			pc_map(e[0], p, q);
+			TEST_ASSERT(gt_cmp(r, e[0]) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("faster delegated pairing with private inputs is correct") {
+			TEST_ASSERT(cp_pdprv_gen(r1, r2, u1, u2, v2, e) == RLC_OK, end);
+			g1_rand(p);
+			g2_rand(q);
+			TEST_ASSERT(cp_amprv_ask(v1, w2, p, q, r1, r2, u1, u2, v2) == RLC_OK, end);
+			TEST_ASSERT(cp_amprv_ans(g, v1, w2) == RLC_OK, end);
+			TEST_ASSERT(cp_amprv_ver(r, g, r1, e) == 1, end);
 			pc_map(e[0], p, q);
 			TEST_ASSERT(gt_cmp(r, e[0]) == RLC_EQ, end);
 		} TEST_END;

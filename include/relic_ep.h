@@ -286,7 +286,7 @@ typedef iso_st *iso_t;
  * @param[out] A			- the point to initialize.
  */
 #if ALLOC == AUTO
-#define ep_null(A)			/* empty */
+#define ep_null(A)				/* empty */
 #else
 #define ep_null(A)			A = NULL;
 #endif
@@ -305,7 +305,7 @@ typedef iso_st *iso_t;
 	}																		\
 
 #elif ALLOC == AUTO
-#define ep_new(A)			/* empty */
+#define ep_new(A)				/* empty */
 
 #endif
 
@@ -322,7 +322,7 @@ typedef iso_st *iso_t;
 	}
 
 #elif ALLOC == AUTO
-#define ep_free(A)			/* empty */
+#define ep_free(A)				/* empty */
 
 #endif
 
@@ -1208,7 +1208,8 @@ void ep_map(ep_t p, const uint8_t *msg, int len);
  * @param[in] dst			- the domain separation tag.
  * @param[in] dst_len		- the domain separation tag length in bytes.
  */
-void ep_map_dst(ep_t p, const uint8_t *msg, int len, const uint8_t *dst, int dst_len);
+void ep_map_dst(ep_t p, const uint8_t *msg, int len, const uint8_t *dst,
+		int dst_len);
 
 /**
  * Maps a byte array to a point in a prime elliptic curve with specified
@@ -1220,7 +1221,8 @@ void ep_map_dst(ep_t p, const uint8_t *msg, int len, const uint8_t *dst, int dst
  * @param[in] dst			- the domain separation tag.
  * @param[in] dst_len		- the domain separation tag length in bytes.
  */
-void ep_map_dst(ep_t p, const uint8_t *msg, int len, const uint8_t *dst, int dst_len);
+void ep_map_dst(ep_t p, const uint8_t *msg, int len, const uint8_t *dst,
+		int dst_len);
 
 /**
  * Compresses a point.

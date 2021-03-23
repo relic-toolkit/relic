@@ -545,27 +545,27 @@ static void pdpub(void) {
 		BENCH_ADD(cp_pdpub_ver(r, g, r1, e));
 	} BENCH_END;
 
-	BENCH_RUN("cp_amore_gen") {
-		BENCH_ADD(cp_amore_gen(r2, u1, u2, v2, e));
+	BENCH_RUN("cp_ampub_gen") {
+		BENCH_ADD(cp_ampub_gen(r2, u1, u2, v2, e));
 	} BENCH_END;
 
-	BENCH_RUN("cp_amore_ask") {
+	BENCH_RUN("cp_ampub_ask") {
 		g1_rand(p);
 		g2_rand(q);
-		BENCH_ADD(cp_amore_ask(r1, v1, w2, p, q, r2, u1, u2, v2));
+		BENCH_ADD(cp_ampub_ask(r1, v1, w2, p, q, r2, u1, u2, v2));
 	} BENCH_END;
 
-	BENCH_RUN("cp_amore_ans") {
+	BENCH_RUN("cp_ampub_ans") {
 		g1_rand(p);
 		g2_rand(q);
-		BENCH_ADD(cp_amore_ans(g, p, q, v1, v2, w2));
+		BENCH_ADD(cp_ampub_ans(g, p, q, v1, v2, w2));
 	} BENCH_END;
 
-	BENCH_RUN("cp_amore_ver") {
+	BENCH_RUN("cp_ampub_ver") {
 		g1_rand(p);
 		g2_rand(q);
 		pc_map(e, p, q);
-		BENCH_ADD(cp_amore_ver(r, g, r1, e));
+		BENCH_ADD(cp_ampub_ver(r, g, r1, e));
 	} BENCH_END;
 
 	bn_free(r1);
