@@ -601,7 +601,7 @@ static void pdprv(void) {
 	}
 	for (int i = 0; i < 3; i++) {
 		g1_null(v1[i]);
-		bn_null(r[i]);
+		bn_null(r2[i]);
 	}
 	for (int i = 0; i < 4; i++) {
 		g2_null(v2[i]);
@@ -641,8 +641,8 @@ static void pdprv(void) {
 		gt_free(e[i]);
 	}
 	for (int i = 0; i < 3; i++) {
-		g1_null(v1[i]);
-		bn_null(r[i]);
+		g1_free(v1[i]);
+		bn_free(r2[i]);
 	}
 	for (int i = 0; i < 4; i++) {
 		g2_free(v2[i]);
