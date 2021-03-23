@@ -789,6 +789,7 @@ static int pdprv(void) {
 		bn_new(r1);
 		g1_new(p);
 		g2_new(q);
+		gt_new(r);
 		for (int i = 0; i < 2; i++) {
 			g1_new(u1[i]);
 			g2_new(u2[i]);

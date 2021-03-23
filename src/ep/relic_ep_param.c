@@ -1026,14 +1026,11 @@ void ep_param_set(int param) {
 					bn_sqr(lamb, lamb);
 					bn_sqr(lamb, lamb);
 					bn_mul_dig(lamb, lamb, 36);
-					bn_print(lamb);
-					bn_print(r);
 					bn_sub(lamb, r, lamb);
 					if (bn_sign(lamb) == RLC_NEG) {
 						bn_neg(lamb, lamb);
 						bn_sub_dig(lamb, lamb, 1);
 					}
-					bn_print(lamb);
 					break;
 				/* beta = (-1 + sqrt(-3))/2, lambda = z^2 - 1 */
 				case EP_B12:

@@ -609,6 +609,25 @@ static void pdprv(void) {
 		gt_null(g[i]);
 	}
 
+	bn_new(r1);
+	g1_new(p);
+	g2_new(q);
+	gt_new(r);
+	for (int i = 0; i < 2; i++) {
+		g1_new(u1[i]);
+		g2_new(u2[i]);
+		gt_new(e[i]);
+	}
+	for (int i = 0; i < 3; i++) {
+		g1_new(v1[i]);
+		bn_new(r2[i]);
+	}
+	for (int i = 0; i < 4; i++) {
+		g2_new(v2[i]);
+		g2_new(w2[i]);
+		gt_new(g[i]);
+	}
+
 	BENCH_RUN("cp_pdprv_gen") {
 		BENCH_ADD(cp_pdprv_gen(r1, r2, u1, u2, v2, e));
 	} BENCH_END;
