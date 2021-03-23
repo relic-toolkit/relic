@@ -81,7 +81,7 @@ void gt_get_gen(gt_t g) {
 
 int g1_is_valid(g1_t a) {
 	bn_t n;
-	g1_t u;
+	g1_t t, u, v;
 	int r;
 
 	if (g1_is_infty(a)) {
@@ -89,35 +89,68 @@ int g1_is_valid(g1_t a) {
 	}
 
 	bn_null(n);
+	g1_null(t);
 	g1_null(u);
+	g1_null(v);
 
 	RLC_TRY {
 		bn_new(n);
+		g1_new(t);
 		g1_new(u);
+		g1_new(v);
 
 		ep_curve_get_cof(n);
 		if (bn_cmp_dig(n, 1) == RLC_EQ) {
 			/* If curve has prime order, simpler to check if point on curve. */
-			return ep_on_curve(a);
+			r = ep_on_curve(a);
 		} else {
-			pc_get_ord(n);
-			/* Otherwise, check order explicitly. */
-			bn_sub_dig(n, n, 1);
-			g1_copy(u, a);
-			for (int i = bn_bits(n) - 2; i >= 0; i--) {
-				g1_dbl(u, u);
-				if (bn_get_bit(n, i)) {
-					g1_add(u, u, a);
-				}
+			switch (ep_curve_is_pairf()) {
+				/* Formulas from "Faster Subgroup Checks for BLS12-381" by Bowe.
+				 * https://eprint.iacr.org/2019/814.pdf */
+				case EP_B12:
+					/* Check [(z^2−1)](2\psi(P)-P-\psi^2(P)) == [3]\psi^2(P). */
+					ep_psi(v, a);
+					ep_dbl(u, v);
+					ep_psi(v, v);
+					ep_sub(u, u, a);
+					ep_sub(u, u, v);
+					fp_prime_get_par(n);
+					bn_sqr(n, n);
+					ep_copy(t, u);
+					for (int i = bn_bits(n) - 2; i >= 0; i--) {
+						ep_dbl(t, t);
+						if (bn_get_bit(n, i)) {
+							ep_add(t, t, u);
+						}
+					}
+					ep_sub(t, t, u);
+					ep_dbl(u, v);
+					ep_add(u, u, v);
+					r = ep_on_curve(t) && (ep_cmp(t, u) == RLC_EQ);
+					break;
+				default:
+					pc_get_ord(n);
+					bn_sub_dig(n, n, 1);
+					/* Otherwise, check order explicitly. */
+					g1_copy(u, a);
+					for (int i = bn_bits(n) - 2; i >= 0; i--) {
+						g1_dbl(u, u);
+						if (bn_get_bit(n, i)) {
+							g1_add(u, u, a);
+						}
+					}
+					g1_neg(u, u);
+					r = ep_on_curve(a) && (g1_cmp(u, a) == RLC_EQ);
+					break;
 			}
-			g1_neg(u, u);
-			r = (g1_cmp(u, a) == RLC_EQ);
 		}
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		bn_free(n);
+		g1_free(t);
 		g1_free(u);
+		g1_free(v);
 	}
 
 	return r;
@@ -167,19 +200,45 @@ int g2_is_valid(g2_t a) {
 			ep2_frb(v, a, 1);
 			g2_add(v, v, a);
 			/* Check if a^(p + 1) = a^t. */
-			r = (g2_cmp(u, v) == RLC_EQ);
+			r = ep2_on_curve(a) && (g2_cmp(u, v) == RLC_EQ);
 		} else {
-			/* Common case. */
-			bn_sub_dig(n, n, 1);
-			g2_copy(u, a);
-			for (int i = bn_bits(n) - 2; i >= 0; i--) {
-				g2_dbl(u, u);
-				if (bn_get_bit(n, i)) {
-					g2_add(u, u, a);
-				}
+			switch (ep_curve_is_pairf()) {
+				/* Formulas from "Faster Subgroup Checks for BLS12-381" by Bowe.
+				 * https://eprint.iacr.org/2019/814.pdf */
+				case EP_B12:
+					/* Check [z]psi^3(P) - \psi^2(P) + P == \infty. */
+					fp_prime_get_par(n);
+					ep2_copy(u, a);
+					for (int i = bn_bits(n) - 2; i >= 0; i--) {
+						ep2_dbl(u, u);
+						if (bn_get_bit(n, i)) {
+							ep2_add(u, u, a);
+						}
+					}
+					if (bn_sign(n) == RLC_NEG) {
+						ep2_neg(u, u);
+					}
+					ep2_frb(u, u, 3);
+					ep2_frb(v, a, 2);
+					ep2_sub(u, u, v);
+					ep2_add(u, u, a);
+					r = ep2_is_infty(u);
+					break;
+				default:
+					pc_get_ord(n);
+					bn_sub_dig(n, n, 1);
+					/* Otherwise, check order explicitly. */
+					g2_copy(u, a);
+					for (int i = bn_bits(n) - 2; i >= 0; i--) {
+						g2_dbl(u, u);
+						if (bn_get_bit(n, i)) {
+							g2_add(u, u, a);
+						}
+					}
+					g2_neg(u, u);
+					r = ep2_on_curve(a) && (g2_cmp(u, a) == RLC_EQ);
+					break;
 			}
-			g2_neg(u, u);
-			r = (g2_cmp(u, a) == RLC_EQ);
 		}
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
