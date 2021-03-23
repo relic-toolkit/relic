@@ -189,7 +189,6 @@ int cp_amore_ans(gt_t g[2], g1_t p, g2_t q, g1_t v1, g2_t v2, g2_t w2) {
 		g2_free(_q[1]);
 	}
 
-
 	return result;
 }
 
