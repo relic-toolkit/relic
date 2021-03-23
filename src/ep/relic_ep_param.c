@@ -1049,7 +1049,6 @@ void ep_param_set(int param) {
 				default:
 					if (bn_cmp_dig(h, 1) == RLC_EQ) {
 						/* SECG curves with endomorphisms. */
-						fp_param_print();
 						fp_set_dig(beta, 2);
 						h->used = RLC_FP_DIGS;
 						dv_copy(h->dp, fp_prime_get(), RLC_FP_DIGS);
