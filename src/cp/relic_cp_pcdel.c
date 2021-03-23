@@ -160,12 +160,35 @@ int cp_amore_ask(bn_t c, g1_t v1, g2_t w2, g1_t p, g2_t q, bn_t r, g1_t u1, g2_t
 
 int cp_amore_ans(gt_t g[2], g1_t p, g2_t q, g1_t v1, g2_t v2, g2_t w2) {
 	int result = RLC_OK;
+	g1_t _p[2];
+	g2_t _q[2];
 
-	pc_map(g[0], p, w2);
-	pc_map(g[1], v1, v2);
-	gt_inv(g[1], g[1]);
-	gt_mul(g[1], g[1], g[0]);
-	pc_map(g[0], p, q);
+	g1_null(_p[0]);
+	g1_null(_p[1]);
+	g2_null(_q[0]);
+	g2_null(_q[1]);
+
+	RLC_TRY {
+		g1_new(_p[0]);
+		g1_new(_p[1]);
+		g2_new(_q[0]);
+		g2_new(_q[1]);
+
+		g1_copy(_p[0], p);
+		g1_copy(_p[1], v1);
+		g2_copy(_q[0], w2);
+		g2_neg(_q[1], v2);
+		pc_map_sim(g[1], _p, _q, 2);
+		pc_map(g[0], p, q);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		g1_free(_p[0]);
+		g1_free(_p[1]);
+		g2_free(_q[0]);
+		g2_free(_q[1]);
+	}
+
 
 	return result;
 }
