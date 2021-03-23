@@ -291,17 +291,32 @@ int gt_is_valid(gt_t a) {
 			/* Check if a^(p + 1) = a^t. */
 			r = (gt_cmp(u, v) == RLC_EQ);
 		} else {
-			/* Common case. */
-			bn_sub_dig(n, n, 1);
-			gt_copy(u, a);
-			for (int i = bn_bits(n) - 2; i >= 0; i--) {
-				gt_sqr(u, u);
-				if (bn_get_bit(n, i)) {
+			switch (ep_curve_is_pairf()) {
+				/* Formulas from "Faster Subgroup Checks for BLS12-381" by Bowe.
+				 * https://eprint.iacr.org/2019/814.pdf */
+				case EP_B12:
+					/* Check [z]psi^3(P) + P == \psi^2(P). */
+					fp_prime_get_par(n);
+					gt_exp(u, a, n);
+					gt_frb(u, u, 3);
+					gt_frb(v, a, 2);
 					gt_mul(u, u, a);
-				}
+					r = (gt_cmp(u, v) == RLC_EQ);
+					break;
+				default:
+					/* Common case. */
+					bn_sub_dig(n, n, 1);
+					gt_copy(u, a);
+					for (int i = bn_bits(n) - 2; i >= 0; i--) {
+						gt_sqr(u, u);
+						if (bn_get_bit(n, i)) {
+							gt_mul(u, u, a);
+						}
+					}
+					gt_inv(u, u);
+					r = (gt_cmp(u, a) == RLC_EQ);
+					break;
 			}
-			gt_inv(u, u);
-			r = (gt_cmp(u, a) == RLC_EQ);
 		}
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
