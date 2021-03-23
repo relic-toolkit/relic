@@ -677,7 +677,7 @@ end:
 
 #if defined(WITH_PC)
 
-static int pcdel(void) {
+static int pdpub(void) {
 	int code = RLC_ERR;
 	bn_t r1, r2;
 	g1_t p, u1, v1;
@@ -715,18 +715,18 @@ static int pcdel(void) {
 		gt_new(g[1]);
 		gt_new(g[2]);
 
-		TEST_CASE("delegated pairing computation is correct") {
-			TEST_ASSERT(cp_pcdel_gen(r1, r2, u1, u2, v2, e) == RLC_OK, end);
+		TEST_CASE("delegated pairing computation with public inputs is correct") {
+			TEST_ASSERT(cp_pdpub_gen(r1, r2, u1, u2, v2, e) == RLC_OK, end);
 			g1_rand(p);
 			g2_rand(q);
-			TEST_ASSERT(cp_pcdel_ask(v1, w2, p, q, r1, r2, u1, u2, v2) == RLC_OK, end);
-			TEST_ASSERT(cp_pcdel_ans(g, p, q, v1, v2, w2) == RLC_OK, end);
-			TEST_ASSERT(cp_pcdel_ver(r, g, r1, e) == 1, end);
+			TEST_ASSERT(cp_pdpub_ask(v1, w2, p, q, r1, r2, u1, u2, v2) == RLC_OK, end);
+			TEST_ASSERT(cp_pdpub_ans(g, p, q, v1, v2, w2) == RLC_OK, end);
+			TEST_ASSERT(cp_pdpub_ver(r, g, r1, e) == 1, end);
 			pc_map(e, p, q);
 			TEST_ASSERT(gt_cmp(r, e) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_CASE("faster delegated pairing computation is correct") {
+		TEST_CASE("faster delegated pairing with public inputs is correct") {
 			TEST_ASSERT(cp_amore_gen(r2, u1, u2, v2, e) == RLC_OK, end);
 			g1_rand(p);
 			g2_rand(q);
@@ -756,6 +756,88 @@ static int pcdel(void) {
 	gt_free(g[0]);
 	gt_free(g[1]);
 	gt_free(g[2]);
+  	return code;
+}
+
+static int pdprv(void) {
+	int code = RLC_ERR;
+	bn_t r1, r2[3];
+	g1_t p, u1[2], v1[3];
+	g2_t q, u2[2], v2[4], w2[4];
+	gt_t e[2], r, g[4];
+
+	bn_null(r1);
+	g1_null(p);
+	g2_null(q);
+	gt_null(r);
+	for (int i = 0; i < 2; i++) {
+		g1_null(u1[i]);
+		g2_null(u2[i]);
+		gt_null(e[i]);
+	}
+	for (int i = 0; i < 3; i++) {
+		g1_null(v1[i]);
+		bn_null(r[i]);
+	}
+	for (int i = 0; i < 4; i++) {
+		g2_null(v2[i]);
+		g2_null(w2[i]);
+		gt_null(g[i]);
+	}
+
+	RLC_TRY {
+		bn_new(r1);
+		g1_new(p);
+		g2_new(q);
+		for (int i = 0; i < 2; i++) {
+			g1_new(u1[i]);
+			g2_new(u2[i]);
+			gt_new(e[i]);
+		}
+		for (int i = 0; i < 3; i++) {
+			g1_new(v1[i]);
+			bn_new(r2[i]);
+		}
+		for (int i = 0; i < 4; i++) {
+			g2_new(v2[i]);
+			g2_new(w2[i]);
+			gt_new(g[i]);
+		}
+
+		TEST_CASE("delegated pairing computation with private inputs is correct") {
+			TEST_ASSERT(cp_pdprv_gen(r1, r2, u1, u2, v2, e) == RLC_OK, end);
+			g1_rand(p);
+			g2_rand(q);
+			TEST_ASSERT(cp_pdprv_ask(v1, w2, p, q, r1, r2, u1, u2, v2) == RLC_OK, end);
+			TEST_ASSERT(cp_pdprv_ans(g, v1, w2) == RLC_OK, end);
+			TEST_ASSERT(cp_pdprv_ver(r, g, r1, e) == 1, end);
+			pc_map(e[0], p, q);
+			TEST_ASSERT(gt_cmp(r, e[0]) == RLC_EQ, end);
+		} TEST_END;
+	} RLC_CATCH_ANY {
+		RLC_ERROR(end);
+	}
+	code = RLC_OK;
+
+  end:
+	bn_free(r1);
+	g1_free(p);
+	g2_free(q);
+	gt_free(r);
+	for (int i = 0; i < 2; i++) {
+		g1_free(u1[i]);
+		g2_free(u2[i]);
+		gt_free(e[i]);
+	}
+	for (int i = 0; i < 3; i++) {
+		g1_null(v1[i]);
+		bn_null(r[i]);
+	}
+	for (int i = 0; i < 4; i++) {
+		g2_free(v2[i]);
+		g2_free(w2[i]);
+		gt_free(g[i]);
+	}
   	return code;
 }
 
@@ -1700,7 +1782,12 @@ int main(void) {
 	util_banner("Protocols based on pairings:\n", 0);
 	if (pc_param_set_any() == RLC_OK) {
 
-		if (pcdel() != RLC_OK) {
+		if (pdpub() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (pdprv() != RLC_OK) {
 			core_clean();
 			return 1;
 		}

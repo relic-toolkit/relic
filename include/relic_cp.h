@@ -899,7 +899,7 @@ int cp_ecss_ver(bn_t e, bn_t s, uint8_t *msg, int len, ec_t q);
  * @param[out] e			- the precomputed values e(U1, U2).
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_pcdel_gen(bn_t c, bn_t r, g1_t u1, g2_t u2, g2_t v2, gt_t e);
+int cp_pdpub_gen(bn_t c, bn_t r, g1_t u1, g2_t u2, g2_t v2, gt_t e);
 
 /**
  * Execute the client-side request for the DCKKS pairing delegation protocol.
@@ -915,7 +915,7 @@ int cp_pcdel_gen(bn_t c, bn_t r, g1_t u1, g2_t u2, g2_t v2, gt_t e);
  * @param[in] v2			- the image of the randomness in G_2.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_pcdel_ask(g1_t v1, g2_t w2, g1_t p, g2_t q, bn_t c, bn_t r, g1_t u1, g2_t u2, g2_t v2);
+int cp_pdpub_ask(g1_t v1, g2_t w2, g1_t p, g2_t q, bn_t c, bn_t r, g1_t u1, g2_t u2, g2_t v2);
 
 /**
  * Execute the server-side response for the DCKKS pairing delegation protocol.
@@ -928,7 +928,7 @@ int cp_pcdel_ask(g1_t v1, g2_t w2, g1_t p, g2_t q, bn_t c, bn_t r, g1_t u1, g2_t
  * @param[in] w2			- the blinded element in G_2.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_pcdel_ans(gt_t g[3], g1_t p, g2_t q, g1_t v1, g2_t v2, g2_t w2);
+int cp_pdpub_ans(gt_t g[3], g1_t p, g2_t q, g1_t v1, g2_t v2, g2_t w2);
 
 /**
  * Verifies the result of the DCKKS pairing delegation protocol.
@@ -939,7 +939,61 @@ int cp_pcdel_ans(gt_t g[3], g1_t p, g2_t q, g1_t v1, g2_t v2, g2_t w2);
  * @param[out] e			- the precomputed values e(U1, U2).
  * @return a boolean value indicating if the computation is correct.
  */
-int cp_pcdel_ver(gt_t r, gt_t g[3], bn_t c, gt_t e);
+int cp_pdpub_ver(gt_t r, gt_t g[3], bn_t c, gt_t e);
+
+/**
+ * Generate parameters for the DCKKS pairing delegation protocol described at
+ * "Secure and Efficient Delegationof Pairings with Online Inputs" (CARDIS 2020)
+ *
+ * @param[out] c 			- the challenge.
+ * @param[out] r 			- the randomness.
+ * @param[out] u1			- the U1 precomputed value in G_1.
+ * @param[out] u2			- the U2 precomputed value in G_2.
+ * @param[out] v2			- the image of the randomness in G_2.
+ * @param[out] e			- the precomputed values e(U1, U2).
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int cp_pdprv_gen(bn_t c, bn_t r[3], g1_t u1[2], g2_t u2[2], g2_t v2[4], gt_t e[2]);
+
+/**
+ * Execute the client-side request for the DCKKS pairing delegation protocol.
+ *
+ * @param[out] v1			- the blinded element in G_1.
+ * @param[out] w2			- the blinded element in G_2.
+ * @param[in] p				- the first argument of the pairing.
+ * @param[in] q				- the second argument of the pairing.
+ * @param[in] c 			- the challenge.
+ * @param[in] r 			- the randomness.
+ * @param[in] u1			- the U1 precomputed value in G_1.
+ * @param[in] u2			- the U2 precomputed value in G_2.
+ * @param[in] v2			- the image of the randomness in G_2.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int cp_pdprv_ask(g1_t v1[3], g2_t w2[4], g1_t p, g2_t q, bn_t c, bn_t r[3], g1_t u1[2], g2_t u2[2], g2_t v2[4]);
+
+/**
+ * Execute the server-side response for the DCKKS pairing delegation protocol.
+ *
+ * @param[out] g			- the group elements computed by the server.
+ * @param[in] p				- the first argument of the pairing.
+ * @param[in] q				- the second argument of the pairing.
+ * @param[in] v1			- the blinded element in G_1.
+ * @param[in] v2			- the image of the randomness in G_2.
+ * @param[in] w2			- the blinded element in G_2.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int cp_pdprv_ans(gt_t g[4], g1_t v1[3], g2_t w2[4]);
+
+/**
+ * Verifies the result of the DCKKS pairing delegation protocol.
+ *
+ * @param[out] r			- the result of the computation.
+ * @param[in] g				- the group elements returned by the server.
+ * @param[in] c 			- the challenge.
+ * @param[out] e			- the precomputed values e(U1, U2).
+ * @return a boolean value indicating if the computation is correct.
+ */
+int cp_pdprv_ver(gt_t r, gt_t g[4], bn_t c, gt_t e[2]);
 
 /**
  * Generate parameters for the AMORE pairing delegation protocol.

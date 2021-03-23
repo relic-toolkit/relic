@@ -486,7 +486,7 @@ static void vbnn(void) {
 
 #if defined(WITH_PC)
 
-static void pcdel(void) {
+static void pdpub(void) {
 	bn_t r1, r2;
 	g1_t p, u1, v1;
 	g2_t q, u2, v2, w2;
@@ -522,27 +522,27 @@ static void pcdel(void) {
 	gt_new(g[1]);
 	gt_new(g[2]);
 
-	BENCH_RUN("cp_pcdel_gen") {
-		BENCH_ADD(cp_pcdel_gen(r1, r2, u1, u2, v2, e));
+	BENCH_RUN("cp_pdpub_gen") {
+		BENCH_ADD(cp_pdpub_gen(r1, r2, u1, u2, v2, e));
 	} BENCH_END;
 
-	BENCH_RUN("cp_pcdel_ask") {
+	BENCH_RUN("cp_pdpub_ask") {
 		g1_rand(p);
 		g2_rand(q);
-		BENCH_ADD(cp_pcdel_ask(v1, w2, p, q, r1, r2, u1, u2, v2));
+		BENCH_ADD(cp_pdpub_ask(v1, w2, p, q, r1, r2, u1, u2, v2));
 	} BENCH_END;
 
-	BENCH_RUN("cp_pcdel_ans") {
+	BENCH_RUN("cp_pdpub_ans") {
 		g1_rand(p);
 		g2_rand(q);
-		BENCH_ADD(cp_pcdel_ans(g, p, q, v1, v2, w2));
+		BENCH_ADD(cp_pdpub_ans(g, p, q, v1, v2, w2));
 	} BENCH_END;
 
-	BENCH_RUN("cp_pcdel_ver") {
+	BENCH_RUN("cp_pdpub_ver") {
 		g1_rand(p);
 		g2_rand(q);
 		pc_map(e, p, q);
-		BENCH_ADD(cp_pcdel_ver(r, g, r1, e));
+		BENCH_ADD(cp_pdpub_ver(r, g, r1, e));
 	} BENCH_END;
 
 	BENCH_RUN("cp_amore_gen") {
@@ -582,6 +582,73 @@ static void pcdel(void) {
 	gt_free(g[0]);
 	gt_free(g[1]);
 	gt_free(g[2]);
+}
+
+static void pdprv(void) {
+	bn_t r1, r2[3];
+	g1_t p, u1[2], v1[3];
+	g2_t q, u2[2], v2[4], w2[4];
+	gt_t e[2], r, g[4];
+
+	bn_null(r1);
+	g1_null(p);
+	g2_null(q);
+	gt_null(r);
+	for (int i = 0; i < 2; i++) {
+		g1_null(u1[i]);
+		g2_null(u2[i]);
+		gt_null(e[i]);
+	}
+	for (int i = 0; i < 3; i++) {
+		g1_null(v1[i]);
+		bn_null(r[i]);
+	}
+	for (int i = 0; i < 4; i++) {
+		g2_null(v2[i]);
+		g2_null(w2[i]);
+		gt_null(g[i]);
+	}
+
+	BENCH_RUN("cp_pdprv_gen") {
+		BENCH_ADD(cp_pdprv_gen(r1, r2, u1, u2, v2, e));
+	} BENCH_END;
+
+	BENCH_RUN("cp_pdprv_ask") {
+		g1_rand(p);
+		g2_rand(q);
+		BENCH_ADD(cp_pdprv_ask(v1, w2, p, q, r1, r2, u1, u2, v2));
+	} BENCH_END;
+
+	BENCH_RUN("cp_pdprv_ans") {
+		g1_rand(p);
+		g2_rand(q);
+		BENCH_ADD(cp_pdprv_ans(g, v1, w2));
+	} BENCH_END;
+
+	BENCH_RUN("cp_pdprv_ver") {
+		g1_rand(p);
+		g2_rand(q);
+		BENCH_ADD(cp_pdprv_ver(r, g, r1, e));
+	} BENCH_END;
+
+	bn_free(r1);
+	g1_free(p);
+	g2_free(q);
+	gt_free(r);
+	for (int i = 0; i < 2; i++) {
+		g1_free(u1[i]);
+		g2_free(u2[i]);
+		gt_free(e[i]);
+	}
+	for (int i = 0; i < 3; i++) {
+		g1_null(v1[i]);
+		bn_null(r[i]);
+	}
+	for (int i = 0; i < 4; i++) {
+		g2_free(v2[i]);
+		g2_free(w2[i]);
+		gt_free(g[i]);
+	}
 }
 
 static void sokaka(void) {
@@ -1560,7 +1627,8 @@ int main(void) {
 #if defined(WITH_PC)
 	util_banner("Protocols based on pairings:\n", 0);
 	if (pc_param_set_any() == RLC_OK) {
-		pcdel();
+		pdpub();
+		pdprv();
 		sokaka();
 		ibe();
 		bgn();
