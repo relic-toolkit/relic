@@ -62,7 +62,7 @@ static int addition2(void) {
 
 		ep_curve_get_ord(n);
 
-		TEST_BEGIN("miller addition is correct") {
+		TEST_CASE("miller addition is correct") {
 			ep_rand(p);
 			ep_rand(q);
 			ep_rand(r);
@@ -75,7 +75,7 @@ static int addition2(void) {
 		} TEST_END;
 
 #if EP_ADD == BASIC || !defined(STRIP)
-		TEST_BEGIN("miller addition in affine coordinates is correct") {
+		TEST_CASE("miller addition in affine coordinates is correct") {
 			ep_rand(p);
 			ep_rand(q);
 			ep_rand(r);
@@ -91,7 +91,7 @@ static int addition2(void) {
 #endif
 
 #if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
-		TEST_BEGIN("miller addition in projective coordinates is correct") {
+		TEST_CASE("miller addition in projective coordinates is correct") {
 			ep_rand(p);
 			ep_rand(q);
 			ep_rand(r);
@@ -106,7 +106,7 @@ static int addition2(void) {
 		} TEST_END;
 
 #if PP_EXT == BASIC || !defined(STRIP)
-		TEST_BEGIN("basic projective miller addition is consistent") {
+		TEST_CASE("basic projective miller addition is consistent") {
 			ep_rand(p);
 			ep_rand(q);
 			ep_rand(r);
@@ -120,7 +120,7 @@ static int addition2(void) {
 #endif
 
 #if PP_EXT == LAZYR || !defined(STRIP)
-		TEST_BEGIN("lazy-reduced projective miller addition is consistent") {
+		TEST_CASE("lazy-reduced projective miller addition is consistent") {
 			ep_rand(p);
 			ep_rand(q);
 			ep_rand(r);
@@ -178,7 +178,7 @@ static int doubling2(void) {
 
 		ep_curve_get_ord(n);
 
-		TEST_BEGIN("miller doubling is correct") {
+		TEST_CASE("miller doubling is correct") {
 			ep_rand(p);
 			ep_rand(q);
 			ep_rand(r);
@@ -190,7 +190,7 @@ static int doubling2(void) {
 		} TEST_END;
 
 #if EP_ADD == BASIC || !defined(STRIP)
-		TEST_BEGIN("miller doubling in affine coordinates is correct") {
+		TEST_CASE("miller doubling in affine coordinates is correct") {
 			ep_rand(p);
 			ep_rand(q);
 			ep_rand(r);
@@ -205,7 +205,7 @@ static int doubling2(void) {
 #endif
 
 #if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
-		TEST_BEGIN("miller doubling in projective coordinates is correct") {
+		TEST_CASE("miller doubling in projective coordinates is correct") {
 			ep_rand(p);
 			ep_rand(q);
 			ep_rand(r);
@@ -219,7 +219,7 @@ static int doubling2(void) {
 		} TEST_END;
 
 #if PP_EXT == BASIC || !defined(STRIP)
-		TEST_BEGIN("basic projective miller doubling is correct") {
+		TEST_CASE("basic projective miller doubling is correct") {
 			ep_rand(p);
 			ep_rand(q);
 			ep_rand(r);
@@ -232,7 +232,7 @@ static int doubling2(void) {
 #endif
 
 #if PP_EXT == LAZYR || !defined(STRIP)
-		TEST_BEGIN("lazy-reduced projective miller doubling is consistent") {
+		TEST_CASE("lazy-reduced projective miller doubling is consistent") {
 			ep_rand(p);
 			ep_rand(q);
 			ep_rand(r);
@@ -290,7 +290,7 @@ static int pairing2(void) {
 
 		ep_curve_get_ord(n);
 
-		TEST_BEGIN("pairing non-degeneracy is correct") {
+		TEST_CASE("pairing non-degeneracy is correct") {
 			ep_rand(p[0]);
 			ep_rand(q[0]);
 			pp_map_k2(e1, p[0], q[0]);
@@ -304,7 +304,7 @@ static int pairing2(void) {
 			TEST_ASSERT(fp2_cmp_dig(e1, 1) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("pairing is bilinear") {
+		TEST_CASE("pairing is bilinear") {
 			ep_rand(p[0]);
 			ep_rand(q[0]);
 			bn_rand_mod(k, n);
@@ -326,7 +326,7 @@ static int pairing2(void) {
 			TEST_ASSERT(fp2_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
 
-        TEST_BEGIN("multi-pairing is correct") {
+        TEST_CASE("multi-pairing is correct") {
                 ep_rand(p[i % 2]);
                 ep_rand(q[i % 2]);
                 pp_map_k2(e1, p[i % 2], q[i % 2]);
@@ -353,7 +353,7 @@ static int pairing2(void) {
         } TEST_END;
 
 #if PP_MAP == TATEP || PP_MAP == OATEP || !defined(STRIP)
-		TEST_BEGIN("tate pairing non-degeneracy is correct") {
+		TEST_CASE("tate pairing non-degeneracy is correct") {
 			ep_rand(p[0]);
 			ep_rand(q[0]);
 			pp_map_tatep_k2(e1, p[0], q[0]);
@@ -367,7 +367,7 @@ static int pairing2(void) {
 			TEST_ASSERT(fp2_cmp_dig(e1, 1) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("tate pairing is bilinear") {
+		TEST_CASE("tate pairing is bilinear") {
 			ep_rand(p[0]);
 			ep_rand(q[0]);
 			bn_rand_mod(k, n);
@@ -389,7 +389,7 @@ static int pairing2(void) {
 			TEST_ASSERT(fp2_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("tate multi-pairing is correct") {
+		TEST_CASE("tate multi-pairing is correct") {
 			ep_rand(p[i % 2]);
 			ep_rand(q[i % 2]);
 			pp_map_tatep_k2(e1, p[i % 2], q[i % 2]);
@@ -417,7 +417,7 @@ static int pairing2(void) {
 #endif
 
 #if PP_MAP == WEIL || !defined(STRIP)
-		TEST_BEGIN("weil pairing non-degeneracy is correct") {
+		TEST_CASE("weil pairing non-degeneracy is correct") {
 			ep_rand(p[0]);
 			ep_rand(q[0]);
 			pp_map_weilp_k2(e1, p[0], q[0]);
@@ -431,7 +431,7 @@ static int pairing2(void) {
 			TEST_ASSERT(fp2_cmp_dig(e1, 1) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("weil pairing is bilinear") {
+		TEST_CASE("weil pairing is bilinear") {
 			ep_rand(p[0]);
 			ep_rand(q[0]);
 			bn_rand_mod(k, n);
@@ -453,7 +453,7 @@ static int pairing2(void) {
 			TEST_ASSERT(fp2_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("weil multi-pairing is correct") {
+		TEST_CASE("weil multi-pairing is correct") {
 			ep_rand(p[i % 2]);
 			ep_rand(q[i % 2]);
 			pp_map_weilp_k2(e1, p[i % 2], q[i % 2]);
@@ -528,7 +528,7 @@ static int doubling8(void) {
 
 		ep_curve_get_ord(n);
 
-		TEST_BEGIN("miller doubling is correct") {
+		TEST_CASE("miller doubling is correct") {
 			ep_rand(p);
 			ep2_curve_get_gen(q);
 			ep2_rand(r);
@@ -540,7 +540,7 @@ static int doubling8(void) {
 		} TEST_END;
 
 #if EP_ADD == BASIC || !defined(STRIP)
-		TEST_BEGIN("miller doubling in affine coordinates is correct") {
+		TEST_CASE("miller doubling in affine coordinates is correct") {
 			ep_rand(p);
 			ep2_curve_get_gen(q);
 			ep2_rand(r);
@@ -561,7 +561,7 @@ static int doubling8(void) {
 #endif
 
 #if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
-		TEST_BEGIN("miller doubling in projective coordinates is correct") {
+		TEST_CASE("miller doubling in projective coordinates is correct") {
 			ep_rand(p);
 			ep2_curve_get_gen(q);
 			ep2_rand(r);
@@ -582,7 +582,7 @@ static int doubling8(void) {
 		} TEST_END;
 
 #if PP_EXT == BASIC || !defined(STRIP)
-		TEST_BEGIN("basic projective miller doubling is correct") {
+		TEST_CASE("basic projective miller doubling is correct") {
 			ep_rand(p);
 			ep2_rand(q);
 			ep2_rand(r);
@@ -595,7 +595,7 @@ static int doubling8(void) {
 #endif
 
 #if PP_EXT == LAZYR || !defined(STRIP)
-		TEST_BEGIN("lazy-reduced projective miller doubling is consistent") {
+		TEST_CASE("lazy-reduced projective miller doubling is consistent") {
 			ep_rand(p);
 			ep2_rand(q);
 			ep2_rand(r);
@@ -653,7 +653,7 @@ static int addition8(void) {
 
 		ep_curve_get_ord(n);
 
-		TEST_BEGIN("miller addition is correct") {
+		TEST_CASE("miller addition is correct") {
 			ep_rand(p);
 			ep2_curve_get_gen(q);
 			ep2_dbl(r, q);
@@ -667,7 +667,7 @@ static int addition8(void) {
 		} TEST_END;
 
 #if EP_ADD == BASIC || !defined(STRIP)
-		TEST_BEGIN("miller addition in affine coordinates is correct") {
+		TEST_CASE("miller addition in affine coordinates is correct") {
 			ep_rand(p);
 			ep2_curve_get_gen(q);
 			ep2_dbl(r, q);
@@ -695,7 +695,7 @@ static int addition8(void) {
 #endif
 
 #if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
-		TEST_BEGIN("miller addition in projective coordinates is correct") {
+		TEST_CASE("miller addition in projective coordinates is correct") {
 			ep_rand(p);
 			ep2_curve_get_gen(q);
 			ep2_dbl(r, q);
@@ -767,7 +767,7 @@ static int pairing8(void) {
 
 		ep_curve_get_ord(n);
 
-		TEST_BEGIN("pairing non-degeneracy is correct") {
+		TEST_CASE("pairing non-degeneracy is correct") {
 			ep_rand(p[0]);
 			ep2_curve_get_gen(q[0]);
 			pp_map_oatep_k8(e1, p[0], q[0]);
@@ -781,7 +781,7 @@ static int pairing8(void) {
 			TEST_ASSERT(fp8_cmp_dig(e1, 1) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("pairing is bilinear") {
+		TEST_CASE("pairing is bilinear") {
 			ep_rand(p[0]);
 			ep2_curve_get_gen(q[0]);
 			bn_rand_mod(k, n);
@@ -850,7 +850,7 @@ static int doubling12(void) {
 
 		ep_curve_get_ord(n);
 
-		TEST_BEGIN("miller doubling is correct") {
+		TEST_CASE("miller doubling is correct") {
 			ep_rand(p);
 			ep2_rand(q);
 			ep2_rand(r);
@@ -862,7 +862,7 @@ static int doubling12(void) {
 		} TEST_END;
 
 #if EP_ADD == BASIC || !defined(STRIP)
-		TEST_BEGIN("miller doubling in affine coordinates is correct") {
+		TEST_CASE("miller doubling in affine coordinates is correct") {
 			ep_rand(p);
 			ep2_rand(q);
 			ep2_rand(r);
@@ -883,7 +883,7 @@ static int doubling12(void) {
 #endif
 
 #if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
-		TEST_BEGIN("miller doubling in projective coordinates is correct") {
+		TEST_CASE("miller doubling in projective coordinates is correct") {
 			ep_rand(p);
 			ep2_rand(q);
 			ep2_rand(r);
@@ -905,7 +905,7 @@ static int doubling12(void) {
 		} TEST_END;
 
 #if PP_EXT == BASIC || !defined(STRIP)
-		TEST_BEGIN("basic projective miller doubling is correct") {
+		TEST_CASE("basic projective miller doubling is correct") {
 			ep_rand(p);
 			ep2_rand(q);
 			ep2_rand(r);
@@ -918,7 +918,7 @@ static int doubling12(void) {
 #endif
 
 #if PP_EXT == LAZYR || !defined(STRIP)
-		TEST_BEGIN("lazy-reduced projective miller doubling is consistent") {
+		TEST_CASE("lazy-reduced projective miller doubling is consistent") {
 			ep_rand(p);
 			ep2_rand(q);
 			ep2_rand(r);
@@ -976,7 +976,7 @@ static int addition12(void) {
 
 		ep_curve_get_ord(n);
 
-		TEST_BEGIN("miller addition is correct") {
+		TEST_CASE("miller addition is correct") {
 			ep_rand(p);
 			ep2_rand(q);
 			ep2_rand(r);
@@ -989,7 +989,7 @@ static int addition12(void) {
 		} TEST_END;
 
 #if EP_ADD == BASIC || !defined(STRIP)
-		TEST_BEGIN("miller addition in affine coordinates is correct") {
+		TEST_CASE("miller addition in affine coordinates is correct") {
 			ep_rand(p);
 			ep2_rand(q);
 			ep2_rand(r);
@@ -1005,7 +1005,7 @@ static int addition12(void) {
 #endif
 
 #if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
-		TEST_BEGIN("miller addition in projective coordinates is correct") {
+		TEST_CASE("miller addition in projective coordinates is correct") {
 			ep_rand(p);
 			ep2_rand(q);
 			ep2_rand(r);
@@ -1020,7 +1020,7 @@ static int addition12(void) {
 		} TEST_END;
 
 #if PP_EXT == BASIC || !defined(STRIP)
-		TEST_BEGIN("basic projective miller addition is consistent") {
+		TEST_CASE("basic projective miller addition is consistent") {
 			ep_rand(p);
 			ep2_rand(q);
 			ep2_rand(r);
@@ -1034,7 +1034,7 @@ static int addition12(void) {
 #endif
 
 #if PP_EXT == LAZYR || !defined(STRIP)
-		TEST_BEGIN("lazy-reduced projective miller addition is consistent") {
+		TEST_CASE("lazy-reduced projective miller addition is consistent") {
 			ep_rand(p);
 			ep2_rand(q);
 			ep2_rand(r);
@@ -1094,7 +1094,7 @@ static int pairing12(void) {
 
 		ep_curve_get_ord(n);
 
-		TEST_BEGIN("pairing non-degeneracy is correct") {
+		TEST_CASE("pairing non-degeneracy is correct") {
 			ep_rand(p[0]);
 			ep2_rand(q[0]);
 			pp_map_k12(e1, p[0], q[0]);
@@ -1108,7 +1108,7 @@ static int pairing12(void) {
 			TEST_ASSERT(fp12_cmp_dig(e1, 1) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("pairing is bilinear") {
+		TEST_CASE("pairing is bilinear") {
 			ep_rand(p[0]);
 			ep2_rand(q[0]);
 			bn_rand_mod(k, n);
@@ -1130,7 +1130,7 @@ static int pairing12(void) {
 			TEST_ASSERT(fp12_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("multi-pairing is correct") {
+		TEST_CASE("multi-pairing is correct") {
 			ep_rand(p[i % 2]);
 			ep2_rand(q[i % 2]);
 			pp_map_k12(e1, p[i % 2], q[i % 2]);
@@ -1157,7 +1157,7 @@ static int pairing12(void) {
 		} TEST_END;
 
 #if PP_MAP == TATEP || !defined(STRIP)
-		TEST_BEGIN("tate pairing non-degeneracy is correct") {
+		TEST_CASE("tate pairing non-degeneracy is correct") {
 			ep_rand(p[0]);
 			ep2_rand(q[0]);
 			pp_map_tatep_k12(e1, p[0], q[0]);
@@ -1171,7 +1171,7 @@ static int pairing12(void) {
 			TEST_ASSERT(fp12_cmp_dig(e1, 1) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("tate pairing is bilinear") {
+		TEST_CASE("tate pairing is bilinear") {
 			ep_rand(p[0]);
 			ep2_rand(q[0]);
 			bn_rand_mod(k, n);
@@ -1193,7 +1193,7 @@ static int pairing12(void) {
 			TEST_ASSERT(fp12_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("tate multi-pairing is correct") {
+		TEST_CASE("tate multi-pairing is correct") {
 			ep_rand(p[i % 2]);
 			ep2_rand(q[i % 2]);
 			pp_map_tatep_k12(e1, p[i % 2], q[i % 2]);
@@ -1221,7 +1221,7 @@ static int pairing12(void) {
 #endif
 
 #if PP_MAP == WEIL || !defined(STRIP)
-		TEST_BEGIN("weil pairing non-degeneracy is correct") {
+		TEST_CASE("weil pairing non-degeneracy is correct") {
 			ep_rand(p[0]);
 			ep2_rand(q[0]);
 			pp_map_weilp_k12(e1, p[0], q[0]);
@@ -1235,7 +1235,7 @@ static int pairing12(void) {
 			TEST_ASSERT(fp12_cmp_dig(e1, 1) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("weil pairing is bilinear") {
+		TEST_CASE("weil pairing is bilinear") {
 			ep_rand(p[0]);
 			ep2_rand(q[0]);
 			bn_rand_mod(k, n);
@@ -1258,7 +1258,7 @@ static int pairing12(void) {
 		} TEST_END;
 
 #if 0
-		TEST_BEGIN("weil multi-pairing is correct") {
+		TEST_CASE("weil multi-pairing is correct") {
 			ep_rand(p[i % 2]);
 			ep2_rand(q[i % 2]);
 			pp_map_weilp_k12(e1, p[i % 2], q[i % 2]);
@@ -1287,7 +1287,7 @@ static int pairing12(void) {
 #endif
 
 #if PP_MAP == OATEP || !defined(STRIP)
-		TEST_BEGIN("optimal ate pairing non-degeneracy is correct") {
+		TEST_CASE("optimal ate pairing non-degeneracy is correct") {
 			ep_rand(p[0]);
 			ep2_rand(q[0]);
 			pp_map_oatep_k12(e1, p[0], q[0]);
@@ -1301,7 +1301,7 @@ static int pairing12(void) {
 			TEST_ASSERT(fp12_cmp_dig(e1, 1) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("optimal ate pairing is bilinear") {
+		TEST_CASE("optimal ate pairing is bilinear") {
 			ep_rand(p[0]);
 			ep2_rand(q[0]);
 			bn_rand_mod(k, n);
@@ -1320,7 +1320,7 @@ static int pairing12(void) {
 			TEST_ASSERT(fp12_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("optimal ate multi-pairing is correct") {
+		TEST_CASE("optimal ate multi-pairing is correct") {
 			ep_rand(p[i % 2]);
 			ep2_rand(q[i % 2]);
 			pp_map_oatep_k12(e1, p[i % 2], q[i % 2]);
@@ -1439,7 +1439,7 @@ static int doubling48(void) {
 
 		ep_curve_get_ord(n);
 
-		TEST_BEGIN("miller doubling is correct") {
+		TEST_CASE("miller doubling is correct") {
 			ep_rand(p);
 			fp8_copy(rx, qx);
 			fp8_copy(ry, qy);
@@ -1453,7 +1453,7 @@ static int doubling48(void) {
 		} TEST_END;
 
 #if EP_ADD == BASIC || !defined(STRIP)
-		TEST_BEGIN("miller doubling in affine coordinates is correct") {
+		TEST_CASE("miller doubling in affine coordinates is correct") {
 			ep_rand(p);
 			fp8_copy(rx, qx);
 			fp8_copy(ry, qy);
@@ -1478,7 +1478,7 @@ static int doubling48(void) {
 #endif
 
 #if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
-		TEST_BEGIN("miller doubling in projective coordinates is correct") {
+		TEST_CASE("miller doubling in projective coordinates is correct") {
 			ep_rand(p);
 			fp8_copy(rx, qx);
 			fp8_copy(ry, qy);
@@ -1578,7 +1578,7 @@ static int addition48(void) {
 
 		ep_curve_get_ord(n);
 
-		TEST_BEGIN("miller addition is correct") {
+		TEST_CASE("miller addition is correct") {
 			ep_rand(p);
 			fp8_copy(rx, qx);
 			fp8_copy(ry, qy);
@@ -1604,7 +1604,7 @@ static int addition48(void) {
 		} TEST_END;
 
 #if EP_ADD == BASIC || !defined(STRIP)
-		TEST_BEGIN("miller addition in affine coordinates is correct") {
+		TEST_CASE("miller addition in affine coordinates is correct") {
 			ep_rand(p);
 			fp8_copy(rx, qx);
 			fp8_copy(ry, qy);
@@ -1630,7 +1630,7 @@ static int addition48(void) {
 #endif
 
 #if EP_ADD == BASIC || !defined(STRIP)
-		TEST_BEGIN("miller addition in projective coordinates is correct") {
+		TEST_CASE("miller addition in projective coordinates is correct") {
 			ep_rand(p);
 			fp8_copy(rx, qx);
 			fp8_copy(ry, qy);
@@ -1716,13 +1716,13 @@ static int pairing48(void) {
 		fp_read_str(qy[1][1][0], QY110, strlen(QY110), 16);
 		fp_read_str(qy[1][1][1], QY111, strlen(QY111), 16);
 
-		TEST_BEGIN("pairing non-degeneracy is correct") {
+		TEST_CASE("pairing non-degeneracy is correct") {
 			ep_rand(p);
 			pp_map_k48(e1, p, qx, qy);
 			TEST_ASSERT(fp48_cmp_dig(e1, 1) != RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("pairing is bilinear") {
+		TEST_CASE("pairing is bilinear") {
 			ep_rand(p);
 			bn_rand_mod(k, n);
 			pp_map_k48(e1, p, qx, qy);
@@ -1835,7 +1835,7 @@ static int doubling54(void) {
 
 		ep_curve_get_ord(n);
 
-		TEST_BEGIN("miller doubling is correct") {
+		TEST_CASE("miller doubling is correct") {
 			ep_rand(p);
 			fp9_copy(rx, qx);
 			fp9_copy(ry, qy);
@@ -1849,7 +1849,7 @@ static int doubling54(void) {
 		} TEST_END;
 
 #if EP_ADD == BASIC || !defined(STRIP)
-		TEST_BEGIN("miller doubling in affine coordinates is correct") {
+		TEST_CASE("miller doubling in affine coordinates is correct") {
 			ep_rand(p);
 			fp9_copy(rx, qx);
 			fp9_copy(ry, qy);
@@ -1874,7 +1874,7 @@ static int doubling54(void) {
 #endif
 
 #if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
-		TEST_BEGIN("miller doubling in projective coordinates is correct") {
+		TEST_CASE("miller doubling in projective coordinates is correct") {
 			ep_rand(p);
 			fp9_copy(rx, qx);
 			fp9_copy(ry, qy);
@@ -1976,7 +1976,7 @@ static int addition54(void) {
 
 		ep_curve_get_ord(n);
 
-		TEST_BEGIN("miller addition is correct") {
+		TEST_CASE("miller addition is correct") {
 			ep_rand(p);
 			fp9_copy(rx, qx);
 			fp9_copy(ry, qy);
@@ -2002,7 +2002,7 @@ static int addition54(void) {
 		} TEST_END;
 
 #if EP_ADD == BASIC || !defined(STRIP)
-		TEST_BEGIN("miller addition in affine coordinates is correct") {
+		TEST_CASE("miller addition in affine coordinates is correct") {
 			ep_rand(p);
 			fp9_copy(rx, qx);
 			fp9_copy(ry, qy);
@@ -2028,7 +2028,7 @@ static int addition54(void) {
 #endif
 
 #if EP_ADD == BASIC || !defined(STRIP)
-		TEST_BEGIN("miller addition in projective coordinates is correct") {
+		TEST_CASE("miller addition in projective coordinates is correct") {
 			ep_rand(p);
 			fp9_copy(rx, qx);
 			fp9_copy(ry, qy);
@@ -2116,13 +2116,13 @@ static int pairing54(void) {
 		fp_read_str(qy[2][1], QY21, strlen(QY21), 16);
 		fp_read_str(qy[2][2], QY22, strlen(QY22), 16);
 
-		TEST_BEGIN("pairing non-degeneracy is correct") {
+		TEST_CASE("pairing non-degeneracy is correct") {
 			ep_rand(p);
 			pp_map_k54(e1, p, qx, qy);
 			TEST_ASSERT(fp54_cmp_dig(e1, 1) != RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("pairing is bilinear") {
+		TEST_CASE("pairing is bilinear") {
 			ep_rand(p);
 			bn_rand_mod(k, n);
 			pp_map_k54(e1, p, qx, qy);

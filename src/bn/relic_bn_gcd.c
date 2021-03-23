@@ -863,7 +863,7 @@ void bn_gcd_ext_mid(bn_t c, bn_t d, bn_t e, bn_t f, const bn_t a, const bn_t b) 
 				bn_neg(f, x);
 				wait = 0;
 			}
-			if (bn_cmp(u, p) == RLC_GT) {
+			if (bn_cmp(u, p) != RLC_LT) {
 				bn_copy(c, r);
 				bn_neg(d, x);
 				bn_copy(w, u);

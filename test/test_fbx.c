@@ -42,7 +42,7 @@ static int memory2(void) {
 	fb2_null(a);
 
 	RLC_TRY {
-		TEST_BEGIN("memory can be allocated") {
+		TEST_CASE("memory can be allocated") {
 			fb2_new(a);
 			fb2_free(a);
 		} TEST_END;
@@ -71,7 +71,7 @@ static int util2(void) {
 		fb2_new(a);
 		fb2_new(b);
 
-		TEST_BEGIN("comparison is consistent") {
+		TEST_CASE("comparison is consistent") {
 			fb2_rand(a);
 			fb2_rand(b);
 			if (fb2_cmp(a, b) != RLC_EQ) {
@@ -80,7 +80,7 @@ static int util2(void) {
 		}
 		TEST_END;
 
-		TEST_BEGIN("copy and comparison are consistent") {
+		TEST_CASE("copy and comparison are consistent") {
 			fb2_rand(a);
 			fb2_rand(b);
 			if (fb2_cmp(a, b) != RLC_EQ) {
@@ -90,7 +90,7 @@ static int util2(void) {
 		}
 		TEST_END;
 
-		TEST_BEGIN("assignment and comparison are consistent") {
+		TEST_CASE("assignment and comparison are consistent") {
 			do {
 				fb2_rand(a);
 			} while (fb2_is_zero(a));
@@ -128,7 +128,7 @@ static int addition2(void) {
 		fb2_new(d);
 		fb2_new(e);
 
-		TEST_BEGIN("addition is commutative") {
+		TEST_CASE("addition is commutative") {
 			fb2_rand(a);
 			fb2_rand(b);
 			fb2_add(d, a, b);
@@ -136,7 +136,7 @@ static int addition2(void) {
 			TEST_ASSERT(fb2_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("addition is associative") {
+		TEST_CASE("addition is associative") {
 			fb2_rand(a);
 			fb2_rand(b);
 			fb2_rand(c);
@@ -147,14 +147,14 @@ static int addition2(void) {
 			TEST_ASSERT(fb2_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("addition has identity") {
+		TEST_CASE("addition has identity") {
 			fb2_rand(a);
 			fb2_zero(d);
 			fb2_add(e, a, d);
 			TEST_ASSERT(fb2_cmp(e, a) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("addition has inverse") {
+		TEST_CASE("addition has inverse") {
 			fb2_rand(a);
 			fb2_copy(d, a);
 			fb2_add(e, a, d);
@@ -194,7 +194,7 @@ static int multiplication2(void) {
 		fb2_new(e);
 		fb2_new(f);
 
-		TEST_BEGIN("multiplication is commutative") {
+		TEST_CASE("multiplication is commutative") {
 			fb2_rand(a);
 			fb2_rand(b);
 			fb2_mul(d, a, b);
@@ -202,7 +202,7 @@ static int multiplication2(void) {
 			TEST_ASSERT(fb2_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("multiplication is associative") {
+		TEST_CASE("multiplication is associative") {
 			fb2_rand(a);
 			fb2_rand(b);
 			fb2_rand(c);
@@ -213,7 +213,7 @@ static int multiplication2(void) {
 			TEST_ASSERT(fb2_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("multiplication is distributive") {
+		TEST_CASE("multiplication is distributive") {
 			fb2_rand(a);
 			fb2_rand(b);
 			fb2_rand(c);
@@ -225,7 +225,7 @@ static int multiplication2(void) {
 			TEST_ASSERT(fb2_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("multiplication has identity") {
+		TEST_CASE("multiplication has identity") {
 			fb2_zero(d);
 			fb_set_bit(d[0], 0, 1);
 			fb2_rand(a);
@@ -233,7 +233,7 @@ static int multiplication2(void) {
 			TEST_ASSERT(fb2_cmp(e, a) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("multiplication has zero property") {
+		TEST_CASE("multiplication has zero property") {
 			fb2_zero(d);
 			fb2_rand(a);
 			fb2_mul(e, a, d);
@@ -268,7 +268,7 @@ static int squaring2(void) {
 		fb2_new(b);
 		fb2_new(c);
 
-		TEST_BEGIN("squaring is correct") {
+		TEST_CASE("squaring is correct") {
 			fb2_rand(a);
 			fb2_mul(b, a, a);
 			fb2_sqr(c, a);
@@ -300,7 +300,7 @@ static int solve2(void) {
 		fb2_new(b);
 		fb2_new(c);
 
-		TEST_BEGIN("solving a quadratic equation is correct") {
+		TEST_CASE("solving a quadratic equation is correct") {
 			fb2_rand(a);
 			fb2_rand(b);
 			/* Make Tr(a_1) = 0. */
@@ -337,7 +337,7 @@ static int inversion2(void) {
 		fb2_new(b);
 		fb2_new(c);
 
-		TEST_BEGIN("inversion is correct") {
+		TEST_CASE("inversion is correct") {
 			do {
 				fb2_rand(a);
 			} while (fb2_is_zero(a));

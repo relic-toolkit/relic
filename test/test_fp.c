@@ -43,7 +43,7 @@ static int memory(void) {
 	fp_null(a);
 
 	RLC_TRY {
-		TEST_BEGIN("memory can be allocated") {
+		TEST_CASE("memory can be allocated") {
 			fp_new(a);
 			fp_free(a);
 		} TEST_END;
@@ -80,7 +80,7 @@ static int util(void) {
 		bn_new(c);
 		bn_new(e);
 
-		TEST_BEGIN("copy and comparison are consistent") {
+		TEST_CASE("copy and comparison are consistent") {
 			fp_rand(a);
 			fp_rand(b);
 			if (fp_cmp(a, b) != RLC_EQ) {
@@ -90,7 +90,7 @@ static int util(void) {
 		}
 		TEST_END;
 
-		TEST_BEGIN("negation is consistent") {
+		TEST_CASE("negation is consistent") {
 			fp_zero(a);
 			fp_neg(b, a);
 			TEST_ASSERT(dv_cmp(a, b, RLC_FP_DIGS) == RLC_EQ, end);
@@ -108,7 +108,7 @@ static int util(void) {
 		}
 		TEST_END;
 
-		TEST_BEGIN("assignment and comparison are consistent") {
+		TEST_CASE("assignment and comparison are consistent") {
 			do {
 				fp_rand(a);
 			} while (fp_is_zero(a));
@@ -123,7 +123,7 @@ static int util(void) {
 		TEST_END;
 
 		bits = 0;
-		TEST_BEGIN("bit setting and getting are consistent") {
+		TEST_CASE("bit setting and getting are consistent") {
 			fp_zero(a);
 			fp_set_bit(a, bits, 1);
 			TEST_ASSERT(fp_get_bit(a, bits) == 1, end);
@@ -134,7 +134,7 @@ static int util(void) {
 		TEST_END;
 
 		bits = 0;
-		TEST_BEGIN("bit assignment and counting are consistent") {
+		TEST_CASE("bit assignment and counting are consistent") {
 			fp_zero(a);
 			fp_set_bit(a, bits, 1);
 			TEST_ASSERT(fp_bits(a) == bits + 1, end);
@@ -142,7 +142,7 @@ static int util(void) {
 		}
 		TEST_END;
 
-		TEST_BEGIN("reading and writing a prime field element are consistent") {
+		TEST_CASE("reading and writing a prime field element are consistent") {
 			for (int j = 2; j <= 64; j++) {
 				fp_rand(a);
 				bits = fp_size_str(a, j);
@@ -162,14 +162,14 @@ static int util(void) {
 		}
 		TEST_END;
 
-		TEST_BEGIN("getting the size of a prime field element is correct") {
+		TEST_CASE("getting the size of a prime field element is correct") {
 			fp_rand(a);
 			fp_prime_back(c, a);
 			TEST_ASSERT(fp_size_str(a, 2) == (1 + bn_bits(c)), end);
 		}
 		TEST_END;
 
-		TEST_BEGIN("converting to and from a prime field element are consistent") {
+		TEST_CASE("converting to and from a prime field element are consistent") {
 			bn_rand(c, RLC_POS, FP_PRIME);
 			bn_mod(c, c, &core_get()->prime);
 			fp_prime_conv(a, c);
@@ -215,7 +215,7 @@ static int addition(void) {
 		fp_new(d);
 		fp_new(e);
 
-		TEST_BEGIN("addition is commutative") {
+		TEST_CASE("addition is commutative") {
 			fp_rand(a);
 			fp_rand(b);
 			fp_add(d, a, b);
@@ -223,7 +223,7 @@ static int addition(void) {
 			TEST_ASSERT(fp_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("addition is associative") {
+		TEST_CASE("addition is associative") {
 			fp_rand(a);
 			fp_rand(b);
 			fp_rand(c);
@@ -234,14 +234,14 @@ static int addition(void) {
 			TEST_ASSERT(fp_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("addition has identity") {
+		TEST_CASE("addition has identity") {
 			fp_rand(a);
 			fp_zero(d);
 			fp_add(e, a, d);
 			TEST_ASSERT(fp_cmp(e, a) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("addition has inverse") {
+		TEST_CASE("addition has inverse") {
 			fp_rand(a);
 			fp_neg(d, a);
 			fp_add(e, a, d);
@@ -249,7 +249,7 @@ static int addition(void) {
 		} TEST_END;
 
 #if FP_ADD == BASIC || !defined(STRIP)
-		TEST_BEGIN("basic addition is correct") {
+		TEST_CASE("basic addition is correct") {
 			fp_rand(a);
 			fp_rand(b);
 			fp_add(d, a, b);
@@ -259,7 +259,7 @@ static int addition(void) {
 #endif
 
 #if FP_ADD == INTEG || !defined(STRIP)
-		TEST_BEGIN("integrated addition is correct") {
+		TEST_CASE("integrated addition is correct") {
 			fp_rand(a);
 			fp_rand(b);
 			fp_add(d, a, b);
@@ -296,7 +296,7 @@ static int subtraction(void) {
 		fp_new(c);
 		fp_new(d);
 
-		TEST_BEGIN("subtraction is anti-commutative") {
+		TEST_CASE("subtraction is anti-commutative") {
 			fp_rand(a);
 			fp_rand(b);
 			fp_sub(c, a, b);
@@ -306,7 +306,7 @@ static int subtraction(void) {
 		}
 		TEST_END;
 
-		TEST_BEGIN("subtraction has identity") {
+		TEST_CASE("subtraction has identity") {
 			fp_rand(a);
 			fp_zero(c);
 			fp_sub(d, a, c);
@@ -314,7 +314,7 @@ static int subtraction(void) {
 		}
 		TEST_END;
 
-		TEST_BEGIN("subtraction has inverse") {
+		TEST_CASE("subtraction has inverse") {
 			fp_rand(a);
 			fp_sub(c, a, a);
 			TEST_ASSERT(fp_is_zero(c), end);
@@ -322,7 +322,7 @@ static int subtraction(void) {
 		TEST_END;
 
 #if FP_ADD == BASIC || !defined(STRIP)
-		TEST_BEGIN("basic subtraction is correct") {
+		TEST_CASE("basic subtraction is correct") {
 			fp_rand(a);
 			fp_rand(b);
 			fp_sub(c, a, b);
@@ -332,7 +332,7 @@ static int subtraction(void) {
 #endif
 
 #if FP_ADD == INTEG || !defined(STRIP)
-		TEST_BEGIN("integrated subtraction is correct") {
+		TEST_CASE("integrated subtraction is correct") {
 			fp_rand(a);
 			fp_rand(b);
 			fp_sub(c, a, b);
@@ -342,7 +342,7 @@ static int subtraction(void) {
 #endif
 
 #if FP_ADD == BASIC || !defined(STRIP)
-		TEST_BEGIN("basic negation is correct") {
+		TEST_CASE("basic negation is correct") {
 			fp_rand(a);
 			fp_neg(c, a);
 			fp_neg_basic(d, a);
@@ -351,7 +351,7 @@ static int subtraction(void) {
 #endif
 
 #if FP_ADD == INTEG || !defined(STRIP)
-		TEST_BEGIN("integrated negation is correct") {
+		TEST_CASE("integrated negation is correct") {
 			fp_rand(a);
 			fp_neg(c, a);
 			fp_neg_integ(d, a);
@@ -390,7 +390,7 @@ static int multiplication(void) {
 		fp_new(e);
 		fp_new(f);
 
-		TEST_BEGIN("multiplication is commutative") {
+		TEST_CASE("multiplication is commutative") {
 			fp_rand(a);
 			fp_rand(b);
 			fp_mul(d, a, b);
@@ -398,7 +398,7 @@ static int multiplication(void) {
 			TEST_ASSERT(fp_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("multiplication is associative") {
+		TEST_CASE("multiplication is associative") {
 			fp_rand(a);
 			fp_rand(b);
 			fp_rand(c);
@@ -409,7 +409,7 @@ static int multiplication(void) {
 			TEST_ASSERT(fp_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("multiplication is distributive") {
+		TEST_CASE("multiplication is distributive") {
 			fp_rand(a);
 			fp_rand(b);
 			fp_rand(c);
@@ -421,14 +421,14 @@ static int multiplication(void) {
 			TEST_ASSERT(fp_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("multiplication has identity") {
+		TEST_CASE("multiplication has identity") {
 			fp_rand(a);
 			fp_set_dig(d, 1);
 			fp_mul(e, a, d);
 			TEST_ASSERT(fp_cmp(e, a) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("multiplication has zero property") {
+		TEST_CASE("multiplication has zero property") {
 			fp_rand(a);
 			fp_zero(d);
 			fp_mul(e, a, d);
@@ -436,7 +436,7 @@ static int multiplication(void) {
 		} TEST_END;
 
 #if FP_MUL == BASIC || !defined(STRIP)
-		TEST_BEGIN("basic multiplication is correct") {
+		TEST_CASE("basic multiplication is correct") {
 			fp_rand(a);
 			fp_rand(b);
 			fp_mul(c, a, b);
@@ -447,7 +447,7 @@ static int multiplication(void) {
 #endif
 
 #if FP_MUL == INTEG || !defined(STRIP)
-		TEST_BEGIN("integrated multiplication is correct") {
+		TEST_CASE("integrated multiplication is correct") {
 			fp_rand(a);
 			fp_rand(b);
 			fp_mul(c, a, b);
@@ -458,7 +458,7 @@ static int multiplication(void) {
 #endif
 
 #if FP_MUL == COMBA || !defined(STRIP)
-		TEST_BEGIN("comba multiplication is correct") {
+		TEST_CASE("comba multiplication is correct") {
 			fp_rand(a);
 			fp_rand(b);
 			fp_mul(c, a, b);
@@ -469,7 +469,7 @@ static int multiplication(void) {
 #endif
 
 #if FP_KARAT > 0 || !defined(STRIP)
-		TEST_BEGIN("karatsuba multiplication is correct") {
+		TEST_CASE("karatsuba multiplication is correct") {
 			fp_rand(a);
 			fp_rand(b);
 			fp_mul(c, a, b);
@@ -506,7 +506,7 @@ static int squaring(void) {
 		fp_new(b);
 		fp_new(c);
 
-		TEST_BEGIN("squaring is correct") {
+		TEST_CASE("squaring is correct") {
 			fp_rand(a);
 			fp_mul(b, a, a);
 			fp_sqr(c, a);
@@ -514,7 +514,7 @@ static int squaring(void) {
 		} TEST_END;
 
 #if FP_SQR == BASIC || !defined(STRIP)
-		TEST_BEGIN("basic squaring is correct") {
+		TEST_CASE("basic squaring is correct") {
 			fp_rand(a);
 			fp_sqr(b, a);
 			fp_sqr_basic(c, a);
@@ -523,7 +523,7 @@ static int squaring(void) {
 #endif
 
 #if FP_SQR == INTEG || !defined(STRIP)
-		TEST_BEGIN("integrated squaring is correct") {
+		TEST_CASE("integrated squaring is correct") {
 			fp_rand(a);
 			fp_sqr(b, a);
 			fp_sqr_integ(c, a);
@@ -532,7 +532,7 @@ static int squaring(void) {
 #endif
 
 #if FP_SQR == COMBA || !defined(STRIP)
-		TEST_BEGIN("comba squaring is correct") {
+		TEST_CASE("comba squaring is correct") {
 			fp_rand(a);
 			fp_sqr(b, a);
 			fp_sqr_comba(c, a);
@@ -541,7 +541,7 @@ static int squaring(void) {
 #endif
 
 #if FP_KARAT > 0 || !defined(STRIP)
-		TEST_BEGIN("karatsuba squaring is correct") {
+		TEST_CASE("karatsuba squaring is correct") {
 			fp_rand(a);
 			fp_sqr(b, a);
 			fp_sqr_karat(c, a);
@@ -573,7 +573,7 @@ static int doubling_halving(void) {
 		fp_new(b);
 		fp_new(c);
 
-		TEST_BEGIN("doubling is consistent") {
+		TEST_CASE("doubling is consistent") {
 			fp_rand(a);
 			fp_add(b, a, a);
 			fp_dbl(c, a);
@@ -581,7 +581,7 @@ static int doubling_halving(void) {
 		} TEST_END;
 
 #if FP_ADD == BASIC || !defined(STRIP)
-		TEST_BEGIN("basic doubling is correct") {
+		TEST_CASE("basic doubling is correct") {
 			fp_rand(a);
 			fp_dbl(b, a);
 			fp_dbl_basic(c, a);
@@ -590,7 +590,7 @@ static int doubling_halving(void) {
 #endif
 
 #if FP_ADD == INTEG || !defined(STRIP)
-		TEST_BEGIN("integrated doubling is correct") {
+		TEST_CASE("integrated doubling is correct") {
 			fp_rand(a);
 			fp_dbl(b, a);
 			fp_dbl_integ(c, a);
@@ -598,7 +598,7 @@ static int doubling_halving(void) {
 		} TEST_END;
 #endif
 
-		TEST_BEGIN("halving is consistent") {
+		TEST_CASE("halving is consistent") {
 			fp_rand(a);
 			fp_dbl(b, a);
 			fp_hlv(c, b);
@@ -607,7 +607,7 @@ static int doubling_halving(void) {
 		TEST_END;
 
 #if FP_ADD == BASIC || !defined(STRIP)
-		TEST_BEGIN("basic halving is correct") {
+		TEST_CASE("basic halving is correct") {
 			fp_rand(a);
 			fp_hlv(b, a);
 			fp_hlv_basic(c, a);
@@ -616,7 +616,7 @@ static int doubling_halving(void) {
 #endif
 
 #if FP_ADD == INTEG || !defined(STRIP)
-		TEST_BEGIN("integrated halving is correct") {
+		TEST_CASE("integrated halving is correct") {
 			fp_rand(a);
 			fp_hlv(b, a);
 			fp_hlv_integ(c, a);
@@ -649,7 +649,7 @@ static int shifting(void) {
 		fp_new(b);
 		fp_new(c);
 
-		TEST_BEGIN("shifting by 1 bit is consistent") {
+		TEST_CASE("shifting by 1 bit is consistent") {
 			fp_rand(a);
 			a[RLC_FP_DIGS - 1] = 0;
 			fp_lsh(b, a, 1);
@@ -657,7 +657,7 @@ static int shifting(void) {
 			TEST_ASSERT(fp_cmp(c, a) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("shifting by 2 bits is consistent") {
+		TEST_CASE("shifting by 2 bits is consistent") {
 			fp_rand(a);
 			a[RLC_FP_DIGS - 1] = 0;
 			fp_lsh(b, a, 2);
@@ -665,7 +665,7 @@ static int shifting(void) {
 			TEST_ASSERT(fp_cmp(c, a) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("shifting by half digit is consistent") {
+		TEST_CASE("shifting by half digit is consistent") {
 			fp_rand(a);
 			a[RLC_FP_DIGS - 1] = 0;
 			fp_lsh(b, a, RLC_DIG / 2);
@@ -673,7 +673,7 @@ static int shifting(void) {
 			TEST_ASSERT(fp_cmp(c, a) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("shifting by 1 digit is consistent") {
+		TEST_CASE("shifting by 1 digit is consistent") {
 			fp_rand(a);
 			a[RLC_FP_DIGS - 1] = 0;
 			fp_lsh(b, a, RLC_DIG);
@@ -681,7 +681,7 @@ static int shifting(void) {
 			TEST_ASSERT(fp_cmp(c, a) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("shifting by 2 digits is consistent") {
+		TEST_CASE("shifting by 2 digits is consistent") {
 			fp_rand(a);
 			a[RLC_FP_DIGS - 1] = 0;
 			a[RLC_FP_DIGS - 2] = 0;
@@ -690,7 +690,7 @@ static int shifting(void) {
 			TEST_ASSERT(fp_cmp(c, a) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("shifting by 1 digit and half is consistent") {
+		TEST_CASE("shifting by 1 digit and half is consistent") {
 			fp_rand(a);
 			a[RLC_FP_DIGS - 1] = 0;
 			a[RLC_FP_DIGS - 2] = 0;
@@ -725,7 +725,7 @@ static int reduction(void) {
 		dv_new(t);
 		dv_zero(t, 2 * RLC_FP_DIGS);
 
-		TEST_BEGIN("modular reduction is correct") {
+		TEST_CASE("modular reduction is correct") {
 			fp_rand(a);
 			dv_copy(t, fp_prime_get(), RLC_FP_DIGS);
 			/* Test if a * p mod p == 0. */
@@ -734,7 +734,7 @@ static int reduction(void) {
 		} TEST_END;
 
 #if FP_RDC == BASIC || !defined(STRIP)
-		TEST_BEGIN("basic modular reduction is correct") {
+		TEST_CASE("basic modular reduction is correct") {
 			fp_rand(a);
 			fp_muln_low(t, a, fp_prime_get());
 			fp_rdc_basic(b, t);
@@ -743,7 +743,7 @@ static int reduction(void) {
 #endif
 
 #if FP_RDC == MONTY || !defined(STRIP)
-		TEST_BEGIN("montgomery modular reduction is correct") {
+		TEST_CASE("montgomery modular reduction is correct") {
 			fp_rand(a);
 			fp_muln_low(t, a, fp_prime_get());
 			fp_rdc_monty(b, t);
@@ -753,7 +753,7 @@ static int reduction(void) {
 
 #if FP_RDC == QUICK || !defined(STRIP)
 		if (fp_prime_get_sps(NULL) != NULL) {
-			TEST_BEGIN("fast modular reduction is correct") {
+			TEST_CASE("fast modular reduction is correct") {
 				fp_rand(a);
 				fp_muln_low(t, a, fp_prime_get());
 				fp_rdc_quick(b, t);
@@ -791,7 +791,7 @@ static int inversion(void) {
 		fp_new(d[0]);
 		fp_new(d[1]);
 
-		TEST_BEGIN("inversion is correct") {
+		TEST_CASE("inversion is correct") {
 			do {
 				fp_rand(a);
 			} while (fp_is_zero(a));
@@ -802,7 +802,7 @@ static int inversion(void) {
 		} TEST_END;
 
 #if FP_INV == BASIC || !defined(STRIP)
-		TEST_BEGIN("basic inversion is correct") {
+		TEST_CASE("basic inversion is correct") {
 			do {
 				fp_rand(a);
 			} while (fp_is_zero(a));
@@ -813,7 +813,7 @@ static int inversion(void) {
 #endif
 
 #if FP_INV == BINAR || !defined(STRIP)
-		TEST_BEGIN("binary inversion is correct") {
+		TEST_CASE("binary inversion is correct") {
 			do {
 				fp_rand(a);
 			} while (fp_is_zero(a));
@@ -824,7 +824,7 @@ static int inversion(void) {
 #endif
 
 #if FP_INV == MONTY || !defined(STRIP)
-		TEST_BEGIN("montgomery inversion is correct") {
+		TEST_CASE("montgomery inversion is correct") {
 			do {
 				fp_rand(a);
 			} while (fp_is_zero(a));
@@ -835,7 +835,7 @@ static int inversion(void) {
 #endif
 
 #if FP_INV == EXGCD || !defined(STRIP)
-		TEST_BEGIN("euclidean inversion is correct") {
+		TEST_CASE("euclidean inversion is correct") {
 			do {
 				fp_rand(a);
 			} while (fp_is_zero(a));
@@ -846,7 +846,7 @@ static int inversion(void) {
 #endif
 
 #if FP_INV == DIVST || !defined(STRIP)
-		TEST_BEGIN("division step inversion is correct") {
+		TEST_CASE("division step inversion is correct") {
 			do {
 				fp_rand(a);
 			} while (fp_is_zero(a));
@@ -857,7 +857,7 @@ static int inversion(void) {
 #endif
 
 #if FP_INV == LOWER || !defined(STRIP)
-		TEST_BEGIN("lower inversion is correct") {
+		TEST_CASE("lower inversion is correct") {
 			do {
 				fp_rand(a);
 			} while (fp_is_zero(a));
@@ -867,7 +867,7 @@ static int inversion(void) {
 		} TEST_END;
 #endif
 
-		TEST_BEGIN("simultaneous inversion is correct") {
+		TEST_CASE("simultaneous inversion is correct") {
 			do {
 				fp_rand(a);
 				fp_rand(b);
@@ -910,7 +910,7 @@ static int exponentiation(void) {
 		fp_new(c);
 		bn_new(d);
 
-		TEST_BEGIN("exponentiation is correct") {
+		TEST_CASE("exponentiation is correct") {
 			fp_rand(a);
 			bn_zero(d);
 			fp_exp(c, a, d);
@@ -933,7 +933,7 @@ static int exponentiation(void) {
 		TEST_END;
 
 #if FP_EXP == BASIC || !defined(STRIP)
-		TEST_BEGIN("basic exponentiation is correct") {
+		TEST_CASE("basic exponentiation is correct") {
 			fp_rand(a);
 			bn_rand(d, RLC_POS, RLC_FP_BITS);
 			fp_exp(c, a, d);
@@ -944,7 +944,7 @@ static int exponentiation(void) {
 #endif
 
 #if FP_EXP == SLIDE || !defined(STRIP)
-		TEST_BEGIN("sliding window exponentiation is correct") {
+		TEST_CASE("sliding window exponentiation is correct") {
 			fp_rand(a);
 			bn_rand(d, RLC_POS, RLC_FP_BITS);
 			fp_exp(c, a, d);
@@ -955,7 +955,7 @@ static int exponentiation(void) {
 #endif
 
 #if FP_EXP == MONTY || !defined(STRIP)
-		TEST_BEGIN("constant-time exponentiation is correct") {
+		TEST_CASE("constant-time exponentiation is correct") {
 			fp_rand(a);
 			bn_rand(d, RLC_POS, RLC_FP_BITS);
 			fp_exp(c, a, d);
@@ -990,7 +990,7 @@ static int square_root(void) {
 		fp_new(b);
 		fp_new(c);
 
-		TEST_BEGIN("square root extraction is correct") {
+		TEST_CASE("square root extraction is correct") {
 			fp_rand(a);
 			fp_sqr(c, a);
 			TEST_ASSERT(fp_srt(b, c), end);
@@ -1031,7 +1031,7 @@ static int digit(void) {
 		fp_new(c);
 		fp_new(d);
 
-		TEST_BEGIN("addition of a single digit is consistent") {
+		TEST_CASE("addition of a single digit is consistent") {
 			fp_rand(a);
 			fp_rand(b);
 			for (int j = 1; j < RLC_FP_DIGS; j++)
@@ -1043,7 +1043,7 @@ static int digit(void) {
 			TEST_ASSERT(fp_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("subtraction of a single digit is consistent") {
+		TEST_CASE("subtraction of a single digit is consistent") {
 			fp_rand(a);
 			fp_rand(b);
 			for (int j = 1; j < RLC_FP_DIGS; j++)
@@ -1055,7 +1055,7 @@ static int digit(void) {
 			TEST_ASSERT(fp_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("multiplication by a single digit is consistent") {
+		TEST_CASE("multiplication by a single digit is consistent") {
 			fp_rand(a);
 			fp_rand(b);
 			for (int j = 1; j < RLC_FP_DIGS; j++)

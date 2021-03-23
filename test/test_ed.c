@@ -86,7 +86,7 @@ static int memory(void) {
 	ed_null(a);
 
 	RLC_TRY {
-		TEST_BEGIN("memory can be allocated") {
+		TEST_CASE("memory can be allocated") {
 			ed_new(a);
 			ed_free(a);
 		} TEST_END;
@@ -118,7 +118,7 @@ int util(void) {
 		ed_new(b);
 		ed_new(c);
 
-		TEST_BEGIN("copy and comparison are consistent") {
+		TEST_CASE("copy and comparison are consistent") {
 			ed_rand(a);
 			ed_rand(b);
 			ed_rand(c);
@@ -145,14 +145,14 @@ int util(void) {
 		}
 		TEST_END;
 
-		TEST_BEGIN("negation and comparison are consistent") {
+		TEST_CASE("negation and comparison are consistent") {
 			ed_rand(a);
 			ed_neg(b, a);
 			TEST_ASSERT(ed_cmp(a, b) != RLC_EQ, end);
 		}
 		TEST_END;
 
-		TEST_BEGIN("assignment to random and comparison are consistent") {
+		TEST_CASE("assignment to random and comparison are consistent") {
 			ed_rand(a);
 			ed_set_infty(c);
 			TEST_ASSERT(ed_cmp(a, c) != RLC_EQ, end);
@@ -160,13 +160,13 @@ int util(void) {
 		}
 		TEST_END;
 
-		TEST_BEGIN("assignment to infinity and infinity test are consistent") {
+		TEST_CASE("assignment to infinity and infinity test are consistent") {
 			ed_set_infty(a);
 			TEST_ASSERT(ed_is_infty(a), end);
 		}
 		TEST_END;
 
-		TEST_BEGIN("validity test is correct") {
+		TEST_CASE("validity test is correct") {
 			ed_set_infty(a);
 			TEST_ASSERT(ed_on_curve(a), end);
 			ed_rand(a);
@@ -176,13 +176,13 @@ int util(void) {
 		}
 		TEST_END;
 
-		TEST_BEGIN("blinding is consistent") {
+		TEST_CASE("blinding is consistent") {
 			ed_rand(a);
 			ed_blind(a, a);
 			TEST_ASSERT(ed_on_curve(a), end);
 		} TEST_END;
 
-		TEST_BEGIN("reading and writing a point are consistent") {
+		TEST_CASE("reading and writing a point are consistent") {
 			for (int j = 0; j < 2; j++) {
 				ed_set_infty(a);
 				l = ed_size_bin(a, j);
@@ -234,7 +234,7 @@ int addition(void) {
 		ed_new(d);
 		ed_new(e);
 
-		TEST_BEGIN("point addition is commutative") {
+		TEST_CASE("point addition is commutative") {
 			ed_rand(a);
 			ed_rand(b);
 			ed_add(d, a, b);
@@ -242,7 +242,7 @@ int addition(void) {
 			TEST_ASSERT(ed_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("point addition is associative") {
+		TEST_CASE("point addition is associative") {
 			ed_rand(a);
 			ed_rand(b);
 			ed_rand(c);
@@ -253,7 +253,7 @@ int addition(void) {
 			TEST_ASSERT(ed_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("point addition has identity") {
+		TEST_CASE("point addition has identity") {
 			ed_rand(a);
 			ed_set_infty(d);
 			ed_add(e, a, d);
@@ -262,7 +262,7 @@ int addition(void) {
 			TEST_ASSERT(ed_cmp(e, a) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("point addition has inverse") {
+		TEST_CASE("point addition has inverse") {
 			ed_rand(a);
 			ed_neg(d, a);
 			ed_add(e, a, d);
@@ -270,7 +270,7 @@ int addition(void) {
 		} TEST_END;
 
 #if ED_ADD == BASIC || !defined(STRIP)
-		TEST_BEGIN("point addition in affine coordinates is correct") {
+		TEST_CASE("point addition in affine coordinates is correct") {
 			ed_rand(a);
 			ed_rand(b);
 			ed_add(d, a, b);
@@ -281,7 +281,7 @@ int addition(void) {
 #endif
 
 #if ED_ADD == PROJC
-		TEST_BEGIN("point addition in projective coordinates is correct") {
+		TEST_CASE("point addition in projective coordinates is correct") {
 			ed_rand(a);
 			ed_rand(b);
 			ed_add_projc(a, a, b);
@@ -298,7 +298,7 @@ int addition(void) {
 			TEST_ASSERT(ed_cmp(e, d) == RLC_EQ, end);
 		} TEST_END;
 #elif ED_ADD == EXTND && !defined(STRIP)
-		TEST_BEGIN("point addition in extended coordinates is correct") {
+		TEST_CASE("point addition in extended coordinates is correct") {
 			ed_rand(a);
 			ed_rand(b);
 			ed_add_extnd(a, a, b);
@@ -344,7 +344,7 @@ int subtraction(void) {
 		ed_new(c);
 		ed_new(d);
 
-		TEST_BEGIN("point subtraction is anti-commutative") {
+		TEST_CASE("point subtraction is anti-commutative") {
 			ed_rand(a);
 			ed_rand(b);
 			ed_sub(c, a, b);
@@ -354,7 +354,7 @@ int subtraction(void) {
 		}
 		TEST_END;
 
-		TEST_BEGIN("point subtraction has identity") {
+		TEST_CASE("point subtraction has identity") {
 			ed_rand(a);
 			ed_set_infty(c);
 			ed_sub(d, a, c);
@@ -362,7 +362,7 @@ int subtraction(void) {
 		}
 		TEST_END;
 
-		TEST_BEGIN("point subtraction has inverse") {
+		TEST_CASE("point subtraction has inverse") {
 			ed_rand(a);
 			ed_sub(c, a, a);
 			TEST_ASSERT(ed_is_infty(c), end);
@@ -370,7 +370,7 @@ int subtraction(void) {
 		TEST_END;
 
 #if ED_ADD == BASIC || !defined(STRIP)
-		TEST_BEGIN("point subtraction in affine coordinates is correct") {
+		TEST_CASE("point subtraction in affine coordinates is correct") {
 			ed_rand(a);
 			ed_rand(b);
 			ed_sub(c, a, b);
@@ -381,7 +381,7 @@ int subtraction(void) {
 #endif
 
 #if ED_ADD == PROJC
-		TEST_BEGIN("point subtraction in projective coordinates is correct") {
+		TEST_CASE("point subtraction in projective coordinates is correct") {
 			ed_rand(a);
 			ed_rand(b);
 			ed_add_projc(a, a, b);
@@ -398,7 +398,7 @@ int subtraction(void) {
 			TEST_ASSERT(ed_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
 #elif ED_ADD == EXTND && !defined(STRIP)
-		TEST_BEGIN("point subtraction in extended coordinates is correct") {
+		TEST_CASE("point subtraction in extended coordinates is correct") {
 			ed_rand(a);
 			ed_rand(b);
 			ed_add_extnd(a, a, b);
@@ -441,7 +441,7 @@ int doubling(void) {
 		ed_new(b);
 		ed_new(c);
 
-		TEST_BEGIN("point doubling is correct") {
+		TEST_CASE("point doubling is correct") {
 			ed_rand(a);
 			ed_add(b, a, a);
 			ed_dbl(c, a);
@@ -449,7 +449,7 @@ int doubling(void) {
 		} TEST_END;
 
 #if ED_ADD == BASIC || !defined(STRIP)
-		TEST_BEGIN("point doubling in affine coordinates is correct") {
+		TEST_CASE("point doubling in affine coordinates is correct") {
 			ed_rand(a);
 			ed_dbl(b, a);
 			ed_norm(b, b);
@@ -459,7 +459,7 @@ int doubling(void) {
 #endif
 
 #if ED_ADD == PROJC || !defined(STRIP)
-		TEST_BEGIN("point doubling in projective coordinates is correct") {
+		TEST_CASE("point doubling in projective coordinates is correct") {
 			ed_rand(a);
 			ed_dbl_projc(a, a);
 			/* a in projective coordinates. */
@@ -471,7 +471,7 @@ int doubling(void) {
 			TEST_ASSERT(ed_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("point doubling in mixed coordinates (z1 = 1) is correct") {
+		TEST_CASE("point doubling in mixed coordinates (z1 = 1) is correct") {
 			ed_rand(a);
 			ed_dbl_projc(b, a);
 			ed_norm(b, b);
@@ -482,7 +482,7 @@ int doubling(void) {
 #endif
 
 #if ED_ADD == EXTND || !defined(STRIP)
-		TEST_BEGIN("point doubling in extended coordinates is correct") {
+		TEST_CASE("point doubling in extended coordinates is correct") {
 			ed_rand(a);
 			ed_dbl_extnd(a, a);
 			/* a in projective coordinates. */
@@ -494,7 +494,7 @@ int doubling(void) {
 			TEST_ASSERT(ed_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("point doubling in mixed coordinates (z1 = 1) is correct") {
+		TEST_CASE("point doubling in mixed coordinates (z1 = 1) is correct") {
 			ed_rand(a);
 			ed_dbl_extnd(b, a);
 			ed_norm(b, b);
@@ -536,13 +536,13 @@ static int multiplication(void) {
 		ed_curve_get_gen(p);
 		ed_curve_get_ord(n);
 
-		TEST_BEGIN("generator has the right order") {
+		TEST_CASE("generator has the right order") {
 			TEST_ASSERT(ed_on_curve(p), end);
 			ed_mul(r, p, n);
 			TEST_ASSERT(ed_is_infty(r) == 1, end);
 		} TEST_END;
 
-		TEST_BEGIN("generator multiplication is correct") {
+		TEST_CASE("generator multiplication is correct") {
 			bn_zero(k);
 			ed_mul_gen(r, k);
 			TEST_ASSERT(ed_is_infty(r), end);
@@ -560,7 +560,7 @@ static int multiplication(void) {
 		} TEST_END;
 
 #if ED_MUL == BASIC || !defined(STRIP)
-		TEST_BEGIN("binary point multiplication is correct") {
+		TEST_CASE("binary point multiplication is correct") {
 			bn_zero(k);
 			ed_mul_basic(r, p, k);
 			TEST_ASSERT(ed_is_infty(r), end);
@@ -582,7 +582,7 @@ static int multiplication(void) {
 #endif
 
 #if ED_MUL == MONTY || !defined(STRIP)
-		TEST_BEGIN("sliding window point multiplication is correct") {
+		TEST_CASE("sliding window point multiplication is correct") {
 			bn_zero(k);
 			ed_mul_slide(r, p, k);
 			TEST_ASSERT(ed_is_infty(r), end);
@@ -605,7 +605,7 @@ static int multiplication(void) {
 #endif
 
 #if ED_MUL == MONTY || !defined(STRIP)
-		TEST_BEGIN("montgomery ladder point multiplication is correct") {
+		TEST_CASE("montgomery ladder point multiplication is correct") {
 			bn_zero(k);
 			ed_mul_monty(r, p, k);
 			TEST_ASSERT(ed_is_infty(r), end);
@@ -628,7 +628,7 @@ static int multiplication(void) {
 #endif
 
 #if ED_MUL == LWNAF || !defined(STRIP)
-		TEST_BEGIN("left-to-right w-naf point multiplication is correct") {
+		TEST_CASE("left-to-right w-naf point multiplication is correct") {
 			bn_zero(k);
 			ed_mul_lwnaf(r, p, k);
 			TEST_ASSERT(ed_is_infty(r), end);
@@ -651,7 +651,7 @@ static int multiplication(void) {
 #endif
 
 #if ED_MUL == LWREG || !defined(STRIP)
-		TEST_BEGIN("left-to-right regular point multiplication is correct") {
+		TEST_CASE("left-to-right regular point multiplication is correct") {
 			bn_zero(k);
 			ed_mul_lwreg(r, p, k);
 			TEST_ASSERT(ed_is_infty(r), end);
@@ -673,7 +673,7 @@ static int multiplication(void) {
 		TEST_END;
 #endif
 
-		TEST_BEGIN("multiplication by digit is correct") {
+		TEST_CASE("multiplication by digit is correct") {
 			ed_mul_dig(r, p, 0);
 			TEST_ASSERT(ed_is_infty(r), end);
 			ed_mul_dig(r, p, 1);
@@ -727,7 +727,7 @@ static int fixed(void) {
 		for (int i = 0; i < RLC_ED_TABLE; i++) {
 			ed_new(t[i]);
 		}
-		TEST_BEGIN("fixed point multiplication is correct") {
+		TEST_CASE("fixed point multiplication is correct") {
 			ed_rand(p);
 			ed_mul_pre(t, p);
 			bn_zero(k);
@@ -754,7 +754,7 @@ static int fixed(void) {
 		for (int i = 0; i < RLC_ED_TABLE_BASIC; i++) {
 			ed_new(t[i]);
 		}
-		TEST_BEGIN("binary fixed point multiplication is correct") {
+		TEST_CASE("binary fixed point multiplication is correct") {
 			ed_rand(p);
 			ed_mul_pre_basic(t, p);
 			bn_zero(k);
@@ -781,7 +781,7 @@ static int fixed(void) {
 		for (int i = 0; i < RLC_ED_TABLE_COMBS; i++) {
 			ed_new(t[i]);
 		}
-		TEST_BEGIN("single-table comb fixed point multiplication is correct") {
+		TEST_CASE("single-table comb fixed point multiplication is correct") {
 			ed_rand(p);
 			ed_mul_pre_combs(t, p);
 			bn_zero(k);
@@ -808,7 +808,7 @@ static int fixed(void) {
 		for (int i = 0; i < RLC_ED_TABLE_COMBD; i++) {
 			ed_new(t[i]);
 		}
-		TEST_BEGIN("double-table comb fixed point multiplication is correct") {
+		TEST_CASE("double-table comb fixed point multiplication is correct") {
 			ed_rand(p);
 			ed_mul_pre_combd(t, p);
 			bn_zero(k);
@@ -835,7 +835,7 @@ static int fixed(void) {
 		for (int i = 0; i < RLC_ED_TABLE_LWNAF; i++) {
 			ed_new(t[i]);
 		}
-		TEST_BEGIN("left-to-right w-naf fixed point multiplication is correct") {
+		TEST_CASE("left-to-right w-naf fixed point multiplication is correct") {
 			ed_rand(p);
 			ed_mul_pre_lwnaf(t, p);
 			bn_zero(k);
@@ -895,7 +895,7 @@ static int simultaneous(void) {
 		ed_curve_get_gen(p);
 		ed_curve_get_ord(n);
 
-		TEST_BEGIN("simultaneous point multiplication is correct") {
+		TEST_CASE("simultaneous point multiplication is correct") {
 			bn_zero(k);
 			bn_rand_mod(l, n);
 			ed_mul(q, p, l);
@@ -930,7 +930,7 @@ static int simultaneous(void) {
 		} TEST_END;
 
 #if ED_SIM == BASIC || !defined(STRIP)
-		TEST_BEGIN("basic simultaneous point multiplication is correct") {
+		TEST_CASE("basic simultaneous point multiplication is correct") {
 			bn_zero(k);
 			bn_rand_mod(l, n);
 			ed_mul(q, p, l);
@@ -966,7 +966,7 @@ static int simultaneous(void) {
 #endif
 
 #if ED_SIM == TRICK || !defined(STRIP)
-		TEST_BEGIN("shamir's trick for simultaneous multiplication is correct") {
+		TEST_CASE("shamir's trick for simultaneous multiplication is correct") {
 			bn_zero(k);
 			bn_rand_mod(l, n);
 			ed_mul(q, p, l);
@@ -1002,7 +1002,7 @@ static int simultaneous(void) {
 #endif
 
 #if ED_SIM == INTER || !defined(STRIP)
-		TEST_BEGIN("interleaving for simultaneous multiplication is correct") {
+		TEST_CASE("interleaving for simultaneous multiplication is correct") {
 			bn_zero(k);
 			bn_rand_mod(l, n);
 			ed_mul(q, p, l);
@@ -1038,7 +1038,7 @@ static int simultaneous(void) {
 #endif
 
 #if ED_SIM == JOINT || !defined(STRIP)
-		TEST_BEGIN("jsf for simultaneous multiplication is correct") {
+		TEST_CASE("jsf for simultaneous multiplication is correct") {
 			bn_zero(k);
 			bn_rand_mod(l, n);
 			ed_mul(q, p, l);
@@ -1073,7 +1073,7 @@ static int simultaneous(void) {
 		} TEST_END;
 #endif
 
-		TEST_BEGIN("simultaneous multiplication with generator is correct") {
+		TEST_CASE("simultaneous multiplication with generator is correct") {
 			bn_zero(k);
 			bn_rand_mod(l, n);
 			ed_mul(q, p, l);
@@ -1130,7 +1130,7 @@ static int compression(void) {
 		ed_new(b);
 		ed_new(c);
 
-		TEST_BEGIN("point compression is correct") {
+		TEST_CASE("point compression is correct") {
 			ed_rand(a);
 			ed_pck(b, a);
 			TEST_ASSERT(ed_upk(c, b) == 1, end);
@@ -1167,7 +1167,7 @@ static int hashing(void) {
 
 		ed_curve_get_ord(n);
 
-		TEST_BEGIN("point hashing is correct") {
+		TEST_CASE("point hashing is correct") {
 			rand_bytes(msg, sizeof(msg));
 			ed_map(a, msg, sizeof(msg));
 			TEST_ASSERT(ed_on_curve(a), end);

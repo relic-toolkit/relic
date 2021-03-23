@@ -67,7 +67,7 @@ static int triple(void) {
 
 		bn_gen_prime(n, RLC_BN_BITS);
 
-		TEST_BEGIN("multiplication triples are generated correctly") {
+		TEST_CASE("multiplication triples are generated correctly") {
 			mt_gen(tri, n);
 			bn_add(t, tri[0]->a, tri[1]->a);
 			bn_mod(t, t, n);
@@ -80,7 +80,7 @@ static int triple(void) {
 			TEST_ASSERT(bn_cmp(t, u) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("multiplication triples are consistent") {
+		TEST_CASE("multiplication triples are consistent") {
 			mt_gen(tri, n);
 			/* Generate random inputs. */
 			bn_rand_mod(x[0], n);
@@ -192,7 +192,7 @@ static int pairing(void) {
 
 		g1_get_ord(n);
 
-		TEST_BEGIN("scalar multiplication triples in g1 are consistent") {
+		TEST_CASE("scalar multiplication triples in g1 are consistent") {
 			mt_gen(tri, n);
 			/* Generate random inputs. */
 			g1_rand(p[0]);
@@ -232,7 +232,7 @@ static int pairing(void) {
 			TEST_ASSERT(g1_cmp(_p, d[0]) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("scalar multiplication triples in g2 are consistent") {
+		TEST_CASE("scalar multiplication triples in g2 are consistent") {
 			/* Generate random inputs. */
 			g2_rand(q[0]);
 			bn_rand_mod(k[0], n);
@@ -273,7 +273,7 @@ static int pairing(void) {
 			TEST_ASSERT(g2_cmp(_q, e[0]) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("exponentiation triples in target group are consistent") {
+		TEST_CASE("exponentiation triples in target group are consistent") {
 			/* Generate random inputs. */
 			gt_rand(r[0]);
 			bn_rand_mod(k[0], n);
@@ -311,7 +311,7 @@ static int pairing(void) {
 			TEST_ASSERT(gt_cmp(_r, f[0]) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("pairing triples are consistent") {
+		TEST_CASE("pairing triples are consistent") {
 			pc_map_tri(t);
 			g1_add(t[0]->a, t[0]->a, t[1]->a);
 			g1_norm(t[0]->a, t[0]->a);

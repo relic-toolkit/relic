@@ -42,7 +42,7 @@ static int memory(void) {
 	ec_null(a);
 
 	RLC_TRY {
-		TEST_BEGIN("memory can be allocated") {
+		TEST_CASE("memory can be allocated") {
 			ec_new(a);
 			ec_free(a);
 		} TEST_END;
@@ -74,14 +74,14 @@ int util(void) {
 		ec_new(b);
 		ec_new(c);
 
-		TEST_BEGIN("comparison is consistent") {
+		TEST_CASE("comparison is consistent") {
 			ec_rand(a);
 			ec_rand(b);
 			TEST_ASSERT(ec_cmp(a, b) != RLC_EQ, end);
 		}
 		TEST_END;
 
-		TEST_BEGIN("copy and comparison are consistent") {
+		TEST_CASE("copy and comparison are consistent") {
 			ec_rand(a);
 			ec_rand(b);
 			ec_rand(c);
@@ -108,14 +108,14 @@ int util(void) {
 		}
 		TEST_END;
 
-		TEST_BEGIN("negation and comparison are consistent") {
+		TEST_CASE("negation and comparison are consistent") {
 			ec_rand(a);
 			ec_neg(b, a);
 			TEST_ASSERT(ec_cmp(a, b) != RLC_EQ, end);
 		}
 		TEST_END;
 
-		TEST_BEGIN
+		TEST_CASE
 				("assignment to random/infinity and comparison are consistent")
 		{
 			ec_rand(a);
@@ -125,13 +125,13 @@ int util(void) {
 		}
 		TEST_END;
 
-		TEST_BEGIN("assignment to infinity and infinity test are consistent") {
+		TEST_CASE("assignment to infinity and infinity test are consistent") {
 			ec_set_infty(a);
 			TEST_ASSERT(ec_is_infty(a), end);
 		}
 		TEST_END;
 
-		TEST_BEGIN("validity test is correct") {
+		TEST_CASE("validity test is correct") {
 			ec_rand(a);
 			TEST_ASSERT(ec_on_curve(a), end);
 			dv_zero(a->x, RLC_FC_DIGS);
@@ -139,13 +139,13 @@ int util(void) {
 		}
 		TEST_END;
 
-		TEST_BEGIN("blinding is consistent") {
+		TEST_CASE("blinding is consistent") {
 			ec_rand(a);
 			ec_blind(a, a);
 			TEST_ASSERT(ec_on_curve(a), end);
 		} TEST_END;
 
-		TEST_BEGIN("reading and writing a point are consistent") {
+		TEST_CASE("reading and writing a point are consistent") {
 			for (int j = 0; j < 2; j++) {
 				ec_set_infty(a);
 				l = ec_size_bin(a, j);
@@ -198,7 +198,7 @@ int addition(void) {
 		ec_new(d);
 		ec_new(e);
 
-		TEST_BEGIN("point addition is commutative") {
+		TEST_CASE("point addition is commutative") {
 			ec_rand(a);
 			ec_rand(b);
 			ec_add(d, a, b);
@@ -206,7 +206,7 @@ int addition(void) {
 			TEST_ASSERT(ec_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("point addition is associative") {
+		TEST_CASE("point addition is associative") {
 			ec_rand(a);
 			ec_rand(b);
 			ec_rand(c);
@@ -217,7 +217,7 @@ int addition(void) {
 			TEST_ASSERT(ec_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("point addition has identity") {
+		TEST_CASE("point addition has identity") {
 			ec_rand(a);
 			ec_set_infty(d);
 			ec_add(e, a, d);
@@ -226,7 +226,7 @@ int addition(void) {
 			TEST_ASSERT(ec_cmp(e, a) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("point addition has inverse") {
+		TEST_CASE("point addition has inverse") {
 			ec_rand(a);
 			ec_neg(d, a);
 			ec_add(e, a, d);
@@ -261,7 +261,7 @@ int subtraction(void) {
 		ec_new(c);
 		ec_new(d);
 
-		TEST_BEGIN("point subtraction is anti-commutative") {
+		TEST_CASE("point subtraction is anti-commutative") {
 			ec_rand(a);
 			ec_rand(b);
 			ec_sub(c, a, b);
@@ -271,7 +271,7 @@ int subtraction(void) {
 		}
 		TEST_END;
 
-		TEST_BEGIN("point subtraction has identity") {
+		TEST_CASE("point subtraction has identity") {
 			ec_rand(a);
 			ec_set_infty(c);
 			ec_sub(d, a, c);
@@ -279,7 +279,7 @@ int subtraction(void) {
 		}
 		TEST_END;
 
-		TEST_BEGIN("point subtraction has inverse") {
+		TEST_CASE("point subtraction has inverse") {
 			ec_rand(a);
 			ec_sub(c, a, a);
 			TEST_ASSERT(ec_is_infty(c), end);
@@ -311,7 +311,7 @@ int doubling(void) {
 		ec_new(b);
 		ec_new(c);
 
-		TEST_BEGIN("point doubling is correct") {
+		TEST_CASE("point doubling is correct") {
 			ec_rand(a);
 			ec_add(b, a, a);
 			ec_dbl(c, a);
@@ -355,7 +355,7 @@ static int multiplication(void) {
 			TEST_ASSERT(ec_is_infty(r) == 1, end);
 		} TEST_END;
 
-		TEST_BEGIN("generator multiplication is correct") {
+		TEST_CASE("generator multiplication is correct") {
 			bn_zero(k);
 			ec_mul_gen(r, k);
 			TEST_ASSERT(ec_is_infty(r), end);
@@ -372,7 +372,7 @@ static int multiplication(void) {
 			TEST_ASSERT(ec_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("point multiplication is correct") {
+		TEST_CASE("point multiplication is correct") {
 			bn_zero(k);
 			ec_mul(r, p, k);
 			TEST_ASSERT(ec_is_infty(r), end);
@@ -432,7 +432,7 @@ static int fixed(void) {
 		for (int i = 0; i < RLC_EC_TABLE; i++) {
 			ec_new(t[i]);
 		}
-		TEST_BEGIN("fixed point multiplication is correct") {
+		TEST_CASE("fixed point multiplication is correct") {
 			ec_rand(p);
 			ec_mul_pre(t, p);
 			bn_zero(k);
@@ -493,7 +493,7 @@ static int simultaneous(void) {
 		ec_curve_get_gen(q);
 		ec_curve_get_ord(n);
 
-		TEST_BEGIN("simultaneous point multiplication is correct") {
+		TEST_CASE("simultaneous point multiplication is correct") {
 			bn_zero(k);
 			bn_rand_mod(l, n);
 			ec_mul(q, p, l);
@@ -527,7 +527,7 @@ static int simultaneous(void) {
 			TEST_ASSERT(ec_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("simultaneous multiplication with generator is correct") {
+		TEST_CASE("simultaneous multiplication with generator is correct") {
 			bn_zero(k);
 			bn_rand_mod(l, n);
 			ec_mul(q, p, l);
@@ -584,7 +584,7 @@ static int compression(void) {
 		ec_new(b);
 		ec_new(c);
 
-		TEST_BEGIN("point compression is correct") {
+		TEST_CASE("point compression is correct") {
 			ec_rand(a);
 			ec_pck(b, a);
 			ec_upk(c, b);
@@ -619,7 +619,7 @@ static int hashing(void) {
 
 		ec_curve_get_ord(n);
 
-		TEST_BEGIN("point hashing is correct") {
+		TEST_CASE("point hashing is correct") {
 			rand_bytes(msg, sizeof(msg));
 			ec_map(a, msg, sizeof(msg));
 			ec_mul(a, a, n);

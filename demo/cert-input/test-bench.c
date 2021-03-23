@@ -76,7 +76,7 @@ static int test_pss(void) {
 			g2_new(_y[i]);
 		}
 
-		TEST_BEGIN("pointcheval-sanders simple signature is correct") {
+		TEST_CASE("pointcheval-sanders simple signature is correct") {
 			TEST_ASSERT(cp_pss_gen(u, v, g, x, y) == RLC_OK, end);
 			TEST_ASSERT(cp_pss_sig(a, b, ms[0], u, v) == RLC_OK, end);
 			TEST_ASSERT(cp_pss_ver(a, b, ms[0], g, x, y) == 1, end);
@@ -87,7 +87,7 @@ static int test_pss(void) {
 		}
 		TEST_END;
 
-		TEST_BEGIN("pointcheval-sanders block signature is correct") {
+		TEST_CASE("pointcheval-sanders block signature is correct") {
 			TEST_ASSERT(cp_psb_gen(u, _v, g, x, _y, MSGS) == RLC_OK, end);
 			TEST_ASSERT(cp_psb_sig(a, b, ms, u, _v, MSGS) == RLC_OK, end);
 			TEST_ASSERT(cp_psb_ver(a, b, ms, g, x, _y, MSGS) == 1, end);
@@ -169,7 +169,7 @@ static int test_mpss(void) {
 			}
 		}
 
-		TEST_BEGIN("multi-party pointcheval-sanders simple signature is correct") {
+		TEST_CASE("multi-party pointcheval-sanders simple signature is correct") {
 			pc_map_tri(t);
 			mt_gen(tri[0], n);
 			mt_gen(tri[1], n);
@@ -190,7 +190,7 @@ static int test_mpss(void) {
 		}
 		TEST_END;
 
-		TEST_BEGIN("multi-party pointcheval-sanders block signature is correct") {
+		TEST_CASE("multi-party pointcheval-sanders block signature is correct") {
 			g1_get_ord(n);
 			pc_map_tri(t);
 			mt_gen(tri[0], n);

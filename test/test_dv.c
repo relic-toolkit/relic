@@ -42,7 +42,7 @@ static int memory(void) {
 	dv_null(a);
 
 	RLC_TRY {
-		TEST_BEGIN("temporary memory can be allocated") {
+		TEST_CASE("temporary memory can be allocated") {
 			dv_new(a);
 			dv_free(a);
 		} TEST_END;
@@ -70,7 +70,7 @@ static int copy(void) {
 		dv_new(a);
 		dv_new(b);
 
-		TEST_BEGIN("copy and comparison are consistent") {
+		TEST_CASE("copy and comparison are consistent") {
 			rand_bytes((uint8_t *)a, RLC_DV_DIGS * sizeof(dig_t));
 			rand_bytes((uint8_t *)b, RLC_DV_DIGS * sizeof(dig_t));
 			if (dv_cmp(a, b, RLC_DV_DIGS) != RLC_EQ) {
@@ -85,7 +85,7 @@ static int copy(void) {
 		}
 		TEST_END;
 
-		TEST_BEGIN("conditional copy and comparison are consistent") {
+		TEST_CASE("conditional copy and comparison are consistent") {
 			rand_bytes((uint8_t *)a, RLC_DV_DIGS * sizeof(dig_t));
 			rand_bytes((uint8_t *)b, RLC_DV_DIGS * sizeof(dig_t));
 			dv_copy_cond(a, b, RLC_DV_DIGS, 0);
@@ -119,7 +119,7 @@ static int swap(void) {
 		dv_new(c);
 		dv_new(d);
 
-		TEST_BEGIN("conditional swap and copy are consistent") {
+		TEST_CASE("conditional swap and copy are consistent") {
 			rand_bytes((uint8_t *)a, RLC_DV_DIGS * sizeof(dig_t));
 			rand_bytes((uint8_t *)b, RLC_DV_DIGS * sizeof(dig_t));
 			dv_copy(c, a, RLC_DV_DIGS);
@@ -128,7 +128,7 @@ static int swap(void) {
 		}
 		TEST_END;
 
-		TEST_BEGIN("conditional swap and comparison are consistent") {
+		TEST_CASE("conditional swap and comparison are consistent") {
 			rand_bytes((uint8_t *)a, RLC_DV_DIGS * sizeof(dig_t));
 			rand_bytes((uint8_t *)b, RLC_DV_DIGS * sizeof(dig_t));
 			dv_copy(c, a, RLC_DV_DIGS);
@@ -170,7 +170,7 @@ static int shifting(void) {
 		dv_new(b);
 		dv_new(c);
 
-		TEST_BEGIN("shifting by  digit is consistent") {
+		TEST_CASE("shifting by  digit is consistent") {
 			rand_bytes((uint8_t *)a, RLC_DV_DIGS * sizeof(dig_t));
 			a[RLC_DV_DIGS - 1] = 0;
 			dv_lshd(b, a, RLC_DV_DIGS, 1);
@@ -179,7 +179,7 @@ static int shifting(void) {
 		} TEST_END;
 
 		if (RLC_DV_DIGS > 1) {
-			TEST_BEGIN("shifting by 2 digits is consistent") {
+			TEST_CASE("shifting by 2 digits is consistent") {
 				rand_bytes((uint8_t *)a, RLC_DV_DIGS * sizeof(dig_t));
 				a[RLC_DV_DIGS - 1] = 0;
 				a[RLC_DV_DIGS - 2] = 0;

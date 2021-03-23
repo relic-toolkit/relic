@@ -59,7 +59,7 @@
  *
  * @param[in] P				- the property description.
  */
-#define TEST_BEGIN(P)														\
+#define TEST_CASE(P)														\
 	util_print("Testing if " P "...%*c", (64 - strlen(P)), ' ');			\
 	for (int i = 0; i < TESTS; i++)											\
 

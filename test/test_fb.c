@@ -43,7 +43,7 @@ static int memory(void) {
 	fb_null(a);
 
 	RLC_TRY {
-		TEST_BEGIN("memory can be allocated") {
+		TEST_CASE("memory can be allocated") {
 			fb_new(a);
 			fb_free(a);
 		} TEST_END;
@@ -75,7 +75,7 @@ static int util(void) {
 		fb_new(a);
 		fb_new(b);
 
-		TEST_BEGIN("copy and comparison are consistent") {
+		TEST_CASE("copy and comparison are consistent") {
 			fb_rand(a);
 			fb_rand(b);
 			if (fb_cmp(a, b) != RLC_EQ) {
@@ -85,7 +85,7 @@ static int util(void) {
 		}
 		TEST_END;
 
-		TEST_BEGIN("assignment and comparison are consistent") {
+		TEST_CASE("assignment and comparison are consistent") {
 			do {
 				fb_rand(a);
 			} while (fb_is_zero(a));
@@ -100,7 +100,7 @@ static int util(void) {
 		TEST_END;
 
 		bits = 0;
-		TEST_BEGIN("bit setting and getting are consistent") {
+		TEST_CASE("bit setting and getting are consistent") {
 			fb_zero(a);
 			fb_set_bit(a, bits, 1);
 			TEST_ASSERT(fb_get_bit(a, bits) == 1, end);
@@ -111,7 +111,7 @@ static int util(void) {
 		TEST_END;
 
 		bits = 0;
-		TEST_BEGIN("bit assignment and counting are consistent") {
+		TEST_CASE("bit assignment and counting are consistent") {
 			fb_zero(a);
 			fb_set_bit(a, bits, 1);
 			TEST_ASSERT(fb_bits(a) == bits + 1, end);
@@ -119,7 +119,7 @@ static int util(void) {
 		}
 		TEST_END;
 
-		TEST_BEGIN("reading and writing a binary field element are consistent") {
+		TEST_CASE("reading and writing a binary field element are consistent") {
 			fb_rand(a);
 			for (int j = 1; j < 7; j++) {
 				bits = fb_size_str(a, 1 << j);
@@ -133,7 +133,7 @@ static int util(void) {
 		}
 		TEST_END;
 
-		TEST_BEGIN("getting the size of a binary field element is correct") {
+		TEST_CASE("getting the size of a binary field element is correct") {
 			fb_rand(a);
 			TEST_ASSERT(fb_size_str(a, 2) == (1 + fb_bits(a)), end);
 		}
@@ -166,7 +166,7 @@ static int addition(void) {
 		fb_new(d);
 		fb_new(e);
 
-		TEST_BEGIN("addition is commutative") {
+		TEST_CASE("addition is commutative") {
 			fb_rand(a);
 			fb_rand(b);
 			fb_add(d, a, b);
@@ -174,7 +174,7 @@ static int addition(void) {
 			TEST_ASSERT(fb_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("addition is associative") {
+		TEST_CASE("addition is associative") {
 			fb_rand(a);
 			fb_rand(b);
 			fb_rand(c);
@@ -185,21 +185,21 @@ static int addition(void) {
 			TEST_ASSERT(fb_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("addition has identity") {
+		TEST_CASE("addition has identity") {
 			fb_rand(a);
 			fb_zero(d);
 			fb_add(e, a, d);
 			TEST_ASSERT(fb_cmp(e, a) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("addition has inverse") {
+		TEST_CASE("addition has inverse") {
 			fb_rand(a);
 			fb_copy(d, a);
 			fb_add(e, a, d);
 			TEST_ASSERT(fb_is_zero(e), end);
 		} TEST_END;
 
-		TEST_BEGIN("addition of the modulo f(z) is correct") {
+		TEST_CASE("addition of the modulo f(z) is correct") {
 			fb_rand(a);
 			fb_poly_add(d, a);
 			fb_add(e, a, fb_poly_get());
@@ -234,7 +234,7 @@ static int multiplication(void) {
 		fb_new(c);
 		fb_new(d);
 
-		TEST_BEGIN("multiplication is commutative") {
+		TEST_CASE("multiplication is commutative") {
 			fb_rand(a);
 			fb_rand(b);
 			fb_mul(c, a, b);
@@ -242,7 +242,7 @@ static int multiplication(void) {
 			TEST_ASSERT(fb_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("multiplication is associative") {
+		TEST_CASE("multiplication is associative") {
 			fb_rand(a);
 			fb_rand(b);
 			fb_rand(c);
@@ -253,7 +253,7 @@ static int multiplication(void) {
 			TEST_ASSERT(fb_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("multiplication is distributive") {
+		TEST_CASE("multiplication is distributive") {
 			fb_rand(a);
 			fb_rand(b);
 			fb_rand(c);
@@ -265,7 +265,7 @@ static int multiplication(void) {
 			TEST_ASSERT(fb_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("multiplication has identity") {
+		TEST_CASE("multiplication has identity") {
 			fb_rand(a);
 			fb_zero(c);
 			fb_set_bit(c, 0, 1);
@@ -273,7 +273,7 @@ static int multiplication(void) {
 			TEST_ASSERT(fb_cmp(d, a) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("multiplication has zero property") {
+		TEST_CASE("multiplication has zero property") {
 			fb_rand(a);
 			fb_zero(b);
 			fb_mul(c, a, b);
@@ -281,7 +281,7 @@ static int multiplication(void) {
 		} TEST_END;
 
 #if FB_MUL == BASIC || !defined(STRIP)
-		TEST_BEGIN("basic multiplication is correct") {
+		TEST_CASE("basic multiplication is correct") {
 			fb_rand(a);
 			fb_rand(b);
 			fb_mul(c, a, b);
@@ -292,7 +292,7 @@ static int multiplication(void) {
 #endif
 
 #if FB_MUL == LODAH || !defined(STRIP)
-		TEST_BEGIN("lopez-dahab multiplication is correct") {
+		TEST_CASE("lopez-dahab multiplication is correct") {
 			fb_rand(a);
 			fb_rand(b);
 			fb_mul(c, a, b);
@@ -303,7 +303,7 @@ static int multiplication(void) {
 #endif
 
 #if FB_MUL == INTEG || !defined(STRIP)
-		TEST_BEGIN("integrated multiplication is correct") {
+		TEST_CASE("integrated multiplication is correct") {
 			fb_rand(a);
 			fb_rand(b);
 			fb_mul(c, a, b);
@@ -314,7 +314,7 @@ static int multiplication(void) {
 #endif
 
 #if FB_KARAT > 0 || !defined(STRIP)
-		TEST_BEGIN("karatsuba multiplication is correct") {
+		TEST_CASE("karatsuba multiplication is correct") {
 			fb_rand(a);
 			fb_rand(b);
 			fb_mul(c, a, b);
@@ -349,7 +349,7 @@ static int squaring(void) {
 		fb_new(b);
 		fb_new(c);
 
-		TEST_BEGIN("squaring is correct") {
+		TEST_CASE("squaring is correct") {
 			fb_rand(a);
 			fb_mul(b, a, a);
 			fb_sqr(c, a);
@@ -357,7 +357,7 @@ static int squaring(void) {
 		} TEST_END;
 
 #if FB_SQR == BASIC || !defined(STRIP)
-		TEST_BEGIN("basic squaring is correct") {
+		TEST_CASE("basic squaring is correct") {
 			fb_rand(a);
 			fb_sqr(b, a);
 			fb_sqr_basic(c, a);
@@ -366,7 +366,7 @@ static int squaring(void) {
 #endif
 
 #if FB_SQR == QUICK || !defined(STRIP)
-		TEST_BEGIN("table squaring is correct") {
+		TEST_CASE("table squaring is correct") {
 			fb_rand(a);
 			fb_sqr(b, a);
 			fb_sqr_quick(c, a);
@@ -375,7 +375,7 @@ static int squaring(void) {
 #endif
 
 #if FB_SQR == INTEG || !defined(STRIP)
-		TEST_BEGIN("integrated squaring is correct") {
+		TEST_CASE("integrated squaring is correct") {
 			fb_rand(a);
 			fb_sqr(b, a);
 			fb_sqr_integ(c, a);
@@ -408,7 +408,7 @@ static int square_root(void) {
 		fb_new(b);
 		fb_new(c);
 
-		TEST_BEGIN("square root extraction is correct") {
+		TEST_CASE("square root extraction is correct") {
 			fb_rand(a);
 			fb_sqr(c, a);
 			fb_srt(b, c);
@@ -416,7 +416,7 @@ static int square_root(void) {
 		} TEST_END;
 
 #if FB_SRT == BASIC || !defined(STRIP)
-		TEST_BEGIN("basic square root extraction is correct") {
+		TEST_CASE("basic square root extraction is correct") {
 			fb_rand(a);
 			fb_srt(b, a);
 			fb_srt_basic(c, a);
@@ -425,7 +425,7 @@ static int square_root(void) {
 #endif
 
 #if FB_SRT == QUICK || !defined(STRIP)
-		TEST_BEGIN("fast square root extraction is correct") {
+		TEST_CASE("fast square root extraction is correct") {
 			fb_rand(a);
 			fb_srt(b, a);
 			fb_srt_quick(c, a);
@@ -458,7 +458,7 @@ static int shifting(void) {
 		fb_new(b);
 		fb_new(c);
 
-		TEST_BEGIN("shifting by 1 bit is consistent") {
+		TEST_CASE("shifting by 1 bit is consistent") {
 			fb_rand(a);
 			a[RLC_FB_DIGS - 1] = 0;
 			fb_lsh(b, a, 1);
@@ -466,7 +466,7 @@ static int shifting(void) {
 			TEST_ASSERT(fb_cmp(c, a) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("shifting by 2 bits is consistent") {
+		TEST_CASE("shifting by 2 bits is consistent") {
 			fb_rand(a);
 			a[RLC_FB_DIGS - 1] = 0;
 			fb_lsh(b, a, 2);
@@ -474,7 +474,7 @@ static int shifting(void) {
 			TEST_ASSERT(fb_cmp(c, a) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("shifting by half digit is consistent") {
+		TEST_CASE("shifting by half digit is consistent") {
 			fb_rand(a);
 			a[RLC_FB_DIGS - 1] = 0;
 			fb_lsh(b, a, RLC_DIG / 2);
@@ -482,7 +482,7 @@ static int shifting(void) {
 			TEST_ASSERT(fb_cmp(c, a) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("shifting by 1 digit is consistent") {
+		TEST_CASE("shifting by 1 digit is consistent") {
 			fb_rand(a);
 			a[RLC_FB_DIGS - 1] = 0;
 			fb_lsh(b, a, RLC_DIG);
@@ -491,7 +491,7 @@ static int shifting(void) {
 		} TEST_END;
 
 		if (RLC_FB_DIGS > 1) {
-			TEST_BEGIN("shifting by 2 digits is consistent") {
+			TEST_CASE("shifting by 2 digits is consistent") {
 				fb_rand(a);
 				a[RLC_FB_DIGS - 1] = 0;
 				a[RLC_FB_DIGS - 2] = 0;
@@ -500,7 +500,7 @@ static int shifting(void) {
 				TEST_ASSERT(fb_cmp(c, a) == RLC_EQ, end);
 			} TEST_END;
 
-			TEST_BEGIN("shifting by 1 digit and half is consistent") {
+			TEST_CASE("shifting by 1 digit and half is consistent") {
 				fb_rand(a);
 				a[RLC_FB_DIGS - 1] = 0;
 				a[RLC_FB_DIGS - 2] = 0;
@@ -540,7 +540,7 @@ static int reduction(void) {
 		dv_new(t0);
 		dv_new(t1);
 
-		TEST_BEGIN("modular reduction is correct") {
+		TEST_CASE("modular reduction is correct") {
 			if (FB_POLYN % RLC_DIG == 0) {
 				/* Test if a * f(z) mod f(z) == 0. */
 				fb_rand(a);
@@ -561,7 +561,7 @@ static int reduction(void) {
 		TEST_END;
 
 #if FB_RDC == BASIC || !defined(STRIP)
-		TEST_BEGIN("basic modular reduction is correct") {
+		TEST_CASE("basic modular reduction is correct") {
 			dv_zero(t0, 2 * RLC_FB_DIGS);
 			dv_zero(t1, 2 * RLC_FB_DIGS);
 			fb_rand(a);
@@ -575,7 +575,7 @@ static int reduction(void) {
 #endif
 
 #if FB_RDC == QUICK || !defined(STRIP)
-		TEST_BEGIN("fast modular reduction is correct") {
+		TEST_CASE("fast modular reduction is correct") {
 			dv_zero(t0, 2 * RLC_FB_DIGS);
 			dv_zero(t1, 2 * RLC_FB_DIGS);
 			fb_rand(a);
@@ -614,7 +614,7 @@ static int trace(void) {
 		fb_new(b);
 		fb_new(c);
 
-		TEST_BEGIN("trace is linear") {
+		TEST_CASE("trace is linear") {
 			fb_rand(a);
 			fb_rand(b);
 			fb_add(c, a, b);
@@ -622,14 +622,14 @@ static int trace(void) {
 		} TEST_END;
 
 #if FB_TRC == BASIC || !defined(STRIP)
-		TEST_BEGIN("basic trace is correct") {
+		TEST_CASE("basic trace is correct") {
 			fb_rand(a);
 			TEST_ASSERT(fb_trc(a) == fb_trc_basic(a), end);
 		} TEST_END;
 #endif
 
 #if FB_TRC == QUICK || !defined(STRIP)
-		TEST_BEGIN("fast trace is correct") {
+		TEST_CASE("fast trace is correct") {
 			fb_rand(a);
 			TEST_ASSERT(fb_trc(a) == fb_trc_quick(a), end);
 		} TEST_END;
@@ -659,7 +659,7 @@ static int solve(void) {
 		fb_new(b);
 		fb_new(c);
 
-		TEST_BEGIN("solving a quadratic equation is correct") {
+		TEST_CASE("solving a quadratic equation is correct") {
 			fb_rand(a);
 			fb_rand(b);
 			/* Make Tr(a) = 0. */
@@ -672,7 +672,7 @@ static int solve(void) {
 		} TEST_END;
 
 #if FB_SLV == BASIC || !defined(STRIP)
-		TEST_BEGIN("basic solve is correct") {
+		TEST_CASE("basic solve is correct") {
 			fb_rand(a);
 			/* Make Tr(a) = 0. */
 			fb_add_dig(a, a, fb_trc(a));
@@ -683,7 +683,7 @@ static int solve(void) {
 #endif
 
 #if FB_SLV == QUICK || !defined(STRIP)
-		TEST_BEGIN("fast solve is correct") {
+		TEST_CASE("fast solve is correct") {
 			fb_rand(a);
 			/* Make Tr(a) = 0. */
 			fb_add_dig(a, a, fb_trc(a));
@@ -721,7 +721,7 @@ static int inversion(void) {
 		fb_new(d[0]);
 		fb_new(d[1]);
 
-		TEST_BEGIN("inversion is correct") {
+		TEST_CASE("inversion is correct") {
 			do {
 				fb_rand(a);
 			} while (fb_is_zero(a));
@@ -731,7 +731,7 @@ static int inversion(void) {
 		} TEST_END;
 
 #if FB_INV == BASIC || !defined(STRIP)
-		TEST_BEGIN("basic inversion is correct") {
+		TEST_CASE("basic inversion is correct") {
 			do {
 				fb_rand(a);
 			} while (fb_is_zero(a));
@@ -742,7 +742,7 @@ static int inversion(void) {
 #endif
 
 #if FB_INV == BINAR || !defined(STRIP)
-		TEST_BEGIN("binary inversion is correct") {
+		TEST_CASE("binary inversion is correct") {
 			do {
 				fb_rand(a);
 			} while (fb_is_zero(a));
@@ -753,7 +753,7 @@ static int inversion(void) {
 #endif
 
 #if FB_INV == ALMOS || !defined(STRIP)
-		TEST_BEGIN("almost inverse is correct") {
+		TEST_CASE("almost inverse is correct") {
 			do {
 				fb_rand(a);
 			} while (fb_is_zero(a));
@@ -764,7 +764,7 @@ static int inversion(void) {
 #endif
 
 #if FB_INV == EXGCD || !defined(STRIP)
-		TEST_BEGIN("euclidean inversion is correct") {
+		TEST_CASE("euclidean inversion is correct") {
 			do {
 				fb_rand(a);
 			} while (fb_is_zero(a));
@@ -775,7 +775,7 @@ static int inversion(void) {
 #endif
 
 #if FB_INV == BRUCH || !defined(STRIP)
-		TEST_BEGIN("brunner inversion is correct") {
+		TEST_CASE("brunner inversion is correct") {
 			do {
 				fb_rand(a);
 			} while (fb_is_zero(a));
@@ -786,7 +786,7 @@ static int inversion(void) {
 #endif
 
 #if FB_INV == ITOHT || !defined(STRIP)
-		TEST_BEGIN("itoh-tsuji inversion is correct") {
+		TEST_CASE("itoh-tsuji inversion is correct") {
 			do {
 				fb_rand(a);
 			} while (fb_is_zero(a));
@@ -797,7 +797,7 @@ static int inversion(void) {
 #endif
 
 #if FB_INV == CTAIA || !defined(STRIP)
-		TEST_BEGIN("constant-time almost inversion is correct") {
+		TEST_CASE("constant-time almost inversion is correct") {
 			do {
 				fb_rand(a);
 			} while (fb_is_zero(a));
@@ -808,7 +808,7 @@ static int inversion(void) {
 #endif
 
 #if FB_INV == LOWER || !defined(STRIP)
-		TEST_BEGIN("lower inversion is correct") {
+		TEST_CASE("lower inversion is correct") {
 			do {
 				fb_rand(a);
 			} while (fb_is_zero(a));
@@ -818,7 +818,7 @@ static int inversion(void) {
 		} TEST_END;
 #endif
 
-		TEST_BEGIN("simultaneous inversion is correct") {
+		TEST_CASE("simultaneous inversion is correct") {
 			do {
 				fb_rand(a);
 				fb_rand(b);
@@ -864,7 +864,7 @@ static int exponentiation(void) {
 		fb_new(c);
 		bn_new(d);
 
-		TEST_BEGIN("exponentiation is correct") {
+		TEST_CASE("exponentiation is correct") {
 			fb_rand(a);
 			bn_zero(d);
 			fb_exp(c, a, d);
@@ -884,7 +884,7 @@ static int exponentiation(void) {
 		} TEST_END;
 
 #if FB_EXP == BASIC || !defined(STRIP)
-		TEST_BEGIN("basic exponentiation is correct") {
+		TEST_CASE("basic exponentiation is correct") {
 			fb_rand(a);
 			bn_rand(d, RLC_POS, RLC_FB_BITS);
 			fb_exp(c, a, d);
@@ -894,7 +894,7 @@ static int exponentiation(void) {
 #endif
 
 #if FB_EXP == SLIDE || !defined(STRIP)
-		TEST_BEGIN("sliding window exponentiation is correct") {
+		TEST_CASE("sliding window exponentiation is correct") {
 			fb_rand(a);
 			bn_rand(d, RLC_POS, RLC_FB_BITS);
 			fb_exp(c, a, d);
@@ -904,7 +904,7 @@ static int exponentiation(void) {
 #endif
 
 #if FB_EXP == MONTY || !defined(STRIP)
-		TEST_BEGIN("constant-time exponentiation is correct") {
+		TEST_CASE("constant-time exponentiation is correct") {
 			fb_rand(a);
 			bn_rand(d, RLC_POS, RLC_FB_BITS);
 			fb_exp(c, a, d);
@@ -917,7 +917,7 @@ static int exponentiation(void) {
 			fb_new(t[i]);
 		}
 
-		TEST_BEGIN("iterated squaring is correct") {
+		TEST_CASE("iterated squaring is correct") {
 			fb_rand(a);
 			bn_rand(d, RLC_POS, 4);
 			fb_itr_pre(t, d->dp[0]);
@@ -928,7 +928,7 @@ static int exponentiation(void) {
 			TEST_ASSERT(fb_cmp(a, b) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("iterated square-root is correct") {
+		TEST_CASE("iterated square-root is correct") {
 			fb_rand(a);
 			bn_rand(d, RLC_POS, 4);
 			fb_itr_pre(t, -d->dp[0]);
@@ -944,7 +944,7 @@ static int exponentiation(void) {
 		}
 
 #if FB_ITR == BASIC || !defined(STRIP)
-		TEST_BEGIN("basic iterated squaring is correct") {
+		TEST_CASE("basic iterated squaring is correct") {
 			fb_rand(a);
 			bn_rand(d, RLC_POS, 4);
 			fb_itr_basic(b, a, d->dp[0]);
@@ -954,7 +954,7 @@ static int exponentiation(void) {
 			TEST_ASSERT(fb_cmp(a, b) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("basic iterated square-root is correct") {
+		TEST_CASE("basic iterated square-root is correct") {
 			fb_rand(a);
 			bn_rand(d, RLC_POS, 4);
 			fb_itr_basic(b, a, -d->dp[0]);
@@ -970,7 +970,7 @@ static int exponentiation(void) {
 			fb_new(t[i]);
 			fb_zero(t[i]);
 		}
-		TEST_BEGIN("fast iterated squaring is correct") {
+		TEST_CASE("fast iterated squaring is correct") {
 			fb_rand(a);
 			bn_rand(d, RLC_POS, 4);
 			fb_itr_pre_quick(t, d->dp[0]);
@@ -981,7 +981,7 @@ static int exponentiation(void) {
 			TEST_ASSERT(fb_cmp(a, b) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("fast iterated square-root is correct") {
+		TEST_CASE("fast iterated square-root is correct") {
 			fb_rand(a);
 			bn_rand(d, RLC_POS, 4);
 			fb_itr_pre_quick(t, -d->dp[0]);
@@ -1025,7 +1025,7 @@ static int digit(void) {
 		fb_new(c);
 		fb_new(d);
 
-		TEST_BEGIN("addition of a single digit is consistent") {
+		TEST_CASE("addition of a single digit is consistent") {
 			fb_rand(a);
 			fb_rand(b);
 			for (int j = 1; j < RLC_FB_DIGS; j++)
@@ -1036,7 +1036,7 @@ static int digit(void) {
 			TEST_ASSERT(fb_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("multiplication by a single digit is consistent") {
+		TEST_CASE("multiplication by a single digit is consistent") {
 			fb_rand(a);
 			fb_rand(b);
 			for (int j = 1; j < RLC_FB_DIGS; j++) {

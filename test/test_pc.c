@@ -42,7 +42,7 @@ static int memory1(void) {
 	g1_null(a);
 
 	RLC_TRY {
-		TEST_BEGIN("memory can be allocated") {
+		TEST_CASE("memory can be allocated") {
 			g1_new(a);
 			g1_free(a);
 		} TEST_END;
@@ -74,14 +74,14 @@ int util1(void) {
 		g1_new(b);
 		g1_new(c);
 
-		TEST_BEGIN("comparison is consistent") {
+		TEST_CASE("comparison is consistent") {
 			g1_rand(a);
 			g1_rand(b);
 			TEST_ASSERT(g1_cmp(a, b) != RLC_EQ, end);
 		}
 		TEST_END;
 
-		TEST_BEGIN("copy and comparison are consistent") {
+		TEST_CASE("copy and comparison are consistent") {
 			g1_rand(a);
 			g1_rand(b);
 			g1_rand(c);
@@ -112,14 +112,14 @@ int util1(void) {
 		}
 		TEST_END;
 
-		TEST_BEGIN("inversion and comparison are consistent") {
+		TEST_CASE("inversion and comparison are consistent") {
 			g1_rand(a);
 			g1_neg(b, a);
 			TEST_ASSERT(g1_cmp(a, b) != RLC_EQ, end);
 		}
 		TEST_END;
 
-		TEST_BEGIN
+		TEST_CASE
 				("assignment to random/infinity and comparison are consistent")
 		{
 			g1_rand(a);
@@ -129,13 +129,13 @@ int util1(void) {
 		}
 		TEST_END;
 
-		TEST_BEGIN("assignment to infinity and infinity test are consistent") {
+		TEST_CASE("assignment to infinity and infinity test are consistent") {
 			g1_set_infty(a);
 			TEST_ASSERT(g1_is_infty(a), end);
 		}
 		TEST_END;
 
-		TEST_BEGIN("reading and writing a point are consistent") {
+		TEST_CASE("reading and writing a point are consistent") {
 			for (int j = 0; j < 2; j++) {
 				g1_set_infty(a);
 				l = g1_size_bin(a, j);
@@ -188,7 +188,7 @@ int addition1(void) {
 		g1_new(d);
 		g1_new(e);
 
-		TEST_BEGIN("point addition is commutative") {
+		TEST_CASE("point addition is commutative") {
 			g1_rand(a);
 			g1_rand(b);
 			g1_add(d, a, b);
@@ -196,7 +196,7 @@ int addition1(void) {
 			TEST_ASSERT(g1_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("point addition is associative") {
+		TEST_CASE("point addition is associative") {
 			g1_rand(a);
 			g1_rand(b);
 			g1_rand(c);
@@ -207,7 +207,7 @@ int addition1(void) {
 			TEST_ASSERT(g1_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("point addition has identity") {
+		TEST_CASE("point addition has identity") {
 			g1_rand(a);
 			g1_set_infty(d);
 			g1_add(e, a, d);
@@ -216,7 +216,7 @@ int addition1(void) {
 			TEST_ASSERT(g1_cmp(e, a) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("point addition has inverse") {
+		TEST_CASE("point addition has inverse") {
 			g1_rand(a);
 			g1_neg(d, a);
 			g1_add(e, a, d);
@@ -251,7 +251,7 @@ int subtraction1(void) {
 		g1_new(c);
 		g1_new(d);
 
-		TEST_BEGIN("point subtraction is anti-commutative") {
+		TEST_CASE("point subtraction is anti-commutative") {
 			g1_rand(a);
 			g1_rand(b);
 			g1_sub(c, a, b);
@@ -261,7 +261,7 @@ int subtraction1(void) {
 		}
 		TEST_END;
 
-		TEST_BEGIN("point subtraction has identity") {
+		TEST_CASE("point subtraction has identity") {
 			g1_rand(a);
 			g1_set_infty(c);
 			g1_sub(d, a, c);
@@ -269,7 +269,7 @@ int subtraction1(void) {
 		}
 		TEST_END;
 
-		TEST_BEGIN("point subtraction has inverse") {
+		TEST_CASE("point subtraction has inverse") {
 			g1_rand(a);
 			g1_sub(c, a, a);
 			TEST_ASSERT(g1_is_infty(c), end);
@@ -301,7 +301,7 @@ int doubling1(void) {
 		g1_new(b);
 		g1_new(c);
 
-		TEST_BEGIN("point doubling is correct") {
+		TEST_CASE("point doubling is correct") {
 			g1_rand(a);
 			g1_add(b, a, a);
 			g1_dbl(c, a);
@@ -340,12 +340,12 @@ static int multiplication1(void) {
 		g1_get_gen(p);
 		pc_get_ord(n);
 
-		TEST_BEGIN("generator has the right order") {
+		TEST_CASE("generator has the right order") {
 			g1_mul(r, p, n);
 			TEST_ASSERT(g1_is_infty(r) == 1, end);
 		} TEST_END;
 
-		TEST_BEGIN("generator multiplication is correct") {
+		TEST_CASE("generator multiplication is correct") {
 			bn_zero(k);
 			g1_mul_gen(r, k);
 			TEST_ASSERT(g1_is_infty(r), end);
@@ -362,7 +362,7 @@ static int multiplication1(void) {
 			TEST_ASSERT(g1_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("random element has the right order") {
+		TEST_CASE("random element has the right order") {
 			g1_rand(p);
 			g1_mul(r, p, n);
 			TEST_ASSERT(g1_is_infty(r) == 1, end);
@@ -411,7 +411,7 @@ static int fixed1(void) {
 		for (int i = 0; i < RLC_G1_TABLE; i++) {
 			g1_new(t[i]);
 		}
-		TEST_BEGIN("fixed point multiplication is correct") {
+		TEST_CASE("fixed point multiplication is correct") {
 			g1_rand(p);
 			g1_mul_pre(t, p);
 			bn_zero(k);
@@ -471,7 +471,7 @@ static int simultaneous1(void) {
 		g1_get_gen(p);
 		pc_get_ord(n);
 
-		TEST_BEGIN("simultaneous point multiplication is correct") {
+		TEST_CASE("simultaneous point multiplication is correct") {
 			bn_zero(k);
 			bn_rand_mod(l, n);
 			g1_mul(q, p, l);
@@ -503,7 +503,7 @@ static int simultaneous1(void) {
 			TEST_ASSERT(g1_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("simultaneous multiplication with generator is correct") {
+		TEST_CASE("simultaneous multiplication with generator is correct") {
 			bn_zero(k);
 			bn_rand_mod(l, n);
 			g1_mul(q, p, l);
@@ -556,7 +556,7 @@ static int validity1(void) {
 	RLC_TRY {
 		g1_new(a);
 
-		TEST_BEGIN("validity test is correct") {
+		TEST_CASE("validity test is correct") {
 			g1_set_infty(a);
 			TEST_ASSERT(!g1_is_valid(a), end);
 			g1_rand(a);
@@ -564,7 +564,7 @@ static int validity1(void) {
 		}
 		TEST_END;
 
-		TEST_BEGIN("blinding is consistent") {
+		TEST_CASE("blinding is consistent") {
 			g1_rand(a);
 			g1_blind(a, a);
 			TEST_ASSERT(g1_is_valid(a), end);
@@ -594,7 +594,7 @@ static int hashing1(void) {
 
 		pc_get_ord(n);
 
-		TEST_BEGIN("point hashing is correct") {
+		TEST_CASE("point hashing is correct") {
 			rand_bytes(msg, sizeof(msg));
 			g1_map(a, msg, sizeof(msg));
 			TEST_ASSERT(g1_is_valid(a), end);
@@ -620,7 +620,7 @@ static int memory2(void) {
 	g2_null(a);
 
 	RLC_TRY {
-		TEST_BEGIN("memory can be allocated") {
+		TEST_CASE("memory can be allocated") {
 			g2_new(a);
 			g2_free(a);
 		} TEST_END;
@@ -652,14 +652,14 @@ int util2(void) {
 		g2_new(b);
 		g2_new(c);
 
-		TEST_BEGIN("comparison is consistent") {
+		TEST_CASE("comparison is consistent") {
 			g2_rand(a);
 			g2_rand(b);
 			TEST_ASSERT(g2_cmp(a, b) != RLC_EQ, end);
 		}
 		TEST_END;
 
-		TEST_BEGIN("copy and comparison are consistent") {
+		TEST_CASE("copy and comparison are consistent") {
 			g2_rand(a);
 			g2_rand(b);
 			g2_rand(c);
@@ -686,7 +686,7 @@ int util2(void) {
 		}
 		TEST_END;
 
-		TEST_BEGIN("negation and comparison are consistent") {
+		TEST_CASE("negation and comparison are consistent") {
 			g2_rand(a);
 			g2_neg(b, a);
 			TEST_ASSERT(g2_cmp(a, b) != RLC_EQ, end);
@@ -697,7 +697,7 @@ int util2(void) {
 		}
 		TEST_END;
 
-		TEST_BEGIN
+		TEST_CASE
 				("assignment to random/infinity and comparison are consistent")
 		{
 			g2_rand(a);
@@ -707,13 +707,13 @@ int util2(void) {
 		}
 		TEST_END;
 
-		TEST_BEGIN("assignment to infinity and infinity test are consistent") {
+		TEST_CASE("assignment to infinity and infinity test are consistent") {
 			g2_set_infty(a);
 			TEST_ASSERT(g2_is_infty(a), end);
 		}
 		TEST_END;
 
-		TEST_BEGIN("reading and writing a point are consistent") {
+		TEST_CASE("reading and writing a point are consistent") {
 			for (int j = 0; j < 2; j++) {
 				g2_set_infty(a);
 				l = g2_size_bin(a, j);
@@ -766,7 +766,7 @@ int addition2(void) {
 		g2_new(d);
 		g2_new(e);
 
-		TEST_BEGIN("point addition is commutative") {
+		TEST_CASE("point addition is commutative") {
 			g2_rand(a);
 			g2_rand(b);
 			g2_add(d, a, b);
@@ -774,7 +774,7 @@ int addition2(void) {
 			TEST_ASSERT(g2_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("point addition is associative") {
+		TEST_CASE("point addition is associative") {
 			g2_rand(a);
 			g2_rand(b);
 			g2_rand(c);
@@ -785,7 +785,7 @@ int addition2(void) {
 			TEST_ASSERT(g2_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("point addition has identity") {
+		TEST_CASE("point addition has identity") {
 			g2_rand(a);
 			g2_set_infty(d);
 			g2_add(e, a, d);
@@ -794,7 +794,7 @@ int addition2(void) {
 			TEST_ASSERT(g2_cmp(e, a) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("point addition has inverse") {
+		TEST_CASE("point addition has inverse") {
 			g2_rand(a);
 			g2_neg(d, a);
 			g2_add(e, a, d);
@@ -829,7 +829,7 @@ int subtraction2(void) {
 		g2_new(c);
 		g2_new(d);
 
-		TEST_BEGIN("point subtraction is anti-commutative") {
+		TEST_CASE("point subtraction is anti-commutative") {
 			g2_rand(a);
 			g2_rand(b);
 			g2_sub(c, a, b);
@@ -839,7 +839,7 @@ int subtraction2(void) {
 		}
 		TEST_END;
 
-		TEST_BEGIN("point subtraction has identity") {
+		TEST_CASE("point subtraction has identity") {
 			g2_rand(a);
 			g2_set_infty(c);
 			g2_sub(d, a, c);
@@ -847,7 +847,7 @@ int subtraction2(void) {
 		}
 		TEST_END;
 
-		TEST_BEGIN("point subtraction has inverse") {
+		TEST_CASE("point subtraction has inverse") {
 			g2_rand(a);
 			g2_sub(c, a, a);
 			TEST_ASSERT(g2_is_infty(c), end);
@@ -879,7 +879,7 @@ int doubling2(void) {
 		g2_new(b);
 		g2_new(c);
 
-		TEST_BEGIN("point doubling is correct") {
+		TEST_CASE("point doubling is correct") {
 			g2_rand(a);
 			g2_add(b, a, a);
 			g2_dbl(c, a);
@@ -918,12 +918,12 @@ static int multiplication2(void) {
 		g2_get_gen(p);
 		pc_get_ord(n);
 
-		TEST_BEGIN("generator has the right order") {
+		TEST_CASE("generator has the right order") {
 			g2_mul(r, p, n);
 			TEST_ASSERT(g2_is_infty(r) == 1, end);
 		} TEST_END;
 
-		TEST_BEGIN("generator multiplication is correct") {
+		TEST_CASE("generator multiplication is correct") {
 			bn_zero(k);
 			g2_mul_gen(r, k);
 			TEST_ASSERT(g2_is_infty(r), end);
@@ -940,7 +940,7 @@ static int multiplication2(void) {
 			TEST_ASSERT(g2_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("random element has the right order") {
+		TEST_CASE("random element has the right order") {
 			g2_rand(p);
 			g2_mul(r, p, n);
 			TEST_ASSERT(g2_is_infty(r) == 1, end);
@@ -989,7 +989,7 @@ static int fixed2(void) {
 		for (int i = 0; i < RLC_G2_TABLE; i++) {
 			g2_new(t[i]);
 		}
-		TEST_BEGIN("fixed point multiplication is correct") {
+		TEST_CASE("fixed point multiplication is correct") {
 			g2_rand(p);
 			g2_mul_pre(t, p);
 			bn_zero(k);
@@ -1049,7 +1049,7 @@ static int simultaneous2(void) {
 		g2_get_gen(p);
 		pc_get_ord(n);
 
-		TEST_BEGIN("simultaneous point multiplication is correct") {
+		TEST_CASE("simultaneous point multiplication is correct") {
 			bn_zero(k);
 			bn_rand_mod(l, n);
 			g2_mul(q, p, l);
@@ -1081,7 +1081,7 @@ static int simultaneous2(void) {
 			TEST_ASSERT(g2_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("simultaneous multiplication with generator is correct") {
+		TEST_CASE("simultaneous multiplication with generator is correct") {
 			bn_zero(k);
 			bn_rand_mod(l, n);
 			g2_mul(q, p, l);
@@ -1134,7 +1134,7 @@ static int validity2(void) {
 	RLC_TRY {
 		g2_new(a);
 
-		TEST_BEGIN("validity test is correct") {
+		TEST_CASE("validity test is correct") {
 			g2_set_infty(a);
 			TEST_ASSERT(!g2_is_valid(a), end);
 			g2_rand(a);
@@ -1142,7 +1142,7 @@ static int validity2(void) {
 		}
 		TEST_END;
 
-		TEST_BEGIN("blinding is consistent") {
+		TEST_CASE("blinding is consistent") {
 			g2_rand(a);
 			g2_blind(a, a);
 			TEST_ASSERT(g2_is_valid(a), end);
@@ -1172,7 +1172,7 @@ static int hashing2(void) {
 
 		pc_get_ord(n);
 
-		TEST_BEGIN("point hashing is correct") {
+		TEST_CASE("point hashing is correct") {
 			rand_bytes(msg, sizeof(msg));
 			g2_map(a, msg, sizeof(msg));
 			TEST_ASSERT(g2_is_valid(a), end);
@@ -1198,7 +1198,7 @@ static int memory(void) {
 	gt_null(a);
 
 	RLC_TRY {
-		TEST_BEGIN("memory can be allocated") {
+		TEST_CASE("memory can be allocated") {
 			gt_new(a);
 			gt_free(a);
 		} TEST_END;
@@ -1229,14 +1229,14 @@ int util(void) {
 		gt_new(b);
 		gt_new(c);
 
-		TEST_BEGIN("comparison is consistent") {
+		TEST_CASE("comparison is consistent") {
 			gt_rand(a);
 			gt_rand(b);
 			TEST_ASSERT(gt_cmp(a, b) != RLC_EQ, end);
 		}
 		TEST_END;
 
-		TEST_BEGIN("copy and comparison are consistent") {
+		TEST_CASE("copy and comparison are consistent") {
 			gt_rand(a);
 			gt_rand(b);
 			gt_rand(c);
@@ -1251,14 +1251,14 @@ int util(void) {
 		}
 		TEST_END;
 
-		TEST_BEGIN("inversion and comparison are consistent") {
+		TEST_CASE("inversion and comparison are consistent") {
 			gt_rand(a);
 			gt_inv(b, a);
 			TEST_ASSERT(gt_cmp(a, b) != RLC_EQ, end);
 		}
 		TEST_END;
 
-		TEST_BEGIN
+		TEST_CASE
 				("assignment to random/infinity and comparison are consistent")
 		{
 			gt_rand(a);
@@ -1268,7 +1268,7 @@ int util(void) {
 		}
 		TEST_END;
 
-		TEST_BEGIN("assignment to unity and unity test are consistent") {
+		TEST_CASE("assignment to unity and unity test are consistent") {
 			gt_set_unity(a);
 			TEST_ASSERT(gt_is_unity(a), end);
 		}
@@ -1304,7 +1304,7 @@ int multiplication(void) {
 		gt_new(d);
 		gt_new(e);
 
-		TEST_BEGIN("multiplication is commutative") {
+		TEST_CASE("multiplication is commutative") {
 			gt_rand(a);
 			gt_rand(b);
 			gt_mul(d, a, b);
@@ -1312,7 +1312,7 @@ int multiplication(void) {
 			TEST_ASSERT(gt_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("multiplication is associative") {
+		TEST_CASE("multiplication is associative") {
 			gt_rand(a);
 			gt_rand(b);
 			gt_rand(c);
@@ -1323,7 +1323,7 @@ int multiplication(void) {
 			TEST_ASSERT(gt_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("multiplication has identity") {
+		TEST_CASE("multiplication has identity") {
 			gt_rand(a);
 			gt_set_unity(d);
 			gt_mul(e, a, d);
@@ -1358,7 +1358,7 @@ int squaring(void) {
 		gt_new(b);
 		gt_new(c);
 
-		TEST_BEGIN("squaring is correct") {
+		TEST_CASE("squaring is correct") {
 			gt_rand(a);
 			gt_mul(b, a, a);
 			gt_sqr(c, a);
@@ -1385,7 +1385,7 @@ static int inversion(void) {
 		gt_new(b);
 		gt_new(c);
 
-		TEST_BEGIN("inversion is correct") {
+		TEST_CASE("inversion is correct") {
 			gt_rand(a);
 			gt_inv(b, a);
 			gt_mul(c, a, b);
@@ -1428,12 +1428,12 @@ int exponentiation(void) {
 		gt_get_gen(a);
 		pc_get_ord(n);
 
-		TEST_BEGIN("generator has the right order") {
+		TEST_CASE("generator has the right order") {
 			gt_exp(c, a, n);
 			TEST_ASSERT(gt_is_unity(c), end);
 		} TEST_END;
 
-		TEST_BEGIN("generator exponentiation is correct") {
+		TEST_CASE("generator exponentiation is correct") {
 			bn_zero(d);
 			gt_exp_gen(c, d);
 			TEST_ASSERT(gt_is_unity(c), end);
@@ -1453,13 +1453,13 @@ int exponentiation(void) {
 			TEST_ASSERT(gt_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("random element has the right order") {
+		TEST_CASE("random element has the right order") {
 			gt_rand(a);
 			gt_exp(c, a, n);
 			TEST_ASSERT(gt_is_unity(c) == 1, end);
 		} TEST_END;
 
-		TEST_BEGIN("exponentiation is correct") {
+		TEST_CASE("exponentiation is correct") {
 			gt_rand(a);
 			gt_rand(b);
 			bn_rand_mod(d, n);
@@ -1495,7 +1495,7 @@ static int validity(void) {
 	RLC_TRY {
 		gt_new(a);
 
-		TEST_BEGIN("validity check is correct") {
+		TEST_CASE("validity check is correct") {
 			gt_set_unity(a);
 			TEST_ASSERT(!gt_is_valid(a), end);
 			gt_rand(a);
@@ -1539,7 +1539,7 @@ static int pairing(void) {
 
 		pc_get_ord(n);
 
-		TEST_BEGIN("pairing non-degeneracy is correct") {
+		TEST_CASE("pairing non-degeneracy is correct") {
 			g1_rand(p[0]);
 			g2_rand(q[0]);
 			pc_map(e1, p[0], q[0]);
@@ -1553,7 +1553,7 @@ static int pairing(void) {
 			TEST_ASSERT(gt_cmp_dig(e1, 1) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("pairing is bilinear") {
+		TEST_CASE("pairing is bilinear") {
 			g1_rand(p[0]);
 			g2_rand(q[0]);
 			bn_rand_mod(k, n);
@@ -1575,7 +1575,7 @@ static int pairing(void) {
 			TEST_ASSERT(gt_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("multi-pairing is correct") {
+		TEST_CASE("multi-pairing is correct") {
 			g1_rand(p[i % 2]);
 			g2_rand(q[i % 2]);
 			pc_map(e1, p[i % 2], q[i % 2]);

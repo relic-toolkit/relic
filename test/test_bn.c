@@ -43,7 +43,7 @@ static int memory(void) {
 	bn_null(a);
 
 	RLC_TRY {
-		TEST_BEGIN("memory can be allocated") {
+		TEST_CASE("memory can be allocated") {
 			bn_new(a);
 			bn_free(a);
 		}
@@ -78,7 +78,7 @@ static int util(void) {
 		bn_new(b);
 		bn_new(c);
 
-		TEST_BEGIN("comparison is consistent") {
+		TEST_CASE("comparison is consistent") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_rand(b, RLC_POS, RLC_BN_BITS);
 			if (bn_cmp(a, b) != RLC_EQ) {
@@ -91,7 +91,7 @@ static int util(void) {
 		}
 		TEST_END;
 
-		TEST_BEGIN("copy and comparison are consistent") {
+		TEST_CASE("copy and comparison are consistent") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_rand(b, RLC_POS, RLC_BN_BITS);
 			bn_rand(c, RLC_POS, RLC_BN_BITS);
@@ -106,7 +106,7 @@ static int util(void) {
 		}
 		TEST_END;
 
-		TEST_BEGIN("absolute, negation and comparison are consistent") {
+		TEST_CASE("absolute, negation and comparison are consistent") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_neg(b, a);
 			bn_abs(a, b);
@@ -117,14 +117,14 @@ static int util(void) {
 			TEST_ASSERT(bn_cmp_dig(b, (dig_t)0) == RLC_LT, end);
 		} TEST_END;
 
-		TEST_BEGIN("signal test is correct") {
+		TEST_CASE("signal test is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_rand(b, RLC_NEG, RLC_BN_BITS);
 			TEST_ASSERT(bn_sign(a) == RLC_POS, end);
 			TEST_ASSERT(bn_sign(b) == RLC_NEG, end);
 		} TEST_END;
 
-		TEST_BEGIN("assignment to zero and comparison are consistent") {
+		TEST_CASE("assignment to zero and comparison are consistent") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_rand(b, RLC_NEG, RLC_BN_BITS);
 			bn_zero(c);
@@ -137,13 +137,13 @@ static int util(void) {
 			TEST_ASSERT(bn_cmp_dig(c, (dig_t)0) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("assignment to zero and zero test are consistent") {
+		TEST_CASE("assignment to zero and zero test are consistent") {
 			bn_zero(c);
 			TEST_ASSERT(bn_is_zero(c), end);
 			TEST_ASSERT(bn_cmp_dig(c, (dig_t)0) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("oddness test is correct") {
+		TEST_CASE("oddness test is correct") {
 			bn_set_dig(a, 2);
 			bn_set_dig(b, 1);
 			TEST_ASSERT(bn_is_even(a) == 1, end);
@@ -151,14 +151,14 @@ static int util(void) {
 		} TEST_END;
 
 		bits = 0;
-		TEST_BEGIN("assignment and bit counting are consistent") {
+		TEST_CASE("assignment and bit counting are consistent") {
 			bn_set_2b(a, bits);
 			TEST_ASSERT(bits + 1 == bn_bits(a), end);
 			bits = (bits + 1) % RLC_BN_BITS;
 		} TEST_END;
 
 		bits = 0;
-		TEST_BEGIN("bit setting and getting are consistent") {
+		TEST_CASE("bit setting and getting are consistent") {
 			bn_zero(a);
 			bn_set_bit(a, bits, 1);
 			TEST_ASSERT(bn_get_bit(a, bits) == 1, end);
@@ -169,7 +169,7 @@ static int util(void) {
 		TEST_END;
 
 		bits = 0;
-		TEST_BEGIN("hamming weight is correct") {
+		TEST_CASE("hamming weight is correct") {
 			bn_zero(a);
 			for (int j = 0; j < bits; j++) {
 				bn_set_bit(a, j, 1);
@@ -179,7 +179,7 @@ static int util(void) {
 		}
 		TEST_END;
 
-		TEST_BEGIN("generating a random integer is consistent") {
+		TEST_CASE("generating a random integer is consistent") {
 			bn_rand(b, RLC_POS, RLC_BN_BITS);
 			bn_rand_mod(a, b);
 			TEST_ASSERT(bn_sign(a) == bn_sign(b), end);
@@ -193,7 +193,7 @@ static int util(void) {
 		}
 		TEST_END;
 
-		TEST_BEGIN("reading and writing the first digit are consistent") {
+		TEST_CASE("reading and writing the first digit are consistent") {
 			bn_rand(a, RLC_POS, RLC_DIG);
 			bn_rand(b, RLC_POS, RLC_DIG);
 			bn_get_dig(&digit, a);
@@ -201,7 +201,7 @@ static int util(void) {
 			TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("assignment to a constant and comparison are consistent") {
+		TEST_CASE("assignment to a constant and comparison are consistent") {
 			bn_set_dig(a, 2);
 			bn_set_dig(b, 1);
 			TEST_ASSERT(bn_cmp(a, b) == RLC_GT, end);
@@ -210,7 +210,7 @@ static int util(void) {
 			TEST_ASSERT(bn_cmp_dig(b, (dig_t)0) == RLC_GT, end);
 		} TEST_END;
 
-		TEST_BEGIN("assignment to random and comparison are consistent") {
+		TEST_CASE("assignment to random and comparison are consistent") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_rand(b, RLC_NEG, RLC_BN_BITS);
 			bn_zero(c);
@@ -221,7 +221,7 @@ static int util(void) {
 		} TEST_END;
 
 		bits = 0;
-		TEST_BEGIN("different forms of assignment are consistent") {
+		TEST_CASE("different forms of assignment are consistent") {
 			bn_set_dig(a, (dig_t)(1) << (dig_t)bits);
 			bn_set_2b(b, bits);
 			bits++;
@@ -229,7 +229,7 @@ static int util(void) {
 			TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("reading and writing a positive number are consistent") {
+		TEST_CASE("reading and writing a positive number are consistent") {
 			int len = RLC_CEIL(RLC_BN_BITS, 8);
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			for (int j = 2; j <= 64; j++) {
@@ -248,7 +248,7 @@ static int util(void) {
 		}
 		TEST_END;
 
-		TEST_BEGIN("getting the size of a positive number is correct") {
+		TEST_CASE("getting the size of a positive number is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			TEST_ASSERT((bn_size_str(a, 2) - 1) == bn_bits(a), end);
 			bits = (bn_bits(a) % 8 == 0 ? bn_bits(a) / 8 : bn_bits(a) / 8 + 1);
@@ -257,7 +257,7 @@ static int util(void) {
 		}
 		TEST_END;
 
-		TEST_BEGIN("reading and writing a negative number are consistent") {
+		TEST_CASE("reading and writing a negative number are consistent") {
 			int len = RLC_CEIL(RLC_BN_BITS, 8);
 			bn_rand(a, RLC_NEG, RLC_BN_BITS);
 			for (int j = 2; j <= 64; j++) {
@@ -278,7 +278,7 @@ static int util(void) {
 		}
 		TEST_END;
 
-		TEST_BEGIN("getting the size of a negative number is correct") {
+		TEST_CASE("getting the size of a negative number is correct") {
 			bn_rand(a, RLC_NEG, RLC_BN_BITS);
 			TEST_ASSERT((bn_size_str(a, 2) - 2) == bn_bits(a), end);
 			bits = (bn_bits(a) % 8 == 0 ? bn_bits(a) / 8 : bn_bits(a) / 8 + 1);
@@ -315,7 +315,7 @@ static int addition(void) {
 		bn_new(d);
 		bn_new(e);
 
-		TEST_BEGIN("addition is commutative") {
+		TEST_CASE("addition is commutative") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_rand(b, RLC_POS, RLC_BN_BITS);
 			bn_add(d, a, b);
@@ -323,7 +323,7 @@ static int addition(void) {
 			TEST_ASSERT(bn_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("addition is associative") {
+		TEST_CASE("addition is associative") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_rand(b, RLC_POS, RLC_BN_BITS);
 			bn_rand(c, RLC_POS, RLC_BN_BITS);
@@ -334,7 +334,7 @@ static int addition(void) {
 			TEST_ASSERT(bn_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("addition has identity") {
+		TEST_CASE("addition has identity") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_zero(d);
 			bn_add(e, a, d);
@@ -343,7 +343,7 @@ static int addition(void) {
 			TEST_ASSERT(bn_cmp(e, a) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("addition has inverse") {
+		TEST_CASE("addition has inverse") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_neg(d, a);
 			bn_add(e, a, d);
@@ -379,7 +379,7 @@ static int subtraction(void) {
 		bn_new(c);
 		bn_new(d);
 
-		TEST_BEGIN("subtraction is anti-commutative") {
+		TEST_CASE("subtraction is anti-commutative") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_rand(b, RLC_POS, RLC_BN_BITS);
 			bn_sub(c, a, b);
@@ -392,7 +392,7 @@ static int subtraction(void) {
 		}
 		TEST_END;
 
-		TEST_BEGIN("subtraction has identity") {
+		TEST_CASE("subtraction has identity") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_zero(c);
 			bn_sub(d, a, c);
@@ -400,7 +400,7 @@ static int subtraction(void) {
 		}
 		TEST_END;
 
-		TEST_BEGIN("subtraction has inverse") {
+		TEST_CASE("subtraction has inverse") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_sub(c, a, a);
 			TEST_ASSERT(bn_is_zero(c), end);
@@ -438,7 +438,7 @@ static int multiplication(void) {
 		bn_new(e);
 		bn_new(f);
 
-		TEST_BEGIN("multiplication is commutative") {
+		TEST_CASE("multiplication is commutative") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS / 2);
 			bn_rand(b, RLC_POS, RLC_BN_BITS / 2);
 			bn_mul(d, a, b);
@@ -446,7 +446,7 @@ static int multiplication(void) {
 			TEST_ASSERT(bn_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("multiplication is associative") {
+		TEST_CASE("multiplication is associative") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS / 3);
 			bn_rand(b, RLC_POS, RLC_BN_BITS / 3);
 			bn_rand(c, RLC_POS, RLC_BN_BITS / 3);
@@ -457,7 +457,7 @@ static int multiplication(void) {
 			TEST_ASSERT(bn_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("multiplication is distributive") {
+		TEST_CASE("multiplication is distributive") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS / 2);
 			bn_rand(b, RLC_POS, RLC_BN_BITS / 2);
 			bn_rand(c, RLC_POS, RLC_BN_BITS / 2);
@@ -469,21 +469,21 @@ static int multiplication(void) {
 			TEST_ASSERT(bn_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("multiplication has identity") {
+		TEST_CASE("multiplication has identity") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_set_dig(d, (dig_t)1);
 			bn_mul(e, a, d);
 			TEST_ASSERT(bn_cmp(e, a) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("multiplication has zero property") {
+		TEST_CASE("multiplication has zero property") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_zero(d);
 			bn_mul(e, a, d);
 			TEST_ASSERT(bn_is_zero(e), end);
 		} TEST_END;
 
-		TEST_BEGIN("multiplication has negation property") {
+		TEST_CASE("multiplication has negation property") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_set_dig(d, 1);
 			bn_neg(d, d);
@@ -492,7 +492,7 @@ static int multiplication(void) {
 			TEST_ASSERT(bn_sign(e) == RLC_NEG, end);
 		} TEST_END;
 
-		TEST_BEGIN("multiplication by a positive number preserves order") {
+		TEST_CASE("multiplication by a positive number preserves order") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS / 2);
 			bn_rand(b, RLC_POS, RLC_BN_BITS / 2);
 			bn_rand(c, RLC_POS, RLC_BN_BITS / 2);
@@ -502,7 +502,7 @@ static int multiplication(void) {
 			TEST_ASSERT(bn_cmp(d, e) == t, end);
 		} TEST_END;
 
-		TEST_BEGIN("multiplication by a negative number reverses order") {
+		TEST_CASE("multiplication by a negative number reverses order") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS / 2);
 			bn_rand(b, RLC_POS, RLC_BN_BITS / 2);
 			bn_rand(c, RLC_POS, RLC_BN_BITS / 2);
@@ -517,7 +517,7 @@ static int multiplication(void) {
 		TEST_END;
 
 #if BN_MUL == BASIC || !defined(STRIP)
-		TEST_BEGIN("basic multiplication is correct") {
+		TEST_CASE("basic multiplication is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS / 2);
 			bn_rand(b, RLC_POS, RLC_BN_BITS / 2);
 			bn_mul(c, a, b);
@@ -528,7 +528,7 @@ static int multiplication(void) {
 #endif
 
 #if BN_MUL == COMBA || !defined(STRIP)
-		TEST_BEGIN("comba multiplication is correct") {
+		TEST_CASE("comba multiplication is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS / 2);
 			bn_rand(b, RLC_POS, RLC_BN_BITS / 2);
 			bn_mul(c, a, b);
@@ -539,7 +539,7 @@ static int multiplication(void) {
 #endif
 
 #if BN_KARAT > 0 || !defined(STRIP)
-		TEST_BEGIN("karatsuba multiplication is correct") {
+		TEST_CASE("karatsuba multiplication is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS / 2);
 			bn_rand(b, RLC_POS, RLC_BN_BITS / 2);
 			bn_mul(c, a, b);
@@ -577,7 +577,7 @@ static int squaring(void) {
 		bn_new(b);
 		bn_new(c);
 
-		TEST_BEGIN("squaring is correct") {
+		TEST_CASE("squaring is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS / 2);
 			bn_mul(b, a, a);
 			bn_sqr(c, a);
@@ -585,7 +585,7 @@ static int squaring(void) {
 		} TEST_END;
 
 #if BN_SQR == BASIC || !defined(STRIP)
-		TEST_BEGIN("basic squaring is correct") {
+		TEST_CASE("basic squaring is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS / 2);
 			bn_sqr(b, a);
 			bn_sqr_basic(c, a);
@@ -594,7 +594,7 @@ static int squaring(void) {
 #endif
 
 #if BN_SQR == COMBA || !defined(STRIP)
-		TEST_BEGIN("comba squaring is correct") {
+		TEST_CASE("comba squaring is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS / 2);
 			bn_sqr(b, a);
 			bn_sqr_comba(c, a);
@@ -603,7 +603,7 @@ static int squaring(void) {
 #endif
 
 #if BN_KARAT > 0 || !defined(STRIP)
-		TEST_BEGIN("karatsuba squaring is correct") {
+		TEST_CASE("karatsuba squaring is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS / 2);
 			bn_sqr(b, a);
 			bn_sqr_karat(c, a);
@@ -636,14 +636,14 @@ static int doubling_halving(void) {
 		bn_new(b);
 		bn_new(c);
 
-		TEST_BEGIN("doubling is consistent") {
+		TEST_CASE("doubling is consistent") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS - 1);
 			bn_add(b, a, a);
 			bn_dbl(c, a);
 			TEST_ASSERT(bn_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("halving is consistent") {
+		TEST_CASE("halving is consistent") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS - 1);
 			bn_dbl(b, a);
 			bn_hlv(c, b);
@@ -674,7 +674,7 @@ static int shifting(void) {
 		bn_new(b);
 		bn_new(c);
 
-		TEST_BEGIN("shifting by 1 bit is consistent") {
+		TEST_CASE("shifting by 1 bit is consistent") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS - 1);
 			bn_lsh(b, a, 1);
 			bn_dbl(c, a);
@@ -687,28 +687,28 @@ static int shifting(void) {
 			TEST_ASSERT(bn_cmp(a, c) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("shifting by 2 bits is consistent") {
+		TEST_CASE("shifting by 2 bits is consistent") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS - 2);
 			bn_lsh(b, a, 2);
 			bn_rsh(c, b, 2);
 			TEST_ASSERT(bn_cmp(a, c) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("shifting by half digit is consistent") {
+		TEST_CASE("shifting by half digit is consistent") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS - RLC_DIG / 2);
 			bn_lsh(b, a, RLC_DIG / 2);
 			bn_rsh(c, b, RLC_DIG / 2);
 			TEST_ASSERT(bn_cmp(a, c) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("shifting by 1 digit is consistent") {
+		TEST_CASE("shifting by 1 digit is consistent") {
 			bn_rand(a, RLC_POS, RLC_DIG);
 			bn_lsh(b, a, RLC_DIG);
 			bn_rsh(c, b, RLC_DIG);
 			TEST_ASSERT(bn_cmp(a, c) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("shifting by 2 digits is consistent") {
+		TEST_CASE("shifting by 2 digits is consistent") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS - 2 * RLC_DIG);
 			bn_lsh(b, a, 2 * RLC_DIG);
 			bn_rsh(c, b, 2 * RLC_DIG);
@@ -716,7 +716,7 @@ static int shifting(void) {
 		}
 		TEST_END;
 
-		TEST_BEGIN("shifting by 1 digit and half is consistent") {
+		TEST_CASE("shifting by 1 digit and half is consistent") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS - RLC_DIG - RLC_DIG / 2);
 			bn_lsh(b, a, RLC_DIG + RLC_DIG / 2);
 			bn_copy(c, a);
@@ -758,7 +758,7 @@ static int division(void) {
 		bn_new(d);
 		bn_new(e);
 
-		TEST_BEGIN("trivial division is correct") {
+		TEST_CASE("trivial division is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS / 2);
 			bn_rand(b, RLC_POS, RLC_BN_BITS);
 			bn_div(e, a, b);
@@ -771,7 +771,7 @@ static int division(void) {
 			TEST_ASSERT(bn_sign(d) == RLC_POS, end);
 		} TEST_END;
 
-		TEST_BEGIN("trivial negative division is correct") {
+		TEST_CASE("trivial negative division is correct") {
 			bn_rand(a, RLC_NEG, RLC_BN_BITS / 2);
 			bn_rand(b, RLC_POS, RLC_BN_BITS);
 			bn_div(e, a, b);
@@ -784,7 +784,7 @@ static int division(void) {
 			TEST_ASSERT(bn_sign(d) == bn_sign(b), end);
 		} TEST_END;
 
-		TEST_BEGIN("trivial division by negative is correct") {
+		TEST_CASE("trivial division by negative is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS / 2);
 			bn_rand(b, RLC_NEG, RLC_BN_BITS);
 			bn_div(e, a, b);
@@ -797,7 +797,7 @@ static int division(void) {
 			TEST_ASSERT(bn_sign(d) == bn_sign(b), end);
 		} TEST_END;
 
-		TEST_BEGIN("negative trivial division by negative is correct") {
+		TEST_CASE("negative trivial division by negative is correct") {
 			bn_rand(a, RLC_NEG, RLC_BN_BITS / 2);
 			bn_rand(b, RLC_NEG, RLC_BN_BITS);
 			bn_div(e, a, b);
@@ -810,7 +810,7 @@ static int division(void) {
 			TEST_ASSERT(bn_sign(d) == bn_sign(b), end);
 		} TEST_END;
 
-		TEST_BEGIN("division is correct") {
+		TEST_CASE("division is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_rand(b, RLC_POS, RLC_BN_BITS / 2);
 			bn_div(e, a, b);
@@ -823,7 +823,7 @@ static int division(void) {
 			TEST_ASSERT(bn_sign(d) == bn_sign(d), end);
 		} TEST_END;
 
-		TEST_BEGIN("negative division is correct") {
+		TEST_CASE("negative division is correct") {
 			bn_rand(a, RLC_NEG, RLC_BN_BITS);
 			bn_rand(b, RLC_POS, RLC_BN_BITS / 2);
 			bn_div(e, a, b);
@@ -836,7 +836,7 @@ static int division(void) {
 			TEST_ASSERT(bn_sign(d) == RLC_POS, end);
 		} TEST_END;
 
-		TEST_BEGIN("division by negative is correct") {
+		TEST_CASE("division by negative is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_rand(b, RLC_NEG, RLC_BN_BITS / 2);
 			bn_div(e, a, b);
@@ -849,7 +849,7 @@ static int division(void) {
 			TEST_ASSERT(bn_sign(d) == bn_sign(b), end);
 		} TEST_END;
 
-		TEST_BEGIN("negative division by negative is correct") {
+		TEST_CASE("negative division by negative is correct") {
 			bn_rand(a, RLC_NEG, RLC_BN_BITS);
 			bn_rand(b, RLC_NEG, RLC_BN_BITS / 2);
 			bn_div(e, a, b);
@@ -893,7 +893,7 @@ static int reduction(void) {
 		bn_new(e);
 
 #if BN_MOD == BASIC || !defined(STRIP)
-		TEST_BEGIN("basic reduction is correct") {
+		TEST_CASE("basic reduction is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS - RLC_DIG / 2);
 			bn_rand(b, RLC_POS, RLC_BN_BITS / 2);
 			bn_div_rem(c, d, a, b);
@@ -907,7 +907,7 @@ static int reduction(void) {
 #endif
 
 #if BN_MOD == BARRT || !defined(STRIP)
-		TEST_BEGIN("barrett reduction is correct") {
+		TEST_CASE("barrett reduction is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS - RLC_DIG / 2);
 			bn_rand(b, RLC_POS, RLC_BN_BITS / 2);
 			bn_div_rem(c, d, a, b);
@@ -922,7 +922,7 @@ static int reduction(void) {
 #endif
 
 #if (BN_MOD == MONTY && BN_MUL == BASIC) || !defined(STRIP)
-		TEST_BEGIN("basic montgomery reduction is correct") {
+		TEST_CASE("basic montgomery reduction is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS - RLC_DIG / 2);
 			bn_rand(b, RLC_POS, RLC_BN_BITS / 2);
 			if (bn_is_even(b)) {
@@ -938,7 +938,7 @@ static int reduction(void) {
 #endif
 
 #if (BN_MOD == MONTY && BN_MUL == COMBA) || !defined(STRIP)
-		TEST_BEGIN("comba montgomery reduction is correct") {
+		TEST_CASE("comba montgomery reduction is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS - RLC_DIG / 2);
 			bn_rand(b, RLC_POS, RLC_BN_BITS / 2);
 			if (bn_is_even(b)) {
@@ -954,7 +954,7 @@ static int reduction(void) {
 #endif
 
 #if BN_MOD == PMERS || !defined(STRIP)
-		TEST_BEGIN("pseudo-mersenne reduction is correct") {
+		TEST_CASE("pseudo-mersenne reduction is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_rand(b, RLC_POS, RLC_BN_BITS / 2);
 			bn_rand(c, RLC_POS, RLC_BN_BITS / 4);
@@ -1008,7 +1008,7 @@ static int exponentiation(void) {
 		bn_sub_dig(p, p, 1);
 #endif
 
-		TEST_BEGIN("modular exponentiation is correct") {
+		TEST_CASE("modular exponentiation is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_mod(a, a, p);
 			bn_mxp(b, a, p, p);
@@ -1016,7 +1016,7 @@ static int exponentiation(void) {
 		}
 		TEST_END;
 
-		TEST_BEGIN("modular exponentiation with zero power is correct") {
+		TEST_CASE("modular exponentiation with zero power is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_zero(b);
 			bn_mxp(a, a, b, p);
@@ -1024,7 +1024,7 @@ static int exponentiation(void) {
 		}
 		TEST_END;
 
-		TEST_BEGIN("modular exponentiation with negative power is correct") {
+		TEST_CASE("modular exponentiation with negative power is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_mod(a, a, p);
 			bn_rand(b, RLC_POS, RLC_BN_BITS);
@@ -1041,7 +1041,7 @@ static int exponentiation(void) {
 		TEST_END;
 
 #if BN_MXP == BASIC || !defined(STRIP)
-		TEST_BEGIN("basic modular exponentiation is correct") {
+		TEST_CASE("basic modular exponentiation is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_mod(a, a, p);
 			bn_mxp_basic(b, a, p, p);
@@ -1051,7 +1051,7 @@ static int exponentiation(void) {
 #endif
 
 #if BN_MXP == SLIDE || !defined(STRIP)
-		TEST_BEGIN("sliding window modular exponentiation is correct") {
+		TEST_CASE("sliding window modular exponentiation is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_mod(a, a, p);
 			bn_mxp_slide(b, a, p, p);
@@ -1061,7 +1061,7 @@ static int exponentiation(void) {
 #endif
 
 #if BN_MXP == CONST || !defined(STRIP)
-		TEST_BEGIN("powering ladder modular exponentiation is correct") {
+		TEST_CASE("powering ladder modular exponentiation is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_mod(a, a, p);
 			bn_mxp_monty(b, a, p, p);
@@ -1151,7 +1151,7 @@ static int gcd(void) {
 		bn_new(e);
 		bn_new(f);
 
-		TEST_BEGIN("greatest common divisor is correct") {
+		TEST_CASE("greatest common divisor is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_rand(b, RLC_POS, RLC_BN_BITS);
 			bn_gcd(c, a, b);
@@ -1172,7 +1172,7 @@ static int gcd(void) {
 			TEST_ASSERT(bn_cmp_abs(c, a) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("extended greatest common divisor is correct") {
+		TEST_CASE("extended greatest common divisor is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_rand(b, RLC_POS, RLC_BN_BITS);
 			bn_gcd_ext(c, d, e, a, b);
@@ -1184,7 +1184,7 @@ static int gcd(void) {
 		} TEST_END;
 
 #if BN_GCD == BASIC || !defined(STRIP)
-		TEST_BEGIN("basic greatest common divisor is correct") {
+		TEST_CASE("basic greatest common divisor is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_rand(b, RLC_POS, RLC_BN_BITS);
 			bn_gcd(c, a, b);
@@ -1192,7 +1192,7 @@ static int gcd(void) {
 			TEST_ASSERT(bn_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("basic extended greatest common divisor is correct") {
+		TEST_CASE("basic extended greatest common divisor is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_rand(b, RLC_POS, RLC_BN_BITS);
 			bn_gcd_ext_basic(c, d, e, a, b);
@@ -1205,7 +1205,7 @@ static int gcd(void) {
 #endif
 
 #if BN_GCD == LEHME || !defined(STRIP)
-		TEST_BEGIN("lehmer greatest common divisor is correct") {
+		TEST_CASE("lehmer greatest common divisor is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_rand(b, RLC_POS, RLC_BN_BITS);
 			bn_gcd(c, a, b);
@@ -1213,7 +1213,7 @@ static int gcd(void) {
 			TEST_ASSERT(bn_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("lehmer extended greatest common divisor is correct") {
+		TEST_CASE("lehmer extended greatest common divisor is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_rand(b, RLC_POS, RLC_BN_BITS);
 			bn_gcd_ext_lehme(c, d, e, a, b);
@@ -1226,7 +1226,7 @@ static int gcd(void) {
 #endif
 
 #if BN_GCD == STEIN || !defined(STRIP)
-		TEST_BEGIN("stein greatest common divisor is correct") {
+		TEST_CASE("stein greatest common divisor is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_rand(b, RLC_POS, RLC_BN_BITS);
 			bn_gcd(c, a, b);
@@ -1234,7 +1234,7 @@ static int gcd(void) {
 			TEST_ASSERT(bn_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("stein extended greatest common divisor is correct") {
+		TEST_CASE("stein extended greatest common divisor is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_rand(b, RLC_POS, RLC_BN_BITS);
 			bn_gcd_ext_stein(c, d, e, a, b);
@@ -1245,7 +1245,7 @@ static int gcd(void) {
 		} TEST_END;
 #endif
 
-		TEST_BEGIN("midway extended greatest common divisor is correct") {
+		TEST_CASE("midway extended greatest common divisor is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_rand(b, RLC_POS, RLC_BN_BITS);
 			bn_gcd_ext_mid(c, d, e, f, a, b);
@@ -1284,7 +1284,7 @@ static int lcm(void) {
 		bn_new(b);
 		bn_new(c);
 
-		TEST_BEGIN("least common multiple is correct") {
+		TEST_CASE("least common multiple is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_rand(b, RLC_POS, RLC_BN_BITS);
 			bn_lcm(c, a, b);
@@ -1326,7 +1326,7 @@ static int symbol(void) {
 			bn_gen_prime(q, RLC_BN_BITS);
 		} while (bn_is_even(p) || bn_is_even(q));
 
-		TEST_BEGIN("legendre symbol is correct") {
+		TEST_CASE("legendre symbol is correct") {
 			bn_smb_leg(c, p, p);
 			TEST_ASSERT(bn_is_zero(c) == 1, end);
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
@@ -1340,7 +1340,7 @@ static int symbol(void) {
 			TEST_ASSERT(bn_cmp_abs(c, a) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("legendre symbol is a homomorphism") {
+		TEST_CASE("legendre symbol is a homomorphism") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS / 2);
 			bn_rand(b, RLC_POS, RLC_BN_BITS / 2);
 			bn_mul(c, a, b);
@@ -1388,14 +1388,14 @@ static int symbol(void) {
 			TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("jacobi symbol is correct") {
+		TEST_CASE("jacobi symbol is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_smb_leg(c, a, p);
 			bn_smb_jac(b, a, p);
 			TEST_ASSERT(bn_cmp_abs(c, b) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("jacobi symbol is a homomorphism") {
+		TEST_CASE("jacobi symbol is a homomorphism") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS / 2);
 			bn_rand(b, RLC_POS, RLC_BN_BITS / 2);
 			bn_rand(p, RLC_POS, RLC_BN_BITS / 2);
@@ -1410,7 +1410,7 @@ static int symbol(void) {
 			TEST_ASSERT(bn_cmp(a, c) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("jacobi symbol is consistent with gcd") {
+		TEST_CASE("jacobi symbol is consistent with gcd") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS / 2);
 			bn_rand(p, RLC_POS, RLC_BN_BITS / 2);
 			if (bn_is_even(p)) {
@@ -1426,7 +1426,7 @@ static int symbol(void) {
 			}
 		} TEST_END;
 
-		TEST_BEGIN("jacobi symbol satisfies quadratic reciprocity") {
+		TEST_CASE("jacobi symbol satisfies quadratic reciprocity") {
 			bn_rand(p, RLC_POS, RLC_BN_BITS / 2);
 			if (bn_is_even(p)) {
 				bn_add_dig(p, p, 1);
@@ -1504,7 +1504,7 @@ static int digit(void) {
 		bn_new(e);
 		bn_new(f);
 
-		TEST_BEGIN("addition of a single digit is consistent") {
+		TEST_CASE("addition of a single digit is consistent") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_rand(b, RLC_POS, RLC_DIG);
 			bn_get_dig(&g, b);
@@ -1513,7 +1513,7 @@ static int digit(void) {
 			TEST_ASSERT(bn_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("subtraction of a single digit is consistent") {
+		TEST_CASE("subtraction of a single digit is consistent") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_rand(b, RLC_POS, RLC_DIG);
 			bn_get_dig(&g, b);
@@ -1522,7 +1522,7 @@ static int digit(void) {
 			TEST_ASSERT(bn_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("multiplication by a single digit is consistent") {
+		TEST_CASE("multiplication by a single digit is consistent") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_rand(b, RLC_POS, RLC_DIG);
 			bn_get_dig(&g, b);
@@ -1531,7 +1531,7 @@ static int digit(void) {
 			TEST_ASSERT(bn_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_BEGIN("division by a single digit is consistent") {
+		TEST_CASE("division by a single digit is consistent") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_rand(b, RLC_POS, RLC_DIG);
 			if (bn_is_zero(b)) {
@@ -1547,7 +1547,7 @@ static int digit(void) {
 		}
 		TEST_END;
 
-		TEST_BEGIN("modular reduction modulo a digit is consistent") {
+		TEST_CASE("modular reduction modulo a digit is consistent") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_rand(b, RLC_POS, RLC_DIG);
 			if (b->dp[0] == 0)
@@ -1558,7 +1558,7 @@ static int digit(void) {
 		}
 		TEST_END;
 
-		TEST_BEGIN("greatest common divisor with a digit is consistent") {
+		TEST_CASE("greatest common divisor with a digit is consistent") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_rand(b, RLC_POS, RLC_DIG);
 			bn_get_dig(&g, b);
@@ -1568,7 +1568,7 @@ static int digit(void) {
 		}
 		TEST_END;
 
-		TEST_BEGIN
+		TEST_CASE
 				("extended greatest common divisor with a digit is consistent")
 		{
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
@@ -1591,7 +1591,7 @@ static int digit(void) {
 		bn_sub_dig(d, d, 1);
 #endif
 
-		TEST_BEGIN("modular exponentiation with a digit is consistent") {
+		TEST_CASE("modular exponentiation with a digit is consistent") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_rand(b, RLC_POS, RLC_DIG);
 			bn_get_dig(&g, b);
@@ -1751,7 +1751,7 @@ static int inversion(void) {
 
 		bn_gen_prime(a, RLC_BN_BITS);
 
-		TEST_BEGIN("modular inversion is correct") {
+		TEST_CASE("modular inversion is correct") {
 			bn_rand_mod(b, a);
 			bn_mod_inv(c, b, a);
 			TEST_ASSERT(bn_cmp_dig(c, 1) != RLC_EQ, end);
@@ -1830,7 +1830,7 @@ static int recoding(void) {
 			bn_new(v2[k]);
 		}
 
-		TEST_BEGIN("window recoding is correct") {
+		TEST_CASE("window recoding is correct") {
 			for (w = 2; w <= 8; w++) {
 				bn_rand(a, RLC_POS, RLC_BN_BITS);
 				l = RLC_BN_BITS + 1;
@@ -1844,7 +1844,7 @@ static int recoding(void) {
 			}
 		} TEST_END;
 
-		TEST_BEGIN("sliding window recoding is correct") {
+		TEST_CASE("sliding window recoding is correct") {
 			for (w = 2; w <= 8; w++) {
 				bn_rand(a, RLC_POS, RLC_BN_BITS);
 				l = RLC_BN_BITS + 1;
@@ -1862,7 +1862,7 @@ static int recoding(void) {
 			}
 		} TEST_END;
 
-		TEST_BEGIN("naf recoding is correct") {
+		TEST_CASE("naf recoding is correct") {
 			for (w = 2; w <= 8; w++) {
 				bn_rand(a, RLC_POS, RLC_BN_BITS);
 				l = RLC_BN_BITS + 1;
@@ -1883,7 +1883,7 @@ static int recoding(void) {
 #if defined(WITH_EB) && defined(EB_KBLTZ) && (EB_MUL == LWNAF || EB_MUL == RWNAF || EB_FIX == LWNAF || EB_SIM == INTER || !defined(STRIP))
 		if (eb_param_set_any_kbltz() == RLC_OK) {
 			eb_curve_get_ord(v1[2]);
-			TEST_BEGIN("tnaf recoding is correct") {
+			TEST_CASE("tnaf recoding is correct") {
 				for (w = 2; w <= 8; w++) {
 					uint8_t t_w;
 					int8_t beta[64], gama[64];
@@ -1944,7 +1944,7 @@ static int recoding(void) {
 			}
 			TEST_END;
 
-			TEST_BEGIN("regular tnaf recoding is correct") {
+			TEST_CASE("regular tnaf recoding is correct") {
 				for (w = 2; w <= 8; w++) {
 					uint8_t t_w;
 					int8_t beta[64], gama[64];
@@ -2015,7 +2015,7 @@ static int recoding(void) {
 		}
 #endif
 
-		TEST_BEGIN("regular recoding is correct") {
+		TEST_CASE("regular recoding is correct") {
 			/* Recode same scalar with different widths. */
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			if (bn_is_even(a)) {
@@ -2037,7 +2037,7 @@ static int recoding(void) {
 			}
 		} TEST_END;
 
-		TEST_BEGIN("jsf recoding is correct") {
+		TEST_CASE("jsf recoding is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_rand(b, RLC_POS, RLC_BN_BITS);
 			l = 2 * (RLC_BN_BITS + 1);
@@ -2062,7 +2062,7 @@ static int recoding(void) {
 		} TEST_END;
 
 #if defined(WITH_EP) && defined(EP_ENDOM) && (EP_MUL == LWNAF || EP_FIX == COMBS || EP_FIX == LWNAF || EP_SIM == INTER || !defined(STRIP))
-		TEST_BEGIN("glv recoding is correct") {
+		TEST_CASE("glv recoding is correct") {
 			if (ep_param_set_any_endom() == RLC_OK) {
 				ep_curve_get_v1(v1);
 				ep_curve_get_v2(v2);
@@ -2070,6 +2070,9 @@ static int recoding(void) {
 				bn_rand_mod(a, b);
 				bn_rec_glv(b, c, a, b, (const bn_t *)v1, (const bn_t *)v2);
 				ep_curve_get_ord(v2[0]);
+				/* Check that subscalars have the right length. */
+				TEST_ASSERT(bn_bits(b) <= 1 + (bn_bits(v2[0]) >> 1), end);
+				TEST_ASSERT(bn_bits(c) <= 1 + (bn_bits(v2[0]) >> 1), end);
 				/* Recover lambda parameter. */
 				if (bn_cmp_dig(v1[2], 1) == RLC_EQ) {
 					bn_gcd_ext(v1[0], v2[1], NULL, v1[1], v2[0]);
@@ -2077,7 +2080,8 @@ static int recoding(void) {
 					bn_gcd_ext(v1[0], v2[1], NULL, v1[2], v2[0]);
 				}
 				if (bn_sign(v2[1]) == RLC_NEG) {
-					bn_add(v2[1], v2[1], v2[0]);
+					/* Negate modulo r. */
+					bn_add(v2[1], v2[0], v2[1]);
 				}
 				if (bn_cmp_dig(v1[2], 1) == RLC_EQ) {
 					bn_sub(v1[0], v2[1], v1[2]);
@@ -2085,6 +2089,10 @@ static int recoding(void) {
 					bn_mul(v1[0], v2[1], v1[1]);
 				}
 				bn_mod(v1[0], v1[0], v2[0]);
+				bn_sub(v1[1], v2[0], v1[0]);
+				if (bn_cmp(v1[1], v1[0]) == RLC_LT) {
+					bn_copy(v1[0], v1[1]);
+				}
 				/* Check if b + c * lambda = k (mod n). */
 				bn_mul(c, c, v1[0]);
 				bn_add(b, b, c);
@@ -2095,7 +2103,7 @@ static int recoding(void) {
 				TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
 			}
 		} TEST_END;
-#endif /* WITH_EP && EP_KBLTZ */
+#endif /* WITH_EP && EP_ENDOM */
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);

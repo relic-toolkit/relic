@@ -423,43 +423,79 @@ void ep_curve_set_endom(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
 	ctx->ep_is_endom = 1;
 	ctx->ep_is_super = 0;
 
+	ep_curve_set(a, b, g, r, h, u, ctmap);
+
 	/* Precompute endomorphism constants. */
 #if EP_MUL == LWNAF || EP_FIX == COMBS || EP_FIX == LWNAF || EP_SIM == INTER || !defined(STRIP)
-	fp_copy(ctx->beta, beta);
-	bn_gcd_ext_mid(&(ctx->ep_v1[1]), &(ctx->ep_v1[2]), &(ctx->ep_v2[1]),
-			&(ctx->ep_v2[2]), l, r);
-	/* r = (v1[1] * v2[2] - v1[2] * v2[1]) / 2. */
-	bn_mul(&(ctx->ep_v1[0]), &(ctx->ep_v1[1]), &(ctx->ep_v2[2]));
-	bn_mul(&(ctx->ep_v2[0]), &(ctx->ep_v1[2]), &(ctx->ep_v2[1]));
-	bn_sub(&(ctx->ep_r), &(ctx->ep_v1[0]), &(ctx->ep_v2[0]));
-	bn_hlv(&(ctx->ep_r), &(ctx->ep_r));
-	/* v1[0] = round(v2[2] * 2^|n| / l). */
-	bn_lsh(&(ctx->ep_v1[0]), &(ctx->ep_v2[2]), bits + 1);
-	if (bn_sign(&(ctx->ep_v1[0])) == RLC_POS) {
-		bn_add(&(ctx->ep_v1[0]), &(ctx->ep_v1[0]), &(ctx->ep_r));
-	} else {
-		bn_sub(&(ctx->ep_v1[0]), &(ctx->ep_v1[0]), &(ctx->ep_r));
-	}
-	bn_dbl(&(ctx->ep_r), &(ctx->ep_r));
-	bn_div(&(ctx->ep_v1[0]), &(ctx->ep_v1[0]), &(ctx->ep_r));
-	if (bn_sign(&ctx->ep_v1[0]) == RLC_NEG) {
-		bn_add_dig(&(ctx->ep_v1[0]), &(ctx->ep_v1[0]), 1);
-	}
-	/* v2[0] = round(v1[2] * 2^|n| / l). */
-	bn_lsh(&(ctx->ep_v2[0]), &(ctx->ep_v1[2]), bits + 1);
-	if (bn_sign(&(ctx->ep_v2[0])) == RLC_POS) {
-		bn_add(&(ctx->ep_v2[0]), &(ctx->ep_v2[0]), &(ctx->ep_r));
-	} else {
-		bn_sub(&(ctx->ep_v2[0]), &(ctx->ep_v2[0]), &(ctx->ep_r));
-	}
-	bn_div(&(ctx->ep_v2[0]), &(ctx->ep_v2[0]), &(ctx->ep_r));
-	if (bn_sign(&ctx->ep_v2[0]) == RLC_NEG) {
-		bn_add_dig(&(ctx->ep_v2[0]), &(ctx->ep_v2[0]), 1);
-	}
-	bn_neg(&(ctx->ep_v2[0]), &(ctx->ep_v2[0]));
-#endif
+	ep_t p, q;
+	bn_t m;
 
-	ep_curve_set(a, b, g, r, h, u, ctmap);
+	ep_null(p);
+	ep_null(q);
+	bn_null(m);
+
+	RLC_TRY {
+		ep_new(p);
+		ep_new(q);
+		bn_new(m);
+
+		/* Check if [m]P = \psi(P). */
+		fp_copy(ctx->beta, beta);
+		bn_copy(m, l);
+		ep_psi(p, g);
+		ep_copy(q, g);
+		for (int i = bn_bits(m) - 2; i >= 0; i--) {
+			ep_dbl(q, q);
+			if (bn_get_bit(m, i)) {
+				ep_add(q, q, g);
+			}
+		}
+		ep_norm(q, q);
+		/* Fix beta in case it is the wrong value. */
+		if (ep_cmp(q, p) != RLC_EQ) {
+			fp_neg(ctx->beta, ctx->beta);
+			fp_sub_dig(ctx->beta, ctx->beta, 1);
+		}
+		bn_gcd_ext_mid(&(ctx->ep_v1[1]), &(ctx->ep_v1[2]), &(ctx->ep_v2[1]),
+				&(ctx->ep_v2[2]), m, r);
+		/* m = (v1[1] * v2[2] - v1[2] * v2[1]) / 2. */
+		bn_mul(&(ctx->ep_v1[0]), &(ctx->ep_v1[1]), &(ctx->ep_v2[2]));
+		bn_mul(&(ctx->ep_v2[0]), &(ctx->ep_v1[2]), &(ctx->ep_v2[1]));
+		bn_sub(m, &(ctx->ep_v1[0]), &(ctx->ep_v2[0]));
+		bn_hlv(m, m);
+		/* v1[0] = round(v2[2] * 2^|n| / m). */
+		bn_lsh(&(ctx->ep_v1[0]), &(ctx->ep_v2[2]), bits + 1);
+		if (bn_sign(&(ctx->ep_v1[0])) == RLC_POS) {
+			bn_add(&(ctx->ep_v1[0]), &(ctx->ep_v1[0]), m);
+		} else {
+			bn_sub(&(ctx->ep_v1[0]), &(ctx->ep_v1[0]), m);
+		}
+		bn_dbl(m, m);
+		bn_div(&(ctx->ep_v1[0]), &(ctx->ep_v1[0]), m);
+		if (bn_sign(&ctx->ep_v1[0]) == RLC_NEG) {
+			bn_add_dig(&(ctx->ep_v1[0]), &(ctx->ep_v1[0]), 1);
+		}
+		/* v2[0] = round(v1[2] * 2^|n| / m). */
+		bn_lsh(&(ctx->ep_v2[0]), &(ctx->ep_v1[2]), bits + 1);
+		if (bn_sign(&(ctx->ep_v2[0])) == RLC_POS) {
+			bn_add(&(ctx->ep_v2[0]), &(ctx->ep_v2[0]), m);
+		} else {
+			bn_sub(&(ctx->ep_v2[0]), &(ctx->ep_v2[0]), m);
+		}
+		bn_div(&(ctx->ep_v2[0]), &(ctx->ep_v2[0]), m);
+		if (bn_sign(&ctx->ep_v2[0]) == RLC_NEG) {
+			bn_add_dig(&(ctx->ep_v2[0]), &(ctx->ep_v2[0]), 1);
+		}
+		bn_neg(&(ctx->ep_v2[0]), &(ctx->ep_v2[0]));
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		ep_free(p);
+		ep_free(q);
+		bn_free(m);
+	}
+
+#endif
 }
 
 #endif

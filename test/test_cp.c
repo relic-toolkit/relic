@@ -51,7 +51,7 @@ static int rsa(void) {
 
 		result = cp_rsa_gen(pub, prv, RLC_BN_BITS);
 
-		TEST_BEGIN("rsa encryption/decryption is correct") {
+		TEST_CASE("rsa encryption/decryption is correct") {
 			TEST_ASSERT(result == RLC_OK, end);
 			il = 10;
 			ol = RLC_BN_BITS / 8 + 1;
@@ -63,7 +63,7 @@ static int rsa(void) {
 
 		result = cp_rsa_gen(pub, prv, RLC_BN_BITS);
 
-		TEST_BEGIN("rsa signature/verification is correct") {
+		TEST_CASE("rsa signature/verification is correct") {
 			TEST_ASSERT(result == RLC_OK, end);
 			il = 10;
 			ol = RLC_BN_BITS / 8 + 1;
@@ -102,7 +102,7 @@ static int rabin(void) {
 
 		result = cp_rabin_gen(pub, prv, RLC_BN_BITS);
 
-		TEST_BEGIN("rabin encryption/decryption is correct") {
+		TEST_CASE("rabin encryption/decryption is correct") {
 			TEST_ASSERT(result == RLC_OK, end);
 			in_len = 10;
 			out_len = RLC_BN_BITS / 8 + 1;
@@ -146,7 +146,7 @@ static int benaloh(void) {
 
 		result = cp_bdpe_gen(pub, prv, bn_get_prime(47), RLC_BN_BITS);
 
-		TEST_BEGIN("benaloh encryption/decryption is correct") {
+		TEST_CASE("benaloh encryption/decryption is correct") {
 			TEST_ASSERT(result == RLC_OK, end);
 			len = RLC_BN_BITS / 8 + 1;
 			rand_bytes(buf, 1);
@@ -156,7 +156,7 @@ static int benaloh(void) {
 			TEST_ASSERT(in == out, end);
 		} TEST_END;
 
-		TEST_BEGIN("benaloh encryption/decryption is homomorphic") {
+		TEST_CASE("benaloh encryption/decryption is homomorphic") {
 			TEST_ASSERT(result == RLC_OK, end);
 			len = RLC_BN_BITS / 8 + 1;
 			rand_bytes(buf, 1);
@@ -213,7 +213,7 @@ static int paillier(void) {
 
 		result = cp_phpe_gen(pub, prv, RLC_BN_BITS / 2);
 
-		TEST_BEGIN("paillier encryption/decryption is correct") {
+		TEST_CASE("paillier encryption/decryption is correct") {
 			TEST_ASSERT(result == RLC_OK, end);
 			bn_rand_mod(a, pub);
 			TEST_ASSERT(cp_phpe_enc(c, a, pub) == RLC_OK, end);
@@ -222,7 +222,7 @@ static int paillier(void) {
 		}
 		TEST_END;
 
-		TEST_BEGIN("paillier encryption/decryption is homomorphic") {
+		TEST_CASE("paillier encryption/decryption is homomorphic") {
 			TEST_ASSERT(result == RLC_OK, end);
 			bn_rand_mod(a, pub);
 			bn_rand_mod(b, pub);
@@ -241,7 +241,7 @@ static int paillier(void) {
 		for (int k = 1; k <= 2; k++) {
 			result = cp_ghpe_gen(pub, s, RLC_BN_BITS / (2 * k));
 			util_print("(s = %d) ", k);
-			TEST_BEGIN("general paillier encryption/decryption is correct") {
+			TEST_CASE("general paillier encryption/decryption is correct") {
 				TEST_ASSERT(result == RLC_OK, end);
 				bn_rand(a, RLC_POS, k * (bn_bits(pub) - 1));
 				TEST_ASSERT(cp_ghpe_enc(c, a, pub, k) == RLC_OK, end);
@@ -250,7 +250,7 @@ static int paillier(void) {
 			}  TEST_END;
 
 			util_print("(s = %d) ", k);
-			TEST_BEGIN("general paillier encryption/decryption is homomorphic") {
+			TEST_CASE("general paillier encryption/decryption is homomorphic") {
 				TEST_ASSERT(result == RLC_OK, end);
 				bn_rand(a, RLC_POS, k * (bn_bits(pub) - 1));
 				bn_rand(b, RLC_POS, k * (bn_bits(pub) - 1));
@@ -363,7 +363,7 @@ static int ecdh(void) {
 		ec_new(qa);
 		ec_new(q_b);
 
-		TEST_BEGIN("ecdh key agreement is correct") {
+		TEST_CASE("ecdh key agreement is correct") {
 			TEST_ASSERT(cp_ecdh_gen(da, qa) == RLC_OK, end);
 			TEST_ASSERT(cp_ecdh_gen(d_b, q_b) == RLC_OK, end);
 			TEST_ASSERT(cp_ecdh_key(k1, RLC_MD_LEN, d_b, qa) == RLC_OK, end);
@@ -411,7 +411,7 @@ static int ecmqv(void) {
 		ec_new(q2a);
 		ec_new(q2_b);
 
-		TEST_BEGIN("ecmqv authenticated key agreement is correct") {
+		TEST_CASE("ecmqv authenticated key agreement is correct") {
 			TEST_ASSERT(cp_ecmqv_gen(d1a, q1a) == RLC_OK, end);
 			TEST_ASSERT(cp_ecmqv_gen(d2a, q2a) == RLC_OK, end);
 			TEST_ASSERT(cp_ecmqv_gen(d1_b, q1_b) == RLC_OK, end);
@@ -463,7 +463,7 @@ static int ecies(void) {
 
 		l = ec_param_level();
 		if (l == 128 || l == 192 || l == 256) {
-			TEST_BEGIN("ecies encryption/decryption is correct") {
+			TEST_CASE("ecies encryption/decryption is correct") {
 				TEST_ASSERT(cp_ecies_gen(da, qa) == RLC_OK, end);
 				in_len = RLC_BC_LEN - 1;
 				out_len = RLC_BC_LEN + RLC_MD_LEN;
@@ -548,7 +548,7 @@ static int ecdsa(void) {
 		bn_new(s);
 		ec_new(q);
 
-		TEST_BEGIN("ecdsa signature is correct") {
+		TEST_CASE("ecdsa signature is correct") {
 			TEST_ASSERT(cp_ecdsa_gen(d, q) == RLC_OK, end);
 			TEST_ASSERT(cp_ecdsa_sig(r, s, m, sizeof(m), 0, d) == RLC_OK, end);
 			TEST_ASSERT(cp_ecdsa_ver(r, s, m, sizeof(m), 0, q) == 1, end);
@@ -592,7 +592,7 @@ static int ecss(void) {
 		bn_new(r);
 		ec_new(q);
 
-		TEST_BEGIN("ecss signature is correct") {
+		TEST_CASE("ecss signature is correct") {
 			TEST_ASSERT(cp_ecss_gen(d, q) == RLC_OK, end);
 			TEST_ASSERT(cp_ecss_sig(r, d, m, sizeof(m), d) == RLC_OK, end);
 			TEST_ASSERT(cp_ecss_ver(r, d, m, sizeof(m), q) == 1, end);
@@ -643,7 +643,7 @@ static int vbnn(void) {
 		ec_new(pka);
 		ec_new(pkb);
 
-		TEST_BEGIN("vbnn signature is correct") {
+		TEST_CASE("vbnn signature is correct") {
 			TEST_ASSERT(cp_vbnn_gen(msk, mpk) == RLC_OK, end);
 			TEST_ASSERT(cp_vbnn_gen_prv(ska, pka, msk, ida, sizeof(ida)) == RLC_OK, end);
 			TEST_ASSERT(cp_vbnn_gen_prv(skb, pkb, msk, idb, sizeof(idb)) == RLC_OK, end);
@@ -694,7 +694,7 @@ static int sokaka(void) {
 
 		cp_sokaka_gen(s);
 
-		TEST_BEGIN
+		TEST_CASE
 				("sakai-ohgishi-kasahara authenticated key agreement is correct")
 		{
 			TEST_ASSERT(cp_sokaka_gen_prv(k, ia, s) == RLC_OK, end);
@@ -736,7 +736,7 @@ static int ibe(void) {
 
 		result = cp_ibe_gen(s, pub);
 
-		TEST_BEGIN("boneh-franklin identity-based encryption/decryption is correct") {
+		TEST_CASE("boneh-franklin identity-based encryption/decryption is correct") {
 			TEST_ASSERT(result == RLC_OK, end);
 			il = 10;
 			ol = il + 2 * RLC_FP_BYTES + 1;
@@ -795,7 +795,7 @@ static int bgn(void) {
 
 		result = cp_bgn_gen(pub, prv);
 
-		TEST_BEGIN("boneh-go-nissim encryption/decryption is correct") {
+		TEST_CASE("boneh-go-nissim encryption/decryption is correct") {
 			TEST_ASSERT(result == RLC_OK, end);
 
 			rand_bytes((unsigned char *)&in, sizeof(dig_t));
@@ -809,7 +809,7 @@ static int bgn(void) {
 			TEST_ASSERT(in == out, end);
 		} TEST_END;
 
-		TEST_BEGIN("boneh-go-nissim encryption is additively homomorphic") {
+		TEST_CASE("boneh-go-nissim encryption is additively homomorphic") {
 			rand_bytes((unsigned char *)&in, sizeof(dig_t));
 			in = in % 11;
 			out = in % 7;
@@ -831,7 +831,7 @@ static int bgn(void) {
 			TEST_ASSERT(in + out == t, end);
 		} TEST_END;
 
-		TEST_BEGIN("boneh-go-nissim encryption is multiplicatively homomorphic") {
+		TEST_CASE("boneh-go-nissim encryption is multiplicatively homomorphic") {
 			rand_bytes((unsigned char *)&in, sizeof(dig_t));
 			in = in % 11;
 			out = in % 17;
@@ -884,10 +884,14 @@ static int bls(void) {
 		g1_new(s);
 		g2_new(q);
 
-		TEST_BEGIN("boneh-lynn-schacham short signature is correct") {
+		TEST_CASE("boneh-lynn-schacham short signature is correct") {
 			TEST_ASSERT(cp_bls_gen(d, q) == RLC_OK, end);
 			TEST_ASSERT(cp_bls_sig(s, m, sizeof(m), d) == RLC_OK, end);
 			TEST_ASSERT(cp_bls_ver(s, m, sizeof(m), q) == 1, end);
+			/* Check adversarial signature. */
+			memset(m, 0, sizeof(m));
+			g2_set_infty(q);
+			TEST_ASSERT(cp_bls_ver(s, m, sizeof(m), q) == 0, end);
 		}
 		TEST_END;
 	}
@@ -922,7 +926,7 @@ static int bbs(void) {
 		g2_new(q);
 		gt_new(z);
 
-		TEST_BEGIN("boneh-boyen short signature is correct") {
+		TEST_CASE("boneh-boyen short signature is correct") {
 			TEST_ASSERT(cp_bbs_gen(d, q, z) == RLC_OK, end);
 			TEST_ASSERT(cp_bbs_sig(s, m, sizeof(m), 0, d) == RLC_OK, end);
 			TEST_ASSERT(cp_bbs_ver(s, m, sizeof(m), 0, q, z) == 1, end);
@@ -993,7 +997,7 @@ static int cls(void) {
 			g2_new(zs[i]);
 		}
 
-		TEST_BEGIN("camenisch-lysyanskaya simple signature is correct") {
+		TEST_CASE("camenisch-lysyanskaya simple signature is correct") {
 			TEST_ASSERT(cp_cls_gen(u, v, x, y) == RLC_OK, end);
 			TEST_ASSERT(cp_cls_sig(a, b, c, m, sizeof(m), u, v) == RLC_OK, end);
 			TEST_ASSERT(cp_cls_ver(a, b, c, m, sizeof(m), x, y) == 1, end);
@@ -1005,7 +1009,7 @@ static int cls(void) {
 		}
 		TEST_END;
 
-		TEST_BEGIN("camenisch-lysyanskaya message-independent signature is correct") {
+		TEST_CASE("camenisch-lysyanskaya message-independent signature is correct") {
 			bn_rand(r, RLC_POS, 2 * pc_param_level());
 			TEST_ASSERT(cp_cli_gen(t, u, v, x, y, z) == RLC_OK, end);
 			TEST_ASSERT(cp_cli_sig(a, A, b, B, c, m, sizeof(m), r, t, u, v) == RLC_OK, end);
@@ -1020,7 +1024,7 @@ static int cls(void) {
 		}
 		TEST_END;
 
-		TEST_BEGIN("camenisch-lysyanskaya message-block signature is correct") {
+		TEST_CASE("camenisch-lysyanskaya message-block signature is correct") {
 			TEST_ASSERT(cp_clb_gen(t, u, vs, x, y, zs, 5) == RLC_OK, end);
 			TEST_ASSERT(cp_clb_sig(a, As, b, Bs, c, msgs, lens, t, u, vs, 5) == RLC_OK, end);
 			TEST_ASSERT(cp_clb_ver(a, As, b, Bs, c, msgs, lens, x, y, zs, 5) == 1, end);
@@ -1091,7 +1095,7 @@ static int pss(void) {
 			g2_new(_y[i]);
 		}
 
-		TEST_BEGIN("pointcheval-sanders simple signature is correct") {
+		TEST_CASE("pointcheval-sanders simple signature is correct") {
 			TEST_ASSERT(cp_pss_gen(u, v, g, x, y) == RLC_OK, end);
 			TEST_ASSERT(cp_pss_sig(a, b, ms[0], u, v) == RLC_OK, end);
 			TEST_ASSERT(cp_pss_ver(a, b, ms[0], g, x, y) == 1, end);
@@ -1102,7 +1106,7 @@ static int pss(void) {
 		}
 		TEST_END;
 
-		TEST_BEGIN("pointcheval-sanders block signature is correct") {
+		TEST_CASE("pointcheval-sanders block signature is correct") {
 			TEST_ASSERT(cp_psb_gen(u, _v, g, x, _y, 5) == RLC_OK, end);
 			TEST_ASSERT(cp_psb_sig(a, b, ms, u, _v, 5) == RLC_OK, end);
 			TEST_ASSERT(cp_psb_ver(a, b, ms, g, x, _y, 5) == 1, end);
@@ -1130,6 +1134,8 @@ static int pss(void) {
 	}
   	return code;
 }
+
+#if defined(WITH_MPC)
 
 static int mpss(void) {
 	int i, j, code = RLC_ERR;
@@ -1186,7 +1192,7 @@ static int mpss(void) {
 			}
 		}
 
-		TEST_BEGIN("multi-party pointcheval-sanders simple signature is correct") {
+		TEST_CASE("multi-party pointcheval-sanders simple signature is correct") {
 			pc_map_tri(t);
 			mt_gen(tri[0], n);
 			mt_gen(tri[1], n);
@@ -1215,7 +1221,7 @@ static int mpss(void) {
 		}
 		TEST_END;
 
-		TEST_BEGIN("multi-party pointcheval-sanders block signature is correct") {
+		TEST_CASE("multi-party pointcheval-sanders block signature is correct") {
 			g1_get_ord(n);
 			pc_map_tri(t);
 			mt_gen(tri[0], n);
@@ -1277,6 +1283,8 @@ static int mpss(void) {
   	return code;
 }
 
+#endif
+
 static int zss(void) {
 	int code = RLC_ERR;
 	bn_t d;
@@ -1296,7 +1304,7 @@ static int zss(void) {
 		g2_new(s);
 		gt_new(z);
 
-		TEST_BEGIN("zhang-safavi-naini-susilo signature is correct") {
+		TEST_CASE("zhang-safavi-naini-susilo signature is correct") {
 			TEST_ASSERT(cp_zss_gen(d, q, z) == RLC_OK, end);
 			TEST_ASSERT(cp_zss_sig(s, m, sizeof(m), 0, d) == RLC_OK, end);
 			TEST_ASSERT(cp_zss_ver(s, m, sizeof(m), 0, q, z) == 1, end);
@@ -1408,7 +1416,7 @@ static int lhs(void) {
 			cp_cmlhs_gen(x[j], hs[j], L, k[j], K, sk[j], pk[j], d[j], y[j]);
 		}
 
-		TEST_BEGIN("context-hiding linear homomorphic signature is correct") {
+		TEST_CASE("context-hiding linear homomorphic signature is correct") {
 			int label[L];
 			/* Compute all signatures. */
 			for (int j = 0; j < S; j++) {
@@ -1455,7 +1463,7 @@ static int lhs(void) {
 		char *ls[L] = { NULL };
 		dig_t ft[S];
 
-		TEST_BEGIN("simple linear multi-key homomorphic signature is correct") {
+		TEST_CASE("simple linear multi-key homomorphic signature is correct") {
 			for (int j = 0; j < S; j++) {
 				cp_mklhs_gen(sk[j], pk[j]);
 				for (int l = 0; l < L; l++) {
