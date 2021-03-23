@@ -119,9 +119,7 @@ static void ep_mul_combs_endom(ep_t r, const ep_t *t, const bn_t k) {
 		ep_curve_get_ord(n);
 		ep_curve_get_v1(v1);
 		ep_curve_get_v2(v2);
-		l = bn_bits(n);
-		l = ((l % (2 * EP_DEPTH)) ==
-				0 ? (l / (2 * EP_DEPTH)) : (l / (2 * EP_DEPTH)) + 1);
+		l = RLC_CEIL(bn_bits(n), (2 * EP_DEPTH));
 
 		bn_copy(_k, k);
 		if (bn_cmp_abs(_k, n) == RLC_GT) {
@@ -140,12 +138,18 @@ static void ep_mul_combs_endom(ep_t r, const ep_t *t, const bn_t k) {
 		p0 = (EP_DEPTH) * l - 1;
 
 		ep_set_infty(r);
+		if (n0 > p0 + 1) {
+			ep_copy(r, t[1 << (EP_DEPTH-1)]);
+		}
+		if (n1 > p0 + 1) {
+			ep_psi(u, t[1 << (EP_DEPTH-1)]);
+			ep_add(r, r, u);
+		}
 
 		for (i = l - 1; i >= 0; i--) {
 			ep_dbl(r, r);
 
-			w0 = 0;
-			w1 = 0;
+			w0 = w1 = 0;
 			p1 = p0--;
 			for (j = EP_DEPTH - 1; j >= 0; j--, p1 -= l) {
 				w0 = w0 << 1;
@@ -165,17 +169,12 @@ static void ep_mul_combs_endom(ep_t r, const ep_t *t, const bn_t k) {
 				}
 			}
 			if (w1 > 0) {
-				ep_copy(u, t[w1]);
-				if (ep_curve_opt_a() == RLC_ZERO) {
-					fp_mul(u->x, u->x, ep_curve_get_beta());
+				ep_psi(u, t[w1]);
+				if (s1 == RLC_POS) {
+					ep_add(r, r, u);
 				} else {
-					fp_neg(u->x, u->x);
-					fp_mul(u->y, u->y, ep_curve_get_beta());
+					ep_sub(r, r, u);
 				}
-				if (s1 == RLC_NEG) {
-					ep_neg(u, u);
-				}
-				ep_add(r, r, u);
 			}
 		}
 		ep_norm(r, r);
@@ -359,13 +358,11 @@ void ep_mul_pre_combs(ep_t *t, const ep_t p) {
 		bn_new(n);
 
 		ep_curve_get_ord(n);
-		l = bn_bits(n);
-		l = ((l % EP_DEPTH) == 0 ? (l / EP_DEPTH) : (l / EP_DEPTH) + 1);
+		l = RLC_CEIL(bn_bits(n), EP_DEPTH);
+
 #if defined(EP_ENDOM)
 		if (ep_curve_is_endom()) {
-			l = bn_bits(n);
-			l = ((l % (2 * EP_DEPTH)) ==
-					0 ? (l / (2 * EP_DEPTH)) : (l / (2 * EP_DEPTH)) + 1);
+			l = RLC_CEIL(bn_bits(n), 2 * EP_DEPTH);
 		}
 #endif
 

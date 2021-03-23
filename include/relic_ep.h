@@ -901,6 +901,15 @@ void ep_dbl_projc(ep_t r, const ep_t p);
 void ep_dbl_jacob(ep_t r, const ep_t p);
 
 /**
+ * Computes the endomorphism map of a prime elliptic curve point.
+ * Computes R = \psi(P).
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point.
+ */
+void ep_psi(ep_t r, const ep_t p);
+
+/**
  * Multiplies a prime elliptic point by an integer using the binary method.
  * There is no restriction on the scalar.
  *
