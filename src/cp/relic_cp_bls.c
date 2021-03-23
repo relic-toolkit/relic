@@ -103,7 +103,7 @@ int cp_bls_ver(g1_t s, uint8_t *msg, int len, g2_t q) {
 		g2_neg(r[1], r[1]);
 
 		pc_map_sim(e, p, r, 2);
-		if (gt_is_unity(e)) {
+		if (gt_is_unity(e) && g2_is_valid(q)) {
 			result = 1;
 		}
 	}
