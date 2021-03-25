@@ -255,7 +255,7 @@ int g2_is_valid(g2_t a) {
 int gt_is_valid(gt_t a) {
 	bn_t p, n;
 	gt_t u, v;
-	int r;
+	int l, r;
 
 	if (gt_is_unity(a)) {
 		return 0;
@@ -296,11 +296,12 @@ int gt_is_valid(gt_t a) {
 				case EP_B12:
 					/* Check [z]psi^3(P) + P == \psi^2(P). */
 					fp_prime_get_par(n);
-					gt_exp(u, a, n);
-					gt_frb(u, u, 3);
-					gt_frb(v, a, 2);
-					gt_mul(u, u, a);
-					r = (gt_cmp(u, v) == RLC_EQ);
+					const int *b = b = fp_prime_get_par_sps(&l);
+					fp12_exp_cyc_sps(u, a, b, l, bn_sign(n));
+					fp12_frb(u, u, 3);
+					fp12_frb(v, a, 2);
+					fp12_mul(u, u, a);
+					r = (fp12_cmp(u, v) == RLC_EQ);
 					break;
 				default:
 					/* Common case. */
