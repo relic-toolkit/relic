@@ -219,8 +219,7 @@ void fp2_exp_cyc(fp2_t c, fp2_t a, bn_t b) {
 	signed char naf[RLC_FP_BITS + 1], *k;
 
 	if (bn_is_zero(b)) {
-		fp2_set_dig(c, 1);
-		return;
+		return fp2_set_dig(c, 1);
 	}
 
 	fp2_null(r);
@@ -330,8 +329,7 @@ void fp8_exp_cyc(fp8_t c, fp8_t a, bn_t b) {
 	signed char naf[RLC_FP_BITS + 1], *k;
 
 	if (bn_is_zero(b)) {
-		fp8_set_dig(c, 1);
-		return;
+		return fp8_set_dig(c, 1);
 	}
 
 	fp8_null(r);
@@ -591,8 +589,7 @@ void fp12_exp_cyc(fp12_t c, fp12_t a, bn_t b) {
 	bn_t _b[4];
 
 	if (bn_is_zero(b)) {
-		fp12_set_dig(c, 1);
-		return;
+		return fp12_set_dig(c, 1);
 	}
 
 	if ((bn_bits(b) > RLC_DIG) && ((w << 3) > bn_bits(b))) {
@@ -828,12 +825,10 @@ void fp12_exp_cyc_sim(fp12_t e, fp12_t a, bn_t b, fp12_t c, bn_t d) {
 
 	if (bn_is_zero(b)) {
 		return fp12_exp_cyc(e, c, d);
-		return;
 	}
 
 	if (bn_is_zero(d)) {
 		return fp12_exp_cyc(e, a, b);
-		return;
 	}
 
 	RLC_TRY {
@@ -922,8 +917,7 @@ void fp12_exp_cyc_sps(fp12_t c, fp12_t a, const int *b, int len, int sign) {
     fp12_t t, *u = RLC_ALLOCA(fp12_t, w);
 
 	if (len == 0) {
-		fp12_set_dig(c, 1);
-		return;
+		return fp12_set_dig(c, 1);
 	}
 
 	fp12_null(t);
@@ -1195,8 +1189,7 @@ void fp48_exp_cyc(fp48_t c, fp48_t a, bn_t b) {
 	int i, j, k, w = bn_ham(b);
 
 	if (bn_is_zero(b)) {
-		fp48_set_dig(c, 1);
-		return;
+		return fp48_set_dig(c, 1);
 	}
 
 	if ((bn_bits(b) > RLC_DIG) && ((w << 3) > bn_bits(b))) {
@@ -1292,8 +1285,7 @@ void fp48_exp_cyc_sps(fp48_t c, fp48_t a, const int *b, int len, int sign) {
     fp48_t t, *u = RLC_ALLOCA(fp48_t, w);
 
 	if (len == 0) {
-		fp48_set_dig(c, 1);
-		return;
+		return fp48_set_dig(c, 1);
 	}
 
 	fp48_null(t);
@@ -1564,8 +1556,7 @@ void fp54_exp_cyc(fp54_t c, fp54_t a, bn_t b) {
 	int i, j, k, w = bn_ham(b);
 
 	if (bn_is_zero(b)) {
-		fp54_set_dig(c, 1);
-		return;
+		return fp54_set_dig(c, 1);
 	}
 
 	if ((bn_bits(b) > RLC_DIG) && ((w << 3) > bn_bits(b))) {
@@ -1662,8 +1653,7 @@ void fp54_exp_cyc_sps(fp54_t c, fp54_t a, const int *b, int len, int sign) {
     fp54_t t, *u = RLC_ALLOCA(fp54_t, w);
 
 	if (len == 0) {
-		fp54_set_dig(c, 1);
-		return;
+		return fp54_set_dig(c, 1);
 	}
 
 	fp54_null(t);
