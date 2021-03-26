@@ -45,7 +45,7 @@ jobs:
       - name: Set Windows ENV
         if: |
           runner.os == 'Windows' &&
-          matrix.cc == "cl"
+          matrix.cc == 'cl'
         uses: ilammy/msvc-dev-cmd@v1
 
       - name: Install Linux Dependencies
