@@ -52,18 +52,16 @@ jobs:
 
       - name: Run CMake
         shell: bash
+        env:
+            CC: ${{ matrix.cc }}
         run: |
             mkdir build
             cd build
-            echo ${MATRIX_CC}
-            echo ${RUNNER_OS}
             if [ "${RUNNER_OS}" == "Windows" ] && [ "${CC}" == "gcc" ]; then
                 cmake -DCMAKE_C_COMPILER=${{ matrix.config.cc }} -DSEED= -DBENCH=0 -G "MinGW Makefiles" ..
             else
                 cmake -DCMAKE_C_COMPILER=${{ matrix.config.cc }} -DSEED= -DBENCH=0 ..
             fi
-        env:
-            CC: ${{ matrix.cc }}
 
       - name: CMake Build
         run: cmake --build build
