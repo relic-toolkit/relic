@@ -37,12 +37,15 @@ jobs:
           - {
               name: "MacOS Latest",
               os: macos-latest,
+              cc: "clang",
             }
     steps:
       - uses: actions/checkout@v2
 
       - name: Set Windows ENV
-        if: runner.os == 'Windows'
+        if: |
+          runner.os == 'Windows' &&
+          matrix.cc == "cl"
         uses: ilammy/msvc-dev-cmd@v1
 
       - name: Install Linux Dependencies
