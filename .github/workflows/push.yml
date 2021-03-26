@@ -11,34 +11,34 @@ jobs:
       matrix:
         config:
           - {
-              name: "Windows Latest - MSVC",
-              artifact: "windows-msvc.tar.xz",
-              os: windows-latest,
-              cc: "cl",
-            }
+            name: "Windows Latest - MSVC",
+            artifact: "windows-msvc.tar.xz",
+            os: windows-latest,
+            cc: "cl",
+          }
           - {
-              name: "Windows Latest - MinGW",
-              artifact: "windows-mingw.tar.xz",
-              os: windows-latest,
-              cc: "gcc"
-            }
+            name: "Windows Latest - MinGW",
+            artifact: "windows-mingw.tar.xz",
+            os: windows-latest,
+            cc: "gcc"
+          }
           - {
-              name: "Ubuntu Latest - GCC",
-              artifact: "linux-gcc.tar.xz",
-              os: ubuntu-latest,
-              cc: "gcc",
-            }
+            name: "Ubuntu Latest - GCC",
+            artifact: "linux-gcc.tar.xz",
+            os: ubuntu-latest,
+            cc: "gcc",
+          }
           - {
-              name: "Ubuntu Latest - Clang",
-              artifact: "linux-clang.tar.xz",
-              os: ubuntu-latest,
-              cc: "clang",
-            }
+            name: "Ubuntu Latest - Clang",
+            artifact: "linux-clang.tar.xz",
+            os: ubuntu-latest,
+            cc: "clang",
+          }
           - {
-              name: "MacOS Latest",
-              os: macos-latest,
-              cc: "clang",
-            }
+            name: "MacOS Latest",
+            os: macos-latest,
+            cc: "clang",
+          }
     steps:
       - uses: actions/checkout@v2
 
@@ -57,28 +57,28 @@ jobs:
             runner.os == 'Windows' &&
             matrix.cc == 'gcc'
         uses: msys2/setup-msys2@v2
-            with:
-                msystem: MINGW64
-                install: >-
-                    git
-                    base-devel
-                    mingw-w64-${{ matrix.arch }}-gcc
-                    mingw-w64-${{ matrix.arch }}-cmake
-                update: true
+        with:
+          msystem: MINGW64
+          install: >-
+            git
+            base-devel
+            mingw-w64-${{ matrix.arch }}-gcc
+            mingw-w64-${{ matrix.arch }}-cmake
+          update: true
 
       - name: Run CMake
         shell: bash
         env:
-            CC: ${{ matrix.cc }}
+          CC: ${{ matrix.cc }}
         run: |
-            mkdir build
-            cd build
-            cmake -DCMAKE_C_COMPILER=${{ matrix.config.cc }} -DSEED= -DBENCH=0 ..
+          mkdir build
+          cd build
+          cmake -DCMAKE_C_COMPILER=${{ matrix.config.cc }} -DSEED= -DBENCH=0 ..
 
       - name: CMake Build
         run: cmake --build build
 
       - name: CMake Test
         run: |
-            cd build
-            ctest .
+          cd build
+          ctest .
