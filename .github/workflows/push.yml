@@ -56,7 +56,7 @@ jobs:
         if: |
             runner.os == 'Windows' &&
             matrix.cc == 'gcc'
-        - uses: msys2/setup-msys2@v2
+        uses: msys2/setup-msys2@v2
             with:
                 msystem: MINGW64
                 install: >-
