@@ -39,6 +39,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/cache@v2
 
       - name: Set Windows ENV
         if: runner.os == 'Windows'
@@ -55,4 +56,4 @@ jobs:
         run: cmake --build build
 
       - name: CMake Test
-        run: ctest -V
+        run: ctest .
