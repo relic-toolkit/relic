@@ -58,8 +58,8 @@ jobs:
           install: >-
             git
             base-devel
-            mingw-w64-${{ matrix.arch }}-gcc
-            mingw-w64-${{ matrix.arch }}-cmake
+            mingw-w64-x64-gcc
+            mingw-w64-x64-cmake
           update: true
 
       - name: Run CMake
