@@ -54,7 +54,7 @@ jobs:
 
       - name: CMake Configure
         working-directory: ${{github.workspace}}/build
-        run: cmake -DCMAKE_C_COMPILER=${{ matrix.config.cc }} -DSEED= -DBENCH=0
+        run: cmake -DCMAKE_C_COMPILER=${{ matrix.config.cc }} -DSEED= -DBENCH=0 ${{github.workspace}}
 
       - name: CMake Build
         working-directory: ${{github.workspace}}/build
