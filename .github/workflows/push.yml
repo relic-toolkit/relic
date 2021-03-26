@@ -15,28 +15,29 @@ jobs:
               artifact: "windows-msvc.tar.xz",
               os: windows-latest,
               cc: "cl",
-              cxx: "cl",
             }
           - {
-              name: "Windows Latest - MinGW", artifact: "windows-mingw.tar.xz",
+              name: "Windows Latest - MinGW",
+              artifact: "windows-mingw.tar.xz",
               os: windows-latest,
-              cc: "gcc", cxx: "g++"
+              cc: "gcc"
             }
           - {
               name: "Ubuntu Latest - GCC",
               artifact: "linux-gcc.tar.xz",
               os: ubuntu-latest,
-              cc: "gcc-9",
-              cxx: "g++-9",
+              cc: "gcc",
             }
           - {
               name: "Ubuntu Latest - Clang",
               artifact: "linux-clang.tar.xz",
               os: ubuntu-latest,
-              cc: "clang-9",
-              cxx: "clang++-9",
+              cc: "clang",
             }
-
+          - {
+              name: "MacOS Latest",
+              os: macos-latest,
+            }
     steps:
       - uses: actions/checkout@v2
 
@@ -48,11 +49,17 @@ jobs:
         if: runner.os == 'Linux'
         run: sudo apt install libgmp-dev
 
+      - name: CMake Create
+        run: cmake -E make_directory ${{github.workspace}}/build
+
       - name: CMake Configure
-        run: cmake -Bbuild -DCMAKE_C_COMPILER=${{ matrix.config.cc }} -DSEED= -DBENCH=0
+        working-directory: ${{github.workspace}}/build
+        run: cmake -DCMAKE_C_COMPILER=${{ matrix.config.cc }} -DSEED= -DBENCH=0
 
       - name: CMake Build
-        run: cmake --build build
+        working-directory: ${{github.workspace}}/build
+        run: cmake --build .
 
       - name: CMake Test
-        run: ctest .
+        working-directory: ${{github.workspace}}/build
+        run: ctest
