@@ -42,27 +42,32 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Set Windows ENV
+      - name: Install Linux Dependencies
+        if: runner.os == 'Linux'
+        run: sudo apt install libgmp-dev
+
+      - name: Set Windows enviroment
         if: |
           runner.os == 'Windows' &&
           matrix.cc == 'cl'
         uses: ilammy/msvc-dev-cmd@v1
 
-      - name: Install Linux Dependencies
-        if: runner.os == 'Linux'
-        run: sudo apt install libgmp-dev
-
-      - name: CMake Create
-        run: cmake -E make_directory ${{github.workspace}}/build
-
-      - name: CMake Configure
-        working-directory: ${{github.workspace}}/build
-        run: cmake -DCMAKE_C_COMPILER=${{ matrix.config.cc }} -DSEED= -DBENCH=0 ${{github.workspace}}
+      - name: Run CMake (MinGW)
+        run: |
+            mkdir build
+            cd build
+            if [ "$RUNNER_OS" == "Windows" && "$CC" == "gcc" ]; then
+                cmake -DCMAKE_C_COMPILER=${{ matrix.config.cc }} -DSEED= -DBENCH=0 -G "MinGW Makefiles" ..
+            else
+                cmake -DCMAKE_C_COMPILER=${{ matrix.config.cc }} -DSEED= -DBENCH=0 ..
+            fi
+        env:
+            CC: ${{ matrix.cc }}
 
       - name: CMake Build
-        working-directory: ${{github.workspace}}/build
-        run: cmake --build .
+        run: cmake --build build
 
       - name: CMake Test
-        working-directory: ${{github.workspace}}/build
-        run: ctest
+        run: |
+            cd build
+            ctest .
