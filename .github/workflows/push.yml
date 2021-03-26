@@ -47,11 +47,15 @@ jobs:
         run: sudo apt install libgmp-dev
 
       - name: Set Windows enviroment
-        if: runner.os == 'Windows' && matrix.cc == 'cl'
+        if: |
+            runner.os == 'Windows' &&
+            matrix.cc == 'cl'
         uses: ilammy/msvc-dev-cmd@v1
 
       - name: Set MinGW enviroment
-        if: runner.os == 'Windows' && matrix.cc == 'gcc'
+        if: |
+            runner.os == 'Windows' &&
+            matrix.cc == 'gcc'
         - uses: msys2/setup-msys2@v2
             with:
                 msystem: MINGW64
