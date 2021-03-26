@@ -68,7 +68,7 @@ jobs:
         run: |
           mkdir build
           cd build
-          cmake -DRAND=HASHD -DSEED=WCGR -DBENCH=0 -G "NMake Makefiles" ..
+          cmake -DBENCH=0 -G "NMake Makefiles" ..
 
       - name: Run CMake (MingW)
         if: ${{ (runner.os == 'Windows') && (matrix.config.cc == 'gcc') }}
