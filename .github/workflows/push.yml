@@ -57,7 +57,7 @@ jobs:
         run: |
             mkdir build
             cd build
-            if [ "$RUNNER_OS" == "Windows" && "$CC" == "gcc" ]; then
+            if [ "$RUNNER_OS" == "Windows" ] && [ "$CC" == "gcc" ]; then
                 cmake -DCMAKE_C_COMPILER=${{ matrix.config.cc }} -DSEED= -DBENCH=0 -G "MinGW Makefiles" ..
             else
                 cmake -DCMAKE_C_COMPILER=${{ matrix.config.cc }} -DSEED= -DBENCH=0 ..
