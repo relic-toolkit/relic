@@ -1,4 +1,4 @@
-name: Build RELIC
+name: Continuous Integration
 
 on: [push, pull_request]
 
@@ -92,4 +92,4 @@ jobs:
       - name: CMake Test
         run: |
           cd build
-          ctest .
+          ctest --verbose .
