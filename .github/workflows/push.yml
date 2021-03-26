@@ -62,10 +62,16 @@ jobs:
             cmake
           update: true
 
-      - name: Run CMake
+      - name: Run CMake (MingW)
+        if: ${{ (runner.os == 'Windows') && (matrix.config.cc == 'gcc') }}
         shell: bash
-        env:
-          CC: ${{ matrix.cc }}
+        run: |
+          mkdir build
+          cd build
+          cmake -DCMAKE_C_COMPILER=${{ matrix.config.cc }} -DSEED= -DBENCH=0 -G "MinGW Makefiles" ..
+
+      - name: Run CMake (standard)
+        shell: bash
         run: |
           mkdir build
           cd build
