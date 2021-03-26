@@ -47,17 +47,16 @@ jobs:
         run: sudo apt install libgmp-dev
 
       - name: Set Windows enviroment
-        if: |
-          runner.os == 'Windows' &&
-          matrix.cc == 'cl'
+        if: runner.os == 'Windows' && matrix.cc == 'cl'
         uses: ilammy/msvc-dev-cmd@v1
 
-      - name: Run CMake (MinGW)
+      - name: Run CMake
         shell: bash
         run: |
             mkdir build
             cd build
-            if [ "$RUNNER_OS" == "Windows" ] && [ "$CC" == "gcc" ]; then
+            echo $CC
+            if [ "${RUNNER_OS}" == "Windows" ] && [ "${CC}" == "gcc" ]; then
                 cmake -DCMAKE_C_COMPILER=${{ matrix.config.cc }} -DSEED= -DBENCH=0 -G "MinGW Makefiles" ..
             else
                 cmake -DCMAKE_C_COMPILER=${{ matrix.config.cc }} -DSEED= -DBENCH=0 ..
