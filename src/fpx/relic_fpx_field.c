@@ -160,12 +160,13 @@ void fp3_field_init(void) {
 		fp3_new(t2);
 
 		/* Compute t0 = u^((p - (p mod 3))/3). */
-		fp_set_dig(ctx->fp3_p0[0], fp_prime_get_cnr());
 		if (fp_prime_get_cnr() < 0) {
+			fp_set_dig(ctx->fp3_p0[0], -fp_prime_get_cnr());
 			fp_neg(ctx->fp3_p0[0], ctx->fp3_p0[0]);
+		} else {
+			fp_set_dig(ctx->fp3_p0[0], fp_prime_get_cnr());
 		}
-		e->used = RLC_FP_DIGS;
-		dv_copy(e->dp, fp_prime_get(), RLC_FP_DIGS);
+		bn_read_raw(e, fp_prime_get(), RLC_FP_DIGS);
 		bn_div_dig(e, e, 3);
 		fp_exp(ctx->fp3_p0[0], ctx->fp3_p0[0], e);
 		fp_sqr(ctx->fp3_p0[1], ctx->fp3_p0[0]);
@@ -173,7 +174,7 @@ void fp3_field_init(void) {
 		/* Compute t0 = u^((p - (p mod 6))/6). */
 		fp3_zero(t0);
 		fp_set_dig(t0[1], 1);
-		dv_copy(e->dp, fp_prime_get(), RLC_FP_DIGS);
+		bn_read_raw(e, fp_prime_get(), RLC_FP_DIGS);
 		bn_div_dig(e, e, 6);
 		fp3_exp(t0, t0, e);
 
@@ -194,7 +195,7 @@ void fp3_field_init(void) {
 		/* Compute t0 = u^((p - (p mod 9))/9). */
 		fp3_zero(t0);
 		fp_set_dig(t0[1], 1);
-		dv_copy(e->dp, fp_prime_get(), RLC_FP_DIGS);
+		bn_read_raw(e, fp_prime_get(), RLC_FP_DIGS);
 		bn_div_dig(e, e, 9);
 		fp3_exp(t0, t0, e);
 		/* Look for a non-trivial subfield element.. */
@@ -205,7 +206,7 @@ void fp3_field_init(void) {
 		/* Compute t0 = u^((p - (p mod 18))/18). */
 		fp3_zero(t0);
 		fp_set_dig(t0[1], 1);
-		dv_copy(e->dp, fp_prime_get(), RLC_FP_DIGS);
+		bn_read_raw(e, fp_prime_get(), RLC_FP_DIGS);
 		bn_div_dig(e, e, 18);
 		fp3_exp(t0, t0, e);
 		/* Look for a non-trivial subfield element.. */

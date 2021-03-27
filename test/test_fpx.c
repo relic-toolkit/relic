@@ -1418,16 +1418,12 @@ static int exponentiation3(void) {
 		TEST_CASE("frobenius and exponentiation are consistent") {
 			fp3_rand(a);
 			fp3_frb(b, a, 0);
-			fp3_print(a);
-			fp3_print(b);
 			TEST_ASSERT(fp3_cmp(a, b) == RLC_EQ, end);
 			fp3_frb(b, a, 1);
 			d->sign = RLC_POS;
 			d->used = RLC_FP_DIGS;
 			dv_copy(d->dp, fp_prime_get(), RLC_FP_DIGS);
 			fp3_exp(c, a, d);
-			fp3_print(b);
-			fp3_print(c);
 			TEST_ASSERT(fp3_cmp(c, b) == RLC_EQ, end);
 		} TEST_END;
 	}
