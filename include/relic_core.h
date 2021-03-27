@@ -445,7 +445,7 @@ ctx_t *core_get(void);
  */
 void core_set(ctx_t *ctx);
 
-#if MULTI != RELIC_NONE
+#if defined(MULTI)
 /**
  * Set an initializer function which is called when the context
  * is uninitialized. This function is called for every thread.

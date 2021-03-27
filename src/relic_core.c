@@ -82,7 +82,7 @@ rlc_thread ctx_t first_ctx;
 static ctx_t first_ctx;
 #endif
 
-#if MULTI != RELIC_NONE
+#if defined(MULTI)
 /*
  * Initializer function to call for every thread's context
  */
@@ -191,7 +191,7 @@ int core_clean(void) {
 }
 
 ctx_t *core_get(void) {
-#if MULTI != RELIC_NONE
+#if defined(MULTI)
     if (core_ctx == NULL && core_thread_initializer != NULL) {
         core_thread_initializer(core_init_ptr);
     }
@@ -203,7 +203,7 @@ void core_set(ctx_t *ctx) {
 	core_ctx = ctx;
 }
 
-#if MULTI != RELIC_NONE
+#if defined(MULTI)
 void core_set_thread_initializer(void(*init)(void *init_ptr), void* init_ptr) {
     core_thread_initializer = init;
     core_init_ptr = init_ptr;
