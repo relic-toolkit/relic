@@ -125,7 +125,6 @@ static int util(void) {
 				bits = fb_size_str(a, 1 << j);
 				fb_write_str(str, bits, a, 1 << j);
 				fb_read_str(b, str, bits, 1 << j);
-				printf("%d\n", j);
 				TEST_ASSERT(fb_cmp(a, b) == RLC_EQ, end);
 			}
 			fb_write_bin(bin, sizeof(bin), a);
