@@ -68,7 +68,7 @@ jobs:
         run: |
           mkdir build
           cd build
-          cmake -DBENCH=0 -G "NMake Makefiles" ..
+          cmake -DCMAKE_BUILD_TYPE=Release -DBENCH=0 -G "NMake Makefiles" ..
 
       - name: Run CMake (MingW)
         if: ${{ (runner.os == 'Windows') && (matrix.config.cc == 'gcc') }}
