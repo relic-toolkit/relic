@@ -65,7 +65,7 @@ int cp_mklhs_sig(g1_t s, bn_t m, char *data, char *id, char *tag, bn_t sk) {
 		strlen(id) + RLC_MAX(strlen(data), strlen(tag)));
 
 	bn_null(n);
-	g1_new(a);
+	g1_null(a);
 
 	RLC_TRY {
 		bn_new(n);
@@ -216,8 +216,8 @@ int cp_mklhs_ver(g1_t sig, bn_t m, bn_t mu[], char *data, char *id[],
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_new(t);
-		bn_new(n);
+		bn_free(t);
+		bn_free(n);
 		g1_free(d);
 		g2_free(g2);
 		gt_free(c);
@@ -351,8 +351,8 @@ int cp_mklhs_onv(g1_t sig, bn_t m, bn_t mu[], char *data, char *id[], g1_t h[],
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_new(t);
-		bn_new(n);
+		bn_free(t);
+		bn_free(n);
 		g1_free(d);
 		g1_free(g1);
 		g2_free(g2);
@@ -362,6 +362,7 @@ int cp_mklhs_onv(g1_t sig, bn_t m, bn_t mu[], char *data, char *id[], g1_t h[],
 			g1_free(g[j]);
 		}
 		RLC_FREE(g);
+		RLC_FREE(str);
 	}
 	return (ver1 && ver2);
 }

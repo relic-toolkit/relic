@@ -259,6 +259,7 @@ void fp3_inv_sim(fp3_t * c, fp3_t * a, int n) {
 			fp3_free(t[i]);
 		}
 		fp3_free(u);
+		RLC_FREE(t);
 	}
 }
 
@@ -426,6 +427,7 @@ void fp8_inv_sim(fp8_t *c, fp8_t *a, int n) {
 			fp8_free(t[i]);
 		}
 		fp8_free(u);
+		RLC_FREE(t);
 	}
 }
 
@@ -527,6 +529,7 @@ void fp9_inv_sim(fp9_t * c, fp9_t * a, int n) {
 			fp9_free(t[i]);
 		}
 		fp9_free(u);
+		RLC_FREE(t);
 	}
 }
 
