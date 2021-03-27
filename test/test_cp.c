@@ -1402,9 +1402,9 @@ static int lhs(void) {
 		for (int i = 0; i < S; i++) {
 			f[i] = RLC_ALLOCA(dig_t, RLC_TERMS);
 			for (int j = 0; j < RLC_TERMS; j++) {
-				uint32_t t;
-				rand_bytes((uint8_t *)&t, sizeof(uint32_t));
-				f[i][j] = t;
+				dig_t t;
+				rand_bytes((uint8_t *)&t, sizeof(dig_t));
+				f[i][j] = t & RLC_MASK(RLC_DIG / 2);
 			}
 			flen[i] = L;
 		}
