@@ -44,7 +44,8 @@
 #if MD_MAP == B2S160 || !defined(STRIP)
 
 void md_map_b2s160(uint8_t *hash, const uint8_t *msg, int len) {
-	blake2s(hash, msg, 0, 20, len, 0);
+	memset(hash, 0, RLC_MD_LEN_B2S160);
+	blake2s(hash, msg, NULL, RLC_MD_LEN_B2S160, len, 0);
 }
 
 #endif
@@ -52,7 +53,8 @@ void md_map_b2s160(uint8_t *hash, const uint8_t *msg, int len) {
 #if MD_MAP == B2S256 || !defined(STRIP)
 
 void md_map_b2s256(uint8_t *hash, const uint8_t *msg, int len) {
-	blake2s(hash, msg, 0, 32, len, 0);
+	memset(hash, 0, RLC_MD_LEN_B2S256);
+	blake2s(hash, msg, NULL, RLC_MD_LEN_B2S256, len, 0);
 }
 
 #endif
