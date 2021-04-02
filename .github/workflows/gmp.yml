@@ -52,9 +52,19 @@ jobs:
         if: runner.os == 'Linux'
         run: sudo apt install libgmp-dev
 
+      - name: Install MacOS Dependencies
+        if: runner.os == 'MacOS'
+        run: brew install gmp
+
       - name: Set Windows enviroment
         if: ${{ (runner.os == 'Windows') && (matrix.config.cc == 'cl') }}
         uses: ilammy/msvc-dev-cmd@v1
+        uses: lukka/run-vcpkg@v6
+        with:
+          setupOnly: true
+      - run: |
+          $VCPKG_ROOT/vcpkg install gmp
+        shell: bash
 
       - name: Set MinGW enviroment
         if: ${{ (runner.os == 'Windows') && (matrix.config.cc == 'gcc') }}
