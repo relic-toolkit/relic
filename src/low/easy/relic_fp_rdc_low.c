@@ -75,7 +75,8 @@
 /*============================================================================*/
 
 void fp_rdcs_low(dig_t *c, const dig_t *a, const dig_t *m) {
-	rlc_align dig_t q[2 * RLC_FP_DIGS], _q[2 * RLC_FP_DIGS], t[2 * RLC_FP_DIGS], r[RLC_FP_DIGS];
+	rlc_align dig_t q[2 * RLC_FP_DIGS], _q[2 * RLC_FP_DIGS];
+	rlc_align dig_t t[2 * RLC_FP_DIGS], r[RLC_FP_DIGS];
 	const int *sform;
 	int len, first, i, j, k, b0, d0, b1, d1;
 
@@ -128,7 +129,7 @@ void fp_rdcs_low(dig_t *c, const dig_t *a, const dig_t *m) {
 			_q[first - 1] &= RLC_MASK(b0);
 		}
 		if (sform[len - 2] < 0) {
-			fp_add(r, r, _q);
+			fp_addm_low(r, r, _q);
 		} else {
 			if (k++ % 2 == 0) {
 				if (fp_subn_low(r, r, _q)) {
