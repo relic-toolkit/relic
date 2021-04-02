@@ -63,8 +63,8 @@ jobs:
       - name: Install Windows Dependencies
         if: ${{ (runner.os == 'Windows') && (matrix.config.cc == 'cl') }}
         run: |
-          $VCPKG_ROOT/vcpkg integrate install
-          $VCPKG_ROOT/vcpkg install gmp
+          $VCPKG_ROOT\vcpkg integrate install
+          $VCPKG_ROOT\vcpkg install gmp
         shell: powershell
 
       - name: Install Linux Dependencies
