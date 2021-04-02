@@ -496,28 +496,28 @@ static int endomorphism(void) {
 			bn_new(v2[k]);
 		}
 
-		/* Recover lambda parameter. */
-		ep_curve_get_v1(v1);
-		ep_curve_get_v2(v2);
-		ep_curve_get_ord(v2[0]);
-		if (bn_cmp_dig(v1[2], 1) == RLC_EQ) {
-			bn_gcd_ext(v1[0], v2[1], NULL, v1[1], v2[0]);
-		} else {
-			bn_gcd_ext(v1[0], v2[1], NULL, v1[2], v2[0]);
-		}
-		if (bn_sign(v2[1]) == RLC_NEG) {
-			/* Negate modulo r. */
-			bn_add(v2[1], v2[0], v2[1]);
-		}
-		bn_mul(v1[0], v2[1], v1[1]);
-		bn_mod(l, v1[0], v2[0]);
-		bn_sub(v1[1], v2[0], l);
-		if (bn_cmp(v1[1], l) == RLC_LT) {
-			bn_copy(l, v1[1]);
-		}
-
 #if defined(EP_ENDOM)
 		if (ep_curve_is_endom()) {
+			/* Recover lambda parameter. */
+			ep_curve_get_v1(v1);
+			ep_curve_get_v2(v2);
+			ep_curve_get_ord(v2[0]);
+			if (bn_cmp_dig(v1[2], 1) == RLC_EQ) {
+				bn_gcd_ext(v1[0], v2[1], NULL, v1[1], v2[0]);
+			} else {
+				bn_gcd_ext(v1[0], v2[1], NULL, v1[2], v2[0]);
+			}
+			if (bn_sign(v2[1]) == RLC_NEG) {
+				/* Negate modulo r. */
+				bn_add(v2[1], v2[0], v2[1]);
+			}
+			bn_mul(v1[0], v2[1], v1[1]);
+			bn_mod(l, v1[0], v2[0]);
+			bn_sub(v1[1], v2[0], l);
+			if (bn_cmp(v1[1], l) == RLC_LT) {
+				bn_copy(l, v1[1]);
+			}
+
 			TEST_CASE("endomorphism is correct") {
 				/* Test if \psi(P) = [l]P. */
 				ep_rand(a);
@@ -548,7 +548,7 @@ static int endomorphism(void) {
 			TEST_END;
 #endif
 		}
-#endif
+#endif /* EP_ENDOM */
 	(void)a;
 	(void)b;
 	(void)c;
