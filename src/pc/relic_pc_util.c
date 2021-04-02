@@ -108,24 +108,19 @@ int g1_is_valid(g1_t a) {
 				/* Formulas from "Faster Subgroup Checks for BLS12-381" by Bowe.
 				 * https://eprint.iacr.org/2019/814.pdf */
 				case EP_B12:
-					/* Check [(z^2−1)](2\psi(P)-P-\psi^2(P)) == [3]\psi^2(P). */
+					/* Check [(z^2−1)](2\psi(P)-P-\psi^2(P)) == [3]\psi^2(P).
+					 * Since \psi(P) = [\lambda]P = [z^2 - 1]P, it is the same
+					 * as checking \psi(2\psi(P)-P-\psi^2(P)) == [3]\psi^2(P),
+					 * or \psi((\psi-1)^2(P)) % r == -3*\psi^2(P). */
 					ep_psi(v, a);
-					ep_dbl(u, v);
-					ep_psi(v, v);
-					ep_sub(u, u, a);
-					ep_sub(u, u, v);
-					fp_prime_get_par(n);
-					bn_sqr(n, n);
-					ep_copy(t, u);
-					for (int i = bn_bits(n) - 2; i >= 0; i--) {
-						ep_dbl(t, t);
-						if (bn_get_bit(n, i)) {
-							ep_add(t, t, u);
-						}
-					}
-					ep_sub(t, t, u);
-					ep_dbl(u, v);
+					ep_sub(t, v, a);
+					ep_psi(u, v);
+					ep_psi(v, t);
+					ep_sub(v, v, t);
+					ep_psi(t, v);
+					ep_dbl(v, u);
 					ep_add(u, u, v);
+					ep_neg(u, u);
 					r = ep_on_curve(t) && (ep_cmp(t, u) == RLC_EQ);
 					break;
 				default:
@@ -206,21 +201,12 @@ int g2_is_valid(g2_t a) {
 				/* Formulas from "Faster Subgroup Checks for BLS12-381" by Bowe.
 				 * https://eprint.iacr.org/2019/814.pdf */
 				case EP_B12:
-					/* Check [z]psi^3(P) + P == \psi^2(P). */
-					fp_prime_get_par(n);
-					ep2_copy(u, a);
-					for (int i = bn_bits(n) - 2; i >= 0; i--) {
-						ep2_dbl(u, u);
-						if (bn_get_bit(n, i)) {
-							ep2_add(u, u, a);
-						}
-					}
-					if (bn_sign(n) == RLC_NEG) {
-						ep2_neg(u, u);
-					}
-					ep2_frb(u, u, 3);
-					ep2_frb(v, a, 2);
+					/* Check [z]psi^3(P) + P == \psi^2(P).
+					 * Since p mod n = r, we can check instead that
+					 * psi^4(P) + P == \psi^2(P). */
+					ep2_frb(u, a, 4);
 					ep2_add(u, u, a);
+					ep2_frb(v, a, 2);
 					r = ep2_on_curve(a) && (g2_cmp(u, v) == RLC_EQ);
 					break;
 				default:
@@ -255,7 +241,7 @@ int g2_is_valid(g2_t a) {
 int gt_is_valid(gt_t a) {
 	bn_t p, n;
 	gt_t u, v;
-	int l, r;
+	int r;
 
 	if (gt_is_unity(a)) {
 		return 0;
@@ -294,13 +280,10 @@ int gt_is_valid(gt_t a) {
 				/* Formulas from "Faster Subgroup Checks for BLS12-381" by Bowe.
 				 * https://eprint.iacr.org/2019/814.pdf */
 				case EP_B12:
-					/* Check [z]psi^3(P) + P == \psi^2(P). */
-					fp_prime_get_par(n);
-					const int *b = b = fp_prime_get_par_sps(&l);
-					fp12_exp_cyc_sps(u, a, b, l, bn_sign(n));
-					fp12_frb(u, u, 3);
-					fp12_frb(v, a, 2);
+					/* Check [z]psi^3(P) + P == \psi^2(P), or trick from G2. */
+					fp12_frb(u, a, 4);
 					fp12_mul(u, u, a);
+					fp12_frb(v, a, 2);
 					r = (fp12_cmp(u, v) == RLC_EQ);
 					break;
 				default:
