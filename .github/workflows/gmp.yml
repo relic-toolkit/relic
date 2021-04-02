@@ -65,7 +65,7 @@ jobs:
         run: |
           $VCPKG_ROOT/vcpkg integrate install
           $VCPKG_ROOT/vcpkg install gmp
-        shell: bash
+        shell: powershell
 
       - name: Install Linux Dependencies
         if: runner.os == 'Linux'
@@ -90,11 +90,11 @@ jobs:
 
       - name: Run CMake (Win)
         if: ${{ (runner.os == 'Windows') && (matrix.config.cc == 'cl') }}
-        shell: bash
+        shell: powershell
         run: |
           mkdir build
           cd build
-          cmake -DCMAKE_TOOLCHAIN_FILE=$VCPKG_ROOT/vcpkg/scripts/buildsystems/vcpkg.cmake -DSEED= -DBENCH=0 -DARITH=gmp -G "NMake Makefiles" ..
+          cmake -DSEED= -DBENCH=0 -DARITH=gmp -G "NMake Makefiles" ..
 
       - name: Run CMake (MingW)
         if: ${{ (runner.os == 'Windows') && (matrix.config.cc == 'gcc') }}
