@@ -45,10 +45,10 @@ endif(STBIN)
 
 if(GMP_INCLUDE_DIR OR GMP_LIBRARIES)
    set(GMP_FOUND TRUE)
-endif(GMP_INCLUDE_DIR AND GMP_LIBRARIES)
+endif()
 
 if(GMP_FOUND)
-	message(STATUS "Configured GMP: ${GMP_INCLUDE_DIR} ${GMP_LIBRARIES}")
+	message(STATUS "Configured GMP: -I${GMP_INCLUDE_DIR} -L${GMP_LIBRARIES}")
 else(GMP_FOUND)
 	message(STATUS "Could NOT find GMP")
 endif(GMP_FOUND)
