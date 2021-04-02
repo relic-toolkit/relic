@@ -59,7 +59,7 @@ jobs:
           setupOnly: true
           vcpkgDirectory: '${{ github.workspace }}/vcpkg'
           vcpkgGitCommitId: '6c9cda1635859571de5c964bbacdece824045305'
-      - run: $VCPKG_ROOT/vcpkg install gmp
+        run: $VCPKG_ROOT/vcpkg install gmp
         shell: bash
 
       - name: Install Linux Dependencies
