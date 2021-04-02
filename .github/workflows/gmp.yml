@@ -52,13 +52,16 @@ jobs:
         if: ${{ (runner.os == 'Windows') && (matrix.config.cc == 'cl') }}
         uses: ilammy/msvc-dev-cmd@v1
 
-      - name: Install Windows Dependencies
+      - name: Install Windows package manager
         if: ${{ (runner.os == 'Windows') && (matrix.config.cc == 'cl') }}
         uses: lukka/run-vcpkg@v6
         with:
           setupOnly: true
           vcpkgDirectory: '${{ github.workspace }}/vcpkg'
           vcpkgGitCommitId: '6c9cda1635859571de5c964bbacdece824045305'
+
+      - name: Install Windows Dependencies
+        if: ${{ (runner.os == 'Windows') && (matrix.config.cc == 'cl') }}
         run: $VCPKG_ROOT/vcpkg install gmp
         shell: bash
 
