@@ -17,12 +17,6 @@ jobs:
       matrix:
         config:
           - {
-            name: "Windows Latest - MSVC",
-            artifact: "windows-msvc.tar.xz",
-            os: windows-latest,
-            cc: "cl",
-          }
-          - {
             name: "Windows Latest - MinGW",
             artifact: "windows-mingw.tar.xz",
             os: windows-latest,
@@ -48,25 +42,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Set Windows enviroment
-        if: ${{ (runner.os == 'Windows') && (matrix.config.cc == 'cl') }}
-        uses: ilammy/msvc-dev-cmd@v1
-
-      - name: Install Windows package manager
-        if: ${{ (runner.os == 'Windows') && (matrix.config.cc == 'cl') }}
-        uses: lukka/run-vcpkg@v6
-        with:
-          setupOnly: true
-          vcpkgDirectory: '${{ github.workspace }}/vcpkg'
-          vcpkgGitCommitId: '6c9cda1635859571de5c964bbacdece824045305'
-
-      - name: Install Windows Dependencies
-        if: ${{ (runner.os == 'Windows') && (matrix.config.cc == 'cl') }}
-        run: |
-          $VCPKG_ROOT/vcpkg install gmp
-          $VCPKG_ROOT/vcpkg integrate install
-        shell: bash
-
       - name: Install Linux Dependencies
         if: runner.os == 'Linux'
         run: sudo apt install libgmp-dev
@@ -87,14 +62,6 @@ jobs:
             cmake
             gmp
           update: true
-
-      - name: Run CMake (Win)
-        if: ${{ (runner.os == 'Windows') && (matrix.config.cc == 'cl') }}
-        shell: bash
-        run: |
-          mkdir build
-          cd build
-          cmake -DSEED= -DBENCH=0 -DARITH=gmp -G "NMake Makefiles" ..
 
       - name: Run CMake (MingW)
         if: ${{ (runner.os == 'Windows') && (matrix.config.cc == 'gcc') }}
