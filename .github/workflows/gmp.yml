@@ -57,8 +57,9 @@ jobs:
         uses: lukka/run-vcpkg@v6
         with:
           setupOnly: true
-      - run: |
-          $VCPKG_ROOT/vcpkg install gmp
+          vcpkgDirectory: '${{ github.workspace }}/vcpkg'
+          vcpkgGitCommitId: '6c9cda1635859571de5c964bbacdece824045305'
+      - run: $VCPKG_ROOT/vcpkg install gmp
         shell: bash
 
       - name: Install Linux Dependencies
