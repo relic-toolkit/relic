@@ -63,9 +63,9 @@ jobs:
       - name: Install Windows Dependencies
         if: ${{ (runner.os == 'Windows') && (matrix.config.cc == 'cl') }}
         run: |
-          ${{ github.workspace }}\vcpkg\vcpkg install gmp
-          ${{ github.workspace }}\vcpkg\vcpkg integrate install
-        shell: powershell
+          $VCPKG_ROOT/vcpkg install gmp
+          $VCPKG_ROOT/vcpkg integrate install
+        shell: bash
 
       - name: Install Linux Dependencies
         if: runner.os == 'Linux'
@@ -90,7 +90,7 @@ jobs:
 
       - name: Run CMake (Win)
         if: ${{ (runner.os == 'Windows') && (matrix.config.cc == 'cl') }}
-        shell: powershell
+        shell: bash
         run: |
           mkdir build
           cd build
