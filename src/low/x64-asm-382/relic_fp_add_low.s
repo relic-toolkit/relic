@@ -51,13 +51,6 @@ p5: .quad P5
 .global p4
 .global p5
 
-.hidden p0
-.hidden p1
-.hidden p2
-.hidden p3
-.hidden p4
-.hidden p5
-
 .text
 
 .global fp_add1_low
