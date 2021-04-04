@@ -356,7 +356,7 @@ static int pad_pkcs1(bn_t m, int *p_len, int m_len, int k_len, int operation) {
 						bn_mod_2b(t, t, 8);
 						if (bn_is_zero(t)) {
 							m_len -= len;
-							bn_rsh(t, m, m_len * 8);
+							bn_rsh(t, m, 8 * m_len);
 							int r = 0;
 							for (int i = 0; i < len; i++) {
 								pad = (uint8_t)t->dp[0];
