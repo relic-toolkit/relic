@@ -43,7 +43,7 @@ else(STBIN)
 	find_library(GMP_LIBRARIES NAMES libgmp.so gmp.lib libgmp-10 libgmp gmp)
 endif(STBIN)
 
-if(GMP_INCLUDE_DIR OR GMP_LIBRARIES)
+if(GMP_INCLUDE_DIR AND GMP_LIBRARIES)
    set(GMP_FOUND TRUE)
 endif()
 

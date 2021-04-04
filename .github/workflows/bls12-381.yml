@@ -70,7 +70,7 @@ jobs:
           mkdir build
           cd build
           ../preset/x64-pbc-bls12-381.sh ../
-          cmake -DSEED= -DBENCH=0 -G "MinGW Makefiles" .
+          cmake -DSEED= -DBENCH=0 -DSTBIN=off -G "MinGW Makefiles" .
 
       - name: Run CMake (standard)
         if: ${{ !(runner.os == 'Windows') }}
