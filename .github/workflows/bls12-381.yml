@@ -69,7 +69,7 @@ jobs:
         run: |
           mkdir build
           cd build
-          ../preset/x64-pbc-bls-381.sh ../
+          ../preset/x64-pbc-bls12-381.sh ../
           cmake -DSEED= -DBENCH=0 -DARITH=gmp -G "MinGW Makefiles" ..
 
       - name: Run CMake (standard)
@@ -78,7 +78,7 @@ jobs:
         run: |
           mkdir build
           cd build
-          ../preset/x64-pbc-bls-381.sh ../
+          ../preset/x64-pbc-bls12-381.sh ../
           cmake -DCMAKE_C_COMPILER=${{ matrix.config.cc }} -DSEED= -DBENCH=0 ..
 
       - name: CMake Build
