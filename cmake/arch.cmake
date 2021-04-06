@@ -24,10 +24,10 @@ message("   ALIGN=16       Align digit vectors into 128-bit boundaries.\n")
 # Architecture and memory layout.
 if(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86")
 	set(ARCH "X86" CACHE STRING "Architecture")
-endif(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86")
-if(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
+endif()
+if(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64" OR CMAKE_SYSTEM_PROCESSOR STREQUAL "AMD64")
 	set(ARCH "X64" CACHE STRING "Architecture")
-endif(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
+endif()
 
 if(WORD AND NOT WSIZE)
 	message(FATAL_ERROR "WORD has been replaced with WSIZE. Please update your configuration")
