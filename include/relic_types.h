@@ -116,7 +116,6 @@ typedef uint64_t dbl_t;
 #ifdef _MSC_VER
 #define RLC_NO_DBLT
 /* MSVS does not support 128-bit type. */
-typedef uint64_t dbl_t;
 #else
 typedef __uint128_t dbl_t;
 #endif
@@ -131,7 +130,7 @@ typedef __uint128_t dbl_t;
  * @param[in] B			- the second digit to multiply.
  */
 #ifdef RLC_NO_DBLT
-#define RLC_MUL_DIG(H, L, A, B)		H = __umulh(A, B); L = (A) * (B)
+#define RLC_MUL_DIG(H, L, A, B)		L = _umul128(A, B, &(H));
 #else
 #define RLC_MUL_DIG(H, L, A, B)												\
 	H = ((dbl_t)(A) * (dbl_t)(B)) >> RLC_DIG;								\
@@ -152,7 +151,7 @@ typedef __uint128_t dbl_t;
 #define RLC_DIV_DIG(Q, R, H, L, D)	Q = _udiv128(H, L, D, &(R))
 #else
 
-#define RLC_DIV_DIG(Q, R, H, L, D)												\
+#define RLC_DIV_DIG(Q, R, H, L, D)											\
 	Q = (((dbl_t)(H) << RLC_DIG) | (L)) / (D);								\
 	R = (((dbl_t)(H) << RLC_DIG) | (L)) - (dbl_t)(Q) * (dbl_t)(D);			\
 
