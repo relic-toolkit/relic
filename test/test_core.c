@@ -34,6 +34,7 @@
 #include "relic.h"
 #include "relic_test.h"
 
+#if defined(MULTI)
 #if MULTI == PTHREAD
 
 void *master(void *ptr) {
@@ -61,6 +62,7 @@ void *tester(void *ptr) {
 	return NULL;
 }
 
+#endif
 #endif
 
 int main(void) {
@@ -100,6 +102,7 @@ int main(void) {
 
 	code = RLC_OK;
 
+#if defined(MULTI)
 #if MULTI == OPENMP
 	TEST_ONCE("library context is thread-safe") {
 		omp_set_num_threads(CORES);
@@ -158,6 +161,7 @@ int main(void) {
 		}
 		TEST_ASSERT(code == RLC_OK, end);
 	} TEST_END;
+#endif
 #endif
 
 	util_banner("All tests have passed.\n", 0);
