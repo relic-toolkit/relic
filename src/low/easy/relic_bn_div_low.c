@@ -129,9 +129,11 @@ void bn_divn_low(dig_t *c, dig_t *d, dig_t *a, int sa, dig_t *b, int sb) {
 
 void bn_div1_low(dig_t *c, dig_t *d, const dig_t *a, int size, dig_t b) {
 	dbl_t w = 0;
+	dig_t r;
 
 	for (int i = size - 1; i >= 0; i--) {
-		RLC_DIV_DIG(c[i], w, w, a[i], b);
+		RLC_DIV_DIG(c[i], r, w, a[i], b);
+		w = r;
 	}
 	*d = (dig_t)w;
 }
