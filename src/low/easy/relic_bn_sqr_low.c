@@ -81,29 +81,38 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
+#include <assert.h>
 dig_t bn_sqra_low(dig_t *c, const dig_t *a, int size) {
 	int i;
-	dig_t c0, c1;
-	dbl_t r, r0, r1;
+	dig_t t, c0, c1, _r0, _r1, r0, r1, s0, s1, t0, t1;
 
 	/* Accumulate this column with the square of a->dp[i]. */
-	r = (dbl_t)(*c) + (dbl_t)(a[0]) * (dbl_t)(a[0]);
-	c[0] = (dig_t)r;
+	t = a[0];
+	RLC_MUL_DIG(_r1, _r0, t, t);
+	r0 = _r0 + c[0];
+	r1 = _r1 + (r0 < _r0);
+	c[0] = r0;
 
 	/* Update the carry. */
-	c0 = (dig_t)(r >> (dbl_t)RLC_DIG);
+	c0 = r1;
 	c1 = 0;
 
 	for (i = 1; i < size; i++) {
-		r = (dbl_t)(a[0]) * (dbl_t)(a[i]);
-		r0 = r + r;
-		r1 = r0 + (dbl_t)(c[i]) + (dbl_t)(c0);
-		c[i] = (dig_t)r1;
+		RLC_MUL_DIG(_r1, _r0, t, a[i]);
+		r0 = _r0 + _r0;
+		r1 = _r1 + _r1 + (r0 < _r0);
+
+		s0 = r0 + c0;
+		s1 = r1 + (s0 < r0);
+
+		t0 = s0 + c[i];
+		t1 = s1 + (t0 < s0);
+		c[i] = t0;
 
 		/* Accumulate the old delayed carry. */
-		c0 = (dig_t)((r1 >> (dbl_t)RLC_DIG) + c1);
+		c0 = t1 + c1;
 		/* Compute the new delayed carry. */
-		c1 = (r0 < r) || (r1 < r0) || (c0 < c1);
+		c1 = (t1 < s1) || (s1 < r1) || (r1 < _r1) || (c0 < c1);
 	}
 	c[size] += c0;
 	c1 += (c[size] < c0);
