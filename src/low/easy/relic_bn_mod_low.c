@@ -46,14 +46,14 @@
  * @param[in] A				- the first digit to multiply.
  * @param[in] B				- the second digit to multiply.
  */
-#define COMBA_STEP_BN_MOD_LOW(R2, R1, R0, A, B)								\
-	dbl_t r = (dbl_t)(A) * (dbl_t)(B);										\
+#define COMBA_STEP_MOD(R2, R1, R0, A, B)									\
+	RLC_MUL_DIG(dig_t _r1, dig_t _r0, A, B);								\
 	dig_t _r = (R1);														\
-	(R0) += (dig_t)(r);														\
-	(R1) += (R0) < (dig_t)(r);												\
+	(R0) += _r0;															\
+	(R1) += (R0) < _r0;														\
 	(R2) += (R1) < _r;														\
-	(R1) += (dig_t)(r >> (dbl_t)RLC_DIG);									\
-	(R2) += (R1) < (dig_t)(r >> (dbl_t)RLC_DIG);							\
+	(R1) += _r1;															\
+	(R2) += (R1) < _r1;														\
 
 /**
  * Accumulates a single precision digit in a triple register variable.
@@ -86,13 +86,13 @@ void bn_modn_low(dig_t *c, const dig_t *a, int sa, const dig_t *m, int sm, dig_t
 		tmp = c;
 		tmpm = m + i;
 		for (j = 0; j < i; j++, tmp++, tmpm--) {
-			COMBA_STEP_BN_MOD_LOW(r2, r1, r0, *tmp, *tmpm);
+			COMBA_STEP_MOD(r2, r1, r0, *tmp, *tmpm);
 		}
 		if (i < sa) {
 			COMBA_ADD(r2, r1, r0, *a);
 		}
 		*tmpc = (dig_t)(r0 * u);
-		COMBA_STEP_BN_MOD_LOW(r2, r1, r0, *tmpc, *m);
+		COMBA_STEP_MOD(r2, r1, r0, *tmpc, *m);
 		r0 = r1;
 		r1 = r2;
 		r2 = 0;
@@ -101,7 +101,7 @@ void bn_modn_low(dig_t *c, const dig_t *a, int sa, const dig_t *m, int sm, dig_t
 		tmp = c + (i - sm + 1);
 		tmpm = m + sm - 1;
 		for (j = i - sm + 1; j < sm; j++, tmp++, tmpm--) {
-			COMBA_STEP_BN_MOD_LOW(r2, r1, r0, *tmp, *tmpm);
+			COMBA_STEP_MOD(r2, r1, r0, *tmp, *tmpm);
 		}
 		if (i < sa) {
 			COMBA_ADD(r2, r1, r0, *a);

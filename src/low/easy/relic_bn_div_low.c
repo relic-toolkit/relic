@@ -34,10 +34,6 @@
 #include "relic_bn.h"
 #include "relic_bn_low.h"
 
-#ifdef _MSC_VER
-#include <immintrin.h>
-#endif
-
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
@@ -82,6 +78,8 @@ void bn_divn_low(dig_t *c, dig_t *d, dig_t *a, int sa, dig_t *b, int sb) {
 
 	/* Find the remaining digits. */
 	for (i = n; i >= (t + 1); i--) {
+		dbl_t tmp;
+
 		if (i > sa) {
 			continue;
 		}
@@ -89,16 +87,7 @@ void bn_divn_low(dig_t *c, dig_t *d, dig_t *a, int sa, dig_t *b, int sb) {
 		if (a[i] == b[t]) {
 			c[i - t - 1] = RLC_MASK(RLC_DIG);
 		} else {
-#ifdef _MSC_VER
-			dig_t tmp;
-			c[i - t - 1] = _udiv128(a[i], a[i - 1], b[i], &tmp);
-#else
-			dbl_t tmp;
-			tmp = ((dbl_t)a[i]) << ((dbl_t)RLC_DIG);
-			tmp |= (dbl_t)(a[i - 1]);
-			tmp /= (dbl_t)(b[t]);
-			c[i - t - 1] = (dig_t)tmp;
-#endif
+			RLC_DIV_DIG(c[i - t - 1], tmp, a[i], a[i - 1], b[t]);
 		}
 
 		c[i - t - 1]++;
@@ -139,29 +128,10 @@ void bn_divn_low(dig_t *c, dig_t *d, dig_t *a, int sa, dig_t *b, int sb) {
 }
 
 void bn_div1_low(dig_t *c, dig_t *d, const dig_t *a, int size, dig_t b) {
-#ifdef _MSC_VER
-	dig_t w;
-#else
-	dbl_t w;
-#endif
-	dig_t r;
-	int i;
+	dbl_t w = 0;
 
-	w = 0;
-	for (i = size - 1; i >= 0; i--) {
-#ifdef _MSC_VER
-		r = _udiv128(w, a[i], b, &w);
-#else
-		w = (w << ((dbl_t)RLC_DIG)) | ((dbl_t)a[i]);
-
-		if (w >= b) {
-			r = (dig_t)(w / b);
-			w -= ((dbl_t)r) * ((dbl_t)b);
-		} else {
-			r = 0;
-		}
-#endif
-		c[i] = (dig_t)r;
+	for (int i = size - 1; i >= 0; i--) {
+		RLC_DIV_DIG(c[i], w, w, a[i], b);
 	}
 	*d = (dig_t)w;
 }

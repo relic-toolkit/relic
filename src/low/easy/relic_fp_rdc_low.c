@@ -48,13 +48,13 @@
  * @param[in] B				- the second digit to multiply.
  */
 #define COMBA_STEP_RDC(R2, R1, R0, A, B)									\
-	dbl_t r = (dbl_t)(A) * (dbl_t)(B);										\
+	RLC_MUL_DIG(dig_t _r1, dig_t _r0, A, B);								\
 	dig_t _r = (R1);														\
-	(R0) += (dig_t)(r);														\
-	(R1) += (R0) < (dig_t)(r);												\
+	(R0) += _r0;															\
+	(R1) += (R0) < _r0;														\
 	(R2) += (R1) < _r;														\
-	(R1) += (dig_t)(r >> (dbl_t)RLC_DIG);									\
-	(R2) += (R1) < (dig_t)(r >> (dbl_t)RLC_DIG);							\
+	(R1) += _r1;															\
+	(R2) += (R1) < _r1;														\
 
 /**
  * Accumulates a single precision digit in a triple register variable.
