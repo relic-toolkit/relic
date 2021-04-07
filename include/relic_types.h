@@ -130,7 +130,7 @@ typedef __uint128_t dbl_t;
  * @param[in] B			- the second digit to multiply.
  */
 #ifdef RLC_NO_DBLT
-#define RLC_MUL_DIG(H, L, A, B)		L = _umul128(A, B, &(H));
+#define RLC_MUL_DIG(H, L, A, B)		L = _umul128(A, B, &(H))
 #else
 #define RLC_MUL_DIG(H, L, A, B)												\
 	H = ((dbl_t)(A) * (dbl_t)(B)) >> RLC_DIG;								\
