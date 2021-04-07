@@ -90,6 +90,7 @@ void bn_divn_low(dig_t *c, dig_t *d, dig_t *a, int sa, dig_t *b, int sb) {
 			c[i - t - 1] = RLC_MASK(RLC_DIG);
 		} else {
 #ifdef _MSC_VER
+			dig_t tmp;
 			c[i - t - 1] = _udiv128(a[i], a[i - 1], b[i], &tmp);
 #else
 			dbl_t tmp;
