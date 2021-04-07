@@ -34,6 +34,10 @@
 #include "relic_bn.h"
 #include "relic_bn_low.h"
 
+#ifdef _MSC_VER
+#include <immintrin.h>
+#endif
+
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
@@ -83,13 +87,17 @@ void bn_divn_low(dig_t *c, dig_t *d, dig_t *a, int sa, dig_t *b, int sb) {
 		}
 
 		if (a[i] == b[t]) {
-			c[i - t - 1] = ((((dbl_t)1) << RLC_DIG) - 1);
+			c[i - t - 1] = RLC_MASK(RLC_DIG);
 		} else {
+#ifdef _MSC_VER
+			c[i - t - 1] = _udiv128(a[i], a[i - 1], b[i], &tmp);
+#else
 			dbl_t tmp;
 			tmp = ((dbl_t)a[i]) << ((dbl_t)RLC_DIG);
 			tmp |= (dbl_t)(a[i - 1]);
 			tmp /= (dbl_t)(b[t]);
 			c[i - t - 1] = (dig_t)tmp;
+#endif
 		}
 
 		c[i - t - 1]++;
