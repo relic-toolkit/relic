@@ -78,7 +78,7 @@ void bn_divn_low(dig_t *c, dig_t *d, dig_t *a, int sa, dig_t *b, int sb) {
 
 	/* Find the remaining digits. */
 	for (i = n; i >= (t + 1); i--) {
-		dbl_t tmp;
+		dig_t tmp;
 
 		if (i > sa) {
 			continue;
@@ -128,11 +128,11 @@ void bn_divn_low(dig_t *c, dig_t *d, dig_t *a, int sa, dig_t *b, int sb) {
 }
 
 void bn_div1_low(dig_t *c, dig_t *d, const dig_t *a, int size, dig_t b) {
-	dbl_t w = 0;
-	dig_t r;
+	dig_t q, r, w = 0;
 
 	for (int i = size - 1; i >= 0; i--) {
-		RLC_DIV_DIG(c[i], r, w, a[i], b);
+		RLC_DIV_DIG(q, r, w, a[i], b);
+		c[i] = q;
 		w = r;
 	}
 	*d = (dig_t)w;
