@@ -61,42 +61,27 @@
 /*============================================================================*/
 
 dig_t bn_mula_low(dig_t *c, const dig_t *a, dig_t digit, int size) {
-	dig_t carry = 0;
+	dig_t _c, r0, r1, carry = 0;
 	for (int i = 0; i < size; i++, a++, c++) {
-		/* Multiply the digit *tmpa by b and accumulate with the previous
+		/* Multiply the digit *a by d and accumulate with the previous
 		 * result in the same columns and the propagated carry. */
-#ifdef RLC_NO_DBLT
-		dig_t r = (*a) * digit;
-		dig_t _c = (dig_t)r + carry;
-		carry = __umulh(*a, digit) + (_c < carry);
-		*c = *c + _c;
-		carry += (*c < _c);
-#else
-		dbl_t r = (dbl_t)(*c) + (dbl_t)(*a) * (dbl_t)(digit) + (dbl_t)(carry);
+		RLC_MUL_DIG(r1, r0, *a, digit);
+		_c = r0 + carry;
+		carry = r1 + (_c < carry);
 		/* Increment the column and assign the result. */
-		*c = (dig_t)r;
+		*c = *c + _c;
 		/* Update the carry. */
-		carry = (dig_t)(r >> (dbl_t)RLC_DIG);
-#endif
+		carry += (*c < _c);
 	}
 	return carry;
 }
 
 dig_t bn_mul1_low(dig_t *c, const dig_t *a, dig_t digit, int size) {
-	dig_t carry = 0;
+	dig_t r0, r1, carry = 0;
 	for (int i = 0; i < size; i++, a++, c++) {
-		/* Multiply the digit *tmpa by b and accumulate with the previous
-		 * result in the same columns and the propagated carry. */
-#ifdef RLC_NO_DBLT
-		dig_t r = (*a) * digit;
-		dig_t _c = (dig_t)r + carry;
-		carry = __umulh(*a, digit) + (*c < carry);
-		*c = _c;
-#else
-		dbl_t r = (dbl_t)(carry) + (dbl_t)(*a) * (dbl_t)(digit);
-		*c = (dig_t)r;
-		carry = (dig_t)(r >> (dbl_t)RLC_DIG);
-#endif
+		RLC_MUL_DIG(r1, r0, *a, digit);
+		*c = r0 + carry;
+		carry = r1 + (*c < carry);
 	}
 	return carry;
 }
