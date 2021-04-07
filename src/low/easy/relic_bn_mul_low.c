@@ -47,7 +47,8 @@
  * @param[in] B				- the second digit to multiply.
  */
 #define COMBA_STEP_MUL(R2, R1, R0, A, B)									\
-	RLC_MUL_DIG(dig_t _r1, dig_t _r0, A, B);								\
+	dig_t _r0, _r1;															\
+	RLC_MUL_DIG(_r1, _r0, A, B);											\
 	dig_t _r = (R1);														\
 	(R0) += _r0;															\
 	(R1) += (R0) < _r0;														\
