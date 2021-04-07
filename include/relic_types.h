@@ -109,7 +109,7 @@ typedef uint32_t dbl_t;
 #elif WSIZE == 32
 typedef uint64_t dbl_t;
 #elif WSIZE == 64
-#if _MSC_VER && !__INTEL_COMPILER
+#ifdef _MSC_VER
 /* MSVS does not support 128-bit type. */
 #else
 typedef __uint128_t dbl_t;
