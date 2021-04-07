@@ -680,6 +680,8 @@
 #define OPENMP   1
 /** POSIX multithreading support. */
 #define PTHREAD  2
+/** MSVC TLS multithreading support. */
+#define MSVCTLS  3
 /** Chosen multithreading API. */
 #cmakedefine MULTI    @MULTI@
 

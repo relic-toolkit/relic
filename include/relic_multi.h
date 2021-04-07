@@ -56,6 +56,8 @@
  */
 #if MULTI == PTHREAD
 #define rlc_thread 	__thread
+#elif MULTI == MSVCTLS
+#define rlc_thread 	__declspec( thread )
 #else
 #define rlc_thread /* */
 #endif
