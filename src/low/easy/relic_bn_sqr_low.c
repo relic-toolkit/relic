@@ -46,16 +46,17 @@
  * @param[in] A				- the first digit to multiply.
  * @param[in] B				- the second digit to multiply.
  */
-#define COMBA_STEP_BN_SQR_LOW(R2, R1, R0, A, B)								\
-	dbl_t r = (dbl_t)(A) * (dbl_t)(B);										\
-	dbl_t s = r + r;														\
+#define COMBA_STEP_SQR(R2, R1, R0, A, B)									\
+	RLC_MUL_DIG(dig_t _r1, dig_t _r0, A, B);								\
+	dig_t _s0 = _r0 + _r0;													\
+	dig_t _s1 = _r1 + _r1 + (_s0 < _r0);									\
 	dig_t _r = (R1);														\
-	(R0) += (dig_t)s;														\
-	(R1) += (R0) < (dig_t)s;												\
+	(R0) += _s0;															\
+	(R1) += (R0) < _s0;														\
 	(R2) += (R1) < _r;														\
-	(R1) += (dig_t)(s >> (dbl_t)RLC_DIG);									\
-	(R2) += (R1) < (dig_t)(s >> (dbl_t)RLC_DIG);							\
-	(R2) += (s < r);														\
+	(R1) += _s1;															\
+	(R2) += (R1) < _s1;														\
+	(R2) += (_s1 < _r1);													\
 
 /**
  * Computes the step of a Comba squaring when the loop length is odd.
@@ -66,13 +67,13 @@
  * @param[in] A				- the first digit to multiply.
  */
 #define COMBA_FINAL(R2, R1, R0, A)											\
-	dbl_t r = (dbl_t)(*tmpa) * (dbl_t)(*tmpa);								\
+	RLC_MUL_DIG(dig_t _r1, dig_t _r0, A, A);								\
 	dig_t _r = (R1);														\
-	(R0) += (dig_t)(r);														\
-	(R1) += (R0) < (dig_t)r;												\
+	(R0) += _r0;															\
+	(R1) += (R0) < _r0;														\
 	(R2) += (R1) < _r;														\
-	(R1) += (dig_t)(r >> (dbl_t)RLC_DIG);									\
-	(R2) += (R1) < (dig_t)(r >> (dbl_t)RLC_DIG);							\
+	(R1) += _r1;															\
+	(R2) += (R1) < _r1;														\
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -123,7 +124,7 @@ void bn_sqrn_low(dig_t *c, const dig_t *a, int size) {
 		/* Compute the number of additions in this column. */
 		j = (i + 1);
 		for (j = 0; j < (i + 1) / 2; j++, tmpa++, tmpb--) {
-			COMBA_STEP_BN_SQR_LOW(r2, r1, r0, *tmpa, *tmpb);
+			COMBA_STEP_SQR(r2, r1, r0, *tmpa, *tmpb);
 		}
 		if (!(i & 0x01)) {
 			COMBA_FINAL(r2, r1, r0, *tmpa);
@@ -139,7 +140,7 @@ void bn_sqrn_low(dig_t *c, const dig_t *a, int size) {
 
 		/* Compute the number of additions in this column. */
 		for (j = 0; j < (size - 1 - i) / 2; j++, tmpa++, tmpb--) {
-			COMBA_STEP_BN_SQR_LOW(r2, r1, r0, *tmpa, *tmpb);
+			COMBA_STEP_SQR(r2, r1, r0, *tmpa, *tmpb);
 		}
 		if (!((size - i) & 0x01)) {
 			COMBA_FINAL(r2, r1, r0, *tmpa);

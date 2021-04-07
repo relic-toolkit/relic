@@ -46,51 +46,56 @@
  * @param[in] A				- the first digit to multiply.
  * @param[in] B				- the second digit to multiply.
  */
-#define COMBA_STEP_BN_MUL_LOW(R2, R1, R0, A, B)								\
-	dbl_t r = (dbl_t)(A) * (dbl_t)(B);										\
+#define COMBA_STEP_MUL(R2, R1, R0, A, B)									\
+	RLC_MUL_DIG(dig_t _r1, dig_t _r0, A, B);								\
 	dig_t _r = (R1);														\
-	(R0) += (dig_t)(r);														\
-	(R1) += (R0) < (dig_t)(r);												\
+	(R0) += _r0;															\
+	(R1) += (R0) < _r0;														\
 	(R2) += (R1) < _r;														\
-	(R1) += (dig_t)((r) >> (dbl_t)RLC_DIG);								\
-	(R2) += (R1) < (dig_t)((r) >> (dbl_t)RLC_DIG);							\
+	(R1) += _r1;															\
+	(R2) += (R1) < _r1;														\
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
 dig_t bn_mula_low(dig_t *c, const dig_t *a, dig_t digit, int size) {
-	int i;
-	dig_t carry;
-	dbl_t r;
-
-	carry = 0;
-	for (i = 0; i < size; i++, a++, c++) {
+	dig_t carry = 0;
+	for (int i = 0; i < size; i++, a++, c++) {
 		/* Multiply the digit *tmpa by b and accumulate with the previous
 		 * result in the same columns and the propagated carry. */
-		r = (dbl_t)(*c) + (dbl_t)(*a) * (dbl_t)(digit) + (dbl_t)(carry);
+#ifdef RLC_NO_DBLT
+		dig_t r = (*a) * digit;
+		dig_t _c = (dig_t)r + carry;
+		carry = __umulh(*a, digit) + (_c < carry);
+		*c = *c + _c;
+		carry += (*c < _c);
+#else
+		dbl_t r = (dbl_t)(*c) + (dbl_t)(*a) * (dbl_t)(digit) + (dbl_t)(carry);
 		/* Increment the column and assign the result. */
 		*c = (dig_t)r;
 		/* Update the carry. */
 		carry = (dig_t)(r >> (dbl_t)RLC_DIG);
+#endif
 	}
 	return carry;
 }
 
 dig_t bn_mul1_low(dig_t *c, const dig_t *a, dig_t digit, int size) {
-	int i;
-	dig_t carry;
-	dbl_t r;
-
-	carry = 0;
-	for (i = 0; i < size; i++, a++, c++) {
+	dig_t carry = 0;
+	for (int i = 0; i < size; i++, a++, c++) {
 		/* Multiply the digit *tmpa by b and accumulate with the previous
 		 * result in the same columns and the propagated carry. */
-		r = (dbl_t)(carry) + (dbl_t)(*a) * (dbl_t)(digit);
-		/* Increment the column and assign the result. */
+#ifdef RLC_NO_DBLT
+		dig_t r = (*a) * digit;
+		dig_t _c = (dig_t)r + carry;
+		carry = __umulh(*a, digit) + (*c < carry);
+		*c = _c;
+#else
+		dbl_t r = (dbl_t)(carry) + (dbl_t)(*a) * (dbl_t)(digit);
 		*c = (dig_t)r;
-		/* Update the carry. */
 		carry = (dig_t)(r >> (dbl_t)RLC_DIG);
+#endif
 	}
 	return carry;
 }
@@ -105,7 +110,7 @@ void bn_muln_low(dig_t *c, const dig_t *a, const dig_t *b, int size) {
 		tmpa = a;
 		tmpb = b + i;
 		for (j = 0; j <= i; j++, tmpa++, tmpb--) {
-			COMBA_STEP_BN_MUL_LOW(r2, r1, r0, *tmpa, *tmpb);
+			COMBA_STEP_MUL(r2, r1, r0, *tmpa, *tmpb);
 		}
 		*c = r0;
 		r0 = r1;
@@ -116,7 +121,7 @@ void bn_muln_low(dig_t *c, const dig_t *a, const dig_t *b, int size) {
 		tmpa = a + i + 1;
 		tmpb = b + (size - 1);
 		for (j = 0; j < size - (i + 1); j++, tmpa++, tmpb--) {
-			COMBA_STEP_BN_MUL_LOW(r2, r1, r0, *tmpa, *tmpb);
+			COMBA_STEP_MUL(r2, r1, r0, *tmpa, *tmpb);
 		}
 		*c = r0;
 		r0 = r1;
@@ -138,7 +143,7 @@ void bn_muld_low(dig_t *c, const dig_t *a, int sa, const dig_t *b, int sb,
 		tmpa = a;
 		tmpb = b + i;
 		for (j = 0; j <= i; j++, tmpa++, tmpb--) {
-			COMBA_STEP_BN_MUL_LOW(r2, r1, r0, *tmpa, *tmpb);
+			COMBA_STEP_MUL(r2, r1, r0, *tmpa, *tmpb);
 		}
 		*c = r0;
 		r0 = r1;
@@ -150,7 +155,7 @@ void bn_muld_low(dig_t *c, const dig_t *a, int sa, const dig_t *b, int sb,
 		tmpa = a + ++ta;
 		tmpb = b + (sb - 1);
 		for (j = 0; j < sb; j++, tmpa++, tmpb--) {
-			COMBA_STEP_BN_MUL_LOW(r2, r1, r0, *tmpa, *tmpb);
+			COMBA_STEP_MUL(r2, r1, r0, *tmpa, *tmpb);
 		}
 		*c = r0;
 		r0 = r1;
@@ -161,7 +166,7 @@ void bn_muld_low(dig_t *c, const dig_t *a, int sa, const dig_t *b, int sb,
 		tmpa = a + ++ta;
 		tmpb = b + (sb - 1);
 		for (j = 0; j < sa - ta; j++, tmpa++, tmpb--) {
-			COMBA_STEP_BN_MUL_LOW(r2, r1, r0, *tmpa, *tmpb);
+			COMBA_STEP_MUL(r2, r1, r0, *tmpa, *tmpb);
 		}
 		*c = r0;
 		r0 = r1;
