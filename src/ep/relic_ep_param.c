@@ -743,6 +743,7 @@ static inline void ep_param_set_ctmap(const char *a_str, const char *b_str,
 	coeffs->deg_yn = ep_param_get_coeffs(coeffs->yn, yn_str);
 	coeffs->deg_yd = ep_param_get_coeffs(coeffs->yd, yd_str);
 }
+
 #endif /* EP_CTMAP */
 
 /*============================================================================*/
