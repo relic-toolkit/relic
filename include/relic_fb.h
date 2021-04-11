@@ -435,7 +435,7 @@ const dig_t *fb_poly_tab_srz(int i);
  * @param the number of the table.
  * @return the precomputed result.
  */
-const fb_t *fb_poly_tab_sqr(int i);
+const fb_st *fb_poly_tab_sqr(int i);
 
 /**
  * Returns an addition chain for (RLC_FB_BITS - 1).
@@ -973,7 +973,7 @@ void fb_itr_basic(fb_t c, const fb_t a, int b);
  * @param[out] t			- the precomputed table.
  * @param[in] b				- the exponent.
  */
-void fb_itr_pre_quick(fb_t *t, int b);
+void fb_itr_pre_quick(fb_st *t, int b);
 
 /**
  * Computes the iterated squaring/square-root of a binary field element by
@@ -983,6 +983,6 @@ void fb_itr_pre_quick(fb_t *t, int b);
  * @param[in] a				- the basis.
  * @param[in] t				- the precomputed table.
  */
-void fb_itr_quick(fb_t c, const fb_t a, const fb_t *t);
+void fb_itr_quick(fb_t c, const fb_t a, const fb_st *t);
 
 #endif /* !RLC_FB_H */

@@ -847,15 +847,13 @@ static int inversion(void) {
 
 static int exponentiation(void) {
 	int code = RLC_ERR;
-	fb_t a, b, c, t[RLC_FB_TABLE_MAX];
+	fb_t a, b, c;
+	fb_st t[RLC_FB_TABLE_MAX];
 	bn_t d;
 
 	fb_null(a);
 	fb_null(b);
 	fb_null(c);
-	for (int i = 0; i < RLC_FB_TABLE_MAX; i++) {
-		fb_null(t[i]);
-	}
 	bn_null(d);
 
 	RLC_TRY {
@@ -913,15 +911,11 @@ static int exponentiation(void) {
 		} TEST_END;
 #endif
 
-		for (int i = 0; i < RLC_FB_TABLE; i++) {
-			fb_new(t[i]);
-		}
-
 		TEST_CASE("iterated squaring is correct") {
 			fb_rand(a);
 			bn_rand(d, RLC_POS, 4);
 			fb_itr_pre(t, d->dp[0]);
-			fb_itr(b, a, d->dp[0], (const fb_t *)t);
+			fb_itr(b, a, d->dp[0], (const fb_st *)t);
 			for (int j = 0; j < d->dp[0]; j++) {
 				fb_sqr(a, a);
 			}
@@ -932,16 +926,12 @@ static int exponentiation(void) {
 			fb_rand(a);
 			bn_rand(d, RLC_POS, 4);
 			fb_itr_pre(t, -d->dp[0]);
-			fb_itr(b, a, -d->dp[0], (const fb_t *)t);
+			fb_itr(b, a, -d->dp[0], (const fb_st *)t);
 			for (int j = 0; j < d->dp[0]; j++) {
 				fb_srt(a, a);
 			}
 			TEST_ASSERT(fb_cmp(a, b) == RLC_EQ, end);
 		} TEST_END;
-
-		for (int i = 0; i < RLC_FB_TABLE; i++) {
-			fb_free(t[i]);
-		}
 
 #if FB_ITR == BASIC || !defined(STRIP)
 		TEST_CASE("basic iterated squaring is correct") {
@@ -966,15 +956,11 @@ static int exponentiation(void) {
 #endif
 
 #if FB_ITR == QUICK || !defined(STRIP)
-		for (int i = 0; i < RLC_FB_TABLE_QUICK; i++) {
-			fb_new(t[i]);
-			fb_zero(t[i]);
-		}
 		TEST_CASE("fast iterated squaring is correct") {
 			fb_rand(a);
 			bn_rand(d, RLC_POS, 4);
 			fb_itr_pre_quick(t, d->dp[0]);
-			fb_itr_quick(b, a, (const fb_t *)t);
+			fb_itr_quick(b, a, (const fb_st *)t);
 			for (int j = 0; j < d->dp[0]; j++) {
 				fb_sqr(a, a);
 			}
@@ -985,16 +971,12 @@ static int exponentiation(void) {
 			fb_rand(a);
 			bn_rand(d, RLC_POS, 4);
 			fb_itr_pre_quick(t, -d->dp[0]);
-			fb_itr_quick(b, a, (const fb_t *)t);
+			fb_itr_quick(b, a, (const fb_st *)t);
 			for (int j = 0; j < d->dp[0]; j++) {
 				fb_srt(a, a);
 			}
 			TEST_ASSERT(fb_cmp(a, b) == RLC_EQ, end);
 		} TEST_END;
-
-		for (int i = 0; i < RLC_FB_TABLE_QUICK; i++) {
-			fb_free(t[i]);
-		}
 #endif
 	}
 	RLC_CATCH_ANY {

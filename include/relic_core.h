@@ -170,7 +170,7 @@ typedef struct _ctx_t {
 	/** Square root of z. */
 	fb_st fb_srz;
 #ifdef FB_PRECO
-	/** Multiplication table for the z^(1/2). */
+	/** Multiplication table for the polynomial z^(1/2). */
 	fb_st fb_tab_srz[256];
 #endif /* FB_PRECO */
 #endif /* FB_SRT == QUICK */
@@ -181,8 +181,6 @@ typedef struct _ctx_t {
 	int chain_len;
 	/** Tables for repeated squarings. */
 	fb_st fb_tab_sqr[RLC_TERMS][RLC_FB_TABLE];
-	/** Pointers to the elements in the tables of repeated squarings. */
-	fb_st *fb_tab_ptr[RLC_TERMS][RLC_FB_TABLE];
 #endif /* FB_INV == ITOHT */
 #endif /* WITH_FB */
 
