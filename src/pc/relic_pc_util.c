@@ -57,26 +57,7 @@ void gt_rand(gt_t a) {
 }
 
 void gt_get_gen(gt_t g) {
-	g1_t g1;
-	g2_t g2;
-
-	g1_null(g1);
-	g2_null(g2);
-
-	RLC_TRY {
-		g1_new(g1);
-		g2_new(g2);
-
-		g1_get_gen(g1);
-		g2_get_gen(g2);
-
-		pc_map(g, g1, g2);
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		g1_free(g1);
-		g2_free(g2);
-	}
+    gt_copy(g, core_get()->gt_g);
 }
 
 int g1_is_valid(g1_t a) {
