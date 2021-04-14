@@ -98,6 +98,8 @@ enum {
 	PRIME_383187,
 	/** NIST 384-bit fast reduction polynomial. */
 	NIST_384,
+	/** Curve448 prime. */
+	PRIME_448,
 	/** Curve511187 511-bit prime modulus. */
 	PRIME_511187,
 	/** NIST 521-bit fast reduction polynomial. */

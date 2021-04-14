@@ -313,6 +313,14 @@ void fp_param_set(int param) {
 				bn_neg(t0, t0);
 				fp_prime_set_pairf(t0, EP_B12);
 				break;
+#elif FP_PRIME == 448
+			case PRIME_448:
+				/* p = 2^448 - 2^224 + 1. */
+				f[0] = -1;
+				f[1] = -224;
+				f[2] = 448;
+				fp_prime_set_pmers(f, 3);
+				break;
 #elif FP_PRIME == 455
 			case B12_455:
 				/* x = 2^76 + 2^53 + 2^31 + 2^11. */
@@ -572,6 +580,8 @@ int fp_param_set_any_pmers(void) {
 	fp_param_set(NIST_256);
 #elif FP_PRIME == 384
 	fp_param_set(NIST_384);
+#elif FP_PRIME == 448
+	fp_param_set(PRIME_448);
 #elif FP_PRIME == 521
 	fp_param_set(NIST_521);
 #else
