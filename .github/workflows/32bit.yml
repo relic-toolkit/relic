@@ -1,4 +1,4 @@
-name: Basic configuration
+name: Basic configuration (32 bits)
 
 on:
   push:
