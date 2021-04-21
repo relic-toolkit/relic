@@ -70,13 +70,14 @@ static void fp_prime_set(const bn_t p) {
 
 		/* compute R mod p */
 		bn_set_dig(&(ctx->one), 1);
-		bn_lsh(&(ctx->one), &(ctx->one), ctx->prime.used * RLC_DIG);
+		bn_lsh(&(ctx->one), &(ctx->one), RLC_FP_DIGS * RLC_DIG);
 		bn_mod(&(ctx->one), &(ctx->one), &(ctx->prime));
 
 		/* compute the R^2 mod p */
 		fp_add(r, ctx->one.dp, ctx->one.dp);
-		bn_set_dig(t, RLC_FP_DIGS * RLC_DIG);
-		fp_exp(ctx->conv.dp, r, t );
+		bn_set_dig(t, RLC_FP_DIGS);
+		bn_lsh(t, t, RLC_DIG_LOG);
+		fp_exp(ctx->conv.dp, r, t);
 		ctx->conv.used = RLC_FP_DIGS;
 		bn_trim(&(ctx->conv));
 

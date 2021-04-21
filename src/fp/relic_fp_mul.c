@@ -216,7 +216,7 @@ void fp_mul_comba(fp_t c, const fp_t a, const fp_t b) {
 		dv_new(t);
 
 		fp_muln_low(t, a, b);
-		fp_rdcn_low(c, t);
+		fp_rdc(c, t);
 		dv_free(t);
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
