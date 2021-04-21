@@ -31,29 +31,11 @@
 
 #include "relic_fp.h"
 #include "relic_fp_low.h"
+#include "relic_util.h"
 
 /*============================================================================*/
 /* Private definitions                                                        */
 /*============================================================================*/
-
-/**
- * Accumulates a double precision digit in a triple register variable.
- *
- * @param[in,out] R2		- most significant word of the triple register.
- * @param[in,out] R1		- middle word of the triple register.
- * @param[in,out] R0		- lowest significant word of the triple register.
- * @param[in] A				- the first digit to multiply.
- * @param[in] B				- the second digit to multiply.
- */
-#define COMBA_STEP_MUL(R2, R1, R0, A, B)									\
-	dig_t _r0, _r1;															\
-	RLC_MUL_DIG(_r1, _r0, A, B);											\
-	dig_t _r = (R1);														\
-	(R0) += _r0;															\
-	(R1) += (R0) < _r0;														\
-	(R2) += (R1) < _r;														\
-	(R1) += _r1;															\
-	(R2) += (R1) < _r1;														\
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -95,7 +77,7 @@ void fp_muln_low(dig_t *c, const dig_t *a, const dig_t *b) {
 		tmpa = a;
 		tmpb = b + i;
 		for (j = 0; j <= i; j++, tmpa++, tmpb--) {
-			COMBA_STEP_MUL(r2, r1, r0, *tmpa, *tmpb);
+			RLC_COMBA_STEP_MUL(r2, r1, r0, *tmpa, *tmpb);
 		}
 		*c = r0;
 		r0 = r1;
@@ -106,7 +88,7 @@ void fp_muln_low(dig_t *c, const dig_t *a, const dig_t *b) {
 		tmpa = a + i + 1;
 		tmpb = b + (RLC_FP_DIGS - 1);
 		for (j = 0; j < RLC_FP_DIGS - (i + 1); j++, tmpa++, tmpb--) {
-			COMBA_STEP_MUL(r2, r1, r0, *tmpa, *tmpb);
+			RLC_COMBA_STEP_MUL(r2, r1, r0, *tmpa, *tmpb);
 		}
 		*c = r0;
 		r0 = r1;
