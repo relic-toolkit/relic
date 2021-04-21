@@ -2,9 +2,14 @@
 =====
 
 [![Project stats](https://www.openhub.net/p/relic-toolkit/widgets/project_thin_badge.gif)](https://www.openhub.net/p/relic-toolkit)
-[![Build Status](https://travis-ci.org/relic-toolkit/relic.svg?branch=main)](https://travis-ci.org/relic-toolkit/relic)
 [![Code Quality: Cpp](https://img.shields.io/lgtm/grade/cpp/g/relic-toolkit/relic.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/relic-toolkit/relic/context:cpp)
 [![Total Alerts](https://img.shields.io/lgtm/alerts/g/relic-toolkit/relic.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/relic-toolkit/relic/alerts)
+
+[![Travis Status](https://travis-ci.org/relic-toolkit/relic.svg?branch=main)](https://travis-ci.org/relic-toolkit/relic)
+[![GHA Status](https://github.com/relic-toolkit/relic/actions/workflows/easy.yml/badge.svg)](https://github.com/relic-toolkit/relic/actions/workflows/easy.yml)
+[![GHA Status](https://github.com/relic-toolkit/relic/actions/workflows/gmp.yml/badge.svg)](https://github.com/relic-toolkit/relic/actions/workflows/gmp.yml)
+[![GHA Status](https://github.com/relic-toolkit/relic/actions/workflows/bls12-381.yml/badge.svg)](https://github.com/relic-toolkit/relic/actions/workflows/bls12-381.yml)
+
 
 RELIC is a modern cryptographic meta-toolkit with emphasis on efficiency and flexibility. RELIC can be used to build efficient and usable cryptographic toolkits tailored for specific security levels and algorithmic choices.
 
