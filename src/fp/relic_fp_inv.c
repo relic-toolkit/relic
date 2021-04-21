@@ -410,8 +410,8 @@ void fp_inv_divst(fp_t c, const fp_t a) {
 #else
 	int d = (49 * FP_PRIME + 57)/17;
 #endif
-	int g0, d0;
-	dig_t fs, gs, delta = 1;
+	dig_t g0, d0, fs, gs;
+	int delta = 1;
 	bn_t _t;
 	dv_t f, g, t, u;
 	fp_t precomp, v, r;
@@ -440,7 +440,13 @@ void fp_inv_divst(fp_t c, const fp_t a) {
 		fp_new(r);
 		fp_new(precomp);
 
+#if WSIZE == 8
+		bn_set_dig(_t, d >> 8);
+		bn_lsh(_t, _t, 8);
+		bn_add_dig(_t, _t, d & 0xFF);
+#else
 		bn_set_dig(_t, d);
+#endif
 		dv_copy(precomp, fp_prime_get(), RLC_FP_DIGS);
 		fp_add_dig(precomp, precomp, 1);
 		fp_hlv(precomp, precomp);
