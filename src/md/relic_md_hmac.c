@@ -42,7 +42,7 @@
 
 void md_hmac(uint8_t *mac, const uint8_t *in, int in_len, const uint8_t *key,
     int key_len) {
-#if MD_MAP == SH224 || MD_MAP == SH256 || MD_MAP == BLAKE2S_160 || MD_MAP == BLAKE2S_256
+#if MD_MAP == SH224 || MD_MAP == SH256 || MD_MAP == B2S160 || MD_MAP == B2S256
   #define block_size 64
 #elif MD_MAP == SH384 || MD_MAP == SH512
   #define block_size  128

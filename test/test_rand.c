@@ -231,7 +231,7 @@ uint8_t result2[] = {
 	0x2C, 0xE4, 0xAD, 0x78, 0x2E, 0x7B
 };
 
-#elif MD_MAP == BLAKE2S_160
+#elif MD_MAP == B2S160
 
 #define FUNCTION "blake2s-160"
 
@@ -259,7 +259,7 @@ uint8_t result2[] = {
 	0x98, 0x7B, 0x11, 0x8D, 0x9F, 0x97, 0xA1, 0x4E, 0x67, 0x82
 };
 
-#elif MD_MAP == BLAKE2S_256
+#elif MD_MAP == B2S256
 
 uint8_t seed1[63];
 
