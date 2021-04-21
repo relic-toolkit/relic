@@ -200,7 +200,7 @@
 /**
  * Accumulates a single precision digit in a triple register variable.
  *
- * @param[in,out] R2		- the temporary variable.
+ * @param[in,out] T			- the temporary variable.
  * @param[in,out] R2		- most significant word of the triple register.
  * @param[in,out] R1		- middle word of the triple register.
  * @param[in,out] R0		- lowest significant word of the triple register.
