@@ -40,6 +40,10 @@
 #include <gmp.h>
 #endif
 
+#if defined(_MSC_VER) && WSIZE == 64
+#include <intrin.h>
+#endif
+
 /*============================================================================*/
 /* Constant definitions                                                       */
 /*============================================================================*/
@@ -109,12 +113,48 @@ typedef uint32_t dbl_t;
 #elif WSIZE == 32
 typedef uint64_t dbl_t;
 #elif WSIZE == 64
-#if defined(__GNUC__) && !defined(__INTEL_COMPILER)
-typedef __uint128_t dbl_t;
-#elif ARITH == EASY
-#error "Easy backend in 64-bit mode supported only in GCC compiler."
+#ifdef _MSC_VER
+/** MSVS does not support 128-bit type. */
+#define RLC_CONF_NODBL
 #else
+typedef __uint128_t dbl_t;
 #endif
+#endif
+
+/**
+ * Multiplies two digits to give a double precision result.
+ *
+ * @param[out] H		- the higher half of the result.
+ * @param[out] L		- the lower half of the result.
+ * @param[in] A			- the first digit to multiply.
+ * @param[in] B			- the second digit to multiply.
+ */
+#ifdef RLC_CONF_NODBL
+#define RLC_MUL_DIG(H, L, A, B)		L = _umul128(A, B, &(H))
+#else
+#define RLC_MUL_DIG(H, L, A, B)												\
+	H = ((dbl_t)(A) * (dbl_t)(B)) >> RLC_DIG;								\
+	L = (A) * (B);															\
+
+#endif
+
+/**
+ * Divides a double-digit by a digit, setting quotient and remainder.
+ *
+ * @param[out] Q		- the quotient.
+ * @param[out] R		- the remainder.
+ * @param[in] H			- the higher half of the dividend.
+ * @param[in] L			- the lower half of the dividend.
+ * @param[in] D			- the divisor.
+ */
+#ifdef RLC_CONF_NODBL
+#define RLC_DIV_DIG(Q, R, H, L, D)	Q = _udiv128(H, L, D, &(R))
+#else
+
+#define RLC_DIV_DIG(Q, R, H, L, D)											\
+	Q = (((dbl_t)(H) << RLC_DIG) | (L)) / (D);								\
+	R = (((dbl_t)(H) << RLC_DIG) | (L)) - (dbl_t)(Q) * (dbl_t)(D);			\
+
 #endif
 
 /*

@@ -35,42 +35,6 @@
 #include "relic_bn_low.h"
 
 /*============================================================================*/
-/* Private definitions                                                        */
-/*============================================================================*/
-
-/**
- * Accumulates a double precision digit in a triple register variable.
- *
- * @param[in,out] R2		- most significant word of the triple register.
- * @param[in,out] R1		- middle word of the triple register.
- * @param[in,out] R0		- lowest significant word of the triple register.
- * @param[in] A				- the first digit to multiply.
- * @param[in] B				- the second digit to multiply.
- */
-#define COMBA_STEP_RDC(R2, R1, R0, A, B)									\
-	dbl_t r = (dbl_t)(A) * (dbl_t)(B);										\
-	dig_t _r = (R1);														\
-	(R0) += (dig_t)(r);														\
-	(R1) += (R0) < (dig_t)(r);												\
-	(R2) += (R1) < _r;														\
-	(R1) += (dig_t)(r >> (dbl_t)RLC_DIG);									\
-	(R2) += (R1) < (dig_t)(r >> (dbl_t)RLC_DIG);							\
-
-/**
- * Accumulates a single precision digit in a triple register variable.
- *
- * @param[in,out] R2		- most significant word of the triple register.
- * @param[in,out] R1		- middle word of the triple register.
- * @param[in,out] R0		- lowest significant word of the triple register.
- * @param[in] A				- the first digit to accumulate.
- */
-#define COMBA_ADD(R2, R1, R0, A)											\
-	dig_t __r = (R1);														\
-	(R0) += (A);															\
-	(R1) += (R0) < (A);														\
-	(R2) += (R1) < __r;														\
-
-/*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
@@ -148,7 +112,7 @@ void fp_rdcs_low(dig_t *c, const dig_t *a, const dig_t *m) {
 
 void fp_rdcn_low(dig_t *c, dig_t *a) {
 	int i, j;
-	dig_t r0, r1, r2, u, *tmp, *tmpc;
+	dig_t t, r0, r1, r2, u, *tmp, *tmpc;
 	const dig_t *m, *tmpm;
 
 	u = *(fp_prime_get_rdc());
@@ -160,11 +124,11 @@ void fp_rdcn_low(dig_t *c, dig_t *a) {
 		tmp = c;
 		tmpm = m + i;
 		for (j = 0; j < i; j++, tmp++, tmpm--) {
-			COMBA_STEP_RDC(r2, r1, r0, *tmp, *tmpm);
+			RLC_COMBA_STEP_MUL(r2, r1, r0, *tmp, *tmpm);
 		}
-		COMBA_ADD(r2, r1, r0, *a);
+		RLC_COMBA_ADD(t, r2, r1, r0, *a);
 		*tmpc = (dig_t)(r0 * u);
-		COMBA_STEP_RDC(r2, r1, r0, *tmpc, *m);
+		RLC_COMBA_STEP_MUL(r2, r1, r0, *tmpc, *m);
 		r0 = r1;
 		r1 = r2;
 		r2 = 0;
@@ -174,15 +138,15 @@ void fp_rdcn_low(dig_t *c, dig_t *a) {
 		tmp = c + (i - RLC_FP_DIGS + 1);
 		tmpm = m + RLC_FP_DIGS - 1;
 		for (j = i - RLC_FP_DIGS + 1; j < RLC_FP_DIGS; j++, tmp++, tmpm--) {
-			COMBA_STEP_RDC(r2, r1, r0, *tmp, *tmpm);
+			RLC_COMBA_STEP_MUL(r2, r1, r0, *tmp, *tmpm);
 		}
-		COMBA_ADD(r2, r1, r0, *a);
+		RLC_COMBA_ADD(t, r2, r1, r0, *a);
 		c[i - RLC_FP_DIGS] = r0;
 		r0 = r1;
 		r1 = r2;
 		r2 = 0;
 	}
-	COMBA_ADD(r2, r1, r0, *a);
+	RLC_COMBA_ADD(t, r2, r1, r0, *a);
 	c[RLC_FP_DIGS - 1] = r0;
 
 	if (r1 || dv_cmp(c, m, RLC_FP_DIGS) != RLC_LT) {
