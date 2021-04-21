@@ -32,47 +32,7 @@
 
 #include "relic_bn.h"
 #include "relic_bn_low.h"
-
-/*============================================================================*/
-/* Private definitions                                                        */
-/*============================================================================*/
-
-/**
- * Computes the step of a Comba squaring.
- *
- * @param[in,out] R2		- most significant word of the triple register.
- * @param[in,out] R1		- middle word of the triple register.
- * @param[in,out] R0		- lowest significant word of the triple register.
- * @param[in] A				- the first digit to multiply.
- * @param[in] B				- the second digit to multiply.
- */
-#define COMBA_STEP_BN_SQR_LOW(R2, R1, R0, A, B)								\
-	dbl_t r = (dbl_t)(A) * (dbl_t)(B);										\
-	dbl_t s = r + r;														\
-	dig_t _r = (R1);														\
-	(R0) += (dig_t)s;														\
-	(R1) += (R0) < (dig_t)s;												\
-	(R2) += (R1) < _r;														\
-	(R1) += (dig_t)(s >> (dbl_t)RLC_DIG);									\
-	(R2) += (R1) < (dig_t)(s >> (dbl_t)RLC_DIG);							\
-	(R2) += (s < r);														\
-
-/**
- * Computes the step of a Comba squaring when the loop length is odd.
- *
- * @param[in,out] R2		- most significant word of the triple register.
- * @param[in,out] R1		- middle word of the triple register.
- * @param[in,out] R0		- lowest significant word of the triple register.
- * @param[in] A				- the first digit to multiply.
- */
-#define COMBA_FINAL(R2, R1, R0, A)											\
-	dbl_t r = (dbl_t)(*tmpa) * (dbl_t)(*tmpa);								\
-	dig_t _r = (R1);														\
-	(R0) += (dig_t)(r);														\
-	(R1) += (R0) < (dig_t)r;												\
-	(R2) += (R1) < _r;														\
-	(R1) += (dig_t)(r >> (dbl_t)RLC_DIG);									\
-	(R2) += (R1) < (dig_t)(r >> (dbl_t)RLC_DIG);							\
+#include "relic_util.h"
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -80,7 +40,41 @@
 
 dig_t bn_sqra_low(dig_t *c, const dig_t *a, int size) {
 	int i;
-	dig_t c0, c1;
+	dig_t t, c0, c1;
+
+	t = a[0];
+
+#ifdef RLC_CONF_NODBL
+	dig_t r0, r1, _r0, _r1, s0, s1, t0, t1;
+	/* Accumulate this column with the square of a->dp[i]. */
+	RLC_MUL_DIG(_r1, _r0, t, t);
+	r0 = _r0 + c[0];
+	r1 = _r1 + (r0 < _r0);
+	c[0] = r0;
+
+	/* Update the carry. */
+	c0 = r1;
+	c1 = 0;
+
+	/* Version of the main loop not using double-precision types. */
+	for (i = 1; i < size; i++) {
+		RLC_MUL_DIG(_r1, _r0, t, a[i]);
+		r0 = _r0 + _r0;
+		r1 = _r1 + _r1 + (r0 < _r0);
+
+		s0 = r0 + c0;
+		s1 = r1 + (s0 < r0);
+
+		t0 = s0 + c[i];
+		t1 = s1 + (t0 < s0);
+		c[i] = t0;
+
+		/* Accumulate the old delayed carry. */
+		c0 = t1 + c1;
+		/* Compute the new delayed carry. */
+		c1 = (t1 < s1) || (s1 < r1) || (r1 < _r1) || (c0 < c1);
+	}
+#else
 	dbl_t r, r0, r1;
 
 	/* Accumulate this column with the square of a->dp[i]. */
@@ -91,6 +85,7 @@ dig_t bn_sqra_low(dig_t *c, const dig_t *a, int size) {
 	c0 = (dig_t)(r >> (dbl_t)RLC_DIG);
 	c1 = 0;
 
+	/* Version using double-precision types is hopefully faster. */
 	for (i = 1; i < size; i++) {
 		r = (dbl_t)(a[0]) * (dbl_t)(a[i]);
 		r0 = r + r;
@@ -102,6 +97,8 @@ dig_t bn_sqra_low(dig_t *c, const dig_t *a, int size) {
 		/* Compute the new delayed carry. */
 		c1 = (r0 < r) || (r1 < r0) || (c0 < c1);
 	}
+#endif
+
 	c[size] += c0;
 	c1 += (c[size] < c0);
 	return c1;
@@ -123,10 +120,10 @@ void bn_sqrn_low(dig_t *c, const dig_t *a, int size) {
 		/* Compute the number of additions in this column. */
 		j = (i + 1);
 		for (j = 0; j < (i + 1) / 2; j++, tmpa++, tmpb--) {
-			COMBA_STEP_BN_SQR_LOW(r2, r1, r0, *tmpa, *tmpb);
+			RLC_COMBA_STEP_SQR(r2, r1, r0, *tmpa, *tmpb);
 		}
 		if (!(i & 0x01)) {
-			COMBA_FINAL(r2, r1, r0, *tmpa);
+			RLC_COMBA_STEP_MUL(r2, r1, r0, *tmpa, *tmpa);
 		}
 		*c = r0;
 		r0 = r1;
@@ -139,10 +136,10 @@ void bn_sqrn_low(dig_t *c, const dig_t *a, int size) {
 
 		/* Compute the number of additions in this column. */
 		for (j = 0; j < (size - 1 - i) / 2; j++, tmpa++, tmpb--) {
-			COMBA_STEP_BN_SQR_LOW(r2, r1, r0, *tmpa, *tmpb);
+			RLC_COMBA_STEP_SQR(r2, r1, r0, *tmpa, *tmpb);
 		}
 		if (!((size - i) & 0x01)) {
-			COMBA_FINAL(r2, r1, r0, *tmpa);
+			RLC_COMBA_STEP_MUL(r2, r1, r0, *tmpa, *tmpa);
 		}
 		*c = r0;
 		r0 = r1;

@@ -78,18 +78,16 @@ void bn_divn_low(dig_t *c, dig_t *d, dig_t *a, int sa, dig_t *b, int sb) {
 
 	/* Find the remaining digits. */
 	for (i = n; i >= (t + 1); i--) {
+		dig_t tmp;
+
 		if (i > sa) {
 			continue;
 		}
 
 		if (a[i] == b[t]) {
-			c[i - t - 1] = ((((dbl_t)1) << RLC_DIG) - 1);
+			c[i - t - 1] = RLC_MASK(RLC_DIG);
 		} else {
-			dbl_t tmp;
-			tmp = ((dbl_t)a[i]) << ((dbl_t)RLC_DIG);
-			tmp |= (dbl_t)(a[i - 1]);
-			tmp /= (dbl_t)(b[t]);
-			c[i - t - 1] = (dig_t)tmp;
+			RLC_DIV_DIG(c[i - t - 1], tmp, a[i], a[i - 1], b[t]);
 		}
 
 		c[i - t - 1]++;
@@ -130,21 +128,12 @@ void bn_divn_low(dig_t *c, dig_t *d, dig_t *a, int sa, dig_t *b, int sb) {
 }
 
 void bn_div1_low(dig_t *c, dig_t *d, const dig_t *a, int size, dig_t b) {
-	dbl_t w;
-	dig_t r;
-	int i;
+	dig_t q, r, w = 0;
 
-	w = 0;
-	for (i = size - 1; i >= 0; i--) {
-		w = (w << ((dbl_t)RLC_DIG)) | ((dbl_t)a[i]);
-
-		if (w >= b) {
-			r = (dig_t)(w / b);
-			w -= ((dbl_t)r) * ((dbl_t)b);
-		} else {
-			r = 0;
-		}
-		c[i] = (dig_t)r;
+	for (int i = size - 1; i >= 0; i--) {
+		RLC_DIV_DIG(q, r, w, a[i], b);
+		c[i] = q;
+		w = r;
 	}
 	*d = (dig_t)w;
 }
