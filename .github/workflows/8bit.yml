@@ -37,7 +37,7 @@ jobs:
         run: |
           mkdir build
           cd build
-          cmake -DCMAKE_C_COMPILER=${{ matrix.config.cc }} -DWSIZE=8 -DSEED= -DBENCH=0 ..
+          cmake -DCMAKE_C_COMPILER=${{ matrix.config.cc }} -DWSIZE=8 -DSEED= -DBENCH=0 -DTESTS=10 ..
 
       - name: CMake Build
         run: cmake --build build
