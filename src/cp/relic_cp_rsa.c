@@ -252,10 +252,9 @@ static uint8_t *hash_id(int md, int *len) {
 static int pad_pkcs1(bn_t m, int *p_len, int m_len, int k_len, int operation) {
 	uint8_t *id, pad = 0;
 	int len, result = RLC_ERR;
-	bn_t t, u;
+	bn_t t;
 
 	bn_null(t);
-	bn_null(u);
 
 	RLC_TRY {
 		bn_new(t);
@@ -407,7 +406,6 @@ static int pad_pkcs1(bn_t m, int *p_len, int m_len, int k_len, int operation) {
 	}
 	RLC_FINALLY {
 		bn_free(t);
-		bn_free(u);
 	}
 	return result;
 }
