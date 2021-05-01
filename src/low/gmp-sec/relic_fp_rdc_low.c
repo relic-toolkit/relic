@@ -42,10 +42,9 @@
 
 void fp_rdcs_low(dig_t *c, const dig_t *a, const dig_t *m) {
 	rlc_align dig_t q[2 * RLC_FP_DIGS], _q[2 * RLC_FP_DIGS];
-	rlc_align dig_t _r[2 * RLC_FP_DIGS], r[2 * RLC_FP_DIGS], t[2 * RLC_FP_DIGS];
+	rlc_align dig_t t[2 * RLC_FP_DIGS], r[RLC_FP_DIGS];
 	const int *sform;
-	int len, first, i, j, b0, d0, b1, d1;
-	dig_t carry;
+	int len, first, i, j, k, b0, d0, b1, d1;
 
 	sform = fp_prime_get_sps(&len);
 
@@ -64,40 +63,47 @@ void fp_rdcs_low(dig_t *c, const dig_t *a, const dig_t *m) {
 		r[first - 1] &= RLC_MASK(b0);
 	}
 
-	carry = 0;
+	k = 0;
 	while (!fp_is_zero(q)) {
 		dv_zero(_q, 2 * RLC_FP_DIGS);
 		for (i = len - 2; i > 0; i--) {
 			j = (sform[i] < 0 ? -sform[i] : sform[i]);
 			RLC_RIP(b1, d1, j);
 			dv_zero(t, 2 * RLC_FP_DIGS);
-			dv_lshd(t, q, RLC_FP_DIGS, d1);
+			dv_lshd(t, q, 2 * RLC_FP_DIGS, d1);
 			if (b1 > 0) {
 				bn_lshb_low(t, t, 2 * RLC_FP_DIGS, b1);
 			}
-			if (sform[i] > 0) {
-				bn_subn_low(_q, _q, t, 2 * RLC_FP_DIGS);
-			} else {
+			/* Check if these two have the same sign. */
+			if ((sform[len - 2] < 0) == (sform[i] < 0)) {
 				bn_addn_low(_q, _q, t, 2 * RLC_FP_DIGS);
+			} else {
+				bn_subn_low(_q, _q, t, 2 * RLC_FP_DIGS);
 			}
 		}
-		if (sform[0] > 0) {
-			bn_subn_low(_q, _q, q, 2 * RLC_FP_DIGS);
-		} else {
+		/* Check if these two have the same sign. */
+		if ((sform[len - 2] < 0) == (sform[0] < 0)) {
 			bn_addn_low(_q, _q, q, 2 * RLC_FP_DIGS);
+		} else {
+			bn_subn_low(_q, _q, q, 2 * RLC_FP_DIGS);
 		}
 		dv_rshd(q, _q, 2 * RLC_FP_DIGS, d0);
 		if (b0 > 0) {
 			bn_rshb_low(q, q, 2 * RLC_FP_DIGS, b0);
 		}
-
-		dv_copy(_r, _q, first);
 		if (b0 > 0) {
-			_r[first - 1] &= RLC_MASK(b0);
+			_q[first - 1] &= RLC_MASK(b0);
 		}
-		carry = fp_addn_low(r, r, _r);
-		if (carry) {
-			fp_subn_low(r, r, m);
+		if (sform[len - 2] < 0) {
+			fp_addm_low(r, r, _q);
+		} else {
+			if (k++ % 2 == 0) {
+				if (fp_subn_low(r, r, _q)) {
+					fp_addn_low(r, r, m);
+				}
+			} else {
+				fp_addn_low(r, r, _q);
+			}
 		}
 	}
 	while (dv_cmp(r, m, RLC_FP_DIGS) != RLC_LT) {

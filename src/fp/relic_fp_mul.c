@@ -137,7 +137,9 @@ static void fp_mul_karat_imp(dv_t c, const fp_t a, const fp_t b, int size,
 		c += h;
 		carry = bn_addn_low(c, c, t, 2 * (h1 + 1));
 		c += 2 * (h1 + 1);
-		bn_add1_low(c, c, carry, 2 * size - h - 2 * (h1 + 1));
+		if (2 * size > h + 2 * (h1 + 1)) {
+			bn_add1_low(c, c, carry, 2 * size - h - 2 * (h1 + 1));
+		}
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
