@@ -673,7 +673,7 @@ end:
 	return code;
 }
 
-static int pok_dlog(void) {
+static int pok(void) {
 	int code = RLC_ERR;
 	bn_t c[2], n, r[2], x;
 	ec_t y[2];
@@ -714,6 +714,66 @@ static int pok_dlog(void) {
 			ec_dbl(y[1], y[1]);
 			ec_norm(y[1], y[1]);
 			TEST_ASSERT(cp_pokor_ver(c, r, y) == 0, end);
+		} TEST_END;
+	}
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
+	}
+	code = RLC_OK;
+
+end:
+	bn_free(n);
+	bn_free(x);
+	for (int i = 0; i < 2; i++) {
+		bn_free(c[i]);
+		bn_free(r[i]);
+		ec_free(y[i]);
+	}
+	return code;
+}
+
+static int sok(void) {
+	int code = RLC_ERR;
+	bn_t c[2], n, r[2], x;
+	ec_t y[2];
+	uint8_t m[5] = { 0, 1, 2, 3, 4 };
+
+	RLC_TRY {
+		bn_null(n);
+		bn_null(x);
+		bn_new(n);
+		bn_new(x);
+		for (int i = 0; i < 2; i++) {
+			bn_null(c[i]);
+			bn_null(r[i]);
+			ec_null(y[i]);
+			bn_new(c[i]);
+			bn_new(r[i]);
+			ec_new(y[i]);
+		}
+		ec_curve_get_ord(n);
+
+		TEST_CASE("signature of knowledge of discrete logarithm is correct") {
+			bn_rand_mod(x, n);
+			ec_mul_gen(y[0], x);
+			TEST_ASSERT(cp_sokdl_sig(c[0], r[0], m, 5, y[0], x) == RLC_OK, end);
+			TEST_ASSERT(cp_sokdl_ver(c[0], r[0], m, 5, y[0]) == 1, end);
+			ec_dbl(y[0], y[0]);
+			ec_norm(y[0], y[0]);
+			TEST_ASSERT(cp_sokdl_ver(c[0], r[0], m, 5, y[0]) == 0, end);
+		} TEST_END;
+
+		TEST_CASE("signature of knowledge of disjunction is correct") {
+			bn_rand_mod(x, n);
+			do {
+				ec_rand(y[0]);
+				ec_mul_gen(y[1], x);
+			} while (ec_cmp(y[0], y[1]) == RLC_EQ);
+			TEST_ASSERT(cp_sokor_sig(c, r,  m, 5, y, x) == RLC_OK, end);
+			TEST_ASSERT(cp_sokor_ver(c, r,  m, 5, y) == 1, end);
+			ec_dbl(y[1], y[1]);
+			ec_norm(y[1], y[1]);
+			TEST_ASSERT(cp_sokor_ver(c, r,  m, 5, y) == 0, end);
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {
@@ -1668,7 +1728,12 @@ int main(void) {
 			return 1;
 		}
 
-		if (pok_dlog() != RLC_OK) {
+		if (pok() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (sok() != RLC_OK) {
 			core_clean();
 			return 1;
 		}

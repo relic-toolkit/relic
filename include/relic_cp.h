@@ -1582,6 +1582,61 @@ int cp_pokor_prv(bn_t c[2], bn_t r[2], ec_t y[2], bn_t x);
 int cp_pokor_ver(bn_t c[2], bn_t r[2], ec_t y[2]);
 
 /**
+ * Computes the proof of knowledge of a discrete logarithm of an elliptic curve
+ * point to a generator. Proves that y = [x]G.
+ *
+ * @param[out] c 			- the challenge.
+ * @param[out] r 			- the response.
+ * @param[in] msg 			- the message to sign.
+ * @param[in] len 			- the length of the message.
+ * @param[in] y 			- the elliptic curve point
+ * @param[in] x 			- the discrete logarithm to prove.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int cp_sokdl_sig(bn_t c, bn_t r, uint8_t *msg, int len, ec_t y, bn_t x);
+
+/**
+ * Verifies the proof of knowledge of a discrete logarithm of an elliptic curve
+ * point to a generator. Verifies that y = [x]G.
+ *
+ * @param[in] c 			- the challenge.
+ * @param[in] r 			- the response.
+ * @param[in] msg 			- the message to sign.
+ * @param[in] len 			- the length of the message.
+ * @param[in] y 			- the elliptic curve point.
+ * @return a boolean value indicating the verification result.
+ */
+int cp_sokdl_ver(bn_t c, bn_t r, uint8_t *msg, int len, ec_t y);
+
+/**
+ * Computes the proof of knowledge of a discrete logarithm of an elliptic curve
+ * point to a generator. Proves that y0 = [x]G or y[1] = [x]G.
+ *
+ * @param[out] c 			- the challenges.
+ * @param[out] r 			- the responses.
+ * @param[in] msg 			- the message to sign.
+ * @param[in] len 			- the length of the message.
+ * @param[in] y 			- the elliptic curve points.
+ * @param[in] x 			- the discrete logarithm to prove.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int cp_sokor_sig(bn_t c[2], bn_t r[2], uint8_t *msg, int len, ec_t y[2],
+	bn_t x);
+
+/**
+ * Verifies the proof of knowledge of a discrete logarithm of an elliptic curve
+ * point to a generator. Verifies that y = [x]G.
+ *
+ * @param[in] c 			- the challenges.
+ * @param[in] r 			- the responses.
+ * @param[in] msg 			- the message to sign.
+ * @param[in] len 			- the length of the message.
+ * @param[in] y 			- the elliptic curve points.
+ * @return a boolean value indicating the verification result.
+ */
+int cp_sokor_ver(bn_t c[2], bn_t r[2], uint8_t *msg, int len, ec_t y[2]);
+
+/**
  * Initialize the Context-hiding Multi-key Homomorphic Signature scheme (CMLHS).
  * The scheme due to Schabhuser et al. signs a vector of messages.
  *
