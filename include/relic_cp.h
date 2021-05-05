@@ -38,10 +38,13 @@
 
 #include "relic_conf.h"
 #include "relic_types.h"
+#include "relic_util.h"
 #include "relic_bn.h"
 #include "relic_ec.h"
 #include "relic_pc.h"
 #include "relic_mpc.h"
+
+#include <sys/queue.h>
 
 /*============================================================================*/
 /* Type definitions.                                                          */
@@ -187,6 +190,48 @@ typedef bgn_st bgn_t[1];
 typedef bgn_st *bgn_t;
 #endif
 
+/**
+ * Represents an extendable ring signature.
+ */
+typedef struct _ers_st {
+	/** The ephemeral public key in the signature. */
+    ec_t h;
+	/** The public key associated to the signature. */
+	ec_t pk;
+	/** The first component of the signature of knowledge. */
+	bn_t c[2];
+	/** The second component of the signature of knowledge. */
+	bn_t r[2];
+} ers_st;
+
+/**
+ * Pointer to an extendable ring signature.
+ */
+/**
+ * Pointer to a Boneh-Goh-Nissim cryptosystem key pair.
+ */
+#if ALLOC == AUTO
+typedef ers_st ers_t[1];
+#else
+typedef ers_st *ers_t;
+#endif
+
+/**
+ * Represents a list of objects.
+ */
+typedef struct _li_st {
+	void *head, *tail;
+} li_st;
+
+/**
+ * Pointer to a list of objects.
+ */
+#if ALLOC == AUTO
+typedef li_st lis_t[1];
+#else
+typedef li_st *lis_t;
+#endif
+
 /*============================================================================*/
 /* Macro definitions                                                          */
 /*============================================================================*/
@@ -196,11 +241,7 @@ typedef bgn_st *bgn_t;
  *
  * @param[out] A			- the moduli to initialize.
  */
-#if ALLOC == AUTO
-#define crt_null(A)				/* empty */
-#else
-#define crt_null(A)			A = NULL;
-#endif
+#define crt_null(A)			RLC_NULL(A)
 
 /**
  * Calls a function to allocate and initialize a Rabin key pair.
@@ -259,11 +300,7 @@ typedef bgn_st *bgn_t;
  *
  * @param[out] A			- the key pair to initialize.
  */
-#if ALLOC == AUTO
-#define rsa_null(A)				/* empty */
-#else
-#define rsa_null(A)			A = NULL;
-#endif
+#define rsa_null(A)			RLC_NULL(A)
 
 /**
  * Calls a function to allocate and initialize an RSA key pair.
@@ -315,11 +352,7 @@ typedef bgn_st *bgn_t;
  *
  * @param[out] A			- the key pair to initialize.
  */
-#if ALLOC == AUTO
-#define rabin_null(A)		/* empty */
-#else
-#define rabin_null(A)		A = NULL;
-#endif
+#define rabin_null(A)		RLC_NULL(A)
 
 /**
  * Calls a function to allocate and initialize a Rabin key pair.
@@ -340,11 +373,7 @@ typedef bgn_st *bgn_t;
  *
  * @param[out] A			- the key pair to initialize.
  */
-#if ALLOC == AUTO
-#define phpe_null(A)		/* empty */
-#else
-#define phpe_null(A)		A = NULL;
-#endif
+#define phpe_null(A)		RLC_NULL(A)
 
 /**
  * Calls a function to allocate and initialize a Paillier key pair.
@@ -359,16 +388,13 @@ typedef bgn_st *bgn_t;
  * @param[out] A			- the key pair to clean and free.
  */
 #define phpe_free(A)		crt_free(A)
+
 /**
  * Initializes a Benaloh's key pair with a null value.
  *
  * @param[out] A			- the key pair to initialize.
  */
-#if ALLOC == AUTO
-#define bdpe_null(A)			/* empty */
-#else
-#define bdpe_null(A)			A = NULL;
-#endif
+#define bdpe_null(A)		RLC_NULL(A)
 
 /**
  * Calls a function to allocate and initialize a Benaloh's key pair.
@@ -424,11 +450,7 @@ typedef bgn_st *bgn_t;
  *
  * @param[out] A			- the key pair to initialize.
  */
-#if ALLOC == AUTO
-#define sokaka_null(A)			/* empty */
-#else
-#define sokaka_null(A)		A = NULL;
-#endif
+#define sokaka_null(A)		RLC_NULL(A)
 
 /**
  * Calls a function to allocate and initialize a SOKAKA key pair.
@@ -473,11 +495,7 @@ typedef bgn_st *bgn_t;
  *
  * @param[out] A			- the key pair to initialize.
  */
-#if ALLOC == AUTO
-#define bgn_null(A)				/* empty */
-#else
-#define bgn_null(A)			A = NULL;
-#endif
+#define bgn_null(A)			RLC_NULL(A)
 
 /**
  * Calls a function to allocate and initialize a BGN key pair.
@@ -528,6 +546,102 @@ typedef bgn_st *bgn_t;
 
 #elif ALLOC == AUTO
 #define bgn_free(A)				/* empty */
+
+#endif
+
+/**
+ * Initializes a BGN key pair with a null value.
+ *
+ * @param[out] A			- the key pair to initialize.
+ */
+#define ers_null(A)			RLC_NULL(A)
+
+/**
+ * Calls a function to allocate and initialize an extendable signature ring.
+ *
+ * @param[out] A			- the new signature ring.
+ */
+#if ALLOC == DYNAMIC
+#define ers_new(A)															\
+	A = (bgn_t)calloc(1, sizeof(ers_st));									\
+	if (A == NULL) {														\
+		RLC_THROW(ERR_NO_MEMORY);											\
+	}																		\
+	ec_new((A)->h);															\
+	ec_new((A)->pk);														\
+	bn_new((A)->c[0]);														\
+	bn_new((A)->c[1]);														\
+	bn_new((A)->r[0]);														\
+	bn_new((A)->r[1]);														\
+
+#elif ALLOC == AUTO
+#define ers_new(A)				/* empty */
+
+#endif
+
+/**
+ * Calls a function to clean and free an extendable signature ring.
+ *
+ * @param[out] A			- the signature ring to clean and free.
+ */
+#if ALLOC == DYNAMIC
+#define ers_free(A)															\
+	if (A != NULL) {														\
+		ec_free((A)->h);													\
+		ec_free((A)->pk);													\
+		bn_free((A)->c[0]);													\
+		bn_free((A)->c[1]);													\
+		bn_free((A)->r[0]);													\
+		bn_free((A)->r[1]);													\
+		free(A);															\
+		A = NULL;															\
+	}
+
+#elif ALLOC == AUTO
+#define ers_free(A)				/* empty */
+
+#endif
+
+/**
+ * Initializes a BGN key pair with a null value.
+ *
+ * @param[out] A			- the key pair to initialize.
+ */
+#define lis_null(A)			RLC_NULL(A)
+
+/**
+ * Calls a function to allocate and initialize a BGN key pair.
+ *
+ * @param[out] A			- the new key pair.
+ */
+#if ALLOC == DYNAMIC
+#define lis_new(A)															\
+	A = (bgn_t)calloc(1, sizeof(li_st));									\
+	if (A == NULL) {														\
+		RLC_THROW(ERR_NO_MEMORY);											\
+	}																		\
+	(A)->head = NULL;														\
+	(A)->tail = NULL;														\
+
+#elif ALLOC == AUTO
+#define lis_new(A)				/* empty */
+
+#endif
+
+/**
+ * Calls a function to clean and free a BGN key pair.
+ *
+ * @param[out] A			- the key pair to clean and free.
+ */
+#if ALLOC == DYNAMIC
+#define lis_free(A)															\
+	if (A != NULL) {														\
+		free(A);															\
+		A = NULL;															\
+	}
+
+#elif ALLOC == AUTO
+#define lis_free(A)				/* empty */
 
 #endif
 
@@ -1610,7 +1724,7 @@ int cp_sokdl_ver(bn_t c, bn_t r, uint8_t *msg, int len, ec_t y);
 
 /**
  * Computes the proof of knowledge of a discrete logarithm of an elliptic curve
- * point to a generator. Proves that y0 = [x]G or y[1] = [x]G.
+ * point to a generator. Proves that y0 = [x]G or y1 = [x]G.
  *
  * @param[out] c 			- the challenges.
  * @param[out] r 			- the responses.
@@ -1618,10 +1732,12 @@ int cp_sokdl_ver(bn_t c, bn_t r, uint8_t *msg, int len, ec_t y);
  * @param[in] len 			- the length of the message.
  * @param[in] y 			- the elliptic curve points.
  * @param[in] x 			- the discrete logarithm to prove.
+ * @param[in] first 		- the flag to indicate the point fort which the
+ *							  discrete logarithm is known.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_sokor_sig(bn_t c[2], bn_t r[2], uint8_t *msg, int len, ec_t y[2],
-	bn_t x);
+	bn_t x, int first);
 
 /**
  * Verifies the proof of knowledge of a discrete logarithm of an elliptic curve
@@ -1635,6 +1751,63 @@ int cp_sokor_sig(bn_t c[2], bn_t r[2], uint8_t *msg, int len, ec_t y[2],
  * @return a boolean value indicating the verification result.
  */
 int cp_sokor_ver(bn_t c[2], bn_t r[2], uint8_t *msg, int len, ec_t y[2]);
+
+/**
+ * Generates the public parameters of the extendable ring signature.
+ *
+ * @åaram[out] pp 			- the public parameters.
+ */
+int cp_ers_gen(ec_t pp);
+
+/**
+ * Generates a key pair for the extendable ring signature.
+ *
+ * @åaram[out] sk 			- the private key.
+ * @param[out] pk 			- the public key.
+ */
+int cp_ers_gen_key(bn_t sk, ec_t pk);
+
+/**
+ * Signs a message using the extendable ring signature scheme.
+ *
+ * @param[out] td 			- the signature trapdoor.
+ * @param[out] p 			- the resulting signature.
+ * @param[in] msg 			- the message to sign.
+ * @param[in] len 			- the message length.
+ * @param[in] sk			- the signer's private key.
+ * @param[in] pk			- the singer's public key.
+ * @param[in] pp			- the public parameters.
+ */
+int cp_ers_sig(bn_t td, ers_t p, uint8_t *msg, int len, bn_t sk, ec_t pk,
+		ec_t pp);
+
+/**
+ * Verifies an extendable ring signature scheme over some messages.
+ *
+ * @param[in] td 			- the signature trapdoor.
+ * @param[in] s 			- the ring of signatures.
+ * @param[in] size 			- the number of signatures in the ring.
+ * @param[in] msg 			- the message to sign.
+ * @param[in] len 			- the message length.
+ * @param[in] sk			- the signer's private key.
+ * @param[in] pk			- the singer's public key.
+ * @param[in] pp			- the public parameters.
+ */
+int cp_ers_ver(bn_t td, ers_t *s, int size, uint8_t *msg, int len, ec_t pp);
+
+/**
+ * Extends an extendable ring signature with a new signature.
+ *
+ * @param[in] td 			- the signature trapdoor.
+ * @param[in] p 			- the ring of signatures.
+ * @param[in] size 			- the number of signatures in the ring.
+ * @param[in] msg 			- the message to sign.
+ * @param[in] len 			- the message length.
+ * @param[in] pk			- the singer's public key.
+ * @param[in] pp			- the public parameters.
+ */
+int cp_ers_ext(bn_t td, ers_t *p, int *size, uint8_t *msg, int len, ec_t pk,
+		ec_t pp);
 
 /**
  * Initialize the Context-hiding Multi-key Homomorphic Signature scheme (CMLHS).

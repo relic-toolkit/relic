@@ -163,6 +163,18 @@
 /** @} */
 
 /**
+ * Generic macro to initialize an object to NULL.
+ *
+ * @param[out] A			- the object to initialize.
+ */
+#if ALLOC == AUTO
+#define RLC_NULL(A)			/* empty */
+#else
+#define RLC_NULL(A)			A = NULL;
+#endif
+
+
+/**
  * Accumulates a double precision digit in a triple register variable.
  *
  * @param[in,out] R2		- most significant word of the triple register.

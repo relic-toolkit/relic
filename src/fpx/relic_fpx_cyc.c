@@ -516,6 +516,7 @@ void fp12_back_cyc_sim(fp12_t c[], fp12_t a[], int n) {
         *t2 = t + 2 * n;
 
 	if (n == 0) {
+		RLC_FREE(t);
 		return;
 	}
 
@@ -922,6 +923,7 @@ void fp12_exp_cyc_sps(fp12_t c, fp12_t a, const int *b, int len, int sign) {
     fp12_t t, *u = RLC_ALLOCA(fp12_t, w);
 
 	if (len == 0) {
+		RLC_FREE(u);
 		fp12_set_dig(c, 1);
 		return;
 	}
@@ -1121,6 +1123,7 @@ void fp48_back_cyc_sim(fp48_t c[], fp48_t a[], int n) {
         *t2 = t + 2 * n;
 
 	if (n == 0) {
+		RLC_FREE(t);
 		return;
 	}
 
@@ -1292,6 +1295,7 @@ void fp48_exp_cyc_sps(fp48_t c, fp48_t a, const int *b, int len, int sign) {
     fp48_t t, *u = RLC_ALLOCA(fp48_t, w);
 
 	if (len == 0) {
+		RLC_FREE(u);
 		fp48_set_dig(c, 1);
 		return;
 	}
@@ -1490,6 +1494,7 @@ void fp54_back_cyc_sim(fp54_t c[], fp54_t a[], int n) {
         *t2 = t + 2 * n;
 
 	if (n == 0) {
+		RLC_FREE(t);
 		return;
 	}
 
@@ -1662,6 +1667,7 @@ void fp54_exp_cyc_sps(fp54_t c, fp54_t a, const int *b, int len, int sign) {
     fp54_t t, *u = RLC_ALLOCA(fp54_t, w);
 
 	if (len == 0) {
+		RLC_FREE(u);
 		fp54_set_dig(c, 1);
 		return;
 	}

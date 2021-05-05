@@ -30,7 +30,6 @@
  */
 
 #include "relic.h"
-#include "relic_test.h"
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -154,64 +153,72 @@ int cp_sokdl_ver(bn_t c, bn_t s, uint8_t *msg, int len, ec_t y) {
 }
 
 int cp_sokor_sig(bn_t c[2], bn_t s[2], uint8_t *msg, int len, ec_t y[2],
-		bn_t x) {
+		bn_t x, int first) {
 	bn_t n, v[2], z;
-	ec_t t;
+	ec_t g, t[2];
 	uint8_t h[RLC_MD_LEN];
 	uint8_t *buf, *m = RLC_ALLOCA(uint8_t, len + 6 * (RLC_FC_BYTES + 1));
 	int l, result = RLC_OK;
+	int one = 1 ^ first;
+	int zero = 0 ^ first;
 
 	bn_null(n);
 	bn_null(v[0]);
 	bn_null(v[1]);
 	bn_null(z);
-	ec_null(t);
+	ec_null(g);
+	ec_null(t[0]);
+	ec_null(t[1]);
 
 	RLC_TRY {
 		bn_new(n);
 		bn_new(v[0]);
 		bn_new(v[1]);
 		bn_new(z);
-		ec_new(t);
+		ec_new(t[0]);
+		ec_new(t[1]);
 
 		buf = m;
 		ec_curve_get_ord(n);
-		bn_rand_mod(c[0], n);
+		ec_curve_get_gen(g);
+		bn_rand_mod(c[zero], n);
 		memcpy(buf, msg, len);
 		buf += len;
 
+		bn_rand_mod(v[0], n);
+		bn_rand_mod(v[1], n);
+		if (first) {
+			ec_mul_gen(t[0], v[0]);
+			ec_mul_sim_gen(t[1], v[1], y[1], c[zero]);
+		} else {
+			/* T1 = [w]Y1 + [v1]G. */
+			ec_mul_sim_gen(t[0], v[0], y[0], c[zero]);
+			/* T2 = [v2]G. */
+			ec_mul_gen(t[1], v[1]);
+		}
+
 		for (int i = 0; i < 2; i++) {
-			bn_rand_mod(v[i], n);
-			ec_curve_get_gen(t);
-			l = ec_size_bin(t, 1);
-			ec_write_bin(buf, l, t, 1);
+			l = ec_size_bin(g, 1);
+			ec_write_bin(buf, l, g, 1);
 			buf += l;
 			l = ec_size_bin(y[i], 1);
 			ec_write_bin(buf, l, y[i], 1);
 			buf += l;
-
-			if (i == 0) {
-				/* T1 = [w]Y1 + [v1]G. */
-				ec_mul_sim_gen(t, v[i], y[i], c[i]);
-			} else {
-				/* T2 = [v2]G. */
-				ec_mul_gen(t, v[i]);
-			}
-			l = ec_size_bin(t, 1);
-			ec_write_bin(buf, l, t, 1);
+			l = ec_size_bin(t[i], 1);
+			ec_write_bin(buf, l, t[i], 1);
 			buf += l;
 		}
 		md_map(h, m, len + 6 * (RLC_FC_BYTES + 1));
 		bn_read_bin(z, h, RLC_MD_LEN);
 		bn_mod(z, z, n);
 
-		bn_sub(c[1], z, c[0]);
-		bn_mod(c[1], c[1], n);
+		bn_sub(c[one], z, c[zero]);
+		bn_mod(c[one], c[one], n);
 
-		bn_copy(s[0], v[0]);
-		bn_mul(s[1], c[1], x);
-		bn_sub(s[1], v[1], s[1]);
-		bn_mod(s[1], s[1], n);
+		bn_copy(s[zero], v[zero]);
+		bn_mul(s[one], c[one], x);
+		bn_sub(s[one], v[one], s[one]);
+		bn_mod(s[one], s[one], n);
 	}
 	RLC_CATCH_ANY {
 		result = RLC_ERR;
@@ -221,7 +228,9 @@ int cp_sokor_sig(bn_t c[2], bn_t s[2], uint8_t *msg, int len, ec_t y[2],
 		bn_free(v[0]);
 		bn_free(v[1]);
 		bn_free(z);
-		ec_free(t);
+		ec_free(g);
+		ec_free(t[0]);
+		ec_free(t[1]);
 	}
 	return result;
 }

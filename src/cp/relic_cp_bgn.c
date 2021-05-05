@@ -33,13 +33,7 @@
 
 #include <limits.h>
 
-#include "relic_core.h"
-#include "relic_conf.h"
-#include "relic_rand.h"
-#include "relic_bn.h"
-#include "relic_util.h"
-#include "relic_cp.h"
-#include "relic_md.h"
+#include "relic.h"
 
 /*============================================================================*/
 /* Public definitions                                                         */
