@@ -44,8 +44,6 @@
 #include "relic_pc.h"
 #include "relic_mpc.h"
 
-#include <sys/queue.h>
-
 /*============================================================================*/
 /* Type definitions.                                                          */
 /*============================================================================*/
@@ -214,22 +212,6 @@ typedef struct _ers_st {
 typedef ers_st ers_t[1];
 #else
 typedef ers_st *ers_t;
-#endif
-
-/**
- * Represents a list of objects.
- */
-typedef struct _li_st {
-	void *head, *tail;
-} li_st;
-
-/**
- * Pointer to a list of objects.
- */
-#if ALLOC == AUTO
-typedef li_st lis_t[1];
-#else
-typedef li_st *lis_t;
 #endif
 
 /*============================================================================*/
@@ -599,49 +581,6 @@ typedef li_st *lis_t;
 
 #elif ALLOC == AUTO
 #define ers_free(A)				/* empty */
-
-#endif
-
-/**
- * Initializes a BGN key pair with a null value.
- *
- * @param[out] A			- the key pair to initialize.
- */
-#define lis_null(A)			RLC_NULL(A)
-
-/**
- * Calls a function to allocate and initialize a BGN key pair.
- *
- * @param[out] A			- the new key pair.
- */
-#if ALLOC == DYNAMIC
-#define lis_new(A)															\
-	A = (bgn_t)calloc(1, sizeof(li_st));									\
-	if (A == NULL) {														\
-		RLC_THROW(ERR_NO_MEMORY);											\
-	}																		\
-	(A)->head = NULL;														\
-	(A)->tail = NULL;														\
-
-#elif ALLOC == AUTO
-#define lis_new(A)				/* empty */
-
-#endif
-
-/**
- * Calls a function to clean and free a BGN key pair.
- *
- * @param[out] A			- the key pair to clean and free.
- */
-#if ALLOC == DYNAMIC
-#define lis_free(A)															\
-	if (A != NULL) {														\
-		free(A);															\
-		A = NULL;															\
-	}
-
-#elif ALLOC == AUTO
-#define lis_free(A)				/* empty */
 
 #endif
 
