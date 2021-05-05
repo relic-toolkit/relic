@@ -564,8 +564,8 @@ static int endomorphism(void) {
 	ep_free(b);
 	ep_free(c);
 	for (int k = 0; k < 3; k++) {
-		bn_null(v1[k]);
-		bn_null(v2[k]);
+		bn_free(v1[k]);
+		bn_free(v2[k]);
 	}
 
 	return code;
