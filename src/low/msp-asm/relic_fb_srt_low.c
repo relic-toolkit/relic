@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (c) 2007, 2008, 2009 RELIC Authors
+ * Copyright (c) 2012 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -289,7 +289,7 @@ const uint8_t fb_srt_table_evens[256] = { 0, 1, 16, 17, 2, 3, 18, 19, 32, 33,
 const uint8_t fb_srt_table_odds[256] = { 0, 16, 1, 17, 32, 48, 33, 49, 2, 18, 3,
 	19, 34, 50, 35, 51, 64, 80, 65, 81, 96, 112, 97, 113, 66, 82, 67, 83, 98,
 	114, 99, 115, 4, 20, 5, 21, 36, 52, 37, 53, 6, 22, 7, 23, 38, 54, 39, 55,
-	68, 84, 69, 85, 100, 116, 101, 117, 70, 86, 71, 87,	102, 118, 103, 119, 128, 
+	68, 84, 69, 85, 100, 116, 101, 117, 70, 86, 71, 87,	102, 118, 103, 119, 128,
 	144, 129, 145, 160, 176, 161, 177, 130, 146, 131, 147, 162, 178, 163, 179,
 	192, 208, 193, 209, 224, 240, 225, 241,	194, 210, 195, 211, 226, 242, 227,
 	243, 132, 148, 133, 149, 164, 180,	165, 181, 134, 150, 135, 151, 166, 182,
