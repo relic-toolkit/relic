@@ -175,6 +175,7 @@ int cp_sokor_sig(bn_t c[2], bn_t s[2], uint8_t *msg, int len, ec_t y[2],
 		bn_new(v[0]);
 		bn_new(v[1]);
 		bn_new(z);
+		ec_new(g);
 		ec_new(t[0]);
 		ec_new(t[1]);
 
