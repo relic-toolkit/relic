@@ -296,7 +296,6 @@ void ep4_curve_set_twist(int type) {
 	ep4_null(g);
 	fp4_null(a);
 	fp4_null(b);
-	fp4_null(u);
 	bn_null(r);
 	bn_null(h);
 
@@ -311,7 +310,6 @@ void ep4_curve_set_twist(int type) {
 		ep4_new(g);
 		fp4_new(a);
 		fp4_new(b);
-		fp4_new(u);
 		bn_new(r);
 		bn_new(h);
 
@@ -357,7 +355,6 @@ void ep4_curve_set_twist(int type) {
 		ep4_free(g);
 		fp4_free(a);
 		fp4_free(b);
-		fp4_free(u);
 		bn_free(r);
 		bn_free(h);
 	}

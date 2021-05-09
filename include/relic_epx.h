@@ -277,12 +277,12 @@ typedef iso2_st *iso2_t;
 	if (A == NULL) {														\
 		RLC_THROW(ERR_NO_MEMORY);											\
 	}																		\
-	fp2_null((A)->x);														\
-	fp2_null((A)->y);														\
-	fp2_null((A)->z);														\
-	fp2_new((A)->x);														\
-	fp2_new((A)->y);														\
-	fp2_new((A)->z);														\
+	fp4_null((A)->x);														\
+	fp4_null((A)->y);														\
+	fp4_null((A)->z);														\
+	fp4_new((A)->x);														\
+	fp4_new((A)->y);														\
+	fp4_new((A)->z);														\
 
 #elif ALLOC == AUTO
 #define ep4_new(A)				/* empty */
@@ -297,9 +297,9 @@ typedef iso2_st *iso2_t;
 #if ALLOC == DYNAMIC
 #define ep4_free(A)															\
 	if (A != NULL) {														\
-		fp2_free((A)->x);													\
-		fp2_free((A)->y);													\
-		fp2_free((A)->z);													\
+		fp4_free((A)->x);													\
+		fp4_free((A)->y);													\
+		fp4_free((A)->z);													\
 		free(A);															\
 		A = NULL;															\
 	}																		\
