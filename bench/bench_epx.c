@@ -655,19 +655,19 @@ static void util4(void) {
 
 	BENCH_RUN("ep4_size_bin") {
 		ep4_rand(p);
-		BENCH_ADD(ep4_size_bin(p));
+		BENCH_ADD(ep4_size_bin(p, 0));
 	} BENCH_END;
 
 	BENCH_RUN("ep4_write_bin") {
 		ep4_rand(p);
-		l = ep4_size_bin(p);
-		BENCH_ADD(ep4_write_bin(bin, l, p));
+		l = ep4_size_bin(p, 0);
+		BENCH_ADD(ep4_write_bin(bin, l, p, 0));
 	} BENCH_END;
 
 	BENCH_RUN("ep4_read_bin") {
 		ep4_rand(p);
-		l = ep4_size_bin(p);
-		ep4_write_bin(bin, l, p);
+		l = ep4_size_bin(p, 0);
+		ep4_write_bin(bin, l, p, 0);
 		BENCH_ADD(ep4_read_bin(p, bin, l));
 	} BENCH_END;
 

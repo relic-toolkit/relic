@@ -222,7 +222,7 @@ void ep4_print(ep4_t p) {
 	fp4_print(p->z);
 }
 
-int ep4_size_bin(ep4_t a) {
+int ep4_size_bin(ep4_t a, int pack) {
 	ep4_t t;
 	int size = 0;
 
@@ -238,6 +238,7 @@ int ep4_size_bin(ep4_t a) {
 		ep4_norm(t, a);
 
 		size = 1 + 8 * RLC_FP_BYTES;
+		//TODO: Implement compression.
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
@@ -277,7 +278,7 @@ void ep4_read_bin(ep4_t a, const uint8_t *bin, int len) {
 	}
 }
 
-void ep4_write_bin(uint8_t *bin, int len, ep4_t a) {
+void ep4_write_bin(uint8_t *bin, int len, ep4_t a, int pack) {
 	ep4_t t;
 
 	ep4_null(t);

@@ -1208,20 +1208,20 @@ static int util4(void) {
 
 		TEST_CASE("reading and writing a point are consistent") {
 			ep4_set_infty(a);
-			l = ep4_size_bin(a);
-			ep4_write_bin(bin, l, a);
+			l = ep4_size_bin(a, 0);
+			ep4_write_bin(bin, l, a, 0);
 			ep4_read_bin(b, bin, l);
 			TEST_ASSERT(ep4_cmp(a, b) == RLC_EQ, end);
 			ep4_rand(a);
-			l = ep4_size_bin(a);
-			ep4_write_bin(bin, l, a);
+			l = ep4_size_bin(a, 0);
+			ep4_write_bin(bin, l, a, 0);
 			ep4_read_bin(b, bin, l);
 			TEST_ASSERT(ep4_cmp(a, b) == RLC_EQ, end);
 			ep4_rand(a);
 			ep4_dbl(a, a);
-			l = ep4_size_bin(a);
+			l = ep4_size_bin(a, 0);
 			ep4_norm(a, a);
-			ep4_write_bin(bin, l, a);
+			ep4_write_bin(bin, l, a, 0);
 			ep4_read_bin(b, bin, l);
 			TEST_ASSERT(ep4_cmp(a, b) == RLC_EQ, end);
 		}

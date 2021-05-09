@@ -242,7 +242,8 @@ void fp4_field_init() {
 		bn_sub_dig(e, e, 1);
 		bn_div_dig(e, e, 6);
 		fp4_exp(t0, t0, e);
-		fp2_copy(ctx->fp4_p1, t0[1]);
+		fp_copy(ctx->fp4_p1[0], t0[1][0]);
+		fp_copy(ctx->fp4_p1[1], t0[1][1]);
 	} RLC_CATCH_ANY {
 	    RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {

@@ -1358,9 +1358,10 @@ void ep4_print(ep4_t p);
  * over a quartic extension with optional point compression.
  *
  * @param[in] a				- the prime field element.
+ * @param[in] pack			- the flag to indicate compression.
  * @return the number of bytes.
  */
-int ep4_size_bin(ep4_t a);
+int ep4_size_bin(ep4_t a, int pack);
 
 /**
  * Reads a prime elliptic curve point over a quartic extension from a byte
@@ -1381,9 +1382,10 @@ void ep4_read_bin(ep4_t a, const uint8_t *bin, int len);
  * @param[out] bin			- the byte vector.
  * @param[in] len			- the buffer capacity.
  * @param[in] a				- the prime elliptic curve point to write.
+ * @param[in] pack			- the flag to indicate compression.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is invalid.
  */
-void ep4_write_bin(uint8_t *bin, int len, ep4_t a);
+void ep4_write_bin(uint8_t *bin, int len, ep4_t a, int pack);
 
 /**
  * Negates a point represented in affine coordinates in an elliptic curve over

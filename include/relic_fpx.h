@@ -3942,6 +3942,17 @@ void fp24_exp_dig(fp24_t c, fp24_t a, dig_t b);
 void fp24_exp_cyc(fp24_t c, fp24_t a, bn_t b);
 
 /**
+ * Computes a power of a cyclotomic dodecic extension field element.
+ *
+ * @param[out] e			- the result.
+ * @param[in] a				- the first element to exponentiate.
+ * @param[in] b				- the first exponent.
+ * @param[in] c				- the second element to exponentiate.
+ * @param[in] d				- the second exponent.
+ */
+void fp24_exp_cyc_sim(fp24_t e, fp24_t a, bn_t b, fp24_t c, bn_t d);
+
+/**
  * Computes a power of a cyclotomic 24-extension field element.
  *
  * @param[out] c			- the result.
