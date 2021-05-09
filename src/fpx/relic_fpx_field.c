@@ -222,3 +222,31 @@ void fp3_field_init(void) {
 		fp3_free(t2);
 	}
 }
+
+void fp4_field_init() {
+	bn_t e;
+	fp4_t t0;
+	ctx_t *ctx = core_get();
+
+	bn_null(e);
+	fp4_null(t0);
+
+	RLC_TRY {
+		bn_new(e);
+		fp4_new(t0);
+
+		fp4_set_dig(t0, 1);
+		fp4_mul_art(t0, t0);
+		e->used = RLC_FP_DIGS;
+		dv_copy(e->dp, fp_prime_get(), RLC_FP_DIGS);
+		bn_sub_dig(e, e, 1);
+		bn_div_dig(e, e, 6);
+		fp4_exp(t0, t0, e);
+		fp2_copy(ctx->fp4_p1, t0[1]);
+	} RLC_CATCH_ANY {
+	    RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		bn_free(e);
+		fp4_free(t0);
+	}
+}

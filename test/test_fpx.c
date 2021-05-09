@@ -1915,16 +1915,14 @@ static int squaring4(void) {
 
 static int inversion4(void) {
 	int code = RLC_ERR;
-	fp4_t a, b, c;
-
-	fp4_null(a);
-	fp4_null(b);
-	fp4_null(c);
+	fp4_t a, b, c, d[2];
 
 	RLC_TRY {
 		fp4_new(a);
 		fp4_new(b);
 		fp4_new(c);
+		fp4_new(d[0]);
+		fp4_new(d[1]);
 
 		TEST_CASE("inversion is correct") {
 			do {
@@ -1933,6 +1931,20 @@ static int inversion4(void) {
 			fp4_inv(b, a);
 			fp4_mul(c, a, b);
 			TEST_ASSERT(fp4_cmp_dig(c, 1) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("simultaneous inversion is correct") {
+			do {
+				fp4_rand(a);
+				fp4_rand(b);
+			} while (fp4_is_zero(a) || fp4_is_zero(b));
+			fp4_copy(d[0], a);
+			fp4_copy(d[1], b);
+			fp4_inv(a, a);
+			fp4_inv(b, b);
+			fp4_inv_sim(d, d, 2);
+			TEST_ASSERT(fp4_cmp(d[0], a) == RLC_EQ &&
+					fp4_cmp(d[1], b) == RLC_EQ, end);
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {
@@ -1944,6 +1956,8 @@ static int inversion4(void) {
 	fp4_free(a);
 	fp4_free(b);
 	fp4_free(c);
+	fp4_free(d[0]);
+	fp4_free(d[1]);
 	return code;
 }
 

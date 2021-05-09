@@ -1871,6 +1871,11 @@ void fp3_frb(fp3_t c, fp3_t a, int i);
 int fp3_srt(fp3_t c, fp3_t a);
 
 /**
+ * Initializes the quartic extension field arithmetic module.
+ */
+void fp4_field_init(void);
+
+/**
  * Copies the second argument to the first argument.
  *
  * @param[out] c			- the result.
@@ -2038,6 +2043,17 @@ void fp4_mul_lazyr(fp4_t c, fp4_t a, fp4_t b);
 void fp4_mul_art(fp4_t c, fp4_t a);
 
 /**
+ * Multiplies a quartic extension field element by a power of the constant
+ * needed to compute a power of the Frobenius map.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the field element to multiply.
+ * @param[in] i				- the power of the Frobenius map.
+ * @param[in] j				- the power of the constant.
+ */
+void fp4_mul_frb(fp4_t c, fp4_t a, int i, int j);
+
+/**
  * Multiples a dense quartic extension field element by a sparse element.
  *
  * @param[out] c			- the result.
@@ -2081,6 +2097,15 @@ void fp4_sqr_lazyr(fp4_t c, fp4_t a);
 void fp4_inv(fp4_t c, fp4_t a);
 
 /**
+ * Inverts multiple quartic extension field elements simultaneously.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the quartic extension field elements to invert.
+ * @param[in] n				- the number of elements.
+ */
+void fp4_inv_sim(fp4_t *c, fp4_t *a, int n);
+
+/**
  * Computes the inverse of a cyclotomic quartic extension field element.
  *
  * For cyclotomic elements, this is equivalent to computing the conjugate.
@@ -2109,6 +2134,16 @@ void fp4_exp(fp4_t c, fp4_t a, bn_t b);
  * @param[in] i				- the power of the Frobenius map.
  */
 void fp4_frb(fp4_t c, fp4_t a, int i);
+
+/**
+ * Extracts the square root of a quartic extension field element. Computes
+ * c = sqrt(a). The other square root is the negation of c.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the extension field element.
+ * @return					- 1 if there is a square root, 0 otherwise.
+ */
+int fp4_srt(fp4_t c, fp4_t a);
 
 /**
  * Copies the second argument to the first argument.

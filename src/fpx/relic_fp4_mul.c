@@ -166,3 +166,15 @@ void fp4_mul_art(fp4_t c, fp4_t a) {
 		fp2_free(t0);
 	}
 }
+
+void fp4_mul_frb(fp4_t c, fp4_t a, int i, int j) {
+    if (i == 1) {
+		for (int k = 0; k < j; k++) {
+        	fp2_mul(c[0], a[0], core_get()->fp4_p1);
+			fp2_mul(c[1], a[1], core_get()->fp4_p1);
+			fp4_mul_art(c, c);
+		}
+    } else {
+		RLC_THROW(ERR_CAUGHT);
+	}
+}
