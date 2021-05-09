@@ -545,7 +545,7 @@ typedef ers_st *ers_t;
  */
 #if ALLOC == DYNAMIC
 #define ers_new(A)															\
-	A = (bgn_t)calloc(1, sizeof(ers_st));									\
+	A = (ers_t)calloc(1, sizeof(ers_st));									\
 	if (A == NULL) {														\
 		RLC_THROW(ERR_NO_MEMORY);											\
 	}																		\
