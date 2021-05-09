@@ -1284,14 +1284,14 @@ int ep_param_set_any_pairf(void) {
 	ep_param_set(B12_P455);
 	type = RLC_EP_DTYPE;
 	degree = 2;
-#elif FP_PRIME == 477
-	ep_param_set(B24_P509);
-	type = RLC_EP_DTYPE;
-	degree = 4;
 #elif FP_PRIME == 508
 	ep_param_set(KSS_P508);
 	type = RLC_EP_DTYPE;
 	degree = 3;
+#elif FP_PRIME == 509
+	ep_param_set(B24_P509);
+	type = RLC_EP_DTYPE;
+	degree = 4;
 #elif FP_PRIME == 511
 	ep_param_set(OT8_P511);
 	type = RLC_EP_DTYPE;
@@ -1340,6 +1340,9 @@ int ep_param_set_any_pairf(void) {
 				break;
 			case 2:
 				ep2_curve_set_twist(type);
+				break;
+			case 4:
+				ep4_curve_set_twist(type);
 				break;
 		}
 	}

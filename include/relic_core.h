@@ -333,6 +333,28 @@ typedef struct _ctx_t {
 	/** The isogeny map coefficients for the SSWU mapping. */
 	iso2_st ep2_iso;
 #endif /* EP_CTMAP */
+	/** The generator of the elliptic curve. */
+	ep4_t ep4_g;
+	/** The 'a' coefficient of the curve. */
+	fp4_t ep4_a;
+	/** The 'b' coefficient of the curve. */
+	fp4_t ep4_b;
+	/** The order of the group of points in the elliptic curve. */
+	bn_st ep4_r;
+	/** The cofactor of the group order in the elliptic curve. */
+	bn_st ep4_h;
+	/** Optimization identifier for the a-coefficient. */
+	int ep4_opt_a;
+	/** Optimization identifier for the b-coefficient. */
+	int ep4_opt_b;
+	/** Flag that stores if the prime curve is a twist. */
+	int ep4_is_twist;
+#ifdef EP_PRECO
+	/** Precomputation table for generator multiplication.*/
+	ep4_st ep4_pre[RLC_EP_TABLE];
+	/** Array of pointers to the precomputation table. */
+	ep4_st *ep4_ptr[RLC_EP_TABLE];
+	#endif /* EP_PRECO */
 #endif /* WITH_EPX */
 
 #ifdef WITH_ED
@@ -365,6 +387,7 @@ typedef struct _ctx_t {
 	/** Constants for computing Frobenius maps in higher extensions. @{ */
 	fp2_st fp2_p1[5];
 	fp2_st fp2_p2[3];
+	fp2_st fp4_p1;
 	/** @} */
 	/** Constants for computing Frobenius maps in higher extensions. @{ */
 	int frb3[3];

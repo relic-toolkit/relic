@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (c) 2010 RELIC Authors
+ * Copyright (c) 2021 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -24,25 +24,30 @@
 /**
  * @file
  *
- * Implementation of pairings over prime curves.
+ * Implementation of point negation on elliptic prime curves over quartic
+ * extensions.
  *
- * @ingroup pp
+ * @ingroup epx
  */
 
 #include "relic_core.h"
-#include "relic_pp.h"
-#include "relic_util.h"
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void pp_map_init(void) {
-	ep2_curve_init();
-	ep4_curve_init();
-}
+void ep4_neg(ep4_t r, ep4_t p) {
+	if (ep4_is_infty(p)) {
+		ep4_set_infty(r);
+		return;
+	}
 
-void pp_map_clean(void) {
-	ep2_curve_clean();
-	ep4_curve_clean();
+	if (r != p) {
+		fp4_copy(r->x, p->x);
+		fp4_copy(r->z, p->z);
+	}
+
+	fp4_neg(r->y, p->y);
+
+	r->coord = p->coord;
 }
