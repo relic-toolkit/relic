@@ -155,6 +155,28 @@ int fp12_upk_max(fp12_t c, fp12_t a) {
 	}
 }
 
+void fp24_pck(fp24_t c, fp24_t a) {
+	fp24_copy(c, a);
+	if (fp24_test_cyc(c)) {
+		fp4_zero(c[0][0]);
+		fp4_zero(c[0][1]);
+	}
+}
+
+int fp24_upk(fp24_t c, fp24_t a) {
+	if (fp4_is_zero(a[0][0]) && fp4_is_zero(a[0][1])) {
+		fp24_back_cyc(c, a);
+		if (fp24_test_cyc(c)) {
+			return 1;
+		} else {
+			return 0;
+		}
+	} else {
+		fp24_copy(c, a);
+		return 1;
+	}
+}
+
 void fp48_pck(fp48_t c, fp48_t a) {
 	fp48_copy(c, a);
 	if (fp48_test_cyc(c)) {

@@ -701,6 +701,13 @@ void fp24_inv(fp24_t c, fp24_t a) {
 	}
 }
 
+void fp24_inv_cyc(fp24_t c, fp24_t a) {
+	fp8_inv_cyc(c[0], a[0]);
+	fp8_inv_cyc(c[1], a[1]);
+	fp8_neg(c[1], c[1]);
+	fp8_inv_cyc(c[2], a[2]);
+}
+
 void fp48_inv(fp48_t c, fp48_t a) {
 	fp24_t t0;
 	fp24_t t1;

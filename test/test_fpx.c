@@ -5116,7 +5116,7 @@ static int util24(void) {
 
 		TEST_CASE("reading and writing a finite field element are consistent") {
 			fp24_rand(a);
-			fp24_write_bin(bin, sizeof(bin), a);
+			fp24_write_bin(bin, sizeof(bin), a, 0);
 			fp24_read_bin(b, bin, sizeof(bin));
 			TEST_ASSERT(fp24_cmp(a, b) == RLC_EQ, end);
 		}
@@ -5124,7 +5124,7 @@ static int util24(void) {
 
 		TEST_CASE("getting the size of a finite field element is correct") {
 			fp24_rand(a);
-			TEST_ASSERT(fp24_size_bin(a) == 24 * RLC_FP_BYTES, end);
+			TEST_ASSERT(fp24_size_bin(a, 0) == 24 * RLC_FP_BYTES, end);
 		}
 		TEST_END;
 	}
@@ -5411,6 +5411,197 @@ static int squaring24(void) {
 	return code;
 }
 
+static int cyclotomic24(void) {
+	int code = RLC_ERR;
+	fp24_t a, b, c, d[2], e[2];
+	bn_t f;
+
+	fp24_null(a);
+	fp24_null(b);
+	fp24_null(c);
+	fp24_null(d[0]);
+	fp24_null(d[1])
+	fp24_null(e[0]);
+	fp24_null(e[1]);
+	bn_null(f);
+
+	RLC_TRY {
+		fp24_new(a);
+		fp24_new(b);
+		fp24_new(c);
+		fp24_new(d[0]);
+		fp24_new(d[1]);
+		fp24_new(e[0]);
+		fp24_new(e[1]);
+		bn_new(f);
+
+		TEST_CASE("cyclotomic test is correct") {
+			fp24_rand(a);
+			fp24_conv_cyc(a, a);
+			TEST_ASSERT(fp24_test_cyc(a) == 1, end);
+		} TEST_END;
+
+		TEST_CASE("compression in cyclotomic subgroup is correct") {
+			fp24_rand(a);
+			fp24_conv_cyc(a, a);
+			fp24_back_cyc(c, a);
+			TEST_ASSERT(fp24_cmp(a, c) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("simultaneous decompression in cyclotomic subgroup is correct") {
+			fp24_rand(d[0]);
+			fp24_rand(d[1]);
+			fp24_conv_cyc(d[0], d[0]);
+			fp24_conv_cyc(d[1], d[1]);
+			fp24_back_cyc_sim(e, d, 2);
+			TEST_ASSERT(fp24_cmp(d[0], e[0]) == RLC_EQ &&
+					fp24_cmp(d[1], e[1]) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("cyclotomic squaring is correct") {
+			fp24_rand(a);
+			fp24_conv_cyc(a, a);
+			fp24_sqr(b, a);
+			fp24_sqr_cyc(c, a);
+			TEST_ASSERT(fp24_cmp(b, c) == RLC_EQ, end);
+		} TEST_END;
+
+#if FPX_RDC == BASIC || !defined(STRIP)
+		TEST_CASE("basic cyclotomic squaring is correct") {
+			fp24_rand(a);
+			fp24_conv_cyc(a, a);
+			fp24_sqr_cyc(b, a);
+			fp24_sqr_cyc_basic(c, a);
+			TEST_ASSERT(fp24_cmp(b, c) == RLC_EQ, end);
+		} TEST_END;
+#endif
+
+#if FPX_RDC == LAZYR || !defined(STRIP)
+		TEST_CASE("lazy-reduced cyclotomic squaring is correct") {
+			fp24_rand(a);
+			fp24_conv_cyc(a, a);
+			fp24_sqr_cyc(b, a);
+			fp24_sqr_cyc_lazyr(c, a);
+			TEST_ASSERT(fp24_cmp(b, c) == RLC_EQ, end);
+		} TEST_END;
+#endif
+
+		TEST_CASE("compressed squaring is correct") {
+			fp24_rand(a);
+			fp24_conv_cyc(a, a);
+			fp4_zero(b[0][0]);
+			fp4_zero(b[1][1]);
+			fp4_zero(c[0][0]);
+			fp4_zero(c[1][1]);
+			fp24_sqr(b, a);
+			fp24_sqr_pck(c, a);
+			fp24_back_cyc(c, c);
+			TEST_ASSERT(fp24_cmp(b, c) == RLC_EQ, end);
+		} TEST_END;
+
+#if FPX_RDC == BASIC || !defined(STRIP)
+		TEST_CASE("basic compressed squaring is correct") {
+			fp24_rand(a);
+			fp24_conv_cyc(a, a);
+			fp4_zero(b[0][0]);
+			fp4_zero(b[1][1]);
+			fp4_zero(c[0][0]);
+			fp4_zero(c[1][1]);
+			fp24_sqr_pck(b, a);
+			fp24_sqr_pck_basic(c, a);
+			TEST_ASSERT(fp24_cmp(b, c) == RLC_EQ, end);
+		} TEST_END;
+#endif
+
+#if FPX_RDC == LAZYR || !defined(STRIP)
+		TEST_CASE("lazy-reduced compressed squaring is correct") {
+			fp24_rand(a);
+			fp24_conv_cyc(a, a);
+			fp4_zero(b[0][0]);
+			fp4_zero(b[1][1]);
+			fp4_zero(c[0][0]);
+			fp4_zero(c[1][1]);
+			fp24_sqr_pck(b, a);
+			fp24_sqr_pck_lazyr(c, a);
+			TEST_ASSERT(fp24_cmp(b, c) == RLC_EQ, end);
+		} TEST_END;
+#endif
+
+        TEST_CASE("cyclotomic exponentiation is correct") {
+			fp24_rand(a);
+			fp24_conv_cyc(a, a);
+			bn_zero(f);
+			fp24_exp_cyc(c, a, f);
+			TEST_ASSERT(fp24_cmp_dig(c, 1) == RLC_EQ, end);
+			bn_set_dig(f, 1);
+			fp24_exp_cyc(c, a, f);
+			TEST_ASSERT(fp24_cmp(c, a) == RLC_EQ, end);
+			bn_rand(f, RLC_POS, RLC_FP_BITS);
+			fp24_exp(b, a, f);
+			fp24_exp_cyc(c, a, f);
+			TEST_ASSERT(fp24_cmp(b, c) == RLC_EQ, end);
+			bn_rand(f, RLC_POS, RLC_FP_BITS);
+			fp24_exp_cyc(b, a, f);
+			bn_neg(f, f);
+			fp24_exp_cyc(c, a, f);
+			fp24_inv_cyc(c, c);
+			/* Try sparse exponents as well. */
+			bn_set_2b(f, RLC_FP_BITS - 1);
+			bn_set_bit(f, RLC_FP_BITS / 2, 1);
+			bn_set_bit(f, 0, 1);
+			fp24_rand(a);
+			fp24_conv_cyc(a, a);
+			fp24_exp_cyc(b, a, f);
+			bn_neg(f, f);
+			fp24_exp_cyc(c, a, f);
+			fp24_inv_cyc(c, c);
+			TEST_ASSERT(fp24_cmp(b, c) == RLC_EQ, end);
+        } TEST_END;
+
+		TEST_CASE("sparse cyclotomic exponentiation is correct") {
+			int g[3] = {0, 0, RLC_FP_BITS - 1};
+			do {
+				bn_rand(f, RLC_POS, RLC_DIG);
+				g[1] = f->dp[0] % RLC_FP_BITS;
+			} while (g[1] == 0 || g[1] == RLC_FP_BITS - 1);
+			bn_set_2b(f, RLC_FP_BITS - 1);
+			bn_set_bit(f, g[1], 1);
+			bn_set_bit(f, 0, 1);
+			fp24_rand(a);
+			fp24_conv_cyc(a, a);
+			fp24_exp(b, a, f);
+			fp24_exp_cyc_sps(c, a, g, 3, RLC_POS);
+			TEST_ASSERT(fp24_cmp(b, c) == RLC_EQ, end);
+			g[0] = 0;
+			fp24_exp_cyc_sps(c, a, g, 0, RLC_POS);
+			TEST_ASSERT(fp24_cmp_dig(c, 1) == RLC_EQ, end);
+			g[0] = 0;
+			fp24_exp_cyc_sps(c, a, g, 1, RLC_POS);
+			TEST_ASSERT(fp24_cmp(c, a) == RLC_EQ, end);
+			g[0] = -1;
+			fp24_exp_cyc_sps(b, a, g, 1, RLC_POS);
+			fp24_inv(b, b);
+			fp24_sqr_cyc(c, a);
+			TEST_ASSERT(fp24_cmp(b, c) == RLC_EQ, end);
+		} TEST_END;
+	}
+	RLC_CATCH_ANY {
+		util_print("FATAL ERROR!\n");
+		RLC_ERROR(end);
+	}
+	code = RLC_OK;
+  end:
+	fp24_free(a);
+	fp24_free(b);
+	fp24_free(c);
+	fp24_free(d[0]);
+	fp24_free(d[1]);
+	fp24_free(e[0]);
+	fp24_free(e[1]);
+	bn_free(f);
+	return code;
+}
+
 static int inversion24(void) {
 	int code = RLC_ERR;
 	fp24_t a, b, c;
@@ -5475,6 +5666,10 @@ static int exponentiation24(void) {
 			fp24_exp(c, a, d);
 			fp24_inv(c, c);
 			TEST_ASSERT(fp24_cmp(b, c) == RLC_EQ, end);
+			bn_rand(d, RLC_POS, RLC_DIG);
+			fp24_exp_dig(b, a, d->dp[0]);
+			fp24_exp(c, a, d);
+			TEST_ASSERT(fp24_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_CASE("frobenius and exponentiation are consistent") {
@@ -5499,6 +5694,61 @@ static int exponentiation24(void) {
 	fp24_free(b);
 	fp24_free(c);
 	bn_free(d);
+	return code;
+}
+
+static int compression24(void) {
+	int code = RLC_ERR;
+	uint8_t bin[24 * RLC_FP_BYTES];
+	fp24_t a, b, c;
+
+	fp24_null(a);
+	fp24_null(b);
+	fp24_null(c);
+
+	RLC_TRY {
+		fp24_new(a);
+		fp24_new(b);
+		fp24_new(c);
+
+		TEST_CASE("compression is consistent") {
+			fp24_rand(a);
+			fp24_pck(b, a);
+			TEST_ASSERT(fp24_upk(c, b) == 1, end);
+			TEST_ASSERT(fp24_cmp(a, c) == RLC_EQ, end);
+			fp24_rand(a);
+			fp24_conv_cyc(a, a);
+			fp24_pck(b, a);
+			TEST_ASSERT(fp24_upk(c, b) == 1, end);
+			TEST_ASSERT(fp24_cmp(a, c) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("compression is consistent with reading and writing") {
+			fp24_rand(a);
+			fp24_conv_cyc(a, a);
+			fp24_write_bin(bin, 16 * RLC_FP_BYTES, a, 1);
+			fp24_read_bin(b, bin, 16 * RLC_FP_BYTES);
+			TEST_ASSERT(fp24_cmp(a, b) == RLC_EQ, end);
+		}
+		TEST_END;
+
+		TEST_CASE("getting the size of a compressed field element is correct") {
+			fp24_rand(a);
+			TEST_ASSERT(fp24_size_bin(a, 0) == 24 * RLC_FP_BYTES, end);
+			fp24_conv_cyc(a, a);
+			TEST_ASSERT(fp24_size_bin(a, 1) == 16 * RLC_FP_BYTES, end);
+		}
+		TEST_END;
+	}
+	RLC_CATCH_ANY {
+		util_print("FATAL ERROR!\n");
+		RLC_ERROR(end);
+	}
+	code = RLC_OK;
+  end:
+	fp24_free(a);
+	fp24_free(b);
+	fp24_free(c);
 	return code;
 }
 
@@ -7498,6 +7748,16 @@ int main(void) {
 		}
 
 		if (exponentiation24() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (cyclotomic24() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (compression24() != RLC_OK) {
 			core_clean();
 			return 1;
 		}

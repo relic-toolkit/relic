@@ -583,28 +583,69 @@ void fp24_print(fp24_t a) {
 	fp8_print(a[2]);
 }
 
-int fp24_size_bin(fp24_t a) {
-	return 24 * RLC_FP_BYTES;
+int fp24_size_bin(fp24_t a, int pack) {
+	if (pack) {
+		if (fp24_test_cyc(a)) {
+			return 16 * RLC_FP_BYTES;
+		} else {
+			return 24 * RLC_FP_BYTES;
+		}
+	} else {
+		return 24 * RLC_FP_BYTES;
+	}
 }
 
 void fp24_read_bin(fp24_t a, const uint8_t *bin, int len) {
-	if (len != 24 * RLC_FP_BYTES) {
+	if (len != 16 * RLC_FP_BYTES && len != 24 * RLC_FP_BYTES) {
 		RLC_THROW(ERR_NO_BUFFER);
 		return;
 	}
-	fp8_read_bin(a[0], bin, 8 * RLC_FP_BYTES);
-	fp8_read_bin(a[1], bin + 8 * RLC_FP_BYTES, 8 * RLC_FP_BYTES);
-	fp8_read_bin(a[2], bin + 16 * RLC_FP_BYTES, 8 * RLC_FP_BYTES);
+	if (len == 16 * RLC_FP_BYTES) {
+		fp4_zero(a[0][0]);
+		fp4_zero(a[0][1]);
+		fp4_read_bin(a[1][0], bin, 4 * RLC_FP_BYTES);
+		fp4_read_bin(a[1][1], bin + 4 * RLC_FP_BYTES, 4 * RLC_FP_BYTES);
+		fp4_read_bin(a[2][0], bin + 8 * RLC_FP_BYTES, 4 * RLC_FP_BYTES);
+		fp4_read_bin(a[2][1], bin + 12 * RLC_FP_BYTES, 4 * RLC_FP_BYTES);
+		fp24_back_cyc(a, a);
+	}
+	if (len == 24 * RLC_FP_BYTES) {
+		fp8_read_bin(a[0], bin, 8 * RLC_FP_BYTES);
+		fp8_read_bin(a[1], bin + 8 * RLC_FP_BYTES, 8 * RLC_FP_BYTES);
+		fp8_read_bin(a[2], bin + 16 * RLC_FP_BYTES, 8 * RLC_FP_BYTES);
+	}
 }
 
-void fp24_write_bin(uint8_t *bin, int len, fp24_t a) {
-	if (len != 24 * RLC_FP_BYTES) {
-		RLC_THROW(ERR_NO_BUFFER);
-		return;
+void fp24_write_bin(uint8_t *bin, int len, fp24_t a, int pack) {
+	fp24_t t;
+
+	fp24_null(t);
+
+	RLC_TRY {
+		fp24_new(t);
+
+		if (pack) {
+			if (len != 16 * RLC_FP_BYTES) {
+				RLC_THROW(ERR_NO_BUFFER);
+			}
+			fp24_pck(t, a);
+			fp4_write_bin(bin, 4 * RLC_FP_BYTES, a[1][0]);
+			fp4_write_bin(bin + 4 * RLC_FP_BYTES, 4 * RLC_FP_BYTES, a[1][1]);
+			fp4_write_bin(bin + 8 * RLC_FP_BYTES, 4 * RLC_FP_BYTES, a[2][0]);
+			fp4_write_bin(bin + 12 * RLC_FP_BYTES, 4 * RLC_FP_BYTES, a[2][1]);
+		} else {
+			if (len != 24 * RLC_FP_BYTES) {
+				RLC_THROW(ERR_NO_BUFFER);
+			}
+			fp8_write_bin(bin, 8 * RLC_FP_BYTES, a[0]);
+			fp8_write_bin(bin + 8 * RLC_FP_BYTES, 8 * RLC_FP_BYTES, a[1]);
+			fp8_write_bin(bin + 16 * RLC_FP_BYTES, 8 * RLC_FP_BYTES, a[2]);
+		}
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		fp24_free(t);
 	}
-	fp8_write_bin(bin, 8 * RLC_FP_BYTES, a[0]);
-	fp8_write_bin(bin + 8 * RLC_FP_BYTES, 8 * RLC_FP_BYTES, a[1]);
-	fp8_write_bin(bin + 16 * RLC_FP_BYTES, 8 * RLC_FP_BYTES, a[2]);
 }
 
 void fp24_set_dig(fp24_t a, dig_t b) {
@@ -690,8 +731,8 @@ void fp48_write_bin(uint8_t *bin, int len, fp48_t a, int pack) {
 			if (len != 48 * RLC_FP_BYTES) {
 				RLC_THROW(ERR_NO_BUFFER);
 			}
-			fp24_write_bin(bin, 24 * RLC_FP_BYTES, a[0]);
-			fp24_write_bin(bin + 24 * RLC_FP_BYTES, 24 * RLC_FP_BYTES, a[1]);
+			fp24_write_bin(bin, 24 * RLC_FP_BYTES, a[0], 0);
+			fp24_write_bin(bin + 24 * RLC_FP_BYTES, 24 * RLC_FP_BYTES, a[1], 0);
 		}
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
