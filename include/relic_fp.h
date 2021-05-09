@@ -121,7 +121,7 @@ enum {
 	/** 455-bit prime for BLS curve of embedding degree 12. */
 	B12_455,
 	/** 477-bit prime for BLS curve of embedding degree 24. */
-	B24_477,
+	B24_509,
 	/** 508-bit prime for KSS16 curve. */
 	KSS_508,
 	/** 511-bit prime for Optimal TNFS-secure curve. */

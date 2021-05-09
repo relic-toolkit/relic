@@ -481,23 +481,6 @@
 #define B12_P455_MAPU	"-1"
 #endif
 
-#if defined(EP_ENDOM) && FP_PRIME == 477
-/**
- * Parameters for a 477-bit pairing-friendly prime curve at the 192-bit security level.
- */
-/** @{ */
-#define B24_P477_A		"0"
-#define B24_P477_B		"4"
-#define B24_P477_X		"15DFD8E4893A408A34B600532B51CC86CAB3AF07103CFCF3EC7B9AF836904CFB60AB0FA8AC91EE6255E5EF6286FA0C24DF9D76EA50599C2E103E40AD"
-#define B24_P477_Y		"0A683957A59B1B488FA657E11B44815056BDE33C09D6AAD392D299F89C7841B91A683BF01B7E70547E48E0FBE1CA9E991983131470F886BA9B6FCE2E"
-#define B24_P477_R		"57F52EE445CC41781FCD53D13E45F6ACDFE4F9F2A3CD414E71238AFC9FCFC7D38CAEF64F4FF79F90013FFFFFF0000001"
-#define B24_P477_H		"41550AAAC04B3FD5000015AB"
-#define B24_P477_BETA	"13D9011CCEAD3E74042D5F515F5F04BD3F8EDD703A4BC74ADDB36A479C0D9AD61475466C5CC1F64BC109A18B162560A1743C98DEF233CCCB5F717BEC"
-#define B24_P477_LAMB	"1001740B431D14BFD17F4BD000300173FFFFFFFEFFFFFFFED"
-#define B24_P477_MAPU	"1"
-/** @} */
-#endif
-
 #if defined(EP_ENDOM) && FP_PRIME == 508
 /**
  * Parameters for a 508-bit pairing-friendly prime curve at the 192-bit security level.
@@ -512,6 +495,21 @@
 #define KSS_P508_BETA	"926C960A5EC3B3A6C6B9CEF2CB923D3240E4780BC1AE423EE39586AD923B1C949768022369DD2CE502E7FCA0670B3A996AC44B48B523DAA7390CCB1F6D9012F"
 #define KSS_P508_LAMB	"1001740B431D14BFD17F4BD000300173FFFFFFFEFFFFFFFED"
 #define KSS_P508_MAPU	"1"
+/** @} */
+#endif
+
+#if defined(EP_ENDOM) && FP_PRIME == 509
+/**
+ * Parameters for a 477-bit pairing-friendly prime curve at the 192-bit security level.
+ */
+/** @{ */
+#define B24_P509_A		"0"
+#define B24_P509_B		"1"
+#define B24_P509_X		"3A1ADC72F714991991F491FA07B2429302EE6CB4FD3A8663BA38F36F81984232A749B91C286A4579F7736D120DC572C42719E75C7F58AC1426DB4827CF4A46A"
+#define B24_P509_Y		"101264A0ACB6129DE3CEB5FF829968E5030855FAD666E88506531D46050023ACB15843C4EA8F8AB478F618D263D4B6271D5972803F2046DDD7C7DBC2F6232FFD"
+#define B24_P509_R		"100000FFFF870FF91CE195DB5B6F3EBD1E08C94C9E193B724ED58B907FF7C311A80D7CABC647746AE3ECB627C943998457FE001"
+#define B24_P509_H		"155555AAAA805FFFAAC0154AAC"
+#define B24_P509_MAPU	"2"
 /** @} */
 #endif
 
@@ -939,16 +937,17 @@ void ep_param_set(int param) {
 				pairf = EP_B12;
 				break;
 #endif
-#if defined(EP_ENDOM) && FP_PRIME == 477
-			case B24_P477:
-				ASSIGNK(B24_P477, B24_477);
-				plain = 1;
-				break;
-#endif
 #if defined(EP_ENDOM) && FP_PRIME == 508
 			case KSS_P508:
 				ASSIGNK(KSS_P508, KSS_508);
 				endom = 1;
+				break;
+#endif
+#if defined(EP_ENDOM) && FP_PRIME == 509
+			case B24_P509:
+				ASSIGN(B24_P509, B24_509);
+				endom = 1;
+				pairf = EP_B24;
 				break;
 #endif
 #if defined(EP_ENDOM) && FP_PRIME == 511
@@ -1041,6 +1040,18 @@ void ep_param_set(int param) {
 					fp_sub_dig(beta, beta, 1);
 					fp_hlv(beta, beta);
 					fp_prime_get_par(lamb);
+					bn_sqr(lamb, lamb);
+					bn_sub_dig(lamb, lamb, 1);
+					break;
+				case EP_B24:
+				/* beta = (-1 + sqrt(-3))/2, lambda = z^4 - 1. */
+					fp_set_dig(beta, 3);
+					fp_neg(beta, beta);
+					fp_srt(beta, beta);
+					fp_sub_dig(beta, beta, 1);
+					fp_hlv(beta, beta);
+					fp_prime_get_par(lamb);
+				 	bn_sqr(lamb, lamb);
 					bn_sqr(lamb, lamb);
 					bn_sub_dig(lamb, lamb, 1);
 					break;
@@ -1197,10 +1208,10 @@ int ep_param_set_any_endom(void) {
 #endif
 #elif FP_PRIME == 455
 	ep_param_set(B12_P455);
-#elif FP_PRIME == 477
-	ep_param_set(B24_P477);
 #elif FP_PRIME == 508
 	ep_param_set(KSS_P508);
+#elif FP_PRIME == 509
+	ep_param_set(B24_P509);
 #elif FP_PRIME == 511
 	ep_param_set(OT8_P511);
 #elif FP_PRIME == 544
@@ -1274,8 +1285,8 @@ int ep_param_set_any_pairf(void) {
 	type = RLC_EP_DTYPE;
 	degree = 2;
 #elif FP_PRIME == 477
-	ep_param_set(B24_P477);
-	type = RLC_EP_MTYPE;
+	ep_param_set(B24_P509);
+	type = RLC_EP_DTYPE;
 	degree = 4;
 #elif FP_PRIME == 508
 	ep_param_set(KSS_P508);
@@ -1404,11 +1415,11 @@ void ep_param_print(void) {
 		case B12_P455:
 			util_banner("Curve B12-P455:", 0);
 			break;
-		case B24_P477:
-			util_banner("Curve B24-P477:", 0);
-			break;
 		case KSS_P508:
 			util_banner("Curve KSS-P508:", 0);
+			break;
+		case B24_P509:
+			util_banner("Curve B24-P509:", 0);
 			break;
 		case OT8_P511:
 			util_banner("Curve OT8-P511:", 0);
@@ -1477,6 +1488,7 @@ int ep_param_level(void) {
 		case B12_P455:
 			return 140;
 		case NIST_P384:
+		case B24_P509:
 			return 192;
 		case NIST_P521:
 			return 256;
@@ -1489,6 +1501,11 @@ int ep_param_level(void) {
 
 int ep_param_embed(void) {
 	switch (ep_param_get()) {
+		case SS_P1536:
+			return 2;
+		case OT8_P511:
+		case CP8_P544:
+			return 8;
 		case BN_P158:
 		case BN_P254:
 		case BN_P256:
@@ -1500,11 +1517,8 @@ int ep_param_embed(void) {
 		case B12_P455:
 		case B12_P638:
 			return 12;
-		case SS_P1536:
-			return 2;
-		case OT8_P511:
-		case CP8_P544:
-			return 8;
+		case B24_P509:
+			return 24;
 		case B48_P575:
 			return 48;
 		case K54_P569:

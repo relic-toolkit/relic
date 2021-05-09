@@ -323,6 +323,20 @@ void fp_prime_set_pairf(const bn_t x, int pairf) {
 				bn_div_dig(p, p, 4);
 				fp_prime_set_dense(p);
 				break;
+			case EP_B24:
+				/* p = (u - 1)^2 * (u^8 - u^4 + 1) / 3 + u. */
+				bn_sqr(t1, t0);
+				bn_sqr(t1, t1);
+				bn_sqr(p, t1);
+				bn_sub(p, p, t1);
+				bn_add_dig(p, p, 1);
+				bn_sub_dig(t1, t0, 1);
+				bn_sqr(t1, t1);
+				bn_mul(p, p, t1);
+				bn_div_dig(p, p, 3);
+				bn_add(p, p, t0);
+				fp_prime_set_dense(p);
+				break;
 			case EP_B48:
 				/* p = (x - 1)^2*(x^16 - x^8 + 1) / 3 + x. */
 				bn_sqr(t1, t0);
