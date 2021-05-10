@@ -201,12 +201,20 @@ int g2_is_valid(g2_t a) {
 				/* Formulas from "Faster Subgroup Checks for BLS12-381" by Bowe.
 				 * https://eprint.iacr.org/2019/814.pdf */
 				case EP_B12:
-					/* Check [z]psi^3(P) + P == \psi^2(P).
-					 * Since p mod n = r, we can check instead that
+					/* Check [z]psi^3(P) + P == \psi^2(P). */
+#if FP_PRIME == 461
+					/* Since p mod n = r, we can check instead that
 					 * psi^4(P) + P == \psi^2(P). */
 					ep2_frb(u, a, 4);
 					ep2_add(u, u, a);
 					ep2_frb(v, a, 2);
+#else
+					fp_prime_get_par(n);
+					g2_mul(u, a, n);
+					ep2_frb(u, u, 3);
+					ep2_frb(v, a, 2);
+					ep2_add(u, u, a);
+#endif
 					r = ep2_on_curve(a) && (g2_cmp(u, v) == RLC_EQ);
 					break;
 				default:
@@ -280,10 +288,18 @@ int gt_is_valid(gt_t a) {
 				/* Formulas from "Faster Subgroup Checks for BLS12-381" by Bowe.
 				 * https://eprint.iacr.org/2019/814.pdf */
 				case EP_B12:
+#if FP_PRIME == 461
 					/* Check [z]psi^3(P) + P == \psi^2(P), or trick from G2. */
 					fp12_frb(u, a, 4);
 					fp12_mul(u, u, a);
 					fp12_frb(v, a, 2);
+#else
+					fp_prime_get_par(n);
+					gt_exp(u, a, n);
+					gt_frb(u, u, 3);
+					gt_frb(v, a, 2);
+					gt_mul(u, u, a);
+#endif
 					r = (fp12_cmp(u, v) == RLC_EQ);
 					break;
 				default:

@@ -41,6 +41,14 @@ void g1_mul(g1_t c, g1_t a, bn_t b) {
 	bn_null(n);
 	bn_null(_b);
 
+	if (bn_bits(b) <= RLC_DIG) {
+		g1_mul_dig(c, a, b->dp[0]);
+		if (bn_sign(b) == RLC_NEG) {
+			g1_neg(c, c);
+		}
+		return;
+	}
+
 	RLC_TRY {
 		bn_new(n);
 		bn_new(_b);
@@ -84,6 +92,14 @@ void g2_mul(g2_t c, g2_t a, bn_t b) {
 
 	bn_null(n);
 	bn_null(_b);
+
+	if (bn_bits(b) <= RLC_DIG) {
+		g2_mul_dig(c, a, b->dp[0]);
+		if (bn_sign(b) == RLC_NEG) {
+			g2_neg(c, c);
+		}
+		return;
+	}
 
 	RLC_TRY {
 		bn_new(n);
