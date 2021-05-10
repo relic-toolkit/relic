@@ -1405,8 +1405,8 @@ static int doubling24(void) {
 
 #if EP_ADD == BASIC || !defined(STRIP)
 		TEST_CASE("miller doubling in affine coordinates is correct") {
-			ep_curve_get_gen(p);
-			ep4_curve_get_gen(q);
+			ep_rand(p);
+			ep4_rand(q);
 			fp24_zero(e1);
 			fp24_zero(e2);
 			fp_neg(p->y, p->y);
@@ -1425,8 +1425,8 @@ static int doubling24(void) {
 
 #if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
 		TEST_CASE("miller doubling in projective coordinates is correct") {
-			ep_curve_get_gen(p);
-			ep4_curve_get_gen(q);
+			ep_rand(p);
+			ep4_rand(q);
 			fp24_zero(e1);
 			fp24_zero(e2);
 			/* Precompute. */
@@ -1583,8 +1583,6 @@ static int pairing24(void) {
 		TEST_CASE("pairing non-degeneracy is correct") {
 			ep_rand(p[0]);
 			ep4_rand(q[0]);
-			ep_curve_get_gen(p[0]);
-			ep4_curve_get_gen(q[0]);
 			pp_map_k24(e1, p[0], q[0]);
 			TEST_ASSERT(fp24_cmp_dig(e1, 1) != RLC_EQ, end);
 			ep_set_infty(p[0]);
