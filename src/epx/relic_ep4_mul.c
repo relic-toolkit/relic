@@ -276,9 +276,7 @@ void ep4_mul_lwnaf(ep4_t r, ep4_t p, const bn_t k) {
 		return;
 	}
 
-#if defined(EP_PLAIN) || defined(EP_SUPER)
 	ep4_mul_naf_imp(r, p, k);
-#endif
 }
 
 #endif

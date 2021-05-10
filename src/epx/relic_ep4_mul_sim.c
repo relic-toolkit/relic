@@ -287,9 +287,7 @@ void ep4_mul_sim_inter(ep4_t r, ep4_t p, bn_t k, ep4_t q, bn_t m) {
 		return;
 	}
 
-#if defined(EP_PLAIN)
 	ep4_mul_sim_plain(r, p, k, q, m, NULL);
-#endif
 }
 
 #endif
