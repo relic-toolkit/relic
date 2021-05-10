@@ -367,7 +367,7 @@ void fp3_mulm_low(fp3_t c, fp3_t a, fp3_t b);
  * @param[out] c			- the result.
  * @param[in] a				- the field element to square.
  */
-void fp3_sqrn_low(dv2_t c, fp3_t a);
+void fp3_sqrn_low(dv3_t c, fp3_t a);
 
 /**
  * Squares a cubic extension field element with integrated modular
