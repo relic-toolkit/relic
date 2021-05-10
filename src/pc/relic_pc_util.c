@@ -285,7 +285,7 @@ int gt_is_valid(gt_t a) {
 					gt_frb(v, a, 2);
 					gt_mul(u, u, a);
 #endif
-					r = (fp12_cmp(u, v) == RLC_EQ);
+					r = (gt_cmp(u, v) == RLC_EQ);
 					break;
 				default:
 					/* Common case. */

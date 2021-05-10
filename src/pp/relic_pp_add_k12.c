@@ -124,9 +124,9 @@ void pp_add_k12_projc_basic(fp12_t l, ep2_t r, ep2_t q, ep_t p) {
 		}
 
 		/* l10 = - (A * xp). */
-		fp_mul(l[one][zero][0], t1[0], p->x);
-		fp_mul(l[one][zero][1], t1[1], p->x);
-		fp2_neg(l[one][zero], l[one][zero]);
+		fp_neg(t4[0], p->x);
+		fp_mul(l[one][zero][0], t1[0], t4[0]);
+		fp_mul(l[one][zero][1], t1[1], t4[0]);
 
 		/* t4 = B * x2. */
 		fp2_mul(t4, q->x, t1);
@@ -222,9 +222,9 @@ void pp_add_k12_projc_lazyr(fp12_t l, ep2_t r, ep2_t q, ep_t p) {
 			zero ^= 1;
 		}
 
-		fp_mul(l[one][zero][0], t1[0], p->x);
-		fp_mul(l[one][zero][1], t1[1], p->x);
-		fp2_neg(l[one][zero], l[one][zero]);
+		fp_neg(t3[0], p->x);
+		fp_mul(l[one][zero][0], t1[0], t3[0]);
+		fp_mul(l[one][zero][1], t1[1], t3[0]);
 
 #ifdef RLC_FP_ROOM
 		fp2_mulc_low(u0, q->x, t1);
