@@ -1008,7 +1008,7 @@ int cp_pdprv_ver(gt_t r, gt_t g[4], bn_t c, gt_t e[2]);
  * @param[out] e			- the precomputed values e(U1, U2).
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_ampub_gen(bn_t r, g1_t u1, g2_t u2, g2_t v2, gt_t e);
+int cp_lvpub_gen(bn_t r, g1_t u1, g2_t u2, g2_t v2, gt_t e);
 
 /**
  * Execute the client-side request for the AMORE pairing delegation protocol.
@@ -1025,7 +1025,7 @@ int cp_ampub_gen(bn_t r, g1_t u1, g2_t u2, g2_t v2, gt_t e);
  * @param[in] v2			- the image of the randomness in G_2.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_ampub_ask(bn_t c, g1_t v1, g2_t w2, g1_t p, g2_t q, bn_t r, g1_t u1,
+int cp_lvpub_ask(bn_t c, g1_t v1, g2_t w2, g1_t p, g2_t q, bn_t r, g1_t u1,
 		g2_t u2, g2_t v2);
 
 /**
@@ -1039,7 +1039,7 @@ int cp_ampub_ask(bn_t c, g1_t v1, g2_t w2, g1_t p, g2_t q, bn_t r, g1_t u1,
  * @param[in] w2			- the blinded element in G_2.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_ampub_ans(gt_t g[2], g1_t p, g2_t q, g1_t v1, g2_t v2, g2_t w2);
+int cp_lvpub_ans(gt_t g[2], g1_t p, g2_t q, g1_t v1, g2_t v2, g2_t w2);
 
 /**
  * Verifies the result of the AMORE pairing delegation protocol.
@@ -1050,7 +1050,7 @@ int cp_ampub_ans(gt_t g[2], g1_t p, g2_t q, g1_t v1, g2_t v2, g2_t w2);
  * @param[out] e			- the precomputed values e(U1, U2).
  * @return a boolean value indicating if the computation is correct.
  */
-int cp_ampub_ver(gt_t r, gt_t g[2], bn_t c, gt_t e);
+int cp_lvpub_ver(gt_t r, gt_t g[2], bn_t c, gt_t e);
 
 /**
  * Generate parameters for the AMORE pairing delegation protocol with private
@@ -1064,7 +1064,7 @@ int cp_ampub_ver(gt_t r, gt_t g[2], bn_t c, gt_t e);
  * @param[out] e			- the precomputed values e(U1, U2).
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_amprv_gen(bn_t c, bn_t r[3], g1_t u1[2], g2_t u2[2], g2_t v2[4],
+int cp_lvprv_gen(bn_t c, bn_t r[3], g1_t u1[2], g2_t u2[2], g2_t v2[4],
 		gt_t e[2]);
 
 /**
@@ -1081,7 +1081,7 @@ int cp_amprv_gen(bn_t c, bn_t r[3], g1_t u1[2], g2_t u2[2], g2_t v2[4],
  * @param[in] v2			- the image of the randomness in G_2.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_amprv_ask(g1_t v1[3], g2_t w2[4], g1_t p, g2_t q, bn_t c, bn_t r[3],
+int cp_lvprv_ask(g1_t v1[3], g2_t w2[4], g1_t p, g2_t q, bn_t c, bn_t r[3],
 		g1_t u1[2], g2_t u2[2], g2_t v2[4]);
 
 /**
@@ -1095,7 +1095,7 @@ int cp_amprv_ask(g1_t v1[3], g2_t w2[4], g1_t p, g2_t q, bn_t c, bn_t r[3],
  * @param[in] w2			- the blinded element in G_2.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_amprv_ans(gt_t g[4], g1_t v1[3], g2_t w2[4]);
+int cp_lvprv_ans(gt_t g[4], g1_t v1[3], g2_t w2[4]);
 
 /**
  * Verifies the result of the AMORE pairing delegation protocol.
@@ -1106,7 +1106,7 @@ int cp_amprv_ans(gt_t g[4], g1_t v1[3], g2_t w2[4]);
  * @param[out] e			- the precomputed values e(U1, U2).
  * @return a boolean value indicating if the computation is correct.
  */
-int cp_amprv_ver(gt_t r, gt_t g[4], bn_t c, gt_t e[2]);
+int cp_lvprv_ver(gt_t r, gt_t g[4], bn_t c, gt_t e[2]);
 
 /**
  * Generates a master key for the SOKAKA identity-based non-interactive

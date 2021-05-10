@@ -545,27 +545,27 @@ static void pdpub(void) {
 		BENCH_ADD(cp_pdpub_ver(r, g, r1, e));
 	} BENCH_END;
 
-	BENCH_RUN("cp_ampub_gen") {
-		BENCH_ADD(cp_ampub_gen(r2, u1, u2, v2, e));
+	BENCH_RUN("cp_lvpub_gen") {
+		BENCH_ADD(cp_lvpub_gen(r2, u1, u2, v2, e));
 	} BENCH_END;
 
-	BENCH_RUN("cp_ampub_ask") {
+	BENCH_RUN("cp_lvpub_ask") {
 		g1_rand(p);
 		g2_rand(q);
-		BENCH_ADD(cp_ampub_ask(r1, v1, w2, p, q, r2, u1, u2, v2));
+		BENCH_ADD(cp_lvpub_ask(r1, v1, w2, p, q, r2, u1, u2, v2));
 	} BENCH_END;
 
-	BENCH_RUN("cp_ampub_ans") {
+	BENCH_RUN("cp_lvpub_ans") {
 		g1_rand(p);
 		g2_rand(q);
-		BENCH_ADD(cp_ampub_ans(g, p, q, v1, v2, w2));
+		BENCH_ADD(cp_lvpub_ans(g, p, q, v1, v2, w2));
 	} BENCH_END;
 
-	BENCH_RUN("cp_ampub_ver") {
+	BENCH_RUN("cp_lvpub_ver") {
 		g1_rand(p);
 		g2_rand(q);
 		pc_map(e, p, q);
-		BENCH_ADD(cp_ampub_ver(r, g, r1, e));
+		BENCH_ADD(cp_lvpub_ver(r, g, r1, e));
 	} BENCH_END;
 
 	bn_free(r1);
@@ -650,26 +650,26 @@ static void pdprv(void) {
 		BENCH_ADD(cp_pdprv_ver(r, g, r1, e));
 	} BENCH_END;
 
-	BENCH_RUN("cp_amprv_gen") {
-		BENCH_ADD(cp_amprv_gen(r1, r2, u1, u2, v2, e));
+	BENCH_RUN("cp_lvprv_gen") {
+		BENCH_ADD(cp_lvprv_gen(r1, r2, u1, u2, v2, e));
 	} BENCH_END;
 
-	BENCH_RUN("cp_amprv_ask") {
+	BENCH_RUN("cp_lvprv_ask") {
 		g1_rand(p);
 		g2_rand(q);
-		BENCH_ADD(cp_amprv_ask(v1, w2, p, q, r1, r2, u1, u2, v2));
+		BENCH_ADD(cp_lvprv_ask(v1, w2, p, q, r1, r2, u1, u2, v2));
 	} BENCH_END;
 
-	BENCH_RUN("cp_amprv_ans") {
+	BENCH_RUN("cp_lvprv_ans") {
 		g1_rand(p);
 		g2_rand(q);
-		BENCH_ADD(cp_amprv_ans(g, v1, w2));
+		BENCH_ADD(cp_lvprv_ans(g, v1, w2));
 	} BENCH_END;
 
-	BENCH_RUN("cp_amprv_ver") {
+	BENCH_RUN("cp_lvprv_ver") {
 		g1_rand(p);
 		g2_rand(q);
-		BENCH_ADD(cp_amprv_ver(r, g, r1, e));
+		BENCH_ADD(cp_lvprv_ver(r, g, r1, e));
 	} BENCH_END;
 
 	bn_free(r1);
