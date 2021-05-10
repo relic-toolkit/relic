@@ -641,7 +641,7 @@ static int memory2(void) {
 int util2(void) {
 	int l, code = RLC_ERR;
 	g2_t a, b, c;
-	uint8_t bin[4 * RLC_PC_BYTES + 1];
+	uint8_t bin[8 * RLC_PC_BYTES + 1];
 
 	g2_null(a);
 	g2_null(b);
@@ -1157,6 +1157,8 @@ static int validity2(void) {
 	return code;
 }
 
+#if FP_PRIME != 509
+
 static int hashing2(void) {
 	int code = RLC_ERR;
 	g2_t a;
@@ -1189,6 +1191,8 @@ static int hashing2(void) {
 	bn_free(n);
 	return code;
 }
+
+#endif
 
 static int memory(void) {
 	err_t e;
@@ -1709,9 +1713,11 @@ int test2(void) {
 		return RLC_ERR;
 	}
 
+#if FP_PRIME != 509
 	if (hashing2() != RLC_OK) {
 		return RLC_ERR;
 	}
+#endif
 
 	return RLC_OK;
 }

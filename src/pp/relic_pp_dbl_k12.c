@@ -54,7 +54,6 @@ void pp_dbl_k12_basic(fp12_t l, ep2_t r, ep2_t q, ep_t p) {
 		ep2_new(t);
 		ep2_copy(t, q);
 		ep2_dbl_slp_basic(r, s, q);
-		fp12_zero(l);
 
 		if (ep2_curve_is_twist() == RLC_EP_MTYPE) {
 			one ^= 1;
