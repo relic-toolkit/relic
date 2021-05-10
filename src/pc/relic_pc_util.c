@@ -93,25 +93,19 @@ int g1_is_valid(g1_t a) {
 				/* Formulas from "Faster Subgroup Checks for BLS12-381" by Bowe.
 				 * https://eprint.iacr.org/2019/814.pdf */
 				case EP_B12:
-					/* Check [(z^2−1)](2\psi(P)-P-\psi^2(P)) == [3]\psi^2(P). */
+					/* Check [(z^2−1)](2\psi(P)-P-\psi^2(P)) == [3]\psi^2(P).
+					 * Since \psi(P) = [\lambda]P = [z^2 - 1]P, it is the same
+					 * as checking \psi(2\psi(P)-P-\psi^2(P)) == [3]\psi^2(P),
+					 * or \psi((\psi-1)^2(P)) % r == -3*\psi^2(P). */
 					ep_psi(v, a);
-					ep_dbl(u, v);
-					ep_psi(v, v);
-					ep_sub(u, u, a);
-					ep_sub(u, u, v);
-					fp_prime_get_par(n);
-					bn_sqr(n, n);
-					ep_copy(t, u);
-					for (int i = bn_bits(n) - 2; i >= 0; i--) {
-						ep_dbl(t, t);
-						if (bn_get_bit(n, i)) {
-							ep_add(t, t, u);
-						}
-					}
-					ep_sub(t, t, u);
-					ep_dbl(u, v);
+					ep_sub(t, v, a);
+					ep_psi(u, v);
+					ep_psi(v, t);
+					ep_sub(v, v, t);
+					ep_psi(t, v);
+					ep_dbl(v, u);
 					ep_add(u, u, v);
-					r = g1_on_curve(t) && (ep_cmp(t, u) == RLC_EQ);
+					r = ep_on_curve(t) && (ep_cmp(t, u) == RLC_EQ);
 					break;
 				default:
 					pc_get_ord(n);
@@ -192,21 +186,19 @@ int g2_is_valid(g2_t a) {
 				 * https://eprint.iacr.org/2019/814.pdf */
 				case EP_B12:
 					/* Check [z]psi^3(P) + P == \psi^2(P). */
+#if FP_PRIME == 461
+					/* Since p mod n = r, we can check instead that
+					 * psi^4(P) + P == \psi^2(P). */
+					ep2_frb(u, a, 4);
+					ep2_add(u, u, a);
+					ep2_frb(v, a, 2);
+#else
 					fp_prime_get_par(n);
-					g2_copy(u, a);
-					for (int i = bn_bits(n) - 2; i >= 0; i--) {
-						g2_dbl(u, u);
-						if (bn_get_bit(n, i)) {
-							g2_add(u, u, a);
-						}
-					}
-					if (bn_sign(n) == RLC_NEG) {
-						g2_neg(u, u);
-					}
+					g2_mul(u, a, n);
 					g2_frb(u, u, 3);
 					g2_frb(v, a, 2);
 					g2_add(u, u, a);
-					r = g2_on_curve(a) && (g2_cmp(u, v) == RLC_EQ);
+#endif
 					break;
 				default:
 					pc_get_ord(n);
@@ -279,13 +271,19 @@ int gt_is_valid(gt_t a) {
 				/* Formulas from "Faster Subgroup Checks for BLS12-381" by Bowe.
 				 * https://eprint.iacr.org/2019/814.pdf */
 				case EP_B12:
-					/* Check [z]psi^3(P) + P == \psi^2(P). */
+#if FP_PRIME == 461
+					/* Check [z]psi^3(P) + P == \psi^2(P), or trick from G2. */
+					fp12_frb(u, a, 4);
+					fp12_mul(u, u, a);
+					fp12_frb(v, a, 2);
+#else
 					fp_prime_get_par(n);
 					gt_exp(u, a, n);
 					gt_frb(u, u, 3);
 					gt_frb(v, a, 2);
 					gt_mul(u, u, a);
-					r = (gt_cmp(u, v) == RLC_EQ);
+#endif
+					r = (fp12_cmp(u, v) == RLC_EQ);
 					break;
 				default:
 					/* Common case. */

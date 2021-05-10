@@ -41,8 +41,9 @@
 #if defined(EP_ENDOM)
 
 static void ep2_mul_glv_imp(ep2_t r, ep2_t p, const bn_t k) {
-	int i, j, l;
+	int i, j, l, _l[4];
 	bn_t n, _k[4], u[4], v[4];
+	int8_t naf[4][RLC_FP_BITS + 1];
 	ep2_t q[4];
 
 	bn_null(n);
@@ -178,16 +179,24 @@ static void ep2_mul_glv_imp(ep2_t r, ep2_t p, const bn_t k) {
 			if (bn_sign(_k[i]) == RLC_NEG) {
 				ep2_neg(q[i], q[i]);
 			}
+			_l[i] = RLC_FP_BITS + 1;
+			memset(naf[i], 0, _l[i]);
+			bn_rec_naf(naf[i], &_l[i], _k[i], 2);
 		}
 
-		l = RLC_MAX(bn_bits(_k[0]), bn_bits(_k[1]));
-		l = RLC_MAX(l, RLC_MAX(bn_bits(_k[2]), bn_bits(_k[3])));
+		l = RLC_MAX(_l[0], _l[1]);
+		l = RLC_MAX(l, RLC_MAX(_l[2], _l[3]));
+
 		ep2_set_infty(r);
-		for (i = l - 1; i >= 0; i--) {
+		for (j = l - 1; j >= 0; j--) {
 			ep2_dbl(r, r);
-			for (j = 0; j < 4; j++) {
-				if (bn_get_bit(_k[j], i)) {
-					ep2_add(r, r, q[j]);
+
+			for (i = 0; i < 4; i++) {
+				if (naf[i][j] > 0) {
+					ep2_add(r, r, q[i]);
+				}
+				if (naf[i][j] < 0) {
+					ep2_sub(r, r, q[i]);
 				}
 			}
 		}

@@ -41,6 +41,14 @@ void g1_mul(g1_t c, g1_t a, bn_t b) {
 	bn_null(n);
 	bn_null(_b);
 
+	if (bn_bits(b) <= RLC_DIG) {
+		g1_mul_dig(c, a, b->dp[0]);
+		if (bn_sign(b) == RLC_NEG) {
+			g1_neg(c, c);
+		}
+		return;
+	}
+
 	RLC_TRY {
 		bn_new(n);
 		bn_new(_b);
@@ -84,6 +92,14 @@ void g2_mul(g2_t c, g2_t a, bn_t b) {
 
 	bn_null(n);
 	bn_null(_b);
+
+	if (bn_bits(b) <= RLC_DIG) {
+		g2_mul_dig(c, a, b->dp[0]);
+		if (bn_sign(b) == RLC_NEG) {
+			g2_neg(c, c);
+		}
+		return;
+	}
 
 	RLC_TRY {
 		bn_new(n);
@@ -129,6 +145,14 @@ void gt_exp(gt_t c, gt_t a, bn_t b) {
 	bn_null(n);
 	bn_null(_b);
 
+	if (bn_bits(b) <= RLC_DIG) {
+		gt_exp_dig(c, a, b->dp[0]);
+		if (bn_sign(b) == RLC_NEG) {
+			gt_inv(c, c);
+		}
+		return;
+	}
+
 	RLC_TRY {
 		bn_new(n);
 		bn_new(_b);
@@ -142,6 +166,37 @@ void gt_exp(gt_t c, gt_t a, bn_t b) {
 	} RLC_FINALLY {
 		bn_free(n);
 		bn_free(_b);
+	}
+}
+
+void gt_exp_dig(gt_t c, gt_t a, dig_t b) {
+	gt_t t;
+
+	if (b == 0) {
+		gt_set_unity(c);
+		return;
+	}
+
+	gt_null(t);
+
+	RLC_TRY {
+		gt_new(t);
+
+		gt_copy(t, a);
+		for (int i = util_bits_dig(b) - 2; i >= 0; i--) {
+			gt_sqr(t, t);
+			if (b & ((dig_t)1 << i)) {
+				gt_mul(t, t, a);
+			}
+		}
+
+		gt_copy(c, t);
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		gt_free(t);
 	}
 }
 
