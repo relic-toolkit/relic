@@ -1,5 +1,4 @@
 cmake_minimum_required(VERSION 3.1)
-set (CMAKE_BUILD_TYPE "Release" CACHE STRING "Build type.")
 if(NOT ${CMAKE_VERSION} VERSION_LESS "3.1")
 	cmake_policy(SET CMP0054 NEW)
 endif()
