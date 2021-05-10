@@ -89,19 +89,19 @@ void fp2_neg(fp2_t c, fp2_t a) {
 
 #if FPX_CBC == BASIC || !defined(STRIP)
 
-void fp3_add_basic(fp2_t c, fp2_t a, fp2_t b) {
+void fp3_add_basic(fp3_t c, fp3_t a, fp3_t b) {
   fp_add(c[0], a[0], b[0]);
   fp_add(c[1], a[1], b[1]);
   fp_add(c[2], a[2], b[2]);
 }
 
-void fp3_sub_basic(fp2_t c, fp2_t a, fp2_t b) {
+void fp3_sub_basic(fp3_t c, fp3_t a, fp3_t b) {
   fp_sub(c[0], a[0], b[0]);
   fp_sub(c[1], a[1], b[1]);
   fp_sub(c[2], a[2], b[2]);
 }
 
-void fp3_dbl_basic(fp2_t c, fp2_t a) {
+void fp3_dbl_basic(fp3_t c, fp3_t a) {
   /* 2 * (a_0 + a_1 * u) = 2 * a_0 + 2 * a_1 * u. */
   fp_dbl(c[0], a[0]);
   fp_dbl(c[1], a[1]);
@@ -118,15 +118,15 @@ void fp3_neg(fp3_t c, fp3_t a) {
 
 #if FPX_CBC == INTEG || !defined(STRIP)
 
-void fp3_add_integ(fp2_t c, fp2_t a, fp2_t b) {
+void fp3_add_integ(fp3_t c, fp3_t a, fp3_t b) {
 	fp3_addm_low(c, a, b);
 }
 
-void fp3_sub_integ(fp2_t c, fp2_t a, fp2_t b) {
+void fp3_sub_integ(fp3_t c, fp3_t a, fp3_t b) {
 	fp3_subm_low(c, a, b);
 }
 
-void fp3_dbl_integ(fp2_t c, fp2_t a) {
+void fp3_dbl_integ(fp3_t c, fp3_t a) {
 	fp3_dblm_low(c, a);
 }
 
