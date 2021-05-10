@@ -2095,7 +2095,7 @@ void fp4_mul_dxs(fp4_t c, fp4_t a, fp4_t b);
  * @param[out] c			- the result.
  * @param[in] a				- the quartic extension field element to square.
  */
-void fp4_sqr_unr(dv6_t c, fp4_t a);
+void fp4_sqr_unr(dv4_t c, fp4_t a);
 
 /**
  * Computes the squares of a quartic extension field element using basic
