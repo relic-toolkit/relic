@@ -30,15 +30,7 @@
  * @ingroup test
  */
 
-#include <stdio.h>
-#include <string.h>
-#include <math.h>
-#include <stdlib.h>
-#include <stdint.h>
-
 #include "relic.h"
-#include "relic_test.h"
-#include "relic_bench.h"
 
 /*============================================================================*/
 /* Public definitions                                                         */

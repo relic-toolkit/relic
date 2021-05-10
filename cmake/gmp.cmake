@@ -10,7 +10,7 @@
 # 2. Redistributions in binary form must reproduce the copyright
 #    notice, this list of conditions and the following disclaimer in the
 #    documentation and/or other materials provided with the distribution.
-# 3. The name of the author may not be used to endorse or promote products 
+# 3. The name of the author may not be used to endorse or promote products
 #    derived from this software without specific prior written permission.
 #
 # THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
@@ -38,17 +38,17 @@ endif (GMP_INCLUDE_DIR AND GMP_LIBRARIES)
 
 find_path(GMP_INCLUDE_DIR NAMES gmp.h)
 if(STBIN)
-	find_library(GMP_LIBRARIES NAMES libgmp.a gmp)
+	find_library(GMP_LIBRARIES NAMES libgmp.a gmp.lib libgmp-10 libgmp gmp)
 else(STBIN)
-	find_library(GMP_LIBRARIES NAMES libgmp.so gmp)
+	find_library(GMP_LIBRARIES NAMES libgmp.so gmp.lib libgmp-10 libgmp gmp)
 endif(STBIN)
 
 if(GMP_INCLUDE_DIR AND GMP_LIBRARIES)
    set(GMP_FOUND TRUE)
-endif(GMP_INCLUDE_DIR AND GMP_LIBRARIES)
+endif()
 
 if(GMP_FOUND)
-	message(STATUS "Configured GMP: ${GMP_LIBRARIES}")
+	message(STATUS "Configured GMP: -I${GMP_INCLUDE_DIR} -L${GMP_LIBRARIES}")
 else(GMP_FOUND)
 	message(STATUS "Could NOT find GMP")
 endif(GMP_FOUND)

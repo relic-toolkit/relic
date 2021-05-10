@@ -54,12 +54,26 @@
  */
 /** @{ */
 #if FP_PRIME < 1536
+
 #define RLC_G1_LOWER			ep_
 #define RLC_G1_UPPER			EP
+
+#if FP_PRIME == 509
+#define RLC_G2_LOWER			ep4_
+#else
 #define RLC_G2_LOWER			ep2_
+#endif
+
 #define RLC_G2_UPPER			EP
+
+#if FP_PRIME == 509
+#define RLC_GT_LOWER			fp24_
+#else
 #define RLC_GT_LOWER			fp12_
+#endif
+
 #define RLC_PC_LOWER			pp_
+
 #else
 #define RLC_G1_LOWER			ep_
 #define RLC_G1_UPPER			EP
@@ -246,7 +260,23 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
 #define pc_param_level()	RLC_CAT(RLC_G1_LOWER, param_level)()
 
 /**
- * Tests if a G_1 element is the unity.
+ * Tests if a G_1 element is on the curve.
+ *
+ * @param[in] P				- the element to test.
+ * @return 1 if the element it the unity, 0 otherwise.
+ */
+#define g1_on_curve(P)		RLC_CAT(RLC_G1_LOWER, on_curve)(P)
+
+/**
+ * Tests if a G_2 element is on the curve.
+ *
+ * @param[in] P				- the element to test.
+ * @return 1 if the element it the unity, 0 otherwise.
+ */
+#define g2_on_curve(P)		RLC_CAT(RLC_G2_LOWER, on_curve)(P)
+
+/**
+ * Tests if a G_1 element is the point at infinity.
  *
  * @param[in] P				- the element to test.
  * @return 1 if the element it the unity, 0 otherwise.
@@ -254,7 +284,7 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
 #define g1_is_infty(P)		RLC_CAT(RLC_G1_LOWER, is_infty)(P)
 
 /**
- * Tests if a G_2 element is the unity.
+ * Tests if a G_2 element is the point at infinity.
  *
  * @param[in] P				- the element to test.
  * @return 1 if the element it the unity, 0 otherwise.
@@ -262,7 +292,7 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
 #define g2_is_infty(P)		RLC_CAT(RLC_G2_LOWER, is_infty)(P)
 
 /**
- * Tests if a G_T element is the unity.
+ * Tests if a G_T element is the identity.
  *
  * @param[in] A				- the element to test.
  * @return 1 if the element it the unity, 0 otherwise.
@@ -773,6 +803,16 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
 #define g2_mul_sim_gen(R, K, Q, L)	RLC_CAT(RLC_G2_LOWER, mul_sim_gen)(R, K, Q, L)
 
 /**
+ * Exponetiates a G_2 element using the i-th power Frobenius.
+ * Computes C = [p^i]A.
+ *
+ * @param[out] C			- the result.
+ * @param[in] A				- the element to exponentiate.
+ * @param[in] I				- the power of the Frobenius map.
+ */
+#define g2_frb(C, A, I)		RLC_CAT(RLC_G2_LOWER, frb)(C, A, I)
+
+/**
  * Exponetiates a G_T element using the i-th power Frobenius.
  * Computes C = A^(p^i).
  *
@@ -809,9 +849,17 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
  * @param[in] Q				- the second element.
  */
 #if FP_PRIME < 1536
-#define pc_map(R, P, Q);		RLC_CAT(RLC_PC_LOWER, map_k12)(R, P, Q)
+
+#if FP_PRIME == 509
+#define pc_map(R, P, Q);		RLC_CAT(RLC_PC_LOWER, map_k24)(R, P, Q)
 #else
+#define pc_map(R, P, Q);		RLC_CAT(RLC_PC_LOWER, map_k12)(R, P, Q)
+#endif
+
+#else
+
 #define pc_map(R, P, Q);		RLC_CAT(RLC_PC_LOWER, map_k2)(R, P, Q)
+
 #endif
 
 /**
@@ -824,7 +872,13 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
  * @param[in] M 			- the number of pairing arguments.
  */
 #if FP_PRIME < 1536
+
+#if FP_PRIME == 509
+#define pc_map_sim(R, P, Q, M);	RLC_CAT(RLC_PC_LOWER, map_sim_k24)(R, P, Q, M)
+#else
 #define pc_map_sim(R, P, Q, M);	RLC_CAT(RLC_PC_LOWER, map_sim_k12)(R, P, Q, M)
+#endif
+
 #else
 #define pc_map_sim(R, P, Q, M);	RLC_CAT(RLC_PC_LOWER, map_sim_k2)(R, P, Q, M)
 #endif
@@ -836,7 +890,13 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
  * @param[in] A				- the field element to exponentiate.
  */
 #if FP_PRIME < 1536
+
+#if FP_PRIME == 509
+#define pc_exp(C, A);			RLC_CAT(RLC_PC_LOWER, exp_k24)(C, A)
+#else
 #define pc_exp(C, A);			RLC_CAT(RLC_PC_LOWER, exp_k12)(C, A)
+#endif
+
 #else
 #define pc_exp(C, A);			RLC_CAT(RLC_PC_LOWER, exp_k2)(C, A)
 #endif

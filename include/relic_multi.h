@@ -49,6 +49,8 @@
 /* Constant definitions                                                       */
 /*============================================================================*/
 
+#if defined(MULTI)
+
 /**
  * If multi-threading is enabled, assigns each thread a local copy of the data.
  */
@@ -74,5 +76,7 @@ extern ctx_t *core_ctx;
 
 #pragma omp threadprivate(first_ctx, core_ctx)
 #endif
+
+#endif /* MULTI */
 
 #endif /* !RLC_MULTI_H */

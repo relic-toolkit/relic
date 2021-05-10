@@ -33,47 +33,6 @@
 #include "relic_fp_low.h"
 
 /*============================================================================*/
-/* Private definitions                                                        */
-/*============================================================================*/
-
-/**
- * Computes the step of a Comba squaring.
- *
- * @param[in,out] R2		- most significant word of the triple register.
- * @param[in,out] R1		- middle word of the triple register.
- * @param[in,out] R0		- lowest significant word of the triple register.
- * @param[in] A				- the first digit to multiply.
- * @param[in] B				- the second digit to multiply.
- */
-#define COMBA_STEP_SQR(R2, R1, R0, A, B)									\
-	dbl_t r = (dbl_t)(A) * (dbl_t)(B);										\
-	dbl_t s = r + r;														\
-	dig_t _r = (R1);														\
-	(R0) += (dig_t)s;														\
-	(R1) += (R0) < (dig_t)s;												\
-	(R2) += (R1) < _r;														\
-	(R1) += (dig_t)(s >> (dbl_t)RLC_DIG);									\
-	(R2) += (R1) < (dig_t)(s >> (dbl_t)RLC_DIG);							\
-	(R2) += (s < r);														\
-
-/**
- * Computes the step of a Comba squaring when the loop length is odd.
- *
- * @param[in,out] R2		- most significant word of the triple register.
- * @param[in,out] R1		- middle word of the triple register.
- * @param[in,out] R0		- lowest significant word of the triple register.
- * @param[in] A				- the first digit to multiply.
- */
-#define COMBA_FINAL(R2, R1, R0, A)											\
-	dbl_t r = (dbl_t)(*tmpa) * (dbl_t)(*tmpa);								\
-	dig_t _r = (R1);														\
-	(R0) += (dig_t)(r);														\
-	(R1) += (R0) < (dig_t)r;												\
-	(R2) += (R1) < _r;														\
-	(R1) += (dig_t)(r >> (dbl_t)RLC_DIG);									\
-	(R2) += (R1) < (dig_t)(r >> (dbl_t)RLC_DIG);							\
-
-/*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
@@ -92,10 +51,10 @@ void fp_sqrn_low(dig_t *c, const dig_t *a) {
 
 		/* Compute the number of additions in this column. */
 		for (j = 0; j < (i + 1) / 2; j++, tmpa++, tmpb--) {
-			COMBA_STEP_SQR(r2, r1, r0, *tmpa, *tmpb);
+			RLC_COMBA_STEP_SQR(r2, r1, r0, *tmpa, *tmpb);
 		}
 		if (!(i & 0x01)) {
-			COMBA_FINAL(r2, r1, r0, *tmpa);
+			RLC_COMBA_STEP_MUL(r2, r1, r0, *tmpa, *tmpa);
 		}
 		*c = r0;
 		r0 = r1;
@@ -108,10 +67,10 @@ void fp_sqrn_low(dig_t *c, const dig_t *a) {
 
 		/* Compute the number of additions in this column. */
 		for (j = 0; j < (RLC_FP_DIGS - 1 - i) / 2; j++, tmpa++, tmpb--) {
-			COMBA_STEP_SQR(r2, r1, r0, *tmpa, *tmpb);
+			RLC_COMBA_STEP_SQR(r2, r1, r0, *tmpa, *tmpb);
 		}
 		if (!((RLC_FP_DIGS - i) & 0x01)) {
-			COMBA_FINAL(r2, r1, r0, *tmpa);
+			RLC_COMBA_STEP_MUL(r2, r1, r0, *tmpa, *tmpa);
 		}
 		*c = r0;
 		r0 = r1;

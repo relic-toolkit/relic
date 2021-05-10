@@ -33,8 +33,6 @@
  */
 
 #include "relic.h"
-#include "relic_test.h"
-#include "relic_bench.h"
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -216,7 +214,7 @@ int cp_vbnn_ver(ec_t r, bn_t z, bn_t h, uint8_t *id, int id_len,
 		if (buf == NULL) {
 			RLC_THROW(ERR_NO_MEMORY);
 		}
-		
+
 		/* get order of ECC group */
 		ec_curve_get_ord(n);
 

@@ -50,33 +50,18 @@
 void gt_rand(gt_t a) {
 	gt_rand_imp(a);
 #if FP_PRIME < 1536
+#if FP_PRIME == 509
+	pp_exp_k24(a, a);
+#else
 	pp_exp_k12(a, a);
+#endif
 #else
 	pp_exp_k2(a, a);
 #endif
 }
 
 void gt_get_gen(gt_t g) {
-	g1_t g1;
-	g2_t g2;
-
-	g1_null(g1);
-	g2_null(g2);
-
-	RLC_TRY {
-		g1_new(g1);
-		g2_new(g2);
-
-		g1_get_gen(g1);
-		g2_get_gen(g2);
-
-		pc_map(g, g1, g2);
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		g1_free(g1);
-		g2_free(g2);
-	}
+    gt_copy(g, core_get()->gt_g);
 }
 
 int g1_is_valid(g1_t a) {
@@ -102,7 +87,7 @@ int g1_is_valid(g1_t a) {
 		ep_curve_get_cof(n);
 		if (bn_cmp_dig(n, 1) == RLC_EQ) {
 			/* If curve has prime order, simpler to check if point on curve. */
-			r = ep_on_curve(a);
+			r = g1_on_curve(a);
 		} else {
 			switch (ep_curve_is_pairf()) {
 				/* Formulas from "Faster Subgroup Checks for BLS12-381" by Bowe.
@@ -120,7 +105,6 @@ int g1_is_valid(g1_t a) {
 					ep_psi(t, v);
 					ep_dbl(v, u);
 					ep_add(u, u, v);
-					ep_neg(u, u);
 					r = ep_on_curve(t) && (ep_cmp(t, u) == RLC_EQ);
 					break;
 				default:
@@ -135,7 +119,7 @@ int g1_is_valid(g1_t a) {
 						}
 					}
 					g1_neg(u, u);
-					r = ep_on_curve(a) && (g1_cmp(u, a) == RLC_EQ);
+					r = g1_on_curve(a) && (g1_cmp(u, a) == RLC_EQ);
 					break;
 			}
 		}
@@ -192,10 +176,10 @@ int g2_is_valid(g2_t a) {
 			/* Compute u = a^t. */
 			g2_mul(u, a, n);
 			/* Compute v = a^(p + 1). */
-			ep2_frb(v, a, 1);
+			g2_frb(v, a, 1);
 			g2_add(v, v, a);
 			/* Check if a^(p + 1) = a^t. */
-			r = ep2_on_curve(a) && (g2_cmp(u, v) == RLC_EQ);
+			r = g2_on_curve(a) && (g2_cmp(u, v) == RLC_EQ);
 		} else {
 			switch (ep_curve_is_pairf()) {
 				/* Formulas from "Faster Subgroup Checks for BLS12-381" by Bowe.
@@ -211,11 +195,10 @@ int g2_is_valid(g2_t a) {
 #else
 					fp_prime_get_par(n);
 					g2_mul(u, a, n);
-					ep2_frb(u, u, 3);
-					ep2_frb(v, a, 2);
-					ep2_add(u, u, a);
+					g2_frb(u, u, 3);
+					g2_frb(v, a, 2);
+					g2_add(u, u, a);
 #endif
-					r = ep2_on_curve(a) && (g2_cmp(u, v) == RLC_EQ);
 					break;
 				default:
 					pc_get_ord(n);
@@ -229,7 +212,7 @@ int g2_is_valid(g2_t a) {
 						}
 					}
 					g2_neg(u, u);
-					r = ep2_on_curve(a) && (g2_cmp(u, a) == RLC_EQ);
+					r = g2_on_curve(a) && (g2_cmp(u, a) == RLC_EQ);
 					break;
 			}
 		}

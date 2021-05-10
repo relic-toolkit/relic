@@ -260,8 +260,7 @@ void ep2_read_bin(ep2_t a, const uint8_t *bin, int len) {
 	}
 
 	a->coord = BASIC;
-	fp_set_dig(a->z[0], 1);
-	fp_zero(a->z[1]);
+	fp2_set_dig(a->z, 1);
 	fp2_read_bin(a->x, bin + 1, 2 * RLC_FP_BYTES);
 	if (len == 2 * RLC_FP_BYTES + 1) {
 		switch(bin[0]) {

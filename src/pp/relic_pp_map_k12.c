@@ -393,7 +393,7 @@ void pp_map_sim_weilp_k12(fp12_t r, ep_t *p, ep2_t *q, int m) {
 
 	fp12_null(r0);
 	fp12_null(r1);
-	bn_null(r);
+	bn_null(n);
 
 	RLC_TRY {
 		fp12_new(r0);

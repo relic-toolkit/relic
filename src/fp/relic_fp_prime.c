@@ -70,13 +70,14 @@ static void fp_prime_set(const bn_t p) {
 
 		/* compute R mod p */
 		bn_set_dig(&(ctx->one), 1);
-		bn_lsh(&(ctx->one), &(ctx->one), ctx->prime.used * RLC_DIG);
+		bn_lsh(&(ctx->one), &(ctx->one), RLC_FP_DIGS * RLC_DIG);
 		bn_mod(&(ctx->one), &(ctx->one), &(ctx->prime));
 
 		/* compute the R^2 mod p */
 		fp_add(r, ctx->one.dp, ctx->one.dp);
-		bn_set_dig(t, RLC_FP_DIGS * RLC_DIG);
-		fp_exp(ctx->conv.dp, r, t );
+		bn_set_dig(t, RLC_FP_DIGS);
+		bn_lsh(t, t, RLC_DIG_LOG);
+		fp_exp(ctx->conv.dp, r, t);
 		ctx->conv.used = RLC_FP_DIGS;
 		bn_trim(&(ctx->conv));
 
@@ -146,15 +147,15 @@ static void fp_prime_set(const bn_t p) {
 void fp_prime_init(void) {
 	ctx_t *ctx = core_get();
 	ctx->fp_id = 0;
-	bn_init(&(ctx->prime), RLC_FP_DIGS);
-	bn_init(&(ctx->par), RLC_FP_DIGS);
+	bn_make(&(ctx->prime), RLC_FP_DIGS);
+	bn_make(&(ctx->par), RLC_FP_DIGS);
 #if FP_RDC == QUICK || !defined(STRIP)
 	ctx->sps_len = 0;
 	memset(ctx->sps, 0, sizeof(ctx->sps));
 #endif
 #if FP_RDC == MONTY || !defined(STRIP)
-	bn_init(&(ctx->conv), RLC_FP_DIGS);
-	bn_init(&(ctx->one), RLC_FP_DIGS);
+	bn_make(&(ctx->conv), RLC_FP_DIGS);
+	bn_make(&(ctx->one), RLC_FP_DIGS);
 #endif
 }
 
@@ -322,6 +323,20 @@ void fp_prime_set_pairf(const bn_t x, int pairf) {
 				bn_div_dig(p, p, 4);
 				fp_prime_set_dense(p);
 				break;
+			case EP_B24:
+				/* p = (u - 1)^2 * (u^8 - u^4 + 1) / 3 + u. */
+				bn_sqr(t1, t0);
+				bn_sqr(t1, t1);
+				bn_sqr(p, t1);
+				bn_sub(p, p, t1);
+				bn_add_dig(p, p, 1);
+				bn_sub_dig(t1, t0, 1);
+				bn_sqr(t1, t1);
+				bn_mul(p, p, t1);
+				bn_div_dig(p, p, 3);
+				bn_add(p, p, t0);
+				fp_prime_set_dense(p);
+				break;
 			case EP_B48:
 				/* p = (x - 1)^2*(x^16 - x^8 + 1) / 3 + x. */
 				bn_sqr(t1, t0);
@@ -458,6 +473,7 @@ void fp_prime_calc(void) {
 #ifdef WITH_FPX
 	if (fp_prime_get_qnr() != 0) {
 		fp2_field_init();
+		fp4_field_init();
 	}
 	if (fp_prime_get_cnr() != 0) {
 		fp3_field_init();

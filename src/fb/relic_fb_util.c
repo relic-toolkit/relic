@@ -201,7 +201,7 @@ void fb_read_str(fb_t a, const char *str, int len, int radix) {
 		return;
 	}
 
-	if (RLC_CEIL(l * len, RLC_DIG) > RLC_FB_DIGS) {
+	if (RLC_CEIL(l * (len - 1), RLC_DIG) > RLC_FB_DIGS) {
 		RLC_THROW(ERR_NO_BUFFER);
 		return;
 	}

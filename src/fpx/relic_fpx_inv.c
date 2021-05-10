@@ -259,6 +259,7 @@ void fp3_inv_sim(fp3_t * c, fp3_t * a, int n) {
 			fp3_free(t[i]);
 		}
 		fp3_free(u);
+		RLC_FREE(t);
 	}
 }
 
@@ -292,6 +293,49 @@ void fp4_inv(fp4_t c, fp4_t a) {
 	} RLC_FINALLY {
 		fp2_free(t0);
 		fp2_free(t1);
+	}
+}
+
+void fp4_inv_sim(fp4_t * c, fp4_t * a, int n) {
+	int i;
+	fp4_t u, *t = RLC_ALLOCA(fp4_t, n);
+
+	for (i = 0; i < n; i++) {
+		fp4_null(t[i]);
+	}
+	fp4_null(u);
+
+	RLC_TRY {
+		for (i = 0; i < n; i++) {
+			fp4_new(t[i]);
+		}
+		fp4_new(u);
+
+		fp4_copy(c[0], a[0]);
+		fp4_copy(t[0], a[0]);
+
+		for (i = 1; i < n; i++) {
+			fp4_copy(t[i], a[i]);
+			fp4_mul(c[i], c[i - 1], t[i]);
+		}
+
+		fp4_inv(u, c[n - 1]);
+
+		for (i = n - 1; i > 0; i--) {
+			fp4_mul(c[i], c[i - 1], u);
+			fp4_mul(u, u, t[i]);
+		}
+		fp4_copy(c[0], u);
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		for (i = 0; i < n; i++) {
+			fp4_free(t[i]);
+		}
+		fp4_free(u);
+		RLC_FREE(t);
 	}
 }
 
@@ -426,6 +470,7 @@ void fp8_inv_sim(fp8_t *c, fp8_t *a, int n) {
 			fp8_free(t[i]);
 		}
 		fp8_free(u);
+		RLC_FREE(t);
 	}
 }
 
@@ -527,6 +572,7 @@ void fp9_inv_sim(fp9_t * c, fp9_t * a, int n) {
 			fp9_free(t[i]);
 		}
 		fp9_free(u);
+		RLC_FREE(t);
 	}
 }
 
@@ -653,6 +699,13 @@ void fp24_inv(fp24_t c, fp24_t a) {
 		fp8_free(v2);
 		fp8_free(t0);
 	}
+}
+
+void fp24_inv_cyc(fp24_t c, fp24_t a) {
+	fp8_inv_cyc(c[0], a[0]);
+	fp8_inv_cyc(c[1], a[1]);
+	fp8_neg(c[1], c[1]);
+	fp8_inv_cyc(c[2], a[2]);
 }
 
 void fp48_inv(fp48_t c, fp48_t a) {

@@ -96,9 +96,9 @@ enum {
 #define md_map(H, M, L)			md_map_sh384(H, M, L)
 #elif MD_MAP == SH512
 #define md_map(H, M, L)			md_map_sh512(H, M, L)
-#elif MD_MAP == BLAKE2S_160
+#elif MD_MAP == B2S160
 #define md_map(H, M, L)			md_map_b2s160(H, M, L)
-#elif MD_MAP == BLAKE2S_256
+#elif MD_MAP == B2S256
 #define md_map(H, M, L)			md_map_b2s256(H, M, L)
 #endif
 

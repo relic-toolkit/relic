@@ -65,6 +65,10 @@ if (WITH_PC)
 	ADD_MODULE(pc)
 endif(WITH_PC)
 
+if (WITH_MD)
+	ADD_MODULE(md)
+endif(WITH_MD)
+
 if (WITH_CP)
 	ADD_MODULE(cp)
 endif(WITH_CP)

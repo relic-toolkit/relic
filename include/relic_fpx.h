@@ -1039,6 +1039,32 @@ void fp2_sub_dig(fp2_t c, const fp2_t a, dig_t b);
 #endif
 
 /**
+ * Squares a 24-degree extension field element in the cyclotomic subgroup.
+ * Computes C = A * A.
+ *
+ * @param[out] C			- the result.
+ * @param[in] A				- the 24-degree extension field element to square.
+ */
+#if FPX_RDC == BASIC
+#define fp24_sqr_cyc(C, A)		fp24_sqr_cyc_basic(C, A)
+#elif FPX_RDC == LAZYR
+#define fp24_sqr_cyc(C, A)		fp24_sqr_cyc_lazyr(C, A)
+#endif
+
+/**
+ * Squares a 24-degree extension field element in the cyclotomic subgroup in
+ * compressed form. Computes C = A * A.
+ *
+ * @param[out] C			- the result.
+ * @param[in] A				- the 24-degree extension field element to square.
+ */
+#if FPX_RDC == BASIC
+#define fp24_sqr_pck(C, A)		fp24_sqr_pck_basic(C, A)
+#elif FPX_RDC == LAZYR
+#define fp24_sqr_pck(C, A)		fp24_sqr_pck_lazyr(C, A)
+#endif
+
+/**
  * Initializes a double-precision 48-degree extension field with null.
  *
  * @param[out] A			- the 48-degree extension element to initialize.
@@ -1871,6 +1897,11 @@ void fp3_frb(fp3_t c, fp3_t a, int i);
 int fp3_srt(fp3_t c, fp3_t a);
 
 /**
+ * Initializes the quartic extension field arithmetic module.
+ */
+void fp4_field_init(void);
+
+/**
  * Copies the second argument to the first argument.
  *
  * @param[out] c			- the result.
@@ -2038,6 +2069,17 @@ void fp4_mul_lazyr(fp4_t c, fp4_t a, fp4_t b);
 void fp4_mul_art(fp4_t c, fp4_t a);
 
 /**
+ * Multiplies a quartic extension field element by a power of the constant
+ * needed to compute a power of the Frobenius map.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the field element to multiply.
+ * @param[in] i				- the power of the Frobenius map.
+ * @param[in] j				- the power of the constant.
+ */
+void fp4_mul_frb(fp4_t c, fp4_t a, int i, int j);
+
+/**
  * Multiples a dense quartic extension field element by a sparse element.
  *
  * @param[out] c			- the result.
@@ -2081,6 +2123,15 @@ void fp4_sqr_lazyr(fp4_t c, fp4_t a);
 void fp4_inv(fp4_t c, fp4_t a);
 
 /**
+ * Inverts multiple quartic extension field elements simultaneously.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the quartic extension field elements to invert.
+ * @param[in] n				- the number of elements.
+ */
+void fp4_inv_sim(fp4_t *c, fp4_t *a, int n);
+
+/**
  * Computes the inverse of a cyclotomic quartic extension field element.
  *
  * For cyclotomic elements, this is equivalent to computing the conjugate.
@@ -2109,6 +2160,16 @@ void fp4_exp(fp4_t c, fp4_t a, bn_t b);
  * @param[in] i				- the power of the Frobenius map.
  */
 void fp4_frb(fp4_t c, fp4_t a, int i);
+
+/**
+ * Extracts the square root of a quartic extension field element. Computes
+ * c = sqrt(a). The other square root is the negation of c.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the extension field element.
+ * @return					- 1 if there is a square root, 0 otherwise.
+ */
+int fp4_srt(fp4_t c, fp4_t a);
 
 /**
  * Copies the second argument to the first argument.
@@ -3582,9 +3643,10 @@ void fp24_print(fp24_t a);
  * element.
  *
  * @param[in] a				- the extension field element.
+ * @param[in] pack			- the flag to indicate compression.
  * @return the number of bytes.
  */
-int fp24_size_bin(fp24_t a);
+int fp24_size_bin(fp24_t a, int pack);
 
 /**
  * Reads a 24-degree extension field element from a byte vector in big-endian
@@ -3604,9 +3666,10 @@ void fp24_read_bin(fp24_t a, const uint8_t *bin, int len);
  * @param[out] bin			- the byte vector.
  * @param[in] len			- the buffer capacity.
  * @param[in] a				- the extension field element to write.
+ * @param[in] pack			- the flag to indicate compression.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is not correct.
  */
-void fp24_write_bin(uint8_t *bin, int len, fp24_t a);
+void fp24_write_bin(uint8_t *bin, int len, fp24_t a, int pack);
 
 /**
  * Returns the result of a comparison between two 24-degree extension field
@@ -3744,12 +3807,100 @@ void fp24_sqr_basic(fp24_t c, fp24_t a);
 void fp24_sqr_lazyr(fp24_t c, fp24_t a);
 
 /**
+ * Computes the square of a cyclotomic 24-extension field element using
+ * basic arithmetic.
+ *
+ * A cyclotomic element is one raised to the (p^6 - 1)(p^2 + 1)-th power.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the cyclotomic extension element to square.
+ */
+void fp24_sqr_cyc_basic(fp24_t c, fp24_t a);
+
+/**
+ * Computes the square of a cyclotomic 24-extension field element using
+ * lazy reduction.
+ *
+ * A cyclotomic element is one raised to the (p^6 - 1)(p^2 + 1)-th power.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the cyclotomic extension element to square.
+ */
+void fp24_sqr_cyc_lazyr(fp24_t c, fp24_t a);
+
+/**
+ * Computes the square of a compressed cyclotomic extension field element.
+ *
+ * A cyclotomic element is one raised to the (p^6 - 1)(p^2 + 1)-th power.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the cyclotomic extension element to square.
+ */
+void fp24_sqr_pck_basic(fp24_t c, fp24_t a);
+
+/**
+ * Computes the square of a compressed cyclotomic extension field element using
+ * lazy reduction.
+ *
+ * A cyclotomic element is one raised to the (p^6 - 1)(p^2 + 1)-th power.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the cyclotomic extension element to square.
+ */
+void fp24_sqr_pck_lazyr(fp24_t c, fp24_t a);
+
+/**
+ * Tests if a 24-extension field element belongs to the cyclotomic
+ * subgroup.
+ *
+ * @param[in] a				- the 24-extension field element to test.
+ * @return 1 if the extension field element is in the subgroup, 0 otherwise.
+ */
+int fp24_test_cyc(fp24_t a);
+
+/**
+ * Converts a 24-extension field element to a cyclotomic element.
+ * Computes c = a^(p^6 - 1)*(p^2 + 1).
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- a 24-extension field element.
+ */
+void fp24_conv_cyc(fp24_t c, fp24_t a);
+
+/**
+ * Decompresses a compressed cyclotomic extension field element.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the 24-extension field element to decompress.
+ */
+void fp24_back_cyc(fp24_t c, fp24_t a);
+
+/**
+ * Decompresses multiple compressed cyclotomic extension field elements.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the 24 field elements to decompress.
+ * @param[in] n				- the number of field elements to decompress.
+ */
+void fp24_back_cyc_sim(fp24_t *c, fp24_t *a, int n);
+
+/**
  * Inverts a 24-degree extension field element. Computes c = 1/a.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the 24-degree extension field element to invert.
  */
 void fp24_inv(fp24_t c, fp24_t a);
+
+/**
+ * Computes the inverse of a cyclotomic octdecic extension field element.
+ * For unitary elements, this is equivalent to computing the conjugate.
+ * A unitary element is one previously raised to the (p^12 - 1)-th power.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the 24-degree extension field element to invert.
+ */
+void fp24_inv_cyc(fp24_t c, fp24_t a);
 
 /**
  * Computes the Frobenius endomorphism of a 24-degree extension element.
@@ -3770,6 +3921,64 @@ void fp24_frb(fp24_t c, fp24_t a, int i);
  * @param[in] b				- the exponent.
  */
 void fp24_exp(fp24_t c, fp24_t a, bn_t b);
+
+/**
+ * Computes a power of a 24-extension field element by a small exponent.
+ * Faster formulas are used if the extension field element is cyclotomic.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the basis.
+ * @param[in] b				- the exponent.
+ */
+void fp24_exp_dig(fp24_t c, fp24_t a, dig_t b);
+
+/**
+ * Computes a power of a cyclotomic 24-extension field element.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the basis.
+ * @param[in] b				- the exponent.
+ */
+void fp24_exp_cyc(fp24_t c, fp24_t a, bn_t b);
+
+/**
+ * Computes a power of a cyclotomic dodecic extension field element.
+ *
+ * @param[out] e			- the result.
+ * @param[in] a				- the first element to exponentiate.
+ * @param[in] b				- the first exponent.
+ * @param[in] c				- the second element to exponentiate.
+ * @param[in] d				- the second exponent.
+ */
+void fp24_exp_cyc_sim(fp24_t e, fp24_t a, bn_t b, fp24_t c, bn_t d);
+
+/**
+ * Computes a power of a cyclotomic 24-extension field element.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the basis.
+ * @param[in] b				- the exponent in sparse form.
+ * @param[in] l				- the length of the exponent in sparse form.
+ * @param[in] s				- the sign of the exponent.
+ */
+void fp24_exp_cyc_sps(fp24_t c, fp24_t a, const int *b, int l, int s);
+
+/**
+ * Compresses a 24-extension field element.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the 24-extension field element to compress.
+ */
+void fp24_pck(fp24_t c, fp24_t a);
+
+/**
+ * Decompresses a 24-extension field element.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the 24-extension field element to decompress.
+ * @return if the decompression was successful
+ */
+int fp24_upk(fp24_t c, fp24_t a);
 
 /**
  * Copies the second argument to the first argument.

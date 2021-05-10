@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (c) 2021 RELIC Authors
+ * Copyright (c) 2013 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -174,7 +174,7 @@
 #define bn_st     	RLC_PREFIX(bn_st)
 #define bn_t      	RLC_PREFIX(bn_t)
 
-#undef bn_init
+#undef bn_make
 #undef bn_clean
 #undef bn_grow
 #undef bn_trim
@@ -277,7 +277,7 @@
 #undef bn_rec_jsf
 #undef bn_rec_glv
 
-#define bn_init 	RLC_PREFIX(bn_init)
+#define bn_make 	RLC_PREFIX(bn_make)
 #define bn_clean 	RLC_PREFIX(bn_clean)
 #define bn_grow 	RLC_PREFIX(bn_grow)
 #define bn_trim 	RLC_PREFIX(bn_trim)
@@ -908,6 +908,7 @@
 #undef ep_dbl_slp_basic
 #undef ep_dbl_projc
 #undef ep_dbl_jacob
+#undef ep_psi
 #undef ep_mul_basic
 #undef ep_mul_slide
 #undef ep_mul_monty
@@ -1002,6 +1003,7 @@
 #define ep_dbl_slp_basic 	RLC_PREFIX(ep_dbl_slp_basic)
 #define ep_dbl_projc 	RLC_PREFIX(ep_dbl_projc)
 #define ep_dbl_jacob 	RLC_PREFIX(ep_dbl_jacob)
+#define ep_psi 	RLC_PREFIX(ep_psi)
 #define ep_mul_basic 	RLC_PREFIX(ep_mul_basic)
 #define ep_mul_slide 	RLC_PREFIX(ep_mul_slide)
 #define ep_mul_monty 	RLC_PREFIX(ep_mul_monty)
@@ -1223,8 +1225,7 @@
 #undef eb_dbl_basic
 #undef eb_dbl_projc
 #undef eb_hlv
-#undef eb_frb_basic
-#undef eb_frb_projc
+#undef eb_frb
 #undef eb_mul_basic
 #undef eb_mul_lodah
 #undef eb_mul_lwnaf
@@ -1296,8 +1297,7 @@
 #define eb_dbl_basic 	RLC_PREFIX(eb_dbl_basic)
 #define eb_dbl_projc 	RLC_PREFIX(eb_dbl_projc)
 #define eb_hlv 	RLC_PREFIX(eb_hlv)
-#define eb_frb_basic 	RLC_PREFIX(eb_frb_basic)
-#define eb_frb_projc 	RLC_PREFIX(eb_frb_projc)
+#define eb_frb 	RLC_PREFIX(eb_frb)
 #define eb_mul_basic 	RLC_PREFIX(eb_mul_basic)
 #define eb_mul_lodah 	RLC_PREFIX(eb_mul_lodah)
 #define eb_mul_lwnaf 	RLC_PREFIX(eb_mul_lwnaf)

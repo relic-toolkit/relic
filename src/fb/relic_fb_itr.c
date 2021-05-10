@@ -56,7 +56,7 @@ void fb_itr_basic(fb_t c, const fb_t a, int b) {
 	}
 }
 
-void fb_itr_pre_quick(fb_t *t, int b) {
+void fb_itr_pre_quick(fb_st *t, int b) {
 	int i, j, k;
 	fb_t r;
 
@@ -80,11 +80,7 @@ void fb_itr_pre_quick(fb_t *t, int b) {
 					}
 				}
 
-#if ALLOC == AUTO
 				fb_copy((dig_t *)t + (4 * i + j) * RLC_FB_DIGS, r);
-#else
-				fb_copy(t[4 * i + j], r);
-#endif
 			}
 		}
 	} RLC_CATCH_ANY {
@@ -94,6 +90,6 @@ void fb_itr_pre_quick(fb_t *t, int b) {
 	}
 }
 
-void fb_itr_quick(fb_t c, const fb_t a, const fb_t *t) {
+void fb_itr_quick(fb_t c, const fb_t a, const fb_st *t) {
 	fb_itrn_low(c, a, (dig_t *)t);
 }

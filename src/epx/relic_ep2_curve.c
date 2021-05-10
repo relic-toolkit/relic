@@ -478,7 +478,7 @@ static void detect_opt(int *opt, fp2_t a) {
 	RLC_TRY {
 		fp2_new(t);
 		fp2_set_dig(t, 3);
-		fp_neg(t[0], t[0]);
+		fp2_neg(t, t);
 
 		if (fp2_cmp(a, t) == RLC_EQ) {
 			*opt = RLC_MIN3;
@@ -535,8 +535,8 @@ void ep2_curve_init(void) {
 #endif
 #endif
 	ep2_set_infty(ctx->ep2_g);
-	bn_init(&(ctx->ep2_r), RLC_FP_DIGS);
-	bn_init(&(ctx->ep2_h), RLC_FP_DIGS);
+	bn_make(&(ctx->ep2_r), RLC_FP_DIGS);
+	bn_make(&(ctx->ep2_h), RLC_FP_DIGS);
 
 #ifdef EP_CTMAP
 	iso2_t iso = ep2_curve_get_iso();
@@ -706,8 +706,7 @@ void ep2_curve_set_twist(int type) {
 	char str[4 * RLC_FP_BYTES + 1];
 	ctx_t *ctx = core_get();
 	ep2_t g;
-	fp2_t a;
-	fp2_t b, u;
+	fp2_t a, b, u;
 	bn_t r, h;
 
 	ep2_null(g);
@@ -791,7 +790,7 @@ void ep2_curve_set_twist(int type) {
 		}
 
 		fp2_zero(g->z);
-		fp_set_dig(g->z[0], 1);
+		fp2_set_dig(g->z, 1);
 		g->coord = BASIC;
 
 		ep2_copy(ctx->ep2_g, g);
@@ -837,10 +836,8 @@ void ep2_curve_set(fp2_t a, fp2_t b, ep2_t g, bn_t r, bn_t h) {
 	ctx_t *ctx = core_get();
 	ctx->ep2_is_twist = 0;
 
-	fp_copy(ctx->ep2_a[0], a[0]);
-	fp_copy(ctx->ep2_a[1], a[1]);
-	fp_copy(ctx->ep2_b[0], b[0]);
-	fp_copy(ctx->ep2_b[1], b[1]);
+	fp2_copy(ctx->ep2_a, a);
+	fp2_copy(ctx->ep2_b, b);
 
 	ep2_norm(ctx->ep2_g, g);
 	bn_copy(&(ctx->ep2_r), r);
