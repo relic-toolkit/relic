@@ -67,7 +67,7 @@ void gt_get_gen(gt_t g) {
 int g1_is_valid(g1_t a) {
 	bn_t n;
 	g1_t t, u, v;
-	int r;
+	int r = 0;
 
 	if (g1_is_infty(a)) {
 		return 0;
@@ -96,7 +96,7 @@ int g1_is_valid(g1_t a) {
 					/* Check [(z^2−1)](2\psi(P)-P-\psi^2(P)) == [3]\psi^2(P).
 					 * Since \psi(P) = [\lambda]P = [z^2 - 1]P, it is the same
 					 * as checking \psi(2\psi(P)-P-\psi^2(P)) == [3]\psi^2(P),
-					 * or \psi((\psi-1)^2(P)) % r == -3*\psi^2(P). */
+					 * or \psi((\psi-1)^2(P)) == [-3]*\psi^2(P). */
 					ep_psi(v, a);
 					ep_sub(t, v, a);
 					ep_psi(u, v);
@@ -105,6 +105,7 @@ int g1_is_valid(g1_t a) {
 					ep_psi(t, v);
 					ep_dbl(v, u);
 					ep_add(u, u, v);
+					ep_neg(u, u);
 					r = ep_on_curve(t) && (ep_cmp(t, u) == RLC_EQ);
 					break;
 				default:
@@ -148,7 +149,7 @@ int g2_is_valid(g2_t a) {
 
 	bn_t p, n;
 	g2_t u, v;
-	int r;
+	int r = 0;
 
 	bn_null(n);
 	bn_null(p);
@@ -199,6 +200,7 @@ int g2_is_valid(g2_t a) {
 					g2_frb(v, a, 2);
 					g2_add(u, u, a);
 #endif
+					r = g2_on_curve(a) && (g2_cmp(u, v) == RLC_EQ);
 					break;
 				default:
 					pc_get_ord(n);
