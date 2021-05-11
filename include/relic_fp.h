@@ -114,6 +114,8 @@ enum {
 	B12_381,
 	/** 382-bit prime provided by Barreto for BN curve. */
 	BN_382,
+	/** 383-bit prime for GT-strong BLS curve of embedding degree 12. */
+	B12_383,
 	/** 446-bit prime provided by Barreto for BN curve. */
 	BN_446,
 	/** 446-bit prime for BLS curve of embedding degree 12. */

@@ -101,6 +101,8 @@ enum {
 	B12_P381,
 	/** Barreto-Naehrig curve with negative x. */
 	BN_P382,
+	/** Barreto-Lynn-Scott curve with embedding degree 12 (GT-strong). */
+	B12_P383,
 	/** Barreto-Naehrig curve with embedding degree 12. */
 	BN_P446,
 	/** Barreto-Lynn-Scott curve with embedding degree 12. */

@@ -45,7 +45,6 @@ cdecl(fp_rsh1_low):
 	ret
 
 cdecl(fp_lsh1_low):
-fp_lsh1_low:
         movq    0(%rsi), %r8
         movq    8(%rsi), %r9
         movq    16(%rsi), %r10

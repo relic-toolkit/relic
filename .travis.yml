@@ -22,7 +22,7 @@ env:
   # Build Supersingular curves
   - CONFIG="-DSEED= -DBENCH=0 -DBN_PRECI=1536 -DFP_PRIME=1536 -DFP_QNRES=on" TEST="-E test_fpx"
   # Build BLS12-381
-  - CONFIG="-DWSIZE=64 -DARITH=x64-asm-382 -DFP_PRIME=381 -DFP_PMERS=off -DFP_QNRES=on"
+  - CONFIG="-DWSIZE=64 -DARITH=x64-asm-6l -DFP_PRIME=381 -DFP_PMERS=off -DFP_QNRES=on"
 
   # Build with Address Sanityzer
   - CONFIG="-DAUSAN=on -DSEED= -DBENCH=0" TEST=""

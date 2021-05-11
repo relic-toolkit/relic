@@ -282,6 +282,15 @@ void fp_param_set(int param) {
 				bn_sub_dig(p, p, 187);
 				fp_prime_set_dense(p);
 				break;
+			case B12_383:
+				/* x = 2^64 + 2^51 + 2^24 + 2^12 + 2^9 */
+				bn_set_2b(t0, 64);
+				bn_set_bit(t0, 51, 1);
+				bn_set_bit(t0, 24, 1);
+				bn_set_bit(t0, 12, 1);
+				bn_set_bit(t0, 9, 1);
+				fp_prime_set_pairf(t0, EP_B12);
+				break;
 #elif FP_PRIME == 384
 			case NIST_384:
 				/* p = 2^384 - 2^128 - 2^96 + 2^32 - 1. */
@@ -598,6 +607,8 @@ int fp_param_set_any_tower(void) {
 	fp_param_set(B12_381);
 #elif FP_PRIME == 382
 	fp_param_set(BN_382);
+#elif FP_PRIME == 383
+	fp_param_set(B12_383);
 #elif FP_PRIME == 446
 #ifdef FP_QNRES
 	fp_param_set(B12_446);
