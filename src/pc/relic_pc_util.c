@@ -175,7 +175,16 @@ int g2_is_valid(g2_t a) {
 			bn_sub(n, p, n);
 			bn_add_dig(n, n, 1);
 			/* Compute u = a^t. */
-			g2_mul(u, a, n);
+			g2_copy(u, a);
+			for (int i = bn_bits(n) - 2; i >= 0; i--) {
+				g2_dbl(u, u);
+				if (bn_get_bit(n, i)) {
+					g2_add(u, u, a);
+				}
+			}
+			if (bn_sign(n) == RLC_NEG) {
+				g2_neg(u, u);
+			}
 			/* Compute v = a^(p + 1). */
 			g2_frb(v, a, 1);
 			g2_add(v, v, a);
@@ -187,7 +196,7 @@ int g2_is_valid(g2_t a) {
 				 * https://eprint.iacr.org/2019/814.pdf */
 				case EP_B12:
 					/* Check [z]psi^3(P) + P == \psi^2(P). */
-#if FP_PRIME == 461
+#if FP_PRIME == 383
 					/* Since p mod n = r, we can check instead that
 					 * psi^4(P) + P == \psi^2(P). */
 					ep2_frb(u, a, 4);
@@ -195,7 +204,16 @@ int g2_is_valid(g2_t a) {
 					ep2_frb(v, a, 2);
 #else
 					fp_prime_get_par(n);
-					g2_mul(u, a, n);
+					g2_copy(u, a);
+					for (int i = bn_bits(n) - 2; i >= 0; i--) {
+						g2_dbl(u, u);
+						if (bn_get_bit(n, i)) {
+							g2_add(u, u, a);
+						}
+					}
+					if (bn_sign(n) == RLC_NEG) {
+						g2_neg(u, u);
+					}
 					g2_frb(u, u, 3);
 					g2_frb(v, a, 2);
 					g2_add(u, u, a);
@@ -267,13 +285,13 @@ int gt_is_valid(gt_t a) {
 			gt_frb(v, a, 1);
 			gt_mul(v, v, a);
 			/* Check if a^(p + 1) = a^t. */
-			r = (gt_cmp(u, v) == RLC_EQ);
+			r = fp12_test_cyc(a) && (gt_cmp(u, v) == RLC_EQ);
 		} else {
 			switch (ep_curve_is_pairf()) {
 				/* Formulas from "Faster Subgroup Checks for BLS12-381" by Bowe.
 				 * https://eprint.iacr.org/2019/814.pdf */
 				case EP_B12:
-#if FP_PRIME == 461
+#if FP_PRIME == 383
 					/* Check [z]psi^3(P) + P == \psi^2(P), or trick from G2. */
 					fp12_frb(u, a, 4);
 					fp12_mul(u, u, a);
@@ -285,7 +303,7 @@ int gt_is_valid(gt_t a) {
 					gt_frb(v, a, 2);
 					gt_mul(u, u, a);
 #endif
-					r = (gt_cmp(u, v) == RLC_EQ);
+					r = fp12_test_cyc(a) && (gt_cmp(u, v) == RLC_EQ);
 					break;
 				default:
 					/* Common case. */
