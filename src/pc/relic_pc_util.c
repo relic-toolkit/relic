@@ -284,8 +284,12 @@ int gt_is_valid(gt_t a) {
 			/* Compute v = a^(p + 1). */
 			gt_frb(v, a, 1);
 			gt_mul(v, v, a);
+#if FP_PRIME == 509
+			r = fp24_test_cyc(a) && (gt_cmp(u, v) == RLC_EQ);
+#else
 			/* Check if a^(p + 1) = a^t. */
 			r = fp12_test_cyc(a) && (gt_cmp(u, v) == RLC_EQ);
+#endif
 		} else {
 			switch (ep_curve_is_pairf()) {
 				/* Formulas from "Faster Subgroup Checks for BLS12-381" by Bowe.
@@ -303,7 +307,11 @@ int gt_is_valid(gt_t a) {
 					gt_frb(v, a, 2);
 					gt_mul(u, u, a);
 #endif
+#if FP_PRIME == 509
+					r = fp24_test_cyc(a) && (gt_cmp(u, v) == RLC_EQ);
+#else
 					r = fp12_test_cyc(a) && (gt_cmp(u, v) == RLC_EQ);
+#endif
 					break;
 				default:
 					/* Common case. */
