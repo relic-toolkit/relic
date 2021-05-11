@@ -112,13 +112,9 @@ int g1_is_valid(g1_t a) {
 					pc_get_ord(n);
 					bn_sub_dig(n, n, 1);
 					/* Otherwise, check order explicitly. */
-					g1_copy(u, a);
-					for (int i = bn_bits(n) - 2; i >= 0; i--) {
-						g1_dbl(u, u);
-						if (bn_get_bit(n, i)) {
-							g1_add(u, u, a);
-						}
-					}
+					/* We use fast scalar multiplication methods here, because
+					 * they should work only in the correct order. */
+					g1_mul(u, a, n);
 					g1_neg(u, u);
 					r = g1_on_curve(a) && (g1_cmp(u, a) == RLC_EQ);
 					break;
@@ -174,14 +170,7 @@ int g2_is_valid(g2_t a) {
 			/* Compute trace t = p - n + 1. */
 			bn_sub(n, p, n);
 			bn_add_dig(n, n, 1);
-			/* Compute u = a^t. */
-			g2_copy(u, a);
-			for (int i = bn_bits(n) - 2; i >= 0; i--) {
-				g2_dbl(u, u);
-				if (bn_get_bit(n, i)) {
-					g2_add(u, u, a);
-				}
-			}
+			g2_mul(u, a, n);
 			if (bn_sign(n) == RLC_NEG) {
 				g2_neg(u, u);
 			}
@@ -224,13 +213,9 @@ int g2_is_valid(g2_t a) {
 					pc_get_ord(n);
 					bn_sub_dig(n, n, 1);
 					/* Otherwise, check order explicitly. */
-					g2_copy(u, a);
-					for (int i = bn_bits(n) - 2; i >= 0; i--) {
-						g2_dbl(u, u);
-						if (bn_get_bit(n, i)) {
-							g2_add(u, u, a);
-						}
-					}
+					/* We use fast scalar multiplication methods here, because
+					 * they should work only in the correct order. */
+					g2_mul(u, a, n);
 					g2_neg(u, u);
 					r = g2_on_curve(a) && (g2_cmp(u, a) == RLC_EQ);
 					break;
@@ -272,6 +257,9 @@ int gt_is_valid(gt_t a) {
 		pc_get_ord(n);
 		ep_curve_get_cof(p);
 
+		/* For a BN curve, we can use the fast test from
+		 * Unbalancing Pairing-Based Key Exchange Protocols by Scott.
+		 * https://eprint.iacr.org/2013/688.pdf */
 		if (bn_cmp_dig(p, 1) == RLC_EQ) {
 			dv_copy(p->dp, fp_prime_get(), RLC_FP_DIGS);
 			p->used = RLC_FP_DIGS;
@@ -297,13 +285,13 @@ int gt_is_valid(gt_t a) {
 					fp12_mul(u, u, a);
 					fp12_frb(v, a, 2);
 #else
-					fp_prime_get_par(n);
+					bn_sub_dig(n, n, 1);
+					/* We assume that the element is in the cyclotomic subgroup
+					 * and test afterwards. */
 					gt_exp(u, a, n);
-					gt_frb(u, u, 3);
-					gt_frb(v, a, 2);
-					gt_mul(u, u, a);
+ 					gt_inv(u, u);
 #endif
-					r = fp12_test_cyc((void *)a) && (gt_cmp(u, v) == RLC_EQ);
+					r = fp12_test_cyc((void *)a) && (gt_cmp(u, a) == RLC_EQ);
 					break;
 				case EP_B24:
 					bn_sub_dig(n, n, 1);
@@ -314,13 +302,7 @@ int gt_is_valid(gt_t a) {
 				default:
 					/* Common case. */
 					bn_sub_dig(n, n, 1);
-					gt_copy(u, a);
-					for (int i = bn_bits(n) - 2; i >= 0; i--) {
-						gt_sqr(u, u);
-						if (bn_get_bit(n, i)) {
-							gt_mul(u, u, a);
-						}
-					}
+					gt_exp(u, a, n);
 					gt_inv(u, u);
 					r = (gt_cmp(u, a) == RLC_EQ);
 					break;
