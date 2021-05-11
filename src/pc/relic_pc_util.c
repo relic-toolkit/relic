@@ -297,7 +297,9 @@ int gt_is_valid(gt_t a) {
 					bn_sub_dig(n, n, 1);
 					gt_exp(u, a, n);
 					gt_inv(u, u);
+#if FP_PRIME == 509
 					r = fp24_test_cyc((void *)a) && (gt_cmp(u, a) == RLC_EQ);
+#endif
 					break;
 				default:
 					/* Common case. */

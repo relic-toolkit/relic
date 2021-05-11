@@ -594,6 +594,8 @@ void fp12_exp_cyc(fp12_t c, fp12_t a, bn_t b) {
 	}
 
 	if ((bn_bits(b) > RLC_DIG) && ((w << 3) > bn_bits(b))) {
+		int _l[4];
+		int8_t naf[4][RLC_FP_BITS + 1];
 		fp12_t t[4];
 
 		RLC_TRY {
@@ -607,21 +609,37 @@ void fp12_exp_cyc(fp12_t c, fp12_t a, bn_t b) {
 			fp12_glv(_b, b);
 
 			if (ep_curve_is_pairf()) {
+				fp12_copy(t[0], a);
+				fp12_frb(t[1], t[0], 1);
+				fp12_frb(t[2], t[1], 1);
+				fp12_frb(t[3], t[2], 1);
+
+				l = 0;
 				for (i = 0; i < 4; i++) {
-					fp12_frb(t[i], a, i);
 					if (bn_sign(_b[i]) == RLC_NEG) {
 						fp12_inv_cyc(t[i], t[i]);
 					}
+					_l[i] = RLC_FP_BITS + 1;
+					bn_rec_naf(&naf[i][0], &_l[i], _b[i], 2);
+					l = RLC_MAX(l, _l[i]);
+				}
+				for (i = 0; i < 4; i++) {
+					for (j = _l[i]; j < l; j++) {
+						naf[i][j] = 0;
+					}
 				}
 
-				l = RLC_MAX(bn_bits(_b[0]), bn_bits(_b[1]));
-				l = RLC_MAX(l, RLC_MAX(bn_bits(_b[2]), bn_bits(_b[3])));
 				fp12_set_dig(c, 1);
 				for (i = l - 1; i >= 0; i--) {
 					fp12_sqr_cyc(c, c);
 					for (j = 0; j < 4; j++) {
-						if (bn_get_bit(_b[j], i)) {
+						if (naf[j][i] > 0) {
 							fp12_mul(c, c, t[j]);
+						}
+						if (naf[j][i] < 0) {
+							fp12_inv_cyc(t[j], t[j]);
+							fp12_mul(c, c, t[j]);
+							fp12_inv_cyc(t[j], t[j]);
 						}
 					}
 				}
