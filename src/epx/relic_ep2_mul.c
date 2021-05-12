@@ -166,7 +166,6 @@ static void ep2_mul_glv_imp(ep2_t r, ep2_t p, const bn_t k) {
 						bn_neg(_k[i], _k[i]);
 					}
 				}
-
 				break;
 		}
 
@@ -175,6 +174,7 @@ static void ep2_mul_glv_imp(ep2_t r, ep2_t p, const bn_t k) {
 		ep2_frb(q[2], q[1], 1);
 		ep2_frb(q[3], q[2], 1);
 
+		l = 0;
 		for (i = 0; i < 4; i++) {
 			if (bn_sign(_k[i]) == RLC_NEG) {
 				ep2_neg(q[i], q[i]);
@@ -182,10 +182,8 @@ static void ep2_mul_glv_imp(ep2_t r, ep2_t p, const bn_t k) {
 			_l[i] = RLC_FP_BITS + 1;
 			memset(naf[i], 0, _l[i]);
 			bn_rec_naf(naf[i], &_l[i], _k[i], 2);
+			l = RLC_MAX(l, _l[i]);
 		}
-
-		l = RLC_MAX(_l[0], _l[1]);
-		l = RLC_MAX(l, RLC_MAX(_l[2], _l[3]));
 
 		ep2_set_infty(r);
 		for (j = l - 1; j >= 0; j--) {

@@ -620,13 +620,9 @@ void fp12_exp_cyc(fp12_t c, fp12_t a, bn_t b) {
 						fp12_inv_cyc(t[i], t[i]);
 					}
 					_l[i] = RLC_FP_BITS + 1;
-					bn_rec_naf(&naf[i][0], &_l[i], _b[i], 2);
+					memset(naf[i], 0, _l[i]);
+					bn_rec_naf(naf[i], &_l[i], _b[i], 2);
 					l = RLC_MAX(l, _l[i]);
-				}
-				for (i = 0; i < 4; i++) {
-					for (j = _l[i]; j < l; j++) {
-						naf[i][j] = 0;
-					}
 				}
 
 				fp12_set_dig(c, 1);
