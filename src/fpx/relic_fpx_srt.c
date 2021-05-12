@@ -291,9 +291,9 @@ int fp4_srt(fp4_t c, fp4_t a) {
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		fp4_free(t0);
-		fp4_free(t1);
-		fp4_free(t2);
+		fp2_free(t0);
+		fp2_free(t1);
+		fp2_free(t2);
 	}
 	return r;
 }
