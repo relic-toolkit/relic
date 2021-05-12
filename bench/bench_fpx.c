@@ -909,9 +909,17 @@ static void arith4(void) {
 	}
 	BENCH_END;
 
+	BENCH_RUN("fp4_srt") {
+		fp4_rand(a);
+		fp4_sqr(a, a);
+		BENCH_ADD(fp4_srt(c, a));
+	}
+	BENCH_END;
+
 	fp4_free(a);
 	fp4_free(b);
 	fp4_free(c);
+	bn_free(d);
 }
 
 static void memory6(void) {

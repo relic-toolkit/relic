@@ -2018,6 +2018,64 @@ static int exponentiation4(void) {
 	return code;
 }
 
+static int square_root4(void) {
+	int code = RLC_ERR;
+	fp4_t a, b, c;
+	int r;
+
+	fp4_null(a);
+	fp4_null(b);
+	fp4_null(c);
+
+	RLC_TRY {
+		fp4_new(a);
+		fp4_new(b);
+		fp4_new(c);
+
+		TEST_CASE("square root extraction is correct") {
+			fp4_zero(a);
+			fp4_sqr(c, a);
+			r = fp4_srt(b, c);
+			TEST_ASSERT(r, end);
+			TEST_ASSERT(fp4_cmp(b, a) == RLC_EQ ||
+					fp4_cmp(c, a) == RLC_EQ, end);
+			fp2_rand(a[0]);
+			fp2_zero(a[1]);
+			fp4_sqr(c, a);
+			r = fp4_srt(b, c);
+			fp4_neg(c, b);
+			TEST_ASSERT(r, end);
+			TEST_ASSERT(fp4_cmp(b, a) == RLC_EQ ||
+					fp4_cmp(c, a) == RLC_EQ, end);
+			fp2_zero(a[0]);
+			fp2_rand(a[1]);
+			fp4_sqr(c, a);
+			r = fp4_srt(b, c);
+			fp4_neg(c, b);
+			TEST_ASSERT(r, end);
+			TEST_ASSERT(fp4_cmp(b, a) == RLC_EQ ||
+					fp4_cmp(c, a) == RLC_EQ, end);
+			fp4_rand(a);
+			fp4_sqr(c, a);
+			r = fp4_srt(b, c);
+			fp4_neg(c, b);
+			TEST_ASSERT(r, end);
+			TEST_ASSERT(fp4_cmp(b, a) == RLC_EQ ||
+					fp4_cmp(c, a) == RLC_EQ, end);
+		} TEST_END;
+	}
+	RLC_CATCH_ANY {
+		util_print("FATAL ERROR!\n");
+		RLC_ERROR(end);
+	}
+	code = RLC_OK;
+  end:
+	fp4_free(a);
+	fp4_free(b);
+	fp4_free(c);
+	return code;
+}
+
 static int memory6(void) {
 	err_t e;
 	int code = RLC_ERR;
@@ -7435,6 +7493,11 @@ int main(void) {
 		}
 
 		if (exponentiation4() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (square_root4() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
