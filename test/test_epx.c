@@ -2036,6 +2036,41 @@ static int simultaneous4(void) {
 	return code;
 }
 
+static int hashing4(void) {
+	int code = RLC_ERR;
+	bn_t n;
+	ep4_t p;
+	uint8_t msg[5];
+
+	bn_null(n);
+	ep4_null(p);
+
+	RLC_TRY {
+		bn_new(n);
+		ep4_new(p);
+
+		ep4_curve_get_ord(n);
+
+		TEST_CASE("point hashing is correct") {
+			rand_bytes(msg, sizeof(msg));
+			ep4_map(p, msg, sizeof(msg));
+			TEST_ASSERT(ep4_is_infty(p) == 0, end);
+			ep4_mul(p, p, n);
+			TEST_ASSERT(ep4_is_infty(p) == 1, end);
+		}
+		TEST_END;
+	}
+	RLC_CATCH_ANY {
+		util_print("FATAL ERROR!\n");
+		RLC_ERROR(end);
+	}
+	code = RLC_OK;
+  end:
+	bn_free(n);
+	ep4_free(p);
+	return code;
+}
+
 static int frobenius4(void) {
 	int code = RLC_ERR;
 	ep4_t a, b, c;
@@ -2202,6 +2237,11 @@ int main(void) {
 		}
 
 		if (simultaneous4() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (hashing4() != RLC_OK) {
 			core_clean();
 			return 1;
 		}

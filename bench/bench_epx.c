@@ -1025,6 +1025,12 @@ static void arith4(void) {
 		BENCH_ADD(ep4_frb(r, q, 1));
 	} BENCH_END;
 
+	BENCH_RUN("ep4_map") {
+		uint8_t msg[5];
+		rand_bytes(msg, 5);
+		BENCH_ADD(ep4_map(p, msg, 5));
+	} BENCH_END;
+
 	ep4_free(p);
 	ep4_free(q);
 	ep4_free(r);
