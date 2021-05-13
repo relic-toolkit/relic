@@ -69,15 +69,13 @@ static void ep4_mul_glv_imp(ep4_t r, ep4_t p, const bn_t k) {
 
 		fp_prime_get_par(u);
 		sign = bn_sign(u);
-		if (sign == RLC_NEG) {
-			bn_neg(u, u);
-		}
+        bn_abs(u, u);
 
 		ep4_norm(q[0], p);
 		for (i = 0; i < 8; i++) {
 			bn_mod(_k[i], v, u);
 			bn_div(v, v, u);
-			if (sign == RLC_NEG && (i % 2 != 0)) {
+			if ((sign == RLC_NEG) && (i % 2 != 0)) {
 				bn_neg(_k[i], _k[i]);
 			}
             if (bn_sign(k) == RLC_NEG) {

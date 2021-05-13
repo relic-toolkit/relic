@@ -36,7 +36,7 @@
 /* Private definitions                                                         */
 /*============================================================================*/
 
-void fp12_glv(bn_t _b[4], bn_t b) {
+static void fp12_glv(bn_t _b[4], bn_t b) {
 	int i, l;
 	bn_t n, u[4], v[4];
 
@@ -161,6 +161,44 @@ void fp12_glv(bn_t _b[4], bn_t b) {
 			bn_free(u[i]);
 			bn_free(v[i]);
 		}
+	}
+}
+
+static void fp24_glv(bn_t _b[8], bn_t b) {
+	int i, sign;
+	bn_t n, u, v;
+
+	bn_null(n);
+	bn_null(u);
+	bn_null(v);
+
+	RLC_TRY {
+		bn_new(n);
+		bn_new(u);
+		bn_new(v);
+
+		ep_curve_get_ord(n);
+		bn_abs(v, b);
+		fp_prime_get_par(u);
+		sign = bn_sign(u);
+		bn_abs(u, u);
+
+		for (i = 0; i < 8; i++) {
+			bn_mod(_b[i], v, u);
+			bn_div(v, v, u);
+			if ((sign == RLC_NEG) && (i % 2 != 0)) {
+				bn_neg(_b[i], _b[i]);
+			}
+			if (bn_sign(b) == RLC_NEG) {
+				bn_neg(_b[i], _b[i]);
+			}
+		}
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		bn_free(n);
+		bn_free(u);
+		bn_free(v);
 	}
 }
 
@@ -587,7 +625,6 @@ void fp12_back_cyc_sim(fp12_t c[], fp12_t a[], int n) {
 
 void fp12_exp_cyc(fp12_t c, fp12_t a, bn_t b) {
 	int i, j, k, l, w = bn_ham(b);
-	bn_t _b[4];
 
 	if (bn_is_zero(b)) {
 		return fp12_set_dig(c, 1);
@@ -597,6 +634,7 @@ void fp12_exp_cyc(fp12_t c, fp12_t a, bn_t b) {
 		int _l[4];
 		int8_t naf[4][RLC_FP_BITS + 1];
 		fp12_t t[4];
+		bn_t _b[4];
 
 		RLC_TRY {
 			for (i = 0; i < 4; i++) {
@@ -1211,31 +1249,79 @@ void fp24_exp_cyc(fp24_t c, fp24_t a, bn_t b) {
 	}
 
 	if ((bn_bits(b) > RLC_DIG) && ((w << 3) > bn_bits(b))) {
-		fp24_t t;
-
-		fp24_null(t)
+		int l, _l[8];
+		int8_t naf[8][RLC_FP_BITS + 1];
+		fp24_t t[8];
+		bn_t _b[8];
 
 		RLC_TRY {
-			fp24_new(t);
-
-			fp24_copy(t, a);
-			for (i = bn_bits(b) - 2; i >= 0; i--) {
-				fp24_sqr_cyc(t, t);
-				if (bn_get_bit(b, i)) {
-					fp24_mul(t, t, a);
-				}
+			for (i = 0; i < 8; i++) {
+				bn_null(_b[i]);
+				bn_new(_b[i]);
+				fp24_null(t[i]);
+				fp24_new(t[i]);
 			}
 
-			fp24_copy(c, t);
-			if (bn_sign(b) == RLC_NEG) {
-				fp24_inv_cyc(c, c);
+			fp24_glv(_b, b);
+
+			if (ep_curve_is_pairf()) {
+				l = 0;
+
+				fp24_copy(t[0], a);
+				for (i = 0; i < 8; i++) {
+					_l[i] = RLC_FP_BITS + 1;
+					memset(naf[i], 0, _l[i]);
+					bn_rec_naf(naf[i], &_l[i], _b[i], 2);
+					l = RLC_MAX(l, _l[i]);
+					if (i > 0) {
+						fp24_frb(t[i], t[i - 1], 1);
+					}
+				}
+
+				for (i = 0; i < 8; i++) {
+					if (bn_sign(_b[i]) == RLC_NEG) {
+						fp24_inv_cyc(t[i], t[i]);
+					}
+				}
+
+				fp24_set_dig(c, 1);
+				for (i = l - 1; i >= 0; i--) {
+					fp24_sqr_cyc(c, c);
+					for (j = 0; j < 8; j++) {
+						if (naf[j][i] > 0) {
+							fp24_mul(c, c, t[j]);
+						}
+						if (naf[j][i] < 0) {
+							fp24_inv_cyc(t[j], t[j]);
+							fp24_mul(c, c, t[j]);
+							fp24_inv_cyc(t[j], t[j]);
+						}
+					}
+				}
+			} else {
+				fp24_copy(t[0], a);
+
+				for (i = bn_bits(b) - 2; i >= 0; i--) {
+					fp24_sqr_cyc(t[0], t[0]);
+					if (bn_get_bit(b, i)) {
+						fp24_mul(t[0], t[0], a);
+					}
+				}
+
+				fp24_copy(c, t[0]);
+				if (bn_sign(b) == RLC_NEG) {
+					fp24_inv_cyc(c, c);
+				}
 			}
 		}
 		RLC_CATCH_ANY {
 			RLC_THROW(ERR_CAUGHT);
 		}
 		RLC_FINALLY {
-			fp24_free(t);
+			for (i = 0; i < 8; i++) {
+				bn_free(_b[i]);
+				fp24_free(t[i]);
+			}
 		}
 	} else {
 		fp24_t t, *u = RLC_ALLOCA(fp24_t, w);

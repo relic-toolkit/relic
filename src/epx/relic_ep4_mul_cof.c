@@ -56,10 +56,10 @@ void ep4_mul_cof(ep4_t r, ep4_t p) {
 
 		fp_prime_get_par(z);
 
-		ep4_mul(t0, p, z);
-		ep4_mul(t1, t0, z);
-		ep4_mul(t2, t1, z);
-		ep4_mul(t3, t2, z);
+		ep4_mul_basic(t0, p, z);
+		ep4_mul_basic(t1, t0, z);
+		ep4_mul_basic(t2, t1, z);
+		ep4_mul_basic(t3, t2, z);
 
 		ep4_sub(t3, t3, t2);
 		ep4_sub(t3, t3, p);
