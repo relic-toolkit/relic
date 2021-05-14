@@ -100,7 +100,7 @@ void pp_exp_k24(fp24_t c, fp24_t a) {
 	}
 	RLC_FINALLY {
 		bn_free(x);
-		for (int i = 0; i < 9; i++) {
+		for (int i = 0; i < 8; i++) {
 			fp24_free(t[i]);
 		}
 	}

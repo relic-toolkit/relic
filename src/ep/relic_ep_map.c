@@ -152,6 +152,7 @@ void ep_map_dst(ep_t p, const uint8_t *msg, int len, const uint8_t *dst, int dst
 				/* h = 1 */
 				break;
 			case EP_B12:
+			case EP_B24:
 				/* multiply by 1-x (x the BLS parameter) to get the correct group. */
 				/* XXX(rsw) is this guaranteed to work? It could fail if one
 				 *          of the prime-squared subgroups is cyclic, but

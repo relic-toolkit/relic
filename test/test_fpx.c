@@ -4358,6 +4358,7 @@ static int cyclotomic12(void) {
 			bn_neg(f, f);
 			fp12_exp_cyc(c, a, f);
 			fp12_inv_cyc(c, c);
+			TEST_ASSERT(fp12_cmp(b, c) == RLC_EQ, end);
 			/* Try sparse exponents as well. */
 			bn_set_2b(f, RLC_FP_BITS - 1);
 			bn_set_bit(f, RLC_FP_BITS / 2, 1);
@@ -5603,6 +5604,7 @@ static int cyclotomic24(void) {
 			bn_neg(f, f);
 			fp24_exp_cyc(c, a, f);
 			fp24_inv_cyc(c, c);
+			TEST_ASSERT(fp24_cmp(b, c) == RLC_EQ, end);
 			/* Try sparse exponents as well. */
 			bn_set_2b(f, RLC_FP_BITS - 1);
 			bn_set_bit(f, RLC_FP_BITS / 2, 1);
@@ -6394,6 +6396,7 @@ static int cyclotomic48(void) {
 			bn_neg(f, f);
 			fp48_exp_cyc(c, a, f);
 			fp48_inv_cyc(c, c);
+			TEST_ASSERT(fp48_cmp(b, c) == RLC_EQ, end);
 			/* Try sparse exponents as well. */
 			bn_set_2b(f, RLC_FP_BITS - 1);
 			bn_set_bit(f, RLC_FP_BITS / 2, 1);
@@ -7140,6 +7143,7 @@ static int cyclotomic54(void) {
 			bn_neg(f, f);
 			fp54_exp_cyc(c, a, f);
 			fp54_inv_cyc(c, c);
+			TEST_ASSERT(fp54_cmp(b, c) == RLC_EQ, end);
 			/* Try sparse exponents as well. */
 			bn_set_2b(f, RLC_FP_BITS - 1);
 			bn_set_bit(f, RLC_FP_BITS / 2, 1);

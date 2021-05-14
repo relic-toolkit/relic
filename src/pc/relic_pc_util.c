@@ -184,7 +184,6 @@ int g2_is_valid(g2_t a) {
 				/* Formulas from "Faster Subgroup Checks for BLS12-381" by Bowe.
 				 * https://eprint.iacr.org/2019/814.pdf */
 				case EP_B12:
-					/* Check [z]psi^3(P) + P == \psi^2(P). */
 #if FP_PRIME == 383
 					/* Since p mod n = r, we can check instead that
 					 * psi^4(P) + P == \psi^2(P). */
@@ -192,6 +191,7 @@ int g2_is_valid(g2_t a) {
 					ep2_add(u, u, a);
 					ep2_frb(v, a, 2);
 #else
+					/* Check [z]psi^3(P) + P == \psi^2(P). */
 					fp_prime_get_par(n);
 					g2_copy(u, a);
 					for (int i = bn_bits(n) - 2; i >= 0; i--) {
@@ -280,7 +280,7 @@ int gt_is_valid(gt_t a) {
 				 * https://eprint.iacr.org/2019/814.pdf */
 				case EP_B12:
 #if FP_PRIME == 383
-					/* Check [z]psi^3(P) + P == \psi^2(P), or trick from G2. */
+					/* GT-strong, so test for cyclotomic only. */
 					fp12_frb(u, a, 4);
 					fp12_mul(u, u, a);
 					fp12_frb(v, a, 2);
@@ -294,11 +294,16 @@ int gt_is_valid(gt_t a) {
 					r = fp12_test_cyc((void *)a) && (gt_cmp(u, a) == RLC_EQ);
 					break;
 				case EP_B24:
-					bn_sub_dig(n, n, 1);
-					gt_exp(u, a, n);
-					gt_inv(u, u);
+					fp_prime_get_par(n);
+					gt_frb(u, a, 1);
+					gt_exp(v, a, n);
+					r = (gt_cmp(u, v) == RLC_EQ);
+					gt_exp(u, v, n);
+					gt_mul(u, u, a);
+					gt_sqr(v, v);
+					r &= (gt_cmp(u, v) != RLC_EQ);
 #if FP_PRIME == 509
-					r = fp24_test_cyc((void *)a) && (gt_cmp(u, a) == RLC_EQ);
+					r &= fp24_test_cyc((void *)a);
 #endif
 					break;
 				default:
