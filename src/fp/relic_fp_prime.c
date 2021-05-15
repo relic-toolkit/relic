@@ -324,7 +324,7 @@ void fp_prime_set_pairf(const bn_t x, int pairf) {
 				fp_prime_set_dense(p);
 				break;
 			case EP_B24:
-				/* p = (u - 1)^2 * (u^8 - u^4 + 1) / 3 + u. */
+				/* p = (x - 1)^2 * (x^8 - x^4 + 1)/3 + x. */
 				bn_sqr(t1, t0);
 				bn_sqr(t1, t1);
 				bn_sqr(p, t1);

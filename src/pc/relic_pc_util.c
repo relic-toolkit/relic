@@ -276,35 +276,53 @@ int gt_is_valid(gt_t a) {
 			r = fp12_test_cyc((void *)a) && (gt_cmp(u, v) == RLC_EQ);
 		} else {
 			switch (ep_curve_is_pairf()) {
+				const int *b;
 				/* Formulas from "Faster Subgroup Checks for BLS12-381" by Bowe.
 				 * https://eprint.iacr.org/2019/814.pdf */
 				case EP_B12:
 #if FP_PRIME == 383
 					/* GT-strong, so test for cyclotomic only. */
-					fp12_frb(u, a, 4);
-					fp12_mul(u, u, a);
-					fp12_frb(v, a, 2);
+					r = 1;
 #else
 					bn_sub_dig(n, n, 1);
 					/* We assume that the element is in the cyclotomic subgroup
 					 * and test afterwards. */
-					gt_exp(u, a, n);
- 					gt_inv(u, u);
+
+					/* The 4-GLS recoding of the exponent gives this. */
+					fp_prime_get_par(n);
+					b = fp_prime_get_par_sps(&r);
+					fp12_exp_cyc_sps((void *)u, (void *)a, b, r, RLC_POS);
+					gt_inv(u, u);
+					gt_mul(u, u, a);
+					gt_inv(u, u);
+					gt_frb(u, u, 2);
+					gt_frb(v, u, 1);
+					gt_inv(v, v);
+					gt_mul(u, u, v);
+					gt_inv(u, u);
+					r = (gt_cmp(u, a) == RLC_EQ);
 #endif
-					r = fp12_test_cyc((void *)a) && (gt_cmp(u, a) == RLC_EQ);
+					r &= fp12_test_cyc((void *)a);
 					break;
 				case EP_B24:
+					/* The 8-GLS recoding of the exponent gives this. */
 					fp_prime_get_par(n);
-					gt_frb(u, a, 1);
-					gt_exp(v, a, n);
-					r = (gt_cmp(u, v) == RLC_EQ);
-					gt_exp(u, v, n);
+					b = fp_prime_get_par_sps(&r);
+					fp24_exp_cyc_sps((void *)u, (void *)a, b, r, bn_sign(n));
 					gt_mul(u, u, a);
-					gt_sqr(v, v);
-					r &= (gt_cmp(u, v) != RLC_EQ);
-#if FP_PRIME == 509
-					r &= fp24_test_cyc((void *)a);
-#endif
+					gt_inv(u, u);
+					gt_frb(u, u, 4);
+					gt_frb(v, u, 1);
+					gt_inv(v, v);
+					gt_mul(u, u, v);
+					gt_frb(v, v, 1);
+					gt_inv(v, v);
+					gt_mul(u, u, v);
+					gt_frb(v, v, 1);
+					gt_inv(v, v);
+					gt_mul(u, u, v);
+					gt_inv(u, u);
+					r = fp24_test_cyc((void *)a) && (gt_cmp(u, a) == RLC_EQ);
 					break;
 				default:
 					/* Common case. */

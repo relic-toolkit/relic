@@ -5595,7 +5595,7 @@ static int cyclotomic24(void) {
 			bn_set_dig(f, 1);
 			fp24_exp_cyc(c, a, f);
 			TEST_ASSERT(fp24_cmp(c, a) == RLC_EQ, end);
-			bn_rand(f, RLC_POS, RLC_FP_BITS);
+			bn_rand(f, RLC_POS, RLC_DIG);
 			fp24_exp(b, a, f);
 			fp24_exp_cyc(c, a, f);
 			TEST_ASSERT(fp24_cmp(b, c) == RLC_EQ, end);

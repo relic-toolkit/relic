@@ -1054,9 +1054,9 @@ void fp24_conv_cyc(fp24_t c, fp24_t a) {
 		/* First, compute c = a^(p^12 - 1). */
 		/* t = a^{-1}. */
 		fp24_inv(t, a);
-		/* c = a^(p^24). */
+		/* c = a^(p^12). */
 		fp24_inv_cyc(c, a);
-		/* c = a^(p^24 - 1). */
+		/* c = a^(p^12 - 1). */
 		fp24_mul(c, c, t);
 
 		/* Second, compute c^(p^4 + 1). */
