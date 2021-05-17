@@ -234,10 +234,13 @@ int g2_is_valid(g2_t a) {
 #endif
 }
 
+#define GLS_MEMBER
+
 int gt_is_valid(gt_t a) {
 	bn_t p, n;
 	gt_t u, v;
-	int r = 0;
+	int l, r = 0;
+	const int *b;
 
 	if (gt_is_unity(a)) {
 		return 0;
@@ -264,19 +267,29 @@ int gt_is_valid(gt_t a) {
 			dv_copy(p->dp, fp_prime_get(), RLC_FP_DIGS);
 			p->used = RLC_FP_DIGS;
 			p->sign = RLC_POS;
+#ifdef GLS_MEMBER
+			/* Compute trace t = p - n + 1, and compute a^t. */
+			fp_prime_get_par(n);
+			b = fp_prime_get_par_sps(&l);
+			fp12_exp_cyc_sps((void *)v, (void *)a, b, l, RLC_POS);
+			fp12_exp_cyc_sps((void *)u, (void *)v, b, l, RLC_POS);
+			gt_sqr(v, u);
+			gt_sqr(u, v);
+			gt_mul(u, u, v);
+#else
 			/* Compute trace t = p - n + 1. */
 			bn_sub(n, p, n);
-			bn_add_dig(n, n, 1);
 			/* Compute u = a^t. */
 			gt_exp(u, a, n);
+#endif
 			/* Compute v = a^(p + 1). */
 			gt_frb(v, a, 1);
-			gt_mul(v, v, a);
 			/* Check if a^(p + 1) = a^t. */
 			r = fp12_test_cyc((void *)a) && (gt_cmp(u, v) == RLC_EQ);
 		} else {
+			fp_prime_get_par(n);
+			b = fp_prime_get_par_sps(&l);
 			switch (ep_curve_is_pairf()) {
-				const int *b;
 				/* Formulas from "Faster Subgroup Checks for BLS12-381" by Bowe.
 				 * https://eprint.iacr.org/2019/814.pdf */
 				case EP_B12:
@@ -284,14 +297,9 @@ int gt_is_valid(gt_t a) {
 					/* GT-strong, so test for cyclotomic only. */
 					r = 1;
 #else
-					bn_sub_dig(n, n, 1);
-					/* We assume that the element is in the cyclotomic subgroup
-					 * and test afterwards. */
-
+#ifdef GLS_MEMBER
 					/* The 4-GLS recoding of the exponent gives this. */
-					fp_prime_get_par(n);
-					b = fp_prime_get_par_sps(&r);
-					fp12_exp_cyc_sps((void *)u, (void *)a, b, r, RLC_POS);
+					fp12_exp_cyc_sps((void *)u, (void *)a, b, l, RLC_POS);
 					gt_inv(u, u);
 					gt_mul(u, u, a);
 					gt_inv(u, u);
@@ -301,14 +309,22 @@ int gt_is_valid(gt_t a) {
 					gt_mul(u, u, v);
 					gt_inv(u, u);
 					r = (gt_cmp(u, a) == RLC_EQ);
+#else
+					gt_frb(u, a, 1);
+					fp12_exp_cyc_sps((void *)v, (void *)a, b, l, bn_sign(n));
+					r = (gt_cmp(u, v) == RLC_EQ);
+					fp12_exp_cyc_sps((void *)u, (void *)v, b, l, bn_sign(n));
+					gt_mul(u, u, a);
+					gt_sqr(v, v);
+					r &= (gt_cmp(u, v) != RLC_EQ);
+#endif
 #endif
 					r &= fp12_test_cyc((void *)a);
 					break;
 				case EP_B24:
+#ifdef GLS_MEMBER
 					/* The 8-GLS recoding of the exponent gives this. */
-					fp_prime_get_par(n);
-					b = fp_prime_get_par_sps(&r);
-					fp24_exp_cyc_sps((void *)u, (void *)a, b, r, bn_sign(n));
+					fp24_exp_cyc_sps((void *)u, (void *)a, b, l, bn_sign(n));
 					gt_mul(u, u, a);
 					gt_inv(u, u);
 					gt_frb(u, u, 4);
@@ -322,7 +338,17 @@ int gt_is_valid(gt_t a) {
 					gt_inv(v, v);
 					gt_mul(u, u, v);
 					gt_inv(u, u);
-					r = fp24_test_cyc((void *)a) && (gt_cmp(u, a) == RLC_EQ);
+					r = (gt_cmp(u, a) == RLC_EQ);
+#else
+					gt_frb(u, a, 1);
+					fp24_exp_cyc_sps((void *)v, (void *)a, b, l, bn_sign(n));
+					r = (gt_cmp(u, v) == RLC_EQ);
+					fp24_exp_cyc_sps((void *)u, (void *)v, b, l, bn_sign(n));
+					gt_mul(u, u, a);
+					gt_sqr(v, v);
+					r &= (gt_cmp(u, v) != RLC_EQ);
+#endif
+					r = fp24_test_cyc((void *)a);
 					break;
 				default:
 					/* Common case. */
