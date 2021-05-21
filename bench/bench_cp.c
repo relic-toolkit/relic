@@ -482,6 +482,64 @@ static void vbnn(void) {
 	ec_free(pkb);
 }
 
+#define MAX_KEYS	2048
+
+#include "assert.h"
+
+static void ers(void) {
+	int size;
+	ec_t pp, pk[MAX_KEYS], *ptr;
+	bn_t sk[MAX_KEYS], td;
+	ers_t ring[MAX_KEYS];
+	uint8_t m[5] = { 0, 1, 2, 3, 4 };
+
+	bn_null(td);
+	ec_null(pp);
+
+	bn_new(td);
+	ec_new(pp);
+	for (int i = 0; i < MAX_KEYS; i++) {
+		bn_null(sk[i]);
+		bn_new(sk[i]);
+		ec_null(pk[i]);
+		ec_new(pk[i]);
+		ers_null(ring[i]);
+		ers_new(ring[i]);
+		cp_ers_gen_key(sk[i], pk[i]);
+	}
+
+	cp_ers_gen(pp);
+
+	BENCH_RUN("cp_ers_sig") {
+		BENCH_ADD(cp_ers_sig(td, ring[0], m, 5, sk[0], pk[0], pp));
+	} BENCH_END;
+
+	size = 1;
+	ptr = &pk[size];
+	BENCH_FEW("cp_ers_ext", cp_ers_ext(td, ring, &size, m, 5, *(ptr++), pp), 1);
+
+	size = 1;
+	cp_ers_sig(td, ring[0], m, 5, sk[0], pk[0], pp);
+	for (int j = 1; j < MAX_KEYS; j = j << 1) {
+		for (int k = 0; k < j; k++) {
+			assert(cp_ers_ext(td, ring, &size, m, 5, pk[size], pp) == RLC_OK);
+			assert(cp_ers_ver(td, ring, size, m, 5, pp));
+		}
+		util_print("(%2d exts) ", j);
+		BENCH_RUN("cp_ers_ver") {
+			BENCH_ADD(cp_ers_ver(td, ring, size, m, 5, pp));
+		} BENCH_END;
+	}
+
+	bn_free(td);
+	ec_free(pp);
+	for (int i = 0; i < MAX_KEYS; i++) {
+		bn_free(sk[i]);
+		ec_free(pk[i]);
+		ers_free(ring[i])
+	}
+}
+
 #endif /* WITH_EC */
 
 #if defined(WITH_PC)
@@ -1660,6 +1718,7 @@ int main(void) {
 		ecdsa();
 		ecss();
 		vbnn();
+		ers();
 	} else {
 		RLC_THROW(ERR_NO_CURVE);
 	}
