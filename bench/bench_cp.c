@@ -523,12 +523,10 @@ static void ers(void) {
 	for (int j = 1; j < MAX_KEYS; j = j << 1) {
 		for (int k = 0; k < j; k++) {
 			assert(cp_ers_ext(td, ring, &size, m, 5, pk[size], pp) == RLC_OK);
-			assert(cp_ers_ver(td, ring, size, m, 5, pp));
 		}
+		assert(cp_ers_ver(td, ring, size, m, 5, pp));
 		util_print("(%2d exts) ", j);
-		BENCH_RUN("cp_ers_ver") {
-			BENCH_ADD(cp_ers_ver(td, ring, size, m, 5, pp));
-		} BENCH_END;
+		BENCH_FEW("cp_ers_ver", cp_ers_ver(td, ring, size, m, 5, pp), 1);
 	}
 
 	bn_free(td);
