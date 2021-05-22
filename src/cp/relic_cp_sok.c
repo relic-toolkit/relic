@@ -148,6 +148,7 @@ int cp_sokdl_ver(bn_t c, bn_t s, uint8_t *msg, int len, ec_t y) {
 		bn_free(n);
 		bn_free(v);
 		ec_free(t);
+		RLC_FREE(m);
 	}
 	return result;
 }
@@ -178,6 +179,9 @@ int cp_sokor_sig(bn_t c[2], bn_t s[2], uint8_t *msg, int len, ec_t y[2],
 		ec_new(g);
 		ec_new(t[0]);
 		ec_new(t[1]);
+		if (m == NULL) {
+			RLC_THROW(ERR_NO_MEMORY);
+		}
 
 		buf = m;
 		ec_curve_get_ord(n);
@@ -232,6 +236,7 @@ int cp_sokor_sig(bn_t c[2], bn_t s[2], uint8_t *msg, int len, ec_t y[2],
 		ec_free(g);
 		ec_free(t[0]);
 		ec_free(t[1]);
+		RLC_FREE(m);
 	}
 	return result;
 }
@@ -255,6 +260,9 @@ int cp_sokor_ver(bn_t c[2], bn_t s[2], uint8_t *msg, int len, ec_t y[2]) {
 		bn_new(v[1]);
 		bn_new(z);
 		ec_new(t);
+		if (m == NULL) {
+			RLC_THROW(ERR_NO_MEMORY);
+		}
 
 		buf = m;
 		ec_curve_get_ord(n);
@@ -296,6 +304,7 @@ int cp_sokor_ver(bn_t c[2], bn_t s[2], uint8_t *msg, int len, ec_t y[2]) {
 		bn_free(v[1]);
 		bn_free(z);
 		ec_free(t);
+		RLC_FREE(m);
 	}
 	return result;
 }

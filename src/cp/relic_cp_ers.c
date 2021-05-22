@@ -172,6 +172,7 @@ int cp_ers_ext(bn_t td, ers_t *p, int *size, uint8_t *msg, int len, ec_t pk,
 		ec_curve_get_ord(n);
 		bn_rand_mod(r, n);
 		bn_sub(td, td, r);
+		bn_mod(td, td, n);
 		ec_mul_gen(p[*size]->h, r);
 
 		ec_copy(p[*size]->pk, pk);

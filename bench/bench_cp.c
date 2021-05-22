@@ -482,15 +482,11 @@ static void vbnn(void) {
 	ec_free(pkb);
 }
 
-#define MAX_KEYS	2048
-
-#include "assert.h"
-
 static void ers(void) {
 	int size;
-	ec_t pp, pk[MAX_KEYS], *ptr;
-	bn_t sk[MAX_KEYS], td;
-	ers_t ring[MAX_KEYS];
+	ec_t pp, pk[16], *ptr;
+	bn_t sk[16], td;
+	ers_t ring[16];
 	uint8_t m[5] = { 0, 1, 2, 3, 4 };
 
 	bn_null(td);
@@ -498,7 +494,7 @@ static void ers(void) {
 
 	bn_new(td);
 	ec_new(pp);
-	for (int i = 0; i < MAX_KEYS; i++) {
+	for (int i = 0; i < 16; i++) {
 		bn_null(sk[i]);
 		bn_new(sk[i]);
 		ec_null(pk[i]);
@@ -520,18 +516,18 @@ static void ers(void) {
 
 	size = 1;
 	cp_ers_sig(td, ring[0], m, 5, sk[0], pk[0], pp);
-	for (int j = 1; j < MAX_KEYS; j = j << 1) {
+	for (int j = 1; j < 16; j = j << 1) {
 		for (int k = 0; k < j; k++) {
-			assert(cp_ers_ext(td, ring, &size, m, 5, pk[size], pp) == RLC_OK);
+			cp_ers_ext(td, ring, &size, m, 5, pk[size], pp);
 		}
-		assert(cp_ers_ver(td, ring, size, m, 5, pp));
+		cp_ers_ver(td, ring, size, m, 5, pp);
 		util_print("(%2d exts) ", j);
 		BENCH_FEW("cp_ers_ver", cp_ers_ver(td, ring, size, m, 5, pp), 1);
 	}
 
 	bn_free(td);
 	ec_free(pp);
-	for (int i = 0; i < MAX_KEYS; i++) {
+	for (int i = 0; i < 16; i++) {
 		bn_free(sk[i]);
 		ec_free(pk[i]);
 		ers_free(ring[i])

@@ -214,6 +214,6 @@ void bench_print(void);
  *
  * @return the last benchmark.
  */
-ull_t ben_total(void);
+ull_t bench_total(void);
 
 #endif /* !RLC_BENCH_H */
