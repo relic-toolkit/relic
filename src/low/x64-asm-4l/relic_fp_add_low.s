@@ -35,6 +35,7 @@
 #include "macro.s"
 
 .text
+
 .global cdecl(fp_add1_low)
 .global cdecl(fp_addn_low)
 .global cdecl(fp_addm_low)
@@ -289,27 +290,31 @@ cdecl(fp_subd_low):
 	ret
 
 cdecl(fp_negm_low):
-    movq    0(%rsi) , %r8
-    or 	    8(%rsi) , %r8
-    or 	    16(%rsi), %r8
-    or 	    24(%rsi), %r8
+    xorq    %rax, %rax
     mov     P0, %rcx
     mov     P1, %r9
     mov     P2, %r10
     mov     P3, %r11
+    subq 	0(%rsi) , %rcx
+    sbbq 	8(%rsi) , %r9
+    sbbq 	16(%rsi) , %r10
+    sbbq 	24(%rsi) , %r11
+
+    movq    0(%rsi) , %r8
+    or 	    8(%rsi) , %r8
+    or 	    16(%rsi), %r8
+    or 	    24(%rsi), %r8
     test    %r8, %r8
-    cmovnz 	%rcx    , %r8
-    subq 	0(%rsi) , %r8
-    movq 	%r8     , 0(%rdi)
-    cmovnz 	%r9     , %r8
-    sbbq 	8(%rsi) , %r8
-    movq 	%r8     , 8(%rdi)
-    cmovnz 	%r10    , %r8
-    sbbq 	16(%rsi), %r8
-    movq 	%r8     , 16(%rdi)
-    cmovnz 	%r11    , %r8
-    sbbq 	24(%rsi), %r8
-    movq 	%r8     , 24(%rdi)
+
+    cmovnz 	%rcx, %rax
+    movq 	%rax, 0(%rdi)
+    cmovnz 	%r9, %rax
+    movq 	%rax, 8(%rdi)
+    cmovnz 	%r10, %rax
+    movq 	%rax, 16(%rdi)
+    cmovnz 	%r11, %rax
+    movq 	%rax, 24(%rdi)
+
     ret
 
 cdecl(fp_dbln_low):

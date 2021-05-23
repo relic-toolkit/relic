@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (c) 2013 RELIC Authors
+ * Copyright (c) 2017 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -24,13 +24,14 @@
 /**
  * @file
  *
- * Implementation of the low-le&vel in&version functions.
+ * Implementation of the low-level inversion functions.
  *
  * @&version $Id$
  * @ingroup fp
  */
 
-#include "relic_bn.h"
+#include <gmp.h>
+
 #include "relic_fp.h"
 #include "relic_fp_low.h"
 #include "relic_core.h"
@@ -39,35 +40,31 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-int fp_invn_asm(dig_t *, const dig_t *, const dig_t *);
-
 void fp_invm_low(dig_t *c, const dig_t *a) {
-	fp_t t, x1;
-	int j, k;
+	mp_size_t cn;
+	rlc_align dig_t s[RLC_FP_DIGS], t[2 * RLC_FP_DIGS], u[RLC_FP_DIGS + 1];
 
-	fp_null(t);
-	fp_null(x1);
+#if FP_RDC == MONTY
+	dv_zero(t + RLC_FP_DIGS, RLC_FP_DIGS);
+	dv_copy(t, a, RLC_FP_DIGS);
+	fp_rdcn_low(u, t);
+#else
+	fp_copy(u, a);
+#endif
 
-	RLC_TRY {
-		fp_new(t);
-		fp_new(x1);
+	dv_copy(s, fp_prime_get(), RLC_FP_DIGS);
 
-		/* u = a, v = p, x1 = 1, x2 = 0, k = 0. */
-		k = fp_invn_asm(x1, a, c);
-		if (k > RLC_FP_DIGS * RLC_DIG) {
-			t[0] = t[1] = t[2] = t[3] = 0;
-			k = 512 - k;
-			j = k % 64;
-			k = k / 64;
-			t[k] = (dig_t)1 << j;
-			fp_mul(c, x1, t);
-		}
+	mpn_gcdext(t, c, &cn, u, RLC_FP_DIGS, s, RLC_FP_DIGS);
+	if (cn < 0) {
+		dv_zero(c - cn, RLC_FP_DIGS + cn);
+		mpn_sub_n(c, fp_prime_get(), c, RLC_FP_DIGS);
+	} else {
+		dv_zero(c + cn, RLC_FP_DIGS - cn);
 	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		fp_free(t);
-		fp_free(x1);
-	}
+
+#if FP_RDC == MONTY
+	dv_zero(t, RLC_FP_DIGS);
+	dv_copy(t + RLC_FP_DIGS, c, RLC_FP_DIGS);
+	mpn_tdiv_qr(u, c, 0, t, 2 * RLC_FP_DIGS, fp_prime_get(), RLC_FP_DIGS);
+#endif
 }
