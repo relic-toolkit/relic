@@ -30,7 +30,7 @@
  *
  * Interface of cryptographic protocols.
  *
- * @ingroup bn
+ * @ingroup cp
  */
 
 #ifndef RLC_CP_H
@@ -213,6 +213,35 @@ typedef ers_st ers_t[1];
 #else
 typedef ers_st *ers_t;
 #endif
+
+/**
+ * Represents an extendable threshold ring signature.
+ */
+typedef struct _etrs_st {
+	/** The secret. */
+	bn_t y;
+	/** The ephemeral public key in the signature. */
+    ec_t h;
+	/** The public key associated to the signature. */
+	ec_t pk;
+	/** The first component of the signature of knowledge. */
+	bn_t c[2];
+	/** The second component of the signature of knowledge. */
+	bn_t r[2];
+} etrs_st;
+
+/**
+ * Pointer to an extendable ring signature.
+ */
+/**
+ * Pointer to a Boneh-Goh-Nissim cryptosystem key pair.
+ */
+#if ALLOC == AUTO
+typedef etrs_st etrs_t[1];
+#else
+typedef etrs_st *etrs_t;
+#endif
+
 
 /*============================================================================*/
 /* Macro definitions                                                          */
@@ -424,7 +453,6 @@ typedef ers_st *ers_t;
 
 #elif ALLOC == AUTO
 #define bdpe_free(A)			/* empty */
-
 #endif
 
 /**
@@ -450,7 +478,6 @@ typedef ers_st *ers_t;
 
 #elif ALLOC == AUTO
 #define sokaka_new(A)			/* empty */
-
 #endif
 
 /**
@@ -469,7 +496,6 @@ typedef ers_st *ers_t;
 
 #elif ALLOC == AUTO
 #define sokaka_free(A)			/* empty */
-
 #endif
 
 /**
@@ -502,7 +528,6 @@ typedef ers_st *ers_t;
 
 #elif ALLOC == AUTO
 #define bgn_new(A)				/* empty */
-
 #endif
 
 /**
@@ -528,7 +553,6 @@ typedef ers_st *ers_t;
 
 #elif ALLOC == AUTO
 #define bgn_free(A)				/* empty */
-
 #endif
 
 /**
@@ -558,7 +582,6 @@ typedef ers_st *ers_t;
 
 #elif ALLOC == AUTO
 #define ers_new(A)				/* empty */
-
 #endif
 
 /**
@@ -581,7 +604,60 @@ typedef ers_st *ers_t;
 
 #elif ALLOC == AUTO
 #define ers_free(A)				/* empty */
+#endif
 
+/**
+ * Initializes a BGN key pair with a null value.
+ *
+ * @param[out] A			- the key pair to initialize.
+ */
+#define etrs_null(A)			RLC_NULL(A)
+
+/**
+ * Calls a function to allocate and initialize an extendable signature ring.
+ *
+ * @param[out] A			- the new signature ring.
+ */
+#if ALLOC == DYNAMIC
+#define etrs_new(A)															\
+	A = (etrs_t)calloc(1, sizeof(etrs_st));									\
+	if (A == NULL) {														\
+		RLC_THROW(ERR_NO_MEMORY);											\
+	}																		\
+	bn_new((A)->y);															\
+	ec_new((A)->h);															\
+	ec_new((A)->pk);														\
+	bn_new((A)->c[0]);														\
+	bn_new((A)->c[1]);														\
+	bn_new((A)->r[0]);														\
+	bn_new((A)->r[1]);														\
+
+#elif ALLOC == AUTO
+#define etrs_new(A)				/* empty */
+
+#endif
+
+/**
+ * Calls a function to clean and free an extendable signature ring.
+ *
+ * @param[out] A			- the signature ring to clean and free.
+ */
+#if ALLOC == DYNAMIC
+#define etrs_free(A)														\
+	if (A != NULL) {														\
+		bn_free((A)->y);													\
+		ec_free((A)->h);													\
+		ec_free((A)->pk);													\
+		bn_free((A)->c[0]);													\
+		bn_free((A)->c[1]);													\
+		bn_free((A)->r[0]);													\
+		bn_free((A)->r[1]);													\
+		free(A);															\
+		A = NULL;															\
+	}
+
+#elif ALLOC == AUTO
+#define etrs_free(A)				/* empty */
 #endif
 
 /*============================================================================*/
@@ -1949,8 +2025,6 @@ int cp_ers_sig(bn_t td, ers_t p, uint8_t *msg, int len, bn_t sk, ec_t pk,
  * @param[in] size 			- the number of signatures in the ring.
  * @param[in] msg 			- the message to sign.
  * @param[in] len 			- the message length.
- * @param[in] sk			- the signer's private key.
- * @param[in] pk			- the singer's public key.
  * @param[in] pp			- the public parameters.
  */
 int cp_ers_ver(bn_t td, ers_t *s, int size, uint8_t *msg, int len, ec_t pp);
@@ -1969,6 +2043,85 @@ int cp_ers_ver(bn_t td, ers_t *s, int size, uint8_t *msg, int len, ec_t pp);
 int cp_ers_ext(bn_t td, ers_t *p, int *size, uint8_t *msg, int len, ec_t pk,
 		ec_t pp);
 
+/**
+ * Generates the public parameters of the extendable threshold ring signature.
+ *
+ * @åaram[out] pp 			- the public parameters.
+ */
+int cp_etrs_gen(ec_t pp);
+
+/**
+ * Generates a key pair for the extendable threshold ring signature.
+ *
+ * @åaram[out] sk 			- the private key.
+ * @param[out] pk 			- the public key.
+ */
+int cp_etrs_gen_key(bn_t sk, ec_t pk);
+
+/**
+ * Signs a message using the extendable threshold ring signature scheme.
+ *
+ * @param[out] td 			- the signature trapdoors.
+ * @param[out] y 			- the signature randomness.
+ * @param[out] max	 		- the maximum number of extensions.
+ * @param[out] p 			- the resulting signature.
+ * @param[in] msg 			- the message to sign.
+ * @param[in] len 			- the message length.
+ * @param[in] sk			- the signer's private key.
+ * @param[in] pk			- the singer's public key.
+ * @param[in] pp			- the public parametetrs.
+ */
+int cp_etrs_sig(bn_t *td, bn_t *y, int max, etrs_t p, uint8_t *msg, int len,
+		bn_t sk, ec_t pk, ec_t pp);
+
+/**
+ * Verifies an extendable threshold ring signature scheme over some messages.
+ *
+ * @param[in] thres 		- the specified threshold.
+ * @param[in] td 			- the signature trapdoors.
+ * @param[in] y 			- the signature randomness.
+ * @param[in] max	 		- the maximum number of extensions.
+ * @param[in] s 			- the ring of signatures.
+ * @param[in] size 			- the number of signatures in the ring.
+ * @param[in] msg 			- the message to sign.
+ * @param[in] len 			- the message length.
+ * @param[in] pp			- the public parametetrs.
+ */
+int cp_etrs_ver(int thres, bn_t *td, bn_t *y, int max, etrs_t *s, int size,
+ 		uint8_t *msg, int len, ec_t pp);
+
+/**
+ * Extends an extendable threshold ring signature with a new signature.
+ *
+ * @param[in] td 			- the signature trapdoors.
+ * @param[in] y 			- the signature randomness.
+ * @param[in] max	 		- the maximum number of extensions.
+ * @param[in] p 			- the ring of signatures.
+ * @param[in] size 			- the number of signatures in the ring.
+ * @param[in] msg 			- the message to sign.
+ * @param[in] len 			- the message length.
+ * @param[in] pk			- the singer's public key.
+ * @param[in] pp			- the public parametetrs.
+ */
+int cp_etrs_ext(bn_t *td, bn_t *y, int max, etrs_t *p, int *size, uint8_t *msg,
+		int len, ec_t pk, ec_t pp);
+/**
+ * Joins an extendable threshold ring signature with a new signature.
+ *
+ * @param[in] thres 		- the specified threshold.
+ * @param[in] td 			- the signature trapdoors.
+ * @param[in] y 			- the signature randomness.
+ * @param[in] max	 		- the maximum number of extensions.
+ * @param[in] p 			- the ring of signatures.
+ * @param[in] size 			- the number of signatures in the ring.
+ * @param[in] msg 			- the message to sign.
+ * @param[in] len 			- the message length.
+ * @param[in] sk			- the signer's private key.
+ * @param[in] pk			- the singer's public key.
+ * @param[in] pp			- the public parametetrs.
+ */
+int cp_etrs_uni(int thres, bn_t *td, bn_t *y, int max, etrs_t *p, int *size,
+		uint8_t *msg, int len, bn_t sk, ec_t pk, ec_t pp);
 /**
  * Initialize the Context-hiding Multi-key Homomorphic Signature scheme (CMLHS).
  * The scheme due to Schabhuser et al. signs a vector of messages.

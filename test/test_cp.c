@@ -833,7 +833,7 @@ static int ers(void) {
 			TEST_ASSERT(cp_ers_ver(td, ring, 1, m, 5, pp) == 1, end);
 			TEST_ASSERT(cp_ers_ver(td, ring, 1, m, 0, pp) == 0, end);
 			size = 1;
-			for (int j = 1; j < 4 - 1; j++) {
+			for (int j = 1; j < 4; j++) {
 				TEST_ASSERT(cp_ers_ext(td, ring, &size, m, 5, pk[j], pp) == RLC_OK, end);
 				TEST_ASSERT(cp_ers_ver(td, ring, size, m, 5, pp) == 1, end);
 				TEST_ASSERT(cp_ers_ver(td, ring, size, m, 0, pp) == 0, end);
@@ -852,6 +852,78 @@ end:
 		bn_free(sk[i]);
 		ec_free(pk[i]);
 		ers_free(ring[i])
+	}
+	return code;
+}
+
+static int etrs(void) {
+	int size, code = RLC_ERR;
+	ec_t pp, pk[4];
+	bn_t sk[4], td[4], y[4];
+	etrs_t ring[4];
+	uint8_t m[5] = { 0, 1, 2, 3, 4 };
+
+
+	ec_null(pp);
+
+	RLC_TRY {
+		ec_new(pp);
+		for (int i = 0; i < 4; i++) {
+			bn_null(td[i]);
+			bn_new(td[i]);
+			bn_null(y[i]);
+			bn_new(y[i]);
+			bn_null(sk[i]);
+			bn_new(sk[i]);
+			ec_null(pk[i]);
+			ec_new(pk[i]);
+			etrs_null(ring[i]);
+			etrs_new(ring[i]);
+			cp_etrs_gen_key(sk[i], pk[i]);
+		}
+
+		cp_etrs_gen(pp);
+
+		TEST_CASE("extendable threshold ring signature scheme is correct") {
+			TEST_ASSERT(cp_etrs_sig(td, y, 4, ring[0], m, 5, sk[0], pk[0], pp) == RLC_OK, end);
+			TEST_ASSERT(cp_etrs_ver(0, td, y, 4, ring, 1, m, 5, pp) == 0, end);
+			TEST_ASSERT(cp_etrs_ver(1, td, y, 4, ring, 1, m, 5, pp) == 1, end);
+			TEST_ASSERT(cp_etrs_ver(1, td, y, 4, ring, 1, m, 0, pp) == 0, end);
+			size = 1;
+			for (int j = 1; j < 4; j++) {
+				TEST_ASSERT(cp_etrs_ext(td, y, 4, ring, &size, m, 5, pk[j], pp) == RLC_OK, end);
+				TEST_ASSERT(cp_etrs_ver(0, td+j, y+j, 4-j, ring, size, m, 5, pp) == 0, end);
+				TEST_ASSERT(cp_etrs_ver(1, td+j, y+j, 4-j, ring, size, m, 5, pp) == 1, end);
+				TEST_ASSERT(cp_etrs_ver(1, td+j, y+j, 4-j, ring, size, m, 0, pp) == 0, end);
+			}
+
+			TEST_ASSERT(cp_etrs_sig(td, y, 4, ring[0], m, 5, sk[0], pk[0], pp) == RLC_OK, end);
+			size = 1;
+			TEST_ASSERT(cp_etrs_uni(1, td, y, 4, ring, &size, m, 5, sk[1], pk[1], pp) == RLC_OK, end);
+			TEST_ASSERT(cp_etrs_ver(1, td, y, 4, ring, size, m, 5, pp) == 0, end);
+			TEST_ASSERT(cp_etrs_ver(2, td, y, 4, ring, size, m, 5, pp) == 1, end);
+			TEST_ASSERT(cp_etrs_ver(2, td, y, 4, ring, size, m, 0, pp) == 0, end);
+			for (int j = 2; j < 4; j++) {
+				TEST_ASSERT(cp_etrs_ext(td, y, 4, ring, &size, m, 5, pk[j], pp) == RLC_OK, end);
+				TEST_ASSERT(cp_etrs_ver(1, td+j-1, y+j-1, 4-j+1, ring, size, m, 5, pp) == 0, end);
+				TEST_ASSERT(cp_etrs_ver(2, td+j-1, y+j-1, 4-j+1, ring, size, m, 5, pp) == 1, end);
+				TEST_ASSERT(cp_etrs_ver(2, td+j-1, y+j-1, 4-j+1, ring, size, m, 0, pp) == 0, end);
+			}
+		} TEST_END;
+	}
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
+	}
+	code = RLC_OK;
+
+end:
+	ec_free(pp);
+	for (int i = 0; i < 4; i++) {
+		bn_free(td[i]);
+		bn_free(y[i]);
+		bn_free(sk[i]);
+		ec_free(pk[i]);
+		etrs_free(ring[i])
 	}
 	return code;
 }
@@ -1979,6 +2051,11 @@ int main(void) {
 		}
 
 		if (ers() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (etrs() != RLC_OK) {
 			core_clean();
 			return 1;
 		}

@@ -537,6 +537,63 @@ static void ers(void) {
 	}
 }
 
+static void etrs(void) {
+	int size;
+	ec_t pp, pk[BENCH + 1];
+	bn_t sk[BENCH + 1], td[BENCH + 1], y[BENCH + 1];
+	etrs_t ring[BENCH + 1];
+	uint8_t m[BENCH + 1] = { 0, 1, 2, 3, 4 };
+
+	ec_null(pp);
+	ec_new(pp);
+	for (int i = 0; i <= BENCH; i++) {
+		bn_null(td[i]);
+		bn_new(td[i]);
+		bn_null(y[i]);
+		bn_new(y[i]);
+		bn_null(sk[i]);
+		bn_new(sk[i]);
+		ec_null(pk[i]);
+		ec_new(pk[i]);
+		etrs_null(ring[i]);
+		etrs_new(ring[i]);
+		cp_etrs_gen_key(sk[i], pk[i]);
+	}
+
+	cp_etrs_gen(pp);
+
+	BENCH_RUN("cp_etrs_sig") {
+		BENCH_ADD(cp_etrs_sig(td, y, BENCH, ring[0], m, 5, sk[0], pk[0], pp));
+	} BENCH_END;
+
+	BENCH_RUN("cp_etrs_ver") {
+		BENCH_ADD(cp_etrs_ver(1, td, y, BENCH, ring, 1, m, 5, pp));
+	} BENCH_END;
+
+	size = 1;
+	BENCH_FEW("cp_etrs_ext", cp_etrs_ext(td, y, BENCH, ring, &size, m, 5, pk[size], pp), 1);
+
+	size = 1;
+	cp_etrs_sig(td, y, BENCH, ring[0], m, 5, sk[0], pk[0], pp);
+	for (int j = 1; j < BENCH && size < BENCH; j = j << 1) {
+		for (int k = 0; k < j && size < BENCH; k++) {
+			cp_etrs_ext(td, y, BENCH, ring, &size, m, 5, pk[size], pp);
+		}
+		cp_etrs_ver(1, td+size-1, y+size-1, BENCH-size+1, ring, size, m, 5, pp);
+		util_print("(%2d exts) ", j);
+		BENCH_FEW("cp_etrs_ver", cp_etrs_ver(1, td+size-1, y+size-1, BENCH-size+1, ring, size, m, 5, pp), 1);
+	}
+
+	ec_free(pp);
+	for (int i = 0; i <= BENCH; i++) {
+		bn_free(td[i]);
+		bn_free(y[i]);
+		bn_free(sk[i]);
+		ec_free(pk[i]);
+		etrs_free(ring[i])
+	}
+}
+
 #endif /* WITH_EC */
 
 #if defined(WITH_PC)
@@ -1716,6 +1773,7 @@ int main(void) {
 		ecss();
 		vbnn();
 		ers();
+		etrs();
 	}
 #endif
 
