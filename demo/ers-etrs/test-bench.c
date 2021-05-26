@@ -35,7 +35,7 @@
 #include "relic.h"
 #include "relic_bench.h"
 
-#define MAX_KEYS	4096
+#define MAX_KEYS	2048
 
 #include "assert.h"
 
@@ -70,7 +70,7 @@ static void ers(void) {
 	bench_compute(BENCH * BENCH);
 	util_print("{\"1\": {\"time\": %lf, \"size\": null}", bench_total()/(double)1000000);
 
-	for (int j = 1; j < MAX_KEYS/2; j = j << 1) {
+	for (int j = 1; j < MAX_KEYS; j = j << 1) {
 		size = j;
 		bench_before();
 		for (int k = 0; k < j; k++) {

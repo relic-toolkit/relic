@@ -484,17 +484,17 @@ static void vbnn(void) {
 
 static void ers(void) {
 	int size;
-	ec_t pp, pk[16], *ptr;
-	bn_t sk[16], td;
-	ers_t ring[16];
-	uint8_t m[5] = { 0, 1, 2, 3, 4 };
+	ec_t pp, pk[BENCH + 1];
+	bn_t sk[BENCH + 1], td;
+	ers_t ring[BENCH + 1];
+	uint8_t m[BENCH + 1] = { 0, 1, 2, 3, 4 };
 
 	bn_null(td);
 	ec_null(pp);
 
 	bn_new(td);
 	ec_new(pp);
-	for (int i = 0; i < 16; i++) {
+	for (int i = 0; i <= BENCH; i++) {
 		bn_null(sk[i]);
 		bn_new(sk[i]);
 		ec_null(pk[i]);
@@ -510,14 +510,17 @@ static void ers(void) {
 		BENCH_ADD(cp_ers_sig(td, ring[0], m, 5, sk[0], pk[0], pp));
 	} BENCH_END;
 
+	BENCH_RUN("cp_ers_ver") {
+		BENCH_ADD(cp_ers_ver(td, ring, 1, m, 5, pp));
+	} BENCH_END;
+
 	size = 1;
-	ptr = &pk[size];
-	BENCH_FEW("cp_ers_ext", cp_ers_ext(td, ring, &size, m, 5, *(ptr++), pp), 1);
+	BENCH_FEW("cp_ers_ext", cp_ers_ext(td, ring, &size, m, 5, pk[size], pp), 1);
 
 	size = 1;
 	cp_ers_sig(td, ring[0], m, 5, sk[0], pk[0], pp);
-	for (int j = 1; j < 16; j = j << 1) {
-		for (int k = 0; k < j; k++) {
+	for (int j = 1; j < BENCH; j = j << 1) {
+		for (int k = 0; k < j && size < BENCH; k++) {
 			cp_ers_ext(td, ring, &size, m, 5, pk[size], pp);
 		}
 		cp_ers_ver(td, ring, size, m, 5, pp);
@@ -527,7 +530,7 @@ static void ers(void) {
 
 	bn_free(td);
 	ec_free(pp);
-	for (int i = 0; i < 16; i++) {
+	for (int i = 0; i <= BENCH; i++) {
 		bn_free(sk[i]);
 		ec_free(pk[i]);
 		ers_free(ring[i])
@@ -1704,8 +1707,8 @@ int main(void) {
 #endif
 
 #if defined(WITH_EC)
-	util_banner("Protocols based on elliptic curves:\n", 0);
 	if (ec_param_set_any() == RLC_OK) {
+		util_banner("Protocols based on elliptic curves:\n", 0);
 		ecdh();
 		ecmqv();
 		ecies();
@@ -1713,14 +1716,12 @@ int main(void) {
 		ecss();
 		vbnn();
 		ers();
-	} else {
-		RLC_THROW(ERR_NO_CURVE);
 	}
 #endif
 
 #if defined(WITH_PC)
-	util_banner("Protocols based on pairings:\n", 0);
 	if (pc_param_set_any() == RLC_OK) {
+		util_banner("Protocols based on pairings:\n", 0);
 		pdpub();
 		pdprv();
 		sokaka();
@@ -1735,8 +1736,6 @@ int main(void) {
 #endif
 		zss();
 		lhs();
-	} else {
-		RLC_THROW(ERR_NO_CURVE);
 	}
 #endif
 
