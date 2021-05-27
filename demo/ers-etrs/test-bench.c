@@ -117,6 +117,92 @@ static void ers(void) {
 	}
 }
 
+#undef MAX_KEYS
+#define MAX_KEYS	2048
+#define MIN_KEYS	64
+
+static void etrs(void) {
+	int size;
+	ec_t pp, pk[MAX_KEYS], *ptr;
+	bn_t sk[MAX_KEYS], td[MAX_KEYS], y[MAX_KEYS];
+	etrs_t ring[MAX_KEYS];
+	uint8_t m[5] = { 0, 1, 2, 3, 4 };
+
+	ec_null(pp);
+	ec_new(pp);
+	for (int i = 0; i < MAX_KEYS; i++) {
+		bn_null(y[i]);
+		bn_new(y[i]);
+		bn_null(td[i]);
+		bn_new(td[i]);
+		bn_null(sk[i]);
+		bn_new(sk[i]);
+		ec_null(pk[i]);
+		ec_new(pk[i]);
+		ers_null(ring[i]);
+		ers_new(ring[i]);
+		cp_etrs_gen_key(sk[i], pk[i]);
+	}
+
+	cp_ers_gen(pp);
+
+	util_print("{");
+	for (int j = 1; j <= MAX_KEYS; j = j << 1) {
+		bench_reset();
+		bench_before();
+		for (int i = 0; i < BENCH; i++)	{
+			cp_etrs_sig(td, y, j, ring[0], m, 5, sk[0], pk[0], pp);
+		}
+		bench_after();
+		bench_compute(BENCH);
+		util_print("\"%d\": {\"time\": %lf, \"size\": null}, ", j, bench_total()/(double)1000000);
+		assert(cp_etrs_ver(1, td, y, j, ring, 1, m, 5, pp));
+	}
+	util_print("}\n\n");
+
+	size = 1;
+	for (int j = 1; j < MAX_KEYS; j = j << 1) {
+		bench_reset();
+		bench_before();
+		cp_etrs_sig(td, y, j, ring[0], m, 5, sk[0], pk[0], pp);
+		for (int k = 0; k < j; k++) {
+			cp_etrs_ext(td, y, j, ring, &size, m, 5, pk[size], pp);
+		}
+		bench_after();
+		bench_compute(1);
+		util_print(", \"%d\": {\"time\": %lf, \"size\": null}", size, bench_total()/(double)1000000);
+		assert(cp_etrs_ver(1, td+size-1, y+size-1, j-size+1, ring, size, m, 5, pp));
+
+	}
+	util_print("}\n\n");
+
+	size = 1;
+	for (int j = 1; j < MAX_KEYS; j = j << 1) {
+		cp_etrs_sig(td, y, j, ring[0], m, 5, sk[0], pk[0], pp);
+		for (int k = 0; k < j; k++) {
+			cp_etrs_ext(td, y, j, ring, &size, m, 5, pk[size], pp);
+		}
+		bench_reset();
+		bench_before();
+		for (int i = 0; i < BENCH; i++)	{
+			cp_etrs_ver(1, td+size-1, y+size-1, j-size+1, ring, size, m, 5, pp);
+		}
+		bench_after();
+		bench_compute(BENCH);
+		util_print(", \"%d\": {\"time\": %lf, \"size\": null}", size, bench_total()/(double)1000000);
+	}
+	util_print("}\n\n");
+
+	ec_free(pp);
+	for (int i = 0; i < MAX_KEYS; i++) {
+		bn_free(td[i]);
+		bn_free(y[i]);
+		bn_free(sk[i]);
+		ec_free(pk[i]);
+		etrs_free(ring[i])
+	}
+}
+
 int main(void) {
 	if (core_init() != RLC_OK) {
 		core_clean();
@@ -126,6 +212,7 @@ int main(void) {
 	conf_print();
 
 	if (ec_param_set_any() == RLC_OK) {
+		etrs();
 		ers();
 	} else {
 		RLC_THROW(ERR_NO_CURVE);

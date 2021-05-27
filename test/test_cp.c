@@ -2059,8 +2059,6 @@ int main(void) {
 			core_clean();
 			return 1;
 		}
-	} else {
-		RLC_THROW(ERR_NO_CURVE);
 	}
 #endif
 
@@ -2129,8 +2127,6 @@ int main(void) {
 			core_clean();
 			return 1;
 		}
-	} else {
-		RLC_THROW(ERR_NO_CURVE);
 	}
 #endif
 
