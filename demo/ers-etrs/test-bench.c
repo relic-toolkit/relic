@@ -118,7 +118,7 @@ static void ers(void) {
 }
 
 #undef MAX_KEYS
-#define MAX_KEYS	256
+#define MAX_KEYS	2048
 #define MIN_KEYS	64
 
 static void etrs(void) {
@@ -160,29 +160,28 @@ static void etrs(void) {
 	}
 	util_print("}\n\n");
 
-	for (int l = 1; l <= 8; l = l << 1) {
-		size = 1;
-		for (int j = 1; j <= MAX_KEYS; j = j << 1) {
+	for (int l = 2; l <= 8; l = l << 1) {
+		for (int j = l; j <= MAX_KEYS; j = j << 1) {
 			bench_reset();
 			bench_before();
+			size = 1;
 			cp_etrs_sig(td, y, j, ring[0], m, 5, sk[0], pk[0], pp);
-			for (int k = 0; k < l; k++) {
+			for (int k = 1; k < j; k++) {
 				cp_etrs_ext(td, y, j, ring, &size, m, 5, pk[size], pp);
 			}
 			bench_after();
 			bench_compute(1);
-			util_print(", \"%d\": {\"time\": %lf, \"size\": null}", j, bench_total()/(double)1000000);
+			util_print("\"%d\": {\"time\": %lf, \"size\": null}, ", j, bench_total()/(double)1000000);
 			assert(cp_etrs_ver(1, td+size-1, y+size-1, j-size+1, ring, size, m, 5, pp));
-
 		}
 		util_print("}\n\n");
 	}
 
 	for (int l = 1; l <= 8; l = l << 1) {
-		size = 1;
-		for (int j = 1; j <= MAX_KEYS; j = j << 1) {
+		for (int j = l; j <= MAX_KEYS; j = j << 1) {
+			size = 1;
 			cp_etrs_sig(td, y, j, ring[0], m, 5, sk[0], pk[0], pp);
-			for (int k = 0; k < j; k++) {
+			for (int k = 0; k < l; k++) {
 				cp_etrs_ext(td, y, j, ring, &size, m, 5, pk[size], pp);
 			}
 			bench_reset();
@@ -192,7 +191,7 @@ static void etrs(void) {
 			}
 			bench_after();
 			bench_compute(BENCH);
-			util_print(", \"%d\": {\"time\": %lf, \"size\": null}", size, bench_total()/(double)1000000);
+			util_print(", \"%d\": {\"time\": %lf, \"size\": null}", j, bench_total()/(double)1000000);
 		}
 		util_print("}\n\n");
 	}
