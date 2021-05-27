@@ -233,12 +233,12 @@ int cp_etrs_ver(int thres, bn_t *td, bn_t *y, int max, etrs_t *s, int size,
 		ec_free(t);
 		ec_free(w[0]);
 		ec_free(w[1]);
-		RLC_FREE(_y);
-		RLC_FREE(_t);
 		for (int i = 0; i < d; i++) {
 			bn_free(_y[i]);
 			ec_free(_t[i]);
 		}
+		RLC_FREE(_y);
+		RLC_FREE(_t);
 	}
 	return result;
 }
@@ -293,8 +293,8 @@ int cp_etrs_ext(bn_t *td, bn_t *y, int max, etrs_t *p, int *size, uint8_t *msg, 
 	RLC_FINALLY {
 		bn_free(n);
 		bn_free(r);
-		ec_free(y[0]);
-		ec_free(y[1]);
+		ec_free(w[0]);
+		ec_free(w[1]);
 	}
 	return result;
 }
@@ -383,12 +383,12 @@ int cp_etrs_uni(int thres, bn_t *td, bn_t *y, int max, etrs_t *p, int *size,
 		ec_free(t);
 		ec_free(w[0]);
 		ec_free(w[1]);
-		RLC_FREE(_y);
-		RLC_FREE(_t);
 		for (int i = 0; i < d; i++) {
 			bn_free(_y[i]);
 			ec_free(_t[i]);
 		}
+		RLC_FREE(_y);
+		RLC_FREE(_t);
 	}
 	return result;
 }
