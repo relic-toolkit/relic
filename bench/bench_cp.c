@@ -472,6 +472,7 @@ static void vbnn(void) {
 	}
 	BENCH_END;
 
+	bn_free(z);
 	bn_free(h);
 	bn_free(msk);
 	bn_free(ska);

@@ -462,7 +462,7 @@ static int ecies(void) {
 		ec_new(q_b);
 
 		l = ec_param_level();
-		if (l == 128 || l == 192 || l == 256) {
+		if (l == 80 || l == 128 || l == 192 || l == 256) {
 			TEST_CASE("ecies encryption/decryption is correct") {
 				TEST_ASSERT(cp_ecies_gen(da, qa) == RLC_OK, end);
 				in_len = RLC_BC_LEN - 1;
