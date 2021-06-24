@@ -460,7 +460,7 @@ static int multiplication2(void) {
 			ep2_mul_basic(r, p, k);
 			TEST_ASSERT(ep2_cmp(p, r) == RLC_EQ, end);
 			ep2_rand(p);
-			ep2_mul(r, p, n);
+			ep2_mul_basic(r, p, n);
 			TEST_ASSERT(ep2_is_infty(r), end);
 			bn_rand_mod(k, n);
 			ep2_mul(q, p, k);
@@ -482,7 +482,7 @@ static int multiplication2(void) {
 			ep2_mul_slide(r, p, k);
 			TEST_ASSERT(ep2_cmp(p, r) == RLC_EQ, end);
 			ep2_rand(p);
-			ep2_mul(r, p, n);
+			ep2_mul_slide(r, p, n);
 			TEST_ASSERT(ep2_is_infty(r), end);
 			bn_rand_mod(k, n);
 			ep2_mul(q, p, k);
@@ -505,7 +505,7 @@ static int multiplication2(void) {
 			ep2_mul_monty(r, p, k);
 			TEST_ASSERT(ep2_cmp(p, r) == RLC_EQ, end);
 			ep2_rand(p);
-			ep2_mul(r, p, n);
+			ep2_mul_monty(r, p, n);
 			TEST_ASSERT(ep2_is_infty(r), end);
 			bn_rand_mod(k, n);
 			ep2_mul(q, p, k);
@@ -528,7 +528,7 @@ static int multiplication2(void) {
 			ep2_mul_lwnaf(r, p, k);
 			TEST_ASSERT(ep2_cmp(p, r) == RLC_EQ, end);
 			ep2_rand(p);
-			ep2_mul(r, p, n);
+			ep2_mul_lwnaf(r, p, n);
 			TEST_ASSERT(ep2_is_infty(r), end);
 			bn_rand_mod(k, n);
 			ep2_mul(q, p, k);
