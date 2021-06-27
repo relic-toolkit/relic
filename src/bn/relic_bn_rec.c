@@ -694,7 +694,7 @@ void bn_rec_reg(int8_t *naf, int *len, const bn_t k, int n, int w) {
 	mask = RLC_MASK(w);
 	l = RLC_CEIL(n, w - 1);
 
-	if (*len <= l) {
+	if (*len < l) {
 		*len = 0;
 		RLC_THROW(ERR_NO_BUFFER);
 		return;

@@ -390,7 +390,7 @@ static void ep_mul_reg_glv(ep_t r, const ep_t p, const bn_t k) {
 static void ep_mul_reg_imp(ep_t r, const ep_t p, const bn_t k) {
 	bn_t _k;
 	int i, j, l, n;
-	int8_t s, reg[1 + RLC_CEIL(RLC_FP_BITS + 1, EP_WIDTH - 1)];
+	int8_t s, reg[RLC_CEIL(RLC_FP_BITS + 1, EP_WIDTH - 1)];
 	ep_t t[1 << (EP_WIDTH - 2)], u, v;
 
 	if (bn_is_zero(k)) {
@@ -420,7 +420,7 @@ static void ep_mul_reg_imp(ep_t r, const ep_t p, const bn_t k) {
 		_k->dp[0] |= bn_is_even(_k);
 
 		/* Compute the regular w-NAF representation of k. */
-		l = RLC_CEIL(n, EP_WIDTH - 1) + 1;
+		l = RLC_CEIL(n, EP_WIDTH - 1);
 		bn_rec_reg(reg, &l, _k, n, EP_WIDTH);
 
 #if defined(EP_MIXED)
