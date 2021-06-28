@@ -471,7 +471,7 @@ typedef iso2_st *iso2_t;
 #define ep4_mul(R, P, K)		ep4_mul_slide(R, P, K)
 #elif EP_MUL == MONTY
 #define ep4_mul(R, P, K)		ep4_mul_monty(R, P, K)
-#elif EP_MUL == LWNAF || EP2_MUL == LWREG
+#elif EP_MUL == LWNAF || EP_MUL == LWREG
 #define ep4_mul(R, P, K)		ep4_mul_lwnaf(R, P, K)
 #endif
 
