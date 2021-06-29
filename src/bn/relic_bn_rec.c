@@ -909,7 +909,7 @@ void bn_rec_frb(bn_t *ki, int sub, const bn_t k, const bn_t x, const bn_t n,
 			bn_dbl(u[3], u[3]);
 			bn_add(v[1], v[1], u[3]);
 			bn_rsh(u[3], u[3], 2);
-			bn_mul(u[3], u[3], u[0]);
+			bn_mul(u[3], u[3], x);
 			bn_mul_dig(u[3], u[3], 3);
 			bn_add(v[2], v[2], u[3]);
 			bn_dbl(u[3], u[3]);
