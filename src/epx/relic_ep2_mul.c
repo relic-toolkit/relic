@@ -103,7 +103,6 @@ static void ep2_mul_glv_imp(ep2_t r, ep2_t p, const bn_t k) {
 		bn_free(n);
 		bn_free(u);
 		for (i = 0; i < 4; i++) {
-			bn_free(v[i]);
 			bn_free(_k[i]);
 			ep2_free(q[i]);
 		}
