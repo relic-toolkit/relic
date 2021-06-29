@@ -33,176 +33,6 @@
 #include "relic_core.h"
 
 /*============================================================================*/
-/* Private definitions                                                         */
-/*============================================================================*/
-
-static void fp12_glv(bn_t _b[4], bn_t b) {
-	int i, l;
-	bn_t n, u[4], v[4];
-
-	bn_null(n);
-
-	RLC_TRY {
-		bn_new(n);
-		for (i = 0; i < 4; i++) {
-			bn_null(u[i]);
-			bn_null(v[i]);
-			bn_new(u[i]);
-			bn_new(v[i]);
-		}
-
-		ep_curve_get_ord(n);
-
-		switch (ep_curve_is_pairf()) {
-			case EP_BN:
-				ep2_curve_get_vs(v);
-
-				for (i = 0; i < 4; i++) {
-					bn_mul(v[i], v[i], b);
-					bn_div(v[i], v[i], n);
-					if (bn_sign(v[i]) == RLC_NEG) {
-						bn_add_dig(v[i], v[i], 1);
-					}
-					bn_zero(_b[i]);
-				}
-
-				fp_prime_get_par(u[0]);
-				bn_dbl(u[2], u[0]);
-				bn_add_dig(u[1], u[2], 1);
-				bn_sub_dig(u[3], u[0], 1);
-				bn_add_dig(u[0], u[0], 1);
-				bn_copy(_b[0], b);
-				for (i = 0; i < 4; i++) {
-					bn_mul(u[i], u[i], v[i]);
-					bn_mod(u[i], u[i], n);
-					bn_add(_b[0], _b[0], n);
-					bn_sub(_b[0], _b[0], u[i]);
-					bn_mod(_b[0], _b[0], n);
-				}
-
-				fp_prime_get_par(u[0]);
-				bn_neg(u[1], u[0]);
-				bn_dbl(u[2], u[0]);
-				bn_add_dig(u[2], u[2], 1);
-				bn_dbl(u[3], u[2]);
-				for (i = 0; i < 4; i++) {
-					bn_mul(u[i], u[i], v[i]);
-					bn_mod(u[i], u[i], n);
-					bn_add(_b[1], _b[1], n);
-					bn_sub(_b[1], _b[1], u[i]);
-					bn_mod(_b[1], _b[1], n);
-				}
-
-				fp_prime_get_par(u[0]);
-				bn_add_dig(u[1], u[0], 1);
-				bn_neg(u[1], u[1]);
-				bn_dbl(u[2], u[0]);
-				bn_add_dig(u[2], u[2], 1);
-				bn_sub_dig(u[3], u[2], 2);
-				bn_neg(u[3], u[3]);
-				for (i = 0; i < 4; i++) {
-					bn_mul(u[i], u[i], v[i]);
-					bn_mod(u[i], u[i], n);
-					bn_add(_b[2], _b[2], n);
-					bn_sub(_b[2], _b[2], u[i]);
-					bn_mod(_b[2], _b[2], n);
-				}
-
-				fp_prime_get_par(u[1]);
-				bn_dbl(u[0], u[1]);
-				bn_neg(u[0], u[0]);
-				bn_dbl(u[2], u[1]);
-				bn_add_dig(u[2], u[2], 1);
-				bn_sub_dig(u[3], u[1], 1);
-				bn_neg(u[1], u[1]);
-				for (i = 0; i < 4; i++) {
-					bn_mul(u[i], u[i], v[i]);
-					bn_mod(u[i], u[i], n);
-					bn_add(_b[3], _b[3], n);
-					bn_sub(_b[3], _b[3], u[i]);
-					bn_mod(_b[3], _b[3], n);
-				}
-
-				for (i = 0; i < 4; i++) {
-					l = bn_bits(_b[i]);
-					bn_sub(_b[i], n, _b[i]);
-					if (bn_bits(_b[i]) > l) {
-						bn_sub(_b[i], _b[i], n);
-						_b[i]->sign = RLC_POS;
-					} else {
-						_b[i]->sign = RLC_NEG;
-					}
-				}
-				break;
-			case EP_B12:
-				bn_abs(v[0], b);
-				fp_prime_get_par(u[0]);
-
-				bn_copy(u[1], u[0]);
-				bn_abs(u[0], u[0]);
-
-				for (i = 0; i < 4; i++) {
-					bn_mod(_b[i], v[0], u[0]);
-					bn_div(v[0], v[0], u[0]);
-					if ((bn_sign(u[1]) == RLC_NEG) && (i % 2 != 0)) {
-						bn_neg(_b[i], _b[i]);
-					}
-					if (bn_sign(b) == RLC_NEG) {
-						bn_neg(_b[i], _b[i]);
-					}
-				}
-				break;
-		}
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		bn_free(n);
-		for (i = 0; i < 4; i++) {
-			bn_free(u[i]);
-			bn_free(v[i]);
-		}
-	}
-}
-
-static void fp24_glv(bn_t _b[8], bn_t b) {
-	int i, sign;
-	bn_t n, u, v;
-
-	bn_null(n);
-	bn_null(u);
-	bn_null(v);
-
-	RLC_TRY {
-		bn_new(n);
-		bn_new(u);
-		bn_new(v);
-
-		ep_curve_get_ord(n);
-		bn_abs(v, b);
-		fp_prime_get_par(u);
-		sign = bn_sign(u);
-		bn_abs(u, u);
-
-		for (i = 0; i < 8; i++) {
-			bn_mod(_b[i], v, u);
-			bn_div(v, v, u);
-			if ((sign == RLC_NEG) && (i % 2 != 0)) {
-				bn_neg(_b[i], _b[i]);
-			}
-			if (bn_sign(b) == RLC_NEG) {
-				bn_neg(_b[i], _b[i]);
-			}
-		}
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		bn_free(n);
-		bn_free(u);
-		bn_free(v);
-	}
-}
-
-/*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
@@ -634,9 +464,14 @@ void fp12_exp_cyc(fp12_t c, fp12_t a, bn_t b) {
 		int _l[4];
 		int8_t naf[4][RLC_FP_BITS + 1];
 		fp12_t t[4];
-		bn_t _b[4];
+		bn_t _b[4], n, u;
+
+		bn_null(n);
+		bn_null(u);
 
 		RLC_TRY {
+			bn_new(n);
+			bn_new(u);
 			for (i = 0; i < 4; i++) {
 				bn_null(_b[i]);
 				bn_new(_b[i]);
@@ -644,7 +479,9 @@ void fp12_exp_cyc(fp12_t c, fp12_t a, bn_t b) {
 				fp12_new(t[i]);
 			}
 
-			fp12_glv(_b, b);
+			ep_curve_get_ord(n);
+			fp_prime_get_par(u);
+			bn_rec_frb(_b, 4, b, u, n, ep_curve_is_pairf());
 
 			if (ep_curve_is_pairf()) {
 				fp12_copy(t[0], a);
@@ -697,6 +534,8 @@ void fp12_exp_cyc(fp12_t c, fp12_t a, bn_t b) {
 			RLC_THROW(ERR_CAUGHT);
 		}
 		RLC_FINALLY {
+			bn_free(n);
+			bn_free(x);
 			for (i = 0; i < 4; i++) {
 				bn_free(_b[i]);
 				fp12_free(t[i]);
@@ -873,7 +712,7 @@ void fp2_exp_cyc_sim(fp2_t e, fp2_t a, bn_t b, fp2_t c, bn_t d) {
 
 void fp12_exp_cyc_sim(fp12_t e, fp12_t a, bn_t b, fp12_t c, bn_t d) {
 	int i, j, l;
-	bn_t _b[4], _d[4];
+	bn_t _b[4], _d[4], n, x;
 	fp12_t t[4], u[4];
 
 	if (bn_is_zero(b)) {
@@ -884,7 +723,12 @@ void fp12_exp_cyc_sim(fp12_t e, fp12_t a, bn_t b, fp12_t c, bn_t d) {
 		return fp12_exp_cyc(e, a, b);
 	}
 
+	bn_null(n);
+	bn_null(u);
+
 	RLC_TRY {
+		bn_new(n);
+		bn_new(x);
 		for (i = 0; i < 4; i++) {
 			bn_null(_b[i]);
 			bn_null(_d[i]);
@@ -896,8 +740,10 @@ void fp12_exp_cyc_sim(fp12_t e, fp12_t a, bn_t b, fp12_t c, bn_t d) {
 			fp12_new(u[i]);
 		}
 
-		fp12_glv(_b, b);
-		fp12_glv(_d, d);
+		ep_curve_get_ord(n);
+		fp_prime_get_par(x);
+		bn_rec_frb(_b, 4, b, x, n, ep_curve_is_pairf() == EP_B12);
+		bn_rec_frb(_d, 4, d, x, n, ep_curve_is_pairf() == EP_B12);
 
 		if (ep_curve_is_pairf()) {
 			for (i = 0; i < 4; i++) {
@@ -955,6 +801,8 @@ void fp12_exp_cyc_sim(fp12_t e, fp12_t a, bn_t b, fp12_t c, bn_t d) {
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
+		bn_free(n);
+		bn_free(x);
 		for (i = 0; i < 4; i++) {
 			bn_free(_b[i]);
 			bn_free(_d[i]);
@@ -1252,9 +1100,14 @@ void fp24_exp_cyc(fp24_t c, fp24_t a, bn_t b) {
 		int l, _l[8];
 		int8_t naf[8][RLC_FP_BITS + 1];
 		fp24_t t[8];
-		bn_t _b[8];
+		bn_t _b[8], n, x;
+
+		bn_null(x);
+		bn_null(u);
 
 		RLC_TRY {
+			bn_new(n);
+			bn_new(x);
 			for (i = 0; i < 8; i++) {
 				bn_null(_b[i]);
 				bn_new(_b[i]);
@@ -1262,7 +1115,9 @@ void fp24_exp_cyc(fp24_t c, fp24_t a, bn_t b) {
 				fp24_new(t[i]);
 			}
 
-			fp24_glv(_b, b);
+			ep_curve_get_ord(n);
+			fp_prime_get_par(x);
+			bn_rec_frb(_b, 8, b, x, n, ep_curve_is_pairf());
 
 			if (ep_curve_is_pairf()) {
 				l = 0;
@@ -1318,6 +1173,8 @@ void fp24_exp_cyc(fp24_t c, fp24_t a, bn_t b) {
 			RLC_THROW(ERR_CAUGHT);
 		}
 		RLC_FINALLY {
+			bn_free(n);
+			bn_free(x);
 			for (i = 0; i < 8; i++) {
 				bn_free(_b[i]);
 				fp24_free(t[i]);

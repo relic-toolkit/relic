@@ -571,7 +571,7 @@ static void memory4(void) {
 
 static void util4(void) {
 	ep4_t p, q, t[2];
-	uint8_t bin[4 * RLC_FP_BYTES + 1];
+	uint8_t bin[8 * RLC_FP_BYTES + 1];
 	int l;
 
 	ep4_null(p);
