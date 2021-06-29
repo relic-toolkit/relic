@@ -481,7 +481,8 @@ void fp12_exp_cyc(fp12_t c, fp12_t a, bn_t b) {
 
 			ep_curve_get_ord(n);
 			fp_prime_get_par(u);
-			bn_rec_frb(_b, 4, b, u, n, ep_curve_is_pairf() == EP_B12);
+			bn_rec_frb(_b, 4, b, u, n, ep_curve_is_pairf() == EP_B12 ||
+				ep_curve_is_pairf() == EP_B24 || ep_curve_is_pairf() == EP_B48);
 
 			if (ep_curve_is_pairf()) {
 				fp12_copy(t[0], a);

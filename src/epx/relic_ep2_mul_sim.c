@@ -632,8 +632,6 @@ void ep2_mul_sim_lot(ep2_t r, ep2_t p[], const bn_t k[], int n) {
 		ep2_t s, t, u, v, *_p = RLC_ALLOCA(ep2_t, 4 * c);
 		int8_t ptr;
 
-		bn_null(q);
-		bn_null(x);
 		ep2_null(s);
 		ep2_null(t);
 		ep2_null(u);
