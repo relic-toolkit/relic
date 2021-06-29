@@ -535,7 +535,7 @@ void fp12_exp_cyc(fp12_t c, fp12_t a, bn_t b) {
 		}
 		RLC_FINALLY {
 			bn_free(n);
-			bn_free(x);
+			bn_free(u);
 			for (i = 0; i < 4; i++) {
 				bn_free(_b[i]);
 				fp12_free(t[i]);
@@ -724,7 +724,7 @@ void fp12_exp_cyc_sim(fp12_t e, fp12_t a, bn_t b, fp12_t c, bn_t d) {
 	}
 
 	bn_null(n);
-	bn_null(u);
+	bn_null(x);
 
 	RLC_TRY {
 		bn_new(n);
@@ -1102,8 +1102,8 @@ void fp24_exp_cyc(fp24_t c, fp24_t a, bn_t b) {
 		fp24_t t[8];
 		bn_t _b[8], n, x;
 
+		bn_null(n);
 		bn_null(x);
-		bn_null(u);
 
 		RLC_TRY {
 			bn_new(n);
