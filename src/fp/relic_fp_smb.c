@@ -134,7 +134,7 @@ void fp_smb_kro(fp_t c, const fp_t a) {
 
 			/* Compute g = (g + g0*f) div 2 by conditionally copying f to u and
 			 * updating the sign of g. */
-			gs ^= g0 & (fs ^ fp_addn_low(g, g, t));
+			gs ^= g0 & (fs ^ bn_addn_low(g, g, t, RLC_FP_DIGS));
 			/* Shift and restore the sign. */
 			fp_rsh1_low(g, g);
 			g[RLC_FP_DIGS - 1] |= (dig_t)gs << (RLC_DIG - 1);
