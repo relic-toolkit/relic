@@ -399,8 +399,6 @@ void fp_inv_exgcd(fp_t c, const fp_t a) {
 
 #endif
 
-#include "assert.h"
-
 #if FP_INV == DIVST || !defined(STRIP)
 
 void fp_inv_divst(fp_t c, const fp_t a) {
