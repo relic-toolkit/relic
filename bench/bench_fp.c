@@ -582,6 +582,20 @@ static void arith(void) {
 	}
 	BENCH_END;
 
+	BENCH_RUN("fp_smb_leg") {
+		fp_rand(a);
+		fp_sqr(a, a);
+		BENCH_ADD(fp_smb_leg(c, a));
+	}
+	BENCH_END;
+
+	BENCH_RUN("fp_smb_kro") {
+		fp_rand(a);
+		fp_sqr(a, a);
+		BENCH_ADD(fp_smb_kro(c, a));
+	}
+	BENCH_END;
+
 	BENCH_RUN("fp_prime_conv") {
 		bn_rand(e, RLC_POS, RLC_FP_BITS);
 		BENCH_ADD(fp_prime_conv(a, e));

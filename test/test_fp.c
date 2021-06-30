@@ -1015,6 +1015,51 @@ static int square_root(void) {
 	return code;
 }
 
+static int symbol(void) {
+	int code = RLC_ERR;
+	fp_t a, b, c;
+
+	fp_null(a);
+	fp_null(b);
+	fp_null(c);
+
+	RLC_TRY {
+		fp_new(a);
+		fp_new(b);
+		fp_new(c);
+
+		TEST_CASE("symbol computation is correct") {
+			fp_zero(a);
+			fp_smb_leg(b, a);
+			TEST_ASSERT(fp_is_zero(b), end);
+			fp_rand(a);
+			fp_sqr(c, a);
+			fp_smb_leg(b, c);
+			TEST_ASSERT(fp_cmp_dig(b, 1) == RLC_EQ, end);
+			do {
+				fp_rand(a);
+			} while(fp_srt(c, a) == 1);
+			fp_smb_leg(b, c);
+			TEST_ASSERT(fp_cmp_dig(b, 1) == RLC_NE, end);
+			fp_rand(a);
+			fp_smb_leg(b, a);
+			fp_smb_kro(c, a);
+			TEST_ASSERT(fp_cmp(b, c) == RLC_EQ, end);
+		}
+		TEST_END;
+	}
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
+	}
+	code = RLC_OK;
+  end:
+	fp_free(a);
+	fp_free(b);
+	fp_free(c);
+	return code;
+}
+
+
 static int digit(void) {
 	int code = RLC_ERR;
 	fp_t a, b, c, d;
@@ -1153,6 +1198,11 @@ int main(void) {
 	}
 
 	if (square_root() != RLC_OK) {
+		core_clean();
+		return 1;
+	}
+
+	if (symbol() != RLC_OK) {
 		core_clean();
 		return 1;
 	}
