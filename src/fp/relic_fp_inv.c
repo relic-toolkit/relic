@@ -409,7 +409,7 @@ void fp_inv_divst(fp_t c, const fp_t a) {
 	int d = (49 * FP_PRIME + 57)/17;
 #endif
 	dig_t g0, d0, fs, gs;
-	int delta = 1;
+	dis_t delta = 1;
 	bn_t _t;
 	dv_t f, g, t, u;
 	fp_t precomp, v, r;

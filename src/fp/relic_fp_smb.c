@@ -88,7 +88,6 @@ void fp_smb_kro(fp_t c, const fp_t a) {
 		dv_new(f);
 		dv_new(g);
 		dv_new(t);
-		dv_new(k);
 
 #if WSIZE == 8
 		bn_set_dig(_t, d >> 8);
