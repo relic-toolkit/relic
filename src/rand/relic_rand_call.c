@@ -77,6 +77,7 @@ void rand_bytes(uint8_t *buf, int size) {
 	ctx_t *ctx = core_get();
 
 	ctx->rand_call(buf, size, ctx->rand_args);
+	rand_check(buf, size);
 }
 
 void rand_seed(void (*callback)(uint8_t *, int, void *), void *args) {

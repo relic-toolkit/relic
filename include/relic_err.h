@@ -71,6 +71,8 @@ enum errors {
 	ERR_NO_CURVE,
 	/** Occurs when the library configuration is incorrect. */
 	ERR_NO_CONFIG,
+	/** Occurs when the PRNG is stuck at one value. */
+	ERR_NO_RAND,
 	/** Constant to indicate the number of errors. */
 	ERR_MAX
 };

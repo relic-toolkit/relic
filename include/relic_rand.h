@@ -105,6 +105,16 @@ void rand_seed(void (*callback)(uint8_t *, int, void *), void *arg);
 #endif
 
 /**
+ * Performs a basic self-test in the pseudo-random number generator output, and
+ * raises an exception in case a string of identifical bytes is found.
+ *
+ * @param[out] buf			- the buffer to check.
+ * @param[in] size			- the number of bytes to check.
+ * @throw ERR_NO_RAND       - if the pseudo-random number generator is stuck.
+ */
+int rand_check(uint8_t *buf, int size);
+
+/**
  * Gathers pseudo-random bytes from the pseudo-random number generator.
  *
  * @param[out] buf			- the buffer to write.
