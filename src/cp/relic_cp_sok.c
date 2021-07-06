@@ -37,7 +37,7 @@
 
 /*
  * Source: "Efficient Group Signature for Large Groups"
- * Authors: Jan Camenisc, Markus Stadler
+ * Authors: Jan Camenisch, Markus Stadler
  */
 
 int cp_sokdl_sig(bn_t c, bn_t s, uint8_t *msg, int len, ec_t y, bn_t x) {
