@@ -1192,6 +1192,18 @@ void ep_norm(ep_t r, const ep_t p);
 void ep_norm_sim(ep_t *r, const ep_t *t, int n);
 
 /**
+ * Maps an array of uniformly random bytes to a point in a prime elliptic
+ * curve.
+ * That array is expected to have a length suitable for two field elements plus
+ * extra bytes for uniformity.
+  *
+ * @param[out] p			- the result.
+ * @param[in] uniform_bytes		- the array of uniform bytes to map.
+ * @param[in] len			- the array length in bytes.
+ */
+void ep_map_from_field(ep_t p, const uint8_t *uniform_bytes, int len);
+
+/**
  * Maps a byte array to a point in a prime elliptic curve.
  *
  * @param[out] p			- the result.
