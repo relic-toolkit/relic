@@ -237,14 +237,17 @@ typedef struct {
 	int coord;
 } ep_st;
 
-
 /**
  * Pointer to an elliptic curve point.
  */
 #if ALLOC == AUTO
 typedef ep_st ep_t[1];
 #else
+#ifdef CHECK
+typedef ep_st *volatile ep_t;
+#else
 typedef ep_st *ep_t;
+#endif
 #endif
 
 /**

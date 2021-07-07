@@ -144,7 +144,11 @@ typedef struct {
 #if ALLOC == AUTO
 typedef eb_st eb_t[1];
 #else
+#ifdef CHECK
+typedef eb_st *volatile eb_t;
+#else
 typedef eb_st *eb_t;
+#endif
 #endif
 
 /*============================================================================*/
