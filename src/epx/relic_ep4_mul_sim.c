@@ -89,13 +89,6 @@ static void ep4_mul_sim_plain(ep4_t r, ep4_t p, bn_t k, ep4_t q, bn_t m,
 		l = RLC_MAX(l0, l1);
 		_k = naf0 + l - 1;
 		_m = naf1 + l - 1;
-		for (i = l0; i < l; i++) {
-			naf0[i] = 0;
-		}
-		for (i = l1; i < l; i++) {
-			naf1[i] = 0;
-		}
-
 		if (bn_sign(k) == RLC_NEG) {
 			for (i =  0; i < l0; i++) {
 				naf0[i] = -naf0[i];

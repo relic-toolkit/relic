@@ -541,6 +541,7 @@ static int endomorphism(void) {
 			TEST_CASE("endomorphism in projective coordinates is correct") {
 				ep_rand(a);
 				ep_dbl_projc(a, a);
+				ep_norm(a, a);
 				ep_psi(b, a);
 				ep_mul(c, a, l);
 				TEST_ASSERT(ep_cmp(b, c) == RLC_EQ, end);

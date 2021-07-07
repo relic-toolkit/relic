@@ -74,7 +74,6 @@ static void ep2_mul_glv_imp(ep2_t r, ep2_t p, const bn_t k) {
 				ep2_neg(q[i], q[i]);
 			}
 			_l[i] = RLC_FP_BITS + 1;
-			memset(naf[i], 0, _l[i]);
 			bn_rec_naf(naf[i], &_l[i], _k[i], 2);
 			l = RLC_MAX(l, _l[i]);
 		}

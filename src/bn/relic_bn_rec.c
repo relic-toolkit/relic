@@ -102,6 +102,8 @@ void bn_rec_win(uint8_t *win, int *len, const bn_t k, int w) {
 		return;
 	}
 
+	memset(win, 0, *len);
+
 	j = 0;
 	for (i = 0; i < l - w; i += w) {
 		win[j++] = get_bits(k, i, i + w - 1);
@@ -120,6 +122,8 @@ void bn_rec_slw(uint8_t *win, int *len, const bn_t k, int w) {
 		RLC_THROW(ERR_NO_BUFFER);
 		return;
 	}
+
+	memset(win, 0, *len);
 
 	i = l - 1;
 	j = 0;
@@ -159,6 +163,8 @@ void bn_rec_naf(int8_t *naf, int *len, const bn_t k, int w) {
 
 		mask = RLC_MASK(w);
 		l = (1 << w);
+
+		memset(naf, 0, *len);
 
 		i = 0;
 		if (w == 2) {
@@ -438,6 +444,8 @@ void bn_rec_tnaf(int8_t *tnaf, int *len, const bn_t k, int8_t u, int m, int w) {
 		bn_new(r1);
 		bn_new(tmp);
 
+		memset(tnaf, 0, *len);
+
 		bn_rec_tnaf_get(&t_w, beta, gama, u, w);
 		bn_abs(tmp, k);
 		bn_rec_tnaf_mod(r0, r1, tmp, u, m);
@@ -564,6 +572,8 @@ void bn_rec_rtnaf(int8_t *tnaf, int *len, const bn_t k, int8_t u, int m, int w) 
 		bn_new(r0);
 		bn_new(r1);
 		bn_new(tmp);
+
+		memset(tnaf, 0, *len);
 
 		bn_rec_tnaf_get(&t_w, beta, gama, u, w);
 		bn_abs(tmp, k);
@@ -694,7 +704,7 @@ void bn_rec_reg(int8_t *naf, int *len, const bn_t k, int n, int w) {
 	mask = RLC_MASK(w);
 	l = RLC_CEIL(n, w - 1);
 
-	if (*len < l) {
+	if (*len <= l) {
 		*len = 0;
 		RLC_THROW(ERR_NO_BUFFER);
 		return;
@@ -703,6 +713,8 @@ void bn_rec_reg(int8_t *naf, int *len, const bn_t k, int n, int w) {
 	RLC_TRY {
 		bn_new(t);
 		bn_abs(t, k);
+
+		memset(naf, 0, *len);
 
 		i = 0;
 		if (w == 2) {
@@ -740,14 +752,14 @@ void bn_rec_jsf(int8_t *jsf, int *len, const bn_t k, const bn_t l) {
 	int8_t u0, u1, d0, d1;
 	int i, j, offset;
 
-	bn_null(n0);
-	bn_null(n1);
-
 	if (*len < (2 * bn_bits(k) + 1)) {
 		*len = 0;
 		RLC_THROW(ERR_NO_BUFFER);
 		return;
 	}
+
+	bn_null(n0);
+	bn_null(n1);
 
 	RLC_TRY {
 		bn_new(n0);
@@ -759,6 +771,8 @@ void bn_rec_jsf(int8_t *jsf, int *len, const bn_t k, const bn_t l) {
 		i = bn_bits(k);
 		j = bn_bits(l);
 		offset = RLC_MAX(i, j) + 1;
+
+		memset(jsf, 0, *len);
 
 		i = 0;
 		d0 = d1 = 0;

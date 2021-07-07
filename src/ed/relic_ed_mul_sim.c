@@ -88,13 +88,6 @@ static void ed_mul_sim_plain(ed_t r, const ed_t p, const bn_t k, const ed_t q,
 		bn_rec_naf(naf1, &l1, m, ED_WIDTH);
 
 		l = RLC_MAX(l0, l1);
-		for (i = l0; i < l; i++) {
-			naf0[i] = 0;
-		}
-		for (i = l1; i < l; i++) {
-			naf1[i] = 0;
-		}
-
 		if (bn_sign(k) == RLC_NEG) {
 			for (i =  0; i < l0; i++) {
 				naf0[i] = -naf0[i];

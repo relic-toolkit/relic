@@ -139,18 +139,6 @@ static void ep_mul_sim_endom(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 		t1 = naf1 + l - 1;
 		t2 = naf2 + l - 1;
 		t3 = naf3 + l - 1;
-		for (i = l0; i < l; i++) {
-			naf0[i] = 0;
-		}
-		for (i = l1; i < l; i++) {
-			naf1[i] = 0;
-		}
-		for (i = l2; i < l; i++) {
-			naf2[i] = 0;
-		}
-		for (i = l3; i < l; i++) {
-			naf3[i] = 0;
-		}
 
 		if (bn_sign(k) == RLC_NEG) {
 			for (i =  0; i < l0; i++) {
@@ -319,13 +307,6 @@ static void ep_mul_sim_plain(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 		bn_rec_naf(naf1, &l1, m, EP_WIDTH);
 
 		l = RLC_MAX(l0, l1);
-		for (i = l0; i < l; i++) {
-			naf0[i] = 0;
-		}
-		for (i = l1; i < l; i++) {
-			naf1[i] = 0;
-		}
-
 		if (bn_sign(k) == RLC_NEG) {
 			for (i =  0; i < l0; i++) {
 				naf0[i] = -naf0[i];
