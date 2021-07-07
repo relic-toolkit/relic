@@ -34,6 +34,7 @@
 #include <string.h>
 
 #include "relic_core.h"
+#include "relic_bench.h"
 #include "relic_multi.h"
 #include "relic_rand.h"
 #include "relic_types.h"
