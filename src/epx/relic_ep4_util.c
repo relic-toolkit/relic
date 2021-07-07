@@ -85,23 +85,17 @@ void ep4_blind(ep4_t r, ep4_t p) {
 
 	RLC_TRY {
 		fp4_new(rand);
+		fp4_rand(rand);
 #if EP_ADD == BASIC
 		(void)rand;
 		ep4_copy(r, p);
-#elif EP_ADD == PROJC
-		fp4_rand(rand);
-		fp4_mul(r->x, p->x, rand);
-		fp4_mul(r->y, p->y, rand);
-		fp4_mul(r->z, p->z, rand);
-		r->coord = PROJC;
-#elif EP_ADD == JACOB
-		fp4_rand(rand);
+#else
 		fp4_mul(r->z, p->z, rand);
 		fp4_mul(r->y, p->y, rand);
 		fp4_sqr(rand, rand);
 		fp4_mul(r->x, r->x, rand);
 		fp4_mul(r->y, r->y, rand);
-		r->coord = JACOB;
+		r->coord = EP_ADD;
 #endif
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
