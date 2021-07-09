@@ -195,7 +195,6 @@ int rand_check(uint8_t *buf, int size) {
 	}
 
 	if (count > RAND_REP) {
-		RLC_THROW(ERR_NO_RAND);
 		return RLC_ERR;
 	}
 	return RLC_OK;
