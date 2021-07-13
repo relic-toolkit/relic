@@ -176,18 +176,16 @@
 	addq    24(\A),%r8
 	adcq	$0,%r9
 
-	xorq	%r10, %r10
 	addq	%rax,%r8
 	adcq	%rdx,%r9
-    adcq	$0,%r10
 
 	movq	8(\A), %rax
 	mulq	%r13           // z1*m2
 	addq	%rax,%r8
 	movq	16(\A), %rax
 	adcq	%rdx,%r9
-    adcq	$0,%r10
 
+	xorq	%r10, %r10
 	mulq	%r12           // z2*m1
 	addq	%rax,%r8
 	movq	%r8, %rax
@@ -207,16 +205,15 @@
 	addq	32(\A),%r9
 	adcq	$0,%r10
 
-	xorq	%r8, %r8
 	addq	%rax,%r9
 	adcq	%rdx,%r10
-    adcq	$0,%r8
 
 	movq	16(\A), %rax
 	mulq	%r13           // z2*m2
 	addq	%rax,%r9
+
 	adcq	%rdx,%r10
-    adcq	$0,%r8
+	xorq	%r8, %r8
 	movq	24(\A), %rax
 
 	mulq	%r12           // z3*m1
@@ -230,13 +227,11 @@
 	mulq	%r14           // z2*m3
 	addq	%rax,%r10
 	adcq	%rdx,%r8
-    adcq	$0,%r11
 
 	movq	24(\A), %rax
 	mulq	%r13           // z3*m2
 	addq	%rax,%r10
 	adcq	%rdx,%r8
-    adcq	$0,%r11
 
 	addq	40(\A),%r10
 	movq	%r10,%r13      // Z1
