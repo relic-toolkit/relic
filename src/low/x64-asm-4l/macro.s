@@ -114,7 +114,7 @@
 	.endif
 .endm
 
-#ifdef FP_PRIME == 254
+#if FP_PRIME == 254
 
 /* Montgomery reduction, comba, optimized for BN254 */
 .macro FP_RDCN_LOW C, A
