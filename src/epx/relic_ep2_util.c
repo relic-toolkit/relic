@@ -294,12 +294,13 @@ void ep2_write_bin(uint8_t *bin, int len, ep2_t a, int pack) {
 
 	ep2_null(t);
 
+	memset(bin, 0, len);
+
 	if (ep2_is_infty(a)) {
 		if (len < 1) {
 			RLC_THROW(ERR_NO_BUFFER);
 			return;
 		} else {
-			bin[0] = 0;
 			return;
 		}
 	}

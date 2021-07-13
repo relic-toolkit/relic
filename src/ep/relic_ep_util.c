@@ -284,6 +284,8 @@ void ep_write_bin(uint8_t *bin, int len, const ep_t a, int pack) {
 
 	ep_null(t);
 
+	memset(bin, 0, len);
+
 	if (ep_is_infty(a)) {
 		if (len < 1) {
 			RLC_THROW(ERR_NO_BUFFER);

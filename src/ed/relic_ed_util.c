@@ -294,12 +294,13 @@ void ed_write_bin(uint8_t *bin, int len, const ed_t a, int pack) {
 
 	ed_null(t);
 
+	memset(bin, 0, len);
+
 	if (ed_is_infty(a)) {
 		if (len < 1) {
 			RLC_THROW(ERR_NO_BUFFER);
 			return;
 		} else {
-			bin[0] = 0;
 			return;
 		}
 	}
