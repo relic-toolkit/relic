@@ -70,6 +70,16 @@ static void dummy3(void) {
 	}
 }
 
+static void dummy4(void) {
+	RLC_TRY {
+		dummy3();
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+	}
+}
+
+
 int main(void) {
 	err_t e;
 	char *msg = NULL;
@@ -120,6 +130,24 @@ int main(void) {
 			switch (e) {
 				case ERR_NO_MEMORY:
 					TEST_END;
+					break;
+			}
+		}
+	}
+
+	TEST_ONCE("throw in deep try-catch is correct and functions are printed") {
+		bn_t a;
+		bn_null(a);
+
+		RLC_TRY {
+			bn_new(a);
+			dummy4();
+		}
+		RLC_CATCH(e) {
+			bn_free(a);
+			switch (e) {
+				case ERR_NO_MEMORY:
+					TEST_END;
 					RLC_ERROR(end);
 					break;
 			}
@@ -127,14 +155,14 @@ int main(void) {
 	}
 #endif
 
-	util_banner("All tests have passed.\n", 0);
-
 	code = RLC_OK;
+	
   end:
 	core_clean();
-	if (code == RLC_ERR)
+	if (code == RLC_ERR) {
+		util_banner("All tests have passed.\n", 0);
 		return 0;
-	else {
+	} else {
 		return 1;
 	}
 }
