@@ -1497,6 +1497,14 @@ int exponentiation(void) {
 			gt_exp(b, b, e);
 			gt_mul(b, a, b);
 			TEST_ASSERT(gt_cmp(b, c) == RLC_EQ, end);
+			gt_exp_dig(b, a, 0);
+			TEST_ASSERT(gt_is_unity(b), end);
+			gt_exp_dig(b, a, 1);
+			TEST_ASSERT(gt_cmp(a, b) == RLC_EQ, end);
+			bn_rand(d, RLC_POS, RLC_DIG);
+			gt_exp(b, a, d);
+			gt_exp_dig(c, a, d->dp[0]);
+			TEST_ASSERT(gt_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {
