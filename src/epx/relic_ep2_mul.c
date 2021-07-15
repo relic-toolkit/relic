@@ -339,7 +339,7 @@ void ep2_mul_lwnaf(ep2_t r, ep2_t p, const bn_t k) {
 
 #if defined(EP_ENDOM)
 	if (ep_curve_is_endom()) {
-		if (ep_curve_opt_a() == RLC_ZERO) {
+		if (ep2_curve_opt_a() == RLC_ZERO) {
 			ep2_mul_glv_imp(r, p, k);
 		} else {
 			ep2_mul_naf_imp(r, p, k);
@@ -383,10 +383,13 @@ void ep2_mul_gen(ep2_t r, bn_t k) {
 }
 
 void ep2_mul_dig(ep2_t r, ep2_t p, dig_t k) {
-	int i, l;
 	ep2_t t;
+	bn_t _k;
+	int8_t u, naf[RLC_DIG + 1];
+	int l;
 
 	ep2_null(t);
+	bn_null(_k);
 
 	if (k == 0 || ep2_is_infty(p)) {
 		ep2_set_infty(r);
@@ -395,15 +398,22 @@ void ep2_mul_dig(ep2_t r, ep2_t p, dig_t k) {
 
 	RLC_TRY {
 		ep2_new(t);
+		bn_new(_k);
 
-		l = util_bits_dig(k);
+		bn_set_dig(_k, k);
 
-		ep2_copy(t, p);
+		l = RLC_DIG + 1;
+		bn_rec_naf(naf, &l, _k, 2);
 
-		for (i = l - 2; i >= 0; i--) {
+		ep2_set_infty(t);
+		for (int i = l - 1; i >= 0; i--) {
 			ep2_dbl(t, t);
-			if (k & ((dig_t)1 << i)) {
+
+			u = naf[i];
+			if (u > 0) {
 				ep2_add(t, t, p);
+			} else if (u < 0) {
+				ep2_sub(t, t, p);
 			}
 		}
 
@@ -414,5 +424,6 @@ void ep2_mul_dig(ep2_t r, ep2_t p, dig_t k) {
 	}
 	RLC_FINALLY {
 		ep2_free(t);
+		bn_free(_k);
 	}
 }

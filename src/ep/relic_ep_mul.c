@@ -741,8 +741,12 @@ void ep_mul_gen(ep_t r, const bn_t k) {
 
 void ep_mul_dig(ep_t r, const ep_t p, dig_t k) {
 	ep_t t;
+	bn_t _k;
+	int8_t u, naf[RLC_DIG + 1];
+	int l;
 
 	ep_null(t);
+	bn_null(_k);
 
 	if (k == 0 || ep_is_infty(p)) {
 		ep_set_infty(r);
@@ -751,12 +755,22 @@ void ep_mul_dig(ep_t r, const ep_t p, dig_t k) {
 
 	RLC_TRY {
 		ep_new(t);
+		bn_new(_k);
 
-		ep_copy(t, p);
-		for (int i = util_bits_dig(k) - 2; i >= 0; i--) {
+		bn_set_dig(_k, k);
+
+		l = RLC_DIG + 1;
+		bn_rec_naf(naf, &l, _k, 2);
+
+		ep_set_infty(t);
+		for (int i = l - 1; i >= 0; i--) {
 			ep_dbl(t, t);
-			if (k & ((dig_t)1 << i)) {
+
+			u = naf[i];
+			if (u > 0) {
 				ep_add(t, t, p);
+			} else if (u < 0) {
+				ep_sub(t, t, p);
 			}
 		}
 
@@ -767,5 +781,6 @@ void ep_mul_dig(ep_t r, const ep_t p, dig_t k) {
 	}
 	RLC_FINALLY {
 		ep_free(t);
+		bn_free(_k);
 	}
 }
