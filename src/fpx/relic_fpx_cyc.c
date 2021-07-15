@@ -84,7 +84,7 @@ int fp2_test_cyc(fp2_t a) {
 void fp2_exp_cyc(fp2_t c, fp2_t a, bn_t b) {
 	fp2_t r, s, t[1 << (FP_WIDTH - 2)];
 	int i, l;
-	signed char naf[RLC_FP_BITS + 1], *k;
+	int8_t naf[RLC_FP_BITS + 1], *k;
 
 	if (bn_is_zero(b)) {
 		return fp2_set_dig(c, 1);
@@ -194,7 +194,7 @@ int fp8_test_cyc(fp8_t a) {
 void fp8_exp_cyc(fp8_t c, fp8_t a, bn_t b) {
 	fp8_t r, s, t[1 << (FP_WIDTH - 2)];
 	int i, l;
-	signed char naf[RLC_FP_BITS + 1], *k;
+	int8_t naf[RLC_FP_BITS + 1], *k;
 
 	if (bn_is_zero(b)) {
 		return fp8_set_dig(c, 1);

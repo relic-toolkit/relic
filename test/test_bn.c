@@ -1815,7 +1815,7 @@ static int recoding(void) {
 	bn_t a, b, c, v1[3], v2[3];
 	int w, k, l;
 	uint8_t d[RLC_BN_BITS + 1];
-	signed char e[2 * (RLC_BN_BITS + 1)];
+	int8_t e[2 * (RLC_BN_BITS + 1)];
 
 	bn_null(a);
 	bn_null(b);
