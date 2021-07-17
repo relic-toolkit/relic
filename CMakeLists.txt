@@ -113,6 +113,7 @@ message(STATUS "Supported multithreading APIs (default = UNDEF):\n")
 message("   MULTI=         No multithreading support.")
 message("   MULTI=OPENMP   Open Multi-Processing.")
 message("   MULTI=PTHREAD  POSIX threads.\n")
+message("   MULTI=MSVCTLS  MSVC TLS threads.\n")
 
 message(STATUS "Supported timers (default = HREAL):\n")
 
@@ -273,6 +274,9 @@ else()
 		find_package(Threads REQUIRED)
 		set(CFLAGS "${CFLAGS} -pthread")
 		set(MULTI "PTHREAD" CACHE STRING "Multithreading interface")
+	endif()
+	if(MULTI STREQUAL MSVCTLS)
+		set(MULTI "MSVCTLS" CACHE STRING "Multithreading interface")
 	endif()
 endif()
 
