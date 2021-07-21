@@ -543,6 +543,11 @@ void eb_read_bin(eb_t a, const uint8_t *bin, int len) {
 			return;
 		}
 	}
+
+	if (!eb_on_curve(a)) {
+		RLC_THROW(ERR_NO_VALID);
+		return;
+	}
 }
 
 void eb_write_bin(uint8_t *bin, int len, const eb_t a, int pack) {
