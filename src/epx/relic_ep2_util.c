@@ -287,6 +287,10 @@ void ep2_read_bin(ep2_t a, const uint8_t *bin, int len) {
 			return;
 		}
 	}
+
+	if (!ep2_on_curve(a)) {
+		RLC_THROW(ERR_NO_VALID);
+	}
 }
 
 void ep2_write_bin(uint8_t *bin, int len, ep2_t a, int pack) {

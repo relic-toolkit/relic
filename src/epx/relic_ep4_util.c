@@ -276,6 +276,10 @@ void ep4_read_bin(ep4_t a, const uint8_t *bin, int len) {
 			return;
 		}
 	}
+
+	if (!ep4_on_curve(a)) {
+		RLC_THROW(ERR_NO_VALID);
+	}
 }
 
 void ep4_write_bin(uint8_t *bin, int len, ep4_t a, int pack) {

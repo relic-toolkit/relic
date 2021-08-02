@@ -321,6 +321,7 @@ int gt_is_valid(gt_t a) {
 #endif
 					r &= fp12_test_cyc((void *)a);
 					break;
+#if FP_PRIME == 509
 				case EP_B24:
 #ifdef GLS_MEMBER
 					/* The 8-GLS recoding of the exponent gives this. */
@@ -350,6 +351,7 @@ int gt_is_valid(gt_t a) {
 #endif
 					r = fp24_test_cyc((void *)a);
 					break;
+#endif
 				default:
 					/* Common case. */
 					bn_sub_dig(n, n, 1);
