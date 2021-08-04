@@ -1195,6 +1195,18 @@ void ep_norm(ep_t r, const ep_t p);
 void ep_norm_sim(ep_t *r, const ep_t *t, int n);
 
 /**
+ * Maps an array of uniformly random bytes to a point in a prime elliptic
+ * curve.
+ * That array is expected to have a length suitable for two field elements plus
+ * extra bytes for uniformity.
+  *
+ * @param[out] p			- the result.
+ * @param[in] uniform_bytes		- the array of uniform bytes to map.
+ * @param[in] len			- the array length in bytes.
+ */
+void ep_map_from_field(ep_t p, const uint8_t *uniform_bytes, int len);
+
+/**
  * Maps a byte array to a point in a prime elliptic curve.
  *
  * @param[out] p			- the result.
@@ -1202,19 +1214,6 @@ void ep_norm_sim(ep_t *r, const ep_t *t, int n);
  * @param[in] len			- the array length in bytes.
  */
 void ep_map(ep_t p, const uint8_t *msg, int len);
-
-/**
- * Maps a byte array to a point in a prime elliptic curve using
- * an explicit domain separation tag.
- *
- * @param[out] p			- the result.
- * @param[in] msg			- the byte array to map.
- * @param[in] len			- the array length in bytes.
- * @param[in] dst			- the domain separation tag.
- * @param[in] dst_len		- the domain separation tag length in bytes.
- */
-void ep_map_dst(ep_t p, const uint8_t *msg, int len, const uint8_t *dst,
-		int dst_len);
 
 /**
  * Maps a byte array to a point in a prime elliptic curve with specified
