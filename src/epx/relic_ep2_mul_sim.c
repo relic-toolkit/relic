@@ -543,7 +543,7 @@ void ep2_mul_sim_dig(ep2_t r, ep2_t p[], dig_t k[], int len) {
 
 void ep2_mul_sim_lot(ep2_t r, ep2_t p[], const bn_t k[], int n) {
 	const int len = RLC_FP_BITS + 1;
-	int i, j, m, l, *_l = RLC_ALLOCA(int, 4 * n);
+	int i, j, m, l, _l[4];
 	bn_t _k[4], q, x;
 	int8_t *naf = RLC_ALLOCA(int8_t, 4 * n * len);
 
@@ -554,6 +554,9 @@ void ep2_mul_sim_lot(ep2_t r, ep2_t p[], const bn_t k[], int n) {
 		ep2_t *_p = RLC_ALLOCA(ep2_t, 4 * n);
 
 		RLC_TRY {
+			if (naf == NULL || _p == NULL) {
+				RLC_THROW(ERR_NO_MEMORY);
+			}
 			bn_new(q);
 			bn_new(x);
 			for (j = 0; j < 4; j++) {
@@ -565,33 +568,23 @@ void ep2_mul_sim_lot(ep2_t r, ep2_t p[], const bn_t k[], int n) {
 				}
 			}
 
-			for (int i = 0; i < n; i++) {
-				ep2_norm(_p[4*i], p[i]);
-				ep2_frb(_p[4*i + 1], _p[4*i], 1);
-				ep2_frb(_p[4*i + 2], _p[4*i + 1], 1);
-				ep2_frb(_p[4*i + 3], _p[4*i + 2], 1);
-			}
-
 			l = 0;
 			ep2_curve_get_ord(q);
 			fp_prime_get_par(x);
 			for (i = 0; i < n; i++) {
+				ep2_norm(_p[4*i], p[i]);
+				ep2_frb(_p[4*i + 1], _p[4*i], 1);
+				ep2_frb(_p[4*i + 2], _p[4*i + 1], 1);
+				ep2_frb(_p[4*i + 3], _p[4*i + 2], 1);
+
 				bn_rec_frb(_k, 4, k[i], x, q, ep_curve_is_pairf() == EP_B12);
 				for (j = 0; j < 4; j++) {
-					_l[4*i + j] = len;
-					bn_rec_naf(&naf[(4*i + j)*len], &_l[4*i + j], _k[j], 2);
+					_l[j] = len;
+					bn_rec_naf(&naf[(4*i + j)*len], &_l[j], _k[j], 2);
 					if (bn_sign(_k[j]) == RLC_NEG) {
 						ep2_neg(_p[4*i + j], _p[4*i + j]);
 					}
-					l = RLC_MAX(l, _l[4*i + j]);
-				}
-			}
-
-			for (i = 0; i < n; i++) {
-				for (j = 0; j < 4; j++) {
-					for (m = _l[4*i + j]; m < l; m++) {
-						naf[(4*i + j)*len + m] = 0;
-					}
+					l = RLC_MAX(l, _l[j]);
 				}
 			}
 
@@ -623,7 +616,6 @@ void ep2_mul_sim_lot(ep2_t r, ep2_t p[], const bn_t k[], int n) {
 					ep2_free(_p[4*i + j]);
 				}
 			}
-			RLC_FREE(_l);
 			RLC_FREE(_p);
 			RLC_FREE(naf);
 		}
@@ -638,6 +630,9 @@ void ep2_mul_sim_lot(ep2_t r, ep2_t p[], const bn_t k[], int n) {
 		ep2_null(v);
 
 		RLC_TRY {
+			if (naf == NULL || _p == NULL) {
+				RLC_THROW(ERR_NO_MEMORY);
+			}
 			bn_new(q);
 			bn_new(x);
 			ep2_new(s);
@@ -655,20 +650,14 @@ void ep2_mul_sim_lot(ep2_t r, ep2_t p[], const bn_t k[], int n) {
 			}
 
 			l = 0;
+			ep2_curve_get_ord(q);
+			fp_prime_get_par(x);
 			for (i = 0; i < n; i++) {
 				bn_rec_frb(_k, 4, k[i], x, q, ep_curve_is_pairf() == EP_B12);
 				for (j = 0; j < 4; j++) {
-					_l[4*i + j] = len;
-					bn_rec_naf(&naf[(4*i + j)*len], &_l[4*i + j], _k[j], w);
-					l = RLC_MAX(l, _l[4*i + j]);
-				}
-			}
-
-			for (i = 0; i < n; i++) {
-				for (j = 0; j < 4; j++) {
-					for (m = _l[4*i + j]; m < l; m++) {
-						naf[(4*i + j)*len + m] = 0;
-					}
+					_l[j] = len;
+					bn_rec_naf(&naf[(4*i + j)*len], &_l[j], _k[j], w);
+					l = RLC_MAX(l, _l[j]);
 				}
 			}
 
@@ -683,7 +672,7 @@ void ep2_mul_sim_lot(ep2_t r, ep2_t p[], const bn_t k[], int n) {
 								ptr = -ptr;
 								ep2_neg(t, t);
 							}
-							if (bn_sign(_k[m]) == RLC_NEG) {
+							if (bn_sign(k[i]) == RLC_NEG) {
 								ep2_neg(t, t);
 							}
 							ep2_add(_p[m*c + (ptr >> 1)], _p[m*c + (ptr >> 1)], t);
@@ -727,7 +716,6 @@ void ep2_mul_sim_lot(ep2_t r, ep2_t p[], const bn_t k[], int n) {
 					ep2_free(_p[i*c + j]);
 				}
 			}
-			RLC_FREE(_l);
 			RLC_FREE(_p);
 			RLC_FREE(naf);
 		}

@@ -797,6 +797,15 @@ static int simultaneous2(void) {
 			ep2_mul_sim(r, p[0], k[0], p[1], k[1]);
 			ep2_mul_sim_lot(p[1], p, k, 2);
 			TEST_ASSERT(ep2_cmp(p[1], r) == RLC_EQ, end);
+			bn_rand_mod(k[0], n);
+			bn_rand_mod(k[1], n);
+			bn_add(k[0], k[0], n);
+			bn_add(k[1], k[1], n);
+			ep2_mul_sim(r, p[0], k[0], p[1], k[1]);
+			ep2_mul(p[0], p[0], k[0]);
+			ep2_mul(p[1], p[1], k[1]);
+			ep2_add(p[1], p[1], p[0]);
+			TEST_ASSERT(ep2_cmp(p[1], r) == RLC_EQ, end);
 		} TEST_END;
 
 #if EP_SIM == BASIC || !defined(STRIP)
