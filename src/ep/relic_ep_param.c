@@ -1295,8 +1295,8 @@ int ep_param_set_any_pairf(void) {
 	type = RLC_EP_DTYPE;
 	degree = 2;
 #elif FP_PRIME == 256
-	ep_param_set(SM9_P256);
-	type = RLC_EP_MTYPE;
+	ep_param_set(BN_P256);
+	type = RLC_EP_DTYPE;
 	degree = 2;
 #elif FP_PRIME == 381
 	ep_param_set(B12_P381);
