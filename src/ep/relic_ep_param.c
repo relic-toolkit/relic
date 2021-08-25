@@ -391,6 +391,21 @@
 /** @} */
 #endif
 
+#if defined(EP_ENDOM) && FP_PRIME == 256
+/**
+ * Parameters for a 256-bit pairing-friendly prime curve standardized in China.
+ */
+/** @{ */
+#define SM9_P256_A		"0"
+#define SM9_P256_B		"5"
+#define SM9_P256_X		"93DE051D62BF718FF5ED0704487D01D6E1E4086909DC3280E8C4E4817C66DDDD"
+#define SM9_P256_Y		"21FE8DDA4F21E607631065125C395BBC1C1C00CBFA6024350C464CD70A3EA616"
+#define SM9_P256_R		"B640000002A3A6F1D603AB4FF58EC74449F2934B18EA8BEEE56EE19CD69ECF25"
+#define SM9_P256_H		"1"
+#define SM9_P256_MAPU	"-1"
+/** @} */
+#endif
+
 #if defined(EP_ENDOM) && FP_PRIME == 381
 /**
 * Parameters for a 381-bit pairing-friendly prime curve.
@@ -542,15 +557,15 @@
  * Parameters for the 544-bit Cocks-Pinch curve.
  */
 /** @{ */
-#define CP8_P544_A		"2"
-#define CP8_P544_B		"0"
-#define CP8_P544_X		"251670DB162D336F28505AE026E94316A074EFF8A26AD412D22C58A9CD154E4643CFC40DE884D3D54B95455267566445CB284DF1E413E11CB190BB760CD5665B12456771"
-#define CP8_P544_Y		"A18EC01733AE4D3AA2B087933D739A4987D839A136695CEE9D7C5B0E24EC62754B70DCD5EFE918C626728C2C31BD9616BC2F724015BCC2CF4DD139897799DA9D198B26CF"
-#define CP8_P544_R		"FF0060739E18D7594A978B0AB6AE4CE3DBFD52A9D00197603FFFDF0000000101"
-#define CP8_P544_H		"BC5A106E29D336CBF340F2BB98248FFC0719523D3233C6B3909C882E2BD2251BD3B22F14"
-#define CP8_P544_BETA	"AEB8BAFC09BEB98DE5FB37D9FC56F9EAC4F908F09D88B1CD8622513C94499803C18F54E6B4FB9180292A2FD4C8AFD2AF43F54BCF308198872F3A6B591394AED0EBF7961A"
-#define CP8_P544_LAMB	"FF801041EF80043901FFFEF800000010"
-#define CP8_P544_MAPU	"5"
+#define GMT8_P544_A		"2"
+#define GMT8_P544_B		"0"
+#define GMT8_P544_X		"251670DB162D336F28505AE026E94316A074EFF8A26AD412D22C58A9CD154E4643CFC40DE884D3D54B95455267566445CB284DF1E413E11CB190BB760CD5665B12456771"
+#define GMT8_P544_Y		"A18EC01733AE4D3AA2B087933D739A4987D839A136695CEE9D7C5B0E24EC62754B70DCD5EFE918C626728C2C31BD9616BC2F724015BCC2CF4DD139897799DA9D198B26CF"
+#define GMT8_P544_R		"FF0060739E18D7594A978B0AB6AE4CE3DBFD52A9D00197603FFFDF0000000101"
+#define GMT8_P544_H		"BC5A106E29D336CBF340F2BB98248FFC0719523D3233C6B3909C882E2BD2251BD3B22F14"
+#define GMT8_P544_BETA	"AEB8BAFC09BEB98DE5FB37D9FC56F9EAC4F908F09D88B1CD8622513C94499803C18F54E6B4FB9180292A2FD4C8AFD2AF43F54BCF308198872F3A6B591394AED0EBF7961A"
+#define GMT8_P544_LAMB	"FF801041EF80043901FFFEF800000010"
+#define GMT8_P544_MAPU	"5"
 #endif
 /** @} */
 
@@ -883,6 +898,11 @@ void ep_param_set(int param) {
 				ASSIGN(SECG_K256, SECG_256);
 				endom = 1;
 				break;
+			case SM9_P256:
+				ASSIGN(SM9_P256, SM9_256);
+				endom = 1;
+				pairf = EP_BN;
+				break;
 			case BN_P256:
 				ASSIGN(BN_P256, BN_256);
 				endom = 1;
@@ -983,8 +1003,8 @@ void ep_param_set(int param) {
 				break;
 #endif
 #if defined(EP_ENDOM) && FP_PRIME == 544
-			case CP8_P544:
-				ASSIGN(CP8_P544, CP8_544);
+			case GMT8_P544:
+				ASSIGN(GMT8_P544, GMT8_544);
 				endom = 1;
 				break;
 #endif
@@ -1231,7 +1251,7 @@ int ep_param_set_any_endom(void) {
 #elif FP_PRIME == 511
 	ep_param_set(OT8_P511);
 #elif FP_PRIME == 544
-	ep_param_set(CP8_P544);
+	ep_param_set(GMT8_P544);
 #elif FP_PRIME == 638
 #ifdef FP_QNRES
 	ep_param_set(B12_P638);
@@ -1275,8 +1295,8 @@ int ep_param_set_any_pairf(void) {
 	type = RLC_EP_DTYPE;
 	degree = 2;
 #elif FP_PRIME == 256
-	ep_param_set(BN_P256);
-	type = RLC_EP_DTYPE;
+	ep_param_set(SM9_P256);
+	type = RLC_EP_MTYPE;
 	degree = 2;
 #elif FP_PRIME == 381
 	ep_param_set(B12_P381);
@@ -1317,7 +1337,7 @@ int ep_param_set_any_pairf(void) {
 	type = RLC_EP_DTYPE;
 	degree = 2;
 #elif FP_PRIME == 544
-	ep_param_set(CP8_P544);
+	ep_param_set(GMT8_P544);
 	type = RLC_EP_MTYPE;
 	degree = 2;
 #elif FP_PRIME == 569
@@ -1420,6 +1440,9 @@ void ep_param_print(void) {
 		case BN_P256:
 			util_banner("Curve BN-P256:", 0);
 			break;
+		case SM9_P256:
+			util_banner("Curve SM9-P256:", 0);
+			break;
 		case B12_P381:
 			util_banner("Curve B12-P381:", 0);
 			break;
@@ -1429,8 +1452,8 @@ void ep_param_print(void) {
 		case B12_P383:
 			util_banner("Curve B12-P383:", 0);
 			break;
-		case CP8_P544:
-			util_banner("Curve CP8-P544:", 0);
+		case GMT8_P544:
+			util_banner("Curve GMT8-P544:", 0);
 			break;
 		case BN_P446:
 			util_banner("Curve BN-P446:", 0);
@@ -1498,6 +1521,7 @@ int ep_param_level(void) {
 			return 112;
 		case BN_P254:
 		case BN_P256:
+		case SM9_P256:
 			return 112;
 		case NIST_P256:
 		case SECG_K256:
@@ -1509,7 +1533,7 @@ int ep_param_level(void) {
 		case B12_P383:
 		case BN_P446:
 		case B12_P446:
-		case CP8_544:
+		case GMT8_544:
 		case SS_P1536:
 			return 128;
 		case B12_P455:
@@ -1531,7 +1555,7 @@ int ep_param_embed(void) {
 		case SS_P1536:
 			return 2;
 		case OT8_P511:
-		case CP8_P544:
+		case GMT8_P544:
 			return 8;
 		case BN_P158:
 		case BN_P254:

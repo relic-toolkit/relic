@@ -315,6 +315,8 @@ typedef struct _ctx_t {
 	fp2_t ep2_map_u;
 	/** The constants needed for hashing. */
 	fp2_t ep2_map_c[4];
+	/** The constants needed for Frobenius. */
+	fp2_t ep2_frb[2];
 	/** Optimization identifier for the a-coefficient. */
 	int ep2_opt_a;
 	/** Optimization identifier for the b-coefficient. */

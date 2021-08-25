@@ -110,6 +110,8 @@ enum {
 	BN_254,
 	/** 256-bit prime provided in Barreto et al. for BN curves. */
 	BN_256,
+	/** 256-bit prime provided for BN curve standardized in China. */
+	SM9_256,
 	/** 381-bit prime for BLS curve of embedding degree 12 (Zcash). */
 	B12_381,
 	/** 382-bit prime provided by Barreto for BN curve. */
@@ -129,7 +131,7 @@ enum {
 	/** 511-bit prime for Optimal TNFS-secure curve. */
 	OT_511,
 	/** Random 544-bit prime for Cocks-Pinch curve with embedding degree 8. */
-	CP8_544,
+	GMT8_544,
 	/** 569-bit prime for KSS curve with embedding degree 54. */
 	K54_569,
 	/** 575-bit prime for BLS curve with embedding degree 48. */
