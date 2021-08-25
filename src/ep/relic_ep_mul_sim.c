@@ -812,7 +812,6 @@ void ep_mul_sim_lot(ep_t r, ep_t p[], const bn_t k[], int n) {
 				}
 				for (j = 0; j < 2; j++) {
 					_l[j] = len;
-					bn_print(_k[j]);
 					bn_rec_naf(&naf[(2*i + j)*len], &_l[j], _k[j], 2);
 					if (bn_sign(_k[j]) == RLC_NEG) {
 						ep_neg(_p[2*i + j], _p[2*i + j]);
