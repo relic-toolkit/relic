@@ -1560,6 +1560,7 @@ int ep_param_embed(void) {
 		case BN_P158:
 		case BN_P254:
 		case BN_P256:
+		case SM9_P256:
 		case BN_P382:
 		case BN_P446:
 		case B12_P446:
