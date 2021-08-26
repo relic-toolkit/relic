@@ -852,8 +852,10 @@ void ep2_curve_set_twist(int type) {
 		/* I don't have a better place for this. */
 		fp_prime_calc();
 
-		fp2_copy(ctx->ep2_frb[0], ctx->fp2_p1[1]);
-		fp2_copy(ctx->ep2_frb[1], ctx->fp2_p1[2]);
+		fp_copy(ctx->ep2_frb[0][0], ctx->fp2_p1[1][0]);
+		fp_copy(ctx->ep2_frb[0][1], ctx->fp2_p1[1][1]);
+		fp_copy(ctx->ep2_frb[1][0], ctx->fp2_p1[2][0]);
+		fp_copy(ctx->ep2_frb[1][1], ctx->fp2_p1[2][1]);
 		if (type == RLC_EP_MTYPE) {
 			fp2_inv(ctx->ep2_frb[0], ctx->ep2_frb[0]);
 			fp2_inv(ctx->ep2_frb[1], ctx->ep2_frb[1]);
