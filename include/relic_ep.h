@@ -32,7 +32,7 @@
  *
  * The scalar multiplication functions are only guaranteed to work
  * in the large prime order subgroup. If you need a generic scalar
- * multiplication function, use ep_mul_basic().
+ * multiplication function, use ep_mul_basic.
  *
  * @ingroup ep
  */
