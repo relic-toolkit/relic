@@ -63,3 +63,50 @@ void bn_mod_inv(bn_t c, const bn_t a, const bn_t b) {
 		bn_free(u);
 	}
 }
+
+void bn_mod_inv_sim(bn_t *c, const bn_t *a, const bn_t b, int n) {
+	int i;
+	bn_t u, *t = RLC_ALLOCA(bn_t, n);
+
+	bn_null(u);
+
+	RLC_TRY {
+		if (t == NULL) {
+			RLC_THROW(ERR_NO_MEMORY);
+		}
+		for (i = 0; i < n; i++) {
+			bn_null(t[i]);
+			bn_new(t[i]);
+		}
+		bn_new(u);
+
+		bn_copy(c[0], a[0]);
+		bn_copy(t[0], a[0]);
+
+		for (i = 1; i < n; i++) {
+			bn_copy(t[i], a[i]);
+			bn_mul(c[i], c[i - 1], a[i]);
+			bn_mod(c[i], c[i], b);
+		}
+
+		bn_mod_inv(u, c[n - 1], b);
+
+		for (i = n - 1; i > 0; i--) {
+			bn_mul(c[i], u, c[i - 1]);
+			bn_mod(c[i], c[i], b);
+			bn_mul(u, u, t[i]);
+			bn_mod(u, u, b);
+		}
+		bn_copy(c[0], u);
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		for (i = 0; i < n; i++) {
+			bn_free(t[i]);
+		}
+		bn_free(u);
+		RLC_FREE(t);
+	}
+}

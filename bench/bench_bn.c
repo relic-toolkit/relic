@@ -281,21 +281,21 @@ static void util(void) {
 }
 
 static void arith(void) {
-	bn_t a, b, c, d, e;
+	bn_t a, b, c, d[2];
 	dig_t f;
 	int len;
 
 	bn_null(a);
 	bn_null(b);
 	bn_null(c);
-	bn_null(d);
-	bn_null(e);
+	bn_null(d[0]);
+	bn_null(d[1]);
 
 	bn_new(a);
 	bn_new(b);
 	bn_new(c);
-	bn_new(d);
-	bn_new(e);
+	bn_new(d[0]);
+	bn_new(d[1]);
 
 	BENCH_RUN("bn_add") {
 		bn_rand(a, RLC_POS, RLC_BN_BITS);
@@ -433,7 +433,7 @@ static void arith(void) {
 	BENCH_RUN("bn_div_rem") {
 		bn_rand(a, RLC_POS, 2 * RLC_BN_BITS - RLC_DIG / 2);
 		bn_rand(b, RLC_POS, RLC_BN_BITS);
-		BENCH_ADD(bn_div_rem(c, d, a, b));
+		BENCH_ADD(bn_div_rem(c, d[0], a, b));
 	}
 	BENCH_END;
 
@@ -483,9 +483,9 @@ static void arith(void) {
 		if (bn_is_even(b)) {
 			bn_add_dig(b, b, 1);
 		}
-		bn_mod_pre(d, b);
+		bn_mod_pre(d[0], b);
 #endif
-		BENCH_ADD(bn_mod(c, a, b, d));
+		BENCH_ADD(bn_mod(c, a, b, d[0]));
 	}
 	BENCH_END;
 
@@ -501,7 +501,7 @@ static void arith(void) {
 #if BN_MOD == BARRT || !defined(STRIP)
 	BENCH_RUN("bn_mod_pre_barrt") {
 		bn_rand(b, RLC_POS, RLC_BN_BITS);
-		BENCH_ADD(bn_mod_pre_barrt(d, b));
+		BENCH_ADD(bn_mod_pre_barrt(d[0], b));
 	}
 	BENCH_END;
 #endif
@@ -510,8 +510,8 @@ static void arith(void) {
 	BENCH_RUN("bn_mod_barrt") {
 		bn_rand(a, RLC_POS, 2 * RLC_BN_BITS - RLC_DIG / 2);
 		bn_rand(b, RLC_POS, RLC_BN_BITS);
-		bn_mod_pre_barrt(d, b);
-		BENCH_ADD(bn_mod_barrt(c, a, b, d));
+		bn_mod_pre_barrt(d[0], b);
+		BENCH_ADD(bn_mod_barrt(c, a, b, d[0]));
 	}
 	BENCH_END;
 #endif
@@ -522,7 +522,7 @@ static void arith(void) {
 		if (bn_is_even(b)) {
 			bn_add_dig(b, b, 1);
 		}
-		BENCH_ADD(bn_mod_pre_monty(d, b));
+		BENCH_ADD(bn_mod_pre_monty(d[0], b));
 	}
 	BENCH_END;
 
@@ -544,8 +544,8 @@ static void arith(void) {
 			bn_add_dig(b, b, 1);
 		}
 		bn_mod(a, a, b);
-		bn_mod_pre_monty(d, b);
-		BENCH_ADD(bn_mod_monty(c, a, b, d));
+		bn_mod_pre_monty(d[0], b);
+		BENCH_ADD(bn_mod_monty(c, a, b, d[0]));
 	}
 	BENCH_END;
 
@@ -557,8 +557,8 @@ static void arith(void) {
 			bn_add_dig(b, b, 1);
 		}
 		bn_mod(a, a, b);
-		bn_mod_pre_monty(d, b);
-		BENCH_ADD(bn_mod_monty_basic(c, a, b, d));
+		bn_mod_pre_monty(d[0], b);
+		BENCH_ADD(bn_mod_monty_basic(c, a, b, d[0]));
 	}
 	BENCH_END;
 #endif
@@ -571,8 +571,8 @@ static void arith(void) {
 			bn_add_dig(b, b, 1);
 		}
 		bn_mod(a, a, b);
-		bn_mod_pre_monty(d, b);
-		BENCH_ADD(bn_mod_monty_comba(c, a, b, d));
+		bn_mod_pre_monty(d[0], b);
+		BENCH_ADD(bn_mod_monty_comba(c, a, b, d[0]));
 	}
 	BENCH_END;
 #endif
@@ -584,7 +584,7 @@ static void arith(void) {
 			bn_add_dig(b, b, 1);
 		}
 		bn_mod(a, a, b);
-		bn_mod_pre_monty(d, b);
+		bn_mod_pre_monty(d[0], b);
 		BENCH_ADD(bn_mod_monty_back(c, c, b));
 	}
 	BENCH_END;
@@ -596,7 +596,7 @@ static void arith(void) {
 		bn_set_2b(b, RLC_BN_BITS);
 		bn_rand(c, RLC_POS, RLC_DIG);
 		bn_sub(b, b, c);
-		BENCH_ADD(bn_mod_pre_pmers(d, b));
+		BENCH_ADD(bn_mod_pre_pmers(d[0], b));
 	}
 	BENCH_END;
 
@@ -605,8 +605,8 @@ static void arith(void) {
 		bn_set_2b(b, RLC_BN_BITS);
 		bn_rand(c, RLC_POS, RLC_DIG);
 		bn_sub(b, b, c);
-		bn_mod_pre_pmers(d, b);
-		BENCH_ADD(bn_mod_pmers(c, a, b, d));
+		bn_mod_pre_pmers(d[0], b);
+		BENCH_ADD(bn_mod_pmers(c, a, b, d[0]));
 	}
 	BENCH_END;
 #endif
@@ -656,8 +656,8 @@ static void arith(void) {
 
 	BENCH_RUN("bn_mxp_dig") {
 		bn_rand(a, RLC_POS, RLC_BN_BITS);
-		bn_rand(d, RLC_POS, RLC_DIG);
-		bn_get_dig(&f, d);
+		bn_rand(d[0], RLC_POS, RLC_DIG);
+		bn_get_dig(&f, d[0]);
 		BENCH_ADD(bn_mxp_dig(c, a, f, b));
 	}
 	BENCH_END;
@@ -713,7 +713,7 @@ static void arith(void) {
 	BENCH_RUN("bn_gcd_ext") {
 		bn_rand(a, RLC_POS, RLC_BN_BITS);
 		bn_rand(b, RLC_POS, RLC_BN_BITS);
-		BENCH_ADD(bn_gcd_ext(c, d, e, a, b));
+		BENCH_ADD(bn_gcd_ext(c, d[0], d[1], a, b));
 	}
 	BENCH_END;
 
@@ -721,7 +721,7 @@ static void arith(void) {
 	BENCH_RUN("bn_gcd_ext_basic") {
 		bn_rand(a, RLC_POS, RLC_BN_BITS);
 		bn_rand(b, RLC_POS, RLC_BN_BITS);
-		BENCH_ADD(bn_gcd_ext_basic(c, d, e, a, b));
+		BENCH_ADD(bn_gcd_ext_basic(c, d[0], d[1], a, b));
 	}
 	BENCH_END;
 #endif
@@ -730,7 +730,7 @@ static void arith(void) {
 	BENCH_RUN("bn_gcd_ext_lehme") {
 		bn_rand(a, RLC_POS, RLC_BN_BITS);
 		bn_rand(b, RLC_POS, RLC_BN_BITS);
-		BENCH_ADD(bn_gcd_ext_lehme(c, d, e, a, b));
+		BENCH_ADD(bn_gcd_ext_lehme(c, d[0], d[1], a, b));
 	}
 	BENCH_END;
 #endif
@@ -739,7 +739,7 @@ static void arith(void) {
 	BENCH_RUN("bn_gcd_ext_stein") {
 		bn_rand(a, RLC_POS, RLC_BN_BITS);
 		bn_rand(b, RLC_POS, RLC_BN_BITS);
-		BENCH_ADD(bn_gcd_ext_stein(c, d, e, a, b));
+		BENCH_ADD(bn_gcd_ext_stein(c, d[0], d[1], a, b));
 	}
 	BENCH_END;
 #endif
@@ -747,14 +747,14 @@ static void arith(void) {
 	BENCH_RUN("bn_gcd_ext_mid") {
 		bn_rand(a, RLC_POS, RLC_BN_BITS);
 		bn_rand(b, RLC_POS, RLC_BN_BITS);
-		BENCH_ADD(bn_gcd_ext_mid(c, c, d, d, a, b));
+		BENCH_ADD(bn_gcd_ext_mid(c, c, d[0], d[1], a, b));
 	}
 	BENCH_END;
 
 	BENCH_RUN("bn_gcd_ext_dig") {
 		bn_rand(a, RLC_POS, RLC_BN_BITS);
 		bn_rand(b, RLC_POS, RLC_DIG);
-		BENCH_ADD(bn_gcd_ext_dig(c, d, e, a, b->dp[0]));
+		BENCH_ADD(bn_gcd_ext_dig(c, d[0], d[1], a, b->dp[0]));
 	}
 	BENCH_END;
 
@@ -809,6 +809,14 @@ static void arith(void) {
 	BENCH_RUN("bn_mod_inv") {
 		bn_rand(b, RLC_POS, RLC_BN_BITS);
 		BENCH_ADD(bn_mod_inv(c, b, a));
+	}
+	BENCH_END;
+
+	/* It should be the case that a is prime here. */
+	BENCH_RUN("bn_mod_inv_sim (2)") {
+		bn_rand(d[0], RLC_POS, RLC_BN_BITS);
+		bn_rand(d[1], RLC_POS, RLC_BN_BITS);
+		BENCH_ADD(bn_mod_inv_sim(d, d, a, 2));
 	}
 	BENCH_END;
 
@@ -920,8 +928,8 @@ static void arith(void) {
 	bn_free(a);
 	bn_free(b);
 	bn_free(c);
-	bn_free(d);
-	bn_free(e);
+	bn_free(d[0]);
+	bn_free(d[1]);
 }
 
 int main(void) {
