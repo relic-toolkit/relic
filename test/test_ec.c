@@ -391,14 +391,14 @@ static int multiplication(void) {
 		} TEST_END;
 
 		TEST_CASE("point multiplication by digit is correct") {
-			ep_mul_dig(r, p, 0);
-			TEST_ASSERT(ep_is_infty(r), end);
-			ep_mul_dig(r, p, 1);
-			TEST_ASSERT(ep_cmp(p, r) == RLC_EQ, end);
+			ec_mul_dig(r, p, 0);
+			TEST_ASSERT(ec_is_infty(r), end);
+			ec_mul_dig(r, p, 1);
+			TEST_ASSERT(ec_cmp(p, r) == RLC_EQ, end);
 			bn_rand(k, RLC_POS, RLC_DIG);
-			ep_mul(q, p, k);
-			ep_mul_dig(r, p, k->dp[0]);
-			TEST_ASSERT(ep_cmp(q, r) == RLC_EQ, end);
+			ec_mul(q, p, k);
+			ec_mul_dig(r, p, k->dp[0]);
+			TEST_ASSERT(ec_cmp(q, r) == RLC_EQ, end);
 		}
 		TEST_END;
 	}
