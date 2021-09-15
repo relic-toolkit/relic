@@ -736,7 +736,7 @@ end:
 static int sok(void) {
 	int code = RLC_ERR;
 	bn_t c[2], n, r[2], x;
-	ec_t y[2];
+	ec_t g[2], y[2];
 	uint8_t m[5] = { 0, 1, 2, 3, 4 };
 
 	bn_null(n);
@@ -748,9 +748,11 @@ static int sok(void) {
 		for (int i = 0; i < 2; i++) {
 			bn_null(c[i]);
 			bn_null(r[i]);
+			ec_null(g[i]);
 			ec_null(y[i]);
 			bn_new(c[i]);
 			bn_new(r[i]);
+			ec_new(g[i]);
 			ec_new(y[i]);
 		}
 		ec_curve_get_ord(n);
@@ -771,20 +773,42 @@ static int sok(void) {
 				ec_rand(y[0]);
 				ec_mul_gen(y[1], x);
 			} while (ec_cmp(y[0], y[1]) == RLC_EQ);
-			TEST_ASSERT(cp_sokor_sig(c, r,  m, 5, y, x, 0) == RLC_OK, end);
-			TEST_ASSERT(cp_sokor_ver(c, r,  m, 5, y) == 1, end);
+			TEST_ASSERT(cp_sokor_sig(c, r,  m, 5, y, NULL, x, 0) == RLC_OK, end);
+			TEST_ASSERT(cp_sokor_ver(c, r,  m, 5, y, NULL) == 1, end);
 			ec_dbl(y[1], y[1]);
 			ec_norm(y[1], y[1]);
-			TEST_ASSERT(cp_sokor_ver(c, r,  m, 5, y) == 0, end);
+			TEST_ASSERT(cp_sokor_ver(c, r,  m, 5, y, NULL) == 0, end);
 			do {
 				ec_mul_gen(y[0], x);
 				ec_rand(y[1]);
 			} while (ec_cmp(y[0], y[1]) == RLC_EQ);
-			TEST_ASSERT(cp_sokor_sig(c, r,  m, 5, y, x, 1) == RLC_OK, end);
-			TEST_ASSERT(cp_sokor_ver(c, r,  m, 5, y) == 1, end);
+			TEST_ASSERT(cp_sokor_sig(c, r,  m, 5, y, NULL, x, 1) == RLC_OK, end);
+			TEST_ASSERT(cp_sokor_ver(c, r,  m, 5, y, NULL) == 1, end);
 			ec_dbl(y[0], y[0]);
 			ec_norm(y[0], y[0]);
-			TEST_ASSERT(cp_sokor_ver(c, r,  m, 5, y) == 0, end);
+			TEST_ASSERT(cp_sokor_ver(c, r,  m, 5, y, NULL) == 0, end);
+			do {
+				ec_curve_get_gen(g[0]);
+				ec_rand(g[1]);
+				ec_rand(y[0]);
+				ec_mul(y[1], g[1], x);
+			} while (ec_cmp(y[0], y[1]) == RLC_EQ);
+			TEST_ASSERT(cp_sokor_sig(c, r,  m, 5, y, g, x, 0) == RLC_OK, end);
+			TEST_ASSERT(cp_sokor_ver(c, r,  m, 5, y, g) == 1, end);
+			ec_dbl(y[1], y[1]);
+			ec_norm(y[1], y[1]);
+			TEST_ASSERT(cp_sokor_ver(c, r,  m, 5, y, g) == 0, end);
+			do {
+				ec_rand(g[0]);
+				ec_mul(y[0], g[0], x);
+				ec_curve_get_gen(g[1]);
+				ec_rand(y[1]);
+			} while (ec_cmp(y[0], y[1]) == RLC_EQ);
+			TEST_ASSERT(cp_sokor_sig(c, r,  m, 5, y, g, x, 1) == RLC_OK, end);
+			TEST_ASSERT(cp_sokor_ver(c, r,  m, 5, y, g) == 1, end);
+			ec_dbl(y[0], y[0]);
+			ec_norm(y[0], y[0]);
+			TEST_ASSERT(cp_sokor_ver(c, r,  m, 5, y, g) == 0, end);
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {
@@ -798,6 +822,7 @@ end:
 	for (int i = 0; i < 2; i++) {
 		bn_free(c[i]);
 		bn_free(r[i]);
+		ec_free(g[i]);
 		ec_free(y[i]);
 	}
 	return code;
@@ -856,6 +881,60 @@ end:
 	return code;
 }
 
+static int smlers(void) {
+	int size, code = RLC_ERR;
+	ec_t pp, pk[4];
+	bn_t sk[4], td;
+	smlers_t ring[4];
+	uint8_t m[5] = { 0, 1, 2, 3, 4 };
+
+	bn_null(td);
+	ec_null(pp);
+
+	RLC_TRY {
+		bn_new(td);
+		ec_new(pp);
+		for (int i = 0; i < 4; i++) {
+			bn_null(sk[i]);
+			bn_new(sk[i]);
+			ec_null(pk[i]);
+			ec_new(pk[i]);
+			smlers_null(ring[i]);
+			smlers_new(ring[i]);
+			cp_ers_gen_key(sk[i], pk[i]);
+		}
+
+		cp_ers_gen(pp);
+
+		TEST_CASE("same-message linkable ext. ring signature scheme is correct") {
+			TEST_ASSERT(cp_smlers_sig(td, ring[0], m, 5, sk[0], pk[0], pp) == RLC_OK, end);
+			TEST_ASSERT(cp_smlers_ver(td, ring, 1, m, 5, pp) == 1, end);
+			TEST_ASSERT(cp_smlers_ver(td, ring, 1, m, 0, pp) == 0, end);
+			size = 1;
+			for (int j = 1; j < 4; j++) {
+				TEST_ASSERT(cp_smlers_ext(td, ring, &size, m, 5, pk[j], pp) == RLC_OK, end);
+				TEST_ASSERT(cp_smlers_ver(td, ring, size, m, 5, pp) == 1, end);
+				TEST_ASSERT(cp_smlers_ver(td, ring, size, m, 0, pp) == 0, end);
+				TEST_ASSERT(ec_cmp(ring[0]->tau, ring[j]->tau) == RLC_EQ, end);
+			}
+		} TEST_END;
+	}
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
+	}
+	code = RLC_OK;
+
+end:
+	bn_free(td);
+	ec_free(pp);
+	for (int i = 0; i < 4; i++) {
+		bn_free(sk[i]);
+		ec_free(pk[i]);
+		smlers_free(ring[i])
+	}
+	return code;
+}
+
 static int etrs(void) {
 	int size, code = RLC_ERR;
 	ec_t pp, pk[4];
@@ -879,10 +958,10 @@ static int etrs(void) {
 			ec_new(pk[i]);
 			etrs_null(ring[i]);
 			etrs_new(ring[i]);
-			cp_etrs_gen_key(sk[i], pk[i]);
+			cp_ers_gen_key(sk[i], pk[i]);
 		}
 
-		cp_etrs_gen(pp);
+		cp_ers_gen(pp);
 
 		TEST_CASE("extendable threshold ring signature scheme is correct") {
 			TEST_ASSERT(cp_etrs_sig(td, y, 4, ring[0], m, 5, sk[0], pk[0], pp) == RLC_OK, end);
@@ -2051,6 +2130,11 @@ int main(void) {
 		}
 
 		if (ers() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (smlers() != RLC_OK) {
 			core_clean();
 			return 1;
 		}

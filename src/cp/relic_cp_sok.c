@@ -154,9 +154,9 @@ int cp_sokdl_ver(bn_t c, bn_t s, uint8_t *msg, int len, ec_t y) {
 }
 
 int cp_sokor_sig(bn_t c[2], bn_t s[2], uint8_t *msg, int len, ec_t y[2],
-		bn_t x, int first) {
+		ec_t g[2], bn_t x, int first) {
 	bn_t n, v[2], z;
-	ec_t g, t[2];
+	ec_t u, t[2];
 	uint8_t h[RLC_MD_LEN];
 	uint8_t *buf, *m = RLC_ALLOCA(uint8_t, len + 6 * (RLC_FC_BYTES + 1));
 	int l, result = RLC_OK;
@@ -167,7 +167,7 @@ int cp_sokor_sig(bn_t c[2], bn_t s[2], uint8_t *msg, int len, ec_t y[2],
 	bn_null(v[0]);
 	bn_null(v[1]);
 	bn_null(z);
-	ec_null(g);
+	ec_null(u);
 	ec_null(t[0]);
 	ec_null(t[1]);
 
@@ -176,7 +176,7 @@ int cp_sokor_sig(bn_t c[2], bn_t s[2], uint8_t *msg, int len, ec_t y[2],
 		bn_new(v[0]);
 		bn_new(v[1]);
 		bn_new(z);
-		ec_new(g);
+		ec_new(u);
 		ec_new(t[0]);
 		ec_new(t[1]);
 		if (m == NULL) {
@@ -185,7 +185,6 @@ int cp_sokor_sig(bn_t c[2], bn_t s[2], uint8_t *msg, int len, ec_t y[2],
 
 		buf = m;
 		ec_curve_get_ord(n);
-		ec_curve_get_gen(g);
 		bn_rand_mod(c[zero], n);
 		memcpy(buf, msg, len);
 		buf += len;
@@ -193,18 +192,35 @@ int cp_sokor_sig(bn_t c[2], bn_t s[2], uint8_t *msg, int len, ec_t y[2],
 		bn_rand_mod(v[0], n);
 		bn_rand_mod(v[1], n);
 		if (first) {
-			ec_mul_gen(t[0], v[0]);
-			ec_mul_sim_gen(t[1], v[1], y[1], c[zero]);
+			if (g != NULL) {
+				ec_mul(t[0], g[0], v[0]);
+				ec_mul_sim(t[1], g[1], v[1], y[1], c[zero]);
+			} else {
+				ec_mul_gen(t[0], v[0]);
+				ec_mul_sim_gen(t[1], v[1], y[1], c[zero]);
+			}
 		} else {
-			/* T1 = [w]Y1 + [v1]G. */
-			ec_mul_sim_gen(t[0], v[0], y[0], c[zero]);
-			/* T2 = [v2]G. */
-			ec_mul_gen(t[1], v[1]);
+			if (g != NULL) {
+				/* T1 = [w]Y1 + [v1]G. */
+				ec_mul_sim(t[0], g[0], v[0], y[0], c[zero]);
+				/* T2 = [v2]G. */
+				ec_mul(t[1], g[1], v[1]);
+			} else {
+				/* T1 = [w]Y1 + [v1]G. */
+				ec_mul_sim_gen(t[0], v[0], y[0], c[zero]);
+				/* T2 = [v2]G. */
+				ec_mul_gen(t[1], v[1]);
+			}
 		}
 
 		for (int i = 0; i < 2; i++) {
-			l = ec_size_bin(g, 1);
-			ec_write_bin(buf, l, g, 1);
+			if (g != NULL) {
+				ec_copy(u, g[i]);
+			} else {
+				ec_curve_get_gen(u);
+			}
+			l = ec_size_bin(u, 1);
+			ec_write_bin(buf, l, u, 1);
 			buf += l;
 			l = ec_size_bin(y[i], 1);
 			ec_write_bin(buf, l, y[i], 1);
@@ -233,7 +249,7 @@ int cp_sokor_sig(bn_t c[2], bn_t s[2], uint8_t *msg, int len, ec_t y[2],
 		bn_free(v[0]);
 		bn_free(v[1]);
 		bn_free(z);
-		ec_free(g);
+		ec_free(u);
 		ec_free(t[0]);
 		ec_free(t[1]);
 		RLC_FREE(m);
@@ -241,7 +257,8 @@ int cp_sokor_sig(bn_t c[2], bn_t s[2], uint8_t *msg, int len, ec_t y[2],
 	return result;
 }
 
-int cp_sokor_ver(bn_t c[2], bn_t s[2], uint8_t *msg, int len, ec_t y[2]) {
+int cp_sokor_ver(bn_t c[2], bn_t s[2], uint8_t *msg, int len, ec_t y[2],
+		ec_t g[2]) {
 	bn_t n, v[2], z;
 	ec_t t;
 	uint8_t h[RLC_MD_LEN];
@@ -270,15 +287,22 @@ int cp_sokor_ver(bn_t c[2], bn_t s[2], uint8_t *msg, int len, ec_t y[2]) {
 		buf += len;
 
 		for (int i = 0; i < 2; i++) {
-			ec_curve_get_gen(t);
+			if (g != NULL) {
+				ec_copy(t, g[i]);
+			} else {
+				ec_curve_get_gen(t);
+			}
 			l = ec_size_bin(t, 1);
 			ec_write_bin(buf, l, t, 1);
 			buf += l;
 			l = ec_size_bin(y[i], 1);
 			ec_write_bin(buf, l, y[i], 1);
 			buf += l;
-
-			ec_mul_sim_gen(t, s[i], y[i], c[i]);
+			if (g != NULL) {
+				ec_mul_sim(t, g[i], s[i], y[i], c[i]);
+			} else {
+				ec_mul_sim_gen(t, s[i], y[i], c[i]);
+			}
 			l = ec_size_bin(t, 1);
 			ec_write_bin(buf, l, t, 1);
 			buf += l;

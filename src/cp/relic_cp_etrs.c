@@ -35,37 +35,11 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-int cp_etrs_gen(ec_t pp) {
-	ec_rand(pp);
-	return RLC_OK;
-}
-
-int cp_etrs_gen_key(bn_t sk, ec_t pk) {
-	bn_t n;
-	int result = RLC_OK;
-
-	bn_null(n);
-
-	RLC_TRY {
-		bn_new(n);
-
-		ec_curve_get_ord(n);
-		bn_rand_mod(sk, n);
-		ec_mul_gen(pk, sk);
-	}
-	RLC_CATCH_ANY {
-		result = RLC_ERR;
-	}
-	RLC_FINALLY {
-		bn_free(n);
-	}
-	return result;
-}
-
 int cp_etrs_sig(bn_t *td, bn_t *y, int max, etrs_t p, uint8_t *msg, int len,
 		bn_t sk, ec_t pk, ec_t pp) {
 	bn_t n, l, u, v, z;
 	ec_t t, w[2];
+	bn_t *_v = RLC_ALLOCA(bn_t, max);
 	int result = RLC_OK;
 
 	bn_null(n);
@@ -88,8 +62,11 @@ int cp_etrs_sig(bn_t *td, bn_t *y, int max, etrs_t p, uint8_t *msg, int len,
 		ec_new(w[1]);
 
 		ec_curve_get_ord(n);
-
+		if (_v == NULL) {
+			RLC_THROW(ERR_NO_MEMORY);
+		}
 		for(int i = 0; i < max; i++) {
+			bn_new(_v[i]);
 			bn_rand_mod(y[i], n);
 			bn_rand_mod(td[i], n);
 		}
@@ -97,9 +74,12 @@ int cp_etrs_sig(bn_t *td, bn_t *y, int max, etrs_t p, uint8_t *msg, int len,
 
 		bn_set_dig(l, 1);
 		for(int j = 0; j < max; j++) {
-			bn_mod_inv(v, y[j], n);
+			bn_copy(_v[j], y[j]);
+		}
+		bn_mod_inv_sim(_v, _v, n, max);
+		for(int j = 0; j < max; j++) {
 			bn_sub(u, y[j], p->y);
-			bn_mul(u, u, v);
+			bn_mul(u, u, _v[j]);
 			bn_mod(u, u, n);
 			bn_mul(l, l, u);
 			bn_mod(l, l, n);
@@ -111,12 +91,17 @@ int cp_etrs_sig(bn_t *td, bn_t *y, int max, etrs_t p, uint8_t *msg, int len,
 			bn_mul(u, v, p->y);
 			bn_mod(l, u, n);
 			for(int j = 0; j < max; j++) {
+				bn_set_dig(_v[j], 1);
 				if (j != i) {
-					bn_sub(v, y[j], y[i]);
-					bn_mod(v, v, n);
-					bn_mod_inv(v, v, n);
+					bn_sub(_v[j], y[j], y[i]);
+					bn_mod(_v[j], _v[j], n);
+				}
+			}
+			bn_mod_inv_sim(_v, _v, n, max);
+			for(int j = 0; j < max; j++) {
+				if (j != i) {
 					bn_sub(u, y[j], p->y);
-					bn_mul(u, u, v);
+					bn_mul(u, u, _v[j]);
 					bn_mod(u, u, n);
 					bn_mul(l, l, u);
 					bn_mod(l, l, n);
@@ -130,7 +115,7 @@ int cp_etrs_sig(bn_t *td, bn_t *y, int max, etrs_t p, uint8_t *msg, int len,
 		ec_copy(p->pk, pk);
 		ec_copy(w[0], p->h);
 		ec_copy(w[1], p->pk);
-		cp_sokor_sig(p->c, p->r, msg, len, w, sk, 0);
+		cp_sokor_sig(p->c, p->r, msg, len, w, NULL, sk, 0);
 	}
 	RLC_CATCH_ANY {
 		result = RLC_ERR;
@@ -144,6 +129,10 @@ int cp_etrs_sig(bn_t *td, bn_t *y, int max, etrs_t p, uint8_t *msg, int len,
 		ec_free(t);
 		ec_free(w[0]);
 		ec_free(w[1]);
+		for (int i = 0; i < max; i++) {
+			bn_free(_v[i]);
+		}
+		RLC_FREE(_v);
 	}
 	return result;
 }
@@ -155,6 +144,7 @@ int cp_etrs_ver(int thres, bn_t *td, bn_t *y, int max, etrs_t *s, int size,
 	ec_t t, w[2];
 
 	int d = max + size - thres;
+	bn_t *_v = RLC_ALLOCA(bn_t, d);
 	bn_t *_y = RLC_ALLOCA(bn_t, d);
 	ec_t *_t = RLC_ALLOCA(ec_t, d);
 
@@ -178,6 +168,7 @@ int cp_etrs_ver(int thres, bn_t *td, bn_t *y, int max, etrs_t *s, int size,
 			RLC_THROW(ERR_NO_MEMORY);
 		}
 		for (i = 0; i < d; i++) {
+			bn_new(_v[i]);
 			bn_new(_y[i]);
 			ec_new(_t[i]);
 		}
@@ -196,13 +187,18 @@ int cp_etrs_ver(int thres, bn_t *td, bn_t *y, int max, etrs_t *s, int size,
 		flag = 1;
 		ec_set_infty(w[0]);
 		for(i = 0; i < d; i++) {
+			for(int j = 0; j < d; j++) {
+				bn_set_dig(_v[j], 1);
+				if (j != i) {
+					bn_sub(_v[j], _y[j], _y[i]);
+					bn_mod(_v[j], _v[j], n);
+				}
+			}
+			bn_mod_inv_sim(_v, _v, n, d);
 			bn_set_dig(l, 1);
 			for(int j = 0; j < d; j++) {
 				if (j != i) {
-					bn_sub(v, _y[j], _y[i]);
-					bn_mod(v, v, n);
-					bn_mod_inv(v, v, n);
-					bn_mul(u, _y[j], v);
+					bn_mul(u, _y[j], _v[j]);
 					bn_mod(u, u, n);
 					bn_mul(l, l, u);
 					bn_mod(l, l, n);
@@ -218,7 +214,7 @@ int cp_etrs_ver(int thres, bn_t *td, bn_t *y, int max, etrs_t *s, int size,
 		for (int i = 0; i < size; i++) {
 			ec_copy(w[0], s[i]->h);
 			ec_copy(w[1], s[i]->pk);
-			flag &= cp_sokor_ver(s[i]->c, s[i]->r, msg, len, w);
+			flag &= cp_sokor_ver(s[i]->c, s[i]->r, msg, len, w, NULL);
         }
 		result = flag;
 	}
@@ -234,9 +230,11 @@ int cp_etrs_ver(int thres, bn_t *td, bn_t *y, int max, etrs_t *s, int size,
 		ec_free(w[0]);
 		ec_free(w[1]);
 		for (int i = 0; i < d; i++) {
+			bn_free(_v[i]);
 			bn_free(_y[i]);
 			ec_free(_t[i]);
 		}
+		RLC_FREE(_v);
 		RLC_FREE(_y);
 		RLC_FREE(_t);
 	}
@@ -283,7 +281,7 @@ int cp_etrs_ext(bn_t *td, bn_t *y, int max, etrs_t *p, int *size, uint8_t *msg, 
 		ec_copy(p[*size]->pk, pk);
 		ec_copy(w[0], p[*size]->h);
 		ec_copy(w[1], p[*size]->pk);
-		cp_sokor_sig(p[*size]->c, p[*size]->r, msg, len, w, r, 1);
+		cp_sokor_sig(p[*size]->c, p[*size]->r, msg, len, w, NULL, r, 1);
 		(*size)++;
 		result = RLC_OK;
 	}
@@ -306,6 +304,7 @@ int cp_etrs_uni(int thres, bn_t *td, bn_t *y, int max, etrs_t *p, int *size,
 	ec_t t, w[2];
 
 	int d = max + *size;
+	bn_t *_v = RLC_ALLOCA(bn_t, d);
 	bn_t *_y = RLC_ALLOCA(bn_t, d);
 	ec_t *_t = RLC_ALLOCA(ec_t, d);
 
@@ -325,10 +324,11 @@ int cp_etrs_uni(int thres, bn_t *td, bn_t *y, int max, etrs_t *p, int *size,
 		ec_new(t);
 		ec_new(w[0]);
 		ec_new(w[1]);
-		if (_y == NULL || _t == NULL) {
+		if (_v == NULL || _y == NULL || _t == NULL) {
 			RLC_THROW(ERR_NO_MEMORY);
 		}
 		for (i = 0; i < d; i++) {
+			bn_new(_v[i]);
 			bn_new(_y[i]);
 			ec_new(_t[i]);
 		}
@@ -347,14 +347,19 @@ int cp_etrs_uni(int thres, bn_t *td, bn_t *y, int max, etrs_t *p, int *size,
 
 		ec_set_infty(p[*size]->h);
 		for(i = 0; i < d; i++) {
+			for(int j = 0; j < d; j++) {
+				bn_set_dig(_v[j], 1);
+				if (j != i) {
+					bn_sub(_v[j], _y[j], _y[i]);
+					bn_mod(_v[j], _v[j], n);
+				}
+			}
+			bn_mod_inv_sim(_v, _v, n, d);
 			bn_set_dig(l, 1);
 			for(int j = 0; j < d; j++) {
 				if (j != i) {
-					bn_sub(v, _y[j], _y[i]);
-					bn_mod(v, v, n);
-					bn_mod_inv(v, v, n);
 					bn_sub(u, _y[j], p[*size]->y);
-					bn_mul(u, u, v);
+					bn_mul(u, u, _v[j]);
 					bn_mod(u, u, n);
 					bn_mul(l, l, u);
 					bn_mod(l, l, n);
@@ -368,7 +373,7 @@ int cp_etrs_uni(int thres, bn_t *td, bn_t *y, int max, etrs_t *p, int *size,
 		ec_copy(p[*size]->pk, pk);
 		ec_copy(w[0], p[*size]->h);
 		ec_copy(w[1], p[*size]->pk);
-		cp_sokor_sig(p[*size]->c, p[*size]->r, msg, len, w, sk, 0);
+		cp_sokor_sig(p[*size]->c, p[*size]->r, msg, len, w, NULL, sk, 0);
 		(*size)++;
 		result = RLC_OK;
 	}
@@ -384,9 +389,11 @@ int cp_etrs_uni(int thres, bn_t *td, bn_t *y, int max, etrs_t *p, int *size,
 		ec_free(w[0]);
 		ec_free(w[1]);
 		for (int i = 0; i < d; i++) {
+			bn_free(_v[i]);
 			bn_free(_y[i]);
 			ec_free(_t[i]);
 		}
+		RLC_FREE(_v);
 		RLC_FREE(_y);
 		RLC_FREE(_t);
 	}
