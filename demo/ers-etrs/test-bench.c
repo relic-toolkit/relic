@@ -147,7 +147,15 @@ static void etrs(void) {
 	cp_ers_gen(pp);
 
 	util_print("{");
-	for (int j = 1; j <= MAX_KEYS; j = j << 1) {
+	bench_reset();
+	for (int i = 0; i < BENCH; i++)	{
+		BENCH_ADD(cp_etrs_sig(td, y, 1, ring[0], m, 5, sk[0], pk[0], pp));
+	}
+	bench_compute(BENCH * BENCH);
+	util_print("\"1\": {\"time\": %lf, \"size\": null}", bench_total()/(double)1000000);
+	assert(cp_etrs_ver(1, td, y, 1, ring, 1, m, 5, pp));
+
+	for (int j = 2; j <= MAX_KEYS; j = j << 1) {
 		bench_reset();
 		bench_before();
 		for (int i = 0; i < BENCH; i++)	{
@@ -155,12 +163,13 @@ static void etrs(void) {
 		}
 		bench_after();
 		bench_compute(BENCH);
-		util_print("\"%d\": {\"time\": %lf, \"size\": null}, ", j, bench_total()/(double)1000000);
+		util_print(", \"%d\": {\"time\": %lf, \"size\": null}", j, bench_total()/(double)1000000);
 		assert(cp_etrs_ver(1, td, y, j, ring, 1, m, 5, pp));
 	}
 	util_print("}\n\n");
 
 	for (int l = 2; l <= 8; l = l << 1) {
+		util_print("{");
 		for (int j = l; j <= MAX_KEYS; j = j << 1) {
 			bench_reset();
 			bench_before();
@@ -171,13 +180,17 @@ static void etrs(void) {
 			}
 			bench_after();
 			bench_compute(1);
-			util_print("\"%d\": {\"time\": %lf, \"size\": null}, ", j, bench_total()/(double)1000000);
+			util_print("\"%d\": {\"time\": %lf, \"size\": null}", j, bench_total()/(double)1000000);
+			if (j < MAX_KEYS) {
+				util_print(", ");
+			}
 			assert(cp_etrs_ver(1, td+size-1, y+size-1, j-size+1, ring, size, m, 5, pp));
 		}
 		util_print("}\n\n");
 	}
 
 	for (int l = 1; l <= 8; l = l << 1) {
+		util_print("{");
 		for (int j = l; j <= MAX_KEYS; j = j << 1) {
 			size = 1;
 			cp_etrs_sig(td, y, j, ring[0], m, 5, sk[0], pk[0], pp);
@@ -191,7 +204,10 @@ static void etrs(void) {
 			}
 			bench_after();
 			bench_compute(BENCH);
-			util_print(", \"%d\": {\"time\": %lf, \"size\": null}", j, bench_total()/(double)1000000);
+			util_print("\"%d\": {\"time\": %lf, \"size\": null}", j, bench_total()/(double)1000000);
+			if (j < MAX_KEYS) {
+				util_print(", ");
+			}
 		}
 		util_print("}\n\n");
 	}
@@ -215,8 +231,8 @@ int main(void) {
 	conf_print();
 
 	if (ec_param_set_any() == RLC_OK) {
-		util_banner("ERS module", 1);
-		ers();
+		//util_banner("ERS module", 1);
+		//ers();
 		util_banner("ETRS module", 1);
 		etrs();
 	} else {
