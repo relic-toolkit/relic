@@ -141,7 +141,7 @@ static void etrs(void) {
 		ec_new(pk[i]);
 		ers_null(ring[i]);
 		ers_new(ring[i]);
-		cp_etrs_gen_key(sk[i], pk[i]);
+		cp_ers_gen_key(sk[i], pk[i]);
 	}
 
 	cp_ers_gen(pp);
