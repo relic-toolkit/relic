@@ -213,11 +213,10 @@ int cp_sokor_sig(bn_t c[2], bn_t s[2], uint8_t *msg, int len, ec_t y[2],
 			}
 		}
 
+		ec_curve_get_gen(u);
 		for (int i = 0; i < 2; i++) {
 			if (g != NULL) {
 				ec_copy(u, g[i]);
-			} else {
-				ec_curve_get_gen(u);
 			}
 			l = ec_size_bin(u, 1);
 			ec_write_bin(buf, l, u, 1);

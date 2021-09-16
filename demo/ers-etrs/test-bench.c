@@ -215,8 +215,10 @@ int main(void) {
 	conf_print();
 
 	if (ec_param_set_any() == RLC_OK) {
-		etrs();
+		util_banner("ERS module", 1);
 		ers();
+		util_banner("ETRS module", 1);
+		etrs();
 	} else {
 		RLC_THROW(ERR_NO_CURVE);
 	}
