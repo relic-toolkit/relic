@@ -117,6 +117,93 @@ static void ers(void) {
 	}
 }
 
+static void smlers(void) {
+	int size;
+	ec_t pp, pk[MAX_KEYS], *ptr;
+	bn_t sk[MAX_KEYS], td[MAX_KEYS], y[MAX_KEYS];
+	smlers_t ring[MAX_KEYS];
+	uint8_t m[5] = { 0, 1, 2, 3, 4 };
+
+	ec_null(pp);
+	ec_new(pp);
+	for (int i = 0; i < MAX_KEYS; i++) {
+		bn_null(y[i]);
+		bn_new(y[i]);
+		bn_null(td[i]);
+		bn_new(td[i]);
+		bn_null(sk[i]);
+		bn_new(sk[i]);
+		ec_null(pk[i]);
+		ec_new(pk[i]);
+		smlers_null(ring[i]);
+		smlers_new(ring[i]);
+		cp_ers_gen_key(sk[i], pk[i]);
+	}
+
+	cp_ers_gen(pp);
+
+	for (int l = 1; l <= 8; l = l << 1) {
+		util_print("{");
+		for (int j = l; j <= MAX_KEYS; j = j << 1) {
+			bench_reset();
+			bench_before();
+			size = 1;
+			for (int k = 0; k < l; k++) {
+				cp_smlers_sig(td[0], ring[0], m, 5, sk[0], pk[0], pp);
+			}
+			for (int k = l; k < j; k++) {
+				cp_smlers_ext(td[0], ring, &size, m, 5, pk[size], pp);
+			}
+			bench_after();
+			bench_compute(1);
+			util_print("\"%d\": {\"time\": %lf, \"size\": null}", j, bench_total()/(double)1000000);
+			if (j < MAX_KEYS) {
+				util_print(", ");
+			}
+			for (int k = 0; k < l; k++) {
+				assert(cp_smlers_ver(td[0], ring, size, m, 5, pp));
+			}
+		}
+		util_print("}\n\n");
+	}
+
+	for (int l = 1; l <= 8; l = l << 1) {
+		util_print("{");
+		for (int j = l; j <= MAX_KEYS; j = j << 1) {
+			size = 1;
+			for (int k = 0; k < l; k++) {
+				cp_smlers_sig(td[0], ring[0], m, 5, sk[0], pk[0], pp);
+			}
+			for (int k = l; k < l; k++) {
+				cp_smlers_ext(td[0], ring, &size, m, 5, pk[size], pp);
+			}
+			bench_reset();
+			bench_before();
+			for (int i = 0; i < BENCH; i++)	{
+				for (int k = 0; k < j; k++) {
+					cp_smlers_ver(td[0], ring, size, m, 5, pp);
+				}
+			}
+			bench_after();
+			bench_compute(BENCH);
+			util_print("\"%d\": {\"time\": %lf, \"size\": null}", j, bench_total()/(double)1000000);
+			if (j < MAX_KEYS) {
+				util_print(", ");
+			}
+		}
+		util_print("}\n\n");
+	}
+
+	ec_free(pp);
+	for (int i = 0; i < MAX_KEYS; i++) {
+		bn_free(td[i]);
+		bn_free(y[i]);
+		bn_free(sk[i]);
+		ec_free(pk[i]);
+		smlers_free(ring[i]);
+	}
+}
+
 #undef MAX_KEYS
 #define MAX_KEYS	2048
 #define MIN_KEYS	64
@@ -233,6 +320,8 @@ int main(void) {
 	if (ec_param_set_any() == RLC_OK) {
 		//util_banner("ERS module", 1);
 		//ers();
+		util_banner("SMLERS module", 1);
+		smlers();
 		util_banner("ETRS module", 1);
 		etrs();
 	} else {
