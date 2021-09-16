@@ -911,9 +911,9 @@ static void arith(void) {
 			bn_rand(a, RLC_POS, RLC_FP_BITS);
 			ep_curve_get_v1(v1);
 			ep_curve_get_v2(v2);
-			ep_curve_get_ord(e);
-			bn_rand_mod(a, e);
-			BENCH_ADD(bn_rec_glv(b, c, a, e, (const bn_t *)v1,
+			ep_curve_get_ord(d[1]);
+			bn_rand_mod(a, d[1]);
+			BENCH_ADD(bn_rec_glv(b, c, a, d[1], (const bn_t *)v1,
 							(const bn_t *)v2));
 		}
 		BENCH_END;
