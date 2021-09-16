@@ -858,8 +858,8 @@ static void arith(void) {
 		BENCH_RUN("bn_rec_tnaf") {
 			int8_t tnaf[RLC_FB_BITS + 8];
 			int len = RLC_BN_BITS + 1;
-			eb_curve_get_ord(e);
-			bn_rand_mod(a, e);
+			eb_curve_get_ord(d[1]);
+			bn_rand_mod(a, d[1]);
 			if (eb_curve_opt_a() == RLC_ZERO) {
 				BENCH_ADD((len = RLC_FB_BITS + 8, bn_rec_tnaf(tnaf, &len, a, -1, RLC_FB_BITS, 4)));
 			} else {
@@ -870,8 +870,8 @@ static void arith(void) {
 
 		BENCH_RUN("bn_rec_rtnaf") {
 			int8_t tnaf[RLC_FB_BITS + 8];
-			eb_curve_get_ord(e);
-			bn_rand_mod(a, e);
+			eb_curve_get_ord(d[1]);
+			bn_rand_mod(a, d[1]);
 			if (eb_curve_opt_a() == RLC_ZERO) {
 				BENCH_ADD((len = RLC_FB_BITS + 8, bn_rec_rtnaf(tnaf, &len, a, -1, RLC_FB_BITS, 4)));
 			} else {
