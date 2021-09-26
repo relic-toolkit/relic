@@ -231,6 +231,7 @@
 #undef bn_div_dig
 #undef bn_div_rem_dig
 #undef bn_mod_inv
+#undef bn_mod_inv_sim
 #undef bn_mod_2b
 #undef bn_mod_dig
 #undef bn_mod_basic
@@ -335,6 +336,7 @@
 #define bn_div_dig 	RLC_PREFIX(bn_div_dig)
 #define bn_div_rem_dig 	RLC_PREFIX(bn_div_rem_dig)
 #define bn_mod_inv 	RLC_PREFIX(bn_mod_inv)
+#define bn_mod_inv_sim 	RLC_PREFIX(bn_mod_inv_sim)
 #define bn_mod_2b 	RLC_PREFIX(bn_mod_2b)
 #define bn_mod_dig 	RLC_PREFIX(bn_mod_dig)
 #define bn_mod_basic 	RLC_PREFIX(bn_mod_basic)
@@ -2664,8 +2666,9 @@
 #undef cp_ers_sig
 #undef cp_ers_ver
 #undef cp_ers_ext
-#undef cp_etrs_gen
-#undef cp_etrs_gen_key
+#undef cp_smlers_sig
+#undef cp_smlers_ver
+#undef cp_smlers_ext
 #undef cp_etrs_sig
 #undef cp_etrs_ver
 #undef cp_etrs_ext
@@ -2796,8 +2799,9 @@
 #define cp_ers_sig 	RLC_PREFIX(cp_ers_sig)
 #define cp_ers_ver 	RLC_PREFIX(cp_ers_ver)
 #define cp_ers_ext 	RLC_PREFIX(cp_ers_ext)
-#define cp_etrs_gen 	RLC_PREFIX(cp_etrs_gen)
-#define cp_etrs_gen_key 	RLC_PREFIX(cp_etrs_gen_key)
+#define cp_smlers_sig 	RLC_PREFIX(cp_smlers_sig)
+#define cp_smlers_ver 	RLC_PREFIX(cp_smlers_ver)
+#define cp_smlers_ext 	RLC_PREFIX(cp_smlers_ext)
 #define cp_etrs_sig 	RLC_PREFIX(cp_etrs_sig)
 #define cp_etrs_ver 	RLC_PREFIX(cp_etrs_ver)
 #define cp_etrs_ext 	RLC_PREFIX(cp_etrs_ext)
