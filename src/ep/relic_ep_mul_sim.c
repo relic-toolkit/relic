@@ -264,7 +264,7 @@ static void ep_mul_sim_endom(ep_t r, const ep_t p, const bn_t k, const ep_t q,
  */
 void ep_mul_sim_lot_endom(ep_t r, const ep_t p[], const bn_t k[], int n) {
 	const int len = RLC_FP_BITS + 1;
-	int i, j, m, l, _l[2];
+	int i, j, m, l, _l[2], sk;
 	bn_t _k[2], q, v1[3], v2[3];
 	int8_t ptr, *naf = RLC_ALLOCA(int8_t, 2 * n * len);
 
@@ -301,8 +301,10 @@ void ep_mul_sim_lot_endom(ep_t r, const ep_t p[], const bn_t k[], int n) {
 			for (i = 0; i < n; i++) {
 				ep_norm(_p[2*i], p[i]);
 				ep_psi(_p[2*i + 1], _p[2*i]);
-				bn_rec_glv(_k[0], _k[1], k[i], q, (const bn_t *)v1, (const bn_t *)v2);
-				if (bn_sign(k[i]) == RLC_NEG) {
+				bn_mod(_k[0], k[i], q);
+				sk = bn_sign(_k[0]);
+				bn_rec_glv(_k[0], _k[1], _k[0], q, (const bn_t *)v1, (const bn_t *)v2);
+				if (sk == RLC_NEG) {
 					bn_neg(_k[0], _k[0]);
 					bn_neg(_k[1], _k[1]);
 				}
@@ -386,8 +388,10 @@ void ep_mul_sim_lot_endom(ep_t r, const ep_t p[], const bn_t k[], int n) {
 			ep_curve_get_v1(v1);
 			ep_curve_get_v2(v2);
 			for (i = 0; i < n; i++) {
-				bn_rec_glv(_k[0], _k[1], k[i], q, (const bn_t *)v1, (const bn_t *)v2);
-				if (bn_sign(k[i]) == RLC_NEG) {
+				bn_mod(_k[0], k[i], q);
+				sk = bn_sign(_k[0]);
+				bn_rec_glv(_k[0], _k[1], _k[0], q, (const bn_t *)v1, (const bn_t *)v2);
+				if (sk == RLC_NEG) {
 					bn_neg(_k[0], _k[0]);
 					bn_neg(_k[1], _k[1]);
 				}
@@ -712,14 +716,8 @@ void ep_mul_sim_trick(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 		}
 
 		ep_curve_get_ord(n);
-		bn_copy(_k, k);
-		if (bn_cmp_abs(_k, n) == RLC_GT) {
-			bn_mod(_k, _k, n);
-		}
-		bn_copy(_m, m);
-		if (bn_cmp_abs(_m, n) == RLC_GT) {
-			bn_mod(_m, _m, n);
-		}
+		bn_mod(_k, k, n);
+		bn_mod(_m, m, n);
 
 		ep_set_infty(t0[0]);
 		ep_copy(t0[1], p);
@@ -812,14 +810,8 @@ void ep_mul_sim_inter(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 
 		/* Handle this here to reduce complexity of static functions. */
 		ep_curve_get_ord(n);
-		bn_copy(_k, k);
-		if (bn_cmp_abs(_k, n) == RLC_GT) {
-			bn_mod(_k, _k, n);
-		}
-		bn_copy(_m, m);
-		if (bn_cmp_abs(_m, n) == RLC_GT) {
-			bn_mod(_m, _m, n);
-		}
+		bn_mod(_k, k, n);
+		bn_mod(_m, m, n);
 
 #if defined(EP_ENDOM)
 		if (ep_curve_is_endom()) {
@@ -878,14 +870,8 @@ void ep_mul_sim_joint(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 		}
 
 		ep_curve_get_ord(n);
-		bn_copy(_k, k);
-		if (bn_cmp_abs(_k, n) == RLC_GT) {
-			bn_mod(_k, _k, n);
-		}
-		bn_copy(_m, m);
-		if (bn_cmp_abs(_m, n) == RLC_GT) {
-			bn_mod(_m, _m, n);
-		}
+		bn_mod(_k, k, n);
+		bn_mod(_m, m, n);
 
 		ep_set_infty(t[0]);
 		ep_copy(t[1], q);
@@ -970,14 +956,8 @@ void ep_mul_sim_gen(ep_t r, const bn_t k, const ep_t q, const bn_t m) {
 		ep_curve_get_gen(g);
 		ep_curve_get_ord(n);
 
-		bn_copy(_k, k);
-		if (bn_cmp_abs(_k, n) == RLC_GT) {
-			bn_mod(_k, _k, n);
-		}
-		bn_copy(_m, m);
-		if (bn_cmp_abs(_m, n) == RLC_GT) {
-			bn_mod(_m, _m, n);
-		}
+		bn_mod(_k, k, n);
+		bn_mod(_m, m, n);
 
 #if defined(EP_ENDOM)
 #if EP_SIM == INTER && EP_FIX == LWNAF && defined(EP_PRECO)

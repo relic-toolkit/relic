@@ -72,11 +72,7 @@ static void ep_mul_glv_imp(ep_t r, const ep_t p, const bn_t k) {
 		ep_curve_get_v1(v1);
 		ep_curve_get_v2(v2);
 
-		bn_copy(_k, k);
-		if (bn_cmp_abs(_k, n) == RLC_GT) {
-			bn_mod(_k, _k, n);
-		}
-
+		bn_mod(_k, k, n);
 		bn_rec_glv(k0, k1, _k, n, (const bn_t *)v1, (const bn_t *)v2);
 		s0 = bn_sign(k0);
 		s1 = bn_sign(k1);
@@ -176,10 +172,7 @@ static void ep_mul_naf_imp(ep_t r, const ep_t p, const bn_t k) {
 		}
 
 		ep_curve_get_ord(n);
-		bn_copy(_k, k);
-		if (bn_cmp_abs(_k, n) == RLC_GT) {
-			bn_mod(_k, _k, n);
-		}
+		bn_mod(_k, k, n);
 
 		/* Compute the precomputation table. */
 		ep_tab(t, p, EP_WIDTH);
@@ -266,9 +259,7 @@ static void ep_mul_reg_glv(ep_t r, const ep_t p, const bn_t k) {
 		ep_curve_get_v2(v2);
 
 		bn_abs(_k, k);
-		if (bn_cmp(_k, n) == RLC_GT) {
-			bn_mod(_k, _k, n);
-		}
+		bn_mod(_k, _k, n);
 
 		bn_rec_glv(k0, k1, _k, n, (const bn_t *)v1, (const bn_t *)v2);
 		s0 = bn_sign(k0);
@@ -544,10 +535,7 @@ void ep_mul_slide(ep_t r, const ep_t p, const bn_t k) {
 #endif
 
 		ep_curve_get_ord(n);
-		bn_copy(_k, k);
-		if (bn_cmp_abs(_k, n) == RLC_GT) {
-			bn_mod(_k, _k, n);
-		}
+		bn_mod(_k, k, n);
 
 		/* Create table. */
 		for (i = 1; i < (1 << (EP_WIDTH - 1)); i++) {
@@ -620,11 +608,7 @@ void ep_mul_monty(ep_t r, const ep_t p, const bn_t k) {
 		ep_curve_get_ord(n);
 		bits = bn_bits(n);
 
-		bn_copy(_k, k);
-		if (bn_cmp_abs(_k, n) == RLC_GT) {
-			bn_mod(_k, _k, n);
-		}
-
+		bn_mod(_k, k, n);
 		bn_abs(l, _k);
 		bn_add(l, l, n);
 		bn_add(n, l, n);
