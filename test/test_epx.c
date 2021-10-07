@@ -449,6 +449,11 @@ static int multiplication2(void) {
 			ep2_mul_gen(r, k);
 			ep2_neg(r, r);
 			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
+			bn_rand_mod(k, n);
+			ep2_mul_gen(q, k);
+			bn_add(k, k, n);
+			ep2_mul_gen(r, k);
+			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 
 #if EP_MUL == BASIC || !defined(STRIP)
@@ -469,6 +474,11 @@ static int multiplication2(void) {
 			bn_neg(k, k);
 			ep2_mul_basic(r, p, k);
 			ep2_neg(r, r);
+			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
+			bn_rand_mod(k, n);
+			ep2_mul_basic(q, p, k);
+			bn_add(k, k, n);
+			ep2_mul_basic(r, p, k);
 			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 #endif
@@ -491,6 +501,11 @@ static int multiplication2(void) {
 			bn_neg(k, k);
 			ep2_mul_slide(r, p, k);
 			ep2_neg(r, r);
+			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
+			bn_rand_mod(k, n);
+			ep2_mul_slide(q, p, k);
+			bn_add(k, k, n);
+			ep2_mul_slide(r, p, k);
 			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
 		}
 		TEST_END;
@@ -515,6 +530,11 @@ static int multiplication2(void) {
 			ep2_mul_monty(r, p, k);
 			ep2_neg(r, r);
 			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
+			bn_rand_mod(k, n);
+			ep2_mul_monty(q, p, k);
+			bn_add(k, k, n);
+			ep2_mul_monty(r, p, k);
+			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
 		}
 		TEST_END;
 #endif
@@ -537,6 +557,11 @@ static int multiplication2(void) {
 			bn_neg(k, k);
 			ep2_mul_lwnaf(r, p, k);
 			ep2_neg(r, r);
+			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
+			bn_rand_mod(k, n);
+			ep2_mul_lwnaf(q, p, k);
+			bn_add(k, k, n);
+			ep2_mul_lwnaf(r, p, k);
 			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
 		}
 		TEST_END;
@@ -614,6 +639,11 @@ static int fixed2(void) {
 			ep2_mul_fix(r, t, k);
 			ep2_neg(r, r);
 			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
+			bn_rand_mod(k, n);
+			ep2_mul_fix(q, t, k);
+			bn_add(k, k, n);
+			ep2_mul_fix(r, t, k);
+			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 		for (int i = 0; i < RLC_EP_TABLE; i++) {
 			ep2_free(t[i]);
@@ -639,6 +669,11 @@ static int fixed2(void) {
 			bn_neg(k, k);
 			ep2_mul_fix_basic(r, t, k);
 			ep2_neg(r, r);
+			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
+			bn_rand_mod(k, n);
+			ep2_mul_fix_basic(q, t, k);
+			bn_add(k, k, n);
+			ep2_mul_fix_basic(r, t, k);
 			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 		for (int i = 0; i < RLC_EP_TABLE_BASIC; i++) {
@@ -667,6 +702,11 @@ static int fixed2(void) {
 			ep2_mul_fix_combs(r, t, k);
 			ep2_neg(r, r);
 			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
+			bn_rand_mod(k, n);
+			ep2_mul_fix_combs(q, t, k);
+			bn_add(k, k, n);
+			ep2_mul_fix_combs(r, t, k);
+			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 		for (int i = 0; i < RLC_EP_TABLE_COMBS; i++) {
 			ep2_free(t[i]);
@@ -694,6 +734,11 @@ static int fixed2(void) {
 			ep2_mul_fix_combd(r, t, k);
 			ep2_neg(r, r);
 			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
+			bn_rand_mod(k, n);
+			ep2_mul_fix_combd(q, t, k);
+			bn_add(k, k, n);
+			ep2_mul_fix_combd(r, t, k);
+			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 		for (int i = 0; i < RLC_EP_TABLE_COMBD; i++) {
 			ep2_free(t[i]);
@@ -720,6 +765,11 @@ static int fixed2(void) {
 			bn_neg(k, k);
 			ep2_mul_fix_lwnaf(r, t, k);
 			ep2_neg(r, r);
+			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
+			bn_rand_mod(k, n);
+			ep2_mul_fix_lwnaf(q, t, k);
+			bn_add(k, k, n);
+			ep2_mul_fix_lwnaf(r, t, k);
 			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 		for (int i = 0; i < RLC_EP_TABLE_LWNAF; i++) {
@@ -984,16 +1034,16 @@ static int simultaneous2(void) {
 			ep2_sub(r, r, p[16]);
 			bn_zero(k[0]);
 			ep2_mul_sim_lot(p[16], p, k, 16);
-			//TEST_ASSERT(ep2_cmp(p[16], r) == RLC_EQ, end);
+			TEST_ASSERT(ep2_cmp(p[16], r) == RLC_EQ, end);
 			ep2_mul(p[16], p[1], k[1]);
 			ep2_sub(r, r, p[16]);
 			ep2_sub(r, r, p[16]);
 			bn_neg(k[1], k[1]);
 			ep2_mul_sim_lot(p[16], p, k, 16);
-			//TEST_ASSERT(ep2_cmp(p[16], r) == RLC_EQ, end);
+			TEST_ASSERT(ep2_cmp(p[16], r) == RLC_EQ, end);
 			bn_add(k[2], k[2], n);
 			ep2_mul_sim_lot(p[16], p, k, 16);
-			//TEST_ASSERT(ep2_cmp(p[16], r) == RLC_EQ, end);
+			TEST_ASSERT(ep2_cmp(p[16], r) == RLC_EQ, end);
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {

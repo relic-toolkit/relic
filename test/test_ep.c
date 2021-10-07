@@ -832,6 +832,11 @@ static int fixed(void) {
 			ep_mul_fix(r, (const ep_t *)t, k);
 			ep_neg(r, r);
 			TEST_ASSERT(ep_cmp(q, r) == RLC_EQ, end);
+			bn_rand_mod(k, n);
+			ep_mul_fix(q, (const ep_t *)t, k);
+			bn_add(k, k, n);
+			ep_mul_fix(r, (const ep_t *)t, k);
+			TEST_ASSERT(ep_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 		for (int i = 0; i < RLC_EP_TABLE; i++) {
 			ep_free(t[i]);
@@ -1030,9 +1035,6 @@ static int simultaneous(void) {
 			ep_mul(p[1], p[1], k[1]);
 			ep_add(p[1], p[1], p[0]);
 			TEST_ASSERT(ep_cmp(p[1], r) == RLC_EQ, end);
-			ep_mul_sim(r, p[0], k[0], p[1], k[1]);
-			ep_mul_sim_lot(p[1], p, k, 2);
-			TEST_ASSERT(ep_cmp(p[1], r) == RLC_EQ, end);
 			bn_rand_mod(k[0], n);
 			bn_rand_mod(k[1], n);
 			bn_add(k[0], k[0], n);
@@ -1041,6 +1043,9 @@ static int simultaneous(void) {
 			ep_mul(p[0], p[0], k[0]);
 			ep_mul(p[1], p[1], k[1]);
 			ep_add(p[1], p[1], p[0]);
+			TEST_ASSERT(ep_cmp(p[1], r) == RLC_EQ, end);
+			ep_mul_sim(r, p[0], k[0], p[1], k[1]);
+			ep_mul_sim_lot(p[1], p, k, 2);
 			TEST_ASSERT(ep_cmp(p[1], r) == RLC_EQ, end);
 		} TEST_END;
 
