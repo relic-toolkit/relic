@@ -874,7 +874,7 @@ void bn_rec_glv(bn_t k0, bn_t k1, const bn_t k, const bn_t n, const bn_t *v1,
 
 void bn_rec_frb(bn_t *ki, int sub, const bn_t k, const bn_t x, const bn_t n,
 		int bls) {
-	int i, l;
+	int i, l, sk, sx;
 	bn_t u[4], v[4];
 
 	RLC_TRY {
@@ -889,13 +889,16 @@ void bn_rec_frb(bn_t *ki, int sub, const bn_t k, const bn_t x, const bn_t n,
 			bn_abs(v[0], k);
 			bn_abs(u[0], x);
 
+			sk = bn_sign(k);
+			sx = bn_sign(x);
+
 			for (i = 0; i < sub; i++) {
 				bn_mod(ki[i], v[0], u[0]);
 				bn_div(v[0], v[0], u[0]);
-				if ((bn_sign(x) == RLC_NEG) && (i % 2 != 0)) {
+				if ((sx == RLC_NEG) && (i % 2 != 0)) {
 					bn_neg(ki[i], ki[i]);
 				}
-				if (bn_sign(k) == RLC_NEG) {
+				if (sk == RLC_NEG) {
 					bn_neg(ki[i], ki[i]);
 				}
 			}
