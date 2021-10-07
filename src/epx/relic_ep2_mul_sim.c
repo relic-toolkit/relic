@@ -545,7 +545,12 @@ void ep2_mul_sim_lot(ep2_t r, ep2_t p[], const bn_t k[], int n) {
 	const int len = RLC_FP_BITS + 1;
 	int i, j, m, l, _l[4];
 	bn_t _k[4], q, x;
-	int8_t *naf = RLC_ALLOCA(int8_t, 4 * n * len);
+	int8_t ptr, *naf = RLC_ALLOCA(int8_t, 4 * n * len);
+
+	if (n == 0) {
+		ep2_set_infty(r);
+		return;
+	}
 
 	bn_null(q);
 	bn_null(x);
@@ -622,7 +627,6 @@ void ep2_mul_sim_lot(ep2_t r, ep2_t p[], const bn_t k[], int n) {
 	} else {
 		const int w = RLC_MAX(2, util_bits_dig(n) - 2), c = (1 << (w - 2));
 		ep2_t s, t, u, v, *_p = RLC_ALLOCA(ep2_t, 4 * c);
-		int8_t ptr;
 
 		ep2_null(s);
 		ep2_null(t);
@@ -657,6 +661,11 @@ void ep2_mul_sim_lot(ep2_t r, ep2_t p[], const bn_t k[], int n) {
 				for (j = 0; j < 4; j++) {
 					_l[j] = len;
 					bn_rec_naf(&naf[(4*i + j)*len], &_l[j], _k[j], w);
+					if (bn_sign(_k[j]) == RLC_NEG) {
+						for (m = 0; m < _l[j]; m++) {
+							naf[(4*i + j)*len + m] = -naf[(4*i + j)*len + m];
+						}
+					}
 					l = RLC_MAX(l, _l[j]);
 				}
 			}
@@ -670,9 +679,6 @@ void ep2_mul_sim_lot(ep2_t r, ep2_t p[], const bn_t k[], int n) {
 							ep2_copy(t, p[j]);
 							if (ptr < 0) {
 								ptr = -ptr;
-								ep2_neg(t, t);
-							}
-							if (bn_sign(k[i]) == RLC_NEG) {
 								ep2_neg(t, t);
 							}
 							ep2_add(_p[m*c + (ptr >> 1)], _p[m*c + (ptr >> 1)], t);

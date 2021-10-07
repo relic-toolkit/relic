@@ -266,7 +266,7 @@ void ep_mul_sim_lot_endom(ep_t r, const ep_t p[], const bn_t k[], int n) {
 	const int len = RLC_FP_BITS + 1;
 	int i, j, m, l, _l[2];
 	bn_t _k[2], q, v1[3], v2[3];
-	int8_t *naf = RLC_ALLOCA(int8_t, 2 * n * len);
+	int8_t ptr, *naf = RLC_ALLOCA(int8_t, 2 * n * len);
 
 	bn_null(q);
 
@@ -350,7 +350,6 @@ void ep_mul_sim_lot_endom(ep_t r, const ep_t p[], const bn_t k[], int n) {
 	} else {
 		const int w = RLC_MAX(2, util_bits_dig(n) - 2), c = (1 << (w - 2));
 		ep_t s, t, u, v, *_p = RLC_ALLOCA(ep_t, 2 * c);
-		int8_t ptr, *sk = RLC_ALLOCA(int8_t, 2 * n);
 
 		ep_null(s);
 		ep_null(t);
@@ -455,7 +454,6 @@ void ep_mul_sim_lot_endom(ep_t r, const ep_t p[], const bn_t k[], int n) {
 					ep_free(_p[i*c + j]);
 				}
 			}
-			RLC_FREE(sk);
 			RLC_FREE(_p);
 			RLC_FREE(naf);
 			for (i = 0; i < 3; i++) {
@@ -599,7 +597,6 @@ void ep_mul_sim_lot_plain(ep_t r, const ep_t p[], const bn_t k[], int n) {
 			ep_null(_p[i]);
 			ep_new(_p[i]);
 		}
-
 
 		for (i = 0; i < n; i++) {
 			_l[i] = l;
@@ -1053,6 +1050,11 @@ void ep_mul_sim_dig(ep_t r, const ep_t p[], const dig_t k[], int n) {
 
 void ep_mul_sim_lot(ep_t r, const ep_t p[], const bn_t k[], int n) {
 	int flag = 0;
+
+	if (n == 0) {
+		ep_set_infty(r);
+		return;
+	}
 
 #if defined(EP_ENDOM)
 	if (ep_curve_is_endom()) {

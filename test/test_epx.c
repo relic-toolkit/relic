@@ -743,23 +743,20 @@ static int fixed2(void) {
 
 static int simultaneous2(void) {
 	int code = RLC_ERR;
-	bn_t n, k[2];
-	ep2_t p[2], r;
+	bn_t n, k[17];
+	ep2_t p[17], r;
 
 	bn_null(n);
-	bn_null(k[0]);
-	bn_null(k[1]);
-	ep2_null(p[0]);
-	ep2_null(p[1]);
 	ep2_null(r);
-
 	RLC_TRY {
 		bn_new(n);
-		bn_new(k[0]);
-		bn_new(k[1]);
-		ep2_new(p[0]);
-		ep2_new(p[1]);
 		ep2_new(r);
+		for (int i = 0; i <= 16; i++) {
+			bn_null(k[i]);
+			bn_new(k[i]);
+			ep2_null(p[i]);
+			ep2_new(p[i]);
+		}
 
 		ep2_curve_get_gen(p[0]);
 		ep2_curve_get_ord(n);
@@ -794,9 +791,6 @@ static int simultaneous2(void) {
 			ep2_mul(p[1], p[1], k[1]);
 			ep2_add(p[1], p[1], p[0]);
 			TEST_ASSERT(ep2_cmp(p[1], r) == RLC_EQ, end);
-			ep2_mul_sim(r, p[0], k[0], p[1], k[1]);
-			ep2_mul_sim_lot(p[1], p, k, 2);
-			TEST_ASSERT(ep2_cmp(p[1], r) == RLC_EQ, end);
 			bn_rand_mod(k[0], n);
 			bn_rand_mod(k[1], n);
 			bn_add(k[0], k[0], n);
@@ -805,6 +799,9 @@ static int simultaneous2(void) {
 			ep2_mul(p[0], p[0], k[0]);
 			ep2_mul(p[1], p[1], k[1]);
 			ep2_add(p[1], p[1], p[0]);
+			TEST_ASSERT(ep2_cmp(p[1], r) == RLC_EQ, end);
+			ep2_mul_sim(r, p[0], k[0], p[1], k[1]);
+			ep2_mul_sim_lot(p[1], p, k, 2);
 			TEST_ASSERT(ep2_cmp(p[1], r) == RLC_EQ, end);
 		} TEST_END;
 
@@ -972,6 +969,32 @@ static int simultaneous2(void) {
 			ep2_mul_sim(p[1], p[0], k[0], p[1], k[1]);
 			TEST_ASSERT(ep2_cmp(p[1], r) == RLC_EQ, end);
 		} TEST_END;
+
+		TEST_CASE("many simultaneous point multiplications are correct") {
+			ep2_set_infty(r);
+			for (int j = 0; j < 16; j++) {
+				bn_rand_mod(k[j], n);
+				ep2_rand(p[j]);
+				ep2_mul(p[16], p[j], k[j]);
+				ep2_add(r, r, p[16]);
+				ep2_mul_sim_lot(p[16], p, k, j + 1);
+				TEST_ASSERT(ep2_cmp(p[16], r) == RLC_EQ, end);
+			}
+			ep2_mul(p[16], p[0], k[0]);
+			ep2_sub(r, r, p[16]);
+			bn_zero(k[0]);
+			ep2_mul_sim_lot(p[16], p, k, 16);
+			//TEST_ASSERT(ep2_cmp(p[16], r) == RLC_EQ, end);
+			ep2_mul(p[16], p[1], k[1]);
+			ep2_sub(r, r, p[16]);
+			ep2_sub(r, r, p[16]);
+			bn_neg(k[1], k[1]);
+			ep2_mul_sim_lot(p[16], p, k, 16);
+			//TEST_ASSERT(ep2_cmp(p[16], r) == RLC_EQ, end);
+			bn_add(k[2], k[2], n);
+			ep2_mul_sim_lot(p[16], p, k, 16);
+			//TEST_ASSERT(ep2_cmp(p[16], r) == RLC_EQ, end);
+		} TEST_END;
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -980,11 +1003,11 @@ static int simultaneous2(void) {
 	code = RLC_OK;
   end:
 	bn_free(n);
-	bn_free(k[0]);
-	bn_free(k[1]);
-	ep2_free(p[0]);
-	ep2_free(p[1]);
 	ep2_free(r);
+	for (int i = 0; i <= 16; i++) {
+		bn_free(k[i]);
+		ep2_free(p[i]);
+	}
 	return code;
 }
 
