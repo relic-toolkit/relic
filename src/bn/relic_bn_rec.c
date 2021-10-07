@@ -938,7 +938,6 @@ void bn_rec_frb(bn_t *ki, int sub, const bn_t k, const bn_t x, const bn_t n,
 				if (bn_sign(v[i]) == RLC_NEG) {
 					bn_add_dig(v[i], v[i], 1);
 				}
-				bn_zero(ki[i]);
 			}
 
 			/* u0 = x + 1, u1 = 2x + 1, u2 = 2x, u3 = x - 1. */
@@ -947,6 +946,9 @@ void bn_rec_frb(bn_t *ki, int sub, const bn_t k, const bn_t x, const bn_t n,
 			bn_sub_dig(u[3], x, 1);
 			bn_add_dig(u[0], x, 1);
 			bn_copy(ki[0], k);
+			bn_zero(ki[1]);
+			bn_zero(ki[2]);
+			bn_zero(ki[3]);
 			for (i = 0; i < 4; i++) {
 				bn_mul(u[i], u[i], v[i]);
 				bn_mod(u[i], u[i], n);

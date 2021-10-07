@@ -311,7 +311,7 @@ void ep2_mul_pre_combd(ep2_t *t, ep2_t p) {
 
 void ep2_mul_fix_combd(ep2_t r, ep2_t *t, bn_t k) {
 	int i, j, d, e, w0, w1, n0, p0, p1;
-	bn_t n;
+	bn_t n, _k;
 
 	if (bn_is_zero(k)) {
 		ep2_set_infty(r);
@@ -319,6 +319,7 @@ void ep2_mul_fix_combd(ep2_t r, ep2_t *t, bn_t k) {
 	}
 
 	bn_null(n);
+	bn_null(_k);
 
 	RLC_TRY {
 		bn_new(n);
@@ -329,7 +330,8 @@ void ep2_mul_fix_combd(ep2_t r, ep2_t *t, bn_t k) {
 		e = (d % 2 == 0 ? (d / 2) : (d / 2) + 1);
 
 		ep2_set_infty(r);
-		n0 = bn_bits(k);
+		bn_mod(_k, k, n);
+		n0 = bn_bits(_k);
 
 		p1 = (e - 1) + (EP_DEPTH - 1) * d;
 		for (i = e - 1; i >= 0; i--) {
@@ -339,7 +341,7 @@ void ep2_mul_fix_combd(ep2_t r, ep2_t *t, bn_t k) {
 			p0 = p1;
 			for (j = EP_DEPTH - 1; j >= 0; j--, p0 -= d) {
 				w0 = w0 << 1;
-				if (p0 < n0 && bn_get_bit(k, p0)) {
+				if (p0 < n0 && bn_get_bit(_k, p0)) {
 					w0 = w0 | 1;
 				}
 			}
@@ -348,7 +350,7 @@ void ep2_mul_fix_combd(ep2_t r, ep2_t *t, bn_t k) {
 			p0 = p1-- + e;
 			for (j = EP_DEPTH - 1; j >= 0; j--, p0 -= d) {
 				w1 = w1 << 1;
-				if (i + e < d && p0 < n0 && bn_get_bit(k, p0)) {
+				if (i + e < d && p0 < n0 && bn_get_bit(_k, p0)) {
 					w1 = w1 | 1;
 				}
 			}
@@ -357,7 +359,7 @@ void ep2_mul_fix_combd(ep2_t r, ep2_t *t, bn_t k) {
 			ep2_add(r, r, t[(1 << EP_DEPTH) + w1]);
 		}
 		ep2_norm(r, r);
-		if (bn_sign(k) == RLC_NEG) {
+		if (bn_sign(_k) == RLC_NEG) {
 			ep2_neg(r, r);
 		}
 	}
@@ -366,6 +368,7 @@ void ep2_mul_fix_combd(ep2_t r, ep2_t *t, bn_t k) {
 	}
 	RLC_FINALLY {
 		bn_free(n);
+		bn_free(_k);
 	}
 }
 
