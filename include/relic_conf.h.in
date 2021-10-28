@@ -671,8 +671,8 @@
 #define DROID    5
 /** Arduino platform. */
 #define DUINO    6
-/** OpenBSD operating system. */
-#define OPENBSD  7
+/** NetBSD operating system. */
+#define NETBSD  7
 /** Detected operation system. */
 #cmakedefine OPSYS    @OPSYS@
 
