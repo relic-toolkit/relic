@@ -160,68 +160,47 @@ void fp_smb_kro(fp_t c, const fp_t a) {
 	}
 }
 
-/*
-# the fixpoint is when f = g (or g = 0, but this is an uninteresting corner case)
-# we also compute u,v,q and r here, since we wish to extend this to a jumping version
-def posdivsteps2k(n,k,delta,f,g):
-    assert (g != 0) & (f & 1)
-    u,v,q,r = 1,0,0,1
-    # while (f != g):
-    while n > 0:
-        if delta > 0 and g&1: delta,f,g,u,v,q,r,k = -delta,g,f,q,r,u,v, (k ^^ (g >> 1) & (f >> 1)) & 1
-        g0 = g&1
-        k = (k ^^ (f >> 1) ^^ (f >> 2)) & 1
-        delta,g,u,v,q,r = 1+delta,(g+g0*f)//2,2*u, 2*v, (q+g0*u),(r+g0*v)
-        n,g = n-1,ZZ(g)
-    M = MatrixSpace(ZZ,2)((u,v,q,r))
-    return delta,f,g,M,k
-	*/
+static int jumpdivstep(dis_t m[4], dig_t *k, dis_t delta, dig_t x, dig_t y, int s) {
+	dig_t ai = 1, bi = 0, ci = 0, di = 1, t, u = 0;
+	//printf("x=%lu y=%lu s=%d\n", x, y, s);
+	for (; s > 0; s--) {
+		dig_t yi = 0;
+		if ((delta >= 0) && (x & 1)) {
+			delta = -delta;
+			t = x;
+			x = y;
+			y = t;
+			x = (y - x) >> 1;
+			t = ai;
+			ai = ai - ci;
+			ci = 2 * t;
+			t = bi;
+			bi = bi - di;
+			di = 2 * t;
+		} else if (x & 1) {
+			delta++;
+			x = (x + y) >> 1;
+			ai = ai + ci;
+			bi = bi + di;
+			ci = 2 * ci;
+			di = 2 * di;
+		} else {
+			delta++;
+			x >>= 1;
+			ci = 2*ci;
+			di = 2*di;
+		}
 
-static int jumpdivstep(dis_t m[4],  dig_t *k, dis_t delta, dig_t f, dig_t g) {
-	dig_t t, u = 1, v = 0, q = 0, r = 1, c0, c1;
-
-	//while (f != g) {
-	for (int s = 62; s >= 0; s--) {
-		/* First handle the else part: if delta < 0, compute -(f,u,v). */
-		c0 = delta >> (RLC_DIG - 1);
-		c1 = -(g & 1);
-		c0 &= c1;
-
-		t = (f ^ g) & c0;
-		f ^= t;
-		g ^= t;
-		t = (u ^ q) & c0;
-		u ^= t;
-		q ^= t;
-		t = (v ^ r) & c0;
-		v ^= t;
-		r ^= t;
-		*k ^= ((g >> (dig_t)1) & (f >> (dig_t)1)) & c0;
-		*k ^= ((f >> (dig_t)1) & (f >> (dig_t)2)) & 1;
-
-		g += f & c1;
-		q += u & c1;
-		r += v & c1;
-		/* Now handle the 'if' part, so c0 will be (delta < 0) && (g & 1)) */
-		/* delta = RLC_SEL(delta, -delta, c0 & 1) - 2 (for half-divstep), thus
-		 * delta = - delta - 2 or delta - 1 */
-		delta = (delta ^ c0) - 1;
-		g >>= 1;
-		u += u;
-		v += v;
+		u += ((yi & y) ^ (y >> (dig_t)1)) & 2;
+		u += (u & (dig_t)1) ^ (ci >> (dig_t)(RLC_DIG - 1));
+		u %= 4;
 	}
-	m[0] = u;
-	m[1] = v;
-	m[2] = q;
-	m[3] = r;
-	//printf("%ld %ld %ld %ld\n", m[0], m[1], m[2], m[3]);
+	m[0] = ai;
+	m[1] = bi;
+	m[2] = ci;
+	m[3] = di;
+	*k = u;
 	return delta;
-}
-
-static void bn_muls_low(dig_t *c, const dig_t *a, dis_t digit, int size) {
-	int sd = digit >> (RLC_DIG - 1);
-	digit = (digit ^ sd) - sd;
-	c[size] = bn_mul1_low(c, a, digit, size);
 }
 
 static dig_t bn_rsh2_low(dig_t *c, const dig_t *a, int size, int bits) {
@@ -268,11 +247,11 @@ static void bn_mul2_low(dig_t *c, const dig_t *a, int sa, dis_t digit) {
 void fp_smb_jmpds(fp_t c, const fp_t a) {
 	dis_t m[4];
 	/* Compute number of iterations based on modulus size. */
-	int i, j = 0, d = -1, s = RLC_DIG - 2;
+	int i, d = 0, s = 32;
 	/* Iterations taken directly from https://github.com/sipa/safegcd-bounds */
 	int iterations = (45907 * FP_PRIME + 26313) / 19929;
 	dv_t f, g, t, p, t0, t1, u0, u1, v0, v1, p01, p11;
-	dig_t k = 0;
+	dig_t j, k = 0;
 
 	dv_null(f);
 	dv_null(g);
@@ -313,46 +292,23 @@ void fp_smb_jmpds(fp_t c, const fp_t a) {
 		dv_zero(v0, 2 * RLC_FP_DIGS);
 		dv_zero(v1, 2 * RLC_FP_DIGS);
 
-		dv_copy(f, fp_prime_get(), RLC_FP_DIGS);
-		dv_copy(p + 1, fp_prime_get(), RLC_FP_DIGS);
+		dv_copy(g, fp_prime_get(), RLC_FP_DIGS);
 #if FP_RDC == MONTY
 		/* Convert a from Montgomery form. */
 		fp_copy(t, a);
-		fp_rdcn_low(g, t);
+		fp_rdcn_low(f, t);
 #else
-		fp_copy(g, a);
+		fp_copy(f, a);
 #endif
-		d = jumpdivstep(m, &k, d, f[0], g[0]);
 
-		bn_mul2_low(t0, f, RLC_POS, m[0]);
-		bn_mul2_low(t1, g, RLC_POS, m[1]);
-		bn_addn_low(t0, t0, t1, RLC_FP_DIGS + 1);
+		int loops = iterations / s;
+		loops = (iterations % s == 0 ? loops - 1 : loops);
 
-		bn_mul2_low(f, f, RLC_POS, m[2]);
-		bn_mul2_low(t1, g, RLC_POS, m[3]);
-		bn_addn_low(t1, t1, f, RLC_FP_DIGS + 1);
-
-		/* Update f and g. */
-		bn_rsh2_low(f, t0, RLC_FP_DIGS + 1, s);
-		bn_rsh2_low(g, t1, RLC_FP_DIGS + 1, s);
-
-		/* Update column vector below. */
-		v1[0] = RLC_SEL(m[1], -m[1], (dig_t)m[1] >> (RLC_DIG - 1));
-		fp_negm_low(t, v1);
-		dv_copy_cond(v1, t, RLC_FP_DIGS, (dig_t)m[1] >> (RLC_DIG - 1));
-		u1[0] = RLC_SEL(m[3], -m[3], (dig_t)m[3] >> (RLC_DIG - 1));
-		fp_negm_low(t, u1);
-		dv_copy_cond(u1, t, RLC_FP_DIGS, (dig_t)m[3] >> (RLC_DIG - 1));
-
-		dv_copy(p01, v1, 2 * RLC_FP_DIGS);
-		dv_copy(p11, u1, 2 * RLC_FP_DIGS);
-
-		iterations += iterations/4;
-		int loops = iterations / (RLC_DIG - 2);
-		loops = (iterations % (RLC_DIG - 2) == 0 ? loops - 1 : loops);
-
-		for (i = 1; i < loops; i++) {
-			d = jumpdivstep(m, &k, d, f[0], g[0]);
+		j = 0;
+		dig_t mask = RLC_MASK(s + 2);
+		for (i = 0; i < loops; i++) {
+			d = jumpdivstep(m, &k, d, f[0] & mask, g[0] & mask, s);
+			//printf("%d %d %ld %ld %ld %ld\n", k, d, m[0], m[1], m[2], m[3]);
 
 			bn_mul2_low(t0, f, f[RLC_FP_DIGS - 1] >> (RLC_DIG - 1), m[0]);
 			bn_mul2_low(t1, g, g[RLC_FP_DIGS - 1] >> (RLC_DIG - 1), m[1]);
@@ -366,82 +322,22 @@ void fp_smb_jmpds(fp_t c, const fp_t a) {
 			bn_rsh2_low(f, t0, RLC_FP_DIGS + 1, s);
 			bn_rsh2_low(g, t1, RLC_FP_DIGS + 1, s);
 
-			p[j] = 0;
-			dv_copy(p + j + 1, fp_prime_get(), RLC_FP_DIGS);
-
-			/* Update column vector below. */
-			bn_muls_low(v0, p01, m[0], RLC_FP_DIGS + j);
-			fp_subd_low(t, p, v0);
-			dv_copy_cond(v0, t, RLC_FP_DIGS + j + 1,
-					(dig_t)m[0] >> (RLC_DIG - 1));
-
-			bn_muls_low(v1, p11, m[1], RLC_FP_DIGS + j);
-			fp_subd_low(t, p, v1);
-			dv_copy_cond(v1, t, RLC_FP_DIGS + j + 1,
-					(dig_t)m[1] >> (RLC_DIG - 1));
-
-			bn_muls_low(u0, p01, m[2], RLC_FP_DIGS + j);
-			fp_subd_low(t, p, u0);
-			dv_copy_cond(u0, t, RLC_FP_DIGS + j + 1,
-					(dig_t)m[2] >> (RLC_DIG - 1));
-
-			bn_muls_low(u1, p11, m[3], RLC_FP_DIGS + j);
-			fp_subd_low(t, p, u1);
-			dv_copy_cond(u1, t, RLC_FP_DIGS + j + 1,
-					(dig_t)m[3] >> (RLC_DIG - 1));
-
-			j = i % RLC_FP_DIGS;
-			if (j == 0) {
-				fp_addd_low(t, u0, u1);
-				fp_rdcn_low(p11, t);
-				fp_addd_low(t, v0, v1);
-				fp_rdcn_low(p01, t);
-				dv_zero(v0, 2 * RLC_FP_DIGS);
-				dv_zero(v1, 2 * RLC_FP_DIGS);
-			} else {
-				fp_addd_low(p11, u0, u1);
-				fp_addd_low(p01, v0, v1);
-			}
+			j = (j + k) % 4;
+			j = (j + ((j & 1) ^ (g[RLC_FP_DIGS - 1] >> (RLC_DIG - 1)))) % 4;
 		}
 
-		s = 2 * iterations - loops * (RLC_DIG - 2);
-		d = jumpdivstep(m, &k, d, f[0] & RLC_MASK(s), g[0] & RLC_MASK(s));
-
-		bn_mul2_low(t0, f, f[RLC_FP_DIGS - 1] >> (RLC_DIG - 1), m[0]);
-		bn_mul2_low(t1, g, g[RLC_FP_DIGS - 1] >> (RLC_DIG - 1), m[1]);
-		bn_addn_low(t0, t0, t1, RLC_FP_DIGS + 1);
-
-		bn_mul2_low(f, f, f[RLC_FP_DIGS - 1] >> (RLC_DIG - 1), m[2]);
-		bn_mul2_low(t1, g, g[RLC_FP_DIGS - 1] >> (RLC_DIG - 1), m[3]);
-		bn_addn_low(t1, t1, f, RLC_FP_DIGS + 1);
-
-		/* Update f and g. */
-		bn_rsh2_low(f, t0, RLC_FP_DIGS + 1, s);
-		bn_rsh2_low(g, t1, RLC_FP_DIGS + 1, s);
-
-		p[j] = 0;
-		dv_copy(p + j + 1, fp_prime_get(), RLC_FP_DIGS);
-
-		/* Update column vector below. */
-		bn_muls_low(v0, p01, m[0], RLC_FP_DIGS + j);
-		fp_subd_low(t, p, v0);
-		dv_copy_cond(v0, t, RLC_FP_DIGS + j + 1,
-				(dig_t)m[0] >> (RLC_DIG - 1));
-
-		bn_muls_low(v1, p11, m[1], RLC_FP_DIGS + j);
-		fp_subd_low(t, p, v1);
-		dv_copy_cond(v1, t, RLC_FP_DIGS + j + 1,
-				(dig_t)m[1] >> (RLC_DIG - 1));
-
-		fp_addd_low(t, v0, v1);
-		fp_rdcn_low(p01, t);
-
-		fp_set_dig(c, 1);
-		for (int j = 0; j < RLC_FP_DIGS; j++) {
-			c[j] &= -(!fp_is_zero(p01));
+		fp_zero(c);
+		j = (j + (j & 1)) % 4;
+		if (fp_cmp_dig(g, 1) == RLC_EQ) {
+			fp_set_dig(c, 1 - j);
 		}
-		fp_neg(t, c);
-		dv_copy_cond(c, t, RLC_FP_DIGS, k & 1);
+		fp_neg(g, g);
+		if (fp_cmp_dig(g, 1) == RLC_EQ) {
+			fp_set_dig(c, 1 - j);
+		}
+		if (fp_is_zero(g)) {
+			fp_set_dig(c, 1 - j);
+		}
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);

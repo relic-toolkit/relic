@@ -1045,6 +1045,13 @@ static int symbol(void) {
 			fp_smb_leg(b, a);
 			fp_smb_kro(c, a);
 			TEST_ASSERT(fp_cmp(b, c) == RLC_EQ, end);
+			fp_rand(a);
+			fp_print(a);
+			fp_smb_leg(b, a);
+			fp_smb_jmpds(c, a);
+			fp_print(b);
+			fp_print(c);
+			TEST_ASSERT(fp_cmp(b, c) == RLC_EQ, end);
 		}
 		TEST_END;
 	}
