@@ -95,7 +95,8 @@ static void fp_prime_set(const bn_t p) {
 		bn_set_dig(t, d);
 #endif
 		ctx->inv.used = RLC_FP_DIGS;
-		fp_add_dig(ctx->inv.dp, fp_prime_get(), 1);
+		dv_copy(ctx->inv.dp, fp_prime_get(), RLC_FP_DIGS);
+		fp_add_dig(ctx->inv.dp, ctx->inv.dp, 1);
 		fp_hlv(ctx->inv.dp, ctx->inv.dp);
 		fp_exp(ctx->inv.dp, ctx->inv.dp, t);
 

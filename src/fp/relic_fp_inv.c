@@ -481,7 +481,8 @@ void fp_inv_divst(fp_t c, const fp_t a) {
 		fp_neg(t, v);
 		dv_copy_cond(v, t, RLC_FP_DIGS, fs);
 
-		fp_add_dig(t, fp_prime_get(), 1);
+		dv_copy(t, fp_prime_get(), RLC_FP_DIGS);
+		fp_add_dig(t, t, 1);
 		fp_hlv(t, t);
 		bn_set_dig(_t, d);
 		fp_exp(t, t, _t);
