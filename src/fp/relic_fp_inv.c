@@ -502,7 +502,7 @@ void fp_inv_divst(fp_t c, const fp_t a) {
 
 #endif
 
-#if FP_INV == JUMPDS || !defined(STRIP)
+#if FP_INV == JMPDS || !defined(STRIP)
 
 static int jumpdivstep(dis_t m[4], dis_t delta, dig_t f, dig_t g, int s) {
 	dig_t u = 1, v = 0, q = 0, r = 1, c0, c1;
