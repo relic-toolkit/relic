@@ -561,25 +561,24 @@ static dig_t bn_rsh2_low(dig_t *c, const dig_t *a, int size, int bits) {
 
 static void bn_mul2_low(dig_t *c, const dig_t *a, int sa, dis_t digit) {
 	int i, sign, sd = digit >> (RLC_DIG - 1);
-	dig_t _c, c0, c1;
-	dbl_t r;
+	dig_t r, _c, c0, c1;
 
 	sa = -sa;
 	sign = sa ^ sd;
 	digit = (digit ^ sd) - sd;
 
-	r = (dbl_t)((a[0] ^ sa) - sa) * digit;
-	_c = ((dig_t)r) ^ sign;
+	RLC_MUL_DIG(r, _c, (a[0] ^ sa) - sa, (dig_t)digit);
+	_c ^= sign;
 	c[0] = _c - sign;
-
-	c0 = ((dbl_t)r >> RLC_DIG);
 	c1 = (c[0] < _c);
+	c0 = r;
 	for (i = 1; i < RLC_FP_DIGS; i++) {
-		r = (a[i] ^ sa) * (dbl_t)digit + c0;
-		_c = (dig_t)r ^ sign;
+		RLC_MUL_DIG(r, _c, a[i] ^ sa, (dig_t)digit);
+		_c += c0;
+		c0 = r + (_c < c0);
+		_c ^= sign;
 		c[i] = _c + c1;
 		c1 = (c[i] < _c);
-		c0 = ((dbl_t)r >> RLC_DIG);
 	}
 	c[i] = (c0 ^ sign) + c1;
 }
