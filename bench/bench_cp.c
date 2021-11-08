@@ -558,8 +558,8 @@ static void smlers(void) {
 		bn_new(sk[i]);
 		ec_null(pk[i]);
 		ec_new(pk[i]);
-		ers_null(ring[i]);
-		ers_new(ring[i]);
+		smlers_null(ring[i]);
+		smlers_new(ring[i]);
 		cp_ers_gen_key(sk[i], pk[i]);
 	}
 
@@ -592,7 +592,7 @@ static void smlers(void) {
 	for (int i = 0; i <= MAX_KEYS; i++) {
 		bn_free(sk[i]);
 		ec_free(pk[i]);
-		ers_free(ring[i])
+		smlers_free(ring[i])
 	}
 }
 
