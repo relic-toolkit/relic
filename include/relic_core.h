@@ -228,6 +228,10 @@ typedef struct _ctx_t {
 	/** Value of constant one in Montgomery form. */
 	bn_st one;
 #endif /* FP_RDC == MONTY */
+#if FP_INV == JUMPDS || !defined(STRIP)
+	/** Value of constant for divstep-based inversion. */
+	bn_st inv;
+#endif /* FP_INV */
 	/** Prime modulus modulo 8. */
 	dig_t mod8;
 	/** Value derived from the prime used for modular reduction. */
