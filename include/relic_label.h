@@ -510,6 +510,7 @@
 #undef fp_inv_monty
 #undef fp_inv_exgcd
 #undef fp_inv_divst
+#undef fp_inv_jmpds
 #undef fp_inv_lower
 #undef fp_inv_sim
 #undef fp_exp_basic
@@ -594,6 +595,7 @@
 #define fp_inv_monty 	RLC_PREFIX(fp_inv_monty)
 #define fp_inv_exgcd 	RLC_PREFIX(fp_inv_exgcd)
 #define fp_inv_divst 	RLC_PREFIX(fp_inv_divst)
+#define fp_inv_jmpds 	RLC_PREFIX(fp_inv_jmpds)
 #define fp_inv_lower 	RLC_PREFIX(fp_inv_lower)
 #define fp_inv_sim 	RLC_PREFIX(fp_inv_sim)
 #define fp_exp_basic 	RLC_PREFIX(fp_exp_basic)

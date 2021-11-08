@@ -360,6 +360,8 @@ typedef rlc_align dig_t fp_st[RLC_FP_DIGS + RLC_PAD(RLC_FP_BYTES)/(RLC_DIG / 8)]
 #define fp_inv(C, A)	fp_inv_exgcd(C, A)
 #elif FP_INV == DIVST
 #define fp_inv(C, A)	fp_inv_divst(C, A)
+#elif FP_INV == JMPDS
+#define fp_inv(C, A)	fp_inv_jmpds(C, A)
 #elif FP_INV == LOWER
 #define fp_inv(C, A)	fp_inv_lower(C, A)
 #endif
@@ -1028,6 +1030,16 @@ void fp_inv_exgcd(fp_t c, const fp_t a);
  * @throw ERR_NO_VALID		- if the field element is not invertible.
  */
 void fp_inv_divst(fp_t c, const fp_t a);
+
+/**
+ * Inverts a prime field element using the constant-time jump division step
+ * by Bernstein and Bo-Yin Yang.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the prime field element to invert.
+ * @throw ERR_NO_VALID		- if the field element is not invertible.
+ */
+void fp_inv_jmpds(fp_t c, const fp_t a);
 
 /**
  * Inverts a prime field element using a direct call to the lower layer.
