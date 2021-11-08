@@ -2236,12 +2236,12 @@ int main(void) {
 		core_clean();
 		return 1;
 	}
-#if 0
+
 	if (prime() != RLC_OK) {
 		core_clean();
 		return 1;
 	}
-#endif
+
 	if (small_primes() != RLC_OK) {
 		core_clean();
 		return 1;
