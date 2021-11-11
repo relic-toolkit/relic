@@ -247,7 +247,7 @@ static void bn_mul2_low(dig_t *c, const dig_t *a, int sa, dis_t digit) {
 int fp_smb_jmpds(const fp_t a) {
 	dis_t m[4];
 	/* Compute number of iterations based on modulus size. */
-	int r, i, d = 0, s = 32;
+	int r, i, d = 0, s = RLC_DIG - 2;
 	/* Iterations taken directly from https://github.com/sipa/safegcd-bounds */
 	int iterations = (45907 * FP_PRIME + 26313) / 19929;
 	dv_t f, g, t, p, t0, t1, u0, u1, v0, v1, p01, p11;
