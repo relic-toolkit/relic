@@ -265,7 +265,6 @@ int fp_smb_jmpds(const fp_t a) {
 	dv_null(v1);
 	dv_null(p01);
 	dv_null(p11);
-	fp_null(pre);
 
 	RLC_TRY {
 		dv_new(t0);
@@ -280,7 +279,6 @@ int fp_smb_jmpds(const fp_t a) {
 		dv_new(v1);
 		dv_new(p01);
 		dv_new(p11);
-		fp_new(pre);
 
 		f[RLC_FP_DIGS] = g[RLC_FP_DIGS] = 0;
 		dv_zero(f, 2 * RLC_FP_DIGS);
@@ -354,7 +352,6 @@ int fp_smb_jmpds(const fp_t a) {
 		dv_free(v1);
 		dv_free(p01);
 		dv_free(p11);
-		fp_free(pre);
 	}
 
 	return r;
