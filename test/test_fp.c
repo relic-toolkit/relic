@@ -1017,41 +1017,26 @@ static int square_root(void) {
 
 static int symbol(void) {
 	int code = RLC_ERR;
-	fp_t a, b, c;
+	fp_t a;
 
 	fp_null(a);
-	fp_null(b);
-	fp_null(c);
 
 	RLC_TRY {
 		fp_new(a);
-		fp_new(b);
-		fp_new(c);
 
 		TEST_CASE("symbol computation is correct") {
 			fp_zero(a);
-			fp_smb_leg(b, a);
-			TEST_ASSERT(fp_is_zero(b), end);
+			TEST_ASSERT(fp_smb_legen(a) == 0, end);
 			fp_rand(a);
-			fp_sqr(c, a);
-			fp_smb_leg(b, c);
-			TEST_ASSERT(fp_cmp_dig(b, 1) == RLC_EQ, end);
+			fp_sqr(a, a);
+			TEST_ASSERT(fp_smb_legen(a) == 1, end);
 			do {
 				fp_rand(a);
-			} while(fp_srt(c, a) == 1);
-			fp_smb_leg(b, c);
-			TEST_ASSERT(fp_cmp_dig(b, 1) == RLC_NE, end);
+			} while(fp_srt(a, a) == 1);
+			TEST_ASSERT(fp_smb_legen(a) == -1, end);
 			fp_rand(a);
-			fp_smb_leg(b, a);
-			fp_smb_kro(c, a);
-			TEST_ASSERT(fp_cmp(b, c) == RLC_EQ, end);
-			fp_rand(a);
-			fp_print(a);
-			fp_smb_leg(b, a);
-			fp_smb_jmpds(c, a);
-			fp_print(b);
-			fp_print(c);
-			TEST_ASSERT(fp_cmp(b, c) == RLC_EQ, end);
+			TEST_ASSERT(fp_smb_legen(a) == fp_smb_divst(a), end);
+			TEST_ASSERT(fp_smb_legen(a) == fp_smb_jmpds(a), end);
 		}
 		TEST_END;
 	}
@@ -1061,8 +1046,6 @@ static int symbol(void) {
 	code = RLC_OK;
   end:
 	fp_free(a);
-	fp_free(b);
-	fp_free(c);
 	return code;
 }
 

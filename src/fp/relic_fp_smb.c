@@ -37,8 +37,9 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void fp_smb_leg(fp_t c, const fp_t a) {
+int fp_smb_legen(const fp_t a) {
 	bn_t t;
+	int r = 0;
 
 	bn_null(t);
 
@@ -52,7 +53,10 @@ void fp_smb_leg(fp_t c, const fp_t a) {
 		bn_sub_dig(t, t, 1);
 		bn_hlv(t, t);
 
-		fp_exp(c, a, t);
+		fp_exp(t->dp, a, t);
+		r = (fp_cmp_dig(t->dp, 1) == RLC_EQ);
+		fp_neg(t->dp, t->dp);
+		r = RLC_SEL(r, -(fp_cmp_dig(t->dp, 1) == RLC_EQ), !r);
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -60,14 +64,15 @@ void fp_smb_leg(fp_t c, const fp_t a) {
 	RLC_FINALLY {
 		bn_free(t);
 	}
+	return r;
 }
 
-void fp_smb_kro(fp_t c, const fp_t a) {
+int fp_smb_divst(const fp_t a) {
 	/* Compute number of iterations based on modulus size. */
 #if FP_PRIME < 46
-	int d = (49 * FP_PRIME + 80)/17;
+	int r, d = (49 * FP_PRIME + 80)/17;
 #else
-	int d = (49 * FP_PRIME + 57)/17;
+	int r, d = (49 * FP_PRIME + 57)/17;
 #endif
 	dig_t delta = 1, g0, d0, fs, gs, k, mask, s;
 	bn_t _t;
@@ -77,11 +82,6 @@ void fp_smb_kro(fp_t c, const fp_t a) {
 	dv_null(f);
 	dv_null(g);
 	dv_null(t);
-
-	if (fp_is_zero(a)) {
-		fp_zero(c);
-		return;
-	}
 
 	RLC_TRY {
 		bn_new(_t);
@@ -140,16 +140,15 @@ void fp_smb_kro(fp_t c, const fp_t a) {
 		}
 
 		for (int j = 0; j < RLC_FP_DIGS; j++) {
+			t[j] = 0;
 			f[j] ^= -fs;
 		}
+		t[0] = 1;
 		fp_add1_low(f, f, fs);
 
-		fp_set_dig(c, 1);
-		for (int j = 0; j < RLC_FP_DIGS; j++) {
-			c[j] &= -(!fp_is_zero(f));
-		}
-		fp_neg(t, c);
-		dv_copy_cond(c, t, RLC_FP_DIGS, k & 1);
+		r = dv_cmp_const(f, t, RLC_FP_DIGS) == RLC_NE;
+		r = RLC_SEL(r, 1, k == 0);
+		r = RLC_SEL(r, -1, k == 1);
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT)
 	} RLC_FINALLY {
@@ -158,38 +157,39 @@ void fp_smb_kro(fp_t c, const fp_t a) {
 		dv_free(g);
 		dv_free(t);
 	}
+	return r;
 }
 
 static int jumpdivstep(dis_t m[4], dig_t *k, dis_t delta, dig_t x, dig_t y, int s) {
-	dig_t ai = 1, bi = 0, ci = 0, di = 1, t, u = 0;
-	//printf("x=%lu y=%lu s=%d\n", x, y, s);
+	dig_t c0, c1, yi, ai = 1, bi = 0, ci = 0, di = 1, t, u = 0;
 	for (; s > 0; s--) {
-		dig_t yi = 0;
-		if ((delta >= 0) && (x & 1)) {
-			delta = -delta;
-			t = x;
-			x = y;
-			y = t;
-			x = (y - x) >> 1;
-			t = ai;
-			ai = ai - ci;
-			ci = 2 * t;
-			t = bi;
-			bi = bi - di;
-			di = 2 * t;
-		} else if (x & 1) {
-			delta++;
-			x = (x + y) >> 1;
-			ai = ai + ci;
-			bi = bi + di;
-			ci = 2 * ci;
-			di = 2 * di;
-		} else {
-			delta++;
-			x >>= 1;
-			ci = 2*ci;
-			di = 2*di;
-		}
+		yi = y;
+		c0 = ~(delta >> (RLC_DIG - 1));
+		c1 = -(x & 1);
+		c0 &= c1;
+
+		t = x;
+		x = (x + (((y ^ c0) - c0) & c1)) >> 1;
+		/* Conditionally copy y = t. */
+		t = (t ^ y) & c0;
+		y ^= t;
+
+		t = ai;
+		ai += ((ci ^ c0) - c0) & c1;
+		/* Conditionally copy ci = t. */
+		t = (t ^ ci) & c0;
+		ci ^= t;
+
+		t = bi;
+		bi += ((di ^ c0) - c0) & c1;
+		/* Conditionally copy di = t. */
+		t = (t ^ di) & c0;
+		di ^= t;
+
+		ci += ci;
+		di += di;
+		/* delta = RLC_SEL(delta + 1, -delta, c0) */
+		delta = (delta ^ c0) + 1;
 
 		u += ((yi & y) ^ (y >> (dig_t)1)) & 2;
 		u += (u & (dig_t)1) ^ (ci >> (dig_t)(RLC_DIG - 1));
@@ -244,10 +244,10 @@ static void bn_mul2_low(dig_t *c, const dig_t *a, int sa, dis_t digit) {
 	c[i] = (c0 ^ sign) + c1;
 }
 
-void fp_smb_jmpds(fp_t c, const fp_t a) {
+int fp_smb_jmpds(const fp_t a) {
 	dis_t m[4];
 	/* Compute number of iterations based on modulus size. */
-	int i, d = 0, s = 32;
+	int r, i, d = 0, s = 32;
 	/* Iterations taken directly from https://github.com/sipa/safegcd-bounds */
 	int iterations = (45907 * FP_PRIME + 26313) / 19929;
 	dv_t f, g, t, p, t0, t1, u0, u1, v0, v1, p01, p11;
@@ -306,9 +306,8 @@ void fp_smb_jmpds(fp_t c, const fp_t a) {
 
 		j = 0;
 		dig_t mask = RLC_MASK(s + 2);
-		for (i = 0; i < loops; i++) {
+		for (i = 0; i <= loops; i++) {
 			d = jumpdivstep(m, &k, d, f[0] & mask, g[0] & mask, s);
-			//printf("%d %d %ld %ld %ld %ld\n", k, d, m[0], m[1], m[2], m[3]);
 
 			bn_mul2_low(t0, f, f[RLC_FP_DIGS - 1] >> (RLC_DIG - 1), m[0]);
 			bn_mul2_low(t1, g, g[RLC_FP_DIGS - 1] >> (RLC_DIG - 1), m[1]);
@@ -326,18 +325,18 @@ void fp_smb_jmpds(fp_t c, const fp_t a) {
 			j = (j + ((j & 1) ^ (g[RLC_FP_DIGS - 1] >> (RLC_DIG - 1)))) % 4;
 		}
 
-		fp_zero(c);
+		r = 0;
 		j = (j + (j & 1)) % 4;
-		if (fp_cmp_dig(g, 1) == RLC_EQ) {
-			fp_set_dig(c, 1 - j);
+
+		t0[0] = 1;
+		dv_zero(t0 + 1, RLC_FP_DIGS - 1);
+		r = RLC_SEL(r, 1 - j, dv_cmp_const(g, t0, RLC_FP_DIGS) == RLC_EQ);
+		for (i = 0; i < RLC_FP_DIGS; i++) {
+			g[i] = ~g[i];
 		}
-		fp_neg(g, g);
-		if (fp_cmp_dig(g, 1) == RLC_EQ) {
-			fp_set_dig(c, 1 - j);
-		}
-		if (fp_is_zero(g)) {
-			fp_set_dig(c, 1 - j);
-		}
+		bn_add1_low(g, g, 1, RLC_FP_DIGS);
+		r = RLC_SEL(r, 1 - j, dv_cmp_const(g, t0, RLC_FP_DIGS) == RLC_EQ);
+		r = RLC_SEL(r, 1 - j, fp_is_zero(g));
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -357,4 +356,6 @@ void fp_smb_jmpds(fp_t c, const fp_t a) {
 		dv_free(p11);
 		fp_free(pre);
 	}
+
+	return r;
 }

@@ -582,24 +582,24 @@ static void arith(void) {
 	}
 	BENCH_END;
 
-	BENCH_RUN("fp_smb_leg") {
+	BENCH_RUN("fp_smb_legen") {
 		fp_rand(a);
 		fp_sqr(a, a);
-		BENCH_ADD(fp_smb_leg(c, a));
+		BENCH_ADD(fp_smb_legen(a));
 	}
 	BENCH_END;
 
-	BENCH_RUN("fp_smb_kro") {
+	BENCH_RUN("fp_smb_divst") {
 		fp_rand(a);
 		fp_sqr(a, a);
-		BENCH_ADD(fp_smb_kro(c, a));
+		BENCH_ADD(fp_smb_divst(a));
 	}
 	BENCH_END;
 
 	BENCH_RUN("fp_smb_jmpds") {
 		fp_rand(a);
 		fp_sqr(a, a);
-		BENCH_ADD(fp_smb_jmpds(c, a));
+		BENCH_ADD(fp_smb_jmpds(a));
 	}
 	BENCH_END;
 
