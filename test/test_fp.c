@@ -1017,12 +1017,14 @@ static int square_root(void) {
 
 static int symbol(void) {
 	int code = RLC_ERR;
-	fp_t a;
+	fp_t a, b;
 
 	fp_null(a);
+	fp_null(b);
 
 	RLC_TRY {
 		fp_new(a);
+		fp_new(b);
 
 		TEST_CASE("symbol computation is correct") {
 			fp_zero(a);
@@ -1032,7 +1034,7 @@ static int symbol(void) {
 			TEST_ASSERT(fp_smb_legen(a) == 1, end);
 			do {
 				fp_rand(a);
-			} while(fp_srt(a, a) == 1);
+			} while(fp_srt(b, a) == 1);
 			TEST_ASSERT(fp_smb_legen(a) == -1, end);
 			fp_rand(a);
 			TEST_ASSERT(fp_smb_legen(a) == fp_smb_divst(a), end);
@@ -1046,6 +1048,7 @@ static int symbol(void) {
 	code = RLC_OK;
   end:
 	fp_free(a);
+	fp_free(b);
 	return code;
 }
 
