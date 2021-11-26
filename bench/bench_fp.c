@@ -541,6 +541,40 @@ static void arith(void) {
 	}
 	BENCH_END;
 
+	BENCH_RUN("fp_smb") {
+		fp_rand(a);
+		fp_sqr(a, a);
+		BENCH_ADD(fp_smb(a));
+	}
+	BENCH_END;
+
+#if FP_SMB == BASIC || !defined(STRIP)
+	BENCH_RUN("fp_smb_basic") {
+		fp_rand(a);
+		fp_sqr(a, a);
+		BENCH_ADD(fp_smb_basic(a));
+	}
+	BENCH_END;
+#endif
+
+#if FP_SMB == DIVST || !defined(STRIP)
+	BENCH_RUN("fp_smb_divst") {
+		fp_rand(a);
+		fp_sqr(a, a);
+		BENCH_ADD(fp_smb_divst(a));
+	}
+	BENCH_END;
+#endif
+
+#if FP_SMB == JMPDS || !defined(STRIP)
+	BENCH_RUN("fp_smb_jmpds") {
+		fp_rand(a);
+		fp_sqr(a, a);
+		BENCH_ADD(fp_smb_jmpds(a));
+	}
+	BENCH_END;
+#endif
+
 	BENCH_RUN("fp_exp") {
 		fp_rand(a);
 		bn_rand(e, RLC_POS, RLC_FP_BITS);
@@ -579,27 +613,6 @@ static void arith(void) {
 		fp_rand(a);
 		fp_sqr(a, a);
 		BENCH_ADD(fp_srt(c, a));
-	}
-	BENCH_END;
-
-	BENCH_RUN("fp_smb_legen") {
-		fp_rand(a);
-		fp_sqr(a, a);
-		BENCH_ADD(fp_smb_legen(a));
-	}
-	BENCH_END;
-
-	BENCH_RUN("fp_smb_divst") {
-		fp_rand(a);
-		fp_sqr(a, a);
-		BENCH_ADD(fp_smb_divst(a));
-	}
-	BENCH_END;
-
-	BENCH_RUN("fp_smb_jmpds") {
-		fp_rand(a);
-		fp_sqr(a, a);
-		BENCH_ADD(fp_smb_jmpds(a));
 	}
 	BENCH_END;
 

@@ -1028,17 +1028,27 @@ static int symbol(void) {
 
 		TEST_CASE("symbol computation is correct") {
 			fp_zero(a);
-			TEST_ASSERT(fp_smb_legen(a) == 0, end);
+			TEST_ASSERT(fp_smb(a) == 0, end);
 			fp_rand(a);
 			fp_sqr(a, a);
-			TEST_ASSERT(fp_smb_legen(a) == 1, end);
+			TEST_ASSERT(fp_smb(a) == 1, end);
 			do {
 				fp_rand(a);
 			} while(fp_srt(b, a) == 1);
-			TEST_ASSERT(fp_smb_legen(a) == -1, end);
+			TEST_ASSERT(fp_smb(a) == -1, end);
 			fp_rand(a);
-			TEST_ASSERT(fp_smb_legen(a) == fp_smb_divst(a), end);
-			TEST_ASSERT(fp_smb_legen(a) == fp_smb_jmpds(a), end);
+#if FP_SMB == BASIC || !defined(STRIP)
+			TEST_ASSERT(fp_smb(a) == fp_smb_basic(a), end);
+#endif
+#if FP_SMB == DIVST || !defined(STRIP)
+			TEST_ASSERT(fp_smb(a) == fp_smb_divst(a), end);
+#endif
+#if FP_SMB == JMPDS || !defined(STRIP)
+			TEST_ASSERT(fp_smb(a) == fp_smb_jmpds(a), end);
+#endif
+#if FP_SMB == LOWER || !defined(STRIP)
+			TEST_ASSERT(fp_smb(a) == fp_smb_lower(a), end);
+#endif
 		}
 		TEST_END;
 	}

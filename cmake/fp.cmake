@@ -8,7 +8,7 @@ message("      FP_PMERS=[off|on] Prefer Pseudo-Mersenne primes over random prime
 message("      FP_QNRES=[off|on] Use -1 as quadratic non-residue (make sure that p = 3 mod 8).")
 message("      FP_WIDTH=w        Width w in [2,6] of window processing for exponentiation methods.\n")
 
-message("   ** Available prime field arithmetic methods (default = BASIC;COMBA;COMBA;MONTY;MONTY;SLIDE):")
+message("   ** Available prime field arithmetic methods (default = BASIC;COMBA;COMBA;MONTY;MONTY;JMPDS;SLIDE):")
 
 message("      Field addition")
 message("      FP_METHD=BASIC    Schoolbook addition.")
@@ -38,6 +38,13 @@ message("      FP_METHD=EXGCD    Inversion by the Extended Euclidean algorithm."
 message("      FP_METHD=DIVST    Constant-time inversion by division steps.")
 message("      FP_METHD=LOWER    Pass inversion to the lower level.\n")
 
+message("      Legendre symbol")
+message("      FP_METHD=BASIC    Computation by Fermat's Little Theorem.")
+message("      FP_METHD=BINAR    Binary algorithm.")
+message("      FP_METHD=DIVST    Constant-time method by division steps.")
+message("      FP_METHD=JMPDS    Constant-time method by jump division steps.")
+message("      FP_METHD=LOWER    Pass call to the lower level.\n")
+
 message("      Field exponentiation")
 message("      FP_METHD=BASIC    Binary exponentiation.")
 message("      FP_METHD=SLIDE    Sliding window exponentiation.")
@@ -65,17 +72,18 @@ option(FP_QNRES "Use -1 as quadratic non-residue." off)
 
 # Choose the arithmetic methods.
 if (NOT FP_METHD)
-	set(FP_METHD "INTEG;INTEG;INTEG;MONTY;MONTY;SLIDE")
+	set(FP_METHD "INTEG;INTEG;INTEG;MONTY;MONTY;JMPDS;SLIDE")
 endif(NOT FP_METHD)
 list(LENGTH FP_METHD FP_LEN)
-if (FP_LEN LESS 6)
+if (FP_LEN LESS 7)
 	message(FATAL_ERROR "Incomplete FP_METHD specification: ${FP_METHD}")
-endif(FP_LEN LESS 6)
+endif(FP_LEN LESS 7)
 
 list(GET FP_METHD 0 FP_ADD)
 list(GET FP_METHD 1 FP_MUL)
 list(GET FP_METHD 2 FP_SQR)
 list(GET FP_METHD 3 FP_RDC)
 list(GET FP_METHD 4 FP_INV)
-list(GET FP_METHD 5 FP_EXP)
+list(GET FP_METHD 5 FP_SMB)
+list(GET FP_METHD 6 FP_EXP)
 set(FP_METHD ${FP_METHD} CACHE STRING "Method for prime field arithmetic.")

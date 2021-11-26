@@ -37,7 +37,9 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-int fp_smb_legen(const fp_t a) {
+#if FP_SMB == BASIC || !defined(STRIP)
+
+int fp_smb_basic(const fp_t a) {
 	bn_t t;
 	int r = 0;
 
@@ -66,6 +68,10 @@ int fp_smb_legen(const fp_t a) {
 	}
 	return r;
 }
+
+#endif
+
+#if FP_SMB == DIVST || !defined(STRIP)
 
 int fp_smb_divst(const fp_t a) {
 	/* Compute number of iterations based on modulus size. */
@@ -160,6 +166,10 @@ int fp_smb_divst(const fp_t a) {
 	return r;
 }
 
+#endif
+
+#if FP_SMB == JMPDS || !defined(STRIP)
+
 static dis_t jumpdivstep(dis_t m[4], dig_t *k, dis_t delta, dis_t x, dis_t y, int s) {
 	dig_t c0, c1, yi, ai = 1, bi = 0, ci = 0, di = 1, t, u = 0;
 	for (; s > 0; s--) {
@@ -222,37 +232,35 @@ static dig_t bn_rsh2_low(dig_t *c, const dig_t *a, int size, int bits) {
 
 static void bn_mul2_low(dig_t *c, const dig_t *a, int sa, dis_t digit) {
 	int i, sign, sd = digit >> (RLC_DIG - 1);
-	dig_t _c, c0, c1;
-	dbl_t r;
+	dig_t r, _c, c0, c1;
 
 	sa = -sa;
 	sign = sa ^ sd;
 	digit = (digit ^ sd) - sd;
 
-	r = (dbl_t)((a[0] ^ sa) - sa) * digit;
-	_c = ((dig_t)r) ^ sign;
+	RLC_MUL_DIG(r, _c, (a[0] ^ sa) - sa, (dig_t)digit);
+	_c ^= sign;
 	c[0] = _c - sign;
-
-	c0 = ((dbl_t)r >> RLC_DIG);
 	c1 = (c[0] < _c);
+	c0 = r;
 	for (i = 1; i < RLC_FP_DIGS; i++) {
-		r = (a[i] ^ sa) * (dbl_t)digit + c0;
-		_c = (dig_t)r ^ sign;
+		RLC_MUL_DIG(r, _c, a[i] ^ sa, (dig_t)digit);
+		_c += c0;
+		c0 = r + (_c < c0);
+		_c ^= sign;
 		c[i] = _c + c1;
 		c1 = (c[i] < _c);
-		c0 = ((dbl_t)r >> RLC_DIG);
 	}
 	c[i] = (c0 ^ sign) + c1;
 }
 
 int fp_smb_jmpds(const fp_t a) {
 	dis_t m[4];
-	/* Compute number of iterations based on modulus size. */
 	int r, i, s = RLC_DIG - 2;
 	/* Iterations taken directly from https://github.com/sipa/safegcd-bounds */
-	int iterations = (45907 * FP_PRIME + 26313) / 19929;
+	int loops, iterations = (45907 * FP_PRIME + 26313) / 19929;
 	dv_t f, g, t, p, t0, t1, u0, u1, v0, v1, p01, p11;
-	dig_t j, k = 0;
+	dig_t j, k, mask = RLC_MASK(s + 2);
 	dis_t d = 0;
 
 	dv_null(f);
@@ -301,11 +309,10 @@ int fp_smb_jmpds(const fp_t a) {
 		fp_copy(f, a);
 #endif
 
-		int loops = iterations / s;
+		loops = iterations / s;
 		loops = (iterations % s == 0 ? loops - 1 : loops);
 
-		j = 0;
-		dig_t mask = RLC_MASK(s + 2);
+		j = k = 0;
 		for (i = 0; i <= loops; i++) {
 			d = jumpdivstep(m, &k, d, f[0] & mask, g[0] & mask, s);
 
@@ -358,3 +365,13 @@ int fp_smb_jmpds(const fp_t a) {
 
 	return r;
 }
+
+#endif
+
+#if FP_SMB == LOWER || !defined(STRIP)
+
+int fp_smb_lower(const fp_t a) {
+	return fp_smbm_low(a);
+}
+
+#endif
