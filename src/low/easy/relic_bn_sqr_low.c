@@ -40,12 +40,13 @@
 
 dig_t bn_sqra_low(dig_t *c, const dig_t *a, int size) {
 	int i;
-	dig_t t, c0, c1;
+	dig_t c0, c1;
+
+#ifdef RLC_CONF_NODBL
+	dig_t r0, r1, _r0, _r1, s0, s1, t, t0, t1;
 
 	t = a[0];
 
-#ifdef RLC_CONF_NODBL
-	dig_t r0, r1, _r0, _r1, s0, s1, t0, t1;
 	/* Accumulate this column with the square of a->dp[i]. */
 	RLC_MUL_DIG(_r1, _r0, t, t);
 	r0 = _r0 + c[0];
