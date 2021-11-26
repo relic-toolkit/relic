@@ -575,6 +575,15 @@ static void arith(void) {
 	BENCH_END;
 #endif
 
+#if FP_SMB == LOWER || !defined(STRIP)
+	BENCH_RUN("fp_smb_lower") {
+		fp_rand(a);
+		fp_sqr(a, a);
+		BENCH_ADD(fp_smb_lower(a));
+	}
+	BENCH_END;
+#endif
+
 	BENCH_RUN("fp_exp") {
 		fp_rand(a);
 		bn_rand(e, RLC_POS, RLC_FP_BITS);
