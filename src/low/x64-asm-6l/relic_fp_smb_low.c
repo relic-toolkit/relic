@@ -30,8 +30,8 @@
  * @ingroup fp
  */
 
-#include "relic_bn.h"
-#include "relic_bn_low.h"
+#include <gmp.h>
+
 #include "relic_fp.h"
 #include "relic_fp_low.h"
 #include "relic_core.h"
@@ -41,25 +41,27 @@
 /*============================================================================*/
 
 int fp_smbm_low(const dig_t *a) {
-	bn_st e;
-	dig_t t[RLC_FP_DIGS];
+	mpz_t n, p;
+	rlc_align dig_t t[2 * RLC_FP_DIGS], u[RLC_FP_DIGS];
+	int res;
 
-	bn_make(&e, RLC_FP_DIGS);
+	mpz_init(n);
+	mpz_init(p);
 
-	e.used = RLC_FP_DIGS;
-	dv_copy(e.dp, fp_prime_get(), RLC_FP_DIGS);
-	bn_rsh1_low(e.dp, e.dp, RLC_FP_DIGS);
-#if AUTO == ALLOC
-	fp_exp(t, a, &e);
+#if FP_RDC == MONTY
+	dv_zero(t + RLC_FP_DIGS, RLC_FP_DIGS);
+	dv_copy(t, a, RLC_FP_DIGS);
+	fp_rdcn_low(u, t);
 #else
-	fp_exp(t, (const fp_t)a, &e);
+	fp_copy(u, a);
 #endif
 
-	int r = (fp_cmp_dig(t, 1) == RLC_EQ);
-	fp_negm_low(t, t);
-	r = RLC_SEL(r, -(fp_cmp_dig(t, 1) == RLC_EQ), !r);
+	mpz_import(n, RLC_FP_DIGS, -1, sizeof(dig_t), 0, 0, u);
+	mpz_import(p, RLC_FP_DIGS, -1, sizeof(dig_t), 0, 0, fp_prime_get());
 
-	bn_clean(&e);
+	res = mpz_jacobi(n, p);
 
-	return r;
+	mpz_clear(n);
+	mpz_clear(p);
+	return res;
 }
