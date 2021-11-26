@@ -375,7 +375,7 @@ typedef rlc_align dig_t fp_st[RLC_FP_DIGS + RLC_PAD(RLC_FP_BYTES)/(RLC_DIG / 8)]
 #elif FP_SMB == DIVST
 #define fp_smb(A)		fp_smb_divst(A)
 #elif FP_SMB == JMPDS
-#define fp_smb(A)		fp_smb_divst(A)
+#define fp_smb(A)		fp_smb_jmpds(A)
 #elif FP_SMB == LOWER
 #define fp_smb(A)		fp_smb_lower(A)
 #endif

@@ -152,9 +152,9 @@ int fp_smb_divst(const fp_t a) {
 		t[0] = 1;
 		fp_add1_low(f, f, fs);
 
-		r = dv_cmp_const(f, t, RLC_FP_DIGS) == RLC_NE;
-		r = RLC_SEL(r, 1, k == 0);
-		r = RLC_SEL(r, -1, k == 1);
+		r = !(dv_cmp_const(f, t, RLC_FP_DIGS) == RLC_NE);
+		r = RLC_SEL(r, -1, (r == 1 && k == 1));
+		r = RLC_SEL(r, 1, (r == 1 && k == 0));
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT)
 	} RLC_FINALLY {
