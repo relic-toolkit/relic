@@ -10,27 +10,27 @@ message("      FP_WIDTH=w        Width w in [2,6] of window processing for expon
 
 message("   ** Available prime field arithmetic methods (default = BASIC;COMBA;COMBA;MONTY;MONTY;JMPDS;SLIDE):")
 
-message("      Field addition")
+message("      Field addition:")
 message("      FP_METHD=BASIC    Schoolbook addition.")
 message("      FP_METHD=INTEG    Integrated modular addition.\n")
 
-message("      Field multiplication")
+message("      Field multiplication:")
 message("      FP_METHD=BASIC    Schoolbook multiplication.")
 message("      FP_METHD=INTEG    Integrated modular multiplication.")
 message("      FP_METHD=COMBA    Comba multiplication.\n")
 
-message("      Field squaring")
+message("      Field squaring:")
 message("      FP_METHD=BASIC    Schoolbook squaring.")
 message("      FP_METHD=INTEG    Integrated modular squaring.")
 message("      FP_METHD=COMBA    Comba squaring.")
 message("      FP_METHD=MULTP    Reuse multiplication for squaring.\n")
 
-message("      Modular reduction")
+message("      Modular reduction:")
 message("      FP_METHD=BASIC    Division-based reduction.")
 message("      FP_METHD=QUICK    Fast reduction modulo special form prime (2^t - c, c > 0).")
 message("      FP_METHD=MONTY    Montgomery modular reduction.\n")
 
-message("      Field inversion")
+message("      Field inversion:")
 message("      FP_METHD=BASIC    Inversion by Fermat's Little Theorem.")
 message("      FP_METHD=BINAR    Binary Inversion algorithm.")
 message("      FP_METHD=MONTY    Montgomery inversion.")
@@ -38,14 +38,14 @@ message("      FP_METHD=EXGCD    Inversion by the Extended Euclidean algorithm."
 message("      FP_METHD=DIVST    Constant-time inversion by division steps.")
 message("      FP_METHD=LOWER    Pass inversion to the lower level.\n")
 
-message("      Legendre symbol")
+message("      Legendre symbol:")
 message("      FP_METHD=BASIC    Computation by Fermat's Little Theorem.")
 message("      FP_METHD=BINAR    Binary algorithm.")
 message("      FP_METHD=DIVST    Constant-time method by division steps.")
 message("      FP_METHD=JMPDS    Constant-time method by jump division steps.")
 message("      FP_METHD=LOWER    Pass call to the lower level.\n")
 
-message("      Field exponentiation")
+message("      Field exponentiation:")
 message("      FP_METHD=BASIC    Binary exponentiation.")
 message("      FP_METHD=SLIDE    Sliding window exponentiation.")
 message("      FP_METHD=MONTY    Constant-time Montgomery powering ladder.\n")
