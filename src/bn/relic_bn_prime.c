@@ -378,12 +378,13 @@ int bn_is_prime_solov(const bn_t a) {
 				break;
 			}
 
-			/* t2 = (t0|a). */
+			/* Lend result here, but restore afterwards, for t2 = (t0|a). */
 			result = bn_smb_jac(t0, a);
 			bn_set_dig(t2, (result < 0 ? -result : result));
 			if (result < 0) {
 				bn_neg(t2, t2);
 			}
+			result = 1;
 			/* If t1 != t2 (mod a) return 0. */
 			bn_mod(t1, t1, a);
 			bn_mod(t2, t2, a);
