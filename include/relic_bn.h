@@ -1145,20 +1145,22 @@ void bn_lcm(bn_t c, const bn_t a, const bn_t b);
 /**
  * Computes the Legendre symbol c = (a|b), b prime.
  *
- * @param[out] c			- the result.
  * @param[in] a				- the first parameter.
  * @param[in] b				- the second parameter.
+ * @throw ERR_NO_VALID		- if there input is negative.
+ * @return the result.
  */
-void bn_smb_leg(bn_t c, const bn_t a, const bn_t b);
+int bn_smb_leg(const bn_t a, const bn_t b);
 
 /**
  * Computes the Jacobi symbol c = (a|b).
  *
- * @param[out] c			- the result.
  * @param[in] a				- the first parameter.
  * @param[in] b				- the second parameter.
+ * @throw ERR_NO_VALID		- if there input is even or negative.
+ * @return the result.
  */
-void bn_smb_jac(bn_t c, const bn_t a, const bn_t b);
+int bn_smb_jac(const bn_t a, const bn_t b);
 
 /**
  * Returns a small precomputed prime from a given position in the list of prime

@@ -894,6 +894,66 @@ static int inversion(void) {
 	return code;
 }
 
+static int symbol(void) {
+	int code = RLC_ERR;
+	fp_t a, b;
+
+	fp_null(a);
+	fp_null(b);
+
+	RLC_TRY {
+		fp_new(a);
+		fp_new(b);
+
+		TEST_CASE("symbol computation is correct") {
+			fp_zero(a);
+			TEST_ASSERT(fp_smb(a) == 0, end);
+			fp_rand(a);
+			fp_sqr(a, a);
+			TEST_ASSERT(fp_smb(a) == 1, end);
+			do {
+				fp_rand(a);
+			} while(fp_srt(b, a) == 1);
+			TEST_ASSERT(fp_smb(a) == -1, end);
+		}
+		TEST_END;
+
+#if FP_SMB == BASIC || !defined(STRIP)
+		TEST_CASE("basic symbol computation is correct") {
+			fp_rand(a);
+			TEST_ASSERT(fp_smb(a) == fp_smb_basic(a), end);
+		} TEST_END;
+#endif
+
+#if FP_SMB == DIVST || !defined(STRIP)
+		TEST_CASE("division step symbol computation is correct") {
+			fp_rand(a);
+			TEST_ASSERT(fp_smb(a) == fp_smb_divst(a), end);
+		} TEST_END;
+#endif
+#if FP_SMB == JMPDS || !defined(STRIP)
+		TEST_CASE("jump division step symbol computation is correct") {
+			fp_rand(a);
+			TEST_ASSERT(fp_smb(a) == fp_smb_jmpds(a), end);
+		} TEST_END;
+#endif
+#if FP_SMB == LOWER || !defined(STRIP)
+		TEST_CASE("lower symbol computation is correct") {
+			fp_rand(a);
+			TEST_ASSERT(fp_smb(a) == fp_smb_lower(a), end);
+		} TEST_END;
+#endif
+	}
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
+	}
+	code = RLC_OK;
+  end:
+	fp_free(a);
+	fp_free(b);
+	return code;
+}
+
 static int exponentiation(void) {
 	int code = RLC_ERR;
 	fp_t a, b, c;
@@ -1014,54 +1074,6 @@ static int square_root(void) {
 	fp_free(c);
 	return code;
 }
-
-static int symbol(void) {
-	int code = RLC_ERR;
-	fp_t a, b;
-
-	fp_null(a);
-	fp_null(b);
-
-	RLC_TRY {
-		fp_new(a);
-		fp_new(b);
-
-		TEST_CASE("symbol computation is correct") {
-			fp_zero(a);
-			TEST_ASSERT(fp_smb(a) == 0, end);
-			fp_rand(a);
-			fp_sqr(a, a);
-			TEST_ASSERT(fp_smb(a) == 1, end);
-			do {
-				fp_rand(a);
-			} while(fp_srt(b, a) == 1);
-			TEST_ASSERT(fp_smb(a) == -1, end);
-			fp_rand(a);
-#if FP_SMB == BASIC || !defined(STRIP)
-			TEST_ASSERT(fp_smb(a) == fp_smb_basic(a), end);
-#endif
-#if FP_SMB == DIVST || !defined(STRIP)
-			TEST_ASSERT(fp_smb(a) == fp_smb_divst(a), end);
-#endif
-#if FP_SMB == JMPDS || !defined(STRIP)
-			TEST_ASSERT(fp_smb(a) == fp_smb_jmpds(a), end);
-#endif
-#if FP_SMB == LOWER || !defined(STRIP)
-			TEST_ASSERT(fp_smb(a) == fp_smb_lower(a), end);
-#endif
-		}
-		TEST_END;
-	}
-	RLC_CATCH_ANY {
-		RLC_ERROR(end);
-	}
-	code = RLC_OK;
-  end:
-	fp_free(a);
-	fp_free(b);
-	return code;
-}
-
 
 static int digit(void) {
 	int code = RLC_ERR;
@@ -1195,17 +1207,17 @@ int main(void) {
 		return 1;
 	}
 
+	if (symbol() != RLC_OK) {
+		core_clean();
+		return 1;
+	}
+
 	if (exponentiation() != RLC_OK) {
 		core_clean();
 		return 1;
 	}
 
 	if (square_root() != RLC_OK) {
-		core_clean();
-		return 1;
-	}
-
-	if (symbol() != RLC_OK) {
 		core_clean();
 		return 1;
 	}
