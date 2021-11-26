@@ -541,6 +541,61 @@ static void ers(void) {
 	}
 }
 
+static void smlers(void) {
+	int size;
+	ec_t pp, pk[MAX_KEYS + 1];
+	bn_t sk[MAX_KEYS + 1], td;
+	smlers_t ring[MAX_KEYS + 1];
+	uint8_t m[5] = { 0, 1, 2, 3, 4 };
+
+	bn_null(td);
+	ec_null(pp);
+
+	bn_new(td);
+	ec_new(pp);
+	for (int i = 0; i <= MAX_KEYS; i++) {
+		bn_null(sk[i]);
+		bn_new(sk[i]);
+		ec_null(pk[i]);
+		ec_new(pk[i]);
+		smlers_null(ring[i]);
+		smlers_new(ring[i]);
+		cp_ers_gen_key(sk[i], pk[i]);
+	}
+
+	cp_ers_gen(pp);
+
+	BENCH_RUN("cp_smlers_sig") {
+		BENCH_ADD(cp_smlers_sig(td, ring[0], m, 5, sk[0], pk[0], pp));
+	} BENCH_END;
+
+	BENCH_RUN("cp_smlers_ver") {
+		BENCH_ADD(cp_smlers_ver(td, ring, 1, m, 5, pp));
+	} BENCH_END;
+
+	size = 1;
+	BENCH_FEW("cp_smlers_ext", cp_smlers_ext(td, ring, &size, m, 5, pk[size], pp), 1);
+
+	size = 1;
+	cp_smlers_sig(td, ring[0], m, 5, sk[0], pk[0], pp);
+	for (int j = 1; j < MAX_KEYS && size < BENCH; j = j << 1) {
+		for (int k = 0; k < j && size < BENCH; k++) {
+			cp_smlers_ext(td, ring, &size, m, 5, pk[size], pp);
+		}
+		cp_smlers_ver(td, ring, size, m, 5, pp);
+		util_print("(%2d exts) ", j);
+		BENCH_FEW("cp_smlers_ver", cp_smlers_ver(td, ring, size, m, 5, pp), 1);
+	}
+
+	bn_free(td);
+	ec_free(pp);
+	for (int i = 0; i <= MAX_KEYS; i++) {
+		bn_free(sk[i]);
+		ec_free(pk[i]);
+		smlers_free(ring[i])
+	}
+}
+
 static void etrs(void) {
 	int size;
 	ec_t pp, pk[MAX_KEYS + 1];
@@ -564,10 +619,10 @@ static void etrs(void) {
 		ec_curve_get_ord(sk[i]);
 		bn_rand_mod(td[i], sk[i]);
 		bn_rand_mod(y[i], sk[i]);
-		cp_etrs_gen_key(sk[i], pk[i]);
+		cp_ers_gen_key(sk[i], pk[i]);
 	}
 
-	cp_etrs_gen(pp);
+	cp_ers_gen(pp);
 
 	BENCH_FEW("cp_etrs_sig", cp_etrs_sig(td, y, MIN_KEYS, ring[0], m, 5, sk[0], pk[0], pp), 1);
 
@@ -1780,6 +1835,7 @@ int main(void) {
 		ecss();
 		vbnn();
 		ers();
+		smlers();
 		etrs();
 	}
 #endif

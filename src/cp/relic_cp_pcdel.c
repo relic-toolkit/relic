@@ -46,7 +46,7 @@ int cp_pdpub_gen(bn_t c, bn_t r, g1_t u1, g2_t u2, g2_t v2, gt_t e) {
 
 		/* Generate random c, U1, r, U2. */
 		pc_get_ord(n);
-		bn_rand(c, RLC_POS, pc_param_level());
+		bn_rand(c, RLC_POS, 50);
 		g1_rand(u1);
 		bn_rand_mod(r, n);
 		g2_rand(u2);
@@ -126,7 +126,7 @@ int cp_pdprv_gen(bn_t c, bn_t r[3], g1_t u1[2], g2_t u2[2], g2_t v2[4], gt_t e[2
 
 		pc_get_ord(n);
 		bn_rand_mod(r[2], n);
-		bn_rand(c, RLC_POS, pc_param_level());
+		bn_rand(c, RLC_POS, 50);
 		for (int i = 0; i < 2; i++) {
 			/* Generate random c, r, Ui. */
 			g1_rand(u1[i]);
@@ -255,7 +255,7 @@ int cp_lvpub_ask(bn_t c, g1_t v1, g2_t w2, g1_t p, g2_t q, bn_t r, g1_t u1, g2_t
 	int result = RLC_OK;
 
 	/* Sample random c. */
-	bn_rand(c, RLC_POS, pc_param_level());
+	bn_rand(c, RLC_POS, 50);
 	/* Compute V1 = [r](P - U1). */
 	g1_sub(v1, p, u1);
 	g1_mul(v1, v1, r);
@@ -340,7 +340,7 @@ int cp_lvprv_gen(bn_t c, bn_t r[3], g1_t u1[2], g2_t u2[2], g2_t v2[4], gt_t e[2
 
 		pc_get_ord(n);
 		bn_rand_mod(r[2], n);
-		bn_rand(c, RLC_POS, pc_param_level());
+		bn_rand(c, RLC_POS, 50);
 		for (int i = 0; i < 2; i++) {
 			/* Generate random c, r, Ui. */
 			g1_rand(u1[i]);

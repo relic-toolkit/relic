@@ -287,6 +287,10 @@ void ed_read_bin(ed_t a, const uint8_t *bin, int len) {
 	fp_mul(a->y, a->y, a->z);
 	fp_sqr(a->z, a->z);
 #endif
+
+	if (!ed_on_curve(a)) {
+		RLC_THROW(ERR_NO_VALID);
+	}
 }
 
 void ed_write_bin(uint8_t *bin, int len, const ed_t a, int pack) {
@@ -294,12 +298,13 @@ void ed_write_bin(uint8_t *bin, int len, const ed_t a, int pack) {
 
 	ed_null(t);
 
+	memset(bin, 0, len);
+
 	if (ed_is_infty(a)) {
 		if (len < 1) {
 			RLC_THROW(ERR_NO_BUFFER);
 			return;
 		} else {
-			bin[0] = 0;
 			return;
 		}
 	}

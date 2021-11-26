@@ -513,10 +513,6 @@ void ep_dbl_projc(ep_t r, const ep_t p) {
 		return;
 	}
 
-	if (fp_is_zero(p->x)) {
-		ep_set_infty(r);
-		return;
-	}
 	ep_dbl_projc_imp(r, p);
 }
 
@@ -530,10 +526,6 @@ void ep_dbl_jacob(ep_t r, const ep_t p) {
 		return;
 	}
 
-	if (fp_is_zero(p->x)) {
-		ep_set_infty(r);
-		return;
-	}
 	ep_dbl_jacob_imp(r, p);
 }
 

@@ -188,7 +188,7 @@ static void util(void) {
 
 static void arith(void) {
 	ep_t p, q, r, t[RLC_EP_TABLE_MAX];
-	bn_t k, l, n;
+	bn_t k, l[2], n;
 
 	ep_null(p);
 	ep_null(q);
@@ -202,7 +202,8 @@ static void arith(void) {
 	ep_new(r);
 	bn_new(k);
 	bn_new(n);
-	bn_new(l);
+	bn_new(l[0]);
+	bn_new(l[1]);
 
 	ep_curve_get_ord(n);
 
@@ -498,59 +499,75 @@ static void arith(void) {
 	}
 #endif
 	BENCH_RUN("ep_mul_sim") {
-		bn_rand_mod(k, n);
-		bn_rand_mod(l, n);
+		bn_rand_mod(l[0], n);
+		bn_rand_mod(l[1], n);
 		ep_rand(p);
 		ep_rand(q);
-		BENCH_ADD(ep_mul_sim(r, p, k, q, l));
+		BENCH_ADD(ep_mul_sim(r, p, l[0], q, l[1]));
 	} BENCH_END;
 
 #if EP_SIM == BASIC || !defined(STRIP)
 	BENCH_RUN("ep_mul_sim_basic") {
-		bn_rand_mod(k, n);
-		bn_rand_mod(l, n);
+		bn_rand_mod(l[0], n);
+		bn_rand_mod(l[1], n);
 		ep_rand(p);
 		ep_rand(q);
-		BENCH_ADD(ep_mul_sim_basic(r, p, k, q, l));
+		BENCH_ADD(ep_mul_sim_basic(r, p, l[0], q, l[1]));
 	} BENCH_END;
 #endif
 
 #if EP_SIM == TRICK || !defined(STRIP)
 	BENCH_RUN("ep_mul_sim_trick") {
-		bn_rand_mod(k, n);
-		bn_rand_mod(l, n);
+		bn_rand_mod(l[0], n);
+		bn_rand_mod(l[1], n);
 		ep_rand(p);
 		ep_rand(q);
-		BENCH_ADD(ep_mul_sim_trick(r, p, k, q, l));
+		BENCH_ADD(ep_mul_sim_trick(r, p, l[0], q, l[1]));
 	} BENCH_END;
 #endif
 
 #if EP_SIM == INTER || !defined(STRIP)
 	BENCH_RUN("ep_mul_sim_inter") {
-		bn_rand_mod(k, n);
-		bn_rand_mod(l, n);
+		bn_rand_mod(l[0], n);
+		bn_rand_mod(l[1], n);
 		ep_rand(p);
 		ep_rand(q);
-		BENCH_ADD(ep_mul_sim_inter(r, p, k, q, l));
+		BENCH_ADD(ep_mul_sim_inter(r, p, l[0], q, l[1]));
 	} BENCH_END;
 #endif
 
 #if EP_SIM == JOINT || !defined(STRIP)
 	BENCH_RUN("ep_mul_sim_joint") {
-		bn_rand_mod(k, n);
-		bn_rand_mod(l, n);
+		bn_rand_mod(l[0], n);
+		bn_rand_mod(l[1], n);
 		ep_rand(p);
 		ep_rand(q);
-		BENCH_ADD(ep_mul_sim_joint(r, p, k, q, l));
+		BENCH_ADD(ep_mul_sim_joint(r, p, l[0], q, l[1]));
 	} BENCH_END;
 #endif
 
 	BENCH_RUN("ep_mul_sim_gen") {
-		bn_rand_mod(k, n);
-		bn_rand_mod(l, n);
+		bn_rand_mod(l[0], n);
+		bn_rand_mod(l[1], n);
 		ep_rand(q);
-		BENCH_ADD(ep_mul_sim_gen(r, k, q, l));
+		BENCH_ADD(ep_mul_sim_gen(r, l[0], q, l[1]));
 	} BENCH_END;
+
+	for (int i = 0; i < 2; i++) {
+		ep_new(t[i]);
+	}
+
+	BENCH_RUN("ep_mul_sim_lot (2)") {
+		bn_rand_mod(l[0], n);
+		bn_rand_mod(l[1], n);
+		ep_rand(t[0]);
+		ep_rand(t[1]);
+		BENCH_ADD(ep_mul_sim_lot(r, t, l, 2));
+	} BENCH_END;
+
+	for (int i = 0; i < 2; i++) {
+		ep_free(t[i]);
+	}
 
 	BENCH_RUN("ep_map") {
 		uint8_t msg[5];
@@ -572,7 +589,8 @@ static void arith(void) {
 	ep_free(q);
 	ep_free(r);
 	bn_free(k);
-	bn_free(l);
+	bn_free(l[0]);
+	bn_free(l[1]);
 	bn_free(n);
 }
 

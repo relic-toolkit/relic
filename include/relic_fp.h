@@ -110,6 +110,8 @@ enum {
 	BN_254,
 	/** 256-bit prime provided in Barreto et al. for BN curves. */
 	BN_256,
+	/** 256-bit prime provided for BN curve standardized in China. */
+	SM9_256,
 	/** 381-bit prime for BLS curve of embedding degree 12 (Zcash). */
 	B12_381,
 	/** 382-bit prime provided by Barreto for BN curve. */
@@ -129,7 +131,7 @@ enum {
 	/** 511-bit prime for Optimal TNFS-secure curve. */
 	OT_511,
 	/** Random 544-bit prime for Cocks-Pinch curve with embedding degree 8. */
-	CP8_544,
+	GMT8_544,
 	/** 569-bit prime for KSS curve with embedding degree 54. */
 	K54_569,
 	/** 575-bit prime for BLS curve with embedding degree 48. */
@@ -358,6 +360,8 @@ typedef rlc_align dig_t fp_st[RLC_FP_DIGS + RLC_PAD(RLC_FP_BYTES)/(RLC_DIG / 8)]
 #define fp_inv(C, A)	fp_inv_exgcd(C, A)
 #elif FP_INV == DIVST
 #define fp_inv(C, A)	fp_inv_divst(C, A)
+#elif FP_INV == JMPDS
+#define fp_inv(C, A)	fp_inv_jmpds(C, A)
 #elif FP_INV == LOWER
 #define fp_inv(C, A)	fp_inv_lower(C, A)
 #endif
@@ -1044,6 +1048,16 @@ void fp_inv_exgcd(fp_t c, const fp_t a);
  * @throw ERR_NO_VALID		- if the field element is not invertible.
  */
 void fp_inv_divst(fp_t c, const fp_t a);
+
+/**
+ * Inverts a prime field element using the constant-time jump division step
+ * by Bernstein and Bo-Yin Yang.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the prime field element to invert.
+ * @throw ERR_NO_VALID		- if the field element is not invertible.
+ */
+void fp_inv_jmpds(fp_t c, const fp_t a);
 
 /**
  * Inverts a prime field element using a direct call to the lower layer.

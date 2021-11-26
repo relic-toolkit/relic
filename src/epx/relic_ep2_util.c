@@ -85,17 +85,17 @@ void ep2_blind(ep2_t r, ep2_t p) {
 
 	RLC_TRY {
 		fp2_new(rand);
+		fp2_rand(rand);
 #if EP_ADD == BASIC
 		(void)rand;
 		ep2_copy(r, p);
-#elif EP_ADD == PROJC
-		fp2_rand(rand);
+#else
 		fp2_mul(r->z, p->z, rand);
 		fp2_mul(r->y, p->y, rand);
 		fp2_sqr(rand, rand);
 		fp2_mul(r->x, r->x, rand);
 		fp2_mul(r->y, r->y, rand);
-		r->coord = PROJC;
+		r->coord = EP_ADD;
 #endif
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -287,6 +287,10 @@ void ep2_read_bin(ep2_t a, const uint8_t *bin, int len) {
 			return;
 		}
 	}
+
+	if (!ep2_on_curve(a)) {
+		RLC_THROW(ERR_NO_VALID);
+	}
 }
 
 void ep2_write_bin(uint8_t *bin, int len, ep2_t a, int pack) {
@@ -294,12 +298,13 @@ void ep2_write_bin(uint8_t *bin, int len, ep2_t a, int pack) {
 
 	ep2_null(t);
 
+	memset(bin, 0, len);
+
 	if (ep2_is_infty(a)) {
 		if (len < 1) {
 			RLC_THROW(ERR_NO_BUFFER);
 			return;
 		} else {
-			bin[0] = 0;
 			return;
 		}
 	}

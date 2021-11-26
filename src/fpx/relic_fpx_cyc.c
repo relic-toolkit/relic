@@ -84,7 +84,7 @@ int fp2_test_cyc(fp2_t a) {
 void fp2_exp_cyc(fp2_t c, fp2_t a, bn_t b) {
 	fp2_t r, s, t[1 << (FP_WIDTH - 2)];
 	int i, l;
-	signed char naf[RLC_FP_BITS + 1], *k;
+	int8_t naf[RLC_FP_BITS + 1], *k;
 
 	if (bn_is_zero(b)) {
 		return fp2_set_dig(c, 1);
@@ -194,7 +194,7 @@ int fp8_test_cyc(fp8_t a) {
 void fp8_exp_cyc(fp8_t c, fp8_t a, bn_t b) {
 	fp8_t r, s, t[1 << (FP_WIDTH - 2)];
 	int i, l;
-	signed char naf[RLC_FP_BITS + 1], *k;
+	int8_t naf[RLC_FP_BITS + 1], *k;
 
 	if (bn_is_zero(b)) {
 		return fp8_set_dig(c, 1);
@@ -496,7 +496,6 @@ void fp12_exp_cyc(fp12_t c, fp12_t a, bn_t b) {
 						fp12_inv_cyc(t[i], t[i]);
 					}
 					_l[i] = RLC_FP_BITS + 1;
-					memset(naf[i], 0, _l[i]);
 					bn_rec_naf(naf[i], &_l[i], _b[i], 2);
 					l = RLC_MAX(l, _l[i]);
 				}
@@ -651,13 +650,6 @@ void fp2_exp_cyc_sim(fp2_t e, fp2_t a, bn_t b, fp2_t c, bn_t d) {
 		bn_rec_naf(naf1, &l1, d, FP_WIDTH);
 
 		l = RLC_MAX(l0, l1);
-		for (i = l0; i < l; i++) {
-			naf0[i] = 0;
-		}
-		for (i = l1; i < l; i++) {
-			naf1[i] = 0;
-		}
-
 		if (bn_sign(b) == RLC_NEG) {
 			for (i = 0; i < l0; i++) {
 				naf0[i] = -naf0[i];
@@ -1126,7 +1118,6 @@ void fp24_exp_cyc(fp24_t c, fp24_t a, bn_t b) {
 				fp24_copy(t[0], a);
 				for (i = 0; i < 8; i++) {
 					_l[i] = RLC_FP_BITS + 1;
-					memset(naf[i], 0, _l[i]);
 					bn_rec_naf(naf[i], &_l[i], _b[i], 2);
 					l = RLC_MAX(l, _l[i]);
 					if (i > 0) {
@@ -1290,13 +1281,6 @@ void fp24_exp_cyc_sim(fp24_t e, fp24_t a, bn_t b, fp24_t c, bn_t d) {
 		bn_rec_naf(naf1, &l1, d, FP_WIDTH);
 
 		l = RLC_MAX(l0, l1);
-		for (i = l0; i < l; i++) {
-			naf0[i] = 0;
-		}
-		for (i = l1; i < l; i++) {
-			naf1[i] = 0;
-		}
-
 		if (bn_sign(b) == RLC_NEG) {
 			for (i = 0; i < l0; i++) {
 				naf0[i] = -naf0[i];

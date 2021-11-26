@@ -91,29 +91,31 @@ int g1_is_valid(g1_t a) {
 		} else {
 			switch (ep_curve_is_pairf()) {
 				/* Formulas from "Faster Subgroup Checks for BLS12-381" by Bowe.
-				 * https://eprint.iacr.org/2019/814.pdf */
+				 * https://eprint.iacr.org/2019/814.pdf, together with tweaks
+				 * by Mike Scott. */
 				case EP_B12:
-					/* Check [(z^2−1)](2\psi(P)-P-\psi^2(P)) == [3]\psi^2(P).
-					 * Since \psi(P) = [\lambda]P = [z^2 - 1]P, it is the same
-					 * as checking \psi(2\psi(P)-P-\psi^2(P)) == [3]\psi^2(P),
-					 * or \psi((\psi-1)^2(P)) == [-3]*\psi^2(P). */
-					ep_psi(v, a);
-					ep_sub(t, v, a);
-					ep_psi(u, v);
-					ep_psi(v, t);
-					ep_sub(v, v, t);
-					ep_psi(t, v);
-					ep_dbl(v, u);
-					ep_add(u, u, v);
-					ep_neg(u, u);
-					r = ep_on_curve(t) && (ep_cmp(t, u) == RLC_EQ);
+					/* Check [(z^2−1)](\psi(P)+P) == -P.*/
+					fp_prime_get_par(n);
+					bn_sqr(n, n);
+					bn_sub_dig(n, n, 1);
+					ep_psi(t, a);
+					ep_add(t, t, a);
+					ep_copy(u, t);
+					for (int i = bn_bits(n) - 2; i >= 0; i--) {
+						g1_dbl(u, u);
+						if (bn_get_bit(n, i)) {
+							g1_add(u, u, t);
+						}
+					}
+					g1_neg(v, a);
+					r = g1_on_curve(a) && (g1_cmp(v, u) == RLC_EQ);
 					break;
 				default:
 					pc_get_ord(n);
 					bn_sub_dig(n, n, 1);
 					/* Otherwise, check order explicitly. */
 					/* We use fast scalar multiplication methods here, because
-					 * they should work only in the correct order. */
+					 * they should work only in the correct subgroup. */
 					g1_mul(u, a, n);
 					g1_neg(u, u);
 					r = g1_on_curve(a) && (g1_cmp(u, a) == RLC_EQ);
@@ -267,21 +269,21 @@ int gt_is_valid(gt_t a) {
 			dv_copy(p->dp, fp_prime_get(), RLC_FP_DIGS);
 			p->used = RLC_FP_DIGS;
 			p->sign = RLC_POS;
-#ifdef GLS_MEMBER
-			/* Compute trace t = p - n + 1, and compute a^t. */
-			fp_prime_get_par(n);
-			b = fp_prime_get_par_sps(&l);
-			fp12_exp_cyc_sps((void *)v, (void *)a, b, l, RLC_POS);
-			fp12_exp_cyc_sps((void *)u, (void *)v, b, l, RLC_POS);
-			gt_sqr(v, u);
-			gt_sqr(u, v);
-			gt_mul(u, u, v);
-#else
-			/* Compute trace t = p - n + 1. */
-			bn_sub(n, p, n);
-			/* Compute u = a^t. */
-			gt_exp(u, a, n);
-#endif
+			if (ep_curve_is_pairf() == EP_BN) {
+				/* Compute trace t = p - n + 1, and compute a^t. */
+				fp_prime_get_par(n);
+				b = fp_prime_get_par_sps(&l);
+				fp12_exp_cyc_sps((void *)v, (void *)a, b, l, RLC_POS);
+				fp12_exp_cyc_sps((void *)u, (void *)v, b, l, RLC_POS);
+				gt_sqr(v, u);
+				gt_sqr(u, v);
+				gt_mul(u, u, v);
+			} else {
+				/* Compute trace t = p - n + 1. */
+				bn_sub(n, p, n);
+				/* Compute u = a^t. */
+				gt_exp(u, a, n);
+			}
 			/* Compute v = a^(p + 1). */
 			gt_frb(v, a, 1);
 			/* Check if a^(p + 1) = a^t. */
@@ -321,6 +323,7 @@ int gt_is_valid(gt_t a) {
 #endif
 					r &= fp12_test_cyc((void *)a);
 					break;
+#if FP_PRIME == 509
 				case EP_B24:
 #ifdef GLS_MEMBER
 					/* The 8-GLS recoding of the exponent gives this. */
@@ -350,6 +353,7 @@ int gt_is_valid(gt_t a) {
 #endif
 					r = fp24_test_cyc((void *)a);
 					break;
+#endif
 				default:
 					/* Common case. */
 					bn_sub_dig(n, n, 1);

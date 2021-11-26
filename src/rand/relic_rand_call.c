@@ -77,6 +77,9 @@ void rand_bytes(uint8_t *buf, int size) {
 	ctx_t *ctx = core_get();
 
 	ctx->rand_call(buf, size, ctx->rand_args);
+	if (rand_check(buf, size) == RLC_ERR) {
+		RLC_THROW(ERR_NO_RAND);
+	}
 }
 
 void rand_seed(void (*callback)(uint8_t *, int, void *), void *args) {

@@ -890,7 +890,7 @@ void eb_mul_rwnaf(eb_t r, const eb_t p, const bn_t k) {
 
 void eb_mul_halve(eb_t r, const eb_t p, const bn_t k) {
 	int i, j, l, trc, cof;
-	int8_t naf[RLC_FB_BITS + 1] = { 0 }, *_k;
+	int8_t naf[RLC_FB_BITS + 1], *_k;
 	eb_t q, s, t[1 << (EB_WIDTH - 2)];
 	bn_t n, m;
 	fb_t u, v, w, z;
@@ -937,9 +937,6 @@ void eb_mul_halve(eb_t r, const eb_t p, const bn_t k) {
 		l = sizeof(naf);
 		bn_rec_naf(naf, &l, m, EB_WIDTH);
 
-		for (i = l; i <= bn_bits(n); i++) {
-			naf[i] = 0;
-		}
 		if (naf[bn_bits(n)] == 1) {
 			eb_dbl(t[0], p);
 		}

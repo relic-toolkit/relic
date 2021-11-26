@@ -673,7 +673,7 @@ static int multiplication(void) {
 		TEST_END;
 #endif
 
-		TEST_CASE("multiplication by digit is correct") {
+		TEST_CASE("point multiplication by digit is correct") {
 			ed_mul_dig(r, p, 0);
 			TEST_ASSERT(ed_is_infty(r), end);
 			ed_mul_dig(r, p, 1);

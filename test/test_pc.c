@@ -367,6 +367,18 @@ static int multiplication1(void) {
 			g1_mul(r, p, n);
 			TEST_ASSERT(g1_is_infty(r) == 1, end);
 		} TEST_END;
+
+		TEST_CASE("point multiplication by digit is correct") {
+			g1_mul_dig(r, p, 0);
+			TEST_ASSERT(g1_is_infty(r), end);
+			g1_mul_dig(r, p, 1);
+			TEST_ASSERT(g1_cmp(p, r) == RLC_EQ, end);
+			bn_rand(k, RLC_POS, RLC_DIG);
+			g1_mul(q, p, k);
+			g1_mul_dig(r, p, k->dp[0]);
+			TEST_ASSERT(g1_cmp(q, r) == RLC_EQ, end);
+		}
+		TEST_END;
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -945,6 +957,18 @@ static int multiplication2(void) {
 			g2_mul(r, p, n);
 			TEST_ASSERT(g2_is_infty(r) == 1, end);
 		} TEST_END;
+
+		TEST_CASE("point multiplication by digit is correct") {
+			g2_mul_dig(r, p, 0);
+			TEST_ASSERT(g2_is_infty(r), end);
+			g2_mul_dig(r, p, 1);
+			TEST_ASSERT(g2_cmp(p, r) == RLC_EQ, end);
+			bn_rand(k, RLC_POS, RLC_DIG);
+			g2_mul(q, p, k);
+			g2_mul_dig(r, p, k->dp[0]);
+			TEST_ASSERT(g2_cmp(q, r) == RLC_EQ, end);
+		}
+		TEST_END;
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -1472,6 +1496,14 @@ int exponentiation(void) {
 			gt_exp(a, a, d);
 			gt_exp(b, b, e);
 			gt_mul(b, a, b);
+			TEST_ASSERT(gt_cmp(b, c) == RLC_EQ, end);
+			gt_exp_dig(b, a, 0);
+			TEST_ASSERT(gt_is_unity(b), end);
+			gt_exp_dig(b, a, 1);
+			TEST_ASSERT(gt_cmp(a, b) == RLC_EQ, end);
+			bn_rand(d, RLC_POS, RLC_DIG);
+			gt_exp(b, a, d);
+			gt_exp_dig(c, a, d->dp[0]);
 			TEST_ASSERT(gt_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 	}

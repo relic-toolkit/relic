@@ -543,6 +543,11 @@ void eb_read_bin(eb_t a, const uint8_t *bin, int len) {
 			return;
 		}
 	}
+
+	if (!eb_on_curve(a)) {
+		RLC_THROW(ERR_NO_VALID);
+		return;
+	}
 }
 
 void eb_write_bin(uint8_t *bin, int len, const eb_t a, int pack) {
@@ -550,12 +555,13 @@ void eb_write_bin(uint8_t *bin, int len, const eb_t a, int pack) {
 
 	eb_null(t);
 
+	memset(bin, 0, len);
+
 	if (eb_is_infty(a)) {
 		if (len < 1) {
 			RLC_THROW(ERR_NO_BUFFER);
 			return;
 		} else {
-			bin[0] = 0;
 			return;
 		}
 	}

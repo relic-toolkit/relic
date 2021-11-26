@@ -299,20 +299,11 @@ void bn_mxp_monty(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 		bn_copy(u, tab[0]);
 #endif
 
-		/* Silly branchless code, since called functions not constant-time. */
-		bn_mod_inv(tab[0], u, m);
-		dv_swap_cond(u->dp, tab[0]->dp, RLC_BN_DIGS, bn_sign(b) == RLC_NEG);
 		if (bn_sign(b) == RLC_NEG) {
-			u->sign = tab[0]->sign;
-			if (bn_cmp_dig(tab[1], 1) != RLC_EQ) {
-				bn_zero(c);
-				RLC_THROW(ERR_NO_VALID);
-			}
+			bn_mod_inv(c, u, m);
+		} else {
+			bn_copy(c, u);
 		}
-		bn_add(tab[1], u, m);
-		dv_swap_cond(u->dp, tab[1]->dp, RLC_BN_DIGS, bn_sign(b) == RLC_NEG && bn_sign(u) == RLC_NEG);
-		u->sign = RLC_POS;
-		bn_copy(c, u);
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);

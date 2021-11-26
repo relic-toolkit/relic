@@ -37,18 +37,14 @@
 /*============================================================================*/
 
 void ep2_frb(ep2_t r, ep2_t p, int i) {
+	ctx_t *ctx = core_get();
+
 	ep2_copy(r, p);
 	for (; i > 0; i--) {
 		fp2_frb(r->x, r->x, 1);
 		fp2_frb(r->y, r->y, 1);
 		fp2_frb(r->z, r->z, 1);
-		if (ep2_curve_is_twist() == RLC_EP_MTYPE) {
-			fp2_mul_frb(r->x, r->x, 1, 4);
-			fp2_mul_art(r->x, r->x);
-			fp2_mul_art(r->y, r->y);
-		} else {
-			fp2_mul_frb(r->x, r->x, 1, 2);
-		}
-		fp2_mul_frb(r->y, r->y, 1, 3);
+		fp2_mul(r->x, r->x, ctx->ep2_frb[0]);
+		fp2_mul(r->y, r->y, ctx->ep2_frb[1]);
 	}
 }

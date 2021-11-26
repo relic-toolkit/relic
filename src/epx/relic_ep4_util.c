@@ -85,17 +85,17 @@ void ep4_blind(ep4_t r, ep4_t p) {
 
 	RLC_TRY {
 		fp4_new(rand);
+		fp4_rand(rand);
 #if EP_ADD == BASIC
 		(void)rand;
 		ep4_copy(r, p);
-#elif EP_ADD == PROJC
-		fp4_rand(rand);
+#else
 		fp4_mul(r->z, p->z, rand);
 		fp4_mul(r->y, p->y, rand);
 		fp4_sqr(rand, rand);
 		fp4_mul(r->x, r->x, rand);
 		fp4_mul(r->y, r->y, rand);
-		r->coord = PROJC;
+		r->coord = EP_ADD;
 #endif
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -276,6 +276,10 @@ void ep4_read_bin(ep4_t a, const uint8_t *bin, int len) {
 			return;
 		}
 	}
+
+	if (!ep4_on_curve(a)) {
+		RLC_THROW(ERR_NO_VALID);
+	}
 }
 
 void ep4_write_bin(uint8_t *bin, int len, ep4_t a, int pack) {
@@ -283,12 +287,13 @@ void ep4_write_bin(uint8_t *bin, int len, ep4_t a, int pack) {
 
 	ep4_null(t);
 
+	memset(bin, 0, len);
+
 	if (ep4_is_infty(a)) {
 		if (len < 1) {
 			RLC_THROW(ERR_NO_BUFFER);
 			return;
 		} else {
-			bin[0] = 0;
 			return;
 		}
 	}

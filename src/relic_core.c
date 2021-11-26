@@ -34,6 +34,7 @@
 #include <string.h>
 
 #include "relic_core.h"
+#include "relic_bench.h"
 #include "relic_multi.h"
 #include "relic_rand.h"
 #include "relic_types.h"
@@ -68,6 +69,8 @@
 #define MSG_NO_CURVE		"no curve supported at this security level"
 /** Error message respective to ERR_NO_CONFIG. */
 #define MSG_NO_CONFIG		"invalid library configuration"
+/** Error message respective to ERR_NO_CURVE. */
+#define MSG_NO_RAND			"faulty pseudo-random number generator"
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -111,6 +114,7 @@ int core_init(void) {
 	core_ctx->reason[ERR_NO_FIELD] = MSG_NO_FIELD;
 	core_ctx->reason[ERR_NO_CURVE] = MSG_NO_CURVE;
 	core_ctx->reason[ERR_NO_CONFIG] = MSG_NO_CONFIG;
+	core_ctx->reason[ERR_NO_RAND] = MSG_NO_RAND;
 	core_ctx->last = NULL;
 #endif /* CHECK */
 

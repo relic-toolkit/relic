@@ -63,7 +63,7 @@ static void fp_prime_set(const bn_t p) {
 
 		bn_copy(&(ctx->prime), p);
 
-		#if FP_RDC == MONTY || !defined(STRIP)
+#if FP_RDC == MONTY || !defined(STRIP)
 
 		bn_mod_pre_monty(t, &(ctx->prime));
 		ctx->u = t->dp[0];
@@ -81,7 +81,42 @@ static void fp_prime_set(const bn_t p) {
 		ctx->conv.used = RLC_FP_DIGS;
 		bn_trim(&(ctx->conv));
 
-		#endif /* FP_RDC == MONTY */
+#endif /* FP_RDC == MONTY */
+
+#if FP_INV == JUMPDS || !defined(STRIP)
+
+		int d = (45907 * FP_PRIME + 26313) / 19929;
+
+#if WSIZE == 8
+		bn_set_dig(t, d >> 8);
+		bn_lsh(t, t, 8);
+		bn_add_dig(t, t, d & 0xFF);
+#else
+		bn_set_dig(t, d);
+#endif
+		ctx->inv.used = RLC_FP_DIGS;
+		dv_copy(ctx->inv.dp, fp_prime_get(), RLC_FP_DIGS);
+		fp_add_dig(ctx->inv.dp, ctx->inv.dp, 1);
+		fp_hlv(ctx->inv.dp, ctx->inv.dp);
+		fp_exp(ctx->inv.dp, ctx->inv.dp, t);
+
+#if FP_RDC == MONTY
+
+#if (FP_PRIME % WSIZE) != 0
+		fp_mul(ctx->inv.dp, ctx->inv.dp, ctx->conv.dp);
+		fp_mul(ctx->inv.dp, ctx->inv.dp, ctx->conv.dp);
+
+		for (int i = 1, j = 0; i < d / (RLC_DIG - 2); i++) {
+			j = i % RLC_FP_DIGS;
+			if (j == 0) {
+				fp_mulm_low(ctx->inv.dp, ctx->inv.dp, ctx->conv.dp);
+			}
+		}
+#endif
+
+#endif /* FP_RDC == MONTY */
+
+#endif /* FP_INV */
 
 		/* Now look for proper quadratic/cubic non-residues. */
 		ctx->qnr = ctx->cnr = 0;
@@ -157,6 +192,9 @@ void fp_prime_init(void) {
 	bn_make(&(ctx->conv), RLC_FP_DIGS);
 	bn_make(&(ctx->one), RLC_FP_DIGS);
 #endif
+#if FP_INV == JUMPDS || !defined(STRIP)
+	bn_make(&(ctx->inv), RLC_FP_DIGS);
+#endif /* FP_INV */
 }
 
 void fp_prime_clean(void) {
@@ -171,6 +209,9 @@ void fp_prime_clean(void) {
 		bn_clean(&(ctx->one));
 		bn_clean(&(ctx->conv));
 #endif
+#if FP_INV == JUMPDS || !defined(STRIP)
+		bn_clean(&(ctx->inv));
+#endif /* FP_INV */
 		bn_clean(&(ctx->prime));
 		bn_clean(&(ctx->par));
 	}

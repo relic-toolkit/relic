@@ -71,6 +71,8 @@ enum errors {
 	ERR_NO_CURVE,
 	/** Occurs when the library configuration is incorrect. */
 	ERR_NO_CONFIG,
+	/** Occurs when the PRNG is stuck at one value. */
+	ERR_NO_RAND,
 	/** Constant to indicate the number of errors. */
 	ERR_MAX
 };
@@ -160,9 +162,9 @@ typedef struct _sts_t {
 /**
  * Implements the THROW clause of the error-handling routines.
  *
- * If the error pointer is not NULL but there is no surrounding TRY-CATCH
- * block, then the code threw an exception after an exception was thrown.
- * In this case, we finish execution.
+ * First we make sure that the error pointer is NULL (new exception) or
+ * there is a surrounding try-catch block (block = 1). If this is not the case,
+ * then it is the second exception thrown in sequence without handling.
  *
  * If the error pointer is NULL, the error was thrown outside of a TRY-CATCH
  * block. An error message is printed and the function returns.
@@ -178,21 +180,20 @@ typedef struct _sts_t {
 	{																	\
 		ctx_t *_ctx = core_get();										\
 		_ctx->code = RLC_ERR;											\
-		if (_ctx->last != NULL && _ctx->last->block == 0) {				\
-			exit(E);													\
-		}																\
-		if (_ctx->last == NULL) {										\
-			_ctx->last = &(_ctx->error);								\
-			_ctx->error.error = &(_ctx->number);						\
-			_ctx->error.block = 0;										\
-			_ctx->number = E;											\
-			RLC_ERR_PRINT(E);											\
-		} else {														\
-			for (; ; longjmp(_ctx->last->addr, 1)) {					\
+		if (_ctx->last == NULL || _ctx->last->block == 1) {				\
+			if (_ctx->last == NULL) {									\
+				_ctx->last = &(_ctx->error);							\
+				_ctx->error.error = &(_ctx->number);					\
+				_ctx->error.block = 0;									\
+				_ctx->number = E;										\
 				RLC_ERR_PRINT(E);										\
-				if (_ctx->last->error) {								\
-					if (E != ERR_CAUGHT) {								\
-						*(_ctx->last->error) = E;						\
+			} else {													\
+				for (; ; longjmp(_ctx->last->addr, 1)) {				\
+					RLC_ERR_PRINT(E);									\
+					if (_ctx->last->error) {							\
+						if (E != ERR_CAUGHT) {							\
+							*(_ctx->last->error) = E;					\
+						}												\
 					}													\
 				}														\
 			}															\

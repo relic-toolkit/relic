@@ -32,7 +32,7 @@
  *
  * The scalar multiplication functions are only guaranteed to work
  * in the large prime order subgroup. If you need a generic scalar
- * multiplication function, use ep_mul_basic().
+ * multiplication function, use ep_mul_basic.
  *
  * @ingroup ep
  */
@@ -97,6 +97,8 @@ enum {
 	BN_P254,
 	/** Barreto-Naehrig curve with negative x. */
 	BN_P256,
+	/** Barreto-Naehrig curve standardized in China. */
+	SM9_P256,
 	/** Barreto-Lynn-Scott curve with embedding degree 12 (ZCash curve). */
 	B12_P381,
 	/** Barreto-Naehrig curve with negative x. */
@@ -116,7 +118,7 @@ enum {
 	/** Optimal TNFS-secure curve with embedding degree 8. */
 	OT8_P511,
 	/** Cocks-pinch curve with embedding degree 8. */
-	CP8_P544,
+	GMT8_P544,
 	/** Kachisa-Scott-Schaefer curve with embedding degree 54. */
 	K54_P569,
 	/** Barreto-Lynn-Scott curve with embedding degree 48. */
@@ -144,7 +146,7 @@ enum {
 	/* Optimal TNFS-secure. */
 	EP_OT8,
 	/* Cocks-Pinch curve. */
-	EP_CP8,
+	EP_GMT8,
 	/* Barreto-Lynn-Scott with embedding degree 12. */
 	EP_B12,
 	/* Kachisa-Schafer-Scott with embedding degree 16. */
@@ -237,14 +239,17 @@ typedef struct {
 	int coord;
 } ep_st;
 
-
 /**
  * Pointer to an elliptic curve point.
  */
 #if ALLOC == AUTO
 typedef ep_st ep_t[1];
 #else
+#ifdef CHECK
+typedef ep_st *volatile ep_t;
+#else
 typedef ep_st *ep_t;
+#endif
 #endif
 
 /**
@@ -1143,14 +1148,15 @@ void ep_mul_sim_joint(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 		const bn_t m);
 
 /**
- * Multiplies simultaneously elements from G_2. Computes R = \Sum_i=0..n k_iP_i.
+ * Multiplies and adds multiple elliptic curve points simultaneously.
+ * Computes R = \Sum_i=0..n [k_i]P_i.
  *
  * @param[out] r			- the result.
- * @param[out] p			- the G_2 elements to multiply.
+ * @param[out] p			- the elements to multiply.
  * @param[out] k			- the integer scalars.
  * @param[out] n			- the number of elements to multiply.
  */
-void ep_mul_sim_lot(ep_t r, ep_t p[], const bn_t k[], int n);
+void ep_mul_sim_lot(ep_t r, const ep_t p[], const bn_t k[], int n);
 
 /**
  * Multiplies and adds the generator and a prime elliptic curve point
@@ -1165,14 +1171,14 @@ void ep_mul_sim_gen(ep_t r, const bn_t k, const ep_t q, const bn_t m);
 
 /**
  * Multiplies prime elliptic curve points by small scalars.
- * Computes R = \sum k_iP_i.
+ * Computes R = \Sum_i=0..n [k_i]P_i.
  *
  * @param[out] r			- the result.
  * @param[in] p				- the points to multiply.
  * @param[in] k				- the small scalars.
- * @param[in] len			- the number of points to multiply.
+ * @param[in] n				- the number of points to multiply.
  */
-void ep_mul_sim_dig(ep_t r, const ep_t p[], const dig_t k[], int len);
+void ep_mul_sim_dig(ep_t r, const ep_t p[], const dig_t k[], int n);
 
 /**
  * Converts a point to affine coordinates.
@@ -1192,6 +1198,18 @@ void ep_norm(ep_t r, const ep_t p);
 void ep_norm_sim(ep_t *r, const ep_t *t, int n);
 
 /**
+ * Maps an array of uniformly random bytes to a point in a prime elliptic
+ * curve.
+ * That array is expected to have a length suitable for two field elements plus
+ * extra bytes for uniformity.
+  *
+ * @param[out] p			- the result.
+ * @param[in] uniform_bytes		- the array of uniform bytes to map.
+ * @param[in] len			- the array length in bytes.
+ */
+void ep_map_from_field(ep_t p, const uint8_t *uniform_bytes, int len);
+
+/**
  * Maps a byte array to a point in a prime elliptic curve.
  *
  * @param[out] p			- the result.
@@ -1199,19 +1217,6 @@ void ep_norm_sim(ep_t *r, const ep_t *t, int n);
  * @param[in] len			- the array length in bytes.
  */
 void ep_map(ep_t p, const uint8_t *msg, int len);
-
-/**
- * Maps a byte array to a point in a prime elliptic curve using
- * an explicit domain separation tag.
- *
- * @param[out] p			- the result.
- * @param[in] msg			- the byte array to map.
- * @param[in] len			- the array length in bytes.
- * @param[in] dst			- the domain separation tag.
- * @param[in] dst_len		- the domain separation tag length in bytes.
- */
-void ep_map_dst(ep_t p, const uint8_t *msg, int len, const uint8_t *dst,
-		int dst_len);
 
 /**
  * Maps a byte array to a point in a prime elliptic curve with specified

@@ -85,7 +85,8 @@ void bn_make(bn_t a, int digits) {
 	}
 #endif
 	if (a != NULL) {
-		a->used = 0;
+		a->used = 1;
+		a->dp[0] = 0;
 		a->alloc = digits;
 		a->sign = RLC_POS;
 	}

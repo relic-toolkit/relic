@@ -1766,16 +1766,20 @@ static int small_primes(void) {
 
 static int inversion(void) {
 	int code = RLC_ERR;
-	bn_t a, b, c;
+	bn_t a, b, c, d[2];
 
 	bn_null(a);
 	bn_null(b);
 	bn_null(c);
+	bn_null(d[0]);
+	bn_null(d[1]);
 
 	RLC_TRY {
 		bn_new(a);
 		bn_new(b);
 		bn_new(c);
+		bn_new(d[0]);
+		bn_new(d[1]);
 
 		bn_gen_prime(a, RLC_BN_BITS);
 
@@ -1785,6 +1789,17 @@ static int inversion(void) {
 			TEST_ASSERT(bn_cmp_dig(c, 1) != RLC_EQ, end);
 			bn_mul(c, b, c);
 			bn_mod(c, c, a);
+			TEST_ASSERT(bn_cmp_dig(c, 1) == RLC_EQ, end);
+			bn_rand_mod(b, a);
+			bn_rand_mod(c, a);
+			bn_copy(d[0], b);
+			bn_copy(d[1], c);
+			bn_mod_inv_sim(d, d, a, 2);
+			bn_mul(b, b, d[0]);
+			bn_mod(b, b, a);
+			bn_mul(c, c, d[1]);
+			bn_mod(c, c, a);
+			TEST_ASSERT(bn_cmp_dig(b, 1) == RLC_EQ, end);
 			TEST_ASSERT(bn_cmp_dig(c, 1) == RLC_EQ, end);
 		} TEST_END;
 	}
@@ -1796,6 +1811,8 @@ static int inversion(void) {
 	bn_free(a);
 	bn_free(b);
 	bn_free(c);
+	bn_free(d[0]);
+	bn_free(d[1]);
 	return code;
 }
 
@@ -1839,7 +1856,7 @@ static int recoding(void) {
 	bn_t a, b, c, v1[3], v2[3];
 	int w, k, l;
 	uint8_t d[RLC_BN_BITS + 1];
-	signed char e[2 * (RLC_BN_BITS + 1)];
+	int8_t e[2 * (RLC_BN_BITS + 1)];
 
 	bn_null(a);
 	bn_null(b);

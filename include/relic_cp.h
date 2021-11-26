@@ -205,13 +205,33 @@ typedef struct _ers_st {
 /**
  * Pointer to an extendable ring signature.
  */
-/**
- * Pointer to a Boneh-Goh-Nissim cryptosystem key pair.
- */
 #if ALLOC == AUTO
 typedef ers_st ers_t[1];
 #else
 typedef ers_st *ers_t;
+#endif
+
+/**
+ * Represents an extendable ring signature.
+ */
+typedef struct _smlers_st {
+	/** The extendable ring signature. */
+	ers_t sig;
+	/** The linkability tag. */
+	ec_t tau;
+	/** The first component of the signature of knowledge. */
+	bn_t c[2];
+	/** The second component of the signature of knowledge. */
+	bn_t r[2];
+} smlers_st;
+
+/**
+ * Pointer to an extendable ring signature.
+ */
+#if ALLOC == AUTO
+typedef smlers_st smlers_t[1];
+#else
+typedef smlers_st *smlers_t;
 #endif
 
 /**
@@ -232,9 +252,6 @@ typedef struct _etrs_st {
 
 /**
  * Pointer to an extendable ring signature.
- */
-/**
- * Pointer to a Boneh-Goh-Nissim cryptosystem key pair.
  */
 #if ALLOC == AUTO
 typedef etrs_st etrs_t[1];
@@ -604,6 +621,57 @@ typedef etrs_st *etrs_t;
 
 #elif ALLOC == AUTO
 #define ers_free(A)				/* empty */
+#endif
+
+/**
+ * Initializes a BGN key pair with a null value.
+ *
+ * @param[out] A			- the key pair to initialize.
+ */
+#define smlers_null(A)			RLC_NULL(A)
+
+/**
+ * Calls a function to allocate and initialize an extendable signature ring.
+ *
+ * @param[out] A			- the new signature ring.
+ */
+#if ALLOC == DYNAMIC
+#define smlers_new(A)														\
+	A = (smlers_t)calloc(1, sizeof(ers_st));								\
+	if (A == NULL) {														\
+		RLC_THROW(ERR_NO_MEMORY);											\
+	}																		\
+	ers_new((A)->sig);														\
+	ec_new((A)->tau);														\
+	bn_new((A)->c[0]);														\
+	bn_new((A)->c[1]);														\
+	bn_new((A)->r[0]);														\
+	bn_new((A)->r[1]);														\
+
+#elif ALLOC == AUTO
+#define smlers_new(A)				/* empty */
+#endif
+
+/**
+ * Calls a function to clean and free an extendable signature ring.
+ *
+ * @param[out] A			- the signature ring to clean and free.
+ */
+#if ALLOC == DYNAMIC
+#define smlers_free(A)														\
+	if (A != NULL) {														\
+		ers_free((A)->sig);													\
+		ec_free((A)->tau);													\
+		bn_free((A)->c[0]);													\
+		bn_free((A)->c[1]);													\
+		bn_free((A)->r[0]);													\
+		bn_free((A)->r[1]);													\
+		free(A);															\
+		A = NULL;															\
+	}
+
+#elif ALLOC == AUTO
+#define smlers_free(A)				/* empty */
 #endif
 
 /**
@@ -1967,13 +2035,14 @@ int cp_sokdl_ver(bn_t c, bn_t r, uint8_t *msg, int len, ec_t y);
  * @param[in] msg 			- the message to sign.
  * @param[in] len 			- the length of the message.
  * @param[in] y 			- the elliptic curve points.
+ * @param[in] g 			- the elliptic curve generators.
  * @param[in] x 			- the discrete logarithm to prove.
- * @param[in] first 		- the flag to indicate the point fort which the
+ * @param[in] first 		- the flag to indicate the point for which the
  *							  discrete logarithm is known.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_sokor_sig(bn_t c[2], bn_t r[2], uint8_t *msg, int len, ec_t y[2],
-	bn_t x, int first);
+		ec_t g[2], bn_t x, int first);
 
 /**
  * Verifies the proof of knowledge of a discrete logarithm of an elliptic curve
@@ -1984,9 +2053,11 @@ int cp_sokor_sig(bn_t c[2], bn_t r[2], uint8_t *msg, int len, ec_t y[2],
  * @param[in] msg 			- the message to sign.
  * @param[in] len 			- the length of the message.
  * @param[in] y 			- the elliptic curve points.
+ * @param[in] g 			- the elliptic curve generators.
  * @return a boolean value indicating the verification result.
  */
-int cp_sokor_ver(bn_t c[2], bn_t r[2], uint8_t *msg, int len, ec_t y[2]);
+int cp_sokor_ver(bn_t c[2], bn_t r[2], uint8_t *msg, int len, ec_t y[2],
+		ec_t g[2]);
 
 /**
  * Generates the public parameters of the extendable ring signature.
@@ -2044,19 +2115,46 @@ int cp_ers_ext(bn_t td, ers_t *p, int *size, uint8_t *msg, int len, ec_t pk,
 		ec_t pp);
 
 /**
- * Generates the public parameters of the extendable threshold ring signature.
+ * Signs a message using the same-message linkable extendable ring signature
+ * scheme.
  *
- * @åaram[out] pp 			- the public parameters.
+ * @param[out] td 			- the signature trapdoor.
+ * @param[out] p 			- the resulting signature.
+ * @param[in] msg 			- the message to sign.
+ * @param[in] len 			- the message length.
+ * @param[in] sk			- the signer's private key.
+ * @param[in] pk			- the singer's public key.
+ * @param[in] pp			- the public parameters.
  */
-int cp_etrs_gen(ec_t pp);
+int cp_smlers_sig(bn_t td, smlers_t p, uint8_t *msg, int len, bn_t sk, ec_t pk,
+		ec_t pp);
 
 /**
- * Generates a key pair for the extendable threshold ring signature.
+ * Verifies a same-message linkable extendable ring signature.
  *
- * @åaram[out] sk 			- the private key.
- * @param[out] pk 			- the public key.
+ * @param[in] td 			- the signature trapdoor.
+ * @param[in] s 			- the ring of signatures.
+ * @param[in] size 			- the number of signatures in the ring.
+ * @param[in] msg 			- the message to sign.
+ * @param[in] len 			- the message length.
+ * @param[in] pp			- the public parameters.
  */
-int cp_etrs_gen_key(bn_t sk, ec_t pk);
+int cp_smlers_ver(bn_t td, smlers_t *s, int size, uint8_t *msg, int len,
+		ec_t pp);
+
+/**
+ * Extends a same-message extendable ring signature with a new signature.
+ *
+ * @param[in] td 			- the signature trapdoor.
+ * @param[in] p 			- the ring of signatures.
+ * @param[in] size 			- the number of signatures in the ring.
+ * @param[in] msg 			- the message to sign.
+ * @param[in] len 			- the message length.
+ * @param[in] pk			- the singer's public key.
+ * @param[in] pp			- the public parameters.
+ */
+int cp_smlers_ext(bn_t td, smlers_t *p, int *size, uint8_t *msg, int len,
+		ec_t pk, ec_t pp);
 
 /**
  * Signs a message using the extendable threshold ring signature scheme.

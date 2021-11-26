@@ -449,6 +449,11 @@ static int multiplication2(void) {
 			ep2_mul_gen(r, k);
 			ep2_neg(r, r);
 			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
+			bn_rand_mod(k, n);
+			ep2_mul_gen(q, k);
+			bn_add(k, k, n);
+			ep2_mul_gen(r, k);
+			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 
 #if EP_MUL == BASIC || !defined(STRIP)
@@ -469,6 +474,11 @@ static int multiplication2(void) {
 			bn_neg(k, k);
 			ep2_mul_basic(r, p, k);
 			ep2_neg(r, r);
+			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
+			bn_rand_mod(k, n);
+			ep2_mul_basic(q, p, k);
+			bn_add(k, k, n);
+			ep2_mul_basic(r, p, k);
 			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 #endif
@@ -491,6 +501,11 @@ static int multiplication2(void) {
 			bn_neg(k, k);
 			ep2_mul_slide(r, p, k);
 			ep2_neg(r, r);
+			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
+			bn_rand_mod(k, n);
+			ep2_mul_slide(q, p, k);
+			bn_add(k, k, n);
+			ep2_mul_slide(r, p, k);
 			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
 		}
 		TEST_END;
@@ -515,6 +530,11 @@ static int multiplication2(void) {
 			ep2_mul_monty(r, p, k);
 			ep2_neg(r, r);
 			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
+			bn_rand_mod(k, n);
+			ep2_mul_monty(q, p, k);
+			bn_add(k, k, n);
+			ep2_mul_monty(r, p, k);
+			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
 		}
 		TEST_END;
 #endif
@@ -538,11 +558,16 @@ static int multiplication2(void) {
 			ep2_mul_lwnaf(r, p, k);
 			ep2_neg(r, r);
 			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
+			bn_rand_mod(k, n);
+			ep2_mul_lwnaf(q, p, k);
+			bn_add(k, k, n);
+			ep2_mul_lwnaf(r, p, k);
+			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
 		}
 		TEST_END;
 #endif
 
-		TEST_CASE("multiplication by digit is correct") {
+		TEST_CASE("point multiplication by digit is correct") {
 			ep2_mul_dig(r, p, 0);
 			TEST_ASSERT(ep2_is_infty(r), end);
 			ep2_mul_dig(r, p, 1);
@@ -614,6 +639,11 @@ static int fixed2(void) {
 			ep2_mul_fix(r, t, k);
 			ep2_neg(r, r);
 			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
+			bn_rand_mod(k, n);
+			ep2_mul_fix(q, t, k);
+			bn_add(k, k, n);
+			ep2_mul_fix(r, t, k);
+			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 		for (int i = 0; i < RLC_EP_TABLE; i++) {
 			ep2_free(t[i]);
@@ -639,6 +669,11 @@ static int fixed2(void) {
 			bn_neg(k, k);
 			ep2_mul_fix_basic(r, t, k);
 			ep2_neg(r, r);
+			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
+			bn_rand_mod(k, n);
+			ep2_mul_fix_basic(q, t, k);
+			bn_add(k, k, n);
+			ep2_mul_fix_basic(r, t, k);
 			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 		for (int i = 0; i < RLC_EP_TABLE_BASIC; i++) {
@@ -667,6 +702,11 @@ static int fixed2(void) {
 			ep2_mul_fix_combs(r, t, k);
 			ep2_neg(r, r);
 			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
+			bn_rand_mod(k, n);
+			ep2_mul_fix_combs(q, t, k);
+			bn_add(k, k, n);
+			ep2_mul_fix_combs(r, t, k);
+			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 		for (int i = 0; i < RLC_EP_TABLE_COMBS; i++) {
 			ep2_free(t[i]);
@@ -693,6 +733,11 @@ static int fixed2(void) {
 			bn_neg(k, k);
 			ep2_mul_fix_combd(r, t, k);
 			ep2_neg(r, r);
+			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
+			bn_rand_mod(k, n);
+			ep2_mul_fix_combd(q, t, k);
+			bn_add(k, k, n);
+			ep2_mul_fix_combd(r, t, k);
 			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 		for (int i = 0; i < RLC_EP_TABLE_COMBD; i++) {
@@ -721,6 +766,11 @@ static int fixed2(void) {
 			ep2_mul_fix_lwnaf(r, t, k);
 			ep2_neg(r, r);
 			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
+			bn_rand_mod(k, n);
+			ep2_mul_fix_lwnaf(q, t, k);
+			bn_add(k, k, n);
+			ep2_mul_fix_lwnaf(r, t, k);
+			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 		for (int i = 0; i < RLC_EP_TABLE_LWNAF; i++) {
 			ep2_free(t[i]);
@@ -743,23 +793,20 @@ static int fixed2(void) {
 
 static int simultaneous2(void) {
 	int code = RLC_ERR;
-	bn_t n, k[2];
-	ep2_t p[2], r;
+	bn_t n, k[17];
+	ep2_t p[17], r;
 
 	bn_null(n);
-	bn_null(k[0]);
-	bn_null(k[1]);
-	ep2_null(p[0]);
-	ep2_null(p[1]);
 	ep2_null(r);
-
 	RLC_TRY {
 		bn_new(n);
-		bn_new(k[0]);
-		bn_new(k[1]);
-		ep2_new(p[0]);
-		ep2_new(p[1]);
 		ep2_new(r);
+		for (int i = 0; i <= 16; i++) {
+			bn_null(k[i]);
+			bn_new(k[i]);
+			ep2_null(p[i]);
+			ep2_new(p[i]);
+		}
 
 		ep2_curve_get_gen(p[0]);
 		ep2_curve_get_ord(n);
@@ -789,6 +836,15 @@ static int simultaneous2(void) {
 			ep2_add(p[1], p[1], p[0]);
 			TEST_ASSERT(ep2_cmp(p[1], r) == RLC_EQ, end);
 			bn_neg(k[1], k[1]);
+			ep2_mul_sim(r, p[0], k[0], p[1], k[1]);
+			ep2_mul(p[0], p[0], k[0]);
+			ep2_mul(p[1], p[1], k[1]);
+			ep2_add(p[1], p[1], p[0]);
+			TEST_ASSERT(ep2_cmp(p[1], r) == RLC_EQ, end);
+			bn_rand_mod(k[0], n);
+			bn_rand_mod(k[1], n);
+			bn_add(k[0], k[0], n);
+			bn_add(k[1], k[1], n);
 			ep2_mul_sim(r, p[0], k[0], p[1], k[1]);
 			ep2_mul(p[0], p[0], k[0]);
 			ep2_mul(p[1], p[1], k[1]);
@@ -963,6 +1019,32 @@ static int simultaneous2(void) {
 			ep2_mul_sim(p[1], p[0], k[0], p[1], k[1]);
 			TEST_ASSERT(ep2_cmp(p[1], r) == RLC_EQ, end);
 		} TEST_END;
+
+		TEST_CASE("many simultaneous point multiplications are correct") {
+			ep2_set_infty(r);
+			for (int j = 0; j < 16; j++) {
+				bn_rand_mod(k[j], n);
+				ep2_rand(p[j]);
+				ep2_mul(p[16], p[j], k[j]);
+				ep2_add(r, r, p[16]);
+				ep2_mul_sim_lot(p[16], p, k, j + 1);
+				TEST_ASSERT(ep2_cmp(p[16], r) == RLC_EQ, end);
+			}
+			ep2_mul(p[16], p[0], k[0]);
+			ep2_sub(r, r, p[16]);
+			bn_zero(k[0]);
+			ep2_mul_sim_lot(p[16], p, k, 16);
+			TEST_ASSERT(ep2_cmp(p[16], r) == RLC_EQ, end);
+			ep2_mul(p[16], p[1], k[1]);
+			ep2_sub(r, r, p[16]);
+			ep2_sub(r, r, p[16]);
+			bn_neg(k[1], k[1]);
+			ep2_mul_sim_lot(p[16], p, k, 16);
+			TEST_ASSERT(ep2_cmp(p[16], r) == RLC_EQ, end);
+			bn_add(k[2], k[2], n);
+			ep2_mul_sim_lot(p[16], p, k, 16);
+			TEST_ASSERT(ep2_cmp(p[16], r) == RLC_EQ, end);
+		} TEST_END;
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -971,11 +1053,11 @@ static int simultaneous2(void) {
 	code = RLC_OK;
   end:
 	bn_free(n);
-	bn_free(k[0]);
-	bn_free(k[1]);
-	ep2_free(p[0]);
-	ep2_free(p[1]);
 	ep2_free(r);
+	for (int i = 0; i <= 16; i++) {
+		bn_free(k[i]);
+		ep2_free(p[i]);
+	}
 	return code;
 }
 
@@ -1072,7 +1154,7 @@ static int frobenius2(void) {
 
 		ep2_curve_get_ord(n);
 
-		TEST_CASE("frobenius and scalar multiplication are consistent") {
+		TEST_CASE("frobenius and point multiplication are consistent") {
 			ep2_rand(a);
 			ep2_frb(b, a, 1);
 			d->used = RLC_FP_DIGS;
@@ -2094,7 +2176,7 @@ static int frobenius4(void) {
 
 		ep4_curve_get_ord(n);
 
-		TEST_CASE("frobenius and scalar multiplication are consistent") {
+		TEST_CASE("frobenius and point multiplication are consistent") {
 			ep4_rand(a);
 			ep4_frb(b, a, 1);
 			d->used = RLC_FP_DIGS;

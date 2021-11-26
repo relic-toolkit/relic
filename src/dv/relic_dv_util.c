@@ -109,7 +109,7 @@ int dv_cmp(const dig_t *a, const dig_t *b, int size) {
 }
 
 int dv_cmp_const(const dig_t *a, const dig_t *b, int size) {
-	int r = 0;
+	dig_t r = 0;
 
 	for (int i = 0; i < size; i++) {
 		r |= a[i] ^ b[i];

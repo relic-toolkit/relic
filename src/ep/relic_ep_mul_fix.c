@@ -121,11 +121,7 @@ static void ep_mul_combs_endom(ep_t r, const ep_t *t, const bn_t k) {
 		ep_curve_get_v2(v2);
 		l = RLC_CEIL(bn_bits(n), (2 * EP_DEPTH));
 
-		bn_copy(_k, k);
-		if (bn_cmp_abs(_k, n) == RLC_GT) {
-			bn_mod(_k, _k, n);
-		}
-
+		bn_mod(_k, k, n);
 		bn_rec_glv(k0, k1, _k, n, (const bn_t *)v1, (const bn_t *)v2);
 		s0 = bn_sign(k0);
 		s1 = bn_sign(k1);
@@ -223,11 +219,7 @@ static void ep_mul_combs_plain(ep_t r, const ep_t *t, const bn_t k) {
 		ep_curve_get_ord(n);
 		l = RLC_CEIL(bn_bits(n), EP_DEPTH);
 
-		bn_copy(_k, k);
-		if (bn_cmp_abs(_k, n) == RLC_GT) {
-			bn_mod(_k, _k, n);
-		}
-
+		bn_mod(_k, k, n);
 		n0 = bn_bits(_k);
 		p0 = (EP_DEPTH) * l - 1;
 
@@ -321,10 +313,7 @@ void ep_mul_fix_basic(ep_t r, const ep_t *t, const bn_t k) {
 		bn_new(_k);
 
 		ep_curve_get_ord(n);
-		bn_copy(_k, k);
-		if (bn_cmp_abs(_k, n) == RLC_GT) {
-			bn_mod(_k, _k, n);
-		}
+		bn_mod(_k, k, n);
 
 		ep_set_infty(r);
 		for (int i = 0; i < bn_bits(_k); i++) {
@@ -480,11 +469,7 @@ void ep_mul_fix_combd(ep_t r, const ep_t *t, const bn_t k) {
 		d = RLC_CEIL(bn_bits(n), EP_DEPTH);
 		e = (d % 2 == 0 ? (d / 2) : (d / 2) + 1);
 
-		bn_copy(_k, k);
-		if (bn_cmp_abs(_k, n) == RLC_GT) {
-			bn_mod(_k, _k, n);
-		}
-
+		bn_mod(_k, k, n);
 		ep_set_infty(r);
 		n0 = bn_bits(_k);
 
@@ -551,11 +536,7 @@ void ep_mul_fix_lwnaf(ep_t r, const ep_t *t, const bn_t k) {
 		bn_new(_k);
 
 		ep_curve_get_ord(n);
-		bn_copy(_k, k);
-		if (bn_cmp_abs(_k, n) == RLC_GT) {
-			bn_mod(_k, _k, n);
-		}
-
+		bn_mod(_k, k, n);
 		ep_mul_fix_plain(r, t, _k);
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -564,4 +545,5 @@ void ep_mul_fix_lwnaf(ep_t r, const ep_t *t, const bn_t k) {
 		bn_free(_k);
 	}
 }
+
 #endif
