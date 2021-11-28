@@ -484,7 +484,13 @@ void fp_inv_divst(fp_t c, const fp_t a) {
 		dv_copy(t, fp_prime_get(), RLC_FP_DIGS);
 		fp_add_dig(t, t, 1);
 		fp_hlv(t, t);
+#if WSIZE == 8
+		bn_set_dig(_t, d >> 8);
+		bn_lsh(_t, _t, 8);
+		bn_add_dig(_t, _t, d & 0xFF);
+#else
 		bn_set_dig(_t, d);
+#endif
 		fp_exp(t, t, _t);
 
 		fp_mul(c, v, t);
@@ -592,7 +598,7 @@ static void bn_mul2_low(dig_t *c, const dig_t *a, dig_t sa, dis_t digit) {
 void fp_inv_jmpds(fp_t c, const fp_t a) {
 	dis_t m[4];
 	/* Compute number of iterations based on modulus size. */
-	int i, d = -1, s = RLC_DIG - 2;
+	int i, d = -1, s = 8 - 2;
 	/* Iterations taken directly from https://github.com/sipa/safegcd-bounds */
 	int iterations = (45907 * FP_PRIME + 26313) / 19929;
 	dv_t f, g, t, p, t0, t1, u0, u1, v0, v1, p01, p11;
@@ -686,12 +692,12 @@ void fp_inv_jmpds(fp_t c, const fp_t a) {
 		for (i = 1; i < loops; i++) {
 			d = jumpdivstep(m, d, f[0] & RLC_MASK(s), g[0] & RLC_MASK(s), s);
 
-			bn_mul2_low(t0, f, f[RLC_FP_DIGS - 1] >> (RLC_DIG - 1), m[0]);
-			bn_mul2_low(t1, g, g[RLC_FP_DIGS - 1] >> (RLC_DIG - 1), m[1]);
+			bn_mul2_low(t0, f, f[RLC_FP_DIGS] >> (RLC_DIG - 1), m[0]);
+			bn_mul2_low(t1, g, g[RLC_FP_DIGS] >> (RLC_DIG - 1), m[1]);
 			bn_addn_low(t0, t0, t1, RLC_FP_DIGS + 1);
 
-			bn_mul2_low(f, f, f[RLC_FP_DIGS - 1] >> (RLC_DIG - 1), m[2]);
-			bn_mul2_low(t1, g, g[RLC_FP_DIGS - 1] >> (RLC_DIG - 1), m[3]);
+			bn_mul2_low(f, f, f[RLC_FP_DIGS] >> (RLC_DIG - 1), m[2]);
+			bn_mul2_low(t1, g, g[RLC_FP_DIGS] >> (RLC_DIG - 1), m[3]);
 			bn_addn_low(t1, t1, f, RLC_FP_DIGS + 1);
 
 			/* Update f and g. */
