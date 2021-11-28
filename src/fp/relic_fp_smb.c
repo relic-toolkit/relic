@@ -333,7 +333,7 @@ int fp_smb_jmpds(const fp_t a) {
 			bn_rsh2_low(g, t1, RLC_FP_DIGS + 1, s);
 
 			j = (j + k) % 4;
-			j = (j + ((j & 1) ^ (g[RLC_FP_DIGS - 1] >> (RLC_DIG - 1)))) % 4;
+			j = (j + ((j & 1) ^ (g[RLC_FP_DIGS] >> (RLC_DIG - 1)))) % 4;
 		}
 
 		r = 0;
