@@ -560,28 +560,33 @@ static dig_t bn_rsh2_low(dig_t *c, const dig_t *a, int size, int bits) {
 	return carry;
 }
 
-static void bn_mul2_low(dig_t *c, const dig_t *a, int sa, dis_t digit) {
-	int i, sign, sd = digit >> (RLC_DIG - 1);
-	dig_t r, _c, c0, c1;
+static void bn_mul2_low(dig_t *c, const dig_t *a, dig_t sa, dis_t digit) {
+	dig_t r, _c, c0, c1, sign, sd = digit >> (RLC_DIG - 1);
+	dig_t _a[RLC_FP_DIGS];
 
 	sa = -sa;
 	sign = sa ^ sd;
 	digit = (digit ^ sd) - sd;
 
-	RLC_MUL_DIG(r, _c, (a[0] ^ sa) - sa, (dig_t)digit);
+	for (int i = 0; i < RLC_FP_DIGS; i++) {
+		_a[i] = a[i] ^ sa;
+	}
+	bn_add1_low(_a, _a, -sa, RLC_FP_DIGS);
+
+	RLC_MUL_DIG(r, _c, _a[0], (dig_t)digit);
 	_c ^= sign;
 	c[0] = _c - sign;
 	c1 = (c[0] < _c);
 	c0 = r;
-	for (i = 1; i < RLC_FP_DIGS; i++) {
-		RLC_MUL_DIG(r, _c, a[i] ^ sa, (dig_t)digit);
+	for (int i = 1; i < RLC_FP_DIGS; i++) {
+		RLC_MUL_DIG(r, _c, _a[i], (dig_t)digit);
 		_c += c0;
 		c0 = r + (_c < c0);
 		_c ^= sign;
 		c[i] = _c + c1;
 		c1 = (c[i] < _c);
 	}
-	c[i] = (c0 ^ sign) + c1;
+	c[RLC_FP_DIGS] = (c0 ^ sign) + c1;
 }
 
 void fp_inv_jmpds(fp_t c, const fp_t a) {
@@ -675,8 +680,8 @@ void fp_inv_jmpds(fp_t c, const fp_t a) {
 		dv_copy(p01, v1, 2 * RLC_FP_DIGS);
 		dv_copy(p11, u1, 2 * RLC_FP_DIGS);
 
-		int loops = iterations / (RLC_DIG - 2);
-		loops = (iterations % (RLC_DIG - 2) == 0 ? loops - 1 : loops);
+		int loops = iterations / s;
+		loops = (iterations % s == 0 ? loops - 1 : loops);
 
 		for (i = 1; i < loops; i++) {
 			d = jumpdivstep(m, d, f[0] & RLC_MASK(s), g[0] & RLC_MASK(s), s);
@@ -759,7 +764,7 @@ void fp_inv_jmpds(fp_t c, const fp_t a) {
 #endif
 		}
 
-		s = iterations - loops * (RLC_DIG - 2);
+		s = iterations - loops * s;
 		d = jumpdivstep(m, d, f[0] & RLC_MASK(s), g[0] & RLC_MASK(s), s);
 
 		bn_mul2_low(t0, f, f[RLC_FP_DIGS - 1] >> (RLC_DIG - 1), m[0]);
