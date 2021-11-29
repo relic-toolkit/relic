@@ -37,7 +37,7 @@ jobs:
           - {
             name: "MacOS Latest",
             os: macos-latest,
-            cc: "clang",
+            cc: "gcc",
           }
     steps:
       - uses: actions/checkout@v2
