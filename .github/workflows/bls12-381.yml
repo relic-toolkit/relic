@@ -34,11 +34,6 @@ jobs:
             os: ubuntu-latest,
             cc: "clang",
           }
-          - {
-            name: "MacOS Latest",
-            os: macos-latest,
-            cc: "gcc",
-          }
     steps:
       - uses: actions/checkout@v2
 
