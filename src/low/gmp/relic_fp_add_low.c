@@ -124,9 +124,7 @@ void fp_hlvm_low(dig_t *c, const dig_t *a) {
             dv_copy(c, a, RLC_FP_DIGS);
     }
     mpn_rshift(c, c, RLC_FP_DIGS, 1);
-    if (carry) {
-            c[RLC_FP_DIGS - 1] ^= ((dig_t)1 << (RLC_DIG - 1));
-    }
+	c[RLC_FP_DIGS - 1] ^= ((dig_t)carry << (RLC_DIG - 1));
 }
 
 void fp_hlvd_low(dig_t *c, const dig_t *a) {
@@ -142,7 +140,5 @@ void fp_hlvd_low(dig_t *c, const dig_t *a) {
 
 	carry = mpn_rshift(c + RLC_FP_DIGS, c + RLC_FP_DIGS, RLC_FP_DIGS, 1);
 	mpn_rshift(c, c, RLC_FP_DIGS, 1);
-	if (carry) {
-		c[RLC_FP_DIGS - 1] ^= ((dig_t)1 << (RLC_DIG - 1));
-	}
+	c[RLC_FP_DIGS - 1] ^= carry;
 }

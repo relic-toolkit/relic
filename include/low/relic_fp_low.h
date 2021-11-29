@@ -321,6 +321,14 @@ void fp_rdcn_low(dig_t *c, dig_t *a);
  */
 void fp_invm_low(dig_t *c, const dig_t *a);
 
+/**
+ * Computes the Legendre symbol of a digit vector and the configured prime.
+ *
+ * @param[in] a				- the digit vector to invert.
+ * @return the result.
+ */
+int fp_smbm_low(const dig_t *a);
+
 #endif /* ASM */
 
 #endif /* !RLC_FP_LOW_H */

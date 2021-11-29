@@ -857,7 +857,7 @@ static int inversion(void) {
 #endif
 
 #if FP_INV == JMPDS || !defined(STRIP)
-		TEST_CASE("jumpdivision step inversion is correct") {
+		TEST_CASE("jump division step inversion is correct") {
 			do {
 				fp_rand(a);
 			} while (fp_is_zero(a));
@@ -902,6 +902,66 @@ static int inversion(void) {
 	fp_free(c);
 	fp_free(d[0]);
 	fp_free(d[1]);
+	return code;
+}
+
+static int symbol(void) {
+	int code = RLC_ERR;
+	fp_t a, b;
+
+	fp_null(a);
+	fp_null(b);
+
+	RLC_TRY {
+		fp_new(a);
+		fp_new(b);
+
+		TEST_CASE("symbol computation is correct") {
+			fp_zero(a);
+			TEST_ASSERT(fp_smb(a) == 0, end);
+			fp_rand(a);
+			fp_sqr(a, a);
+			TEST_ASSERT(fp_smb(a) == 1, end);
+			do {
+				fp_rand(a);
+			} while(fp_srt(b, a) == 1);
+			TEST_ASSERT(fp_smb(a) == -1, end);
+		}
+		TEST_END;
+
+#if FP_SMB == BASIC || !defined(STRIP)
+		TEST_CASE("basic symbol computation is correct") {
+			fp_rand(a);
+			TEST_ASSERT(fp_smb(a) == fp_smb_basic(a), end);
+		} TEST_END;
+#endif
+
+#if FP_SMB == DIVST || !defined(STRIP)
+		TEST_CASE("division step symbol computation is correct") {
+			fp_rand(a);
+			TEST_ASSERT(fp_smb(a) == fp_smb_divst(a), end);
+		} TEST_END;
+#endif
+#if FP_SMB == JMPDS || !defined(STRIP)
+		TEST_CASE("jump division step symbol computation is correct") {
+			fp_rand(a);
+			TEST_ASSERT(fp_smb(a) == fp_smb_jmpds(a), end);
+		} TEST_END;
+#endif
+#if FP_SMB == LOWER || !defined(STRIP)
+		TEST_CASE("lower symbol computation is correct") {
+			fp_rand(a);
+			TEST_ASSERT(fp_smb(a) == fp_smb_lower(a), end);
+		} TEST_END;
+#endif
+	}
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
+	}
+	code = RLC_OK;
+  end:
+	fp_free(a);
+	fp_free(b);
 	return code;
 }
 
@@ -1154,6 +1214,11 @@ int main(void) {
 	}
 
 	if (inversion() != RLC_OK) {
+		core_clean();
+		return 1;
+	}
+
+	if (symbol() != RLC_OK) {
 		core_clean();
 		return 1;
 	}

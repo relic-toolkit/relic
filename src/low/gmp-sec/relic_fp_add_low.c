@@ -90,7 +90,7 @@ dig_t fp_subd_low(dig_t *c, const dig_t *a, const dig_t *b) {
 
 void fp_subc_low(dig_t *c, const dig_t *a, const dig_t *b) {
 	dig_t carry = mpn_sub_n(c, a, b, 2 * RLC_FP_DIGS);
-	mpn_cnd_sub_n(carry, c + RLC_FP_DIGS, c + RLC_FP_DIGS,
+	mpn_cnd_add_n(carry, c + RLC_FP_DIGS, c + RLC_FP_DIGS,
 		fp_prime_get(), RLC_FP_DIGS);
 }
 
@@ -124,6 +124,6 @@ void fp_hlvd_low(dig_t *c, const dig_t *a) {
 	mpn_sec_add_1(c + RLC_FP_DIGS, a + RLC_FP_DIGS, RLC_FP_DIGS, carry, t);
 	carry = mpn_rshift(c + RLC_FP_DIGS, c + RLC_FP_DIGS, RLC_FP_DIGS, 1);
 	mpn_rshift(c, c, RLC_FP_DIGS, 1);
-	c[RLC_FP_DIGS - 1] ^= ((dig_t)carry << (RLC_DIG - 1));
+	c[RLC_FP_DIGS - 1] ^= carry;
 	RLC_FREE(t);
 }

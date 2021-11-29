@@ -78,8 +78,6 @@ void bn_divn_low(dig_t *c, dig_t *d, dig_t *a, int sa, dig_t *b, int sb) {
 
 	/* Find the remaining digits. */
 	for (i = n; i >= (t + 1); i--) {
-		dig_t tmp;
-
 		if (i > sa) {
 			continue;
 		}
@@ -87,7 +85,7 @@ void bn_divn_low(dig_t *c, dig_t *d, dig_t *a, int sa, dig_t *b, int sb) {
 		if (a[i] == b[t]) {
 			c[i - t - 1] = RLC_MASK(RLC_DIG);
 		} else {
-			RLC_DIV_DIG(c[i - t - 1], tmp, a[i], a[i - 1], b[t]);
+			RLC_DIV_DIG(c[i - t - 1], carry, a[i], a[i - 1], b[t]);
 		}
 
 		c[i - t - 1]++;

@@ -35,19 +35,19 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void bn_smb_leg(bn_t c, const bn_t a, const bn_t b) {
+int bn_smb_leg(const bn_t a, const bn_t b) {
 	bn_t t;
+	int res;
 
 	bn_null(t);
 
 	if (bn_sign(b) == RLC_NEG) {
 		RLC_THROW(ERR_NO_VALID);
-		return;
+		return 0;
 	}
 
 	if (bn_cmp(a, b) == RLC_EQ) {
-		bn_zero(c);
-		return;
+		return 0;
 	}
 
 	RLC_TRY {
@@ -56,11 +56,14 @@ void bn_smb_leg(bn_t c, const bn_t a, const bn_t b) {
 		/* t = (b - 1)/2. */
 		bn_sub_dig(t, b, 1);
 		bn_rsh(t, t, 1);
-		bn_mxp(c, a, t, b);
-		bn_sub_dig(t, b, 1);
-		if (bn_cmp(c, t) == RLC_EQ) {
-			bn_set_dig(c, 1);
-			bn_neg(c, c);
+		bn_mxp(t, a, t, b);
+		res = 0;
+		if (bn_cmp_dig(t, 1) == RLC_EQ) {
+			res = 1;
+		}
+		bn_sub(t, b, t);
+		if (bn_cmp_dig(t, 1) == RLC_EQ) {
+			res = -1;
 		}
 	}
 	RLC_CATCH_ANY {
@@ -69,11 +72,13 @@ void bn_smb_leg(bn_t c, const bn_t a, const bn_t b) {
 	RLC_FINALLY {
 		bn_free(t);
 	}
+
+	return res;
 }
 
-void bn_smb_jac(bn_t c, const bn_t a, const bn_t b) {
+int bn_smb_jac(const bn_t a, const bn_t b) {
 	bn_t t0, t1, r;
-	int t, h;
+	int t, h, res;
 
 	bn_null(t0);
 	bn_null(t1);
@@ -82,7 +87,7 @@ void bn_smb_jac(bn_t c, const bn_t a, const bn_t b) {
 	/* Argument b must be odd. */
 	if (bn_is_even(b) || bn_sign(b) == RLC_NEG) {
 		RLC_THROW(ERR_NO_VALID);
-		return;
+		return 0;
 	}
 
 	RLC_TRY {
@@ -104,13 +109,13 @@ void bn_smb_jac(bn_t c, const bn_t a, const bn_t b) {
 			/* If a = 0 then if n = 1 return t else return 0. */
 			if (bn_is_zero(t0)) {
 				if (bn_cmp_dig(t1, 1) == RLC_EQ) {
-					bn_set_dig(c, 1);
+					res = 1;
 					if (t == -1) {
-						bn_neg(c, c);
+						res = -1;
 					}
 					break;
 				} else {
-					bn_zero(c);
+					res = 0;
 					break;
 				}
 			}
@@ -147,4 +152,6 @@ void bn_smb_jac(bn_t c, const bn_t a, const bn_t b) {
 		bn_free(t1);
 		bn_free(r);
 	}
+
+	return res;
 }

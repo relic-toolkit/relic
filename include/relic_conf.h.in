@@ -254,10 +254,25 @@
 #define EXGCD    4
 /** Constant-time inversion by Bernstein-Yang division steps. */
 #define DIVST    5
+/** Constant-time inversion by Bernstein-Yang jump division steps. */
+#define JMPDS    6
 /** Use implementation provided by the lower layer. */
 #define LOWER    8
 /** Chosen prime field inversion method. */
 #define FP_INV   @FP_INV@
+
+/** Legendre by Fermat's Little Theorem. */
+#define BASIC    1
+/** Binary method. */
+#define BINAR    2
+/** Constant-time inversion by Bernstein-Yang division steps. */
+#define DIVST    5
+/** Constant-time inversion by Bernstein-Yang jump division steps. */
+#define JMPDS    6
+/** Use implementation provided by the lower layer. */
+#define LOWER    8
+/** Chosen prime field inversion method. */
+#define FP_SMB   @FP_SMB@
 
 /** Binary modular exponentiation. */
 #define BASIC    1

@@ -769,7 +769,7 @@ static void arith(void) {
 
 	BENCH_RUN("bn_smb_leg") {
 		bn_rand(a, RLC_POS, RLC_BN_BITS);
-		BENCH_ADD(bn_smb_leg(c, a, b));
+		BENCH_ADD(bn_smb_leg(a, b));
 	}
 	BENCH_END;
 
@@ -779,7 +779,7 @@ static void arith(void) {
 		if (bn_is_even(b)) {
 			bn_add_dig(b, b, 1);
 		}
-		BENCH_ADD(bn_smb_jac(c, a, b));
+		BENCH_ADD(bn_smb_jac(a, b));
 	}
 	BENCH_END;
 

@@ -367,6 +367,24 @@ typedef rlc_align dig_t fp_st[RLC_FP_DIGS + RLC_PAD(RLC_FP_BYTES)/(RLC_DIG / 8)]
 #endif
 
 /**
+ * Computes the Legendre symbol of a prime field element. Computes C = (A|P).
+ *
+ * @param[out] C			- the result.
+ * @param[in] A				- the prime field element to compute.
+ */
+#if FP_SMB == BASIC
+#define fp_smb(A)		fp_smb_basic(A)
+#elif FP_SMB == BINAR
+#define fp_smb(A)		fp_smb_binar(A)
+#elif FP_SMB == DIVST
+#define fp_smb(A)		fp_smb_divst(A)
+#elif FP_SMB == JMPDS
+#define fp_smb(A)		fp_smb_jmpds(A)
+#elif FP_SMB == LOWER
+#define fp_smb(A)		fp_smb_lower(A)
+#endif
+
+/**
  * Exponentiates a prime field element. Computes C = A^B (mod p).
  *
  * @param[out] C			- the result.
@@ -1058,6 +1076,49 @@ void fp_inv_lower(fp_t c, const fp_t a);
  * @param[in] n				- the number of elements.
  */
 void fp_inv_sim(fp_t *c, const fp_t *a, int n);
+
+/**
+ * Computes Legendre symbol of a prime field element using exponentiation.
+ *
+ * @param[in] a				- the prime field element to compute.
+ * @return the result.
+ */
+int fp_smb_basic(const fp_t a);
+
+/**
+ * Computes Legendre symbol of a prime field element using the binary method.
+ *
+ * @param[in] a				- the prime field element to compute.
+ * @return the result.
+ */
+int fp_smb_binar(const fp_t a);
+
+/**
+ * Computes Legendre symbol of a prime field element using the constant-time
+ * division step approach by Bernstein and Bo-Yin Yang.
+ *
+ * @param[in] a				- the prime field element to compute.
+ * @return the result.
+ */
+int fp_smb_divst(const fp_t a);
+
+/**
+ * Computes Legendre symbol of a prime field element using the constant-time
+ * jump division step approach by Bernstein and Bo-Yin Yang.
+ *
+ * @param[in] a				- the prime field element to compute.
+ * @return the result.
+ */
+int fp_smb_jmpds(const fp_t a);
+
+/**
+ * Computes Legendre symbol a prime field element using a direct call to the
+ * lower layer.
+ *
+ * @param[in] a				- the prime field element to invert.
+ * @return the result.
+ */
+int fp_smb_lower(const fp_t a);
 
 /**
  * Exponentiates a prime field element using the binary
