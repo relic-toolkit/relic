@@ -83,7 +83,7 @@ jobs:
           ../preset/x64-pbc-bls12-381.sh ..
 
       - name: Run CMake (standard)
-        if: ${{ !(runner.os == 'Windows') }}
+        if: ${{ !(runner.os == 'Windows') && !(runner.os == 'MacOS')}}
         shell: bash
         run: |
           mkdir build
