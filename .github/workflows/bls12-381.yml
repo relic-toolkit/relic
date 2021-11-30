@@ -34,11 +34,6 @@ jobs:
             os: ubuntu-latest,
             cc: "clang",
           }
-          - {
-            name: "MacOS Latest",
-            os: macos-latest,
-            cc: "gcc",
-          }
     steps:
       - uses: actions/checkout@v2
 
@@ -48,7 +43,7 @@ jobs:
 
       - name: Install MacOS Dependencies
         if: runner.os == 'MacOS'
-        run: brew install gmp gcc
+        run: brew install gmp
 
       - name: Set MinGW enviroment
         if: ${{ (runner.os == 'Windows') && (matrix.config.cc == 'gcc') }}
@@ -73,17 +68,8 @@ jobs:
           cmake -DSEED= -DBENCH=0 -DSTBIN=off -DRAND=HASHD ..
           ../preset/x64-pbc-bls12-381.sh ..
 
-      - name: Run CMake (MacOS)
-        if: ${{ (runner.os == 'MacOS') }}
-        shell: bash
-        run: |
-          mkdir build
-          cd build
-          CC=gcc-11 cmake -DSEED= -DBENCH=0 -DSTBIN=off -DRAND=HASHD ..
-          ../preset/x64-pbc-bls12-381.sh ..
-
       - name: Run CMake (standard)
-        if: ${{ !(runner.os == 'Windows') && !(runner.os == 'MacOS')}}
+        if: ${{ !(runner.os == 'Windows') }}
         shell: bash
         run: |
           mkdir build
