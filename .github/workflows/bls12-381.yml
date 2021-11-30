@@ -78,7 +78,7 @@ jobs:
         shell: bash
         run: |
           mkdir build
-          cd build.
+          cd build
           CC=gcc-11 cmake -DSEED= -DBENCH=0 -DSTBIN=off -DRAND=HASHD ..
           ../preset/x64-pbc-bls12-381.sh ..
 
