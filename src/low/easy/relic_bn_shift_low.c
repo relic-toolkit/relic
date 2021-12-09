@@ -126,3 +126,19 @@ dig_t bn_rshb_low(dig_t *c, const dig_t *a, int size, int bits) {
 	}
 	return carry;
 }
+
+dig_t bn_rshs_low(dig_t *c, const dig_t *a, int size, int bits) {
+	dig_t r, carry, shift, mask;
+
+	/* Prepare the bit mask. */
+	shift = (RLC_DIG - bits) % RLC_DIG;
+	mask = RLC_MASK(bits);
+	carry = a[size - 1] & mask;
+	c[size - 1] = (dis_t)a[size - 1] >> bits;
+	for (int i = size - 2; i >= 0; i--) {
+		r = a[i] & mask;
+		c[i] = (a[i] >> bits) | (carry << shift);
+		carry = r;
+	}
+	return carry;
+}

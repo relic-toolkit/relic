@@ -550,22 +550,6 @@ static inline void bn_mul2_low(dig_t *c, const dig_t *a, dis_t digit, int size) 
 	c[size] = bn_mul1_low(c, a, digit, size);
 }
 
-static dig_t bn_rsh2_low(dig_t *c, const dig_t *a, int size, int bits) {
-	dig_t r, carry, shift, mask;
-
-	/* Prepare the bit mask. */
-	shift = (RLC_DIG - bits) % RLC_DIG;
-	mask = RLC_MASK(bits);
-	carry = a[size - 1] & mask;
-	c[size - 1] = (dis_t)a[size - 1] >> bits;
-	for (int i = size - 2; i >= 0; i--) {
-		r = a[i] & mask;
-		c[i] = (a[i] >> bits) | (carry << shift);
-		carry = r;
-	}
-	return carry;
-}
-
 void fp_inv_jmpds(fp_t c, const fp_t a) {
 	dis_t m[4];
 	/* Compute number of iterations based on modulus size. */
@@ -643,8 +627,8 @@ void fp_inv_jmpds(fp_t c, const fp_t a) {
 		bn_addn_low(t1, t1, f, RLC_FP_DIGS + 1);
 
 		/* Update f and g. */
-		bn_rsh2_low(f, t0, RLC_FP_DIGS + 1, s);
-		bn_rsh2_low(g, t1, RLC_FP_DIGS + 1, s);
+		bn_rshs_low(f, t0, RLC_FP_DIGS + 1, s);
+		bn_rshs_low(g, t1, RLC_FP_DIGS + 1, s);
 
 		/* Update column vector below. */
 		v1[0] = RLC_SEL(m[1], -m[1], RLC_SIGN(m[1]));
@@ -672,8 +656,8 @@ void fp_inv_jmpds(fp_t c, const fp_t a) {
 			bn_addn_low(t1, t1, f, RLC_FP_DIGS + 1);
 
 			/* Update f and g. */
-			bn_rsh2_low(f, t0, RLC_FP_DIGS + 1, s);
-			bn_rsh2_low(g, t1, RLC_FP_DIGS + 1, s);
+			bn_rshs_low(f, t0, RLC_FP_DIGS + 1, s);
+			bn_rshs_low(g, t1, RLC_FP_DIGS + 1, s);
 
 #if (FP_PRIME % WSIZE) != 0
 			p[j] = 0;
@@ -749,8 +733,8 @@ void fp_inv_jmpds(fp_t c, const fp_t a) {
 		bn_addn_low(t1, t1, f, RLC_FP_DIGS + 1);
 
 		/* Update f and g. */
-		bn_rsh2_low(f, t0, RLC_FP_DIGS + 1, s);
-		bn_rsh2_low(g, t1, RLC_FP_DIGS + 1, s);
+		bn_rshs_low(f, t0, RLC_FP_DIGS + 1, s);
+		bn_rshs_low(g, t1, RLC_FP_DIGS + 1, s);
 
 #if (FP_PRIME % WSIZE) != 0
 		p[j] = 0;

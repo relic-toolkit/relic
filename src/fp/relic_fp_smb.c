@@ -204,22 +204,6 @@ static dis_t jumpdivstep(dis_t m[4], dig_t *k, dis_t delta, dis_t x, dis_t y, in
 	return delta;
 }
 
-static inline dig_t bn_rsh2_low(dig_t *c, const dig_t *a, int size, int bits) {
-	dig_t r, carry, shift, mask;
-
-	/* Prepare the bit mask. */
-	shift = (RLC_DIG - bits) % RLC_DIG;
-	mask = RLC_MASK(bits);
-	carry = a[size - 1] & mask;
-	c[size - 1] = (dis_t)a[size - 1] >> bits;
-	for (int i = size - 2; i >= 0; i--) {
-		r = a[i] & mask;
-		c[i] = (a[i] >> bits) | (carry << shift);
-		carry = r;
-	}
-	return carry;
-}
-
 int fp_smb_jmpds(const fp_t a) {
 	dis_t m[4], d = 0;
 	int r, i, s = RLC_DIG - 2;
@@ -290,8 +274,8 @@ int fp_smb_jmpds(const fp_t a) {
 			bn_addn_low(t1, t1, f, RLC_FP_DIGS + 1);
 
 			/* Update f and g. */
-			bn_rsh2_low(f, t0, RLC_FP_DIGS + 1, s);
-			bn_rsh2_low(g, t1, RLC_FP_DIGS + 1, s);
+			bn_rshs_low(f, t0, RLC_FP_DIGS + 1, s);
+			bn_rshs_low(g, t1, RLC_FP_DIGS + 1, s);
 
 			j = (j + k) % 4;
 			j = (j + ((j & 1) ^ (g[RLC_FP_DIGS] >> (RLC_DIG - 1)))) % 4;
