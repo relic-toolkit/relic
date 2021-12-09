@@ -116,6 +116,13 @@
 #define RLC_HIGH(D)				(D >> (RLC_DIG >> 1))
 
 /**
+ * Returns the sign bit of a digit.
+ *
+ * @param[in] D			- the digit.
+ */
+#define RLC_SIGN(D)				(((dig_t)D) >> (RLC_DIG - 1))
+
+/**
  * Selects between two values based on the value of a given flag.
  *
  * @param[in] A			- the first argument.

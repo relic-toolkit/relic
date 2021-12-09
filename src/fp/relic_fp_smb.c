@@ -171,7 +171,7 @@ int fp_smb_divst(const fp_t a) {
 #if FP_SMB == JMPDS || !defined(STRIP)
 
 static dis_t jumpdivstep(dis_t m[4], dig_t *k, dis_t delta, dis_t x, dis_t y, int s) {
-	dig_t c0, c1, yi, ai = 1, bi = 0, ci = 0, di = 1, t, u = 0;
+	dig_t c0, c1, yi, ai = 1, bi = 0, ci = 0, di = 1, u = 0;
 	for (; s > 0; s--) {
 		yi = y;
 
@@ -179,28 +179,18 @@ static dis_t jumpdivstep(dis_t m[4], dig_t *k, dis_t delta, dis_t x, dis_t y, in
 		c1 = -(x & 1);
 		c0 &= c1;
 
-		t = x;
-		x = (x + (((y ^ c0) - c0) & c1)) >> 1;
-		/* Conditionally copy y = t. */
-		t = (t ^ y) & c0;
-		y ^= t;
-
-		t = ai;
+		x += ((y ^ c0) - c0) & c1;
 		ai += ((ci ^ c0) - c0) & c1;
-		/* Conditionally copy ci = t. */
-		t = (t ^ ci) & c0;
-		ci ^= t;
-
-		t = bi;
 		bi += ((di ^ c0) - c0) & c1;
-		/* Conditionally copy di = t. */
-		t = (t ^ di) & c0;
-		di ^= t;
 
-		ci += ci;
-		di += di;
 		/* delta = RLC_SEL(delta + 1, -delta, c0) */
 		delta = (delta ^ c0) + 1;
+		y = y + (x & c0);
+		ci = ci + (ai & c0);
+		di = di + (bi & c0);
+		x >>= 1;
+		ci += ci;
+		di += di;
 
 		u += ((yi & y) ^ (y >> (dig_t)1)) & 2;
 		u += (u & (dig_t)1) ^ (ci >> (dig_t)(RLC_DIG - 1));
@@ -214,7 +204,7 @@ static dis_t jumpdivstep(dis_t m[4], dig_t *k, dis_t delta, dis_t x, dis_t y, in
 	return delta;
 }
 
-static dig_t bn_rsh2_low(dig_t *c, const dig_t *a, int size, int bits) {
+static inline dig_t bn_rsh2_low(dig_t *c, const dig_t *a, int size, int bits) {
 	dig_t r, carry, shift, mask;
 
 	/* Prepare the bit mask. */
@@ -228,35 +218,6 @@ static dig_t bn_rsh2_low(dig_t *c, const dig_t *a, int size, int bits) {
 		carry = r;
 	}
 	return carry;
-}
-
-static void bn_mul2_low(dig_t *c, const dig_t *a, dig_t sa, dis_t digit) {
-	dig_t r, _c, c0, c1, sign, sd = digit >> (RLC_DIG - 1);
-	dig_t _a[RLC_FP_DIGS];
-
-	sa = -sa;
-	sign = sa ^ sd;
-	digit = (digit ^ sd) - sd;
-
-	for (int i = 0; i < RLC_FP_DIGS; i++) {
-		_a[i] = a[i] ^ sa;
-	}
-	bn_add1_low(_a, _a, -sa, RLC_FP_DIGS);
-
-	RLC_MUL_DIG(r, _c, _a[0], (dig_t)digit);
-	_c ^= sign;
-	c[0] = _c - sign;
-	c1 = (c[0] < _c);
-	c0 = r;
-	for (int i = 1; i < RLC_FP_DIGS; i++) {
-		RLC_MUL_DIG(r, _c, _a[i], (dig_t)digit);
-		_c += c0;
-		c0 = r + (_c < c0);
-		_c ^= sign;
-		c[i] = _c + c1;
-		c1 = (c[i] < _c);
-	}
-	c[RLC_FP_DIGS] = (c0 ^ sign) + c1;
 }
 
 int fp_smb_jmpds(const fp_t a) {
@@ -320,12 +281,12 @@ int fp_smb_jmpds(const fp_t a) {
 		for (i = 0; i <= loops; i++) {
 			d = jumpdivstep(m, &k, d, f[0] & mask, g[0] & mask, s);
 
-			bn_mul2_low(t0, f, f[RLC_FP_DIGS] >> (RLC_DIG - 1), m[0]);
-			bn_mul2_low(t1, g, g[RLC_FP_DIGS] >> (RLC_DIG - 1), m[1]);
+			t0[RLC_FP_DIGS] = bn_muls_low(t0, f, f[RLC_FP_DIGS] >> (RLC_DIG - 1), m[0], RLC_FP_DIGS);
+			t1[RLC_FP_DIGS] = bn_muls_low(t1, g, g[RLC_FP_DIGS] >> (RLC_DIG - 1), m[1], RLC_FP_DIGS);
 			bn_addn_low(t0, t0, t1, RLC_FP_DIGS + 1);
 
-			bn_mul2_low(f, f, f[RLC_FP_DIGS] >> (RLC_DIG - 1), m[2]);
-			bn_mul2_low(t1, g, g[RLC_FP_DIGS] >> (RLC_DIG - 1), m[3]);
+			f[RLC_FP_DIGS] = bn_muls_low(f, f, f[RLC_FP_DIGS] >> (RLC_DIG - 1), m[2], RLC_FP_DIGS);
+			t1[RLC_FP_DIGS] = bn_muls_low(t1, g, g[RLC_FP_DIGS] >> (RLC_DIG - 1), m[3], RLC_FP_DIGS);
 			bn_addn_low(t1, t1, f, RLC_FP_DIGS + 1);
 
 			/* Update f and g. */
