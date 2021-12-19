@@ -463,8 +463,6 @@ static void ep_mul_reg_imp(ep_t r, const ep_t p, const bn_t k) {
 /* Public definitions                                                         */
 /*============================================================================*/
 
-#if EP_MUL == BASIC || !defined(STRIP)
-
 void ep_mul_basic(ep_t r, const ep_t p, const bn_t k) {
 	ep_t t;
 
@@ -498,8 +496,6 @@ void ep_mul_basic(ep_t r, const ep_t p, const bn_t k) {
 		ep_free(t);
 	}
 }
-
-#endif
 
 #if EP_MUL == SLIDE || !defined(STRIP)
 

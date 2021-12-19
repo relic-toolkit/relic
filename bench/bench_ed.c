@@ -373,7 +373,7 @@ static void arith(void) {
 	} BENCH_END;
 #endif
 
-#if ED_ADD == PROJC || !defined(STRIP)
+#if ED_ADD == EXTND || !defined(STRIP)
 	BENCH_RUN("ed_dbl_extnd") {
 		ed_rand(p);
 		ed_rand(q);
