@@ -730,7 +730,8 @@ static int reduction(void) {
 			dv_copy(t, fp_prime_get(), RLC_FP_DIGS);
 			/* Test if a * p mod p == 0. */
 			fp_mul(b, a, t);
-			TEST_ASSERT(fp_is_zero(b) == 1, end);
+			fp_sub(t, b, t);
+			TEST_ASSERT(fp_is_zero(b) == 1 || fp_is_zero(t) == 1, end);
 		} TEST_END;
 
 #if FP_RDC == BASIC || !defined(STRIP)
@@ -797,8 +798,7 @@ static int inversion(void) {
 			} while (fp_is_zero(a));
 			fp_inv(b, a);
 			fp_mul(c, a, b);
-			fp_set_dig(b, 1);
-			TEST_ASSERT(fp_cmp(c, b) == RLC_EQ, end);
+			TEST_ASSERT(fp_cmp_dig(c, 1) == RLC_EQ, end);
 		} TEST_END;
 
 #if FP_INV == BASIC || !defined(STRIP)
@@ -935,7 +935,6 @@ static int symbol(void) {
 			TEST_ASSERT(fp_smb(a) == fp_smb_basic(a), end);
 		} TEST_END;
 #endif
-
 #if FP_SMB == DIVST || !defined(STRIP)
 		TEST_CASE("division step symbol computation is correct") {
 			fp_rand(a);
@@ -1066,7 +1065,7 @@ static int square_root(void) {
 			fp_sqr(c, a);
 			TEST_ASSERT(fp_srt(b, c), end);
 			fp_neg(c, b);
-			TEST_ASSERT(fp_cmp(b, a) == RLC_EQ || fp_cmp(c, a) == RLC_EQ, end);
+			TEST_ASSERT(fp_cmp(b, a) == RLC_EQ || fp_cmp(c, a) == RLC_EQ), end);
 			fp_rand(a);
 			if (fp_srt(b, a)) {
 				fp_sqr(c, b);

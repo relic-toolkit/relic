@@ -585,7 +585,6 @@ void fp_prime_conv_dig(fp_t c, dig_t a) {
 
 void fp_prime_back(bn_t c, const fp_t a) {
 	dv_t t;
-	int i;
 
 	dv_null(t);
 
@@ -593,12 +592,11 @@ void fp_prime_back(bn_t c, const fp_t a) {
 		dv_new(t);
 
 		bn_grow(c, RLC_FP_DIGS);
-		for (i = 0; i < RLC_FP_DIGS; i++) {
-			c->dp[i] = a[i];
-		}
+		fp_norm(c->dp, a);
+
 #if FP_RDC == MONTY
 		dv_zero(t, 2 * RLC_FP_DIGS + 1);
-		dv_copy(t, a, RLC_FP_DIGS);
+		dv_copy(t, c->dp, RLC_FP_DIGS);
 		fp_rdc(c->dp, t);
 #endif
 		c->used = RLC_FP_DIGS;
