@@ -318,8 +318,8 @@ int main(void) {
 	conf_print();
 
 	if (ec_param_set_any() == RLC_OK) {
-		//util_banner("ERS module", 1);
-		//ers();
+		util_banner("ERS module", 1);
+		ers();
 		util_banner("SMLERS module", 1);
 		smlers();
 		util_banner("ETRS module", 1);
