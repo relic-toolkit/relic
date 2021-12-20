@@ -326,7 +326,7 @@ static void arith(void) {
 		BENCH_ADD(ed_sub_extnd(r, p, q));
 	} BENCH_END;
 
-	BENCH_RUN("ed_sub_projc (z2 = 1)") {
+	BENCH_RUN("ed_sub_extnd (z2 = 1)") {
 		ed_rand(p);
 		ed_rand(q);
 		ed_add_extnd(p, p, q);
@@ -335,12 +335,12 @@ static void arith(void) {
 		BENCH_ADD(ed_sub_extnd(r, p, q));
 	} BENCH_END;
 
-	BENCH_RUN("ed_sub_projc (z1,z2 = 1)") {
+	BENCH_RUN("ed_sub_extnd (z1,z2 = 1)") {
 		ed_rand(p);
 		ed_norm(p, p);
 		ed_rand(q);
 		ed_norm(q, q);
-		BENCH_ADD(ed_sub_projc(r, p, q));
+		BENCH_ADD(ed_sub_extnd(r, p, q));
 	} BENCH_END;
 #endif
 
