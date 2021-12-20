@@ -1065,7 +1065,7 @@ static int square_root(void) {
 			fp_sqr(c, a);
 			TEST_ASSERT(fp_srt(b, c), end);
 			fp_neg(c, b);
-			TEST_ASSERT(fp_cmp(b, a) == RLC_EQ || fp_cmp(c, a) == RLC_EQ), end);
+			TEST_ASSERT(fp_cmp(b, a) == RLC_EQ || fp_cmp(c, a) == RLC_EQ, end);
 			fp_rand(a);
 			if (fp_srt(b, a)) {
 				fp_sqr(c, b);
