@@ -80,7 +80,7 @@ enum {
  * Size of a precomputation table using the chosen algorithm.
  */
 #if ED_FIX == BASIC
-#define RLC_ED__TABLE			RLC_ED_TABLE_BASIC
+#define RLC_ED_TABLE			RLC_ED_TABLE_BASIC
 #elif ED_FIX == COMBS
 #define RLC_ED_TABLE			RLC_ED_TABLE_COMBS
 #elif ED_FIX == COMBD
