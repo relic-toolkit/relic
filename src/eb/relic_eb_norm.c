@@ -135,10 +135,11 @@ void eb_norm_sim(eb_t *r, const eb_t *t, int n) {
 				fb_copy(r[i]->z, a[i]);
 			}
 		}
-
+#if EB_ADD == PROJC || !defined(STRIP)
 		for (int i = 0; i < n; i++) {
 			eb_norm_imp(r[i], r[i], 1);
 		}
+#endif /* EB_ADD == PROJC */
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
