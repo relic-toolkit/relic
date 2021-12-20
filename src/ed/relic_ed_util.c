@@ -123,10 +123,10 @@ void ed_blind(ed_t r, const ed_t p) {
 	RLC_TRY {
 		fp_new(rand);
 		fp_rand(rand);
-#if EP_ADD == BASIC
+#if ED_ADD == BASIC
 		(void)rand;
 		ed_copy(r, p);
-#elif EP_ADD == PROJC
+#elif ED_ADD == PROJC || ED_ADD == EXTND
 		fp_mul(r->x, p->x, rand);
 		fp_mul(r->y, p->y, rand);
 		fp_mul(r->z, p->z, rand);

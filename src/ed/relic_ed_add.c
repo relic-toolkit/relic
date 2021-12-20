@@ -281,7 +281,7 @@ void ed_add_extnd(ed_t r, const ed_t p, const ed_t q) {
 		fp_mul(r->t, t2, r->z);
 		fp_mul(r->z, t3, t4);
 
-		r->coord = PROJC;
+		r->coord = EXTND;
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT)
 	} RLC_FINALLY {
