@@ -132,10 +132,11 @@ void ep_norm_sim(ep_t *r, const ep_t *t, int n) {
 				fp_copy(r[i]->z, a[i]);
 			}
 		}
-
+#if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
 		for (i = 0; i < n; i++) {
 			ep_norm_imp(r[i], r[i], 1);
 		}
+#endif /* EP_ADD == PROJC */
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
