@@ -42,13 +42,12 @@
 /*============================================================================*/
 
 int ed_is_infty(const ed_t p) {
-	fp_t t;
-	int r = 0;
-
-	fp_null(t);
-
 	if (p->coord == BASIC) {
 		return (fp_is_zero(p->x) && (fp_cmp_dig(p->y, 1) == RLC_EQ));
+	}
+
+	if (p->coord != BASIC) {
+		return (fp_is_zero(p->x) && (fp_cmp(p->y, p->z) == RLC_EQ));
 	}
 
 	if (fp_is_zero(p->z)) {
@@ -56,20 +55,7 @@ int ed_is_infty(const ed_t p) {
 		return 0;
 	}
 
-	RLC_TRY {
-		fp_new(t);
-		fp_inv(t, p->z);
-		fp_mul(t, p->y, t);
-		if (fp_is_zero(p->x) && (fp_cmp_dig(t, 1) == RLC_EQ)) {
-			r = 1;
-		}
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		fp_free(t);
-	}
-
-	return r;
+	return 0;
 }
 
 void ed_set_infty(ed_t p) {
