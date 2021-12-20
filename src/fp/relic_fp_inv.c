@@ -598,8 +598,6 @@ void fp_inv_jmpds(fp_t c, const fp_t a) {
 #endif
 
 		f[RLC_FP_DIGS] = g[RLC_FP_DIGS] = 0;
-		dv_zero(f, 2 * RLC_FP_DIGS);
-		dv_zero(g, 2 * RLC_FP_DIGS);
 		dv_zero(t, 2 * RLC_FP_DIGS);
 		dv_zero(p, 2 * RLC_FP_DIGS);
 		dv_zero(u0, 2 * RLC_FP_DIGS);
