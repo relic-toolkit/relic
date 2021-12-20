@@ -296,7 +296,6 @@ void ep_write_bin(uint8_t *bin, int len, const ep_t a, int pack) {
 			RLC_THROW(ERR_NO_BUFFER);
 			return;
 		} else {
-			bin[0] = 0;
 			return;
 		}
 	}
