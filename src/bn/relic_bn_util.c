@@ -56,6 +56,7 @@ void bn_copy(bn_t c, const bn_t a) {
 
 	c->used = a->used;
 	c->sign = a->sign;
+	bn_trim(c);
 }
 
 void bn_abs(bn_t c, const bn_t a) {
