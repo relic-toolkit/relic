@@ -40,6 +40,7 @@ int cp_etrs_sig(bn_t *td, bn_t *y, int max, etrs_t p, uint8_t *msg, int len,
 	bn_t n, l, u, v, z;
 	ec_t t, w[2];
 	bn_t *_v = RLC_ALLOCA(bn_t, max);
+	bn_t *_y = RLC_ALLOCA(bn_t, max);
 	int result = RLC_OK;
 
 	bn_null(n);
@@ -62,24 +63,22 @@ int cp_etrs_sig(bn_t *td, bn_t *y, int max, etrs_t p, uint8_t *msg, int len,
 		ec_new(w[1]);
 
 		ec_curve_get_ord(n);
-		if (_v == NULL) {
+		if (_v == NULL || _y == NULL) {
 			RLC_THROW(ERR_NO_MEMORY);
 		}
 		for(int i = 0; i < max; i++) {
 			bn_new(_v[i]);
+			bn_new(_y[i]);
 			bn_rand_mod(y[i], n);
 			bn_rand_mod(td[i], n);
 		}
 		bn_rand_mod(p->y, n);
 
 		bn_set_dig(l, 1);
-		for(int j = 0; j < max; j++) {
-			bn_copy(_v[j], y[j]);
-		}
-		bn_mod_inv_sim(_v, _v, n, max);
+		bn_mod_inv_sim(_y, y, n, max);
 		for(int j = 0; j < max; j++) {
 			bn_sub(u, y[j], p->y);
-			bn_mul(u, u, _v[j]);
+			bn_mul(u, u, _y[j]);
 			bn_mod(u, u, n);
 			bn_mul(l, l, u);
 			bn_mod(l, l, n);
@@ -87,8 +86,7 @@ int cp_etrs_sig(bn_t *td, bn_t *y, int max, etrs_t p, uint8_t *msg, int len,
 		ec_mul(p->h, pp, l);
 		for(int i = 0; i < max; i++) {
 			ec_mul_gen(t, td[i]);
-			bn_mod_inv(v, y[i], n);
-			bn_mul(u, v, p->y);
+			bn_mul(u, _y[i], p->y);
 			bn_mod(l, u, n);
 			for(int j = 0; j < max; j++) {
 				bn_set_dig(_v[j], 1);
@@ -131,8 +129,10 @@ int cp_etrs_sig(bn_t *td, bn_t *y, int max, etrs_t p, uint8_t *msg, int len,
 		ec_free(w[1]);
 		for (int i = 0; i < max; i++) {
 			bn_free(_v[i]);
+			bn_free(_y[i]);
 		}
 		RLC_FREE(_v);
+		RLC_FREE(_y);
 	}
 	return result;
 }
