@@ -152,15 +152,15 @@ static void smlers(void) {
 			bench_reset();
 			bench_before();
 			size = 1;
-			for (int k = 0; k < l; k++) {
+			for (int k = 0; k < 1; k++) {
 				cp_smlers_sig(td[0], ring[0], m, 5, sk[0], pk[0], pp);
 			}
-			for (int k = l; k < j; k++) {
+			for (int k = 1; k < j; k++) {
 				cp_smlers_ext(td[0], ring, &size, m, 5, pk[size], pp);
 			}
 			bench_after();
 			bench_compute(1);
-			util_print("\"%d\": {\"time\": %lf, \"size\": null}", j, bench_total()/(double)1000000);
+			util_print("\"%d\": {\"time\": %lf, \"size\": null}", j, l * bench_total()/(double)1000000);
 			if (j < MAX_KEYS) {
 				util_print(", ");
 			}
@@ -176,10 +176,10 @@ static void smlers(void) {
 		util_print("- Threshold %d:\n {", l);
 		for (int j = l; j <= MAX_KEYS; j = j << 1) {
 			size = 1;
-			for (int k = 0; k < l; k++) {
+			for (int k = 0; k < 1; k++) {
 				cp_smlers_sig(td[0], ring[0], m, 5, sk[0], pk[0], pp);
 			}
-			for (int k = l; k < l; k++) {
+			for (int k = 1; k < j; k++) {
 				cp_smlers_ext(td[0], ring, &size, m, 5, pk[size], pp);
 			}
 			bench_reset();
@@ -191,7 +191,7 @@ static void smlers(void) {
 			}
 			bench_after();
 			bench_compute(BENCH);
-			util_print("\"%d\": {\"time\": %lf, \"size\": %d}", j, bench_total()/(double)1000000, 2 * RLC_FP_BYTES + size * 8 * RLC_FP_BYTES + l * 6 * RLC_FP_BYTES);
+			util_print("\"%d\": {\"time\": %lf, \"size\": %d}", j, l * bench_total()/(double)1000000, l * (2 * RLC_FP_BYTES + size * 14 * RLC_FP_BYTES));
 			if (j < MAX_KEYS) {
 				util_print(", ");
 			}
