@@ -131,8 +131,8 @@ int cp_ers_ver(bn_t td, ers_t *s, int size, uint8_t *msg, int len, ec_t pp) {
 				ec_copy(y[1], s[i]->pk);
 				flag &= cp_sokor_ver(s[i]->c, s[i]->r, msg, len, y, NULL);
 	        }
+			result = flag;
 		}
-		result = flag;
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
