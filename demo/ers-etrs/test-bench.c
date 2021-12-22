@@ -185,13 +185,13 @@ static void smlers(void) {
 			bench_reset();
 			bench_before();
 			for (int i = 0; i < BENCH; i++)	{
-				for (int k = 0; k < j; k++) {
+				for (int k = 0; k < l; k++) {
 					cp_smlers_ver(td[0], ring, size, m, 5, pp);
 				}
 			}
 			bench_after();
 			bench_compute(BENCH);
-			util_print("\"%d\": {\"time\": %lf, \"size\": %d}", j, l * bench_total()/(double)1000000, l * (2 * RLC_FP_BYTES + size * 14 * RLC_FP_BYTES));
+			util_print("\"%d\": {\"time\": %lf, \"size\": %d}", j, bench_total()/(double)1000000, l * (2 * RLC_FP_BYTES + size * 14 * RLC_FP_BYTES));
 			if (j < MAX_KEYS) {
 				util_print(", ");
 			}
