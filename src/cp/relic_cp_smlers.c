@@ -149,6 +149,8 @@ int cp_smlers_ext(bn_t td, smlers_t *p, int *size, uint8_t *msg, int len, ec_t p
 	RLC_TRY {
 		bn_new(n);
 		bn_new(r);
+		ec_new(g[0]);
+		ec_new(g[1]);
 		ec_new(y[0]);
 		ec_new(y[1]);
 
