@@ -1805,6 +1805,76 @@ static void lhs(void) {
 	}
 }
 
+#define M	5			/* Number of server messages (larger). */
+#define N	2			/* Number of client messages. */
+
+static void psi(void) {
+	bn_t q, r, x[M], y[N], z[M];
+	g1_t d, s[M + 1];
+	g2_t u[M], ss;
+	gt_t t[M];
+	int len;
+
+	bn_new(q);
+	bn_new(r);
+	g1_new(d);
+	g2_new(ss);
+	for (int i = 0; i < M; i++) {
+		bn_null(x[i]);
+		bn_null(z[i]);
+		g1_null(s[i]);
+		bn_new(x[i]);
+		bn_new(z[i]);
+		g1_new(s[i]);
+	}
+	for (int i = 0; i < N; i++) {
+		bn_null(y[i]);
+		g2_null(u[i]);
+		gt_null(t[i]);
+		bn_new(y[i]);
+		g2_new(u[i]);
+	}
+
+	pc_get_ord(q);
+	for (int j = 0; j < M; j++) {
+		bn_rand_mod(x[j], q);
+	}
+	for (int j = 0; j < N; j++) {
+		bn_rand_mod(y[j], q);
+	}
+
+	BENCH_RUN("cp_lapsi_gen (5)") {
+		BENCH_ADD(cp_lapsi_gen(ss, s, M));
+	} BENCH_END;
+
+	BENCH_RUN("cp_lapsi_ask (5)") {
+		BENCH_ADD(cp_lapsi_ask(d, r, x, s, M));
+	} BENCH_END;
+
+	BENCH_RUN("cp_lapsi_ans (2)") {
+		BENCH_ADD(cp_lapsi_ans(t, u, d, ss, y, N));
+	} BENCH_END;
+
+	BENCH_RUN("cp_lapsi_int") {
+		BENCH_ADD(cp_lapsi_int(z, &len, r, x, s, M, t, u, N));
+	} BENCH_END;
+
+    bn_free(q);
+	bn_free(r);
+	g1_free(d);
+	g2_free(ss);
+	for (int i = 0; i < M; i++) {
+		bn_free(x[i]);
+		bn_free(z[i]);
+		g1_free(s[i]);
+	}
+	for (int i = 0; i < N; i++) {
+		bn_free(y[i]);
+		g2_free(u[i]);
+		gt_free(t[i]);
+	}
+}
+
 #endif /* WITH_PC */
 
 int main(void) {
@@ -1857,6 +1927,7 @@ int main(void) {
 #endif
 		zss();
 		lhs();
+		psi();
 	}
 #endif
 

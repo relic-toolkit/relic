@@ -2016,36 +2016,116 @@ static int lhs(void) {
 	code = RLC_OK;
 
   end:
-	  bn_free(n);
-	  bn_free(m);
-	  g1_free(h);
-	  g1_free(_r);
-	  g2_free(_s);
-	  gt_free(vk);
+	bn_free(n);
+	bn_free(m);
+	g1_free(h);
+	g1_free(_r);
+	g2_free(_s);
+	gt_free(vk);
 
-	  for (int i = 0; i < S; i++) {
-		  RLC_FREE(f[i]);
-		  for (int j = 0; j < RLC_TERMS; j++) {
+	for (int i = 0; i < S; i++) {
+		RLC_FREE(f[i]);
+		for (int j = 0; j < RLC_TERMS; j++) {
 			  gt_free(hs[i][j]);
-		  }
-		  RLC_FREE(hs[i]);
-		  for (int j = 0; j < L; j++) {
-			  bn_free(x[i][j]);
-			  bn_free(msg[i][j]);
-			  g1_free(a[i][j]);
-			  g1_free(c[i][j]);
-			  g1_free(r[i][j]);
-			  g2_free(s[i][j]);
-		  }
-		  bn_free(sk[i]);
-		  bn_free(d[i]);
-		  g1_free(sig[i]);
-		  g1_free(as[i]);
-		  g1_free(cs[i]);
-		  g2_free(y[i]);
-		  g2_free(z[i]);
-		  g2_free(pk[i]);
-	  }
+		}
+		RLC_FREE(hs[i]);
+		for (int j = 0; j < L; j++) {
+			bn_free(x[i][j]);
+			bn_free(msg[i][j]);
+			g1_free(a[i][j]);
+			g1_free(c[i][j]);
+			g1_free(r[i][j]);
+			g2_free(s[i][j]);
+		}
+		bn_free(sk[i]);
+		bn_free(d[i]);
+		g1_free(sig[i]);
+		g1_free(as[i]);
+		g1_free(cs[i]);
+		g2_free(y[i]);
+		g2_free(z[i]);
+		g2_free(pk[i]);
+	}
+	return code;
+}
+
+#define M	5			/* Number of server messages (larger). */
+#define N	2			/* Number of client messages. */
+
+static int psi(void) {
+	int len, code = RLC_ERR;
+	bn_t q, r, x[M], y[N], z[M];
+	g1_t d, s[M + 1];
+	g2_t u[M], ss;
+	gt_t t[M];
+
+	bn_null(q);
+	bn_null(r);
+	g1_null(d);
+	g2_null(ss);
+
+	RLC_TRY {
+		bn_new(q);
+		bn_new(r);
+		g1_new(d);
+		g2_new(ss);
+		for (int i = 0; i < M; i++) {
+			bn_null(x[i]);
+			bn_null(z[i]);
+			g1_null(s[i]);
+			bn_new(x[i]);
+			bn_new(z[i]);
+			g1_new(s[i]);
+		}
+		for (int i = 0; i < N; i++) {
+			bn_null(y[i]);
+			g2_null(u[i]);
+			gt_null(t[i]);
+			bn_new(y[i]);
+			g2_new(u[i]);
+		}
+
+		pc_get_ord(q);
+		TEST_CASE("laconic private set intersection is correct") {
+			for (int j = 0; j < M; j++) {
+				bn_rand_mod(x[j], q);
+			}
+			for (int j = 0; j < N; j++) {
+				bn_rand_mod(y[j], q);
+			}
+			len = 0;
+			TEST_ASSERT(cp_lapsi_gen(ss, s, M) == RLC_OK, end);
+			TEST_ASSERT(cp_lapsi_ask(d, r, x, s, M) == RLC_OK, end);
+			TEST_ASSERT(cp_lapsi_ans(t, u, d, ss, y, N) == RLC_OK, end);
+			TEST_ASSERT(cp_lapsi_int(z, &len, r, x, s, M, t, u, N) == RLC_OK, end);
+			TEST_ASSERT(len == 0, end);
+			for (int j = 0; j < N; j++) {
+				bn_copy(y[j], x[1]);
+			}
+			TEST_ASSERT(cp_lapsi_ans(t, u, d, ss, y, N) == RLC_OK, end);
+			TEST_ASSERT(cp_lapsi_int(z, &len, r, x, s, M, t, u, N) == RLC_OK, end);
+			TEST_ASSERT(len == N, end);
+		} TEST_END;
+	}
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
+	}
+	code = RLC_OK;
+  end:
+    bn_free(q);
+	bn_free(r);
+	g1_free(d);
+	g2_free(ss);
+	for (int i = 0; i < M; i++) {
+		bn_free(x[i]);
+		bn_free(z[i]);
+		g1_free(s[i]);
+	}
+	for (int i = 0; i < N; i++) {
+		bn_free(y[i]);
+		g2_free(u[i]);
+		gt_free(t[i]);
+	}
 	return code;
 }
 
@@ -2149,7 +2229,6 @@ int main(void) {
 #if defined(WITH_PC)
 	util_banner("Protocols based on pairings:\n", 0);
 	if (pc_param_set_any() == RLC_OK) {
-
 		if (pdpub() != RLC_OK) {
 			core_clean();
 			return 1;
@@ -2208,6 +2287,11 @@ int main(void) {
 		}
 
 		if (lhs() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (psi() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
