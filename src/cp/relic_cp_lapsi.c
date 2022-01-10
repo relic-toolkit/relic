@@ -162,7 +162,7 @@ int cp_lapsi_ans(gt_t t[], g2_t u[], g1_t d, g2_t ss, bn_t y[], int n) {
 int cp_lapsi_int(bn_t z[], int *len, bn_t r, bn_t x[], g1_t s[], int m,
 		gt_t t[], g2_t u[], int n) {
 	int i, j, k, result = RLC_OK;
-	bn_t q, *p = RLC_ALLOCA(bn_t, m), *_p = RLC_ALLOCA(bn_t, m);
+	bn_t q, *p = RLC_ALLOCA(bn_t, m + 1), *_p = RLC_ALLOCA(bn_t, m + 1);
 	g1_t d;
 	gt_t e;
 
@@ -174,7 +174,7 @@ int cp_lapsi_int(bn_t z[], int *len, bn_t r, bn_t x[], g1_t s[], int m,
 		bn_new(q);
 		g1_new(d);
 		gt_new(e);
-		for (i = 0; i < m; i++) {
+		for (i = 0; i <= m; i++) {
 			bn_null(p[i]);
 			bn_null(_p[i]);
 			bn_new(p[i]);
@@ -225,7 +225,7 @@ int cp_lapsi_int(bn_t z[], int *len, bn_t r, bn_t x[], g1_t s[], int m,
 		bn_free(q);
 		g1_free(d);
 		gt_free(e);
-		for (i = 0; i < m; i++) {
+		for (i = 0; i <= m; i++) {
 			bn_free(p[i]);
 			bn_free(_p[i]);
 		}

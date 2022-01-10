@@ -2083,6 +2083,7 @@ static int psi(void) {
 			gt_null(t[i]);
 			bn_new(y[i]);
 			g2_new(u[i]);
+			gt_new(t[i]);
 		}
 
 		pc_get_ord(q);
@@ -2099,12 +2100,14 @@ static int psi(void) {
 			TEST_ASSERT(cp_lapsi_ans(t, u, d, ss, y, N) == RLC_OK, end);
 			TEST_ASSERT(cp_lapsi_int(z, &len, r, x, s, M, t, u, N) == RLC_OK, end);
 			TEST_ASSERT(len == 0, end);
-			for (int j = 0; j < N; j++) {
-				bn_copy(y[j], x[1]);
+			for (int k = 0; k < N; k++) {
+				for (int j = 0; j < k; j++) {
+					bn_copy(y[j], x[j]);
+				}
+				TEST_ASSERT(cp_lapsi_ans(t, u, d, ss, y, N) == RLC_OK, end);
+				TEST_ASSERT(cp_lapsi_int(z, &len, r, x, s, M, t, u, N) == RLC_OK, end);
+				TEST_ASSERT(len == k, end);				
 			}
-			TEST_ASSERT(cp_lapsi_ans(t, u, d, ss, y, N) == RLC_OK, end);
-			TEST_ASSERT(cp_lapsi_int(z, &len, r, x, s, M, t, u, N) == RLC_OK, end);
-			TEST_ASSERT(len == N, end);
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {
