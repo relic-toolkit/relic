@@ -398,8 +398,10 @@
 #undef bn_lshb_low
 #undef bn_rsh1_low
 #undef bn_rshb_low
+#undef bn_rshs_low
 #undef bn_mula_low
 #undef bn_mul1_low
+#undef bn_muls_low
 #undef bn_muln_low
 #undef bn_muld_low
 #undef bn_sqra_low
@@ -418,8 +420,10 @@
 #define bn_lshb_low 	RLC_PREFIX(bn_lshb_low)
 #define bn_rsh1_low 	RLC_PREFIX(bn_rsh1_low)
 #define bn_rshb_low 	RLC_PREFIX(bn_rshb_low)
+#define bn_rshs_low 	RLC_PREFIX(bn_rshs_low)
 #define bn_mula_low 	RLC_PREFIX(bn_mula_low)
 #define bn_mul1_low 	RLC_PREFIX(bn_mul1_low)
+#define bn_muls_low 	RLC_PREFIX(bn_muls_low)
 #define bn_muln_low 	RLC_PREFIX(bn_muln_low)
 #define bn_muld_low 	RLC_PREFIX(bn_muld_low)
 #define bn_sqra_low 	RLC_PREFIX(bn_sqra_low)
@@ -2702,6 +2706,10 @@
 #undef cp_mklhs_ver
 #undef cp_mklhs_off
 #undef cp_mklhs_onv
+#undef cp_lapsi_gen
+#undef cp_lapsi_ask
+#undef cp_lapsi_ans
+#undef cp_lapsi_int
 
 #define cp_rsa_gen 	RLC_PREFIX(cp_rsa_gen)
 #define cp_rsa_enc 	RLC_PREFIX(cp_rsa_enc)
@@ -2835,6 +2843,10 @@
 #define cp_mklhs_ver 	RLC_PREFIX(cp_mklhs_ver)
 #define cp_mklhs_off 	RLC_PREFIX(cp_mklhs_off)
 #define cp_mklhs_onv 	RLC_PREFIX(cp_mklhs_onv)
+#define cp_lapsi_gen 	RLC_PREFIX(cp_lapsi_gen)
+#define cp_lapsi_ask 	RLC_PREFIX(cp_lapsi_ask)
+#define cp_lapsi_ans 	RLC_PREFIX(cp_lapsi_ans)
+#define cp_lapsi_int 	RLC_PREFIX(cp_lapsi_int)
 
 #undef md_map_sh224
 #undef md_map_sh256
