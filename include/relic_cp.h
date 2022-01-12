@@ -2455,11 +2455,12 @@ int cp_mklhs_onv(g1_t sig, bn_t m, bn_t mu[], char *data, char *id[], g1_t h[],
  * Generates the secrets and its consecutive powers for the Laconic Private Set
  * Intersection (LaPSI) protocol, given the maximum set size.
  *
- * @param[out] ss			- the secret power in G_1.
- * @param[out] s 			- the consecutive powers in G_2.
+ * @param[out] sk			- the sender's secret key.
+ * @param[out] ss			- the secret power in G_2.
+ * @param[out] s 			- the consecutive powers in G_1.
  * @param[in] m 			- the maximum set size.
  */
-int cp_lapsi_gen(g2_t ss, g1_t s[], int m);
+int cp_lapsi_gen(bn_t sk, g2_t ss, g1_t s[], int m);
 
 /**
  * Computes the receiver part of the LaPSI protocol, given its input set.
@@ -2489,7 +2490,8 @@ int cp_lapsi_ans(gt_t t[], g2_t u[], g1_t d, g2_t ss, bn_t y[], int n);
  *
  * @param[out] z			- the elements in the intersection.
  * @param[out] len			- the cardinality of the resulting intersection.
- * @param[out] r 			- the random nonce.
+ * @param[in] sk			- the sender's secret key.
+ * @param[in] d				- the polynomial interpolation in the exponent.
  * @param[in] x 			- the receiver's input set.
  * @param[in] s 			- the consecutive powers.
  * @param[in] m 			- the receiver's input set size.
@@ -2497,7 +2499,7 @@ int cp_lapsi_ans(gt_t t[], g2_t u[], g1_t d, g2_t ss, bn_t y[], int n);
  * @param[in] u 			- the missing elements in the exponent.
  * @param[in] n 			- the sender's input set size.
  */
-int cp_lapsi_int(bn_t z[], int *len, bn_t r, bn_t x[], g1_t s[], int m,
+int cp_lapsi_int(bn_t z[], int *len, bn_t sk, g1_t d, bn_t x[], int m,
 		gt_t t[], g2_t u[], int n);
 
 #endif /* !RLC_CP_H */

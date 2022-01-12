@@ -1844,7 +1844,7 @@ static void psi(void) {
 	}
 
 	BENCH_RUN("cp_lapsi_gen (5)") {
-		BENCH_ADD(cp_lapsi_gen(ss, s, M));
+		BENCH_ADD(cp_lapsi_gen(q, ss, s, M));
 	} BENCH_END;
 
 	BENCH_RUN("cp_lapsi_ask (5)") {
@@ -1856,7 +1856,7 @@ static void psi(void) {
 	} BENCH_END;
 
 	BENCH_RUN("cp_lapsi_int") {
-		BENCH_ADD(cp_lapsi_int(z, &len, r, x, s, M, t, u, N));
+		BENCH_ADD(cp_lapsi_int(z, &len, q, d, x, M, t, u, N));
 	} BENCH_END;
 
     bn_free(q);

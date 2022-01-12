@@ -2086,27 +2086,23 @@ static int psi(void) {
 			gt_new(t[i]);
 		}
 
-		pc_get_ord(q);
 		TEST_CASE("laconic private set intersection is correct") {
+			pc_get_ord(q);
 			for (int j = 0; j < M; j++) {
 				bn_rand_mod(x[j], q);
 			}
 			for (int j = 0; j < N; j++) {
 				bn_rand_mod(y[j], q);
 			}
-			len = 0;
-			TEST_ASSERT(cp_lapsi_gen(ss, s, M) == RLC_OK, end);
+			TEST_ASSERT(cp_lapsi_gen(q, ss, s, M) == RLC_OK, end);
 			TEST_ASSERT(cp_lapsi_ask(d, r, x, s, M) == RLC_OK, end);
-			TEST_ASSERT(cp_lapsi_ans(t, u, d, ss, y, N) == RLC_OK, end);
-			TEST_ASSERT(cp_lapsi_int(z, &len, r, x, s, M, t, u, N) == RLC_OK, end);
-			TEST_ASSERT(len == 0, end);
-			for (int k = 0; k < N; k++) {
+			for (int k = 0; k <= N; k++) {
 				for (int j = 0; j < k; j++) {
 					bn_copy(y[j], x[j]);
 				}
 				TEST_ASSERT(cp_lapsi_ans(t, u, d, ss, y, N) == RLC_OK, end);
-				TEST_ASSERT(cp_lapsi_int(z, &len, r, x, s, M, t, u, N) == RLC_OK, end);
-				TEST_ASSERT(len == k, end);				
+				TEST_ASSERT(cp_lapsi_int(z, &len, q, d, x, M, t, u, N) == RLC_OK, end);
+				TEST_ASSERT(len == k, end);
 			}
 		} TEST_END;
 	}
