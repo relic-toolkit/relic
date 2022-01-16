@@ -4265,15 +4265,6 @@ void fp48_inv(fp48_t c, fp48_t a);
 void fp48_inv_cyc(fp48_t c, fp48_t a);
 
 /**
- * Converts a 48-extension field element to a cyclotomic element. Computes
- * c = a^(p^6 - 1).
- *
- * @param[out] c			- the result.
- * @param[in] a				- the 48-extension field element.
- */
-void fp48_conv_cyc(fp48_t c, fp48_t a);
-
-/**
  * Computes the Frobenius endomorphism of a 48-extension element.
  * Computes c = a^p.
  *
@@ -4623,15 +4614,6 @@ void fp54_inv(fp54_t c, fp54_t a);
  * @param[in] a				- the 54-extension field element to invert.
  */
 void fp54_inv_cyc(fp54_t c, fp54_t a);
-
-/**
- * Converts a 54-extension field element to a cyclotomic element. Computes
- * c = a^(p^6 - 1).
- *
- * @param[out] c			- the result.
- * @param[in] a				- the 54-extension field element.
- */
-void fp54_conv_cyc(fp54_t c, fp54_t a);
 
 /**
  * Computes the Frobenius endomorphism of a 54-extension element.
