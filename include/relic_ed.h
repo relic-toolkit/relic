@@ -777,6 +777,17 @@ void ed_mul_sim_joint(ed_t r, const ed_t p, const bn_t k, const ed_t q,
 	const bn_t m);
 
 /**
+ * Multiplies and adds multiple Edwards elliptic curve points simultaneously.
+ * Computes R = \Sum_i=0..n [k_i]P_i.
+ *
+ * @param[out] r			- the result.
+ * @param[out] p			- the elements to multiply.
+ * @param[out] k			- the integer scalars.
+ * @param[out] n			- the number of elements to multiply.
+ */
+void ed_mul_sim_lot(ed_t r, const ed_t p[], const bn_t k[], int n);
+
+/**
  * Multiplies and adds the generator and an Edwards elliptic curve point
  * simultaneously. Computes R = [k]G + [m]Q.
  *

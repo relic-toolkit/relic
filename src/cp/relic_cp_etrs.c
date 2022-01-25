@@ -37,17 +37,16 @@
 
 int cp_etrs_sig(bn_t *td, bn_t *y, int max, etrs_t p, uint8_t *msg, int len,
 		bn_t sk, ec_t pk, ec_t pp) {
-	bn_t n, l, u, v, z;
-	ec_t t, w[2];
+	bn_t n, l, u, z;
+	ec_t w[2];
+	bn_t *v = RLC_ALLOCA(bn_t, max);
 	bn_t *_v = RLC_ALLOCA(bn_t, max);
 	int result = RLC_OK;
 
 	bn_null(n);
 	bn_null(l);
 	bn_null(u);
-	bn_null(v);
 	bn_null(z);
-	ec_null(t);
 	ec_null(w[0]);
 	ec_null(w[1]);
 
@@ -55,17 +54,18 @@ int cp_etrs_sig(bn_t *td, bn_t *y, int max, etrs_t p, uint8_t *msg, int len,
 		bn_new(n);
 		bn_new(l);
 		bn_new(u);
-		bn_new(v);
 		bn_new(z);
-		ec_new(t);
 		ec_new(w[0]);
 		ec_new(w[1]);
 
 		ec_curve_get_ord(n);
-		if (_v == NULL) {
+		if (_v == NULL || v == NULL) {
 			RLC_THROW(ERR_NO_MEMORY);
 		}
 		for(int i = 0; i < max; i++) {
+			bn_null(v[i]);
+			bn_null(_v[i]);
+			bn_new(v[i]);
 			bn_new(_v[i]);
 			bn_rand_mod(y[i], n);
 			bn_rand_mod(td[i], n);
@@ -85,11 +85,12 @@ int cp_etrs_sig(bn_t *td, bn_t *y, int max, etrs_t p, uint8_t *msg, int len,
 			bn_mod(l, l, n);
 		}
 		ec_mul(p->h, pp, l);
+
+		bn_zero(z);
+		bn_mod_inv_sim(v, y, n, max);
 		for(int i = 0; i < max; i++) {
-			ec_mul_gen(t, td[i]);
-			bn_mod_inv(v, y[i], n);
-			bn_mul(u, v, p->y);
-			bn_mod(l, u, n);
+			bn_mul(u, v[i], p->y);
+			bn_mod(v[i], u, n);
 			for(int j = 0; j < max; j++) {
 				bn_set_dig(_v[j], 1);
 				if (j != i) {
@@ -103,14 +104,16 @@ int cp_etrs_sig(bn_t *td, bn_t *y, int max, etrs_t p, uint8_t *msg, int len,
 					bn_sub(u, y[j], p->y);
 					bn_mul(u, u, _v[j]);
 					bn_mod(u, u, n);
-					bn_mul(l, l, u);
-					bn_mod(l, l, n);
+					bn_mul(v[i], v[i], u);
+					bn_mod(v[i], v[i], n);
 				}
 			}
-			ec_mul(t, t, l);
-			ec_add(p->h, p->h, t);
+			bn_mul(v[i], v[i], td[i]);
+			bn_mod(v[i], v[i], n);
+			bn_add(z, z, v[i]);
+			bn_mod(z, z, n);
 		}
-		ec_norm(p->h, p->h);
+		ec_mul_sim_gen(p->h, z, pp, l);
 
 		ec_copy(p->pk, pk);
 		ec_copy(w[0], p->h);
@@ -124,12 +127,11 @@ int cp_etrs_sig(bn_t *td, bn_t *y, int max, etrs_t p, uint8_t *msg, int len,
 		bn_free(n);
 		bn_free(l);
 		bn_free(u);
-		bn_free(v);
 		bn_free(z);
-		ec_free(t);
 		ec_free(w[0]);
 		ec_free(w[1]);
 		for (int i = 0; i < max; i++) {
+			bn_free(v[i]);
 			bn_free(_v[i]);
 		}
 		RLC_FREE(_v);
@@ -140,10 +142,11 @@ int cp_etrs_sig(bn_t *td, bn_t *y, int max, etrs_t p, uint8_t *msg, int len,
 int cp_etrs_ver(int thres, bn_t *td, bn_t *y, int max, etrs_t *s, int size,
 		uint8_t *msg, int len, ec_t pp) {
 	int i, flag = 0, result = 0;
-	bn_t l, n, u, v;
+	bn_t l, n, u;
 	ec_t t, w[2];
 
 	int d = max + size - thres;
+	bn_t *v = RLC_ALLOCA(bn_t, d);
 	bn_t *_v = RLC_ALLOCA(bn_t, d);
 	bn_t *_y = RLC_ALLOCA(bn_t, d);
 	ec_t *_t = RLC_ALLOCA(ec_t, d);
@@ -151,8 +154,6 @@ int cp_etrs_ver(int thres, bn_t *td, bn_t *y, int max, etrs_t *s, int size,
 	bn_null(l);
 	bn_null(n);
 	bn_null(u);
-	bn_null(v);
-	ec_null(t);
 	ec_null(w[0]);
 	ec_null(w[1]);
 
@@ -160,14 +161,15 @@ int cp_etrs_ver(int thres, bn_t *td, bn_t *y, int max, etrs_t *s, int size,
 		bn_new(l);
 		bn_new(n);
 		bn_new(u);
-		bn_new(v);
-		ec_new(t);
 		ec_new(w[0]);
 		ec_new(w[1]);
-		if (_y == NULL || _t == NULL) {
+		if (_y == NULL || _t == NULL || v == NULL) {
 			RLC_THROW(ERR_NO_MEMORY);
 		}
 		for (i = 0; i < d; i++) {
+			bn_null(v[i]);
+			bn_null(_v[i]);
+			bn_new(v[i]);
 			bn_new(_v[i]);
 			bn_new(_y[i]);
 			ec_new(_t[i]);
@@ -195,20 +197,17 @@ int cp_etrs_ver(int thres, bn_t *td, bn_t *y, int max, etrs_t *s, int size,
 				}
 			}
 			bn_mod_inv_sim(_v, _v, n, d);
-			bn_set_dig(l, 1);
+			bn_set_dig(v[i], 1);
 			for(int j = 0; j < d; j++) {
 				if (j != i) {
 					bn_mul(u, _y[j], _v[j]);
 					bn_mod(u, u, n);
-					bn_mul(l, l, u);
-					bn_mod(l, l, n);
+					bn_mul(v[i], v[i], u);
+					bn_mod(v[i], v[i], n);
 				}
 			}
-
-			ec_mul(t, _t[i], l);
-			ec_add(w[0], w[0], t);
 		}
-		ec_norm(w[0], w[0]);
+		ec_mul_sim_lot(w[0], _t, v, d);
 		flag &= ec_cmp(w[0], pp) != RLC_EQ;
 
 		for (int i = 0; i < size; i++) {
@@ -225,11 +224,10 @@ int cp_etrs_ver(int thres, bn_t *td, bn_t *y, int max, etrs_t *s, int size,
 		bn_free(l);
 		bn_free(n);
 		bn_free(u);
-		bn_free(v);
-		ec_free(t);
 		ec_free(w[0]);
 		ec_free(w[1]);
 		for (int i = 0; i < d; i++) {
+			bn_free(v[i]);
 			bn_free(_v[i]);
 			bn_free(_y[i]);
 			ec_free(_t[i]);

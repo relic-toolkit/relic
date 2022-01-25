@@ -611,12 +611,6 @@ void ep_mul_sim_lot_plain(ep_t r, const ep_t p[], const bn_t k[], int n) {
 			}
 		}
 
-		for (i = 0; i < n; i++) {
-			for (j = _l[i]; j < l; j++) {
-				naf[i*l + j] = 0;
-			}
-		}
-
 		ep_set_infty(r);
 		for (i = l - 1; i >= 0; i--) {
 			ep_dbl(r, r);
