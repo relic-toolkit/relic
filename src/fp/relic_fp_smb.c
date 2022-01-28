@@ -406,9 +406,8 @@ dis_t jumpdivstep(dis_t m[4], dig_t *k, dis_t delta, dis_t x, dis_t y, int s) {
 		ci += ci;
 		di += di;
 
-		u += ((yi & y) ^ (y >> (dig_t)1)) & 2;
-		u += (u & (dig_t)1) ^ (ci >> (dig_t)(RLC_DIG - 1));
-		u %= 4;
+		u += ((yi & y) ^ (y >> 1)) & 2;
+		u += (u & 1) ^ RLC_SIGN(ci);
 	}
 	m[0] = ai;
 	m[1] = bi;
