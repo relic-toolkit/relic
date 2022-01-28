@@ -143,7 +143,7 @@ int cp_etrs_ver(int thres, bn_t *td, bn_t *y, int max, etrs_t *s, int size,
 		uint8_t *msg, int len, ec_t pp) {
 	int i, flag = 0, result = 0;
 	bn_t l, n, u;
-	ec_t t, w[2];
+	ec_t w[2];
 
 	int d = max + size - thres;
 	bn_t *v = RLC_ALLOCA(bn_t, d);
@@ -232,6 +232,7 @@ int cp_etrs_ver(int thres, bn_t *td, bn_t *y, int max, etrs_t *s, int size,
 			bn_free(_y[i]);
 			ec_free(_t[i]);
 		}
+		RLC_FREE(v);
 		RLC_FREE(_v);
 		RLC_FREE(_y);
 		RLC_FREE(_t);
