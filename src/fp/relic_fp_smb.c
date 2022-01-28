@@ -385,7 +385,7 @@ int fp_smb_binar(const fp_t a) {
 #if FP_SMB == JMPDS || !defined(STRIP)
 
 dis_t jumpdivstep(dis_t m[4], dig_t *k, dis_t delta, dis_t x, dis_t y, int s) {
-	dig_t c0, c1, yi, ai = 1, bi = 0, ci = 0, di = 1, u = 0;
+	dig_t t0, t1, t2, c0, c1, yi, ai = 1, bi = 0, ci = 0, di = 1, u = 0;
 	for (s = RLC_DIG - 2; s > 0; s--) {
 		yi = y;
 
@@ -393,18 +393,21 @@ dis_t jumpdivstep(dis_t m[4], dig_t *k, dis_t delta, dis_t x, dis_t y, int s) {
 		c1 = -(x & 1);
 		c0 &= c1;
 
-		x += ((y ^ c0) - c0) & c1;
-		ai += ((ci ^ c0) - c0) & c1;
-		bi += ((di ^ c0) - c0) & c1;
+		t0 = (delta < 0 ? y : -y);
+		t1 = (delta < 0 ? ci : -ci);
+		t2 = (delta < 0 ? di : -di);
+		x += t0 & c1;
+		ai += t1 & c1;
+		bi += t2 & c1;
 
 		/* delta = RLC_SEL(delta + 1, -delta, c0) */
-		delta = (delta ^ c0) + 1;
 		y = y + (x & c0);
 		ci = ci + (ai & c0);
 		di = di + (bi & c0);
 		x >>= 1;
-		ci += ci;
-		di += di;
+		ci <<= 1;
+		di <<= 1;
+		delta = (delta ^ c0) + 1;
 
 		u += ((yi & y) ^ (y >> 1)) & 2;
 		u += (u & 1) ^ RLC_SIGN(ci);
