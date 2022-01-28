@@ -421,23 +421,20 @@ dis_t jumpdivstep(dis_t m[4], dig_t *k, dis_t delta, dis_t x, dis_t y, int s) {
 }
 
 static inline dig_t _bn_muls_low(dig_t *c, const dig_t *a, dig_t sa, dis_t digit, int size) {
-	dig_t r, _a, _c, c0, c1, c2, sign, sd = digit >> (RLC_DIG - 1);
+	dig_t r, _a[size], _c, c0, c1, sign, sd = digit >> (RLC_DIG - 1);
 
 	sa = -sa;
 	sign = sa ^ sd;
 	digit = (digit ^ sd) - sd;
 
-	_a = (a[0] ^ sa) - sa;
-	c2 = (_a < (a[0] ^ sa));
-	RLC_MUL_DIG(r, _c, _a, (dig_t)digit);
+	cneg_n(_a, a, sa, size);
+	RLC_MUL_DIG(r, _c, _a[0], (dig_t)digit);
 	_c ^= sign;
 	c[0] = _c - sign;
 	c1 = (c[0] < _c);
 	c0 = r;
 	for (int i = 1; i < size; i++) {
-		_a = (a[i] ^ sa) + c2;
-		c2 = (_a < c2);
-		RLC_MUL_DIG(r, _c, _a, (dig_t)digit);
+		RLC_MUL_DIG(r, _c, _a[i], (dig_t)digit);
 		_c += c0;
 		c0 = r + (_c < c0);
 		_c ^= sign;
