@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (c) 2021 RELIC Authors
+ * Copyright (c) 2009 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -24,22 +24,35 @@
 /**
  * @file
  *
- * Implementation of the low-level inversion functions.
+ * Implementation of the low-level multiple precision bit shifting functions.
  *
- * @&version $Id$
- * @ingroup fp
+ * @ingroup bn
  */
 
 #include <gmp.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 
-#include "relic_fp.h"
-#include "relic_fp_low.h"
-#include "relic_core.h"
+#include "relic_bn.h"
+#include "relic_bn_low.h"
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
-int fp_smbm_low(const dig_t *a) {
-	return (fp_is_zero(a) ? 0 : (ct_is_square_mod_384(a, fp_prime_get()) ? 1 : -1));
+dig_t bn_lsh1_low(dig_t *c, const dig_t *a, int size) {
+	return mpn_lshift(c, a, size, 1);
+}
+
+dig_t bn_lshb_low(dig_t *c, const dig_t *a, int size, int bits) {
+	return mpn_lshift(c, a, size, bits);
+}
+
+dig_t bn_rsh1_low(dig_t *c, const dig_t *a, int size) {
+	return mpn_rshift(c, a, size, 1);
+}
+
+dig_t bn_rshb_low(dig_t *c, const dig_t *a, int size, int bits) {
+	return mpn_rshift(c, a, size, bits);
 }

@@ -565,6 +565,15 @@ static void arith(void) {
 	BENCH_END;
 #endif
 
+#if FP_SMB == BINAR || !defined(STRIP)
+	BENCH_RUN("fp_smb_binar") {
+		fp_rand(a);
+		fp_sqr(a, a);
+		BENCH_ADD(fp_smb_binar(a));
+	}
+	BENCH_END;
+#endif
+
 #if FP_SMB == DIVST || !defined(STRIP)
 	BENCH_RUN("fp_smb_divst") {
 		fp_rand(a);

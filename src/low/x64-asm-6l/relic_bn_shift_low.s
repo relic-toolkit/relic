@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (c) 2021 RELIC Authors
+ * Copyright (c) 2017 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -21,25 +21,41 @@
  * or <https://www.apache.org/licenses/>.
  */
 
+#include "relic_fp_low.h"
+
 /**
  * @file
  *
- * Implementation of the low-level inversion functions.
+ * Implementation of the low-level prime field addition and subtraction
+ * functions.
  *
- * @&version $Id$
+ * @version $Id: relic_fp_add_low.c 88 2009-09-06 21:27:19Z dfaranha $
  * @ingroup fp
  */
 
-#include <gmp.h>
+.text
+.global bn_rshs_low
 
-#include "relic_fp.h"
-#include "relic_fp_low.h"
-#include "relic_core.h"
-
-/*============================================================================*/
-/* Public definitions                                                         */
-/*============================================================================*/
-
-int fp_smbm_low(const dig_t *a) {
-	return (fp_is_zero(a) ? 0 : (ct_is_square_mod_384(a, fp_prime_get()) ? 1 : -1));
-}
+bn_rshs_low:
+	movq	0(%rsi), %r8
+	movq	8(%rsi), %r9
+	movq	16(%rsi), %r10
+	movq	24(%rsi), %r11
+	movq	32(%rsi), %rax
+	movq	40(%rsi), %rcx
+    movq	48(%rsi), %rsi
+	shrd	$62, %r9, %r8
+	shrd	$62, %r10, %r9
+	shrd	$62, %r11, %r10
+	shrd	$62, %rax, %r11
+	shrd	$62, %rcx, %rax
+    shrd	$62, %rsi, %rcx
+	sar	    $62, %rsi
+	movq	%r8,0(%rdi)
+	movq	%r9,8(%rdi)
+	movq	%r10,16(%rdi)
+	movq	%r11,24(%rdi)
+	movq	%rax,32(%rdi)
+	movq	%rcx,40(%rdi)
+    movq	%rsi,48(%rdi)
+	ret
