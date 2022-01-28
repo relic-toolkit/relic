@@ -34,6 +34,63 @@
 #include "relic_fp_low.h"
 
 /*============================================================================*/
+/* Private definitions                                                        */
+/*============================================================================*/
+
+/**
+ * Conditionally negate a digit vector using two's complement representation.
+ *
+ * @param[out] c 		- the result.
+ * @param[in] a 		- the digit vector to conditionally negate.
+ * @param[in] sa 		- the sign of the digit vector.
+ * @param[in] n			- the number of digits to conditionally negate.
+ */
+static inline void bn_negm_low(dig_t c[], const dig_t a[], dig_t sa, size_t n) {
+    dig_t carry = sa & 1;
+
+	sa = -sa;
+    for (int i = 0; i < n; i++) {
+        c[i] = (a[i] ^ sa) + carry;
+		carry = (c[i] < carry);
+    }
+}
+
+/**
+ * Multiply a digit vector by a signed digit and compute the results in
+ * two's complement representation.
+ *
+ * @param[out] c 		- the result.
+ * @param[in] a			- the digit vector to multiply.
+ * @param[in] sa 		- the sign of the digit vector.
+ * @param[in] digit 	- the signed digit to multiply.
+ * @param[in] size 		- the number of digits to multiply.
+ * @return the most significant bit of the result.
+ */
+static inline dig_t bn_mul2_low(dig_t *c, const dig_t *a, dig_t sa, dis_t digit,
+		int size) {
+	dig_t r, _c, c0, c1, sign, sd = digit >> (RLC_DIG - 1);
+
+	sa = -sa;
+	sign = sa ^ sd;
+	digit = (digit ^ sd) - sd;
+
+	RLC_MUL_DIG(r, _c, a[0], (dig_t)digit);
+	_c ^= sign;
+	c[0] = _c - sign;
+	c1 = (c[0] < _c);
+	c0 = r;
+	for (int i = 1; i < size; i++) {
+		RLC_MUL_DIG(r, _c, a[i], (dig_t)digit);
+		_c += c0;
+		c0 = r + (_c < c0);
+		_c ^= sign;
+		c[i] = _c + c1;
+		c1 = (c[i] < _c);
+	}
+	return (c0 ^ sign) + c1;
+}
+
+/*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
@@ -170,23 +227,18 @@ int fp_smb_divst(const fp_t a) {
 
 #if FP_SMB == BINAR || !defined(STRIP)
 
-#include <stddef.h>
+static inline dig_t is_zero(dig_t l) {
+	return (~l & (l - 1)) >> (RLC_DIG - 1);
+}
 
-#define MSB(x) ((x) >> (RLC_DIG-1))
-
-static inline dig_t is_zero(dig_t l)
-{   return (~l & (l - 1)) >> (RLC_DIG - 1);   }
-
-static dig_t lshift_2(dig_t hi, dig_t lo, size_t l)
-{
+static dig_t lshift_2(dig_t hi, dig_t lo, size_t l) {
     size_t r = RLC_DIG - l;
     dig_t mask = 0 - (is_zero(l)^1);
     return (hi << (l&(RLC_DIG-1))) | ((lo & mask) >> (r&(RLC_DIG-1)));
 }
 
 static void ab_approximation_n(dig_t a_[2], const dig_t a[],
-                               dig_t b_[2], const dig_t b[])
-{
+                               dig_t b_[2], const dig_t b[]) {
     dig_t a_hi, a_lo, b_hi, b_lo, mask;
     size_t i;
 
@@ -219,47 +271,46 @@ static dig_t cneg_n(dig_t ret[], const dig_t a[], dig_t neg, size_t n)
         carry = (dig_t)(limbx >> RLC_DIG);
     }
 
-    return 0 - MSB((dig_t)limbx);
+    return 0 - RLC_SIGN((dig_t)limbx);
 }
 
 static dig_t smul_n_shift_n(dig_t ret[], const dig_t a[], dig_t *f_,
-                                           const dig_t b[], dig_t *g_,
-                                           size_t n)
-{
+		const dig_t b[], dig_t *g_,
+		size_t n) {
     dig_t a_[n+1], b_[n+1], f, g, neg, carry, hi;
     size_t i;
 
     /* |a|*|f_| */
     f = *f_;
-    neg = 0 - MSB(f);
+    neg = -RLC_SIGN(f);
     f = (f ^ neg) - neg;            /* ensure |f| is positive */
-    (void)cneg_n(a_, a, neg, n);
+    bn_negm_low(a_, a, RLC_SIGN(f), n);
     hi = bn_mul1_low(a_, a_, f, n);
     a_[n] = hi - (f & neg);
 
     /* |b|*|g_| */
     g = *g_;
-    neg = 0 - MSB(g);
+    neg = -RLC_SIGN(g);
     g = (g ^ neg) - neg;            /* ensure |g| is positive */
-    (void)cneg_n(b_, b, neg, n);
+    bn_negm_low(b_, b, RLC_SIGN(g), n);
     hi = bn_mul1_low(b_, b_, g, n);
     b_[n] = hi - (g & neg);
 
     /* |a|*|f_| + |b|*|g_| */
-    (void)bn_addn_low(a_, a_, b_, n+1);
+    bn_addn_low(a_, a_, b_, n + 1);
 
     /* (|a|*|f_| + |b|*|g_|) >> k */
-    for (carry=a_[0], i=0; i<n; i++) {
-        hi = carry >> (RLC_DIG-2);
+    for (carry = a_[0], i = 0; i<n; i++) {
+        hi = carry >> (RLC_DIG - 2);
         carry = a_[i+1];
         ret[i] = hi | (carry << 2);
     }
 
     /* ensure result is non-negative, fix up |f_| and |g_| accordingly */
-    neg = 0 - MSB(carry);
+    neg = -RLC_SIGN(carry);
     *f_ = (*f_ ^ neg) - neg;
     *g_ = (*g_ ^ neg) - neg;
-    (void)cneg_n(ret, ret, neg, n);
+    bn_negm_low(ret, ret, neg, n);
 
     return neg;
 }
@@ -268,8 +319,7 @@ static dig_t smul_n_shift_n(dig_t ret[], const dig_t a[], dig_t *f_,
  * Copy of inner_loop_n above, but with |L| updates.
  */
 static dig_t legendre_loop_n(dig_t L, dig_t m[4], const dig_t a_[2],
-                              const dig_t b_[2], size_t n)
-{
+		const dig_t b_[2], size_t n) {
     dbl_t limbx;
     dig_t f0 = 1, g0 = 0, f1 = 0, g1 = 1;
     dig_t a_lo, a_hi, b_lo, b_hi, t_lo, t_hi, odd, borrow, xorm;
@@ -333,9 +383,11 @@ static dig_t legendre_loop_n(dig_t L, dig_t m[4], const dig_t a_[2],
 }
 
 int fp_smb_binar(const fp_t a) {
+	const int s = RLC_DIG - 2;
 	dv_t x, y, t;
-    dig_t a_[2], b_[2], neg, L = 0, m[4];
+    dig_t a_[2], b_[2], neg, l = 0, m[4];
 	bn_t _t;
+	int iterations = 2 * RLC_FP_DIGS * RLC_DIG;
 
 	if (fp_is_zero(a)) {
 		return 0;
@@ -357,16 +409,16 @@ int fp_smb_binar(const fp_t a) {
 		dv_copy(x, _t->dp, _t->used);
 		dv_copy(y, fp_prime_get(), RLC_FP_DIGS);
 
-		for (size_t i = 0; i < (2 * RLC_FP_DIGS * RLC_DIG)/(RLC_DIG - 2); i++) {
+		for (size_t i = 0; i < iterations/s; i++) {
 	        ab_approximation_n(a_, x, b_, y);
-	        L = legendre_loop_n(L, m, a_, b_, RLC_DIG-2);
+	        l = legendre_loop_n(l, m, a_, b_, s);
 	        neg = smul_n_shift_n(t, x, &m[0], y, &m[1], RLC_FP_DIGS);
 	        (void)smul_n_shift_n(y, x, &m[2], y, &m[3], RLC_FP_DIGS);
 	        dv_copy(x, t, RLC_FP_DIGS);
-	        L += (y[0] >> 1) & neg;
+	        l += (y[0] >> 1) & neg;
 	    }
 
-	    L = legendre_loop_n(L, m, x, y, (2*RLC_FP_DIGS*RLC_DIG)%(RLC_DIG-2));
+	    l = legendre_loop_n(l, m, x, y, iterations % s);
 
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT)
@@ -377,7 +429,7 @@ int fp_smb_binar(const fp_t a) {
 		dv_free(t);
 	}
 
-	return (L & 1 ? -1 : 1);
+	return (l & 1 ? -1 : 1);
 }
 
 #endif
@@ -420,100 +472,60 @@ dis_t jumpdivstep(dis_t m[4], dig_t *k, dis_t delta, dis_t x, dis_t y, int s) {
 	return delta;
 }
 
-static inline dig_t _bn_muls_low(dig_t *c, const dig_t *a, dig_t sa, dis_t digit, int size) {
-	dig_t r, _c, c0, c1, sign, sd = digit >> (RLC_DIG - 1);
-
-	sa = -sa;
-	sign = sa ^ sd;
-	digit = (digit ^ sd) - sd;
-
-	RLC_MUL_DIG(r, _c, a[0], (dig_t)digit);
-	_c ^= sign;
-	c[0] = _c - sign;
-	c1 = (c[0] < _c);
-	c0 = r;
-	for (int i = 1; i < size; i++) {
-		RLC_MUL_DIG(r, _c, a[i], (dig_t)digit);
-		_c += c0;
-		c0 = r + (_c < c0);
-		_c ^= sign;
-		c[i] = _c + c1;
-		c1 = (c[i] < _c);
-	}
-	return (c0 ^ sign) + c1;
-}
-
 int fp_smb_jmpds(const fp_t a) {
+	const int s = RLC_DIG - 2;
 	dis_t m[4], d = 0;
-	int r, i, s = RLC_DIG - 2;
+	int r, i;
 	/* Iterations taken directly from https://github.com/sipa/safegcd-bounds */
-	int loops, iterations = (45907 * FP_PRIME + 26313) / 19929;
-	dv_t f, g, t, p, t0, t1, u0, u1, p01, p11;
-	dig_t j, k, mask = RLC_MASK(s + 2);
+	int iterations = (45907 * FP_PRIME + 26313) / 19929;
+	dv_t f, g, t0, t1, u0, u1;
+	dig_t sf, sg, j, k;
 
 	dv_null(f);
 	dv_null(g);
-	dv_null(t);
-	dv_null(p);
 	dv_null(t0);
 	dv_null(t1);
 	dv_null(u0);
 	dv_null(u1);
-	dv_null(p01);
-	dv_null(p11);
 
 	RLC_TRY {
-		dv_new(t0);
 		dv_new(f);
-		dv_new(t);
-		dv_new(p);
 		dv_new(g);
+		dv_new(t0);
 		dv_new(t1);
 		dv_new(u0);
 		dv_new(u1);
-		dv_new(v0);
-		dv_new(v1);
-		dv_new(p01);
-		dv_new(p11);
 
-		f[RLC_FP_DIGS] = g[RLC_FP_DIGS] = 0;
-		dv_zero(f, 2 * RLC_FP_DIGS);
-		dv_zero(g, 2 * RLC_FP_DIGS);
-		dv_zero(t, 2 * RLC_FP_DIGS);
-		dv_zero(p, 2 * RLC_FP_DIGS);
-		dv_zero(u0, 2 * RLC_FP_DIGS);
-		dv_zero(u1, 2 * RLC_FP_DIGS);
-
+		dv_zero(f, RLC_FP_DIGS + 1);
 		dv_copy(g, fp_prime_get(), RLC_FP_DIGS);
+		dv_zero(t0 + RLC_FP_DIGS, RLC_FP_DIGS);
+		g[RLC_FP_DIGS] = 0;
+
 #if FP_RDC == MONTY
 		/* Convert a from Montgomery form. */
-		fp_copy(t, a);
-		fp_rdcn_low(f, t);
+		fp_copy(t0, a);
+		fp_rdcn_low(f, t0);
 #else
 		fp_copy(f, a);
 #endif
 
-		loops = iterations / s;
-		loops = (iterations % s == 0 ? loops - 1 : loops);
-
-		j = k = 0;
-		for (i = 0; i <= loops; i++) {
+		for (i = j = k = 0; i < iterations; i += s) {
 			int precision = RLC_FP_DIGS;
-			d = jumpdivstep(m, &k, d, f[0] & mask, g[0] & mask, s);
+			d = jumpdivstep(m, &k, d, f[0], g[0], s);
 
-			cneg_n(u0, f, -RLC_SIGN(f[precision]), precision);
-			cneg_n(u1, g, -RLC_SIGN(g[precision]), precision);
+			sf = RLC_SIGN(f[precision]);
+			sg = RLC_SIGN(g[precision]);
+			bn_negm_low(u0, f, sf, precision);
+			bn_negm_low(u1, g, sg, precision);
 
-			t0[precision] = _bn_muls_low(t0, u0, RLC_SIGN(f[precision]), m[0], precision);
-			t1[precision] = _bn_muls_low(t1, u1, RLC_SIGN(g[precision]), m[1], precision);
+			t0[precision] = bn_mul2_low(t0, u0, sf, m[0], precision);
+			t1[precision] = bn_mul2_low(t1, u1, sg, m[1], precision);
 			bn_addn_low(t0, t0, t1, precision + 1);
-
-			f[precision] = _bn_muls_low(f, u0, RLC_SIGN(f[precision]), m[2], precision);
-			t1[precision] = _bn_muls_low(t1, u1, RLC_SIGN(g[precision]), m[3], precision);
-			bn_addn_low(t1, t1, f, precision + 1);
-
-			/* Update f and g. */
 			bn_rshs_low(f, t0, precision + 1, s);
+
+			t0[precision] = bn_mul2_low(t0, u0, sf, m[2], precision);
+			t1[precision] = bn_mul2_low(t1, u1, sg, m[3], precision);
+			bn_addn_low(t1, t1, t0, precision + 1);
 			bn_rshs_low(g, t1, precision + 1, s);
 
 			j = (j + k) % 4;
@@ -534,16 +546,12 @@ int fp_smb_jmpds(const fp_t a) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		dv_free(t0);
 		dv_free(f);
-		dv_free(t);
-		dv_free(p);
 		dv_free(g);
+		dv_free(t0);
 		dv_free(t1);
 		dv_free(u0);
 		dv_free(u1);
-		dv_free(p01);
-		dv_free(p11);
 	}
 
 	return r;
