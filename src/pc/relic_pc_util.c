@@ -236,8 +236,6 @@ int g2_is_valid(g2_t a) {
 #endif
 }
 
-#define GLS_MEMBER
-
 int gt_is_valid(gt_t a) {
 	bn_t p, n;
 	gt_t u, v;
@@ -292,68 +290,29 @@ int gt_is_valid(gt_t a) {
 			fp_prime_get_par(n);
 			b = fp_prime_get_par_sps(&l);
 			switch (ep_curve_is_pairf()) {
-				/* Formulas from "Faster Subgroup Checks for BLS12-381" by Bowe.
-				 * https://eprint.iacr.org/2019/814.pdf */
+				/* Formulas from "Families of SNARK-friendly 2-chains of
+				 * elliptic curves" by Housni and Guillevic.
+				 * https://eprint.iacr.org/2021/1359.pdf */
 				case EP_B12:
 #if FP_PRIME == 383
 					/* GT-strong, so test for cyclotomic only. */
 					r = 1;
 #else
-#ifdef GLS_MEMBER
-					/* The 4-GLS recoding of the exponent gives this. */
-					fp12_exp_cyc_sps((void *)u, (void *)a, b, l, RLC_POS);
-					gt_inv(u, u);
-					gt_mul(u, u, a);
-					gt_inv(u, u);
-					gt_frb(u, u, 2);
-					gt_frb(v, u, 1);
-					gt_inv(v, v);
-					gt_mul(u, u, v);
-					gt_inv(u, u);
-					r = (gt_cmp(u, a) == RLC_EQ);
-#else
+					/* Check that a^u = a^p. */
 					gt_frb(u, a, 1);
 					fp12_exp_cyc_sps((void *)v, (void *)a, b, l, bn_sign(n));
 					r = (gt_cmp(u, v) == RLC_EQ);
-					fp12_exp_cyc_sps((void *)u, (void *)v, b, l, bn_sign(n));
-					gt_mul(u, u, a);
-					gt_sqr(v, v);
-					r &= (gt_cmp(u, v) != RLC_EQ);
-#endif
 #endif
 					r &= fp12_test_cyc((void *)a);
 					break;
 #if FP_PRIME == 509
 				case EP_B24:
-#ifdef GLS_MEMBER
-					/* The 8-GLS recoding of the exponent gives this. */
-					fp24_exp_cyc_sps((void *)u, (void *)a, b, l, bn_sign(n));
-					gt_mul(u, u, a);
-					gt_inv(u, u);
-					gt_frb(u, u, 4);
-					gt_frb(v, u, 1);
-					gt_inv(v, v);
-					gt_mul(u, u, v);
-					gt_frb(v, v, 1);
-					gt_inv(v, v);
-					gt_mul(u, u, v);
-					gt_frb(v, v, 1);
-					gt_inv(v, v);
-					gt_mul(u, u, v);
-					gt_inv(u, u);
-					r = (gt_cmp(u, a) == RLC_EQ);
-#else
+					/* Check that a^u = a^p. */
 					gt_frb(u, a, 1);
 					fp24_exp_cyc_sps((void *)v, (void *)a, b, l, bn_sign(n));
 					r = (gt_cmp(u, v) == RLC_EQ);
-					fp24_exp_cyc_sps((void *)u, (void *)v, b, l, bn_sign(n));
-					gt_mul(u, u, a);
-					gt_sqr(v, v);
-					r &= (gt_cmp(u, v) != RLC_EQ);
-#endif
 					r = fp24_test_cyc((void *)a);
 					break;
-#endif
 				default:
 					/* Common case. */
 					bn_sub_dig(n, n, 1);
