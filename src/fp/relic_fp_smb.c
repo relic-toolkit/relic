@@ -384,9 +384,9 @@ int fp_smb_binar(const fp_t a) {
 
 #if FP_SMB == JMPDS || !defined(STRIP)
 
-dis_t jumpdivstep(dis_t m[4], dig_t *k, dis_t delta, dis_t x, dis_t y) {
+dis_t jumpdivstep(dis_t m[4], dig_t *k, dis_t delta, dis_t x, dis_t y, int s) {
 	dig_t t0, t1, t2, c0, c1, yi, ai = 1, bi = 0, ci = 0, di = 1, u = 0;
-	for (int s = RLC_DIG - 2; s > 0; s--) {
+	for (s = RLC_DIG - 2; s > 0; s--) {
 		yi = y;
 
 		c0 = ~(delta >> (RLC_DIG - 1));
@@ -420,24 +420,20 @@ dis_t jumpdivstep(dis_t m[4], dig_t *k, dis_t delta, dis_t x, dis_t y) {
 	return delta;
 }
 
-static inline dig_t _bn_muls_low(dig_t *c, const dig_t *a, dig_t sa, dis_t digit) {
-	dig_t r, _a, _c, c0, c1, c2, sign, sd = digit >> (RLC_DIG - 1);
+static inline dig_t _bn_muls_low(dig_t *c, const dig_t *a, dig_t sa, dis_t digit, int size) {
+	dig_t r, _c, c0, c1, sign, sd = digit >> (RLC_DIG - 1);
 
 	sa = -sa;
 	sign = sa ^ sd;
 	digit = (digit ^ sd) - sd;
 
-	_a = (a[0] ^ sa) - sa;
-	c2 = (_a < (a[0] ^ sa));
-	RLC_MUL_DIG(r, _c, _a, (dig_t)digit);
+	RLC_MUL_DIG(r, _c, a[0], (dig_t)digit);
 	_c ^= sign;
 	c[0] = _c - sign;
 	c1 = (c[0] < _c);
 	c0 = r;
-	for (int i = 1; i < RLC_FP_DIGS; i++) {
-		_a = (a[i] ^ sa) + c2;
-		c2 = (_a < c2);
-		RLC_MUL_DIG(r, _c, _a, (dig_t)digit);
+	for (int i = 1; i < size; i++) {
+		RLC_MUL_DIG(r, _c, a[i], (dig_t)digit);
 		_c += c0;
 		c0 = r + (_c < c0);
 		_c ^= sign;
@@ -449,11 +445,10 @@ static inline dig_t _bn_muls_low(dig_t *c, const dig_t *a, dig_t sa, dis_t digit
 
 int fp_smb_jmpds(const fp_t a) {
 	dis_t m[4], d = 0;
-	int r, i;
-	const int s = RLC_DIG - 2;
+	int r, i, s = RLC_DIG - 2;
 	/* Iterations taken directly from https://github.com/sipa/safegcd-bounds */
-	int iterations = (45907 * FP_PRIME + 26313) / 19929;
-	dv_t f, g, t, p, t0, t1, u0, u1, v0, v1, p01, p11;
+	int loops, iterations = (45907 * FP_PRIME + 26313) / 19929;
+	dv_t f, g, t, p, t0, t1, u0, u1, p01, p11;
 	dig_t j, k, mask = RLC_MASK(s + 2);
 
 	dv_null(f);
@@ -464,8 +459,6 @@ int fp_smb_jmpds(const fp_t a) {
 	dv_null(t1);
 	dv_null(u0);
 	dv_null(u1);
-	dv_null(v0);
-	dv_null(v1);
 	dv_null(p01);
 	dv_null(p11);
 
@@ -490,8 +483,6 @@ int fp_smb_jmpds(const fp_t a) {
 		dv_zero(p, 2 * RLC_FP_DIGS);
 		dv_zero(u0, 2 * RLC_FP_DIGS);
 		dv_zero(u1, 2 * RLC_FP_DIGS);
-		dv_zero(v0, 2 * RLC_FP_DIGS);
-		dv_zero(v1, 2 * RLC_FP_DIGS);
 
 		dv_copy(g, fp_prime_get(), RLC_FP_DIGS);
 #if FP_RDC == MONTY
@@ -502,24 +493,31 @@ int fp_smb_jmpds(const fp_t a) {
 		fp_copy(f, a);
 #endif
 
+		loops = iterations / s;
+		loops = (iterations % s == 0 ? loops - 1 : loops);
+
 		j = k = 0;
-		for (i = 0; i < iterations; i += s) {
-			d = jumpdivstep(m, &k, d, f[0] & mask, g[0] & mask);
+		for (i = 0; i <= loops; i++) {
+			int precision = RLC_FP_DIGS;
+			d = jumpdivstep(m, &k, d, f[0] & mask, g[0] & mask, s);
 
-			t0[RLC_FP_DIGS] = _bn_muls_low(t0, f, RLC_SIGN(f[RLC_FP_DIGS]), m[0]);
-			t1[RLC_FP_DIGS] = _bn_muls_low(t1, g, RLC_SIGN(g[RLC_FP_DIGS]), m[1]);
-			bn_addn_low(t0, t0, t1, RLC_FP_DIGS + 1);
+			cneg_n(u0, f, -RLC_SIGN(f[precision]), precision);
+			cneg_n(u1, g, -RLC_SIGN(g[precision]), precision);
 
-			f[RLC_FP_DIGS] = _bn_muls_low(f, f, RLC_SIGN(f[RLC_FP_DIGS]), m[2]);
-			t1[RLC_FP_DIGS] = _bn_muls_low(t1, g, RLC_SIGN(g[RLC_FP_DIGS]), m[3]);
-			bn_addn_low(t1, t1, f, RLC_FP_DIGS + 1);
+			t0[precision] = _bn_muls_low(t0, u0, RLC_SIGN(f[precision]), m[0], precision);
+			t1[precision] = _bn_muls_low(t1, u1, RLC_SIGN(g[precision]), m[1], precision);
+			bn_addn_low(t0, t0, t1, precision + 1);
+
+			f[precision] = _bn_muls_low(f, u0, RLC_SIGN(f[precision]), m[2], precision);
+			t1[precision] = _bn_muls_low(t1, u1, RLC_SIGN(g[precision]), m[3], precision);
+			bn_addn_low(t1, t1, f, precision + 1);
 
 			/* Update f and g. */
-			bn_rshs_low(f, t0, RLC_FP_DIGS + 1, s);
-			bn_rshs_low(g, t1, RLC_FP_DIGS + 1, s);
+			bn_rshs_low(f, t0, precision + 1, s);
+			bn_rshs_low(g, t1, precision + 1, s);
 
 			j = (j + k) % 4;
-			j = (j + ((j & 1) ^ (RLC_SIGN(g[RLC_FP_DIGS])))) % 4;
+			j = (j + ((j & 1) ^ (RLC_SIGN(g[precision])))) % 4;
 		}
 
 		r = 0;
@@ -544,8 +542,6 @@ int fp_smb_jmpds(const fp_t a) {
 		dv_free(t1);
 		dv_free(u0);
 		dv_free(u1);
-		dv_free(v0);
-		dv_free(v1);
 		dv_free(p01);
 		dv_free(p11);
 	}
