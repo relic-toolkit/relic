@@ -420,6 +420,33 @@ dis_t jumpdivstep(dis_t m[4], dig_t *k, dis_t delta, dis_t x, dis_t y, int s) {
 	return delta;
 }
 
+static inline dig_t _bn_muls_low(dig_t *c, const dig_t *a, dig_t sa, dis_t digit, int size) {
+	dig_t r, _a, _c, c0, c1, c2, sign, sd = digit >> (RLC_DIG - 1);
+
+	sa = -sa;
+	sign = sa ^ sd;
+	digit = (digit ^ sd) - sd;
+
+	_a = (a[0] ^ sa) - sa;
+	c2 = (_a < (a[0] ^ sa));
+	RLC_MUL_DIG(r, _c, _a, (dig_t)digit);
+	_c ^= sign;
+	c[0] = _c - sign;
+	c1 = (c[0] < _c);
+	c0 = r;
+	for (int i = 1; i < size; i++) {
+		_a = (a[i] ^ sa) + c2;
+		c2 = (_a < c2);
+		RLC_MUL_DIG(r, _c, _a, (dig_t)digit);
+		_c += c0;
+		c0 = r + (_c < c0);
+		_c ^= sign;
+		c[i] = _c + c1;
+		c1 = (c[i] < _c);
+	}
+	return (c0 ^ sign) + c1;
+}
+
 int fp_smb_jmpds(const fp_t a) {
 	dis_t m[4], d = 0;
 	int r, i, s = RLC_DIG - 2;
@@ -482,13 +509,13 @@ int fp_smb_jmpds(const fp_t a) {
 			int precision = RLC_FP_DIGS;
 			d = jumpdivstep(m, &k, d, f[0] & mask, g[0] & mask, s);
 
-			t0[precision] = bn_muls_low(t0, f, RLC_SIGN(f[precision]), m[0], precision);
-			t1[precision] = bn_muls_low(t1, g, RLC_SIGN(g[precision]), m[1], precision);
-			bn_addn_low(t0, t0, t1, precision + 1);
+			t0[precision] = _bn_muls_low(t0, f, RLC_SIGN(f[precision]), m[0], precision);
+			t1[precision] = _bn_muls_low(t1, g, RLC_SIGN(g[precision]), m[1], precision);
+			bn_addp_low(t0, t0, t1);
 
-			f[precision] = bn_muls_low(f, f, RLC_SIGN(f[precision]), m[2], precision);
-			t1[precision] = bn_muls_low(t1, g, RLC_SIGN(g[precision]), m[3], precision);
-			bn_addn_low(t1, t1, f, precision + 1);
+			f[precision] = _bn_muls_low(f, f, RLC_SIGN(f[precision]), m[2], precision);
+			t1[precision] = _bn_muls_low(t1, g, RLC_SIGN(g[precision]), m[3], precision);
+			bn_addp_low(t1, t1, f);
 
 			/* Update f and g. */
 			bn_rshs_low(f, t0, precision + 1, s);
@@ -504,10 +531,7 @@ int fp_smb_jmpds(const fp_t a) {
 		fp_zero(t0);
 		t0[0] = 1;
 		r = RLC_SEL(r, 1 - j, dv_cmp_const(g, t0, RLC_FP_DIGS) == RLC_EQ);
-		for (i = 0; i < RLC_FP_DIGS; i++) {
-			g[i] = ~g[i];
-		}
-		bn_add1_low(g, g, 1, RLC_FP_DIGS);
+		cneg_n(g, g, -1, RLC_FP_DIGS);
 		r = RLC_SEL(r, 1 - j, dv_cmp_const(g, t0, RLC_FP_DIGS) == RLC_EQ);
 		r = RLC_SEL(r, 1 - j, fp_is_zero(g));
 	}
