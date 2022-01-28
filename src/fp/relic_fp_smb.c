@@ -128,6 +128,215 @@ int fp_smb_basic(const fp_t a) {
 
 #endif
 
+#if FP_SMB == BINAR || !defined(STRIP)
+
+static inline dig_t is_zero(dig_t l) {
+	return (~l & (l - 1)) >> (RLC_DIG - 1);
+}
+
+static dig_t lshift_2(dig_t hi, dig_t lo, size_t l) {
+    size_t r = RLC_DIG - l;
+    dig_t mask = 0 - (is_zero(l)^1);
+    return (hi << (l&(RLC_DIG-1))) | ((lo & mask) >> (r&(RLC_DIG-1)));
+}
+
+static void ab_approximation_n(dig_t a_[2], const dig_t a[],
+                               dig_t b_[2], const dig_t b[]) {
+    dig_t a_hi, a_lo, b_hi, b_lo, mask;
+    size_t i;
+
+    i = RLC_FP_DIGS-1;
+    a_hi = a[i],    a_lo = a[i-1];
+    b_hi = b[i],    b_lo = b[i-1];
+    for (i--; --i;) {
+        mask = 0 - is_zero(a_hi | b_hi);
+        a_hi = ((a_lo ^ a_hi) & mask) ^ a_hi;
+        b_hi = ((b_lo ^ b_hi) & mask) ^ b_hi;
+        a_lo = ((a[i] ^ a_lo) & mask) ^ a_lo;
+        b_lo = ((b[i] ^ b_lo) & mask) ^ b_lo;
+    }
+    i = RLC_DIG - util_bits_dig(a_hi | b_hi);
+    /* |i| can be RLC_DIG if all a[2..]|b[2..] were zeros */
+
+    a_[0] = a[0], a_[1] = lshift_2(a_hi, a_lo, i);
+    b_[0] = b[0], b_[1] = lshift_2(b_hi, b_lo, i);
+}
+
+static dig_t smul_n_shift_n(dig_t ret[], const dig_t a[], dig_t *f_,
+		const dig_t b[], dig_t *g_,
+		size_t n) {
+	dv_t a_, b_;
+	dig_t f, g, neg, carry, hi;
+
+	dv_null(a_);
+	dv_null(b_);
+
+	RLC_TRY {
+		dv_new(a_);
+		dv_new(b_);
+
+	    size_t i;
+
+	    /* |a|*|f_| */
+	    f = *f_;
+	    neg = -RLC_SIGN(f);
+	    f = (f ^ neg) - neg;            /* ensure |f| is positive */
+	    bn_negm_low(a_, a, RLC_SIGN(f), n);
+	    hi = bn_mul1_low(a_, a_, f, n);
+	    a_[n] = hi - (f & neg);
+
+	    /* |b|*|g_| */
+	    g = *g_;
+	    neg = -RLC_SIGN(g);
+	    g = (g ^ neg) - neg;            /* ensure |g| is positive */
+	    bn_negm_low(b_, b, RLC_SIGN(g), n);
+	    hi = bn_mul1_low(b_, b_, g, n);
+	    b_[n] = hi - (g & neg);
+
+	    /* |a|*|f_| + |b|*|g_| */
+	    bn_addn_low(a_, a_, b_, n + 1);
+
+	    /* (|a|*|f_| + |b|*|g_|) >> k */
+	    for (carry = a_[0], i = 0; i<n; i++) {
+	        hi = carry >> (RLC_DIG - 2);
+	        carry = a_[i+1];
+	        ret[i] = hi | (carry << 2);
+	    }
+
+	    /* ensure result is non-negative, fix up |f_| and |g_| accordingly */
+	    neg = -RLC_SIGN(carry);
+	    *f_ = (*f_ ^ neg) - neg;
+	    *g_ = (*g_ ^ neg) - neg;
+	    bn_negm_low(ret, ret, neg, n);
+
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		RLC_FREE(a_);
+		RLC_FREE(b_);
+	}
+
+    return neg;
+}
+
+/*
+ * Copy of inner_loop_n above, but with |L| updates.
+ */
+static dig_t legendre_loop_n(dig_t l, dig_t m[4], const dig_t a_[2],
+		const dig_t b_[2], size_t n) {
+    dig_t limbx, f0 = 1, g0 = 0, f1 = 0, g1 = 1;
+    dig_t a_lo, a_hi, b_lo, b_hi, t_lo, t_hi, odd, borrow, xorm;
+
+    a_lo = a_[0], a_hi = a_[1];
+    b_lo = b_[0], b_hi = b_[1];
+
+    while(n--) {
+        odd = 0 - (a_lo&1);
+
+        /* a_ -= b_ if a_ is odd */
+        t_lo = a_lo, t_hi = a_hi;
+        limbx = a_lo - (b_lo & odd);
+        borrow = (limbx < a_lo);
+        a_lo = limbx;
+        limbx = a_hi - ((b_hi & odd) + borrow);
+        borrow = (limbx < a_hi);
+        a_hi = limbx;
+
+        l += ((t_lo & b_lo) >> 1) & borrow;
+
+        /* negate a_-b_ if it borrowed */
+        a_lo ^= borrow;
+        a_hi ^= borrow;
+        limbx = a_lo + (borrow & 1);
+        a_hi += (limbx < a_lo);
+        a_lo = limbx;
+
+        /* b_=a_ if a_-b_ borrowed */
+        b_lo = ((t_lo ^ b_lo) & borrow) ^ b_lo;
+        b_hi = ((t_hi ^ b_hi) & borrow) ^ b_hi;
+
+        /* exchange f0 and f1 if a_-b_ borrowed */
+        xorm = (f0 ^ f1) & borrow;
+        f0 ^= xorm;
+        f1 ^= xorm;
+
+        /* exchange g0 and g1 if a_-b_ borrowed */
+        xorm = (g0 ^ g1) & borrow;
+        g0 ^= xorm;
+        g1 ^= xorm;
+
+        /* subtract if a_ was odd */
+        f0 -= f1 & odd;
+        g0 -= g1 & odd;
+
+        f1 <<= 1;
+        g1 <<= 1;
+        a_lo >>= 1; a_lo |= a_hi << (RLC_DIG-1);
+        a_hi >>= 1;
+
+        l += (b_lo + 2) >> 2;
+    }
+
+	m[0] = f0;
+	m[1] = g0;
+	m[2] = f1;
+	m[3] = g1;
+
+    return l;
+}
+
+int fp_smb_binar(const fp_t a) {
+	const int s = RLC_DIG - 2;
+	dv_t x, y, t;
+    dig_t a_[2], b_[2], neg, l = 0, m[4];
+	bn_t _t;
+	int iterations = 2 * RLC_FP_DIGS * RLC_DIG;
+
+	if (fp_is_zero(a)) {
+		return 0;
+	}
+
+	bn_null(_t);
+	dv_null(x);
+	dv_null(y);
+	dv_null(t);
+
+	RLC_TRY {
+		bn_new(_t);
+		dv_new(x);
+		dv_new(y);
+		dv_new(t);
+
+		fp_prime_back(_t, a);
+		dv_zero(x, RLC_FP_DIGS);
+		dv_copy(x, _t->dp, _t->used);
+		dv_copy(y, fp_prime_get(), RLC_FP_DIGS);
+
+		for (size_t i = 0; i < iterations/s; i++) {
+	        ab_approximation_n(a_, x, b_, y);
+	        l = legendre_loop_n(l, m, a_, b_, s);
+	        neg = smul_n_shift_n(t, x, &m[0], y, &m[1], RLC_FP_DIGS);
+	        (void)smul_n_shift_n(y, x, &m[2], y, &m[3], RLC_FP_DIGS);
+	        dv_copy(x, t, RLC_FP_DIGS);
+	        l += (y[0] >> 1) & neg;
+	    }
+
+	    l = legendre_loop_n(l, m, x, y, iterations % s);
+
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT)
+	} RLC_FINALLY {
+		bn_free(_t);
+		dv_free(x);
+		dv_free(y);
+		dv_free(t);
+	}
+
+	return (l & 1 ? -1 : 1);
+}
+
+#endif
+
 #if FP_SMB == DIVST || !defined(STRIP)
 
 int fp_smb_divst(const fp_t a) {
@@ -221,215 +430,6 @@ int fp_smb_divst(const fp_t a) {
 		dv_free(t);
 	}
 	return r;
-}
-
-#endif
-
-#if FP_SMB == BINAR || !defined(STRIP)
-
-static inline dig_t is_zero(dig_t l) {
-	return (~l & (l - 1)) >> (RLC_DIG - 1);
-}
-
-static dig_t lshift_2(dig_t hi, dig_t lo, size_t l) {
-    size_t r = RLC_DIG - l;
-    dig_t mask = 0 - (is_zero(l)^1);
-    return (hi << (l&(RLC_DIG-1))) | ((lo & mask) >> (r&(RLC_DIG-1)));
-}
-
-static void ab_approximation_n(dig_t a_[2], const dig_t a[],
-                               dig_t b_[2], const dig_t b[]) {
-    dig_t a_hi, a_lo, b_hi, b_lo, mask;
-    size_t i;
-
-    i = RLC_FP_DIGS-1;
-    a_hi = a[i],    a_lo = a[i-1];
-    b_hi = b[i],    b_lo = b[i-1];
-    for (i--; --i;) {
-        mask = 0 - is_zero(a_hi | b_hi);
-        a_hi = ((a_lo ^ a_hi) & mask) ^ a_hi;
-        b_hi = ((b_lo ^ b_hi) & mask) ^ b_hi;
-        a_lo = ((a[i] ^ a_lo) & mask) ^ a_lo;
-        b_lo = ((b[i] ^ b_lo) & mask) ^ b_lo;
-    }
-    i = RLC_DIG - util_bits_dig(a_hi | b_hi);
-    /* |i| can be RLC_DIG if all a[2..]|b[2..] were zeros */
-
-    a_[0] = a[0], a_[1] = lshift_2(a_hi, a_lo, i);
-    b_[0] = b[0], b_[1] = lshift_2(b_hi, b_lo, i);
-}
-
-static dig_t cneg_n(dig_t ret[], const dig_t a[], dig_t neg, size_t n)
-{
-    dbl_t limbx = 0;
-    dig_t carry;
-    size_t i;
-
-    for (carry=neg&1, i=0; i<n; i++) {
-        limbx = (dbl_t)(a[i] ^ neg) + carry;
-        ret[i] = (dig_t)limbx;
-        carry = (dig_t)(limbx >> RLC_DIG);
-    }
-
-    return 0 - RLC_SIGN((dig_t)limbx);
-}
-
-static dig_t smul_n_shift_n(dig_t ret[], const dig_t a[], dig_t *f_,
-		const dig_t b[], dig_t *g_,
-		size_t n) {
-    dig_t a_[n+1], b_[n+1], f, g, neg, carry, hi;
-    size_t i;
-
-    /* |a|*|f_| */
-    f = *f_;
-    neg = -RLC_SIGN(f);
-    f = (f ^ neg) - neg;            /* ensure |f| is positive */
-    bn_negm_low(a_, a, RLC_SIGN(f), n);
-    hi = bn_mul1_low(a_, a_, f, n);
-    a_[n] = hi - (f & neg);
-
-    /* |b|*|g_| */
-    g = *g_;
-    neg = -RLC_SIGN(g);
-    g = (g ^ neg) - neg;            /* ensure |g| is positive */
-    bn_negm_low(b_, b, RLC_SIGN(g), n);
-    hi = bn_mul1_low(b_, b_, g, n);
-    b_[n] = hi - (g & neg);
-
-    /* |a|*|f_| + |b|*|g_| */
-    bn_addn_low(a_, a_, b_, n + 1);
-
-    /* (|a|*|f_| + |b|*|g_|) >> k */
-    for (carry = a_[0], i = 0; i<n; i++) {
-        hi = carry >> (RLC_DIG - 2);
-        carry = a_[i+1];
-        ret[i] = hi | (carry << 2);
-    }
-
-    /* ensure result is non-negative, fix up |f_| and |g_| accordingly */
-    neg = -RLC_SIGN(carry);
-    *f_ = (*f_ ^ neg) - neg;
-    *g_ = (*g_ ^ neg) - neg;
-    bn_negm_low(ret, ret, neg, n);
-
-    return neg;
-}
-
-/*
- * Copy of inner_loop_n above, but with |L| updates.
- */
-static dig_t legendre_loop_n(dig_t L, dig_t m[4], const dig_t a_[2],
-		const dig_t b_[2], size_t n) {
-    dbl_t limbx;
-    dig_t f0 = 1, g0 = 0, f1 = 0, g1 = 1;
-    dig_t a_lo, a_hi, b_lo, b_hi, t_lo, t_hi, odd, borrow, xorm;
-
-    a_lo = a_[0], a_hi = a_[1];
-    b_lo = b_[0], b_hi = b_[1];
-
-    while(n--) {
-        odd = 0 - (a_lo&1);
-
-        /* a_ -= b_ if a_ is odd */
-        t_lo = a_lo, t_hi = a_hi;
-        limbx = a_lo - (dbl_t)(b_lo & odd);
-        a_lo = (dig_t)limbx;
-        borrow = (dig_t)(limbx >> RLC_DIG) & 1;
-        limbx = a_hi - ((dbl_t)(b_hi & odd) + borrow);
-        a_hi = (dig_t)limbx;
-        borrow = (dig_t)(limbx >> RLC_DIG);
-
-        L += ((t_lo & b_lo) >> 1) & borrow;
-
-        /* negate a_-b_ if it borrowed */
-        a_lo ^= borrow;
-        a_hi ^= borrow;
-        limbx = a_lo + (dbl_t)(borrow & 1);
-        a_lo = (dig_t)limbx;
-        a_hi += (dig_t)(limbx >> RLC_DIG) & 1;
-
-        /* b_=a_ if a_-b_ borrowed */
-        b_lo = ((t_lo ^ b_lo) & borrow) ^ b_lo;
-        b_hi = ((t_hi ^ b_hi) & borrow) ^ b_hi;
-
-        /* exchange f0 and f1 if a_-b_ borrowed */
-        xorm = (f0 ^ f1) & borrow;
-        f0 ^= xorm;
-        f1 ^= xorm;
-
-        /* exchange g0 and g1 if a_-b_ borrowed */
-        xorm = (g0 ^ g1) & borrow;
-        g0 ^= xorm;
-        g1 ^= xorm;
-
-        /* subtract if a_ was odd */
-        f0 -= f1 & odd;
-        g0 -= g1 & odd;
-
-        f1 <<= 1;
-        g1 <<= 1;
-        a_lo >>= 1; a_lo |= a_hi << (RLC_DIG-1);
-        a_hi >>= 1;
-
-        L += (b_lo + 2) >> 2;
-    }
-
-	m[0] = f0;
-	m[1] = g0;
-	m[2] = f1;
-	m[3] = g1;
-
-    return L;
-}
-
-int fp_smb_binar(const fp_t a) {
-	const int s = RLC_DIG - 2;
-	dv_t x, y, t;
-    dig_t a_[2], b_[2], neg, l = 0, m[4];
-	bn_t _t;
-	int iterations = 2 * RLC_FP_DIGS * RLC_DIG;
-
-	if (fp_is_zero(a)) {
-		return 0;
-	}
-
-	bn_null(_t);
-	dv_null(x);
-	dv_null(y);
-	dv_null(t);
-
-	RLC_TRY {
-		bn_new(_t);
-		dv_new(x);
-		dv_new(y);
-		dv_new(t);
-
-		fp_prime_back(_t, a);
-		dv_zero(x, RLC_FP_DIGS);
-		dv_copy(x, _t->dp, _t->used);
-		dv_copy(y, fp_prime_get(), RLC_FP_DIGS);
-
-		for (size_t i = 0; i < iterations/s; i++) {
-	        ab_approximation_n(a_, x, b_, y);
-	        l = legendre_loop_n(l, m, a_, b_, s);
-	        neg = smul_n_shift_n(t, x, &m[0], y, &m[1], RLC_FP_DIGS);
-	        (void)smul_n_shift_n(y, x, &m[2], y, &m[3], RLC_FP_DIGS);
-	        dv_copy(x, t, RLC_FP_DIGS);
-	        l += (y[0] >> 1) & neg;
-	    }
-
-	    l = legendre_loop_n(l, m, x, y, iterations % s);
-
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT)
-	} RLC_FINALLY {
-		bn_free(_t);
-		dv_free(x);
-		dv_free(y);
-		dv_free(t);
-	}
-
-	return (l & 1 ? -1 : 1);
 }
 
 #endif
@@ -538,7 +538,7 @@ int fp_smb_jmpds(const fp_t a) {
 		fp_zero(t0);
 		t0[0] = 1;
 		r = RLC_SEL(r, 1 - j, dv_cmp_const(g, t0, RLC_FP_DIGS) == RLC_EQ);
-		cneg_n(g, g, -1, RLC_FP_DIGS);
+		bn_negm_low(g, g, 1, RLC_FP_DIGS);
 		r = RLC_SEL(r, 1 - j, dv_cmp_const(g, t0, RLC_FP_DIGS) == RLC_EQ);
 		r = RLC_SEL(r, 1 - j, fp_is_zero(g));
 	}
