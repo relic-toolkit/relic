@@ -313,6 +313,7 @@ int gt_is_valid(gt_t a) {
 					r = (gt_cmp(u, v) == RLC_EQ);
 					r = fp24_test_cyc((void *)a);
 					break;
+#endif
 				default:
 					/* Common case. */
 					bn_sub_dig(n, n, 1);
