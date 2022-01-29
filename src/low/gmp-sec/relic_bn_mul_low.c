@@ -61,11 +61,7 @@ dig_t bn_muls_low(dig_t *c, const dig_t *a, dig_t sa, dis_t digit, int size) {
 	sign = sa ^ sd;
 	digit = (digit ^ sd) - sd;
 
-	for (size_t i = 0; i < size; i++) {
-		_a[i] = a[i] ^ sa;
-	}
-	bn_add1_low(_a, _a, -sa, size);
-	carry = bn_mul1_low(c, _a, (dig_t)digit, size);
+	carry = bn_mul1_low(c, a, (dig_t)digit, size);
 	for (size_t i = 0; i < size; i++) {
 		c[i] = c[i] ^ sign;
 	}

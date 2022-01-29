@@ -57,42 +57,7 @@ static void bn_negs_low(dig_t c[], const dig_t a[], dig_t sa, size_t n) {
     }
 }
 
-/**
- * Multiply a digit vector by a signed digit and compute the results in
- * two's complement representation.
- *
- * @param[out] c 		- the result.
- * @param[in] a			- the digit vector to multiply.
- * @param[in] sa 		- the sign of the digit vector.
- * @param[in] digit 	- the signed digit to multiply.
- * @param[in] size 		- the number of digits to multiply.
- * @return the most significant bit of the result.
- */
-static dig_t bn_mul2_low(dig_t *c, const dig_t *a, dig_t sa, dis_t digit,
-		int size) {
-	dig_t r, _c, c0, c1, sign, sd = digit >> (RLC_DIG - 1);
-
-	sa = -sa;
-	sign = sa ^ sd;
-	digit = (digit ^ sd) - sd;
-
-	RLC_MUL_DIG(r, _c, a[0], (dig_t)digit);
-	_c ^= sign;
-	c[0] = _c - sign;
-	c1 = (c[0] < _c);
-	c0 = r;
-	for (int i = 1; i < size; i++) {
-		RLC_MUL_DIG(r, _c, a[i], (dig_t)digit);
-		_c += c0;
-		c0 = r + (_c < c0);
-		_c ^= sign;
-		c[i] = _c + c1;
-		c1 = (c[i] < _c);
-	}
-	return (c0 ^ sign) + c1;
-}
-
-static inline dis_t jumpdivstep(dis_t m[4], dig_t *k, dis_t delta,
+static dis_t jumpdivstep(dis_t m[4], dig_t *k, dis_t delta,
 		dis_t x, dis_t y, int s) {
 	dig_t t0, t1, t2, c0, c1, yi, ai = 1, bi = 0, ci = 0, di = 1, u = 0;
 	for (s = RLC_DIG - 2; s > 0; s--) {

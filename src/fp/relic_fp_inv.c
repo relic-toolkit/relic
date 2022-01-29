@@ -57,7 +57,6 @@ static void bn_negs_low(dig_t c[], const dig_t a[], dig_t sa, size_t n) {
     }
 }
 
-
 static void bn_mul2_low(dig_t *c, const dig_t *a, dis_t digit, int size) {
 	int sd = digit >> (RLC_DIG - 1);
 	digit = (digit ^ sd) - sd;
