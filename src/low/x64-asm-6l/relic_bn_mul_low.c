@@ -48,24 +48,6 @@ dig_t bn_mul1_low(dig_t *c, const dig_t *a, dig_t digit, int size) {
 	return mpn_mul_1(c, a, size, digit);
 }
 
-dig_t bn_muls_low(dig_t *c, const dig_t *a, dig_t sa, dis_t digit, int size) {
-	dig_t _a[size], carry, sign, sd = digit >> (RLC_DIG - 1);
-
-	sa = -sa;
-	sign = sa ^ sd;
-	digit = (digit ^ sd) - sd;
-
-	for (size_t i = 0; i < size; i++) {
-		_a[i] = a[i] ^ sa;
-	}
-	mpn_add_1(_a, _a, size, -sa);
-	carry = mpn_mul_1(c, _a, size, digit);
-	for (size_t i = 0; i < size; i++) {
-		c[i] = c[i] ^ sign;
-	}
-	return (carry ^ sign) + mpn_add_1(c, c, size, -sign);
-}
-
 void bn_muln_low(dig_t *c, const dig_t *a, const dig_t *b, int size) {
 	mpn_mul_n(c, a, b, size);
 }

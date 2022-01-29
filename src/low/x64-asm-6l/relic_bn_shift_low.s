@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (c) 2017 RELIC Authors
+ * Copyright (c) 2009 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -21,16 +21,12 @@
  * or <https://www.apache.org/licenses/>.
  */
 
-#include "relic_fp_low.h"
-
 /**
  * @file
  *
- * Implementation of the low-level prime field addition and subtraction
- * functions.
+ * Implementation of the ASM multiple precision bit shifting functions.
  *
- * @version $Id: relic_fp_add_low.c 88 2009-09-06 21:27:19Z dfaranha $
- * @ingroup fp
+ * @ingroup bn
  */
 
 .text

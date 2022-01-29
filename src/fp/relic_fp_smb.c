@@ -523,13 +523,13 @@ int fp_smb_jmpds(const fp_t a) {
 			bn_negs_low(u0, f, sf, precision);
 			bn_negs_low(u1, g, sg, precision);
 
-			t0[precision] = bn_mul2_low(t0, u0, sf, m[0], precision);
-			t1[precision] = bn_mul2_low(t1, u1, sg, m[1], precision);
+			t0[precision] = bn_muls_low(t0, u0, sf, m[0], precision);
+			t1[precision] = bn_muls_low(t1, u1, sg, m[1], precision);
 			bn_addn_low(t0, t0, t1, precision + 1);
 			bn_rshs_low(f, t0, precision + 1, s);
 
-			t0[precision] = bn_mul2_low(t0, u0, sf, m[2], precision);
-			t1[precision] = bn_mul2_low(t1, u1, sg, m[3], precision);
+			t0[precision] = bn_muls_low(t0, u0, sf, m[2], precision);
+			t1[precision] = bn_muls_low(t1, u1, sg, m[3], precision);
 			bn_addn_low(t1, t1, t0, precision + 1);
 			bn_rshs_low(g, t1, precision + 1, s);
 
