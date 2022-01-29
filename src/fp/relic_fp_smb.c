@@ -61,6 +61,7 @@ static dis_t jumpdivstep(dis_t m[4], dig_t *k, dis_t delta,
 		dis_t x, dis_t y, int s) {
 	dig_t t0, t1, t2, c0, c1, yi, ai = 1, bi = 0, ci = 0, di = 1, u = 0;
 
+	/* Unrolling twice makes it faster. */
 	for (s -= 2; s >= 0; s -= 2) {
 		yi = y;
 
@@ -80,7 +81,7 @@ static dis_t jumpdivstep(dis_t m[4], dig_t *k, dis_t delta,
 		ci += ai & c0;
 		di += bi & c0;
 
-		x >>= 1;
+		x  >>= 1;
 		ci <<= 1;
 		di <<= 1;
 		delta = (delta ^ c0) + 1;
@@ -105,7 +106,8 @@ static dis_t jumpdivstep(dis_t m[4], dig_t *k, dis_t delta,
 		y  += x  & c0;
 		ci += ai & c0;
 		di += bi & c0;
-		x >>= 1;
+
+		x  >>= 1;
 		ci <<= 1;
 		di <<= 1;
 		delta = (delta ^ c0) + 1;
