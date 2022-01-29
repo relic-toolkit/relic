@@ -60,7 +60,32 @@ static void bn_negs_low(dig_t c[], const dig_t a[], dig_t sa, size_t n) {
 static dis_t jumpdivstep(dis_t m[4], dig_t *k, dis_t delta,
 		dis_t x, dis_t y, int s) {
 	dig_t t0, t1, t2, c0, c1, yi, ai = 1, bi = 0, ci = 0, di = 1, u = 0;
-	for (s = RLC_DIG - 2; s > 0; s--) {
+	for (s = RLC_DIG - 2; s > 0; s-=2) {
+		yi = y;
+
+		c0 = ~(delta >> (RLC_DIG - 1));
+		c1 = -(x & 1);
+		c0 &= c1;
+
+		t0 = (delta < 0 ? y : -y);
+		t1 = (delta < 0 ? ci : -ci);
+		t2 = (delta < 0 ? di : -di);
+		x += t0 & c1;
+		ai += t1 & c1;
+		bi += t2 & c1;
+
+		/* delta = RLC_SEL(delta + 1, -delta, c0) */
+		y = y + (x & c0);
+		ci = ci + (ai & c0);
+		di = di + (bi & c0);
+		x >>= 1;
+		ci <<= 1;
+		di <<= 1;
+		delta = (delta ^ c0) + 1;
+
+		u += ((yi & y) ^ (y >> 1)) & 2;
+		u += (u & 1) ^ RLC_SIGN(ci);
+
 		yi = y;
 
 		c0 = ~(delta >> (RLC_DIG - 1));
