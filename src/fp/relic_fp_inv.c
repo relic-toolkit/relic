@@ -69,8 +69,27 @@ static dis_t jumpdivstep(dis_t m[4], dis_t delta, dig_t f, dig_t g, int s) {
 	/* This is actually faster than my previous version, several tricks from
 	 * https://github.com/bitcoin-core/secp256k1/blob/master/src/modinv64_impl.h
 	 */
-	for (s--; s >= 0; s--) {
+	for (s -= 2; s >= 0; s -= 2) {
 		/* First handle the else part: if delta < 0, compute -(f,u,v). */
+		c0 = delta >> (RLC_DIG - 1);
+		c1 = -(g & 1);
+		c0 &= c1;
+		/* Conditionally add -(f,u,v) to (g,q,r) */
+		g += ((f ^ c0) - c0) & c1;
+		q += ((u ^ c0) - c0) & c1;
+		r += ((v ^ c0) - c0) & c1;
+		/* Now handle the 'if' part, so c0 will be (delta < 0) && (g & 1)) */
+		/* delta = RLC_SEL(delta, -delta, c0 & 1) - 2 (for half-divstep), thus
+		 * delta = - delta - 2 or delta - 1 */
+		delta = (delta ^ c0) - 1;
+		f = f + (g & c0);
+		u = u + (q & c0);
+		v = v + (r & c0);
+		g >>= 1;
+		u += u;
+		v += v;
+
+        /* First handle the else part: if delta < 0, compute -(f,u,v). */
 		c0 = delta >> (RLC_DIG - 1);
 		c1 = -(g & 1);
 		c0 &= c1;
