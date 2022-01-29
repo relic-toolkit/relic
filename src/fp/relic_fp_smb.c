@@ -47,7 +47,7 @@
  * @param[in] sa 		- the sign of the digit vector.
  * @param[in] n			- the number of digits to conditionally negate.
  */
-static inline void bn_negm_low(dig_t c[], const dig_t a[], dig_t sa, size_t n) {
+static void bn_negs_low(dig_t c[], const dig_t a[], dig_t sa, size_t n) {
     dig_t carry = sa & 1;
 
 	sa = -sa;
@@ -68,7 +68,7 @@ static inline void bn_negm_low(dig_t c[], const dig_t a[], dig_t sa, size_t n) {
  * @param[in] size 		- the number of digits to multiply.
  * @return the most significant bit of the result.
  */
-static inline dig_t bn_mul2_low(dig_t *c, const dig_t *a, dig_t sa, dis_t digit,
+static dig_t bn_mul2_low(dig_t *c, const dig_t *a, dig_t sa, dis_t digit,
 		int size) {
 	dig_t r, _c, c0, c1, sign, sd = digit >> (RLC_DIG - 1);
 
@@ -222,7 +222,7 @@ static dig_t smul_n_shift_n(dig_t ret[], const dig_t a[], dig_t *f_,
 	    f = *f_;
 	    neg = -RLC_SIGN(f);
 	    f = (f ^ neg) - neg;            /* ensure |f| is positive */
-	    bn_negm_low(a_, a, RLC_SIGN(f), n);
+	    bn_negs_low(a_, a, RLC_SIGN(f), n);
 	    hi = bn_mul1_low(a_, a_, f, n);
 	    a_[n] = hi - (f & neg);
 
@@ -230,7 +230,7 @@ static dig_t smul_n_shift_n(dig_t ret[], const dig_t a[], dig_t *f_,
 	    g = *g_;
 	    neg = -RLC_SIGN(g);
 	    g = (g ^ neg) - neg;            /* ensure |g| is positive */
-	    bn_negm_low(b_, b, RLC_SIGN(g), n);
+	    bn_negs_low(b_, b, RLC_SIGN(g), n);
 	    hi = bn_mul1_low(b_, b_, g, n);
 	    b_[n] = hi - (g & neg);
 
@@ -248,7 +248,7 @@ static dig_t smul_n_shift_n(dig_t ret[], const dig_t a[], dig_t *f_,
 	    neg = -RLC_SIGN(carry);
 	    *f_ = (*f_ ^ neg) - neg;
 	    *g_ = (*g_ ^ neg) - neg;
-	    bn_negm_low(ret, ret, neg, n);
+	    bn_negs_low(ret, ret, neg, n);
 
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -520,8 +520,8 @@ int fp_smb_jmpds(const fp_t a) {
 
 			sf = RLC_SIGN(f[precision]);
 			sg = RLC_SIGN(g[precision]);
-			bn_negm_low(u0, f, sf, precision);
-			bn_negm_low(u1, g, sg, precision);
+			bn_negs_low(u0, f, sf, precision);
+			bn_negs_low(u1, g, sg, precision);
 
 			t0[precision] = bn_mul2_low(t0, u0, sf, m[0], precision);
 			t1[precision] = bn_mul2_low(t1, u1, sg, m[1], precision);
@@ -543,7 +543,7 @@ int fp_smb_jmpds(const fp_t a) {
 		fp_zero(t0);
 		t0[0] = 1;
 		r = RLC_SEL(r, 1 - j, dv_cmp_const(g, t0, RLC_FP_DIGS) == RLC_EQ);
-		bn_negm_low(g, g, 1, RLC_FP_DIGS);
+		bn_negs_low(g, g, 1, RLC_FP_DIGS);
 		r = RLC_SEL(r, 1 - j, dv_cmp_const(g, t0, RLC_FP_DIGS) == RLC_EQ);
 		r = RLC_SEL(r, 1 - j, fp_is_zero(g));
 	}

@@ -47,7 +47,7 @@
  * @param[in] sa 		- the sign of the digit vector.
  * @param[in] n			- the number of digits to conditionally negate.
  */
-static inline void bn_negm_low(dig_t c[], const dig_t a[], dig_t sa, size_t n) {
+static void bn_negs_low(dig_t c[], const dig_t a[], dig_t sa, size_t n) {
     dig_t carry = sa & 1;
 
 	sa = -sa;
@@ -68,7 +68,7 @@ static inline void bn_negm_low(dig_t c[], const dig_t a[], dig_t sa, size_t n) {
  * @param[in] size 		- the number of digits to multiply.
  * @return the most significant bit of the result.
  */
-static inline dig_t _bn_muls_low(dig_t *c, const dig_t *a, dig_t sa, dis_t digit,
+static dig_t _bn_muls_low(dig_t *c, const dig_t *a, dig_t sa, dis_t digit,
 		int size) {
 	dig_t r, _c, c0, c1, sign, sd = digit >> (RLC_DIG - 1);
 
@@ -92,12 +92,11 @@ static inline dig_t _bn_muls_low(dig_t *c, const dig_t *a, dig_t sa, dis_t digit
 	return (c0 ^ sign) + c1;
 }
 
-static inline void bn_mul2_low(dig_t *c, const dig_t *a, dis_t digit, int size) {
+static void bn_mul2_low(dig_t *c, const dig_t *a, dis_t digit, int size) {
 	int sd = digit >> (RLC_DIG - 1);
 	digit = (digit ^ sd) - sd;
 	c[size] = bn_mul1_low(c, a, digit, size);
 }
-
 
 static dis_t jumpdivstep(dis_t m[4], dis_t delta, dig_t f, dig_t g, int s) {
 	dig_t u = 1, v = 0, q = 0, r = 1, c0, c1;
@@ -710,8 +709,8 @@ void fp_inv_jmpds(fp_t c, const fp_t a) {
 
 			sf = RLC_SIGN(f[RLC_FP_DIGS]);
 			sg = RLC_SIGN(g[RLC_FP_DIGS]);
-			bn_negm_low(u0, f, sf, RLC_FP_DIGS);
-			bn_negm_low(u1, g, sg, RLC_FP_DIGS);
+			bn_negs_low(u0, f, sf, RLC_FP_DIGS);
+			bn_negs_low(u1, g, sg, RLC_FP_DIGS);
 
 			t0[RLC_FP_DIGS] = _bn_muls_low(t0, u0, sf, m[0], RLC_FP_DIGS);
 			t1[RLC_FP_DIGS] = _bn_muls_low(t1, u1, sg, m[1], RLC_FP_DIGS);
@@ -790,8 +789,8 @@ void fp_inv_jmpds(fp_t c, const fp_t a) {
 
 		sf = RLC_SIGN(f[RLC_FP_DIGS]);
 		sg = RLC_SIGN(g[RLC_FP_DIGS]);
-		bn_negm_low(u0, f, sf, RLC_FP_DIGS);
-		bn_negm_low(u1, g, sg, RLC_FP_DIGS);
+		bn_negs_low(u0, f, sf, RLC_FP_DIGS);
+		bn_negs_low(u1, g, sg, RLC_FP_DIGS);
 
 		t0[RLC_FP_DIGS] = _bn_muls_low(t0, u0, sf, m[0], RLC_FP_DIGS);
 		t1[RLC_FP_DIGS] = _bn_muls_low(t1, u1, sg, m[1], RLC_FP_DIGS);

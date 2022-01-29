@@ -43,13 +43,13 @@ bn_rshs_low:
 	movq	24(%rsi), %r11
 	movq	32(%rsi), %rax
 	movq	40(%rsi), %rcx
-    movq	48(%rsi), %rsi
+	movq	48(%rsi), %rsi
 	shrd	$62, %r9, %r8
 	shrd	$62, %r10, %r9
 	shrd	$62, %r11, %r10
 	shrd	$62, %rax, %r11
 	shrd	$62, %rcx, %rax
-    shrd	$62, %rsi, %rcx
+	shrd	$62, %rsi, %rcx
 	sar	    $62, %rsi
 	movq	%r8,0(%rdi)
 	movq	%r9,8(%rdi)
@@ -57,5 +57,5 @@ bn_rshs_low:
 	movq	%r11,24(%rdi)
 	movq	%rax,32(%rdi)
 	movq	%rcx,40(%rdi)
-    movq	%rsi,48(%rdi)
+	movq	%rsi,48(%rdi)
 	ret

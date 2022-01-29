@@ -177,7 +177,7 @@ typedef unsigned int uint_t;
 #if ALIGN > 1
 #define rlc_align 		__attribute__ ((aligned (ALIGN)))
 #else
-#define rlc_align 		/* empty*/
+#define rlc_align 		/* empty */
 #endif
 
 /**
