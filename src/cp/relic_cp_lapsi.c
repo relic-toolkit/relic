@@ -159,18 +159,20 @@ int cp_lapsi_ans(gt_t t[], g2_t u[], g1_t d, g2_t ss, bn_t y[], int n) {
 int cp_lapsi_int(bn_t z[], int *len, bn_t sk, g1_t d, bn_t x[], int m,
 		gt_t t[], g2_t u[], int n) {
 	int j, k, result = RLC_OK;
-	bn_t i, q;
+	bn_t q, *i = RLC_ALLOCA(bn_t, m);
 	g1_t c;
 	gt_t e;
 
-	bn_null(i);
 	bn_null(q);
 	g1_null(c);
 	gt_null(e);
 
 	RLC_TRY {
-		bn_new(i);
 		bn_new(q);
+		for (j = 0; j < m; j++) {
+			bn_null(i[j]);
+			bn_new(i[j]);
+		}
 		g1_new(c);
 		gt_new(e);
 
@@ -178,10 +180,12 @@ int cp_lapsi_int(bn_t z[], int *len, bn_t sk, g1_t d, bn_t x[], int m,
 		if (m > 0) {
 			pc_get_ord(q);
 			for (k = 0; k < m; k++) {
-				bn_sub(i, sk, x[k]);
-				bn_mod(i, i, q);
-				bn_mod_inv(i, i, q);
-				g1_mul(c, d, i);
+				bn_sub(i[k], sk, x[k]);
+				bn_mod(i[k], i[k], q);
+			}
+			bn_mod_inv_sim(i, i, q, m);
+			for (k = 0; k < m; k++) {
+				g1_mul(c, d, i[k]);
 				for (j = 0; j < n; j++) {
 					pc_map(e, c, u[j]);
 					if (gt_cmp(e, t[j]) == RLC_EQ && !gt_is_unity(e)) {
@@ -196,10 +200,13 @@ int cp_lapsi_int(bn_t z[], int *len, bn_t sk, g1_t d, bn_t x[], int m,
 		result = RLC_ERR;
 	}
 	RLC_FINALLY {
-		bn_free(i);
 		bn_free(q);
+		for (j = 0; j < m; j++) {
+			bn_free(i[j]);
+		}
 		g1_free(c);
 		gt_free(e);
+		RLC_FREE(i);
 	}
 	return result;
 }
