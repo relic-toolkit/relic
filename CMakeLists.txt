@@ -300,11 +300,13 @@ set(CMAKE_EXE_LINKER_FLAGS "${LFLAGS}")
 message(STATUS "Compiler flags: ${CMAKE_C_FLAGS}")
 message(STATUS "Linker flags: ${CMAKE_EXE_LINKER_FLAGS}")
 
+set(ARITH_COPY ${ARITH})
 string(TOUPPER ${ARITH} ARITH)
+string(REPLACE "-" "_" ARITH ${ARITH})
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/include/relic_conf.h.in
 	${CMAKE_CURRENT_BINARY_DIR}/include/relic_conf.h @ONLY)
-message(STATUS "Configured ${CMAKE_CURRENT_SOURCE_DIR}/include/relic_conf.h.in")
-string(TOLOWER ${ARITH} ARITH)
+message(STATUS "Configured ${CMAKE_CURRENT_SOURCE_DIR}/include/relic_conf.h.in with backend " ${ARITH_COPY})
+set(ARITH ${ARITH_COPY})
 
 if (LABEL)
 	set(RELIC "relic_${LABEL}")
