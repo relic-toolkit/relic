@@ -282,7 +282,7 @@ void ep_mul_sim_lot_endom(ep_t r, const ep_t p[], const bn_t k[], int n) {
 				bn_null(_k[j]);
 				bn_new(_k[j]);
 			}
-			for (i = 0; i < n; i++) {
+			for (i = 0; i < 2 * n; i++) {
 				ep_null(_p[i]);
 				ep_new(_p[i]);
 			}
@@ -339,7 +339,7 @@ void ep_mul_sim_lot_endom(ep_t r, const ep_t p[], const bn_t k[], int n) {
 			bn_free(q);
 			bn_free(_k[0]);
 			bn_free(_k[1]);
-			for (i = 0; i < n; i++) {
+			for (i = 0; i < 2 * n; i++) {
 				ep_free(_p[i]);
 			}
 			RLC_FREE(_p);
