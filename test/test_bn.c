@@ -2188,21 +2188,16 @@ static int recoding(void) {
 					/* Negate modulo r. */
 					bn_add(v2[1], v2[0], v2[1]);
 				}
-				if (bn_cmp_dig(v1[2], 1) == RLC_EQ) {
-					bn_sub(v1[0], v2[1], v1[2]);
-				} else {
-					bn_mul(v1[0], v2[1], v1[1]);
-				}
+				bn_mul(v1[0], v2[1], v1[1]);
 				bn_mod(v1[0], v1[0], v2[0]);
 
-				/* Check if b + c * lambda = k (mod n). */
-				bn_mul(c, c, v1[0]);
-				bn_add(b, b, c);
+				/* Check if b \pm c * lambda = k (mod n). */
+				bn_mul(v1[1], c, v1[0]);
+				bn_add(b, b, v1[1]);
 				bn_mod(b, b, v2[0]);
-				if (bn_sign(b) == RLC_NEG) {
-					bn_add(b, b, v2[0]);
-				}
-				bn_sub(c, v2[0], b);
+				bn_sub(c, b, v1[1]);
+				bn_sub(c, c, v1[1]);
+				bn_mod(c, c, v2[0]);
 				TEST_ASSERT(bn_cmp(a, b) == RLC_EQ ||
 					bn_cmp(a, c) == RLC_EQ, end);
 			}
