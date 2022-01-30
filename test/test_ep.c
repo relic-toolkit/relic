@@ -513,17 +513,15 @@ static int endomorphism(void) {
 			}
 			bn_mul(v1[0], v2[1], v1[1]);
 			bn_mod(l, v1[0], v2[0]);
-			bn_sub(v1[1], v2[0], l);
-			if (bn_cmp(v1[1], l) == RLC_LT) {
-				bn_copy(l, v1[1]);
-			}
 
 			TEST_CASE("endomorphism is correct") {
 				/* Test if \psi(P) = [l]P. */
 				ep_rand(a);
 				ep_psi(b, a);
 				ep_mul(c, a, l);
-				TEST_ASSERT(ep_cmp(b, c) == RLC_EQ, end);
+				ep_neg(a, b);
+				TEST_ASSERT(ep_cmp(b, c) == RLC_EQ ||
+					ep_cmp(a, c) == RLC_EQ, end);
 			}
 			TEST_END;
 

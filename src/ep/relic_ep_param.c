@@ -812,7 +812,7 @@ void ep_param_set(int param) {
 #endif
 #if defined(EP_ENDOM) && FP_PRIME == 160
 			case SECG_K160:
-				ASSIGN(SECG_K160, SECG_160D);
+				ASSIGNK(SECG_K160, SECG_160D);
 				endom = 1;
 				break;
 #endif
@@ -842,7 +842,7 @@ void ep_param_set(int param) {
 #endif
 #if defined(EP_ENDOM) && FP_PRIME == 224
 			case SECG_K224:
-				ASSIGN(SECG_K224, SECG_224);
+				ASSIGNK(SECG_K224, SECG_224);
 				endom = 1;
 				break;
 #endif
@@ -889,7 +889,7 @@ void ep_param_set(int param) {
 #endif
 #if defined(EP_ENDOM) && FP_PRIME == 256
 			case SECG_K256:
-				ASSIGN(SECG_K256, SECG_256);
+				ASSIGNK(SECG_K256, SECG_256);
 				endom = 1;
 				break;
 			case SM9_P256:
@@ -998,13 +998,13 @@ void ep_param_set(int param) {
 #endif
 #if defined(EP_ENDOM) && FP_PRIME == 544
 			case GMT8_P544:
-				ASSIGN(GMT8_P544, GMT8_544);
+				ASSIGNK(GMT8_P544, GMT8_544);
 				endom = 1;
 				break;
 #endif
 #if defined(EP_ENDOM) && FP_PRIME == 569
 			case K54_P569:
-				ASSIGN(K54_P569, K54_569);
+				ASSIGNK(K54_P569, K54_569);
 				endom = 1;
 				pairf = EP_K54;
 				break;

@@ -1818,7 +1818,7 @@ static int inversion(void) {
 
 static int lagrange(void) {
 	int flag, code = RLC_ERR;
-	bn_t a, b, c, d[5], e[5];
+	bn_t a, b, c, d[6], e[6];
 
 	bn_null(a);
 	bn_null(b);
@@ -2194,10 +2194,7 @@ static int recoding(void) {
 					bn_mul(v1[0], v2[1], v1[1]);
 				}
 				bn_mod(v1[0], v1[0], v2[0]);
-				bn_sub(v1[1], v2[0], v1[0]);
-				if (bn_cmp(v1[1], v1[0]) == RLC_LT) {
-					bn_copy(v1[0], v1[1]);
-				}
+
 				/* Check if b + c * lambda = k (mod n). */
 				bn_mul(c, c, v1[0]);
 				bn_add(b, b, c);
@@ -2205,7 +2202,9 @@ static int recoding(void) {
 				if (bn_sign(b) == RLC_NEG) {
 					bn_add(b, b, v2[0]);
 				}
-				TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
+				bn_sub(c, v2[0], b);
+				TEST_ASSERT(bn_cmp(a, b) == RLC_EQ ||
+					bn_cmp(a, c) == RLC_EQ, end);
 			}
 		} TEST_END;
 #endif /* WITH_EP && EP_ENDOM */
