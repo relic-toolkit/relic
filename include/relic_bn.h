@@ -1401,4 +1401,29 @@ void bn_rec_glv(bn_t k0, bn_t k1, const bn_t k, const bn_t n, const bn_t v1[],
 void bn_rec_frb(bn_t *ki, int sub, const bn_t k, const bn_t x, const bn_t n,
 	int bls);
 
+/**
+ * Computes the coefficients of the polynomial representing the Lagrange
+ * interpolation for a modulus and a given set of roots.
+ * Computes c(x) = \prod_{0 <= i < n}(x - ai) mod q.
+ *
+ * @param[out] c 			- the coefficients of the polynomial.
+ * @param[in] a				- the set of roots.
+ * @param[in] b				- the modulus.
+ * @param[in] n				- the number of roots to interpolate.
+ */
+void bn_lag(bn_t *c, bn_t *a, bn_t b, int n);
+
+/**
+ * Evaluates an interpolated n-degree polynomial over a value in a modular way,
+ * given the (n+1) coefficients of the polynomial and the modulus.
+ * Computes c = a(x) mod q.
+ *
+ * @param[out] c 			- the result of the evaluation.
+ * @param[in] a 			- the coefficients of the polynomial.
+ * @param[in] x				- the value to evaluate.
+ * @param[in] b				- the modulus.
+ * @param[in] n				- the degree of the polynomial.
+ */
+void bn_evl(bn_t c, bn_t *a, bn_t x, bn_t b, int n);
+
 #endif /* !RLC_BN_H */

@@ -282,6 +282,8 @@
 #undef bn_rec_jsf
 #undef bn_rec_glv
 #undef bn_rec_frb
+#undef bn_lag
+#undef bn_evl
 
 #define bn_make 	RLC_PREFIX(bn_make)
 #define bn_clean 	RLC_PREFIX(bn_clean)
@@ -387,6 +389,8 @@
 #define bn_rec_jsf 	RLC_PREFIX(bn_rec_jsf)
 #define bn_rec_glv 	RLC_PREFIX(bn_rec_glv)
 #define bn_rec_frb 	RLC_PREFIX(bn_rec_frb)
+#define bn_lag 	RLC_PREFIX(bn_lag)
+#define bn_evl 	RLC_PREFIX(bn_evl)
 
 #undef bn_add1_low
 #undef bn_addn_low
@@ -1121,6 +1125,7 @@
 #undef ed_mul_sim_trick
 #undef ed_mul_sim_inter
 #undef ed_mul_sim_joint
+#undef ed_mul_sim_lot
 #undef ed_mul_sim_gen
 #undef ed_tab
 #undef ed_print
@@ -1189,6 +1194,7 @@
 #define ed_mul_sim_trick 	RLC_PREFIX(ed_mul_sim_trick)
 #define ed_mul_sim_inter 	RLC_PREFIX(ed_mul_sim_inter)
 #define ed_mul_sim_joint 	RLC_PREFIX(ed_mul_sim_joint)
+#define ed_mul_sim_lot 	RLC_PREFIX(ed_mul_sim_lot)
 #define ed_mul_sim_gen 	RLC_PREFIX(ed_mul_sim_gen)
 #define ed_tab 	RLC_PREFIX(ed_tab)
 #define ed_print 	RLC_PREFIX(ed_print)
@@ -2298,7 +2304,6 @@
 #undef fp48_back_cyc_sim
 #undef fp48_inv
 #undef fp48_inv_cyc
-#undef fp48_conv_cyc
 #undef fp48_frb
 #undef fp48_exp
 #undef fp48_exp_dig
@@ -2338,7 +2343,6 @@
 #define fp48_back_cyc_sim 	RLC_PREFIX(fp48_back_cyc_sim)
 #define fp48_inv 	RLC_PREFIX(fp48_inv)
 #define fp48_inv_cyc 	RLC_PREFIX(fp48_inv_cyc)
-#define fp48_conv_cyc 	RLC_PREFIX(fp48_conv_cyc)
 #define fp48_frb 	RLC_PREFIX(fp48_frb)
 #define fp48_exp 	RLC_PREFIX(fp48_exp)
 #define fp48_exp_dig 	RLC_PREFIX(fp48_exp_dig)
@@ -2378,7 +2382,6 @@
 #undef fp54_back_cyc_sim
 #undef fp54_inv
 #undef fp54_inv_cyc
-#undef fp54_conv_cyc
 #undef fp54_frb
 #undef fp54_exp
 #undef fp54_exp_dig
@@ -2418,7 +2421,6 @@
 #define fp54_back_cyc_sim 	RLC_PREFIX(fp54_back_cyc_sim)
 #define fp54_inv 	RLC_PREFIX(fp54_inv)
 #define fp54_inv_cyc 	RLC_PREFIX(fp54_inv_cyc)
-#define fp54_conv_cyc 	RLC_PREFIX(fp54_conv_cyc)
 #define fp54_frb 	RLC_PREFIX(fp54_frb)
 #define fp54_exp 	RLC_PREFIX(fp54_exp)
 #define fp54_exp_dig 	RLC_PREFIX(fp54_exp_dig)

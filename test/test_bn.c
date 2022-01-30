@@ -1816,6 +1816,66 @@ static int inversion(void) {
 	return code;
 }
 
+static int lagrange(void) {
+	int flag, code = RLC_ERR;
+	bn_t a, b, c, d[5], e[5];
+
+	bn_null(a);
+	bn_null(b);
+	bn_null(c);
+
+	RLC_TRY {
+		bn_new(a);
+		bn_new(b);
+		bn_new(c);
+		for (int j = 0; j <= 5; j++) {
+			bn_null(d[j]);
+			bn_null(e[j]);
+			bn_new(d[j]);
+			bn_new(e[j]);
+		}
+
+		bn_gen_prime(a, RLC_BN_BITS);
+
+		TEST_CASE("lagrange interpolation is correct") {
+			for (int k = 1; k < 5; k++) {
+				for (int j = 0; j < k; j++) {
+					bn_rand_mod(d[j], a);
+				}
+				bn_lag(e, d, a, k);
+				do {
+					flag = 1;
+					bn_rand_mod(b, a);
+					for (int j = 0; j < k; j++) {
+						if (bn_cmp(b, d[j]) == RLC_EQ) {
+							flag = 0;
+						}
+					}
+				} while (flag == 0);
+				bn_evl(c, e, b, a, k);
+				TEST_ASSERT(!bn_is_zero(c), end);
+				for (int j = 0; j < k; j++) {
+					bn_evl(c, e, d[j], a, k);
+					TEST_ASSERT(bn_is_zero(c), end);
+				}
+			}
+		} TEST_END;
+	}
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
+	}
+	code = RLC_OK;
+  end:
+	bn_free(a);
+	bn_free(b);
+	bn_free(c);
+	for (int j = 0; j <= 5; j++) {
+		bn_free(d[j]);
+		bn_free(e[j]);
+	}
+	return code;
+}
+
 static int factor(void) {
 	int code = RLC_ERR;
 	bn_t p, q, n;
@@ -2272,6 +2332,11 @@ int main(void) {
 	}
 
 	if (inversion() != RLC_OK) {
+		core_clean();
+		return 1;
+	}
+
+	if (lagrange() != RLC_OK) {
 		core_clean();
 		return 1;
 	}

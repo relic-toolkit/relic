@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (c) 2020 RELIC Authors
+ * Copyright (c) 2021 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -24,7 +24,7 @@
 /**
  * @file
  *
- * Implementation of the multiple precision integer modular inversion.
+ * Implementation of the modular Lagrante interpolation.
  *
  * @ingroup bn
  */
@@ -36,77 +36,61 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void bn_mod_inv(bn_t c, const bn_t a, const bn_t b) {
-	bn_t t, u;
+void bn_lag(bn_t *c, bn_t *a, bn_t b, int n) {
+    int i, j;
+	bn_t *t = RLC_ALLOCA(bn_t, n + 1);
 
-	bn_null(t);
-	bn_null(u);
-
-	RLC_TRY {
-		bn_new(t);
-		bn_new(u);
-
-		bn_copy(u, b);
-		bn_gcd_ext(t, c, NULL, a, b);
-
-		if (bn_sign(c) == RLC_NEG) {
-			bn_add(c, c, u);
-		}
-
-		if (bn_cmp_dig(t, 1) != RLC_EQ) {
-			RLC_THROW(ERR_NO_VALID);
-		}
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		bn_free(t);
-		bn_free(u);
-	}
-}
-
-void bn_mod_inv_sim(bn_t *c, const bn_t *a, const bn_t b, int n) {
-	int i;
-	bn_t u, *t = RLC_ALLOCA(bn_t, n);
-
-	bn_null(u);
+    if (n == 0) {
+        bn_zero(c[0]);
+        return;
+    }
 
 	RLC_TRY {
 		if (t == NULL) {
 			RLC_THROW(ERR_NO_MEMORY);
 		}
-		for (i = 0; i < n; i++) {
+		for (i = 0; i <= n; i++) {
 			bn_null(t[i]);
 			bn_new(t[i]);
 		}
-		bn_new(u);
 
-		bn_copy(c[0], a[0]);
-		bn_copy(t[0], a[0]);
-
-		for (i = 1; i < n; i++) {
-			bn_copy(t[i], a[i]);
-			bn_mul(c[i], c[i - 1], a[i]);
-			bn_mod(c[i], c[i], b);
-		}
-
-		bn_mod_inv(u, c[n - 1], b);
-
-		for (i = n - 1; i > 0; i--) {
-			bn_mul(c[i], u, c[i - 1]);
-			bn_mod(c[i], c[i], b);
-			bn_mul(u, u, t[i]);
-			bn_mod(u, u, b);
-		}
-		bn_copy(c[0], u);
+        for (i = 0; i < n; i++) {
+            bn_zero(t[0]);
+            if (i == 0) {
+		        bn_set_dig(t[1], 1);
+                bn_neg(c[0], a[i]);
+                bn_mod(c[0], c[0], b);
+            } else {
+                for (j = 0; j <= i; j++) {
+                    bn_copy(t[j + 1], c[j]);
+                }
+                for (j = 0; j <= i; j++) {
+                    bn_mul(c[j], c[j], a[i]);
+                    bn_mod(c[j], c[j], b);
+                    bn_sub(c[j], t[j], c[j]);
+                    bn_mod(c[j], c[j], b);
+                }
+            }
+            bn_copy(c[i + 1], t[i + 1]);
+        }
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		for (i = 0; i < n; i++) {
+		for (i = 0; i <= n; i++) {
 			bn_free(t[i]);
 		}
-		bn_free(u);
 		RLC_FREE(t);
 	}
+}
+
+void bn_evl(bn_t c, bn_t *a, bn_t x, bn_t b, int n) {
+    bn_zero(c);
+    for (int j = n; j >= 0; j--) {
+        bn_mul(c, c, x);
+        bn_mod(c, c, b);
+        bn_add(c, c, a[j]);
+        bn_mod(c, c, b);
+    }
 }

@@ -63,18 +63,19 @@ int cp_lapsi_gen(bn_t sk, g2_t ss, g1_t s[], int m) {
 }
 
 int cp_lapsi_ask(g1_t d, bn_t r, bn_t x[], g1_t s[], int m) {
-	int i, j, result = RLC_OK;
-	bn_t q, *p = RLC_ALLOCA(bn_t, m + 1), *_p = RLC_ALLOCA(bn_t, m + 1);
+	int i, result = RLC_OK;
+	bn_t q, *p = RLC_ALLOCA(bn_t, m + 1);
 
 	bn_null(q);
 
 	RLC_TRY {
 		bn_new(q);
+		if (p == NULL) {
+			RLC_THROW(ERR_NO_MEMORY);
+		}
 		for (i = 0; i <= m; i++) {
 			bn_null(p[i]);
-			bn_null(_p[i]);
 			bn_new(p[i]);
-			bn_new(_p[i]);
 		}
 
 		pc_get_ord(q);
@@ -82,20 +83,7 @@ int cp_lapsi_ask(g1_t d, bn_t r, bn_t x[], g1_t s[], int m) {
 		if (m == 0) {
 			g1_mul_gen(d, r);
 		} else {
-			bn_set_dig(p[0], 1);
-			for (i = 0; i < m; i++) {
-				bn_zero(_p[0]);
-				for (j = 0; j <= i; j++) {
-					bn_copy(_p[j + 1], p[j]);
-				}
-				for (j = 0; j <= i; j++) {
-					bn_mul(p[j], p[j], x[i]);
-					bn_mod(p[j], p[j], q);
-					bn_sub(p[j], _p[j], p[j]);
-					bn_mod(p[j], p[j], q);
-				}
-				bn_copy(p[j], _p[j]);
-			}
+			bn_lag(p, x, q, m);
 			g1_mul_sim_lot(d, s, p, m + 1);
 			g1_mul(d, d, r);
 		}
@@ -107,10 +95,8 @@ int cp_lapsi_ask(g1_t d, bn_t r, bn_t x[], g1_t s[], int m) {
 		bn_free(q);
 		for (i = 0; i <= m; i++) {
 			bn_free(p[i]);
-			bn_free(_p[i]);
 		}
 		RLC_FREE(p);
-		RLC_FREE(_p);
 	}
 	return result;
 }
