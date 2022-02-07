@@ -1138,7 +1138,7 @@ static int square_root(void) {
 
 static int gcd(void) {
 	int code = RLC_ERR;
-	bn_t a, b, c, d, e, f;
+	bn_t a, b, c, d, e, f, g, h;
 
 	bn_null(a);
 	bn_null(b);
@@ -1146,6 +1146,8 @@ static int gcd(void) {
 	bn_null(d);
 	bn_null(e);
 	bn_null(f);
+	bn_null(g);
+	bn_null(h);
 
 	RLC_TRY {
 		bn_new(a);
@@ -1154,6 +1156,8 @@ static int gcd(void) {
 		bn_new(d);
 		bn_new(e);
 		bn_new(f);
+		bn_new(g);
+		bn_new(h);
 
 		TEST_CASE("greatest common divisor is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
@@ -1199,12 +1203,16 @@ static int gcd(void) {
 		TEST_CASE("basic extended greatest common divisor is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_rand(b, RLC_POS, RLC_BN_BITS);
+			bn_gcd_basic(f, a, b);
 			bn_gcd_ext_basic(c, d, e, a, b);
 			bn_mul(d, d, a);
 			bn_mul(e, e, b);
 			bn_add(d, d, e);
-			bn_gcd_basic(f, a, b);
 			TEST_ASSERT(bn_cmp(c, d) == RLC_EQ && bn_cmp(c, f) == RLC_EQ, end);
+			bn_gcd_ext(c, d, e, a, b);
+			bn_gcd_ext_basic(f, g, h, a, b);
+			TEST_ASSERT(bn_cmp(c, f) == RLC_EQ && bn_cmp(d, g) == RLC_EQ
+				&& bn_cmp(e, h) == RLC_EQ, end);
 		} TEST_END;
 #endif
 
@@ -1220,11 +1228,11 @@ static int gcd(void) {
 		TEST_CASE("lehmer extended greatest common divisor is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_rand(b, RLC_POS, RLC_BN_BITS);
+			bn_gcd_lehme(f, a, b);
 			bn_gcd_ext_lehme(c, d, e, a, b);
 			bn_mul(d, d, a);
 			bn_mul(e, e, b);
 			bn_add(d, d, e);
-			bn_gcd_lehme(f, a, b);
 			TEST_ASSERT(bn_cmp(c, d) == RLC_EQ && bn_cmp(c, f) == RLC_EQ, end);
 		} TEST_END;
 #endif
@@ -1241,11 +1249,16 @@ static int gcd(void) {
 		TEST_CASE("stein extended greatest common divisor is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_rand(b, RLC_POS, RLC_BN_BITS);
+			bn_gcd_stein(f, a, b);
 			bn_gcd_ext_stein(c, d, e, a, b);
 			bn_mul(d, d, a);
 			bn_mul(e, e, b);
 			bn_add(d, d, e);
-			TEST_ASSERT(bn_cmp(c, d) == RLC_EQ, end);
+			TEST_ASSERT(bn_cmp(c, d) == RLC_EQ && bn_cmp(c, f) == RLC_EQ, end);
+			bn_gcd_ext(c, d, e, a, b);
+			bn_gcd_ext_stein(f, g, h, a, b);
+			TEST_ASSERT(bn_cmp(c, f) == RLC_EQ && bn_cmp(d, g) == RLC_EQ
+				&& bn_cmp(e, h) == RLC_EQ, end);
 		} TEST_END;
 #endif
 
@@ -1272,6 +1285,8 @@ static int gcd(void) {
 	bn_free(d);
 	bn_free(e);
 	bn_free(f);
+	bn_free(g);
+	bn_free(h);
 	return code;
 }
 
