@@ -1,0 +1,215 @@
+/*
+ * RELIC is an Efficient LIbrary for Cryptography
+ * Copyright (c) 2014 RELIC Authors
+ *
+ * This file is part of RELIC. RELIC is legal property of its developers,
+ * whose names are not listed here. Please refer to the COPYRIGHT file
+ * for contact information.
+ *
+ * RELIC is free software; you can redistribute it and/or modify it under the
+ * terms of the version 2.1 (or later) of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; or version 2.0 of the Apache
+ * License as published by the Apache Software Foundation. See the LICENSE files
+ * for more details.
+ *
+ * RELIC is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the LICENSE files for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public or the
+ * Apache License along with RELIC. If not, see <https://www.gnu.org/licenses/>
+ * or <https://www.apache.org/licenses/>.
+ */
+
+/**
+ * @file
+ *
+ * Implementation of Paillier's Subgroup-variant
+ *                   Homomorphic Probabilistic Encryption.
+ *
+ * @ingroup cp
+ */
+
+#include "relic.h"
+
+/*============================================================================*/
+/* Public definitions                                                         */
+/*============================================================================*/
+
+int cp_shpe_gen(bn_t pub, shpe_t prv, int sbits, int nbits) {
+	int result = RLC_OK;
+
+    if (sbits > (nbits/2)) {
+        return RLC_ERR;
+    }
+
+	/* Generate primes p and q of equivalent length
+       and (p-1) has a prime factor (the subgroup order) of length sbits
+     */
+	do {
+		bn_gen_factor_prime(prv->a, prv->p, sbits, nbits / 2);
+		bn_gen_prime(prv->q, nbits / 2);
+	} while (bn_cmp(prv->p, prv->q) == RLC_EQ);
+
+
+	/* Compute n = pq. */
+	bn_mul(prv->n, prv->p, prv->q);
+
+    /* compute the subgroup size */
+	bn_sub_dig(prv->p, prv->p, 1);
+	bn_sub_dig(prv->q, prv->q, 1);
+    bn_mul(pub, prv->p, prv->q);	// lambda = (p-1)(q-1)
+    bn_div(prv->b, pub, prv->a);	// lambda = a*b
+
+	/* Restore p and q. */
+	bn_add_dig(prv->p, prv->p, 1);
+	bn_add_dig(prv->q, prv->q, 1);
+
+    /* Fix the generator to be g=(1+n)^b */
+
+	/* Compute dp and dq. */
+    /* dp is 1/((q-1)*lambda) mod p */
+    bn_mod(prv->dp, pub, prv->p);
+    bn_mul(prv->dp, prv->dp, prv->q);
+    bn_mod(prv->dp, prv->dp, prv->p);
+
+    /* dq is 1/((p-1)*lambda) mod q */
+    bn_mod(prv->dq, pub, prv->q);
+    bn_mul(prv->dq, prv->dq, prv->p);
+    bn_mod(prv->dq, prv->dq, prv->q);
+
+    /* invertions */
+	bn_mod_inv(prv->dp, prv->dp, prv->p);
+	bn_mod_inv(prv->dq, prv->dq, prv->q);
+
+    /* Precompute (1+n)^b)^n mod n^2 */
+	bn_sqr(prv->qi, prv->n);					// n^2
+    bn_add_dig(pub, prv->n, 1);					// 1+n
+    bn_mxp(prv->gn, pub, prv->b, prv->qi);		// (1+n)^b mod n^2
+    bn_mxp(prv->gn, prv->gn, prv->n, prv->qi);	// ((1+n)^b)^n mod n^2
+
+	/* qInv = q^(-1) mod p. */
+	bn_mod_inv(prv->qi, prv->q, prv->p);
+
+	/* n=pq */
+	bn_copy(pub, prv->n);
+	return result;
+}
+
+/* Encryption is faster if private key is known */
+int cp_phpe_enc_prv(bn_t c, bn_t m, bn_t pub, bn_t prv) {
+	bn_t r, s;
+	int result = RLC_OK;
+
+	bn_null(r);
+	bn_null(s);
+
+	if (pub == NULL || bn_bits(m) > bn_bits(pub)) {
+		return RLC_ERR;
+	}
+
+	RLC_TRY {
+		bn_new(r);
+		bn_new(s);
+
+		/* Generate r in Z_alpha^*. */
+        bn_rand_mod(r, prv->a);
+		/* For G=(1+n)^b, compute c = (G^m)(G^n)^r mod n^2
+         *  which is also c = (1+n*b*m)(G^n)^r mod n^2.
+         */
+		bn_sqr(s, pub);
+        bn_mxp(r, prv->gn, r, s);	// n^2
+        bn_mul(c, prv->n, m);		// n*m
+        bn_mod(c, c, s);
+        bn_mul(c, c, prv->b);		// b*n*m
+        bn_add_dig(c, c, 1);		// 1+b*n*m
+        bn_mod(c, c, s);
+        bn_mul(c, c, r);			// (1+n*b*m)(G^n)^r
+        bn_mod(c, c, s);
+
+	}
+	RLC_CATCH_ANY {
+		result = RLC_ERR;
+	}
+	RLC_FINALLY {
+		bn_free(g);
+		bn_free(r);
+		bn_free(s);
+	}
+
+	return result;
+}
+
+int cp_phpe_dec_alpha(bn_t m, bn_t c, phpe_t prv, bn_t alpha, bn_t nsq) {
+	bn_t s, u;
+	int result = RLC_OK;
+
+	if (prv == NULL || bn_bits(c) > 2 * bn_bits(prv->n)) {
+		return RLC_ERR;
+	}
+
+	bn_null(s);
+	bn_null(u);
+
+	RLC_TRY {
+		bn_new(s);
+		bn_new(u);
+
+
+#if MULTI == OPENMP
+		omp_set_num_threads(CORES);
+		#pragma omp parallel copyin(core_ctx) firstprivate(c, prv)
+		{
+			#pragma omp sections
+			{
+				#pragma omp section
+				{
+#endif
+					/* Compute m_p = L(c^alpha mod p^2) * dp mod p. */
+					bn_sqr(s, prv->p);
+					bn_mxp(s, c, alpha, s);
+					bn_sub_dig(s, s, 1);
+					bn_div(s, s, prv->p);
+					bn_mul(s, s, prv->dp);
+					bn_mod(s, s, prv->p);
+#if MULTI == OPENMP
+				}
+				#pragma omp section
+				{
+#endif
+					/* Compute m_q = (c^alpha mod q^2) * dq mod q. */
+					bn_sqr(u, prv->q);
+					bn_mxp(u, c, alpha, u);
+					bn_sub_dig(u, u, 1);
+					bn_div(u, u, prv->q);
+					bn_mul(u, u, prv->dq);
+					bn_mod(u, u, prv->q);
+#if MULTI == OPENMP
+				}
+			}
+		}
+#endif
+
+		/* m = (m_p - m_q) mod p. */
+		bn_sub(m, s, u);
+		while (bn_sign(m) == RLC_NEG) {
+			bn_add(m, m, prv->p);
+		}
+		bn_mod(m, m, prv->p);
+		/* m1 = qInv(m_p - m_q) mod p. */
+		bn_mul(m, m, prv->qi);
+		bn_mod(m, m, prv->p);
+		/* m = m2 + m1 * q. */
+		bn_mul(m, m, prv->q);
+		bn_add(m, m, u);
+		bn_mod(m, m, prv->n);
+	} RLC_CATCH_ANY {
+		result = RLC_ERR;
+	}
+	RLC_FINALLY {
+		bn_free(s);
+		bn_free(u);
+	}
+
+	return result;
+}

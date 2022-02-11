@@ -58,9 +58,9 @@ typedef struct {
 	bn_t p;
 	/** The second prime q. */
 	bn_t q;
-	/** The precomputed costant for the first prime. */
+	/** The precomputed constant for the first prime. */
 	bn_t dp;
-	/** The precomputed costant for the second prime. */
+	/** The precomputed constant for the second prime. */
 	bn_t dq;
 	/** The inverse of q modulo p. */
 	bn_t qi;
@@ -109,6 +109,41 @@ typedef crt_st *rabin_t;
 typedef crt_st phpe_t[1];
 #else
 typedef crt_st *phpe_t;
+#endif
+
+
+/**
+ * Represents a pair of moduli for using the Chinese Remainder Theorem (CRT).
+ * Together with a subgroup order (a) and size (b)
+ */
+typedef struct {
+	/** The modulus n = pq. */
+	bn_t n;
+	/** The first prime p. */
+	bn_t p;
+	/** The second prime q. */
+	bn_t q;
+	/** The precomputed constant for the first prime. */
+	bn_t dp;
+	/** The precomputed constant for the second prime. */
+	bn_t dq;
+	/** The inverse of q modulo p. */
+	bn_t qi;
+	/** The subgroup order. */
+	bn_t a;
+	/** The subgroup size. */
+	bn_t b;
+	/** The precomputed ((1+n)^b)^n mod n^2. */
+	bn_t gn;
+} shpe_st;
+
+/**
+ * Pointer to a Subgroup-Paillier's Homomorphic Probabilistic Encryption key pair.
+ */
+#if ALLOC == AUTO
+typedef shpe_st shpe_t[1];
+#else
+typedef shpe_st *shpe_t;
 #endif
 
 /**
