@@ -49,26 +49,22 @@ int cp_phpe_gen(bn_t pub, phpe_t prv, int bits) {
 
 #ifdef CP_CRT
 	/* Fix g = n + 1. */
-	bn_add_dig(pub, prv->n, 1);
 
-	/* Precompute dp = 1/(pow(g, p-1, p^2)//p mod p. */
-	bn_sqr(prv->dp, prv->p);
-	bn_sub_dig(prv->p, prv->p, 1);
-	bn_mxp(prv->dp, pub, prv->p, prv->dp);
-	bn_sub_dig(prv->dp, prv->dp, 1);
-	bn_div(prv->dp, prv->dp, prv->p);
-	/* Precompute dq = 1/(pow(g, q-1, q^2)//q mod q. */
-	bn_sqr(prv->dq, prv->q);
-	bn_sub_dig(prv->q, prv->q, 1);
-	bn_mxp(prv->dq, pub, prv->q, prv->dq);
-	bn_sub_dig(prv->dq, prv->dq, 1);
-	bn_div(prv->dq, prv->dq, prv->q);
+	/* Precompute dp = 1/(pow(g, p-1, p^2)//p mod p. 
+       with g=1+n, this is also 1/((p-1)q) mod p.
+     */
+ 	bn_sub_dig(prv->dp, prv->p, 1);			//p-1
+ 	bn_mul(prv->dp, prv->dp, prv->q);		//(p-1)q
+	bn_mod(prv->dp, prv->dp, prv->p);		//(p-1)q mod p
+	bn_mod_inv(prv->dp, prv->dp, prv->p);	//((p-1)q)^{-1} mod p
 
-	/* Restore p and q. */
-	bn_add_dig(prv->p, prv->p, 1);
-	bn_add_dig(prv->q, prv->q, 1);
-	bn_mod_inv(prv->dp, prv->dp, prv->p);
-	bn_mod_inv(prv->dq, prv->dq, prv->q);
+    /* Precompute dq = 1/(pow(g, q-1, q^2)//q mod q.
+       with g=1+n, this is also 1/((q-1)p) mod q.
+     */
+ 	bn_sub_dig(prv->dq, prv->q, 1);			//q-1
+ 	bn_mul(prv->dq, prv->dq, prv->p);		//(q-1)p
+	bn_mod(prv->dq, prv->dq, prv->q);		//(q-1)p mod q
+	bn_mod_inv(prv->dq, prv->dq, prv->q);	//((q-1)p)^{-1} mod q
 
 	/* qInv = q^(-1) mod p. */
 	bn_mod_inv(prv->qi, prv->q, prv->p);
