@@ -44,31 +44,27 @@ int cp_phpe_gen(bn_t pub, phpe_t prv, int bits) {
 		bn_gen_prime(prv->q, bits / 2);
 	} while (bn_cmp(prv->p, prv->q) == RLC_EQ);
 
-	/* Compute n = pq and l = \phi(n). */
+	/* Compute n = pq. */
 	bn_mul(prv->n, prv->p, prv->q);
 
 #ifdef CP_CRT
 	/* Fix g = n + 1. */
-	bn_add_dig(pub, prv->n, 1);
 
-	/* Precompute dp = 1/(pow(g, p-1, p^2)//p mod p. */
-	bn_sqr(prv->dp, prv->p);
-	bn_sub_dig(prv->p, prv->p, 1);
-	bn_mxp(prv->dp, pub, prv->p, prv->dp);
-	bn_sub_dig(prv->dp, prv->dp, 1);
-	bn_div(prv->dp, prv->dp, prv->p);
-	/* Precompute dq = 1/(pow(g, q-1, q^2)//q mod q. */
-	bn_sqr(prv->dq, prv->q);
-	bn_sub_dig(prv->q, prv->q, 1);
-	bn_mxp(prv->dq, pub, prv->q, prv->dq);
-	bn_sub_dig(prv->dq, prv->dq, 1);
-	bn_div(prv->dq, prv->dq, prv->q);
+	/* Precompute dp = 1/(pow(g, p-1, p^2)//p mod p. 
+       with g=1+n, this is also 1/((p-1)q) mod p.
+     */
+ 	bn_sub_dig(prv->dp, prv->p, 1);			//p-1
+ 	bn_mul(prv->dp, prv->dp, prv->q);		//(p-1)q
+	bn_mod(prv->dp, prv->dp, prv->p);		//(p-1)q mod p
+	bn_mod_inv(prv->dp, prv->dp, prv->p);	//((p-1)q)^{-1} mod p
 
-	/* Restore p and q. */
-	bn_add_dig(prv->p, prv->p, 1);
-	bn_add_dig(prv->q, prv->q, 1);
-	bn_mod_inv(prv->dp, prv->dp, prv->p);
-	bn_mod_inv(prv->dq, prv->dq, prv->q);
+    /* Precompute dq = 1/(pow(g, q-1, q^2)//q mod q.
+       with g=1+n, this is also 1/((q-1)p) mod q.
+     */
+ 	bn_sub_dig(prv->dq, prv->q, 1);			//q-1
+ 	bn_mul(prv->dq, prv->dq, prv->p);		//(q-1)p
+	bn_mod(prv->dq, prv->dq, prv->q);		//(q-1)p mod q
+	bn_mod_inv(prv->dq, prv->dq, prv->q);	//((q-1)p)^{-1} mod q
 
 	/* qInv = q^(-1) mod p. */
 	bn_mod_inv(prv->qi, prv->q, prv->p);
@@ -97,10 +93,14 @@ int cp_phpe_enc(bn_t c, bn_t m, bn_t pub) {
 
 		/* Generate r in Z_n^*. */
 		bn_rand_mod(r, pub);
-		/* Compute c = (g^m)(r^n) mod n^2. */
+		/* Compute c = (g^m)(r^n) mod n^2.
+			with g=1+n, this is also (1+nm)r^n mod n^2.
+		*/
 		bn_add_dig(g, pub, 1);
 		bn_sqr(s, pub);
-		bn_mxp(c, g, m, s);
+		bn_mul(c, pub, m);
+        bn_add_dig(c, c, 1);
+		bn_mod(c, c, s);        
 		bn_mxp(r, r, pub, s);
 		bn_mul(c, c, r);
 		bn_mod(c, c, s);
