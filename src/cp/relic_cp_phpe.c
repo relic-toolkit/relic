@@ -44,7 +44,7 @@ int cp_phpe_gen(bn_t pub, phpe_t prv, int bits) {
 		bn_gen_prime(prv->q, bits / 2);
 	} while (bn_cmp(prv->p, prv->q) == RLC_EQ);
 
-	/* Compute n = pq and l = \phi(n). */
+	/* Compute n = pq. */
 	bn_mul(prv->n, prv->p, prv->q);
 
 #ifdef CP_CRT
@@ -93,10 +93,12 @@ int cp_phpe_enc(bn_t c, bn_t m, bn_t pub) {
 
 		/* Generate r in Z_n^*. */
 		bn_rand_mod(r, pub);
-		/* Compute c = (g^m)(r^n) mod n^2. */
+		/* Compute c = ((1+n)^m)(r^n) mod n^2 = (1+nm)r^n */
 		bn_add_dig(g, pub, 1);
 		bn_sqr(s, pub);
-		bn_mxp(c, g, m, s);
+		bn_mul(c, pub, m);
+        bn_add_dig(c, c, 1);
+		bn_mod(c, c, s);        
 		bn_mxp(r, r, pub, s);
 		bn_mul(c, c, r);
 		bn_mod(c, c, s);
