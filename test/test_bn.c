@@ -1660,12 +1660,14 @@ static int digit(void) {
 
 static int prime(void) {
 	int code = RLC_ERR;
-	bn_t p;
+	bn_t p, q;
 
 	bn_null(p);
+	bn_null(q);
 
 	RLC_TRY {
 		bn_new(p);
+		bn_new(q);
 
 		TEST_ONCE("prime generation is consistent") {
 			bn_gen_prime(p, RLC_BN_BITS);
@@ -1695,7 +1697,6 @@ static int prime(void) {
 			TEST_ASSERT(bn_is_prime(p) == 1, end);
 		} TEST_END;
 #endif
-
 		bn_gen_prime(p, RLC_BN_BITS);
 
 		TEST_ONCE("basic prime testing is correct") {
@@ -1709,6 +1710,13 @@ static int prime(void) {
 		TEST_ONCE("solovay-strassen prime testing is correct") {
 			TEST_ASSERT(bn_is_prime_solov(p) == 1, end);
 		} TEST_END;
+
+		bn_gen_factor_prime(p, q, RLC_BN_BITS>>1, RLC_BN_BITS);
+
+		TEST_ONCE("prime with large (p-1) prime factor testing is correct") {
+			TEST_ASSERT(bn_is_prime(p) == 1, end);
+			TEST_ASSERT(bn_is_prime(q) == 1, end);
+		} TEST_END;
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);
@@ -1716,6 +1724,7 @@ static int prime(void) {
 	code = RLC_OK;
   end:
 	bn_free(p);
+	bn_free(q);
 	return code;
 }
 
