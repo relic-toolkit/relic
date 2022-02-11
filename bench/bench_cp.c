@@ -1926,7 +1926,7 @@ int main(void) {
 	paillier();
 	benaloh();
 #endif
-/*
+
 #if defined(WITH_EC)
 	if (ec_param_set_any() == RLC_OK) {
 		util_banner("Protocols based on elliptic curves:\n", 0);
@@ -1941,8 +1941,6 @@ int main(void) {
 		etrs();
 	}
 #endif
-
-*/
 
 #if defined(WITH_PC)
 	if (pc_param_set_any() == RLC_OK) {
