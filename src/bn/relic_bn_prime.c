@@ -527,7 +527,6 @@ void bn_gen_prime_stron(bn_t a, int bits) {
 #endif
 
 int bn_gen_factor_prime(bn_t a, bn_t b, int abits, int bbits) {
-        /* Generate large prime b, with (b-1) divisible by large prime a */
     if (! (bbits>abits) ) {
 		return RLC_ERR;
     }
