@@ -361,6 +361,17 @@ typedef bn_st *bn_t;
 #define bn_gen_prime(A, B)	bn_gen_prime_stron(A, B)
 #endif
 
+/**
+ * Generates a probable prime number b,
+ *  with (b-1) divisible by a probable large prime a.
+ *
+ * @param[out] a			- the prime factor of (b-1).
+ * @param[out] b			- the prime result b.
+ * @param[in] abits			- the length of the factor a in bits.
+ * @param[in] bbits			- the length of the result in bits.
+ */
+int bn_gen_factor_prime(bn_t A, bn_t B, int abits, int bbits); 
+
 /*============================================================================*/
 /* Function prototypes                                                        */
 /*============================================================================*/
