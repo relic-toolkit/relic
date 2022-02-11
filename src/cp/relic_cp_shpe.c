@@ -36,7 +36,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-int cp_shpe_gen(bn_t pub, shpe_t prv, int sbits, int nbits) {
+int cp_shpe_gen(shpe_t pub, shpe_t prv, int sbits, int nbits) {
 	int result = RLC_OK;
 
     if (sbits > (nbits/2)) {
@@ -51,15 +51,14 @@ int cp_shpe_gen(bn_t pub, shpe_t prv, int sbits, int nbits) {
 		bn_gen_prime(prv->q, nbits / 2);
 	} while (bn_cmp(prv->p, prv->q) == RLC_EQ);
 
-
 	/* Compute n = pq. */
 	bn_mul(prv->n, prv->p, prv->q);
 
     /* compute the subgroup size */
 	bn_sub_dig(prv->p, prv->p, 1);
 	bn_sub_dig(prv->q, prv->q, 1);
-    bn_mul(pub, prv->p, prv->q);	// lambda = (p-1)(q-1)
-    bn_div(prv->b, pub, prv->a);	// lambda = a*b
+    bn_mul(pub->g, prv->p, prv->q);	// lambda = (p-1)(q-1)
+    bn_div(prv->b, pub->g, prv->a);	// lambda = a*b
 
 	/* Restore p and q. */
 	bn_add_dig(prv->p, prv->p, 1);
@@ -69,12 +68,12 @@ int cp_shpe_gen(bn_t pub, shpe_t prv, int sbits, int nbits) {
 
 	/* Compute dp and dq. */
     /* dp is 1/((q-1)*lambda) mod p */
-    bn_mod(prv->dp, pub, prv->p);
+    bn_mod(prv->dp, pub->g, prv->p);
     bn_mul(prv->dp, prv->dp, prv->q);
     bn_mod(prv->dp, prv->dp, prv->p);
 
     /* dq is 1/((p-1)*lambda) mod q */
-    bn_mod(prv->dq, pub, prv->q);
+    bn_mod(prv->dq, pub->g, prv->q);
     bn_mul(prv->dq, prv->dq, prv->p);
     bn_mod(prv->dq, prv->dq, prv->q);
 
@@ -84,27 +83,29 @@ int cp_shpe_gen(bn_t pub, shpe_t prv, int sbits, int nbits) {
 
     /* Precompute (1+n)^b)^n mod n^2 */
 	bn_sqr(prv->qi, prv->n);					// n^2
-    bn_add_dig(pub, prv->n, 1);					// 1+n
-    bn_mxp(prv->gn, pub, prv->b, prv->qi);		// (1+n)^b mod n^2
-    bn_mxp(prv->gn, prv->gn, prv->n, prv->qi);	// ((1+n)^b)^n mod n^2
+    bn_add_dig(pub->g, prv->n, 1);				// 1+n
+    bn_mxp(prv->g, pub->g, prv->b, prv->qi);	// (1+n)^b mod n^2
+    bn_mxp(prv->gn, prv->g, prv->n, prv->qi);	// ((1+n)^b)^n mod n^2
 
 	/* qInv = q^(-1) mod p. */
 	bn_mod_inv(prv->qi, prv->q, prv->p);
 
 	/* n=pq */
-	bn_copy(pub, prv->n);
+	bn_copy(pub->n, prv->n);
+	bn_copy(pub->g, prv->g);
+
 	return result;
 }
 
 /* Encryption is faster if private key is known */
-int cp_phpe_enc_prv(bn_t c, bn_t m, bn_t pub, bn_t prv) {
+int cp_shpe_enc_prv(bn_t c, bn_t m, shpe_t prv) {
 	bn_t r, s;
 	int result = RLC_OK;
 
 	bn_null(r);
 	bn_null(s);
 
-	if (pub == NULL || bn_bits(m) > bn_bits(pub)) {
+	if (prv == NULL || prv->n == NULL || bn_bits(m) > bn_bits(prv->n)) {
 		return RLC_ERR;
 	}
 
@@ -117,8 +118,8 @@ int cp_phpe_enc_prv(bn_t c, bn_t m, bn_t pub, bn_t prv) {
 		/* For G=(1+n)^b, compute c = (G^m)(G^n)^r mod n^2
          *  which is also c = (1+n*b*m)(G^n)^r mod n^2.
          */
-		bn_sqr(s, pub);
-        bn_mxp(r, prv->gn, r, s);	// n^2
+		bn_sqr(s, prv->n);			// n^2
+        bn_mxp(r, prv->gn, r, s);	// (G^n)^r
         bn_mul(c, prv->n, m);		// n*m
         bn_mod(c, c, s);
         bn_mul(c, c, prv->b);		// b*n*m
@@ -132,7 +133,6 @@ int cp_phpe_enc_prv(bn_t c, bn_t m, bn_t pub, bn_t prv) {
 		result = RLC_ERR;
 	}
 	RLC_FINALLY {
-		bn_free(g);
 		bn_free(r);
 		bn_free(s);
 	}
@@ -140,7 +140,43 @@ int cp_phpe_enc_prv(bn_t c, bn_t m, bn_t pub, bn_t prv) {
 	return result;
 }
 
-int cp_phpe_dec_alpha(bn_t m, bn_t c, phpe_t prv, bn_t alpha, bn_t nsq) {
+int cp_shpe_enc(bn_t c, bn_t m, shpe_t pub) {
+	bn_t r, s;
+	int result = RLC_OK;
+
+	bn_null(r);
+	bn_null(s);
+
+	if (pub == NULL || pub->n == NULL || bn_bits(m) > bn_bits(pub->n)) {
+		return RLC_ERR;
+	}
+
+	RLC_TRY {
+		bn_new(r);
+		bn_new(s);
+
+		/* Generate r in Z_alpha^*. */
+        bn_rand_mod(r, pub->n);
+		/* For G=(1+n)^b, compute c = G^(m+nr) mod n^2
+         */
+		bn_sqr(s, pub->n);
+        bn_mul(r, r, pub->n);		// n*r
+        bn_add(r, r, m);			// m+n*r
+        bn_mxp(c, pub->g, r, s);	// G^(m+n*r) mod n^2
+
+	}
+	RLC_CATCH_ANY {
+		result = RLC_ERR;
+	}
+	RLC_FINALLY {
+		bn_free(r);
+		bn_free(s);
+	}
+
+	return result;
+}
+
+int cp_shpe_dec(bn_t m, bn_t c, shpe_t prv) {
 	bn_t s, u;
 	int result = RLC_OK;
 
@@ -167,7 +203,7 @@ int cp_phpe_dec_alpha(bn_t m, bn_t c, phpe_t prv, bn_t alpha, bn_t nsq) {
 #endif
 					/* Compute m_p = L(c^alpha mod p^2) * dp mod p. */
 					bn_sqr(s, prv->p);
-					bn_mxp(s, c, alpha, s);
+					bn_mxp(s, c, prv->a, s);
 					bn_sub_dig(s, s, 1);
 					bn_div(s, s, prv->p);
 					bn_mul(s, s, prv->dp);
@@ -179,7 +215,7 @@ int cp_phpe_dec_alpha(bn_t m, bn_t c, phpe_t prv, bn_t alpha, bn_t nsq) {
 #endif
 					/* Compute m_q = (c^alpha mod q^2) * dq mod q. */
 					bn_sqr(u, prv->q);
-					bn_mxp(u, c, alpha, u);
+					bn_mxp(u, c, prv->a, u);
 					bn_sub_dig(u, u, 1);
 					bn_div(u, u, prv->q);
 					bn_mul(u, u, prv->dq);
