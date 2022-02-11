@@ -1716,6 +1716,11 @@ static int prime(void) {
 		TEST_ONCE("prime with large (p-1) prime factor testing is correct") {
 			TEST_ASSERT(bn_is_prime(p) == 1, end);
 			TEST_ASSERT(bn_is_prime(q) == 1, end);
+			bn_sub_dig(p, p, 1); 	// (p-1)
+			bn_div(p, p, q);	// (p-1)/q
+			bn_mul(p, p, q);	// ((p-1)/q)*q
+			bn_add_dig(p, p, 1);	// ((p-1)/q)*q+1
+			TEST_ASSERT(bn_is_prime(p) == 1, end);
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {

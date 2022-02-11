@@ -1024,7 +1024,7 @@ int cp_shpe_gen(shpe_t pub, shpe_t prv, int sbits, int nbits);
 int cp_shpe_enc(bn_t c, bn_t m, shpe_t pub);
 
 /**
- * Encrypts faster using the Subgroup Paillier cryptosystem if the private key is known
+ * Encrypts faster using the Subgroup Paillier cryptosystem if the private key is known.
  *
  * @param[out] c			- the ciphertex, represented as an integer.
  * @param[in] m				- the plaintext as an integer.
