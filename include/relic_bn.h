@@ -370,7 +370,7 @@ typedef bn_st *bn_t;
  * @param[in] abits			- the length of the factor a in bits.
  * @param[in] bbits			- the length of the result in bits.
  */
-int bn_gen_factor_prime(bn_t A, bn_t B, int abits, int bbits); 
+int bn_gen_factor_prime(bn_t a, bn_t b, int abits, int bbits); 
 
 /*============================================================================*/
 /* Function prototypes                                                        */
