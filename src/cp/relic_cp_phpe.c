@@ -93,7 +93,9 @@ int cp_phpe_enc(bn_t c, bn_t m, bn_t pub) {
 
 		/* Generate r in Z_n^*. */
 		bn_rand_mod(r, pub);
-		/* Compute c = ((1+n)^m)(r^n) mod n^2 = (1+nm)r^n */
+		/* Compute c = (g^m)(r^n) mod n^2.
+			with g=1+n, this is also (1+nm)r^n mod n^2.
+		*/
 		bn_add_dig(g, pub, 1);
 		bn_sqr(s, pub);
 		bn_mul(c, pub, m);
