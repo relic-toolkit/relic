@@ -385,6 +385,7 @@ typedef etrs_st *etrs_t;
 	bn_new((A)->qi);														\
 	bn_new((A)->a);															\
 	bn_new((A)->b);															\
+	bn_new((A)->g);														\
 	bn_new((A)->gn);														\
 
 #elif ALLOC == AUTO
@@ -397,6 +398,7 @@ typedef etrs_st *etrs_t;
 	bn_new((A)->qi);														\
 	bn_new((A)->a);															\
 	bn_new((A)->b);															\
+	bn_new((A)->g);														\
 	bn_new((A)->gn);														\
 
 #endif
@@ -417,6 +419,7 @@ typedef etrs_st *etrs_t;
 		bn_free((A)->qi);													\
 		bn_free((A)->a);													\
 		bn_free((A)->b);													\
+		bn_free((A)->g);													\
 		bn_free((A)->gn);													\
 		free(A);															\
 		A = NULL;															\
