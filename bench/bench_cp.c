@@ -174,16 +174,22 @@ static void benaloh(void) {
 static void paillier(void) {
 	bn_t c, m, pub;
 	phpe_t prv;
+    shpe_t spub, sprv;
 
 	bn_null(c);
 	bn_null(m);
 	bn_null(pub);
 	phpe_null(prv);
+    shpe_null(spub);
+    shpe_null(sprv);
+
 
 	bn_new(c);
 	bn_new(m);
 	bn_new(pub);
 	phpe_new(prv);
+    shpe_new(spub);
+    shpe_new(sprv);
 
 	BENCH_ONE("cp_phpe_gen", cp_phpe_gen(pub, prv, RLC_BN_BITS / 2), 1);
 
@@ -196,6 +202,30 @@ static void paillier(void) {
 		bn_rand_mod(m, pub);
 		cp_phpe_enc(c, m, pub);
 		BENCH_ADD(cp_phpe_dec(m, c, prv));
+	} BENCH_END;
+
+	BENCH_ONE("cp_shpe_gen", cp_shpe_gen(spub, sprv, RLC_BN_BITS / 10, RLC_BN_BITS / 2), 1);
+
+	BENCH_RUN("cp_shpe_enc") {
+		bn_rand_mod(m, spub->n);
+		BENCH_ADD(cp_shpe_enc(c, m, spub));
+	} BENCH_END;
+
+	BENCH_RUN("cp_shpe_enc_prv") {
+		bn_rand_mod(m, spub->n);
+		BENCH_ADD(cp_shpe_enc_prv(c, m, sprv));
+	} BENCH_END;
+
+	BENCH_RUN("cp_shpe_dec (1)") {
+		bn_rand_mod(m, spub->n);
+		cp_shpe_enc(c, m, spub);
+		BENCH_ADD(cp_shpe_dec(m, c, sprv));
+	} BENCH_END;
+
+	BENCH_RUN("cp_shpe_dec (2)") {
+		bn_rand_mod(m, spub->n);
+		cp_shpe_enc_prv(c, m, sprv);
+		BENCH_ADD(cp_shpe_dec(m, c, sprv));
 	} BENCH_END;
 
 	BENCH_ONE("cp_ghpe_gen", cp_ghpe_gen(pub, prv->n, RLC_BN_BITS / 2), 1);
@@ -228,6 +258,8 @@ static void paillier(void) {
 	bn_free(m);
 	bn_free(pub);
 	phpe_free(prv);
+    shpe_free(spub);
+    shpe_free(sprv);
 }
 
 #endif
@@ -1403,7 +1435,7 @@ static void mpss(void) {
 		BENCH_ADD(cp_mpsb_ver(r[1], g, s, ms, h, x[0], _y, _v, tri[2], t, 10));
 	} BENCH_DIV(2);
 
-  	bn_free(n);
+	bn_free(n);
 	g1_free(g);
 	g2_free(h);
 	for (int i = 0; i < 2; i++) {
@@ -1891,8 +1923,8 @@ int main(void) {
 	util_banner("Protocols based on integer factorization:\n", 0);
 	rsa();
 	rabin();
-	benaloh();
 	paillier();
+	benaloh();
 #endif
 
 #if defined(WITH_EC)
