@@ -35,7 +35,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void g1_mul(g1_t c, g1_t a, bn_t b) {
+void g1_mul(g1_t c, g1_t a, const bn_t b) {
 	bn_t n, _b;
 
 	bn_null(n);
@@ -65,7 +65,7 @@ void g1_mul(g1_t c, g1_t a, bn_t b) {
 	}
 }
 
-void g1_mul_gen(g1_t c, bn_t b) {
+void g1_mul_gen(g1_t c, const bn_t b) {
 	bn_t n, _b;
 
 	bn_null(n);
@@ -87,7 +87,7 @@ void g1_mul_gen(g1_t c, bn_t b) {
 	}
 }
 
-void g2_mul(g2_t c, g2_t a, bn_t b) {
+void g2_mul(g2_t c, g2_t a, const bn_t b) {
 	bn_t n, _b;
 
 	bn_null(n);
@@ -117,7 +117,7 @@ void g2_mul(g2_t c, g2_t a, bn_t b) {
 	}
 }
 
-void g2_mul_gen(g2_t c, bn_t b) {
+void g2_mul_gen(g2_t c, const bn_t b) {
 	bn_t n, _b;
 
 	bn_null(n);
@@ -139,7 +139,7 @@ void g2_mul_gen(g2_t c, bn_t b) {
 	}
 }
 
-void gt_exp(gt_t c, gt_t a, bn_t b) {
+void gt_exp(gt_t c, gt_t a, const bn_t b) {
 	bn_t n, _b;
 
 	bn_null(n);
