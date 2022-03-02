@@ -935,7 +935,7 @@ void gt_rand(gt_t a);
  * @param[in] p				- the element to multiply.
  * @param[in] k				- the integer.
  */
-void g1_mul(g1_t r, g1_t p, const bn_t k);
+void g1_mul(g1_t r, const g1_t p, const bn_t k);
 
 /**
  * Multiplies an element from G_2 by an integer. Computes R = [k]P.
@@ -944,7 +944,7 @@ void g1_mul(g1_t r, g1_t p, const bn_t k);
  * @param[in] p				- the element to multiply.
  * @param[in] k				- the integer.
  */
-void g2_mul(g2_t r, g2_t p, const bn_t k);
+void g2_mul(g2_t r, const g2_t p, const bn_t k);
 
 /**
  * Multiplies the generator of G_1 by an integer.
