@@ -667,7 +667,7 @@ void ep2_set_infty(ep2_t p);
  * @param[out] q			- the result.
  * @param[in] p				- the elliptic curve point to copy.
  */
-void ep2_copy(ep2_t r, ep2_t p);
+void ep2_copy(ep2_t r, const ep2_t p);
 
 /**
  * Compares two elliptic curve points.
@@ -676,7 +676,7 @@ void ep2_copy(ep2_t r, ep2_t p);
  * @param[in] q				- the second elliptic curve point.
  * @return RLC_EQ if p == q and RLC_NE if p != q.
  */
-int ep2_cmp(ep2_t p, ep2_t q);
+int ep2_cmp(const ep2_t p, const ep2_t q);
 
 /**
  * Assigns a random value to an elliptic curve point.

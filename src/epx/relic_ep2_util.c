@@ -47,7 +47,7 @@ void ep2_set_infty(ep2_t p) {
 	p->coord = BASIC;
 }
 
-void ep2_copy(ep2_t r, ep2_t p) {
+void ep2_copy(ep2_t r, const ep2_t p) {
 	fp2_copy(r->x, p->x);
 	fp2_copy(r->y, p->y);
 	fp2_copy(r->z, p->z);
