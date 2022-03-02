@@ -47,7 +47,7 @@
  * @param p					- the first point to add.
  * @param q					- the second point to add.
  */
-static void ep4_add_basic_imp(ep4_t r, fp4_t s, ep4_t p, ep4_t q) {
+static void ep4_add_basic_imp(ep4_t r, fp4_t s, const ep4_t p, const ep4_t q) {
 	fp4_t t0, t1, t2;
 
 	fp4_null(t0);
@@ -124,7 +124,7 @@ static void ep4_add_basic_imp(ep4_t r, fp4_t s, ep4_t p, ep4_t q) {
  * @param p					- the affine point.
  * @param q					- the projective point.
  */
-static void ep4_add_projc_mix(ep4_t r, ep4_t p, ep4_t q) {
+static void ep4_add_projc_mix(ep4_t r, const ep4_t p, const ep4_t q) {
 	fp4_t t0, t1, t2, t3, t4, t5, t6;
 
 	fp4_null(t0);
@@ -233,7 +233,7 @@ static void ep4_add_projc_mix(ep4_t r, ep4_t p, ep4_t q) {
  * @param p					- the first point to add.
  * @param q					- the second point to add.
  */
-static void ep4_add_projc_imp(ep4_t r, ep4_t p, ep4_t q) {
+static void ep4_add_projc_imp(ep4_t r, const ep4_t p, const ep4_t q) {
 #if defined(EP_MIXED) && defined(STRIP)
 	ep4_add_projc_mix(r, p, q);
 #else /* General addition. */
@@ -355,7 +355,7 @@ static void ep4_add_projc_imp(ep4_t r, ep4_t p, ep4_t q) {
 
 #if EP_ADD == BASIC || !defined(STRIP)
 
-void ep4_add_basic(ep4_t r, ep4_t p, ep4_t q) {
+void ep4_add_basic(ep4_t r, const ep4_t p, const ep4_t q) {
 	if (ep4_is_infty(p)) {
 		ep4_copy(r, q);
 		return;
@@ -369,7 +369,7 @@ void ep4_add_basic(ep4_t r, ep4_t p, ep4_t q) {
 	ep4_add_basic_imp(r, NULL, p, q);
 }
 
-void ep4_add_slp_basic(ep4_t r, fp4_t s, ep4_t p, ep4_t q) {
+void ep4_add_slp_basic(ep4_t r, fp4_t s, const ep4_t p, const ep4_t q) {
 	if (ep4_is_infty(p)) {
 		ep4_copy(r, q);
 		return;
@@ -387,7 +387,7 @@ void ep4_add_slp_basic(ep4_t r, fp4_t s, ep4_t p, ep4_t q) {
 
 #if EP_ADD == PROJC || !defined(STRIP)
 
-void ep4_add_projc(ep4_t r, ep4_t p, ep4_t q) {
+void ep4_add_projc(ep4_t r, const ep4_t p, const ep4_t q) {
 	if (ep4_is_infty(p)) {
 		ep4_copy(r, q);
 		return;

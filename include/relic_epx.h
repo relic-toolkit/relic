@@ -776,7 +776,7 @@ void ep2_neg(ep2_t r, ep2_t p);
  * @param[in] p				- the first point to add.
  * @param[in] q				- the second point to add.
  */
-void ep2_add_basic(ep2_t r, ep2_t p, ep2_t q);
+void ep2_add_basic(ep2_t r, const ep2_t p, const ep2_t q);
 
 /**
  * Adds to points represented in affine coordinates in an elliptic curve over a
@@ -787,7 +787,7 @@ void ep2_add_basic(ep2_t r, ep2_t p, ep2_t q);
  * @param[in] p				- the first point to add.
  * @param[in] q				- the second point to add.
  */
-void ep2_add_slp_basic(ep2_t r, fp2_t s, ep2_t p, ep2_t q);
+void ep2_add_slp_basic(ep2_t r, fp2_t s, const ep2_t p, const ep2_t q);
 
 /**
  * Adds two points represented in projective coordinates in an elliptic curve
@@ -797,7 +797,7 @@ void ep2_add_slp_basic(ep2_t r, fp2_t s, ep2_t p, ep2_t q);
  * @param[in] p				- the first point to add.
  * @param[in] q				- the second point to add.
  */
-void ep2_add_projc(ep2_t r, ep2_t p, ep2_t q);
+void ep2_add_projc(ep2_t r, const ep2_t p, const ep2_t q);
 
  /**
   * Subtracts a point i an elliptic curve over a quadratic extension from
@@ -1416,7 +1416,7 @@ void ep4_neg(ep4_t r, ep4_t p);
  * @param[in] p				- the first point to add.
  * @param[in] q				- the second point to add.
  */
-void ep4_add_basic(ep4_t r, ep4_t p, ep4_t q);
+void ep4_add_basic(ep4_t r, const ep4_t p, const ep4_t q);
 
 /**
  * Adds to points represented in affine coordinates in an elliptic curve over a
@@ -1427,7 +1427,7 @@ void ep4_add_basic(ep4_t r, ep4_t p, ep4_t q);
  * @param[in] p				- the first point to add.
  * @param[in] q				- the second point to add.
  */
-void ep4_add_slp_basic(ep4_t r, fp4_t s, ep4_t p, ep4_t q);
+void ep4_add_slp_basic(ep4_t r, fp4_t s, const ep4_t p, const ep4_t q);
 
 /**
  * Adds two points represented in projective coordinates in an elliptic curve
@@ -1437,7 +1437,7 @@ void ep4_add_slp_basic(ep4_t r, fp4_t s, ep4_t p, ep4_t q);
  * @param[in] p				- the first point to add.
  * @param[in] q				- the second point to add.
  */
-void ep4_add_projc(ep4_t r, ep4_t p, ep4_t q);
+void ep4_add_projc(ep4_t r, const ep4_t p, const ep4_t q);
 
  /**
   * Subtracts a point i an elliptic curve over a quartic extension from
