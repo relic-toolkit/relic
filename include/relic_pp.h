@@ -876,7 +876,7 @@ void pp_norm_k24(ep4_t c, ep4_t a);
  * @param[in] q				- the first elliptic curve point.
  * @param[in] p				- the second elliptic curve point.
  */
-void pp_map_tatep_k2(fp2_t r, ep_t p, ep_t q);
+void pp_map_tatep_k2(fp2_t r, const ep_t p, const ep_t q);
 
 /**
  * Computes the Tate multi-pairing of in a parameterized elliptic curve with
@@ -887,7 +887,7 @@ void pp_map_tatep_k2(fp2_t r, ep_t p, ep_t q);
  * @param[in] p				- the second pairing arguments.
  * @param[in] m 			- the number of pairings to evaluate.
  */
-void pp_map_sim_tatep_k2(fp2_t r, ep_t *p, ep_t *q, int m);
+void pp_map_sim_tatep_k2(fp2_t r, const ep_t *p, const ep_t *q, int m);
 
 /**
  * Computes the Weil pairing of two points in a parameterized elliptic curve
@@ -897,7 +897,7 @@ void pp_map_sim_tatep_k2(fp2_t r, ep_t *p, ep_t *q, int m);
  * @param[in] q				- the first elliptic curve point.
  * @param[in] p				- the second elliptic curve point.
  */
-void pp_map_weilp_k2(fp2_t r, ep_t p, ep_t q);
+void pp_map_weilp_k2(fp2_t r, const ep_t p, const ep_t q);
 
 /**
  * Computes the optimal ate pairing of two points in a parameterized elliptic
@@ -907,7 +907,7 @@ void pp_map_weilp_k2(fp2_t r, ep_t p, ep_t q);
  * @param[in] q				- the first elliptic curve point.
  * @param[in] p				- the second elliptic curve point.
  */
-void pp_map_oatep_k8(fp8_t r, ep_t p, ep2_t q);
+void pp_map_oatep_k8(fp8_t r, const ep_t p, const ep2_t q);
 
 /**
  * Computes the Weil multi-pairing of in a parameterized elliptic curve with
@@ -918,7 +918,7 @@ void pp_map_oatep_k8(fp8_t r, ep_t p, ep2_t q);
  * @param[in] p				- the second pairing arguments.
  * @param[in] m 			- the number of pairings to evaluate.
  */
-void pp_map_sim_weilp_k2(fp2_t r, ep_t *p, ep_t *q, int m);
+void pp_map_sim_weilp_k2(fp2_t r, const ep_t *p, const ep_t *q, int m);
 
 /**
  * Computes the Tate pairing of two points in a parameterized elliptic curve
@@ -928,7 +928,7 @@ void pp_map_sim_weilp_k2(fp2_t r, ep_t *p, ep_t *q, int m);
  * @param[in] q				- the first elliptic curve point.
  * @param[in] p				- the second elliptic curve point.
  */
-void pp_map_tatep_k12(fp12_t r, ep_t p, ep2_t q);
+void pp_map_tatep_k12(fp12_t r, const ep_t p, const ep2_t q);
 
 /**
  * Computes the Tate multi-pairing of in a parameterized elliptic curve with
@@ -939,7 +939,7 @@ void pp_map_tatep_k12(fp12_t r, ep_t p, ep2_t q);
  * @param[in] p				- the second pairing arguments.
  * @param[in] m 			- the number of pairings to evaluate.
  */
-void pp_map_sim_tatep_k12(fp12_t r, ep_t *p, ep2_t *q, int m);
+void pp_map_sim_tatep_k12(fp12_t r, const ep_t *p, const ep2_t *q, int m);
 
 /**
  * Computes the Weil pairing of two points in a parameterized elliptic curve
@@ -949,7 +949,7 @@ void pp_map_sim_tatep_k12(fp12_t r, ep_t *p, ep2_t *q, int m);
  * @param[in] q				- the first elliptic curve point.
  * @param[in] p				- the second elliptic curve point.
  */
-void pp_map_weilp_k12(fp12_t r, ep_t p, ep2_t q);
+void pp_map_weilp_k12(fp12_t r, const ep_t p, const ep2_t q);
 
 /**
  * Computes the Weil multi-pairing of in a parameterized elliptic curve with
@@ -960,7 +960,7 @@ void pp_map_weilp_k12(fp12_t r, ep_t p, ep2_t q);
  * @param[in] p				- the second pairing arguments.
  * @param[in] m 			- the number of pairings to evaluate.
  */
-void pp_map_sim_weilp_k12(fp12_t r, ep_t *p, ep2_t *q, int m);
+void pp_map_sim_weilp_k12(fp12_t r, const ep_t *p, const ep2_t *q, int m);
 
 /**
  * Computes the optimal ate pairing of two points in a parameterized elliptic
@@ -970,7 +970,7 @@ void pp_map_sim_weilp_k12(fp12_t r, ep_t *p, ep2_t *q, int m);
  * @param[in] q				- the first elliptic curve point.
  * @param[in] p				- the second elliptic curve point.
  */
-void pp_map_oatep_k12(fp12_t r, ep_t p, ep2_t q);
+void pp_map_oatep_k12(fp12_t r, const ep_t p, const ep2_t q);
 
 /**
  * Computes the optimal ate multi-pairing of in a parameterized elliptic
@@ -981,7 +981,7 @@ void pp_map_oatep_k12(fp12_t r, ep_t p, ep2_t q);
  * @param[in] p				- the second pairing arguments.
  * @param[in] m 			- the number of pairings to evaluate.
  */
-void pp_map_sim_oatep_k12(fp12_t r, ep_t *p, ep2_t *q, int m);
+void pp_map_sim_oatep_k12(fp12_t r, const ep_t *p, const ep2_t *q, int m);
 
 /**
  * Computes the Optimal Ate pairing of two points in a parameterized elliptic
@@ -991,7 +991,7 @@ void pp_map_sim_oatep_k12(fp12_t r, ep_t *p, ep2_t *q, int m);
  * @param[in] q				- the first elliptic curve point.
  * @param[in] p				- the second elliptic curve point.
  */
-void pp_map_k24(fp24_t r, ep_t p, ep4_t q);
+void pp_map_k24(fp24_t r, const ep_t p, const ep4_t q);
 
 /**
  * Computes the optimal ate multi-pairing of in a parameterized elliptic
@@ -1002,7 +1002,7 @@ void pp_map_k24(fp24_t r, ep_t p, ep4_t q);
  * @param[in] p				- the second pairing arguments.
  * @param[in] m 			- the number of pairings to evaluate.
  */
-void pp_map_sim_k24(fp24_t r, ep_t *p, ep4_t *q, int m);
+void pp_map_sim_k24(fp24_t r, const ep_t *p, const ep4_t *q, int m);
 
 /**
  * Computes the Optimal Ate pairing of two points in a parameterized elliptic
@@ -1012,7 +1012,7 @@ void pp_map_sim_k24(fp24_t r, ep_t *p, ep4_t *q, int m);
  * @param[in] q				- the first elliptic curve point.
  * @param[in] p				- the second elliptic curve point.
  */
-void pp_map_k48(fp48_t r, ep_t p, fp8_t qx, fp8_t qy);
+void pp_map_k48(fp48_t r, const ep_t p, const fp8_t qx, const fp8_t qy);
 
 /**
  * Computes the Optimal Ate pairing of two points in a parameterized elliptic
@@ -1022,6 +1022,6 @@ void pp_map_k48(fp48_t r, ep_t p, fp8_t qx, fp8_t qy);
  * @param[in] q				- the first elliptic curve point.
  * @param[in] p				- the second elliptic curve point.
  */
-void pp_map_k54(fp54_t r, ep_t p, fp9_t qx, fp9_t qy);
+void pp_map_k54(fp54_t r, const ep_t p, const fp9_t qx, const fp9_t qy);
 
 #endif /* !RLC_PP_H */

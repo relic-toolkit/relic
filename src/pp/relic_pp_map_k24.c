@@ -138,7 +138,7 @@ static void pp_mil_k24(fp24_t r, ep4_t *t, ep4_t *q, ep_t *p, int m, bn_t a) {
 
 #if PP_MAP == OATEP || !defined(STRIP)
 
-void pp_map_k24(fp24_t r, ep_t p, ep4_t q) {
+void pp_map_k24(fp24_t r, const ep_t p, const ep4_t q) {
 	ep_t _p[1];
 	ep4_t t[1], _q[1];
 	bn_t a;
@@ -185,7 +185,7 @@ void pp_map_k24(fp24_t r, ep_t p, ep4_t q) {
 	}
 }
 
-void pp_map_sim_k24(fp24_t r, ep_t *p, ep4_t *q, int m) {
+void pp_map_sim_k24(fp24_t r, const ep_t *p, const ep4_t *q, int m) {
 	ep_t *_p = RLC_ALLOCA(ep_t, m);
 	ep4_t *t = RLC_ALLOCA(ep4_t, m), *_q = RLC_ALLOCA(ep4_t, m);
 	bn_t a;

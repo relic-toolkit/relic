@@ -159,7 +159,7 @@ static void pp_mil_k54(fp54_t r, fp9_t qx, fp9_t qy, ep_t p, bn_t a) {
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void pp_map_k54(fp54_t r, ep_t p, fp9_t qx, fp9_t qy) {
+void pp_map_k54(fp54_t r, const ep_t p, const fp9_t qx, const fp9_t qy) {
 	bn_t a;
 
 	bn_null(a);

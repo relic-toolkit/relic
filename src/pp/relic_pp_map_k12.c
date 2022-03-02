@@ -236,7 +236,7 @@ static void pp_fin_k12_oatep(fp12_t r, ep2_t t, ep2_t q, ep_t p) {
 
 #if PP_MAP == TATEP || !defined(STRIP)
 
-void pp_map_tatep_k12(fp12_t r, ep_t p, ep2_t q) {
+void pp_map_tatep_k12(fp12_t r, const ep_t p, const ep2_t q) {
 	ep_t _p[1], t[1];
 	ep2_t _q[1];
 	bn_t n;
@@ -273,7 +273,7 @@ void pp_map_tatep_k12(fp12_t r, ep_t p, ep2_t q) {
 	}
 }
 
-void pp_map_sim_tatep_k12(fp12_t r, ep_t *p, ep2_t *q, int m) {
+void pp_map_sim_tatep_k12(fp12_t r, const ep_t *p, const ep2_t *q, int m) {
 	ep_t *_p = RLC_ALLOCA(ep_t, m), *t = RLC_ALLOCA(ep_t, m);
 	ep2_t *_q = RLC_ALLOCA(ep2_t, m);
 	bn_t n;
@@ -330,7 +330,7 @@ void pp_map_sim_tatep_k12(fp12_t r, ep_t *p, ep2_t *q, int m) {
 
 #if PP_MAP == WEILP || !defined(STRIP)
 
-void pp_map_weilp_k12(fp12_t r, ep_t p, ep2_t q) {
+void pp_map_weilp_k12(fp12_t r, const ep_t p, const ep2_t q) {
 	ep_t _p[1], t0[1];
 	ep2_t _q[1], t1[1];
 	fp12_t r0, r1;
@@ -384,7 +384,7 @@ void pp_map_weilp_k12(fp12_t r, ep_t p, ep2_t q) {
 	}
 }
 
-void pp_map_sim_weilp_k12(fp12_t r, ep_t *p, ep2_t *q, int m) {
+void pp_map_sim_weilp_k12(fp12_t r, const ep_t *p, const ep2_t *q, int m) {
 	ep_t *_p = RLC_ALLOCA(ep_t, m), *t0 = RLC_ALLOCA(ep_t, m);
 	ep2_t *_q = RLC_ALLOCA(ep2_t, m), *t1 = RLC_ALLOCA(ep2_t, m);
 	fp12_t r0, r1;
@@ -460,7 +460,7 @@ void pp_map_sim_weilp_k12(fp12_t r, ep_t *p, ep2_t *q, int m) {
 
 #if PP_MAP == OATEP || !defined(STRIP)
 
-void pp_map_oatep_k12(fp12_t r, ep_t p, ep2_t q) {
+void pp_map_oatep_k12(fp12_t r, const ep_t p, const ep2_t q) {
 	ep_t _p[1];
 	ep2_t t[1], _q[1];
 	bn_t a;
@@ -520,7 +520,7 @@ void pp_map_oatep_k12(fp12_t r, ep_t p, ep2_t q) {
 	}
 }
 
-void pp_map_sim_oatep_k12(fp12_t r, ep_t *p, ep2_t *q, int m) {
+void pp_map_sim_oatep_k12(fp12_t r, const ep_t *p, const ep2_t *q, int m) {
 	ep_t *_p = RLC_ALLOCA(ep_t, m);
 	ep2_t *t = RLC_ALLOCA(ep2_t, m), *_q = RLC_ALLOCA(ep2_t, m);
 	bn_t a;

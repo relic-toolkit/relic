@@ -102,7 +102,7 @@ static void pp_mil_k48(fp48_t r, fp8_t qx, fp8_t qy, ep_t p, bn_t a) {
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void pp_map_k48(fp48_t r, ep_t p, fp8_t qx, fp8_t qy) {
+void pp_map_k48(fp48_t r, const ep_t p, const fp8_t qx, const fp8_t qy) {
 	bn_t a;
 
 	bn_null(a);
