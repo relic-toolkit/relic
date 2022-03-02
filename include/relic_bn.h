@@ -545,7 +545,7 @@ void bn_rand(bn_t a, int sign, int bits);
  * @param[out] a			- the multiple precision integer to assign.
  * @param[in] b				- the modulus.
  */
-void bn_rand_mod(bn_t a, bn_t b);
+void bn_rand_mod(bn_t a, const bn_t b);
 
 /**
  * Prints a multiple precision integer to standard output.

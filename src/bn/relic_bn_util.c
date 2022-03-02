@@ -220,7 +220,7 @@ void bn_rand(bn_t a, int sign, int bits) {
 	bn_trim(a);
 }
 
-void bn_rand_mod(bn_t a, bn_t b) {
+void bn_rand_mod(bn_t a, const bn_t b) {
 	bn_t t;
 
 	bn_null(t);
