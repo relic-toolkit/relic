@@ -40,7 +40,7 @@
 
 #if defined(EP_ENDOM)
 
-static void ep4_mul_glv_imp(ep4_t r, ep4_t p, const bn_t k) {
+static void ep4_mul_glv_imp(ep4_t r, const ep4_t p, const bn_t k) {
 	int sign, i, j, l, _l[8];
 	bn_t n, _k[8], u, v;
 	int8_t naf[8][RLC_FP_BITS + 1];
@@ -130,7 +130,7 @@ static void ep4_mul_glv_imp(ep4_t r, ep4_t p, const bn_t k) {
 
 #endif /* EP_ENDOM */
 
-static void ep4_mul_naf_imp(ep4_t r, ep4_t p, const bn_t k) {
+static void ep4_mul_naf_imp(ep4_t r, const ep4_t p, const bn_t k) {
 	int l, i, n;
 	int8_t naf[RLC_FP_BITS + 1];
 	ep4_t t[1 << (EP_WIDTH - 2)];
@@ -183,7 +183,7 @@ static void ep4_mul_naf_imp(ep4_t r, ep4_t p, const bn_t k) {
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void ep4_mul_basic(ep4_t r, ep4_t p, const bn_t k) {
+void ep4_mul_basic(ep4_t r, const ep4_t p, const bn_t k) {
 	int i, l;
 	ep4_t t;
 
@@ -227,7 +227,7 @@ void ep4_mul_basic(ep4_t r, ep4_t p, const bn_t k) {
 
 #if EP_MUL == SLIDE || !defined(STRIP)
 
-void ep4_mul_slide(ep4_t r, ep4_t p, const bn_t k) {
+void ep4_mul_slide(ep4_t r, const ep4_t p, const bn_t k) {
 	ep4_t t[1 << (EP_WIDTH - 1)], q;
 	int i, j, l;
 	uint8_t win[RLC_FP_BITS + 1];
@@ -297,7 +297,7 @@ void ep4_mul_slide(ep4_t r, ep4_t p, const bn_t k) {
 
 #if EP_MUL == MONTY || !defined(STRIP)
 
-void ep4_mul_monty(ep4_t r, ep4_t p, const bn_t k) {
+void ep4_mul_monty(ep4_t r, const ep4_t p, const bn_t k) {
 	ep4_t t[2];
 
 	ep4_null(t[0]);
@@ -362,7 +362,7 @@ void ep4_mul_monty(ep4_t r, ep4_t p, const bn_t k) {
 
 #if EP_MUL == LWNAF || !defined(STRIP)
 
-void ep4_mul_lwnaf(ep4_t r, ep4_t p, const bn_t k) {
+void ep4_mul_lwnaf(ep4_t r, const ep4_t p, const bn_t k) {
 	if (bn_is_zero(k) || ep4_is_infty(p)) {
 		ep4_set_infty(r);
 		return;
@@ -386,7 +386,7 @@ void ep4_mul_lwnaf(ep4_t r, ep4_t p, const bn_t k) {
 
 #endif
 
-void ep4_mul_gen(ep4_t r, bn_t k) {
+void ep4_mul_gen(ep4_t r, const bn_t k) {
 	if (bn_is_zero(k)) {
 		ep4_set_infty(r);
 		return;
@@ -413,7 +413,7 @@ void ep4_mul_gen(ep4_t r, bn_t k) {
 #endif
 }
 
-void ep4_mul_dig(ep4_t r, ep4_t p, dig_t k) {
+void ep4_mul_dig(ep4_t r, const ep4_t p, const dig_t k) {
 	int i, l;
 	ep4_t t;
 

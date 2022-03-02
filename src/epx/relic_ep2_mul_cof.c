@@ -44,7 +44,7 @@
  * @param[out] r			- the result.
  * @param[in] p				- the point to multiply.
  */
-static void ep2_mul_cof_bn(ep2_t r, ep2_t p) {
+static void ep2_mul_cof_bn(ep2_t r, const ep2_t p) {
 	bn_t x;
 	ep2_t t0, t1, t2;
 
@@ -97,7 +97,7 @@ static void ep2_mul_cof_bn(ep2_t r, ep2_t p) {
  * @param[out] r			- the result.
  * @param[in] p				- the point to multiply.
  */
-static void ep2_mul_cof_b12(ep2_t r, ep2_t p) {
+static void ep2_mul_cof_b12(ep2_t r, const ep2_t p) {
 	bn_t x;
 	ep2_t t0, t1, t2, t3;
 
@@ -150,7 +150,7 @@ static void ep2_mul_cof_b12(ep2_t r, ep2_t p) {
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void ep2_mul_cof(ep2_t r, ep2_t p) {
+void ep2_mul_cof(ep2_t r, const ep2_t p) {
 	bn_t k;
 
 	bn_null(k);
