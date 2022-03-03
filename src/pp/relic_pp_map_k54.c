@@ -37,7 +37,7 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-static void pp_mil_k54(fp54_t r, fp9_t qx, fp9_t qy, ep_t p, bn_t a) {
+static void pp_mil_k54(fp54_t r, const fp9_t qx, const fp9_t qy, const ep_t p, const bn_t a) {
 	fp54_t l;
 	ep_t _p;
 	fp9_t rx, ry, rz, sx, sy, sz;
@@ -85,9 +85,9 @@ static void pp_mil_k54(fp54_t r, fp9_t qx, fp9_t qy, ep_t p, bn_t a) {
 				fp54_mul_dxs(r, r, l);
 			}
 			if (s[i] < 0) {
-				fp9_neg(qy, qy);
+				fp9_neg(qy, qy);	// Warning: not really modifying ...
 				pp_add_k54(l, rx, ry, rz, qx, qy, p);
-				fp9_neg(qy, qy);
+				fp9_neg(qy, qy);	// ... since put back to initial value!
 				fp54_mul_dxs(r, r, l);
 			}
 		}

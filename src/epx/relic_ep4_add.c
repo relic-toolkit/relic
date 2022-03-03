@@ -409,7 +409,7 @@ void ep4_add_projc(ep4_t r, const ep4_t p, const ep4_t q) {
 
 #endif
 
-void ep4_sub(ep4_t r, ep4_t p, ep4_t q) {
+void ep4_sub(ep4_t r, const ep4_t p, const ep4_t q) {
 	ep4_t t;
 
 	ep4_null(t);

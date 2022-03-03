@@ -360,7 +360,7 @@ void ep4_curve_set_twist(int type) {
 	}
 }
 
-void ep4_curve_set(fp4_t a, fp4_t b, ep4_t g, bn_t r, bn_t h) {
+void ep4_curve_set(const fp4_t a, const fp4_t b, const ep4_t g, const bn_t r, const bn_t h) {
 	ctx_t *ctx = core_get();
 	ctx->ep4_is_twist = 0;
 

@@ -637,7 +637,7 @@ iso2_t ep2_curve_get_iso(void);
  * @param[in] r			- the order of the group of points.
  * @param[in] h			- the cofactor of the group order.
  */
-void ep2_curve_set(fp2_t a, fp2_t b, ep2_t g, bn_t r, bn_t h);
+void ep2_curve_set(const fp2_t a, const fp2_t b, const ep2_t g, const bn_t r, const bn_t h);
 
 /**
  * Configures an elliptic curve by twisting the curve over the base prime field.
@@ -691,7 +691,7 @@ void ep2_rand(ep2_t p);
  * @param[out] r			- the blinded prime elliptic curve point.
  * @param[in] p				- the prime elliptic curve point to blind.
  */
-void ep2_blind(ep2_t r, ep2_t p);
+void ep2_blind(ep2_t r, const ep2_t p);
 
 /**
  * Computes the right-hand side of the elliptic curve equation at a certain
@@ -700,7 +700,7 @@ void ep2_blind(ep2_t r, ep2_t p);
  * @param[out] rhs			- the result.
  * @param[in] p				- the point.
  */
-void ep2_rhs(fp2_t rhs, ep2_t p);
+void ep2_rhs(fp2_t rhs, const ep2_t p);
 
 /**
  * Tests if a point is in the curve.
@@ -716,7 +716,7 @@ int ep2_on_curve(ep2_t p);
  * @param[in] p				- the point to multiply.
  * @param[in] w				- the window width.
  */
-void ep2_tab(ep2_t *t, ep2_t p, int w);
+void ep2_tab(ep2_t *t, const ep2_t p, int w);
 
 /**
  * Prints an elliptic curve point.
@@ -757,7 +757,7 @@ void ep2_read_bin(ep2_t a, const uint8_t *bin, int len);
  * @param[in] pack			- the flag to indicate point compression.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is invalid.
  */
-void ep2_write_bin(uint8_t *bin, int len, ep2_t a, int pack);
+void ep2_write_bin(uint8_t *bin, int len, const ep2_t a, int pack);
 
 /**
  * Negates a point represented in affine coordinates in an elliptic curve over
@@ -766,7 +766,7 @@ void ep2_write_bin(uint8_t *bin, int len, ep2_t a, int pack);
  * @param[out] r			- the result.
  * @param[out] p			- the point to negate.
  */
-void ep2_neg(ep2_t r, ep2_t p);
+void ep2_neg(ep2_t r, const ep2_t p);
 
 /**
  * Adds to points represented in affine coordinates in an elliptic curve over a
@@ -807,7 +807,7 @@ void ep2_add_projc(ep2_t r, const ep2_t p, const ep2_t q);
   * @param[in] p			- the first point.
   * @param[in] q			- the point to subtract.
   */
-void ep2_sub(ep2_t r, ep2_t p, ep2_t q);
+void ep2_sub(ep2_t r, const ep2_t p, const ep2_t q);
 
 /**
  * Doubles a points represented in affine coordinates in an elliptic curve over
@@ -816,7 +816,7 @@ void ep2_sub(ep2_t r, ep2_t p, ep2_t q);
  * @param[out] r			- the result.
  * @param[int] p			- the point to double.
  */
-void ep2_dbl_basic(ep2_t r, ep2_t p);
+void ep2_dbl_basic(ep2_t r, const ep2_t p);
 
 /**
  * Doubles a points represented in affine coordinates in an elliptic curve over
@@ -826,7 +826,7 @@ void ep2_dbl_basic(ep2_t r, ep2_t p);
  * @param[out] s			- the slope.
  * @param[in] p				- the point to double.
  */
-void ep2_dbl_slp_basic(ep2_t r, fp2_t s, ep2_t p);
+void ep2_dbl_slp_basic(ep2_t r, fp2_t s, const ep2_t p);
 
 /**
  * Doubles a points represented in projective coordinates in an elliptic curve
@@ -835,7 +835,7 @@ void ep2_dbl_slp_basic(ep2_t r, fp2_t s, ep2_t p);
  * @param[out] r			- the result.
  * @param[in] p				- the point to double.
  */
-void ep2_dbl_projc(ep2_t r, ep2_t p);
+void ep2_dbl_projc(ep2_t r, const ep2_t p);
 
 /**
  * Multiplies a prime elliptic point by an integer using the binary method.
@@ -1113,7 +1113,7 @@ void ep2_mul_sim_dig(ep2_t r, const ep2_t p[], const dig_t k[], int len);
  * @param[out] r			- the result.
  * @param[in] p				- the point to convert.
  */
-void ep2_norm(ep2_t r, ep2_t p);
+void ep2_norm(ep2_t r, const ep2_t p);
 
 /**
  * Converts multiple points to affine coordinates.
@@ -1122,7 +1122,7 @@ void ep2_norm(ep2_t r, ep2_t p);
  * @param[in] t				- the points to convert.
  * @param[in] n				- the number of points.
  */
-void ep2_norm_sim(ep2_t *r, ep2_t *t, int n);
+void ep2_norm_sim(ep2_t *r, const ep2_t *t, int n);
 
 /**
  * Maps an array of uniformly random bytes to a point in a prime elliptic
@@ -1169,7 +1169,7 @@ void ep2_map_dst(ep2_t p, const uint8_t *msg, int len, const uint8_t *dst, int d
  * @param[in] p				- a point in affine coordinates.
  * @param[in] i				- the power of the Frobenius map.
  */
-void ep2_frb(ep2_t r, ep2_t p, int i);
+void ep2_frb(ep2_t r, const ep2_t p, int i);
 
 /**
  * Compresses a point in an elliptic curve over a quadratic extension.
@@ -1177,7 +1177,7 @@ void ep2_frb(ep2_t r, ep2_t p, int i);
  * @param[out] r			- the result.
  * @param[in] p				- the point to compress.
  */
-void ep2_pck(ep2_t r, ep2_t p);
+void ep2_pck(ep2_t r, const ep2_t p);
 
 /**
  * Decompresses a point in an elliptic curve over a quadratic extension.
@@ -1186,7 +1186,7 @@ void ep2_pck(ep2_t r, ep2_t p);
  * @param[in] p				- the point to decompress.
  * @return if the decompression was successful
  */
-int ep2_upk(ep2_t r, ep2_t p);
+int ep2_upk(ep2_t r, const ep2_t p);
 
 /**
  * Initializes the elliptic curve over quartic extension.
@@ -1277,7 +1277,7 @@ void ep4_curve_get_cof(bn_t h);
  * @param[in] r			- the order of the group of points.
  * @param[in] h			- the cofactor of the group order.
  */
-void ep4_curve_set(fp4_t a, fp4_t b, ep4_t g, bn_t r, bn_t h);
+void ep4_curve_set(const fp4_t a, const fp4_t b, const ep4_t g, const bn_t r, const bn_t h);
 
 /**
  * Configures an elliptic curve by twisting the curve over the base prime field.
@@ -1307,7 +1307,7 @@ void ep4_set_infty(ep4_t p);
  * @param[out] q			- the result.
  * @param[in] p				- the elliptic curve point to copy.
  */
-void ep4_copy(ep4_t r, ep4_t p);
+void ep4_copy(ep4_t r, const ep4_t p);
 
 /**
  * Compares two elliptic curve points.
@@ -1316,7 +1316,7 @@ void ep4_copy(ep4_t r, ep4_t p);
  * @param[in] q				- the second elliptic curve point.
  * @return RLC_EQ if p == q and RLC_NE if p != q.
  */
-int ep4_cmp(ep4_t p, ep4_t q);
+int ep4_cmp(const ep4_t p, const ep4_t q);
 
 /**
  * Assigns a random value to an elliptic curve point.
@@ -1331,7 +1331,7 @@ void ep4_rand(ep4_t p);
  * @param[out] r			- the blinded prime elliptic curve point.
  * @param[in] p				- the prime elliptic curve point to blind.
  */
-void ep4_blind(ep4_t r, ep4_t p);
+void ep4_blind(ep4_t r, const ep4_t p);
 
 /**
  * Computes the right-hand side of the elliptic curve equation at a certain
@@ -1340,7 +1340,7 @@ void ep4_blind(ep4_t r, ep4_t p);
  * @param[out] rhs			- the result.
  * @param[in] p				- the point.
  */
-void ep4_rhs(fp4_t rhs, ep4_t p);
+void ep4_rhs(fp4_t rhs, const ep4_t p);
 
 /**
  * Tests if a point is in the curve.
@@ -1356,7 +1356,7 @@ int ep4_on_curve(ep4_t p);
  * @param[in] p				- the point to multiply.
  * @param[in] w				- the window width.
  */
-void ep4_tab(ep4_t *t, ep4_t p, int w);
+void ep4_tab(ep4_t *t, const ep4_t p, int w);
 
 /**
  * Prints an elliptic curve point.
@@ -1397,7 +1397,7 @@ void ep4_read_bin(ep4_t a, const uint8_t *bin, int len);
  * @param[in] pack			- the flag to indicate compression.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is invalid.
  */
-void ep4_write_bin(uint8_t *bin, int len, ep4_t a, int pack);
+void ep4_write_bin(uint8_t *bin, int len, const ep4_t a, int pack);
 
 /**
  * Negates a point represented in affine coordinates in an elliptic curve over
@@ -1406,7 +1406,7 @@ void ep4_write_bin(uint8_t *bin, int len, ep4_t a, int pack);
  * @param[out] r			- the result.
  * @param[out] p			- the point to negate.
  */
-void ep4_neg(ep4_t r, ep4_t p);
+void ep4_neg(ep4_t r, const ep4_t p);
 
 /**
  * Adds to points represented in affine coordinates in an elliptic curve over a
@@ -1447,7 +1447,7 @@ void ep4_add_projc(ep4_t r, const ep4_t p, const ep4_t q);
   * @param[in] p			- the first point.
   * @param[in] q			- the point to subtract.
   */
-void ep4_sub(ep4_t r, ep4_t p, ep4_t q);
+void ep4_sub(ep4_t r, const ep4_t p, const ep4_t q);
 
 /**
  * Doubles a points represented in affine coordinates in an elliptic curve over
@@ -1456,7 +1456,7 @@ void ep4_sub(ep4_t r, ep4_t p, ep4_t q);
  * @param[out] r			- the result.
  * @param[int] p			- the point to double.
  */
-void ep4_dbl_basic(ep4_t r, ep4_t p);
+void ep4_dbl_basic(ep4_t r, const ep4_t p);
 
 /**
  * Doubles a points represented in affine coordinates in an elliptic curve over
@@ -1466,7 +1466,7 @@ void ep4_dbl_basic(ep4_t r, ep4_t p);
  * @param[out] s			- the slope.
  * @param[in] p				- the point to double.
  */
-void ep4_dbl_slp_basic(ep4_t r, fp4_t s, ep4_t p);
+void ep4_dbl_slp_basic(ep4_t r, fp4_t s, const ep4_t p);
 
 /**
  * Doubles a points represented in projective coordinates in an elliptic curve
@@ -1475,7 +1475,7 @@ void ep4_dbl_slp_basic(ep4_t r, fp4_t s, ep4_t p);
  * @param[out] r			- the result.
  * @param[in] p				- the point to double.
  */
-void ep4_dbl_projc(ep4_t r, ep4_t p);
+void ep4_dbl_projc(ep4_t r, const ep4_t p);
 
 /**
  * Multiplies a prime elliptic point by an integer using the binary method.
@@ -1753,7 +1753,7 @@ void ep4_mul_sim_dig(ep4_t r, const ep4_t p[], const dig_t k[], int len);
  * @param[out] r			- the result.
  * @param[in] p				- the point to convert.
  */
-void ep4_norm(ep4_t r, ep4_t p);
+void ep4_norm(ep4_t r, const ep4_t p);
 
 /**
  * Converts multiple points to affine coordinates.
@@ -1762,7 +1762,7 @@ void ep4_norm(ep4_t r, ep4_t p);
  * @param[in] t				- the points to convert.
  * @param[in] n				- the number of points.
  */
-void ep4_norm_sim(ep4_t *r, ep4_t *t, int n);
+void ep4_norm_sim(ep4_t *r, const ep4_t *t, int n);
 
 /**
  * Maps a byte array to a point in an elliptic curve over a quartic extension.
@@ -1797,7 +1797,7 @@ void ep4_map_dst(ep4_t p, const uint8_t *msg, int len, const uint8_t *dst, int d
  * @param[in] p				- a point in affine coordinates.
  * @param[in] i				- the power of the Frobenius map.
  */
-void ep4_frb(ep4_t r, ep4_t p, int i);
+void ep4_frb(ep4_t r, const ep4_t p, int i);
 
 /**
  * Compresses a point in an elliptic curve over a quartic extension.
@@ -1805,7 +1805,7 @@ void ep4_frb(ep4_t r, ep4_t p, int i);
  * @param[out] r			- the result.
  * @param[in] p				- the point to compress.
  */
-void ep4_pck(ep4_t r, ep4_t p);
+void ep4_pck(ep4_t r, const ep4_t p);
 
 /**
  * Decompresses a point in an elliptic curve over a quartic extension.
@@ -1814,6 +1814,6 @@ void ep4_pck(ep4_t r, ep4_t p);
  * @param[in] p				- the point to decompress.
  * @return if the decompression was successful
  */
-int ep4_upk(ep4_t r, ep4_t p);
+int ep4_upk(ep4_t r, const ep4_t p);
 
 #endif /* !RLC_EPX_H */

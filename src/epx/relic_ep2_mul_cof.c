@@ -158,18 +158,18 @@ void ep2_mul_cof(ep2_t r, const ep2_t p) {
 	RLC_TRY {
 		switch (ep_curve_is_pairf()) {
 			case EP_BN:
-				ep2_mul_cof_bn(p, p);
+				ep2_mul_cof_bn(r, p);
 				break;
 			case EP_B12:
-				ep2_mul_cof_b12(p, p);
+				ep2_mul_cof_b12(r, p);
 				break;
 			default:
 				/* Now, multiply by cofactor to get the correct group. */
 				ep2_curve_get_cof(k);
 				if (bn_bits(k) < RLC_DIG) {
-					ep2_mul_dig(p, p, k->dp[0]);
+					ep2_mul_dig(r, p, k->dp[0]);
 				} else {
-					ep2_mul_big(p, p, k);
+					ep2_mul_big(r, p, k);
 				}
 				break;
 		}		

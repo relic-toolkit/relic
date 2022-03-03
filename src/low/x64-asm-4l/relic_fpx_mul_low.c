@@ -38,7 +38,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void fp3_muln_low(dv3_t c, fp3_t a, fp3_t b) {
+void fp3_muln_low(dv3_t c, const fp3_t a, const fp3_t b) {
 	rlc_align dig_t t0[2 * RLC_FP_DIGS], t1[2 * RLC_FP_DIGS], t2[2 * RLC_FP_DIGS], t3[2 * RLC_FP_DIGS];
 	rlc_align dig_t t4[2 * RLC_FP_DIGS], t5[2 * RLC_FP_DIGS], t6[2 * RLC_FP_DIGS];
 
@@ -111,7 +111,7 @@ void fp3_muln_low(dv3_t c, fp3_t a, fp3_t b) {
 	fp_addc_low(c[2], t5, t1);
 }
 
-void fp3_mulm_low(fp3_t c, fp3_t a, fp3_t b) {
+void fp3_mulm_low(fp3_t c, const fp3_t a, const fp3_t b) {
 	dv3_t t;
 
 	dv3_null(t);

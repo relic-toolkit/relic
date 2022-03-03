@@ -46,7 +46,7 @@
  * @param[out] s			- the resulting slope.
  * @param[in] p				- the point to double.
  */
-static void ep4_dbl_basic_imp(ep4_t r, fp4_t s, ep4_t p) {
+static void ep4_dbl_basic_imp(ep4_t r, fp4_t s, const ep4_t p) {
 	fp4_t t0, t1, t2;
 
 	fp4_null(t0);
@@ -117,7 +117,7 @@ static void ep4_dbl_basic_imp(ep4_t r, fp4_t s, ep4_t p) {
  * @param[out] r				- the result.
  * @param[in] p					- the point to double.
  */
-static void ep4_dbl_projc_imp(ep4_t r, ep4_t p) {
+static void ep4_dbl_projc_imp(ep4_t r, const ep4_t p) {
 	fp4_t t0, t1, t2, t3, t4, t5;
 
 	fp4_null(t0);
@@ -242,7 +242,7 @@ static void ep4_dbl_projc_imp(ep4_t r, ep4_t p) {
 
 #if EP_ADD == BASIC || !defined(STRIP)
 
-void ep4_dbl_basic(ep4_t r, ep4_t p) {
+void ep4_dbl_basic(ep4_t r, const ep4_t p) {
 	if (ep4_is_infty(p)) {
 		ep4_set_infty(r);
 		return;
@@ -251,7 +251,7 @@ void ep4_dbl_basic(ep4_t r, ep4_t p) {
 	ep4_dbl_basic_imp(r, NULL, p);
 }
 
-void ep4_dbl_slp_basic(ep4_t r, fp4_t s, ep4_t p) {
+void ep4_dbl_slp_basic(ep4_t r, fp4_t s, const ep4_t p) {
 	if (ep4_is_infty(p)) {
 		ep4_set_infty(r);
 		return;
@@ -264,7 +264,7 @@ void ep4_dbl_slp_basic(ep4_t r, fp4_t s, ep4_t p) {
 
 #if EP_ADD == PROJC || !defined(STRIP)
 
-void ep4_dbl_projc(ep4_t r, ep4_t p) {
+void ep4_dbl_projc(ep4_t r, const ep4_t p) {
 	if (ep4_is_infty(p)) {
 		ep4_set_infty(r);
 		return;

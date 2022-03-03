@@ -78,7 +78,7 @@ void ep2_rand(ep2_t p) {
 	}
 }
 
-void ep2_blind(ep2_t r, ep2_t p) {
+void ep2_blind(ep2_t r, const ep2_t p) {
 	fp2_t rand;
 
 	fp2_null(rand);
@@ -104,7 +104,7 @@ void ep2_blind(ep2_t r, ep2_t p) {
 	}
 }
 
-void ep2_rhs(fp2_t rhs, ep2_t p) {
+void ep2_rhs(fp2_t rhs, const ep2_t p) {
 	fp2_t t0;
 
 	fp2_null(t0);
@@ -192,7 +192,7 @@ int ep2_on_curve(ep2_t p) {
 	return r;
 }
 
-void ep2_tab(ep2_t *t, ep2_t p, int w) {
+void ep2_tab(ep2_t *t, const ep2_t p, int w) {
 	if (w > 2) {
 		ep2_dbl(t[0], p);
 #if defined(EP_MIXED)
@@ -293,7 +293,7 @@ void ep2_read_bin(ep2_t a, const uint8_t *bin, int len) {
 	}
 }
 
-void ep2_write_bin(uint8_t *bin, int len, ep2_t a, int pack) {
+void ep2_write_bin(uint8_t *bin, int len, const ep2_t a, int pack) {
 	ep2_t t;
 
 	ep2_null(t);

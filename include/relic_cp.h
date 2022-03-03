@@ -860,7 +860,7 @@ int cp_rsa_gen(rsa_t pub, rsa_t prv, int bits);
  * @param[in] pub			- the public key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_rsa_enc(uint8_t *out, int *out_len, const uint8_t *in, int in_len, const rsa_t pub);
+int cp_rsa_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len, const rsa_t pub);
 
 /**
  * Decrypts using the RSA cryptosystem. Uses the CRT optimization if
@@ -873,7 +873,7 @@ int cp_rsa_enc(uint8_t *out, int *out_len, const uint8_t *in, int in_len, const 
  * @param[in] prv			- the private key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_rsa_dec(uint8_t *out, int *out_len, const uint8_t *in, int in_len, const rsa_t prv);
+int cp_rsa_dec(uint8_t *out, int *out_len, uint8_t *in, int in_len, const rsa_t prv);
 
 /**
  * Signs using the basic RSA signature algorithm. The flag must be non-zero if
@@ -926,7 +926,7 @@ int cp_rabin_gen(rabin_t pub, rabin_t prv, int bits);
  * @param[in] pub			- the public key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_rabin_enc(uint8_t *out, int *out_len, const uint8_t *in, int in_len,
+int cp_rabin_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len,
 		const rabin_t pub);
 
 /**
@@ -939,7 +939,7 @@ int cp_rabin_enc(uint8_t *out, int *out_len, const uint8_t *in, int in_len,
  * @param[in] prv			- the private key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_rabin_dec(uint8_t *out, int *out_len, const uint8_t *in, int in_len,
+int cp_rabin_dec(uint8_t *out, int *out_len, uint8_t *in, int in_len,
 		const rabin_t prv);
 
 /**
@@ -1145,7 +1145,7 @@ int cp_ecies_gen(bn_t d, ec_t q);
  * @param[in] q				- the public key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_ecies_enc(ec_t r, uint8_t *out, int *out_len, const uint8_t *in, int in_len,
+int cp_ecies_enc(ec_t r, uint8_t *out, int *out_len, uint8_t *in, int in_len,
 		const ec_t q);
 
 /**
@@ -1159,7 +1159,7 @@ int cp_ecies_enc(ec_t r, uint8_t *out, int *out_len, const uint8_t *in, int in_l
  * @param[in] d				- the private key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_ecies_dec(uint8_t *out, int *out_len, const ec_t r, const uint8_t *in, int in_len,
+int cp_ecies_dec(uint8_t *out, int *out_len, const ec_t r, uint8_t *in, int in_len,
 		const bn_t d);
 
 /**
@@ -1595,7 +1595,7 @@ int cp_ibe_gen_prv(g2_t prv, char *id, bn_t master);
  * @param[in] pub			- the public key of the PKG.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_ibe_enc(uint8_t *out, int *out_len, const uint8_t *in, int in_len, const char *id,
+int cp_ibe_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len, const char *id,
 		const g1_t pub);
 
 /**
@@ -1608,7 +1608,7 @@ int cp_ibe_enc(uint8_t *out, int *out_len, const uint8_t *in, int in_len, const 
  * @param[in] pub			- the private key of the user.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_ibe_dec(uint8_t *out, int *out_len, const uint8_t *in, int in_len, const g2_t prv);
+int cp_ibe_dec(uint8_t *out, int *out_len, uint8_t *in, int in_len, const g2_t prv);
 
 /**
  * Generates a key pair for the Boneh-Lynn-Schacham (BLS) signature protocol.

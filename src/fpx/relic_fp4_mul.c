@@ -39,7 +39,7 @@
 
 #if FPX_RDC == BASIC || !defined(STRIP)
 
-void fp4_mul_basic(fp4_t c, fp4_t a, fp4_t b) {
+void fp4_mul_basic(fp4_t c, const fp4_t a, const fp4_t b) {
 	fp2_t t0, t1, t2;
 
 	fp2_null(t0);
@@ -84,7 +84,7 @@ void fp4_mul_basic(fp4_t c, fp4_t a, fp4_t b) {
 
 #if PP_EXT == LAZYR || !defined(STRIP)
 
-void fp4_mul_unr(dv4_t c, fp4_t a, fp4_t b) {
+void fp4_mul_unr(dv4_t c, const fp4_t a, const fp4_t b) {
 	fp2_t t0, t1;
 	dv2_t u0, u1;
 
@@ -129,7 +129,7 @@ void fp4_mul_unr(dv4_t c, fp4_t a, fp4_t b) {
 	}
 }
 
-void fp4_mul_lazyr(fp4_t c, fp4_t a, fp4_t b) {
+void fp4_mul_lazyr(fp4_t c, const fp4_t a, const fp4_t b) {
 	dv4_t t;
 
 	dv4_null(t);
@@ -148,7 +148,7 @@ void fp4_mul_lazyr(fp4_t c, fp4_t a, fp4_t b) {
 
 #endif
 
-void fp4_mul_art(fp4_t c, fp4_t a) {
+void fp4_mul_art(fp4_t c, const fp4_t a) {
 	fp2_t t0;
 
 	fp2_null(t0);
@@ -167,7 +167,7 @@ void fp4_mul_art(fp4_t c, fp4_t a) {
 	}
 }
 
-void fp4_mul_frb(fp4_t c, fp4_t a, int i, int j) {
+void fp4_mul_frb(fp4_t c, const fp4_t a, int i, int j) {
 	fp2_t t;
 
 	fp2_null(t);

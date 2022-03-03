@@ -409,7 +409,7 @@ void ep2_add_projc(ep2_t r, const ep2_t p, const ep2_t q) {
 
 #endif
 
-void ep2_sub(ep2_t r, ep2_t p, ep2_t q) {
+void ep2_sub(ep2_t r, const ep2_t p, const ep2_t q) {
 	ep2_t t;
 
 	ep2_null(t);

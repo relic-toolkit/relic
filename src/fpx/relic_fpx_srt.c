@@ -36,7 +36,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-int fp2_srt(fp2_t c, fp2_t a) {
+int fp2_srt(fp2_t c, const fp2_t a) {
 	int r = 0;
 	fp_t t0;
 	fp_t t1;
@@ -127,7 +127,7 @@ int fp2_srt(fp2_t c, fp2_t a) {
 	return r;
 }
 
-int fp3_srt(fp3_t c, fp3_t a) {
+int fp3_srt(fp3_t c, const fp3_t a) {
 	int r = 0;
 	fp3_t t0, t1, t2, t3;
 	bn_t e;
@@ -216,7 +216,7 @@ int fp3_srt(fp3_t c, fp3_t a) {
 	return r;
 }
 
-int fp4_srt(fp4_t c, fp4_t a) {
+int fp4_srt(fp4_t c, const fp4_t a) {
 	int r = 0;
 	fp2_t t0, t1, t2;
 

@@ -38,7 +38,7 @@
 
 #if FPX_QDR == BASIC || !defined(STRIP)
 
-void fp2_sqr_basic(fp2_t c, fp2_t a) {
+void fp2_sqr_basic(fp2_t c, const fp2_t a) {
 	fp_t t0, t1, t2;
 
 	fp_null(t0);
@@ -103,7 +103,7 @@ void fp2_sqr_basic(fp2_t c, fp2_t a) {
 
 #if FPX_QDR == INTEG || !defined(STRIP)
 
-void fp2_sqr_integ(fp2_t c, fp2_t a) {
+void fp2_sqr_integ(fp2_t c, const fp2_t a) {
 	fp2_sqrm_low(c, a);
 }
 

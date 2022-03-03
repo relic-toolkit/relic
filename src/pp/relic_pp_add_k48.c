@@ -37,7 +37,7 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-static void ep8_add_basic(fp8_t s, fp8_t rx, fp8_t ry, fp8_t qx, fp8_t qy) {
+static void ep8_add_basic(fp8_t s, fp8_t rx, fp8_t ry, const fp8_t qx, const fp8_t qy) {
 	fp8_t t0, t1, t2;
 
 	fp8_null(t0);
@@ -104,7 +104,7 @@ static void ep8_add_basic(fp8_t s, fp8_t rx, fp8_t ry, fp8_t qx, fp8_t qy) {
 
 #if EP_ADD == BASIC || !defined(STRIP)
 
-void pp_add_k48_basic(fp48_t l, fp8_t rx, fp8_t ry, fp8_t qx, fp8_t qy, ep_t p) {
+void pp_add_k48_basic(fp48_t l, fp8_t rx, fp8_t ry, fp8_t qx, fp8_t qy, const ep_t p) {
 	fp8_t s, tx, ty;
 
 	fp8_null(s);
@@ -149,8 +149,8 @@ void pp_add_k48_basic(fp48_t l, fp8_t rx, fp8_t ry, fp8_t qx, fp8_t qy, ep_t p) 
 
 #if EP_ADD == PROJC || !defined(STRIP)
 
-void pp_add_k48_projc(fp48_t l, fp8_t rx, fp8_t ry, fp8_t rz, fp8_t qx,
-		fp8_t qy, ep_t p) {
+void pp_add_k48_projc(fp48_t l, fp8_t rx, fp8_t ry, fp8_t rz, const fp8_t qx,
+		const fp8_t qy, const ep_t p) {
 	fp8_t t0, t1, t2, t3, t4;
 
 	fp8_null(t0);

@@ -39,7 +39,7 @@
 
 #if EP_ADD == PROJC || !defined(STRIP)
 
-void pp_dbl_k24_basic(fp24_t l, ep4_t r, ep4_t q, ep_t p) {
+void pp_dbl_k24_basic(fp24_t l, ep4_t r, const ep4_t q, const ep_t p) {
 	fp4_t s;
 	ep4_t t;
 
@@ -77,7 +77,7 @@ void pp_dbl_k24_basic(fp24_t l, ep4_t r, ep4_t q, ep_t p) {
 
 #if EP_ADD == PROJC || !defined(STRIP)
 
-void pp_dbl_k24_projc(fp24_t l, ep4_t r, ep4_t q, ep_t p) {
+void pp_dbl_k24_projc(fp24_t l, ep4_t r, const ep4_t q, const ep_t p) {
 	fp4_t t0, t1, t2, t3, t4, t5, t6;
 
 	fp4_null(t0);

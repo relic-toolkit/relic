@@ -44,7 +44,7 @@
  * @param r			- the result.
  * @param p			- the point to normalize.
  */
-static void ep2_norm_imp(ep2_t r, ep2_t p, int inverted) {
+static void ep2_norm_imp(ep2_t r, const ep2_t p, int inverted) {
 	if (p->coord != BASIC) {
 		fp2_t t0, t1;
 
@@ -85,7 +85,7 @@ static void ep2_norm_imp(ep2_t r, ep2_t p, int inverted) {
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void ep2_norm(ep2_t r, ep2_t p) {
+void ep2_norm(ep2_t r, const ep2_t p) {
 	if (ep2_is_infty(p)) {
 		ep2_set_infty(r);
 		return;
@@ -100,7 +100,7 @@ void ep2_norm(ep2_t r, ep2_t p) {
 #endif
 }
 
-void ep2_norm_sim(ep2_t *r, ep2_t *t, int n) {
+void ep2_norm_sim(ep2_t *r, const ep2_t *t, int n) {
 	int i;
 	fp2_t *a = RLC_ALLOCA(fp2_t, n);
 

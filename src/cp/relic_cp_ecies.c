@@ -58,7 +58,7 @@ int cp_ecies_gen(bn_t d, ec_t q) {
 	return result;
 }
 
-int cp_ecies_enc(ec_t r, uint8_t *out, int *out_len, const uint8_t *in, int in_len,
+int cp_ecies_enc(ec_t r, uint8_t *out, int *out_len, uint8_t *in, int in_len,
 		const ec_t q) {
 	bn_t k, n, x;
 	ec_t p;
@@ -112,7 +112,7 @@ int cp_ecies_enc(ec_t r, uint8_t *out, int *out_len, const uint8_t *in, int in_l
 	return result;
 }
 
-int cp_ecies_dec(uint8_t *out, int *out_len, const ec_t r, const uint8_t *in, int in_len,
+int cp_ecies_dec(uint8_t *out, int *out_len, const ec_t r, uint8_t *in, int in_len,
 		const bn_t d) {
 	ec_t p;
 	bn_t x;

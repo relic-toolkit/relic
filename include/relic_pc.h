@@ -969,7 +969,7 @@ void g2_mul_gen(g2_t r, const bn_t k);
  * @param[in] a				- the element to exponentiate.
  * @param[in] b				- the integer exponent.
  */
-void gt_exp(gt_t c, gt_t a, const bn_t b);
+void gt_exp(gt_t c, const gt_t a, const bn_t b);
 
 /**
  * Exponentiates an element from G_T by a small integer. Computes c = a^b.
@@ -978,7 +978,7 @@ void gt_exp(gt_t c, gt_t a, const bn_t b);
  * @param[in] a				- the element to exponentiate.
  * @param[in] b				- the integer exponent.
  */
-void gt_exp_dig(gt_t c, gt_t a, const dig_t b);
+void gt_exp_dig(gt_t c, const gt_t a, const dig_t b);
 
 /**
  * Exponentiates two element from G_T by integers simultaneously. Computes
@@ -990,7 +990,7 @@ void gt_exp_dig(gt_t c, gt_t a, const dig_t b);
  * @param[in] a				- the second element to exponentiate.
  * @param[in] b				- the second integer exponent.
  */
-void gt_exp_sim(gt_t e, gt_t a, bn_t b, gt_t c, bn_t d);
+void gt_exp_sim(gt_t e, const gt_t a, const bn_t b, const gt_t c, const bn_t d);
 
 /**
  * Exponentiates a generator from G_T by an integer. Computes c = a^b.
@@ -998,7 +998,7 @@ void gt_exp_sim(gt_t e, gt_t a, bn_t b, gt_t c, bn_t d);
  * @param[out] c			- the result.
  * @param[in] b				- the integer exponent.
  */
-void gt_exp_gen(gt_t c, bn_t b);
+void gt_exp_gen(gt_t c, const bn_t b);
 
  /**
   * Returns the generator for the group G_T.
