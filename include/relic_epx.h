@@ -652,7 +652,7 @@ void ep2_curve_set_twist(int type);
  * @param[in] p				- the point to test.
  * @return 1 if the point is at infinity, 0 otherise.
  */
-int ep2_is_infty(ep2_t p);
+int ep2_is_infty(const ep2_t p);
 
 /**
  * Assigns an elliptic curve point to the point at infinity.
@@ -1292,7 +1292,7 @@ void ep4_curve_set_twist(int type);
  * @param[in] p				- the point to test.
  * @return 1 if the point is at infinity, 0 otherise.
  */
-int ep4_is_infty(ep4_t p);
+int ep4_is_infty(const ep4_t p);
 
 /**
  * Assigns an elliptic curve point to the point at infinity.

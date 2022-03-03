@@ -36,7 +36,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-int ep4_is_infty(ep4_t p) {
+int ep4_is_infty(const ep4_t p) {
 	return (fp4_is_zero(p->z) == 1);
 }
 
