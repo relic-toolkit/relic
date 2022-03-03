@@ -61,7 +61,7 @@ void fp2_inv(fp2_t c, const fp2_t a) {
 					fp_mul_dig(t1, t1, -fp_prime_get_qnr());
 					fp_add(t0, t0, t1);
 				} else {
-					fp_mul_dig(t1, t1, const fp_prime_get_qnr());
+					fp_mul_dig(t1, t1, fp_prime_get_qnr());
 					fp_sub(t0, t0, t1);
 				}
 			}
