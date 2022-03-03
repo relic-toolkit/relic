@@ -723,7 +723,7 @@ void ep2_tab(ep2_t *t, const ep2_t p, int w);
  *
  * @param[in] p				- the elliptic curve point to print.
  */
-void ep2_print(ep2_t p);
+void ep2_print(const ep2_t p);
 
 /**
  * Returns the number of bytes necessary to store a prime elliptic curve point
@@ -733,7 +733,7 @@ void ep2_print(ep2_t p);
  * @param[in] pack			- the flag to indicate compression.
  * @return the number of bytes.
  */
-int ep2_size_bin(ep2_t a, int pack);
+int ep2_size_bin(const ep2_t a, int pack);
 
 /**
  * Reads a prime elliptic curve point over a quadratic extension from a byte
@@ -1363,7 +1363,7 @@ void ep4_tab(ep4_t *t, const ep4_t p, int w);
  *
  * @param[in] p				- the elliptic curve point to print.
  */
-void ep4_print(ep4_t p);
+void ep4_print(const ep4_t p);
 
 /**
  * Returns the number of bytes necessary to store a prime elliptic curve point
@@ -1373,7 +1373,7 @@ void ep4_print(ep4_t p);
  * @param[in] pack			- the flag to indicate compression.
  * @return the number of bytes.
  */
-int ep4_size_bin(ep4_t a, int pack);
+int ep4_size_bin(const ep4_t a, int pack);
 
 /**
  * Reads a prime elliptic curve point over a quartic extension from a byte

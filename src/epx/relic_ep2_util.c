@@ -209,13 +209,13 @@ void ep2_tab(ep2_t *t, const ep2_t p, int w) {
 	ep2_copy(t[0], p);
 }
 
-void ep2_print(ep2_t p) {
+void ep2_print(const ep2_t p) {
 	fp2_print(p->x);
 	fp2_print(p->y);
 	fp2_print(p->z);
 }
 
-int ep2_size_bin(ep2_t a, int pack) {
+int ep2_size_bin(const ep2_t a, int pack) {
 	ep2_t t;
 	int size = 0;
 

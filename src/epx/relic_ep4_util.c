@@ -216,13 +216,13 @@ void ep4_tab(ep4_t *t, const ep4_t p, int w) {
 	ep4_copy(t[0], p);
 }
 
-void ep4_print(ep4_t p) {
+void ep4_print(const ep4_t p) {
 	fp4_print(p->x);
 	fp4_print(p->y);
 	fp4_print(p->z);
 }
 
-int ep4_size_bin(ep4_t a, int pack) {
+int ep4_size_bin(const ep4_t a, int pack) {
 	ep4_t t;
 	int size = 0;
 
