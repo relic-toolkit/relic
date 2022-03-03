@@ -98,7 +98,7 @@ int cp_shpe_gen(shpe_t pub, shpe_t prv, int sbits, int nbits) {
 }
 
 /* Encryption is faster if private key is known */
-int cp_shpe_enc_prv(bn_t c, bn_t m, shpe_t prv) {
+int cp_shpe_enc_prv(bn_t c, const bn_t m, const shpe_t prv) {
 	bn_t r, s;
 	int result = RLC_OK;
 
@@ -140,7 +140,7 @@ int cp_shpe_enc_prv(bn_t c, bn_t m, shpe_t prv) {
 	return result;
 }
 
-int cp_shpe_enc(bn_t c, bn_t m, shpe_t pub) {
+int cp_shpe_enc(bn_t c, const bn_t m, const shpe_t pub) {
 	bn_t r, s;
 	int result = RLC_OK;
 
@@ -176,7 +176,7 @@ int cp_shpe_enc(bn_t c, bn_t m, shpe_t pub) {
 	return result;
 }
 
-int cp_shpe_dec(bn_t m, bn_t c, shpe_t prv) {
+int cp_shpe_dec(bn_t m, const bn_t c, const shpe_t prv) {
 	bn_t s, u;
 	int result = RLC_OK;
 

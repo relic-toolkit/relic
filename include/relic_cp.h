@@ -860,7 +860,7 @@ int cp_rsa_gen(rsa_t pub, rsa_t prv, int bits);
  * @param[in] pub			- the public key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_rsa_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len, rsa_t pub);
+int cp_rsa_enc(uint8_t *out, int *out_len, const uint8_t *in, int in_len, const rsa_t pub);
 
 /**
  * Decrypts using the RSA cryptosystem. Uses the CRT optimization if
@@ -873,7 +873,7 @@ int cp_rsa_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len, rsa_t pub);
  * @param[in] prv			- the private key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_rsa_dec(uint8_t *out, int *out_len, uint8_t *in, int in_len, rsa_t prv);
+int cp_rsa_dec(uint8_t *out, int *out_len, const uint8_t *in, int in_len, const rsa_t prv);
 
 /**
  * Signs using the basic RSA signature algorithm. The flag must be non-zero if
@@ -926,8 +926,8 @@ int cp_rabin_gen(rabin_t pub, rabin_t prv, int bits);
  * @param[in] pub			- the public key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_rabin_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len,
-		rabin_t pub);
+int cp_rabin_enc(uint8_t *out, int *out_len, const uint8_t *in, int in_len,
+		const rabin_t pub);
 
 /**
  * Decrypts using the Rabin cryptosystem.
@@ -939,8 +939,8 @@ int cp_rabin_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len,
  * @param[in] prv			- the private key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_rabin_dec(uint8_t *out, int *out_len, uint8_t *in, int in_len,
-		rabin_t prv);
+int cp_rabin_dec(uint8_t *out, int *out_len, const uint8_t *in, int in_len,
+		const rabin_t prv);
 
 /**
  * Generates a key pair for Benaloh's Dense Probabilistic Encryption.
@@ -962,7 +962,7 @@ int cp_bdpe_gen(bdpe_t pub, bdpe_t prv, dig_t block, int bits);
  * @param[in] pub			- the public key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_bdpe_enc(uint8_t *out, int *out_len, dig_t in, bdpe_t pub);
+int cp_bdpe_enc(uint8_t *out, int *out_len, const dig_t in, const bdpe_t pub);
 
 /**
  * Decrypts using Benaloh's cryptosystem.
@@ -973,7 +973,7 @@ int cp_bdpe_enc(uint8_t *out, int *out_len, dig_t in, bdpe_t pub);
  * @param[in] prv			- the private key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_bdpe_dec(dig_t *out, uint8_t *in, int in_len, bdpe_t prv);
+int cp_bdpe_dec(dig_t *out, uint8_t *in, int in_len, const bdpe_t prv);
 
 /**
  * Generates a key pair for Paillier's Homomorphic Probabilistic Encryption.
@@ -993,7 +993,7 @@ int cp_phpe_gen(bn_t pub, phpe_t prv, int bits);
  * @param[in] pub			- the public key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_phpe_enc(bn_t c, bn_t m, bn_t pub);
+int cp_phpe_enc(bn_t c, const bn_t m, const bn_t pub);
 
 /**
  * Decrypts using the Paillier cryptosystem.
@@ -1003,7 +1003,7 @@ int cp_phpe_enc(bn_t c, bn_t m, bn_t pub);
  * @param[in] prv			- the private key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_phpe_dec(bn_t m, bn_t c, phpe_t prv);
+int cp_phpe_dec(bn_t m, const bn_t c, const phpe_t prv);
 
 /**
  * Generates a key pair for Paillier's Subgroup Homomorphic Probabilistic Encryption.
@@ -1024,18 +1024,17 @@ int cp_shpe_gen(shpe_t pub, shpe_t prv, int sbits, int nbits);
  * @param[in] pub			- the public key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_shpe_enc(bn_t c, bn_t m, shpe_t pub);
+int cp_shpe_enc(bn_t c, const bn_t m, const shpe_t pub);
 
 /**
  * Encrypts faster using the Subgroup Paillier cryptosystem if the private key is known.
  *
  * @param[out] c			- the ciphertex, represented as an integer.
  * @param[in] m				- the plaintext as an integer.
- * @param[in] pub			- the public key.
  * @param[in] prv			- the private key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_shpe_enc_prv(bn_t c, bn_t m, shpe_t prv);
+int cp_shpe_enc_prv(bn_t c, const bn_t m, const shpe_t prv);
 
 /**
  * Decrypts using the Subgroup Paillier cryptosystem.
@@ -1045,7 +1044,7 @@ int cp_shpe_enc_prv(bn_t c, bn_t m, shpe_t prv);
  * @param[in] prv			- the private key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_shpe_dec(bn_t m, bn_t c, shpe_t prv);
+int cp_shpe_dec(bn_t m, const bn_t c, const shpe_t prv);
 
 /**
  * Generates a key pair for Genealized Homomorphic Probabilistic Encryption.
@@ -1066,7 +1065,7 @@ int cp_ghpe_gen(bn_t pub, bn_t prv, int bits);
  * @param[in] s			- the block length parameter.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_ghpe_enc(bn_t c, bn_t m, bn_t pub, int s);
+int cp_ghpe_enc(bn_t c, const bn_t m, const bn_t pub, int s);
 
 /**
  * Decrypts using the Generalized Paillier cryptosystem.
@@ -1077,7 +1076,7 @@ int cp_ghpe_enc(bn_t c, bn_t m, bn_t pub, int s);
  * @param[in] s			- the block length parameter.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_ghpe_dec(bn_t m, bn_t c, bn_t pub, bn_t prv, int s);
+int cp_ghpe_dec(bn_t m, const bn_t c, const bn_t pub, const bn_t prv, int s);
 
 /**
  * Generates an ECDH key pair.
@@ -1146,8 +1145,8 @@ int cp_ecies_gen(bn_t d, ec_t q);
  * @param[in] q				- the public key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_ecies_enc(ec_t r, uint8_t *out, int *out_len, uint8_t *in, int in_len,
-		ec_t q);
+int cp_ecies_enc(ec_t r, uint8_t *out, int *out_len, const uint8_t *in, int in_len,
+		const ec_t q);
 
 /**
  * Decrypts using the ECIES cryptosystem.
@@ -1160,8 +1159,8 @@ int cp_ecies_enc(ec_t r, uint8_t *out, int *out_len, uint8_t *in, int in_len,
  * @param[in] d				- the private key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_ecies_dec(uint8_t *out, int *out_len, ec_t r, uint8_t *in, int in_len,
-		bn_t d);
+int cp_ecies_dec(uint8_t *out, int *out_len, const ec_t r, const uint8_t *in, int in_len,
+		const bn_t d);
 
 /**
  * Generates an ECDSA key pair.
@@ -1503,7 +1502,7 @@ int cp_bgn_gen(bgn_t pub, bgn_t prv);
  * @param[in] pub			- the public key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_bgn_enc1(g1_t out[2], dig_t in, bgn_t pub);
+int cp_bgn_enc1(g1_t out[2], const dig_t in, const bgn_t pub);
 
 /**
  * Decrypts in G_1 using the BGN cryptosystem.
@@ -1513,7 +1512,7 @@ int cp_bgn_enc1(g1_t out[2], dig_t in, bgn_t pub);
  * @param[in] prv			- the private key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_bgn_dec1(dig_t *out, g1_t in[2], bgn_t prv);
+int cp_bgn_dec1(dig_t *out, const g1_t in[2], const bgn_t prv);
 
 /**
  * Encrypts in G_2 using the BGN cryptosystem.
@@ -1523,7 +1522,7 @@ int cp_bgn_dec1(dig_t *out, g1_t in[2], bgn_t prv);
  * @param[in] pub			- the public key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_bgn_enc2(g2_t out[2], dig_t in, bgn_t pub);
+int cp_bgn_enc2(g2_t out[2], const dig_t in, const bgn_t pub);
 
 /**
  * Decrypts in G_2 using the BGN cryptosystem.
@@ -1533,7 +1532,7 @@ int cp_bgn_enc2(g2_t out[2], dig_t in, bgn_t pub);
  * @param[in] prv			- the private key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_bgn_dec2(dig_t *out, g2_t in[2], bgn_t prv);
+int cp_bgn_dec2(dig_t *out, const g2_t in[2], const bgn_t prv);
 
 /**
  * Adds homomorphically two BGN ciphertexts in G_T.
@@ -1563,7 +1562,7 @@ int cp_bgn_mul(gt_t e[4], g1_t c[2], g2_t d[2]);
  * @param[in] prv			- the private key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_bgn_dec(dig_t *out, gt_t in[4], bgn_t prv);
+int cp_bgn_dec(dig_t *out, const gt_t in[4], const bgn_t prv);
 
 /**
  * Generates a master key for a Private Key Generator (PKG) in the
@@ -1596,8 +1595,8 @@ int cp_ibe_gen_prv(g2_t prv, char *id, bn_t master);
  * @param[in] pub			- the public key of the PKG.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_ibe_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len, char *id,
-		g1_t pub);
+int cp_ibe_enc(uint8_t *out, int *out_len, const uint8_t *in, int in_len, const char *id,
+		const g1_t pub);
 
 /**
  * Decrypts a message using the BF-IBE protocol.
@@ -1609,7 +1608,7 @@ int cp_ibe_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len, char *id,
  * @param[in] pub			- the private key of the user.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_ibe_dec(uint8_t *out, int *out_len, uint8_t *in, int in_len, g2_t prv);
+int cp_ibe_dec(uint8_t *out, int *out_len, const uint8_t *in, int in_len, const g2_t prv);
 
 /**
  * Generates a key pair for the Boneh-Lynn-Schacham (BLS) signature protocol.

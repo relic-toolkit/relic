@@ -74,7 +74,7 @@ int cp_phpe_gen(bn_t pub, phpe_t prv, int bits) {
 	return result;
 }
 
-int cp_phpe_enc(bn_t c, bn_t m, bn_t pub) {
+int cp_phpe_enc(bn_t c, const bn_t m, const bn_t pub) {
 	bn_t g, r, s;
 	int result = RLC_OK;
 
@@ -117,7 +117,7 @@ int cp_phpe_enc(bn_t c, bn_t m, bn_t pub) {
 	return result;
 }
 
-int cp_phpe_dec(bn_t m, bn_t c, phpe_t prv) {
+int cp_phpe_dec(bn_t m, const bn_t c, const phpe_t prv) {
 	bn_t s, t, u, v;
 	int result = RLC_OK;
 

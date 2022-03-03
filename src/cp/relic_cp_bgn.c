@@ -72,7 +72,7 @@ int cp_bgn_gen(bgn_t pub, bgn_t prv) {
 	return result;
 }
 
-int cp_bgn_enc1(g1_t out[2], dig_t in, bgn_t pub) {
+int cp_bgn_enc1(g1_t out[2], const dig_t in, const bgn_t pub) {
 	bn_t r, n;
 	g1_t t;
 	int result = RLC_OK;
@@ -114,7 +114,7 @@ int cp_bgn_enc1(g1_t out[2], dig_t in, bgn_t pub) {
 	return result;
 }
 
-int cp_bgn_dec1(dig_t *out, g1_t in[2], bgn_t prv) {
+int cp_bgn_dec1(dig_t *out, const g1_t in[2], const bgn_t prv) {
 	bn_t r, n;
 	g1_t s, t, u;
 	int i, result = RLC_ERR;
@@ -172,7 +172,7 @@ int cp_bgn_dec1(dig_t *out, g1_t in[2], bgn_t prv) {
 	return result;
 }
 
-int cp_bgn_enc2(g2_t out[2], dig_t in, bgn_t pub) {
+int cp_bgn_enc2(g2_t out[2], const dig_t in, const bgn_t pub) {
 	bn_t r, n;
 	g2_t t;
 	int result = RLC_OK;
@@ -213,7 +213,7 @@ int cp_bgn_enc2(g2_t out[2], dig_t in, bgn_t pub) {
 	return result;
 }
 
-int cp_bgn_dec2(dig_t *out, g2_t in[2], bgn_t prv) {
+int cp_bgn_dec2(dig_t *out, const g2_t in[2], const bgn_t prv) {
 	bn_t r, n;
 	g2_t s, t, u;
 	int i, result = RLC_ERR;
@@ -287,7 +287,7 @@ int cp_bgn_mul(gt_t e[4], g1_t c[2], g2_t d[2]) {
 	return RLC_OK;
 }
 
-int cp_bgn_dec(dig_t *out, gt_t in[4], bgn_t prv) {
+int cp_bgn_dec(dig_t *out, const gt_t in[4], const bgn_t prv) {
 	int i, result = RLC_ERR;
 	g1_t g;
 	g2_t h;
