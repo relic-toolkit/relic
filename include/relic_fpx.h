@@ -1311,7 +1311,7 @@ void fp2_rand(fp2_t a);
  *
  * @param[in] a				- the quadratic extension field element to print.
  */
-void fp2_print(fp2_t a);
+void fp2_print(const fp2_t a);
 
 /**
  * Returns the number of bytes necessary to store a quadratic extension field
@@ -1354,7 +1354,7 @@ void fp2_write_bin(uint8_t *bin, int len, fp2_t a, int pack);
  * @param[in] b				- the second quadratic extension field element.
  * @return RLC_EQ if a == b, and RLC_NE otherwise.
  */
-int fp2_cmp(fp2_t a, fp2_t b);
+int fp2_cmp(const fp2_t a, const fp2_t b);
 
 /**
  * Returns the result of a signed comparison between a quadratic extension field
@@ -1364,7 +1364,7 @@ int fp2_cmp(fp2_t a, fp2_t b);
  * @param[in] b				- the digit.
  * @return RLC_EQ if a == b, and RLC_NE otherwise.
  */
-int fp2_cmp_dig(fp2_t a, dig_t b);
+int fp2_cmp_dig(const fp2_t a, const dig_t b);
 
 /**
  * Assigns a quadratic extension field element to a digit.
@@ -1670,7 +1670,7 @@ void fp3_rand(fp3_t a);
  *
  * @param[in] a				- the cubic extension field element to print.
  */
-void fp3_print(fp3_t a);
+void fp3_print(const fp3_t a);
 
 /**
  * Returns the number of bytes necessary to store a cubic extension field
@@ -1711,7 +1711,7 @@ void fp3_write_bin(uint8_t *bin, int len, fp3_t a);
  * @param[in] b				- the second cubic extension field element.
  * @return RLC_EQ if a == b, and RLC_NE otherwise.
  */
-int fp3_cmp(fp3_t a, fp3_t b);
+int fp3_cmp(const fp3_t a, const fp3_t b);
 
 /**
  * Returns the result of a signed comparison between a cubic extension field
@@ -1721,7 +1721,7 @@ int fp3_cmp(fp3_t a, fp3_t b);
  * @param[in] b				- the digit.
  * @return RLC_EQ if a == b, and RLC_NE otherwise.
  */
-int fp3_cmp_dig(fp3_t a, dig_t b);
+int fp3_cmp_dig(const fp3_t a, const dig_t b);
 
 /**
  * Assigns a cubic extension field element to a digit.
@@ -1936,7 +1936,7 @@ void fp4_rand(fp4_t a);
  *
  * @param[in] a				- the quartic extension field element to print.
  */
-void fp4_print(fp4_t a);
+void fp4_print(const fp4_t a);
 
 /**
  * Returns the number of bytes necessary to store a quartic extension field
@@ -1977,7 +1977,7 @@ void fp4_write_bin(uint8_t *bin, int len, fp4_t a);
  * @param[in] b				- the second quartic extension field element.
  * @return RLC_EQ if a == b, and RLC_NE otherwise.
  */
-int fp4_cmp(fp4_t a, fp4_t b);
+int fp4_cmp(const fp4_t a, const fp4_t b);
 
 /**
  * Returns the result of a signed comparison between a quartic extension field
@@ -1987,7 +1987,7 @@ int fp4_cmp(fp4_t a, fp4_t b);
  * @param[in] b				- the digit.
  * @return RLC_EQ if a == b, and RLC_NE otherwise.
  */
-int fp4_cmp_dig(fp4_t a, dig_t b);
+int fp4_cmp_dig(const fp4_t a, const dig_t b);
 
 /**
  * Assigns a quartic extension field element to a digit.
@@ -2206,7 +2206,7 @@ void fp6_rand(fp6_t a);
  *
  * @param[in] a				- the sextic extension field element to print.
  */
-void fp6_print(fp6_t a);
+void fp6_print(const fp6_t a);
 
 /**
  * Returns the number of bytes necessary to store a quadratic extension field
@@ -2247,7 +2247,7 @@ void fp6_write_bin(uint8_t *bin, int len, fp6_t a);
  * @param[in] b				- the second sextic extension field element.
  * @return RLC_EQ if a == b, and RLC_NE otherwise.
  */
-int fp6_cmp(fp6_t a, fp6_t b);
+int fp6_cmp(const fp6_t a, const fp6_t b);
 
 /**
  * Returns the result of a signed comparison between a sextic extension field
@@ -2257,7 +2257,7 @@ int fp6_cmp(fp6_t a, fp6_t b);
  * @param[in] b				- the digit.
  * @return RLC_EQ if a == b, and RLC_NE otherwise.
  */
-int fp6_cmp_dig(fp6_t a, dig_t b);
+int fp6_cmp_dig(const fp6_t a, const dig_t b);
 
 /**
  * Assigns a sextic extension field element to a digit.
@@ -2435,7 +2435,7 @@ void fp8_rand(fp8_t a);
  *
  * @param[in] a				- the octic extension field element to print.
  */
-void fp8_print(fp8_t a);
+void fp8_print(const fp8_t a);
 
 /**
  * Returns the number of bytes necessary to store an octic extension field
@@ -2477,7 +2477,7 @@ void fp8_write_bin(uint8_t *bin, int len, fp8_t a);
  * @param[in] b				- the second octic extension field element.
  * @return RLC_EQ if a == b, and RLC_NE otherwise.
  */
-int fp8_cmp(fp8_t a, fp8_t b);
+int fp8_cmp(const fp8_t a, const fp8_t b);
 
 /**
  * Returns the result of a signed comparison between an octic extension field
@@ -2487,7 +2487,7 @@ int fp8_cmp(fp8_t a, fp8_t b);
  * @param[in] b				- the digit.
  * @return RLC_EQ if a == b, and RLC_NE otherwise.
  */
-int fp8_cmp_dig(fp8_t a, dig_t b);
+int fp8_cmp_dig(const fp8_t a, const dig_t b);
 
 /**
  * Assigns an octic extension field element to a digit.
@@ -2719,7 +2719,7 @@ void fp9_rand(fp9_t a);
  *
  * @param[in] a				- the nonic extension field element to print.
  */
-void fp9_print(fp9_t a);
+void fp9_print(const fp9_t a);
 
 /**
  * Returns the number of bytes necessary to store a quadratic extension field
@@ -2760,7 +2760,7 @@ void fp9_write_bin(uint8_t *bin, int len, fp9_t a);
  * @param[in] b				- the second nonic extension field element.
  * @return RLC_EQ if a == b, and RLC_NE otherwise.
  */
-int fp9_cmp(fp9_t a, fp9_t b);
+int fp9_cmp(const fp9_t a, const fp9_t b);
 
 /**
  * Returns the result of a signed comparison between a nonic extension field
@@ -2770,7 +2770,7 @@ int fp9_cmp(fp9_t a, fp9_t b);
  * @param[in] b				- the digit.
  * @return RLC_EQ if a == b, and RLC_NE otherwise.
  */
-int fp9_cmp_dig(fp9_t a, dig_t b);
+int fp9_cmp_dig(const fp9_t a, const dig_t b);
 
 /**
  * Assigns a nonic extension field element to a digit.
@@ -2957,7 +2957,7 @@ void fp12_rand(fp12_t a);
  *
  * @param[in] a				- the dodecic extension field element to print.
  */
-void fp12_print(fp12_t a);
+void fp12_print(const fp12_t a);
 
 /**
  * Returns the number of bytes necessary to store a dodecic extension field
@@ -3000,7 +3000,7 @@ void fp12_write_bin(uint8_t *bin, int len, fp12_t a, int pack);
  * @param[in] b				- the second dodecic extension field element.
  * @return RLC_EQ if a == b, and RLC_NE otherwise.
  */
-int fp12_cmp(fp12_t a, fp12_t b);
+int fp12_cmp(const fp12_t a, const fp12_t b);
 
 /**
  * Returns the result of a signed comparison between a dodecic extension field
@@ -3010,7 +3010,7 @@ int fp12_cmp(fp12_t a, fp12_t b);
  * @param[in] b				- the digit.
  * @return RLC_EQ if a == b, and RLC_NE otherwise.
  */
-int fp12_cmp_dig(fp12_t a, dig_t b);
+int fp12_cmp_dig(const fp12_t a, const dig_t b);
 
 /**
  * Assigns a dodecic extension field element to a digit.
@@ -3375,7 +3375,7 @@ void fp18_rand(fp18_t a);
  *
  * @param[in] A				- the octdecic extension field element to print.
  */
-void fp18_print(fp18_t a);
+void fp18_print(const fp18_t a);
 
 /**
  * Returns the number of bytes necessary to store an octdecic extension field
@@ -3416,7 +3416,7 @@ void fp18_write_bin(uint8_t *bin, int len, fp18_t a);
  * @param[in] b				- the second octdecic extension field element.
  * @return RLC_EQ if a == b, and RLC_NE otherwise.
  */
-int fp18_cmp(fp18_t a, fp18_t b);
+int fp18_cmp(const fp18_t a, const fp18_t b);
 
 /**
  * Returns the result of a signed comparison between an octdecic extension
@@ -3426,7 +3426,7 @@ int fp18_cmp(fp18_t a, fp18_t b);
  * @param[in] b				- the digit.
  * @return RLC_EQ if a == b, and RLC_NE otherwise.
  */
-int fp18_cmp_dig(fp18_t a, dig_t b);
+int fp18_cmp_dig(const fp18_t a, const dig_t b);
 
 /**
  * Assigns an octdecic extension field element to a digit.
@@ -3636,7 +3636,7 @@ void fp24_rand(fp24_t a);
  *
  * @param[in] A				- the 24-degree extension field element to print.
  */
-void fp24_print(fp24_t a);
+void fp24_print(const fp24_t a);
 
 /**
  * Returns the number of bytes necessary to store a 24-degree extension field
@@ -3679,7 +3679,7 @@ void fp24_write_bin(uint8_t *bin, int len, fp24_t a, int pack);
  * @param[in] b				- the second 24-degree extension field element.
  * @return RLC_EQ if a == b, and RLC_NE otherwise.
  */
-int fp24_cmp(fp24_t a, fp24_t b);
+int fp24_cmp(const fp24_t a, const fp24_t b);
 
 /**
  * Returns the result of a signed comparison between a 24-degree extension field
@@ -3689,7 +3689,7 @@ int fp24_cmp(fp24_t a, fp24_t b);
  * @param[in] b				- the digit.
  * @return RLC_EQ if a == b, and RLC_NE otherwise.
  */
-int fp24_cmp_dig(fp24_t a, dig_t b);
+int fp24_cmp_dig(const fp24_t a, const dig_t b);
 
 /**
  * Assigns a 24-degree extension field element to a digit.
@@ -4015,7 +4015,7 @@ void fp48_rand(fp48_t a);
  *
  * @param[in] a				- the 48-extension field element to print.
  */
-void fp48_print(fp48_t a);
+void fp48_print(const fp48_t a);
 
 /**
  * Returns the number of bytes necessary to store a 48-extension field
@@ -4058,7 +4058,7 @@ void fp48_write_bin(uint8_t *bin, int len, fp48_t a, int pack);
  * @param[in] b				- the second 48-extension field element.
  * @return RLC_EQ if a == b, and RLC_NE otherwise.
  */
-int fp48_cmp(fp48_t a, fp48_t b);
+int fp48_cmp(const fp48_t a, const fp48_t b);
 
 /**
  * Returns the result of a signed comparison between a 48-extension field
@@ -4068,7 +4068,7 @@ int fp48_cmp(fp48_t a, fp48_t b);
  * @param[in] b				- the digit.
  * @return RLC_EQ if a == b, and RLC_NE otherwise.
  */
-int fp48_cmp_dig(fp48_t a, dig_t b);
+int fp48_cmp_dig(const fp48_t a, const dig_t b);
 
 /**
  * Assigns a 48-extension field element to a digit.
@@ -4366,7 +4366,7 @@ void fp54_rand(fp54_t a);
  *
  * @param[in] a				- the 54-extension field element to print.
  */
-void fp54_print(fp54_t a);
+void fp54_print(const fp54_t a);
 
 /**
  * Returns the number of bytes necessary to store a 54-extension field
@@ -4409,7 +4409,7 @@ void fp54_write_bin(uint8_t *bin, int len, fp54_t a, int pack);
  * @param[in] b				- the second 54-extension field element.
  * @return RLC_EQ if a == b, and RLC_NE otherwise.
  */
-int fp54_cmp(fp54_t a, fp54_t b);
+int fp54_cmp(const fp54_t a, const fp54_t b);
 
 /**
  * Returns the result of a signed comparison between a 54-extension field
@@ -4419,7 +4419,7 @@ int fp54_cmp(fp54_t a, fp54_t b);
  * @param[in] b				- the digit.
  * @return RLC_EQ if a == b, and RLC_NE otherwise.
  */
-int fp54_cmp_dig(fp54_t a, dig_t b);
+int fp54_cmp_dig(const fp54_t a, const dig_t b);
 
 /**
  * Assigns a 54-extension field element to a digit.

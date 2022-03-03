@@ -55,7 +55,7 @@ void fp2_rand(fp2_t a) {
 	fp_rand(a[1]);
 }
 
-void fp2_print(fp2_t a) {
+void fp2_print(const fp2_t a) {
 	fp_print(a[0]);
 	fp_print(a[1]);
 }
@@ -150,7 +150,7 @@ void fp3_rand(fp3_t a) {
 	fp_rand(a[2]);
 }
 
-void fp3_print(fp3_t a) {
+void fp3_print(const fp3_t a) {
 	fp_print(a[0]);
 	fp_print(a[1]);
 	fp_print(a[2]);
@@ -205,7 +205,7 @@ void fp4_rand(fp4_t a) {
 	fp2_rand(a[1]);
 }
 
-void fp4_print(fp4_t a) {
+void fp4_print(const fp4_t a) {
 	fp2_print(a[0]);
 	fp2_print(a[1]);
 }
@@ -259,7 +259,7 @@ void fp6_rand(fp6_t a) {
 	fp2_rand(a[2]);
 }
 
-void fp6_print(fp6_t a) {
+void fp6_print(const fp6_t a) {
 	fp2_print(a[0]);
 	fp2_print(a[1]);
 	fp2_print(a[2]);
@@ -314,7 +314,7 @@ void fp8_rand(fp8_t a) {
 	fp4_rand(a[1]);
 }
 
-void fp8_print(fp8_t a) {
+void fp8_print(const fp8_t a) {
 	fp4_print(a[0]);
 	fp4_print(a[1]);
 }
@@ -376,7 +376,7 @@ void fp9_rand(fp9_t a) {
 	fp3_rand(a[2]);
 }
 
-void fp9_print(fp9_t a) {
+void fp9_print(const fp9_t a) {
 	fp3_print(a[0]);
 	fp3_print(a[1]);
 	fp3_print(a[2]);
@@ -431,7 +431,7 @@ void fp12_rand(fp12_t a) {
 	fp6_rand(a[1]);
 }
 
-void fp12_print(fp12_t a) {
+void fp12_print(const fp12_t a) {
 	fp6_print(a[0]);
 	fp6_print(a[1]);
 }
@@ -523,7 +523,7 @@ void fp18_rand(fp18_t a) {
 	fp9_rand(a[1]);
 }
 
-void fp18_print(fp18_t a) {
+void fp18_print(const fp18_t a) {
 	fp9_print(a[0]);
 	fp9_print(a[1]);
 }
@@ -577,7 +577,7 @@ void fp24_rand(fp24_t a) {
 	fp8_rand(a[2]);
 }
 
-void fp24_print(fp24_t a) {
+void fp24_print(const fp24_t a) {
 	fp8_print(a[0]);
 	fp8_print(a[1]);
 	fp8_print(a[2]);
@@ -673,7 +673,7 @@ void fp48_rand(fp48_t a) {
 	fp24_rand(a[1]);
 }
 
-void fp48_print(fp48_t a) {
+void fp48_print(const fp48_t a) {
 	fp24_print(a[0]);
 	fp24_print(a[1]);
 }
@@ -768,7 +768,7 @@ void fp54_rand(fp54_t a) {
 	fp18_rand(a[2]);
 }
 
-void fp54_print(fp54_t a) {
+void fp54_print(const fp54_t a) {
 	fp18_print(a[0]);
 	fp18_print(a[1]);
 	fp18_print(a[2]);
