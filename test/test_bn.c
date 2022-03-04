@@ -988,18 +988,20 @@ static int reduction(void) {
 	return code;
 }
 
+// For bn_mxp_sim experiments
+#define BN_MXP_SIM_LOT_LARGER (3*BN_XPWDT+5)
+
 static int exponentiation(void) {
 	int code = RLC_ERR;
 	bn_t a, b, c, p;
-    const uint64_t XPSIMLOTM = 3*BN_XPWDT+5;
-    bn_t t[XPSIMLOTM], u[XPSIMLOTM];
+    bn_t t[BN_MXP_SIM_LOT_LARGER], u[BN_MXP_SIM_LOT_LARGER];
 
 	bn_null(a);
 	bn_null(b);
 	bn_null(c);
 	bn_null(p);
 
-    for(int i=0; i<XPSIMLOTM; ++i) {
+    for(int i=0; i<BN_MXP_SIM_LOT_LARGER; ++i) {
         bn_null(t[i]); bn_null(u[i]);
     }
 
@@ -1008,7 +1010,7 @@ static int exponentiation(void) {
 		bn_new(b);
 		bn_new(c);
 		bn_new(p);
-        for(int i=0; i<XPSIMLOTM; ++i) {
+        for(int i=0; i<BN_MXP_SIM_LOT_LARGER; ++i) {
             bn_new(t[i]); bn_new(u[i]);
         }
 #if BN_MOD != PMERS
@@ -1082,7 +1084,7 @@ static int exponentiation(void) {
 		TEST_END;
 #endif
 
-        for(int i=0; i<XPSIMLOTM; ++i) {
+        for(int i=0; i<BN_MXP_SIM_LOT_LARGER; ++i) {
             bn_rand_mod(t[i], p);
             bn_rand_mod(u[i], p);
         }
@@ -1104,11 +1106,11 @@ static int exponentiation(void) {
 
 		TEST_CASE("simultaneous modular exponentiation lot (1) is correct") {
                 // Simultaneous
-            bn_mxp_sim_lot(a, (const bn_t*)t, (const bn_t*)u, p, XPSIMLOTM>>1);
+            bn_mxp_sim_lot(a, (const bn_t*)t, (const bn_t*)u, p, BN_MXP_SIM_LOT_LARGER>>1);
 
                 // By hand
             bn_mxp(b, t[0], u[0], p);
-            for(int i=1; i<(XPSIMLOTM>>1); ++i) {
+            for(int i=1; i<(BN_MXP_SIM_LOT_LARGER>>1); ++i) {
                 bn_mxp(c, t[i], u[i], p);
                 bn_mul(b, b, c);
                 bn_mod(b, b, p);
@@ -1118,11 +1120,11 @@ static int exponentiation(void) {
         TEST_END;
 		TEST_CASE("simultaneous modular exponentiation lot (2) is correct") {
                 // Simultaneous
-            bn_mxp_sim_lot(a, (const bn_t*)t, (const bn_t*)u, p, XPSIMLOTM);
+            bn_mxp_sim_lot(a, (const bn_t*)t, (const bn_t*)u, p, BN_MXP_SIM_LOT_LARGER);
 
                 // By hand
             bn_mxp(b, t[0], u[0], p);
-            for(int i=1; i<XPSIMLOTM; ++i) {
+            for(int i=1; i<BN_MXP_SIM_LOT_LARGER; ++i) {
                 bn_mxp(c, t[i], u[i], p);
                 bn_mul(b, b, c);
                 bn_mod(b, b, p);
@@ -1141,7 +1143,7 @@ static int exponentiation(void) {
 	bn_free(b);
 	bn_free(c);
 	bn_free(p);
-    for(int i=0; i<XPSIMLOTM; ++i) {
+    for(int i=0; i<BN_MXP_SIM_LOT_LARGER; ++i) {
         bn_free(t[i]);bn_free(u[i]);
     }
 	return code;
