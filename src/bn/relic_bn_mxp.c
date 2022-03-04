@@ -376,3 +376,116 @@ void bn_mxp_dig(bn_t c, const bn_t a, dig_t b, const bn_t m) {
 		bn_free(r);
 	}
 }
+
+
+/****************************************************************
+ * bn_t simultaneous exponentiation generalized Shamir trick
+ * utility subroutine overwritting u, with precomputed table t
+ ****************************************************************/
+void _bn_mxp_sim(bn_t S, const bn_t P[BN_XPWDT], bn_t u[BN_XPWDT],
+                 const bn_t T[BN_XPWDT], const bn_t mod) {
+        // WARNING: overwrites u
+    int iszeroexp = 0x1;
+    for(uint64_t j=0; j<BN_XPWDT; ++j) {
+        iszeroexp &= bn_is_zero(u[j]);
+    }
+
+    if (iszeroexp) {
+        bn_set_dig(S,1);
+        return;
+    }
+
+    uint64_t parities = !bn_is_even(u[0]);
+    for(uint64_t j=1; j<BN_XPWDT; ++j) parities |= (!bn_is_even(u[j]))<<j;
+
+    for(uint64_t j=0; j<BN_XPWDT; ++j) {
+        bn_hlv(u[j],u[j]);			// Halving exponents, WARNING: u overwriten
+    }
+
+    _bn_mxp_sim(S, P, u, T, mod);	// POwer up to the halves
+
+    bn_sqr(S,S); bn_mod(S,S,mod);	// One Squaring
+
+    if (parities) {
+        bn_mul(S, S, T[parities]);	// One multiplication by the odd exponents
+        bn_mod(S,S,mod);
+    }
+}
+
+/****************************************************************
+ * bn_t simultaneous exponentiation generalized Shamir trick and fixed width
+ ****************************************************************/
+void bn_mxp_sim(bn_t S, const bn_t P[BN_XPWDT], const bn_t u[BN_XPWDT], const bn_t mod) {
+    const unsigned int TABLE_DIM = 1<<BN_XPWDT;
+    bn_t T[TABLE_DIM], hu[BN_XPWDT];
+
+    RLC_TRY {
+
+        bn_null(T[0]); bn_new(T[0]); bn_set_dig(T[0],1);
+
+        for(uint64_t i=0; i<BN_XPWDT; ++i) {
+            const uint64_t star = 1<<i; const uint64_t stars = star<<1;
+            bn_null(T[star]); bn_new(T[star]); bn_copy(T[star], P[i]);
+            for(uint64_t j=star+1; j<stars; ++j) {
+                bn_null(T[j]); bn_new(T[j]);
+                bn_mul(T[j], T[star], T[j-star]); bn_mod(T[j],T[j],mod);
+            }
+        }
+
+        for(uint64_t j=0; j<BN_XPWDT; ++j) {
+            bn_null(hu[j]); bn_new(hu[j]); bn_copy(hu[j],u[j]);
+        }
+
+        _bn_mxp_sim(S,P,hu,T,mod);
+
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+        for(uint64_t i=0; i<TABLE_DIM; ++i) { bn_free(T[i]); }
+        for(uint64_t j=0; j<BN_XPWDT; ++j) { bn_free(hu[j]); }
+    }
+}
+
+/****************************************************************
+ * bn_t simultaneous exponentiation generalized Shamir trick any width
+ ****************************************************************/
+void bn_mxp_sim_lot(bn_t S, const bn_t P[], const bn_t u[], const bn_t mod, int n) {
+    bn_t wP[BN_XPWDT], wu[BN_XPWDT], tmp;
+	RLC_TRY {
+            //
+        bn_null(tmp); bn_new(tmp);
+        for(uint64_t j=0; j<BN_XPWDT; ++j) {
+            bn_null(wP[j]); bn_new(wP[j]);
+            bn_null(wu[j]); bn_new(wu[j]);
+        }
+
+        const int endblockingloop = ( (n/BN_XPWDT)*BN_XPWDT ); // multiple of BN_XPWDT
+        bn_set_dig(S, 1);
+        int i = 0; for(; i<endblockingloop; ) {
+            for(uint64_t j=0; j<BN_XPWDT; ++j, ++i) {
+                bn_copy(wP[j], P[i]);
+                bn_copy(wu[j], u[i]);
+            }
+            bn_mxp_sim(tmp, wP, wu, mod);
+            bn_mul(S, S, tmp);
+            bn_mod(S, S, mod);
+        }
+
+        for(; i<n; ++i) {
+            bn_mxp(tmp, P[i], u[i], mod);
+            bn_mul(S, S, tmp);
+            bn_mod(S, S, mod);
+        }
+
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+        int a = 0;
+        printf("Divide by zero. %d\n", 13/a);
+
+	} RLC_FINALLY {
+        for(uint64_t j=0; j<BN_XPWDT; ++j) {
+            bn_free(wP[j]); bn_free(wu[j]);
+        }
+        bn_free(tmp);
+    }
+}

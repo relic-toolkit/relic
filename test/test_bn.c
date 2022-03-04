@@ -991,18 +991,26 @@ static int reduction(void) {
 static int exponentiation(void) {
 	int code = RLC_ERR;
 	bn_t a, b, c, p;
+    const uint64_t XPSIMLOTM = 3*BN_XPWDT+5;
+    bn_t t[XPSIMLOTM], u[XPSIMLOTM];
 
 	bn_null(a);
 	bn_null(b);
 	bn_null(c);
 	bn_null(p);
 
+    for(int i=0; i<XPSIMLOTM; ++i) {
+        bn_null(t[i]); bn_null(u[i]);
+    }
+
 	RLC_TRY {
 		bn_new(a);
 		bn_new(b);
 		bn_new(c);
 		bn_new(p);
-
+        for(int i=0; i<XPSIMLOTM; ++i) {
+            bn_new(t[i]); bn_new(u[i]);
+        }
 #if BN_MOD != PMERS
 		bn_gen_prime(p, RLC_BN_BITS);
 #elif BN_PRECI >= 128
@@ -1073,6 +1081,56 @@ static int exponentiation(void) {
 		}
 		TEST_END;
 #endif
+
+        for(int i=0; i<XPSIMLOTM; ++i) {
+            bn_rand_mod(t[i], p);
+            bn_rand_mod(u[i], p);
+        }
+
+		TEST_CASE("simultaneous modular exponentiation is correct") {
+                // Simultaneous
+            bn_mxp_sim(a, t, u, p);
+
+                // By hand
+            bn_mxp(b, t[0], u[0], p);
+            for(int i=1; i<BN_XPWDT; ++i) {
+                bn_mxp(c, t[i], u[i], p);
+                bn_mul(b, b, c);
+                bn_mod(b, b, p);
+            }
+			TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
+        }
+        TEST_END;
+
+		TEST_CASE("simultaneous modular exponentiation lot (1) is correct") {
+                // Simultaneous
+            bn_mxp_sim_lot(a, (const bn_t*)t, (const bn_t*)u, p, XPSIMLOTM>>1);
+
+                // By hand
+            bn_mxp(b, t[0], u[0], p);
+            for(int i=1; i<(XPSIMLOTM>>1); ++i) {
+                bn_mxp(c, t[i], u[i], p);
+                bn_mul(b, b, c);
+                bn_mod(b, b, p);
+            }
+			TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
+        }
+        TEST_END;
+		TEST_CASE("simultaneous modular exponentiation lot (2) is correct") {
+                // Simultaneous
+            bn_mxp_sim_lot(a, (const bn_t*)t, (const bn_t*)u, p, XPSIMLOTM);
+
+                // By hand
+            bn_mxp(b, t[0], u[0], p);
+            for(int i=1; i<XPSIMLOTM; ++i) {
+                bn_mxp(c, t[i], u[i], p);
+                bn_mul(b, b, c);
+                bn_mod(b, b, p);
+            }
+			TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
+        }
+        TEST_END;
+
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);
@@ -1083,6 +1141,9 @@ static int exponentiation(void) {
 	bn_free(b);
 	bn_free(c);
 	bn_free(p);
+    for(int i=0; i<XPSIMLOTM; ++i) {
+        bn_free(t[i]);bn_free(u[i]);
+    }
 	return code;
 }
 
@@ -1715,7 +1776,7 @@ static int prime(void) {
 		TEST_ONCE("prime with large (p-1) prime factor testing is correct") {
 			TEST_ASSERT(bn_is_prime(p) == 1, end);
 			TEST_ASSERT(bn_is_prime(q) == 1, end);
-			bn_sub_dig(p, p, 1); 	// (p-1)
+			bn_sub_dig(p, p, 1);	// (p-1)
 			bn_div(p, p, q);		// (p-1)/q
 			bn_mul(p, p, q);		// ((p-1)/q)*q
 			bn_add_dig(p, p, 1);	// ((p-1)/q)*q+1
@@ -2367,7 +2428,6 @@ int main(void) {
 		core_clean();
 		return 1;
 	}
-
 	util_banner("All tests have passed.\n", 0);
 
 	core_clean();

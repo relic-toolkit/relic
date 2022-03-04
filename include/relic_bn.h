@@ -53,7 +53,7 @@
  * multiple precision integer must grow. Otherwise, it represents the fixed
  * fixed precision.
  */
-#define RLC_BN_BITS 	((int)BN_PRECI)
+#define RLC_BN_BITS	((int)BN_PRECI)
 
 /**
  * Size in digits of a block sufficient to store the required precision.
@@ -164,7 +164,7 @@ typedef bn_st *bn_t;
  * @param[in] D				- the precision in digits.
  * @throw ERR_NO_MEMORY		- if there is no available memory.
  * @throw ERR_PRECISION		- if the required precision cannot be represented
- * 							by the library.
+ *							by the library.
  */
 #if ALLOC == DYNAMIC
 #define bn_new_size(A, D)													\
@@ -370,7 +370,7 @@ typedef bn_st *bn_t;
  * @param[in] abits			- the length of the factor a in bits.
  * @param[in] bbits			- the length of the result in bits.
  */
-int bn_gen_factor_prime(bn_t a, bn_t b, int abits, int bbits); 
+int bn_gen_factor_prime(bn_t a, bn_t b, int abits, int bbits);
 
 /*============================================================================*/
 /* Function prototypes                                                        */
@@ -383,7 +383,7 @@ int bn_gen_factor_prime(bn_t a, bn_t b, int abits, int bbits);
  * @param[in] digits		- the required precision in digits.
  * @throw ERR_NO_MEMORY		- if there is no available memory.
  * @throw ERR_PRECISION		- if the required precision cannot be represented
- * 							by the library.
+ *							by the library.
  */
 void bn_make(bn_t a, int digits);
 
@@ -402,7 +402,7 @@ void bn_clean(bn_t a);
  * @param[in] digits		- the number of digits to expand.
  * @throw ERR_NO_MEMORY		- if there is no available memory.
  * @throw ERR_PRECISION		- if the required precision cannot be represented
- * 							by the library.
+ *							by the library.
  */
 void bn_grow(bn_t a, int digits);
 
@@ -861,7 +861,7 @@ void bn_div_rem_dig(bn_t c, dig_t *d, const bn_t a, const dig_t b);
  * Computes the modular inverse of a multiple precision integer. Computes c such
  * that a*c mod b = 1.
  *
- * @param[out] c 			- the result.
+ * @param[out] c			- the result.
  * @param[in] a				- the element to invert.
  * param[in] b				- the modulus.
  *
@@ -1042,10 +1042,33 @@ void bn_mxp_monty(bn_t c, const bn_t a, const bn_t b, const bn_t m);
 void bn_mxp_dig(bn_t c, const bn_t a, dig_t b, const bn_t m);
 
 /**
+ * Exponentiates simultaneously BN_XPWDT integers modulo a positive integer
+ * using generalized Shamir's trick. Computes R = \prod P_i^{u_i}.
+ *
+ * @param[out] R			- the result.
+ * @param[in] P				- the BN_XPWDT elements to multiply.
+ * @param[in] u				- the BN_XPWDT integer scalars.
+ * @param[in] m				- the modulus.
+ */
+void bn_mxp_sim(bn_t R, const bn_t P[BN_XPWDT], const bn_t u[BN_XPWDT], const bn_t m);
+
+/**
+ * Exponentiates simultaneously integers modulo a positive integer
+ * using generalized Shamir's trick. Computes R = \prod P_i^{u_i}.
+ *
+ * @param[out] R			- the result.
+ * @param[in] P				- the elements to multiply.
+ * @param[in] u				- the integer scalars.
+ * @param[in] N				- the number of elements to multiply.
+ * @param[in] m				- the modulus.
+ */
+void bn_mxp_sim_lot(bn_t R, const bn_t P[], const bn_t u[], const bn_t m, int n);
+
+/**
  * Extracts an approximate integer square-root of a multiple precision integer.
  *
- * @param[out] c 			- the result.
- * @param[in] a 			- the multiple precision integer to extract.
+ * @param[out] c			- the result.
+ * @param[in] a			- the multiple precision integer to extract.
  *
  * @throw ERR_NO_VALID		- if the argument is negative.
  */
@@ -1339,11 +1362,11 @@ void bn_rec_rtnaf(int8_t *tnaf, int *len, const bn_t k, int8_t u, int m, int w);
  * Write the constants needed for \tau-NAF recoding as a set of \alpha_u =
  * \beta_u + \gamma_u * \tau elements.
  *
- * @param[out] t 		- the integer corresponding to \tau.
+ * @param[out] t		- the integer corresponding to \tau.
  * @param[out] beta		- the first coefficients of the constants.
  * @param[out] gama		- the second coefficients of the constants.
- * @param[in] u 		- the u curve parameter.
- * @param[in] w 		- the window size in bits.
+ * @param[in] u		- the u curve parameter.
+ * @param[in] w		- the window size in bits.
  */
 void bn_rec_tnaf_get(uint8_t *t, int8_t *beta, int8_t *gama, int8_t u, int w);
 
@@ -1403,11 +1426,11 @@ void bn_rec_glv(bn_t k0, bn_t k1, const bn_t k, const bn_t n, const bn_t v1[],
  * Recodes a scalar in subscalars according to Frobenius endomorphism.
  *
  * @param[out] ki			- the recoded subscalars.
- * @param[in] sub 			- the number of subscalars.
+ * @param[in] sub			- the number of subscalars.
  * @param[in] k				- the scalar to recode.
- * @param[in] x 			- the elliptic curve parameter.
+ * @param[in] x			- the elliptic curve parameter.
  * @param[in] n				- the elliptic curve group order.
- * @param[in] bls 			- flag to indicate if it is a BLS12 curve.
+ * @param[in] bls			- flag to indicate if it is a BLS12 curve.
  */
 void bn_rec_frb(bn_t *ki, int sub, const bn_t k, const bn_t x, const bn_t n,
 	int bls);
@@ -1417,7 +1440,7 @@ void bn_rec_frb(bn_t *ki, int sub, const bn_t k, const bn_t x, const bn_t n,
  * interpolation for a modulus and a given set of roots.
  * Computes c(x) = \prod_{0 <= i < n}(x - ai) mod q.
  *
- * @param[out] c 			- the coefficients of the polynomial.
+ * @param[out] c			- the coefficients of the polynomial.
  * @param[in] a				- the set of roots.
  * @param[in] b				- the modulus.
  * @param[in] n				- the number of roots to interpolate.
@@ -1429,8 +1452,8 @@ void bn_lag(bn_t *c, bn_t *a, bn_t b, int n);
  * given the (n+1) coefficients of the polynomial and the modulus.
  * Computes c = a(x) mod q.
  *
- * @param[out] c 			- the result of the evaluation.
- * @param[in] a 			- the coefficients of the polynomial.
+ * @param[out] c			- the result of the evaluation.
+ * @param[in] a			- the coefficients of the polynomial.
  * @param[in] x				- the value to evaluate.
  * @param[in] b				- the modulus.
  * @param[in] n				- the degree of the polynomial.

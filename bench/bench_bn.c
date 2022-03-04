@@ -282,6 +282,8 @@ static void util(void) {
 
 static void arith(void) {
 	bn_t a, b, c, d[3], e[3];
+    const uint64_t XPSIMLOTM = 3*BN_XPWDT+5;
+    bn_t t[XPSIMLOTM], u[XPSIMLOTM];
 	dig_t f;
 	int len;
 
@@ -297,6 +299,10 @@ static void arith(void) {
 		bn_null(e[j]);
 		bn_new(d[j]);
 		bn_new(e[j]);
+	}
+	for (int i = 0; i < XPSIMLOTM; ++i) {
+        bn_null(t[i]); bn_null(u[i]);
+        bn_new(t[i]); bn_new(u[i]);
 	}
 
 	BENCH_RUN("bn_add") {
@@ -664,6 +670,47 @@ static void arith(void) {
 	}
 	BENCH_END;
 
+    bn_set_2b(b, RLC_BN_BITS);
+    bn_rand(c, RLC_POS, RLC_DIG);
+    bn_sub(b, b, c);
+    if (bn_is_even(b)) {
+        bn_add_dig(b, b, 1);
+    }
+    for(int i=0; i<XPSIMLOTM; ++i) {
+        bn_rand_mod(t[i], b);
+        bn_rand_mod(u[i], b);
+    }
+
+    util_print("(BN_XPWDT = %d) ", BN_XPWDT);
+	BENCH_RUN("bn_mxp_sim") {
+		BENCH_ADD(bn_mxp_sim(c, t, u, b));
+	}
+	BENCH_END;
+
+    int SMLT = BN_XPWDT>>1; util_print("(%d SIMLOT) ", SMLT);
+	BENCH_RUN("bn_mxp_sim_lot") {
+		BENCH_ADD(bn_mxp_sim_lot(c, (const bn_t*)t, (const bn_t*)u, b, SMLT));
+	}
+	BENCH_END;
+
+    SMLT = BN_XPWDT<<1; util_print("(%d SIMLOT) ", SMLT);
+	BENCH_RUN("bn_mxp_sim_lot") {
+		BENCH_ADD(bn_mxp_sim_lot(c, (const bn_t*)t, (const bn_t*)u, b, SMLT));
+	}
+	BENCH_END;
+
+    SMLT = XPSIMLOTM>>1; util_print("(%d SIMLOT) ", SMLT);
+	BENCH_RUN("bn_mxp_sim_lot") {
+		BENCH_ADD(bn_mxp_sim_lot(c, (const bn_t*)t, (const bn_t*)u, b, SMLT));
+	}
+	BENCH_END;
+
+    SMLT = XPSIMLOTM; util_print("(%d SIMLOT) ", SMLT);
+	BENCH_RUN("bn_mxp_sim_lot") {
+		BENCH_ADD(bn_mxp_sim_lot(c, (const bn_t*)t, (const bn_t*)u, b, SMLT));
+	}
+	BENCH_END;
+
 	BENCH_RUN("bn_srt") {
 		bn_rand(a, RLC_POS, RLC_BN_BITS);
 		BENCH_ADD(bn_srt(b, a));
@@ -936,6 +983,9 @@ static void arith(void) {
 		bn_free(d[j]);
 		bn_free(e[j]);
 	}
+	for (int i = 0; i < XPSIMLOTM; ++i) {
+        bn_free(t[i]);bn_free(u[i]);
+    }
 }
 
 int main(void) {
