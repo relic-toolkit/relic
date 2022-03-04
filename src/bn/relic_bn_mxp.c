@@ -417,13 +417,14 @@ void _bn_mxp_sim(bn_t S, const bn_t P[BN_XPWDT], bn_t u[BN_XPWDT],
     }
 }
 
+#define BN_XPWDT_TABLE_SIZE (1u<<BN_XPWDT)
+
 /****************************************************************
  * bn_t simultaneous exponentiation generalized Shamir trick and fixed width
  ****************************************************************/
 void bn_mxp_sim(bn_t S, const bn_t P[BN_XPWDT], const bn_t u[BN_XPWDT], const bn_t mod) {
     bn_t hu[BN_XPWDT];
-    const unsigned int TABLE_DIM = 1u<<BN_XPWDT;
-    bn_t T[TABLE_DIM];
+    bn_t T[BN_XPWDT_TABLE_SIZE];
 
     RLC_TRY {
 
@@ -450,7 +451,7 @@ void bn_mxp_sim(bn_t S, const bn_t P[BN_XPWDT], const bn_t u[BN_XPWDT], const bn
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-        for(unsigned int i=0; i<TABLE_DIM; ++i) { bn_free(T[i]); }
+        for(unsigned int i=0; i<BN_XPWDT_TABLE_SIZE; ++i) { bn_free(T[i]); }
         for(unsigned int j=0; j<BN_XPWDT; ++j) { bn_free(hu[j]); }
     }
 }
