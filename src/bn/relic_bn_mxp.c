@@ -391,23 +391,28 @@ void _bn_mxp_sim(bn_t S, const bn_t P[BN_XPWDT], bn_t u[BN_XPWDT],
     }
 
     if (iszeroexp) {
-        bn_set_dig(S,1);
+        bn_set_dig(S,1); // all exponents zero, just return 1
         return;
     }
 
+        // Select odd exponents
     uint64_t parities = !bn_is_even(u[0]);
     for(uint64_t j=1; j<BN_XPWDT; ++j) parities |= (!bn_is_even(u[j]))<<j;
 
+        // Halving exponents
     for(uint64_t j=0; j<BN_XPWDT; ++j) {
-        bn_hlv(u[j],u[j]);			// Halving exponents, WARNING: u overwriten
+        bn_hlv(u[j],u[j]);			// WARNING: u overwriten
     }
 
-    _bn_mxp_sim(S, P, u, T, mod);	// POwer up to the halves
+        // POwer up to the halves
+    _bn_mxp_sim(S, P, u, T, mod);
 
-    bn_sqr(S,S); bn_mod(S,S,mod);	// One Squaring
+        // One Squaring
+    bn_sqr(S,S); bn_mod(S,S,mod);
 
+        // One multiplication by the odd exponents
     if (parities) {
-        bn_mul(S, S, T[parities]);	// One multiplication by the odd exponents
+        bn_mul(S, S, T[parities]);
         bn_mod(S,S,mod);
     }
 }
@@ -423,6 +428,7 @@ void bn_mxp_sim(bn_t S, const bn_t P[BN_XPWDT], const bn_t u[BN_XPWDT], const bn
 
         bn_null(T[0]); bn_new(T[0]); bn_set_dig(T[0],1);
 
+            // Precompute all 2^{BN_XPWDT} combinations of points P
         for(uint64_t i=0; i<BN_XPWDT; ++i) {
             const uint64_t star = 1<<i; const uint64_t stars = star<<1;
             bn_null(T[star]); bn_new(T[star]); bn_copy(T[star], P[i]);
@@ -432,10 +438,12 @@ void bn_mxp_sim(bn_t S, const bn_t P[BN_XPWDT], const bn_t u[BN_XPWDT], const bn
             }
         }
 
+            // copy u, as hu will be overwritten by the subroutine
         for(uint64_t j=0; j<BN_XPWDT; ++j) {
             bn_null(hu[j]); bn_new(hu[j]); bn_copy(hu[j],u[j]);
         }
 
+            // Call the exponentiation subroutine
         _bn_mxp_sim(S,P,hu,T,mod);
 
 	} RLC_CATCH_ANY {
@@ -452,15 +460,17 @@ void bn_mxp_sim(bn_t S, const bn_t P[BN_XPWDT], const bn_t u[BN_XPWDT], const bn
 void bn_mxp_sim_lot(bn_t S, const bn_t P[], const bn_t u[], const bn_t mod, int n) {
     bn_t wP[BN_XPWDT], wu[BN_XPWDT], tmp;
 	RLC_TRY {
-            //
+            // Will use blocks of size BN_XPWDT
         bn_null(tmp); bn_new(tmp);
         for(uint64_t j=0; j<BN_XPWDT; ++j) {
             bn_null(wP[j]); bn_new(wP[j]);
             bn_null(wu[j]); bn_new(wu[j]);
         }
 
-        const int endblockingloop = ( (n/BN_XPWDT)*BN_XPWDT ); // multiple of BN_XPWDT
+            // Largest multiple of BN_XPWDT lower than n
+        const int endblockingloop = ( (n/BN_XPWDT)*BN_XPWDT );
         bn_set_dig(S, 1);
+            // Exponentiate by blocks of size BN_XPWDT
         int i = 0; for(; i<endblockingloop; ) {
             for(uint64_t j=0; j<BN_XPWDT; ++j, ++i) {
                 bn_copy(wP[j], P[i]);
@@ -471,6 +481,7 @@ void bn_mxp_sim_lot(bn_t S, const bn_t P[], const bn_t u[], const bn_t mod, int 
             bn_mod(S, S, mod);
         }
 
+            // Remaining (n-endblockingloop) exponentiations
         for(; i<n; ++i) {
             bn_mxp(tmp, P[i], u[i], mod);
             bn_mul(S, S, tmp);
@@ -479,9 +490,6 @@ void bn_mxp_sim_lot(bn_t S, const bn_t P[], const bn_t u[], const bn_t mod, int 
 
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
-        int a = 0;
-        printf("Divide by zero. %d\n", 13/a);
-
 	} RLC_FINALLY {
         for(uint64_t j=0; j<BN_XPWDT; ++j) {
             bn_free(wP[j]); bn_free(wu[j]);
