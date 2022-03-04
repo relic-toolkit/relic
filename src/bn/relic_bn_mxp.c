@@ -421,8 +421,9 @@ void _bn_mxp_sim(bn_t S, const bn_t P[BN_XPWDT], bn_t u[BN_XPWDT],
  * bn_t simultaneous exponentiation generalized Shamir trick and fixed width
  ****************************************************************/
 void bn_mxp_sim(bn_t S, const bn_t P[BN_XPWDT], const bn_t u[BN_XPWDT], const bn_t mod) {
+    bn_t hu[BN_XPWDT];
     const unsigned int TABLE_DIM = 1u<<BN_XPWDT;
-    bn_t T[TABLE_DIM], hu[BN_XPWDT];
+    bn_t T[TABLE_DIM];
 
     RLC_TRY {
 
