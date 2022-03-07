@@ -219,7 +219,7 @@ typedef pt_st *pt_t;
  * @param[out] tri				- the multiplication triples to generate.
  * @param[in] order				- the order.
  */
-void mt_gen(mt_t tri[2], bn_t order);
+void mpc_mt_gen(mt_t tri[2], bn_t order);
 
 /**
  * Performs the local work for a MPC multiplication.
@@ -231,7 +231,7 @@ void mt_gen(mt_t tri[2], bn_t order);
  * @param[in] n 				- the order.
  * @param[in] tri 				- the multiplication triple.
 */
-void mt_mul_lcl(bn_t d, bn_t e, bn_t x, bn_t y, bn_t n, mt_t tri);
+void mpc_mt_lcl(bn_t d, bn_t e, bn_t x, bn_t y, bn_t n, mt_t tri);
 
 /**
  * Opens the public values in an MPC multiplication.
@@ -240,7 +240,7 @@ void mt_mul_lcl(bn_t d, bn_t e, bn_t x, bn_t y, bn_t n, mt_t tri);
  * @param[out] e 				- the second public value.
  * @param[in] n 				- the order.
 */
-void mt_mul_bct(bn_t d[2], bn_t e[2], bn_t n);
+void mpc_mt_bct(bn_t d[2], bn_t e[2], bn_t n);
 
 /**
  * Finishes an MPC multiplication by computing the multiplication result.
@@ -252,7 +252,7 @@ void mt_mul_bct(bn_t d[2], bn_t e[2], bn_t n);
  * @param[in] tri 				- the multiplication triple.
  * @param[in] party				- the party performing the computation.
  */
-void mt_mul_mpc(bn_t r, bn_t d, bn_t e, bn_t n, mt_t tri, int party);
+void mpc_mt_mul(bn_t r, bn_t d, bn_t e, bn_t n, mt_t tri, int party);
 
 /**
  * Performs the local work for a MPC scalar multiplication in G1.

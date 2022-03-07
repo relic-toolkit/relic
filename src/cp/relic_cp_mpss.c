@@ -92,11 +92,11 @@ int cp_mpss_sig(g1_t a, g1_t b[2], bn_t m[2], bn_t r[2], bn_t s[2], mt_t mul_tri
 		}
 		/* Compute d = (xm + y) in MPC. */
 		g1_get_ord(n);
-		mt_mul_lcl(d[0], e[0], m[0], s[0], n, mul_tri[0]);
-		mt_mul_lcl(d[1], e[1], m[1], s[1], n, mul_tri[1]);
-		mt_mul_bct(d, e, n);
-		mt_mul_mpc(d[0], d[0], e[0], n, mul_tri[0], 0);
-		mt_mul_mpc(d[1], d[1], e[1], n, mul_tri[1], 1);
+		mpc_mt_lcl(d[0], e[0], m[0], s[0], n, mul_tri[0]);
+		mpc_mt_lcl(d[1], e[1], m[1], s[1], n, mul_tri[1]);
+		mpc_mt_bct(d, e, n);
+		mpc_mt_mul(d[0], d[0], e[0], n, mul_tri[0], 0);
+		mpc_mt_mul(d[1], d[1], e[1], n, mul_tri[1], 1);
 		bn_add(d[0], d[0], r[0]);
 		bn_mod(d[0], d[0], n);
 		bn_add(d[1], d[1], r[1]);

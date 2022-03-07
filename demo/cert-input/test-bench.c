@@ -171,9 +171,9 @@ static int test_mpss(void) {
 
 		TEST_CASE("multi-party pointcheval-sanders simple signature is correct") {
 			pc_map_tri(t);
-			mt_gen(tri[0], n);
-			mt_gen(tri[1], n);
-			mt_gen(tri[2], n);
+			mpc_mt_gen(tri[0], n);
+			mpc_mt_gen(tri[1], n);
+			mpc_mt_gen(tri[2], n);
 			TEST_ASSERT(cp_mpss_gen(u, v, h, x, y) == RLC_OK, end);
 			TEST_ASSERT(cp_mpss_bct(x, y) == RLC_OK, end);
 			/* Compute signature in MPC. */
@@ -193,9 +193,9 @@ static int test_mpss(void) {
 		TEST_CASE("multi-party pointcheval-sanders block signature is correct") {
 			g1_get_ord(n);
 			pc_map_tri(t);
-			mt_gen(tri[0], n);
-			mt_gen(tri[1], n);
-			mt_gen(tri[2], n);
+			mpc_mt_gen(tri[0], n);
+			mpc_mt_gen(tri[1], n);
+			mpc_mt_gen(tri[2], n);
 			TEST_ASSERT(cp_mpsb_gen(u, _v, h, x, _y, MSGS) == RLC_OK, end);
 			TEST_ASSERT(cp_mpsb_bct(x, _y, MSGS) == RLC_OK, end);
 			/* Compute signature in MPC. */
@@ -364,9 +364,9 @@ static void bench_mpss(void) {
 	}
 
 	pc_map_tri(t);
-	mt_gen(tri[0], n);
-	mt_gen(tri[1], n);
-	mt_gen(tri[2], n);
+	mpc_mt_gen(tri[0], n);
+	mpc_mt_gen(tri[1], n);
+	mpc_mt_gen(tri[2], n);
 
 	bn_rand_mod(m[0], n);
 	bn_rand_mod(m[1], n);
@@ -393,9 +393,9 @@ static void bench_mpss(void) {
 
 	g1_get_ord(n);
 	pc_map_tri(t);
-	mt_gen(tri[0], n);
-	mt_gen(tri[1], n);
-	mt_gen(tri[2], n);
+	mpc_mt_gen(tri[0], n);
+	mpc_mt_gen(tri[1], n);
+	mpc_mt_gen(tri[2], n);
 
 	BENCH_RUN("cp_mpsb_gen") {
 		BENCH_ADD(cp_mpsb_gen(u, _v, h, x, _y, MSGS));

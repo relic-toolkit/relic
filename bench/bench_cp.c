@@ -1376,9 +1376,9 @@ static void mpss(void) {
 	}
 
 	pc_map_tri(t);
-	mt_gen(tri[0], n);
-	mt_gen(tri[1], n);
-	mt_gen(tri[2], n);
+	mpc_mt_gen(tri[0], n);
+	mpc_mt_gen(tri[1], n);
+	mpc_mt_gen(tri[2], n);
 
 	bn_rand_mod(m[0], n);
 	bn_rand_mod(m[1], n);
@@ -1411,9 +1411,9 @@ static void mpss(void) {
 
 	g1_get_ord(n);
 	pc_map_tri(t);
-	mt_gen(tri[0], n);
-	mt_gen(tri[1], n);
-	mt_gen(tri[2], n);
+	mpc_mt_gen(tri[0], n);
+	mpc_mt_gen(tri[1], n);
+	mpc_mt_gen(tri[2], n);
 
 	BENCH_RUN("cp_mpsb_gen (10)") {
 		BENCH_ADD(cp_mpsb_gen(u, _v, h, x, _y, 10));

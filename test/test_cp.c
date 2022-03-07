@@ -1782,9 +1782,9 @@ static int mpss(void) {
 
 		TEST_CASE("multi-party pointcheval-sanders simple signature is correct") {
 			pc_map_tri(t);
-			mt_gen(tri[0], n);
-			mt_gen(tri[1], n);
-			mt_gen(tri[2], n);
+			mpc_mt_gen(tri[0], n);
+			mpc_mt_gen(tri[1], n);
+			mpc_mt_gen(tri[2], n);
 			gt_exp_gen(e[0], tri[2][0]->b);
 			gt_exp_gen(e[1], tri[2][1]->b);
 			gt_exp_gen(f[0], tri[2][0]->c);
@@ -1812,9 +1812,9 @@ static int mpss(void) {
 		TEST_CASE("multi-party pointcheval-sanders block signature is correct") {
 			g1_get_ord(n);
 			pc_map_tri(t);
-			mt_gen(tri[0], n);
-			mt_gen(tri[1], n);
-			mt_gen(tri[2], n);
+			mpc_mt_gen(tri[0], n);
+			mpc_mt_gen(tri[1], n);
+			mpc_mt_gen(tri[2], n);
 			gt_exp_gen(e[0], tri[2][0]->b);
 			gt_exp_gen(e[1], tri[2][1]->b);
 			gt_exp_gen(f[0], tri[2][0]->c);

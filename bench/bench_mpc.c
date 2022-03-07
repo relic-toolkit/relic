@@ -58,22 +58,22 @@ static void mul_triple(void) {
 
 	bn_gen_prime(order, RLC_BN_BITS);
 
-	BENCH_RUN("mt_gen") {
-		BENCH_ADD(mt_gen(tri, order));
+	BENCH_RUN("mpc_mt_gen") {
+		BENCH_ADD(mpc_mt_gen(tri, order));
 	} BENCH_END;
 
-	BENCH_RUN("mt_mul_lcl") {
-		BENCH_ADD(mt_mul_lcl(d[0], e[0], x[0], y[0], order, tri[0]));
-		BENCH_ADD(mt_mul_lcl(d[1], e[1], x[1], y[1], order, tri[1]));
+	BENCH_RUN("mpc_mt_lcl") {
+		BENCH_ADD(mpc_mt_lcl(d[0], e[0], x[0], y[0], order, tri[0]));
+		BENCH_ADD(mpc_mt_lcl(d[1], e[1], x[1], y[1], order, tri[1]));
 	} BENCH_DIV(2);
 
-	BENCH_RUN("mt_mul_bct") {
-		BENCH_ADD(mt_mul_bct(d, e, order););
+	BENCH_RUN("mpc_mt_bct") {
+		BENCH_ADD(mpc_mt_bct(d, e, order););
 	} BENCH_END;
 
-	BENCH_RUN("mt_mul_mpc") {
-		BENCH_ADD(mt_mul_mpc(d[0], d[0], e[0], order, tri[0], 0););
-		BENCH_ADD(mt_mul_mpc(d[1], d[1], e[1], order, tri[1], 1););
+	BENCH_RUN("mpc_mt_mul") {
+		BENCH_ADD(mpc_mt_mul(d[0], d[0], e[0], order, tri[0], 0););
+		BENCH_ADD(mpc_mt_mul(d[1], d[1], e[1], order, tri[1], 1););
 	} BENCH_DIV(2);
 
 	bn_free(order);
@@ -128,7 +128,7 @@ static void pair_triple(void) {
 
 	g1_get_ord(n);
 
-	mt_gen(tri, n);
+	mpc_mt_gen(tri, n);
 	BENCH_RUN("g1_mul") {
 		/* Generate random inputs. */
 		g1_rand(p[0]);
@@ -163,7 +163,7 @@ static void pair_triple(void) {
 		BENCH_ADD(g1_mul_mpc(d[1], l[1], d[1], tri[1], 1));
 	} BENCH_DIV(2);
 
-	mt_gen(tri, n);
+	mpc_mt_gen(tri, n);
 	BENCH_RUN("g2_mul") {
 		/* Generate random inputs. */
 		g2_rand(q[0]);
@@ -197,7 +197,7 @@ static void pair_triple(void) {
 		BENCH_ADD(g2_mul_mpc(e[1], l[1], e[1], tri[1], 1));
 	} BENCH_DIV(2);
 
-	mt_gen(tri, n);
+	mpc_mt_gen(tri, n);
 	BENCH_RUN("gt_exp") {
 		/* Generate random inputs. */
 		gt_rand(r[0]);
