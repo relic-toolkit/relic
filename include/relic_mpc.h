@@ -384,4 +384,10 @@ void pc_map_bct(g1_t d[2], g2_t e[2]);
  */
 void pc_map_mpc(gt_t r, g1_t d1, g2_t d2, pt_t triple, int party);
 
+int mpc_sss_gen(bn_t *y, const bn_t *x, const bn_t secret, const bn_t order,
+        size_t k, size_t n);
+
+int mpc_sss_key(bn_t secret, const bn_t *x, const bn_t *y, const bn_t order,
+        size_t k);
+
 #endif /* !RLC_MPC_H */

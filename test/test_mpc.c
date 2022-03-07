@@ -127,10 +127,68 @@ static int triple(void) {
 	mt_free(tri[0]);
 	mt_free(tri[1]);
 	for (int j = 0; j < 2; j++) {
-	  bn_free(d[j]);
-	  bn_free(e[j]);
-	  bn_free(x[j]);
-	  bn_free(y[j]);
+		bn_free(d[j]);
+		bn_free(e[j]);
+		bn_free(x[j]);
+		bn_free(y[j]);
+	}
+	return code;
+}
+
+static int shamir(void) {
+	int code = RLC_ERR;
+	bn_t q, t, s, x[4], y[4];
+
+	bn_null(q);
+	bn_null(t);
+	bn_null(s);
+
+	RLC_TRY {
+		bn_new(q);
+		bn_new(t);
+		bn_new(s);
+		for (int j = 0; j < 4; j++) {
+			bn_null(y[j]);
+			bn_new(y[j]);
+			bn_null(x[j]);
+			bn_new(x[j]);
+			bn_set_dig(x[j], j);
+		}
+
+		bn_gen_prime(q, RLC_BN_BITS);
+
+		TEST_CASE("shamir secret shares are generated correctly") {
+			for (int i = 3; i < 4; i++) {
+				for (int j = 3; j <= i; j++) {
+					bn_rand_mod(s, q);
+					bn_zero(t);
+					TEST_ASSERT(mpc_sss_gen(y, x, s, q, j, i) == RLC_OK, end);
+					if (j > 3) {
+						TEST_ASSERT(mpc_sss_key(t, x, y, q, j - 1) == RLC_OK, end);
+						bn_print(s);
+						bn_print(t);
+						TEST_ASSERT(bn_cmp(t, s) != RLC_EQ, end);
+					} else {
+						TEST_ASSERT(mpc_sss_key(t, x, y, q, j - 1) == RLC_ERR, end);
+					}
+					TEST_ASSERT(mpc_sss_key(t, x, y, q, j) == RLC_OK, end);
+					TEST_ASSERT(bn_cmp(t, s) == RLC_EQ, end);
+				}
+			}
+		} TEST_END;
+	} RLC_CATCH_ANY {
+		util_print("FATAL ERROR!\n");
+		RLC_ERROR(end);
+	}
+
+	code = RLC_OK;
+  end:
+	bn_free(t);
+	bn_free(q);
+	bn_free(s);
+	for (int j = 0; j < 4; j++) {
+		bn_free(x[j]);
+		bn_free(y[j]);
 	}
 	return code;
 }
@@ -389,6 +447,11 @@ int main(void) {
 
 #if defined(WITH_BN)
 	if (triple()) {
+		core_clean();
+		return 1;
+	}
+
+	if (shamir()) {
 		core_clean();
 		return 1;
 	}

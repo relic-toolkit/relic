@@ -1257,6 +1257,14 @@ static int gcd(void) {
 			TEST_ASSERT(bn_cmp(c, d) == RLC_EQ && bn_cmp(c, f) == RLC_EQ, end);
 			bn_gcd_ext(c, d, e, a, b);
 			bn_gcd_ext_stein(f, g, h, a, b);
+			bn_print(a);
+			bn_print(b);
+			bn_print(c);
+			bn_print(d);
+			bn_print(e);
+			bn_print(f);
+			bn_print(g);
+			bn_print(h);
 			TEST_ASSERT(bn_cmp(c, f) == RLC_EQ && bn_cmp(d, g) == RLC_EQ
 				&& bn_cmp(e, h) == RLC_EQ, end);
 		} TEST_END;
@@ -1844,66 +1852,6 @@ static int inversion(void) {
 	return code;
 }
 
-static int lagrange(void) {
-	int flag, code = RLC_ERR;
-	bn_t a, b, c, d[6], e[6];
-
-	bn_null(a);
-	bn_null(b);
-	bn_null(c);
-
-	RLC_TRY {
-		bn_new(a);
-		bn_new(b);
-		bn_new(c);
-		for (int j = 0; j <= 5; j++) {
-			bn_null(d[j]);
-			bn_null(e[j]);
-			bn_new(d[j]);
-			bn_new(e[j]);
-		}
-
-		bn_gen_prime(a, RLC_BN_BITS);
-
-		TEST_CASE("lagrange interpolation is correct") {
-			for (int k = 1; k < 5; k++) {
-				for (int j = 0; j < k; j++) {
-					bn_rand_mod(d[j], a);
-				}
-				bn_lag(e, d, a, k);
-				do {
-					flag = 1;
-					bn_rand_mod(b, a);
-					for (int j = 0; j < k; j++) {
-						if (bn_cmp(b, d[j]) == RLC_EQ) {
-							flag = 0;
-						}
-					}
-				} while (flag == 0);
-				bn_evl(c, e, b, a, k);
-				TEST_ASSERT(!bn_is_zero(c), end);
-				for (int j = 0; j < k; j++) {
-					bn_evl(c, e, d[j], a, k);
-					TEST_ASSERT(bn_is_zero(c), end);
-				}
-			}
-		} TEST_END;
-	}
-	RLC_CATCH_ANY {
-		RLC_ERROR(end);
-	}
-	code = RLC_OK;
-  end:
-	bn_free(a);
-	bn_free(b);
-	bn_free(c);
-	for (int j = 0; j <= 5; j++) {
-		bn_free(d[j]);
-		bn_free(e[j]);
-	}
-	return code;
-}
-
 static int factor(void) {
 	int code = RLC_ERR;
 	bn_t p, q, n;
@@ -2216,18 +2164,24 @@ static int recoding(void) {
 					/* Negate modulo r. */
 					bn_add(v2[1], v2[0], v2[1]);
 				}
-				bn_mul(v1[0], v2[1], v1[1]);
+				if (bn_cmp_dig(v1[2], 1) == RLC_EQ) {
+					bn_sub(v1[0], v2[1], v1[2]);
+				} else {
+					bn_mul(v1[0], v2[1], v1[1]);
+				}
 				bn_mod(v1[0], v1[0], v2[0]);
-
-				/* Check if b \pm c * lambda = k (mod n). */
-				bn_mul(v1[1], c, v1[0]);
-				bn_add(b, b, v1[1]);
+				bn_sub(v1[1], v2[0], v1[0]);
+				if (bn_cmp(v1[1], v1[0]) == RLC_LT) {
+					bn_copy(v1[0], v1[1]);
+				}
+				/* Check if b + c * lambda = k (mod n). */
+				bn_mul(c, c, v1[0]);
+				bn_add(b, b, c);
 				bn_mod(b, b, v2[0]);
-				bn_sub(c, b, v1[1]);
-				bn_sub(c, c, v1[1]);
-				bn_mod(c, c, v2[0]);
-				TEST_ASSERT(bn_cmp(a, b) == RLC_EQ ||
-					bn_cmp(a, c) == RLC_EQ, end);
+				if (bn_sign(b) == RLC_NEG) {
+					bn_add(b, b, v2[0]);
+				}
+				TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
 			}
 		} TEST_END;
 #endif /* WITH_EP && EP_ENDOM */
@@ -2354,11 +2308,6 @@ int main(void) {
 	}
 
 	if (inversion() != RLC_OK) {
-		core_clean();
-		return 1;
-	}
-
-	if (lagrange() != RLC_OK) {
 		core_clean();
 		return 1;
 	}
