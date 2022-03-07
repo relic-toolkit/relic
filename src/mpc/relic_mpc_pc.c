@@ -286,7 +286,7 @@ void pc_map_tri(pt_t t[2]) {
 		mt_new(tri[1]);
 
 		g1_get_ord(n);
-		mt_gen(tri, n);
+		mpc_mt_gen(tri, n);
 
 		for (int i = 0; i < 2; i++) {
 			g1_mul_gen(t[i]->a, tri[i]->a);

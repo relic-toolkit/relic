@@ -116,18 +116,6 @@ typedef crt_st *phpe_t;
  * Represents a Subgroup Paillier's Probabilistic Encryption key pair.
  */
 typedef struct {
-	/** The modulus n = pq. */
-	bn_t n;
-	/** The first prime p. */
-	bn_t p;
-	/** The second prime q. */
-	bn_t q;
-	/** The precomputed constant for the first prime. */
-	bn_t dp;
-	/** The precomputed constant for the second prime. */
-	bn_t dq;
-	/** The inverse of q modulo p. */
-	bn_t qi;
 	/** The subgroup order. */
 	bn_t a;
 	/** The subgroup size. */
@@ -136,6 +124,8 @@ typedef struct {
 	bn_t g;
 	/** The precomputed ((1+n)^b)^n mod n^2. */
 	bn_t gn;
+	/** The CRT parameters. */
+	crt_t crt;
 } shpe_st;
 
 /**
@@ -377,29 +367,19 @@ typedef etrs_st *etrs_t;
 	if (A == NULL) {														\
 		RLC_THROW(ERR_NO_MEMORY);											\
 	}																		\
-	bn_new((A)->n);															\
-	bn_new((A)->dp);														\
-	bn_new((A)->dq);														\
-	bn_new((A)->p);															\
-	bn_new((A)->q);															\
-	bn_new((A)->qi);														\
 	bn_new((A)->a);															\
 	bn_new((A)->b);															\
-	bn_new((A)->g);														\
+	bn_new((A)->g);															\
 	bn_new((A)->gn);														\
+	crt_new((A)->crt);														\
 
 #elif ALLOC == AUTO
 #define shpe_new(A)															\
-	bn_new((A)->n);															\
-	bn_new((A)->dp);														\
-	bn_new((A)->dq);														\
-	bn_new((A)->p);															\
-	bn_new((A)->q);															\
-	bn_new((A)->qi);														\
 	bn_new((A)->a);															\
 	bn_new((A)->b);															\
-	bn_new((A)->g);														\
+	bn_new((A)->g);															\
 	bn_new((A)->gn);														\
+	crt_new((A)->crt);														\
 
 #endif
 
@@ -411,16 +391,11 @@ typedef etrs_st *etrs_t;
 #if ALLOC == DYNAMIC
 #define shpe_free(A)														\
 	if (A != NULL) {														\
-		bn_free((A)->n);													\
-		bn_free((A)->dp);													\
-		bn_free((A)->dq);													\
-		bn_free((A)->p);													\
-		bn_free((A)->q);													\
-		bn_free((A)->qi);													\
 		bn_free((A)->a);													\
 		bn_free((A)->b);													\
 		bn_free((A)->g);													\
 		bn_free((A)->gn);													\
+		crt_free((A)->crt);													\
 		free(A);															\
 		A = NULL;															\
 	}
