@@ -47,7 +47,7 @@ int cp_shpe_gen(shpe_t pub, shpe_t prv, int sbits, int nbits) {
        and (p-1) has a prime factor (the subgroup order) of length sbits
      */
 	do {
-		bn_gen_factor_prime(prv->a, prv->crt->p, sbits, nbits / 2);
+		bn_gen_prime_factor(prv->a, prv->crt->p, sbits, nbits / 2);
 		bn_gen_prime(prv->crt->q, nbits / 2);
 	} while (bn_cmp(prv->crt->p, prv->crt->q) == RLC_EQ);
 

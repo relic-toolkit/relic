@@ -1719,7 +1719,7 @@ static int prime(void) {
 			TEST_ASSERT(bn_is_prime_solov(p) == 1, end);
 		} TEST_END;
 
-		bn_gen_factor_prime(q, p, RLC_BN_BITS>>1, RLC_BN_BITS);
+		bn_gen_prime_factor(q, p, RLC_BN_BITS>>1, RLC_BN_BITS);
 		TEST_ONCE("prime with large (p-1) prime factor testing is correct") {
 			TEST_ASSERT(bn_is_prime(p) == 1, end);
 			TEST_ASSERT(bn_is_prime(q) == 1, end);
