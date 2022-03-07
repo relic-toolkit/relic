@@ -319,7 +319,7 @@ static int subgroup_paillier(int sbits_factor) {
         util_print("(o = %d, |n| = %d) ", RLC_BN_BITS / (sbits_factor*2), RLC_BN_BITS / 2);
 		TEST_CASE("Subgroup Paillier encryption/decryption is correct") {
 			TEST_ASSERT(result == RLC_OK, end);
-			bn_rand_mod(a, pub->n);
+			bn_rand_mod(a, pub->crt->n);
 			TEST_ASSERT(cp_shpe_enc(c, a, pub) == RLC_OK, end);
 			TEST_ASSERT(cp_shpe_dec(b, c, prv) == RLC_OK, end);
 			TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
@@ -329,7 +329,7 @@ static int subgroup_paillier(int sbits_factor) {
         util_print("(o = %d, |n| = %d) ", RLC_BN_BITS / (sbits_factor*2), RLC_BN_BITS / 2);
 		TEST_CASE("Subgroup Paillier faster encryption with private key is correct") {
 			TEST_ASSERT(result == RLC_OK, end);
-			bn_rand_mod(a, pub->n);
+			bn_rand_mod(a, pub->crt->n);
 			TEST_ASSERT(cp_shpe_enc_prv(c, a, prv) == RLC_OK, end);
 			TEST_ASSERT(cp_shpe_dec(b, c, prv) == RLC_OK, end);
 			TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
@@ -339,16 +339,16 @@ static int subgroup_paillier(int sbits_factor) {
         util_print("(o = %d, |n| = %d) ", RLC_BN_BITS / (sbits_factor*2), RLC_BN_BITS / 2);
 		TEST_CASE("Subgroup Paillier encryption/decryption is homomorphic") {
 			TEST_ASSERT(result == RLC_OK, end);
-			bn_rand_mod(a, pub->n);
-			bn_rand_mod(b, pub->n);
+			bn_rand_mod(a, pub->crt->n);
+			bn_rand_mod(b, pub->crt->n);
 			TEST_ASSERT(cp_shpe_enc(c, a, pub) == RLC_OK, end);
 			TEST_ASSERT(cp_shpe_enc(d, b, pub) == RLC_OK, end);
 			bn_mul(c, c, d);
-			bn_sqr(d, pub->n);
+			bn_sqr(d, pub->crt->n);
 			bn_mod(c, c, d);
 			TEST_ASSERT(cp_shpe_dec(d, c, prv) == RLC_OK, end);
 			bn_add(a, a, b);
-			bn_mod(a, a, pub->n);
+			bn_mod(a, a, pub->crt->n);
 			TEST_ASSERT(bn_cmp(a, d) == RLC_EQ, end);
 		}
 		TEST_END;
@@ -365,8 +365,8 @@ static int subgroup_paillier(int sbits_factor) {
 	bn_free(c);
 	bn_free(d);
 	bn_free(s);
-	phpe_free(pub);
-	phpe_free(prv);
+	shpe_free(pub);
+	shpe_free(prv);
 	return code;
 }
 
