@@ -36,7 +36,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void bn_lag(bn_t *c, bn_t *a, bn_t b, int n) {
+void bn_lag(bn_t *c, const bn_t *a, const bn_t b, int n) {
     int i, j;
 	bn_t *t = RLC_ALLOCA(bn_t, n + 1);
 
@@ -85,7 +85,7 @@ void bn_lag(bn_t *c, bn_t *a, bn_t b, int n) {
 	}
 }
 
-void bn_evl(bn_t c, bn_t *a, bn_t x, bn_t b, int n) {
+void bn_evl(bn_t c, const bn_t *a, const bn_t x, const bn_t b, int n) {
     bn_zero(c);
     for (int j = n; j >= 0; j--) {
         bn_mul(c, c, x);

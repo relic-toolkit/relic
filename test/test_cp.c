@@ -291,68 +291,67 @@ static int paillier(void) {
 }
 
 
-static int subgroup_paillier(int sbits_factor) {
+static int subgroup_paillier() {
 	int code = RLC_ERR;
-	bn_t a, b, c, d, s;
+	bn_t a, b, c, d;
 	shpe_t pub, prv;
-	int result;
+	int result, bits;
 
 	bn_null(a);
 	bn_null(b);
 	bn_null(c);
 	bn_null(d);
-	bn_null(s);
-	bn_null(pub);
-	phpe_null(prv);
+	shpe_null(pub);
+	shpe_null(prv);
 
 	RLC_TRY {
 		bn_new(a);
 		bn_new(b);
 		bn_new(c);
 		bn_new(d);
-		bn_new(s);
-		shpe_new(prv);
         shpe_new(pub);
+		shpe_new(prv);
 
-		result = cp_shpe_gen(pub, prv, RLC_BN_BITS / (sbits_factor*2), RLC_BN_BITS / 2);
+		for (bits = 3; bits < 6; bits++) {
+			result = cp_shpe_gen(pub, prv, RLC_BN_BITS / (bits * 2), RLC_BN_BITS / 2);
 
-        util_print("(o = %d, |n| = %d) ", RLC_BN_BITS / (sbits_factor*2), RLC_BN_BITS / 2);
-		TEST_CASE("Subgroup Paillier encryption/decryption is correct") {
-			TEST_ASSERT(result == RLC_OK, end);
-			bn_rand_mod(a, pub->n);
-			TEST_ASSERT(cp_shpe_enc(c, a, pub) == RLC_OK, end);
-			TEST_ASSERT(cp_shpe_dec(b, c, prv) == RLC_OK, end);
-			TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
+			util_print("(o = %d, |n| = %d) ", RLC_BN_BITS / (bits * 2), RLC_BN_BITS / 2);
+			TEST_CASE("subgroup paillier encryption/decryption is correct") {
+				TEST_ASSERT(result == RLC_OK, end);
+				bn_rand_mod(a, pub->crt->n);
+				TEST_ASSERT(cp_shpe_enc(c, a, pub) == RLC_OK, end);
+				TEST_ASSERT(cp_shpe_dec(b, c, prv) == RLC_OK, end);
+				TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
+			}
+			TEST_END;
+
+			util_print("(o = %d, |n| = %d) ", RLC_BN_BITS / (bits * 2), RLC_BN_BITS / 2);
+			TEST_CASE("subgroup paillier faster encryption with private key is correct") {
+				TEST_ASSERT(result == RLC_OK, end);
+				bn_rand_mod(a, pub->crt->n);
+				TEST_ASSERT(cp_shpe_enc_prv(c, a, prv) == RLC_OK, end);
+				TEST_ASSERT(cp_shpe_dec(b, c, prv) == RLC_OK, end);
+				TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
+			}
+			TEST_END;
+
+			util_print("(o = %d, |n| = %d) ", RLC_BN_BITS / (bits * 2), RLC_BN_BITS / 2);
+			TEST_CASE("subgroup paillier encryption/decryption is homomorphic") {
+				TEST_ASSERT(result == RLC_OK, end);
+				bn_rand_mod(a, pub->crt->n);
+				bn_rand_mod(b, pub->crt->n);
+				TEST_ASSERT(cp_shpe_enc(c, a, pub) == RLC_OK, end);
+				TEST_ASSERT(cp_shpe_enc(d, b, pub) == RLC_OK, end);
+				bn_mul(c, c, d);
+				bn_sqr(d, pub->crt->n);
+				bn_mod(c, c, d);
+				TEST_ASSERT(cp_shpe_dec(d, c, prv) == RLC_OK, end);
+				bn_add(a, a, b);
+				bn_mod(a, a, pub->crt->n);
+				TEST_ASSERT(bn_cmp(a, d) == RLC_EQ, end);
+			}
+			TEST_END;
 		}
-		TEST_END;
-
-        util_print("(o = %d, |n| = %d) ", RLC_BN_BITS / (sbits_factor*2), RLC_BN_BITS / 2);
-		TEST_CASE("Subgroup Paillier faster encryption with private key is correct") {
-			TEST_ASSERT(result == RLC_OK, end);
-			bn_rand_mod(a, pub->n);
-			TEST_ASSERT(cp_shpe_enc_prv(c, a, prv) == RLC_OK, end);
-			TEST_ASSERT(cp_shpe_dec(b, c, prv) == RLC_OK, end);
-			TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
-		}
-		TEST_END;
-
-        util_print("(o = %d, |n| = %d) ", RLC_BN_BITS / (sbits_factor*2), RLC_BN_BITS / 2);
-		TEST_CASE("Subgroup Paillier encryption/decryption is homomorphic") {
-			TEST_ASSERT(result == RLC_OK, end);
-			bn_rand_mod(a, pub->n);
-			bn_rand_mod(b, pub->n);
-			TEST_ASSERT(cp_shpe_enc(c, a, pub) == RLC_OK, end);
-			TEST_ASSERT(cp_shpe_enc(d, b, pub) == RLC_OK, end);
-			bn_mul(c, c, d);
-			bn_sqr(d, pub->n);
-			bn_mod(c, c, d);
-			TEST_ASSERT(cp_shpe_dec(d, c, prv) == RLC_OK, end);
-			bn_add(a, a, b);
-			bn_mod(a, a, pub->n);
-			TEST_ASSERT(bn_cmp(a, d) == RLC_EQ, end);
-		}
-		TEST_END;
-
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);
@@ -364,12 +363,10 @@ static int subgroup_paillier(int sbits_factor) {
 	bn_free(b);
 	bn_free(c);
 	bn_free(d);
-	bn_free(s);
-	phpe_free(pub);
-	phpe_free(prv);
+	shpe_free(pub);
+	shpe_free(prv);
 	return code;
 }
-
 
 #if defined(WITH_EC)
 
@@ -1785,9 +1782,9 @@ static int mpss(void) {
 
 		TEST_CASE("multi-party pointcheval-sanders simple signature is correct") {
 			pc_map_tri(t);
-			mt_gen(tri[0], n);
-			mt_gen(tri[1], n);
-			mt_gen(tri[2], n);
+			mpc_mt_gen(tri[0], n);
+			mpc_mt_gen(tri[1], n);
+			mpc_mt_gen(tri[2], n);
 			gt_exp_gen(e[0], tri[2][0]->b);
 			gt_exp_gen(e[1], tri[2][1]->b);
 			gt_exp_gen(f[0], tri[2][0]->c);
@@ -1815,9 +1812,9 @@ static int mpss(void) {
 		TEST_CASE("multi-party pointcheval-sanders block signature is correct") {
 			g1_get_ord(n);
 			pc_map_tri(t);
-			mt_gen(tri[0], n);
-			mt_gen(tri[1], n);
-			mt_gen(tri[2], n);
+			mpc_mt_gen(tri[0], n);
+			mpc_mt_gen(tri[1], n);
+			mpc_mt_gen(tri[2], n);
 			gt_exp_gen(e[0], tri[2][0]->b);
 			gt_exp_gen(e[1], tri[2][1]->b);
 			gt_exp_gen(f[0], tri[2][0]->c);
@@ -2241,21 +2238,10 @@ int main(void) {
 		return 1;
 	}
 
-	if (subgroup_paillier(3) != RLC_OK) {
+	if (subgroup_paillier() != RLC_OK) {
 		core_clean();
 		return 1;
 	}
-
-	if (subgroup_paillier(4) != RLC_OK) {
-		core_clean();
-		return 1;
-	}
-
-	if (subgroup_paillier(5) != RLC_OK) {
-		core_clean();
-		return 1;
-	}
-
 #endif
 #if defined(WITH_EC)
 	util_banner("Protocols based on elliptic curves:\n", 0);

@@ -207,23 +207,23 @@ static void paillier(void) {
 	BENCH_ONE("cp_shpe_gen", cp_shpe_gen(spub, sprv, RLC_BN_BITS / 10, RLC_BN_BITS / 2), 1);
 
 	BENCH_RUN("cp_shpe_enc") {
-		bn_rand_mod(m, spub->n);
+		bn_rand_mod(m, spub->crt->n);
 		BENCH_ADD(cp_shpe_enc(c, m, spub));
 	} BENCH_END;
 
 	BENCH_RUN("cp_shpe_enc_prv") {
-		bn_rand_mod(m, spub->n);
+		bn_rand_mod(m, spub->crt->n);
 		BENCH_ADD(cp_shpe_enc_prv(c, m, sprv));
 	} BENCH_END;
 
 	BENCH_RUN("cp_shpe_dec (1)") {
-		bn_rand_mod(m, spub->n);
+		bn_rand_mod(m, spub->crt->n);
 		cp_shpe_enc(c, m, spub);
 		BENCH_ADD(cp_shpe_dec(m, c, sprv));
 	} BENCH_END;
 
 	BENCH_RUN("cp_shpe_dec (2)") {
-		bn_rand_mod(m, spub->n);
+		bn_rand_mod(m, spub->crt->n);
 		cp_shpe_enc_prv(c, m, sprv);
 		BENCH_ADD(cp_shpe_dec(m, c, sprv));
 	} BENCH_END;
@@ -1376,9 +1376,9 @@ static void mpss(void) {
 	}
 
 	pc_map_tri(t);
-	mt_gen(tri[0], n);
-	mt_gen(tri[1], n);
-	mt_gen(tri[2], n);
+	mpc_mt_gen(tri[0], n);
+	mpc_mt_gen(tri[1], n);
+	mpc_mt_gen(tri[2], n);
 
 	bn_rand_mod(m[0], n);
 	bn_rand_mod(m[1], n);
@@ -1411,9 +1411,9 @@ static void mpss(void) {
 
 	g1_get_ord(n);
 	pc_map_tri(t);
-	mt_gen(tri[0], n);
-	mt_gen(tri[1], n);
-	mt_gen(tri[2], n);
+	mpc_mt_gen(tri[0], n);
+	mpc_mt_gen(tri[1], n);
+	mpc_mt_gen(tri[2], n);
 
 	BENCH_RUN("cp_mpsb_gen (10)") {
 		BENCH_ADD(cp_mpsb_gen(u, _v, h, x, _y, 10));
