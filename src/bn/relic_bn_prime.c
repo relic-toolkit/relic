@@ -526,17 +526,19 @@ void bn_gen_prime_stron(bn_t a, int bits) {
 
 #endif
 
-int bn_gen_factor_prime(bn_t a, bn_t b, int abits, int bbits) {
+int bn_gen_prime_factor(bn_t a, bn_t b, int abits, int bbits) {
+	bn_t t;
+	int result = RLC_OK;
+
     if (! (bbits>abits) ) {
 		return RLC_ERR;
     }
-	int result = RLC_OK;
 
-    bn_gen_prime(a, abits);
-    bn_t t; bn_null(t);
+    bn_null(t);
 
     RLC_TRY {
         bn_new(t);
+		bn_gen_prime(a, abits);
         do {
             bn_rand(t, RLC_POS, bbits - bn_bits(a));
             do {

@@ -269,6 +269,7 @@
 #undef bn_gen_prime_basic
 #undef bn_gen_prime_safep
 #undef bn_gen_prime_stron
+#undef bn_gen_prime_factor
 #undef bn_factor
 #undef bn_is_factor
 #undef bn_rec_win
@@ -376,6 +377,7 @@
 #define bn_gen_prime_basic 	RLC_PREFIX(bn_gen_prime_basic)
 #define bn_gen_prime_safep 	RLC_PREFIX(bn_gen_prime_safep)
 #define bn_gen_prime_stron 	RLC_PREFIX(bn_gen_prime_stron)
+#define bn_gen_prime_factor 	RLC_PREFIX(bn_gen_prime_factor)
 #define bn_factor 	RLC_PREFIX(bn_factor)
 #define bn_is_factor 	RLC_PREFIX(bn_is_factor)
 #define bn_rec_win 	RLC_PREFIX(bn_rec_win)
@@ -2590,6 +2592,10 @@
 #undef cp_phpe_gen
 #undef cp_phpe_enc
 #undef cp_phpe_dec
+#undef cp_shpe_gen
+#undef cp_shpe_enc
+#undef cp_shpe_enc_prv
+#undef cp_shpe_dec
 #undef cp_ghpe_gen
 #undef cp_ghpe_enc
 #undef cp_ghpe_dec
@@ -2727,6 +2733,10 @@
 #define cp_phpe_gen 	RLC_PREFIX(cp_phpe_gen)
 #define cp_phpe_enc 	RLC_PREFIX(cp_phpe_enc)
 #define cp_phpe_dec 	RLC_PREFIX(cp_phpe_dec)
+#define cp_shpe_gen 	RLC_PREFIX(cp_shpe_gen)
+#define cp_shpe_enc 	RLC_PREFIX(cp_shpe_enc)
+#define cp_shpe_enc_prv 	RLC_PREFIX(cp_shpe_enc_prv)
+#define cp_shpe_dec 	RLC_PREFIX(cp_shpe_dec)
 #define cp_ghpe_gen 	RLC_PREFIX(cp_ghpe_gen)
 #define cp_ghpe_enc 	RLC_PREFIX(cp_ghpe_enc)
 #define cp_ghpe_dec 	RLC_PREFIX(cp_ghpe_dec)

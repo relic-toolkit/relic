@@ -361,17 +361,6 @@ typedef bn_st *bn_t;
 #define bn_gen_prime(A, B)	bn_gen_prime_stron(A, B)
 #endif
 
-/**
- * Generates a probable prime number b,
- *  with (b-1) divisible by a probable large prime a.
- *
- * @param[out] a			- the prime factor of (b-1).
- * @param[out] b			- the prime result b.
- * @param[in] abits			- the length of the factor a in bits.
- * @param[in] bbits			- the length of the result in bits.
- */
-int bn_gen_factor_prime(bn_t a, bn_t b, int abits, int bbits); 
-
 /*============================================================================*/
 /* Function prototypes                                                        */
 /*============================================================================*/
@@ -1251,6 +1240,18 @@ void bn_gen_prime_safep(bn_t a, int bits);
  * @param[in] bits			- the length of the number in bits.
  */
 void bn_gen_prime_stron(bn_t a, int bits);
+
+/**
+ * Generates a probable prime number b, with (b-1) divisible by a probable large
+ * prime a.
+ *
+ * @param[out] a			- the prime factor of (b-1).
+ * @param[out] b			- the prime result b.
+ * @param[in] abits			- the length of the factor a in bits.
+ * @param[in] bbits			- the length of the result in bits.
+ */
+int bn_gen_prime_factor(bn_t a, bn_t b, int abits, int bbits); 
+
 
 /**
  * Tries to factorize an integer using Pollard (p - 1) factoring algorithm.

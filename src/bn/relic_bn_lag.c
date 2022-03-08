@@ -87,7 +87,7 @@ void bn_lag(bn_t *c, const bn_t *a, const bn_t b, int n) {
 
 void bn_evl(bn_t c, const bn_t *a, const bn_t x, const bn_t b, int n) {
     bn_zero(c);
-    for (int j = n; j >= 0; j--) {
+    for (int j = n - 1; j >= 0; j--) {
         bn_mul(c, c, x);
         bn_mod(c, c, b);
         bn_add(c, c, a[j]);

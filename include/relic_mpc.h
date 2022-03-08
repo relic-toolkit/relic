@@ -255,6 +255,32 @@ void mpc_mt_bct(bn_t d[2], bn_t e[2], bn_t n);
 void mpc_mt_mul(bn_t r, bn_t d, bn_t e, bn_t n, mt_t tri, int party);
 
 /**
+ * Generates shares (x, y) of a secret key using a (k, n)-threshold Shamir's
+ * Secret Sharing over a given finite field.
+ *
+ * @param[out] x			- the indexes of the parties receiving shares.
+ * @param[out] y			- the evaluation points.
+ * @param[in] key 			- the secret to share.
+ * @param[in] order			- the order of the finite field.
+ * @param[in] k				- the threshold.
+ * @param[in] n				- the number of parties.
+ */
+int mpc_sss_gen(bn_t *x, bn_t *y, const bn_t key, const bn_t order,
+        size_t k, size_t n);
+
+/**
+ * Recovers a secret key using a k shares (x, y) of over a given finite field.
+ *
+ * @param[in] key 			- the recovered secret.
+ * @param[in] x				- the indexes of the parties contributing shares.
+ * @param[in] y				- the evaluation points.
+ * @param[in] order			- the order of the finite field.
+ * @param[in] k				- the threshold.
+ */
+int mpc_sss_key(bn_t key, const bn_t *x, const bn_t *y, const bn_t order,
+        size_t k);
+
+/**
  * Performs the local work for a MPC scalar multiplication in G1.
  *
  * @param[out] d 				- the share of the masked scalar.
@@ -377,17 +403,11 @@ void pc_map_bct(g1_t d[2], g2_t e[2]);
  * Computes a pairing using a pairing triple.
  *
  * @param[out] r 			- the pairing result.
- * @param[in] d1				- the first public value.
- * @param[in] d2				- the second public value.
+ * @param[in] d1			- the first public value.
+ * @param[in] d2			- the second public value.
  * @param[in] triple		- the pairing triple.
  * @param[in] party			- the number of the party executing the computation.
  */
 void pc_map_mpc(gt_t r, g1_t d1, g2_t d2, pt_t triple, int party);
-
-int mpc_sss_gen(bn_t *y, const bn_t *x, const bn_t secret, const bn_t order,
-        size_t k, size_t n);
-
-int mpc_sss_key(bn_t secret, const bn_t *x, const bn_t *y, const bn_t order,
-        size_t k);
 
 #endif /* !RLC_MPC_H */
