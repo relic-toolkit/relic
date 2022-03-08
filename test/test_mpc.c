@@ -137,7 +137,7 @@ static int triple(void) {
 
 static int shamir(void) {
 	int code = RLC_ERR;
-	bn_t q, t, s, x[5], y[5];
+	bn_t q, t, s, x[10], y[10];
 
 	bn_null(q);
 	bn_null(t);
@@ -147,28 +147,23 @@ static int shamir(void) {
 		bn_new(q);
 		bn_new(t);
 		bn_new(s);
-		for (int j = 0; j < 5; j++) {
+		for (int j = 0; j < 10; j++) {
 			bn_null(y[j]);
 			bn_new(y[j]);
 			bn_null(x[j]);
 			bn_new(x[j]);
-			bn_set_dig(x[j], j);
 		}
 
 		bn_gen_prime(q, RLC_BN_BITS);
 
 		TEST_CASE("shamir secret shares are generated correctly") {
-			for (int i = 3; i < 5; i++) {
+			for (int i = 3; i < 10; i++) {
 				for (int j = 3; j <= i; j++) {
-					printf("%d %d\n", j, i);
 					bn_rand_mod(s, q);
 					bn_zero(t);
-					TEST_ASSERT(mpc_sss_gen(y, x, s, q, j, i) == RLC_OK, end);
+					TEST_ASSERT(mpc_sss_gen(x, y, s, q, j, i) == RLC_OK, end);
 					if (j > 3) {
-						bn_print(t);
 						TEST_ASSERT(mpc_sss_key(t, x, y, q, j - 1) == RLC_OK, end);
-						bn_print(s);
-						bn_print(t);
 						TEST_ASSERT(bn_cmp(t, s) != RLC_EQ, end);
 					} else {
 						TEST_ASSERT(mpc_sss_key(t, x, y, q, j - 1) == RLC_ERR, end);
@@ -188,7 +183,7 @@ static int shamir(void) {
 	bn_free(t);
 	bn_free(q);
 	bn_free(s);
-	for (int j = 0; j < 5; j++) {
+	for (int j = 0; j < 10; j++) {
 		bn_free(x[j]);
 		bn_free(y[j]);
 	}

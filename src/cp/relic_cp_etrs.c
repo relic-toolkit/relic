@@ -134,6 +134,7 @@ int cp_etrs_sig(bn_t *td, bn_t *y, int max, etrs_t p, uint8_t *msg, int len,
 			bn_free(v[i]);
 			bn_free(_v[i]);
 		}
+		RLC_FREE(v);
 		RLC_FREE(_v);
 	}
 	return result;

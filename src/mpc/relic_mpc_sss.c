@@ -37,7 +37,7 @@
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
-int mpc_sss_gen(bn_t *y, const bn_t *x, const bn_t secret, const bn_t order,
+int mpc_sss_gen(bn_t *x, bn_t *y, const bn_t secret, const bn_t order,
         size_t k, size_t n) {
     bn_t t, *a = RLC_ALLOCA(bn_t, k);
 
@@ -62,7 +62,8 @@ int mpc_sss_gen(bn_t *y, const bn_t *x, const bn_t secret, const bn_t order,
             bn_rand_mod(a[i], order);
         }
         for (int i = 0; i < n; i++) {
-            bn_evl(y[i], a, x[i], order, k - 1);
+            bn_set_dig(x[i], i + 1);
+            bn_evl(y[i], a, x[i], order, k);
         }
     } RLC_CATCH_ANY {
         RLC_THROW(ERR_CAUGHT);
@@ -77,11 +78,11 @@ int mpc_sss_gen(bn_t *y, const bn_t *x, const bn_t secret, const bn_t order,
     return RLC_OK;
 }
 
-int mpc_sss_key(bn_t secret, const bn_t *x, const bn_t *y, const bn_t order,
+int mpc_sss_key(bn_t key, const bn_t *x, const bn_t *y, const bn_t order,
         size_t k) {
     bn_t t;
-    bn_t *a = RLC_ALLOCA(bn_t, k + 1);
-    bn_t *b = RLC_ALLOCA(bn_t, k + 1);
+    bn_t *a = RLC_ALLOCA(bn_t, k);
+    bn_t *b = RLC_ALLOCA(bn_t, k);
 
     if (k < 3) {
         RLC_FREE(a);
@@ -97,7 +98,7 @@ int mpc_sss_key(bn_t secret, const bn_t *x, const bn_t *y, const bn_t order,
         }
 
         bn_new(t);
-        for (int i = 0; i <= k; i++) {
+        for (int i = 0; i < k; i++) {
             bn_null(a[i]);
             bn_null(b[i]);
             bn_new(a[i]);
@@ -122,20 +123,20 @@ int mpc_sss_key(bn_t secret, const bn_t *x, const bn_t *y, const bn_t order,
         bn_mul(a[0], a[0], b[0]);
         bn_mod(a[0], a[0], order);
         bn_mul(a[0], a[0], y[0]);
-        bn_mod(secret, a[0], order);
-        for (int i = 1; i <= k; i++) {
+        bn_mod(key, a[0], order);
+        for (int i = 1; i < k; i++) {
             bn_mul(a[i], a[i], b[i]);
             bn_mod(a[i], a[i], order);
             bn_mul(a[i], a[i], y[i]);
             bn_mod(a[i], a[i], order);
-            bn_add(secret, secret, a[i]);
-            bn_mod(secret, secret, order);
+            bn_add(key, key, a[i]);
+            bn_mod(key, key, order);
         }
     } RLC_CATCH_ANY {
         RLC_THROW(ERR_CAUGHT);
     } RLC_FINALLY {
         bn_free(t);
-        for (int i = 0; i <= k; i++) {
+        for (int i = 0; i < k; i++) {
             bn_free(a[i]);
             bn_free(b[i]);
         }
