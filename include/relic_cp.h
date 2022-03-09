@@ -2584,7 +2584,7 @@ int cp_mklhs_onv(g1_t sig, bn_t m, bn_t mu[], char *data, char *id[], g1_t h[],
  * @param[out] s			- the consecutive powers in G_1.
  * @param[in] m			- the maximum set size.
  */
-int cp_lapsi_gen(bn_t sk, g2_t ss, g1_t s[], int m);
+int cp_lapsi_gen(bn_t sk, g1_t ss, g2_t s[], int m);
 
 /**
  * Computes the receiver part of the LaPSI protocol, given its input set.
@@ -2595,19 +2595,19 @@ int cp_lapsi_gen(bn_t sk, g2_t ss, g1_t s[], int m);
  * @param[in] s			- the consecutive powers.
  * @param[in] m			- the receiver's input set size.
  */
-int cp_lapsi_ask(g1_t d, bn_t r, bn_t x[], g1_t s[], int m);
+int cp_lapsi_ask(g2_t d, bn_t r, bn_t x[], g2_t s[], int m);
 
 /**
  * Computes the sender part of the LaPSI protocol, given its input set.
  *
  * @param[out] t			- the pairing results.
  * @param[out] u			- the missing elements in the exponent.
- * @param[in] d				- the polynomial interpolation in the exponent.
  * @param[in] ss			- the secret power.
+ * @param[in] d				- the polynomial interpolation in the exponent.
  * @param[in] y			- the server's input set.
  * @param[in] n			- the sender's input set size.
  */
-int cp_lapsi_ans(gt_t t[], g2_t u[], g1_t d, g2_t ss, bn_t y[], int n);
+int cp_lapsi_ans(gt_t t[], g1_t u[], g1_t ss, g2_t d, bn_t y[], int n);
 
 /**
  * Computes the intersaction as the final part of the LaPSI protocol.
@@ -2623,7 +2623,7 @@ int cp_lapsi_ans(gt_t t[], g2_t u[], g1_t d, g2_t ss, bn_t y[], int n);
  * @param[in] u			- the missing elements in the exponent.
  * @param[in] n			- the sender's input set size.
  */
-int cp_lapsi_int(bn_t z[], int *len, bn_t sk, g1_t d, bn_t x[], int m,
-		gt_t t[], g2_t u[], int n);
+int cp_lapsi_int(bn_t z[], int *len, bn_t sk, g2_t d, bn_t x[], int m,
+		gt_t t[], g1_t u[], int n);
 
 #endif /* !RLC_CP_H */
