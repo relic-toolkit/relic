@@ -1920,7 +1920,7 @@ int main(void) {
 
 	util_banner("Benchmarks for the CP module:", 0);
 
-/*#if defined(WITH_BN)
+#if defined(WITH_BN)
 	util_banner("Protocols based on integer factorization:\n", 0);
 	rsa();
 	rabin();
@@ -1941,12 +1941,12 @@ int main(void) {
 		smlers();
 		etrs();
 	}
-#endif*/
+#endif
 
 #if defined(WITH_PC)
 	if (pc_param_set_any() == RLC_OK) {
 		util_banner("Protocols based on pairings:\n", 0);
-/*		pdpub();
+		pdpub();
 		pdprv();
 		sokaka();
 		ibe();
@@ -1959,7 +1959,7 @@ int main(void) {
 		mpss();
 #endif
 		zss();
-		lhs();*/
+		lhs();
 		psi();
 	}
 #endif
