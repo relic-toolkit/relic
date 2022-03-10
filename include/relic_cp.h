@@ -731,7 +731,7 @@ typedef etrs_st *etrs_t;
 	bn_new((A)->r[1]);														\
 
 #elif ALLOC == AUTO
-#define smlers_new(A)				/* empty */
+#define smlers_new(A)		/* empty */
 #endif
 
 /**
@@ -753,7 +753,7 @@ typedef etrs_st *etrs_t;
 	}
 
 #elif ALLOC == AUTO
-#define smlers_free(A)				/* empty */
+#define smlers_free(A)		/* empty */
 #endif
 
 /**
@@ -783,7 +783,7 @@ typedef etrs_st *etrs_t;
 	bn_new((A)->r[1]);														\
 
 #elif ALLOC == AUTO
-#define etrs_new(A)				/* empty */
+#define etrs_new(A)			/* empty */
 
 #endif
 
@@ -807,7 +807,7 @@ typedef etrs_st *etrs_t;
 	}
 
 #elif ALLOC == AUTO
-#define etrs_free(A)				/* empty */
+#define etrs_free(A)		/* empty */
 #endif
 
 /*============================================================================*/
@@ -1037,7 +1037,7 @@ int cp_ghpe_gen(bn_t pub, bn_t prv, int bits);
  * @param[out] c			- the ciphertext.
  * @param[in] m				- the plaintext.
  * @param[in] pub			- the public key.
- * @param[in] s			- the block length parameter.
+ * @param[in] s				- the block length parameter.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_ghpe_enc(bn_t c, const bn_t m, const bn_t pub, int s);
@@ -1048,7 +1048,7 @@ int cp_ghpe_enc(bn_t c, const bn_t m, const bn_t pub, int s);
  * @param[out] m			- the plaintext.
  * @param[in] c				- the ciphertext.
  * @param[in] pub			- the public key.
- * @param[in] s			- the block length parameter.
+ * @param[in] s				- the block length parameter.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_ghpe_dec(bn_t m, const bn_t c, const bn_t pub, const bn_t prv, int s);
@@ -1227,8 +1227,8 @@ int cp_pdpub_gen(bn_t c, bn_t r, g1_t u1, g2_t u2, g2_t v2, gt_t e);
  * @param[out] w2			- the blinded element in G_2.
  * @param[in] p				- the first argument of the pairing.
  * @param[in] q				- the second argument of the pairing.
- * @param[in] c			- the challenge.
- * @param[in] r			- the randomness.
+ * @param[in] c				- the challenge.
+ * @param[in] r				- the randomness.
  * @param[in] u1			- the U1 precomputed value in G_1.
  * @param[in] u2			- the U2 precomputed value in G_2.
  * @param[in] v2			- the image of the randomness in G_2.
@@ -1255,7 +1255,7 @@ int cp_pdpub_ans(gt_t g[3], g1_t p, g2_t q, g1_t v1, g2_t v2, g2_t w2);
  *
  * @param[out] r			- the result of the computation.
  * @param[in] g				- the group elements returned by the server.
- * @param[in] c			- the challenge.
+ * @param[in] c				- the challenge.
  * @param[out] e			- the precomputed values e(U1, U2).
  * @return a boolean value indicating if the computation is correct.
  */
@@ -1283,8 +1283,8 @@ int cp_pdprv_gen(bn_t c, bn_t r[3], g1_t u1[2], g2_t u2[2], g2_t v2[4],
  * @param[out] w2			- the blinded element in G_2.
  * @param[in] p				- the first argument of the pairing.
  * @param[in] q				- the second argument of the pairing.
- * @param[in] c			- the challenge.
- * @param[in] r			- the randomness.
+ * @param[in] c				- the challenge.
+ * @param[in] r				- the randomness.
  * @param[in] u1			- the U1 precomputed value in G_1.
  * @param[in] u2			- the U2 precomputed value in G_2.
  * @param[in] v2			- the image of the randomness in G_2.
@@ -1311,7 +1311,7 @@ int cp_pdprv_ans(gt_t g[4], g1_t v1[3], g2_t w2[4]);
  *
  * @param[out] r			- the result of the computation.
  * @param[in] g				- the group elements returned by the server.
- * @param[in] c			- the challenge.
+ * @param[in] c				- the challenge.
  * @param[out] e			- the precomputed values e(U1, U2).
  * @return a boolean value indicating if the computation is correct.
  */
@@ -1338,8 +1338,8 @@ int cp_lvpub_gen(bn_t r, g1_t u1, g2_t u2, g2_t v2, gt_t e);
  * @param[out] w2			- the blinded element in G_2.
  * @param[in] p				- the first argument of the pairing.
  * @param[in] q				- the second argument of the pairing.
- * @param[in] c			- the challenge.
- * @param[in] r			- the randomness.
+ * @param[in] c				- the challenge.
+ * @param[in] r				- the randomness.
  * @param[in] u1			- the U1 precomputed value in G_1.
  * @param[in] u2			- the U2 precomputed value in G_2.
  * @param[in] v2			- the image of the randomness in G_2.
@@ -1366,7 +1366,7 @@ int cp_lvpub_ans(gt_t g[2], g1_t p, g2_t q, g1_t v1, g2_t v2, g2_t w2);
  *
  * @param[out] r			- the result of the computation.
  * @param[in] g				- the group elements returned by the server.
- * @param[in] c			- the challenge.
+ * @param[in] c				- the challenge.
  * @param[out] e			- the precomputed values e(U1, U2).
  * @return a boolean value indicating if the computation is correct.
  */
@@ -1394,8 +1394,8 @@ int cp_lvprv_gen(bn_t c, bn_t r[3], g1_t u1[2], g2_t u2[2], g2_t v2[4],
  * @param[out] w2			- the blinded element in G_2.
  * @param[in] p				- the first argument of the pairing.
  * @param[in] q				- the second argument of the pairing.
- * @param[in] c			- the challenge.
- * @param[in] r			- the randomness.
+ * @param[in] c				- the challenge.
+ * @param[in] r				- the randomness.
  * @param[in] u1			- the U1 precomputed value in G_1.
  * @param[in] u2			- the U2 precomputed value in G_2.
  * @param[in] v2			- the image of the randomness in G_2.
@@ -1422,7 +1422,7 @@ int cp_lvprv_ans(gt_t g[4], g1_t v1[3], g2_t w2[4]);
  *
  * @param[out] r			- the result of the computation.
  * @param[in] g				- the group elements returned by the server.
- * @param[in] c			- the challenge.
+ * @param[in] c				- the challenge.
  * @param[out] e			- the precomputed values e(U1, U2).
  * @return a boolean value indicating if the computation is correct.
  */
@@ -1493,7 +1493,7 @@ int cp_bgn_dec1(dig_t *out, const g1_t in[2], const bgn_t prv);
  * Encrypts in G_2 using the BGN cryptosystem.
  *
  * @param[out] c			- the ciphertext.
- * @param[in] m			- the plaintext as a small integer.
+ * @param[in] m				- the plaintext as a small integer.
  * @param[in] pub			- the public key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
@@ -1503,7 +1503,7 @@ int cp_bgn_enc2(g2_t out[2], const dig_t in, const bgn_t pub);
  * Decrypts in G_2 using the BGN cryptosystem.
  *
  * @param[out] out			- the decrypted small integer.
- * @param[in] c			- the ciphertext.
+ * @param[in] c				- the ciphertext.
  * @param[in] prv			- the private key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
@@ -1513,8 +1513,8 @@ int cp_bgn_dec2(dig_t *out, const g2_t in[2], const bgn_t prv);
  * Adds homomorphically two BGN ciphertexts in G_T.
  *
  * @param[out] e			- the resulting ciphertext.
- * @param[in] c			- the first ciphertext to add.
- * @param[in] d			- the second ciphertext to add.
+ * @param[in] c				- the first ciphertext to add.
+ * @param[in] d				- the second ciphertext to add.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_bgn_add(gt_t e[4], gt_t c[4], gt_t d[4]);
@@ -1523,8 +1523,8 @@ int cp_bgn_add(gt_t e[4], gt_t c[4], gt_t d[4]);
  * Multiplies homomorphically two BGN ciphertexts in G_T.
  *
  * @param[out] e			- the resulting ciphertext.
- * @param[in] c			- the first ciphertext to add.
- * @param[in] d			- the second ciphertext to add.
+ * @param[in] c				- the first ciphertext to add.
+ * @param[in] d				- the second ciphertext to add.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_bgn_mul(gt_t e[4], g1_t c[2], g2_t d[2]);
@@ -1533,7 +1533,7 @@ int cp_bgn_mul(gt_t e[4], g1_t c[2], g2_t d[2]);
  * Decrypts in G_T using the BGN cryptosystem.
  *
  * @param[out] out			- the decrypted small integer.
- * @param[in] c			- the ciphertext.
+ * @param[in] c				- the ciphertext.
  * @param[in] prv			- the private key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
@@ -1753,7 +1753,7 @@ int cp_cli_ver(g1_t a, g1_t A, g1_t b, g1_t B, g1_t c, uint8_t *msg, int len,
  * @param[out] x			- the first part of the public key.
  * @param[out] y			- the second part of the public key.
  * @param[out] z			- the remaining (l - 1) parts of the public key.
- * @param[in] l			- the number of messages to sign.
+ * @param[in] l				- the number of messages to sign.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_clb_gen(bn_t t, bn_t u, bn_t v[], g2_t x, g2_t y, g2_t z[], int l);
@@ -1771,7 +1771,7 @@ int cp_clb_gen(bn_t t, bn_t u, bn_t v[], g2_t x, g2_t y, g2_t z[], int l);
  * @param[in] t				- the first part of the private key.
  * @param[in] u				- the second part of the private key.
  * @param[in] v				- the remaining (l - 1) parts of the private key.
- * @param[in] l			- the number of messages to sign.
+ * @param[in] l				- the number of messages to sign.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_clb_sig(g1_t a, g1_t A[], g1_t b, g1_t B[], g1_t c, uint8_t *msgs[],
@@ -1789,8 +1789,8 @@ int cp_clb_sig(g1_t a, g1_t A[], g1_t b, g1_t B[], g1_t c, uint8_t *msgs[],
  * @param[in] lens			- the l message lengths in bytes.
  * @param[in] x				- the first part of the public key.
  * @param[in] y				- the second part of the public key.
- * @param[in] z			- the remaining (l - 1) parts of the public key.
- * @param[in] l			- the number of messages to sign.
+ * @param[in] z				- the remaining (l - 1) parts of the public key.
+ * @param[in] l				- the number of messages to sign.
  * @return a boolean value indicating the verification result.
  */
 int cp_clb_ver(g1_t a, g1_t A[], g1_t b, g1_t B[], g1_t c, uint8_t *msgs[],
@@ -1814,7 +1814,7 @@ int cp_pss_gen(bn_t u, bn_t v, g2_t g, g2_t x, g2_t y);
  *
  * @param[out] a			- the first part of the signature.
  * @param[out] b			- the second part of the signature.
- * @param[in] m			- the message to sign.
+ * @param[in] m				- the message to sign.
  * @param[in] u				- the first part of the private key.
  * @param[in] v				- the second part of the private key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
@@ -1910,7 +1910,7 @@ int cp_psb_gen(bn_t r, bn_t s[], g2_t g, g2_t x, g2_t y[], int l);
  * @param[in] ms			- the l messages to sign.
  * @param[in] r				- the first part of the private key.
  * @param[in] s				- the remaining l part of the private key.
- * @param[in] l			- the number of messages to sign.
+ * @param[in] l				- the number of messages to sign.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_psb_sig(g1_t a, g1_t b, bn_t ms[], bn_t r, bn_t s[], int l);
@@ -1924,7 +1924,7 @@ int cp_psb_sig(g1_t a, g1_t b, bn_t ms[], bn_t r, bn_t s[], int l);
  * @param[in] g				- the first part of the public key.
  * @param[in] x				- the second part of the public key.
  * @param[in] y				- the remaining l parts of the public key.
- * @param[in] l			- the number of messages to sign.
+ * @param[in] l				- the number of messages to sign.
  * @return a boolean value indicating the verification result.
  */
 int cp_psb_ver(g1_t a, g1_t b, bn_t ms[], g2_t g, g2_t x, g2_t y[], int l);
@@ -1938,7 +1938,7 @@ int cp_psb_ver(g1_t a, g1_t b, bn_t ms[], g2_t g, g2_t x, g2_t y[], int l);
  * @param[out] g			- the first part of the public key.
  * @param[out] x			- the second part of the public key.
  * @param[out] y			- the third part of the public key.
- * @param[in] l			- the number of messages to sign.
+ * @param[in] l				- the number of messages to sign.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_mpsb_gen(bn_t r[2], bn_t s[][2], g2_t h, g2_t x[2], g2_t y[][2], int l);
@@ -1953,7 +1953,7 @@ int cp_mpsb_gen(bn_t r[2], bn_t s[][2], g2_t h, g2_t x[2], g2_t y[][2], int l);
  * @param[in] s				- the second parts of the private key.
  * @param[in] mul_tri		- the triple for the multiplication.
  * @param[in] sm_tri		- the triple for the scalar multiplication.
- * @param[in] l			- the number of messages to sign.
+ * @param[in] l				- the number of messages to sign.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_mpsb_sig(g1_t a, g1_t b[2], bn_t m[][2], bn_t r[2], bn_t s[][2],
@@ -1964,7 +1964,7 @@ int cp_mpsb_sig(g1_t a, g1_t b[2], bn_t m[][2], bn_t r[2], bn_t s[][2],
  *
  * @param[in,out] x			- the shares of the second part of the public key.
  * @param[in,out] y			- the shares of the third part of the public key.
- * @param[in] l			- the number of messages to sign.
+ * @param[in] l				- the number of messages to sign.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_mpsb_bct(g2_t x[2], g2_t y[][2], int l);
@@ -1982,8 +1982,8 @@ int cp_mpsb_bct(g2_t x[2], g2_t y[][2], int l);
  * @param[in] y				- the third parts of the public key.
  * @param[in] sm_tri		- the triple for the scalar multiplication.
  * @param[in] pc_tri		- the triple for the pairing computation.
- * @param[in] v			- the private keys, can be NULL.
- * @param[in] l			- the number of messages to sign.
+ * @param[in] v				- the private keys, can be NULL.
+ * @param[in] l				- the number of messages to sign.
  * @return a boolean value indicating the verification result.
  */
 int cp_mpsb_ver(gt_t e, g1_t a, g1_t b[2], bn_t m[][2], g2_t h, g2_t x,
@@ -2064,8 +2064,8 @@ int cp_vbnn_sig(ec_t r, bn_t z, bn_t h, uint8_t *id, int id_len, uint8_t *msg,
  * Verifies a signature and message using the vBNN-IBS scheme.
  *
  * @param[in] r				- the R value of the signature.
- * @param[in] z			- the z value of the signature.
- * @param[in] h			- the h value of the signature.
+ * @param[in] z				- the z value of the signature.
+ * @param[in] h				- the h value of the signature.
  * @param[in] id			- the identity buffer.
  * @param[in] id_len		- the size of identity buffer.
  * @param[in] msg			- the message buffer to sign.
@@ -2082,8 +2082,8 @@ int cp_vbnn_ver(ec_t r, bn_t z, bn_t h, uint8_t *id, int id_len, uint8_t *msg,
  *
  * @param[out] c			- the challenge.
  * @param[out] r			- the response.
- * @param[in] y			- the elliptic curve point
- * @param[in] x			- the discrete logarithm to prove.
+ * @param[in] y				- the elliptic curve point
+ * @param[in] x				- the discrete logarithm to prove.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_pokdl_prv(bn_t c, bn_t r, ec_t y, bn_t x);
@@ -2092,9 +2092,9 @@ int cp_pokdl_prv(bn_t c, bn_t r, ec_t y, bn_t x);
  * Verifies the proof of knowledge of a discrete logarithm of an elliptic curve
  * point to a generator. Verifies that y = [x]G.
  *
- * @param[in] c			- the challenge.
- * @param[in] r			- the response.
- * @param[in] y			- the elliptic curve point.
+ * @param[in] c				- the challenge.
+ * @param[in] r				- the response.
+ * @param[in] y				- the elliptic curve point.
  * @return a boolean value indicating the verification result.
  */
 int cp_pokdl_ver(bn_t c, bn_t r, ec_t y);
@@ -2105,8 +2105,8 @@ int cp_pokdl_ver(bn_t c, bn_t r, ec_t y);
  *
  * @param[out] c			- the challenges.
  * @param[out] r			- the responses.
- * @param[in] y			- the elliptic curve points.
- * @param[in] x			- the discrete logarithm to prove.
+ * @param[in] y				- the elliptic curve points.
+ * @param[in] x				- the discrete logarithm to prove.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_pokor_prv(bn_t c[2], bn_t r[2], ec_t y[2], bn_t x);
@@ -2115,9 +2115,9 @@ int cp_pokor_prv(bn_t c[2], bn_t r[2], ec_t y[2], bn_t x);
  * Verifies the proof of knowledge of a discrete logarithm of an elliptic curve
  * point to a generator. Verifies that y = [x]G.
  *
- * @param[in] c			- the challenges.
- * @param[in] r			- the responses.
- * @param[in] y			- the elliptic curve points.
+ * @param[in] c				- the challenges.
+ * @param[in] r				- the responses.
+ * @param[in] y				- the elliptic curve points.
  * @return a boolean value indicating the verification result.
  */
 int cp_pokor_ver(bn_t c[2], bn_t r[2], ec_t y[2]);
@@ -2130,8 +2130,8 @@ int cp_pokor_ver(bn_t c[2], bn_t r[2], ec_t y[2]);
  * @param[out] r			- the response.
  * @param[in] msg			- the message to sign.
  * @param[in] len			- the length of the message.
- * @param[in] y			- the elliptic curve point
- * @param[in] x			- the discrete logarithm to prove.
+ * @param[in] y				- the elliptic curve point
+ * @param[in] x				- the discrete logarithm to prove.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_sokdl_sig(bn_t c, bn_t r, uint8_t *msg, int len, ec_t y, bn_t x);
@@ -2140,11 +2140,11 @@ int cp_sokdl_sig(bn_t c, bn_t r, uint8_t *msg, int len, ec_t y, bn_t x);
  * Verifies the proof of knowledge of a discrete logarithm of an elliptic curve
  * point to a generator. Verifies that y = [x]G.
  *
- * @param[in] c			- the challenge.
- * @param[in] r			- the response.
+ * @param[in] c				- the challenge.
+ * @param[in] r				- the response.
  * @param[in] msg			- the message to sign.
  * @param[in] len			- the length of the message.
- * @param[in] y			- the elliptic curve point.
+ * @param[in] y				- the elliptic curve point.
  * @return a boolean value indicating the verification result.
  */
 int cp_sokdl_ver(bn_t c, bn_t r, uint8_t *msg, int len, ec_t y);
@@ -2157,10 +2157,10 @@ int cp_sokdl_ver(bn_t c, bn_t r, uint8_t *msg, int len, ec_t y);
  * @param[out] r			- the responses.
  * @param[in] msg			- the message to sign.
  * @param[in] len			- the length of the message.
- * @param[in] y			- the elliptic curve points.
- * @param[in] g			- the elliptic curve generators.
- * @param[in] x			- the discrete logarithm to prove.
- * @param[in] first		- the flag to indicate the point for which the
+ * @param[in] y				- the elliptic curve points.
+ * @param[in] g				- the elliptic curve generators.
+ * @param[in] x				- the discrete logarithm to prove.
+ * @param[in] first			- the flag to indicate the point for which the
  *							  discrete logarithm is known.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
@@ -2171,12 +2171,12 @@ int cp_sokor_sig(bn_t c[2], bn_t r[2], uint8_t *msg, int len, ec_t y[2],
  * Verifies the proof of knowledge of a discrete logarithm of an elliptic curve
  * point to a generator. Verifies that y = [x]G.
  *
- * @param[in] c			- the challenges.
- * @param[in] r			- the responses.
+ * @param[in] c				- the challenges.
+ * @param[in] r				- the responses.
  * @param[in] msg			- the message to sign.
  * @param[in] len			- the length of the message.
- * @param[in] y			- the elliptic curve points.
- * @param[in] g			- the elliptic curve generators.
+ * @param[in] y				- the elliptic curve points.
+ * @param[in] g				- the elliptic curve generators.
  * @return a boolean value indicating the verification result.
  */
 int cp_sokor_ver(bn_t c[2], bn_t r[2], uint8_t *msg, int len, ec_t y[2],
@@ -2227,7 +2227,7 @@ int cp_ers_ver(bn_t td, ers_t *s, int size, uint8_t *msg, int len, ec_t pp);
  * Extends an extendable ring signature with a new signature.
  *
  * @param[in] td			- the signature trapdoor.
- * @param[in] p			- the ring of signatures.
+ * @param[in] p				- the ring of signatures.
  * @param[in] size			- the number of signatures in the ring.
  * @param[in] msg			- the message to sign.
  * @param[in] len			- the message length.
@@ -2256,7 +2256,7 @@ int cp_smlers_sig(bn_t td, smlers_t p, uint8_t *msg, int len, bn_t sk, ec_t pk,
  * Verifies a same-message linkable extendable ring signature.
  *
  * @param[in] td			- the signature trapdoor.
- * @param[in] s			- the ring of signatures.
+ * @param[in] s				- the ring of signatures.
  * @param[in] size			- the number of signatures in the ring.
  * @param[in] msg			- the message to sign.
  * @param[in] len			- the message length.
@@ -2269,7 +2269,7 @@ int cp_smlers_ver(bn_t td, smlers_t *s, int size, uint8_t *msg, int len,
  * Extends a same-message extendable ring signature with a new signature.
  *
  * @param[in] td			- the signature trapdoor.
- * @param[in] p			- the ring of signatures.
+ * @param[in] p				- the ring of signatures.
  * @param[in] size			- the number of signatures in the ring.
  * @param[in] msg			- the message to sign.
  * @param[in] len			- the message length.
@@ -2298,11 +2298,11 @@ int cp_etrs_sig(bn_t *td, bn_t *y, int max, etrs_t p, uint8_t *msg, int len,
 /**
  * Verifies an extendable threshold ring signature scheme over some messages.
  *
- * @param[in] thres		- the specified threshold.
+ * @param[in] thres			- the specified threshold.
  * @param[in] td			- the signature trapdoors.
- * @param[in] y			- the signature randomness.
+ * @param[in] y				- the signature randomness.
  * @param[in] max			- the maximum number of extensions.
- * @param[in] s			- the ring of signatures.
+ * @param[in] s				- the ring of signatures.
  * @param[in] size			- the number of signatures in the ring.
  * @param[in] msg			- the message to sign.
  * @param[in] len			- the message length.
@@ -2315,9 +2315,9 @@ int cp_etrs_ver(int thres, bn_t *td, bn_t *y, int max, etrs_t *s, int size,
  * Extends an extendable threshold ring signature with a new signature.
  *
  * @param[in] td			- the signature trapdoors.
- * @param[in] y			- the signature randomness.
+ * @param[in] y				- the signature randomness.
  * @param[in] max			- the maximum number of extensions.
- * @param[in] p			- the ring of signatures.
+ * @param[in] p				- the ring of signatures.
  * @param[in] size			- the number of signatures in the ring.
  * @param[in] msg			- the message to sign.
  * @param[in] len			- the message length.
@@ -2329,11 +2329,11 @@ int cp_etrs_ext(bn_t *td, bn_t *y, int max, etrs_t *p, int *size, uint8_t *msg,
 /**
  * Joins an extendable threshold ring signature with a new signature.
  *
- * @param[in] thres		- the specified threshold.
+ * @param[in] thres			- the specified threshold.
  * @param[in] td			- the signature trapdoors.
- * @param[in] y			- the signature randomness.
+ * @param[in] y				- the signature randomness.
  * @param[in] max			- the maximum number of extensions.
- * @param[in] p			- the ring of signatures.
+ * @param[in] p				- the ring of signatures.
  * @param[in] size			- the number of signatures in the ring.
  * @param[in] msg			- the message to sign.
  * @param[in] len			- the message length.
@@ -2359,7 +2359,7 @@ int cp_cmlhs_init(g1_t h);
  * @param[out] hs			- the hash values, one per label.
  * @param[in] len			- the number of possible labels.
  * @param[out] prf			- the key for the pseudo-random function (PRF).
- * @param[out] plen		- the PRF key length.
+ * @param[out] plen			- the PRF key length.
  * @param[out] sk			- the private key for the BLS signature scheme.
  * @param[out] pk			- the public key for the BLS signature scheme.
  * @param[out] d			- the secret exponent.
@@ -2380,9 +2380,9 @@ int cp_cmlhs_gen(bn_t x[], gt_t hs[], int len, uint8_t prf[], int plen,
  * @param[out] s			- the fourth component of the signature.
  * @param[in] msg			- the message vector to sign (one component).
  * @param[in] data			- the dataset identifier.
- * @param[in] label		- the integer label.
- * @param[in] x			- the exponent value for the label.
- * @param[in] h			- the random value (message has one component).
+ * @param[in] label			- the integer label.
+ * @param[in] x				- the exponent value for the label.
+ * @param[in] h				- the random value (message has one component).
  * @param[in] prf			- the key for the pseudo-random function (PRF).
  * @param[in] plen			- the PRF key length.
  * @param[in] sk			- the private key for the BLS signature scheme.
@@ -2400,7 +2400,7 @@ int cp_cmlhs_sig(g1_t sig, g2_t z, g1_t a, g1_t c, g1_t r, g2_t s, bn_t msg,
  * @param[out] c			- the resulting second component of the signature.
  * @param[in] as			- the vector of first components of the signatures.
  * @param[in] cs			- the vector of second components of the signatures.
- * @param[in] f			- the linear coefficients in the function.
+ * @param[in] f				- the linear coefficients in the function.
  * @param[in] len			- the number of coefficients.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
@@ -2413,7 +2413,7 @@ int cp_cmlhs_fun(g1_t a, g1_t c, g1_t as[], g1_t cs[], dig_t f[], int len);
  * @param[out] s			- the resulting fourth component of the signature.
  * @param[in] rs			- the vector of third components of the signatures.
  * @param[in] ss			- the vector of fourth components of the signatures.
- * @param[in] f			- the linear coefficients in the function.
+ * @param[in] f				- the linear coefficients in the function.
  * @param[in] len			- the number of coefficients.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
@@ -2422,20 +2422,20 @@ int cp_cmlhs_evl(g1_t r, g2_t s, g1_t rs[], g2_t ss[], dig_t f[], int len);
 /**
  * Verifies a CMLHS signature over a set of messages.
  *
- * @param[in] r			- the first component of the homomorphic signature.
- * @param[in] s			- the second component of the homomorphic signature.
+ * @param[in] r				- the first component of the homomorphic signature.
+ * @param[in] s				- the second component of the homomorphic signature.
  * @param[in] sig			- the BLS signatures.
- * @param[in] z			- the powers of the outputs of the PRF.
+ * @param[in] z				- the powers of the outputs of the PRF.
  * @param[in] a				- the vector of first components of the signatures.
  * @param[in] c				- the vector of second components of the signatures.
  * @param[in] msg			- the combined message.
  * @param[in] data			- the dataset identifier.
  * @param[in] h				- the random element (message has one component).
- * @param[in] label		- the integer labels.
+ * @param[in] label			- the integer labels.
  * @param[in] hs			- the hash values, one per label.
- * @param[in] f			- the linear coefficients in the function.
+ * @param[in] f				- the linear coefficients in the function.
  * @param[in] flen			- the number of coefficients.
- * @param[in] y			- the public elements of the users.
+ * @param[in] y				- the public elements of the users.
  * @param[in] pk			- the public keys of the users.
  * @param[in] slen			- the number of signatures.
  * @return a boolean value indicating the verification result.
@@ -2449,11 +2449,11 @@ int cp_cmlhs_ver(g1_t r, g2_t s, g1_t sig[], g2_t z[], g1_t a[], g1_t c[],
  *
  * @param[out] vk			- the verification key.
  * @param[in] h				- the random element (message has one component).
- * @param[in] label		- the integer labels.
+ * @param[in] label			- the integer labels.
  * @param[in] hs			- the hash values, one per label.
- * @param[in] f			- the linear coefficients in the function.
+ * @param[in] f				- the linear coefficients in the function.
  * @param[in] flen			- the number of coefficients.
- * @param[in] y			- the public elements of the users.
+ * @param[in] y				- the public elements of the users.
  * @param[in] pk			- the public keys of the users.
  * @param[in] slen			- the number of signatures.
  * @return a boolean value indicating the verification result.
@@ -2464,10 +2464,10 @@ void cp_cmlhs_off(gt_t vk, g1_t h, int label[], gt_t * hs[], dig_t *f[],
 /**
  * Perform the online verification of a CMLHS signature over a set of messages.
  *
- * @param[in] r			- the first component of the homomorphic signature.
- * @param[in] s			- the second component of the homomorphic signature.
+ * @param[in] r				- the first component of the homomorphic signature.
+ * @param[in] s				- the second component of the homomorphic signature.
  * @param[in] sig			- the BLS signatures.
- * @param[in] z			- the powers of the outputs of the PRF.
+ * @param[in] z				- the powers of the outputs of the PRF.
  * @param[in] a				- the vector of first components of the signatures.
  * @param[in] c				- the vector of second components of the signatures.
  * @param[in] msg			- the combined message.
@@ -2491,7 +2491,7 @@ int cp_mklhs_gen(bn_t sk, g2_t pk);
  * Signs a message using the MKLHS.
  *
  * @param[out] s			- the resulting signature.
- * @param[in] m			- the message to sign.
+ * @param[in] m				- the message to sign.
  * @param[in] data			- the dataset identifier.
  * @param[in] id			- the identity.
  * @param[in] tag			- the tag.
@@ -2505,7 +2505,7 @@ int cp_mklhs_sig(g1_t s, bn_t m, char *data, char *id, char *tag, bn_t sk);
  *
  * @param[out] mu			- the combined message.
  * @param[in] m				- the vector of individual messages.
- * @param[in] f			- the linear coefficients in the function.
+ * @param[in] f				- the linear coefficients in the function.
  * @param[in] len			- the number of coefficients.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
@@ -2516,7 +2516,7 @@ int cp_mklhs_fun(bn_t mu, bn_t m[], dig_t f[], int len);
  *
  * @param[out] sig			- the resulting signature.
  * @param[in] s				- the set of signatures.
- * @param[in] f			- the linear coefficients in the function.
+ * @param[in] f				- the linear coefficients in the function.
  * @param[in] len			- the number of coefficients.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
@@ -2526,12 +2526,12 @@ int cp_mklhs_evl(g1_t sig, g1_t s[], dig_t f[], int len);
  * Verifies a MKLHS signature over a set of messages.
  *
  * @param[in] sig			- the homomorphic signature to verify.
- * @param[in] m			- the signed message.
+ * @param[in] m				- the signed message.
  * @param[in] mu			- the vector of signed messages per user.
  * @param[in] data			- the dataset identifier.
  * @param[in] id			- the vector of identities.
  * @param[in] tag			- the vector of tags.
- * @param[in] f			- the linear coefficients in the function.
+ * @param[in] f				- the linear coefficients in the function.
  * @param[in] flen			- the number of coefficients.
  * @param[in] pk			- the public keys of the users.
  * @param[in] slen			- the number of signatures.
@@ -2548,7 +2548,7 @@ int cp_mklhs_ver(g1_t sig, bn_t m, bn_t mu[], char *data, char *id[],
  * @param[out] ft			- the precomputed linear coefficients.
  * @param[in] id			- the vector of identities.
  * @param[in] tag			- the vector of tags.
- * @param[in] f			- the linear coefficients in the function.
+ * @param[in] f				- the linear coefficients in the function.
  * @param[in] flen			- the number of coefficients.
  * @param[in] slen			- the number of signatures.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
@@ -2561,11 +2561,11 @@ int cp_mklhs_off(g1_t h[], dig_t ft[], char *id[], char *tag[], dig_t *f[],
  * messages.
  *
  * @param[in] sig			- the homomorphic signature to verify.
- * @param[in] m			- the signed message.
+ * @param[in] m				- the signed message.
  * @param[in] mu			- the vector of signed messages per user.
  * @param[in] data			- the dataset identifier.
  * @param[in] id			- the vector of identities.
- * @param[in] d			- the hashes of labels.
+ * @param[in] d				- the hashes of labels.
  * @param[in] ft			- the precomputed linear coefficients.
  * @param[in] pk			- the public keys of the users.
  * @param[in] slen			- the number of signatures.
@@ -2581,32 +2581,32 @@ int cp_mklhs_onv(g1_t sig, bn_t m, bn_t mu[], char *data, char *id[], g1_t h[],
  * @param[out] sk			- the sender's secret key.
  * @param[out] ss			- the secret power in G_2.
  * @param[out] s			- the consecutive powers in G_1.
- * @param[in] m			- the maximum set size.
+ * @param[in] m				- the maximum set size.
  */
-int cp_lapsi_gen(bn_t sk, g2_t ss, g1_t s[], int m);
+int cp_lapsi_gen(bn_t sk, g1_t ss, g2_t s[], int m);
 
 /**
  * Computes the receiver part of the LaPSI protocol, given its input set.
  *
  * @param[out] d			- the polynomial interpolation in the exponent.
  * @param[out] r			- the random nonce.
- * @param[in] x			- the receiver's input set.
- * @param[in] s			- the consecutive powers.
- * @param[in] m			- the receiver's input set size.
+ * @param[in] x				- the receiver's input set.
+ * @param[in] s				- the consecutive powers.
+ * @param[in] m				- the receiver's input set size.
  */
-int cp_lapsi_ask(g1_t d, bn_t r, bn_t x[], g1_t s[], int m);
+int cp_lapsi_ask(g2_t d, bn_t r, bn_t x[], g2_t s[], int m);
 
 /**
  * Computes the sender part of the LaPSI protocol, given its input set.
  *
  * @param[out] t			- the pairing results.
  * @param[out] u			- the missing elements in the exponent.
- * @param[in] d				- the polynomial interpolation in the exponent.
  * @param[in] ss			- the secret power.
- * @param[in] y			- the server's input set.
- * @param[in] n			- the sender's input set size.
+ * @param[in] d				- the polynomial interpolation in the exponent.
+ * @param[in] y				- the server's input set.
+ * @param[in] n				- the sender's input set size.
  */
-int cp_lapsi_ans(gt_t t[], g2_t u[], g1_t d, g2_t ss, bn_t y[], int n);
+int cp_lapsi_ans(gt_t t[], g1_t u[], g1_t ss, g2_t d, bn_t y[], int n);
 
 /**
  * Computes the intersaction as the final part of the LaPSI protocol.
@@ -2615,14 +2615,14 @@ int cp_lapsi_ans(gt_t t[], g2_t u[], g1_t d, g2_t ss, bn_t y[], int n);
  * @param[out] len			- the cardinality of the resulting intersection.
  * @param[in] sk			- the sender's secret key.
  * @param[in] d				- the polynomial interpolation in the exponent.
- * @param[in] x			- the receiver's input set.
- * @param[in] s			- the consecutive powers.
- * @param[in] m			- the receiver's input set size.
+ * @param[in] x				- the receiver's input set.
+ * @param[in] s				- the consecutive powers.
+ * @param[in] m				- the receiver's input set size.
  * @param[in] t				- the pairing results.
- * @param[in] u			- the missing elements in the exponent.
- * @param[in] n			- the sender's input set size.
+ * @param[in] u				- the missing elements in the exponent.
+ * @param[in] n				- the sender's input set size.
  */
-int cp_lapsi_int(bn_t z[], int *len, bn_t sk, g1_t d, bn_t x[], int m,
-		gt_t t[], g2_t u[], int n);
+int cp_lapsi_int(bn_t z[], int *len, bn_t sk, g2_t d, bn_t x[], int m,
+		gt_t t[], g1_t u[], int n);
 
 #endif /* !RLC_CP_H */

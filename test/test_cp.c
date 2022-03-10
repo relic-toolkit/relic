@@ -2133,34 +2133,34 @@ static int lhs(void) {
 static int psi(void) {
 	int len, code = RLC_ERR;
 	bn_t q, r, x[M], y[N], z[M];
-	g1_t d, s[M + 1];
-	g2_t u[M], ss;
+	g1_t u[M], ss;
+	g2_t d, s[M + 1];
 	gt_t t[M];
 
 	bn_null(q);
 	bn_null(r);
-	g1_null(d);
-	g2_null(ss);
+	g1_null(ss);
+	g2_null(d);
 
 	RLC_TRY {
 		bn_new(q);
 		bn_new(r);
-		g1_new(d);
-		g2_new(ss);
+		g1_new(ss);
+		g2_new(d);
 		for (int i = 0; i < M; i++) {
 			bn_null(x[i]);
 			bn_null(z[i]);
-			g1_null(s[i]);
+			g2_null(s[i]);
 			bn_new(x[i]);
 			bn_new(z[i]);
-			g1_new(s[i]);
+			g2_new(s[i]);
 		}
 		for (int i = 0; i < N; i++) {
 			bn_null(y[i]);
-			g2_null(u[i]);
+			g1_null(u[i]);
 			gt_null(t[i]);
 			bn_new(y[i]);
-			g2_new(u[i]);
+			g1_new(u[i]);
 			gt_new(t[i]);
 		}
 
@@ -2178,7 +2178,7 @@ static int psi(void) {
 				for (int j = 0; j < k; j++) {
 					bn_copy(y[j], x[j]);
 				}
-				TEST_ASSERT(cp_lapsi_ans(t, u, d, ss, y, N) == RLC_OK, end);
+				TEST_ASSERT(cp_lapsi_ans(t, u, ss, d, y, N) == RLC_OK, end);
 				TEST_ASSERT(cp_lapsi_int(z, &len, q, d, x, M, t, u, N) == RLC_OK, end);
 				TEST_ASSERT(len == k, end);
 			}
@@ -2191,16 +2191,16 @@ static int psi(void) {
   end:
     bn_free(q);
 	bn_free(r);
-	g1_free(d);
-	g2_free(ss);
+	g1_free(ss);
+	g2_free(d);
 	for (int i = 0; i < M; i++) {
 		bn_free(x[i]);
 		bn_free(z[i]);
-		g1_free(s[i]);
+		g2_free(s[i]);
 	}
 	for (int i = 0; i < N; i++) {
 		bn_free(y[i]);
-		g2_free(u[i]);
+		g1_free(u[i]);
 		gt_free(t[i]);
 	}
 	return code;
