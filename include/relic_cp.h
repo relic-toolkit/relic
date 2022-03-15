@@ -963,12 +963,23 @@ int cp_phpe_gen(bn_t pub, phpe_t prv, int bits);
 /**
  * Encrypts using the Paillier cryptosystem.
  *
- * @param[out] c			- the ciphertex, represented as an integer.
+ * @param[out] c			- the ciphertext, represented as an integer.
  * @param[in] m				- the plaintext as an integer.
  * @param[in] pub			- the public key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_phpe_enc(bn_t c, bn_t m, bn_t pub);
+
+/**
+ * Evaluated a homomorphic addition using the Paillier cryptosystem.
+ *
+ * @param[out] r			- the resulting ciphertext.
+ * @param[in] c				- the first ciphertext as an integer to multiply.
+ * @param[in] d				- the second ciphertext as an integer to multiply.
+ * @param[in] pub			- the public key.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int cp_phpe_add(bn_t r, bn_t c, bn_t d, bn_t pub);
 
 /**
  * Decrypts using the Paillier cryptosystem.
@@ -994,7 +1005,7 @@ int cp_shpe_gen(shpe_t pub, shpe_t prv, int sbits, int nbits);
 /**
  * Encrypts using the Subgroup Paillier cryptosystem.
  *
- * @param[out] c			- the ciphertex, represented as an integer.
+ * @param[out] c			- the ciphertext, represented as an integer.
  * @param[in] m				- the plaintext as an integer.
  * @param[in] pub			- the public key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
@@ -1004,7 +1015,7 @@ int cp_shpe_enc(bn_t c, bn_t m, shpe_t pub);
 /**
  * Encrypts faster using the Subgroup Paillier cryptosystem if the private key is known.
  *
- * @param[out] c			- the ciphertex, represented as an integer.
+ * @param[out] c			- the ciphertext represented as an integer.
  * @param[in] m				- the plaintext as an integer.
  * @param[in] pub			- the public key.
  * @param[in] prv			- the private key.

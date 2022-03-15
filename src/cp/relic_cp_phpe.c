@@ -50,7 +50,7 @@ int cp_phpe_gen(bn_t pub, phpe_t prv, int bits) {
 #ifdef CP_CRT
 	/* Fix g = n + 1. */
 
-	/* Precompute dp = 1/(pow(g, p-1, p^2)//p mod p. 
+	/* Precompute dp = 1/(pow(g, p-1, p^2)//p mod p.
        with g=1+n, this is also 1/((p-1)q) mod p.
      */
  	bn_sub_dig(prv->dp, prv->p, 1);			//p-1
@@ -71,6 +71,29 @@ int cp_phpe_gen(bn_t pub, phpe_t prv, int bits) {
 #endif
 
 	bn_copy(pub, prv->n);
+	return result;
+}
+
+int cp_phpe_add(bn_t r, bn_t c, bn_t d, bn_t pub) {
+	int result = RLC_OK;
+	bn_t s;
+
+	bn_null(s);
+
+	RLC_TRY {
+		bn_new(s);
+
+		bn_sqr(s, pub);
+		bn_mul(r, c, d);
+		bn_mod(r, r, s);
+	}
+	RLC_CATCH_ANY {
+		result = RLC_ERR;
+	}
+	RLC_FINALLY {
+		bn_free(s);
+	}
+
 	return result;
 }
 
@@ -100,7 +123,7 @@ int cp_phpe_enc(bn_t c, bn_t m, bn_t pub) {
 		bn_sqr(s, pub);
 		bn_mul(c, pub, m);
         bn_add_dig(c, c, 1);
-		bn_mod(c, c, s);        
+		bn_mod(c, c, s);
 		bn_mxp(r, r, pub, s);
 		bn_mul(c, c, r);
 		bn_mod(c, c, s);
