@@ -41,7 +41,7 @@ int mpc_sss_gen(bn_t *x, bn_t *y, const bn_t secret, const bn_t order,
         size_t k, size_t n) {
     bn_t t, *a = RLC_ALLOCA(bn_t, k);
 
-    if (k < 3 || n < k) {
+    if (k < 2 || n < k) {
         return RLC_ERR;
     }
 
@@ -84,7 +84,7 @@ int mpc_sss_key(bn_t key, const bn_t *x, const bn_t *y, const bn_t order,
     bn_t *a = RLC_ALLOCA(bn_t, k);
     bn_t *b = RLC_ALLOCA(bn_t, k);
 
-    if (k < 3) {
+    if (k < 2) {
         RLC_FREE(a);
         RLC_FREE(b);
         return RLC_ERR;

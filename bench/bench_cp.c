@@ -198,6 +198,12 @@ static void paillier(void) {
 		BENCH_ADD(cp_phpe_enc(c, m, pub));
 	} BENCH_END;
 
+	BENCH_RUN("cp_phpe_add") {
+		bn_rand_mod(m, pub);
+		cp_phpe_enc(c, m, pub);
+		BENCH_ADD(cp_phpe_add(c, c, c, pub));
+	} BENCH_END;
+
 	BENCH_RUN("cp_phpe_dec") {
 		bn_rand_mod(m, pub);
 		cp_phpe_enc(c, m, pub);

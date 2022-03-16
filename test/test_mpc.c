@@ -157,12 +157,12 @@ static int shamir(void) {
 		bn_gen_prime(q, RLC_BN_BITS);
 
 		TEST_CASE("shamir secret shares are generated correctly") {
-			for (int i = 3; i < 10; i++) {
-				for (int j = 3; j <= i; j++) {
+			for (int i = 2; i < 10; i++) {
+				for (int j = 2; j <= i; j++) {
 					bn_rand_mod(s, q);
 					bn_zero(t);
 					TEST_ASSERT(mpc_sss_gen(x, y, s, q, j, i) == RLC_OK, end);
-					if (j > 3) {
+					if (j > 2) {
 						TEST_ASSERT(mpc_sss_key(t, x, y, q, j - 1) == RLC_OK, end);
 						TEST_ASSERT(bn_cmp(t, s) != RLC_EQ, end);
 					} else {
