@@ -979,7 +979,7 @@ int cp_phpe_enc(bn_t c, const bn_t m, const bn_t pub);
  * @param[in] pub			- the public key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_phpe_add(bn_t r, bn_t c, bn_t d, bn_t pub);
+int cp_phpe_add(bn_t r, const bn_t c, const bn_t d, const bn_t pub);
 
 /**
  * Decrypts using the Paillier cryptosystem.

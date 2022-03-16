@@ -74,7 +74,7 @@ int cp_phpe_gen(bn_t pub, phpe_t prv, int bits) {
 	return result;
 }
 
-int cp_phpe_add(bn_t r, bn_t c, bn_t d, bn_t pub) {
+int cp_phpe_add(bn_t r, const bn_t c, const bn_t d, const bn_t pub) {
 	int result = RLC_OK;
 	bn_t s;
 
