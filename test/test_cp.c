@@ -228,9 +228,7 @@ static int paillier(void) {
 			bn_rand_mod(b, pub);
 			TEST_ASSERT(cp_phpe_enc(c, a, pub) == RLC_OK, end);
 			TEST_ASSERT(cp_phpe_enc(d, b, pub) == RLC_OK, end);
-			bn_mul(c, c, d);
-			bn_sqr(d, pub);
-			bn_mod(c, c, d);
+			TEST_ASSERT(cp_phpe_add(c, c, d, pub) == RLC_OK, end);
 			TEST_ASSERT(cp_phpe_dec(d, c, prv) == RLC_OK, end);
 			bn_add(a, a, b);
 			bn_mod(a, a, pub);
