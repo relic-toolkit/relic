@@ -2129,40 +2129,71 @@ static int lhs(void) {
 #define N	2			/* Number of client messages. */
 
 static int psi(void) {
-	int len, code = RLC_ERR;
-	bn_t q, r, x[M], y[N], z[M];
+	int len, result, code = RLC_ERR;
+	bn_t g, n, q, r, p[M], x[M], v[N], w[N], y[N], z[M];
 	g1_t u[M], ss;
 	g2_t d, s[M + 1];
 	gt_t t[M];
 
+	bn_null(g);
+	bn_null(n);
 	bn_null(q);
 	bn_null(r);
 	g1_null(ss);
 	g2_null(d);
 
 	RLC_TRY {
+		bn_new(g);
+		bn_new(n);
 		bn_new(q);
 		bn_new(r);
 		g1_new(ss);
 		g2_new(d);
 		for (int i = 0; i < M; i++) {
+			bn_null(p[i]);
 			bn_null(x[i]);
 			bn_null(z[i]);
 			g2_null(s[i]);
+			bn_new(p[i]);
 			bn_new(x[i]);
 			bn_new(z[i]);
 			g2_new(s[i]);
 		}
 		for (int i = 0; i < N; i++) {
+			bn_null(v[i]);
+			bn_null(w[i]);
 			bn_null(y[i]);
 			g1_null(u[i]);
 			gt_null(t[i]);
+			bn_new(v[i]);
+			bn_new(w[i]);
 			bn_new(y[i]);
 			g1_new(u[i]);
 			gt_new(t[i]);
 		}
 
-		TEST_CASE("laconic private set intersection is correct") {
+		result = cp_rsapsi_gen(g, n, RLC_BN_BITS);
+
+		TEST_CASE("factoring-based laconic private set intersection is correct") {
+			TEST_ASSERT(result == RLC_OK, end);
+			for (int j = 0; j < M; j++) {
+				bn_rand_mod(x[j], n);
+			}
+			for (int j = 0; j < N; j++) {
+				bn_rand_mod(y[j], n);
+			}
+			TEST_ASSERT(cp_rsapsi_ask(q, r, p, g, n, x, M) == RLC_OK, end);
+			for (int k = 0; k <= N; k++) {
+				for (int j = 0; j < k; j++) {
+					bn_copy(y[j], x[j]);
+				}
+				TEST_ASSERT(cp_rsapsi_ans(v, w, q, g, n, y, N) == RLC_OK, end);
+				TEST_ASSERT(cp_rsapsi_int(z, &len, r, p, n, x, M, v, w, N) == RLC_OK, end);
+				TEST_ASSERT(len == k, end);
+			}
+		} TEST_END;
+
+		TEST_CASE("pairing-based laconic private set intersection is correct") {
 			pc_get_ord(q);
 			for (int j = 0; j < M; j++) {
 				bn_rand_mod(x[j], q);
@@ -2170,14 +2201,14 @@ static int psi(void) {
 			for (int j = 0; j < N; j++) {
 				bn_rand_mod(y[j], q);
 			}
-			TEST_ASSERT(cp_lapsi_gen(q, ss, s, M) == RLC_OK, end);
-			TEST_ASSERT(cp_lapsi_ask(d, r, x, s, M) == RLC_OK, end);
+			TEST_ASSERT(cp_pbpsi_gen(q, ss, s, M) == RLC_OK, end);
+			TEST_ASSERT(cp_pbpsi_ask(d, r, x, s, M) == RLC_OK, end);
 			for (int k = 0; k <= N; k++) {
 				for (int j = 0; j < k; j++) {
 					bn_copy(y[j], x[j]);
 				}
-				TEST_ASSERT(cp_lapsi_ans(t, u, ss, d, y, N) == RLC_OK, end);
-				TEST_ASSERT(cp_lapsi_int(z, &len, q, d, x, M, t, u, N) == RLC_OK, end);
+				TEST_ASSERT(cp_pbpsi_ans(t, u, ss, d, y, N) == RLC_OK, end);
+				TEST_ASSERT(cp_pbpsi_int(z, &len, q, d, x, M, t, u, N) == RLC_OK, end);
 				TEST_ASSERT(len == k, end);
 			}
 		} TEST_END;
@@ -2187,16 +2218,21 @@ static int psi(void) {
 	}
 	code = RLC_OK;
   end:
+  	bn_free(g);
+	bn_free(n);
     bn_free(q);
 	bn_free(r);
 	g1_free(ss);
 	g2_free(d);
 	for (int i = 0; i < M; i++) {
+		bn_free(p[i]);
 		bn_free(x[i]);
 		bn_free(z[i]);
 		g2_free(s[i]);
 	}
 	for (int i = 0; i < N; i++) {
+		bn_free(v[i]);
+		bn_free(w[i]);
 		bn_free(y[i]);
 		g1_free(u[i]);
 		gt_free(t[i]);
@@ -2213,7 +2249,7 @@ int main(void) {
 	}
 
 	util_banner("Tests for the CP module", 0);
-
+#if 0
 #if defined(WITH_BN)
 	util_banner("Protocols based on integer factorization:\n", 0);
 	if (rsa() != RLC_OK) {
@@ -2302,10 +2338,11 @@ int main(void) {
 		}
 	}
 #endif
-
+#endif
 #if defined(WITH_PC)
 	util_banner("Protocols based on pairings:\n", 0);
 	if (pc_param_set_any() == RLC_OK) {
+#if 0
 		if (pdpub() != RLC_OK) {
 			core_clean();
 			return 1;
@@ -2367,13 +2404,20 @@ int main(void) {
 			core_clean();
 			return 1;
 		}
+#endif
+	}
+#endif
 
+#if defined(WITH_BN) && defined(WITH_PC)
+	util_banner("Protocols based on accumulators:\n", 0);
+	if (pc_param_set_any() == RLC_OK) {
 		if (psi() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
 	}
 #endif
+
 	util_banner("All tests have passed.\n", 0);
 
 	core_clean();

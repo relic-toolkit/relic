@@ -2714,10 +2714,10 @@
 #undef cp_mklhs_ver
 #undef cp_mklhs_off
 #undef cp_mklhs_onv
-#undef cp_lapsi_gen
-#undef cp_lapsi_ask
-#undef cp_lapsi_ans
-#undef cp_lapsi_int
+#undef cp_pbpsi_gen
+#undef cp_pbpsi_ask
+#undef cp_pbpsi_ans
+#undef cp_pbpsi_int
 
 #define cp_rsa_gen 	RLC_PREFIX(cp_rsa_gen)
 #define cp_rsa_enc 	RLC_PREFIX(cp_rsa_enc)
@@ -2855,10 +2855,10 @@
 #define cp_mklhs_ver 	RLC_PREFIX(cp_mklhs_ver)
 #define cp_mklhs_off 	RLC_PREFIX(cp_mklhs_off)
 #define cp_mklhs_onv 	RLC_PREFIX(cp_mklhs_onv)
-#define cp_lapsi_gen 	RLC_PREFIX(cp_lapsi_gen)
-#define cp_lapsi_ask 	RLC_PREFIX(cp_lapsi_ask)
-#define cp_lapsi_ans 	RLC_PREFIX(cp_lapsi_ans)
-#define cp_lapsi_int 	RLC_PREFIX(cp_lapsi_int)
+#define cp_pbpsi_gen 	RLC_PREFIX(cp_pbpsi_gen)
+#define cp_pbpsi_ask 	RLC_PREFIX(cp_pbpsi_ask)
+#define cp_pbpsi_ans 	RLC_PREFIX(cp_pbpsi_ans)
+#define cp_pbpsi_int 	RLC_PREFIX(cp_pbpsi_int)
 
 #undef md_map_sh224
 #undef md_map_sh256
