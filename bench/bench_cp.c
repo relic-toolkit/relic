@@ -1851,6 +1851,7 @@ static void psi(void) {
 	g1_t u[M], ss;
 	g2_t d, s[M + 1];
 	gt_t t[M];
+	crt_t crt;
 	int len;
 
 	bn_new(g);
@@ -1881,6 +1882,7 @@ static void psi(void) {
 		g1_new(u[i]);
 		gt_new(t[i]);
 	}
+	crt_new(crt);
 
 	pc_get_ord(q);
 	for (int j = 0; j < M; j++) {
@@ -1902,6 +1904,20 @@ static void psi(void) {
 
 	BENCH_RUN("cp_rsapsi_int") {
 		BENCH_ADD(cp_rsapsi_int(z, &len, r, p, n, x, M, v, w, N));
+	} BENCH_END;
+
+	BENCH_ONE("cp_shipsi_gen", cp_shipsi_gen(g, crt, RLC_BN_BITS), 1);
+
+	BENCH_RUN("cp_shipsi_ask (5)") {
+		BENCH_ADD(cp_shipsi_ask(q, r, g, crt, x, M));
+	} BENCH_END;
+
+	BENCH_RUN("cp_shipsi_ans (2)") {
+		BENCH_ADD(cp_shipsi_ans(v, w[0], q, g, crt, y, N));
+	} BENCH_END;
+
+	BENCH_RUN("cp_shipsi_int") {
+		BENCH_ADD(cp_shipsi_int(z, &len, r, crt, x, M, v, w[0], N));
 	} BENCH_END;
 
 	BENCH_RUN("cp_pbpsi_gen (5)") {
@@ -1947,7 +1963,7 @@ int main(void) {
 	conf_print();
 
 	util_banner("Benchmarks for the CP module:", 0);
-#if 0
+
 #if defined(WITH_BN)
 	util_banner("Protocols based on integer factorization:\n", 0);
 	rsa();
@@ -1970,11 +1986,11 @@ int main(void) {
 		etrs();
 	}
 #endif
-#endif
+
 #if defined(WITH_PC)
 	if (pc_param_set_any() == RLC_OK) {
 		util_banner("Protocols based on pairings:\n", 0);
-		/*pdpub();
+		pdpub();
 		pdprv();
 		sokaka();
 		ibe();
@@ -1987,7 +2003,7 @@ int main(void) {
 		mpss();
 #endif
 		zss();
-		lhs();*/
+		lhs();
 
 		util_banner("Protocols based on accumulators:\n", 0);
 		psi();

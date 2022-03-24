@@ -2134,6 +2134,7 @@ static int psi(void) {
 	g1_t u[M], ss;
 	g2_t d, s[M + 1];
 	gt_t t[M];
+	crt_t crt;
 
 	bn_null(g);
 	bn_null(n);
@@ -2141,6 +2142,7 @@ static int psi(void) {
 	bn_null(r);
 	g1_null(ss);
 	g2_null(d);
+	crt_null(crt);
 
 	RLC_TRY {
 		bn_new(g);
@@ -2171,6 +2173,7 @@ static int psi(void) {
 			g1_new(u[i]);
 			gt_new(t[i]);
 		}
+		crt_new(crt);
 
 		result = cp_rsapsi_gen(g, n, RLC_BN_BITS);
 
@@ -2189,6 +2192,27 @@ static int psi(void) {
 				}
 				TEST_ASSERT(cp_rsapsi_ans(v, w, q, g, n, y, N) == RLC_OK, end);
 				TEST_ASSERT(cp_rsapsi_int(z, &len, r, p, n, x, M, v, w, N) == RLC_OK, end);
+				TEST_ASSERT(len == k, end);
+			}
+		} TEST_END;
+
+		result = cp_shipsi_gen(g, crt, RLC_BN_BITS);
+
+		TEST_CASE("factoring-based size-hiding private set intersection is correct") {
+			TEST_ASSERT(result == RLC_OK, end);
+			for (int j = 0; j < M; j++) {
+				bn_rand_mod(x[j], crt->n);
+			}
+			for (int j = 0; j < N; j++) {
+				bn_rand_mod(y[j], crt->n);
+			}
+			TEST_ASSERT(cp_shipsi_ask(q, r, g, crt, x, M) == RLC_OK, end);
+			for (int k = 0; k <= N; k++) {
+				for (int j = 0; j < k; j++) {
+					bn_copy(y[j], x[j]);
+				}
+				TEST_ASSERT(cp_shipsi_ans(v, w[0], q, g, crt, y, N) == RLC_OK, end);
+				TEST_ASSERT(cp_shipsi_int(z, &len, r, crt, x, M, v, w[0], N) == RLC_OK, end);
 				TEST_ASSERT(len == k, end);
 			}
 		} TEST_END;
@@ -2237,6 +2261,7 @@ static int psi(void) {
 		g1_free(u[i]);
 		gt_free(t[i]);
 	}
+	crt_free(crt);
 	return code;
 }
 
@@ -2249,7 +2274,7 @@ int main(void) {
 	}
 
 	util_banner("Tests for the CP module", 0);
-#if 0
+
 #if defined(WITH_BN)
 	util_banner("Protocols based on integer factorization:\n", 0);
 	if (rsa() != RLC_OK) {
@@ -2277,6 +2302,7 @@ int main(void) {
 		return 1;
 	}
 #endif
+
 #if defined(WITH_EC)
 	util_banner("Protocols based on elliptic curves:\n", 0);
 	if (ec_param_set_any() == RLC_OK) {
@@ -2338,11 +2364,11 @@ int main(void) {
 		}
 	}
 #endif
-#endif
+
 #if defined(WITH_PC)
 	util_banner("Protocols based on pairings:\n", 0);
 	if (pc_param_set_any() == RLC_OK) {
-#if 0
+
 		if (pdpub() != RLC_OK) {
 			core_clean();
 			return 1;
@@ -2404,7 +2430,6 @@ int main(void) {
 			core_clean();
 			return 1;
 		}
-#endif
 	}
 #endif
 

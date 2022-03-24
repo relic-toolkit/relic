@@ -120,7 +120,7 @@ typedef struct {
 	bn_t a;
 	/** The subgroup size. */
 	bn_t b;
-	/** The generator (1+n)^b) mod n^2. */
+	/** The generator ((1+n)^b) mod n^2. */
 	bn_t g;
 	/** The precomputed ((1+n)^b)^n mod n^2. */
 	bn_t gn;
@@ -2638,6 +2638,57 @@ int cp_rsapsi_ans(bn_t t[], bn_t u[], bn_t d, bn_t g, bn_t n, bn_t y[], int l);
  */
 int cp_rsapsi_int(bn_t z[], int *len, bn_t r, bn_t p[], bn_t n, bn_t x[], int m,
 		bn_t t[], bn_t u[], int l);
+
+/**
+ * Generates the trusted setup parameters for the factoring-based size-hiding
+ * Private Set Intersection (SHI-PSI) protocol.
+ *
+ * @param[out] g			- the generator.
+ * @param[in] crt			- the parameters given by the trusted setup.
+ * @param[in] bits			- the precision in bits.
+ */
+int cp_shipsi_gen(bn_t g, crt_t crt, int bits);
+
+/**
+ * Computes the receiver part of the SHI-PSI protocol, given its input set.
+ *
+ * @param[out] d			- the resulting accumulator.
+ * @param[out] r			- the random nonce.
+ * @param[in] g				- the generator given by the trusted setup.
+ * @param[in] crt			- the parameters given by the trusted setup.
+ * @param[in] x				- the receiver's input set.
+ * @param[in] m				- the receiver's input set size.
+ */
+int cp_shipsi_ask(bn_t d, bn_t r, bn_t g, crt_t crt, bn_t x[], int m);
+
+/**
+ * Computes the sender part of the SHI-PSI protocol, given its input set.
+ *
+ * @param[out] t			- the accumulator results.
+ * @param[out] u			- the hint in the exponent.
+ * @param[in] d				- the receiver's accumulator.
+ * @param[in] g				- the generator given by the trusted setup.
+ * @param[in] crt			- the parameters given by the trusted setup.
+ * @param[in] y				- the server's input set.
+ * @param[in] n				- the sender's input set size.
+ */
+int cp_shipsi_ans(bn_t t[], bn_t u, bn_t d, bn_t g, crt_t crt, bn_t y[], int n);
+
+/**
+ * Computes the intersection as the final part of the SHI-PSI protocol.
+ *
+ * @param[out] z			- the elements in the intersection.
+ * @param[out] len			- the cardinality of the resulting intersection.
+ * @param[in] r				- the random nonce.
+ * @param[in] crt			- the parameters given by the trusted setup.
+ * @param[in] x				- the receiver's input set.
+ * @param[in] m				- the receiver's input set size.
+ * @param[in] t				- the accumulator results.
+ * @param[in] u				- the hint in the exponent.
+ * @param[in] n				- the sender's input set size.
+ */
+int cp_shipsi_int(bn_t z[], int *len, bn_t r, crt_t crt, bn_t x[], int m,
+		bn_t t[], bn_t u, int n);
 
 /**
  * Generates the secrets and consecutive powers for the pairing-based laconic
