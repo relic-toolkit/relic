@@ -2654,12 +2654,12 @@ int cp_shipsi_gen(bn_t g, crt_t crt, int bits);
  *
  * @param[out] d			- the resulting accumulator.
  * @param[out] r			- the random nonce.
- * @param[in] g				- the generator given by the trusted setup.
+ * @param[in] n				- the modulus given by the trusted setup.
  * @param[in] crt			- the parameters given by the trusted setup.
  * @param[in] x				- the receiver's input set.
  * @param[in] m				- the receiver's input set size.
  */
-int cp_shipsi_ask(bn_t d, bn_t r, bn_t g, crt_t crt, bn_t x[], int m);
+int cp_shipsi_ask(bn_t d, bn_t r, bn_t g, bn_t n, bn_t x[], int m);
 
 /**
  * Computes the sender part of the SHI-PSI protocol, given its input set.
@@ -2680,15 +2680,15 @@ int cp_shipsi_ans(bn_t t[], bn_t u, bn_t d, bn_t g, crt_t crt, bn_t y[], int n);
  * @param[out] z			- the elements in the intersection.
  * @param[out] len			- the cardinality of the resulting intersection.
  * @param[in] r				- the random nonce.
- * @param[in] crt			- the parameters given by the trusted setup.
+ * @param[in] n				- the modulus given by the trusted setup.
  * @param[in] x				- the receiver's input set.
  * @param[in] m				- the receiver's input set size.
  * @param[in] t				- the accumulator results.
  * @param[in] u				- the hint in the exponent.
- * @param[in] n				- the sender's input set size.
+ * @param[in] l				- the sender's input set size.
  */
-int cp_shipsi_int(bn_t z[], int *len, bn_t r, crt_t crt, bn_t x[], int m,
-		bn_t t[], bn_t u, int n);
+int cp_shipsi_int(bn_t z[], int *len, bn_t r, bn_t n, bn_t x[], int m,
+		bn_t t[], bn_t u, int l);
 
 /**
  * Generates the secrets and consecutive powers for the pairing-based laconic

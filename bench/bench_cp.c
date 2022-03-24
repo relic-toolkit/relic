@@ -1909,7 +1909,7 @@ static void psi(void) {
 	BENCH_ONE("cp_shipsi_gen", cp_shipsi_gen(g, crt, RLC_BN_BITS), 1);
 
 	BENCH_RUN("cp_shipsi_ask (5)") {
-		BENCH_ADD(cp_shipsi_ask(q, r, g, crt, x, M));
+		BENCH_ADD(cp_shipsi_ask(q, r, g, crt->n, x, M));
 	} BENCH_END;
 
 	BENCH_RUN("cp_shipsi_ans (2)") {
@@ -1917,7 +1917,7 @@ static void psi(void) {
 	} BENCH_END;
 
 	BENCH_RUN("cp_shipsi_int") {
-		BENCH_ADD(cp_shipsi_int(z, &len, r, crt, x, M, v, w[0], N));
+		BENCH_ADD(cp_shipsi_int(z, &len, r, crt->n, x, M, v, w[0], N));
 	} BENCH_END;
 
 	BENCH_RUN("cp_pbpsi_gen (5)") {

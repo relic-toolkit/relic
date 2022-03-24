@@ -2206,13 +2206,13 @@ static int psi(void) {
 			for (int j = 0; j < N; j++) {
 				bn_rand_mod(y[j], crt->n);
 			}
-			TEST_ASSERT(cp_shipsi_ask(q, r, g, crt, x, M) == RLC_OK, end);
+			TEST_ASSERT(cp_shipsi_ask(q, r, g, crt->n, x, M) == RLC_OK, end);
 			for (int k = 0; k <= N; k++) {
 				for (int j = 0; j < k; j++) {
 					bn_copy(y[j], x[j]);
 				}
 				TEST_ASSERT(cp_shipsi_ans(v, w[0], q, g, crt, y, N) == RLC_OK, end);
-				TEST_ASSERT(cp_shipsi_int(z, &len, r, crt, x, M, v, w[0], N) == RLC_OK, end);
+				TEST_ASSERT(cp_shipsi_int(z, &len, r, crt->n, x, M, v, w[0], N) == RLC_OK, end);
 				TEST_ASSERT(len == k, end);
 			}
 		} TEST_END;
@@ -2274,7 +2274,7 @@ int main(void) {
 	}
 
 	util_banner("Tests for the CP module", 0);
-
+#if 0
 #if defined(WITH_BN)
 	util_banner("Protocols based on integer factorization:\n", 0);
 	if (rsa() != RLC_OK) {
@@ -2432,7 +2432,7 @@ int main(void) {
 		}
 	}
 #endif
-
+#endif
 #if defined(WITH_BN) && defined(WITH_PC)
 	util_banner("Protocols based on accumulators:\n", 0);
 	if (pc_param_set_any() == RLC_OK) {
