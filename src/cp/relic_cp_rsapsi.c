@@ -96,15 +96,21 @@ int cp_rsapsi_ask(bn_t d, bn_t r, bn_t p[], bn_t g, bn_t n, bn_t x[], int m) {
 int cp_rsapsi_ans(bn_t t[], bn_t u[], bn_t d, bn_t g, bn_t n, bn_t y[], int l) {
 	int j, result = RLC_OK, len = RLC_CEIL(RLC_BN_BITS, 8);
 	uint8_t h[RLC_MD_LEN], bin[RLC_CEIL(RLC_BN_BITS, 8)];
+	unsigned int *shuffle = RLC_ALLOCA(unsigned int, l);
 	bn_t p;
 
 	bn_null(p);
 
 	RLC_TRY {
 		bn_new(p);
+		if (shuffle == NULL) {
+			RLC_THROW(ERR_NO_MEMORY);
+		}
+
+		util_perm(shuffle, l);
 
 		for (j = 0; j < l; j++) {
-			bn_write_bin(bin, len, y[j]);
+			bn_write_bin(bin, len, y[shuffle[j]]);
 			md_map(h, bin, len);
 			bn_read_bin(p, h, RLC_MD_LEN / 2);
 			if (bn_is_even(p)) {
@@ -124,6 +130,7 @@ int cp_rsapsi_ans(bn_t t[], bn_t u[], bn_t d, bn_t g, bn_t n, bn_t y[], int l) {
 	}
 	RLC_FINALLY {
 		bn_free(p);
+		RLC_FREE(shuffle);
 	}
 	return result;
 }

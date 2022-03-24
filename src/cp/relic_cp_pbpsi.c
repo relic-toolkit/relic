@@ -106,6 +106,7 @@ int cp_pbpsi_ans(gt_t t[], g1_t u[], g1_t ss, g2_t d, bn_t y[], int n) {
 	bn_t q, tj;
 	g1_t g1;
 	g2_t g2;
+	unsigned int *shuffle = RLC_ALLOCA(unsigned int, n);
 
 	bn_null(q);
 	bn_null(tj);
@@ -117,6 +118,11 @@ int cp_pbpsi_ans(gt_t t[], g1_t u[], g1_t ss, g2_t d, bn_t y[], int n) {
 		bn_new(tj);
 		g1_new(g1);
 		g2_new(g2);
+		if (shuffle == NULL) {
+			RLC_THROW(ERR_NO_MEMORY);
+		}
+
+		util_perm(shuffle, n);
 
 		pc_get_ord(q);
 		g2_get_gen(g2);
@@ -124,7 +130,7 @@ int cp_pbpsi_ans(gt_t t[], g1_t u[], g1_t ss, g2_t d, bn_t y[], int n) {
 			bn_rand_mod(tj, q);
 			g1_mul_gen(g1, tj);
 			pc_map(t[j], g1, d);
-			g1_mul_gen(u[j], y[j]);
+			g1_mul_gen(u[j], y[shuffle[j]]);
 			g1_sub(u[j], ss, u[j]);
 			g1_mul(u[j], u[j], tj);
 		}
@@ -137,6 +143,7 @@ int cp_pbpsi_ans(gt_t t[], g1_t u[], g1_t ss, g2_t d, bn_t y[], int n) {
 		bn_free(tj);
 		g1_free(g1);
 		g1_free(g2);
+		RLC_FREE(shuffle);
 	}
 	return result;
 }
