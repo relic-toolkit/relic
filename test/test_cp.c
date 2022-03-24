@@ -2274,7 +2274,7 @@ int main(void) {
 	}
 
 	util_banner("Tests for the CP module", 0);
-#if 0
+
 #if defined(WITH_BN)
 	util_banner("Protocols based on integer factorization:\n", 0);
 	if (rsa() != RLC_OK) {
@@ -2432,7 +2432,7 @@ int main(void) {
 		}
 	}
 #endif
-#endif
+
 #if defined(WITH_BN) && defined(WITH_PC)
 	util_banner("Protocols based on accumulators:\n", 0);
 	if (pc_param_set_any() == RLC_OK) {
