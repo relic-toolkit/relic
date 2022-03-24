@@ -198,7 +198,7 @@ int cp_shipsi_int(bn_t z[], int *len, bn_t r, bn_t n, bn_t x[], int m,
 		}
 		bn_free(e);
 		bn_free(f);
-		RLC_FREE(h);
+		RLC_FREE(hs);
 	}
 	return result;
 }
