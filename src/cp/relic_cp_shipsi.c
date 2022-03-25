@@ -76,8 +76,9 @@ int cp_shipsi_ask(bn_t d, bn_t r, bn_t g, bn_t n, bn_t x[], int m) {
 		bn_new(t);
 
 		/* Compute R = g^r mod N for random r mod N^2. */
-		bn_sqr(t, n);
-		bn_rand_mod(r, t);
+		bn_rand_mod(r, n);
+		bn_rand_mod(t, n);
+		bn_mul(r, r, t);
 		bn_mxp(d, g, r, n);
 
 		/* Now hash all x_i and accmulate on R. */
