@@ -142,7 +142,7 @@ int cp_pbpsi_ans(gt_t t[], g1_t u[], g1_t ss, g2_t d, bn_t y[], int n) {
 		bn_free(q);
 		bn_free(tj);
 		g1_free(g1);
-		g1_free(g2);
+		g2_free(g2);
 		RLC_FREE(shuffle);
 	}
 	return result;

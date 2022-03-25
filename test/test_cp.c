@@ -2161,6 +2161,8 @@ static int psi(void) {
 			bn_new(z[i]);
 			g2_new(s[i]);
 		}
+		g2_null(s[M]);
+		g2_new(s[M]);
 		for (int i = 0; i < N; i++) {
 			bn_null(v[i]);
 			bn_null(w[i]);
@@ -2254,6 +2256,7 @@ static int psi(void) {
 		bn_free(z[i]);
 		g2_free(s[i]);
 	}
+	g2_free(s[M]);
 	for (int i = 0; i < N; i++) {
 		bn_free(v[i]);
 		bn_free(w[i]);
