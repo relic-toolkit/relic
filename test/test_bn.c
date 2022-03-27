@@ -1216,6 +1216,31 @@ static int gcd(void) {
 		} TEST_END;
 #endif
 
+#if BN_GCD == BINAR || !defined(STRIP)
+		TEST_CASE("binary greatest common divisor is correct") {
+			bn_rand(a, RLC_POS, RLC_BN_BITS);
+			bn_rand(b, RLC_POS, RLC_BN_BITS);
+			bn_gcd(c, a, b);
+			bn_gcd_binar(d, a, b);
+			TEST_ASSERT(bn_cmp(c, d) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("binary extended greatest common divisor is correct") {
+			bn_rand(a, RLC_POS, RLC_BN_BITS);
+			bn_rand(b, RLC_POS, RLC_BN_BITS);
+			bn_gcd_binar(f, a, b);
+			bn_gcd_ext_binar(c, d, e, a, b);
+			bn_mul(d, d, a);
+			bn_mul(e, e, b);
+			bn_add(d, d, e);
+			TEST_ASSERT(bn_cmp(c, d) == RLC_EQ && bn_cmp(c, f) == RLC_EQ, end);
+			bn_gcd_ext(c, d, e, a, b);
+			bn_gcd_ext_binar(f, g, h, a, b);
+			TEST_ASSERT(bn_cmp(c, f) == RLC_EQ && bn_cmp(d, g) == RLC_EQ
+				&& bn_cmp(e, h) == RLC_EQ, end);
+		} TEST_END;
+#endif
+
 #if BN_GCD == LEHME || !defined(STRIP)
 		TEST_CASE("lehmer greatest common divisor is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
@@ -1234,37 +1259,8 @@ static int gcd(void) {
 			bn_mul(e, e, b);
 			bn_add(d, d, e);
 			TEST_ASSERT(bn_cmp(c, d) == RLC_EQ && bn_cmp(c, f) == RLC_EQ, end);
-		} TEST_END;
-#endif
-
-#if BN_GCD == STEIN || !defined(STRIP)
-		TEST_CASE("stein greatest common divisor is correct") {
-			bn_rand(a, RLC_POS, RLC_BN_BITS);
-			bn_rand(b, RLC_POS, RLC_BN_BITS);
-			bn_gcd(c, a, b);
-			bn_gcd_stein(d, a, b);
-			TEST_ASSERT(bn_cmp(c, d) == RLC_EQ, end);
-		} TEST_END;
-
-		TEST_CASE("stein extended greatest common divisor is correct") {
-			bn_rand(a, RLC_POS, RLC_BN_BITS);
-			bn_rand(b, RLC_POS, RLC_BN_BITS);
-			bn_gcd_stein(f, a, b);
-			bn_gcd_ext_stein(c, d, e, a, b);
-			bn_mul(d, d, a);
-			bn_mul(e, e, b);
-			bn_add(d, d, e);
-			TEST_ASSERT(bn_cmp(c, d) == RLC_EQ && bn_cmp(c, f) == RLC_EQ, end);
 			bn_gcd_ext(c, d, e, a, b);
-			bn_gcd_ext_stein(f, g, h, a, b);
-			bn_print(a);
-			bn_print(b);
-			bn_print(c);
-			bn_print(d);
-			bn_print(e);
-			bn_print(f);
-			bn_print(g);
-			bn_print(h);
+			bn_gcd_ext_lehme(f, g, h, a, b);
 			TEST_ASSERT(bn_cmp(c, f) == RLC_EQ && bn_cmp(d, g) == RLC_EQ
 				&& bn_cmp(e, h) == RLC_EQ, end);
 		} TEST_END;

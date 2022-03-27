@@ -324,8 +324,8 @@ typedef bn_st *bn_t;
 #define bn_gcd(C, A, B)		bn_gcd_basic(C, A, B)
 #elif BN_GCD == LEHME
 #define bn_gcd(C, A, B)		bn_gcd_lehme(C, A, B)
-#elif BN_GCD == STEIN
-#define bn_gcd(C, A, B)		bn_gcd_stein(C, A, B)
+#elif BN_GCD == BINAR
+#define bn_gcd(C, A, B)		bn_gcd_binar(C, A, B)
 #endif
 
 /**
@@ -343,8 +343,8 @@ typedef bn_st *bn_t;
 #define bn_gcd_ext(C, D, E, A, B)		bn_gcd_ext_basic(C, D, E, A, B)
 #elif BN_GCD == LEHME
 #define bn_gcd_ext(C, D, E, A, B)		bn_gcd_ext_lehme(C, D, E, A, B)
-#elif BN_GCD == STEIN
-#define bn_gcd_ext(C, D, E, A, B)		bn_gcd_ext_stein(C, D, E, A, B)
+#elif BN_GCD == BINAR
+#define bn_gcd_ext(C, D, E, A, B)		bn_gcd_ext_binar(C, D, E, A, B)
 #endif
 
 /**
@@ -1062,13 +1062,13 @@ void bn_gcd_lehme(bn_t c, const bn_t a, const bn_t b);
 
 /**
  * Computes the greatest common divisor of two multiple precision integers
- * using Stein's binary GCD algorithm.
+ * using the Binary GCD algorithm.
  *
  * @param[out] c			- the result;
  * @param[in] a				- the first multiple precision integer.
  * @param[in] b				- the second multiple precision integer.
  */
-void bn_gcd_stein(bn_t c, const bn_t a, const bn_t b);
+void bn_gcd_binar(bn_t c, const bn_t a, const bn_t b);
 
 /**
  * Computes the greatest common divisor of a multiple precision integer and a
@@ -1106,7 +1106,7 @@ void bn_gcd_ext_lehme(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b);
 
 /**
  * Computes the greatest common divisor of two multiple precision integers
- * using Stein's binary algorithm.
+ * using the Binary algorithm.
  *
  * @param[out] c			- the result;
  * @param[out] d			- the cofactor of the first operand, can be NULL.
@@ -1114,7 +1114,7 @@ void bn_gcd_ext_lehme(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b);
  * @param[in] a				- the first multiple precision integer.
  * @param[in] b				- the second multiple precision integer.
  */
-void bn_gcd_ext_stein(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b);
+void bn_gcd_ext_binar(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b);
 
 /**
  * Computes the extended greatest common divisor of two multiple precision
@@ -1250,7 +1250,7 @@ void bn_gen_prime_stron(bn_t a, int bits);
  * @param[in] abits			- the length of the factor a in bits.
  * @param[in] bbits			- the length of the result in bits.
  */
-int bn_gen_prime_factor(bn_t a, bn_t b, int abits, int bbits); 
+int bn_gen_prime_factor(bn_t a, bn_t b, int abits, int bbits);
 
 
 /**

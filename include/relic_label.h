@@ -253,11 +253,11 @@
 #undef bn_srt
 #undef bn_gcd_basic
 #undef bn_gcd_lehme
-#undef bn_gcd_stein
+#undef bn_gcd_binar
 #undef bn_gcd_dig
 #undef bn_gcd_ext_basic
 #undef bn_gcd_ext_lehme
-#undef bn_gcd_ext_stein
+#undef bn_gcd_ext_binar
 #undef bn_gcd_ext_mid
 #undef bn_gcd_ext_dig
 #undef bn_lcm
@@ -361,11 +361,11 @@
 #define bn_srt 	RLC_PREFIX(bn_srt)
 #define bn_gcd_basic 	RLC_PREFIX(bn_gcd_basic)
 #define bn_gcd_lehme 	RLC_PREFIX(bn_gcd_lehme)
-#define bn_gcd_stein 	RLC_PREFIX(bn_gcd_stein)
+#define bn_gcd_binar 	RLC_PREFIX(bn_gcd_binar)
 #define bn_gcd_dig 	RLC_PREFIX(bn_gcd_dig)
 #define bn_gcd_ext_basic 	RLC_PREFIX(bn_gcd_ext_basic)
 #define bn_gcd_ext_lehme 	RLC_PREFIX(bn_gcd_ext_lehme)
-#define bn_gcd_ext_stein 	RLC_PREFIX(bn_gcd_ext_stein)
+#define bn_gcd_ext_binar 	RLC_PREFIX(bn_gcd_ext_binar)
 #define bn_gcd_ext_mid 	RLC_PREFIX(bn_gcd_ext_mid)
 #define bn_gcd_ext_dig 	RLC_PREFIX(bn_gcd_ext_dig)
 #define bn_lcm 	RLC_PREFIX(bn_lcm)
