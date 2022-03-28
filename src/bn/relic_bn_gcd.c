@@ -780,24 +780,19 @@ void bn_gcd_ext_binar(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 		bn_div(y, y, u);
 		bn_hlv(_a, x);
 		bn_hlv(_b, y);
-		bn_div(t, d, _b);
-		bn_hlv(t, t);
-		bn_mul(v, x, t);
-		bn_mul(u, y, t);
-		if (bn_sign(d) == RLC_NEG) {
-			bn_add(d, d, u);
-			bn_sub(_e, _e, v);
-		} else {
-			bn_sub(d, d, u);
-			bn_add(_e, _e, v);
-		}
 		while (bn_cmp_abs(d, _b) == RLC_GT) {
-			if (bn_sign(d) == RLC_NEG) {
-				bn_add(d, d, y);
-				bn_sub(_e, _e, x);
+			bn_div(t, d, _b);
+			if (bn_bits(t) > 1) {
+				bn_hlv(t, t);
+			}
+			bn_mul(v, x, t);
+			bn_mul(u, y, t);
+			if (bn_sign(d) != bn_sign(u)) {
+				bn_add(d, d, u);
+				bn_sub(_e, _e, v);
 			} else {
-				bn_sub(d, d, y);
-				bn_add(_e, _e, x);
+				bn_sub(d, d, u);
+				bn_add(_e, _e, v);
 			}
 		}
 		if (e != NULL) {
