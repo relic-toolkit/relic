@@ -115,40 +115,27 @@ void bn_gcd_ext_basic(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 
 		bn_zero(x_1);
 		bn_set_dig(y_1, 1);
-
+		bn_set_dig(d, 1);
 		if (e != NULL) {
-			bn_set_dig(d, 1);
 			bn_zero(e);
+		}
 
-			while (!bn_is_zero(v)) {
-				bn_div_rem(q, r, u, v);
+		while (!bn_is_zero(v)) {
+			bn_div_rem(q, r, u, v);
 
-				bn_copy(u, v);
-				bn_copy(v, r);
+			bn_copy(u, v);
+			bn_copy(v, r);
 
-				bn_mul(c, q, x_1);
-				bn_sub(r, d, c);
-				bn_copy(d, x_1);
-				bn_copy(x_1, r);
+			bn_mul(c, q, x_1);
+			bn_sub(r, d, c);
+			bn_copy(d, x_1);
+			bn_copy(x_1, r);
 
+			if (e != NULL) {
 				bn_mul(c, q, y_1);
 				bn_sub(r, e, c);
 				bn_copy(e, y_1);
 				bn_copy(y_1, r);
-			}
-		} else {
-			bn_set_dig(d, 1);
-
-			while (!bn_is_zero(v)) {
-				bn_div_rem(q, r, u, v);
-
-				bn_copy(u, v);
-				bn_copy(v, r);
-
-				bn_mul(c, q, x_1);
-				bn_sub(r, d, c);
-				bn_copy(d, x_1);
-				bn_copy(x_1, r);
 			}
 		}
 		bn_copy(c, u);
