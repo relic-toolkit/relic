@@ -991,17 +991,20 @@ static int reduction(void) {
 static int exponentiation(void) {
 	int code = RLC_ERR;
 	bn_t a, b, c, p;
+	crt_t crt;
 
 	bn_null(a);
 	bn_null(b);
 	bn_null(c);
 	bn_null(p);
+	crt_null(crt);
 
 	RLC_TRY {
 		bn_new(a);
 		bn_new(b);
 		bn_new(c);
 		bn_new(p);
+		crt_new(crt);
 
 #if BN_MOD != PMERS
 		bn_gen_prime(p, RLC_BN_BITS);
@@ -1073,6 +1076,31 @@ static int exponentiation(void) {
 		}
 		TEST_END;
 #endif
+
+		do {
+			bn_gen_prime(crt->p, RLC_BN_BITS / 2);
+			bn_gen_prime(crt->q, RLC_BN_BITS / 2);
+		} while (bn_is_even(crt->p) || bn_is_even(crt->q));
+
+		/* n = pq. */
+		bn_mul(crt->n, crt->p, crt->q);
+		/* qInv = q^(-1) mod p. */
+		bn_mod_inv(crt->qi, crt->q, crt->p);
+		bn_sub_dig(crt->dp, crt->p, 1);
+		bn_sub_dig(crt->dq, crt->q, 1);
+
+		TEST_CASE("chinese remainder theorem modular exponentiation is correct") {
+			bn_rand(a, RLC_POS, RLC_BN_BITS);
+			bn_rand(b, RLC_POS, RLC_BN_BITS);
+			bn_mod(a, a, crt->n);
+			bn_mul(c, crt->dp, crt->dq);
+			bn_mod(b, b, c);
+			bn_mxp(p, a, b, crt->n);
+			bn_mod(c, b, crt->dp);
+			bn_mod(b, b, crt->dq);
+			bn_mxp_crt(c, a, c, b, crt, 0);
+			TEST_ASSERT(bn_cmp(c, p) == RLC_EQ, end);
+		} TEST_END;
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);
@@ -1083,6 +1111,7 @@ static int exponentiation(void) {
 	bn_free(b);
 	bn_free(c);
 	bn_free(p);
+	crt_free(crt);
 	return code;
 }
 

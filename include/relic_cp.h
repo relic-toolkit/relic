@@ -49,30 +49,6 @@
 /*============================================================================*/
 
 /**
- * Represents a pair of moduli for using the Chinese Remainder Theorem (CRT).
- */
-typedef struct {
-	/** The modulus n = pq. */
-	bn_t n;
-	/** The first prime p. */
-	bn_t p;
-	/** The second prime q. */
-	bn_t q;
-	/** The precomputed constant for the first prime. */
-	bn_t dp;
-	/** The precomputed constant for the second prime. */
-	bn_t dq;
-	/** The inverse of q modulo p. */
-	bn_t qi;
-} crt_st;
-
-#if ALLOC == AUTO
-typedef crt_st crt_t[1];
-#else
-typedef crt_st *crt_t;
-#endif
-
-/**
  * Represents an RSA key pair.
  */
 typedef struct {
@@ -289,65 +265,6 @@ typedef etrs_st *etrs_t;
 /*============================================================================*/
 /* Macro definitions                                                          */
 /*============================================================================*/
-
-/**
- * Initializes a CRT moduli set with a null value.
- *
- * @param[out] A			- the moduli to initialize.
- */
-#define crt_null(A)			RLC_NULL(A)
-
-/**
- * Calls a function to allocate and initialize a Rabin key pair.
- *
- * @param[out] A			- the new key pair.
- */
-#if ALLOC == DYNAMIC
-#define crt_new(A)															\
-	A = (crt_t)calloc(1, sizeof(crt_st));									\
-	if (A == NULL) {														\
-		RLC_THROW(ERR_NO_MEMORY);											\
-	}																		\
-	bn_new((A)->n);															\
-	bn_new((A)->dp);														\
-	bn_new((A)->dq);														\
-	bn_new((A)->p);															\
-	bn_new((A)->q);															\
-	bn_new((A)->qi);														\
-
-#elif ALLOC == AUTO
-#define crt_new(A)															\
-	bn_new((A)->n);															\
-	bn_new((A)->dp);														\
-	bn_new((A)->dq);														\
-	bn_new((A)->p);															\
-	bn_new((A)->q);															\
-	bn_new((A)->qi);														\
-
-#endif
-
-/**
- * Calls a function to clean and free a Rabin key pair.
- *
- * @param[out] A			- the key pair to clean and free.
- */
-#if ALLOC == DYNAMIC
-#define crt_free(A)															\
-	if (A != NULL) {														\
-		bn_free((A)->n);													\
-		bn_free((A)->dp);													\
-		bn_free((A)->dq);													\
-		bn_free((A)->p);													\
-		bn_free((A)->q);													\
-		bn_free((A)->qi);													\
-		free(A);															\
-		A = NULL;															\
-	}
-
-#elif ALLOC == AUTO
-#define crt_free(A)				/* empty */
-
-#endif
 
 /**
  * Initializes a Subgroup Paillier key pair with a null value.

@@ -141,97 +141,43 @@ int cp_phpe_enc(bn_t c, bn_t m, bn_t pub) {
 }
 
 int cp_phpe_dec(bn_t m, bn_t c, phpe_t prv) {
-	bn_t s, t, u, v;
+	bn_t t, u;
 	int result = RLC_OK;
 
 	if (prv == NULL || bn_bits(c) > 2 * bn_bits(prv->n)) {
 		return RLC_ERR;
 	}
 
-	bn_null(s);
 	bn_null(t);
 	bn_null(u);
-	bn_null(v);
 
 	RLC_TRY {
-		bn_new(s);
 		bn_new(t);
 		bn_new(u);
-		bn_new(v);
+
+		bn_sub_dig(t, prv->p, 1);
+		bn_sub_dig(u, prv->q, 1);
 
 #if !defined(CP_CRT)
-		bn_sub_dig(s, prv->p, 1);
-		bn_sub_dig(t, prv->q, 1);
-		bn_mul(s, s, t);
+		bn_mul(t, t, u);
 		/* Compute (c^l mod n^2) * u mod n. */
-		bn_sqr(t, prv->n);
-		bn_mxp(m, c, s, t);
+		bn_sqr(u, prv->n);
+		bn_mxp(m, c, t, u);
 
 		bn_sub_dig(m, m, 1);
 		bn_div(m, m, prv->n);
-		bn_mod_inv(t, s, prv->n);
-		bn_mul(m, m, t);
+		bn_mod_inv(u, t, prv->n);
+		bn_mul(m, m, u);
 		bn_mod(m, m, prv->n);
 #else
-
-#if MULTI == OPENMP
-		omp_set_num_threads(CORES);
-		#pragma omp parallel copyin(core_ctx) firstprivate(c, prv)
-		{
-			#pragma omp sections
-			{
-				#pragma omp section
-				{
-#endif
-					/* Compute m_p = (c^(p-1) mod p^2) * dp mod p. */
-					bn_sub_dig(t, prv->p, 1);
-					bn_sqr(s, prv->p);
-					bn_mxp(s, c, t, s);
-					bn_sub_dig(s, s, 1);
-					bn_div(s, s, prv->p);
-					bn_mul(s, s, prv->dp);
-					bn_mod(s, s, prv->p);
-#if MULTI == OPENMP
-				}
-				#pragma omp section
-				{
-#endif
-					/* Compute m_q = (c^(q-1) mod q^2) * dq mod q. */
-					bn_sub_dig(v, prv->q, 1);
-					bn_sqr(u, prv->q);
-					bn_mxp(u, c, v, u);
-					bn_sub_dig(u, u, 1);
-					bn_div(u, u, prv->q);
-					bn_mul(u, u, prv->dq);
-					bn_mod(u, u, prv->q);
-#if MULTI == OPENMP
-				}
-			}
-		}
-#endif
-
-		/* m = (m_p - m_q) mod p. */
-		bn_sub(m, s, u);
-		while (bn_sign(m) == RLC_NEG) {
-			bn_add(m, m, prv->p);
-		}
-		bn_mod(m, m, prv->p);
-		/* m1 = qInv(m_p - m_q) mod p. */
-		bn_mul(m, m, prv->qi);
-		bn_mod(m, m, prv->p);
-		/* m = m2 + m1 * q. */
-		bn_mul(m, m, prv->q);
-		bn_add(m, m, u);
-		bn_mod(m, m, prv->n);
-#endif
+		bn_mxp_crt(m, c, t, u, prv, 1);
+#endif /* CP_CRT */
 	} RLC_CATCH_ANY {
 		result = RLC_ERR;
 	}
 	RLC_FINALLY {
-		bn_free(s);
 		bn_free(t);
 		bn_free(u);
-		bn_free(v);
 	}
 
 	return result;

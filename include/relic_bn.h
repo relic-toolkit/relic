@@ -121,6 +121,30 @@ typedef bn_st *bn_t;
 #endif
 #endif
 
+/**
+ * Represents a pair of moduli for using the Chinese Remainder Theorem (CRT).
+ */
+typedef struct {
+	/** The modulus n = pq. */
+	bn_t n;
+	/** The first prime p. */
+	bn_t p;
+	/** The second prime q. */
+	bn_t q;
+	/** The precomputed constant for the first prime. */
+	bn_t dp;
+	/** The precomputed constant for the second prime. */
+	bn_t dq;
+	/** The inverse of q modulo p. */
+	bn_t qi;
+} crt_st;
+
+#if ALLOC == AUTO
+typedef crt_st crt_t[1];
+#else
+typedef crt_st *crt_t;
+#endif
+
 /*============================================================================*/
 /* Macro definitions                                                          */
 /*============================================================================*/
@@ -195,6 +219,65 @@ typedef bn_st *bn_t;
 
 #elif ALLOC == AUTO
 #define bn_free(A)			/* empty */										\
+
+#endif
+
+/**
+ * Initializes a CRT moduli set with a null value.
+ *
+ * @param[out] A			- the moduli to initialize.
+ */
+#define crt_null(A)			RLC_NULL(A)
+
+/**
+ * Calls a function to allocate and initialize a Rabin key pair.
+ *
+ * @param[out] A			- the new key pair.
+ */
+#if ALLOC == DYNAMIC
+#define crt_new(A)															\
+	A = (crt_t)calloc(1, sizeof(crt_st));									\
+	if (A == NULL) {														\
+		RLC_THROW(ERR_NO_MEMORY);											\
+	}																		\
+	bn_new((A)->n);															\
+	bn_new((A)->dp);														\
+	bn_new((A)->dq);														\
+	bn_new((A)->p);															\
+	bn_new((A)->q);															\
+	bn_new((A)->qi);														\
+
+#elif ALLOC == AUTO
+#define crt_new(A)															\
+	bn_new((A)->n);															\
+	bn_new((A)->dp);														\
+	bn_new((A)->dq);														\
+	bn_new((A)->p);															\
+	bn_new((A)->q);															\
+	bn_new((A)->qi);														\
+
+#endif
+
+/**
+ * Calls a function to clean and free a Rabin key pair.
+ *
+ * @param[out] A			- the key pair to clean and free.
+ */
+#if ALLOC == DYNAMIC
+#define crt_free(A)															\
+	if (A != NULL) {														\
+		bn_free((A)->n);													\
+		bn_free((A)->dp);													\
+		bn_free((A)->dq);													\
+		bn_free((A)->p);													\
+		bn_free((A)->q);													\
+		bn_free((A)->qi);													\
+		free(A);															\
+		A = NULL;															\
+	}
+
+#elif ALLOC == AUTO
+#define crt_free(A)				/* empty */
 
 #endif
 
@@ -1029,6 +1112,20 @@ void bn_mxp_monty(bn_t c, const bn_t a, const bn_t b, const bn_t m);
  * @param[in] m				- the modulus.
  */
 void bn_mxp_dig(bn_t c, const bn_t a, dig_t b, const bn_t m);
+
+/*
+ * Computes a modular exponentiation of a multiple precision integer using the
+ * Chinese Remainder Theorem, given the moduli.
+ *
+ * @param[out] d 			- the result.
+ * @param[in] a				- the basis.
+ * @param[in] b				- the exponent modulo p.
+ * @param[in] c				- the exponent modulo q.
+ * @param[in] crt 			- the set of moduli.
+ * @param[in] sqr 			- the flag to indicate if modulo n or n^2.
+ */
+void bn_mxp_crt(bn_t d, const bn_t a, const bn_t b, const bn_t c,
+	const crt_t crt, int sqr);
 
 /**
  * Extracts an approximate integer square-root of a multiple precision integer.

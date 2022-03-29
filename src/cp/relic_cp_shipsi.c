@@ -60,7 +60,7 @@ int cp_shipsi_gen(bn_t g, crt_t crt, int bits) {
 	/* phi(n) = (p - 1)(q - 1). */
 	bn_sub_dig(crt->dp, crt->p, 1);
 	bn_sub_dig(crt->dq, crt->q, 1);
-	bn_mul(crt->qi, crt->dp, crt->dq);
+	bn_mod_inv(crt->qi, crt->q, crt->p);
 
 	return RLC_OK;
 }
@@ -104,12 +104,14 @@ int cp_shipsi_ans(bn_t t[], bn_t u, bn_t d, bn_t g, crt_t crt, bn_t y[], int n) 
 	int j, result = RLC_OK, len = RLC_CEIL(RLC_BN_BITS, 8);
 	uint8_t h[RLC_MD_LEN], bin[RLC_CEIL(RLC_BN_BITS, 8)];
 	unsigned int *shuffle = RLC_ALLOCA(unsigned int, n);
-	bn_t p;
+	bn_t p, q;
 
 	bn_null(p);
+	bn_null(q);
 
 	RLC_TRY {
 		bn_new(p);
+		bn_new(q);
 		if (shuffle == NULL) {
 			RLC_THROW(ERR_NO_MEMORY);
 		}
@@ -124,10 +126,24 @@ int cp_shipsi_ans(bn_t t[], bn_t u, bn_t d, bn_t g, crt_t crt, bn_t y[], int n) 
 			if (bn_is_even(p)) {
 				bn_add_dig(p, p, 1);
 			}
-			bn_mod_inv(p, p, crt->qi);
+
+#if !defined(CP_CRT)
+			bn_mul(q, crt->dp, crt->dq);
+			bn_mod_inv(p, p, q);
 			bn_mul(p, p, u);
-			bn_mod(p, p, crt->qi);
+			bn_mod(p, p, q);
 			bn_mxp(t[j], d, p, crt->n);
+#else
+			bn_mod_inv(q, p, crt->dq);
+			bn_mul(q, q, u);
+			bn_mod(q, q, crt->dq);
+
+			bn_mod_inv(p, p, crt->dp);
+			bn_mul(p, p, u);
+			bn_mod(p, p, crt->dp);
+
+			bn_mxp_crt(t[j], d, p, q, crt, 0);
+#endif /* CP_CRT */
 		}
 		bn_mxp(u, g, u, crt->n);
 	}
@@ -136,6 +152,7 @@ int cp_shipsi_ans(bn_t t[], bn_t u, bn_t d, bn_t g, crt_t crt, bn_t y[], int n) 
 	}
 	RLC_FINALLY {
 		bn_free(p);
+		bn_free(q);
 		RLC_FREE(shuffle);
 	}
 	return result;
