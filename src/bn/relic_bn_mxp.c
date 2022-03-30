@@ -355,7 +355,7 @@ void bn_mxp_crt(bn_t d, const bn_t a, const bn_t b, const bn_t c,
 		} else {
 #if MULTI == OPENMP
 			omp_set_num_threads(CORES);
-			#pragma omp parallel copyin(core_ctx) firstprivate(c, crt)
+			#pragma omp parallel copyin(core_ctx) firstprivate(crt)
 			{
 				#pragma omp sections
 				{

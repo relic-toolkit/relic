@@ -145,7 +145,15 @@ int cp_shipsi_ans(bn_t t[], bn_t u, bn_t d, bn_t g, crt_t crt, bn_t y[], int n) 
 			bn_mxp_crt(t[j], d, p, q, crt, 0);
 #endif /* CP_CRT */
 		}
+
+#if !defined(CP_CRT)
 		bn_mxp(u, g, u, crt->n);
+#else
+		bn_mod(p, u, crt->dp);
+		bn_mod(q, u, crt->dq);
+
+		bn_mxp_crt(u, g, p, q, crt, 0);
+#endif
 	}
 	RLC_CATCH_ANY {
 		result = RLC_ERR;
