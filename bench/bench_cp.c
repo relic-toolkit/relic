@@ -1843,8 +1843,8 @@ static void lhs(void) {
 	}
 }
 
-#define M	5			/* Number of server messages (larger). */
-#define N	2			/* Number of client messages. */
+#define M	256			/* Number of server messages (larger). */
+#define N	8			/* Number of client messages. */
 
 static void psi(void) {
 	bn_t g, n, q, r, p[M], x[M], v[N], w[N], y[N], z[M];
@@ -1911,7 +1911,7 @@ static void psi(void) {
 	BENCH_ONE("cp_shipsi_gen", cp_shipsi_gen(g, crt, RLC_BN_BITS), 1);
 
 	BENCH_RUN("cp_shipsi_ask (5)") {
-		BENCH_ADD(cp_shipsi_ask(q, r, g, crt->n, x, M));
+		BENCH_ADD(cp_shipsi_ask(q, r, p, g, crt->n, x, M));
 	} BENCH_END;
 
 	BENCH_RUN("cp_shipsi_ans (2)") {
@@ -1919,7 +1919,7 @@ static void psi(void) {
 	} BENCH_END;
 
 	BENCH_RUN("cp_shipsi_int") {
-		BENCH_ADD(cp_shipsi_int(z, &len, r, crt->n, x, M, v, w[0], N));
+		BENCH_ADD(cp_shipsi_int(z, &len, r, p, crt->n, x, M, v, w[0], N));
 	} BENCH_END;
 
 	BENCH_RUN("cp_pbpsi_gen (5)") {

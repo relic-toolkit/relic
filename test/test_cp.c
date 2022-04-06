@@ -2208,13 +2208,13 @@ static int psi(void) {
 			for (int j = 0; j < N; j++) {
 				bn_rand_mod(y[j], crt->n);
 			}
-			TEST_ASSERT(cp_shipsi_ask(q, r, g, crt->n, x, M) == RLC_OK, end);
+			TEST_ASSERT(cp_shipsi_ask(q, r, p, g, crt->n, x, M) == RLC_OK, end);
 			for (int k = 0; k <= N; k++) {
 				for (int j = 0; j < k; j++) {
 					bn_copy(y[j], x[j]);
 				}
 				TEST_ASSERT(cp_shipsi_ans(v, w[0], q, g, crt, y, N) == RLC_OK, end);
-				TEST_ASSERT(cp_shipsi_int(z, &len, r, crt->n, x, M, v, w[0], N) == RLC_OK, end);
+				TEST_ASSERT(cp_shipsi_int(z, &len, r, p, crt->n, x, M, v, w[0], N) == RLC_OK, end);
 				TEST_ASSERT(len == k, end);
 			}
 		} TEST_END;

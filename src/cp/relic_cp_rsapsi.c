@@ -32,6 +32,15 @@
 #include "relic.h"
 
 /*============================================================================*/
+/* Private definitions                                                        */
+/*============================================================================*/
+
+/**
+ * Statistical security determining collision probability.
+ */
+#define STAT_SEC	40
+
+/*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
@@ -80,7 +89,7 @@ int cp_rsapsi_ask(bn_t d, bn_t r, bn_t p[], bn_t g, bn_t n, bn_t x[], int m) {
 	for (i = 0; i < m; i++) {
 		bn_write_bin(bin, len, x[i]);
 		md_map(h, bin, len);
-		bn_read_bin(p[i], h, RLC_MD_LEN / 2);
+		bn_read_bin(p[i], h, 2 * STAT_SEC / 8);
 		if (bn_is_even(p[i])) {
 			bn_add_dig(p[i], p[i], 1);
 		}
@@ -112,7 +121,7 @@ int cp_rsapsi_ans(bn_t t[], bn_t u[], bn_t d, bn_t g, bn_t n, bn_t y[], int l) {
 		for (j = 0; j < l; j++) {
 			bn_write_bin(bin, len, y[shuffle[j]]);
 			md_map(h, bin, len);
-			bn_read_bin(p, h, RLC_MD_LEN / 2);
+			bn_read_bin(p, h, 2 * STAT_SEC / 8);
 			if (bn_is_even(p)) {
 				bn_add_dig(p, p, 1);
 			}

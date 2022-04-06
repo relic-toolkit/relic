@@ -32,14 +32,23 @@
 #include "relic.h"
 
 /*============================================================================*/
+/* Private definitions                                                        */
+/*============================================================================*/
+
+/**
+ * Statistical security determining collision probability.
+ */
+#define STAT_SEC	(40)
+
+/*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
 int cp_shipsi_gen(bn_t g, crt_t crt, int bits) {
 	/* Generate different primes p and q. */
 	do {
-		bn_gen_prime_safep(crt->p, bits / 2);
-		bn_gen_prime_safep(crt->q, bits / 2);
+		bn_gen_prime(crt->p, bits / 2);
+		bn_gen_prime(crt->q, bits / 2);
 	} while (bn_cmp(crt->p, crt->q) == RLC_EQ);
 
 	/* Swap p and q so that p is smaller. */
@@ -65,36 +74,26 @@ int cp_shipsi_gen(bn_t g, crt_t crt, int bits) {
 	return RLC_OK;
 }
 
-int cp_shipsi_ask(bn_t d, bn_t r, bn_t g, bn_t n, bn_t x[], int m) {
+int cp_shipsi_ask(bn_t d, bn_t r, bn_t p[], bn_t g, bn_t n, bn_t x[], int m) {
 	int i, result = RLC_OK, len = RLC_CEIL(RLC_BN_BITS, 8);
 	uint8_t h[RLC_MD_LEN], bin[RLC_CEIL(RLC_BN_BITS, 8)];
-	bn_t t;
 
-	bn_null(t);
+	/* Compute R = g^r mod N. */
+	bn_rand_mod(r, n);
+	bn_mxp(d, g, r, n);
 
-	RLC_TRY {
-		bn_new(t);
-
-		/* Compute R = g^r mod N for random r mod N^2. */
-		bn_rand_mod(r, n);
-		bn_rand_mod(t, n);
-		bn_mul(r, r, t);
-		bn_mxp(d, g, r, n);
-
-		/* Now hash all x_i and accmulate on R. */
-		for (i = 0; i < m; i++) {
-			bn_write_bin(bin, len, x[i]);
-			md_map(h, bin, len);
-			bn_read_bin(t, h, RLC_MD_LEN);
-			if (bn_is_even(t)) {
-				bn_add_dig(t, t, 1);
-			}
-			bn_mxp(d, d, t, n);
+	/* Now hash all x_i and accmulate on R. */
+	for (i = 0; i < m; i++) {
+		bn_write_bin(bin, len, x[i]);
+		md_map(h, bin, len);
+		bn_read_bin(p[i], h, 2 * STAT_SEC / 8);
+		if (bn_is_even(p[i])) {
+			bn_add_dig(p[i], p[i], 1);
 		}
-	} RLC_CATCH_ANY {
-		result = RLC_ERR;
-	} RLC_FINALLY {
-		bn_free(t);
+		do {
+			bn_add_dig(p[i], p[i], 2);
+		} while (!bn_is_prime(p[i]));
+		bn_mxp(d, d, p[i], n);
 	}
 
 	return result;
@@ -122,10 +121,13 @@ int cp_shipsi_ans(bn_t t[], bn_t u, bn_t d, bn_t g, crt_t crt, bn_t y[], int n) 
 		for (j = 0; j < n; j++) {
 			bn_write_bin(bin, len, y[shuffle[j]]);
 			md_map(h, bin, len);
-			bn_read_bin(p, h, RLC_MD_LEN);
+			bn_read_bin(p, h, 2 * STAT_SEC / 8);
 			if (bn_is_even(p)) {
 				bn_add_dig(p, p, 1);
 			}
+			do {
+				bn_add_dig(p, p, 2);
+			} while (!bn_is_prime(p));
 
 #if !defined(CP_CRT)
 			bn_mul(q, crt->dp, crt->dq);
@@ -166,11 +168,9 @@ int cp_shipsi_ans(bn_t t[], bn_t u, bn_t d, bn_t g, crt_t crt, bn_t y[], int n) 
 	return result;
 }
 
-int cp_shipsi_int(bn_t z[], int *len, bn_t r, bn_t n, bn_t x[], int m,
+int cp_shipsi_int(bn_t z[], int *len, bn_t r, bn_t p[], bn_t n, bn_t x[], int m,
 		bn_t t[], bn_t u, int l) {
-	int i, j, k, result = RLC_OK, size = RLC_CEIL(RLC_BN_BITS, 8);
-	uint8_t h[RLC_MD_LEN], bin[RLC_CEIL(RLC_BN_BITS, 8)];
-	bn_t *hs = RLC_ALLOCA(bn_t, m);
+	int i, j, k, result = RLC_OK;
 	bn_t e, f;
 
 	bn_null(e);
@@ -179,22 +179,6 @@ int cp_shipsi_int(bn_t z[], int *len, bn_t r, bn_t n, bn_t x[], int m,
 	RLC_TRY {
 		bn_new(e);
 		bn_new(f);
-		if (hs == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
-		for (i = 0; i < m; i++) {
-			bn_null(hs[i]);
-			bn_new(hs[i]);
-		}
-
-		for (i = 0; i < m; i++) {
-			bn_write_bin(bin, size, x[i]);
-			md_map(h, bin, size);
-			bn_read_bin(hs[i], h, RLC_MD_LEN);
-			if (bn_is_even(hs[i])) {
-				bn_add_dig(hs[i], hs[i], 1);
-			}
-		}
 
 		*len = 0;
 		if (m > 0) {
@@ -204,7 +188,7 @@ int cp_shipsi_int(bn_t z[], int *len, bn_t r, bn_t n, bn_t x[], int m,
 					bn_copy(e, f);
 					for (i = 0; i < m; i++) {
 						if (i != k) {
-							bn_mxp(e, e, hs[i], n);
+							bn_mxp(e, e, p[i], n);
 						}
 					}
 					if (bn_cmp(e, t[j]) == RLC_EQ) {
@@ -219,12 +203,8 @@ int cp_shipsi_int(bn_t z[], int *len, bn_t r, bn_t n, bn_t x[], int m,
 		result = RLC_ERR;
 	}
 	RLC_FINALLY {
-		for (i = 0; i < m; i++) {
-			bn_free(hs[i]);
-		}
 		bn_free(e);
 		bn_free(f);
-		RLC_FREE(hs);
 	}
 	return result;
 }
