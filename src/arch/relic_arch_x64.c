@@ -38,31 +38,15 @@
 #include "lzcnt.inc"
 
 /*============================================================================*/
-/* Private definitions                                                        */
-/*============================================================================*/
-
-/**
- * Function pointer to underlying lznct implementation.
- */
-static unsigned int (*lzcnt_ptr)(ull_t);
-
-#if TIMER == CYCLE || TIMER == PERF
-/**
- * Renames the inline assembly macro to a prettier name.
- */
-#define asm					__asm__ volatile
-#endif
-
-/*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
 void arch_init(void) {
-	lzcnt_ptr = (has_lzcnt_hard() ? lzcnt64_hard : lzcnt64_soft);
+	core_get()->lzcnt_ptr = (has_lzcnt_hard() ? lzcnt64_hard : lzcnt64_soft);
 }
 
 void arch_clean(void) {
-	lzcnt_ptr = NULL;
+	core_get()->lzcnt_ptr = NULL;
 }
 
 #if TIMER == CYCLE
@@ -105,5 +89,5 @@ ull_t arch_cycles(void) {
 #endif
 
 unsigned int arch_lzcnt(dig_t x) {
-	return lzcnt_ptr((ull_t)x) - (8 * sizeof(ull_t) - WSIZE);
+	return core_get()->lzcnt_ptr((ull_t)x) - (8 * sizeof(ull_t) - WSIZE);
 }
