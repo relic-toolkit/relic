@@ -150,7 +150,11 @@ set(BENCH "100" CACHE STRING "Number of times each benchmark is ran.")
 set(TESTS "100" CACHE STRING "Number of times each test is ran.")
 
 # Number of cores.
-set(CORES "1" CACHE STRING "Number of available processor cores.")
+set(CORES "1" CACHE STRING "Number of processor cores available to the library.")
+
+if(NOT CORES STREQUAL "1")
+	set(MULTI OPENMP)
+endif()
 
 # Choose the arithmetic backend.
 set(ARITH "easy" CACHE STRING "Arithmetic backend")
