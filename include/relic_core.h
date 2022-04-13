@@ -413,10 +413,10 @@ typedef struct _ctx_t {
 	/** Stores the time measured after the execution of the benchmark. */
 	ben_t after;
 	/** Stores the sum of timings for the current benchmark. */
-	long long total;
+	ull_t total;
 #ifdef OVERH
 	/** Benchmarking overhead to be measured and subtracted from benchmarks. */
-	long long over;
+	ull_t over;
 #endif
 #endif
 
@@ -437,6 +437,13 @@ typedef struct _ctx_t {
 	int perf_fd;
 	/** Buffer for storing perf data, */
 	struct perf_event_mmap_page *perf_buf;
+#endif
+
+	/** Function pointer to underlying lznct implementation. */
+#if ARCH == X86
+	unsigned int (*lzcnt_ptr)(unsigned int);
+#elif ARCH == X64
+	unsigned int (*lzcnt_ptr)(ull_t);
 #endif
 } ctx_t;
 
@@ -473,6 +480,9 @@ ctx_t *core_get(void);
 void core_set(ctx_t *ctx);
 
 #if defined(MULTI)
+
+#include "relic_multi.h"
+
 /**
  * Set an initializer function which is called when the context
  * is uninitialized. This function is called for every thread.

@@ -157,7 +157,7 @@ typedef struct timeval ben_t;
 
 #else /* TIMER == CYCLE || TIMER == PERF */
 
-typedef unsigned long long ben_t;
+typedef ull_t ben_t;
 
 #endif
 

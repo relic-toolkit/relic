@@ -24,7 +24,7 @@
 /**
  * @file
  *
- * Implementation of protocols for laconic private set intersection.
+ * Implementation of pairing-based laconic private set intersection protocols.
  *
  * @ingroup cp
  */
@@ -35,7 +35,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-int cp_lapsi_gen(bn_t sk, g1_t ss, g2_t s[], int m) {
+int cp_pbpsi_gen(bn_t sk, g1_t ss, g2_t s[], int m) {
 	int i, result = RLC_OK;
 	bn_t q;
 
@@ -62,7 +62,7 @@ int cp_lapsi_gen(bn_t sk, g1_t ss, g2_t s[], int m) {
 	return result;
 }
 
-int cp_lapsi_ask(g2_t d, bn_t r, bn_t x[], g2_t s[], int m) {
+int cp_pbpsi_ask(g2_t d, bn_t r, bn_t x[], g2_t s[], int m) {
 	int i, result = RLC_OK;
 	bn_t q, *p = RLC_ALLOCA(bn_t, m + 1);
 
@@ -101,11 +101,12 @@ int cp_lapsi_ask(g2_t d, bn_t r, bn_t x[], g2_t s[], int m) {
 	return result;
 }
 
-int cp_lapsi_ans(gt_t t[], g1_t u[], g1_t ss, g2_t d, bn_t y[], int n) {
+int cp_pbpsi_ans(gt_t t[], g1_t u[], g1_t ss, g2_t d, bn_t y[], int n) {
 	int j, result = RLC_OK;
 	bn_t q, tj;
 	g1_t g1;
 	g2_t g2;
+	unsigned int *shuffle = RLC_ALLOCA(unsigned int, n);
 
 	bn_null(q);
 	bn_null(tj);
@@ -117,6 +118,11 @@ int cp_lapsi_ans(gt_t t[], g1_t u[], g1_t ss, g2_t d, bn_t y[], int n) {
 		bn_new(tj);
 		g1_new(g1);
 		g2_new(g2);
+		if (shuffle == NULL) {
+			RLC_THROW(ERR_NO_MEMORY);
+		}
+
+		util_perm(shuffle, n);
 
 		pc_get_ord(q);
 		g2_get_gen(g2);
@@ -124,7 +130,7 @@ int cp_lapsi_ans(gt_t t[], g1_t u[], g1_t ss, g2_t d, bn_t y[], int n) {
 			bn_rand_mod(tj, q);
 			g1_mul_gen(g1, tj);
 			pc_map(t[j], g1, d);
-			g1_mul_gen(u[j], y[j]);
+			g1_mul_gen(u[j], y[shuffle[j]]);
 			g1_sub(u[j], ss, u[j]);
 			g1_mul(u[j], u[j], tj);
 		}
@@ -136,12 +142,13 @@ int cp_lapsi_ans(gt_t t[], g1_t u[], g1_t ss, g2_t d, bn_t y[], int n) {
 		bn_free(q);
 		bn_free(tj);
 		g1_free(g1);
-		g1_free(g2);
+		g2_free(g2);
+		RLC_FREE(shuffle);
 	}
 	return result;
 }
 
-int cp_lapsi_int(bn_t z[], int *len, bn_t sk, g2_t d, bn_t x[], int m,
+int cp_pbpsi_int(bn_t z[], int *len, bn_t sk, g2_t d, bn_t x[], int m,
 		gt_t t[], g1_t u[], int n) {
 	int j, k, result = RLC_OK;
 	bn_t q, *i = RLC_ALLOCA(bn_t, m);

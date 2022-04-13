@@ -286,12 +286,14 @@ static void util(void) {
 static void arith(void) {
 	bn_t a, b, c, d[3], e[3];
     bn_t t[BN_MXP_SIM_LOT_LARGER], u[BN_MXP_SIM_LOT_LARGER];
+	crt_t crt;
 	dig_t f;
 	int len;
 
 	bn_null(a);
 	bn_null(b);
 	bn_null(c);
+	crt_null(crt);
 
 	bn_new(a);
 	bn_new(b);
@@ -306,6 +308,7 @@ static void arith(void) {
         bn_null(t[i]); bn_null(u[i]);
         bn_new(t[i]); bn_new(u[i]);
 	}
+	crt_new(crt);
 
 	BENCH_RUN("bn_add") {
 		bn_rand(a, RLC_POS, RLC_BN_BITS);
@@ -707,9 +710,23 @@ static void arith(void) {
 	}
 	BENCH_END;
 
-    SMLT = BN_MXP_SIM_LOT_LARGER; util_print("(%d SIMLOT) ", SMLT);
+    SMLT = BN_MXP_SIM_LOT_LARGER; util_print("(%d SIM_LOT) ", SMLT);
 	BENCH_RUN("bn_mxp_sim_lot") {
 		BENCH_ADD(bn_mxp_sim_lot(c, (const bn_t*)t, (const bn_t*)u, b, SMLT));
+	}
+	BENCH_END;
+
+	bn_gen_prime(crt->p, RLC_BN_BITS / 2);
+	bn_gen_prime(crt->q, RLC_BN_BITS / 2);
+	bn_mul(crt->n, crt->p, crt->q);
+	bn_mod_inv(crt->qi, crt->q, crt->p);
+	bn_sub_dig(crt->dp, crt->p, 1);
+	bn_sub_dig(crt->dq, crt->q, 1);
+	BENCH_RUN("bn_mxp_crt") {
+		bn_rand(c, RLC_POS, RLC_BN_BITS);
+		bn_mod(a, c, crt->dp);
+		bn_mod(b, c, crt->dq);
+		BENCH_ADD(bn_mxp_crt(c, c, a, b, crt, 0));
 	}
 	BENCH_END;
 
@@ -744,11 +761,11 @@ static void arith(void) {
 	BENCH_END;
 #endif
 
-#if BN_GCD == STEIN || !defined(STRIP)
-	BENCH_RUN("bn_gcd_stein") {
+#if BN_GCD == BINAR || !defined(STRIP)
+	BENCH_RUN("bn_gcd_binar") {
 		bn_rand(a, RLC_POS, RLC_BN_BITS);
 		bn_rand(b, RLC_POS, RLC_BN_BITS);
-		BENCH_ADD(bn_gcd_stein(c, a, b));
+		BENCH_ADD(bn_gcd_binar(c, a, b));
 	}
 	BENCH_END;
 #endif
@@ -777,6 +794,15 @@ static void arith(void) {
 	BENCH_END;
 #endif
 
+#if BN_GCD == BINAR || !defined(STRIP)
+	BENCH_RUN("bn_gcd_ext_binar") {
+		bn_rand(a, RLC_POS, RLC_BN_BITS);
+		bn_rand(b, RLC_POS, RLC_BN_BITS);
+		BENCH_ADD(bn_gcd_ext_binar(c, d[0], d[1], a, b));
+	}
+	BENCH_END;
+#endif
+
 #if BN_GCD == LEHME || !defined(STRIP)
 	BENCH_RUN("bn_gcd_ext_lehme") {
 		bn_rand(a, RLC_POS, RLC_BN_BITS);
@@ -786,11 +812,11 @@ static void arith(void) {
 	BENCH_END;
 #endif
 
-#if BN_GCD == STEIN || !defined(STRIP)
-	BENCH_RUN("bn_gcd_ext_stein") {
+#if BN_GCD == BINAR || !defined(STRIP)
+	BENCH_RUN("bn_gcd_ext_binar") {
 		bn_rand(a, RLC_POS, RLC_BN_BITS);
 		bn_rand(b, RLC_POS, RLC_BN_BITS);
-		BENCH_ADD(bn_gcd_ext_stein(c, d[0], d[1], a, b));
+		BENCH_ADD(bn_gcd_ext_binar(c, d[0], d[1], a, b));
 	}
 	BENCH_END;
 #endif
@@ -988,6 +1014,7 @@ static void arith(void) {
 	for (int i = 0; i < BN_MXP_SIM_LOT_LARGER; ++i) {
         bn_free(t[i]);bn_free(u[i]);
     }
+	crt_free(crt);
 }
 
 int main(void) {

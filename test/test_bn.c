@@ -995,11 +995,13 @@ static int exponentiation(void) {
 	int code = RLC_ERR;
 	bn_t a, b, c, p;
     bn_t t[BN_MXP_SIM_LOT_LARGER], u[BN_MXP_SIM_LOT_LARGER];
+	crt_t crt;
 
 	bn_null(a);
 	bn_null(b);
 	bn_null(c);
 	bn_null(p);
+	crt_null(crt);
 
     for(int i=0; i<BN_MXP_SIM_LOT_LARGER; ++i) {
         bn_null(t[i]); bn_null(u[i]);
@@ -1013,6 +1015,8 @@ static int exponentiation(void) {
         for(int i=0; i<BN_MXP_SIM_LOT_LARGER; ++i) {
             bn_new(t[i]); bn_new(u[i]);
         }
+		crt_new(crt);
+
 #if BN_MOD != PMERS
 		bn_gen_prime(p, RLC_BN_BITS);
 #elif BN_PRECI >= 128
@@ -1133,6 +1137,30 @@ static int exponentiation(void) {
         }
         TEST_END;
 
+		do {
+			bn_gen_prime(crt->p, RLC_BN_BITS / 2);
+			bn_gen_prime(crt->q, RLC_BN_BITS / 2);
+		} while (bn_is_even(crt->p) || bn_is_even(crt->q));
+
+		/* n = pq. */
+		bn_mul(crt->n, crt->p, crt->q);
+		/* qInv = q^(-1) mod p. */
+		bn_mod_inv(crt->qi, crt->q, crt->p);
+		bn_sub_dig(crt->dp, crt->p, 1);
+		bn_sub_dig(crt->dq, crt->q, 1);
+
+		TEST_CASE("chinese remainder theorem modular exponentiation is correct") {
+			bn_rand(a, RLC_POS, RLC_BN_BITS);
+			bn_rand(b, RLC_POS, RLC_BN_BITS);
+			bn_mod(a, a, crt->n);
+			bn_mul(c, crt->dp, crt->dq);
+			bn_mod(b, b, c);
+			bn_mxp(p, a, b, crt->n);
+			bn_mod(c, b, crt->dp);
+			bn_mod(b, b, crt->dq);
+			bn_mxp_crt(c, a, c, b, crt, 0);
+			TEST_ASSERT(bn_cmp(c, p) == RLC_EQ, end);
+		} TEST_END;
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);
@@ -1146,6 +1174,7 @@ static int exponentiation(void) {
     for(int i=0; i<BN_MXP_SIM_LOT_LARGER; ++i) {
         bn_free(t[i]);bn_free(u[i]);
     }
+	crt_free(crt);
 	return code;
 }
 
@@ -1279,6 +1308,31 @@ static int gcd(void) {
 		} TEST_END;
 #endif
 
+#if BN_GCD == BINAR || !defined(STRIP)
+		TEST_CASE("binary greatest common divisor is correct") {
+			bn_rand(a, RLC_POS, RLC_BN_BITS);
+			bn_rand(b, RLC_POS, RLC_BN_BITS);
+			bn_gcd(c, a, b);
+			bn_gcd_binar(d, a, b);
+			TEST_ASSERT(bn_cmp(c, d) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("binary extended greatest common divisor is correct") {
+			bn_rand(a, RLC_POS, RLC_BN_BITS);
+			bn_rand(b, RLC_POS, RLC_BN_BITS);
+			bn_gcd_binar(f, a, b);
+			bn_gcd_ext_binar(c, d, e, a, b);
+			bn_mul(d, d, a);
+			bn_mul(e, e, b);
+			bn_add(d, d, e);
+			TEST_ASSERT(bn_cmp(c, d) == RLC_EQ && bn_cmp(c, f) == RLC_EQ, end);
+			bn_gcd_ext(c, d, e, a, b);
+			bn_gcd_ext_binar(f, g, h, a, b);
+			TEST_ASSERT(bn_cmp(c, f) == RLC_EQ && bn_cmp(d, g) == RLC_EQ
+				&& bn_cmp(e, h) == RLC_EQ, end);
+		} TEST_END;
+#endif
+
 #if BN_GCD == LEHME || !defined(STRIP)
 		TEST_CASE("lehmer greatest common divisor is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
@@ -1297,37 +1351,8 @@ static int gcd(void) {
 			bn_mul(e, e, b);
 			bn_add(d, d, e);
 			TEST_ASSERT(bn_cmp(c, d) == RLC_EQ && bn_cmp(c, f) == RLC_EQ, end);
-		} TEST_END;
-#endif
-
-#if BN_GCD == STEIN || !defined(STRIP)
-		TEST_CASE("stein greatest common divisor is correct") {
-			bn_rand(a, RLC_POS, RLC_BN_BITS);
-			bn_rand(b, RLC_POS, RLC_BN_BITS);
-			bn_gcd(c, a, b);
-			bn_gcd_stein(d, a, b);
-			TEST_ASSERT(bn_cmp(c, d) == RLC_EQ, end);
-		} TEST_END;
-
-		TEST_CASE("stein extended greatest common divisor is correct") {
-			bn_rand(a, RLC_POS, RLC_BN_BITS);
-			bn_rand(b, RLC_POS, RLC_BN_BITS);
-			bn_gcd_stein(f, a, b);
-			bn_gcd_ext_stein(c, d, e, a, b);
-			bn_mul(d, d, a);
-			bn_mul(e, e, b);
-			bn_add(d, d, e);
-			TEST_ASSERT(bn_cmp(c, d) == RLC_EQ && bn_cmp(c, f) == RLC_EQ, end);
 			bn_gcd_ext(c, d, e, a, b);
-			bn_gcd_ext_stein(f, g, h, a, b);
-			bn_print(a);
-			bn_print(b);
-			bn_print(c);
-			bn_print(d);
-			bn_print(e);
-			bn_print(f);
-			bn_print(g);
-			bn_print(h);
+			bn_gcd_ext_lehme(f, g, h, a, b);
 			TEST_ASSERT(bn_cmp(c, f) == RLC_EQ && bn_cmp(d, g) == RLC_EQ
 				&& bn_cmp(e, h) == RLC_EQ, end);
 		} TEST_END;

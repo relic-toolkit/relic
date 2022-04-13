@@ -33,8 +33,8 @@ message("      BN_METHD=SLIDE    Sliding window modular exponentiation.\n")
 
 message("      Greatest Common Divisor:")
 message("      BN_METHD=BASIC    Euclid's standard GCD algorithm.")
-message("      BN_METHD=LEHME    Lehmer's fast GCD algorithm.")
-message("      BN_METHD=STEIN    Stein's binary GCD algorithm.\n")
+message("      BN_METHD=BINAR    Binary GCD algorithm.")
+message("      BN_METHD=LEHME    Lehmer's fast GCD algorithm.\n")
 
 message("      Prime generation:")
 message("      BN_METHD=BASIC    Basic prime generation.")

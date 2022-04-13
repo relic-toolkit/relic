@@ -129,6 +129,7 @@
 #undef util_conv_char
 #undef util_bits_dig
 #undef util_cmp_const
+#undef util_perm
 #undef util_printf
 #undef util_print_dig
 
@@ -138,6 +139,7 @@
 #define util_conv_char 	RLC_PREFIX(util_conv_char)
 #define util_bits_dig 	RLC_PREFIX(util_bits_dig)
 #define util_cmp_const 	RLC_PREFIX(util_cmp_const)
+#define util_perm 	RLC_PREFIX(util_perm)
 #define util_printf 	RLC_PREFIX(util_printf)
 #define util_print_dig 	RLC_PREFIX(util_print_dig)
 
@@ -251,11 +253,11 @@
 #undef bn_srt
 #undef bn_gcd_basic
 #undef bn_gcd_lehme
-#undef bn_gcd_stein
+#undef bn_gcd_binar
 #undef bn_gcd_dig
 #undef bn_gcd_ext_basic
 #undef bn_gcd_ext_lehme
-#undef bn_gcd_ext_stein
+#undef bn_gcd_ext_binar
 #undef bn_gcd_ext_mid
 #undef bn_gcd_ext_dig
 #undef bn_lcm
@@ -359,11 +361,11 @@
 #define bn_srt 	RLC_PREFIX(bn_srt)
 #define bn_gcd_basic 	RLC_PREFIX(bn_gcd_basic)
 #define bn_gcd_lehme 	RLC_PREFIX(bn_gcd_lehme)
-#define bn_gcd_stein 	RLC_PREFIX(bn_gcd_stein)
+#define bn_gcd_binar 	RLC_PREFIX(bn_gcd_binar)
 #define bn_gcd_dig 	RLC_PREFIX(bn_gcd_dig)
 #define bn_gcd_ext_basic 	RLC_PREFIX(bn_gcd_ext_basic)
 #define bn_gcd_ext_lehme 	RLC_PREFIX(bn_gcd_ext_lehme)
-#define bn_gcd_ext_stein 	RLC_PREFIX(bn_gcd_ext_stein)
+#define bn_gcd_ext_binar 	RLC_PREFIX(bn_gcd_ext_binar)
 #define bn_gcd_ext_mid 	RLC_PREFIX(bn_gcd_ext_mid)
 #define bn_gcd_ext_dig 	RLC_PREFIX(bn_gcd_ext_dig)
 #define bn_lcm 	RLC_PREFIX(bn_lcm)
@@ -2591,6 +2593,7 @@
 #undef cp_bdpe_dec
 #undef cp_phpe_gen
 #undef cp_phpe_enc
+#undef cp_phpe_add
 #undef cp_phpe_dec
 #undef cp_shpe_gen
 #undef cp_shpe_enc
@@ -2714,10 +2717,18 @@
 #undef cp_mklhs_ver
 #undef cp_mklhs_off
 #undef cp_mklhs_onv
-#undef cp_lapsi_gen
-#undef cp_lapsi_ask
-#undef cp_lapsi_ans
-#undef cp_lapsi_int
+#undef cp_rsapsi_gen
+#undef cp_rsapsi_ask
+#undef cp_rsapsi_ans
+#undef cp_rsapsi_int
+#undef cp_shipsi_gen
+#undef cp_shipsi_ask
+#undef cp_shipsi_ans
+#undef cp_shipsi_int
+#undef cp_pbpsi_gen
+#undef cp_pbpsi_ask
+#undef cp_pbpsi_ans
+#undef cp_pbpsi_int
 
 #define cp_rsa_gen 	RLC_PREFIX(cp_rsa_gen)
 #define cp_rsa_enc 	RLC_PREFIX(cp_rsa_enc)
@@ -2732,6 +2743,7 @@
 #define cp_bdpe_dec 	RLC_PREFIX(cp_bdpe_dec)
 #define cp_phpe_gen 	RLC_PREFIX(cp_phpe_gen)
 #define cp_phpe_enc 	RLC_PREFIX(cp_phpe_enc)
+#define cp_phpe_add 	RLC_PREFIX(cp_phpe_add)
 #define cp_phpe_dec 	RLC_PREFIX(cp_phpe_dec)
 #define cp_shpe_gen 	RLC_PREFIX(cp_shpe_gen)
 #define cp_shpe_enc 	RLC_PREFIX(cp_shpe_enc)
@@ -2855,10 +2867,18 @@
 #define cp_mklhs_ver 	RLC_PREFIX(cp_mklhs_ver)
 #define cp_mklhs_off 	RLC_PREFIX(cp_mklhs_off)
 #define cp_mklhs_onv 	RLC_PREFIX(cp_mklhs_onv)
-#define cp_lapsi_gen 	RLC_PREFIX(cp_lapsi_gen)
-#define cp_lapsi_ask 	RLC_PREFIX(cp_lapsi_ask)
-#define cp_lapsi_ans 	RLC_PREFIX(cp_lapsi_ans)
-#define cp_lapsi_int 	RLC_PREFIX(cp_lapsi_int)
+#define cp_rsapsi_gen 	RLC_PREFIX(cp_rsapsi_gen)
+#define cp_rsapsi_ask 	RLC_PREFIX(cp_rsapsi_ask)
+#define cp_rsapsi_ans 	RLC_PREFIX(cp_rsapsi_ans)
+#define cp_rsapsi_int 	RLC_PREFIX(cp_rsapsi_int)
+#define cp_shipsi_gen 	RLC_PREFIX(cp_shipsi_gen)
+#define cp_shipsi_ask 	RLC_PREFIX(cp_shipsi_ask)
+#define cp_shipsi_ans 	RLC_PREFIX(cp_shipsi_ans)
+#define cp_shipsi_int 	RLC_PREFIX(cp_shipsi_int)
+#define cp_pbpsi_gen 	RLC_PREFIX(cp_pbpsi_gen)
+#define cp_pbpsi_ask 	RLC_PREFIX(cp_pbpsi_ask)
+#define cp_pbpsi_ans 	RLC_PREFIX(cp_pbpsi_ans)
+#define cp_pbpsi_int 	RLC_PREFIX(cp_pbpsi_int)
 
 #undef md_map_sh224
 #undef md_map_sh256
