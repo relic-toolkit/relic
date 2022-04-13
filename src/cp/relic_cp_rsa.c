@@ -738,52 +738,9 @@ int cp_rsa_dec(uint8_t *out, int *out_len, uint8_t *in, int in_len, const rsa_t 
 #if !defined(CP_CRT)
 		bn_mxp(eb, eb, prv->d, prv->crt->n);
 #else
-
-		bn_copy(m, eb);
-
-#if MULTI == OPENMP
-		omp_set_num_threads(CORES);
-		#pragma omp parallel copyin(core_ctx) firstprivate(prv)
-		{
-			#pragma omp sections
-			{
-				#pragma omp section
-				{
-#endif
-					/* m1 = c^dP mod p. */
-					bn_mxp(eb, eb, prv->crt->dp, prv->crt->p);
-
-#if MULTI == OPENMP
-				}
-				#pragma omp section
-				{
-#endif
-					/* m2 = c^dQ mod q. */
-					bn_mxp(m, m, prv->crt->dq, prv->crt->q);
-
-#if MULTI == OPENMP
-				}
-			}
-		}
-#endif
-		/* m1 = m1 - m2 mod p. */
-		bn_sub(eb, eb, m);
-		while (bn_sign(eb) == RLC_NEG) {
-			bn_add(eb, eb, prv->crt->p);
-		}
-		bn_mod(eb, eb, prv->crt->p);
-		/* m1 = qInv(m1 - m2) mod p. */
-		bn_mul(eb, eb, prv->crt->qi);
-		bn_mod(eb, eb, prv->crt->p);
-		/* m = m2 + m1 * q. */
-		bn_mul(eb, eb, prv->crt->q);
-		bn_add(eb, eb, m);
-
+		bn_mxp_crt(eb, eb, prv->crt->dp, prv->crt->dq, prv->crt, 0);
 #endif /* CP_CRT */
 
-		if (bn_cmp(eb, prv->crt->n) != RLC_LT) {
-			result = RLC_ERR;
-		}
 #if CP_RSAPD == BASIC
 		if (pad_basic(eb, &pad_len, in_len, size, RSA_DEC) == RLC_OK) {
 #elif CP_RSAPD == PKCS1
@@ -876,44 +833,7 @@ int cp_rsa_sig(uint8_t *sig, int *sig_len, uint8_t *msg, int msg_len, int hash, 
 #if !defined(CP_CRT)
 			bn_mxp(eb, eb, prv->d, prv->crt->n);
 #else  /* CP_CRT */
-
-#if MULTI == OPENMP
-			omp_set_num_threads(CORES);
-			#pragma omp parallel copyin(core_ctx) firstprivate(prv)
-			{
-				#pragma omp sections
-				{
-					#pragma omp section
-					{
-#endif
-						/* m1 = c^dP mod p. */
-						bn_mxp(eb, eb, prv->crt->dp, prv->crt->p);
-#if MULTI == OPENMP
-					}
-					#pragma omp section
-					{
-#endif
-						/* m2 = c^dQ mod q. */
-						bn_mxp(m, m, prv->crt->dq, prv->crt->q);
-#if MULTI == OPENMP
-					}
-				}
-			}
-#endif
-			/* m1 = m1 - m2 mod p. */
-			bn_sub(eb, eb, m);
-			while (bn_sign(eb) == RLC_NEG) {
-				bn_add(eb, eb, prv->crt->p);
-			}
-			bn_mod(eb, eb, prv->crt->p);
-			/* m1 = qInv(m1 - m2) mod p. */
-			bn_mul(eb, eb, prv->crt->qi);
-			bn_mod(eb, eb, prv->crt->p);
-			/* m = m2 + m1 * q. */
-			bn_mul(eb, eb, prv->crt->q);
-			bn_add(eb, eb, m);
-			bn_mod(eb, eb, prv->crt->n);
-
+			bn_mxp_crt(eb, eb, prv->crt->dp, prv->crt->dq, prv->crt, 0);
 #endif /* CP_CRT */
 
 			size = bn_size_bin(prv->crt->n);

@@ -105,9 +105,16 @@ int cp_shpe_enc_prv(bn_t c, const bn_t m, const shpe_t prv) {
 	bn_null(r);
 	bn_null(s);
 
-	if (prv == NULL || prv->crt->n == NULL || bn_bits(m) > bn_bits(prv->crt->n)) {
+	if (prv == NULL) {
 		return RLC_ERR;
 	}
+
+#if ALLOC != AUTO
+	if (prv->crt == NULL || prv->crt->n == NULL ||
+			bn_bits(m) > bn_bits(prv->crt->n)) {
+		return RLC_ERR;
+	}
+#endif
 
 	RLC_TRY {
 		bn_new(r);
@@ -147,10 +154,16 @@ int cp_shpe_enc(bn_t c, const bn_t m, const shpe_t pub) {
 	bn_null(r);
 	bn_null(s);
 
-	if (pub == NULL || pub->crt->n == NULL ||
+	if (pub == NULL) {
+		return RLC_ERR;
+	}
+
+#if ALLOC != AUTO
+	if (pub->crt == NULL || pub->crt->n == NULL ||
 			bn_bits(m) > bn_bits(pub->crt->n)) {
 		return RLC_ERR;
 	}
+#endif
 
 	RLC_TRY {
 		bn_new(r);
@@ -178,73 +191,42 @@ int cp_shpe_enc(bn_t c, const bn_t m, const shpe_t pub) {
 }
 
 int cp_shpe_dec(bn_t m, const bn_t c, const shpe_t prv) {
-	bn_t s, u;
+	bn_t t, u;
 	int result = RLC_OK;
 
 	if (prv == NULL || bn_bits(c) > 2 * bn_bits(prv->crt->n)) {
 		return RLC_ERR;
 	}
 
-	bn_null(s);
+	bn_null(t);
 	bn_null(u);
 
 	RLC_TRY {
-		bn_new(s);
+		bn_new(t);
 		bn_new(u);
 
+#if !defined(CP_CRT)
+		bn_sub_dig(t, prv->crt->p, 1);
+		bn_sub_dig(u, prv->crt->q, 1);
+		bn_mul(t, t, u);
 
-#if MULTI == OPENMP
-		omp_set_num_threads(CORES);
-		#pragma omp parallel copyin(core_ctx) firstprivate(c, prv)
-		{
-			#pragma omp sections
-			{
-				#pragma omp section
-				{
-#endif
-					/* Compute m_p = L(c^alpha mod p^2) * dp mod p. */
-					bn_sqr(s, prv->crt->p);
-					bn_mxp(s, c, prv->a, s);
-					bn_sub_dig(s, s, 1);
-					bn_div(s, s, prv->crt->p);
-					bn_mul(s, s, prv->crt->dp);
-					bn_mod(s, s, prv->crt->p);
-#if MULTI == OPENMP
-				}
-				#pragma omp section
-				{
-#endif
-					/* Compute m_q = (c^alpha mod q^2) * dq mod q. */
-					bn_sqr(u, prv->crt->q);
-					bn_mxp(u, c, prv->a, u);
-					bn_sub_dig(u, u, 1);
-					bn_div(u, u, prv->crt->q);
-					bn_mul(u, u, prv->crt->dq);
-					bn_mod(u, u, prv->crt->q);
-#if MULTI == OPENMP
-				}
-			}
-		}
-#endif
+		/* Compute (c^l mod n^2) * u mod n. */
+		bn_sqr(u, prv->crt->n);
+		bn_mxp(m, c, prv->a, u);
 
-		/* m = (m_p - m_q) mod p. */
-		bn_sub(m, s, u);
-		while (bn_sign(m) == RLC_NEG) {
-			bn_add(m, m, prv->crt->p);
-		}
-		bn_mod(m, m, prv->crt->p);
-		/* m1 = qInv(m_p - m_q) mod p. */
-		bn_mul(m, m, prv->crt->qi);
-		bn_mod(m, m, prv->crt->p);
-		/* m = m2 + m1 * q. */
-		bn_mul(m, m, prv->crt->q);
-		bn_add(m, m, u);
+		bn_sub_dig(m, m, 1);
+		bn_div(m, m, prv->crt->n);
+		bn_mod_inv(u, t, prv->crt->n);
+		bn_mul(m, m, u);
 		bn_mod(m, m, prv->crt->n);
+#else
+		bn_mxp_crt(m, c, prv->a, prv->a, prv->crt, 1);
+#endif /* CP_CRT */
 	} RLC_CATCH_ANY {
 		result = RLC_ERR;
 	}
 	RLC_FINALLY {
-		bn_free(s);
+		bn_free(t);
 		bn_free(u);
 	}
 

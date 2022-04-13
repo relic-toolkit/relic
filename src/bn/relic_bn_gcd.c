@@ -115,40 +115,27 @@ void bn_gcd_ext_basic(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 
 		bn_zero(x_1);
 		bn_set_dig(y_1, 1);
-
+		bn_set_dig(d, 1);
 		if (e != NULL) {
-			bn_set_dig(d, 1);
 			bn_zero(e);
+		}
 
-			while (!bn_is_zero(v)) {
-				bn_div_rem(q, r, u, v);
+		while (!bn_is_zero(v)) {
+			bn_div_rem(q, r, u, v);
 
-				bn_copy(u, v);
-				bn_copy(v, r);
+			bn_copy(u, v);
+			bn_copy(v, r);
 
-				bn_mul(c, q, x_1);
-				bn_sub(r, d, c);
-				bn_copy(d, x_1);
-				bn_copy(x_1, r);
+			bn_mul(c, q, x_1);
+			bn_sub(r, d, c);
+			bn_copy(d, x_1);
+			bn_copy(x_1, r);
 
+			if (e != NULL) {
 				bn_mul(c, q, y_1);
 				bn_sub(r, e, c);
 				bn_copy(e, y_1);
 				bn_copy(y_1, r);
-			}
-		} else {
-			bn_set_dig(d, 1);
-
-			while (!bn_is_zero(v)) {
-				bn_div_rem(q, r, u, v);
-
-				bn_copy(u, v);
-				bn_copy(v, r);
-
-				bn_mul(c, q, x_1);
-				bn_sub(r, d, c);
-				bn_copy(d, x_1);
-				bn_copy(x_1, r);
 			}
 		}
 		bn_copy(c, u);
@@ -601,9 +588,9 @@ void bn_gcd_ext_lehme(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 
 #endif
 
-#if BN_GCD == STEIN || !defined(STRIP)
+#if BN_GCD == BINAR || !defined(STRIP)
 
-void bn_gcd_stein(bn_t c, const bn_t a, const bn_t b) {
+void bn_gcd_binar(bn_t c, const bn_t a, const bn_t b) {
 	bn_t u, v, t;
 	int shift;
 
@@ -663,8 +650,8 @@ void bn_gcd_stein(bn_t c, const bn_t a, const bn_t b) {
 	}
 }
 
-void bn_gcd_ext_stein(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
-	bn_t x, y, u, v, _a, _b, _e;
+void bn_gcd_ext_binar(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
+	bn_t x, y, t, u, v, _a, _b, _e;
 	int shift;
 
 	if (bn_is_zero(a)) {
@@ -687,6 +674,7 @@ void bn_gcd_ext_stein(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 
 	bn_null(x);
 	bn_null(y);
+	bn_null(t);
 	bn_null(u);
 	bn_null(v);
 	bn_null(_a);
@@ -696,6 +684,7 @@ void bn_gcd_ext_stein(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 	RLC_TRY {
 		bn_new(x);
 		bn_new(y);
+		bn_new(t);
 		bn_new(u);
 		bn_new(v);
 		bn_new(_a);
@@ -704,8 +693,6 @@ void bn_gcd_ext_stein(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 
 		bn_abs(x, a);
 		bn_abs(y, b);
-
-		/* Algorithm 14.61 from Handbook of Applied Cryptography + Errata. */
 
 		/* g = 1. */
 		shift = 0;
@@ -773,21 +760,28 @@ void bn_gcd_ext_stein(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 				}
 			}
 		}
+		/* If u = 0 then d = C, e = D and return (d, e, g * v). */
+		bn_lsh(c, u, shift);
+		/* Now fix reciprocals. */
 		bn_div(x, x, u);
 		bn_div(y, y, u);
 		bn_hlv(_a, x);
 		bn_hlv(_b, y);
 		while (bn_cmp_abs(d, _b) == RLC_GT) {
-			if (bn_sign(d) == RLC_NEG) {
-				bn_add(d, d, y);
-				bn_sub(_e, _e, x);
+			bn_div(t, d, _b);
+			if (bn_bits(t) > 1) {
+				bn_hlv(t, t);
+			}
+			bn_mul(v, x, t);
+			bn_mul(u, y, t);
+			if (bn_sign(d) != bn_sign(u)) {
+				bn_add(d, d, u);
+				bn_sub(_e, _e, v);
 			} else {
-				bn_sub(d, d, y);
-				bn_add(_e, _e, x);
+				bn_sub(d, d, u);
+				bn_add(_e, _e, v);
 			}
 		}
-		/* If u = 0 then d = C, e = D and return (d, e, g * v). */
-		bn_lsh(c, u, shift);
 		if (e != NULL) {
 			bn_copy(e, _e);
 		}
@@ -798,6 +792,7 @@ void bn_gcd_ext_stein(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 	RLC_FINALLY {
 		bn_free(x);
 		bn_free(y);
+		bn_free(t);
 		bn_free(u);
 		bn_free(v);
 		bn_free(_a);

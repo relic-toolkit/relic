@@ -71,6 +71,11 @@
 #define RLC_GET(S, ID, L)		memcpy(S, ID, L);
 #endif
 
+/**
+ * Renames the inline assembly macro to a prettier name.
+ */
+#define asm					__asm__ volatile
+
 /*============================================================================*/
 /* Function prototypes                                                        */
 /*============================================================================*/

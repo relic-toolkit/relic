@@ -1843,36 +1843,48 @@ static void lhs(void) {
 	}
 }
 
-#define M	5			/* Number of server messages (larger). */
-#define N	2			/* Number of client messages. */
+#define M	256			/* Number of server messages (larger). */
+#define N	8			/* Number of client messages. */
 
 static void psi(void) {
-	bn_t q, r, x[M], y[N], z[M];
+	bn_t g, n, q, r, p[M], x[M], v[N], w[N], y[N], z[M];
 	g1_t u[M], ss;
 	g2_t d, s[M + 1];
 	gt_t t[M];
+	crt_t crt;
 	int len;
 
+	bn_new(g);
+	bn_new(n);
 	bn_new(q);
 	bn_new(r);
 	g2_new(d);
 	g1_new(ss);
 	for (int i = 0; i < M; i++) {
+		bn_null(p[i]);
 		bn_null(x[i]);
 		bn_null(z[i]);
 		g2_null(s[i]);
+		bn_new(p[i]);
 		bn_new(x[i]);
 		bn_new(z[i]);
 		g2_new(s[i]);
 	}
+	g2_null(s[M]);
+	g2_new(s[M]);
 	for (int i = 0; i < N; i++) {
+		bn_null(v[i]);
+		bn_null(w[i]);
 		bn_null(y[i]);
 		g1_null(u[i]);
 		gt_null(t[i]);
+		bn_new(v[i]);
+		bn_new(w[i]);
 		bn_new(y[i]);
 		g1_new(u[i]);
 		gt_new(t[i]);
 	}
+	crt_new(crt);
 
 	pc_get_ord(q);
 	for (int j = 0; j < M; j++) {
@@ -1882,20 +1894,48 @@ static void psi(void) {
 		bn_rand_mod(y[j], q);
 	}
 
-	BENCH_RUN("cp_lapsi_gen (5)") {
-		BENCH_ADD(cp_lapsi_gen(q, ss, s, M));
+	BENCH_ONE("cp_rsapsi_gen", cp_rsapsi_gen(g, n, RLC_BN_BITS), 1);
+
+	BENCH_RUN("cp_rsapsi_ask (5)") {
+		BENCH_ADD(cp_rsapsi_ask(q, r, p, g, n, x, M));
 	} BENCH_END;
 
-	BENCH_RUN("cp_lapsi_ask (5)") {
-		BENCH_ADD(cp_lapsi_ask(d, r, x, s, M));
+	BENCH_RUN("cp_rsapsi_ans (2)") {
+		BENCH_ADD(cp_rsapsi_ans(v, w, q, g, n, y, N));
 	} BENCH_END;
 
-	BENCH_RUN("cp_lapsi_ans (2)") {
-		BENCH_ADD(cp_lapsi_ans(t, u, ss, d, y, N));
+	BENCH_RUN("cp_rsapsi_int") {
+		BENCH_ADD(cp_rsapsi_int(z, &len, r, p, n, x, M, v, w, N));
 	} BENCH_END;
 
-	BENCH_RUN("cp_lapsi_int") {
-		BENCH_ADD(cp_lapsi_int(z, &len, q, d, x, M, t, u, N));
+	BENCH_ONE("cp_shipsi_gen", cp_shipsi_gen(g, crt, RLC_BN_BITS), 1);
+
+	BENCH_RUN("cp_shipsi_ask (5)") {
+		BENCH_ADD(cp_shipsi_ask(q, r, p, g, crt->n, x, M));
+	} BENCH_END;
+
+	BENCH_RUN("cp_shipsi_ans (2)") {
+		BENCH_ADD(cp_shipsi_ans(v, w[0], q, g, crt, y, N));
+	} BENCH_END;
+
+	BENCH_RUN("cp_shipsi_int") {
+		BENCH_ADD(cp_shipsi_int(z, &len, r, p, crt->n, x, M, v, w[0], N));
+	} BENCH_END;
+
+	BENCH_RUN("cp_pbpsi_gen (5)") {
+		BENCH_ADD(cp_pbpsi_gen(q, ss, s, M));
+	} BENCH_END;
+
+	BENCH_RUN("cp_pbpsi_ask (5)") {
+		BENCH_ADD(cp_pbpsi_ask(d, r, x, s, M));
+	} BENCH_END;
+
+	BENCH_RUN("cp_pbpsi_ans (2)") {
+		BENCH_ADD(cp_pbpsi_ans(t, u, ss, d, y, N));
+	} BENCH_END;
+
+	BENCH_RUN("cp_pbpsi_int") {
+		BENCH_ADD(cp_pbpsi_int(z, &len, q, d, x, M, t, u, N));
 	} BENCH_END;
 
     bn_free(q);
@@ -1907,6 +1947,7 @@ static void psi(void) {
 		bn_free(z[i]);
 		g2_free(s[i]);
 	}
+	g2_free(s[M]);
 	for (int i = 0; i < N; i++) {
 		bn_free(y[i]);
 		g1_free(u[i]);
@@ -1966,6 +2007,8 @@ int main(void) {
 #endif
 		zss();
 		lhs();
+
+		util_banner("Protocols based on accumulators:\n", 0);
 		psi();
 	}
 #endif

@@ -49,30 +49,6 @@
 /*============================================================================*/
 
 /**
- * Represents a pair of moduli for using the Chinese Remainder Theorem (CRT).
- */
-typedef struct {
-	/** The modulus n = pq. */
-	bn_t n;
-	/** The first prime p. */
-	bn_t p;
-	/** The second prime q. */
-	bn_t q;
-	/** The precomputed constant for the first prime. */
-	bn_t dp;
-	/** The precomputed constant for the second prime. */
-	bn_t dq;
-	/** The inverse of q modulo p. */
-	bn_t qi;
-} crt_st;
-
-#if ALLOC == AUTO
-typedef crt_st crt_t[1];
-#else
-typedef crt_st *crt_t;
-#endif
-
-/**
  * Represents an RSA key pair.
  */
 typedef struct {
@@ -120,7 +96,7 @@ typedef struct {
 	bn_t a;
 	/** The subgroup size. */
 	bn_t b;
-	/** The generator (1+n)^b) mod n^2. */
+	/** The generator ((1+n)^b) mod n^2. */
 	bn_t g;
 	/** The precomputed ((1+n)^b)^n mod n^2. */
 	bn_t gn;
@@ -289,65 +265,6 @@ typedef etrs_st *etrs_t;
 /*============================================================================*/
 /* Macro definitions                                                          */
 /*============================================================================*/
-
-/**
- * Initializes a CRT moduli set with a null value.
- *
- * @param[out] A			- the moduli to initialize.
- */
-#define crt_null(A)			RLC_NULL(A)
-
-/**
- * Calls a function to allocate and initialize a Rabin key pair.
- *
- * @param[out] A			- the new key pair.
- */
-#if ALLOC == DYNAMIC
-#define crt_new(A)															\
-	A = (crt_t)calloc(1, sizeof(crt_st));									\
-	if (A == NULL) {														\
-		RLC_THROW(ERR_NO_MEMORY);											\
-	}																		\
-	bn_new((A)->n);															\
-	bn_new((A)->dp);														\
-	bn_new((A)->dq);														\
-	bn_new((A)->p);															\
-	bn_new((A)->q);															\
-	bn_new((A)->qi);														\
-
-#elif ALLOC == AUTO
-#define crt_new(A)															\
-	bn_new((A)->n);															\
-	bn_new((A)->dp);														\
-	bn_new((A)->dq);														\
-	bn_new((A)->p);															\
-	bn_new((A)->q);															\
-	bn_new((A)->qi);														\
-
-#endif
-
-/**
- * Calls a function to clean and free a Rabin key pair.
- *
- * @param[out] A			- the key pair to clean and free.
- */
-#if ALLOC == DYNAMIC
-#define crt_free(A)															\
-	if (A != NULL) {														\
-		bn_free((A)->n);													\
-		bn_free((A)->dp);													\
-		bn_free((A)->dq);													\
-		bn_free((A)->p);													\
-		bn_free((A)->q);													\
-		bn_free((A)->qi);													\
-		free(A);															\
-		A = NULL;															\
-	}
-
-#elif ALLOC == AUTO
-#define crt_free(A)				/* empty */
-
-#endif
 
 /**
  * Initializes a Subgroup Paillier key pair with a null value.
@@ -2586,18 +2503,124 @@ int cp_mklhs_onv(g1_t sig, bn_t m, bn_t mu[], char *data, char *id[], g1_t h[],
 		dig_t ft[], g2_t pk[], int slen);
 
 /**
- * Generates the secrets and its consecutive powers for the Laconic Private Set
- * Intersection (LaPSI) protocol, given the maximum set size.
+ * Generates the trusted setup parameters for the factoring-based laconic
+ * Private Set Intersection (RSA-PSI) protocol.
+ *
+ * @param[out] g			- the generator.
+ * @param[out] n			- the modulus.
+ * @param[in] bits			- the precision in bits.
+ */
+int cp_rsapsi_gen(bn_t g, bn_t n, int bits);
+
+/**
+ * Computes the receiver part of the RSA-PSI protocol, given its input set.
+ *
+ * @param[out] d			- the resulting accumulator.
+ * @param[out] r			- the random nonce.
+ * @param[out] p			- the mapping of elements to prime numbers.
+ * @param[in] g				- the generator given by the trusted setup.
+ * @param[in] n				- the modulus given by the trusted setup.
+ * @param[in] x				- the receiver's input set.
+ * @param[in] m				- the receiver's input set size.
+ */
+int cp_rsapsi_ask(bn_t d, bn_t r, bn_t p[], bn_t g, bn_t n, bn_t x[], int m);
+
+/**
+ * Computes the sender part of the RSA-PSI protocol, given its input set.
+ *
+ * @param[out] t			- the accumulator results.
+ * @param[out] u			- the missing elements in the exponent.
+ * @param[in] d				- the receiver's accumulator.
+ * @param[in] g				- the generator given by the trusted setup.
+ * @param[in] n				- the modulus given by the trusted setup.
+ * @param[in] y				- the server's input set.
+ * @param[in] l				- the sender's input set size.
+ */
+int cp_rsapsi_ans(bn_t t[], bn_t u[], bn_t d, bn_t g, bn_t n, bn_t y[], int l);
+
+/**
+ * Computes the intersection as the final part of the RSA-PSI protocol.
+ *
+ * @param[out] z			- the elements in the intersection.
+ * @param[out] len			- the cardinality of the resulting intersection.
+ * @param[in] r				- the random nonce.
+ * @param[in] p				- the mapping of elements to prime numbers.
+ * @param[in] n				- the modulus given by the trusted setup.
+ * @param[in] x				- the receiver's input set.
+ * @param[in] m				- the receiver's input set size.
+ * @param[in] t				- the accumulator results.
+ * @param[in] u				- the missing elements in the exponent.
+ * @param[in] l				- the sender's input set size.
+ */
+int cp_rsapsi_int(bn_t z[], int *len, bn_t r, bn_t p[], bn_t n, bn_t x[], int m,
+		bn_t t[], bn_t u[], int l);
+
+/**
+ * Generates the trusted setup parameters for the factoring-based size-hiding
+ * Private Set Intersection (SHI-PSI) protocol.
+ *
+ * @param[out] g			- the generator.
+ * @param[in] crt			- the parameters given by the trusted setup.
+ * @param[in] bits			- the precision in bits.
+ */
+int cp_shipsi_gen(bn_t g, crt_t crt, int bits);
+
+/**
+ * Computes the receiver part of the SHI-PSI protocol, given its input set.
+ *
+ * @param[out] d			- the resulting accumulator.
+ * @param[out] r			- the random nonce.
+ * @param[out] p			- the mapping of elements to prime numbers.
+ * @param[in] n				- the modulus given by the trusted setup.
+ * @param[in] crt			- the parameters given by the trusted setup.
+ * @param[in] x				- the receiver's input set.
+ * @param[in] m				- the receiver's input set size.
+ */
+int cp_shipsi_ask(bn_t d, bn_t r, bn_t p[], bn_t g, bn_t n, bn_t x[], int m);
+
+/**
+ * Computes the sender part of the SHI-PSI protocol, given its input set.
+ *
+ * @param[out] t			- the accumulator results.
+ * @param[out] u			- the hint in the exponent.
+ * @param[in] d				- the receiver's accumulator.
+ * @param[in] g				- the generator given by the trusted setup.
+ * @param[in] crt			- the parameters given by the trusted setup.
+ * @param[in] y				- the server's input set.
+ * @param[in] n				- the sender's input set size.
+ */
+int cp_shipsi_ans(bn_t t[], bn_t u, bn_t d, bn_t g, crt_t crt, bn_t y[], int n);
+
+/**
+ * Computes the intersection as the final part of the SHI-PSI protocol.
+ *
+ * @param[out] z			- the elements in the intersection.
+ * @param[out] len			- the cardinality of the resulting intersection.
+ * @param[in] r				- the random nonce.
+ * @param[in] p				- the mapping of elements to prime numbers.
+ * @param[in] n				- the modulus given by the trusted setup.
+ * @param[in] x				- the receiver's input set.
+ * @param[in] m				- the receiver's input set size.
+ * @param[in] t				- the accumulator results.
+ * @param[in] u				- the hint in the exponent.
+ * @param[in] l				- the sender's input set size.
+ */
+int cp_shipsi_int(bn_t z[], int *len, bn_t r, bn_t p[], bn_t n, bn_t x[], int m,
+		bn_t t[], bn_t u, int l);
+
+/**
+ * Generates the secrets and consecutive powers for the pairing-based laconic
+ * Private Set Intersection (PB-PSI) protocol, given the maximum set size.
  *
  * @param[out] sk			- the sender's secret key.
  * @param[out] ss			- the secret power in G_2.
  * @param[out] s			- the consecutive powers in G_1.
  * @param[in] m				- the maximum set size.
  */
-int cp_lapsi_gen(bn_t sk, g1_t ss, g2_t s[], int m);
+int cp_pbpsi_gen(bn_t sk, g1_t ss, g2_t s[], int m);
 
 /**
- * Computes the receiver part of the LaPSI protocol, given its input set.
+ * Computes the receiver part of the PB-PSI protocol, given its input set.
  *
  * @param[out] d			- the polynomial interpolation in the exponent.
  * @param[out] r			- the random nonce.
@@ -2605,10 +2628,10 @@ int cp_lapsi_gen(bn_t sk, g1_t ss, g2_t s[], int m);
  * @param[in] s				- the consecutive powers.
  * @param[in] m				- the receiver's input set size.
  */
-int cp_lapsi_ask(g2_t d, bn_t r, bn_t x[], g2_t s[], int m);
+int cp_pbpsi_ask(g2_t d, bn_t r, bn_t x[], g2_t s[], int m);
 
 /**
- * Computes the sender part of the LaPSI protocol, given its input set.
+ * Computes the sender part of the PB-PSI protocol, given its input set.
  *
  * @param[out] t			- the pairing results.
  * @param[out] u			- the missing elements in the exponent.
@@ -2617,10 +2640,10 @@ int cp_lapsi_ask(g2_t d, bn_t r, bn_t x[], g2_t s[], int m);
  * @param[in] y				- the server's input set.
  * @param[in] n				- the sender's input set size.
  */
-int cp_lapsi_ans(gt_t t[], g1_t u[], g1_t ss, g2_t d, bn_t y[], int n);
+int cp_pbpsi_ans(gt_t t[], g1_t u[], g1_t ss, g2_t d, bn_t y[], int n);
 
 /**
- * Computes the intersaction as the final part of the LaPSI protocol.
+ * Computes the intersection as the final part of the PB-PSI protocol.
  *
  * @param[out] z			- the elements in the intersection.
  * @param[out] len			- the cardinality of the resulting intersection.
@@ -2633,7 +2656,7 @@ int cp_lapsi_ans(gt_t t[], g1_t u[], g1_t ss, g2_t d, bn_t y[], int n);
  * @param[in] u				- the missing elements in the exponent.
  * @param[in] n				- the sender's input set size.
  */
-int cp_lapsi_int(bn_t z[], int *len, bn_t sk, g2_t d, bn_t x[], int m,
+int cp_pbpsi_int(bn_t z[], int *len, bn_t sk, g2_t d, bn_t x[], int m,
 		gt_t t[], g1_t u[], int n);
 
 #endif /* !RLC_CP_H */

@@ -70,6 +70,9 @@ int cp_mklhs_sig(g1_t s, bn_t m, char *data, char *id, char *tag, bn_t sk) {
 	RLC_TRY {
 		bn_new(n);
 		g1_new(a);
+		if (str == NULL) {
+			RLC_THROW(ERR_NO_MEMORY);
+		}
 
 		pc_get_ord(n);
 		g1_mul_gen(a, m);
@@ -165,7 +168,7 @@ int cp_mklhs_ver(g1_t sig, bn_t m, bn_t mu[], char *data, char *id[],
 		g2_new(g2);
 		gt_new(c);
 		gt_new(e);
-		if (g == NULL || h == NULL) {
+		if (g == NULL || h == NULL || str == NULL) {
 			RLC_FREE(g);
 			RLC_FREE(h);
 			RLC_THROW(ERR_NO_MEMORY);
@@ -249,7 +252,7 @@ int cp_mklhs_off(g1_t h[], dig_t ft[], char *id[], char *tag[], dig_t *f[],
 	uint8_t *str = RLC_ALLOCA(uint8_t, imax + lmax);
 
 	RLC_TRY {
-		if (_h == NULL) {
+		if (_h == NULL || str == NULL) {
 			RLC_FREE(_h);
 			RLC_THROW(ERR_NO_MEMORY);
 		}
@@ -311,7 +314,7 @@ int cp_mklhs_onv(g1_t sig, bn_t m, bn_t mu[], char *data, char *id[], g1_t h[],
 		g2_new(g2);
 		gt_new(c);
 		gt_new(e);
-		if (g == NULL) {
+		if (g == NULL || str == NULL) {
 			RLC_FREE(g);
 			RLC_THROW(ERR_NO_MEMORY);
 		}

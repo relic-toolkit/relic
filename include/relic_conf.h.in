@@ -178,10 +178,10 @@
 
 /** Basic Euclidean GCD Algorithm. */
 #define BASIC    1
+/** Binary GCD Algorithm. */
+#define BINAR    2
 /** Lehmer's fast GCD Algorithm. */
-#define LEHME    2
-/** Stein's binary GCD Algorithm. */
-#define STEIN    3
+#define LEHME    3
 /** Chosen multiple precision greatest common divisor method. */
 #define BN_GCD   @BN_GCD@
 

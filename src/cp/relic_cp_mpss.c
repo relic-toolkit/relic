@@ -322,6 +322,11 @@ int cp_mpsb_ver(gt_t e, g1_t a, g1_t b[2], bn_t m[][2], g2_t h, g2_t x,
 	RLC_TRY {
 		bn_new(n);
 		bn_new(_t);
+		if (_m == NULL || _y == NULL) {
+			RLC_FREE(_m);
+			RLC_FREE(_y);
+			RLC_THROW(ERR_NO_MEMORY);
+		}
 		for (int i = 0; i < 2; i++) {
 			bn_null(d[i]);
 			bn_null(r[i]);
