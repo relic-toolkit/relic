@@ -292,26 +292,22 @@ void bn_mod_pre_pmers(bn_t u, const bn_t m) {
 }
 
 void bn_mod_pmers(bn_t c, const bn_t a, const bn_t m, const bn_t u) {
-	bn_t q, t, r;
-	int bits;
+	bn_t q, t;
+	const int bits = bn_bits(m);
 
 	bn_null(q);
 	bn_null(t);
-	bn_null(r);
 
 	RLC_TRY {
+		/* Implement algorithm 10.25 from HEHC. */
+
 		bn_new(q);
 		bn_new(t);
-		bn_new(r);
 
-		bn_copy(t, a);
+		bn_rsh(q, a, bits);
+		bn_mod_2b(c, a, bits);
 
-		bits = bn_bits(m);
-
-		bn_rsh(q, t, bits);
-		bn_mod_2b(r, t, bits);
-
-		while (!bn_is_zero(q)) {
+		while (bits > 0 && !bn_is_zero(q)) {
 			if (u -> used == 1) {
 				bn_mul_dig(t, q, u->dp[0]);
 			} else {
@@ -320,13 +316,11 @@ void bn_mod_pmers(bn_t c, const bn_t a, const bn_t m, const bn_t u) {
 			bn_rsh(q, t, bits);
 			bn_mod_2b(t, t, bits);
 
-			bn_add(r, r, t);
+			bn_add(c, c, t);
 		}
-		while (bn_cmp_abs(r, m) != RLC_LT) {
-			bn_sub(r, r, m);
+		while (bits > 0 && bn_cmp_abs(c, m) != RLC_LT) {
+			bn_sub(c, c, m);
 		}
-
-		bn_copy(c, r);
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -334,7 +328,6 @@ void bn_mod_pmers(bn_t c, const bn_t a, const bn_t m, const bn_t u) {
 	RLC_FINALLY {
 		bn_free(t);
 		bn_free(q);
-		bn_free(r);
 	}
 }
 
