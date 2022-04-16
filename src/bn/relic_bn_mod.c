@@ -80,8 +80,8 @@ void bn_mod_pre_barrt(bn_t u, const bn_t m) {
 }
 
 void bn_mod_barrt(bn_t c, const bn_t a, const bn_t m, const bn_t u) {
-	unsigned long mu;
 	bn_t q, t;
+	int mu;
 
 	bn_null(q);
 	bn_null(t);
@@ -101,42 +101,41 @@ void bn_mod_barrt(bn_t c, const bn_t a, const bn_t m, const bn_t u) {
 		bn_new(t);
 		bn_zero(t);
 
-		mu = m->used;
+		bn_rsh(q, a, (m->used - 1) * RLC_DIG);
 
-		bn_rsh(q, a, (mu - 1) * RLC_DIG);
-
-		if (mu > ((dig_t)1) << (RLC_DIG - 1)) {
+		if (m->used > ((dig_t)1) << (RLC_DIG - 1)) {
 			bn_mul(t, q, u);
 		} else {
 			bn_grow(t, q->used + u->used);
 			if (q->used > u->used) {
 				bn_muld_low(t->dp, q->dp, q->used, u->dp, u->used,
-						mu, q->used + u->used);
+					m->used, q->used + u->used);
 			} else {
+				mu = RLC_MAX(0, m->used - (u->used - q->used));
 				bn_muld_low(t->dp, u->dp, u->used, q->dp, q->used,
-						mu - (u->used - q->used), q->used + u->used);
+					mu, q->used + u->used);
 			}
 			t->used = q->used + u->used;
 			bn_trim(t);
 		}
 
-		bn_rsh(q, t, (mu + 1) * RLC_DIG);
+		bn_rsh(q, t, (m->used + 1) * RLC_DIG);
 
 		if (q->used > m->used) {
 			bn_muld_low(t->dp, q->dp, q->used, m->dp, m->used, 0, q->used + 1);
 		} else {
-			bn_muld_low(t->dp, m->dp, m->used, q->dp, q->used, 0, mu + 1);
+			bn_muld_low(t->dp, m->dp, m->used, q->dp, q->used, 0, m->used + 1);
 		}
-		t->used = mu + 1;
+		t->used = m->used + 1;
 		bn_trim(t);
 
-		bn_mod_2b(q, t, RLC_DIG * (mu + 1));
-		bn_mod_2b(t, a, RLC_DIG * (mu + 1));
+		bn_mod_2b(q, t, RLC_DIG * (m->used + 1));
+		bn_mod_2b(t, a, RLC_DIG * (m->used + 1));
 		bn_sub(t, t, q);
 
 		if (bn_sign(t) == RLC_NEG) {
 			bn_set_dig(q, (dig_t)1);
-			bn_lsh(q, q, (mu + 1) * RLC_DIG);
+			bn_lsh(q, q, (m->used + 1) * RLC_DIG);
 			bn_add(t, t, q);
 		}
 
