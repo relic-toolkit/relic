@@ -55,8 +55,9 @@ void bn_mod_2b(bn_t c, const bn_t a, int b) {
 	RLC_RIP(b, d, b);
 
 	first = (d) + (b == 0 ? 0 : 1);
-	for (i = first; i < c->used; i++)
+	for (i = first; i < c->used; i++) {
 		c->dp[i] = 0;
+	}
 
 	c->dp[d] &= RLC_MASK(b);
 
@@ -89,6 +90,12 @@ void bn_mod_barrt(bn_t c, const bn_t a, const bn_t m, const bn_t u) {
 		bn_copy(c, a);
 		return;
 	}
+
+	if (a->used > 2 * m->used) {
+		bn_mod(c, a, m);
+		return;
+	}
+
 	RLC_TRY {
 		bn_new(q);
 		bn_new(t);
