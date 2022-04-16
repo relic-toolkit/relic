@@ -57,7 +57,11 @@
 #if MULTI == PTHREAD
 #define rlc_thread 	thread_local
 #else
-#define rlc_thread /* */
+#if defined(_MSC_VER)
+#define rlc_thread 	__declspec(thread)
+#else
+#define rlc_thread 	/* */
+#endif
 #endif
 
 /**
@@ -67,12 +71,12 @@
 /**
  * Active library context, only visible inside the library.
  */
-extern ctx_t first_ctx;
+extern rlc_thread ctx_t first_ctx;
 
 /**
  * Pointer to active library context, only visible inside the library.
  */
-extern ctx_t *core_ctx;
+extern rlc_thread ctx_t *core_ctx;
 
 #pragma omp threadprivate(first_ctx, core_ctx)
 #endif
