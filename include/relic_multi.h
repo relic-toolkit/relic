@@ -55,7 +55,7 @@
  * If multi-threading is enabled, assigns each thread a local copy of the data.
  */
 #if MULTI == PTHREAD
-#define rlc_thread 	__thread
+#define rlc_thread 	thread_local
 #else
 #define rlc_thread /* */
 #endif
