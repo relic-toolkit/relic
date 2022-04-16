@@ -78,7 +78,9 @@ extern rlc_thread ctx_t first_ctx;
  */
 extern rlc_thread ctx_t *core_ctx;
 
+#if !defined(_MSC_VER)
 #pragma omp threadprivate(first_ctx, core_ctx)
+#endif
 #endif
 
 #endif /* MULTI */
