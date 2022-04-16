@@ -152,7 +152,7 @@ set(TESTS "100" CACHE STRING "Number of times each test is ran.")
 # Number of cores.
 set(CORES "1" CACHE STRING "Number of processor cores available to the library.")
 
-if(NOT CORES STREQUAL "1")
+if(NOT CORES STREQUAL "1" AND NOT MULTI)
 	set(MULTI OPENMP)
 endif()
 
@@ -264,10 +264,19 @@ if(AUSAN)
 	set(DFLAGS "${DFLAGS} -ggdb -fsanitize=address -fsanitize=undefined")
 endif()
 
+# Find OpenMP
 if(MULTI STREQUAL OPENMP)
 	if (MSVC)
 		set(CFLAGS "${CFLAGS} /openmp")
 	else ()
+		if (OPSYS STREQUAL MACOSX AND CMAKE_C_COMPILER_ID MATCHES "Clang")
+			set(OpenMP_C "${CMAKE_C_COMPILER}")
+			set(OpenMP_C_FLAGS "-fopenmp=libomp -Wno-unused-command-line-argument")
+			set(OpenMP_C_LIB_NAMES "libomp" "libgomp" "libiomp5")
+			set(OpenMP_libomp_LIBRARY ${OpenMP_C_LIB_NAMES})
+			set(OpenMP_libgomp_LIBRARY ${OpenMP_C_LIB_NAMES})
+			set(OpenMP_libiomp5_LIBRARY ${OpenMP_C_LIB_NAMES})
+		endif ()
 		find_package(OpenMP REQUIRED)
 		set(CFLAGS "${CFLAGS} -fopenmp")
 	endif ()
