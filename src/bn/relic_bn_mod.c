@@ -108,6 +108,7 @@ void bn_mod_barrt(bn_t c, const bn_t a, const bn_t m, const bn_t u) {
 		if (mu > ((dig_t)1) << (RLC_DIG - 1)) {
 			bn_mul(t, q, u);
 		} else {
+			bn_grow(t, q->used + u->used);
 			if (q->used > u->used) {
 				bn_muld_low(t->dp, q->dp, q->used, u->dp, u->used,
 						mu, q->used + u->used);
@@ -151,7 +152,6 @@ void bn_mod_barrt(bn_t c, const bn_t a, const bn_t m, const bn_t u) {
 	RLC_FINALLY {
 		bn_free(q);
 		bn_free(t);
-
 	}
 }
 
