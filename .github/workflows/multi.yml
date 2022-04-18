@@ -67,7 +67,10 @@ jobs:
       - name: Set MacOS enviroment
         if: ${{ (runner.os == 'MacOS') && (matrix.config.cc == 'clang') }}
         shell: bash
-        run: brew install libomp
+        run: |
+          curl -O https://mac.r-project.org/openmp/openmp-13.0.0-darwin21-Release.tar.gz
+          sudo tar fvxz openmp-*.tar.gz -C /
+          xcode-select --install
 
       - name: Run CMake (Win)
         if: ${{ (runner.os == 'Windows') && (matrix.config.cc == 'cl') }}
