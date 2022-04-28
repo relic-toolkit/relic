@@ -2132,7 +2132,7 @@ static int psi(void) {
 	int len, result, code = RLC_ERR;
 	bn_t g, n, q, r, p[M], x[M], v[N], w[N], y[N], z[M];
 	g1_t u[M], ss;
-	g2_t d, s[M + 1];
+	g2_t d[M + 1], s[M + 1];
 	gt_t t[M];
 	crt_t crt;
 
@@ -2141,7 +2141,6 @@ static int psi(void) {
 	bn_null(q);
 	bn_null(r);
 	g1_null(ss);
-	g2_null(d);
 	crt_null(crt);
 
 	RLC_TRY {
@@ -2150,19 +2149,22 @@ static int psi(void) {
 		bn_new(q);
 		bn_new(r);
 		g1_new(ss);
-		g2_new(d);
 		for (int i = 0; i < M; i++) {
 			bn_null(p[i]);
 			bn_null(x[i]);
 			bn_null(z[i]);
+			g2_null(d[i]);
 			g2_null(s[i]);
 			bn_new(p[i]);
 			bn_new(x[i]);
 			bn_new(z[i]);
+			g2_new(d[i]);
 			g2_new(s[i]);
 		}
 		g2_null(s[M]);
 		g2_new(s[M]);
+		g2_null(d[M]);
+		g2_new(d[M]);
 		for (int i = 0; i < N; i++) {
 			bn_null(v[i]);
 			bn_null(w[i]);
@@ -2233,7 +2235,7 @@ static int psi(void) {
 				for (int j = 0; j < k; j++) {
 					bn_copy(y[j], x[j]);
 				}
-				TEST_ASSERT(cp_pbpsi_ans(t, u, ss, d, y, N) == RLC_OK, end);
+				TEST_ASSERT(cp_pbpsi_ans(t, u, ss, d[0], y, N) == RLC_OK, end);
 				TEST_ASSERT(cp_pbpsi_int(z, &len, q, d, x, M, t, u, N) == RLC_OK, end);
 				TEST_ASSERT(len == k, end);
 			}
@@ -2254,8 +2256,10 @@ static int psi(void) {
 		bn_free(p[i]);
 		bn_free(x[i]);
 		bn_free(z[i]);
+		g2_free(d[i]);
 		g2_free(s[i]);
 	}
+	g2_free(d[M]);
 	g2_free(s[M]);
 	for (int i = 0; i < N; i++) {
 		bn_free(v[i]);

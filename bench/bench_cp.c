@@ -1849,7 +1849,7 @@ static void lhs(void) {
 static void psi(void) {
 	bn_t g, n, q, r, p[M], x[M], v[N], w[N], y[N], z[M];
 	g1_t u[M], ss;
-	g2_t d, s[M + 1];
+	g2_t d[M + 1], s[M + 1];
 	gt_t t[M];
 	crt_t crt;
 	int len;
@@ -1858,18 +1858,21 @@ static void psi(void) {
 	bn_new(n);
 	bn_new(q);
 	bn_new(r);
-	g2_new(d);
 	g1_new(ss);
 	for (int i = 0; i < M; i++) {
 		bn_null(p[i]);
 		bn_null(x[i]);
 		bn_null(z[i]);
+		g2_null(d[i]);
 		g2_null(s[i]);
 		bn_new(p[i]);
 		bn_new(x[i]);
 		bn_new(z[i]);
+		g2_new(d[i]);
 		g2_new(s[i]);
 	}
+	g2_null(d[M]);
+	g2_new(d[M]);
 	g2_null(s[M]);
 	g2_new(s[M]);
 	for (int i = 0; i < N; i++) {
@@ -1931,7 +1934,7 @@ static void psi(void) {
 	} BENCH_END;
 
 	BENCH_RUN("cp_pbpsi_ans (2)") {
-		BENCH_ADD(cp_pbpsi_ans(t, u, ss, d, y, N));
+		BENCH_ADD(cp_pbpsi_ans(t, u, ss, d[0], y, N));
 	} BENCH_END;
 
 	BENCH_RUN("cp_pbpsi_int") {
@@ -1941,12 +1944,13 @@ static void psi(void) {
     bn_free(q);
 	bn_free(r);
 	g1_free(ss);
-	g2_free(d);
 	for (int i = 0; i < M; i++) {
 		bn_free(x[i]);
 		bn_free(z[i]);
+		g2_free(d[i]);
 		g2_free(s[i]);
 	}
+	g2_free(d[M]);
 	g2_free(s[M]);
 	for (int i = 0; i < N; i++) {
 		bn_free(y[i]);
