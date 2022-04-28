@@ -106,6 +106,10 @@ void *socketThread(void *arg) {
     }
 
     cp_pbpsi_ask(d, r, x, s, M);
+
+    bench_reset();
+    bench_before();
+
     g2_write_bin(buffer, 4 * RLC_PC_BYTES + 1, d[0], 0);
 	// Send message to the client socket
     send(newSocket, buffer, 4 * RLC_PC_BYTES + 1, 0);
@@ -123,7 +127,10 @@ void *socketThread(void *arg) {
     cp_pbpsi_inth(x, &len, d, x, M, t, u, N);
     printf("%d\n", len);
 
-    printf("Exit socketThread \n");
+    bench_after();
+    bench_compute(1);
+    printf("Receiver: ");
+    bench_print();
 
 end:
     close(newSocket);

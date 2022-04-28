@@ -90,6 +90,9 @@ void *clientThread(void *arg) {
         printf("Send failed\n");
     }
 
+    bench_reset();
+    bench_before();
+
     //Read the message from the server into the buffer
     if (recv(clientSocket, buffer, 4 * RLC_PC_BYTES + 1, 0) < 0) {
        printf("Receive failed\n");
@@ -110,6 +113,11 @@ void *clientThread(void *arg) {
     if (send(clientSocket, buffer, ptr - buffer, 0) < 0) {
         printf("Send failed\n");
     }
+
+    bench_after();
+    bench_compute(1);
+    printf("Sender: ");
+    bench_print();
 
 end:
     close(clientSocket);
