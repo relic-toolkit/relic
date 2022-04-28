@@ -104,8 +104,7 @@ static int test(void) {
 
 #undef M
 #undef N
-#define M	256			/* Number of server messages (larger). */
-#define N	8			/* Number of client messages. */
+#include "params.h"
 
 static void bench(void) {
 	bn_t g, n, q, r, p[M], x[M], v[N], w[N], y[N], z[M];
