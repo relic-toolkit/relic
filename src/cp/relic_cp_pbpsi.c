@@ -159,8 +159,8 @@ int cp_pbpsi_ans(gt_t t[], g1_t u[], g1_t ss, g2_t d, bn_t y[], int n) {
 	return result;
 }
 
-int cp_pbpsi_int(bn_t z[], int *len, bn_t sk, g2_t d[], bn_t x[], int m,
-		gt_t t[], g1_t u[], int n) {
+int cp_pbpsi_int(bn_t z[], int *len, g2_t d[], bn_t x[], int m, gt_t t[],
+		g1_t u[], int n) {
 	int j, k, result = RLC_OK;
 	gt_t e;
 

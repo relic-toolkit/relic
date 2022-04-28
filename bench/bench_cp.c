@@ -1938,7 +1938,7 @@ static void psi(void) {
 	} BENCH_END;
 
 	BENCH_RUN("cp_pbpsi_int") {
-		BENCH_ADD(cp_pbpsi_int(z, &len, q, d, x, M, t, u, N));
+		BENCH_ADD(cp_pbpsi_int(z, &len, d, x, M, t, u, N));
 	} BENCH_END;
 
     bn_free(q);

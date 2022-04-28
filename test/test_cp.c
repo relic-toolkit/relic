@@ -2236,7 +2236,7 @@ static int psi(void) {
 					bn_copy(y[j], x[j]);
 				}
 				TEST_ASSERT(cp_pbpsi_ans(t, u, ss, d[0], y, N) == RLC_OK, end);
-				TEST_ASSERT(cp_pbpsi_int(z, &len, q, d, x, M, t, u, N) == RLC_OK, end);
+				TEST_ASSERT(cp_pbpsi_int(z, &len, d, x, M, t, u, N) == RLC_OK, end);
 				TEST_ASSERT(len == k, end);
 			}
 		} TEST_END;

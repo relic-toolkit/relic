@@ -2648,7 +2648,6 @@ int cp_pbpsi_ans(gt_t t[], g1_t u[], g1_t ss, g2_t d, bn_t y[], int n);
  *
  * @param[out] z			- the elements in the intersection.
  * @param[out] len			- the cardinality of the resulting intersection.
- * @param[in] sk			- the sender's secret key.
  * @param[in] d				- the polynomial interpolations in the exponent.
  * @param[in] x				- the receiver's input set.
  * @param[in] s				- the consecutive powers.
@@ -2657,7 +2656,7 @@ int cp_pbpsi_ans(gt_t t[], g1_t u[], g1_t ss, g2_t d, bn_t y[], int n);
  * @param[in] u				- the missing elements in the exponent.
  * @param[in] n				- the sender's input set size.
  */
-int cp_pbpsi_int(bn_t z[], int *len, bn_t sk, g2_t d[], bn_t x[], int m,
-		gt_t t[], g1_t u[], int n);
+int cp_pbpsi_int(bn_t z[], int *len, g2_t d[], bn_t x[], int m, gt_t t[],
+		g1_t u[], int n);
 
 #endif /* !RLC_CP_H */

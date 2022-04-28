@@ -13,7 +13,7 @@
 
 pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 
-static int cp_pbpsi_inth(bn_t z[], int *len, bn_t sk, g2_t d[], bn_t x[], int m,
+static int cp_pbpsi_inth(bn_t z[], int *len, g2_t d[], bn_t x[], int m,
 		uint8_t t[][RLC_MD_LEN], g1_t u[], int n) {
 	int j, k, result = RLC_OK;
 	gt_t e;
@@ -94,8 +94,6 @@ void *socketThread(void *arg) {
         bn_rand_mod(x[j], q);
     }
 
-    cp_pbpsi_gen(q, ss, s, M);
-
     int newSocket = *((int *)arg);
     recv(newSocket, buffer, sizeof(buffer), 0);
 
@@ -122,7 +120,7 @@ void *socketThread(void *arg) {
         ptr += 2 * RLC_PC_BYTES + 1;
     }
 
-    cp_pbpsi_inth(x, &len, q, d, x, M, t, u, N);
+    cp_pbpsi_inth(x, &len, d, x, M, t, u, N);
     printf("%d\n", len);
 
     printf("Exit socketThread \n");
