@@ -1899,11 +1899,11 @@ static void psi(void) {
 
 	BENCH_ONE("cp_rsapsi_gen", cp_rsapsi_gen(g, n, RLC_BN_BITS), 1);
 
-	BENCH_RUN("cp_rsapsi_ask (5)") {
+	BENCH_RUN("cp_rsapsi_ask (M)") {
 		BENCH_ADD(cp_rsapsi_ask(q, r, p, g, n, x, M));
 	} BENCH_END;
 
-	BENCH_RUN("cp_rsapsi_ans (2)") {
+	BENCH_RUN("cp_rsapsi_ans (N)") {
 		BENCH_ADD(cp_rsapsi_ans(v, w, q, g, n, y, N));
 	} BENCH_END;
 
@@ -1913,11 +1913,11 @@ static void psi(void) {
 
 	BENCH_ONE("cp_shipsi_gen", cp_shipsi_gen(g, crt, RLC_BN_BITS), 1);
 
-	BENCH_RUN("cp_shipsi_ask (5)") {
+	BENCH_RUN("cp_shipsi_ask (M)") {
 		BENCH_ADD(cp_shipsi_ask(q, r, p, g, crt->n, x, M));
 	} BENCH_END;
 
-	BENCH_RUN("cp_shipsi_ans (2)") {
+	BENCH_RUN("cp_shipsi_ans (N)") {
 		BENCH_ADD(cp_shipsi_ans(v, w[0], q, g, crt, y, N));
 	} BENCH_END;
 
@@ -1925,15 +1925,15 @@ static void psi(void) {
 		BENCH_ADD(cp_shipsi_int(z, &len, r, p, crt->n, x, M, v, w[0], N));
 	} BENCH_END;
 
-	BENCH_RUN("cp_pbpsi_gen (5)") {
+	BENCH_RUN("cp_pbpsi_gen (M)") {
 		BENCH_ADD(cp_pbpsi_gen(q, ss, s, M));
 	} BENCH_END;
 
-	BENCH_RUN("cp_pbpsi_ask (5)") {
+	BENCH_RUN("cp_pbpsi_ask (M)") {
 		BENCH_ADD(cp_pbpsi_ask(d, r, x, s, M));
 	} BENCH_END;
 
-	BENCH_RUN("cp_pbpsi_ans (2)") {
+	BENCH_RUN("cp_pbpsi_ans (N)") {
 		BENCH_ADD(cp_pbpsi_ans(t, u, ss, d[0], y, N));
 	} BENCH_END;
 
