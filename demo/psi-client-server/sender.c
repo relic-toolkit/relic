@@ -131,9 +131,9 @@ void *clientThread(void *arg) {
 	}
 	core_clean();
 	RLC_FREE(y);
-	RLC_FREE(y);
-	RLC_FREE(t);
+	RLC_FREE(u);
 	RLC_FREE(s);
+	RLC_FREE(t);
 
 	pthread_exit(NULL);
 }
