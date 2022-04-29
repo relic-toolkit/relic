@@ -49,7 +49,7 @@ static int cp_pbpsi_inth(bn_t z[], int *len, g2_t d[], bn_t x[], int m,
 }
 
 void *socketThread(void *arg) {
-    uint8_t *ptr, buffer[2 * RLC_PC_BYTES + 1 + (M + 1) * (4 * RLC_PC_BYTES + 1)];
+    uint8_t *ptr, buffer[N * (RLC_MD_LEN + 2 * RLC_PC_BYTES + 1)];
     bn_t q, r, x[M];
     g1_t ss, u[N];
     g2_t d[M + 1], s[M + 1];
@@ -88,21 +88,20 @@ void *socketThread(void *arg) {
 		goto end;
     }
 
-    pc_get_ord(q);
+    int newSocket = *((int *)arg);
+
+	/* Compute the CRS explicitly. */
+    bn_read_str(q, SK, strlen(SK), 16);
+    g1_mul_gen(ss, q);
+    g2_get_gen(s[0]);
+    for (int i = 1; i <= M; i++) {
+        g2_mul(s[i], s[i - 1], q);
+    }
+
+	pc_get_ord(q);
     bn_set_dig(x[0], 1);
     for (int j = 1; j < M; j++) {
         bn_rand_mod(x[j], q);
-    }
-
-    int newSocket = *((int *)arg);
-    recv(newSocket, buffer, sizeof(buffer), 0);
-
-    g1_read_bin(ss, buffer, 2 * RLC_PC_BYTES + 1);
-
-    ptr = buffer + 2 * RLC_PC_BYTES + 1;
-    for (int i = 0; i <= M; i++) {
-        g2_read_bin(s[i], ptr,  4 * RLC_PC_BYTES + 1);
-        ptr += 4 * RLC_PC_BYTES + 1;
     }
 
     cp_pbpsi_ask(d, r, x, s, M);
@@ -110,8 +109,8 @@ void *socketThread(void *arg) {
     bench_reset();
     bench_before();
 
+	// Send accumulator to the client socket
     g2_write_bin(buffer, 4 * RLC_PC_BYTES + 1, d[0], 0);
-	// Send message to the client socket
     send(newSocket, buffer, 4 * RLC_PC_BYTES + 1, 0);
 
     recv(newSocket, buffer, N * (RLC_MD_LEN + 2 * RLC_PC_BYTES + 1), 0);

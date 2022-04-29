@@ -19,7 +19,7 @@ void *clientThread(void *arg) {
     struct sockaddr_in serverAddr;
     socklen_t addr_size;
 
-    uint8_t buffer[2 * RLC_PC_BYTES + 1 + (M + 1) * (4 * RLC_PC_BYTES + 1)];
+    uint8_t buffer[N * (RLC_MD_LEN + 2 * RLC_PC_BYTES + 1)];
     uint8_t *ptr, tmp[12 * RLC_PC_BYTES];
     bn_t q, y[N];
     g1_t ss, u[N];
@@ -71,23 +71,18 @@ void *clientThread(void *arg) {
 		goto end;
     }
 
-    cp_pbpsi_gen(q, ss, s, M);
+    /* Compute the CRS explicitly. */
+    bn_read_str(q, SK, strlen(SK), 16);
+    g1_mul_gen(ss, q);
+    g2_get_gen(s[0]);
+    for (int i = 1; i <= M; i++) {
+        g2_mul(s[i], s[i - 1], q);
+    }
 
     pc_get_ord(q);
     bn_set_dig(y[0], 1);
     for (int j = 1; j < N; j++) {
         bn_rand_mod(y[j], q);
-    }
-
-    g1_write_bin(buffer, 2 * RLC_PC_BYTES + 1, ss, 0);
-    ptr = buffer + 2 * RLC_PC_BYTES + 1;
-    for (int i = 0; i <= M; i++) {
-        g2_write_bin(ptr, 4 * RLC_PC_BYTES + 1, s[i], 0);
-        ptr += 4 * RLC_PC_BYTES + 1;
-    }
-
-    if (send(clientSocket, buffer, sizeof(buffer), 0) < 0) {
-        printf("Send failed\n");
     }
 
     bench_reset();
