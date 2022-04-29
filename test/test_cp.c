@@ -2251,7 +2251,6 @@ static int psi(void) {
     bn_free(q);
 	bn_free(r);
 	g1_free(ss);
-	g2_free(d);
 	for (int i = 0; i < M; i++) {
 		bn_free(p[i]);
 		bn_free(x[i]);

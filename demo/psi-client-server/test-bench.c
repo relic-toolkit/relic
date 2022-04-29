@@ -81,7 +81,6 @@ static int test(void) {
 	bn_free(n);
     bn_free(q);
 	g1_free(ss);
-	g2_free(d);
 	for (int i = 0; i < M; i++) {
 		bn_free(p[i]);
 		bn_free(x[i]);
