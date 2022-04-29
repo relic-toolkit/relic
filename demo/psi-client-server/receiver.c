@@ -14,7 +14,7 @@
 pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 
 static int cp_pbpsi_inth(bn_t z[], int *len, g2_t d[], bn_t x[], int m,
-		uint8_t t[][RLC_MD_LEN], g1_t u[], int n) {
+		uint8_t *t, g1_t u[], int n) {
 	int j, k, result = RLC_OK;
 	gt_t e;
 	uint8_t h[RLC_MD_LEN], buffer[12 * RLC_PC_BYTES];
@@ -31,7 +31,7 @@ static int cp_pbpsi_inth(bn_t z[], int *len, g2_t d[], bn_t x[], int m,
 					pc_map(e, u[j], d[k + 1]);
 					gt_write_bin(buffer, 12 * RLC_PC_BYTES, e, 0);
 					md_map(h, buffer, sizeof(buffer));
-					if (memcmp(h, t[j], RLC_MD_LEN) == RLC_EQ &&
+					if (memcmp(h, t + j * RLC_MD_LEN, RLC_MD_LEN) == RLC_EQ &&
 							!gt_is_unity(e)) {
 						bn_copy(z[*len], x[k]);
 						(*len)++;
@@ -51,14 +51,23 @@ static int cp_pbpsi_inth(bn_t z[], int *len, g2_t d[], bn_t x[], int m,
 
 bn_t sk;
 g1_t ss;
-g2_t s[M + 1];
+g2_t *s;
 
 void *socketThread(void *arg) {
 	uint8_t buffer[4 * RLC_PC_BYTES + 1];
-	bn_t q, r, x[M];
-	g1_t u[N];
-	g2_t d[M + 1];
-	uint8_t t[N][RLC_MD_LEN];
+
+	if (core_init() != RLC_OK) {
+		goto end;
+	}
+
+	if (pc_param_set_any() != RLC_OK) {
+		goto end;
+	}
+
+	bn_t q, r, *x = (bn_t *)RLC_ALLOCA(bn_t, M);
+	g1_t *u = (g1_t *) RLC_ALLOCA(g1_t, N);
+	g2_t *d = (g2_t *) RLC_ALLOCA(g2_t, (M + 1));
+	uint8_t *t = (uint8_t *)RLC_ALLOCA(uint8_t, N * RLC_MD_LEN);
 	int len = 0;
 
 	bn_null(q);
@@ -78,14 +87,6 @@ void *socketThread(void *arg) {
 	}
 	g2_null(d[M]);
 	g2_new(d[M]);
-
-	if (core_init() != RLC_OK) {
-		goto end;
-	}
-
-	if (pc_param_set_any() != RLC_OK) {
-		goto end;
-	}
 
 	int newSocket = *((int *)arg);
 
@@ -108,7 +109,7 @@ void *socketThread(void *arg) {
 
 	for (int i = 0; i < N; i++) {
 		recv(newSocket, buffer, RLC_MD_LEN + 2 * RLC_PC_BYTES + 1, 0);
-		memcpy(t[i], buffer, RLC_MD_LEN);
+		memcpy(t + i * RLC_MD_LEN, buffer, RLC_MD_LEN);
 		g1_read_bin(u[i], buffer + RLC_MD_LEN, 2 * RLC_PC_BYTES + 1);
 	}
 
@@ -128,6 +129,10 @@ void *socketThread(void *arg) {
 	for (int i = 0; i <= M; i++) {
 		g2_free(d[i]);
 	}
+	RLC_FREE(x);
+	RLC_FREE(u);
+	RLC_FREE(d);
+	RLC_FREE(t);
 	core_clean();
 
 	pthread_exit(NULL);
@@ -142,6 +147,11 @@ int main() {
 	core_init();
 
 	bn_new(sk);
+	g1_new(ss);
+	s = (g2_t *) RLC_ALLOCA(g2_t, (M + 1));
+	for (int i = 0; i <= M; i++) {
+		g2_new(s[i]);
+	}
 
 	pc_param_set_any();
 	/* Compute the CRS explicitly. */
@@ -151,7 +161,6 @@ int main() {
 	for (int i = 1; i <= M; i++) {
 		g2_mul(s[i], s[i - 1], sk);
 	}
-	core_clean();
 
 	//Create the socket.
 	serverSocket = socket(PF_INET, SOCK_STREAM, 0);
@@ -203,5 +212,12 @@ int main() {
 		}
 	}
 
+	bn_free(sk);
+	g1_free(ss);
+	for (int i = 0; i <= M; i++) {
+		g2_free(s[i]);
+	}
+	RLC_FREE(s);
+	core_clean();
 	return 0;
 }

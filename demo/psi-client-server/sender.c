@@ -21,10 +21,10 @@ void *clientThread(void *arg) {
 
 	uint8_t buffer[4 * RLC_PC_BYTES + 1];
 	uint8_t tmp[12 * RLC_PC_BYTES];
-	bn_t q, y[N];
-	g1_t ss, u[N];
-	g2_t d, s[M + 1];
-	gt_t t[N];
+	bn_t q, *y = (bn_t *)RLC_ALLOCA(bn_t, N);
+	g1_t ss, *u = (g1_t *) RLC_ALLOCA(g1_t, N);
+	g2_t d, *s = (g2_t *) RLC_ALLOCA(g2_t, (M + 1));
+	gt_t *t = (gt_t *) RLC_ALLOCA(gt_t, N);
 
 	// Create the socket.
 	clientSocket = socket(PF_INET, SOCK_STREAM, 0);
@@ -59,7 +59,7 @@ void *clientThread(void *arg) {
 		g1_null(u[i]);
 		gt_null(t[i]);
 		bn_new(y[i]);
-		g1_new(t[i]);
+		g1_new(u[i]);
 		gt_new(t[i]);
 	}
 	for (int i = 0; i <= M; i++) {
@@ -130,6 +130,10 @@ void *clientThread(void *arg) {
 		g2_free(s[i]);
 	}
 	core_clean();
+	RLC_FREE(y);
+	RLC_FREE(y);
+	RLC_FREE(t);
+	RLC_FREE(s);
 
 	pthread_exit(NULL);
 }
