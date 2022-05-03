@@ -22,8 +22,8 @@ void *clientThread(void *arg) {
 	uint8_t buffer[4 * RLC_PC_BYTES + 1];
 	uint8_t tmp[12 * RLC_PC_BYTES];
 	bn_t q, *y = (bn_t *)RLC_ALLOCA(bn_t, N);
-	g1_t ss, *u = (g1_t *) RLC_ALLOCA(g1_t, N);
-	g2_t d, *s = (g2_t *) RLC_ALLOCA(g2_t, (M + 1));
+	g1_t ss, *u = (g1_t *)RLC_ALLOCA(g1_t, N);
+	g2_t d, *s = (g2_t *)RLC_ALLOCA(g2_t, (M + 1));
 	gt_t *t = (gt_t *) RLC_ALLOCA(gt_t, N);
 
 	// Create the socket.
@@ -104,9 +104,8 @@ void *clientThread(void *arg) {
 	for (int i = 0; i < N; i++) {
 		gt_write_bin(tmp, 12 * RLC_PC_BYTES, t[i], 0);
 		md_map(buffer, tmp, 12 * RLC_PC_BYTES);
-		g1_write_bin(buffer + RLC_MD_LEN, 2 * RLC_PC_BYTES + 1, u[i], 0);
-		if (send(clientSocket, buffer, RLC_MD_LEN + 2 * RLC_PC_BYTES + 1,
-						0) < 0) {
+		g1_write_bin(buffer + RLC_MD_LEN, RLC_PC_BYTES + 1, u[i], 1);
+		if (send(clientSocket, buffer, RLC_MD_LEN + RLC_PC_BYTES + 1, 0) < 0) {
 			printf("Send failed\n");
 		}
 	}

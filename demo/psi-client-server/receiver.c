@@ -108,9 +108,9 @@ void *socketThread(void *arg) {
 	send(newSocket, buffer, 4 * RLC_PC_BYTES + 1, 0);
 
 	for (int i = 0; i < N; i++) {
-		recv(newSocket, buffer, RLC_MD_LEN + 2 * RLC_PC_BYTES + 1, 0);
+		recv(newSocket, buffer, RLC_MD_LEN + RLC_PC_BYTES + 1, 0);
 		memcpy(t + i * RLC_MD_LEN, buffer, RLC_MD_LEN);
-		g1_read_bin(u[i], buffer + RLC_MD_LEN, 2 * RLC_PC_BYTES + 1);
+		g1_read_bin(u[i], buffer + RLC_MD_LEN, RLC_PC_BYTES + 1);
 	}
 
 	cp_pbpsi_inth(x, &len, d, x, M, t, u, N);
