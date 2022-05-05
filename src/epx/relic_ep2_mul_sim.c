@@ -65,7 +65,7 @@ static void ep2_mul_sim_endom(ep2_t r, ep2_t p, const bn_t k, ep2_t q, const bn_
 	RLC_TRY {
 		bn_new(n);
 		bn_new(u);
-		for (j = 0; j < 4; j++) {
+		for (i = 0; i < 4; i++) {
 			bn_null(_k[j]);
 			bn_new(_k[j]);
 			bn_null(_m[j]);
