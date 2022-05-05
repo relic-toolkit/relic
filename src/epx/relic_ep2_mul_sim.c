@@ -66,10 +66,10 @@ static void ep2_mul_sim_endom(ep2_t r, ep2_t p, const bn_t k, ep2_t q, const bn_
 		bn_new(n);
 		bn_new(u);
 		for (i = 0; i < 4; i++) {
-			bn_null(_k[j]);
-			bn_new(_k[j]);
-			bn_null(_m[j]);
-			bn_new(_m[j]);
+			bn_null(_k[i]);
+			bn_new(_k[i]);
+			bn_null(_m[i]);
+			bn_new(_m[i]);
 			ep2_null(_p[i]);
 			ep2_null(_q[i]);
 			ep2_new(_p[i]);
