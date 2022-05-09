@@ -194,7 +194,7 @@ void bn_gcd_lehme(bn_t c, const bn_t a, const bn_t b) {
 		bn_new(t2);
 		bn_new(t3);
 
-		if (bn_cmp(a, b) == RLC_GT) {
+		if (bn_cmp_abs(a, b) == RLC_GT) {
 			bn_abs(x, a);
 			bn_abs(y, b);
 		} else {
@@ -386,7 +386,7 @@ void bn_gcd_ext_lehme(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 		bn_new(t3);
 		bn_new(t4);
 
-		if (bn_cmp(a, b) != RLC_LT) {
+		if (bn_cmp_abs(a, b) != RLC_LT) {
 			bn_abs(x, a);
 			bn_abs(y, b);
 			swap = 0;
