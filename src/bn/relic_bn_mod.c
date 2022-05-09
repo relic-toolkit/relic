@@ -75,6 +75,11 @@ void bn_mod_basic(bn_t c, const bn_t a, const bn_t m) {
 #if BN_MOD == BARRT || !defined(STRIP)
 
 void bn_mod_pre_barrt(bn_t u, const bn_t m) {
+	if (bn_is_even(m) || bn_sign(m) != RLC_POS) {
+		RLC_THROW(ERR_NO_VALID);
+		return;
+	}
+
 	bn_set_2b(u, m->used * 2 * RLC_DIG);
 	bn_div(u, u, m);
 }
@@ -85,6 +90,11 @@ void bn_mod_barrt(bn_t c, const bn_t a, const bn_t m, const bn_t u) {
 
 	bn_null(q);
 	bn_null(t);
+
+	if (bn_is_even(m) || bn_sign(m) != RLC_POS) {
+		RLC_THROW(ERR_NO_VALID);
+		return;
+	}
 
 	if (bn_cmp(a, m) == RLC_LT) {
 		bn_copy(c, a);
@@ -159,10 +169,9 @@ void bn_mod_barrt(bn_t c, const bn_t a, const bn_t m, const bn_t u) {
 #if BN_MOD == MONTY || (defined(WITH_FP) && FP_RDC == MONTY) || !defined(STRIP)
 
 void bn_mod_pre_monty(bn_t u, const bn_t m) {
-	dig_t x, b;
-	b = m->dp[0];
+	dig_t x, b = m->dp[0];
 
-	if ((b & 0x01) == 0) {
+	if (bn_is_even(m) || bn_sign(m) != RLC_POS) {
 		RLC_THROW(ERR_NO_VALID);
 		return;
 	}
@@ -183,6 +192,11 @@ void bn_mod_pre_monty(bn_t u, const bn_t m) {
 }
 
 void bn_mod_monty_conv(bn_t c, const bn_t a, const bn_t m) {
+	if (bn_is_even(m) || bn_sign(m) != RLC_POS) {
+		RLC_THROW(ERR_NO_VALID);
+		return;
+	}
+
 	bn_copy(c, a);
 	while (bn_sign(c) == RLC_NEG) {
 		bn_add(c, c, m);
@@ -198,7 +212,6 @@ void bn_mod_monty_back(bn_t c, const bn_t a, const bn_t m) {
 
 	RLC_TRY {
 		bn_new(u);
-
 		bn_mod_pre_monty(u, m);
 		bn_mod_monty(c, a, m, u);
 	} RLC_CATCH_ANY {
@@ -289,11 +302,12 @@ void bn_mod_monty_comba(bn_t c, const bn_t a, const bn_t m, const bn_t u) {
 #if BN_MOD == PMERS || !defined(STRIP)
 
 void bn_mod_pre_pmers(bn_t u, const bn_t m) {
-	int bits;
+	if (bn_is_even(m) || bn_sign(m) != RLC_POS) {
+		RLC_THROW(ERR_NO_VALID);
+		return;
+	}
 
-	bits = bn_bits(m);
-
-	bn_set_2b(u, bits);
+	bn_set_2b(u, bn_bits(m));
 	bn_sub(u, u, m);
 }
 
