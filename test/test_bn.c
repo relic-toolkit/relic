@@ -905,6 +905,10 @@ static int reduction(void) {
 			if (bn_cmp(a, c) == RLC_LT) {
 				bn_mod_basic(e, a, b);
 				TEST_ASSERT(bn_cmp(e, d) == RLC_EQ, end);
+				bn_neg(a, a);
+				bn_mod_basic(e, a, b);
+				bn_sub(e, b, e);
+				TEST_ASSERT(bn_cmp(e, d) == RLC_EQ, end);
 			}
 		}
 		TEST_END;
@@ -917,8 +921,12 @@ static int reduction(void) {
 			bn_div_rem(c, d, a, b);
 			bn_sqr(c, b);
 			if (bn_cmp(a, c) == RLC_LT) {
-				bn_mod_pre_barrt(e, b);
-				bn_mod_barrt(e, a, b, e);
+				bn_mod_pre_barrt(c, b);
+				bn_mod_barrt(e, a, b, c);
+				TEST_ASSERT(bn_cmp(e, d) == RLC_EQ, end);
+				bn_neg(a, a);
+				bn_mod_barrt(e, a, b, c);
+				bn_sub(e, b, e);
 				TEST_ASSERT(bn_cmp(e, d) == RLC_EQ, end);
 			}
 		}
@@ -937,6 +945,11 @@ static int reduction(void) {
 			bn_mod_pre_monty(e, b);
 			bn_mod_monty_basic(d, c, b, e);
 			TEST_ASSERT(bn_cmp(a, d) == RLC_EQ, end);
+			bn_neg(a, a);
+			bn_mod_monty_conv(c, a, b);
+			bn_mod_monty_basic(d, c, b, e);
+			bn_add(a, a, b);
+			TEST_ASSERT(bn_cmp(a, d) == RLC_EQ, end);
 		}
 		TEST_END;
 #endif
@@ -953,6 +966,11 @@ static int reduction(void) {
 			bn_mod_pre_monty(e, b);
 			bn_mod_monty_comba(d, c, b, e);
 			TEST_ASSERT(bn_cmp(a, d) == RLC_EQ, end);
+			bn_neg(a, a);
+			bn_mod_monty_conv(c, a, b);
+			bn_mod_monty_comba(d, c, b, e);
+			bn_add(a, a, b);
+			TEST_ASSERT(bn_cmp(a, d) == RLC_EQ, end);
 		}
 		TEST_END;
 #endif
@@ -962,12 +980,17 @@ static int reduction(void) {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_rand(b, RLC_POS, RLC_BN_BITS / 2);
 			bn_rand(c, RLC_POS, RLC_BN_BITS / 4);
-			if (bn_is_zero(c))
+			if (bn_is_zero(c)) {
 				bn_set_dig(c, 1);
+			}
 			bn_set_2b(b, RLC_BN_BITS / 2);
 			bn_sub(b, b, c);
 			bn_mod(c, a, b);
 			bn_mod_pre_pmers(e, b);
+			bn_mod_pmers(d, a, b, e);
+			TEST_ASSERT(bn_cmp(c, d) == RLC_EQ, end);
+			bn_neg(a, a);
+			bn_mod(c, a, b);
 			bn_mod_pmers(d, a, b, e);
 			TEST_ASSERT(bn_cmp(c, d) == RLC_EQ, end);
 		}

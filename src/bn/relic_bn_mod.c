@@ -86,7 +86,7 @@ void bn_mod_pre_barrt(bn_t u, const bn_t m) {
 
 void bn_mod_barrt(bn_t c, const bn_t a, const bn_t m, const bn_t u) {
 	bn_t q, t;
-	int mu;
+	int mu, neg;
 
 	bn_null(q);
 	bn_null(t);
@@ -96,7 +96,7 @@ void bn_mod_barrt(bn_t c, const bn_t a, const bn_t m, const bn_t u) {
 		return;
 	}
 
-	if (bn_cmp(a, m) == RLC_LT) {
+	if (bn_cmp_abs(a, m) == RLC_LT) {
 		bn_copy(c, a);
 		return;
 	}
@@ -111,7 +111,10 @@ void bn_mod_barrt(bn_t c, const bn_t a, const bn_t m, const bn_t u) {
 		bn_new(t);
 		bn_zero(t);
 
-		bn_rsh(q, a, (m->used - 1) * RLC_DIG);
+		neg = (bn_sign(a) == RLC_NEG);
+		bn_abs(c, a);
+
+		bn_rsh(q, c, (m->used - 1) * RLC_DIG);
 
 		if (m->used > ((dig_t)1) << (RLC_DIG - 1)) {
 			bn_mul(t, q, u);
@@ -140,7 +143,7 @@ void bn_mod_barrt(bn_t c, const bn_t a, const bn_t m, const bn_t u) {
 		bn_trim(t);
 
 		bn_mod_2b(q, t, RLC_DIG * (m->used + 1));
-		bn_mod_2b(t, a, RLC_DIG * (m->used + 1));
+		bn_mod_2b(t, c, RLC_DIG * (m->used + 1));
 		bn_sub(t, t, q);
 
 		if (bn_sign(t) == RLC_NEG) {
@@ -154,6 +157,9 @@ void bn_mod_barrt(bn_t c, const bn_t a, const bn_t m, const bn_t u) {
 		}
 
 		bn_copy(c, t);
+		if (neg) {
+			bn_sub(c, m, c);
+		}
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -197,10 +203,7 @@ void bn_mod_monty_conv(bn_t c, const bn_t a, const bn_t m) {
 		return;
 	}
 
-	bn_copy(c, a);
-	while (bn_sign(c) == RLC_NEG) {
-		bn_add(c, c, m);
-	}
+	bn_mod(c, a, m);
 	bn_lsh(c, c, m->used * RLC_DIG);
 	bn_mod(c, c, m);
 }
@@ -313,7 +316,12 @@ void bn_mod_pre_pmers(bn_t u, const bn_t m) {
 
 void bn_mod_pmers(bn_t c, const bn_t a, const bn_t m, const bn_t u) {
 	bn_t q, t;
-	const int bits = bn_bits(m);
+	int neg = 0, bits = bn_bits(m);
+
+	if (bn_sign(m) != RLC_POS) {
+		RLC_THROW(ERR_NO_VALID);
+		return;
+	}
 
 	bn_null(q);
 	bn_null(t);
@@ -324,8 +332,14 @@ void bn_mod_pmers(bn_t c, const bn_t a, const bn_t m, const bn_t u) {
 		bn_new(q);
 		bn_new(t);
 
-		bn_rsh(q, a, bits);
-		bn_mod_2b(c, a, bits);
+		bn_copy(c, a);
+		if (bn_sign(c) == RLC_NEG) {
+			neg = 1;
+			bn_sub(c, m, c);
+		}
+
+		bn_rsh(q, c, bits);
+		bn_mod_2b(c, c, bits);
 
 		while (bits > 0 && !bn_is_zero(q)) {
 			if (u -> used == 1) {
@@ -340,6 +354,10 @@ void bn_mod_pmers(bn_t c, const bn_t a, const bn_t m, const bn_t u) {
 		}
 		while (bits > 0 && bn_cmp_abs(c, m) != RLC_LT) {
 			bn_sub(c, c, m);
+		}
+
+		if (neg) {
+			bn_sub(c, m, c);
 		}
 	}
 	RLC_CATCH_ANY {
