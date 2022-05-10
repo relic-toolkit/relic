@@ -37,6 +37,11 @@
 
 #include "lzcnt.inc"
 
+/**
+ * Renames the inline assembly macro to a prettier name.
+ */
+#define asm					__asm__ volatile
+
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
