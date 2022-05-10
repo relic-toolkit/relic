@@ -259,6 +259,18 @@ void fp_param_set(int param) {
 				bn_add_dig(t0, t0, 0x8A);
 				fp_prime_set_pairf(t0, EP_BN);
 				break;
+#elif FP_PRIME == 315
+			case B24_315:
+				/* x = -2^32 + 2^30 + 2^21 + 2^20 + 1). */
+				bn_set_2b(t0, 32);
+				bn_neg(t0, t0);
+				bn_set_2b(t1, 30);
+				bn_set_bit(t1, 21, 1);
+				bn_set_bit(t1, 20, 1);
+				bn_add_dig(t1, t1, 1);
+				bn_add(t0, t0, t1);
+				fp_prime_set_pairf(t0, EP_B24);
+				break;
 #elif FP_PRIME == 377
 			case B12_377:
 				/* x = 2^63 + 2^58 + 2^56 + 2^51 + 2^47 + 2^46 + 1. */
@@ -627,6 +639,8 @@ int fp_param_set_any_tower(void) {
 	fp_param_set(BN_254);
 #elif FP_PRIME == 256
 	fp_param_set(BN_256);
+#elif FP_PRIME == 315
+	fp_param_set(B24_315);
 #elif FP_PRIME == 377
 	fp_param_set(B12_377);
 #elif FP_PRIME == 381

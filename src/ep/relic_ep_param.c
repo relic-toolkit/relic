@@ -404,6 +404,21 @@
 /** @} */
 #endif
 
+#if defined(EP_ENDOM) && FP_PRIME == 315
+/**
+* Parameters for a 377-bit pairing-friendly prime curve.
+*/
+/** @{ */
+#define B24_P315_A		"0"
+#define B24_P315_B		"1"
+#define B24_P315_X		"41A0A424393988DA1B2B117076EF6E4F54B344CC46DDE3C983603A832CB638DBF4B721710866097"
+#define B24_P315_Y		"2E6F83C55DEFF20227ECDF0DB2BB2EBB5D72C8A29010871D3CCE9059E83DFB96F2922D5DA4E4E5F"
+#define B24_P315_R		"196DEAC24A9DA12B25FC7EC9CF927A98C8C480ECE644E36419D0C5FD00C00001"
+#define B24_P315_H		"2FE8030000000000"
+#define B24_P315_MAPU	"-2"
+/** @} */
+#endif
+
 #if defined(EP_ENDOM) && FP_PRIME == 377
 /**
 * Parameters for a 377-bit pairing-friendly prime curve.
@@ -918,6 +933,13 @@ void ep_param_set(int param) {
 				pairf = EP_BN;
 				break;
 #endif
+#if defined(EP_ENDOM) & FP_PRIME == 315
+			case B24_P315:
+				ASSIGN(B24_P315, B24_315);
+				endom = 1;
+				pairf = EP_B24;
+				break;
+#endif
 #if defined(EP_ENDOM) & FP_PRIME == 377
 			case B12_P377:
 				ASSIGN(B12_P377, B12_377);
@@ -1246,6 +1268,8 @@ int ep_param_set_any_endom(void) {
 	ep_param_set(TWEEDLEDUM);
 #elif FP_PRIME == 256
 	ep_param_set(SECG_K256);
+#elif FP_PRIME == 315
+	ep_param_set(B24_P315);
 #elif FP_PRIME == 377
 	ep_param_set(B12_P377);
 #elif FP_PRIME == 381
@@ -1316,6 +1340,10 @@ int ep_param_set_any_pairf(void) {
 	ep_param_set(BN_P256);
 	type = RLC_EP_DTYPE;
 	degree = 2;
+#elif FP_PRIME == 315
+	ep_param_set(B24_P315);
+	type = RLC_EP_DTYPE;
+	degree = 4;
 #elif FP_PRIME == 377
 	ep_param_set(B12_P377);
 	type = RLC_EP_DTYPE;

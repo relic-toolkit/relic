@@ -112,6 +112,8 @@ enum {
 	BN_256,
 	/** 256-bit prime provided for BN curve standardized in China. */
 	SM9_256,
+	/** 315-bit prime for BLS curve of embedding degree 24 (SNARKs). */
+	B24_315,
 	/** 381-bit prime for BLS curve of embedding degree 12 (SNARKs). */
 	B12_377,
 	/** 381-bit prime for BLS curve of embedding degree 12 (Zcash). */
