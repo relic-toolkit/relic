@@ -151,8 +151,9 @@ static void pp_exp_b12(fp12_t c, fp12_t a) {
 		bn_new(x);
 
 		/*
-		 * Final exponentiation following Ghammam and Fouotsa:
-		 * On the Computation of Optimal Ate Pairing at the 192-bit Level.
+		 * Final exponentiation following Hayashida, Hayasaka and Teruya:
+		 * Efficient Final Exponentiation via Cyclotomic Structure for Pairings
+		 * over Families of Elliptic Curves
 		 */
 		fp_prime_get_par(x);
 		b = fp_prime_get_par_sps(&l);
@@ -178,7 +179,7 @@ static void pp_exp_b12(fp12_t c, fp12_t a) {
 			fp12_sqr_cyc(t1, t1);
 		} else {
 			/*
-			 * Variant from Ghammam and Fouotsa:
+			 * Variant from Ghammam and Fouotsa saves computing (x-1)^2 power:
 			 * Improving the computation of the optimal ate pairing for a high
 			 * security level
 			 */
