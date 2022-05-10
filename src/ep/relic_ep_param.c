@@ -1578,6 +1578,8 @@ int ep_param_level(void) {
 		case CURVE_25519:
 		case TWEEDLEDUM:
 			return 128;
+		case B24_P315:
+		case B12_P377:
 		case B12_P381:
 		case BN_P382:
 		case B12_P383:
@@ -1601,30 +1603,24 @@ int ep_param_level(void) {
 }
 
 int ep_param_embed(void) {
-	switch (ep_param_get()) {
-		case SS_P1536:
+	switch (core_get()->ep_is_pairf) {
+		case EP_SS1:
+			return 1;
+		case EP_SS2:
 			return 2;
-		case OT8_P511:
-		case GMT8_P544:
+		case EP_OT8:
+		case EP_GMT8:
 			return 8;
-		case BN_P158:
-		case BN_P254:
-		case BN_P256:
-		case SM9_P256:
-		case BN_P382:
-		case BN_P446:
-		case B12_P446:
-		case BN_P638:
-		case B12_P381:
-		case B12_P383:
-		case B12_P455:
-		case B12_P638:
+		case EP_BN:
+		case EP_B12:
 			return 12;
-		case B24_P509:
+		case EP_K16:
+			return 16;
+		case EP_B24:
 			return 24;
-		case B48_P575:
+		case EP_B48:
 			return 48;
-		case K54_P569:
+		case EP_K54:
 			return 54;
 	}
 	return 0;

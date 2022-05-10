@@ -66,7 +66,7 @@
 
 #define RLC_G2_UPPER			EP
 
-#if FP_PRIME == 509
+#if FP_PRIME == 315 || FP_PRIME == 509
 #define RLC_GT_LOWER			fp24_
 #else
 #define RLC_GT_LOWER			fp12_
