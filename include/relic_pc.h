@@ -58,7 +58,7 @@
 #define RLC_G1_LOWER			ep_
 #define RLC_G1_UPPER			EP
 
-#if FP_PRIME == 509
+#if FP_PRIME == 315 || FP_PRIME == 509
 #define RLC_G2_LOWER			ep4_
 #else
 #define RLC_G2_LOWER			ep2_
@@ -850,7 +850,7 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
  */
 #if FP_PRIME < 1536
 
-#if FP_PRIME == 509
+#if FP_PRIME == 315 || FP_PRIME == 509
 #define pc_map(R, P, Q);		RLC_CAT(RLC_PC_LOWER, map_k24)(R, P, Q)
 #else
 #define pc_map(R, P, Q);		RLC_CAT(RLC_PC_LOWER, map_k12)(R, P, Q)
@@ -873,7 +873,7 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
  */
 #if FP_PRIME < 1536
 
-#if FP_PRIME == 509
+#if FP_PRIME == 315 || FP_PRIME == 509
 #define pc_map_sim(R, P, Q, M);	RLC_CAT(RLC_PC_LOWER, map_sim_k24)(R, P, Q, M)
 #else
 #define pc_map_sim(R, P, Q, M);	RLC_CAT(RLC_PC_LOWER, map_sim_k12)(R, P, Q, M)
@@ -891,7 +891,7 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
  */
 #if FP_PRIME < 1536
 
-#if FP_PRIME == 509
+#if FP_PRIME == 315 || FP_PRIME == 509
 #define pc_exp(C, A);			RLC_CAT(RLC_PC_LOWER, exp_k24)(C, A)
 #else
 #define pc_exp(C, A);			RLC_CAT(RLC_PC_LOWER, exp_k12)(C, A)
