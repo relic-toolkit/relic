@@ -404,6 +404,21 @@
 /** @} */
 #endif
 
+#if defined(EP_ENDOM) && FP_PRIME == 377
+/**
+* Parameters for a 377-bit pairing-friendly prime curve.
+*/
+/** @{ */
+#define B12_P377_A		"0"
+#define B12_P377_B		"1"
+#define B12_P377_X		"8848DEFE740A67C8FC6225BF87FF5485951E2CAA9D41BB188282C8BD37CB5CD5481512FFCD394EEAB9B16EB21BE9EF"
+#define B12_P377_Y		"1914A69C5102EFF1F674F5D30AFEEC4BD7FB348CA3E52D96D182AD44FB82305C2FE3D3634A9591AFD82DE55559C8EA6"
+#define B12_P377_R		"12AB655E9A2CA55660B44D1E5C37B00159AA76FED00000010A11800000000001"
+#define B12_P377_H		"170B5D44300000000000000000000000"
+#define B12_P377_MAPU	"-2"
+/** @} */
+#endif
+
 #if defined(EP_ENDOM) && FP_PRIME == 381
 /**
 * Parameters for a 381-bit pairing-friendly prime curve.
@@ -903,10 +918,11 @@ void ep_param_set(int param) {
 				pairf = EP_BN;
 				break;
 #endif
-#if defined(EP_PLAIN) & FP_PRIME == 382
-			case CURVE_67254:
-				ASSIGN(CURVE_67254, PRIME_382105);
-				plain = 1;
+#if defined(EP_ENDOM) & FP_PRIME == 377
+			case B12_P377:
+				ASSIGN(B12_P377, B12_377);
+				endom = 1;
+				pairf = EP_B12;
 				break;
 #endif
 #if defined(EP_ENDOM) & FP_PRIME == 381
@@ -918,6 +934,12 @@ void ep_param_set(int param) {
 				ctmap = 1;
 #endif /* EP_CTMAP */
 				pairf = EP_B12;
+				break;
+#endif
+#if defined(EP_PLAIN) & FP_PRIME == 382
+			case CURVE_67254:
+				ASSIGN(CURVE_67254, PRIME_382105);
+				plain = 1;
 				break;
 #endif
 #if defined(EP_ENDOM) & FP_PRIME == 382
@@ -1224,6 +1246,8 @@ int ep_param_set_any_endom(void) {
 	ep_param_set(TWEEDLEDUM);
 #elif FP_PRIME == 256
 	ep_param_set(SECG_K256);
+#elif FP_PRIME == 377
+	ep_param_set(B12_P377);
 #elif FP_PRIME == 381
 	ep_param_set(B12_P381);
 #elif FP_PRIME == 382
@@ -1290,6 +1314,10 @@ int ep_param_set_any_pairf(void) {
 	degree = 2;
 #elif FP_PRIME == 256
 	ep_param_set(BN_P256);
+	type = RLC_EP_DTYPE;
+	degree = 2;
+#elif FP_PRIME == 377
+	ep_param_set(B12_P377);
 	type = RLC_EP_DTYPE;
 	degree = 2;
 #elif FP_PRIME == 381
