@@ -250,6 +250,7 @@
 #undef bn_mxp_slide
 #undef bn_mxp_monty
 #undef bn_mxp_dig
+#undef bn_mxp_crt
 #undef bn_srt
 #undef bn_gcd_basic
 #undef bn_gcd_lehme
@@ -358,6 +359,7 @@
 #define bn_mxp_slide 	RLC_PREFIX(bn_mxp_slide)
 #define bn_mxp_monty 	RLC_PREFIX(bn_mxp_monty)
 #define bn_mxp_dig 	RLC_PREFIX(bn_mxp_dig)
+#define bn_mxp_crt 	RLC_PREFIX(bn_mxp_crt)
 #define bn_srt 	RLC_PREFIX(bn_srt)
 #define bn_gcd_basic 	RLC_PREFIX(bn_gcd_basic)
 #define bn_gcd_lehme 	RLC_PREFIX(bn_gcd_lehme)
