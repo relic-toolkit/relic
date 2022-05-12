@@ -1516,6 +1516,151 @@
 #define ep2_pck 	RLC_PREFIX(ep2_pck)
 #define ep2_upk 	RLC_PREFIX(ep2_upk)
 
+#undef ep4_st
+#undef ep4_t
+#define ep4_st        RLC_PREFIX(ep4_st)
+#define ep4_t         RLC_PREFIX(ep4_t)
+
+#undef ep4_curve_init
+#undef ep4_curve_clean
+#undef ep4_curve_get_a
+#undef ep4_curve_get_b
+#undef ep4_curve_get_vs
+#undef ep4_curve_opt_a
+#undef ep4_curve_opt_b
+#undef ep4_curve_is_twist
+#undef ep4_curve_get_gen
+#undef ep4_curve_get_tab
+#undef ep4_curve_get_ord
+#undef ep4_curve_get_cof
+#undef ep4_curve_set
+#undef ep4_curve_set_twist
+#undef ep4_is_infty
+#undef ep4_set_infty
+#undef ep4_copy
+#undef ep4_cmp
+#undef ep4_rand
+#undef ep4_blind
+#undef ep4_rhs
+#undef ep4_on_curve
+#undef ep4_tab
+#undef ep4_print
+#undef ep4_size_bin
+#undef ep4_read_bin
+#undef ep4_write_bin
+#undef ep4_neg
+#undef ep4_add_basic
+#undef ep4_add_slp_basic
+#undef ep4_add_projc
+#undef ep4_sub
+#undef ep4_dbl_basic
+#undef ep4_dbl_slp_basic
+#undef ep4_dbl_projc
+#undef ep4_mul_basic
+#undef ep4_mul_slide
+#undef ep4_mul_monty
+#undef ep4_mul_lwnaf
+#undef ep4_mul_lwreg
+#undef ep4_mul_gen
+#undef ep4_mul_dig
+#undef ep4_mul_cof
+#undef ep4_mul_pre_basic
+#undef ep4_mul_pre_yaowi
+#undef ep4_mul_pre_nafwi
+#undef ep4_mul_pre_combs
+#undef ep4_mul_pre_combd
+#undef ep4_mul_pre_lwnaf
+#undef ep4_mul_fix_basic
+#undef ep4_mul_fix_yaowi
+#undef ep4_mul_fix_nafwi
+#undef ep4_mul_fix_combs
+#undef ep4_mul_fix_combd
+#undef ep4_mul_fix_lwnaf
+#undef ep4_mul_sim_basic
+#undef ep4_mul_sim_trick
+#undef ep4_mul_sim_inter
+#undef ep4_mul_sim_joint
+#undef ep4_mul_sim_lot
+#undef ep4_mul_sim_gen
+#undef ep4_mul_sim_dig
+#undef ep4_norm
+#undef ep4_norm_sim
+#undef ep4_map
+#undef ep4_map_dst
+#undef ep4_frb
+#undef ep4_pck
+#undef ep4_upk
+
+#define ep4_curve_init 	RLC_PREFIX(ep4_curve_init)
+#define ep4_curve_clean 	RLC_PREFIX(ep4_curve_clean)
+#define ep4_curve_get_a 	RLC_PREFIX(ep4_curve_get_a)
+#define ep4_curve_get_b 	RLC_PREFIX(ep4_curve_get_b)
+#define ep4_curve_get_vs 	RLC_PREFIX(ep4_curve_get_vs)
+#define ep4_curve_opt_a 	RLC_PREFIX(ep4_curve_opt_a)
+#define ep4_curve_opt_b 	RLC_PREFIX(ep4_curve_opt_b)
+#define ep4_curve_is_twist 	RLC_PREFIX(ep4_curve_is_twist)
+#define ep4_curve_get_gen 	RLC_PREFIX(ep4_curve_get_gen)
+#define ep4_curve_get_tab 	RLC_PREFIX(ep4_curve_get_tab)
+#define ep4_curve_get_ord 	RLC_PREFIX(ep4_curve_get_ord)
+#define ep4_curve_get_cof 	RLC_PREFIX(ep4_curve_get_cof)
+#define ep4_curve_set 	RLC_PREFIX(ep4_curve_set)
+#define ep4_curve_set_twist 	RLC_PREFIX(ep4_curve_set_twist)
+#define ep4_is_infty 	RLC_PREFIX(ep4_is_infty)
+#define ep4_set_infty 	RLC_PREFIX(ep4_set_infty)
+#define ep4_copy 	RLC_PREFIX(ep4_copy)
+#define ep4_cmp 	RLC_PREFIX(ep4_cmp)
+#define ep4_rand 	RLC_PREFIX(ep4_rand)
+#define ep4_blind 	RLC_PREFIX(ep4_blind)
+#define ep4_rhs 	RLC_PREFIX(ep4_rhs)
+#define ep4_on_curve 	RLC_PREFIX(ep4_on_curve)
+#define ep4_tab 	RLC_PREFIX(ep4_tab)
+#define ep4_print 	RLC_PREFIX(ep4_print)
+#define ep4_size_bin 	RLC_PREFIX(ep4_size_bin)
+#define ep4_read_bin 	RLC_PREFIX(ep4_read_bin)
+#define ep4_write_bin 	RLC_PREFIX(ep4_write_bin)
+#define ep4_neg 	RLC_PREFIX(ep4_neg)
+#define ep4_add_basic 	RLC_PREFIX(ep4_add_basic)
+#define ep4_add_slp_basic 	RLC_PREFIX(ep4_add_slp_basic)
+#define ep4_add_projc 	RLC_PREFIX(ep4_add_projc)
+#define ep4_sub 	RLC_PREFIX(ep4_sub)
+#define ep4_dbl_basic 	RLC_PREFIX(ep4_dbl_basic)
+#define ep4_dbl_slp_basic 	RLC_PREFIX(ep4_dbl_slp_basic)
+#define ep4_dbl_projc 	RLC_PREFIX(ep4_dbl_projc)
+#define ep4_mul_basic 	RLC_PREFIX(ep4_mul_basic)
+#define ep4_mul_slide 	RLC_PREFIX(ep4_mul_slide)
+#define ep4_mul_monty 	RLC_PREFIX(ep4_mul_monty)
+#define ep4_mul_lwnaf 	RLC_PREFIX(ep4_mul_lwnaf)
+#define ep4_mul_lwreg 	RLC_PREFIX(ep4_mul_lwreg)
+#define ep4_mul_gen 	RLC_PREFIX(ep4_mul_gen)
+#define ep4_mul_dig 	RLC_PREFIX(ep4_mul_dig)
+#define ep4_mul_cof 	RLC_PREFIX(ep4_mul_cof)
+#define ep4_mul_pre_basic 	RLC_PREFIX(ep4_mul_pre_basic)
+#define ep4_mul_pre_yaowi 	RLC_PREFIX(ep4_mul_pre_yaowi)
+#define ep4_mul_pre_nafwi 	RLC_PREFIX(ep4_mul_pre_nafwi)
+#define ep4_mul_pre_combs 	RLC_PREFIX(ep4_mul_pre_combs)
+#define ep4_mul_pre_combd 	RLC_PREFIX(ep4_mul_pre_combd)
+#define ep4_mul_pre_lwnaf 	RLC_PREFIX(ep4_mul_pre_lwnaf)
+#define ep4_mul_fix_basic 	RLC_PREFIX(ep4_mul_fix_basic)
+#define ep4_mul_fix_yaowi 	RLC_PREFIX(ep4_mul_fix_yaowi)
+#define ep4_mul_fix_nafwi 	RLC_PREFIX(ep4_mul_fix_nafwi)
+#define ep4_mul_fix_combs 	RLC_PREFIX(ep4_mul_fix_combs)
+#define ep4_mul_fix_combd 	RLC_PREFIX(ep4_mul_fix_combd)
+#define ep4_mul_fix_lwnaf 	RLC_PREFIX(ep4_mul_fix_lwnaf)
+#define ep4_mul_sim_basic 	RLC_PREFIX(ep4_mul_sim_basic)
+#define ep4_mul_sim_trick 	RLC_PREFIX(ep4_mul_sim_trick)
+#define ep4_mul_sim_inter 	RLC_PREFIX(ep4_mul_sim_inter)
+#define ep4_mul_sim_joint 	RLC_PREFIX(ep4_mul_sim_joint)
+#define ep4_mul_sim_lot 	RLC_PREFIX(ep4_mul_sim_lot)
+#define ep4_mul_sim_gen 	RLC_PREFIX(ep4_mul_sim_gen)
+#define ep4_mul_sim_dig 	RLC_PREFIX(ep4_mul_sim_dig)
+#define ep4_norm 	RLC_PREFIX(ep4_norm)
+#define ep4_norm_sim 	RLC_PREFIX(ep4_norm_sim)
+#define ep4_map 	RLC_PREFIX(ep4_map)
+#define ep4_map_dst 	RLC_PREFIX(ep4_map_dst)
+#define ep4_frb 	RLC_PREFIX(ep4_frb)
+#define ep4_pck 	RLC_PREFIX(ep4_pck)
+#define ep4_upk 	RLC_PREFIX(ep4_upk)
+
 #undef fp2_st
 #undef fp2_t
 #undef dv2_t
@@ -2569,14 +2714,36 @@
 #define pp_map_k48 	RLC_PREFIX(pp_map_k48)
 #define pp_map_k54 	RLC_PREFIX(pp_map_k54)
 
+#undef pc_core_init
+#undef pc_core_calc
+#undef pc_core_clean
+
+#define pc_core_init 	RLC_PREFIX(pc_core_init)
+#define pc_core_calc 	RLC_PREFIX(pc_core_calc)
+#define pc_core_clean 	RLC_PREFIX(pc_core_clean)
+
+#undef mpc_mt_gen
+#undef mpc_mt_lcl
+#undef mpc_mt_bct
+#undef mpc_mt_mul
+#undef mpc_sss_gen
+#undef mpc_sss_key
+
+#define mpc_mt_gen 	RLC_PREFIX(mpc_mt_gen)
+#define mpc_mt_lcl 	RLC_PREFIX(mpc_mt_lcl)
+#define mpc_mt_bct 	RLC_PREFIX(mpc_mt_bct)
+#define mpc_mt_mul 	RLC_PREFIX(mpc_mt_mul)
+#define mpc_sss_gen 	RLC_PREFIX(mpc_sss_gen)
+#define mpc_sss_key 	RLC_PREFIX(mpc_sss_key)
+
 #undef crt_t
 #undef rsa_t
 #undef rabin_t
 #undef phpe_t
 #undef bdpe_t
 #undef sokaka_t
-#define crt_t		RLC_PREFIX(crt_t)
-#define rsa_t		RLC_PREFIX(rsa_t)
+#define crt_t	RLC_PREFIX(crt_t)
+#define rsa_t	RLC_PREFIX(rsa_t)
 #define rabin_t	RLC_PREFIX(rabin_t)
 #define phpe_t	RLC_PREFIX(phpe_t)
 #define bdpe_t	RLC_PREFIX(bdpe_t)
