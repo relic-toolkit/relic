@@ -121,7 +121,7 @@ void ep4_rhs(fp4_t rhs, ep4_t p) {
 				break;
 #if FP_RDC != MONTY
 			case RLC_MIN3:
-				fp4_sub_dig(t0, t0, 3);
+				fp_sub_dig(t0[0][0], t0[0][0], 3);
 				break;
 			case RLC_ONE:
 				fp_add_dig(t0[0][0], t0[0][0], 1);
@@ -150,7 +150,7 @@ void ep4_rhs(fp4_t rhs, ep4_t p) {
 				break;
 #if FP_RDC != MONTY
 			case RLC_MIN3:
-				fp4_sub_dig(t0, t0, 3);
+				fp_sub_dig(t0[0][0], t0[0][0], 3);
 				break;
 			case RLC_ONE:
 				fp_add_dig(t0[0][0], t0[0][0], 1);
