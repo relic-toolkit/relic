@@ -1423,8 +1423,13 @@ static int bgn(void) {
 			out = in % 17;
 			TEST_ASSERT(cp_bgn_enc1(c, in, pub) == RLC_OK, end);
 			TEST_ASSERT(cp_bgn_enc2(e, out, pub) == RLC_OK, end);
+			TEST_ASSERT(cp_bgn_enc1(d, out, pub) == RLC_OK, end);
+			TEST_ASSERT(cp_bgn_enc2(f, in, pub) == RLC_OK, end);
 			in = in * out;
 			TEST_ASSERT(cp_bgn_mul(g, c, e) == RLC_OK, end);
+			TEST_ASSERT(cp_bgn_dec(&t, g, prv) == RLC_OK, end);
+			TEST_ASSERT(in == t, end);
+			TEST_ASSERT(cp_bgn_mul(g, d, f) == RLC_OK, end);
 			TEST_ASSERT(cp_bgn_dec(&t, g, prv) == RLC_OK, end);
 			TEST_ASSERT(in == t, end);
 			TEST_ASSERT(cp_bgn_add(g, g, g) == RLC_OK, end);
