@@ -1245,8 +1245,9 @@ static int memory(void) {
 }
 
 int util(void) {
-	int code = RLC_ERR;
+	int l, code = RLC_ERR;
 	gt_t a, b, c;
+	uint8_t bin[24 * RLC_PC_BYTES];
 
 	gt_null(a);
 	gt_null(b);
@@ -1299,6 +1300,22 @@ int util(void) {
 		TEST_CASE("assignment to unity and unity test are consistent") {
 			gt_set_unity(a);
 			TEST_ASSERT(gt_is_unity(a), end);
+		}
+		TEST_END;
+
+		TEST_CASE("reading and writing an element are consistent") {
+			for (int j = 0; j < 2; j++) {
+				gt_set_unity(a);
+				l = gt_size_bin(a, j);
+				gt_write_bin(bin, l, a, j);
+				gt_read_bin(b, bin, l);
+				TEST_ASSERT(gt_cmp(a, b) == RLC_EQ, end);
+				gt_rand(a);
+				l = gt_size_bin(a, j);
+				gt_write_bin(bin, l, a, j);
+				gt_read_bin(b, bin, l);
+				TEST_ASSERT(gt_cmp(a, b) == RLC_EQ, end);
+			}
 		}
 		TEST_END;
 	}

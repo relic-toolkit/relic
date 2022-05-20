@@ -182,7 +182,8 @@ void fp4_mul_frb(fp4_t c, fp4_t a, int i, int j) {
 			for (int k = 0; k < j; k++) {
 	        	fp2_mul(c[0], a[0], t);
 				fp2_mul(c[1], a[1], t);
-				if (!fp_is_zero(t[1])) {
+				/* If constant in base field, then second component is zero. */
+				if (core_get()->frb4 == 1) {
 					fp4_mul_art(c, c);
 				}
 			}

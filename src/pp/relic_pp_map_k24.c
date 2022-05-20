@@ -106,7 +106,7 @@ static void pp_mil_k24(fp24_t r, ep4_t *t, ep4_t *q, ep_t *p, int m, bn_t a) {
 			fp24_sqr(r, r);
 			for (j = 0; j < m; j++) {
 				pp_dbl_k24(l, t[j], t[j], _p[j]);
-				fp24_mul(r, r, l);
+				fp24_mul_dxs(r, r, l);
 				if (s[i] > 0) {
 					pp_add_k24(l, t[j], q[j], p[j]);
 					fp24_mul_dxs(r, r, l);

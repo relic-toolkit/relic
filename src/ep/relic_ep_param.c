@@ -419,6 +419,21 @@
 /** @} */
 #endif
 
+#if defined(EP_ENDOM) && FP_PRIME == 317
+/**
+* Parameters for a 377-bit pairing-friendly prime curve.
+*/
+/** @{ */
+#define B24_P317_A		"0"
+#define B24_P317_B		"4"
+#define B24_P317_X		"325C2B065C4FAC86D1140C27F7335CACB7D5C0542CAE9E790B8A1290570A39CA25FFAEF7F1DA1F7"
+#define B24_P317_Y		"32239CB1D737F2283BA0707D11B291DF9AC9255DF42134F7D5C9A6B3B4038E13B4544BDC6F7E333"
+#define B24_P317_R		"443F917EA68DAFC2D0B097F28D83CD491CD1E79196BF0E7AF000000000000001"
+#define B24_P317_H		"3D512E5584A9AAAB"
+#define B24_P317_MAPU	"-3"
+/** @} */
+#endif
+
 #if defined(EP_ENDOM) && FP_PRIME == 377
 /**
 * Parameters for a 377-bit pairing-friendly prime curve.
@@ -940,6 +955,13 @@ void ep_param_set(int param) {
 				pairf = EP_B24;
 				break;
 #endif
+#if defined(EP_ENDOM) & FP_PRIME == 317
+			case B24_P317:
+				ASSIGN(B24_P317, B24_317);
+				endom = 1;
+				pairf = EP_B24;
+				break;
+#endif
 #if defined(EP_ENDOM) & FP_PRIME == 377
 			case B12_P377:
 				ASSIGN(B12_P377, B12_377);
@@ -1270,6 +1292,8 @@ int ep_param_set_any_endom(void) {
 	ep_param_set(SECG_K256);
 #elif FP_PRIME == 315
 	ep_param_set(B24_P315);
+#elif FP_PRIME == 317
+	ep_param_set(B24_P317);
 #elif FP_PRIME == 377
 	ep_param_set(B12_P377);
 #elif FP_PRIME == 381
@@ -1343,6 +1367,10 @@ int ep_param_set_any_pairf(void) {
 #elif FP_PRIME == 315
 	ep_param_set(B24_P315);
 	type = RLC_EP_DTYPE;
+	degree = 4;
+#elif FP_PRIME == 317
+	ep_param_set(B24_P317);
+	type = RLC_EP_MTYPE;
 	degree = 4;
 #elif FP_PRIME == 377
 	ep_param_set(B12_P377);
@@ -1492,6 +1520,12 @@ void ep_param_print(void) {
 			break;
 		case SM9_P256:
 			util_banner("Curve SM9-P256:", 0);
+			break;
+		case B24_P315:
+			util_banner("Curve B24-P315:", 0);
+			break;
+		case B24_P317:
+			util_banner("Curve B24-P317:", 0);
 			break;
 		case B12_P381:
 			util_banner("Curve B12-P381:", 0);

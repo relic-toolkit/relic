@@ -50,7 +50,7 @@
 void gt_rand(gt_t a) {
 	gt_rand_imp(a);
 #if FP_PRIME < 1536
-#if FP_PRIME == 315 || FP_PRIME == 509
+#if FP_PRIME == 315 || FP_PRIME == 317 || FP_PRIME == 509
 	pp_exp_k24(a, a);
 #else
 	pp_exp_k12(a, a);
@@ -305,7 +305,7 @@ int gt_is_valid(gt_t a) {
 #endif
 					r &= fp12_test_cyc((void *)a);
 					break;
-#if FP_PRIME == 315 || FP_PRIME == 509
+#if FP_PRIME == 315 || FP_PRIME == 317 || FP_PRIME == 509
 				case EP_B24:
 					/* Check that a^u = a^p. */
 					gt_frb(u, a, 1);

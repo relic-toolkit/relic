@@ -42,6 +42,7 @@
 void pp_dbl_k24_basic(fp24_t l, ep4_t r, ep4_t q, ep_t p) {
 	fp4_t s;
 	ep4_t t;
+	int two = 1, one = 1;
 
 	fp4_null(s);
 	ep4_null(t);
@@ -53,14 +54,22 @@ void pp_dbl_k24_basic(fp24_t l, ep4_t r, ep4_t q, ep_t p) {
 		ep4_dbl_slp_basic(r, s, q);
 		fp24_zero(l);
 
-		fp_mul(l[1][1][0][0], s[0][0], p->x);
-		fp_mul(l[1][1][0][1], s[0][1], p->x);
-		fp_mul(l[1][1][1][0], s[1][0], p->x);
-		fp_mul(l[1][1][1][1], s[1][1], p->x);
+		if (ep4_curve_is_twist() == RLC_EP_MTYPE) {
+			two += 1;
+			one ^= 1;
+		}
+
+		fp_mul(l[two][one][0][0], s[0][0], p->x);
+		fp_mul(l[two][one][0][1], s[0][1], p->x);
+		fp_mul(l[two][one][1][0], s[1][0], p->x);
+		fp_mul(l[two][one][1][1], s[1][1], p->x);
 
 		fp4_mul(l[0][0], s, t->x);
 		fp4_sub(l[0][0], t->y, l[0][0]);
-		fp4_mul_art(l[0][0], l[0][0]);
+
+		if (ep4_curve_is_twist() != RLC_EP_MTYPE) {
+			fp4_mul_art(l[0][0], l[0][0]);
+		}
 
 		fp_copy(l[0][1][0][0], p->y);
 	}
@@ -79,6 +88,7 @@ void pp_dbl_k24_basic(fp24_t l, ep4_t r, ep4_t q, ep_t p) {
 
 void pp_dbl_k24_projc(fp24_t l, ep4_t r, ep4_t q, ep_t p) {
 	fp4_t t0, t1, t2, t3, t4, t5, t6;
+	int two = 1, one = 1;
 
 	fp4_null(t0);
 	fp4_null(t1);
@@ -87,6 +97,11 @@ void pp_dbl_k24_projc(fp24_t l, ep4_t r, ep4_t q, ep_t p) {
 	fp4_null(t4);
 	fp4_null(t5);
 	fp4_null(t6);
+
+	if (ep4_curve_is_twist() == RLC_EP_MTYPE) {
+		two += 1;
+		one ^= 1;
+	}
 
 	RLC_TRY {
 		fp4_new(t0);
@@ -146,13 +161,16 @@ void pp_dbl_k24_projc(fp24_t l, ep4_t r, ep4_t q, ep_t p) {
 
 		/* l11 = D - B. */
 		fp4_sub(l[0][0], t3, t1);
-		fp4_mul_art(l[0][0], l[0][0]);
+
+		if (ep4_curve_is_twist() != RLC_EP_MTYPE) {
+			fp4_mul_art(l[0][0], l[0][0]);
+		}
 
 		/* l10 = (3 * xp) * A. */
-		fp_mul(l[1][1][0][0], p->x, t0[0][0]);
-		fp_mul(l[1][1][0][1], p->x, t0[0][1]);
-		fp_mul(l[1][1][1][0], p->x, t0[1][0]);
-		fp_mul(l[1][1][1][1], p->x, t0[1][1]);
+		fp_mul(l[two][one][0][0], p->x, t0[0][0]);
+		fp_mul(l[two][one][0][1], p->x, t0[0][1]);
+		fp_mul(l[two][one][1][0], p->x, t0[1][0]);
+		fp_mul(l[two][one][1][1], p->x, t0[1][1]);
 
 		/* l00 = F * (-yp). */
 		fp_mul(l[0][1][0][0], p->y, t5[0][0]);
