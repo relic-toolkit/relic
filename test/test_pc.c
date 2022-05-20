@@ -1302,22 +1302,6 @@ int util(void) {
 			TEST_ASSERT(gt_is_unity(a), end);
 		}
 		TEST_END;
-
-		TEST_CASE("reading and writing an element are consistent") {
-			for (int j = 0; j < 2; j++) {
-				gt_set_unity(a);
-				l = gt_size_bin(a, j);
-				gt_write_bin(bin, l, a, j);
-				gt_read_bin(b, bin, l);
-				TEST_ASSERT(gt_cmp(a, b) == RLC_EQ, end);
-				gt_rand(a);
-				l = gt_size_bin(a, j);
-				gt_write_bin(bin, l, a, j);
-				gt_read_bin(b, bin, l);
-				TEST_ASSERT(gt_cmp(a, b) == RLC_EQ, end);
-			}
-		}
-		TEST_END;
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
