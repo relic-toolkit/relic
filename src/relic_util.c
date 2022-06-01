@@ -154,16 +154,11 @@ int util_cmp_const(const void *a, const void *b, int size) {
 void util_perm(unsigned int p[], int n) {
 	size_t i, j, k;
 
-	for (i = 0; i < n; i++) {
-		p[i] = i;
-	}
-
 	for (i = 0; i < n - 1; i++) {
 		rand_bytes((uint8_t *)&k, sizeof(size_t));
-		j = i + (k % (n - i));
-		if (i != j) {
-			RLC_SWAP(p[i], p[j]);
-		}
+		j = k % (i+1);
+		p[i] = p[j];
+		p[j] = i;
 	}
 }
 
