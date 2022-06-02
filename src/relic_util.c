@@ -154,7 +154,7 @@ int util_cmp_const(const void *a, const void *b, int size) {
 void util_perm(unsigned int p[], int n) {
 	size_t i, j, k;
 
-	for (i = 0; i < n - 1; i++) {
+	for (i = 0; i < n; i++) {
 		rand_bytes((uint8_t *)&k, sizeof(size_t));
 		j = k % (i+1);
 		p[i] = p[j];
