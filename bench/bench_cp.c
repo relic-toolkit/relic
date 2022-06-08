@@ -1849,7 +1849,7 @@ static void lhs(void) {
 static void psi(void) {
 	bn_t g, n, q, r, p[M], x[M], v[N], w[N], y[N], z[M];
 	g1_t u[M], ss;
-	g2_t d, s[M + 1];
+	g2_t d[M + 1], s[M + 1];
 	gt_t t[M];
 	crt_t crt;
 	int len;
@@ -1858,18 +1858,21 @@ static void psi(void) {
 	bn_new(n);
 	bn_new(q);
 	bn_new(r);
-	g2_new(d);
 	g1_new(ss);
 	for (int i = 0; i < M; i++) {
 		bn_null(p[i]);
 		bn_null(x[i]);
 		bn_null(z[i]);
+		g2_null(d[i]);
 		g2_null(s[i]);
 		bn_new(p[i]);
 		bn_new(x[i]);
 		bn_new(z[i]);
+		g2_new(d[i]);
 		g2_new(s[i]);
 	}
+	g2_null(d[M]);
+	g2_new(d[M]);
 	g2_null(s[M]);
 	g2_new(s[M]);
 	for (int i = 0; i < N; i++) {
@@ -1896,11 +1899,11 @@ static void psi(void) {
 
 	BENCH_ONE("cp_rsapsi_gen", cp_rsapsi_gen(g, n, RLC_BN_BITS), 1);
 
-	BENCH_RUN("cp_rsapsi_ask (5)") {
+	BENCH_RUN("cp_rsapsi_ask (M)") {
 		BENCH_ADD(cp_rsapsi_ask(q, r, p, g, n, x, M));
 	} BENCH_END;
 
-	BENCH_RUN("cp_rsapsi_ans (2)") {
+	BENCH_RUN("cp_rsapsi_ans (N)") {
 		BENCH_ADD(cp_rsapsi_ans(v, w, q, g, n, y, N));
 	} BENCH_END;
 
@@ -1910,11 +1913,11 @@ static void psi(void) {
 
 	BENCH_ONE("cp_shipsi_gen", cp_shipsi_gen(g, crt, RLC_BN_BITS), 1);
 
-	BENCH_RUN("cp_shipsi_ask (5)") {
+	BENCH_RUN("cp_shipsi_ask (M)") {
 		BENCH_ADD(cp_shipsi_ask(q, r, p, g, crt->n, x, M));
 	} BENCH_END;
 
-	BENCH_RUN("cp_shipsi_ans (2)") {
+	BENCH_RUN("cp_shipsi_ans (N)") {
 		BENCH_ADD(cp_shipsi_ans(v, w[0], q, g, crt, y, N));
 	} BENCH_END;
 
@@ -1922,31 +1925,32 @@ static void psi(void) {
 		BENCH_ADD(cp_shipsi_int(z, &len, r, p, crt->n, x, M, v, w[0], N));
 	} BENCH_END;
 
-	BENCH_RUN("cp_pbpsi_gen (5)") {
+	BENCH_RUN("cp_pbpsi_gen (M)") {
 		BENCH_ADD(cp_pbpsi_gen(q, ss, s, M));
 	} BENCH_END;
 
-	BENCH_RUN("cp_pbpsi_ask (5)") {
+	BENCH_RUN("cp_pbpsi_ask (M)") {
 		BENCH_ADD(cp_pbpsi_ask(d, r, x, s, M));
 	} BENCH_END;
 
-	BENCH_RUN("cp_pbpsi_ans (2)") {
-		BENCH_ADD(cp_pbpsi_ans(t, u, ss, d, y, N));
+	BENCH_RUN("cp_pbpsi_ans (N)") {
+		BENCH_ADD(cp_pbpsi_ans(t, u, ss, d[0], y, N));
 	} BENCH_END;
 
 	BENCH_RUN("cp_pbpsi_int") {
-		BENCH_ADD(cp_pbpsi_int(z, &len, q, d, x, M, t, u, N));
+		BENCH_ADD(cp_pbpsi_int(z, &len, d, x, M, t, u, N));
 	} BENCH_END;
 
     bn_free(q);
 	bn_free(r);
 	g1_free(ss);
-	g2_free(d);
 	for (int i = 0; i < M; i++) {
 		bn_free(x[i]);
 		bn_free(z[i]);
+		g2_free(d[i]);
 		g2_free(s[i]);
 	}
+	g2_free(d[M]);
 	g2_free(s[M]);
 	for (int i = 0; i < N; i++) {
 		bn_free(y[i]);

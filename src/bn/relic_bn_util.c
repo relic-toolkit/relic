@@ -351,6 +351,7 @@ void bn_read_str(bn_t a, const char *str, int len, int radix) {
 		}
 
 		a->sign = sign;
+		bn_trim(a);
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	}

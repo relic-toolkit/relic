@@ -24,39 +24,24 @@
 /**
  * @file
  *
- * Implementation of low-level prime field modular reduction.
+ * Implementation of the low-level prime field multiplication functions.
  *
- * @ingroup fp
+ * @ingroup bn
  */
 
+#include <gmp.h>
+
+#include "relic_fp.h"
 #include "relic_fp_low.h"
 
-#include "macro.s"
+/*============================================================================*/
+/* Public definitions                                                         */
+/*============================================================================*/
 
-.text
+dig_t fp_mula_low(dig_t *c, const dig_t *a, dig_t digit) {
+	return mpn_addmul_1(c, a, RLC_FP_DIGS, digit);
+}
 
-.global fp_rdcn_low
-
-/*
- * Function: fp_rdcn_low
- * Inputs: rdi = c, rsi = a
- * Output: rax
- */
-fp_rdcn_low:
-	push	%r12
-	push	%r13
-	push	%r14
-	push	%r15
-	push 	%rbx
-	push	%rbp
-	leaq 	p0(%rip), %rbx
-
-	FP_RDCN_LOW %rdi, %r8, %r9, %r10, %rsi, %rbx
-
-	pop		%rbp
-	pop		%rbx
-	pop		%r15
-	pop		%r14
-	pop		%r13
-	pop		%r12
-	ret
+dig_t fp_mul1_low(dig_t *c, const dig_t *a, dig_t digit) {
+	return mpn_mul_1(c, a, RLC_FP_DIGS, digit);
+}

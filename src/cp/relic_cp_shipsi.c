@@ -183,14 +183,14 @@ int cp_shipsi_int(bn_t z[], int *len, bn_t r, bn_t p[], bn_t n, bn_t x[], int m,
 		*len = 0;
 		if (m > 0) {
 			bn_mxp(f, u, r, n);
-			for (j = 0; j < l; j++) {
-				for (k = 0; k < m; k++) {
-					bn_copy(e, f);
-					for (i = 0; i < m; i++) {
-						if (i != k) {
-							bn_mxp(e, e, p[i], n);
-						}
+			for (k = 0; k < m; k++) {
+				bn_copy(e, f);
+				for (i = 0; i < m; i++) {
+					if (i != k) {
+						bn_mxp(e, e, p[i], n);
 					}
+				}
+				for (j = 0; j < l; j++) {
 					if (bn_cmp(e, t[j]) == RLC_EQ) {
 						bn_copy(z[*len], x[k]);
 						(*len)++;
