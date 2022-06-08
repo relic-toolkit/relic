@@ -38,70 +38,77 @@
 /*============================================================================*/
 
 void pp_exp_k24(fp24_t c, fp24_t a) {
-	fp24_t t[8];
+	fp24_t t0, t1, t2;
 	const int *b;
 	bn_t x;
 	int l;
 
 	bn_null(x);
+	fp24_null(t0);
+	fp24_null(t1);
+	fp24_null(t2);
 
 	RLC_TRY {
 		bn_new(x);
-		for (int i = 0; i < 8; i++) {
-			fp24_null(t[i]);
-			fp24_new(t[i]);
-		}
+		fp24_new(t0);
+		fp24_new(t1);
+		fp24_new(t2);
 
+		/*
+		 * Final exponentiation following Hayashida, Hayasaka and Teruya:
+		 * Efficient Final Exponentiation via Cyclotomic Structure for Pairings
+		 * over Families of Elliptic Curves
+		 */
 		fp_prime_get_par(x);
 		b = fp_prime_get_par_sps(&l);
 		/* First, compute m^(p^12 - 1)(p^4 + 1). */
 		fp24_conv_cyc(c, a);
 
-		/* v7 = f^x. */
-		fp24_exp_cyc_sps(t[7], c, b, l, bn_sign(x));
+		/* t0 = f^x. */
+		fp24_exp_cyc_sps(t0, c, b, l, bn_sign(x));
 
-		/* v6 = f^(-2x + 1). */
-		fp24_sqr_cyc(t[6], t[7]);
-		fp24_inv_cyc(t[6], t[6]);
-		fp24_mul(t[6], t[6], c);
+		/* t1 = f^(-2x + 1). */
+		fp24_sqr_cyc(t1, t0);
+		fp24_inv_cyc(t1, t1);
+		fp24_mul(t1, t1, c);
 
-		/* v7 = f^(x^2 - 2x + 1). */
-		fp24_exp_cyc_sps(t[7], t[7], b, l, bn_sign(x));
-		fp24_mul(t[7], t[7], t[6]);
+		/* t0 = f^(x^2 - 2x + 1). */
+		fp24_exp_cyc_sps(t0, t0, b, l, bn_sign(x));
+		fp24_mul(t0, t0, t1);
 
-		fp24_exp_cyc_sps(t[6], t[7], b, l, bn_sign(x));
+		/* t1 = t0^(x + p). */
+		fp24_exp_cyc_sps(t1, t0, b, l, bn_sign(x));
+		fp24_frb(t0, t0, 1);
+		fp24_mul(t1, t1, t0);
 
-		fp24_exp_cyc_sps(t[5], t[6], b, l, bn_sign(x));
+		/* t0 = t1^(x^2 + p^2). */
+		fp24_exp_cyc_sps(t0, t1, b, l, bn_sign(x));
+		fp24_exp_cyc_sps(t0, t0, b, l, bn_sign(x));
+		fp24_frb(t1, t1, 2);
+		fp24_mul(t0, t0, t1);
 
-		fp24_exp_cyc_sps(t[4], t[5], b, l, bn_sign(x));
-
-		fp24_exp_cyc_sps(t[3], t[4], b, l, bn_sign(x));
-		fp24_inv_cyc(t[2], t[7]);
-		fp24_mul(t[3], t[3], t[2]);
-
-		fp24_exp_cyc_sps(t[2], t[3], b, l, bn_sign(x));
-
-		fp24_exp_cyc_sps(t[1], t[2], b, l, bn_sign(x));
+		/* t1 = t0^(x^4 + p^4 - 1). */
+		fp24_exp_cyc_sps(t1, t0, b, l, bn_sign(x));
+		fp24_exp_cyc_sps(t1, t1, b, l, bn_sign(x));
+		fp24_exp_cyc_sps(t1, t1, b, l, bn_sign(x));
+		fp24_exp_cyc_sps(t1, t1, b, l, bn_sign(x));
+		fp24_inv_cyc(t2, t0);
+		fp24_frb(t0, t0, 4);
+		fp24_mul(t1, t1, t0);
+		fp24_mul(t1, t1, t2);
 
 		/* c = c^3. */
-		fp24_sqr_cyc(t[0], c);
-		fp24_mul(c, c, t[0]);
-
-		fp24_exp_cyc_sps(t[0], t[1], b, l, bn_sign(x));
-
-		fp24_mul(c, c, t[0]);
-		for (int i = 1; i < 8; i++) {
-			fp24_frb(t[i], t[i], i);
-			fp24_mul(c, c, t[i]);
-		}
+		fp24_sqr_cyc(t0, c);
+		fp24_mul(c, c, t0);
+		fp24_mul(c, c, t1);
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
 		bn_free(x);
-		for (int i = 0; i < 8; i++) {
-			fp24_free(t[i]);
-		}
+		fp24_free(t0);
+		fp24_free(t1);
+		fp24_free(t2);
 	}
 }

@@ -53,8 +53,10 @@
  * @param[in] t					- the pointer to the precomputed table.
  */
 static void ep2_mul_sim_endom(ep2_t r, ep2_t p, const bn_t k, ep2_t q, const bn_t m) {
-	int i, j, l;
-	bn_t n, u, _k[4], _m[4];
+	int i, j, l, _l[4];
+	bn_t _k[4], _m[4], n, u;
+	int8_t naf0[4][RLC_FP_BITS + 1];
+	int8_t naf1[4][RLC_FP_BITS + 1];
 	ep2_t _p[4], _q[4];
 
 	bn_null(n);
@@ -65,19 +67,14 @@ static void ep2_mul_sim_endom(ep2_t r, ep2_t p, const bn_t k, ep2_t q, const bn_
 		bn_new(u);
 		for (i = 0; i < 4; i++) {
 			bn_null(_k[i]);
+			bn_new(_k[i]);
 			bn_null(_m[i]);
+			bn_new(_m[i]);
 			ep2_null(_p[i]);
 			ep2_null(_q[i]);
-			bn_new(_k[i]);
-			bn_new(_m[i]);
 			ep2_new(_p[i]);
 			ep2_new(_q[i]);
 		}
-
-		ep2_curve_get_ord(n);
-		fp_prime_get_par(u);
-		bn_rec_frb(_k, 4, k, u, n, ep_curve_is_pairf() == EP_B12);
-		bn_rec_frb(_m, 4, m, u, n, ep_curve_is_pairf() == EP_B12);
 
 		ep2_norm(_p[0], p);
 		ep2_frb(_p[1], _p[0], 1);
@@ -88,29 +85,44 @@ static void ep2_mul_sim_endom(ep2_t r, ep2_t p, const bn_t k, ep2_t q, const bn_
 		ep2_frb(_q[2], _q[1], 1);
 		ep2_frb(_q[3], _q[2], 1);
 
+		ep2_curve_get_ord(n);
+		fp_prime_get_par(u);
+		bn_mod(_k[0], k, n);
+		bn_rec_frb(_k, 4, _k[0], u, n, ep_curve_is_pairf() == EP_B12);
+		bn_mod(_m[0], m, n);
+		bn_rec_frb(_m, 4, _m[0], u, n, ep_curve_is_pairf() == EP_B12);
+
+		l = 0;
 		for (i = 0; i < 4; i++) {
+			_l[i] = RLC_FP_BITS + 1;
+			bn_rec_naf(naf0[i], &_l[i], _k[i], 2);
 			if (bn_sign(_k[i]) == RLC_NEG) {
 				ep2_neg(_p[i], _p[i]);
 			}
+			l = RLC_MAX(l, _l[i]);
+			_l[i] = RLC_FP_BITS + 1;
+			bn_rec_naf(naf1[i], &_l[i], _m[i], 2);
 			if (bn_sign(_m[i]) == RLC_NEG) {
 				ep2_neg(_q[i], _q[i]);
 			}
+			l = RLC_MAX(l, _l[i]);
 		}
-
-		l = RLC_MAX(bn_bits(_k[0]), bn_bits(_k[1]));
-		l = RLC_MAX(l, RLC_MAX(bn_bits(_k[2]), bn_bits(_k[3])));
-		l = RLC_MAX(l, RLC_MAX(bn_bits(_m[0]), bn_bits(_m[1])));
-		l = RLC_MAX(l, RLC_MAX(bn_bits(_m[2]), bn_bits(_m[3])));
 
 		ep2_set_infty(r);
 		for (i = l - 1; i >= 0; i--) {
 			ep2_dbl(r, r);
 			for (j = 0; j < 4; j++) {
-				if (bn_get_bit(_k[j], i)) {
+				if (naf0[j][i] > 0) {
 					ep2_add(r, r, _p[j]);
 				}
-				if (bn_get_bit(_m[j], i)) {
+				if (naf0[j][i] < 0) {
+					ep2_sub(r, r, _p[j]);
+				}
+				if (naf1[j][i] > 0) {
 					ep2_add(r, r, _q[j]);
+				}
+				if (naf1[j][i] < 0) {
+					ep2_sub(r, r, _q[j]);
 				}
 			}
 		}
@@ -132,6 +144,8 @@ static void ep2_mul_sim_endom(ep2_t r, ep2_t p, const bn_t k, ep2_t q, const bn_
 }
 
 #endif /* EP_ENDOM */
+
+#if defined(EP_PLAIN) || defined(EP_SUPER)
 
 /**
  * Multiplies and adds two prime elliptic curve points simultaneously,
@@ -232,6 +246,8 @@ static void ep2_mul_sim_plain(ep2_t r, ep2_t p, bn_t k, ep2_t q, bn_t m,
 		}
 	}
 }
+
+#endif /* EP_PLAIN || EP_SUPER */
 
 #endif /* EP_SIM == INTER */
 

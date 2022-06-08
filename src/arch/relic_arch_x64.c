@@ -37,16 +37,28 @@
 
 #include "lzcnt.inc"
 
+/**
+ * Renames the inline assembly macro to a prettier name.
+ */
+#define asm					__asm__ volatile
+
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
 void arch_init(void) {
-	core_get()->lzcnt_ptr = (has_lzcnt_hard() ? lzcnt64_hard : lzcnt64_soft);
+	ctx_t *ctx = core_get();
+	if (ctx != NULL) {
+		core_get()->lzcnt_ptr =
+			(has_lzcnt_hard() ? lzcnt64_hard : lzcnt64_soft);
+	}
 }
 
 void arch_clean(void) {
-	core_get()->lzcnt_ptr = NULL;
+	ctx_t *ctx = core_get();
+	if (ctx != NULL) {
+		core_get()->lzcnt_ptr = NULL;
+	}
 }
 
 #if TIMER == CYCLE

@@ -404,6 +404,51 @@
 /** @} */
 #endif
 
+#if defined(EP_ENDOM) && FP_PRIME == 315
+/**
+* Parameters for a 377-bit pairing-friendly prime curve.
+*/
+/** @{ */
+#define B24_P315_A		"0"
+#define B24_P315_B		"1"
+#define B24_P315_X		"41A0A424393988DA1B2B117076EF6E4F54B344CC46DDE3C983603A832CB638DBF4B721710866097"
+#define B24_P315_Y		"2E6F83C55DEFF20227ECDF0DB2BB2EBB5D72C8A29010871D3CCE9059E83DFB96F2922D5DA4E4E5F"
+#define B24_P315_R		"196DEAC24A9DA12B25FC7EC9CF927A98C8C480ECE644E36419D0C5FD00C00001"
+#define B24_P315_H		"2FE8030000000000"
+#define B24_P315_MAPU	"-2"
+/** @} */
+#endif
+
+#if defined(EP_ENDOM) && FP_PRIME == 317
+/**
+* Parameters for a 377-bit pairing-friendly prime curve.
+*/
+/** @{ */
+#define B24_P317_A		"0"
+#define B24_P317_B		"4"
+#define B24_P317_X		"325C2B065C4FAC86D1140C27F7335CACB7D5C0542CAE9E790B8A1290570A39CA25FFAEF7F1DA1F7"
+#define B24_P317_Y		"32239CB1D737F2283BA0707D11B291DF9AC9255DF42134F7D5C9A6B3B4038E13B4544BDC6F7E333"
+#define B24_P317_R		"443F917EA68DAFC2D0B097F28D83CD491CD1E79196BF0E7AF000000000000001"
+#define B24_P317_H		"3D512E5584A9AAAB"
+#define B24_P317_MAPU	"-3"
+/** @} */
+#endif
+
+#if defined(EP_ENDOM) && FP_PRIME == 377
+/**
+* Parameters for a 377-bit pairing-friendly prime curve.
+*/
+/** @{ */
+#define B12_P377_A		"0"
+#define B12_P377_B		"1"
+#define B12_P377_X		"8848DEFE740A67C8FC6225BF87FF5485951E2CAA9D41BB188282C8BD37CB5CD5481512FFCD394EEAB9B16EB21BE9EF"
+#define B12_P377_Y		"1914A69C5102EFF1F674F5D30AFEEC4BD7FB348CA3E52D96D182AD44FB82305C2FE3D3634A9591AFD82DE55559C8EA6"
+#define B12_P377_R		"12AB655E9A2CA55660B44D1E5C37B00159AA76FED00000010A11800000000001"
+#define B12_P377_H		"170B5D44300000000000000000000000"
+#define B12_P377_MAPU	"-2"
+/** @} */
+#endif
+
 #if defined(EP_ENDOM) && FP_PRIME == 381
 /**
 * Parameters for a 381-bit pairing-friendly prime curve.
@@ -903,10 +948,25 @@ void ep_param_set(int param) {
 				pairf = EP_BN;
 				break;
 #endif
-#if defined(EP_PLAIN) & FP_PRIME == 382
-			case CURVE_67254:
-				ASSIGN(CURVE_67254, PRIME_382105);
-				plain = 1;
+#if defined(EP_ENDOM) & FP_PRIME == 315
+			case B24_P315:
+				ASSIGN(B24_P315, B24_315);
+				endom = 1;
+				pairf = EP_B24;
+				break;
+#endif
+#if defined(EP_ENDOM) & FP_PRIME == 317
+			case B24_P317:
+				ASSIGN(B24_P317, B24_317);
+				endom = 1;
+				pairf = EP_B24;
+				break;
+#endif
+#if defined(EP_ENDOM) & FP_PRIME == 377
+			case B12_P377:
+				ASSIGN(B12_P377, B12_377);
+				endom = 1;
+				pairf = EP_B12;
 				break;
 #endif
 #if defined(EP_ENDOM) & FP_PRIME == 381
@@ -918,6 +978,12 @@ void ep_param_set(int param) {
 				ctmap = 1;
 #endif /* EP_CTMAP */
 				pairf = EP_B12;
+				break;
+#endif
+#if defined(EP_PLAIN) & FP_PRIME == 382
+			case CURVE_67254:
+				ASSIGN(CURVE_67254, PRIME_382105);
+				plain = 1;
 				break;
 #endif
 #if defined(EP_ENDOM) & FP_PRIME == 382
@@ -1224,6 +1290,12 @@ int ep_param_set_any_endom(void) {
 	ep_param_set(TWEEDLEDUM);
 #elif FP_PRIME == 256
 	ep_param_set(SECG_K256);
+#elif FP_PRIME == 315
+	ep_param_set(B24_P315);
+#elif FP_PRIME == 317
+	ep_param_set(B24_P317);
+#elif FP_PRIME == 377
+	ep_param_set(B12_P377);
 #elif FP_PRIME == 381
 	ep_param_set(B12_P381);
 #elif FP_PRIME == 382
@@ -1290,6 +1362,18 @@ int ep_param_set_any_pairf(void) {
 	degree = 2;
 #elif FP_PRIME == 256
 	ep_param_set(BN_P256);
+	type = RLC_EP_DTYPE;
+	degree = 2;
+#elif FP_PRIME == 315
+	ep_param_set(B24_P315);
+	type = RLC_EP_DTYPE;
+	degree = 4;
+#elif FP_PRIME == 317
+	ep_param_set(B24_P317);
+	type = RLC_EP_MTYPE;
+	degree = 4;
+#elif FP_PRIME == 377
+	ep_param_set(B12_P377);
 	type = RLC_EP_DTYPE;
 	degree = 2;
 #elif FP_PRIME == 381
@@ -1437,6 +1521,12 @@ void ep_param_print(void) {
 		case SM9_P256:
 			util_banner("Curve SM9-P256:", 0);
 			break;
+		case B24_P315:
+			util_banner("Curve B24-P315:", 0);
+			break;
+		case B24_P317:
+			util_banner("Curve B24-P317:", 0);
+			break;
 		case B12_P381:
 			util_banner("Curve B12-P381:", 0);
 			break;
@@ -1522,6 +1612,8 @@ int ep_param_level(void) {
 		case CURVE_25519:
 		case TWEEDLEDUM:
 			return 128;
+		case B24_P315:
+		case B12_P377:
 		case B12_P381:
 		case BN_P382:
 		case B12_P383:
@@ -1545,30 +1637,24 @@ int ep_param_level(void) {
 }
 
 int ep_param_embed(void) {
-	switch (ep_param_get()) {
-		case SS_P1536:
+	switch (core_get()->ep_is_pairf) {
+		case EP_SS1:
+			return 1;
+		case EP_SS2:
 			return 2;
-		case OT8_P511:
-		case GMT8_P544:
+		case EP_OT8:
+		case EP_GMT8:
 			return 8;
-		case BN_P158:
-		case BN_P254:
-		case BN_P256:
-		case SM9_P256:
-		case BN_P382:
-		case BN_P446:
-		case B12_P446:
-		case BN_P638:
-		case B12_P381:
-		case B12_P383:
-		case B12_P455:
-		case B12_P638:
+		case EP_BN:
+		case EP_B12:
 			return 12;
-		case B24_P509:
+		case EP_K16:
+			return 16;
+		case EP_B24:
 			return 24;
-		case B48_P575:
+		case EP_B48:
 			return 48;
-		case K54_P569:
+		case EP_K54:
 			return 54;
 	}
 	return 0;

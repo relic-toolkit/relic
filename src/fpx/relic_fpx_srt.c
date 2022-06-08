@@ -247,13 +247,11 @@ int fp4_srt(fp4_t c, fp4_t a) {
 				fp2_mul_nor(t0, t0);
 				fp2_inv(t0, t0);
 				fp2_mul(t0, a[0], t0);
-				fp2_neg(t0, t0);
 				fp2_zero(c[0]);
 				if (!fp2_srt(c[1], t0)) {
 					/* should never happen! */
 					RLC_THROW(ERR_NO_VALID);
 				}
-				fp2_mul_art(c[1], c[1]);
 			}
 		} else {
 			/* t0 = a[0]^2 - s^2 * a[1]^2 */
@@ -261,7 +259,6 @@ int fp4_srt(fp4_t c, fp4_t a) {
 			fp2_sqr(t1, a[1]);
 			fp2_mul_nor(t2, t1);
 			fp2_sub(t0, t0, t2);
-
 			if (fp2_srt(t1, t0)) {
 				/* t0 = (a_0 + sqrt(t0)) / 2 */
 				fp2_add(t0, a[0], t1);

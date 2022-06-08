@@ -62,14 +62,16 @@ int cp_pbpsi_gen(bn_t sk, g1_t ss, g2_t s[], int m) {
 	return result;
 }
 
-int cp_pbpsi_ask(g2_t d, bn_t r, bn_t x[], g2_t s[], int m) {
+int cp_pbpsi_ask(g2_t d[], bn_t r, bn_t x[], g2_t s[], int m) {
 	int i, result = RLC_OK;
-	bn_t q, *p = RLC_ALLOCA(bn_t, m + 1);
+	bn_t t, q, *p = RLC_ALLOCA(bn_t, m + 1);
 
 	bn_null(q);
+	bn_null(t);
 
 	RLC_TRY {
 		bn_new(q);
+		bn_new(t);
 		if (p == NULL) {
 			RLC_THROW(ERR_NO_MEMORY);
 		}
@@ -81,11 +83,19 @@ int cp_pbpsi_ask(g2_t d, bn_t r, bn_t x[], g2_t s[], int m) {
 		pc_get_ord(q);
 		bn_rand_mod(r, q);
 		if (m == 0) {
-			g2_mul_gen(d, r);
+			g2_mul_gen(d[0], r);
 		} else {
 			bn_lag(p, x, q, m);
-			g2_mul_sim_lot(d, s, p, m + 1);
-			g2_mul(d, d, r);
+			g2_mul_sim_lot(d[0], s, p, m + 1);
+			g2_mul(d[0], d[0], r);
+			for (i = 0; i < m; i++) {
+				bn_copy(t, x[i]);
+				bn_copy(x[i], x[m - 1]);
+				bn_lag(p, x, q, m - 1);
+				g2_mul_sim_lot(d[i + 1], s, p, m);
+				g2_mul(d[i + 1], d[i + 1], r);
+				bn_copy(x[i], t);
+			}
 		}
 	}
 	RLC_CATCH_ANY {
@@ -93,6 +103,7 @@ int cp_pbpsi_ask(g2_t d, bn_t r, bn_t x[], g2_t s[], int m) {
 	}
 	RLC_FINALLY {
 		bn_free(q);
+		bn_free(t);
 		for (i = 0; i <= m; i++) {
 			bn_free(p[i]);
 		}
@@ -148,38 +159,21 @@ int cp_pbpsi_ans(gt_t t[], g1_t u[], g1_t ss, g2_t d, bn_t y[], int n) {
 	return result;
 }
 
-int cp_pbpsi_int(bn_t z[], int *len, bn_t sk, g2_t d, bn_t x[], int m,
-		gt_t t[], g1_t u[], int n) {
+int cp_pbpsi_int(bn_t z[], int *len, g2_t d[], bn_t x[], int m, gt_t t[],
+		g1_t u[], int n) {
 	int j, k, result = RLC_OK;
-	bn_t q, *i = RLC_ALLOCA(bn_t, m);
-	g2_t c;
 	gt_t e;
 
-	bn_null(q);
-	g2_null(c);
 	gt_null(e);
 
 	RLC_TRY {
-		bn_new(q);
-		for (j = 0; j < m; j++) {
-			bn_null(i[j]);
-			bn_new(i[j]);
-		}
-		g2_new(c);
 		gt_new(e);
 
 		*len = 0;
 		if (m > 0) {
-			pc_get_ord(q);
 			for (k = 0; k < m; k++) {
-				bn_sub(i[k], sk, x[k]);
-				bn_mod(i[k], i[k], q);
-			}
-			bn_mod_inv_sim(i, i, q, m);
-			for (k = 0; k < m; k++) {
-				g2_mul(c, d, i[k]);
 				for (j = 0; j < n; j++) {
-					pc_map(e, u[j], c);
+					pc_map(e, u[j], d[k + 1]);
 					if (gt_cmp(e, t[j]) == RLC_EQ && !gt_is_unity(e)) {
 						bn_copy(z[*len], x[k]);
 						(*len)++;
@@ -192,13 +186,7 @@ int cp_pbpsi_int(bn_t z[], int *len, bn_t sk, g2_t d, bn_t x[], int m,
 		result = RLC_ERR;
 	}
 	RLC_FINALLY {
-		bn_free(q);
-		for (j = 0; j < m; j++) {
-			bn_free(i[j]);
-		}
-		g2_free(c);
 		gt_free(e);
-		RLC_FREE(i);
 	}
 	return result;
 }

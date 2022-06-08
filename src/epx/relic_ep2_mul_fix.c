@@ -323,6 +323,7 @@ void ep2_mul_fix_combd(ep2_t r, ep2_t *t, bn_t k) {
 
 	RLC_TRY {
 		bn_new(n);
+		bn_new(_k);
 
 		ep2_curve_get_ord(n);
 		d = bn_bits(n);
