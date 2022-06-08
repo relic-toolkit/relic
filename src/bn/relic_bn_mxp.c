@@ -493,7 +493,7 @@ void _bn_mxp_sim(bn_t S, const bn_t P[BN_XPWDT], bn_t u[BN_XPWDT],
         bn_hlv(u[j],u[j]);			// WARNING: u overwriten
     }
 
-        // POwer up to the halves
+        // Recursive Power up to the halves
     _bn_mxp_sim(S, P, u, T, mod);
 
         // One Squaring
@@ -573,11 +573,16 @@ void bn_mxp_sim_lot(bn_t S, const bn_t P[], const bn_t u[], const bn_t mod, int 
         }
 
             // Remaining (n-endblockingloop) exponentiations
-        for(; i<n; ++i) {
-            bn_mxp(tmp, P[i], u[i], mod);
-            bn_mul(S, S, tmp);
-            bn_mod(S, S, mod);
+        unsigned int j=0; for(; i<n; ++j, ++i) {
+            bn_copy(wP[j], P[i]);
+            bn_copy(wu[j], u[i]);
         }
+        for(; j<BN_XPWDT; ++j) {	// Set remaining to exponent zero
+            bn_set_dig(wu[j], 0);
+        }
+        bn_mxp_sim(tmp, wP, wu, mod);
+        bn_mul(S, S, tmp);
+        bn_mod(S, S, mod);
 
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
