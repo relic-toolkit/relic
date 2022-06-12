@@ -406,7 +406,7 @@
 
 #if defined(EP_ENDOM) && FP_PRIME == 315
 /**
-* Parameters for a 377-bit pairing-friendly prime curve.
+* Parameters for a 315-bit pairing-friendly prime curve.
 */
 /** @{ */
 #define B24_P315_A		"0"
@@ -421,7 +421,7 @@
 
 #if defined(EP_ENDOM) && FP_PRIME == 317
 /**
-* Parameters for a 377-bit pairing-friendly prime curve.
+* Parameters for a 317-bit pairing-friendly prime curve.
 */
 /** @{ */
 #define B24_P317_A		"0"
