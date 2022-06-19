@@ -194,7 +194,7 @@ int g2_is_valid(const g2_t a) {
 					ep2_add(u, u, a);
 					ep2_frb(v, a, 2);
 #else
-					/* Check \psi(P) == z(P). */
+					/* Check \psi(P) == [z]P. */
 					fp_prime_get_par(n);
 					g2_copy(u, a);
 					for (int i = bn_bits(n) - 2; i >= 0; i--) {
