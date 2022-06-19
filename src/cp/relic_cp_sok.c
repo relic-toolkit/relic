@@ -40,7 +40,8 @@
  * Authors: Jan Camenisch, Markus Stadler
  */
 
-int cp_sokdl_sig(bn_t c, bn_t s, uint8_t *msg, int len, ec_t y, bn_t x) {
+int cp_sokdl_sig(bn_t c, bn_t s, const uint8_t *msg, size_t len, const ec_t y,
+		const bn_t x) {
 	bn_t n, r;
 	ec_t t;
 	uint8_t h[RLC_MD_LEN];
@@ -97,7 +98,8 @@ int cp_sokdl_sig(bn_t c, bn_t s, uint8_t *msg, int len, ec_t y, bn_t x) {
 	return result;
 }
 
-int cp_sokdl_ver(bn_t c, bn_t s, uint8_t *msg, int len, ec_t y) {
+int cp_sokdl_ver(const bn_t c, const bn_t s, const uint8_t *msg, size_t len,
+		const ec_t y) {
 	bn_t n, v;
 	ec_t t;
 	uint8_t h[RLC_MD_LEN];
@@ -153,8 +155,8 @@ int cp_sokdl_ver(bn_t c, bn_t s, uint8_t *msg, int len, ec_t y) {
 	return result;
 }
 
-int cp_sokor_sig(bn_t c[2], bn_t s[2], uint8_t *msg, int len, ec_t y[2],
-		ec_t g[2], bn_t x, int first) {
+int cp_sokor_sig(bn_t c[2], bn_t s[2], const uint8_t *msg, size_t len,
+		const ec_t y[2], const ec_t g[2], const bn_t x, int first) {
 	bn_t n, v[2], z;
 	ec_t u, t[2];
 	uint8_t h[RLC_MD_LEN];
@@ -256,8 +258,8 @@ int cp_sokor_sig(bn_t c[2], bn_t s[2], uint8_t *msg, int len, ec_t y[2],
 	return result;
 }
 
-int cp_sokor_ver(bn_t c[2], bn_t s[2], uint8_t *msg, int len, ec_t y[2],
-		ec_t g[2]) {
+int cp_sokor_ver(const bn_t c[2], const bn_t s[2], const uint8_t *msg,
+		size_t len, const ec_t y[2], const ec_t g[2]) {
 	bn_t n, v[2], z;
 	ec_t t;
 	uint8_t h[RLC_MD_LEN];

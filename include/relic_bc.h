@@ -64,8 +64,8 @@
  * @param[in] key_len		- the key size in bytes.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int bc_aes_cbc_enc(uint8_t *out, int *out_len, uint8_t *in,
-		int in_len, uint8_t *key, int key_len, uint8_t *iv);
+int bc_aes_cbc_enc(uint8_t *out, size_t *out_len, const uint8_t *in,
+		size_t in_len, const uint8_t *key, size_t key_len, const uint8_t *iv);
 
 /**
  * Decrypts with AES in CBC mode.
@@ -78,7 +78,7 @@ int bc_aes_cbc_enc(uint8_t *out, int *out_len, uint8_t *in,
  * @param[in] key_len		- the key size in bytes.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int bc_aes_cbc_dec(uint8_t *out, int *out_len, uint8_t *in,
-		int in_len, uint8_t *key, int key_len, uint8_t *iv);
+int bc_aes_cbc_dec(uint8_t *out, size_t *out_len, const uint8_t *in,
+		size_t in_len, const uint8_t *key, size_t key_len, const uint8_t *iv);
 
 #endif /* !RLC_BC_H */

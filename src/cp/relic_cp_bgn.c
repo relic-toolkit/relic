@@ -271,14 +271,14 @@ int cp_bgn_dec2(dig_t *out, const g2_t in[2], const bgn_t prv) {
 	return result;
 }
 
-int cp_bgn_add(gt_t e[4], gt_t c[4], gt_t d[4]) {
+int cp_bgn_add(gt_t e[4], const gt_t c[4], const gt_t d[4]) {
 	for (int i = 0; i < 4; i++) {
 		gt_mul(e[i], c[i], d[i]);
 	}
 	return RLC_OK;
 }
 
-int cp_bgn_mul(gt_t e[4], g1_t c[2], g2_t d[2]) {
+int cp_bgn_mul(gt_t e[4], const g1_t c[2], const g2_t d[2]) {
 	for (int i = 0; i < 2; i++) {
 		for (int j = 0; j < 2; j++) {
 			pc_map(e[2*i + j], c[i], d[j]);

@@ -40,7 +40,7 @@ int cp_cmlhs_init(g1_t h) {
 	return RLC_OK;
 }
 
-int cp_cmlhs_gen(bn_t x[], gt_t hs[], int len, uint8_t prf[], int plen,
+int cp_cmlhs_gen(bn_t x[], gt_t hs[], size_t len, uint8_t prf[], size_t plen,
 		bn_t sk, g2_t pk, bn_t d, g2_t y) {
 	g1_t g1;
 	g2_t g2;
@@ -89,9 +89,9 @@ int cp_cmlhs_gen(bn_t x[], gt_t hs[], int len, uint8_t prf[], int plen,
 	return result;
 }
 
-int cp_cmlhs_sig(g1_t sig, g2_t z, g1_t a, g1_t c, g1_t r, g2_t s, bn_t msg,
-		char *data, int label, bn_t x, g1_t h, uint8_t prf[], int plen,
-		bn_t d, bn_t sk) {
+int cp_cmlhs_sig(g1_t sig, g2_t z, g1_t a, g1_t c, g1_t r, g2_t s,
+		const bn_t msg, const char *data, int label, const bn_t x, const g1_t h,
+		const uint8_t prf[], size_t plen, const bn_t d, const bn_t sk) {
 	bn_t k, m, n;
 	g1_t t;
 	uint8_t mac[RLC_MD_LEN];
@@ -169,7 +169,8 @@ int cp_cmlhs_sig(g1_t sig, g2_t z, g1_t a, g1_t c, g1_t r, g2_t s, bn_t msg,
 	return result;
 }
 
-int cp_cmlhs_fun(g1_t a, g1_t c, g1_t as[], g1_t cs[], dig_t f[], int len) {
+int cp_cmlhs_fun(g1_t a, g1_t c, const g1_t as[], const g1_t cs[],
+		const dig_t f[], size_t len) {
 	int result = RLC_OK;
 
 	g1_mul_sim_dig(a, as, f, len);
@@ -178,7 +179,8 @@ int cp_cmlhs_fun(g1_t a, g1_t c, g1_t as[], g1_t cs[], dig_t f[], int len) {
 	return result;
 }
 
-int cp_cmlhs_evl(g1_t r, g2_t s, g1_t rs[], g2_t ss[], dig_t f[], int len) {
+int cp_cmlhs_evl(g1_t r, g2_t s, const g1_t rs[], const g2_t ss[],
+		const dig_t f[], size_t len) {
 	int result = RLC_OK;
 
 	g1_mul_sim_dig(r, rs, f, len);
@@ -187,9 +189,10 @@ int cp_cmlhs_evl(g1_t r, g2_t s, g1_t rs[], g2_t ss[], dig_t f[], int len) {
 	return result;
 }
 
-int cp_cmlhs_ver(g1_t r, g2_t s, g1_t sig[], g2_t z[], g1_t a[], g1_t c[],
-		bn_t msg, char *data, g1_t h, int label[], gt_t *hs[],
-		dig_t *f[], int flen[], g2_t y[], g2_t pk[], int slen) {
+int cp_cmlhs_ver(const g1_t r, const g2_t s, const g1_t sig[], const g2_t z[],
+		const g1_t a[], const g1_t c[], const bn_t msg, const char *data,
+		const g1_t h, const int label[], const gt_t *hs[], const dig_t *f[],
+		const int flen[], const g2_t y[], const g2_t pk[], size_t slen) {
 	g1_t g1;
 	g2_t g2;
 	gt_t e, u, v;
@@ -276,8 +279,9 @@ int cp_cmlhs_ver(g1_t r, g2_t s, g1_t sig[], g2_t z[], g1_t a[], g1_t c[],
 	return result;
 }
 
-void cp_cmlhs_off(gt_t vk, g1_t h, int label[], gt_t *hs[], dig_t *f[],
-		int flen[], g2_t y[], g2_t pk[], int slen) {
+void cp_cmlhs_off(gt_t vk, const g1_t h, const int label[], const gt_t *hs[],
+		const dig_t *f[], const size_t flen[], const g2_t y[], const g2_t pk[],
+		size_t slen) {
 	gt_t v;
 
 	gt_null(v);
@@ -299,8 +303,10 @@ void cp_cmlhs_off(gt_t vk, g1_t h, int label[], gt_t *hs[], dig_t *f[],
 	}
 }
 
-int cp_cmlhs_onv(g1_t r, g2_t s, g1_t sig[], g2_t z[], g1_t a[], g1_t c[],
-		bn_t msg, char *data, g1_t h, gt_t vk, g2_t y[], g2_t pk[], int slen) {
+int cp_cmlhs_onv(const g1_t r, const g2_t s, const g1_t sig[], const g2_t z[],
+		const g1_t a[], const g1_t c[], const bn_t msg, const char *data,
+		const g1_t h, const gt_t vk, const g2_t y[], const g2_t pk[],
+		size_t slen) {
 	g1_t g1;
 	g2_t g2;
 	gt_t e, u, v;

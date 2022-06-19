@@ -64,7 +64,7 @@ void gt_get_gen(gt_t g) {
     gt_copy(g, core_get()->gt_g);
 }
 
-int g1_is_valid(g1_t a) {
+int g1_is_valid(const g1_t a) {
 	bn_t n;
 	g1_t t, u, v;
 	int r = 0;
@@ -134,7 +134,7 @@ int g1_is_valid(g1_t a) {
 	return r;
 }
 
-int g2_is_valid(g2_t a) {
+int g2_is_valid(const g2_t a) {
 #if FP_PRIME >= 1536
 	if (pc_map_is_type1()) {
 		return g1_is_valid(a);
@@ -236,7 +236,7 @@ int g2_is_valid(g2_t a) {
 #endif
 }
 
-int gt_is_valid(gt_t a) {
+int gt_is_valid(const gt_t a) {
 	bn_t p, n;
 	gt_t u, v;
 	int l, r = 0;

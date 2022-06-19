@@ -62,7 +62,7 @@ int cp_zss_gen(bn_t d, g1_t q, gt_t z) {
 	return result;
 }
 
-int cp_zss_sig(g2_t s, uint8_t *msg, int len, int hash, bn_t d) {
+int cp_zss_sig(g2_t s, const uint8_t *msg, size_t len, int hash, const bn_t d) {
 	bn_t m, n, r, t;
 	uint8_t h[RLC_MD_LEN];
 	int result = RLC_OK;
@@ -109,7 +109,8 @@ int cp_zss_sig(g2_t s, uint8_t *msg, int len, int hash, bn_t d) {
 	return result;
 }
 
-int cp_zss_ver(g2_t s, uint8_t *msg, int len, int hash, g1_t q, gt_t z) {
+int cp_zss_ver(const g2_t s, const uint8_t *msg, size_t len, int hash,
+		const g1_t q, const gt_t z) {
 	bn_t m, n;
 	g1_t g;
 	gt_t e;

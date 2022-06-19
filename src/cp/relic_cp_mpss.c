@@ -76,7 +76,8 @@ int cp_mpss_bct(g2_t x[2], g2_t y[2]) {
 	return RLC_OK;
 }
 
-int cp_mpss_sig(g1_t a, g1_t b[2], bn_t m[2], bn_t r[2], bn_t s[2], mt_t mul_tri[2], mt_t sm_tri[2]) {
+int cp_mpss_sig(g1_t a, g1_t b[2], const bn_t m[2], const bn_t r[2],
+		const bn_t s[2], const mt_t mul_tri[2], const mt_t sm_tri[2]) {
 	int result = RLC_OK;
 	bn_t n, d[2], e[2];
 
@@ -120,8 +121,9 @@ int cp_mpss_sig(g1_t a, g1_t b[2], bn_t m[2], bn_t r[2], bn_t s[2], mt_t mul_tri
 	return result;
 }
 
-int cp_mpss_ver(gt_t e, g1_t a, g1_t b[2], bn_t m[2], g2_t h, g2_t x, g2_t y,
-		mt_t sm_tri[2], pt_t pc_tri[2]) {
+int cp_mpss_ver(gt_t e, const g1_t a, const g1_t b[2], const bn_t m[2],
+		const g2_t h, const g2_t x, const g2_t y, const mt_t sm_tri[2],
+		const pt_t pc_tri[2]) {
 	int result = 0;
 	bn_t n, d[2], r[2];
 	g1_t p[2], q[2];
@@ -206,7 +208,8 @@ int cp_mpss_ver(gt_t e, g1_t a, g1_t b[2], bn_t m[2], g2_t h, g2_t x, g2_t y,
 	return result;
 }
 
-int cp_mpsb_gen(bn_t r[2], bn_t s[][2], g2_t h, g2_t x[2], g2_t y[][2], int l) {
+int cp_mpsb_gen(bn_t r[2], bn_t s[][2], g2_t h, g2_t x[2], g2_t y[][2],
+		size_t l) {
 	bn_t n;
 	int result = RLC_OK;
 
@@ -238,7 +241,7 @@ int cp_mpsb_gen(bn_t r[2], bn_t s[][2], g2_t h, g2_t x[2], g2_t y[][2], int l) {
 	return result;
 }
 
-int cp_mpsb_bct(g2_t x[2], g2_t y[][2], int l) {
+int cp_mpsb_bct(g2_t x[2], g2_t y[][2], size_t l) {
 	/* Add public values and replicate. */
 	g2_add(x[0], x[0], x[1]);
 	g2_norm(x[0], x[0]);
@@ -251,8 +254,9 @@ int cp_mpsb_bct(g2_t x[2], g2_t y[][2], int l) {
 	return RLC_OK;
 }
 
-int cp_mpsb_sig(g1_t a, g1_t b[2], bn_t m[][2], bn_t r[2], bn_t s[][2],
-		mt_t mul_tri[2], mt_t sm_tri[2], int l) {
+int cp_mpsb_sig(g1_t a, g1_t b[2], const bn_t m[][2], const bn_t r[2],
+		const bn_t s[][2], const mt_t mul_tri[2], const mt_t sm_tri[2],
+		size_t l) {
 	int result = RLC_OK;
 	bn_t n, d[2], e[2], t[2];
 
@@ -308,8 +312,9 @@ int cp_mpsb_sig(g1_t a, g1_t b[2], bn_t m[][2], bn_t r[2], bn_t s[][2],
 	return result;
 }
 
-int cp_mpsb_ver(gt_t e, g1_t a, g1_t b[2], bn_t m[][2], g2_t h, g2_t x,
-		g2_t y[][2], bn_t v[][2], mt_t sm_tri[2], pt_t pc_tri[2], int l) {
+int cp_mpsb_ver(gt_t e, const g1_t a, const g1_t b[2], const bn_t m[][2],
+		const g2_t h, const g2_t x, const g2_t y[][2], const bn_t v[][2],
+		const mt_t sm_tri[2], const pt_t pc_tri[2], size_t l) {
 	int result = 0;
 	bn_t n, _t, t[2], d[2], r[2], *_m = RLC_ALLOCA(bn_t, 2 * l);
 	g1_t p[2], q[2];

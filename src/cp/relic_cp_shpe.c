@@ -36,7 +36,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-int cp_shpe_gen(shpe_t pub, shpe_t prv, int sbits, int nbits) {
+int cp_shpe_gen(shpe_t pub, shpe_t prv, size_t sbits, size_t nbits) {
 	int result = RLC_OK;
 
     if (sbits > (nbits/2)) {

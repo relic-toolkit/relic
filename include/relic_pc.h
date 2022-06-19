@@ -1012,20 +1012,20 @@ void gt_get_gen(gt_t g);
  *
  * @param[in] a             - the element to check.
  */
-int g1_is_valid(g1_t a);
+int g1_is_valid(const g1_t a);
 
 /**
  * Checks if an element form G_2 is valid (has the right order).
  *
  * @param[in] a             - the element to check.
  */
-int g2_is_valid(g2_t a);
+int g2_is_valid(const g2_t a);
 
 /**
  * Checks if an element form G_T is valid (has the right order).
  *
  * @param[in] a             - the element to check.
  */
-int gt_is_valid(gt_t a);
+int gt_is_valid(const gt_t a);
 
 #endif /* !RLC_PC_H */

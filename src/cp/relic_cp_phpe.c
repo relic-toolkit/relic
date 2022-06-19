@@ -35,7 +35,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-int cp_phpe_gen(bn_t pub, phpe_t prv, int bits) {
+int cp_phpe_gen(bn_t pub, phpe_t prv, size_t bits) {
 	int result = RLC_OK;
 
 	/* Generate primes p and q of equivalent length. */

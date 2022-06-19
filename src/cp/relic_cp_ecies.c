@@ -58,8 +58,8 @@ int cp_ecies_gen(bn_t d, ec_t q) {
 	return result;
 }
 
-int cp_ecies_enc(ec_t r, uint8_t *out, int *out_len, uint8_t *in, int in_len,
-		const ec_t q) {
+int cp_ecies_enc(ec_t r, uint8_t *out, size_t *out_len, const uint8_t *in,
+		size_t in_len, const ec_t q) {
 	bn_t k, n, x;
 	ec_t p;
 	int l, result = RLC_OK, size = RLC_CEIL(RLC_MAX(128, ec_param_level()), 8);
@@ -112,8 +112,8 @@ int cp_ecies_enc(ec_t r, uint8_t *out, int *out_len, uint8_t *in, int in_len,
 	return result;
 }
 
-int cp_ecies_dec(uint8_t *out, int *out_len, const ec_t r, uint8_t *in, int in_len,
-		const bn_t d) {
+int cp_ecies_dec(uint8_t *out, size_t *out_len, const ec_t r, const uint8_t *in,
+		size_t in_len, const bn_t d) {
 	ec_t p;
 	bn_t x;
 

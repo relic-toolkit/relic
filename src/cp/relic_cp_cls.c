@@ -59,7 +59,8 @@ int cp_cls_gen(bn_t r, bn_t s, g2_t x, g2_t y) {
 	return result;
 }
 
-int cp_cls_sig(g1_t a, g1_t b, g1_t c, uint8_t *msg, int len, bn_t r, bn_t s) {
+int cp_cls_sig(g1_t a, g1_t b, g1_t c, const uint8_t *msg, size_t len,
+		const bn_t r, const bn_t s) {
 	bn_t m, n;
 	int result = RLC_OK;
 
@@ -95,7 +96,8 @@ int cp_cls_sig(g1_t a, g1_t b, g1_t c, uint8_t *msg, int len, bn_t r, bn_t s) {
 	return result;
 }
 
-int cp_cls_ver(g1_t a, g1_t b, g1_t c, uint8_t *msg, int len, g2_t x, g2_t y) {
+int cp_cls_ver(g1_t a, g1_t b, g1_t c, const uint8_t *msg, size_t len,
+		const g2_t x, const g2_t y) {
 	g1_t p[2];
 	g2_t r[2];
 	gt_t e;
@@ -189,8 +191,8 @@ int cp_cli_gen(bn_t t, bn_t u, bn_t v, g2_t x, g2_t y, g2_t z) {
 	return result;
 }
 
-int cp_cli_sig(g1_t a, g1_t A, g1_t b, g1_t B, g1_t c, uint8_t *msg, int len,
-		bn_t r, bn_t t, bn_t u, bn_t v) {
+int cp_cli_sig(g1_t a, g1_t A, g1_t b, g1_t B, g1_t c, const uint8_t *msg,
+		size_t len, const bn_t r, const bn_t t, const bn_t u, const bn_t v) {
 	bn_t m, n;
 	int result = RLC_OK;
 
@@ -237,8 +239,8 @@ int cp_cli_sig(g1_t a, g1_t A, g1_t b, g1_t B, g1_t c, uint8_t *msg, int len,
 	return result;
 }
 
-int cp_cli_ver(g1_t a, g1_t A, g1_t b, g1_t B, g1_t c, uint8_t *msg, int len,
-		bn_t r, g2_t x, g2_t y, g2_t z) {
+int cp_cli_ver(g1_t a, g1_t A, g1_t b, g1_t B, g1_t c, const uint8_t *msg,
+		size_t len, const bn_t r, const g2_t x, const g2_t y, const g2_t z) {
 	g1_t p[2];
 	g2_t q[2];
 	gt_t e;
@@ -323,7 +325,7 @@ int cp_cli_ver(g1_t a, g1_t A, g1_t b, g1_t B, g1_t c, uint8_t *msg, int len,
 	return result;
 }
 
-int cp_clb_gen(bn_t t, bn_t u, bn_t v[], g2_t x, g2_t y, g2_t z[], int l) {
+int cp_clb_gen(bn_t t, bn_t u, bn_t v[], g2_t x, g2_t y, g2_t z[], size_t l) {
 	bn_t n;
 	int i, result = RLC_OK;
 
@@ -351,8 +353,9 @@ int cp_clb_gen(bn_t t, bn_t u, bn_t v[], g2_t x, g2_t y, g2_t z[], int l) {
 	return result;
 }
 
-int cp_clb_sig(g1_t a, g1_t A[], g1_t b, g1_t B[], g1_t c, uint8_t *msgs[],
-		int lens[], bn_t t, bn_t u, bn_t v[], int l) {
+int cp_clb_sig(g1_t a, g1_t A[], g1_t b, g1_t B[], g1_t c, const uint8_t *ms[],
+		const size_t ls[], const bn_t t, const bn_t u, const bn_t v[],
+		size_t l) {
 	bn_t m, n;
 	int i, result = RLC_OK;
 
@@ -372,7 +375,7 @@ int cp_clb_sig(g1_t a, g1_t A[], g1_t b, g1_t B[], g1_t c, uint8_t *msgs[],
 		}
 		/* Compute c = a^(x+xym_0)\prod A_i^(xym_i) = B_i^(xm_i). */
 		pc_get_ord(n);
-		bn_read_bin(m, msgs[0], lens[0]);
+		bn_read_bin(m, ms[0], ls[0]);
 		bn_mod(m, m, n);
 		bn_mul(m, m, t);
 		bn_mod(m, m, n);
@@ -382,7 +385,7 @@ int cp_clb_sig(g1_t a, g1_t A[], g1_t b, g1_t B[], g1_t c, uint8_t *msgs[],
 		g1_mul(c, a, m);
 		/* This can be made faster with more interleaving. */
 		for (i = 1; i < l; i++) {
-			bn_read_bin(m, msgs[i], lens[i]);
+			bn_read_bin(m, ms[i], ls[i]);
 			bn_mod(m, m, n);
 			bn_mul(m, m, t);
 			bn_mod(m, m, n);
@@ -403,8 +406,9 @@ int cp_clb_sig(g1_t a, g1_t A[], g1_t b, g1_t B[], g1_t c, uint8_t *msgs[],
 	return result;
 }
 
-int cp_clb_ver(g1_t a, g1_t A[], g1_t b, g1_t B[], g1_t c, uint8_t *msgs[],
-		int lens[], g2_t x, g2_t y, g2_t z[], int l) {
+int cp_clb_ver(g1_t a, g1_t A[], g1_t b, g1_t B[], g1_t c, const uint8_t *ms[],
+		const size_t ls[], const g2_t x, const g2_t y, const g2_t z[],
+		size_t l) {
 	g1_t p[2];
 	g2_t q[2];
 	gt_t e;
@@ -468,12 +472,12 @@ int cp_clb_ver(g1_t a, g1_t A[], g1_t b, g1_t B[], g1_t c, uint8_t *msgs[],
 
 		/* Check that e(a, X)e(m_0b, X)\prod e(m_iB, X) = e(c, g). */
 		pc_get_ord(n);
-		bn_read_bin(m, msgs[0], lens[0]);
+		bn_read_bin(m, ms[0], ls[0]);
 		bn_mod(m, m, n);
 		g1_mul(p[0], b, m);
 		g1_add(p[0], p[0], a);
 		for (i = 1; i < l; i++) {
-			bn_read_bin(m, msgs[i], lens[i]);
+			bn_read_bin(m, ms[i], ls[i]);
 			bn_mod(m, m, n);
 			g1_mul(p[1], B[i - 1], m);
 			g1_add(p[0], p[0], p[1]);
