@@ -36,7 +36,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void ep4_neg(ep4_t r, ep4_t p) {
+void ep4_neg(ep4_t r, const ep4_t p) {
 	if (ep4_is_infty(p)) {
 		ep4_set_infty(r);
 		return;

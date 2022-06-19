@@ -36,7 +36,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-int ep2_cmp(ep2_t p, ep2_t q) {
+int ep2_cmp(const ep2_t p, const ep2_t q) {
     ep2_t r, s;
     int result = RLC_NE;
 

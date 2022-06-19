@@ -660,7 +660,7 @@ int cp_rsa_gen(rsa_t pub, rsa_t prv, int bits) {
 	return result;
 }
 
-int cp_rsa_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len, rsa_t pub) {
+int cp_rsa_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len, const rsa_t pub) {
 	bn_t m, eb;
 	int size, pad_len, result = RLC_OK;
 
@@ -717,7 +717,7 @@ int cp_rsa_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len, rsa_t pub) {
 	return result;
 }
 
-int cp_rsa_dec(uint8_t *out, int *out_len, uint8_t *in, int in_len, rsa_t prv) {
+int cp_rsa_dec(uint8_t *out, int *out_len, uint8_t *in, int in_len, const rsa_t prv) {
 	bn_t m, eb;
 	int size, pad_len, result = RLC_OK;
 

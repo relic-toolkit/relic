@@ -96,7 +96,7 @@ int cp_rabin_gen(rabin_t pub, rabin_t prv, int bits) {
 }
 
 int cp_rabin_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len,
-		rabin_t pub) {
+		const rabin_t pub) {
 	bn_t m, t;
 	int size, result = RLC_OK;
 
@@ -147,7 +147,7 @@ int cp_rabin_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len,
 }
 
 int cp_rabin_dec(uint8_t *out, int *out_len, uint8_t *in, int in_len,
-		rabin_t prv) {
+		const rabin_t prv) {
 	bn_t m, m0, m1, t, n;
 	int size, result = RLC_OK;
 	uint8_t pad;

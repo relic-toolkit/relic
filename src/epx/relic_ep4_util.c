@@ -36,7 +36,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-int ep4_is_infty(ep4_t p) {
+int ep4_is_infty(const ep4_t p) {
 	return (fp4_is_zero(p->z) == 1);
 }
 
@@ -47,7 +47,7 @@ void ep4_set_infty(ep4_t p) {
 	p->coord = BASIC;
 }
 
-void ep4_copy(ep4_t r, ep4_t p) {
+void ep4_copy(ep4_t r, const ep4_t p) {
 	fp4_copy(r->x, p->x);
 	fp4_copy(r->y, p->y);
 	fp4_copy(r->z, p->z);
@@ -78,7 +78,7 @@ void ep4_rand(ep4_t p) {
 	}
 }
 
-void ep4_blind(ep4_t r, ep4_t p) {
+void ep4_blind(ep4_t r, const ep4_t p) {
 	fp4_t rand;
 
 	fp4_null(rand);
@@ -104,7 +104,7 @@ void ep4_blind(ep4_t r, ep4_t p) {
 	}
 }
 
-void ep4_rhs(fp4_t rhs, ep4_t p) {
+void ep4_rhs(fp4_t rhs, const ep4_t p) {
 	fp4_t t0, t1;
 
 	fp4_null(t0);
@@ -205,7 +205,7 @@ int ep4_on_curve(ep4_t p) {
 	return r;
 }
 
-void ep4_tab(ep4_t *t, ep4_t p, int w) {
+void ep4_tab(ep4_t *t, const ep4_t p, int w) {
 	if (w > 2) {
 		ep4_dbl(t[0], p);
 #if defined(EP_MIXED)
@@ -222,13 +222,13 @@ void ep4_tab(ep4_t *t, ep4_t p, int w) {
 	ep4_copy(t[0], p);
 }
 
-void ep4_print(ep4_t p) {
+void ep4_print(const ep4_t p) {
 	fp4_print(p->x);
 	fp4_print(p->y);
 	fp4_print(p->z);
 }
 
-int ep4_size_bin(ep4_t a, int pack) {
+int ep4_size_bin(const ep4_t a, int pack) {
 	ep4_t t;
 	int size = 0;
 
@@ -288,7 +288,7 @@ void ep4_read_bin(ep4_t a, const uint8_t *bin, int len) {
 	}
 }
 
-void ep4_write_bin(uint8_t *bin, int len, ep4_t a, int pack) {
+void ep4_write_bin(uint8_t *bin, int len, const ep4_t a, int pack) {
 	ep4_t t;
 
 	ep4_null(t);

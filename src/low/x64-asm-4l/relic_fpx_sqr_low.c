@@ -37,7 +37,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void fp3_sqrn_low(dv3_t c, fp3_t a) {
+void fp3_sqrn_low(dv3_t c, const fp3_t a) {
 	rlc_align dig_t t0[2 * RLC_FP_DIGS], t1[2 * RLC_FP_DIGS], t2[2 * RLC_FP_DIGS];
 	rlc_align dig_t t3[2 * RLC_FP_DIGS], t4[2 * RLC_FP_DIGS];
 
@@ -103,7 +103,7 @@ void fp3_sqrn_low(dv3_t c, fp3_t a) {
 	}
 }
 
-void fp3_sqrm_low(fp3_t c, fp3_t a) {
+void fp3_sqrm_low(fp3_t c, const fp3_t a) {
 	dv3_t t;
 
 	dv3_null(t);

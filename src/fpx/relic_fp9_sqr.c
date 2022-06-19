@@ -39,7 +39,7 @@
 
 #if FPX_RDC == BASIC || !defined(STRIP)
 
-void fp9_sqr_basic(fp9_t c, fp9_t a) {
+void fp9_sqr_basic(fp9_t c, const fp9_t a) {
 	fp3_t t0, t1, t2, t3, t4;
 
 	fp3_null(t0);
@@ -112,7 +112,7 @@ void fp9_sqr_basic(fp9_t c, fp9_t a) {
 
 #if PP_EXT == LAZYR || !defined(STRIP)
 
-void fp9_sqr_unr(dv9_t c, fp9_t a) {
+void fp9_sqr_unr(dv9_t c, const fp9_t a) {
 	dv3_t u0, u1, u2, u3, u4, u5;
 	fp3_t t0, t1, t2, t3;
 
@@ -201,7 +201,7 @@ void fp9_sqr_unr(dv9_t c, fp9_t a) {
 	}
 }
 
-void fp9_sqr_lazyr(fp9_t c, fp9_t a) {
+void fp9_sqr_lazyr(fp9_t c, const fp9_t a) {
 	dv9_t t;
 
 	dv9_null(t);

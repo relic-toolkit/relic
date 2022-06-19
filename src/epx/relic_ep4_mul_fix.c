@@ -44,7 +44,7 @@
  * @param[out] t				- the destination table.
  * @param[in] p					- the point to multiply.
  */
-static void ep4_mul_pre_ordin(ep4_t *t, ep4_t p) {
+static void ep4_mul_pre_ordin(ep4_t *t, const ep4_t p) {
 	int i;
 
 	ep4_dbl(t[0], p);
@@ -76,7 +76,7 @@ static void ep4_mul_pre_ordin(ep4_t *t, ep4_t p) {
  * @param[in] p					- the point to multiply.
  * @param[in] k					- the integer.
  */
-static void ep4_mul_fix_ordin(ep4_t r, ep4_t *table, bn_t k) {
+static void ep4_mul_fix_ordin(ep4_t r, const ep4_t *table, const bn_t k) {
 	int len, i, n;
 	int8_t naf[2 * RLC_FP_BITS + 1], *t;
 
@@ -117,7 +117,7 @@ static void ep4_mul_fix_ordin(ep4_t r, ep4_t *table, bn_t k) {
 
 #if EP_FIX == BASIC || !defined(STRIP)
 
-void ep4_mul_pre_basic(ep4_t *t, ep4_t p) {
+void ep4_mul_pre_basic(ep4_t *t, const ep4_t p) {
 	bn_t n;
 
 	bn_null(n);
@@ -140,7 +140,7 @@ void ep4_mul_pre_basic(ep4_t *t, ep4_t p) {
 	}
 }
 
-void ep4_mul_fix_basic(ep4_t r, ep4_t *t, bn_t k) {
+void ep4_mul_fix_basic(ep4_t r, const ep4_t *t, const bn_t k) {
 	if (bn_is_zero(k)) {
 		ep4_set_infty(r);
 		return;
@@ -163,7 +163,7 @@ void ep4_mul_fix_basic(ep4_t r, ep4_t *t, bn_t k) {
 
 #if EP_FIX == COMBS || !defined(STRIP)
 
-void ep4_mul_pre_combs(ep4_t *t, ep4_t p) {
+void ep4_mul_pre_combs(ep4_t *t, const ep4_t p) {
 	int i, j, l;
 	bn_t n;
 
@@ -205,7 +205,7 @@ void ep4_mul_pre_combs(ep4_t *t, ep4_t p) {
 	}
 }
 
-void ep4_mul_fix_combs(ep4_t r, ep4_t *t, bn_t k) {
+void ep4_mul_fix_combs(ep4_t r, const ep4_t *t, const bn_t k) {
 	int i, j, l, w, n0, p0, p1;
 	bn_t n;
 
@@ -269,7 +269,7 @@ void ep4_mul_fix_combs(ep4_t r, ep4_t *t, bn_t k) {
 
 #if EP_FIX == COMBD || !defined(STRIP)
 
-void ep4_mul_pre_combd(ep4_t *t, ep4_t p) {
+void ep4_mul_pre_combd(ep4_t *t, const ep4_t p) {
 	int i, j, d, e;
 	bn_t n;
 
@@ -318,7 +318,7 @@ void ep4_mul_pre_combd(ep4_t *t, ep4_t p) {
 	}
 }
 
-void ep4_mul_fix_combd(ep4_t r, ep4_t *t, bn_t k) {
+void ep4_mul_fix_combd(ep4_t r, const ep4_t *t, const bn_t k) {
 	int i, j, d, e, w0, w1, n0, p0, p1;
 	bn_t n;
 
@@ -382,11 +382,11 @@ void ep4_mul_fix_combd(ep4_t r, ep4_t *t, bn_t k) {
 
 #if EP_FIX == LWNAF || !defined(STRIP)
 
-void ep4_mul_pre_lwnaf(ep4_t *t, ep4_t p) {
+void ep4_mul_pre_lwnaf(ep4_t *t, const ep4_t p) {
 	ep4_mul_pre_ordin(t, p);
 }
 
-void ep4_mul_fix_lwnaf(ep4_t r, ep4_t *t, bn_t k) {
+void ep4_mul_fix_lwnaf(ep4_t r, const ep4_t *t, const bn_t k) {
 	ep4_mul_fix_ordin(r, t, k);
 }
 

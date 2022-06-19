@@ -35,7 +35,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void fp2_pck(fp2_t c, fp2_t a) {
+void fp2_pck(fp2_t c, const fp2_t a) {
 	int b = fp_get_bit(a[1], 0);
 	fp2_copy(c, a);
 	if (fp2_test_cyc(a)) {
@@ -45,7 +45,7 @@ void fp2_pck(fp2_t c, fp2_t a) {
 	}
 }
 
-int fp2_upk(fp2_t c, fp2_t a) {
+int fp2_upk(fp2_t c, const fp2_t a) {
 	if (fp_bits(a[1]) <= 1) {
 		int result, b = fp_get_bit(a[1], 0);
 		fp_t t;
@@ -84,7 +84,7 @@ int fp2_upk(fp2_t c, fp2_t a) {
 	}
 }
 
-void fp12_pck(fp12_t c, fp12_t a) {
+void fp12_pck(fp12_t c, const fp12_t a) {
 	fp12_copy(c, a);
 	if (fp12_test_cyc(c)) {
 		fp2_zero(c[0][0]);
@@ -92,7 +92,7 @@ void fp12_pck(fp12_t c, fp12_t a) {
 	}
 }
 
-int fp12_upk(fp12_t c, fp12_t a) {
+int fp12_upk(fp12_t c, const fp12_t a) {
 	if (fp2_is_zero(a[0][0]) && fp2_is_zero(a[1][1])) {
 		fp12_back_cyc(c, a);
 		if (fp12_test_cyc(c)) {
@@ -106,7 +106,7 @@ int fp12_upk(fp12_t c, fp12_t a) {
 	}
 }
 
-void fp12_pck_max(fp12_t c, fp12_t a) {
+void fp12_pck_max(fp12_t c, const fp12_t a) {
 	 fp12_copy(c, a);
 	if (fp12_test_cyc(c)) {
 		/* Use torus-based compression from Section 4.1 in
@@ -119,7 +119,7 @@ void fp12_pck_max(fp12_t c, fp12_t a) {
 	}
 }
 
-int fp12_upk_max(fp12_t c, fp12_t a) {
+int fp12_upk_max(fp12_t c, const fp12_t a) {
 	if (fp6_is_zero(a[1])) {
 		fp12_t t;
 
@@ -155,7 +155,7 @@ int fp12_upk_max(fp12_t c, fp12_t a) {
 	}
 }
 
-void fp24_pck(fp24_t c, fp24_t a) {
+void fp24_pck(fp24_t c, const fp24_t a) {
 	fp24_copy(c, a);
 	if (fp24_test_cyc(c)) {
 		fp4_zero(c[0][0]);
@@ -163,7 +163,7 @@ void fp24_pck(fp24_t c, fp24_t a) {
 	}
 }
 
-int fp24_upk(fp24_t c, fp24_t a) {
+int fp24_upk(fp24_t c, const fp24_t a) {
 	if (fp4_is_zero(a[0][0]) && fp4_is_zero(a[0][1])) {
 		fp24_back_cyc(c, a);
 		if (fp24_test_cyc(c)) {
@@ -177,7 +177,7 @@ int fp24_upk(fp24_t c, fp24_t a) {
 	}
 }
 
-void fp48_pck(fp48_t c, fp48_t a) {
+void fp48_pck(fp48_t c, const fp48_t a) {
 	fp48_copy(c, a);
 	if (fp48_test_cyc(c)) {
 		fp8_zero(c[0][0]);
@@ -185,7 +185,7 @@ void fp48_pck(fp48_t c, fp48_t a) {
 	}
 }
 
-int fp48_upk(fp48_t c, fp48_t a) {
+int fp48_upk(fp48_t c, const fp48_t a) {
 	if (fp8_is_zero(a[0][0]) && fp8_is_zero(a[1][1])) {
 		fp48_back_cyc(c, a);
 		if (fp48_test_cyc(c)) {
@@ -199,7 +199,7 @@ int fp48_upk(fp48_t c, fp48_t a) {
 	}
 }
 
-void fp54_pck(fp54_t c, fp54_t a) {
+void fp54_pck(fp54_t c, const fp54_t a) {
 	fp54_copy(c, a);
 	if (fp54_test_cyc(c)) {
 		fp9_zero(c[0][0]);
@@ -207,7 +207,7 @@ void fp54_pck(fp54_t c, fp54_t a) {
 	}
 }
 
-int fp54_upk(fp54_t c, fp54_t a) {
+int fp54_upk(fp54_t c, const fp54_t a) {
 	if (fp9_is_zero(a[0][0]) && fp9_is_zero(a[0][1])) {
 		fp54_back_cyc(c, a);
 		if (fp54_test_cyc(c)) {

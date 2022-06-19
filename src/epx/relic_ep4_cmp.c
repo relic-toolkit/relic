@@ -36,7 +36,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-int ep4_cmp(ep4_t p, ep4_t q) {
+int ep4_cmp(const ep4_t p, const ep4_t q) {
     ep4_t r, s;
     int result = RLC_NE;
 

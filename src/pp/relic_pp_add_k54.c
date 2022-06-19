@@ -37,7 +37,7 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-static void ep9_add_basic(fp9_t s, fp9_t rx, fp9_t ry, fp9_t qx, fp9_t qy) {
+static void ep9_add_basic(fp9_t s, fp9_t rx, fp9_t ry, const fp9_t qx, const fp9_t qy) {
 	fp9_t t0, t1, t2;
 
 	fp9_null(t0);
@@ -104,7 +104,7 @@ static void ep9_add_basic(fp9_t s, fp9_t rx, fp9_t ry, fp9_t qx, fp9_t qy) {
 
 #if EP_ADD == BASIC || !defined(STRIP)
 
-void pp_add_k54_basic(fp54_t l, fp9_t rx, fp9_t ry, fp9_t qx, fp9_t qy, ep_t p) {
+void pp_add_k54_basic(fp54_t l, fp9_t rx, fp9_t ry, const fp9_t qx, const fp9_t qy, const ep_t p) {
 	fp9_t s, tx, ty;
 
 	fp9_null(s);
@@ -150,8 +150,8 @@ void pp_add_k54_basic(fp54_t l, fp9_t rx, fp9_t ry, fp9_t qx, fp9_t qy, ep_t p) 
 
 #if EP_ADD == PROJC || !defined(STRIP)
 
-void pp_add_k54_projc(fp54_t l, fp9_t rx, fp9_t ry, fp9_t rz, fp9_t qx,
-		fp9_t qy, ep_t p) {
+void pp_add_k54_projc(fp54_t l, fp9_t rx, fp9_t ry, fp9_t rz, const fp9_t qx,
+		const fp9_t qy, const ep_t p) {
 	fp9_t t0, t1, t2, t3, t4;
 
 	fp9_null(t0);

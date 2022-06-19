@@ -37,7 +37,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void fp2_sqrn_low(dv2_t c, fp2_t a) {
+void fp2_sqrn_low(dv2_t c, const fp2_t a) {
 	rlc_align dig_t t0[2 * RLC_FP_DIGS], t1[2 * RLC_FP_DIGS], t2[2 * RLC_FP_DIGS];
 
 	/* t0 = (a0 + a1). */
@@ -73,7 +73,7 @@ void fp2_sqrn_low(dv2_t c, fp2_t a) {
 	/* c = c0 + c1 * u. */
 }
 
-void fp2_sqrm_low(fp2_t c, fp2_t a) {
+void fp2_sqrm_low(fp2_t c, const fp2_t a) {
 	rlc_align dv2_t t;
 
 	dv2_null(t);
@@ -89,7 +89,7 @@ void fp2_sqrm_low(fp2_t c, fp2_t a) {
 	}
 }
 
-void fp3_sqrn_low(dv3_t c, fp3_t a) {
+void fp3_sqrn_low(dv3_t c, const fp3_t a) {
 	rlc_align dig_t t0[2 * RLC_FP_DIGS], t1[2 * RLC_FP_DIGS], t2[2 * RLC_FP_DIGS];
 	rlc_align dig_t t3[2 * RLC_FP_DIGS], t4[2 * RLC_FP_DIGS];
 
@@ -155,7 +155,7 @@ void fp3_sqrn_low(dv3_t c, fp3_t a) {
 	}
 }
 
-void fp3_sqrm_low(fp3_t c, fp3_t a) {
+void fp3_sqrm_low(fp3_t c, const fp3_t a) {
 	rlc_align dv3_t t;
 
 	dv3_null(t);

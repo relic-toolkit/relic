@@ -36,7 +36,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void ep4_frb(ep4_t r, ep4_t p, int i) {
+void ep4_frb(ep4_t r, const ep4_t p, int i) {
 	ep4_copy(r, p);
 	for (; i > 0; i--) {
 		fp4_frb(r->x, r->x, 1);

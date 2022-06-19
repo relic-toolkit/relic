@@ -46,7 +46,7 @@
  * @param[in] p					- the point to multiply.
  * @param[in] k					- the integer.
  */
-static void ep2_mul_fix_plain(ep2_t r, ep2_t *table, bn_t k) {
+static void ep2_mul_fix_plain(ep2_t r, const ep2_t *table, const bn_t k) {
 	int len, i, n;
 	int8_t naf[2 * RLC_FP_BITS + 1], *t;
 
@@ -87,7 +87,7 @@ static void ep2_mul_fix_plain(ep2_t r, ep2_t *table, bn_t k) {
 
 #if EP_FIX == BASIC || !defined(STRIP)
 
-void ep2_mul_pre_basic(ep2_t *t, ep2_t p) {
+void ep2_mul_pre_basic(ep2_t *t, const ep2_t p) {
 	bn_t n;
 
 	bn_null(n);
@@ -110,7 +110,7 @@ void ep2_mul_pre_basic(ep2_t *t, ep2_t p) {
 	}
 }
 
-void ep2_mul_fix_basic(ep2_t r, ep2_t *t, bn_t k) {
+void ep2_mul_fix_basic(ep2_t r, const ep2_t *t, const bn_t k) {
 	bn_t n, _k;
 
 	if (bn_is_zero(k)) {
@@ -150,7 +150,7 @@ void ep2_mul_fix_basic(ep2_t r, ep2_t *t, bn_t k) {
 
 #if EP_FIX == COMBS || !defined(STRIP)
 
-void ep2_mul_pre_combs(ep2_t *t, ep2_t p) {
+void ep2_mul_pre_combs(ep2_t *t, const ep2_t p) {
 	int i, j, l;
 	bn_t n;
 
@@ -192,7 +192,7 @@ void ep2_mul_pre_combs(ep2_t *t, ep2_t p) {
 	}
 }
 
-void ep2_mul_fix_combs(ep2_t r, ep2_t *t, bn_t k) {
+void ep2_mul_fix_combs(ep2_t r, const ep2_t *t, const bn_t k) {
 	int i, j, l, w, n0, p0, p1;
 	bn_t n, _k;
 
@@ -260,7 +260,7 @@ void ep2_mul_fix_combs(ep2_t r, ep2_t *t, bn_t k) {
 
 #if EP_FIX == COMBD || !defined(STRIP)
 
-void ep2_mul_pre_combd(ep2_t *t, ep2_t p) {
+void ep2_mul_pre_combd(ep2_t *t, const ep2_t p) {
 	int i, j, d, e;
 	bn_t n;
 
@@ -309,7 +309,7 @@ void ep2_mul_pre_combd(ep2_t *t, ep2_t p) {
 	}
 }
 
-void ep2_mul_fix_combd(ep2_t r, ep2_t *t, bn_t k) {
+void ep2_mul_fix_combd(ep2_t r, const ep2_t *t, const bn_t k) {
 	int i, j, d, e, w0, w1, n0, p0, p1;
 	bn_t n, _k;
 
@@ -377,11 +377,11 @@ void ep2_mul_fix_combd(ep2_t r, ep2_t *t, bn_t k) {
 
 #if EP_FIX == LWNAF || !defined(STRIP)
 
-void ep2_mul_pre_lwnaf(ep2_t *t, ep2_t p) {
+void ep2_mul_pre_lwnaf(ep2_t *t, const ep2_t p) {
 	ep2_tab(t, p, EP_DEPTH);
 }
 
-void ep2_mul_fix_lwnaf(ep2_t r, ep2_t *t, bn_t k) {
+void ep2_mul_fix_lwnaf(ep2_t r, const ep2_t *t, const bn_t k) {
 	bn_t n, _k;
 
 	if (bn_is_zero(k)) {

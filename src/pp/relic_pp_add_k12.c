@@ -41,7 +41,7 @@
 
 #if EP_ADD == BASIC || !defined(STRIP)
 
-void pp_add_k12_basic(fp12_t l, ep2_t r, ep2_t q, ep_t p) {
+void pp_add_k12_basic(fp12_t l, ep2_t r, const ep2_t q, const ep_t p) {
 	int one = 1, zero = 0;
 	fp2_t s;
 	ep2_t t;
@@ -82,7 +82,7 @@ void pp_add_k12_basic(fp12_t l, ep2_t r, ep2_t q, ep_t p) {
 
 #if PP_EXT == BASIC || !defined(STRIP)
 
-void pp_add_k12_projc_basic(fp12_t l, ep2_t r, ep2_t q, ep_t p) {
+void pp_add_k12_projc_basic(fp12_t l, ep2_t r, const ep2_t q, const ep_t p) {
 	fp2_t t0, t1, t2, t3, t4;
 	int one = 1, zero = 0;
 
@@ -170,7 +170,7 @@ void pp_add_k12_projc_basic(fp12_t l, ep2_t r, ep2_t q, ep_t p) {
 
 #if PP_EXT == LAZYR || !defined(STRIP)
 
-void pp_add_k12_projc_lazyr(fp12_t l, ep2_t r, ep2_t q, ep_t p) {
+void pp_add_k12_projc_lazyr(fp12_t l, ep2_t r, const ep2_t q, const ep_t p) {
 	fp2_t t0, t1, t2, t3;
 	dv2_t u0, u1;
 	int one = 1, zero = 0;
@@ -258,7 +258,7 @@ void pp_add_k12_projc_lazyr(fp12_t l, ep2_t r, ep2_t q, ep_t p) {
 
 #endif
 
-void pp_add_lit_k12(fp12_t l, ep_t r, ep_t p, ep2_t q) {
+void pp_add_lit_k12(fp12_t l, ep_t r, const ep_t p, const ep2_t q) {
 	fp_t t0, t1, t2, t3;
 	int one = 1, zero = 0;
 
