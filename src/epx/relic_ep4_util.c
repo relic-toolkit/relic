@@ -182,7 +182,7 @@ void ep4_rhs(fp4_t rhs, const ep4_t p) {
 }
 
 
-int ep4_on_curve(ep4_t p) {
+int ep4_on_curve(const ep4_t p) {
 	ep4_t t;
 	int r = 0;
 

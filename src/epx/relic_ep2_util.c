@@ -169,7 +169,7 @@ void ep2_rhs(fp2_t rhs, const ep2_t p) {
 }
 
 
-int ep2_on_curve(ep2_t p) {
+int ep2_on_curve(const ep2_t p) {
 	ep2_t t;
 	int r = 0;
 

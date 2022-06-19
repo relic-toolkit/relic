@@ -707,7 +707,7 @@ void ep2_rhs(fp2_t rhs, const ep2_t p);
  *
  * @param[in] p				- the point to test.
  */
-int ep2_on_curve(ep2_t p);
+int ep2_on_curve(const ep2_t p);
 
 /**
  * Builds a precomputation table for multiplying a random prime elliptic point.
@@ -1347,7 +1347,7 @@ void ep4_rhs(fp4_t rhs, const ep4_t p);
  *
  * @param[in] p				- the point to test.
  */
-int ep4_on_curve(ep4_t p);
+int ep4_on_curve(const ep4_t p);
 
 /**
  * Builds a precomputation table for multiplying a random prime elliptic point.

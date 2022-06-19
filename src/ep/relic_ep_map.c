@@ -148,11 +148,8 @@ void ep_map_from_field(ep_t p, const uint8_t *uniform_bytes, int len) {
 				break;
 			case EP_B12:
 			case EP_B24:
-				/* multiply by 1-x (x the BLS parameter) to get the correct group. */
-				/* XXX(rsw) is this guaranteed to work? It could fail if one
-				 *          of the prime-squared subgroups is cyclic, but
-				 *          maybe there's an argument that this is never the case...
-				 */
+				/* Multiply by (1-x) to get the correct group, as proven in
+				 * Piellard. https://eprint.iacr.org/2022/352.pdf */
 				fp_prime_get_par(k);
 				bn_neg(k, k);
 				bn_add_dig(k, k, 1);

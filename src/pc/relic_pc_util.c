@@ -66,7 +66,7 @@ void gt_get_gen(gt_t g) {
 
 int g1_is_valid(const g1_t a) {
 	bn_t n;
-	g1_t t, u, v;
+	g1_t u, v;
 	int r = 0;
 
 	if (g1_is_infty(a)) {
@@ -74,13 +74,11 @@ int g1_is_valid(const g1_t a) {
 	}
 
 	bn_null(n);
-	g1_null(t);
 	g1_null(u);
 	g1_null(v);
 
 	RLC_TRY {
 		bn_new(n);
-		g1_new(t);
 		g1_new(u);
 		g1_new(v);
 
@@ -90,24 +88,26 @@ int g1_is_valid(const g1_t a) {
 			r = g1_on_curve(a);
 		} else {
 			switch (ep_curve_is_pairf()) {
-				/* Formulas from "Faster Subgroup Checks for BLS12-381" by Bowe.
-				 * https://eprint.iacr.org/2019/814.pdf, together with tweaks
-				 * by Mike Scott. */
+				/* Formulas from "Co-factor clearing and subgroup membership
+				 * testing on pairing-friendly curves" by El Housni, Guillevic,
+				 * Piellard. https://eprint.iacr.org/2022/352.pdf */
 				case EP_B12:
-					/* Check [(z^2−1)](\psi(P)+P) == -P.*/
+				case EP_B24:
+					/* Check [\psi(P) == [z^2 - 1]P. */
 					fp_prime_get_par(n);
 					bn_sqr(n, n);
+					if (ep_curve_is_pairf() == EP_B24) {
+						bn_sqr(n, n);
+					}
 					bn_sub_dig(n, n, 1);
-					ep_psi(t, a);
-					ep_add(t, t, a);
-					ep_copy(u, t);
+					ep_copy(u, a);
 					for (int i = bn_bits(n) - 2; i >= 0; i--) {
 						g1_dbl(u, u);
 						if (bn_get_bit(n, i)) {
-							g1_add(u, u, t);
+							g1_add(u, u, a);
 						}
 					}
-					g1_neg(v, a);
+					ep_psi(v, a);
 					r = g1_on_curve(a) && (g1_cmp(v, u) == RLC_EQ);
 					break;
 				default:
@@ -126,7 +126,6 @@ int g1_is_valid(const g1_t a) {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		bn_free(n);
-		g1_free(t);
 		g1_free(u);
 		g1_free(v);
 	}
@@ -183,9 +182,11 @@ int g2_is_valid(const g2_t a) {
 			r = g2_on_curve(a) && (g2_cmp(u, v) == RLC_EQ);
 		} else {
 			switch (ep_curve_is_pairf()) {
-				/* Formulas from "Faster Subgroup Checks for BLS12-381" by Bowe.
-				 * https://eprint.iacr.org/2019/814.pdf */
+				/* Formulas from "Co-factor clearing and subgroup membership
+				 * testing on pairing-friendly curves" by El Housni, Guillevic,
+				 * Piellard. https://eprint.iacr.org/2022/352.pdf */
 				case EP_B12:
+				case EP_B24:
 #if FP_PRIME == 383
 					/* Since p mod n = r, we can check instead that
 					 * psi^4(P) + P == \psi^2(P). */
@@ -193,7 +194,7 @@ int g2_is_valid(const g2_t a) {
 					ep2_add(u, u, a);
 					ep2_frb(v, a, 2);
 #else
-					/* Check [z]psi^3(P) + P == \psi^2(P). */
+					/* Check \psi(P) == z(P). */
 					fp_prime_get_par(n);
 					g2_copy(u, a);
 					for (int i = bn_bits(n) - 2; i >= 0; i--) {
@@ -205,9 +206,7 @@ int g2_is_valid(const g2_t a) {
 					if (bn_sign(n) == RLC_NEG) {
 						g2_neg(u, u);
 					}
-					g2_frb(u, u, 3);
-					g2_frb(v, a, 2);
-					g2_add(u, u, a);
+					g2_frb(v, a, 1);
 #endif
 					r = g2_on_curve(a) && (g2_cmp(u, v) == RLC_EQ);
 					break;
@@ -305,15 +304,13 @@ int gt_is_valid(const gt_t a) {
 #endif
 					r &= fp12_test_cyc((void *)a);
 					break;
-#if FP_PRIME == 315 || FP_PRIME == 317 || FP_PRIME == 509
 				case EP_B24:
 					/* Check that a^u = a^p. */
 					gt_frb(u, a, 1);
 					fp24_exp_cyc_sps((void *)v, (void *)a, b, l, bn_sign(n));
 					r = (gt_cmp(u, v) == RLC_EQ);
-					r = fp24_test_cyc((void *)a);
+					r &= fp24_test_cyc((void *)a);
 					break;
-#endif
 				default:
 					/* Common case. */
 					bn_sub_dig(n, n, 1);
