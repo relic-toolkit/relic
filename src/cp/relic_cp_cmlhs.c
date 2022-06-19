@@ -192,7 +192,7 @@ int cp_cmlhs_evl(g1_t r, g2_t s, const g1_t rs[], const g2_t ss[],
 int cp_cmlhs_ver(const g1_t r, const g2_t s, const g1_t sig[], const g2_t z[],
 		const g1_t a[], const g1_t c[], const bn_t msg, const char *data,
 		const g1_t h, const int label[], const gt_t *hs[], const dig_t *f[],
-		const int flen[], const g2_t y[], const g2_t pk[], size_t slen) {
+		const size_t flen[], const g2_t y[], const g2_t pk[], size_t slen) {
 	g1_t g1;
 	g2_t g2;
 	gt_t e, u, v;

@@ -2401,7 +2401,7 @@ int cp_cmlhs_evl(g1_t r, g2_t s, const g1_t rs[], const g2_t ss[],
 int cp_cmlhs_ver(const g1_t r, const g2_t s, const g1_t sig[], const g2_t z[],
 		const g1_t a[], const g1_t c[], const bn_t m, const char *data,
 		const g1_t h, const int label[], const gt_t * hs[], const dig_t *f[],
-		const int flen[], const g2_t y[], const g2_t pk[], size_t slen);
+		const size_t flen[], const g2_t y[], const g2_t pk[], size_t slen);
 
 /**
  * Perform the offline verification of a CMLHS signature over a set of messages.
@@ -2591,7 +2591,7 @@ int cp_rsapsi_ans(bn_t t[], bn_t u[], const bn_t d, const bn_t g, const bn_t n,
  * @param[in] u				- the missing elements in the exponent.
  * @param[in] l				- the sender's input set size.
  */
-int cp_rsapsi_int(bn_t z[], int *len, const bn_t r, const bn_t p[],
+int cp_rsapsi_int(bn_t z[], size_t *len, const bn_t r, const bn_t p[],
 		const bn_t n, const bn_t x[], const size_t m, const bn_t t[],
 		const bn_t u[], size_t l);
 
@@ -2603,7 +2603,7 @@ int cp_rsapsi_int(bn_t z[], int *len, const bn_t r, const bn_t p[],
  * @param[in] crt			- the parameters given by the trusted setup.
  * @param[in] bits			- the precision in bits.
  */
-int cp_shipsi_gen(bn_t g, const crt_t crt, size_t bits);
+int cp_shipsi_gen(bn_t g, crt_t crt, size_t bits);
 
 /**
  * Computes the receiver part of the SHI-PSI protocol, given its input set.
@@ -2647,7 +2647,7 @@ int cp_shipsi_ans(bn_t t[], bn_t u, bn_t d, const bn_t g, const crt_t crt,
  * @param[in] u				- the hint in the exponent.
  * @param[in] l				- the sender's input set size.
  */
-int cp_shipsi_int(bn_t z[], int *len, const bn_t r, const bn_t p[],
+int cp_shipsi_int(bn_t z[], size_t *len, const bn_t r, const bn_t p[],
 		const bn_t n, const bn_t x[], size_t m, const bn_t t[], const bn_t u,
 		size_t l);
 

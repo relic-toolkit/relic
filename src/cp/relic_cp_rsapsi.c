@@ -146,7 +146,7 @@ int cp_rsapsi_ans(bn_t t[], bn_t u[], const bn_t d, const bn_t g, const bn_t n,
 	return result;
 }
 
-int cp_rsapsi_int(bn_t z[], int *len, const bn_t r, const bn_t p[],
+int cp_rsapsi_int(bn_t z[], size_t *len, const bn_t r, const bn_t p[],
 		const bn_t n, const bn_t x[], size_t m, const bn_t t[], const bn_t u[],
 		size_t l) {
 	int i, j, k, result = RLC_OK;
