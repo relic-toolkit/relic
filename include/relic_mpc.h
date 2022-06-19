@@ -219,7 +219,7 @@ typedef pt_st *pt_t;
  * @param[out] tri				- the multiplication triples to generate.
  * @param[in] order				- the order.
  */
-void mpc_mt_gen(mt_t tri[2], bn_t order);
+void mpc_mt_gen(mt_t tri[2], const bn_t order);
 
 /**
  * Performs the local work for a MPC multiplication.
@@ -231,7 +231,8 @@ void mpc_mt_gen(mt_t tri[2], bn_t order);
  * @param[in] n 				- the order.
  * @param[in] tri 				- the multiplication triple.
 */
-void mpc_mt_lcl(bn_t d, bn_t e, bn_t x, bn_t y, bn_t n, mt_t tri);
+void mpc_mt_lcl(bn_t d, bn_t e, const bn_t x, const bn_t y, const bn_t n,
+		const mt_t tri);
 
 /**
  * Opens the public values in an MPC multiplication.
@@ -252,7 +253,8 @@ void mpc_mt_bct(bn_t d[2], bn_t e[2], bn_t n);
  * @param[in] tri 				- the multiplication triple.
  * @param[in] party				- the party performing the computation.
  */
-void mpc_mt_mul(bn_t r, bn_t d, bn_t e, bn_t n, mt_t tri, int party);
+void mpc_mt_mul(bn_t r, const bn_t d, const bn_t e, const bn_t n,
+		const mt_t tri, int party);
 
 /**
  * Generates shares (x, y) of a secret key using a (k, n)-threshold Shamir's
@@ -289,7 +291,7 @@ int mpc_sss_key(bn_t key, const bn_t *x, const bn_t *y, const bn_t order,
  * @param[in] p 				- the point to multiply.
  * @param[in] tri 				- the multiplication triple.
 */
-void g1_mul_lcl(bn_t d, g1_t q, bn_t x, g1_t p, mt_t tri);
+void g1_mul_lcl(bn_t d, g1_t q, const bn_t x, const g1_t p, const mt_t tri);
 
 /**
  * Opens the public values in an MPC scalar multiplication in G1.
@@ -309,7 +311,7 @@ void g1_mul_bct(bn_t d[2], g1_t q[2]);
  * @param[in] tri 				- the multiplication triple.
  * @param[in] party				- the party performing the computation.
  */
-void g1_mul_mpc(g1_t r, bn_t d, g1_t q, mt_t tri, int party);
+void g1_mul_mpc(g1_t r, const bn_t d, const g1_t q, const mt_t tri, int party);
 
 /**
  * Performs the local work for a MPC scalar multiplication in G2.
@@ -320,7 +322,7 @@ void g1_mul_mpc(g1_t r, bn_t d, g1_t q, mt_t tri, int party);
  * @param[in] p 				- the point to multiply.
  * @param[in] tri 				- the multiplication triple.
 */
-void g2_mul_lcl(bn_t d, g2_t q, bn_t x, g2_t p, mt_t tri);
+void g2_mul_lcl(bn_t d, g2_t q, const bn_t x, const g2_t p, const mt_t tri);
 
 /**
  * Opens the public values in an MPC scalar multiplication in G2.
@@ -340,7 +342,7 @@ void g2_mul_bct(bn_t d[2], g2_t q[2]);
  * @param[in] tri 				- the multiplication triple.
  * @param[in] party				- the party performing the computation.
  */
-void g2_mul_mpc(g2_t r, bn_t d, g2_t q, mt_t tri, int party);
+void g2_mul_mpc(g2_t r, const bn_t d, const g2_t q, const mt_t tri, int party);
 
 /**
  * Performs the local work for a MPC scalar multiplication in G2.
@@ -351,7 +353,7 @@ void g2_mul_mpc(g2_t r, bn_t d, g2_t q, mt_t tri, int party);
  * @param[in] p 				- the point to multiply.
  * @param[in] tri 				- the multiplication triple.
 */
-void gt_exp_lcl(bn_t d, gt_t q, bn_t x, gt_t p, mt_t tri);
+void gt_exp_lcl(bn_t d, gt_t q, const bn_t x, const gt_t p, const mt_t tri);
 
 /**
  * Opens the public values in an MPC scalar multiplication in G2.
@@ -371,7 +373,7 @@ void gt_exp_bct(bn_t d[2], gt_t q[2]);
  * @param[in] tri 				- the multiplication triple.
  * @param[in] party				- the party performing the computation.
  */
-void gt_exp_mpc(gt_t r, bn_t d, gt_t q, mt_t tri, int party);
+void gt_exp_mpc(gt_t r, const bn_t d, const gt_t q, const mt_t tri, int party);
 
 /**
  * Generates a pairing triple.
@@ -389,7 +391,7 @@ void pc_map_tri(pt_t t[2]);
  * @param[in] q				- the share of the second pairing argument.
  * @param[in] t				- the pairing triple.
  */
-void pc_map_lcl(g1_t d, g2_t e, g1_t p, g2_t q, pt_t t);
+void pc_map_lcl(g1_t d, g2_t e, const g1_t p, const g2_t q, const pt_t t);
 
 /**
  * Broadcasts the public values for pairing computation.
@@ -408,6 +410,7 @@ void pc_map_bct(g1_t d[2], g2_t e[2]);
  * @param[in] triple		- the pairing triple.
  * @param[in] party			- the number of the party executing the computation.
  */
-void pc_map_mpc(gt_t r, g1_t d1, g2_t d2, pt_t triple, int party);
+void pc_map_mpc(gt_t r, const g1_t d1, const g2_t d2, const pt_t triple,
+	int party);
 
 #endif /* !RLC_MPC_H */

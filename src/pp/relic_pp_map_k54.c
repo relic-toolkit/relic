@@ -37,10 +37,11 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-static void pp_mil_k54(fp54_t r, const fp9_t qx, const fp9_t qy, const ep_t p, const bn_t a) {
+static void pp_mil_k54(fp54_t r, const fp9_t qx, const fp9_t qy, const ep_t p,
+		const bn_t a) {
 	fp54_t l;
 	ep_t _p;
-	fp9_t rx, ry, rz, sx, sy, sz;
+	fp9_t rx, ry, rz, sx, sy, sz, qn;
 	int i, len = bn_bits(a) + 1;
 	int8_t s[RLC_FP_BITS + 1];
 
@@ -62,6 +63,7 @@ static void pp_mil_k54(fp54_t r, const fp9_t qx, const fp9_t qy, const ep_t p, c
 		fp9_new(sx);
 		fp9_new(sy);
 		fp9_new(sz);
+		fp9_new(qn);
 
 		fp54_zero(l);
 		fp9_copy(rx, qx);
@@ -74,6 +76,7 @@ static void pp_mil_k54(fp54_t r, const fp9_t qx, const fp9_t qy, const ep_t p, c
 		fp_add(_p->x, _p->x, p->x);
 		fp_neg(_p->y, p->y);
 #endif
+		fp9_neg(qn, qy);
 
 		bn_rec_naf(s, &len, a, 2);
 		for (i = len - 2; i >= 0; i--) {
@@ -85,9 +88,7 @@ static void pp_mil_k54(fp54_t r, const fp9_t qx, const fp9_t qy, const ep_t p, c
 				fp54_mul_dxs(r, r, l);
 			}
 			if (s[i] < 0) {
-				fp9_neg(qy, qy);	// Warning: not really modifying ...
-				pp_add_k54(l, rx, ry, rz, qx, qy, p);
-				fp9_neg(qy, qy);	// ... since put back to initial value!
+				pp_add_k54(l, rx, ry, rz, qx, qn, p);
 				fp54_mul_dxs(r, r, l);
 			}
 		}
@@ -152,6 +153,7 @@ static void pp_mil_k54(fp54_t r, const fp9_t qx, const fp9_t qy, const ep_t p, c
 		fp9_free(sx);
 		fp9_free(sy);
 		fp9_free(sz);
+		fp9_free(qn);
 	}
 }
 

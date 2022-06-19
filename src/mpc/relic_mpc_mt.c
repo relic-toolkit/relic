@@ -38,7 +38,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void mpc_mt_gen(mt_t tri[2], bn_t order) {
+void mpc_mt_gen(mt_t tri[2], const bn_t order) {
 	for (int i = 0; i < 2; i++) {
 		bn_rand_mod(tri[i]->a, order);
 		bn_rand_mod(tri[i]->b, order);
@@ -58,7 +58,8 @@ void mpc_mt_gen(mt_t tri[2], bn_t order) {
 	}
 }
 
-void mpc_mt_lcl(bn_t d, bn_t e, bn_t x, bn_t y, bn_t n, mt_t tri) {
+void mpc_mt_lcl(bn_t d, bn_t e, const bn_t x, const bn_t y, const bn_t n,
+		const mt_t tri) {
 	bn_t t;
 
 	bn_null(t);
@@ -98,7 +99,8 @@ void mpc_mt_bct(bn_t d[2], bn_t e[2], bn_t n) {
 	bn_copy(e[1], e[0]);
 }
 
-void mpc_mt_mul(bn_t r, bn_t d, bn_t e, bn_t n, mt_t tri, int party) {
+void mpc_mt_mul(bn_t r, const bn_t d, const bn_t e, const bn_t n,
+		const mt_t tri, int party) {
 	bn_t t;
 
 	bn_null(t);

@@ -163,7 +163,7 @@ typedef fb_t fb2_t[2];
  * @param[in] a				- the quadratic extension binary field element.
  * @param[in] b				- the quadratic extension binary field element.
  */
-void fb2_mul(fb2_t c, fb2_t a, fb2_t b);
+void fb2_mul(fb2_t c, const fb2_t a, const fb2_t b);
 
  /**
   * Multiples a quadratic extension field element by a quadratic non-residue.
@@ -173,7 +173,7 @@ void fb2_mul(fb2_t c, fb2_t a, fb2_t b);
   * @param[in] a				- the quadratic extension binary field element.
   * @param[in] b				- the quadratic extension binary field element.
   */
- void fb2_mul_nor(fb2_t c, fb2_t a);
+ void fb2_mul_nor(fb2_t c, const fb2_t a);
 
 /**
  * Computes the square of a quadratic extension field element. Computes
@@ -182,7 +182,7 @@ void fb2_mul(fb2_t c, fb2_t a, fb2_t b);
  * @param[out] c			- the result.
  * @param[in] a				- the binary field element to square.
  */
-void fb2_sqr(fb2_t c, fb2_t a);
+void fb2_sqr(fb2_t c, const fb2_t a);
 
 /**
  * Solves a quadratic equation for c, Tr(a) = 0. Computes c such that
@@ -191,7 +191,7 @@ void fb2_sqr(fb2_t c, fb2_t a);
  * @param[out] c			- the result.
  * @param[in] a				- the quadratic extension field element.
  */
-void fb2_slv(fb2_t c, fb2_t a);
+void fb2_slv(fb2_t c, const fb2_t a);
 
 /**
  * Inverts a quadratic extension field element. Computes c = a^{-1}.
@@ -199,6 +199,6 @@ void fb2_slv(fb2_t c, fb2_t a);
  * @param[out] c			- the result.
  * @param[in] a				- the quadratic extension field element to invert.
  */
-void fb2_inv(fb2_t c, fb2_t a);
+void fb2_inv(fb2_t c, const fb2_t a);
 
 #endif /* !RLC_FBX_H */

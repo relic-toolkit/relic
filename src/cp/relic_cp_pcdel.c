@@ -256,9 +256,8 @@ int cp_lvpub_gen(bn_t r, g1_t u1, g2_t u2, g2_t v2, gt_t e) {
 	return result;
 }
 
-int cp_lvpub_ask(bn_t c, const g1_t v1, const g2_t w2, const g1_t p,
-		const g2_t q, const bn_t r, const g1_t u1, const g2_t u2,
-		const g2_t v2) {
+int cp_lvpub_ask(bn_t c, g1_t v1, g2_t w2, const g1_t p, const g2_t q,
+		const bn_t r, const g1_t u1, const g2_t u2, const g2_t v2) {
 	int result = RLC_OK;
 
 	/* Sample random c. */

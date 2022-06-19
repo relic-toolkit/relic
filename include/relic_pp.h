@@ -549,7 +549,8 @@ void pp_add_k24_projc(fp24_t l, ep4_t r, const ep4_t q, const ep_t p);
  * @param[in] q				- the second point to add.
  * @param[in] p				- the affine point to evaluate the line function.
  */
-void pp_add_k48_basic(fp48_t l, fp8_t rx, fp8_t ry, fp8_t qx, fp8_t qy, const ep_t p);
+void pp_add_k48_basic(fp48_t l, fp8_t rx, fp8_t ry, fp8_t qx, fp8_t qy,
+        const ep_t p);
 
 /**
  * Adds two points and evaluates the corresponding line function at another
@@ -561,7 +562,8 @@ void pp_add_k48_basic(fp48_t l, fp8_t rx, fp8_t ry, fp8_t qx, fp8_t qy, const ep
  * @param[in] q				- the second point to add.
  * @param[in] p				- the affine point to evaluate the line function.
  */
-void pp_add_k48_projc(fp48_t l, fp8_t rx, fp8_t ry, fp8_t rz, const fp8_t qx, const fp8_t qy, const ep_t p);
+void pp_add_k48_projc(fp48_t l, fp8_t rx, fp8_t ry, fp8_t rz, const fp8_t qx,
+        const fp8_t qy, const ep_t p);
 
 /**
  * Adds two points and evaluates the corresponding line function at another
@@ -572,7 +574,8 @@ void pp_add_k48_projc(fp48_t l, fp8_t rx, fp8_t ry, fp8_t rz, const fp8_t qx, co
  * @param[in] q				- the second point to add.
  * @param[in] p				- the affine point to evaluate the line function.
  */
-void pp_add_k54_basic(fp54_t l, fp9_t rx, fp9_t ry, const fp9_t qx, const fp9_t qy, const ep_t p);
+void pp_add_k54_basic(fp54_t l, fp9_t rx, fp9_t ry, const fp9_t qx,
+        const fp9_t qy, const ep_t p);
 
 /**
  * Adds two points and evaluates the corresponding line function at another
@@ -584,7 +587,8 @@ void pp_add_k54_basic(fp54_t l, fp9_t rx, fp9_t ry, const fp9_t qx, const fp9_t 
  * @param[in] q				- the second point to add.
  * @param[in] p				- the affine point to evaluate the line function.
  */
-void pp_add_k54_projc(fp54_t l, fp9_t rx, fp9_t ry, fp9_t rz, const fp9_t qx, const fp9_t qy, const ep_t p);
+void pp_add_k54_projc(fp54_t l, fp9_t rx, fp9_t ry, fp9_t rz, const fp9_t qx,
+        const fp9_t qy, const ep_t p);
 
 /**
  * Doubles a point and evaluates the corresponding line function at another

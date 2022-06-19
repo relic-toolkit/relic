@@ -96,8 +96,8 @@ int cp_cls_sig(g1_t a, g1_t b, g1_t c, const uint8_t *msg, size_t len,
 	return result;
 }
 
-int cp_cls_ver(g1_t a, g1_t b, g1_t c, const uint8_t *msg, size_t len,
-		const g2_t x, const g2_t y) {
+int cp_cls_ver(const g1_t a, const g1_t b, const g1_t c, const uint8_t *msg,
+		size_t len, const g2_t x, const g2_t y) {
 	g1_t p[2];
 	g2_t r[2];
 	gt_t e;
@@ -406,9 +406,9 @@ int cp_clb_sig(g1_t a, g1_t A[], g1_t b, g1_t B[], g1_t c, const uint8_t *ms[],
 	return result;
 }
 
-int cp_clb_ver(g1_t a, g1_t A[], g1_t b, g1_t B[], g1_t c, const uint8_t *ms[],
-		const size_t ls[], const g2_t x, const g2_t y, const g2_t z[],
-		size_t l) {
+int cp_clb_ver(const g1_t a, const g1_t A[], const g1_t b, const g1_t B[],
+		const g1_t c, const uint8_t *ms[], const size_t ls[], const g2_t x,
+		const g2_t y, const g2_t z[], size_t l) {
 	g1_t p[2];
 	g2_t q[2];
 	gt_t e;

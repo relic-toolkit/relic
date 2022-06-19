@@ -141,7 +141,7 @@ typedef dig_t *dv_t;
  * @param[in] a				- the temporary digit vector to print.
  * @param[in] digits		- the number of digits to print.
  */
-void dv_print(dig_t *a, int digits);
+void dv_print(const dig_t *a, int digits);
 
 /**
  * Assigns zero to a temporary double-precision digit vector.

@@ -71,7 +71,7 @@ int cp_sokaka_gen_prv(sokaka_t k, const char *id, bn_t master) {
 }
 
 int cp_sokaka_key(uint8_t *key, size_t key_len, const char *id1,
-		sokaka_t k, const char *id2) {
+		const sokaka_t k, const char *id2) {
 	int len1 = strlen(id1), len2 = strlen(id2);
 	int size, first = 0, result = RLC_OK;
 	uint8_t *buf;

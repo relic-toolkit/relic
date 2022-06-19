@@ -57,7 +57,7 @@ int cp_mklhs_gen(bn_t sk, g2_t pk) {
 	return result;
 }
 
-int cp_mklhs_sig(g1_t s, bn_t m, const char *data, const char *id,
+int cp_mklhs_sig(g1_t s, const bn_t m, const char *data, const char *id,
 		const char *tag, const bn_t sk) {
 	bn_t n;
 	g1_t a;

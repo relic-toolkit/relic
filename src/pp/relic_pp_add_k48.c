@@ -37,7 +37,8 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-static void ep8_add_basic(fp8_t s, fp8_t rx, fp8_t ry, const fp8_t qx, const fp8_t qy) {
+static void ep8_add_basic(fp8_t s, fp8_t rx, fp8_t ry, const fp8_t qx,
+		const fp8_t qy) {
 	fp8_t t0, t1, t2;
 
 	fp8_null(t0);

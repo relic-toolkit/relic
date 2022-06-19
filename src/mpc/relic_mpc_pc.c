@@ -37,7 +37,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void g1_mul_lcl(bn_t d, g1_t q, bn_t x, g1_t p, mt_t tri) {
+void g1_mul_lcl(bn_t d, g1_t q, const bn_t x, const g1_t p, const mt_t tri) {
 	bn_t n;
 
 	bn_null(n);
@@ -89,7 +89,7 @@ void g1_mul_bct(bn_t d[2], g1_t q[2]) {
 	}
 }
 
-void g1_mul_mpc(g1_t r, bn_t d, g1_t q, mt_t tri, int party) {
+void g1_mul_mpc(g1_t r, const bn_t d, const g1_t q, const mt_t tri, int party) {
 	g1_t t;
 
 	g1_null(t);
@@ -116,7 +116,7 @@ void g1_mul_mpc(g1_t r, bn_t d, g1_t q, mt_t tri, int party) {
 	}
 }
 
-void g2_mul_lcl(bn_t d, g2_t q, bn_t x, g2_t p, mt_t tri) {
+void g2_mul_lcl(bn_t d, g2_t q, const bn_t x, const g2_t p, const mt_t tri) {
 	bn_t n;
 
 	bn_null(n);
@@ -168,7 +168,7 @@ void g2_mul_bct(bn_t d[2], g2_t q[2]) {
 	}
 }
 
-void g2_mul_mpc(g2_t r, bn_t d, g2_t q, mt_t tri, int party) {
+void g2_mul_mpc(g2_t r, const bn_t d, const g2_t q, const mt_t tri, int party) {
 	g2_t t;
 
 	g2_null(t);
@@ -195,7 +195,7 @@ void g2_mul_mpc(g2_t r, bn_t d, g2_t q, mt_t tri, int party) {
 	}
 }
 
-void gt_exp_lcl(bn_t d, gt_t q, bn_t x, gt_t p, mt_t tri) {
+void gt_exp_lcl(bn_t d, gt_t q, const bn_t x, const gt_t p, const mt_t tri) {
 	bn_t n;
 
 	bn_null(n);
@@ -247,7 +247,7 @@ void gt_exp_bct(bn_t d[2], gt_t q[2]) {
 	}
 }
 
-void gt_exp_mpc(gt_t r, bn_t d, gt_t q, mt_t tri, int party) {
+void gt_exp_mpc(gt_t r, const bn_t d, const gt_t q, const mt_t tri, int party) {
 	gt_t t;
 
 	gt_null(t);
@@ -302,7 +302,7 @@ void pc_map_tri(pt_t t[2]) {
 	}
 }
 
-void pc_map_lcl(g1_t d, g2_t e, g1_t p, g2_t q, pt_t t) {
+void pc_map_lcl(g1_t d, g2_t e, const g1_t p, const g2_t q, const pt_t t) {
 	/* Compute public values for transmission. */
 	g1_sub(d, p, t->a);
 	g1_norm(d, d);
@@ -320,7 +320,8 @@ void pc_map_bct(g1_t d[2], g2_t e[2]) {
 	g2_copy(e[1], e[0]);
 }
 
-void pc_map_mpc(gt_t r, g1_t d1, g2_t d2, pt_t triple, int party) {
+void pc_map_mpc(gt_t r, const g1_t d1, const g2_t d2, const pt_t triple,
+		int party) {
 	gt_t t;
 	g1_t _p[2];
 	g2_t _q[2];

@@ -1001,7 +1001,7 @@ int cp_ecdh_gen(bn_t d, ec_t q);
  * @param[in] q				- the point received from the other party.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_ecdh_key(uint8_t *key, size_t key_len, const bn_t d, ec_t q);
+int cp_ecdh_key(uint8_t *key, size_t key_len, const bn_t d, const ec_t q);
 
 /**
  * Generate an ECMQV key pair.
@@ -1493,7 +1493,7 @@ int cp_ibe_gen(bn_t master, g1_t pub);
  * @param[in] s				- the master key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_ibe_gen_prv(g2_t prv, const char *id, bn_t master);
+int cp_ibe_gen_prv(g2_t prv, const char *id, const bn_t master);
 
 /**
  * Encrypts a message using the BF-IBE protocol.
@@ -1734,9 +1734,9 @@ int cp_clb_sig(g1_t a, g1_t A[], g1_t b, g1_t B[], g1_t c, const uint8_t *ms[],
  * @param[in] l				- the number of messages to sign.
  * @return a boolean value indicating the verification result.
  */
-int cp_clb_ver(g1_t a, g1_t A[], g1_t b, g1_t B[], g1_t c, const uint8_t *ms[],
-		const size_t ls[], const g2_t x, const g2_t y, const g2_t z[],
-		size_t l);
+ int cp_clb_ver(const g1_t a, const g1_t A[], const g1_t b, const g1_t B[],
+ 		const g1_t c, const uint8_t *ms[], const size_t ls[], const g2_t x,
+ 		const g2_t y, const g2_t z[], size_t l);
 
 /**
  * Generates a key pair for the Pointcheval-Sanders simple signature (PSS)
@@ -1872,8 +1872,8 @@ int cp_psb_sig(g1_t a, g1_t b, const bn_t ms[], const bn_t r, const bn_t s[],
  * @param[in] l				- the number of messages to sign.
  * @return a boolean value indicating the verification result.
  */
-int cp_psb_ver(g1_t a, g1_t b, const bn_t ms[], const g2_t g, const g2_t x,
-		const g2_t y[], size_t l);
+int cp_psb_ver(const g1_t a, const g1_t b, const bn_t ms[], const g2_t g,
+		const g2_t x, const g2_t y[], size_t l);
 
 /**
  * Generates a key pair for the multi-part version of the Pointcheval-Sanders
@@ -2024,8 +2024,8 @@ int cp_vbnn_sig(ec_t r, bn_t z, bn_t h, const uint8_t *id, size_t id_len,
  * @param[in] mpk			- the master public key of the generation center.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_vbnn_ver(ec_t r, bn_t z, bn_t h, const uint8_t *id, size_t id_len,
-		const uint8_t *msg, int msg_len, const ec_t mpk);
+int cp_vbnn_ver(const ec_t r, const bn_t z, const bn_t h, const uint8_t *id,
+		size_t id_len, const uint8_t *msg, int msg_len, const ec_t mpk);
 
 /**
  * Computes the proof of knowledge of a discrete logarithm of an elliptic curve
@@ -2099,7 +2099,8 @@ int cp_sokdl_sig(bn_t c, bn_t r, const uint8_t *msg, size_t len, const ec_t y,
  * @param[in] y				- the elliptic curve point.
  * @return a boolean value indicating the verification result.
  */
-int cp_sokdl_ver(bn_t c, bn_t r, const uint8_t *msg, size_t len, const ec_t y);
+int cp_sokdl_ver(const bn_t c, const bn_t r, const uint8_t *msg, size_t len,
+		const ec_t y);
 
 /**
  * Computes the proof of knowledge of a discrete logarithm of an elliptic curve
