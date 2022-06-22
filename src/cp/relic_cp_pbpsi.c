@@ -64,7 +64,7 @@ int cp_pbpsi_gen(bn_t sk, g1_t ss, g2_t s[], size_t m) {
 
 int cp_pbpsi_ask(g2_t d[], bn_t r, const bn_t x[], const g2_t s[], size_t m) {
 	int i, result = RLC_OK;
-	bn_t t, q, *p = RLC_ALLOCA(bn_t, m + 1), *_x = RLC_ALLOCA(bn_t, m + 1)
+	bn_t t, q, *p = RLC_ALLOCA(bn_t, m + 1), *_x = RLC_ALLOCA(bn_t, m + 1);
 
 	bn_null(q);
 	bn_null(t);
