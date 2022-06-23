@@ -41,7 +41,7 @@
 
 #if EP_ADD == BASIC || !defined(STRIP)
 
-void pp_add_k2_basic(fp2_t l, ep_t r, ep_t p, ep_t q) {
+void pp_add_k2_basic(fp2_t l, ep_t r, const ep_t p, const ep_t q) {
 	fp_t s;
 	ep_t t;
 
@@ -72,7 +72,7 @@ void pp_add_k2_basic(fp2_t l, ep_t r, ep_t p, ep_t q) {
 
 #if PP_EXT == BASIC || !defined(STRIP)
 
-void pp_add_k2_projc_basic(fp2_t l, ep_t r, ep_t p, ep_t q) {
+void pp_add_k2_projc_basic(fp2_t l, ep_t r, const ep_t p, const ep_t q) {
 	fp_t t0, t1, t2, t3, t4, t5;
 
 	fp_null(t0);
@@ -154,7 +154,7 @@ void pp_add_k2_projc_basic(fp2_t l, ep_t r, ep_t p, ep_t q) {
 
 #if PP_EXT == LAZYR || !defined(STRIP)
 
-void pp_add_k2_projc_lazyr(fp2_t l, ep_t r, ep_t p, ep_t q) {
+void pp_add_k2_projc_lazyr(fp2_t l, ep_t r, const ep_t p, const ep_t q) {
 	fp_t t0, t1, t2, t3, t4, t5;
 	dv_t u0, u1;
 

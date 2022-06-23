@@ -39,11 +39,11 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void pp_norm_k2(ep_t r, ep_t p) {
+void pp_norm_k2(ep_t r, const ep_t p) {
 	ep_norm(r, p);
 }
 
-void pp_norm_k8(ep2_t r, ep2_t p) {
+void pp_norm_k8(ep2_t r, const ep2_t p) {
 	if (ep2_is_infty(p)) {
 		ep2_set_infty(r);
 		return;
@@ -63,7 +63,7 @@ void pp_norm_k8(ep2_t r, ep2_t p) {
 #endif
 }
 
-void pp_norm_k12(ep2_t r, ep2_t p) {
+void pp_norm_k12(ep2_t r, const ep2_t p) {
 	if (ep2_is_infty(p)) {
 		ep2_set_infty(r);
 		return;
@@ -82,7 +82,7 @@ void pp_norm_k12(ep2_t r, ep2_t p) {
 #endif
 }
 
-void pp_norm_k24(ep4_t r, ep4_t p) {
+void pp_norm_k24(ep4_t r, const ep4_t p) {
 	if (ep4_is_infty(p)) {
 		ep4_set_infty(r);
 		return;

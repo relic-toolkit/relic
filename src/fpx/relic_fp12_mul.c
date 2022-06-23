@@ -39,7 +39,7 @@
 
 #if FPX_RDC == LAZYR || !defined(STRIP)
 
-inline static void fp6_mul_dxs_unr_lazyr(dv6_t c, fp6_t a, fp6_t b) {
+inline static void fp6_mul_dxs_unr_lazyr(dv6_t c, const fp6_t a, const fp6_t b) {
 	dv2_t u0, u1, u2, u3;
 	fp2_t t0, t1;
 
@@ -117,7 +117,7 @@ inline static void fp6_mul_dxs_unr_lazyr(dv6_t c, fp6_t a, fp6_t b) {
 
 #if FPX_RDC == BASIC || !defined(STRIP)
 
-void fp12_mul_basic(fp12_t c, fp12_t a, fp12_t b) {
+void fp12_mul_basic(fp12_t c, const fp12_t a, const fp12_t b) {
 	fp6_t t0, t1, t2;
 
 	fp6_null(t0);
@@ -158,7 +158,7 @@ void fp12_mul_basic(fp12_t c, fp12_t a, fp12_t b) {
 	}
 }
 
-void fp12_mul_dxs_basic(fp12_t c, fp12_t a, fp12_t b) {
+void fp12_mul_dxs_basic(fp12_t c, const fp12_t a, const fp12_t b) {
 	fp6_t t0, t1, t2;
 
 	fp6_null(t0);
@@ -245,7 +245,7 @@ void fp12_mul_dxs_basic(fp12_t c, fp12_t a, fp12_t b) {
 
 #if FPX_RDC == LAZYR || !defined(STRIP)
 
-void fp12_mul_unr(dv12_t c, fp12_t a, fp12_t b) {
+void fp12_mul_unr(dv12_t c, const fp12_t a, const fp12_t b) {
 	fp6_t t0, t1;
 	dv6_t u0, u1, u2, u3;
 
@@ -298,7 +298,7 @@ void fp12_mul_unr(dv12_t c, fp12_t a, fp12_t b) {
 	}
 }
 
-void fp12_mul_lazyr(fp12_t c, fp12_t a, fp12_t b) {
+void fp12_mul_lazyr(fp12_t c, const fp12_t a, const fp12_t b) {
 	dv12_t t;
 
 	dv12_null(t);
@@ -317,7 +317,7 @@ void fp12_mul_lazyr(fp12_t c, fp12_t a, fp12_t b) {
 	}
 }
 
-void fp12_mul_dxs_lazyr(fp12_t c, fp12_t a, fp12_t b) {
+void fp12_mul_dxs_lazyr(fp12_t c, const fp12_t a, const fp12_t b) {
 	fp6_t t0;
 	dv6_t u0, u1, u2;
 
@@ -421,7 +421,7 @@ void fp12_mul_dxs_lazyr(fp12_t c, fp12_t a, fp12_t b) {
 
 #endif
 
-void fp12_mul_art(fp12_t c, fp12_t a) {
+void fp12_mul_art(fp12_t c, const fp12_t a) {
 	fp6_t t0;
 
 	fp6_null(t0);

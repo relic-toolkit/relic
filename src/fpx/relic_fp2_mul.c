@@ -39,7 +39,7 @@
 
 #if FPX_QDR == BASIC || !defined(STRIP)
 
-void fp2_mul_basic(fp2_t c, fp2_t a, fp2_t b) {
+void fp2_mul_basic(fp2_t c, const fp2_t a, const fp2_t b) {
 	dv_t t0, t1, t2, t3, t4;
 
 	dv_null(t0);
@@ -103,7 +103,7 @@ void fp2_mul_basic(fp2_t c, fp2_t a, fp2_t b) {
 	}
 }
 
-void fp2_mul_nor_basic(fp2_t c, fp2_t a) {
+void fp2_mul_nor_basic(fp2_t c, const fp2_t a) {
 	fp2_t t;
 	bn_t b;
 
@@ -163,17 +163,17 @@ void fp2_mul_nor_basic(fp2_t c, fp2_t a) {
 
 #if FPX_QDR == INTEG || !defined(STRIP)
 
-void fp2_mul_integ(fp2_t c, fp2_t a, fp2_t b) {
+void fp2_mul_integ(fp2_t c, const fp2_t a, const fp2_t b) {
 	fp2_mulm_low(c, a, b);
 }
 
-void fp2_mul_nor_integ(fp2_t c, fp2_t a) {
+void fp2_mul_nor_integ(fp2_t c, const fp2_t a) {
 	fp2_norm_low(c, a);
 }
 
 #endif
 
-void fp2_mul_art(fp2_t c, fp2_t a) {
+void fp2_mul_art(fp2_t c, const fp2_t a) {
 	fp_t t;
 
 	fp_null(t);
@@ -207,7 +207,7 @@ void fp2_mul_art(fp2_t c, fp2_t a) {
 	}
 }
 
-void fp2_mul_frb(fp2_t c, fp2_t a, int i, int j) {
+void fp2_mul_frb(fp2_t c, const fp2_t a, int i, int j) {
 	ctx_t *ctx = core_get();
 
 #if ALLOC == AUTO

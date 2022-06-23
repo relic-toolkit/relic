@@ -44,7 +44,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-int cp_rsapsi_gen(bn_t g, bn_t n, int bits) {
+int cp_rsapsi_gen(bn_t g, bn_t n, size_t bits) {
 	bn_t p, q;
 
 	bn_null(p);
@@ -77,7 +77,8 @@ int cp_rsapsi_gen(bn_t g, bn_t n, int bits) {
 	return RLC_OK;
 }
 
-int cp_rsapsi_ask(bn_t d, bn_t r, bn_t p[], bn_t g, bn_t n, bn_t x[], int m) {
+int cp_rsapsi_ask(bn_t d, bn_t r, bn_t p[], const bn_t g, const bn_t n,
+		const bn_t x[], size_t m) {
 	int i, result = RLC_OK, len = RLC_CEIL(RLC_BN_BITS, 8);
 	uint8_t h[RLC_MD_LEN], bin[RLC_CEIL(RLC_BN_BITS, 8)];
 
@@ -102,7 +103,8 @@ int cp_rsapsi_ask(bn_t d, bn_t r, bn_t p[], bn_t g, bn_t n, bn_t x[], int m) {
 	return result;
 }
 
-int cp_rsapsi_ans(bn_t t[], bn_t u[], bn_t d, bn_t g, bn_t n, bn_t y[], int l) {
+int cp_rsapsi_ans(bn_t t[], bn_t u[], const bn_t d, const bn_t g, const bn_t n,
+		const bn_t y[], size_t l) {
 	int j, result = RLC_OK, len = RLC_CEIL(RLC_BN_BITS, 8);
 	uint8_t h[RLC_MD_LEN], bin[RLC_CEIL(RLC_BN_BITS, 8)];
 	unsigned int *shuffle = RLC_ALLOCA(unsigned int, l);
@@ -144,8 +146,9 @@ int cp_rsapsi_ans(bn_t t[], bn_t u[], bn_t d, bn_t g, bn_t n, bn_t y[], int l) {
 	return result;
 }
 
-int cp_rsapsi_int(bn_t z[], int *len, bn_t r, bn_t p[], bn_t n, bn_t x[], int m,
-		bn_t t[], bn_t u[], int l) {
+int cp_rsapsi_int(bn_t z[], size_t *len, const bn_t r, const bn_t p[],
+		const bn_t n, const bn_t x[], size_t m, const bn_t t[], const bn_t u[],
+		size_t l) {
 	int i, j, k, result = RLC_OK;
 	bn_t e, f;
 

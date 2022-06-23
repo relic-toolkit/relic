@@ -39,7 +39,7 @@
 
 #if FPX_RDC == BASIC || !defined(STRIP)
 
-void fp18_sqr_basic(fp18_t c, fp18_t a) {
+void fp18_sqr_basic(fp18_t c, const fp18_t a) {
 	fp9_t t0, t1;
 
 	fp9_null(t0);
@@ -70,7 +70,7 @@ void fp18_sqr_basic(fp18_t c, fp18_t a) {
 
 #if FPX_RDC == LAZYR || !defined(STRIP)
 
-void fp18_sqr_unr(dv18_t c, fp18_t a) {
+void fp18_sqr_unr(dv18_t c, const fp18_t a) {
 	fp9_t t;
 	dv9_t u0, u1, u2;
 
@@ -123,7 +123,7 @@ void fp18_sqr_unr(dv18_t c, fp18_t a) {
 	}
 }
 
-void fp18_sqr_lazyr(fp18_t c, fp18_t a) {
+void fp18_sqr_lazyr(fp18_t c, const fp18_t a) {
 	dv18_t t;
 
 	dv18_null(t);

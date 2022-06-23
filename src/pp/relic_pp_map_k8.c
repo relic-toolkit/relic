@@ -120,7 +120,7 @@ static void pp_mil_k8(fp8_t r, ep2_t *t, ep2_t *q, ep_t *p, int m, bn_t a) {
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void pp_map_oatep_k8(fp8_t r, ep_t p, ep2_t q) {
+void pp_map_oatep_k8(fp8_t r, const ep_t p, const ep2_t q) {
 	ep_t _p[1];
 	ep2_t t[1], _q[1];
 	bn_t a;

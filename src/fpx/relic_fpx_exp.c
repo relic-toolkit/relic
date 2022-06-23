@@ -35,7 +35,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void fp2_exp(fp2_t c, fp2_t a, bn_t b) {
+void fp2_exp(fp2_t c, const fp2_t a, const bn_t b) {
 	fp2_t t;
 
 	if (bn_is_zero(b)) {
@@ -70,7 +70,7 @@ void fp2_exp(fp2_t c, fp2_t a, bn_t b) {
 	}
 }
 
-void fp2_exp_dig(fp2_t c, fp2_t a, dig_t b) {
+void fp2_exp_dig(fp2_t c, const fp2_t a, dig_t b) {
 	fp2_t t;
 
 	if (b == 0) {
@@ -101,7 +101,7 @@ void fp2_exp_dig(fp2_t c, fp2_t a, dig_t b) {
 	}
 }
 
-void fp3_exp(fp3_t c, fp3_t a, bn_t b) {
+void fp3_exp(fp3_t c, const fp3_t a, const bn_t b) {
 	fp3_t t;
 
 	if (bn_is_zero(b)) {
@@ -137,7 +137,7 @@ void fp3_exp(fp3_t c, fp3_t a, bn_t b) {
 	}
 }
 
-void fp4_exp(fp4_t c, fp4_t a, bn_t b) {
+void fp4_exp(fp4_t c, const fp4_t a, const bn_t b) {
 	fp4_t t;
 
 	if (bn_is_zero(b)) {
@@ -173,7 +173,7 @@ void fp4_exp(fp4_t c, fp4_t a, bn_t b) {
 	}
 }
 
-void fp6_exp(fp6_t c, fp6_t a, bn_t b) {
+void fp6_exp(fp6_t c, const fp6_t a, const bn_t b) {
 	fp6_t t;
 
 	if (bn_is_zero(b)) {
@@ -209,7 +209,7 @@ void fp6_exp(fp6_t c, fp6_t a, bn_t b) {
 	}
 }
 
-void fp8_exp(fp8_t c, fp8_t a, bn_t b) {
+void fp8_exp(fp8_t c, const fp8_t a, const bn_t b) {
 	fp8_t t;
 
 	if (bn_is_zero(b)) {
@@ -249,7 +249,7 @@ void fp8_exp(fp8_t c, fp8_t a, bn_t b) {
 	}
 }
 
-void fp9_exp(fp9_t c, fp9_t a, bn_t b) {
+void fp9_exp(fp9_t c, const fp9_t a, const bn_t b) {
 	fp9_t t;
 
 	if (bn_is_zero(b)) {
@@ -285,7 +285,7 @@ void fp9_exp(fp9_t c, fp9_t a, bn_t b) {
 	}
 }
 
-void fp12_exp(fp12_t c, fp12_t a, bn_t b) {
+void fp12_exp(fp12_t c, const fp12_t a, const bn_t b) {
 	fp12_t t;
 
 	if (bn_is_zero(b)) {
@@ -325,7 +325,7 @@ void fp12_exp(fp12_t c, fp12_t a, bn_t b) {
 	}
 }
 
-void fp12_exp_dig(fp12_t c, fp12_t a, dig_t b) {
+void fp12_exp_dig(fp12_t c, const fp12_t a, dig_t b) {
 	bn_t _b;
 	fp12_t t, v;
 	int8_t u, naf[RLC_DIG + 1];
@@ -385,7 +385,7 @@ void fp12_exp_dig(fp12_t c, fp12_t a, dig_t b) {
 	}
 }
 
-void fp18_exp(fp18_t c, fp18_t a, bn_t b) {
+void fp18_exp(fp18_t c, const fp18_t a, const bn_t b) {
 	fp18_t t;
 
 	if (bn_is_zero(b)) {
@@ -421,7 +421,7 @@ void fp18_exp(fp18_t c, fp18_t a, bn_t b) {
 	}
 }
 
-void fp24_exp(fp24_t c, fp24_t a, bn_t b) {
+void fp24_exp(fp24_t c, const fp24_t a, const bn_t b) {
 	fp24_t t;
 
 	if (bn_is_zero(b)) {
@@ -457,7 +457,7 @@ void fp24_exp(fp24_t c, fp24_t a, bn_t b) {
 	}
 }
 
-void fp24_exp_dig(fp24_t c, fp24_t a, dig_t b) {
+void fp24_exp_dig(fp24_t c, const fp24_t a, dig_t b) {
 	bn_t _b;
 	fp24_t t, v;
 	int8_t u, naf[RLC_DIG + 1];
@@ -517,7 +517,7 @@ void fp24_exp_dig(fp24_t c, fp24_t a, dig_t b) {
 	}
 }
 
-void fp48_exp(fp48_t c, fp48_t a, bn_t b) {
+void fp48_exp(fp48_t c, const fp48_t a, const bn_t b) {
 	fp48_t t;
 
 	if (bn_is_zero(b)) {
@@ -557,7 +557,7 @@ void fp48_exp(fp48_t c, fp48_t a, bn_t b) {
 	}
 }
 
-void fp48_exp_dig(fp48_t c, fp48_t a, dig_t b) {
+void fp48_exp_dig(fp48_t c, const fp48_t a, dig_t b) {
 	bn_t _b;
 	fp48_t t, v;
 	int8_t u, naf[RLC_DIG + 1];
@@ -617,7 +617,7 @@ void fp48_exp_dig(fp48_t c, fp48_t a, dig_t b) {
 	}
 }
 
-void fp54_exp(fp54_t c, fp54_t a, bn_t b) {
+void fp54_exp(fp54_t c, const fp54_t a, const bn_t b) {
 	fp54_t t;
 
 	if (bn_is_zero(b)) {
@@ -653,7 +653,7 @@ void fp54_exp(fp54_t c, fp54_t a, bn_t b) {
 	}
 }
 
-void fp54_exp_dig(fp54_t c, fp54_t a, dig_t b) {
+void fp54_exp_dig(fp54_t c, const fp54_t a, dig_t b) {
 	bn_t _b;
 	fp54_t t, v;
 	int8_t u, naf[RLC_DIG + 1];

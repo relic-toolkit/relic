@@ -36,7 +36,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void fp2_conv_cyc(fp2_t c, fp2_t a) {
+void fp2_conv_cyc(fp2_t c, const fp2_t a) {
 	fp2_t t;
 
 	fp2_null(t);
@@ -59,7 +59,7 @@ void fp2_conv_cyc(fp2_t c, fp2_t a) {
 	}
 }
 
-int fp2_test_cyc(fp2_t a) {
+int fp2_test_cyc(const fp2_t a) {
 	fp2_t t;
 	int result = 0;
 
@@ -81,7 +81,7 @@ int fp2_test_cyc(fp2_t a) {
 	return result;
 }
 
-void fp2_exp_cyc(fp2_t c, fp2_t a, bn_t b) {
+void fp2_exp_cyc(fp2_t c, const fp2_t a, const bn_t b) {
 	fp2_t r, s, t[1 << (FP_WIDTH - 2)];
 	int i, l;
 	int8_t naf[RLC_FP_BITS + 1], *k;
@@ -146,7 +146,7 @@ void fp2_exp_cyc(fp2_t c, fp2_t a, bn_t b) {
 	}
 }
 
-void fp8_conv_cyc(fp8_t c, fp8_t a) {
+void fp8_conv_cyc(fp8_t c, const fp8_t a) {
 	fp8_t t;
 
 	fp8_null(t);
@@ -169,7 +169,7 @@ void fp8_conv_cyc(fp8_t c, fp8_t a) {
 	}
 }
 
-int fp8_test_cyc(fp8_t a) {
+int fp8_test_cyc(const fp8_t a) {
 	fp8_t t;
 	int result = 0;
 
@@ -191,7 +191,7 @@ int fp8_test_cyc(fp8_t a) {
 	return result;
 }
 
-void fp8_exp_cyc(fp8_t c, fp8_t a, bn_t b) {
+void fp8_exp_cyc(fp8_t c, const fp8_t a, const bn_t b) {
 	fp8_t r, s, t[1 << (FP_WIDTH - 2)];
 	int i, l;
 	int8_t naf[RLC_FP_BITS + 1], *k;
@@ -256,7 +256,7 @@ void fp8_exp_cyc(fp8_t c, fp8_t a, bn_t b) {
 	}
 }
 
-void fp12_conv_cyc(fp12_t c, fp12_t a) {
+void fp12_conv_cyc(fp12_t c, const fp12_t a) {
 	fp12_t t;
 
 	fp12_null(t);
@@ -287,7 +287,7 @@ void fp12_conv_cyc(fp12_t c, fp12_t a) {
 	}
 }
 
-int fp12_test_cyc(fp12_t a) {
+int fp12_test_cyc(const fp12_t a) {
 	fp12_t t0, t1;
 	int result = 0;
 
@@ -316,7 +316,7 @@ int fp12_test_cyc(fp12_t a) {
 	return result;
 }
 
-void fp12_back_cyc(fp12_t c, fp12_t a) {
+void fp12_back_cyc(fp12_t c, const fp12_t a) {
 	fp2_t t0, t1, t2;
 
 	fp2_null(t0);
@@ -374,7 +374,7 @@ void fp12_back_cyc(fp12_t c, fp12_t a) {
 	}
 }
 
-void fp12_back_cyc_sim(fp12_t c[], fp12_t a[], int n) {
+void fp12_back_cyc_sim(fp12_t c[], const fp12_t a[], int n) {
     fp2_t *t = RLC_ALLOCA(fp2_t, n * 3);
     fp2_t
         *t0 = t + 0 * n,
@@ -453,7 +453,7 @@ void fp12_back_cyc_sim(fp12_t c[], fp12_t a[], int n) {
 	}
 }
 
-void fp12_exp_cyc(fp12_t c, fp12_t a, bn_t b) {
+void fp12_exp_cyc(fp12_t c, const fp12_t a, const bn_t b) {
 	int i, j, k, l, w = bn_ham(b);
 
 	if (bn_is_zero(b)) {
@@ -602,7 +602,7 @@ void fp12_exp_cyc(fp12_t c, fp12_t a, bn_t b) {
 	}
 }
 
-void fp2_exp_cyc_sim(fp2_t e, fp2_t a, bn_t b, fp2_t c, bn_t d) {
+void fp2_exp_cyc_sim(fp2_t e, const fp2_t a, const bn_t b, const fp2_t c, const bn_t d) {
 	int i, l, n0, n1, l0, l1;
 	int8_t naf0[RLC_FP_BITS + 1], naf1[RLC_FP_BITS + 1], *_k, *_m;
 	fp2_t r, t0[1 << (EP_WIDTH - 2)];
@@ -703,7 +703,7 @@ void fp2_exp_cyc_sim(fp2_t e, fp2_t a, bn_t b, fp2_t c, bn_t d) {
 }
 
 
-void fp12_exp_cyc_sim(fp12_t e, fp12_t a, bn_t b, fp12_t c, bn_t d) {
+void fp12_exp_cyc_sim(fp12_t e, const fp12_t a, const bn_t b, const fp12_t c, const bn_t d) {
 	int i, j, l;
 	bn_t _b[4], _d[4], n, x;
 	fp12_t t[4], u[4];
@@ -805,7 +805,7 @@ void fp12_exp_cyc_sim(fp12_t e, fp12_t a, bn_t b, fp12_t c, bn_t d) {
 	}
 }
 
-void fp12_exp_cyc_sps(fp12_t c, fp12_t a, const int *b, int len, int sign) {
+void fp12_exp_cyc_sps(fp12_t c, const fp12_t a, const int *b, int len, int sign) {
 	int i, j, k, w = len;
     fp12_t t, *u = RLC_ALLOCA(fp12_t, w);
 
@@ -884,7 +884,7 @@ void fp12_exp_cyc_sps(fp12_t c, fp12_t a, const int *b, int len, int sign) {
 	}
 }
 
-void fp24_conv_cyc(fp24_t c, fp24_t a) {
+void fp24_conv_cyc(fp24_t c, const fp24_t a) {
 	fp24_t t;
 
 	fp24_null(t);
@@ -915,7 +915,7 @@ void fp24_conv_cyc(fp24_t c, fp24_t a) {
 	}
 }
 
-int fp24_test_cyc(fp24_t a) {
+int fp24_test_cyc(const fp24_t a) {
 	fp24_t t0, t1;
 	int result = 0;
 
@@ -944,7 +944,7 @@ int fp24_test_cyc(fp24_t a) {
 	return result;
 }
 
-void fp24_back_cyc(fp24_t c, fp24_t a) {
+void fp24_back_cyc(fp24_t c, const fp24_t a) {
 	fp4_t t0, t1, t2;
 
 	fp4_null(t0);
@@ -1002,7 +1002,7 @@ void fp24_back_cyc(fp24_t c, fp24_t a) {
 	}
 }
 
-void fp24_back_cyc_sim(fp24_t c[], fp24_t a[], int n) {
+void fp24_back_cyc_sim(fp24_t c[], const fp24_t a[], int n) {
     fp4_t *t = RLC_ALLOCA(fp4_t, n * 3);
     fp4_t
         *t0 = t + 0 * n,
@@ -1081,7 +1081,7 @@ void fp24_back_cyc_sim(fp24_t c[], fp24_t a[], int n) {
 	}
 }
 
-void fp24_exp_cyc(fp24_t c, fp24_t a, bn_t b) {
+void fp24_exp_cyc(fp24_t c, const fp24_t a, const bn_t b) {
 	int i, j, k, w = bn_ham(b);
 
 	if (bn_is_zero(b)) {
@@ -1233,7 +1233,7 @@ void fp24_exp_cyc(fp24_t c, fp24_t a, bn_t b) {
 	}
 }
 
-void fp24_exp_cyc_sim(fp24_t e, fp24_t a, bn_t b, fp24_t c, bn_t d) {
+void fp24_exp_cyc_sim(fp24_t e, const fp24_t a, const bn_t b, const fp24_t c, const bn_t d) {
 	int i, l, n0, n1, l0, l1;
 	int8_t naf0[RLC_FP_BITS + 1], naf1[RLC_FP_BITS + 1], *_k, *_m;
 	fp24_t r, t0[1 << (EP_WIDTH - 2)];
@@ -1333,7 +1333,7 @@ void fp24_exp_cyc_sim(fp24_t e, fp24_t a, bn_t b, fp24_t c, bn_t d) {
 	}
 }
 
-void fp24_exp_cyc_sps(fp24_t c, fp24_t a, const int *b, int len, int sign) {
+void fp24_exp_cyc_sps(fp24_t c, const fp24_t a, const int *b, int len, int sign) {
 	int i, j, k, w = len;
     fp24_t t, *u = RLC_ALLOCA(fp24_t, w);
 
@@ -1412,7 +1412,7 @@ void fp24_exp_cyc_sps(fp24_t c, fp24_t a, const int *b, int len, int sign) {
 	}
 }
 
-void fp48_conv_cyc(fp48_t c, fp48_t a) {
+void fp48_conv_cyc(fp48_t c, const fp48_t a) {
 	fp48_t t;
 
 	fp48_null(t);
@@ -1443,7 +1443,7 @@ void fp48_conv_cyc(fp48_t c, fp48_t a) {
 	}
 }
 
-int fp48_test_cyc(fp48_t a) {
+int fp48_test_cyc(const fp48_t a) {
 	fp48_t t0, t1;
 	int result = 0;
 
@@ -1472,7 +1472,7 @@ int fp48_test_cyc(fp48_t a) {
 	return result;
 }
 
-void fp48_back_cyc(fp48_t c, fp48_t a) {
+void fp48_back_cyc(fp48_t c, const fp48_t a) {
 	fp8_t t0, t1, t2;
 
 	fp8_null(t0);
@@ -1530,7 +1530,7 @@ void fp48_back_cyc(fp48_t c, fp48_t a) {
 	}
 }
 
-void fp48_back_cyc_sim(fp48_t c[], fp48_t a[], int n) {
+void fp48_back_cyc_sim(fp48_t c[], const fp48_t a[], int n) {
     fp8_t *t = RLC_ALLOCA(fp8_t, n * 3);
     fp8_t
         *t0 = t + 0 * n,
@@ -1609,7 +1609,7 @@ void fp48_back_cyc_sim(fp48_t c[], fp48_t a[], int n) {
 	}
 }
 
-void fp48_exp_cyc(fp48_t c, fp48_t a, bn_t b) {
+void fp48_exp_cyc(fp48_t c, const fp48_t a, const bn_t b) {
 	int i, j, k, w = bn_ham(b);
 
 	if (bn_is_zero(b)) {
@@ -1704,7 +1704,7 @@ void fp48_exp_cyc(fp48_t c, fp48_t a, bn_t b) {
 	}
 }
 
-void fp48_exp_cyc_sps(fp48_t c, fp48_t a, const int *b, int len, int sign) {
+void fp48_exp_cyc_sps(fp48_t c, const fp48_t a, const int *b, int len, int sign) {
 	int i, j, k, w = len;
     fp48_t t, *u = RLC_ALLOCA(fp48_t, w);
 
@@ -1783,7 +1783,7 @@ void fp48_exp_cyc_sps(fp48_t c, fp48_t a, const int *b, int len, int sign) {
 	}
 }
 
-void fp54_conv_cyc(fp54_t c, fp54_t a) {
+void fp54_conv_cyc(fp54_t c, const fp54_t a) {
 	fp54_t t;
 
 	fp54_null(t);
@@ -1814,7 +1814,7 @@ void fp54_conv_cyc(fp54_t c, fp54_t a) {
 	}
 }
 
-int fp54_test_cyc(fp54_t a) {
+int fp54_test_cyc(const fp54_t a) {
 	fp54_t t0, t1;
 	int result = 0;
 
@@ -1842,7 +1842,7 @@ int fp54_test_cyc(fp54_t a) {
 	return result;
 }
 
-void fp54_back_cyc(fp54_t c, fp54_t a) {
+void fp54_back_cyc(fp54_t c, const fp54_t a) {
 	fp9_t t0, t1, t2;
 
 	fp9_null(t0);
@@ -1900,7 +1900,7 @@ void fp54_back_cyc(fp54_t c, fp54_t a) {
 	}
 }
 
-void fp54_back_cyc_sim(fp54_t c[], fp54_t a[], int n) {
+void fp54_back_cyc_sim(fp54_t c[], const fp54_t a[], int n) {
     fp9_t *t = RLC_ALLOCA(fp9_t, n * 3);
     fp9_t
         *t0 = t + 0 * n,
@@ -1979,7 +1979,7 @@ void fp54_back_cyc_sim(fp54_t c[], fp54_t a[], int n) {
 	}
 }
 
-void fp54_exp_cyc(fp54_t c, fp54_t a, bn_t b) {
+void fp54_exp_cyc(fp54_t c, const fp54_t a, const bn_t b) {
 	int i, j, k, w = bn_ham(b);
 
 	if (bn_is_zero(b)) {
@@ -2075,7 +2075,7 @@ void fp54_exp_cyc(fp54_t c, fp54_t a, bn_t b) {
 	}
 }
 
-void fp54_exp_cyc_sps(fp54_t c, fp54_t a, const int *b, int len, int sign) {
+void fp54_exp_cyc_sps(fp54_t c, const fp54_t a, const int *b, int len, int sign) {
 	int i, j, k, w = len;
     fp54_t t, *u = RLC_ALLOCA(fp54_t, w);
 

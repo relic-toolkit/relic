@@ -39,7 +39,7 @@
 
 #if FPX_RDC == BASIC || !defined(STRIP)
 
-void fp18_mul_basic(fp18_t c, fp18_t a, fp18_t b) {
+void fp18_mul_basic(fp18_t c, const fp18_t a, const fp18_t b) {
 	fp9_t t0, t1, t2;
 
 	fp9_null(t0);
@@ -84,7 +84,7 @@ void fp18_mul_basic(fp18_t c, fp18_t a, fp18_t b) {
 
 #if FPX_RDC == LAZYR || !defined(STRIP)
 
-void fp18_mul_unr(dv18_t c, fp18_t a, fp18_t b) {
+void fp18_mul_unr(dv18_t c, const fp18_t a, const fp18_t b) {
 	fp9_t t0, t1;
 	dv9_t u0, u1, u2, u3;
 
@@ -137,7 +137,7 @@ void fp18_mul_unr(dv18_t c, fp18_t a, fp18_t b) {
 	}
 }
 
-void fp18_mul_lazyr(fp18_t c, fp18_t a, fp18_t b) {
+void fp18_mul_lazyr(fp18_t c, const fp18_t a, const fp18_t b) {
 	dv18_t t;
 
 	dv18_null(t);
@@ -159,7 +159,7 @@ void fp18_mul_lazyr(fp18_t c, fp18_t a, fp18_t b) {
 
 #endif
 
-void fp18_mul_dxs(fp18_t c, fp18_t a, fp18_t b) {
+void fp18_mul_dxs(fp18_t c, const fp18_t a, const fp18_t b) {
 	fp9_t t0, t1, t2;
 
 	fp9_null(t0);
@@ -205,7 +205,7 @@ void fp18_mul_dxs(fp18_t c, fp18_t a, fp18_t b) {
 	}
 }
 
-void fp18_mul_art(fp18_t c, fp18_t a) {
+void fp18_mul_art(fp18_t c, const fp18_t a) {
 	fp9_t t0;
 
 	fp9_null(t0);

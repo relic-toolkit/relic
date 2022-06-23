@@ -40,7 +40,7 @@
 static void rsa(void) {
 	rsa_t pub, prv;
 	uint8_t in[10], new[10], h[RLC_MD_LEN], out[RLC_BN_BITS / 8 + 1];
-	int out_len, new_len;
+	size_t out_len, new_len;
 
 	rsa_null(pub);
 	rsa_null(prv);
@@ -105,7 +105,7 @@ static void rsa(void) {
 static void rabin(void) {
 	rabin_t pub, prv;
 	uint8_t in[1000], new[1000], out[RLC_BN_BITS / 8 + 1];
-	int in_len, out_len, new_len;
+	size_t in_len, out_len, new_len;
 
 	rabin_null(pub);
 	rabin_null(prv);
@@ -140,7 +140,7 @@ static void benaloh(void) {
 	bdpe_t pub, prv;
 	dig_t in, new;
 	uint8_t out[RLC_BN_BITS / 8 + 1];
-	int out_len;
+	size_t out_len;
 
 	bdpe_null(pub);
 	bdpe_null(prv);
@@ -334,7 +334,7 @@ static void ecies(void) {
 	ec_t q, r;
 	bn_t d;
 	uint8_t in[10], out[16 + RLC_MD_LEN];
-	int in_len, out_len;
+	size_t in_len, out_len;
 
 	bn_null(d);
 	ec_null(q);
@@ -525,11 +525,11 @@ static void vbnn(void) {
 #define MIN_KEYS	RLC_MIN(BENCH, 16)
 
 static void ers(void) {
-	int size;
+	size_t size;
 	ec_t pp, pk[MAX_KEYS + 1];
 	bn_t sk[MAX_KEYS + 1], td;
 	ers_t ring[MAX_KEYS + 1];
-	uint8_t m[5] = { 0, 1, 2, 3, 4 };
+	const uint8_t m[5] = { 0, 1, 2, 3, 4 };
 
 	bn_null(td);
 	ec_null(pp);
@@ -580,11 +580,11 @@ static void ers(void) {
 }
 
 static void smlers(void) {
-	int size;
+	size_t size;
 	ec_t pp, pk[MAX_KEYS + 1];
 	bn_t sk[MAX_KEYS + 1], td;
 	smlers_t ring[MAX_KEYS + 1];
-	uint8_t m[5] = { 0, 1, 2, 3, 4 };
+	const uint8_t m[5] = { 0, 1, 2, 3, 4 };
 
 	bn_null(td);
 	ec_null(pp);
@@ -635,11 +635,11 @@ static void smlers(void) {
 }
 
 static void etrs(void) {
-	int size;
+	size_t size;
 	ec_t pp, pk[MAX_KEYS + 1];
 	bn_t sk[MAX_KEYS + 1], td[MAX_KEYS + 1], y[MAX_KEYS + 1];
 	etrs_t ring[MAX_KEYS + 1];
-	uint8_t m[5] = { 0, 1, 2, 3, 4 };
+	const uint8_t m[5] = { 0, 1, 2, 3, 4 };
 
 	ec_null(pp);
 	ec_new(pp);
@@ -950,7 +950,7 @@ static void ibe(void) {
 	g2_t prv;
 	uint8_t in[10], out[10 + 2 * RLC_FP_BYTES + 1];
 	char *id = "Alice";
-	int in_len, out_len;
+	size_t in_len, out_len;
 
 	bn_null(s);
 	g1_null(pub);
@@ -1158,8 +1158,8 @@ static int cls(void) {
 	g1_t a, A, b, B, c, _A[4], _B[4];
 	g2_t x, y, z, _z[4];
 	uint8_t m[5] = { 0, 1, 2, 3, 4 };
-	uint8_t *msgs[5] = {m, m, m, m, m};
-	int lens[5] = {sizeof(m), sizeof(m), sizeof(m), sizeof(m), sizeof(m)};
+	const uint8_t *ms[5] = {m, m, m, m, m};
+	const size_t ls[5] = {sizeof(m), sizeof(m), sizeof(m), sizeof(m), sizeof(m)};
 
 	bn_null(r);
 	bn_null(t);
@@ -1229,11 +1229,11 @@ static int cls(void) {
 	} BENCH_END;
 
 	BENCH_RUN("cp_clb_sig (5)") {
-		BENCH_ADD(cp_clb_sig(a, _A, b, _B, c, msgs, lens, t, u, _v, 5));
+		BENCH_ADD(cp_clb_sig(a, _A, b, _B, c, ms, ls, t, u, _v, 5));
 	} BENCH_END;
 
 	BENCH_RUN("cp_clb_ver (5)") {
-		BENCH_ADD(cp_clb_ver(a, _A, b, _B, c, msgs, lens, x, y, _z, 5));
+		BENCH_ADD(cp_clb_ver(a, _A, b, _B, c, ms, ls, x, y, _z, 5));
 	} BENCH_END;
 
 	bn_free(r);
@@ -1528,11 +1528,10 @@ static void lhs(void) {
 	g1_t a[S][L], c[S][L], r[S][L];
 	g2_t _s, s[S][L], pk[S], y[S], z[S];
 	gt_t *hs[S], vk;
-	char *data = "id";
-	char *id[S] = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
-	dig_t ft[S];
-	dig_t *f[S];
-	int flen[S];
+	const char *data = "id";
+	const char *id[S] = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
+	dig_t ft[S], *f[S];
+	size_t flen[S];
 
 	bn_null(m);
 	bn_null(n);
@@ -1654,12 +1653,13 @@ static void lhs(void) {
 	}
 
 	BENCH_RUN("cp_cmlhs_ver") {
-		BENCH_ADD(cp_cmlhs_ver(_r, _s, sig, z, as, cs, m, data, h, label, hs,
-			f, flen, y, pk, S));
+		BENCH_ADD(cp_cmlhs_ver(_r, _s, sig, z, as, cs, m, data, h, label,
+			(const gt_t **)hs, (const dig_t **)f, flen, y, pk, S));
 	} BENCH_DIV(S);
 
 	BENCH_RUN("cp_cmlhs_off") {
-		BENCH_ADD(cp_cmlhs_off(vk, h, label, hs, f, flen, y, pk, S));
+		BENCH_ADD(cp_cmlhs_off(vk, h, label, (const gt_t **)hs,
+			(const dig_t **)f, flen, y, pk, S));
 	} BENCH_DIV(S);
 
 	BENCH_RUN("cp_cmlhs_onv") {
@@ -1759,11 +1759,13 @@ static void lhs(void) {
 	}
 
 	BENCH_RUN("cp_mklhs_ver") {
-		BENCH_ADD(cp_mklhs_ver(_r, m, d, data, id, ls, f, flen, pk, S));
+		BENCH_ADD(cp_mklhs_ver(_r, m, d, data, id, (const char **)ls,
+			(const dig_t **)f, flen, pk, S));
 	} BENCH_DIV(S);
 
 	BENCH_RUN("cp_mklhs_off") {
-		BENCH_ADD(cp_mklhs_off(cs, ft, id, ls, f, flen, S));
+		BENCH_ADD(cp_mklhs_off(cs, ft, id, (const char **)ls, (const dig_t **)f,
+			flen, S));
 	} BENCH_DIV(S);
 
 	BENCH_RUN("cp_mklhs_onv") {
@@ -1852,7 +1854,7 @@ static void psi(void) {
 	g2_t d[M + 1], s[M + 1];
 	gt_t t[M];
 	crt_t crt;
-	int len;
+	size_t len;
 
 	bn_new(g);
 	bn_new(n);

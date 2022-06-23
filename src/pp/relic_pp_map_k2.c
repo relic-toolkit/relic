@@ -158,7 +158,7 @@ static void pp_mil_lit_k2(fp2_t r, ep_t *t, ep_t *p, ep_t *q, int m, bn_t a) {
 
 #if PP_MAP == TATEP || PP_MAP == OATEP || !defined(STRIP)
 
-void pp_map_tatep_k2(fp2_t r, ep_t p, ep_t q) {
+void pp_map_tatep_k2(fp2_t r, const ep_t p, const ep_t q) {
 	ep_t _p[1], _q[1], t[1];
 	bn_t n;
 
@@ -194,7 +194,7 @@ void pp_map_tatep_k2(fp2_t r, ep_t p, ep_t q) {
 	}
 }
 
-void pp_map_sim_tatep_k2(fp2_t r, ep_t *p, ep_t *q, int m) {
+void pp_map_sim_tatep_k2(fp2_t r, const ep_t *p, const ep_t *q, int m) {
 	ep_t *_p = RLC_ALLOCA(ep_t, m),
 			*_q = RLC_ALLOCA(ep_t, m), *t = RLC_ALLOCA(ep_t, m);
 	bn_t n;
@@ -252,7 +252,7 @@ void pp_map_sim_tatep_k2(fp2_t r, ep_t *p, ep_t *q, int m) {
 
 #if PP_MAP == WEILP || !defined(STRIP)
 
-void pp_map_weilp_k2(fp2_t r, ep_t p, ep_t q) {
+void pp_map_weilp_k2(fp2_t r, const ep_t p, const ep_t q) {
 	ep_t _p[1], _q[1], t0[1], t1[1];
 	fp2_t r0, r1;
 	bn_t n;
@@ -306,7 +306,7 @@ void pp_map_weilp_k2(fp2_t r, ep_t p, ep_t q) {
 	}
 }
 
-void pp_map_sim_weilp_k2(fp2_t r, ep_t *p, ep_t *q, int m) {
+void pp_map_sim_weilp_k2(fp2_t r, const ep_t *p, const ep_t *q, int m) {
 	ep_t *_p = RLC_ALLOCA(ep_t, m),
 			*_q = RLC_ALLOCA(ep_t, m),
 			*t0 = RLC_ALLOCA(ep_t, m), *t1 = RLC_ALLOCA(ep_t, m);

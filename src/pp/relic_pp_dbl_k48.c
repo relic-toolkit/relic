@@ -98,7 +98,7 @@ static void ep8_dbl_basic(fp8_t s, fp8_t rx, fp8_t ry) {
 
 #if EP_ADD == BASIC || !defined(STRIP)
 
-void pp_dbl_k48_basic(fp48_t l, fp8_t rx, fp8_t ry, ep_t p) {
+void pp_dbl_k48_basic(fp48_t l, fp8_t rx, fp8_t ry, const ep_t p) {
 	fp8_t s, tx, ty;
 
 	fp8_null(s);
@@ -142,7 +142,7 @@ void pp_dbl_k48_basic(fp48_t l, fp8_t rx, fp8_t ry, ep_t p) {
 
 #if EP_ADD == PROJC || !defined(STRIP)
 
-void pp_dbl_k48_projc(fp48_t l, fp8_t rx, fp8_t ry, fp8_t rz, ep_t p) {
+void pp_dbl_k48_projc(fp48_t l, fp8_t rx, fp8_t ry, fp8_t rz, const ep_t p) {
 	fp8_t t0, t1, t2, t3, t4, t5, t6;
 
 	fp8_null(t0);

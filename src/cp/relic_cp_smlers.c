@@ -35,8 +35,8 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-int cp_smlers_sig(bn_t td, smlers_t p, uint8_t *msg, int len, bn_t sk, ec_t pk,
-		ec_t pp) {
+int cp_smlers_sig(bn_t td, smlers_t p, const uint8_t *msg, size_t len,
+		const bn_t sk, const ec_t pk, const ec_t pp) {
 	ec_t g[2], y[2];
 	int result = RLC_OK;
 
@@ -73,7 +73,8 @@ int cp_smlers_sig(bn_t td, smlers_t p, uint8_t *msg, int len, bn_t sk, ec_t pk,
 	return result;
 }
 
-int cp_smlers_ver(bn_t td, smlers_t *s, int size, uint8_t *msg, int len, ec_t pp) {
+int cp_smlers_ver(bn_t td, smlers_t *s, size_t size, const uint8_t *msg,
+		size_t len, const ec_t pp) {
 	bn_t n;
 	ec_t t, g[2], y[2];
 	int flag = 0, result = 0;
@@ -127,8 +128,8 @@ int cp_smlers_ver(bn_t td, smlers_t *s, int size, uint8_t *msg, int len, ec_t pp
 	return result;
 }
 
-int cp_smlers_ext(bn_t td, smlers_t *p, int *size, uint8_t *msg, int len, ec_t pk,
-		ec_t pp) {
+int cp_smlers_ext(bn_t td, smlers_t *p, size_t *size, const uint8_t *msg,
+		size_t len, const ec_t pk, const ec_t pp) {
 	bn_t n, r;
 	ec_t g[2], y[2];
 	int result = RLC_OK;

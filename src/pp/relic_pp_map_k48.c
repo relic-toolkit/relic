@@ -37,10 +37,11 @@
 /* Private definitions                                                         */
 /*============================================================================*/
 
-static void pp_mil_k48(fp48_t r, fp8_t qx, fp8_t qy, ep_t p, bn_t a) {
+static void pp_mil_k48(fp48_t r, const fp8_t qx, const fp8_t qy, const ep_t p,
+		const bn_t a) {
 	fp48_t l;
 	ep_t _p;
-	fp8_t rx, ry, rz;
+	fp8_t rx, ry, rz, qn;
 	int i, len = bn_bits(a) + 1;
 	int8_t s[RLC_FP_BITS + 1];
 
@@ -49,6 +50,7 @@ static void pp_mil_k48(fp48_t r, fp8_t qx, fp8_t qy, ep_t p, bn_t a) {
 	fp8_null(rx);
 	fp8_null(ry);
 	fp8_null(rz);
+	fp8_null(qn);
 
 	RLC_TRY {
 		fp48_new(l);
@@ -56,6 +58,7 @@ static void pp_mil_k48(fp48_t r, fp8_t qx, fp8_t qy, ep_t p, bn_t a) {
 		fp8_new(rx);
 		fp8_new(ry);
 		fp8_new(rz);
+		fp8_new(qn);
 
 		fp48_zero(l);
 		fp8_copy(rx, qx);
@@ -68,6 +71,7 @@ static void pp_mil_k48(fp48_t r, fp8_t qx, fp8_t qy, ep_t p, bn_t a) {
 		fp_add(_p->x, _p->x, p->x);
 		fp_neg(_p->y, p->y);
 #endif
+		fp8_neg(qn, qy);
 
 		bn_rec_naf(s, &len, a, 2);
 		for (i = len - 2; i >= 0; i--) {
@@ -79,9 +83,7 @@ static void pp_mil_k48(fp48_t r, fp8_t qx, fp8_t qy, ep_t p, bn_t a) {
 				fp48_mul_dxs(r, r, l);
 			}
 			if (s[i] < 0) {
-				fp8_neg(qy, qy);
-				pp_add_k48(l, rx, ry, rz, qx, qy, p);
-				fp8_neg(qy, qy);
+				pp_add_k48(l, rx, ry, rz, qx, qn, p);
 				fp48_mul_dxs(r, r, l);
 			}
 		}
@@ -95,6 +97,7 @@ static void pp_mil_k48(fp48_t r, fp8_t qx, fp8_t qy, ep_t p, bn_t a) {
 		fp8_free(rx);
 		fp8_free(ry);
 		fp8_free(rz);
+		fp8_free(qn);
 	}
 }
 
@@ -102,7 +105,7 @@ static void pp_mil_k48(fp48_t r, fp8_t qx, fp8_t qy, ep_t p, bn_t a) {
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void pp_map_k48(fp48_t r, ep_t p, fp8_t qx, fp8_t qy) {
+void pp_map_k48(fp48_t r, const ep_t p, const fp8_t qx, const fp8_t qy) {
 	bn_t a;
 
 	bn_null(a);

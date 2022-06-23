@@ -36,7 +36,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void fb2_sqr(fb2_t c, fb2_t a) {
+void fb2_sqr(fb2_t c, const fb2_t a) {
 	fb_sqr(c[1], a[1]);
 	fb_sqr(c[0], a[0]);
 	fb_add(c[0], c[0], c[1]);

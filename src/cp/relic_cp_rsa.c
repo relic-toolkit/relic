@@ -660,7 +660,8 @@ int cp_rsa_gen(rsa_t pub, rsa_t prv, int bits) {
 	return result;
 }
 
-int cp_rsa_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len, rsa_t pub) {
+int cp_rsa_enc(uint8_t *out, size_t *out_len, const uint8_t *in, size_t in_len,
+		const rsa_t pub) {
 	bn_t m, eb;
 	int size, pad_len, result = RLC_OK;
 
@@ -717,7 +718,8 @@ int cp_rsa_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len, rsa_t pub) {
 	return result;
 }
 
-int cp_rsa_dec(uint8_t *out, int *out_len, uint8_t *in, int in_len, rsa_t prv) {
+int cp_rsa_dec(uint8_t *out, size_t *out_len, const uint8_t *in, size_t in_len,
+		const rsa_t prv) {
 	bn_t m, eb;
 	int size, pad_len, result = RLC_OK;
 
@@ -772,7 +774,8 @@ int cp_rsa_dec(uint8_t *out, int *out_len, uint8_t *in, int in_len, rsa_t prv) {
 	return result;
 }
 
-int cp_rsa_sig(uint8_t *sig, int *sig_len, uint8_t *msg, int msg_len, int hash, rsa_t prv) {
+int cp_rsa_sig(uint8_t *sig, size_t *sig_len, const uint8_t *msg,
+		size_t msg_len, int hash, const rsa_t prv) {
 	bn_t m, eb;
 	int pad_len, size, result = RLC_OK;
 	uint8_t h[RLC_MD_LEN];
@@ -860,7 +863,8 @@ int cp_rsa_sig(uint8_t *sig, int *sig_len, uint8_t *msg, int msg_len, int hash, 
 	return result;
 }
 
-int cp_rsa_ver(uint8_t *sig, int sig_len, uint8_t *msg, int msg_len, int hash, rsa_t pub) {
+int cp_rsa_ver(uint8_t *sig, size_t sig_len, const uint8_t *msg, size_t msg_len,
+		int hash, const rsa_t pub) {
 	bn_t m, eb;
 	int size, pad_len, result;
 	uint8_t *h1 = RLC_ALLOCA(uint8_t, RLC_MAX(msg_len, RLC_MD_LEN) + 8);

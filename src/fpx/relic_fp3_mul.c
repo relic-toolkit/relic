@@ -39,7 +39,7 @@
 
 #if FPX_CBC == BASIC || !defined(STRIP)
 
-void fp3_mul_basic(fp3_t c, fp3_t a, fp3_t b) {
+void fp3_mul_basic(fp3_t c, const fp3_t a, const fp3_t b) {
 	dv_t t, t0, t1, t2, t3, t4, t5, t6;
 
 	dv_null(t);
@@ -143,13 +143,13 @@ void fp3_mul_basic(fp3_t c, fp3_t a, fp3_t b) {
 
 #if FPX_CBC == INTEG || !defined(STRIP)
 
-void fp3_mul_integ(fp3_t c, fp3_t a, fp3_t b) {
+void fp3_mul_integ(fp3_t c, const fp3_t a, const fp3_t b) {
 	fp3_mulm_low(c, a, b);
 }
 
 #endif
 
-void fp3_mul_nor(fp3_t c, fp3_t a) {
+void fp3_mul_nor(fp3_t c, const fp3_t a) {
 	fp_t t;
 
 	fp_null(t);
@@ -177,7 +177,7 @@ void fp3_mul_nor(fp3_t c, fp3_t a) {
 	}
 }
 
-void fp3_mul_frb(fp3_t c, fp3_t a, int i, int j) {
+void fp3_mul_frb(fp3_t c, const fp3_t a, int i, int j) {
 	ctx_t *ctx = core_get();
 	fp3_copy(c, a);
 	switch (i % 3) {

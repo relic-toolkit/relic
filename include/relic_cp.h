@@ -752,7 +752,8 @@ int cp_rsa_gen(rsa_t pub, rsa_t prv, int bits);
  * @param[in] pub			- the public key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_rsa_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len, rsa_t pub);
+int cp_rsa_enc(uint8_t *out, size_t *out_len, const uint8_t *in, size_t in_len,
+		const rsa_t pub);
 
 /**
  * Decrypts using the RSA cryptosystem. Uses the CRT optimization if
@@ -765,7 +766,8 @@ int cp_rsa_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len, rsa_t pub);
  * @param[in] prv			- the private key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_rsa_dec(uint8_t *out, int *out_len, uint8_t *in, int in_len, rsa_t prv);
+int cp_rsa_dec(uint8_t *out, size_t *out_len, const uint8_t *in, size_t in_len,
+		const rsa_t prv);
 
 /**
  * Signs using the basic RSA signature algorithm. The flag must be non-zero if
@@ -780,8 +782,8 @@ int cp_rsa_dec(uint8_t *out, int *out_len, uint8_t *in, int in_len, rsa_t prv);
  * @param[in] prv			- the private key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_rsa_sig(uint8_t *sig, int *sig_len, uint8_t *msg, int msg_len,
-		int hash, rsa_t prv);
+int cp_rsa_sig(uint8_t *sig, size_t *sig_len, const uint8_t *msg,
+		size_t msg_len, int hash, const rsa_t prv);
 
 /**
  * Verifies an RSA signature. The flag must be non-zero if the message being
@@ -795,8 +797,8 @@ int cp_rsa_sig(uint8_t *sig, int *sig_len, uint8_t *msg, int msg_len,
  * @param[in] pub			- the public key.
  * @return a boolean value indicating if the signature is valid.
  */
-int cp_rsa_ver(uint8_t *sig, int sig_len, uint8_t *msg, int msg_len, int hash,
-		rsa_t pub);
+int cp_rsa_ver(uint8_t *sig, size_t sig_len, const uint8_t *msg, size_t msg_len,
+		int hash, const rsa_t pub);
 
 /**
  * Generates a key pair for the Rabin cryptosystem.
@@ -806,7 +808,7 @@ int cp_rsa_ver(uint8_t *sig, int sig_len, uint8_t *msg, int msg_len, int hash,
  * @param[in] bits			- the key length in bits.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_rabin_gen(rabin_t pub, rabin_t prv, int bits);
+int cp_rabin_gen(rabin_t pub, rabin_t prv, size_t bits);
 
 /**
  * Encrypts using the Rabin cryptosystem.
@@ -818,8 +820,8 @@ int cp_rabin_gen(rabin_t pub, rabin_t prv, int bits);
  * @param[in] pub			- the public key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_rabin_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len,
-		rabin_t pub);
+int cp_rabin_enc(uint8_t *out, size_t *out_len, const uint8_t *in,
+		size_t in_len, const rabin_t pub);
 
 /**
  * Decrypts using the Rabin cryptosystem.
@@ -831,8 +833,8 @@ int cp_rabin_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len,
  * @param[in] prv			- the private key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_rabin_dec(uint8_t *out, int *out_len, uint8_t *in, int in_len,
-		rabin_t prv);
+int cp_rabin_dec(uint8_t *out, size_t *out_len, const uint8_t *in,
+		size_t in_len, const rabin_t prv);
 
 /**
  * Generates a key pair for Benaloh's Dense Probabilistic Encryption.
@@ -843,7 +845,7 @@ int cp_rabin_dec(uint8_t *out, int *out_len, uint8_t *in, int in_len,
  * @param[in] bits			- the key length in bits.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_bdpe_gen(bdpe_t pub, bdpe_t prv, dig_t block, int bits);
+int cp_bdpe_gen(bdpe_t pub, bdpe_t prv, dig_t block, size_t bits);
 
 /**
  * Encrypts using Benaloh's cryptosystem.
@@ -854,7 +856,7 @@ int cp_bdpe_gen(bdpe_t pub, bdpe_t prv, dig_t block, int bits);
  * @param[in] pub			- the public key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_bdpe_enc(uint8_t *out, int *out_len, dig_t in, bdpe_t pub);
+int cp_bdpe_enc(uint8_t *out, size_t *out_len, dig_t in, const bdpe_t pub);
 
 /**
  * Decrypts using Benaloh's cryptosystem.
@@ -865,7 +867,7 @@ int cp_bdpe_enc(uint8_t *out, int *out_len, dig_t in, bdpe_t pub);
  * @param[in] prv			- the private key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_bdpe_dec(dig_t *out, uint8_t *in, int in_len, bdpe_t prv);
+int cp_bdpe_dec(dig_t *out, const uint8_t *in, size_t in_len, const bdpe_t prv);
 
 /**
  * Generates a key pair for Paillier's Homomorphic Probabilistic Encryption.
@@ -875,7 +877,7 @@ int cp_bdpe_dec(dig_t *out, uint8_t *in, int in_len, bdpe_t prv);
  * @param[in] bits			- the key length in bits.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_phpe_gen(bn_t pub, phpe_t prv, int bits);
+int cp_phpe_gen(bn_t pub, phpe_t prv, size_t bits);
 
 /**
  * Encrypts using the Paillier cryptosystem.
@@ -885,7 +887,7 @@ int cp_phpe_gen(bn_t pub, phpe_t prv, int bits);
  * @param[in] pub			- the public key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_phpe_enc(bn_t c, bn_t m, bn_t pub);
+int cp_phpe_enc(bn_t c, const bn_t m, const bn_t pub);
 
 /**
  * Evaluated a homomorphic addition using the Paillier cryptosystem.
@@ -896,7 +898,7 @@ int cp_phpe_enc(bn_t c, bn_t m, bn_t pub);
  * @param[in] pub			- the public key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_phpe_add(bn_t r, bn_t c, bn_t d, bn_t pub);
+int cp_phpe_add(bn_t r, const bn_t c, const bn_t d, const bn_t pub);
 
 /**
  * Decrypts using the Paillier cryptosystem.
@@ -906,7 +908,7 @@ int cp_phpe_add(bn_t r, bn_t c, bn_t d, bn_t pub);
  * @param[in] prv			- the private key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_phpe_dec(bn_t m, bn_t c, phpe_t prv);
+int cp_phpe_dec(bn_t m, const bn_t c, const phpe_t prv);
 
 /**
  * Generates a key pair for Paillier's Subgroup Homomorphic Probabilistic Encryption.
@@ -917,7 +919,7 @@ int cp_phpe_dec(bn_t m, bn_t c, phpe_t prv);
  * @param[in] nbits			- the key length in bits.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_shpe_gen(shpe_t pub, shpe_t prv, int sbits, int nbits);
+int cp_shpe_gen(shpe_t pub, shpe_t prv, size_t sbits, size_t nbits);
 
 /**
  * Encrypts using the Subgroup Paillier cryptosystem.
@@ -927,18 +929,17 @@ int cp_shpe_gen(shpe_t pub, shpe_t prv, int sbits, int nbits);
  * @param[in] pub			- the public key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_shpe_enc(bn_t c, bn_t m, shpe_t pub);
+int cp_shpe_enc(bn_t c, const bn_t m, const shpe_t pub);
 
 /**
  * Encrypts faster using the Subgroup Paillier cryptosystem if the private key is known.
  *
  * @param[out] c			- the ciphertext represented as an integer.
  * @param[in] m				- the plaintext as an integer.
- * @param[in] pub			- the public key.
  * @param[in] prv			- the private key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_shpe_enc_prv(bn_t c, bn_t m, shpe_t prv);
+int cp_shpe_enc_prv(bn_t c, const bn_t m, const shpe_t prv);
 
 /**
  * Decrypts using the Subgroup Paillier cryptosystem.
@@ -948,7 +949,7 @@ int cp_shpe_enc_prv(bn_t c, bn_t m, shpe_t prv);
  * @param[in] prv			- the private key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_shpe_dec(bn_t m, bn_t c, shpe_t prv);
+int cp_shpe_dec(bn_t m, const bn_t c, const shpe_t prv);
 
 /**
  * Generates a key pair for Genealized Homomorphic Probabilistic Encryption.
@@ -958,7 +959,7 @@ int cp_shpe_dec(bn_t m, bn_t c, shpe_t prv);
  * @param[in] bits			- the key length in bits.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_ghpe_gen(bn_t pub, bn_t prv, int bits);
+int cp_ghpe_gen(bn_t pub, bn_t prv, size_t bits);
 
 /**
  * Encrypts using the Generalized Paillier cryptosystem.
@@ -969,7 +970,7 @@ int cp_ghpe_gen(bn_t pub, bn_t prv, int bits);
  * @param[in] s				- the block length parameter.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_ghpe_enc(bn_t c, bn_t m, bn_t pub, int s);
+int cp_ghpe_enc(bn_t c, const bn_t m, const bn_t pub, size_t s);
 
 /**
  * Decrypts using the Generalized Paillier cryptosystem.
@@ -980,7 +981,7 @@ int cp_ghpe_enc(bn_t c, bn_t m, bn_t pub, int s);
  * @param[in] s				- the block length parameter.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_ghpe_dec(bn_t m, bn_t c, bn_t pub, bn_t prv, int s);
+int cp_ghpe_dec(bn_t m, const bn_t c, const bn_t pub, const bn_t prv, size_t s);
 
 /**
  * Generates an ECDH key pair.
@@ -1000,7 +1001,7 @@ int cp_ecdh_gen(bn_t d, ec_t q);
  * @param[in] q				- the point received from the other party.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_ecdh_key(uint8_t *key, int key_len, bn_t d, ec_t q);
+int cp_ecdh_key(uint8_t *key, size_t key_len, const bn_t d, const ec_t q);
 
 /**
  * Generate an ECMQV key pair.
@@ -1025,8 +1026,8 @@ int cp_ecmqv_gen(bn_t d, ec_t q);
  * @param[in] q2v			- the ephemeral point received from the party.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_ecmqv_key(uint8_t *key, int key_len, bn_t d1, bn_t d2, ec_t q2u,
-		ec_t q1v, ec_t q2v);
+int cp_ecmqv_key(uint8_t *key, size_t key_len, const bn_t d1, const bn_t d2,
+		const ec_t q2u, const ec_t q1v, const ec_t q2v);
 
 /**
  * Generates an ECIES key pair.
@@ -1049,8 +1050,8 @@ int cp_ecies_gen(bn_t d, ec_t q);
  * @param[in] q				- the public key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_ecies_enc(ec_t r, uint8_t *out, int *out_len, uint8_t *in, int in_len,
-		ec_t q);
+int cp_ecies_enc(ec_t r, uint8_t *out, size_t *out_len, const uint8_t *in,
+		size_t in_len, const ec_t q);
 
 /**
  * Decrypts using the ECIES cryptosystem.
@@ -1063,8 +1064,8 @@ int cp_ecies_enc(ec_t r, uint8_t *out, int *out_len, uint8_t *in, int in_len,
  * @param[in] d				- the private key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_ecies_dec(uint8_t *out, int *out_len, ec_t r, uint8_t *in, int in_len,
-		bn_t d);
+int cp_ecies_dec(uint8_t *out, size_t *out_len, const ec_t r, const uint8_t *in,
+		size_t in_len, const bn_t d);
 
 /**
  * Generates an ECDSA key pair.
@@ -1086,7 +1087,8 @@ int cp_ecdsa_gen(bn_t d, ec_t q);
  * @param[in] d				- the private key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_ecdsa_sig(bn_t r, bn_t s, uint8_t *msg, int len, int hash, bn_t d);
+int cp_ecdsa_sig(bn_t r, bn_t s, const uint8_t *msg, size_t len, int hash,
+		const bn_t d);
 
 /**
  * Verifies a message signed with ECDSA using the basic method.
@@ -1099,7 +1101,8 @@ int cp_ecdsa_sig(bn_t r, bn_t s, uint8_t *msg, int len, int hash, bn_t d);
  * @param[in] q				- the public key.
  * @return a boolean value indicating if the signature is valid.
  */
-int cp_ecdsa_ver(bn_t r, bn_t s, uint8_t *msg, int len, int hash, ec_t q);
+int cp_ecdsa_ver(bn_t r, bn_t s, const uint8_t *msg, size_t len, int hash,
+		const ec_t q);
 
 /**
  * Generates an Elliptic Curve Schnorr Signature key pair.
@@ -1120,7 +1123,7 @@ int cp_ecss_gen(bn_t d, ec_t q);
  * @param[in] d				- the private key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_ecss_sig(bn_t e, bn_t s, uint8_t *msg, int len, bn_t d);
+int cp_ecss_sig(bn_t e, bn_t s, const uint8_t *msg, size_t len, const bn_t d);
 
 /**
  * Verifies a message signed with the Elliptic Curve Schnorr Signature using the
@@ -1133,7 +1136,7 @@ int cp_ecss_sig(bn_t e, bn_t s, uint8_t *msg, int len, bn_t d);
  * @param[in] q				- the public key.
  * @return a boolean value indicating if the signature is valid.
  */
-int cp_ecss_ver(bn_t e, bn_t s, uint8_t *msg, int len, ec_t q);
+int cp_ecss_ver(bn_t e, bn_t s, const uint8_t *msg, size_t len, const ec_t q);
 
 /**
  * Generate parameters for the DCKKS pairing delegation protocol described at
@@ -1163,8 +1166,8 @@ int cp_pdpub_gen(bn_t c, bn_t r, g1_t u1, g2_t u2, g2_t v2, gt_t e);
  * @param[in] v2			- the image of the randomness in G_2.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_pdpub_ask(g1_t v1, g2_t w2, g1_t p, g2_t q, bn_t c, bn_t r, g1_t u1,
-		g2_t u2, g2_t v2);
+int cp_pdpub_ask(g1_t v1, g2_t w2, const g1_t p, const g2_t q, const bn_t c,
+		const bn_t r, const g1_t u1, const g2_t u2, const g2_t v2);
 
 /**
  * Execute the server-side response for the DCKKS pairing delegation protocol.
@@ -1177,7 +1180,8 @@ int cp_pdpub_ask(g1_t v1, g2_t w2, g1_t p, g2_t q, bn_t c, bn_t r, g1_t u1,
  * @param[in] w2			- the blinded element in G_2.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_pdpub_ans(gt_t g[3], g1_t p, g2_t q, g1_t v1, g2_t v2, g2_t w2);
+int cp_pdpub_ans(gt_t g[3], const g1_t p, const g2_t q, const g1_t v1,
+		const g2_t v2, const g2_t w2);
 
 /**
  * Verifies the result of the DCKKS pairing delegation protocol.
@@ -1185,10 +1189,10 @@ int cp_pdpub_ans(gt_t g[3], g1_t p, g2_t q, g1_t v1, g2_t v2, g2_t w2);
  * @param[out] r			- the result of the computation.
  * @param[in] g				- the group elements returned by the server.
  * @param[in] c				- the challenge.
- * @param[out] e			- the precomputed values e(U1, U2).
+ * @param[in] e				- the precomputed values e(U1, U2).
  * @return a boolean value indicating if the computation is correct.
  */
-int cp_pdpub_ver(gt_t r, gt_t g[3], bn_t c, gt_t e);
+int cp_pdpub_ver(gt_t r, const gt_t g[3], const bn_t c, const gt_t e);
 
 /**
  * Generate parameters for the DCKKS pairing delegation protocol described at
@@ -1219,8 +1223,9 @@ int cp_pdprv_gen(bn_t c, bn_t r[3], g1_t u1[2], g2_t u2[2], g2_t v2[4],
  * @param[in] v2			- the image of the randomness in G_2.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_pdprv_ask(g1_t v1[3], g2_t w2[4], g1_t p, g2_t q, bn_t c, bn_t r[3],
-		g1_t u1[2], g2_t u2[2], g2_t v2[4]);
+int cp_pdprv_ask(g1_t v1[3], g2_t w2[4], const g1_t p, const g2_t q,
+		const bn_t c, const bn_t r[3], const g1_t u1[2], const g2_t u2[2],
+		const g2_t v2[4]);
 
 /**
  * Execute the server-side response for the DCKKS pairing delegation protocol.
@@ -1233,7 +1238,7 @@ int cp_pdprv_ask(g1_t v1[3], g2_t w2[4], g1_t p, g2_t q, bn_t c, bn_t r[3],
  * @param[in] w2			- the blinded element in G_2.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_pdprv_ans(gt_t g[4], g1_t v1[3], g2_t w2[4]);
+int cp_pdprv_ans(gt_t g[4], const g1_t v1[3], const g2_t w2[4]);
 
 /**
  * Verifies the result of the DCKKS pairing delegation protocol.
@@ -1241,13 +1246,13 @@ int cp_pdprv_ans(gt_t g[4], g1_t v1[3], g2_t w2[4]);
  * @param[out] r			- the result of the computation.
  * @param[in] g				- the group elements returned by the server.
  * @param[in] c				- the challenge.
- * @param[out] e			- the precomputed values e(U1, U2).
+ * @param[in] e				- the precomputed values e(U1, U2).
  * @return a boolean value indicating if the computation is correct.
  */
-int cp_pdprv_ver(gt_t r, gt_t g[4], bn_t c, gt_t e[2]);
+int cp_pdprv_ver(gt_t r, const gt_t g[4], const bn_t c, const gt_t e[2]);
 
 /**
- * Generate parameters for the AMORE pairing delegation protocol with public
+ * Generate parameters for the LOVE pairing delegation protocol with public
  * inputs.
  *
  * @param[out] r			- the randomness.
@@ -1260,7 +1265,7 @@ int cp_pdprv_ver(gt_t r, gt_t g[4], bn_t c, gt_t e[2]);
 int cp_lvpub_gen(bn_t r, g1_t u1, g2_t u2, g2_t v2, gt_t e);
 
 /**
- * Execute the client-side request for the AMORE pairing delegation protocol.
+ * Execute the client-side request for the LOVE pairing delegation protocol.
  *
  * @param[out] c			- the challenge.
  * @param[out] v1			- the blinded element in G_1.
@@ -1274,11 +1279,11 @@ int cp_lvpub_gen(bn_t r, g1_t u1, g2_t u2, g2_t v2, gt_t e);
  * @param[in] v2			- the image of the randomness in G_2.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_lvpub_ask(bn_t c, g1_t v1, g2_t w2, g1_t p, g2_t q, bn_t r, g1_t u1,
-		g2_t u2, g2_t v2);
+int cp_lvpub_ask(bn_t c, g1_t v1, g2_t w2, const g1_t p, const g2_t q,
+		const bn_t r, const g1_t u1, const g2_t u2, const g2_t v2);
 
 /**
- * Execute the server-side response for the AMORE pairing delegation protocol.
+ * Execute the server-side response for the LOVE pairing delegation protocol.
  *
  * @param[out] g			- the group elements computed by the server.
  * @param[in] p				- the first argument of the pairing.
@@ -1288,21 +1293,22 @@ int cp_lvpub_ask(bn_t c, g1_t v1, g2_t w2, g1_t p, g2_t q, bn_t r, g1_t u1,
  * @param[in] w2			- the blinded element in G_2.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_lvpub_ans(gt_t g[2], g1_t p, g2_t q, g1_t v1, g2_t v2, g2_t w2);
+int cp_lvpub_ans(gt_t g[2], const g1_t p, const g2_t q, const g1_t v1,
+		const g2_t v2, const g2_t w2);
 
 /**
- * Verifies the result of the AMORE pairing delegation protocol.
+ * Verifies the result of the LOVE pairing delegation protocol.
  *
  * @param[out] r			- the result of the computation.
  * @param[in] g				- the group elements returned by the server.
  * @param[in] c				- the challenge.
- * @param[out] e			- the precomputed values e(U1, U2).
+ * @param[in] e				- the precomputed values e(U1, U2).
  * @return a boolean value indicating if the computation is correct.
  */
-int cp_lvpub_ver(gt_t r, gt_t g[2], bn_t c, gt_t e);
+int cp_lvpub_ver(gt_t r, const gt_t g[2], const bn_t c, const gt_t e);
 
 /**
- * Generate parameters for the AMORE pairing delegation protocol with private
+ * Generate parameters for the LOVE pairing delegation protocol with private
  * inputs.
  *
  * @param[out] c			- the challenge.
@@ -1317,7 +1323,7 @@ int cp_lvprv_gen(bn_t c, bn_t r[3], g1_t u1[2], g2_t u2[2], g2_t v2[4],
 		gt_t e[2]);
 
 /**
- * Execute the client-side request for the AMORE pairing delegation protocol.
+ * Execute the client-side request for the LOVE pairing delegation protocol.
  *
  * @param[out] v1			- the blinded element in G_1.
  * @param[out] w2			- the blinded element in G_2.
@@ -1330,11 +1336,12 @@ int cp_lvprv_gen(bn_t c, bn_t r[3], g1_t u1[2], g2_t u2[2], g2_t v2[4],
  * @param[in] v2			- the image of the randomness in G_2.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_lvprv_ask(g1_t v1[3], g2_t w2[4], g1_t p, g2_t q, bn_t c, bn_t r[3],
-		g1_t u1[2], g2_t u2[2], g2_t v2[4]);
+int cp_lvprv_ask(g1_t v1[3], g2_t w2[4], const g1_t p, const g2_t q,
+		const bn_t c, const bn_t r[3], const g1_t u1[2], const g2_t u2[2],
+		const g2_t v2[4]);
 
 /**
- * Execute the server-side response for the AMORE pairing delegation protocol.
+ * Execute the server-side response for the LOVE pairing delegation protocol.
  *
  * @param[out] g			- the group elements computed by the server.
  * @param[in] p				- the first argument of the pairing.
@@ -1344,18 +1351,18 @@ int cp_lvprv_ask(g1_t v1[3], g2_t w2[4], g1_t p, g2_t q, bn_t c, bn_t r[3],
  * @param[in] w2			- the blinded element in G_2.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_lvprv_ans(gt_t g[4], g1_t v1[3], g2_t w2[4]);
+int cp_lvprv_ans(gt_t g[4], const g1_t v1[3], const g2_t w2[4]);
 
 /**
- * Verifies the result of the AMORE pairing delegation protocol.
+ * Verifies the result of the LOVE pairing delegation protocol.
  *
  * @param[out] r			- the result of the computation.
  * @param[in] g				- the group elements returned by the server.
  * @param[in] c				- the challenge.
- * @param[out] e			- the precomputed values e(U1, U2).
+ * @param[in] e				- the precomputed values e(U1, U2).
  * @return a boolean value indicating if the computation is correct.
  */
-int cp_lvprv_ver(gt_t r, gt_t g[4], bn_t c, gt_t e[2]);
+int cp_lvprv_ver(gt_t r, const gt_t g[4], const bn_t c, const gt_t e[2]);
 
 /**
  * Generates a master key for the SOKAKA identity-based non-interactive
@@ -1374,7 +1381,7 @@ int cp_sokaka_gen(bn_t master);
  * @param[in] master		- the master key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_sokaka_gen_prv(sokaka_t k, char *id, bn_t master);
+int cp_sokaka_gen_prv(sokaka_t k, const char *id, bn_t master);
 
 /**
  * Computes a shared key between two entities.
@@ -1386,8 +1393,8 @@ int cp_sokaka_gen_prv(sokaka_t k, char *id, bn_t master);
  * @param[in] id2			- the second identity.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_sokaka_key(uint8_t *key, unsigned int key_len, char *id1,
-		sokaka_t k, char *id2);
+int cp_sokaka_key(uint8_t *key, size_t key_len, const char *id1,
+		const sokaka_t k, const char *id2);
 
 /**
  * Generates a key pair for the Boneh-Go-Nissim (BGN) cryptosystem.
@@ -1406,7 +1413,7 @@ int cp_bgn_gen(bgn_t pub, bgn_t prv);
  * @param[in] pub			- the public key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_bgn_enc1(g1_t out[2], dig_t in, bgn_t pub);
+int cp_bgn_enc1(g1_t out[2], const dig_t in, const bgn_t pub);
 
 /**
  * Decrypts in G_1 using the BGN cryptosystem.
@@ -1416,7 +1423,7 @@ int cp_bgn_enc1(g1_t out[2], dig_t in, bgn_t pub);
  * @param[in] prv			- the private key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_bgn_dec1(dig_t *out, g1_t in[2], bgn_t prv);
+int cp_bgn_dec1(dig_t *out, const g1_t in[2], const bgn_t prv);
 
 /**
  * Encrypts in G_2 using the BGN cryptosystem.
@@ -1426,7 +1433,7 @@ int cp_bgn_dec1(dig_t *out, g1_t in[2], bgn_t prv);
  * @param[in] pub			- the public key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_bgn_enc2(g2_t out[2], dig_t in, bgn_t pub);
+int cp_bgn_enc2(g2_t out[2], const dig_t in, const bgn_t pub);
 
 /**
  * Decrypts in G_2 using the BGN cryptosystem.
@@ -1436,7 +1443,7 @@ int cp_bgn_enc2(g2_t out[2], dig_t in, bgn_t pub);
  * @param[in] prv			- the private key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_bgn_dec2(dig_t *out, g2_t in[2], bgn_t prv);
+int cp_bgn_dec2(dig_t *out, const g2_t in[2], const bgn_t prv);
 
 /**
  * Adds homomorphically two BGN ciphertexts in G_T.
@@ -1446,7 +1453,7 @@ int cp_bgn_dec2(dig_t *out, g2_t in[2], bgn_t prv);
  * @param[in] d				- the second ciphertext to add.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_bgn_add(gt_t e[4], gt_t c[4], gt_t d[4]);
+int cp_bgn_add(gt_t e[4], const gt_t c[4], const gt_t d[4]);
 
 /**
  * Multiplies homomorphically two BGN ciphertexts in G_T.
@@ -1456,7 +1463,7 @@ int cp_bgn_add(gt_t e[4], gt_t c[4], gt_t d[4]);
  * @param[in] d				- the second ciphertext to add.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_bgn_mul(gt_t e[4], g1_t c[2], g2_t d[2]);
+int cp_bgn_mul(gt_t e[4], const g1_t c[2], const g2_t d[2]);
 
 /**
  * Decrypts in G_T using the BGN cryptosystem.
@@ -1466,7 +1473,7 @@ int cp_bgn_mul(gt_t e[4], g1_t c[2], g2_t d[2]);
  * @param[in] prv			- the private key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_bgn_dec(dig_t *out, gt_t in[4], bgn_t prv);
+int cp_bgn_dec(dig_t *out, const gt_t in[4], const bgn_t prv);
 
 /**
  * Generates a master key for a Private Key Generator (PKG) in the
@@ -1486,7 +1493,7 @@ int cp_ibe_gen(bn_t master, g1_t pub);
  * @param[in] s				- the master key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_ibe_gen_prv(g2_t prv, char *id, bn_t master);
+int cp_ibe_gen_prv(g2_t prv, const char *id, const bn_t master);
 
 /**
  * Encrypts a message using the BF-IBE protocol.
@@ -1499,8 +1506,8 @@ int cp_ibe_gen_prv(g2_t prv, char *id, bn_t master);
  * @param[in] pub			- the public key of the PKG.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_ibe_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len, char *id,
-		g1_t pub);
+int cp_ibe_enc(uint8_t *out, size_t *out_len, const uint8_t *in, size_t in_len,
+		const char *id, const g1_t pub);
 
 /**
  * Decrypts a message using the BF-IBE protocol.
@@ -1512,7 +1519,8 @@ int cp_ibe_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len, char *id,
  * @param[in] pub			- the private key of the user.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_ibe_dec(uint8_t *out, int *out_len, uint8_t *in, int in_len, g2_t prv);
+int cp_ibe_dec(uint8_t *out, size_t *out_len, const uint8_t *in, size_t in_len,
+		const g2_t prv);
 
 /**
  * Generates a key pair for the Boneh-Lynn-Schacham (BLS) signature protocol.
@@ -1532,7 +1540,7 @@ int cp_bls_gen(bn_t d, g2_t q);
  * @param[in] d				- the private key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_bls_sig(g1_t s, uint8_t *msg, int len, bn_t d);
+int cp_bls_sig(g1_t s, const uint8_t *msg, int len, const bn_t d);
 
 /**
  * Verifies a message signed with BLS protocol.
@@ -1543,7 +1551,7 @@ int cp_bls_sig(g1_t s, uint8_t *msg, int len, bn_t d);
  * @param[in] q				- the public key.
  * @return a boolean value indicating if the signature is valid.
  */
-int cp_bls_ver(g1_t s, uint8_t *msg, int len, g2_t q);
+int cp_bls_ver(g1_t s, const uint8_t *msg, size_t len, const g2_t q);
 
 /**
  * Generates a key pair for the Boneh-Boyen (BB) signature protocol.
@@ -1565,7 +1573,7 @@ int cp_bbs_gen(bn_t d, g2_t q, gt_t z);
  * @param[in] d				- the private key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_bbs_sig(g1_t s, uint8_t *msg, int len, int hash, bn_t d);
+int cp_bbs_sig(g1_t s, const uint8_t *msg, size_t len, int hash, const bn_t d);
 
 /**
  * Verifies a message signed with the BB protocol.
@@ -1578,7 +1586,8 @@ int cp_bbs_sig(g1_t s, uint8_t *msg, int len, int hash, bn_t d);
  * @param[out] z			- the second component of the public key.
  * @return a boolean value indicating the verification result.
  */
-int cp_bbs_ver(g1_t s, uint8_t *msg, int len, int hash, g2_t q, gt_t z);
+int cp_bbs_ver(g1_t s, const uint8_t *msg, size_t len, int hash, const g2_t q,
+		const gt_t z);
 
 /**
  * Generates a key pair for the Camenisch-Lysyanskaya simple signature (CLS)
@@ -1604,7 +1613,8 @@ int cp_cls_gen(bn_t u, bn_t v, g2_t x, g2_t y);
  * @param[in] v				- the second part of the private key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_cls_sig(g1_t a, g1_t b, g1_t c, uint8_t *msg, int len, bn_t u, bn_t v);
+int cp_cls_sig(g1_t a, g1_t b, g1_t c, const uint8_t *msg, size_t len,
+		const bn_t u, const bn_t v);
 
 /**
  ** Verifies a signature using the CLS protocol.
@@ -1618,7 +1628,8 @@ int cp_cls_sig(g1_t a, g1_t b, g1_t c, uint8_t *msg, int len, bn_t u, bn_t v);
  * @param[in] v				- the second part of the public key.
  * @return a boolean value indicating the verification result.
  */
-int cp_cls_ver(g1_t a, g1_t b, g1_t c, uint8_t *msg, int len, g2_t x, g2_t y);
+int cp_cls_ver(const g1_t a, const g1_t b, const g1_t c, const uint8_t *msg,
+		size_t len, const g2_t x, const g2_t y);
 
 /**
  * Generates a key pair for the Camenisch-Lysyanskaya message-independent (CLI)
@@ -1650,8 +1661,8 @@ int cp_cli_gen(bn_t t, bn_t u, bn_t v, g2_t x, g2_t y, g2_t z);
  * @param[in] v				- the third part of the private key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_cli_sig(g1_t a, g1_t A, g1_t b, g1_t B, g1_t c, uint8_t *msg, int len,
-		bn_t r, bn_t t, bn_t u, bn_t v);
+int cp_cli_sig(g1_t a, g1_t A, g1_t b, g1_t B, g1_t c, const uint8_t *msg,
+		size_t len, const bn_t r, const bn_t t, const bn_t u, const bn_t v);
 
 /**
  * Verifies a message signed using the CLI protocol.
@@ -1669,8 +1680,8 @@ int cp_cli_sig(g1_t a, g1_t A, g1_t b, g1_t B, g1_t c, uint8_t *msg, int len,
  * @param[in] z				- the third part of the public key.
  * @return a boolean value indicating the verification result.
  */
-int cp_cli_ver(g1_t a, g1_t A, g1_t b, g1_t B, g1_t c, uint8_t *msg, int len,
-		bn_t r, g2_t x, g2_t y, g2_t z);
+int cp_cli_ver(g1_t a, g1_t A, g1_t b, g1_t B, g1_t c, const uint8_t *msg,
+		size_t len, const bn_t r, const g2_t x, const g2_t y, const g2_t z);
 
 /**
  * Generates a key pair for the Camenisch-Lysyanskaya message-block (CLB)
@@ -1685,7 +1696,7 @@ int cp_cli_ver(g1_t a, g1_t A, g1_t b, g1_t B, g1_t c, uint8_t *msg, int len,
  * @param[in] l				- the number of messages to sign.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_clb_gen(bn_t t, bn_t u, bn_t v[], g2_t x, g2_t y, g2_t z[], int l);
+int cp_clb_gen(bn_t t, bn_t u, bn_t v[], g2_t x, g2_t y, g2_t z[], size_t l);
 
 /**
  * Signs a block of messages using the CLB protocol.
@@ -1695,16 +1706,17 @@ int cp_clb_gen(bn_t t, bn_t u, bn_t v[], g2_t x, g2_t y, g2_t z[], int l);
  * @param[out] b			- the next component of the signature.
  * @param[out] B			- the (l - 1) next components of the signature.
  * @param[out] c			- the last component of the signature.
- * @param[in] msgs			- the l messages to sign.
- * @param[in] lens			- the l message lengths in bytes.
+ * @param[in] ms			- the l messages to sign.
+ * @param[in] ls			- the l message lengths in bytes.
  * @param[in] t				- the first part of the private key.
  * @param[in] u				- the second part of the private key.
  * @param[in] v				- the remaining (l - 1) parts of the private key.
  * @param[in] l				- the number of messages to sign.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_clb_sig(g1_t a, g1_t A[], g1_t b, g1_t B[], g1_t c, uint8_t *msgs[],
-		int lens[], bn_t t, bn_t u, bn_t v[], int l);
+int cp_clb_sig(g1_t a, g1_t A[], g1_t b, g1_t B[], g1_t c, const uint8_t *ms[],
+		const size_t ls[], const bn_t t, const bn_t u, const bn_t v[],
+		const size_t l);
 
 /**
  * Verifies a block of messages signed using the CLB protocol.
@@ -1714,16 +1726,17 @@ int cp_clb_sig(g1_t a, g1_t A[], g1_t b, g1_t B[], g1_t c, uint8_t *msgs[],
  * @param[out] b			- the next component of the signature.
  * @param[out] B			- the (l - 1) next components of the signature.
  * @param[out] c			- the last component of the signature.
- * @param[in] msgs			- the l messages to sign.
- * @param[in] lens			- the l message lengths in bytes.
+ * @param[in] ms			- the l messages to sign.
+ * @param[in] ls			- the l message lengths in bytes.
  * @param[in] x				- the first part of the public key.
  * @param[in] y				- the second part of the public key.
  * @param[in] z				- the remaining (l - 1) parts of the public key.
  * @param[in] l				- the number of messages to sign.
  * @return a boolean value indicating the verification result.
  */
-int cp_clb_ver(g1_t a, g1_t A[], g1_t b, g1_t B[], g1_t c, uint8_t *msgs[],
-		int lens[], g2_t x, g2_t y, g2_t z[], int l);
+ int cp_clb_ver(const g1_t a, const g1_t A[], const g1_t b, const g1_t B[],
+ 		const g1_t c, const uint8_t *ms[], const size_t ls[], const g2_t x,
+ 		const g2_t y, const g2_t z[], size_t l);
 
 /**
  * Generates a key pair for the Pointcheval-Sanders simple signature (PSS)
@@ -1748,7 +1761,7 @@ int cp_pss_gen(bn_t u, bn_t v, g2_t g, g2_t x, g2_t y);
  * @param[in] v				- the second part of the private key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_pss_sig(g1_t a, g1_t b, bn_t m, bn_t u, bn_t v);
+int cp_pss_sig(g1_t a, g1_t b, const bn_t m, const bn_t u, const bn_t v);
 
 /**
  ** Verifies a signature using the PSS protocol.
@@ -1761,7 +1774,8 @@ int cp_pss_sig(g1_t a, g1_t b, bn_t m, bn_t u, bn_t v);
  * @param[in] v				- the third part of the public key.
  * @return a boolean value indicating the verification result.
  */
-int cp_pss_ver(g1_t a, g1_t b, bn_t m, g2_t g, g2_t x, g2_t y);
+int cp_pss_ver(const g1_t a, const g1_t b, const bn_t m, const g2_t g,
+		const g2_t x, const g2_t y);
 
 /**
  * Generates a key pair for the multi-part version of the Pointcheval-Sanders
@@ -1788,8 +1802,8 @@ int cp_mpss_gen(bn_t r[2], bn_t s[2], g2_t g, g2_t x[2], g2_t y[2]);
  * @param[in] sm_tri		- the triple for the scalar multiplication.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_mpss_sig(g1_t a, g1_t b[2], bn_t m[2], bn_t r[2], bn_t s[2],
-		mt_t mul_tri[2], mt_t sm_tri[2]);
+int cp_mpss_sig(g1_t a, g1_t b[2], const bn_t m[2], const bn_t r[2],
+		const bn_t s[2], const mt_t mul_tri[2], const mt_t sm_tri[2]);
 
 /**
  * Opens public values in the MPSS protocols, in this case public keys.
@@ -1815,8 +1829,9 @@ int cp_mpss_bct(g2_t x[2], g2_t y[2]);
  * @param[in] pc_tri		- the triple for the pairing computation.
  * @return a boolean value indicating the verification result.
  */
-int cp_mpss_ver(gt_t e, g1_t a, g1_t b[2], bn_t m[2], g2_t h, g2_t x, g2_t y,
-		mt_t sm_tri[2], pt_t pc_tri[2]);
+int cp_mpss_ver(gt_t e, const g1_t a, const g1_t b[2], const bn_t m[2],
+		const g2_t h, const g2_t x, const g2_t y, const mt_t sm_tri[2],
+		const pt_t pc_tri[2]);
 
 /**
  * Generates a key pair for the Pointcheval-Sanders block signature (PSB)
@@ -1829,7 +1844,7 @@ int cp_mpss_ver(gt_t e, g1_t a, g1_t b[2], bn_t m[2], g2_t h, g2_t x, g2_t y,
  * @param[out] y			- the third part of the public key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_psb_gen(bn_t r, bn_t s[], g2_t g, g2_t x, g2_t y[], int l);
+int cp_psb_gen(bn_t r, bn_t s[], g2_t g, g2_t x, g2_t y[], size_t l);
 
 /**
  * Signs a block of messages using the PSB protocol.
@@ -1842,7 +1857,8 @@ int cp_psb_gen(bn_t r, bn_t s[], g2_t g, g2_t x, g2_t y[], int l);
  * @param[in] l				- the number of messages to sign.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_psb_sig(g1_t a, g1_t b, bn_t ms[], bn_t r, bn_t s[], int l);
+int cp_psb_sig(g1_t a, g1_t b, const bn_t ms[], const bn_t r, const bn_t s[],
+		size_t l);
 
 /**
  * Verifies a block of messages signed using the PSB protocol.
@@ -1856,7 +1872,8 @@ int cp_psb_sig(g1_t a, g1_t b, bn_t ms[], bn_t r, bn_t s[], int l);
  * @param[in] l				- the number of messages to sign.
  * @return a boolean value indicating the verification result.
  */
-int cp_psb_ver(g1_t a, g1_t b, bn_t ms[], g2_t g, g2_t x, g2_t y[], int l);
+int cp_psb_ver(const g1_t a, const g1_t b, const bn_t ms[], const g2_t g,
+		const g2_t x, const g2_t y[], size_t l);
 
 /**
  * Generates a key pair for the multi-part version of the Pointcheval-Sanders
@@ -1870,7 +1887,8 @@ int cp_psb_ver(g1_t a, g1_t b, bn_t ms[], g2_t g, g2_t x, g2_t y[], int l);
  * @param[in] l				- the number of messages to sign.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_mpsb_gen(bn_t r[2], bn_t s[][2], g2_t h, g2_t x[2], g2_t y[][2], int l);
+int cp_mpsb_gen(bn_t r[2], bn_t s[][2], g2_t h, g2_t x[2], g2_t y[][2],
+		size_t l);
 
 /**
  * Signs a message using the MPSS protocol operating over shares using triples.
@@ -1885,8 +1903,9 @@ int cp_mpsb_gen(bn_t r[2], bn_t s[][2], g2_t h, g2_t x[2], g2_t y[][2], int l);
  * @param[in] l				- the number of messages to sign.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_mpsb_sig(g1_t a, g1_t b[2], bn_t m[][2], bn_t r[2], bn_t s[][2],
-		mt_t mul_tri[2], mt_t sm_tri[2], int l);
+int cp_mpsb_sig(g1_t a, g1_t b[2], const bn_t m[][2], const bn_t r[2],
+		const bn_t s[][2], const mt_t mul_tri[2], const mt_t sm_tri[2],
+		size_t l);
 
 /**
  * Opens public values in the MPSS protocols, in this case public keys.
@@ -1896,7 +1915,7 @@ int cp_mpsb_sig(g1_t a, g1_t b[2], bn_t m[][2], bn_t r[2], bn_t s[][2],
  * @param[in] l				- the number of messages to sign.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_mpsb_bct(g2_t x[2], g2_t y[][2], int l);
+int cp_mpsb_bct(g2_t x[2], g2_t y[][2], size_t l);
 
 /**
  * Verifies a signature using the MPSS protocol operating over shares using
@@ -1915,8 +1934,9 @@ int cp_mpsb_bct(g2_t x[2], g2_t y[][2], int l);
  * @param[in] l				- the number of messages to sign.
  * @return a boolean value indicating the verification result.
  */
-int cp_mpsb_ver(gt_t e, g1_t a, g1_t b[2], bn_t m[][2], g2_t h, g2_t x,
-		g2_t y[][2], bn_t v[][2], mt_t sm_tri[2], pt_t pc_tri[2], int l);
+int cp_mpsb_ver(gt_t e, const g1_t a, const g1_t b[2], const bn_t m[][2],
+		const g2_t h, const g2_t x, const g2_t y[][2], const bn_t v[][2],
+		const mt_t sm_tri[2], const pt_t pc_tri[2], size_t l);
 
 /**
  * Generates a Zhang-Safavi-Naini-Susilo (ZSS) key pair.
@@ -1937,7 +1957,7 @@ int cp_zss_gen(bn_t d, g1_t q, gt_t z);
  * @param[in] d				- the private key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_zss_sig(g2_t s, uint8_t *msg, int len, int hash, bn_t d);
+int cp_zss_sig(g2_t s, const uint8_t *msg, size_t len, int hash, const bn_t d);
 
 /**
  * Verifies a message signed with ZSS scheme.
@@ -1950,7 +1970,8 @@ int cp_zss_sig(g2_t s, uint8_t *msg, int len, int hash, bn_t d);
  * @param[out] z			- the second component of the public key.
  * @return a boolean value indicating the verification result.
  */
-int cp_zss_ver(g2_t s, uint8_t *msg, int len, int hash, g1_t q, gt_t z);
+int cp_zss_ver(const g2_t s, const uint8_t *msg, size_t len, int hash,
+		const g1_t q, const gt_t z);
 
 /**
  * Generates a vBNN-IBS key generation center (KGC).
@@ -1971,7 +1992,8 @@ int cp_vbnn_gen(bn_t msk, ec_t mpk);
  * @param[in] id_len		- the identity length in bytes.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_vbnn_gen_prv(bn_t sk, ec_t pk, bn_t msk, uint8_t *id, int id_len);
+int cp_vbnn_gen_prv(bn_t sk, ec_t pk, const bn_t msk, const uint8_t *id,
+		size_t id_len);
 
 /**
  * Signs a message using the vBNN-IBS scheme.
@@ -1986,8 +2008,8 @@ int cp_vbnn_gen_prv(bn_t sk, ec_t pk, bn_t msk, uint8_t *id, int id_len);
  * @param[in] sk			- the signer private key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_vbnn_sig(ec_t r, bn_t z, bn_t h, uint8_t *id, int id_len, uint8_t *msg,
-		int msg_len, bn_t sk, ec_t pk);
+int cp_vbnn_sig(ec_t r, bn_t z, bn_t h, const uint8_t *id, size_t id_len,
+		const uint8_t *msg, int msg_len, const bn_t sk, const ec_t pk);
 
 /**
  * Verifies a signature and message using the vBNN-IBS scheme.
@@ -2002,8 +2024,8 @@ int cp_vbnn_sig(ec_t r, bn_t z, bn_t h, uint8_t *id, int id_len, uint8_t *msg,
  * @param[in] mpk			- the master public key of the generation center.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_vbnn_ver(ec_t r, bn_t z, bn_t h, uint8_t *id, int id_len, uint8_t *msg,
-		int msg_len, ec_t mpk);
+int cp_vbnn_ver(const ec_t r, const bn_t z, const bn_t h, const uint8_t *id,
+		size_t id_len, const uint8_t *msg, int msg_len, const ec_t mpk);
 
 /**
  * Computes the proof of knowledge of a discrete logarithm of an elliptic curve
@@ -2015,7 +2037,7 @@ int cp_vbnn_ver(ec_t r, bn_t z, bn_t h, uint8_t *id, int id_len, uint8_t *msg,
  * @param[in] x				- the discrete logarithm to prove.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_pokdl_prv(bn_t c, bn_t r, ec_t y, bn_t x);
+int cp_pokdl_prv(bn_t c, bn_t r, const ec_t y, const bn_t x);
 
 /**
  * Verifies the proof of knowledge of a discrete logarithm of an elliptic curve
@@ -2026,7 +2048,7 @@ int cp_pokdl_prv(bn_t c, bn_t r, ec_t y, bn_t x);
  * @param[in] y				- the elliptic curve point.
  * @return a boolean value indicating the verification result.
  */
-int cp_pokdl_ver(bn_t c, bn_t r, ec_t y);
+int cp_pokdl_ver(const bn_t c, const bn_t r, const ec_t y);
 
 /**
  * Computes the proof of knowledge of a discrete logarithm of an elliptic curve
@@ -2038,7 +2060,7 @@ int cp_pokdl_ver(bn_t c, bn_t r, ec_t y);
  * @param[in] x				- the discrete logarithm to prove.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_pokor_prv(bn_t c[2], bn_t r[2], ec_t y[2], bn_t x);
+int cp_pokor_prv(bn_t c[2], bn_t r[2], const ec_t y[2], const bn_t x);
 
 /**
  * Verifies the proof of knowledge of a discrete logarithm of an elliptic curve
@@ -2049,7 +2071,7 @@ int cp_pokor_prv(bn_t c[2], bn_t r[2], ec_t y[2], bn_t x);
  * @param[in] y				- the elliptic curve points.
  * @return a boolean value indicating the verification result.
  */
-int cp_pokor_ver(bn_t c[2], bn_t r[2], ec_t y[2]);
+int cp_pokor_ver(const bn_t c[2], const bn_t r[2], const ec_t y[2]);
 
 /**
  * Computes the proof of knowledge of a discrete logarithm of an elliptic curve
@@ -2063,7 +2085,8 @@ int cp_pokor_ver(bn_t c[2], bn_t r[2], ec_t y[2]);
  * @param[in] x				- the discrete logarithm to prove.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_sokdl_sig(bn_t c, bn_t r, uint8_t *msg, int len, ec_t y, bn_t x);
+int cp_sokdl_sig(bn_t c, bn_t r, const uint8_t *msg, size_t len, const ec_t y,
+		const bn_t x);
 
 /**
  * Verifies the proof of knowledge of a discrete logarithm of an elliptic curve
@@ -2076,7 +2099,8 @@ int cp_sokdl_sig(bn_t c, bn_t r, uint8_t *msg, int len, ec_t y, bn_t x);
  * @param[in] y				- the elliptic curve point.
  * @return a boolean value indicating the verification result.
  */
-int cp_sokdl_ver(bn_t c, bn_t r, uint8_t *msg, int len, ec_t y);
+int cp_sokdl_ver(const bn_t c, const bn_t r, const uint8_t *msg, size_t len,
+		const ec_t y);
 
 /**
  * Computes the proof of knowledge of a discrete logarithm of an elliptic curve
@@ -2093,8 +2117,8 @@ int cp_sokdl_ver(bn_t c, bn_t r, uint8_t *msg, int len, ec_t y);
  *							  discrete logarithm is known.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_sokor_sig(bn_t c[2], bn_t r[2], uint8_t *msg, int len, ec_t y[2],
-		ec_t g[2], bn_t x, int first);
+int cp_sokor_sig(bn_t c[2], bn_t r[2], const uint8_t *msg, size_t len,
+		const ec_t y[2], const ec_t g[2], const bn_t x, int first);
 
 /**
  * Verifies the proof of knowledge of a discrete logarithm of an elliptic curve
@@ -2108,8 +2132,8 @@ int cp_sokor_sig(bn_t c[2], bn_t r[2], uint8_t *msg, int len, ec_t y[2],
  * @param[in] g				- the elliptic curve generators.
  * @return a boolean value indicating the verification result.
  */
-int cp_sokor_ver(bn_t c[2], bn_t r[2], uint8_t *msg, int len, ec_t y[2],
-		ec_t g[2]);
+int cp_sokor_ver(const bn_t c[2], const bn_t r[2], const uint8_t *msg,
+		size_t len, const ec_t y[2], const ec_t g[2]);
 
 /**
  * Generates the public parameters of the extendable ring signature.
@@ -2137,25 +2161,27 @@ int cp_ers_gen_key(bn_t sk, ec_t pk);
  * @param[in] pk			- the singer's public key.
  * @param[in] pp			- the public parameters.
  */
-int cp_ers_sig(bn_t td, ers_t p, uint8_t *msg, int len, bn_t sk, ec_t pk,
-		ec_t pp);
+int cp_ers_sig(bn_t td, ers_t p, const uint8_t *msg, size_t len, const bn_t sk,
+		const ec_t pk, const ec_t pp);
 
 /**
  * Verifies an extendable ring signature scheme over some messages.
  *
  * @param[in] td			- the signature trapdoor.
- * @param[in] s			- the ring of signatures.
+ * @param[in] s
+ - the ring of signatures.
  * @param[in] size			- the number of signatures in the ring.
  * @param[in] msg			- the message to sign.
  * @param[in] len			- the message length.
  * @param[in] pp			- the public parameters.
  */
-int cp_ers_ver(bn_t td, ers_t *s, int size, uint8_t *msg, int len, ec_t pp);
+int cp_ers_ver(const bn_t td, const ers_t *s, size_t size, const uint8_t *msg,
+		size_t len, const ec_t pp);
 
 /**
  * Extends an extendable ring signature with a new signature.
  *
- * @param[in] td			- the signature trapdoor.
+ * @param[out] td			- the signature trapdoor.
  * @param[in] p				- the ring of signatures.
  * @param[in] size			- the number of signatures in the ring.
  * @param[in] msg			- the message to sign.
@@ -2163,8 +2189,8 @@ int cp_ers_ver(bn_t td, ers_t *s, int size, uint8_t *msg, int len, ec_t pp);
  * @param[in] pk			- the singer's public key.
  * @param[in] pp			- the public parameters.
  */
-int cp_ers_ext(bn_t td, ers_t *p, int *size, uint8_t *msg, int len, ec_t pk,
-		ec_t pp);
+int cp_ers_ext(bn_t td, ers_t *p, size_t *size, const uint8_t *msg, size_t len,
+		const ec_t pk, const ec_t pp);
 
 /**
  * Signs a message using the same-message linkable extendable ring signature
@@ -2178,8 +2204,8 @@ int cp_ers_ext(bn_t td, ers_t *p, int *size, uint8_t *msg, int len, ec_t pk,
  * @param[in] pk			- the singer's public key.
  * @param[in] pp			- the public parameters.
  */
-int cp_smlers_sig(bn_t td, smlers_t p, uint8_t *msg, int len, bn_t sk, ec_t pk,
-		ec_t pp);
+int cp_smlers_sig(bn_t td, smlers_t p, const uint8_t *msg, size_t len,
+		const bn_t sk, const ec_t pk, const ec_t pp);
 
 /**
  * Verifies a same-message linkable extendable ring signature.
@@ -2191,13 +2217,13 @@ int cp_smlers_sig(bn_t td, smlers_t p, uint8_t *msg, int len, bn_t sk, ec_t pk,
  * @param[in] len			- the message length.
  * @param[in] pp			- the public parameters.
  */
-int cp_smlers_ver(bn_t td, smlers_t *s, int size, uint8_t *msg, int len,
-		ec_t pp);
+int cp_smlers_ver(bn_t td, smlers_t *s, size_t size, const uint8_t *msg,
+		size_t len, const ec_t pp);
 
 /**
  * Extends a same-message extendable ring signature with a new signature.
  *
- * @param[in] td			- the signature trapdoor.
+ * @param[out] td			- the signature trapdoor.
  * @param[in] p				- the ring of signatures.
  * @param[in] size			- the number of signatures in the ring.
  * @param[in] msg			- the message to sign.
@@ -2205,8 +2231,8 @@ int cp_smlers_ver(bn_t td, smlers_t *s, int size, uint8_t *msg, int len,
  * @param[in] pk			- the singer's public key.
  * @param[in] pp			- the public parameters.
  */
-int cp_smlers_ext(bn_t td, smlers_t *p, int *size, uint8_t *msg, int len,
-		ec_t pk, ec_t pp);
+int cp_smlers_ext(bn_t td, smlers_t *p, size_t *size, const uint8_t *msg,
+		size_t len, const ec_t pk, const ec_t pp);
 
 /**
  * Signs a message using the extendable threshold ring signature scheme.
@@ -2221,8 +2247,8 @@ int cp_smlers_ext(bn_t td, smlers_t *p, int *size, uint8_t *msg, int len,
  * @param[in] pk			- the singer's public key.
  * @param[in] pp			- the public parametetrs.
  */
-int cp_etrs_sig(bn_t *td, bn_t *y, int max, etrs_t p, uint8_t *msg, int len,
-		bn_t sk, ec_t pk, ec_t pp);
+int cp_etrs_sig(bn_t *td, bn_t *y, size_t max, etrs_t p, const uint8_t *msg,
+		size_t len, const bn_t sk, const ec_t pk, const ec_t pp);
 
 /**
  * Verifies an extendable threshold ring signature scheme over some messages.
@@ -2237,13 +2263,14 @@ int cp_etrs_sig(bn_t *td, bn_t *y, int max, etrs_t p, uint8_t *msg, int len,
  * @param[in] len			- the message length.
  * @param[in] pp			- the public parametetrs.
  */
-int cp_etrs_ver(int thres, bn_t *td, bn_t *y, int max, etrs_t *s, int size,
-		uint8_t *msg, int len, ec_t pp);
+int cp_etrs_ver(size_t thres, const bn_t *td, const bn_t *y, size_t max,
+		const etrs_t *s, size_t size, const uint8_t *msg, size_t len,
+		const ec_t pp);
 
 /**
  * Extends an extendable threshold ring signature with a new signature.
  *
- * @param[in] td			- the signature trapdoors.
+ * @param[out] td			- the signature trapdoors.
  * @param[in] y				- the signature randomness.
  * @param[in] max			- the maximum number of extensions.
  * @param[in] p				- the ring of signatures.
@@ -2253,8 +2280,8 @@ int cp_etrs_ver(int thres, bn_t *td, bn_t *y, int max, etrs_t *s, int size,
  * @param[in] pk			- the singer's public key.
  * @param[in] pp			- the public parametetrs.
  */
-int cp_etrs_ext(bn_t *td, bn_t *y, int max, etrs_t *p, int *size, uint8_t *msg,
-		int len, ec_t pk, ec_t pp);
+int cp_etrs_ext(bn_t *td, bn_t *y, size_t max, etrs_t *p, size_t *size,
+		const uint8_t *msg, size_t len, const ec_t pk, const ec_t pp);
 /**
  * Joins an extendable threshold ring signature with a new signature.
  *
@@ -2270,8 +2297,9 @@ int cp_etrs_ext(bn_t *td, bn_t *y, int max, etrs_t *p, int *size, uint8_t *msg,
  * @param[in] pk			- the singer's public key.
  * @param[in] pp			- the public parametetrs.
  */
-int cp_etrs_uni(int thres, bn_t *td, bn_t *y, int max, etrs_t *p, int *size,
-		uint8_t *msg, int len, bn_t sk, ec_t pk, ec_t pp);
+int cp_etrs_uni(int thres, bn_t *td, bn_t *y, int max, etrs_t *p, size_t *size,
+		const uint8_t *msg, size_t len, const bn_t sk, const ec_t pk,
+		const ec_t pp);
 /**
  * Initialize the Context-hiding Multi-key Homomorphic Signature scheme (CMLHS).
  * The scheme due to Schabhuser et al. signs a vector of messages.
@@ -2295,7 +2323,7 @@ int cp_cmlhs_init(g1_t h);
  * @param[out] y			- the corresponding public element.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_cmlhs_gen(bn_t x[], gt_t hs[], int len, uint8_t prf[], int plen,
+int cp_cmlhs_gen(bn_t x[], gt_t hs[], size_t len, uint8_t prf[], size_t plen,
 		bn_t sk, g2_t pk, bn_t d, g2_t y);
 
 /**
@@ -2318,9 +2346,9 @@ int cp_cmlhs_gen(bn_t x[], gt_t hs[], int len, uint8_t prf[], int plen,
  * @param[out] d			- the secret exponent.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_cmlhs_sig(g1_t sig, g2_t z, g1_t a, g1_t c, g1_t r, g2_t s, bn_t msg,
-		char *data, int label, bn_t x, g1_t h, uint8_t prf[], int plen,
-		bn_t sk, bn_t d);
+int cp_cmlhs_sig(g1_t sig, g2_t z, g1_t a, g1_t c, g1_t r, g2_t s,
+		const bn_t msg, const char *data, int label, const bn_t x, const g1_t h,
+		const uint8_t prf[], size_t plen, const bn_t sk, const bn_t d);
 
 /**
  * Applies a function over a set of CMLHS signatures from the same user.
@@ -2333,7 +2361,8 @@ int cp_cmlhs_sig(g1_t sig, g2_t z, g1_t a, g1_t c, g1_t r, g2_t s, bn_t msg,
  * @param[in] len			- the number of coefficients.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_cmlhs_fun(g1_t a, g1_t c, g1_t as[], g1_t cs[], dig_t f[], int len);
+int cp_cmlhs_fun(g1_t a, g1_t c, const g1_t as[], const g1_t cs[],
+		const dig_t f[], size_t len);
 
 /**
  * Evaluates a function over a set of CMLHS signatures.
@@ -2346,7 +2375,8 @@ int cp_cmlhs_fun(g1_t a, g1_t c, g1_t as[], g1_t cs[], dig_t f[], int len);
  * @param[in] len			- the number of coefficients.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_cmlhs_evl(g1_t r, g2_t s, g1_t rs[], g2_t ss[], dig_t f[], int len);
+int cp_cmlhs_evl(g1_t r, g2_t s, const g1_t rs[], const g2_t ss[],
+		const dig_t f[], size_t len);
 
 /**
  * Verifies a CMLHS signature over a set of messages.
@@ -2369,9 +2399,10 @@ int cp_cmlhs_evl(g1_t r, g2_t s, g1_t rs[], g2_t ss[], dig_t f[], int len);
  * @param[in] slen			- the number of signatures.
  * @return a boolean value indicating the verification result.
  */
-int cp_cmlhs_ver(g1_t r, g2_t s, g1_t sig[], g2_t z[], g1_t a[], g1_t c[],
-		bn_t m, char *data, g1_t h, int label[], gt_t * hs[],
-		dig_t *f[], int flen[], g2_t y[], g2_t pk[], int slen);
+int cp_cmlhs_ver(const g1_t r, const g2_t s, const g1_t sig[], const g2_t z[],
+		const g1_t a[], const g1_t c[], const bn_t m, const char *data,
+		const g1_t h, const int label[], const gt_t * hs[], const dig_t *f[],
+		const size_t flen[], const g2_t y[], const g2_t pk[], size_t slen);
 
 /**
  * Perform the offline verification of a CMLHS signature over a set of messages.
@@ -2387,8 +2418,9 @@ int cp_cmlhs_ver(g1_t r, g2_t s, g1_t sig[], g2_t z[], g1_t a[], g1_t c[],
  * @param[in] slen			- the number of signatures.
  * @return a boolean value indicating the verification result.
  */
-void cp_cmlhs_off(gt_t vk, g1_t h, int label[], gt_t * hs[], dig_t *f[],
-		int flen[], g2_t y[], g2_t pk[], int slen);
+void cp_cmlhs_off(gt_t vk, const g1_t h, const int label[], const gt_t *hs[],
+		const dig_t *f[], const size_t flen[], const g2_t y[], const g2_t pk[],
+		size_t slen);
 
 /**
  * Perform the online verification of a CMLHS signature over a set of messages.
@@ -2405,8 +2437,10 @@ void cp_cmlhs_off(gt_t vk, g1_t h, int label[], gt_t * hs[], dig_t *f[],
  * @param[in] vk			- the verification key.
  * @return a boolean value indicating the verification result.
  */
-int cp_cmlhs_onv(g1_t r, g2_t s, g1_t sig[], g2_t z[], g1_t a[], g1_t c[],
-		bn_t msg, char *data, g1_t h, gt_t vk, g2_t y[], g2_t pk[], int slen);
+int cp_cmlhs_onv(const g1_t r, const g2_t s, const g1_t sig[], const g2_t z[],
+		const g1_t a[], const g1_t c[], const bn_t msg, const char *data,
+		const g1_t h, const gt_t vk, const g2_t y[], const g2_t pk[],
+		size_t slen);
 /**
  * Generates a key pair for the Multi-Key Homomorphic Signature (MKLHS) scheme.
  *
@@ -2427,7 +2461,8 @@ int cp_mklhs_gen(bn_t sk, g2_t pk);
  * @param[in] sk			- the private key for the signature scheme.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_mklhs_sig(g1_t s, bn_t m, char *data, char *id, char *tag, bn_t sk);
+int cp_mklhs_sig(g1_t s, const bn_t m, const char *data, const char *id,
+		const char *tag, const bn_t sk);
 
 /**
  * Applies a function over a set of messages from the same user.
@@ -2438,7 +2473,7 @@ int cp_mklhs_sig(g1_t s, bn_t m, char *data, char *id, char *tag, bn_t sk);
  * @param[in] len			- the number of coefficients.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_mklhs_fun(bn_t mu, bn_t m[], dig_t f[], int len);
+int cp_mklhs_fun(bn_t mu, const bn_t m[], const dig_t f[], size_t len);
 
 /**
  * Evaluates a function over a set of MKLHS signatures.
@@ -2449,7 +2484,7 @@ int cp_mklhs_fun(bn_t mu, bn_t m[], dig_t f[], int len);
  * @param[in] len			- the number of coefficients.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_mklhs_evl(g1_t sig, g1_t s[], dig_t f[], int len);
+int cp_mklhs_evl(g1_t sig, const g1_t s[], const dig_t f[], size_t len);
 
 /**
  * Verifies a MKLHS signature over a set of messages.
@@ -2466,8 +2501,9 @@ int cp_mklhs_evl(g1_t sig, g1_t s[], dig_t f[], int len);
  * @param[in] slen			- the number of signatures.
  * @return a boolean value indicating the verification result.
  */
-int cp_mklhs_ver(g1_t sig, bn_t m, bn_t mu[], char *data, char *id[],
-		char *tag[], dig_t *f[], int flen[], g2_t pk[], int slen);
+int cp_mklhs_ver(const g1_t sig, const bn_t m, const bn_t mu[],
+		const char *data, const char *id[], const char *tag[], const dig_t *f[],
+		const size_t flen[], const g2_t pk[], size_t slen);
 
 /**
  * Computes the offline part of veryfying a MKLHS signature over a set of
@@ -2482,8 +2518,8 @@ int cp_mklhs_ver(g1_t sig, bn_t m, bn_t mu[], char *data, char *id[],
  * @param[in] slen			- the number of signatures.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_mklhs_off(g1_t h[], dig_t ft[], char *id[], char *tag[], dig_t *f[],
-		int flen[], int slen);
+int cp_mklhs_off(g1_t h[], dig_t ft[], const char *id[], const char *tag[],
+		const dig_t *f[], const size_t flen[], size_t slen);
 
 /**
  * Computes the online part of veryfying a MKLHS signature over a set of
@@ -2500,8 +2536,9 @@ int cp_mklhs_off(g1_t h[], dig_t ft[], char *id[], char *tag[], dig_t *f[],
  * @param[in] slen			- the number of signatures.
  * @return a boolean value indicating the verification result.
  */
-int cp_mklhs_onv(g1_t sig, bn_t m, bn_t mu[], char *data, char *id[], g1_t h[],
-		dig_t ft[], g2_t pk[], int slen);
+int cp_mklhs_onv(const g1_t sig, const bn_t m, const bn_t mu[],
+		const char *data, const char *id[], const g1_t h[], const dig_t ft[],
+		const g2_t pk[], size_t slen);
 
 /**
  * Generates the trusted setup parameters for the factoring-based laconic
@@ -2511,7 +2548,7 @@ int cp_mklhs_onv(g1_t sig, bn_t m, bn_t mu[], char *data, char *id[], g1_t h[],
  * @param[out] n			- the modulus.
  * @param[in] bits			- the precision in bits.
  */
-int cp_rsapsi_gen(bn_t g, bn_t n, int bits);
+int cp_rsapsi_gen(bn_t g, bn_t n, size_t bits);
 
 /**
  * Computes the receiver part of the RSA-PSI protocol, given its input set.
@@ -2524,7 +2561,8 @@ int cp_rsapsi_gen(bn_t g, bn_t n, int bits);
  * @param[in] x				- the receiver's input set.
  * @param[in] m				- the receiver's input set size.
  */
-int cp_rsapsi_ask(bn_t d, bn_t r, bn_t p[], bn_t g, bn_t n, bn_t x[], int m);
+int cp_rsapsi_ask(bn_t d, bn_t r, bn_t p[], const bn_t g, const bn_t n,
+		const bn_t x[], size_t m);
 
 /**
  * Computes the sender part of the RSA-PSI protocol, given its input set.
@@ -2537,7 +2575,8 @@ int cp_rsapsi_ask(bn_t d, bn_t r, bn_t p[], bn_t g, bn_t n, bn_t x[], int m);
  * @param[in] y				- the server's input set.
  * @param[in] l				- the sender's input set size.
  */
-int cp_rsapsi_ans(bn_t t[], bn_t u[], bn_t d, bn_t g, bn_t n, bn_t y[], int l);
+int cp_rsapsi_ans(bn_t t[], bn_t u[], const bn_t d, const bn_t g, const bn_t n,
+		const bn_t y[], size_t l);
 
 /**
  * Computes the intersection as the final part of the RSA-PSI protocol.
@@ -2553,8 +2592,9 @@ int cp_rsapsi_ans(bn_t t[], bn_t u[], bn_t d, bn_t g, bn_t n, bn_t y[], int l);
  * @param[in] u				- the missing elements in the exponent.
  * @param[in] l				- the sender's input set size.
  */
-int cp_rsapsi_int(bn_t z[], int *len, bn_t r, bn_t p[], bn_t n, bn_t x[], int m,
-		bn_t t[], bn_t u[], int l);
+int cp_rsapsi_int(bn_t z[], size_t *len, const bn_t r, const bn_t p[],
+		const bn_t n, const bn_t x[], const size_t m, const bn_t t[],
+		const bn_t u[], size_t l);
 
 /**
  * Generates the trusted setup parameters for the factoring-based size-hiding
@@ -2564,7 +2604,7 @@ int cp_rsapsi_int(bn_t z[], int *len, bn_t r, bn_t p[], bn_t n, bn_t x[], int m,
  * @param[in] crt			- the parameters given by the trusted setup.
  * @param[in] bits			- the precision in bits.
  */
-int cp_shipsi_gen(bn_t g, crt_t crt, int bits);
+int cp_shipsi_gen(bn_t g, crt_t crt, size_t bits);
 
 /**
  * Computes the receiver part of the SHI-PSI protocol, given its input set.
@@ -2577,7 +2617,8 @@ int cp_shipsi_gen(bn_t g, crt_t crt, int bits);
  * @param[in] x				- the receiver's input set.
  * @param[in] m				- the receiver's input set size.
  */
-int cp_shipsi_ask(bn_t d, bn_t r, bn_t p[], bn_t g, bn_t n, bn_t x[], int m);
+int cp_shipsi_ask(bn_t d, bn_t r, bn_t p[], const bn_t g, const bn_t n,
+		const bn_t x[], size_t m);
 
 /**
  * Computes the sender part of the SHI-PSI protocol, given its input set.
@@ -2590,7 +2631,8 @@ int cp_shipsi_ask(bn_t d, bn_t r, bn_t p[], bn_t g, bn_t n, bn_t x[], int m);
  * @param[in] y				- the server's input set.
  * @param[in] n				- the sender's input set size.
  */
-int cp_shipsi_ans(bn_t t[], bn_t u, bn_t d, bn_t g, crt_t crt, bn_t y[], int n);
+int cp_shipsi_ans(bn_t t[], bn_t u, bn_t d, const bn_t g, const crt_t crt,
+		const bn_t y[], const size_t n);
 
 /**
  * Computes the intersection as the final part of the SHI-PSI protocol.
@@ -2606,8 +2648,9 @@ int cp_shipsi_ans(bn_t t[], bn_t u, bn_t d, bn_t g, crt_t crt, bn_t y[], int n);
  * @param[in] u				- the hint in the exponent.
  * @param[in] l				- the sender's input set size.
  */
-int cp_shipsi_int(bn_t z[], int *len, bn_t r, bn_t p[], bn_t n, bn_t x[], int m,
-		bn_t t[], bn_t u, int l);
+int cp_shipsi_int(bn_t z[], size_t *len, const bn_t r, const bn_t p[],
+		const bn_t n, const bn_t x[], size_t m, const bn_t t[], const bn_t u,
+		size_t l);
 
 /**
  * Generates the secrets and consecutive powers for the pairing-based laconic
@@ -2618,7 +2661,7 @@ int cp_shipsi_int(bn_t z[], int *len, bn_t r, bn_t p[], bn_t n, bn_t x[], int m,
  * @param[out] s			- the consecutive powers in G_1.
  * @param[in] m				- the maximum set size.
  */
-int cp_pbpsi_gen(bn_t sk, g1_t ss, g2_t s[], int m);
+int cp_pbpsi_gen(bn_t sk, g1_t ss, g2_t s[], size_t m);
 
 /**
  * Computes the receiver part of the PB-PSI protocol, given its input set.
@@ -2629,7 +2672,7 @@ int cp_pbpsi_gen(bn_t sk, g1_t ss, g2_t s[], int m);
  * @param[in] s				- the consecutive powers.
  * @param[in] m				- the receiver's input set size.
  */
-int cp_pbpsi_ask(g2_t d[], bn_t r, bn_t x[], g2_t s[], int m);
+int cp_pbpsi_ask(g2_t d[], bn_t r, const bn_t x[], const g2_t s[], size_t m);
 
 /**
  * Computes the sender part of the PB-PSI protocol, given its input set.
@@ -2641,7 +2684,8 @@ int cp_pbpsi_ask(g2_t d[], bn_t r, bn_t x[], g2_t s[], int m);
  * @param[in] y				- the server's input set.
  * @param[in] n				- the sender's input set size.
  */
-int cp_pbpsi_ans(gt_t t[], g1_t u[], g1_t ss, g2_t d, bn_t y[], int n);
+int cp_pbpsi_ans(gt_t t[], g1_t u[], const g1_t ss, const g2_t d,
+		const bn_t y[], size_t n);
 
 /**
  * Computes the intersection as the final part of the PB-PSI protocol.
@@ -2656,7 +2700,7 @@ int cp_pbpsi_ans(gt_t t[], g1_t u[], g1_t ss, g2_t d, bn_t y[], int n);
  * @param[in] u				- the missing elements in the exponent.
  * @param[in] n				- the sender's input set size.
  */
-int cp_pbpsi_int(bn_t z[], int *len, g2_t d[], bn_t x[], int m, gt_t t[],
-		g1_t u[], int n);
+int cp_pbpsi_int(bn_t z[], size_t *len, const g2_t d[], const bn_t x[], size_t m,
+		const gt_t t[], const g1_t u[], size_t n);
 
 #endif /* !RLC_CP_H */

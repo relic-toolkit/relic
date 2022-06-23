@@ -39,7 +39,7 @@
 
 #if FPX_RDC == BASIC || !defined(STRIP)
 
-void fp4_sqr_basic(fp4_t c, fp4_t a) {
+void fp4_sqr_basic(fp4_t c, const fp4_t a) {
 	fp2_t t0, t1;
 
 	fp2_null(t0);
@@ -70,7 +70,7 @@ void fp4_sqr_basic(fp4_t c, fp4_t a) {
 
 #if PP_EXT == LAZYR || !defined(STRIP)
 
-void fp4_sqr_unr(dv4_t c, fp4_t a) {
+void fp4_sqr_unr(dv4_t c, const fp4_t a) {
 	fp2_t t;
 	dv2_t u0, u1;
 
@@ -107,7 +107,7 @@ void fp4_sqr_unr(dv4_t c, fp4_t a) {
 	}
 }
 
-void fp4_sqr_lazyr(fp4_t c, fp4_t a) {
+void fp4_sqr_lazyr(fp4_t c, const fp4_t a) {
 	dv4_t t;
 
 	dv4_null(t);

@@ -39,7 +39,7 @@
 
 #if FPX_RDC == BASIC || !defined(STRIP)
 
-void fp12_sqr_basic(fp12_t c, fp12_t a) {
+void fp12_sqr_basic(fp12_t c, const fp12_t a) {
 	fp6_t t0, t1;
 
 	fp6_null(t0);
@@ -66,7 +66,7 @@ void fp12_sqr_basic(fp12_t c, fp12_t a) {
 	}
 }
 
-void fp12_sqr_cyc_basic(fp12_t c, fp12_t a) {
+void fp12_sqr_cyc_basic(fp12_t c, const fp12_t a) {
 	fp2_t t0, t1, t2, t3, t4, t5, t6;
 
 	fp2_null(t0);
@@ -160,7 +160,7 @@ void fp12_sqr_cyc_basic(fp12_t c, fp12_t a) {
 	}
 }
 
-void fp12_sqr_pck_basic(fp12_t c, fp12_t a) {
+void fp12_sqr_pck_basic(fp12_t c, const fp12_t a) {
 	fp2_t t0, t1, t2, t3, t4, t5, t6;
 
 	fp2_null(t0);
@@ -234,7 +234,7 @@ void fp12_sqr_pck_basic(fp12_t c, fp12_t a) {
 
 #if FPX_RDC == LAZYR || !defined(STRIP)
 
-void fp12_sqr_unr(dv12_t c, fp12_t a) {
+void fp12_sqr_unr(dv12_t c, const fp12_t a) {
 	fp4_t t0, t1;
 	dv4_t u0, u1, u2, u3, u4;
 
@@ -337,7 +337,7 @@ void fp12_sqr_unr(dv12_t c, fp12_t a) {
 	}
 }
 
-void fp12_sqr_lazyr(fp12_t c, fp12_t a) {
+void fp12_sqr_lazyr(fp12_t c, const fp12_t a) {
 	dv12_t t;
 
 	dv12_null(t);
@@ -356,7 +356,7 @@ void fp12_sqr_lazyr(fp12_t c, fp12_t a) {
 	}
 }
 
-void fp12_sqr_cyc_lazyr(fp12_t c, fp12_t a) {
+void fp12_sqr_cyc_lazyr(fp12_t c, const fp12_t a) {
 	fp2_t t0, t1, t2;
 	dv2_t u0, u1, u2, u3;
 
@@ -452,7 +452,7 @@ void fp12_sqr_cyc_lazyr(fp12_t c, fp12_t a) {
 	}
 }
 
-void fp12_sqr_pck_lazyr(fp12_t c, fp12_t a) {
+void fp12_sqr_pck_lazyr(fp12_t c, const fp12_t a) {
 	fp2_t t0, t1, t2;
 	dv2_t u0, u1, u2, u3;
 

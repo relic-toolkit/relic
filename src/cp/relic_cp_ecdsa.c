@@ -58,7 +58,8 @@ int cp_ecdsa_gen(bn_t d, ec_t q) {
 	return result;
 }
 
-int cp_ecdsa_sig(bn_t r, bn_t s, uint8_t *msg, int len, int hash, bn_t d) {
+int cp_ecdsa_sig(bn_t r, bn_t s, const uint8_t *msg, size_t len, int hash,
+		const bn_t d) {
 	bn_t n, k, x, e;
 	ec_t p;
 	uint8_t h[RLC_MD_LEN];
@@ -121,7 +122,8 @@ int cp_ecdsa_sig(bn_t r, bn_t s, uint8_t *msg, int len, int hash, bn_t d) {
 	return result;
 }
 
-int cp_ecdsa_ver(bn_t r, bn_t s, uint8_t *msg, int len, int hash, ec_t q) {
+int cp_ecdsa_ver(bn_t r, bn_t s, const uint8_t *msg, size_t len, int hash,
+		const ec_t q) {
 	bn_t n, k, e, v;
 	ec_t p;
 	uint8_t h[RLC_MD_LEN];

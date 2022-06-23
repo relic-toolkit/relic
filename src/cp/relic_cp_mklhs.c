@@ -57,7 +57,8 @@ int cp_mklhs_gen(bn_t sk, g2_t pk) {
 	return result;
 }
 
-int cp_mklhs_sig(g1_t s, bn_t m, char *data, char *id, char *tag, bn_t sk) {
+int cp_mklhs_sig(g1_t s, const bn_t m, const char *data, const char *id,
+		const char *tag, const bn_t sk) {
 	bn_t n;
 	g1_t a;
 	int result = RLC_OK;
@@ -100,7 +101,7 @@ int cp_mklhs_sig(g1_t s, bn_t m, char *data, char *id, char *tag, bn_t sk) {
 	return result;
 }
 
-int cp_mklhs_fun(bn_t mu, bn_t m[], dig_t f[], int len) {
+int cp_mklhs_fun(bn_t mu, const bn_t m[], const dig_t f[], size_t len) {
 	bn_t n, t;
 	int result = RLC_OK;
 
@@ -129,7 +130,7 @@ int cp_mklhs_fun(bn_t mu, bn_t m[], dig_t f[], int len) {
 	return result;
 }
 
-int cp_mklhs_evl(g1_t sig, g1_t s[], dig_t f[], int len) {
+int cp_mklhs_evl(g1_t sig, const g1_t s[], const dig_t f[], size_t len) {
 	int result = RLC_OK;
 
 	g1_mul_sim_dig(sig, s, f, len);
@@ -137,8 +138,9 @@ int cp_mklhs_evl(g1_t sig, g1_t s[], dig_t f[], int len) {
 	return result;
 }
 
-int cp_mklhs_ver(g1_t sig, bn_t m, bn_t mu[], char *data, char *id[],
-		char *tag[], dig_t *f[], int flen[], g2_t pk[], int slen) {
+int cp_mklhs_ver(const g1_t sig, const bn_t m, const bn_t mu[],
+		const char *data, const char *id[], const char *tag[], const dig_t *f[],
+		const size_t flen[], const g2_t pk[], size_t slen) {
 	bn_t t, n;
 	g1_t d, *g = RLC_ALLOCA(g1_t, slen);
 	g2_t g2;
@@ -238,8 +240,8 @@ int cp_mklhs_ver(g1_t sig, bn_t m, bn_t mu[], char *data, char *id[],
 	return (ver1 && ver2);
 }
 
-int cp_mklhs_off(g1_t h[], dig_t ft[], char *id[], char *tag[], dig_t *f[],
-		int flen[],	int slen) {
+int cp_mklhs_off(g1_t h[], dig_t ft[], const char *id[], const char *tag[],
+		const dig_t *f[], const size_t flen[], size_t slen) {
 	int imax = 0, lmax = 0, fmax = 0, result = RLC_OK;
 	for (int i = 0; i < slen; i++) {
 		fmax = RLC_MAX(fmax, flen[i]);
@@ -286,8 +288,9 @@ int cp_mklhs_off(g1_t h[], dig_t ft[], char *id[], char *tag[], dig_t *f[],
 	return result;
 }
 
-int cp_mklhs_onv(g1_t sig, bn_t m, bn_t mu[], char *data, char *id[], g1_t h[],
-		dig_t ft[], g2_t pk[], int slen) {
+int cp_mklhs_onv(const g1_t sig, const bn_t m, const bn_t mu[],
+		const char *data, const char *id[], const g1_t h[], const dig_t ft[],
+		const g2_t pk[], size_t slen) {
 	bn_t t, n;
 	g1_t d, g1, *g = RLC_ALLOCA(g1_t, slen);
 	g2_t g2;

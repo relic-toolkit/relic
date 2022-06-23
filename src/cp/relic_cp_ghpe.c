@@ -36,7 +36,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-int cp_ghpe_gen(bn_t pub, bn_t prv, int bits) {
+int cp_ghpe_gen(bn_t pub, bn_t prv, size_t bits) {
 	int result = RLC_OK;
 	bn_t p, q, r;
 
@@ -78,7 +78,7 @@ int cp_ghpe_gen(bn_t pub, bn_t prv, int bits) {
 	return result;
 }
 
-int cp_ghpe_enc(bn_t c, bn_t m, bn_t pub, int s) {
+int cp_ghpe_enc(bn_t c, const bn_t m, const bn_t pub, size_t s) {
 	bn_t g, r, t;
 	int result = RLC_OK;
 
@@ -126,7 +126,8 @@ int cp_ghpe_enc(bn_t c, bn_t m, bn_t pub, int s) {
 	return result;
 }
 
-int cp_ghpe_dec(bn_t m, bn_t c, bn_t pub, bn_t prv, int s) {
+int cp_ghpe_dec(bn_t m, const bn_t c, const bn_t pub, const bn_t prv,
+		size_t s) {
 	bn_t i, l, r, t, u, v, x;
 	int result = RLC_OK;
 	dig_t fk;

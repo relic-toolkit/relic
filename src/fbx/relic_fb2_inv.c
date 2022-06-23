@@ -36,7 +36,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void fb2_inv(fb2_t c, fb2_t a) {
+void fb2_inv(fb2_t c, const fb2_t a) {
 	fb_t a0, a1, m0, m1;
 
 	fb_null(a0);

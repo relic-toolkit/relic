@@ -38,7 +38,7 @@
 
 #if FPX_RDC == BASIC || !defined(STRIP)
 
-void fp6_mul_basic(fp6_t c, fp6_t a, fp6_t b) {
+void fp6_mul_basic(fp6_t c, const fp6_t a, const fp6_t b) {
 	fp2_t v0, v1, v2, t0, t1, t2;
 
 	fp2_null(v0);
@@ -110,7 +110,7 @@ void fp6_mul_basic(fp6_t c, fp6_t a, fp6_t b) {
 #if PP_EXT == LAZYR || !defined(STRIP)
 
 /* MSVC needs this to be exported, so remove inline */
-void fp6_mul_unr(dv6_t c, fp6_t a, fp6_t b) {
+void fp6_mul_unr(dv6_t c, const fp6_t a, const fp6_t b) {
 	dv2_t u0, u1, u2, u3;
 	fp2_t t0, t1;
 
@@ -201,7 +201,7 @@ void fp6_mul_unr(dv6_t c, fp6_t a, fp6_t b) {
 	}
 }
 
-void fp6_mul_lazyr(fp6_t c, fp6_t a, fp6_t b) {
+void fp6_mul_lazyr(fp6_t c, const fp6_t a, const fp6_t b) {
 	dv6_t t;
 
 	dv6_null(t);
@@ -221,7 +221,7 @@ void fp6_mul_lazyr(fp6_t c, fp6_t a, fp6_t b) {
 
 #endif
 
-void fp6_mul_dxs(fp6_t c, fp6_t a, fp6_t b) {
+void fp6_mul_dxs(fp6_t c, const fp6_t a, const fp6_t b) {
 	fp2_t v0, v1, t0, t1, t2;
 
 	fp2_null(v0);
@@ -278,7 +278,7 @@ void fp6_mul_dxs(fp6_t c, fp6_t a, fp6_t b) {
 	}
 }
 
-void fp6_mul_art(fp6_t c, fp6_t a) {
+void fp6_mul_art(fp6_t c, const fp6_t a) {
 	fp2_t t0;
 
 	fp2_null(t0);

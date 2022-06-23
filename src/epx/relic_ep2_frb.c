@@ -36,7 +36,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void ep2_frb(ep2_t r, ep2_t p, int i) {
+void ep2_frb(ep2_t r, const ep2_t p, int i) {
 	ctx_t *ctx = core_get();
 
 	ep2_copy(r, p);

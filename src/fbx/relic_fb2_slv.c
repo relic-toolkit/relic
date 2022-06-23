@@ -36,7 +36,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void fb2_slv(fb2_t c, fb2_t a) {
+void fb2_slv(fb2_t c, const fb2_t a) {
 	/* Compute c_0 = a_0 + a_1. */
 	fb_add(c[0], a[0], a[1]);
 	/* Compute c_1^2 + c_1 = a_1. */

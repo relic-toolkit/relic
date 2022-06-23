@@ -35,8 +35,8 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-int cp_etrs_sig(bn_t *td, bn_t *y, int max, etrs_t p, uint8_t *msg, int len,
-		bn_t sk, ec_t pk, ec_t pp) {
+int cp_etrs_sig(bn_t *td, bn_t *y, size_t max, etrs_t p, const uint8_t *msg,
+		size_t len, const bn_t sk, const ec_t pk, const ec_t pp) {
 	bn_t n, l, u, z;
 	ec_t w[2];
 	bn_t *v = RLC_ALLOCA(bn_t, max);
@@ -140,8 +140,9 @@ int cp_etrs_sig(bn_t *td, bn_t *y, int max, etrs_t p, uint8_t *msg, int len,
 	return result;
 }
 
-int cp_etrs_ver(int thres, bn_t *td, bn_t *y, int max, etrs_t *s, int size,
-		uint8_t *msg, int len, ec_t pp) {
+int cp_etrs_ver(size_t thres, const bn_t *td, const bn_t *y, size_t max,
+		const etrs_t *s, size_t size, const uint8_t *msg, size_t len,
+		const ec_t pp) {
 	int i, flag = 0, result = 0;
 	bn_t l, n, u;
 	ec_t w[2];
@@ -241,8 +242,8 @@ int cp_etrs_ver(int thres, bn_t *td, bn_t *y, int max, etrs_t *s, int size,
 	return result;
 }
 
-int cp_etrs_ext(bn_t *td, bn_t *y, int max, etrs_t *p, int *size, uint8_t *msg, int len,
-		ec_t pk, ec_t pp) {
+int cp_etrs_ext(bn_t *td, bn_t *y, size_t max, etrs_t *p, size_t *size,
+		const uint8_t *msg, size_t len, const ec_t pk, const ec_t pp) {
 	bn_t n, r;
 	ec_t w[2];
 	int i, result = RLC_OK;
@@ -297,8 +298,9 @@ int cp_etrs_ext(bn_t *td, bn_t *y, int max, etrs_t *p, int *size, uint8_t *msg, 
 	return result;
 }
 
-int cp_etrs_uni(int thres, bn_t *td, bn_t *y, int max, etrs_t *p, int *size,
-		uint8_t *msg, int len, bn_t sk, ec_t pk, ec_t pp) {
+int cp_etrs_uni(int thres, bn_t *td, bn_t *y, int max, etrs_t *p, size_t *size,
+		const uint8_t *msg, size_t len, const bn_t sk, const ec_t pk,
+		const ec_t pp) {
 	int i, result = 0;
 	bn_t l, n, u, v;
 	ec_t t, w[2];

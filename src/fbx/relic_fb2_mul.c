@@ -37,7 +37,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void fb2_mul(fb2_t c, fb2_t a, fb2_t b) {
+void fb2_mul(fb2_t c, const fb2_t a, const fb2_t b) {
 	fb_t t0, t1, t2;
 
 	fb_null(t0);
@@ -67,7 +67,7 @@ void fb2_mul(fb2_t c, fb2_t a, fb2_t b) {
 	}
 }
 
-void fb2_mul_nor(fb2_t c, fb2_t a) {
+void fb2_mul_nor(fb2_t c, const fb2_t a) {
 	fb_t t;
 
 	fb_null(t);
@@ -84,4 +84,3 @@ void fb2_mul_nor(fb2_t c, fb2_t a) {
 		fb_free(t);
 	}
 }
-

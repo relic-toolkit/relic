@@ -35,7 +35,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-int cp_pbpsi_gen(bn_t sk, g1_t ss, g2_t s[], int m) {
+int cp_pbpsi_gen(bn_t sk, g1_t ss, g2_t s[], size_t m) {
 	int i, result = RLC_OK;
 	bn_t q;
 
@@ -62,9 +62,9 @@ int cp_pbpsi_gen(bn_t sk, g1_t ss, g2_t s[], int m) {
 	return result;
 }
 
-int cp_pbpsi_ask(g2_t d[], bn_t r, bn_t x[], g2_t s[], int m) {
+int cp_pbpsi_ask(g2_t d[], bn_t r, const bn_t x[], const g2_t s[], size_t m) {
 	int i, result = RLC_OK;
-	bn_t t, q, *p = RLC_ALLOCA(bn_t, m + 1);
+	bn_t t, q, *p = RLC_ALLOCA(bn_t, m + 1), *_x = RLC_ALLOCA(bn_t, m + 1);
 
 	bn_null(q);
 	bn_null(t);
@@ -78,6 +78,8 @@ int cp_pbpsi_ask(g2_t d[], bn_t r, bn_t x[], g2_t s[], int m) {
 		for (i = 0; i <= m; i++) {
 			bn_null(p[i]);
 			bn_new(p[i]);
+			bn_null(_x[i]);
+			bn_new(_x[i]);
 		}
 
 		pc_get_ord(q);
@@ -89,12 +91,15 @@ int cp_pbpsi_ask(g2_t d[], bn_t r, bn_t x[], g2_t s[], int m) {
 			g2_mul_sim_lot(d[0], s, p, m + 1);
 			g2_mul(d[0], d[0], r);
 			for (i = 0; i < m; i++) {
-				bn_copy(t, x[i]);
-				bn_copy(x[i], x[m - 1]);
-				bn_lag(p, x, q, m - 1);
+				bn_copy(_x[i], x[i]);
+			}
+			for (i = 0; i < m; i++) {
+				bn_copy(t, _x[i]);
+				bn_copy(_x[i], _x[m - 1]);
+				bn_lag(p, _x, q, m - 1);
 				g2_mul_sim_lot(d[i + 1], s, p, m);
 				g2_mul(d[i + 1], d[i + 1], r);
-				bn_copy(x[i], t);
+				bn_copy(_x[i], t);
 			}
 		}
 	}
@@ -106,13 +111,15 @@ int cp_pbpsi_ask(g2_t d[], bn_t r, bn_t x[], g2_t s[], int m) {
 		bn_free(t);
 		for (i = 0; i <= m; i++) {
 			bn_free(p[i]);
+			bn_free(_x[i]);
 		}
 		RLC_FREE(p);
 	}
 	return result;
 }
 
-int cp_pbpsi_ans(gt_t t[], g1_t u[], g1_t ss, g2_t d, bn_t y[], int n) {
+int cp_pbpsi_ans(gt_t t[], g1_t u[], const g1_t ss, const g2_t d,
+		const bn_t y[], size_t n) {
 	int j, result = RLC_OK;
 	bn_t q, tj;
 	g1_t g1;
@@ -159,8 +166,8 @@ int cp_pbpsi_ans(gt_t t[], g1_t u[], g1_t ss, g2_t d, bn_t y[], int n) {
 	return result;
 }
 
-int cp_pbpsi_int(bn_t z[], int *len, g2_t d[], bn_t x[], int m, gt_t t[],
-		g1_t u[], int n) {
+int cp_pbpsi_int(bn_t z[], size_t *len, const g2_t d[], const bn_t x[],
+		size_t m, const gt_t t[], const g1_t u[], size_t n) {
 	int j, k, result = RLC_OK;
 	gt_t e;
 

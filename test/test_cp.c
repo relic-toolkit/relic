@@ -39,7 +39,7 @@ static int rsa(void) {
 	int code = RLC_ERR;
 	rsa_t pub, prv;
 	uint8_t in[10], out[RLC_BN_BITS / 8 + 1], h[RLC_MD_LEN];
-	int il, ol;
+	size_t il, ol;
 	int result;
 
 	rsa_null(pub);
@@ -90,7 +90,7 @@ static int rabin(void) {
 	rabin_t pub, prv;
 	uint8_t in[10];
 	uint8_t out[RLC_BN_BITS / 8 + 1];
-	int in_len, out_len;
+	size_t in_len, out_len;
 	int result;
 
 	rabin_null(pub);
@@ -130,7 +130,7 @@ static int benaloh(void) {
 	bn_t a, b;
 	dig_t in, out;
 	uint8_t buf[RLC_BN_BITS / 8 + 1];
-	int len;
+	size_t len;
 	int result;
 
 	bn_null(a);
@@ -521,7 +521,7 @@ static int ecies(void) {
 	ec_t r;
 	bn_t da, d_b;
 	ec_t qa, q_b;
-	int l, in_len, out_len;
+	size_t l, in_len, out_len;
 	uint8_t in[RLC_BC_LEN - 1], out[RLC_BC_LEN + RLC_MD_LEN];
 
 	ec_null(r);
@@ -905,11 +905,12 @@ end:
 }
 
 static int ers(void) {
-	int size, code = RLC_ERR;
+	int code = RLC_ERR;
 	ec_t pp, pk[4];
 	bn_t sk[4], td;
 	ers_t ring[4];
-	uint8_t m[5] = { 0, 1, 2, 3, 4 };
+	const uint8_t m[5] = { 0, 1, 2, 3, 4 };
+	size_t size;
 
 	bn_null(td);
 	ec_null(pp);
@@ -958,11 +959,12 @@ end:
 }
 
 static int smlers(void) {
-	int size, code = RLC_ERR;
+	int code = RLC_ERR;
 	ec_t pp, pk[4];
 	bn_t sk[4], td;
 	smlers_t ring[4];
-	uint8_t m[5] = { 0, 1, 2, 3, 4 };
+	const uint8_t m[5] = { 0, 1, 2, 3, 4 };
+	size_t size;
 
 	bn_null(td);
 	ec_null(pp);
@@ -1012,12 +1014,12 @@ end:
 }
 
 static int etrs(void) {
-	int size, code = RLC_ERR;
+	int code = RLC_ERR;
 	ec_t pp, pk[4];
 	bn_t sk[4], td[4], y[4];
 	etrs_t ring[4];
-	uint8_t m[5] = { 0, 1, 2, 3, 4 };
-
+	const uint8_t m[5] = { 0, 1, 2, 3, 4 };
+	size_t size;
 
 	ec_null(pp);
 
@@ -1308,7 +1310,7 @@ static int ibe(void) {
 	g2_t prv;
 	uint8_t in[10], out[10 + 2 * RLC_FP_BYTES + 1];
 	char *id = "Alice";
-	int il, ol;
+	size_t il, ol;
 	int result;
 
 	bn_null(s);
@@ -1545,9 +1547,9 @@ static int cls(void) {
 	bn_t r, t, u, v, vs[4];
 	g1_t a, A, b, B, c, As[4], Bs[4];
 	g2_t x, y, z, zs[4];
-	uint8_t m[5] = { 0, 1, 2, 3, 4 };
-	uint8_t *msgs[5] = {m, m, m, m, m};
-	int lens[5] = {sizeof(m), sizeof(m), sizeof(m), sizeof(m), sizeof(m)};
+	const uint8_t m[5] = { 0, 1, 2, 3, 4 };
+	const uint8_t *ms[5] = {m, m, m, m, m};
+	const size_t ls[5] = {sizeof(m), sizeof(m), sizeof(m), sizeof(m), sizeof(m)};
 
 	bn_null(r);
 	bn_null(t);
@@ -1603,8 +1605,10 @@ static int cls(void) {
 		TEST_CASE("camenisch-lysyanskaya message-independent signature is correct") {
 			bn_rand(r, RLC_POS, 2 * pc_param_level());
 			TEST_ASSERT(cp_cli_gen(t, u, v, x, y, z) == RLC_OK, end);
-			TEST_ASSERT(cp_cli_sig(a, A, b, B, c, m, sizeof(m), r, t, u, v) == RLC_OK, end);
-			TEST_ASSERT(cp_cli_ver(a, A, b, B, c, m, sizeof(m), r, x, y, z) == 1, end);
+			TEST_ASSERT(cp_cli_sig(a, A, b, B, c, m, sizeof(m), r, t, u, v)
+					== RLC_OK, end);
+			TEST_ASSERT(cp_cli_ver(a, A, b, B, c, m, sizeof(m), r, x, y, z)
+					== 1, end);
 			/* Check adversarial signature. */
 			g1_set_infty(a);
 			g1_set_infty(A);
@@ -1617,8 +1621,10 @@ static int cls(void) {
 
 		TEST_CASE("camenisch-lysyanskaya message-block signature is correct") {
 			TEST_ASSERT(cp_clb_gen(t, u, vs, x, y, zs, 5) == RLC_OK, end);
-			TEST_ASSERT(cp_clb_sig(a, As, b, Bs, c, msgs, lens, t, u, vs, 5) == RLC_OK, end);
-			TEST_ASSERT(cp_clb_ver(a, As, b, Bs, c, msgs, lens, x, y, zs, 5) == 1, end);
+			TEST_ASSERT(cp_clb_sig(a, As, b, Bs, c, ms, ls, t, u, vs, 5)
+					== RLC_OK, end);
+			TEST_ASSERT(cp_clb_ver(a, As, b, Bs, c, ms, ls, x, y, zs, 5)
+					== 1, end);
 		}
 		TEST_END;
 	}
@@ -1930,10 +1936,11 @@ static int lhs(void) {
 	g1_t a[S][L], c[S][L], r[S][L];
 	g2_t _s, s[S][L], pk[S], y[S], z[S];
 	gt_t *hs[S], vk;
-	char *data = "database-identifier";
-	char *id[S] = { "Alice", "Bob" };
-	dig_t *f[S] = { NULL };
-	int flen[S];
+	const char *data = "database-identifier";
+	const char *id[S] = { "Alice", "Bob" };
+	dig_t ft[S], *f[S] = { NULL };
+	size_t flen[S];
+	char *ls[L] = { NULL };
 
 	bn_null(m);
 	bn_null(n);
@@ -2043,16 +2050,14 @@ static int lhs(void) {
 			}
 
 			TEST_ASSERT(cp_cmlhs_ver(_r, _s, sig, z, as, cs, m, data, h, label,
-				hs, f, flen, y, pk, S) == 1, end);
+				(const gt_t **)hs, (const dig_t **)f, flen, y, pk, S), end);
 
-			cp_cmlhs_off(vk, h, label, hs, f, flen, y, pk, S);
+			cp_cmlhs_off(vk, h, label, (const gt_t **)hs, (const dig_t **)f,
+				flen, y, pk, S);
 			TEST_ASSERT(cp_cmlhs_onv(_r, _s, sig, z, as, cs, m, data, h, vk,
 				y, pk, S) == 1, end);
 		}
 		TEST_END;
-
-		char *ls[L] = { NULL };
-		dig_t ft[S];
 
 		TEST_CASE("simple linear multi-key homomorphic signature is correct") {
 			for (int j = 0; j < S; j++) {
@@ -2084,9 +2089,11 @@ static int lhs(void) {
 				}
 			}
 
-			TEST_ASSERT(cp_mklhs_ver(_r, m, d, data, id, ls, f, flen, pk, S), end);
+			TEST_ASSERT(cp_mklhs_ver(_r, m, d, data, id, (const char **)ls,
+					(const dig_t **)f, flen, pk, S), end);
 
-			cp_mklhs_off(as, ft, id, ls, f, flen, S);
+			cp_mklhs_off(as, ft, id, (const char **)ls, (const dig_t **)f,
+					flen, S);
 			TEST_ASSERT(cp_mklhs_onv(_r, m, d, data, id, as, ft, pk, S), end);
 		}
 		TEST_END;
@@ -2134,12 +2141,13 @@ static int lhs(void) {
 #define N	2			/* Number of client messages. */
 
 static int psi(void) {
-	int len, result, code = RLC_ERR;
+	int result, code = RLC_ERR;
 	bn_t g, n, q, r, p[M], x[M], v[N], w[N], y[N], z[M];
 	g1_t u[M], ss;
 	g2_t d[M + 1], s[M + 1];
 	gt_t t[M];
 	crt_t crt;
+	size_t l;
 
 	bn_null(g);
 	bn_null(n);
@@ -2200,8 +2208,8 @@ static int psi(void) {
 					bn_copy(y[j], x[j]);
 				}
 				TEST_ASSERT(cp_rsapsi_ans(v, w, q, g, n, y, N) == RLC_OK, end);
-				TEST_ASSERT(cp_rsapsi_int(z, &len, r, p, n, x, M, v, w, N) == RLC_OK, end);
-				TEST_ASSERT(len == k, end);
+				TEST_ASSERT(cp_rsapsi_int(z, &l, r, p, n, x, M, v, w, N) == RLC_OK, end);
+				TEST_ASSERT(l == k, end);
 			}
 		} TEST_END;
 
@@ -2220,9 +2228,11 @@ static int psi(void) {
 				for (int j = 0; j < k; j++) {
 					bn_copy(y[j], x[j]);
 				}
-				TEST_ASSERT(cp_shipsi_ans(v, w[0], q, g, crt, y, N) == RLC_OK, end);
-				TEST_ASSERT(cp_shipsi_int(z, &len, r, p, crt->n, x, M, v, w[0], N) == RLC_OK, end);
-				TEST_ASSERT(len == k, end);
+				TEST_ASSERT(cp_shipsi_ans(v, w[0], q, g, crt, y, N) == RLC_OK,
+					end);
+				TEST_ASSERT(cp_shipsi_int(z, &l, r, p, crt->n, x, M, v, w[0],
+					N) == RLC_OK, end);
+				TEST_ASSERT(l == k, end);
 			}
 		} TEST_END;
 
@@ -2241,8 +2251,9 @@ static int psi(void) {
 					bn_copy(y[j], x[j]);
 				}
 				TEST_ASSERT(cp_pbpsi_ans(t, u, ss, d[0], y, N) == RLC_OK, end);
-				TEST_ASSERT(cp_pbpsi_int(z, &len, d, x, M, t, u, N) == RLC_OK, end);
-				TEST_ASSERT(len == k, end);
+				TEST_ASSERT(cp_pbpsi_int(z, &l, d, x, M, t, u, N) == RLC_OK,
+					end);
+				TEST_ASSERT(l == k, end);
 			}
 		} TEST_END;
 	}

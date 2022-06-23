@@ -40,7 +40,7 @@
 
 #if defined(EP_ENDOM)
 
-static void ep2_mul_glv_imp(ep2_t r, ep2_t p, const bn_t k) {
+static void ep2_mul_glv_imp(ep2_t r, const ep2_t p, const bn_t k) {
 	int i, j, l, _l[4];
 	bn_t n, _k[4], u;
 	int8_t naf[4][RLC_FP_BITS + 1];
@@ -112,7 +112,7 @@ static void ep2_mul_glv_imp(ep2_t r, ep2_t p, const bn_t k) {
 
 #endif /* EP_ENDOM */
 
-static void ep2_mul_naf_imp(ep2_t r, ep2_t p, const bn_t k) {
+static void ep2_mul_naf_imp(ep2_t r, const ep2_t p, const bn_t k) {
 	int l, i, n;
 	int8_t naf[RLC_FP_BITS + 1];
 	ep2_t t[1 << (EP_WIDTH - 2)];
@@ -165,7 +165,7 @@ static void ep2_mul_naf_imp(ep2_t r, ep2_t p, const bn_t k) {
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void ep2_mul_basic(ep2_t r, ep2_t p, const bn_t k) {
+void ep2_mul_basic(ep2_t r, const ep2_t p, const bn_t k) {
 	int i, l;
 	ep2_t t;
 
@@ -209,7 +209,7 @@ void ep2_mul_basic(ep2_t r, ep2_t p, const bn_t k) {
 
 #if EP_MUL == SLIDE || !defined(STRIP)
 
-void ep2_mul_slide(ep2_t r, ep2_t p, const bn_t k) {
+void ep2_mul_slide(ep2_t r, const ep2_t p, const bn_t k) {
 	ep2_t t[1 << (EP_WIDTH - 1)], q;
 	int i, j, l;
 	uint8_t win[RLC_FP_BITS + 1];
@@ -279,7 +279,7 @@ void ep2_mul_slide(ep2_t r, ep2_t p, const bn_t k) {
 
 #if EP_MUL == MONTY || !defined(STRIP)
 
-void ep2_mul_monty(ep2_t r, ep2_t p, const bn_t k) {
+void ep2_mul_monty(ep2_t r, const ep2_t p, const bn_t k) {
 	ep2_t t[2];
 
 	ep2_null(t[0]);
@@ -332,7 +332,7 @@ void ep2_mul_monty(ep2_t r, ep2_t p, const bn_t k) {
 
 #if EP_MUL == LWNAF || !defined(STRIP)
 
-void ep2_mul_lwnaf(ep2_t r, ep2_t p, const bn_t k) {
+void ep2_mul_lwnaf(ep2_t r, const ep2_t p, const bn_t k) {
 	if (bn_is_zero(k) || ep2_is_infty(p)) {
 		ep2_set_infty(r);
 		return;
@@ -356,7 +356,7 @@ void ep2_mul_lwnaf(ep2_t r, ep2_t p, const bn_t k) {
 
 #endif
 
-void ep2_mul_gen(ep2_t r, bn_t k) {
+void ep2_mul_gen(ep2_t r, const bn_t k) {
 	if (bn_is_zero(k)) {
 		ep2_set_infty(r);
 		return;
@@ -383,7 +383,7 @@ void ep2_mul_gen(ep2_t r, bn_t k) {
 #endif
 }
 
-void ep2_mul_dig(ep2_t r, ep2_t p, dig_t k) {
+void ep2_mul_dig(ep2_t r, const ep2_t p, const dig_t k) {
 	ep2_t t;
 	bn_t _k;
 	int8_t u, naf[RLC_DIG + 1];
