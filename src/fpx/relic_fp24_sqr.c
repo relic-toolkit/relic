@@ -37,7 +37,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-#if FPX_RDC == BASIC || !defined(STRIP)
+#if FPX_RDC == BASIC || FPX_RDC == LAZYR ||!defined(STRIP)
 
 void fp24_sqr_basic(fp24_t c, const fp24_t a) {
 	fp8_t t0, t1, t2, t3, t4;

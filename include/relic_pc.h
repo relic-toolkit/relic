@@ -662,7 +662,7 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
  * @param[in] P					- the element to multiply.
  * @param[in] K					- the secret scalar.
  */
-#define g1_mul_key(R, P, K)		RLC_CAT(RLC_G1_LOWER, mul_lwreg)(R, P, K)
+#define g1_mul_key(R, P, K)		RLC_CAT(RLC_G1_LOWER, mul)(R, P, K)
 
 /**
  * Multiplies an element from G_1 by a small integer. Computes R = [k]P.
