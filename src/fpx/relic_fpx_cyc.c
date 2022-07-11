@@ -328,27 +328,19 @@ void fp12_back_cyc(fp12_t c, const fp12_t a) {
 		fp2_new(t1);
 		fp2_new(t2);
 
-		if (fp2_is_zero(a[1][0])) {
-			/* t0 = 2 * g4 * g5 */
-			fp2_mul(t0, a[0][1], a[1][2]);
-			fp2_dbl(t0, t0);
-			fp2_copy(t1, a[0][2]);
-		} else {
-			/* t0 = g4^2. */
-			fp2_sqr(t0, a[0][1]);
-			/* t1 = 3 * g4^2 - 2 * g3. */
-			fp2_sub(t1, t0, a[0][2]);
-			fp2_dbl(t1, t1);
-			fp2_add(t1, t1, t0);
-			/* t0 = E * g5^2 + t1. */
-			fp2_sqr(t2, a[1][2]);
-			fp2_mul_nor(t0, t2);
-			fp2_add(t0, t0, t1);
-			/* t1 = 1/(4 * g2). */
-			fp2_dbl(t1, a[1][0]);
-			fp2_dbl(t1, t1);
-		}
-
+		/* t0 = g4^2. */
+		fp2_sqr(t0, a[0][1]);
+		/* t1 = 3 * g4^2 - 2 * g3. */
+		fp2_sub(t1, t0, a[0][2]);
+		fp2_dbl(t1, t1);
+		fp2_add(t1, t1, t0);
+		/* t0 = E * g5^2 + t1. */
+		fp2_sqr(t2, a[1][2]);
+		fp2_mul_nor(t0, t2);
+		fp2_add(t0, t0, t1);
+		/* t1 = 1/(4 * g2). */
+		fp2_dbl(t1, a[1][0]);
+		fp2_dbl(t1, t1);
 		fp2_inv(t1, t1);
 		/* c_1 = g1. */
 		fp2_mul(c[1][1], t0, t1);
@@ -408,27 +400,19 @@ void fp12_back_cyc_sim(fp12_t c[], const fp12_t a[], int n) {
 		}
 
 		for (int i = 0; i < n; i++) {
-			/* TODO: make this constant time. */
-			if (fp2_is_zero(a[i][1][0])) {
-				/* t0 = 2 * g4 * g5 */
-				fp2_mul(t0[i], a[i][0][1], a[i][1][2]);
-				fp2_dbl(t0[i], t0[i]);
-				fp2_copy(t1[i], a[i][0][2]);
-			} else {
-				/* t0 = g4^2. */
-				fp2_sqr(t0[i], a[i][0][1]);
-				/* t1 = 3 * g4^2 - 2 * g3. */
-				fp2_sub(t1[i], t0[i], a[i][0][2]);
-				fp2_dbl(t1[i], t1[i]);
-				fp2_add(t1[i], t1[i], t0[i]);
-				/* t0 = E * g5^2 + t1. */
-				fp2_sqr(t2[i], a[i][1][2]);
-				fp2_mul_nor(t0[i], t2[i]);
-				fp2_add(t0[i], t0[i], t1[i]);
-				/* t1 = (4 * g2). */
-				fp2_dbl(t1[i], a[i][1][0]);
-				fp2_dbl(t1[i], t1[i]);
-			}
+			/* t0 = g4^2. */
+			fp2_sqr(t0[i], a[i][0][1]);
+			/* t1 = 3 * g4^2 - 2 * g3. */
+			fp2_sub(t1[i], t0[i], a[i][0][2]);
+			fp2_dbl(t1[i], t1[i]);
+			fp2_add(t1[i], t1[i], t0[i]);
+			/* t0 = E * g5^2 + t1. */
+			fp2_sqr(t2[i], a[i][1][2]);
+			fp2_mul_nor(t0[i], t2[i]);
+			fp2_add(t0[i], t0[i], t1[i]);
+			/* t1 = (4 * g2). */
+			fp2_dbl(t1[i], a[i][1][0]);
+			fp2_dbl(t1[i], t1[i]);
 		}
 
 		/* t1 = 1 / t1. */
