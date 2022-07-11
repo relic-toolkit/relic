@@ -187,7 +187,7 @@ static void ep_curve_set(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
 
 	ctx->ep_is_ctmap = ctmap;
 	ep_curve_set_map(u);
-	LOG_DBG("ep_curve_set %d digits\n", core_get()->ep_r.used);
+
 	ep_norm(&(ctx->ep_g), g);
 	bn_copy(&(ctx->ep_r), r);
 	bn_copy(&(ctx->ep_h), h);
@@ -209,7 +209,6 @@ void ep_curve_init(void) {
 	}
 #endif
 	ep_set_infty(&ctx->ep_g);
-	LOG_DBG("digits: %d", RLC_FP_DIGS);
 	bn_make(&ctx->ep_r, RLC_FP_DIGS);
 	bn_make(&ctx->ep_h, RLC_FP_DIGS);
 #if defined(EP_ENDOM) && (EP_MUL == LWNAF || EP_FIX == COMBS || EP_FIX == LWNAF || !defined(STRIP))
@@ -262,8 +261,6 @@ void ep_curve_get_v1(bn_t v[]) {
 void ep_curve_get_v2(bn_t v[]) {
 	ctx_t *ctx = core_get();
 	for (int i = 0; i < 3; i++) {
-		LOG_DBG("curve get %d\n", i);
-		LOG_DBG("used at %lx\n",&(ctx->ep_v2[i].used) );
 		bn_copy(v[i], &(ctx->ep_v2[i]));
 	}
 }
@@ -359,8 +356,6 @@ void ep_curve_get_gen(ep_t g) {
 }
 
 void ep_curve_get_ord(bn_t n) {
-	LOG_DBG("bn_copy %d digits\n", core_get()->ep_r.used);
-	//bn_print(&core_get()->ep_r);
 	bn_copy(n, &core_get()->ep_r);
 }
 
