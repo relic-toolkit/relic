@@ -162,8 +162,8 @@ void util_perm(unsigned int p[], int n) {
 	}
 }
 
-//#ifndef QUIET
-void util_printf(const char *format, ...) {
+#ifndef QUIET
+void util_print(const char *format, ...) {
 #if ARCH == AVR && !defined(OPSYS)
 	util_print_ptr = print_buf + 1;
 	va_list list;
@@ -196,7 +196,7 @@ void util_printf(const char *format, ...) {
 	va_end(list);
 #endif
 }
-//#endif
+#endif
 
 void util_print_dig(dig_t a, int pad) {
 #if RLC_DIG == 64
