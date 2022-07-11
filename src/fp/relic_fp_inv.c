@@ -559,11 +559,6 @@ void fp_inv_jmpds(fp_t c, const fp_t a) {
 	dv_t f, g, t, p, t0, t1, u0, u1, v0, v1, p01, p11;
 	fp_t pre;
 
-	if (fp_is_zero(a)) {
-		RLC_THROW(ERR_NO_VALID);
-		return;
-	}
-
 	dv_null(f);
 	dv_null(g);
 	dv_null(t);
@@ -804,11 +799,6 @@ void fp_inv_jmpds(fp_t c, const fp_t a) {
 #if FP_INV == LOWER || !defined(STRIP)
 
 void fp_inv_lower(fp_t c, const fp_t a) {
-	if (fp_is_zero(a)) {
-		RLC_THROW(ERR_NO_VALID);
-		return;
-	}
-
 	fp_invm_low(c, a);
 }
 
@@ -830,8 +820,8 @@ void fp_inv_sim(fp_t *c, const fp_t *a, int n) {
 		}
 		fp_new(u);
 
-		fp_copy(t[0], a[0]);
 		fp_copy(c[0], a[0]);
+		fp_copy(t[0], a[0]);
 
 		for (i = 1; i < n; i++) {
 			fp_copy(t[i], a[i]);
