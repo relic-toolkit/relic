@@ -262,7 +262,7 @@ typedef struct _sts_t {
 #else
 #define RLC_THROW(E)														\
 	core_get()->code = RLC_ERR; 											\
-	LOG_ERR("ERROR THROWN in %s:%d\n", RLC_FILE, __LINE__);				\
+	util_print("ERROR THROWN in %s:%d\n", RLC_FILE, __LINE__);				\
 
 #endif
 #endif

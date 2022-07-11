@@ -237,12 +237,7 @@
  * @param[in] F			- the format string.
  */
 #ifndef QUIET
-//#define util_print(F, ...)		printf(RLC_STR(F), ##__VA_ARGS__)
-#include "sys/log.h"
-#define LOG_MODULE "Relic"
-#define LOG_LEVEL LOG_LEVEL_DBG
-
-#define util_print(F, ...)		LOG_DBG_(RLC_STR(F), ##__VA_ARGS__)
+#define util_print(F, ...)		util_printf(RLC_STR(F), ##__VA_ARGS__)
 #else
 #define util_print(F, ...)		/* empty */
 #endif
@@ -255,9 +250,9 @@
  */
 #define util_banner(L, I)													\
 	if (!I) {																\
-		LOG_INFO_("\n-- " L "\n");											\
+		util_print("\n-- " L "\n");											\
 	} else {																\
-		LOG_INFO_("\n** " L "\n\n");										\
+		util_print("\n** " L "\n\n");										\
 	}																		\
 
 /*============================================================================*/
