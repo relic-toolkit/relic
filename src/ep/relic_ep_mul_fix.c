@@ -48,7 +48,7 @@
 static void ep_mul_fix_plain(ep_t r, const ep_t *t, const bn_t k) {
 	int l, i, n;
 	int8_t naf[RLC_FP_BITS + 1];
-
+	LOG_DBG("ep_mul_fix_plain\n");
 	/* Compute the w-TNAF representation of k. */
 	l = RLC_FP_BITS + 1;
 	bn_rec_naf(naf, &l, k, EP_DEPTH);
@@ -96,7 +96,7 @@ static void ep_mul_combs_endom(ep_t r, const ep_t *t, const bn_t k) {
 	int i, j, l, w0, w1, n0, n1, p0, p1, s0, s1;
 	bn_t n, _k, k0, k1, v1[3], v2[3];
 	ep_t u;
-
+	LOG_DBG("ep_mul_combs_endom\n");
 	bn_null(n);
 	bn_null(_k);
 	bn_null(k0);
@@ -115,12 +115,15 @@ static void ep_mul_combs_endom(ep_t r, const ep_t *t, const bn_t k) {
 			bn_new(v1[i]);
 			bn_new(v2[i]);
 		}
-
+		LOG_DBG("ep_curve_get_ord n\n");
 		ep_curve_get_ord(n);
+		LOG_DBG("ep_curve_get_v1\n");
 		ep_curve_get_v1(v1);
+		LOG_DBG("ep_curve_get_v2\n");
 		ep_curve_get_v2(v2);
+		LOG_DBG("RLC_CEIL\n");
 		l = RLC_CEIL(bn_bits(n), (2 * EP_DEPTH));
-
+		LOG_DBG("bn_mod bn_rec_glv\n");
 		bn_mod(_k, k, n);
 		bn_rec_glv(k0, k1, _k, n, (const bn_t *)v1, (const bn_t *)v2);
 		s0 = bn_sign(k0);
@@ -132,13 +135,17 @@ static void ep_mul_combs_endom(ep_t r, const ep_t *t, const bn_t k) {
 		n1 = bn_bits(k1);
 
 		p0 = (EP_DEPTH) * l - 1;
-
+		LOG_DBG("ep_set_infty\n");
 		ep_set_infty(r);
+		LOG_DBG("ep_copy\n");
 		if (n0 > p0 + 1) {
 			ep_copy(r, t[1 << (EP_DEPTH-1)]);
 		}
+		
 		if (n1 > p0 + 1) {
+			LOG_DBG("ep_psi\n");
 			ep_psi(u, t[1 << (EP_DEPTH-1)]);
+			LOG_DBG("ep_add\n");
 			ep_add(r, r, u);
 		}
 
@@ -191,6 +198,7 @@ static void ep_mul_combs_endom(ep_t r, const ep_t *t, const bn_t k) {
 			bn_free(v1[i]);
 			bn_free(v2[i]);
 		}
+		LOG_DBG("bn_free\n");
 	}
 }
 
@@ -208,7 +216,7 @@ static void ep_mul_combs_endom(ep_t r, const ep_t *t, const bn_t k) {
 static void ep_mul_combs_plain(ep_t r, const ep_t *t, const bn_t k) {
 	int i, j, l, w, n0, p0, p1;
 	bn_t n, _k;
-
+	LOG_DBG("ep_mul_combs_plain\n");
 	bn_null(n);
 	bn_null(_k);
 
@@ -274,7 +282,7 @@ static void ep_mul_combs_plain(ep_t r, const ep_t *t, const bn_t k) {
 
 void ep_mul_pre_basic(ep_t *t, const ep_t p) {
 	bn_t n;
-
+	LOG_DBG("ep_mul_pre_basic\n");
 	bn_null(n);
 
 	RLC_TRY {
@@ -299,7 +307,7 @@ void ep_mul_pre_basic(ep_t *t, const ep_t p) {
 
 void ep_mul_fix_basic(ep_t r, const ep_t *t, const bn_t k) {
 	bn_t n, _k;
-
+	LOG_DBG("ep_mul_fix_basic\n");
 	if (bn_is_zero(k)) {
 		ep_set_infty(r);
 		return;
@@ -340,7 +348,7 @@ void ep_mul_fix_basic(ep_t r, const ep_t *t, const bn_t k) {
 void ep_mul_pre_combs(ep_t *t, const ep_t p) {
 	int i, j, l;
 	bn_t n;
-
+	LOG_DBG("ep_mul_pre_combs\n");
 	bn_null(n);
 
 	RLC_TRY {
@@ -405,7 +413,7 @@ void ep_mul_fix_combs(ep_t r, const ep_t *t, const bn_t k) {
 void ep_mul_pre_combd(ep_t *t, const ep_t p) {
 	int i, j, d, e;
 	bn_t n;
-
+	LOG_DBG("ep_mul_pre_combd\n");
 	bn_null(n);
 
 	RLC_TRY {

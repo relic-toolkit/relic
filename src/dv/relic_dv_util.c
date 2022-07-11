@@ -112,6 +112,7 @@ int dv_cmp_const(const dig_t *a, const dig_t *b, int size) {
 	dig_t r = 0;
 
 	for (int i = 0; i < size; i++) {
+		//printf("%lx %lx\n", a[i], b[i]);
 		r |= a[i] ^ b[i];
 	}
 

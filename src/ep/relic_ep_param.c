@@ -1172,6 +1172,7 @@ void ep_param_set(int param) {
 					}
 					break;
 			}
+			LOG_DBG("switch(pairf) %d digits\n", core_get()->ep_r.used);
 		}
 #endif /* EP_ENDOM */
 
@@ -1198,6 +1199,7 @@ void ep_param_set(int param) {
 			ep_curve_set_endom(a, b, g, r, h, beta, lamb, u, ctmap);
 			core_get()->ep_id = param;
 			core_get()->ep_is_pairf = pairf;
+			LOG_DBG("ep_curve_set_endom %d digits\n", core_get()->ep_r.used);
 		}
 #endif
 
@@ -1220,7 +1222,9 @@ void ep_param_set(int param) {
 		ep_free(g);
 		bn_free(r);
 		bn_free(h);
+		LOG_DBG("RLC_FINALLY %d digits\n", core_get()->ep_r.used);
 	}
+
 }
 
 int ep_param_set_any(void) {
@@ -1228,12 +1232,15 @@ int ep_param_set_any(void) {
 	if (r == RLC_ERR) {
 		r = ep_param_set_any_endom();
 		if (r == RLC_ERR) {
+			LOG_DBG("ep_param_set_any_pairf ");
+			LOG_DBG_("%d digits\n", core_get()->ep_r.used);
 			r = ep_param_set_any_pairf();
 			if (r == RLC_ERR) {
 				return RLC_ERR;
 			}
 		}
 	}
+	LOG_DBG("ep_param_set_any %d digits\n", core_get()->ep_r.used);
 	return RLC_OK;
 }
 
@@ -1450,17 +1457,23 @@ int ep_param_set_any_pairf(void) {
 #endif
 #ifdef WITH_PP
 	if (r == RLC_OK) {
+		LOG_DBG("switch (degree) %d digits\n", core_get()->ep_r.used);
 		switch (degree) {
 			case 0:
 				ep2_curve_set_twist(0);
+				LOG_DBG("ep2_curve_set_twist(0) %d digits\n", core_get()->ep_r.used);
 				/* Compute pairing generator. */
 				pc_core_calc();
+				LOG_DBG("pc_core_calc %d digits\n", core_get()->ep_r.used);
 				break;
 			case 2:
 				ep2_curve_set_twist(type);
+				LOG_DBG("ep2_curve_set_twist %d digits\n", core_get()->ep_r.used);
 				break;
 			case 4:
+				
 				ep4_curve_set_twist(type);
+				LOG_DBG("ep4_curve_set_twist %d digits\n", core_get()->ep_r.used);
 				break;
 		}
 	}

@@ -57,9 +57,11 @@ void pc_core_calc(void) {
 
 		g1_get_gen(g1);
 		g2_get_gen(g2);
-
+		LOG_DBG("pc_map pre %d digits\n", core_get()->ep_r.used);
 		pc_map(gt, g1, g2);
+		LOG_DBG("pc_map post %d digits\n", core_get()->ep_r.used);
 		gt_copy(core_get()->gt_g, gt);
+		LOG_DBG("gt_copy(core_get()->gt_g, gt); %d digits\n", core_get()->ep_r.used);
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {

@@ -392,7 +392,7 @@ void ep4_curve_set_twist(int type) {
 
 		bn_copy(&(ctx->ep4_r), r);
 		bn_copy(&(ctx->ep4_h), h);
-
+		LOG_DBG("bn_copy(&(ctx->ep4_h), h) %d digits\n", core_get()->ep_r.used);
 		if (type == RLC_EP_MTYPE) {
 			fp2_zero(a[0]);
 			fp_copy(a[1][0], ctx->fp4_p1[0]);
@@ -401,10 +401,11 @@ void ep4_curve_set_twist(int type) {
 			fp_copy(ctx->fp4_p1[0], a[1][0]);
 			fp_copy(ctx->fp4_p1[1], a[1][1]);
 		}
-
+		LOG_DBG("RLC_EP_MTYPE %d digits\n", core_get()->ep_r.used);
 #if defined(WITH_PC)
 		/* Compute pairing generator. */
 		pc_core_calc();
+		LOG_DBG("pc_core_calc %d digits\n", core_get()->ep_r.used);
 #endif
 
 #if defined(EP_PRECO)

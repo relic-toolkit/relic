@@ -131,6 +131,7 @@ void bn_grow(bn_t a, int digits) {
 #elif ALLOC == AUTO
 	if (digits > RLC_BN_SIZE) {
 		RLC_THROW(ERR_NO_PRECI);
+		printf(" digits: %d %d", digits, RLC_BN_SIZE);
 		return;
 	}
 	(void)a;

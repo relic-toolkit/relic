@@ -697,17 +697,20 @@ void ep_mul_gen(ep_t r, const bn_t k) {
 		ep_set_infty(r);
 		return;
 	}
-
+	LOG_DBG("ep_mul_gen\n");
 #ifdef EP_PRECO
 	ep_mul_fix(r, ep_curve_get_tab(), k);
 #else
 	ep_t g;
-
+	LOG_DBG("ep_null\n");
 	ep_null(g);
-
+	
 	RLC_TRY {
+		LOG_DBG("ep_new\n");
 		ep_new(g);
+		LOG_DBG("ep_curve_get_gen\n");
 		ep_curve_get_gen(g);
+		LOG_DBG("ep_mul\n");
 		ep_mul(r, g, k);
 	}
 	RLC_CATCH_ANY {
@@ -715,6 +718,7 @@ void ep_mul_gen(ep_t r, const bn_t k) {
 	}
 	RLC_FINALLY {
 		ep_free(g);
+		LOG_DBG("ep_free\n");
 	}
 #endif
 }

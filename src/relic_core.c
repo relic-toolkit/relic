@@ -197,7 +197,9 @@ int core_clean(void) {
 ctx_t *core_get(void) {
 #if defined(MULTI)
     if (core_ctx == NULL && core_thread_initializer != NULL) {
+		LOG_DBG("core_thread_initializer\n");
         core_thread_initializer(core_init_ptr);
+		
     }
 #endif
 	return core_ctx;

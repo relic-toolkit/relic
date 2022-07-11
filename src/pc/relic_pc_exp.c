@@ -42,6 +42,7 @@ void g1_mul(g1_t c, const g1_t a, const bn_t b) {
 	bn_null(_b);
 
 	if (bn_bits(b) <= RLC_DIG) {
+		printf("\ng1_mul_dig\n");
 		g1_mul_dig(c, a, b->dp[0]);
 		if (bn_sign(b) == RLC_NEG) {
 			g1_neg(c, c);
