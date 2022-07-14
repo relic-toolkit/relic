@@ -1520,7 +1520,7 @@ void bn_rec_frb(bn_t *ki, int sub, const bn_t k, const bn_t x, const bn_t n,
  * @param[in] b				- the modulus.
  * @param[in] n				- the number of roots to interpolate.
  */
-void bn_lag(bn_t *c, const bn_t *a, const bn_t b, int n);
+void bn_lag(bn_t *c, const bn_t *a, const bn_t b, size_t n);
 
 /**
  * Evaluates an interpolated n-degree polynomial over a value in a modular way,
@@ -1533,6 +1533,6 @@ void bn_lag(bn_t *c, const bn_t *a, const bn_t b, int n);
  * @param[in] b				- the modulus.
  * @param[in] n				- the degree of the polynomial.
  */
-void bn_evl(bn_t c, const bn_t *a, const bn_t x, const bn_t b, int n);
+void bn_evl(bn_t c, const bn_t *a, const bn_t x, const bn_t b, size_t n);
 
 #endif /* !RLC_BN_H */
