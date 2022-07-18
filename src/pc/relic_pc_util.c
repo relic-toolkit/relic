@@ -171,7 +171,13 @@ int g2_is_valid(const g2_t a) {
 			/* Compute trace t = p - n + 1. */
 			bn_sub(n, p, n);
 			bn_add_dig(n, n, 1);
-			g2_mul(u, a, n);
+			g2_copy(u, a);
+			for (int i = bn_bits(n) - 2; i >= 0; i--) {
+				g2_dbl(u, u);
+				if (bn_get_bit(n, i)) {
+					g2_add(u, u, a);
+				}
+			}
 			if (bn_sign(n) == RLC_NEG) {
 				g2_neg(u, u);
 			}
