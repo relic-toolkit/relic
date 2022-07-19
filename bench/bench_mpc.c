@@ -87,6 +87,43 @@ static void mul_triple(void) {
 	}
 }
 
+static void shamir(void) {
+	bn_t q, t, s, x[10], y[10];
+
+	bn_null(q);
+	bn_null(t);
+	bn_null(s);
+
+	bn_new(q);
+	bn_new(t);
+	bn_new(s);
+	for (int j = 0; j < 10; j++) {
+		bn_null(y[j]);
+		bn_new(y[j]);
+		bn_null(x[j]);
+		bn_new(x[j]);
+	}
+
+	bn_gen_prime(q, RLC_BN_BITS);
+	bn_rand_mod(s, q);
+
+	BENCH_RUN("mpc_sss_gen (10)") {
+		BENCH_ADD(mpc_sss_gen(x, y, s, q, 10, 10));
+	} BENCH_END;
+
+	BENCH_RUN("mpc_sss_key (10)") {
+		BENCH_ADD(mpc_sss_key(t, x, y, q, 10));
+	} BENCH_END;
+
+	bn_free(t);
+	bn_free(q);
+	bn_free(s);
+	for (int j = 0; j < 10; j++) {
+		bn_free(x[j]);
+		bn_free(y[j]);
+	}
+}
+
 static void pair_triple(void) {
 	g1_t d[2], p[2], _p;
 	g2_t e[2], q[2], _q;
@@ -290,6 +327,7 @@ int main(void) {
 
 #if defined(WITH_BN)
 	mul_triple();
+	shamir();
 #endif
 
 #if defined(WITH_PC)
