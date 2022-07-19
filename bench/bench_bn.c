@@ -692,7 +692,31 @@ static void arith(void) {
 	}
 	BENCH_END;
 
+    util_print("( %d SIM_LOT) ", BN_XPWDT);
+	BENCH_RUN("bn_mxp_sim_lot") {
+		BENCH_ADD(bn_mxp_sim_lot(c, (const bn_t*)t, (const bn_t*)u, b, BN_XPWDT));
+	}
+	BENCH_END;
+
     int SMLT = BN_XPWDT>>1; util_print("( %d SIM_LOT) ", SMLT);
+	BENCH_RUN("bn_mxp_sim_lot") {
+		BENCH_ADD(bn_mxp_sim_lot(c, (const bn_t*)t, (const bn_t*)u, b, SMLT));
+	}
+	BENCH_END;
+
+    SMLT = SMLT<<1; util_print("( %d SIM_LOT) ", SMLT);
+	BENCH_RUN("bn_mxp_sim_lot") {
+		BENCH_ADD(bn_mxp_sim_lot(c, (const bn_t*)t, (const bn_t*)u, b, SMLT));
+	}
+	BENCH_END;
+
+    SMLT = BN_XPWDT+1; util_print("( %d SIM_LOT) ", SMLT);
+	BENCH_RUN("bn_mxp_sim_lot") {
+		BENCH_ADD(bn_mxp_sim_lot(c, (const bn_t*)t, (const bn_t*)u, b, SMLT));
+	}
+	BENCH_END;
+
+    SMLT = BN_XPWDT+2; util_print("( %d SIM_LOT) ", SMLT);
 	BENCH_RUN("bn_mxp_sim_lot") {
 		BENCH_ADD(bn_mxp_sim_lot(c, (const bn_t*)t, (const bn_t*)u, b, SMLT));
 	}

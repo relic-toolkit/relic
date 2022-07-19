@@ -522,10 +522,12 @@ void bn_mxp_sim(bn_t S, const bn_t P[BN_XPWDT], const bn_t u[BN_XPWDT], const bn
             // Precompute all 2^{BN_XPWDT} combinations of points P
         for(unsigned int i=0; i<BN_XPWDT; ++i) {
             const unsigned int star = 1<<i; const unsigned int stars = star<<1;
-            bn_null(T[star]); bn_new(T[star]); bn_copy(T[star], P[i]);
-            for(unsigned int j=star+1; j<stars; ++j) {
-                bn_null(T[j]); bn_new(T[j]);
-                bn_mul(T[j], T[star], T[j-star]); bn_mod(T[j],T[j],mod);
+            if (! bn_is_zero(u[i])) { // Otherwise will never need P[i]
+                bn_null(T[star]); bn_new(T[star]); bn_copy(T[star], P[i]);
+                for(unsigned int j=star+1; j<stars; ++j) {
+                    bn_null(T[j]); bn_new(T[j]);
+                    bn_mul(T[j], T[star], T[j-star]); bn_mod(T[j],T[j],mod);
+                }
             }
         }
 

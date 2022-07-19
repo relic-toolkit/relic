@@ -1132,21 +1132,7 @@ static int exponentiation(void) {
         TEST_END;
 
 		TEST_CASE("simultaneous modular exponentiation lot (1) is correct") {
-                // Simultaneous
-            bn_mxp_sim_lot(a, (const bn_t*)t, (const bn_t*)u, p, BN_MXP_SIM_LOT_LARGER>>1);
-
-                // By hand
-            bn_mxp(b, t[0], u[0], p);
-            for(int i=1; i<(BN_MXP_SIM_LOT_LARGER>>1); ++i) {
-                bn_mxp(c, t[i], u[i], p);
-                bn_mul(b, b, c);
-                bn_mod(b, b, p);
-            }
-			TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
-        }
-        TEST_END;
-		TEST_CASE("simultaneous modular exponentiation lot (2) is correct") {
-                // Simultaneous
+                // Simultaneous Large case
             bn_mxp_sim_lot(a, (const bn_t*)t, (const bn_t*)u, p, BN_MXP_SIM_LOT_LARGER);
 
                 // By hand
@@ -1155,6 +1141,27 @@ static int exponentiation(void) {
                 bn_mxp(c, t[i], u[i], p);
                 bn_mul(b, b, c);
                 bn_mod(b, b, p);
+            }
+			TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
+        }
+        TEST_END;
+		TEST_CASE("simultaneous modular exponentiation lot (2) is correct") {
+                // Simultaneous Small cases
+            bn_set_dig(a,1);
+            for(int k=0; k<BN_XPWDT; ++k) {
+                bn_mxp_sim_lot(c, (const bn_t*)t, (const bn_t*)u, p, k+(BN_XPWDT>>1));
+                bn_mul(a, a, c);
+                bn_mod(a, a, p);
+            }
+
+                // By hand
+            bn_set_dig(b,1);
+            for(int k=0; k<BN_XPWDT; ++k) {
+                for(int i=0; i<(k+(BN_XPWDT>>1)); ++i) {
+                    bn_mxp(c, t[i], u[i], p);
+                    bn_mul(b, b, c);
+                    bn_mod(b, b, p);
+                }
             }
 			TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
         }
