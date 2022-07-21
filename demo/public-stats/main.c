@@ -315,12 +315,12 @@ int main(int argc, char *argv[]) {
 		assert(cp_mklhs_ver(sig, res, t, DATABASE, acs,
 				&l[0][2 * GROUPS * DAYS], f, flen, pk, STATES));
 		BENCH_ONE("Time elapsed", cp_mklhs_ver(sig, res, t, DATABASE, acs,
-				&l[0][2 * GROUPS * DAYS], f, flen, pk, STATES));
+				&l[0][2 * GROUPS * DAYS], f, flen, pk, STATES), 1);
 
 		cp_mklhs_off(cs, ft, acs, &l[0][2 * GROUPS * DAYS], f, flen, STATES);
 		assert(cp_mklhs_onv(sig, res, t, DATABASE, acs, cs, ft, pk, STATES));
 		BENCH_ONE("Time with precomputation", cp_mklhs_onv(sig, res, t,
-			DATABASE, acs, cs, ft, pk, STATES));
+			DATABASE, acs, cs, ft, pk, STATES), 1);
 
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
