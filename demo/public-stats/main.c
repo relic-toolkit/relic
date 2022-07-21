@@ -55,21 +55,21 @@
 #define END_2020	"2020-06-25"
 
 /* First value is population in each of the autonomous communities in 2020. */
-uint64_t populations[STATES] = {
+const uint64_t populations[STATES] = {
 	8405294, 1316064, 1024381, 1176627, 2188626, 580997, 2410819,
 	2030807, 7516544, 4948411, 1067272, 2699299, 6587711, 1479098, 646197,
 	2172591, 312719, 84913, 84667
 };
 
 /* Total population per age group in 2019. */
-uint64_t pyramid[GROUPS] = { 37643844, 4482743, 4566276 };
+const uint64_t pyramid[GROUPS] = { 37643844, 4482743, 4566276 };
 
-char *acronyms[STATES] = {
+const char *acronyms[STATES] = {
 	"AN", "AR", "AS", "IB", "CN", "CB", "CL", "CM", "CT", "VC",
 	"EX", "GA", "MD", "MC", "NC", "PV", "RI", "CE", "ML"
 };
 
-char *acs[STATES] = {
+const char *acs[STATES] = {
 	"Andalusia", "Aragón", "Asturias", "Balearics", "Canary Islands",
 	"Cantabria", "Castile & León", "Castile-La Mancha", "Catalonia",
 	"Valencia", "Extremadura", "Galicia", "Madrid", "Murcia",
@@ -77,7 +77,7 @@ char *acs[STATES] = {
 };
 
 /* Population pyramids for autonomous communities, taken from countryeconomy.com */
-double pyramids[STATES][GROUPS] = {
+const double pyramids[STATES][GROUPS] = {
 	{15.86 + 66.98, 9.06, 17.16 - 9.06},
 	{14.12 + 64.23, 10.26, 21.65 - 10.26},
 	{10.97 + 63.37, 12.82, 25.66 - 12.82},
@@ -164,7 +164,7 @@ int main(int argc, char *argv[]) {
 	g2_t pk[STATES];
 	char *l[STATES][3 * GROUPS * DAYS];
 	dig_t *f[STATES];
-	int flen[STATES];
+	size_t flen[STATES];
 	int counter;
 	uint64_t total;
 	uint64_t excess;
@@ -288,8 +288,8 @@ int main(int argc, char *argv[]) {
 			g1_add(sig, sig, u);
 		}
 		g1_norm(sig, sig);
-		assert(cp_mklhs_ver(sig, res, t, DATABASE, acs, l[0], f, flen,
-			pk, STATES));
+		assert(cp_mklhs_ver(sig, res, t, DATABASE, acs, (const char **)l[0],
+			(const dig_t **)f, (const size_t *)flen, pk, STATES));
 
 		printf("Total Expected: %6lu\n", res->dp[0] / FIXED);
 
@@ -313,11 +313,14 @@ int main(int argc, char *argv[]) {
 		printf("Total Observed: %6lu\n", res->dp[0]);
 
 		assert(cp_mklhs_ver(sig, res, t, DATABASE, acs,
-				&l[0][2 * GROUPS * DAYS], f, flen, pk, STATES));
+				(const char **)&l[0][2 * GROUPS * DAYS], (const dig_t **)f,
+				(const size_t *)flen, pk, STATES));
 		BENCH_ONE("Time elapsed", cp_mklhs_ver(sig, res, t, DATABASE, acs,
-				&l[0][2 * GROUPS * DAYS], f, flen, pk, STATES), 1);
+				(const char **)&l[0][2 * GROUPS * DAYS], (const dig_t **)f,
+				(const size_t *)flen, pk, STATES), 1);
 
-		cp_mklhs_off(cs, ft, acs, &l[0][2 * GROUPS * DAYS], f, flen, STATES);
+		cp_mklhs_off(cs, ft, acs, (const char **)&l[0][2 * GROUPS * DAYS],
+				(const dig_t **)f, (const size_t *)flen, STATES);
 		assert(cp_mklhs_onv(sig, res, t, DATABASE, acs, cs, ft, pk, STATES));
 		BENCH_ONE("Time with precomputation", cp_mklhs_onv(sig, res, t,
 			DATABASE, acs, cs, ft, pk, STATES), 1);
