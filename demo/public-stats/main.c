@@ -35,6 +35,7 @@
 #include "relic.h"
 #include "csv.h"
 
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -43,16 +44,16 @@
 
 #define STATES 		19
 #define GROUPS		3
-#define DAYS 		90
+#define DAYS 		180
 #define FACTOR		(1000000)
 #define FIXED		((uint64_t)100000)
 #define DATABASE	"COVID19-Spain"
 #define BEG_2018	"27/03/2018"
-#define END_2018	"25/06/2018"
+#define END_2018	"23/09/2018"
 #define BEG_2019	"27/03/2019"
-#define END_2019	"25/06/2019"
+#define END_2019	"23/09/2019"
 #define BEG_2020	"2020-03-27"
-#define END_2020	"2020-06-25"
+#define END_2020	"2020-09-23"
 
 /* First value is population in each of the autonomous communities in 2020. */
 const uint64_t populations[STATES] = {
@@ -105,13 +106,13 @@ void read_region(g1_t s[], char *l[], bn_t m[], int *counter,
 		uint64_t metric[3], const char *file, int region, char *start,
 		char *end, bn_t sk) {
 	FILE *stream = fopen(file, "r");
-	int found = 0;
+	int found = 0, sign = 0;
 	char line[1024];
 	char str[3];
 	char label[100] = { 0 };
 	dig_t n;
+	uint64_t acc[3] = { 0 };
 
-	found = 0;
 	sprintf(str, "%d", region);
 	while (fgets(line, 1024, stream)) {
 		if (strstr(line, start) != NULL) {
@@ -123,10 +124,10 @@ void read_region(g1_t s[], char *l[], bn_t m[], int *counter,
 		char **tmp = parse_csv(line);
 		char **ptr = tmp;
 
-		if (found && !strcmp(ptr[2], str) && !strcmp(ptr[5], "todos") &&
-				strcmp(ptr[7], "todos")) {
-			n = atoi(ptr[9]);
-			//printf("%s\n", line);
+		if (found && !strcmp(ptr[0], "ccaa") && !strcmp(ptr[2], str) &&
+				!strcmp(ptr[5], "todos") && strcmp(ptr[7], "todos")) {
+			n = round(atof(ptr[9]));
+			printf("%s %d %d\n", line, n, *counter);
 			if (strcmp(ptr[6], "menos_65") == 0) {
 				//printf("< 65 = %s\n", ptr[9]);
 				metric[0] += n;
@@ -145,6 +146,7 @@ void read_region(g1_t s[], char *l[], bn_t m[], int *counter,
 			cp_mklhs_sig(s[*counter], m[*counter], DATABASE, acs[region - 1],
 				l[*counter], sk);
 			(*counter)++;
+			sign = 0;
 		}
 
 		free_csv_line(tmp);
@@ -246,7 +248,7 @@ int main(int argc, char *argv[]) {
 					observed[i][2]);
 
 			printf("\ttotal expected: %lu\n",
-					(expected[0] + expected[1] + expected[2]) / FIXED);
+					expected[0] + expected[1] + expected[2]);
 			printf("\ttotal observed: %lu\n",
 					observed[i][0] + observed[i][1] + observed[i][2]);
 
