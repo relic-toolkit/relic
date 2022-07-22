@@ -106,7 +106,7 @@ void read_region(g1_t s[], char *l[], bn_t m[], int *counter,
 		uint64_t metric[3], const char *file, int region, char *start,
 		char *end, bn_t sk) {
 	FILE *stream = fopen(file, "r");
-	int found = 0, sign = 0;
+	int found = 0;
 	char line[1024];
 	char str[3];
 	char label[100] = { 0 };
@@ -127,7 +127,6 @@ void read_region(g1_t s[], char *l[], bn_t m[], int *counter,
 		if (found && !strcmp(ptr[0], "ccaa") && !strcmp(ptr[2], str) &&
 				!strcmp(ptr[5], "todos") && strcmp(ptr[7], "todos")) {
 			n = round(atof(ptr[9]));
-			printf("%s %d %d\n", line, n, *counter);
 			if (strcmp(ptr[6], "menos_65") == 0) {
 				//printf("< 65 = %s\n", ptr[9]);
 				metric[0] += n;
@@ -146,7 +145,6 @@ void read_region(g1_t s[], char *l[], bn_t m[], int *counter,
 			cp_mklhs_sig(s[*counter], m[*counter], DATABASE, acs[region - 1],
 				l[*counter], sk);
 			(*counter)++;
-			sign = 0;
 		}
 
 		free_csv_line(tmp);
@@ -238,8 +236,8 @@ int main(int argc, char *argv[]) {
 			printf("%s -- %s:\n", acronyms[i], acs[i]);
 
 			for (int j = 0; j < GROUPS; j++) {
-				//expected[j] = (FIXED * ratios[i][j]/(2*pyramid[j])) * baseline[j];
-				expected[j] = mortality[j] * ratios[i][j] / (FIXED * FACTOR);
+				expected[j] = (FIXED * ratios[i][j]/(2*pyramid[j])) * baseline[j];
+				//expected[j] = mortality[j] * ratios[i][j] / (FIXED * FACTOR);
 			}
 
 			printf("\texpected : %lu %lu %lu\n", expected[0], expected[1],
@@ -264,7 +262,7 @@ int main(int argc, char *argv[]) {
 				pyramid[1] / FACTOR, pyramid[2] / FACTOR);
 		printf("Mortality: %6lu %6lu %6lu\n", mortality[0] / FIXED,
 				mortality[1] / FIXED, mortality[2] / FIXED);
-		printf("Total Expected: %6lu\n", total);
+		printf("Total Expected: %6lu\n", total / FIXED);
 		printf("Total Observed: %6lu\n", excess);
 
 		util_banner("Authenticated computation:", 1);
