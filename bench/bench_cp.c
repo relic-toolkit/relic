@@ -1606,7 +1606,7 @@ static void lhs(void) {
 
 	BENCH_ONE("cp_cmlhs_gen",
 		for (int j = 0; j < S; j++) {
-			BENCH_ADD(cp_cmlhs_gen(x[j], hs[j], L, k[j], K, sk[j], pk[j], d[j], y[j]));
+			cp_cmlhs_gen(x[j], hs[j], L, k[j], K, sk[j], pk[j], d[j], y[j]);
 		},
 	S);
 
@@ -1618,8 +1618,8 @@ static void lhs(void) {
 			for (int l = 0; l < L; l++) {
 				label[l] = l;
 				bn_mod(msg[l], msg[l], n);
-				BENCH_ADD(cp_cmlhs_sig(sig[j], z[j], a[j][l], c[j][l], r[j][l],
-					s[j][l], msg[l], data, label[l], x[j][l], h, k[j], K, d[j], sk[j]));
+				cp_cmlhs_sig(sig[j], z[j], a[j][l], c[j][l], r[j][l], s[j][l],
+					msg[l], data, label[l], x[j][l], h, k[j], K, d[j], sk[j]);
 			}
 		},
 	S * L);
