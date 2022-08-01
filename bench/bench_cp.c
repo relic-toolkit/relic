@@ -116,7 +116,7 @@ static void rabin(void) {
 	BENCH_ONE("cp_rabin_gen", cp_rabin_gen(pub, prv, RLC_BN_BITS), 1);
 
 	BENCH_RUN("cp_rabin_enc") {
-		in_len = bn_size_bin(pub->n) - 9;
+		in_len = bn_size_bin(pub->n) - 10;
 		out_len = RLC_BN_BITS / 8 + 1;
 		rand_bytes(in, in_len);
 		BENCH_ADD(cp_rabin_enc(out, &out_len, in, in_len, pub));
@@ -124,7 +124,7 @@ static void rabin(void) {
 	} BENCH_END;
 
 	BENCH_RUN("cp_rabin_dec") {
-		in_len = bn_size_bin(pub->n) - 9;
+		in_len = bn_size_bin(pub->n) - 10;
 		new_len = in_len;
 		out_len = RLC_BN_BITS / 8 + 1;
 		rand_bytes(in, in_len);
