@@ -365,6 +365,7 @@ int cp_cmlhs_onv(const g1_t r, const g2_t s, const g1_t sig[], const g2_t z[],
 				fp_prime_back(n, sig[i]->y);
 				fp_copy(g1->x, pk[i]->x[0]);
 				fp_copy(g1->y, pk[i]->y[0]);
+				fp_set_dig(g1->z, 1);
 				result &= cp_ecdsa_ver(k, n, buf, len + dlen, 0, g1);
 			}
 		}
