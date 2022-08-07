@@ -122,8 +122,8 @@ int cp_ecdsa_sig(bn_t r, bn_t s, const uint8_t *msg, size_t len, int hash,
 	return result;
 }
 
-int cp_ecdsa_ver(bn_t r, bn_t s, const uint8_t *msg, size_t len, int hash,
-		const ec_t q) {
+int cp_ecdsa_ver(const bn_t r, const bn_t s, const uint8_t *msg, size_t len,
+		int hash, const ec_t q) {
 	bn_t n, k, e, v;
 	ec_t p;
 	uint8_t h[RLC_MD_LEN];

@@ -1532,6 +1532,7 @@ static void lhs(void) {
 	const char *id[S] = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
 	dig_t ft[S], *f[S];
 	size_t flen[S];
+	int label[L];
 
 	bn_null(m);
 	bn_null(n);
@@ -1604,22 +1605,20 @@ static void lhs(void) {
 	/* Initialize scheme for messages of single components. */
 	cp_cmlhs_init(h);
 
-	BENCH_ONE("cp_cmlhs_gen",
+	BENCH_ONE("cp_cmlhs_gen (ecdsa)",
 		for (int j = 0; j < S; j++) {
-			cp_cmlhs_gen(x[j], hs[j], L, k[j], K, sk[j], pk[j], d[j], y[j]);
+			cp_cmlhs_gen(x[j], hs[j], L, k[j], K, sk[j], pk[j], d[j], y[j], 0);
 		},
 	S);
 
-	int label[L];
-
-	BENCH_FEW("cp_cmlhs_sig",
+	BENCH_FEW("cp_cmlhs_sig (ecdsa)",
 		/* Compute all signatures. */
 		for (int j = 0; j < S; j++) {
 			for (int l = 0; l < L; l++) {
 				label[l] = l;
 				bn_mod(msg[l], msg[l], n);
 				cp_cmlhs_sig(sig[j], z[j], a[j][l], c[j][l], r[j][l], s[j][l],
-					msg[l], data, label[l], x[j][l], h, k[j], K, d[j], sk[j]);
+					msg[l], data, label[l], x[j][l], h, k[j], K, d[j], sk[j], 0);
 			}
 		},
 	S * L);
@@ -1652,19 +1651,80 @@ static void lhs(void) {
 		bn_mod(m, m, n);
 	}
 
-	BENCH_RUN("cp_cmlhs_ver") {
+	BENCH_RUN("cp_cmlhs_ver (ecdsa)") {
 		BENCH_ADD(cp_cmlhs_ver(_r, _s, sig, z, as, cs, m, data, h, label,
-			(const gt_t **)hs, (const dig_t **)f, flen, y, pk, S));
+			(const gt_t **)hs, (const dig_t **)f, flen, y, pk, S, 0));
 	} BENCH_DIV(S);
 
 	BENCH_RUN("cp_cmlhs_off") {
 		BENCH_ADD(cp_cmlhs_off(vk, h, label, (const gt_t **)hs,
-			(const dig_t **)f, flen, y, pk, S));
+			(const dig_t **)f, flen, S));
 	} BENCH_DIV(S);
 
-	BENCH_RUN("cp_cmlhs_onv") {
+	BENCH_RUN("cp_cmlhs_onv (ecdsa)") {
 		BENCH_ADD(cp_cmlhs_onv(_r, _s, sig, z, as, cs, m, data, h, vk, y,
-			pk, S));
+			pk, S, 0));
+	} BENCH_DIV(S);
+
+	BENCH_ONE("cp_cmlhs_gen (bls)",
+		for (int j = 0; j < S; j++) {
+			cp_cmlhs_gen(x[j], hs[j], L, k[j], K, sk[j], pk[j], d[j], y[j], 1);
+		},
+	S);
+
+	BENCH_FEW("cp_cmlhs_sig (bls)",
+		/* Compute all signatures. */
+		for (int j = 0; j < S; j++) {
+			for (int l = 0; l < L; l++) {
+				label[l] = l;
+				bn_mod(msg[l], msg[l], n);
+				cp_cmlhs_sig(sig[j], z[j], a[j][l], c[j][l], r[j][l], s[j][l],
+					msg[l], data, label[l], x[j][l], h, k[j], K, d[j], sk[j], 1);
+			}
+		},
+	S * L);
+
+	BENCH_RUN("cp_cmlhs_fun") {
+		for (int j = 0; j < S; j++) {
+			BENCH_ADD(cp_cmlhs_fun(as[j], cs[j], a[j], c[j], f[j], L));
+		}
+	} BENCH_DIV(S);
+
+	BENCH_RUN("cp_cmlhs_evl") {
+		cp_cmlhs_evl(_r, _s, r[0], s[0], f[0], L);
+		for (int j = 1; j < S; j++) {
+			BENCH_ADD(cp_cmlhs_evl(r[0][0], s[0][0], r[j], s[j], f[j], L));
+			g1_add(_r, _r, r[0][0]);
+			g2_add(_s, _s, s[0][0]);
+		}
+		g1_norm(_r, _r);
+		g2_norm(_s, _s);
+	} BENCH_DIV(S);
+
+	bn_zero(m);
+	for (int j = 0; j < L; j++) {
+		dig_t sum = 0;
+		for (int l = 0; l < S; l++) {
+			sum += f[l][j];
+		}
+		bn_mul_dig(msg[j], msg[j], sum);
+		bn_add(m, m, msg[j]);
+		bn_mod(m, m, n);
+	}
+
+	BENCH_RUN("cp_cmlhs_ver (bls)") {
+		BENCH_ADD(cp_cmlhs_ver(_r, _s, sig, z, as, cs, m, data, h, label,
+			(const gt_t **)hs, (const dig_t **)f, flen, y, pk, S, 1));
+	} BENCH_DIV(S);
+
+	BENCH_RUN("cp_cmlhs_off") {
+		BENCH_ADD(cp_cmlhs_off(vk, h, label, (const gt_t **)hs,
+			(const dig_t **)f, flen, S));
+	} BENCH_DIV(S);
+
+	BENCH_RUN("cp_cmlhs_onv (bls)") {
+		BENCH_ADD(cp_cmlhs_onv(_r, _s, sig, z, as, cs, m, data, h, vk, y,
+			pk, S, 1));
 	} BENCH_DIV(S);
 
 #ifdef BENCH_LHS

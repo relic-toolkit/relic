@@ -77,7 +77,7 @@ int cp_bls_sig(g1_t s, const uint8_t *msg, int len, const bn_t d) {
 	return result;
 }
 
-int cp_bls_ver(g1_t s, const uint8_t *msg, size_t len, const g2_t q) {
+int cp_bls_ver(const g1_t s, const uint8_t *msg, size_t len, const g2_t q) {
 	g1_t p[2];
 	g2_t r[2];
 	gt_t e;

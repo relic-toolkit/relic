@@ -1101,8 +1101,8 @@ int cp_ecdsa_sig(bn_t r, bn_t s, const uint8_t *msg, size_t len, int hash,
  * @param[in] q				- the public key.
  * @return a boolean value indicating if the signature is valid.
  */
-int cp_ecdsa_ver(bn_t r, bn_t s, const uint8_t *msg, size_t len, int hash,
-		const ec_t q);
+int cp_ecdsa_ver(const bn_t r, const bn_t s, const uint8_t *msg, size_t len,
+		int hash, const ec_t q);
 
 /**
  * Generates an Elliptic Curve Schnorr Signature key pair.
@@ -1551,7 +1551,7 @@ int cp_bls_sig(g1_t s, const uint8_t *msg, int len, const bn_t d);
  * @param[in] q				- the public key.
  * @return a boolean value indicating if the signature is valid.
  */
-int cp_bls_ver(g1_t s, const uint8_t *msg, size_t len, const g2_t q);
+int cp_bls_ver(const g1_t s, const uint8_t *msg, size_t len, const g2_t q);
 
 /**
  * Generates a key pair for the Boneh-Boyen (BB) signature protocol.
@@ -2321,10 +2321,11 @@ int cp_cmlhs_init(g1_t h);
  * @param[out] pk			- the public key for the BLS signature scheme.
  * @param[out] d			- the secret exponent.
  * @param[out] y			- the corresponding public element.
+ * @param[in] bls			- the flag for selecting BLS or ECDSA.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_cmlhs_gen(bn_t x[], gt_t hs[], size_t len, uint8_t prf[], size_t plen,
-		bn_t sk, g2_t pk, bn_t d, g2_t y);
+		bn_t sk, g2_t pk, bn_t d, g2_t y, int bls);
 
 /**
  * Signs a message vector using the CMLHS.
@@ -2342,13 +2343,14 @@ int cp_cmlhs_gen(bn_t x[], gt_t hs[], size_t len, uint8_t prf[], size_t plen,
  * @param[in] h				- the random value (message has one component).
  * @param[in] prf			- the key for the pseudo-random function (PRF).
  * @param[in] plen			- the PRF key length.
- * @param[in] sk			- the private key for the BLS signature scheme.
- * @param[out] d			- the secret exponent.
+ * @param[in] sk			- the private key for the signature scheme.
+ * @param[in] d				- the secret exponent.
+ * @param[in] bls			- the flag for selecting BLS or ECDSA.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_cmlhs_sig(g1_t sig, g2_t z, g1_t a, g1_t c, g1_t r, g2_t s,
 		const bn_t msg, const char *data, int label, const bn_t x, const g1_t h,
-		const uint8_t prf[], size_t plen, const bn_t sk, const bn_t d);
+		const uint8_t prf[], size_t plen, const bn_t sk, const bn_t d, int bls);
 
 /**
  * Applies a function over a set of CMLHS signatures from the same user.
@@ -2397,12 +2399,14 @@ int cp_cmlhs_evl(g1_t r, g2_t s, const g1_t rs[], const g2_t ss[],
  * @param[in] y				- the public elements of the users.
  * @param[in] pk			- the public keys of the users.
  * @param[in] slen			- the number of signatures.
+ * @param[in] bls			- the flag for selecting BLS or ECDSA.
  * @return a boolean value indicating the verification result.
  */
 int cp_cmlhs_ver(const g1_t r, const g2_t s, const g1_t sig[], const g2_t z[],
 		const g1_t a[], const g1_t c[], const bn_t m, const char *data,
 		const g1_t h, const int label[], const gt_t * hs[], const dig_t *f[],
-		const size_t flen[], const g2_t y[], const g2_t pk[], size_t slen);
+		const size_t flen[], const g2_t y[], const g2_t pk[], size_t slen,
+		int bls);
 
 /**
  * Perform the offline verification of a CMLHS signature over a set of messages.
@@ -2419,8 +2423,7 @@ int cp_cmlhs_ver(const g1_t r, const g2_t s, const g1_t sig[], const g2_t z[],
  * @return a boolean value indicating the verification result.
  */
 void cp_cmlhs_off(gt_t vk, const g1_t h, const int label[], const gt_t *hs[],
-		const dig_t *f[], const size_t flen[], const g2_t y[], const g2_t pk[],
-		size_t slen);
+		const dig_t *f[], const size_t flen[], size_t slen);
 
 /**
  * Perform the online verification of a CMLHS signature over a set of messages.
@@ -2435,12 +2438,13 @@ void cp_cmlhs_off(gt_t vk, const g1_t h, const int label[], const gt_t *hs[],
  * @param[in] data			- the dataset identifier.
  * @param[in] h				- the random element (message has one component).
  * @param[in] vk			- the verification key.
+ * @param[in] bls			- the flag for selecting BLS or ECDSA.
  * @return a boolean value indicating the verification result.
  */
 int cp_cmlhs_onv(const g1_t r, const g2_t s, const g1_t sig[], const g2_t z[],
 		const g1_t a[], const g1_t c[], const bn_t msg, const char *data,
 		const g1_t h, const gt_t vk, const g2_t y[], const g2_t pk[],
-		size_t slen);
+		size_t slen, int bls);
 /**
  * Generates a key pair for the Multi-Key Homomorphic Signature (MKLHS) scheme.
  *

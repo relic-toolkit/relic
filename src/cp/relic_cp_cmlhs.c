@@ -41,7 +41,7 @@ int cp_cmlhs_init(g1_t h) {
 }
 
 int cp_cmlhs_gen(bn_t x[], gt_t hs[], size_t len, uint8_t prf[], size_t plen,
-		bn_t sk, g2_t pk, bn_t d, g2_t y) {
+		bn_t sk, g2_t pk, bn_t d, g2_t y, int bls) {
 	g1_t g1;
 	g2_t g2;
 	gt_t gt;
@@ -65,9 +65,14 @@ int cp_cmlhs_gen(bn_t x[], gt_t hs[], size_t len, uint8_t prf[], size_t plen,
 		pc_map(gt, g1, g2);
 
 		rand_bytes(prf, plen);
-		cp_bls_gen(sk, pk);
+		if (bls) {
+			cp_bls_gen(sk, pk);
+		} else {
+			cp_ecdsa_gen(sk, g1);
+			fp_copy(pk->x[0], g1->x);
+			fp_copy(pk->y[0], g1->y);
+		}
 
-		pc_get_ord(n);
 		/* Generate elements for n tags. */
 		for (int i = 0; i < len; i++) {
 			bn_rand_mod(x[i], n);
@@ -91,7 +96,8 @@ int cp_cmlhs_gen(bn_t x[], gt_t hs[], size_t len, uint8_t prf[], size_t plen,
 
 int cp_cmlhs_sig(g1_t sig, g2_t z, g1_t a, g1_t c, g1_t r, g2_t s,
 		const bn_t msg, const char *data, int label, const bn_t x, const g1_t h,
-		const uint8_t prf[], size_t plen, const bn_t d, const bn_t sk) {
+		const uint8_t prf[], size_t plen, const bn_t d, const bn_t sk,
+		int bls) {
 	bn_t k, m, n;
 	g1_t t;
 	uint8_t mac[RLC_MD_LEN];
@@ -154,7 +160,14 @@ int cp_cmlhs_sig(g1_t sig, g2_t z, g1_t a, g1_t c, g1_t r, g2_t s,
 		len = g2_size_bin(z, 0);
 		g2_write_bin(buf, len, z, 0);
 		memcpy(buf + len, data, dlen);
-		cp_bls_sig(sig, buf, len + dlen, sk);
+		if (bls) {
+			cp_bls_sig(sig, buf, len + dlen, sk);
+		} else {
+			cp_ecdsa_sig(m, n, buf, len + dlen, 0, sk);
+			fp_prime_conv(sig->x, m);
+			fp_prime_conv(sig->y, n);
+			fp_set_dig(sig->z, 1);
+		}
 	}
 	RLC_CATCH_ANY {
 		result = RLC_ERR;
@@ -192,7 +205,8 @@ int cp_cmlhs_evl(g1_t r, g2_t s, const g1_t rs[], const g2_t ss[],
 int cp_cmlhs_ver(const g1_t r, const g2_t s, const g1_t sig[], const g2_t z[],
 		const g1_t a[], const g1_t c[], const bn_t msg, const char *data,
 		const g1_t h, const int label[], const gt_t *hs[], const dig_t *f[],
-		const size_t flen[], const g2_t y[], const g2_t pk[], size_t slen) {
+		const size_t flen[], const g2_t y[], const g2_t pk[], size_t slen,
+		int bls) {
 	g1_t g1;
 	g2_t g2;
 	gt_t e, u, v;
@@ -220,18 +234,25 @@ int cp_cmlhs_ver(const g1_t r, const g2_t s, const g1_t sig[], const g2_t z[],
 			RLC_THROW(ERR_NO_MEMORY);
 		}
 
-		pc_get_ord(n);
-		g1_get_gen(g1);
-		g2_get_gen(g2);
-
 		for (int i = 0; i < slen; i++) {
 			len = g2_size_bin(z[i], 0);
 			g2_write_bin(buf, len, z[i], 0);
 			memcpy(buf + len, data, dlen);
-			if (cp_bls_ver(sig[i], buf, len + dlen, pk[i]) == 0) {
-				result = 0;
+			if (bls) {
+				result &= cp_bls_ver(sig[i], buf, len + dlen, pk[i]);
+			} else {
+				fp_prime_back(k, sig[i]->x);
+				fp_prime_back(n, sig[i]->y);
+				fp_copy(g1->x, pk[i]->x[0]);
+				fp_copy(g1->y, pk[i]->y[0]);
+				fp_set_dig(g1->z, 1);
+				result &= cp_ecdsa_ver(k, n, buf, len + dlen, 0, g1);
 			}
 		}
+
+		pc_get_ord(n);
+		g1_get_gen(g1);
+		g2_get_gen(g2);
 
 		pc_map_sim(e, a, z, slen);
 		pc_map_sim(u, c, y, slen);
@@ -280,8 +301,7 @@ int cp_cmlhs_ver(const g1_t r, const g2_t s, const g1_t sig[], const g2_t z[],
 }
 
 void cp_cmlhs_off(gt_t vk, const g1_t h, const int label[], const gt_t *hs[],
-		const dig_t *f[], const size_t flen[], const g2_t y[], const g2_t pk[],
-		size_t slen) {
+		const dig_t *f[], const size_t flen[], size_t slen) {
 	gt_t v;
 
 	gt_null(v);
@@ -306,7 +326,7 @@ void cp_cmlhs_off(gt_t vk, const g1_t h, const int label[], const gt_t *hs[],
 int cp_cmlhs_onv(const g1_t r, const g2_t s, const g1_t sig[], const g2_t z[],
 		const g1_t a[], const g1_t c[], const bn_t msg, const char *data,
 		const g1_t h, const gt_t vk, const g2_t y[], const g2_t pk[],
-		size_t slen) {
+		size_t slen, int bls) {
 	g1_t g1;
 	g2_t g2;
 	gt_t e, u, v;
@@ -334,18 +354,24 @@ int cp_cmlhs_onv(const g1_t r, const g2_t s, const g1_t sig[], const g2_t z[],
 			RLC_THROW(ERR_NO_MEMORY);
 		}
 
-		pc_get_ord(n);
-		g1_get_gen(g1);
-		g2_get_gen(g2);
-
 		for (int i = 0; i < slen; i++) {
 			len = g2_size_bin(z[i], 0);
 			g2_write_bin(buf, len, z[i], 0);
 			memcpy(buf + len, data, dlen);
-			if (cp_bls_ver(sig[i], buf, len + dlen, pk[i]) == 0) {
-				result = 0;
+			if (bls) {
+				result &= cp_bls_ver(sig[i], buf, len + dlen, pk[i]);
+			} else {
+				fp_prime_back(k, sig[i]->x);
+				fp_prime_back(n, sig[i]->y);
+				fp_copy(g1->x, pk[i]->x[0]);
+				fp_copy(g1->y, pk[i]->y[0]);
+				result &= cp_ecdsa_ver(k, n, buf, len + dlen, 0, g1);
 			}
 		}
+
+		pc_get_ord(n);
+		g1_get_gen(g1);
+		g2_get_gen(g2);
 
 		pc_map_sim(e, a, z, slen);
 		pc_map_sim(u, c, y, slen);
