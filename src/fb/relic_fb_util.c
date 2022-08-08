@@ -189,46 +189,31 @@ int fb_size_str(const fb_t a, int radix) {
 }
 
 void fb_read_str(fb_t a, const char *str, int len, int radix) {
-	int i, j, l;
-	char c;
-	dig_t carry;
+	bn_t t;
 
-	fb_zero(a);
+	bn_null(t);
 
-	l = log_radix(radix);
 	if (!valid_radix(radix)) {
 		RLC_THROW(ERR_NO_VALID);
-		return;
 	}
 
-	if (RLC_CEIL(l * (len - 1), RLC_DIG) > RLC_FB_DIGS) {
-		RLC_THROW(ERR_NO_BUFFER);
-		return;
+	RLC_TRY {
+		bn_new(t);
+
+		bn_read_str(t, str, len, radix);
+
+		if (bn_bits(t) >= RLC_FB_BITS) {
+			RLC_THROW(ERR_NO_BUFFER);
+		}
+
+		fb_zero(a);
+		dv_copy(a, t->dp, t->used);
 	}
-
-	j = 0;
-	while (j < len) {
-		if (str[j] == 0) {
-			break;
-		}
-		c = (char)((radix < 36) ? RLC_UPP(str[j]) : str[j]);
-		for (i = 0; i < 64; i++) {
-			if (c == util_conv_char(i)) {
-				break;
-			}
-		}
-
-		if (i < radix) {
-			carry = fb_lshb_low(a, a, l);
-			if (carry != 0) {
-				RLC_THROW(ERR_NO_BUFFER);
-				break;
-			}
-			fb_add_dig(a, a, (dig_t)i);
-		} else {
-			break;
-		}
-		j++;
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		bn_free(t);
 	}
 }
 
