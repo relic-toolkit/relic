@@ -202,7 +202,7 @@ void fb_read_str(fb_t a, const char *str, int len, int radix) {
 
 		bn_read_str(t, str, len, radix);
 
-		if (bn_bits(t) >= RLC_FB_BITS) {
+		if (bn_bits(t) > RLC_FB_BITS) {
 			RLC_THROW(ERR_NO_BUFFER);
 		}
 
