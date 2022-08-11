@@ -132,21 +132,13 @@ void fp6_mul_unr(dv6_t c, const fp6_t a, const fp6_t b) {
 		/* v0 = a_0b_0, v1 = a_1b_1, v2 = a_2b_2,
 		 * t0 = a_1 + a_2, t1 = b_1 + b_2,
 		 * u4 = u1 + u2, u5 = u0 + u1, u6 = u0 + u2 */
-#ifdef RLC_FP_ROOM
-		fp2_mulc_low(u0, a[0], b[0]);
-		fp2_mulc_low(u1, a[1], b[1]);
-		fp2_mulc_low(u2, a[2], b[2]);
-		fp2_addn_low(t0, a[1], a[2]);
-		fp2_addn_low(t1, b[1], b[2]);
-		fp2_addd_low(c[0], u1, u2);
-#else
 		fp2_muln_low(u0, a[0], b[0]);
 		fp2_muln_low(u1, a[1], b[1]);
 		fp2_muln_low(u2, a[2], b[2]);
 		fp2_addm_low(t0, a[1], a[2]);
 		fp2_addm_low(t1, b[1], b[2]);
 		fp2_addc_low(c[0], u1, u2);
-#endif
+
 		/* t2 (c_0) = v0 + E((a_1 + a_2)(b_1 + b_2) - v1 - v2) */
 		fp2_muln_low(u3, t0, t1);
 		fp2_subc_low(u3, u3, c[0]);

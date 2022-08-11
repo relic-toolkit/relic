@@ -144,11 +144,7 @@ void fp6_sqr_unr(dv6_t c, const fp6_t a) {
 		/* t1 = 2 * a_1 * a_2 */
 		fp2_dblm_low(t0, a[1]);
 
-#ifdef RLC_FP_ROOM
-		fp2_mulc_low(u1, t0, a[2]);
-#else
 		fp2_muln_low(u1, t0, a[2]);
-#endif
 
 		/* u2 = a_2^2. */
 		fp2_sqrn_low(u2, a[2]);

@@ -1734,7 +1734,7 @@ int cp_clb_sig(g1_t a, g1_t A[], g1_t b, g1_t B[], g1_t c, const uint8_t *ms[],
  * @param[in] l				- the number of messages to sign.
  * @return a boolean value indicating the verification result.
  */
- int cp_clb_ver(const g1_t a, const g1_t A[], const g1_t b, const g1_t B[],
+int cp_clb_ver(const g1_t a, const g1_t A[], const g1_t b, const g1_t B[],
  		const g1_t c, const uint8_t *ms[], const size_t ls[], const g2_t x,
  		const g2_t y, const g2_t z[], size_t l);
 

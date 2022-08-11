@@ -176,17 +176,6 @@ void fp2_nord_low(dv2_t c, dv2_t a);
 void fp2_muln_low(dv2_t c, const fp2_t a, const fp2_t b);
 
 /**
- * Multiplies two quadratic extension elements of the same size and corrects
- * the result by adding (2^(RLC_FP_DIGS * WSIZE) * p)/4. This function should
- * be used when the RLC_FP_ROOM optimization is detected. Computes c = a * b.
- *
- * @param[out] c			- the result.
- * @param[in] a				- the first field element to multiply.
- * @param[in] b				- the second field element to multiply.
- */
-void fp2_mulc_low(dv2_t c, const fp2_t a, const fp2_t b);
-
-/**
  * Multiplies two quadratic extension field elements of the same size with
  * embedded modular reduction. Computes c = (a * b) mod p.
  *

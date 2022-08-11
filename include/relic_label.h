@@ -1826,7 +1826,6 @@
 #undef fp2_norh_low
 #undef fp2_nord_low
 #undef fp2_muln_low
-#undef fp2_mulc_low
 #undef fp2_mulm_low
 #undef fp2_sqrn_low
 #undef fp2_sqrm_low
@@ -1846,7 +1845,6 @@
 #define fp2_norh_low 	RLC_PREFIX(fp2_norh_low)
 #define fp2_nord_low 	RLC_PREFIX(fp2_nord_low)
 #define fp2_muln_low 	RLC_PREFIX(fp2_muln_low)
-#define fp2_mulc_low 	RLC_PREFIX(fp2_mulc_low)
 #define fp2_mulm_low 	RLC_PREFIX(fp2_mulm_low)
 #define fp2_sqrn_low 	RLC_PREFIX(fp2_sqrn_low)
 #define fp2_sqrm_low 	RLC_PREFIX(fp2_sqrm_low)

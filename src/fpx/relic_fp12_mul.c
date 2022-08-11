@@ -58,26 +58,6 @@ inline static void fp6_mul_dxs_unr_lazyr(dv6_t c, const fp6_t a, const fp6_t b) 
 		fp2_new(t0);
 		fp2_new(t1);
 
-#ifdef RLC_FP_ROOM
-		fp2_mulc_low(u0, a[0], b[0]);
-		fp2_mulc_low(u1, a[1], b[1]);
-		fp2_addn_low(t0, a[0], a[1]);
-		fp2_addn_low(t1, b[0], b[1]);
-
-		/* c_1 = (a_0 + a_1)(b_0 + b_1) - a_0b_0 - a_1b_1 */
-		fp2_muln_low(u2, t0, t1);
-		fp2_subc_low(u2, u2, u0);
-		fp2_subc_low(c[1], u2, u1);
-
-		/* c_0 = a_0b_0 + E a_2b_1 */
-		fp2_mulc_low(u2, a[2], b[1]);
-		fp2_norh_low(c[0], u2);
-		fp2_addc_low(c[0], u0, c[0]);
-
-		/* c_2 = a_0b_2 + a_1b_1 */
-		fp2_mulc_low(u2, a[2], b[0]);
-		fp2_addc_low(c[2], u1, u2);
-#else
 		fp2_muln_low(u0, a[0], b[0]);
 		fp2_muln_low(u1, a[1], b[1]);
 		fp2_addm_low(t0, a[0], a[1]);
@@ -96,7 +76,6 @@ inline static void fp6_mul_dxs_unr_lazyr(dv6_t c, const fp6_t a, const fp6_t b) 
 		/* c_2 = a_0b_2 + a_1b_1 */
 		fp2_muln_low(u2, a[2], b[0]);
 		fp2_addc_low(c[2], u1, u2);
-#endif
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
@@ -347,15 +326,10 @@ void fp12_mul_dxs_lazyr(fp12_t c, const fp12_t a, const fp12_t b) {
 			fp2_copy(t0[1], b[1][1]);
 #elif EP_ADD == PROJC || EP_ADD == JACOB
 			/* t0 = a_0 * b_0. */
-#ifdef RLC_FP_ROOM
-			fp2_mulc_low(u0[0], a[0][0], b[0][0]);
-			fp2_mulc_low(u0[1], a[0][1], b[0][0]);
-			fp2_mulc_low(u0[2], a[0][2], b[0][0]);
-#else
 			fp2_muln_low(u0[0], a[0][0], b[0][0]);
 			fp2_muln_low(u0[1], a[0][1], b[0][0]);
 			fp2_muln_low(u0[2], a[0][2], b[0][0]);
-#endif
+			
 			/* t2 = b_0 + b_1. */
 			fp2_add(t0[0], b[0][0], b[1][0]);
 			fp2_copy(t0[1], b[1][1]);
