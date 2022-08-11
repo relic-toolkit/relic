@@ -142,42 +142,27 @@ void fp6_mul_unr(dv6_t c, const fp6_t a, const fp6_t b) {
 		/* t2 (c_0) = v0 + E((a_1 + a_2)(b_1 + b_2) - v1 - v2) */
 		fp2_muln_low(u3, t0, t1);
 		fp2_subc_low(u3, u3, c[0]);
-#ifdef RLC_FP_ROOM
-		fp2_norh_low(c[0], u3);
-#else
 		fp2_nord_low(c[0], u3);
-#endif
 		fp2_addc_low(c[0], c[0], u0);
 
 		/* c_1 = (a_0 + a_1)(b_0 + b_1) - v0 - v1 + Ev2 */
-#ifdef RLC_FP_ROOM
-		fp2_addn_low(t0, a[0], a[1]);
-		fp2_addn_low(t1, b[0], b[1]);
-		fp2_addd_low(c[1], u0, u1);
-#else
 		fp2_addm_low(t0, a[0], a[1]);
 		fp2_addm_low(t1, b[0], b[1]);
 		fp2_addc_low(c[1], u0, u1);
-#endif
 		fp2_muln_low(u3, t0, t1);
 		fp2_subc_low(u3, u3, c[1]);
-#ifdef RLC_FP_ROOM
-		fp2_norh_low(c[2], u2);
-#else
 		fp2_nord_low(c[2], u2);
-#endif
 		fp2_addc_low(c[1], u3, c[2]);
 
 		/* c_2 = (a_0 + a_2)(b_0 + b_2) - v0 + v1 - v2 */
 #ifdef RLC_FP_ROOM
 		fp2_addn_low(t0, a[0], a[2]);
 		fp2_addn_low(t1, b[0], b[2]);
-		fp2_addd_low(c[2], u0, u2);
 #else
 		fp2_addm_low(t0, a[0], a[2]);
 		fp2_addm_low(t1, b[0], b[2]);
-		fp2_addc_low(c[2], u0, u2);
 #endif
+		fp2_addc_low(c[2], u0, u2);
 		fp2_muln_low(u3, t0, t1);
 		fp2_subc_low(u3, u3, c[2]);
 		fp2_addc_low(c[2], u3, u1);
