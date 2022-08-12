@@ -4234,7 +4234,7 @@ static int cyclotomic12(void) {
 	fp12_null(b);
 	fp12_null(c);
 	fp12_null(d[0]);
-	fp12_null(d[1])
+	fp12_null(d[1]);
 	fp12_null(e[0]);
 	bn_null(f);
 
@@ -7230,7 +7230,7 @@ static int inversion54(void) {
 			fp54_conv_cyc(a, a);
 			fp54_inv(b, a);
 			fp54_inv_cyc(c, a);
-			//TEST_ASSERT(fp54_cmp(b, c) == RLC_EQ, end);
+			TEST_ASSERT(fp54_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {
@@ -7559,7 +7559,9 @@ int main(void) {
 			core_clean();
 			return 1;
 		}
+	}
 
+	if (fp_prime_get_qnr() && (ep_param_embed() >= 8)) {
 		util_banner("Octic extension: (j) as CNR", 0);
 		util_banner("Utilities:", 1);
 
@@ -7617,7 +7619,7 @@ int main(void) {
 	}
 
 	/* Only execute these if there is an assigned cubic non-residue. */
-	if (fp_prime_get_cnr()) {
+	if (fp_prime_get_cnr() && (ep_param_embed() >= 9)) {
 		util_print("\n-- Nonic extension: (j) as CNR\n");
 		util_banner("Utilities:", 1);
 
@@ -7669,7 +7671,7 @@ int main(void) {
 		}
 	}
 
-	if (fp_prime_get_qnr()) {
+	if (fp_prime_get_qnr() && (ep_param_embed() >= 12)) {
 		util_banner("Dodecic extension:", 0);
 		util_banner("Utilities:", 1);
 
@@ -7724,9 +7726,10 @@ int main(void) {
 			core_clean();
 			return 1;
 		}
+
 	}
 
-	if (fp_prime_get_cnr()) {
+	if (fp_prime_get_cnr() && (ep_param_embed() >= 18)) {
 		util_banner("Octdecic extension:", 0);
 		util_banner("Utilities:", 1);
 
@@ -7773,7 +7776,7 @@ int main(void) {
 		}
 	}
 
-	if (fp_prime_get_qnr()) {
+	if (fp_prime_get_qnr() && (ep_param_embed() >= 24)) {
 		util_banner("Extension of degree 24:", 0);
 		util_banner("Utilities:", 1);
 
@@ -7828,7 +7831,9 @@ int main(void) {
 			core_clean();
 			return 1;
 		}
+	}
 
+	if (fp_prime_get_qnr() && (ep_param_embed() >= 48)) {
 		util_banner("Extension of degree 48:", 0);
 		util_banner("Utilities:", 1);
 
@@ -7885,7 +7890,7 @@ int main(void) {
 		}
 	}
 
-	if (fp_prime_get_cnr()) {
+	if (fp_prime_get_cnr() && (ep_param_embed() == 54)) {
 		util_banner("Extension of degree 54:", 0);
 		util_banner("Utilities:", 1);
 

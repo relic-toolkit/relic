@@ -91,7 +91,7 @@ void fp8_frb(fp8_t c, const fp8_t a, int i) {
 		fp4_frb(c[1], c[1], 1);
 		fp2_mul_frb(c[1][0], c[1][0], 2, 1);
 		fp2_mul_frb(c[1][1], c[1][1], 2, 1);
-		if (fp_prime_get_mod8() != 1) {
+		if (fp_prime_get_mod8() != 1 && fp_prime_get_mod8() != 5) {
 			fp4_mul_art(c[1], c[1]);
 		}
 	}
