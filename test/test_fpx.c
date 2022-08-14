@@ -682,7 +682,7 @@ static int exponentiation2(void) {
 			d->used = RLC_FP_DIGS;
 			dv_copy(d->dp, fp_prime_get(), RLC_FP_DIGS);
 			fp2_exp(c, a, d);
-			TEST_ASSERT(fp2_cmp(c, b) == RLC_EQ, end);
+			TEST_ASSERT(fp2_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
         TEST_CASE("exponentiation of cyclotomic element is correct") {
@@ -1424,7 +1424,7 @@ static int exponentiation3(void) {
 			d->used = RLC_FP_DIGS;
 			dv_copy(d->dp, fp_prime_get(), RLC_FP_DIGS);
 			fp3_exp(c, a, d);
-			TEST_ASSERT(fp3_cmp(c, b) == RLC_EQ, end);
+			TEST_ASSERT(fp3_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {
@@ -2002,7 +2002,7 @@ static int exponentiation4(void) {
 			d->used = RLC_FP_DIGS;
 			dv_copy(d->dp, fp_prime_get(), RLC_FP_DIGS);
 			fp4_exp(c, a, d);
-			TEST_ASSERT(fp4_cmp(c, b) == RLC_EQ, end);
+			TEST_ASSERT(fp4_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {
@@ -2589,7 +2589,7 @@ static int exponentiation6(void) {
 			d->used = RLC_FP_DIGS;
 			dv_copy(d->dp, fp_prime_get(), RLC_FP_DIGS);
 			fp6_exp(c, a, d);
-			TEST_ASSERT(fp6_cmp(c, b) == RLC_EQ, end);
+			TEST_ASSERT(fp6_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {
@@ -3214,7 +3214,7 @@ static int exponentiation8(void) {
 			d->used = RLC_FP_DIGS;
 			dv_copy(d->dp, fp_prime_get(), RLC_FP_DIGS);
 			fp8_exp(c, a, d);
-			TEST_ASSERT(fp8_cmp(c, b) == RLC_EQ, end);
+			TEST_ASSERT(fp8_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {
@@ -3789,7 +3789,7 @@ static int exponentiation9(void) {
 			d->used = RLC_FP_DIGS;
 			dv_copy(d->dp, fp_prime_get(), RLC_FP_DIGS);
 			fp9_exp(c, a, d);
-			TEST_ASSERT(fp9_cmp(c, b) == RLC_EQ, end);
+			TEST_ASSERT(fp9_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {
@@ -4505,7 +4505,7 @@ static int exponentiation12(void) {
 			d->used = RLC_FP_DIGS;
 			dv_copy(d->dp, fp_prime_get(), RLC_FP_DIGS);
 			fp12_exp(c, a, d);
-			TEST_ASSERT(fp12_cmp(c, b) == RLC_EQ, end);
+			TEST_ASSERT(fp12_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {
@@ -5049,7 +5049,7 @@ static int exponentiation18(void) {
 			d->used = RLC_FP_DIGS;
 			dv_copy(d->dp, fp_prime_get(), RLC_FP_DIGS);
 			fp18_exp(c, a, d);
-			TEST_ASSERT(fp18_cmp(c, b) == RLC_EQ, end);
+			TEST_ASSERT(fp18_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {
@@ -5741,7 +5741,7 @@ static int exponentiation24(void) {
 			d->used = RLC_FP_DIGS;
 			dv_copy(d->dp, fp_prime_get(), RLC_FP_DIGS);
 			fp24_exp(c, a, d);
-			TEST_ASSERT(fp24_cmp(c, b) == RLC_EQ, end);
+			TEST_ASSERT(fp24_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {
@@ -6543,7 +6543,7 @@ static int exponentiation48(void) {
 			d->used = RLC_FP_DIGS;
 			dv_copy(d->dp, fp_prime_get(), RLC_FP_DIGS);
 			fp48_exp(c, a, d);
-			TEST_ASSERT(fp48_cmp(c, b) == RLC_EQ, end);
+			TEST_ASSERT(fp48_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {
@@ -7290,7 +7290,7 @@ static int exponentiation54(void) {
 			d->used = RLC_FP_DIGS;
 			dv_copy(d->dp, fp_prime_get(), RLC_FP_DIGS);
 			fp54_exp(c, a, d);
-			TEST_ASSERT(fp54_cmp(c, b) == RLC_EQ, end);
+			TEST_ASSERT(fp54_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {
