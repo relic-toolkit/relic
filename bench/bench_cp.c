@@ -1488,12 +1488,12 @@ static void zss(void) {
 	}
 	BENCH_END;
 
-	BENCH_RUN("cp_zss_sign (h = 0)") {
+	BENCH_RUN("cp_zss_sig (h = 0)") {
 		BENCH_ADD(cp_zss_sig(s, msg, 5, 0, d));
 	}
 	BENCH_END;
 
-	BENCH_RUN("cp_zss_sign (h = 1)") {
+	BENCH_RUN("cp_zss_sig (h = 1)") {
 		md_map(h, msg, 5);
 		BENCH_ADD(cp_zss_sig(s, h, RLC_MD_LEN, 1, d));
 	}
