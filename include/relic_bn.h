@@ -1528,10 +1528,10 @@ void bn_rec_glv(bn_t k0, bn_t k1, const bn_t k, const bn_t n, const bn_t v1[],
  * @param[in] k				- the scalar to recode.
  * @param[in] x			- the elliptic curve parameter.
  * @param[in] n				- the elliptic curve group order.
- * @param[in] bls			- flag to indicate if it is a BLS12 curve.
+ * @param[in] cof 			- flag to indicate if it is a curve with cofactor 1.
  */
 void bn_rec_frb(bn_t *ki, int sub, const bn_t k, const bn_t x, const bn_t n,
-	int bls);
+	int cof);
 
 /**
  * Computes the coefficients of the polynomial representing the Lagrange

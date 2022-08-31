@@ -88,9 +88,9 @@ static void ep2_mul_sim_endom(ep2_t r, const ep2_t p, const bn_t k, ep2_t q, con
 		ep2_curve_get_ord(n);
 		fp_prime_get_par(u);
 		bn_mod(_k[0], k, n);
-		bn_rec_frb(_k, 4, _k[0], u, n, ep_curve_is_pairf() == EP_B12);
+		bn_rec_frb(_k, 4, _k[0], u, n, ep_curve_is_pairf() == EP_BN);
 		bn_mod(_m[0], m, n);
-		bn_rec_frb(_m, 4, _m[0], u, n, ep_curve_is_pairf() == EP_B12);
+		bn_rec_frb(_m, 4, _m[0], u, n, ep_curve_is_pairf() == EP_BN);
 
 		l = 0;
 		for (i = 0; i < 4; i++) {
@@ -672,7 +672,7 @@ void ep2_mul_sim_lot(ep2_t r, const ep2_t p[], const bn_t k[], int n) {
 				ep2_frb(_p[4*i + 3], _p[4*i + 2], 1);
 
 				bn_mod(_k[0], k[i], q);
-				bn_rec_frb(_k, 4, _k[0], x, q, ep_curve_is_pairf() == EP_B12);
+				bn_rec_frb(_k, 4, _k[0], x, q, ep_curve_is_pairf() == EP_BN);
 				for (j = 0; j < 4; j++) {
 					_l[j] = len;
 					bn_rec_naf(&naf[(4*i + j)*len], &_l[j], _k[j], 2);
@@ -748,7 +748,7 @@ void ep2_mul_sim_lot(ep2_t r, const ep2_t p[], const bn_t k[], int n) {
 			fp_prime_get_par(x);
 			for (i = 0; i < n; i++) {
 				bn_mod(_k[0], k[i], q);
-				bn_rec_frb(_k, 4, _k[0], x, q, ep_curve_is_pairf() == EP_B12);
+				bn_rec_frb(_k, 4, _k[0], x, q, ep_curve_is_pairf() == EP_BN);
 				for (j = 0; j < 4; j++) {
 					_l[j] = len;
 					bn_rec_naf(&naf[(4*i + j)*len], &_l[j], _k[j], w);

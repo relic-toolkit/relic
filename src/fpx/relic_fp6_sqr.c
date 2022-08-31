@@ -144,11 +144,7 @@ void fp6_sqr_unr(dv6_t c, const fp6_t a) {
 		/* t1 = 2 * a_1 * a_2 */
 		fp2_dblm_low(t0, a[1]);
 
-#ifdef RLC_FP_ROOM
-		fp2_mulc_low(u1, t0, a[2]);
-#else
 		fp2_muln_low(u1, t0, a[2]);
-#endif
 
 		/* u2 = a_2^2. */
 		fp2_sqrn_low(u2, a[2]);
@@ -165,28 +161,17 @@ void fp6_sqr_unr(dv6_t c, const fp6_t a) {
 		fp2_sqrn_low(u4, t1);
 
 		/* u4 = (u4 + u3)/2. */
-#ifdef RLC_FP_ROOM
-		fp2_addd_low(u4, u4, u3);
-#else
 		fp2_addc_low(u4, u4, u3);
-#endif
+
 		fp_hlvd_low(u4[0], u4[0]);
 		fp_hlvd_low(u4[1], u4[1]);
 
 		/* u3 = u3 - u4 - u1. */
-#ifdef RLC_FP_ROOM
-		fp2_addd_low(u5, u1, u4);
-#else
 		fp2_addc_low(u5, u1, u4);
-#endif
 		fp2_subc_low(u3, u3, u5);
 
 		/* c2 = u4 - u0 - u2. */
-#ifdef RLC_FP_ROOM
-		fp2_addd_low(u5, u0, u2);
-#else
 		fp2_addc_low(u5, u0, u2);
-#endif
 		fp2_subc_low(c[2], u4, u5);
 
 		/* c0 = u0 + u1 * E. */

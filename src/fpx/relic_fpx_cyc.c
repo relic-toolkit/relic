@@ -497,8 +497,7 @@ void fp12_exp_cyc(fp12_t c, const fp12_t a, const bn_t b) {
 
 			ep_curve_get_ord(n);
 			fp_prime_get_par(u);
-			bn_rec_frb(_b, 4, b, u, n, ep_curve_is_pairf() == EP_B12 ||
-				ep_curve_is_pairf() == EP_B24 || ep_curve_is_pairf() == EP_B48);
+			bn_rec_frb(_b, 4, b, u, n, ep_curve_is_pairf() == EP_BN);
 
 			if (ep_curve_is_pairf()) {
 				fp12_copy(t[0], a);
@@ -751,8 +750,8 @@ void fp12_exp_cyc_sim(fp12_t e, const fp12_t a, const bn_t b, const fp12_t c, co
 
 		ep_curve_get_ord(n);
 		fp_prime_get_par(x);
-		bn_rec_frb(_b, 4, b, x, n, ep_curve_is_pairf() == EP_B12);
-		bn_rec_frb(_d, 4, d, x, n, ep_curve_is_pairf() == EP_B12);
+		bn_rec_frb(_b, 4, b, x, n, ep_curve_is_pairf() == EP_BN);
+		bn_rec_frb(_d, 4, d, x, n, ep_curve_is_pairf() == EP_BN);
 
 		if (ep_curve_is_pairf()) {
 			for (i = 0; i < 4; i++) {
@@ -1126,7 +1125,7 @@ void fp24_exp_cyc(fp24_t c, const fp24_t a, const bn_t b) {
 
 			ep_curve_get_ord(n);
 			fp_prime_get_par(x);
-			bn_rec_frb(_b, 8, b, x, n, ep_curve_is_pairf());
+			bn_rec_frb(_b, 8, b, x, n, ep_curve_is_pairf() == EP_BN);
 
 			if (ep_curve_is_pairf()) {
 				l = 0;

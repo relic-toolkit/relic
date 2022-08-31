@@ -99,15 +99,10 @@ static void fp4_mul_dxs_unr(dv4_t c, const fp4_t a, const fp4_t b) {
 		dv2_new(u0);
 		dv2_new(u1);
 
-#ifdef RLC_FP_ROOM
-		fp2_mulc_low(u1, a[1], b[1]);
-		fp2_addn_low(t0, b[0], b[1]);
-		fp2_addn_low(t1, a[0], a[1]);
-#else
 		fp2_muln_low(u1, a[1], b[1]);
 		fp2_addm_low(t0, b[0], b[1]);
 		fp2_addm_low(t1, a[0], a[1]);
-#endif
+
 		fp2_muln_low(c[1], t1, t0);
 		fp2_subc_low(c[1], c[1], u1);
 		fp2_norh_low(c[0], u1);

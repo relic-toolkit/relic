@@ -2010,20 +2010,21 @@ static int lhs(void) {
 		/* Initialize scheme for messages of single components. */
 		g1_get_ord(n);
 		cp_cmlhs_init(h);
-		for (int j = 0; j < S; j++) {
-			cp_cmlhs_gen(x[j], hs[j], L, k[j], K, sk[j], pk[j], d[j], y[j]);
-		}
 
 		TEST_CASE("context-hiding linear homomorphic signature is correct") {
-			int label[L];
-			/* Compute all signatures. */
+			int label[L], b = i % 2;
+
+			for (int j = 0; j < S; j++) {
+				cp_cmlhs_gen(x[j], hs[j], L, k[j], K, sk[j], pk[j], d[j], y[j], b);
+			}
+			/* Compute all signatures (ECDSA if b = 0; BLS if b = 1). */
 			for (int j = 0; j < S; j++) {
 				for (int l = 0; l < L; l++) {
 					label[l] = l;
 					bn_rand_mod(msg[j][l], n);
-					cp_cmlhs_sig(sig[j], z[j], a[j][l], c[j][l], r[j][l], s[j][l],
-						msg[j][l], data, label[l], x[j][l], h, k[j], K,
-						d[j], sk[j]);
+					cp_cmlhs_sig(sig[j], z[j], a[j][l], c[j][l], r[j][l],
+						s[j][l], msg[j][l], data, label[l], x[j][l], h, k[j], K,
+						d[j], sk[j], b);
 				}
 			}
 			/* Apply linear function over signatures. */
@@ -2050,12 +2051,12 @@ static int lhs(void) {
 			}
 
 			TEST_ASSERT(cp_cmlhs_ver(_r, _s, sig, z, as, cs, m, data, h, label,
-				(const gt_t **)hs, (const dig_t **)f, flen, y, pk, S), end);
+				(const gt_t **)hs, (const dig_t **)f, flen, y, pk, S, b), end);
 
 			cp_cmlhs_off(vk, h, label, (const gt_t **)hs, (const dig_t **)f,
-				flen, y, pk, S);
+				flen, S);
 			TEST_ASSERT(cp_cmlhs_onv(_r, _s, sig, z, as, cs, m, data, h, vk,
-				y, pk, S) == 1, end);
+				y, pk, S, b) == 1, end);
 		}
 		TEST_END;
 
@@ -2297,6 +2298,16 @@ int main(void) {
 
 	util_banner("Tests for the CP module", 0);
 
+	#if defined(WITH_BN) && defined(WITH_PC)
+		util_banner("Protocols based on accumulators:\n", 0);
+		if (pc_param_set_any() == RLC_OK) {
+			if (psi() != RLC_OK) {
+				core_clean();
+				return 1;
+			}
+		}
+	#endif
+
 #if defined(WITH_BN)
 	util_banner("Protocols based on integer factorization:\n", 0);
 	if (rsa() != RLC_OK) {
@@ -2449,16 +2460,6 @@ int main(void) {
 		}
 
 		if (lhs() != RLC_OK) {
-			core_clean();
-			return 1;
-		}
-	}
-#endif
-
-#if defined(WITH_BN) && defined(WITH_PC)
-	util_banner("Protocols based on accumulators:\n", 0);
-	if (pc_param_set_any() == RLC_OK) {
-		if (psi() != RLC_OK) {
 			core_clean();
 			return 1;
 		}

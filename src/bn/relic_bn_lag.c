@@ -58,8 +58,7 @@ void bn_lag(bn_t *c, const bn_t *a, const bn_t b, size_t n) {
             bn_zero(t[0]);
             if (i == 0) {
 		        bn_set_dig(t[1], 1);
-                bn_neg(c[0], a[i]);
-                bn_mod(c[0], c[0], b);
+                bn_sub(c[0], b, a[i]);
             } else {
                 for (j = 0; j <= i; j++) {
                     bn_copy(t[j + 1], c[j]);

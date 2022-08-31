@@ -62,7 +62,7 @@ static void ep2_mul_glv_imp(ep2_t r, const ep2_t p, const bn_t k) {
 		ep2_curve_get_ord(n);
 		fp_prime_get_par(u);
 		bn_mod(_k[0], k, n);
-		bn_rec_frb(_k, 4, _k[0], u, n, ep_curve_is_pairf() == EP_B12);
+		bn_rec_frb(_k, 4, _k[0], u, n, ep_curve_is_pairf() == EP_BN);
 
 		ep2_norm(q[0], p);
 		ep2_frb(q[1], q[0], 1);

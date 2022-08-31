@@ -3273,7 +3273,9 @@ int main(void) {
 		util6();
 		util_banner("Arithmetic:", 1);
 		arith6();
+	}
 
+	if (fp_prime_get_qnr() && (ep_param_embed() >= 8)) {
 		util_banner("Octic extension:", 0);
 		util_banner("Utilities:", 1);
 		memory8();
@@ -3282,7 +3284,7 @@ int main(void) {
 		arith8();
 	}
 
-	if (fp_prime_get_cnr()) {
+	if (fp_prime_get_cnr() && (ep_param_embed() >= 9)) {
 		util_banner("Nonic extension:", 0);
 		util_banner("Utilities:", 1);
 		memory9();
@@ -3291,7 +3293,7 @@ int main(void) {
 		arith9();
 	}
 
-	if (fp_prime_get_qnr()) {
+	if (fp_prime_get_qnr() && (ep_param_embed() >= 12)) {
 		util_banner("Dodecic extension:", 0);
 		util_banner("Utilities:", 1);
 		memory12();
@@ -3300,8 +3302,8 @@ int main(void) {
 		arith12();
 	}
 
-	if (fp_prime_get_cnr()) {
-		util_banner("Octodecic extension:", 0);
+	if (fp_prime_get_cnr() && (ep_param_embed() >= 18)) {
+		util_banner("Octdecic extension:", 0);
 		util_banner("Utilities:", 1);
 		memory18();
 		util18();
@@ -3310,14 +3312,16 @@ int main(void) {
 		arith18();
 	}
 
-	if (fp_prime_get_qnr()) {
+	if (fp_prime_get_qnr() && (ep_param_embed() >= 24)) {
 		util_banner("Extension of degree 24:", 0);
 		util_banner("Utilities:", 1);
 		memory24();
 		util24();
 		util_banner("Arithmetic:", 1);
 		arith24();
+	}
 
+	if (fp_prime_get_qnr() && (ep_param_embed() >= 48)) {
 		util_banner("Extension of degree 48:", 0);
 		util_banner("Utilities:", 1);
 		memory48();
@@ -3326,7 +3330,7 @@ int main(void) {
 		arith48();
 	}
 
-	if (fp_prime_get_cnr()) {
+	if (fp_prime_get_cnr() && (ep_param_embed() >= 54)) {
 		util_banner("Extension of degree 54:", 0);
 		util_banner("Utilities:", 1);
 		memory54();
