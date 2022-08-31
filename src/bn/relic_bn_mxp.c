@@ -542,7 +542,16 @@ void bn_mxp_sim(bn_t S, const bn_t P[BN_XPWDT], const bn_t u[BN_XPWDT], const bn
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-        for(unsigned int i=0; i<BN_XPWDT_TABLE_SIZE; ++i) { bn_free(T[i]); }
+        bn_free(T[0]);
+        for(unsigned int i=0; i<BN_XPWDT; ++i) {
+            const unsigned int star = 1<<i; const unsigned int stars = star<<1;
+            if (! bn_is_zero(u[i])) { // Otherwise P[i] was not needed
+                bn_free(T[star]);
+                for(unsigned int j=star+1; j<stars; ++j) {
+                    bn_free(T[j]);
+                }
+            }
+        }
         for(unsigned int j=0; j<BN_XPWDT; ++j) { bn_free(hu[j]); }
     }
 }
