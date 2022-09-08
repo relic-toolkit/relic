@@ -52,7 +52,8 @@
  * @param[in] m					- the second integer.
  * @param[in] t					- the pointer to the precomputed table.
  */
-static void ep2_mul_sim_endom(ep2_t r, const ep2_t p, const bn_t k, ep2_t q, const bn_t m) {
+static void ep2_mul_sim_endom(ep2_t r, const ep2_t p, const bn_t k, ep2_t q,
+		const bn_t m) {
 	int i, j, l, _l[4];
 	bn_t _k[4], _m[4], n, u;
 	int8_t naf0[4][RLC_FP_BITS + 1];
@@ -159,8 +160,8 @@ static void ep2_mul_sim_endom(ep2_t r, const ep2_t p, const bn_t k, ep2_t q, con
  * @param[in] m					- the second integer.
  * @param[in] t					- the pointer to the precomputed table.
  */
-static void ep2_mul_sim_plain(ep2_t r, const ep2_t p, const bn_t k, const ep2_t q, const bn_t m,
-		const ep2_t *t) {
+static void ep2_mul_sim_plain(ep2_t r, const ep2_t p, const bn_t k,
+		const ep2_t q, const bn_t m, const ep2_t *t) {
 	int i, l, l0, l1, n0, n1, w, gen;
 	int8_t naf0[2 * RLC_FP_BITS + 1], naf1[2 * RLC_FP_BITS + 1], *_k, *_m;
 	ep2_t t0[1 << (EP_WIDTH - 2)];
@@ -257,7 +258,8 @@ static void ep2_mul_sim_plain(ep2_t r, const ep2_t p, const bn_t k, const ep2_t 
 
 #if EP_SIM == BASIC || !defined(STRIP)
 
-void ep2_mul_sim_basic(ep2_t r, const ep2_t p, const bn_t k, const ep2_t q, const bn_t l) {
+void ep2_mul_sim_basic(ep2_t r, const ep2_t p, const bn_t k, const ep2_t q,
+		const bn_t l) {
 	ep2_t t;
 
 	ep2_null(t);
@@ -281,7 +283,8 @@ void ep2_mul_sim_basic(ep2_t r, const ep2_t p, const bn_t k, const ep2_t q, cons
 
 #if EP_SIM == TRICK || !defined(STRIP)
 
-void ep2_mul_sim_trick(ep2_t r, const ep2_t p, const bn_t k, const ep2_t q, const bn_t m) {
+void ep2_mul_sim_trick(ep2_t r, const ep2_t p, const bn_t k, const ep2_t q,
+		const bn_t m) {
 	ep2_t t0[1 << (EP_WIDTH / 2)];
 	ep2_t t1[1 << (EP_WIDTH / 2)];
 	ep2_t t[1 << EP_WIDTH];
@@ -389,7 +392,8 @@ void ep2_mul_sim_trick(ep2_t r, const ep2_t p, const bn_t k, const ep2_t q, cons
 
 #if EP_SIM == INTER || !defined(STRIP)
 
-void ep2_mul_sim_inter(ep2_t r, const ep2_t p, const bn_t k, const ep2_t q, const bn_t m) {
+void ep2_mul_sim_inter(ep2_t r, const ep2_t p, const bn_t k, const ep2_t q,
+		const bn_t m) {
 	int flag = 0;
 	bn_t n, _k, _m;
 
@@ -443,7 +447,8 @@ void ep2_mul_sim_inter(ep2_t r, const ep2_t p, const bn_t k, const ep2_t q, cons
 
 #if EP_SIM == JOINT || !defined(STRIP)
 
-void ep2_mul_sim_joint(ep2_t r, const ep2_t p, const bn_t k, const ep2_t q, const bn_t m) {
+void ep2_mul_sim_joint(ep2_t r, const ep2_t p, const bn_t k, const ep2_t q,
+		const bn_t m) {
 	bn_t n, _k, _m;
 	ep2_t t[5];
 	int i, l, u_i, offset;
@@ -772,7 +777,7 @@ void ep2_mul_sim_lot(ep2_t r, const ep2_t p[], const bn_t k[], int n) {
 								ptr = -ptr;
 								ep2_neg(t, t);
 							}
-							ep2_add(_p[m*c + (ptr >> 1)], _p[m*c + (ptr >> 1)], t);
+							ep2_add(_p[m*c + (ptr/2)], _p[m*c + (ptr/2)], t);
 						}
 					}
 				}
