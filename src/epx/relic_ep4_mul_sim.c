@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (c) 2012 RELIC Authors
+ * Copyright (c) 2021 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -50,8 +50,8 @@
  * @param[in] m					- the second integer.
  * @param[in] t					- the pointer to the precomputed table.
  */
-static void ep4_mul_sim_plain(ep4_t r, const ep4_t p, const bn_t k, const ep4_t q, const bn_t m,
-		ep4_t *t) {
+static void ep4_mul_sim_plain(ep4_t r, const ep4_t p, const bn_t k,
+		const ep4_t q, const bn_t m, ep4_t *t) {
 	int i, l, l0, l1, n0, n1, w, gen;
 	int8_t naf0[2 * RLC_FP_BITS + 1], naf1[2 * RLC_FP_BITS + 1], *_k, *_m;
 	ep4_t t0[1 << (EP_WIDTH - 2)];
@@ -146,7 +146,8 @@ static void ep4_mul_sim_plain(ep4_t r, const ep4_t p, const bn_t k, const ep4_t 
 
 #if EP_SIM == BASIC || !defined(STRIP)
 
-void ep4_mul_sim_basic(ep4_t r, const ep4_t p, const bn_t k, const ep4_t q, const bn_t l) {
+void ep4_mul_sim_basic(ep4_t r, const ep4_t p, const bn_t k, const ep4_t q,
+		const bn_t l) {
 	ep4_t t;
 
 	ep4_null(t);
@@ -170,7 +171,8 @@ void ep4_mul_sim_basic(ep4_t r, const ep4_t p, const bn_t k, const ep4_t q, cons
 
 #if EP_SIM == TRICK || !defined(STRIP)
 
-void ep4_mul_sim_trick(ep4_t r, const ep4_t p, const bn_t k, const ep4_t q, const bn_t m) {
+void ep4_mul_sim_trick(ep4_t r, const ep4_t p, const bn_t k, const ep4_t q,
+		const bn_t m) {
 	ep4_t t0[1 << (EP_WIDTH / 2)];
 	ep4_t t1[1 << (EP_WIDTH / 2)];
 	ep4_t t[1 << EP_WIDTH];
@@ -270,7 +272,8 @@ void ep4_mul_sim_trick(ep4_t r, const ep4_t p, const bn_t k, const ep4_t q, cons
 
 #if EP_SIM == INTER || !defined(STRIP)
 
-void ep4_mul_sim_inter(ep4_t r, const ep4_t p, const bn_t k, const ep4_t q, const bn_t m) {
+void ep4_mul_sim_inter(ep4_t r, const ep4_t p, const bn_t k, const ep4_t q,
+		const bn_t m) {
 	if (bn_is_zero(k) || ep4_is_infty(p)) {
 		ep4_mul(r, q, m);
 		return;
@@ -287,7 +290,8 @@ void ep4_mul_sim_inter(ep4_t r, const ep4_t p, const bn_t k, const ep4_t q, cons
 
 #if EP_SIM == JOINT || !defined(STRIP)
 
-void ep4_mul_sim_joint(ep4_t r, const ep4_t p, const bn_t k, const ep4_t q, const bn_t m) {
+void ep4_mul_sim_joint(ep4_t r, const ep4_t p, const bn_t k, const ep4_t q,
+		const bn_t m) {
 	ep4_t t[5];
 	int i, l, u_i, offset;
 	int8_t jsf[4 * (RLC_FP_BITS + 1)];
@@ -579,7 +583,7 @@ void ep4_mul_sim_lot(ep4_t r, const ep4_t p[], const bn_t k[], int n) {
 							if (bn_sign(_k[m]) == RLC_NEG) {
 								ep4_neg(t, t);
 							}
-							ep4_add(_p[m*c + (ptr >> 1)], _p[m*c + (ptr >> 1)], t);
+							ep4_add(_p[m*c + (ptr/2)], _p[m*c + (ptr/2)], t);
 						}
 					}
 				}
