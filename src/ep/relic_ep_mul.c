@@ -35,7 +35,6 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-#if EP_MUL == LWNAF || !defined(STRIP)
 
 #if defined(EP_ENDOM)
 
@@ -212,9 +211,7 @@ static void ep_mul_naf_imp(ep_t r, const ep_t p, const bn_t k) {
 }
 
 #endif /* EP_PLAIN || EP_SUPER */
-#endif /* EP_MUL == LWNAF */
 
-#if EP_MUL == LWREG || !defined(STRIP)
 
 #if defined(EP_ENDOM)
 
@@ -457,7 +454,6 @@ static void ep_mul_reg_imp(ep_t r, const ep_t p, const bn_t k) {
 }
 
 #endif /* EP_PLAIN || EP_SUPER */
-#endif /* EP_MUL == LWNAF */
 
 /*============================================================================*/
 /* Public definitions                                                         */
