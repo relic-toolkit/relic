@@ -437,7 +437,7 @@ static int doubling(void) {
 		} TEST_END;
 #endif
 
-#if EP_ADD == PROJC || !defined(STRIP)
+#if EP_ADD == JACOB || !defined(STRIP)
 		TEST_CASE("point doubling in jacobian coordinates is correct") {
 			ep_rand(a);
 			/* a in projective coordinates. */
