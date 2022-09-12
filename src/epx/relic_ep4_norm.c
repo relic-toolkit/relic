@@ -32,12 +32,6 @@
 
 #include "relic_core.h"
 
-/*============================================================================*/
-/* Private definitions                                                        */
-/*============================================================================*/
-
-#if EP_ADD == PROJC || !defined(STRIP)
-
 /**
  * Normalizes a point represented in projective coordinates.
  *
@@ -78,12 +72,6 @@ static void ep4_norm_imp(ep4_t r, const ep4_t p, int inverted) {
 
 	r->coord = BASIC;
 }
-
-#endif /* EP_ADD == PROJC */
-
-/*============================================================================*/
-/* Public definitions                                                         */
-/*============================================================================*/
 
 void ep4_norm(ep4_t r, const ep4_t p) {
 	if (ep4_is_infty(p)) {

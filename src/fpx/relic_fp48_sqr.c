@@ -37,7 +37,8 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-#if FPX_RDC == BASIC || !defined(STRIP)
+//TODO: Remove the FPX_RDX == LAZYR from below condition once lazy reduction has been implemented
+#if FPX_RDC == BASIC || FPX_RDC == LAZYR || !defined(STRIP)
 
 void fp48_sqr_basic(fp48_t c, const fp48_t a) {
 	fp24_t t0, t1;

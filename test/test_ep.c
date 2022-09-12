@@ -537,7 +537,7 @@ static int endomorphism(void) {
 			TEST_END;
 #endif
 
-#if EB_ADD == PROJC || !defined(STRIP)
+#if (EB_ADD == PROJC && EP_ADD == PROJC) || !defined(STRIP)
 			TEST_CASE("endomorphism in projective coordinates is correct") {
 				ep_rand(a);
 				ep_dbl_projc(a, a);

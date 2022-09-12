@@ -37,7 +37,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-#if EP_ADD == PROJC || !defined(STRIP)
+#if EP_ADD == BASIC || !defined(STRIP)
 
 void pp_dbl_k24_basic(fp24_t l, ep4_t r, const ep4_t q, const ep_t p) {
 	fp4_t s;

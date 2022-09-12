@@ -670,8 +670,6 @@ void ep_mul_lwnaf(ep_t r, const ep_t p, const bn_t k) {
 
 #endif
 
-#if EP_MUL == LWREG || !defined(STRIP)
-
 void ep_mul_lwreg(ep_t r, const ep_t p, const bn_t k) {
 	if (bn_is_zero(k) || ep_is_infty(p)) {
 		ep_set_infty(r);
@@ -689,8 +687,6 @@ void ep_mul_lwreg(ep_t r, const ep_t p, const bn_t k) {
 	ep_mul_reg_imp(r, p, k);
 #endif
 }
-
-#endif
 
 void ep_mul_gen(ep_t r, const bn_t k) {
 	if (bn_is_zero(k)) {
