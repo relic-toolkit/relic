@@ -33,10 +33,13 @@
 #define RLC_ERR_H
 
 #include <stdint.h>
-#include <setjmp.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+
+#ifdef CHECK
+#include <setjmp.h>
+#endif
 
 #include "relic_core.h"
 #include "relic_conf.h"
@@ -94,6 +97,9 @@ enum errors {
  */
 typedef int err_t;
 
+
+#ifdef CHECK
+
 /**
  * Type that describes an error status, including the error code and the program
  * location where the error occurred.
@@ -106,6 +112,8 @@ typedef struct _sts_t {
 	/** Flag to tell if there is a surrounding try-catch block. */
 	int block;
 } sts_t;
+
+#endif
 
 /*============================================================================*/
 /* Macro definitions                                                          */
