@@ -117,7 +117,7 @@ enum {
 	B12_P446,
 	/** Barreto-Lynn-Scott curve with embedding degree 12. */
 	B12_P455,
-	/** Kachisa-Schafer-Scott with negative x. */
+	/** Kachisa-Schaefer-Scott with negative x. */
 	KSS_P508,
 	/** Barreto-Lynn-Scott curve with embedding degree 24. */
 	B24_P509,
@@ -133,6 +133,8 @@ enum {
 	BN_P638,
 	/** Barreto-Lynn-Scott curve with embedding degree 12. */
 	B12_P638,
+	/** Kachisa-Scott-Schaefer curve with embedding degree 18. */
+	K18_P638,
 	/** 1536-bit supersingular curve. */
 	SS_P1536,
 	/** 3072-bit supersingular curve. */
@@ -151,12 +153,20 @@ enum {
 	EP_BN,
 	/* Optimal TNFS-secure. */
 	EP_OT8,
-	/* Cocks-Pinch curve. */
+	/* Cocks-Pinch curve discovered by Guillevic, Masson and Thomé (GMT). */
 	EP_GMT8,
 	/* Barreto-Lynn-Scott with embedding degree 12. */
 	EP_B12,
-	/* Kachisa-Schafer-Scott with embedding degree 16. */
+	/* Fotiadis-Martindale with embedding degree 16. */
+	EP_FM16,
+	/* Kachisa-Schaefer-Scott with embedding degree 16. */
 	EP_K16,
+	/* Fotiadis-Martindale with embedding degree 18. */
+	EP_FM18,
+	/* Kachisa-Schaefer-Scott with embedding degree 18. */
+	EP_K18,
+	/* Scott-Guillevic with embedding degree 18. */
+	EP_SG18,
 	/* Barreto-Lynn-Scott with embedding degree 24. */
 	EP_B24,
 	/* Barreto-Lynn-Scott with embedding degree 48. */

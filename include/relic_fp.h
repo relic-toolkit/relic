@@ -146,6 +146,8 @@ enum {
 	BN_638,
 	/** 638-bit prime for BLS curve with embedding degree 12. */
 	B12_638,
+	/** 638-bit prime for KSS curve with embedding degree 18. */
+	K18_638,
 	/** 1536-bit prime for supersingular curve with embedding degree k = 2. */
 	SS_1536,
 	/** 3072-bit prime for supersingular curve with embedding degree k = 1. */

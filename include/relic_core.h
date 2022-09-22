@@ -340,6 +340,28 @@ typedef struct _ctx_t {
 	iso2_st ep2_iso;
 #endif /* EP_CTMAP */
 	/** The generator of the elliptic curve. */
+	ep3_t ep3_g;
+	/** The 'a' coefficient of the curve. */
+	fp3_t ep3_a;
+	/** The 'b' coefficient of the curve. */
+	fp3_t ep3_b;
+	/** The order of the group of points in the elliptic curve. */
+	bn_st ep3_r;
+	/** The cofactor of the group order in the elliptic curve. */
+	bn_st ep3_h;
+	/** Optimization identifier for the a-coefficient. */
+	int ep3_opt_a;
+	/** Optimization identifier for the b-coefficient. */
+	int ep3_opt_b;
+	/** Flag that stores if the prime curve is a twist. */
+	int ep3_is_twist;
+#ifdef EP_PRECO
+	/** Precomputation table for generator multiplication.*/
+	ep3_st ep3_pre[RLC_EP_TABLE];
+	/** Array of pointers to the precomputation table. */
+	ep3_st *ep3_ptr[RLC_EP_TABLE];
+#endif /* EP_PRECO */
+	/** The generator of the elliptic curve. */
 	ep4_t ep4_g;
 	/** The 'a' coefficient of the curve. */
 	fp4_t ep4_a;
@@ -360,7 +382,7 @@ typedef struct _ctx_t {
 	ep4_st ep4_pre[RLC_EP_TABLE];
 	/** Array of pointers to the precomputation table. */
 	ep4_st *ep4_ptr[RLC_EP_TABLE];
-	#endif /* EP_PRECO */
+#endif /* EP_PRECO */
 #endif /* WITH_EPX */
 
 #ifdef WITH_ED
