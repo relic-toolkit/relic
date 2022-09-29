@@ -38,6 +38,7 @@
  */
 #define asm					__asm__ volatile
 
+#if TIMER == CYCLE
 #if OPSYS == MACOSX
 /*
  * Adapted from work by D. Lemire, Duc Tri Nguyen (CERG GMU), Dougall Johnson
@@ -162,12 +163,19 @@ static void init_rdtsc() {
 }
 
 #endif
+#endif
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
 void arch_init(void) {
+	ctx_t *ctx = core_get();
+	if (ctx != NULL) {
+		core_get()->lzcnt_ptr =
+			(has_lzcnt_hard() ? lzcnt64_hard : lzcnt64_soft);
+	}
+
 #if TIMER == CYCLE
 
 #if OPSYS == MACOSX
@@ -185,6 +193,10 @@ void arch_init(void) {
 }
 
 void arch_clean(void) {
+	ctx_t *ctx = core_get();
+	if (ctx != NULL) {
+		core_get()->lzcnt_ptr = NULL;
+	}
 }
 
 
@@ -216,8 +228,6 @@ ull_t arch_cycles(void) {
 	return value;
 }
 
-unsigned int arch_lzcnt(unsigned int x) {
-#if WSIZE == 64
-	return lzcnt64_gcc_arm(x);
-#endif
+unsigned int arch_lzcnt(dig_t x) {
+	return core_get()->lzcnt_ptr((ull_t)x) - (8 * sizeof(ull_t) - WSIZE);
 }
