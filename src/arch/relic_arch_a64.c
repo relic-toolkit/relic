@@ -170,7 +170,7 @@ static void init_rdtsc() {
 void arch_init(void) {
 #if TIMER == CYCLE
 
-#ifdef OPSYS == MACOSX
+#if OPSYS == MACOSX
 	int test_high_perf_cores = 1;
 	if (test_high_perf_cores) {
 		pthread_set_qos_class_self_np(QOS_CLASS_USER_INTERACTIVE, 0);
