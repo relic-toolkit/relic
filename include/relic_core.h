@@ -443,7 +443,7 @@ typedef struct _ctx_t {
 	/** Function pointer to underlying lznct implementation. */
 #if ARCH == X86
 	unsigned int (*lzcnt_ptr)(unsigned int);
-#elif ARCH == X64
+#elif ARCH == X64 || ARCH == A64
 	unsigned int (*lzcnt_ptr)(ull_t);
 #endif
 } ctx_t;
