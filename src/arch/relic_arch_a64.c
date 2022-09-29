@@ -29,7 +29,11 @@
  * @ingroup arch
  */
 
+#include <stdio.h>
+
 #include "relic_types.h"
+#include "relic_arch.h"
+#include "relic_core.h"
 
 #include "lzcnt.inc"
 
@@ -46,7 +50,6 @@
  */
 #include <dlfcn.h>
 #include <pthread.h>
-#include <stdio.h>
 #include <stdlib.h>
 
 #define KPERF_LIST															\
