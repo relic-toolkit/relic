@@ -1066,6 +1066,7 @@ void ep_param_set(int param) {
 			case GMT8_P544:
 				ASSIGNK(GMT8_P544, GMT8_544);
 				endom = 1;
+				pairf = EP_GMT8;
 				break;
 #endif
 #if defined(EP_ENDOM) && FP_PRIME == 569
