@@ -60,7 +60,8 @@ int fp2_srt(fp2_t c, const fp2_t a) {
 			/* special case: either a[0] is square and sqrt is purely 'real'
 			 * or a[0] is non-square and sqrt is purely 'imaginary' */
 			r = 1;
-			if (fp_srt(t0, a[0])) {
+			if (fp_smb(a[0]) == 1) {
+				fp_srt(t0, a[0]);
 				fp_copy(c[0], t0);
 				fp_zero(c[1]);
 			} else {
@@ -92,12 +93,13 @@ int fp2_srt(fp2_t c, const fp2_t a) {
 			}
 			fp_add(t0, t0, t1);
 
-			if (fp_srt(t1, t0)) {
+			if (fp_smb(t0) == 1) {
+				fp_srt(t1, t0);
 				/* t0 = (a_0 + sqrt(t0)) / 2 */
 				fp_add(t0, a[0], t1);
 				fp_hlv(t0, t0);
 
-				if (!fp_srt(t2, t0)) {
+				if (fp_smb(t0) != 1) {
 					/* t0 = (a_0 - sqrt(t0)) / 2 */
 					fp_sub(t0, a[0], t1);
 					fp_hlv(t0, t0);
@@ -105,6 +107,8 @@ int fp2_srt(fp2_t c, const fp2_t a) {
 						/* should never happen! */
 						RLC_THROW(ERR_NO_VALID);
 					}
+				} else {
+					fp_srt(t2, t0);
 				}
 				/* c_0 = sqrt(t0) */
 				fp_copy(c[0], t2);
