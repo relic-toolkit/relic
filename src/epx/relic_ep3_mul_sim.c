@@ -173,9 +173,8 @@ void ep3_mul_sim_basic(ep3_t r, const ep3_t p, const bn_t k, const ep3_t q,
 
 void ep3_mul_sim_trick(ep3_t r, const ep3_t p, const bn_t k, const ep3_t q,
 		const bn_t m) {
-	ep3_t t0[1 << (EP_WIDTH / 2)];
-	ep3_t t1[1 << (EP_WIDTH / 2)];
-	ep3_t t[1 << EP_WIDTH];
+	ep3_t t0[1 << (EP_WIDTH / 2)], t1[1 << (EP_WIDTH / 2)];
+	ep3_t t[1 << (EP_WIDTH - EP_WIDTH % 2)];
 	bn_t n;
 	int l0, l1, w = EP_WIDTH / 2;
 	uint8_t w0[2 * RLC_FP_BITS], w1[2 * RLC_FP_BITS];
@@ -202,7 +201,7 @@ void ep3_mul_sim_trick(ep3_t r, const ep3_t p, const bn_t k, const ep3_t q,
 			ep3_new(t0[i]);
 			ep3_new(t1[i]);
 		}
-		for (int i = 0; i < (1 << EP_WIDTH); i++) {
+		for (int i = 0; i < (1 << (EP_WIDTH - EP_WIDTH % 2)); i++) {
 			ep3_null(t[i]);
 			ep3_new(t[i]);
 		}
@@ -232,19 +231,12 @@ void ep3_mul_sim_trick(ep3_t r, const ep3_t p, const bn_t k, const ep3_t q,
 		}
 
 #if defined(EP_MIXED)
-		ep3_norm_sim(t + 1, t + 1, (1 << (EP_WIDTH)) - 1);
+		ep3_norm_sim(t + 1, t + 1, (1 << (EP_WIDTH - EP_WIDTH % 2)) - 1);
 #endif
 
 		l0 = l1 = RLC_CEIL(2 * RLC_FP_BITS, w);
 		bn_rec_win(w0, &l0, k, w);
 		bn_rec_win(w1, &l1, m, w);
-
-		for (int i = l0; i < l1; i++) {
-			w0[i] = 0;
-		}
-		for (int i = l1; i < l0; i++) {
-			w1[i] = 0;
-		}
 
 		ep3_set_infty(r);
 		for (int i = RLC_MAX(l0, l1) - 1; i >= 0; i--) {
@@ -263,7 +255,7 @@ void ep3_mul_sim_trick(ep3_t r, const ep3_t p, const bn_t k, const ep3_t q,
 			ep3_free(t0[i]);
 			ep3_free(t1[i]);
 		}
-		for (int i = 0; i < (1 << EP_WIDTH); i++) {
+		for (int i = 0; i < (1 << (EP_WIDTH - EP_WIDTH % 2)); i++) {
 			ep3_free(t[i]);
 		}
 	}
@@ -478,14 +470,6 @@ void ep3_mul_sim_lot(ep3_t r, const ep3_t p[], const bn_t k[], int n) {
 						ep3_neg(_p[8*i + j], _p[8*i + j]);
 					}
 					l = RLC_MAX(l, _l[8*i + j]);
-				}
-			}
-
-			for (i = 0; i < n; i++) {
-				for (j = 0; j < 8; j++) {
-					for (m = _l[8*i + j]; m < l; m++) {
-						naf[(8*i + j)*len + m] = 0;
-					}
 				}
 			}
 
