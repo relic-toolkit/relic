@@ -61,7 +61,7 @@ option(EP_CTMAP "Use contant-time SSWU and isogeny map for hashing" on)
 
 # Choose the arithmetic methods.
 if (NOT EP_METHD)
-	set(EP_METHD "PROJC;LWNAF;COMBS;INTER")
+	set(EP_METHD "PROJC;LWNAF;COMBS;INTER;SSWUM")
 endif(NOT EP_METHD)
 list(LENGTH EP_METHD EP_LEN)
 if (EP_LEN LESS 5)
