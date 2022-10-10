@@ -238,13 +238,6 @@ void ep4_mul_sim_trick(ep4_t r, const ep4_t p, const bn_t k, const ep4_t q,
 		bn_rec_win(w0, &l0, k, w);
 		bn_rec_win(w1, &l1, m, w);
 
-		for (int i = l0; i < l1; i++) {
-			w0[i] = 0;
-		}
-		for (int i = l1; i < l0; i++) {
-			w1[i] = 0;
-		}
-
 		ep4_set_infty(r);
 		for (int i = RLC_MAX(l0, l1) - 1; i >= 0; i--) {
 			for (int j = 0; j < w; j++) {
@@ -477,14 +470,6 @@ void ep4_mul_sim_lot(ep4_t r, const ep4_t p[], const bn_t k[], int n) {
 						ep4_neg(_p[8*i + j], _p[8*i + j]);
 					}
 					l = RLC_MAX(l, _l[8*i + j]);
-				}
-			}
-
-			for (i = 0; i < n; i++) {
-				for (j = 0; j < 8; j++) {
-					for (m = _l[8*i + j]; m < l; m++) {
-						naf[(8*i + j)*len + m] = 0;
-					}
 				}
 			}
 

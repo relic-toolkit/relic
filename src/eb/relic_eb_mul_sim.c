@@ -108,12 +108,6 @@ static void eb_mul_sim_kbltz(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 		l = RLC_MAX(l0, l1);
 		_k = tnaf0 + l - 1;
 		_m = tnaf1 + l - 1;
-		for (i =  l0; i < l; i++) {
-			tnaf0[i] = 0;
-		}
-		for (i =  l1; i < l; i++) {
-			tnaf1[i] = 0;
-		}
 
 		if (bn_sign(k) == RLC_NEG) {
 			for (i =  0; i < l0; i++) {
@@ -374,12 +368,6 @@ void eb_mul_sim_trick(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 		l0 = l1 = RLC_CEIL(RLC_FB_BITS + 1, w);
 		bn_rec_win(w0, &l0, k, w);
 		bn_rec_win(w1, &l1, m, w);
-		for (int i = l0; i < l1; i++) {
-			w0[i] = 0;
-		}
-		for (int i = l1; i < l0; i++) {
-			w1[i] = 0;
-		}
 
 		eb_set_infty(r);
 		for (int i = RLC_MAX(l0, l1) - 1; i >= 0; i--) {

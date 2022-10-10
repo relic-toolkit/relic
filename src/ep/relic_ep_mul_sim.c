@@ -746,12 +746,6 @@ void ep_mul_sim_trick(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 		l0 = l1 = RLC_CEIL(RLC_FP_BITS + 1, w);
 		bn_rec_win(w0, &l0, _k, w);
 		bn_rec_win(w1, &l1, _m, w);
-		for (int i = l0; i < l1; i++) {
-			w0[i] = 0;
-		}
-		for (int i = l1; i < l0; i++) {
-			w1[i] = 0;
-		}
 
 		ep_set_infty(r);
 		for (int i = RLC_MAX(l0, l1) - 1; i >= 0; i--) {
