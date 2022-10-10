@@ -44,10 +44,10 @@ message("      EP_METHD=SSWUM    Simplified Shallue-van de Woestijne-Ulas method
 message("      EP_METHD=SWIFT    SwiftEC hashing method.\n")
 
 if (NOT EP_DEPTH)
-	set(EP_DEPTH 5)
+	set(EP_DEPTH 4)
 endif(NOT EP_DEPTH)
 if (NOT EP_WIDTH)
-	set(EP_WIDTH 5)
+	set(EP_WIDTH 4)
 endif(NOT EP_WIDTH)
 set(EP_DEPTH "${EP_DEPTH}" CACHE STRING "Width of precomputation table for fixed point methods.")
 set(EP_WIDTH "${EP_WIDTH}" CACHE STRING "Width of window processing for unknown point methods.")

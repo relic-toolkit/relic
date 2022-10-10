@@ -173,9 +173,8 @@ void ep4_mul_sim_basic(ep4_t r, const ep4_t p, const bn_t k, const ep4_t q,
 
 void ep4_mul_sim_trick(ep4_t r, const ep4_t p, const bn_t k, const ep4_t q,
 		const bn_t m) {
-	ep4_t t0[1 << (EP_WIDTH / 2)];
-	ep4_t t1[1 << (EP_WIDTH / 2)];
-	ep4_t t[1 << EP_WIDTH];
+	ep4_t t0[1 << (EP_WIDTH / 2)], t1[1 << (EP_WIDTH / 2)];
+	ep4_t t[1 << (EP_WIDTH - EP_WIDTH % 2)];
 	bn_t n;
 	int l0, l1, w = EP_WIDTH / 2;
 	uint8_t w0[2 * RLC_FP_BITS], w1[2 * RLC_FP_BITS];
@@ -202,7 +201,7 @@ void ep4_mul_sim_trick(ep4_t r, const ep4_t p, const bn_t k, const ep4_t q,
 			ep4_new(t0[i]);
 			ep4_new(t1[i]);
 		}
-		for (int i = 0; i < (1 << EP_WIDTH); i++) {
+		for (int i = 0; i < (1 << (EP_WIDTH - EP_WIDTH % 2)); i++) {
 			ep4_null(t[i]);
 			ep4_new(t[i]);
 		}
@@ -232,7 +231,7 @@ void ep4_mul_sim_trick(ep4_t r, const ep4_t p, const bn_t k, const ep4_t q,
 		}
 
 #if defined(EP_MIXED)
-		ep4_norm_sim(t + 1, t + 1, (1 << (EP_WIDTH)) - 1);
+		ep4_norm_sim(t + 1, t + 1, (1 << (EP_WIDTH - EP_WIDTH % 2)) - 1);
 #endif
 
 		l0 = l1 = RLC_CEIL(2 * RLC_FP_BITS, w);
@@ -263,7 +262,7 @@ void ep4_mul_sim_trick(ep4_t r, const ep4_t p, const bn_t k, const ep4_t q,
 			ep4_free(t0[i]);
 			ep4_free(t1[i]);
 		}
-		for (int i = 0; i < (1 << EP_WIDTH); i++) {
+		for (int i = 0; i < (1 << (EP_WIDTH - EP_WIDTH % 2)); i++) {
 			ep4_free(t[i]);
 		}
 	}

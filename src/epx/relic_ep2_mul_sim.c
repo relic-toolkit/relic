@@ -52,8 +52,8 @@
  * @param[in] m					- the second integer.
  * @param[in] t					- the pointer to the precomputed table.
  */
-static void ep2_mul_sim_endom(ep2_t r, const ep2_t p, const bn_t k, ep2_t q,
-		const bn_t m) {
+static void ep2_mul_sim_endom(ep2_t r, const ep2_t p, const bn_t k,
+		const ep2_t q, const bn_t m) {
 	int i, j, l, _l[4];
 	bn_t _k[4], _m[4], n, u;
 	int8_t naf0[4][RLC_FP_BITS + 1];
@@ -285,9 +285,8 @@ void ep2_mul_sim_basic(ep2_t r, const ep2_t p, const bn_t k, const ep2_t q,
 
 void ep2_mul_sim_trick(ep2_t r, const ep2_t p, const bn_t k, const ep2_t q,
 		const bn_t m) {
-	ep2_t t0[1 << (EP_WIDTH / 2)];
-	ep2_t t1[1 << (EP_WIDTH / 2)];
-	ep2_t t[1 << EP_WIDTH];
+	ep2_t t0[1 << (EP_WIDTH / 2)], t1[1 << (EP_WIDTH / 2)];
+	ep2_t t[1 << (EP_WIDTH - EP_WIDTH % 2)];
 	bn_t n, _k, _m;
 	int l0, l1, w = EP_WIDTH / 2;
 	uint8_t w0[2 * RLC_FP_BITS], w1[2 * RLC_FP_BITS];
@@ -320,7 +319,7 @@ void ep2_mul_sim_trick(ep2_t r, const ep2_t p, const bn_t k, const ep2_t q,
 			ep2_new(t0[i]);
 			ep2_new(t1[i]);
 		}
-		for (int i = 0; i < (1 << EP_WIDTH); i++) {
+		for (int i = 0; i < (1 << (EP_WIDTH - EP_WIDTH % 2)); i++) {
 			ep2_null(t[i]);
 			ep2_new(t[i]);
 		}
@@ -350,7 +349,7 @@ void ep2_mul_sim_trick(ep2_t r, const ep2_t p, const bn_t k, const ep2_t q,
 		}
 
 #if defined(EP_MIXED)
-		ep2_norm_sim(t + 1, t + 1, (1 << (EP_WIDTH)) - 1);
+		ep2_norm_sim(t + 1, t + 1, (1 << (EP_WIDTH - EP_WIDTH % 2)) - 1);
 #endif
 
 		l0 = l1 = RLC_CEIL(2 * RLC_FP_BITS, w);
@@ -383,7 +382,7 @@ void ep2_mul_sim_trick(ep2_t r, const ep2_t p, const bn_t k, const ep2_t q,
 			ep2_free(t0[i]);
 			ep2_free(t1[i]);
 		}
-		for (int i = 0; i < (1 << EP_WIDTH); i++) {
+		for (int i = 0; i < (1 << (EP_WIDTH - EP_WIDTH % 2)); i++) {
 			ep2_free(t[i]);
 		}
 	}

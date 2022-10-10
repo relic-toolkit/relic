@@ -243,7 +243,12 @@ void ep_map_swift(ep_t p, const uint8_t *msg, int len) {
 		 */
 		md_xmd(pseudo_random_bytes, 2 * len_per_elm, msg, len,
 				(const uint8_t *)"RELIC", 5);
-		ep_map_from_field(p, pseudo_random_bytes, 2 * len_per_elm, ep_map_sswu);
+		/* figure out which hash function to use */
+		const int abNeq0 = (ep_curve_opt_a() != RLC_ZERO) &&
+				(ep_curve_opt_b() != RLC_ZERO);
+		void (*const map_fn)(ep_t, fp_t) =(ep_curve_is_ctmap() ||
+				abNeq0) ? ep_map_sswu : ep_map_svdw;
+		ep_map_from_field(p, pseudo_random_bytes, 2 * len_per_elm, map_fn);
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
