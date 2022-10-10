@@ -12,7 +12,7 @@ message("      EP_PRECO=[off|on] Build precomputation table for generator.")
 message("      EP_DEPTH=w        Width w in [2,8] of precomputation table for fixed point methods.")
 message("      EP_WIDTH=w        Width w in [2,6] of window processing for unknown point methods.\n")
 
-message("   ** Available prime elliptic curve methods (default = PROJC;LWNAF;COMBS;INTER;SWIFT):\n")
+message("   ** Available prime elliptic curve methods (default = PROJC;LWNAF;COMBS;INTER;SSWUM):\n")
 
 message("      Point representation:")
 message("      EP_METHD=BASIC    Affine coordinates.")

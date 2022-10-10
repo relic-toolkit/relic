@@ -451,8 +451,6 @@ typedef iso_st *iso_t;
  */
 #if EP_MAP == BASIC
 #define ep_map(R, S, L)			ep_map_basic(R, S, L)
-#elif EP_MAP == SVDWM
-#define ep_map(R, S, L)			ep_map_svdwm(R, S, L)
 #elif EP_MAP == SSWUM
 #define ep_map(R, S, L)			ep_map_sswum(R, S, L)
 #elif EP_MAP == SWIFT
@@ -1242,17 +1240,7 @@ void ep_map_basic(ep_t p, const uint8_t *msg, int len);
 
 /**
  * Maps a byte array to a point in a prime elliptic curve using the
- * Shallue-van de Woestijne map.
- *
- * @param[out] p			- the result.
- * @param[in] msg			- the byte array to map.
- * @param[in] len			- the array length in bytes.
- */
-void ep_map_ssdwm(ep_t p, const uint8_t *msg, int len);
-
-/**
- * Maps a byte array to a point in a prime elliptic curve using the
- * Simplified Shallue-van de Woestijne-Ulas map.
+ * (Simplified) Shallue-van de Woestijne-Ulas map.
  *
  * @param[out] p			- the result.
  * @param[in] msg			- the byte array to map.
