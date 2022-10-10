@@ -1356,12 +1356,43 @@ static int hashing(void) {
 			rand_bytes(msg, sizeof(msg));
 			ep_map(a, msg, sizeof(msg));
 			TEST_ASSERT(ep_is_infty(a) == 0, end);
-			ep_map_dst(b, msg, sizeof(msg), (const uint8_t *)"RELIC", 5);
-			TEST_ASSERT(ep_cmp(a, b) == RLC_EQ, end);
 			ep_mul(a, a, n);
 			TEST_ASSERT(ep_is_infty(a) == 1, end);
 		}
 		TEST_END;
+
+#if EP_MAP == BASIC || !defined(STRIP)
+		TEST_CASE("basic point hashing is correct") {
+			rand_bytes(msg, sizeof(msg));
+			ep_map_basic(a, msg, sizeof(msg));
+			TEST_ASSERT(ep_is_infty(a) == 0, end);
+			ep_mul(a, a, n);
+			TEST_ASSERT(ep_is_infty(a) == 1, end);
+		}
+		TEST_END;
+#endif
+
+#if EP_MAP == SSWUM || !defined(STRIP)
+		TEST_CASE("simplified SWU point hashing is correct") {
+			rand_bytes(msg, sizeof(msg));
+			ep_map_sswum(a, msg, sizeof(msg));
+			TEST_ASSERT(ep_is_infty(a) == 0, end);
+			ep_mul(a, a, n);
+			TEST_ASSERT(ep_is_infty(a) == 1, end);
+		}
+		TEST_END;
+#endif
+
+#if EP_MAP == SWIFT || !defined(STRIP)
+		TEST_CASE("swift point hashing is correct") {
+			rand_bytes(msg, sizeof(msg));
+			ep_map_swift(a, msg, sizeof(msg));
+			TEST_ASSERT(ep_is_infty(a) == 0, end);
+			ep_mul(a, a, n);
+			TEST_ASSERT(ep_is_infty(a) == 1, end);
+		}
+		TEST_END;
+#endif
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);

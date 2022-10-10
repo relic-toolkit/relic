@@ -386,7 +386,6 @@ static void arith2(void) {
 
 	BENCH_RUN("fp2_srt") {
 		fp2_rand(a);
-		fp2_sqr(a, a);
 		BENCH_ADD(fp2_srt(c, a));
 	}
 	BENCH_END;

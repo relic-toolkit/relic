@@ -83,7 +83,7 @@ static void ep_curve_set_map(const fp_t u) {
 	bn_t t;
 	bn_null(t);
 
-	const int abNeq0 = (ep_curve_opt_a() != RLC_ZERO) && (ep_curve_opt_b() != RLC_ZERO);
+	const int abNeq0 = (ep_curve_opt_a() * ep_curve_opt_b()) != RLC_ZERO;
 
 	ctx_t *ctx = core_get();
 	dig_t *c1 = ctx->ep_map_c[0];

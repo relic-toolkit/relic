@@ -202,10 +202,10 @@
 			{																				\
 				const int e1 = PFX##_is_zero(t2);											\
 				PFX##_neg(t3, u);         /* t3 = -u */										\
-				COPY_COND(t2, t3, e1);        /* exception: -u instead of u^2t^4 + ut^2 */	\
+				COPY_COND(t2, t3, e1);    /* exception: -u instead of u^2t^4 + ut^2 */		\
 				PFX##_inv(t2, t2);        /* t2 = -1/u or 1/(u^2 * t^4 + u*t^2) */			\
 				PFX##_add_dig(t3, t2, 1); /* t3 = 1 + t2 */									\
-				COPY_COND(t2, t3, e1 == 0);      /* only add 1 if t2 != -1/u */				\
+				COPY_COND(t2, t3, e1 == 0);/* only add 1 if t2 != -1/u */					\
 			}																				\
 			/* e1 goes out of scope */														\
                                                                                 			\

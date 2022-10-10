@@ -52,8 +52,10 @@ TMPL_MAP_HORNER(fp, fp_st)
 /**
  * Generic isogeny map evaluation for use with SSWU map.
  */
-		TMPL_MAP_ISOGENY_MAP(ep, fp, iso)
+TMPL_MAP_ISOGENY_MAP(ep, fp, iso)
+
 #endif /* EP_CTMAP */
+
 /**
  * Simplified SWU mapping from Section 4 of
  * "Fast and simple constant-time hashing to the BLS12-381 Elliptic Curve"
@@ -72,11 +74,20 @@ static inline int fp_sgn0(const fp_t t, bn_t k) {
 	return bn_get_bit(k, 0);
 }
 
-/*============================================================================*/
-/* Public definitions                                                         */
-/*============================================================================*/
 
-void ep_map_from_field(ep_t p, const uint8_t *uniform_bytes, int len) {
+/**
+ * Maps an array of uniformly random bytes to a point in a prime elliptic
+ * curve.
+ * That array is expected to have a length suitable for two field elements plus
+ * extra bytes for uniformity.
+  *
+ * @param[out] p			- the result.
+ * @param[in] uniform_bytes	- the array of uniform bytes to map.
+ * @param[in] len			- the array length in bytes.
+ * @param[in] map_fn		- the mapping function.
+ */
+void ep_map_from_field(ep_t p, const uint8_t *uniform_bytes, int len,
+		void (*const map_fn)(ep_t, fp_t)) {
 	bn_t k;
 	fp_t t;
 	ep_t q;
@@ -97,28 +108,22 @@ void ep_map_from_field(ep_t p, const uint8_t *uniform_bytes, int len) {
 		fp_new(t);
 		ep_new(q);
 
-		/* figure out which hash function to use */
-		const int abNeq0 = (ep_curve_opt_a() != RLC_ZERO) &&
-				(ep_curve_opt_b() != RLC_ZERO);
-		void (*const map_fn)(ep_t, fp_t) =(ep_curve_is_ctmap() ||
-				abNeq0) ? ep_map_sswu : ep_map_svdw;
-
 #define EP_MAP_CONVERT_BYTES(IDX)                                       \
     do {                                                                \
       bn_read_bin(k, uniform_bytes + IDX * len_per_elm, len_per_elm);   \
       fp_prime_conv(t, k);                                              \
     } while (0)
 
-#define EP_MAP_APPLY_MAP(PT)                                    \
-    do {                                                        \
-      /* check sign of t */                                     \
-      neg = fp_sgn0(t, k);                                      \
-      /* convert */                                             \
-      map_fn(PT, t);                                            \
-      /* compare sign of y and sign of t; fix if necessary */   \
-      neg = neg != fp_sgn0(PT->y, k);                             \
-      fp_neg(t, PT->y);                                          \
-      dv_copy_cond(PT->y, t, RLC_FP_DIGS, neg);                  \
+#define EP_MAP_APPLY_MAP(PT)                                    		\
+    do {                                                        		\
+      /* check sign of t */                                     		\
+      neg = fp_sgn0(t, k);                                      		\
+      /* convert */                                             		\
+      map_fn(PT, t);                                            		\
+      /* compare sign of y and sign of t; fix if necessary */   		\
+      neg = neg != fp_sgn0(PT->y, k);                           		\
+      fp_neg(t, PT->y);                                         		\
+      dv_copy_cond(PT->y, t, RLC_FP_DIGS, neg);                 		\
     } while (0)
 
 		/* first map invocation */
@@ -140,34 +145,7 @@ void ep_map_from_field(ep_t p, const uint8_t *uniform_bytes, int len) {
 		/* sum the result */
 		ep_add(p, p, q);
 		ep_norm(p, p);
-
-		/* clear cofactor */
-		switch (ep_curve_is_pairf()) {
-			case EP_BN:
-				/* h = 1 */
-				break;
-			case EP_B12:
-			case EP_B24:
-				/* Multiply by (1-x) to get the correct group, as proven in
-				 * Piellard. https://eprint.iacr.org/2022/352.pdf */
-				fp_prime_get_par(k);
-				bn_neg(k, k);
-				bn_add_dig(k, k, 1);
-				if (bn_bits(k) < RLC_DIG) {
-					ep_mul_dig(p, p, k->dp[0]);
-				} else {
-					ep_mul(p, p, k);
-				}
-				break;
-			default:
-				/* multiply by cofactor to get the correct group. */
-				ep_curve_get_cof(k);
-				if (bn_bits(k) < RLC_DIG) {
-					ep_mul_dig(p, p, k->dp[0]);
-				} else {
-					ep_mul_basic(p, p, k);
-				}
-		}
+		ep_mul_cof(p, p);
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -179,8 +157,53 @@ void ep_map_from_field(ep_t p, const uint8_t *uniform_bytes, int len) {
 	}
 }
 
-void ep_map_dst(ep_t p, const uint8_t *msg, int len, const uint8_t *dst,
-		int dst_len) {
+/*============================================================================*/
+/* Public definitions                                                         */
+/*============================================================================*/
+
+void ep_map_basic(ep_t p, const uint8_t *msg, int len) {
+	bn_t x;
+	fp_t t0;
+	uint8_t digest[RLC_MD_LEN];
+
+	bn_null(x);
+	fp_null(t0);
+
+	RLC_TRY {
+		bn_new(x);
+		fp_new(t0);
+
+		md_map(digest, msg, len);
+		bn_read_bin(x, digest, RLC_MIN(RLC_FP_BYTES, RLC_MD_LEN));
+
+		fp_zero(p->x);
+		fp_prime_conv(p->x, x);
+		fp_set_dig(p->z, 1);
+
+		while (1) {
+			ep_rhs(t0, p);
+
+			if (fp_smb(t0) == 1) {
+				fp_srt(p->y, t0);
+				p->coord = BASIC;
+				break;
+			}
+
+			fp_add_dig(p->x, p->x, 1);
+		}
+
+		ep_mul_cof(p, p);
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		bn_free(x);
+		fp_free(t0);
+	}
+}
+
+void ep_map_sswum(ep_t p, const uint8_t *msg, int len) {
 
 	/* enough space for two field elements plus extra bytes for uniformity */
 	const int len_per_elm = (FP_PRIME + ep_param_level() + 7) / 8;
@@ -191,8 +214,14 @@ void ep_map_dst(ep_t p, const uint8_t *msg, int len, const uint8_t *dst,
 		/* XXX(rsw) the below assumes that we want to use MD_MAP for hashing.
 		 *          Consider making the hash function a per-curve option!
 		 */
-		md_xmd(pseudo_random_bytes, 2 * len_per_elm, msg, len, dst, dst_len);
-		ep_map_from_field(p, pseudo_random_bytes, 2 * len_per_elm);
+		md_xmd(pseudo_random_bytes, 2 * len_per_elm, msg, len,
+				(const uint8_t *)"RELIC", 5);
+		/* figure out which hash function to use */
+		const int abNeq0 = (ep_curve_opt_a() != RLC_ZERO) &&
+				(ep_curve_opt_b() != RLC_ZERO);
+		void (*const map_fn)(ep_t, fp_t) =(ep_curve_is_ctmap() ||
+				abNeq0) ? ep_map_sswu : ep_map_svdw;
+		ep_map_from_field(p, pseudo_random_bytes, 2 * len_per_elm, map_fn);
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -202,6 +231,24 @@ void ep_map_dst(ep_t p, const uint8_t *msg, int len, const uint8_t *dst,
 	}
 }
 
-void ep_map(ep_t p, const uint8_t *msg, int len) {
-	ep_map_dst(p, msg, len, (const uint8_t *)"RELIC", 5);
+void ep_map_swift(ep_t p, const uint8_t *msg, int len) {
+	/* enough space for two field elements plus extra bytes for uniformity */
+	const int len_per_elm = (FP_PRIME + ep_param_level() + 7) / 8;
+	uint8_t *pseudo_random_bytes = RLC_ALLOCA(uint8_t, 2 * len_per_elm);
+
+	RLC_TRY {
+		/* for hash_to_field, need to hash to a pseudorandom string */
+		/* XXX(rsw) the below assumes that we want to use MD_MAP for hashing.
+		 *          Consider making the hash function a per-curve option!
+		 */
+		md_xmd(pseudo_random_bytes, 2 * len_per_elm, msg, len,
+				(const uint8_t *)"RELIC", 5);
+		ep_map_from_field(p, pseudo_random_bytes, 2 * len_per_elm, ep_map_sswu);
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		RLC_FREE(pseudo_random_bytes);
+	}
 }
