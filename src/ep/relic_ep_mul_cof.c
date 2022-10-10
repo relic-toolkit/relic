@@ -55,18 +55,18 @@ void ep_mul_cof(ep_t r, const ep_t p) {
 				bn_neg(k, k);
 				bn_add_dig(k, k, 1);
 				if (bn_bits(k) < RLC_DIG) {
-					ep_mul_dig(p, p, k->dp[0]);
+					ep_mul_dig(r, p, k->dp[0]);
 				} else {
-					ep_mul(p, p, k);
+					ep_mul(r, p, k);
 				}
 				break;
 			default:
 				/* multiply by cofactor to get the correct group. */
 				ep_curve_get_cof(k);
 				if (bn_bits(k) < RLC_DIG) {
-					ep_mul_dig(p, p, k->dp[0]);
+					ep_mul_dig(r, p, k->dp[0]);
 				} else {
-					ep_mul_basic(p, p, k);
+					ep_mul_basic(r, p, k);
 				}
 		}
 	} RLC_CATCH_ANY {
