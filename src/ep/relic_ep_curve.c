@@ -86,10 +86,11 @@ static void ep_curve_set_map(const fp_t u) {
 	const int abNeq0 = (ep_curve_opt_a() * ep_curve_opt_b()) != RLC_ZERO;
 
 	ctx_t *ctx = core_get();
-	dig_t *c1 = ctx->ep_map_c[0];
-	dig_t *c2 = ctx->ep_map_c[1];
-	dig_t *c3 = ctx->ep_map_c[2];
-	dig_t *c4 = ctx->ep_map_c[3];
+	dig_t *c0 = ctx->ep_map_c[0];
+	dig_t *c1 = ctx->ep_map_c[1];
+	dig_t *c2 = ctx->ep_map_c[2];
+	dig_t *c3 = ctx->ep_map_c[3];
+	dig_t *c4 = ctx->ep_map_c[4];
 
 	fp_copy(ctx->ep_map_u, u);
 
@@ -101,56 +102,62 @@ static void ep_curve_set_map(const fp_t u) {
 			/* constants 3 and 4: a and b for either the curve or the isogeny */
 #ifdef EP_CTMAP
 			if (ep_curve_is_ctmap()) {
-				fp_copy(c3, ctx->ep_iso.a);
-				fp_copy(c4, ctx->ep_iso.b);
+				fp_copy(c2, ctx->ep_iso.a);
+				fp_copy(c3, ctx->ep_iso.b);
 			} else {
 #endif
-				fp_copy(c3, ctx->ep_a);
-				fp_copy(c4, ctx->ep_b);
+				fp_copy(c2, ctx->ep_a);
+				fp_copy(c3, ctx->ep_b);
 #ifdef EP_CTMAP
 			}
 #endif
 			/* constant 1: -b / a */
-			fp_neg(c1, c3);     /* c1 = -a */
-			fp_inv(c1, c1);     /* c1 = -1 / a */
-			fp_mul(c1, c1, c4); /* c1 = -b / a */
+			fp_neg(c0, c2);     /* c0 = -a */
+			fp_inv(c0, c0);     /* c0 = -1 / a */
+			fp_mul(c0, c0, c3); /* c0 = -b / a */
 
 			/* constant 2 is unused in this case */
 		} else {
 			/* SvdW map constants */
 			/* constant 1: g(u) = u^3 + a * u + b */
-			fp_sqr(c1, ctx->ep_map_u);
-			fp_add(c1, c1, ctx->ep_a);
-			fp_mul(c1, c1, ctx->ep_map_u);
-			fp_add(c1, c1, ctx->ep_b);
+			fp_sqr(c0, ctx->ep_map_u);
+			fp_add(c0, c0, ctx->ep_a);
+			fp_mul(c0, c0, ctx->ep_map_u);
+			fp_add(c0, c0, ctx->ep_b);
 
 			/* constant 2: -u / 2 */
-			fp_set_dig(c2, 1);
-			fp_neg(c2, c2);                /* -1 */
-			fp_hlv(c2, c2);                /* -1/2 */
-			fp_mul(c2, c2, ctx->ep_map_u); /* c2 = -1/2 * u */
+			fp_set_dig(c1, 1);
+			fp_neg(c1, c1);                /* -1 */
+			fp_hlv(c1, c1);                /* -1/2 */
+			fp_mul(c1, c1, ctx->ep_map_u); /* c1 = -1/2 * u */
 
 			/* constant 3: sqrt(-g(u) * (3 * u^2 + 4 * a)) */
-			fp_sqr(c3, ctx->ep_map_u);    /* c3 = u^2 */
-			fp_mul_dig(c3, c3, 3);        /* c3 = 3 * u^2 */
-			fp_mul_dig(c4, ctx->ep_a, 4); /* c4 = 4 * a */
-			fp_add(c4, c3, c4);           /* c4 = 3 * u^2 + 4 * a */
-			fp_neg(c4, c4);               /* c4 = -(3 * u^2 + 4 * a) */
-			fp_mul(c3, c4, c1);           /* c3 = -g(u) * (3 * u^2 + 4 * a) */
-			if (!fp_srt(c3, c3)) {        /* c3 = sqrt(-g(u) * (3 * u^2 + 4 * a)) */
+			fp_sqr(c2, ctx->ep_map_u);    /* c2 = u^2 */
+			fp_mul_dig(c2, c2, 3);        /* c2 = 3 * u^2 */
+			fp_mul_dig(c3, ctx->ep_a, 4); /* c3 = 4 * a */
+			fp_add(c3, c2, c3);           /* c3 = 3 * u^2 + 4 * a */
+			fp_neg(c3, c3);               /* c3 = -(3 * u^2 + 4 * a) */
+			fp_mul(c2, c3, c0);           /* c2 = -g(u) * (3 * u^2 + 4 * a) */
+			if (!fp_srt(c2, c2)) {        /* c2 = sqrt(-g(u) * (3 * u^2 + 4 * a)) */
 				RLC_THROW(ERR_NO_VALID);
 			}
-			/* make sure sgn0(c3) == 0 */
-			fp_prime_back(t, c3);
+			/* make sure sgn0(c2) == 0 */
+			fp_prime_back(t, c2);
 			if (bn_get_bit(t, 0) != 0) {
-				/* set sgn0(c3) == 0 */
-				fp_neg(c3, c3);
+				/* set sgn0(c2) == 0 */
+				fp_neg(c2, c2);
 			}
 
 			/* constant 4: -4 * g(u) / (3 * u^2 + 4 * a) */
-			fp_inv(c4, c4);        /* c4 = -1 / (3 * u^2 + 4 * a) */
-			fp_mul(c4, c4, c1);    /* c4 *= g(u) */
-			fp_mul_dig(c4, c4, 4); /* c4 *= 4 */
+			fp_inv(c3, c3);        /* c3 = -1 / (3 * u^2 + 4 * a) */
+			fp_mul(c3, c3, c0);    /* c3 *= g(u) */
+			fp_mul_dig(c3, c3, 4); /* c3 *= 4 */
+		}
+
+		fp_set_dig(c4, 3);
+		fp_neg(c4, c4);
+		if (!fp_srt(c4, c4)) {
+			RLC_THROW(ERR_NO_VALID);
 		}
 	}
 	RLC_CATCH_ANY {

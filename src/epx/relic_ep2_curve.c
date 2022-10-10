@@ -1,5 +1,4 @@
-/*
- * RELIC is an Efficient LIbrary for Cryptography
+/* RELIC is an Efficient LIbrary for Cryptography
  * Copyright (c) 2012 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
@@ -143,10 +142,10 @@
 #define B12_P381_ISO_A1 "F0"
 #define B12_P381_ISO_B0 "3F4"
 #define B12_P381_ISO_B1 "3F4"
-#define B12_P381_ISO_XN "5c759507e8e333ebb5b7a9a47d7ed8532c52d39fd3a042a88b58423c50ae15d5c2638e343d9c71c6238aaaaaaaa97d6,5c759507e8e333ebb5b7a9a47d7ed8532c52d39fd3a042a88b58423c50ae15d5c2638e343d9c71c6238aaaaaaaa97d6;0,11560bf17baa99bc32126fced787c88f984f87adf7ae0c7f9a208c6b4f20a4181472aaa9cb8d555526a9ffffffffc71a;11560bf17baa99bc32126fced787c88f984f87adf7ae0c7f9a208c6b4f20a4181472aaa9cb8d555526a9ffffffffc71e,8ab05f8bdd54cde190937e76bc3e447cc27c3d6fbd7063fcd104635a790520c0a395554e5c6aaaa9354ffffffffe38d;171d6541fa38ccfaed6dea691f5fb614cb14b4e7f4e810aa22d6108f142b85757098e38d0f671c7188e2aaaaaaaa5ed1,0"
-#define B12_P381_ISO_XD "0,1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaa63;c,1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaa9f;1,0"
-#define B12_P381_ISO_YN "1530477c7ab4113b59a4c18b076d11930f7da5d4a07f649bf54439d87d27e500fc8c25ebf8c92f6812cfc71c71c6d706,1530477c7ab4113b59a4c18b076d11930f7da5d4a07f649bf54439d87d27e500fc8c25ebf8c92f6812cfc71c71c6d706;0,5c759507e8e333ebb5b7a9a47d7ed8532c52d39fd3a042a88b58423c50ae15d5c2638e343d9c71c6238aaaaaaaa97be;11560bf17baa99bc32126fced787c88f984f87adf7ae0c7f9a208c6b4f20a4181472aaa9cb8d555526a9ffffffffc71c,8ab05f8bdd54cde190937e76bc3e447cc27c3d6fbd7063fcd104635a790520c0a395554e5c6aaaa9354ffffffffe38f;124c9ad43b6cf79bfbf7043de3811ad0761b0f37a1e26286b0e977c69aa274524e79097a56dc4bd9e1b371c71c718b10,0"
-#define B12_P381_ISO_YD "1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffa8fb,1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffa8fb;0,1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffa9d3;12,1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaa99;1,0"
+#define B12_P381_ISO_XN "5C759507E8E333EBB5B7A9A47D7ED8532C52D39FD3A042A88B58423C50AE15D5C2638E343D9C71C6238AAAAAAAA97D6,5C759507E8E333EBB5B7A9A47D7ED8532C52D39FD3A042A88B58423C50AE15D5C2638E343D9C71C6238AAAAAAAA97D6;0,11560BF17BAA99BC32126FCED787C88F984F87ADF7AE0C7F9A208C6B4F20A4181472AAA9CB8D555526A9FFFFFFFFC71A;11560BF17BAA99BC32126FCED787C88F984F87ADF7AE0C7F9A208C6B4F20A4181472AAA9CB8D555526A9FFFFFFFFC71E,8AB05F8BDD54CDE190937E76BC3E447CC27C3D6FBD7063FCD104635A790520C0A395554E5C6AAAA9354FFFFFFFFE38D;171D6541FA38CCFAED6DEA691F5FB614CB14B4E7F4E810AA22D6108F142B85757098E38D0F671C7188E2AAAAAAAA5ED1,0"
+#define B12_P381_ISO_XD "0,1A0111EA397FE69A4B1BA7B6434BACD764774B84F38512BF6730D2A0F6B0F6241EABFFFEB153FFFFB9FEFFFFFFFFAA63;C,1A0111EA397FE69A4B1BA7B6434BACD764774B84F38512BF6730D2A0F6B0F6241EABFFFEB153FFFFB9FEFFFFFFFFAA9F;1,0"
+#define B12_P381_ISO_YN "1530477C7AB4113B59A4C18B076D11930F7DA5D4A07F649BF54439D87D27E500FC8C25EBF8C92F6812CFC71C71C6D706,1530477C7AB4113B59A4C18B076D11930F7DA5D4A07F649BF54439D87D27E500FC8C25EBF8C92F6812CFC71C71C6D706;0,5C759507E8E333EBB5B7A9A47D7ED8532C52D39FD3A042A88B58423C50AE15D5C2638E343D9C71C6238AAAAAAAA97BE;11560BF17BAA99BC32126FCED787C88F984F87ADF7AE0C7F9A208C6B4F20A4181472AAA9CB8D555526A9FFFFFFFFC71C,8AB05F8BDD54CDE190937E76BC3E447CC27C3D6FBD7063FCD104635A790520C0A395554E5C6AAAA9354FFFFFFFFE38F;124C9AD43B6CF79BFBF7043DE3811AD0761B0F37A1E26286B0E977C69AA274524E79097A56DC4BD9E1B371C71C718B10,0"
+#define B12_P381_ISO_YD "1A0111EA397FE69A4B1BA7B6434BACD764774B84F38512BF6730D2A0F6B0F6241EABFFFEB153FFFFB9FEFFFFFFFFA8FB,1A0111EA397FE69A4B1BA7B6434BACD764774B84F38512BF6730D2A0F6B0F6241EABFFFEB153FFFFB9FEFFFFFFFFA8FB;0,1A0111EA397FE69A4B1BA7B6434BACD764774B84F38512BF6730D2A0F6B0F6241EABFFFEB153FFFFB9FEFFFFFFFFA9D3;12,1A0111EA397FE69A4B1BA7B6434BACD764774B84F38512BF6730D2A0F6B0F6241EABFFFEB153FFFFB9FEFFFFFFFFAA99;1,0"
 #define B12_P381_MAPU0	"-2"
 #define B12_P381_MAPU1	"-1"
 #else /* !defined(EP_CTMAP) */
@@ -439,13 +438,14 @@ static void ep2_curve_set_map(void) {
 	bn_t t;
 	bn_null(t);
 
-	const int abNeq0 = (ep2_curve_opt_a() != RLC_ZERO) && (ep2_curve_opt_b() != RLC_ZERO);
+	const int abNeq0 = (ep2_curve_opt_a() * ep2_curve_opt_b()) != RLC_ZERO;
 
 	ctx_t *ctx = core_get();
-	fp_t *c1 = ctx->ep2_map_c[0];
-	fp_t *c2 = ctx->ep2_map_c[1];
-	fp_t *c3 = ctx->ep2_map_c[2];
-	fp_t *c4 = ctx->ep2_map_c[3];
+	fp_t *c0 = ctx->ep2_map_c[0];
+	fp_t *c1 = ctx->ep2_map_c[1];
+	fp_t *c2 = ctx->ep2_map_c[2];
+	fp_t *c3 = ctx->ep2_map_c[3];
+	fp_t *c4 = ctx->ep2_map_c[4];
 
 	RLC_TRY {
 		bn_new(t);
@@ -455,60 +455,61 @@ static void ep2_curve_set_map(void) {
 			/* constants 3 and 4 are a and b for the curve or isogeny */
 #ifdef EP_CTMAP
 			if (ep2_curve_is_ctmap()) {
-				fp2_copy(c3, ctx->ep2_iso.a);
-				fp2_copy(c4, ctx->ep2_iso.b);
+				fp2_copy(c2, ctx->ep2_iso.a);
+				fp2_copy(c3, ctx->ep2_iso.b);
 			} else {
 #endif
-				fp2_copy(c3, ctx->ep2_a);
-				fp2_copy(c4, ctx->ep2_b);
+				fp2_copy(c2, ctx->ep2_a);
+				fp2_copy(c3, ctx->ep2_b);
 #ifdef EP_CTMAP
 			}
 #endif
 			/* constant 1: -b / a */
-			fp2_neg(c1, c3);     /* c1 = -a */
-			fp2_inv(c1, c1);     /* c1 = -1 / a */
-			fp2_mul(c1, c1, c4); /* c1 = -b / a */
+			fp2_neg(c0, c2);     /* c0 = -a */
+			fp2_inv(c0, c0);     /* c0 = -1 / a */
+			fp2_mul(c0, c0, c3); /* c0 = -b / a */
 
 			/* constant 2 is unused in this case */
 		} else {
 			/* SvdW map constants */
 			/* constant 1: g(u) = u^3 + a * u + b */
-			fp2_sqr(c1, ctx->ep2_map_u);
-			fp2_add(c1, c1, ctx->ep2_a);
-			fp2_mul(c1, c1, ctx->ep2_map_u);
-			fp2_add(c1, c1, ctx->ep2_b);
+			fp2_sqr(c0, ctx->ep2_map_u);
+			fp2_add(c0, c0, ctx->ep2_a);
+			fp2_mul(c0, c0, ctx->ep2_map_u);
+			fp2_add(c0, c0, ctx->ep2_b);
 
 			/* constant 2: -u / 2 */
-			fp2_set_dig(c2, 2);
-			fp2_neg(c2, c2);                 /* -2 */
-			fp2_inv(c2, c2);                 /* -1 / 2 */
-			fp2_mul(c2, c2, ctx->ep2_map_u); /* -u / 2 */
+			fp2_set_dig(c1, 1);
+			fp2_neg(c1, c1);                 /* -1 */
+			fp_hlv(c1[0], c1[0]);			/* -1/2 */
+			fp_hlv(c1[1], c1[1]);
+			fp2_mul(c1, c1, ctx->ep2_map_u); /* -u / 2 */
 
 			/* constant 3: sqrt(-g(u) * (3 * u^2 + 4 * a)) */
-			fp2_sqr(c3, ctx->ep2_map_u);    /* u^2 */
-			fp2_mul_dig(c3, c3, 3);         /* 3 * u^2 */
-			fp2_mul_dig(c4, ctx->ep2_a, 4); /* 4 * a */
-			fp2_add(c4, c3, c4);            /* 3 * u^2 + 4 * a */
-			fp2_neg(c4, c4);                /* -(3 * u^2 + 4 * a) */
-			fp2_mul(c3, c4, c1);            /* -g(u) * (3 * u^2 + 4 * a) */
-			if (!fp2_srt(c3, c3)) {
+			fp2_sqr(c2, ctx->ep2_map_u);    /* u^2 */
+			fp2_mul_dig(c2, c2, 3);         /* 3 * u^2 */
+			fp2_mul_dig(c3, ctx->ep2_a, 4); /* 4 * a */
+			fp2_add(c3, c2, c3);            /* 3 * u^2 + 4 * a */
+			fp2_neg(c3, c3);                /* -(3 * u^2 + 4 * a) */
+			fp2_mul(c2, c3, c0);            /* -g(u) * (3 * u^2 + 4 * a) */
+			if (!fp2_srt(c2, c2)) {
 				RLC_THROW(ERR_NO_VALID);
 			}
-			/* make sure sgn0(c3) == 0 */
-			const int c30_z = fp_is_zero(c3[0]);
-			fp_prime_back(t, c3[0]);
-			const int c30_n = bn_get_bit(t, 0);
-			fp_prime_back(t, c3[1]);
-			const int c31_n = bn_get_bit(t, 0);
-			if (c30_n | (c30_z & c31_n)) {
-				/* set sgn0(c3) == 0 */
-				fp2_neg(c3, c3);
+			/* make sure sgn0(c2) == 0 */
+			const int c20_z = fp_is_zero(c2[0]);
+			fp_prime_back(t, c2[0]);
+			const int c20_n = bn_get_bit(t, 0);
+			fp_prime_back(t, c2[1]);
+			const int c21_n = bn_get_bit(t, 0);
+			if (c20_n | (c20_z & c21_n)) {
+				/* set sgn0(c2) == 0 */
+				fp2_neg(c2, c2);
 			}
 
 			/* constant 4: -4 * g(u) / (3 * u^2 + 4 * a) */
-			fp2_inv(c4, c4);        /* -1 / (3 * u^2 + 4 * a */
-			fp2_mul(c4, c4, c1);    /* -g(u) / (3 * u^2 + 4 * a) */
-			fp2_mul_dig(c4, c4, 4); /* -4 * g(u) / (3 * u^2 + 4 * a) */
+			fp2_inv(c3, c3);        /* -1 / (3 * u^2 + 4 * a */
+			fp2_mul(c3, c3, c0);    /* -g(u) / (3 * u^2 + 4 * a) */
+			fp2_mul_dig(c3, c3, 4); /* -4 * g(u) / (3 * u^2 + 4 * a) */
 		}
 	}
 	RLC_CATCH_ANY {
