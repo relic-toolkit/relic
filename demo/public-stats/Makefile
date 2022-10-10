@@ -8,7 +8,7 @@ all: lib data.csv
 
 lib:
 	mkdir -p target
-	cd target; ${RELIC_ROOT}/../preset/x64-pbc-bls12-381.sh ${RELIC_ROOT}/../; cmake -DEP_METHD='JACOB;LWNAF;COMBS;INTER' .; make
+	cd target; ${RELIC_ROOT}/../preset/x64-pbc-bls12-381.sh ${RELIC_ROOT}/../; cmake -DEP_METHD='JACOB;LWNAF;COMBS;INTER;SSWUM' .; make
 
 data.csv:
 	wget -c https://raw.githubusercontent.com/TheEconomist/covid-19-excess-deaths-tracker/master/source-data/spain/archive/spain_total_source_2020_04_13.csv
