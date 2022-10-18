@@ -74,10 +74,12 @@
 #define MSP      2
 /** ARM 32-bit architecture. */
 #define ARM      3
+/** ARM 64-bit architecture. */
+#define A64      4
 /** Intel x86-compatible 32-bit architecture. */
-#define X86      4
+#define X86      5
 /** AMD64-compatible 64-bit architecture. */
-#define X64      5
+#define X64      6
 /** Architecture. */
 #cmakedefine ARCH	 @ARCH@
 
