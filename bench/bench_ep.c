@@ -587,6 +587,12 @@ static void arith(void) {
 		BENCH_ADD(ep_map_sswum(p, msg, 5));
 	} BENCH_END;
 
+	BENCH_RUN("ep_map_swift") {
+		uint8_t msg[5];
+		rand_bytes(msg, 5);
+		BENCH_ADD(ep_map_swift(p, msg, 5));
+	} BENCH_END;
+
 	BENCH_RUN("ep_pck") {
 		ep_rand(p);
 		BENCH_ADD(ep_pck(q, p));
