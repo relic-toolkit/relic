@@ -166,7 +166,8 @@ int cp_ecss_ver(bn_t e, bn_t s, const uint8_t *msg, size_t len, const ec_t q) {
 
 				bn_mod(ev, ev, n);
 
-				result = dv_cmp_const(ev->dp, e->dp, RLC_MIN(ev->used, e->used));
+				result = dv_cmp_const(ev->dp, e->dp, RLC_MIN(ev->used,
+								e->used));
 				result = (result == RLC_NE ? 0 : 1);
 
 				if (ev->used != e->used) {

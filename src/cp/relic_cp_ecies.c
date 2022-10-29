@@ -141,8 +141,8 @@ int cp_ecies_dec(uint8_t *out, size_t *out_len, const ec_t r, const uint8_t *in,
 		if (util_cmp_const(h, in + in_len - RLC_MD_LEN, RLC_MD_LEN)) {
 			result = RLC_ERR;
 		} else {
-			if (bc_aes_cbc_dec(out, out_len, in, in_len - RLC_MD_LEN, key, size, iv)
-					!= RLC_OK) {
+			if (bc_aes_cbc_dec(out, out_len, in, in_len - RLC_MD_LEN,
+						key, size, iv) != RLC_OK) {
 				result = RLC_ERR;
 			}
 		}

@@ -51,19 +51,19 @@ int cp_phpe_gen(bn_t pub, phpe_t prv, size_t bits) {
 	/* Fix g = n + 1. */
 
 	/* Precompute dp = 1/(pow(g, p-1, p^2)//p mod p.
-       with g=1+n, this is also 1/((p-1)q) mod p.
-     */
- 	bn_sub_dig(prv->dp, prv->p, 1);			//p-1
- 	bn_mul(prv->dp, prv->dp, prv->q);		//(p-1)q
-	bn_mod(prv->dp, prv->dp, prv->p);		//(p-1)q mod p
+	 * with g=1+n, this is also 1/((p-1)q) mod p.
+	 */
+	bn_sub_dig(prv->dp, prv->p, 1);	//p-1
+	bn_mul(prv->dp, prv->dp, prv->q);	//(p-1)q
+	bn_mod(prv->dp, prv->dp, prv->p);	//(p-1)q mod p
 	bn_mod_inv(prv->dp, prv->dp, prv->p);	//((p-1)q)^{-1} mod p
 
-    /* Precompute dq = 1/(pow(g, q-1, q^2)//q mod q.
-       with g=1+n, this is also 1/((q-1)p) mod q.
-     */
- 	bn_sub_dig(prv->dq, prv->q, 1);			//q-1
- 	bn_mul(prv->dq, prv->dq, prv->p);		//(q-1)p
-	bn_mod(prv->dq, prv->dq, prv->q);		//(q-1)p mod q
+	/* Precompute dq = 1/(pow(g, q-1, q^2)//q mod q.
+	 * with g=1+n, this is also 1/((q-1)p) mod q.
+	 */
+	bn_sub_dig(prv->dq, prv->q, 1);	//q-1
+	bn_mul(prv->dq, prv->dq, prv->p);	//(q-1)p
+	bn_mod(prv->dq, prv->dq, prv->q);	//(q-1)p mod q
 	bn_mod_inv(prv->dq, prv->dq, prv->q);	//((q-1)p)^{-1} mod q
 
 	/* qInv = q^(-1) mod p. */
@@ -117,12 +117,12 @@ int cp_phpe_enc(bn_t c, const bn_t m, const bn_t pub) {
 		/* Generate r in Z_n^*. */
 		bn_rand_mod(r, pub);
 		/* Compute c = (g^m)(r^n) mod n^2.
-			with g=1+n, this is also (1+nm)r^n mod n^2.
-		*/
+		 * With g=1+n, this is also (1 + n*m) * r^n mod n^2.
+		 */
 		bn_add_dig(g, pub, 1);
 		bn_sqr(s, pub);
 		bn_mul(c, pub, m);
-        bn_add_dig(c, c, 1);
+		bn_add_dig(c, c, 1);
 		bn_mod(c, c, s);
 		bn_mxp(r, r, pub, s);
 		bn_mul(c, c, r);
@@ -172,7 +172,8 @@ int cp_phpe_dec(bn_t m, const bn_t c, const phpe_t prv) {
 #else
 		bn_mxp_crt(m, c, t, u, prv, 1);
 #endif /* CP_CRT */
-	} RLC_CATCH_ANY {
+	}
+	RLC_CATCH_ANY {
 		result = RLC_ERR;
 	}
 	RLC_FINALLY {

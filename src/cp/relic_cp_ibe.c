@@ -81,7 +81,7 @@ int cp_ibe_enc(uint8_t *out, size_t *out_len, const uint8_t *in, size_t in_len,
 	g2_null(q);
 	gt_null(e);
 
-	if (pub == NULL || in_len <= 0 || in_len > RLC_MD_LEN ) {
+	if (pub == NULL || in_len <= 0 || in_len > RLC_MD_LEN) {
 		return RLC_ERR;
 	}
 
@@ -127,9 +127,11 @@ int cp_ibe_enc(uint8_t *out, size_t *out_len, const uint8_t *in, size_t in_len,
 		}
 
 		*out_len = in_len + (2 * RLC_FP_BYTES + 1);
-	} RLC_CATCH_ANY {
+	}
+	RLC_CATCH_ANY {
 		result = RLC_ERR;
-	} RLC_FINALLY {
+	}
+	RLC_FINALLY {
 		bn_free(n);
 		bn_free(r);
 		g1_free(p);
@@ -182,9 +184,11 @@ int cp_ibe_dec(uint8_t *out, size_t *out_len, const uint8_t *in, size_t in_len,
 		}
 
 		*out_len = in_len;
-	} RLC_CATCH_ANY {
+	}
+	RLC_CATCH_ANY {
 		result = RLC_ERR;
-	} RLC_FINALLY {
+	}
+	RLC_FINALLY {
 		g1_free(p);
 		gt_free(e);
 		RLC_FREE(buf);
