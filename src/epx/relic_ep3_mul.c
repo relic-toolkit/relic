@@ -40,11 +40,39 @@
 
 #if defined(EP_ENDOM)
 
+static void ep3_psi(ep3_t r, const ep3_t p) {
+	ep3_t q;
+
+	ep3_null(q);
+
+	if (ep3_is_infty(p)) {
+		ep3_set_infty(r);
+		return;
+	}
+
+	RLC_TRY {
+		ep3_new(q);
+
+		/* We have that u mod n = p^4 - 3*p mod n. */
+		ep3_frb(r, p, 3);
+		ep3_dbl(q, p);
+		ep3_add(q, q, p);
+		ep3_sub(r, r, q);
+		ep3_frb(r, r, 1);
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		ep3_free(q);
+	}
+}
+
 static void ep3_mul_glv_imp(ep3_t r, const ep3_t p, const bn_t k) {
-	int i, j, l, _l[4];
-	bn_t n, _k[4], u;
-	int8_t naf[4][RLC_FP_BITS + 1];
-	ep3_t q[4];
+	int i, j, l, _l[6];
+	bn_t n, _k[6], u;
+	int8_t naf[6][RLC_FP_BITS + 1];
+	ep3_t q[6];
 
 	bn_null(n);
 	bn_null(u);
@@ -52,7 +80,7 @@ static void ep3_mul_glv_imp(ep3_t r, const ep3_t p, const bn_t k) {
 	RLC_TRY {
 		bn_new(n);
 		bn_new(u);
-		for (i = 0; i < 4; i++) {
+		for (i = 0; i < 6; i++) {
 			bn_null(_k[i]);
 			ep3_null(q[i]);
 			bn_new(_k[i]);
@@ -62,15 +90,18 @@ static void ep3_mul_glv_imp(ep3_t r, const ep3_t p, const bn_t k) {
 		ep3_curve_get_ord(n);
 		fp_prime_get_par(u);
 		bn_mod(_k[0], k, n);
-		bn_rec_frb(_k, 4, _k[0], u, n, ep_curve_is_pairf() == EP_BN);
+		bn_rec_frb(_k, 6, _k[0], u, n, ep_curve_is_pairf() == EP_BN);
 
 		ep3_norm(q[0], p);
-		ep3_frb(q[1], q[0], 1);
-		ep3_frb(q[2], q[1], 1);
-		ep3_frb(q[3], q[2], 1);
+		for (int i = 1; i < 6; i++) {
+			ep3_psi(q[i], q[i - 1]);
+		}
+#if defined(EP_MIXED)
+		ep3_norm_sim(q + 1, q + 1, (1 << (EP_WIDTH - 1)) - 1);
+#endif
 
 		l = 0;
-		for (i = 0; i < 4; i++) {
+		for (i = 0; i < 6; i++) {
 			if (bn_sign(_k[i]) == RLC_NEG) {
 				ep3_neg(q[i], q[i]);
 			}
@@ -83,7 +114,7 @@ static void ep3_mul_glv_imp(ep3_t r, const ep3_t p, const bn_t k) {
 		for (j = l - 1; j >= 0; j--) {
 			ep3_dbl(r, r);
 
-			for (i = 0; i < 4; i++) {
+			for (i = 0; i < 6; i++) {
 				if (naf[i][j] > 0) {
 					ep3_add(r, r, q[i]);
 				}
@@ -102,7 +133,7 @@ static void ep3_mul_glv_imp(ep3_t r, const ep3_t p, const bn_t k) {
 	RLC_FINALLY {
 		bn_free(n);
 		bn_free(u);
-		for (i = 0; i < 4; i++) {
+		for (i = 0; i < 3; i++) {
 			bn_free(_k[i]);
 			ep3_free(q[i]);
 		}

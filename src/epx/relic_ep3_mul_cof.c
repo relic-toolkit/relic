@@ -40,54 +40,17 @@
 
 void ep3_mul_cof(ep3_t r, const ep3_t p) {
 	bn_t z;
-	ep3_t t0, t1, t2, t3;
 
-	ep3_null(t0);
-	ep3_null(t1);
-	ep3_null(t2);
-	ep3_null(t3);
 	bn_null(z);
 
 	RLC_TRY {
-		ep3_new(t0);
-		ep3_new(t1);
-		ep3_new(t2);
-		ep3_new(t3);
-
-		fp_prime_get_par(z);
-
-		ep3_mul_basic(t0, p, z);
-		ep3_mul_basic(t1, t0, z);
-		ep3_mul_basic(t2, t1, z);
-		ep3_mul_basic(t3, t2, z);
-
-		ep3_sub(t3, t3, t2);
-		ep3_sub(t3, t3, p);
-		ep3_sub(t2, t2, t1);
-		ep3_frb(t2, t2, 1);
-
-		ep3_sub(t1, t1, t0);
-		ep3_frb(t1, t1, 2);
-
-		ep3_sub(t0, t0, p);
-		ep3_frb(t0, t0, 3);
-
-		ep3_dbl(r, p);
-		ep3_frb(r, r, 4);
-		ep3_add(r, r, t0);
-		ep3_add(r, r, t1);
-		ep3_add(r, r, t2);
-		ep3_add(r, r, t3);
-
-		ep3_norm(r, r);
+		/* TODO: optimize this and subgroup membership. */
+		bn_new(z);
+		ep3_curve_get_cof(z);
+		ep3_mul(r, p, z);
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		ep3_free(t0);
-		ep3_free(t1);
-		ep3_free(t2);
-		ep3_free(t3);
 		bn_free(z);
-
 	}
 }

@@ -327,6 +327,17 @@ void ep3_curve_set_twist(int type) {
 		bn_copy(&(ctx->ep3_r), r);
 		bn_copy(&(ctx->ep3_h), h);
 
+		fp_copy(ctx->ep3_frb[0][0], ctx->fp3_p1[1][0]);
+		fp_copy(ctx->ep3_frb[0][1], ctx->fp3_p1[1][1]);
+		fp_copy(ctx->ep3_frb[0][2], ctx->fp3_p1[1][2]);
+		fp_copy(ctx->ep3_frb[1][0], ctx->fp3_p1[2][0]);
+		fp_copy(ctx->ep3_frb[1][1], ctx->fp3_p1[2][1]);
+		fp_copy(ctx->ep3_frb[1][2], ctx->fp3_p1[2][2]);
+		if (type == RLC_EP_MTYPE) {
+			fp3_inv(ctx->ep3_frb[0], ctx->ep3_frb[0]);
+			fp3_inv(ctx->ep3_frb[1], ctx->ep3_frb[1]);
+		}
+
 #if defined(WITH_PC)
 		/* Compute pairing generator. */
 		pc_core_calc();

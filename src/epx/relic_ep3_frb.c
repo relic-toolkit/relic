@@ -39,12 +39,12 @@
 void ep3_frb(ep3_t r, const ep3_t p, int i) {
 	ctx_t *ctx = core_get();
 
-	fp3_copy(r, p);
+	ep3_copy(r, p);
 	for (; i > 0; i--) {
 		fp3_frb(r->x, r->x, 1);
 		fp3_frb(r->y, r->y, 1);
 		fp3_frb(r->z, r->z, 1);
-		//fp3_mul(r->x, r->x, ctx->ep3_frb[0]);
-		//fp3_mul(r->y, r->y, ctx->ep3_frb[1]);
+		fp3_mul(r->x, r->x, ctx->ep3_frb[0]);
+		fp3_mul(r->y, r->y, ctx->ep3_frb[1]);
 	}
 }

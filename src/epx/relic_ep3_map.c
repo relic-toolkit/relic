@@ -53,7 +53,7 @@ void ep3_map(ep3_t p, const uint8_t *msg, int len) {
 		bn_read_bin(x, digest, RLC_MIN(RLC_FP_BYTES, RLC_MD_LEN));
 
 		fp3_zero(p->x);
-		fp_prime_conv(p->x[0][0], x);
+		fp_prime_conv(p->x[0], x);
 		fp3_set_dig(p->z, 1);
 
 		while (1) {
@@ -64,7 +64,7 @@ void ep3_map(ep3_t p, const uint8_t *msg, int len) {
 				break;
 			}
 
-			fp_add_dig(p->x[0][0], p->x[0][0], 1);
+			fp_add_dig(p->x[0], p->x[0], 1);
 		}
 
 		ep3_mul_cof(p, p);
