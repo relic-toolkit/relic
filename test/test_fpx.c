@@ -468,7 +468,7 @@ static int multiplication2(void) {
 			TEST_ASSERT(fp2_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_CASE("multiplication by quadratic non-residue is correct") {
+		TEST_CASE("multiplication by quadratic/cubic non-residue is correct") {
 			fp2_rand(a);
 			fp2_mul_nor(b, a);
 			switch (fp_prime_get_mod8()) {
@@ -1256,11 +1256,19 @@ static int multiplication3(void) {
 
 		TEST_CASE("multiplication by cubic non-residue is correct") {
 			fp3_rand(a);
-			fp3_zero(b);
-			fp_set_dig(b[1], 1);
-			fp3_mul(c, a, b);
-			fp3_mul_nor(d, a);
-			TEST_ASSERT(fp3_cmp(c, d) == RLC_EQ, end);
+			fp3_mul_nor(b, a);
+			switch (fp_prime_get_mod18()) {
+				case 7:
+					fp_set_dig(c[0], fp3_field_get_cnr());
+					fp_set_dig(c[1], 1);
+					fp_zero(c[2]);
+					fp3_mul(c, a, c);
+					break;
+				default:
+					fp3_copy(c, b);
+					break;
+			}
+			TEST_ASSERT(fp3_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {
@@ -3603,7 +3611,7 @@ static int multiplication9(void) {
 		TEST_CASE("multiplication by adjoined root is correct") {
 			fp9_rand(a);
 			fp9_zero(b);
-			fp2_set_dig(b[1], 1);
+			fp3_set_dig(b[1], 1);
 			fp9_mul(c, a, b);
 			fp9_mul_art(d, a);
 			TEST_ASSERT(fp9_cmp(c, d) == RLC_EQ, end);
@@ -7620,7 +7628,8 @@ int main(void) {
 
 	/* Only execute these if there is an assigned cubic non-residue. */
 	if (fp_prime_get_cnr() && (ep_param_embed() >= 9)) {
-		util_print("\n-- Nonic extension: (j) as CNR\n");
+		util_print("\n-- Nonic extension: (j + %d) as CNR\n",
+				fp3_field_get_cnr());
 		util_banner("Utilities:", 1);
 
 		if (memory9() != RLC_OK) {

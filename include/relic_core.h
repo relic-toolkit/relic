@@ -234,6 +234,8 @@ typedef struct _ctx_t {
 #endif /* FP_INV */
 	/** Prime modulus modulo 8. */
 	dig_t mod8;
+	/** Prime modulus modulo 8. */
+	dig_t mod18;
 	/** Value derived from the prime used for modular reduction. */
 	dig_t u;
 	/** Quadratic non-residue. */
@@ -349,6 +351,8 @@ typedef struct _ctx_t {
 	bn_st ep3_r;
 	/** The cofactor of the group order in the elliptic curve. */
 	bn_st ep3_h;
+	/** The constants needed for Frobenius. */
+	fp3_t ep3_frb[2];
 	/** Optimization identifier for the a-coefficient. */
 	int ep3_opt_a;
 	/** Optimization identifier for the b-coefficient. */
@@ -421,8 +425,8 @@ typedef struct _ctx_t {
 	/** Constants for computing Frobenius maps in higher extensions. @{ */
 	int frb3[3];
 	fp_st fp3_p0[2];
-	fp_st fp3_p1[5];
-	fp_st fp3_p2[2];
+	fp3_st fp3_p1[5];
+	fp3_st fp3_p2[2];
 	/** @} */
 #endif /* WITH_PP */
 

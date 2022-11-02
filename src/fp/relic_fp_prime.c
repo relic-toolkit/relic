@@ -120,6 +120,7 @@ static void fp_prime_set(const bn_t p) {
 		/* Now look for proper quadratic/cubic non-residues. */
 		ctx->qnr = ctx->cnr = 0;
 		bn_mod_dig(&(ctx->mod8), &(ctx->prime), 8);
+		bn_mod_dig(&(ctx->mod18), &(ctx->prime), 18);
 
 		switch (ctx->mod8) {
 			case 3:
@@ -277,6 +278,10 @@ const dig_t *fp_prime_get_conv(void) {
 
 dig_t fp_prime_get_mod8(void) {
 	return core_get()->mod8;
+}
+
+dig_t fp_prime_get_mod18(void) {
+	return core_get()->mod18;
 }
 
 int fp_prime_get_qnr(void) {

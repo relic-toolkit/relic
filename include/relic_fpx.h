@@ -1636,6 +1636,11 @@ int fp2_upk(fp2_t c, const fp2_t a);
 void fp3_field_init(void);
 
 /**
+ * Return the integer part (u) of the cubic non-residue (j + u).
+ */
+int fp3_field_get_cnr(void);
+
+/**
  * Copies the second argument to the first argument.
  *
  * @param[out] c			- the result.
@@ -1811,6 +1816,15 @@ void fp3_mul_basic(fp3_t c, const fp3_t a, const fp3_t b);
  * @param[in] b				- the second cubic extension field element.
  */
 void fp3_mul_integ(fp3_t c, const fp3_t a, const fp3_t b);
+
+/**
+ * Multiplies a cubic extension field element by the adjoined root.
+ * Computes c = a * j.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the quadratic extension field element to multiply.
+ */
+void fp3_mul_art(fp3_t c, const fp3_t a);
 
 /**
  * Multiplies a cubic extension field element by a cubic non-residue.

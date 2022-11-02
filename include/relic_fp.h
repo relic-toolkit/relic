@@ -451,6 +451,13 @@ const dig_t *fp_prime_get_conv(void);
 dig_t fp_prime_get_mod8(void);
 
 /**
+ * Returns the result of prime order mod 18.
+ *
+ * @return the result of prime order mod 18.
+ */
+dig_t fp_prime_get_mod18(void);
+
+/**
  * Returns the prime stored in special form. The most significant bit is
  * RLC_FP_BITS.
  *

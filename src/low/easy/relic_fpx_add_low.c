@@ -286,22 +286,42 @@ void fp3_dblm_low(fp3_t c, fp3_t a) {
 }
 
 void fp3_nord_low(dv3_t c, dv3_t a) {
-	dv_t t;
+	dv3_t t;
 
-	dv_null(t);
+	dv3_null(t);
 
 	RLC_TRY {
-		dv_new(t);
-		dv_copy(t, a[0], 2 * RLC_FP_DIGS);
-		dv_copy(c[0], a[2], 2 * RLC_FP_DIGS);
+		dv3_new(t);
+
+		dv_copy(t[0], a[2], 2 * RLC_FP_DIGS);
 		for (int i = 1; i < fp_prime_get_cnr(); i++) {
-			fp_addc_low(c[0], c[0], a[2]);
+			fp_addc_low(t[0], t[0], a[2]);
 		}
 		for (int i = 0; i >= fp_prime_get_cnr(); i--) {
-			fp_subc_low(c[0], c[0], a[2]);
+			fp_subc_low(t[0], t[0], a[2]);
 		}
-		dv_copy(c[2], a[1], 2 * RLC_FP_DIGS);
-		dv_copy(c[1], t, 2 * RLC_FP_DIGS);
+		dv_copy(t[2], a[1], 2 * RLC_FP_DIGS);
+		dv_copy(t[1], a[0], 2 * RLC_FP_DIGS);
+
+		int cnr = fp3_field_get_cnr();
+		switch (fp_prime_get_mod18()) {
+			case 7:
+				/* If p = 7 mod 8, (2^k + i) is a QNR/CNR.   */
+				dv_copy(c[0], a[0], 2 * RLC_FP_DIGS);
+				dv_copy(c[1], a[1], 2 * RLC_FP_DIGS);
+				dv_copy(c[2], a[2], 2 * RLC_FP_DIGS);
+				while (cnr > 1) {
+					fp3_addc_low(c, c, c);
+					cnr = cnr >> 1;
+				}
+				fp3_addc_low(c, c, t);
+				break;
+			default:
+				dv_copy(c[0], t[0], 2 * RLC_FP_DIGS);
+				dv_copy(c[1], t[1], 2 * RLC_FP_DIGS);
+				dv_copy(c[2], t[2], 2 * RLC_FP_DIGS);
+				break;
+			}
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
