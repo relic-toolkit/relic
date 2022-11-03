@@ -177,6 +177,28 @@ int fp24_upk(fp24_t c, const fp24_t a) {
 	}
 }
 
+void fp18_pck(fp18_t c, const fp18_t a) {
+	fp18_copy(c, a);
+	if (fp18_test_cyc(c)) {
+		fp2_zero(c[0][0]);
+		fp2_zero(c[1][1]);
+	}
+}
+
+int fp18_upk(fp18_t c, const fp18_t a) {
+	if (fp2_is_zero(a[0][0]) && fp2_is_zero(a[1][1])) {
+		fp18_back_cyc(c, a);
+		if (fp18_test_cyc(c)) {
+			return 1;
+		} else {
+			return 0;
+		}
+	} else {
+		fp18_copy(c, a);
+		return 1;
+	}
+}
+
 void fp48_pck(fp48_t c, const fp48_t a) {
 	fp48_copy(c, a);
 	if (fp48_test_cyc(c)) {

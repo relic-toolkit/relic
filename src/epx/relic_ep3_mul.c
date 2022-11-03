@@ -54,9 +54,9 @@ static void ep3_psi(ep3_t r, const ep3_t p) {
 		ep3_new(q);
 
 		/* We have that u mod n = p^4 - 3*p mod n. */
-		ep3_frb(r, p, 3);
 		ep3_dbl(q, p);
 		ep3_add(q, q, p);
+		ep3_frb(r, p, 3);
 		ep3_sub(r, r, q);
 		ep3_frb(r, r, 1);
 	}
@@ -102,9 +102,6 @@ static void ep3_mul_glv_imp(ep3_t r, const ep3_t p, const bn_t k) {
 
 		l = 0;
 		for (i = 0; i < 6; i++) {
-			if (bn_sign(_k[i]) == RLC_NEG) {
-				ep3_neg(q[i], q[i]);
-			}
 			_l[i] = RLC_FP_BITS + 1;
 			bn_rec_naf(naf[i], &_l[i], _k[i], 2);
 			l = RLC_MAX(l, _l[i]);

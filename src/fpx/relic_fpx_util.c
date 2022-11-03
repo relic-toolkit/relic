@@ -528,26 +528,67 @@ void fp18_print(const fp18_t a) {
 	fp9_print(a[1]);
 }
 
-int fp18_size_bin(fp18_t a) {
-	return 18 * RLC_FP_BYTES;
+int fp18_size_bin(fp18_t a, int pack) {
+	if (pack) {
+		if (fp18_test_cyc(a)) {
+			return 12 * RLC_FP_BYTES;
+		} else {
+			return 18 * RLC_FP_BYTES;
+		}
+	} else {
+		return 18 * RLC_FP_BYTES;
+	}
 }
 
 void fp18_read_bin(fp18_t a, const uint8_t *bin, int len) {
-	if (len != 18 * RLC_FP_BYTES) {
+	if (len != 12 * RLC_FP_BYTES && len != 18 * RLC_FP_BYTES) {
 		RLC_THROW(ERR_NO_BUFFER);
 		return;
 	}
-	fp9_read_bin(a[0], bin, 9 * RLC_FP_BYTES);
-	fp9_read_bin(a[1], bin + 9 * RLC_FP_BYTES, 9 * RLC_FP_BYTES);
+	if (len == 12 * RLC_FP_BYTES) {
+		fp3_zero(a[0][0]);
+		fp3_read_bin(a[0][1], bin, 3 * RLC_FP_BYTES);
+		fp3_read_bin(a[0][2], bin + 3 * RLC_FP_BYTES, 3 * RLC_FP_BYTES);
+		fp3_read_bin(a[1][0], bin + 6 * RLC_FP_BYTES, 3 * RLC_FP_BYTES);
+		fp3_zero(a[1][1]);
+		fp3_read_bin(a[1][2], bin + 9 * RLC_FP_BYTES, 3 * RLC_FP_BYTES);
+		fp18_back_cyc(a, a);
+	}
+	if (len == 18 * RLC_FP_BYTES) {
+		fp9_read_bin(a[0], bin, 9 * RLC_FP_BYTES);
+		fp9_read_bin(a[1], bin + 9 * RLC_FP_BYTES, 9 * RLC_FP_BYTES);
+	}
 }
 
-void fp18_write_bin(uint8_t *bin, int len, const fp18_t a) {
-	if (len != 18 * RLC_FP_BYTES) {
-		RLC_THROW(ERR_NO_BUFFER);
-		return;
+void fp18_write_bin(uint8_t *bin, int len, const fp18_t a, int pack) {
+	fp18_t t;
+
+	fp18_null(t);
+
+	RLC_TRY {
+		fp18_new(t);
+
+		if (pack) {
+			if (len != 12 * RLC_FP_BYTES) {
+				RLC_THROW(ERR_NO_BUFFER);
+			}
+			fp18_pck(t, a);
+			fp3_write_bin(bin, 3 * RLC_FP_BYTES, a[0][1]);
+			fp3_write_bin(bin + 3 * RLC_FP_BYTES, 3 * RLC_FP_BYTES, a[0][2]);
+			fp3_write_bin(bin + 6 * RLC_FP_BYTES, 3 * RLC_FP_BYTES, a[1][0]);
+			fp3_write_bin(bin + 9 * RLC_FP_BYTES, 3 * RLC_FP_BYTES, a[1][2]);
+		} else {
+			if (len != 18 * RLC_FP_BYTES) {
+				RLC_THROW(ERR_NO_BUFFER);
+			}
+			fp9_write_bin(bin, 9 * RLC_FP_BYTES, a[0]);
+			fp9_write_bin(bin + 9 * RLC_FP_BYTES, 9 * RLC_FP_BYTES, a[1]);
+		}
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		fp18_free(t);
 	}
-	fp9_write_bin(bin, 9 * RLC_FP_BYTES, a[0]);
-	fp9_write_bin(bin + 9 * RLC_FP_BYTES, 9 * RLC_FP_BYTES, a[1]);
 }
 
 void fp18_set_dig(fp18_t a, const dig_t b) {
@@ -828,9 +869,9 @@ void fp54_write_bin(uint8_t *bin, int len, const fp54_t a, int pack) {
 			if (len != 54 * RLC_FP_BYTES) {
 				RLC_THROW(ERR_NO_BUFFER);
 			}
-			fp18_write_bin(bin, 18 * RLC_FP_BYTES, a[0]);
-			fp18_write_bin(bin + 18 * RLC_FP_BYTES, 18 * RLC_FP_BYTES, a[1]);
-			fp18_write_bin(bin + 36 * RLC_FP_BYTES, 18 * RLC_FP_BYTES, a[2]);
+			fp18_write_bin(bin, 18 * RLC_FP_BYTES, a[0], 0);
+			fp18_write_bin(bin + 18 * RLC_FP_BYTES, 18 * RLC_FP_BYTES, a[1], 0);
+			fp18_write_bin(bin + 36 * RLC_FP_BYTES, 18 * RLC_FP_BYTES, a[2], 0);
 		}
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);

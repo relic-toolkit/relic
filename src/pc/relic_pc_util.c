@@ -52,6 +52,8 @@ void gt_rand(gt_t a) {
 #if FP_PRIME < 1536
 #if FP_PRIME == 315 || FP_PRIME == 317 || FP_PRIME == 509
 	pp_exp_k24(a, a);
+#elif FP_PRIME == 638 && !defined(FP_QNRES)
+	pp_exp_k18(a, a);
 #else
 	pp_exp_k12(a, a);
 #endif

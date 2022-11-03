@@ -966,6 +966,32 @@ void fp2_sub_dig(fp2_t c, const fp2_t a, dig_t b);
 #endif
 
 /**
+ * Squares an octdecic extension field element in the cyclotomic subgroup.
+ * Computes C = A * A.
+ *
+ * @param[out] C			- the result.
+ * @param[in] A				- the an octdecic extension field element to square.
+ */
+#if FPX_RDC == BASIC
+#define fp18_sqr_cyc(C, A)		fp18_sqr_cyc_basic(C, A)
+#elif FPX_RDC == LAZYR
+#define fp18_sqr_cyc(C, A)		fp18_sqr_cyc_lazyr(C, A)
+#endif
+
+/**
+ * Squares an octdecic extension field element in the cyclotomic subgroup in
+ * compressed form. Computes C = A * A.
+ *
+ * @param[out] C			- the result.
+ * @param[in] A				- the octdecic extension field element to square.
+ */
+#if FPX_RDC == BASIC
+#define fp18_sqr_pck(C, A)		fp18_sqr_pck_basic(C, A)
+#elif FPX_RDC == LAZYR
+#define fp18_sqr_pck(C, A)		fp18_sqr_pck_lazyr(C, A)
+#endif
+
+/**
  * Initializes a double-precision 24-degree extension field with null.
  *
  * @param[out] A			- the 24-degree extension element to initialize.
@@ -3156,8 +3182,6 @@ void fp12_sqr_lazyr(fp12_t c, const fp12_t a);
  * Computes the square of a cyclotomic dodecic extension field element using
  * basic arithmetic.
  *
- * A cyclotomic element is one raised to the (p^6 - 1)(p^2 + 1)-th power.
- *
  * @param[out] c			- the result.
  * @param[in] a				- the cyclotomic extension element to square.
  */
@@ -3167,8 +3191,6 @@ void fp12_sqr_cyc_basic(fp12_t c, const fp12_t a);
  * Computes the square of a cyclotomic dodecic extension field element using
  * lazy reduction.
  *
- * A cyclotomic element is one raised to the (p^6 - 1)(p^2 + 1)-th power.
- *
  * @param[out] c			- the result.
  * @param[in] a				- the cyclotomic extension element to square.
  */
@@ -3176,8 +3198,6 @@ void fp12_sqr_cyc_lazyr(fp12_t c, const fp12_t a);
 
 /**
  * Computes the square of a compressed cyclotomic extension field element.
- *
- * A cyclotomic element is one raised to the (p^6 - 1)(p^2 + 1)-th power.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the cyclotomic extension element to square.
@@ -3188,8 +3208,6 @@ void fp12_sqr_pck_basic(fp12_t c, const fp12_t a);
  * Computes the square of a compressed cyclotomic extension field element using
  * lazy reduction.
  *
- * A cyclotomic element is one raised to the (p^6 - 1)(p^2 + 1)-th power.
- *
  * @param[out] c			- the result.
  * @param[in] a				- the cyclotomic extension element to square.
  */
@@ -3198,6 +3216,8 @@ void fp12_sqr_pck_lazyr(fp12_t c, const fp12_t a);
 /**
  * Tests if a dodecic extension field element belongs to the cyclotomic
  * subgroup.
+ *
+ * A cyclotomic element is one raised to the (p^6 - 1)(p^2 + 1)-th power.
  *
  * @param[in] a				- the dodecic extension field element to test.
  * @return 1 if the extension field element is in the subgroup, 0 otherwise.
@@ -3286,17 +3306,6 @@ void fp12_exp_dig(fp12_t c, const fp12_t a, dig_t b);
  * @param[in] b				- the exponent.
  */
 void fp12_exp_cyc(fp12_t c, const fp12_t a, const bn_t b);
-
-/**
- * Computes a power of a cyclotomic quadratic extension field element.
- *
- * @param[out] e			- the result.
- * @param[in] a				- the first element to exponentiate.
- * @param[in] b				- the first exponent.
- * @param[in] c				- the second element to exponentiate.
- * @param[in] d				- the second exponent.
- */
-void fp2_exp_cyc_sim(fp2_t e, const fp2_t a, const bn_t b, const fp2_t c, const bn_t d);
 
 /**
  * Computes a power of a cyclotomic dodecic extension field element.
@@ -3392,16 +3401,17 @@ void fp18_rand(fp18_t a);
 void fp18_print(const fp18_t a);
 
 /**
- * Returns the number of bytes necessary to store an octdecic extension field
+ * Returns the number of bytes necessary to store a octdecic extension field
  * element.
  *
  * @param[in] a				- the extension field element.
+ * @param[in] pack			- the flag to indicate compression.
  * @return the number of bytes.
  */
-int fp18_size_bin(fp18_t a);
+int fp18_size_bin(fp18_t a, int pack);
 
 /**
- * Reads an octdecic extension field element from a byte vector in big-endian
+ * Reads a octdecic extension field element from a byte vector in big-endian
  * format.
  *
  * @param[out] a			- the result.
@@ -3412,15 +3422,16 @@ int fp18_size_bin(fp18_t a);
 void fp18_read_bin(fp18_t a, const uint8_t *bin, int len);
 
 /**
- * Writes an octdecic extension field element to a byte vector in big-endian
+ * Writes a octdecic extension field element to a byte vector in big-endian
  * format.
  *
  * @param[out] bin			- the byte vector.
  * @param[in] len			- the buffer capacity.
  * @param[in] a				- the extension field element to write.
+ * @param[in] pack			- the flag to indicate compression.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is not correct.
  */
-void fp18_write_bin(uint8_t *bin, int len, const fp18_t a);
+void fp18_write_bin(uint8_t *bin, int len, const fp18_t a, int pack);
 
 /**
  * Returns the result of a comparison between two octdecic extension field
@@ -3569,6 +3580,78 @@ void fp18_sqr_basic(fp18_t c, const fp18_t a);
 void fp18_sqr_lazyr(fp18_t c, const fp18_t a);
 
 /**
+ * Computes the square of a cyclotomic dodecic extension field element using
+ * basic arithmetic.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the cyclotomic extension element to square.
+ */
+void fp18_sqr_cyc_basic(fp18_t c, const fp18_t a);
+
+/**
+ * Computes the square of a cyclotomic dodecic extension field element using
+ * lazy reduction.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the cyclotomic extension element to square.
+ */
+void fp18_sqr_cyc_lazyr(fp18_t c, const fp18_t a);
+
+/**
+ * Computes the square of a compressed cyclotomic extension field element.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the cyclotomic extension element to square.
+ */
+void fp18_sqr_pck_basic(fp18_t c, const fp18_t a);
+
+/**
+ * Computes the square of a compressed cyclotomic extension field element using
+ * lazy reduction.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the cyclotomic extension element to square.
+ */
+void fp18_sqr_pck_lazyr(fp18_t c, const fp18_t a);
+
+/**
+ * Tests if an octdecic extension field element belongs to the cyclotomic
+ * subgroup.
+ *
+ * A cyclotomic element is one raised to the (p^9 - 1)(p^3 + 1)-th power.
+ *
+ * @param[in] a				- the octdecic extension field element to test.
+ * @return 1 if the extension field element is in the subgroup, 0 otherwise.
+ */
+int fp18_test_cyc(const fp18_t a);
+
+/**
+ * Converts an octdecic field element to a cyclotomic element.
+ * Computes c = a^(p^9 - 1)*(p^3 + 1).
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the octdecic extension field element.
+ */
+void fp18_conv_cyc(fp18_t c, const fp18_t a);
+
+/**
+ * Decompresses a compressed cyclotomic extension field element.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the octdecic field element to decompress.
+ */
+void fp18_back_cyc(fp18_t c, const fp18_t a);
+
+/**
+ * Decompresses multiple compressed cyclotomic extension field elements.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the octdecic field elements to decompress.
+ * @param[in] n				- the number of field elements to decompress.
+ */
+void fp18_back_cyc_sim(fp18_t *c, const fp18_t *a, int n);
+
+/**
  * Inverts an octdecic extension field element. Computes c = 1/a.
  *
  * @param[out] c			- the result.
@@ -3585,15 +3668,6 @@ void fp18_inv(fp18_t c, const fp18_t a);
  * @param[in] a				- the octdecic extension field element to invert.
  */
 void fp18_inv_cyc(fp18_t c, const fp18_t a);
-
-/**
- * Converts an octdecic extension field element to a cyclotomic element.
- * Computes c = a^(p^9 - 1).
- *
- * @param[out] c			- the result.
- * @param[in] a				- an octdecic extension field element.
- */
-void fp18_conv_cyc(fp18_t c, const fp18_t a);
 
 /**
  * Computes the Frobenius endomorphism of an octdecic extension element.
@@ -3614,6 +3688,71 @@ void fp18_frb(fp18_t c, const fp18_t a, int i);
  * @param[in] b				- the exponent.
  */
 void fp18_exp(fp18_t c, const fp18_t a, const bn_t b);
+
+/**
+ * Computes a power of a cyclotomic octdecic extension field element.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the basis.
+ * @param[in] b				- the exponent.
+ */
+void fp18_exp_cyc(fp18_t c, const fp18_t a, const bn_t b);
+
+/**
+ * Computes a power of a cyclotomic octdecic extension field element.
+ *
+ * @param[out] e			- the result.
+ * @param[in] a				- the first element to exponentiate.
+ * @param[in] b				- the first exponent.
+ * @param[in] c				- the second element to exponentiate.
+ * @param[in] d				- the second exponent.
+ */
+void fp18_exp_cyc_sim(fp18_t e, const fp18_t a, const bn_t b, const fp18_t c, const bn_t d);
+
+/**
+ * Computes a power of a cyclotomic octdecic extension field element.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the basis.
+ * @param[in] b				- the exponent in sparse form.
+ * @param[in] l				- the length of the exponent in sparse form.
+ * @param[in] s				- the sign of the exponent.
+ */
+void fp18_exp_cyc_sps(fp18_t c, const fp18_t a, const int *b, int l, int s);
+
+/**
+ * Compresses a octdecic extension field element.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the octdecic extension field element to compress.
+ */
+void fp18_pck(fp18_t c, const fp18_t a);
+
+/**
+ * Decompresses a octdecic extension field element.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the octdecic extension field element to decompress.
+ * @return if the decompression was successful
+ */
+int fp18_upk(fp18_t c, const fp18_t a);
+
+/**
+ * Compresses a octdecic extension field element at the maximum rate.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the octdecic extension field element to compress.
+ */
+void fp18_pck_max(fp18_t c, const fp18_t a);
+
+/**
+ * Decompresses a octdecic extension field element at the maximum rate.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the octdecic extension field element to decompress.
+ * @return if the decompression was successful
+ */
+int fp18_upk_max(fp18_t c, const fp18_t a);
 
 /**
  * Copies the second argument to the first argument.
@@ -3824,8 +3963,6 @@ void fp24_sqr_lazyr(fp24_t c, const fp24_t a);
  * Computes the square of a cyclotomic 24-extension field element using
  * basic arithmetic.
  *
- * A cyclotomic element is one raised to the (p^6 - 1)(p^2 + 1)-th power.
- *
  * @param[out] c			- the result.
  * @param[in] a				- the cyclotomic extension element to square.
  */
@@ -3835,8 +3972,6 @@ void fp24_sqr_cyc_basic(fp24_t c, const fp24_t a);
  * Computes the square of a cyclotomic 24-extension field element using
  * lazy reduction.
  *
- * A cyclotomic element is one raised to the (p^6 - 1)(p^2 + 1)-th power.
- *
  * @param[out] c			- the result.
  * @param[in] a				- the cyclotomic extension element to square.
  */
@@ -3844,8 +3979,6 @@ void fp24_sqr_cyc_lazyr(fp24_t c, const fp24_t a);
 
 /**
  * Computes the square of a compressed cyclotomic extension field element.
- *
- * A cyclotomic element is one raised to the (p^6 - 1)(p^2 + 1)-th power.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the cyclotomic extension element to square.
@@ -3856,8 +3989,6 @@ void fp24_sqr_pck_basic(fp24_t c, const fp24_t a);
  * Computes the square of a compressed cyclotomic extension field element using
  * lazy reduction.
  *
- * A cyclotomic element is one raised to the (p^6 - 1)(p^2 + 1)-th power.
- *
  * @param[out] c			- the result.
  * @param[in] a				- the cyclotomic extension element to square.
  */
@@ -3867,6 +3998,8 @@ void fp24_sqr_pck_lazyr(fp24_t c, const fp24_t a);
  * Tests if a 24-extension field element belongs to the cyclotomic
  * subgroup.
  *
+ * A cyclotomic element is one raised to the (p^8 - 1)(p^4 + 1)-th power.
+ *
  * @param[in] a				- the 24-extension field element to test.
  * @return 1 if the extension field element is in the subgroup, 0 otherwise.
  */
@@ -3874,7 +4007,7 @@ int fp24_test_cyc(const fp24_t a);
 
 /**
  * Converts a 24-extension field element to a cyclotomic element.
- * Computes c = a^(p^6 - 1)*(p^2 + 1).
+ * Computes c = a^(p^8 - 1)*(p^4 + 1).
  *
  * @param[out] c			- the result.
  * @param[in] a				- a 24-extension field element.
@@ -4185,8 +4318,6 @@ void fp48_sqr_lazyr(fp48_t c, const fp48_t a);
  * Computes the square of a cyclotomic 48-extension field element using
  * basic arithmetic.
  *
- * A cyclotomic element is one raised to the (p^6 - 1)(p^2 + 1)-th power.
- *
  * @param[out] c			- the result.
  * @param[in] a				- the cyclotomic extension element to square.
  */
@@ -4196,8 +4327,6 @@ void fp48_sqr_cyc_basic(fp48_t c, const fp48_t a);
  * Computes the square of a cyclotomic 48-extension field element using
  * lazy reduction.
  *
- * A cyclotomic element is one raised to the (p^6 - 1)(p^2 + 1)-th power.
- *
  * @param[out] c			- the result.
  * @param[in] a				- the cyclotomic extension element to square.
  */
@@ -4205,8 +4334,6 @@ void fp48_sqr_cyc_lazyr(fp48_t c, const fp48_t a);
 
 /**
  * Computes the square of a compressed cyclotomic extension field element.
- *
- * A cyclotomic element is one raised to the (p^6 - 1)(p^2 + 1)-th power.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the cyclotomic extension element to square.
@@ -4217,8 +4344,6 @@ void fp48_sqr_pck_basic(fp48_t c, const fp48_t a);
  * Computes the square of a compressed cyclotomic extension field element using
  * lazy reduction.
  *
- * A cyclotomic element is one raised to the (p^6 - 1)(p^2 + 1)-th power.
- *
  * @param[out] c			- the result.
  * @param[in] a				- the cyclotomic extension element to square.
  */
@@ -4228,6 +4353,8 @@ void fp48_sqr_pck_lazyr(fp48_t c, const fp48_t a);
  * Tests if a 48-extension field element belongs to the cyclotomic
  * subgroup.
  *
+ * A cyclotomic element is one raised to the (p^16 - 1)(p^8 + 1)-th power.
+ *
  * @param[in] a				- the 48-extension field element to test.
  * @return 1 if the extension field element is in the subgroup, 0 otherwise.
  */
@@ -4235,7 +4362,7 @@ int fp48_test_cyc(const fp48_t a);
 
 /**
  * Converts a 48-extension field element to a cyclotomic element.
- * Computes c = a^(p^6 - 1)*(p^2 + 1).
+ * Computes c = a^(p^16 - 1)*(p^8 + 1).
  *
  * @param[out] c			- the result.
  * @param[in] a				- a 48-extension field element.
@@ -4536,8 +4663,6 @@ void fp54_sqr_lazyr(fp54_t c, const fp54_t a);
  * Computes the square of a cyclotomic 54-extension field element using
  * basic arithmetic.
  *
- * A cyclotomic element is one raised to the (p^6 - 1)(p^2 + 1)-th power.
- *
  * @param[out] c			- the result.
  * @param[in] a				- the cyclotomic extension element to square.
  */
@@ -4547,8 +4672,6 @@ void fp54_sqr_cyc_basic(fp54_t c, const fp54_t a);
  * Computes the square of a cyclotomic 54-extension field element using
  * lazy reduction.
  *
- * A cyclotomic element is one raised to the (p^6 - 1)(p^2 + 1)-th power.
- *
  * @param[out] c			- the result.
  * @param[in] a				- the cyclotomic extension element to square.
  */
@@ -4556,8 +4679,6 @@ void fp54_sqr_cyc_lazyr(fp54_t c, const fp54_t a);
 
 /**
  * Computes the square of a compressed cyclotomic extension field element.
- *
- * A cyclotomic element is one raised to the (p^6 - 1)(p^2 + 1)-th power.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the cyclotomic extension element to square.
@@ -4568,8 +4689,6 @@ void fp54_sqr_pck_basic(fp54_t c, const fp54_t a);
  * Computes the square of a compressed cyclotomic extension field element using
  * lazy reduction.
  *
- * A cyclotomic element is one raised to the (p^6 - 1)(p^2 + 1)-th power.
- *
  * @param[out] c			- the result.
  * @param[in] a				- the cyclotomic extension element to square.
  */
@@ -4579,6 +4698,8 @@ void fp54_sqr_pck_lazyr(fp54_t c, const fp54_t a);
  * Tests if a 54-extension field element belongs to the cyclotomic
  * subgroup.
  *
+ * A cyclotomic element is one raised to the (p^18 - 1)(p^9 + 1)-th power.
+ *
  * @param[in] a				- the 54-extension field element to test.
  * @return 1 if the extension field element is in the subgroup, 0 otherwise.
  */
@@ -4586,7 +4707,7 @@ int fp54_test_cyc(const fp54_t a);
 
 /**
  * Converts a 54-extension field element to a cyclotomic element.
- * Computes c = a^(p^6 - 1)*(p^2 + 1).
+ * Computes c = a^(p^18 - 1)*(p^9 + 1).
  *
  * @param[out] c			- the result.
  * @param[in] a				- a 54-extension field element.
