@@ -3690,6 +3690,16 @@ void fp18_frb(fp18_t c, const fp18_t a, int i);
 void fp18_exp(fp18_t c, const fp18_t a, const bn_t b);
 
 /**
+ * Computes a power of a dodecic extension field element by a small exponent.
+ * Faster formulas are used if the extension field element is cyclotomic.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the basis.
+ * @param[in] b				- the exponent.
+ */
+void fp18_exp_dig(fp18_t c, const fp18_t a, dig_t b);
+
+/**
  * Computes a power of a cyclotomic octdecic extension field element.
  *
  * @param[out] c			- the result.
