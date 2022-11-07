@@ -125,7 +125,7 @@ static void pp_exp_bn(fp12_t c, fp12_t a) {
 }
 
 /**
- * Computes the final exponentiation of a pairing defined over 
+ * Computes the final exponentiation of a pairing defined over
  * the SM9 curve.
  *
  * @param[out] c			- the result.
@@ -340,14 +340,12 @@ static void pp_exp_b12(fp12_t c, fp12_t a) {
 void pp_exp_k12(fp12_t c, fp12_t a) {
 	switch (ep_curve_is_pairf()) {
 		case EP_BN:
-			switch (ep_param_get()) {
-				case SM9_P256:
-					pp_exp_sm9(c, a);
-					break;
-				default:
-					pp_exp_bn(c, a);
-					break;
+			if (ep_param_get() == SM9_P256) {
+				pp_exp_sm9(c, a);
+			} else {
+				pp_exp_bn(c, a);
 			}
+			break;
 		case EP_B12:
 			pp_exp_b12(c, a);
 			break;
