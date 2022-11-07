@@ -92,6 +92,8 @@ enum {
 	BSI_256,
 	/** SECG 256-bit denser reduction prime. */
 	SECG_256,
+	/** SM2 256-bit prime modulus standardized in China. */
+	SM2_256,
 	/** Curve67254 382-bit prime modulus. */
 	PRIME_382105,
 	/** Curve383187 383-bit prime modulus. */
