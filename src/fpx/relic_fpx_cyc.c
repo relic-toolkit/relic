@@ -1126,7 +1126,7 @@ static void fp18_gls(fp18_t c, const fp18_t a) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		fp18_free(q);
+		fp18_free(b);
 	}
 }
 
