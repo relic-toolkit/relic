@@ -125,6 +125,105 @@ static void pp_exp_bn(fp12_t c, fp12_t a) {
 }
 
 /**
+ * Computes the final exponentiation of a pairing defined over
+ * the SM9 curve.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the extension field element to exponentiate.
+ */
+static void pp_exp_sm9(fp12_t c, fp12_t a) {
+	fp12_t t0, t1, t2, t3, t4, t5, t6, r0, r1;
+	bn_t x;
+	const int *b;
+	int l;
+
+	fp12_null(t0);
+	fp12_null(t1);
+	fp12_null(t2);
+	fp12_null(t3);
+	fp12_null(t4);
+	fp12_null(t5);
+	fp12_null(t6);
+	fp12_null(r0);
+	fp12_null(r1);
+	bn_null(x);
+
+	RLC_TRY {
+		fp12_new(t0);
+		fp12_new(t1);
+		fp12_new(t2);
+		fp12_new(t3);
+		fp12_new(t4);
+		fp12_new(t5);
+		fp12_new(t6);
+		fp12_new(r0);
+		fp12_new(r1);
+		bn_new(x);
+
+		fp_prime_get_par(x);
+		b = fp_prime_get_par_sps(&l);
+
+		/* First, compute m = f^(p^6 - 1)(p^2 + 1). */
+		fp12_conv_cyc(c, a);
+
+		/* Now compute m^((p^4 - p^2 + 1) / r) using addition chain method. */
+		fp12_frb(r0, c, 1);
+		fp12_frb(r1, c, 2);
+		fp12_frb(t0, c, 3);
+		fp12_mul(t0, t0, r0);
+		fp12_mul(t0, t0, r1);
+
+		fp12_copy(t1, c);
+
+		fp12_exp_cyc_sps(t4, c, b, l, RLC_POS);
+		fp12_exp_cyc_sps(t5, t4, b, l, RLC_POS);
+		fp12_exp_cyc_sps(t6, t5, b, l, RLC_POS);
+
+		fp12_frb(t3, t4, 1);
+		fp12_frb(t2, t5, 2);
+		fp12_frb(r0, t6, 1);
+		fp12_mul(t6, t6, r0);
+		fp12_frb(r0, t5, 1);
+		fp12_mul(t4, t4, r0);
+
+		fp12_inv_cyc(t1, t1);
+		fp12_inv_cyc(t3, t3);
+		fp12_inv_cyc(t4, t4);
+		fp12_inv_cyc(t5, t5);
+		fp12_inv_cyc(t6, t6);
+
+		fp12_sqr_cyc(r0, t6);
+		fp12_mul(r0, r0, t4);
+		fp12_mul(r0, r0, t5);
+		fp12_mul(r1, t5, t3);
+		fp12_mul(r1, r0, r1);
+		fp12_mul(r0, r0, t2);
+		fp12_sqr_cyc(r1, r1);
+		fp12_mul(r1, r1, r0);
+		fp12_sqr_cyc(r1, r1);
+		fp12_mul(r0, r1, t0);
+		fp12_mul(r1, r1, t1);
+		fp12_sqr_cyc(r1, r1);
+		fp12_mul(c, r0, r1);
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		fp12_free(t0);
+		fp12_free(t1);
+		fp12_free(t2);
+		fp12_free(t3);
+		fp12_free(t4);
+		fp12_free(t5);
+		fp12_free(t6);
+		fp12_free(r0);
+		fp12_free(r1);
+		bn_free(x);
+	}
+}
+
+/**
  * Computes the final exponentiation of a pairing defined over a
  * Barreto-Lynn-Scott curve.
  *
@@ -241,7 +340,11 @@ static void pp_exp_b12(fp12_t c, fp12_t a) {
 void pp_exp_k12(fp12_t c, fp12_t a) {
 	switch (ep_curve_is_pairf()) {
 		case EP_BN:
-			pp_exp_bn(c, a);
+			if (ep_param_get() == SM9_P256) {
+				pp_exp_sm9(c, a);
+			} else {
+				pp_exp_bn(c, a);
+			}
 			break;
 		case EP_B12:
 			pp_exp_b12(c, a);

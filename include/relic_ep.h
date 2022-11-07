@@ -81,6 +81,8 @@ enum {
 	BSI_P256,
 	/** SECG K-256 prime curve. */
 	SECG_K256,
+	/** SM2 P-256 prime curve. */
+	SM2_P256,
 	/** Curve67254 prime curve. */
 	CURVE_67254,
 	/** Curve383187 prime curve. */
