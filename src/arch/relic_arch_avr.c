@@ -41,7 +41,7 @@ void arch_init(void) {
 void arch_clean(void) {
 }
 
-void arch_copy_rom(char *dest, const char *src, int len) {
+void arch_copy_rom(char *dest, const char *src, size_t len) {
 	int i = 0;
 	char c;
 
