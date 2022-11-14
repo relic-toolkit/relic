@@ -1271,15 +1271,6 @@ int bn_smb_leg(const bn_t a, const bn_t b);
 int bn_smb_jac(const bn_t a, const bn_t b);
 
 /**
- * Returns a small precomputed prime from a given position in the list of prime
- * numbers.
- *
- * @param[in] pos			- the position in the prime sequence.
- * @return a prime if the position is lower than 512, 0 otherwise.
- */
-dig_t bn_get_prime(int pos);
-
-/**
  * Tests if a number is a probable prime.
  *
  * @param[in] a				- the multiple precision integer to test.

@@ -170,13 +170,6 @@ static void bn_exp(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 /* Public definitions                                                         */
 /*============================================================================*/
 
-dig_t bn_get_prime(int pos) {
-	if (pos >= BASIC_TESTS) {
-		return 0;
-	}
-	return primes[pos];
-}
-
 int bn_is_prime(const bn_t a) {
 	int result;
 
