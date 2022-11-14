@@ -42,7 +42,7 @@
 
 #if RAND == RDRND
 
-void rand_bytes(uint8_t *buf, int size) {
+void rand_bytes(uint8_t *buf, size_t size) {
 	int i = 0, j;
 	unsigned long long r;
 
@@ -58,7 +58,7 @@ void rand_bytes(uint8_t *buf, int size) {
 	}
 }
 
-void rand_seed(uint8_t *buf, int size) {
+void rand_seed(uint8_t *buf, size_t size) {
 	/* Do nothing, mark as seeded. */
 	core_get()->seeded = 1;
 }

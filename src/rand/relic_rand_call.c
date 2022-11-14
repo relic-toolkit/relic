@@ -44,7 +44,7 @@
 
 #if RAND == CALL
 
-static void rand_stub(uint8_t *buf, int size, void *args) {
+static void rand_stub(uint8_t *buf, size_t size, void *args) {
 	int c, l, fd = open("/dev/urandom", O_RDONLY);
 
 	if (fd == -1) {
@@ -73,7 +73,7 @@ static void rand_stub(uint8_t *buf, int size, void *args) {
 
 #if RAND == CALL
 
-void rand_bytes(uint8_t *buf, int size) {
+void rand_bytes(uint8_t *buf, size_t size) {
 	ctx_t *ctx = core_get();
 
 	ctx->rand_call(buf, size, ctx->rand_args);
@@ -82,7 +82,7 @@ void rand_bytes(uint8_t *buf, int size) {
 	}
 }
 
-void rand_seed(void (*callback)(uint8_t *, int, void *), void *args) {
+void rand_seed(void (*callback)(uint8_t *, size_t, void *), void *args) {
 	ctx_t *ctx = core_get();
 
 	if (callback == NULL) {

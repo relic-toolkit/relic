@@ -51,7 +51,7 @@
 
 #if RAND == UDEV
 
-void rand_bytes(uint8_t *buf, int size) {
+void rand_bytes(uint8_t *buf, size_t size) {
 	int c, l, *fd = (int *)&(core_get()->rand);
 
 	l = 0;
@@ -65,7 +65,7 @@ void rand_bytes(uint8_t *buf, int size) {
 	} while (l < size);
 }
 
-void rand_seed(uint8_t *buf, int size) {
+void rand_seed(uint8_t *buf, size_t size) {
 	/* Do nothing, only mark as seeded. */
 	core_get()->seeded = 1;
 }
