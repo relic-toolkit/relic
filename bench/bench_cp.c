@@ -1328,7 +1328,7 @@ static void pss(void) {
 	}
 }
 
-#ifdef WITH_MPC
+#if defined(WITH_MPC)
 
 static void mpss(void) {
 	bn_t m[2], n, u[2], v[2], ms[10][2], _v[10][2];
