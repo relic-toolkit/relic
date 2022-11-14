@@ -105,7 +105,7 @@ int bn_is_even(const bn_t a) {
 	return 0;
 }
 
-int bn_bits(const bn_t a) {
+size_t bn_bits(const bn_t a) {
 	int bits;
 
 	if (bn_is_zero(a)) {
@@ -118,7 +118,7 @@ int bn_bits(const bn_t a) {
 	return bits + util_bits_dig(a->dp[a->used - 1]);
 }
 
-int bn_get_bit(const bn_t a, int bit) {
+int bn_get_bit(const bn_t a, size_t bit) {
 	int d;
 
 	if (bit < 0) {
@@ -139,7 +139,7 @@ int bn_get_bit(const bn_t a, int bit) {
 	}
 }
 
-void bn_set_bit(bn_t a, int bit, int value) {
+void bn_set_bit(bn_t a, size_t bit, int value) {
 	int d;
 
 	if (bit < 0) {
@@ -162,7 +162,7 @@ void bn_set_bit(bn_t a, int bit, int value) {
 	}
 }
 
-int bn_ham(const bn_t a) {
+size_t bn_ham(const bn_t a) {
 	int c = 0;
 
 	for (int i = 0; i < bn_bits(a); i++) {
@@ -183,11 +183,11 @@ void bn_set_dig(bn_t a, dig_t digit) {
 	a->sign = RLC_POS;
 }
 
-void bn_set_2b(bn_t a, int b) {
+void bn_set_2b(bn_t a, size_t b) {
 	int i, d;
 
-	if (b < 0) {
-		bn_zero(a);
+	if (b >= RLC_BN_SIZE * RLC_DIG) {
+		RLC_THROW(ERR_NO_VALID);
 	} else {
 		RLC_RIP(b, d, b);
 
@@ -201,7 +201,7 @@ void bn_set_2b(bn_t a, int b) {
 	}
 }
 
-void bn_rand(bn_t a, int sign, int bits) {
+void bn_rand(bn_t a, int sign, size_t bits) {
 	int digits;
 
 	RLC_RIP(bits, digits, bits);
@@ -264,7 +264,7 @@ void bn_print(const bn_t a) {
 	}
 }
 
-int bn_size_str(const bn_t a, int radix) {
+size_t bn_size_str(const bn_t a, unsigned int radix) {
 	int digits = 0;
 	bn_t t;
 
@@ -308,7 +308,7 @@ int bn_size_str(const bn_t a, int radix) {
 	return digits + 1;
 }
 
-void bn_read_str(bn_t a, const char *str, int len, int radix) {
+void bn_read_str(bn_t a, const char *str, size_t len, unsigned int radix) {
 	int sign, i, j;
 	char c;
 
@@ -357,7 +357,7 @@ void bn_read_str(bn_t a, const char *str, int len, int radix) {
 	}
 }
 
-void bn_write_str(char *str, int len, const bn_t a, int radix) {
+void bn_write_str(char *str, size_t len, const bn_t a, unsigned int radix) {
 	bn_t t;
 	dig_t d;
 	int digits, l, i, j;
@@ -426,7 +426,7 @@ void bn_write_str(char *str, int len, const bn_t a, int radix) {
 	}
 }
 
-int bn_size_bin(const bn_t a) {
+size_t bn_size_bin(const bn_t a) {
 	dig_t d;
 	int digits;
 
@@ -440,7 +440,7 @@ int bn_size_bin(const bn_t a) {
 	return digits;
 }
 
-void bn_read_bin(bn_t a, const uint8_t *bin, int len) {
+void bn_read_bin(bn_t a, const uint8_t *bin, size_t len) {
 	int i, j;
 	dig_t d = (RLC_DIG / 8);
 	int digs = (len % d == 0 ? len / d : len / d + 1);
@@ -470,7 +470,7 @@ void bn_read_bin(bn_t a, const uint8_t *bin, int len) {
 	bn_trim(a);
 }
 
-void bn_write_bin(uint8_t *bin, int len, const bn_t a) {
+void bn_write_bin(uint8_t *bin, size_t len, const bn_t a) {
 	int size, k;
 	dig_t d;
 
@@ -501,11 +501,11 @@ void bn_write_bin(uint8_t *bin, int len, const bn_t a) {
 	}
 }
 
-int bn_size_raw(const bn_t a) {
+size_t bn_size_raw(const bn_t a) {
 	return a->used;
 }
 
-void bn_read_raw(bn_t a, const dig_t *raw, int len) {
+void bn_read_raw(bn_t a, const dig_t *raw, size_t len) {
 	RLC_TRY {
 		bn_grow(a, len);
 		a->used = len;
@@ -517,7 +517,7 @@ void bn_read_raw(bn_t a, const dig_t *raw, int len) {
 	}
 }
 
-void bn_write_raw(dig_t *raw, int len, const bn_t a) {
+void bn_write_raw(dig_t *raw, size_t len, const bn_t a) {
 	int i, size;
 
 	size = a->used;

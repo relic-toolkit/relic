@@ -134,7 +134,7 @@ char util_conv_char(dig_t i) {
 #endif
 }
 
-int util_bits_dig(dig_t a) {
+size_t util_bits_dig(dig_t a) {
     return RLC_DIG - arch_lzcnt(a);
 }
 

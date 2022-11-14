@@ -63,15 +63,11 @@ void bn_hlv(bn_t c, const bn_t a) {
 	bn_trim(c);
 }
 
-void bn_lsh(bn_t c, const bn_t a, int bits) {
+void bn_lsh(bn_t c, const bn_t a, unsigned int bits) {
 	int digits;
 	dig_t carry;
 
 	bn_copy(c, a);
-
-	if (bits <= 0) {
-		return;
-	}
 
 	RLC_RIP(bits, digits, bits);
 
@@ -101,21 +97,22 @@ void bn_lsh(bn_t c, const bn_t a, int bits) {
 	}
 }
 
-void bn_rsh(bn_t c, const bn_t a, int bits) {
+void bn_rsh(bn_t c, const bn_t a, unsigned int bits) {
 	int digits = 0;
 
 	bn_copy(c, a);
-
-	if (bits <= 0) {
-		return;
-	}
 
 	RLC_RIP(bits, digits, bits);
 
 	if (digits > 0) {
 		dv_rshd(c->dp, a->dp, a->used, digits);
 	}
-	c->used = a->used - digits;
+
+	if (a->used > digits) {
+		c->used = a->used - digits;
+	} else {
+		c->used = 0;
+	}
 	c->sign = a->sign;
 
 	if (c->used > 0 && bits > 0) {

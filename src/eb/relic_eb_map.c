@@ -37,7 +37,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void eb_map(eb_t p, const uint8_t *msg, int len) {
+void eb_map(eb_t p, const uint8_t *msg, size_t len) {
 	bn_t k;
 	fb_t t0, t1;
 	int i;

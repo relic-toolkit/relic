@@ -45,8 +45,6 @@
  * @param[in] p					- the point to multiply.
  */
 static void ep4_mul_pre_ordin(ep4_t *t, const ep4_t p) {
-	int i;
-
 	ep4_dbl(t[0], p);
 #if defined(EP_MIXED)
 	ep4_norm(t[0], t[0]);
@@ -54,12 +52,12 @@ static void ep4_mul_pre_ordin(ep4_t *t, const ep4_t p) {
 
 #if EP_DEPTH > 2
 	ep4_add(t[1], t[0], p);
-	for (i = 2; i < (1 << (EP_DEPTH - 2)); i++) {
+	for (int i = 2; i < (1 << (EP_DEPTH - 2)); i++) {
 		ep4_add(t[i], t[i - 1], t[0]);
 	}
 
 #if defined(EP_MIXED)
-	for (i = 1; i < (1 << (EP_DEPTH - 2)); i++) {
+	for (int i = 1; i < (1 << (EP_DEPTH - 2)); i++) {
 		ep4_norm(t[i], t[i]);
 	}
 #endif
@@ -77,8 +75,9 @@ static void ep4_mul_pre_ordin(ep4_t *t, const ep4_t p) {
  * @param[in] k					- the integer.
  */
 static void ep4_mul_fix_ordin(ep4_t r, const ep4_t *table, const bn_t k) {
-	int len, i, n;
 	int8_t naf[2 * RLC_FP_BITS + 1], *t;
+	size_t len;
+	int n;
 
 	if (bn_is_zero(k)) {
 		ep4_set_infty(r);
@@ -91,7 +90,7 @@ static void ep4_mul_fix_ordin(ep4_t r, const ep4_t *table, const bn_t k) {
 
 	t = naf + len - 1;
 	ep4_set_infty(r);
-	for (i = len - 1; i >= 0; i--, t--) {
+	for (int i = len - 1; i >= 0; i--, t--) {
 		ep4_dbl(r, r);
 
 		n = *t;

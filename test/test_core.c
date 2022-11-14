@@ -123,6 +123,7 @@ int main(void) {
 		}
 		TEST_ASSERT(code == RLC_OK, end);
 
+		core_clean();
 		core_init();
 #pragma omp parallel copyin(core_ctx) shared(code)
 		{

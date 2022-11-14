@@ -740,7 +740,7 @@ typedef etrs_st *etrs_t;
  * @param[in] bits			- the key length in bits.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_rsa_gen(rsa_t pub, rsa_t prv, int bits);
+int cp_rsa_gen(rsa_t pub, rsa_t prv, size_t bits);
 
 /**
  * Encrypts using the RSA cryptosystem.
@@ -1540,7 +1540,7 @@ int cp_bls_gen(bn_t d, g2_t q);
  * @param[in] d				- the private key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_bls_sig(g1_t s, const uint8_t *msg, int len, const bn_t d);
+int cp_bls_sig(g1_t s, const uint8_t *msg, size_t len, const bn_t d);
 
 /**
  * Verifies a message signed with BLS protocol.

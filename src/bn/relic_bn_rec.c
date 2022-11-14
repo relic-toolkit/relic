@@ -43,7 +43,7 @@
  * @param[in] to			- the last bit position, inclusive.
  * @return the bits in the chosen positions.
  */
-static char get_bits(const bn_t a, int from, int to) {
+static char get_bits(const bn_t a, size_t from, size_t to) {
 	int f, t;
 	dig_t mf, mt;
 
@@ -91,7 +91,7 @@ static char get_bits(const bn_t a, int from, int to) {
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void bn_rec_win(uint8_t *win, int *len, const bn_t k, int w) {
+void bn_rec_win(uint8_t *win, size_t *len, const bn_t k, size_t w) {
 	int i, j, l;
 
 	l = bn_bits(k);
@@ -112,7 +112,7 @@ void bn_rec_win(uint8_t *win, int *len, const bn_t k, int w) {
 	*len = j;
 }
 
-void bn_rec_slw(uint8_t *win, int *len, const bn_t k, int w) {
+void bn_rec_slw(uint8_t *win, size_t *len, const bn_t k, size_t w) {
 	int i, j, l, s;
 
 	l = bn_bits(k);
@@ -143,7 +143,7 @@ void bn_rec_slw(uint8_t *win, int *len, const bn_t k, int w) {
 	*len = j;
 }
 
-void bn_rec_naf(int8_t *naf, int *len, const bn_t k, int w) {
+void bn_rec_naf(int8_t *naf, size_t *len, const bn_t k, size_t w) {
 	int i, l;
 	bn_t t;
 	dig_t t0, mask;
@@ -217,7 +217,8 @@ void bn_rec_naf(int8_t *naf, int *len, const bn_t k, int w) {
 	}
 }
 
-void bn_rec_tnaf_get(uint8_t *t, int8_t *beta, int8_t *gama, int8_t u, int w) {
+void bn_rec_tnaf_get(uint8_t *t, int8_t *beta, int8_t *gama, int8_t u,
+		size_t w) {
 	if (u == -1) {
 		switch (w) {
 			case 2:
@@ -349,7 +350,7 @@ void bn_rec_tnaf_get(uint8_t *t, int8_t *beta, int8_t *gama, int8_t u, int w) {
 	}
 }
 
-void bn_rec_tnaf_mod(bn_t r0, bn_t r1, const bn_t k, int u, int m) {
+void bn_rec_tnaf_mod(bn_t r0, bn_t r1, const bn_t k, int u, size_t m) {
 	bn_t t, t0, t1, t2, t3;
 
 	bn_null(t);
@@ -421,7 +422,8 @@ void bn_rec_tnaf_mod(bn_t r0, bn_t r1, const bn_t k, int u, int m) {
 	}
 }
 
-void bn_rec_tnaf(int8_t *tnaf, int *len, const bn_t k, int8_t u, int m, int w) {
+void bn_rec_tnaf(int8_t *tnaf, size_t *len, const bn_t k, int8_t u, size_t m,
+		size_t w) {
 	int i, l;
 	bn_t tmp, r0, r1;
 	int8_t beta[64], gama[64];
@@ -551,7 +553,8 @@ void bn_rec_tnaf(int8_t *tnaf, int *len, const bn_t k, int8_t u, int m, int w) {
 	}
 }
 
-void bn_rec_rtnaf(int8_t *tnaf, int *len, const bn_t k, int8_t u, int m, int w) {
+void bn_rec_rtnaf(int8_t *tnaf, size_t *len, const bn_t k, int8_t u, size_t m,
+		size_t w) {
 	int i, l;
 	bn_t tmp, r0, r1;
 	int8_t beta[64], gama[64];
@@ -693,7 +696,7 @@ void bn_rec_rtnaf(int8_t *tnaf, int *len, const bn_t k, int8_t u, int m, int w) 
 	}
 }
 
-void bn_rec_reg(int8_t *naf, int *len, const bn_t k, int n, int w) {
+void bn_rec_reg(int8_t *naf, size_t *len, const bn_t k, size_t n, size_t w) {
 	int i, l;
 	bn_t t;
 	dig_t t0, mask;
@@ -746,7 +749,7 @@ void bn_rec_reg(int8_t *naf, int *len, const bn_t k, int n, int w) {
 	}
 }
 
-void bn_rec_jsf(int8_t *jsf, int *len, const bn_t k, const bn_t l) {
+void bn_rec_jsf(int8_t *jsf, size_t *len, const bn_t k, const bn_t l) {
 	bn_t n0, n1;
 	dig_t l0, l1;
 	int8_t u0, u1, d0, d1;
@@ -828,7 +831,8 @@ void bn_rec_jsf(int8_t *jsf, int *len, const bn_t k, const bn_t l) {
 void bn_rec_glv(bn_t k0, bn_t k1, const bn_t k, const bn_t n, const bn_t *v1,
 		const bn_t *v2) {
 	bn_t t, b1, b2;
-	int r1, r2, bits;
+	int r1, r2;
+	size_t bits;
 
 	bn_null(b1);
 	bn_null(b2);

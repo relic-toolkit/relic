@@ -202,9 +202,14 @@ void bn_gcd_lehme(bn_t c, const bn_t a, const bn_t b) {
 			bn_abs(y, a);
 		}
 		while (y->used > 1) {
-			bn_rsh(u, x, bn_bits(x) - RLC_DIG);
+			if (bn_bits(x) > RLC_DIG) {
+				bn_rsh(u, x, bn_bits(x) - RLC_DIG);
+				bn_rsh(v, y, bn_bits(x) - RLC_DIG);
+			} else {
+				bn_copy(u, x);
+				bn_copy(v, y);
+			}
 			_x = u->dp[0];
-			bn_rsh(v, y, bn_bits(x) - RLC_DIG);
 			_y = v->dp[0];
 			_a = _d = 1;
 			_b = _c = 0;
@@ -237,8 +242,13 @@ void bn_gcd_lehme(bn_t c, const bn_t a, const bn_t b) {
 				bn_copy(x, y);
 				bn_copy(y, t0);
 			} else {
-				bn_rsh(u, x, bn_bits(x) - 2 * RLC_DIG);
-				bn_rsh(v, y, bn_bits(x) - 2 * RLC_DIG);
+				if (bn_bits(x) > 2 * RLC_DIG) {
+					bn_rsh(u, x, bn_bits(x) - 2 * RLC_DIG);
+					bn_rsh(v, y, bn_bits(x) - 2 * RLC_DIG);
+				} else {
+					bn_copy(u, x);
+					bn_copy(v, y);
+				}
 				if (_a < 0) {
 					bn_mul_dig(t0, u, -_a);
 					bn_neg(t0, t0);
@@ -265,9 +275,14 @@ void bn_gcd_lehme(bn_t c, const bn_t a, const bn_t b) {
 				}
 				bn_add(u, t0, t1);
 				bn_add(v, t2, t3);
-				bn_rsh(t0, u, bn_bits(u) - RLC_DIG);
+				if (bn_bits(u) > RLC_DIG) {
+					bn_rsh(t0, u, bn_bits(u) - RLC_DIG);
+					bn_rsh(t1, v, bn_bits(u) - RLC_DIG);
+				} else {
+					bn_copy(t0, u);
+					bn_copy(t1, v);
+				}
 				_x = t0->dp[0];
-				bn_rsh(t1, v, bn_bits(u) - RLC_DIG);
 				_y = t1->dp[0];
 				t = 0;
 				if (_y != 0) {
@@ -400,9 +415,14 @@ void bn_gcd_ext_lehme(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 		bn_set_dig(d, 1);
 
 		while (y->used > 1) {
-			bn_rsh(u, x, bn_bits(x) - RLC_DIG);
+			if (bn_bits(x) > RLC_DIG) {
+				bn_rsh(u, x, bn_bits(x) - RLC_DIG);
+				bn_rsh(v, y, bn_bits(x) - RLC_DIG);
+			} else {
+				bn_copy(u, x);
+				bn_copy(v, y);
+			}
 			_x = u->dp[0];
-			bn_rsh(v, y, bn_bits(x) - RLC_DIG);
 			_y = v->dp[0];
 			_a = _d = 1;
 			_b = _c = 0;
@@ -439,8 +459,13 @@ void bn_gcd_ext_lehme(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 				bn_copy(t4, d);
 				bn_copy(d, t1);
 			} else {
-				bn_rsh(u, x, bn_bits(x) - 2 * RLC_DIG);
-				bn_rsh(v, y, bn_bits(x) - 2 * RLC_DIG);
+				if (bn_bits(x) > 2 * RLC_DIG) {
+					bn_rsh(u, x, bn_bits(x) - 2 * RLC_DIG);
+					bn_rsh(v, y, bn_bits(x) - 2 * RLC_DIG);
+				} else {
+					bn_copy(u, x);
+					bn_copy(v, y);
+				}
 				if (_a < 0) {
 					bn_mul_dig(t0, u, -_a);
 					bn_neg(t0, t0);
@@ -467,9 +492,14 @@ void bn_gcd_ext_lehme(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 				}
 				bn_add(u, t0, t1);
 				bn_add(v, t2, t3);
-				bn_rsh(t0, u, bn_bits(u) - RLC_DIG);
+				if (bn_bits(u) > RLC_DIG) {
+					bn_rsh(t0, u, bn_bits(u) - RLC_DIG);
+					bn_rsh(t1, v, bn_bits(u) - RLC_DIG);
+				} else {
+					bn_copy(t0, u);
+					bn_copy(t1, v);
+				}
 				_x = t0->dp[0];
-				bn_rsh(t1, v, bn_bits(u) - RLC_DIG);
 				_y = t1->dp[0];
 				t = 0;
 				if (_y != 0) {

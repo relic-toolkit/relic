@@ -40,10 +40,11 @@
 #if defined(EP_ENDOM)
 
 static void ep_mul_glv_imp(ep_t r, const ep_t p, const bn_t k) {
-	int l, l0, l1, i, n0, n1, s0, s1;
+	int i, n0, n1, s0, s1;
 	int8_t naf0[RLC_FP_BITS + 1], naf1[RLC_FP_BITS + 1], *t0, *t1;
 	bn_t n, _k, k0, k1, v1[3], v2[3];
 	ep_t q, t[1 << (EP_WIDTH - 2)];
+	size_t l, l0, l1;
 
 	bn_null(n);
 	bn_null(_k);
@@ -153,11 +154,11 @@ static void ep_mul_glv_imp(ep_t r, const ep_t p, const bn_t k) {
 #if defined(EP_PLAIN) || defined(EP_SUPER)
 
 static void ep_mul_naf_imp(ep_t r, const ep_t p, const bn_t k) {
-	int i, l;
 	/* Some of the supported prime curves have order > field. */
 	int8_t u, naf[RLC_FP_BITS + 2];
 	ep_t t[1 << (EP_WIDTH - 2)];
 	bn_t _k, n;
+	size_t l;
 
 	bn_null(n);
 	bn_null(_k);
@@ -166,7 +167,7 @@ static void ep_mul_naf_imp(ep_t r, const ep_t p, const bn_t k) {
 		bn_new(n);
 		bn_new(_k);
 		/* Prepare the precomputation table. */
-		for (i = 0; i < (1 << (EP_WIDTH - 2)); i++) {
+		for (int i = 0; i < (1 << (EP_WIDTH - 2)); i++) {
 			ep_null(t[i]);
 			ep_new(t[i]);
 		}
@@ -182,7 +183,7 @@ static void ep_mul_naf_imp(ep_t r, const ep_t p, const bn_t k) {
 		bn_rec_naf(naf, &l, _k, EP_WIDTH);
 
 		ep_set_infty(r);
-		for (i = l - 1; i >= 0; i--) {
+		for (int i = l - 1; i >= 0; i--) {
 			ep_dbl(r, r);
 
 			u = naf[i];
@@ -205,7 +206,7 @@ static void ep_mul_naf_imp(ep_t r, const ep_t p, const bn_t k) {
 		bn_free(n);
 		bn_free(_k);
 		/* Free the precomputation table. */
-		for (i = 0; i < (1 << (EP_WIDTH - 2)); i++) {
+		for (int i = 0; i < (1 << (EP_WIDTH - 2)); i++) {
 			ep_free(t[i]);
 		}
 	}
@@ -219,10 +220,11 @@ static void ep_mul_naf_imp(ep_t r, const ep_t p, const bn_t k) {
 #if defined(EP_ENDOM)
 
 static void ep_mul_reg_glv(ep_t r, const ep_t p, const bn_t k) {
-	int i, j, l, n0, n1, s0, s1, b0, b1;
+	int i, j, n0, n1, s0, s1, b0, b1;
 	int8_t _s0, _s1, reg0[RLC_FP_BITS + 1], reg1[RLC_FP_BITS + 1];
 	bn_t n, _k, k0, k1, v1[3], v2[3];
 	ep_t q, t[1 << (EP_WIDTH - 2)], u, v, w;
+	size_t l;
 
 	bn_null(n);
 	bn_null(_k);
@@ -371,9 +373,10 @@ static void ep_mul_reg_glv(ep_t r, const ep_t p, const bn_t k) {
 
 static void ep_mul_reg_imp(ep_t r, const ep_t p, const bn_t k) {
 	bn_t _k;
-	int i, j, l, n;
+	int i, j, n;
 	int8_t s, reg[1 + RLC_CEIL(RLC_FP_BITS + 1, EP_WIDTH - 1)];
 	ep_t t[1 << (EP_WIDTH - 2)], u, v;
+	size_t l;
 
 	if (bn_is_zero(k)) {
 		ep_set_infty(r);
@@ -502,8 +505,8 @@ void ep_mul_basic(ep_t r, const ep_t p, const bn_t k) {
 void ep_mul_slide(ep_t r, const ep_t p, const bn_t k) {
 	bn_t _k, n;
 	ep_t t[1 << (EP_WIDTH - 1)], q;
-	int i, j, l;
 	uint8_t win[RLC_FP_BITS + 1];
+	size_t l;
 
 	if (bn_is_zero(k) || ep_is_infty(p)) {
 		ep_set_infty(r);
@@ -517,7 +520,7 @@ void ep_mul_slide(ep_t r, const ep_t p, const bn_t k) {
 	RLC_TRY {
 		bn_new(n);
 		bn_new(_k);
-		for (i = 0; i < (1 << (EP_WIDTH - 1)); i ++) {
+		for (size_t i = 0; i < (1 << (EP_WIDTH - 1)); i ++) {
 			ep_null(t[i]);
 			ep_new(t[i]);
 		}
@@ -534,7 +537,7 @@ void ep_mul_slide(ep_t r, const ep_t p, const bn_t k) {
 		bn_mod(_k, k, n);
 
 		/* Create table. */
-		for (i = 1; i < (1 << (EP_WIDTH - 1)); i++) {
+		for (size_t i = 1; i < (1 << (EP_WIDTH - 1)); i++) {
 			ep_add(t[i], t[i - 1], q);
 		}
 
@@ -545,11 +548,11 @@ void ep_mul_slide(ep_t r, const ep_t p, const bn_t k) {
 		ep_set_infty(q);
 		l = RLC_FP_BITS + 1;
 		bn_rec_slw(win, &l, _k, EP_WIDTH);
-		for (i = 0; i < l; i++) {
+		for (size_t i = 0; i < l; i++) {
 			if (win[i] == 0) {
 				ep_dbl(q, q);
 			} else {
-				for (j = 0; j < util_bits_dig(win[i]); j++) {
+				for (size_t j = 0; j < util_bits_dig(win[i]); j++) {
 					ep_dbl(q, q);
 				}
 				ep_add(q, q, t[win[i] >> 1]);
@@ -567,7 +570,7 @@ void ep_mul_slide(ep_t r, const ep_t p, const bn_t k) {
 	RLC_FINALLY {
 		bn_free(n);
 		bn_free(_k);
-		for (i = 0; i < (1 << (EP_WIDTH - 1)); i++) {
+		for (size_t i = 0; i < (1 << (EP_WIDTH - 1)); i++) {
 			ep_free(t[i]);
 		}
 		ep_free(q);
@@ -579,9 +582,9 @@ void ep_mul_slide(ep_t r, const ep_t p, const bn_t k) {
 #if EP_MUL == MONTY || !defined(STRIP)
 
 void ep_mul_monty(ep_t r, const ep_t p, const bn_t k) {
-	int i, j, bits;
 	ep_t t[2];
 	bn_t n, l, _k;
+	size_t bits;
 
 	bn_null(n);
 	bn_null(l);
@@ -619,8 +622,8 @@ void ep_mul_monty(ep_t r, const ep_t p, const bn_t k) {
 		ep_blind(t[0], t[0]);
 		ep_blind(t[1], t[1]);
 
-		for (i = bits - 1; i >= 0; i--) {
-			j = bn_get_bit(l, i);
+		for (int i = bits - 1; i >= 0; i--) {
+			int j = bn_get_bit(l, i);
 			dv_swap_cond(t[0]->x, t[1]->x, RLC_FP_DIGS, j ^ 1);
 			dv_swap_cond(t[0]->y, t[1]->y, RLC_FP_DIGS, j ^ 1);
 			dv_swap_cond(t[0]->z, t[1]->z, RLC_FP_DIGS, j ^ 1);
@@ -723,7 +726,7 @@ void ep_mul_dig(ep_t r, const ep_t p, dig_t k) {
 	ep_t t;
 	bn_t _k;
 	int8_t u, naf[RLC_DIG + 1];
-	int l;
+	size_t l;
 
 	ep_null(t);
 	bn_null(_k);

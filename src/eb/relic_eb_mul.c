@@ -49,9 +49,10 @@
  * @param[in] k					- the integer.
  */
 static void eb_mul_ltnaf_imp(eb_t r, const eb_t p, const bn_t k) {
-	int i, l, n;
+	int i, n;
 	int8_t tnaf[RLC_FB_BITS + 8], u;
 	eb_t t[1 << (EB_WIDTH - 2)];
+	size_t l;
 
 	if (eb_curve_opt_a() == RLC_ZERO) {
 		u = -1;
@@ -120,9 +121,10 @@ static void eb_mul_ltnaf_imp(eb_t r, const eb_t p, const bn_t k) {
  * @param[in] k					- the integer.
  */
 static void eb_mul_lnaf_imp(eb_t r, const eb_t p, const bn_t k) {
-	int i, l, n;
+	int i, n;
 	int8_t naf[RLC_FB_BITS + 1];
 	eb_t t[1 << (EB_WIDTH - 2)];
+	size_t l;
 
 	RLC_TRY {
 		/* Prepare the precomputation table. */
@@ -190,9 +192,10 @@ static void eb_mul_lnaf_imp(eb_t r, const eb_t p, const bn_t k) {
  * @param[in] k					- the integer.
  */
 static void eb_mul_rtnaf_imp(eb_t r, const eb_t p, const bn_t k) {
-	int i, l, n;
+	int i, n;
 	int8_t tnaf[RLC_FB_BITS + 8], u;
 	eb_t t[1 << (EB_WIDTH - 2)];
+	size_t l;
 
 	if (eb_curve_opt_a() == RLC_ZERO) {
 		u = -1;
@@ -489,9 +492,10 @@ static void eb_mul_rtnaf_imp(eb_t r, const eb_t p, const bn_t k) {
  * @param[in] k					- the integer.
  */
 static void eb_mul_rnaf_imp(eb_t r, const eb_t p, const bn_t k) {
-	int i, l, n;
+	int i, n;
 	int8_t naf[RLC_FB_BITS + 1];
 	eb_t t[1 << (EB_WIDTH - 2)];
+	size_t l;
 
 	RLC_TRY {
 		/* Prepare the accumulator table. */
@@ -650,10 +654,10 @@ void eb_mul_basic(eb_t r, const eb_t p, const bn_t k) {
 #if EB_MUL == LODAH || !defined(STRIP)
 
 void eb_mul_lodah(eb_t r, const eb_t p, const bn_t k) {
-	int bits, i, j;
 	dv_t x1, z1, x2, z2, r1, r2, r3, r4, r5;
 	const dig_t *b;
 	bn_t t, n;
+	size_t bits;
 
 	if (bn_is_zero(k)) {
 		eb_set_infty(r);
@@ -721,8 +725,8 @@ void eb_mul_lodah(eb_t r, const eb_t p, const bn_t k) {
 		fb_mul(z2, z2, r1);
 		fb_mul(x2, x2, r1);
 
-		for (i = bits - 1; i >= 0; i--) {
-			j = bn_get_bit(t, i);
+		for (int i = bits - 1; i >= 0; i--) {
+			int j = bn_get_bit(t, i);
 			fb_mul(r1, x1, z2);
 			fb_mul(r2, x2, z1);
 			fb_add(r3, r1, r2);
@@ -889,11 +893,12 @@ void eb_mul_rwnaf(eb_t r, const eb_t p, const bn_t k) {
 #if EB_MUL == HALVE || !defined(STRIP)
 
 void eb_mul_halve(eb_t r, const eb_t p, const bn_t k) {
-	int i, j, l, trc, cof;
+	int i, j, trc, cof;
 	int8_t naf[RLC_FB_BITS + 1], *_k;
 	eb_t q, s, t[1 << (EB_WIDTH - 2)];
 	bn_t n, m;
 	fb_t u, v, w, z;
+	size_t l;
 
 	if (bn_is_zero(k) || eb_is_infty(p)) {
 		eb_set_infty(r);

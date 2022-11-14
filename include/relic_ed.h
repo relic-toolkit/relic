@@ -482,7 +482,7 @@ void ed_norm_sim(ed_t *r, const ed_t *t, int n);
  * @param[in] msg			- the byte array to map.
  * @param[in] len			- the array length in bytes.
  */
-void ed_map(ed_t p, const uint8_t *msg, int len);
+void ed_map(ed_t p, const uint8_t *msg, size_t len);
 
 /**
  * Maps a byte array to a point in an Edwards elliptic curve using
@@ -494,7 +494,8 @@ void ed_map(ed_t p, const uint8_t *msg, int len);
  * @param[in] dst			- the domain separation tag.
  * @param[in] dst_len		- the domain separation tag length in bytes.
  */
-void ed_map_dst(ed_t p, const uint8_t *msg, int len, const uint8_t *dst, int dst_len);
+void ed_map_dst(ed_t p, const uint8_t *msg, size_t len, const uint8_t *dst,
+		size_t dst_len);
 
 /**
  * Multiplies an Edwards elliptic curve point by an integer. Computes R = [k]P.
@@ -840,7 +841,7 @@ int ed_size_bin(const ed_t a, int pack);
  * @throw ERR_NO_VALID		- if the encoded point is invalid.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is invalid.
  */
-void ed_read_bin(ed_t a, const uint8_t *bin, int len);
+void ed_read_bin(ed_t a, const uint8_t *bin, size_t len);
 
 /**
  * Writes an Edwards elliptic curve point to a byte vector in big-endian format
@@ -852,7 +853,7 @@ void ed_read_bin(ed_t a, const uint8_t *bin, int len);
  * @param[in] pack			- the flag to indicate point compression.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is invalid.
  */
-void ed_write_bin(uint8_t *bin, int len, const ed_t a, int pack);
+void ed_write_bin(uint8_t *bin, size_t len, const ed_t a, int pack);
 
 /**
  * Multiplies an Edwards elliptic point by an integer using the binary method.

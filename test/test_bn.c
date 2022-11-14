@@ -234,7 +234,7 @@ static int util(void) {
 		} TEST_END;
 
 		TEST_CASE("reading and writing a positive number are consistent") {
-			int len = RLC_CEIL(RLC_BN_BITS, 8);
+			size_t len = RLC_CEIL(RLC_BN_BITS, 8);
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			for (int j = 2; j <= 64; j++) {
 				bits = bn_size_str(a, j);
@@ -262,7 +262,7 @@ static int util(void) {
 		TEST_END;
 
 		TEST_CASE("reading and writing a negative number are consistent") {
-			int len = RLC_CEIL(RLC_BN_BITS, 8);
+			size_t len = RLC_CEIL(RLC_BN_BITS, 8);
 			bn_rand(a, RLC_NEG, RLC_BN_BITS);
 			for (int j = 2; j <= 64; j++) {
 				bits = bn_size_str(a, j);
@@ -1139,8 +1139,9 @@ static int exponentiation(void) {
 }
 
 static int square_root(void) {
-	int bits, code = RLC_ERR;
+	size_t bits;
 	bn_t a, b, c;
+	int code = RLC_ERR;
 
 	bn_null(a);
 	bn_null(b);
@@ -1938,9 +1939,10 @@ static int factor(void) {
 static int recoding(void) {
 	int code = RLC_ERR;
 	bn_t a, b, c, v1[3], v2[3];
-	int w, k, l;
+	int w, k;
 	uint8_t d[RLC_BN_BITS + 1];
 	int8_t e[2 * (RLC_BN_BITS + 1)];
+	size_t l;
 
 	bn_null(a);
 	bn_null(b);

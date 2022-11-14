@@ -53,10 +53,11 @@
  */
 static void ed_mul_sim_plain(ed_t r, const ed_t p, const bn_t k, const ed_t q,
 		const bn_t m, const ed_t *t) {
-	int i, l, l0, l1, n0, n1, w, gen;
+	int i, n0, n1, w, gen;
 	int8_t naf0[RLC_FP_BITS + 1], naf1[RLC_FP_BITS + 1], *_k, *_m;
 	ed_t t0[1 << (ED_WIDTH - 2)];
 	ed_t t1[1 << (ED_WIDTH - 2)];
+	size_t l, l0, l1;
 
 	RLC_TRY {
 		gen = (t == NULL ? 0 : 1);
@@ -176,7 +177,7 @@ void ed_mul_sim_trick(ed_t r, const ed_t p, const bn_t k, const ed_t q,
 		const bn_t m) {
 	ed_t t0[1 << (ED_WIDTH / 2)], t1[1 << (ED_WIDTH / 2)], t[1 << ED_WIDTH];
 	bn_t n;
-	int l0, l1, w = ED_WIDTH / 2;
+	size_t l0, l1, w = ED_WIDTH / 2;
 	uint8_t w0[RLC_FP_BITS + 1], w1[RLC_FP_BITS + 1];
 
 	bn_null(n);
@@ -293,8 +294,9 @@ void ed_mul_sim_inter(ed_t r, const ed_t p, const bn_t k, const ed_t q,
 void ed_mul_sim_joint(ed_t r, const ed_t p, const bn_t k, const ed_t q,
 		const bn_t m) {
 	ed_t t[5];
-	int i, l, u_i, offset;
+	int i, u_i, offset;
 	int8_t jsf[2 * (RLC_FP_BITS + 1)];
+	size_t l;
 
 	if (bn_is_zero(k) || ed_is_infty(p)) {
 		ed_mul(r, q, m);
@@ -398,9 +400,10 @@ void ed_mul_sim_gen(ed_t r, const bn_t k, const ed_t q, const bn_t m) {
 }
 
 void ed_mul_sim_lot(ed_t r, const ed_t p[], const bn_t k[], int n) {
-	int i, j, l, *_l = RLC_ALLOCA(int, n);
-	ed_t *_p = RLC_ALLOCA(ed_t, n);
+	int i, j;
 	int8_t *naf = NULL;
+	ed_t *_p = RLC_ALLOCA(ed_t, n);
+	size_t l, *_l = RLC_ALLOCA(size_t, n);
 
 	RLC_TRY {
 		l = 0;

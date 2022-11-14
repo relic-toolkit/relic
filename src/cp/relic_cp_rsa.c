@@ -244,9 +244,10 @@ static uint8_t *hash_id(int md, int *len) {
  * @param[in] operation	- flag to indicate the operation type.
  * @return RLC_ERR if errors occurred, RLC_OK otherwise.
  */
-static int pad_pkcs1(bn_t m, int *p_len, int m_len, int k_len, int operation) {
+static int pad_pkcs1(bn_t m, int *p_len, size_t m_len, size_t k_len, int op) {
 	uint8_t *id, pad = 0;
-	int len, result = RLC_ERR;
+	size_t len;
+	int result = RLC_ERR;
 	bn_t t;
 
 	bn_null(t);
@@ -254,7 +255,7 @@ static int pad_pkcs1(bn_t m, int *p_len, int m_len, int k_len, int operation) {
 	RLC_TRY {
 		bn_new(t);
 
-		switch (operation) {
+		switch (op) {
 			case RSA_ENC:
 				/* EB = 00 | 02 | PS | 00 | D. */
 				bn_zero(m);
@@ -419,7 +420,7 @@ static int pad_pkcs1(bn_t m, int *p_len, int m_len, int k_len, int operation) {
  * @param[in] operation	- flag to indicate the operation type.
  * @return RLC_ERR if errors occurred, RLC_OK otherwise.
  */
-static int pad_pkcs2(bn_t m, int *p_len, int m_len, int k_len, int operation) {
+static int pad_pkcs2(bn_t m, int *p_len, size_t m_len, size_t k_len, int op) {
 	uint8_t pad, h1[RLC_MD_LEN], h2[RLC_MD_LEN];
 	uint8_t *mask = RLC_ALLOCA(uint8_t, k_len);
 	int result = RLC_ERR;
@@ -430,7 +431,7 @@ static int pad_pkcs2(bn_t m, int *p_len, int m_len, int k_len, int operation) {
 	RLC_TRY {
 		bn_new(t);
 
-		switch (operation) {
+		switch (op) {
 			case RSA_ENC:
 				/* DB = lHash | PS | 01 | D. */
 				md_map(h1, NULL, 0);
@@ -578,7 +579,7 @@ static int pad_pkcs2(bn_t m, int *p_len, int m_len, int k_len, int operation) {
 /* Public definitions                                                         */
 /*============================================================================*/
 
-int cp_rsa_gen(rsa_t pub, rsa_t prv, int bits) {
+int cp_rsa_gen(rsa_t pub, rsa_t prv, size_t bits) {
 	bn_t t, r;
 	int result = RLC_OK;
 

@@ -329,7 +329,7 @@ void fp12_exp_dig(fp12_t c, const fp12_t a, dig_t b) {
 	bn_t _b;
 	fp12_t t, v;
 	int8_t u, naf[RLC_DIG + 1];
-	int l;
+	size_t l;
 
 	if (b == 0) {
 		fp12_set_dig(c, 1);
@@ -461,7 +461,7 @@ void fp24_exp_dig(fp24_t c, const fp24_t a, dig_t b) {
 	bn_t _b;
 	fp24_t t, v;
 	int8_t u, naf[RLC_DIG + 1];
-	int l;
+	size_t l;
 
 	if (b == 0) {
 		fp24_set_dig(c, 1);
@@ -561,7 +561,7 @@ void fp48_exp_dig(fp48_t c, const fp48_t a, dig_t b) {
 	bn_t _b;
 	fp48_t t, v;
 	int8_t u, naf[RLC_DIG + 1];
-	int l;
+	size_t l;
 
 	if (b == 0) {
 		fp48_set_dig(c, 1);
@@ -657,7 +657,7 @@ void fp54_exp_dig(fp54_t c, const fp54_t a, dig_t b) {
 	bn_t _b;
 	fp54_t t, v;
 	int8_t u, naf[RLC_DIG + 1];
-	int l;
+	size_t l;
 
 	if (b == 0) {
 		fp54_set_dig(c, 1);

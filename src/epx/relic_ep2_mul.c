@@ -41,7 +41,7 @@
 #if defined(EP_ENDOM)
 
 static void ep2_mul_glv_imp(ep2_t r, const ep2_t p, const bn_t k) {
-	int i, j, l, _l[4];
+	size_t l, _l[4];
 	bn_t n, _k[4], u;
 	int8_t naf[4][RLC_FP_BITS + 1];
 	ep2_t q[4];
@@ -52,7 +52,7 @@ static void ep2_mul_glv_imp(ep2_t r, const ep2_t p, const bn_t k) {
 	RLC_TRY {
 		bn_new(n);
 		bn_new(u);
-		for (i = 0; i < 4; i++) {
+		for (int i = 0; i < 4; i++) {
 			bn_null(_k[i]);
 			ep2_null(q[i]);
 			bn_new(_k[i]);
@@ -70,7 +70,7 @@ static void ep2_mul_glv_imp(ep2_t r, const ep2_t p, const bn_t k) {
 		ep2_frb(q[3], q[2], 1);
 
 		l = 0;
-		for (i = 0; i < 4; i++) {
+		for (int i = 0; i < 4; i++) {
 			if (bn_sign(_k[i]) == RLC_NEG) {
 				ep2_neg(q[i], q[i]);
 			}
@@ -80,10 +80,10 @@ static void ep2_mul_glv_imp(ep2_t r, const ep2_t p, const bn_t k) {
 		}
 
 		ep2_set_infty(r);
-		for (j = l - 1; j >= 0; j--) {
+		for (int j = l - 1; j >= 0; j--) {
 			ep2_dbl(r, r);
 
-			for (i = 0; i < 4; i++) {
+			for (int i = 0; i < 4; i++) {
 				if (naf[i][j] > 0) {
 					ep2_add(r, r, q[i]);
 				}
@@ -102,7 +102,7 @@ static void ep2_mul_glv_imp(ep2_t r, const ep2_t p, const bn_t k) {
 	RLC_FINALLY {
 		bn_free(n);
 		bn_free(u);
-		for (i = 0; i < 4; i++) {
+		for (int i = 0; i < 4; i++) {
 			bn_free(_k[i]);
 			ep2_free(q[i]);
 		}
@@ -113,13 +113,13 @@ static void ep2_mul_glv_imp(ep2_t r, const ep2_t p, const bn_t k) {
 #endif /* EP_ENDOM */
 
 static void ep2_mul_naf_imp(ep2_t r, const ep2_t p, const bn_t k) {
-	int l, i, n;
+	size_t l, n;
 	int8_t naf[RLC_FP_BITS + 1];
 	ep2_t t[1 << (EP_WIDTH - 2)];
 
 	RLC_TRY {
 		/* Prepare the precomputation table. */
-		for (i = 0; i < (1 << (EP_WIDTH - 2)); i++) {
+		for (int i = 0; i < (1 << (EP_WIDTH - 2)); i++) {
 			ep2_null(t[i]);
 			ep2_new(t[i]);
 		}
@@ -131,7 +131,7 @@ static void ep2_mul_naf_imp(ep2_t r, const ep2_t p, const bn_t k) {
 		bn_rec_naf(naf, &l, k, EP_WIDTH);
 
 		ep2_set_infty(r);
-		for (i = l - 1; i >= 0; i--) {
+		for (int i = l - 1; i >= 0; i--) {
 			ep2_dbl(r, r);
 
 			n = naf[i];
@@ -153,7 +153,7 @@ static void ep2_mul_naf_imp(ep2_t r, const ep2_t p, const bn_t k) {
 	}
 	RLC_FINALLY {
 		/* Free the precomputation table. */
-		for (i = 0; i < (1 << (EP_WIDTH - 2)); i++) {
+		for (int i = 0; i < (1 << (EP_WIDTH - 2)); i++) {
 			ep2_free(t[i]);
 		}
 	}
@@ -166,7 +166,7 @@ static void ep2_mul_naf_imp(ep2_t r, const ep2_t p, const bn_t k) {
 /*============================================================================*/
 
 void ep2_mul_basic(ep2_t r, const ep2_t p, const bn_t k) {
-	int i, l;
+	size_t l;
 	ep2_t t;
 
 	ep2_null(t);
@@ -186,7 +186,7 @@ void ep2_mul_basic(ep2_t r, const ep2_t p, const bn_t k) {
 			ep2_set_infty(t);
 		}
 
-		for (i = l - 2; i >= 0; i--) {
+		for (int i = l - 2; i >= 0; i--) {
 			ep2_dbl(t, t);
 			if (bn_get_bit(k, i)) {
 				ep2_add(t, t, p);
@@ -211,8 +211,8 @@ void ep2_mul_basic(ep2_t r, const ep2_t p, const bn_t k) {
 
 void ep2_mul_slide(ep2_t r, const ep2_t p, const bn_t k) {
 	ep2_t t[1 << (EP_WIDTH - 1)], q;
-	int i, j, l;
 	uint8_t win[RLC_FP_BITS + 1];
+	size_t l;
 
 	ep2_null(q);
 
@@ -222,7 +222,7 @@ void ep2_mul_slide(ep2_t r, const ep2_t p, const bn_t k) {
 	}
 
 	RLC_TRY {
-		for (i = 0; i < (1 << (EP_WIDTH - 1)); i ++) {
+		for (int i = 0; i < (1 << (EP_WIDTH - 1)); i ++) {
 			ep2_null(t[i]);
 			ep2_new(t[i]);
 		}
@@ -237,7 +237,7 @@ void ep2_mul_slide(ep2_t r, const ep2_t p, const bn_t k) {
 #endif
 
 		/* Create table. */
-		for (i = 1; i < (1 << (EP_WIDTH - 1)); i++) {
+		for (size_t i = 1; i < (1 << (EP_WIDTH - 1)); i++) {
 			ep2_add(t[i], t[i - 1], q);
 		}
 
@@ -248,11 +248,11 @@ void ep2_mul_slide(ep2_t r, const ep2_t p, const bn_t k) {
 		ep2_set_infty(q);
 		l = RLC_FP_BITS + 1;
 		bn_rec_slw(win, &l, k, EP_WIDTH);
-		for (i = 0; i < l; i++) {
+		for (size_t i = 0; i < l; i++) {
 			if (win[i] == 0) {
 				ep2_dbl(q, q);
 			} else {
-				for (j = 0; j < util_bits_dig(win[i]); j++) {
+				for (size_t j = 0; j < util_bits_dig(win[i]); j++) {
 					ep2_dbl(q, q);
 				}
 				ep2_add(q, q, t[win[i] >> 1]);
@@ -268,7 +268,7 @@ void ep2_mul_slide(ep2_t r, const ep2_t p, const bn_t k) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		for (i = 0; i < (1 << (EP_WIDTH - 1)); i++) {
+		for (size_t i = 0; i < (1 << (EP_WIDTH - 1)); i++) {
 			ep2_free(t[i]);
 		}
 		ep2_free(q);
@@ -387,7 +387,7 @@ void ep2_mul_dig(ep2_t r, const ep2_t p, const dig_t k) {
 	ep2_t t;
 	bn_t _k;
 	int8_t u, naf[RLC_DIG + 1];
-	int l;
+	size_t l;
 
 	ep2_null(t);
 	bn_null(_k);

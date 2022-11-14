@@ -234,7 +234,7 @@ int ep_size_bin(const ep_t a, int pack) {
 	return size;
 }
 
-void ep_read_bin(ep_t a, const uint8_t *bin, int len) {
+void ep_read_bin(ep_t a, const uint8_t *bin, size_t len) {
 	if (len == 1) {
 		if (bin[0] == 0) {
 			ep_set_infty(a);
@@ -284,7 +284,7 @@ void ep_read_bin(ep_t a, const uint8_t *bin, int len) {
 	}
 }
 
-void ep_write_bin(uint8_t *bin, int len, const ep_t a, int pack) {
+void ep_write_bin(uint8_t *bin, size_t len, const ep_t a, int pack) {
 	ep_t t;
 
 	ep_null(t);

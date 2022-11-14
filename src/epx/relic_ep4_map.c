@@ -37,7 +37,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void ep4_map(ep4_t p, const uint8_t *msg, int len) {
+void ep4_map(ep4_t p, const uint8_t *msg, size_t len) {
 	bn_t x;
 	fp4_t t0;
 	uint8_t digest[RLC_MD_LEN];

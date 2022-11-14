@@ -276,7 +276,7 @@ int bn_is_prime_rabin(const bn_t a) {
 		bn_sub_dig(n1, a, 1);
 		bn_copy(r, n1);
 		s = 0;
-		while (bn_is_even(r)) {
+		while (!bn_is_zero(r) && bn_is_even(r)) {
 			s++;
 			bn_rsh(r, r, 1);
 		}
@@ -401,7 +401,7 @@ int bn_is_prime_solov(const bn_t a) {
 
 #if BN_GEN == BASIC || !defined(STRIP)
 
-void bn_gen_prime_basic(bn_t a, int bits) {
+void bn_gen_prime_basic(bn_t a, size_t bits) {
 	while (1) {
 		do {
 			bn_rand(a, RLC_POS, bits);
@@ -416,7 +416,7 @@ void bn_gen_prime_basic(bn_t a, int bits) {
 
 #if BN_GEN == SAFEP || !defined(STRIP)
 
-void bn_gen_prime_safep(bn_t a, int bits) {
+void bn_gen_prime_safep(bn_t a, size_t bits) {
 	while (1) {
 		do {
 			bn_rand(a, RLC_POS, bits);
@@ -440,7 +440,7 @@ void bn_gen_prime_safep(bn_t a, int bits) {
 
 #if BN_GEN == STRON || !defined(STRIP)
 
-void bn_gen_prime_stron(bn_t a, int bits) {
+void bn_gen_prime_stron(bn_t a, size_t bits) {
 	dig_t i, j;
 	int found, k;
 	bn_t r, s, t;
@@ -519,7 +519,7 @@ void bn_gen_prime_stron(bn_t a, int bits) {
 
 #endif
 
-int bn_gen_prime_factor(bn_t a, bn_t b, int abits, int bbits) {
+int bn_gen_prime_factor(bn_t a, bn_t b, size_t abits, size_t bbits) {
 	bn_t t;
 	int result = RLC_OK;
 

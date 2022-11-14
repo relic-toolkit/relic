@@ -53,9 +53,10 @@
  * param[in] in         - the input string.
  * param[in] in_len     - the number of bytes in the input.
  */
-static void rand_hash(uint8_t *out, int out_len, uint8_t *in, int in_len) {
+static void rand_hash(uint8_t *out, size_t out_len, uint8_t *in,
+		size_t in_len) {
 	uint32_t j = util_conv_big(8 * out_len);
-	int len = RLC_CEIL(out_len, RLC_MD_LEN);
+	size_t len = RLC_CEIL(out_len, RLC_MD_LEN);
 	uint8_t* buf = RLC_ALLOCA(uint8_t, 1 + sizeof(uint32_t) + in_len);
 	uint8_t hash[RLC_MD_LEN];
 
@@ -88,7 +89,7 @@ static void rand_hash(uint8_t *out, int out_len, uint8_t *in, int in_len) {
  * @param[in,out] state		- the internal state.
  * @param[in] digit			- the small integer.
  */
-static int rand_inc(uint8_t *data, int size, int digit) {
+static int rand_inc(uint8_t *data, size_t size, int digit) {
 	int carry = digit;
 	for (int i = size - 1; i >= 0; i--) {
 		int16_t s;
@@ -105,7 +106,7 @@ static int rand_inc(uint8_t *data, int size, int digit) {
  * @param[in,out] state		- the internal state.
  * @param[in] hash			- the hash value.
  */
-static int rand_add(uint8_t *state, uint8_t *hash, int size) {
+static int rand_add(uint8_t *state, uint8_t *hash, size_t size) {
 	int carry = 0;
 	for (int i = size - 1; i >= 0; i--) {
 		/* Make sure carries are detected. */
@@ -123,7 +124,7 @@ static int rand_add(uint8_t *state, uint8_t *hash, int size) {
  * @param[out] out 			- the buffer to write.
  * @param[in] out_len		- the number of bytes to write.
  */
-static void rand_gen(uint8_t *out, int out_len) {
+static void rand_gen(uint8_t *out, size_t out_len) {
 	int m = RLC_CEIL(out_len, RLC_MD_LEN);
 	uint8_t hash[RLC_MD_LEN], data[(RLC_RAND_SIZE - 1)/2];
 	ctx_t *ctx = core_get();
@@ -150,7 +151,7 @@ static void rand_gen(uint8_t *out, int out_len) {
 
 #if RAND == HASHD
 
-void rand_bytes(uint8_t *buf, int size) {
+void rand_bytes(uint8_t *buf, size_t size) {
 	uint8_t hash[RLC_MD_LEN];
 	int carry, len  = (RLC_RAND_SIZE - 1)/2;
 	ctx_t *ctx = core_get();
@@ -173,9 +174,9 @@ void rand_bytes(uint8_t *buf, int size) {
 	ctx->counter = ctx->counter + 1;
 }
 
-void rand_seed(uint8_t *buf, int size) {
+void rand_seed(uint8_t *buf, size_t size) {
 	ctx_t *ctx = core_get();
-	int len = (RLC_RAND_SIZE - 1) / 2;
+	size_t len = (RLC_RAND_SIZE - 1) / 2;
 
 	if (size <= 0) {
 		RLC_THROW(ERR_NO_VALID);
