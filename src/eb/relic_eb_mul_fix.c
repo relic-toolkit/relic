@@ -49,8 +49,9 @@
  * @param[in] k					- the integer.
  */
 static void eb_mul_fix_kbltz(eb_t r, const eb_t *t, const bn_t k) {
-	int i, l, n;
+	int i, n;
 	int8_t u, tnaf[RLC_FB_BITS + 8];
+	size_t l;
 
 	if (bn_is_zero(k)) {
 		eb_set_infty(r);
@@ -106,8 +107,9 @@ static void eb_mul_fix_kbltz(eb_t r, const eb_t *t, const bn_t k) {
  * @param[in] k					- the integer.
  */
 static void eb_mul_fix_plain(eb_t r, const eb_t *t, const bn_t k) {
-	int l, i, n;
+	int i, n;
 	int8_t naf[RLC_FB_BITS + 1];
+	size_t l;
 
 	if (bn_is_zero(k)) {
 		eb_set_infty(r);
