@@ -190,9 +190,11 @@ int cp_mpss_ver(gt_t e, const g1_t a, const g1_t b[2], const bn_t m[2],
 			/* Now combine shares and multiply. */
 			gt_mul(e, beta[0], beta[1]);
 		}
-	} RLC_CATCH_ANY {
+	}
+	RLC_CATCH_ANY {
 		result = RLC_ERR;
-	} RLC_FINALLY {
+	}
+	RLC_FINALLY {
 		bn_free(n);
 		for (int i = 0; i < 2; i++) {
 			bn_free(d[i]);
@@ -299,9 +301,11 @@ int cp_mpsb_sig(g1_t a, g1_t b[2], const bn_t m[][2], const bn_t r[2],
 		g1_norm(a, a);
 		g1_mul(b[0], a, d[0]);
 		g1_mul(b[1], a, d[1]);
-	} RLC_CATCH_ANY {
+	}
+	RLC_CATCH_ANY {
 		result = RLC_ERR;
-	} RLC_FINALLY {
+	}
+	RLC_FINALLY {
 		bn_free(n);
 		for (int i = 0; i < 2; i++) {
 			bn_free(d[i]);
@@ -351,23 +355,23 @@ int cp_mpsb_ver(gt_t e, const g1_t a, const g1_t b[2], const bn_t m[][2],
 			gt_new(alpha[i]);
 			gt_new(beta[i]);
 			for (int j = 0; j < l; j++) {
-				g2_null(_y[l*i + j]);
-				g2_new(_y[l*i + j]);
-				bn_null(_m[l*i + j]);
-				bn_new(_m[l*i + j]);
+				g2_null(_y[l * i + j]);
+				g2_new(_y[l * i + j]);
+				bn_null(_m[l * i + j]);
+				bn_new(_m[l * i + j]);
 			}
 		}
 		g1_get_ord(n);
 		if (v == NULL) {
 			for (int i = 0; i < 2; i++) {
 				for (int j = 0; j < l; j++) {
-					bn_copy(_m[l*i + j], m[j][i]);
-					g2_copy(_y[l*i + j], y[j][i]);
+					bn_copy(_m[l * i + j], m[j][i]);
+					g2_copy(_y[l * i + j], y[j][i]);
 				}
 			}
 			/* Compute Z = X + [m] * Y. */
 			for (int i = 0; i < 2; i++) {
-				g2_mul_sim_lot(z[i], &_y[l*i], &_m[l*i], l);
+				g2_mul_sim_lot(z[i], &_y[l * i], &_m[l * i], l);
 			}
 		} else {
 			/* Compute Z = X + [m] * [y_i] * G. */
@@ -421,9 +425,11 @@ int cp_mpsb_ver(gt_t e, const g1_t a, const g1_t b[2], const bn_t m[][2],
 			/* Now combine shares and multiply. */
 			gt_mul(e, beta[0], beta[1]);
 		}
-	} RLC_CATCH_ANY {
+	}
+	RLC_CATCH_ANY {
 		result = RLC_ERR;
-	} RLC_FINALLY {
+	}
+	RLC_FINALLY {
 		bn_free(n);
 		bn_free(_t);
 		for (int i = 0; i < 2; i++) {
@@ -437,8 +443,8 @@ int cp_mpsb_ver(gt_t e, const g1_t a, const g1_t b[2], const bn_t m[][2],
 			gt_free(alpha[i]);
 			gt_free(beta[i]);
 			for (int j = 0; j < l; j++) {
-				g2_free(_y[l*i + j]);
-				bn_free(_m[l*i + j]);
+				g2_free(_y[l * i + j]);
+				bn_free(_m[l * i + j]);
 			}
 		}
 		RLC_FREE(_y);

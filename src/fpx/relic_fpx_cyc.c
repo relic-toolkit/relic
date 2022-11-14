@@ -83,8 +83,8 @@ int fp2_test_cyc(const fp2_t a) {
 
 void fp2_exp_cyc(fp2_t c, const fp2_t a, const bn_t b) {
 	fp2_t r, s, t[1 << (FP_WIDTH - 2)];
-	int i, l;
 	int8_t naf[RLC_FP_BITS + 1], *k;
+	size_t l;
 
 	if (bn_is_zero(b)) {
 		return fp2_set_dig(c, 1);
@@ -96,7 +96,7 @@ void fp2_exp_cyc(fp2_t c, const fp2_t a, const bn_t b) {
 	RLC_TRY {
 		fp2_new(r);
 		fp2_new(s);
-		for (i = 0; i < (1 << (FP_WIDTH - 2)); i ++) {
+		for (int i = 0; i < (1 << (FP_WIDTH - 2)); i ++) {
 			fp2_null(t[i]);
 			fp2_new(t[i]);
 		}
@@ -116,7 +116,7 @@ void fp2_exp_cyc(fp2_t c, const fp2_t a, const bn_t b) {
 
 		k = naf + l - 1;
 
-		for (i = l - 1; i >= 0; i--, k--) {
+		for (int i = l - 1; i >= 0; i--, k--) {
 			fp2_sqr(r, r);
 
 			if (*k > 0) {
@@ -140,7 +140,7 @@ void fp2_exp_cyc(fp2_t c, const fp2_t a, const bn_t b) {
 	RLC_FINALLY {
 		fp2_free(r);
 		fp2_free(s);
-		for (i = 0; i < (1 << (FP_WIDTH - 2)); i++) {
+		for (int i = 0; i < (1 << (FP_WIDTH - 2)); i++) {
 			fp2_free(t[i]);
 		}
 	}
@@ -193,8 +193,8 @@ int fp8_test_cyc(const fp8_t a) {
 
 void fp8_exp_cyc(fp8_t c, const fp8_t a, const bn_t b) {
 	fp8_t r, s, t[1 << (FP_WIDTH - 2)];
-	int i, l;
 	int8_t naf[RLC_FP_BITS + 1], *k;
+	size_t l;
 
 	if (bn_is_zero(b)) {
 		return fp8_set_dig(c, 1);
@@ -206,7 +206,7 @@ void fp8_exp_cyc(fp8_t c, const fp8_t a, const bn_t b) {
 	RLC_TRY {
 		fp8_new(r);
 		fp8_new(s);
-		for (i = 0; i < (1 << (FP_WIDTH - 2)); i ++) {
+		for (int i = 0; i < (1 << (FP_WIDTH - 2)); i ++) {
 			fp8_null(t[i]);
 			fp8_new(t[i]);
 		}
@@ -226,7 +226,7 @@ void fp8_exp_cyc(fp8_t c, const fp8_t a, const bn_t b) {
 
 		k = naf + l - 1;
 
-		for (i = l - 1; i >= 0; i--, k--) {
+		for (int i = l - 1; i >= 0; i--, k--) {
 			fp8_sqr_cyc(r, r);
 
 			if (*k > 0) {
@@ -250,7 +250,7 @@ void fp8_exp_cyc(fp8_t c, const fp8_t a, const bn_t b) {
 	RLC_FINALLY {
 		fp8_free(r);
 		fp8_free(s);
-		for (i = 0; i < (1 << (FP_WIDTH - 2)); i++) {
+		for (int i = 0; i < (1 << (FP_WIDTH - 2)); i++) {
 			fp8_free(t[i]);
 		}
 	}
@@ -470,14 +470,14 @@ void fp12_back_cyc_sim(fp12_t c[], const fp12_t a[], int n) {
 }
 
 void fp12_exp_cyc(fp12_t c, const fp12_t a, const bn_t b) {
-	int i, j, k, l, w = bn_ham(b);
+	size_t j, k, l, w = bn_ham(b);
 
 	if (bn_is_zero(b)) {
 		return fp12_set_dig(c, 1);
 	}
 
 	if ((bn_bits(b) > RLC_DIG) && ((w << 3) > bn_bits(b))) {
-		int _l[4];
+		size_t _l[4];
 		int8_t naf[4][RLC_FP_BITS + 1];
 		fp12_t t[4];
 		bn_t _b[4], n, u;
@@ -488,7 +488,7 @@ void fp12_exp_cyc(fp12_t c, const fp12_t a, const bn_t b) {
 		RLC_TRY {
 			bn_new(n);
 			bn_new(u);
-			for (i = 0; i < 4; i++) {
+			for (int i = 0; i < 4; i++) {
 				bn_null(_b[i]);
 				bn_new(_b[i]);
 				fp12_null(t[i]);
@@ -506,7 +506,7 @@ void fp12_exp_cyc(fp12_t c, const fp12_t a, const bn_t b) {
 				fp12_frb(t[3], t[2], 1);
 
 				l = 0;
-				for (i = 0; i < 4; i++) {
+				for (int i = 0; i < 4; i++) {
 					if (bn_sign(_b[i]) == RLC_NEG) {
 						fp12_inv_cyc(t[i], t[i]);
 					}
@@ -516,9 +516,9 @@ void fp12_exp_cyc(fp12_t c, const fp12_t a, const bn_t b) {
 				}
 
 				fp12_set_dig(c, 1);
-				for (i = l - 1; i >= 0; i--) {
+				for (int i = l - 1; i >= 0; i--) {
 					fp12_sqr_cyc(c, c);
-					for (j = 0; j < 4; j++) {
+					for (int j = 0; j < 4; j++) {
 						if (naf[j][i] > 0) {
 							fp12_mul(c, c, t[j]);
 						}
@@ -532,7 +532,7 @@ void fp12_exp_cyc(fp12_t c, const fp12_t a, const bn_t b) {
 			} else {
 				fp12_copy(t[0], a);
 
-				for (i = bn_bits(b) - 2; i >= 0; i--) {
+				for (int i = bn_bits(b) - 2; i >= 0; i--) {
 					fp12_sqr_cyc(t[0], t[0]);
 					if (bn_get_bit(b, i)) {
 						fp12_mul(t[0], t[0], a);
@@ -551,7 +551,7 @@ void fp12_exp_cyc(fp12_t c, const fp12_t a, const bn_t b) {
 		RLC_FINALLY {
 			bn_free(n);
 			bn_free(u);
-			for (i = 0; i < 4; i++) {
+			for (int i = 0; i < 4; i++) {
 				bn_free(_b[i]);
 				fp12_free(t[i]);
 			}
@@ -565,7 +565,7 @@ void fp12_exp_cyc(fp12_t c, const fp12_t a, const bn_t b) {
 			if (u == NULL) {
 				RLC_THROW(ERR_NO_MEMORY);
 			}
-			for (i = 0; i < w; i++) {
+			for (int i = 0; i < w; i++) {
 				fp12_null(u[i]);
 				fp12_new(u[i]);
 			}
@@ -573,7 +573,7 @@ void fp12_exp_cyc(fp12_t c, const fp12_t a, const bn_t b) {
 
 			j = 0;
 			fp12_copy(t, a);
-			for (i = 1; i < bn_bits(b); i++) {
+			for (size_t i = 1; i < bn_bits(b); i++) {
 				fp12_sqr_pck(t, t);
 				if (bn_get_bit(b, i)) {
 					fp12_copy(u[j++], t);
@@ -596,7 +596,7 @@ void fp12_exp_cyc(fp12_t c, const fp12_t a, const bn_t b) {
 				fp12_copy(c, u[0]);
 			}
 
-			for (i = j; i < k; i++) {
+			for (size_t i = j; i < k; i++) {
 				fp12_mul(c, c, u[i]);
 			}
 
@@ -608,7 +608,7 @@ void fp12_exp_cyc(fp12_t c, const fp12_t a, const bn_t b) {
 			RLC_THROW(ERR_CAUGHT);
 		}
 		RLC_FINALLY {
-			for (i = 0; i < w; i++) {
+			for (size_t i = 0; i < w; i++) {
 				fp12_free(u[i]);
 			}
 			fp12_free(t);
@@ -618,10 +618,11 @@ void fp12_exp_cyc(fp12_t c, const fp12_t a, const bn_t b) {
 }
 
 void fp2_exp_cyc_sim(fp2_t e, const fp2_t a, const bn_t b, const fp2_t c, const bn_t d) {
-	int i, l, n0, n1, l0, l1;
+	int n0, n1;
 	int8_t naf0[RLC_FP_BITS + 1], naf1[RLC_FP_BITS + 1], *_k, *_m;
 	fp2_t r, t0[1 << (EP_WIDTH - 2)];
 	fp2_t s, t1[1 << (EP_WIDTH - 2)];
+	size_t l, l0, l1;
 
 	if (bn_is_zero(b)) {
 		return fp2_exp_cyc(e, c, d);
@@ -637,7 +638,7 @@ void fp2_exp_cyc_sim(fp2_t e, const fp2_t a, const bn_t b, const fp2_t c, const 
 	RLC_TRY {
 		fp2_new(r);
 		fp2_new(s);
-		for (i = 0; i < (1 << (FP_WIDTH - 2)); i ++) {
+		for (int i = 0; i < (1 << (FP_WIDTH - 2)); i ++) {
 			fp2_null(t0[i]);
 			fp2_null(t1[i]);
 			fp2_new(t0[i]);
@@ -666,12 +667,12 @@ void fp2_exp_cyc_sim(fp2_t e, const fp2_t a, const bn_t b, const fp2_t c, const 
 
 		l = RLC_MAX(l0, l1);
 		if (bn_sign(b) == RLC_NEG) {
-			for (i = 0; i < l0; i++) {
+			for (size_t i = 0; i < l0; i++) {
 				naf0[i] = -naf0[i];
 			}
 		}
 		if (bn_sign(d) == RLC_NEG) {
-			for (i = 0; i < l1; i++) {
+			for (size_t i = 0; i < l1; i++) {
 				naf1[i] = -naf1[i];
 			}
 		}
@@ -680,7 +681,7 @@ void fp2_exp_cyc_sim(fp2_t e, const fp2_t a, const bn_t b, const fp2_t c, const 
 		_m = naf1 + l - 1;
 
 		fp2_set_dig(r, 1);
-		for (i = l - 1; i >= 0; i--, _k--, _m--) {
+		for (int i = l - 1; i >= 0; i--, _k--, _m--) {
 			fp2_sqr(r, r);
 
 			n0 = *_k;
@@ -710,7 +711,7 @@ void fp2_exp_cyc_sim(fp2_t e, const fp2_t a, const bn_t b, const fp2_t c, const 
 	RLC_FINALLY {
 		fp2_free(r);
 		fp2_free(s);
-		for (i = 0; i < (1 << (FP_WIDTH - 2)); i++) {
+		for (int i = 0; i < (1 << (FP_WIDTH - 2)); i++) {
 			fp2_free(t0[i]);
 			fp2_free(t1[i]);
 		}
@@ -820,8 +821,9 @@ void fp12_exp_cyc_sim(fp12_t e, const fp12_t a, const bn_t b, const fp12_t c, co
 	}
 }
 
-void fp12_exp_cyc_sps(fp12_t c, const fp12_t a, const int *b, int len, int sign) {
-	int i, j, k, w = len;
+void fp12_exp_cyc_sps(fp12_t c, const fp12_t a, const int *b, size_t len,
+		int sign) {
+	size_t i, j, k, w = len;
     fp12_t t, *u = RLC_ALLOCA(fp12_t, w);
 
 	if (len == 0) {
@@ -1097,7 +1099,7 @@ void fp24_back_cyc_sim(fp24_t c[], const fp24_t a[], int n) {
 }
 
 void fp24_exp_cyc(fp24_t c, const fp24_t a, const bn_t b) {
-	int i, j, k, w = bn_ham(b);
+	size_t j, k, w = bn_ham(b);
 
 	if (bn_is_zero(b)) {
 		fp24_set_dig(c, 1);
@@ -1105,7 +1107,7 @@ void fp24_exp_cyc(fp24_t c, const fp24_t a, const bn_t b) {
 	}
 
 	if ((bn_bits(b) > RLC_DIG) && ((w << 3) > bn_bits(b))) {
-		int l, _l[8];
+		size_t l, _l[8];
 		int8_t naf[8][RLC_FP_BITS + 1];
 		fp24_t t[8];
 		bn_t _b[8], n, x;
@@ -1116,7 +1118,7 @@ void fp24_exp_cyc(fp24_t c, const fp24_t a, const bn_t b) {
 		RLC_TRY {
 			bn_new(n);
 			bn_new(x);
-			for (i = 0; i < 8; i++) {
+			for (int i = 0; i < 8; i++) {
 				bn_null(_b[i]);
 				bn_new(_b[i]);
 				fp24_null(t[i]);
@@ -1131,7 +1133,7 @@ void fp24_exp_cyc(fp24_t c, const fp24_t a, const bn_t b) {
 				l = 0;
 
 				fp24_copy(t[0], a);
-				for (i = 0; i < 8; i++) {
+				for (int i = 0; i < 8; i++) {
 					_l[i] = RLC_FP_BITS + 1;
 					bn_rec_naf(naf[i], &_l[i], _b[i], 2);
 					l = RLC_MAX(l, _l[i]);
@@ -1140,16 +1142,16 @@ void fp24_exp_cyc(fp24_t c, const fp24_t a, const bn_t b) {
 					}
 				}
 
-				for (i = 0; i < 8; i++) {
+				for (int i = 0; i < 8; i++) {
 					if (bn_sign(_b[i]) == RLC_NEG) {
 						fp24_inv_cyc(t[i], t[i]);
 					}
 				}
 
 				fp24_set_dig(c, 1);
-				for (i = l - 1; i >= 0; i--) {
+				for (int i = l - 1; i >= 0; i--) {
 					fp24_sqr_cyc(c, c);
-					for (j = 0; j < 8; j++) {
+					for (int j = 0; j < 8; j++) {
 						if (naf[j][i] > 0) {
 							fp24_mul(c, c, t[j]);
 						}
@@ -1163,7 +1165,7 @@ void fp24_exp_cyc(fp24_t c, const fp24_t a, const bn_t b) {
 			} else {
 				fp24_copy(t[0], a);
 
-				for (i = bn_bits(b) - 2; i >= 0; i--) {
+				for (int i = bn_bits(b) - 2; i >= 0; i--) {
 					fp24_sqr_cyc(t[0], t[0]);
 					if (bn_get_bit(b, i)) {
 						fp24_mul(t[0], t[0], a);
@@ -1182,7 +1184,7 @@ void fp24_exp_cyc(fp24_t c, const fp24_t a, const bn_t b) {
 		RLC_FINALLY {
 			bn_free(n);
 			bn_free(x);
-			for (i = 0; i < 8; i++) {
+			for (int i = 0; i < 8; i++) {
 				bn_free(_b[i]);
 				fp24_free(t[i]);
 			}
@@ -1196,7 +1198,7 @@ void fp24_exp_cyc(fp24_t c, const fp24_t a, const bn_t b) {
 			if (u == NULL) {
 				RLC_THROW(ERR_NO_MEMORY);
 			}
-			for (i = 0; i < w; i++) {
+			for (size_t i = 0; i < w; i++) {
 				fp24_null(u[i]);
 				fp24_new(u[i]);
 			}
@@ -1204,7 +1206,7 @@ void fp24_exp_cyc(fp24_t c, const fp24_t a, const bn_t b) {
 
 			j = 0;
 			fp24_copy(t, a);
-			for (i = 1; i < bn_bits(b); i++) {
+			for (size_t i = 1; i < bn_bits(b); i++) {
 				fp24_sqr_pck(t, t);
 				if (bn_get_bit(b, i)) {
 					fp24_copy(u[j++], t);
@@ -1227,7 +1229,7 @@ void fp24_exp_cyc(fp24_t c, const fp24_t a, const bn_t b) {
 				fp24_copy(c, u[0]);
 			}
 
-			for (i = j; i < k; i++) {
+			for (size_t i = j; i < k; i++) {
 				fp24_mul(c, c, u[i]);
 			}
 
@@ -1239,7 +1241,7 @@ void fp24_exp_cyc(fp24_t c, const fp24_t a, const bn_t b) {
 			RLC_THROW(ERR_CAUGHT);
 		}
 		RLC_FINALLY {
-			for (i = 0; i < w; i++) {
+			for (size_t i = 0; i < w; i++) {
 				fp24_free(u[i]);
 			}
 			fp24_free(t);
@@ -1249,10 +1251,11 @@ void fp24_exp_cyc(fp24_t c, const fp24_t a, const bn_t b) {
 }
 
 void fp24_exp_cyc_sim(fp24_t e, const fp24_t a, const bn_t b, const fp24_t c, const bn_t d) {
-	int i, l, n0, n1, l0, l1;
+	int n0, n1;
 	int8_t naf0[RLC_FP_BITS + 1], naf1[RLC_FP_BITS + 1], *_k, *_m;
 	fp24_t r, t0[1 << (EP_WIDTH - 2)];
 	fp24_t s, t1[1 << (EP_WIDTH - 2)];
+	size_t l, l0, l1;
 
 	if (bn_is_zero(b)) {
 		return fp24_exp_cyc(e, c, d);
@@ -1268,7 +1271,7 @@ void fp24_exp_cyc_sim(fp24_t e, const fp24_t a, const bn_t b, const fp24_t c, co
 	RLC_TRY {
 		fp24_new(r);
 		fp24_new(s);
-		for (i = 0; i < (1 << (FP_WIDTH - 2)); i ++) {
+		for (int i = 0; i < (1 << (FP_WIDTH - 2)); i ++) {
 			fp24_null(t0[i]);
 			fp24_null(t1[i]);
 			fp24_new(t0[i]);
@@ -1297,12 +1300,12 @@ void fp24_exp_cyc_sim(fp24_t e, const fp24_t a, const bn_t b, const fp24_t c, co
 
 		l = RLC_MAX(l0, l1);
 		if (bn_sign(b) == RLC_NEG) {
-			for (i = 0; i < l0; i++) {
+			for (size_t i = 0; i < l0; i++) {
 				naf0[i] = -naf0[i];
 			}
 		}
 		if (bn_sign(d) == RLC_NEG) {
-			for (i = 0; i < l1; i++) {
+			for (size_t i = 0; i < l1; i++) {
 				naf1[i] = -naf1[i];
 			}
 		}
@@ -1311,7 +1314,7 @@ void fp24_exp_cyc_sim(fp24_t e, const fp24_t a, const bn_t b, const fp24_t c, co
 		_m = naf1 + l - 1;
 
 		fp24_set_dig(r, 1);
-		for (i = l - 1; i >= 0; i--, _k--, _m--) {
+		for (int i = l - 1; i >= 0; i--, _k--, _m--) {
 			fp24_sqr(r, r);
 
 			n0 = *_k;
@@ -1341,15 +1344,16 @@ void fp24_exp_cyc_sim(fp24_t e, const fp24_t a, const bn_t b, const fp24_t c, co
 	RLC_FINALLY {
 		fp24_free(r);
 		fp24_free(s);
-		for (i = 0; i < (1 << (FP_WIDTH - 2)); i++) {
+		for (int i = 0; i < (1 << (FP_WIDTH - 2)); i++) {
 			fp24_free(t0[i]);
 			fp24_free(t1[i]);
 		}
 	}
 }
 
-void fp24_exp_cyc_sps(fp24_t c, const fp24_t a, const int *b, int len, int sign) {
-	int i, j, k, w = len;
+void fp24_exp_cyc_sps(fp24_t c, const fp24_t a, const int *b, size_t len,
+		int sign) {
+	size_t i, j, k, w = len;
     fp24_t t, *u = RLC_ALLOCA(fp24_t, w);
 
 	if (len == 0) {
@@ -1719,8 +1723,9 @@ void fp48_exp_cyc(fp48_t c, const fp48_t a, const bn_t b) {
 	}
 }
 
-void fp48_exp_cyc_sps(fp48_t c, const fp48_t a, const int *b, int len, int sign) {
-	int i, j, k, w = len;
+void fp48_exp_cyc_sps(fp48_t c, const fp48_t a, const int *b, size_t len,
+		int sign) {
+	size_t i, j, k, w = len;
     fp48_t t, *u = RLC_ALLOCA(fp48_t, w);
 
 	if (len == 0) {
@@ -2090,8 +2095,9 @@ void fp54_exp_cyc(fp54_t c, const fp54_t a, const bn_t b) {
 	}
 }
 
-void fp54_exp_cyc_sps(fp54_t c, const fp54_t a, const int *b, int len, int sign) {
-	int i, j, k, w = len;
+void fp54_exp_cyc_sps(fp54_t c, const fp54_t a, const int *b, size_t len,
+		int sign) {
+	size_t i, j, k, w = len;
     fp54_t t, *u = RLC_ALLOCA(fp54_t, w);
 
 	if (len == 0) {

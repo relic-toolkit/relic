@@ -47,8 +47,9 @@
  * @param[in] k					- the integer.
  */
 static void ed_mul_fix_plain(ed_t r, const ed_t * t, const bn_t k) {
-	int l, i, n;
+	int i, n;
 	int8_t naf[RLC_FP_BITS + 1], *_k;
+	size_t l;
 
 	/* Compute the w-TNAF representation of k. */
 	l = RLC_FP_BITS + 1;

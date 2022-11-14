@@ -40,8 +40,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void md_mgf(uint8_t *key, int key_len, const uint8_t *in,
-		int in_len) {
+void md_mgf(uint8_t *key, size_t key_len, const uint8_t *in, size_t in_len) {
 	uint32_t i, j, d;
 	uint8_t *buffer = RLC_ALLOCA(uint8_t, in_len + sizeof(uint32_t));
 	uint8_t *t = RLC_ALLOCA(uint8_t, key_len + RLC_MD_LEN);

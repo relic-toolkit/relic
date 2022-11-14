@@ -132,6 +132,7 @@ static int benaloh(void) {
 	uint8_t buf[RLC_BN_BITS / 8 + 1];
 	size_t len;
 	int result;
+	dig_t prime = 0xFB;
 
 	bn_null(a);
 	bn_null(b);
@@ -144,13 +145,13 @@ static int benaloh(void) {
 		bdpe_new(pub);
 		bdpe_new(prv);
 
-		result = cp_bdpe_gen(pub, prv, bn_get_prime(47), RLC_BN_BITS);
+		result = cp_bdpe_gen(pub, prv, prime, RLC_BN_BITS);
 
 		TEST_CASE("benaloh encryption/decryption is correct") {
 			TEST_ASSERT(result == RLC_OK, end);
 			len = RLC_BN_BITS / 8 + 1;
 			rand_bytes(buf, 1);
-			in = buf[0] % bn_get_prime(47);
+			in = buf[0] % prime;
 			TEST_ASSERT(cp_bdpe_enc(buf, &len, in, pub) == RLC_OK, end);
 			TEST_ASSERT(cp_bdpe_dec(&out, buf, len, prv) == RLC_OK, end);
 			TEST_ASSERT(in == out, end);
@@ -160,12 +161,12 @@ static int benaloh(void) {
 			TEST_ASSERT(result == RLC_OK, end);
 			len = RLC_BN_BITS / 8 + 1;
 			rand_bytes(buf, 1);
-			in = buf[0] % bn_get_prime(47);
+			in = buf[0] % prime;
 			TEST_ASSERT(cp_bdpe_enc(buf, &len, in, pub) == RLC_OK, end);
 			bn_read_bin(a, buf, len);
 			rand_bytes(buf, 1);
-			out = (buf[0] % bn_get_prime(47));
-			in = (in + out) % bn_get_prime(47);
+			out = (buf[0] % prime);
+			in = (in + out) % prime;
 			TEST_ASSERT(cp_bdpe_enc(buf, &len, out, pub) == RLC_OK, end);
 			bn_read_bin(b, buf, len);
 			bn_mul(a, a, b);
@@ -2237,26 +2238,28 @@ static int psi(void) {
 			}
 		} TEST_END;
 
-		TEST_CASE("pairing-based laconic private set intersection is correct") {
-			pc_get_ord(q);
-			for (int j = 0; j < M; j++) {
-				bn_rand_mod(x[j], q);
-			}
-			for (int j = 0; j < N; j++) {
-				bn_rand_mod(y[j], q);
-			}
-			TEST_ASSERT(cp_pbpsi_gen(q, ss, s, M) == RLC_OK, end);
-			TEST_ASSERT(cp_pbpsi_ask(d, r, x, s, M) == RLC_OK, end);
-			for (int k = 0; k <= N; k++) {
-				for (int j = 0; j < k; j++) {
-					bn_copy(y[j], x[j]);
+		if (pc_param_set_any() == RLC_OK) {
+			TEST_CASE("pairing-based laconic private set intersection is correct") {
+				pc_get_ord(q);
+				for (int j = 0; j < M; j++) {
+					bn_rand_mod(x[j], q);
 				}
-				TEST_ASSERT(cp_pbpsi_ans(t, u, ss, d[0], y, N) == RLC_OK, end);
-				TEST_ASSERT(cp_pbpsi_int(z, &l, d, x, M, t, u, N) == RLC_OK,
-					end);
-				TEST_ASSERT(l == k, end);
-			}
-		} TEST_END;
+				for (int j = 0; j < N; j++) {
+					bn_rand_mod(y[j], q);
+				}
+				TEST_ASSERT(cp_pbpsi_gen(q, ss, s, M) == RLC_OK, end);
+				TEST_ASSERT(cp_pbpsi_ask(d, r, x, s, M) == RLC_OK, end);
+				for (int k = 0; k <= N; k++) {
+					for (int j = 0; j < k; j++) {
+						bn_copy(y[j], x[j]);
+					}
+					TEST_ASSERT(cp_pbpsi_ans(t, u, ss, d[0], y, N) == RLC_OK, end);
+					TEST_ASSERT(cp_pbpsi_int(z, &l, d, x, M, t, u, N) == RLC_OK,
+						end);
+					TEST_ASSERT(l == k, end);
+				}
+			} TEST_END;
+		}
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);
@@ -2297,16 +2300,6 @@ int main(void) {
 	}
 
 	util_banner("Tests for the CP module", 0);
-
-	#if defined(WITH_BN) && defined(WITH_PC)
-		util_banner("Protocols based on accumulators:\n", 0);
-		if (pc_param_set_any() == RLC_OK) {
-			if (psi() != RLC_OK) {
-				core_clean();
-				return 1;
-			}
-		}
-	#endif
 
 #if defined(WITH_BN)
 	util_banner("Protocols based on integer factorization:\n", 0);
@@ -2463,6 +2456,14 @@ int main(void) {
 			core_clean();
 			return 1;
 		}
+	}
+#endif
+
+#if defined(WITH_BN) && defined(WITH_PC)
+	util_banner("Protocols based on accumulators:\n", 0);
+	if (psi() != RLC_OK) {
+		core_clean();
+		return 1;
 	}
 #endif
 

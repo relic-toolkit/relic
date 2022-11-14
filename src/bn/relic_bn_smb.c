@@ -121,7 +121,7 @@ int bn_smb_jac(const bn_t a, const bn_t b) {
 			}
 			/* Write t0 as 2^h * t0. */
 			h = 0;
-			while (bn_is_even(t0)) {
+			while (bn_is_even(t0) && !bn_is_zero(t0)) {
 				h++;
 				bn_rsh(t0, t0, 1);
 			}

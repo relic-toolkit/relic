@@ -296,7 +296,7 @@ void fp_prime_set_dense(const bn_t p) {
 void fp_prime_set_pairf(const bn_t x, int pairf) {
 	bn_t p, t0, t1;
 	ctx_t *ctx = core_get();
-	int len = bn_bits(x) + 1;
+	size_t len = bn_bits(x) + 1;
 	int8_t s[RLC_FP_BITS + 1];
 
 	bn_null(p);
@@ -459,7 +459,7 @@ void fp_prime_set_pairf(const bn_t x, int pairf) {
 	}
 }
 
-void fp_prime_set_pmers(const int *f, int len) {
+void fp_prime_set_pmers(const int *f, size_t len) {
 	bn_t p, t;
 
 	bn_null(p);

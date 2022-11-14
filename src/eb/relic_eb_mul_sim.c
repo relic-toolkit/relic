@@ -54,10 +54,11 @@
  */
 static void eb_mul_sim_kbltz(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 		const bn_t m, const eb_t *t) {
-	int i, l, l0, l1, n0, n1, w, g;
+	int i, n0, n1, w, g;
 	int8_t u, tnaf0[RLC_FB_BITS + 8], tnaf1[RLC_FB_BITS + 8], *_k, *_m;
 	eb_t t0[1 << (EB_WIDTH - 2)];
 	eb_t t1[1 << (EB_WIDTH - 2)];
+	size_t l, l0, l1;
 
 	for (i =  0; i < (1 << (EB_WIDTH - 2)); i++) {
 		eb_null(t0[i]);
@@ -183,10 +184,11 @@ static void eb_mul_sim_kbltz(eb_t r, const eb_t p, const bn_t k, const eb_t q,
  */
 static void eb_mul_sim_plain(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 		const bn_t m, const eb_t *t) {
-	int i, l, l0, l1, n0, n1, w, g;
+	int i, n0, n1, w, g;
 	int8_t naf0[RLC_FB_BITS + 1], naf1[RLC_FB_BITS + 1], *_k, *_m;
 	eb_t t0[1 << (EB_WIDTH - 2)];
 	eb_t t1[1 << (EB_WIDTH - 2)];
+	size_t l, l0, l1;
 
 	for (i =  0; i < (1 << (EB_WIDTH - 2)); i++) {
 		eb_null(t0[i]);
@@ -310,7 +312,7 @@ void eb_mul_sim_basic(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 void eb_mul_sim_trick(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 		const bn_t m) {
 	eb_t t0[1 << (EB_WIDTH / 2)], t1[1 << (EB_WIDTH / 2)], t[1 << EB_WIDTH];
-	int l0, l1, w = EB_WIDTH / 2;
+	size_t l0, l1, w = EB_WIDTH / 2;
 	uint8_t w0[RLC_FB_BITS], w1[RLC_FB_BITS];
 	bn_t n;
 
@@ -436,8 +438,9 @@ void eb_mul_sim_inter(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 void eb_mul_sim_joint(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 		const bn_t m) {
 	eb_t t[5];
-	int i, u_i, len, offset;
+	int i, u_i, offset;
 	int8_t jsf[2 * (RLC_FB_BITS + 1)];
+	size_t len;
 
 	if (bn_is_zero(k) || eb_is_infty(p)) {
 		eb_mul(r, q, m);

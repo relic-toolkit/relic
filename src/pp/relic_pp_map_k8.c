@@ -53,7 +53,8 @@ static void pp_mil_k8(fp8_t r, ep2_t *t, ep2_t *q, ep_t *p, int m, bn_t a) {
 	fp8_t l;
 	ep_t *_p = RLC_ALLOCA(ep_t, m);
 	ep2_t *_q = RLC_ALLOCA(ep2_t, m);
-	int i, j, len = bn_bits(a) + 1;
+	size_t len = bn_bits(a) + 1;
+	int i, j;
 	int8_t s[RLC_FP_BITS + 1];
 
 	if (m == 0) {

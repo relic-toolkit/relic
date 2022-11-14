@@ -62,3 +62,6 @@
 -T dis_t
 -T rsa_pub_t
 -T rsa_prv_t
+-T ers_t
+-T etrs_t
+-T smlers_t

@@ -63,7 +63,7 @@ int cp_mklhs_sig(g1_t s, const bn_t m, const char *data, const char *id,
 	g1_t a;
 	int result = RLC_OK;
 	uint8_t *str = RLC_ALLOCA(uint8_t,
-		strlen(id) + RLC_MAX(strlen(data), strlen(tag)));
+			strlen(id) + RLC_MAX(strlen(data), strlen(tag)));
 
 	bn_null(n);
 	g1_null(a);

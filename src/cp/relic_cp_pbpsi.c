@@ -114,6 +114,7 @@ int cp_pbpsi_ask(g2_t d[], bn_t r, const bn_t x[], const g2_t s[], size_t m) {
 			bn_free(_x[i]);
 		}
 		RLC_FREE(p);
+		RLC_FREE(_x);
 	}
 	return result;
 }

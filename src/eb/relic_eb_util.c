@@ -500,7 +500,7 @@ int eb_size_bin(const eb_t a, int pack) {
 	return size;
 }
 
-void eb_read_bin(eb_t a, const uint8_t *bin, int len) {
+void eb_read_bin(eb_t a, const uint8_t *bin, size_t len) {
 	if (len == 1) {
 		if (bin[0] == 0) {
 			eb_set_infty(a);
@@ -550,7 +550,7 @@ void eb_read_bin(eb_t a, const uint8_t *bin, int len) {
 	}
 }
 
-void eb_write_bin(uint8_t *bin, int len, const eb_t a, int pack) {
+void eb_write_bin(uint8_t *bin, size_t len, const eb_t a, int pack) {
 	eb_t t;
 
 	eb_null(t);

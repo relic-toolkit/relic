@@ -285,7 +285,7 @@ char util_conv_char(dig_t i);
  * @param[in] a				- the digit.
  * @return the position of the highest bit set.
  */
-int util_bits_dig(dig_t a);
+size_t util_bits_dig(dig_t a);
 
 /**
  * Compares two buffers in constant time.

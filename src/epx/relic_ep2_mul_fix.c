@@ -47,8 +47,9 @@
  * @param[in] k					- the integer.
  */
 static void ep2_mul_fix_plain(ep2_t r, const ep2_t *table, const bn_t k) {
-	int len, i, n;
 	int8_t naf[2 * RLC_FP_BITS + 1], *t;
+	size_t len;
+	int n;
 
 	if (bn_is_zero(k)) {
 		ep2_set_infty(r);
@@ -61,7 +62,7 @@ static void ep2_mul_fix_plain(ep2_t r, const ep2_t *table, const bn_t k) {
 
 	t = naf + len - 1;
 	ep2_set_infty(r);
-	for (i = len - 1; i >= 0; i--, t--) {
+	for (int i = len - 1; i >= 0; i--, t--) {
 		ep2_dbl(r, r);
 
 		n = *t;

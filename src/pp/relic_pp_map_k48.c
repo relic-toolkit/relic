@@ -42,7 +42,8 @@ static void pp_mil_k48(fp48_t r, const fp8_t qx, const fp8_t qy, const ep_t p,
 	fp48_t l;
 	ep_t _p;
 	fp8_t rx, ry, rz, qn;
-	int i, len = bn_bits(a) + 1;
+	size_t len = bn_bits(a) + 1;
+	int i;
 	int8_t s[RLC_FP_BITS + 1];
 
 	fp48_null(l);

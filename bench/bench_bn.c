@@ -288,7 +288,7 @@ static void arith(void) {
     bn_t t[BN_MXP_SIM_LOT_LARGER], u[BN_MXP_SIM_LOT_LARGER];
 	crt_t crt;
 	dig_t f;
-	int len;
+	size_t len;
 
 	bn_null(a);
 	bn_null(b);
@@ -964,7 +964,7 @@ static void arith(void) {
 
 	BENCH_RUN("bn_rec_naf") {
 		int8_t naf[RLC_BN_BITS + 1];
-		int len;
+		size_t len;
 		bn_rand(a, RLC_POS, RLC_BN_BITS);
 		BENCH_ADD((len = RLC_BN_BITS + 1, bn_rec_naf(naf, &len, a, 4)));
 	}
@@ -974,7 +974,7 @@ static void arith(void) {
 	if (eb_param_set_any_kbltz() == RLC_OK) {
 		BENCH_RUN("bn_rec_tnaf") {
 			int8_t tnaf[RLC_FB_BITS + 8];
-			int len = RLC_BN_BITS + 1;
+			size_t len = RLC_BN_BITS + 1;
 			eb_curve_get_ord(b);
 			bn_rand_mod(a, b);
 			if (eb_curve_opt_a() == RLC_ZERO) {
@@ -1001,7 +1001,7 @@ static void arith(void) {
 
 	BENCH_RUN("bn_rec_reg") {
 		int8_t naf[RLC_BN_BITS + 1];
-		int len = RLC_BN_BITS + 1;
+		size_t len = RLC_BN_BITS + 1;
 		bn_rand(a, RLC_POS, RLC_BN_BITS);
 		BENCH_ADD((len = RLC_BN_BITS + 1, bn_rec_reg(naf, &len, a, RLC_BN_BITS, 4)));
 	}

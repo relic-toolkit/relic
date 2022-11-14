@@ -25,7 +25,6 @@
  * @file
  *
  * Implementation of the Zhang-Safavi-Naini-Susilo short signature protocol.
-
  *
  * @ingroup cp
  */
@@ -89,9 +88,9 @@ int cp_zss_sig(g2_t s, const uint8_t *msg, size_t len, int hash, const bn_t d) {
 		}
 		bn_mod(m, m, n);
 
-        /* Compute (H(m) + d) and invert. */
-        bn_add(t, m, d);
-        bn_mod(t, t, n);
+		/* Compute (H(m) + d) and invert. */
+		bn_add(t, m, d);
+		bn_mod(t, t, n);
 		bn_mod_inv(t, t, n);
 
 		/* Compute the sinature. */

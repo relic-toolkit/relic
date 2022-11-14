@@ -54,7 +54,7 @@
  */
 static void ep_mul_sim_endom(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 		const bn_t m, const ep_t *t) {
-	int i, l, l0, l1, l2, l3, sk0, sk1, sl0, sl1, w, g = 0;
+	int i, sk0, sk1, sl0, sl1, w, g = 0;
 	int8_t naf0[RLC_FP_BITS + 1], naf1[RLC_FP_BITS + 1], *t0, *t1, u;
 	int8_t naf2[RLC_FP_BITS + 1], naf3[RLC_FP_BITS + 1], *t2, *t3;
 	bn_t n, k0, k1, m0, m1;
@@ -62,6 +62,7 @@ static void ep_mul_sim_endom(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 	ep_t v;
 	ep_t tab0[1 << (EP_WIDTH - 2)];
 	ep_t tab1[1 << (EP_WIDTH - 2)];
+	size_t l, l0, l1, l2, l3;
 
 	bn_null(n);
 	bn_null(k0);
@@ -264,9 +265,10 @@ static void ep_mul_sim_endom(ep_t r, const ep_t p, const bn_t k, const ep_t q,
  */
 void ep_mul_sim_lot_endom(ep_t r, const ep_t p[], const bn_t k[], int n) {
 	const int len = RLC_FP_BITS + 1;
-	int i, j, m, l, _l[2], sk;
+	int i, j, m, sk;
 	bn_t _k[2], q, v1[3], v2[3];
 	int8_t ptr, *naf = RLC_ALLOCA(int8_t, 2 * n * len);
+	size_t l, _l[2];
 
 	bn_null(q);
 
@@ -486,10 +488,11 @@ void ep_mul_sim_lot_endom(ep_t r, const ep_t p[], const bn_t k[], int n) {
  */
 static void ep_mul_sim_plain(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 		const bn_t m, const ep_t *t) {
-	int i, l, l0, l1, w, gen;
+	int i, w, gen;
 	int8_t naf0[RLC_FP_BITS + 1], naf1[RLC_FP_BITS + 1], n0, n1, *u, *v;
 	ep_t t0[1 << (EP_WIDTH - 2)];
 	ep_t t1[1 << (EP_WIDTH - 2)];
+	size_t l, l0, l1;
 
 	RLC_TRY {
 		gen = (t == NULL ? 0 : 1);
@@ -583,9 +586,10 @@ static void ep_mul_sim_plain(ep_t r, const ep_t p, const bn_t k, const ep_t q,
  * @param[out] n			- the number of elements to multiply.
  */
 void ep_mul_sim_lot_plain(ep_t r, const ep_t p[], const bn_t k[], int n) {
-	int i, j, l, *_l = RLC_ALLOCA(int, n);
-	ep_t *_p = RLC_ALLOCA(ep_t, n);
+	int i, j;
 	int8_t *naf = NULL;
+	ep_t *_p = RLC_ALLOCA(ep_t, n);
+	size_t l, *_l = RLC_ALLOCA(size_t, n);
 
 	RLC_TRY {
 		l = 0;
@@ -677,7 +681,7 @@ void ep_mul_sim_trick(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 		const bn_t m) {
 	ep_t t0[1 << (EP_WIDTH / 2)], t1[1 << (EP_WIDTH / 2)], t[1 << EP_WIDTH];
 	bn_t n, _k, _m;
-	int l0, l1, w = EP_WIDTH / 2;
+	size_t l0, l1, w = EP_WIDTH / 2;
 	uint8_t w0[RLC_FP_BITS + 1], w1[RLC_FP_BITS + 1];
 
 	if (bn_is_zero(k) || ep_is_infty(p)) {
@@ -838,8 +842,9 @@ void ep_mul_sim_joint(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 		const bn_t m) {
 	bn_t n, _k, _m;
 	ep_t t[5];
-	int i, l, u_i, offset;
+	int i, u_i, offset;
 	int8_t jsf[2 * (RLC_FP_BITS + 1)];
+	size_t l;
 
 	if (bn_is_zero(k) || ep_is_infty(p)) {
 		ep_mul(r, q, m);

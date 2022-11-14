@@ -116,7 +116,7 @@ void bn_mxp_basic(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 
 void bn_mxp_slide(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 	bn_t tab[RLC_TABLE_SIZE], t, u, r;
-	int i, j, l, w = 1;
+	size_t l, w = 1;
 	uint8_t *win = RLC_ALLOCA(uint8_t, bn_bits(b));
 
 	if (win == NULL) {
@@ -140,28 +140,28 @@ void bn_mxp_slide(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 	bn_null(u);
 	bn_null(r);
 	/* Initialize table. */
-	for (i = 0; i < RLC_TABLE_SIZE; i++) {
+	for (size_t i = 0; i < RLC_TABLE_SIZE; i++) {
 		bn_null(tab[i]);
 	}
 
 	/* Find window size. */
-	i = bn_bits(b);
-	if (i <= 21) {
+	l = bn_bits(b);
+	if (l <= 21) {
 		w = 2;
-	} else if (i <= 32) {
+	} else if (l <= 32) {
 		w = 3;
-	} else if (i <= 128) {
+	} else if (l <= 128) {
 		w = 4;
-	} else if (i <= 256) {
+	} else if (l <= 256) {
 		w = 5;
-	} else if (i <= 512) {
+	} else if (l <= 512) {
 		w = 6;
 	} else {
 		w = 7;
 	}
 
 	RLC_TRY {
-		for (i = 0; i < (1 << (w - 1)); i++) {
+		for (size_t i = 0; i < (1 << (w - 1)); i++) {
 			bn_new(tab[i]);
 		}
 
@@ -183,19 +183,18 @@ void bn_mxp_slide(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 		bn_sqr(t, tab[0]);
 		bn_mod(t, t, m, u);
 		/* Create table. */
-		for (i = 1; i < 1 << (w - 1); i++) {
+		for (size_t i = 1; i < 1 << (w - 1); i++) {
 			bn_mul(tab[i], tab[i - 1], t);
 			bn_mod(tab[i], tab[i], m, u);
 		}
 
-		l = bn_bits(b);
 		bn_rec_slw(win, &l, b, w);
-		for (i = 0; i < l; i++) {
+		for (size_t i = 0; i < l; i++) {
 			if (win[i] == 0) {
 				bn_sqr(r, r);
 				bn_mod(r, r, m, u);
 			} else {
-				for (j = 0; j < util_bits_dig(win[i]); j++) {
+				for (size_t j = 0; j < util_bits_dig(win[i]); j++) {
 					bn_sqr(r, r);
 					bn_mod(r, r, m, u);
 				}
@@ -218,7 +217,7 @@ void bn_mxp_slide(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		for (i = 0; i < (1 << (w - 1)); i++) {
+		for (size_t i = 0; i < (1 << (w - 1)); i++) {
 			bn_free(tab[i]);
 		}
 		bn_free(u);

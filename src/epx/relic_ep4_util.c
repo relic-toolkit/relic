@@ -254,7 +254,7 @@ int ep4_size_bin(const ep4_t a, int pack) {
 	return size;
 }
 
-void ep4_read_bin(ep4_t a, const uint8_t *bin, int len) {
+void ep4_read_bin(ep4_t a, const uint8_t *bin, size_t len) {
 	if (len == 1) {
 		if (bin[0] == 0) {
 			ep4_set_infty(a);
@@ -288,7 +288,7 @@ void ep4_read_bin(ep4_t a, const uint8_t *bin, int len) {
 	}
 }
 
-void ep4_write_bin(uint8_t *bin, int len, const ep4_t a, int pack) {
+void ep4_write_bin(uint8_t *bin, size_t len, const ep4_t a, int pack) {
 	ep4_t t;
 
 	ep4_null(t);

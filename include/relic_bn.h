@@ -53,22 +53,22 @@
  * multiple precision integer must grow. Otherwise, it represents the fixed
  * fixed precision.
  */
-#define RLC_BN_BITS	((int)BN_PRECI)
+#define RLC_BN_BITS 	((size_t)BN_PRECI)
 
 /**
  * Size in digits of a block sufficient to store the required precision.
  */
-#define RLC_BN_DIGS		((int)RLC_CEIL(BN_PRECI, RLC_DIG))
+#define RLC_BN_DIGS		((size_t)RLC_CEIL(BN_PRECI, RLC_DIG))
 
 /**
  * Size in digits of a block sufficient to store a multiple precision integer.
  */
 #if BN_MAGNI == DOUBLE
-#define RLC_BN_SIZE		((int)(2 * RLC_BN_DIGS + 2))
+#define RLC_BN_SIZE		((size_t)(2 * RLC_BN_DIGS + 2))
 #elif BN_MAGNI == CARRY
-#define RLC_BN_SIZE		((int)(RLC_BN_DIGS + 1))
+#define RLC_BN_SIZE		((size_t)(RLC_BN_DIGS + 1))
 #elif BN_MAGNI == SINGLE
-#define RLC_BN_SIZE		((int)RLC_BN_DIGS)
+#define RLC_BN_SIZE		((size_t)RLC_BN_DIGS)
 #endif
 
 /**
@@ -94,9 +94,9 @@
  */
 typedef struct {
 	/** The number of digits allocated to this multiple precision integer. */
-	int alloc;
+	size_t alloc;
 	/** The number of digits actually used. */
-	int used;
+	size_t used;
 	/** The sign of this multiple precision integer. */
 	int sign;
 #if ALLOC == DYNAMIC
@@ -457,7 +457,7 @@ typedef crt_st *crt_t;
  * @throw ERR_PRECISION		- if the required precision cannot be represented
  *							by the library.
  */
-void bn_make(bn_t a, int digits);
+void bn_make(bn_t a, size_t digits);
 
 /**
  * Cleans a multiple precision integer.
@@ -476,7 +476,7 @@ void bn_clean(bn_t a);
  * @throw ERR_PRECISION		- if the required precision cannot be represented
  *							by the library.
  */
-void bn_grow(bn_t a, int digits);
+void bn_grow(bn_t a, size_t digits);
 
 /**
  * Adjust the number of valid digits of a multiple precision integer.
@@ -546,7 +546,7 @@ int bn_is_even(const bn_t a);
  * @param[in] a				- the multiple precision integer.
  * @return number of bits.
  */
-int bn_bits(const bn_t a);
+size_t bn_bits(const bn_t a);
 
 /**
  * Returns the bit stored in the given position on a multiple precision integer.
@@ -555,7 +555,7 @@ int bn_bits(const bn_t a);
  * @param[in] bit			- the bit position to read.
  * @return the bit value.
  */
-int bn_get_bit(const bn_t a, int bit);
+int bn_get_bit(const bn_t a, size_t bit);
 
 /**
  * Stores a bit in a given position on a multiple precision integer.
@@ -564,7 +564,7 @@ int bn_get_bit(const bn_t a, int bit);
  * @param[in] bit			- the bit position to store.
  * @param[in] value			- the bit value.
  */
-void bn_set_bit(bn_t a, int bit, int value);
+void bn_set_bit(bn_t a, size_t bit, int value);
 
 /**
  * Returns the Hamming weight of a multiple precision integer.
@@ -572,7 +572,7 @@ void bn_set_bit(bn_t a, int bit, int value);
  * @param[in] a				- the multiple precision integer.
  * @return the number of non-zero bits.
  */
-int bn_ham(const bn_t a);
+size_t bn_ham(const bn_t a);
 
 /**
  * Reads the first digit in a multiple precision integer.
@@ -599,7 +599,7 @@ void bn_set_dig(bn_t a, dig_t digit);
  * @param[out] a			- the result.
  * @param[in] b				- the power of 2 to assign.
  */
-void bn_set_2b(bn_t a, int b);
+void bn_set_2b(bn_t a, size_t b);
 
 /**
  * Assigns a random value to a multiple precision integer.
@@ -608,7 +608,7 @@ void bn_set_2b(bn_t a, int b);
  * @param[in] sign			- the sign to be assigned (RLC_NEG or RLC_POS).
  * @param[in] bits			- the number of bits.
  */
-void bn_rand(bn_t a, int sign, int bits);
+void bn_rand(bn_t a, int sign, size_t bits);
 
 /**
  * Assigns a non-zero random value to a multiple precision integer with absolute
@@ -635,7 +635,7 @@ void bn_print(const bn_t a);
  * @throw ERR_NO_VALID		- if the radix is invalid.
  * @return the number of digits in the given radix.
  */
-int bn_size_str(const bn_t a, int radix);
+size_t bn_size_str(const bn_t a, unsigned int radix);
 
 /**
  * Reads a multiple precision integer from a string in a given radix. The radix
@@ -647,7 +647,7 @@ int bn_size_str(const bn_t a, int radix);
  * @param[in] radix			- the radix.
  * @throw ERR_NO_VALID		- if the radix is invalid.
  */
-void bn_read_str(bn_t a, const char *str, int len, int radix);
+void bn_read_str(bn_t a, const char *str, size_t len, unsigned int radix);
 
 /**
  * Writes a multiple precision integer to a string in a given radix. The radix
@@ -660,7 +660,7 @@ void bn_read_str(bn_t a, const char *str, int len, int radix);
  * @throw ERR_NO_BUFFER		- if the buffer capacity is insufficient.
  * @throw ERR_NO_VALID		- if the radix is invalid.
  */
-void bn_write_str(char *str, int len, const bn_t a, int radix);
+void bn_write_str(char *str, size_t len, const bn_t a, unsigned radix);
 
 /**
  * Returns the number of bytes necessary to store a multiple precision integer.
@@ -668,7 +668,7 @@ void bn_write_str(char *str, int len, const bn_t a, int radix);
  * @param[in] a				- the multiple precision integer.
  * @return the number of bytes.
  */
-int bn_size_bin(const bn_t a);
+size_t bn_size_bin(const bn_t a);
 
 /**
  * Reads a positive multiple precision integer from a byte vector in big-endian
@@ -678,7 +678,7 @@ int bn_size_bin(const bn_t a);
  * @param[in] bin			- the byte vector.
  * @param[in] len			- the buffer capacity.
  */
-void bn_read_bin(bn_t a, const uint8_t *bin, int len);
+void bn_read_bin(bn_t a, const uint8_t *bin, size_t len);
 
 /**
  * Writes a positive multiple precision integer to a byte vector in big-endian
@@ -689,7 +689,7 @@ void bn_read_bin(bn_t a, const uint8_t *bin, int len);
  * @param[in] a				- the multiple integer to write.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is insufficient.
  */
-void bn_write_bin(uint8_t *bin, int len, const bn_t a);
+void bn_write_bin(uint8_t *bin, size_t len, const bn_t a);
 
 /**
  * Returns the number of digits necessary to store a multiple precision integer.
@@ -697,7 +697,7 @@ void bn_write_bin(uint8_t *bin, int len, const bn_t a);
  * @param[in] a				- the multiple precision integer.
  * @return the number of digits.
  */
-int bn_size_raw(const bn_t a);
+size_t bn_size_raw(const bn_t a);
 
 /**
  * Reads a positive multiple precision integer from a digit vector.
@@ -706,7 +706,7 @@ int bn_size_raw(const bn_t a);
  * @param[in] raw			- the digit vector.
  * @param[in] len			- the size of the string.
  */
-void bn_read_raw(bn_t a, const dig_t *raw, int len);
+void bn_read_raw(bn_t a, const dig_t *raw, size_t len);
 
 /**
  * Writes a positive multiple precision integer to a byte vector.
@@ -716,7 +716,7 @@ void bn_read_raw(bn_t a, const dig_t *raw, int len);
  * @param[in] a				- the multiple integer to write.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is insufficient.
  */
-void bn_write_raw(dig_t *raw, int len, const bn_t a);
+void bn_write_raw(dig_t *raw, size_t len, const bn_t a);
 
 /**
  * Returns the result of an unsigned comparison between two multiple precision
@@ -870,7 +870,7 @@ void bn_hlv(bn_t c, const bn_t a);
  * @param[in] a				- the multiple precision integer to shift.
  * @param[in] bits			- the number of bits to shift.
  */
-void bn_lsh(bn_t c, const bn_t a, int bits);
+void bn_lsh(bn_t c, const bn_t a, unsigned int bits);
 
 /**
  * Shifts a multiple precision number to the right. Computes
@@ -880,7 +880,7 @@ void bn_lsh(bn_t c, const bn_t a, int bits);
  * @param[in] a				- the multiple precision integer to shift.
  * @param[in] bits			- the number of bits to shift.
  */
-void bn_rsh(bn_t c, const bn_t a, int bits);
+void bn_rsh(bn_t c, const bn_t a, unsigned int bits);
 
 /**
  * Divides a multiple precision integer by another multiple precision integer
@@ -1294,15 +1294,6 @@ int bn_smb_leg(const bn_t a, const bn_t b);
 int bn_smb_jac(const bn_t a, const bn_t b);
 
 /**
- * Returns a small precomputed prime from a given position in the list of prime
- * numbers.
- *
- * @param[in] pos			- the position in the prime sequence.
- * @return a prime if the position is lower than 512, 0 otherwise.
- */
-dig_t bn_get_prime(int pos);
-
-/**
  * Tests if a number is a probable prime.
  *
  * @param[in] a				- the multiple precision integer to test.
@@ -1342,7 +1333,7 @@ int bn_is_prime_solov(const bn_t a);
  * @param[out] a			- the result.
  * @param[in] bits			- the length of the number in bits.
  */
-void bn_gen_prime_basic(bn_t a, int bits);
+void bn_gen_prime_basic(bn_t a, size_t bits);
 
 /**
  * Generates a probable prime number a with (a - 1)/2 also prime.
@@ -1350,7 +1341,7 @@ void bn_gen_prime_basic(bn_t a, int bits);
  * @param[out] a			- the result.
  * @param[in] bits			- the length of the number in bits.
  */
-void bn_gen_prime_safep(bn_t a, int bits);
+void bn_gen_prime_safep(bn_t a, size_t bits);
 
 /**
  * Generates a probable prime number with (a - 1)/2, (a + 1)/2 and
@@ -1359,7 +1350,7 @@ void bn_gen_prime_safep(bn_t a, int bits);
  * @param[out] a			- the result.
  * @param[in] bits			- the length of the number in bits.
  */
-void bn_gen_prime_stron(bn_t a, int bits);
+void bn_gen_prime_stron(bn_t a, size_t bits);
 
 /**
  * Generates a probable prime number b, with (b-1) divisible by a probable large
@@ -1370,7 +1361,7 @@ void bn_gen_prime_stron(bn_t a, int bits);
  * @param[in] abits			- the length of the factor a in bits.
  * @param[in] bbits			- the length of the result in bits.
  */
-int bn_gen_prime_factor(bn_t a, bn_t b, int abits, int bbits);
+int bn_gen_prime_factor(bn_t a, bn_t b, size_t abits, size_t bbits);
 
 
 /**
@@ -1402,7 +1393,7 @@ int bn_is_factor(bn_t c, const bn_t a);
  * @param[in] w				- the window size in bits.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is insufficient.
  */
-void bn_rec_win(uint8_t *win, int *len, const bn_t k, int w);
+void bn_rec_win(uint8_t *win, size_t *len, const bn_t k, size_t w);
 
 /**
  * Recodes a positive integer in sliding window form. If a negative integer is
@@ -1414,7 +1405,7 @@ void bn_rec_win(uint8_t *win, int *len, const bn_t k, int w);
  * @param[in] w				- the window size in bits.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is insufficient.
  */
-void bn_rec_slw(uint8_t *win, int *len, const bn_t k, int w);
+void bn_rec_slw(uint8_t *win, size_t *len, const bn_t k, size_t w);
 
 /**
  * Recodes a positive integer in width-w Non-Adjacent Form. If a negative
@@ -1426,7 +1417,7 @@ void bn_rec_slw(uint8_t *win, int *len, const bn_t k, int w);
  * @param[in] w				- the window size in bits.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is insufficient.
  */
-void bn_rec_naf(int8_t *naf, int *len, const bn_t k, int w);
+void bn_rec_naf(int8_t *naf, size_t *len, const bn_t k, size_t w);
 
 /**
  * Recodes a positive integer in width-w \tau-NAF. If a negative integer is
@@ -1440,7 +1431,8 @@ void bn_rec_naf(int8_t *naf, int *len, const bn_t k, int w);
  * @param[in] w				- the window size in bits.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is insufficient.
  */
-void bn_rec_tnaf(int8_t *tnaf, int *len, const bn_t k, int8_t u, int m, int w);
+void bn_rec_tnaf(int8_t *tnaf, size_t *len, const bn_t k, int8_t u, size_t m,
+		size_t w);
 
 /**
  * Recodes a positive integer in regular fixed-length width-w \tau-NAF.
@@ -1454,7 +1446,8 @@ void bn_rec_tnaf(int8_t *tnaf, int *len, const bn_t k, int8_t u, int m, int w);
  * @param[in] w				- the window size in bits.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is insufficient.
  */
-void bn_rec_rtnaf(int8_t *tnaf, int *len, const bn_t k, int8_t u, int m, int w);
+void bn_rec_rtnaf(int8_t *tnaf, size_t *len, const bn_t k, int8_t u, size_t m,
+		size_t w);
 
 /**
  * Write the constants needed for \tau-NAF recoding as a set of \alpha_u =
@@ -1466,7 +1459,8 @@ void bn_rec_rtnaf(int8_t *tnaf, int *len, const bn_t k, int8_t u, int m, int w);
  * @param[in] u		- the u curve parameter.
  * @param[in] w		- the window size in bits.
  */
-void bn_rec_tnaf_get(uint8_t *t, int8_t *beta, int8_t *gama, int8_t u, int w);
+void bn_rec_tnaf_get(uint8_t *t, int8_t *beta, int8_t *gama, int8_t u,
+		size_t w);
 
 /**
  * Computes the partial reduction k partmod d = r0 + r1 * t, where
@@ -1478,7 +1472,7 @@ void bn_rec_tnaf_get(uint8_t *t, int8_t *beta, int8_t *gama, int8_t u, int w);
  * @param[in] u			- the u curve parameter.
  * @param[in] m			- the extension degree of the binary field.
  */
-void bn_rec_tnaf_mod(bn_t r0, bn_t r1, const bn_t k, int u, int m);
+void bn_rec_tnaf_mod(bn_t r0, bn_t r1, const bn_t k, int u, size_t m);
 
 /**
  * Recodes a positive integer in regular fixed-length width-w NAF. If a negative
@@ -1491,7 +1485,7 @@ void bn_rec_tnaf_mod(bn_t r0, bn_t r1, const bn_t k, int u, int m);
  * @param[in] w				- the window size in bits.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is insufficient.
  */
-void bn_rec_reg(int8_t *naf, int *len, const bn_t k, int n, int w);
+void bn_rec_reg(int8_t *naf, size_t *len, const bn_t k, size_t n, size_t w);
 
 /**
  * Recodes of a pair of positive integers in Joint Sparse Form. If negative
@@ -1503,7 +1497,7 @@ void bn_rec_reg(int8_t *naf, int *len, const bn_t k, int n, int w);
  * @param[in] l				- the second integer to recode.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is insufficient.
  */
-void bn_rec_jsf(int8_t *jsf, int *len, const bn_t k, const bn_t l);
+void bn_rec_jsf(int8_t *jsf, size_t *len, const bn_t k, const bn_t l);
 
 /**
  * Recodes a positive integer into two parts k0,k1 such that k = k0 + phi(k1),

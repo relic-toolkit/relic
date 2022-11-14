@@ -73,9 +73,10 @@ int cp_vbnn_gen(bn_t msk, ec_t mpk) {
 int cp_vbnn_gen_prv(bn_t sk, ec_t pk, const bn_t msk, const uint8_t *id,
 		size_t id_len) {
 	uint8_t hash[RLC_MD_LEN];
-	int len, result = RLC_OK;
+	size_t len;
 	uint8_t *buf = NULL;
 	bn_t n, r;
+	int result = RLC_OK;
 
 	/* zero variables */
 	bn_null(n);
@@ -125,10 +126,11 @@ int cp_vbnn_gen_prv(bn_t sk, ec_t pk, const bn_t msk, const uint8_t *id,
 
 int cp_vbnn_sig(ec_t r, bn_t z, bn_t h, const uint8_t *id, size_t id_len,
 		const uint8_t *msg, int msg_len, const bn_t sk, const ec_t pk) {
-	int len, result = RLC_OK;
+	size_t len;
 	uint8_t *buf = NULL, *buf_i, hash[RLC_MD_LEN];
 	bn_t n, y;
 	ec_t t;
+	int result = RLC_OK;
 
 	/* zero variables */
 	bn_null(n);
@@ -189,11 +191,11 @@ int cp_vbnn_sig(ec_t r, bn_t z, bn_t h, const uint8_t *id, size_t id_len,
 
 int cp_vbnn_ver(const ec_t r, const bn_t z, const bn_t h, const uint8_t *id,
 		size_t id_len, const uint8_t *msg, int msg_len, const ec_t mpk) {
-	int len, result = 0;
+	size_t len;
 	uint8_t *buf = NULL, *buf_i, hash[RLC_MD_LEN];
 	bn_t n, c, _h;
-	ec_t Z;
-	ec_t t;
+	ec_t Z, t;
+	int result = 0;
 
 	/* zero variables */
 	bn_null(n);
