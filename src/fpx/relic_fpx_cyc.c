@@ -1160,8 +1160,6 @@ void fp18_exp_cyc(fp18_t c, const fp18_t a, const bn_t b) {
 			ep_curve_get_ord(n);
 			fp_prime_get_par(x);
 			bn_mod(_b[0], b, n);
-			bn_print(b);
-			bn_print(_b[0]);
 			bn_rec_frb(_b, 6, _b[0], x, n, ep_curve_is_pairf() == EP_BN);
 
 			if (ep_curve_is_pairf()) {
