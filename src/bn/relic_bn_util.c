@@ -121,11 +121,6 @@ size_t bn_bits(const bn_t a) {
 int bn_get_bit(const bn_t a, uint_t bit) {
 	int d;
 
-	if (bit < 0) {
-		RLC_THROW(ERR_NO_VALID);
-		return 0;
-	}
-
 	if (bit > bn_bits(a)) {
 		return 0;
 	}
@@ -141,11 +136,6 @@ int bn_get_bit(const bn_t a, uint_t bit) {
 
 void bn_set_bit(bn_t a, uint_t bit, int value) {
 	int d;
-
-	if (bit < 0) {
-		RLC_THROW(ERR_NO_VALID);
-		return;
-	}
 
 	RLC_RIP(bit, d, bit);
 
