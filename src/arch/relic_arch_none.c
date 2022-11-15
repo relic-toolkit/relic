@@ -45,7 +45,7 @@ ull_t arch_cycles(void) {
 	return 0;
 }
 
-unsigned int arch_lzcnt(dig_t a) {
+uint_t arch_lzcnt(dig_t a) {
 #if WSIZE == 8 || WSIZE == 16
 	static const uint8_t table[16] = {
 		4, 3, 2, 2, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0

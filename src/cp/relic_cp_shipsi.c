@@ -104,7 +104,7 @@ int cp_shipsi_ans(bn_t t[], bn_t u, bn_t d, const bn_t g, const crt_t crt,
 		const bn_t y[], size_t n) {
 	int j, result = RLC_OK, len = RLC_CEIL(RLC_BN_BITS, 8);
 	uint8_t h[RLC_MD_LEN], bin[RLC_CEIL(RLC_BN_BITS, 8)];
-	unsigned int *shuffle = RLC_ALLOCA(unsigned int, n);
+	uint_t *shuffle = RLC_ALLOCA(unsigned int, n);
 	bn_t p, q;
 
 	bn_null(p);

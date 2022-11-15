@@ -303,7 +303,7 @@ int util_cmp_const(const void *a, const void *b, int n);
  * @param[out] p 			- the resulting permutation.
  * @param[in] n 			- the size of the permutation.
  */
-void util_perm(unsigned int p[], int n);
+void util_perm(uint_t p[], int n);
 
 /**
  * Formats and prints data following a printf-like syntax.

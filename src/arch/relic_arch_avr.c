@@ -51,7 +51,7 @@ void arch_copy_rom(char *dest, const char *src, size_t len) {
 	*dest = 0;
 }
 
-unsigned int arch_lzcnt() {
+uint_t arch_lzcnt() {
 	static const uint8_t table[16] = {
 		0, 1, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4
 	};

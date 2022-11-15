@@ -555,7 +555,7 @@ size_t bn_bits(const bn_t a);
  * @param[in] bit			- the bit position to read.
  * @return the bit value.
  */
-int bn_get_bit(const bn_t a, size_t bit);
+int bn_get_bit(const bn_t a, uint_t bit);
 
 /**
  * Stores a bit in a given position on a multiple precision integer.
@@ -564,7 +564,7 @@ int bn_get_bit(const bn_t a, size_t bit);
  * @param[in] bit			- the bit position to store.
  * @param[in] value			- the bit value.
  */
-void bn_set_bit(bn_t a, size_t bit, int value);
+void bn_set_bit(bn_t a, uint_t bit, int value);
 
 /**
  * Returns the Hamming weight of a multiple precision integer.
@@ -572,7 +572,7 @@ void bn_set_bit(bn_t a, size_t bit, int value);
  * @param[in] a				- the multiple precision integer.
  * @return the number of non-zero bits.
  */
-size_t bn_ham(const bn_t a);
+uint_t bn_ham(const bn_t a);
 
 /**
  * Reads the first digit in a multiple precision integer.
@@ -635,7 +635,7 @@ void bn_print(const bn_t a);
  * @throw ERR_NO_VALID		- if the radix is invalid.
  * @return the number of digits in the given radix.
  */
-size_t bn_size_str(const bn_t a, unsigned int radix);
+size_t bn_size_str(const bn_t a, uint_t radix);
 
 /**
  * Reads a multiple precision integer from a string in a given radix. The radix
@@ -647,7 +647,7 @@ size_t bn_size_str(const bn_t a, unsigned int radix);
  * @param[in] radix			- the radix.
  * @throw ERR_NO_VALID		- if the radix is invalid.
  */
-void bn_read_str(bn_t a, const char *str, size_t len, unsigned int radix);
+void bn_read_str(bn_t a, const char *str, size_t len, uint_t radix);
 
 /**
  * Writes a multiple precision integer to a string in a given radix. The radix
@@ -870,7 +870,7 @@ void bn_hlv(bn_t c, const bn_t a);
  * @param[in] a				- the multiple precision integer to shift.
  * @param[in] bits			- the number of bits to shift.
  */
-void bn_lsh(bn_t c, const bn_t a, unsigned int bits);
+void bn_lsh(bn_t c, const bn_t a, uint_t bits);
 
 /**
  * Shifts a multiple precision number to the right. Computes
@@ -880,7 +880,7 @@ void bn_lsh(bn_t c, const bn_t a, unsigned int bits);
  * @param[in] a				- the multiple precision integer to shift.
  * @param[in] bits			- the number of bits to shift.
  */
-void bn_rsh(bn_t c, const bn_t a, unsigned int bits);
+void bn_rsh(bn_t c, const bn_t a, uint_t bits);
 
 /**
  * Divides a multiple precision integer by another multiple precision integer

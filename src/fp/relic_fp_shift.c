@@ -36,7 +36,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void fp_lsh(fp_t c, const fp_t a, int bits) {
+void fp_lsh(fp_t c, const fp_t a, uint_t bits) {
 	int digits;
 
 	RLC_RIP(bits, digits, bits);
@@ -62,7 +62,7 @@ void fp_lsh(fp_t c, const fp_t a, int bits) {
 
 }
 
-void fp_rsh(fp_t c, const fp_t a, int bits) {
+void fp_rsh(fp_t c, const fp_t a, uint_t bits) {
 	int digits;
 
 	RLC_RIP(bits, digits, bits);
