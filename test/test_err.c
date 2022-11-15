@@ -38,17 +38,17 @@
 static void dummy(void);
 static void dummy2(void);
 
-int j;
+int counter;
 
 static void dummy(void) {
-	j++;
-	if (j < 6)
+	counter++;
+	if (counter < 6)
 		dummy2();
 }
 
 static void dummy2(void) {
-	j++;
-	if (j < 5)
+	counter++;
+	if (counter < 5)
 		dummy();
 	else {
 		RLC_THROW(ERR_NO_MEMORY);
@@ -101,7 +101,7 @@ int main(void) {
 		}
 	} TEST_END;
 
-	j = 0;
+	counter = 0;
 
 	TEST_ONCE("try-catch is correct and error message is printed") {
 		RLC_TRY {
