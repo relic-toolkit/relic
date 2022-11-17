@@ -1167,7 +1167,6 @@ void fp18_exp_cyc(fp18_t c, const fp18_t a, const bn_t b) {
 
 				fp18_copy(t[0], a);
 				for (i = 0; i < 6; i++) {
-					bn_print(_b[i]);
 					if (i > 0) {
 						fp18_gls(t[i], t[i - 1]);
 					}
