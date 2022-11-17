@@ -301,7 +301,7 @@ void pp_dbl_k18_projc_lazyr(fp18_t l, ep3_t r, const ep3_t q, const ep_t p) {
 
 void pp_dbl_lit_k18(fp18_t l, ep_t r, const ep_t p, const ep3_t q) {
 	fp_t t0, t1, t2, t3, t4, t5, t6;
-	int one = 1, zero = 0;
+	int two = 2, one = 1, zero = 0;
 
 	fp_null(t0);
 	fp_null(t1);
@@ -310,6 +310,11 @@ void pp_dbl_lit_k18(fp18_t l, ep_t r, const ep_t p, const ep3_t q) {
 	fp_null(t4);
 	fp_null(t5);
 	fp_null(t6);
+
+	if (ep3_curve_is_twist() == RLC_EP_MTYPE) {
+		//one ^= 1;
+		//zero ^= 1;
+	}
 
 	RLC_TRY {
 		fp_new(t0);
@@ -354,19 +359,13 @@ void pp_dbl_lit_k18(fp18_t l, ep_t r, const ep_t p, const ep3_t q) {
 		fp_dbl(r->z, r->z);
 		r->coord = PROJC;
 
-		if (ep3_curve_is_twist() == RLC_EP_MTYPE) {
-			one ^= 1;
-			zero ^= 1;
-		}
-
-		fp3_dbl(l[zero][one], q->x);
-		fp3_add(l[zero][one], l[zero][one], q->x);
-		fp_mul(l[zero][one][0], l[zero][one][0], t0);
-		fp_mul(l[zero][one][1], l[zero][one][1], t0);
-		fp_mul(l[zero][one][2], l[zero][one][2], t0);
+		fp3_dbl(l[zero][two], q->x);
+		fp3_add(l[zero][two], l[zero][two], q->x);
+		fp_mul(l[zero][two][0], l[zero][two][0], t0);
+		fp_mul(l[zero][two][1], l[zero][two][1], t0);
+		fp_mul(l[zero][two][2], l[zero][two][2], t0);
 
 		fp_sub(l[zero][zero][0], t3, t1);
-		fp_zero(l[zero][zero][1]);
 
 		fp_mul(l[one][one][0], q->y[0], t5);
 		fp_mul(l[one][one][1], q->y[1], t5);

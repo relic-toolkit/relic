@@ -1114,8 +1114,8 @@ static void fp18_gls(fp18_t c, const fp18_t a) {
 	RLC_TRY {
 		fp18_new(b);
 
-		/* We have that x mod n = p^4 - 3*p mod n. */
-		fp18_sqr(b, a);
+		/* We have that x = p^4 - 3*p = (p^3 - 3)p mod n. */
+		fp18_sqr_cyc(b, a);
 		fp18_mul(b, b, a);
 		fp18_frb(c, a, 3);
 		fp18_inv_cyc(b, b);
@@ -1178,7 +1178,7 @@ void fp18_exp_cyc(fp18_t c, const fp18_t a, const bn_t b) {
 
 				fp18_set_dig(c, 1);
 				for (j = l - 1; j >= 0; j--) {
-					fp18_sqr(c, c);
+					fp18_sqr_cyc(c, c);
 					for (i = 0; i < 6; i++) {
 						if (naf[i][j] > 0) {
 							fp18_mul(c, c, t[i]);

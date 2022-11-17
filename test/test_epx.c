@@ -1591,6 +1591,11 @@ static int multiplication3(void) {
 			ep3_mul_gen(r, k);
 			ep3_neg(r, r);
 			TEST_ASSERT(ep3_cmp(q, r) == RLC_EQ, end);
+			bn_rand_mod(k, n);
+			ep3_mul_gen(q, k);
+			bn_add(k, k, n);
+			ep3_mul_gen(r, k);
+			TEST_ASSERT(ep3_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 
 #if EP_MUL == BASIC || !defined(STRIP)
@@ -2612,6 +2617,11 @@ static int multiplication4(void) {
 			bn_neg(k, k);
 			ep4_mul_gen(r, k);
 			ep4_neg(r, r);
+			TEST_ASSERT(ep4_cmp(q, r) == RLC_EQ, end);
+			bn_rand_mod(k, n);
+			ep4_mul_gen(q, k);
+			bn_add(k, k, n);
+			ep4_mul_gen(r, k);
 			TEST_ASSERT(ep4_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 

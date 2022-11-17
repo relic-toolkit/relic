@@ -69,57 +69,77 @@ void pp_exp_k18(fp18_t c, fp18_t a) {
 		/* First, compute m^(p^9 - 1)(p^3 + 1). */
 		fp18_conv_cyc(c, a);
 
-		/* t0 = f^x. */
+		/* t0 = f^x, t1 = f^2, t4 = f * t1 = f^3. */
 		fp18_exp_cyc_sps(t0, c, b, l, bn_sign(x));
-
-		/* t1 = f^2, t4 = f * t1. */
 		fp18_sqr_cyc(t1, c);
 		fp18_mul(t4, c, t1);
+		/* t2 = f^5, t1 = f^7. */
 		fp18_mul(t2, t1, t4);
 		fp18_mul(t1, t1, t2);
-		fp18_mul(t2, t2, t0);
+		/* t0 = f^(x + 5), t2 = f^(x^2 + 5x), c = f^l_6. */
+		fp18_mul(t0, t0, t2);
 		fp18_exp_cyc_sps(t2, t0, b, l, bn_sign(x));
-
 		fp18_mul(c, t1, t2);
-		fp18_exp_dig(t0, c, 7);
-		fp18_sqr(t1, t0);
+
+		/* t0 = f^7l_6, t1 = f^14l_6, t3 = f^xl_6 */
+		fp18_sqr_cyc(t5, c);
+		fp18_sqr_cyc(t0, t5);
+		fp18_mul(t0, t0, c);
+		fp18_mul(t0, t0, t5);
+		fp18_sqr_cyc(t1, t0);
 		fp18_exp_cyc_sps(t3, c, b, l, bn_sign(x));
-		fp18_inv_cyc(t3, t3);
+		/* c = f^x^2l_6 + 3 = f^l_5. */
 		fp18_exp_cyc_sps(c, t3, b, l, bn_sign(x));
 		fp18_mul(c, c, t4);
+		/* t2 = f^xl_5, t4 = f^-xl_5, t5 = f^(-xl_5 - 14l_6). */
 		fp18_exp_cyc_sps(t2, c, b, l, bn_sign(x));
-		fp18_inv_cyc(t2, t2);
 		fp18_inv_cyc(t4, t2);
+		fp18_inv_cyc(t1, t1);
 		fp18_mul(t5, t1, t4);
-		fp18_sqr(t1, t5);
+		/* t1 = f^(-3xl_5 - 49l_6) = f^l_4. */
+		fp18_sqr_cyc(t1, t5);
 		fp18_mul(t1, t1, t5);
+		fp18_inv_cyc(t0, t0);
 		fp18_mul(t1, t1, t0);
 
+		/* t2 = f^x^2l_5, t0 = f^-l_4, t1 = f^-(-2l_4 - xl_5)p = f^l_1p. */
 		fp18_exp_cyc_sps(t2, t2, b, l, bn_sign(x));
-		fp18_inv_cyc(t2, t2);
 		fp18_inv_cyc(t0, t1);
-		fp18_sqr(t1, t0);
+		fp18_sqr_cyc(t1, t0);
 		fp18_mul(t1, t1, t4);
+		fp18_inv_cyc(t1, t1);
 		fp18_frb(t1, t1, 1);
-		fp18_frb(c, c, 1);
-		fp18_mul(t4, c, t0);
+		/* t4 = (fl_5p * f^l_4)p^4 * f^l_1p. */
+		fp18_frb(t4, c, 1);
+		fp18_inv_cyc(t0, t0);
+		fp18_mul(t4, t4, t0);
 		fp18_frb(t4, t4, 4);
-		fp18_exp_dig(t3, t3, 7);
-		fp18_inv_cyc(t3, t3);
-		fp18_sqr(t1, t3);
+		fp18_mul(t4, t4, t1);
+		/* t3 = f^7xl_6, t1 = f^14xl_6, t0 = f^(35xl_6 + 2x^2l_5) = f^l_3. */
+		fp18_sqr_cyc(t5, t3);
+		fp18_sqr_cyc(t1, t5);
+		fp18_mul(t3, t1, t3);
+		fp18_mul(t3, t3, t5);
+		fp18_sqr_cyc(t1, t3);
 		fp18_mul(t0, t1, t2);
-		fp18_sqr(t0, t0);
+		fp18_sqr_cyc(t0, t0);
 		fp18_mul(t0, t0, t3);
+
+		/* t3 = f^21xl_6, t1 = f^x^2l_5 + 21xl_6 = f^l_0. */
 		fp18_mul(t3, t1, t3);
 		fp18_mul(t1, t2, t3);
+		/* t4 = (fl_5p * f^l_4)p^4 * f^l_1p * f^l_0. */
 		fp18_mul(t4, t1, t4);
+		/* t1 = f^(2l_5 - xl_0) = f^l_2. */
 		fp18_exp_cyc_sps(t1, t1, b, l, bn_sign(x));
 		fp18_inv_cyc(t1, t1);
-		fp18_sqr(t2, c);
+		fp18_sqr_cyc(t2, c);
 		fp18_mul(t1, t1, t2);
+		/* t0 = (f^l_3p * f^l_2)p^2. */
 		fp18_frb(t0, t0, 1);
 		fp18_mul(t0, t0, t1);
 		fp18_frb(t0, t0, 2);
+		/* c = (fl_5p * f^l_4)p^4 * f^l_1p * f^l_0 * (f^l_3p * f^l_2)p^2. */
 		fp18_mul(c, t4, t0);
 	}
 	RLC_CATCH_ANY {

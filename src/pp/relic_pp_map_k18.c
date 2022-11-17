@@ -155,10 +155,13 @@ static void pp_mil_lit_k18(fp18_t r, ep_t *t, ep_t *p, ep3_t *q, int m, bn_t a) 
 			RLC_THROW(ERR_NO_MEMORY);
 		}
 		fp18_new(l);
+
 		for (j = 0; j < m; j++) {
 			ep3_null(_q[j]);
 			ep3_new(_q[j]);
 			ep_copy(t[j], p[j]);
+			fp3_mul(q[j]->x, q[j]->x, core_get()->ep3_frb[2]);
+			fp3_mul(q[j]->y, q[j]->y, core_get()->ep3_frb[2]);
 			ep3_neg(_q[j], q[j]);
 		}
 

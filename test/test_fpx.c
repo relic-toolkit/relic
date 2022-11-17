@@ -5100,6 +5100,7 @@ static int cyclotomic18(void) {
         TEST_CASE("cyclotomic exponentiation is correct") {
 			fp18_rand(a);
 			fp18_conv_cyc(a, a);
+			pp_exp_k18(a, a);
 			bn_zero(f);
 			fp18_exp_cyc(c, a, f);
 			TEST_ASSERT(fp18_cmp_dig(c, 1) == RLC_EQ, end);

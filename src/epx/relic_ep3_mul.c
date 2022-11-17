@@ -97,7 +97,7 @@ static void ep3_mul_glv_imp(ep3_t r, const ep3_t p, const bn_t k) {
 			ep3_psi(q[i], q[i - 1]);
 		}
 #if defined(EP_MIXED)
-		ep3_norm_sim(q + 1, q + 1, (1 << (EP_WIDTH - 1)) - 1);
+		ep3_norm_sim(q + 1, q + 1, 5);
 #endif
 
 		l = 0;

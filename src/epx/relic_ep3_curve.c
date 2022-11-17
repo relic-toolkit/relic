@@ -279,11 +279,13 @@ void ep3_curve_set_twist(int type) {
 	ctx_t *ctx = core_get();
 	ep3_t g;
 	fp3_t a, b;
+	fp18_t c;
 	bn_t r, h;
 
 	ep3_null(g);
 	fp3_null(a);
 	fp3_null(b);
+	fp18_null(c);
 	bn_null(r);
 	bn_null(h);
 
@@ -298,6 +300,7 @@ void ep3_curve_set_twist(int type) {
 		ep3_new(g);
 		fp3_new(a);
 		fp3_new(b);
+		fp18_new(c);
 		bn_new(r);
 		bn_new(h);
 
@@ -338,6 +341,11 @@ void ep3_curve_set_twist(int type) {
 			fp3_inv(ctx->ep3_frb[1], ctx->ep3_frb[1]);
 		}
 
+		fp18_zero(c);
+		fp9_set_dig(c[1], 1);
+		fp18_inv(c, c);
+		fp3_copy(ctx->ep3_frb[2], c[1][2]);
+
 #if defined(WITH_PC)
 		/* Compute pairing generator. */
 		pc_core_calc();
@@ -354,6 +362,7 @@ void ep3_curve_set_twist(int type) {
 		ep3_free(g);
 		fp3_free(a);
 		fp3_free(b);
+		fp18_free(c);
 		bn_free(r);
 		bn_free(h);
 	}

@@ -961,6 +961,18 @@ void pp_dbl_k54_projc(fp54_t l, fp9_t rx, fp9_t ry, fp9_t rz, const ep_t p);
 void pp_dbl_lit_k12(fp12_t l, ep_t r, const ep_t p, const ep2_t q);
 
 /**
+ * Doubles a point and evaluates the corresponding line function at another
+ * point on an elliptic curve twist with embedding degree 18 using projective
+ * coordinates.
+ *
+ * @param[out] l			- the result of the evaluation.
+ * @param[in, out] r		- the resulting point.
+ * @param[in] p				- the point to double.
+ * @param[in] q				- the affine point to evaluate the line function.
+ */
+void pp_dbl_lit_k18(fp18_t l, ep_t r, const ep_t p, const ep3_t q);
+
+/**
  * Computes the final exponentiation for a pairing defined over curves of
  * embedding degree 2. Computes c = a^(p^2 - 1)/r.
  *

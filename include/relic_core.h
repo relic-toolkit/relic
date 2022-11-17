@@ -352,7 +352,7 @@ typedef struct _ctx_t {
 	/** The cofactor of the group order in the elliptic curve. */
 	bn_st ep3_h;
 	/** The constants needed for Frobenius. */
-	fp3_t ep3_frb[2];
+	fp3_t ep3_frb[3];
 	/** Optimization identifier for the a-coefficient. */
 	int ep3_opt_a;
 	/** Optimization identifier for the b-coefficient. */

@@ -93,6 +93,11 @@ void pp_add_k18_projc_basic(fp18_t l, ep3_t r, const ep3_t q, const ep_t p) {
 	fp3_null(t3);
 	fp3_null(t4);
 
+	if (ep3_curve_is_twist() == RLC_EP_MTYPE) {
+		one ^= 1;
+		zero ^= 1;
+	}
+
 	RLC_TRY {
 		fp3_new(t0);
 		fp3_new(t1);
@@ -118,11 +123,6 @@ void pp_add_k18_projc_basic(fp18_t l, ep3_t r, const ep3_t q, const ep_t p) {
 		/* F = E + z1 * C. */
 		fp3_mul(t3, t3, r->z);
 		fp3_add(t3, t2, t3);
-
-		if (ep3_curve_is_twist() == RLC_EP_MTYPE) {
-			one ^= 1;
-			zero ^= 1;
-		}
 
 		/* l10 = - (A * xp). */
 		fp_neg(t4[0], p->x);
@@ -175,23 +175,28 @@ void pp_add_k18_projc_basic(fp18_t l, ep3_t r, const ep3_t q, const ep_t p) {
 
 void pp_add_k18_projc_lazyr(fp18_t l, ep3_t r, const ep3_t q, const ep_t p) {
 	fp3_t t0, t1, t2, t3;
-	dv2_t u0, u1;
+	dv3_t u0, u1;
 	int one = 1, zero = 0;
 
 	fp3_null(t0);
 	fp3_null(t1);
 	fp3_null(t2);
 	fp3_null(t3);
-	dv2_null(u0);
-	dv2_null(u1);
+	dv3_null(u0);
+	dv3_null(u1);
+
+	if (ep3_curve_is_twist() == RLC_EP_MTYPE) {
+		one ^= 1;
+		zero ^= 1;
+	}
 
 	RLC_TRY {
 		fp3_new(t0);
 		fp3_new(t1);
 		fp3_new(t2);
 		fp3_new(t3);
-		dv2_new(u0);
-		dv2_new(u1);
+		dv3_new(u0);
+		dv3_new(u1);
 
 		fp3_mul(t0, r->z, q->x);
 		fp3_sub(t0, r->x, t0);
@@ -216,11 +221,6 @@ void pp_add_k18_projc_lazyr(fp18_t l, ep3_t r, const ep3_t q, const ep_t p) {
 		fp3_rdcn_low(r->y, u1);
 		fp3_mul(r->x, t0, t3);
 		fp3_mul(r->z, r->z, t2);
-
-		if (ep3_curve_is_twist() == RLC_EP_MTYPE) {
-			one ^= 1;
-			zero ^= 1;
-		}
 
 		fp_neg(t3[0], p->x);
 		fp_mul(l[one][zero][0], t1[0], t3[0]);
@@ -247,8 +247,8 @@ void pp_add_k18_projc_lazyr(fp18_t l, ep3_t r, const ep3_t q, const ep_t p) {
 		fp3_free(t1);
 		fp3_free(t2);
 		fp3_free(t3);
-		dv2_free(u0);
-		dv2_free(u1);
+		dv3_free(u0);
+		dv3_free(u1);
 	}
 }
 
@@ -258,12 +258,17 @@ void pp_add_k18_projc_lazyr(fp18_t l, ep3_t r, const ep3_t q, const ep_t p) {
 
 void pp_add_lit_k18(fp18_t l, ep_t r, const ep_t p, const ep3_t q) {
 	fp_t t0, t1, t2, t3;
-	int one = 1, zero = 0;
+	int two = 2, one = 1, zero = 0;
 
 	fp_null(t0);
 	fp_null(t1);
 	fp_null(t2);
 	fp_null(t3);
+
+	if (ep3_curve_is_twist() == RLC_EP_MTYPE) {
+		//one ^= 1;
+		//zero ^= 1;
+	}
 
 	RLC_TRY {
 		fp_new(t0);
@@ -278,18 +283,13 @@ void pp_add_lit_k18(fp18_t l, ep_t r, const ep_t p, const ep3_t q) {
 		fp_mul(t2, p->x, t1);
 		r->coord = PROJC;
 
-		if (ep3_curve_is_twist() == RLC_EP_MTYPE) {
-			one ^= 1;
-			zero ^= 1;
-		}
-
 		fp_mul(l[zero][zero][0], t0, p->y);
 		fp_sub(l[zero][zero][0], t2, l[zero][zero][0]);
 
-		fp_mul(l[zero][one][0], q->x[0], t1);
-		fp_mul(l[zero][one][1], q->x[1], t1);
-		fp_mul(l[zero][one][2], q->x[2], t1);
-		fp3_neg(l[zero][one], l[zero][one]);
+		fp_mul(l[zero][two][0], q->x[0], t1);
+		fp_mul(l[zero][two][1], q->x[1], t1);
+		fp_mul(l[zero][two][2], q->x[2], t1);
+		fp3_neg(l[zero][two], l[zero][two]);
 
 		fp_mul(l[one][one][0], q->y[0], t0);
 		fp_mul(l[one][one][1], q->y[1], t0);

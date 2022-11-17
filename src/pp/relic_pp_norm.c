@@ -69,7 +69,7 @@ void pp_norm_k12(ep2_t r, const ep2_t p) {
 		return;
 	}
 
-	if (p->coord) {
+	if (p->coord == BASIC) {
 		/* If the point is represented in affine coordinates, we just copy it. */
 		ep2_copy(r, p);
 	}
@@ -88,7 +88,7 @@ void pp_norm_k18(ep3_t r, const ep3_t p) {
 		return;
 	}
 
-	if (p->coord) {
+	if (p->coord == BASIC) {
 		/* If the point is represented in affine coordinates, we just copy it. */
 		ep3_copy(r, p);
 	}
@@ -107,7 +107,7 @@ void pp_norm_k24(ep4_t r, const ep4_t p) {
 		return;
 	}
 
-	if (p->coord) {
+	if (p->coord == BASIC) {
 		/* If the point is represented in affine coordinates, we just copy it. */
 		ep4_copy(r, p);
 	}
