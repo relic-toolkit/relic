@@ -487,7 +487,7 @@ void pp_map_oatep_k18(fp18_t r, const ep_t p, const ep3_t q) {
 
 		if (!ep_is_infty(_p[0]) && !ep3_is_infty(_q[0])) {
 			switch (ep_curve_is_pairf()) {
-				case EP_BN:
+				case EP_K18:
 					bn_mul_dig(a, a, 6);
 					bn_add_dig(a, a, 2);
 					/* r = f_{|a|,Q}(P). */
@@ -498,15 +498,6 @@ void pp_map_oatep_k18(fp18_t r, const ep_t p, const ep3_t q) {
 						ep3_neg(t[0], t[0]);
 					}
 					pp_fin_k18_oatep(r, t[0], _q[0], _p[0]);
-					pp_exp_k18(r, r);
-					break;
-				case EP_B12:
-					/* r = f_{|a|,Q}(P). */
-					pp_mil_k18(r, t, _q, _p, 1, a);
-					if (bn_sign(a) == RLC_NEG) {
-						fp18_inv_cyc(r, r);
-						ep3_neg(t[0], t[0]);
-					}
 					pp_exp_k18(r, r);
 					break;
 			}
