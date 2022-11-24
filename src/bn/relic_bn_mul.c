@@ -218,11 +218,9 @@ void bn_mul_comba(bn_t c, const bn_t a, const bn_t b) {
 			bn_muln_low(t->dp, a->dp, b->dp, a->used);
 		} else {
 			if (a->used > b->used) {
-				bn_muld_low(t->dp, a->dp, a->used, b->dp, b->used, 0,
-						a->used + b->used);
+				bn_muld_low(t->dp, a->dp, a->used, b->dp, b->used, 0, t->used);
 			} else {
-				bn_muld_low(t->dp, b->dp, b->used, a->dp, a->used, 0,
-						a->used + b->used);
+				bn_muld_low(t->dp, b->dp, b->used, a->dp, a->used, 0, t->used);
 			}
 		}
 
