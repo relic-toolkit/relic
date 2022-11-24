@@ -50,7 +50,7 @@ jobs:
 
       - name: Install Linux Dependencies
         if: ${{ (runner.os == 'Linux') && (matrix.config.cc == 'clang') }}
-        run: sudo apt install libomp libomp-dev
+        run: sudo apt install libomp5 libomp-dev
 
       - name: Set Windows enviroment
         if: ${{ (runner.os == 'Windows') && (matrix.config.cc == 'cl') }}
