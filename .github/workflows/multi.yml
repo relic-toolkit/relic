@@ -48,6 +48,10 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Install Linux Dependencies
+        if: ${{ (runner.os == 'Linux') && (matrix.config.cc == 'clang') }}
+        run: sudo apt install libomp libomp-dev
+
       - name: Set Windows enviroment
         if: ${{ (runner.os == 'Windows') && (matrix.config.cc == 'cl') }}
         uses: ilammy/msvc-dev-cmd@v1
