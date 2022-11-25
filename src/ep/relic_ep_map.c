@@ -316,10 +316,13 @@ void ep_map_swift(ep_t p, const uint8_t *msg, int len) {
 				fp_mul(v, v, z1);
 				fp_add(v, v, ep_curve_get_b());
 
-				dv_swap_cond(x1, y1, RLC_FP_DIGS, fp_smb(u) == 1);
-				dv_swap_cond(t, u, RLC_FP_DIGS, fp_smb(u) == 1);
-				dv_swap_cond(x1, z1, RLC_FP_DIGS, fp_smb(v) == 1);
-				dv_swap_cond(t, v, RLC_FP_DIGS, fp_smb(v) == 1);
+				int c2 = fp_smb(u);
+				int c3 = fp_smb(v);
+
+				dv_swap_cond(x1, y1, RLC_FP_DIGS, c2 == 1);
+				dv_swap_cond(t, u, RLC_FP_DIGS, c2 == 1);
+				dv_swap_cond(x1, z1, RLC_FP_DIGS, c3 == 1);
+				dv_swap_cond(t, v, RLC_FP_DIGS, c3 == 1);
 
 				if (!fp_srt(t, t)) {
 					RLC_THROW(ERR_NO_VALID);
