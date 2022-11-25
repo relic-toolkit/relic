@@ -39,7 +39,7 @@
 
 #if FPX_RDC == BASIC || !defined(STRIP)
 
-void fp54_sqr_basic(fp54_t c, fp54_t a) {
+void fp54_sqr_basic(fp54_t c, const fp54_t a) {
 	fp18_t t0, t1, t2, t3, t4;
 
 	fp18_null(t0);
@@ -111,7 +111,7 @@ void fp54_sqr_basic(fp54_t c, fp54_t a) {
 	}
 }
 
-void fp54_sqr_cyc_basic(fp54_t c, fp54_t a) {
+void fp54_sqr_cyc_basic(fp54_t c, const fp54_t a) {
 	fp9_t t0, t1, t2, t3, t4, t5, t6;
 
 	fp9_null(t0);
@@ -200,7 +200,7 @@ void fp54_sqr_cyc_basic(fp54_t c, fp54_t a) {
 	}
 }
 
-void fp54_sqr_pck_basic(fp54_t c, fp54_t a) {
+void fp54_sqr_pck_basic(fp54_t c, const fp54_t a) {
 	fp9_t t0, t1, t2, t3, t4, t5, t6;
 
 	fp9_null(t0);
@@ -274,17 +274,17 @@ void fp54_sqr_pck_basic(fp54_t c, fp54_t a) {
 
 #if FPX_RDC == LAZYR || !defined(STRIP)
 
-void fp54_sqr_lazyr(fp54_t c, fp54_t a) {
+void fp54_sqr_lazyr(fp54_t c, const fp54_t a) {
 	/* TODO: implement lazy reduction. */
 	fp54_sqr_basic(c, a);
 }
 
-void fp54_sqr_cyc_lazyr(fp54_t c, fp54_t a) {
+void fp54_sqr_cyc_lazyr(fp54_t c, const fp54_t a) {
 	/* TODO: implement lazy reduction. */
 	fp54_sqr_cyc_basic(c, a);
 }
 
-void fp54_sqr_pck_lazyr(fp54_t c, fp54_t a) {
+void fp54_sqr_pck_lazyr(fp54_t c, const fp54_t a) {
 	fp9_t t0, t1, t2;
 	dv9_t u0, u1, u2, u3;
 

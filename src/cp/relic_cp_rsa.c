@@ -660,7 +660,8 @@ int cp_rsa_gen(rsa_t pub, rsa_t prv, int bits) {
 	return result;
 }
 
-int cp_rsa_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len, rsa_t pub) {
+int cp_rsa_enc(uint8_t *out, size_t *out_len, const uint8_t *in, size_t in_len,
+		const rsa_t pub) {
 	bn_t m, eb;
 	int size, pad_len, result = RLC_OK;
 
@@ -717,7 +718,8 @@ int cp_rsa_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len, rsa_t pub) {
 	return result;
 }
 
-int cp_rsa_dec(uint8_t *out, int *out_len, uint8_t *in, int in_len, rsa_t prv) {
+int cp_rsa_dec(uint8_t *out, size_t *out_len, const uint8_t *in, size_t in_len,
+		const rsa_t prv) {
 	bn_t m, eb;
 	int size, pad_len, result = RLC_OK;
 
@@ -738,52 +740,9 @@ int cp_rsa_dec(uint8_t *out, int *out_len, uint8_t *in, int in_len, rsa_t prv) {
 #if !defined(CP_CRT)
 		bn_mxp(eb, eb, prv->d, prv->crt->n);
 #else
-
-		bn_copy(m, eb);
-
-#if MULTI == OPENMP
-		omp_set_num_threads(CORES);
-		#pragma omp parallel copyin(core_ctx) firstprivate(prv)
-		{
-			#pragma omp sections
-			{
-				#pragma omp section
-				{
-#endif
-					/* m1 = c^dP mod p. */
-					bn_mxp(eb, eb, prv->crt->dp, prv->crt->p);
-
-#if MULTI == OPENMP
-				}
-				#pragma omp section
-				{
-#endif
-					/* m2 = c^dQ mod q. */
-					bn_mxp(m, m, prv->crt->dq, prv->crt->q);
-
-#if MULTI == OPENMP
-				}
-			}
-		}
-#endif
-		/* m1 = m1 - m2 mod p. */
-		bn_sub(eb, eb, m);
-		while (bn_sign(eb) == RLC_NEG) {
-			bn_add(eb, eb, prv->crt->p);
-		}
-		bn_mod(eb, eb, prv->crt->p);
-		/* m1 = qInv(m1 - m2) mod p. */
-		bn_mul(eb, eb, prv->crt->qi);
-		bn_mod(eb, eb, prv->crt->p);
-		/* m = m2 + m1 * q. */
-		bn_mul(eb, eb, prv->crt->q);
-		bn_add(eb, eb, m);
-
+		bn_mxp_crt(eb, eb, prv->crt->dp, prv->crt->dq, prv->crt, 0);
 #endif /* CP_CRT */
 
-		if (bn_cmp(eb, prv->crt->n) != RLC_LT) {
-			result = RLC_ERR;
-		}
 #if CP_RSAPD == BASIC
 		if (pad_basic(eb, &pad_len, in_len, size, RSA_DEC) == RLC_OK) {
 #elif CP_RSAPD == PKCS1
@@ -815,7 +774,8 @@ int cp_rsa_dec(uint8_t *out, int *out_len, uint8_t *in, int in_len, rsa_t prv) {
 	return result;
 }
 
-int cp_rsa_sig(uint8_t *sig, int *sig_len, uint8_t *msg, int msg_len, int hash, rsa_t prv) {
+int cp_rsa_sig(uint8_t *sig, size_t *sig_len, const uint8_t *msg,
+		size_t msg_len, int hash, const rsa_t prv) {
 	bn_t m, eb;
 	int pad_len, size, result = RLC_OK;
 	uint8_t h[RLC_MD_LEN];
@@ -876,44 +836,7 @@ int cp_rsa_sig(uint8_t *sig, int *sig_len, uint8_t *msg, int msg_len, int hash, 
 #if !defined(CP_CRT)
 			bn_mxp(eb, eb, prv->d, prv->crt->n);
 #else  /* CP_CRT */
-
-#if MULTI == OPENMP
-			omp_set_num_threads(CORES);
-			#pragma omp parallel copyin(core_ctx) firstprivate(prv)
-			{
-				#pragma omp sections
-				{
-					#pragma omp section
-					{
-#endif
-						/* m1 = c^dP mod p. */
-						bn_mxp(eb, eb, prv->crt->dp, prv->crt->p);
-#if MULTI == OPENMP
-					}
-					#pragma omp section
-					{
-#endif
-						/* m2 = c^dQ mod q. */
-						bn_mxp(m, m, prv->crt->dq, prv->crt->q);
-#if MULTI == OPENMP
-					}
-				}
-			}
-#endif
-			/* m1 = m1 - m2 mod p. */
-			bn_sub(eb, eb, m);
-			while (bn_sign(eb) == RLC_NEG) {
-				bn_add(eb, eb, prv->crt->p);
-			}
-			bn_mod(eb, eb, prv->crt->p);
-			/* m1 = qInv(m1 - m2) mod p. */
-			bn_mul(eb, eb, prv->crt->qi);
-			bn_mod(eb, eb, prv->crt->p);
-			/* m = m2 + m1 * q. */
-			bn_mul(eb, eb, prv->crt->q);
-			bn_add(eb, eb, m);
-			bn_mod(eb, eb, prv->crt->n);
-
+			bn_mxp_crt(eb, eb, prv->crt->dp, prv->crt->dq, prv->crt, 0);
 #endif /* CP_CRT */
 
 			size = bn_size_bin(prv->crt->n);
@@ -940,7 +863,8 @@ int cp_rsa_sig(uint8_t *sig, int *sig_len, uint8_t *msg, int msg_len, int hash, 
 	return result;
 }
 
-int cp_rsa_ver(uint8_t *sig, int sig_len, uint8_t *msg, int msg_len, int hash, rsa_t pub) {
+int cp_rsa_ver(uint8_t *sig, size_t sig_len, const uint8_t *msg, size_t msg_len,
+		int hash, const rsa_t pub) {
 	bn_t m, eb;
 	int size, pad_len, result;
 	uint8_t *h1 = RLC_ALLOCA(uint8_t, RLC_MAX(msg_len, RLC_MD_LEN) + 8);

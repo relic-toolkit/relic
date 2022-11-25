@@ -268,7 +268,7 @@ typedef struct _ctx_t {
 	/** The distinguished non-square used by the mapping function */
 	fp_st ep_map_u;
 	/** Precomputed constants for hashing. */
-	fp_st ep_map_c[4];
+	fp_st ep_map_c[5];
 #ifdef EP_ENDOM
 #if EP_MUL == LWNAF || EP_FIX == COMBS || EP_FIX == LWNAF || EP_SIM == INTER || !defined(STRIP)
 	/** Parameters required by the GLV method. @{ */
@@ -393,6 +393,7 @@ typedef struct _ctx_t {
 	/** Constants for computing Frobenius maps in higher extensions. @{ */
 	fp2_st fp2_p1[5];
 	fp2_st fp2_p2[3];
+	int frb4;
 	fp2_st fp4_p1;
 	/** @} */
 	/** Constants for computing Frobenius maps in higher extensions. @{ */
@@ -413,10 +414,10 @@ typedef struct _ctx_t {
 	/** Stores the time measured after the execution of the benchmark. */
 	ben_t after;
 	/** Stores the sum of timings for the current benchmark. */
-	long long total;
+	ull_t total;
 #ifdef OVERH
 	/** Benchmarking overhead to be measured and subtracted from benchmarks. */
-	long long over;
+	ull_t over;
 #endif
 #endif
 
@@ -437,6 +438,13 @@ typedef struct _ctx_t {
 	int perf_fd;
 	/** Buffer for storing perf data, */
 	struct perf_event_mmap_page *perf_buf;
+#endif
+
+	/** Function pointer to underlying lznct implementation. */
+#if ARCH == X86
+	unsigned int (*lzcnt_ptr)(unsigned int);
+#elif ARCH == X64 || ARCH == A64
+	unsigned int (*lzcnt_ptr)(ull_t);
 #endif
 } ctx_t;
 
@@ -473,6 +481,9 @@ ctx_t *core_get(void);
 void core_set(ctx_t *ctx);
 
 #if defined(MULTI)
+
+#include "relic_multi.h"
+
 /**
  * Set an initializer function which is called when the context
  * is uninitialized. This function is called for every thread.

@@ -1,9 +1,9 @@
 RELIC_ROOT = ../../..
 
 all: type1 type3
-	gcc -c test1.c -o test1.o -I /usr/local/include/relic_type1
-	gcc -c test2.c -o test2.o -I /usr/local/include/relic_type3
-	gcc -o test test.c test1.o test2.o /usr/local/lib/librelic_s_*.a -lgmp
+	gcc -ggdb -c test1.c -o test1.o -I /usr/local/include/relic_type1
+	gcc -ggdb -c test2.c -o test2.o -I /usr/local/include/relic_type3
+	gcc -ggdb -o test test.c test1.o test2.o /usr/local/lib/librelic_s_*.a -lgmp
 
 type1:
 	mkdir -p target-type1

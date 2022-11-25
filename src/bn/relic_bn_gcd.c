@@ -115,40 +115,27 @@ void bn_gcd_ext_basic(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 
 		bn_zero(x_1);
 		bn_set_dig(y_1, 1);
-
+		bn_set_dig(d, 1);
 		if (e != NULL) {
-			bn_set_dig(d, 1);
 			bn_zero(e);
+		}
 
-			while (!bn_is_zero(v)) {
-				bn_div_rem(q, r, u, v);
+		while (!bn_is_zero(v)) {
+			bn_div_rem(q, r, u, v);
 
-				bn_copy(u, v);
-				bn_copy(v, r);
+			bn_copy(u, v);
+			bn_copy(v, r);
 
-				bn_mul(c, q, x_1);
-				bn_sub(r, d, c);
-				bn_copy(d, x_1);
-				bn_copy(x_1, r);
+			bn_mul(c, q, x_1);
+			bn_sub(r, d, c);
+			bn_copy(d, x_1);
+			bn_copy(x_1, r);
 
+			if (e != NULL) {
 				bn_mul(c, q, y_1);
 				bn_sub(r, e, c);
 				bn_copy(e, y_1);
 				bn_copy(y_1, r);
-			}
-		} else {
-			bn_set_dig(d, 1);
-
-			while (!bn_is_zero(v)) {
-				bn_div_rem(q, r, u, v);
-
-				bn_copy(u, v);
-				bn_copy(v, r);
-
-				bn_mul(c, q, x_1);
-				bn_sub(r, d, c);
-				bn_copy(d, x_1);
-				bn_copy(x_1, r);
 			}
 		}
 		bn_copy(c, u);
@@ -207,7 +194,7 @@ void bn_gcd_lehme(bn_t c, const bn_t a, const bn_t b) {
 		bn_new(t2);
 		bn_new(t3);
 
-		if (bn_cmp(a, b) == RLC_GT) {
+		if (bn_cmp_abs(a, b) == RLC_GT) {
 			bn_abs(x, a);
 			bn_abs(y, b);
 		} else {
@@ -399,7 +386,7 @@ void bn_gcd_ext_lehme(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 		bn_new(t3);
 		bn_new(t4);
 
-		if (bn_cmp(a, b) != RLC_LT) {
+		if (bn_cmp_abs(a, b) != RLC_LT) {
 			bn_abs(x, a);
 			bn_abs(y, b);
 			swap = 0;
@@ -601,9 +588,9 @@ void bn_gcd_ext_lehme(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 
 #endif
 
-#if BN_GCD == STEIN || !defined(STRIP)
+#if BN_GCD == BINAR || !defined(STRIP)
 
-void bn_gcd_stein(bn_t c, const bn_t a, const bn_t b) {
+void bn_gcd_binar(bn_t c, const bn_t a, const bn_t b) {
 	bn_t u, v, t;
 	int shift;
 
@@ -663,9 +650,9 @@ void bn_gcd_stein(bn_t c, const bn_t a, const bn_t b) {
 	}
 }
 
-void bn_gcd_ext_stein(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
-	bn_t x, y, u, v, _a, _b, _e;
-	int shift, found;
+void bn_gcd_ext_binar(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
+	bn_t x, y, t, u, v, _a, _b, _e;
+	int shift;
 
 	if (bn_is_zero(a)) {
 		bn_abs(c, b);
@@ -687,6 +674,7 @@ void bn_gcd_ext_stein(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 
 	bn_null(x);
 	bn_null(y);
+	bn_null(t);
 	bn_null(u);
 	bn_null(v);
 	bn_null(_a);
@@ -696,6 +684,7 @@ void bn_gcd_ext_stein(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 	RLC_TRY {
 		bn_new(x);
 		bn_new(y);
+		bn_new(t);
 		bn_new(u);
 		bn_new(v);
 		bn_new(_a);
@@ -723,25 +712,24 @@ void bn_gcd_ext_stein(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 		bn_zero(d);
 		bn_set_dig(_e, 1);
 
-		found = 0;
-		while (!found) {
-			/* While u is even, u = u/2. */
-			while ((u->dp[0] & 0x01) == 0) {
-				bn_hlv(u, u);
-				/* If A = B = 0 (mod 2) then A = A/2, B = B/2. */
-				if ((_a->dp[0] & 0x01) == 0 && (_b->dp[0] & 0x01) == 0) {
-					bn_hlv(_a, _a);
-					bn_hlv(_b, _b);
-				} else {
-					/* Otherwise A = (A + y)/2, B = (B - x)/2. */
-					bn_add(_a, _a, y);
-					bn_hlv(_a, _a);
-					bn_sub(_b, _b, x);
-					bn_hlv(_b, _b);
-				}
+		/* While u is even, u = u/2. */
+		while (bn_is_even(u)) {
+			bn_hlv(u, u);
+			/* If A = B = 0 (mod 2) then A = A/2, B = B/2. */
+			if ((_a->dp[0] & 0x01) == 0 && (_b->dp[0] & 0x01) == 0) {
+				bn_hlv(_a, _a);
+				bn_hlv(_b, _b);
+			} else {
+				/* Otherwise A = (A + y)/2, B = (B - x)/2. */
+				bn_add(_a, _a, y);
+				bn_hlv(_a, _a);
+				bn_sub(_b, _b, x);
+				bn_hlv(_b, _b);
 			}
-			/* While v is even, v = v/2. */
-			while ((v->dp[0] & 0x01) == 0) {
+		}
+		while (bn_cmp(u, v) != RLC_EQ) {
+			/* If v is even, v = v/2. */
+			if (bn_is_even(v)) {
 				bn_hlv(v, v);
 				/* If C = D = 0 (mod 2) then C = C/2, D = D/2. */
 				if ((d->dp[0] & 0x01) == 0 && (_e->dp[0] & 0x01) == 0) {
@@ -754,22 +742,44 @@ void bn_gcd_ext_stein(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 					bn_sub(_e, _e, x);
 					bn_hlv(_e, _e);
 				}
-			}
-			/* If u >= v then u = u - v, A = A - C, B = B - D. */
-			if (bn_cmp(u, v) != RLC_LT) {
-				bn_sub(u, u, v);
-				bn_sub(_a, _a, d);
-				bn_sub(_b, _b, _e);
 			} else {
-				/* Otherwise, v = v - u, C = C - a, D = D - B. */
-				bn_sub(v, v, u);
-				bn_sub(d, d, _a);
-				bn_sub(_e, _e, _b);
+				if (bn_cmp(v, u) == RLC_LT) {
+					bn_copy(c, u);
+					bn_copy(u, v);
+					bn_copy(v, c);
+					bn_copy(c, d);
+					bn_copy(d, _a);
+					bn_copy(_a, c);
+					bn_copy(c, _e);
+					bn_copy(_e, _b);
+					bn_copy(_b, c);
+				} else {
+					bn_sub(v, v, u);
+					bn_sub(d, d, _a);
+					bn_sub(_e, _e, _b);
+				}
 			}
-			/* If u = 0 then d = C, e = D and return (d, e, g * v). */
-			if (bn_is_zero(u)) {
-				bn_lsh(c, v, shift);
-				found = 1;
+		}
+		/* If u = 0 then d = C, e = D and return (d, e, g * v). */
+		bn_lsh(c, u, shift);
+		/* Now fix reciprocals. */
+		bn_div(x, x, u);
+		bn_div(y, y, u);
+		bn_hlv(_a, x);
+		bn_hlv(_b, y);
+		while (bn_cmp_abs(d, _b) == RLC_GT) {
+			bn_div(t, d, _b);
+			if (bn_bits(t) > 1) {
+				bn_hlv(t, t);
+			}
+			bn_mul(v, x, t);
+			bn_mul(u, y, t);
+			if (bn_sign(d) != bn_sign(u)) {
+				bn_add(d, d, u);
+				bn_sub(_e, _e, v);
+			} else {
+				bn_sub(d, d, u);
+				bn_add(_e, _e, v);
 			}
 		}
 		if (e != NULL) {
@@ -782,6 +792,7 @@ void bn_gcd_ext_stein(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 	RLC_FINALLY {
 		bn_free(x);
 		bn_free(y);
+		bn_free(t);
 		bn_free(u);
 		bn_free(v);
 		bn_free(_a);

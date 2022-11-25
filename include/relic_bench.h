@@ -121,7 +121,7 @@
  * @param[in] FUNCTION		- the function executed.
  */
 #define BENCH_ADD(FUNCTION)													\
-	FUNCTION;																\
+	if (BENCH > 1) FUNCTION;												\
 	bench_before();															\
 	for (int _b = 0; _b < BENCH; _b++) {									\
 		FUNCTION;															\
@@ -157,7 +157,7 @@ typedef struct timeval ben_t;
 
 #else /* TIMER == CYCLE || TIMER == PERF */
 
-typedef unsigned long long ben_t;
+typedef ull_t ben_t;
 
 #endif
 

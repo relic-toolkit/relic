@@ -248,7 +248,7 @@
 #define SECG_K256_H		"1"
 #define SECG_K256_BETA	"7AE96A2B657C07106E64479EAC3434E99CF0497512F58995C1396C28719501EE"
 #define SECG_K256_LAMB	"5363AD4CC05C30E0A5261C028812645A122E22EA20816678DF02967C1B23BD72"
-#define SECG_K256_MAPU "1"
+#define SECG_K256_MAPU	"1"
 /** @} */
 #endif
 
@@ -338,8 +338,6 @@
 #define BN_P158_Y		"4"
 #define BN_P158_R		"240000006ED000007FE96000419F59800C9FFD81"
 #define BN_P158_H		"1"
-#define BN_P158_BETA	"240000006E8800007F434000411F93C00C7F3B08"
-#define BN_P158_LAMB	"240000006E4000007E9D800040A064000C5EB323"
 #define BN_P158_MAPU	"1"
 /** @} */
 #endif
@@ -403,6 +401,51 @@
 #define SM9_P256_R		"B640000002A3A6F1D603AB4FF58EC74449F2934B18EA8BEEE56EE19CD69ECF25"
 #define SM9_P256_H		"1"
 #define SM9_P256_MAPU	"-1"
+/** @} */
+#endif
+
+#if defined(EP_ENDOM) && FP_PRIME == 315
+/**
+* Parameters for a 315-bit pairing-friendly prime curve.
+*/
+/** @{ */
+#define B24_P315_A		"0"
+#define B24_P315_B		"1"
+#define B24_P315_X		"41A0A424393988DA1B2B117076EF6E4F54B344CC46DDE3C983603A832CB638DBF4B721710866097"
+#define B24_P315_Y		"2E6F83C55DEFF20227ECDF0DB2BB2EBB5D72C8A29010871D3CCE9059E83DFB96F2922D5DA4E4E5F"
+#define B24_P315_R		"196DEAC24A9DA12B25FC7EC9CF927A98C8C480ECE644E36419D0C5FD00C00001"
+#define B24_P315_H		"2FE8030000000000"
+#define B24_P315_MAPU	"-2"
+/** @} */
+#endif
+
+#if defined(EP_ENDOM) && FP_PRIME == 317
+/**
+* Parameters for a 317-bit pairing-friendly prime curve.
+*/
+/** @{ */
+#define B24_P317_A		"0"
+#define B24_P317_B		"4"
+#define B24_P317_X		"325C2B065C4FAC86D1140C27F7335CACB7D5C0542CAE9E790B8A1290570A39CA25FFAEF7F1DA1F7"
+#define B24_P317_Y		"32239CB1D737F2283BA0707D11B291DF9AC9255DF42134F7D5C9A6B3B4038E13B4544BDC6F7E333"
+#define B24_P317_R		"443F917EA68DAFC2D0B097F28D83CD491CD1E79196BF0E7AF000000000000001"
+#define B24_P317_H		"3D512E5584A9AAAB"
+#define B24_P317_MAPU	"-3"
+/** @} */
+#endif
+
+#if defined(EP_ENDOM) && FP_PRIME == 377
+/**
+* Parameters for a 377-bit pairing-friendly prime curve.
+*/
+/** @{ */
+#define B12_P377_A		"0"
+#define B12_P377_B		"1"
+#define B12_P377_X		"8848DEFE740A67C8FC6225BF87FF5485951E2CAA9D41BB188282C8BD37CB5CD5481512FFCD394EEAB9B16EB21BE9EF"
+#define B12_P377_Y		"1914A69C5102EFF1F674F5D30AFEEC4BD7FB348CA3E52D96D182AD44FB82305C2FE3D3634A9591AFD82DE55559C8EA6"
+#define B12_P377_R		"12AB655E9A2CA55660B44D1E5C37B00159AA76FED00000010A11800000000001"
+#define B12_P377_H		"170B5D44300000000000000000000000"
+#define B12_P377_MAPU	"-2"
 /** @} */
 #endif
 
@@ -614,8 +657,6 @@
 #define BN_P638_Y		"128AC488584B7C05EFD5436E559D741C978A5027926525B3DECB22D40E03FC7BD8D4235FD7E9DD2F3BFF3945D54C25E701624E27AFEF8F27F7DDEADEDAF3FE3AA0234D35290703FCE6254A7D75B6A304"
 #define BN_P638_R		"23FFFFFDC000000D7FFFFFB8000001D3FFFFF942D000165E3FFF94870000D52FFFFDD0E00008DE55600086550021E555FFFFF54FFFF4EAC000000049800154D9FFFFFFFFFFFFEDA00000000000000061"
 #define BN_P638_H		"1"
-#define BN_P638_BETA	"47FFFFFCA000000D7FFFFFB8000001AFFFFFFCA480000D5BFFFFCA47FFFFFDBFFFFEE90000000018C000479CFFFFFFFFFFFFF9D0000000000000002E"
-#define BN_P638_LAMB	"8FFFFFF94000001AFFFFFF700000035FFFFFF947E0001AC0FFFF947DFFFFFC0FFFFDCFC00000002580007D69FFFFFFFFFFFFF6A0000000000000003D"
 #define BN_P638_MAPU	"-1"
 /** @} */
 #endif
@@ -631,8 +672,6 @@
 #define B12_P638_Y		"2D340B33877480A9785E86ED2EDCAFC170B82568CB21B708B79FC6DA3748461FCD80697E486695F3CAE76FCB1781E784F6812F57BE05DFC850426650DED8B40A464B00A35718228EC8E02B52B59D876E"
 #define B12_P638_R		"50F94035FF4000FFFFFFFFFFF9406BFDC0040000000000000035FB801DFFBFFFFFFFFFFFFFFF401BFF80000000000000000000FFC01"
 #define B12_P638_H		"BFF8001555555555555555554D957EAAAAAAAAAAAAAAAAAAAABEB"
-#define B12_P638_BETA	"1E5CD621BF4C01DFFDFFFFFFFCE57239EE275BF63000000000207C802254C4BE7FFFFFFFFFFF55FE959D1B8000000000000001BCCEB5801FFFFFFFFFFFFFFFFE2E801E"
-#define B12_P638_LAMB	"50F94035FF4000FFFFFFFFFFF9406BFDC0040000000000000035F94035FF7FFFFFFFFFFFFFFF4033FF00000000000000000000FF801"
 #define B12_P638_MAPU	"3"
 /** @} */
 #endif
@@ -818,7 +857,7 @@ void ep_param_set(int param) {
 #endif
 #if defined(EP_ENDOM) && FP_PRIME == 160
 			case SECG_K160:
-				ASSIGN(SECG_K160, SECG_160D);
+				ASSIGNK(SECG_K160, SECG_160D);
 				endom = 1;
 				break;
 #endif
@@ -848,7 +887,7 @@ void ep_param_set(int param) {
 #endif
 #if defined(EP_ENDOM) && FP_PRIME == 224
 			case SECG_K224:
-				ASSIGN(SECG_K224, SECG_224);
+				ASSIGNK(SECG_K224, SECG_224);
 				endom = 1;
 				break;
 #endif
@@ -895,7 +934,7 @@ void ep_param_set(int param) {
 #endif
 #if defined(EP_ENDOM) && FP_PRIME == 256
 			case SECG_K256:
-				ASSIGN(SECG_K256, SECG_256);
+				ASSIGNK(SECG_K256, SECG_256);
 				endom = 1;
 				break;
 			case SM9_P256:
@@ -909,10 +948,25 @@ void ep_param_set(int param) {
 				pairf = EP_BN;
 				break;
 #endif
-#if defined(EP_PLAIN) & FP_PRIME == 382
-			case CURVE_67254:
-				ASSIGN(CURVE_67254, PRIME_382105);
-				plain = 1;
+#if defined(EP_ENDOM) & FP_PRIME == 315
+			case B24_P315:
+				ASSIGN(B24_P315, B24_315);
+				endom = 1;
+				pairf = EP_B24;
+				break;
+#endif
+#if defined(EP_ENDOM) & FP_PRIME == 317
+			case B24_P317:
+				ASSIGN(B24_P317, B24_317);
+				endom = 1;
+				pairf = EP_B24;
+				break;
+#endif
+#if defined(EP_ENDOM) & FP_PRIME == 377
+			case B12_P377:
+				ASSIGN(B12_P377, B12_377);
+				endom = 1;
+				pairf = EP_B12;
 				break;
 #endif
 #if defined(EP_ENDOM) & FP_PRIME == 381
@@ -924,6 +978,12 @@ void ep_param_set(int param) {
 				ctmap = 1;
 #endif /* EP_CTMAP */
 				pairf = EP_B12;
+				break;
+#endif
+#if defined(EP_PLAIN) & FP_PRIME == 382
+			case CURVE_67254:
+				ASSIGN(CURVE_67254, PRIME_382105);
+				plain = 1;
 				break;
 #endif
 #if defined(EP_ENDOM) & FP_PRIME == 382
@@ -1004,13 +1064,14 @@ void ep_param_set(int param) {
 #endif
 #if defined(EP_ENDOM) && FP_PRIME == 544
 			case GMT8_P544:
-				ASSIGN(GMT8_P544, GMT8_544);
+				ASSIGNK(GMT8_P544, GMT8_544);
 				endom = 1;
+				pairf = EP_GMT8;
 				break;
 #endif
 #if defined(EP_ENDOM) && FP_PRIME == 569
 			case K54_P569:
-				ASSIGN(K54_P569, K54_569);
+				ASSIGNK(K54_P569, K54_569);
 				endom = 1;
 				pairf = EP_K54;
 				break;
@@ -1230,6 +1291,12 @@ int ep_param_set_any_endom(void) {
 	ep_param_set(TWEEDLEDUM);
 #elif FP_PRIME == 256
 	ep_param_set(SECG_K256);
+#elif FP_PRIME == 315
+	ep_param_set(B24_P315);
+#elif FP_PRIME == 317
+	ep_param_set(B24_P317);
+#elif FP_PRIME == 377
+	ep_param_set(B12_P377);
 #elif FP_PRIME == 381
 	ep_param_set(B12_P381);
 #elif FP_PRIME == 382
@@ -1296,6 +1363,18 @@ int ep_param_set_any_pairf(void) {
 	degree = 2;
 #elif FP_PRIME == 256
 	ep_param_set(BN_P256);
+	type = RLC_EP_DTYPE;
+	degree = 2;
+#elif FP_PRIME == 315
+	ep_param_set(B24_P315);
+	type = RLC_EP_DTYPE;
+	degree = 4;
+#elif FP_PRIME == 317
+	ep_param_set(B24_P317);
+	type = RLC_EP_MTYPE;
+	degree = 4;
+#elif FP_PRIME == 377
+	ep_param_set(B12_P377);
 	type = RLC_EP_DTYPE;
 	degree = 2;
 #elif FP_PRIME == 381
@@ -1443,6 +1522,12 @@ void ep_param_print(void) {
 		case SM9_P256:
 			util_banner("Curve SM9-P256:", 0);
 			break;
+		case B24_P315:
+			util_banner("Curve B24-P315:", 0);
+			break;
+		case B24_P317:
+			util_banner("Curve B24-P317:", 0);
+			break;
 		case B12_P381:
 			util_banner("Curve B12-P381:", 0);
 			break;
@@ -1528,6 +1613,8 @@ int ep_param_level(void) {
 		case CURVE_25519:
 		case TWEEDLEDUM:
 			return 128;
+		case B24_P315:
+		case B12_P377:
 		case B12_P381:
 		case BN_P382:
 		case B12_P383:
@@ -1551,30 +1638,24 @@ int ep_param_level(void) {
 }
 
 int ep_param_embed(void) {
-	switch (ep_param_get()) {
-		case SS_P1536:
+	switch (core_get()->ep_is_pairf) {
+		case EP_SS1:
+			return 1;
+		case EP_SS2:
 			return 2;
-		case OT8_P511:
-		case GMT8_P544:
+		case EP_OT8:
+		case EP_GMT8:
 			return 8;
-		case BN_P158:
-		case BN_P254:
-		case BN_P256:
-		case SM9_P256:
-		case BN_P382:
-		case BN_P446:
-		case B12_P446:
-		case BN_P638:
-		case B12_P381:
-		case B12_P383:
-		case B12_P455:
-		case B12_P638:
+		case EP_BN:
+		case EP_B12:
 			return 12;
-		case B24_P509:
+		case EP_K16:
+			return 16;
+		case EP_B24:
 			return 24;
-		case B48_P575:
+		case EP_B48:
 			return 48;
-		case K54_P569:
+		case EP_K54:
 			return 54;
 	}
 	return 0;

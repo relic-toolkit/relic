@@ -39,7 +39,7 @@
 
 #if FPX_RDC == BASIC || !defined(STRIP)
 
-void fp48_mul_basic(fp48_t c, fp48_t a, fp48_t b) {
+void fp48_mul_basic(fp48_t c, const fp48_t a, const fp48_t b) {
 	fp24_t t0, t1, t2;
 
 	fp24_null(t0);
@@ -84,14 +84,14 @@ void fp48_mul_basic(fp48_t c, fp48_t a, fp48_t b) {
 
 #if FPX_RDC == LAZYR || !defined(STRIP)
 
-void fp48_mul_lazyr(fp48_t c, fp48_t a, fp48_t b) {
+void fp48_mul_lazyr(fp48_t c, const fp48_t a, const fp48_t b) {
 	/* TODO: implement lazy reduction. */
 	fp48_mul_basic(c, a, b);
 }
 
 #endif
 
-void fp48_mul_dxs(fp48_t c, fp48_t a, fp48_t b) {
+void fp48_mul_dxs(fp48_t c, const fp48_t a, const fp48_t b) {
 	fp24_t t0, t1, t2;
 
 	fp24_null(t0);
@@ -154,7 +154,7 @@ void fp48_mul_dxs(fp48_t c, fp48_t a, fp48_t b) {
 	}
 }
 
-void fp48_mul_art(fp48_t c, fp48_t a) {
+void fp48_mul_art(fp48_t c, const fp48_t a) {
 	fp24_t t0;
 
 	fp24_null(t0);

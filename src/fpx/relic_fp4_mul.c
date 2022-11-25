@@ -39,7 +39,7 @@
 
 #if FPX_RDC == BASIC || !defined(STRIP)
 
-void fp4_mul_basic(fp4_t c, fp4_t a, fp4_t b) {
+void fp4_mul_basic(fp4_t c, const fp4_t a, const fp4_t b) {
 	fp2_t t0, t1, t2;
 
 	fp2_null(t0);
@@ -84,7 +84,7 @@ void fp4_mul_basic(fp4_t c, fp4_t a, fp4_t b) {
 
 #if PP_EXT == LAZYR || !defined(STRIP)
 
-void fp4_mul_unr(dv4_t c, fp4_t a, fp4_t b) {
+void fp4_mul_unr(dv4_t c, const fp4_t a, const fp4_t b) {
 	fp2_t t0, t1;
 	dv2_t u0, u1;
 
@@ -99,25 +99,16 @@ void fp4_mul_unr(dv4_t c, fp4_t a, fp4_t b) {
 		dv2_new(u0);
 		dv2_new(u1);
 
-#ifdef RLC_FP_ROOM
-		fp2_mulc_low(u0, a[0], b[0]);
-		fp2_mulc_low(u1, a[1], b[1]);
-		fp2_addn_low(t0, b[0], b[1]);
-		fp2_addn_low(t1, a[0], a[1]);
-#else
 		fp2_muln_low(u0, a[0], b[0]);
 		fp2_muln_low(u1, a[1], b[1]);
 		fp2_addm_low(t0, b[0], b[1]);
 		fp2_addm_low(t1, a[0], a[1]);
-#endif
+
 		fp2_muln_low(c[1], t1, t0);
 		fp2_subc_low(c[1], c[1], u0);
 		fp2_subc_low(c[1], c[1], u1);
-#ifdef RLC_FP_ROOM
-		fp2_norh_low(c[0], u1);
-#else
+
 		fp2_nord_low(c[0], u1);
-#endif
 		fp2_addc_low(c[0], c[0], u0);
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -129,7 +120,7 @@ void fp4_mul_unr(dv4_t c, fp4_t a, fp4_t b) {
 	}
 }
 
-void fp4_mul_lazyr(fp4_t c, fp4_t a, fp4_t b) {
+void fp4_mul_lazyr(fp4_t c, const fp4_t a, const fp4_t b) {
 	dv4_t t;
 
 	dv4_null(t);
@@ -148,7 +139,7 @@ void fp4_mul_lazyr(fp4_t c, fp4_t a, fp4_t b) {
 
 #endif
 
-void fp4_mul_art(fp4_t c, fp4_t a) {
+void fp4_mul_art(fp4_t c, const fp4_t a) {
 	fp2_t t0;
 
 	fp2_null(t0);
@@ -167,7 +158,7 @@ void fp4_mul_art(fp4_t c, fp4_t a) {
 	}
 }
 
-void fp4_mul_frb(fp4_t c, fp4_t a, int i, int j) {
+void fp4_mul_frb(fp4_t c, const fp4_t a, int i, int j) {
 	fp2_t t;
 
 	fp2_null(t);
@@ -177,11 +168,15 @@ void fp4_mul_frb(fp4_t c, fp4_t a, int i, int j) {
 
 		fp_copy(t[0], core_get()->fp4_p1[0]);
 		fp_copy(t[1], core_get()->fp4_p1[1]);
+
 	    if (i == 1) {
 			for (int k = 0; k < j; k++) {
 	        	fp2_mul(c[0], a[0], t);
 				fp2_mul(c[1], a[1], t);
-				fp4_mul_art(c, c);
+				/* If constant in base field, then second component is zero. */
+				if (core_get()->frb4 == 1) {
+					fp4_mul_art(c, c);
+				}
 			}
 	    } else {
 			RLC_THROW(ERR_NO_VALID);

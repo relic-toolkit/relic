@@ -99,6 +99,12 @@ enum {
 	BN_P256,
 	/** Barreto-Naehrig curve standardized in China. */
 	SM9_P256,
+	/** Barreto-Lynn-Scott curve with embedding degree 24 (SNARK curve). */
+	B24_P315,
+	/** Barreto-Lynn-Scott curve with embedding degree 24 (SNARK curve). */
+	B24_P317,
+	/** Barreto-Lynn-Scott curve with embedding degree 12 (SNARK curve). */
+	B12_P377,
 	/** Barreto-Lynn-Scott curve with embedding degree 12 (ZCash curve). */
 	B12_P381,
 	/** Barreto-Naehrig curve with negative x. */
@@ -433,6 +439,22 @@ typedef iso_st *iso_t;
 #define ep_mul_sim(R, P, K, Q, M)	ep_mul_sim_inter(R, P, K, Q, M)
 #elif EP_SIM == JOINT
 #define ep_mul_sim(R, P, K, Q, M)	ep_mul_sim_joint(R, P, K, Q, M)
+#endif
+
+/**
+ * Hashes a byte string to a prime elliptic point or the right order.
+ * Computes R = H(s).
+ *
+ * @param[out] R				- the result.
+ * @param[in] S					- the string to hash.
+ * @param[in] L					- the string length.
+ */
+#if EP_MAP == BASIC
+#define ep_map(R, S, L)			ep_map_basic(R, S, L)
+#elif EP_MAP == SSWUM
+#define ep_map(R, S, L)			ep_map_sswum(R, S, L)
+#elif EP_MAP == SWIFT
+#define ep_map(R, S, L)			ep_map_swift(R, S, L)
 #endif
 
 /*============================================================================*/
@@ -982,6 +1004,15 @@ void ep_mul_gen(ep_t r, const bn_t k);
 void ep_mul_dig(ep_t r, const ep_t p, dig_t k);
 
 /**
+ * Multiplies a point in an elliptic curve over by the curve cofactor.
+ * In short, it takes a point in the curve to the large prime-order subgroup.
+ *
+ * @param[out] R				- the result.
+ * @param[in] P					- the point to multiply.
+ */
+void ep_mul_cof(ep_t r, const ep_t p);
+
+/**
  * Builds a precomputation table for multiplying a fixed prime elliptic point
  * using the binary method.
  *
@@ -1198,25 +1229,34 @@ void ep_norm(ep_t r, const ep_t p);
 void ep_norm_sim(ep_t *r, const ep_t *t, int n);
 
 /**
- * Maps an array of uniformly random bytes to a point in a prime elliptic
- * curve.
- * That array is expected to have a length suitable for two field elements plus
- * extra bytes for uniformity.
-  *
- * @param[out] p			- the result.
- * @param[in] uniform_bytes		- the array of uniform bytes to map.
- * @param[in] len			- the array length in bytes.
- */
-void ep_map_from_field(ep_t p, const uint8_t *uniform_bytes, int len);
-
-/**
- * Maps a byte array to a point in a prime elliptic curve.
+ * Maps a byte array to a point in a prime elliptic curve using the hash and
+ * increment approach.
  *
  * @param[out] p			- the result.
  * @param[in] msg			- the byte array to map.
  * @param[in] len			- the array length in bytes.
  */
-void ep_map(ep_t p, const uint8_t *msg, int len);
+void ep_map_basic(ep_t p, const uint8_t *msg, int len);
+
+/**
+ * Maps a byte array to a point in a prime elliptic curve using the
+ * (Simplified) Shallue-van de Woestijne-Ulas map.
+ *
+ * @param[out] p			- the result.
+ * @param[in] msg			- the byte array to map.
+ * @param[in] len			- the array length in bytes.
+ */
+void ep_map_sswum(ep_t p, const uint8_t *msg, int len);
+
+/**
+ * Maps a byte array to a point in a prime elliptic curve using the
+ * SwiftEC approach.
+ *
+ * @param[out] p			- the result.
+ * @param[in] msg			- the byte array to map.
+ * @param[in] len			- the array length in bytes.
+ */
+void ep_map_swift(ep_t p, const uint8_t *msg, int len);
 
 /**
  * Maps a byte array to a point in a prime elliptic curve with specified

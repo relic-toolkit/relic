@@ -41,7 +41,7 @@
 
 #if EP_ADD == BASIC || !defined(STRIP)
 
-void pp_dbl_k8_basic(fp8_t l, ep2_t r, ep2_t q, ep_t p) {
+void pp_dbl_k8_basic(fp8_t l, ep2_t r, const ep2_t q, const ep_t p) {
 	fp2_t s;
 	ep2_t t;
 	int one = 1, zero = 0;
@@ -81,7 +81,7 @@ void pp_dbl_k8_basic(fp8_t l, ep2_t r, ep2_t q, ep_t p) {
 
 #if PP_EXT == BASIC || !defined(STRIP)
 
-void pp_dbl_k8_projc_new(fp8_t l, ep2_t r, ep2_t q, ep_t p) {
+void pp_dbl_k8_projc_new(fp8_t l, ep2_t r, const ep2_t q, const ep_t p) {
 	fp2_t t0, t1, t2, t3, t4;
 	int one = 1, zero = 0;
 
@@ -150,7 +150,7 @@ void pp_dbl_k8_projc_new(fp8_t l, ep2_t r, ep2_t q, ep_t p) {
 	}
 }
 
-void pp_dbl_k8_projc_basic(fp8_t l, ep2_t r, ep2_t q, ep_t p) {
+void pp_dbl_k8_projc_basic(fp8_t l, ep2_t r, const ep2_t q, const ep_t p) {
 	fp2_t t0, t1, t2, t3, t4, t5, t6;
 	int one = 1, zero = 0;
 
@@ -258,7 +258,7 @@ void pp_dbl_k8_projc_basic(fp8_t l, ep2_t r, ep2_t q, ep_t p) {
 
 #if PP_EXT == LAZYR || !defined(STRIP)
 
-void pp_dbl_k8_projc_lazyr(fp8_t l, ep2_t r, ep2_t q, ep_t p) {
+void pp_dbl_k8_projc_lazyr(fp8_t l, ep2_t r, const ep2_t q, const ep_t p) {
 	fp2_t t0, t1, t2, t3, t4, t5, t6;
 	dv2_t u0, u1;
 	int one = 1, zero = 0;
@@ -372,7 +372,7 @@ void pp_dbl_k8_projc_lazyr(fp8_t l, ep2_t r, ep2_t q, ep_t p) {
 	}
 }
 
-void pp_dbl_k8_projc_lazyr_new(fp8_t l, ep2_t r, ep2_t q, ep_t p) {
+void pp_dbl_k8_projc_lazyr_new(fp8_t l, ep2_t r, const ep2_t q, const ep_t p) {
 	fp2_t t0, t1, t2, t3;
 	dv2_t u2, u3;
 	int one = 1, zero = 0;

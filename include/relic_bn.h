@@ -121,6 +121,30 @@ typedef bn_st *bn_t;
 #endif
 #endif
 
+/**
+ * Represents a pair of moduli for using the Chinese Remainder Theorem (CRT).
+ */
+typedef struct {
+	/** The modulus n = pq. */
+	bn_t n;
+	/** The first prime p. */
+	bn_t p;
+	/** The second prime q. */
+	bn_t q;
+	/** The precomputed constant for the first prime. */
+	bn_t dp;
+	/** The precomputed constant for the second prime. */
+	bn_t dq;
+	/** The inverse of q modulo p. */
+	bn_t qi;
+} crt_st;
+
+#if ALLOC == AUTO
+typedef crt_st crt_t[1];
+#else
+typedef crt_st *crt_t;
+#endif
+
 /*============================================================================*/
 /* Macro definitions                                                          */
 /*============================================================================*/
@@ -195,6 +219,65 @@ typedef bn_st *bn_t;
 
 #elif ALLOC == AUTO
 #define bn_free(A)			/* empty */										\
+
+#endif
+
+/**
+ * Initializes a CRT moduli set with a null value.
+ *
+ * @param[out] A			- the moduli to initialize.
+ */
+#define crt_null(A)			RLC_NULL(A)
+
+/**
+ * Calls a function to allocate and initialize a Rabin key pair.
+ *
+ * @param[out] A			- the new key pair.
+ */
+#if ALLOC == DYNAMIC
+#define crt_new(A)															\
+	A = (crt_t)calloc(1, sizeof(crt_st));									\
+	if (A == NULL) {														\
+		RLC_THROW(ERR_NO_MEMORY);											\
+	}																		\
+	bn_new((A)->n);															\
+	bn_new((A)->dp);														\
+	bn_new((A)->dq);														\
+	bn_new((A)->p);															\
+	bn_new((A)->q);															\
+	bn_new((A)->qi);														\
+
+#elif ALLOC == AUTO
+#define crt_new(A)															\
+	bn_new((A)->n);															\
+	bn_new((A)->dp);														\
+	bn_new((A)->dq);														\
+	bn_new((A)->p);															\
+	bn_new((A)->q);															\
+	bn_new((A)->qi);														\
+
+#endif
+
+/**
+ * Calls a function to clean and free a Rabin key pair.
+ *
+ * @param[out] A			- the key pair to clean and free.
+ */
+#if ALLOC == DYNAMIC
+#define crt_free(A)															\
+	if (A != NULL) {														\
+		bn_free((A)->n);													\
+		bn_free((A)->dp);													\
+		bn_free((A)->dq);													\
+		bn_free((A)->p);													\
+		bn_free((A)->q);													\
+		bn_free((A)->qi);													\
+		free(A);															\
+		A = NULL;															\
+	}
+
+#elif ALLOC == AUTO
+#define crt_free(A)				/* empty */
 
 #endif
 
@@ -324,8 +407,8 @@ typedef bn_st *bn_t;
 #define bn_gcd(C, A, B)		bn_gcd_basic(C, A, B)
 #elif BN_GCD == LEHME
 #define bn_gcd(C, A, B)		bn_gcd_lehme(C, A, B)
-#elif BN_GCD == STEIN
-#define bn_gcd(C, A, B)		bn_gcd_stein(C, A, B)
+#elif BN_GCD == BINAR
+#define bn_gcd(C, A, B)		bn_gcd_binar(C, A, B)
 #endif
 
 /**
@@ -343,8 +426,8 @@ typedef bn_st *bn_t;
 #define bn_gcd_ext(C, D, E, A, B)		bn_gcd_ext_basic(C, D, E, A, B)
 #elif BN_GCD == LEHME
 #define bn_gcd_ext(C, D, E, A, B)		bn_gcd_ext_lehme(C, D, E, A, B)
-#elif BN_GCD == STEIN
-#define bn_gcd_ext(C, D, E, A, B)		bn_gcd_ext_stein(C, D, E, A, B)
+#elif BN_GCD == BINAR
+#define bn_gcd_ext(C, D, E, A, B)		bn_gcd_ext_binar(C, D, E, A, B)
 #endif
 
 /**
@@ -534,7 +617,7 @@ void bn_rand(bn_t a, int sign, int bits);
  * @param[out] a			- the multiple precision integer to assign.
  * @param[in] b				- the modulus.
  */
-void bn_rand_mod(bn_t a, bn_t b);
+void bn_rand_mod(bn_t a, const bn_t b);
 
 /**
  * Prints a multiple precision integer to standard output.
@@ -1030,6 +1113,20 @@ void bn_mxp_monty(bn_t c, const bn_t a, const bn_t b, const bn_t m);
  */
 void bn_mxp_dig(bn_t c, const bn_t a, dig_t b, const bn_t m);
 
+/*
+ * Computes a modular exponentiation of a multiple precision integer using the
+ * Chinese Remainder Theorem, given the moduli.
+ *
+ * @param[out] d 			- the result.
+ * @param[in] a				- the basis.
+ * @param[in] b				- the exponent modulo p.
+ * @param[in] c				- the exponent modulo q.
+ * @param[in] crt 			- the set of moduli.
+ * @param[in] sqr 			- the flag to indicate if modulo n or n^2.
+ */
+void bn_mxp_crt(bn_t d, const bn_t a, const bn_t b, const bn_t c,
+	const crt_t crt, int sqr);
+
 /**
  * Extracts an approximate integer square-root of a multiple precision integer.
  *
@@ -1062,13 +1159,13 @@ void bn_gcd_lehme(bn_t c, const bn_t a, const bn_t b);
 
 /**
  * Computes the greatest common divisor of two multiple precision integers
- * using Stein's binary GCD algorithm.
+ * using the Binary GCD algorithm.
  *
  * @param[out] c			- the result;
  * @param[in] a				- the first multiple precision integer.
  * @param[in] b				- the second multiple precision integer.
  */
-void bn_gcd_stein(bn_t c, const bn_t a, const bn_t b);
+void bn_gcd_binar(bn_t c, const bn_t a, const bn_t b);
 
 /**
  * Computes the greatest common divisor of a multiple precision integer and a
@@ -1106,7 +1203,7 @@ void bn_gcd_ext_lehme(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b);
 
 /**
  * Computes the greatest common divisor of two multiple precision integers
- * using Stein's binary algorithm.
+ * using the Binary algorithm.
  *
  * @param[out] c			- the result;
  * @param[out] d			- the cofactor of the first operand, can be NULL.
@@ -1114,7 +1211,7 @@ void bn_gcd_ext_lehme(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b);
  * @param[in] a				- the first multiple precision integer.
  * @param[in] b				- the second multiple precision integer.
  */
-void bn_gcd_ext_stein(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b);
+void bn_gcd_ext_binar(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b);
 
 /**
  * Computes the extended greatest common divisor of two multiple precision
@@ -1240,6 +1337,18 @@ void bn_gen_prime_safep(bn_t a, int bits);
  * @param[in] bits			- the length of the number in bits.
  */
 void bn_gen_prime_stron(bn_t a, int bits);
+
+/**
+ * Generates a probable prime number b, with (b-1) divisible by a probable large
+ * prime a.
+ *
+ * @param[out] a			- the prime factor of (b-1).
+ * @param[out] b			- the prime result b.
+ * @param[in] abits			- the length of the factor a in bits.
+ * @param[in] bbits			- the length of the result in bits.
+ */
+int bn_gen_prime_factor(bn_t a, bn_t b, int abits, int bbits);
+
 
 /**
  * Tries to factorize an integer using Pollard (p - 1) factoring algorithm.
@@ -1396,9 +1505,34 @@ void bn_rec_glv(bn_t k0, bn_t k1, const bn_t k, const bn_t n, const bn_t v1[],
  * @param[in] k				- the scalar to recode.
  * @param[in] x 			- the elliptic curve parameter.
  * @param[in] n				- the elliptic curve group order.
- * @param[in] bls 			- flag to indicate if it is a BLS12 curve.
+ * @param[in] cof 			- flag to indicate if it is a curve with cofactor 1.
  */
 void bn_rec_frb(bn_t *ki, int sub, const bn_t k, const bn_t x, const bn_t n,
 	int bls);
+
+/**
+ * Computes the coefficients of the polynomial representing the Lagrange
+ * interpolation for a modulus and a given set of roots.
+ * Computes c(x) = \prod_{0 <= i < n}(x - ai) mod q.
+ *
+ * @param[out] c 			- the coefficients of the polynomial.
+ * @param[in] a				- the set of roots.
+ * @param[in] b				- the modulus.
+ * @param[in] n				- the number of roots to interpolate.
+ */
+void bn_lag(bn_t *c, const bn_t *a, const bn_t b, size_t n);
+
+/**
+ * Evaluates an interpolated n-degree polynomial over a value in a modular way,
+ * given the (n+1) coefficients of the polynomial and the modulus.
+ * Computes c = a(x) mod q.
+ *
+ * @param[out] c 			- the result of the evaluation.
+ * @param[in] a 			- the coefficients of the polynomial.
+ * @param[in] x				- the value to evaluate.
+ * @param[in] b				- the modulus.
+ * @param[in] n				- the degree of the polynomial.
+ */
+void bn_evl(bn_t c, const bn_t *a, const bn_t x, const bn_t b, size_t n);
 
 #endif /* !RLC_BN_H */

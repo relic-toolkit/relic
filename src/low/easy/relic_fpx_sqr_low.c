@@ -37,7 +37,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void fp2_sqrn_low(dv2_t c, fp2_t a) {
+void fp2_sqrn_low(dv2_t c, const fp2_t a) {
 	rlc_align dig_t t0[2 * RLC_FP_DIGS], t1[2 * RLC_FP_DIGS], t2[2 * RLC_FP_DIGS];
 
 	/* t0 = (a0 + a1). */
@@ -85,22 +85,16 @@ void fp2_sqrn_low(dv2_t c, fp2_t a) {
 		/* c0 = a0^2 + b_0^2 * u^2. */
 		fp_muln_low(c[0], t0, t1);
 
-#ifdef RLC_FP_ROOM
-		for (int i = -1; i > fp_prime_get_qnr(); i--) {
-			fp_addd_low(c[0], c[0], c[1]);
-		}
-		for (int i = 1; i < fp_prime_get_qnr(); i++) {
-			fp_subd_low(c[0], c[0], c[1]);
-		}
-		/* c1 = 2 * a0 * a1. */
-		fp_addd_low(c[1], c[1], c[1]);
-#else
 		for (int i = -1; i > fp_prime_get_qnr(); i--) {
 			fp_addc_low(c[0], c[0], c[1]);
 		}
 		for (int i = 1; i < fp_prime_get_qnr(); i++) {
 			fp_subc_low(c[0], c[0], c[1]);
 		}
+#ifdef RLC_FP_ROOM
+		/* c1 = 2 * a0 * a1. */
+		fp_addd_low(c[1], c[1], c[1]);
+#else
 		/* c1 = 2 * a0 * a1. */
 		fp_addc_low(c[1], c[1], c[1]);
 #endif
@@ -109,7 +103,7 @@ void fp2_sqrn_low(dv2_t c, fp2_t a) {
 	/* c = c0 + c1 * u. */
 }
 
-void fp2_sqrm_low(fp2_t c, fp2_t a) {
+void fp2_sqrm_low(fp2_t c, const fp2_t a) {
 	rlc_align dv2_t t;
 
 	dv2_null(t);
@@ -125,7 +119,7 @@ void fp2_sqrm_low(fp2_t c, fp2_t a) {
 	}
 }
 
-void fp3_sqrn_low(dv3_t c, fp3_t a) {
+void fp3_sqrn_low(dv3_t c, const fp3_t a) {
 	rlc_align dig_t t0[2 * RLC_FP_DIGS], t1[2 * RLC_FP_DIGS], t2[2 * RLC_FP_DIGS];
 	rlc_align dig_t t3[2 * RLC_FP_DIGS], t4[2 * RLC_FP_DIGS];
 
@@ -191,7 +185,7 @@ void fp3_sqrn_low(dv3_t c, fp3_t a) {
 	}
 }
 
-void fp3_sqrm_low(fp3_t c, fp3_t a) {
+void fp3_sqrm_low(fp3_t c, const fp3_t a) {
 	rlc_align dv3_t t;
 
 	dv3_null(t);

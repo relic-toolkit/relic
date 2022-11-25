@@ -39,7 +39,7 @@
 
 #if FPX_RDC == BASIC || !defined(STRIP)
 
-void fp24_sqr_basic(fp24_t c, fp24_t a) {
+void fp24_sqr_basic(fp24_t c, const fp24_t a) {
 	fp8_t t0, t1, t2, t3, t4;
 
 	fp8_null(t0);
@@ -111,7 +111,7 @@ void fp24_sqr_basic(fp24_t c, fp24_t a) {
 	}
 }
 
-void fp24_sqr_cyc_basic(fp24_t c, fp24_t a) {
+void fp24_sqr_cyc_basic(fp24_t c, const fp24_t a) {
 	fp4_t t0, t1, t2, t3, t4, t5, t6;
 
 	fp4_null(t0);
@@ -200,7 +200,7 @@ void fp24_sqr_cyc_basic(fp24_t c, fp24_t a) {
 	}
 }
 
-void fp24_sqr_pck_basic(fp24_t c, fp24_t a) {
+void fp24_sqr_pck_basic(fp24_t c, const fp24_t a) {
 	fp4_t t0, t1, t2, t3, t4, t5, t6;
 
 	fp4_null(t0);
@@ -274,7 +274,7 @@ void fp24_sqr_pck_basic(fp24_t c, fp24_t a) {
 
 #if FPX_RDC == LAZYR || !defined(STRIP)
 
-void fp24_sqr_unr(dv24_t c, fp24_t a) {
+void fp24_sqr_unr(dv24_t c, const fp24_t a) {
 	dv8_t u0, u1, u2, u3, u4;
 	fp8_t t0, t1;
 
@@ -376,7 +376,7 @@ void fp24_sqr_unr(dv24_t c, fp24_t a) {
 	}
 }
 
-void fp24_sqr_lazyr(fp24_t c, fp24_t a) {
+void fp24_sqr_lazyr(fp24_t c, const fp24_t a) {
 	dv24_t t;
 
 	dv24_null(t);
@@ -397,12 +397,12 @@ void fp24_sqr_lazyr(fp24_t c, fp24_t a) {
 	}
 }
 
-void fp24_sqr_cyc_lazyr(fp24_t c, fp24_t a) {
+void fp24_sqr_cyc_lazyr(fp24_t c, const fp24_t a) {
 	/* TODO: implement lazy reduction. */
 	fp24_sqr_cyc_basic(c, a);
 }
 
-void fp24_sqr_pck_lazyr(fp24_t c, fp24_t a) {
+void fp24_sqr_pck_lazyr(fp24_t c, const fp24_t a) {
 	/* TODO: implement lazy reduction. */
 	fp24_sqr_pck_basic(c, a);
 }

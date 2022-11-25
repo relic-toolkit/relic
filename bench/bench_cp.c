@@ -40,7 +40,7 @@
 static void rsa(void) {
 	rsa_t pub, prv;
 	uint8_t in[10], new[10], h[RLC_MD_LEN], out[RLC_BN_BITS / 8 + 1];
-	int out_len, new_len;
+	size_t out_len, new_len;
 
 	rsa_null(pub);
 	rsa_null(prv);
@@ -105,7 +105,7 @@ static void rsa(void) {
 static void rabin(void) {
 	rabin_t pub, prv;
 	uint8_t in[1000], new[1000], out[RLC_BN_BITS / 8 + 1];
-	int in_len, out_len, new_len;
+	size_t in_len, out_len, new_len;
 
 	rabin_null(pub);
 	rabin_null(prv);
@@ -116,7 +116,7 @@ static void rabin(void) {
 	BENCH_ONE("cp_rabin_gen", cp_rabin_gen(pub, prv, RLC_BN_BITS), 1);
 
 	BENCH_RUN("cp_rabin_enc") {
-		in_len = bn_size_bin(pub->n) - 9;
+		in_len = bn_size_bin(pub->n) - 10;
 		out_len = RLC_BN_BITS / 8 + 1;
 		rand_bytes(in, in_len);
 		BENCH_ADD(cp_rabin_enc(out, &out_len, in, in_len, pub));
@@ -124,7 +124,7 @@ static void rabin(void) {
 	} BENCH_END;
 
 	BENCH_RUN("cp_rabin_dec") {
-		in_len = bn_size_bin(pub->n) - 9;
+		in_len = bn_size_bin(pub->n) - 10;
 		new_len = in_len;
 		out_len = RLC_BN_BITS / 8 + 1;
 		rand_bytes(in, in_len);
@@ -140,7 +140,7 @@ static void benaloh(void) {
 	bdpe_t pub, prv;
 	dig_t in, new;
 	uint8_t out[RLC_BN_BITS / 8 + 1];
-	int out_len;
+	size_t out_len;
 
 	bdpe_null(pub);
 	bdpe_null(prv);
@@ -174,16 +174,22 @@ static void benaloh(void) {
 static void paillier(void) {
 	bn_t c, m, pub;
 	phpe_t prv;
+    shpe_t spub, sprv;
 
 	bn_null(c);
 	bn_null(m);
 	bn_null(pub);
 	phpe_null(prv);
+    shpe_null(spub);
+    shpe_null(sprv);
+
 
 	bn_new(c);
 	bn_new(m);
 	bn_new(pub);
 	phpe_new(prv);
+    shpe_new(spub);
+    shpe_new(sprv);
 
 	BENCH_ONE("cp_phpe_gen", cp_phpe_gen(pub, prv, RLC_BN_BITS / 2), 1);
 
@@ -192,10 +198,40 @@ static void paillier(void) {
 		BENCH_ADD(cp_phpe_enc(c, m, pub));
 	} BENCH_END;
 
+	BENCH_RUN("cp_phpe_add") {
+		bn_rand_mod(m, pub);
+		cp_phpe_enc(c, m, pub);
+		BENCH_ADD(cp_phpe_add(c, c, c, pub));
+	} BENCH_END;
+
 	BENCH_RUN("cp_phpe_dec") {
 		bn_rand_mod(m, pub);
 		cp_phpe_enc(c, m, pub);
 		BENCH_ADD(cp_phpe_dec(m, c, prv));
+	} BENCH_END;
+
+	BENCH_ONE("cp_shpe_gen", cp_shpe_gen(spub, sprv, RLC_BN_BITS / 10, RLC_BN_BITS / 2), 1);
+
+	BENCH_RUN("cp_shpe_enc") {
+		bn_rand_mod(m, spub->crt->n);
+		BENCH_ADD(cp_shpe_enc(c, m, spub));
+	} BENCH_END;
+
+	BENCH_RUN("cp_shpe_enc_prv") {
+		bn_rand_mod(m, spub->crt->n);
+		BENCH_ADD(cp_shpe_enc_prv(c, m, sprv));
+	} BENCH_END;
+
+	BENCH_RUN("cp_shpe_dec (1)") {
+		bn_rand_mod(m, spub->crt->n);
+		cp_shpe_enc(c, m, spub);
+		BENCH_ADD(cp_shpe_dec(m, c, sprv));
+	} BENCH_END;
+
+	BENCH_RUN("cp_shpe_dec (2)") {
+		bn_rand_mod(m, spub->crt->n);
+		cp_shpe_enc_prv(c, m, sprv);
+		BENCH_ADD(cp_shpe_dec(m, c, sprv));
 	} BENCH_END;
 
 	BENCH_ONE("cp_ghpe_gen", cp_ghpe_gen(pub, prv->n, RLC_BN_BITS / 2), 1);
@@ -228,6 +264,8 @@ static void paillier(void) {
 	bn_free(m);
 	bn_free(pub);
 	phpe_free(prv);
+    shpe_free(spub);
+    shpe_free(sprv);
 }
 
 #endif
@@ -296,7 +334,7 @@ static void ecies(void) {
 	ec_t q, r;
 	bn_t d;
 	uint8_t in[10], out[16 + RLC_MD_LEN];
-	int in_len, out_len;
+	size_t in_len, out_len;
 
 	bn_null(d);
 	ec_null(q);
@@ -487,11 +525,11 @@ static void vbnn(void) {
 #define MIN_KEYS	RLC_MIN(BENCH, 16)
 
 static void ers(void) {
-	int size;
+	size_t size;
 	ec_t pp, pk[MAX_KEYS + 1];
 	bn_t sk[MAX_KEYS + 1], td;
 	ers_t ring[MAX_KEYS + 1];
-	uint8_t m[5] = { 0, 1, 2, 3, 4 };
+	const uint8_t m[5] = { 0, 1, 2, 3, 4 };
 
 	bn_null(td);
 	ec_null(pp);
@@ -542,11 +580,11 @@ static void ers(void) {
 }
 
 static void smlers(void) {
-	int size;
+	size_t size;
 	ec_t pp, pk[MAX_KEYS + 1];
 	bn_t sk[MAX_KEYS + 1], td;
 	smlers_t ring[MAX_KEYS + 1];
-	uint8_t m[5] = { 0, 1, 2, 3, 4 };
+	const uint8_t m[5] = { 0, 1, 2, 3, 4 };
 
 	bn_null(td);
 	ec_null(pp);
@@ -597,11 +635,11 @@ static void smlers(void) {
 }
 
 static void etrs(void) {
-	int size;
+	size_t size;
 	ec_t pp, pk[MAX_KEYS + 1];
 	bn_t sk[MAX_KEYS + 1], td[MAX_KEYS + 1], y[MAX_KEYS + 1];
 	etrs_t ring[MAX_KEYS + 1];
-	uint8_t m[5] = { 0, 1, 2, 3, 4 };
+	const uint8_t m[5] = { 0, 1, 2, 3, 4 };
 
 	ec_null(pp);
 	ec_new(pp);
@@ -912,7 +950,7 @@ static void ibe(void) {
 	g2_t prv;
 	uint8_t in[10], out[10 + 2 * RLC_FP_BYTES + 1];
 	char *id = "Alice";
-	int in_len, out_len;
+	size_t in_len, out_len;
 
 	bn_null(s);
 	g1_null(pub);
@@ -1120,8 +1158,8 @@ static int cls(void) {
 	g1_t a, A, b, B, c, _A[4], _B[4];
 	g2_t x, y, z, _z[4];
 	uint8_t m[5] = { 0, 1, 2, 3, 4 };
-	uint8_t *msgs[5] = {m, m, m, m, m};
-	int lens[5] = {sizeof(m), sizeof(m), sizeof(m), sizeof(m), sizeof(m)};
+	const uint8_t *ms[5] = {m, m, m, m, m};
+	const size_t ls[5] = {sizeof(m), sizeof(m), sizeof(m), sizeof(m), sizeof(m)};
 
 	bn_null(r);
 	bn_null(t);
@@ -1191,11 +1229,11 @@ static int cls(void) {
 	} BENCH_END;
 
 	BENCH_RUN("cp_clb_sig (5)") {
-		BENCH_ADD(cp_clb_sig(a, _A, b, _B, c, msgs, lens, t, u, _v, 5));
+		BENCH_ADD(cp_clb_sig(a, _A, b, _B, c, ms, ls, t, u, _v, 5));
 	} BENCH_END;
 
 	BENCH_RUN("cp_clb_ver (5)") {
-		BENCH_ADD(cp_clb_ver(a, _A, b, _B, c, msgs, lens, x, y, _z, 5));
+		BENCH_ADD(cp_clb_ver(a, _A, b, _B, c, ms, ls, x, y, _z, 5));
 	} BENCH_END;
 
 	bn_free(r);
@@ -1344,9 +1382,9 @@ static void mpss(void) {
 	}
 
 	pc_map_tri(t);
-	mt_gen(tri[0], n);
-	mt_gen(tri[1], n);
-	mt_gen(tri[2], n);
+	mpc_mt_gen(tri[0], n);
+	mpc_mt_gen(tri[1], n);
+	mpc_mt_gen(tri[2], n);
 
 	bn_rand_mod(m[0], n);
 	bn_rand_mod(m[1], n);
@@ -1379,9 +1417,9 @@ static void mpss(void) {
 
 	g1_get_ord(n);
 	pc_map_tri(t);
-	mt_gen(tri[0], n);
-	mt_gen(tri[1], n);
-	mt_gen(tri[2], n);
+	mpc_mt_gen(tri[0], n);
+	mpc_mt_gen(tri[1], n);
+	mpc_mt_gen(tri[2], n);
 
 	BENCH_RUN("cp_mpsb_gen (10)") {
 		BENCH_ADD(cp_mpsb_gen(u, _v, h, x, _y, 10));
@@ -1403,7 +1441,7 @@ static void mpss(void) {
 		BENCH_ADD(cp_mpsb_ver(r[1], g, s, ms, h, x[0], _y, _v, tri[2], t, 10));
 	} BENCH_DIV(2);
 
-  	bn_free(n);
+	bn_free(n);
 	g1_free(g);
 	g2_free(h);
 	for (int i = 0; i < 2; i++) {
@@ -1450,12 +1488,12 @@ static void zss(void) {
 	}
 	BENCH_END;
 
-	BENCH_RUN("cp_zss_sign (h = 0)") {
+	BENCH_RUN("cp_zss_sig (h = 0)") {
 		BENCH_ADD(cp_zss_sig(s, msg, 5, 0, d));
 	}
 	BENCH_END;
 
-	BENCH_RUN("cp_zss_sign (h = 1)") {
+	BENCH_RUN("cp_zss_sig (h = 1)") {
 		md_map(h, msg, 5);
 		BENCH_ADD(cp_zss_sig(s, h, RLC_MD_LEN, 1, d));
 	}
@@ -1490,11 +1528,11 @@ static void lhs(void) {
 	g1_t a[S][L], c[S][L], r[S][L];
 	g2_t _s, s[S][L], pk[S], y[S], z[S];
 	gt_t *hs[S], vk;
-	char *data = "id";
-	char *id[S] = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
-	dig_t ft[S];
-	dig_t *f[S];
-	int flen[S];
+	const char *data = "id";
+	const char *id[S] = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
+	dig_t ft[S], *f[S];
+	size_t flen[S];
+	int label[L];
 
 	bn_null(m);
 	bn_null(n);
@@ -1567,22 +1605,20 @@ static void lhs(void) {
 	/* Initialize scheme for messages of single components. */
 	cp_cmlhs_init(h);
 
-	BENCH_ONE("cp_cmlhs_gen",
+	BENCH_ONE("cp_cmlhs_gen (ecdsa)",
 		for (int j = 0; j < S; j++) {
-			BENCH_ADD(cp_cmlhs_gen(x[j], hs[j], L, k[j], K, sk[j], pk[j], d[j], y[j]));
+			cp_cmlhs_gen(x[j], hs[j], L, k[j], K, sk[j], pk[j], d[j], y[j], 0);
 		},
 	S);
 
-	int label[L];
-
-	BENCH_FEW("cp_cmlhs_sig",
+	BENCH_FEW("cp_cmlhs_sig (ecdsa)",
 		/* Compute all signatures. */
 		for (int j = 0; j < S; j++) {
 			for (int l = 0; l < L; l++) {
 				label[l] = l;
 				bn_mod(msg[l], msg[l], n);
-				BENCH_ADD(cp_cmlhs_sig(sig[j], z[j], a[j][l], c[j][l], r[j][l],
-					s[j][l], msg[l], data, label[l], x[j][l], h, k[j], K, d[j], sk[j]));
+				cp_cmlhs_sig(sig[j], z[j], a[j][l], c[j][l], r[j][l], s[j][l],
+					msg[l], data, label[l], x[j][l], h, k[j], K, d[j], sk[j], 0);
 			}
 		},
 	S * L);
@@ -1615,18 +1651,80 @@ static void lhs(void) {
 		bn_mod(m, m, n);
 	}
 
-	BENCH_RUN("cp_cmlhs_ver") {
-		BENCH_ADD(cp_cmlhs_ver(_r, _s, sig, z, as, cs, m, data, h, label, hs,
-			f, flen, y, pk, S));
+	BENCH_RUN("cp_cmlhs_ver (ecdsa)") {
+		BENCH_ADD(cp_cmlhs_ver(_r, _s, sig, z, as, cs, m, data, h, label,
+			(const gt_t **)hs, (const dig_t **)f, flen, y, pk, S, 0));
 	} BENCH_DIV(S);
 
 	BENCH_RUN("cp_cmlhs_off") {
-		BENCH_ADD(cp_cmlhs_off(vk, h, label, hs, f, flen, y, pk, S));
+		BENCH_ADD(cp_cmlhs_off(vk, h, label, (const gt_t **)hs,
+			(const dig_t **)f, flen, S));
 	} BENCH_DIV(S);
 
-	BENCH_RUN("cp_cmlhs_onv") {
+	BENCH_RUN("cp_cmlhs_onv (ecdsa)") {
 		BENCH_ADD(cp_cmlhs_onv(_r, _s, sig, z, as, cs, m, data, h, vk, y,
-			pk, S));
+			pk, S, 0));
+	} BENCH_DIV(S);
+
+	BENCH_ONE("cp_cmlhs_gen (bls)",
+		for (int j = 0; j < S; j++) {
+			cp_cmlhs_gen(x[j], hs[j], L, k[j], K, sk[j], pk[j], d[j], y[j], 1);
+		},
+	S);
+
+	BENCH_FEW("cp_cmlhs_sig (bls)",
+		/* Compute all signatures. */
+		for (int j = 0; j < S; j++) {
+			for (int l = 0; l < L; l++) {
+				label[l] = l;
+				bn_mod(msg[l], msg[l], n);
+				cp_cmlhs_sig(sig[j], z[j], a[j][l], c[j][l], r[j][l], s[j][l],
+					msg[l], data, label[l], x[j][l], h, k[j], K, d[j], sk[j], 1);
+			}
+		},
+	S * L);
+
+	BENCH_RUN("cp_cmlhs_fun") {
+		for (int j = 0; j < S; j++) {
+			BENCH_ADD(cp_cmlhs_fun(as[j], cs[j], a[j], c[j], f[j], L));
+		}
+	} BENCH_DIV(S);
+
+	BENCH_RUN("cp_cmlhs_evl") {
+		cp_cmlhs_evl(_r, _s, r[0], s[0], f[0], L);
+		for (int j = 1; j < S; j++) {
+			BENCH_ADD(cp_cmlhs_evl(r[0][0], s[0][0], r[j], s[j], f[j], L));
+			g1_add(_r, _r, r[0][0]);
+			g2_add(_s, _s, s[0][0]);
+		}
+		g1_norm(_r, _r);
+		g2_norm(_s, _s);
+	} BENCH_DIV(S);
+
+	bn_zero(m);
+	for (int j = 0; j < L; j++) {
+		dig_t sum = 0;
+		for (int l = 0; l < S; l++) {
+			sum += f[l][j];
+		}
+		bn_mul_dig(msg[j], msg[j], sum);
+		bn_add(m, m, msg[j]);
+		bn_mod(m, m, n);
+	}
+
+	BENCH_RUN("cp_cmlhs_ver (bls)") {
+		BENCH_ADD(cp_cmlhs_ver(_r, _s, sig, z, as, cs, m, data, h, label,
+			(const gt_t **)hs, (const dig_t **)f, flen, y, pk, S, 1));
+	} BENCH_DIV(S);
+
+	BENCH_RUN("cp_cmlhs_off") {
+		BENCH_ADD(cp_cmlhs_off(vk, h, label, (const gt_t **)hs,
+			(const dig_t **)f, flen, S));
+	} BENCH_DIV(S);
+
+	BENCH_RUN("cp_cmlhs_onv (bls)") {
+		BENCH_ADD(cp_cmlhs_onv(_r, _s, sig, z, as, cs, m, data, h, vk, y,
+			pk, S, 1));
 	} BENCH_DIV(S);
 
 #ifdef BENCH_LHS
@@ -1721,11 +1819,13 @@ static void lhs(void) {
 	}
 
 	BENCH_RUN("cp_mklhs_ver") {
-		BENCH_ADD(cp_mklhs_ver(_r, m, d, data, id, ls, f, flen, pk, S));
+		BENCH_ADD(cp_mklhs_ver(_r, m, d, data, id, (const char **)ls,
+			(const dig_t **)f, flen, pk, S));
 	} BENCH_DIV(S);
 
 	BENCH_RUN("cp_mklhs_off") {
-		BENCH_ADD(cp_mklhs_off(cs, ft, id, ls, f, flen, S));
+		BENCH_ADD(cp_mklhs_off(cs, ft, id, (const char **)ls, (const dig_t **)f,
+			flen, S));
 	} BENCH_DIV(S);
 
 	BENCH_RUN("cp_mklhs_onv") {
@@ -1805,35 +1905,51 @@ static void lhs(void) {
 	}
 }
 
-#define M	5			/* Number of server messages (larger). */
-#define N	2			/* Number of client messages. */
+#define M	256			/* Number of server messages (larger). */
+#define N	8			/* Number of client messages. */
 
 static void psi(void) {
-	bn_t q, r, x[M], y[N], z[M];
-	g1_t d, s[M + 1];
-	g2_t u[M], ss;
+	bn_t g, n, q, r, p[M], x[M], v[N], w[N], y[N], z[M];
+	g1_t u[M], ss;
+	g2_t d[M + 1], s[M + 1];
 	gt_t t[M];
-	int len;
+	crt_t crt;
+	size_t len;
 
+	bn_new(g);
+	bn_new(n);
 	bn_new(q);
 	bn_new(r);
-	g1_new(d);
-	g2_new(ss);
+	g1_new(ss);
 	for (int i = 0; i < M; i++) {
+		bn_null(p[i]);
 		bn_null(x[i]);
 		bn_null(z[i]);
-		g1_null(s[i]);
+		g2_null(d[i]);
+		g2_null(s[i]);
+		bn_new(p[i]);
 		bn_new(x[i]);
 		bn_new(z[i]);
-		g1_new(s[i]);
+		g2_new(d[i]);
+		g2_new(s[i]);
 	}
+	g2_null(d[M]);
+	g2_new(d[M]);
+	g2_null(s[M]);
+	g2_new(s[M]);
 	for (int i = 0; i < N; i++) {
+		bn_null(v[i]);
+		bn_null(w[i]);
 		bn_null(y[i]);
-		g2_null(u[i]);
+		g1_null(u[i]);
 		gt_null(t[i]);
+		bn_new(v[i]);
+		bn_new(w[i]);
 		bn_new(y[i]);
-		g2_new(u[i]);
+		g1_new(u[i]);
+		gt_new(t[i]);
 	}
+	crt_new(crt);
 
 	pc_get_ord(q);
 	for (int j = 0; j < M; j++) {
@@ -1843,34 +1959,64 @@ static void psi(void) {
 		bn_rand_mod(y[j], q);
 	}
 
-	BENCH_RUN("cp_lapsi_gen (5)") {
-		BENCH_ADD(cp_lapsi_gen(q, ss, s, M));
+	BENCH_ONE("cp_rsapsi_gen", cp_rsapsi_gen(g, n, RLC_BN_BITS), 1);
+
+	BENCH_RUN("cp_rsapsi_ask (M)") {
+		BENCH_ADD(cp_rsapsi_ask(q, r, p, g, n, x, M));
 	} BENCH_END;
 
-	BENCH_RUN("cp_lapsi_ask (5)") {
-		BENCH_ADD(cp_lapsi_ask(d, r, x, s, M));
+	BENCH_RUN("cp_rsapsi_ans (N)") {
+		BENCH_ADD(cp_rsapsi_ans(v, w, q, g, n, y, N));
 	} BENCH_END;
 
-	BENCH_RUN("cp_lapsi_ans (2)") {
-		BENCH_ADD(cp_lapsi_ans(t, u, d, ss, y, N));
+	BENCH_RUN("cp_rsapsi_int") {
+		BENCH_ADD(cp_rsapsi_int(z, &len, r, p, n, x, M, v, w, N));
 	} BENCH_END;
 
-	BENCH_RUN("cp_lapsi_int") {
-		BENCH_ADD(cp_lapsi_int(z, &len, q, d, x, M, t, u, N));
+	BENCH_ONE("cp_shipsi_gen", cp_shipsi_gen(g, crt, RLC_BN_BITS), 1);
+
+	BENCH_RUN("cp_shipsi_ask (M)") {
+		BENCH_ADD(cp_shipsi_ask(q, r, p, g, crt->n, x, M));
+	} BENCH_END;
+
+	BENCH_RUN("cp_shipsi_ans (N)") {
+		BENCH_ADD(cp_shipsi_ans(v, w[0], q, g, crt, y, N));
+	} BENCH_END;
+
+	BENCH_RUN("cp_shipsi_int") {
+		BENCH_ADD(cp_shipsi_int(z, &len, r, p, crt->n, x, M, v, w[0], N));
+	} BENCH_END;
+
+	BENCH_RUN("cp_pbpsi_gen (M)") {
+		BENCH_ADD(cp_pbpsi_gen(q, ss, s, M));
+	} BENCH_END;
+
+	BENCH_RUN("cp_pbpsi_ask (M)") {
+		BENCH_ADD(cp_pbpsi_ask(d, r, x, s, M));
+	} BENCH_END;
+
+	BENCH_RUN("cp_pbpsi_ans (N)") {
+		BENCH_ADD(cp_pbpsi_ans(t, u, ss, d[0], y, N));
+	} BENCH_END;
+
+	BENCH_RUN("cp_pbpsi_int") {
+		BENCH_ADD(cp_pbpsi_int(z, &len, d, x, M, t, u, N));
 	} BENCH_END;
 
     bn_free(q);
 	bn_free(r);
-	g1_free(d);
-	g2_free(ss);
+	g1_free(ss);
 	for (int i = 0; i < M; i++) {
 		bn_free(x[i]);
 		bn_free(z[i]);
-		g1_free(s[i]);
+		g2_free(d[i]);
+		g2_free(s[i]);
 	}
+	g2_free(d[M]);
+	g2_free(s[M]);
 	for (int i = 0; i < N; i++) {
 		bn_free(y[i]);
-		g2_free(u[i]);
+		g1_free(u[i]);
 		gt_free(t[i]);
 	}
 }
@@ -1891,8 +2037,8 @@ int main(void) {
 	util_banner("Protocols based on integer factorization:\n", 0);
 	rsa();
 	rabin();
-	benaloh();
 	paillier();
+	benaloh();
 #endif
 
 #if defined(WITH_EC)
@@ -1927,6 +2073,8 @@ int main(void) {
 #endif
 		zss();
 		lhs();
+
+		util_banner("Protocols based on accumulators:\n", 0);
 		psi();
 	}
 #endif

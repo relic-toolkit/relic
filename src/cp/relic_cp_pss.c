@@ -60,7 +60,7 @@ int cp_pss_gen(bn_t r, bn_t s, g2_t g, g2_t x, g2_t y) {
 	return result;
 }
 
-int cp_pss_sig(g1_t a, g1_t b, bn_t m, bn_t r, bn_t s) {
+int cp_pss_sig(g1_t a, g1_t b, const bn_t m, const bn_t r, const bn_t s) {
 	bn_t n, t;
 	int result = RLC_OK;
 
@@ -88,7 +88,8 @@ int cp_pss_sig(g1_t a, g1_t b, bn_t m, bn_t r, bn_t s) {
 	return result;
 }
 
-int cp_pss_ver(g1_t a, g1_t b, bn_t m, g2_t g, g2_t x, g2_t y) {
+int cp_pss_ver(const g1_t a, const g1_t b, const bn_t m, const g2_t g,
+		const g2_t x, const g2_t y) {
 	g1_t p[2];
 	g2_t r[2];
 	gt_t e;
@@ -134,7 +135,7 @@ int cp_pss_ver(g1_t a, g1_t b, bn_t m, g2_t g, g2_t x, g2_t y) {
 	return result;
 }
 
-int cp_psb_gen(bn_t r, bn_t s[], g2_t g, g2_t x, g2_t y[], int l) {
+int cp_psb_gen(bn_t r, bn_t s[], g2_t g, g2_t x, g2_t y[], size_t l) {
 	bn_t n;
 	int i, result = RLC_OK;
 
@@ -161,7 +162,8 @@ int cp_psb_gen(bn_t r, bn_t s[], g2_t g, g2_t x, g2_t y[], int l) {
 	return result;
 }
 
-int cp_psb_sig(g1_t a, g1_t b, bn_t ms[], bn_t r, bn_t s[], int l) {
+int cp_psb_sig(g1_t a, g1_t b, const bn_t ms[], const bn_t r, const bn_t s[],
+		size_t l) {
 	bn_t m, n, t;
 	int i, result = RLC_OK;
 
@@ -200,7 +202,8 @@ int cp_psb_sig(g1_t a, g1_t b, bn_t ms[], bn_t r, bn_t s[], int l) {
 	return result;
 }
 
-int cp_psb_ver(g1_t a, g1_t b, bn_t ms[], g2_t g, g2_t x, g2_t y[], int l) {
+int cp_psb_ver(const g1_t a, const g1_t b, const bn_t ms[], const g2_t g,
+		const g2_t x, const g2_t y[], size_t l) {
 	g1_t p[2];
 	g2_t q[2];
 	gt_t e;

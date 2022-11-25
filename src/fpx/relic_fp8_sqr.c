@@ -39,7 +39,7 @@
 
 #if FPX_RDC == BASIC || !defined(STRIP)
 
-void fp8_sqr_basic(fp8_t c, fp8_t a) {
+void fp8_sqr_basic(fp8_t c, const fp8_t a) {
 	fp4_t t0, t1;
 
 	fp4_null(t0);
@@ -70,7 +70,7 @@ void fp8_sqr_basic(fp8_t c, fp8_t a) {
 
 #if PP_EXT == LAZYR || !defined(STRIP)
 
-void fp8_sqr_unr(dv8_t c, fp8_t a) {
+void fp8_sqr_unr(dv8_t c, const fp8_t a) {
 	fp4_t t;
 	dv4_t u0, u1, u2;
 
@@ -116,7 +116,7 @@ void fp8_sqr_unr(dv8_t c, fp8_t a) {
 	}
 }
 
-void fp8_sqr_lazyr(fp8_t c, fp8_t a) {
+void fp8_sqr_lazyr(fp8_t c, const fp8_t a) {
 	dv8_t t;
 
 	dv8_null(t);
@@ -137,7 +137,7 @@ void fp8_sqr_lazyr(fp8_t c, fp8_t a) {
 
 #endif
 
-void fp8_sqr_cyc(fp8_t c, fp8_t a) {
+void fp8_sqr_cyc(fp8_t c, const fp8_t a) {
 	fp4_t t0, t1, t2;
 
 	fp4_null(t0);

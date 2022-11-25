@@ -38,7 +38,7 @@
 
 #if FPX_RDC == BASIC || !defined(STRIP)
 
-void fp6_mul_basic(fp6_t c, fp6_t a, fp6_t b) {
+void fp6_mul_basic(fp6_t c, const fp6_t a, const fp6_t b) {
 	fp2_t v0, v1, v2, t0, t1, t2;
 
 	fp2_null(v0);
@@ -110,7 +110,7 @@ void fp6_mul_basic(fp6_t c, fp6_t a, fp6_t b) {
 #if PP_EXT == LAZYR || !defined(STRIP)
 
 /* MSVC needs this to be exported, so remove inline */
-void fp6_mul_unr(dv6_t c, fp6_t a, fp6_t b) {
+void fp6_mul_unr(dv6_t c, const fp6_t a, const fp6_t b) {
 	dv2_t u0, u1, u2, u3;
 	fp2_t t0, t1;
 
@@ -132,60 +132,47 @@ void fp6_mul_unr(dv6_t c, fp6_t a, fp6_t b) {
 		/* v0 = a_0b_0, v1 = a_1b_1, v2 = a_2b_2,
 		 * t0 = a_1 + a_2, t1 = b_1 + b_2,
 		 * u4 = u1 + u2, u5 = u0 + u1, u6 = u0 + u2 */
-#ifdef RLC_FP_ROOM
-		fp2_mulc_low(u0, a[0], b[0]);
-		fp2_mulc_low(u1, a[1], b[1]);
-		fp2_mulc_low(u2, a[2], b[2]);
-		fp2_addn_low(t0, a[1], a[2]);
-		fp2_addn_low(t1, b[1], b[2]);
-		fp2_addd_low(c[0], u1, u2);
-#else
 		fp2_muln_low(u0, a[0], b[0]);
 		fp2_muln_low(u1, a[1], b[1]);
 		fp2_muln_low(u2, a[2], b[2]);
+#ifdef RLC_FP_ROOM
+		fp2_addn_low(t0, a[1], a[2]);
+		fp2_addn_low(t1, b[1], b[2]);
+#else
 		fp2_addm_low(t0, a[1], a[2]);
 		fp2_addm_low(t1, b[1], b[2]);
-		fp2_addc_low(c[0], u1, u2);
 #endif
+		fp2_addc_low(c[0], u1, u2);
+
 		/* t2 (c_0) = v0 + E((a_1 + a_2)(b_1 + b_2) - v1 - v2) */
 		fp2_muln_low(u3, t0, t1);
 		fp2_subc_low(u3, u3, c[0]);
-#ifdef RLC_FP_ROOM
-		fp2_norh_low(c[0], u3);
-#else
 		fp2_nord_low(c[0], u3);
-#endif
 		fp2_addc_low(c[0], c[0], u0);
 
 		/* c_1 = (a_0 + a_1)(b_0 + b_1) - v0 - v1 + Ev2 */
 #ifdef RLC_FP_ROOM
 		fp2_addn_low(t0, a[0], a[1]);
 		fp2_addn_low(t1, b[0], b[1]);
-		fp2_addd_low(c[1], u0, u1);
 #else
 		fp2_addm_low(t0, a[0], a[1]);
 		fp2_addm_low(t1, b[0], b[1]);
-		fp2_addc_low(c[1], u0, u1);
 #endif
+		fp2_addc_low(c[1], u0, u1);
 		fp2_muln_low(u3, t0, t1);
 		fp2_subc_low(u3, u3, c[1]);
-#ifdef RLC_FP_ROOM
-		fp2_norh_low(c[2], u2);
-#else
 		fp2_nord_low(c[2], u2);
-#endif
 		fp2_addc_low(c[1], u3, c[2]);
 
 		/* c_2 = (a_0 + a_2)(b_0 + b_2) - v0 + v1 - v2 */
 #ifdef RLC_FP_ROOM
 		fp2_addn_low(t0, a[0], a[2]);
 		fp2_addn_low(t1, b[0], b[2]);
-		fp2_addd_low(c[2], u0, u2);
 #else
 		fp2_addm_low(t0, a[0], a[2]);
 		fp2_addm_low(t1, b[0], b[2]);
-		fp2_addc_low(c[2], u0, u2);
 #endif
+		fp2_addc_low(c[2], u0, u2);
 		fp2_muln_low(u3, t0, t1);
 		fp2_subc_low(u3, u3, c[2]);
 		fp2_addc_low(c[2], u3, u1);
@@ -201,7 +188,7 @@ void fp6_mul_unr(dv6_t c, fp6_t a, fp6_t b) {
 	}
 }
 
-void fp6_mul_lazyr(fp6_t c, fp6_t a, fp6_t b) {
+void fp6_mul_lazyr(fp6_t c, const fp6_t a, const fp6_t b) {
 	dv6_t t;
 
 	dv6_null(t);
@@ -221,7 +208,7 @@ void fp6_mul_lazyr(fp6_t c, fp6_t a, fp6_t b) {
 
 #endif
 
-void fp6_mul_dxs(fp6_t c, fp6_t a, fp6_t b) {
+void fp6_mul_dxs(fp6_t c, const fp6_t a, const fp6_t b) {
 	fp2_t v0, v1, t0, t1, t2;
 
 	fp2_null(v0);
@@ -278,7 +265,7 @@ void fp6_mul_dxs(fp6_t c, fp6_t a, fp6_t b) {
 	}
 }
 
-void fp6_mul_art(fp6_t c, fp6_t a) {
+void fp6_mul_art(fp6_t c, const fp6_t a) {
 	fp2_t t0;
 
 	fp2_null(t0);

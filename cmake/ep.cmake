@@ -12,7 +12,7 @@ message("      EP_PRECO=[off|on] Build precomputation table for generator.")
 message("      EP_DEPTH=w        Width w in [2,8] of precomputation table for fixed point methods.")
 message("      EP_WIDTH=w        Width w in [2,6] of window processing for unknown point methods.\n")
 
-message("   ** Available prime elliptic curve methods (default = PROJC;LWNAF;COMBS;INTER):\n")
+message("   ** Available prime elliptic curve methods (default = PROJC;LWNAF;COMBS;INTER;SSWUM):\n")
 
 message("      Point representation:")
 message("      EP_METHD=BASIC    Affine coordinates.")
@@ -20,6 +20,7 @@ message("      EP_METHD=PROJC    Homogeneous projective coordinates (complete fo
 message("      EP_METHD=JACOB    Jacobian projective coordinates.\n")
 
 message("      Variable-base scalar multiplication:")
+message("      EB_METHD=BASIC    Binary double-and-add method.")
 message("      EP_METHD=SLIDE    Sliding window method.")
 message("      EP_METHD=MONTY    Montgomery ladder method.")
 message("      EP_METHD=LWNAF    Left-to-right window NAF method.")
@@ -36,6 +37,11 @@ message("      EP_METHD=BASIC    Multiplication-and-addition simultaneous multip
 message("      EP_METHD=TRICK    Shamir's trick for simultaneous multiplication.")
 message("      EP_METHD=INTER    Interleaving of window NAFs (GLV for Koblitz curves).")
 message("      EP_METHD=JOINT    Joint sparse form.\n")
+
+message("      Hash to point on the elliptic curve:")
+message("      EP_METHD=BASIC    Hash to x-coordinate and increment.")
+message("      EP_METHD=SSWUM    Simplified Shallue-van de Woestijne-Ulas method.")
+message("      EP_METHD=SWIFT    SwiftEC hashing method.\n")
 
 if (NOT EP_DEPTH)
 	set(EP_DEPTH 4)
@@ -55,15 +61,16 @@ option(EP_CTMAP "Use contant-time SSWU and isogeny map for hashing" on)
 
 # Choose the arithmetic methods.
 if (NOT EP_METHD)
-	set(EP_METHD "PROJC;LWNAF;COMBS;INTER")
+	set(EP_METHD "PROJC;LWNAF;COMBS;INTER;SSWUM")
 endif(NOT EP_METHD)
 list(LENGTH EP_METHD EP_LEN)
-if (EP_LEN LESS 4)
+if (EP_LEN LESS 5)
 	message(FATAL_ERROR "Incomplete EP_METHD specification: ${EP_METHD}")
-endif(EP_LEN LESS 4)
+endif(EP_LEN LESS 5)
 
 list(GET EP_METHD 0 EP_ADD)
 list(GET EP_METHD 1 EP_MUL)
 list(GET EP_METHD 2 EP_FIX)
 list(GET EP_METHD 3 EP_SIM)
+list(GET EP_METHD 4 EP_MAP)
 set(EP_METHD ${EP_METHD} CACHE STRING "Method for prime elliptic curve arithmetic.")

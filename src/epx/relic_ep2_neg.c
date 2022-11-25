@@ -36,7 +36,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void ep2_neg(ep2_t r, ep2_t p) {
+void ep2_neg(ep2_t r, const ep2_t p) {
 	if (ep2_is_infty(p)) {
 		ep2_set_infty(r);
 		return;

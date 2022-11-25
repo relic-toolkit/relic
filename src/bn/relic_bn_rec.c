@@ -873,7 +873,7 @@ void bn_rec_glv(bn_t k0, bn_t k1, const bn_t k, const bn_t n, const bn_t *v1,
 }
 
 void bn_rec_frb(bn_t *ki, int sub, const bn_t k, const bn_t x, const bn_t n,
-		int bls) {
+		int cof) {
 	int i, l, sk, sx;
 	bn_t u[4], v[4];
 
@@ -885,7 +885,7 @@ void bn_rec_frb(bn_t *ki, int sub, const bn_t k, const bn_t x, const bn_t n,
 			bn_new(v[i]);
 		}
 
-		if (bls) {
+		if (cof == 0) {
 			bn_abs(v[0], k);
 			bn_abs(u[0], x);
 

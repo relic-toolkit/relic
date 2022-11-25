@@ -44,7 +44,7 @@
  * @param r			- the result.
  * @param p			- the point to normalize.
  */
-static void ep4_norm_imp(ep4_t r, ep4_t p, int inverted) {
+static void ep4_norm_imp(ep4_t r, const ep4_t p, int inverted) {
 	if (p->coord != BASIC) {
 		fp4_t t0, t1;
 
@@ -85,7 +85,7 @@ static void ep4_norm_imp(ep4_t r, ep4_t p, int inverted) {
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void ep4_norm(ep4_t r, ep4_t p) {
+void ep4_norm(ep4_t r, const ep4_t p) {
 	if (ep4_is_infty(p)) {
 		ep4_set_infty(r);
 		return;
@@ -100,7 +100,7 @@ void ep4_norm(ep4_t r, ep4_t p) {
 #endif
 }
 
-void ep4_norm_sim(ep4_t *r, ep4_t *t, int n) {
+void ep4_norm_sim(ep4_t *r, const ep4_t *t, int n) {
 	int i;
 	fp4_t *a = RLC_ALLOCA(fp4_t, n);
 

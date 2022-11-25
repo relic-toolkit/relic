@@ -21,48 +21,55 @@
  * or <https://www.apache.org/licenses/>.
  */
 
+#include "relic_fp_low.h"
+
 /**
  * @file
  *
- * Implementation of the low-level prime field multiplication functions.
+ * Implementation of the low-level prime field addition and subtraction
+ * functions.
  *
- * @ingroup bn
+ * @version $Id: relic_fp_add_low.c 88 2009-09-06 21:27:19Z dfaranha $
+ * @ingroup fp
  */
 
-#include "macro.s"
-
 .text
+.global fp_rsh1_low
+.global fp_lsh1_low
 
-.global fp_muln_low
-.global fp_mulm_low
-
-fp_muln_low:
-	movq %rdx,%rcx
-	FP_MULN_LOW %rdi, %r8, %r9, %r10, %rsi, %rcx
+fp_rsh1_low:
+	movq	0(%rsi), %r8
+	movq	8(%rsi), %r9
+	movq	16(%rsi), %r10
+	movq	24(%rsi), %r11
+	movq	32(%rsi), %rax
+	shrd	$1, %r9, %r8
+	shrd	$1, %r10, %r9
+	shrd	$1, %r11, %r10
+	shrd	$1, %rax, %r11
+	shr     $1, %rax
+	movq	%r8,0(%rdi)
+	movq	%r9,8(%rdi)
+	movq	%r10,16(%rdi)
+	movq	%r11,24(%rdi)
+	movq	%rax,32(%rdi)
 	ret
 
-fp_mulm_low:
-	push	%r12
-	push	%r13
-	push	%r14
-	push	%r15
-	push 	%rbx
-	push	%rbp
-	subq 	$128, %rsp
-
-	movq 	%rdx,%rcx
-	leaq 	p0(%rip), %rbx
-
-	FP_MULN_LOW %rsp, %r8, %r9, %r10, %rsi, %rcx
-
-	FP_RDCN_LOW %rdi, %r8, %r9, %r10, %rsp, %rbx
-
-	addq	$128, %rsp
-
-	pop		%rbp
-	pop		%rbx
-	pop		%r15
-	pop		%r14
-	pop		%r13
-	pop		%r12
+fp_lsh1_low:
+	movq	0(%rsi), %r8
+	movq	8(%rsi), %r9
+	movq	16(%rsi), %r10
+	movq	24(%rsi), %r11
+	movq	32(%rsi), %rax
+	shld	$1, %r11, %rax
+	shld	$1, %r10, %r11
+	shld	$1, %r9, %r10
+	shld	$1, %r8, %r9
+	shl     $1, %r8
+	movq	%r8,0(%rdi)
+	movq	%r9,8(%rdi)
+	movq	%r10,16(%rdi)
+	movq	%r11,24(%rdi)
+	movq	%rax,32(%rdi)
+	xorq	%rax, %rax
 	ret

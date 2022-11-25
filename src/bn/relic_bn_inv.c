@@ -30,7 +30,7 @@
  */
 
 #include "relic_core.h"
-#include "relic_bn_low.h"
+#include "relic_bn.h"
 
 /*============================================================================*/
 /* Public definitions                                                         */

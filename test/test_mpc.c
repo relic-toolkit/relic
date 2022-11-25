@@ -68,7 +68,7 @@ static int triple(void) {
 		bn_gen_prime(n, RLC_BN_BITS);
 
 		TEST_CASE("multiplication triples are generated correctly") {
-			mt_gen(tri, n);
+			mpc_mt_gen(tri, n);
 			bn_add(t, tri[0]->a, tri[1]->a);
 			bn_mod(t, t, n);
 			bn_add(u, tri[0]->b, tri[1]->b);
@@ -81,7 +81,7 @@ static int triple(void) {
 		} TEST_END;
 
 		TEST_CASE("multiplication triples are consistent") {
-			mt_gen(tri, n);
+			mpc_mt_gen(tri, n);
 			/* Generate random inputs. */
 			bn_rand_mod(x[0], n);
 			bn_rand_mod(y[0], n);
@@ -102,14 +102,14 @@ static int triple(void) {
 			bn_mod(y[0], y[0], n);
 
 			/* Compute public values locally. */
-			mt_mul_lcl(d[0], e[0], x[0], y[0], n, tri[0]);
-			mt_mul_lcl(d[1], e[1], x[1], y[1], n, tri[1]);
+			mpc_mt_lcl(d[0], e[0], x[0], y[0], n, tri[0]);
+			mpc_mt_lcl(d[1], e[1], x[1], y[1], n, tri[1]);
 			/* Broadcast public values. */
-			mt_mul_bct(d, e, n);
+			mpc_mt_bct(d, e, n);
 			TEST_ASSERT(bn_cmp(d[0], d[1]) == RLC_EQ, end);
 			TEST_ASSERT(bn_cmp(e[0], e[1]) == RLC_EQ, end);
-			mt_mul_mpc(d[0], d[0], e[0], n, tri[0], 0);
-			mt_mul_mpc(d[1], d[1], e[1], n, tri[1], 1);
+			mpc_mt_mul(d[0], d[0], e[0], n, tri[0], 0);
+			mpc_mt_mul(d[1], d[1], e[1], n, tri[1], 1);
 			bn_add(d[0], d[0], d[1]);
 			bn_mod(d[0], d[0], n);
 			TEST_ASSERT(bn_cmp(t, d[0]) == RLC_EQ, end);
@@ -127,10 +127,65 @@ static int triple(void) {
 	mt_free(tri[0]);
 	mt_free(tri[1]);
 	for (int j = 0; j < 2; j++) {
-	  bn_free(d[j]);
-	  bn_free(e[j]);
-	  bn_free(x[j]);
-	  bn_free(y[j]);
+		bn_free(d[j]);
+		bn_free(e[j]);
+		bn_free(x[j]);
+		bn_free(y[j]);
+	}
+	return code;
+}
+
+static int shamir(void) {
+	int code = RLC_ERR;
+	bn_t q, t, s, x[10], y[10];
+
+	bn_null(q);
+	bn_null(t);
+	bn_null(s);
+
+	RLC_TRY {
+		bn_new(q);
+		bn_new(t);
+		bn_new(s);
+		for (int j = 0; j < 10; j++) {
+			bn_null(y[j]);
+			bn_new(y[j]);
+			bn_null(x[j]);
+			bn_new(x[j]);
+		}
+
+		bn_gen_prime(q, RLC_BN_BITS);
+
+		TEST_CASE("shamir secret shares are generated correctly") {
+			for (int i = 2; i < 10; i++) {
+				for (int j = 2; j <= i; j++) {
+					bn_rand_mod(s, q);
+					bn_zero(t);
+					TEST_ASSERT(mpc_sss_gen(x, y, s, q, j, i) == RLC_OK, end);
+					if (j > 2) {
+						TEST_ASSERT(mpc_sss_key(t, x, y, q, j - 1) == RLC_OK, end);
+						TEST_ASSERT(bn_cmp(t, s) != RLC_EQ, end);
+					} else {
+						TEST_ASSERT(mpc_sss_key(t, x, y, q, j - 1) == RLC_ERR, end);
+					}
+					TEST_ASSERT(mpc_sss_key(t, x, y, q, j) == RLC_OK, end);
+					TEST_ASSERT(bn_cmp(t, s) == RLC_EQ, end);
+				}
+			}
+		} TEST_END;
+	} RLC_CATCH_ANY {
+		util_print("FATAL ERROR!\n");
+		RLC_ERROR(end);
+	}
+
+	code = RLC_OK;
+  end:
+	bn_free(t);
+	bn_free(q);
+	bn_free(s);
+	for (int j = 0; j < 10; j++) {
+		bn_free(x[j]);
+		bn_free(y[j]);
 	}
 	return code;
 }
@@ -193,7 +248,7 @@ static int pairing(void) {
 		g1_get_ord(n);
 
 		TEST_CASE("scalar multiplication triples in g1 are consistent") {
-			mt_gen(tri, n);
+			mpc_mt_gen(tri, n);
 			/* Generate random inputs. */
 			g1_rand(p[0]);
 			bn_rand_mod(k[0], n);
@@ -389,6 +444,11 @@ int main(void) {
 
 #if defined(WITH_BN)
 	if (triple()) {
+		core_clean();
+		return 1;
+	}
+
+	if (shamir()) {
 		core_clean();
 		return 1;
 	}

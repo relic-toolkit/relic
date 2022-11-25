@@ -151,8 +151,9 @@ static void pp_exp_b12(fp12_t c, fp12_t a) {
 		bn_new(x);
 
 		/*
-		 * Final exponentiation following Ghammam and Fouotsa:
-		 * On the Computation of Optimal Ate Pairing at the 192-bit Level.
+		 * Final exponentiation following Hayashida, Hayasaka and Teruya:
+		 * Efficient Final Exponentiation via Cyclotomic Structure for Pairings
+		 * over Families of Elliptic Curves
 		 */
 		fp_prime_get_par(x);
 		b = fp_prime_get_par_sps(&l);
@@ -164,42 +165,62 @@ static void pp_exp_b12(fp12_t c, fp12_t a) {
 		/* t0 = f^2. */
 		fp12_sqr_cyc(t0, c);
 
-		/* t1 = f^x. */
-		fp12_exp_cyc_sps(t1, c, b, l, bn_sign(x));
-
-		/* t2 = f^(x^2). */
-		fp12_exp_cyc_sps(t2, t1, b, l, bn_sign(x));
-
-		/* t1 = t2/(t1^2 * f). */
+		/* t3 = 1/f. */
 		fp12_inv_cyc(t3, c);
-		fp12_sqr_cyc(t1, t1);
+
+		if (b[0] == 0) {
+			/* t1 = f^x. */
+			fp12_exp_cyc_sps(t1, c, b, l, bn_sign(x));
+
+			/* t2 = f^(x^2). */
+			fp12_exp_cyc_sps(t2, t1, b, l, bn_sign(x));
+
+			/* t1 = t2/(t1^2 * f). */
+			fp12_sqr_cyc(t1, t1);
+		} else {
+			/*
+			 * Variant from Ghammam and Fouotsa saves computing (x-1)^2 power:
+			 * Improving the computation of the optimal ate pairing for a high
+			 * security level
+			 */
+			int _b[RLC_TERMS + 1];
+
+			for (int i = 0; i < l; i++) {
+				if (b[i] > 0) {
+					_b[i] = b[i] - 1;
+				} else {
+					_b[i] = b[i] + 1;
+				}
+			}
+
+			/* t1 = f^x. */
+			fp12_exp_cyc_sps(t1, t0, b, l, bn_sign(x));
+
+			/* t2 = f^(x^2). */
+			fp12_exp_cyc_sps(t2, t1, _b, l, bn_sign(x));
+		}
+
+		/* t1 = f^(u^2 - 2u + 1). */
 		fp12_mul(t1, t1, t3);
 		fp12_inv_cyc(t1, t1);
 		fp12_mul(t1, t1, t2);
 
-		/* t2 = t1^x. */
+		/* t2 = t1^(x + p). */
 		fp12_exp_cyc_sps(t2, t1, b, l, bn_sign(x));
+		fp12_frb(t3, t1, 1);
+		fp12_mul(t2, t2, t3);
 
-		/* t3 = t2^x/t1. */
+		/* t3 = t2^(x^2 + p^2 - 1) */
 		fp12_exp_cyc_sps(t3, t2, b, l, bn_sign(x));
-		fp12_inv_cyc(t1, t1);
-		fp12_mul(t3, t1, t3);
-
-		/* t1 = t1^(-p^3 ) * t2^(p^2). */
-		fp12_inv_cyc(t1, t1);
-		fp12_frb(t1, t1, 3);
-		fp12_frb(t2, t2, 2);
+		fp12_exp_cyc_sps(t3, t3, b, l, bn_sign(x));
+		fp12_frb(t1, t2, 2);
+		fp12_inv_cyc(t2, t2);
 		fp12_mul(t1, t1, t2);
+		fp12_mul(t3, t3, t1);
 
-		/* t2 = f * f^2 * t3^x. */
-		fp12_exp_cyc_sps(t2, t3, b, l, bn_sign(x));
-		fp12_mul(t2, t2, t0);
-		fp12_mul(t2, t2, c);
-
-		/* Compute t1 * t2 * t3^p. */
-		fp12_mul(t1, t1, t2);
-		fp12_frb(t2, t3, 1);
-		fp12_mul(c, t1, t2);
+		/* c = t3 * f^3. */
+		fp12_mul(t0, t0, c);
+		fp12_mul(c, t0, t3);
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);

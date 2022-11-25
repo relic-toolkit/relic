@@ -38,7 +38,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void dv_print(dig_t *a, int digits) {
+void dv_print(const dig_t *a, int digits) {
 	int i;
 
 	/* Suppress possible unused parameter warning. */

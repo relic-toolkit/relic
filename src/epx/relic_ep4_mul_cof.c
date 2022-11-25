@@ -38,7 +38,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void ep4_mul_cof(ep4_t r, ep4_t p) {
+void ep4_mul_cof(ep4_t r, const ep4_t p) {
 	bn_t z;
 	ep4_t t0, t1, t2, t3;
 

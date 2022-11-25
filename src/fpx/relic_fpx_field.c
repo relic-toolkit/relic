@@ -242,8 +242,15 @@ void fp4_field_init() {
 		bn_sub_dig(e, e, 1);
 		bn_div_dig(e, e, 6);
 		fp4_exp(t0, t0, e);
-		fp_copy(ctx->fp4_p1[0], t0[1][0]);
-		fp_copy(ctx->fp4_p1[1], t0[1][1]);
+		if (fp2_is_zero(t0[1])) {
+			ctx->frb4 = 0;
+			fp_copy(ctx->fp4_p1[0], t0[0][0]);
+			fp_copy(ctx->fp4_p1[1], t0[0][1]);
+		} else {
+			ctx->frb4 = 1;
+			fp_copy(ctx->fp4_p1[0], t0[1][0]);
+			fp_copy(ctx->fp4_p1[1], t0[1][1]);
+		}
 	} RLC_CATCH_ANY {
 	    RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {

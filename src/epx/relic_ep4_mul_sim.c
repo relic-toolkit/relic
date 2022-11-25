@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (c) 2012 RELIC Authors
+ * Copyright (c) 2021 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -50,8 +50,8 @@
  * @param[in] m					- the second integer.
  * @param[in] t					- the pointer to the precomputed table.
  */
-static void ep4_mul_sim_plain(ep4_t r, ep4_t p, bn_t k, ep4_t q, bn_t m,
-		ep4_t *t) {
+static void ep4_mul_sim_plain(ep4_t r, const ep4_t p, const bn_t k,
+		const ep4_t q, const bn_t m, ep4_t *t) {
 	int i, l, l0, l1, n0, n1, w, gen;
 	int8_t naf0[2 * RLC_FP_BITS + 1], naf1[2 * RLC_FP_BITS + 1], *_k, *_m;
 	ep4_t t0[1 << (EP_WIDTH - 2)];
@@ -146,7 +146,8 @@ static void ep4_mul_sim_plain(ep4_t r, ep4_t p, bn_t k, ep4_t q, bn_t m,
 
 #if EP_SIM == BASIC || !defined(STRIP)
 
-void ep4_mul_sim_basic(ep4_t r, ep4_t p, bn_t k, ep4_t q, bn_t l) {
+void ep4_mul_sim_basic(ep4_t r, const ep4_t p, const bn_t k, const ep4_t q,
+		const bn_t l) {
 	ep4_t t;
 
 	ep4_null(t);
@@ -170,10 +171,10 @@ void ep4_mul_sim_basic(ep4_t r, ep4_t p, bn_t k, ep4_t q, bn_t l) {
 
 #if EP_SIM == TRICK || !defined(STRIP)
 
-void ep4_mul_sim_trick(ep4_t r, ep4_t p, bn_t k, ep4_t q, bn_t m) {
-	ep4_t t0[1 << (EP_WIDTH / 2)];
-	ep4_t t1[1 << (EP_WIDTH / 2)];
-	ep4_t t[1 << EP_WIDTH];
+void ep4_mul_sim_trick(ep4_t r, const ep4_t p, const bn_t k, const ep4_t q,
+		const bn_t m) {
+	ep4_t t0[1 << (EP_WIDTH / 2)], t1[1 << (EP_WIDTH / 2)];
+	ep4_t t[1 << (EP_WIDTH - EP_WIDTH % 2)];
 	bn_t n;
 	int l0, l1, w = EP_WIDTH / 2;
 	uint8_t w0[2 * RLC_FP_BITS], w1[2 * RLC_FP_BITS];
@@ -200,7 +201,7 @@ void ep4_mul_sim_trick(ep4_t r, ep4_t p, bn_t k, ep4_t q, bn_t m) {
 			ep4_new(t0[i]);
 			ep4_new(t1[i]);
 		}
-		for (int i = 0; i < (1 << EP_WIDTH); i++) {
+		for (int i = 0; i < (1 << (EP_WIDTH - EP_WIDTH % 2)); i++) {
 			ep4_null(t[i]);
 			ep4_new(t[i]);
 		}
@@ -230,19 +231,12 @@ void ep4_mul_sim_trick(ep4_t r, ep4_t p, bn_t k, ep4_t q, bn_t m) {
 		}
 
 #if defined(EP_MIXED)
-		ep4_norm_sim(t + 1, t + 1, (1 << (EP_WIDTH)) - 1);
+		ep4_norm_sim(t + 1, t + 1, (1 << (EP_WIDTH - EP_WIDTH % 2)) - 1);
 #endif
 
 		l0 = l1 = RLC_CEIL(2 * RLC_FP_BITS, w);
 		bn_rec_win(w0, &l0, k, w);
 		bn_rec_win(w1, &l1, m, w);
-
-		for (int i = l0; i < l1; i++) {
-			w0[i] = 0;
-		}
-		for (int i = l1; i < l0; i++) {
-			w1[i] = 0;
-		}
 
 		ep4_set_infty(r);
 		for (int i = RLC_MAX(l0, l1) - 1; i >= 0; i--) {
@@ -261,7 +255,7 @@ void ep4_mul_sim_trick(ep4_t r, ep4_t p, bn_t k, ep4_t q, bn_t m) {
 			ep4_free(t0[i]);
 			ep4_free(t1[i]);
 		}
-		for (int i = 0; i < (1 << EP_WIDTH); i++) {
+		for (int i = 0; i < (1 << (EP_WIDTH - EP_WIDTH % 2)); i++) {
 			ep4_free(t[i]);
 		}
 	}
@@ -270,7 +264,8 @@ void ep4_mul_sim_trick(ep4_t r, ep4_t p, bn_t k, ep4_t q, bn_t m) {
 
 #if EP_SIM == INTER || !defined(STRIP)
 
-void ep4_mul_sim_inter(ep4_t r, ep4_t p, bn_t k, ep4_t q, bn_t m) {
+void ep4_mul_sim_inter(ep4_t r, const ep4_t p, const bn_t k, const ep4_t q,
+		const bn_t m) {
 	if (bn_is_zero(k) || ep4_is_infty(p)) {
 		ep4_mul(r, q, m);
 		return;
@@ -287,7 +282,8 @@ void ep4_mul_sim_inter(ep4_t r, ep4_t p, bn_t k, ep4_t q, bn_t m) {
 
 #if EP_SIM == JOINT || !defined(STRIP)
 
-void ep4_mul_sim_joint(ep4_t r, ep4_t p, bn_t k, ep4_t q, bn_t m) {
+void ep4_mul_sim_joint(ep4_t r, const ep4_t p, const bn_t k, const ep4_t q,
+		const bn_t m) {
 	ep4_t t[5];
 	int i, l, u_i, offset;
 	int8_t jsf[4 * (RLC_FP_BITS + 1)];
@@ -360,7 +356,7 @@ void ep4_mul_sim_joint(ep4_t r, ep4_t p, bn_t k, ep4_t q, bn_t m) {
 
 #endif
 
-void ep4_mul_sim_gen(ep4_t r, bn_t k, ep4_t q, bn_t m) {
+void ep4_mul_sim_gen(ep4_t r, const bn_t k, const ep4_t q, const bn_t m) {
 	ep4_t gen;
 
 	ep4_null(gen);
@@ -392,7 +388,7 @@ void ep4_mul_sim_gen(ep4_t r, bn_t k, ep4_t q, bn_t m) {
 	}
 }
 
-void ep4_mul_sim_dig(ep4_t r, ep4_t p[], dig_t k[], int len) {
+void ep4_mul_sim_dig(ep4_t r, const ep4_t p[], const dig_t k[], int len) {
 	ep4_t t;
 	int max;
 
@@ -426,7 +422,7 @@ void ep4_mul_sim_dig(ep4_t r, ep4_t p[], dig_t k[], int len) {
 	}
 }
 
-void ep4_mul_sim_lot(ep4_t r, ep4_t p[], const bn_t k[], int n) {
+void ep4_mul_sim_lot(ep4_t r, const ep4_t p[], const bn_t k[], int n) {
 	const int len = RLC_FP_BITS + 1;
 	int i, j, m, l, *_l = RLC_ALLOCA(int, 8 * n);
 	bn_t _k[8], q, x;
@@ -466,7 +462,7 @@ void ep4_mul_sim_lot(ep4_t r, ep4_t p[], const bn_t k[], int n) {
 
 			l = 0;
 			for (i = 0; i < n; i++) {
-				bn_rec_frb(_k, 8, k[i], q, x, ep_curve_is_pairf());
+				bn_rec_frb(_k, 8, k[i], q, x, ep_curve_is_pairf() == EP_BN);
 				for (j = 0; j < 8; j++) {
 					_l[8*i + j] = len;
 					bn_rec_naf(&naf[(8*i + j)*len], &_l[8*i + j], _k[j], 2);
@@ -474,14 +470,6 @@ void ep4_mul_sim_lot(ep4_t r, ep4_t p[], const bn_t k[], int n) {
 						ep4_neg(_p[8*i + j], _p[8*i + j]);
 					}
 					l = RLC_MAX(l, _l[8*i + j]);
-				}
-			}
-
-			for (i = 0; i < n; i++) {
-				for (j = 0; j < 8; j++) {
-					for (m = _l[8*i + j]; m < l; m++) {
-						naf[(8*i + j)*len + m] = 0;
-					}
 				}
 			}
 
@@ -549,7 +537,7 @@ void ep4_mul_sim_lot(ep4_t r, ep4_t p[], const bn_t k[], int n) {
 
 			l = 0;
 			for (i = 0; i < n; i++) {
-				bn_rec_frb(_k, 8, k[i], q, x, ep_curve_is_pairf());
+				bn_rec_frb(_k, 8, k[i], q, x, ep_curve_is_pairf() == EP_BN);
 				for (j = 0; j < 8; j++) {
 					_l[8*i + j] = len;
 					bn_rec_naf(&naf[(8*i + j)*len], &_l[8*i + j], _k[j], w);
@@ -579,7 +567,7 @@ void ep4_mul_sim_lot(ep4_t r, ep4_t p[], const bn_t k[], int n) {
 							if (bn_sign(_k[m]) == RLC_NEG) {
 								ep4_neg(t, t);
 							}
-							ep4_add(_p[m*c + (ptr >> 1)], _p[m*c + (ptr >> 1)], t);
+							ep4_add(_p[m*c + (ptr/2)], _p[m*c + (ptr/2)], t);
 						}
 					}
 				}

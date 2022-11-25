@@ -58,7 +58,7 @@ int cp_ecdh_gen(bn_t d, ec_t q) {
 	return result;
 }
 
-int cp_ecdh_key(uint8_t *key, int key_len, bn_t d, ec_t q) {
+int cp_ecdh_key(uint8_t *key, size_t key_len, const bn_t d, const ec_t q) {
 	ec_t p;
 	bn_t x, h;
 	int l, result = RLC_OK;

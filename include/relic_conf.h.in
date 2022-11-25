@@ -74,10 +74,12 @@
 #define MSP      2
 /** ARM 32-bit architecture. */
 #define ARM      3
+/** ARM 64-bit architecture. */
+#define A64      4
 /** Intel x86-compatible 32-bit architecture. */
-#define X86      4
+#define X86      5
 /** AMD64-compatible 64-bit architecture. */
-#define X64      5
+#define X64      6
 /** Architecture. */
 #cmakedefine ARCH	 @ARCH@
 
@@ -178,10 +180,10 @@
 
 /** Basic Euclidean GCD Algorithm. */
 #define BASIC    1
+/** Binary GCD Algorithm. */
+#define BINAR    2
 /** Lehmer's fast GCD Algorithm. */
-#define LEHME    2
-/** Stein's binary GCD Algorithm. */
-#define STEIN    3
+#define LEHME    3
 /** Chosen multiple precision greatest common divisor method. */
 #define BN_GCD   @BN_GCD@
 
@@ -467,6 +469,15 @@
 #define JOINT    4
 /** Chosen prime elliptic curve simulteanous point multiplication method. */
 #define EP_SIM   @EP_SIM@
+
+/** Basic hash to x-coordinate and increment. */
+#define BASIC    1
+/** (Simplified) Shallue-van de Woestijne-Ulas map. */
+#define SSWUM    2
+/** SwiftEC method. */
+#define SWIFT    3
+/** Chosen prime elliptic curve hashing method. */
+#define EP_MAP   @EP_MAP@
 
 /** Prime elliptic curve arithmetic method. */
 #define EP_METHD "@EP_METHD@"

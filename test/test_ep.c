@@ -513,17 +513,15 @@ static int endomorphism(void) {
 			}
 			bn_mul(v1[0], v2[1], v1[1]);
 			bn_mod(l, v1[0], v2[0]);
-			bn_sub(v1[1], v2[0], l);
-			if (bn_cmp(v1[1], l) == RLC_LT) {
-				bn_copy(l, v1[1]);
-			}
 
 			TEST_CASE("endomorphism is correct") {
 				/* Test if \psi(P) = [l]P. */
 				ep_rand(a);
 				ep_psi(b, a);
 				ep_mul(c, a, l);
-				TEST_ASSERT(ep_cmp(b, c) == RLC_EQ, end);
+				ep_neg(a, b);
+				TEST_ASSERT(ep_cmp(b, c) == RLC_EQ ||
+					ep_cmp(a, c) == RLC_EQ, end);
 			}
 			TEST_END;
 
@@ -532,7 +530,9 @@ static int endomorphism(void) {
 				ep_rand(a);
 				ep_psi(b, a);
 				ep_mul(c, a, l);
-				TEST_ASSERT(ep_cmp(b, c) == RLC_EQ, end);
+				ep_neg(a, b);
+				TEST_ASSERT(ep_cmp(b, c) == RLC_EQ ||
+					ep_cmp(a, c) == RLC_EQ, end);
 			}
 			TEST_END;
 #endif
@@ -541,10 +541,11 @@ static int endomorphism(void) {
 			TEST_CASE("endomorphism in projective coordinates is correct") {
 				ep_rand(a);
 				ep_dbl_projc(a, a);
-				ep_norm(a, a);
 				ep_psi(b, a);
 				ep_mul(c, a, l);
-				TEST_ASSERT(ep_cmp(b, c) == RLC_EQ, end);
+				ep_neg(a, b);
+				TEST_ASSERT(ep_cmp(b, c) == RLC_EQ ||
+					ep_cmp(a, c) == RLC_EQ, end);
 			}
 			TEST_END;
 #endif
@@ -1355,12 +1356,43 @@ static int hashing(void) {
 			rand_bytes(msg, sizeof(msg));
 			ep_map(a, msg, sizeof(msg));
 			TEST_ASSERT(ep_is_infty(a) == 0, end);
-			ep_map_dst(b, msg, sizeof(msg), (const uint8_t *)"RELIC", 5);
-			TEST_ASSERT(ep_cmp(a, b) == RLC_EQ, end);
 			ep_mul(a, a, n);
 			TEST_ASSERT(ep_is_infty(a) == 1, end);
 		}
 		TEST_END;
+
+#if EP_MAP == BASIC || !defined(STRIP)
+		TEST_CASE("basic point hashing is correct") {
+			rand_bytes(msg, sizeof(msg));
+			ep_map_basic(a, msg, sizeof(msg));
+			TEST_ASSERT(ep_is_infty(a) == 0, end);
+			ep_mul(a, a, n);
+			TEST_ASSERT(ep_is_infty(a) == 1, end);
+		}
+		TEST_END;
+#endif
+
+#if EP_MAP == SSWUM || !defined(STRIP)
+		TEST_CASE("simplified SWU point hashing is correct") {
+			rand_bytes(msg, sizeof(msg));
+			ep_map_sswum(a, msg, sizeof(msg));
+			TEST_ASSERT(ep_is_infty(a) == 0, end);
+			ep_mul(a, a, n);
+			TEST_ASSERT(ep_is_infty(a) == 1, end);
+		}
+		TEST_END;
+#endif
+
+#if EP_MAP == SWIFT || !defined(STRIP)
+		TEST_CASE("swift point hashing is correct") {
+			rand_bytes(msg, sizeof(msg));
+			ep_map_swift(a, msg, sizeof(msg));
+			TEST_ASSERT(ep_is_infty(a) == 0, end);
+			ep_mul(a, a, n);
+			TEST_ASSERT(ep_is_infty(a) == 1, end);
+		}
+		TEST_END;
+#endif
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);

@@ -557,7 +557,7 @@ static void memory(void) {
 
 static void util(void) {
 	gt_t a, b;
-	uint8_t bin[12 * RLC_PC_BYTES];
+	uint8_t bin[24 * RLC_PC_BYTES];
 	int l;
 
 	gt_null(a);
@@ -685,6 +685,13 @@ static void arith(void) {
 		pc_get_ord(d);
 		bn_rand_mod(e, d);
 		BENCH_ADD(gt_exp(c, a, e));
+	}
+	BENCH_END;
+
+	BENCH_RUN("gt_exp_gen") {
+		pc_get_ord(d);
+		bn_rand_mod(e, d);
+		BENCH_ADD(gt_exp_gen(c, e));
 	}
 	BENCH_END;
 

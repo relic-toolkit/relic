@@ -152,6 +152,13 @@ echo "#define ep2_t         RLC_PREFIX(ep2_t)"
 echo
 REDEF2 epx ep2
 
+echo "#undef ep4_st"
+echo "#undef ep4_t"
+echo "#define ep4_st        RLC_PREFIX(ep4_st)"
+echo "#define ep4_t         RLC_PREFIX(ep4_t)"
+echo
+REDEF2 epx ep4
+
 echo "#undef fp2_st"
 echo "#undef fp2_t"
 echo "#undef dv2_t"
@@ -231,6 +238,8 @@ REDEF2 fbx fb2
 REDEF2 fbx fb4
 
 REDEF pp
+REDEF pc
+REDEF mpc
 
 echo "#undef crt_t"
 echo "#undef rsa_t"
@@ -238,8 +247,8 @@ echo "#undef rabin_t"
 echo "#undef phpe_t"
 echo "#undef bdpe_t"
 echo "#undef sokaka_t"
-echo "#define crt_t		RLC_PREFIX(crt_t)"
-echo "#define rsa_t		RLC_PREFIX(rsa_t)"
+echo "#define crt_t	RLC_PREFIX(crt_t)"
+echo "#define rsa_t	RLC_PREFIX(rsa_t)"
 echo "#define rabin_t	RLC_PREFIX(rabin_t)"
 echo "#define phpe_t	RLC_PREFIX(phpe_t)"
 echo "#define bdpe_t	RLC_PREFIX(bdpe_t)"

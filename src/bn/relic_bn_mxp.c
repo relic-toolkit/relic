@@ -317,6 +317,95 @@ void bn_mxp_monty(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 
 #endif
 
+void bn_mxp_crt(bn_t d, const bn_t a, const bn_t b, const bn_t c,
+		const crt_t crt, int sqr) {
+	bn_t t, u;
+
+	bn_null(t);
+	bn_null(u);
+
+	RLC_TRY {
+		bn_new(t);
+		bn_new(u);
+
+		if (!sqr) {
+#if MULTI == OPENMP
+			omp_set_num_threads(CORES);
+			#pragma omp parallel copyin(core_ctx) firstprivate(crt)
+			{
+				#pragma omp sections
+				{
+					#pragma omp section
+					{
+#endif
+						/* m1 = a^dP mod p. */
+						bn_mxp(t, a, b, crt->p);
+#if MULTI == OPENMP
+					}
+#pragma omp section
+					{
+#endif
+						/* m2 = a^dQ mod q. */
+						bn_mxp(u, a, c, crt->q);
+#if MULTI == OPENMP
+					}
+				}
+			}
+#endif
+		} else {
+#if MULTI == OPENMP
+			omp_set_num_threads(CORES);
+			#pragma omp parallel copyin(core_ctx) firstprivate(crt)
+			{
+				#pragma omp sections
+				{
+					#pragma omp section
+					{
+#endif
+						/* Compute m_p = L(c^(p-1) mod p^2) * dp mod p. */
+						bn_sqr(t, crt->p);
+						bn_mxp(t, a, b, t);
+						bn_sub_dig(t, t, 1);
+						bn_div(t, t, crt->p);
+						bn_mul(t, t, crt->dp);
+						bn_mod(t, t, crt->p);
+#if MULTI == OPENMP
+					}
+					#pragma omp section
+					{
+#endif
+						/* Compute m_q = L(c^(q-1) mod q^2) * dq mod q. */
+						bn_sqr(u, crt->q);
+						bn_mxp(u, a, c, u);
+						bn_sub_dig(u, u, 1);
+						bn_div(u, u, crt->q);
+						bn_mul(u, u, crt->dq);
+						bn_mod(u, u, crt->q);
+#if MULTI == OPENMP
+					}
+				}
+			}
+#endif
+		}
+		/* m1 = m1 - m2 mod p. */
+		bn_sub(d, t, u);
+		while (bn_sign(d) == RLC_NEG) {
+			bn_add(d, d, crt->p);
+		}
+		/* m1 = qInv(m1 - m2) mod p. */
+		bn_mul(d, d, crt->qi);
+		bn_mod(d, d, crt->p);
+		/* m = m2 + m1 * q. */
+		bn_mul(d, d, crt->q);
+		bn_add(d, d, u);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		bn_free(t);
+		bn_free(u);
+	}
+}
+
 void bn_mxp_dig(bn_t c, const bn_t a, dig_t b, const bn_t m) {
 	int i, l;
 	bn_t t, u, r;
