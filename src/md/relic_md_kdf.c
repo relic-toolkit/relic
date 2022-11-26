@@ -42,8 +42,17 @@
 
 void md_kdf(uint8_t *key, size_t key_len, const uint8_t *in, size_t in_len) {
 	uint32_t i, j, d;
-	uint8_t* buffer = RLC_ALLOCA(uint8_t, in_len + sizeof(uint32_t));
-	uint8_t* t = RLC_ALLOCA(uint8_t, key_len + RLC_MD_LEN);
+	uint8_t *buffer = NULL, *t = NULL;
+
+	if ((in_len + sizeof(uint32_t) < in_len) ||
+			(key_len + RLC_MD_LEN < key_len)) {
+		RLC_THROW(ERR_NO_VALID);
+		return;
+	}
+
+	buffer = RLC_ALLOCA(uint8_t, in_len + sizeof(uint32_t));
+	t = RLC_ALLOCA(uint8_t, key_len + RLC_MD_LEN);
+
 	if (buffer == NULL || t == NULL) {
 		RLC_FREE(buffer);
 		RLC_FREE(t);
