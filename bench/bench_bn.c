@@ -688,8 +688,18 @@ static void arith(void) {
 	}
 	BENCH_END;
 
-	BENCH_RUN("bn_mxp_sim_few") {
+	BENCH_RUN("bn_mxp_sim_few (2)") {
 		BENCH_ADD(bn_mxp_sim_few(c, t, u, b, 2));
+	}
+	BENCH_END;
+
+	BENCH_RUN("bn_mxp_sim_few (4)") {
+		BENCH_ADD(bn_mxp_sim_few(c, t, u, b, 4));
+	}
+	BENCH_END;
+
+	BENCH_RUN("bn_mxp_sim_few (8)") {
+		BENCH_ADD(bn_mxp_sim_few(c, t, u, b, 8));
 	}
 	BENCH_END;
 

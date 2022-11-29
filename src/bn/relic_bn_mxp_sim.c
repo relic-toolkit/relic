@@ -38,7 +38,7 @@
 /**
  * Size of precomputation table.
  */
-#define RLC_TABLE_SIZE			64
+#define XP_WIDTH	RLC_MAX(8, RLC_WIDTH)
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -46,154 +46,34 @@
 
 void bn_mxp_sim(bn_t c, const bn_t a, const bn_t b, const bn_t d, const bn_t e,
 		const bn_t m) {
-	bn_t t0[RLC_TABLE_SIZE], t1[RLC_TABLE_SIZE], s, t, u;
-	size_t l, l0, l1, w = 1;
-	uint8_t *w0 = NULL, *w1 = NULL;
+	bn_t t0[2], t1[2];
 
-	if (bn_cmp_dig(m, 1) == RLC_EQ) {
-		bn_zero(c);
-		return;
-	}
-
-	if (bn_is_zero(b) || bn_is_zero(e)) {
-		bn_set_dig(c, 1);
-		return;
-	}
-
-	/* Find window size. */
-	l = RLC_MAX(bn_bits(b), bn_bits(e));
-	if (l <= 21) {
-		w = 2;
-	} else if (l <= 32) {
-		w = 3;
-	} else if (l <= 128) {
-		w = 4;
-	} else if (l <= 256) {
-		w = 5;
-	} else if (l <= 512) {
-		w = 6;
-	} else {
-		w = 7;
-	}
-
-	w0 = RLC_ALLOCA(uint8_t, l);
-	w1 = RLC_ALLOCA(uint8_t, l);
-	if (w0 == NULL || w1 == NULL) {
-		RLC_FREE(w0);
-		RLC_FREE(w1);
-		RLC_THROW(ERR_NO_MEMORY);
-		return;
-	}
-
-	bn_null(s);
-	bn_null(t);
-	bn_null(u);
-	/* Initialize table. */
-	for (size_t i = 0; i < RLC_TABLE_SIZE; i++) {
+	for (size_t i = 0; i < 2; i++) {
 		bn_null(t0[i]);
 		bn_null(t1[i]);
 	}
 
 	RLC_TRY {
-		for (size_t i = 0; i < (1 << (w - 1)); i++) {
+		for (size_t i = 0; i < 2; i++) {
 			bn_new(t0[i]);
 			bn_new(t1[i]);
 		}
 
-		bn_new(s);
-		bn_new(t);
-		bn_new(u);
-		bn_mod_pre(u, m);
+		bn_copy(t0[0], a);
+		bn_copy(t0[1], d);
+		bn_copy(t1[0], b);
+		bn_copy(t1[1], e);
 
-		bn_copy(t, a);
-		bn_copy(s, d);
-		if (bn_sign(b) == RLC_NEG) {
-			bn_mod_inv(t, a, m);
-		}
-
-		if (bn_sign(e) == RLC_NEG) {
-			bn_mod_inv(s, d, m);
-		}
-
-#if BN_MOD == MONTY
-		bn_mod_monty_conv(t, t, m);
-		bn_mod_monty_conv(s, s, m);
-#endif
-
-		bn_copy(t0[0], t);
-		bn_copy(t1[0], s);
-		bn_sqr(t, t0[0]);
-		bn_mod(t, t, m, u);
-		bn_sqr(s, t1[0]);
-		bn_mod(s, s, m, u);
-		/* Create table. */
-		for (size_t i = 1; i < 1 << (w - 1); i++) {
-			bn_mul(t0[i], t0[i - 1], t);
-			bn_mod(t0[i], t0[i], m, u);
-			bn_mul(t1[i], t1[i - 1], s);
-			bn_mod(t1[i], t1[i], m, u);
-		}
-
-		bn_set_dig(t, 1);
-		bn_set_dig(s, 1);
-#if BN_MOD == MONTY
-		bn_mod_monty_conv(t, t, m);
-		bn_copy(s, t);
-#endif
-
-		l0 = l1 = l;
-		bn_rec_slw(w0, &l0, b, w);
-		bn_rec_slw(w1, &l1, e, w);
-		for (size_t i = 0; i < l0; i++) {
-			if (w0[i] == 0) {
-				bn_sqr(t, t);
-				bn_mod(t, t, m, u);
-			} else {
-				for (size_t j = 0; j < util_bits_dig(w0[i]); j++) {
-					bn_sqr(t, t);
-					bn_mod(t, t, m, u);
-				}
-				bn_mul(t, t, t0[w0[i] >> 1]);
-				bn_mod(t, t, m, u);
-			}
-		}
-
-		for (size_t i = 0; i < l1; i++) {
-			if (w1[i] == 0) {
-				bn_sqr(s, s);
-				bn_mod(s, s, m, u);
-			} else {
-				for (size_t j = 0; j < util_bits_dig(w1[i]); j++) {
-					bn_sqr(s, s);
-					bn_mod(s, s, m, u);
-				}
-				bn_mul(s, s, t1[w1[i] >> 1]);
-				bn_mod(s, s, m, u);
-			}
-		}
-
-		bn_mul(t, t, s);
-		bn_mod(t, t, m, u);
-
-#if BN_MOD == MONTY
-		bn_mod_monty_back(c, t, m);
-#else
-		bn_copy(c, t);
-#endif
+		bn_mxp_sim_few(c, t0, t1, m, 2);
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		for (size_t i = 0; i < (1 << (w - 1)); i++) {
+		for (size_t i = 0; i < 2; i++) {
 			bn_free(t0[i]);
 			bn_free(t1[i]);
 		}
-		bn_free(s);
-		bn_free(t);
-		bn_free(u);
-		RLC_FREE(w0);
-		RLC_FREE(w1);
 	}
 }
 
@@ -232,7 +112,7 @@ void bn_mxp_sim_few(bn_t c, const bn_t *a, const bn_t *b, const bn_t m,
 		bn_new(u);
 		bn_mod_pre(u, m);
 
-        // Precompute all 2^{RLC_WIDTH} combinations of points P
+        // Precompute all 2^n combinations
 		bn_set_dig(t[0], 1);
 #if BN_MOD == MONTY
 		bn_mod_monty_conv(t[0], t[0], m);
@@ -290,7 +170,7 @@ void bn_mxp_sim_few(bn_t c, const bn_t *a, const bn_t *b, const bn_t m,
 
 void bn_mxp_sim_lot(bn_t c, const bn_t *a, const bn_t *b, const bn_t m, size_t n) {
 	uint_t i, j;
-    bn_t _a[RLC_WIDTH], _b[RLC_WIDTH], t;
+    bn_t _a[XP_WIDTH], _b[XP_WIDTH], t;
 
 	if (bn_cmp_dig(m, 1) == RLC_EQ) {
 		bn_zero(c);
@@ -298,26 +178,26 @@ void bn_mxp_sim_lot(bn_t c, const bn_t *a, const bn_t *b, const bn_t m, size_t n
 	}
 
 	RLC_TRY {
-        // Will use blocks of size RLC_WIDTH
+        // Will use blocks of size XP_WIDTH
         bn_null(t);
 		bn_new(t);
-        for(int j = 0; j < RLC_WIDTH; j++) {
+        for(int j = 0; j < XP_WIDTH; j++) {
             bn_null(_a[j]);
             bn_null(_b[j]);
 			bn_new(_a[j]);
 			bn_new(_b[j]);
         }
 
-        // Largest multiple of RLC_WIDTH lower than n
-        const int endblockingloop = ((n / RLC_WIDTH) * RLC_WIDTH);
+        // Largest multiple of XP_WIDTH lower than n
+        const int endblockingloop = ((n / XP_WIDTH) * XP_WIDTH);
         bn_set_dig(c, 1);
         // Exponentiate by blocks of size RLC_WIDTH
 		for(i = 0; i < endblockingloop;) {
-            for(j = 0; j < RLC_WIDTH; j++, i++) {
+            for(j = 0; j < 8; j++, i++) {
                 bn_copy(_a[j], a[i]);
                 bn_copy(_b[j], b[i]);
             }
-            bn_mxp_sim_few(t, _a, _b, m, RLC_WIDTH);
+            bn_mxp_sim_few(t, _a, _b, m, XP_WIDTH);
             bn_mul(c, c, t);
             bn_mod(c, c, m);
         }
@@ -333,7 +213,7 @@ void bn_mxp_sim_lot(bn_t c, const bn_t *a, const bn_t *b, const bn_t m, size_t n
                     bn_copy(_a[j], a[i]);
                     bn_copy(_b[j], b[i]);
                 }
-                bn_mxp_sim_few(t, _a, _b, m, n - i);
+                bn_mxp_sim_few(t, _a, _b, m, j);
             }
             bn_mul(c, c, t);
             bn_mod(c, c, m);
@@ -341,7 +221,7 @@ void bn_mxp_sim_lot(bn_t c, const bn_t *a, const bn_t *b, const bn_t m, size_t n
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-        for(j = 0; j < RLC_WIDTH; j++) {
+        for(j = 0; j < XP_WIDTH; j++) {
             bn_free(_a[j]);
 			bn_free(_b[j]);
         }

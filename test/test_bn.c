@@ -1110,7 +1110,7 @@ static int exponentiation(void) {
 		TEST_END;
 #endif
 
-        for(int i=0; i < 16; ++i) {
+        for(int i = 0; i < 16; ++i) {
             bn_rand_mod(t[i], p);
             bn_rand_mod(u[i], p);
         }
