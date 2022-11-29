@@ -48,7 +48,7 @@
 
 void bn_mxp_basic(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 	int i, l;
-	bn_t t, u, r;
+	bn_t t, u;
 
 	if (bn_cmp_dig(m, 1) == RLC_EQ) {
 		bn_zero(c);
@@ -62,12 +62,10 @@ void bn_mxp_basic(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 
 	bn_null(t);
 	bn_null(u);
-	bn_null(r);
 
 	RLC_TRY {
 		bn_new(t);
 		bn_new(u);
-		bn_new(r);
 
 		bn_mod_pre(u, m);
 
@@ -79,25 +77,24 @@ void bn_mxp_basic(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 		bn_copy(t, a);
 #endif
 
-		bn_copy(r, t);
-
+		bn_copy(c, t);
 		for (i = l - 2; i >= 0; i--) {
-			bn_sqr(r, r);
-			bn_mod(r, r, m, u);
+			bn_sqr(c, c);
+			bn_mod(c, c, m, u);
 			if (bn_get_bit(b, i)) {
-				bn_mul(r, r, t);
-				bn_mod(r, r, m, u);
+				bn_mul(c, c, t);
+				bn_mod(c, c, m, u);
 			}
 		}
 
 #if BN_MOD == MONTY
-		bn_mod_monty_back(r, r, m);
+		bn_mod_monty_back(c, c, m);
 #endif
 
 		if (bn_sign(b) == RLC_NEG) {
-			bn_mod_inv(c, r, m);
+			bn_mod_inv(c, c, m);
 		} else {
-			bn_copy(c, r);
+			bn_copy(c, c);
 		}
 	}
 	RLC_CATCH_ANY {
@@ -106,7 +103,6 @@ void bn_mxp_basic(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 	RLC_FINALLY {
 		bn_free(t);
 		bn_free(u);
-		bn_free(r);
 	}
 }
 
@@ -406,7 +402,7 @@ void bn_mxp_crt(bn_t d, const bn_t a, const bn_t b, const bn_t c,
 
 void bn_mxp_dig(bn_t c, const bn_t a, dig_t b, const bn_t m) {
 	int i, l;
-	bn_t t, u, r;
+	bn_t t, u;
 
 	if (bn_cmp_dig(m, 1) == RLC_EQ) {
 		bn_zero(c);
@@ -420,12 +416,10 @@ void bn_mxp_dig(bn_t c, const bn_t a, dig_t b, const bn_t m) {
 
 	bn_null(t);
 	bn_null(u);
-	bn_null(r);
 
 	RLC_TRY {
 		bn_new(t);
 		bn_new(u);
-		bn_new(r);
 
 		bn_mod_pre(u, m);
 
@@ -437,21 +431,18 @@ void bn_mxp_dig(bn_t c, const bn_t a, dig_t b, const bn_t m) {
 		bn_copy(t, a);
 #endif
 
-		bn_copy(r, t);
-
+		bn_copy(c, t);
 		for (i = l - 2; i >= 0; i--) {
-			bn_sqr(r, r);
-			bn_mod(r, r, m, u);
+			bn_sqr(c, c);
+			bn_mod(c, c, m, u);
 			if (b & ((dig_t)1 << i)) {
-				bn_mul(r, r, t);
-				bn_mod(r, r, m, u);
+				bn_mul(c, c, t);
+				bn_mod(c, c, m, u);
 			}
 		}
 
 #if BN_MOD == MONTY
-		bn_mod_monty_back(c, r, m);
-#else
-		bn_copy(c, r);
+		bn_mod_monty_back(c, c, m);
 #endif
 		/* Exponent is unsigned, so no need to invert if negative. */
 	} RLC_CATCH_ANY {
@@ -460,6 +451,5 @@ void bn_mxp_dig(bn_t c, const bn_t a, dig_t b, const bn_t m) {
 	RLC_FINALLY {
 		bn_free(t);
 		bn_free(u);
-		bn_free(r);
 	}
 }
