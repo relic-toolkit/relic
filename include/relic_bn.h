@@ -660,7 +660,7 @@ void bn_read_str(bn_t a, const char *str, size_t len, uint_t radix);
  * @throw ERR_NO_BUFFER		- if the buffer capacity is insufficient.
  * @throw ERR_NO_VALID		- if the radix is invalid.
  */
-void bn_write_str(char *str, size_t len, const bn_t a, unsigned radix);
+void bn_write_str(char *str, size_t len, const bn_t a, uint_t radix);
 
 /**
  * Returns the number of bytes necessary to store a multiple precision integer.

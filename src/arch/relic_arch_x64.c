@@ -64,7 +64,7 @@ void arch_clean(void) {
 #if TIMER == CYCLE
 
 ull_t arch_cycles(void) {
-	uint_t hi, lo;
+	uint32_t hi, lo;
 	asm (
 		"cpuid\n\t"/*serialize*/
 		"rdtsc\n\t"/*read the clock*/

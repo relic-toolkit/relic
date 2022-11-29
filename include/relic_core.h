@@ -442,9 +442,9 @@ typedef struct _ctx_t {
 
 	/** Function pointer to underlying lznct implementation. */
 #if ARCH == X86
-	uint_t (*lzcnt_ptr)(unsigned int);
+	unsigned int (*lzcnt_ptr)(dig_t);
 #elif ARCH == X64 || ARCH == A64
-	uint_t (*lzcnt_ptr)(ull_t);
+	unsigned int (*lzcnt_ptr)(ull_t);
 #endif
 } ctx_t;
 
