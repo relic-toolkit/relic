@@ -1011,9 +1011,13 @@ static int reduction(void) {
 	return code;
 }
 
+// For bn_mxp_sim experiments
+#define BN_MXP_SIM_LOT_LARGER (3*BN_XPWDT+5)
+
 static int exponentiation(void) {
 	int code = RLC_ERR;
 	bn_t a, b, c, p;
+    bn_t t[BN_MXP_SIM_LOT_LARGER], u[BN_MXP_SIM_LOT_LARGER];
 	crt_t crt;
 
 	bn_null(a);
@@ -1022,11 +1026,18 @@ static int exponentiation(void) {
 	bn_null(p);
 	crt_null(crt);
 
+    for(int i=0; i<BN_MXP_SIM_LOT_LARGER; ++i) {
+        bn_null(t[i]); bn_null(u[i]);
+    }
+
 	RLC_TRY {
 		bn_new(a);
 		bn_new(b);
 		bn_new(c);
 		bn_new(p);
+        for(int i=0; i<BN_MXP_SIM_LOT_LARGER; ++i) {
+            bn_new(t[i]); bn_new(u[i]);
+        }
 		crt_new(crt);
 
 #if BN_MOD != PMERS
@@ -1100,6 +1111,62 @@ static int exponentiation(void) {
 		TEST_END;
 #endif
 
+        for(int i=0; i<BN_MXP_SIM_LOT_LARGER; ++i) {
+            bn_rand_mod(t[i], p);
+            bn_rand_mod(u[i], p);
+        }
+
+		TEST_CASE("simultaneous modular exponentiation is correct") {
+                // Simultaneous
+            bn_mxp_sim(a, t, u, p);
+
+                // By hand
+            bn_mxp(b, t[0], u[0], p);
+            for(int i=1; i<BN_XPWDT; ++i) {
+                bn_mxp(c, t[i], u[i], p);
+                bn_mul(b, b, c);
+                bn_mod(b, b, p);
+            }
+			TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
+        }
+        TEST_END;
+
+		TEST_CASE("simultaneous modular exponentiation lot (1) is correct") {
+                // Simultaneous Large case
+            bn_mxp_sim_lot(a, (const bn_t*)t, (const bn_t*)u, p, BN_MXP_SIM_LOT_LARGER);
+
+                // By hand
+            bn_mxp(b, t[0], u[0], p);
+            for(int i=1; i<BN_MXP_SIM_LOT_LARGER; ++i) {
+                bn_mxp(c, t[i], u[i], p);
+                bn_mul(b, b, c);
+                bn_mod(b, b, p);
+            }
+			TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
+        }
+        TEST_END;
+		TEST_CASE("simultaneous modular exponentiation lot (2) is correct") {
+                // Simultaneous Small cases
+            bn_set_dig(a,1);
+            for(int k=0; k<BN_XPWDT; ++k) {
+                bn_mxp_sim_lot(c, (const bn_t*)t, (const bn_t*)u, p, k+(BN_XPWDT>>1));
+                bn_mul(a, a, c);
+                bn_mod(a, a, p);
+            }
+
+                // By hand
+            bn_set_dig(b,1);
+            for(int k=0; k<BN_XPWDT; ++k) {
+                for(int i=0; i<(k+(BN_XPWDT>>1)); ++i) {
+                    bn_mxp(c, t[i], u[i], p);
+                    bn_mul(b, b, c);
+                    bn_mod(b, b, p);
+                }
+            }
+			TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
+        }
+        TEST_END;
+
 		do {
 			bn_gen_prime(crt->p, RLC_BN_BITS / 2);
 			bn_gen_prime(crt->q, RLC_BN_BITS / 2);
@@ -1134,6 +1201,9 @@ static int exponentiation(void) {
 	bn_free(b);
 	bn_free(c);
 	bn_free(p);
+    for(int i=0; i<BN_MXP_SIM_LOT_LARGER; ++i) {
+        bn_free(t[i]);bn_free(u[i]);
+    }
 	crt_free(crt);
 	return code;
 }
@@ -1772,7 +1842,7 @@ static int prime(void) {
 		TEST_ONCE("prime with large (p-1) prime factor testing is correct") {
 			TEST_ASSERT(bn_is_prime(p) == 1, end);
 			TEST_ASSERT(bn_is_prime(q) == 1, end);
-			bn_sub_dig(p, p, 1); 	// (p-1)
+			bn_sub_dig(p, p, 1);	// (p-1)
 			bn_div(p, p, q);		// (p-1)/q
 			bn_mul(p, p, q);		// ((p-1)/q)*q
 			bn_add_dig(p, p, 1);	// ((p-1)/q)*q+1
@@ -2366,7 +2436,6 @@ int main(void) {
 		core_clean();
 		return 1;
 	}
-
 	util_banner("All tests have passed.\n", 0);
 
 	core_clean();

@@ -7,6 +7,7 @@ message("      BN_MAGNI=DOUBLE   A multiple precision integer can store 2w words
 message("      BN_MAGNI=CARRY    A multiple precision integer can store w+1 words.")
 message("      BN_MAGNI=SINGLE   A multiple precision integer can store w words.")
 message("      BN_KARAT=n        The number of Karatsuba steps.\n")
+message("      BN_XPWDT=w        Width w of precomputation table for simulatenous exponentiation.\n")
 
 message("   ** Available multiple precision arithmetic methods (default = COMBA;COMBA;MONTY;SLIDE;BASIC;BASIC):\n")
 
@@ -51,6 +52,12 @@ if (NOT BN_KARAT)
 	set(BN_KARAT 0)
 endif(NOT BN_KARAT)
 set(BN_KARAT ${BN_KARAT} CACHE STRING "Number of Karatsuba levels.")
+
+# Fix the simulatenous exponentiation window
+if (NOT BN_XPWDT)
+	set(BN_XPWDT 7)
+endif(NOT BN_XPWDT)
+set(BN_XPWDT ${BN_XPWDT} CACHE STRING "Width of exponentiation Window.")
 
 if (NOT BN_MAGNI)
 	set(BN_MAGNI "DOUBLE")

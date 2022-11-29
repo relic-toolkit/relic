@@ -722,10 +722,10 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
  * Multiplies simultaneously two elements from G_1. Computes R = [k]P + [l]Q.
  *
  * @param[out] R			- the result.
- * @param[out] P			- the first G_1 element to multiply.
- * @param[out] K			- the first integer scalar.
- * @param[out] L			- the second G_1 element to multiply.
- * @param[out] Q			- the second integer scalar.
+ * @param[in] P				- the first G_1 element to multiply.
+ * @param[in] K				- the first integer scalar.
+ * @param[in] L				- the second G_1 element to multiply.
+ * @param[in] Q				- the second integer scalar.
  */
 #define g1_mul_sim(R, P, K, Q, L)	RLC_CAT(RLC_G1_LOWER, mul_sim)(R, P, K, Q, L)
 
@@ -733,9 +733,9 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
  * Multiplies simultaneously elements from G_1. Computes R = \Sum_i=0..n k_iP_i.
  *
  * @param[out] R			- the result.
- * @param[out] P			- the G_1 elements to multiply.
- * @param[out] K			- the integer scalars.
- * @param[out] N			- the number of elements to multiply.
+ * @param[in] P				- the G_1 elements to multiply.
+ * @param[in] K				- the integer scalars.
+ * @param[in] N				- the number of elements to multiply.
  */
 #define g1_mul_sim_lot(R, P, K, N)	RLC_CAT(RLC_G1_LOWER, mul_sim_lot)(R, P, K, N)
 

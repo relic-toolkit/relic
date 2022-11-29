@@ -141,6 +141,8 @@
 #define BN_MAGNI @BN_MAGNI@
 /** Number of Karatsuba steps. */
 #define BN_KARAT @BN_KARAT@
+/** Width of precomputation table for simultaneous exponentiation. */
+#define BN_XPWDT @BN_XPWDT@
 
 /** Schoolbook multiplication. */
 #define BASIC    1
