@@ -328,6 +328,7 @@ void bn_mxp_sim_lot(bn_t c, const bn_t *a, const bn_t *b, const bn_t m, size_t n
 				// A single exponent
                 bn_mxp(t, a[i], b[i], m);
 			} else {
+				j = 0;
 				for(; i < n; j++, i++) {
                     bn_copy(_a[j], a[i]);
                     bn_copy(_b[j], b[i]);
