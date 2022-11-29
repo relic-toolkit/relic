@@ -63,7 +63,7 @@ void bn_hlv(bn_t c, const bn_t a) {
 	bn_trim(c);
 }
 
-void bn_lsh(bn_t c, const bn_t a, unsigned int bits) {
+void bn_lsh(bn_t c, const bn_t a, uint_t bits) {
 	int digits;
 	dig_t carry;
 
@@ -97,8 +97,8 @@ void bn_lsh(bn_t c, const bn_t a, unsigned int bits) {
 	}
 }
 
-void bn_rsh(bn_t c, const bn_t a, unsigned int bits) {
-	int digits = 0;
+void bn_rsh(bn_t c, const bn_t a, uint_t bits) {
+	uint_t digits = 0;
 
 	bn_copy(c, a);
 

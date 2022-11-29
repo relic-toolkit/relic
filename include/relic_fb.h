@@ -538,7 +538,7 @@ int fb_is_zero(const fb_t a);
  * @param[in] bit			- the bit position.
  * @return the bit value.
  */
-int fb_get_bit(const fb_t a, size_t bit);
+int fb_get_bit(const fb_t a, uint_t bit);
 
 /**
  * Stores a bit in a given position on a binary field element.
@@ -547,7 +547,7 @@ int fb_get_bit(const fb_t a, size_t bit);
  * @param[in] bit			- the bit position.
  * @param[in] value			- the bit value.
  */
-void fb_set_bit(fb_t a, size_t bit, int value);
+void fb_set_bit(fb_t a, uint_t bit, int value);
 
 /**
  * Assigns a small positive polynomial to a binary field element.
@@ -590,7 +590,7 @@ void fb_print(const fb_t a);
  * @throw ERR_NO_VALID		- if the radix is invalid.
  * @return the number of digits in the given radix.
  */
-size_t fb_size_str(const fb_t a, unsigned int radix);
+size_t fb_size_str(const fb_t a, uint_t radix);
 
 /**
  * Reads a binary field element from a string in a given radix. The radix must
@@ -603,7 +603,7 @@ size_t fb_size_str(const fb_t a, unsigned int radix);
  * @throw ERR_NO_VALID		- if the radix is invalid.
  * @throw ERR_NO_BUFFER		- if the string is too long.
  */
-void fb_read_str(fb_t a, const char *str, size_t len, unsigned int radix);
+void fb_read_str(fb_t a, const char *str, size_t len, uint_t radix);
 
 /**
  * Writes a binary field element to a string in a given radix. The radix must
@@ -616,7 +616,7 @@ void fb_read_str(fb_t a, const char *str, size_t len, unsigned int radix);
  * @throw ERR_NO_VALID		- if the radix is invalid.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is insufficient.
  */
-void fb_write_str(char *str, size_t len, const fb_t a, unsigned int radix);
+void fb_write_str(char *str, size_t len, const fb_t a, uint_t radix);
 
 /**
  * Reads a binary field element from a byte vector in big-endian format.
@@ -753,7 +753,7 @@ void fb_sqr_quick(fb_t c, const fb_t a);
  * @param[in] a				- the binary field element to shift.
  * @param[in] bits			- the number of bits to shift.
  */
-void fb_lsh(fb_t c, const fb_t a, int bits);
+void fb_lsh(fb_t c, const fb_t a, uint_t bits);
 
 /**
 * Shifts a binary field element to the right. Computes c = a / (z^bits).
@@ -762,7 +762,7 @@ void fb_lsh(fb_t c, const fb_t a, int bits);
  * @param[in] a				- the binary field element to shift.
  * @param[in] bits			- the number of bits to shift.
  */
-void fb_rsh(fb_t c, const fb_t a, int bits);
+void fb_rsh(fb_t c, const fb_t a, uint_t bits);
 
 /**
  * Reduces a multiplication result modulo an irreducible polynomial using

@@ -35,7 +35,7 @@
 #include "relic_test.h"
 
 static int memory2(void) {
-	err_t e;
+	err_t e = ERR_CAUGHT;
 	int code = RLC_ERR;
 	fb2_t a;
 

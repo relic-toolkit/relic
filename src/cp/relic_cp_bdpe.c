@@ -159,7 +159,7 @@ int cp_bdpe_dec(dig_t *out, const uint8_t *in, size_t in_len,
 
 	size = bn_size_bin(prv->n);
 
-	if (in_len < 0 || in_len != size) {
+	if (in_len != size) {
 		return RLC_ERR;
 	}
 

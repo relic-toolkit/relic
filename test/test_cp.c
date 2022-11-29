@@ -380,7 +380,7 @@ static int subgroup_paillier() {
 #define NIST_P256_B_X	"B8F245FC8A1C7E933D5CAD6E77102C72B0C1F393F779F3F504DA1CA776434B10"
 #define NIST_P256_B_Y	"5373FA01BC13FF5843D4A31E40833785C598C0BBC2F6AF7317C327BE09883799"
 
-uint8_t result[] = {
+uint8_t expected[] = {
 	0xC0, 0xEC, 0x2B, 0xAC, 0xEB, 0x3C, 0x6E, 0xE3, 0x21, 0x96, 0xD5, 0x43,
 	0x0E, 0xE6, 0xDA, 0xBB, 0x50, 0xAE, 0xEE, 0xBE, 0xBA, 0xCE, 0x6B, 0x86,
 	0x09, 0xD7, 0xEB, 0x07, 0xD6, 0x45, 0xF6, 0x34, 0xD4, 0xE0, 0xD1, 0x9A,
@@ -562,7 +562,7 @@ static int ecies(void) {
 #if defined(EP_PLAIN) && FP_PRIME == 256
 			case NIST_P256:
 				ASSIGNP(NIST_P256);
-				memcpy(msg, result, sizeof(result));
+				memcpy(msg, expected, sizeof(expected));
 				break;
 #endif
 			default:

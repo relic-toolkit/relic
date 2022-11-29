@@ -38,7 +38,7 @@
 int bn_factor(bn_t c, const bn_t a) {
 	bn_t t0, t1;
 	int result;
-	unsigned int i, tests;
+	uint_t i, tests;
 
 	bn_null(t0);
 	bn_null(t1);

@@ -79,7 +79,7 @@ const uint8_t **ed_map_output = NULL;
 #endif
 
 static int memory(void) {
-	err_t e;
+	err_t e = ERR_CAUGHT;
 	int code = RLC_ERR;
 	ed_t a;
 
