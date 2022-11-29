@@ -51,7 +51,7 @@
 static void eb_mul_ltnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 	int i, n;
 	int8_t tnaf[RLC_FB_BITS + 8], u;
-	eb_t t[1 << (EB_WIDTH - 2)];
+	eb_t t[1 << (RLC_WIDTH - 2)];
 	size_t l;
 
 	if (eb_curve_opt_a() == RLC_ZERO) {
@@ -62,16 +62,16 @@ static void eb_mul_ltnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 
 	RLC_TRY {
 		/* Prepare the precomputation table. */
-		for (i = 0; i < (1 << (EB_WIDTH - 2)); i++) {
+		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
 			eb_null(t[i]);
 			eb_new(t[i]);
 		}
 		/* Compute the precomputation table. */
-		eb_tab(t, p, EB_WIDTH);
+		eb_tab(t, p, RLC_WIDTH);
 
 		/* Compute the w-TNAF representation of k. */
 		l = sizeof(tnaf);
-		bn_rec_tnaf(tnaf, &l, k, u, RLC_FB_BITS, EB_WIDTH);
+		bn_rec_tnaf(tnaf, &l, k, u, RLC_FB_BITS, RLC_WIDTH);
 
 		n = tnaf[l - 1];
 		if (n > 0) {
@@ -102,7 +102,7 @@ static void eb_mul_ltnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 	}
 	RLC_FINALLY {
 		/* Free the precomputation table. */
-		for (i = 0; i < (1 << (EB_WIDTH - 2)); i++) {
+		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
 			eb_free(t[i]);
 		}
 	}
@@ -123,12 +123,12 @@ static void eb_mul_ltnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 static void eb_mul_lnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 	int i, n;
 	int8_t naf[RLC_FB_BITS + 1];
-	eb_t t[1 << (EB_WIDTH - 2)];
+	eb_t t[1 << (RLC_WIDTH - 2)];
 	size_t l;
 
 	RLC_TRY {
 		/* Prepare the precomputation table. */
-		for (i = 0; i < (1 << (EB_WIDTH - 2)); i++) {
+		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
 			eb_null(t[i]);
 			eb_new(t[i]);
 			eb_set_infty(t[i]);
@@ -137,11 +137,11 @@ static void eb_mul_lnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 		}
 
 		/* Compute the precomputation table. */
-		eb_tab(t, p, EB_WIDTH);
+		eb_tab(t, p, RLC_WIDTH);
 
 		/* Compute the w-NAF representation of k. */
 		l = sizeof(naf);
-		bn_rec_naf(naf, &l, k, EB_WIDTH);
+		bn_rec_naf(naf, &l, k, RLC_WIDTH);
 
 		n = naf[l - 1];
 		if (n > 0) {
@@ -170,7 +170,7 @@ static void eb_mul_lnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 	}
 	RLC_FINALLY {
 		/* Free the precomputation table. */
-		for (i = 0; i < (1 << (EB_WIDTH - 2)); i++) {
+		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
 			eb_free(t[i]);
 		}
 	}
@@ -194,7 +194,7 @@ static void eb_mul_lnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 static void eb_mul_rtnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 	int i, n;
 	int8_t tnaf[RLC_FB_BITS + 8], u;
-	eb_t t[1 << (EB_WIDTH - 2)];
+	eb_t t[1 << (RLC_WIDTH - 2)];
 	size_t l;
 
 	if (eb_curve_opt_a() == RLC_ZERO) {
@@ -205,7 +205,7 @@ static void eb_mul_rtnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 
 	RLC_TRY {
 		/* Prepare the precomputation table. */
-		for (i = 0; i < (1 << (EB_WIDTH - 2)); i++) {
+		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
 			eb_null(t[i]);
 			eb_new(t[i]);
 			eb_set_infty(t[i]);
@@ -213,7 +213,7 @@ static void eb_mul_rtnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 
 		/* Compute the w-TNAF representation of k. */
 		l = sizeof(tnaf);
-		bn_rec_tnaf(tnaf, &l, k, u, RLC_FB_BITS, EB_WIDTH);
+		bn_rec_tnaf(tnaf, &l, k, u, RLC_FB_BITS, RLC_WIDTH);
 
 		eb_copy(r, p);
 		for (i = 0; i < l; i++) {
@@ -232,11 +232,11 @@ static void eb_mul_rtnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 
 		eb_copy(r, t[0]);
 
-#if defined(EB_MIXED) && defined(STRIP) && (EB_WIDTH > 2)
-		eb_norm_sim(t + 1, (const eb_t *)t + 1, (1 << (EB_WIDTH - 2)) - 1);
+#if defined(EB_MIXED) && defined(STRIP) && (RLC_WIDTH > 2)
+		eb_norm_sim(t + 1, (const eb_t *)t + 1, (1 << (RLC_WIDTH - 2)) - 1);
 #endif
 
-#if EB_WIDTH == 3
+#if RLC_WIDTH == 3
 		eb_frb(t[0], t[1]);
 		if (u == 1) {
 			eb_sub(t[1], t[1], t[0]);
@@ -245,7 +245,7 @@ static void eb_mul_rtnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 		}
 #endif
 
-#if EB_WIDTH == 4
+#if RLC_WIDTH == 4
 		eb_frb(t[0], t[3]);
 		eb_frb(t[0], t[0]);
 		eb_frb(t[0], t[0]);
@@ -264,7 +264,7 @@ static void eb_mul_rtnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 		eb_add(t[2], t[0], t[2]);
 #endif
 
-#if EB_WIDTH == 5
+#if RLC_WIDTH == 5
 		eb_frb(t[0], t[3]);
 		eb_frb(t[0], t[0]);
 		eb_frb(t[0], t[0]);
@@ -315,7 +315,7 @@ static void eb_mul_rtnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 		eb_sub(t[7], t[0], t[7]);
 #endif
 
-#if EB_WIDTH == 6
+#if RLC_WIDTH == 6
 		eb_frb(t[0], t[1]);
 		eb_frb(t[0], t[0]);
 		eb_frb(t[0], t[0]);
@@ -450,12 +450,12 @@ static void eb_mul_rtnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 		eb_sub(t[15], t[0], t[15]);
 #endif
 
-#if defined(EB_MIXED) && defined(STRIP) && (EB_WIDTH > 2)
-		eb_norm_sim(t + 1, (const eb_t *)t + 1, (1 << (EB_WIDTH - 2)) - 1);
+#if defined(EB_MIXED) && defined(STRIP) && (RLC_WIDTH > 2)
+		eb_norm_sim(t + 1, (const eb_t *)t + 1, (1 << (RLC_WIDTH - 2)) - 1);
 #endif
 
 		/* Add accumulators */
-		for (i = 1; i < (1 << (EB_WIDTH - 2)); i++) {
+		for (i = 1; i < (1 << (RLC_WIDTH - 2)); i++) {
 			if (r->coord == BASIC) {
 				eb_add(r, t[i], r);
 			} else {
@@ -473,7 +473,7 @@ static void eb_mul_rtnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 	}
 	RLC_FINALLY {
 		/* Free the precomputation table. */
-		for (i = 0; i < (1 << (EB_WIDTH - 2)); i++) {
+		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
 			eb_free(t[i]);
 		}
 	}
@@ -494,12 +494,12 @@ static void eb_mul_rtnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 static void eb_mul_rnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 	int i, n;
 	int8_t naf[RLC_FB_BITS + 1];
-	eb_t t[1 << (EB_WIDTH - 2)];
+	eb_t t[1 << (RLC_WIDTH - 2)];
 	size_t l;
 
 	RLC_TRY {
 		/* Prepare the accumulator table. */
-		for (i = 0; i < (1 << (EB_WIDTH - 2)); i++) {
+		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
 			eb_null(t[i]);
 			eb_new(t[i]);
 			eb_set_infty(t[i]);
@@ -507,7 +507,7 @@ static void eb_mul_rnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 
 		/* Compute the w-NAF representation of k. */
 		l = sizeof(naf);
-		bn_rec_naf(naf, &l, k, EB_WIDTH);
+		bn_rec_naf(naf, &l, k, RLC_WIDTH);
 
 		eb_copy(r, p);
 		for (i = 0; i < l; i++) {
@@ -524,12 +524,12 @@ static void eb_mul_rnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 
 		eb_copy(r, t[0]);
 
-#if EB_WIDTH >= 3
+#if RLC_WIDTH >= 3
 		/* Compute 3 * T[1]. */
 		eb_dbl(t[0], t[1]);
 		eb_add(t[1], t[0], t[1]);
 #endif
-#if EB_WIDTH >= 4
+#if RLC_WIDTH >= 4
 		/* Compute 5 * T[2]. */
 		eb_dbl(t[0], t[2]);
 		eb_dbl(t[0], t[0]);
@@ -541,7 +541,7 @@ static void eb_mul_rnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 		eb_dbl(t[0], t[0]);
 		eb_sub(t[3], t[0], t[3]);
 #endif
-#if EB_WIDTH >= 5
+#if RLC_WIDTH >= 5
 		/* Compute 9 * T[4]. */
 		eb_dbl(t[0], t[4]);
 		eb_dbl(t[0], t[0]);
@@ -569,7 +569,7 @@ static void eb_mul_rnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 		eb_dbl(t[0], t[0]);
 		eb_sub(t[7], t[0], t[7]);
 #endif
-#if EB_WIDTH == 6
+#if RLC_WIDTH == 6
 		for (i = 8; i < 15; i++) {
 			eb_mul_dig(t[i], t[i], 2 * i + 1);
 		}
@@ -582,7 +582,7 @@ static void eb_mul_rnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 #endif
 
 		/* Add accumulators */
-		for (i = 1; i < (1 << (EB_WIDTH - 2)); i++) {
+		for (i = 1; i < (1 << (RLC_WIDTH - 2)); i++) {
 			if (r->coord == BASIC) {
 				eb_add(r, t[i], r);
 			} else {
@@ -600,7 +600,7 @@ static void eb_mul_rnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 	}
 	RLC_FINALLY {
 		/* Free the accumulator table. */
-		for (i = 0; i < (1 << (EB_WIDTH - 2)); i++) {
+		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
 			eb_free(t[i]);
 		}
 	}
@@ -895,7 +895,7 @@ void eb_mul_rwnaf(eb_t r, const eb_t p, const bn_t k) {
 void eb_mul_halve(eb_t r, const eb_t p, const bn_t k) {
 	int i, j, trc, cof;
 	int8_t naf[RLC_FB_BITS + 1], *_k;
-	eb_t q, s, t[1 << (EB_WIDTH - 2)];
+	eb_t q, s, t[1 << (RLC_WIDTH - 2)];
 	bn_t n, m;
 	fb_t u, v, w, z;
 	size_t l;
@@ -909,7 +909,7 @@ void eb_mul_halve(eb_t r, const eb_t p, const bn_t k) {
 	bn_null(n);
 	eb_null(q);
 	eb_null(s);
-	for (i = 0; i < (1 << (EB_WIDTH - 2)); i++) {
+	for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
 		eb_null(t[i]);
 	}
 	fb_null(u);
@@ -928,7 +928,7 @@ void eb_mul_halve(eb_t r, const eb_t p, const bn_t k) {
 		fb_new(z);
 
 		/* Prepare the precomputation table. */
-		for (i = 0; i < (1 << (EB_WIDTH - 2)); i++) {
+		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
 			eb_new(t[i]);
 			eb_set_infty(t[i]);
 		}
@@ -940,7 +940,7 @@ void eb_mul_halve(eb_t r, const eb_t p, const bn_t k) {
 
 		/* Compute the w-NAF representation of k'. */
 		l = sizeof(naf);
-		bn_rec_naf(naf, &l, m, EB_WIDTH);
+		bn_rec_naf(naf, &l, m, RLC_WIDTH);
 
 		if (naf[bn_bits(n)] == 1) {
 			eb_dbl(t[0], p);
@@ -1019,16 +1019,16 @@ void eb_mul_halve(eb_t r, const eb_t p, const bn_t k) {
 			}
 		}
 
-#if EB_WIDTH == 2
+#if RLC_WIDTH == 2
 		eb_norm(r, t[0]);
 #else
 		/* Compute Q_i = Q_i + Q_{i+2} for i from 2^{w-1}-3 to 1. */
-		for (i = (1 << (EB_WIDTH - 1)) - 3; i >= 1; i -= 2) {
+		for (i = (1 << (RLC_WIDTH - 1)) - 3; i >= 1; i -= 2) {
 			eb_add(t[i / 2], t[i / 2], t[(i + 2) / 2]);
 		}
 		/* Compute R = Q_1 + 2 * sum_{i != 1}Q_i. */
 		eb_copy(r, t[1]);
-		for (i = 2; i < (1 << (EB_WIDTH - 2)); i++) {
+		for (i = 2; i < (1 << (RLC_WIDTH - 2)); i++) {
 			eb_add(r, r, t[i]);
 		}
 		eb_dbl(r, r);
@@ -1054,7 +1054,7 @@ void eb_mul_halve(eb_t r, const eb_t p, const bn_t k) {
 	}
 	RLC_FINALLY {
 		/* Free the precomputation table. */
-		for (i = 0; i < (1 << (EB_WIDTH - 2)); i++) {
+		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
 			eb_free(t[i]);
 		}
 		bn_free(n);

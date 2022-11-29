@@ -221,7 +221,7 @@ void eb_tab(eb_t *t, const eb_t p, int w) {
 
 		switch (w) {
 			/* Formulas from https://eprint.iacr.org/2014/664. */
-#if EB_DEPTH == 3 || EB_WIDTH ==  3
+#if RLC_DEPTH == 3 || RLC_WIDTH ==  3
 			case 3:
 				eb_frb(t[0], p);
 				if (u == 1) {
@@ -231,7 +231,7 @@ void eb_tab(eb_t *t, const eb_t p, int w) {
 				eb_copy(t[0], p);
 				break;
 #endif
-#if EB_DEPTH == 4 || EB_WIDTH ==  4
+#if RLC_DEPTH == 4 || RLC_WIDTH ==  4
 			case 4:
 				eb_frb(t[0], p);
 				eb_frb(t[1], t[0]);
@@ -244,7 +244,7 @@ void eb_tab(eb_t *t, const eb_t p, int w) {
 				eb_copy(t[0], p);
 				break;
 #endif
-#if EB_DEPTH == 5 || EB_WIDTH ==  5
+#if RLC_DEPTH == 5 || RLC_WIDTH ==  5
 			case 5:
 				eb_frb(t[0], p);
 				eb_frb(t[1], t[0]);
@@ -262,7 +262,7 @@ void eb_tab(eb_t *t, const eb_t p, int w) {
 				eb_copy(t[0], p);
 				break;
 #endif
-#if EB_DEPTH == 6 || EB_WIDTH ==  6
+#if RLC_DEPTH == 6 || RLC_WIDTH ==  6
 			case 6:
 				eb_frb(t[0], p);
 				eb_frb(t[15], t[0]);
@@ -297,7 +297,7 @@ void eb_tab(eb_t *t, const eb_t p, int w) {
 				eb_copy(t[0], p);
 				break;
 #endif
-#if EB_DEPTH == 7 || EB_WIDTH ==  7
+#if RLC_DEPTH == 7 || RLC_WIDTH ==  7
 			case 7:
 				eb_frb(t[0], p);
 				eb_frb(t[15], t[0]);
@@ -354,7 +354,7 @@ void eb_tab(eb_t *t, const eb_t p, int w) {
 				eb_copy(t[0], p);
 				break;
 #endif
-#if EB_DEPTH == 8 || EB_WIDTH ==  8
+#if RLC_DEPTH == 8 || RLC_WIDTH ==  8
 			case 8:
 				eb_frb(t[0], p);
 				eb_frb(t[57], t[0]);

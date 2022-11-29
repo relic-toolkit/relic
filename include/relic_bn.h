@@ -1128,27 +1128,41 @@ void bn_mxp_crt(bn_t d, const bn_t a, const bn_t b, const bn_t c,
 	const crt_t crt, int sqr);
 
 /**
- * Exponentiates simultaneously BN_XPWDT integers modulo a positive integer
- * using generalized Shamir's trick. Computes R = \prod P_i^{u_i}.
+ * Exponentiates simultaneously two integers modulo a positive integer
+ * using generalized Shamir's trick. Computes c = a^b * d^e mod m.
  *
- * @param[out] R			- the result.
- * @param[in] P				- the BN_XPWDT elements to multiply.
- * @param[in] u				- the BN_XPWDT integer scalars.
+ * @param[out] c			- the result.
+ * @param[in] a				- the elements to exponentiate.
+ * @param[in] b				- the exponents.
  * @param[in] m				- the modulus.
  */
-void bn_mxp_sim(bn_t R, const bn_t P[BN_XPWDT], const bn_t u[BN_XPWDT], const bn_t m);
+void bn_mxp_sim(bn_t c, const bn_t a, const bn_t b, const bn_t d, const bn_t e,
+		const bn_t m);
 
 /**
- * Exponentiates simultaneously integers modulo a positive integer
- * using generalized Shamir's trick. Computes R = \prod P_i^{u_i}.
+ * Exponentiates simultaneously up to 8 integers modulo a positive integer
+ * using generalized Shamir's trick. Computes c = \prod a_i^{b_i} mod m.
  *
- * @param[out] R			- the result.
- * @param[in] P				- the elements to multiply.
- * @param[in] u				- the integer scalars.
- * @param[in] N				- the number of elements to multiply.
+ * @param[out] c			- the result.
+ * @param[in] a				- the elements to exponentiate.
+ * @param[in] b				- the exponents.
  * @param[in] m				- the modulus.
  */
-void bn_mxp_sim_lot(bn_t R, const bn_t P[], const bn_t u[], const bn_t m, int n);
+void bn_mxp_sim_few(bn_t c, const bn_t *a, const bn_t *b, const bn_t m,
+		size_t n);
+
+/**
+ * Exponentiates simultaneously many integers modulo a positive integer
+ * using generalized Shamir's trick. Computes c = \prod a_i^{b_i} mod m.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the elements to exponentiate.
+ * @param[in] b				- the integer scalars.
+ * @param[in] m				- the modulus.
+ * @param[in] n				- the number of elements to multiply.
+ */
+void bn_mxp_sim_lot(bn_t c, const bn_t *a, const bn_t *b, const bn_t m,
+		size_t n);
 
 /**
  * Extracts an approximate integer square-root of a multiple precision integer.

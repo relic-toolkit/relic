@@ -7,7 +7,7 @@ message("      FB_KARAT=n        The number of Karatsuba levels.")
 message("      FB_TRINO=[off|on] Prefer trinomials.")
 message("      FB_SQRTF=[off|on] Prefer square-root friendly polynomials.")
 message("      FB_PRECO=[off|on] Precompute multiplication table for sqrt(z).")
-message("      FB_WIDTH=w        Width w in [2,6] of window processing for exponentiation methods.\n")
+message("      RLC_WIDTH=w        Width w in [2,6] of window processing for exponentiation methods.\n")
 
 message("   ** Available binary field arithmetic methods (default = LODAH;QUICK;QUICK;BASIC;QUICK;QUICK;EXGCD;SLIDE;QUICK):\n")
 
@@ -68,10 +68,10 @@ if (NOT FB_KARAT)
 endif(NOT FB_KARAT)
 set(FB_KARAT ${FB_KARAT} CACHE STRING "Number of Karatsuba levels.")
 
-if (NOT FB_WIDTH)
-	set(FB_WIDTH 4)
-endif(NOT FB_WIDTH)
-set(FB_WIDTH ${FB_WIDTH} CACHE STRING "Width of window processing for exponentiation methods.")
+if (NOT RLC_WIDTH)
+	set(RLC_WIDTH 4)
+endif(NOT RLC_WIDTH)
+set(RLC_WIDTH ${RLC_WIDTH} CACHE STRING "Width of window processing for exponentiation methods.")
 
 option(FB_TRINO "Prefer trinomials." on)
 option(FB_SQRTF "Prefer square-root friendly polynomials." off)

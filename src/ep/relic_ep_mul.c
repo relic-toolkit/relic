@@ -43,7 +43,7 @@ static void ep_mul_glv_imp(ep_t r, const ep_t p, const bn_t k) {
 	int i, n0, n1, s0, s1;
 	int8_t naf0[RLC_FP_BITS + 1], naf1[RLC_FP_BITS + 1], *t0, *t1;
 	bn_t n, _k, k0, k1, v1[3], v2[3];
-	ep_t q, t[1 << (EP_WIDTH - 2)];
+	ep_t q, t[1 << (RLC_WIDTH - 2)];
 	size_t l, l0, l1;
 
 	bn_null(n);
@@ -58,7 +58,7 @@ static void ep_mul_glv_imp(ep_t r, const ep_t p, const bn_t k) {
 		bn_new(k0);
 		bn_new(k1);
 		ep_new(q);
-		for (i = 0; i < (1 << (EP_WIDTH - 2)); i++) {
+		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
 			ep_null(t[i]);
 			ep_new(t[i]);
 		}
@@ -81,15 +81,15 @@ static void ep_mul_glv_imp(ep_t r, const ep_t p, const bn_t k) {
 		bn_abs(k1, k1);
 
 		if (s0 == RLC_POS) {
-			ep_tab(t, p, EP_WIDTH);
+			ep_tab(t, p, RLC_WIDTH);
 		} else {
 			ep_neg(q, p);
-			ep_tab(t, q, EP_WIDTH);
+			ep_tab(t, q, RLC_WIDTH);
 		}
 
 		l0 = l1 = RLC_FP_BITS + 1;
-		bn_rec_naf(naf0, &l0, k0, EP_WIDTH);
-		bn_rec_naf(naf1, &l1, k1, EP_WIDTH);
+		bn_rec_naf(naf0, &l0, k0, RLC_WIDTH);
+		bn_rec_naf(naf1, &l1, k1, RLC_WIDTH);
 
 		l = RLC_MAX(l0, l1);
 		t0 = naf0 + l - 1;
@@ -138,7 +138,7 @@ static void ep_mul_glv_imp(ep_t r, const ep_t p, const bn_t k) {
 		bn_free(k1);
 		bn_free(n)
 		ep_free(q);
-		for (i = 0; i < 1 << (EP_WIDTH - 2); i++) {
+		for (i = 0; i < 1 << (RLC_WIDTH - 2); i++) {
 			ep_free(t[i]);
 		}
 		for (i = 0; i < 3; i++) {
@@ -156,7 +156,7 @@ static void ep_mul_glv_imp(ep_t r, const ep_t p, const bn_t k) {
 static void ep_mul_naf_imp(ep_t r, const ep_t p, const bn_t k) {
 	/* Some of the supported prime curves have order > field. */
 	int8_t u, naf[RLC_FP_BITS + 2];
-	ep_t t[1 << (EP_WIDTH - 2)];
+	ep_t t[1 << (RLC_WIDTH - 2)];
 	bn_t _k, n;
 	size_t l;
 
@@ -167,7 +167,7 @@ static void ep_mul_naf_imp(ep_t r, const ep_t p, const bn_t k) {
 		bn_new(n);
 		bn_new(_k);
 		/* Prepare the precomputation table. */
-		for (int i = 0; i < (1 << (EP_WIDTH - 2)); i++) {
+		for (int i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
 			ep_null(t[i]);
 			ep_new(t[i]);
 		}
@@ -176,11 +176,11 @@ static void ep_mul_naf_imp(ep_t r, const ep_t p, const bn_t k) {
 		bn_mod(_k, k, n);
 
 		/* Compute the precomputation table. */
-		ep_tab(t, p, EP_WIDTH);
+		ep_tab(t, p, RLC_WIDTH);
 
 		/* Compute the w-NAF representation of k. */
 		l = RLC_FP_BITS + 2;
-		bn_rec_naf(naf, &l, _k, EP_WIDTH);
+		bn_rec_naf(naf, &l, _k, RLC_WIDTH);
 
 		ep_set_infty(r);
 		for (int i = l - 1; i >= 0; i--) {
@@ -206,7 +206,7 @@ static void ep_mul_naf_imp(ep_t r, const ep_t p, const bn_t k) {
 		bn_free(n);
 		bn_free(_k);
 		/* Free the precomputation table. */
-		for (int i = 0; i < (1 << (EP_WIDTH - 2)); i++) {
+		for (int i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
 			ep_free(t[i]);
 		}
 	}
@@ -223,7 +223,7 @@ static void ep_mul_reg_glv(ep_t r, const ep_t p, const bn_t k) {
 	int i, j, n0, n1, s0, s1, b0, b1;
 	int8_t _s0, _s1, reg0[RLC_FP_BITS + 1], reg1[RLC_FP_BITS + 1];
 	bn_t n, _k, k0, k1, v1[3], v2[3];
-	ep_t q, t[1 << (EP_WIDTH - 2)], u, v, w;
+	ep_t q, t[1 << (RLC_WIDTH - 2)], u, v, w;
 	size_t l;
 
 	bn_null(n);
@@ -245,7 +245,7 @@ static void ep_mul_reg_glv(ep_t r, const ep_t p, const bn_t k) {
 		ep_new(v);
 		ep_new(w);
 
-		for (i = 0; i < (1 << (EP_WIDTH - 2)); i++) {
+		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
 			ep_null(t[i]);
 			ep_new(t[i]);
 		}
@@ -276,12 +276,12 @@ static void ep_mul_reg_glv(ep_t r, const ep_t p, const bn_t k) {
 		ep_copy(q, p);
 		ep_neg(t[0], p);
 		dv_copy_cond(q->y, t[0]->y, RLC_FP_DIGS, s0 != RLC_POS);
-		ep_tab(t, q, EP_WIDTH);
+		ep_tab(t, q, RLC_WIDTH);
 
 		l = RLC_FP_BITS + 1;
-		bn_rec_reg(reg0, &l, k0, bn_bits(n)/2, EP_WIDTH);
+		bn_rec_reg(reg0, &l, k0, bn_bits(n)/2, RLC_WIDTH);
 		l = RLC_FP_BITS + 1;
-		bn_rec_reg(reg1, &l, k1, bn_bits(n)/2, EP_WIDTH);
+		bn_rec_reg(reg1, &l, k1, bn_bits(n)/2, RLC_WIDTH);
 
 #if defined(EP_MIXED)
 		fp_set_dig(u->z, 1);
@@ -292,7 +292,7 @@ static void ep_mul_reg_glv(ep_t r, const ep_t p, const bn_t k) {
 #endif
 		ep_set_infty(r);
 		for (i = l - 1; i >= 0; i--) {
-			for (j = 0; j < EP_WIDTH - 1; j++) {
+			for (j = 0; j < RLC_WIDTH - 1; j++) {
 				ep_dbl(r, r);
 			}
 
@@ -303,7 +303,7 @@ static void ep_mul_reg_glv(ep_t r, const ep_t p, const bn_t k) {
 			_s1 = (n1 >> 7);
 			n1 = ((n1 ^ _s1) - _s1) >> 1;
 
-			for (j = 0; j < (1 << (EP_WIDTH - 2)); j++) {
+			for (j = 0; j < (1 << (RLC_WIDTH - 2)); j++) {
 				dv_copy_cond(u->x, t[j]->x, RLC_FP_DIGS, j == n0);
 				dv_copy_cond(w->x, t[j]->x, RLC_FP_DIGS, j == n1);
 				dv_copy_cond(u->y, t[j]->y, RLC_FP_DIGS, j == n0);
@@ -357,7 +357,7 @@ static void ep_mul_reg_glv(ep_t r, const ep_t p, const bn_t k) {
 		ep_free(u);
 		ep_free(v);
 		ep_free(w);
-		for (i = 0; i < 1 << (EP_WIDTH - 2); i++) {
+		for (i = 0; i < 1 << (RLC_WIDTH - 2); i++) {
 			ep_free(t[i]);
 		}
 		for (i = 0; i < 3; i++) {
@@ -374,8 +374,8 @@ static void ep_mul_reg_glv(ep_t r, const ep_t p, const bn_t k) {
 static void ep_mul_reg_imp(ep_t r, const ep_t p, const bn_t k) {
 	bn_t _k;
 	int i, j, n;
-	int8_t s, reg[1 + RLC_CEIL(RLC_FP_BITS + 1, EP_WIDTH - 1)];
-	ep_t t[1 << (EP_WIDTH - 2)], u, v;
+	int8_t s, reg[1 + RLC_CEIL(RLC_FP_BITS + 1, RLC_WIDTH - 1)];
+	ep_t t[1 << (RLC_WIDTH - 2)], u, v;
 	size_t l;
 
 	if (bn_is_zero(k)) {
@@ -390,12 +390,12 @@ static void ep_mul_reg_imp(ep_t r, const ep_t p, const bn_t k) {
 		ep_new(u);
 		ep_new(v);
 		/* Prepare the precomputation table. */
-		for (i = 0; i < (1 << (EP_WIDTH - 2)); i++) {
+		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
 			ep_null(t[i]);
 			ep_new(t[i]);
 		}
 		/* Compute the precomputation table. */
-		ep_tab(t, p, EP_WIDTH);
+		ep_tab(t, p, RLC_WIDTH);
 
 		ep_curve_get_ord(_k);
 		n = bn_bits(_k);
@@ -405,8 +405,8 @@ static void ep_mul_reg_imp(ep_t r, const ep_t p, const bn_t k) {
 		_k->dp[0] |= 1;
 
 		/* Compute the regular w-NAF representation of k. */
-		l = RLC_CEIL(n, EP_WIDTH - 1) + 1;
-		bn_rec_reg(reg, &l, _k, n, EP_WIDTH);
+		l = RLC_CEIL(n, RLC_WIDTH - 1) + 1;
+		bn_rec_reg(reg, &l, _k, n, RLC_WIDTH);
 
 #if defined(EP_MIXED)
 		fp_set_dig(u->z, 1);
@@ -416,7 +416,7 @@ static void ep_mul_reg_imp(ep_t r, const ep_t p, const bn_t k) {
 #endif
 		ep_set_infty(r);
 		for (i = l - 1; i >= 0; i--) {
-			for (j = 0; j < EP_WIDTH - 1; j++) {
+			for (j = 0; j < RLC_WIDTH - 1; j++) {
 				ep_dbl(r, r);
 			}
 
@@ -424,7 +424,7 @@ static void ep_mul_reg_imp(ep_t r, const ep_t p, const bn_t k) {
 			s = (n >> 7);
 			n = ((n ^ s) - s) >> 1;
 
-			for (j = 0; j < (1 << (EP_WIDTH - 2)); j++) {
+			for (j = 0; j < (1 << (RLC_WIDTH - 2)); j++) {
 				dv_copy_cond(u->x, t[j]->x, RLC_FP_DIGS, j == n);
 				dv_copy_cond(u->y, t[j]->y, RLC_FP_DIGS, j == n);
 #if !defined(EP_MIXED)
@@ -450,7 +450,7 @@ static void ep_mul_reg_imp(ep_t r, const ep_t p, const bn_t k) {
 	}
 	RLC_FINALLY {
 		/* Free the precomputation table. */
-		for (i = 0; i < (1 << (EP_WIDTH - 2)); i++) {
+		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
 			ep_free(t[i]);
 		}
 		bn_free(_k);
@@ -504,7 +504,7 @@ void ep_mul_basic(ep_t r, const ep_t p, const bn_t k) {
 
 void ep_mul_slide(ep_t r, const ep_t p, const bn_t k) {
 	bn_t _k, n;
-	ep_t t[1 << (EP_WIDTH - 1)], q;
+	ep_t t[1 << (RLC_WIDTH - 1)], q;
 	uint8_t win[RLC_FP_BITS + 1];
 	size_t l;
 
@@ -520,7 +520,7 @@ void ep_mul_slide(ep_t r, const ep_t p, const bn_t k) {
 	RLC_TRY {
 		bn_new(n);
 		bn_new(_k);
-		for (size_t i = 0; i < (1 << (EP_WIDTH - 1)); i ++) {
+		for (size_t i = 0; i < (1 << (RLC_WIDTH - 1)); i ++) {
 			ep_null(t[i]);
 			ep_new(t[i]);
 		}
@@ -537,17 +537,17 @@ void ep_mul_slide(ep_t r, const ep_t p, const bn_t k) {
 		bn_mod(_k, k, n);
 
 		/* Create table. */
-		for (size_t i = 1; i < (1 << (EP_WIDTH - 1)); i++) {
+		for (size_t i = 1; i < (1 << (RLC_WIDTH - 1)); i++) {
 			ep_add(t[i], t[i - 1], q);
 		}
 
 #if defined(EP_MIXED)
-		ep_norm_sim(t + 1, (const ep_t *)t + 1, (1 << (EP_WIDTH - 1)) - 1);
+		ep_norm_sim(t + 1, (const ep_t *)t + 1, (1 << (RLC_WIDTH - 1)) - 1);
 #endif
 
 		ep_set_infty(q);
 		l = RLC_FP_BITS + 1;
-		bn_rec_slw(win, &l, _k, EP_WIDTH);
+		bn_rec_slw(win, &l, _k, RLC_WIDTH);
 		for (size_t i = 0; i < l; i++) {
 			if (win[i] == 0) {
 				ep_dbl(q, q);
@@ -570,7 +570,7 @@ void ep_mul_slide(ep_t r, const ep_t p, const bn_t k) {
 	RLC_FINALLY {
 		bn_free(n);
 		bn_free(_k);
-		for (size_t i = 0; i < (1 << (EP_WIDTH - 1)); i++) {
+		for (size_t i = 0; i < (1 << (RLC_WIDTH - 1)); i++) {
 			ep_free(t[i]);
 		}
 		ep_free(q);

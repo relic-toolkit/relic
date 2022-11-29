@@ -9,8 +9,7 @@ message("      EP_MIXED=[off|on] Use mixed coordinates.")
 message("      EP_CTMAP=[off|on] Use contant-time SSWU and isogeny map for hashing.\n")
 
 message("      EP_PRECO=[off|on] Build precomputation table for generator.")
-message("      EP_DEPTH=w        Width w in [2,8] of precomputation table for fixed point methods.")
-message("      EP_WIDTH=w        Width w in [2,6] of window processing for unknown point methods.\n")
+message("      RLC_DEPTH=w        Width w in [2,8] of precomputation table for fixed point methods.")
 
 message("   ** Available prime elliptic curve methods (default = PROJC;LWNAF;COMBS;INTER):\n")
 
@@ -36,15 +35,6 @@ message("      EP_METHD=BASIC    Multiplication-and-addition simultaneous multip
 message("      EP_METHD=TRICK    Shamir's trick for simultaneous multiplication.")
 message("      EP_METHD=INTER    Interleaving of window NAFs (GLV for Koblitz curves).")
 message("      EP_METHD=JOINT    Joint sparse form.\n")
-
-if (NOT EP_DEPTH)
-	set(EP_DEPTH 4)
-endif(NOT EP_DEPTH)
-if (NOT EP_WIDTH)
-	set(EP_WIDTH 4)
-endif(NOT EP_WIDTH)
-set(EP_DEPTH "${EP_DEPTH}" CACHE STRING "Width of precomputation table for fixed point methods.")
-set(EP_WIDTH "${EP_WIDTH}" CACHE STRING "Width of window processing for unknown point methods.")
 
 option(EP_PLAIN "Support for ordinary curves without endomorphisms" on)
 option(EP_SUPER "Support for supersingular curves" on)

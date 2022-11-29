@@ -41,7 +41,7 @@
 /*============================================================================*/
 
 static void nist_kdf(uint8_t *key, size_t key_len, const uint8_t *in,
-		size_t in_len, uint32_t value) {
+		size_t in_len, dig_t value) {
 	uint32_t i, j, d;
 	uint8_t *buffer = NULL, hash[RLC_MD_LEN];
 	size_t out_len = 0;
@@ -54,7 +54,6 @@ static void nist_kdf(uint8_t *key, size_t key_len, const uint8_t *in,
 
 	buffer = RLC_ALLOCA(uint8_t, in_len + sizeof(uint32_t));
 	if (buffer == NULL) {
-		RLC_FREE(buffer);
 		RLC_THROW(ERR_NO_MEMORY);
 		return;
 	}

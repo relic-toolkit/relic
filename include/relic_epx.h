@@ -57,17 +57,17 @@
 /**
  * Size of a precomputation table using the single-table comb method.
  */
-#define RLC_EPX_TABLE_COMBS      (1 << EP_DEPTH)
+#define RLC_EPX_TABLE_COMBS      (1 << RLC_DEPTH)
 
 /**
  * Size of a precomputation table using the double-table comb method.
  */
-#define RLC_EPX_TABLE_COMBD		(1 << (EP_DEPTH + 1))
+#define RLC_EPX_TABLE_COMBD		(1 << (RLC_DEPTH + 1))
 
 /**
  * Size of a precomputation table using the w-(T)NAF method.
  */
-#define RLC_EPX_TABLE_LWNAF		(1 << (EP_DEPTH - 2))
+#define RLC_EPX_TABLE_LWNAF		(1 << (RLC_DEPTH - 2))
 
 /**
  * Size of a precomputation table using the chosen algorithm.

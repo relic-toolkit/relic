@@ -280,12 +280,9 @@ static void util(void) {
 	bn_free(b);
 }
 
-// For bn_mxp_sim experiments
-#define BN_MXP_SIM_LOT_LARGER (3*BN_XPWDT+5)
-
 static void arith(void) {
 	bn_t a, b, c, d[3], e[3];
-    bn_t t[BN_MXP_SIM_LOT_LARGER], u[BN_MXP_SIM_LOT_LARGER];
+    bn_t t[16], u[16];
 	crt_t crt;
 	dig_t f;
 	size_t len;
@@ -304,7 +301,7 @@ static void arith(void) {
 		bn_new(d[j]);
 		bn_new(e[j]);
 	}
-	for (int i = 0; i < BN_MXP_SIM_LOT_LARGER; ++i) {
+	for (int i = 0; i < 16; ++i) {
         bn_null(t[i]); bn_null(u[i]);
         bn_new(t[i]); bn_new(u[i]);
 	}
@@ -681,62 +678,38 @@ static void arith(void) {
     if (bn_is_even(b)) {
         bn_add_dig(b, b, 1);
     }
-    for(int i=0; i<BN_MXP_SIM_LOT_LARGER; ++i) {
+    for(int i = 0; i < 16; i++) {
         bn_rand_mod(t[i], b);
         bn_rand_mod(u[i], b);
     }
 
-    util_print("(BN_XPWDT=%d) ", BN_XPWDT);
 	BENCH_RUN("bn_mxp_sim") {
-		BENCH_ADD(bn_mxp_sim(c, t, u, b));
+		BENCH_ADD(bn_mxp_sim(c, t[0], u[0], t[1], u[1], b));
 	}
 	BENCH_END;
 
-    util_print("( %d SIM_LOT) ", BN_XPWDT);
-	BENCH_RUN("bn_mxp_sim_lot") {
-		BENCH_ADD(bn_mxp_sim_lot(c, (const bn_t*)t, (const bn_t*)u, b, BN_XPWDT));
+	BENCH_RUN("bn_mxp_sim_few") {
+		BENCH_ADD(bn_mxp_sim_few(c, t, u, b, 2));
 	}
 	BENCH_END;
 
-    int SMLT = BN_XPWDT>>1; util_print("( %d SIM_LOT) ", SMLT);
-	BENCH_RUN("bn_mxp_sim_lot") {
-		BENCH_ADD(bn_mxp_sim_lot(c, (const bn_t*)t, (const bn_t*)u, b, SMLT));
+	BENCH_RUN("bn_mxp_sim_lot (2)") {
+		BENCH_ADD(bn_mxp_sim_lot(c, (const bn_t*)t, (const bn_t*)u, b, 2));
 	}
 	BENCH_END;
 
-    SMLT = SMLT<<1; util_print("( %d SIM_LOT) ", SMLT);
-	BENCH_RUN("bn_mxp_sim_lot") {
-		BENCH_ADD(bn_mxp_sim_lot(c, (const bn_t*)t, (const bn_t*)u, b, SMLT));
+	BENCH_RUN("bn_mxp_sim_lot (4)") {
+		BENCH_ADD(bn_mxp_sim_lot(c, (const bn_t*)t, (const bn_t*)u, b, 4));
 	}
 	BENCH_END;
 
-    SMLT = BN_XPWDT+1; util_print("( %d SIM_LOT) ", SMLT);
-	BENCH_RUN("bn_mxp_sim_lot") {
-		BENCH_ADD(bn_mxp_sim_lot(c, (const bn_t*)t, (const bn_t*)u, b, SMLT));
+	BENCH_RUN("bn_mxp_sim_lot (8)") {
+		BENCH_ADD(bn_mxp_sim_lot(c, (const bn_t*)t, (const bn_t*)u, b, 8));
 	}
 	BENCH_END;
 
-    SMLT = BN_XPWDT+2; util_print("( %d SIM_LOT) ", SMLT);
-	BENCH_RUN("bn_mxp_sim_lot") {
-		BENCH_ADD(bn_mxp_sim_lot(c, (const bn_t*)t, (const bn_t*)u, b, SMLT));
-	}
-	BENCH_END;
-
-    SMLT = BN_XPWDT<<1; util_print("(%d SIM_LOT) ", SMLT);
-	BENCH_RUN("bn_mxp_sim_lot") {
-		BENCH_ADD(bn_mxp_sim_lot(c, (const bn_t*)t, (const bn_t*)u, b, SMLT));
-	}
-	BENCH_END;
-
-    SMLT = BN_MXP_SIM_LOT_LARGER>>1; util_print("(%d SIM_LOT) ", SMLT);
-	BENCH_RUN("bn_mxp_sim_lot") {
-		BENCH_ADD(bn_mxp_sim_lot(c, (const bn_t*)t, (const bn_t*)u, b, SMLT));
-	}
-	BENCH_END;
-
-    SMLT = BN_MXP_SIM_LOT_LARGER; util_print("(%d SIM_LOT) ", SMLT);
-	BENCH_RUN("bn_mxp_sim_lot") {
-		BENCH_ADD(bn_mxp_sim_lot(c, (const bn_t*)t, (const bn_t*)u, b, SMLT));
+	BENCH_RUN("bn_mxp_sim_lot (16)") {
+		BENCH_ADD(bn_mxp_sim_lot(c, (const bn_t*)t, (const bn_t*)u, b, 16));
 	}
 	BENCH_END;
 
@@ -1035,8 +1008,9 @@ static void arith(void) {
 		bn_free(d[j]);
 		bn_free(e[j]);
 	}
-	for (int i = 0; i < BN_MXP_SIM_LOT_LARGER; ++i) {
-        bn_free(t[i]);bn_free(u[i]);
+	for (int i = 0; i < 16; ++i) {
+        bn_free(t[i]);
+		bn_free(u[i]);
     }
 	crt_free(crt);
 }

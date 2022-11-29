@@ -82,7 +82,7 @@ int fp2_test_cyc(const fp2_t a) {
 }
 
 void fp2_exp_cyc(fp2_t c, const fp2_t a, const bn_t b) {
-	fp2_t r, s, t[1 << (FP_WIDTH - 2)];
+	fp2_t r, s, t[1 << (RLC_WIDTH - 2)];
 	int8_t naf[RLC_FP_BITS + 1], *k;
 	size_t l;
 
@@ -96,15 +96,15 @@ void fp2_exp_cyc(fp2_t c, const fp2_t a, const bn_t b) {
 	RLC_TRY {
 		fp2_new(r);
 		fp2_new(s);
-		for (int i = 0; i < (1 << (FP_WIDTH - 2)); i ++) {
+		for (int i = 0; i < (1 << (RLC_WIDTH - 2)); i ++) {
 			fp2_null(t[i]);
 			fp2_new(t[i]);
 		}
 
-#if FP_WIDTH > 2
+#if RLC_WIDTH > 2
 		fp2_sqr(t[0], a);
 		fp2_mul(t[1], t[0], a);
-		for (int i = 2; i < (1 << (FP_WIDTH - 2)); i++) {
+		for (int i = 2; i < (1 << (RLC_WIDTH - 2)); i++) {
 			fp2_mul(t[i], t[i - 1], t[0]);
 		}
 #endif
@@ -112,7 +112,7 @@ void fp2_exp_cyc(fp2_t c, const fp2_t a, const bn_t b) {
 
 		l = RLC_FP_BITS + 1;
 		fp2_set_dig(r, 1);
-		bn_rec_naf(naf, &l, b, FP_WIDTH);
+		bn_rec_naf(naf, &l, b, RLC_WIDTH);
 
 		k = naf + l - 1;
 
@@ -140,7 +140,7 @@ void fp2_exp_cyc(fp2_t c, const fp2_t a, const bn_t b) {
 	RLC_FINALLY {
 		fp2_free(r);
 		fp2_free(s);
-		for (int i = 0; i < (1 << (FP_WIDTH - 2)); i++) {
+		for (int i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
 			fp2_free(t[i]);
 		}
 	}
@@ -192,7 +192,7 @@ int fp8_test_cyc(const fp8_t a) {
 }
 
 void fp8_exp_cyc(fp8_t c, const fp8_t a, const bn_t b) {
-	fp8_t r, s, t[1 << (FP_WIDTH - 2)];
+	fp8_t r, s, t[1 << (RLC_WIDTH - 2)];
 	int8_t naf[RLC_FP_BITS + 1], *k;
 	size_t l;
 
@@ -206,15 +206,15 @@ void fp8_exp_cyc(fp8_t c, const fp8_t a, const bn_t b) {
 	RLC_TRY {
 		fp8_new(r);
 		fp8_new(s);
-		for (int i = 0; i < (1 << (FP_WIDTH - 2)); i ++) {
+		for (int i = 0; i < (1 << (RLC_WIDTH - 2)); i ++) {
 			fp8_null(t[i]);
 			fp8_new(t[i]);
 		}
 
-#if FP_WIDTH > 2
+#if RLC_WIDTH > 2
 		fp8_sqr_cyc(t[0], a);
 		fp8_mul(t[1], t[0], a);
-		for (int i = 2; i < (1 << (FP_WIDTH - 2)); i++) {
+		for (int i = 2; i < (1 << (RLC_WIDTH - 2)); i++) {
 			fp8_mul(t[i], t[i - 1], t[0]);
 		}
 #endif
@@ -222,7 +222,7 @@ void fp8_exp_cyc(fp8_t c, const fp8_t a, const bn_t b) {
 
 		l = RLC_FP_BITS + 1;
 		fp8_set_dig(r, 1);
-		bn_rec_naf(naf, &l, b, FP_WIDTH);
+		bn_rec_naf(naf, &l, b, RLC_WIDTH);
 
 		k = naf + l - 1;
 
@@ -250,7 +250,7 @@ void fp8_exp_cyc(fp8_t c, const fp8_t a, const bn_t b) {
 	RLC_FINALLY {
 		fp8_free(r);
 		fp8_free(s);
-		for (int i = 0; i < (1 << (FP_WIDTH - 2)); i++) {
+		for (int i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
 			fp8_free(t[i]);
 		}
 	}
@@ -620,8 +620,8 @@ void fp12_exp_cyc(fp12_t c, const fp12_t a, const bn_t b) {
 void fp2_exp_cyc_sim(fp2_t e, const fp2_t a, const bn_t b, const fp2_t c, const bn_t d) {
 	int n0, n1;
 	int8_t naf0[RLC_FP_BITS + 1], naf1[RLC_FP_BITS + 1], *_k, *_m;
-	fp2_t r, t0[1 << (EP_WIDTH - 2)];
-	fp2_t s, t1[1 << (EP_WIDTH - 2)];
+	fp2_t r, t0[1 << (RLC_WIDTH - 2)];
+	fp2_t s, t1[1 << (RLC_WIDTH - 2)];
 	size_t l, l0, l1;
 
 	if (bn_is_zero(b)) {
@@ -638,23 +638,23 @@ void fp2_exp_cyc_sim(fp2_t e, const fp2_t a, const bn_t b, const fp2_t c, const 
 	RLC_TRY {
 		fp2_new(r);
 		fp2_new(s);
-		for (int i = 0; i < (1 << (FP_WIDTH - 2)); i ++) {
+		for (int i = 0; i < (1 << (RLC_WIDTH - 2)); i ++) {
 			fp2_null(t0[i]);
 			fp2_null(t1[i]);
 			fp2_new(t0[i]);
 			fp2_new(t1[i]);
 		}
 
-#if FP_WIDTH > 2
+#if RLC_WIDTH > 2
 		fp2_sqr(t0[0], a);
 		fp2_mul(t0[1], t0[0], a);
-		for (int i = 2; i < (1 << (FP_WIDTH - 2)); i++) {
+		for (int i = 2; i < (1 << (RLC_WIDTH - 2)); i++) {
 			fp2_mul(t0[i], t0[i - 1], t0[0]);
 		}
 
 		fp2_sqr(t1[0], c);
 		fp2_mul(t1[1], t1[0], c);
-		for (int i = 2; i < (1 << (FP_WIDTH - 2)); i++) {
+		for (int i = 2; i < (1 << (RLC_WIDTH - 2)); i++) {
 			fp2_mul(t1[i], t1[i - 1], t1[0]);
 		}
 #endif
@@ -662,8 +662,8 @@ void fp2_exp_cyc_sim(fp2_t e, const fp2_t a, const bn_t b, const fp2_t c, const 
 		fp2_copy(t1[0], c);
 
 		l0 = l1 = RLC_FP_BITS + 1;
-		bn_rec_naf(naf0, &l0, b, FP_WIDTH);
-		bn_rec_naf(naf1, &l1, d, FP_WIDTH);
+		bn_rec_naf(naf0, &l0, b, RLC_WIDTH);
+		bn_rec_naf(naf1, &l1, d, RLC_WIDTH);
 
 		l = RLC_MAX(l0, l1);
 		if (bn_sign(b) == RLC_NEG) {
@@ -711,7 +711,7 @@ void fp2_exp_cyc_sim(fp2_t e, const fp2_t a, const bn_t b, const fp2_t c, const 
 	RLC_FINALLY {
 		fp2_free(r);
 		fp2_free(s);
-		for (int i = 0; i < (1 << (FP_WIDTH - 2)); i++) {
+		for (int i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
 			fp2_free(t0[i]);
 			fp2_free(t1[i]);
 		}
@@ -1253,8 +1253,8 @@ void fp24_exp_cyc(fp24_t c, const fp24_t a, const bn_t b) {
 void fp24_exp_cyc_sim(fp24_t e, const fp24_t a, const bn_t b, const fp24_t c, const bn_t d) {
 	int n0, n1;
 	int8_t naf0[RLC_FP_BITS + 1], naf1[RLC_FP_BITS + 1], *_k, *_m;
-	fp24_t r, t0[1 << (EP_WIDTH - 2)];
-	fp24_t s, t1[1 << (EP_WIDTH - 2)];
+	fp24_t r, t0[1 << (RLC_WIDTH - 2)];
+	fp24_t s, t1[1 << (RLC_WIDTH - 2)];
 	size_t l, l0, l1;
 
 	if (bn_is_zero(b)) {
@@ -1271,23 +1271,23 @@ void fp24_exp_cyc_sim(fp24_t e, const fp24_t a, const bn_t b, const fp24_t c, co
 	RLC_TRY {
 		fp24_new(r);
 		fp24_new(s);
-		for (int i = 0; i < (1 << (FP_WIDTH - 2)); i ++) {
+		for (int i = 0; i < (1 << (RLC_WIDTH - 2)); i ++) {
 			fp24_null(t0[i]);
 			fp24_null(t1[i]);
 			fp24_new(t0[i]);
 			fp24_new(t1[i]);
 		}
 
-#if FP_WIDTH > 2
+#if RLC_WIDTH > 2
 		fp24_sqr(t0[0], a);
 		fp24_mul(t0[1], t0[0], a);
-		for (int i = 2; i < (1 << (FP_WIDTH - 2)); i++) {
+		for (int i = 2; i < (1 << (RLC_WIDTH - 2)); i++) {
 			fp24_mul(t0[i], t0[i - 1], t0[0]);
 		}
 
 		fp24_sqr(t1[0], c);
 		fp24_mul(t1[1], t1[0], c);
-		for (int i = 2; i < (1 << (FP_WIDTH - 2)); i++) {
+		for (int i = 2; i < (1 << (RLC_WIDTH - 2)); i++) {
 			fp24_mul(t1[i], t1[i - 1], t1[0]);
 		}
 #endif
@@ -1295,8 +1295,8 @@ void fp24_exp_cyc_sim(fp24_t e, const fp24_t a, const bn_t b, const fp24_t c, co
 		fp24_copy(t1[0], c);
 
 		l0 = l1 = RLC_FP_BITS + 1;
-		bn_rec_naf(naf0, &l0, b, FP_WIDTH);
-		bn_rec_naf(naf1, &l1, d, FP_WIDTH);
+		bn_rec_naf(naf0, &l0, b, RLC_WIDTH);
+		bn_rec_naf(naf1, &l1, d, RLC_WIDTH);
 
 		l = RLC_MAX(l0, l1);
 		if (bn_sign(b) == RLC_NEG) {
@@ -1344,7 +1344,7 @@ void fp24_exp_cyc_sim(fp24_t e, const fp24_t a, const bn_t b, const fp24_t c, co
 	RLC_FINALLY {
 		fp24_free(r);
 		fp24_free(s);
-		for (int i = 0; i < (1 << (FP_WIDTH - 2)); i++) {
+		for (int i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
 			fp24_free(t0[i]);
 			fp24_free(t1[i]);
 		}
