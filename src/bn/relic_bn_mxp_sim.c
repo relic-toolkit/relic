@@ -40,53 +40,6 @@
  */
 #define RLC_TABLE_SIZE			64
 
-/**
- * Recursively compute simultaneous modular exponentiations using a generalized
- * Shamir's trick and precomputed tables.
- *
- * @param[out] c		- the result.
- * @param[in] a			- the bases to exponentiate.
- * @param[in, out] b	- the exponents
- * @param[in] t 		- the precomputed tables.
- */
-void bn_mxp_sim_impl(bn_t c, const bn_t *a, bn_t *b, const bn_t *t,
-		const bn_t m, size_t n) {
-	uint_t parities;
-    int iszeroexp = 0x1;
-
-    for(size_t j = 0; j < n; j++) {
-        iszeroexp &= bn_is_zero(b[j]);
-    }
-    if (iszeroexp) {
-        bn_set_dig(c, 1); // all exponents zero, just return 1
-        return;
-    }
-
-    // Select odd exponents
-    parities = !bn_is_even(b[0]);
-    for(size_t j = 1; j < n; j++) {
-		parities |= (uint_t)(!bn_is_even(b[j])) << j;
-	}
-
-    // Halving exponents
-    for(size_t j = 0; j < n; j++) {
-        bn_hlv(b[j], b[j]);	// WARNING: u overwriten
-    }
-
-    // Recursive Power up to the halves
-    bn_mxp_sim_impl(c, a, b, t, m, n);
-
-    // One Squaring
-    bn_sqr(c, c);
-	bn_mod(c, c, m);
-
-    // One multiplication by the odd exponents
-    if (parities) {
-        bn_mul(c, c, t[parities]);
-        bn_mod(c, c, m);
-    }
-}
-
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
@@ -102,7 +55,7 @@ void bn_mxp_sim(bn_t c, const bn_t a, const bn_t b, const bn_t d, const bn_t e,
 		return;
 	}
 
-	if (bn_is_zero(b)) {
+	if (bn_is_zero(b) || bn_is_zero(e)) {
 		bn_set_dig(c, 1);
 		return;
 	}
@@ -246,7 +199,14 @@ void bn_mxp_sim(bn_t c, const bn_t a, const bn_t b, const bn_t d, const bn_t e,
 
 void bn_mxp_sim_few(bn_t c, const bn_t *a, const bn_t *b, const bn_t m,
 		size_t n) {
-    bn_t *_b = NULL, *t = NULL;
+    bn_t *t = NULL, u;
+	size_t l;
+	dig_t parities;
+
+	if (bn_cmp_dig(m, 1) == RLC_EQ) {
+		bn_zero(c);
+		return;
+	}
 
 	if (n == 0) {
 		return;
@@ -257,65 +217,90 @@ void bn_mxp_sim_few(bn_t c, const bn_t *a, const bn_t *b, const bn_t m,
 		return;
 	}
 
-	_b = RLC_ALLOCA(bn_t, n);
+	bn_null(u);
 	t = RLC_ALLOCA(bn_t, 1 << n);
-	if (_b == NULL || t == NULL) {
-		RLC_FREE(_b);
-		RLC_FREE(t);
+	if (t == NULL) {
 		RLC_THROW(ERR_NO_MEMORY);
 		return;
 	}
 
     RLC_TRY {
-		for (size_t i = 0; i < n; i++) {
-			bn_null(_b[i]);
-			bn_new(_b[i]);
-			bn_copy(_b[i], b[i]);
-		}
-
 		for (size_t i = 0; i < (1 << n); i++) {
 			bn_null(t[i]);
 			bn_new(t[i]);
 		}
+		bn_new(u);
+		bn_mod_pre(u, m);
 
         // Precompute all 2^{RLC_WIDTH} combinations of points P
 		bn_set_dig(t[0], 1);
+#if BN_MOD == MONTY
+		bn_mod_monty_conv(t[0], t[0], m);
+#endif
         for (size_t i = 0; i < n; i++) {
             if (!bn_is_zero(b[i])) { // Otherwise will never need P[i]
 				const uint_t star = 1 << i;
+#if BN_MOD == MONTY
+				bn_mod_monty_conv(t[star], a[i], m);
+#else
 				bn_copy(t[star], a[i]);
+#endif
                 for(size_t j = star + 1; j < (star << 1); j++) {
                     bn_mul(t[j], t[star], t[j - star]);
-					bn_mod(t[j], t[j], m);
+					bn_mod(t[j], t[j], m, u);
                 }
             }
         }
 
-        // Call the exponentiation subroutine
-        bn_mxp_sim_impl(c, a, _b, t, m, n);
+		l = bn_bits(b[0]);
+	    for(size_t j = 1; j < n; j++) {
+			l = RLC_MAX(l, bn_bits(b[j]));
+	    }
+
+		bn_copy(c, t[0]);
+		for (int i = l - 1; i >= 0; i--) {
+			// One Squaring
+		    bn_sqr(c, c);
+			bn_mod(c, c, m, u);
+			// Select odd exponents
+		    parities = bn_get_bit(b[0], i);
+		    for(size_t j = 1; j < n; j++) {
+				parities |= (uint_t)(bn_get_bit(b[j], i)) << j;
+			}
+			// One multiplication by the odd exponents
+		    if (parities) {
+		        bn_mul(c, c, t[parities]);
+		        bn_mod(c, c, m, u);
+		    }
+		}
+#if BN_MOD == MONTY
+		bn_mod_monty_back(c, c, m);
+#endif
 
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		for(size_t j = 0; j < n; j++) {
-			bn_free(_b[j]);
-		}
 		for (size_t i = 0; i < (1 << n); i++) {
 			bn_free(t[i]);
 		}
-		RLC_FREE(_b);
 		RLC_FREE(t);
+		bn_free(u);
     }
 }
 
 void bn_mxp_sim_lot(bn_t c, const bn_t *a, const bn_t *b, const bn_t m, size_t n) {
 	uint_t i, j;
-    bn_t _a[RLC_WIDTH], _b[RLC_WIDTH], tmp;
+    bn_t _a[RLC_WIDTH], _b[RLC_WIDTH], t;
+
+	if (bn_cmp_dig(m, 1) == RLC_EQ) {
+		bn_zero(c);
+		return;
+	}
 
 	RLC_TRY {
         // Will use blocks of size RLC_WIDTH
-        bn_null(tmp);
-		bn_new(tmp);
+        bn_null(t);
+		bn_new(t);
         for(int j = 0; j < RLC_WIDTH; j++) {
             bn_null(_a[j]);
             bn_null(_b[j]);
@@ -332,8 +317,8 @@ void bn_mxp_sim_lot(bn_t c, const bn_t *a, const bn_t *b, const bn_t m, size_t n
                 bn_copy(_a[j], a[i]);
                 bn_copy(_b[j], b[i]);
             }
-            bn_mxp_sim_few(tmp, _a, _b, m, RLC_WIDTH);
-            bn_mul(c, c, tmp);
+            bn_mxp_sim_few(t, _a, _b, m, RLC_WIDTH);
+            bn_mul(c, c, t);
             bn_mod(c, c, m);
         }
 
@@ -341,20 +326,15 @@ void bn_mxp_sim_lot(bn_t c, const bn_t *a, const bn_t *b, const bn_t m, size_t n
         if (n > i) {
 			if (n == i + 1) {
 				// A single exponent
-                bn_mxp(tmp, a[i], b[i], m);
+                bn_mxp(t, a[i], b[i], m);
 			} else {
-                j = 0;
 				for(; i < n; j++, i++) {
                     bn_copy(_a[j], a[i]);
                     bn_copy(_b[j], b[i]);
                 }
-                for(; j < RLC_WIDTH; j++) {
-					// Set remaining to exponent zero
-                    bn_zero(_b[j]);
-                }
-                bn_mxp_sim_few(tmp, _a, _b, m, RLC_WIDTH);
+                bn_mxp_sim_few(t, _a, _b, m, n - i);
             }
-            bn_mul(c, c, tmp);
+            bn_mul(c, c, t);
             bn_mod(c, c, m);
         }
 	} RLC_CATCH_ANY {
@@ -364,6 +344,6 @@ void bn_mxp_sim_lot(bn_t c, const bn_t *a, const bn_t *b, const bn_t m, size_t n
             bn_free(_a[j]);
 			bn_free(_b[j]);
         }
-        bn_free(tmp);
+        bn_free(t);
     }
 }
