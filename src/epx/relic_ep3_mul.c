@@ -194,8 +194,9 @@ static void ep3_mul_naf_imp(ep3_t r, const ep3_t p, const bn_t k) {
 /*============================================================================*/
 
 void ep3_mul_basic(ep3_t r, const ep3_t p, const bn_t k) {
-	int i, l;
 	ep3_t t;
+	int8_t u, naf[RLC_FP_BITS + 1];
+	int l;
 
 	ep3_null(t);
 
@@ -206,23 +207,23 @@ void ep3_mul_basic(ep3_t r, const ep3_t p, const bn_t k) {
 
 	RLC_TRY {
 		ep3_new(t);
-		l = bn_bits(k);
 
-		if (bn_get_bit(k, l - 1)) {
-			ep3_copy(t, p);
-		} else {
-			ep3_set_infty(t);
-		}
+		l = RLC_FP_BITS;
+		bn_rec_naf(naf, &l, k, 2);
 
-		for (i = l - 2; i >= 0; i--) {
+		ep3_set_infty(t);
+		for (int i = l - 1; i >= 0; i--) {
 			ep3_dbl(t, t);
-			if (bn_get_bit(k, i)) {
+
+			u = naf[i];
+			if (u > 0) {
 				ep3_add(t, t, p);
+			} else if (u < 0) {
+				ep3_sub(t, t, p);
 			}
 		}
 
-		ep3_copy(r, t);
-		ep3_norm(r, r);
+		ep3_norm(r, t);
 		if (bn_sign(k) == RLC_NEG) {
 			ep3_neg(r, r);
 		}
@@ -440,8 +441,8 @@ void ep3_mul_dig(ep3_t r, const ep3_t p, const dig_t k) {
 		l = RLC_DIG + 1;
 		bn_rec_naf(naf, &l, _k, 2);
 
-		ep3_set_infty(t);
-		for (int i = l - 1; i >= 0; i--) {
+		ep3_copy(t, p);
+		for (int i = l - 2; i >= 0; i--) {
 			ep3_dbl(t, t);
 
 			u = naf[i];
