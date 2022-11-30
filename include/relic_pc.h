@@ -673,6 +673,26 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
 #define g1_mul_key(R, P, K)		RLC_CAT(RLC_G1_LOWER, mul_lwreg)(R, P, K)
 
 /**
+ * Multiplies an element from a larger group containing G_1 by a scalar.
+ * Computes R = [k]P.
+ *
+ * @param[out] R				- the result.
+ * @param[in] P					- the element to multiply.
+ * @param[in] K					- the scalar.
+ */
+#define g1_mul_any(R, P, K)		RLC_CAT(RLC_G1_LOWER, mul_basic)(R, P, K)
+
+/**
+ * Multiplies an element from a larger group containing G_2 by a scalar.
+ * Computes R = [k]P.
+ *
+ * @param[out] R				- the result.
+ * @param[in] P					- the element to multiply.
+ * @param[in] K					- the scalar.
+ */
+#define g2_mul_any(R, P, K)		RLC_CAT(RLC_G2_LOWER, mul_basic)(R, P, K)
+
+/**
  * Multiplies an element from G_1 by a small integer. Computes R = [k]P.
  *
  * @param[out] R			- the result.

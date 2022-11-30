@@ -69,7 +69,8 @@ void gt_get_gen(gt_t g) {
 int g1_is_valid(const g1_t a) {
 	bn_t n, t;
 	g1_t u, v;
-	int r = 0;
+	int l0, l1, r = 0;
+	int8_t naf0[RLC_FP_BITS + 1], naf1[RLC_FP_BITS + 1];
 
 	if (g1_is_infty(a)) {
 		return 0;
@@ -104,13 +105,7 @@ int g1_is_valid(const g1_t a) {
 						bn_sqr(n, n);
 					}
 					bn_sub_dig(n, n, 1);
-					ep_copy(u, a);
-					for (int i = bn_bits(n) - 2; i >= 0; i--) {
-						g1_dbl(u, u);
-						if (bn_get_bit(n, i)) {
-							g1_add(u, u, a);
-						}
-					}
+					g1_mul_any(u, a, n);
 					ep_psi(v, a);
 					r = g1_on_curve(a) && (g1_cmp(v, u) == RLC_EQ);
 					break;
@@ -125,14 +120,24 @@ int g1_is_valid(const g1_t a) {
 					bn_add_dig(t, t, 1);
 					ep_psi(v, a);
 
+					l0 = l1 = RLC_FP_BITS + 1;
+					bn_rec_naf(naf0, &l0, t, 2);
+					bn_rec_naf(naf1, &l1, n, 2);
+
 					ep_copy(u, a);
-					for (int i = bn_bits(t) - 2; i >= 0; i--) {
+					for (int i = RLC_MAX(l0, l1) - 2; i >= 0; i--) {
 						g1_dbl(u, u);
-						if (bn_get_bit(t, i)) {
+						if (naf0[i] > 0) {
 							g1_add(u, u, a);
 						}
-						if (bn_get_bit(n, i)) {
+						if (naf0[i] < 0) {
+							g1_sub(u, u, a);
+						}
+						if (naf1[i] > 0) {
 							g1_add(u, u, v);
+						}
+						if (naf1[i] < 0) {
+							g1_sub(u, u, v);
 						}
 					}
 					if (bn_sign(n) == RLC_NEG) {
@@ -202,16 +207,7 @@ int g2_is_valid(const g2_t a) {
 			/* Compute trace t = p - n + 1. */
 			bn_sub(n, p, n);
 			bn_add_dig(n, n, 1);
-			g2_copy(u, a);
-			for (int i = bn_bits(n) - 2; i >= 0; i--) {
-				g2_dbl(u, u);
-				if (bn_get_bit(n, i)) {
-					g2_add(u, u, a);
-				}
-			}
-			if (bn_sign(n) == RLC_NEG) {
-				g2_neg(u, u);
-			}
+			g2_mul_any(u, a, n);
 			/* Compute v = a^(p + 1). */
 			g2_frb(v, a, 1);
 			g2_add(v, v, a);
@@ -224,27 +220,18 @@ int g2_is_valid(const g2_t a) {
 				 * Piellard. https://eprint.iacr.org/2022/352.pdf */
 				case EP_B12:
 				case EP_B24:
-#if FP_PRIME == 383
-					/* Since p mod n = r, we can check instead that
-					 * psi^4(P) + P == \psi^2(P). */
-					ep2_frb(u, a, 4);
-					ep2_add(u, u, a);
-					ep2_frb(v, a, 2);
-#else
-					/* Check \psi(P) == [z]P. */
-					fp_prime_get_par(n);
-					g2_copy(u, a);
-					for (int i = bn_bits(n) - 2; i >= 0; i--) {
-						g2_dbl(u, u);
-						if (bn_get_bit(n, i)) {
-							g2_add(u, u, a);
-						}
+					if (core_get()->ep_id == B12_383) {
+						/* Since p mod n = r, we can check instead that
+						 * psi^4(P) + P == \psi^2(P). */
+						g2_frb(u, a, 4);
+						g2_add(u, u, a);
+						g2_frb(v, a, 2);
+					} else {
+						/* Check \psi(P) == [z]P. */
+						fp_prime_get_par(n);
+						g2_mul_any(u, a, n);
+						g2_frb(v, a, 1);
 					}
-					if (bn_sign(n) == RLC_NEG) {
-						g2_neg(u, u);
-					}
-					g2_frb(v, a, 1);
-#endif
 					r = g2_on_curve(a) && (g2_cmp(u, v) == RLC_EQ);
 					break;
 				/* Formulas from "Fast Subgroup Membership Testings for G1,
@@ -254,16 +241,7 @@ int g2_is_valid(const g2_t a) {
 					/* Check that [2z/7]P + \psi(P) + [z/7]\psi^3(P) == O. */
 					fp_prime_get_par(n);
 					bn_div_dig(n, n, 7);
-					g2_copy(u, a);
-					for (int i = bn_bits(n) - 2; i >= 0; i--) {
-						g2_dbl(u, u);
-						if (bn_get_bit(n, i)) {
-							g2_add(u, u, a);
-						}
-					}
-					if (bn_sign(n) == RLC_NEG) {
-						g2_neg(u, u);
-					}
+					g2_mul_any(u, a, n);
 					g2_frb(v, u, 2);
 					g2_dbl(u, u);
 					g2_add(v, v, a);
@@ -354,15 +332,15 @@ int gt_is_valid(const gt_t a) {
 				 * elliptic curves" by Housni and Guillevic.
 				 * https://eprint.iacr.org/2021/1359.pdf */
 				case EP_B12:
-#if FP_PRIME == 383
-					/* GT-strong, so test for cyclotomic only. */
-					r = 1;
-#else
-					/* Check that a^u = a^p. */
-					gt_frb(u, a, 1);
-					fp12_exp_cyc_sps((void *)v, (void *)a, b, l, bn_sign(n));
-					r = (gt_cmp(u, v) == RLC_EQ);
-#endif
+					if (core_get()->ep_id == B12_383) {
+						/* GT-strong, so test for cyclotomic only. */
+						r = 1;
+					} else {
+						/* Check that a^u = a^p. */
+						gt_frb(u, a, 1);
+						fp12_exp_cyc_sps((void *)v, (void *)a, b, l, bn_sign(n));
+						r = (gt_cmp(u, v) == RLC_EQ);
+					}
 					r &= fp12_test_cyc((void *)a);
 					break;
 				case EP_B24:
