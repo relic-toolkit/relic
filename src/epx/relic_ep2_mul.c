@@ -167,7 +167,7 @@ static void ep2_mul_naf_imp(ep2_t r, const ep2_t p, const bn_t k) {
 
 void ep2_mul_basic(ep2_t r, const ep2_t p, const bn_t k) {
 	ep2_t t;
-	int8_t u, naf[RLC_FP_BITS + 1];
+	int8_t u, naf[2 * RLC_FP_BITS + 1];
 	int l;
 
 	ep2_null(t);
@@ -180,7 +180,7 @@ void ep2_mul_basic(ep2_t r, const ep2_t p, const bn_t k) {
 	RLC_TRY {
 		ep2_new(t);
 
-		l = RLC_FP_BITS;
+		l = 2 * RLC_FP_BITS + 1;
 		bn_rec_naf(naf, &l, k, 2);
 
 		ep2_set_infty(t);
