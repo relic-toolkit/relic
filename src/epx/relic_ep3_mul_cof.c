@@ -44,10 +44,10 @@ void ep3_mul_cof(ep3_t r, const ep3_t p) {
 	bn_null(z);
 
 	RLC_TRY {
-		/* TODO: optimize this and subgroup membership. */
+		/* TODO: optimize this. */
 		bn_new(z);
 		ep3_curve_get_cof(z);
-		ep3_mul(r, p, z);
+		ep3_mul_basic(r, p, z);
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {

@@ -67,7 +67,7 @@ void gt_get_gen(gt_t g) {
 }
 
 int g1_is_valid(const g1_t a) {
-	bn_t n;
+	bn_t n, t;
 	g1_t u, v;
 	int r = 0;
 
@@ -76,11 +76,13 @@ int g1_is_valid(const g1_t a) {
 	}
 
 	bn_null(n);
+	bn_null(t);
 	g1_null(u);
 	g1_null(v);
 
 	RLC_TRY {
 		bn_new(n);
+		bn_new(t);
 		g1_new(u);
 		g1_new(v);
 
@@ -112,6 +114,32 @@ int g1_is_valid(const g1_t a) {
 					ep_psi(v, a);
 					r = g1_on_curve(a) && (g1_cmp(v, u) == RLC_EQ);
 					break;
+				case EP_K18:
+					/* Check that [a_0]P + [a_1]\psi(P)) == O, for
+					 * a_0 = 19a_1 + 1, a_1 = (x/7)^3 */
+					fp_prime_get_par(n);
+					bn_div_dig(n, n, 7);
+					bn_sqr(t, n);
+					bn_mul(n, n, t);
+					bn_mul_dig(t, n, 19);
+					bn_add_dig(t, t, 1);
+					ep_psi(v, a);
+
+					ep_copy(u, a);
+					for (int i = bn_bits(t) - 2; i >= 0; i--) {
+						g1_dbl(u, u);
+						if (bn_get_bit(t, i)) {
+							g1_add(u, u, a);
+						}
+						if (bn_get_bit(n, i)) {
+							g1_add(u, u, v);
+						}
+					}
+					if (bn_sign(n) == RLC_NEG) {
+						g1_neg(u, u);
+					}
+					r = g1_on_curve(a) && g1_is_infty(u);
+					break;
 				default:
 					pc_get_ord(n);
 					bn_sub_dig(n, n, 1);
@@ -128,6 +156,7 @@ int g1_is_valid(const g1_t a) {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		bn_free(n);
+		bn_free(t);
 		g1_free(u);
 		g1_free(v);
 	}
@@ -216,6 +245,30 @@ int g2_is_valid(const g2_t a) {
 					}
 					g2_frb(v, a, 1);
 #endif
+					r = g2_on_curve(a) && (g2_cmp(u, v) == RLC_EQ);
+					break;
+				/* Formulas from "Fast Subgroup Membership Testings for G1,
+				 * G2 and GT on Pairing-friendly Curves" by Dai et al.
+				 * https://eprint.iacr.org/2022/348.pdf */
+				case EP_K18:
+					/* Check that [2z/7]P + \psi(P) + [z/7]\psi^3(P) == O. */
+					fp_prime_get_par(n);
+					bn_div_dig(n, n, 7);
+					g2_copy(u, a);
+					for (int i = bn_bits(n) - 2; i >= 0; i--) {
+						g2_dbl(u, u);
+						if (bn_get_bit(n, i)) {
+							g2_add(u, u, a);
+						}
+					}
+					if (bn_sign(n) == RLC_NEG) {
+						g2_neg(u, u);
+					}
+					g2_frb(v, u, 2);
+					g2_dbl(u, u);
+					g2_add(v, v, a);
+					g2_frb(v, v, 1);
+					g2_neg(v, v);
 					r = g2_on_curve(a) && (g2_cmp(u, v) == RLC_EQ);
 					break;
 				default:
@@ -318,6 +371,24 @@ int gt_is_valid(const gt_t a) {
 					fp24_exp_cyc_sps((void *)v, (void *)a, b, l, bn_sign(n));
 					r = (gt_cmp(u, v) == RLC_EQ);
 					r &= fp24_test_cyc((void *)a);
+					break;
+				/* Formulas from "Fast Subgroup Membership Testings for G1,
+				 * G2 and GT on Pairing-friendly Curves" by Dai et al.
+				 * https://eprint.iacr.org/2022/348.pdf */
+				case EP_K18:
+					/* Check that [2z]P + [z]\psi^3(P) == -7\psi(P). */
+					fp18_exp_cyc_sps((void *)u, (void *)a, b, l, bn_sign(n));
+					gt_frb(v, u, 3);
+					gt_sqr(u, u);
+					gt_mul(u, u, v);
+					gt_sqr(v, a);
+					gt_mul(v, v, a);
+					gt_sqr(v, v);
+					gt_mul(v, v, a);
+					gt_frb(v, v, 1);
+					gt_inv(v, v);
+					r = (gt_cmp(u, v) == RLC_EQ);
+					r &= fp18_test_cyc((void *)a);
 					break;
 				default:
 					/* Common case. */
