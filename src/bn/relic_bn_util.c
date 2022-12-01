@@ -255,7 +255,7 @@ void bn_print(const bn_t a) {
 }
 
 size_t bn_size_str(const bn_t a, uint_t radix) {
-	int digits = 0;
+	size_t digits = 0;
 	bn_t t;
 
 	bn_null(t);
