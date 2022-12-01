@@ -67,25 +67,22 @@ void bn_lsh(bn_t c, const bn_t a, uint_t bits) {
 	int digits;
 	dig_t carry;
 
-	bn_copy(c, a);
-
 	RLC_RIP(bits, digits, bits);
 
 	RLC_TRY {
 		bn_grow(c, c->used + digits + (bits > 0));
 
 		c->used = a->used + digits;
-		c->sign = a->sign;
 		if (digits > 0) {
 			dv_lshd(c->dp, a->dp, c->used, digits);
+		} else {
+			dv_copy(c->dp, a->dp, a->used);
 		}
+		c->sign = a->sign;
 
 		if (bits > 0) {
-			if (c != a) {
-				carry = bn_lshb_low(c->dp + digits, a->dp, a->used, bits);
-			} else {
-				carry = bn_lshb_low(c->dp + digits, c->dp + digits, c->used - digits, bits);
-			}
+			carry = bn_lshb_low(c->dp + digits, c->dp + digits,
+				c->used - digits, bits);
 			if (carry != 0) {
 				c->dp[c->used] = carry;
 				(c->used)++;
@@ -100,27 +97,29 @@ void bn_lsh(bn_t c, const bn_t a, uint_t bits) {
 void bn_rsh(bn_t c, const bn_t a, uint_t bits) {
 	uint_t digits = 0;
 
-	bn_copy(c, a);
-
 	RLC_RIP(bits, digits, bits);
 
-	if (digits > 0) {
-		dv_rshd(c->dp, a->dp, a->used, digits);
-	}
+	RLC_TRY {
+		bn_grow(c, a->used);
 
-	if (a->used > digits) {
-		c->used = a->used - digits;
-	} else {
-		c->used = 0;
-	}
-	c->sign = a->sign;
-
-	if (c->used > 0 && bits > 0) {
-		if (digits == 0 && c != a) {
-			bn_rshb_low(c->dp, a->dp + digits, a->used - digits, bits);
+		if (digits > 0) {
+			if (a->used > digits) {
+				dv_rshd(c->dp, a->dp, a->used, digits);
+				c->used = a->used - digits;
+			} else {
+				c->used = 0;
+			}
 		} else {
+			dv_copy(c->dp, a->dp, a->used);
+			c->used = a->used;
+		}
+		c->sign = a->sign;
+
+		if (c->used > 0 && bits > 0) {
 			bn_rshb_low(c->dp, c->dp, c->used, bits);
 		}
+		bn_trim(c);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	bn_trim(c);
 }
