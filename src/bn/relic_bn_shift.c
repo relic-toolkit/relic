@@ -70,7 +70,7 @@ void bn_lsh(bn_t c, const bn_t a, uint_t bits) {
 	RLC_RIP(bits, digits, bits);
 
 	RLC_TRY {
-		bn_grow(c, c->used + digits + (bits > 0));
+		bn_grow(c, a->used + digits + (bits > 0));
 
 		c->used = a->used + digits;
 		if (digits > 0) {
