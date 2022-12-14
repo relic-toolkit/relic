@@ -110,7 +110,6 @@ void ep3_mul_cof(ep3_t r, const ep3_t p) {
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		ep3_free(tx0);
 		ep3_free(tx1);
 		ep3_free(tx2);
 		ep3_free(tx3);
