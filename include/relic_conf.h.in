@@ -26,7 +26,6 @@
  *
  * Project configuration.
  *
- * @version $Id: relic_conf.h.in 45 2009-07-04 23:45:48Z dfaranha $
  * @ingroup relic
  */
 
@@ -60,6 +59,10 @@
 #cmakedefine SHLIB
 /** Build static library. */
 #cmakedefine STLIB
+/** Width of window processing for exponentiation methods. */
+#define RLC_WIDTH @RLC_WIDTH@
+/** Width of precomputation table for fixed base exponentiation methods. */
+#define RLC_DEPTH @RLC_DEPTH@
 
 /** Number of times each test is ran. */
 #define TESTS    @TESTS@
@@ -74,10 +77,12 @@
 #define MSP      2
 /** ARM 32-bit architecture. */
 #define ARM      3
+/** ARM 64-bit architecture. */
+#define A64      4
 /** Intel x86-compatible 32-bit architecture. */
-#define X86      4
+#define X86      5
 /** AMD64-compatible 64-bit architecture. */
-#define X64      5
+#define X64      6
 /** Architecture. */
 #cmakedefine ARCH	 @ARCH@
 
@@ -205,8 +210,6 @@
 #cmakedefine FP_PMERS
 /** Use -1 as quadratic non-residue. */
 #cmakedefine FP_QNRES
-/** Width of window processing for exponentiation methods. */
-#define FP_WIDTH @FP_WIDTH@
 
 /** Schoolbook addition. */
 #define BASIC    1
@@ -320,8 +323,6 @@
 #cmakedefine FB_SQRTF
 /** Precompute multiplication table for sqrt(z). */
 #cmakedefine FB_PRECO
-/** Width of window processing for exponentiation methods. */
-#define FB_WIDTH @FB_WIDTH@
 
 /** Shift-and-add multiplication. */
 #define BASIC    1
@@ -419,10 +420,6 @@
 #cmakedefine EP_PRECO
 /** Enable isogeny map for SSWU map-to-curve. */
 #cmakedefine EP_CTMAP
-/** Width of precomputation table for fixed point methods. */
-#define EP_DEPTH @EP_DEPTH@
-/** Width of window processing for unknown point methods. */
-#define EP_WIDTH @EP_WIDTH@
 
 /** Affine coordinates. */
 #define BASIC	 1
@@ -479,10 +476,6 @@
 #cmakedefine EB_MIXED
 /** Build precomputation table for generator. */
 #cmakedefine EB_PRECO
-/** Width of precomputation table for fixed point methods. */
-#define EB_DEPTH @EB_DEPTH@
-/** Width of window processing for unknown point methods. */
-#define EB_WIDTH @EB_WIDTH@
 
 /** Binary elliptic curve arithmetic method. */
 #define EB_METHD "@EB_METHD@"
@@ -531,10 +524,6 @@
 
 /** Build precomputation table for generator. */
 #cmakedefine ED_PRECO
-/** Width of precomputation table for fixed point methods. */
-#define ED_DEPTH @ED_DEPTH@
-/** Width of window processing for unknown point methods. */
-#define ED_WIDTH @ED_WIDTH@
 
 /** Edwards elliptic curve arithmetic method. */
 #define ED_METHD "@ED_METHD@"

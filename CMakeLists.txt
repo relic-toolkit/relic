@@ -71,7 +71,7 @@ message("   WITH=FP       Prime field arithmetic.")
 message("   WITH=FPX      Prime extension field arithmetic.")
 message("   WITH=FB       Binary field arithmetic.")
 message("   WITH=EP       Elliptic curves over prime fields.")
-message("   WITH=EPX      Elliptic curves over quadratic extensions of prime fields.")
+message("   WITH=EPX      Elliptic curves over extensions of prime fields.")
 message("   WITH=EB       Elliptic curves over binary fields.")
 message("   WITH=ED       Elliptic Edwards curves over prime fields.")
 message("   WTTH=EC       Elliptic curve cryptography.")
@@ -128,6 +128,15 @@ message("   TIMER=PERF     GNU/Linux performance monitoring framework.\n")
 message(STATUS "Prefix to identify this build of the library (default = \"\"):\n")
 
 message("   LABEL=relic\n")
+
+message(STATUS "Available switches (default = CHECK, VERBS, DOCUM):\n")
+
+message("   RLC_DEPTH=w    Width w in [2,8] of table for fixed exponentiation.")
+message("   RLC_WIDTH=w    Width w in [2,6] of table for exponentiation.\n")
+
+# Table sizes for exponentiation methods
+set(RLC_DEPTH "5" CACHE STRING "Width of precomputation table for fixed base exponentiation methods.")
+set(RLC_WIDTH "4" CACHE STRING "Width of window processing for general exponentiation methods.")
 
 include(cmake/arch.cmake)
 include(cmake/err.cmake)

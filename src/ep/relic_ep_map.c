@@ -48,25 +48,31 @@
  * @param[in] coeffs	- the vector of coefficients in the polynomial.
  * @param[in] deg 		- the degree of the polynomial.
  */
-TMPL_MAP_HORNER(fp, fp_st)
+TMPL_MAP_HORNER(fp, fp_st);
+
 /**
  * Generic isogeny map evaluation for use with SSWU map.
  */
-		TMPL_MAP_ISOGENY_MAP(ep, fp, iso)
+TMPL_MAP_ISOGENY_MAP(ep, fp, iso);
+
 #endif /* EP_CTMAP */
+
+#define EP_MAP_COPY_COND(O, I, C) dv_copy_cond(O, I, RLC_FP_DIGS, C)
 /**
  * Simplified SWU mapping from Section 4 of
  * "Fast and simple constant-time hashing to the BLS12-381 Elliptic Curve"
  */
-#define EP_MAP_COPY_COND(O, I, C) dv_copy_cond(O, I, RLC_FP_DIGS, C)
-		TMPL_MAP_SSWU(ep, fp, dig_t, EP_MAP_COPY_COND)
+TMPL_MAP_SSWU(ep, fp, dig_t, EP_MAP_COPY_COND);
+
 /**
  * Shallue--van de Woestijne map, based on the definition from
  * draft-irtf-cfrg-hash-to-curve-06, Section 6.6.1
  */
-TMPL_MAP_SVDW(ep, fp, dig_t, EP_MAP_COPY_COND)
+TMPL_MAP_SVDW(ep, fp, dig_t, EP_MAP_COPY_COND);
+
 #undef EP_MAP_COPY_COND
-/* caution: this function overwrites k, which it uses as an auxiliary variable */
+
+/* caution: this function overwrites k, which used as an auxiliary variable */
 static inline int fp_sgn0(const fp_t t, bn_t k) {
 	fp_prime_back(k, t);
 	return bn_get_bit(k, 0);
@@ -76,7 +82,7 @@ static inline int fp_sgn0(const fp_t t, bn_t k) {
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void ep_map_from_field(ep_t p, const uint8_t *uniform_bytes, int len) {
+void ep_map_from_field(ep_t p, const uint8_t *uniform_bytes, size_t len) {
 	bn_t k;
 	fp_t t;
 	ep_t q;
@@ -100,26 +106,26 @@ void ep_map_from_field(ep_t p, const uint8_t *uniform_bytes, int len) {
 		/* figure out which hash function to use */
 		const int abNeq0 = (ep_curve_opt_a() != RLC_ZERO) &&
 				(ep_curve_opt_b() != RLC_ZERO);
-		void (*const map_fn)(ep_t, fp_t) =(ep_curve_is_ctmap() ||
+		void (*const map_fn)(ep_t, fp_t) = (ep_curve_is_ctmap() ||
 				abNeq0) ? ep_map_sswu : ep_map_svdw;
 
-#define EP_MAP_CONVERT_BYTES(IDX)                                       \
-    do {                                                                \
-      bn_read_bin(k, uniform_bytes + IDX * len_per_elm, len_per_elm);   \
-      fp_prime_conv(t, k);                                              \
-    } while (0)
+#define EP_MAP_CONVERT_BYTES(IDX)											\
+		do {																\
+			bn_read_bin(k, uniform_bytes + IDX * len_per_elm, len_per_elm);	\
+			fp_prime_conv(t, k);											\
+		} while (0)
 
-#define EP_MAP_APPLY_MAP(PT)                                    \
-    do {                                                        \
-      /* check sign of t */                                     \
-      neg = fp_sgn0(t, k);                                      \
-      /* convert */                                             \
-      map_fn(PT, t);                                            \
-      /* compare sign of y and sign of t; fix if necessary */   \
-      neg = neg != fp_sgn0(PT->y, k);                             \
-      fp_neg(t, PT->y);                                          \
-      dv_copy_cond(PT->y, t, RLC_FP_DIGS, neg);                  \
-    } while (0)
+#define EP_MAP_APPLY_MAP(PT)												\
+		do {																\
+			/* check sign of t */											\
+			neg = fp_sgn0(t, k);											\
+			/* convert */													\
+			map_fn(PT, t);													\
+			/* compare sign of y and sign of t; fix if necessary */			\
+			neg = neg != fp_sgn0(PT->y, k);									\
+			fp_neg(t, PT->y);												\
+			dv_copy_cond(PT->y, t, RLC_FP_DIGS, neg);						\
+		} while (0)
 
 		/* first map invocation */
 		EP_MAP_CONVERT_BYTES(0);
@@ -179,8 +185,8 @@ void ep_map_from_field(ep_t p, const uint8_t *uniform_bytes, int len) {
 	}
 }
 
-void ep_map_dst(ep_t p, const uint8_t *msg, int len, const uint8_t *dst,
-		int dst_len) {
+void ep_map_dst(ep_t p, const uint8_t *msg, size_t len, const uint8_t *dst,
+		size_t dst_len) {
 
 	/* enough space for two field elements plus extra bytes for uniformity */
 	const int len_per_elm = (FP_PRIME + ep_param_level() + 7) / 8;
@@ -202,6 +208,6 @@ void ep_map_dst(ep_t p, const uint8_t *msg, int len, const uint8_t *dst,
 	}
 }
 
-void ep_map(ep_t p, const uint8_t *msg, int len) {
+void ep_map(ep_t p, const uint8_t *msg, size_t len) {
 	ep_map_dst(p, msg, len, (const uint8_t *)"RELIC", 5);
 }

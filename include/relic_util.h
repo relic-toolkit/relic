@@ -285,7 +285,7 @@ char util_conv_char(dig_t i);
  * @param[in] a				- the digit.
  * @return the position of the highest bit set.
  */
-int util_bits_dig(dig_t a);
+size_t util_bits_dig(dig_t a);
 
 /**
  * Compares two buffers in constant time.
@@ -295,7 +295,7 @@ int util_bits_dig(dig_t a);
  * @param[in] n				- the length in bytes of the buffers.
  * @return RLC_EQ if they are equal and RLC_NE otherwise.
  */
-int util_cmp_const(const void *a, const void *b, int n);
+int util_cmp_const(const void *a, const void *b, size_t n);
 
 /**
  * Computes a random permutation in [0, n-1].
@@ -303,7 +303,7 @@ int util_cmp_const(const void *a, const void *b, int n);
  * @param[out] p 			- the resulting permutation.
  * @param[in] n 			- the size of the permutation.
  */
-void util_perm(unsigned int p[], int n);
+void util_perm(uint_t p[], size_t n);
 
 /**
  * Formats and prints data following a printf-like syntax.

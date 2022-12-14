@@ -42,7 +42,8 @@ static void pp_mil_k54(fp54_t r, const fp9_t qx, const fp9_t qy, const ep_t p,
 	fp54_t l;
 	ep_t _p;
 	fp9_t rx, ry, rz, sx, sy, sz, qn;
-	int i, len = bn_bits(a) + 1;
+	size_t len = bn_bits(a) + 1;
+	int i;
 	int8_t s[RLC_FP_BITS + 1];
 
 	fp54_null(l);

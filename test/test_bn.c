@@ -36,7 +36,7 @@
 #include "relic_test.h"
 
 static int memory(void) {
-	err_t e;
+	err_t e = ERR_CAUGHT;
 	int code = RLC_ERR;
 	bn_t a;
 
@@ -234,7 +234,7 @@ static int util(void) {
 		} TEST_END;
 
 		TEST_CASE("reading and writing a positive number are consistent") {
-			int len = RLC_CEIL(RLC_BN_BITS, 8);
+			size_t len = RLC_CEIL(RLC_BN_BITS, 8);
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			for (int j = 2; j <= 64; j++) {
 				bits = bn_size_str(a, j);
@@ -262,7 +262,7 @@ static int util(void) {
 		TEST_END;
 
 		TEST_CASE("reading and writing a negative number are consistent") {
-			int len = RLC_CEIL(RLC_BN_BITS, 8);
+			size_t len = RLC_CEIL(RLC_BN_BITS, 8);
 			bn_rand(a, RLC_NEG, RLC_BN_BITS);
 			for (int j = 2; j <= 64; j++) {
 				bits = bn_size_str(a, j);
@@ -1014,6 +1014,7 @@ static int reduction(void) {
 static int exponentiation(void) {
 	int code = RLC_ERR;
 	bn_t a, b, c, p;
+    bn_t t[16], u[16];
 	crt_t crt;
 
 	bn_null(a);
@@ -1022,11 +1023,20 @@ static int exponentiation(void) {
 	bn_null(p);
 	crt_null(crt);
 
+    for(int i = 0; i < 16; i++) {
+        bn_null(t[i]);
+		bn_null(u[i]);
+    }
+
 	RLC_TRY {
 		bn_new(a);
 		bn_new(b);
 		bn_new(c);
 		bn_new(p);
+        for(int i = 0; i < 16; i++) {
+            bn_new(t[i]);
+			bn_new(u[i]);
+        }
 		crt_new(crt);
 
 #if BN_MOD != PMERS
@@ -1100,6 +1110,44 @@ static int exponentiation(void) {
 		TEST_END;
 #endif
 
+        for(int i = 0; i < 16; ++i) {
+            bn_rand_mod(t[i], p);
+            bn_rand_mod(u[i], p);
+        }
+
+		TEST_CASE("simultaneous modular exponentiation is correct") {
+			bn_mxp_sim(a, t[0], u[0], t[1], u[1], p);
+			bn_mxp(c, t[0], u[0], p);
+			bn_mxp(b, t[1], u[1], p);
+			bn_mul(b, b, c);
+			bn_mod(b, b, p);
+			TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("simultaneous few modular exponentiations is correct") {
+            bn_mxp_sim_few(a, t, u, p, 8);
+            bn_mxp(b, t[0], u[0], p);
+            for(int i = 1; i < 8; ++i) {
+                bn_mxp(c, t[i], u[i], p);
+                bn_mul(b, b, c);
+                bn_mod(b, b, p);
+            }
+			TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
+        }
+        TEST_END;
+
+		TEST_CASE("simultaneous many modular exponentiation is correct") {
+            bn_mxp_sim_lot(a, t, u, p, 16);
+            bn_mxp(b, t[0], u[0], p);
+            for(int i = 1; i < 16; ++i) {
+                bn_mxp(c, t[i], u[i], p);
+                bn_mul(b, b, c);
+                bn_mod(b, b, p);
+            }
+			TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
+        }
+        TEST_END;
+
 		do {
 			bn_gen_prime(crt->p, RLC_BN_BITS / 2);
 			bn_gen_prime(crt->q, RLC_BN_BITS / 2);
@@ -1134,13 +1182,18 @@ static int exponentiation(void) {
 	bn_free(b);
 	bn_free(c);
 	bn_free(p);
+    for(size_t i = 0; i < 16; i++) {
+        bn_free(t[i]);
+		bn_free(u[i]);
+    }
 	crt_free(crt);
 	return code;
 }
 
 static int square_root(void) {
-	int bits, code = RLC_ERR;
+	size_t bits;
 	bn_t a, b, c;
+	int code = RLC_ERR;
 
 	bn_null(a);
 	bn_null(b);
@@ -1771,7 +1824,7 @@ static int prime(void) {
 		TEST_ONCE("prime with large (p-1) prime factor testing is correct") {
 			TEST_ASSERT(bn_is_prime(p) == 1, end);
 			TEST_ASSERT(bn_is_prime(q) == 1, end);
-			bn_sub_dig(p, p, 1); 	// (p-1)
+			bn_sub_dig(p, p, 1);	// (p-1)
 			bn_div(p, p, q);		// (p-1)/q
 			bn_mul(p, p, q);		// ((p-1)/q)*q
 			bn_add_dig(p, p, 1);	// ((p-1)/q)*q+1
@@ -1938,9 +1991,10 @@ static int factor(void) {
 static int recoding(void) {
 	int code = RLC_ERR;
 	bn_t a, b, c, v1[3], v2[3];
-	int w, k, l;
+	int w, k;
 	uint8_t d[RLC_BN_BITS + 1];
 	int8_t e[2 * (RLC_BN_BITS + 1)];
+	size_t l;
 
 	bn_null(a);
 	bn_null(b);
@@ -2364,7 +2418,6 @@ int main(void) {
 		core_clean();
 		return 1;
 	}
-
 	util_banner("All tests have passed.\n", 0);
 
 	core_clean();

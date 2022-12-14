@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (c) 2010 RELIC Authors
+ * Copyright (c) 2011 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -24,7 +24,7 @@
 /**
  * @file
  *
- * Implementation of a Key Derivation function.
+ * Implementation of a Key Derivation Function and Mask Generation Function.
  *
  * @ingroup md
  */
@@ -37,17 +37,23 @@
 #include "relic_md.h"
 
 /*============================================================================*/
-/* Public definitions                                                         */
+/* Private definitions                                                        */
 /*============================================================================*/
 
-void md_kdf(uint8_t *key, int key_len, const uint8_t *in,
-		int in_len) {
+static void nist_kdf(uint8_t *key, size_t key_len, const uint8_t *in,
+		size_t in_len, dig_t value) {
 	uint32_t i, j, d;
-	uint8_t* buffer = RLC_ALLOCA(uint8_t, in_len + sizeof(uint32_t));
-	uint8_t* t = RLC_ALLOCA(uint8_t, key_len + RLC_MD_LEN);
-	if (buffer == NULL || t == NULL) {
-		RLC_FREE(buffer);
-		RLC_FREE(t);
+	uint8_t *buffer = NULL, hash[RLC_MD_LEN];
+	size_t out_len = 0;
+
+	if (((key_len >> 32) > RLC_MD_LEN) ||
+		(in_len + sizeof(uint32_t) < in_len)) {
+		RLC_THROW(ERR_NO_VALID);
+		return;
+	}
+
+	buffer = RLC_ALLOCA(uint8_t, in_len + sizeof(uint32_t));
+	if (buffer == NULL) {
 		RLC_THROW(ERR_NO_MEMORY);
 		return;
 	}
@@ -55,15 +61,32 @@ void md_kdf(uint8_t *key, int key_len, const uint8_t *in,
 	/* d = ceil(kLen/hLen). */
 	d = RLC_CEIL(key_len, RLC_MD_LEN);
 	memcpy(buffer, in, in_len);
-	for (i = 1; i <= d; i++) {
+	for (i = value; i < d + value; i++) {
 		j = util_conv_big(i);
 		/* c = integer_to_string(c, 4). */
 		memcpy(buffer + in_len, &j, sizeof(uint32_t));
 		/* t = t || hash(z || c). */
-		md_map(t + (i - 1) * RLC_MD_LEN, buffer, in_len + sizeof(uint32_t));
+		if (out_len + RLC_MD_LEN <= key_len) {
+			md_map(key + out_len, buffer, in_len + sizeof(uint32_t));
+            out_len += RLC_MD_LEN;
+        } else {
+			md_map(hash, buffer, in_len + sizeof(uint32_t));
+            memcpy(key + out_len, hash, key_len - out_len);
+        }
 	}
-	memcpy(key, t, key_len);
 
 	RLC_FREE(buffer);
-	RLC_FREE(t);
+}
+
+
+/*============================================================================*/
+/* Public definitions                                                         */
+/*============================================================================*/
+
+void md_mgf(uint8_t *key, size_t key_len, const uint8_t *in, size_t in_len) {
+	nist_kdf(key, key_len, in, in_len, 0);
+}
+
+void md_kdf(uint8_t *key, size_t key_len, const uint8_t *in, size_t in_len) {
+	nist_kdf(key, key_len, in, in_len, 1);
 }

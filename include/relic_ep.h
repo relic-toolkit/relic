@@ -81,6 +81,8 @@ enum {
 	BSI_P256,
 	/** SECG K-256 prime curve. */
 	SECG_K256,
+	/** SM2 P-256 prime curve. */
+	SM2_P256,
 	/** Curve67254 prime curve. */
 	CURVE_67254,
 	/** Curve383187 prime curve. */
@@ -197,17 +199,17 @@ enum {
 /**
  * Size of a precomputation table using the single-table comb method.
  */
-#define RLC_EP_TABLE_COMBS      (1 << EP_DEPTH)
+#define RLC_EP_TABLE_COMBS      (1 << RLC_DEPTH)
 
 /**
  * Size of a precomputation table using the double-table comb method.
  */
-#define RLC_EP_TABLE_COMBD		(1 << (EP_DEPTH + 1))
+#define RLC_EP_TABLE_COMBD		(1 << (RLC_DEPTH + 1))
 
 /**
  * Size of a precomputation table using the w-(T)NAF method.
  */
-#define RLC_EP_TABLE_LWNAF		(1 << (EP_DEPTH - 2))
+#define RLC_EP_TABLE_LWNAF		(1 << (RLC_DEPTH - 2))
 
 /**
  * Size of a precomputation table using the chosen algorithm.
@@ -819,7 +821,7 @@ int ep_size_bin(const ep_t a, int pack);
  * @throw ERR_NO_VALID		- if the encoded point is invalid.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is invalid.
  */
-void ep_read_bin(ep_t a, const uint8_t *bin, int len);
+void ep_read_bin(ep_t a, const uint8_t *bin, size_t len);
 
 /**
  * Writes a prime elliptic curve point to a byte vector in big-endian format
@@ -831,7 +833,7 @@ void ep_read_bin(ep_t a, const uint8_t *bin, int len);
  * @param[in] pack			- the flag to indicate point compression.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is invalid.
  */
-void ep_write_bin(uint8_t *bin, int len, const ep_t a, int pack);
+void ep_write_bin(uint8_t *bin, size_t len, const ep_t a, int pack);
 
 /**
  * Negates a prime elliptic curve point.
@@ -1223,7 +1225,7 @@ void ep_norm_sim(ep_t *r, const ep_t *t, int n);
  * @param[in] uniform_bytes		- the array of uniform bytes to map.
  * @param[in] len			- the array length in bytes.
  */
-void ep_map_from_field(ep_t p, const uint8_t *uniform_bytes, int len);
+void ep_map_from_field(ep_t p, const uint8_t *uniform_bytes, size_t len);
 
 /**
  * Maps a byte array to a point in a prime elliptic curve.
@@ -1232,7 +1234,7 @@ void ep_map_from_field(ep_t p, const uint8_t *uniform_bytes, int len);
  * @param[in] msg			- the byte array to map.
  * @param[in] len			- the array length in bytes.
  */
-void ep_map(ep_t p, const uint8_t *msg, int len);
+void ep_map(ep_t p, const uint8_t *msg, size_t len);
 
 /**
  * Maps a byte array to a point in a prime elliptic curve with specified
@@ -1244,8 +1246,8 @@ void ep_map(ep_t p, const uint8_t *msg, int len);
  * @param[in] dst			- the domain separation tag.
  * @param[in] dst_len		- the domain separation tag length in bytes.
  */
-void ep_map_dst(ep_t p, const uint8_t *msg, int len, const uint8_t *dst,
-		int dst_len);
+void ep_map_dst(ep_t p, const uint8_t *msg, size_t len, const uint8_t *dst,
+		size_t dst_len);
 
 /**
  * Compresses a point.

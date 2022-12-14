@@ -64,7 +64,7 @@ void arch_clean(void) {
 #if TIMER == CYCLE
 
 ull_t arch_cycles(void) {
-	unsigned int hi, lo;
+	uint32_t hi, lo;
 	asm (
 		"cpuid\n\t"/*serialize*/
 		"rdtsc\n\t"/*read the clock*/
@@ -78,7 +78,7 @@ ull_t arch_cycles(void) {
 #elif TIMER == PERF
 
 ull_t arch_cycles(void) {
-	unsigned int seq;
+	uint_t seq;
 	ull_t index, offset, result = 0;
 	if (core_get()->perf_buf != NULL) {
 		do {
@@ -100,6 +100,6 @@ ull_t arch_cycles(void) {
 }
 #endif
 
-unsigned int arch_lzcnt(dig_t x) {
+uint_t arch_lzcnt(dig_t x) {
 	return core_get()->lzcnt_ptr((ull_t)x) - (8 * sizeof(ull_t) - WSIZE);
 }

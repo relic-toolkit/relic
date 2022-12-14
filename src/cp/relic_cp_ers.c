@@ -123,15 +123,15 @@ int cp_ers_ver(const bn_t td, const ers_t *s, size_t size, const uint8_t *msg,
 		ec_mul_gen(t, td);
 
 		for (int i = 0; i < size; i++) {
-            ec_add(t, t, s[i]->h);
-        }
+			ec_add(t, t, s[i]->h);
+		}
 		if (ec_cmp(pp, t) == RLC_EQ) {
 			flag = 1;
 			for (int i = 0; i < size; i++) {
 				ec_copy(y[0], s[i]->h);
 				ec_copy(y[1], s[i]->pk);
 				flag &= cp_sokor_ver(s[i]->c, s[i]->r, msg, len, y, NULL);
-	        }
+			}
 		}
 		result = flag;
 	}

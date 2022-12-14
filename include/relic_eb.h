@@ -86,17 +86,17 @@ enum {
 /**
  * Size of a precomputation table using the single-table comb method.
  */
-#define RLC_EB_TABLE_COMBS      (1 << EB_DEPTH)
+#define RLC_EB_TABLE_COMBS      (1 << RLC_DEPTH)
 
 /**
  * Size of a precomputation table using the double-table comb method.
  */
-#define RLC_EB_TABLE_COMBD		(1 << (EB_DEPTH + 1))
+#define RLC_EB_TABLE_COMBD		(1 << (RLC_DEPTH + 1))
 
 /**
  * Size of a precomputation table using the w-(T)NAF method.
  */
-#define RLC_EB_TABLE_LWNAF		(1 << (EB_DEPTH - 2))
+#define RLC_EB_TABLE_LWNAF		(1 << (RLC_DEPTH - 2))
 
 /**
  * Size of a precomputation table using the chosen algorithm.
@@ -560,7 +560,7 @@ int eb_size_bin(const eb_t a, int pack);
  * @throw ERR_NO_VALID		- if the encoded point is invalid.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is invalid.
  */
-void eb_read_bin(eb_t a, const uint8_t *bin, int len);
+void eb_read_bin(eb_t a, const uint8_t *bin, size_t len);
 
 /**
  * Writes a binary field element to a byte vector in big-endian format with
@@ -572,7 +572,7 @@ void eb_read_bin(eb_t a, const uint8_t *bin, int len);
  * @param[in] pack			- the flag to indicate point compression.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is invalid.
  */
-void eb_write_bin(uint8_t *bin, int len, const eb_t a, int pack);
+void eb_write_bin(uint8_t *bin, size_t len, const eb_t a, int pack);
 
 /**
  * Negates a binary elliptic curve point represented by affine coordinates.
@@ -928,7 +928,7 @@ void eb_norm_sim(eb_t *r, const eb_t *t, int n);
  * @param[in] msg			- the byte array to map.
  * @param[in] len			- the array length in bytes.
  */
-void eb_map(eb_t p, const uint8_t *msg, int len);
+void eb_map(eb_t p, const uint8_t *msg, size_t len);
 
 /**
  * Compresses a point.

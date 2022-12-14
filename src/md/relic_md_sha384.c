@@ -40,7 +40,7 @@
 
 #if MD_MAP == SH384 || !defined(STRIP)
 
-void md_map_sh384(uint8_t *hash, const uint8_t *msg, int len) {
+void md_map_sh384(uint8_t *hash, const uint8_t *msg, size_t len) {
 	SHA384Context ctx;
 
 	if (SHA384Reset(&ctx) != shaSuccess) {

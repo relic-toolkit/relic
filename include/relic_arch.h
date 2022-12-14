@@ -104,7 +104,7 @@ uint_t arch_lzcnt(dig_t);
  * @param[in] src		- the pointer to the string stored on the text section.
  * @param[in] len		- the length of the string.
  */
-void arch_copy_rom(char *dest, const char *src, int len);
+void arch_copy_rom(char *dest, const char *src, size_t len);
 
 #endif
 

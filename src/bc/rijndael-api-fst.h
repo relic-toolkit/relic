@@ -90,7 +90,6 @@ typedef struct {                    /* changed order of the components */
 
 int makeKey(keyInstance *key, BYTE direction, int keyLen, char *keyMaterial);
 
-/* FIXME: Accept the keyMaterial as a byte sequence. */
 int makeKey2(keyInstance *key, BYTE direction, int keyLen, char *keyMaterial);
 
 int cipherInit(cipherInstance *cipher, BYTE mode, char *IV);

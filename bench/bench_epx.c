@@ -35,19 +35,19 @@
 #include "relic_bench.h"
 
 static void memory2(void) {
-	ep4_t a[BENCH];
+	ep2_t a[BENCH];
 
-	BENCH_FEW("ep4_null", ep4_null(a[i]), 1);
+	BENCH_FEW("ep2_null", ep2_null(a[i]), 1);
 
-	BENCH_FEW("ep4_new", ep4_new(a[i]), 1);
+	BENCH_FEW("ep2_new", ep2_new(a[i]), 1);
 	for (int i = 0; i < BENCH; i++) {
-		ep4_free(a[i]);
+		ep2_free(a[i]);
 	}
 
 	for (int i = 0; i < BENCH; i++) {
-		ep4_new(a[i]);
+		ep2_new(a[i]);
 	}
-	BENCH_FEW("ep4_free", ep4_free(a[i]), 1);
+	BENCH_FEW("ep2_free", ep2_free(a[i]), 1);
 
 	(void)a;
 }

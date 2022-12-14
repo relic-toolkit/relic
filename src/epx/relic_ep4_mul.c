@@ -41,10 +41,11 @@
 #if defined(EP_ENDOM)
 
 static void ep4_mul_glv_imp(ep4_t r, const ep4_t p, const bn_t k) {
-	int sign, i, j, l, _l[8];
+	int sign, i, j;
 	bn_t n, _k[8], u, v;
 	int8_t naf[8][RLC_FP_BITS + 1];
 	ep4_t q[8];
+	size_t l, _l[8];
 
 	bn_null(n);
 	bn_null(u);
@@ -131,22 +132,23 @@ static void ep4_mul_glv_imp(ep4_t r, const ep4_t p, const bn_t k) {
 #endif /* EP_ENDOM */
 
 static void ep4_mul_naf_imp(ep4_t r, const ep4_t p, const bn_t k) {
-	int l, i, n;
+	int i, n;
 	int8_t naf[RLC_FP_BITS + 1];
-	ep4_t t[1 << (EP_WIDTH - 2)];
+	ep4_t t[1 << (RLC_WIDTH - 2)];
+	size_t l;
 
 	RLC_TRY {
 		/* Prepare the precomputation table. */
-		for (i = 0; i < (1 << (EP_WIDTH - 2)); i++) {
+		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
 			ep4_null(t[i]);
 			ep4_new(t[i]);
 		}
 		/* Compute the precomputation table. */
-		ep4_tab(t, p, EP_WIDTH);
+		ep4_tab(t, p, RLC_WIDTH);
 
 		/* Compute the w-NAF representation of k. */
 		l = sizeof(naf);
-		bn_rec_naf(naf, &l, k, EP_WIDTH);
+		bn_rec_naf(naf, &l, k, RLC_WIDTH);
 
 		ep4_set_infty(r);
 		for (i = l - 1; i >= 0; i--) {
@@ -171,7 +173,7 @@ static void ep4_mul_naf_imp(ep4_t r, const ep4_t p, const bn_t k) {
 	}
 	RLC_FINALLY {
 		/* Free the precomputation table. */
-		for (i = 0; i < (1 << (EP_WIDTH - 2)); i++) {
+		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
 			ep4_free(t[i]);
 		}
 	}
@@ -228,9 +230,9 @@ void ep4_mul_basic(ep4_t r, const ep4_t p, const bn_t k) {
 #if EP_MUL == SLIDE || !defined(STRIP)
 
 void ep4_mul_slide(ep4_t r, const ep4_t p, const bn_t k) {
-	ep4_t t[1 << (EP_WIDTH - 1)], q;
-	int i, j, l;
+	ep4_t t[1 << (RLC_WIDTH - 1)], q;
 	uint8_t win[RLC_FP_BITS + 1];
+	size_t l;
 
 	ep4_null(q);
 
@@ -240,7 +242,7 @@ void ep4_mul_slide(ep4_t r, const ep4_t p, const bn_t k) {
 	}
 
 	RLC_TRY {
-		for (i = 0; i < (1 << (EP_WIDTH - 1)); i ++) {
+		for (size_t i = 0; i < (1 << (RLC_WIDTH - 1)); i ++) {
 			ep4_null(t[i]);
 			ep4_new(t[i]);
 		}
@@ -255,22 +257,22 @@ void ep4_mul_slide(ep4_t r, const ep4_t p, const bn_t k) {
 #endif
 
 		/* Create table. */
-		for (i = 1; i < (1 << (EP_WIDTH - 1)); i++) {
+		for (size_t i = 1; i < (1 << (RLC_WIDTH - 1)); i++) {
 			ep4_add(t[i], t[i - 1], q);
 		}
 
 #if defined(EP_MIXED)
-		ep4_norm_sim(t + 1, t + 1, (1 << (EP_WIDTH - 1)) - 1);
+		ep4_norm_sim(t + 1, t + 1, (1 << (RLC_WIDTH - 1)) - 1);
 #endif
 
 		ep4_set_infty(q);
 		l = RLC_FP_BITS + 1;
-		bn_rec_slw(win, &l, k, EP_WIDTH);
-		for (i = 0; i < l; i++) {
+		bn_rec_slw(win, &l, k, RLC_WIDTH);
+		for (size_t i = 0; i < l; i++) {
 			if (win[i] == 0) {
 				ep4_dbl(q, q);
 			} else {
-				for (j = 0; j < util_bits_dig(win[i]); j++) {
+				for (size_t j = 0; j < util_bits_dig(win[i]); j++) {
 					ep4_dbl(q, q);
 				}
 				ep4_add(q, q, t[win[i] >> 1]);
@@ -286,7 +288,7 @@ void ep4_mul_slide(ep4_t r, const ep4_t p, const bn_t k) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		for (i = 0; i < (1 << (EP_WIDTH - 1)); i++) {
+		for (size_t i = 0; i < (1 << (RLC_WIDTH - 1)); i++) {
 			ep4_free(t[i]);
 		}
 		ep4_free(q);

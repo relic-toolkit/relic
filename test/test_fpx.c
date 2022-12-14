@@ -33,7 +33,7 @@
 #include "relic_test.h"
 
 static int memory2(void) {
-	err_t e;
+	err_t e = ERR_CAUGHT;
 	int code = RLC_ERR;
 	fp2_t a;
 
@@ -828,7 +828,7 @@ static int square_root2(void) {
 }
 
 static int memory3(void) {
-	err_t e;
+	err_t e = ERR_CAUGHT;
 	int code = RLC_ERR;
 	fp3_t a;
 
@@ -1484,7 +1484,7 @@ static int square_root3(void) {
 }
 
 static int memory4(void) {
-	err_t e;
+	err_t e = ERR_CAUGHT;
 	int code = RLC_ERR;
 	fp4_t a;
 
@@ -2085,7 +2085,7 @@ static int square_root4(void) {
 }
 
 static int memory6(void) {
-	err_t e;
+	err_t e = ERR_CAUGHT;
 	int code = RLC_ERR;
 	fp6_t a;
 
@@ -2614,7 +2614,7 @@ static int exponentiation6(void) {
 }
 
 static int memory8(void) {
-	err_t e;
+	err_t e = ERR_CAUGHT;
 	int code = RLC_ERR;
 	fp8_t a;
 
@@ -3239,7 +3239,7 @@ static int exponentiation8(void) {
 }
 
 static int memory12(void) {
-	err_t e;
+	err_t e = ERR_CAUGHT;
 	int code = RLC_ERR;
 	fp12_t a;
 
@@ -3265,7 +3265,7 @@ static int memory12(void) {
 }
 
 static int memory9(void) {
-	err_t e;
+	err_t e = ERR_CAUGHT;
 	int code = RLC_ERR;
 	fp9_t a;
 
@@ -4588,7 +4588,7 @@ static int compression12(void) {
 }
 
 static int memory18(void) {
-	err_t e;
+	err_t e = ERR_CAUGHT;
 	int code = RLC_ERR;
 	fp18_t a;
 
@@ -5331,7 +5331,7 @@ static int compression18(void) {
 }
 
 static int memory24(void) {
-	err_t e;
+	err_t e = ERR_CAUGHT;
 	int code = RLC_ERR;
 	fp24_t a;
 
@@ -6078,7 +6078,7 @@ static int compression24(void) {
 }
 
 static int memory48(void) {
-	err_t e;
+	err_t e = ERR_CAUGHT;
 	int code = RLC_ERR;
 	fp48_t a;
 
@@ -6825,7 +6825,7 @@ static int exponentiation48(void) {
 }
 
 static int memory54(void) {
-	err_t e;
+	err_t e = ERR_CAUGHT;
 	int code = RLC_ERR;
 	fp54_t a;
 

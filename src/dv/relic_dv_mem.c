@@ -47,7 +47,7 @@
 
 #if ALLOC == DYNAMIC
 
-void dv_new_dynam(dv_t *a, int digits) {
+void dv_new_dynam(dv_t *a, size_t digits) {
 	if (digits > RLC_DV_DIGS) {
 		RLC_THROW(ERR_NO_PRECI);
 		return;

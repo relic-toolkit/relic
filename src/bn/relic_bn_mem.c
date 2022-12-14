@@ -41,7 +41,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void bn_make(bn_t a, int digits) {
+void bn_make(bn_t a, size_t digits) {
 	if (digits < 0) {
 		RLC_THROW(ERR_NO_VALID);
 	}
@@ -112,7 +112,7 @@ void bn_clean(bn_t a) {
 	}
 }
 
-void bn_grow(bn_t a, int digits) {
+void bn_grow(bn_t a, size_t digits) {
 #if ALLOC == DYNAMIC
 	dig_t *t;
 
@@ -143,7 +143,7 @@ void bn_trim(bn_t a) {
 			--(a->used);
 		}
 		/* Zero can't be negative. */
-		if (a->used <= 0) {
+		if (a->used == 0) {
 			a->used = 1;
 			a->dp[0] = 0;
 			a->sign = RLC_POS;

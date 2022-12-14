@@ -50,7 +50,7 @@ void arch_clean(void) {
 }
 
 ull_t arch_cycles(void) {
-	unsigned int hi, lo;
+	uint32_t hi, lo;
 	asm (
 		"cpuid\n\t"/*serialize*/
 		"rdtsc\n\t"/*read the clock*/
@@ -61,6 +61,6 @@ ull_t arch_cycles(void) {
 	return ((ull_t) lo) | (((ull_t) hi) << 32);
 }
 
-unsigned int arch_lzcnt(dig_t x) {
+uint_t arch_lzcnt(dig_t x) {
 	return core_get()->lzcnt_ptr((uint32_t)x) - (8 * sizeof(uint32_t) - WSIZE);
 }

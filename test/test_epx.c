@@ -35,7 +35,7 @@
 #include "relic_test.h"
 
 static int memory2(void) {
-	err_t e;
+	err_t e = ERR_CAUGHT;
 	int code = RLC_ERR;
 	ep2_t a;
 
@@ -2206,7 +2206,7 @@ static int frobenius3(void) {
 }
 
 static int memory4(void) {
-	err_t e;
+	err_t e = ERR_CAUGHT;
 	int code = RLC_ERR;
 	ep4_t a;
 

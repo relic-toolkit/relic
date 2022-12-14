@@ -107,7 +107,7 @@ int cp_rsapsi_ans(bn_t t[], bn_t u[], const bn_t d, const bn_t g, const bn_t n,
 		const bn_t y[], size_t l) {
 	int j, result = RLC_OK, len = RLC_CEIL(RLC_BN_BITS, 8);
 	uint8_t h[RLC_MD_LEN], bin[RLC_CEIL(RLC_BN_BITS, 8)];
-	unsigned int *shuffle = RLC_ALLOCA(unsigned int, l);
+	uint_t *shuffle = RLC_ALLOCA(uint_t, l);
 	bn_t p;
 
 	bn_null(p);
