@@ -317,18 +317,22 @@ void fp18_mul_dxs_lazyr(fp18_t c, const fp18_t a, const fp18_t b) {
 			/* t0 = a_0 * b_0. */
 			fp9_mul_dxs_unr_lazyr(u0, a[0], b[0]);
 #if EP_ADD == BASIC
-			/* t0 = a_0 * b_0. */
+			/* t0 = a_1 * b_1. */
 			fp_muln_low(u1[1][0], a[1][2][0], b[1][1][0]);
 			fp_muln_low(u1[1][1], a[1][2][1], b[1][1][0]);
+			fp_muln_low(u1[1][2], a[1][2][2], b[1][1][0]);
 			fp3_nord_low(u1[0], u1[1]);
 			fp_muln_low(u1[1][0], a[1][0][0], b[1][1][0]);
 			fp_muln_low(u1[1][1], a[1][0][1], b[1][1][0]);
+			fp_muln_low(u1[1][2], a[1][0][2], b[1][1][0]);
 			fp_muln_low(u1[2][0], a[1][1][0], b[1][1][0]);
 			fp_muln_low(u1[2][1], a[1][1][1], b[1][1][0]);
+			fp_muln_low(u1[2][2], a[1][1][2], b[1][1][0]);
 			/* t2 = b_0 + b_1. */
 			fp3_copy(t0[0], b[0][0]);
 			fp_add(t0[1][0], b[0][1][0], b[1][1][0]);
 			fp_copy(t0[1][1], b[0][1][1]);
+			fp_copy(t0[1][2], b[0][1][2]);
 #elif EP_ADD == PROJC || EP_ADD == JACOB
 			/* t1 = a_1 * b_1. */
 			fp3_muln_low(u1[1], a[1][2], b[1][1]);
