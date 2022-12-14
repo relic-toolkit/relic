@@ -160,8 +160,6 @@ static void pp_mil_lit_k18(fp18_t r, ep_t *t, ep_t *p, ep3_t *q, int m, bn_t a) 
 			ep3_null(_q[j]);
 			ep3_new(_q[j]);
 			ep_copy(t[j], p[j]);
-			fp3_mul(q[j]->x, q[j]->x, core_get()->ep3_frb[2]);
-			fp3_mul(q[j]->y, q[j]->y, core_get()->ep3_frb[2]);
 			ep3_neg(_q[j], q[j]);
 		}
 
@@ -200,37 +198,51 @@ static void pp_mil_lit_k18(fp18_t r, ep_t *t, ep_t *p, ep3_t *q, int m, bn_t a) 
  * @param[in] a				- the loop parameter.
  */
 static void pp_fin_k18_oatep(fp18_t r, ep3_t t, ep3_t q, ep_t p) {
-	ep3_t q1, q2;
-	fp18_t tmp;
+    fp18_t u, v;
+    ep3_t _q;
+    ep_t _p;
 
-	fp18_null(tmp);
-	ep3_null(q1);
-	ep3_null(q2);
+    fp18_null(u);
+    fp18_null(v);
+    ep3_null(_q);
+    ep_null(_p);
 
-	RLC_TRY {
-		ep3_new(q1);
-		ep3_new(q2);
-		fp18_new(tmp);
-		fp18_zero(tmp);
+    RLC_TRY {
+        fp18_new(u);
+        fp18_new(v);
+        ep3_new(_q);
+        ep3_null(_p);
 
-		fp2_set_dig(q1->z, 1);
-		fp2_set_dig(q2->z, 1);
+        /* _q = 3*p*Q. */
+        fp18_zero(u);
+        fp18_zero(v);
 
-		ep3_frb(q1, q, 1);
-		ep3_frb(q2, q, 2);
-		ep3_neg(q2, q2);
+        /* Compute additional line function. */
+#if EP_ADD == BASIC
+		ep_neg(_p, p);
+#else
+		fp_add(_p->x, p->x, p->x);
+		fp_add(_p->x, _p->x, p->x);
+		fp_neg(_p->y, p->y);
+#endif
 
-		pp_add_k18(tmp, t, q1, p);
-		fp18_mul_dxs(r, r, tmp);
-		pp_add_k18(tmp, t, q2, p);
-		fp18_mul_dxs(r, r, tmp);
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		fp18_free(tmp);
-		ep3_free(q1);
-		ep3_free(q2);
-	}
+        pp_dbl_k18(u, _q, q, _p);
+        pp_add_k18(v, _q, q, p);
+        pp_norm_k18(_q, _q);
+        fp18_mul_dxs(u, u, v);
+        fp18_frb(u, u, 1);
+        fp18_mul(r, r, u);
+        ep3_frb(_q, _q, 1);
+        pp_add_k18(u, t, _q, p);
+        fp18_mul_dxs(r, r, u);
+    } RLC_CATCH_ANY {
+        RLC_THROW(ERR_CAUGHT);
+    } RLC_FINALLY {
+        fp18_free(u);
+        fp18_free(v);
+        ep3_free(_q);
+        ep_free(_p);
+    }
 }
 
 /*============================================================================*/
@@ -257,6 +269,8 @@ void pp_map_tatep_k18(fp18_t r, const ep_t p, const ep3_t q) {
 
 		ep_norm(_p[0], p);
 		ep3_norm(_q[0], q);
+		fp3_mul(_q[0]->x, _q[0]->x, core_get()->ep3_frb[2]);
+		fp3_mul(_q[0]->y, _q[0]->y, core_get()->ep3_frb[2]);
 		ep_curve_get_ord(n);
 		fp18_set_dig(r, 1);
 
@@ -302,7 +316,10 @@ void pp_map_sim_tatep_k18(fp18_t r, const ep_t *p, const ep3_t *q, int m) {
 		for (i = 0; i < m; i++) {
 			if (!ep_is_infty(p[i]) && !ep3_is_infty(q[i])) {
 				ep_norm(_p[j], p[i]);
-				ep3_norm(_q[j++], q[i]);
+				ep3_norm(_q[j], q[i]);
+				fp3_mul(_q[j]->x, _q[j]->x, core_get()->ep3_frb[2]);
+				fp3_mul(_q[j]->y, _q[j]->y, core_get()->ep3_frb[2]);
+				j++;
 			}
 		}
 
@@ -358,20 +375,24 @@ void pp_map_weilp_k18(fp18_t r, const ep_t p, const ep3_t q) {
 
 		ep_norm(_p[0], p);
 		ep3_norm(_q[0], q);
+
 		ep_curve_get_ord(n);
 		bn_sub_dig(n, n, 1);
 		fp18_set_dig(r0, 1);
 		fp18_set_dig(r1, 1);
 
 		if (!ep_is_infty(_p[0]) && !ep3_is_infty(_q[0])) {
-			pp_mil_lit_k18(r0, t0, _p, _q, 1, n);
 			pp_mil_k18(r1, t1, _q, _p, 1, n);
+			fp3_mul(_q[0]->x, _q[0]->x, core_get()->ep3_frb[2]);
+			fp3_mul(_q[0]->y, _q[0]->y, core_get()->ep3_frb[2]);
+			pp_mil_lit_k18(r0, t0, _p, _q, 1, n);
 			fp18_inv(r1, r1);
 			fp18_mul(r0, r0, r1);
 			fp18_inv(r1, r0);
 			fp18_inv_cyc(r0, r0);
 		}
 		fp18_mul(r, r0, r1);
+		fp18_sqr(r, r);
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -430,14 +451,19 @@ void pp_map_sim_weilp_k18(fp18_t r, const ep_t *p, const ep3_t *q, int m) {
 		fp18_set_dig(r1, 1);
 
 		if (j > 0) {
-			pp_mil_lit_k18(r0, t0, _p, _q, j, n);
 			pp_mil_k18(r1, t1, _q, _p, j, n);
+			for (i = 0; i < j; i++) {
+				fp3_mul(_q[i]->x, _q[i]->x, core_get()->ep3_frb[2]);
+				fp3_mul(_q[i]->y, _q[i]->y, core_get()->ep3_frb[2]);
+			}
+			pp_mil_lit_k18(r0, t0, _p, _q, j, n);
 			fp18_inv(r1, r1);
 			fp18_mul(r0, r0, r1);
 			fp18_inv(r1, r0);
 			fp18_inv_cyc(r0, r0);
 		}
 		fp18_mul(r, r0, r1);
+		fp18_sqr(r, r);
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -488,8 +514,6 @@ void pp_map_oatep_k18(fp18_t r, const ep_t p, const ep3_t q) {
 		if (!ep_is_infty(_p[0]) && !ep3_is_infty(_q[0])) {
 			switch (ep_curve_is_pairf()) {
 				case EP_K18:
-					bn_mul_dig(a, a, 6);
-					bn_add_dig(a, a, 2);
 					/* r = f_{|a|,Q}(P). */
 					pp_mil_k18(r, t, _q, _p, 1, a);
 					if (bn_sign(a) == RLC_NEG) {
@@ -548,9 +572,7 @@ void pp_map_sim_oatep_k18(fp18_t r, const ep_t *p, const ep3_t *q, int m) {
 
 		if (j > 0) {
 			switch (ep_curve_is_pairf()) {
-				case EP_BN:
-					bn_mul_dig(a, a, 6);
-					bn_add_dig(a, a, 2);
+				case EP_K18:
 					/* r = f_{|a|,Q}(P). */
 					pp_mil_k18(r, t, _q, _p, j, a);
 					if (bn_sign(a) == RLC_NEG) {
@@ -562,14 +584,6 @@ void pp_map_sim_oatep_k18(fp18_t r, const ep_t *p, const ep3_t *q, int m) {
 							ep3_neg(t[i], t[i]);
 						}
 						pp_fin_k18_oatep(r, t[i], _q[i], _p[i]);
-					}
-					pp_exp_k18(r, r);
-					break;
-				case EP_B12:
-					/* r = f_{|a|,Q}(P). */
-					pp_mil_k18(r, t, _q, _p, j, a);
-					if (bn_sign(a) == RLC_NEG) {
-						fp18_inv_cyc(r, r);
 					}
 					pp_exp_k18(r, r);
 					break;

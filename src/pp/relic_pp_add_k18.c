@@ -265,11 +265,6 @@ void pp_add_lit_k18(fp18_t l, ep_t r, const ep_t p, const ep3_t q) {
 	fp_null(t2);
 	fp_null(t3);
 
-	if (ep3_curve_is_twist() == RLC_EP_MTYPE) {
-		//one ^= 1;
-		//zero ^= 1;
-	}
-
 	RLC_TRY {
 		fp_new(t0);
 		fp_new(t1);
