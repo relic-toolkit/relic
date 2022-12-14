@@ -425,7 +425,7 @@ void fp18_exp_dig(fp18_t c, const fp18_t a, dig_t b) {
 	bn_t _b;
 	fp18_t t, v;
 	int8_t u, naf[RLC_DIG + 1];
-	int l;
+	size_t l;
 
 	if (b == 0) {
 		fp18_set_dig(c, 1);

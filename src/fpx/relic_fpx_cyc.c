@@ -1141,7 +1141,7 @@ void fp18_exp_cyc(fp18_t c, const fp18_t a, const bn_t b) {
 	}
 
 	if ((bn_bits(b) > RLC_DIG) && ((w << 3) > bn_bits(b))) {
-		int l, _l[6];
+		size_t l, _l[6];
 		int8_t naf[6][RLC_FP_BITS + 1];
 		fp18_t t[6];
 		bn_t _b[6], n, x;
@@ -1280,10 +1280,11 @@ void fp18_exp_cyc(fp18_t c, const fp18_t a, const bn_t b) {
 }
 
 void fp18_exp_cyc_sim(fp18_t e, const fp18_t a, const bn_t b, const fp18_t c, const bn_t d) {
-	int i, l, n0, n1, l0, l1;
+	int i, n0, n1;
+	size_t l, l0, l1;
 	int8_t naf0[RLC_FP_BITS + 1], naf1[RLC_FP_BITS + 1], *_k, *_m;
-	fp18_t r, t0[1 << (EP_WIDTH - 2)];
-	fp18_t s, t1[1 << (EP_WIDTH - 2)];
+	fp18_t r, t0[1 << (RLC_WIDTH - 2)];
+	fp18_t s, t1[1 << (RLC_WIDTH - 2)];
 
 	if (bn_is_zero(b)) {
 		return fp18_exp_cyc(e, c, d);
@@ -1299,23 +1300,23 @@ void fp18_exp_cyc_sim(fp18_t e, const fp18_t a, const bn_t b, const fp18_t c, co
 	RLC_TRY {
 		fp18_new(r);
 		fp18_new(s);
-		for (i = 0; i < (1 << (FP_WIDTH - 2)); i ++) {
+		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i ++) {
 			fp18_null(t0[i]);
 			fp18_null(t1[i]);
 			fp18_new(t0[i]);
 			fp18_new(t1[i]);
 		}
 
-#if FP_WIDTH > 2
+#if RLC_WIDTH > 2
 		fp18_sqr(t0[0], a);
 		fp18_mul(t0[1], t0[0], a);
-		for (int i = 2; i < (1 << (FP_WIDTH - 2)); i++) {
+		for (int i = 2; i < (1 << (RLC_WIDTH - 2)); i++) {
 			fp18_mul(t0[i], t0[i - 1], t0[0]);
 		}
 
 		fp18_sqr(t1[0], c);
 		fp18_mul(t1[1], t1[0], c);
-		for (int i = 2; i < (1 << (FP_WIDTH - 2)); i++) {
+		for (int i = 2; i < (1 << (RLC_WIDTH - 2)); i++) {
 			fp18_mul(t1[i], t1[i - 1], t1[0]);
 		}
 #endif
@@ -1323,8 +1324,8 @@ void fp18_exp_cyc_sim(fp18_t e, const fp18_t a, const bn_t b, const fp18_t c, co
 		fp18_copy(t1[0], c);
 
 		l0 = l1 = RLC_FP_BITS + 1;
-		bn_rec_naf(naf0, &l0, b, FP_WIDTH);
-		bn_rec_naf(naf1, &l1, d, FP_WIDTH);
+		bn_rec_naf(naf0, &l0, b, RLC_WIDTH);
+		bn_rec_naf(naf1, &l1, d, RLC_WIDTH);
 
 		l = RLC_MAX(l0, l1);
 		if (bn_sign(b) == RLC_NEG) {
@@ -1372,7 +1373,7 @@ void fp18_exp_cyc_sim(fp18_t e, const fp18_t a, const bn_t b, const fp18_t c, co
 	RLC_FINALLY {
 		fp18_free(r);
 		fp18_free(s);
-		for (i = 0; i < (1 << (FP_WIDTH - 2)); i++) {
+		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
 			fp18_free(t0[i]);
 			fp18_free(t1[i]);
 		}

@@ -541,7 +541,7 @@ int fp18_size_bin(fp18_t a, int pack) {
 }
 
 void fp18_read_bin(fp18_t a, const uint8_t *bin, size_t len) {
-	if (len != 18 * RLC_FP_BYTES) {
+	if (len != 12 * RLC_FP_BYTES && len != 18 * RLC_FP_BYTES) {
 		RLC_THROW(ERR_NO_BUFFER);
 		return;
 	}
@@ -560,7 +560,7 @@ void fp18_read_bin(fp18_t a, const uint8_t *bin, size_t len) {
 	}
 }
 
-void fp18_write_bin(uint8_t *bin, int len, const fp18_t a, int pack) {
+void fp18_write_bin(uint8_t *bin, size_t len, const fp18_t a, int pack) {
 	fp18_t t;
 
 	fp18_null(t);

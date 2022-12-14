@@ -3444,7 +3444,7 @@ void fp18_read_bin(fp18_t a, const uint8_t *bin, size_t len);
  * @param[in] pack			- the flag to indicate compression.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is not correct.
  */
-void fp18_write_bin(uint8_t *bin, size_t len, const fp18_t a);
+void fp18_write_bin(uint8_t *bin, size_t len, const fp18_t a, int pack);
 
 /**
  * Returns the result of a comparison between two octdecic extension field

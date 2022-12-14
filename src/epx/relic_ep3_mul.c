@@ -143,20 +143,20 @@ static void ep3_mul_glv_imp(ep3_t r, const ep3_t p, const bn_t k) {
 static void ep3_mul_naf_imp(ep3_t r, const ep3_t p, const bn_t k) {
 	int l, i, n;
 	int8_t naf[RLC_FP_BITS + 1];
-	ep3_t t[1 << (EP_WIDTH - 2)];
+	ep3_t t[1 << (RLC_WIDTH - 2)];
 
 	RLC_TRY {
 		/* Prepare the precomputation table. */
-		for (i = 0; i < (1 << (EP_WIDTH - 2)); i++) {
+		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
 			ep3_null(t[i]);
 			ep3_new(t[i]);
 		}
 		/* Compute the precomputation table. */
-		ep3_tab(t, p, EP_WIDTH);
+		ep3_tab(t, p, RLC_WIDTH);
 
 		/* Compute the w-NAF representation of k. */
 		l = sizeof(naf);
-		bn_rec_naf(naf, &l, k, EP_WIDTH);
+		bn_rec_naf(naf, &l, k, RLC_WIDTH);
 
 		ep3_set_infty(r);
 		for (i = l - 1; i >= 0; i--) {
@@ -181,7 +181,7 @@ static void ep3_mul_naf_imp(ep3_t r, const ep3_t p, const bn_t k) {
 	}
 	RLC_FINALLY {
 		/* Free the precomputation table. */
-		for (i = 0; i < (1 << (EP_WIDTH - 2)); i++) {
+		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
 			ep3_free(t[i]);
 		}
 	}
@@ -239,7 +239,7 @@ void ep3_mul_basic(ep3_t r, const ep3_t p, const bn_t k) {
 #if EP_MUL == SLIDE || !defined(STRIP)
 
 void ep3_mul_slide(ep3_t r, const ep3_t p, const bn_t k) {
-	ep3_t t[1 << (EP_WIDTH - 1)], q;
+	ep3_t t[1 << (RLC_WIDTH - 1)], q;
 	int i, j, l;
 	uint8_t win[RLC_FP_BITS + 1];
 
@@ -251,7 +251,7 @@ void ep3_mul_slide(ep3_t r, const ep3_t p, const bn_t k) {
 	}
 
 	RLC_TRY {
-		for (i = 0; i < (1 << (EP_WIDTH - 1)); i ++) {
+		for (i = 0; i < (1 << (RLC_WIDTH - 1)); i ++) {
 			ep3_null(t[i]);
 			ep3_new(t[i]);
 		}
@@ -266,17 +266,17 @@ void ep3_mul_slide(ep3_t r, const ep3_t p, const bn_t k) {
 #endif
 
 		/* Create table. */
-		for (i = 1; i < (1 << (EP_WIDTH - 1)); i++) {
+		for (i = 1; i < (1 << (RLC_WIDTH - 1)); i++) {
 			ep3_add(t[i], t[i - 1], q);
 		}
 
 #if defined(EP_MIXED)
-		ep3_norm_sim(t + 1, t + 1, (1 << (EP_WIDTH - 1)) - 1);
+		ep3_norm_sim(t + 1, t + 1, (1 << (RLC_WIDTH - 1)) - 1);
 #endif
 
 		ep3_set_infty(q);
 		l = RLC_FP_BITS + 1;
-		bn_rec_slw(win, &l, k, EP_WIDTH);
+		bn_rec_slw(win, &l, k, RLC_WIDTH);
 		for (i = 0; i < l; i++) {
 			if (win[i] == 0) {
 				ep3_dbl(q, q);
@@ -297,7 +297,7 @@ void ep3_mul_slide(ep3_t r, const ep3_t p, const bn_t k) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		for (i = 0; i < (1 << (EP_WIDTH - 1)); i++) {
+		for (i = 0; i < (1 << (RLC_WIDTH - 1)); i++) {
 			ep3_free(t[i]);
 		}
 		ep3_free(q);
