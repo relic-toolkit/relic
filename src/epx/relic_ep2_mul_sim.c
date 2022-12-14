@@ -52,8 +52,8 @@
  * @param[in] m					- the second integer.
  * @param[in] t					- the pointer to the precomputed table.
  */
-static void ep2_mul_sim_endom(ep2_t r, const ep2_t p, const bn_t k, ep2_t q,
-		const bn_t m) {
+static void ep2_mul_sim_endom(ep2_t r, const ep2_t p, const bn_t k,
+		const ep2_t q, const bn_t m) {
 	size_t l, _l[4];
 	bn_t _k[4], _m[4], n, u;
 	int8_t naf0[4][RLC_FP_BITS + 1];

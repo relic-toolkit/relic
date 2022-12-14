@@ -1247,7 +1247,6 @@ static int memory(void) {
 int util(void) {
 	int code = RLC_ERR;
 	gt_t a, b, c;
-	uint8_t bin[24 * RLC_PC_BYTES];
 
 	gt_null(a);
 	gt_null(b);

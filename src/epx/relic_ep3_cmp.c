@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (c) 2021 RELIC Authors
+ * Copyright (c) 2022 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -24,71 +24,59 @@
 /**
  * @file
  *
- * Implementation of point multiplication of a prime elliptic curve over a
- * quadratic extension by the curve cofactor.
+ * Implementation of utilities for prime elliptic curves over quadratic
+ * extensions.
  *
  * @ingroup epx
  */
 
 #include "relic_core.h"
-#include "relic_md.h"
-#include "relic_tmpl_map.h"
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void ep4_mul_cof(ep4_t r, const ep4_t p) {
-	bn_t z;
-	ep4_t t0, t1, t2, t3;
+int ep3_cmp(const ep3_t p, const ep3_t q) {
+    ep3_t r, s;
+    int result = RLC_NE;
 
-	ep4_null(t0);
-	ep4_null(t1);
-	ep4_null(t2);
-	ep4_null(t3);
-	bn_null(z);
-
-	RLC_TRY {
-		bn_new(z);
-		ep4_new(t0);
-		ep4_new(t1);
-		ep4_new(t2);
-		ep4_new(t3);
-
-		fp_prime_get_par(z);
-
-		ep4_mul_basic(t0, p, z);
-		ep4_mul_basic(t1, t0, z);
-		ep4_mul_basic(t2, t1, z);
-		ep4_mul_basic(t3, t2, z);
-
-		ep4_sub(t3, t3, t2);
-		ep4_sub(t3, t3, p);
-		ep4_sub(t2, t2, t1);
-		ep4_frb(t2, t2, 1);
-
-		ep4_sub(t1, t1, t0);
-		ep4_frb(t1, t1, 2);
-
-		ep4_sub(t0, t0, p);
-		ep4_frb(t0, t0, 3);
-
-		ep4_dbl(r, p);
-		ep4_frb(r, r, 4);
-		ep4_add(r, r, t0);
-		ep4_add(r, r, t1);
-		ep4_add(r, r, t2);
-		ep4_add(r, r, t3);
-
-		ep4_norm(r, r);
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		ep4_free(t0);
-		ep4_free(t1);
-		ep4_free(t2);
-		ep4_free(t3);
-		bn_free(z);
-
+	if (ep3_is_infty(p) && ep3_is_infty(q)) {
+		return RLC_EQ;
 	}
+
+    ep3_null(r);
+    ep3_null(s);
+
+    RLC_TRY {
+        ep3_new(r);
+        ep3_new(s);
+
+        if ((p->coord != BASIC) && (q->coord != BASIC)) {
+            /* If the two points are not normalized, it is faster to compare
+             * x1 * z2^2 == x2 * z1^2 and y1 * z2^3 == y2 * z1^3. */
+            fp3_sqr(r->z, p->z);
+            fp3_sqr(s->z, q->z);
+            fp3_mul(r->x, p->x, s->z);
+            fp3_mul(s->x, q->x, r->z);
+            fp3_mul(r->z, r->z, p->z);
+            fp3_mul(s->z, s->z, q->z);
+            fp3_mul(r->y, p->y, s->z);
+            fp3_mul(s->y, q->y, r->z);
+        } else {
+			ep3_norm(r, p);
+            ep3_norm(s, q);
+        }
+
+        if ((fp3_cmp(r->x, s->x) == RLC_EQ) &&
+				(fp3_cmp(r->y, s->y) == RLC_EQ)) {
+            result = RLC_EQ;
+        }
+    } RLC_CATCH_ANY {
+        RLC_THROW(ERR_CAUGHT);
+    } RLC_FINALLY {
+        ep3_free(r);
+        ep3_free(s);
+    }
+
+    return result;
 }

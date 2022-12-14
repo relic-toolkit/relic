@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (c) 2021 RELIC Authors
+ * Copyright (c) 2022 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -24,71 +24,30 @@
 /**
  * @file
  *
- * Implementation of point multiplication of a prime elliptic curve over a
- * quadratic extension by the curve cofactor.
+ * Implementation of point negation on elliptic prime curves over quadratic
+ * extensions.
  *
  * @ingroup epx
  */
 
 #include "relic_core.h"
-#include "relic_md.h"
-#include "relic_tmpl_map.h"
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void ep4_mul_cof(ep4_t r, const ep4_t p) {
-	bn_t z;
-	ep4_t t0, t1, t2, t3;
-
-	ep4_null(t0);
-	ep4_null(t1);
-	ep4_null(t2);
-	ep4_null(t3);
-	bn_null(z);
-
-	RLC_TRY {
-		bn_new(z);
-		ep4_new(t0);
-		ep4_new(t1);
-		ep4_new(t2);
-		ep4_new(t3);
-
-		fp_prime_get_par(z);
-
-		ep4_mul_basic(t0, p, z);
-		ep4_mul_basic(t1, t0, z);
-		ep4_mul_basic(t2, t1, z);
-		ep4_mul_basic(t3, t2, z);
-
-		ep4_sub(t3, t3, t2);
-		ep4_sub(t3, t3, p);
-		ep4_sub(t2, t2, t1);
-		ep4_frb(t2, t2, 1);
-
-		ep4_sub(t1, t1, t0);
-		ep4_frb(t1, t1, 2);
-
-		ep4_sub(t0, t0, p);
-		ep4_frb(t0, t0, 3);
-
-		ep4_dbl(r, p);
-		ep4_frb(r, r, 4);
-		ep4_add(r, r, t0);
-		ep4_add(r, r, t1);
-		ep4_add(r, r, t2);
-		ep4_add(r, r, t3);
-
-		ep4_norm(r, r);
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		ep4_free(t0);
-		ep4_free(t1);
-		ep4_free(t2);
-		ep4_free(t3);
-		bn_free(z);
-
+void ep3_neg(ep3_t r, const ep3_t p) {
+	if (ep3_is_infty(p)) {
+		ep3_set_infty(r);
+		return;
 	}
+
+	if (r != p) {
+		fp3_copy(r->x, p->x);
+		fp3_copy(r->z, p->z);
+	}
+
+	fp3_neg(r->y, p->y);
+
+	r->coord = p->coord;
 }

@@ -210,13 +210,14 @@ void fp2_mul_art(fp2_t c, const fp2_t a) {
 void fp2_mul_frb(fp2_t c, const fp2_t a, int i, int j) {
 	ctx_t *ctx = core_get();
 
+	fp2_copy(c, a);
 #if ALLOC == AUTO
 	switch(i) {
 		case 1:
-			fp2_mul(c, a, ctx->fp2_p1[j - 1]);
+			fp2_mul(c, c, ctx->fp2_p1[j - 1]);
 			break;
 		case 2:
-			fp2_mul(c, a, ctx->fp2_p2[j - 1]);
+			fp2_mul(c, c, ctx->fp2_p2[j - 1]);
 			break;
 	}
 #else
@@ -238,7 +239,7 @@ void fp2_mul_frb(fp2_t c, const fp2_t a, int i, int j) {
 				break;
 		}
 
-		fp2_mul(c, a, t);
+		fp2_mul(c, c, t);
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);

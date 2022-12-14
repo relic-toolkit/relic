@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (c) 2021 RELIC Authors
+ * Copyright (c) 2022 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -38,57 +38,88 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void ep4_mul_cof(ep4_t r, const ep4_t p) {
-	bn_t z;
-	ep4_t t0, t1, t2, t3;
+void ep3_mul_cof(ep3_t r, const ep3_t p) {
+	ep3_t tx1, tx2, tx3, t0, t1, t2, t3, t4, t5;
+	bn_t x;
 
-	ep4_null(t0);
-	ep4_null(t1);
-	ep4_null(t2);
-	ep4_null(t3);
-	bn_null(z);
+	ep3_null(tx1);
+	ep3_null(tx2);
+	ep3_null(tx3);
+	ep3_null(t0);
+	ep3_null(t1);
+	ep3_null(t2);
+	ep3_null(t3);
+	ep3_null(t4);
+	ep3_null(t5);
+	bn_null(x);
 
 	RLC_TRY {
-		bn_new(z);
-		ep4_new(t0);
-		ep4_new(t1);
-		ep4_new(t2);
-		ep4_new(t3);
+		ep3_new(tx1);
+		ep3_new(tx2);
+		ep3_new(tx3);
+		ep3_new(t0);
+		ep3_new(t1);
+		ep3_new(t2);
+		ep3_new(t3);
+		ep3_new(t4);
+		ep3_new(t5);
+		bn_new(x);
 
-		fp_prime_get_par(z);
+		fp_prime_get_par(x);
 
-		ep4_mul_basic(t0, p, z);
-		ep4_mul_basic(t1, t0, z);
-		ep4_mul_basic(t2, t1, z);
-		ep4_mul_basic(t3, t2, z);
+		ep3_mul_basic(tx1, p, x);
+		ep3_mul_basic(tx2, tx1, x);
+		ep3_mul_basic(tx3, tx2, x);
 
-		ep4_sub(t3, t3, t2);
-		ep4_sub(t3, t3, p);
-		ep4_sub(t2, t2, t1);
-		ep4_frb(t2, t2, 1);
+		ep3_frb(t1, tx1, 2);
+		ep3_frb(t2, t1, 3);
+		ep3_add(t2, t2, tx1);
+		ep3_frb(t3, t1, 1);
+		ep3_neg(t1, t1);
 
-		ep4_sub(t1, t1, t0);
-		ep4_frb(t1, t1, 2);
+		ep3_frb(t4, tx2, 1);
+		ep3_add(t3, t3, t4);
+		ep3_frb(t4, t4, 1);
+		ep3_sub(t3, t3, t4);
 
-		ep4_sub(t0, t0, p);
-		ep4_frb(t0, t0, 3);
+		ep3_frb(t4, p, 4);
+		ep3_neg(t4, t4);
 
-		ep4_dbl(r, p);
-		ep4_frb(r, r, 4);
-		ep4_add(r, r, t0);
-		ep4_add(r, r, t1);
-		ep4_add(r, r, t2);
-		ep4_add(r, r, t3);
+		ep3_frb(t5, p, 1);
+		ep3_frb(tx1, t5, 2);
+		ep3_add(t5, t5, tx1);
+		ep3_frb(tx1, tx2, 4);
+		ep3_sub(t5, t5, tx1);
+		ep3_frb(tx2, tx1, 1);
+		ep3_add(t5, t5, tx2);
+		ep3_frb(tx3, tx3, 1);
+		ep3_add(t5, t5, tx3);
 
-		ep4_norm(r, r);
+		ep3_add(t1, t1, p);
+		ep3_dbl(t0, p);
+		ep3_add(t0, t0, t2);
+		ep3_add(t0, t0, t1);
+		ep3_add(t3, t3, t1);
+		ep3_add(t4, t4, t0);
+		ep3_add(t3, t3, t0);
+		ep3_add(t4, t4, t3);
+		ep3_add(t3, t3, t5);
+		ep3_dbl(t4, t4);
+		ep3_add(r, t4, t3);
+
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		ep4_free(t0);
-		ep4_free(t1);
-		ep4_free(t2);
-		ep4_free(t3);
-		bn_free(z);
-
+		ep3_free(tx0);
+		ep3_free(tx1);
+		ep3_free(tx2);
+		ep3_free(tx3);
+		ep3_free(t0);
+		ep3_free(t1);
+		ep3_free(t2);
+		ep3_free(t3);
+		ep3_free(t4);
+		ep3_free(t5);
+		bn_free(x);
 	}
 }

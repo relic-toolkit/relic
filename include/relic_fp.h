@@ -148,6 +148,8 @@ enum {
 	BN_638,
 	/** 638-bit prime for BLS curve with embedding degree 12. */
 	B12_638,
+	/** 638-bit prime for KSS curve with embedding degree 18. */
+	K18_638,
 	/** 1536-bit prime for supersingular curve with embedding degree k = 2. */
 	SS_1536,
 	/** 3072-bit prime for supersingular curve with embedding degree k = 1. */
@@ -449,6 +451,13 @@ const dig_t *fp_prime_get_conv(void);
  * @return the result of prime order mod 8.
  */
 dig_t fp_prime_get_mod8(void);
+
+/**
+ * Returns the result of prime order mod 18.
+ *
+ * @return the result of prime order mod 18.
+ */
+dig_t fp_prime_get_mod18(void);
 
 /**
  * Returns the prime stored in special form. The most significant bit is

@@ -39,10 +39,12 @@
 
 void pp_map_init(void) {
 	ep2_curve_init();
+	ep3_curve_init();
 	ep4_curve_init();
 }
 
 void pp_map_clean(void) {
 	ep2_curve_clean();
+	ep3_curve_clean();
 	ep4_curve_clean();
 }

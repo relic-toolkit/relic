@@ -60,6 +60,8 @@
 
 #if FP_PRIME == 315 || FP_PRIME == 317 || FP_PRIME == 509
 #define RLC_G2_LOWER			ep4_
+#elif FP_PRIME == 638 && !defined(FP_QNRES)
+#define RLC_G2_LOWER            ep3_
 #else
 #define RLC_G2_LOWER			ep2_
 #endif
@@ -68,6 +70,8 @@
 
 #if FP_PRIME == 315 || FP_PRIME == 317 || FP_PRIME == 509
 #define RLC_GT_LOWER			fp24_
+#elif FP_PRIME == 638 && !defined(FP_QNRES)
+#define RLC_GT_LOWER            fp18_
 #else
 #define RLC_GT_LOWER			fp12_
 #endif
@@ -232,7 +236,11 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
 /**
  * Configures some set of curve parameters for the current security level.
  */
+#if EC_CUR == PRIME
 #define pc_param_set_any()	ep_param_set_any_pairf()
+#else
+#define pc_param_set_any()	RLC_ERR
+#endif
 
 /**
  * Returns the type of the configured pairing.
@@ -665,6 +673,26 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
 #define g1_mul_key(R, P, K)		RLC_CAT(RLC_G1_LOWER, mul_lwreg)(R, P, K)
 
 /**
+ * Multiplies an element from a larger group containing G_1 by a scalar.
+ * Computes R = [k]P.
+ *
+ * @param[out] R				- the result.
+ * @param[in] P					- the element to multiply.
+ * @param[in] K					- the scalar.
+ */
+#define g1_mul_any(R, P, K)		RLC_CAT(RLC_G1_LOWER, mul_basic)(R, P, K)
+
+/**
+ * Multiplies an element from a larger group containing G_2 by a scalar.
+ * Computes R = [k]P.
+ *
+ * @param[out] R				- the result.
+ * @param[in] P					- the element to multiply.
+ * @param[in] K					- the scalar.
+ */
+#define g2_mul_any(R, P, K)		RLC_CAT(RLC_G2_LOWER, mul_basic)(R, P, K)
+
+/**
  * Multiplies an element from G_1 by a small integer. Computes R = [k]P.
  *
  * @param[out] R			- the result.
@@ -852,6 +880,8 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
 
 #if FP_PRIME == 315 || FP_PRIME == 317 || FP_PRIME == 509
 #define pc_map(R, P, Q);		RLC_CAT(RLC_PC_LOWER, map_k24)(R, P, Q)
+#elif FP_PRIME == 638 && !defined(FP_QNRES)
+#define pc_map(R, P, Q);		RLC_CAT(RLC_PC_LOWER, map_k18)(R, P, Q)
 #else
 #define pc_map(R, P, Q);		RLC_CAT(RLC_PC_LOWER, map_k12)(R, P, Q)
 #endif
@@ -875,6 +905,8 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
 
 #if FP_PRIME == 315 || FP_PRIME == 317 || FP_PRIME == 509
 #define pc_map_sim(R, P, Q, M);	RLC_CAT(RLC_PC_LOWER, map_sim_k24)(R, P, Q, M)
+#elif FP_PRIME == 638 && !defined(FP_QNRES)
+#define pc_map_sim(R, P, Q, M);	RLC_CAT(RLC_PC_LOWER, map_sim_k18)(R, P, Q, M)
 #else
 #define pc_map_sim(R, P, Q, M);	RLC_CAT(RLC_PC_LOWER, map_sim_k12)(R, P, Q, M)
 #endif
@@ -893,6 +925,8 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
 
 #if FP_PRIME == 315 || FP_PRIME == 317 || FP_PRIME == 509
 #define pc_exp(C, A);			RLC_CAT(RLC_PC_LOWER, exp_k24)(C, A)
+#elif FP_PRIME == 638 && !defined(FP_QNRES)
+#define pc_exp(C, A);			RLC_CAT(RLC_PC_LOWER, exp_k18)(C, A)
 #else
 #define pc_exp(C, A);			RLC_CAT(RLC_PC_LOWER, exp_k12)(C, A)
 #endif

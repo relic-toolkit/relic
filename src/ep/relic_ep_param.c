@@ -674,9 +674,7 @@
 #define BN_P638_H		"1"
 #define BN_P638_MAPU	"-1"
 /** @} */
-#endif
 
-#if defined(EP_ENDOM) && FP_PRIME == 638
 /**
  * Parameters for a 638-bit pairing-friendly prime curve.
  */
@@ -688,6 +686,19 @@
 #define B12_P638_R		"50F94035FF4000FFFFFFFFFFF9406BFDC0040000000000000035FB801DFFBFFFFFFFFFFFFFFF401BFF80000000000000000000FFC01"
 #define B12_P638_H		"BFF8001555555555555555554D957EAAAAAAAAAAAAAAAAAAAABEB"
 #define B12_P638_MAPU	"3"
+/** @} */
+
+/**
+ * Parameters for a 638-bit pairing-friendly prime curve.
+ */
+/** @{ */
+#define K18_P638_A		"0"
+#define K18_P638_B		"6"
+#define K18_P638_X		"2D2158F08DADC234929DFB876FDE4203FE3702DC95F373C9B0A8F5EC84559F2AEC42DB7AF71FB2409423A237E664EF28E005D8477B1860DF8426034DAB516CCFBFC76223609318EADE2A00B21B746E2C"
+#define K18_P638_Y		"1AD0E6C8D2F8B84E81E17D20277BFF5E7784849B6B3F570F6CB7DDD7BB51E680A9B01A9E2CBF87B7D1CA40F3F9DB65DCDD485800C7D6BCE6F11F85F4FC91381A1F6FF721BE1FA7DC73B1452EC9E067C1"
+#define K18_P638_R		"217C6AD09A8C1501A39F40A5CAE9A8FA6C1D721892617A6D5AB381B7B89EF9B4A91AE277CAAA0EE0BC3E2910806BDC08EA69545693C740000000001"
+#define K18_P638_H		"1708507726EC82EBF64DB756506B2000010540EB1D"
+#define K18_P638_MAPU	"1"
 /** @} */
 #endif
 
@@ -833,7 +844,7 @@ void ep_param_set(int param) {
 	char str[2 * RLC_FP_BYTES + 2];
 	fp_t a, b, beta, u;
 	ep_t g;
-	bn_t r, h, lamb;
+	bn_t r, t, h, lamb;
 
 	fp_null(a);
 	fp_null(b);
@@ -842,6 +853,7 @@ void ep_param_set(int param) {
 	bn_null(lamb);
 	ep_null(g);
 	bn_null(r);
+	bn_null(t);
 	bn_null(h);
 
 	RLC_TRY {
@@ -852,6 +864,7 @@ void ep_param_set(int param) {
 		bn_new(lamb);
 		ep_new(g);
 		bn_new(r);
+		bn_new(t);
 		bn_new(h);
 
 		core_get()->ep_id = 0;
@@ -1113,6 +1126,11 @@ void ep_param_set(int param) {
 				endom = 1;
 				pairf = EP_B12;
 				break;
+			case K18_P638:
+				ASSIGN(K18_P638, K18_638);
+				endom = 1;
+				pairf = EP_K18;
+				break;
 #endif
 #if defined(EP_SUPER) && FP_PRIME == 1536
 			case SS_P1536:
@@ -1156,6 +1174,18 @@ void ep_param_set(int param) {
 					fp_prime_get_par(lamb);
 					bn_sqr(lamb, lamb);
 					bn_sub_dig(lamb, lamb, 1);
+					break;
+				/* beta = (-1 + sqrt(-3))/2, lambda = z^3 + 18 */
+				case EP_K18:
+					fp_set_dig(beta, 3);
+					fp_neg(beta, beta);
+					fp_srt(beta, beta);
+					fp_sub_dig(beta, beta, 1);
+					fp_hlv(beta, beta);
+					fp_prime_get_par(lamb);
+					bn_sqr(t, lamb);
+					bn_mul(lamb, t, lamb);
+					bn_add_dig(lamb, lamb, 18);
 					break;
 				case EP_B24:
 				/* beta = (-1 + sqrt(-3))/2, lambda = z^4 - 1. */
@@ -1239,6 +1269,7 @@ void ep_param_set(int param) {
 		bn_free(lamb);
 		ep_free(g);
 		bn_free(r);
+		bn_free(t);
 		bn_free(h);
 	}
 }
@@ -1342,7 +1373,7 @@ int ep_param_set_any_endom(void) {
 #ifdef FP_QNRES
 	ep_param_set(B12_P638);
 #else
-	ep_param_set(BN_P638);
+	ep_param_set(K18_P638);
 #endif
 #else
 	r = RLC_ERR;
@@ -1452,9 +1483,9 @@ int ep_param_set_any_pairf(void) {
 	type = RLC_EP_MTYPE;
 	degree = 2;
 #else
-	ep_param_set(BN_P638);
-	type = RLC_EP_DTYPE;
-	degree = 2;
+	ep_param_set(K18_P638);
+	type = RLC_EP_MTYPE;
+	degree = 3;
 #endif
 #elif FP_PRIME == 1536
 	ep_param_set(SS_P1536);
@@ -1478,6 +1509,9 @@ int ep_param_set_any_pairf(void) {
 				break;
 			case 2:
 				ep2_curve_set_twist(type);
+				break;
+			case 3:
+				ep3_curve_set_twist(type);
 				break;
 			case 4:
 				ep4_curve_set_twist(type);
@@ -1592,6 +1626,9 @@ void ep_param_print(void) {
 		case B12_P638:
 			util_banner("Curve B12-P638:", 0);
 			break;
+		case K18_P638:
+			util_banner("Curve K18-P638:", 0);
+			break;
 		case SS_P1536:
 			util_banner("Curve SS-P1536:", 0);
 			break;
@@ -1649,6 +1686,7 @@ int ep_param_level(void) {
 		case B12_P455:
 			return 140;
 		case NIST_P384:
+		case K18_P638:
 		case B24_P509:
 			return 192;
 		case NIST_P521:
@@ -1674,6 +1712,8 @@ int ep_param_embed(void) {
 			return 12;
 		case EP_K16:
 			return 16;
+		case EP_K18:
+			return 18;
 		case EP_B24:
 			return 24;
 		case EP_B48:
