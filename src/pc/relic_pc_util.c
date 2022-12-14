@@ -69,7 +69,7 @@ void gt_get_gen(gt_t g) {
 int g1_is_valid(const g1_t a) {
 	bn_t n, t;
 	g1_t u, v;
-	int l0, l1, r = 0;
+	size_t l0, l1, r = 0;
 	int8_t naf0[RLC_FP_BITS + 1], naf1[RLC_FP_BITS + 1];
 
 	if (g1_is_infty(a)) {
