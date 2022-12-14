@@ -69,7 +69,8 @@ static void ep3_psi(ep3_t r, const ep3_t p) {
 }
 
 static void ep3_mul_glv_imp(ep3_t r, const ep3_t p, const bn_t k) {
-	int i, j, l, _l[6];
+	int i, j;
+	size_t l, _l[6];
 	bn_t n, _k[6], u;
 	int8_t naf[6][RLC_FP_BITS + 1];
 	ep3_t q[6];
@@ -141,9 +142,10 @@ static void ep3_mul_glv_imp(ep3_t r, const ep3_t p, const bn_t k) {
 #endif /* EP_ENDOM */
 
 static void ep3_mul_naf_imp(ep3_t r, const ep3_t p, const bn_t k) {
-	int l, i, n;
+	int i, n;
 	int8_t naf[RLC_FP_BITS + 1];
 	ep3_t t[1 << (RLC_WIDTH - 2)];
+	size_t l;
 
 	RLC_TRY {
 		/* Prepare the precomputation table. */
@@ -195,8 +197,8 @@ static void ep3_mul_naf_imp(ep3_t r, const ep3_t p, const bn_t k) {
 
 void ep3_mul_basic(ep3_t r, const ep3_t p, const bn_t k) {
 	ep3_t t;
-	int8_t u, naf[RLC_FP_BITS + 1];
-	int l;
+	int8_t u, naf[2 * RLC_FP_BITS + 1];
+	size_t l;
 
 	ep3_null(t);
 
@@ -208,7 +210,7 @@ void ep3_mul_basic(ep3_t r, const ep3_t p, const bn_t k) {
 	RLC_TRY {
 		ep3_new(t);
 
-		l = RLC_FP_BITS;
+		l = 2 * RLC_FP_BITS + 1;
 		bn_rec_naf(naf, &l, k, 2);
 
 		ep3_set_infty(t);
@@ -240,7 +242,8 @@ void ep3_mul_basic(ep3_t r, const ep3_t p, const bn_t k) {
 
 void ep3_mul_slide(ep3_t r, const ep3_t p, const bn_t k) {
 	ep3_t t[1 << (RLC_WIDTH - 1)], q;
-	int i, j, l;
+	int i, j;
+	size_t l;
 	uint8_t win[RLC_FP_BITS + 1];
 
 	ep3_null(q);
@@ -422,7 +425,7 @@ void ep3_mul_dig(ep3_t r, const ep3_t p, const dig_t k) {
 	ep3_t t;
 	bn_t _k;
 	int8_t u, naf[RLC_DIG + 1];
-	int l;
+	size_t l;
 
 	ep3_null(t);
 	bn_null(_k);

@@ -47,7 +47,8 @@
  * @param[in] k					- the integer.
  */
 static void ep3_mul_fix_plain(ep3_t r, const ep3_t *table, const bn_t k) {
-	int len, i, n;
+	int i, n;
+	size_t len;
 	int8_t naf[2 * RLC_FP_BITS + 1], *t;
 
 	if (bn_is_zero(k)) {
