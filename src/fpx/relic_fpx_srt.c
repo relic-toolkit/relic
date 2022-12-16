@@ -42,6 +42,10 @@ int fp2_is_sqr(const fp2_t a) {
 
 	fp2_null(t);
 
+	/* Idea QR testing in extension fields from  "Square root computation over
+	 * even extension fields", by Gora Adj and Francisco Rodríguez-Henríquez.
+	 * https://eprint.iacr.org/2012/685 */
+
 	RLC_TRY {
 		fp2_new(t);
 
