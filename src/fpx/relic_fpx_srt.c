@@ -36,6 +36,25 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
+int fp2_is_sqr(const fp2_t a) {
+	fp2_t t;
+	int r;
+
+	fp2_null(t);
+
+	RLC_TRY {
+		fp2_new(t);
+
+		fp2_frb(t, a, 1);
+		fp2_mul(t, t, a);
+		r = fp_is_sqr(t[0]);
+	} RLC_FINALLY {
+		fp2_free(t);
+	}
+
+	return r;
+}
+
 int fp2_srt(fp2_t c, const fp2_t a) {
 	int r = 0;
 	fp_t t0;
@@ -131,6 +150,28 @@ int fp2_srt(fp2_t c, const fp2_t a) {
 	return r;
 }
 
+int fp3_is_sqr(const fp3_t a) {
+	fp3_t t, u;
+	int r;
+
+	fp3_null(t);
+	fp3_null(u);
+
+	RLC_TRY {
+		fp3_new(t);
+
+		fp3_frb(t, a, 1);
+		fp3_frb(u, a, 2);
+		fp3_mul(t, t, a);
+		fp3_mul(t, t, u);
+		r = fp_is_sqr(t[0]);
+	} RLC_FINALLY {
+		fp2_free(t);
+	}
+
+	return r;
+}
+
 int fp3_srt(fp3_t c, const fp3_t a) {
 	int r = 0;
 	fp3_t t0, t1, t2, t3;
@@ -215,6 +256,30 @@ int fp3_srt(fp3_t c, const fp3_t a) {
 		fp3_free(t2);
 		fp3_free(t3);
 		bn_free(e);
+	}
+
+	return r;
+}
+
+int fp4_is_sqr(const fp4_t a) {
+	fp4_t t, u;
+	int r;
+
+	fp4_null(t);
+	fp4_null(u);
+
+	RLC_TRY {
+		fp4_new(t);
+
+		fp4_frb(t, a, 1);
+		fp4_frb(u, a, 2);
+		fp4_mul(t, t, u);
+		fp4_frb(u, a, 3);
+		fp4_mul(t, t, a);
+		fp4_mul(t, t, u);
+		r = fp_is_sqr(t[0][0]);
+	} RLC_FINALLY {
+		fp4_free(t);
 	}
 
 	return r;

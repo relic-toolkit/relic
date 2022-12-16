@@ -1604,6 +1604,14 @@ void fp2_exp_cyc(fp2_t c, const fp2_t a, const bn_t b);
 void fp2_frb(fp2_t c, const fp2_t a, int i);
 
 /**
+ * Tests if a quadratic extension field element is a quadratic residue.
+ *
+ * @param[in] a				- the prime field element to test.
+ * @return 1 if the argument is even, 0 otherwise.
+ */
+int fp2_is_sqr(const fp2_t a);
+
+/**
  * Extracts the square root of a quadratic extension field element. Computes
  * c = sqrt(a). The other square root is the negation of c.
  *
@@ -1887,6 +1895,14 @@ void fp3_exp(fp3_t c, const fp3_t a, const bn_t b);
 void fp3_frb(fp3_t c, const fp3_t a, int i);
 
 /**
+ * Tests if a cubic extension field element is a quadratic residue.
+ *
+ * @param[in] a				- the prime field element to test.
+ * @return 1 if the argument is even, 0 otherwise.
+ */
+int fp3_is_sqr(const fp3_t a);
+
+/**
  * Extracts the square root of a cubic extension field element. Computes
  * c = sqrt(a). The other square root is the negation of c.
  *
@@ -2160,6 +2176,14 @@ void fp4_exp(fp4_t c, const fp4_t a, const bn_t b);
  * @param[in] i				- the power of the Frobenius map.
  */
 void fp4_frb(fp4_t c, const fp4_t a, int i);
+
+/**
+ * Tests if a quartic extension field element is a quadratic residue.
+ *
+ * @param[in] a				- the prime field element to test.
+ * @return 1 if the argument is even, 0 otherwise.
+ */
+int fp4_is_sqr(const fp4_t a);
 
 /**
  * Extracts the square root of a quartic extension field element. Computes

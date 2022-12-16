@@ -1467,6 +1467,19 @@ static int square_root3(void) {
 		fp3_new(b);
 		fp3_new(c);
 
+		TEST_CASE("quadratic residuosity test is correct") {
+			fp3_zero(a);
+			TEST_ASSERT(fp3_is_sqr(a) == 0, end);
+			fp3_rand(a);
+			fp3_sqr(a, a);
+			TEST_ASSERT(fp3_is_sqr(a) == 1, end);
+			do {
+				fp3_rand(a);
+			} while(fp3_srt(b, a) == 1);
+			TEST_ASSERT(fp3_is_sqr(a) == 0, end);
+		}
+		TEST_END;
+
 		TEST_CASE("square root extraction is correct") {
 			fp3_rand(a);
 			fp3_sqr(c, a);
@@ -2044,6 +2057,19 @@ static int square_root4(void) {
 		fp4_new(a);
 		fp4_new(b);
 		fp4_new(c);
+
+		TEST_CASE("quadratic residuosity test is correct") {
+			fp4_zero(a);
+			TEST_ASSERT(fp4_is_sqr(a) == 0, end);
+			fp4_rand(a);
+			fp4_sqr(a, a);
+			TEST_ASSERT(fp4_is_sqr(a) == 1, end);
+			do {
+				fp4_rand(a);
+			} while(fp4_srt(b, a) == 1);
+			TEST_ASSERT(fp4_is_sqr(a) == 0, end);
+		}
+		TEST_END;
 
 		TEST_CASE("square root extraction is correct") {
 			fp4_zero(a);

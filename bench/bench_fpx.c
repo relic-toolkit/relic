@@ -384,6 +384,12 @@ static void arith2(void) {
 	}
 	BENCH_END;
 
+	BENCH_RUN("fp2_is_sqr") {
+		fp2_rand(a);
+		BENCH_ADD(fp2_is_sqr(a));
+	}
+	BENCH_END;
+
 	BENCH_RUN("fp2_srt") {
 		fp2_rand(a);
 		BENCH_ADD(fp2_srt(c, a));
@@ -693,6 +699,18 @@ static void arith3(void) {
 	}
 	BENCH_END;
 
+	BENCH_RUN("fp3_is_sqr") {
+		fp3_rand(a);
+		BENCH_ADD(fp3_is_sqr(a));
+	}
+	BENCH_END;
+
+	BENCH_RUN("fp3_srt") {
+		fp2_rand(a);
+		BENCH_ADD(fp3_srt(c, a));
+	}
+	BENCH_END;
+
 	fp3_free(a);
 	fp3_free(b);
 	fp3_free(c);
@@ -905,6 +923,12 @@ static void arith4(void) {
 	BENCH_RUN("fp4_frb") {
 		fp4_rand(a);
 		BENCH_ADD(fp4_frb(c, a, 1));
+	}
+	BENCH_END;
+
+	BENCH_RUN("fp4_is_sqr") {
+		fp4_rand(a);
+		BENCH_ADD(fp4_is_sqr(a));
 	}
 	BENCH_END;
 
