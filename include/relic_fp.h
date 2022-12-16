@@ -1156,6 +1156,14 @@ void fp_exp_slide(fp_t c, const fp_t a, const bn_t b);
 void fp_exp_monty(fp_t c, const fp_t a, const bn_t b);
 
 /**
+ * Tests if a prime field element is a quadratic residue.
+ *
+ * @param[in] a				- the prime field element to test.
+ * @return 1 if the argument is even, 0 otherwise.
+ */
+int fp_is_sqr(const fp_t a);
+
+/**
  * Extracts the square root of a prime field element. Computes c = sqrt(a). The
  * other square root is the negation of c.
  *

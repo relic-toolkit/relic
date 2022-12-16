@@ -35,6 +35,10 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
+int fp_is_sqr(const fp_t a) {
+	return fp_smb(a) == 1;
+}
+
 int fp_srt(fp_t c, const fp_t a) {
 	bn_t e;
 	fp_t t0;

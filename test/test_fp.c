@@ -1061,6 +1061,19 @@ static int square_root(void) {
 		fp_new(b);
 		fp_new(c);
 
+		TEST_CASE("quadratic residuosity test is correct") {
+			fp_zero(a);
+			TEST_ASSERT(fp_is_sqr(a) == 0, end);
+			fp_rand(a);
+			fp_sqr(a, a);
+			TEST_ASSERT(fp_is_sqr(a) == 1, end);
+			do {
+				fp_rand(a);
+			} while(fp_srt(b, a) == 1);
+			TEST_ASSERT(fp_is_sqr(a) == 0, end);
+		}
+		TEST_END;
+
 		TEST_CASE("square root extraction is correct") {
 			fp_rand(a);
 			fp_sqr(c, a);
