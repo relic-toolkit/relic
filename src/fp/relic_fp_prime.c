@@ -102,7 +102,7 @@ static void fp_prime_set(const bn_t p) {
 
 #if FP_RDC == MONTY
 
-#if (FP_PRIME % WSIZE) != 0
+#ifdef RLC_FP_ROOM
 		fp_mul(ctx->inv.dp, ctx->inv.dp, ctx->conv.dp);
 		fp_mul(ctx->inv.dp, ctx->inv.dp, ctx->conv.dp);
 

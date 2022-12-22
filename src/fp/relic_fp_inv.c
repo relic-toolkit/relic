@@ -620,7 +620,7 @@ void fp_inv_jmpds(fp_t c, const fp_t a) {
 		dv_new(p11);
 		fp_new(pre);
 
-#if (FP_PRIME % WSIZE) != 0
+#ifdef RLC_FP_ROOM
 		int j = 0;
 		fp_copy(pre, core_get()->inv.dp);
 #else
@@ -692,7 +692,7 @@ void fp_inv_jmpds(fp_t c, const fp_t a) {
 			bn_addn_low(t1, t1, t0, RLC_FP_DIGS + 1);
 			bn_rshs_low(g, t1, RLC_FP_DIGS + 1, s);
 
-#if (FP_PRIME % WSIZE) != 0
+#ifdef RLC_FP_ROOM
 			p[j] = 0;
 			dv_copy(p + j + 1, fp_prime_get(), RLC_FP_DIGS);
 
@@ -772,7 +772,7 @@ void fp_inv_jmpds(fp_t c, const fp_t a) {
 		bn_addn_low(t1, t1, t0, RLC_FP_DIGS + 1);
 		bn_rshs_low(g, t1, RLC_FP_DIGS + 1, s);
 
-#if (FP_PRIME % WSIZE) != 0
+#ifdef RLC_FP_ROOM
 		p[j] = 0;
 		dv_copy(p + j + 1, fp_prime_get(), RLC_FP_DIGS);
 
