@@ -197,51 +197,6 @@ static void ab_approximation_n(dig_t a_[2], const dig_t a[],
     b_[0] = b[0], b_[1] = lshift_2(b_hi, b_lo, i);
 }
 
-static dig_t cneg_n(dig_t ret[], const dig_t a[], dig_t neg)
-{
-    dbl_t limbx = 0;
-    dig_t carry;
-    size_t i;
-
-    for (carry=neg&1, i=0; i<RLC_FP_DIGS; i++) {
-        limbx = (dbl_t)(a[i] ^ neg) + carry;
-        ret[i] = (dig_t)limbx;
-        carry = (dig_t)(limbx >> RLC_DIG);
-    }
-
-    return 0 - RLC_SIGN((dig_t)limbx);
-}
-
-static dig_t add_n(dig_t ret[], const dig_t a[], dig_t b[], size_t n)
-{
-    dbl_t limbx;
-    dig_t carry;
-    size_t i;
-
-    for (carry=0, i=0; i<n; i++) {
-        limbx = a[i] + (b[i] + (dbl_t)carry);
-        ret[i] = (dig_t)limbx;
-        carry = (dig_t)(limbx >> RLC_DIG);
-    }
-
-    return carry;
-}
-
-static dig_t umul_n(dig_t ret[], const dig_t a[], dig_t b)
-{
-    dbl_t limbx;
-    dig_t hi;
-    size_t i;
-
-    for (hi=0, i=0; i<RLC_FP_DIGS; i++) {
-        limbx = (b * (dbl_t)a[i]) + hi;
-        ret[i] = (dig_t)limbx;
-        hi = (dig_t)(limbx >> RLC_DIG);
-    }
-
-    return hi;
-}
-
 static dig_t smul_n_shift_n(dig_t ret[], const dig_t a[], dig_t *f_,
                                            const dig_t b[], dig_t *g_)
 {
@@ -252,20 +207,20 @@ static dig_t smul_n_shift_n(dig_t ret[], const dig_t a[], dig_t *f_,
     f = *f_;
     neg = 0 - RLC_SIGN(f);
     f = (f ^ neg) - neg;            /* ensure |f| is positive */
-    (void)cneg_n(a_, a, neg);
-    hi = umul_n(a_, a_, f);
+    (void)bn_negs_low(a_, a, -neg, RLC_FP_DIGS);
+    hi = bn_mul1_low(a_, a_, f, RLC_FP_DIGS);
     a_[RLC_FP_DIGS] = hi - (f & neg);
 
     /* |b|*|g_| */
     g = *g_;
     neg = 0 - RLC_SIGN(g);
     g = (g ^ neg) - neg;            /* ensure |g| is positive */
-    (void)cneg_n(b_, b, neg);
-    hi = umul_n(b_, b_, g);
+    (void)bn_negs_low(b_, b, -neg, RLC_FP_DIGS);
+    hi = bn_mul1_low(b_, b_, g, RLC_FP_DIGS);
     b_[RLC_FP_DIGS] = hi - (g & neg);
 
     /* |a|*|f_| + |b|*|g_| */
-    (void)add_n(a_, a_, b_, RLC_FP_DIGS+1);
+    (void)bn_addn_low(a_, a_, b_, RLC_FP_DIGS+1);
 
     /* (|a|*|f_| + |b|*|g_|) >> k */
     for (carry=a_[0], i=0; i<RLC_FP_DIGS; i++) {
@@ -278,7 +233,7 @@ static dig_t smul_n_shift_n(dig_t ret[], const dig_t a[], dig_t *f_,
     neg = 0 - RLC_SIGN(carry);
     *f_ = (*f_ ^ neg) - neg;
     *g_ = (*g_ ^ neg) - neg;
-    (void)cneg_n(ret, ret, neg);
+    (void)bn_negs_low(ret, ret, -neg, RLC_FP_DIGS);
 
     return neg;
 }
