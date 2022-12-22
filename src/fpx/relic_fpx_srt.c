@@ -52,6 +52,8 @@ int fp2_is_sqr(const fp2_t a) {
 		fp2_frb(t, a, 1);
 		fp2_mul(t, t, a);
 		r = fp_is_sqr(t[0]);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		fp2_free(t);
 	}
@@ -169,6 +171,8 @@ int fp3_is_sqr(const fp3_t a) {
 		fp3_mul(t, t, a);
 		fp3_mul(t, t, u);
 		r = fp_is_sqr(t[0]);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		fp2_free(t);
 	}
@@ -282,6 +286,8 @@ int fp4_is_sqr(const fp4_t a) {
 		fp4_mul(t, t, a);
 		fp4_mul(t, t, u);
 		r = fp_is_sqr(t[0][0]);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		fp4_free(t);
 	}
