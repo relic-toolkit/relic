@@ -183,12 +183,12 @@ static void ab_approximation_n(dig_t a_[2], const dig_t a[],
     i = RLC_FP_DIGS-1;
     a_hi = a[i],    a_lo = a[i-1];
     b_hi = b[i],    b_lo = b[i-1];
-    for (i--; --i;) {
+    for (int j = i - 1; j >= 0; j--) {
         mask = 0 - is_zero(a_hi | b_hi);
         a_hi = ((a_lo ^ a_hi) & mask) ^ a_hi;
         b_hi = ((b_lo ^ b_hi) & mask) ^ b_hi;
-        a_lo = ((a[i] ^ a_lo) & mask) ^ a_lo;
-        b_lo = ((b[i] ^ b_lo) & mask) ^ b_lo;
+        a_lo = ((a[j] ^ a_lo) & mask) ^ a_lo;
+        b_lo = ((b[j] ^ b_lo) & mask) ^ b_lo;
     }
     i = RLC_DIG - util_bits_dig(a_hi | b_hi);
     /* |i| can be RLC_DIG if all a[2..]|b[2..] were zeros */
