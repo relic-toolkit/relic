@@ -208,7 +208,7 @@ static dig_t smul_n_shift_n(dig_t ret[], const dig_t a[], dig_t *f_,
     neg = 0 - RLC_SIGN(f);
     f = (f ^ neg) - neg;            /* ensure |f| is positive */
     (void)bn_negs_low(a_, a, -neg, RLC_FP_DIGS);
-    hi = bn_mul1_low(a_, a_, f, RLC_FP_DIGS);
+    hi = fp_mul1_low(a_, a_, f);
     a_[RLC_FP_DIGS] = hi - (f & neg);
 
     /* |b|*|g_| */
@@ -216,7 +216,7 @@ static dig_t smul_n_shift_n(dig_t ret[], const dig_t a[], dig_t *f_,
     neg = 0 - RLC_SIGN(g);
     g = (g ^ neg) - neg;            /* ensure |g| is positive */
     (void)bn_negs_low(b_, b, -neg, RLC_FP_DIGS);
-    hi = bn_mul1_low(b_, b_, g, RLC_FP_DIGS);
+    hi = fp_mul1_low(b_, b_, g);
     b_[RLC_FP_DIGS] = hi - (g & neg);
 
     /* |a|*|f_| + |b|*|g_| */
