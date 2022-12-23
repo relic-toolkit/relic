@@ -535,6 +535,7 @@
 #undef fp_exp_basic
 #undef fp_exp_slide
 #undef fp_exp_monty
+#undef fp_is_sqr
 #undef fp_srt
 
 #define fp_prime_init 	RLC_PREFIX(fp_prime_init)
@@ -625,6 +626,7 @@
 #define fp_exp_basic 	RLC_PREFIX(fp_exp_basic)
 #define fp_exp_slide 	RLC_PREFIX(fp_exp_slide)
 #define fp_exp_monty 	RLC_PREFIX(fp_exp_monty)
+#define fp_is_sqr 	RLC_PREFIX(fp_is_sqr)
 #define fp_srt 	RLC_PREFIX(fp_srt)
 
 #undef fp_add1_low
@@ -952,6 +954,7 @@
 #undef ep_mul_lwreg
 #undef ep_mul_gen
 #undef ep_mul_dig
+#undef ep_mul_cof
 #undef ep_mul_pre_basic
 #undef ep_mul_pre_yaowi
 #undef ep_mul_pre_nafwi
@@ -973,8 +976,9 @@
 #undef ep_mul_sim_dig
 #undef ep_norm
 #undef ep_norm_sim
-#undef ep_map_from_field
-#undef ep_map
+#undef ep_map_basic
+#undef ep_map_sswum
+#undef ep_map_swift
 #undef ep_map_dst
 #undef ep_pck
 #undef ep_upk
@@ -1046,6 +1050,7 @@
 #define ep_mul_lwreg 	RLC_PREFIX(ep_mul_lwreg)
 #define ep_mul_gen 	RLC_PREFIX(ep_mul_gen)
 #define ep_mul_dig 	RLC_PREFIX(ep_mul_dig)
+#define ep_mul_cof 	RLC_PREFIX(ep_mul_cof)
 #define ep_mul_pre_basic 	RLC_PREFIX(ep_mul_pre_basic)
 #define ep_mul_pre_yaowi 	RLC_PREFIX(ep_mul_pre_yaowi)
 #define ep_mul_pre_nafwi 	RLC_PREFIX(ep_mul_pre_nafwi)
@@ -1067,8 +1072,9 @@
 #define ep_mul_sim_dig 	RLC_PREFIX(ep_mul_sim_dig)
 #define ep_norm 	RLC_PREFIX(ep_norm)
 #define ep_norm_sim 	RLC_PREFIX(ep_norm_sim)
-#define ep_map_from_field 	RLC_PREFIX(ep_map_from_field)
-#define ep_map 	RLC_PREFIX(ep_map)
+#define ep_map_basic 	RLC_PREFIX(ep_map_basic)
+#define ep_map_sswum 	RLC_PREFIX(ep_map_sswum)
+#define ep_map_swift 	RLC_PREFIX(ep_map_swift)
 #define ep_map_dst 	RLC_PREFIX(ep_map_dst)
 #define ep_pck 	RLC_PREFIX(ep_pck)
 #define ep_upk 	RLC_PREFIX(ep_upk)
@@ -1762,6 +1768,7 @@
 #undef fp2_exp_dig
 #undef fp2_exp_cyc
 #undef fp2_frb
+#undef fp2_is_sqr
 #undef fp2_srt
 #undef fp2_pck
 #undef fp2_upk
@@ -1807,6 +1814,7 @@
 #define fp2_exp_dig 	RLC_PREFIX(fp2_exp_dig)
 #define fp2_exp_cyc 	RLC_PREFIX(fp2_exp_cyc)
 #define fp2_frb 	RLC_PREFIX(fp2_frb)
+#define fp2_is_sqr 	RLC_PREFIX(fp2_is_sqr)
 #define fp2_srt 	RLC_PREFIX(fp2_srt)
 #define fp2_pck 	RLC_PREFIX(fp2_pck)
 #define fp2_upk 	RLC_PREFIX(fp2_upk)
@@ -1879,6 +1887,7 @@
 #undef fp3_inv_sim
 #undef fp3_exp
 #undef fp3_frb
+#undef fp3_is_sqr
 #undef fp3_srt
 
 #define fp3_field_init 	RLC_PREFIX(fp3_field_init)
@@ -1910,6 +1919,7 @@
 #define fp3_inv_sim 	RLC_PREFIX(fp3_inv_sim)
 #define fp3_exp 	RLC_PREFIX(fp3_exp)
 #define fp3_frb 	RLC_PREFIX(fp3_frb)
+#define fp3_is_sqr 	RLC_PREFIX(fp3_is_sqr)
 #define fp3_srt 	RLC_PREFIX(fp3_srt)
 
 #undef fp3_addn_low
@@ -1978,6 +1988,7 @@
 #undef fp4_inv_cyc
 #undef fp4_exp
 #undef fp4_frb
+#undef fp4_is_sqr
 #undef fp4_srt
 
 #define fp4_field_init 	RLC_PREFIX(fp4_field_init)
@@ -2010,6 +2021,7 @@
 #define fp4_inv_cyc 	RLC_PREFIX(fp4_inv_cyc)
 #define fp4_exp 	RLC_PREFIX(fp4_exp)
 #define fp4_frb 	RLC_PREFIX(fp4_frb)
+#define fp4_is_sqr 	RLC_PREFIX(fp4_is_sqr)
 #define fp4_srt 	RLC_PREFIX(fp4_srt)
 
 #undef fp6_copy
