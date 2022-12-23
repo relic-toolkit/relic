@@ -244,7 +244,7 @@ static dig_t smul_n_shift_n(dig_t ret[], const dig_t a[], dig_t *f_,
 static dig_t legendre_loop_n(dig_t l, dig_t m[4], const dig_t a_[2],
 		const dig_t b_[2], size_t n) {
     dbl_t limbx;
-    dig_t f0 = 1, g0 = 0, f1 = 0, g1 = 1;
+    dig_t tmp, f0 = 1, g0 = 0, f1 = 0, g1 = 1;
     dig_t a_lo, a_hi, b_lo, b_hi, t_lo, t_hi, odd, borrow, xorm;
 
     a_lo = a_[0], a_hi = a_[1];
@@ -255,21 +255,21 @@ static dig_t legendre_loop_n(dig_t l, dig_t m[4], const dig_t a_[2],
 
         /* a_ -= b_ if a_ is odd */
         t_lo = a_lo, t_hi = a_hi;
-        limbx = a_lo - (dbl_t)(b_lo & odd);
-        a_lo = (dig_t)limbx;
-        borrow = (dig_t)(limbx >> RLC_DIG) & 1;
+        tmp = a_lo - (b_lo & odd);
+        borrow = (a_lo < tmp);
+        a_lo = tmp;
         limbx = a_hi - ((dbl_t)(b_hi & odd) + borrow);
-        a_hi = (dig_t)limbx;
-        borrow = (dig_t)(limbx >> RLC_DIG);
+        borrow = ((dig_t)(limbx >> RLC_DIG));
+        a_hi = limbx;
 
         l += ((t_lo & b_lo) >> 1) & borrow;
 
         /* negate a_-b_ if it borrowed */
         a_lo ^= borrow;
         a_hi ^= borrow;
-        limbx = a_lo + (dbl_t)(borrow & 1);
-        a_lo = (dig_t)limbx;
-        a_hi += (dig_t)(limbx >> RLC_DIG) & 1;
+        tmp = a_lo + (borrow & 1);
+        a_hi += (a_lo < limbx);
+        a_lo = tmp;
 
         /* b_=a_ if a_-b_ borrowed */
         b_lo = ((t_lo ^ b_lo) & borrow) ^ b_lo;
