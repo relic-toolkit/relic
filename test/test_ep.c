@@ -1337,7 +1337,6 @@ static int compression(void) {
 static int hashing(void) {
 	int code = RLC_ERR;
 	ep_t a;
-	ep_t b;
 	bn_t n;
 	uint8_t msg[5];
 
@@ -1383,16 +1382,18 @@ static int hashing(void) {
 		TEST_END;
 #endif
 
-#if EP_MAP == SWIFT || !defined(STRIP)
-		TEST_CASE("swift point hashing is correct") {
-			rand_bytes(msg, sizeof(msg));
-			ep_map_swift(a, msg, sizeof(msg));
-			TEST_ASSERT(ep_is_infty(a) == 0, end);
-			ep_mul(a, a, n);
-			TEST_ASSERT(ep_is_infty(a) == 1, end);
+		if (ep_curve_is_pairf()) {
+			#if EP_MAP == SWIFT || !defined(STRIP)
+					TEST_CASE("swift point hashing is correct") {
+						rand_bytes(msg, sizeof(msg));
+						ep_map_swift(a, msg, sizeof(msg));
+						TEST_ASSERT(ep_is_infty(a) == 0, end);
+						ep_mul(a, a, n);
+						TEST_ASSERT(ep_is_infty(a) == 1, end);
+					}
+					TEST_END;
+			#endif
 		}
-		TEST_END;
-#endif
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);
