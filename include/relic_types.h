@@ -134,8 +134,8 @@ typedef __uint128_t dbl_t;
 #define RLC_MUL_DIG(H, L, A, B)		L = _umul128(A, B, &(H))
 #else
 #define RLC_MUL_DIG(H, L, A, B)												\
-	H = ((dbl_t)(A) * (dbl_t)(B)) >> RLC_DIG;								\
-	L = (A) * (B);															\
+	H = (dig_t)(((dbl_t)(A) * (dbl_t)(B)) >> RLC_DIG);						\
+	L = (dig_t)((A) * (B));													\
 
 #endif
 
@@ -153,8 +153,8 @@ typedef __uint128_t dbl_t;
 #else
 
 #define RLC_DIV_DIG(Q, R, H, L, D)											\
-	Q = (((dbl_t)(H) << RLC_DIG) | (L)) / (D);								\
-	R = (((dbl_t)(H) << RLC_DIG) | (L)) - (dbl_t)(Q) * (dbl_t)(D);			\
+	Q = (dig_t)((((dbl_t)(H) << RLC_DIG) | (L)) / (D));						\
+	R = (dig_t)((((dbl_t)(H) << RLC_DIG) | (L)) - (dbl_t)(Q) * (dbl_t)(D));	\
 
 #endif
 
