@@ -38,42 +38,155 @@
 /*============================================================================*/
 
 void ep4_map(ep4_t p, const uint8_t *msg, int len) {
-	bn_t x;
-	fp4_t t0;
-	uint8_t digest[RLC_MD_LEN];
+	/* enough space for two field elements plus extra bytes for uniformity */
+	const int elm = (FP_PRIME + ep_param_level() + 7) / 8;
+	uint8_t t0z, t0, t1, s[2], sign, *r = RLC_ALLOCA(uint8_t, 8 * elm + 1);
+	fp4_t t, u, v, w, y, x1, y1, z1;
+	ctx_t *ctx = core_get();
+	bn_t k;
 
-	bn_null(x);
-	fp4_null(t0);
+	bn_null(k);
+	fp_null(t);
+	fp_null(u);
+	fp_null(v);
+	fp_null(w);
+	fp_null(y);
+	fp_null(x1);
+	fp_null(y1);
+	fp_null(z1);
 
 	RLC_TRY {
-		bn_new(x);
-		fp4_new(t0);
+		bn_new(k);
+		fp_new(t);
+		fp_new(u);
+		fp_new(v);
+		fp_new(w);
+		fp_new(y);
+		fp_new(x1);
+		fp_new(y1);
+		fp_new(z1);
 
-		md_map(digest, msg, len);
-		bn_read_bin(x, digest, RLC_MIN(RLC_FP_BYTES, RLC_MD_LEN));
+		md_xmd(r, 8 * elm + 1, msg, len, (const uint8_t *)"RELIC", 5);
 
-		fp4_zero(p->x);
-		fp_prime_conv(p->x[0][0], x);
-		fp4_set_dig(p->z, 1);
+		for (int i = 0; i < 2; i++) {
+			for (int j = 0; j < 2; j++) {
+				bn_read_bin(k, r, elm);
+				fp_prime_conv(u[i][j], k);
+				r += elm;
+				bn_read_bin(k, r, elm);
+				fp_prime_conv(t[i][j], k);
+				r += elm;
+			}
+		}
+		sign = r[8 * elm] & 1;
 
-		while (1) {
-			ep4_rhs(t0, p);
+		/* Assume that a = 0. */
+		fp4_sqr(x1, u);
+		fp4_mul(x1, x1, u);
+		fp4_sqr(y1, t);
+		fp4_add(x1, x1, ctx->ep4_b);
+		fp4_sub(x1, x1, y1);
+		fp4_dbl(y1, y1);
+		fp4_add(y1, y1, x1);
+		fp4_copy(z1, u);
+		fp_mul(z1[0][0], z1[0][0], ctx->ep_map_c[4]);
+		fp_mul(z1[0][1], z1[0][1], ctx->ep_map_c[4]);
+		fp_mul(z1[1][0], z1[1][0], ctx->ep_map_c[4]);
+		fp_mul(z1[1][1], z1[1][1], ctx->ep_map_c[4]);
+		fp4_mul(x1, x1, z1);
+		fp4_mul(z1, z1, t);
+		fp4_dbl(z1, z1);
 
-			if (fp4_srt(p->y, t0)) {
-				p->coord = BASIC;
-				break;
+		fp4_dbl(y, y1);
+		fp4_sqr(y, y);
+		fp4_mul(v, y1, u);
+		fp4_sub(v, x1, v);
+		fp4_mul(v, v, z1);
+		fp4_mul(w, y1, z1);
+		fp4_dbl(w, w);
+
+		if (fp4_is_zero(w)) {
+			ep4_set_infty(p);
+		} else {
+			fp4_inv(w, w);
+			fp4_mul(x1, v, w);
+			fp4_add(y1, u, x1);
+			fp4_neg(y1, y1);
+			fp4_mul(z1, y, w);
+			fp4_sqr(z1, z1);
+			fp4_add(z1, z1, u);
+
+			ep4_curve_get_b(w);
+
+			fp4_sqr(t, x1);
+			fp4_mul(t, t, x1);
+			fp4_add(t, t, w);
+
+			fp4_sqr(u, y1);
+			fp4_mul(u, u, y1);
+			fp4_add(u, u, w);
+
+			fp4_sqr(v, z1);
+			fp4_mul(v, v, z1);
+			fp4_add(v, v, w);
+
+			int c2 = fp4_is_sqr(u);
+			int c3 = fp4_is_sqr(v);
+
+			for (int i = 0; i < 2; i++) {
+				for (int j = 0; j < 2; j++) {
+					dv_swap_cond(x1[i][j], y1[i][j], RLC_FP_DIGS, c2);
+					dv_swap_cond(t[i][j], u[i][j], RLC_FP_DIGS, c2);
+					dv_swap_cond(x1[i][j], z1[i][j], RLC_FP_DIGS, c3);
+					dv_swap_cond(t[i][j], v[i][j], RLC_FP_DIGS, c3);
+				}
 			}
 
-			fp_add_dig(p->x[0][0], p->x[0][0], 1);
+			if (!fp4_srt(t, t)) {
+				RLC_THROW(ERR_NO_VALID);
+			}
+			fp4_neg(u, t);
+
+			for (int i = 0; i < 2; i++) {
+				t0z = fp_is_zero(t[i][0]);
+				fp_prime_back(k, t[i][0]);
+				t0 = bn_get_bit(k, 0);
+				fp_prime_back(k, t[0][1]);
+				t1 = bn_get_bit(k, 0);
+				/* t[0] == 0 ? sgn0(t[1]) : sgn0(t[0]) */
+				s[i] = t0 | (t0z & t1);
+			}
+
+			t0z = fp2_is_zero(t[0]);
+			sign ^= (s[0] | (t0z & s[1]));
+
+			dv_swap_cond(t[0][0], u[0][0], RLC_FP_DIGS, sign);
+			dv_swap_cond(t[0][1], u[0][1], RLC_FP_DIGS, sign);
+			dv_swap_cond(t[1][0], u[1][0], RLC_FP_DIGS, sign);
+			dv_swap_cond(t[1][1], u[1][1], RLC_FP_DIGS, sign);
+
+			fp4_copy(p->x, x1);
+			fp4_copy(p->y, t);
+			fp4_set_dig(p->z, 1);
+			p->coord = BASIC;
+
+			ep4_mul_cof(p, p);
 		}
 
-		ep4_mul_cof(p, p);
+		bn_free(k);
+		fp_free(t);
+		fp_free(u);
+		fp_free(v);
+		fp_free(w);
+		fp_free(y);
+		fp_free(x1);
+		fp_free(y1);
+		fp_free(z1);
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(x);
-		fp4_free(t0);
+		RLC_FREE(r);
 	}
 }
