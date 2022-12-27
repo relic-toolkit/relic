@@ -1114,7 +1114,7 @@ static int hashing2(void) {
 		TEST_CASE("point hashing is correct") {
 			rand_bytes(msg, sizeof(msg));
 			ep2_map(p, msg, sizeof(msg));
-			TEST_ASSERT(ep2_is_infty(p) == 0, end);
+			TEST_ASSERT(ep2_on_curve(p) == 0, end);
 			ep2_map_dst(q, msg, sizeof(msg), (const uint8_t *)"RELIC", 5);
 			TEST_ASSERT(ep2_cmp(p, q) == RLC_EQ, end);
 			ep2_mul(p, p, n);
@@ -2139,7 +2139,7 @@ static int hashing4(void) {
 		TEST_CASE("point hashing is correct") {
 			rand_bytes(msg, sizeof(msg));
 			ep4_map(p, msg, sizeof(msg));
-			TEST_ASSERT(ep4_is_infty(p) == 0, end);
+			TEST_ASSERT(ep4_on_curve(p) == 0, end);
 			ep4_mul(p, p, n);
 			TEST_ASSERT(ep4_is_infty(p) == 1, end);
 		}
