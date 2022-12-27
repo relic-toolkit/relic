@@ -234,7 +234,7 @@ void ep_map_sswum(ep_t p, const uint8_t *msg, int len) {
 void ep_map_swift(ep_t p, const uint8_t *msg, int len) {
 	/* enough space for two field elements plus extra bytes for uniformity */
 	const int len_per_elm = (FP_PRIME + ep_param_level() + 7) / 8;
-	uint8_t s, *pseudo_random_bytes = RLC_ALLOCA(uint8_t, 2 * len_per_elm);
+	uint8_t s, *pseudo_random_bytes = RLC_ALLOCA(uint8_t, 2 * len_per_elm + 1);
 	fp_t t, u, v, w, y, x1, y1, z1;
 	ctx_t *ctx = core_get();
 	bn_t k;
@@ -267,7 +267,7 @@ void ep_map_swift(ep_t p, const uint8_t *msg, int len) {
 		fp_prime_conv(u, k);
 		bn_read_bin(k, pseudo_random_bytes + len_per_elm, len_per_elm);
 		fp_prime_conv(t, k);
-		s = pseudo_random_bytes[len - 1] & 1;
+		s = pseudo_random_bytes[2 * len_per_elm] & 1;
 
 		if (ep_curve_opt_a() == RLC_ZERO) {
 			fp_sqr(x1, u);
@@ -302,27 +302,24 @@ void ep_map_swift(ep_t p, const uint8_t *msg, int len) {
 				fp_add(z1, z1, u);
 
 				fp_sqr(t, x1);
-				fp_add(t, t, ep_curve_get_a());
 				fp_mul(t, t, x1);
 				fp_add(t, t, ep_curve_get_b());
 
 				fp_sqr(u, y1);
-				fp_add(u, u, ep_curve_get_a());
 				fp_mul(u, u, y1);
 				fp_add(u, u, ep_curve_get_b());
 
 				fp_sqr(v, z1);
-				fp_add(v, v, ep_curve_get_a());
 				fp_mul(v, v, z1);
 				fp_add(v, v, ep_curve_get_b());
 
-				int c2 = fp_smb(u);
-				int c3 = fp_smb(v);
+				int c2 = fp_is_sqr(u);
+				int c3 = fp_is_sqr(v);
 
-				dv_swap_cond(x1, y1, RLC_FP_DIGS, c2 == 1);
-				dv_swap_cond(t, u, RLC_FP_DIGS, c2 == 1);
-				dv_swap_cond(x1, z1, RLC_FP_DIGS, c3 == 1);
-				dv_swap_cond(t, v, RLC_FP_DIGS, c3 == 1);
+				dv_swap_cond(x1, y1, RLC_FP_DIGS, c2);
+				dv_swap_cond(t, u, RLC_FP_DIGS, c2);
+				dv_swap_cond(x1, z1, RLC_FP_DIGS, c3);
+				dv_swap_cond(t, v, RLC_FP_DIGS, c3);
 
 				if (!fp_srt(t, t)) {
 					RLC_THROW(ERR_NO_VALID);
