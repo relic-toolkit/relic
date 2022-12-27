@@ -1364,6 +1364,548 @@ static int pairing12(void) {
 	return code;
 }
 
+static int doubling18(void) {
+	int code = RLC_ERR;
+	bn_t k, n;
+	ep_t p;
+	ep3_t q, r, s;
+	fp18_t e1, e2;
+
+	bn_null(k);
+	bn_null(n);
+	ep_null(p);
+	ep3_null(q);
+	ep3_null(r);
+	ep3_null(s);
+	fp18_null(e1);
+	fp18_null(e2);
+
+	RLC_TRY {
+		bn_new(n);
+		bn_new(k);
+		ep_new(p);
+		ep3_new(q);
+		ep3_new(r);
+		ep3_new(s);
+		fp18_new(e1);
+		fp18_new(e2);
+
+		ep_curve_get_ord(n);
+
+		TEST_CASE("miller doubling is correct") {
+			ep_rand(p);
+			ep3_rand(q);
+			ep3_rand(r);
+			pp_dbl_k18(e1, r, q, p);
+			pp_norm_k18(r, r);
+			ep3_dbl(s, q);
+			ep3_norm(s, s);
+			TEST_ASSERT(ep3_cmp(r, s) == RLC_EQ, end);
+		} TEST_END;
+
+#if EP_ADD == BASIC || !defined(STRIP)
+		TEST_CASE("miller doubling in affine coordinates is correct") {
+			ep_rand(p);
+			ep3_rand(q);
+			ep3_rand(r);
+			fp18_zero(e1);
+			fp18_zero(e2);
+			fp_neg(p->y, p->y);
+			pp_dbl_k18_basic(e2, r, q, p);
+			pp_exp_k18(e2, e2);
+#if EP_ADD == PROJC || EP_ADD == JACOB
+			/* Precompute. */
+			fp_dbl(p->z, p->x);
+			fp_add(p->x, p->z, p->x);
+#endif
+			pp_dbl_k18(e1, r, q, p);
+			pp_exp_k18(e1, e1);
+			TEST_ASSERT(fp18_cmp(e1, e2) == RLC_EQ, end);
+		} TEST_END;
+#endif
+
+#if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
+		TEST_CASE("miller doubling in projective coordinates is correct") {
+			ep_rand(p);
+			ep3_rand(q);
+			ep3_rand(r);
+			fp18_zero(e1);
+			fp18_zero(e2);
+			/* Precompute. */
+			fp_neg(p->y, p->y);
+			fp_dbl(p->z, p->x);
+			fp_add(p->x, p->z, p->x);
+			pp_dbl_k18_projc(e2, r, q, p);
+			pp_exp_k18(e2, e2);
+#if EP_ADD == BASIC
+			/* Revert precomputing. */
+			fp_hlv(p->x, p->z);
+#endif
+			pp_dbl_k18(e1, r, q, p);
+			pp_exp_k18(e1, e1);
+			TEST_ASSERT(fp18_cmp(e1, e2) == RLC_EQ, end);
+		} TEST_END;
+
+#if PP_EXT == BASIC || !defined(STRIP)
+		TEST_CASE("basic projective miller doubling is correct") {
+			ep_rand(p);
+			ep3_rand(q);
+			ep3_rand(r);
+			fp18_zero(e1);
+			fp18_zero(e2);
+			pp_dbl_k18_projc(e1, r, q, p);
+			pp_dbl_k18_projc_basic(e2, r, q, p);
+			TEST_ASSERT(fp18_cmp(e1, e2) == RLC_EQ, end);
+		} TEST_END;
+#endif
+
+#if PP_EXT == LAZYR || !defined(STRIP)
+		TEST_CASE("lazy-reduced projective miller doubling is consistent") {
+			ep_rand(p);
+			ep3_rand(q);
+			ep3_rand(r);
+			fp18_zero(e1);
+			fp18_zero(e2);
+			pp_dbl_k18_projc(e1, r, q, p);
+			pp_dbl_k18_projc_lazyr(e2, r, q, p);
+			TEST_ASSERT(fp18_cmp(e1, e2) == RLC_EQ, end);
+		} TEST_END;
+#endif
+#endif /* EP_ADD = PROJC */
+	}
+	RLC_CATCH_ANY {
+		util_print("FATAL ERROR!\n");
+		RLC_ERROR(end);
+	}
+	code = RLC_OK;
+  end:
+	bn_free(n);
+	bn_free(k);
+	ep_free(p);
+	ep3_free(q);
+	ep3_free(r);
+	ep3_free(s);
+	fp18_free(e1);
+	fp18_free(e2);
+	return code;
+}
+
+static int addition18(void) {
+	int code = RLC_ERR;
+	bn_t k, n;
+	ep_t p;
+	ep3_t q, r, s;
+	fp18_t e1, e2;
+
+	bn_null(k);
+	bn_null(n);
+	ep_null(p);
+	ep3_null(q);
+	ep3_null(r);
+	ep3_null(s);
+	fp18_null(e1);
+	fp18_null(e2);
+
+	RLC_TRY {
+		bn_new(n);
+		bn_new(k);
+		ep_new(p);
+		ep3_new(q);
+		ep3_new(r);
+		ep3_new(s);
+		fp18_new(e1);
+		fp18_new(e2);
+
+		ep_curve_get_ord(n);
+
+		TEST_CASE("miller addition is correct") {
+			ep_rand(p);
+			ep3_rand(q);
+			ep3_rand(r);
+			ep3_copy(s, r);
+			pp_add_k18(e1, r, q, p);
+			pp_norm_k18(r, r);
+			ep3_add(s, s, q);
+			ep3_norm(s, s);
+			TEST_ASSERT(ep3_cmp(r, s) == RLC_EQ, end);
+		} TEST_END;
+
+#if EP_ADD == BASIC || !defined(STRIP)
+		TEST_CASE("miller addition in affine coordinates is correct") {
+			ep_rand(p);
+			ep3_rand(q);
+			ep3_rand(r);
+			ep3_copy(s, r);
+			fp18_zero(e1);
+			fp18_zero(e2);
+			pp_add_k18(e1, r, q, p);
+			pp_exp_k18(e1, e1);
+			pp_add_k18_basic(e2, s, q, p);
+			pp_exp_k18(e2, e2);
+			TEST_ASSERT(fp18_cmp(e1, e2) == RLC_EQ, end);
+		} TEST_END;
+#endif
+
+#if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
+		TEST_CASE("miller addition in projective coordinates is correct") {
+			ep_rand(p);
+			ep3_rand(q);
+			ep3_rand(r);
+			ep3_copy(s, r);
+			fp18_zero(e1);
+			fp18_zero(e2);
+			pp_add_k18(e1, r, q, p);
+			pp_exp_k18(e1, e1);
+			pp_add_k18_projc(e2, s, q, p);
+			pp_exp_k18(e2, e2);
+			TEST_ASSERT(fp18_cmp(e1, e2) == RLC_EQ, end);
+		} TEST_END;
+
+#if PP_EXT == BASIC || !defined(STRIP)
+		TEST_CASE("basic projective miller addition is consistent") {
+			ep_rand(p);
+			ep3_rand(q);
+			ep3_rand(r);
+			ep3_copy(s, r);
+			fp18_zero(e1);
+			fp18_zero(e2);
+			pp_add_k18_projc(e1, r, q, p);
+			pp_add_k18_projc_basic(e2, s, q, p);
+			TEST_ASSERT(fp18_cmp(e1, e2) == RLC_EQ, end);
+		} TEST_END;
+#endif
+
+#if PP_EXT == LAZYR || !defined(STRIP)
+		TEST_CASE("lazy-reduced projective miller addition is consistent") {
+			ep_rand(p);
+			ep3_rand(q);
+			ep3_rand(r);
+			ep3_copy(s, r);
+			fp18_zero(e1);
+			fp18_zero(e2);
+			pp_add_k18_projc(e1, r, q, p);
+			pp_add_k18_projc_lazyr(e2, s, q, p);
+			TEST_ASSERT(fp18_cmp(e1, e2) == RLC_EQ, end);
+		} TEST_END;
+#endif
+#endif /* EP_ADD = PROJC */
+	}
+	RLC_CATCH_ANY {
+		util_print("FATAL ERROR!\n");
+		RLC_ERROR(end);
+	}
+	code = RLC_OK;
+  end:
+	bn_free(n);
+	bn_free(k);
+	ep_free(p);
+	ep3_free(q);
+	ep3_free(r);
+	ep3_free(s);
+	fp18_free(e1);
+	fp18_free(e2);
+	return code;
+}
+
+static int pairing18(void) {
+	int j, code = RLC_ERR;
+	bn_t k, n;
+	ep_t p[2];
+	ep3_t q[2], r;
+	fp18_t e1, e2;
+
+	bn_null(k);
+	bn_null(n);
+	fp18_null(e1);
+	fp18_null(e2);
+	ep3_null(r);
+
+	RLC_TRY {
+		bn_new(n);
+		bn_new(k);
+		fp18_new(e1);
+		fp18_new(e2);
+		ep3_new(r);
+
+		for (j = 0; j < 2; j++) {
+			ep_null(p[j]);
+			ep3_null(q[j]);
+			ep_new(p[j]);
+			ep3_new(q[j]);
+		}
+
+		ep_curve_get_ord(n);
+
+		TEST_CASE("pairing non-degeneracy is correct") {
+			ep_rand(p[0]);
+			ep3_rand(q[0]);
+			pp_map_k18(e1, p[0], q[0]);
+			TEST_ASSERT(fp18_cmp_dig(e1, 1) != RLC_EQ, end);
+			ep_set_infty(p[0]);
+			pp_map_k18(e1, p[0], q[0]);
+			TEST_ASSERT(fp18_cmp_dig(e1, 1) == RLC_EQ, end);
+			ep_rand(p[0]);
+			ep3_set_infty(q[0]);
+			pp_map_k18(e1, p[0], q[0]);
+			TEST_ASSERT(fp18_cmp_dig(e1, 1) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("pairing is bilinear") {
+			ep_rand(p[0]);
+			ep3_rand(q[0]);
+			bn_rand_mod(k, n);
+			ep3_mul(r, q[0], k);
+			pp_map_k18(e1, p[0], r);
+			pp_map_k18(e2, p[0], q[0]);
+			fp18_exp(e2, e2, k);
+			TEST_ASSERT(fp18_cmp(e1, e2) == RLC_EQ, end);
+			ep_mul(p[0], p[0], k);
+			pp_map_k18(e2, p[0], q[0]);
+			TEST_ASSERT(fp18_cmp(e1, e2) == RLC_EQ, end);
+			ep_dbl(p[0], p[0]);
+			pp_map_k18(e2, p[0], q[0]);
+			fp18_sqr(e1, e1);
+			TEST_ASSERT(fp18_cmp(e1, e2) == RLC_EQ, end);
+			ep3_dbl(q[0], q[0]);
+			pp_map_k18(e2, p[0], q[0]);
+			fp18_sqr(e1, e1);
+			TEST_ASSERT(fp18_cmp(e1, e2) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("multi-pairing is correct") {
+			ep_rand(p[i % 2]);
+			ep3_rand(q[i % 2]);
+			pp_map_k18(e1, p[i % 2], q[i % 2]);
+			ep_rand(p[1 - (i % 2)]);
+			ep3_set_infty(q[1 - (i % 2)]);
+			pp_map_sim_k18(e2, p, q, 2);
+			TEST_ASSERT(fp18_cmp(e1, e2) == RLC_EQ, end);
+			ep_set_infty(p[1 - (i % 2)]);
+			ep3_rand(q[1 - (i % 2)]);
+			pp_map_sim_k18(e2, p, q, 2);
+			TEST_ASSERT(fp18_cmp(e1, e2) == RLC_EQ, end);
+			ep3_set_infty(q[i % 2]);
+			pp_map_sim_k18(e2, p, q, 2);
+			TEST_ASSERT(fp18_cmp_dig(e2, 1) == RLC_EQ, end);
+			ep_rand(p[0]);
+			ep3_rand(q[0]);
+			pp_map_k18(e1, p[0], q[0]);
+			ep_rand(p[1]);
+			ep3_rand(q[1]);
+			pp_map_k18(e2, p[1], q[1]);
+			fp18_mul(e1, e1, e2);
+			pp_map_sim_k18(e2, p, q, 2);
+			TEST_ASSERT(fp18_cmp(e1, e2) == RLC_EQ, end);
+		} TEST_END;
+
+#if PP_MAP == TATEP || !defined(STRIP)
+		TEST_CASE("tate pairing non-degeneracy is correct") {
+			ep_rand(p[0]);
+			ep3_rand(q[0]);
+			pp_map_tatep_k18(e1, p[0], q[0]);
+			TEST_ASSERT(fp18_cmp_dig(e1, 1) != RLC_EQ, end);
+			ep_set_infty(p[0]);
+			pp_map_tatep_k18(e1, p[0], q[0]);
+			TEST_ASSERT(fp18_cmp_dig(e1, 1) == RLC_EQ, end);
+			ep_rand(p[0]);
+			ep3_set_infty(q[0]);
+			pp_map_tatep_k18(e1, p[0], q[0]);
+			TEST_ASSERT(fp18_cmp_dig(e1, 1) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("tate pairing is bilinear") {
+			ep_rand(p[0]);
+			ep3_rand(q[0]);
+			bn_rand_mod(k, n);
+			ep3_mul(r, q[0], k);
+			pp_map_tatep_k18(e1, p[0], r);
+			pp_map_tatep_k18(e2, p[0], q[0]);
+			fp18_exp(e2, e2, k);
+			TEST_ASSERT(fp18_cmp(e1, e2) == RLC_EQ, end);
+			ep_mul(p[0], p[0], k);
+			pp_map_tatep_k18(e2, p[0], q[0]);
+			TEST_ASSERT(fp18_cmp(e1, e2) == RLC_EQ, end);
+			ep_dbl(p[0], p[0]);
+			pp_map_tatep_k18(e2, p[0], q[0]);
+			fp18_sqr(e1, e1);
+			TEST_ASSERT(fp18_cmp(e1, e2) == RLC_EQ, end);
+			ep3_dbl(q[0], q[0]);
+			pp_map_tatep_k18(e2, p[0], q[0]);
+			fp18_sqr(e1, e1);
+			TEST_ASSERT(fp18_cmp(e1, e2) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("tate multi-pairing is correct") {
+			ep_rand(p[i % 2]);
+			ep3_rand(q[i % 2]);
+			pp_map_tatep_k18(e1, p[i % 2], q[i % 2]);
+			ep_rand(p[1 - (i % 2)]);
+			ep3_set_infty(q[1 - (i % 2)]);
+			pp_map_sim_tatep_k18(e2, p, q, 2);
+			TEST_ASSERT(fp18_cmp(e1, e2) == RLC_EQ, end);
+			ep_set_infty(p[1 - (i % 2)]);
+			ep3_rand(q[1 - (i % 2)]);
+			pp_map_sim_tatep_k18(e2, p, q, 2);
+			TEST_ASSERT(fp18_cmp(e1, e2) == RLC_EQ, end);
+			ep3_set_infty(q[i % 2]);
+			pp_map_sim_tatep_k18(e2, p, q, 2);
+			TEST_ASSERT(fp18_cmp_dig(e2, 1) == RLC_EQ, end);
+			ep_rand(p[0]);
+			ep3_rand(q[0]);
+			pp_map_tatep_k18(e1, p[0], q[0]);
+			ep_rand(p[1]);
+			ep3_rand(q[1]);
+			pp_map_tatep_k18(e2, p[1], q[1]);
+			fp18_mul(e1, e1, e2);
+			pp_map_sim_tatep_k18(e2, p, q, 2);
+			TEST_ASSERT(fp18_cmp(e1, e2) == RLC_EQ, end);
+		} TEST_END;
+#endif
+
+#if PP_MAP == WEIL || !defined(STRIP)
+		TEST_CASE("weil pairing non-degeneracy is correct") {
+			ep_rand(p[0]);
+			ep3_rand(q[0]);
+			pp_map_weilp_k18(e1, p[0], q[0]);
+			TEST_ASSERT(fp18_cmp_dig(e1, 1) != RLC_EQ, end);
+			ep_set_infty(p[0]);
+			pp_map_weilp_k18(e1, p[0], q[0]);
+			TEST_ASSERT(fp18_cmp_dig(e1, 1) == RLC_EQ, end);
+			ep_rand(p[0]);
+			ep3_set_infty(q[0]);
+			pp_map_weilp_k18(e1, p[0], q[0]);
+			TEST_ASSERT(fp18_cmp_dig(e1, 1) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("weil pairing is bilinear") {
+			ep_rand(p[0]);
+			ep3_rand(q[0]);
+			bn_rand_mod(k, n);
+			ep3_mul(r, q[0], k);
+			pp_map_weilp_k18(e1, p[0], r);
+			pp_map_weilp_k18(e2, p[0], q[0]);
+			fp18_exp(e2, e2, k);
+			TEST_ASSERT(fp18_cmp(e1, e2) == RLC_EQ, end);
+			ep_mul(p[0], p[0], k);
+			pp_map_weilp_k18(e2, p[0], q[0]);
+			TEST_ASSERT(fp18_cmp(e1, e2) == RLC_EQ, end);
+			ep_dbl(p[0], p[0]);
+			pp_map_weilp_k18(e2, p[0], q[0]);
+			fp18_sqr(e1, e1);
+			TEST_ASSERT(fp18_cmp(e1, e2) == RLC_EQ, end);
+			ep3_dbl(q[0], q[0]);
+			pp_map_weilp_k18(e2, p[0], q[0]);
+			fp18_sqr(e1, e1);
+			TEST_ASSERT(fp18_cmp(e1, e2) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("weil multi-pairing is correct") {
+			ep_rand(p[i % 2]);
+			ep3_rand(q[i % 2]);
+			pp_map_weilp_k18(e1, p[i % 2], q[i % 2]);
+			ep_rand(p[1 - (i % 2)]);
+			ep3_set_infty(q[1 - (i % 2)]);
+			pp_map_sim_weilp_k18(e2, p, q, 2);
+			TEST_ASSERT(fp18_cmp(e1, e2) == RLC_EQ, end);
+			ep_set_infty(p[1 - (i % 2)]);
+			ep3_rand(q[1 - (i % 2)]);
+			pp_map_sim_weilp_k18(e2, p, q, 2);
+			TEST_ASSERT(fp18_cmp(e1, e2) == RLC_EQ, end);
+			ep3_set_infty(q[i % 2]);
+			pp_map_sim_weilp_k18(e2, p, q, 2);
+			TEST_ASSERT(fp18_cmp_dig(e2, 1) == RLC_EQ, end);
+			ep_rand(p[0]);
+			ep3_rand(q[0]);
+			pp_map_weilp_k18(e1, p[0], q[0]);
+			ep_rand(p[1]);
+			ep3_rand(q[1]);
+			pp_map_weilp_k18(e2, p[1], q[1]);
+			fp18_mul(e1, e1, e2);
+			pp_map_sim_weilp_k18(e2, p, q, 2);
+			TEST_ASSERT(fp18_cmp(e1, e2) == RLC_EQ, end);
+		} TEST_END;
+#endif
+
+#if PP_MAP == OATEP || !defined(STRIP)
+		TEST_CASE("optimal ate pairing non-degeneracy is correct") {
+			ep_rand(p[0]);
+			ep3_rand(q[0]);
+			pp_map_oatep_k18(e1, p[0], q[0]);
+			TEST_ASSERT(fp18_cmp_dig(e1, 1) != RLC_EQ, end);
+			ep_set_infty(p[0]);
+			pp_map_oatep_k18(e1, p[0], q[0]);
+			TEST_ASSERT(fp18_cmp_dig(e1, 1) == RLC_EQ, end);
+			ep_rand(p[0]);
+			ep3_set_infty(q[0]);
+			pp_map_oatep_k18(e1, p[0], q[0]);
+			TEST_ASSERT(fp18_cmp_dig(e1, 1) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("optimal ate pairing is bilinear") {
+			ep_rand(p[0]);
+			ep3_rand(q[0]);
+			bn_rand_mod(k, n);
+			ep3_mul(r, q[0], k);
+			pp_map_oatep_k18(e1, p[0], r);
+			ep_mul(p[0], p[0], k);
+			pp_map_oatep_k18(e2, p[0], q[0]);
+			TEST_ASSERT(fp18_cmp(e1, e2) == RLC_EQ, end);
+			ep_dbl(p[0], p[0]);
+			pp_map_oatep_k18(e2, p[0], q[0]);
+			fp18_sqr(e1, e1);
+			TEST_ASSERT(fp18_cmp(e1, e2) == RLC_EQ, end);
+			ep3_dbl(q[0], q[0]);
+			pp_map_oatep_k18(e2, p[0], q[0]);
+			fp18_sqr(e1, e1);
+			TEST_ASSERT(fp18_cmp(e1, e2) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("optimal ate multi-pairing is correct") {
+			ep_rand(p[i % 2]);
+			ep3_rand(q[i % 2]);
+			pp_map_oatep_k18(e1, p[i % 2], q[i % 2]);
+			ep_rand(p[1 - (i % 2)]);
+			ep3_set_infty(q[1 - (i % 2)]);
+			pp_map_sim_oatep_k18(e2, p, q, 2);
+			TEST_ASSERT(fp18_cmp(e1, e2) == RLC_EQ, end);
+			ep_set_infty(p[1 - (i % 2)]);
+			ep3_rand(q[1 - (i % 2)]);
+			pp_map_sim_oatep_k18(e2, p, q, 2);
+			TEST_ASSERT(fp18_cmp(e1, e2) == RLC_EQ, end);
+			ep3_set_infty(q[i % 2]);
+			pp_map_sim_oatep_k18(e2, p, q, 2);
+			TEST_ASSERT(fp18_cmp_dig(e2, 1) == RLC_EQ, end);
+			ep_rand(p[0]);
+			ep3_rand(q[0]);
+			pp_map_oatep_k18(e1, p[0], q[0]);
+			ep_rand(p[1]);
+			ep3_rand(q[1]);
+			pp_map_oatep_k18(e2, p[1], q[1]);
+			fp18_mul(e1, e1, e2);
+			pp_map_sim_oatep_k18(e2, p, q, 2);
+			TEST_ASSERT(fp18_cmp(e1, e2) == RLC_EQ, end);
+		} TEST_END;
+#endif
+	}
+	RLC_CATCH_ANY {
+		util_print("FATAL ERROR!\n");
+		RLC_ERROR(end);
+	}
+	code = RLC_OK;
+  end:
+	bn_free(n);
+	bn_free(k);
+	fp18_free(e1);
+	fp18_free(e2);
+	ep3_free(r);
+
+	for (j = 0; j < 2; j++) {
+		ep_free(p[j]);
+		ep3_free(q[j]);
+	}
+	return code;
+}
+
 static int doubling24(void) {
 	int code = RLC_ERR;
 	bn_t k, n;
@@ -2534,6 +3076,23 @@ int main(void) {
 		}
 
 		if (pairing12() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+	}
+
+	if (ep_param_embed() == 18) {
+		if (doubling18() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (addition18() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (pairing18() != RLC_OK) {
 			core_clean();
 			return 1;
 		}

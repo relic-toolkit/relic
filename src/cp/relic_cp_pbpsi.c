@@ -114,6 +114,7 @@ int cp_pbpsi_ask(g2_t d[], bn_t r, const bn_t x[], const g2_t s[], size_t m) {
 			bn_free(_x[i]);
 		}
 		RLC_FREE(p);
+		RLC_FREE(_x);
 	}
 	return result;
 }
@@ -124,7 +125,7 @@ int cp_pbpsi_ans(gt_t t[], g1_t u[], const g1_t ss, const g2_t d,
 	bn_t q, tj;
 	g1_t g1;
 	g2_t g2;
-	unsigned int *shuffle = RLC_ALLOCA(unsigned int, n);
+	uint_t *shuffle = RLC_ALLOCA(uint_t, n);
 
 	bn_null(q);
 	bn_null(tj);

@@ -37,12 +37,54 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void ep4_map(ep4_t p, const uint8_t *msg, int len) {
+void _ep4_map(ep4_t p, const uint8_t *msg, size_t len) {
+	bn_t x;
+	fp4_t t0;
+	uint8_t digest[RLC_MD_LEN];
+
+	bn_null(x);
+	fp4_null(t0);
+
+	RLC_TRY {
+		bn_new(x);
+		fp4_new(t0);
+
+		md_map(digest, msg, len);
+		bn_read_bin(x, digest, RLC_MIN(RLC_FP_BYTES, RLC_MD_LEN));
+
+		fp4_zero(p->x);
+		fp_prime_conv(p->x[0][0], x);
+		fp4_set_dig(p->z, 1);
+
+		while (1) {
+			ep4_rhs(t0, p);
+
+			if (fp4_srt(p->y, t0)) {
+				p->coord = BASIC;
+				break;
+			}
+
+			fp_add_dig(p->x[0][0], p->x[0][0], 1);
+		}
+
+		ep4_mul_cof(p, p);
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		bn_free(x);
+		fp4_free(t0);
+	}
+}
+
+void ep4_map(ep4_t p, const uint8_t *msg, size_t len) {
 	/* enough space for two field elements plus extra bytes for uniformity */
-	const int elm = (FP_PRIME + ep_param_level() + 7) / 8;
+	const size_t elm = (FP_PRIME + ep_param_level() + 7) / 8;
 	uint8_t t0z, t0, t1, s[2], sign, *r = RLC_ALLOCA(uint8_t, 8 * elm + 1);
 	fp4_t t, u, v, w, y, x1, y1, z1;
 	ctx_t *ctx = core_get();
+	dig_t c2, c3;
 	bn_t k;
 
 	bn_null(k);
@@ -78,7 +120,7 @@ void ep4_map(ep4_t p, const uint8_t *msg, int len) {
 				r += elm;
 			}
 		}
-		sign = r[8 * elm] & 1;
+		sign = r[0] & 1;
 
 		/* Assume that a = 0. */
 		fp4_sqr(x1, u);
@@ -130,8 +172,8 @@ void ep4_map(ep4_t p, const uint8_t *msg, int len) {
 			fp4_mul(v, v, z1);
 			fp4_add(v, v, w);
 
-			int c2 = fp4_is_sqr(u);
-			int c3 = fp4_is_sqr(v);
+			c2 = fp4_is_sqr(u);
+			c3 = fp4_is_sqr(v);
 
 			for (int i = 0; i < 2; i++) {
 				for (int j = 0; j < 2; j++) {

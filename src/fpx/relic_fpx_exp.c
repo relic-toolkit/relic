@@ -329,7 +329,7 @@ void fp12_exp_dig(fp12_t c, const fp12_t a, dig_t b) {
 	bn_t _b;
 	fp12_t t, v;
 	int8_t u, naf[RLC_DIG + 1];
-	int l;
+	size_t l;
 
 	if (b == 0) {
 		fp12_set_dig(c, 1);
@@ -421,6 +421,66 @@ void fp18_exp(fp18_t c, const fp18_t a, const bn_t b) {
 	}
 }
 
+void fp18_exp_dig(fp18_t c, const fp18_t a, dig_t b) {
+	bn_t _b;
+	fp18_t t, v;
+	int8_t u, naf[RLC_DIG + 1];
+	size_t l;
+
+	if (b == 0) {
+		fp18_set_dig(c, 1);
+		return;
+	}
+
+	bn_null(_b);
+	fp18_null(t);
+	fp18_null(v);
+
+	RLC_TRY {
+		bn_new(_b);
+		fp18_new(t);
+		fp18_new(v);
+
+		fp18_copy(t, a);
+
+		if (fp18_test_cyc(a)) {
+			fp18_inv_cyc(v, a);
+			bn_set_dig(_b, b);
+
+			l = RLC_DIG + 1;
+			bn_rec_naf(naf, &l, _b, 2);
+
+			for (int i = bn_bits(_b) - 2; i >= 0; i--) {
+				fp18_sqr_cyc(t, t);
+
+				u = naf[i];
+				if (u > 0) {
+					fp18_mul(t, t, a);
+				} else if (u < 0) {
+					fp18_mul(t, t, v);
+				}
+			}
+		} else {
+			for (int i = util_bits_dig(b) - 2; i >= 0; i--) {
+				fp18_sqr(t, t);
+				if (b & ((dig_t)1 << i)) {
+					fp18_mul(t, t, a);
+				}
+			}
+		}
+
+		fp18_copy(c, t);
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		bn_free(_b);
+		fp18_free(t);
+		fp18_free(v);
+	}
+}
+
 void fp24_exp(fp24_t c, const fp24_t a, const bn_t b) {
 	fp24_t t;
 
@@ -461,7 +521,7 @@ void fp24_exp_dig(fp24_t c, const fp24_t a, dig_t b) {
 	bn_t _b;
 	fp24_t t, v;
 	int8_t u, naf[RLC_DIG + 1];
-	int l;
+	size_t l;
 
 	if (b == 0) {
 		fp24_set_dig(c, 1);
@@ -561,7 +621,7 @@ void fp48_exp_dig(fp48_t c, const fp48_t a, dig_t b) {
 	bn_t _b;
 	fp48_t t, v;
 	int8_t u, naf[RLC_DIG + 1];
-	int l;
+	size_t l;
 
 	if (b == 0) {
 		fp48_set_dig(c, 1);
@@ -657,7 +717,7 @@ void fp54_exp_dig(fp54_t c, const fp54_t a, dig_t b) {
 	bn_t _b;
 	fp54_t t, v;
 	int8_t u, naf[RLC_DIG + 1];
-	int l;
+	size_t l;
 
 	if (b == 0) {
 		fp54_set_dig(c, 1);

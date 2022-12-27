@@ -187,7 +187,8 @@ void ed_map_ell2_5mod8(ed_t p, fp_t t) {
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void ed_map_dst(ed_t p, const uint8_t *msg, int len, const uint8_t *dst, int dst_len) {
+void ed_map_dst(ed_t p, const uint8_t *msg, size_t len, const uint8_t *dst,
+		size_t dst_len) {
 	bn_t k;
 	fp_t t;
 	ed_t q;
@@ -254,6 +255,6 @@ void ed_map_dst(ed_t p, const uint8_t *msg, int len, const uint8_t *dst, int dst
 	}
 }
 
-void ed_map(ed_t p, const uint8_t *msg, int len) {
+void ed_map(ed_t p, const uint8_t *msg, size_t len) {
 	ed_map_dst(p, msg, len, (const uint8_t *)"RELIC", 5);
 }

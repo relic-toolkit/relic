@@ -46,12 +46,13 @@
  * @param[in] k					- the integer.
  */
 static void ep_mul_fix_plain(ep_t r, const ep_t *t, const bn_t k) {
-	int l, i, n;
+	int i, n;
 	int8_t naf[RLC_FP_BITS + 1];
+	size_t l;
 
 	/* Compute the w-TNAF representation of k. */
 	l = RLC_FP_BITS + 1;
-	bn_rec_naf(naf, &l, k, EP_DEPTH);
+	bn_rec_naf(naf, &l, k, RLC_DEPTH);
 
 	n = naf[l - 1];
 	if (n > 0) {
@@ -119,7 +120,7 @@ static void ep_mul_combs_endom(ep_t r, const ep_t *t, const bn_t k) {
 		ep_curve_get_ord(n);
 		ep_curve_get_v1(v1);
 		ep_curve_get_v2(v2);
-		l = RLC_CEIL(bn_bits(n), (2 * EP_DEPTH));
+		l = RLC_CEIL(bn_bits(n), (2 * RLC_DEPTH));
 
 		bn_mod(_k, k, n);
 		bn_rec_glv(k0, k1, _k, n, (const bn_t *)v1, (const bn_t *)v2);
@@ -131,14 +132,14 @@ static void ep_mul_combs_endom(ep_t r, const ep_t *t, const bn_t k) {
 		n0 = bn_bits(k0);
 		n1 = bn_bits(k1);
 
-		p0 = (EP_DEPTH) * l - 1;
+		p0 = (RLC_DEPTH) * l - 1;
 
 		ep_set_infty(r);
 		if (n0 > p0 + 1) {
-			ep_copy(r, t[1 << (EP_DEPTH-1)]);
+			ep_copy(r, t[1 << (RLC_DEPTH-1)]);
 		}
 		if (n1 > p0 + 1) {
-			ep_psi(u, t[1 << (EP_DEPTH-1)]);
+			ep_psi(u, t[1 << (RLC_DEPTH-1)]);
 			ep_add(r, r, u);
 		}
 
@@ -147,7 +148,7 @@ static void ep_mul_combs_endom(ep_t r, const ep_t *t, const bn_t k) {
 
 			w0 = w1 = 0;
 			p1 = p0--;
-			for (j = EP_DEPTH - 1; j >= 0; j--, p1 -= l) {
+			for (j = RLC_DEPTH - 1; j >= 0; j--, p1 -= l) {
 				w0 = w0 << 1;
 				w1 = w1 << 1;
 				if (p1 < n0 && bn_get_bit(k0, p1)) {
@@ -217,15 +218,15 @@ static void ep_mul_combs_plain(ep_t r, const ep_t *t, const bn_t k) {
 		bn_new(_k);
 
 		ep_curve_get_ord(n);
-		l = RLC_CEIL(bn_bits(n), EP_DEPTH);
+		l = RLC_CEIL(bn_bits(n), RLC_DEPTH);
 
 		bn_mod(_k, k, n);
 		n0 = bn_bits(_k);
-		p0 = (EP_DEPTH) * l - 1;
+		p0 = (RLC_DEPTH) * l - 1;
 
 		w = 0;
 		p1 = p0--;
-		for (j = EP_DEPTH - 1; j >= 0; j--, p1 -= l) {
+		for (j = RLC_DEPTH - 1; j >= 0; j--, p1 -= l) {
 			w = w << 1;
 			if (p1 < n0 && bn_get_bit(_k, p1)) {
 				w = w | 1;
@@ -238,7 +239,7 @@ static void ep_mul_combs_plain(ep_t r, const ep_t *t, const bn_t k) {
 
 			w = 0;
 			p1 = p0--;
-			for (j = EP_DEPTH - 1; j >= 0; j--, p1 -= l) {
+			for (j = RLC_DEPTH - 1; j >= 0; j--, p1 -= l) {
 				w = w << 1;
 				if (p1 < n0 && bn_get_bit(_k, p1)) {
 					w = w | 1;
@@ -347,18 +348,18 @@ void ep_mul_pre_combs(ep_t *t, const ep_t p) {
 		bn_new(n);
 
 		ep_curve_get_ord(n);
-		l = RLC_CEIL(bn_bits(n), EP_DEPTH);
+		l = RLC_CEIL(bn_bits(n), RLC_DEPTH);
 
 #if defined(EP_ENDOM)
 		if (ep_curve_is_endom()) {
-			l = RLC_CEIL(bn_bits(n), 2 * EP_DEPTH);
+			l = RLC_CEIL(bn_bits(n), 2 * RLC_DEPTH);
 		}
 #endif
 
 		ep_set_infty(t[0]);
 
 		ep_copy(t[1], p);
-		for (j = 1; j < EP_DEPTH; j++) {
+		for (j = 1; j < RLC_DEPTH; j++) {
 			ep_dbl(t[1 << j], t[1 << (j - 1)]);
 			for (i = 1; i < l; i++) {
 				ep_dbl(t[1 << j], t[1 << j]);
@@ -412,12 +413,12 @@ void ep_mul_pre_combd(ep_t *t, const ep_t p) {
 		bn_new(n);
 
 		ep_curve_get_ord(n);
-		d = RLC_CEIL(bn_bits(n), EP_DEPTH);
+		d = RLC_CEIL(bn_bits(n), RLC_DEPTH);
 		e = (d % 2 == 0 ? (d / 2) : (d / 2) + 1);
 
 		ep_set_infty(t[0]);
 		ep_copy(t[1], p);
-		for (j = 1; j < EP_DEPTH; j++) {
+		for (j = 1; j < RLC_DEPTH; j++) {
 			ep_dbl(t[1 << j], t[1 << (j - 1)]);
 			for (i = 1; i < d; i++) {
 				ep_dbl(t[1 << j], t[1 << j]);
@@ -429,17 +430,17 @@ void ep_mul_pre_combd(ep_t *t, const ep_t p) {
 				ep_add(t[(1 << j) + i], t[i], t[1 << j]);
 			}
 		}
-		ep_set_infty(t[1 << EP_DEPTH]);
-		for (j = 1; j < (1 << EP_DEPTH); j++) {
-			ep_dbl(t[(1 << EP_DEPTH) + j], t[j]);
+		ep_set_infty(t[1 << RLC_DEPTH]);
+		for (j = 1; j < (1 << RLC_DEPTH); j++) {
+			ep_dbl(t[(1 << RLC_DEPTH) + j], t[j]);
 			for (i = 1; i < e; i++) {
-				ep_dbl(t[(1 << EP_DEPTH) + j], t[(1 << EP_DEPTH) + j]);
+				ep_dbl(t[(1 << RLC_DEPTH) + j], t[(1 << RLC_DEPTH) + j]);
 			}
 		}
 
-		ep_norm_sim(t + 2, (const ep_t *)t + 2, (1 << EP_DEPTH) - 2);
-		ep_norm_sim(t + (1 << EP_DEPTH) + 1,
-				(const ep_t *)t + (1 << EP_DEPTH) + 1, (1 << EP_DEPTH) - 1);
+		ep_norm_sim(t + 2, (const ep_t *)t + 2, (1 << RLC_DEPTH) - 2);
+		ep_norm_sim(t + (1 << RLC_DEPTH) + 1,
+				(const ep_t *)t + (1 << RLC_DEPTH) + 1, (1 << RLC_DEPTH) - 1);
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -466,20 +467,20 @@ void ep_mul_fix_combd(ep_t r, const ep_t *t, const bn_t k) {
 		bn_new(_k);
 
 		ep_curve_get_ord(n);
-		d = RLC_CEIL(bn_bits(n), EP_DEPTH);
+		d = RLC_CEIL(bn_bits(n), RLC_DEPTH);
 		e = (d % 2 == 0 ? (d / 2) : (d / 2) + 1);
 
 		bn_mod(_k, k, n);
 		ep_set_infty(r);
 		n0 = bn_bits(_k);
 
-		p1 = (e - 1) + (EP_DEPTH - 1) * d;
+		p1 = (e - 1) + (RLC_DEPTH - 1) * d;
 		for (i = e - 1; i >= 0; i--) {
 			ep_dbl(r, r);
 
 			w0 = 0;
 			p0 = p1;
-			for (j = EP_DEPTH - 1; j >= 0; j--, p0 -= d) {
+			for (j = RLC_DEPTH - 1; j >= 0; j--, p0 -= d) {
 				w0 = w0 << 1;
 				if (p0 < n0 && bn_get_bit(_k, p0)) {
 					w0 = w0 | 1;
@@ -488,7 +489,7 @@ void ep_mul_fix_combd(ep_t r, const ep_t *t, const bn_t k) {
 
 			w1 = 0;
 			p0 = p1-- + e;
-			for (j = EP_DEPTH - 1; j >= 0; j--, p0 -= d) {
+			for (j = RLC_DEPTH - 1; j >= 0; j--, p0 -= d) {
 				w1 = w1 << 1;
 				if (i + e < d && p0 < n0 && bn_get_bit(_k, p0)) {
 					w1 = w1 | 1;
@@ -496,7 +497,7 @@ void ep_mul_fix_combd(ep_t r, const ep_t *t, const bn_t k) {
 			}
 
 			ep_add(r, r, t[w0]);
-			ep_add(r, r, t[(1 << EP_DEPTH) + w1]);
+			ep_add(r, r, t[(1 << RLC_DEPTH) + w1]);
 		}
 		ep_norm(r, r);
 		if (bn_sign(_k) == RLC_NEG) {
@@ -517,7 +518,7 @@ void ep_mul_fix_combd(ep_t r, const ep_t *t, const bn_t k) {
 #if EP_FIX == LWNAF || !defined(STRIP)
 
 void ep_mul_pre_lwnaf(ep_t *t, const ep_t p) {
-	ep_tab(t, p, EP_DEPTH);
+	ep_tab(t, p, RLC_DEPTH);
 }
 
 void ep_mul_fix_lwnaf(ep_t r, const ep_t *t, const bn_t k) {

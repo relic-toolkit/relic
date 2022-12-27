@@ -120,15 +120,14 @@ void bn_mod_barrt(bn_t c, const bn_t a, const bn_t m, const bn_t u) {
 			bn_mul(t, q, u);
 		} else {
 			bn_grow(t, q->used + u->used);
-			if (q->used > u->used) {
-				bn_muld_low(t->dp, q->dp, q->used, u->dp, u->used, m->used,
-						q->used + u->used);
-			} else {
-				mu = RLC_MAX(0, m->used - (u->used - q->used));
-				bn_muld_low(t->dp, u->dp, u->used, q->dp, q->used, mu,
-						q->used + u->used);
-			}
 			t->used = q->used + u->used;
+			mu = u->used - q->used;
+			if (q->used > u->used) {
+				bn_muld_low(t->dp, q->dp, q->used, u->dp, u->used, mu, t->used);
+			} else {
+				mu = (mu > u->used - q->used ? mu - (u->used - q->used) : 0);
+				bn_muld_low(t->dp, u->dp, u->used, q->dp, q->used, mu, t->used);
+			}
 			bn_trim(t);
 		}
 

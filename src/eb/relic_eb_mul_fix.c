@@ -49,8 +49,9 @@
  * @param[in] k					- the integer.
  */
 static void eb_mul_fix_kbltz(eb_t r, const eb_t *t, const bn_t k) {
-	int i, l, n;
+	int i, n;
 	int8_t u, tnaf[RLC_FB_BITS + 8];
+	size_t l;
 
 	if (bn_is_zero(k)) {
 		eb_set_infty(r);
@@ -66,7 +67,7 @@ static void eb_mul_fix_kbltz(eb_t r, const eb_t *t, const bn_t k) {
 
 	/* Compute the w-TNAF representation of k. */
 	l = sizeof(tnaf);
-	bn_rec_tnaf(tnaf, &l, k, u, RLC_FB_BITS, EB_DEPTH);
+	bn_rec_tnaf(tnaf, &l, k, u, RLC_FB_BITS, RLC_DEPTH);
 
 	n = tnaf[l - 1];
 	if (n > 0) {
@@ -106,8 +107,9 @@ static void eb_mul_fix_kbltz(eb_t r, const eb_t *t, const bn_t k) {
  * @param[in] k					- the integer.
  */
 static void eb_mul_fix_plain(eb_t r, const eb_t *t, const bn_t k) {
-	int l, i, n;
+	int i, n;
 	int8_t naf[RLC_FB_BITS + 1];
+	size_t l;
 
 	if (bn_is_zero(k)) {
 		eb_set_infty(r);
@@ -116,7 +118,7 @@ static void eb_mul_fix_plain(eb_t r, const eb_t *t, const bn_t k) {
 
 	/* Compute the w-TNAF representation of k. */
 	l = RLC_FB_BITS + 1;
-	bn_rec_naf(naf, &l, k, EB_DEPTH);
+	bn_rec_naf(naf, &l, k, RLC_DEPTH);
 
 	n = naf[l - 1];
 	if (n > 0) {
@@ -208,12 +210,12 @@ void eb_mul_pre_combs(eb_t *t, const eb_t p) {
 		bn_new(ord);
 
 		eb_curve_get_ord(ord);
-		l = RLC_CEIL(bn_bits(ord), EB_DEPTH);
+		l = RLC_CEIL(bn_bits(ord), RLC_DEPTH);
 
 		eb_set_infty(t[0]);
 
 		eb_copy(t[1], p);
-		for (j = 1; j < EB_DEPTH; j++) {
+		for (j = 1; j < RLC_DEPTH; j++) {
 			eb_dbl(t[1 << j], t[1 << (j - 1)]);
 			for (i = 1; i < l; i++) {
 				eb_dbl(t[1 << j], t[1 << j]);
@@ -251,14 +253,14 @@ void eb_mul_fix_combs(eb_t r, const eb_t *t, const bn_t k) {
 		bn_new(ord);
 
 		eb_curve_get_ord(ord);
-		l = RLC_CEIL(bn_bits(ord), EB_DEPTH);
+		l = RLC_CEIL(bn_bits(ord), RLC_DEPTH);
 
 		n = bn_bits(k);
-		p0 = (EB_DEPTH) * l - 1;
+		p0 = (RLC_DEPTH) * l - 1;
 
 		w = 0;
 		p1 = p0--;
-		for (j = EB_DEPTH - 1; j >= 0; j--, p1 -= l) {
+		for (j = RLC_DEPTH - 1; j >= 0; j--, p1 -= l) {
 			w = w << 1;
 			if (p1 < n && bn_get_bit(k, p1)) {
 				w = w | 1;
@@ -271,7 +273,7 @@ void eb_mul_fix_combs(eb_t r, const eb_t *t, const bn_t k) {
 
 			w = 0;
 			p1 = p0--;
-			for (j = EB_DEPTH - 1; j >= 0; j--, p1 -= l) {
+			for (j = RLC_DEPTH - 1; j >= 0; j--, p1 -= l) {
 				w = w << 1;
 				if (p1 < n && bn_get_bit(k, p1)) {
 					w = w | 1;
@@ -308,12 +310,12 @@ void eb_mul_pre_combd(eb_t *t, const eb_t p) {
 		bn_new(n);
 
 		eb_curve_get_ord(n);
-		d = RLC_CEIL(bn_bits(n), EB_DEPTH);
+		d = RLC_CEIL(bn_bits(n), RLC_DEPTH);
 		e = (d % 2 == 0 ? (d / 2) : (d / 2) + 1);
 
 		eb_set_infty(t[0]);
 		eb_copy(t[1], p);
-		for (j = 1; j < EB_DEPTH; j++) {
+		for (j = 1; j < RLC_DEPTH; j++) {
 			eb_dbl(t[1 << j], t[1 << (j - 1)]);
 			for (i = 1; i < d; i++) {
 				eb_dbl(t[1 << j], t[1 << j]);
@@ -322,17 +324,17 @@ void eb_mul_pre_combd(eb_t *t, const eb_t p) {
 				eb_add(t[(1 << j) + i], t[1 << j], t[i]);
 			}
 		}
-		eb_set_infty(t[1 << EB_DEPTH]);
-		for (j = 1; j < (1 << EB_DEPTH); j++) {
-			eb_dbl(t[(1 << EB_DEPTH) + j], t[j]);
+		eb_set_infty(t[1 << RLC_DEPTH]);
+		for (j = 1; j < (1 << RLC_DEPTH); j++) {
+			eb_dbl(t[(1 << RLC_DEPTH) + j], t[j]);
 			for (i = 1; i < e; i++) {
-				eb_dbl(t[(1 << EB_DEPTH) + j], t[(1 << EB_DEPTH) + j]);
+				eb_dbl(t[(1 << RLC_DEPTH) + j], t[(1 << RLC_DEPTH) + j]);
 			}
 		}
 
-		eb_norm_sim(t + 2, (const eb_t *)t + 2, (1 << EB_DEPTH) - 2);
-		eb_norm_sim(t + (1 << EB_DEPTH) + 1,
-				(const eb_t *)t + (1 << EB_DEPTH) + 1, (1 << EB_DEPTH) - 1);
+		eb_norm_sim(t + 2, (const eb_t *)t + 2, (1 << RLC_DEPTH) - 2);
+		eb_norm_sim(t + (1 << RLC_DEPTH) + 1,
+				(const eb_t *)t + (1 << RLC_DEPTH) + 1, (1 << RLC_DEPTH) - 1);
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -358,19 +360,19 @@ void eb_mul_fix_combd(eb_t r, const eb_t *t, const bn_t k) {
 
 		eb_curve_get_ord(n);
 
-		d = RLC_CEIL(bn_bits(n), EB_DEPTH);
+		d = RLC_CEIL(bn_bits(n), RLC_DEPTH);
 		e = (d % 2 == 0 ? (d / 2) : (d / 2) + 1);
 
 		eb_set_infty(r);
 		n0 = bn_bits(k);
 
-		p1 = (e - 1) + (EB_DEPTH - 1) * d;
+		p1 = (e - 1) + (RLC_DEPTH - 1) * d;
 		for (i = e - 1; i >= 0; i--) {
 			eb_dbl(r, r);
 
 			w0 = 0;
 			p0 = p1;
-			for (j = EB_DEPTH - 1; j >= 0; j--, p0 -= d) {
+			for (j = RLC_DEPTH - 1; j >= 0; j--, p0 -= d) {
 				w0 = w0 << 1;
 				if (p0 < n0 && bn_get_bit(k, p0)) {
 					w0 = w0 | 1;
@@ -379,7 +381,7 @@ void eb_mul_fix_combd(eb_t r, const eb_t *t, const bn_t k) {
 
 			w1 = 0;
 			p0 = p1-- + e;
-			for (j = EB_DEPTH - 1; j >= 0; j--, p0 -= d) {
+			for (j = RLC_DEPTH - 1; j >= 0; j--, p0 -= d) {
 				w1 = w1 << 1;
 				if (i + e < d && p0 < n0 && bn_get_bit(k, p0)) {
 					w1 = w1 | 1;
@@ -387,7 +389,7 @@ void eb_mul_fix_combd(eb_t r, const eb_t *t, const bn_t k) {
 			}
 
 			eb_add(r, r, t[w0]);
-			eb_add(r, r, t[(1 << EB_DEPTH) + w1]);
+			eb_add(r, r, t[(1 << RLC_DEPTH) + w1]);
 		}
 		eb_norm(r, r);
 		if (bn_sign(k) == RLC_NEG) {
@@ -407,7 +409,7 @@ void eb_mul_fix_combd(eb_t r, const eb_t *t, const bn_t k) {
 #if EB_FIX == LWNAF || !defined(STRIP)
 
 void eb_mul_pre_lwnaf(eb_t *t, const eb_t p) {
-	eb_tab(t, p, EB_DEPTH);
+	eb_tab(t, p, RLC_DEPTH);
 }
 
 void eb_mul_fix_lwnaf(eb_t r, const eb_t *t, const bn_t k) {

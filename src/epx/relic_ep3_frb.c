@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (c) 2011 RELIC Authors
+ * Copyright (c) 2022 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -24,47 +24,27 @@
 /**
  * @file
  *
- * Implementation of a Mask Generation Function.
+ * Implementation of frobenius action on prime elliptic curves over
+ * quadratic extensions.
  *
- * @ingroup md
+ * @ingroup epx
  */
 
-#include <string.h>
-
-#include "relic_conf.h"
 #include "relic_core.h"
-#include "relic_util.h"
-#include "relic_md.h"
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void md_mgf(uint8_t *key, int key_len, const uint8_t *in,
-		int in_len) {
-	uint32_t i, j, d;
-	uint8_t *buffer = RLC_ALLOCA(uint8_t, in_len + sizeof(uint32_t));
-	uint8_t *t = RLC_ALLOCA(uint8_t, key_len + RLC_MD_LEN);
+void ep3_frb(ep3_t r, const ep3_t p, int i) {
+	ctx_t *ctx = core_get();
 
-	if (buffer == NULL || t == NULL) {
-		RLC_FREE(buffer);
-		RLC_FREE(t);
-		RLC_THROW(ERR_NO_MEMORY);
-		return;
+	ep3_copy(r, p);
+	for (; i > 0; i--) {
+		fp3_frb(r->x, r->x, 1);
+		fp3_frb(r->y, r->y, 1);
+		fp3_frb(r->z, r->z, 1);
+		fp3_mul(r->x, r->x, ctx->ep3_frb[0]);
+		fp3_mul(r->y, r->y, ctx->ep3_frb[1]);
 	}
-
-	/* d = ceil(kLen/hLen). */
-	d = RLC_CEIL(key_len, RLC_MD_LEN);
-	memcpy(buffer, in, in_len);
-	for (i = 0; i < d; i++) {
-		j = util_conv_big(i);
-		/* c = integer_to_string(c, 4). */
-		memcpy(buffer + in_len, &j, sizeof(uint32_t));
-		/* t = t || hash(z || c). */
-		md_map(t + i * RLC_MD_LEN, buffer, in_len + sizeof(uint32_t));
-	}
-	memcpy(key, t, key_len);
-
-	RLC_FREE(buffer);
-	RLC_FREE(t);
 }

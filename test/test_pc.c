@@ -35,7 +35,7 @@
 #include "relic_test.h"
 
 static int memory1(void) {
-	err_t e;
+	err_t e = ERR_CAUGHT;
 	int code = RLC_ERR;
 	g1_t a;
 
@@ -625,7 +625,7 @@ static int hashing1(void) {
 }
 
 static int memory2(void) {
-	err_t e;
+	err_t e = ERR_CAUGHT;
 	int code = RLC_ERR;
 	g2_t a;
 
@@ -1219,7 +1219,7 @@ static int hashing2(void) {
 #endif
 
 static int memory(void) {
-	err_t e;
+	err_t e = ERR_CAUGHT;
 	int code = RLC_ERR;
 	gt_t a;
 
@@ -1245,9 +1245,8 @@ static int memory(void) {
 }
 
 int util(void) {
-	int l, code = RLC_ERR;
+	int code = RLC_ERR;
 	gt_t a, b, c;
-	uint8_t bin[24 * RLC_PC_BYTES];
 
 	gt_null(a);
 	gt_null(b);

@@ -37,9 +37,9 @@
 static void memory2(void) {
 	ep2_t a[BENCH];
 
-	BENCH_FEW("ep2_null", ep4_null(a[i]), 1);
+	BENCH_FEW("ep2_null", ep2_null(a[i]), 1);
 
-	BENCH_FEW("ep2_new", ep4_new(a[i]), 1);
+	BENCH_FEW("ep2_new", ep2_new(a[i]), 1);
 	for (int i = 0; i < BENCH; i++) {
 		ep2_free(a[i]);
 	}
@@ -47,7 +47,7 @@ static void memory2(void) {
 	for (int i = 0; i < BENCH; i++) {
 		ep2_new(a[i]);
 	}
-	BENCH_FEW("ep2_free", ep4_free(a[i]), 1);
+	BENCH_FEW("ep2_free", ep2_free(a[i]), 1);
 
 	(void)a;
 }

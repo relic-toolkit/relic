@@ -314,7 +314,7 @@ void pp_dbl_k12_projc_lazyr(fp12_t l, ep2_t r, const ep2_t q, const ep_t p) {
 			fp2_mul(r->z, t1, t3);
 
 			/* l11 = E - B. */
-			fp2_sub(l[1][1], t2, t1);
+			fp2_sub(l[one][one], t2, t1);
 
 			/* l10 = (3 * xp) * t0. */
 			fp_mul(l[one][zero][0], p->x, t0[0]);

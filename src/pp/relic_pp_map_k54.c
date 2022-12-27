@@ -42,7 +42,8 @@ static void pp_mil_k54(fp54_t r, const fp9_t qx, const fp9_t qy, const ep_t p,
 	fp54_t l;
 	ep_t _p;
 	fp9_t rx, ry, rz, sx, sy, sz, qn;
-	int i, len = bn_bits(a) + 1;
+	size_t len = bn_bits(a) + 1;
+	int i;
 	int8_t s[RLC_FP_BITS + 1];
 
 	fp54_null(l);
@@ -116,12 +117,12 @@ static void pp_mil_k54(fp54_t r, const fp9_t qx, const fp9_t qy, const ep_t p,
 		fp9_inv(sz, sz);
 		fp_copy(sz[0][0], sz[2][2]);
 		fp_mul(sz[0][0], sz[0][0], core_get()->fp3_p0[1]);
-		fp_mul(sz[0][0], sz[0][0], core_get()->fp3_p1[3]);
-		fp_mul(sz[0][0], sz[0][0], core_get()->fp3_p1[0]);
+		fp_mul(sz[0][0], sz[0][0], core_get()->fp3_p1[3][0]);
+		fp_mul(sz[0][0], sz[0][0], core_get()->fp3_p1[0][0]);
 		fp3_mul_nor(sz[0], sz[0]);
 		fp3_mul_nor(sz[0], sz[0]);
 		fp3_mul_nor(sz[0], sz[0]);
-		fp_mul(sz[1][0], sz[0][0], core_get()->fp3_p2[1]);
+		fp_mul(sz[1][0], sz[0][0], core_get()->fp3_p2[1][0]);
 
 		for (int i = 0; i < 3; i++) {
 			fp3_mul(ry[i], ry[i], sz[0]);

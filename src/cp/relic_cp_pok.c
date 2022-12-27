@@ -134,7 +134,7 @@ int cp_pokdl_ver(const bn_t c, const bn_t r, const ec_t y) {
 	return result;
 }
 
-int cp_pokor_prv(bn_t c[2], bn_t r[2],const  ec_t y[2], const bn_t x) {
+int cp_pokor_prv(bn_t c[2], bn_t r[2], const ec_t y[2], const bn_t x) {
 	bn_t n, v[2], z;
 	ec_t t;
 	int l, result = RLC_OK;

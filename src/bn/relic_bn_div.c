@@ -167,13 +167,11 @@ void bn_div_dig(bn_t c, const bn_t a, dig_t b) {
 	}
 
 	RLC_TRY {
-		bn_new_size(q, a->used);
-		bn_div1_low(q->dp, &r, (const dig_t *)a->dp, a->used, b);
+		bn_new(q);
 
+		bn_copy(q, a);
+		bn_div1_low(q->dp, &r, (const dig_t *)a->dp, a->used, b);
 		if (c != NULL) {
-			q->used = a->used;
-			q->sign = a->sign;
-			bn_trim(q);
 			bn_copy(c, q);
 		}
 	}
@@ -207,13 +205,12 @@ void bn_div_rem_dig(bn_t c, dig_t *d, const bn_t a, dig_t b) {
 	}
 
 	RLC_TRY {
-		bn_new_size(q, a->used);
+		bn_new(q);
+
+		bn_copy(q, a);
 		bn_div1_low(q->dp, &r, (const dig_t *)a->dp, a->used, b);
 
 		if (c != NULL) {
-			q->used = a->used;
-			q->sign = a->sign;
-			bn_trim(q);
 			bn_copy(c, q);
 		}
 

@@ -871,8 +871,6 @@ void ep2_curve_set_twist(int type) {
 		bn_copy(&(ctx->ep2_r), r);
 		bn_copy(&(ctx->ep2_h), h);
 		ctx->ep2_is_ctmap = ctmap;
-		/* I don't have a better place for this. */
-		fp_prime_calc();
 
 		fp_copy(ctx->ep2_frb[0][0], ctx->fp2_p1[1][0]);
 		fp_copy(ctx->ep2_frb[0][1], ctx->fp2_p1[1][1]);

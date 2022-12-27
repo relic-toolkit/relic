@@ -236,6 +236,15 @@ void fp_param_set(int param) {
 				f[7] = 256;
 				fp_prime_set_pmers(f, 8);
 				break;
+			case SM2_256:
+				/* p = 2^256 - 2^224 - 2^96 + 2^64 - 1. */
+				f[0] = -1;
+				f[1] = 64;
+				f[2] = -96;
+				f[3] = -224;
+				f[4] = 256;
+				fp_prime_set_pmers(f, 5);
+				break;
 			case BN_256:
 				/* x = -0x600000000000219B. */
 				bn_set_2b(t0, 62);
@@ -520,6 +529,21 @@ void fp_param_set(int param) {
 				bn_neg(t0, t0);
 				fp_prime_set_pairf(t0, EP_B12);
 				break;
+			case K18_638:
+				/* x = 2^80 + 2^77 + 2^76 − 2^61 − 2^53 − 2^14. */
+				bn_set_2b(t0, 80);
+				bn_set_2b(t1, 77);
+				bn_add(t0, t0, t1);
+				bn_set_2b(t1, 76);
+				bn_add(t0, t0, t1);
+				bn_set_2b(t1, 61);
+				bn_sub(t0, t0, t1);
+				bn_set_2b(t1, 53);
+				bn_sub(t0, t0, t1);
+				bn_set_2b(t1, 14);
+				bn_sub(t0, t0, t1);
+				fp_prime_set_pairf(t0, EP_K18);
+				break;
 #elif FP_PRIME == 1536
 			case SS_1536:
 				/* x = 2^255 + 2^41 + 1. */
@@ -687,7 +711,8 @@ int fp_param_set_any_tower(void) {
 #ifdef FP_QNRES
 	fp_param_set(B12_638);
 #else
-	fp_param_set(BN_638);
+	//fp_param_set(BN_638);
+	fp_param_set(K18_638);
 #endif
 #elif FP_PRIME == 1536
 	fp_param_set(SS_1536);

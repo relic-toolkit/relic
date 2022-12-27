@@ -141,6 +141,7 @@ static void benaloh(void) {
 	dig_t in, new;
 	uint8_t out[RLC_BN_BITS / 8 + 1];
 	size_t out_len;
+	dig_t prime = 0xFB;
 
 	bdpe_null(pub);
 	bdpe_null(prv);
@@ -148,13 +149,12 @@ static void benaloh(void) {
 	bdpe_new(pub);
 	bdpe_new(prv);
 
-	BENCH_ONE("cp_bdpe_gen", cp_bdpe_gen(pub, prv, bn_get_prime(47),
-		RLC_BN_BITS), 1);
+	BENCH_ONE("cp_bdpe_gen", cp_bdpe_gen(pub, prv, prime, RLC_BN_BITS), 1);
 
 	BENCH_RUN("cp_bdpe_enc") {
 		out_len = RLC_BN_BITS / 8 + 1;
 		rand_bytes(out, 1);
-		in = out[0] % bn_get_prime(47);
+		in = out[0] % prime;
 		BENCH_ADD(cp_bdpe_enc(out, &out_len, in, pub));
 		cp_bdpe_dec(&new, out, out_len, prv);
 	} BENCH_END;
@@ -162,7 +162,7 @@ static void benaloh(void) {
 	BENCH_RUN("cp_bdpe_dec") {
 		out_len = RLC_BN_BITS / 8 + 1;
 		rand_bytes(out, 1);
-		in = out[0] % bn_get_prime(47);
+		in = out[0] % prime;
 		cp_bdpe_enc(out, &out_len, in, pub);
 		BENCH_ADD(cp_bdpe_dec(&new, out, out_len, prv));
 	} BENCH_END;
@@ -1328,7 +1328,7 @@ static void pss(void) {
 	}
 }
 
-#ifdef WITH_MPC
+#if defined(WITH_MPC)
 
 static void mpss(void) {
 	bn_t m[2], n, u[2], v[2], ms[10][2], _v[10][2];

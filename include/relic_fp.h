@@ -48,17 +48,17 @@
 /**
  * Precision in bits of a prime field element.
  */
-#define RLC_FP_BITS 	((int)FP_PRIME)
+#define RLC_FP_BITS 	((size_t)FP_PRIME)
 
 /**
  * Size in digits of a block sufficient to store a prime field element.
  */
-#define RLC_FP_DIGS 	((int)RLC_CEIL(RLC_FP_BITS, RLC_DIG))
+#define RLC_FP_DIGS 	((size_t)RLC_CEIL(RLC_FP_BITS, RLC_DIG))
 
 /**
  * Size in bytes of a block sufficient to store a binary field element.
  */
-#define RLC_FP_BYTES 	((int)RLC_CEIL(RLC_FP_BITS, 8))
+#define RLC_FP_BYTES 	((size_t)RLC_CEIL(RLC_FP_BITS, 8))
 
 /*
  * Finite field identifiers.
@@ -92,6 +92,8 @@ enum {
 	BSI_256,
 	/** SECG 256-bit denser reduction prime. */
 	SECG_256,
+	/** SM2 256-bit prime modulus standardized in China. */
+	SM2_256,
 	/** Curve67254 382-bit prime modulus. */
 	PRIME_382105,
 	/** Curve383187 383-bit prime modulus. */
@@ -146,6 +148,8 @@ enum {
 	BN_638,
 	/** 638-bit prime for BLS curve with embedding degree 12. */
 	B12_638,
+	/** 638-bit prime for KSS curve with embedding degree 18. */
+	K18_638,
 	/** 1536-bit prime for supersingular curve with embedding degree k = 2. */
 	SS_1536,
 	/** 3072-bit prime for supersingular curve with embedding degree k = 1. */
@@ -449,6 +453,13 @@ const dig_t *fp_prime_get_conv(void);
 dig_t fp_prime_get_mod8(void);
 
 /**
+ * Returns the result of prime order mod 18.
+ *
+ * @return the result of prime order mod 18.
+ */
+dig_t fp_prime_get_mod18(void);
+
+/**
  * Returns the prime stored in special form. The most significant bit is
  * RLC_FP_BITS.
  *
@@ -499,10 +510,10 @@ void fp_prime_set_dense(const bn_t p);
  * @param[in] spars		- the list of powers of 2 describing the prime.
  * @param[in] len		- the number of powers.
  */
-void fp_prime_set_pmers(const int *spars, int len);
+void fp_prime_set_pmers(const int *spars, size_t len);
 
 /**
-* Assigns the prime field modulus to a parametrization from a family of
+ * Assigns the prime field modulus to a parametrization from a family of
  * pairing-friendly curves.
  */
 void fp_prime_set_pairf(const bn_t x, int pairf);
@@ -651,7 +662,7 @@ int fp_is_even(const fp_t a);
  * @param[in] bit			- the bit position.
  * @return the bit value.
  */
-int fp_get_bit(const fp_t a, int bit);
+int fp_get_bit(const fp_t a, uint_t bit);
 
 /**
  * Stores a bit in a given position on a prime field element.
@@ -660,7 +671,7 @@ int fp_get_bit(const fp_t a, int bit);
  * @param[in] bit			- the bit position.
  * @param[in] value			- the bit value.
  */
-void fp_set_bit(fp_t a, int bit, int value);
+void fp_set_bit(fp_t a, uint_t bit, int value);
 
 /**
  * Assigns a small positive constant to a prime field element.
@@ -679,7 +690,7 @@ void fp_set_dig(fp_t c, dig_t a);
  * @param[in] a				- the prime field element.
  * @return the number of bits.
  */
-int fp_bits(const fp_t a);
+size_t fp_bits(const fp_t a);
 
 /**
  * Assigns a random value to a prime field element.
@@ -704,7 +715,7 @@ void fp_print(const fp_t a);
  * @throw ERR_NO_VALID		- if the radix is invalid.
  * @return the number of digits in the given radix.
  */
-int fp_size_str(const fp_t a, int radix);
+size_t fp_size_str(const fp_t a, uint_t radix);
 
 /**
  * Reads a prime field element from a string in a given radix. The radix must
@@ -716,7 +727,7 @@ int fp_size_str(const fp_t a, int radix);
  * @param[in] radix			- the radix.
  * @throw ERR_NO_VALID		- if the radix is invalid.
  */
-void fp_read_str(fp_t a, const char *str, int len, int radix);
+void fp_read_str(fp_t a, const char *str, size_t len, uint_t radix);
 
 /**
  * Writes a prime field element to a string in a given radix. The radix must
@@ -729,7 +740,7 @@ void fp_read_str(fp_t a, const char *str, int len, int radix);
  * @throw ERR_BUFFER		- if the buffer capacity is insufficient.
  * @throw ERR_NO_VALID		- if the radix is invalid.
  */
-void fp_write_str(char *str, int len, const fp_t a, int radix);
+void fp_write_str(char *str, size_t len, const fp_t a, uint_t radix);
 
 /**
  * Reads a prime field element from a byte vector in big-endian format.
@@ -739,7 +750,7 @@ void fp_write_str(char *str, int len, const fp_t a, int radix);
  * @param[in] len			- the buffer capacity.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is not RLC_FP_BYTES.
  */
-void fp_read_bin(fp_t a, const uint8_t *bin, int len);
+void fp_read_bin(fp_t a, const uint8_t *bin, size_t len);
 
 /**
  * Writes a prime field element to a byte vector in big-endian format.
@@ -749,7 +760,7 @@ void fp_read_bin(fp_t a, const uint8_t *bin, int len);
  * @param[in] a				- the prime field element to write.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is not RLC_FP_BYTES.
  */
-void fp_write_bin(uint8_t *bin, int len, const fp_t a);
+void fp_write_bin(uint8_t *bin, size_t len, const fp_t a);
 
 /**
  * Returns the result of a comparison between two prime field elements.
@@ -962,7 +973,7 @@ void fp_sqr_karat(fp_t c, const fp_t a);
  * @param[in] a				- the prime field element to shift.
  * @param[in] bits			- the number of bits to shift.
  */
-void fp_lsh(fp_t c, const fp_t a, int bits);
+void fp_lsh(fp_t c, const fp_t a, uint_t bits);
 
 /**
  * Shifts a prime field element to the right. Computes c = floor(a / 2^bits).
@@ -971,7 +982,7 @@ void fp_lsh(fp_t c, const fp_t a, int bits);
  * @param[in] a				- the prime field element to shift.
  * @param[in] bits			- the number of bits to shift.
  */
-void fp_rsh(fp_t c, const fp_t a, int bits);
+void fp_rsh(fp_t c, const fp_t a, uint_t bits);
 
 /**
  * Reduces a multiplication result modulo the prime field modulo using

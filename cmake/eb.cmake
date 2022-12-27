@@ -6,8 +6,6 @@ message("      EB_PLAIN=[off|on] Support for ordinary curves without endomorphis
 message("      EB_KBLTZ=[off|on] Support for Koblitz anomalous binary curves.")
 message("      EB_MIXED=[off|on] Use mixed coordinates.")
 message("      EB_PRECO=[off|on] Build precomputation table for generator.")
-message("      EB_DEPTH=w        Width w in [2,8] of precomputation table for fixed point methods.")
-message("      EB_WIDTH=w        Width w in [2,6] of window processing for unknown point methods.\n")
 
 message("   ** Available binary elliptic curve methods (default = PROJC;LWNAF;COMBS;INTER):\n")
 
@@ -33,15 +31,6 @@ message("      EB_METHD=BASIC    Multiplication-and-addition simultaneous multip
 message("      EB_METHD=TRICK    Shamir's trick for simultaneous multiplication.")
 message("      EB_METHD=INTER    Interleaving of window (T)NAFs.")
 message("      EB_METHD=JOINT    Joint sparse form.\n")
-
-if (NOT EB_DEPTH)
-	set(EB_DEPTH 4)
-endif(NOT EB_DEPTH)
-if (NOT EB_WIDTH)
-	set(EB_WIDTH 4)
-endif(NOT EB_WIDTH)
-set(EB_DEPTH "${EB_DEPTH}" CACHE STRING "Width of precomputation table for fixed point methods.")
-set(EB_WIDTH "${EB_WIDTH}" CACHE STRING "Width of window processing for unknown point methods.")
 
 option(EB_PLAIN "Support for ordinary curves without endomorphisms" on)
 option(EB_KBLTZ "Support for Koblitz anomalous binary curves" on)

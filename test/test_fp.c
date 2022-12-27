@@ -36,7 +36,7 @@
 #include "relic_fp_low.h"
 
 static int memory(void) {
-	err_t e;
+	err_t e = ERR_CAUGHT;
 	int code = RLC_ERR;
 	fp_t a;
 

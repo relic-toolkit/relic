@@ -48,27 +48,31 @@
  * @param[in] coeffs	- the vector of coefficients in the polynomial.
  * @param[in] deg 		- the degree of the polynomial.
  */
-TMPL_MAP_HORNER(fp, fp_st)
+TMPL_MAP_HORNER(fp, fp_st);
+
 /**
  * Generic isogeny map evaluation for use with SSWU map.
  */
-TMPL_MAP_ISOGENY_MAP(ep, fp, iso)
+TMPL_MAP_ISOGENY_MAP(ep, fp, iso);
 
 #endif /* EP_CTMAP */
 
+#define EP_MAP_COPY_COND(O, I, C) dv_copy_cond(O, I, RLC_FP_DIGS, C)
 /**
  * Simplified SWU mapping from Section 4 of
  * "Fast and simple constant-time hashing to the BLS12-381 Elliptic Curve"
  */
-#define EP_MAP_COPY_COND(O, I, C) dv_copy_cond(O, I, RLC_FP_DIGS, C)
-		TMPL_MAP_SSWU(ep, fp, dig_t, EP_MAP_COPY_COND)
+TMPL_MAP_SSWU(ep, fp, dig_t, EP_MAP_COPY_COND);
+
 /**
  * Shallue--van de Woestijne map, based on the definition from
  * draft-irtf-cfrg-hash-to-curve-06, Section 6.6.1
  */
-TMPL_MAP_SVDW(ep, fp, dig_t, EP_MAP_COPY_COND)
+TMPL_MAP_SVDW(ep, fp, dig_t, EP_MAP_COPY_COND);
+
 #undef EP_MAP_COPY_COND
-/* caution: this function overwrites k, which it uses as an auxiliary variable */
+
+/* caution: this function overwrites k, which used as an auxiliary variable */
 static inline int fp_sgn0(const fp_t t, bn_t k) {
 	fp_prime_back(k, t);
 	return bn_get_bit(k, 0);
@@ -86,14 +90,14 @@ static inline int fp_sgn0(const fp_t t, bn_t k) {
  * @param[in] len			- the array length in bytes.
  * @param[in] map_fn		- the mapping function.
  */
-void ep_map_from_field(ep_t p, const uint8_t *uniform_bytes, int len,
-		void (*const map_fn)(ep_t, fp_t)) {
+static void ep_map_from_field(ep_t p, const uint8_t *uniform_bytes, size_t len,
+		const void (*const map_fn)(ep_t, fp_t)) {
 	bn_t k;
 	fp_t t;
 	ep_t q;
 	int neg;
 	/* enough space for two field elements plus extra bytes for uniformity */
-	const int len_per_elm = (FP_PRIME + ep_param_level() + 7) / 8;
+	const size_t len_per_elm = (FP_PRIME + ep_param_level() + 7) / 8;
 
 	bn_null(k);
 	fp_null(t);
@@ -161,7 +165,7 @@ void ep_map_from_field(ep_t p, const uint8_t *uniform_bytes, int len,
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void ep_map_basic(ep_t p, const uint8_t *msg, int len) {
+void ep_map_basic(ep_t p, const uint8_t *msg, size_t len) {
 	bn_t x;
 	fp_t t0;
 	uint8_t digest[RLC_MD_LEN];
@@ -203,10 +207,10 @@ void ep_map_basic(ep_t p, const uint8_t *msg, int len) {
 	}
 }
 
-void ep_map_sswum(ep_t p, const uint8_t *msg, int len) {
+void ep_map_sswum(ep_t p, const uint8_t *msg, size_t len) {
 
 	/* enough space for two field elements plus extra bytes for uniformity */
-	const int len_per_elm = (FP_PRIME + ep_param_level() + 7) / 8;
+	const size_t len_per_elm = (FP_PRIME + ep_param_level() + 7) / 8;
 	uint8_t *pseudo_random_bytes = RLC_ALLOCA(uint8_t, 2 * len_per_elm);
 
 	RLC_TRY {
@@ -231,9 +235,9 @@ void ep_map_sswum(ep_t p, const uint8_t *msg, int len) {
 	}
 }
 
-void ep_map_swift(ep_t p, const uint8_t *msg, int len) {
+void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 	/* enough space for two field elements plus extra bytes for uniformity */
-	const int len_per_elm = (FP_PRIME + ep_param_level() + 7) / 8;
+	const size_t len_per_elm = (FP_PRIME + ep_param_level() + 7) / 8;
 	uint8_t s, *pseudo_random_bytes = RLC_ALLOCA(uint8_t, 2 * len_per_elm + 1);
 	fp_t t, u, v, w, y, x1, y1, z1;
 	ctx_t *ctx = core_get();
@@ -260,7 +264,7 @@ void ep_map_swift(ep_t p, const uint8_t *msg, int len) {
 		fp_new(y1);
 		fp_new(z1);
 
-		md_xmd(pseudo_random_bytes, 2 * len_per_elm, msg, len,
+		md_xmd(pseudo_random_bytes, 2 * len_per_elm + 1, msg, len,
 				(const uint8_t *)"RELIC", 5);
 
 		bn_read_bin(k, pseudo_random_bytes, len_per_elm);

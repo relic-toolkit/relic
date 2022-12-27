@@ -204,7 +204,7 @@ void arch_clean(void) {
 
 
 ull_t arch_cycles(void) {
-	unsigned int value = 0;
+	uint_t value = 0;
 
 #if TIMER == CYCLE
 
@@ -231,6 +231,6 @@ ull_t arch_cycles(void) {
 	return value;
 }
 
-unsigned int arch_lzcnt(dig_t x) {
+uint_t arch_lzcnt(dig_t x) {
 	return core_get()->lzcnt_ptr((ull_t)x) - (8 * sizeof(ull_t) - WSIZE);
 }
