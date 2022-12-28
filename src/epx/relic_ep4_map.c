@@ -151,7 +151,7 @@ void ep4_map(ep4_t p, const uint8_t *msg, size_t len) {
 				t0z = fp_is_zero(t[i][0]);
 				fp_prime_back(k, t[i][0]);
 				t0 = bn_get_bit(k, 0);
-				fp_prime_back(k, t[0][1]);
+				fp_prime_back(k, t[i][1]);
 				t1 = bn_get_bit(k, 0);
 				/* t[0] == 0 ? sgn0(t[1]) : sgn0(t[0]) */
 				s[i] = t0 | (t0z & t1);
