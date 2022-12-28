@@ -1458,6 +1458,7 @@ int test(void) {
 
 int main(void) {
 	int r0 = RLC_ERR, r1 = RLC_ERR, r2 = RLC_ERR, r3 = RLC_ERR;
+	int c0 = 0, c1 = 0, c2 = 0, c3 = 0;
 
 	if (core_init() != RLC_OK) {
 		core_clean();
@@ -1469,6 +1470,7 @@ int main(void) {
 #if defined(EP_PLAIN)
 	r0 = ep_param_set_any_plain();
 	if (r0 == RLC_OK) {
+		c0 = ep_param_get();
 		if (test() != RLC_OK) {
 			core_clean();
 			return 1;
@@ -1479,27 +1481,36 @@ int main(void) {
 #if defined(EP_ENDOM)
 	r1 = ep_param_set_any_endom();
 	if (r1 == RLC_OK) {
-		if (test() != RLC_OK) {
-			core_clean();
-			return 1;
+		c1 = ep_param_get();
+		if (c1 != c0) {
+			if (test() != RLC_OK) {
+				core_clean();
+				return 1;
+			}
 		}
 	}
 #endif
 
 	r2 = ep_param_set_any_pairf();
 	if (r2 == RLC_OK) {
-		if (test() != RLC_OK) {
-			core_clean();
-			return 1;
+		c2 = ep_param_get();
+		if (c2 != c1) {
+			if (test() != RLC_OK) {
+				core_clean();
+				return 1;
+			}
 		}
 	}
 
 #if defined(EP_SUPER)
 	r3 = ep_param_set_any_super();
 	if (r3 == RLC_OK) {
-		if (test() != RLC_OK) {
-			core_clean();
-			return 1;
+		c3 = ep_param_get();
+		if (c3 != c2) {
+			if (test() != RLC_OK) {
+				core_clean();
+				return 1;
+			}
 		}
 	}
 #endif
@@ -1516,6 +1527,11 @@ int main(void) {
 			}
 		}
 	}
+
+	(void)c0;
+	(void)c1;
+	(void)c2;
+	(void)c3;
 
 	util_banner("All tests have passed.\n", 0);
 
