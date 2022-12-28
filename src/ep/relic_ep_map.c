@@ -165,6 +165,8 @@ static void ep_map_from_field(ep_t p, const uint8_t *uniform_bytes, size_t len,
 /* Public definitions                                                         */
 /*============================================================================*/
 
+#if EP_MAP == BASIC || !defined(STRIP)
+
 void ep_map_basic(ep_t p, const uint8_t *msg, size_t len) {
 	bn_t x;
 	fp_t t0;
@@ -207,33 +209,39 @@ void ep_map_basic(ep_t p, const uint8_t *msg, size_t len) {
 	}
 }
 
-void ep_map_sswum(ep_t p, const uint8_t *msg, size_t len) {
+#endif
 
+#if EP_MAP == SSWUM || !defined(STRIP)
+
+void ep_map_sswum(ep_t p, const uint8_t *msg, size_t len) {
 	/* enough space for two field elements plus extra bytes for uniformity */
-	const size_t len_per_elm = (FP_PRIME + ep_param_level() + 7) / 8;
-	uint8_t *pseudo_random_bytes = RLC_ALLOCA(uint8_t, 2 * len_per_elm);
+	const size_t elm = (FP_PRIME + ep_param_level() + 7) / 8;
+	uint8_t *r = RLC_ALLOCA(uint8_t, 2 * elm);
 
 	RLC_TRY {
 		/* for hash_to_field, need to hash to a pseudorandom string */
 		/* XXX(rsw) the below assumes that we want to use MD_MAP for hashing.
 		 *          Consider making the hash function a per-curve option!
 		 */
-		md_xmd(pseudo_random_bytes, 2 * len_per_elm, msg, len,
-				(const uint8_t *)"RELIC", 5);
+		md_xmd(r, 2 * elm, msg, len, (const uint8_t *)"RELIC", 5);
 		/* figure out which hash function to use */
 		const int abNeq0 = (ep_curve_opt_a() != RLC_ZERO) &&
 				(ep_curve_opt_b() != RLC_ZERO);
 		void (*const map_fn)(ep_t, fp_t) = (ep_curve_is_ctmap() ||
 				abNeq0) ? ep_map_sswu : ep_map_svdw;
-		ep_map_from_field(p, pseudo_random_bytes, 2 * len_per_elm, map_fn);
+		ep_map_from_field(p, r, 2 * elm, map_fn);
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		RLC_FREE(pseudo_random_bytes);
+		RLC_FREE(r);
 	}
 }
+
+#endif
+
+#if EP_MAP == SWIFT || !defined(STRIP)
 
 void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 	/* enough space for two field elements plus extra bytes for uniformity */
@@ -356,3 +364,5 @@ void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 		RLC_FREE(pseudo_random_bytes);
 	}
 }
+
+#endif
