@@ -37,47 +37,6 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void _ep4_map(ep4_t p, const uint8_t *msg, size_t len) {
-	bn_t x;
-	fp4_t t0;
-	uint8_t digest[RLC_MD_LEN];
-
-	bn_null(x);
-	fp4_null(t0);
-
-	RLC_TRY {
-		bn_new(x);
-		fp4_new(t0);
-
-		md_map(digest, msg, len);
-		bn_read_bin(x, digest, RLC_MIN(RLC_FP_BYTES, RLC_MD_LEN));
-
-		fp4_zero(p->x);
-		fp_prime_conv(p->x[0][0], x);
-		fp4_set_dig(p->z, 1);
-
-		while (1) {
-			ep4_rhs(t0, p);
-
-			if (fp4_srt(p->y, t0)) {
-				p->coord = BASIC;
-				break;
-			}
-
-			fp_add_dig(p->x[0][0], p->x[0][0], 1);
-		}
-
-		ep4_mul_cof(p, p);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		bn_free(x);
-		fp4_free(t0);
-	}
-}
-
 void ep4_map(ep4_t p, const uint8_t *msg, size_t len) {
 	/* enough space for two field elements plus extra bytes for uniformity */
 	const size_t elm = (FP_PRIME + ep_param_level() + 7) / 8;
@@ -88,25 +47,25 @@ void ep4_map(ep4_t p, const uint8_t *msg, size_t len) {
 	bn_t k;
 
 	bn_null(k);
-	fp_null(t);
-	fp_null(u);
-	fp_null(v);
-	fp_null(w);
-	fp_null(y);
-	fp_null(x1);
-	fp_null(y1);
-	fp_null(z1);
+	fp4_null(t);
+	fp4_null(u);
+	fp4_null(v);
+	fp4_null(w);
+	fp4_null(y);
+	fp4_null(x1);
+	fp4_null(y1);
+	fp4_null(z1);
 
 	RLC_TRY {
 		bn_new(k);
-		fp_new(t);
-		fp_new(u);
-		fp_new(v);
-		fp_new(w);
-		fp_new(y);
-		fp_new(x1);
-		fp_new(y1);
-		fp_new(z1);
+		fp4_new(t);
+		fp4_new(u);
+		fp4_new(v);
+		fp4_new(w);
+		fp4_new(y);
+		fp4_new(x1);
+		fp4_new(y1);
+		fp4_new(z1);
 
 		md_xmd(r, 8 * elm + 1, msg, len, (const uint8_t *)"RELIC", 5);
 
@@ -187,7 +146,6 @@ void ep4_map(ep4_t p, const uint8_t *msg, size_t len) {
 			if (!fp4_srt(t, t)) {
 				RLC_THROW(ERR_NO_VALID);
 			}
-			fp4_neg(u, t);
 
 			for (int i = 0; i < 2; i++) {
 				t0z = fp_is_zero(t[i][0]);
@@ -202,6 +160,7 @@ void ep4_map(ep4_t p, const uint8_t *msg, size_t len) {
 			t0z = fp2_is_zero(t[0]);
 			sign ^= (s[0] | (t0z & s[1]));
 
+			fp4_neg(u, t);
 			dv_swap_cond(t[0][0], u[0][0], RLC_FP_DIGS, sign);
 			dv_swap_cond(t[0][1], u[0][1], RLC_FP_DIGS, sign);
 			dv_swap_cond(t[1][0], u[1][0], RLC_FP_DIGS, sign);
@@ -216,14 +175,14 @@ void ep4_map(ep4_t p, const uint8_t *msg, size_t len) {
 		}
 
 		bn_free(k);
-		fp_free(t);
-		fp_free(u);
-		fp_free(v);
-		fp_free(w);
-		fp_free(y);
-		fp_free(x1);
-		fp_free(y1);
-		fp_free(z1);
+		fp4_free(t);
+		fp4_free(u);
+		fp4_free(v);
+		fp4_free(w);
+		fp4_free(y);
+		fp4_free(x1);
+		fp4_free(y1);
+		fp4_free(z1);
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);

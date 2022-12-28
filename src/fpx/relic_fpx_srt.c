@@ -85,7 +85,7 @@ int fp2_srt(fp2_t c, const fp2_t a) {
 			/* special case: either a[0] is square and sqrt is purely 'real'
 			 * or a[0] is non-square and sqrt is purely 'imaginary' */
 			r = 1;
-			if (fp_smb(a[0]) == 1) {
+			if (fp_is_sqr(a[0])) {
 				fp_srt(t0, a[0]);
 				fp_copy(c[0], t0);
 				fp_zero(c[1]);
@@ -118,13 +118,13 @@ int fp2_srt(fp2_t c, const fp2_t a) {
 			}
 			fp_add(t0, t0, t1);
 
-			if (fp_smb(t0) == 1) {
+			if (fp_is_sqr(t0)) {
 				fp_srt(t1, t0);
 				/* t0 = (a_0 + sqrt(t0)) / 2 */
 				fp_add(t0, a[0], t1);
 				fp_hlv(t0, t0);
 
-				if (fp_smb(t0) != 1) {
+				if (!fp_is_sqr(t0)) {
 					/* t0 = (a_0 - sqrt(t0)) / 2 */
 					fp_sub(t0, a[0], t1);
 					fp_hlv(t0, t0);
@@ -228,7 +228,7 @@ int fp3_srt(fp3_t c, const fp3_t a) {
 
 				fp3_mul(t0, t0, a);
 				fp_sub_dig(t1[0], t1[0], 1);
-				fp3_mul(c, t0, t1);
+				fp3_mul(t0, t0, t1);
 				break;
 			case 3:
 			case 7:
@@ -245,15 +245,16 @@ int fp3_srt(fp3_t c, const fp3_t a) {
 				fp3_exp(t0, t0, e);
 
 				fp3_mul(t0, t0, a);
-				fp3_mul(c, t0, t1);
+				fp3_mul(t0, t0, t1);
 				break;
 			default:
 				fp3_zero(c);
 				break;
 		}
 
-		fp3_sqr(t0, c);
-		if (fp3_cmp(t0, a) == RLC_EQ) {
+		fp3_sqr(t1, t0);
+		if (fp3_cmp(t1, a) == RLC_EQ) {
+			fp3_copy(c, t3);
 			r = 1;
 		}
 	} RLC_CATCH_ANY {

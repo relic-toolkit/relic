@@ -1550,7 +1550,7 @@ int ep3_size_bin(const ep3_t a, int pack);
  * @throw ERR_NO_VALID		- if the encoded point is invalid.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is invalid.
  */
-void ep3_read_bin(ep3_t a, const uint8_t *bin, int len);
+void ep3_read_bin(ep3_t a, const uint8_t *bin, size_t len);
 
 /**
  * Writes a prime elliptic curve pointer over a quartic extension to a byte
@@ -1562,7 +1562,7 @@ void ep3_read_bin(ep3_t a, const uint8_t *bin, int len);
  * @param[in] pack			- the flag to indicate compression.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is invalid.
  */
-void ep3_write_bin(uint8_t *bin, int len, const ep3_t a, int pack);
+void ep3_write_bin(uint8_t *bin, size_t len, const ep3_t a, int pack);
 
 /**
  * Negates a point represented in affine coordinates in an elliptic curve over
@@ -1910,7 +1910,7 @@ void ep3_mul_sim_gen(ep3_t r, const bn_t k, const ep3_t q, const bn_t m);
  * @param[in] k				- the small scalars.
  * @param[in] len			- the number of points to multiply.
  */
-void ep3_mul_sim_dig(ep3_t r, const ep3_t p[], const dig_t k[], int len);
+void ep3_mul_sim_dig(ep3_t r, const ep3_t p[], const dig_t k[], size_t len);
 
 /**
  * Converts a point to affine coordinates.
@@ -1930,25 +1930,13 @@ void ep3_norm(ep3_t r, const ep3_t p);
 void ep3_norm_sim(ep3_t *r, const ep3_t *t, int n);
 
 /**
- * Maps a byte array to a point in an elliptic curve over a quartic extension.
+ * Maps a byte array to a point in an elliptic curve over a cubic extension.
  *
  * @param[out] p			- the result.
  * @param[in] msg			- the byte array to map.
  * @param[in] len			- the array length in bytes.
  */
-void ep3_map(ep3_t p, const uint8_t *msg, int len);
-
-/**
- * Maps a byte array to a point in an elliptic curve over a quartic extension
- * using an explicit domain separation tag.
- *
- * @param[out] p			- the result.
- * @param[in] msg			- the byte array to map.
- * @param[in] len			- the array length in bytes.
- * @param[in] dst			- the domain separatoin tag.
- * @param[in] dst_len		- the domain separation tag length in bytes.
- */
-void ep3_map_dst(ep3_t p, const uint8_t *msg, int len, const uint8_t *dst, int dst_len);
+void ep3_map(ep3_t p, const uint8_t *msg, size_t len);
 
 /**
  * Computes a power of the Gailbraith-Lin-Scott homomorphism of a point
