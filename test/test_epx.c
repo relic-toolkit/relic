@@ -1096,31 +1096,61 @@ static int compression2(void) {
 static int hashing2(void) {
 	int code = RLC_ERR;
 	bn_t n;
-	ep2_t p;
-	ep2_t q;
+	ep2_t a;
 	uint8_t msg[5];
 
 	bn_null(n);
 	ep2_null(p);
-	ep2_null(q);
 
 	RLC_TRY {
 		bn_new(n);
 		ep2_new(p);
-		ep2_new(q);
 
 		ep2_curve_get_ord(n);
 
 		TEST_CASE("point hashing is correct") {
 			rand_bytes(msg, sizeof(msg));
-			ep2_map(p, msg, sizeof(msg));
-			TEST_ASSERT(ep2_on_curve(p) == 1, end);
-			ep2_map_dst(q, msg, sizeof(msg), (const uint8_t *)"RELIC", 5);
-			TEST_ASSERT(ep2_cmp(p, q) == RLC_EQ, end);
-			ep2_mul(p, p, n);
-			TEST_ASSERT(ep2_is_infty(p) == 1, end);
+			ep2_map(a, msg, sizeof(msg));
+			TEST_ASSERT(ep2_on_curve(a) == 1, end);
+			ep2_mul(a, a, n);
+			TEST_ASSERT(ep2_is_infty(a) == 1, end);
 		}
 		TEST_END;
+
+#if EP_MAP == BASIC || !defined(STRIP)
+		TEST_CASE("basic point hashing is correct") {
+			rand_bytes(msg, sizeof(msg));
+			ep2_map_basic(a, msg, sizeof(msg));
+			TEST_ASSERT(ep2_is_infty(a) == 0, end);
+			ep2_mul(a, a, n);
+			TEST_ASSERT(ep2_is_infty(a) == 1, end);
+		}
+		TEST_END;
+#endif
+
+#if EP_MAP == SSWUM || !defined(STRIP)
+		TEST_CASE("simplified SWU point hashing is correct") {
+			rand_bytes(msg, sizeof(msg));
+			ep2_map_sswum(a, msg, sizeof(msg));
+			TEST_ASSERT(ep2_is_infty(a) == 0, end);
+			ep2_mul(a, a, n);
+			TEST_ASSERT(ep2_is_infty(a) == 1, end);
+		}
+		TEST_END;
+#endif
+
+		if (ep_curve_is_pairf()) {
+			#if EP_MAP == SWIFT || !defined(STRIP)
+					TEST_CASE("swift point hashing is correct") {
+						rand_bytes(msg, sizeof(msg));
+						ep2_map_swift(a, msg, sizeof(msg));
+						TEST_ASSERT(ep_is_infty(a) == 0, end);
+						ep2_mul(a, a, n);
+						TEST_ASSERT(ep2_is_infty(a) == 1, end);
+					}
+					TEST_END;
+			#endif
+		}
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -1129,8 +1159,7 @@ static int hashing2(void) {
 	code = RLC_OK;
   end:
 	bn_free(n);
-	ep2_free(p);
-	ep2_free(q);
+	ep2_free(a);
 	return code;
 }
 

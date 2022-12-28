@@ -471,6 +471,22 @@ typedef iso2_st *iso2_t;
 #endif
 
 /**
+ * Hashes a byte string to a prime elliptic point or the right order.
+ * Computes R = H(s).
+ *
+ * @param[out] R				- the result.
+ * @param[in] S					- the string to hash.
+ * @param[in] L					- the string length.
+ */
+#if EP_MAP == BASIC
+#define ep2_map(R, S, L)			ep2_map_basic(R, S, L)
+#elif EP_MAP == SSWUM
+#define ep2_map(R, S, L)			ep2_map_sswum(R, S, L)
+#elif EP_MAP == SWIFT
+#define ep2_map(R, S, L)			ep2_map_swift(R, S, L)
+#endif
+
+/**
  * Adds two points in an elliptic curve over a cubic extension field.
  * Computes R = P + Q.
  *
@@ -1289,38 +1305,33 @@ void ep2_norm(ep2_t r, const ep2_t p);
 void ep2_norm_sim(ep2_t *r, const ep2_t *t, int n);
 
 /**
- * Maps an array of uniformly random bytes to a point in a prime elliptic
- * curve.
- * That array is expected to have a length suitable for four field elements plus
- * extra bytes for uniformity.
-  *
+ * Maps a byte array to a point in a prime elliptic curve using the hash and
+ * increment approach.
  * @param[out] p			- the result.
- * @param[in] uniform_bytes		- the array of uniform bytes to map.
+ * @param[in] msg			- the byte array to map.
  * @param[in] len			- the array length in bytes.
  */
-void ep2_map_from_field(ep2_t p, const uint8_t *uniform_bytes, size_t len);
+void ep2_map_basic(ep2_t p, const uint8_t *msg, size_t len);
 
 /**
- * Maps a byte array to a point in an elliptic curve over a quadratic extension.
+ * Maps a byte array to a point in a prime elliptic curve using the
+ * (Simplified) Shallue-van de Woestijne-Ulas map.
  *
  * @param[out] p			- the result.
  * @param[in] msg			- the byte array to map.
  * @param[in] len			- the array length in bytes.
  */
-void ep2_map(ep2_t p, const uint8_t *msg, size_t len);
+void ep2_map_sswum(ep2_t p, const uint8_t *msg, size_t len);
 
 /**
- * Maps a byte array to a point in an elliptic curve over a quadratic extension
- * using an explicit domain separation tag.
+ * Maps a byte array to a point in a prime elliptic curve using the
+ * SwiftEC approach.
  *
  * @param[out] p			- the result.
  * @param[in] msg			- the byte array to map.
  * @param[in] len			- the array length in bytes.
- * @param[in] dst			- the domain separatoin tag.
- * @param[in] dst_len		- the domain separation tag length in bytes.
  */
-void ep2_map_dst(ep2_t p, const uint8_t *msg, size_t len, const uint8_t *dst,
-		size_t dst_len);
+void ep2_map_swift(ep2_t p, const uint8_t *msg, size_t len);
 
 /**
  * Computes a power of the Gailbraith-Lin-Scott homomorphism of a point
@@ -2553,19 +2564,6 @@ void ep4_norm_sim(ep4_t *r, const ep4_t *t, int n);
  * @param[in] len			- the array length in bytes.
  */
 void ep4_map(ep4_t p, const uint8_t *msg, size_t len);
-
-/**
- * Maps a byte array to a point in an elliptic curve over a quartic extension
- * using an explicit domain separation tag.
- *
- * @param[out] p			- the result.
- * @param[in] msg			- the byte array to map.
- * @param[in] len			- the array length in bytes.
- * @param[in] dst			- the domain separatoin tag.
- * @param[in] dst_len		- the domain separation tag length in bytes.
- */
-void ep4_map_dst(ep4_t p, const uint8_t *msg, size_t len, const uint8_t *dst,
-		size_t dst_len);
 
 /**
  * Computes a power of the Gailbraith-Lin-Scott homomorphism of a point
