@@ -254,7 +254,7 @@ int fp3_srt(fp3_t c, const fp3_t a) {
 
 		fp3_sqr(t1, t0);
 		if (fp3_cmp(t1, a) == RLC_EQ) {
-			fp3_copy(c, t3);
+			fp3_copy(c, t0);
 			r = 1;
 		}
 	} RLC_CATCH_ANY {
