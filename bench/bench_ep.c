@@ -394,6 +394,11 @@ static void arith(void) {
 		BENCH_ADD(ep_mul_gen(q, k));
 	} BENCH_END;
 
+	BENCH_RUN("ep_mul_cof") {
+		ep_rand(p);
+		BENCH_ADD(ep_mul_cof(q, p));
+	} BENCH_END;
+
 	BENCH_RUN("ep_mul_dig") {
 		bn_rand(k, RLC_POS, RLC_DIG);
 		bn_rand_mod(k, n);
