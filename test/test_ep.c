@@ -525,7 +525,7 @@ static int endomorphism(void) {
 			}
 			TEST_END;
 
-#if EB_ADD == BASIC || !defined(STRIP)
+#if EP_ADD == BASIC || !defined(STRIP)
 			TEST_CASE("endomorphism in affine coordinates is correct") {
 				ep_rand(a);
 				ep_psi(b, a);
@@ -537,11 +537,24 @@ static int endomorphism(void) {
 			TEST_END;
 #endif
 
-#if EB_ADD == PROJC || !defined(STRIP)
+#if EP_ADD == PROJC || !defined(STRIP)
 			TEST_CASE("endomorphism in projective coordinates is correct") {
 				ep_rand(a);
 				ep_dbl_projc(a, a);
 				ep_psi(b, a);
+				ep_norm(a, a);
+				ep_mul(c, a, l);
+				ep_neg(a, b);
+			}
+			TEST_END;
+#endif
+
+#if EP_ADD == JACOB || !defined(STRIP)
+			TEST_CASE("endomorphism in jacobian coordinates is correct") {
+				ep_rand(a);
+				ep_dbl_jacob(a, a);
+				ep_psi(b, a);
+				ep_norm(a, a);
 				ep_mul(c, a, l);
 				ep_neg(a, b);
 				TEST_ASSERT(ep_cmp(b, c) == RLC_EQ ||

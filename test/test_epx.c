@@ -1144,7 +1144,7 @@ static int hashing2(void) {
 					TEST_CASE("swift point hashing is correct") {
 						rand_bytes(msg, sizeof(msg));
 						ep2_map_swift(a, msg, sizeof(msg));
-						TEST_ASSERT(ep_is_infty(a) == 0, end);
+						TEST_ASSERT(ep2_is_infty(a) == 0, end);
 						ep2_mul(a, a, n);
 						TEST_ASSERT(ep2_is_infty(a) == 1, end);
 					}
