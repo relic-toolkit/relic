@@ -77,6 +77,7 @@ void ep_mul_cof(ep_t r, const ep_t p) {
 					ep_mul_basic(r, r, k);
 				}
 				ep_add(r, r, v);
+				ep_norm(r, r);
 				break;
 			default:
 				/* multiply by cofactor to get the correct group. */
