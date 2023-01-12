@@ -57,7 +57,7 @@ void ep_mul_cof(ep_t r, const ep_t p) {
 				if (bn_bits(k) < RLC_DIG) {
 					ep_mul_dig(r, p, k->dp[0]);
 				} else {
-					ep_mul(r, p, k);
+					ep_mul_basic(r, p, k);
 				}
 				break;
 			default:
