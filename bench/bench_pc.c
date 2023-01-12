@@ -519,13 +519,11 @@ static void arith2(void) {
 	}
 	BENCH_END;
 
-#if FP_PRIME != 509
 	BENCH_RUN("g2_map") {
 		uint8_t msg[5];
 		rand_bytes(msg, 5);
 		BENCH_ADD(g2_map(p, msg, 5));
 	} BENCH_END;
-#endif
 
 	g2_free(p);
 	g2_free(q);
