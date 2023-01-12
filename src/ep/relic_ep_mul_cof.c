@@ -38,11 +38,18 @@
 /*============================================================================*/
 
 void ep_mul_cof(ep_t r, const ep_t p) {
+	ep_t u, v;
 	bn_t k;
 
 	bn_null(k);
+	ep_null(u);
+	ep_null(v);
 
 	RLC_TRY {
+		bn_new(k);
+		ep_new(u);
+		ep_new(v);
+
 		switch (ep_curve_is_pairf()) {
 			case EP_BN:
 				/* h = 1 */
@@ -60,6 +67,15 @@ void ep_mul_cof(ep_t r, const ep_t p) {
 					ep_mul_basic(r, p, k);
 				}
 				break;
+			case EP_K18:
+				fp_prime_get_par(k);
+				bn_add_dig(k, k, 3);
+				ep_mul_dig(u, p, 49);
+				ep_mul_dig(u, u, 7);
+				ep_psi(v, u);
+				ep_mul_basic(v, v, k);
+				ep_add(r, v, u);
+				break;
 			default:
 				/* multiply by cofactor to get the correct group. */
 				ep_curve_get_cof(k);
@@ -73,5 +89,7 @@ void ep_mul_cof(ep_t r, const ep_t p) {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		bn_free(k);
+		ep_free(u);
+		ep_free(v);
 	}
 }
