@@ -161,9 +161,9 @@ int fp3_is_sqr(const fp3_t a) {
 	RLC_TRY {
 		fp3_new(t);
 
-		fp3_frb(t, a, 1);
-		fp3_frb(u, a, 2);
-		fp3_mul(t, t, a);
+		fp3_frb(u, a, 1);
+		fp3_mul(t, u, a);
+		fp3_frb(u, u, 1);
 		fp3_mul(t, t, u);
 		r = fp_is_sqr(t[0]);
 	} RLC_CATCH_ANY {
@@ -275,12 +275,12 @@ int fp4_is_sqr(const fp4_t a) {
 	RLC_TRY {
 		fp4_new(t);
 
-		fp4_frb(t, a, 1);
-		fp4_frb(u, a, 2);
-		fp4_mul(t, t, u);
-		fp4_frb(u, a, 3);
-		fp4_mul(t, t, a);
-		fp4_mul(t, t, u);
+		fp4_frb(u, a, 1);
+		fp4_mul(t, u, a);
+		for (int i = 2; i < 4; i++) {
+			fp4_frb(u, u, 1);
+			fp4_mul(t, t, u);
+		}
 		r = fp_is_sqr(t[0][0]);
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -366,6 +366,118 @@ int fp4_srt(fp4_t c, const fp4_t a) {
 		fp2_free(t0);
 		fp2_free(t1);
 		fp2_free(t2);
+	}
+	return r;
+}
+
+int fp8_is_sqr(const fp8_t a) {
+	fp8_t t, u;
+	int r;
+
+	fp8_null(t);
+	fp8_null(u);
+
+	RLC_TRY {
+		fp8_new(t);
+
+		fp8_frb(u, a, 1);
+		fp8_mul(t, u, a);
+		for (int i = 2; i < 8; i++) {
+			fp8_frb(u, u, 1);
+			fp8_mul(t, t, u);
+		}
+		r = fp_is_sqr(t[0][0][0]);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		fp8_free(t);
+		fp8_free(u);
+	}
+
+	return r;
+}
+
+int fp8_srt(fp8_t c, const fp8_t a) {
+	int c0, r = 0;
+	fp4_t t0, t1, t2;
+
+	fp4_null(t0);
+	fp4_null(t1);
+	fp4_null(t2);
+
+	if (fp8_is_zero(a)) {
+		fp8_zero(c);
+		return 1;
+	}
+
+	RLC_TRY {
+		fp4_new(t0);
+		fp4_new(t1);
+		fp4_new(t2);
+
+		if (fp4_is_zero(a[1])) {
+			/* special case: either a[0] is square and sqrt is purely 'real'
+			 * or a[0] is non-square and sqrt is purely 'imaginary' */
+			r = 1;
+			if (fp4_is_sqr(a[0])) {
+				fp4_srt(c[0], a[0]);
+				fp4_zero(c[1]);
+			} else {
+				/* Compute a[0]/s^2. */
+				fp4_set_dig(t0, 1);
+				fp4_mul_art(t0, t0);
+				fp4_inv(t0, t0);
+				fp4_mul(t0, a[0], t0);
+				fp4_zero(c[0]);
+				if (!fp4_srt(c[1], t0)) {
+					/* should never happen! */
+					RLC_THROW(ERR_NO_VALID);
+				}
+			}
+		} else {
+			/* t0 = a[0]^2 - s^2 * a[1]^2 */
+			fp4_sqr(t0, a[0]);
+			fp4_sqr(t1, a[1]);
+			fp4_mul_art(t2, t1);
+			fp4_sub(t0, t0, t2);
+
+			if (fp4_is_sqr(t0)) {
+				fp4_srt(t1, t0);
+				/* t0 = (a_0 + sqrt(t0)) / 2 */
+				fp4_add(t0, a[0], t1);
+				fp_hlv(t0[0][0], t0[0][0]);
+				fp_hlv(t0[0][1], t0[0][1]);
+				fp_hlv(t0[1][0], t0[1][0]);
+				fp_hlv(t0[1][1], t0[1][1]);
+				c0 = fp4_is_sqr(t0);
+				/* t0 = (a_0 - sqrt(t0)) / 2 */
+				fp4_sub(t1, a[0], t1);
+				fp_hlv(t1[0][0], t1[0][0]);
+				fp_hlv(t1[0][1], t1[0][1]);
+				fp_hlv(t1[1][0], t1[1][0]);
+				fp_hlv(t1[1][1], t1[1][1]);
+				dv_copy_cond(t0[0][0], t1[0][0], RLC_FP_DIGS, !c0);
+				dv_copy_cond(t0[0][1], t1[0][1], RLC_FP_DIGS, !c0);
+				dv_copy_cond(t0[1][0], t1[1][0], RLC_FP_DIGS, !c0);
+				dv_copy_cond(t0[1][1], t1[1][1], RLC_FP_DIGS, !c0);
+				/* Should always be a quadratic residue. */
+				fp4_srt(t2, t0);
+				/* c_0 = sqrt(t0) */
+				fp4_copy(c[0], t2);
+
+				/* c_1 = a_1 / (2 * sqrt(t0)) */
+				fp4_dbl(t2, t2);
+				fp4_inv(t2, t2);
+				fp4_mul(c[1], a[1], t2);
+				r = 1;
+			}
+		}
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		fp4_free(t0);
+		fp4_free(t1);
+		fp4_free(t2);
 	}
 	return r;
 }

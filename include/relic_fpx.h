@@ -2761,6 +2761,24 @@ void fp8_exp_cyc(fp8_t c, const fp8_t a, const bn_t b);
 void fp8_frb(fp8_t c, const fp8_t a, int i);
 
 /**
+ * Tests if an octic extension field element is a quadratic residue.
+ *
+ * @param[in] a				- the prime field element to test.
+ * @return 1 if the argument is even, 0 otherwise.
+ */
+int fp8_is_sqr(const fp8_t a);
+
+/**
+ * Extracts the square root of an octic extension field element. Computes
+ * c = sqrt(a). The other square root is the negation of c.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the extension field element.
+ * @return					- 1 if there is a square root, 0 otherwise.
+ */
+int fp8_srt(fp8_t c, const fp8_t a);
+
+/**
  * Copies the second argument to the first argument.
  *
  * @param[out] c			- the result.

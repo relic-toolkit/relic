@@ -3277,29 +3277,74 @@ static int exponentiation8(void) {
 	return code;
 }
 
-static int memory12(void) {
-	err_t e = ERR_CAUGHT;
+static int square_root8(void) {
 	int code = RLC_ERR;
-	fp12_t a;
+	fp8_t a, b, c;
+	int r;
 
-	fp12_null(a);
+	fp8_null(a);
+	fp8_null(b);
+	fp8_null(c);
 
 	RLC_TRY {
-		TEST_CASE("memory can be allocated") {
-			fp12_new(a);
-			fp12_free(a);
-		} TEST_END;
-	} RLC_CATCH(e) {
-		switch (e) {
-			case ERR_NO_MEMORY:
-				util_print("FATAL ERROR!\n");
-				RLC_ERROR(end);
-				break;
+		fp8_new(a);
+		fp8_new(b);
+		fp8_new(c);
+
+		TEST_CASE("quadratic residuosity test is correct") {
+			fp8_zero(a);
+			TEST_ASSERT(fp8_is_sqr(a) == 0, end);
+			fp8_rand(a);
+			fp8_sqr(a, a);
+			TEST_ASSERT(fp8_is_sqr(a) == 1, end);
+			do {
+				fp8_rand(a);
+			} while(fp8_srt(b, a) == 1);
+			TEST_ASSERT(fp8_is_sqr(a) == 0, end);
 		}
+		TEST_END;
+
+		TEST_CASE("square root extraction is correct") {
+			fp8_zero(a);
+			fp8_sqr(c, a);
+			r = fp8_srt(b, c);
+			TEST_ASSERT(r, end);
+			TEST_ASSERT(fp8_cmp(b, a) == RLC_EQ ||
+					fp8_cmp(c, a) == RLC_EQ, end);
+			fp4_rand(a[0]);
+			fp4_zero(a[1]);
+			fp8_sqr(c, a);
+			r = fp8_srt(b, c);
+			fp8_neg(c, b);
+			TEST_ASSERT(r, end);
+			TEST_ASSERT(fp8_cmp(b, a) == RLC_EQ ||
+					fp8_cmp(c, a) == RLC_EQ, end);
+			fp4_zero(a[0]);
+			fp4_rand(a[1]);
+			fp8_sqr(c, a);
+			r = fp8_srt(b, c);
+			fp8_neg(c, b);
+			TEST_ASSERT(r, end);
+			TEST_ASSERT(fp8_cmp(b, a) == RLC_EQ ||
+					fp8_cmp(c, a) == RLC_EQ, end);
+			fp8_rand(a);
+			fp8_sqr(c, a);
+			r = fp8_srt(b, c);
+			fp8_neg(c, b);
+			TEST_ASSERT(r, end);
+			TEST_ASSERT(fp8_cmp(b, a) == RLC_EQ ||
+					fp8_cmp(c, a) == RLC_EQ, end);
+		} TEST_END;
 	}
-	(void)a;
+	RLC_CATCH_ANY {
+		util_print("FATAL ERROR!\n");
+		RLC_ERROR(end);
+	}
 	code = RLC_OK;
   end:
+	fp8_free(a);
+	fp8_free(b);
+	fp8_free(c);
 	return code;
 }
 
@@ -3849,6 +3894,32 @@ static int exponentiation9(void) {
 	fp9_free(b);
 	fp9_free(c);
 	bn_free(d);
+	return code;
+}
+
+static int memory12(void) {
+	err_t e = ERR_CAUGHT;
+	int code = RLC_ERR;
+	fp12_t a;
+
+	fp12_null(a);
+
+	RLC_TRY {
+		TEST_CASE("memory can be allocated") {
+			fp12_new(a);
+			fp12_free(a);
+		} TEST_END;
+	} RLC_CATCH(e) {
+		switch (e) {
+			case ERR_NO_MEMORY:
+				util_print("FATAL ERROR!\n");
+				RLC_ERROR(end);
+				break;
+		}
+	}
+	(void)a;
+	code = RLC_OK;
+  end:
 	return code;
 }
 
@@ -7919,6 +7990,11 @@ int main(void) {
 		}
 
 		if (exponentiation8() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (square_root8() != RLC_OK) {
 			core_clean();
 			return 1;
 		}

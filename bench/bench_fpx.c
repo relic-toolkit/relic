@@ -1428,6 +1428,19 @@ static void arith8(void) {
 	}
 	BENCH_END;
 
+	BENCH_RUN("fp8_is_sqr") {
+		fp8_rand(a);
+		BENCH_ADD(fp8_is_sqr(a));
+	}
+	BENCH_END;
+
+	BENCH_RUN("fp8_srt") {
+		fp8_rand(a);
+		fp8_sqr(a, a);
+		BENCH_ADD(fp8_srt(c, a));
+	}
+	BENCH_END;
+
 	fp8_free(a);
 	fp8_free(b);
 	fp8_free(c);
