@@ -140,21 +140,38 @@ void ep4_mul_pre_basic(ep4_t *t, const ep4_t p) {
 }
 
 void ep4_mul_fix_basic(ep4_t r, const ep4_t *t, const bn_t k) {
+	bn_t n, _k;
+
 	if (bn_is_zero(k)) {
 		ep4_set_infty(r);
 		return;
 	}
 
-	ep4_set_infty(r);
+	bn_null(n);
+	bn_null(_k);
 
-	for (int i = 0; i < bn_bits(k); i++) {
-		if (bn_get_bit(k, i)) {
-			ep4_add(r, r, t[i]);
+	RLC_TRY {
+		bn_new(n);
+		bn_new(_k);
+
+		ep4_curve_get_ord(n);
+		bn_mod(_k, k, n);
+
+		ep4_set_infty(r);
+		for (int i = 0; i < bn_bits(_k); i++) {
+			if (bn_get_bit(_k, i)) {
+				ep4_add(r, r, t[i]);
+			}
 		}
-	}
-	ep4_norm(r, r);
-	if (bn_sign(k) == RLC_NEG) {
-		ep4_neg(r, r);
+		ep4_norm(r, r);
+		if (bn_sign(_k) == RLC_NEG) {
+			ep4_neg(r, r);
+		}
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		bn_free(n);
+		bn_free(_k);
 	}
 }
 
