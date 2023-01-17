@@ -1580,8 +1580,502 @@ static void arith4(void) {
 	fp4_free(s);
 }
 
+static void memory8(void) {
+	ep8_t a[BENCH];
+
+	BENCH_FEW("ep8_null", ep8_null(a[i]), 1);
+
+	BENCH_FEW("ep8_new", ep8_new(a[i]), 1);
+	for (int i = 0; i < BENCH; i++) {
+		ep8_free(a[i]);
+	}
+
+	for (int i = 0; i < BENCH; i++) {
+		ep8_new(a[i]);
+	}
+	BENCH_FEW("ep8_free", ep8_free(a[i]), 1);
+
+	(void)a;
+}
+
+static void util8(void) {
+	ep8_t p, q, t[2];
+	uint8_t bin[16 * RLC_FP_BYTES + 1];
+	int l;
+
+	ep8_null(p);
+	ep8_null(q);
+	ep8_null(t[0]);
+	ep8_null(t[1]);
+
+	ep8_new(p);
+	ep8_new(q);
+	ep8_new(t[0]);
+	ep8_new(t[1]);
+
+	BENCH_RUN("ep8_is_infty") {
+		ep8_rand(p);
+		BENCH_ADD(ep8_is_infty(p));
+	}
+	BENCH_END;
+
+	BENCH_RUN("ep8_set_infty") {
+		ep8_rand(p);
+		BENCH_ADD(ep8_set_infty(p));
+	}
+	BENCH_END;
+
+	BENCH_RUN("ep8_copy") {
+		ep8_rand(p);
+		ep8_rand(q);
+		BENCH_ADD(ep8_copy(p, q));
+	}
+	BENCH_END;
+
+	BENCH_RUN("ep8_cmp") {
+		ep8_rand(p);
+		ep8_dbl(p, p);
+		ep8_rand(q);
+		ep8_dbl(q, q);
+		BENCH_ADD(ep8_cmp(p, q));
+	} BENCH_END;
+
+	BENCH_RUN("ep8_norm") {
+		ep8_rand(p);
+		ep8_dbl(p, p);
+		BENCH_ADD(ep8_norm(p, p));
+	} BENCH_END;
+
+	BENCH_RUN("ep8_norm_sim (2)") {
+		ep8_rand(t[0]);
+		ep8_rand(t[1]);
+		ep8_dbl(t[0], t[0]);
+		ep8_dbl(t[1], t[1]);
+		BENCH_ADD(ep8_norm_sim(t, t, 2));
+	} BENCH_END;
+
+	BENCH_RUN("ep8_cmp (1 norm)") {
+		ep8_rand(p);
+		ep8_dbl(p, p);
+		ep8_rand(q);
+		BENCH_ADD(ep8_cmp(p, q));
+	} BENCH_END;
+
+	BENCH_RUN("ep8_cmp (2 norm)") {
+		ep8_rand(p);
+		ep8_rand(q);
+		BENCH_ADD(ep8_cmp(p, q));
+	} BENCH_END;
+
+	BENCH_RUN("ep8_rand") {
+		BENCH_ADD(ep8_rand(p));
+	}
+	BENCH_END;
+
+	BENCH_RUN("ep8_blind") {
+		BENCH_ADD(ep8_blind(p, p));
+	}
+	BENCH_END;
+
+	BENCH_RUN("ep8_on_curve") {
+		ep8_rand(p);
+		BENCH_ADD(ep8_on_curve(p));
+	} BENCH_END;
+
+	BENCH_RUN("ep8_size_bin") {
+		ep8_rand(p);
+		BENCH_ADD(ep8_size_bin(p, 0));
+	} BENCH_END;
+
+	BENCH_RUN("ep8_write_bin") {
+		ep8_rand(p);
+		l = ep8_size_bin(p, 0);
+		BENCH_ADD(ep8_write_bin(bin, l, p, 0));
+	} BENCH_END;
+
+	BENCH_RUN("ep8_read_bin") {
+		ep8_rand(p);
+		l = ep8_size_bin(p, 0);
+		ep8_write_bin(bin, l, p, 0);
+		BENCH_ADD(ep8_read_bin(p, bin, l));
+	} BENCH_END;
+
+	ep8_free(p);
+	ep8_free(q);
+	ep8_free(t[0]);
+	ep8_free(t[1]);
+}
+
+static void arith8(void) {
+	ep8_t p, q, r, t[RLC_EPX_TABLE_MAX];
+	bn_t k, n, l;
+	fp8_t s;
+
+	ep8_null(p);
+	ep8_null(q);
+	ep8_null(r);
+	bn_null(k);
+	bn_null(n);
+	fp8_null(s);
+	for (int i = 0; i < RLC_EPX_TABLE_MAX; i++) {
+		ep8_null(t[i]);
+	}
+
+	ep8_new(p);
+	ep8_new(q);
+	ep8_new(r);
+	bn_new(k);
+	bn_new(n);
+	bn_new(l);
+	fp8_new(s);
+
+	ep8_curve_get_ord(n);
+
+	BENCH_RUN("ep8_add") {
+		ep8_rand(p);
+		ep8_rand(q);
+		ep8_add(p, p, q);
+		ep8_rand(q);
+		ep8_rand(p);
+		ep8_add(q, q, p);
+		BENCH_ADD(ep8_add(r, p, q));
+	}
+	BENCH_END;
+
+#if EP_ADD == BASIC || !defined(STRIP)
+	BENCH_RUN("ep8_add_basic") {
+		ep8_rand(p);
+		ep8_rand(q);
+		BENCH_ADD(ep8_add_basic(r, p, q));
+	}
+	BENCH_END;
+
+	BENCH_RUN("ep8_add_slp_basic") {
+		ep8_rand(p);
+		ep8_rand(q);
+		BENCH_ADD(ep8_add_slp_basic(r, s, p, q));
+	}
+	BENCH_END;
+#endif
+
+#if EP_ADD == PROJC || !defined(STRIP)
+	BENCH_RUN("ep8_add_projc") {
+		ep8_rand(p);
+		ep8_rand(q);
+		ep8_add_projc(p, p, q);
+		ep8_rand(q);
+		ep8_rand(p);
+		ep8_add_projc(q, q, p);
+		BENCH_ADD(ep8_add_projc(r, p, q));
+	}
+	BENCH_END;
+
+	BENCH_RUN("ep8_add_projc (z2 = 1)") {
+		ep8_rand(p);
+		ep8_rand(q);
+		ep8_add_projc(p, p, q);
+		ep8_rand(q);
+		ep8_norm(q, q);
+		BENCH_ADD(ep8_add_projc(r, p, q));
+	}
+	BENCH_END;
+
+	BENCH_RUN("ep8_add_projc (z1,z2 = 1)") {
+		ep8_rand(p);
+		ep8_norm(p, p);
+		ep8_rand(q);
+		ep8_norm(q, q);
+		BENCH_ADD(ep8_add_projc(r, p, q));
+	}
+	BENCH_END;
+#endif
+
+	BENCH_RUN("ep8_sub") {
+		ep8_rand(p);
+		ep8_rand(q);
+		ep8_add(p, p, q);
+		ep8_rand(q);
+		ep8_rand(p);
+		ep8_add(q, q, p);
+		BENCH_ADD(ep8_sub(r, p, q));
+	}
+	BENCH_END;
+
+	BENCH_RUN("ep8_dbl") {
+		ep8_rand(p);
+		ep8_rand(q);
+		ep8_add(p, p, q);
+		BENCH_ADD(ep8_dbl(r, p));
+	}
+	BENCH_END;
+
+#if EP_ADD == BASIC || !defined(STRIP)
+	BENCH_RUN("ep8_dbl_basic") {
+		ep8_rand(p);
+		BENCH_ADD(ep8_dbl_basic(r, p));
+	}
+	BENCH_END;
+
+	BENCH_RUN("ep8_dbl_slp_basic") {
+		ep8_rand(p);
+		BENCH_ADD(ep8_dbl_slp_basic(r, s, p));
+	}
+	BENCH_END;
+#endif
+
+#if EP_ADD == PROJC || !defined(STRIP)
+	BENCH_RUN("ep8_dbl_projc") {
+		ep8_rand(p);
+		ep8_rand(q);
+		ep8_add_projc(p, p, q);
+		BENCH_ADD(ep8_dbl_projc(r, p));
+	}
+	BENCH_END;
+
+	BENCH_RUN("ep8_dbl_projc (z1 = 1)") {
+		ep8_rand(p);
+		ep8_norm(p, p);
+		BENCH_ADD(ep8_dbl_projc(r, p));
+	}
+	BENCH_END;
+#endif
+
+	BENCH_RUN("ep8_neg") {
+		ep8_rand(p);
+		ep8_rand(q);
+		ep8_add(p, p, q);
+		BENCH_ADD(ep8_neg(r, p));
+	}
+	BENCH_END;
+
+	BENCH_RUN("ep8_mul") {
+		bn_rand_mod(k, n);
+		BENCH_ADD(ep8_mul(q, p, k));
+	} BENCH_END;
+
+#if EP_MUL == BASIC || !defined(STRIP)
+	BENCH_RUN("ep8_mul_basic") {
+		bn_rand_mod(k, n);
+		BENCH_ADD(ep8_mul_basic(q, p, k));
+	} BENCH_END;
+#endif
+
+#if EP_MUL == SLIDE || !defined(STRIP)
+	BENCH_RUN("ep8_mul_slide") {
+		bn_rand_mod(k, n);
+		ep8_rand(p);
+		BENCH_ADD(ep8_mul_slide(q, p, k));
+	} BENCH_END;
+#endif
+
+#if EP_MUL == MONTY || !defined(STRIP)
+	BENCH_RUN("ep8_mul_monty") {
+		bn_rand_mod(k, n);
+		ep8_rand(p);
+		BENCH_ADD(ep8_mul_monty(q, p, k));
+	} BENCH_END;
+#endif
+
+#if EP_MUL == LWNAF || !defined(STRIP)
+	BENCH_RUN("ep8_mul_lwnaf") {
+		bn_rand_mod(k, n);
+		ep8_rand(p);
+		BENCH_ADD(ep8_mul_lwnaf(q, p, k));
+	} BENCH_END;
+#endif
+
+	BENCH_RUN("ep8_mul_gen") {
+		bn_rand_mod(k, n);
+		BENCH_ADD(ep8_mul_gen(q, k));
+	} BENCH_END;
+
+	BENCH_RUN("ep8_mul_cof") {
+		ep8_rand(p);
+		BENCH_ADD(ep8_mul_cof(q, p));
+	} BENCH_END;
+
+	BENCH_RUN("ep8_mul_dig") {
+		bn_rand(k, RLC_POS, RLC_DIG);
+		ep8_rand(p);
+		BENCH_ADD(ep8_mul_dig(q, p, k->dp[0]));
+	}
+	BENCH_END;
+
+	for (int i = 0; i < RLC_EPX_TABLE_MAX; i++) {
+		ep8_new(t[i]);
+	}
+
+	BENCH_RUN("ep8_mul_pre") {
+		ep8_rand(p);
+		BENCH_ADD(ep8_mul_pre(t, p));
+	} BENCH_END;
+
+	BENCH_RUN("ep8_mul_fix") {
+		bn_rand_mod(k, n);
+		ep8_rand(p);
+		ep8_mul_pre(t, p);
+		BENCH_ADD(ep8_mul_fix(q, t, k));
+	} BENCH_END;
+
+	for (int i = 0; i < RLC_EPX_TABLE_MAX; i++) {
+		ep8_free(t[i]);
+	}
+
+#if EP_FIX == BASIC || !defined(STRIP)
+	for (int i = 0; i < RLC_EPX_TABLE_BASIC; i++) {
+		ep8_new(t[i]);
+	}
+	BENCH_RUN("ep8_mul_pre_basic") {
+		ep8_rand(p);
+		BENCH_ADD(ep8_mul_pre_basic(t, p));
+	} BENCH_END;
+
+	BENCH_RUN("ep8_mul_fix_basic") {
+		bn_rand_mod(k, n);
+		ep8_rand(p);
+		ep8_mul_pre_basic(t, p);
+		BENCH_ADD(ep8_mul_fix_basic(q, t, k));
+	} BENCH_END;
+	for (int i = 0; i < RLC_EPX_TABLE_BASIC; i++) {
+		ep8_free(t[i]);
+	}
+#endif
+
+#if EP_FIX == COMBS || !defined(STRIP)
+	for (int i = 0; i < RLC_EPX_TABLE_COMBS; i++) {
+		ep8_new(t[i]);
+	}
+	BENCH_RUN("ep8_mul_pre_combs") {
+		ep8_rand(p);
+		BENCH_ADD(ep8_mul_pre_combs(t, p));
+	} BENCH_END;
+
+	BENCH_RUN("ep8_mul_fix_combs") {
+		bn_rand_mod(k, n);
+		ep8_rand(p);
+		ep8_mul_pre_combs(t, p);
+		BENCH_ADD(ep8_mul_fix_combs(q, t, k));
+	} BENCH_END;
+	for (int i = 0; i < RLC_EPX_TABLE_COMBS; i++) {
+		ep8_free(t[i]);
+	}
+#endif
+
+#if EP_FIX == COMBD || !defined(STRIP)
+	for (int i = 0; i < RLC_EPX_TABLE_COMBD; i++) {
+		ep8_new(t[i]);
+	}
+	BENCH_RUN("ep8_mul_pre_combd") {
+		BENCH_ADD(ep8_mul_pre_combd(t, p));
+	} BENCH_END;
+
+	BENCH_RUN("ep8_mul_fix_combd") {
+		bn_rand_mod(k, n);
+		ep8_mul_pre_combd(t, p);
+		BENCH_ADD(ep8_mul_fix_combd(q, t, k));
+	} BENCH_END;
+	for (int i = 0; i < RLC_EPX_TABLE_COMBD; i++) {
+		ep8_free(t[i]);
+	}
+#endif
+
+#if EP_FIX == LWNAF || !defined(STRIP)
+	for (int i = 0; i < RLC_EPX_TABLE_LWNAF; i++) {
+		ep8_new(t[i]);
+	}
+	BENCH_RUN("ep8_mul_pre_lwnaf") {
+		ep8_rand(p);
+		BENCH_ADD(ep8_mul_pre_lwnaf(t, p));
+	} BENCH_END;
+
+	BENCH_RUN("ep8_mul_fix_lwnaf") {
+		bn_rand_mod(k, n);
+		ep8_rand(p);
+		ep8_mul_pre_lwnaf(t, p);
+		BENCH_ADD(ep8_mul_fix_lwnaf(q, t, k));
+	} BENCH_END;
+	for (int i = 0; i < RLC_EPX_TABLE_LWNAF; i++) {
+		ep8_free(t[i]);
+	}
+#endif
+
+	BENCH_RUN("ep8_mul_sim") {
+		bn_rand_mod(k, n);
+		bn_rand_mod(l, n);
+		ep8_rand(p);
+		ep8_rand(q);
+		BENCH_ADD(ep8_mul_sim(r, p, k, q, l));
+	} BENCH_END;
+
+#if EP_SIM == BASIC || !defined(STRIP)
+	BENCH_RUN("ep8_mul_sim_basic") {
+		bn_rand_mod(k, n);
+		bn_rand_mod(l, n);
+		ep8_rand(p);
+		ep8_rand(q);
+		BENCH_ADD(ep8_mul_sim_basic(r, p, k, q, l));
+	} BENCH_END;
+#endif
+
+#if EP_SIM == TRICK || !defined(STRIP)
+	BENCH_RUN("ep8_mul_sim_trick") {
+		bn_rand_mod(k, n);
+		bn_rand_mod(l, n);
+		ep8_rand(p);
+		ep8_rand(q);
+		BENCH_ADD(ep8_mul_sim_trick(r, p, k, q, l));
+	} BENCH_END;
+#endif
+
+#if EP_SIM == INTER || !defined(STRIP)
+	BENCH_RUN("ep8_mul_sim_inter") {
+		bn_rand_mod(k, n);
+		bn_rand_mod(l, n);
+		ep8_rand(p);
+		ep8_rand(q);
+		BENCH_ADD(ep8_mul_sim_inter(r, p, k, q, l));
+	} BENCH_END;
+#endif
+
+#if EP_SIM == JOINT || !defined(STRIP)
+	BENCH_RUN("ep8_mul_sim_joint") {
+		bn_rand_mod(k, n);
+		bn_rand_mod(l, n);
+		ep8_rand(p);
+		ep8_rand(q);
+		BENCH_ADD(ep8_mul_sim_joint(r, p, k, q, l));
+	} BENCH_END;
+#endif
+
+	BENCH_RUN("ep8_mul_sim_gen") {
+		bn_rand_mod(k, n);
+		bn_rand_mod(l, n);
+		ep8_rand(q);
+		BENCH_ADD(ep8_mul_sim_gen(r, k, q, l));
+	} BENCH_END;
+
+	BENCH_RUN("ep8_frb") {
+		ep8_rand(q);
+		BENCH_ADD(ep8_frb(r, q, 1));
+	} BENCH_END;
+
+	BENCH_RUN("ep8_map") {
+		uint8_t msg[5];
+		rand_bytes(msg, 5);
+		BENCH_ADD(ep8_map(p, msg, 5));
+	} BENCH_END;
+
+	ep8_free(p);
+	ep8_free(q);
+	ep8_free(r);
+	bn_free(k);
+	bn_free(n);
+	bn_free(l);
+	fp8_free(s);
+}
+
 int main(void) {
-	int r0, r1, r2;
+	int r0, r1, r2, r3;
 	if (core_init() != RLC_OK) {
 		core_clean();
 		return 1;
@@ -1630,7 +2124,18 @@ int main(void) {
 		arith4();
 	}
 
-	if (!r0 && !r2 && !r1) {
+	if ((r3 = ep8_curve_is_twist())) {
+		ep_param_print();
+
+		util_banner("Utilities:", 1);
+		memory8();
+		util8();
+
+		util_banner("Arithmetic:", 1);
+		arith8();
+	}
+
+	if (!r0 && !r2 && !r1 && !r3) {
 		RLC_THROW(ERR_NO_CURVE);
 		core_clean();
 		return 0;

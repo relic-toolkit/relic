@@ -160,6 +160,7 @@ int fp3_is_sqr(const fp3_t a) {
 
 	RLC_TRY {
 		fp3_new(t);
+		fp3_new(u);
 
 		fp3_frb(u, a, 1);
 		fp3_mul(t, u, a);
@@ -170,6 +171,7 @@ int fp3_is_sqr(const fp3_t a) {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		fp2_free(t);
+		fp2_free(u);
 	}
 
 	return r;
@@ -274,6 +276,7 @@ int fp4_is_sqr(const fp4_t a) {
 
 	RLC_TRY {
 		fp4_new(t);
+		fp4_new(u);
 
 		fp4_frb(u, a, 1);
 		fp4_mul(t, u, a);
@@ -286,6 +289,7 @@ int fp4_is_sqr(const fp4_t a) {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		fp4_free(t);
+		fp4_free(u);
 	}
 
 	return r;
@@ -379,6 +383,7 @@ int fp8_is_sqr(const fp8_t a) {
 
 	RLC_TRY {
 		fp8_new(t);
+		fp8_new(u);
 
 		fp8_frb(u, a, 1);
 		fp8_mul(t, u, a);

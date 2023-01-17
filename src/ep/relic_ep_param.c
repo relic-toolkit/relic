@@ -1516,6 +1516,9 @@ int ep_param_set_any_pairf(void) {
 			case 4:
 				ep4_curve_set_twist(type);
 				break;
+			case 8:
+				ep8_curve_set_twist(type);
+				break;
 		}
 	}
 #else

@@ -387,6 +387,28 @@ typedef struct _ctx_t {
 	/** Array of pointers to the precomputation table. */
 	ep4_st *ep4_ptr[RLC_EP_TABLE];
 #endif /* EP_PRECO */
+	/** The generator of the elliptic curve. */
+	ep8_t ep8_g;
+	/** The 'a' coefficient of the curve. */
+	fp8_t ep8_a;
+	/** The 'b' coefficient of the curve. */
+	fp8_t ep8_b;
+	/** The order of the group of points in the elliptic curve. */
+	bn_st ep8_r;
+	/** The cofactor of the group order in the elliptic curve. */
+	bn_st ep8_h;
+	/** Optimization identifier for the a-coefficient. */
+	int ep8_opt_a;
+	/** Optimization identifier for the b-coefficient. */
+	int ep8_opt_b;
+	/** Flag that stores if the prime curve is a twist. */
+	int ep8_is_twist;
+#ifdef EP_PRECO
+	/** Precomputation table for generator multiplication.*/
+	ep8_st ep8_pre[RLC_EP_TABLE];
+	/** Array of pointers to the precomputation table. */
+	ep8_st *ep8_ptr[RLC_EP_TABLE];
+#endif /* EP_PRECO */
 #endif /* WITH_EPX */
 
 #ifdef WITH_ED
@@ -419,14 +441,14 @@ typedef struct _ctx_t {
 	/** Constants for computing Frobenius maps in higher extensions. @{ */
 	fp2_st fp2_p1[5];
 	fp2_st fp2_p2[3];
-	int frb4;
-	fp2_st fp4_p1;
-	/** @} */
-	/** Constants for computing Frobenius maps in higher extensions. @{ */
 	int frb3[3];
 	fp_st fp3_p0[2];
 	fp3_st fp3_p1[5];
 	fp3_st fp3_p2[2];
+	int frb4;
+	fp2_st fp4_p1;
+	int frb8;
+	fp2_st fp8_p1;
 	/** @} */
 #endif /* WITH_PP */
 

@@ -554,6 +554,7 @@ void fp_prime_calc(void) {
 	if (fp_prime_get_qnr() != 0) {
 		fp2_field_init();
 		fp4_field_init();
+		fp8_field_init();
 	}
 	if (fp_prime_get_cnr() != 0) {
 		fp3_field_init();

@@ -117,7 +117,7 @@ typedef struct {
 } ep2_st;
 
 /**
- * Pointer to an elliptic curve point.
+ * Pointer to an elliptic curve point over a quadratic extension field.
  */
 #if ALLOC == AUTO
 typedef ep2_st ep2_t[1];
@@ -141,7 +141,7 @@ typedef struct {
 } ep3_st;
 
 /**
- * Pointer to an elliptic curve point.
+ * Pointer to an elliptic curve point over a cubic extension field.
  */
 #if ALLOC == AUTO
 typedef ep3_st ep3_t[1];
@@ -150,7 +150,7 @@ typedef ep3_st *ep3_t;
 #endif
 
 /**
- * Represents an elliptic curve point over a quartic extension over a prime
+ * Represents an elliptic curve point over a octic extension over a prime
  * field.
  */
 typedef struct {
@@ -165,12 +165,36 @@ typedef struct {
 } ep4_st;
 
 /**
- * Pointer to an elliptic curve point.
+ * Pointer to an elliptic curve point over a octic extension field.
  */
 #if ALLOC == AUTO
 typedef ep4_st ep4_t[1];
 #else
 typedef ep4_st *ep4_t;
+#endif
+
+/**
+ * Represents an elliptic curve point over an octic extension over a prime
+ * field.
+ */
+typedef struct {
+	/** The first coordinate. */
+	fp8_t x;
+	/** The second coordinate. */
+	fp8_t y;
+	/** The third coordinate (projective representation). */
+	fp8_t z;
+	/** Flag to indicate the coordinate system of this point. */
+	int coord;
+} ep8_st;
+
+/**
+ * Pointer to an elliptic curve point over an octic extension field.
+ */
+#if ALLOC == AUTO
+typedef ep8_st ep8_t[1];
+#else
+typedef ep8_st *ep8_t;
 #endif
 
 /**
@@ -356,6 +380,56 @@ typedef iso2_st *iso2_t;
 
 #elif ALLOC == AUTO
 #define ep4_free(A)				/* empty */
+#endif
+
+/**
+ * Initializes a point on an elliptic curve with a null value.
+ *
+ * @param[out] A				- the point to initialize.
+ */
+#define ep8_null(A)				RLC_NULL(A)
+
+/**
+ * Calls a function to allocate a point on an elliptic curve.
+ *
+ * @param[out] A				- the new point.
+ * @throw ERR_NO_MEMORY			- if there is no available memory.
+ */
+#if ALLOC == DYNAMIC
+#define ep8_new(A)															\
+	A = (ep8_t)calloc(1, sizeof(ep8_st));									\
+	if (A == NULL) {														\
+		RLC_THROW(ERR_NO_MEMORY);											\
+	}																		\
+	fp8_null((A)->x);														\
+	fp8_null((A)->y);														\
+	fp8_null((A)->z);														\
+	fp8_new((A)->x);														\
+	fp8_new((A)->y);														\
+	fp8_new((A)->z);														\
+
+#elif ALLOC == AUTO
+#define ep8_new(A)				/* empty */
+
+#endif
+
+/**
+ * Calls a function to clean and free a point on an elliptic curve.
+ *
+ * @param[out] A				- the point to free.
+ */
+#if ALLOC == DYNAMIC
+#define ep8_free(A)															\
+	if (A != NULL) {														\
+		fp8_free((A)->x);													\
+		fp8_free((A)->y);													\
+		fp8_free((A)->z);													\
+		free(A);															\
+		A = NULL;															\
+	}																		\
+
+#elif ALLOC == AUTO
+#define ep8_free(A)				/* empty */
 #endif
 
 /**
@@ -599,7 +673,7 @@ typedef iso2_st *iso2_t;
 #endif
 
 /**
- * Adds two points in an elliptic curve over a quadratic extension field.
+ * Adds two points in an elliptic curve over a octic extension field.
  * Computes R = P + Q.
  *
  * @param[out] R				- the result.
@@ -613,7 +687,7 @@ typedef iso2_st *iso2_t;
 #endif
 
 /**
- * Doubles a point in an elliptic curve over a quadratic extension field.
+ * Doubles a point in an elliptic curve over a octic extension field.
  * Computes R = 2P.
  *
  * @param[out] R				- the result.
@@ -626,7 +700,7 @@ typedef iso2_st *iso2_t;
 #endif
 
 /**
- * Multiplies a point in an elliptic curve over a quadratic extension field by
+ * Multiplies a point in an elliptic curve over a octic extension field by
  * an unrestricted integer scalar. Computes R = [k]P.
  *
  * @param[out] R				- the result.
@@ -636,7 +710,7 @@ typedef iso2_st *iso2_t;
 #define ep4_mul_big(R, P, K)	ep4_mul_basic(R, P, K)
 
 /**
- * Multiplies a point in an elliptic curve over a quadratic extension field.
+ * Multiplies a point in an elliptic curve over a octic extension field.
  * Computes R = [k]P.
  *
  * @param[out] R				- the result.
@@ -655,7 +729,7 @@ typedef iso2_st *iso2_t;
 
 /**
  * Builds a precomputation table for multiplying a fixed prime elliptic point
- * over a quadratic extension.
+ * over a octic extension.
  *
  * @param[out] T				- the precomputation table.
  * @param[in] P					- the point to multiply.
@@ -672,7 +746,7 @@ typedef iso2_st *iso2_t;
 #endif
 
 /**
- * Multiplies a fixed prime elliptic point over a quadratic extension using a
+ * Multiplies a fixed prime elliptic point over a octic extension using a
  * precomputation table. Computes R = [k]P.
  *
  * @param[out] R				- the result.
@@ -708,6 +782,118 @@ typedef iso2_st *iso2_t;
 #define ep4_mul_sim(R, P, K, Q, M)	ep4_mul_sim_inter(R, P, K, Q, M)
 #elif EP_SIM == JOINT
 #define ep4_mul_sim(R, P, K, Q, M)	ep4_mul_sim_joint(R, P, K, Q, M)
+#endif
+
+/**
+ * Adds two points in an elliptic curve over a octic extension field.
+ * Computes R = P + Q.
+ *
+ * @param[out] R				- the result.
+ * @param[in] P					- the first point to add.
+ * @param[in] Q					- the second point to add.
+ */
+#if EP_ADD == BASIC
+#define ep8_add(R, P, Q)		ep8_add_basic(R, P, Q);
+#elif EP_ADD == PROJC || EP_ADD == JACOB
+#define ep8_add(R, P, Q)		ep8_add_projc(R, P, Q);
+#endif
+
+/**
+ * Doubles a point in an elliptic curve over a octic extension field.
+ * Computes R = 2P.
+ *
+ * @param[out] R				- the result.
+ * @param[in] P					- the point to double.
+ */
+#if EP_ADD == BASIC
+#define ep8_dbl(R, P)			ep8_dbl_basic(R, P);
+#elif EP_ADD == PROJC || EP_ADD == JACOB
+#define ep8_dbl(R, P)			ep8_dbl_projc(R, P);
+#endif
+
+/**
+ * Multiplies a point in an elliptic curve over a octic extension field by
+ * an unrestricted integer scalar. Computes R = [k]P.
+ *
+ * @param[out] R				- the result.
+ * @param[in] P					- the point to multiply.
+ * @param[in] K					- the integer.
+ */
+#define ep8_mul_big(R, P, K)	ep8_mul_basic(R, P, K)
+
+/**
+ * Multiplies a point in an elliptic curve over a octic extension field.
+ * Computes R = [k]P.
+ *
+ * @param[out] R				- the result.
+ * @param[in] P					- the point to multiply.
+ * @param[in] K					- the integer.
+ */
+#if EP_MUL == BASIC
+#define ep8_mul(R, P, K)		ep8_mul_basic(R, P, K)
+#elif EP_MUL == SLIDE
+#define ep8_mul(R, P, K)		ep8_mul_slide(R, P, K)
+#elif EP_MUL == MONTY
+#define ep8_mul(R, P, K)		ep8_mul_monty(R, P, K)
+#elif EP_MUL == LWNAF || EP_MUL == LWREG
+#define ep8_mul(R, P, K)		ep8_mul_lwnaf(R, P, K)
+#endif
+
+/**
+ * Builds a precomputation table for multiplying a fixed prime elliptic point
+ * over a octic extension.
+ *
+ * @param[out] T				- the precomputation table.
+ * @param[in] P					- the point to multiply.
+ */
+#if EP_FIX == BASIC
+#define ep8_mul_pre(T, P)		ep8_mul_pre_basic(T, P)
+#elif EP_FIX == COMBS
+#define ep8_mul_pre(T, P)		ep8_mul_pre_combs(T, P)
+#elif EP_FIX == COMBD
+#define ep8_mul_pre(T, P)		ep8_mul_pre_combd(T, P)
+#elif EP_FIX == LWNAF
+//TODO: implement ep8_mul_pre_glv
+#define ep8_mul_pre(T, P)		ep8_mul_pre_lwnaf(T, P)
+#endif
+
+/**
+ * Multiplies a fixed prime elliptic point over a octic extension using a
+ * precomputation table. Computes R = [k]P.
+ *
+ * @param[out] R				- the result.
+ * @param[in] T					- the precomputation table.
+ * @param[in] K					- the integer.
+ */
+#if EP_FIX == BASIC
+#define ep8_mul_fix(R, T, K)	ep8_mul_fix_basic(R, T, K)
+#elif EP_FIX == COMBS
+#define ep8_mul_fix(R, T, K)	ep8_mul_fix_combs(R, T, K)
+#elif EP_FIX == COMBD
+#define ep8_mul_fix(R, T, K)	ep8_mul_fix_combd(R, T, K)
+#elif EP_FIX == LWNAF
+//TODO: implement ep8_mul_fix_glv
+#define ep8_mul_fix(R, T, K)	ep8_mul_fix_lwnaf(R, T, K)
+#endif
+
+/**
+ * Multiplies and adds two prime elliptic curve points simultaneously. Computes
+ * R = [k]P + [l]Q.
+ *
+ * @param[out] R				- the result.
+ * @param[in] P					- the first point to multiply.
+ * @param[in] K					- the first integer.
+ * @param[in] Q					- the second point to multiply.
+ * @param[in] M					- the second integer,
+ */
+#if EP_SIM == BASIC
+#define ep8_mul_sim(R, P, K, Q, M)	ep8_mul_sim_basic(R, P, K, Q, M)
+#elif EP_SIM == TRICK
+#define ep8_mul_sim(R, P, K, Q, M)	ep8_mul_sim_trick(R, P, K, Q, M)
+#elif EP_SIM == INTER
+#define ep8_mul_sim(R, P, K, Q, M)	ep8_mul_sim_inter(R, P, K, Q, M)
+#elif EP_SIM == JOINT
+#define ep8_mul_sim(R, P, K, Q, M)	ep8_mul_sim_joint(R, P, K, Q, M)
 #endif
 
 /*============================================================================*/
@@ -815,7 +1001,8 @@ iso2_t ep2_curve_get_iso(void);
  * @param[in] r			- the order of the group of points.
  * @param[in] h			- the cofactor of the group order.
  */
-void ep2_curve_set(const fp2_t a, const fp2_t b, const ep2_t g, const bn_t r, const bn_t h);
+void ep2_curve_set(const fp2_t a, const fp2_t b, const ep2_t g, const bn_t r,
+		const bn_t h);
 
 /**
  * Configures an elliptic curve by twisting the curve over the base prime field.
@@ -978,7 +1165,7 @@ void ep2_add_slp_basic(ep2_t r, fp2_t s, const ep2_t p, const ep2_t q);
 void ep2_add_projc(ep2_t r, const ep2_t p, const ep2_t q);
 
  /**
-  * Subtracts a point i an elliptic curve over a quadratic extension from
+  * Subtracts a point in an elliptic curve over a quadratic extension from
   * another.
   *
   * @param[out] r			- the result.
@@ -1365,12 +1552,12 @@ void ep2_pck(ep2_t r, const ep2_t p);
 int ep2_upk(ep2_t r, const ep2_t p);
 
 /**
- * Initializes the elliptic curve over quartic extension.
+ * Initializes the elliptic curve over octic extension.
  */
 void ep3_curve_init(void);
 
 /**
- * Finalizes the elliptic curve over quartic extension.
+ * Finalizes the elliptic curve over octic extension.
  */
 void ep3_curve_clean(void);
 
@@ -1445,7 +1632,7 @@ void ep3_curve_get_ord(bn_t n);
 void ep3_curve_get_cof(bn_t h);
 
 /**
- * Configures an elliptic curve over a quartic extension by its coefficients.
+ * Configures an elliptic curve over a octic extension by its coefficients.
  *
  * @param[in] a			- the 'a' coefficient of the curve.
  * @param[in] b			- the 'b' coefficient of the curve.
@@ -1453,7 +1640,8 @@ void ep3_curve_get_cof(bn_t h);
  * @param[in] r			- the order of the group of points.
  * @param[in] h			- the cofactor of the group order.
  */
-void ep3_curve_set(const fp3_t a, const fp3_t b, const ep3_t g, const bn_t r, const bn_t h);
+void ep3_curve_set(const fp3_t a, const fp3_t b, const ep3_t g, const bn_t r,
+		const bn_t h);
 
 /**
  * Configures an elliptic curve by twisting the curve over the base prime field.
@@ -1543,7 +1731,7 @@ void ep3_print(const ep3_t p);
 
 /**
  * Returns the number of bytes necessary to store a prime elliptic curve point
- * over a quartic extension with optional point compression.
+ * over a octic extension with optional point compression.
  *
  * @param[in] a				- the prime field element.
  * @param[in] pack			- the flag to indicate compression.
@@ -1552,7 +1740,7 @@ void ep3_print(const ep3_t p);
 int ep3_size_bin(const ep3_t a, int pack);
 
 /**
- * Reads a prime elliptic curve point over a quartic extension from a byte
+ * Reads a prime elliptic curve point over a octic extension from a byte
  * vector in big-endian format.
  *
  * @param[out] a			- the result.
@@ -1564,7 +1752,7 @@ int ep3_size_bin(const ep3_t a, int pack);
 void ep3_read_bin(ep3_t a, const uint8_t *bin, size_t len);
 
 /**
- * Writes a prime elliptic curve pointer over a quartic extension to a byte
+ * Writes a prime elliptic curve pointer over a octic extension to a byte
  * vector in big-endian format with optional point compression.
  *
  * @param[out] bin			- the byte vector.
@@ -1577,7 +1765,7 @@ void ep3_write_bin(uint8_t *bin, size_t len, const ep3_t a, int pack);
 
 /**
  * Negates a point represented in affine coordinates in an elliptic curve over
- * a quartic extension.
+ * a octic extension.
  *
  * @param[out] r			- the result.
  * @param[out] p			- the point to negate.
@@ -1586,7 +1774,7 @@ void ep3_neg(ep3_t r, const ep3_t p);
 
 /**
  * Adds to points represented in affine coordinates in an elliptic curve over a
- * quartic extension.
+ * octic extension.
  *
  * @param[out] r			- the result.
  * @param[in] p				- the first point to add.
@@ -1596,7 +1784,7 @@ void ep3_add_basic(ep3_t r, const ep3_t p, const ep3_t q);
 
 /**
  * Adds to points represented in affine coordinates in an elliptic curve over a
- * quartic extension and returns the computed slope.
+ * octic extension and returns the computed slope.
  *
  * @param[out] r			- the result.
  * @param[out] s			- the slope.
@@ -1607,7 +1795,7 @@ void ep3_add_slp_basic(ep3_t r, fp3_t s, const ep3_t p, const ep3_t q);
 
 /**
  * Adds two points represented in projective coordinates in an elliptic curve
- * over a quartic extension.
+ * over a octic extension.
  *
  * @param[out] r			- the result.
  * @param[in] p				- the first point to add.
@@ -1616,7 +1804,7 @@ void ep3_add_slp_basic(ep3_t r, fp3_t s, const ep3_t p, const ep3_t q);
 void ep3_add_projc(ep3_t r, const ep3_t p, const ep3_t q);
 
  /**
-  * Subtracts a point i an elliptic curve over a quartic extension from
+  * Subtracts a point in an elliptic curve over a octic extension from
   * another.
   *
   * @param[out] r			- the result.
@@ -1627,7 +1815,7 @@ void ep3_sub(ep3_t r, const ep3_t p, const ep3_t q);
 
 /**
  * Doubles a points represented in affine coordinates in an elliptic curve over
- * a quartic extension.
+ * a octic extension.
  *
  * @param[out] r			- the result.
  * @param[int] p			- the point to double.
@@ -1636,7 +1824,7 @@ void ep3_dbl_basic(ep3_t r, const ep3_t p);
 
 /**
  * Doubles a points represented in affine coordinates in an elliptic curve over
- * a quartic extension and returns the computed slope.
+ * a octic extension and returns the computed slope.
  *
  * @param[out] r			- the result.
  * @param[out] s			- the slope.
@@ -1646,7 +1834,7 @@ void ep3_dbl_slp_basic(ep3_t r, fp3_t s, const ep3_t p);
 
 /**
  * Doubles a points represented in projective coordinates in an elliptic curve
- * over a quartic extension.
+ * over a octic extension.
  *
  * @param[out] r			- the result.
  * @param[in] p				- the point to double.
@@ -1717,9 +1905,8 @@ void ep3_mul_gen(ep3_t r, const bn_t k);
  */
 void ep3_mul_dig(ep3_t r, const ep3_t p, const dig_t k);
 
-
 /**
- * Multiplies a point in an elliptic curve over a quartic extension field by
+ * Multiplies a point in an elliptic curve over a octic extension field by
  * the curve cofactor or a small multiple for which a short vector exists.
  * In short, it takes a point in the curve to the large prime-order subgroup.
  *
@@ -1952,10 +2139,10 @@ void ep3_map(ep3_t p, const uint8_t *msg, size_t len);
 /**
  * Computes a power of the Gailbraith-Lin-Scott homomorphism of a point
  * represented in affine coordinates on a twisted elliptic curve over a
- * quartic exension. That is, Psi^i(P) = Twist(P)(Frob^i(unTwist(P)).
- * On the trace-zero group of a quartic twist, consists of a power of the
+ * octic exension. That is, Psi^i(P) = Twist(P)(Frob^i(unTwist(P)).
+ * On the trace-zero group of a octic twist, consists of a power of the
  * Frobenius map of a point represented in affine coordinates in an elliptic
- * curve over a quartic exension. Computes Frob^i(P) = (p^i)P.
+ * curve over a octic exension. Computes Frob^i(P) = (p^i)P.
  *
  * @param[out] r			- the result in affine coordinates.
  * @param[in] p				- a point in affine coordinates.
@@ -1964,7 +2151,7 @@ void ep3_map(ep3_t p, const uint8_t *msg, size_t len);
 void ep3_frb(ep3_t r, const ep3_t p, int i);
 
 /**
- * Compresses a point in an elliptic curve over a quartic extension.
+ * Compresses a point in an elliptic curve over a octic extension.
  *
  * @param[out] r			- the result.
  * @param[in] p				- the point to compress.
@@ -1972,7 +2159,7 @@ void ep3_frb(ep3_t r, const ep3_t p, int i);
 void ep3_pck(ep3_t r, const ep3_t p);
 
 /**
- * Decompresses a point in an elliptic curve over a quartic extension.
+ * Decompresses a point in an elliptic curve over a octic extension.
  *
  * @param[out] r			- the result.
  * @param[in] p				- the point to decompress.
@@ -1981,12 +2168,12 @@ void ep3_pck(ep3_t r, const ep3_t p);
 int ep3_upk(ep3_t r, const ep3_t p);
 
 /**
- * Initializes the elliptic curve over quartic extension.
+ * Initializes the elliptic curve over octic extension.
  */
 void ep4_curve_init(void);
 
 /**
- * Finalizes the elliptic curve over quartic extension.
+ * Finalizes the elliptic curve over octic extension.
  */
 void ep4_curve_clean(void);
 
@@ -2061,7 +2248,7 @@ void ep4_curve_get_ord(bn_t n);
 void ep4_curve_get_cof(bn_t h);
 
 /**
- * Configures an elliptic curve over a quartic extension by its coefficients.
+ * Configures an elliptic curve over a octic extension by its coefficients.
  *
  * @param[in] a			- the 'a' coefficient of the curve.
  * @param[in] b			- the 'b' coefficient of the curve.
@@ -2069,7 +2256,8 @@ void ep4_curve_get_cof(bn_t h);
  * @param[in] r			- the order of the group of points.
  * @param[in] h			- the cofactor of the group order.
  */
-void ep4_curve_set(const fp4_t a, const fp4_t b, const ep4_t g, const bn_t r, const bn_t h);
+void ep4_curve_set(const fp4_t a, const fp4_t b, const ep4_t g, const bn_t r,
+		const bn_t h);
 
 /**
  * Configures an elliptic curve by twisting the curve over the base prime field.
@@ -2159,7 +2347,7 @@ void ep4_print(const ep4_t p);
 
 /**
  * Returns the number of bytes necessary to store a prime elliptic curve point
- * over a quartic extension with optional point compression.
+ * over a octic extension with optional point compression.
  *
  * @param[in] a				- the prime field element.
  * @param[in] pack			- the flag to indicate compression.
@@ -2168,7 +2356,7 @@ void ep4_print(const ep4_t p);
 int ep4_size_bin(const ep4_t a, int pack);
 
 /**
- * Reads a prime elliptic curve point over a quartic extension from a byte
+ * Reads a prime elliptic curve point over a octic extension from a byte
  * vector in big-endian format.
  *
  * @param[out] a			- the result.
@@ -2180,7 +2368,7 @@ int ep4_size_bin(const ep4_t a, int pack);
 void ep4_read_bin(ep4_t a, const uint8_t *bin, size_t len);
 
 /**
- * Writes a prime elliptic curve pointer over a quartic extension to a byte
+ * Writes a prime elliptic curve pointer over a octic extension to a byte
  * vector in big-endian format with optional point compression.
  *
  * @param[out] bin			- the byte vector.
@@ -2193,7 +2381,7 @@ void ep4_write_bin(uint8_t *bin, size_t len, const ep4_t a, int pack);
 
 /**
  * Negates a point represented in affine coordinates in an elliptic curve over
- * a quartic extension.
+ * a octic extension.
  *
  * @param[out] r			- the result.
  * @param[out] p			- the point to negate.
@@ -2202,7 +2390,7 @@ void ep4_neg(ep4_t r, const ep4_t p);
 
 /**
  * Adds to points represented in affine coordinates in an elliptic curve over a
- * quartic extension.
+ * octic extension.
  *
  * @param[out] r			- the result.
  * @param[in] p				- the first point to add.
@@ -2212,7 +2400,7 @@ void ep4_add_basic(ep4_t r, const ep4_t p, const ep4_t q);
 
 /**
  * Adds to points represented in affine coordinates in an elliptic curve over a
- * quartic extension and returns the computed slope.
+ * octic extension and returns the computed slope.
  *
  * @param[out] r			- the result.
  * @param[out] s			- the slope.
@@ -2223,7 +2411,7 @@ void ep4_add_slp_basic(ep4_t r, fp4_t s, const ep4_t p, const ep4_t q);
 
 /**
  * Adds two points represented in projective coordinates in an elliptic curve
- * over a quartic extension.
+ * over a octic extension.
  *
  * @param[out] r			- the result.
  * @param[in] p				- the first point to add.
@@ -2232,7 +2420,7 @@ void ep4_add_slp_basic(ep4_t r, fp4_t s, const ep4_t p, const ep4_t q);
 void ep4_add_projc(ep4_t r, const ep4_t p, const ep4_t q);
 
  /**
-  * Subtracts a point i an elliptic curve over a quartic extension from
+  * Subtracts a point in an elliptic curve over a octic extension from
   * another.
   *
   * @param[out] r			- the result.
@@ -2243,7 +2431,7 @@ void ep4_sub(ep4_t r, const ep4_t p, const ep4_t q);
 
 /**
  * Doubles a points represented in affine coordinates in an elliptic curve over
- * a quartic extension.
+ * a octic extension.
  *
  * @param[out] r			- the result.
  * @param[int] p			- the point to double.
@@ -2252,7 +2440,7 @@ void ep4_dbl_basic(ep4_t r, const ep4_t p);
 
 /**
  * Doubles a points represented in affine coordinates in an elliptic curve over
- * a quartic extension and returns the computed slope.
+ * a octic extension and returns the computed slope.
  *
  * @param[out] r			- the result.
  * @param[out] s			- the slope.
@@ -2262,7 +2450,7 @@ void ep4_dbl_slp_basic(ep4_t r, fp4_t s, const ep4_t p);
 
 /**
  * Doubles a points represented in projective coordinates in an elliptic curve
- * over a quartic extension.
+ * over a octic extension.
  *
  * @param[out] r			- the result.
  * @param[in] p				- the point to double.
@@ -2335,7 +2523,7 @@ void ep4_mul_dig(ep4_t r, const ep4_t p, const dig_t k);
 
 
 /**
- * Multiplies a point in an elliptic curve over a quartic extension field by
+ * Multiplies a point in an elliptic curve over a octic extension field by
  * the curve cofactor or a small multiple for which a short vector exists.
  * In short, it takes a point in the curve to the large prime-order subgroup.
  *
@@ -2557,7 +2745,7 @@ void ep4_norm(ep4_t r, const ep4_t p);
 void ep4_norm_sim(ep4_t *r, const ep4_t *t, int n);
 
 /**
- * Maps a byte array to a point in an elliptic curve over a quartic extension.
+ * Maps a byte array to a point in an elliptic curve over a octic extension.
  *
  * @param[out] p			- the result.
  * @param[in] msg			- the byte array to map.
@@ -2568,10 +2756,10 @@ void ep4_map(ep4_t p, const uint8_t *msg, size_t len);
 /**
  * Computes a power of the Gailbraith-Lin-Scott homomorphism of a point
  * represented in affine coordinates on a twisted elliptic curve over a
- * quartic exension. That is, Psi^i(P) = Twist(P)(Frob^i(unTwist(P)).
- * On the trace-zero group of a quartic twist, consists of a power of the
+ * octic exension. That is, Psi^i(P) = Twist(P)(Frob^i(unTwist(P)).
+ * On the trace-zero group of a octic twist, consists of a power of the
  * Frobenius map of a point represented in affine coordinates in an elliptic
- * curve over a quartic exension. Computes Frob^i(P) = (p^i)P.
+ * curve over a octic exension. Computes Frob^i(P) = (p^i)P.
  *
  * @param[out] r			- the result in affine coordinates.
  * @param[in] p				- a point in affine coordinates.
@@ -2580,7 +2768,7 @@ void ep4_map(ep4_t p, const uint8_t *msg, size_t len);
 void ep4_frb(ep4_t r, const ep4_t p, int i);
 
 /**
- * Compresses a point in an elliptic curve over a quartic extension.
+ * Compresses a point in an elliptic curve over a octic extension.
  *
  * @param[out] r			- the result.
  * @param[in] p				- the point to compress.
@@ -2588,12 +2776,629 @@ void ep4_frb(ep4_t r, const ep4_t p, int i);
 void ep4_pck(ep4_t r, const ep4_t p);
 
 /**
- * Decompresses a point in an elliptic curve over a quartic extension.
+ * Decompresses a point in an elliptic curve over a octic extension.
  *
  * @param[out] r			- the result.
  * @param[in] p				- the point to decompress.
  * @return if the decompression was successful
  */
 int ep4_upk(ep4_t r, const ep4_t p);
+
+/**
+ * Initializes the elliptic curve over octic extension.
+ */
+void ep8_curve_init(void);
+
+/**
+ * Finalizes the elliptic curve over octic extension.
+ */
+void ep8_curve_clean(void);
+
+/**
+ * Returns the 'a' coefficient of the currently configured elliptic curve.
+ *
+ * @return the 'a' coefficient of the elliptic curve.
+ */
+void ep8_curve_get_a(fp8_t a);
+
+/**
+ * Returns the 'b' coefficient of the currently configured elliptic curve.
+ *
+ * @param[out] b			- the 'b' coefficient of the elliptic curve.
+ */
+void ep8_curve_get_b(fp8_t b);
+
+/**
+ * Returns the vector of coefficients required to perform GLV method.
+ *
+ * @param[out] b			- the vector of coefficients.
+ */
+void ep8_curve_get_vs(bn_t *v);
+
+/**
+ * Returns a optimization identifier based on the 'a' coefficient of the curve.
+ *
+ * @return the optimization identifier.
+ */
+int ep8_curve_opt_a(void);
+
+/**
+ * Returns b optimization identifier based on the 'b' coefficient of the curve.
+ *
+ * @return the optimization identifier.
+ */
+int ep8_curve_opt_b(void);
+
+/**
+ * Tests if the configured elliptic curve is a twist.
+ *
+ * @return the type of the elliptic curve twist, 0 if non-twisted curve.
+ */
+int ep8_curve_is_twist(void);
+
+/**
+ * Returns the generator of the group of points in the elliptic curve.
+ *
+ * @param[out] g			- the returned generator.
+ */
+void ep8_curve_get_gen(ep8_t g);
+
+/**
+ * Returns the precomputation table for the generator.
+ *
+ * @return the table.
+ */
+ep8_t *ep8_curve_get_tab(void);
+
+/**
+ * Returns the order of the group of points in the elliptic curve.
+ *
+ * @param[out] n			- the returned order.
+ */
+void ep8_curve_get_ord(bn_t n);
+
+/**
+ * Returns the cofactor of the group order in the elliptic curve.
+ *
+ * @param[out] h			- the returned cofactor.
+ */
+void ep8_curve_get_cof(bn_t h);
+
+/**
+ * Configures an elliptic curve over a octic extension by its coefficients.
+ *
+ * @param[in] a			- the 'a' coefficient of the curve.
+ * @param[in] b			- the 'b' coefficient of the curve.
+ * @param[in] g			- the generator.
+ * @param[in] r			- the order of the group of points.
+ * @param[in] h			- the cofactor of the group order.
+ */
+void ep8_curve_set(const fp8_t a, const fp8_t b, const ep8_t g, const bn_t r,
+		const bn_t h);
+
+/**
+ * Configures an elliptic curve by twisting the curve over the base prime field.
+ *
+ *  @param				- the type of twist (multiplicative or divisive)
+ */
+void ep8_curve_set_twist(int type);
+
+/**
+ * Tests if a point on an elliptic curve is at the infinity.
+ *
+ * @param[in] p				- the point to test.
+ * @return 1 if the point is at infinity, 0 otherise.
+ */
+int ep8_is_infty(const ep8_t p);
+
+/**
+ * Assigns an elliptic curve point to the point at infinity.
+ *
+ * @param[out] p			- the point to assign.
+ */
+void ep8_set_infty(ep8_t p);
+
+/**
+ * Copies the second argument to the first argument.
+ *
+ * @param[out] q			- the result.
+ * @param[in] p				- the elliptic curve point to copy.
+ */
+void ep8_copy(ep8_t r, const ep8_t p);
+
+/**
+ * Compares two elliptic curve points.
+ *
+ * @param[in] p				- the first elliptic curve point.
+ * @param[in] q				- the second elliptic curve point.
+ * @return RLC_EQ if p == q and RLC_NE if p != q.
+ */
+int ep8_cmp(const ep8_t p, const ep8_t q);
+
+/**
+ * Assigns a random value to an elliptic curve point.
+ *
+ * @param[out] p			- the elliptic curve point to assign.
+ */
+void ep8_rand(ep8_t p);
+
+/**
+ * Randomizes coordinates of an elliptic curve point.
+ *
+ * @param[out] r			- the blinded prime elliptic curve point.
+ * @param[in] p				- the prime elliptic curve point to blind.
+ */
+void ep8_blind(ep8_t r, const ep8_t p);
+
+/**
+ * Computes the right-hand side of the elliptic curve equation at a certain
+ * elliptic curve point.
+ *
+ * @param[out] rhs			- the result.
+ * @param[in] p				- the point.
+ */
+void ep8_rhs(fp8_t rhs, const ep8_t p);
+
+/**
+ * Tests if a point is in the curve.
+ *
+ * @param[in] p				- the point to test.
+ */
+int ep8_on_curve(const ep8_t p);
+
+/**
+ * Builds a precomputation table for multiplying a random prime elliptic point.
+ *
+ * @param[out] t			- the precomputation table.
+ * @param[in] p				- the point to multiply.
+ * @param[in] w				- the window width.
+ */
+void ep8_tab(ep8_t *t, const ep8_t p, int w);
+
+/**
+ * Prints an elliptic curve point.
+ *
+ * @param[in] p				- the elliptic curve point to print.
+ */
+void ep8_print(const ep8_t p);
+
+/**
+ * Returns the number of bytes necessary to store a prime elliptic curve point
+ * over a octic extension with optional point compression.
+ *
+ * @param[in] a				- the prime field element.
+ * @param[in] pack			- the flag to indicate compression.
+ * @return the number of bytes.
+ */
+int ep8_size_bin(const ep8_t a, int pack);
+
+/**
+ * Reads a prime elliptic curve point over a octic extension from a byte
+ * vector in big-endian format.
+ *
+ * @param[out] a			- the result.
+ * @param[in] bin			- the byte vector.
+ * @param[in] len			- the buffer capacity.
+ * @throw ERR_NO_VALID		- if the encoded point is invalid.
+ * @throw ERR_NO_BUFFER		- if the buffer capacity is invalid.
+ */
+void ep8_read_bin(ep8_t a, const uint8_t *bin, size_t len);
+
+/**
+ * Writes a prime elliptic curve pointer over a octic extension to a byte
+ * vector in big-endian format with optional point compression.
+ *
+ * @param[out] bin			- the byte vector.
+ * @param[in] len			- the buffer capacity.
+ * @param[in] a				- the prime elliptic curve point to write.
+ * @param[in] pack			- the flag to indicate compression.
+ * @throw ERR_NO_BUFFER		- if the buffer capacity is invalid.
+ */
+void ep8_write_bin(uint8_t *bin, size_t len, const ep8_t a, int pack);
+
+/**
+ * Negates a point represented in affine coordinates in an elliptic curve over
+ * a octic extension.
+ *
+ * @param[out] r			- the result.
+ * @param[out] p			- the point to negate.
+ */
+void ep8_neg(ep8_t r, const ep8_t p);
+
+/**
+ * Adds to points represented in affine coordinates in an elliptic curve over a
+ * octic extension.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the first point to add.
+ * @param[in] q				- the second point to add.
+ */
+void ep8_add_basic(ep8_t r, const ep8_t p, const ep8_t q);
+
+/**
+ * Adds to points represented in affine coordinates in an elliptic curve over a
+ * octic extension and returns the computed slope.
+ *
+ * @param[out] r			- the result.
+ * @param[out] s			- the slope.
+ * @param[in] p				- the first point to add.
+ * @param[in] q				- the second point to add.
+ */
+void ep8_add_slp_basic(ep8_t r, fp8_t s, const ep8_t p, const ep8_t q);
+
+/**
+ * Adds two points represented in projective coordinates in an elliptic curve
+ * over a octic extension.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the first point to add.
+ * @param[in] q				- the second point to add.
+ */
+void ep8_add_projc(ep8_t r, const ep8_t p, const ep8_t q);
+
+ /**
+  * Subtracts a point in an elliptic curve over a octic extension from
+  * another.
+  *
+  * @param[out] r			- the result.
+  * @param[in] p			- the first point.
+  * @param[in] q			- the point to subtract.
+  */
+void ep8_sub(ep8_t r, const ep8_t p, const ep8_t q);
+
+/**
+ * Doubles a points represented in affine coordinates in an elliptic curve over
+ * a octic extension.
+ *
+ * @param[out] r			- the result.
+ * @param[int] p			- the point to double.
+ */
+void ep8_dbl_basic(ep8_t r, const ep8_t p);
+
+/**
+ * Doubles a points represented in affine coordinates in an elliptic curve over
+ * a octic extension and returns the computed slope.
+ *
+ * @param[out] r			- the result.
+ * @param[out] s			- the slope.
+ * @param[in] p				- the point to double.
+ */
+void ep8_dbl_slp_basic(ep8_t r, fp8_t s, const ep8_t p);
+
+/**
+ * Doubles a points represented in projective coordinates in an elliptic curve
+ * over a octic extension.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to double.
+ */
+void ep8_dbl_projc(ep8_t r, const ep8_t p);
+
+/**
+ * Multiplies a prime elliptic point by an integer using the binary method.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to multiply.
+ * @param[in] k				- the integer.
+ */
+void ep8_mul_basic(ep8_t r, const ep8_t p, const bn_t k);
+
+/**
+ * Multiplies a prime elliptic point by an integer using the sliding window
+ * method.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to multiply.
+ * @param[in] k				- the integer.
+ */
+void ep8_mul_slide(ep8_t r, const ep8_t p, const bn_t k);
+
+/**
+ * Multiplies a prime elliptic point by an integer using the constant-time
+ * Montgomery ladder point multiplication method.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to multiply.
+ * @param[in] k				- the integer.
+ */
+void ep8_mul_monty(ep8_t r, const ep8_t p, const bn_t k);
+
+/**
+ * Multiplies a prime elliptic point by an integer using the w-NAF method.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to multiply.
+ * @param[in] k				- the integer.
+ */
+void ep8_mul_lwnaf(ep8_t r, const ep8_t p, const bn_t k);
+
+/**
+ * Multiplies a prime elliptic point by an integer using a regular method.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to multiply.
+ * @param[in] k				- the integer.
+ */
+void ep8_mul_lwreg(ep8_t r, const ep8_t p, const bn_t k);
+
+/**
+ * Multiplies the generator of an elliptic curve over a qaudratic extension.
+ *
+ * @param[out] r			- the result.
+ * @param[in] k				- the integer.
+ */
+void ep8_mul_gen(ep8_t r, const bn_t k);
+
+/**
+ * Multiplies a prime elliptic point by a small integer.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to multiply.
+ * @param[in] k				- the integer.
+ */
+void ep8_mul_dig(ep8_t r, const ep8_t p, const dig_t k);
+
+
+/**
+ * Multiplies a point in an elliptic curve over a octic extension field by
+ * the curve cofactor or a small multiple for which a short vector exists.
+ * In short, it takes a point in the curve to the large prime-order subgroup.
+ *
+ * @param[out] R				- the result.
+ * @param[in] P					- the point to multiply.
+ */
+void ep8_mul_cof(ep8_t r, const ep8_t p);
+
+/**
+ * Builds a precomputation table for multiplying a fixed prime elliptic point
+ * using the binary method.
+ *
+ * @param[out] t			- the precomputation table.
+ * @param[in] p				- the point to multiply.
+ */
+void ep8_mul_pre_basic(ep8_t *t, const ep8_t p);
+
+/**
+ * Builds a precomputation table for multiplying a fixed prime elliptic point
+ * using Yao's windowing method.
+ *
+ * @param[out] t			- the precomputation table.
+ * @param[in] p				- the point to multiply.
+ */
+void ep8_mul_pre_yaowi(ep8_t *t, const ep8_t p);
+
+/**
+ * Builds a precomputation table for multiplying a fixed prime elliptic point
+ * using the NAF windowing method.
+ *
+ * @param[out] t			- the precomputation table.
+ * @param[in] p				- the point to multiply.
+ */
+void ep8_mul_pre_nafwi(ep8_t *t, const ep8_t p);
+
+/**
+ * Builds a precomputation table for multiplying a fixed prime elliptic point
+ * using the single-table comb method.
+ *
+ * @param[out] t			- the precomputation table.
+ * @param[in] p				- the point to multiply.
+ */
+void ep8_mul_pre_combs(ep8_t *t, const ep8_t p);
+
+/**
+ * Builds a precomputation table for multiplying a fixed prime elliptic point
+ * using the double-table comb method.
+ *
+ * @param[out] t			- the precomputation table.
+ * @param[in] p				- the point to multiply.
+ */
+void ep8_mul_pre_combd(ep8_t *t, const ep8_t p);
+
+/**
+ * Builds a precomputation table for multiplying a fixed prime elliptic point
+ * using the w-(T)NAF method.
+ *
+ * @param[out] t			- the precomputation table.
+ * @param[in] p				- the point to multiply.
+ */
+void ep8_mul_pre_lwnaf(ep8_t *t, const ep8_t p);
+
+/**
+ * Multiplies a fixed prime elliptic point using a precomputation table and
+ * the binary method.
+ *
+ * @param[out] r			- the result.
+ * @param[in] t				- the precomputation table.
+ * @param[in] k				- the integer.
+ */
+void ep8_mul_fix_basic(ep8_t r, const ep8_t *t, const bn_t k);
+
+/**
+ * Multiplies a fixed prime elliptic point using a precomputation table and
+ * Yao's windowing method
+ *
+ * @param[out] r			- the result.
+ * @param[in] t				- the precomputation table.
+ * @param[in] k				- the integer.
+ */
+void ep8_mul_fix_yaowi(ep8_t r, const ep8_t *t, const bn_t k);
+
+/**
+ * Multiplies a fixed prime elliptic point using a precomputation table and
+ * the w-(T)NAF method.
+ *
+ * @param[out] r			- the result.
+ * @param[in] t				- the precomputation table.
+ * @param[in] k				- the integer.
+ */
+void ep8_mul_fix_nafwi(ep8_t r, const ep8_t *t, const bn_t k);
+
+/**
+ * Multiplies a fixed prime elliptic point using a precomputation table and
+ * the single-table comb method.
+ *
+ * @param[out] r			- the result.
+ * @param[in] t				- the precomputation table.
+ * @param[in] k				- the integer.
+ */
+void ep8_mul_fix_combs(ep8_t r, const ep8_t *t, const bn_t k);
+
+/**
+ * Multiplies a fixed prime elliptic point using a precomputation table and
+ * the double-table comb method.
+ *
+ * @param[out] r			- the result.
+ * @param[in] t				- the precomputation table.
+ * @param[in] k				- the integer.
+ */
+void ep8_mul_fix_combd(ep8_t r, const ep8_t *t, const bn_t k);
+
+/**
+ * Multiplies a fixed prime elliptic point using a precomputation table and
+ * the w-(T)NAF method.
+ *
+ * @param[out] r			- the result.
+ * @param[in] t				- the precomputation table.
+ * @param[in] k				- the integer.
+ */
+void ep8_mul_fix_lwnaf(ep8_t r, const ep8_t *t, const bn_t k);
+
+/**
+ * Multiplies and adds two prime elliptic curve points simultaneously using
+ * scalar multiplication and point addition.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the first point to multiply.
+ * @param[in] k				- the first integer.
+ * @param[in] q				- the second point to multiply.
+ * @param[in] m				- the second integer,
+ */
+void ep8_mul_sim_basic(ep8_t r, const ep8_t p, const bn_t k, const ep8_t q, const bn_t m);
+
+/**
+ * Multiplies and adds two prime elliptic curve points simultaneously using
+ * shamir's trick.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the first point to multiply.
+ * @param[in] k				- the first integer.
+ * @param[in] q				- the second point to multiply.
+ * @param[in] m				- the second integer,
+ */
+void ep8_mul_sim_trick(ep8_t r, const ep8_t p, const bn_t k, const ep8_t q, const bn_t m);
+
+/**
+ * Multiplies and adds two prime elliptic curve points simultaneously using
+ * interleaving of NAFs.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the first point to multiply.
+ * @param[in] k				- the first integer.
+ * @param[in] q				- the second point to multiply.
+ * @param[in] m				- the second integer,
+ */
+void ep8_mul_sim_inter(ep8_t r, const ep8_t p, const bn_t k, const ep8_t q, const bn_t m);
+
+/**
+ * Multiplies and adds two prime elliptic curve points simultaneously using
+ * Solinas' Joint Sparse Form.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the first point to multiply.
+ * @param[in] k				- the first integer.
+ * @param[in] q				- the second point to multiply.
+ * @param[in] m				- the second integer,
+ */
+void ep8_mul_sim_joint(ep8_t r, const ep8_t p, const bn_t k, const ep8_t q, const bn_t m);
+
+/**
+ * Multiplies simultaneously elements from a prime elliptic curve.
+ * Computes R = \Sum_i=0..n k_iP_i.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p			- the points to multiply.
+ * @param[in] k			- the integer scalars.
+ * @param[in] n			- the number of elements to multiply.
+ */
+void ep8_mul_sim_lot(ep8_t r, const ep8_t p[], const bn_t k[], size_t n);
+
+/**
+ * Multiplies and adds the generator and a prime elliptic curve point
+ * simultaneously. Computes R = [k]G + [l]Q.
+ *
+ * @param[out] r			- the result.
+ * @param[in] k				- the first integer.
+ * @param[in] q				- the second point to multiply.
+ * @param[in] m				- the second integer,
+ */
+void ep8_mul_sim_gen(ep8_t r, const bn_t k, const ep8_t q, const bn_t m);
+
+/**
+ * Multiplies prime elliptic curve points by small scalars.
+ * Computes R = \sum k_iP_i.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the points to multiply.
+ * @param[in] k				- the small scalars.
+ * @param[in] len			- the number of points to multiply.
+ */
+void ep8_mul_sim_dig(ep8_t r, const ep8_t p[], const dig_t k[], size_t len);
+
+/**
+ * Converts a point to affine coordinates.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to convert.
+ */
+void ep8_norm(ep8_t r, const ep8_t p);
+
+/**
+ * Converts multiple points to affine coordinates.
+ *
+ * @param[out] r			- the result.
+ * @param[in] t				- the points to convert.
+ * @param[in] n				- the number of points.
+ */
+void ep8_norm_sim(ep8_t *r, const ep8_t *t, int n);
+
+/**
+ * Maps a byte array to a point in an elliptic curve over a octic extension.
+ *
+ * @param[out] p			- the result.
+ * @param[in] msg			- the byte array to map.
+ * @param[in] len			- the array length in bytes.
+ */
+void ep8_map(ep8_t p, const uint8_t *msg, size_t len);
+
+/**
+ * Computes a power of the Gailbraith-Lin-Scott homomorphism of a point
+ * represented in affine coordinates on a twisted elliptic curve over a
+ * octic exension. That is, Psi^i(P) = Twist(P)(Frob^i(unTwist(P)).
+ * On the trace-zero group of a octic twist, consists of a power of the
+ * Frobenius map of a point represented in affine coordinates in an elliptic
+ * curve over a octic exension. Computes Frob^i(P) = (p^i)P.
+ *
+ * @param[out] r			- the result in affine coordinates.
+ * @param[in] p				- a point in affine coordinates.
+ * @param[in] i				- the power of the Frobenius map.
+ */
+void ep8_frb(ep8_t r, const ep8_t p, int i);
+
+/**
+ * Compresses a point in an elliptic curve over a octic extension.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to compress.
+ */
+void ep8_pck(ep8_t r, const ep8_t p);
+
+/**
+ * Decompresses a point in an elliptic curve over a octic extension.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to decompress.
+ * @return if the decompression was successful
+ */
+int ep8_upk(ep8_t r, const ep8_t p);
 
 #endif /* !RLC_EPX_H */

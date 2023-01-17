@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (c) 2010 RELIC Authors
+ * Copyright (c) 2023 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -24,29 +24,25 @@
 /**
  * @file
  *
- * Implementation of pairings over prime curves.
+ * Implementation of frobenius action on prime elliptic curves over
+ * quartic extensions.
  *
- * @ingroup pp
+ * @ingroup epx
  */
 
 #include "relic_core.h"
-#include "relic_pp.h"
-#include "relic_util.h"
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void pp_map_init(void) {
-	ep2_curve_init();
-	ep3_curve_init();
-	ep4_curve_init();
-	ep8_curve_init();
-}
-
-void pp_map_clean(void) {
-	ep2_curve_clean();
-	ep3_curve_clean();
-	ep4_curve_clean();
-	ep8_curve_clean();
+void ep8_frb(ep8_t r, const ep8_t p, int i) {
+	ep8_copy(r, p);
+	for (; i > 0; i--) {
+		fp8_frb(r->x, r->x, 1);
+		fp8_frb(r->y, r->y, 1);
+		fp8_frb(r->z, r->z, 1);
+		fp8_mul_frb(r->x, r->x, 1, 2);
+		fp8_mul_frb(r->y, r->y, 1, 3);
+	}
 }

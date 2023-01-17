@@ -37,7 +37,7 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-static void ep8_dbl_basic(fp8_t s, fp8_t rx, fp8_t ry) {
+static void _ep8_dbl_basic(fp8_t s, fp8_t rx, fp8_t ry) {
 	fp8_t t0, t1, t2;
 
 	fp8_null(t0);
@@ -112,7 +112,7 @@ void pp_dbl_k48_basic(fp48_t l, fp8_t rx, fp8_t ry, const ep_t p) {
 
 		fp8_copy(tx, rx);
 		fp8_copy(ty, ry);
-		ep8_dbl_basic(s, rx, ry);
+		_ep8_dbl_basic(s, rx, ry);
 		fp48_zero(l);
 
 		fp_mul(l[0][1][0][0][0], p->x, s[0][0][0]);

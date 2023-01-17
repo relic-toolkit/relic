@@ -295,3 +295,39 @@ void fp4_field_init() {
 		fp4_free(t0);
 	}
 }
+
+void fp8_field_init() {
+	bn_t e;
+	fp8_t t0;
+	ctx_t *ctx = core_get();
+
+	bn_null(e);
+	fp8_null(t0);
+
+	RLC_TRY {
+		bn_new(e);
+		fp8_new(t0);
+
+		fp8_set_dig(t0, 1);
+		fp8_mul_art(t0, t0);
+		e->used = RLC_FP_DIGS;
+		dv_copy(e->dp, fp_prime_get(), RLC_FP_DIGS);
+		bn_sub_dig(e, e, 1);
+		bn_div_dig(e, e, 6);
+		fp8_exp(t0, t0, e);
+		if (fp4_is_zero(t0[1])) {
+			ctx->frb8 = 0;
+			fp_copy(ctx->fp8_p1[0], t0[0][0][0]);
+			fp_copy(ctx->fp8_p1[1], t0[0][0][1]);
+		} else {
+			ctx->frb8 = 1;
+			fp_copy(ctx->fp8_p1[0], t0[1][1][0]);
+			fp_copy(ctx->fp8_p1[1], t0[1][1][1]);
+		}
+	} RLC_CATCH_ANY {
+	    RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		bn_free(e);
+		fp8_free(t0);
+	}
+}

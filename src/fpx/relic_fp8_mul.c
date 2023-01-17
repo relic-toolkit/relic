@@ -268,3 +268,36 @@ void fp8_mul_art(fp8_t c, const fp8_t a) {
 		fp4_free(t0);
 	}
 }
+
+void fp8_mul_frb(fp8_t c, const fp8_t a, int i, int j) {
+	fp2_t t;
+
+	fp2_null(t);
+
+	RLC_TRY {
+		fp4_new(t);
+
+		fp_copy(t[0], core_get()->fp8_p1[0]);
+		fp_copy(t[1], core_get()->fp8_p1[1]);
+
+	    if (i == 1) {
+			fp8_copy(c, a);
+			for (int k = 0; k < j; k++) {
+	        	fp2_mul(c[0][0], c[0][0], t);
+				fp2_mul(c[0][1], c[0][1], t);
+				fp2_mul(c[1][0], c[1][0], t);
+				fp2_mul(c[1][1], c[1][1], t);
+				/* If constant in base field, then second component is zero. */
+				if (core_get()->frb8 == 1) {
+					fp8_mul_art(c, c);
+				}
+			}
+	    } else {
+			RLC_THROW(ERR_NO_VALID);
+		}
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		fp4_free(t);
+	}
+}

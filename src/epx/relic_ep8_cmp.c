@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (c) 2010 RELIC Authors
+ * Copyright (c) 2023 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -24,29 +24,59 @@
 /**
  * @file
  *
- * Implementation of pairings over prime curves.
+ * Implementation of utilities for prime elliptic curves over quadratic
+ * extensions.
  *
- * @ingroup pp
+ * @ingroup epx
  */
 
 #include "relic_core.h"
-#include "relic_pp.h"
-#include "relic_util.h"
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void pp_map_init(void) {
-	ep2_curve_init();
-	ep3_curve_init();
-	ep4_curve_init();
-	ep8_curve_init();
-}
+int ep8_cmp(const ep8_t p, const ep8_t q) {
+    ep8_t r, s;
+    int result = RLC_NE;
 
-void pp_map_clean(void) {
-	ep2_curve_clean();
-	ep3_curve_clean();
-	ep4_curve_clean();
-	ep8_curve_clean();
+	if (ep8_is_infty(p) && ep8_is_infty(q)) {
+		return RLC_EQ;
+	}
+
+    ep8_null(r);
+    ep8_null(s);
+
+    RLC_TRY {
+        ep8_new(r);
+        ep8_new(s);
+
+        if ((p->coord != BASIC) && (q->coord != BASIC)) {
+            /* If the two points are not normalized, it is faster to compare
+             * x1 * z2^2 == x2 * z1^2 and y1 * z2^3 == y2 * z1^3. */
+            fp8_sqr(r->z, p->z);
+            fp8_sqr(s->z, q->z);
+            fp8_mul(r->x, p->x, s->z);
+            fp8_mul(s->x, q->x, r->z);
+            fp8_mul(r->z, r->z, p->z);
+            fp8_mul(s->z, s->z, q->z);
+            fp8_mul(r->y, p->y, s->z);
+            fp8_mul(s->y, q->y, r->z);
+        } else {
+			ep8_norm(r, p);
+            ep8_norm(s, q);
+        }
+
+        if ((fp8_cmp(r->x, s->x) == RLC_EQ) &&
+				(fp8_cmp(r->y, s->y) == RLC_EQ)) {
+            result = RLC_EQ;
+        }
+    } RLC_CATCH_ANY {
+        RLC_THROW(ERR_CAUGHT);
+    } RLC_FINALLY {
+        ep8_free(r);
+        ep8_free(s);
+    }
+
+    return result;
 }

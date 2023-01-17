@@ -2477,6 +2477,11 @@ void fp6_exp(fp6_t c, const fp6_t a, const bn_t b);
 void fp6_frb(fp6_t c, const fp6_t a, int i);
 
 /**
+ * Initializes the octic extension field arithmetic module.
+ */
+void fp8_field_init(void);
+
+/**
  * Copies the second argument to the first argument.
  *
  * @param[out] c			- the result.
@@ -2643,6 +2648,17 @@ void fp8_mul_lazyr(fp8_t c, const fp8_t a, const fp8_t b);
  * @param[in] a				- the octic extension field element to multiply.
  */
 void fp8_mul_art(fp8_t c, const fp8_t a);
+
+/**
+ * Multiplies an octic extension field element by a power of the constant
+ * needed to compute a power of the Frobenius map.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the field element to multiply.
+ * @param[in] i				- the power of the Frobenius map.
+ * @param[in] j				- the power of the constant.
+ */
+void fp8_mul_frb(fp8_t c, const fp8_t a, int i, int j);
 
 /**
  * Multiples a dense octic extension field element by a sparse element.

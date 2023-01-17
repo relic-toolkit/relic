@@ -37,7 +37,7 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-static void ep8_add_basic(fp8_t s, fp8_t rx, fp8_t ry, const fp8_t qx,
+static void _ep8_add_basic(fp8_t s, fp8_t rx, fp8_t ry, const fp8_t qx,
 		const fp8_t qy) {
 	fp8_t t0, t1, t2;
 
@@ -119,7 +119,7 @@ void pp_add_k48_basic(fp48_t l, fp8_t rx, fp8_t ry, fp8_t qx, fp8_t qy, const ep
 
 		fp8_copy(tx, rx);
 		fp8_copy(ty, ry);
-		ep8_add_basic(s, rx, ry, qx, qy);
+		_ep8_add_basic(s, rx, ry, qx, qy);
 
 		fp48_zero(l);
 		fp_mul(l[0][1][0][0][0], p->x, s[0][0][0]);
