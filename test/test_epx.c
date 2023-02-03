@@ -1100,11 +1100,11 @@ static int hashing2(void) {
 	uint8_t msg[5];
 
 	bn_null(n);
-	ep2_null(p);
+	ep2_null(a);
 
 	RLC_TRY {
 		bn_new(n);
-		ep2_new(p);
+		ep2_new(a);
 
 		ep2_curve_get_ord(n);
 

@@ -40,7 +40,6 @@
 void eb_map(eb_t p, const uint8_t *msg, size_t len) {
 	bn_t k;
 	fb_t t0, t1;
-	int i;
 	uint8_t digest[RLC_MD_LEN];
 
 	bn_null(k);
@@ -56,10 +55,7 @@ void eb_map(eb_t p, const uint8_t *msg, size_t len) {
 		bn_read_bin(k, digest, RLC_MIN(RLC_FB_BYTES, RLC_MD_LEN));
 		fb_set_dig(p->z, 1);
 
-		i = 0;
 		while (1) {
-			bn_add_dig(k, k, 1);
-			bn_mod_2b(k, k, RLC_FB_BITS);
 			dv_copy(p->x, k->dp, RLC_FB_DIGS);
 
 			eb_rhs(t1, p);
@@ -71,7 +67,8 @@ void eb_map(eb_t p, const uint8_t *msg, size_t len) {
 			fb_mul(t0, t0, t1);
 			/* Solve t1^2 + t1 = t0. */
 			if (fb_trc(t0) != 0) {
-				i++;
+				bn_add_dig(k, k, 1);
+				bn_mod_2b(k, k, RLC_FB_BITS);
 			} else {
 				fb_slv(t1, t0);
 				/* x3 = x1, y3 = t1 * x1, z3 = 1. */
