@@ -50,6 +50,40 @@
 /*============================================================================*/
 
 /**
+ * Pairing-friendly elliptic curve identifiers.
+ */
+enum {
+    /** Supersingular curves with embedding degree 1. */
+    EP_SS1 = 1,
+    /** Supersingular curves with embedding degree 2. */
+    EP_SS2,
+    /** Barreto-Naehrig. */
+    EP_BN,
+    /* Optimal TNFS-secure. */
+    EP_OT8,
+    /* Cocks-Pinch family discovered by Guillevic, Masson and Thomé (GMT). */
+    EP_GMT8,
+    /* Barreto-Lynn-Scott family with embedding degree 12. */
+    EP_B12,
+    /* Fotiadis-Martindale family with embedding degree 16. */
+    EP_FM16,
+    /* Kachisa-Schaefer-Scott family with embedding degree 16. */
+    EP_K16,
+    /* Fotiadis-Martindale family with embedding degree 18. */
+    EP_FM18,
+    /* Kachisa-Schaefer-Scott family with embedding degree 18. */
+    EP_K18,
+    /* Scott-Guillevic family with embedding degree 18. */
+    EP_SG18,
+    /* Barreto-Lynn-Scott family with embedding degree 24. */
+    EP_B24,
+    /* Barreto-Lynn-Scott family with embedding degree 48. */
+    EP_B48,
+    /** Scott-Guillevic family with embedding degree 54. */
+    EP_SG54,
+};
+
+/**
  * Prime elliptic curve identifiers.
  */
 enum {
@@ -128,7 +162,7 @@ enum {
 	/** Cocks-pinch curve with embedding degree 8. */
 	GMT8_P544,
 	/** Kachisa-Scott-Schaefer curve with embedding degree 54. */
-	K54_P569,
+	SG54_P569,
 	/** Barreto-Lynn-Scott curve with embedding degree 48. */
 	B48_P575,
 	/** Barreto-Naehrig curve with positive x. */
@@ -137,44 +171,12 @@ enum {
 	B12_P638,
 	/** Kachisa-Scott-Schaefer curve with embedding degree 18. */
 	K18_P638,
+    /** Scott-Guillevic curve with embedding degree 18. */
+    SG18_P638,
 	/** 1536-bit supersingular curve. */
 	SS_P1536,
 	/** 3072-bit supersingular curve. */
 	SS_P3072,
-};
-
-/**
- * Pairing-friendly elliptic curve identifiers.
- */
-enum {
-	/** Supersingular curves with embedding degree 1. */
-	EP_SS1 = 1,
-	/** Supersingular curves with embedding degree 2. */
-	EP_SS2,
-	/** Barreto-Naehrig. */
-	EP_BN,
-	/* Optimal TNFS-secure. */
-	EP_OT8,
-	/* Cocks-Pinch curve discovered by Guillevic, Masson and Thomé (GMT). */
-	EP_GMT8,
-	/* Barreto-Lynn-Scott with embedding degree 12. */
-	EP_B12,
-	/* Fotiadis-Martindale with embedding degree 16. */
-	EP_FM16,
-	/* Kachisa-Schaefer-Scott with embedding degree 16. */
-	EP_K16,
-	/* Fotiadis-Martindale with embedding degree 18. */
-	EP_FM18,
-	/* Kachisa-Schaefer-Scott with embedding degree 18. */
-	EP_K18,
-	/* Scott-Guillevic with embedding degree 18. */
-	EP_SG18,
-	/* Barreto-Lynn-Scott with embedding degree 24. */
-	EP_B24,
-	/* Barreto-Lynn-Scott with embedding degree 48. */
-	EP_B48,
-	/** Kachisa-Scott-Schaefer curve with embedding degree 54. */
-	EP_K54,
 };
 
 /*============================================================================*/

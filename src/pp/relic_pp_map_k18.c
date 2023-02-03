@@ -52,7 +52,8 @@ static void pp_mil_k18(fp18_t r, ep3_t *t, ep3_t *q, ep_t *p, int m, bn_t a) {
 	fp18_t l;
 	ep_t *_p = RLC_ALLOCA(ep_t, m);
 	ep3_t *_q = RLC_ALLOCA(ep3_t, m);
-	int i, j, len = bn_bits(a) + 1;
+	int i, j;
+	size_t len = bn_bits(a) + 1;
 	int8_t s[RLC_FP_BITS + 1];
 
 	if (m == 0) {
