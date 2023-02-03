@@ -99,7 +99,13 @@ void fp_param_set(int param) {
 		core_get()->fp_id = param;
 
 		switch (param) {
-#if FP_PRIME == 158
+#if FP_PRIME == 127
+			case MP_127:
+				f[0] = -1;
+				f[1] = 127;
+				fp_prime_set_pmers(f, 2);
+				break;
+#elif FP_PRIME == 158
 			case BN_158:
 				/* x = 0x4000000031. */
 				bn_set_2b(t0, 38);
@@ -637,7 +643,9 @@ int fp_param_set_any_dense(void) {
 }
 
 int fp_param_set_any_pmers(void) {
-#if FP_PRIME == 160
+#if FP_PRIME == 127
+	fp_param_set(MP_127);
+#elif FP_PRIME == 160
 	fp_param_set(SECG_160);
 #elif FP_PRIME == 192
 	fp_param_set(NIST_192);

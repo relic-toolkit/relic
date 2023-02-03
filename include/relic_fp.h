@@ -64,8 +64,10 @@
  * Finite field identifiers.
  */
 enum {
+    /** Mersenne prime with 127 bits. */
+    MP_127 = 1,
 	/** SECG 160-bit fast reduction prime. */
-	SECG_160 = 1,
+	SECG_160,
 	/** SECG 160-bit denser reduction prime. */
 	SECG_160D,
 	/** NIST 192-bit fast reduction prime. */
