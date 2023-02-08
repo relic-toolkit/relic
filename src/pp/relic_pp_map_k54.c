@@ -175,7 +175,7 @@ void pp_map_k54(fp54_t r, const ep_t p, const fp9_t qx, const fp9_t qy) {
 
 		if (!ep_is_infty(p) && !(fp9_is_zero(qx) && fp9_is_zero(qy))) {
 			switch (ep_curve_is_pairf()) {
-				case EP_K54:
+				case EP_SG54:
 					/* r = f_{|a|,Q}(P). */
 					pp_mil_k54(r, qx, qy, p, a);
 					if (bn_sign(a) == RLC_NEG) {

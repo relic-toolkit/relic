@@ -403,6 +403,29 @@ void fp_prime_set_pairf(const bn_t x, int pairf) {
  				bn_div_dig(p, p, 21);
  				fp_prime_set_dense(p);
  				break;
+ 			case EP_SG18:
+ 				/* 243x^10 - 162x^8 + 81*x^7 + 27x^6 - 54x^5 + 9x^4 + 9x^3 -
+ 				   3x^2 + 1 */
+ 				bn_sqr(p, t0);
+ 				bn_mul_dig(p, p, 243);
+				bn_sub_dig(p, p, 162);
+				bn_mul(p, p, t0);
+				bn_add_dig(p, p, 81);
+				bn_mul(p, p, t0);
+				bn_add_dig(p, p, 27);
+				bn_mul(p, p, t0);
+				bn_sub_dig(p, p, 54);
+				bn_mul(p, p, t0);
+				bn_add_dig(p, p, 9);
+				bn_mul(p, p, t0);
+				bn_add_dig(p, p, 9);
+				bn_mul(p, p, t0);
+				bn_sub_dig(p, p, 3);
+				bn_mul(p, p, t0);
+				bn_mul(p, p, t0);
+				bn_add_dig(p, p, 1);
+ 				fp_prime_set_dense(p);
+ 				break;
 			case EP_B24:
 				/* p = (x - 1)^2 * (x^8 - x^4 + 1)/3 + x. */
 				bn_sqr(t1, t0);
@@ -432,7 +455,7 @@ void fp_prime_set_pairf(const bn_t x, int pairf) {
 				bn_add(p, p, t0);
 				fp_prime_set_dense(p);
 				break;
-			case EP_K54:
+			case EP_SG54:
 				/* p = (1+3*x+3*x^2+(3^5)*x^9+(3^5)*x^10+(3^6)*x^10+(3^6)*x^11+(3^9)*x^18+(3^10)*x^19+(3^10)*x^20) */
 				bn_set_dig(p, 1);
 				bn_mul_dig(t1, t0, 3);
