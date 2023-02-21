@@ -164,9 +164,6 @@ void ep8_mul_fix_basic(ep8_t r, const ep8_t *t, const bn_t k) {
 			}
 		}
 		ep8_norm(r, r);
-		if (bn_sign(_k) == RLC_NEG) {
-			ep8_neg(r, r);
-		}
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
@@ -272,9 +269,6 @@ void ep8_mul_fix_combs(ep8_t r, const ep8_t *t, const bn_t k) {
 			}
 		}
 		ep8_norm(r, r);
-		if (bn_sign(_k) == RLC_NEG) {
-			ep8_neg(r, r);
-		}
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);

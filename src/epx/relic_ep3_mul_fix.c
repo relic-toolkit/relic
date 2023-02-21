@@ -136,9 +136,6 @@ void ep3_mul_fix_basic(ep3_t r, const ep3_t *t, const bn_t k) {
 			}
 		}
 		ep3_norm(r, r);
-		if (bn_sign(_k) == RLC_NEG) {
-			ep3_neg(r, r);
-		}
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
@@ -244,9 +241,6 @@ void ep3_mul_fix_combs(ep3_t r, const ep3_t *t, const bn_t k) {
 			}
 		}
 		ep3_norm(r, r);
-		if (bn_sign(_k) == RLC_NEG) {
-			ep3_neg(r, r);
-		}
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -361,9 +355,6 @@ void ep3_mul_fix_combd(ep3_t r, const ep3_t *t, const bn_t k) {
 			ep3_add(r, r, t[(1 << RLC_DEPTH) + w1]);
 		}
 		ep3_norm(r, r);
-		if (bn_sign(_k) == RLC_NEG) {
-			ep3_neg(r, r);
-		}
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);

@@ -450,18 +450,16 @@ void ep_curve_set_endom(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
 		fp_copy(ctx->beta, beta);
 		bn_copy(m, l);
 		ep_psi(p, g);
-		ep_copy(q, g);
-		for (int i = bn_bits(m) - 2; i >= 0; i--) {
-			ep_dbl(q, q);
-			if (bn_get_bit(m, i)) {
-				ep_add(q, q, g);
-			}
-		}
-		ep_norm(q, q);
+		ep_mul_basic(q, g, m);
 		/* Fix beta in case it is the wrong value. */
 		if (ep_cmp(q, p) != RLC_EQ) {
 			fp_neg(ctx->beta, ctx->beta);
 			fp_sub_dig(ctx->beta, ctx->beta, 1);
+			ep_psi(p, g);
+			ep_mul_basic(q, g, m);
+			if (ep_cmp(q, p) != RLC_EQ) {
+				RLC_THROW(ERR_NO_VALID);
+			}
 		}
 		bn_gcd_ext_mid(&(ctx->ep_v1[1]), &(ctx->ep_v1[2]), &(ctx->ep_v2[1]),
 				&(ctx->ep_v2[2]), m, r);

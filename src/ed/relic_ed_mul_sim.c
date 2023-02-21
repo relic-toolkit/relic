@@ -232,7 +232,7 @@ void ed_mul_sim_trick(ed_t r, const ed_t p, const bn_t k, const ed_t q,
 		}
 
 #if defined(ED_MIXED)
-		ed_norm_sim(t + 1, (const ed_t *)t + 1, (1 << (RLC_WIDTH)) - 1);
+		ed_norm_sim(t + 2, (const ed_t *)t + 2, (1 << ((w + w))) - 2);
 #endif
 
 		l0 = l1 = RLC_CEIL(RLC_FP_BITS, w);

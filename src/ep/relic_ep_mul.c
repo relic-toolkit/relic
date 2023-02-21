@@ -124,9 +124,6 @@ static void ep_mul_glv_imp(ep_t r, const ep_t p, const bn_t k) {
 		}
 		/* Convert r to affine coordinates. */
 		ep_norm(r, r);
-		if (bn_sign(_k) == RLC_NEG) {
-			ep_neg(r, r);
-		}
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -195,9 +192,6 @@ static void ep_mul_naf_imp(ep_t r, const ep_t p, const bn_t k) {
 		}
 		/* Convert r to affine coordinates. */
 		ep_norm(r, r);
-		if (bn_sign(_k) == RLC_NEG) {
-			ep_neg(r, r);
-		}
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -260,8 +254,7 @@ static void ep_mul_reg_glv(ep_t r, const ep_t p, const bn_t k) {
 		ep_curve_get_v1(v1);
 		ep_curve_get_v2(v2);
 
-		bn_abs(_k, k);
-		bn_mod(_k, _k, n);
+		bn_mod(_k, k, n);
 
 		bn_rec_glv(k0, k1, _k, n, (const bn_t *)v1, (const bn_t *)v2);
 		s0 = bn_sign(k0);
@@ -341,8 +334,6 @@ static void ep_mul_reg_glv(ep_t r, const ep_t p, const bn_t k) {
 
 		/* Convert r to affine coordinates. */
 		ep_norm(r, r);
-		ep_neg(u, r);
-		dv_copy_cond(r->y, u->y, RLC_FP_DIGS, bn_sign(k) == RLC_NEG);
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -468,6 +459,8 @@ static void ep_mul_reg_imp(ep_t r, const ep_t p, const bn_t k) {
 
 void ep_mul_basic(ep_t r, const ep_t p, const bn_t k) {
 	ep_t t;
+	int8_t u, naf[RLC_FP_BITS + 1];
+	size_t l;
 
 	ep_null(t);
 
@@ -479,11 +472,18 @@ void ep_mul_basic(ep_t r, const ep_t p, const bn_t k) {
 	RLC_TRY {
 		ep_new(t);
 
-		ep_copy(t, p);
-		for (int i = bn_bits(k) - 2; i >= 0; i--) {
+		l = RLC_FP_BITS + 1;
+		bn_rec_naf(naf, &l, k, 2);
+
+		ep_set_infty(t);
+		for (int i = l - 1; i >= 0; i--) {
 			ep_dbl(t, t);
-			if (bn_get_bit(k, i)) {
+
+			u = naf[i];
+			if (u > 0) {
 				ep_add(t, t, p);
+			} else if (u < 0) {
+				ep_sub(t, t, p);
 			}
 		}
 
@@ -560,9 +560,6 @@ void ep_mul_slide(ep_t r, const ep_t p, const bn_t k) {
 		}
 
 		ep_norm(r, q);
-		if (bn_sign(_k) == RLC_NEG) {
-			ep_neg(r, r);
-		}
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -635,8 +632,6 @@ void ep_mul_monty(ep_t r, const ep_t p, const bn_t k) {
 		}
 
 		ep_norm(r, t[0]);
-		ep_neg(t[0], r);
-		dv_copy_cond(r->y, t[0]->y, RLC_FP_DIGS, bn_sign(_k) == RLC_NEG);
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	}

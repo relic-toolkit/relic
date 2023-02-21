@@ -362,7 +362,7 @@ void eb_mul_sim_trick(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 		}
 
 #if RLC_WIDTH > 2 && defined(EB_MIXED)
-		eb_norm_sim(t + 1, (const eb_t *)(t + 1), (1 << RLC_WIDTH) - 1);
+		eb_norm_sim(t + 2, (const eb_t *)(t + 2), (1 << (w + w)) - 2);
 #endif
 
 		l0 = l1 = RLC_CEIL(RLC_FB_BITS + 1, w);
