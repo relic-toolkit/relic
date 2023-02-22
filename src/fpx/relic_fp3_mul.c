@@ -178,10 +178,11 @@ void fp3_mul_art(fp3_t c, const fp3_t a) {
 }
 
 void fp3_mul_nor(fp3_t c, const fp3_t a) {
-	fp3_t t;
+	fp3_t t, u;
 	bn_t b;
 
 	fp3_null(t);
+	fp3_null(u);
 	bn_null(b);
 
 	RLC_TRY {
@@ -192,14 +193,16 @@ void fp3_mul_nor(fp3_t c, const fp3_t a) {
 
 		switch (fp_prime_get_mod18()) {
 			case 7:
-				/* If p = 7 mod 18, we choose (2^k + j) as a QNR/CNR. */
 				fp3_mul_art(t, a);
-				fp3_copy(c, a);
+				fp3_copy(u, a);
 				while (cnr > 1) {
-					fp3_dbl(c, c);
+					fp3_dbl(u, u);
+					if (cnr & 1) {
+						fp3_add(u, u, a);
+					}
 					cnr = cnr >> 1;
 				}
-				fp3_add(c, c, t);
+				fp3_add(c, u, t);
 				break;
 			default:
 				fp3_mul_art(c, a);
@@ -211,6 +214,7 @@ void fp3_mul_nor(fp3_t c, const fp3_t a) {
 	}
 	RLC_FINALLY {
 		fp3_free(t);
+		fp3_free(u);
 		bn_free(b);
 	}
 }

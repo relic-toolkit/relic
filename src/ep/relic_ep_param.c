@@ -700,6 +700,19 @@
 #define K18_P638_H		"1708507726EC82EBF64DB756506B2000010540EB1D"
 #define K18_P638_MAPU	"1"
 /** @} */
+
+/**
+ * Parameters for a 638-bit pairing-friendly prime curve.
+ */
+/** @{ */
+#define SG18_P638_A		"0"
+#define SG18_P638_B		"F"
+#define SG18_P638_X		"E0D4EFF000926F3F04EC069C865F33B6ABD8F70B19B71E93111193736C505A211C527AF75475C92513B4601BA248A97A6717B631A462BF7366F2767D3C9ECB1A1782524B131853E2684A33EB28C518B"
+#define SG18_P638_Y		"1F11E9002370B0A9F5E3A3CCFF9468621FE85FB70CC024C3636B7427714C19140A00B09975E0F42921C8839A3D0E3DDCE74B09A556771D5A072F4B5F77C8F816B69C4F093B1FAA547EA906F1E405F229"
+#define SG18_P638_R		"6D45960E65595E64AE55954202C604A99543E572A870006483A877DC004A61BE5000000D793FFFFFFFF7000000000001"
+#define SG18_P638_H		"9120D848090486C36090000D8D835FFE7E91A8FFFFF9FD08FFFFFFFA00000001"
+#define SG18_P638_MAPU	"1"
+/** @} */
 #endif
 
 #if defined(EP_SUPER) && FP_PRIME == 1536
@@ -1131,6 +1144,11 @@ void ep_param_set(int param) {
 				endom = 1;
 				pairf = EP_K18;
 				break;
+			case SG18_P638:
+				ASSIGN(SG18_P638, SG18_638);
+				endom = 1;
+				pairf = EP_SG18;
+				break;
 #endif
 #if defined(EP_SUPER) && FP_PRIME == 1536
 			case SS_P1536:
@@ -1187,8 +1205,22 @@ void ep_param_set(int param) {
 					bn_mul(lamb, t, lamb);
 					bn_add_dig(lamb, lamb, 18);
 					break;
-				case EP_B24:
+				/* beta = (-1 + sqrt(-3))/2, lambda = -18z^3 - 3 */
+				case EP_SG18:
+					fp_set_dig(beta, 3);
+					fp_neg(beta, beta);
+					fp_srt(beta, beta);
+					fp_sub_dig(beta, beta, 1);
+					fp_hlv(beta, beta);
+					fp_prime_get_par(lamb);
+					bn_sqr(t, lamb);
+					bn_mul(lamb, t, lamb);
+					bn_mul_dig(lamb, lamb, 9);
+					bn_add_dig(lamb, lamb, 2);
+					bn_neg(lamb, lamb);
+					break;
 				/* beta = (-1 + sqrt(-3))/2, lambda = z^4 - 1. */
+				case EP_B24:
 					fp_set_dig(beta, 3);
 					fp_neg(beta, beta);
 					fp_srt(beta, beta);
@@ -1484,7 +1516,8 @@ int ep_param_set_any_pairf(void) {
 	type = RLC_EP_MTYPE;
 	degree = 2;
 #else
-	ep_param_set(K18_P638);
+	//ep_param_set(K18_P638);
+	ep_param_set(SG18_P638);
 	type = RLC_EP_MTYPE;
 	degree = 3;
 #endif
@@ -1633,6 +1666,9 @@ void ep_param_print(void) {
 		case K18_P638:
 			util_banner("Curve K18-P638:", 0);
 			break;
+		case SG18_P638:
+			util_banner("Curve SG18-P638:", 0);
+			break;
 		case SS_P1536:
 			util_banner("Curve SS-P1536:", 0);
 			break;
@@ -1717,6 +1753,7 @@ int ep_param_embed(void) {
 		case EP_K16:
 			return 16;
 		case EP_K18:
+		case EP_SG18:
 			return 18;
 		case EP_B24:
 			return 24;

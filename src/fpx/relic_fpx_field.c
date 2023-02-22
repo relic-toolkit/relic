@@ -49,7 +49,11 @@ int fp2_field_get_qnr() {
 
 int fp3_field_get_cnr() {
 #if FP_PRIME == 638
-	return 8;
+	if (fp_param_get() == K18_638) {
+		return 8;
+	} else {
+		return 3;
+	}
 #endif
 	return 0;
 }

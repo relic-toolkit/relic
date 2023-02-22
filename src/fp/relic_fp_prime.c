@@ -141,7 +141,11 @@ static void fp_prime_set(const bn_t p) {
 				ctx->cnr = 2;
 				/* TODO: implement cube root to handle this better. */
 #if FP_PRIME == 638
-				ctx->qnr = -6;
+				if (fp_param_get() == K18_638) {
+					ctx->qnr = -6;
+				} else {
+					ctx->qnr = -7;
+				}
 				ctx->cnr = 3;
 #endif
 
