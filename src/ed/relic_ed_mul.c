@@ -117,10 +117,6 @@ static void ed_mul_reg_imp(ed_t r, const ed_t p, const bn_t k) {
 	size_t l;
 
 	bn_null(_k);
-	if (bn_is_zero(k)) {
-		ed_set_infty(r);
-		return;
-	}
 
 	RLC_TRY {
 		bn_new(_k);
@@ -139,7 +135,7 @@ static void ed_mul_reg_imp(ed_t r, const ed_t p, const bn_t k) {
 		_k->dp[0] |= bn_is_even(_k);
 
 		/* Compute the w-NAF representation of k. */
-		l = RLC_CEIL(RLC_FP_BITS + 1, RLC_WIDTH - 1);
+		l = RLC_CEIL(RLC_FP_BITS + 1, RLC_WIDTH - 1) + 1;
 		bn_rec_reg(reg, &l, _k, RLC_FP_BITS, RLC_WIDTH);
 
 		ed_set_infty(r);

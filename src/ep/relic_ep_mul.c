@@ -369,11 +369,6 @@ static void ep_mul_reg_imp(ep_t r, const ep_t p, const bn_t k) {
 	ep_t t[1 << (RLC_WIDTH - 2)], u, v;
 	size_t l;
 
-	if (bn_is_zero(k)) {
-		ep_set_infty(r);
-		return;
-	}
-
 	bn_null(_k);
 
 	RLC_TRY {
