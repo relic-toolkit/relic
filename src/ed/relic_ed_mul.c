@@ -193,7 +193,7 @@ static void ed_mul_reg_imp(ed_t r, const ed_t p, const bn_t k) {
 
 void ed_mul_basic(ed_t r, const ed_t p, const bn_t k) {
 	ed_t t;
-	int8_t u, *naf = RLC_ALLOCA(int8_t, bn_bits(k));
+	int8_t u, *naf = RLC_ALLOCA(int8_t, bn_bits(k) + 1);
 	size_t l;
 
 	ed_null(t);

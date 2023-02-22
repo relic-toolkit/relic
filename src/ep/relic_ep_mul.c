@@ -454,7 +454,7 @@ static void ep_mul_reg_imp(ep_t r, const ep_t p, const bn_t k) {
 
 void ep_mul_basic(ep_t r, const ep_t p, const bn_t k) {
 	ep_t t;
-	int8_t u, *naf = RLC_ALLOCA(int8_t, bn_bits(k));
+	int8_t u, *naf = RLC_ALLOCA(int8_t, bn_bits(k) + 1);
 	size_t l;
 
 	ep_null(t);

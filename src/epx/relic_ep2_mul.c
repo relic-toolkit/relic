@@ -167,7 +167,7 @@ static void ep2_mul_naf_imp(ep2_t r, const ep2_t p, const bn_t k) {
 
 void ep2_mul_basic(ep2_t r, const ep2_t p, const bn_t k) {
 	ep2_t t;
-	int8_t u, *naf = RLC_ALLOCA(int8_t, bn_bits(k));
+	int8_t u, *naf = RLC_ALLOCA(int8_t, bn_bits(k) + 1);
 	size_t l;
 
 	ep2_null(t);
