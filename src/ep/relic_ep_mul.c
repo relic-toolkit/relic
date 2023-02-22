@@ -454,7 +454,7 @@ static void ep_mul_reg_imp(ep_t r, const ep_t p, const bn_t k) {
 
 void ep_mul_basic(ep_t r, const ep_t p, const bn_t k) {
 	ep_t t;
-	int8_t u, naf[RLC_FP_BITS + 1];
+	int8_t u, *naf = RLC_ALLOCA(int8_t, bn_bits(k));
 	size_t l;
 
 	ep_null(t);
@@ -466,10 +466,12 @@ void ep_mul_basic(ep_t r, const ep_t p, const bn_t k) {
 
 	RLC_TRY {
 		ep_new(t);
+		if (naf == NULL) {
+			RLC_THROW(ERR_NO_BUFFER);
+		}
 
-		l = RLC_FP_BITS + 1;
+		l = bn_bits(k) + 1;
 		bn_rec_naf(naf, &l, k, 2);
-
 		ep_set_infty(t);
 		for (int i = l - 1; i >= 0; i--) {
 			ep_dbl(t, t);
@@ -492,6 +494,7 @@ void ep_mul_basic(ep_t r, const ep_t p, const bn_t k) {
 	}
 	RLC_FINALLY {
 		ep_free(t);
+		RLC_FREE(naf);
 	}
 }
 

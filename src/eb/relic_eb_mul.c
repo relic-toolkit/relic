@@ -617,22 +617,33 @@ static void eb_mul_rnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 
 void eb_mul_basic(eb_t r, const eb_t p, const bn_t k) {
 	eb_t t;
+	int8_t u, *naf = RLC_ALLOCA(int8_t, bn_bits(k));
+	size_t l;
+
+	eb_null(t);
 
 	if (bn_is_zero(k) || eb_is_infty(p)) {
 		eb_set_infty(r);
 		return;
 	}
 
-	eb_null(t);
-
 	RLC_TRY {
 		eb_new(t);
+		if (naf == NULL) {
+			RLC_THROW(ERR_NO_BUFFER);
+		}
 
-		eb_copy(t, p);
-		for (int i = bn_bits(k) - 2; i >= 0; i--) {
+		l = bn_bits(k) + 1;
+		bn_rec_naf(naf, &l, k, 2);
+		eb_set_infty(t);
+		for (int i = l - 1; i >= 0; i--) {
 			eb_dbl(t, t);
-			if (bn_get_bit(k, i)) {
+
+			u = naf[i];
+			if (u > 0) {
 				eb_add(t, t, p);
+			} else if (u < 0) {
+				eb_sub(t, t, p);
 			}
 		}
 
@@ -646,6 +657,7 @@ void eb_mul_basic(eb_t r, const eb_t p, const bn_t k) {
 	}
 	RLC_FINALLY {
 		eb_free(t);
+		RLC_FREE(naf);
 	}
 }
 
@@ -718,7 +730,7 @@ void eb_mul_lodah(eb_t r, const eb_t p, const bn_t k) {
 				break;
 		}
 
-		/* Blind both points independently. */
+		/* Blind both points indebendently. */
 		fb_rand(z1);
 		fb_mul(x1, z1, p->x);
 		fb_rand(r1);

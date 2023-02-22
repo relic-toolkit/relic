@@ -168,7 +168,7 @@ static void ep4_mul_naf_imp(ep4_t r, const ep4_t p, const bn_t k) {
 
 void ep4_mul_basic(ep4_t r, const ep4_t p, const bn_t k) {
 	ep4_t t;
-	int8_t u, naf[2 * RLC_FP_BITS + 1];
+	int8_t u, *naf = RLC_ALLOCA(int8_t, bn_bits(k));
 	size_t l;
 
 	ep4_null(t);
@@ -180,10 +180,12 @@ void ep4_mul_basic(ep4_t r, const ep4_t p, const bn_t k) {
 
 	RLC_TRY {
 		ep4_new(t);
+		if (naf == NULL) {
+			RLC_THROW(ERR_NO_BUFFER);
+		}
 
-		l = 2 * RLC_FP_BITS + 1;
+		l = bn_bits(k) + 1;
 		bn_rec_naf(naf, &l, k, 2);
-
 		ep4_set_infty(t);
 		for (int i = l - 1; i >= 0; i--) {
 			ep4_dbl(t, t);
@@ -206,6 +208,7 @@ void ep4_mul_basic(ep4_t r, const ep4_t p, const bn_t k) {
 	}
 	RLC_FINALLY {
 		ep4_free(t);
+		RLC_FREE(naf);
 	}
 }
 
@@ -354,7 +357,7 @@ void ep4_mul_lwnaf(ep4_t r, const ep4_t p, const bn_t k) {
 
 #if defined(EP_ENDOM)
 	if (ep_curve_is_endom()) {
-		if (ep_curve_opt_a() == RLC_ZERO) {
+		if (ep4_curve_opt_a() == RLC_ZERO) {
 			ep4_mul_glv_imp(r, p, k);
 		} else {
 			ep4_mul_naf_imp(r, p, k);

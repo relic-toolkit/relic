@@ -193,6 +193,8 @@ static void ed_mul_reg_imp(ed_t r, const ed_t p, const bn_t k) {
 
 void ed_mul_basic(ed_t r, const ed_t p, const bn_t k) {
 	ed_t t;
+	int8_t u, *naf = RLC_ALLOCA(int8_t, bn_bits(k));
+	size_t l;
 
 	ed_null(t);
 
@@ -203,12 +205,21 @@ void ed_mul_basic(ed_t r, const ed_t p, const bn_t k) {
 
 	RLC_TRY {
 		ed_new(t);
+		if (naf == NULL) {
+			RLC_THROW(ERR_NO_BUFFER);
+		}
 
-		ed_copy(t, p);
-		for (int i = bn_bits(k) - 2; i >= 0; i--) {
+		l = bn_bits(k) + 1;
+		bn_rec_naf(naf, &l, k, 2);
+		ed_set_infty(t);
+		for (int i = l - 1; i >= 0; i--) {
 			ed_dbl(t, t);
-			if (bn_get_bit(k, i)) {
+
+			u = naf[i];
+			if (u > 0) {
 				ed_add(t, t, p);
+			} else if (u < 0) {
+				ed_sub(t, t, p);
 			}
 		}
 
@@ -222,6 +233,7 @@ void ed_mul_basic(ed_t r, const ed_t p, const bn_t k) {
 	}
 	RLC_FINALLY {
 		ed_free(t);
+		RLC_FREE(naf);
 	}
 }
 
