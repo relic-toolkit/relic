@@ -76,10 +76,7 @@ int fp_srt(fp_t c, const fp_t a) {
 			int f = 0, m = 0;
 
 			/* First, check if there is a root. Compute t1 = a^((p - 1)/2). */
-			bn_rsh(e, e, 1);
-			fp_exp(t0, a, e);
-
-			if (fp_cmp_dig(t0, 1) != RLC_EQ) {
+			if (!fp_is_sqr(a)) {
 				/* Nope, there is no square root. */
 				r = 0;
 			} else {
@@ -88,11 +85,10 @@ int fp_srt(fp_t c, const fp_t a) {
 				 * such that (t2 | p) = t2^((p - 1)/2)!= 1. */
 				do {
 					fp_rand(t1);
-					fp_exp(t0, t1, e);
-				} while (fp_cmp_dig(t0, 1) == RLC_EQ);
+				} while (fp_is_sqr(t1));
 
 				/* Write p - 1 as (e * 2^f), odd e. */
-				bn_lsh(e, e, 1);
+				bn_sub_dig(e, e, 1);
 				while (bn_is_even(e)) {
 					bn_rsh(e, e, 1);
 					f++;
