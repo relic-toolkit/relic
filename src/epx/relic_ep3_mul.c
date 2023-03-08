@@ -53,12 +53,20 @@ static void ep3_psi(ep3_t r, const ep3_t p) {
 	RLC_TRY {
 		ep3_new(q);
 
-		/* We have that u mod n = p^4 - 3*p mod n. */
-		ep3_dbl(q, p);
-		ep3_add(q, q, p);
-		ep3_frb(r, p, 3);
-		ep3_sub(r, r, q);
-		ep3_frb(r, r, 1);
+		if (ep_curve_is_pairf() == EP_SG18) {
+			/* -3*u = (2*p^2 - p^5) mod r */
+			ep3_frb(q, p, 5);
+			ep3_frb(r, p, 2);
+			ep3_dbl(r, r);
+			ep3_sub(r, r, q);
+		} else {
+			/* For KSS18, we have that u = p^4 - 3*p mod r. */
+			ep3_dbl(q, p);
+			ep3_add(q, q, p);
+			ep3_frb(r, p, 3);
+			ep3_sub(r, r, q);
+			ep3_frb(r, r, 1);
+		}
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -88,8 +96,14 @@ static void ep3_mul_glv_imp(ep3_t r, const ep3_t p, const bn_t k) {
 			ep3_new(q[i]);
 		}
 
-		ep3_curve_get_ord(n);
 		fp_prime_get_par(u);
+		if (ep_curve_is_pairf() == EP_SG18) {
+			/* Compute base 3*u for the recoding below. */
+			bn_dbl(n, u);
+			bn_add(u, u, n);
+			bn_neg(u, u);
+		}
+		ep3_curve_get_ord(n);
 		bn_mod(_k[0], k, n);
 		bn_rec_frb(_k, 6, _k[0], u, n, ep_curve_is_pairf() == EP_BN);
 

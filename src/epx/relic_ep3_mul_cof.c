@@ -38,7 +38,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void ep3_mul_cof(ep3_t r, const ep3_t p) {
+void ep3_mul_cof_k18(ep3_t r, const ep3_t p) {
 	ep3_t tx1, tx2, tx3, t0, t1, t2, t3, t4, t5;
 	bn_t x;
 
@@ -120,5 +120,36 @@ void ep3_mul_cof(ep3_t r, const ep3_t p) {
 		ep3_free(t4);
 		ep3_free(t5);
 		bn_free(x);
+	}
+}
+
+/*============================================================================*/
+/* Public definitions                                                         */
+/*============================================================================*/
+
+void ep3_mul_cof(ep3_t r, const ep3_t p) {
+	bn_t k;
+
+	bn_null(k);
+
+	RLC_TRY {
+		switch (ep_curve_is_pairf()) {
+			case EP_K18:
+				ep3_mul_cof_k18(r, p);
+				break;
+			default:
+				/* Now, multiply by cofactor to get the correct group. */
+				ep3_curve_get_cof(k);
+				if (bn_bits(k) < RLC_DIG) {
+					ep3_mul_dig(r, p, k->dp[0]);
+				} else {
+					ep3_mul_big(r, p, k);
+				}
+				break;
+		}
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		bn_free(k);
 	}
 }
