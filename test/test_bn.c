@@ -2133,7 +2133,6 @@ static int recoding(void) {
 					int8_t beta[64], gama[64];
 					int8_t tnaf[RLC_FB_BITS + 8];
 					int8_t u = (eb_curve_opt_a() == RLC_ZERO ? -1 : 1);
-					int n;
 					do {
 						bn_rand_mod(a, v1[2]);
 						l = RLC_FB_BITS + 1;
@@ -2143,7 +2142,6 @@ static int recoding(void) {
 					bn_rec_rtnaf(tnaf, &l, a, u, RLC_FB_BITS, w);
 					bn_zero(a);
 					bn_zero(b);
-					n = 0;
 					for (k = l - 1; k >= 0; k--) {
 						for (int m = 0; m < w - 1; m++) {
 							bn_copy(c, b);
@@ -2154,9 +2152,6 @@ static int recoding(void) {
 							bn_dbl(a, b);
 							bn_neg(a, a);
 							bn_copy(b, c);
-						}
-						if (tnaf[k] != 0) {
-							n++;
 						}
 						if (w == 2) {
 							if (tnaf[k] >= 0) {
