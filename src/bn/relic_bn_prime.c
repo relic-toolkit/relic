@@ -527,7 +527,8 @@ int bn_gen_prime_factor(bn_t a, bn_t b, size_t abits, size_t bbits) {
 		return RLC_ERR;
     }
 
-    bn_null(t); bn_null(u);
+    bn_null(t);
+	bn_null(u);
 
     RLC_TRY {
         bn_new(t);
@@ -545,7 +546,8 @@ int bn_gen_prime_factor(bn_t a, bn_t b, size_t abits, size_t bbits) {
 		result = RLC_ERR;
     }
     RLC_FINALLY {
-        bn_free(t); bn_free(u);
+        bn_free(t);
+		bn_free(u);
     }
 
     return result;
