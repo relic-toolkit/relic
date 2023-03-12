@@ -426,6 +426,10 @@ void fp12_back_cyc_sim(fp12_t c[], const fp12_t a[], int n) {
 				fp2_dbl(t1[i], a[i][1][0]);
 				fp2_dbl(t1[i], t1[i]);
 			}
+			/* If unity, decompress to unity as well. */
+			if (fp12_cmp_dig(a[i], 1) == RLC_EQ) {
+				fp2_set_dig(t1[i], 1);
+			}
 		}
 
 		/* t1 = 1 / t1. */
