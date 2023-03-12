@@ -1373,8 +1373,7 @@ int ep_param_set_any_endom(void) {
 #ifdef FP_QNRES
 	ep_param_set(B12_P638);
 #else
-	//ep_param_set(K18_P638);
-    ep_param_set(SG18_P638);
+	ep_param_set(K18_P638);
 #endif
 #else
 	r = RLC_ERR;
