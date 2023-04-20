@@ -42,7 +42,7 @@ int fp_is_sqr(const fp_t a) {
 int fp_srt(fp_t c, const fp_t a) {
 	bn_t e;
 	fp_t t0, t1, t2, t3;
-	int f, r = 0;
+	int f = 0, r = 0;
 
 	bn_null(e);
 	fp_null(t0);
@@ -84,16 +84,15 @@ int fp_srt(fp_t c, const fp_t a) {
 				/* First check that a is a square. */
 				r = fp_is_sqr(a);
 
-				/* Compute progenitor as x^(p-1-2^f)/2^{f+1) where 2^f|(p-1). */
+				/* Compute progenitor as x^(p-1-2^f)/2^(f+1) where 2^f|(p-1). */
 
 				/* Write p - 1 as (e * 2^f), odd e. */
-				f = 0;
 				bn_sub_dig(e, e, 1);
 				while (bn_is_even(e)) {
 					bn_rsh(e, e, 1);
 					f++;
 				}
-				/* Make it e = (p - 1 - 2^f)/2^{f + 1), compute t0 = a^e. */
+				/* Make it e = (p - 1 - 2^f)/2^(f + 1), compute t0 = a^e. */
 				bn_rsh(e, e, 1);
 				fp_exp(t0, a, e);
 
@@ -104,15 +103,17 @@ int fp_srt(fp_t c, const fp_t a) {
 				fp_mul(t1, t1, a);
 				fp_mul(c, t0, a);
 				fp_copy(t2, t1);
-				for (int m = f; m > 1; m--) {
-					for (int i = 1; i < m - 1; i++) {
+				for (int j = f; j > 1; j--) {
+					for (int i = 1; i < j - 1; i++) {
 						fp_sqr(t2, t2);
 					}
 					fp_mul(t0, c, t3);
-					dv_copy_cond(c, t0, RLC_FP_DIGS, fp_cmp_dig(t2, 1) != RLC_EQ);
+					dv_copy_cond(c, t0, RLC_FP_DIGS,
+							fp_cmp_dig(t2, 1) != RLC_EQ);
 					fp_sqr(t3, t3);
 					fp_mul(t0, t1, t3);
-					dv_copy_cond(t1, t0, RLC_FP_DIGS, fp_cmp_dig(t2, 1) != RLC_EQ);
+					dv_copy_cond(t1, t0, RLC_FP_DIGS,
+							fp_cmp_dig(t2, 1) != RLC_EQ);
 					fp_copy(t2, t1);
 				}
 
