@@ -232,9 +232,11 @@ typedef struct _ctx_t {
 	/** Value of constant for divstep-based inversion. */
 	bn_st inv;
 #endif /* FP_INV */
+	/** Root of unity for square root extraction. */
+	bn_st root;
 	/** Prime modulus modulo 8. */
 	dig_t mod8;
-	/** Prime modulus modulo 8. */
+	/** Prime modulus modulo 18. */
 	dig_t mod18;
 	/** Value derived from the prime used for modular reduction. */
 	dig_t u;

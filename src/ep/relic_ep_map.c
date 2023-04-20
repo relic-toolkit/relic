@@ -72,13 +72,6 @@ TMPL_MAP_SVDW(ep, fp, dig_t, EP_MAP_COPY_COND);
 
 #undef EP_MAP_COPY_COND
 
-/* caution: this function overwrites k, which used as an auxiliary variable */
-static inline int fp_sgn0(const fp_t t, bn_t k) {
-	fp_prime_back(k, t);
-	return bn_get_bit(k, 0);
-}
-
-
 /**
  * Maps an array of uniformly random bytes to a point in a prime elliptic
  * curve.
@@ -121,11 +114,11 @@ static void ep_map_from_field(ep_t p, const uint8_t *uniform_bytes, size_t len,
 #define EP_MAP_APPLY_MAP(PT)												\
     do {																	\
 		/* check sign of t */												\
-		neg = fp_sgn0(t, k);												\
+		neg = fp_is_even(t);												\
 		/* convert */														\
 		map_fn(PT, t);														\
 		/* compare sign of y and sign of t; fix if necessary */				\
-		neg = neg != fp_sgn0(PT->y, k);										\
+		neg = neg != fp_is_even(PT->y);										\
 		fp_neg(t, PT->y);													\
 		dv_copy_cond(PT->y, t, RLC_FP_DIGS, neg);							\
     } while (0)
@@ -337,7 +330,7 @@ void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 					RLC_THROW(ERR_NO_VALID);
 				}
 				fp_neg(u, t);
-				dv_swap_cond(t, u, RLC_FP_DIGS, fp_sgn0(t, k) ^ s);
+				dv_swap_cond(t, u, RLC_FP_DIGS, fp_is_even(t) ^ s);
 
 				fp_copy(p->x, x1);
 				fp_copy(p->y, t);

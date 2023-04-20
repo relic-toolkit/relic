@@ -167,6 +167,16 @@ static void fp_prime_set(const bn_t p) {
 		}
 #endif
 
+		/* Compute root of unity by computing QNR to (p - 1)/2^f. */
+		bn_sub_dig(t, p, 1);
+		while (bn_is_even(t)) {
+			bn_rsh(t, t, 1);
+		}
+		ctx->root.used = RLC_FP_DIGS;
+		dv_copy(ctx->root.dp, fp_prime_get(), RLC_FP_DIGS);
+		fp_sub_dig(ctx->root.dp, ctx->root.dp, -ctx->qnr);
+		fp_exp(ctx->root.dp, ctx->root.dp, t);
+
 		ctx->ad2 = 0;
 		bn_sub_dig(t, p, 1);
 		while (bn_is_even(t)) {
@@ -278,6 +288,10 @@ const dig_t *fp_prime_get_conv(void) {
 #else
 	return NULL;
 #endif
+}
+
+const dig_t *fp_prime_get_root(void) {
+	return core_get()->root.dp;
 }
 
 dig_t fp_prime_get_mod8(void) {

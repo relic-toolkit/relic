@@ -56,10 +56,24 @@ int fp_is_zero(const fp_t a) {
 }
 
 int fp_is_even(const fp_t a) {
-	if ((a[0] & 0x01) == 0) {
-		return 1;
+	int r;
+	bn_t t;
+
+	bn_null(t);
+
+	RLC_TRY {
+		bn_new(t);
+
+		fp_prime_back(t, a);
+		r = bn_is_even(t);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
 	}
-	return 0;
+	RLC_FINALLY {
+		bn_free(t);
+	}
+
+	return r;
 }
 
 int fp_get_bit(const fp_t a, uint_t bit) {

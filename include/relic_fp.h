@@ -450,6 +450,13 @@ const dig_t *fp_prime_get_rdc(void);
 const dig_t *fp_prime_get_conv(void);
 
 /**
+ * Returns a root of unity modulo the prime field modulus.
+ *
+ * @return the root of unity.
+ */
+const dig_t *fp_prime_get_root(void);
+
+/**
  * Returns the result of prime order mod 8.
  *
  * @return the result of prime order mod 8.
