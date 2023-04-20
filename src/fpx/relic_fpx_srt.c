@@ -205,6 +205,9 @@ int fp3_srt(fp3_t c, const fp3_t a) {
 		e->used = RLC_FP_DIGS;
 		dv_copy(e->dp, fp_prime_get(), RLC_FP_DIGS);
 
+		/* First check if input is square. */
+		r = fp3_is_sqr(a);
+
 		switch (fp_prime_get_mod8()) {
 			case 1:
 				/* Implement constant-time version of Tonelli-Shanks algorithm
@@ -300,12 +303,6 @@ int fp3_srt(fp3_t c, const fp3_t a) {
 			default:
 				fp3_zero(c);
 				break;
-		}
-
-		fp3_sqr(t1, t0);
-		if (fp3_cmp(t1, a) == RLC_EQ) {
-			fp3_copy(c, t0);
-			r = 1;
 		}
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
