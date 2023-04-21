@@ -213,7 +213,7 @@ int fp3_srt(fp3_t c, const fp3_t a) {
 				/* Implement constant-time version of Tonelli-Shanks algorithm
 				 * as per https://eprint.iacr.org/2020/1497.pdf */
 
-				/* Compute progenitor as x^(p-1-2^f)/2^{f+1) where 2^f|(p-1). */
+				/* Compute progenitor as x^(p^3-1-2^f)/2^{f+1) for 2^f|(p-1). */
 
 				/* Write p^3 - 1 as (e * 2^f), odd e. */
 				bn_sqr(d, e);
@@ -224,15 +224,20 @@ int fp3_srt(fp3_t c, const fp3_t a) {
 					f++;
 				}
 
-				/* Generate root of unity, and continue algorithm. */
-				do {
-					fp3_rand(t3);
-				} while (fp3_is_sqr(t3));
-				fp3_exp(t3, t3, e);
-
 				/* Make it e = (p^3 - 1 - 2^f)/2^(f + 1), compute t0 = a^e. */
 				bn_rsh(e, e, 1);
 				fp3_exp(t0, a, e);
+
+				/* Generate root of unity, and continue algorithm. */
+				e->used = RLC_FP_DIGS;
+				dv_copy(e->dp, fp_prime_get(), RLC_FP_DIGS);
+				bn_sqr(d, e);
+				bn_add(e, e, d);
+				bn_add_dig(e, e, 1);
+				fp3_zero(t3);
+				dv_copy(t3[0], fp_prime_get_root(), RLC_FP_DIGS);
+				fp3_exp(t3, t3, e);
+				fp3_print(t3);
 
 				fp3_sqr(t1, t0);
 				fp3_mul(t1, t1, a);
@@ -259,7 +264,6 @@ int fp3_srt(fp3_t c, const fp3_t a) {
 							fp3_cmp_dig(t2, 1) != RLC_EQ);
 					fp3_copy(t2, t1);
 				}
-				fp3_copy(t0, c);
 				break;
 			case 5:
 				fp3_dbl(t3, a);
@@ -283,7 +287,7 @@ int fp3_srt(fp3_t c, const fp3_t a) {
 
 				fp3_mul(t0, t0, a);
 				fp_sub_dig(t1[0], t1[0], 1);
-				fp3_mul(t0, t0, t1);
+				fp3_mul(c, t0, t1);
 				break;
 			case 3:
 			case 7:
@@ -298,7 +302,7 @@ int fp3_srt(fp3_t c, const fp3_t a) {
 				fp3_exp(t0, t0, e);
 
 				fp3_mul(t0, t0, a);
-				fp3_mul(t0, t0, t1);
+				fp3_mul(c, t0, t1);
 				break;
 			default:
 				fp3_zero(c);
