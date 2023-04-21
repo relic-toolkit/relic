@@ -49,6 +49,11 @@
 #undef core_ctx
 #define core_ctx      RLC_PREFIX(core_ctx)
 
+#undef core_thread_initializer
+#define core_thread_initializer      RLC_PREFIX(core_thread_initializer)
+#undef core_init_ptr
+#define core_init_ptr      RLC_PREFIX(core_init_ptr)
+
 #undef core_init
 #undef core_clean
 #undef core_get
