@@ -179,9 +179,11 @@ int fp3_is_sqr(const fp3_t a) {
 
 int fp3_srt(fp3_t c, const fp3_t a) {
 	int f = 0, r = 0;
+	fp_t root;
 	fp3_t t0, t1, t2, t3;
 	bn_t d, e;
 
+	fp_null(root);
 	fp3_null(t0);
 	fp3_null(t1);
 	fp3_null(t2);
@@ -195,6 +197,7 @@ int fp3_srt(fp3_t c, const fp3_t a) {
 	}
 
 	RLC_TRY {
+		fp_new(root);
 		fp3_new(t0);
 		fp3_new(t1);
 		fp3_new(t2);
@@ -229,8 +232,7 @@ int fp3_srt(fp3_t c, const fp3_t a) {
 				fp3_exp(t0, a, e);
 
 				/* Generate root of unity, and continue algorithm. */
-				fp3_zero(t3);
-				dv_copy(t3[0], fp_prime_get_root(), RLC_FP_DIGS);
+				dv_copy(root, fp_prime_get_root(), RLC_FP_DIGS);
 
 				fp3_sqr(t1, t0);
 				fp3_mul(t1, t1, a);
@@ -240,15 +242,19 @@ int fp3_srt(fp3_t c, const fp3_t a) {
 					for (int i = 1; i < j - 1; i++) {
 						fp3_sqr(t2, t2);
 					}
-					fp3_mul(t0, c, t3);
+					fp_mul(t0[0], c[0], root);
+					fp_mul(t0[1], c[1], root);
+					fp_mul(t0[2], c[2], root);
 					dv_copy_cond(c[0], t0[0], RLC_FP_DIGS,
 							fp3_cmp_dig(t2, 1) != RLC_EQ);
 					dv_copy_cond(c[1], t0[1], RLC_FP_DIGS,
 							fp3_cmp_dig(t2, 1) != RLC_EQ);
 					dv_copy_cond(c[2], t0[2], RLC_FP_DIGS,
 							fp3_cmp_dig(t2, 1) != RLC_EQ);
-					fp3_sqr(t3, t3);
-					fp3_mul(t0, t1, t3);
+					fp_sqr(root, root);
+					fp_mul(t0[0], t1[0], root);
+					fp_mul(t0[1], t1[1], root);
+					fp_mul(t0[2], t1[2], root);
 					dv_copy_cond(t1[0], t0[0], RLC_FP_DIGS,
 							fp3_cmp_dig(t2, 1) != RLC_EQ);
 					dv_copy_cond(t1[1], t0[1], RLC_FP_DIGS,
@@ -304,6 +310,7 @@ int fp3_srt(fp3_t c, const fp3_t a) {
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
+		fp_free(root);
 		fp3_free(t0);
 		fp3_free(t1);
 		fp3_free(t2);
