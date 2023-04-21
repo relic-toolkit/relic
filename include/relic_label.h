@@ -1527,6 +1527,151 @@
 #define ep2_pck 	RLC_PREFIX(ep2_pck)
 #define ep2_upk 	RLC_PREFIX(ep2_upk)
 
+#undef ep3_st
+#undef ep3_t
+#define ep3_st        RLC_PREFIX(ep3_st)
+#define ep3_t         RLC_PREFIX(ep3_t)
+
+#undef ep3_curve_init
+#undef ep3_curve_clean
+#undef ep3_curve_get_a
+#undef ep3_curve_get_b
+#undef ep3_curve_get_vs
+#undef ep3_curve_opt_a
+#undef ep3_curve_opt_b
+#undef ep3_curve_is_twist
+#undef ep3_curve_get_gen
+#undef ep3_curve_get_tab
+#undef ep3_curve_get_ord
+#undef ep3_curve_get_cof
+#undef ep3_curve_set
+#undef ep3_curve_set_twist
+#undef ep3_is_infty
+#undef ep3_set_infty
+#undef ep3_copy
+#undef ep3_cmp
+#undef ep3_rand
+#undef ep3_blind
+#undef ep3_rhs
+#undef ep3_on_curve
+#undef ep3_tab
+#undef ep3_print
+#undef ep3_size_bin
+#undef ep3_read_bin
+#undef ep3_write_bin
+#undef ep3_neg
+#undef ep3_add_basic
+#undef ep3_add_slp_basic
+#undef ep3_add_projc
+#undef ep3_sub
+#undef ep3_dbl_basic
+#undef ep3_dbl_slp_basic
+#undef ep3_dbl_projc
+#undef ep3_mul_basic
+#undef ep3_mul_slide
+#undef ep3_mul_monty
+#undef ep3_mul_lwnaf
+#undef ep3_mul_lwreg
+#undef ep3_mul_gen
+#undef ep3_mul_dig
+#undef ep3_mul_cof
+#undef ep3_mul_pre_basic
+#undef ep3_mul_pre_yaowi
+#undef ep3_mul_pre_nafwi
+#undef ep3_mul_pre_combs
+#undef ep3_mul_pre_combd
+#undef ep3_mul_pre_lwnaf
+#undef ep3_mul_fix_basic
+#undef ep3_mul_fix_yaowi
+#undef ep3_mul_fix_nafwi
+#undef ep3_mul_fix_combs
+#undef ep3_mul_fix_combd
+#undef ep3_mul_fix_lwnaf
+#undef ep3_mul_sim_basic
+#undef ep3_mul_sim_trick
+#undef ep3_mul_sim_inter
+#undef ep3_mul_sim_joint
+#undef ep3_mul_sim_lot
+#undef ep3_mul_sim_gen
+#undef ep3_mul_sim_dig
+#undef ep3_norm
+#undef ep3_norm_sim
+#undef ep3_map
+#undef ep3_map_dst
+#undef ep3_frb
+#undef ep3_pck
+#undef ep3_upk
+
+#define ep3_curve_init 	RLC_PREFIX(ep3_curve_init)
+#define ep3_curve_clean 	RLC_PREFIX(ep3_curve_clean)
+#define ep3_curve_get_a 	RLC_PREFIX(ep3_curve_get_a)
+#define ep3_curve_get_b 	RLC_PREFIX(ep3_curve_get_b)
+#define ep3_curve_get_vs 	RLC_PREFIX(ep3_curve_get_vs)
+#define ep3_curve_opt_a 	RLC_PREFIX(ep3_curve_opt_a)
+#define ep3_curve_opt_b 	RLC_PREFIX(ep3_curve_opt_b)
+#define ep3_curve_is_twist 	RLC_PREFIX(ep3_curve_is_twist)
+#define ep3_curve_get_gen 	RLC_PREFIX(ep3_curve_get_gen)
+#define ep3_curve_get_tab 	RLC_PREFIX(ep3_curve_get_tab)
+#define ep3_curve_get_ord 	RLC_PREFIX(ep3_curve_get_ord)
+#define ep3_curve_get_cof 	RLC_PREFIX(ep3_curve_get_cof)
+#define ep3_curve_set 	RLC_PREFIX(ep3_curve_set)
+#define ep3_curve_set_twist 	RLC_PREFIX(ep3_curve_set_twist)
+#define ep3_is_infty 	RLC_PREFIX(ep3_is_infty)
+#define ep3_set_infty 	RLC_PREFIX(ep3_set_infty)
+#define ep3_copy 	RLC_PREFIX(ep3_copy)
+#define ep3_cmp 	RLC_PREFIX(ep3_cmp)
+#define ep3_rand 	RLC_PREFIX(ep3_rand)
+#define ep3_blind 	RLC_PREFIX(ep3_blind)
+#define ep3_rhs 	RLC_PREFIX(ep3_rhs)
+#define ep3_on_curve 	RLC_PREFIX(ep3_on_curve)
+#define ep3_tab 	RLC_PREFIX(ep3_tab)
+#define ep3_print 	RLC_PREFIX(ep3_print)
+#define ep3_size_bin 	RLC_PREFIX(ep3_size_bin)
+#define ep3_read_bin 	RLC_PREFIX(ep3_read_bin)
+#define ep3_write_bin 	RLC_PREFIX(ep3_write_bin)
+#define ep3_neg 	RLC_PREFIX(ep3_neg)
+#define ep3_add_basic 	RLC_PREFIX(ep3_add_basic)
+#define ep3_add_slp_basic 	RLC_PREFIX(ep3_add_slp_basic)
+#define ep3_add_projc 	RLC_PREFIX(ep3_add_projc)
+#define ep3_sub 	RLC_PREFIX(ep3_sub)
+#define ep3_dbl_basic 	RLC_PREFIX(ep3_dbl_basic)
+#define ep3_dbl_slp_basic 	RLC_PREFIX(ep3_dbl_slp_basic)
+#define ep3_dbl_projc 	RLC_PREFIX(ep3_dbl_projc)
+#define ep3_mul_basic 	RLC_PREFIX(ep3_mul_basic)
+#define ep3_mul_slide 	RLC_PREFIX(ep3_mul_slide)
+#define ep3_mul_monty 	RLC_PREFIX(ep3_mul_monty)
+#define ep3_mul_lwnaf 	RLC_PREFIX(ep3_mul_lwnaf)
+#define ep3_mul_lwreg 	RLC_PREFIX(ep3_mul_lwreg)
+#define ep3_mul_gen 	RLC_PREFIX(ep3_mul_gen)
+#define ep3_mul_dig 	RLC_PREFIX(ep3_mul_dig)
+#define ep3_mul_cof 	RLC_PREFIX(ep3_mul_cof)
+#define ep3_mul_pre_basic 	RLC_PREFIX(ep3_mul_pre_basic)
+#define ep3_mul_pre_yaowi 	RLC_PREFIX(ep3_mul_pre_yaowi)
+#define ep3_mul_pre_nafwi 	RLC_PREFIX(ep3_mul_pre_nafwi)
+#define ep3_mul_pre_combs 	RLC_PREFIX(ep3_mul_pre_combs)
+#define ep3_mul_pre_combd 	RLC_PREFIX(ep3_mul_pre_combd)
+#define ep3_mul_pre_lwnaf 	RLC_PREFIX(ep3_mul_pre_lwnaf)
+#define ep3_mul_fix_basic 	RLC_PREFIX(ep3_mul_fix_basic)
+#define ep3_mul_fix_yaowi 	RLC_PREFIX(ep3_mul_fix_yaowi)
+#define ep3_mul_fix_nafwi 	RLC_PREFIX(ep3_mul_fix_nafwi)
+#define ep3_mul_fix_combs 	RLC_PREFIX(ep3_mul_fix_combs)
+#define ep3_mul_fix_combd 	RLC_PREFIX(ep3_mul_fix_combd)
+#define ep3_mul_fix_lwnaf 	RLC_PREFIX(ep3_mul_fix_lwnaf)
+#define ep3_mul_sim_basic 	RLC_PREFIX(ep3_mul_sim_basic)
+#define ep3_mul_sim_trick 	RLC_PREFIX(ep3_mul_sim_trick)
+#define ep3_mul_sim_inter 	RLC_PREFIX(ep3_mul_sim_inter)
+#define ep3_mul_sim_joint 	RLC_PREFIX(ep3_mul_sim_joint)
+#define ep3_mul_sim_lot 	RLC_PREFIX(ep3_mul_sim_lot)
+#define ep3_mul_sim_gen 	RLC_PREFIX(ep3_mul_sim_gen)
+#define ep3_mul_sim_dig 	RLC_PREFIX(ep3_mul_sim_dig)
+#define ep3_norm 	RLC_PREFIX(ep3_norm)
+#define ep3_norm_sim 	RLC_PREFIX(ep3_norm_sim)
+#define ep3_map 	RLC_PREFIX(ep3_map)
+#define ep3_map_dst 	RLC_PREFIX(ep3_map_dst)
+#define ep3_frb 	RLC_PREFIX(ep3_frb)
+#define ep3_pck 	RLC_PREFIX(ep3_pck)
+#define ep3_upk 	RLC_PREFIX(ep3_upk)
+
 #undef ep4_st
 #undef ep4_t
 #define ep4_st        RLC_PREFIX(ep4_st)

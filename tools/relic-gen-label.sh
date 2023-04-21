@@ -152,6 +152,13 @@ echo "#define ep2_t         RLC_PREFIX(ep2_t)"
 echo
 REDEF2 epx ep2
 
+echo "#undef ep3_st"
+echo "#undef ep3_t"
+echo "#define ep3_st        RLC_PREFIX(ep3_st)"
+echo "#define ep3_t         RLC_PREFIX(ep3_t)"
+echo
+REDEF2 epx ep3
+
 echo "#undef ep4_st"
 echo "#undef ep4_t"
 echo "#define ep4_st        RLC_PREFIX(ep4_st)"
