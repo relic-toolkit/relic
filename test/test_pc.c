@@ -35,7 +35,7 @@
 #include "relic_test.h"
 
 static int memory1(void) {
-	err_t e;
+	err_t e = ERR_CAUGHT;
 	int code = RLC_ERR;
 	g1_t a;
 
@@ -625,7 +625,7 @@ static int hashing1(void) {
 }
 
 static int memory2(void) {
-	err_t e;
+	err_t e = ERR_CAUGHT;
 	int code = RLC_ERR;
 	g2_t a;
 
@@ -1219,7 +1219,7 @@ static int hashing2(void) {
 #endif
 
 static int memory(void) {
-	err_t e;
+	err_t e = ERR_CAUGHT;
 	int code = RLC_ERR;
 	gt_t a;
 
@@ -1635,6 +1635,10 @@ static int pairing(void) {
 			gt_mul(e1, e1, e2);
 			pc_map_sim(e2, p, q, 2);
 			TEST_ASSERT(gt_cmp(e1, e2) == RLC_EQ, end);
+			g1_neg(p[1], p[0]);
+			g2_copy(q[1], q[0]);
+			pc_map_sim(e1, p, q, 2);
+			TEST_ASSERT(gt_cmp_dig(e1, 1) == RLC_EQ, end);
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {

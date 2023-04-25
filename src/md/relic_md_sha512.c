@@ -40,7 +40,7 @@
 
 #if MD_MAP == SH512 || !defined(STRIP)
 
-void md_map_sh512(uint8_t *hash, const uint8_t *msg, int len) {
+void md_map_sh512(uint8_t *hash, const uint8_t *msg, size_t len) {
 	SHA512Context ctx;
 
 	if (SHA512Reset(&ctx) != shaSuccess) {

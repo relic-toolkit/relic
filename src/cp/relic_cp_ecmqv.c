@@ -58,8 +58,8 @@ int cp_ecmqv_gen(bn_t d, ec_t q) {
 	return result;
 }
 
-int cp_ecmqv_key(uint8_t *key, int key_len, bn_t d1, bn_t d2, ec_t q2u,
-		ec_t q1v, ec_t q2v) {
+int cp_ecmqv_key(uint8_t *key, size_t key_len, const bn_t d1, const bn_t d2,
+		const ec_t q2u, const ec_t q1v, const ec_t q2v) {
 	ec_t p;
 	bn_t x, n, s;
 	int l, result = RLC_OK;

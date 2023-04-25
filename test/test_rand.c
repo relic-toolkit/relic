@@ -363,7 +363,7 @@ static int test(void) {
 
 static int test(void) {
 	uint8_t out[64];
-	int len = sizeof(out) / 2, code = RLC_ERR;
+	size_t len = sizeof(out) / 2, code = RLC_ERR;
 
 	TEST_ONCE("rdrand hardware generator is non-trivial") {
 		memset(out, 0, 2 * len);

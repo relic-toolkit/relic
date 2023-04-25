@@ -67,7 +67,7 @@ int cp_bbs_gen(bn_t d, g2_t q, gt_t z) {
 	return result;
 }
 
-int cp_bbs_sig(g1_t s, uint8_t *msg, int len, int hash, bn_t d) {
+int cp_bbs_sig(g1_t s, const uint8_t *msg, size_t len, int hash, const bn_t d) {
 	bn_t m, n, r;
 	uint8_t h[RLC_MD_LEN];
 	int result = RLC_OK;
@@ -109,7 +109,8 @@ int cp_bbs_sig(g1_t s, uint8_t *msg, int len, int hash, bn_t d) {
 	return result;
 }
 
-int cp_bbs_ver(g1_t s, uint8_t *msg, int len, int hash, g2_t q, gt_t z) {
+int cp_bbs_ver(g1_t s, const uint8_t *msg, size_t len, int hash, const g2_t q,
+		const gt_t z) {
 	bn_t m, n;
 	g2_t g;
 	gt_t e;

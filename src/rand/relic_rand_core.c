@@ -183,7 +183,7 @@ void rand_init(void) {
 #endif
 }
 
-int rand_check(uint8_t *buf, int size) {
+int rand_check(uint8_t *buf, size_t size) {
 	int count = 0;
 
 	for (int i = 1; i < size; i++) {

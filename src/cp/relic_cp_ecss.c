@@ -57,7 +57,7 @@ int cp_ecss_gen(bn_t d, ec_t q) {
 	return result;
 }
 
-int cp_ecss_sig(bn_t e, bn_t s, uint8_t *msg, int len, bn_t d) {
+int cp_ecss_sig(bn_t e, bn_t s, const uint8_t *msg, size_t len, const bn_t d) {
 	bn_t n, k, x, r;
 	ec_t p;
 	uint8_t hash[RLC_MD_LEN];
@@ -122,7 +122,7 @@ int cp_ecss_sig(bn_t e, bn_t s, uint8_t *msg, int len, bn_t d) {
 	return result;
 }
 
-int cp_ecss_ver(bn_t e, bn_t s, uint8_t *msg, int len, ec_t q) {
+int cp_ecss_ver(bn_t e, bn_t s, const uint8_t *msg, size_t len, const ec_t q) {
 	bn_t n, ev, rv;
 	ec_t p;
 	uint8_t hash[RLC_MD_LEN];
@@ -166,7 +166,8 @@ int cp_ecss_ver(bn_t e, bn_t s, uint8_t *msg, int len, ec_t q) {
 
 				bn_mod(ev, ev, n);
 
-				result = dv_cmp_const(ev->dp, e->dp, RLC_MIN(ev->used, e->used));
+				result = dv_cmp_const(ev->dp, e->dp, RLC_MIN(ev->used,
+								e->used));
 				result = (result == RLC_NE ? 0 : 1);
 
 				if (ev->used != e->used) {

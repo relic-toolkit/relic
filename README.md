@@ -2,9 +2,6 @@
 =====
 
 [![Project stats](https://www.openhub.net/p/relic-toolkit/widgets/project_thin_badge.gif)](https://www.openhub.net/p/relic-toolkit)
-[![Code Quality: Cpp](https://img.shields.io/lgtm/grade/cpp/g/relic-toolkit/relic.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/relic-toolkit/relic/context:cpp)
-[![Total Alerts](https://img.shields.io/lgtm/alerts/g/relic-toolkit/relic.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/relic-toolkit/relic/alerts)
-
 [![Travis Status](https://travis-ci.org/relic-toolkit/relic.svg?branch=main)](https://travis-ci.org/relic-toolkit/relic)
 [![GHA Status](https://github.com/relic-toolkit/relic/actions/workflows/easy.yml/badge.svg)](https://github.com/relic-toolkit/relic/actions/workflows/easy.yml)
 [![GHA Status](https://github.com/relic-toolkit/relic/actions/workflows/gmp.yml/badge.svg)](https://github.com/relic-toolkit/relic/actions/workflows/gmp.yml)
@@ -63,4 +60,4 @@ Starting from version 0.3.3, static linking and changes in the configuration or 
 
 ### Disclaimer
 
-RELIC is at most alpha-quality software. Implementations may not be correct or secure and may include patented algorithms. There are *many* configuration options which make the library horribly insecure. Backward API compatibility with early versions may not necessarily be maintained. Use at your own risk.
+RELIC is at best alpha-quality software. Implementations may not be correct or secure and may include patented algorithms. There are *many* configuration options which make the library horribly insecure. Backward API compatibility with early versions may not necessarily be maintained. Use at your own risk.

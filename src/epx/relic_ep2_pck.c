@@ -36,7 +36,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void ep2_pck(ep2_t r, ep2_t p) {
+void ep2_pck(ep2_t r, const ep2_t p) {
 	bn_t halfQ, yValue;
 
         bn_null(halfQ);
@@ -70,7 +70,7 @@ void ep2_pck(ep2_t r, ep2_t p) {
 	}
 }
 
-int ep2_upk(ep2_t r, ep2_t p) {
+int ep2_upk(ep2_t r, const ep2_t p) {
 	fp2_t t;
 	bn_t halfQ;
 	bn_t yValue;

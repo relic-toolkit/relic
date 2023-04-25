@@ -40,8 +40,8 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-int bc_aes_cbc_enc(uint8_t *out, int *out_len, uint8_t *in,
-		int in_len, uint8_t *key, int key_len, uint8_t *iv) {
+int bc_aes_cbc_enc(uint8_t *out, size_t *out_len, const uint8_t *in,
+		size_t in_len, const uint8_t *key, size_t key_len, const uint8_t *iv) {
 	keyInstance key_inst;
 	cipherInstance cipher_inst;
 
@@ -56,17 +56,23 @@ int bc_aes_cbc_enc(uint8_t *out, int *out_len, uint8_t *in,
 		return RLC_ERR;
 	}
 	memcpy(cipher_inst.IV, iv, RLC_BC_LEN);
-	*out_len = padEncrypt(&cipher_inst, &key_inst, in, in_len, out);
-	if (*out_len <= 0) {
+	pad_len = padEncrypt(&cipher_inst, &key_inst, (unsigned char *)in,
+			in_len, out);
+
+	*out_len = 0;
+	if (pad_len <= 0) {
 		return RLC_ERR;
+	} else {
+		*out_len = pad_len;
 	}
 	return RLC_OK;
 }
 
-int bc_aes_cbc_dec(uint8_t *out, int *out_len, uint8_t *in,
-		int in_len, uint8_t *key, int key_len, uint8_t *iv) {
+int bc_aes_cbc_dec(uint8_t *out, size_t *out_len, const uint8_t *in,
+		size_t in_len, const uint8_t *key, size_t key_len, const uint8_t *iv) {
 	keyInstance key_inst;
 	cipherInstance cipher_inst;
+	int pad_len;
 
 	if (*out_len < in_len) {
 		return RLC_ERR;
@@ -79,9 +85,14 @@ int bc_aes_cbc_dec(uint8_t *out, int *out_len, uint8_t *in,
 		return RLC_ERR;
 	}
 	memcpy(cipher_inst.IV, iv, RLC_BC_LEN);
-	*out_len = padDecrypt(&cipher_inst, &key_inst, in, in_len, out);
-	if (*out_len <= 0) {
+	pad_len = padDecrypt(&cipher_inst, &key_inst, (unsigned char *)in,
+			in_len, out);
+
+	*out_len = 0;
+	if (pad_len <= 0) {
 		return RLC_ERR;
+	} else {
+		*out_len = pad_len;
 	}
 	return RLC_OK;
 }

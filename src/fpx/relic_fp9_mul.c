@@ -38,7 +38,7 @@
 
 #if FPX_RDC == BASIC || !defined(STRIP)
 
-void fp9_mul_basic(fp9_t c, fp9_t a, fp9_t b) {
+void fp9_mul_basic(fp9_t c, const fp9_t a, const fp9_t b) {
 	fp3_t v0, v1, v2, t0, t1, t2;
 
 	fp3_null(v0);
@@ -109,7 +109,7 @@ void fp9_mul_basic(fp9_t c, fp9_t a, fp9_t b) {
 
 #if PP_EXT == LAZYR || !defined(STRIP)
 
-void fp9_mul_unr(dv9_t c, fp9_t a, fp9_t b) {
+void fp9_mul_unr(dv9_t c, const fp9_t a, const fp9_t b) {
 	dv3_t u0, u1, u2, u3;
 	fp3_t t0, t1;
 
@@ -182,7 +182,7 @@ void fp9_mul_unr(dv9_t c, fp9_t a, fp9_t b) {
 	}
 }
 
-void fp9_mul_lazyr(fp9_t c, fp9_t a, fp9_t b) {
+void fp9_mul_lazyr(fp9_t c, const fp9_t a, const fp9_t b) {
 	dv9_t t;
 
 	dv9_null(t);
@@ -202,7 +202,7 @@ void fp9_mul_lazyr(fp9_t c, fp9_t a, fp9_t b) {
 
 #endif
 
-void fp9_mul_dxs(fp9_t c, fp9_t a, fp9_t b) {
+void fp9_mul_dxs(fp9_t c, const fp9_t a, const fp9_t b) {
 	fp3_t v0, v1, t0, t1, t2;
 
 	fp3_null(v0);
@@ -259,7 +259,7 @@ void fp9_mul_dxs(fp9_t c, fp9_t a, fp9_t b) {
 	}
 }
 
-void fp9_mul_art(fp9_t c, fp9_t a) {
+void fp9_mul_art(fp9_t c, const fp9_t a) {
 	fp3_t t0;
 
 	fp3_null(t0);

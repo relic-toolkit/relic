@@ -32,6 +32,7 @@
 #ifndef RLC_TYPES_H
 #define RLC_TYPES_H
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include "relic_conf.h"
@@ -165,7 +166,7 @@ typedef unsigned long long ull_t;
 /*
  * Represents the unsigned integer with maximum precision.
  */
-typedef unsigned int uint_t;
+typedef unsigned long uint_t;
 
 /*============================================================================*/
 /* Macro definitions                                                          */

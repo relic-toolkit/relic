@@ -38,7 +38,8 @@
 
 void bn_srt(bn_t c, bn_t a) {
 	bn_t h, l, m, t;
-	int bits, cmp;
+	size_t bits;
+	int cmp;
 
 	if (bn_sign(a) == RLC_NEG) {
 		RLC_THROW(ERR_NO_VALID);
@@ -58,8 +59,11 @@ void bn_srt(bn_t c, bn_t a) {
 		bn_new(m);
 		bn_new(t);
 
+		bn_zero(l);
 		bn_set_2b(h, bits >> 1);
-		bn_set_2b(l, (bits >> 1) - 1);
+		if (bits >= 2) {
+			bn_set_2b(l, (bits >> 1) - 1);
+		}
 
 		/* Trivial binary search approach. */
 		do {

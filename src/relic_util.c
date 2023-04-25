@@ -134,11 +134,11 @@ char util_conv_char(dig_t i) {
 #endif
 }
 
-int util_bits_dig(dig_t a) {
+size_t util_bits_dig(dig_t a) {
     return RLC_DIG - arch_lzcnt(a);
 }
 
-int util_cmp_const(const void *a, const void *b, int size) {
+int util_cmp_const(const void *a, const void *b, size_t size) {
 	const uint8_t *_a = (const uint8_t *)a;
 	const uint8_t *_b = (const uint8_t *)b;
 	uint8_t result = 0;
@@ -149,6 +149,17 @@ int util_cmp_const(const void *a, const void *b, int size) {
 	}
 
 	return (result == 0 ? RLC_EQ : RLC_NE);
+}
+
+void util_perm(uint_t p[], size_t n) {
+	size_t i, j, k;
+
+	for (i = 0; i < n; i++) {
+		rand_bytes((uint8_t *)&k, sizeof(size_t));
+		j = k % (i+1);
+		p[i] = p[j];
+		p[j] = i;
+	}
 }
 
 #ifndef QUIET

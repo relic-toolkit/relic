@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (c) 2017 RELIC Authors
+ * Copyright (c) 2022 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -24,39 +24,56 @@
 /**
  * @file
  *
- * Implementation of low-level prime field modular reduction.
+ * Implementation of hashing to a prime elliptic curve over a quadratic
+ * extension.
  *
- * @ingroup fp
+ * @ingroup epx
  */
 
-#include "relic_fp_low.h"
+#include "relic_core.h"
+#include "relic_md.h"
 
-#include "macro.s"
+/*============================================================================*/
+/* Public definitions                                                         */
+/*============================================================================*/
 
-.text
+void ep3_map(ep3_t p, const uint8_t *msg, int len) {
+	bn_t x;
+	fp3_t t0;
+	uint8_t digest[RLC_MD_LEN];
 
-.global fp_rdcn_low
+	bn_null(x);
+	fp3_null(t0);
 
-/*
- * Function: fp_rdcn_low
- * Inputs: rdi = c, rsi = a
- * Output: rax
- */
-fp_rdcn_low:
-	push	%r12
-	push	%r13
-	push	%r14
-	push	%r15
-	push 	%rbx
-	push	%rbp
-	leaq 	p0(%rip), %rbx
+	RLC_TRY {
+		bn_new(x);
+		fp3_new(t0);
 
-	FP_RDCN_LOW %rdi, %r8, %r9, %r10, %rsi, %rbx
+		md_map(digest, msg, len);
+		bn_read_bin(x, digest, RLC_MIN(RLC_FP_BYTES, RLC_MD_LEN));
 
-	pop		%rbp
-	pop		%rbx
-	pop		%r15
-	pop		%r14
-	pop		%r13
-	pop		%r12
-	ret
+		fp3_zero(p->x);
+		fp_prime_conv(p->x[0], x);
+		fp3_set_dig(p->z, 1);
+
+		while (1) {
+			ep3_rhs(t0, p);
+
+			if (fp3_srt(p->y, t0)) {
+				p->coord = BASIC;
+				break;
+			}
+
+			fp_add_dig(p->x[0], p->x[0], 1);
+		}
+
+		ep3_mul_cof(p, p);
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		bn_free(x);
+		fp3_free(t0);
+	}
+}

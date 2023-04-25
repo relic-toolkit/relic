@@ -43,25 +43,16 @@ fp_rsh1_low:
 	movq	16(%rsi), %r10
 	movq	24(%rsi), %r11
 	movq	32(%rsi), %rax
-	movq	40(%rsi), %rcx
-	movq	48(%rsi), %rdx
-	movq	56(%rsi), %rsi
 	shrd	$1, %r9, %r8
 	shrd	$1, %r10, %r9
 	shrd	$1, %r11, %r10
 	shrd	$1, %rax, %r11
-	shrd	$1, %rcx, %rax
-	shrd	$1, %rdx, %rcx
-	shrd	$1, %rsi, %rdx
-	shr		$1, %rsi
+	shr     $1, %rax
 	movq	%r8,0(%rdi)
 	movq	%r9,8(%rdi)
 	movq	%r10,16(%rdi)
 	movq	%r11,24(%rdi)
 	movq	%rax,32(%rdi)
-	movq	%rcx,40(%rdi)
-	movq	%rdx,48(%rdi)
-	movq	%rsi,56(%rdi)
 	ret
 
 fp_lsh1_low:
@@ -70,24 +61,15 @@ fp_lsh1_low:
 	movq	16(%rsi), %r10
 	movq	24(%rsi), %r11
 	movq	32(%rsi), %rax
-	movq	40(%rsi), %rcx
-	movq	48(%rsi), %rdx
-	movq	56(%rsi), %rsi
-	shld	$1, %rdx, %rsi
-	shld	$1, %rcx, %rdx
-	shld	$1, %rax, %rcx
 	shld	$1, %r11, %rax
 	shld	$1, %r10, %r11
 	shld	$1, %r9, %r10
 	shld	$1, %r8, %r9
-	shl		$1, %r8
+	shl     $1, %r8
 	movq	%r8,0(%rdi)
 	movq	%r9,8(%rdi)
 	movq	%r10,16(%rdi)
 	movq	%r11,24(%rdi)
 	movq	%rax,32(%rdi)
-	movq	%rcx,40(%rdi)
-	movq	%rdx,48(%rdi)
-	movq	%rsi,56(%rdi)
 	xorq	%rax, %rax
 	ret

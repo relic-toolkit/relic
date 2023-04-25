@@ -38,7 +38,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void fp2_muln_low(dv2_t c, fp2_t a, fp2_t b) {
+void fp2_muln_low(dv2_t c, const fp2_t a, const fp2_t b) {
 	rlc_align dig_t t0[2 * RLC_FP_DIGS], t1[2 * RLC_FP_DIGS], t2[2 * RLC_FP_DIGS];
 
 	/* Karatsuba algorithm. */
@@ -82,43 +82,7 @@ void fp2_muln_low(dv2_t c, fp2_t a, fp2_t b) {
 #endif
 }
 
-void fp2_mulc_low(dv2_t c, fp2_t a, fp2_t b) {
-	rlc_align dig_t t0[2 * RLC_FP_DIGS], t1[2 * RLC_FP_DIGS], t2[2 * RLC_FP_DIGS];
-
-	/* Karatsuba algorithm. */
-
-	/* t0 = a_0 + a_1, t1 = b_0 + b_1. */
-	fp_addn_low(t0, a[0], a[1]);
-	fp_addn_low(t1, b[0], b[1]);
-
-	/* c_0 = a_0 * b_0, c_1 = a_1 * b_1, t2 = (a_0 + a_1) * (b_0 + b_1). */
-	fp_muln_low(c[0], a[0], b[0]);
-	fp_muln_low(c[1], a[1], b[1]);
-	fp_muln_low(t2, t0, t1);
-
-	/* t0 = (a_0 * b_0) + (a_1 * b_1). */
-	fp_addd_low(t0, c[0], c[1]);
-
-	/* c_0 = (a_0 * b_0) + u^2 * (a_1 * b_1). */
-	fp_subd_low(c[0], c[0], c[1]);
-
-#ifndef FP_QNRES
-	/* t1 = u^2 * (a_1 * b_1). */
-	for (int i = -1; i > fp_prime_get_qnr(); i--) {
-		fp_subd_low(c[0], c[0], c[1]);
-	}
-#endif
-
-	/* c_1 = (t2 - t0). */
-	fp_subd_low(c[1], t2, t0);
-
-	/* c_0 = c_0 + 2^N * p/4. */
-	bn_lshb_low(c[0] + RLC_FP_DIGS - 1, c[0] + RLC_FP_DIGS - 1, RLC_FP_DIGS + 1, 2);
-	fp_addn_low(c[0] + RLC_FP_DIGS, c[0] + RLC_FP_DIGS, fp_prime_get());
-	bn_rshb_low(c[0] + RLC_FP_DIGS - 1, c[0] + RLC_FP_DIGS - 1, RLC_FP_DIGS + 1, 2);
-}
-
-void fp2_mulm_low(fp2_t c, fp2_t a, fp2_t b) {
+void fp2_mulm_low(fp2_t c, const fp2_t a, const fp2_t b) {
 	rlc_align dv2_t t;
 
 	dv2_null(t);
@@ -134,7 +98,7 @@ void fp2_mulm_low(fp2_t c, fp2_t a, fp2_t b) {
 	}
 }
 
-void fp3_muln_low(dv3_t c, fp3_t a, fp3_t b) {
+void fp3_muln_low(dv3_t c, const fp3_t a, const fp3_t b) {
 	rlc_align dig_t t0[2 * RLC_FP_DIGS], t1[2 * RLC_FP_DIGS], t2[2 * RLC_FP_DIGS], t3[2 * RLC_FP_DIGS];
 	rlc_align dig_t t4[2 * RLC_FP_DIGS], t5[2 * RLC_FP_DIGS], t6[2 * RLC_FP_DIGS];
 
@@ -207,7 +171,7 @@ void fp3_muln_low(dv3_t c, fp3_t a, fp3_t b) {
 	fp_addc_low(c[2], t5, t1);
 }
 
-void fp3_mulm_low(fp3_t c, fp3_t a, fp3_t b) {
+void fp3_mulm_low(fp3_t c, const fp3_t a, const fp3_t b) {
 	dv3_t t;
 
 	dv3_null(t);

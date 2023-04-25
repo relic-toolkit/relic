@@ -45,7 +45,7 @@
  * @param[in] radix				- the radix to check.
  * @return if radix is a valid radix.
  */
-static int valid_radix(int radix) {
+static int valid_radix(uint_t radix) {
 	while (radix > 0) {
 		if (radix != 1 && radix % 2 == 1)
 			return 0;
@@ -60,7 +60,7 @@ static int valid_radix(int radix) {
  * @param[in] radix				- the valid radix.
  * @return the logarithm of the radix in basis two.
  */
-static int log_radix(int radix) {
+static int log_radix(uint_t radix) {
 	int l = 0;
 
 	while (radix > 0) {
@@ -93,7 +93,7 @@ int fb_is_zero(const fb_t a) {
 	return !t;
 }
 
-int fb_get_bit(const fb_t a, int bit) {
+int fb_get_bit(const fb_t a, uint_t bit) {
 	int d;
 
 	RLC_RIP(bit, d, bit);
@@ -101,7 +101,7 @@ int fb_get_bit(const fb_t a, int bit) {
 	return (a[d] >> bit) & 1;
 }
 
-void fb_set_bit(fb_t a, int bit, int value) {
+void fb_set_bit(fb_t a, uint_t bit, int value) {
 	int d;
 	dig_t mask;
 
@@ -116,7 +116,7 @@ void fb_set_bit(fb_t a, int bit, int value) {
 	}
 }
 
-int fb_bits(const fb_t a) {
+size_t fb_bits(const fb_t a) {
 	int i = RLC_FB_DIGS - 1;
 
 	while (i >= 0 && a[i] == 0) {
@@ -136,7 +136,7 @@ void fb_set_dig(fb_t c, dig_t a) {
 }
 
 void fb_rand(fb_t a) {
-	int bits, digits;
+	size_t bits, digits;
 
 	rand_bytes((uint8_t *)a, RLC_FB_DIGS * sizeof(dig_t));
 
@@ -148,11 +148,9 @@ void fb_rand(fb_t a) {
 }
 
 void fb_print(const fb_t a) {
-	int i;
-
 	/* Suppress possible unused parameter warning. */
 	(void)a;
-	for (i = RLC_FB_DIGS - 1; i > 0; i--) {
+	for (int i = RLC_FB_DIGS - 1; i > 0; i--) {
 		util_print_dig(a[i], 1);
 		util_print(" ");
 	}
@@ -160,9 +158,9 @@ void fb_print(const fb_t a) {
 	util_print("\n");
 }
 
-int fb_size_str(const fb_t a, int radix) {
+size_t fb_size_str(const fb_t a, uint_t radix) {
 	bn_t t;
-	int digits = 0;
+	size_t digits = 0;
 
 	bn_null(t);
 
@@ -188,51 +186,36 @@ int fb_size_str(const fb_t a, int radix) {
 	return digits;
 }
 
-void fb_read_str(fb_t a, const char *str, int len, int radix) {
-	int i, j, l;
-	char c;
-	dig_t carry;
+void fb_read_str(fb_t a, const char *str, size_t len, uint_t radix) {
+	bn_t t;
 
-	fb_zero(a);
+	bn_null(t);
 
-	l = log_radix(radix);
 	if (!valid_radix(radix)) {
 		RLC_THROW(ERR_NO_VALID);
-		return;
 	}
 
-	if (RLC_CEIL(l * (len - 1), RLC_DIG) > RLC_FB_DIGS) {
-		RLC_THROW(ERR_NO_BUFFER);
-		return;
+	RLC_TRY {
+		bn_new(t);
+
+		bn_read_str(t, str, len, radix);
+
+		if (bn_bits(t) > RLC_FB_BITS) {
+			RLC_THROW(ERR_NO_BUFFER);
+		}
+
+		fb_zero(a);
+		dv_copy(a, t->dp, t->used);
 	}
-
-	j = 0;
-	while (j < len) {
-		if (str[j] == 0) {
-			break;
-		}
-		c = (char)((radix < 36) ? RLC_UPP(str[j]) : str[j]);
-		for (i = 0; i < 64; i++) {
-			if (c == util_conv_char(i)) {
-				break;
-			}
-		}
-
-		if (i < radix) {
-			carry = fb_lshb_low(a, a, l);
-			if (carry != 0) {
-				RLC_THROW(ERR_NO_BUFFER);
-				break;
-			}
-			fb_add_dig(a, a, (dig_t)i);
-		} else {
-			break;
-		}
-		j++;
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		bn_free(t);
 	}
 }
 
-void fb_write_str(char *str, int len, const fb_t a, int radix) {
+void fb_write_str(char *str, size_t len, const fb_t a, uint_t radix) {
 	fb_t t;
 	int d, l, i, j;
 	char c;
@@ -291,7 +274,7 @@ void fb_write_str(char *str, int len, const fb_t a, int radix) {
 	}
 }
 
-void fb_read_bin(fb_t a, const uint8_t *bin, int len) {
+void fb_read_bin(fb_t a, const uint8_t *bin, size_t len) {
 	bn_t t;
 
 	bn_null(t);
@@ -316,7 +299,7 @@ void fb_read_bin(fb_t a, const uint8_t *bin, int len) {
 	}
 }
 
-void fb_write_bin(uint8_t *bin, int len, const fb_t a) {
+void fb_write_bin(uint8_t *bin, size_t len, const fb_t a) {
 	bn_t t;
 
 	bn_null(t);

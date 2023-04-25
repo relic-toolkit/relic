@@ -39,7 +39,7 @@
 
 #if FPX_RDC == BASIC || !defined(STRIP)
 
-void fp8_mul_basic(fp8_t c, fp8_t a, fp8_t b) {
+void fp8_mul_basic(fp8_t c, const fp8_t a, const fp8_t b) {
 	fp4_t t0, t1, t4;
 
 	fp4_null(t0);
@@ -84,7 +84,7 @@ void fp8_mul_basic(fp8_t c, fp8_t a, fp8_t b) {
 
 #if PP_EXT == LAZYR || !defined(STRIP)
 
-static void fp4_mul_dxs_unr(dv4_t c, fp4_t a, fp4_t b) {
+static void fp4_mul_dxs_unr(dv4_t c, const fp4_t a, const fp4_t b) {
 	fp2_t t0, t1;
 	dv2_t u0, u1;
 
@@ -99,15 +99,10 @@ static void fp4_mul_dxs_unr(dv4_t c, fp4_t a, fp4_t b) {
 		dv2_new(u0);
 		dv2_new(u1);
 
-#ifdef RLC_FP_ROOM
-		fp2_mulc_low(u1, a[1], b[1]);
-		fp2_addn_low(t0, b[0], b[1]);
-		fp2_addn_low(t1, a[0], a[1]);
-#else
 		fp2_muln_low(u1, a[1], b[1]);
 		fp2_addm_low(t0, b[0], b[1]);
 		fp2_addm_low(t1, a[0], a[1]);
-#endif
+
 		fp2_muln_low(c[1], t1, t0);
 		fp2_subc_low(c[1], c[1], u1);
 		fp2_norh_low(c[0], u1);
@@ -121,7 +116,7 @@ static void fp4_mul_dxs_unr(dv4_t c, fp4_t a, fp4_t b) {
 	}
 }
 
-void fp8_mul_dxs(fp8_t c, fp8_t a, fp8_t b) {
+void fp8_mul_dxs(fp8_t c, const fp8_t a, const fp8_t b) {
 	fp4_t t0, t1;
 	dv4_t u0, u1, u2, u3;
 
@@ -179,7 +174,7 @@ void fp8_mul_dxs(fp8_t c, fp8_t a, fp8_t b) {
 	}
 }
 
-void fp8_mul_unr(dv8_t c, fp8_t a, fp8_t b) {
+void fp8_mul_unr(dv8_t c, const fp8_t a, const fp8_t b) {
 	fp4_t t0, t1;
 	dv4_t u0, u1, u2, u3;
 
@@ -234,7 +229,7 @@ void fp8_mul_unr(dv8_t c, fp8_t a, fp8_t b) {
 	}
 }
 
-void fp8_mul_lazyr(fp8_t c, fp8_t a, fp8_t b) {
+void fp8_mul_lazyr(fp8_t c, const fp8_t a, const fp8_t b) {
 	dv8_t t;
 
 	dv8_null(t);
@@ -255,7 +250,7 @@ void fp8_mul_lazyr(fp8_t c, fp8_t a, fp8_t b) {
 
 #endif
 
-void fp8_mul_art(fp8_t c, fp8_t a) {
+void fp8_mul_art(fp8_t c, const fp8_t a) {
 	fp4_t t0;
 
 	fp4_null(t0);

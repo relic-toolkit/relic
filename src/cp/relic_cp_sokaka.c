@@ -57,7 +57,7 @@ int cp_sokaka_gen(bn_t master) {
 	return result;
 }
 
-int cp_sokaka_gen_prv(sokaka_t k, char *id, bn_t master) {
+int cp_sokaka_gen_prv(sokaka_t k, const char *id, bn_t master) {
 	if (pc_map_is_type1()) {
 		g1_map(k->s1, (uint8_t *)id, strlen(id));
 		g1_mul(k->s1, k->s1, master);
@@ -70,10 +70,10 @@ int cp_sokaka_gen_prv(sokaka_t k, char *id, bn_t master) {
 	return RLC_OK;
 }
 
-int cp_sokaka_key(uint8_t *key, unsigned int key_len, char *id1,
-		sokaka_t k, char *id2) {
-	int len1 = strlen(id1), len2 = strlen(id2);
-	int size, first = 0, result = RLC_OK;
+int cp_sokaka_key(uint8_t *key, size_t key_len, const char *id1,
+		const sokaka_t k, const char *id2) {
+	size_t size, len1 = strlen(id1), len2 = strlen(id2);
+	int first = 0, result = RLC_OK;
 	uint8_t *buf;
 	g1_t p;
 	g2_t q;

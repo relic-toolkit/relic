@@ -6,7 +6,6 @@ message("      FP_PRIME=n        The prime modulus size in bits.")
 message("      FP_KARAT=n        The number of Karatsuba levels.")
 message("      FP_PMERS=[off|on] Prefer Pseudo-Mersenne primes over random primes.")
 message("      FP_QNRES=[off|on] Use -1 as quadratic non-residue (make sure that p = 3 mod 8).")
-message("      FP_WIDTH=w        Width w in [2,6] of window processing for exponentiation methods.\n")
 
 message("   ** Available prime field arithmetic methods (default = BASIC;COMBA;COMBA;MONTY;MONTY;JMPDS;SLIDE):")
 
@@ -61,11 +60,6 @@ if (NOT FP_KARAT)
 	set(FP_KARAT 0)
 endif(NOT FP_KARAT)
 set(FP_KARAT ${FP_KARAT} CACHE STRING "Number of Karatsuba levels.")
-
-if (NOT FP_WIDTH)
-	set(FP_WIDTH 4)
-endif(NOT FP_WIDTH)
-set(FP_WIDTH ${FP_WIDTH} CACHE STRING "Width of window processing for exponentiation methods.")
 
 option(FP_PMERS "Prefer special form primes over random primes." off)
 option(FP_QNRES "Use -1 as quadratic non-residue." off)

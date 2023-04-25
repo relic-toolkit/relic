@@ -402,6 +402,17 @@ typedef RLC_CAT(RLC_EC_LOWER, t) ec_t;
 #define ec_mul_sim_gen(R, K, Q, L)	RLC_CAT(RLC_EC_LOWER, mul_sim_gen)(R, K, Q, L)
 
 /**
+ * Multiplies and adds many elliptic curve points simultaneously.
+ * Computes R = \Sum_i=0..n k_iP_i.
+ *
+ * @param[out] R			- the result.
+ * @param[out] P			- the points to multiply.
+ * @param[out] K			- the integer scalars.
+ * @param[out] N			- the number of elements to multiply.
+ */
+#define ec_mul_sim_lot(R, P, K, N)	RLC_CAT(RLC_EC_LOWER, mul_sim_lot)(R, P, K, N)
+
+/**
  * Converts a point to affine coordinates.
  *
  * @param[out] R				- the result.

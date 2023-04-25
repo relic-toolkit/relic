@@ -66,7 +66,7 @@ int fp_is_even(const fp_t a) {
 	return 0;
 }
 
-int fp_get_bit(const fp_t a, int bit) {
+int fp_get_bit(const fp_t a, uint_t bit) {
 	int d;
 
 	RLC_RIP(bit, d, bit);
@@ -74,7 +74,7 @@ int fp_get_bit(const fp_t a, int bit) {
 	return (a[d] >> bit) & 1;
 }
 
-void fp_set_bit(fp_t a, int bit, int value) {
+void fp_set_bit(fp_t a, uint_t bit, int value) {
 	int d;
 	dig_t mask;
 
@@ -89,7 +89,7 @@ void fp_set_bit(fp_t a, int bit, int value) {
 	}
 }
 
-int fp_bits(const fp_t a) {
+size_t fp_bits(const fp_t a) {
 	int i = RLC_FP_DIGS - 1;
 
 	while (i >= 0 && a[i] == 0) {
@@ -168,9 +168,9 @@ void fp_print(const fp_t a) {
 	}
 }
 
-int fp_size_str(const fp_t a, int radix) {
+size_t fp_size_str(const fp_t a, uint_t radix) {
 	bn_t t;
-	int digits = 0;
+	size_t digits = 0;
 
 	bn_null(t);
 
@@ -190,7 +190,7 @@ int fp_size_str(const fp_t a, int radix) {
 	return digits;
 }
 
-void fp_read_str(fp_t a, const char *str, int len, int radix) {
+void fp_read_str(fp_t a, const char *str, size_t len, uint_t radix) {
 	bn_t t;
 
 	bn_null(t);
@@ -219,7 +219,7 @@ void fp_read_str(fp_t a, const char *str, int len, int radix) {
 	}
 }
 
-void fp_write_str(char *str, int len, const fp_t a, int radix) {
+void fp_write_str(char *str, size_t len, const fp_t a, uint_t radix) {
 	bn_t t;
 
 	bn_null(t);
@@ -238,7 +238,7 @@ void fp_write_str(char *str, int len, const fp_t a, int radix) {
 	}
 }
 
-void fp_read_bin(fp_t a, const uint8_t *bin, int len) {
+void fp_read_bin(fp_t a, const uint8_t *bin, size_t len) {
 	bn_t t;
 
 	bn_null(t);
@@ -275,7 +275,7 @@ void fp_read_bin(fp_t a, const uint8_t *bin, int len) {
 	}
 }
 
-void fp_write_bin(uint8_t *bin, int len, const fp_t a) {
+void fp_write_bin(uint8_t *bin, size_t len, const fp_t a) {
 	bn_t t;
 
 	bn_null(t);

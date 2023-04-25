@@ -36,7 +36,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-int ep2_is_infty(ep2_t p) {
+int ep2_is_infty(const ep2_t p) {
 	return (fp2_is_zero(p->z) == 1);
 }
 
@@ -47,7 +47,7 @@ void ep2_set_infty(ep2_t p) {
 	p->coord = BASIC;
 }
 
-void ep2_copy(ep2_t r, ep2_t p) {
+void ep2_copy(ep2_t r, const ep2_t p) {
 	fp2_copy(r->x, p->x);
 	fp2_copy(r->y, p->y);
 	fp2_copy(r->z, p->z);
@@ -78,7 +78,7 @@ void ep2_rand(ep2_t p) {
 	}
 }
 
-void ep2_blind(ep2_t r, ep2_t p) {
+void ep2_blind(ep2_t r, const ep2_t p) {
 	fp2_t rand;
 
 	fp2_null(rand);
@@ -104,7 +104,7 @@ void ep2_blind(ep2_t r, ep2_t p) {
 	}
 }
 
-void ep2_rhs(fp2_t rhs, ep2_t p) {
+void ep2_rhs(fp2_t rhs, const ep2_t p) {
 	fp2_t t0;
 
 	fp2_null(t0);
@@ -169,7 +169,7 @@ void ep2_rhs(fp2_t rhs, ep2_t p) {
 }
 
 
-int ep2_on_curve(ep2_t p) {
+int ep2_on_curve(const ep2_t p) {
 	ep2_t t;
 	int r = 0;
 
@@ -192,7 +192,7 @@ int ep2_on_curve(ep2_t p) {
 	return r;
 }
 
-void ep2_tab(ep2_t *t, ep2_t p, int w) {
+void ep2_tab(ep2_t *t, const ep2_t p, int w) {
 	if (w > 2) {
 		ep2_dbl(t[0], p);
 #if defined(EP_MIXED)
@@ -209,13 +209,13 @@ void ep2_tab(ep2_t *t, ep2_t p, int w) {
 	ep2_copy(t[0], p);
 }
 
-void ep2_print(ep2_t p) {
+void ep2_print(const ep2_t p) {
 	fp2_print(p->x);
 	fp2_print(p->y);
 	fp2_print(p->z);
 }
 
-int ep2_size_bin(ep2_t a, int pack) {
+int ep2_size_bin(const ep2_t a, int pack) {
 	ep2_t t;
 	int size = 0;
 
@@ -243,7 +243,7 @@ int ep2_size_bin(ep2_t a, int pack) {
 	return size;
 }
 
-void ep2_read_bin(ep2_t a, const uint8_t *bin, int len) {
+void ep2_read_bin(ep2_t a, const uint8_t *bin, size_t len) {
 	if (len == 1) {
 		if (bin[0] == 0) {
 			ep2_set_infty(a);
@@ -293,7 +293,7 @@ void ep2_read_bin(ep2_t a, const uint8_t *bin, int len) {
 	}
 }
 
-void ep2_write_bin(uint8_t *bin, int len, ep2_t a, int pack) {
+void ep2_write_bin(uint8_t *bin, size_t len, const ep2_t a, int pack) {
 	ep2_t t;
 
 	ep2_null(t);

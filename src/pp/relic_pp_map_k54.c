@@ -37,11 +37,13 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-static void pp_mil_k54(fp54_t r, fp9_t qx, fp9_t qy, ep_t p, bn_t a) {
+static void pp_mil_k54(fp54_t r, const fp9_t qx, const fp9_t qy, const ep_t p,
+		const bn_t a) {
 	fp54_t l;
 	ep_t _p;
-	fp9_t rx, ry, rz, sx, sy, sz;
-	int i, len = bn_bits(a) + 1;
+	fp9_t rx, ry, rz, sx, sy, sz, qn;
+	size_t len = bn_bits(a) + 1;
+	int i;
 	int8_t s[RLC_FP_BITS + 1];
 
 	fp54_null(l);
@@ -62,6 +64,7 @@ static void pp_mil_k54(fp54_t r, fp9_t qx, fp9_t qy, ep_t p, bn_t a) {
 		fp9_new(sx);
 		fp9_new(sy);
 		fp9_new(sz);
+		fp9_new(qn);
 
 		fp54_zero(l);
 		fp9_copy(rx, qx);
@@ -74,6 +77,7 @@ static void pp_mil_k54(fp54_t r, fp9_t qx, fp9_t qy, ep_t p, bn_t a) {
 		fp_add(_p->x, _p->x, p->x);
 		fp_neg(_p->y, p->y);
 #endif
+		fp9_neg(qn, qy);
 
 		bn_rec_naf(s, &len, a, 2);
 		for (i = len - 2; i >= 0; i--) {
@@ -85,9 +89,7 @@ static void pp_mil_k54(fp54_t r, fp9_t qx, fp9_t qy, ep_t p, bn_t a) {
 				fp54_mul_dxs(r, r, l);
 			}
 			if (s[i] < 0) {
-				fp9_neg(qy, qy);
-				pp_add_k54(l, rx, ry, rz, qx, qy, p);
-				fp9_neg(qy, qy);
+				pp_add_k54(l, rx, ry, rz, qx, qn, p);
 				fp54_mul_dxs(r, r, l);
 			}
 		}
@@ -115,12 +117,12 @@ static void pp_mil_k54(fp54_t r, fp9_t qx, fp9_t qy, ep_t p, bn_t a) {
 		fp9_inv(sz, sz);
 		fp_copy(sz[0][0], sz[2][2]);
 		fp_mul(sz[0][0], sz[0][0], core_get()->fp3_p0[1]);
-		fp_mul(sz[0][0], sz[0][0], core_get()->fp3_p1[3]);
-		fp_mul(sz[0][0], sz[0][0], core_get()->fp3_p1[0]);
+		fp_mul(sz[0][0], sz[0][0], core_get()->fp3_p1[3][0]);
+		fp_mul(sz[0][0], sz[0][0], core_get()->fp3_p1[0][0]);
 		fp3_mul_nor(sz[0], sz[0]);
 		fp3_mul_nor(sz[0], sz[0]);
 		fp3_mul_nor(sz[0], sz[0]);
-		fp_mul(sz[1][0], sz[0][0], core_get()->fp3_p2[1]);
+		fp_mul(sz[1][0], sz[0][0], core_get()->fp3_p2[1][0]);
 
 		for (int i = 0; i < 3; i++) {
 			fp3_mul(ry[i], ry[i], sz[0]);
@@ -152,6 +154,7 @@ static void pp_mil_k54(fp54_t r, fp9_t qx, fp9_t qy, ep_t p, bn_t a) {
 		fp9_free(sx);
 		fp9_free(sy);
 		fp9_free(sz);
+		fp9_free(qn);
 	}
 }
 
@@ -159,7 +162,7 @@ static void pp_mil_k54(fp54_t r, fp9_t qx, fp9_t qy, ep_t p, bn_t a) {
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void pp_map_k54(fp54_t r, ep_t p, fp9_t qx, fp9_t qy) {
+void pp_map_k54(fp54_t r, const ep_t p, const fp9_t qx, const fp9_t qy) {
 	bn_t a;
 
 	bn_null(a);
@@ -172,7 +175,7 @@ void pp_map_k54(fp54_t r, ep_t p, fp9_t qx, fp9_t qy) {
 
 		if (!ep_is_infty(p) && !(fp9_is_zero(qx) && fp9_is_zero(qy))) {
 			switch (ep_curve_is_pairf()) {
-				case EP_K54:
+				case EP_SG54:
 					/* r = f_{|a|,Q}(P). */
 					pp_mil_k54(r, qx, qy, p, a);
 					if (bn_sign(a) == RLC_NEG) {

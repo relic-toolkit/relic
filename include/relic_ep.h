@@ -50,6 +50,40 @@
 /*============================================================================*/
 
 /**
+ * Pairing-friendly elliptic curve identifiers.
+ */
+enum {
+    /** Supersingular curves with embedding degree 1. */
+    EP_SS1 = 1,
+    /** Supersingular curves with embedding degree 2. */
+    EP_SS2,
+    /** Barreto-Naehrig. */
+    EP_BN,
+    /* Optimal TNFS-secure. */
+    EP_OT8,
+    /* Cocks-Pinch family discovered by Guillevic, Masson and Thomé (GMT). */
+    EP_GMT8,
+    /* Barreto-Lynn-Scott family with embedding degree 12. */
+    EP_B12,
+    /* Fotiadis-Martindale family with embedding degree 16. */
+    EP_FM16,
+    /* Kachisa-Schaefer-Scott family with embedding degree 16. */
+    EP_K16,
+    /* Fotiadis-Martindale family with embedding degree 18. */
+    EP_FM18,
+    /* Kachisa-Schaefer-Scott family with embedding degree 18. */
+    EP_K18,
+    /* Scott-Guillevic family with embedding degree 18. */
+    EP_SG18,
+    /* Barreto-Lynn-Scott family with embedding degree 24. */
+    EP_B24,
+    /* Barreto-Lynn-Scott family with embedding degree 48. */
+    EP_B48,
+    /** Scott-Guillevic family with embedding degree 54. */
+    EP_SG54,
+};
+
+/**
  * Prime elliptic curve identifiers.
  */
 enum {
@@ -81,6 +115,8 @@ enum {
 	BSI_P256,
 	/** SECG K-256 prime curve. */
 	SECG_K256,
+	/** SM2 P-256 prime curve. */
+	SM2_P256,
 	/** Curve67254 prime curve. */
 	CURVE_67254,
 	/** Curve383187 prime curve. */
@@ -99,6 +135,12 @@ enum {
 	BN_P256,
 	/** Barreto-Naehrig curve standardized in China. */
 	SM9_P256,
+	/** Barreto-Lynn-Scott curve with embedding degree 24 (SNARK curve). */
+	B24_P315,
+	/** Barreto-Lynn-Scott curve with embedding degree 24 (SNARK curve). */
+	B24_P317,
+	/** Barreto-Lynn-Scott curve with embedding degree 12 (SNARK curve). */
+	B12_P377,
 	/** Barreto-Lynn-Scott curve with embedding degree 12 (ZCash curve). */
 	B12_P381,
 	/** Barreto-Naehrig curve with negative x. */
@@ -111,7 +153,7 @@ enum {
 	B12_P446,
 	/** Barreto-Lynn-Scott curve with embedding degree 12. */
 	B12_P455,
-	/** Kachisa-Schafer-Scott with negative x. */
+	/** Kachisa-Schaefer-Scott with negative x. */
 	KSS_P508,
 	/** Barreto-Lynn-Scott curve with embedding degree 24. */
 	B24_P509,
@@ -120,43 +162,21 @@ enum {
 	/** Cocks-pinch curve with embedding degree 8. */
 	GMT8_P544,
 	/** Kachisa-Scott-Schaefer curve with embedding degree 54. */
-	K54_P569,
+	SG54_P569,
 	/** Barreto-Lynn-Scott curve with embedding degree 48. */
 	B48_P575,
 	/** Barreto-Naehrig curve with positive x. */
 	BN_P638,
 	/** Barreto-Lynn-Scott curve with embedding degree 12. */
 	B12_P638,
+	/** Kachisa-Scott-Schaefer curve with embedding degree 18. */
+	K18_P638,
+    /** Scott-Guillevic curve with embedding degree 18. */
+    SG18_P638,
 	/** 1536-bit supersingular curve. */
 	SS_P1536,
 	/** 3072-bit supersingular curve. */
 	SS_P3072,
-};
-
-/**
- * Pairing-friendly elliptic curve identifiers.
- */
-enum {
-	/** Supersingular curves with embedding degree 1. */
-	EP_SS1 = 1,
-	/** Supersingular curves with embedding degree 2. */
-	EP_SS2,
-	/** Barreto-Naehrig. */
-	EP_BN,
-	/* Optimal TNFS-secure. */
-	EP_OT8,
-	/* Cocks-Pinch curve. */
-	EP_GMT8,
-	/* Barreto-Lynn-Scott with embedding degree 12. */
-	EP_B12,
-	/* Kachisa-Schafer-Scott with embedding degree 16. */
-	EP_K16,
-	/* Barreto-Lynn-Scott with embedding degree 24. */
-	EP_B24,
-	/* Barreto-Lynn-Scott with embedding degree 48. */
-	EP_B48,
-	/** Kachisa-Scott-Schaefer curve with embedding degree 54. */
-	EP_K54,
 };
 
 /*============================================================================*/
@@ -181,17 +201,17 @@ enum {
 /**
  * Size of a precomputation table using the single-table comb method.
  */
-#define RLC_EP_TABLE_COMBS      (1 << EP_DEPTH)
+#define RLC_EP_TABLE_COMBS      (1 << RLC_DEPTH)
 
 /**
  * Size of a precomputation table using the double-table comb method.
  */
-#define RLC_EP_TABLE_COMBD		(1 << (EP_DEPTH + 1))
+#define RLC_EP_TABLE_COMBD		(1 << (RLC_DEPTH + 1))
 
 /**
  * Size of a precomputation table using the w-(T)NAF method.
  */
-#define RLC_EP_TABLE_LWNAF		(1 << (EP_DEPTH - 2))
+#define RLC_EP_TABLE_LWNAF		(1 << (RLC_DEPTH - 2))
 
 /**
  * Size of a precomputation table using the chosen algorithm.
@@ -803,7 +823,7 @@ int ep_size_bin(const ep_t a, int pack);
  * @throw ERR_NO_VALID		- if the encoded point is invalid.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is invalid.
  */
-void ep_read_bin(ep_t a, const uint8_t *bin, int len);
+void ep_read_bin(ep_t a, const uint8_t *bin, size_t len);
 
 /**
  * Writes a prime elliptic curve point to a byte vector in big-endian format
@@ -815,7 +835,7 @@ void ep_read_bin(ep_t a, const uint8_t *bin, int len);
  * @param[in] pack			- the flag to indicate point compression.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is invalid.
  */
-void ep_write_bin(uint8_t *bin, int len, const ep_t a, int pack);
+void ep_write_bin(uint8_t *bin, size_t len, const ep_t a, int pack);
 
 /**
  * Negates a prime elliptic curve point.
@@ -1207,7 +1227,7 @@ void ep_norm_sim(ep_t *r, const ep_t *t, int n);
  * @param[in] uniform_bytes		- the array of uniform bytes to map.
  * @param[in] len			- the array length in bytes.
  */
-void ep_map_from_field(ep_t p, const uint8_t *uniform_bytes, int len);
+void ep_map_from_field(ep_t p, const uint8_t *uniform_bytes, size_t len);
 
 /**
  * Maps a byte array to a point in a prime elliptic curve.
@@ -1216,7 +1236,7 @@ void ep_map_from_field(ep_t p, const uint8_t *uniform_bytes, int len);
  * @param[in] msg			- the byte array to map.
  * @param[in] len			- the array length in bytes.
  */
-void ep_map(ep_t p, const uint8_t *msg, int len);
+void ep_map(ep_t p, const uint8_t *msg, size_t len);
 
 /**
  * Maps a byte array to a point in a prime elliptic curve with specified
@@ -1228,8 +1248,8 @@ void ep_map(ep_t p, const uint8_t *msg, int len);
  * @param[in] dst			- the domain separation tag.
  * @param[in] dst_len		- the domain separation tag length in bytes.
  */
-void ep_map_dst(ep_t p, const uint8_t *msg, int len, const uint8_t *dst,
-		int dst_len);
+void ep_map_dst(ep_t p, const uint8_t *msg, size_t len, const uint8_t *dst,
+		size_t dst_len);
 
 /**
  * Compresses a point.

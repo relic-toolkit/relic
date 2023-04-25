@@ -2,8 +2,7 @@ message(STATUS "Elliptic Edwards curve over prime fields arithmetic configuratio
 
 message("   ** Options for the prime elliptic Edwards curve module (default = all on):")
 message("      ED_PRECO=[off|on] Build precomputation table for generator.")
-message("      ED_DEPTH=w        Width w in [2,6] of precomputation table for fixed point methods.")
-message("      ED_WIDTH=w        Width w in [2,6] of window processing for unknown point methods.\n")
+message("      RLC_DEPTH=w        Width w in [2,6] of precomputation table for fixed point methods.")
 
 message("   ** Available prime elliptic Edwards curve methods (default = PROJC;LWNAF;COMBS;INTER):")
 message("      ED_METHD=BASIC    Affine coordinates.")
@@ -30,15 +29,6 @@ message("      ED_METHD=INTER    Interleaving of window NAFs (GLV for Koblitz cu
 message("      ED_METHD=JOINT    Joint sparse form.\n")
 
 message("      Note: these methods must be given in order. Ex: ED_METHD=\"EXTND;LWNAF;COMBD;TRICK\"\n")
-
-if (NOT ED_DEPTH)
-	set(ED_DEPTH 4)
-endif(NOT ED_DEPTH)
-if (NOT ED_WIDTH)
-	set(ED_WIDTH 4)
-endif(NOT ED_WIDTH)
-set(ED_DEPTH "${ED_DEPTH}" CACHE STRING "Width of precomputation table for fixed point methods.")
-set(ED_WIDTH "${ED_WIDTH}" CACHE STRING "Width of window processing for unknown point methods.")
 
 option(ED_PRECO "Build precomputation table for generator" on)
 

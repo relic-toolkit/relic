@@ -109,6 +109,23 @@
 /** @} */
 #endif
 
+#if defined(EP_ENDOM) && FP_PRIME == 377
+/** @{ */
+#define B12_P377_A0		"0"
+#define B12_P377_A1		"0"
+#define B12_P377_B0		"0"
+#define B12_P377_B1		"10222F6DB0FD6F343BD03737460C589DC7B4F91CD5FD889129207B63C6BF8000DD39E5C1CCCCCCD1C9ED9999999999A"
+#define B12_P377_X0		"18480BE71C785FEC89630A2A3841D01C565F071203E50317EA501F557DB6B9B71889F52BB53540274E3E48F7C005196"
+#define B12_P377_X1		"EA6040E700403170DC5A51B1B140D5532777EE6651CECBE7223ECE0799C9DE5CF89984BFF76FE6B26BFEFA6EA16AFE"
+#define B12_P377_Y0		"690D665D446F7BD960736BCBB2EFB4DE03ED7274B49A58E458C282F832D204F2CF88886D8C7C2EF094094409FD4DDF"
+#define B12_P377_Y1		"F8169FD28355189E549DA3151A70AA61EF11AC3D591BF12463B01ACEE304C24279B83F5E52270BD9A1CDD185EB8F93"
+#define B12_P377_R		"12AB655E9A2CA55660B44D1E5C37B00159AA76FED00000010A11800000000001"
+#define B12_P377_H		"26BA558AE9562ADDD88D99A6F6A829FBB36B00E1DCC40C8C505634FAE2E189D693E8C36676BD09A0F3622FBA094800452217CC8FFFFFFFFFFFFFFFFFFFFFFF"
+#define B12_P377_MAPU0	"1"
+#define B12_P377_MAPU1	"-1"
+/** @} */
+#endif
+
 #if defined(EP_ENDOM) && FP_PRIME == 381
 /** @{ */
 #define B12_P381_A0		"0"
@@ -130,11 +147,11 @@
 #define B12_P381_ISO_XD "0,1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaa63;c,1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaa9f;1,0"
 #define B12_P381_ISO_YN "1530477c7ab4113b59a4c18b076d11930f7da5d4a07f649bf54439d87d27e500fc8c25ebf8c92f6812cfc71c71c6d706,1530477c7ab4113b59a4c18b076d11930f7da5d4a07f649bf54439d87d27e500fc8c25ebf8c92f6812cfc71c71c6d706;0,5c759507e8e333ebb5b7a9a47d7ed8532c52d39fd3a042a88b58423c50ae15d5c2638e343d9c71c6238aaaaaaaa97be;11560bf17baa99bc32126fced787c88f984f87adf7ae0c7f9a208c6b4f20a4181472aaa9cb8d555526a9ffffffffc71c,8ab05f8bdd54cde190937e76bc3e447cc27c3d6fbd7063fcd104635a790520c0a395554e5c6aaaa9354ffffffffe38f;124c9ad43b6cf79bfbf7043de3811ad0761b0f37a1e26286b0e977c69aa274524e79097a56dc4bd9e1b371c71c718b10,0"
 #define B12_P381_ISO_YD "1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffa8fb,1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffa8fb;0,1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffa9d3;12,1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaa99;1,0"
-#define B12_P381_MAPU0 "-2"
-#define B12_P381_MAPU1 "-1"
+#define B12_P381_MAPU0	"-2"
+#define B12_P381_MAPU1	"-1"
 #else /* !defined(EP_CTMAP) */
-#define B12_P381_MAPU0 "0"
-#define B12_P381_MAPU1 "1"
+#define B12_P381_MAPU0	"0"
+#define B12_P381_MAPU1	"1"
 #endif
 /** @} */
 #endif
@@ -785,6 +802,10 @@ void ep2_curve_set_twist(int type) {
 			case SM9_P256:
 				ASSIGN(SM9_P256);
 				break;
+#elif FP_PRIME == 377
+			case B12_P377:
+				ASSIGN(B12_P377);
+				break;
 #elif FP_PRIME == 381
 			case B12_P381:
 				ASSIGN(B12_P381);
@@ -849,8 +870,6 @@ void ep2_curve_set_twist(int type) {
 		bn_copy(&(ctx->ep2_r), r);
 		bn_copy(&(ctx->ep2_h), h);
 		ctx->ep2_is_ctmap = ctmap;
-		/* I don't have a better place for this. */
-		fp_prime_calc();
 
 		fp_copy(ctx->ep2_frb[0][0], ctx->fp2_p1[1][0]);
 		fp_copy(ctx->ep2_frb[0][1], ctx->fp2_p1[1][1]);
@@ -886,7 +905,7 @@ void ep2_curve_set_twist(int type) {
 	}
 }
 
-void ep2_curve_set(fp2_t a, fp2_t b, ep2_t g, bn_t r, bn_t h) {
+void ep2_curve_set(const fp2_t a, const fp2_t b, const ep2_t g, const bn_t r, const bn_t h) {
 	ctx_t *ctx = core_get();
 	ctx->ep2_is_twist = 0;
 

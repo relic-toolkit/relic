@@ -69,8 +69,7 @@ static void fp_prime_set(const bn_t p) {
 		ctx->u = t->dp[0];
 
 		/* compute R mod p */
-		bn_set_dig(&(ctx->one), 1);
-		bn_lsh(&(ctx->one), &(ctx->one), RLC_FP_DIGS * RLC_DIG);
+		bn_set_2b(&(ctx->one), ctx->prime.used * RLC_DIG);
 		bn_mod(&(ctx->one), &(ctx->one), &(ctx->prime));
 
 		/* compute the R^2 mod p */
@@ -121,6 +120,7 @@ static void fp_prime_set(const bn_t p) {
 		/* Now look for proper quadratic/cubic non-residues. */
 		ctx->qnr = ctx->cnr = 0;
 		bn_mod_dig(&(ctx->mod8), &(ctx->prime), 8);
+		bn_mod_dig(&(ctx->mod18), &(ctx->prime), 18);
 
 		switch (ctx->mod8) {
 			case 3:
@@ -139,6 +139,12 @@ static void fp_prime_set(const bn_t p) {
 			case 5:
 				ctx->qnr = -2;
 				ctx->cnr = 2;
+				/* TODO: implement cube root to handle this better. */
+#if FP_PRIME == 638
+				ctx->qnr = -6;
+				ctx->cnr = 3;
+#endif
+
 				/* Check if it is a quadratic non-residue or find another. */
 				fp_set_dig(r, -ctx->qnr);
 				fp_neg(r, r);
@@ -274,6 +280,10 @@ dig_t fp_prime_get_mod8(void) {
 	return core_get()->mod8;
 }
 
+dig_t fp_prime_get_mod18(void) {
+	return core_get()->mod18;
+}
+
 int fp_prime_get_qnr(void) {
 	return core_get()->qnr;
 }
@@ -296,7 +306,7 @@ void fp_prime_set_dense(const bn_t p) {
 void fp_prime_set_pairf(const bn_t x, int pairf) {
 	bn_t p, t0, t1;
 	ctx_t *ctx = core_get();
-	int len = bn_bits(x) + 1;
+	size_t len = bn_bits(x) + 1;
 	int8_t s[RLC_FP_BITS + 1];
 
 	bn_null(p);
@@ -364,6 +374,58 @@ void fp_prime_set_pairf(const bn_t x, int pairf) {
 				bn_div_dig(p, p, 4);
 				fp_prime_set_dense(p);
 				break;
+			case EP_K18:
+				/* (x^8 + 5x^7 + 7x^6 + 37x^5 + 188x^4 + 259x^3 + 343x^2 +
+				   1763x + 2401)/21 */
+				bn_add_dig(p, t0, 5);
+				bn_mul(p, p, t0);
+				bn_add_dig(p, p, 7);
+				bn_mul(p, p, t0);
+				bn_add_dig(p, p, 37);
+				bn_mul(p, p, t0);
+				bn_add_dig(p, p, 188);
+				bn_mul(p, p, t0);
+				bn_add_dig(p, p, 256);
+				bn_add_dig(p, p, 3);
+				bn_mul(p, p, t0);
+				bn_add_dig(p, p, 256);
+				bn_add_dig(p, p, 87);
+				bn_mul(p, p, t0);
+				bn_set_dig(t1, 6);
+				bn_lsh(t1, t1, 8);
+				bn_add_dig(t1, t1, 227);
+				bn_add(p, p, t1);
+				bn_mul(p, p, t0);
+				bn_set_dig(t0, 9);
+				bn_lsh(t0, t0, 8);
+				bn_add_dig(t0, t0, 97);
+				bn_add(p, p, t0);
+ 				bn_div_dig(p, p, 21);
+ 				fp_prime_set_dense(p);
+ 				break;
+ 			case EP_SG18:
+ 				/* 243x^10 - 162x^8 + 81*x^7 + 27x^6 - 54x^5 + 9x^4 + 9x^3 -
+ 				   3x^2 + 1 */
+ 				bn_sqr(p, t0);
+ 				bn_mul_dig(p, p, 243);
+				bn_sub_dig(p, p, 162);
+				bn_mul(p, p, t0);
+				bn_add_dig(p, p, 81);
+				bn_mul(p, p, t0);
+				bn_add_dig(p, p, 27);
+				bn_mul(p, p, t0);
+				bn_sub_dig(p, p, 54);
+				bn_mul(p, p, t0);
+				bn_add_dig(p, p, 9);
+				bn_mul(p, p, t0);
+				bn_add_dig(p, p, 9);
+				bn_mul(p, p, t0);
+				bn_sub_dig(p, p, 3);
+				bn_mul(p, p, t0);
+				bn_mul(p, p, t0);
+				bn_add_dig(p, p, 1);
+ 				fp_prime_set_dense(p);
+ 				break;
 			case EP_B24:
 				/* p = (x - 1)^2 * (x^8 - x^4 + 1)/3 + x. */
 				bn_sqr(t1, t0);
@@ -393,7 +455,7 @@ void fp_prime_set_pairf(const bn_t x, int pairf) {
 				bn_add(p, p, t0);
 				fp_prime_set_dense(p);
 				break;
-			case EP_K54:
+			case EP_SG54:
 				/* p = (1+3*x+3*x^2+(3^5)*x^9+(3^5)*x^10+(3^6)*x^10+(3^6)*x^11+(3^9)*x^18+(3^10)*x^19+(3^10)*x^20) */
 				bn_set_dig(p, 1);
 				bn_mul_dig(t1, t0, 3);
@@ -459,7 +521,7 @@ void fp_prime_set_pairf(const bn_t x, int pairf) {
 	}
 }
 
-void fp_prime_set_pmers(const int *f, int len) {
+void fp_prime_set_pmers(const int *f, size_t len) {
 	bn_t p, t;
 
 	bn_null(p);

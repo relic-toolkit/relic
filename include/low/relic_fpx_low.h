@@ -46,7 +46,7 @@
  * @param[in] a				- the first field element to add.
  * @param[in] b				- the second field element to add.
  */
-void fp2_addn_low(fp2_t c, fp2_t a, fp2_t b);
+void fp2_addn_low(fp2_t c, const fp2_t a, const fp2_t b);
 
 /**
  * Adds two quadratic extension field elements of the same size with integrated
@@ -56,7 +56,7 @@ void fp2_addn_low(fp2_t c, fp2_t a, fp2_t b);
  * @param[in] a				- the first field element to add.
  * @param[in] b				- the second field element to add.
  */
-void fp2_addm_low(fp2_t c, fp2_t a, fp2_t b);
+void fp2_addm_low(fp2_t c, const fp2_t a, const fp2_t b);
 
 /**
  * Adds two double-precision quadratic extension field elements of the same
@@ -87,7 +87,7 @@ void fp2_addc_low(dv2_t c, dv2_t a, dv2_t b);
  * @param[in] a				- the first field element.
  * @param[in] b				- the field element to subtract.
  */
-void fp2_subn_low(fp2_t c, fp2_t a, fp2_t b);
+void fp2_subn_low(fp2_t c, const fp2_t a, const fp2_t b);
 
 /**
  * Subtracts a quadratic extension field element from another of the same size
@@ -97,7 +97,7 @@ void fp2_subn_low(fp2_t c, fp2_t a, fp2_t b);
  * @param[in] a				- the first field element.
  * @param[in] b				- the field element to subtract.
  */
-void fp2_subm_low(fp2_t c, fp2_t a, fp2_t b);
+void fp2_subm_low(fp2_t c, const fp2_t a, const fp2_t b);
 
 /**
  * Subtracts a double-precision quadratic extension field element from another
@@ -126,7 +126,7 @@ void fp2_subc_low(dv2_t c, dv2_t a, dv2_t b);
  * @param[out] c			- the result.
  * @param[in] a				- the first field element to multiply.
  */
-void fp2_dbln_low(fp2_t c, fp2_t a);
+void fp2_dbln_low(fp2_t c, const fp2_t a);
 
 /**
  * Doubles a quadratic extension field element with integrated modular
@@ -135,7 +135,7 @@ void fp2_dbln_low(fp2_t c, fp2_t a);
  * @param[out] c			- the result.
  * @param[in] a				- the field element to double.
  */
-void fp2_dblm_low(fp2_t c, fp2_t a);
+void fp2_dblm_low(fp2_t c, const fp2_t a);
 
 /**
  * Multiplies a quadratic extension field element by the quadratic
@@ -144,7 +144,7 @@ void fp2_dblm_low(fp2_t c, fp2_t a);
  * @param[out] c			- the result.
  * @param[in] a				- the field element to multiply.
  */
-void fp2_norm_low(fp2_t c, fp2_t a);
+void fp2_norm_low(fp2_t c, const fp2_t a);
 
 /**
  * Multiplies a double-precision quadratic extension field element by the
@@ -173,18 +173,7 @@ void fp2_nord_low(dv2_t c, dv2_t a);
  * @param[in] a				- the first field element to multiply.
  * @param[in] b				- the second field element to multiply.
  */
-void fp2_muln_low(dv2_t c, fp2_t a, fp2_t b);
-
-/**
- * Multiplies two quadratic extension elements of the same size and corrects
- * the result by adding (2^(RLC_FP_DIGS * WSIZE) * p)/4. This function should
- * be used when the RLC_FP_ROOM optimization is detected. Computes c = a * b.
- *
- * @param[out] c			- the result.
- * @param[in] a				- the first field element to multiply.
- * @param[in] b				- the second field element to multiply.
- */
-void fp2_mulc_low(dv2_t c, fp2_t a, fp2_t b);
+void fp2_muln_low(dv2_t c, const fp2_t a, const fp2_t b);
 
 /**
  * Multiplies two quadratic extension field elements of the same size with
@@ -194,7 +183,7 @@ void fp2_mulc_low(dv2_t c, fp2_t a, fp2_t b);
  * @param[in] a				- the first field element to multiply.
  * @param[in] b				- the second field element to multiply.
  */
-void fp2_mulm_low(fp2_t c, fp2_t a, fp2_t b);
+void fp2_mulm_low(fp2_t c, const fp2_t a, const fp2_t b);
 
 /**
  * Squares a quadratic extension element. Computes c = a * a.
@@ -202,7 +191,7 @@ void fp2_mulm_low(fp2_t c, fp2_t a, fp2_t b);
  * @param[out] c			- the result.
  * @param[in] a				- the field element to square.
  */
-void fp2_sqrn_low(dv2_t c, fp2_t a);
+void fp2_sqrn_low(dv2_t c, const fp2_t a);
 
 /**
  * Squares a quadratic extension field element with integrated modular
@@ -211,7 +200,7 @@ void fp2_sqrn_low(dv2_t c, fp2_t a);
  * @param[out] c			- the result.
  * @param[in] a				- the field element to square.
  */
-void fp2_sqrm_low(fp2_t c, fp2_t a);
+void fp2_sqrm_low(fp2_t c, const fp2_t a);
 
 /**
  * Reduces a quadratic extension element modulo the configured prime p.
@@ -230,7 +219,7 @@ void fp2_rdcn_low(fp2_t c, dv2_t a);
  * @param[in] a				- the first field element to add.
  * @param[in] b				- the second field element to add.
  */
-void fp3_addn_low(fp3_t c, fp3_t a, fp3_t b);
+void fp3_addn_low(fp3_t c, const fp3_t a, const fp3_t b);
 
 /**
  * Adds two cubic extension field elements of the same size with integrated
@@ -240,7 +229,7 @@ void fp3_addn_low(fp3_t c, fp3_t a, fp3_t b);
  * @param[in] a				- the first field element to add.
  * @param[in] b				- the second field element to add.
  */
-void fp3_addm_low(fp3_t c, fp3_t a, fp3_t b);
+void fp3_addm_low(fp3_t c, const fp3_t a, const fp3_t b);
 
 /**
  * Adds two double-precision cubic extension field elements of the same
@@ -271,7 +260,7 @@ void fp3_addc_low(dv3_t c, dv3_t a, dv3_t b);
  * @param[in] a				- the first field element.
  * @param[in] b				- the field element to subtract.
  */
-void fp3_subn_low(fp3_t c, fp3_t a, fp3_t b);
+void fp3_subn_low(fp3_t c, const fp3_t a, const fp3_t b);
 
 /**
  * Subtracts a cubic extension field element from another of the same size
@@ -281,7 +270,7 @@ void fp3_subn_low(fp3_t c, fp3_t a, fp3_t b);
  * @param[in] a				- the first field element.
  * @param[in] b				- the field element to subtract.
  */
-void fp3_subm_low(fp3_t c, fp3_t a, fp3_t b);
+void fp3_subm_low(fp3_t c, const fp3_t a, const fp3_t b);
 
 /**
  * Subtracts a double-precision cubic extension field element from another
@@ -310,7 +299,7 @@ void fp3_subc_low(dv3_t c, dv3_t a, dv3_t b);
  * @param[out] c			- the result.
  * @param[in] a				- the first field element to multiply.
  */
-void fp3_dbln_low(fp3_t c, fp3_t a);
+void fp3_dbln_low(fp3_t c, const fp3_t a);
 
 /**
  * Doubles a cubic extension field element with integrated modular
@@ -319,7 +308,7 @@ void fp3_dbln_low(fp3_t c, fp3_t a);
  * @param[out] c			- the result.
  * @param[in] a				- the field element to double.
  */
-void fp3_dblm_low(fp3_t c, fp3_t a);
+void fp3_dblm_low(fp3_t c, const fp3_t a);
 
 /**
  * Multiplies a double-precision cubic extension field element by the
@@ -338,7 +327,7 @@ void fp3_nord_low(dv3_t c, dv3_t a);
  * @param[in] a				- the first field element to multiply.
  * @param[in] b				- the second field element to multiply.
  */
-void fp3_muln_low(dv3_t c, fp3_t a, fp3_t b);
+void fp3_muln_low(dv3_t c, const fp3_t a, const fp3_t b);
 
 /**
  * Multiplies two cubic extension elements of the same size and corrects
@@ -349,7 +338,7 @@ void fp3_muln_low(dv3_t c, fp3_t a, fp3_t b);
  * @param[in] a				- the first field element to multiply.
  * @param[in] b				- the second field element to multiply.
  */
-void fp3_mulc_low(dv3_t c, fp3_t a, fp3_t b);
+void fp3_mulc_low(dv3_t c, const fp3_t a, const fp3_t b);
 
 /**
  * Multiplies two cubic extension field elements of the same size with
@@ -359,7 +348,7 @@ void fp3_mulc_low(dv3_t c, fp3_t a, fp3_t b);
  * @param[in] a				- the first field element to multiply.
  * @param[in] b				- the second field element to multiply.
  */
-void fp3_mulm_low(fp3_t c, fp3_t a, fp3_t b);
+void fp3_mulm_low(fp3_t c, const fp3_t a, const fp3_t b);
 
 /**
  * Squares a cubic extension element. Computes c = a * a.
@@ -367,7 +356,7 @@ void fp3_mulm_low(fp3_t c, fp3_t a, fp3_t b);
  * @param[out] c			- the result.
  * @param[in] a				- the field element to square.
  */
-void fp3_sqrn_low(dv3_t c, fp3_t a);
+void fp3_sqrn_low(dv3_t c, const fp3_t a);
 
 /**
  * Squares a cubic extension field element with integrated modular
@@ -376,7 +365,7 @@ void fp3_sqrn_low(dv3_t c, fp3_t a);
  * @param[out] c			- the result.
  * @param[in] a				- the field element to square.
  */
-void fp3_sqrm_low(fp3_t c, fp3_t a);
+void fp3_sqrm_low(fp3_t c, const fp3_t a);
 
 /**
  * Reduces a cubic extension element modulo the configured prime p.

@@ -36,7 +36,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void fp2_inv(fp2_t c, fp2_t a) {
+void fp2_inv(fp2_t c, const fp2_t a) {
 	fp_t t0, t1;
 
 	fp_null(t0);
@@ -89,12 +89,12 @@ void fp2_inv(fp2_t c, fp2_t a) {
 	}
 }
 
-void fp2_inv_cyc(fp2_t c, fp2_t a) {
+void fp2_inv_cyc(fp2_t c, const fp2_t a) {
 	fp_copy(c[0], a[0]);
 	fp_neg(c[1], a[1]);
 }
 
-void fp2_inv_sim(fp2_t *c, fp2_t *a, int n) {
+void fp2_inv_sim(fp2_t *c, const fp2_t *a, int n) {
 	int i;
 	fp2_t u, *t = RLC_ALLOCA(fp2_t, n);
 
@@ -137,7 +137,7 @@ void fp2_inv_sim(fp2_t *c, fp2_t *a, int n) {
 	}
 }
 
-void fp3_inv(fp3_t c, fp3_t a) {
+void fp3_inv(fp3_t c, const fp3_t a) {
 	fp_t v0;
 	fp_t v1;
 	fp_t v2;
@@ -220,7 +220,7 @@ void fp3_inv(fp3_t c, fp3_t a) {
 	}
 }
 
-void fp3_inv_sim(fp3_t * c, fp3_t * a, int n) {
+void fp3_inv_sim(fp3_t * c, const fp3_t * a, int n) {
 	int i;
 	fp3_t u, *t = RLC_ALLOCA(fp3_t, n);
 
@@ -263,12 +263,12 @@ void fp3_inv_sim(fp3_t * c, fp3_t * a, int n) {
 	}
 }
 
-void fp4_inv_cyc(fp4_t c, fp4_t a) {
+void fp4_inv_cyc(fp4_t c, const fp4_t a) {
 	fp2_copy(c[0], a[0]);
 	fp2_neg(c[1], a[1]);
 }
 
-void fp4_inv(fp4_t c, fp4_t a) {
+void fp4_inv(fp4_t c, const fp4_t a) {
 	fp2_t t0;
 	fp2_t t1;
 
@@ -296,7 +296,7 @@ void fp4_inv(fp4_t c, fp4_t a) {
 	}
 }
 
-void fp4_inv_sim(fp4_t * c, fp4_t * a, int n) {
+void fp4_inv_sim(fp4_t * c, const fp4_t * a, int n) {
 	int i;
 	fp4_t u, *t = RLC_ALLOCA(fp4_t, n);
 
@@ -339,7 +339,7 @@ void fp4_inv_sim(fp4_t * c, fp4_t * a, int n) {
 	}
 }
 
-void fp6_inv(fp6_t c, fp6_t a) {
+void fp6_inv(fp6_t c, const fp6_t a) {
 	fp2_t v0;
 	fp2_t v1;
 	fp2_t v2;
@@ -398,12 +398,12 @@ void fp6_inv(fp6_t c, fp6_t a) {
 	}
 }
 
-void fp8_inv_cyc(fp8_t c, fp8_t a) {
+void fp8_inv_cyc(fp8_t c, const fp8_t a) {
 	fp4_copy(c[0], a[0]);
 	fp4_neg(c[1], a[1]);
 }
 
-void fp8_inv(fp8_t c, fp8_t a) {
+void fp8_inv(fp8_t c, const fp8_t a) {
 	fp4_t t0;
 	fp4_t t1;
 
@@ -431,7 +431,7 @@ void fp8_inv(fp8_t c, fp8_t a) {
 	}
 }
 
-void fp8_inv_sim(fp8_t *c, fp8_t *a, int n) {
+void fp8_inv_sim(fp8_t *c, const fp8_t *a, int n) {
 	int i;
 	fp8_t u, *t = RLC_ALLOCA(fp8_t, n);
 
@@ -474,7 +474,7 @@ void fp8_inv_sim(fp8_t *c, fp8_t *a, int n) {
 	}
 }
 
-void fp9_inv(fp9_t c, fp9_t a) {
+void fp9_inv(fp9_t c, const fp9_t a) {
 	fp3_t v0;
 	fp3_t v1;
 	fp3_t v2;
@@ -533,7 +533,7 @@ void fp9_inv(fp9_t c, fp9_t a) {
 	}
 }
 
-void fp9_inv_sim(fp9_t * c, fp9_t * a, int n) {
+void fp9_inv_sim(fp9_t * c, const fp9_t * a, int n) {
 	int i;
 	fp9_t u, *t = RLC_ALLOCA(fp9_t, n);
 
@@ -576,7 +576,7 @@ void fp9_inv_sim(fp9_t * c, fp9_t * a, int n) {
 	}
 }
 
-void fp12_inv(fp12_t c, fp12_t a) {
+void fp12_inv(fp12_t c, const fp12_t a) {
 	fp6_t t0;
 	fp6_t t1;
 
@@ -604,12 +604,12 @@ void fp12_inv(fp12_t c, fp12_t a) {
 	}
 }
 
-void fp12_inv_cyc(fp12_t c, fp12_t a) {
+void fp12_inv_cyc(fp12_t c, const fp12_t a) {
 	fp6_copy(c[0], a[0]);
 	fp6_neg(c[1], a[1]);
 }
 
-void fp18_inv(fp18_t c, fp18_t a) {
+void fp18_inv(fp18_t c, const fp18_t a) {
 	fp9_t t0;
 	fp9_t t1;
 
@@ -637,12 +637,12 @@ void fp18_inv(fp18_t c, fp18_t a) {
 	}
 }
 
-void fp18_inv_cyc(fp18_t c, fp18_t a) {
+void fp18_inv_cyc(fp18_t c, const fp18_t a) {
 	fp9_copy(c[0], a[0]);
 	fp9_neg(c[1], a[1]);
 }
 
-void fp24_inv(fp24_t c, fp24_t a) {
+void fp24_inv(fp24_t c, const fp24_t a) {
 	fp8_t v0;
 	fp8_t v1;
 	fp8_t v2;
@@ -701,14 +701,14 @@ void fp24_inv(fp24_t c, fp24_t a) {
 	}
 }
 
-void fp24_inv_cyc(fp24_t c, fp24_t a) {
+void fp24_inv_cyc(fp24_t c, const fp24_t a) {
 	fp8_inv_cyc(c[0], a[0]);
 	fp8_inv_cyc(c[1], a[1]);
 	fp8_neg(c[1], c[1]);
 	fp8_inv_cyc(c[2], a[2]);
 }
 
-void fp48_inv(fp48_t c, fp48_t a) {
+void fp48_inv(fp48_t c, const fp48_t a) {
 	fp24_t t0;
 	fp24_t t1;
 
@@ -736,12 +736,12 @@ void fp48_inv(fp48_t c, fp48_t a) {
 	}
 }
 
-void fp48_inv_cyc(fp48_t c, fp48_t a) {
+void fp48_inv_cyc(fp48_t c, const fp48_t a) {
 	fp24_copy(c[0], a[0]);
 	fp24_neg(c[1], a[1]);
 }
 
-void fp54_inv(fp54_t c, fp54_t a) {
+void fp54_inv(fp54_t c, const fp54_t a) {
 	fp18_t v0;
 	fp18_t v1;
 	fp18_t v2;
@@ -800,7 +800,7 @@ void fp54_inv(fp54_t c, fp54_t a) {
 	}
 }
 
-void fp54_inv_cyc(fp54_t c, fp54_t a) {
+void fp54_inv_cyc(fp54_t c, const fp54_t a) {
 	fp18_inv_cyc(c[0], a[0]);
 	fp18_inv_cyc(c[1], a[1]);
 	fp18_neg(c[1], c[1]);

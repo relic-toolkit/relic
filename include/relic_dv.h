@@ -141,7 +141,7 @@ typedef dig_t *dv_t;
  * @param[in] a				- the temporary digit vector to print.
  * @param[in] digits		- the number of digits to print.
  */
-void dv_print(dig_t *a, int digits);
+void dv_print(const dig_t *a, size_t digits);
 
 /**
  * Assigns zero to a temporary double-precision digit vector.
@@ -149,7 +149,7 @@ void dv_print(dig_t *a, int digits);
  * @param[out] a			- the temporary digit vector to assign.
  * @param[in] digits		- the number of words to initialize with zero.
  */
-void dv_zero(dig_t *a, int digits);
+void dv_zero(dig_t *a, size_t digits);
 
 /**
  * Copies some digits from a digit vector to another digit vector.
@@ -158,7 +158,7 @@ void dv_zero(dig_t *a, int digits);
  * @param[in] a				- the source.
  * @param[in] digits		- the number of digits to copy.
  */
-void dv_copy(dig_t *c, const dig_t *a, int digits);
+void dv_copy(dig_t *c, const dig_t *a, size_t digits);
 
 /**
  * Conditionally copies some digits from a digit vector to another digit vector.
@@ -168,7 +168,7 @@ void dv_copy(dig_t *c, const dig_t *a, int digits);
  * @param[in] digits		- the number of digits to copy.
  * @param[in] cond			- the condition to evaluate.
  */
-void dv_copy_cond(dig_t *c, const dig_t *a, int digits, dig_t cond);
+void dv_copy_cond(dig_t *c, const dig_t *a, size_t digits, dig_t cond);
 
 /**
  * Conditionally swap two digit vectors.
@@ -178,7 +178,7 @@ void dv_copy_cond(dig_t *c, const dig_t *a, int digits, dig_t cond);
  * @param[in] digits		- the number of digits to copy.
  * @param[in] cond			- the condition to evaluate.
  */
-void dv_swap_cond(dig_t *c, dig_t *a, int digits, dig_t cond);
+void dv_swap_cond(dig_t *c, dig_t *a, size_t digits, dig_t cond);
 
 /**
  * Returns the result of a comparison between two digit vectors.
@@ -188,7 +188,7 @@ void dv_swap_cond(dig_t *c, dig_t *a, int digits, dig_t cond);
  * @param[in] size			- the length in digits of the vectors.
  * @return RLC_LT if a < b, RLC_EQ if a == b and RLC_GT if a > b.
  */
-int dv_cmp(const dig_t *a, const dig_t *b, int size);
+int dv_cmp(const dig_t *a, const dig_t *b, size_t size);
 
 /**
  * Compares two digit vectors in constant time.
@@ -198,7 +198,7 @@ int dv_cmp(const dig_t *a, const dig_t *b, int size);
  * @param[in] size			- the length in digits of the vectors.
  * @return RLC_EQ if they are equal and RLC_NE otherwise.
  */
-int dv_cmp_const(const dig_t *a, const dig_t *b, int size);
+int dv_cmp_const(const dig_t *a, const dig_t *b, size_t size);
 
 /**
  * Allocates and initializes a temporary double-precision digit vector.
@@ -210,7 +210,7 @@ int dv_cmp_const(const dig_t *a, const dig_t *b, int size);
  * 							by the library.
  */
 #if ALLOC == DYNAMIC
-void dv_new_dynam(dv_t *a, int digits);
+void dv_new_dynam(dv_t *a, size_t digits);
 #endif
 
 /**
@@ -231,7 +231,7 @@ void dv_free_dynam(dv_t *a);
  * @param[in] size			- the number of digits to shift.
  * @param[in] digits		- the shift amount.
  */
-void dv_lshd(dig_t *c, const dig_t *a, int size, int digits);
+void dv_lshd(dig_t *c, const dig_t *a, size_t size, uint_t digits);
 
 /**
  * Shifts a digit vector to the right by some digits.
@@ -242,6 +242,6 @@ void dv_lshd(dig_t *c, const dig_t *a, int size, int digits);
  * @param[in] size			- the number of digits to shift.
  * @param[in] digits		- the shift amount.
  */
-void dv_rshd(dig_t *c, const dig_t *a, int size, int digits);
+void dv_rshd(dig_t *c, const dig_t *a, size_t size, uint_t digits);
 
 #endif /* !RLC_DV_H */

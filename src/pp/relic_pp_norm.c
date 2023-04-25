@@ -39,11 +39,11 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void pp_norm_k2(ep_t r, ep_t p) {
+void pp_norm_k2(ep_t r, const ep_t p) {
 	ep_norm(r, p);
 }
 
-void pp_norm_k8(ep2_t r, ep2_t p) {
+void pp_norm_k8(ep2_t r, const ep2_t p) {
 	if (ep2_is_infty(p)) {
 		ep2_set_infty(r);
 		return;
@@ -63,13 +63,13 @@ void pp_norm_k8(ep2_t r, ep2_t p) {
 #endif
 }
 
-void pp_norm_k12(ep2_t r, ep2_t p) {
+void pp_norm_k12(ep2_t r, const ep2_t p) {
 	if (ep2_is_infty(p)) {
 		ep2_set_infty(r);
 		return;
 	}
 
-	if (p->coord) {
+	if (p->coord == BASIC) {
 		/* If the point is represented in affine coordinates, we just copy it. */
 		ep2_copy(r, p);
 	}
@@ -82,13 +82,32 @@ void pp_norm_k12(ep2_t r, ep2_t p) {
 #endif
 }
 
-void pp_norm_k24(ep4_t r, ep4_t p) {
+void pp_norm_k18(ep3_t r, const ep3_t p) {
+	if (ep3_is_infty(p)) {
+		ep3_set_infty(r);
+		return;
+	}
+
+	if (p->coord == BASIC) {
+		/* If the point is represented in affine coordinates, we just copy it. */
+		ep3_copy(r, p);
+	}
+#if EP_ADD == PROJC || !defined(STRIP)
+	fp3_inv(r->z, p->z);
+	fp3_mul(r->x, p->x, r->z);
+	fp3_mul(r->y, p->y, r->z);
+	fp3_set_dig(r->z, 1);
+	r->coord = BASIC;
+#endif
+}
+
+void pp_norm_k24(ep4_t r, const ep4_t p) {
 	if (ep4_is_infty(p)) {
 		ep4_set_infty(r);
 		return;
 	}
 
-	if (p->coord) {
+	if (p->coord == BASIC) {
 		/* If the point is represented in affine coordinates, we just copy it. */
 		ep4_copy(r, p);
 	}

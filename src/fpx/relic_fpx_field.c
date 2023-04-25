@@ -47,6 +47,13 @@ int fp2_field_get_qnr() {
 #endif
 }
 
+int fp3_field_get_cnr() {
+#if FP_PRIME == 638
+	return 8;
+#endif
+	return 0;
+}
+
 void fp2_field_init(void) {
 	bn_t e;
 	fp2_t t0, t1;
@@ -89,6 +96,7 @@ void fp2_field_init(void) {
 		bn_sub_dig(e, e, 1);
 		bn_div_dig(e, e, 6);
 		fp2_exp(t0, t0, e);
+
 		fp_copy(ctx->fp2_p1[0][0], t0[0]);
 		fp_copy(ctx->fp2_p1[0][1], t0[1]);
 		fp2_sqr(t1, t0);
@@ -145,19 +153,17 @@ void fp2_field_init(void) {
 
 void fp3_field_init(void) {
 	bn_t e;
-	fp3_t t0, t1, t2;
+	fp3_t t0, t1;
 	ctx_t *ctx = core_get();
 
 	bn_null(e);
 	fp3_null(t0);
 	fp3_null(t1);
-	fp3_null(t2);
 
 	RLC_TRY {
 		bn_new(e);
 		fp3_new(t0);
 		fp3_new(t1);
-		fp3_new(t2);
 
 		/* Compute t0 = u^((p - (p mod 3))/3). */
 		if (fp_prime_get_cnr() < 0) {
@@ -172,54 +178,85 @@ void fp3_field_init(void) {
 		fp_sqr(ctx->fp3_p0[1], ctx->fp3_p0[0]);
 
 		/* Compute t0 = u^((p - (p mod 6))/6). */
-		fp3_zero(t0);
-		fp_set_dig(t0[1], 1);
+		fp3_set_dig(t1, 1);
+		fp3_mul_nor(t0, t1);
 		bn_read_raw(e, fp_prime_get(), RLC_FP_DIGS);
 		bn_div_dig(e, e, 6);
 		fp3_exp(t0, t0, e);
 
-		/* Look for a non-trivial subfield element.. */
-		ctx->frb3[0] = 0;
-		while (ctx->frb3[0] < 3 && fp_is_zero(t0[ctx->frb3[0]++]));
-		/* Fill rest of table with powers of constant. */
-		fp_copy(ctx->fp3_p1[0], t0[--ctx->frb3[0] % 3]);
-		fp3_sqr(t1, t0);
-		fp_copy(ctx->fp3_p1[1], t1[(2 * ctx->frb3[0]) % 3]);
-		fp3_mul(t2, t1, t0);
-		fp_copy(ctx->fp3_p1[2], t2[(3 * ctx->frb3[0]) % 3]);
-		fp3_sqr(t2, t1);
-		fp_copy(ctx->fp3_p1[3], t2[(4 * ctx->frb3[0]) % 3]);
-		fp3_mul(t2, t2, t0);
-		fp_copy(ctx->fp3_p1[4], t2[(5 * ctx->frb3[0]) % 3]);
+		if (fp3_field_get_cnr() == 0) {
+			/* Look for a non-trivial subfield element.. */
+			ctx->frb3[0] = 0;
+			while (ctx->frb3[0] < 3 && fp_is_zero(t0[ctx->frb3[0]++]));
+			/* Fill rest of table with powers of constant. */
+			fp_copy(ctx->fp3_p1[0][0], t0[--ctx->frb3[0] % 3]);
+			fp3_sqr(t1, t0);
+			fp_copy(ctx->fp3_p1[1][0], t1[(2 * ctx->frb3[0]) % 3]);
+			fp3_mul(t1, t1, t0);
+			fp_copy(ctx->fp3_p1[2][0], t1[(3 * ctx->frb3[0]) % 3]);
+			fp3_sqr(t1, t0);
+			fp3_sqr(t1, t1);
+			fp_copy(ctx->fp3_p1[3][0], t1[(4 * ctx->frb3[0]) % 3]);
+			fp3_mul(t1, t1, t0);
+			fp_copy(ctx->fp3_p1[4][0], t1[(5 * ctx->frb3[0]) % 3]);
+		} else {
+			fp_copy(ctx->fp3_p1[0][0], t0[0]);
+			fp_copy(ctx->fp3_p1[0][1], t0[1]);
+			fp_copy(ctx->fp3_p1[0][2], t0[2]);
+			fp3_sqr(t1, t0);
+			fp_copy(ctx->fp3_p1[1][0], t1[0]);
+			fp_copy(ctx->fp3_p1[1][1], t1[1]);
+			fp_copy(ctx->fp3_p1[1][2], t1[2]);
+			fp3_mul(t1, t1, t0);
+			fp_copy(ctx->fp3_p1[2][0], t1[0]);
+			fp_copy(ctx->fp3_p1[2][1], t1[1]);
+			fp_copy(ctx->fp3_p1[2][2], t1[2]);
+			fp3_sqr(t1, t0);
+			fp3_sqr(t1, t1);
+			fp_copy(ctx->fp3_p1[3][0], t1[0]);
+			fp_copy(ctx->fp3_p1[3][1], t1[1]);
+			fp_copy(ctx->fp3_p1[3][2], t1[2]);
+			fp3_mul(t1, t1, t0);
+			fp_copy(ctx->fp3_p1[4][0], t1[0]);
+			fp_copy(ctx->fp3_p1[4][1], t1[1]);
+			fp_copy(ctx->fp3_p1[4][2], t1[2]);
+		}
 
 		/* Compute t0 = u^((p - (p mod 9))/9). */
-		fp3_zero(t0);
-		fp_set_dig(t0[1], 1);
+		fp3_set_dig(t1, 1);
+		fp3_mul_nor(t0, t1);
 		bn_read_raw(e, fp_prime_get(), RLC_FP_DIGS);
 		bn_div_dig(e, e, 9);
 		fp3_exp(t0, t0, e);
 		/* Look for a non-trivial subfield element.. */
-		ctx->frb3[1] = 0;
-		while (ctx->frb3[1] < 3 && fp_is_zero(t0[ctx->frb3[1]++]));
-		fp_copy(ctx->fp3_p2[0], t0[--ctx->frb3[1]]);
+		if (fp3_field_get_cnr() == 0) {
+			ctx->frb3[1] = 0;
+			while (ctx->frb3[1] < 3 && fp_is_zero(t0[ctx->frb3[1]++]));
+			fp_copy(ctx->fp3_p2[0][0], t0[--ctx->frb3[1]]);
+		} else {
+			fp3_copy(ctx->fp3_p2[0], t0);
+		}
 
 		/* Compute t0 = u^((p - (p mod 18))/18). */
-		fp3_zero(t0);
-		fp_set_dig(t0[1], 1);
+		fp3_set_dig(t1, 1);
+		fp3_mul_nor(t0, t1);
 		bn_read_raw(e, fp_prime_get(), RLC_FP_DIGS);
 		bn_div_dig(e, e, 18);
 		fp3_exp(t0, t0, e);
 		/* Look for a non-trivial subfield element.. */
-		ctx->frb3[2] = 0;
-		while (ctx->frb3[2] < 3 && fp_is_zero(t0[ctx->frb3[2]++]));
-		fp_copy(ctx->fp3_p2[1], t0[--ctx->frb3[2]]);
+		if (fp3_field_get_cnr() == 0) {
+			ctx->frb3[2] = 0;
+			while (ctx->frb3[2] < 3 && fp_is_zero(t0[ctx->frb3[2]++]));
+			fp_copy(ctx->fp3_p2[1][0], t0[--ctx->frb3[2]]);
+		} else {
+			fp3_copy(ctx->fp3_p2[1], t0);
+		}
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		bn_free(e);
 		fp3_free(t0);
 		fp3_free(t1);
-		fp3_free(t2);
 	}
 }
 
@@ -242,8 +279,15 @@ void fp4_field_init() {
 		bn_sub_dig(e, e, 1);
 		bn_div_dig(e, e, 6);
 		fp4_exp(t0, t0, e);
-		fp_copy(ctx->fp4_p1[0], t0[1][0]);
-		fp_copy(ctx->fp4_p1[1], t0[1][1]);
+		if (fp2_is_zero(t0[1])) {
+			ctx->frb4 = 0;
+			fp_copy(ctx->fp4_p1[0], t0[0][0]);
+			fp_copy(ctx->fp4_p1[1], t0[0][1]);
+		} else {
+			ctx->frb4 = 1;
+			fp_copy(ctx->fp4_p1[0], t0[1][0]);
+			fp_copy(ctx->fp4_p1[1], t0[1][1]);
+		}
 	} RLC_CATCH_ANY {
 	    RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {

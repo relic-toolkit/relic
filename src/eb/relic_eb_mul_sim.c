@@ -54,12 +54,13 @@
  */
 static void eb_mul_sim_kbltz(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 		const bn_t m, const eb_t *t) {
-	int i, l, l0, l1, n0, n1, w, g;
+	int i, n0, n1, w, g;
 	int8_t u, tnaf0[RLC_FB_BITS + 8], tnaf1[RLC_FB_BITS + 8], *_k, *_m;
-	eb_t t0[1 << (EB_WIDTH - 2)];
-	eb_t t1[1 << (EB_WIDTH - 2)];
+	eb_t t0[1 << (RLC_WIDTH - 2)];
+	eb_t t1[1 << (RLC_WIDTH - 2)];
+	size_t l, l0, l1;
 
-	for (i =  0; i < (1 << (EB_WIDTH - 2)); i++) {
+	for (i =  0; i < (1 << (RLC_WIDTH - 2)); i++) {
 		eb_null(t0[i]);
 		eb_null(t1[i]);
 	}
@@ -74,36 +75,36 @@ static void eb_mul_sim_kbltz(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 
 		g = (t == NULL ? 0 : 1);
 		if (!g) {
-			for (i =  0; i < (1 << (EB_WIDTH - 2)); i++) {
+			for (i =  0; i < (1 << (RLC_WIDTH - 2)); i++) {
 				eb_new(t0[i]);
 				eb_set_infty(t0[i]);
 				fb_set_bit(t0[i]->z, 0, 1);
 				t0[i]->coord = BASIC;
 			}
-			eb_tab(t0, p, EB_WIDTH);
+			eb_tab(t0, p, RLC_WIDTH);
 			t = (const eb_t *)t0;
 		}
 
 		/* Prepare the precomputation table. */
-		for (i =  0; i < (1 << (EB_WIDTH - 2)); i++) {
+		for (i =  0; i < (1 << (RLC_WIDTH - 2)); i++) {
 			eb_new(t1[i]);
 			eb_set_infty(t1[i]);
 			fb_set_bit(t1[i]->z, 0, 1);
 			t1[i]->coord = BASIC;
 		}
 		/* Compute the precomputation table. */
-		eb_tab(t1, q, EB_WIDTH);
+		eb_tab(t1, q, RLC_WIDTH);
 
 		/* Compute the w-TNAF representation of k. */
 		if (g) {
-			w = EB_DEPTH;
+			w = RLC_DEPTH;
 		} else {
-			w = EB_WIDTH;
+			w = RLC_WIDTH;
 		}
 
 		l0 = l1 = RLC_FB_BITS + 8;
 		bn_rec_tnaf(tnaf0, &l0, k, u, RLC_FB_BITS, w);
-		bn_rec_tnaf(tnaf1, &l1, m, u, RLC_FB_BITS, EB_WIDTH);
+		bn_rec_tnaf(tnaf1, &l1, m, u, RLC_FB_BITS, RLC_WIDTH);
 
 		l = RLC_MAX(l0, l1);
 		_k = tnaf0 + l - 1;
@@ -155,11 +156,11 @@ static void eb_mul_sim_kbltz(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 	}
 	RLC_FINALLY {
 		if (!g) {
-			for (i =  0; i < (1 << (EB_WIDTH - 2)); i++) {
+			for (i =  0; i < (1 << (RLC_WIDTH - 2)); i++) {
 				eb_free(t0[i]);
 			}
 		}
-		for (i =  0; i < (1 << (EB_WIDTH - 2)); i++) {
+		for (i =  0; i < (1 << (RLC_WIDTH - 2)); i++) {
 			eb_free(t1[i]);
 		}
 	}
@@ -183,12 +184,13 @@ static void eb_mul_sim_kbltz(eb_t r, const eb_t p, const bn_t k, const eb_t q,
  */
 static void eb_mul_sim_plain(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 		const bn_t m, const eb_t *t) {
-	int i, l, l0, l1, n0, n1, w, g;
+	int i, n0, n1, w, g;
 	int8_t naf0[RLC_FB_BITS + 1], naf1[RLC_FB_BITS + 1], *_k, *_m;
-	eb_t t0[1 << (EB_WIDTH - 2)];
-	eb_t t1[1 << (EB_WIDTH - 2)];
+	eb_t t0[1 << (RLC_WIDTH - 2)];
+	eb_t t1[1 << (RLC_WIDTH - 2)];
+	size_t l, l0, l1;
 
-	for (i =  0; i < (1 << (EB_WIDTH - 2)); i++) {
+	for (i =  0; i < (1 << (RLC_WIDTH - 2)); i++) {
 		eb_null(t0[i]);
 		eb_null(t1[i]);
 	}
@@ -196,30 +198,30 @@ static void eb_mul_sim_plain(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 	RLC_TRY {
 		g = (t == NULL ? 0 : 1);
 		if (!g) {
-			for (i =  0; i < (1 << (EB_WIDTH - 2)); i++) {
+			for (i =  0; i < (1 << (RLC_WIDTH - 2)); i++) {
 				eb_new(t0[i]);
 			}
-			eb_tab(t0, p, EB_WIDTH);
+			eb_tab(t0, p, RLC_WIDTH);
 			t = (const eb_t *)t0;
 		}
 
 		/* Prepare the precomputation table. */
-		for (i =  0; i < (1 << (EB_WIDTH - 2)); i++) {
+		for (i =  0; i < (1 << (RLC_WIDTH - 2)); i++) {
 			eb_new(t1[i]);
 		}
 		/* Compute the precomputation table. */
-		eb_tab(t1, q, EB_WIDTH);
+		eb_tab(t1, q, RLC_WIDTH);
 
 		/* Compute the w-NAF representation of k. */
 		if (g) {
-			w = EB_DEPTH;
+			w = RLC_DEPTH;
 		} else {
-			w = EB_WIDTH;
+			w = RLC_WIDTH;
 		}
 
 		l0 = l1 = RLC_FB_BITS + 1;
 		bn_rec_naf(naf0, &l0, k, w);
-		bn_rec_naf(naf1, &l1, m, EB_WIDTH);
+		bn_rec_naf(naf1, &l1, m, RLC_WIDTH);
 
 		l = RLC_MAX(l0, l1);
 		if (bn_sign(k) == RLC_NEG) {
@@ -263,11 +265,11 @@ static void eb_mul_sim_plain(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 	RLC_FINALLY {
 		/* Free the precomputation tables. */
 		if (!g) {
-			for (i =  0; i < 1 << (EB_WIDTH - 2); i++) {
+			for (i =  0; i < 1 << (RLC_WIDTH - 2); i++) {
 				eb_free(t0[i]);
 			}
 		}
-		for (i =  0; i < 1 << (EB_WIDTH - 2); i++) {
+		for (i =  0; i < 1 << (RLC_WIDTH - 2); i++) {
 			eb_free(t1[i]);
 		}
 	}
@@ -309,8 +311,8 @@ void eb_mul_sim_basic(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 
 void eb_mul_sim_trick(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 		const bn_t m) {
-	eb_t t0[1 << (EB_WIDTH / 2)], t1[1 << (EB_WIDTH / 2)], t[1 << EB_WIDTH];
-	int l0, l1, w = EB_WIDTH / 2;
+	eb_t t0[1 << (RLC_WIDTH / 2)], t1[1 << (RLC_WIDTH / 2)], t[1 << RLC_WIDTH];
+	size_t l0, l1, w = RLC_WIDTH / 2;
 	uint8_t w0[RLC_FB_BITS], w1[RLC_FB_BITS];
 	bn_t n;
 
@@ -336,7 +338,7 @@ void eb_mul_sim_trick(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 			eb_new(t0[i]);
 			eb_new(t1[i]);
 		}
-		for (int i = 0; i < (1 << EB_WIDTH); i++) {
+		for (int i = 0; i < (1 << RLC_WIDTH); i++) {
 			eb_null(t[i]);
 			eb_new(t[i]);
 		}
@@ -365,8 +367,8 @@ void eb_mul_sim_trick(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 			}
 		}
 
-#if EB_WIDTH > 2 && defined(EB_MIXED)
-		eb_norm_sim(t + 1, (const eb_t *)(t + 1), (1 << EB_WIDTH) - 1);
+#if RLC_WIDTH > 2 && defined(EB_MIXED)
+		eb_norm_sim(t + 1, (const eb_t *)(t + 1), (1 << RLC_WIDTH) - 1);
 #endif
 
 		l0 = l1 = RLC_CEIL(RLC_FB_BITS + 1, w);
@@ -396,7 +398,7 @@ void eb_mul_sim_trick(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 			eb_free(t0[i]);
 			eb_free(t1[i]);
 		}
-		for (int i = 0; i < (1 << EB_WIDTH); i++) {
+		for (int i = 0; i < (1 << RLC_WIDTH); i++) {
 			eb_free(t[i]);
 		}
 	}
@@ -436,8 +438,9 @@ void eb_mul_sim_inter(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 void eb_mul_sim_joint(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 		const bn_t m) {
 	eb_t t[5];
-	int i, u_i, len, offset;
+	int i, u_i, offset;
 	int8_t jsf[2 * (RLC_FB_BITS + 1)];
+	size_t len;
 
 	if (bn_is_zero(k) || eb_is_infty(p)) {
 		eb_mul(r, q, m);

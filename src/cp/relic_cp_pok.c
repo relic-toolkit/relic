@@ -40,7 +40,7 @@
  * Authors: Jan Camenisc, Markus Stadler (1997)
  */
 
-int cp_pokdl_prv(bn_t c, bn_t r, ec_t y, bn_t x) {
+int cp_pokdl_prv(bn_t c, bn_t r, const ec_t y, const bn_t x) {
 	bn_t n, v;
 	ec_t t;
 	int l, result = RLC_OK;
@@ -87,7 +87,7 @@ int cp_pokdl_prv(bn_t c, bn_t r, ec_t y, bn_t x) {
 	return result;
 }
 
-int cp_pokdl_ver(bn_t c, bn_t r, ec_t y) {
+int cp_pokdl_ver(const bn_t c, const bn_t r, const ec_t y) {
 	bn_t n, v;
 	ec_t t;
 	int l, result = 0;
@@ -134,7 +134,7 @@ int cp_pokdl_ver(bn_t c, bn_t r, ec_t y) {
 	return result;
 }
 
-int cp_pokor_prv(bn_t c[2], bn_t r[2], ec_t y[2], bn_t x) {
+int cp_pokor_prv(bn_t c[2], bn_t r[2], const ec_t y[2], const bn_t x) {
 	bn_t n, v[2], z;
 	ec_t t;
 	int l, result = RLC_OK;
@@ -203,7 +203,7 @@ int cp_pokor_prv(bn_t c[2], bn_t r[2], ec_t y[2], bn_t x) {
 	return result;
 }
 
-int cp_pokor_ver(bn_t c[2], bn_t r[2], ec_t y[2]) {
+int cp_pokor_ver(const bn_t c[2], const bn_t r[2], const ec_t y[2]) {
 	bn_t n, v[2], z;
 	ec_t t;
 	int l, result = 0;

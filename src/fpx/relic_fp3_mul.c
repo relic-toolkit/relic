@@ -39,7 +39,7 @@
 
 #if FPX_CBC == BASIC || !defined(STRIP)
 
-void fp3_mul_basic(fp3_t c, fp3_t a, fp3_t b) {
+void fp3_mul_basic(fp3_t c, const fp3_t a, const fp3_t b) {
 	dv_t t, t0, t1, t2, t3, t4, t5, t6;
 
 	dv_null(t);
@@ -143,13 +143,13 @@ void fp3_mul_basic(fp3_t c, fp3_t a, fp3_t b) {
 
 #if FPX_CBC == INTEG || !defined(STRIP)
 
-void fp3_mul_integ(fp3_t c, fp3_t a, fp3_t b) {
+void fp3_mul_integ(fp3_t c, const fp3_t a, const fp3_t b) {
 	fp3_mulm_low(c, a, b);
 }
 
 #endif
 
-void fp3_mul_nor(fp3_t c, fp3_t a) {
+void fp3_mul_art(fp3_t c, const fp3_t a) {
 	fp_t t;
 
 	fp_null(t);
@@ -177,35 +177,117 @@ void fp3_mul_nor(fp3_t c, fp3_t a) {
 	}
 }
 
-void fp3_mul_frb(fp3_t c, fp3_t a, int i, int j) {
+void fp3_mul_nor(fp3_t c, const fp3_t a) {
+	fp3_t t;
+	bn_t b;
+
+	fp3_null(t);
+	bn_null(b);
+
+	RLC_TRY {
+		fp3_new(t);
+		bn_new(b);
+
+		int cnr = fp3_field_get_cnr();
+
+		switch (fp_prime_get_mod18()) {
+			case 7:
+				/* If p = 7 mod 18, we choose (2^k + j) as a QNR/CNR. */
+				fp3_mul_art(t, a);
+				fp3_copy(c, a);
+				while (cnr > 1) {
+					fp3_dbl(c, c);
+					cnr = cnr >> 1;
+				}
+				fp3_add(c, c, t);
+				break;
+			default:
+				fp3_mul_art(c, a);
+				break;
+		}
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		fp3_free(t);
+		bn_free(b);
+	}
+}
+
+void fp3_mul_frb(fp3_t c, const fp3_t a, int i, int j) {
 	ctx_t *ctx = core_get();
+
 	fp3_copy(c, a);
-	switch (i % 3) {
-		case 0:
-			if (j % 3 == 1) {
-				fp_mul(c[1], c[1], ctx->fp3_p0[0]);
-				fp_mul(c[2], c[2], ctx->fp3_p0[1]);
+	if (i % 3 == 0) {
+		if (j % 3 == 1) {
+			fp_mul(c[1], c[1], ctx->fp3_p0[0]);
+			fp_mul(c[2], c[2], ctx->fp3_p0[1]);
+		}
+		if (j % 3 == 2) {
+			fp_mul(c[1], c[1], ctx->fp3_p0[1]);
+			fp_mul(c[2], c[2], ctx->fp3_p0[0]);
+		}
+	}
+
+	if (fp3_field_get_cnr() == 0) {
+		switch (i % 3) {
+			case 1:
+				fp_mul(c[0], c[0], ctx->fp3_p1[j - 1][0]);
+				fp_mul(c[1], c[1], ctx->fp3_p1[j - 1][0]);
+				fp_mul(c[2], c[2], ctx->fp3_p1[j - 1][0]);
+				for (int k = 0; k < (j * ctx->frb3[0]) % 3; k++) {
+					fp3_mul_nor(c, c);
+				}
+				break;
+			case 2:
+				fp_mul(c[0], c[0], ctx->fp3_p2[j - 1][0]);
+				fp_mul(c[1], c[1], ctx->fp3_p2[j - 1][0]);
+				fp_mul(c[2], c[2], ctx->fp3_p2[j - 1][0]);
+				for (int k = 0; k < ctx->frb3[j]; k++) {
+					fp3_mul_nor(c, c);
+				}
+				break;
+		}
+	} else {
+#if ALLOC == AUTO
+		switch (i) {
+			case 1:
+				fp3_mul(c, c, ctx->fp3_p1[j - 1]);
+				break;
+			case 2:
+				fp3_mul(c, c, ctx->fp3_p2[j - 1]);
+				break;
+		}
+#else
+		fp3_t t;
+
+		fp3_null(t);
+
+		RLC_TRY {
+			fp3_new(t);
+
+			switch (i) {
+				case 1:
+					fp_copy(t[0], ctx->fp3_p1[j - 1][0]);
+					fp_copy(t[1], ctx->fp3_p1[j - 1][1]);
+					fp_copy(t[2], ctx->fp3_p1[j - 1][2]);
+					break;
+				case 2:
+					fp_copy(t[0], ctx->fp3_p2[j - 1][0]);
+					fp_copy(t[1], ctx->fp3_p2[j - 1][1]);
+					fp_copy(t[2], ctx->fp3_p2[j - 1][2]);
+					break;
 			}
-			if (j % 3 == 2) {
-				fp_mul(c[1], c[1], ctx->fp3_p0[1]);
-				fp_mul(c[2], c[2], ctx->fp3_p0[0]);
-			}
-			break;
-		case 1:
-			fp_mul(c[0], c[0], ctx->fp3_p1[j - 1]);
-			fp_mul(c[1], c[1], ctx->fp3_p1[j - 1]);
-			fp_mul(c[2], c[2], ctx->fp3_p1[j - 1]);
-			for (int k = 0; k < (j * ctx->frb3[0]) % 3; k++) {
-				fp3_mul_nor(c, c);
-			}
-			break;
-		case 2:
-			fp_mul(c[0], c[0], ctx->fp3_p2[j - 1]);
-			fp_mul(c[1], c[1], ctx->fp3_p2[j - 1]);
-			fp_mul(c[2], c[2], ctx->fp3_p2[j - 1]);
-			for (int k = 0; k < ctx->frb3[j]; k++) {
-				fp3_mul_nor(c, c);
-			}
-			break;
+
+			fp3_mul(c, c, t);
+		}
+		RLC_CATCH_ANY {
+			RLC_THROW(ERR_CAUGHT);
+		}
+		RLC_FINALLY {
+			fp3_free(t);
+		}
+#endif
 	}
 }

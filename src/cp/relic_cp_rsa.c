@@ -49,22 +49,22 @@
 /**
  * Identifier for encrypted messages.
  */
-#define RSA_PUB			(02)
+#define RSA_PUB				(02)
 
 /**
  * Identifier for signed messages.
  */
-#define RSA_PRV			(01)
+#define RSA_PRV				(01)
 
 /**
  * Byte used as padding unit.
  */
-#define RSA_PAD			(0xFF)
+#define RSA_PAD				(0xFF)
 
 /**
  * Byte used as padding unit in PSS signatures.
  */
-#define RSA_PSS			(0xBC)
+#define RSA_PSS				(0xBC)
 
 /**
  * Identifier for encryption.
@@ -177,30 +177,34 @@ static int pad_basic(bn_t m, int *p_len, int m_len, int k_len, int operation) {
 /**
  * ASN.1 identifier of the hash function SHA-224.
  */
-static const uint8_t sh224_id[] =
-		{ 0x30, 0x2d, 0x30, 0x0d, 0x06, 0x09, 0x60, 0x86, 0x48, 0x01, 0x65,
-			0x03, 0x04, 0x02, 0x04, 0x05, 0x00, 0x04, 0x1c };
+static const uint8_t sh224_id[] = {
+	0x30, 0x2d, 0x30, 0x0d, 0x06, 0x09, 0x60, 0x86, 0x48, 0x01, 0x65, 0x03,
+	0x04, 0x02, 0x04, 0x05, 0x00, 0x04, 0x1c
+};
 
 /**
  * ASN.1 identifier of the hash function SHA-256.
  */
-static const uint8_t sh256_id[] =
-		{ 0x30, 0x31, 0x30, 0x0d, 0x06, 0x09, 0x60, 0x86, 0x48, 0x01, 0x65,
-			0x03, 0x04, 0x02, 0x01, 0x05, 0x00, 0x04, 0x20 };
+static const uint8_t sh256_id[] = {
+	0x30, 0x31, 0x30, 0x0d, 0x06, 0x09, 0x60, 0x86, 0x48, 0x01, 0x65, 0x03,
+	0x04, 0x02, 0x01, 0x05, 0x00, 0x04, 0x20
+};
 
 /**
  * ASN.1 identifier of the hash function SHA-384.
  */
-static const uint8_t sh384_id[] =
-		{ 0x30, 0x41, 0x30, 0x0d, 0x06, 0x09, 0x60, 0x86, 0x48, 0x01, 0x65,
-			0x03, 0x04, 0x02, 0x02, 0x05, 0x00, 0x04, 0x30 };
+static const uint8_t sh384_id[] = {
+	0x30, 0x41, 0x30, 0x0d, 0x06, 0x09, 0x60, 0x86, 0x48, 0x01, 0x65, 0x03,
+	0x04, 0x02, 0x02, 0x05, 0x00, 0x04, 0x30
+};
 
 /**
  * ASN.1 identifier of the hash function SHA-512.
  */
-static const uint8_t sh512_id[] =
-		{ 0x30, 0x51, 0x30, 0x0d, 0x06, 0x09, 0x60, 0x86, 0x48, 0x01, 0x65,
-			0x03, 0x04, 0x02, 0x03, 0x05, 0x00, 0x04, 0x40 };
+static const uint8_t sh512_id[] = {
+	0x30, 0x51, 0x30, 0x0d, 0x06, 0x09, 0x60, 0x86, 0x48, 0x01, 0x65, 0x03,
+	0x04, 0x02, 0x03, 0x05, 0x00, 0x04, 0x40
+};
 
 /**
  * Returns a pointer to the ASN.1 identifier of a hash function according to the
@@ -240,9 +244,10 @@ static uint8_t *hash_id(int md, int *len) {
  * @param[in] operation	- flag to indicate the operation type.
  * @return RLC_ERR if errors occurred, RLC_OK otherwise.
  */
-static int pad_pkcs1(bn_t m, int *p_len, int m_len, int k_len, int operation) {
+static int pad_pkcs1(bn_t m, int *p_len, size_t m_len, size_t k_len, int op) {
 	uint8_t *id, pad = 0;
-	int len, result = RLC_ERR;
+	size_t len;
+	int result = RLC_ERR;
 	bn_t t;
 
 	bn_null(t);
@@ -250,7 +255,7 @@ static int pad_pkcs1(bn_t m, int *p_len, int m_len, int k_len, int operation) {
 	RLC_TRY {
 		bn_new(t);
 
-		switch (operation) {
+		switch (op) {
 			case RSA_ENC:
 				/* EB = 00 | 02 | PS | 00 | D. */
 				bn_zero(m);
@@ -415,10 +420,9 @@ static int pad_pkcs1(bn_t m, int *p_len, int m_len, int k_len, int operation) {
  * @param[in] operation	- flag to indicate the operation type.
  * @return RLC_ERR if errors occurred, RLC_OK otherwise.
  */
-static int pad_pkcs2(bn_t m, int *p_len, int m_len, int k_len, int operation) {
-        uint8_t pad, h1[RLC_MD_LEN], h2[RLC_MD_LEN];
-        /* MSVC does not allow dynamic stack arrays */
-        uint8_t *mask = RLC_ALLOCA(uint8_t, k_len);
+static int pad_pkcs2(bn_t m, int *p_len, size_t m_len, size_t k_len, int op) {
+	uint8_t pad, h1[RLC_MD_LEN], h2[RLC_MD_LEN];
+	uint8_t *mask = RLC_ALLOCA(uint8_t, k_len);
 	int result = RLC_ERR;
 	bn_t t;
 
@@ -427,7 +431,7 @@ static int pad_pkcs2(bn_t m, int *p_len, int m_len, int k_len, int operation) {
 	RLC_TRY {
 		bn_new(t);
 
-		switch (operation) {
+		switch (op) {
 			case RSA_ENC:
 				/* DB = lHash | PS | 01 | D. */
 				md_map(h1, NULL, 0);
@@ -564,7 +568,7 @@ static int pad_pkcs2(bn_t m, int *p_len, int m_len, int k_len, int operation) {
 		bn_free(t);
 	}
 
-        RLC_FREE(mask);
+	RLC_FREE(mask);
 
 	return result;
 }
@@ -575,7 +579,7 @@ static int pad_pkcs2(bn_t m, int *p_len, int m_len, int k_len, int operation) {
 /* Public definitions                                                         */
 /*============================================================================*/
 
-int cp_rsa_gen(rsa_t pub, rsa_t prv, int bits) {
+int cp_rsa_gen(rsa_t pub, rsa_t prv, size_t bits) {
 	bn_t t, r;
 	int result = RLC_OK;
 
@@ -660,7 +664,8 @@ int cp_rsa_gen(rsa_t pub, rsa_t prv, int bits) {
 	return result;
 }
 
-int cp_rsa_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len, rsa_t pub) {
+int cp_rsa_enc(uint8_t *out, size_t *out_len, const uint8_t *in, size_t in_len,
+		const rsa_t pub) {
 	bn_t m, eb;
 	int size, pad_len, result = RLC_OK;
 
@@ -717,7 +722,8 @@ int cp_rsa_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len, rsa_t pub) {
 	return result;
 }
 
-int cp_rsa_dec(uint8_t *out, int *out_len, uint8_t *in, int in_len, rsa_t prv) {
+int cp_rsa_dec(uint8_t *out, size_t *out_len, const uint8_t *in, size_t in_len,
+		const rsa_t prv) {
 	bn_t m, eb;
 	int size, pad_len, result = RLC_OK;
 
@@ -738,52 +744,9 @@ int cp_rsa_dec(uint8_t *out, int *out_len, uint8_t *in, int in_len, rsa_t prv) {
 #if !defined(CP_CRT)
 		bn_mxp(eb, eb, prv->d, prv->crt->n);
 #else
-
-		bn_copy(m, eb);
-
-#if MULTI == OPENMP
-		omp_set_num_threads(CORES);
-		#pragma omp parallel copyin(core_ctx) firstprivate(prv)
-		{
-			#pragma omp sections
-			{
-				#pragma omp section
-				{
-#endif
-					/* m1 = c^dP mod p. */
-					bn_mxp(eb, eb, prv->crt->dp, prv->crt->p);
-
-#if MULTI == OPENMP
-				}
-				#pragma omp section
-				{
-#endif
-					/* m2 = c^dQ mod q. */
-					bn_mxp(m, m, prv->crt->dq, prv->crt->q);
-
-#if MULTI == OPENMP
-				}
-			}
-		}
-#endif
-		/* m1 = m1 - m2 mod p. */
-		bn_sub(eb, eb, m);
-		while (bn_sign(eb) == RLC_NEG) {
-			bn_add(eb, eb, prv->crt->p);
-		}
-		bn_mod(eb, eb, prv->crt->p);
-		/* m1 = qInv(m1 - m2) mod p. */
-		bn_mul(eb, eb, prv->crt->qi);
-		bn_mod(eb, eb, prv->crt->p);
-		/* m = m2 + m1 * q. */
-		bn_mul(eb, eb, prv->crt->q);
-		bn_add(eb, eb, m);
-
+		bn_mxp_crt(eb, eb, prv->crt->dp, prv->crt->dq, prv->crt, 0);
 #endif /* CP_CRT */
 
-		if (bn_cmp(eb, prv->crt->n) != RLC_LT) {
-			result = RLC_ERR;
-		}
 #if CP_RSAPD == BASIC
 		if (pad_basic(eb, &pad_len, in_len, size, RSA_DEC) == RLC_OK) {
 #elif CP_RSAPD == PKCS1
@@ -815,7 +778,8 @@ int cp_rsa_dec(uint8_t *out, int *out_len, uint8_t *in, int in_len, rsa_t prv) {
 	return result;
 }
 
-int cp_rsa_sig(uint8_t *sig, int *sig_len, uint8_t *msg, int msg_len, int hash, rsa_t prv) {
+int cp_rsa_sig(uint8_t *sig, size_t *sig_len, const uint8_t *msg,
+		size_t msg_len, int hash, const rsa_t prv) {
 	bn_t m, eb;
 	int pad_len, size, result = RLC_OK;
 	uint8_t h[RLC_MD_LEN];
@@ -875,45 +839,8 @@ int cp_rsa_sig(uint8_t *sig, int *sig_len, uint8_t *msg, int msg_len, int hash, 
 
 #if !defined(CP_CRT)
 			bn_mxp(eb, eb, prv->d, prv->crt->n);
-#else  /* CP_CRT */
-
-#if MULTI == OPENMP
-			omp_set_num_threads(CORES);
-			#pragma omp parallel copyin(core_ctx) firstprivate(prv)
-			{
-				#pragma omp sections
-				{
-					#pragma omp section
-					{
-#endif
-						/* m1 = c^dP mod p. */
-						bn_mxp(eb, eb, prv->crt->dp, prv->crt->p);
-#if MULTI == OPENMP
-					}
-					#pragma omp section
-					{
-#endif
-						/* m2 = c^dQ mod q. */
-						bn_mxp(m, m, prv->crt->dq, prv->crt->q);
-#if MULTI == OPENMP
-					}
-				}
-			}
-#endif
-			/* m1 = m1 - m2 mod p. */
-			bn_sub(eb, eb, m);
-			while (bn_sign(eb) == RLC_NEG) {
-				bn_add(eb, eb, prv->crt->p);
-			}
-			bn_mod(eb, eb, prv->crt->p);
-			/* m1 = qInv(m1 - m2) mod p. */
-			bn_mul(eb, eb, prv->crt->qi);
-			bn_mod(eb, eb, prv->crt->p);
-			/* m = m2 + m1 * q. */
-			bn_mul(eb, eb, prv->crt->q);
-			bn_add(eb, eb, m);
-			bn_mod(eb, eb, prv->crt->n);
-
+#else /* CP_CRT */
+			bn_mxp_crt(eb, eb, prv->crt->dp, prv->crt->dq, prv->crt, 0);
 #endif /* CP_CRT */
 
 			size = bn_size_bin(prv->crt->n);
@@ -940,7 +867,8 @@ int cp_rsa_sig(uint8_t *sig, int *sig_len, uint8_t *msg, int msg_len, int hash, 
 	return result;
 }
 
-int cp_rsa_ver(uint8_t *sig, int sig_len, uint8_t *msg, int msg_len, int hash, rsa_t pub) {
+int cp_rsa_ver(uint8_t *sig, size_t sig_len, const uint8_t *msg, size_t msg_len,
+		int hash, const rsa_t pub) {
 	bn_t m, eb;
 	int size, pad_len, result;
 	uint8_t *h1 = RLC_ALLOCA(uint8_t, RLC_MAX(msg_len, RLC_MD_LEN) + 8);
@@ -996,7 +924,8 @@ int cp_rsa_ver(uint8_t *sig, int sig_len, uint8_t *msg, int msg_len, int hash, r
 #elif CP_RSAPD == PKCS1
 		if (pad_pkcs1(eb, &pad_len, RLC_MD_LEN, size, operation) == RLC_OK) {
 #elif CP_RSAPD == PKCS2
-		if (pad_pkcs2(eb, &pad_len, bn_bits(pub->crt->n), size, operation) == RLC_OK) {
+		if (pad_pkcs2(eb, &pad_len, bn_bits(pub->crt->n), size,
+						operation) == RLC_OK) {
 #endif
 
 #if CP_RSAPD == PKCS2

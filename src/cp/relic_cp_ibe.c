@@ -59,14 +59,14 @@ int cp_ibe_gen(bn_t master, g1_t pub) {
 	return result;
 }
 
-int cp_ibe_gen_prv(g2_t prv, char *id, bn_t master) {
+int cp_ibe_gen_prv(g2_t prv, const char *id, const bn_t master) {
 	g2_map(prv, (uint8_t *)id, strlen(id));
 	g2_mul(prv, prv, master);
 	return RLC_OK;
 }
 
-int cp_ibe_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len, char *id,
-		g1_t pub) {
+int cp_ibe_enc(uint8_t *out, size_t *out_len, const uint8_t *in, size_t in_len,
+		const char *id, const g1_t pub) {
 	int l, result = RLC_OK;
 	uint8_t *buf = NULL, h[RLC_MD_LEN];
 	bn_t n;
@@ -81,7 +81,7 @@ int cp_ibe_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len, char *id,
 	g2_null(q);
 	gt_null(e);
 
-	if (pub == NULL || in_len <= 0 || in_len > RLC_MD_LEN ) {
+	if (pub == NULL || in_len <= 0 || in_len > RLC_MD_LEN) {
 		return RLC_ERR;
 	}
 
@@ -127,9 +127,11 @@ int cp_ibe_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len, char *id,
 		}
 
 		*out_len = in_len + (2 * RLC_FP_BYTES + 1);
-	} RLC_CATCH_ANY {
+	}
+	RLC_CATCH_ANY {
 		result = RLC_ERR;
-	} RLC_FINALLY {
+	}
+	RLC_FINALLY {
 		bn_free(n);
 		bn_free(r);
 		g1_free(p);
@@ -140,7 +142,8 @@ int cp_ibe_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len, char *id,
 	return result;
 }
 
-int cp_ibe_dec(uint8_t *out, int *out_len, uint8_t *in, int in_len, g2_t prv) {
+int cp_ibe_dec(uint8_t *out, size_t *out_len, const uint8_t *in, size_t in_len,
+		const g2_t prv) {
 	int l, result = RLC_OK;
 	uint8_t *buf = NULL, h[RLC_MD_LEN];
 	g1_t p;
@@ -181,9 +184,11 @@ int cp_ibe_dec(uint8_t *out, int *out_len, uint8_t *in, int in_len, g2_t prv) {
 		}
 
 		*out_len = in_len;
-	} RLC_CATCH_ANY {
+	}
+	RLC_CATCH_ANY {
 		result = RLC_ERR;
-	} RLC_FINALLY {
+	}
+	RLC_FINALLY {
 		g1_free(p);
 		gt_free(e);
 		RLC_FREE(buf);
