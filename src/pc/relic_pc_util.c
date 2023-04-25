@@ -149,9 +149,7 @@ int g1_is_valid(const g1_t a) {
 					pc_get_ord(n);
 					bn_sub_dig(n, n, 1);
 					/* Otherwise, check order explicitly. */
-					/* We use fast scalar multiplication methods here, because
-					 * they should work only in the correct subgroup. */
-					g1_mul(u, a, n);
+					g1_mul_any(u, a, n);
 					g1_neg(u, u);
 					r = g1_on_curve(a) && (g1_cmp(u, a) == RLC_EQ);
 					break;
@@ -215,7 +213,7 @@ int g2_is_valid(const g2_t a) {
 				break;
 			/* Formulas from "Fast Subgroup Membership Testings for G1,
 			 * G2 and GT on Pairing-friendly Curves" by Dai et al.
-			* https://eprint.iacr.org/2022/348.pdf */
+			 * https://eprint.iacr.org/2022/348.pdf */
 			case EP_BN:
 				/*Check that [z+1]P+[z]\psi(P)+[z]\psi^2(P)=[2z]\psi^3(P)*/
 				fp_prime_get_par(n);
@@ -229,7 +227,6 @@ int g2_is_valid(const g2_t a) {
                 g2_dbl(v, v);
 				r = g2_on_curve(a) && (g2_cmp(u, v) == RLC_EQ);
 				break;
-
 			case EP_K18:
 				/* Check that [2z/7]P + \psi(P) + [z/7]\psi^3(P) == O. */
 				fp_prime_get_par(n);
@@ -246,9 +243,7 @@ int g2_is_valid(const g2_t a) {
 				pc_get_ord(n);
 				bn_sub_dig(n, n, 1);
 				/* Otherwise, check order explicitly. */
-				/* We use fast scalar multiplication methods here, because
-				 * they should work only in the correct order. */
-				g2_mul(u, a, n);
+				g2_mul_any(u, a, n);
 				g2_neg(u, u);
 				r = g2_on_curve(a) && (g2_cmp(u, a) == RLC_EQ);
 				break;
@@ -324,7 +319,7 @@ int gt_is_valid(const gt_t a) {
 				gt_sqr(v, v);
 				r = (gt_cmp(u, v) == RLC_EQ);
 				r &= fp12_test_cyc((void *)a);
-				break;				
+				break;
 			case EP_K18:
 			    /* Check that [2z]P + [z]\psi^3(P) == -7\psi(P). */
 				fp18_exp_cyc_sps((void *)u, (void *)a, b, l, bn_sign(n));
