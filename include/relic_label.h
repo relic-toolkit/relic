@@ -462,6 +462,7 @@
 #undef fp_prime_get
 #undef fp_prime_get_rdc
 #undef fp_prime_get_conv
+#undef fp_prime_get_root
 #undef fp_prime_get_mod8
 #undef fp_prime_get_mod18
 #undef fp_prime_get_sps
@@ -554,6 +555,7 @@
 #define fp_prime_get 	RLC_PREFIX(fp_prime_get)
 #define fp_prime_get_rdc 	RLC_PREFIX(fp_prime_get_rdc)
 #define fp_prime_get_conv 	RLC_PREFIX(fp_prime_get_conv)
+#define fp_prime_get_root 	RLC_PREFIX(fp_prime_get_root)
 #define fp_prime_get_mod8 	RLC_PREFIX(fp_prime_get_mod8)
 #define fp_prime_get_mod18 	RLC_PREFIX(fp_prime_get_mod18)
 #define fp_prime_get_sps 	RLC_PREFIX(fp_prime_get_sps)
@@ -1602,10 +1604,6 @@
 #undef ep3_norm
 #undef ep3_norm_sim
 #undef ep3_map
-<<<<<<< HEAD
-=======
-#undef ep3_map_dst
->>>>>>> main
 #undef ep3_frb
 #undef ep3_pck
 #undef ep3_upk
@@ -1675,10 +1673,6 @@
 #define ep3_norm 	RLC_PREFIX(ep3_norm)
 #define ep3_norm_sim 	RLC_PREFIX(ep3_norm_sim)
 #define ep3_map 	RLC_PREFIX(ep3_map)
-<<<<<<< HEAD
-=======
-#define ep3_map_dst 	RLC_PREFIX(ep3_map_dst)
->>>>>>> main
 #define ep3_frb 	RLC_PREFIX(ep3_frb)
 #define ep3_pck 	RLC_PREFIX(ep3_pck)
 #define ep3_upk 	RLC_PREFIX(ep3_upk)
