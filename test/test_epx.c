@@ -2345,23 +2345,25 @@ static int util4(void) {
 		} TEST_END;
 
 		TEST_CASE("reading and writing a point are consistent") {
-			ep4_set_infty(a);
-			l = ep4_size_bin(a, 0);
-			ep4_write_bin(bin, l, a, 0);
-			ep4_read_bin(b, bin, l);
-			TEST_ASSERT(ep4_cmp(a, b) == RLC_EQ, end);
-			ep4_rand(a);
-			l = ep4_size_bin(a, 0);
-			ep4_write_bin(bin, l, a, 0);
-			ep4_read_bin(b, bin, l);
-			TEST_ASSERT(ep4_cmp(a, b) == RLC_EQ, end);
-			ep4_rand(a);
-			ep4_dbl(a, a);
-			l = ep4_size_bin(a, 0);
-			ep4_norm(a, a);
-			ep4_write_bin(bin, l, a, 0);
-			ep4_read_bin(b, bin, l);
-			TEST_ASSERT(ep4_cmp(a, b) == RLC_EQ, end);
+			for (int j = 0; j < 2; j++) {
+				ep4_set_infty(a);
+				l = ep4_size_bin(a, j);
+				ep4_write_bin(bin, l, a, j);
+				ep4_read_bin(b, bin, l);
+				TEST_ASSERT(ep4_cmp(a, b) == RLC_EQ, end);
+				ep4_rand(a);
+				l = ep4_size_bin(a, j);
+				ep4_write_bin(bin, l, a, j);
+				ep4_read_bin(b, bin, l);
+				TEST_ASSERT(ep4_cmp(a, b) == RLC_EQ, end);
+				ep4_rand(a);
+				ep4_dbl(a, a);
+				l = ep4_size_bin(a, j);
+				ep4_norm(a, a);
+				ep4_write_bin(bin, l, a, j);
+				ep4_read_bin(b, bin, l);
+				TEST_ASSERT(ep4_cmp(a, b) == RLC_EQ, end);
+			}
 		}
 		TEST_END;
 	}
@@ -3372,23 +3374,25 @@ static int util8(void) {
 		} TEST_END;
 
 		TEST_CASE("reading and writing a point are consistent") {
-			ep8_set_infty(a);
-			l = ep8_size_bin(a, 0);
-			ep8_write_bin(bin, l, a, 0);
-			ep8_read_bin(b, bin, l);
-			TEST_ASSERT(ep8_cmp(a, b) == RLC_EQ, end);
-			ep8_rand(a);
-			l = ep8_size_bin(a, 0);
-			ep8_write_bin(bin, l, a, 0);
-			ep8_read_bin(b, bin, l);
-			TEST_ASSERT(ep8_cmp(a, b) == RLC_EQ, end);
-			ep8_rand(a);
-			ep8_dbl(a, a);
-			l = ep8_size_bin(a, 0);
-			ep8_norm(a, a);
-			ep8_write_bin(bin, l, a, 0);
-			ep8_read_bin(b, bin, l);
-			TEST_ASSERT(ep8_cmp(a, b) == RLC_EQ, end);
+			for (int j = 0; j < 2; j++) {
+				ep8_set_infty(a);
+				l = ep8_size_bin(a, j);
+				ep8_write_bin(bin, l, a, j);
+				ep8_read_bin(b, bin, l);
+				TEST_ASSERT(ep8_cmp(a, b) == RLC_EQ, end);
+				ep8_rand(a);
+				l = ep8_size_bin(a, j);
+				ep8_write_bin(bin, l, a, j);
+				ep8_read_bin(b, bin, l);
+				TEST_ASSERT(ep8_cmp(a, b) == RLC_EQ, end);
+				ep8_rand(a);
+				ep8_dbl(a, a);
+				l = ep8_size_bin(a, j);
+				ep8_norm(a, a);
+				ep8_write_bin(bin, l, a, j);
+				ep8_read_bin(b, bin, l);
+				TEST_ASSERT(ep8_cmp(a, b) == RLC_EQ, end);
+			}
 		}
 		TEST_END;
 	}

@@ -653,7 +653,7 @@ static int memory2(void) {
 int util2(void) {
 	int l, code = RLC_ERR;
 	g2_t a, b, c;
-	uint8_t bin[8 * RLC_PC_BYTES + 1];
+	uint8_t bin[16 * RLC_PC_BYTES + 1];
 
 	g2_null(a);
 	g2_null(b);

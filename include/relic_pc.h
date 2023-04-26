@@ -58,7 +58,9 @@
 #define RLC_G1_LOWER			ep_
 #define RLC_G1_UPPER			EP
 
-#if FP_PRIME == 315 || FP_PRIME == 317 || FP_PRIME == 509
+#if FP_PRIME == 575
+#define RLC_G2_LOWER			ep8_
+#elif FP_PRIME == 315 || FP_PRIME == 317 || FP_PRIME == 509
 #define RLC_G2_LOWER			ep4_
 #elif FP_PRIME == 638 && !defined(FP_QNRES)
 #define RLC_G2_LOWER            ep3_
@@ -68,7 +70,9 @@
 
 #define RLC_G2_UPPER			EP
 
-#if FP_PRIME == 315 || FP_PRIME == 317 || FP_PRIME == 509
+#if FP_PRIME == 575
+#define RLC_GT_LOWER			fp48_
+#elif FP_PRIME == 315 || FP_PRIME == 317 || FP_PRIME == 509
 #define RLC_GT_LOWER			fp24_
 #elif FP_PRIME == 638 && !defined(FP_QNRES)
 #define RLC_GT_LOWER            fp18_
