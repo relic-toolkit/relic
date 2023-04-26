@@ -1154,6 +1154,10 @@ static int pairing12(void) {
 			fp12_mul(e1, e1, e2);
 			pp_map_sim_k12(e2, p, q, 2);
 			TEST_ASSERT(fp12_cmp(e1, e2) == RLC_EQ, end);
+			ep_neg(p[1], p[0]);
+			ep2_copy(q[1], q[0]);
+			pp_map_sim_k12(e1, p, q, 2);
+			TEST_ASSERT(fp12_cmp_dig(e1, 1) == RLC_EQ, end);
 		} TEST_END;
 
 #if PP_MAP == TATEP || !defined(STRIP)
@@ -1217,6 +1221,10 @@ static int pairing12(void) {
 			fp12_mul(e1, e1, e2);
 			pp_map_sim_tatep_k12(e2, p, q, 2);
 			TEST_ASSERT(fp12_cmp(e1, e2) == RLC_EQ, end);
+			ep_neg(p[1], p[0]);
+			ep2_copy(q[1], q[0]);
+			pp_map_sim_tatep_k12(e1, p, q, 2);
+			TEST_ASSERT(fp12_cmp_dig(e1, 1) == RLC_EQ, end);
 		} TEST_END;
 #endif
 
@@ -1281,6 +1289,10 @@ static int pairing12(void) {
 			fp12_mul(e1, e1, e2);
 			pp_map_sim_weilp_k12(e2, p, q, 2);
 			TEST_ASSERT(fp12_cmp(e1, e2) == RLC_EQ, end);
+			ep_neg(p[1], p[0]);
+			ep2_copy(q[1], q[0]);
+			pp_map_sim_weilp_k12(e1, p, q, 2);
+			TEST_ASSERT(fp12_cmp_dig(e1, 1) == RLC_EQ, end);
 		} TEST_END;
 #endif
 
@@ -1342,6 +1354,10 @@ static int pairing12(void) {
 			fp12_mul(e1, e1, e2);
 			pp_map_sim_oatep_k12(e2, p, q, 2);
 			TEST_ASSERT(fp12_cmp(e1, e2) == RLC_EQ, end);
+			ep_neg(p[1], p[0]);
+			ep2_copy(q[1], q[0]);
+			pp_map_sim_oatep_k12(e1, p, q, 2);
+			TEST_ASSERT(fp12_cmp_dig(e1, 1) == RLC_EQ, end);
 		} TEST_END;
 #endif
 	}
@@ -2182,6 +2198,10 @@ static int pairing24(void) {
 			fp24_mul(e1, e1, e2);
 			pp_map_sim_k24(e2, p, q, 2);
 			TEST_ASSERT(fp24_cmp(e1, e2) == RLC_EQ, end);
+			ep_neg(p[1], p[0]);
+			ep4_copy(q[1], q[0]);
+			pp_map_sim_k24(e1, p, q, 2);
+			TEST_ASSERT(fp24_cmp_dig(e1, 1) == RLC_EQ, end);
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {

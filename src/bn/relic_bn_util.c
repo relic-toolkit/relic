@@ -350,7 +350,7 @@ void bn_read_str(bn_t a, const char *str, size_t len, uint_t radix) {
 void bn_write_str(char *str, size_t len, const bn_t a, uint_t radix) {
 	bn_t t;
 	dig_t d;
-	int digits, l, i, j;
+	int l, i, j;
 	char c;
 
 	bn_null(t);
@@ -383,12 +383,9 @@ void bn_write_str(char *str, size_t len, const bn_t a, uint_t radix) {
 			t->sign = RLC_POS;
 		}
 
-		digits = 0;
 		while (!bn_is_zero(t) && j < len) {
 			bn_div_rem_dig(t, &d, t, (dig_t)radix);
-			str[j] = util_conv_char(d);
-			digits++;
-			j++;
+			str[j++] = util_conv_char(d);
 		}
 
 		/* Reverse the digits of the string. */

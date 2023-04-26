@@ -45,9 +45,15 @@
 #ifdef LABEL
 
 #undef first_ctx
-#define first_ctx     RLC_PREFIX(first_ctx)
+#define first_ctx					RLC_PREFIX(first_ctx)
 #undef core_ctx
-#define core_ctx      RLC_PREFIX(core_ctx)
+#define core_ctx					RLC_PREFIX(core_ctx)
+#if defined(MULTI)
+#undef core_thread_initializer
+#define core_thread_initializer	RLC_PREFIX(core_thread_initializer)
+#undef core_init_ptr
+#define core_init_ptr				RLC_PREFIX(core_init_ptr)
+#endif
 
 #undef core_init
 #undef core_clean
@@ -144,10 +150,10 @@
 #define util_print_dig 	RLC_PREFIX(util_print_dig)
 
 #undef conf_print
-#define conf_print    RLC_PREFIX(conf_print)
+#define conf_print	RLC_PREFIX(conf_print)
 
 #undef dv_t
-#define dv_t          RLC_PREFIX(dv_t)
+#define dv_t			RLC_PREFIX(dv_t)
 
 #undef dv_print
 #undef dv_zero
@@ -448,8 +454,8 @@
 
 #undef fp_st
 #undef fp_t
-#define fp_st	        RLC_PREFIX(fp_st)
-#define fp_t          RLC_PREFIX(fp_t)
+#define fp_st			RLC_PREFIX(fp_st)
+#define fp_t			RLC_PREFIX(fp_t)
 
 #undef fp_prime_init
 #undef fp_prime_clean
@@ -697,8 +703,8 @@
 
 #undef fp_st
 #undef fp_t
-#define fp_st	        RLC_PREFIX(fp_st)
-#define fp_t          RLC_PREFIX(fp_t)
+#define fp_st			RLC_PREFIX(fp_st)
+#define fp_t			RLC_PREFIX(fp_t)
 
 #undef fb_poly_init
 #undef fb_poly_clean
@@ -890,8 +896,8 @@
 
 #undef ep_st
 #undef ep_t
-#define ep_st         RLC_PREFIX(ep_st)
-#define ep_t          RLC_PREFIX(ep_t)
+#define ep_st			RLC_PREFIX(ep_st)
+#define ep_t			RLC_PREFIX(ep_t)
 
 #undef ep_curve_init
 #undef ep_curve_clean
@@ -1085,8 +1091,8 @@
 
 #undef ed_st
 #undef ed_t
-#define ed_st         RLC_PREFIX(ed_st)
-#define ed_t          RLC_PREFIX(ed_t)
+#define ed_st 		RLC_PREFIX(ed_st)
+#define ed_t			RLC_PREFIX(ed_t)
 
 #undef ed_param_set
 #undef ed_param_set_any
@@ -1228,8 +1234,8 @@
 
 #undef eb_st
 #undef eb_t
-#define eb_st         RLC_PREFIX(eb_st)
-#define eb_t          RLC_PREFIX(eb_t)
+#define eb_st			RLC_PREFIX(eb_st)
+#define eb_t			RLC_PREFIX(eb_t)
 
 #undef eb_curve_init
 #undef eb_curve_clean
@@ -1377,8 +1383,8 @@
 
 #undef ep2_st
 #undef ep2_t
-#define ep2_st        RLC_PREFIX(ep2_st)
-#define ep2_t         RLC_PREFIX(ep2_t)
+#define ep2_st		RLC_PREFIX(ep2_st)
+#define ep2_t			RLC_PREFIX(ep2_t)
 
 #undef ep2_curve_init
 #undef ep2_curve_clean
@@ -1528,8 +1534,8 @@
 
 #undef ep3_st
 #undef ep3_t
-#define ep3_st        RLC_PREFIX(ep3_st)
-#define ep3_t         RLC_PREFIX(ep3_t)
+#define ep3_st		RLC_PREFIX(ep3_st)
+#define ep3_t			RLC_PREFIX(ep3_t)
 
 #undef ep3_curve_init
 #undef ep3_curve_clean
@@ -1596,6 +1602,10 @@
 #undef ep3_norm
 #undef ep3_norm_sim
 #undef ep3_map
+<<<<<<< HEAD
+=======
+#undef ep3_map_dst
+>>>>>>> main
 #undef ep3_frb
 #undef ep3_pck
 #undef ep3_upk
@@ -1665,14 +1675,18 @@
 #define ep3_norm 	RLC_PREFIX(ep3_norm)
 #define ep3_norm_sim 	RLC_PREFIX(ep3_norm_sim)
 #define ep3_map 	RLC_PREFIX(ep3_map)
+<<<<<<< HEAD
+=======
+#define ep3_map_dst 	RLC_PREFIX(ep3_map_dst)
+>>>>>>> main
 #define ep3_frb 	RLC_PREFIX(ep3_frb)
 #define ep3_pck 	RLC_PREFIX(ep3_pck)
 #define ep3_upk 	RLC_PREFIX(ep3_upk)
 
 #undef ep4_st
 #undef ep4_t
-#define ep4_st        RLC_PREFIX(ep4_st)
-#define ep4_t         RLC_PREFIX(ep4_t)
+#define ep4_st		RLC_PREFIX(ep4_st)
+#define ep4_t			RLC_PREFIX(ep4_t)
 
 #undef ep4_curve_init
 #undef ep4_curve_clean
@@ -1958,63 +1972,63 @@
 #undef fp2_st
 #undef fp2_t
 #undef dv2_t
-#define fp2_st        RLC_PREFIX(fp2_st)
-#define fp2_t         RLC_PREFIX(fp2_t)
-#define dv2_t         RLC_PREFIX(dv2_t)
+#define fp2_st		RLC_PREFIX(fp2_st)
+#define fp2_t			RLC_PREFIX(fp2_t)
+#define dv2_t			RLC_PREFIX(dv2_t)
 #undef fp3_st
 #undef fp3_t
 #undef dv3_t
-#define fp3_st        RLC_PREFIX(fp3_st)
-#define fp3_t         RLC_PREFIX(fp3_t)
-#define dv3_t         RLC_PREFIX(dv3_t)
+#define fp3_st		RLC_PREFIX(fp3_st)
+#define fp3_t			RLC_PREFIX(fp3_t)
+#define dv3_t			RLC_PREFIX(dv3_t)
 #undef fp6_st
 #undef fp6_t
 #undef dv6_t
-#define fp6_st        RLC_PREFIX(fp6_st)
-#define fp6_t         RLC_PREFIX(fp6_t)
-#define dv6_t         RLC_PREFIX(dv6_t)
+#define fp6_st		RLC_PREFIX(fp6_st)
+#define fp6_t			RLC_PREFIX(fp6_t)
+#define dv6_t			RLC_PREFIX(dv6_t)
 #undef fp9_st
 #undef fp8_t
 #undef dv8_t
-#define fp8_st        RLC_PREFIX(fp8_st)
-#define fp8_t         RLC_PREFIX(fp8_t)
-#define dv8_t         RLC_PREFIX(dv8_t)
+#define fp8_st		RLC_PREFIX(fp8_st)
+#define fp8_t			RLC_PREFIX(fp8_t)
+#define dv8_t			RLC_PREFIX(dv8_t)
 #undef fp9_st
 #undef fp9_t
 #undef dv9_t
-#define fp9_st        RLC_PREFIX(fp9_st)
-#define fp9_t         RLC_PREFIX(fp9_t)
-#define dv9_t         RLC_PREFIX(dv9_t)
+#define fp9_st		RLC_PREFIX(fp9_st)
+#define fp9_t			RLC_PREFIX(fp9_t)
+#define dv9_t			RLC_PREFIX(dv9_t)
 #undef fp12_st
 #undef fp12_t
 #undef dv12_t
-#define fp12_st        RLC_PREFIX(fp12_st)
-#define fp12_t         RLC_PREFIX(fp12_t)
-#define dv12_t         RLC_PREFIX(dv12_t)
+#define fp12_st		RLC_PREFIX(fp12_st)
+#define fp12_t		RLC_PREFIX(fp12_t)
+#define dv12_t		RLC_PREFIX(dv12_t)
 #undef fp18_st
 #undef fp18_t
 #undef dv18_t
-#define fp18_st        RLC_PREFIX(fp18_st)
-#define fp18_t         RLC_PREFIX(fp18_t)
-#define dv18_t         RLC_PREFIX(dv18_t)
+#define fp18_st		RLC_PREFIX(fp18_st)
+#define fp18_t		RLC_PREFIX(fp18_t)
+#define dv18_t		RLC_PREFIX(dv18_t)
 #undef fp24_st
 #undef fp24_t
 #undef dv24_t
-#define fp24_st        RLC_PREFIX(fp24_st)
-#define fp24_t         RLC_PREFIX(fp24_t)
-#define dv24_t         RLC_PREFIX(dv24_t)
+#define fp24_st		RLC_PREFIX(fp24_st)
+#define fp24_t		RLC_PREFIX(fp24_t)
+#define dv24_t		RLC_PREFIX(dv24_t)
 #undef fp48_st
 #undef fp48_t
 #undef dv48_t
-#define fp48_st        RLC_PREFIX(fp48_st)
-#define fp48_t         RLC_PREFIX(fp48_t)
-#define dv48_t         RLC_PREFIX(dv48_t)
+#define fp48_st		RLC_PREFIX(fp48_st)
+#define fp48_t		RLC_PREFIX(fp48_t)
+#define dv48_t		RLC_PREFIX(dv48_t)
 #undef fp54_st
 #undef fp54_t
 #undef dv54_t
-#define fp54_st        RLC_PREFIX(fp54_st)
-#define fp54_t         RLC_PREFIX(fp54_t)
-#define dv54_t         RLC_PREFIX(dv54_t)
+#define fp54_st		RLC_PREFIX(fp54_st)
+#define fp54_t		RLC_PREFIX(fp54_t)
+#define dv54_t		RLC_PREFIX(dv54_t)
 
 #undef fp2_add_dig
 #undef fp2_sub_dig
@@ -3114,8 +3128,8 @@
 #undef phpe_t
 #undef bdpe_t
 #undef sokaka_t
-#define crt_t	RLC_PREFIX(crt_t)
-#define rsa_t	RLC_PREFIX(rsa_t)
+#define crt_t		RLC_PREFIX(crt_t)
+#define rsa_t		RLC_PREFIX(rsa_t)
 #define rabin_t	RLC_PREFIX(rabin_t)
 #define phpe_t	RLC_PREFIX(phpe_t)
 #define bdpe_t	RLC_PREFIX(bdpe_t)

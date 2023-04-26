@@ -325,6 +325,6 @@ void fp3_nord_low(dv3_t c, dv3_t a) {
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		dv_free(t);
+		dv3_free(t);
 	}
 }

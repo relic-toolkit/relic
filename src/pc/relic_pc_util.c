@@ -149,9 +149,7 @@ int g1_is_valid(const g1_t a) {
 					pc_get_ord(n);
 					bn_sub_dig(n, n, 1);
 					/* Otherwise, check order explicitly. */
-					/* We use fast scalar multiplication methods here, because
-					 * they should work only in the correct subgroup. */
-					g1_mul(u, a, n);
+					g1_mul_any(u, a, n);
 					g1_neg(u, u);
 					r = g1_on_curve(a) && (g1_cmp(u, a) == RLC_EQ);
 					break;
@@ -180,91 +178,79 @@ int g2_is_valid(const g2_t a) {
 		return 0;
 	}
 
-	bn_t p, n;
+	bn_t n;
 	g2_t u, v;
 	int r = 0;
 
 	bn_null(n);
-	bn_null(p);
 	g2_null(u);
 	g2_null(v);
 
 	RLC_TRY {
 		bn_new(n);
-		bn_new(p);
 		g2_new(u);
 		g2_new(v);
 
-		pc_get_ord(n);
-		ep_curve_get_cof(p);
-
-		if (bn_cmp_dig(p, 1) == RLC_EQ) {
-			/* Trick for curves of prime order or subgroup-secure. */
-			bn_mul(n, n, p);
-			dv_copy(p->dp, fp_prime_get(), RLC_FP_DIGS);
-			p->used = RLC_FP_DIGS;
-			p->sign = RLC_POS;
-			/* Compute trace t = p - n + 1. */
-			bn_sub(n, p, n);
-			bn_add_dig(n, n, 1);
-			g2_mul_any(u, a, n);
-			/* Compute v = a^(p + 1). */
-			g2_frb(v, a, 1);
-			g2_add(v, v, a);
-			/* Check if a^(p + 1) = a^t. */
-			r = g2_on_curve(a) && (g2_cmp(u, v) == RLC_EQ);
-		} else {
-			switch (ep_curve_is_pairf()) {
-				/* Formulas from "Co-factor clearing and subgroup membership
-				 * testing on pairing-friendly curves" by El Housni, Guillevic,
-				 * Piellard. https://eprint.iacr.org/2022/352.pdf */
-				case EP_B12:
-				case EP_B24:
-					if (core_get()->ep_id == B12_383) {
-						/* Since p mod n = r, we can check instead that
-						 * psi^4(P) + P == \psi^2(P). */
-						g2_frb(u, a, 4);
-						g2_add(u, u, a);
-						g2_frb(v, a, 2);
-					} else {
-						/* Check \psi(P) == [z]P. */
-						fp_prime_get_par(n);
-						g2_mul_any(u, a, n);
-						g2_frb(v, a, 1);
-					}
-					r = g2_on_curve(a) && (g2_cmp(u, v) == RLC_EQ);
-					break;
-				/* Formulas from "Fast Subgroup Membership Testings for G1,
-				 * G2 and GT on Pairing-friendly Curves" by Dai et al.
-				 * https://eprint.iacr.org/2022/348.pdf */
-				case EP_K18:
-					/* Check that [2z/7]P + \psi(P) + [z/7]\psi^3(P) == O. */
+		switch (ep_curve_is_pairf()) {
+			/* Formulas from "Co-factor clearing and subgroup membership
+			* testing on pairing-friendly curves" by El Housni, Guillevic,
+			* Piellard. https://eprint.iacr.org/2022/352.pdf */
+			case EP_B12:
+			case EP_B24:
+				if (core_get()->ep_id == B12_383) {
+					/* Since p mod n = r, we can check instead that
+					* psi^4(P) + P == \psi^2(P). */
+					g2_frb(u, a, 4);
+					g2_add(u, u, a);
+					g2_frb(v, a, 2);
+				} else {
+				/* Check \psi(P) == [z]P. */
 					fp_prime_get_par(n);
-					bn_div_dig(n, n, 7);
 					g2_mul_any(u, a, n);
-					g2_frb(v, u, 2);
-					g2_dbl(u, u);
-					g2_add(v, v, a);
-					g2_frb(v, v, 1);
-					g2_neg(v, v);
-					r = g2_on_curve(a) && (g2_cmp(u, v) == RLC_EQ);
-					break;
-				default:
-					pc_get_ord(n);
-					bn_sub_dig(n, n, 1);
-					/* Otherwise, check order explicitly. */
-					/* We use fast scalar multiplication methods here, because
-					 * they should work only in the correct order. */
-					g2_mul(u, a, n);
-					g2_neg(u, u);
-					r = g2_on_curve(a) && (g2_cmp(u, a) == RLC_EQ);
-					break;
-			}
+					g2_frb(v, a, 1);
+				}
+				r = g2_on_curve(a) && (g2_cmp(u, v) == RLC_EQ);
+				break;
+			/* Formulas from "Fast Subgroup Membership Testings for G1,
+			 * G2 and GT on Pairing-friendly Curves" by Dai et al.
+			 * https://eprint.iacr.org/2022/348.pdf */
+			case EP_BN:
+				/*Check that [z+1]P+[z]\psi(P)+[z]\psi^2(P)=[2z]\psi^3(P)*/
+				fp_prime_get_par(n);
+				g2_mul_any(u, a, n);
+				g2_frb(v, u, 1);
+				g2_add(u, u, a);
+				g2_add(u, u, v);
+				g2_frb(v, v, 1);
+				g2_add(u, u, v);
+				g2_frb(v, v, 1);
+                g2_dbl(v, v);
+				r = g2_on_curve(a) && (g2_cmp(u, v) == RLC_EQ);
+				break;
+			case EP_K18:
+				/* Check that [2z/7]P + \psi(P) + [z/7]\psi^3(P) == O. */
+				fp_prime_get_par(n);
+				bn_div_dig(n, n, 7);
+				g2_mul_any(u, a, n);
+				g2_frb(v, u, 2);
+				g2_dbl(u, u);
+				g2_add(v, v, a);
+				g2_frb(v, v, 1);
+				g2_neg(v, v);
+				r = g2_on_curve(a) && (g2_cmp(u, v) == RLC_EQ);
+				break;
+			default:
+				pc_get_ord(n);
+				bn_sub_dig(n, n, 1);
+				/* Otherwise, check order explicitly. */
+				g2_mul_any(u, a, n);
+				g2_neg(u, u);
+				r = g2_on_curve(a) && (g2_cmp(u, a) == RLC_EQ);
+				break;
 		}
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		bn_free(p);
 		bn_free(n);
 		g2_free(u);
 		g2_free(v);
@@ -275,7 +261,7 @@ int g2_is_valid(const g2_t a) {
 }
 
 int gt_is_valid(const gt_t a) {
-	bn_t p, n;
+	bn_t n;
 	gt_t u, v;
 	int l, r = 0;
 	const int *b;
@@ -285,102 +271,82 @@ int gt_is_valid(const gt_t a) {
 	}
 
 	bn_null(n);
-	bn_null(p);
 	gt_null(u);
 	gt_null(v);
 
 	RLC_TRY {
 		bn_new(n);
-		bn_new(p);
 		gt_new(u);
 		gt_new(v);
 
-		pc_get_ord(n);
-		ep_curve_get_cof(p);
-
-		/* For a BN curve, we can use the fast test from
-		 * Unbalancing Pairing-Based Key Exchange Protocols by Scott.
-		 * https://eprint.iacr.org/2013/688.pdf */
-		if (bn_cmp_dig(p, 1) == RLC_EQ) {
-			dv_copy(p->dp, fp_prime_get(), RLC_FP_DIGS);
-			p->used = RLC_FP_DIGS;
-			p->sign = RLC_POS;
-			if (ep_curve_is_pairf() == EP_BN) {
-				/* Compute trace t = p - n + 1, and compute a^t. */
-				fp_prime_get_par(n);
-				b = fp_prime_get_par_sps(&l);
-				fp12_exp_cyc_sps((void *)v, (void *)a, b, l, RLC_POS);
-				fp12_exp_cyc_sps((void *)u, (void *)v, b, l, RLC_POS);
-				gt_sqr(v, u);
-				gt_sqr(u, v);
-				gt_mul(u, u, v);
-			} else {
-				/* Compute trace t = p - n + 1. */
-				bn_sub(n, p, n);
-				/* Compute u = a^t. */
-				gt_exp(u, a, n);
-			}
-			/* Compute v = a^(p + 1). */
-			gt_frb(v, a, 1);
-			/* Check if a^(p + 1) = a^t. */
-			r = fp12_test_cyc((void *)a) && (gt_cmp(u, v) == RLC_EQ);
-		} else {
-			fp_prime_get_par(n);
-			b = fp_prime_get_par_sps(&l);
-			switch (ep_curve_is_pairf()) {
-				/* Formulas from "Families of SNARK-friendly 2-chains of
-				 * elliptic curves" by Housni and Guillevic.
-				 * https://eprint.iacr.org/2021/1359.pdf */
-				case EP_B12:
-					if (core_get()->ep_id == B12_383) {
-						/* GT-strong, so test for cyclotomic only. */
-						r = 1;
-					} else {
-						/* Check that a^u = a^p. */
-						gt_frb(u, a, 1);
-						fp12_exp_cyc_sps((void *)v, (void *)a, b, l, bn_sign(n));
-						r = (gt_cmp(u, v) == RLC_EQ);
-					}
-					r &= fp12_test_cyc((void *)a);
-					break;
-				case EP_B24:
+		fp_prime_get_par(n);
+		b = fp_prime_get_par_sps(&l);
+		switch (ep_curve_is_pairf()) {
+			/* Formulas from "Families of SNARK-friendly 2-chains of
+			 * elliptic curves" by Housni and Guillevic.
+			 * https://eprint.iacr.org/2021/1359.pdf */
+			case EP_B12:
+				if (core_get()->ep_id == B12_383) {
+					/* GT-strong, so test for cyclotomic only. */
+					r = 1;
+				} else {
 					/* Check that a^u = a^p. */
 					gt_frb(u, a, 1);
-					fp24_exp_cyc_sps((void *)v, (void *)a, b, l, bn_sign(n));
+					fp12_exp_cyc_sps((void *)v, (void *)a, b, l, bn_sign(n));
 					r = (gt_cmp(u, v) == RLC_EQ);
-					r &= fp24_test_cyc((void *)a);
-					break;
-				/* Formulas from "Fast Subgroup Membership Testings for G1,
-				 * G2 and GT on Pairing-friendly Curves" by Dai et al.
-				 * https://eprint.iacr.org/2022/348.pdf */
-				case EP_K18:
-					/* Check that [2z]P + [z]\psi^3(P) == -7\psi(P). */
-					fp18_exp_cyc_sps((void *)u, (void *)a, b, l, bn_sign(n));
-					gt_frb(v, u, 3);
-					gt_sqr(u, u);
-					gt_mul(u, u, v);
-					gt_sqr(v, a);
-					gt_mul(v, v, a);
-					gt_sqr(v, v);
-					gt_mul(v, v, a);
-					gt_frb(v, v, 1);
-					gt_inv(v, v);
-					r = (gt_cmp(u, v) == RLC_EQ);
-					r &= fp18_test_cyc((void *)a);
-					break;
-				default:
-					/* Common case. */
-					bn_sub_dig(n, n, 1);
-					gt_exp(u, a, n);
-					gt_inv(u, u);
-					r = (gt_cmp(u, a) == RLC_EQ);
-					break;
-			}
+				}
+				r &= fp12_test_cyc((void *)a);
+				break;
+			case EP_B24:
+				/* Check that a^u = a^p. */
+				gt_frb(u, a, 1);
+				fp24_exp_cyc_sps((void *)v, (void *)a, b, l, bn_sign(n));
+				r = (gt_cmp(u, v) == RLC_EQ);
+				r &= fp24_test_cyc((void *)a);
+				break;
+			/* Formulas from "Fast Subgroup Membership Testings for G1,
+			 * G2 and GT on Pairing-friendly Curves" by Dai et al.
+			 * https://eprint.iacr.org/2022/348.pdf */
+			case EP_BN:
+				/*Check that [z+1]P+[z]\psi(P)+[z]\psi^2(P)=[2z]\psi^3(P)*/
+				fp12_exp_cyc_sps((void *)u, (void *)a, b, l, bn_sign(n));
+				gt_frb(v, u, 1);
+				gt_mul(u, u, a);
+				gt_mul(u, u, v);
+				gt_frb(v, v, 1);
+				gt_mul(u, u, v);
+				gt_frb(v, v, 1);
+				gt_sqr(v, v);
+				r = (gt_cmp(u, v) == RLC_EQ);
+				r &= fp12_test_cyc((void *)a);
+				break;
+			case EP_K18:
+			    /* Check that [2z]P + [z]\psi^3(P) == -7\psi(P). */
+				fp18_exp_cyc_sps((void *)u, (void *)a, b, l, bn_sign(n));
+				gt_frb(v, u, 3);
+				gt_sqr(u, u);
+				gt_mul(u, u, v);
+				gt_sqr(v, a);
+				gt_mul(v, v, a);
+				gt_sqr(v, v);
+				gt_mul(v, v, a);
+				gt_frb(v, v, 1);
+				gt_inv(v, v);
+				r = (gt_cmp(u, v) == RLC_EQ);
+				r &= fp18_test_cyc((void *)a);
+				break;
+			default:
+				/* Common case. */
+				pc_get_ord(n);
+				bn_sub_dig(n, n, 1);
+				gt_exp(u, a, n);
+				gt_inv(u, u);
+				r = (gt_cmp(u, a) == RLC_EQ);
+				break;
 		}
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		bn_free(p);
 		bn_free(n);
 		gt_free(u);
 		gt_free(v);
