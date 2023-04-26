@@ -25,7 +25,7 @@
  * @file
  *
  * Implementation of point multiplication of a prime elliptic curve over a
- * quadratic extension by the curve cofactor.
+ * quartic extension by the curve cofactor.
  *
  * @ingroup epx
  */
@@ -57,21 +57,21 @@ void ep4_mul_cof(ep4_t r, const ep4_t p) {
 
 		fp_prime_get_par(z);
 
+		bn_sub_dig(z, z, 1);
 		ep4_mul_basic(t0, p, z);
+		bn_add_dig(z, z, 1);
 		ep4_mul_basic(t1, t0, z);
 		ep4_mul_basic(t2, t1, z);
 		ep4_mul_basic(t3, t2, z);
 
-		ep4_sub(t3, t3, t2);
-		ep4_sub(t3, t3, p);
-		ep4_sub(t2, t2, t1);
-		ep4_frb(t2, t2, 1);
-
-		ep4_sub(t1, t1, t0);
-		ep4_frb(t1, t1, 2);
-
-		ep4_sub(t0, t0, p);
+		/* Compute t0 = [u - 1]*\psi^3(P). */
 		ep4_frb(t0, t0, 3);
+		/* Compute t2 = [u^2*(u-1)]\psi(P). */
+		ep4_frb(t2, t2, 1);
+		/* Compute t1 = [u*(u-1)]\psi^2(P). */
+		ep4_frb(t1, t1, 2);
+		/* Compute t3 = [u^3(u-1) - 1]P. */
+		ep4_sub(t3, t3, p);
 
 		ep4_dbl(r, p);
 		ep4_frb(r, r, 4);
