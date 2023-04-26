@@ -39,12 +39,9 @@
 /*============================================================================*/
 
 void ep3_mul_cof_k18(ep3_t r, const ep3_t p) {
-	ep3_t tx1, tx2, tx3, t0, t1, t2, t3, t4, t5;
+	ep3_t t0, t1, t2, t3, t4, t5;
 	bn_t x;
 
-	ep3_null(tx1);
-	ep3_null(tx2);
-	ep3_null(tx3);
 	ep3_null(t0);
 	ep3_null(t1);
 	ep3_null(t2);
@@ -54,9 +51,6 @@ void ep3_mul_cof_k18(ep3_t r, const ep3_t p) {
 	bn_null(x);
 
 	RLC_TRY {
-		ep3_new(tx1);
-		ep3_new(tx2);
-		ep3_new(tx3);
 		ep3_new(t0);
 		ep3_new(t1);
 		ep3_new(t2);
@@ -65,64 +59,78 @@ void ep3_mul_cof_k18(ep3_t r, const ep3_t p) {
 		ep3_new(t5);
 		bn_new(x);
 
-		/* Method due to Fuentes et al. using multi-addsub chain from Olivos. */
+		/* Method from "Faster Hashing to G2" by Laura Fuentes-Castañeda,
+		 * Edward Knapp and Francisco Rodríguez-Henríquez.
+		. */
+
+		/* Compute multi-addition-subtraction chain \sum \lambda_i \psi^P, where
+		 * \lambda_0 = 5u + 18
+		 * \lambda_1 = (u^3+3u^2+1)
+		 * \lambda_2 = -(3u^2+8*u)
+		 * \lambda_3 = (3u+1)
+		 * \lambda_4 = -(u^2+2)
+		 * \lambda_5 = (u^2+5u)
+
+		 * We will write the subscalars below as vectors for simplicity.
+		 */
 
 		fp_prime_get_par(x);
 
-		/* tx1 = [u]P, tx2 = [u^2]P, tx3 = [u^3]P. */
-		ep3_mul_basic(tx1, p, x);
-		ep3_mul_basic(tx2, tx1, x);
-		ep3_mul_basic(tx3, tx2, x);
+		/* t0 = [u]P, t4 = [u^2]P, later t2 = [u^3]P. */
+		ep3_mul_basic(t0, p, x);
+		ep3_mul_basic(t4, t0, x);
 
-		/* t1 = [u]\psi^2(P). */
-		ep3_frb(t1, tx1, 2);
-		/* t2 = [u]\psi^5(P) + [u]P. */
+		/* t1 = [1, 0, -u, 0, 0, 0]. */
+		ep3_frb(t1, t0, 2);
+		/* t2 = [u, 0, 0, 0, 0, u]. */
 		ep3_frb(t2, t1, 3);
-		ep3_add(t2, t2, tx1);
-		/* t3 = \psi3(P). */
+		ep3_add(t2, t2, t0);
+		/* t3 = [0, 0, 0, -u, 0, 0]. */
 		ep3_frb(t3, t1, 1);
 		ep3_neg(t1, t1);
-
-		/* t4 = [u^2]\psi(P). */
-		ep3_frb(t4, tx2, 1);
-		ep3_add(t3, t3, t4);
-		/* t4 = [u^2]\psi^2(P). */
-		ep3_frb(t4, t4, 1);
-		ep3_sub(t3, t3, t4);
-
-		/* t4 = -\psi^4(P). */
-		ep3_frb(t4, p, 4);
-		ep3_neg(t4, t4);
-
-		/* t5 = \psi(P) + \psi^3(P) - [u^2]\psi^4 + [u^2]\psi^5 + [u^3]\psi(P). */
-		ep3_frb(t5, p, 1);
-		ep3_frb(tx1, t5, 2);
-		ep3_add(t5, t5, tx1);
-		ep3_frb(tx1, tx2, 4);
-		ep3_sub(t5, t5, tx1);
-		ep3_frb(tx2, tx1, 1);
-		ep3_add(t5, t5, tx2);
-		ep3_frb(tx3, tx3, 1);
-		ep3_add(t5, t5, tx3);
-
 		ep3_add(t1, t1, p);
+		/* t0 = [u+3, 0, -u, 0, 0, u]. */
 		ep3_dbl(t0, p);
 		ep3_add(t0, t0, t2);
 		ep3_add(t0, t0, t1);
-		ep3_add(t3, t3, t1);
-		ep3_add(t4, t4, t0);
-		ep3_add(t3, t3, t0);
-		ep3_add(t4, t4, t3);
-		ep3_add(t3, t3, t5);
-		ep3_dbl(t4, t4);
-		ep3_add(r, t4, t3);
 
+		/* t2 = [0, 0, u^2, 0, 0, 0], t3 = [0, u^2, -u^2, -u, 0, 0]. */
+		ep3_frb(t2, t4, 1);
+		ep3_add(t3, t3, t2);
+		ep3_frb(t2, t2, 1);
+		ep3_sub(t3, t3, t2);
+
+		/* t5 = [0, u^3 + 1, 0, 1, -u^2, u^2] */
+		ep3_frb(t5, p, 1);
+		ep3_frb(t2, t5, 2);
+		ep3_add(t5, t5, t2);
+		ep3_frb(t2, t4, 4);
+		ep3_sub(t5, t5, t2);
+		ep3_frb(t2, t2, 1);
+		ep3_add(t5, t5, t2);
+		ep3_mul_basic(t2, t4, x);
+		ep3_frb(t2, t2, 1);
+		ep3_add(t5, t5, t2);
+
+		/* t4 = [0, 0, 0, 0, -1, 0], t3 = [1, u^2, -u^2-u, -u, 0, 0]. */
+		ep3_frb(t4, p, 4);
+		ep3_neg(t4, t4);
+		ep3_add(t3, t3, t1);
+		/* t4 = [u+3, 0, -u, 0, -1, u]. */
+		ep3_add(t4, t4, t0);
+		/* t3 = [u+4, u^2, -u^2-2u, -u, -1, u]. */
+		ep3_add(t3, t3, t0);
+		/* t4 = [2u+7, u^2, -u^2-3u, -u, -1, 2u]. */
+		ep3_add(t4, t4, t3);
+		/* t3 = [u+4, u^3+u^2+1, -u^2-2u, -u+1, -u^2, u^2+u]. */
+		ep3_add(t3, t3, t5);
+		/* t4 = [4u+14, 2u^2, -2u^2-6u, -2u, -2, 4u]. */
+		ep3_dbl(t4, t4);
+		/* r = [5u+18, u^3+3u^2+1, -3u^2-8u, -3u+1, -u^2-2, u^2+5u]. */
+		ep3_add(r, t4, t3);
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		ep3_free(tx1);
-		ep3_free(tx2);
-		ep3_free(tx3);
 		ep3_free(t0);
 		ep3_free(t1);
 		ep3_free(t2);
