@@ -243,10 +243,8 @@ int ep8_size_bin(const ep8_t a, int pack) {
 
 		ep8_norm(t, a);
 
-		size = 1 + 8 * RLC_FP_BYTES;
-		if (!pack) {
-			size += 8 * RLC_FP_BYTES;
-		}
+		size = 1 + 16 * RLC_FP_BYTES;
+		//TODO: implement compression properly
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
@@ -255,6 +253,7 @@ int ep8_size_bin(const ep8_t a, int pack) {
 
 	return size;
 }
+
 void ep8_read_bin(ep8_t a, const uint8_t *bin, size_t len) {
 	if (len == 1) {
 		if (bin[0] == 0) {
