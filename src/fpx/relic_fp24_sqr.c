@@ -362,7 +362,6 @@ void fp24_sqr_unr(dv24_t c, const fp24_t a) {
 			fp2_addc_low(c[1][0][j], u4[0][j], u3[0][j]);
 			fp2_addc_low(c[1][1][j], u2[0][j], u3[1][j]);
 		}
-
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
@@ -398,13 +397,191 @@ void fp24_sqr_lazyr(fp24_t c, const fp24_t a) {
 }
 
 void fp24_sqr_cyc_lazyr(fp24_t c, const fp24_t a) {
-	/* TODO: implement lazy reduction. */
-	fp24_sqr_cyc_basic(c, a);
+	fp4_t t0, t1, t2;
+	dv4_t u0, u1, u2, u3;
+
+	fp4_null(t0);
+	fp4_null(t1);
+	fp4_null(t2);
+	dv4_null(u0);
+	dv4_null(u1);
+	dv4_null(u2);
+	dv4_null(u3);
+
+	RLC_TRY {
+		fp4_new(t0);
+		fp4_new(t1);
+		fp4_new(t2);
+		dv4_new(u0);
+		dv4_new(u1);
+		dv4_new(u2);
+		dv4_new(u3);
+
+		fp4_sqr_unr(u2, a[0][0]);
+		fp4_sqr_unr(u3, a[0][1]);
+		fp4_add(t1, a[0][0], a[0][1]);
+
+		fp2_nord_low(u1[0], u3[1]);
+		fp2_addc_low(u0[0], u2[0], u1[0]);
+		fp2_addc_low(u0[1], u2[1], u3[0]);
+		fp2_rdcn_low(t0[0], u0[0]);
+		fp2_rdcn_low(t0[1], u0[1]);
+
+		fp4_sqr_unr(u1, t1);
+		fp2_subc_low(u1[0], u1[0], u2[0]);
+		fp2_subc_low(u1[1], u1[1], u2[1]);
+		fp2_subc_low(u1[0], u1[0], u3[0]);
+		fp2_subc_low(u1[1], u1[1], u3[1]);
+		fp2_rdcn_low(t1[0], u1[0]);
+		fp2_rdcn_low(t1[1], u1[1]);
+
+		fp4_sub(c[0][0], t0, a[0][0]);
+		fp4_add(c[0][0], c[0][0], c[0][0]);
+		fp4_add(c[0][0], t0, c[0][0]);
+
+		fp4_add(c[0][1], t1, a[0][1]);
+		fp4_add(c[0][1], c[0][1], c[0][1]);
+		fp4_add(c[0][1], t1, c[0][1]);
+
+		fp4_sqr_unr(u0, a[2][0]);
+		fp4_sqr_unr(u1, a[2][1]);
+		fp4_add(t1, a[2][0], a[2][1]);
+		fp4_sqr_unr(u2, t1);
+
+		for (int i = 0; i < 2; i++) {
+			fp2_addc_low(u3[i], u0[i], u1[i]);
+			fp2_subc_low(u3[i], u2[i], u3[i]);
+			fp2_rdcn_low(t1[i], u3[i]);
+		}
+
+		fp4_add(t0, a[1][0], a[1][1]);
+		fp4_sqr(t2, t0);
+		fp4_sqr_unr(u2, a[1][0]);
+
+		fp4_mul_art(t0, t1);
+		fp4_add(t1, t0, a[1][0]);
+		fp4_dbl(t1, t1);
+		fp4_add(c[1][0], t1, t0);
+
+		fp2_nord_low(u3[0], u1[1]);
+		fp2_addc_low(u3[0], u0[0], u3[0]);
+		fp2_addc_low(u3[1], u0[1], u1[0]);
+		fp4_sqr_unr(u1, a[1][1]);
+		fp2_rdcn_low(t1[0], u3[0]);
+		fp2_rdcn_low(t1[1], u3[1]);
+		fp4_sub(t0, t1, a[1][1]);
+		fp4_dbl(t0, t0);
+		fp4_add(c[1][1], t0, t1);
+
+		fp2_nord_low(u3[0], u1[1]);
+		fp2_addc_low(u3[0], u2[0], u3[0]);
+		fp2_addc_low(u3[1], u2[1], u1[0]);
+		fp2_rdcn_low(t1[0], u3[0]);
+		fp2_rdcn_low(t1[1], u3[1]);
+		fp4_sub(t0, t1, a[2][0]);
+		fp4_dbl(t0, t0);
+		fp4_add(c[2][0], t0, t1);
+
+		fp2_addc_low(u3[0], u2[0], u1[0]);
+		fp2_addc_low(u3[1], u2[1], u1[1]);
+		fp2_rdcn_low(t0[0], u3[0]);
+		fp2_rdcn_low(t0[1], u3[1]);
+		fp4_sub(t1, t2, t0);
+		fp4_add(t0, t1, a[2][1]);
+		fp4_dbl(t0, t0);
+		fp4_add(c[2][1], t1, t0);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		fp4_free(t0);
+		fp4_free(t1);
+		fp4_free(t2);
+		dv4_free(u0);
+		dv4_free(u1);
+		dv4_free(u2);
+		dv4_free(u3);
+	}
 }
 
 void fp24_sqr_pck_lazyr(fp24_t c, const fp24_t a) {
-	/* TODO: implement lazy reduction. */
-	fp24_sqr_pck_basic(c, a);
+	fp4_t t0, t1, t2;
+	dv4_t u0, u1, u2, u3;
+
+	fp4_null(t0);
+	fp4_null(t1);
+	fp4_null(t2);
+	dv4_null(u0);
+	dv4_null(u1);
+	dv4_null(u2);
+	dv4_null(u3);
+
+	RLC_TRY {
+		fp4_new(t0);
+		fp4_new(t1);
+		fp4_new(t2);
+		dv4_new(u0);
+		dv4_new(u1);
+		dv4_new(u2);
+		dv4_new(u3);
+
+		fp4_sqr_unr(u0, a[2][0]);
+		fp4_sqr_unr(u1, a[2][1]);
+		fp4_add(t1, a[2][0], a[2][1]);
+		fp4_sqr_unr(u2, t1);
+
+		for (int i = 0; i < 2; i++) {
+			fp2_addc_low(u3[i], u0[i], u1[i]);
+			fp2_subc_low(u3[i], u2[i], u3[i]);
+			fp2_rdcn_low(t1[i], u3[i]);
+		}
+
+		fp4_add(t0, a[1][0], a[1][1]);
+		fp4_sqr(t2, t0);
+		fp4_sqr_unr(u2, a[1][0]);
+
+		fp4_mul_art(t0, t1);
+		fp4_add(t1, t0, a[1][0]);
+		fp4_dbl(t1, t1);
+		fp4_add(c[1][0], t1, t0);
+
+		fp2_nord_low(u3[0], u1[1]);
+		fp2_addc_low(u3[0], u0[0], u3[0]);
+		fp2_addc_low(u3[1], u0[1], u1[0]);
+		fp4_sqr_unr(u1, a[1][1]);
+		fp2_rdcn_low(t1[0], u3[0]);
+		fp2_rdcn_low(t1[1], u3[1]);
+		fp4_sub(t0, t1, a[1][1]);
+		fp4_dbl(t0, t0);
+		fp4_add(c[1][1], t0, t1);
+
+		fp2_nord_low(u3[0], u1[1]);
+		fp2_addc_low(u3[0], u2[0], u3[0]);
+		fp2_addc_low(u3[1], u2[1], u1[0]);
+		fp2_rdcn_low(t1[0], u3[0]);
+		fp2_rdcn_low(t1[1], u3[1]);
+		fp4_sub(t0, t1, a[2][0]);
+		fp4_dbl(t0, t0);
+		fp4_add(c[2][0], t0, t1);
+
+		fp2_addc_low(u3[0], u2[0], u1[0]);
+		fp2_addc_low(u3[1], u2[1], u1[1]);
+		fp2_rdcn_low(t0[0], u3[0]);
+		fp2_rdcn_low(t0[1], u3[1]);
+		fp4_sub(t1, t2, t0);
+		fp4_add(t0, t1, a[2][1]);
+		fp4_dbl(t0, t0);
+		fp4_add(c[2][1], t1, t0);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		fp4_free(t0);
+		fp4_free(t1);
+		fp4_free(t2);
+		dv4_free(u0);
+		dv4_free(u1);
+		dv4_free(u2);
+		dv4_free(u3);
+	}
 }
 
 #endif
