@@ -65,26 +65,36 @@ void ep3_mul_cof_k18(ep3_t r, const ep3_t p) {
 		ep3_new(t5);
 		bn_new(x);
 
+		/* Method due to Fuentes et al. using multi-addsub chain from Olivos. */
+
 		fp_prime_get_par(x);
 
+		/* tx1 = [u]P, tx2 = [u^2]P, tx3 = [u^3]P. */
 		ep3_mul_basic(tx1, p, x);
 		ep3_mul_basic(tx2, tx1, x);
 		ep3_mul_basic(tx3, tx2, x);
 
+		/* t1 = [u]\psi^2(P). */
 		ep3_frb(t1, tx1, 2);
+		/* t2 = [u]\psi^5(P) + [u]P. */
 		ep3_frb(t2, t1, 3);
 		ep3_add(t2, t2, tx1);
+		/* t3 = \psi3(P). */
 		ep3_frb(t3, t1, 1);
 		ep3_neg(t1, t1);
 
+		/* t4 = [u^2]\psi(P). */
 		ep3_frb(t4, tx2, 1);
 		ep3_add(t3, t3, t4);
+		/* t4 = [u^2]\psi^2(P). */
 		ep3_frb(t4, t4, 1);
 		ep3_sub(t3, t3, t4);
 
+		/* t4 = -\psi^4(P). */
 		ep3_frb(t4, p, 4);
 		ep3_neg(t4, t4);
 
+		/* t5 = \psi(P) + \psi^3(P) - [u^2]\psi^4 + [u^2]\psi^5 + [u^3]\psi(P). */
 		ep3_frb(t5, p, 1);
 		ep3_frb(tx1, t5, 2);
 		ep3_add(t5, t5, tx1);

@@ -228,16 +228,15 @@ int g2_is_valid(const g2_t a) {
 				r = g2_on_curve(a) && (g2_cmp(u, v) == RLC_EQ);
 				break;
 			case EP_K18:
-				/* Check that [2z/7]P + \psi(P) + [z/7]\psi^3(P) == O. */
+				/* Check that P + u*psi2P + 2*psi3P == \mathcal{O}. */
 				fp_prime_get_par(n);
-				bn_div_dig(n, n, 7);
-				g2_mul_any(u, a, n);
-				g2_frb(v, u, 2);
-				g2_dbl(u, u);
-				g2_add(v, v, a);
-				g2_frb(v, v, 1);
-				g2_neg(v, v);
-				r = g2_on_curve(a) && (g2_cmp(u, v) == RLC_EQ);
+				g2_frb(u, a, 2);
+				g2_frb(v, u, 1);
+				g2_dbl(v, v);
+				g2_mul_any(u, u, n);
+				g2_add(v, v, u);
+				g2_neg(u, v);
+				r = g2_on_curve(a) && (g2_cmp(u, a) == RLC_EQ);
 				break;
 			default:
 				pc_get_ord(n);
@@ -321,18 +320,14 @@ int gt_is_valid(const gt_t a) {
 				r &= fp12_test_cyc((void *)a);
 				break;
 			case EP_K18:
-			    /* Check that [2z]P + [z]\psi^3(P) == -7\psi(P). */
-				fp18_exp_cyc_sps((void *)u, (void *)a, b, l, bn_sign(n));
-				gt_frb(v, u, 3);
-				gt_sqr(u, u);
-				gt_mul(u, u, v);
-				gt_sqr(v, a);
-				gt_mul(v, v, a);
+				/* Check that P + u*psi2P + 2*psi3P == \mathcal{O}. */
+				gt_frb(u, a, 2);
+				gt_frb(v, u, 1);
 				gt_sqr(v, v);
-				gt_mul(v, v, a);
-				gt_frb(v, v, 1);
-				gt_inv(v, v);
-				r = (gt_cmp(u, v) == RLC_EQ);
+				fp18_exp_cyc_sps((void *)u, (void *)u, b, l, bn_sign(n));
+				gt_mul(v, v, u);
+				gt_inv(u, v);
+				r = (gt_cmp(u, a) == RLC_EQ);
 				r &= fp18_test_cyc((void *)a);
 				break;
 			default:
