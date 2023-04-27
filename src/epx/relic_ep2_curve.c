@@ -487,7 +487,8 @@ static void ep2_curve_set_map(void) {
 			/* constant 3: sqrt(-g(u) * (3 * u^2 + 4 * a)) */
 			fp2_sqr(c3, ctx->ep2_map_u);    /* u^2 */
 			fp2_mul_dig(c3, c3, 3);         /* 3 * u^2 */
-			fp2_mul_dig(c4, ctx->ep2_a, 4); /* 4 * a */
+			fp2_dbl(c4, ctx->ep2_a);        /* 4 * a */
+			fp2_dbl(c4, c4);
 			fp2_add(c4, c3, c4);            /* 3 * u^2 + 4 * a */
 			fp2_neg(c4, c4);                /* -(3 * u^2 + 4 * a) */
 			fp2_mul(c3, c4, c1);            /* -g(u) * (3 * u^2 + 4 * a) */
@@ -508,7 +509,8 @@ static void ep2_curve_set_map(void) {
 			/* constant 4: -4 * g(u) / (3 * u^2 + 4 * a) */
 			fp2_inv(c4, c4);        /* -1 / (3 * u^2 + 4 * a */
 			fp2_mul(c4, c4, c1);    /* -g(u) / (3 * u^2 + 4 * a) */
-			fp2_mul_dig(c4, c4, 4); /* -4 * g(u) / (3 * u^2 + 4 * a) */
+			fp2_dbl(c4, c4);        /* -4 * g(u) / (3 * u^2 + 4 * a) */
+			fp2_dbl(c4, c4);
 		}
 	}
 	RLC_CATCH_ANY {
