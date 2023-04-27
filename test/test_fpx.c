@@ -7701,6 +7701,8 @@ int main(void) {
 		}
 	}
 
+	fp_param_print();
+
 	/* Only execute these if there is an assigned quadratic non-residue. */
 	if (fp_prime_get_qnr()) {
 		util_print("\n-- Quadratic extension: %d as QNR\n", fp_prime_get_qnr());
