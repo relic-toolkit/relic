@@ -112,8 +112,8 @@ int cp_smlers_ver(bn_t td, smlers_t *s, size_t size, const uint8_t *msg,
 				ec_copy(y[1], s[i]->tau);
 				flag &= cp_sokor_ver(s[i]->c, s[i]->r, msg, len, y, g);
 			}
+      result = flag;
 		}
-		result = flag;
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);

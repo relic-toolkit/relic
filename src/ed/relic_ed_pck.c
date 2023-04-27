@@ -37,7 +37,8 @@
 
 void ed_pck(ed_t r, const ed_t p) {
 	fp_copy(r->y, p->y);
-	int b = fp_get_bit(p->x, 0);
+	fp_norm(r->x, p->x);
+	int b = fp_get_bit(r->x, 0);
 	fp_zero(r->x);
 	fp_set_bit(r->x, 0, b);
 	fp_set_dig(r->z, 1);
@@ -66,7 +67,10 @@ int ed_upk(ed_t r, const ed_t p) {
 		fp_mul(u, u, t);
 		fp_srt(u, u);
 
-		if (fp_get_bit(u, 0) != fp_get_bit(p->x, 0)) {
+		fp_norm(u, u);
+		fp_norm(r->x, p->x);
+
+		if (fp_get_bit(u, 0) != fp_get_bit(r->x, 0)) {
 			fp_neg(u, u);
 		}
 		fp_copy(r->x, u);

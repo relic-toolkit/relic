@@ -184,8 +184,6 @@ void ed_dbl_extnd(ed_t r, const ed_t p) {
 		// efd: dbl-2008-hwcd, rfc edition
 		// 4M + 4S + 1D + 7add
 
-		r->coord = PROJC;
-
 		/* A = X^2, B = Y^2 */
 		fp_sqr(t0, p->x);
 		fp_sqr(t1, p->y);
@@ -212,13 +210,11 @@ void ed_dbl_extnd(ed_t r, const ed_t p) {
 		fp_mul(r->x, t2, t3);
 		/* Y = G * H */
 		fp_mul(r->y, t4, r->z);
-		if (r->coord != EXTND) {
-			/* T = E * H */
-			fp_mul(r->t, t2, r->z);
-			r->coord = EXTND;
-		}
+		/* T = E * H */
+		fp_mul(r->t, t2, r->z);
 		/* Z = F * G */
 		fp_mul(r->z, t3, t4);
+		r->coord = EXTND;
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {

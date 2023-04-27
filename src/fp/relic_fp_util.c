@@ -46,13 +46,17 @@ void fp_zero(fp_t a) {
 
 int fp_is_zero(const fp_t a) {
 	int i;
-	dig_t t = 0;
+	dig_t t = 0, u = 0;
 
 	for (i = 0; i < RLC_FP_DIGS; i++) {
 		t |= a[i];
 	}
 
-	return !t;
+	for (i = 0; i < RLC_FP_DIGS; i++) {
+		u |= a[i] ^ fp_prime_get()[i];
+	}
+
+	return !t || !u;
 }
 
 int fp_is_even(const fp_t a) {
@@ -116,6 +120,13 @@ void fp_rand(fp_t a) {
 
 	while (dv_cmp(a, fp_prime_get(), RLC_FP_DIGS) != RLC_LT) {
 		fp_subm_low(a, a, fp_prime_get());
+	}
+}
+
+void fp_norm(fp_t c, const fp_t a) {
+	fp_copy(c, a);
+	while (dv_cmp(c, fp_prime_get(), RLC_FP_DIGS) != RLC_LT) {
+		fp_subn_low(c, c, fp_prime_get());
 	}
 }
 
@@ -278,7 +289,6 @@ void fp_write_bin(uint8_t *bin, size_t len, const fp_t a) {
 		bn_new(t);
 
 		fp_prime_back(t, a);
-
 		bn_write_bin(bin, len, t);
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);

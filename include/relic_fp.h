@@ -702,6 +702,14 @@ size_t fp_bits(const fp_t a);
 void fp_rand(fp_t a);
 
 /**
+ * Normalizes a prime field element to a representative in [0, p - 1].
+ *
+ * @param[out] c 			- the normalized field element.
+ * @param[in] a 			- the field element to normalize-
+ */
+void fp_norm(fp_t c, const fp_t a);
+
+/**
  * Prints a prime field element to standard output.
  *
  * @param[in] a				- the prime field element to print.

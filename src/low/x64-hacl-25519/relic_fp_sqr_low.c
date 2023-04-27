@@ -20,63 +20,35 @@
  * Apache License along with RELIC. If not, see <https://www.gnu.org/licenses/>
  * or <https://www.apache.org/licenses/>.
  */
+
 /**
  * @file
  *
- * Implementation of the prime field comparison functions.
+ * Implementation of low-level prime field squaring functions.
  *
  * @ingroup fp
  */
 
-#include "relic_core.h"
+#include <gmp.h>
+
+#include "relic_fp.h"
 #include "relic_fp_low.h"
+
+/*============================================================================*/
+/* Private definitions                                                        */
+/*============================================================================*/
+
+void _fp_sqrm_low(dig_t *tmp, const dig_t *f1, dig_t *out);
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
-int fp_cmp_dig(const fp_t a, dig_t b) {
-	fp_t t;
-	int r = RLC_EQ;
-
-	fp_null(t);
-
-	RLC_TRY {
-		fp_new(t);
-		fp_prime_conv_dig(t, b);
-		r = fp_cmp(a, t);
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		fp_free(t);
-	}
-
-	return r;
+void fp_sqrn_low(dig_t *c, const dig_t *a) {
+	mpn_mul_n(c, a, a, RLC_FP_DIGS);
 }
 
-int fp_cmp(const fp_t a, const fp_t b) {
-	fp_t t, u, v;
-	int r = RLC_EQ;
-
-	fp_null(t);
-	fp_null(u);
-	fp_null(v);
-
-	RLC_TRY {
-		fp_new(t);
-		fp_new(u);
-		fp_new(v);
-		fp_norm(u, a);
-		fp_norm(v, b);
-		fp_sub(t, u, v);
-		r = fp_is_zero(t) ?  RLC_EQ : RLC_NE;
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		fp_free(t);
-		fp_free(u);
-		fp_free(v);
-	}
-
-	return r;
+void fp_sqrm_low(dig_t *c, const dig_t *a) {
+	rlc_align dig_t t[2 * RLC_FP_DIGS];
+	_fp_sqrm_low(t, a, c);
 }

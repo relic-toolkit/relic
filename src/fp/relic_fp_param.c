@@ -198,9 +198,12 @@ void fp_param_set(int param) {
 				break;
 #elif FP_PRIME == 255
 			case PRIME_25519:
-				bn_set_2b(p, 255);
-				bn_sub_dig(p, p, 19);
-				fp_prime_set_dense(p);
+				/* p = 2^255 - 2^4 - 2^1 - 2^0. */
+				f[0] = -1;
+				f[1] = -1;
+				f[2] = -4;
+				f[3] = 255;
+				fp_prime_set_pmers(f, 4);
 				break;
 			case PRIME_H2ADC:
 				bn_set_2b(p, 222);
