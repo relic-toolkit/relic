@@ -110,6 +110,18 @@ void fp3_dbl_basic(fp3_t c, const fp3_t a) {
 
 #endif
 
+void fp3_add_dig(fp3_t c, const fp3_t a, dig_t dig) {
+	fp_add_dig(c[0], a[0], dig);
+	fp_copy(c[1], a[1]);
+	fp_copy(c[2], a[2]);
+}
+
+void fp3_sub_dig(fp3_t c, const fp3_t a, dig_t dig) {
+	fp_sub_dig(c[0], a[0], dig);
+	fp_copy(c[1], a[1]);
+	fp_copy(c[2], a[2]);
+}
+
 void fp3_neg(fp3_t c, const fp3_t a) {
 	fp_neg(c[0], a[0]);
 	fp_neg(c[1], a[1]);
@@ -146,6 +158,16 @@ void fp4_dbl(fp4_t c, const fp4_t a) {
 	/* 2 * (a_0 + a_1 * v + a_2 * v^2) = 2 * a_0 + 2 * a_1 * v + 2 * a_2 * v^2. */
 	fp2_dbl(c[0], a[0]);
 	fp2_dbl(c[1], a[1]);
+}
+
+void fp4_add_dig(fp4_t c, const fp4_t a, dig_t dig) {
+	fp2_add_dig(c[0], a[0], dig);
+	fp2_copy(c[1], a[1]);
+}
+
+void fp4_sub_dig(fp4_t c, const fp4_t a, dig_t dig) {
+	fp2_sub_dig(c[0], a[0], dig);
+	fp2_copy(c[1], a[1]);
 }
 
 void fp4_neg(fp4_t c, const fp4_t a) {

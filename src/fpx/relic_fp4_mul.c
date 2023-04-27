@@ -187,3 +187,8 @@ void fp4_mul_frb(fp4_t c, const fp4_t a, int i, int j) {
 		fp2_free(t);
 	}
 }
+
+void fp4_mul_dig(fp4_t c, const fp4_t a, dig_t b) {
+	fp2_mul_dig(c[0], a[0], b);
+	fp2_mul_dig(c[1], a[1], b);
+}

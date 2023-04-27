@@ -131,10 +131,7 @@ void ep4_rhs(fp4_t rhs, const ep4_t p) {
 				break;
 			case RLC_TINY:
 				ep4_curve_get_a(t1);
-				fp_mul_dig(t0[0][0], t0[0][0], t1[0][0][0]);
-				fp_mul_dig(t0[0][1], t0[0][1], t1[0][0][0]);
-				fp_mul_dig(t0[1][0], t0[0][0], t1[0][0][0]);
-				fp_mul_dig(t0[1][1], t0[1][1], t1[0][0][0]);
+				fp4_mul_dig(t0, t0, t1[0][0][0]);
 				break;
 #endif
 			default:
@@ -160,10 +157,7 @@ void ep4_rhs(fp4_t rhs, const ep4_t p) {
 				break;
 			case RLC_TINY:
 				ep4_curve_get_b(t1);
-				fp_mul_dig(t0[0][0], t0[0][0], t1[0][0][0]);
-				fp_mul_dig(t0[0][1], t0[0][1], t1[0][0][0]);
-				fp_mul_dig(t0[1][0], t0[0][0], t1[0][0][0]);
-				fp_mul_dig(t0[1][1], t0[1][1], t1[0][0][0]);
+				fp4_mul_dig(t0, t0, t1[0][0][0]);
 				break;
 #endif
 			default:

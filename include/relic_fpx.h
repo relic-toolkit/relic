@@ -304,24 +304,6 @@ typedef fp18_t fp54_t[3];
 #endif
 
 /**
- * Adds a quadratic extension field element and a digit. Computes c = a + b.
- *
- * @param[out] c			- the result.
- * @param[in] a				- the quadratic extension field element.
- * @param[in] b				- the digit to add.
- */
-void fp2_add_dig(fp2_t c, const fp2_t a, dig_t b);
-
-/**
- * Subtracts a quadratic extension field element and a digit. Computes c = a - b.
- *
- * @param[out] c			- the result.
- * @param[in] a				- the quadratic extension field element.
- * @param[in] b				- the digit to subtract.
- */
-void fp2_sub_dig(fp2_t c, const fp2_t a, dig_t b);
-
-/**
  * Multiplies two quadratic extension field elements. Computes C = A * B.
  *
  * @param[out] C			- the result.
@@ -1420,6 +1402,15 @@ void fp2_add_basic(fp2_t c, const fp2_t a, const fp2_t b);
 void fp2_add_integ(fp2_t c, const fp2_t a, const fp2_t b);
 
 /**
+ * Adds a quadratic extension field element and a digit. Computes c = a + b.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the quadratic extension field element.
+ * @param[in] b				- the digit to add.
+ */
+void fp2_add_dig(fp2_t c, const fp2_t a, dig_t b);
+
+/**
  * Subtracts a quadratic extension field element from another using basic
  * arithmetic.
  *
@@ -1438,6 +1429,15 @@ void fp2_sub_basic(fp2_t c, const fp2_t a, const fp2_t b);
  * @param[in] b				- the second quadratic extension field element.
  */
 void fp2_sub_integ(fp2_t c, const fp2_t a, const fp2_t b);
+
+/**
+ * Subtracts a quadratic extension field element and a digit. Computes c = a - b.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the quadratic extension field element.
+ * @param[in] b				- the digit to subtract.
+ */
+void fp2_sub_dig(fp2_t c, const fp2_t a, dig_t b);
 
 /**
  * Negates a quadratic extension field element.
@@ -1793,6 +1793,15 @@ void fp3_add_basic(fp3_t c, const fp3_t a, const fp3_t b);
 void fp3_add_integ(fp3_t c, const fp3_t a, const fp3_t b);
 
 /**
+ * Adds a cubic extension field element and a digit. Computes c = a + b.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the cubic extension field element.
+ * @param[in] b				- the digit to add.
+ */
+void fp3_add_dig(fp3_t c, const fp3_t a, dig_t b);
+
+/**
  * Subtracts a cubic extension field element from another using basic
  * arithmetic.
  *
@@ -1811,6 +1820,15 @@ void fp3_sub_basic(fp3_t c, const fp3_t a, const fp3_t b);
  * @param[in] b				- the second cubic extension field element.
  */
 void fp3_sub_integ(fp3_t c, const fp3_t a, const fp3_t b);
+
+/**
+ * Subtracts a cubic extension field element and a digit. Computes c = a - b.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the cubic extension field element.
+ * @param[in] b				- the digit to subtract.
+ */
+void fp3_sub_dig(fp3_t c, const fp3_t a, dig_t b);
 
 /**
  * Negates a cubic extension field element. Computes c = -a.
@@ -1884,6 +1902,16 @@ void fp3_mul_nor(fp3_t c, const fp3_t a);
  * @param[in] j				- the power of the constant.
  */
 void fp3_mul_frb(fp3_t c, const fp3_t a, int i, int j);
+
+/**
+ * Multiplies a cubic extension field element by a digit.
+ * Computes c = a * b.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the cubic extension field element.
+ * @param[in] b				- the digit to multiply.
+ */
+void fp3_mul_dig(fp3_t c, const fp3_t a, dig_t b);
 
 /**
  * Computes the square of a cubic extension field element using basic
@@ -2059,6 +2087,15 @@ void fp4_set_dig(fp4_t a, const dig_t b);
 void fp4_add(fp4_t c, const fp4_t a, const fp4_t b);
 
 /**
+ * Adds a quartic extension field element and a digit. Computes c = a + b.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the quartic extension field element.
+ * @param[in] b				- the digit to add.
+ */
+void fp4_add_dig(fp4_t c, const fp4_t a, dig_t b);
+
+/**
  * Subtracts a quartic extension field element from another. Computes
  * c = a - b.
  *
@@ -2067,6 +2104,15 @@ void fp4_add(fp4_t c, const fp4_t a, const fp4_t b);
  * @param[in] b				- the quartic extension field element.
  */
 void fp4_sub(fp4_t c, const fp4_t a, const fp4_t b);
+
+/**
+ * Subtracts a quartic extension field element and a digit. Computes c = a - b.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the quartic extension field element.
+ * @param[in] b				- the digit to subtract.
+ */
+void fp4_sub_dig(fp4_t c, const fp4_t a, dig_t b);
 
 /**
  * Negates a quartic extension field element. Computes c = -a.
@@ -2130,6 +2176,16 @@ void fp4_mul_art(fp4_t c, const fp4_t a);
  * @param[in] j				- the power of the constant.
  */
 void fp4_mul_frb(fp4_t c, const fp4_t a, int i, int j);
+
+/**
+ * Multiplies a quartic extension field element by a digit.
+ * Computes c = a * b.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the quartic extension field element.
+ * @param[in] b				- the digit to multiply.
+ */
+void fp4_mul_dig(fp4_t c, const fp4_t a, dig_t b);
 
 /**
  * Multiples a dense quartic extension field element by a sparse element.

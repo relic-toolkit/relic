@@ -1104,8 +1104,6 @@ static int digit(void) {
 		TEST_CASE("addition of a single digit is consistent") {
 			fp_rand(a);
 			fp_rand(b);
-			for (int j = 1; j < RLC_FP_DIGS; j++)
-				b[j] = 0;
 			g = b[0];
 			fp_set_dig(b, g);
 			fp_add(c, a, b);
@@ -1116,8 +1114,6 @@ static int digit(void) {
 		TEST_CASE("subtraction of a single digit is consistent") {
 			fp_rand(a);
 			fp_rand(b);
-			for (int j = 1; j < RLC_FP_DIGS; j++)
-				b[j] = 0;
 			g = b[0];
 			fp_set_dig(b, g);
 			fp_sub(c, a, b);
@@ -1128,8 +1124,6 @@ static int digit(void) {
 		TEST_CASE("multiplication by a single digit is consistent") {
 			fp_rand(a);
 			fp_rand(b);
-			for (int j = 1; j < RLC_FP_DIGS; j++)
-				b[j] = 0;
 			g = b[0];
 			fp_set_dig(b, g);
 			fp_mul(c, a, b);
