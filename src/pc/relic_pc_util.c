@@ -93,6 +93,7 @@ int g1_is_valid(const g1_t a) {
 			r = g1_on_curve(a);
 		} else {
 			switch (ep_curve_is_pairf()) {
+#if defined(EP_ENDOM) && !defined(STRIP)
 				/* Formulas from "Co-factor clearing and subgroup membership
 				 * testing on pairing-friendly curves" by El Housni, Guillevic,
 				 * Piellard. https://eprint.iacr.org/2022/352.pdf */
@@ -145,6 +146,7 @@ int g1_is_valid(const g1_t a) {
 					}
 					r = g1_on_curve(a) && g1_is_infty(u);
 					break;
+#endif
 				default:
 					pc_get_ord(n);
 					bn_sub_dig(n, n, 1);
@@ -192,6 +194,7 @@ int g2_is_valid(const g2_t a) {
 		g2_new(v);
 
 		switch (ep_curve_is_pairf()) {
+#if defined(EP_ENDOM) && !defined(STRIP)
 			/* Formulas from "Co-factor clearing and subgroup membership
 			* testing on pairing-friendly curves" by El Housni, Guillevic,
 			* Piellard. https://eprint.iacr.org/2022/352.pdf */
@@ -239,6 +242,7 @@ int g2_is_valid(const g2_t a) {
 				g2_neg(v, v);
 				r = g2_on_curve(a) && (g2_cmp(u, v) == RLC_EQ);
 				break;
+#endif
 			default:
 				pc_get_ord(n);
 				bn_sub_dig(n, n, 1);

@@ -36,7 +36,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-#if defined(EP_ENDOM)
+#if defined(EP_ENDOM) && !defined(STRIP)
 
 void ep_psi(ep_t r, const ep_t p) {
 	if (ep_is_infty(p)) {
