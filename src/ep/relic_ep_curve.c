@@ -418,12 +418,12 @@ void ep_curve_set_plain(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
 #if defined(EP_SUPER)
 
 void ep_curve_set_super(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
-		const bn_t h, const fp_t u, int ctmap) {
+		const bn_t h, int ctmap) {
 	ctx_t *ctx = core_get();
 	ctx->ep_is_endom = 0;
 	ctx->ep_is_super = 1;
 
-	ep_curve_set(a, b, g, r, h, u, ctmap);
+	ep_curve_set(a, b, g, r, h, ctmap);
 }
 
 #endif
