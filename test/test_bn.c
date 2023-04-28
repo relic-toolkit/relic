@@ -2267,10 +2267,6 @@ static int recoding(void) {
 					bn_mul(v1[0], v2[1], v1[1]);
 				}
 				bn_mod(v1[0], v1[0], v2[0]);
-				bn_sub(v1[1], v2[0], v1[0]);
-				if (bn_cmp(v1[1], v1[0]) == RLC_LT) {
-					bn_copy(v1[0], v1[1]);
-				}
 				/* Check if b + c * lambda = k (mod n). */
 				bn_mul(c, c, v1[0]);
 				bn_add(b, b, c);
