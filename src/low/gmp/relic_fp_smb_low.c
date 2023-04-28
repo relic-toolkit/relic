@@ -61,6 +61,7 @@ int fp_smbm_low(const dig_t *a) {
 
 	res = mpz_jacobi(n, p);
 
+	(void)t;
 	mpz_clear(n);
 	mpz_clear(p);
 	return res;
