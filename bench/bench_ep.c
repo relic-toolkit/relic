@@ -580,11 +580,13 @@ static void arith(void) {
 		BENCH_ADD(ep_map(p, msg, 5));
 	} BENCH_END;
 
+#if EP_MAP == BASIC || !defined(STRIP)
 	BENCH_RUN("ep_map_basic") {
 		uint8_t msg[5];
 		rand_bytes(msg, 5);
 		BENCH_ADD(ep_map_basic(p, msg, 5));
 	} BENCH_END;
+#endif
 
 #if EP_MAP == SSWUM || !defined(STRIP)
 	BENCH_RUN("ep_map_sswum") {

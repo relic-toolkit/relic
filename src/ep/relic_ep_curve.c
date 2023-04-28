@@ -106,6 +106,11 @@ static void ep_curve_set_map(void) {
 #endif
 				fp_copy(c2, ctx->ep_a);
 				fp_copy(c3, ctx->ep_b);
+				/* Generate a non-square u to define the map. */
+				fp_set_dig(ctx->ep_map_u, 0);
+				do {
+					fp_add_dig(ctx->ep_map_u, ctx->ep_map_u, 1);
+				} while (fp_is_sqr(ctx->ep_map_u));
 #ifdef EP_CTMAP
 			}
 #endif
