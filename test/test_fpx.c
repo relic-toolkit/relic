@@ -840,6 +840,64 @@ static int square_root2(void) {
 	return code;
 }
 
+static int digit2(void) {
+	int code = RLC_ERR;
+	fp2_t a, b, c, d;
+	dig_t g;
+
+	fp2_null(a);
+	fp2_null(b);
+	fp2_null(c);
+	fp2_null(d);
+
+	RLC_TRY {
+		fp2_new(a);
+		fp2_new(b);
+		fp2_new(c);
+		fp2_new(d);
+
+		TEST_CASE("addition of a single digit is consistent") {
+			fp2_rand(a);
+			fp_rand(b[0]);
+			g = b[0][0];
+			fp2_set_dig(b, g);
+			fp2_add(c, a, b);
+			fp2_add_dig(d, a, g);
+			TEST_ASSERT(fp2_cmp(c, d) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("subtraction of a single digit is consistent") {
+			fp2_rand(a);
+			fp_rand(b[0]);
+			g = b[0][0];
+			fp2_set_dig(b, g);
+			fp2_sub(c, a, b);
+			fp2_sub_dig(d, a, g);
+			TEST_ASSERT(fp2_cmp(c, d) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("multiplication by a single digit is consistent") {
+			fp2_rand(a);
+			fp_rand(b[0]);
+			g = b[0][0];
+			fp2_set_dig(b, g);
+			fp2_mul(c, a, b);
+			fp2_mul_dig(d, a, g);
+			TEST_ASSERT(fp2_cmp(c, d) == RLC_EQ, end);
+		} TEST_END;
+	}
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
+	}
+	code = RLC_OK;
+  end:
+	fp2_free(a);
+	fp2_free(b);
+	fp2_free(c);
+	fp2_free(d);
+	return code;
+}
+
 static int memory3(void) {
 	err_t e = ERR_CAUGHT;
 	int code = RLC_ERR;
@@ -1509,6 +1567,64 @@ static int square_root3(void) {
 	return code;
 }
 
+static int digit3(void) {
+	int code = RLC_ERR;
+	fp3_t a, b, c, d;
+	dig_t g;
+
+	fp3_null(a);
+	fp3_null(b);
+	fp3_null(c);
+	fp3_null(d);
+
+	RLC_TRY {
+		fp3_new(a);
+		fp3_new(b);
+		fp3_new(c);
+		fp3_new(d);
+
+		TEST_CASE("addition of a single digit is consistent") {
+			fp3_rand(a);
+			fp_rand(b[0]);
+			g = b[0][0];
+			fp3_set_dig(b, g);
+			fp3_add(c, a, b);
+			fp3_add_dig(d, a, g);
+			TEST_ASSERT(fp3_cmp(c, d) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("subtraction of a single digit is consistent") {
+			fp3_rand(a);
+			fp_rand(b[0]);
+			g = b[0][0];
+			fp3_set_dig(b, g);
+			fp3_sub(c, a, b);
+			fp3_sub_dig(d, a, g);
+			TEST_ASSERT(fp3_cmp(c, d) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("multiplication by a single digit is consistent") {
+			fp3_rand(a);
+			fp_rand(b[0]);
+			g = b[0][0];
+			fp3_set_dig(b, g);
+			fp3_mul(c, a, b);
+			fp3_mul_dig(d, a, g);
+			TEST_ASSERT(fp3_cmp(c, d) == RLC_EQ, end);
+		} TEST_END;
+	}
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
+	}
+	code = RLC_OK;
+  end:
+	fp3_free(a);
+	fp3_free(b);
+	fp3_free(c);
+	fp3_free(d);
+	return code;
+}
+
 static int memory4(void) {
 	err_t e = ERR_CAUGHT;
 	int code = RLC_ERR;
@@ -2120,6 +2236,64 @@ static int square_root4(void) {
 	fp4_free(a);
 	fp4_free(b);
 	fp4_free(c);
+	return code;
+}
+
+static int digit4(void) {
+	int code = RLC_ERR;
+	fp4_t a, b, c, d;
+	dig_t g;
+
+	fp4_null(a);
+	fp4_null(b);
+	fp4_null(c);
+	fp4_null(d);
+
+	RLC_TRY {
+		fp4_new(a);
+		fp4_new(b);
+		fp4_new(c);
+		fp4_new(d);
+
+		TEST_CASE("addition of a single digit is consistent") {
+			fp4_rand(a);
+			fp_rand(b[0][0]);
+			g = b[0][0][0];
+			fp4_set_dig(b, g);
+			fp4_add(c, a, b);
+			fp4_add_dig(d, a, g);
+			TEST_ASSERT(fp4_cmp(c, d) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("subtraction of a single digit is consistent") {
+			fp4_rand(a);
+			fp_rand(b[0][0]);
+			g = b[0][0][0];
+			fp4_set_dig(b, g);
+			fp4_sub(c, a, b);
+			fp4_sub_dig(d, a, g);
+			TEST_ASSERT(fp4_cmp(c, d) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("multiplication by a single digit is consistent") {
+			fp4_rand(a);
+			fp_rand(b[0][0]);
+			g = b[0][0][0];
+			fp4_set_dig(b, g);
+			fp4_mul(c, a, b);
+			fp4_mul_dig(d, a, g);
+			TEST_ASSERT(fp4_cmp(c, d) == RLC_EQ, end);
+		} TEST_END;
+	}
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
+	}
+	code = RLC_OK;
+  end:
+	fp4_free(a);
+	fp4_free(b);
+	fp4_free(c);
+	fp4_free(d);
 	return code;
 }
 
@@ -7767,6 +7941,11 @@ int main(void) {
 			core_clean();
 			return 1;
 		}
+
+		if (digit2() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
 	}
 
 	/* Only execute these if there is an assigned cubic non-residue. */
@@ -7822,6 +8001,11 @@ int main(void) {
 		}
 
 		if (square_root3() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (digit3() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
@@ -7881,6 +8065,11 @@ int main(void) {
 		}
 
 		if (square_root4() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (digit4() != RLC_OK) {
 			core_clean();
 			return 1;
 		}

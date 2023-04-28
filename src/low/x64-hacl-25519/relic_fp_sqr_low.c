@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (c) 2021 RELIC Authors
+ * Copyright (c) 2009 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -24,35 +24,31 @@
 /**
  * @file
  *
- * Implementation of the endomorphism map on prime elliptic curves.
+ * Implementation of low-level prime field squaring functions.
  *
- * @ingroup ep
+ * @ingroup fp
  */
 
-#include "relic_core.h"
-#include "relic_ep.h"
+#include <gmp.h>
+
+#include "relic_fp.h"
+#include "relic_fp_low.h"
+
+/*============================================================================*/
+/* Private definitions                                                        */
+/*============================================================================*/
+
+void _fp_sqrm_low(dig_t *tmp, const dig_t *f1, dig_t *out);
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
-#if defined(EP_ENDOM) && !defined(STRIP)
-
-void ep_psi(ep_t r, const ep_t p) {
-	if (ep_is_infty(p)) {
-		ep_set_infty(r);
-		return;
-	}
-
-	if (r != p) {
-		ep_copy(r, p);
-	}
-	if (ep_curve_opt_a() == RLC_ZERO) {
-		fp_mul(r->x, r->x, ep_curve_get_beta());
- 	} else {
-		fp_neg(r->x, r->x);
-	 	fp_mul(r->y, r->y, ep_curve_get_beta());
- 	}
+void fp_sqrn_low(dig_t *c, const dig_t *a) {
+	mpn_mul_n(c, a, a, RLC_FP_DIGS);
 }
 
-#endif
+void fp_sqrm_low(dig_t *c, const dig_t *a) {
+	rlc_align dig_t t[2 * RLC_FP_DIGS];
+	_fp_sqrm_low(t, a, c);
+}

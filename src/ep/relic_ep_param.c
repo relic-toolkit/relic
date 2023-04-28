@@ -349,7 +349,7 @@
 
 #if defined(EP_ENDOM) && FP_PRIME == 255
 /**
- * Parameters for a 255-bit crve with high 2-adicity.
+ * Parameters for a 255-bit curve with high 2-adicity.
  */
 /** @{ */
 #define TWEEDLEDUM_A	"0"

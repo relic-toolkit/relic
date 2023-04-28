@@ -55,5 +55,28 @@ int fp_cmp_dig(const fp_t a, dig_t b) {
 }
 
 int fp_cmp(const fp_t a, const fp_t b) {
-	return dv_cmp_const(a, b, RLC_FP_DIGS);
+	fp_t t, u, v;
+	int r = RLC_EQ;
+
+	fp_null(t);
+	fp_null(u);
+	fp_null(v);
+
+	RLC_TRY {
+		fp_new(t);
+		fp_new(u);
+		fp_new(v);
+		fp_norm(u, a);
+		fp_norm(v, b);
+		fp_sub(t, u, v);
+		r = fp_is_zero(t) ?  RLC_EQ : RLC_NE;
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		fp_free(t);
+		fp_free(u);
+		fp_free(v);
+	}
+
+	return r;
 }

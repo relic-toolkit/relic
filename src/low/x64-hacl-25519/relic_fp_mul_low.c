@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (c) 2021 RELIC Authors
+ * Copyright (c) 2009 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -24,35 +24,39 @@
 /**
  * @file
  *
- * Implementation of the endomorphism map on prime elliptic curves.
+ * Implementation of the low-level prime field multiplication functions.
  *
- * @ingroup ep
+ * @ingroup fp
  */
 
-#include "relic_core.h"
-#include "relic_ep.h"
+#include <gmp.h>
+
+#include "relic_fp.h"
+#include "relic_fp_low.h"
+
+/*============================================================================*/
+/* Private definitions                                                        */
+/*============================================================================*/
+
+void _fp_mulm_low(dig_t *tmp, const dig_t *f1, dig_t *out, const dig_t *f2);
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
-#if defined(EP_ENDOM) && !defined(STRIP)
-
-void ep_psi(ep_t r, const ep_t p) {
-	if (ep_is_infty(p)) {
-		ep_set_infty(r);
-		return;
-	}
-
-	if (r != p) {
-		ep_copy(r, p);
-	}
-	if (ep_curve_opt_a() == RLC_ZERO) {
-		fp_mul(r->x, r->x, ep_curve_get_beta());
- 	} else {
-		fp_neg(r->x, r->x);
-	 	fp_mul(r->y, r->y, ep_curve_get_beta());
- 	}
+dig_t fp_mula_low(dig_t *c, const dig_t *a, dig_t digit) {
+	return mpn_addmul_1(c, a, RLC_FP_DIGS, digit);
 }
 
-#endif
+dig_t fp_mul1_low(dig_t *c, const dig_t *a, dig_t digit) {
+	return mpn_mul_1(c, a, RLC_FP_DIGS, digit);
+}
+
+void fp_muln_low(dig_t *c, const dig_t *a, const dig_t *b) {
+	mpn_mul_n(c, a, b, RLC_FP_DIGS);
+}
+
+void fp_mulm_low(dig_t *c, const dig_t *a, const dig_t *b) {
+	rlc_align dig_t t[2 * RLC_FP_DIGS];
+	_fp_mulm_low(t, a, c, b);
+}

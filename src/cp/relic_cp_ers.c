@@ -133,7 +133,7 @@ int cp_ers_ver(const bn_t td, const ers_t *s, size_t size, const uint8_t *msg,
 				flag &= cp_sokor_ver(s[i]->c, s[i]->r, msg, len, y, NULL);
 			}
 		}
-		result = flag;
+    result = flag;
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
