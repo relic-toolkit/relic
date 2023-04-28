@@ -124,7 +124,7 @@ void fp12_frb(fp12_t c, const fp12_t a, int i) {
 }
 
 void fp18_frb(fp18_t c, const fp18_t a, int i) {
-	/* Cost of five multiplication in Fp^2 per Frobenius. */
+	/* Cost of five multiplication in Fp^3 per Frobenius. */
 	fp18_copy(c, a);
 	for (; i % 18 > 0; i--) {
 		fp9_frb(c[0], c[0], 1);

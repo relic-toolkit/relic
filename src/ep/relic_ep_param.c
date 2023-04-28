@@ -1515,8 +1515,11 @@ int ep_param_set_any_pairf(void) {
 	type = RLC_EP_MTYPE;
 	degree = 2;
 #else
-	//ep_param_set(K18_P638);
-	ep_param_set(SG18_P638);
+	//ep_param_set(BN_P638);
+	//type = RLC_EP_DTYPE;
+	//degree = 2;
+	ep_param_set(K18_P638);
+	//ep_param_set(SG18_P638);
 	type = RLC_EP_MTYPE;
 	degree = 3;
 #endif
@@ -1619,6 +1622,9 @@ void ep_param_print(void) {
 			break;
 		case B24_P317:
 			util_banner("Curve B24-P317:", 0);
+			break;
+		case B12_P377:
+			util_banner("Curve B12-P377:", 0);
 			break;
 		case B12_P381:
 			util_banner("Curve B12-P381:", 0);

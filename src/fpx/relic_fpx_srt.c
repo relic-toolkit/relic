@@ -42,7 +42,7 @@ int fp2_is_sqr(const fp2_t a) {
 
 	fp2_null(t);
 
-	/* Idea QR testing in extension fields from  "Square root computation over
+	/* QR testing in extension fields from  "Square root computation over
 	 * even extension fields", by Gora Adj and Francisco Rodríguez-Henríquez.
 	 * https://eprint.iacr.org/2012/685 */
 
@@ -208,9 +208,6 @@ int fp3_srt(fp3_t c, const fp3_t a) {
 		e->used = RLC_FP_DIGS;
 		dv_copy(e->dp, fp_prime_get(), RLC_FP_DIGS);
 
-		/* First check if input is square. */
-		r = fp3_is_sqr(a);
-
 		switch (fp_prime_get_mod8()) {
 			case 1:
 				/* Implement constant-time version of Tonelli-Shanks algorithm
@@ -307,6 +304,10 @@ int fp3_srt(fp3_t c, const fp3_t a) {
 				fp3_zero(c);
 				break;
 		}
+		/* Assume it is a square and test at the end. */
+		/* We cannot use QR test because it depends on Frobenius constants. */
+		fp3_sqr(t0, c);
+		r = (fp3_cmp(t0, a) == RLC_EQ ? 1 : 0);
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {

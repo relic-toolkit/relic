@@ -440,12 +440,14 @@ typedef struct _ctx_t {
 #endif
 
 #if defined(WITH_FPX) || defined(WITH_PP)
-	/** Integer part of the quadratic non-residue. */
+	/** Integer part of the quadratic non-residue in the quadratic extension. */
 	dis_t qnr2;
 	/** Constants for computing Frobenius maps in higher extensions. @{ */
 	fp2_st fp2_p1[5];
 	fp2_st fp2_p2[3];
 	int frb3[3];
+	/** Integer part of the cubic non-residue in the cubic extension. */
+	dis_t cnr3;
 	fp_st fp3_p0[2];
 	fp3_st fp3_p1[5];
 	fp3_st fp3_p2[2];

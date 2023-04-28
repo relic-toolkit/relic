@@ -147,11 +147,10 @@ static void fp_prime_set(const bn_t p) {
 				break;
 		}
 
-
 		/* Check if qnr it is a quadratic non-residue or find another. */
 		fp_set_dig(r, -ctx->qnr);
 		fp_neg(r, r);
-		while (fp_is_sqr(r) && fp_is_cub(r)) {
+		while (fp_is_sqr(r)) {
 			ctx->qnr--;
 			fp_set_dig(r, -ctx->qnr);
 			fp_neg(r, r);

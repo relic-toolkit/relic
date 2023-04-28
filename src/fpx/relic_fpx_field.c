@@ -55,7 +55,15 @@ int fp3_field_get_cnr() {
 		return 3;
 	}
 #endif
-	return 0;
+
+	switch (core_get()->mod8) {
+		case 3:
+			return 1;
+		case 7:
+			return 2;
+	}
+
+	return core_get()->cnr3;
 }
 
 void fp2_field_init(void) {
@@ -81,7 +89,8 @@ void fp2_field_init(void) {
 		fp_zero(t0[0]);
 		fp_set_dig(t0[1], 1);
 		/* If it does not work, attempt (u + 2), otherwise double. */
-		if (fp2_srt(t1, t0) == 1) {
+		/* We cannot used QR test here because Frobenius constants below. */
+		if (fp2_srt(t1, t0)) {
 			ctx->qnr2 = 2;
 			fp_set_dig(t0[0], ctx->qnr2);
 			while (fp2_srt(t1, t0) && util_bits_dig(ctx->qnr2) < RLC_DIG - 1) {
@@ -169,6 +178,22 @@ void fp3_field_init(void) {
 		fp3_new(t0);
 		fp3_new(t1);
 
+		/* Start by trying a trivial quadratic non-residue. */
+		ctx->cnr3 = 0;
+		fp_zero(t0[0]);
+		fp_set_dig(t0[1], 1);
+		fp_zero(t0[2]);
+		/* If it does not work, attempt (u + 2), otherwise double. */
+		if (fp3_srt(t1, t0)) {
+			ctx->cnr3 = 1;
+			fp_set_dig(t0[0], ctx->cnr3);
+			while (fp3_srt(t1, t0) && util_bits_dig(ctx->qnr2) < RLC_DIG - 1) {
+				/* Pick a power of 2 for efficiency. */
+				ctx->cnr3 *= 2;
+				fp_set_dig(t0[0], ctx->cnr3);
+			}
+		}
+
 		/* Compute t0 = u^((p - (p mod 3))/3). */
 		if (fp_prime_get_cnr() < 0) {
 			fp_set_dig(ctx->fp3_p0[0], -fp_prime_get_cnr());
@@ -187,7 +212,6 @@ void fp3_field_init(void) {
 		bn_read_raw(e, fp_prime_get(), RLC_FP_DIGS);
 		bn_div_dig(e, e, 6);
 		fp3_exp(t0, t0, e);
-
 		if (fp3_field_get_cnr() == 0) {
 			/* Look for a non-trivial subfield element.. */
 			ctx->frb3[0] = 0;
