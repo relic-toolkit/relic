@@ -2251,7 +2251,7 @@ static int recoding(void) {
 				/* Check that subscalars have the right length. */
 				TEST_ASSERT(bn_bits(b) <= 1 + (bn_bits(v2[0]) >> 1), end);
 				TEST_ASSERT(bn_bits(c) <= 1 + (bn_bits(v2[0]) >> 1), end);
-				/* Recover lambda parameter. */
+				/* Recover two candidates for the lambda parameter. */
 				if (bn_cmp_dig(v1[2], 1) == RLC_EQ) {
 					bn_gcd_ext(v1[0], v2[1], NULL, v1[1], v2[0]);
 				} else {
@@ -2267,14 +2267,23 @@ static int recoding(void) {
 					bn_mul(v1[0], v2[1], v1[1]);
 				}
 				bn_mod(v1[0], v1[0], v2[0]);
+				bn_sub(v1[1], v2[0], v1[0]);
 				/* Check if b + c * lambda = k (mod n). */
-				bn_mul(c, c, v1[0]);
-				bn_add(b, b, c);
-				bn_mod(b, b, v2[0]);
-				if (bn_sign(b) == RLC_NEG) {
-					bn_add(b, b, v2[0]);
+				bn_mul(v2[1], c, v1[0]);
+				bn_add(v2[1], v2[1], b);
+				bn_mod(v2[1], v2[1], v2[0]);
+				if (bn_sign(v2[1]) == RLC_NEG) {
+					bn_add(v2[1], v2[1], v2[0]);
 				}
-				TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
+				/* Now try the other candidate. */
+				bn_mul(v2[2], c, v1[1]);
+				bn_add(v2[2], v2[2], b);
+				bn_mod(v2[2], v2[2], v2[0]);
+				if (bn_sign(v2[2]) == RLC_NEG) {
+					bn_add(v2[2], v2[2], v2[0]);
+				}
+				TEST_ASSERT(bn_cmp(a, v2[1]) == RLC_EQ ||
+					bn_cmp(a, v2[2]) == RLC_EQ, end);
 			}
 		} TEST_END;
 #endif /* WITH_EP && EP_ENDOM */
