@@ -96,14 +96,14 @@ int fp_srt(fp_t c, const fp_t a) {
 				bn_rsh(e, e, 1);
 				fp_exp(t0, a, e);
 
-				/* Recover root of unity, and continue algorithm. */
-				fp_copy(t3, fp_prime_get_root());
+				/* Recover 2^f-root of unity, and continue algorithm. */
+				fp_copy(t3, fp_prime_get_srt());
 
 				fp_sqr(t1, t0);
 				fp_mul(t1, t1, a);
 				fp_mul(c, t0, a);
-				fp_copy(t2, t1);
 				for (int j = f; j > 1; j--) {
+					fp_copy(t2, t1);
 					for (int i = 1; i < j - 1; i++) {
 						fp_sqr(t2, t2);
 					}
@@ -114,7 +114,6 @@ int fp_srt(fp_t c, const fp_t a) {
 					fp_mul(t0, t1, t3);
 					dv_copy_cond(t1, t0, RLC_FP_DIGS,
 							fp_cmp_dig(t2, 1) != RLC_EQ);
-					fp_copy(t2, t1);
 				}
 
 				fp_neg(t0, c);

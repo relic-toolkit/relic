@@ -84,7 +84,7 @@ void fp2_field_init(void) {
 		if (fp2_srt(t1, t0) == 1) {
 			ctx->qnr2 = 2;
 			fp_set_dig(t0[0], ctx->qnr2);
-			while (fp2_srt(t1, t0) == 1 && util_bits_dig(ctx->qnr2) < RLC_DIG - 1) {
+			while (fp2_srt(t1, t0) && util_bits_dig(ctx->qnr2) < RLC_DIG - 1) {
 				/* Pick a power of 2 for efficiency. */
 				ctx->qnr2 *= 2;
 				fp_set_dig(t0[0], ctx->qnr2);

@@ -654,6 +654,20 @@ static void arith(void) {
 	}
 	BENCH_END;
 
+	BENCH_RUN("fp_is_cub") {
+		fp_rand(a);
+		BENCH_ADD(fp_is_cub(a));
+	}
+	BENCH_END;
+
+	BENCH_RUN("fp_crt") {
+		fp_rand(a);
+		fp_sqr(b, a);
+		fp_mul(b, b, a);
+		BENCH_ADD(fp_crt(c, a));
+	}
+	BENCH_END;
+
 	BENCH_RUN("fp_prime_conv") {
 		bn_rand(e, RLC_POS, RLC_FP_BITS);
 		BENCH_ADD(fp_prime_conv(a, e));

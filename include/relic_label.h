@@ -462,7 +462,8 @@
 #undef fp_prime_get
 #undef fp_prime_get_rdc
 #undef fp_prime_get_conv
-#undef fp_prime_get_root
+#undef fp_prime_get_srt
+#undef fp_prime_get_crt
 #undef fp_prime_get_mod8
 #undef fp_prime_get_mod18
 #undef fp_prime_get_sps
@@ -555,7 +556,8 @@
 #define fp_prime_get 	RLC_PREFIX(fp_prime_get)
 #define fp_prime_get_rdc 	RLC_PREFIX(fp_prime_get_rdc)
 #define fp_prime_get_conv 	RLC_PREFIX(fp_prime_get_conv)
-#define fp_prime_get_root 	RLC_PREFIX(fp_prime_get_root)
+#define fp_prime_get_srt 	RLC_PREFIX(fp_prime_get_srt)
+#define fp_prime_get_crt 	RLC_PREFIX(fp_prime_get_crt)
 #define fp_prime_get_mod8 	RLC_PREFIX(fp_prime_get_mod8)
 #define fp_prime_get_mod18 	RLC_PREFIX(fp_prime_get_mod18)
 #define fp_prime_get_sps 	RLC_PREFIX(fp_prime_get_sps)

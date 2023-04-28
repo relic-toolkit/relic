@@ -48,6 +48,7 @@ static void fp_prime_set(const bn_t p) {
 	bn_t t;
 	fp_t r;
 	ctx_t *ctx = core_get();
+	dig_t rem;
 
 	if (p->used != RLC_FP_DIGS) {
 		RLC_THROW(ERR_NO_VALID);
@@ -129,38 +130,50 @@ static void fp_prime_set(const bn_t p) {
 				break;
 			case 7:
 				ctx->qnr = -1;
+				/* Try this one, pick another later if not a CNR. */
 				ctx->cnr = -2;
-				/* TODO: implement cube root to handle this better. */
-#if FP_PRIME == 638
-				ctx->cnr = -3;
-#endif
 				break;
 			case 1:
 			case 5:
 				ctx->qnr = -2;
 				ctx->cnr = 2;
-				/* TODO: implement cube root to handle this better. */
 #if FP_PRIME == 638
 				if (fp_param_get() == K18_638) {
 					ctx->qnr = -6;
 				} else {
 					ctx->qnr = -7;
 				}
-				ctx->cnr = 3;
 #endif
-
-				/* Check if it is a quadratic non-residue or find another. */
-				fp_set_dig(r, -ctx->qnr);
-				fp_neg(r, r);
-				while (fp_is_sqr(r) == 1) {
-					ctx->qnr--;
-					fp_set_dig(r, -ctx->qnr);
-					fp_neg(r, r);
-					/* We cannot guarantee a cubic extension anymore. */
-					ctx->cnr = 0;
-				};
 				break;
 		}
+
+
+		/* Check if qnr it is a quadratic non-residue or find another. */
+		fp_set_dig(r, -ctx->qnr);
+		fp_neg(r, r);
+		while (fp_is_sqr(r) && fp_is_cub(r)) {
+			ctx->qnr--;
+			fp_set_dig(r, -ctx->qnr);
+			fp_neg(r, r);
+		};
+
+		/* Check if cnr it is a cubic non-residue or find another. */
+		if (ctx->cnr > 0) {
+			fp_set_dig(r, ctx->cnr);
+			while (fp_is_cub(r)) {
+				ctx->cnr++;
+				fp_set_dig(r, ctx->cnr);
+			};
+		} else {
+			fp_set_dig(r, -ctx->cnr);
+			fp_neg(r, r);
+			while (fp_is_cub(r)) {
+				ctx->cnr--;
+				fp_set_dig(r, -ctx->cnr);
+				fp_neg(r, r);
+			};
+		}
+
 #ifdef FP_QNRES
 		if (ctx->mod8 != 3) {
 			RLC_THROW(ERR_NO_VALID);
@@ -172,10 +185,30 @@ static void fp_prime_set(const bn_t p) {
 		while (bn_is_even(t)) {
 			bn_rsh(t, t, 1);
 		}
-		ctx->root.used = RLC_FP_DIGS;
-		dv_copy(ctx->root.dp, fp_prime_get(), RLC_FP_DIGS);
-		fp_sub_dig(ctx->root.dp, ctx->root.dp, -ctx->qnr);
-		fp_exp(ctx->root.dp, ctx->root.dp, t);
+
+		ctx->srt.used = RLC_FP_DIGS;
+		if (ctx->qnr < 0) {
+			fp_set_dig(ctx->srt.dp, -ctx->qnr);
+		} else {
+			fp_set_dig(ctx->srt.dp, ctx->qnr);
+		}
+		fp_exp(ctx->srt.dp, ctx->srt.dp, t);
+
+		/* Write p - 1 as (e * 3^f), with e = 3l \pm 1. */
+		bn_sub_dig(t, p, 1);
+		bn_mod_dig(&rem, t, 3);
+		while (rem == 0) {
+			bn_div_dig(t, t, 3);
+			bn_mod_dig(&rem, t, 3);
+		}
+
+		/* Compute root of unity by computing CNR to (p - 1)/3^f. */
+		if (ctx->cnr < 0) {
+			fp_set_dig(ctx->crt.dp, -fp_prime_get_cnr());
+		} else {
+			fp_set_dig(ctx->crt.dp, fp_prime_get_cnr());
+		}
+		fp_exp(ctx->crt.dp, ctx->crt.dp, t);
 
 		ctx->ad2 = 0;
 		bn_sub_dig(t, p, 1);
@@ -290,8 +323,12 @@ const dig_t *fp_prime_get_conv(void) {
 #endif
 }
 
-const dig_t *fp_prime_get_root(void) {
-	return core_get()->root.dp;
+const dig_t *fp_prime_get_srt(void) {
+	return core_get()->srt.dp;
+}
+
+const dig_t *fp_prime_get_crt(void) {
+	return core_get()->crt.dp;
 }
 
 dig_t fp_prime_get_mod8(void) {

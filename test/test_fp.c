@@ -1106,6 +1106,78 @@ static int square_root(void) {
 	return code;
 }
 
+static int cube_root(void) {
+	int code = RLC_ERR;
+	fp_t a, b, c, d;
+
+	fp_null(a);
+	fp_null(b);
+	fp_null(c);
+	fp_null(d);
+
+	RLC_TRY {
+		fp_new(a);
+		fp_new(b);
+		fp_new(c);
+		fp_new(d);
+
+		TEST_CASE("cubic residuosity test is correct") {
+			fp_zero(a);
+			TEST_ASSERT(fp_is_cub(a) == 0, end);
+			fp_rand(a);
+			fp_sqr(b, a);
+			fp_mul(a, a, b);
+			TEST_ASSERT(fp_is_cub(a) == 1, end);
+			do {
+				fp_rand(a);
+			} while(fp_crt(b, a) == 1);
+			TEST_ASSERT(fp_is_cub(a) == 0, end);
+		}
+		TEST_END;
+
+		TEST_CASE("cube root extraction is correct") {
+			int r = 1;
+			fp_rand(a);
+			fp_sqr(c, a);
+			fp_mul(c, c, a);
+			TEST_ASSERT(fp_crt(b, c), end);
+			fp_copy(d, fp_prime_get_crt());
+			while (fp_cmp_dig(d, 1) != RLC_EQ) {
+				fp_copy(c, d);
+				fp_sqr(d, d);
+				fp_mul(d, d, c);
+			}
+			if (fp_cmp(b, a) != RLC_EQ) {
+				fp_mul(b, b, c);
+				if (fp_cmp(b, a) != RLC_EQ) {
+					fp_mul(b, b, c);
+					if (fp_cmp(b, a) != RLC_EQ) {
+						r = 0;
+					}
+				}
+			}
+			TEST_ASSERT(r == 1, end);
+			fp_rand(a);
+			if (fp_crt(b, a)) {
+				fp_sqr(c, b);
+				fp_mul(c, c, b);
+				TEST_ASSERT(fp_cmp(c, a) == RLC_EQ, end);
+			}
+		}
+		TEST_END;
+	}
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
+	}
+	code = RLC_OK;
+  end:
+	fp_free(a);
+	fp_free(b);
+	fp_free(c);
+	fp_free(d);
+	return code;
+}
+
 static int digit(void) {
 	int code = RLC_ERR;
 	fp_t a, b, c, d;
@@ -1249,6 +1321,11 @@ int main(void) {
 	}
 
 	if (square_root() != RLC_OK) {
+		core_clean();
+		return 1;
+	}
+
+	if (cube_root() != RLC_OK) {
 		core_clean();
 		return 1;
 	}

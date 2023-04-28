@@ -450,11 +450,20 @@ const dig_t *fp_prime_get_rdc(void);
 const dig_t *fp_prime_get_conv(void);
 
 /**
- * Returns a root of unity modulo the prime field modulus.
+ * Returns a 2^f-root of unity modulo the prime field modulus, for the maximum f
+ * such that 2^f divides (p-1).
  *
  * @return the root of unity.
  */
-const dig_t *fp_prime_get_root(void);
+const dig_t *fp_prime_get_srt(void);
+
+/**
+ * Returns a 3^f-root of unity modulo the prime field modulus, for the maximum f
+ * such that 3^f divides (p-1).
+ *
+ * @return the root of unity.
+ */
+const dig_t *fp_prime_get_crt(void);
 
 /**
  * Returns the result of prime order mod 8.
@@ -1194,5 +1203,23 @@ int fp_is_sqr(const fp_t a);
  * @return					- 1 if there is a square root, 0 otherwise.
  */
 int fp_srt(fp_t c, const fp_t a);
+
+/**
+ * Tests if a prime field element is a cubic residue.
+ *
+ * @param[in] a				- the prime field element to test.
+ * @return 1 if the argument is even, 0 otherwise.
+ */
+int fp_is_cub(const fp_t a);
+
+/**
+ * Extracts the cube root of a prime field element. Computes c = crt(a). The
+ * other cube root is the square of c.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the prime field element.
+ * @return					- 1 if there is a cube root, 0 otherwise.
+ */
+int fp_crt(fp_t c, const fp_t a);
 
 #endif /* !RLC_FP_H */
