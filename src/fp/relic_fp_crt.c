@@ -160,13 +160,14 @@ int fp_crt(fp_t c, const fp_t a) {
 				fp_sqr(t4, c);
 				fp_mul(c, c, t4);
 			}
-			fp_set_dig(t5, 1);
 			fp_sqr(t1, t0);
 			fp_mul(t1, t1, t0);
 			fp_mul(t1, t1, a);
 			if (rem == 2) {
+				fp_mul(t0, t0, a);
 				fp_mul(t1, t1, a);
 			}
+			fp_set_dig(t5, 1);
 			for (int j = f; j > 1; j--) {
 				fp_copy(t2, t1);
 				for (int i = 1; i < j - 1; i++) {
