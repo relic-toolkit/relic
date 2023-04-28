@@ -586,17 +586,21 @@ static void arith(void) {
 		BENCH_ADD(ep_map_basic(p, msg, 5));
 	} BENCH_END;
 
+#if EP_MAP == SSWUM || !defined(STRIP)
 	BENCH_RUN("ep_map_sswum") {
 		uint8_t msg[5];
 		rand_bytes(msg, 5);
 		BENCH_ADD(ep_map_sswum(p, msg, 5));
 	} BENCH_END;
+#endif
 
+#if EP_MAP == SWIFT || !defined(STRIP)
 	BENCH_RUN("ep_map_swift") {
 		uint8_t msg[5];
 		rand_bytes(msg, 5);
 		BENCH_ADD(ep_map_swift(p, msg, 5));
 	} BENCH_END;
+#endif
 
 	BENCH_RUN("ep_pck") {
 		ep_rand(p);

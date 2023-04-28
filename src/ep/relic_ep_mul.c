@@ -209,8 +209,6 @@ static void ep_mul_naf_imp(ep_t r, const ep_t p, const bn_t k) {
 #endif /* EP_PLAIN || EP_SUPER */
 #endif /* EP_MUL == LWNAF */
 
-#if EP_MUL == LWREG || !defined(STRIP)
-
 #if defined(EP_ENDOM)
 
 static void ep_mul_reg_glv(ep_t r, const ep_t p, const bn_t k) {
@@ -446,7 +444,6 @@ static void ep_mul_reg_imp(ep_t r, const ep_t p, const bn_t k) {
 }
 
 #endif /* EP_PLAIN || EP_SUPER */
-#endif /* EP_MUL == LWNAF */
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -666,8 +663,8 @@ void ep_mul_lwnaf(ep_t r, const ep_t p, const bn_t k) {
 
 #endif
 
-#if EP_MUL == LWREG || !defined(STRIP)
-
+/* Conditional compilation of the function below was turned off because it
+ * is used by the default for protected scalar multiplication in G1. */
 void ep_mul_lwreg(ep_t r, const ep_t p, const bn_t k) {
 	if (bn_is_zero(k) || ep_is_infty(p)) {
 		ep_set_infty(r);
@@ -685,8 +682,6 @@ void ep_mul_lwreg(ep_t r, const ep_t p, const bn_t k) {
 	ep_mul_reg_imp(r, p, k);
 #endif
 }
-
-#endif
 
 void ep_mul_gen(ep_t r, const bn_t k) {
 	if (bn_is_zero(k)) {
