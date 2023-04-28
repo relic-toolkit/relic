@@ -497,6 +497,7 @@
 #undef fp_set_dig
 #undef fp_bits
 #undef fp_rand
+#undef fp_norm
 #undef fp_print
 #undef fp_size_str
 #undef fp_read_str
@@ -550,6 +551,8 @@
 #undef fp_exp_monty
 #undef fp_is_sqr
 #undef fp_srt
+#undef fp_is_cub
+#undef fp_crt
 
 #define fp_prime_init 	RLC_PREFIX(fp_prime_init)
 #define fp_prime_clean 	RLC_PREFIX(fp_prime_clean)
@@ -591,6 +594,7 @@
 #define fp_set_dig 	RLC_PREFIX(fp_set_dig)
 #define fp_bits 	RLC_PREFIX(fp_bits)
 #define fp_rand 	RLC_PREFIX(fp_rand)
+#define fp_norm 	RLC_PREFIX(fp_norm)
 #define fp_print 	RLC_PREFIX(fp_print)
 #define fp_size_str 	RLC_PREFIX(fp_size_str)
 #define fp_read_str 	RLC_PREFIX(fp_read_str)
@@ -644,6 +648,8 @@
 #define fp_exp_monty 	RLC_PREFIX(fp_exp_monty)
 #define fp_is_sqr 	RLC_PREFIX(fp_is_sqr)
 #define fp_srt 	RLC_PREFIX(fp_srt)
+#define fp_is_cub 	RLC_PREFIX(fp_is_cub)
+#define fp_crt 	RLC_PREFIX(fp_crt)
 
 #undef fp_add1_low
 #undef fp_addn_low
@@ -2026,8 +2032,6 @@
 #define fp54_t		RLC_PREFIX(fp54_t)
 #define dv54_t		RLC_PREFIX(dv54_t)
 
-#undef fp2_add_dig
-#undef fp2_sub_dig
 #undef fp2_field_init
 #undef fp2_field_get_qnr
 #undef fp2_copy
@@ -2043,8 +2047,10 @@
 #undef fp2_set_dig
 #undef fp2_add_basic
 #undef fp2_add_integ
+#undef fp2_add_dig
 #undef fp2_sub_basic
 #undef fp2_sub_integ
+#undef fp2_sub_dig
 #undef fp2_neg
 #undef fp2_dbl_basic
 #undef fp2_dbl_integ
@@ -2072,8 +2078,6 @@
 #undef fp2_pck
 #undef fp2_upk
 
-#define fp2_add_dig 	RLC_PREFIX(fp2_add_dig)
-#define fp2_sub_dig 	RLC_PREFIX(fp2_sub_dig)
 #define fp2_field_init 	RLC_PREFIX(fp2_field_init)
 #define fp2_field_get_qnr 	RLC_PREFIX(fp2_field_get_qnr)
 #define fp2_copy 	RLC_PREFIX(fp2_copy)
@@ -2089,8 +2093,10 @@
 #define fp2_set_dig 	RLC_PREFIX(fp2_set_dig)
 #define fp2_add_basic 	RLC_PREFIX(fp2_add_basic)
 #define fp2_add_integ 	RLC_PREFIX(fp2_add_integ)
+#define fp2_add_dig 	RLC_PREFIX(fp2_add_dig)
 #define fp2_sub_basic 	RLC_PREFIX(fp2_sub_basic)
 #define fp2_sub_integ 	RLC_PREFIX(fp2_sub_integ)
+#define fp2_sub_dig 	RLC_PREFIX(fp2_sub_dig)
 #define fp2_neg 	RLC_PREFIX(fp2_neg)
 #define fp2_dbl_basic 	RLC_PREFIX(fp2_dbl_basic)
 #define fp2_dbl_integ 	RLC_PREFIX(fp2_dbl_integ)
@@ -2171,8 +2177,10 @@
 #undef fp3_set_dig
 #undef fp3_add_basic
 #undef fp3_add_integ
+#undef fp3_add_dig
 #undef fp3_sub_basic
 #undef fp3_sub_integ
+#undef fp3_sub_dig
 #undef fp3_neg
 #undef fp3_dbl_basic
 #undef fp3_dbl_integ
@@ -2181,6 +2189,7 @@
 #undef fp3_mul_art
 #undef fp3_mul_nor
 #undef fp3_mul_frb
+#undef fp3_mul_dig
 #undef fp3_sqr_basic
 #undef fp3_sqr_integ
 #undef fp3_inv
@@ -2205,8 +2214,10 @@
 #define fp3_set_dig 	RLC_PREFIX(fp3_set_dig)
 #define fp3_add_basic 	RLC_PREFIX(fp3_add_basic)
 #define fp3_add_integ 	RLC_PREFIX(fp3_add_integ)
+#define fp3_add_dig 	RLC_PREFIX(fp3_add_dig)
 #define fp3_sub_basic 	RLC_PREFIX(fp3_sub_basic)
 #define fp3_sub_integ 	RLC_PREFIX(fp3_sub_integ)
+#define fp3_sub_dig 	RLC_PREFIX(fp3_sub_dig)
 #define fp3_neg 	RLC_PREFIX(fp3_neg)
 #define fp3_dbl_basic 	RLC_PREFIX(fp3_dbl_basic)
 #define fp3_dbl_integ 	RLC_PREFIX(fp3_dbl_integ)
@@ -2215,6 +2226,7 @@
 #define fp3_mul_art 	RLC_PREFIX(fp3_mul_art)
 #define fp3_mul_nor 	RLC_PREFIX(fp3_mul_nor)
 #define fp3_mul_frb 	RLC_PREFIX(fp3_mul_frb)
+#define fp3_mul_dig 	RLC_PREFIX(fp3_mul_dig)
 #define fp3_sqr_basic 	RLC_PREFIX(fp3_sqr_basic)
 #define fp3_sqr_integ 	RLC_PREFIX(fp3_sqr_integ)
 #define fp3_inv 	RLC_PREFIX(fp3_inv)
@@ -2273,7 +2285,9 @@
 #undef fp4_cmp_dig
 #undef fp4_set_dig
 #undef fp4_add
+#undef fp4_add_dig
 #undef fp4_sub
+#undef fp4_sub_dig
 #undef fp4_neg
 #undef fp4_dbl
 #undef fp4_mul_unr
@@ -2281,6 +2295,7 @@
 #undef fp4_mul_lazyr
 #undef fp4_mul_art
 #undef fp4_mul_frb
+#undef fp4_mul_dig
 #undef fp4_mul_dxs
 #undef fp4_sqr_unr
 #undef fp4_sqr_basic
@@ -2306,7 +2321,9 @@
 #define fp4_cmp_dig 	RLC_PREFIX(fp4_cmp_dig)
 #define fp4_set_dig 	RLC_PREFIX(fp4_set_dig)
 #define fp4_add 	RLC_PREFIX(fp4_add)
+#define fp4_add_dig 	RLC_PREFIX(fp4_add_dig)
 #define fp4_sub 	RLC_PREFIX(fp4_sub)
+#define fp4_sub_dig 	RLC_PREFIX(fp4_sub_dig)
 #define fp4_neg 	RLC_PREFIX(fp4_neg)
 #define fp4_dbl 	RLC_PREFIX(fp4_dbl)
 #define fp4_mul_unr 	RLC_PREFIX(fp4_mul_unr)
@@ -2314,6 +2331,7 @@
 #define fp4_mul_lazyr 	RLC_PREFIX(fp4_mul_lazyr)
 #define fp4_mul_art 	RLC_PREFIX(fp4_mul_art)
 #define fp4_mul_frb 	RLC_PREFIX(fp4_mul_frb)
+#define fp4_mul_dig 	RLC_PREFIX(fp4_mul_dig)
 #define fp4_mul_dxs 	RLC_PREFIX(fp4_mul_dxs)
 #define fp4_sqr_unr 	RLC_PREFIX(fp4_sqr_unr)
 #define fp4_sqr_basic 	RLC_PREFIX(fp4_sqr_basic)
