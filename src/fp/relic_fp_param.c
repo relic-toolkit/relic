@@ -633,7 +633,7 @@ int fp_param_set_any_dense(void) {
 #ifdef FP_QNRES
 		do {
 			bn_gen_prime(p, RLC_FP_BITS);
-		} while ((p->dp[0] & 0x7) != 3);
+		} while ((p->dp[0] % 8) != 3);
 #else
 		bn_gen_prime(p, RLC_FP_BITS);
 #endif
@@ -739,7 +739,8 @@ int fp_param_set_any_tower(void) {
 	do {
 		/* Since we have to generate a prime number, pick a nice towering. */
 		fp_param_set_any_dense();
-	} while (fp_prime_get_mod8() == 1 || fp_prime_get_mod8() == 5);
+	} while (fp_prime_get_mod8() == 1 || fp_prime_get_mod8() == 5
+		|| fp_prime_get_mod18() % 3 == 2);
 #endif
 
 	return RLC_OK;
