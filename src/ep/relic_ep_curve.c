@@ -110,7 +110,15 @@ static void ep_curve_set_map(void) {
 				fp_set_dig(ctx->ep_map_u, 0);
 				do {
 					fp_add_dig(ctx->ep_map_u, ctx->ep_map_u, 1);
-				} while (fp_is_sqr(ctx->ep_map_u));
+					/* Check that g(b/ua) = u^3 + a * u + b is square*/
+					fp_mul(c1, ctx->ep_a, ctx->ep_map_u);
+					fp_inv(c1, c1);
+					fp_mul(c1, c1, ctx->ep_b);
+					fp_sqr(c0, c1);
+					fp_add(c0, c0, ctx->ep_a);
+					fp_mul(c0, c0, ctx->ep_map_u);
+					fp_add(c0, c0, ctx->ep_b);
+				} while (fp_is_sqr(ctx->ep_map_u) || !fp_is_sqr(c0));
 #ifdef EP_CTMAP
 			}
 #endif
@@ -146,7 +154,7 @@ static void ep_curve_set_map(void) {
 				fp_add(c3, c2, c3);           /* c3 = 3 * u^2 + 4 * a */
 				fp_neg(c3, c3);               /* c3 = -(3 * u^2 + 4 * a) */
 				fp_mul(c2, c3, c0);           /* c2 = -g(u) * (3 * u^2 + 4 * a) */
-			} while (!fp_is_sqr(c2));
+			} while (fp_is_zero(c2) || !fp_is_sqr(c2));
 			if (!fp_srt(c2, c2)) {        /* c2 = sqrt(-g(u) * (3 * u^2 + 4 * a)) */
 				RLC_THROW(ERR_NO_VALID);
 			}
