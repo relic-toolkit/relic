@@ -49,6 +49,7 @@ void ep_mul_cof(ep_t r, const ep_t p) {
 		ep_new(v);
 
 		switch (ep_curve_is_pairf()) {
+#if defined(EP_ENDOM) && !defined(STRIP)
 			case EP_BN:
 				/* h = 1 */
 				break;
@@ -80,6 +81,7 @@ void ep_mul_cof(ep_t r, const ep_t p) {
 				ep_mul_dig(r, r, 49);
 				ep_mul_dig(r, r, 7);
 				break;
+#endif
 			default:
 				/* multiply by cofactor to get the correct group. */
 				ep_curve_get_cof(k);
