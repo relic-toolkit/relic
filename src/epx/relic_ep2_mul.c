@@ -173,6 +173,7 @@ void ep2_mul_basic(ep2_t r, const ep2_t p, const bn_t k) {
 	ep2_null(t);
 
 	if (bn_is_zero(k) || ep2_is_infty(p)) {
+		RLC_FREE(naf);
 		ep2_set_infty(r);
 		return;
 	}

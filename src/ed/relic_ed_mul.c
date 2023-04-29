@@ -199,6 +199,7 @@ void ed_mul_basic(ed_t r, const ed_t p, const bn_t k) {
 	ed_null(t);
 
 	if (bn_is_zero(k) || ed_is_infty(p)) {
+		RLC_FREE(naf);
 		ed_set_infty(r);
 		return;
 	}

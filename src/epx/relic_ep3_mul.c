@@ -217,6 +217,7 @@ void ep3_mul_basic(ep3_t r, const ep3_t p, const bn_t k) {
 	ep3_null(t);
 
 	if (bn_is_zero(k) || ep3_is_infty(p)) {
+		RLC_FREE(naf);
 		ep3_set_infty(r);
 		return;
 	}

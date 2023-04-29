@@ -174,6 +174,7 @@ void ep4_mul_basic(ep4_t r, const ep4_t p, const bn_t k) {
 	ep4_null(t);
 
 	if (bn_is_zero(k) || ep4_is_infty(p)) {
+		RLC_FREE(naf);
 		ep4_set_infty(r);
 		return;
 	}

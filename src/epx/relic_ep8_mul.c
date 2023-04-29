@@ -168,22 +168,25 @@ static void ep8_mul_naf_imp(ep8_t r, const ep8_t p, const bn_t k) {
 
 void ep8_mul_basic(ep8_t r, const ep8_t p, const bn_t k) {
 	ep8_t t;
-	int8_t u, naf[2 * RLC_FP_BITS + 1];
+	int8_t u, *naf = RLC_ALLOCA(int8_t, bn_bits(k) + 1);
 	size_t l;
 
 	ep8_null(t);
 
 	if (bn_is_zero(k) || ep8_is_infty(p)) {
+		RLC_FREE(naf);
 		ep8_set_infty(r);
 		return;
 	}
 
 	RLC_TRY {
 		ep8_new(t);
+		if (naf == NULL) {
+			RLC_THROW(ERR_NO_BUFFER);
+		}
 
-		l = 2 * RLC_FP_BITS + 1;
+		l = bn_bits(k) + 1;
 		bn_rec_naf(naf, &l, k, 2);
-
 		ep8_set_infty(t);
 		for (int i = l - 1; i >= 0; i--) {
 			ep8_dbl(t, t);
@@ -206,6 +209,7 @@ void ep8_mul_basic(ep8_t r, const ep8_t p, const bn_t k) {
 	}
 	RLC_FINALLY {
 		ep8_free(t);
+		RLC_FREE(naf);
 	}
 }
 
