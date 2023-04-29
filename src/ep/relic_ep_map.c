@@ -274,7 +274,9 @@ void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 		fp_prime_conv(t, k);
 		s = pseudo_random_bytes[2 * len_per_elm] & 1;
 
-		if (ep_curve_opt_a() == RLC_ZERO) {
+		if (ep_curve_opt_a() != RLC_ZERO) {
+			RLC_THROW(ERR_NO_VALID);
+		} else {
 			fp_sqr(x1, u);
 			fp_mul(x1, x1, u);
 			fp_sqr(y1, t);
@@ -339,7 +341,11 @@ void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 				ep_mul_cof(p, p);
 			}
 		}
-
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
 		bn_free(k);
 		fp_free(t);
 		fp_free(u);
@@ -349,11 +355,6 @@ void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 		fp_free(x1);
 		fp_free(y1);
 		fp_free(z1);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
 		RLC_FREE(pseudo_random_bytes);
 	}
 }

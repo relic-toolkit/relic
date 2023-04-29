@@ -142,7 +142,6 @@ static void ep_mul_glv_imp(ep_t r, const ep_t p, const bn_t k) {
 			bn_free(v1[i]);
 			bn_free(v2[i]);
 		}
-
 	}
 }
 
