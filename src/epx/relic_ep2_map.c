@@ -374,7 +374,11 @@ void ep2_map_swift(ep2_t p, const uint8_t *msg, size_t len) {
 
 			ep2_mul_cof(p, p);
 		}
-
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
 		bn_free(k);
 		fp2_free(t);
 		fp2_free(u);
@@ -384,11 +388,6 @@ void ep2_map_swift(ep2_t p, const uint8_t *msg, size_t len) {
 		fp2_free(x1);
 		fp2_free(y1);
 		fp2_free(z1);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
 		RLC_FREE(r);
 	}
 }

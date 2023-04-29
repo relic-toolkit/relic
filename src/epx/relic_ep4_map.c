@@ -173,7 +173,11 @@ void ep4_map(ep4_t p, const uint8_t *msg, size_t len) {
 
 			ep4_mul_cof(p, p);
 		}
-
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
 		bn_free(k);
 		fp4_free(t);
 		fp4_free(u);
@@ -183,11 +187,6 @@ void ep4_map(ep4_t p, const uint8_t *msg, size_t len) {
 		fp4_free(x1);
 		fp4_free(y1);
 		fp4_free(z1);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
 		RLC_FREE(r);
 	}
 }

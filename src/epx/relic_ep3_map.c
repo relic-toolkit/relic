@@ -166,7 +166,11 @@ void ep3_map(ep3_t p, const uint8_t *msg, size_t len) {
 
 			ep3_mul_cof(p, p);
 		}
-
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
 		bn_free(k);
 		fp3_free(t);
 		fp3_free(u);
@@ -176,11 +180,6 @@ void ep3_map(ep3_t p, const uint8_t *msg, size_t len) {
 		fp3_free(x1);
 		fp3_free(y1);
 		fp3_free(z1);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
 		RLC_FREE(r);
 	}
 }

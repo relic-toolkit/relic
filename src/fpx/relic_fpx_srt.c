@@ -242,11 +242,11 @@ int fp3_srt(fp3_t c, const fp3_t a) {
 					fp_mul(t0[0], t3[0], root);
 					fp_mul(t0[1], t3[1], root);
 					fp_mul(t0[2], t3[2], root);
-					dv_copy_cond(c[0], t0[0], RLC_FP_DIGS,
+					dv_copy_cond(t3[0], t0[0], RLC_FP_DIGS,
 							fp3_cmp_dig(t2, 1) != RLC_EQ);
-					dv_copy_cond(c[1], t0[1], RLC_FP_DIGS,
+					dv_copy_cond(t3[1], t0[1], RLC_FP_DIGS,
 							fp3_cmp_dig(t2, 1) != RLC_EQ);
-					dv_copy_cond(c[2], t0[2], RLC_FP_DIGS,
+					dv_copy_cond(t3[2], t0[2], RLC_FP_DIGS,
 							fp3_cmp_dig(t2, 1) != RLC_EQ);
 					fp_sqr(root, root);
 					fp_mul(t0[0], t1[0], root);

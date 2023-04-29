@@ -287,7 +287,12 @@ void ep8_mul_slide(ep8_t r, const ep8_t p, const bn_t k) {
 
 void ep8_mul_monty(ep8_t r, const ep8_t p, const bn_t k) {
 	ep8_t t[2];
+	bn_t n, l, _k;
+	size_t bits;
 
+	bn_null(n);
+	bn_null(l);
+	bn_null(_k);
 	ep8_null(t[0]);
 	ep8_null(t[1]);
 
@@ -297,11 +302,29 @@ void ep8_mul_monty(ep8_t r, const ep8_t p, const bn_t k) {
 	}
 
 	RLC_TRY {
+		bn_new(n);
+		bn_new(l);
+		bn_new(_k);
 		ep8_new(t[0]);
 		ep8_new(t[1]);
 
-		ep8_set_infty(t[0]);
-		ep8_copy(t[1], p);
+		ep8_curve_get_ord(n);
+		bits = bn_bits(n);
+
+		bn_mod(_k, k, n);
+		bn_abs(l, _k);
+		bn_add(l, l, n);
+		bn_add(n, l, n);
+		dv_swap_cond(l->dp, n->dp, RLC_MAX(l->used, n->used),
+			bn_get_bit(l, bits) == 0);
+		l->used = RLC_SEL(l->used, n->used, bn_get_bit(l, bits) == 0);
+
+		ep8_norm(t[0], p);
+		ep8_dbl(t[1], t[0]);
+
+		/* Blind both points independently. */
+		ep8_blind(t[0], t[0]);
+		ep8_blind(t[1], t[1]);
 
 		for (int i = bn_bits(k) - 1; i >= 0; i--) {
 			int j = bn_get_bit(k, i);
@@ -328,13 +351,13 @@ void ep8_mul_monty(ep8_t r, const ep8_t p, const bn_t k) {
 		}
 
 		ep8_norm(r, t[0]);
-		if (bn_sign(k) == RLC_NEG) {
-			ep8_neg(r, r);
-		}
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
+		bn_free(n);
+		bn_free(l);
+		bn_free(_k);
 		ep8_free(t[1]);
 		ep8_free(t[0]);
 	}

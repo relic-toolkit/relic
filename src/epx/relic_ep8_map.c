@@ -186,7 +186,11 @@ void ep8_map(ep8_t p, const uint8_t *msg, size_t len) {
 
 			ep8_mul_cof(p, p);
 		}
-
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
 		bn_free(k);
 		fp8_free(t);
 		fp8_free(u);
@@ -196,11 +200,6 @@ void ep8_map(ep8_t p, const uint8_t *msg, size_t len) {
 		fp8_free(x1);
 		fp8_free(y1);
 		fp8_free(z1);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
 		RLC_FREE(r);
 	}
 }

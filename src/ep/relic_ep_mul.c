@@ -570,7 +570,7 @@ void ep_mul_slide(ep_t r, const ep_t p, const bn_t k) {
 }
 
 #endif
-#include "assert.h"
+
 #if EP_MUL == MONTY || !defined(STRIP)
 
 void ep_mul_monty(ep_t r, const ep_t p, const bn_t k) {
@@ -615,7 +615,7 @@ void ep_mul_monty(ep_t r, const ep_t p, const bn_t k) {
 		ep_blind(t[1], t[1]);
 
 		for (int i = bits - 1; i >= 0; i--) {
-			int j = bn_get_bit(l, i);
+ 			int j = bn_get_bit(l, i);
 			dv_swap_cond(t[0]->x, t[1]->x, RLC_FP_DIGS, j ^ 1);
 			dv_swap_cond(t[0]->y, t[1]->y, RLC_FP_DIGS, j ^ 1);
 			dv_swap_cond(t[0]->z, t[1]->z, RLC_FP_DIGS, j ^ 1);
