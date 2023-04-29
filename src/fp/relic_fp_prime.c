@@ -247,6 +247,8 @@ void fp_prime_init(void) {
 #if FP_INV == JUMPDS || !defined(STRIP)
 	bn_make(&(ctx->inv), RLC_FP_DIGS);
 #endif /* FP_INV */
+	bn_make(&(ctx->srt), RLC_FP_DIGS);
+	bn_make(&(ctx->crt), RLC_FP_DIGS);
 }
 
 void fp_prime_clean(void) {
@@ -264,6 +266,8 @@ void fp_prime_clean(void) {
 #if FP_INV == JUMPDS || !defined(STRIP)
 		bn_clean(&(ctx->inv));
 #endif /* FP_INV */
+		bn_clean(&(ctx->srt));
+		bn_clean(&(ctx->crt));
 		bn_clean(&(ctx->prime));
 		bn_clean(&(ctx->par));
 	}

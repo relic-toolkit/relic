@@ -262,7 +262,9 @@ void fp3_field_init(void) {
 			while (ctx->frb3[1] < 3 && fp_is_zero(t0[ctx->frb3[1]++]));
 			fp_copy(ctx->fp3_p2[0][0], t0[--ctx->frb3[1]]);
 		} else {
-			fp3_copy(ctx->fp3_p2[0], t0);
+			fp_copy(ctx->fp3_p2[0][0], t0[0]);
+			fp_copy(ctx->fp3_p2[0][1], t0[1]);
+			fp_copy(ctx->fp3_p2[0][2], t0[2]);
 		}
 
 		/* Compute t0 = u^((p - (p mod 18))/18). */
@@ -277,7 +279,9 @@ void fp3_field_init(void) {
 			while (ctx->frb3[2] < 3 && fp_is_zero(t0[ctx->frb3[2]++]));
 			fp_copy(ctx->fp3_p2[1][0], t0[--ctx->frb3[2]]);
 		} else {
-			fp3_copy(ctx->fp3_p2[1], t0);
+			fp_copy(ctx->fp3_p2[1][0], t0[0]);
+			fp_copy(ctx->fp3_p2[1][1], t0[1]);
+			fp_copy(ctx->fp3_p2[1][2], t0[2]);
 		}
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);

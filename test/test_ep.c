@@ -1325,6 +1325,7 @@ static int compression(void) {
 
 	RLC_TRY {
 		ep_new(a);
+		ep_new(b);
 		ep_new(c);
 
 		TEST_CASE("point compression is correct") {
@@ -1341,6 +1342,7 @@ static int compression(void) {
 	code = RLC_OK;
   end:
 	ep_free(a);
+	ep_free(b);
 	ep_free(c);
 	return code;
 }
