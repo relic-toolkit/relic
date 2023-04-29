@@ -129,6 +129,7 @@ int fp_srt(fp_t c, const fp_t a) {
 		fp_free(t0);
 		fp_free(t1);
 		fp_free(t2);
+		fp_free(t3);
 	}
 	return r;
 }
