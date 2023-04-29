@@ -120,8 +120,8 @@ static void ep2_map_from_field(ep2_t p, const uint8_t *r, size_t len) {
 		/* which hash function should we use? */
 		const int abNeq0 = (ep2_curve_opt_a() != RLC_ZERO) &&
 				(ep2_curve_opt_b() != RLC_ZERO);
-		void (*const map_fn)(ep2_t, fp2_t) = (ep2_curve_is_ctmap() ||
-				abNeq0) ? ep2_map_sswu : ep2_map_svdw;
+		const void (*const map_fn)(ep2_t, fp2_t) = (void (*const))
+				(ep2_curve_is_ctmap() || abNeq0 ? ep2_map_sswu : ep2_map_svdw);
 
 #define EP2_MAP_CONVERT_BYTES(IDX)											\
 		do {																\

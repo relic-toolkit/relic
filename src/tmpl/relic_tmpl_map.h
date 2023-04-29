@@ -172,7 +172,7 @@
  * "Fast and simple constant-time hashing to the BLS12-381 Elliptic Curve"
  */
 #define TMPL_MAP_SSWU(CUR, PFX, PTR_TY, COPY_COND)							\
-	static void CUR##_map_sswu(CUR##_t p, PFX##_t t) {						\
+	static void CUR##_map_sswu(CUR##_t p, const PFX##_t t) {				\
 		PFX##_t t0, t1, t2, t3;												\
 		ctx_t *ctx = core_get();											\
 		PTR_TY *mBoverA = ctx->CUR##_map_c[0];								\
@@ -197,40 +197,40 @@
 			PFX##_sqr(t1, t0);     /* t1 = u^2 * t^4 */						\
 			PFX##_add(t2, t1, t0); /* t2 = u^2 * t^4 + u * t^2 */			\
 																			\
-			/* handle the exceptional cases */												\
-			/* XXX(rsw) should be done projectively */										\
-			{																				\
-				const int e1 = PFX##_is_zero(t2);											\
-				PFX##_neg(t3, u);           /* t3 = -u */									\
-				COPY_COND(t2, t3, e1);      /* exception: -u instead of u^2t^4 + ut^2 */	\
-				PFX##_inv(t2, t2);          /* t2 = -1/u or 1/(u^2 * t^4 + u*t^2) */		\
-				PFX##_add_dig(t3, t2, 1);   /* t3 = 1 + t2 */								\
-				COPY_COND(t2, t3, e1 == 0); /* only add 1 if t2 != -1/u */					\
-			}																				\
-			/* e1 goes out of scope */														\
-                                                                                			\
-			/* compute x1, g(x1) */															\
-			PFX##_mul(p->x, t2, mBoverA); /* -B / A * (1 + 1 / (u^2 * t^4 + u * t^2)) */	\
-			PFX##_sqr(p->y, p->x);        /* x^2 */											\
-			PFX##_add(p->y, p->y, a);     /* x^2 + a */										\
-			PFX##_mul(p->y, p->y, p->x);  /* x^3 + a x */									\
-			PFX##_add(p->y, p->y, b);     /* x^3 + a x + b */								\
-                                                                                    		\
-			/* compute x2, g(x2) */															\
-			PFX##_mul(t2, t0, p->x); /* t2 = u * t^2 * x1 */								\
-			PFX##_mul(t1, t0, t1);   /* t1 = u^3 * t^6 */									\
-			PFX##_mul(t3, t1, p->y); /* t5 = g(t2) = u^3 * t^6 * g(p->x) */					\
-																							\
-			/* XXX(rsw)                                                               */	\
-			/* This should be done in constant time and without computing 2 sqrts.    */	\
-			/* Avoiding a second sqrt relies on knowing the 2-adicity of the modulus. */	\
-			if (!PFX##_srt(p->y, p->y)) {													\
-				/* try x2, g(x2) */															\
-				PFX##_copy(p->x, t2);														\
-				if (!PFX##_srt(p->y, t3)) {													\
-					RLC_THROW(ERR_NO_VALID);												\
-				}																			\
-			}																				\
+			/* handle the exceptional cases */								\
+			/* XXX(rsw) should be done projectively */						\
+			{																\
+				const int e1 = PFX##_is_zero(t2);							\
+				PFX##_neg(t3, u);           /* t3 = -u */					\
+				/* exception: -u instead of u^2t^4 + ut^2 */				\
+				COPY_COND(t2, t3, e1);      								\
+				/* t2 = -1/u or 1/(u^2 * t^4 + u*t^2) */					\
+				PFX##_inv(t2, t2);          								\
+				PFX##_add_dig(t3, t2, 1);   /* t3 = 1 + t2 */				\
+				COPY_COND(t2, t3, e1 == 0); /* only add 1 if t2 != -1/u */	\
+			}																\
+			/* e1 goes out of scope */										\
+			/* compute x1, g(x1) */											\
+			/* -B / A * (1 + 1 / (u^2 * t^4 + u * t^2)) */					\
+			PFX##_mul(p->x, t2, mBoverA);									\
+			PFX##_sqr(p->y, p->x);        /* x^2 */							\
+			PFX##_add(p->y, p->y, a);     /* x^2 + a */						\
+			PFX##_mul(p->y, p->y, p->x);  /* x^3 + a x */					\
+			PFX##_add(p->y, p->y, b);     /* x^3 + a x + b */				\
+                                                                            \
+			/* compute x2, g(x2) */											\
+			PFX##_mul(t2, t0, p->x); /* t2 = u * t^2 * x1 */				\
+			PFX##_mul(t1, t0, t1);   /* t1 = u^3 * t^6 */					\
+			PFX##_mul(t3, t1, p->y); /* t5 = g(t2) = u^3 * t^6 * g(p->x) */	\
+			{																\
+				/* try x2, g(x2) */											\
+				const int e1 = PFX##_is_sqr(p->y);							\
+				COPY_COND(p->x, t2, e1 == 0);								\
+				COPY_COND(p->y, t3, e1 == 0);								\
+			}																\
+			if (!PFX##_srt(p->y, p->y)) {									\
+				RLC_THROW(ERR_NO_VALID);									\
+			}																\
 			PFX##_set_dig(p->z, 1);											\
 			p->coord = BASIC;												\
 		}																	\
@@ -248,8 +248,15 @@
  * draft-irtf-cfrg-hash-to-curve-06, Section 6.6.1
  */
 #define TMPL_MAP_SVDW(CUR, PFX, PTR_TY, COPY_COND)							\
-	static void CUR##_map_svdw(CUR##_t p, PFX##_t t) {						\
+	static void CUR##_map_svdw(CUR##_t p, const PFX##_t t) {				\
 		PFX##_t t1, t2, t3, t4;												\
+		ctx_t *ctx = core_get();											\
+		PTR_TY *gU = ctx->CUR##_map_c[0];									\
+		PTR_TY *mUover2 = ctx->CUR##_map_c[1];								\
+		PTR_TY *c3 = ctx->CUR##_map_c[2];									\
+		PTR_TY *c4 = ctx->CUR##_map_c[3];									\
+		PTR_TY *u = ctx->CUR##_map_u;										\
+																			\
 		PFX##_null(t1);														\
 		PFX##_null(t2);														\
 		PFX##_null(t3);														\
@@ -261,13 +268,6 @@
 			PFX##_new(t3);													\
 			PFX##_new(t4);													\
 																			\
-			ctx_t *ctx = core_get();										\
-			PTR_TY *gU = ctx->CUR##_map_c[0];								\
-			PTR_TY *mUover2 = ctx->CUR##_map_c[1];							\
-			PTR_TY *c3 = ctx->CUR##_map_c[2];								\
-			PTR_TY *c4 = ctx->CUR##_map_c[3];								\
-			PTR_TY *u = ctx->CUR##_map_u;									\
-                                                                            \
 			/* start computing the map */									\
 			PFX##_sqr(t1, t);												\
 			PFX##_mul(t1, t1, gU);											\
@@ -290,26 +290,31 @@
 			PFX##_mul(t4, t4, t3);											\
 			PFX##_mul(t4, t4, c3);											\
 																			\
-			/* XXX(rsw) this should be constant time */						\
 			/* compute x1 and g(x1) */										\
 			PFX##_sub(p->x, mUover2, t4);									\
 			CUR##_rhs(p->y, p);												\
-			if (!PFX##_srt(p->y, p->y)) {									\
+			{																\
+				const int e0 = PFX##_is_sqr(p->y);							\
 				/* compute x2 and g(x2) */									\
-				PFX##_add(p->x, mUover2, t4);								\
-				CUR##_rhs(p->y, p);											\
-				if (!PFX##_srt(p->y, p->y)) {								\
-					/* compute x3 and g(x3) */								\
-					PFX##_sqr(p->x, t2);									\
-					PFX##_mul(p->x, p->x, t3);								\
-					PFX##_sqr(p->x, p->x);									\
-					PFX##_mul(p->x, p->x, c4);								\
-					PFX##_add(p->x, p->x, u);								\
-					CUR##_rhs(p->y, p);										\
-					if (!PFX##_srt(p->y, p->y)) {							\
-						RLC_THROW(ERR_NO_VALID);							\
-					}														\
-				}															\
+				PFX##_add(t4, mUover2, t4);									\
+				COPY_COND(p->x, t4, e0 == 0);								\
+				CUR##_rhs(t1, p);											\
+				COPY_COND(p->y, t1, e0 == 0);								\
+			}																\
+			{																\
+				const int e1 = PFX##_is_sqr(p->y);							\
+				/* compute x3 and g(x3) */									\
+				PFX##_sqr(t1, t2);											\
+				PFX##_mul(t1, t1, t3);										\
+				PFX##_sqr(t1, t1);											\
+				PFX##_mul(t1, t1, c4);										\
+				PFX##_add(t1, t1, u);										\
+				COPY_COND(p->x, t1, e1 == 0);								\
+				CUR##_rhs(t2, p);											\
+				COPY_COND(p->y, t2, e1 == 0);								\
+			}																\
+			if (!PFX##_srt(p->y, p->y)) {									\
+				RLC_THROW(ERR_NO_VALID);									\
 			}																\
 			PFX##_set_dig(p->z, 1);											\
 			p->coord = BASIC;												\

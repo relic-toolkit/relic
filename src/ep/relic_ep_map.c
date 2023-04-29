@@ -84,7 +84,7 @@ TMPL_MAP_SVDW(ep, fp, dig_t, EP_MAP_COPY_COND);
  * @param[in] map_fn		- the mapping function.
  */
 static void ep_map_from_field(ep_t p, const uint8_t *uniform_bytes, size_t len,
-		const void (*const map_fn)(ep_t, fp_t)) {
+		const void (*const map_fn)(ep_t, const fp_t)) {
 	bn_t k;
 	fp_t t;
 	ep_t q;
@@ -220,8 +220,8 @@ void ep_map_sswum(ep_t p, const uint8_t *msg, size_t len) {
 		/* figure out which hash function to use */
 		const int abNeq0 = (ep_curve_opt_a() != RLC_ZERO) &&
 				(ep_curve_opt_b() != RLC_ZERO);
-		void (*const map_fn)(ep_t, fp_t) = (ep_curve_is_ctmap() ||
-				abNeq0) ? ep_map_sswu : ep_map_svdw;
+		const void (*const map_fn)(ep_t, const fp_t) = (void (*const))
+				(ep_curve_is_ctmap() || abNeq0 ? ep_map_sswu : ep_map_svdw);
 		ep_map_from_field(p, r, 2 * elm, map_fn);
 	}
 	RLC_CATCH_ANY {
