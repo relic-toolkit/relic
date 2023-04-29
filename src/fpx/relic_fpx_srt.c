@@ -233,15 +233,15 @@ int fp3_srt(fp3_t c, const fp3_t a) {
 
 				fp3_sqr(t1, t0);
 				fp3_mul(t1, t1, a);
-				fp3_mul(c, t0, a);
+				fp3_mul(t3, t0, a);
 				fp3_copy(t2, t1);
 				for (int j = f; j > 1; j--) {
 					for (int i = 1; i < j - 1; i++) {
 						fp3_sqr(t2, t2);
 					}
-					fp_mul(t0[0], c[0], root);
-					fp_mul(t0[1], c[1], root);
-					fp_mul(t0[2], c[2], root);
+					fp_mul(t0[0], t3[0], root);
+					fp_mul(t0[1], t3[1], root);
+					fp_mul(t0[2], t3[2], root);
 					dv_copy_cond(c[0], t0[0], RLC_FP_DIGS,
 							fp3_cmp_dig(t2, 1) != RLC_EQ);
 					dv_copy_cond(c[1], t0[1], RLC_FP_DIGS,
@@ -283,7 +283,7 @@ int fp3_srt(fp3_t c, const fp3_t a) {
 
 				fp3_mul(t0, t0, a);
 				fp_sub_dig(t1[0], t1[0], 1);
-				fp3_mul(c, t0, t1);
+				fp3_mul(t3, t0, t1);
 				break;
 			case 3:
 			case 7:
@@ -298,7 +298,7 @@ int fp3_srt(fp3_t c, const fp3_t a) {
 				fp3_exp(t0, t0, e);
 
 				fp3_mul(t0, t0, a);
-				fp3_mul(c, t0, t1);
+				fp3_mul(t3, t0, t1);
 				break;
 			default:
 				fp3_zero(c);
@@ -306,8 +306,12 @@ int fp3_srt(fp3_t c, const fp3_t a) {
 		}
 		/* Assume it is a square and test at the end. */
 		/* We cannot use QR test because it depends on Frobenius constants. */
-		fp3_sqr(t0, c);
+		fp3_sqr(t0, t3);
 		r = (fp3_cmp(t0, a) == RLC_EQ ? 1 : 0);
+		fp3_zero(c);
+		dv_copy_cond(c[0], t3[0], RLC_FP_DIGS, r);
+		dv_copy_cond(c[1], t3[1], RLC_FP_DIGS, r);
+		dv_copy_cond(c[2], t3[2], RLC_FP_DIGS, r);
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {

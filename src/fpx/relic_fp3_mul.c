@@ -269,15 +269,15 @@ void fp3_mul_frb(fp3_t c, const fp3_t a, int i, int j) {
 					fp_copy(t[0], ctx->fp3_p1[j - 1][0]);
 					fp_copy(t[1], ctx->fp3_p1[j - 1][1]);
 					fp_copy(t[2], ctx->fp3_p1[j - 1][2]);
+					fp3_mul(c, c, t);
 					break;
 				case 2:
 					fp_copy(t[0], ctx->fp3_p2[j - 1][0]);
 					fp_copy(t[1], ctx->fp3_p2[j - 1][1]);
 					fp_copy(t[2], ctx->fp3_p2[j - 1][2]);
+					fp3_mul(c, c, t);
 					break;
 			}
-
-			fp3_mul(c, c, t);
 		}
 		RLC_CATCH_ANY {
 			RLC_THROW(ERR_CAUGHT);
