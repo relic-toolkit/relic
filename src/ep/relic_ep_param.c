@@ -1110,15 +1110,17 @@ void ep_param_set(int param) {
 
 #if defined(EP_ENDOM)
 		if (endom) {
+			/* beta = (-1+sqrt(-3))/2 */
+			fp_set_dig(beta, 3);
+			fp_neg(beta, beta);
+			fp_srt(beta, beta);
+			fp_sub_dig(beta, beta, 1);
+			fp_hlv(beta, beta);
+			fp_prime_get_par(lamb);
+
 			switch(pairf) {
-				/* beta = (-1+sqrt(-3))/2, lambda = 36*u^3 + 18*u^2 + 6*u + 1 */
 				case EP_BN:
-					fp_set_dig(beta, 3);
-					fp_neg(beta, beta);
-					fp_srt(beta, beta);
-					fp_sub_dig(beta, beta, 1);
-					fp_hlv(beta, beta);
-					fp_prime_get_par(lamb);
+					/* lambda = 36*u^3 + 18*u^2 + 6*u + 1 */
 					bn_sqr(lamb, lamb);
 					bn_sqr(lamb, lamb);
 					bn_mul_dig(lamb, lamb, 36);
@@ -1128,69 +1130,45 @@ void ep_param_set(int param) {
 						bn_sub_dig(lamb, lamb, 1);
 					}
 					break;
-				/* beta = (-1 + sqrt(-3))/2, lambda = z^2 - 1 */
 				case EP_B12:
-					fp_set_dig(beta, 3);
-					fp_neg(beta, beta);
-					fp_srt(beta, beta);
-					fp_sub_dig(beta, beta, 1);
-					fp_hlv(beta, beta);
-					fp_prime_get_par(lamb);
+					/* lambda = z^2 - 1 */
 					bn_sqr(lamb, lamb);
 					bn_sub_dig(lamb, lamb, 1);
 					break;
-				/* beta = (-1 + sqrt(-3))/2, lambda = z^3 + 18 */
 				case EP_K18:
-					fp_set_dig(beta, 3);
-					fp_neg(beta, beta);
-					fp_srt(beta, beta);
-					fp_sub_dig(beta, beta, 1);
-					fp_hlv(beta, beta);
-					fp_prime_get_par(lamb);
+					/* lambda = z^3 + 18 */
 					bn_sqr(t, lamb);
 					bn_mul(lamb, t, lamb);
 					bn_add_dig(lamb, lamb, 18);
 					break;
-				/* beta = (-1 + sqrt(-3))/2, lambda = -18z^3 - 3 */
 				case EP_SG18:
-					fp_set_dig(beta, 3);
-					fp_neg(beta, beta);
-					fp_srt(beta, beta);
-					fp_sub_dig(beta, beta, 1);
-					fp_hlv(beta, beta);
-					fp_prime_get_par(lamb);
+					/* lambda = -18z^3 - 3 */
 					bn_sqr(t, lamb);
 					bn_mul(lamb, t, lamb);
 					bn_mul_dig(lamb, lamb, 9);
 					bn_add_dig(lamb, lamb, 2);
 					bn_neg(lamb, lamb);
 					break;
-				/* beta = (-1 + sqrt(-3))/2, lambda = z^4 - 1. */
 				case EP_B24:
-					fp_set_dig(beta, 3);
-					fp_neg(beta, beta);
-					fp_srt(beta, beta);
-					fp_sub_dig(beta, beta, 1);
-					fp_hlv(beta, beta);
-					fp_prime_get_par(lamb);
+					/* lambda = z^4 - 1. */
 				 	bn_sqr(lamb, lamb);
+					bn_sqr(lamb, lamb);
+					bn_sub_dig(lamb, lamb, 1);
+					break;
+				case EP_B48:
+					/* lambda = z^8 - 1. */
+					bn_sqr(lamb, lamb);
+					bn_sqr(lamb, lamb);
 					bn_sqr(lamb, lamb);
 					bn_sub_dig(lamb, lamb, 1);
 					break;
 				default:
 					if (bn_cmp_dig(h, 1) == RLC_EQ) {
-						/* SECG curves with endomorphisms. */
-						fp_set_dig(beta, 2);
-						h->used = RLC_FP_DIGS;
-						dv_copy(h->dp, fp_prime_get(), RLC_FP_DIGS);
-						/* Borrow h but restore at the end. */
-						bn_sub_dig(h, h, 1);
-						bn_div_dig(h, h, 3);
-						fp_exp(beta, beta, h);
+						/* other curves with endomorphisms. */
 						bn_set_dig(lamb, 3);
-						bn_sub_dig(h, r, 1);
-						bn_div_dig(h, h, 3);
-						bn_mxp(lamb, lamb, h, r);
+						bn_sub_dig(t, r, 1);
+						bn_div_dig(t, t, 3);
+						bn_mxp(lamb, lamb, t, r);
 						/* Try another primitive root. */
 						if (bn_cmp_dig(lamb, 1) == RLC_EQ) {
 							bn_set_dig(lamb, 2);

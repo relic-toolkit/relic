@@ -326,8 +326,8 @@ void ep8_mul_monty(ep8_t r, const ep8_t p, const bn_t k) {
 		ep8_blind(t[0], t[0]);
 		ep8_blind(t[1], t[1]);
 
-		for (int i = bn_bits(k) - 1; i >= 0; i--) {
-			int j = bn_get_bit(k, i);
+		for (int i = bits - 1; i >= 0; i--) {
+			int j = bn_get_bit(l, i);
 			for (int l = 0; l < 2; l++) {
 				for (int m = 0; m < 2; m++) {
 					for (int n = 0; n < 2; n++) {

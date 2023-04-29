@@ -370,8 +370,8 @@ void ep3_mul_monty(ep3_t r, const ep3_t p, const bn_t k) {
 		ep3_blind(t[0], t[0]);
 		ep3_blind(t[1], t[1]);
 
-		for (int i = bn_bits(k) - 1; i >= 0; i--) {
-			int j = bn_get_bit(k, i);
+		for (int i = bits - 1; i >= 0; i--) {
+			int j = bn_get_bit(l, i);
 			dv_swap_cond(t[0]->x[0], t[1]->x[0], RLC_FP_DIGS, j ^ 1);
 			dv_swap_cond(t[0]->x[1], t[1]->x[1], RLC_FP_DIGS, j ^ 1);
 			dv_swap_cond(t[0]->x[2], t[1]->x[2], RLC_FP_DIGS, j ^ 1);
