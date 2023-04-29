@@ -457,6 +457,7 @@ void ep_mul_basic(ep_t r, const ep_t p, const bn_t k) {
 
 	if (bn_is_zero(k) || ep_is_infty(p)) {
 		ep_set_infty(r);
+		RLC_FREE(naf);
 		return;
 	}
 
