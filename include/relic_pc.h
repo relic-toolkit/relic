@@ -883,7 +883,7 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
 #if FP_PRIME < 1536
 
 #if FP_PRIME == 575
-#define pc_map(R, P, Q);		RLC_CAT(RLC_PC_LOWER, map_k48)(R, P, Q->x, Q->y)
+#define pc_map(R, P, Q);		RLC_CAT(RLC_PC_LOWER, map_k48)(R, P, Q)
 #elif FP_PRIME == 315 || FP_PRIME == 317 || FP_PRIME == 509
 #define pc_map(R, P, Q);		RLC_CAT(RLC_PC_LOWER, map_k24)(R, P, Q)
 #elif FP_PRIME == 638 && !defined(FP_QNRES)
@@ -909,7 +909,9 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
  */
 #if FP_PRIME < 1536
 
-#if FP_PRIME == 315 || FP_PRIME == 317 || FP_PRIME == 509
+#if FP_PRIME == 575
+#define pc_map_sim(R, P, Q, M);	RLC_CAT(RLC_PC_LOWER, map_sim_k48)(R, P, Q, M)
+#elif FP_PRIME == 315 || FP_PRIME == 317 || FP_PRIME == 509
 #define pc_map_sim(R, P, Q, M);	RLC_CAT(RLC_PC_LOWER, map_sim_k24)(R, P, Q, M)
 #elif FP_PRIME == 638 && !defined(FP_QNRES)
 #define pc_map_sim(R, P, Q, M);	RLC_CAT(RLC_PC_LOWER, map_sim_k18)(R, P, Q, M)

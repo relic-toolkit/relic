@@ -34,85 +34,24 @@
 #include "relic_util.h"
 
 /*============================================================================*/
-/* Private definitions                                                        */
-/*============================================================================*/
-
-static void _ep8_dbl_basic(fp8_t s, fp8_t rx, fp8_t ry) {
-	fp8_t t0, t1, t2;
-
-	fp8_null(t0);
-	fp8_null(t1);
-	fp8_null(t2);
-
-	RLC_TRY {
-		fp8_new(t0);
-		fp8_new(t1);
-		fp8_new(t2);
-
-		/* t0 = 1/(2 * y1). */
-		fp8_dbl(t0, ry);
-		fp8_inv(t0, t0);
-
-		/* t1 = 3 * x1^2 + a. */
-		fp8_sqr(t1, rx);
-		fp8_copy(t2, t1);
-		fp8_dbl(t1, t1);
-		fp8_add(t1, t1, t2);
-
-		/* a = 0. */
-		/* t1 = (3 * x1^2 + a)/(2 * y1). */
-		fp8_mul(t1, t1, t0);
-
-		if (s != NULL) {
-			fp8_copy(s, t1);
-		}
-
-		/* t2 = t1^2. */
-		fp8_sqr(t2, t1);
-
-		/* x3 = t1^2 - 2 * x1. */
-		fp8_dbl(t0, rx);
-		fp8_sub(t0, t2, t0);
-
-		/* y3 = t1 * (x1 - x3) - y1. */
-		fp8_sub(t2, rx, t0);
-		fp8_mul(t1, t1, t2);
-
-		fp8_sub(ry, t1, ry);
-
-		fp8_copy(rx, t0);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		fp8_free(t0);
-		fp8_free(t1);
-		fp8_free(t2);
-	}
-}
-
-/*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
 #if EP_ADD == BASIC || !defined(STRIP)
 
-void pp_dbl_k48_basic(fp48_t l, fp8_t rx, fp8_t ry, const ep_t p) {
-	fp8_t s, tx, ty;
+void pp_dbl_k48_basic(fp48_t l, ep8_t r, const ep8_t q, const ep_t p) {
+	fp8_t s;
+	ep8_t t;
 
 	fp8_null(s);
-	fp8_null(tx);
-	fp8_null(ty);
+	ep8_null(t);
 
 	RLC_TRY {
 		fp8_new(s);
-		fp8_new(tx);
-		fp8_new(ty);
+		ep8_new(t);
 
-		fp8_copy(tx, rx);
-		fp8_copy(ty, ry);
-		_ep8_dbl_basic(s, rx, ry);
+		ep8_copy(t, q);
+		ep8_dbl_slp_basic(r, s, q);
 		fp48_zero(l);
 
 		fp_mul(l[0][1][0][0][0], p->x, s[0][0][0]);
@@ -124,8 +63,8 @@ void pp_dbl_k48_basic(fp48_t l, fp8_t rx, fp8_t ry, const ep_t p) {
 		fp_mul(l[0][1][1][1][0], p->x, s[1][1][0]);
 		fp_mul(l[0][1][1][1][1], p->x, s[1][1][1]);
 
-		fp8_mul(l[0][0], s, tx);
-		fp8_sub(l[0][0], ty, l[0][0]);
+		fp8_mul(l[0][0], s, t->x);
+		fp8_sub(l[0][0], t->y, l[0][0]);
 
 		fp_copy(l[1][1][0][0][0], p->y);
 	} RLC_CATCH_ANY {
@@ -133,8 +72,7 @@ void pp_dbl_k48_basic(fp48_t l, fp8_t rx, fp8_t ry, const ep_t p) {
 	}
 	RLC_FINALLY {
 		fp8_free(s);
-		fp8_free(tx);
-		fp8_free(ty);
+		ep8_free(t);
 	}
 }
 
@@ -142,7 +80,7 @@ void pp_dbl_k48_basic(fp48_t l, fp8_t rx, fp8_t ry, const ep_t p) {
 
 #if EP_ADD == PROJC || !defined(STRIP)
 
-void pp_dbl_k48_projc(fp48_t l, fp8_t rx, fp8_t ry, fp8_t rz, const ep_t p) {
+void pp_dbl_k48_projc(fp48_t l, ep8_t r, const ep8_t q, const ep_t p) {
 	fp8_t t0, t1, t2, t3, t4, t5, t6;
 
 	fp8_null(t0);
@@ -163,26 +101,25 @@ void pp_dbl_k48_projc(fp48_t l, fp8_t rx, fp8_t ry, fp8_t rz, const ep_t p) {
 		fp8_new(t6);
 
 		/* A = x1^2. */
-		fp8_sqr(t0, rx);
+		fp8_sqr(t0, q->x);
 		/* B = y1^2. */
-		fp8_sqr(t1, ry);
+		fp8_sqr(t1, q->y);
 		/* C = z1^2. */
-		fp8_sqr(t2, rz);
+		fp8_sqr(t2, q->z);
 		/* D = 3bC, general b. */
 		fp8_dbl(t3, t2);
 		fp8_add(t3, t3, t2);
-		fp8_zero(t4);
-		fp_copy(t4[1][0][0], ep_curve_get_b());
-
+		ep8_curve_get_b(t4);
 		fp8_mul(t3, t3, t4);
+
 		/* E = (x1 + y1)^2 - A - B. */
-		fp8_add(t4, rx, ry);
+		fp8_add(t4, q->x, q->y);
 		fp8_sqr(t4, t4);
 		fp8_sub(t4, t4, t0);
 		fp8_sub(t4, t4, t1);
 
 		/* F = (y1 + z1)^2 - B - C. */
-		fp8_add(t5, ry, rz);
+		fp8_add(t5, q->y, q->z);
 		fp8_sqr(t5, t5);
 		fp8_sub(t5, t5, t1);
 		fp8_sub(t5, t5, t2);
@@ -192,23 +129,23 @@ void pp_dbl_k48_projc(fp48_t l, fp8_t rx, fp8_t ry, fp8_t rz, const ep_t p) {
 		fp8_add(t6, t6, t3);
 
 		/* x3 = E * (B - G). */
-		fp8_sub(rx, t1, t6);
-		fp8_mul(rx, rx, t4);
+		fp8_sub(r->x, t1, t6);
+		fp8_mul(r->x, r->x, t4);
 
 		/* y3 = (B + G)^2 -12D^2. */
 		fp8_add(t6, t6, t1);
 		fp8_sqr(t6, t6);
 		fp8_sqr(t2, t3);
-		fp8_dbl(ry, t2);
-		fp8_dbl(t2, ry);
-		fp8_dbl(ry, t2);
-		fp8_add(ry, ry, t2);
-		fp8_sub(ry, t6, ry);
+		fp8_dbl(r->y, t2);
+		fp8_dbl(t2, r->y);
+		fp8_dbl(r->y, t2);
+		fp8_add(r->y, r->y, t2);
+		fp8_sub(r->y, t6, r->y);
 
 		/* z3 = 4B * F. */
-		fp8_dbl(rz, t1);
-		fp8_dbl(rz, rz);
-		fp8_mul(rz, rz, t5);
+		fp8_dbl(r->z, t1);
+		fp8_dbl(r->z, r->z);
+		fp8_mul(r->z, r->z, t5);
 
 		/* l11 = D - B. */
 		fp8_sub(l[0][0], t3, t1);

@@ -550,83 +550,214 @@ static void pairing12(void) {
 	}
 }
 
-static void pairing48(void) {
-	ep_t p;
-	fp8_t qx, qy, qz;
-	fp48_t e;
+static void pairing24(void) {
+	bn_t k, n, l;
+	ep4_t p[2], r;
+	ep_t q[2];
+	fp24_t e;
+	int j;
 
-	ep_null(p);
-	fp8_null(qx);
-	fp8_null(qy);
-	fp8_null(qz);
-	fp48_null(e);
+	bn_null(k);
+	bn_null(n);
+	bn_null(l);
+	ep4_null(r);
+	fp24_null(e);
 
-	ep_new(p);
-	fp8_new(qx);
-	fp8_new(qy);
-	fp8_new(qz);
-	fp48_new(e);
+	bn_new(k);
+	bn_new(n);
+	bn_new(l);
+	ep4_new(r);
+	fp24_new(e);
 
-	BENCH_RUN("pp_add_k48") {
-		fp8_rand(qx);
-		fp8_rand(qy);
-		fp8_rand(qz);
-		ep_rand(p);
-		BENCH_ADD(pp_add_k48(e, qx, qy, qz, qy, qx, p));
+	for (j = 0; j < 2; j++) {
+		ep4_null(p[j]);
+		ep_null(q[j]);
+		ep4_new(p[j]);
+		ep_new(q[j]);
+	}
+
+	ep4_curve_get_ord(n);
+
+	BENCH_RUN("pp_add_k24") {
+		ep4_rand(p[0]);
+		ep4_dbl(r, p[0]);
+		ep4_norm(r, r);
+		ep_rand(q[0]);
+		BENCH_ADD(pp_add_k24(e, r, p[0], q[0]));
 	}
 	BENCH_END;
 
 #if EP_ADD == BASIC || !defined(STRIP)
-	BENCH_RUN("pp_add_k48_basic") {
-		fp8_rand(qx);
-		fp8_rand(qy);
-		fp8_rand(qz);
-		ep_rand(p);
-		BENCH_ADD(pp_add_k48_basic(e, qx, qy, qy, qx, p));
+	BENCH_RUN("pp_add_k24_basic") {
+		ep4_rand(p[0]);
+		ep4_dbl(r, p[0]);
+		ep4_norm(r, r);
+		ep_rand(q[0]);
+		BENCH_ADD(pp_add_k24_basic(e, r, p[0], q[0]));
 	}
 	BENCH_END;
 #endif
 
 #if EP_ADD == PROJC || !defined(STRIP)
-	BENCH_RUN("pp_add_k48_projc") {
-		fp8_rand(qx);
-		fp8_rand(qy);
-		fp8_rand(qz);
-		ep_rand(p);
-		BENCH_ADD(pp_add_k48_projc(e, qx, qy, qz, qx, qy, p));
+
+	BENCH_RUN("pp_add_k24_projc") {
+		ep4_rand(p[0]);
+		ep4_dbl(r, p[0]);
+		ep4_norm(r, r);
+		ep_rand(q[0]);
+		BENCH_ADD(pp_add_k24_projc(e, r, p[0], q[0]));
+	}
+	BENCH_END;
+
+#endif
+
+	BENCH_RUN("pp_dbl_k24") {
+		ep4_rand(p[0]);
+		ep_rand(q[0]);
+		BENCH_ADD(pp_dbl_k24(e, p[0], p[0], q[0]));
+	}
+	BENCH_END;
+
+#if EP_ADD == BASIC || !defined(STRIP)
+	BENCH_RUN("pp_dbl_k24_basic") {
+		ep4_rand(p[0]);
+		ep_rand(q[0]);
+		BENCH_ADD(pp_dbl_k24_basic(e, p[0], p[0], q[0]));
 	}
 	BENCH_END;
 #endif
 
-	BENCH_RUN("pp_dbl_k48") {
-		fp8_rand(qx);
-		fp8_rand(qy);
-		fp8_rand(qz);
-		ep_rand(p);
-		BENCH_ADD(pp_dbl_k48(e, qx, qy, qz, p));
+#if EP_ADD == PROJC || !defined(STRIP)
+
+	BENCH_RUN("pp_dbl_k24_projc") {
+		ep4_rand(p[0]);
+		ep_rand(q[0]);
+		BENCH_ADD(pp_dbl_k24_projc(e, p[0], p[0], q[0]));
 	}
 	BENCH_END;
 
-	#if EP_ADD == BASIC || !defined(STRIP)
-		BENCH_RUN("pp_dbl_k48_basic") {
-			fp8_rand(qx);
-			fp8_rand(qy);
-			ep_rand(p);
-			BENCH_ADD(pp_dbl_k48_basic(e, qx, qy, p));
-		}
-		BENCH_END;
-	#endif
+#endif
 
-	#if EP_ADD == PROJC || !defined(STRIP)
-		BENCH_RUN("pp_dbl_k48_projc") {
-			fp8_rand(qx);
-			fp8_rand(qy);
-			fp8_rand(qz);
-			ep_rand(p);
-			BENCH_ADD(pp_dbl_k48_projc(e, qx, qy, qz, p));
-		}
-		BENCH_END;
-	#endif
+	BENCH_RUN("pp_exp_k24") {
+		fp24_rand(e);
+		BENCH_ADD(pp_exp_k24(e, e));
+	}
+	BENCH_END;
+
+	BENCH_RUN("pp_map_k24") {
+		ep4_rand(p[0]);
+		ep_rand(q[0]);
+		BENCH_ADD(pp_map_k24(e, q[0], p[0]));
+	}
+	BENCH_END;
+
+	BENCH_RUN("pp_map_sim_k24 (2)") {
+		ep4_rand(p[0]);
+		ep_rand(q[0]);
+		ep4_rand(p[1]);
+		ep_rand(q[1]);
+		BENCH_ADD(pp_map_sim_k24(e, q, p, 2));
+	}
+	BENCH_END;
+
+	bn_free(k);
+	bn_free(n);
+	bn_free(l);
+	fp24_free(e);
+	ep4_free(r);
+	for (j = 0; j < 2; j++) {
+		ep4_free(p[j]);
+		ep_free(q[j]);
+	}
+}
+
+static void pairing48(void) {
+	bn_t k, n, l;
+	ep8_t p[2], r;
+	ep_t q[2];
+	fp48_t e;
+	int j;
+
+	bn_null(k);
+	bn_null(n);
+	bn_null(l);
+	ep8_null(r);
+	fp48_null(e);
+
+	bn_new(k);
+	bn_new(n);
+	bn_new(l);
+	ep8_new(r);
+	fp48_new(e);
+
+	for (j = 0; j < 2; j++) {
+		ep8_null(p[j]);
+		ep_null(q[j]);
+		ep8_new(p[j]);
+		ep_new(q[j]);
+	}
+
+	ep8_curve_get_ord(n);
+
+	BENCH_RUN("pp_add_k48") {
+		ep8_rand(p[0]);
+		ep8_dbl(r, p[0]);
+		ep8_norm(r, r);
+		ep_rand(q[0]);
+		BENCH_ADD(pp_add_k48(e, r, p[0], q[0]));
+	}
+	BENCH_END;
+
+#if EP_ADD == BASIC || !defined(STRIP)
+	BENCH_RUN("pp_add_k48_basic") {
+		ep8_rand(p[0]);
+		ep8_dbl(r, p[0]);
+		ep8_norm(r, r);
+		ep_rand(q[0]);
+		BENCH_ADD(pp_add_k48_basic(e, r, p[0], q[0]));
+	}
+	BENCH_END;
+#endif
+
+#if EP_ADD == PROJC || !defined(STRIP)
+
+	BENCH_RUN("pp_add_k48_projc") {
+		ep8_rand(p[0]);
+		ep8_dbl(r, p[0]);
+		ep8_norm(r, r);
+		ep_rand(q[0]);
+		BENCH_ADD(pp_add_k48_projc(e, r, p[0], q[0]));
+	}
+	BENCH_END;
+
+#endif
+
+	BENCH_RUN("pp_dbl_k48") {
+		ep8_rand(p[0]);
+		ep_rand(q[0]);
+		BENCH_ADD(pp_dbl_k48(e, p[0], p[0], q[0]));
+	}
+	BENCH_END;
+
+#if EP_ADD == BASIC || !defined(STRIP)
+	BENCH_RUN("pp_dbl_k48_basic") {
+		ep8_rand(p[0]);
+		ep_rand(q[0]);
+		BENCH_ADD(pp_dbl_k48_basic(e, p[0], p[0], q[0]));
+	}
+	BENCH_END;
+#endif
+
+#if EP_ADD == PROJC || !defined(STRIP)
+
+	BENCH_RUN("pp_dbl_k48_projc") {
+		ep8_rand(p[0]);
+		ep_rand(q[0]);
+		BENCH_ADD(pp_dbl_k48_projc(e, p[0], p[0], q[0]));
+	}
+	BENCH_END;
+
+#endif
 
 	BENCH_RUN("pp_exp_k48") {
 		fp48_rand(e);
@@ -635,19 +766,30 @@ static void pairing48(void) {
 	BENCH_END;
 
 	BENCH_RUN("pp_map_k48") {
-		fp8_rand(qx);
-		fp8_rand(qy);
-		fp8_rand(qz);
-		ep_rand(p);
-		BENCH_ADD(pp_map_k48(e, p, qx, qy));
+		ep8_rand(p[0]);
+		ep_rand(q[0]);
+		BENCH_ADD(pp_map_k48(e, q[0], p[0]));
 	}
 	BENCH_END;
 
-	ep_free(p);
-	fp8_free(qx);
-	fp8_free(qy);
-	fp8_free(qz);
+	BENCH_RUN("pp_map_sim_k48 (2)") {
+		ep8_rand(p[0]);
+		ep_rand(q[0]);
+		ep8_rand(p[1]);
+		ep_rand(q[1]);
+		BENCH_ADD(pp_map_sim_k48(e, q, p, 2));
+	}
+	BENCH_END;
+
+	bn_free(k);
+	bn_free(n);
+	bn_free(l);
 	fp48_free(e);
+	ep8_free(r);
+	for (j = 0; j < 2; j++) {
+		ep8_free(p[j]);
+		ep_free(q[j]);
+	}
 }
 
 static void pairing54(void) {
@@ -779,6 +921,10 @@ int main(void) {
 
 	if (ep_param_embed() == 12) {
 		pairing12();
+	}
+
+	if (ep_param_embed() == 48) {
+		pairing24();
 	}
 
 	if (ep_param_embed() == 48) {

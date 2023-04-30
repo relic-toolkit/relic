@@ -119,3 +119,22 @@ void pp_norm_k24(ep4_t r, const ep4_t p) {
 	r->coord = BASIC;
 #endif
 }
+
+void pp_norm_k48(ep8_t r, const ep8_t p) {
+	if (ep8_is_infty(p)) {
+		ep8_set_infty(r);
+		return;
+	}
+
+	if (p->coord == BASIC) {
+		/* If the point is represented in affine coordinates, we just copy it. */
+		ep8_copy(r, p);
+	}
+#if EP_ADD == PROJC || !defined(STRIP)
+	fp8_inv(r->z, p->z);
+	fp8_mul(r->x, p->x, r->z);
+	fp8_mul(r->y, p->y, r->z);
+	fp8_set_dig(r->z, 1);
+	r->coord = BASIC;
+#endif
+}

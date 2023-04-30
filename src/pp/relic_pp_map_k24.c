@@ -168,7 +168,6 @@ void pp_map_k24(fp24_t r, const ep_t p, const ep4_t q) {
 					pp_mil_k24(r, t, _q, _p, 1, a);
 					if (bn_sign(a) == RLC_NEG) {
 						fp24_inv_cyc(r, r);
-						ep4_neg(t[0], t[0]);
 					}
 					pp_exp_k24(r, r);
 					break;
