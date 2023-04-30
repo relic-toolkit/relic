@@ -243,6 +243,17 @@ int g2_is_valid(const g2_t a) {
 				g2_neg(u, v);
 				r = g2_on_curve(a) && (g2_cmp(u, a) == RLC_EQ);
 				break;
+			case EP_SG18:
+				/* Check that 3u*P + 2\psi^2(P) == \psi^5P]. */
+				fp_prime_get_par(n);
+				bn_mul_dig(n, n, 3);
+				ep3_mul_basic(u, a, n);
+				ep3_frb(v, a, 2);
+				ep3_add(u, u, v);
+				ep3_add(u, u, v);
+				ep3_frb(v, a, 5);
+				r = g2_on_curve(a) && (g2_cmp(u, v) == RLC_EQ);
+				break;
 #endif
 			default:
 				pc_get_ord(n);
