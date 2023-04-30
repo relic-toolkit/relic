@@ -34,10 +34,16 @@
 #include "relic_util.h"
 
 /*============================================================================*/
-/* Public definitions                                                         */
+/* Private definitions                                                        */
 /*============================================================================*/
 
-void pp_exp_k18(fp18_t c, fp18_t a) {
+/**
+ * Computes the final exponentiation of a pairing defined over a KSS curve.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the extension field element to exponentiate.
+ */
+static void pp_exp_kss(fp18_t c, fp18_t a) {
 	fp18_t t0, t1, t2, t3, t4, t5;
 	const int *b;
 	bn_t x;
@@ -153,5 +159,114 @@ void pp_exp_k18(fp18_t c, fp18_t a) {
 		fp18_free(t3);
 		fp18_free(t4);
 		fp18_free(t5);
+	}
+}
+
+/**
+ * Computes the final exponentiation of a pairing defined over a SG curve.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the extension field element to exponentiate.
+ */
+void pp_exp_sg(fp18_t c, fp18_t a) {
+	fp18_t t0, t1, t2, t3;
+	const int *b;
+	bn_t x;
+	int l;
+
+	bn_null(x);
+	fp18_null(t0);
+	fp18_null(t1);
+	fp18_null(t2);
+	fp18_null(t3);
+
+	RLC_TRY {
+		bn_new(x);
+		fp18_new(t0);
+		fp18_new(t1);
+		fp18_new(t2);
+		fp18_new(t3);
+
+		fp_prime_get_par(x);
+		b = fp_prime_get_par_sps(&l);
+		/* First, compute m^(p^9 - 1)(p^3 + 1). */
+		fp18_conv_cyc(c, a);
+
+		/* t0 = f^(-3p^2), t1 = f^(1 - 3up + p^3). */
+		fp18_sqr(t1, c);
+		fp18_mul(t1, t1, c);
+		if (bn_sign(x) == RLC_POS) {
+			fp18_inv_cyc(t1, t1);
+			fp18_frb(t0, t1, 2);
+		} else {
+			fp18_frb(t0, t1, 2);
+			fp18_inv_cyc(t0, t0);
+		}
+		fp18_exp_cyc_sps(t1, t1, b, l, RLC_POS);
+		fp18_frb(t3, c, 2);
+		fp18_mul(t1, t1, t3);
+		fp18_frb(t1, t1, 1);
+		fp18_mul(t1, t1, c);
+
+		fp18_exp_cyc_sps(t2, t1, b, l, RLC_POS);
+		fp18_exp_cyc_sps(t2, t2, b, l, RLC_POS);
+		fp18_sqr_cyc(t3, t2);
+		fp18_mul(t2, t2, t3);
+		fp18_frb(t3, t1, 1);
+		fp18_mul(t2, t2, t3);
+		fp18_exp_cyc_sps(t2, t2, b, l, RLC_POS);
+		if (bn_sign(x) == RLC_NEG) {
+			fp18_inv_cyc(t3, t1);
+		} else {
+			fp18_copy(t3, t1);
+		}
+		fp18_mul(t2, t2, t3);
+		fp18_exp_cyc_sps(t2, t2, b, l, RLC_POS);
+		fp18_sqr_cyc(t3, t2);
+		fp18_mul(t2, t2, t3);
+		fp18_frb(t3, t1, 2);
+		fp18_mul(t2, t2, t3);
+		fp18_mul(t2, t2, t0);
+
+		fp18_exp_cyc_sps(t3, t2, b, l, RLC_POS);
+		fp18_exp_cyc_sps(t3, t3, b, l, RLC_POS);
+		fp18_sqr_cyc(t0, t3);
+		fp18_mul(t3, t3, t0);
+		fp18_inv_cyc(t2, t2),
+		fp18_mul(t2, t2, t3);
+
+		fp18_exp_cyc_sps(t3, t2, b, l, RLC_POS);
+		fp18_exp_cyc_sps(t3, t3, b, l, RLC_POS);
+		fp18_sqr_cyc(t0, t3);
+		fp18_mul(t3, t3, t0);
+
+		fp18_inv_cyc(t2, t2),
+		fp18_mul(t2, t2, t3);
+		fp18_mul(c, t1, t2);
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		bn_free(x);
+		fp18_free(t0);
+		fp18_free(t1);
+		fp18_free(t2);
+		fp18_free(t3);
+	}
+}
+
+/*============================================================================*/
+/* Public definitions                                                         */
+/*============================================================================*/
+
+void pp_exp_k18(fp18_t c, fp18_t a) {
+	switch (ep_curve_is_pairf()) {
+		case EP_K18:
+			pp_exp_kss(c, a);
+			break;
+		case EP_SG18:
+			pp_exp_sg(c, a);
+			break;
 	}
 }

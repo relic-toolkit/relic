@@ -1142,7 +1142,7 @@ void ep_param_set(int param) {
 					bn_add_dig(lamb, lamb, 18);
 					break;
 				case EP_SG18:
-					/* lambda = -18z^3 - 3 */
+					/* lambda = -9z^3 - 2 */
 					bn_sqr(t, lamb);
 					bn_mul(lamb, t, lamb);
 					bn_mul_dig(lamb, lamb, 9);
@@ -1172,9 +1172,8 @@ void ep_param_set(int param) {
 						/* Try another primitive root. */
 						if (bn_cmp_dig(lamb, 1) == RLC_EQ) {
 							bn_set_dig(lamb, 2);
-							bn_mxp(lamb, lamb, h, r);
+							bn_mxp(lamb, lamb, t, r);
 						}
-						bn_set_dig(h, 1);
 					}
 					break;
 			}
@@ -1329,6 +1328,7 @@ int ep_param_set_any_endom(void) {
 	ep_param_set(B12_P638);
 #else
 	ep_param_set(K18_P638);
+	//ep_param_set(SG18_P638);
 #endif
 #else
 	r = RLC_ERR;

@@ -81,6 +81,8 @@ void ep_mul_cof(ep_t r, const ep_t p) {
 				ep_mul_dig(r, r, 49);
 				ep_mul_dig(r, r, 7);
 				break;
+			case EP_SG18:
+				/* TODO: fast cofactor clearing. */
 #endif
 			default:
 				/* multiply by cofactor to get the correct group. */
