@@ -178,12 +178,14 @@ void fp3_mul_art(fp3_t c, const fp3_t a) {
 }
 
 void fp3_mul_nor(fp3_t c, const fp3_t a) {
-	fp3_t t;
+	fp3_t t, u;
 
 	fp3_null(t);
+	fp3_null(u);
 
 	RLC_TRY {
 		fp3_new(t);
+		fp3_new(u);
 
 		fp3_mul_art(t, a);
 
@@ -192,12 +194,15 @@ void fp3_mul_nor(fp3_t c, const fp3_t a) {
 			case 1:
 			case 7:
 				if (cnr != 0) {
-					fp3_copy(c, a);
+					fp3_copy(u, a);
 					while (cnr > 1) {
-						fp3_dbl(c, c);
+						fp3_dbl(u, u);
 						cnr = cnr >> 1;
+						if (cnr & 1) {
+							fp3_add(u, u, a);
+						}
 					}
-					fp3_add(t, t, c);
+					fp3_add(t, t, u);
 				}
 				break;
 		}
@@ -209,6 +214,7 @@ void fp3_mul_nor(fp3_t c, const fp3_t a) {
 	}
 	RLC_FINALLY {
 		fp3_free(t);
+		fp3_free(u);
 	}
 }
 

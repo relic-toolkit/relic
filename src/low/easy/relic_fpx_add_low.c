@@ -286,12 +286,14 @@ void fp3_dblm_low(fp3_t c, fp3_t a) {
 }
 
 void fp3_nord_low(dv3_t c, dv3_t a) {
-	dv3_t t;
+	dv3_t t, u;
 
 	dv3_null(t);
+	dv3_null(u);
 
 	RLC_TRY {
 		dv3_new(t);
+		dv3_new(u);
 
 		dv_copy(t[0], a[2], 2 * RLC_FP_DIGS);
 		for (int i = 1; i < fp_prime_get_cnr(); i++) {
@@ -308,14 +310,17 @@ void fp3_nord_low(dv3_t c, dv3_t a) {
 			case 1:
 			case 7:
 				if (cnr != 0) {
-					dv_copy(c[0], a[0], 2 * RLC_FP_DIGS);
-					dv_copy(c[1], a[1], 2 * RLC_FP_DIGS);
-					dv_copy(c[2], a[2], 2 * RLC_FP_DIGS);
+					dv_copy(u[0], a[0], 2 * RLC_FP_DIGS);
+					dv_copy(u[1], a[1], 2 * RLC_FP_DIGS);
+					dv_copy(u[2], a[2], 2 * RLC_FP_DIGS);
 					while (cnr > 1) {
-						fp3_addc_low(c, c, c);
+						fp3_addc_low(u, u, u);
+						if (cnr & 1) {
+							fp3_addc_low(u, u, a);
+						}
 						cnr = cnr >> 1;
 					}
-					fp3_addc_low(t, t, c);
+					fp3_addc_low(t, t, u);
 				}
 				break;
 		}
@@ -326,5 +331,6 @@ void fp3_nord_low(dv3_t c, dv3_t a) {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		dv3_free(t);
+		dv3_free(u);
 	}
 }

@@ -183,7 +183,9 @@ void fp3_field_init(void) {
 		fp_zero(t0[0]);
 		fp_set_dig(t0[1], 1);
 		fp_zero(t0[2]);
-		/* If it does not work, attempt (u + 2), otherwise double. */
+		/* If it does not work, attempt (u + 1), otherwise double. */
+		/* This code will fail if p \neq 1 mod 8 because square root in Fp^3
+		 * relic on Frobenius. Must implement explicit test for those cases. */
 		if (fp3_srt(t1, t0)) {
 			ctx->cnr3 = 1;
 			fp_set_dig(t0[0], ctx->cnr3);

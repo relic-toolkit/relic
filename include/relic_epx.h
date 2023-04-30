@@ -588,16 +588,6 @@ typedef iso2_st *iso2_t;
 #endif
 
 /**
- * Multiplies a point in an elliptic curve over a cubic extension field by
- * an unrestricted integer scalar. Computes R = [k]P.
- *
- * @param[out] R				- the result.
- * @param[in] P					- the point to multiply.
- * @param[in] K					- the integer.
- */
-#define ep3_mul_big(R, P, K)	ep3_mul_basic(R, P, K)
-
-/**
  * Multiplies a point in an elliptic curve over a cubic extension field.
  * Computes R = [k]P.
  *
