@@ -1642,6 +1642,7 @@ int ep_param_level(void) {
 		case TWEEDLEDUM:
 			return 128;
 		case B24_P315:
+		case B24_P317:
 		case B12_P377:
 		case B12_P381:
 		case BN_P382:
