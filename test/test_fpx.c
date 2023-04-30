@@ -826,6 +826,10 @@ static int square_root2(void) {
 			TEST_ASSERT(r, end);
 			TEST_ASSERT(fp2_cmp(b, a) == RLC_EQ ||
 					fp2_cmp(c, a) == RLC_EQ, end);
+			do {
+				fp2_rand(a);
+			} while(fp2_is_sqr(a) == 1);
+			TEST_ASSERT(fp2_srt(b, a) == 0, end);
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {
@@ -1522,7 +1526,6 @@ static int exponentiation3(void) {
 static int square_root3(void) {
 	int code = RLC_ERR;
 	fp3_t a, b, c;
-	int r;
 
 	fp3_null(a);
 	fp3_null(b);
@@ -1549,11 +1552,20 @@ static int square_root3(void) {
 		TEST_CASE("square root extraction is correct") {
 			fp3_rand(a);
 			fp3_sqr(c, a);
-			r = fp3_srt(b, c);
-			fp3_sqr(b, b);
-			TEST_ASSERT(r == 1, end);
-			TEST_ASSERT(fp3_cmp(b, c) == RLC_EQ, end);
-		} TEST_END;
+			TEST_ASSERT(fp3_srt(b, c), end);
+			fp3_neg(c, b);
+			TEST_ASSERT(fp3_cmp(b, a) == RLC_EQ || fp3_cmp(c, a) == RLC_EQ, end);
+			fp3_rand(a);
+			if (fp3_srt(b, a)) {
+				fp3_sqr(c, b);
+				TEST_ASSERT(fp3_cmp(c, a) == RLC_EQ, end);
+			}
+			do {
+				fp3_rand(a);
+			} while(fp3_is_sqr(a) == 1);
+			TEST_ASSERT(fp3_srt(b, a) == 0, end);
+		}
+		TEST_END;
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
