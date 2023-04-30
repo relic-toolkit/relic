@@ -35,10 +35,16 @@
 #include "relic_tmpl_map.h"
 
 /*============================================================================*/
-/* Public definitions                                                         */
+/* Private definitions                                                        */
 /*============================================================================*/
 
-void ep3_mul_cof_k18(ep3_t r, const ep3_t p) {
+/**
+ * Multiplies a point by the cofactor in a KSS18 curve.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to multiply.
+ */
+static void ep3_mul_cof_k18(ep3_t r, const ep3_t p) {
 	ep3_t t0, t1, t2, t3, t4, t5;
 	bn_t x;
 
@@ -141,6 +147,73 @@ void ep3_mul_cof_k18(ep3_t r, const ep3_t p) {
 	}
 }
 
+/**
+ * Multiplies a point by the cofactor in a Scott-Guillevic curve.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to multiply.
+ */
+static void ep3_mul_cof_sg18(ep3_t r, const ep3_t p) {
+	ep3_t t0, t1, t2, t3, t4;
+	bn_t x;
+
+	ep3_null(t0);
+	ep3_null(t1);
+	ep3_null(t2);
+	ep3_null(t3);
+	ep3_null(t4);
+	bn_null(x);
+
+	RLC_TRY {
+		ep3_new(t0);
+		ep3_new(t1);
+		ep3_new(t2);
+		ep3_new(t3);
+		ep3_new(t4);
+		bn_new(x);
+
+		/* Vector computed by Guillevic's MAGMA script:
+		[9*u^4-3*u^2+u, 3*u^2-1, -6*u^3 + 2*u, -2*u, 0, 3*u^3-u+1] */
+		fp_prime_get_par(x);
+
+		/* t0 = [u]P, t1 = [3u^2]P, t2 = [3u^3]P, t3 = [9u^4]P. */
+		ep3_mul_basic(t0, p, x);
+		bn_mul_dig(x, x, 3);
+		ep3_mul_basic(t1, t0, x);
+		bn_div_dig(x, x, 3);
+		ep3_mul_basic(t2, t1, x);
+		bn_mul_dig(x, x, 3);
+		ep3_mul_basic(t3, t2, x);
+		ep3_sub(t3, t3, t1);
+		ep3_add(t3, t3, t0);
+
+		ep3_sub(t4, t1, p),
+		ep3_frb(t4, t4, 1);
+		ep3_add(t3, t3, t4);
+
+		ep3_sub(t2, t2, t0);
+		ep3_frb(t4, t2, 2);
+		ep3_dbl(t4, t4);
+		ep3_sub(t3, t3, t4);
+		ep3_add(t2, t2, p);
+		ep3_frb(t2, t2, 5);
+		ep3_add(t3, t3, t2);
+
+		ep3_dbl(t4, t0);
+		ep3_frb(t4, t4, 3);
+		ep3_sub(r, t3, t4);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		ep3_free(t0);
+		ep3_free(t1);
+		ep3_free(t2);
+		ep3_free(t3);
+		ep3_free(t4);
+		bn_free(x);
+	}
+}
+
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
@@ -155,13 +228,16 @@ void ep3_mul_cof(ep3_t r, const ep3_t p) {
 			case EP_K18:
 				ep3_mul_cof_k18(r, p);
 				break;
+			case EP_SG18:
+				ep3_mul_cof_sg18(r, p);
+				break;
 			default:
 				/* Now, multiply by cofactor to get the correct group. */
 				ep3_curve_get_cof(k);
 				if (bn_bits(k) < RLC_DIG) {
 					ep3_mul_dig(r, p, k->dp[0]);
 				} else {
-					ep3_mul_big(r, p, k);
+					ep3_mul_basic(r, p, k);
 				}
 				break;
 		}

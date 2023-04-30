@@ -149,24 +149,6 @@ int g1_is_valid(const g1_t a) {
 					r = g1_on_curve(a) && g1_is_infty(u);
 					break;
 				case EP_SG18:
-					fp_prime_get_par(n);
-					ep_psi(u, a);
-					if (bn_bits(n) < RLC_DIG) {
-						ep_mul_dig(v, u, n->dp[0]);
-						ep_mul_dig(v, v, n->dp[0]);
-					} else {
-						ep_mul_basic(v, u, n);
-						ep_mul_basic(v, v, n);
-					}
-					bn_mul_dig(n, n, 9);
-					if (bn_bits(n) < RLC_DIG) {
-						ep_mul_dig(v, v, n->dp[0]);
-					} else {
-						ep_mul_basic(v, v, n);
-					}
-					ep_add(v, v, u);
-					r = g1_on_curve(a) && (g1_cmp(v, a) == RLC_EQ);
-					break;
 #endif
 				default:
 					pc_get_ord(n);
@@ -263,15 +245,16 @@ int g2_is_valid(const g2_t a) {
 				r = g2_on_curve(a) && (g2_cmp(u, a) == RLC_EQ);
 				break;
 			case EP_SG18:
-				/* Check that 3u*P + 2\psi^2(P) == \psi^5P]. */
+				/* Check that 3u*P + 2\psi^2(P) == \psi^5P] and [3]P \eq O. */
 				fp_prime_get_par(n);
 				bn_mul_dig(n, n, 3);
 				ep3_mul_basic(u, a, n);
+				r = g2_is_infty(a) == 0;
 				ep3_frb(v, a, 2);
 				ep3_add(u, u, v);
 				ep3_add(u, u, v);
 				ep3_frb(v, a, 5);
-				r = g2_on_curve(a) && (g2_cmp(u, v) == RLC_EQ);
+				r &= g2_on_curve(a) && (g2_cmp(u, v) == RLC_EQ);
 				break;
 #endif
 			default:
