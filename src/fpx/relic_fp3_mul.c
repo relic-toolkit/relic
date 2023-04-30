@@ -197,10 +197,10 @@ void fp3_mul_nor(fp3_t c, const fp3_t a) {
 					fp3_copy(u, a);
 					while (cnr > 1) {
 						fp3_dbl(u, u);
-						cnr = cnr >> 1;
 						if (cnr & 1) {
 							fp3_add(u, u, a);
 						}
+						cnr = cnr >> 1;
 					}
 					fp3_add(t, t, u);
 				}
