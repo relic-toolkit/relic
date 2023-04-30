@@ -148,6 +148,25 @@ int g1_is_valid(const g1_t a) {
 					}
 					r = g1_on_curve(a) && g1_is_infty(u);
 					break;
+				case EP_SG18:
+					fp_prime_get_par(n);
+					ep_psi(u, a);
+					if (bn_bits(n) < RLC_DIG) {
+						ep_mul_dig(v, u, n->dp[0]);
+						ep_mul_dig(v, v, n->dp[0]);
+					} else {
+						ep_mul_basic(v, u, n);
+						ep_mul_basic(v, v, n);
+					}
+					bn_mul_dig(n, n, 9);
+					if (bn_bits(n) < RLC_DIG) {
+						ep_mul_dig(v, v, n->dp[0]);
+					} else {
+						ep_mul_basic(v, v, n);
+					}
+					ep_add(v, v, u);
+					r = g1_on_curve(a) && (g1_cmp(v, a) == RLC_EQ);
+					break;
 #endif
 				default:
 					pc_get_ord(n);
