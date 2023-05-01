@@ -532,8 +532,6 @@
 #define KSS_P508_Y		"8773227730CBE52483BF6AAAA9E4FE2870B463FA14D92C31D0F99C6B6EE13106A0E8C87AD7631F8ECCE0DD6189B4C2232C644E4B857F325923FC8A80A947FFA"
 #define KSS_P508_R		"BF33E1C9934E7868ECE51D291E5644DA8A2F179CEE74854EE6819B240F20CE4E7D19F4CDABA6EAEA5B0E3000000001"
 #define KSS_P508_H		"10565283D505534A492ADC6AAABB051B1D"
-#define KSS_P508_BETA	"926C960A5EC3B3A6C6B9CEF2CB923D3240E4780BC1AE423EE39586AD923B1C949768022369DD2CE502E7FCA0670B3A996AC44B48B523DAA7390CCB1F6D9012F"
-#define KSS_P508_LAMB	"1001740B431D14BFD17F4BD000300173FFFFFFFEFFFFFFFED"
 /** @} */
 #endif
 
@@ -827,6 +825,8 @@ void ep_param_set(int param) {
 		bn_new(h);
 
 		core_get()->ep_id = 0;
+		fp_zero(beta);
+		bn_zero(lamb);
 
 		switch (param) {
 #if defined(EP_ENDOM) && FP_PRIME == 158
@@ -1024,8 +1024,9 @@ void ep_param_set(int param) {
 #endif
 #if defined(EP_ENDOM) && FP_PRIME == 508
 			case KSS_P508:
-				ASSIGNK(KSS_P508, KSS_508);
+				ASSIGN(KSS_P508, KSS_508);
 				endom = 1;
+				pairf = EP_K18;
 				break;
 #endif
 #if defined(EP_ENDOM) && FP_PRIME == 509
@@ -1110,13 +1111,18 @@ void ep_param_set(int param) {
 
 #if defined(EP_ENDOM)
 		if (endom) {
-			/* beta = (-1+sqrt(-3))/2 */
-			fp_set_dig(beta, 3);
-			fp_neg(beta, beta);
-			fp_srt(beta, beta);
-			fp_sub_dig(beta, beta, 1);
-			fp_hlv(beta, beta);
-			fp_prime_get_par(lamb);
+			if (fp_is_zero(beta)) {
+				/* beta = (-1+sqrt(-3))/2 */
+				fp_set_dig(beta, 3);
+				fp_neg(beta, beta);
+				fp_srt(beta, beta);
+				fp_sub_dig(beta, beta, 1);
+				fp_hlv(beta, beta);
+			}
+
+			if (bn_is_zero(lamb)) {
+				fp_prime_get_par(lamb);
+			}
 
 			switch(pairf) {
 				case EP_BN:

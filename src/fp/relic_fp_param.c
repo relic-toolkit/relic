@@ -416,34 +416,7 @@ void fp_param_set(int param) {
 				bn_set_2b(t1, 12);
 				bn_sub(t0, t0, t1);
 				bn_neg(t0, t0);
-				/* h = (49*u^2 + 245 * u + 343)/3 */
-				bn_mul_dig(p, t0, 245);
-				bn_add_dig(p, p, 200);
-				bn_add_dig(p, p, 143);
-				bn_sqr(t1, t0);
-				bn_mul_dig(t2, t1, 49);
-				bn_add(p, p, t2);
-				bn_div_dig(p, p, 3);
-				/* n = (u^6 + 37 * u^3 + 343)/343. */
-				bn_mul(t1, t1, t0);
-				bn_mul_dig(t2, t1, 37);
-				bn_sqr(t1, t1);
-				bn_add(t2, t2, t1);
-				bn_add_dig(t2, t2, 200);
-				bn_add_dig(t2, t2, 143);
-				bn_div_dig(t2, t2, 49);
-				bn_div_dig(t2, t2, 7);
-				bn_mul(p, p, t2);
-				/* t = (u^4 + 16 * u + 7)/7. */
-				bn_mul_dig(t1, t0, 16);
-				bn_add_dig(t1, t1, 7);
-				bn_sqr(t2, t0);
-				bn_sqr(t2, t2);
-				bn_add(t2, t2, t1);
-				bn_div_dig(t2, t2, 7);
-				bn_add(p, p, t2);
-				bn_sub_dig(p, p, 1);
-				fp_prime_set_dense(p);
+				fp_prime_set_pairf(t0, EP_K18);
 				break;
 #elif FP_PRIME == 509
 			case B24_509:
