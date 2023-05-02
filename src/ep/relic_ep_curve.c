@@ -468,7 +468,13 @@ void ep_curve_set_endom(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
 
 		/* Check if [m]P = \psi(P). */
 		fp_copy(ctx->beta, beta);
-		bn_copy(m, l);
+		/* Fix lambda in case it is negative. */
+		if (bn_sign(l) == RLC_NEG) {
+			bn_add(m, l, r);
+		} else {
+			bn_copy(m, l);
+		}
+		/* Now check that beta and lambda match each other. */
 		ep_psi(p, g);
 		ep_mul_basic(q, g, m);
 		/* Fix beta in case it is the wrong value. */

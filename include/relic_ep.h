@@ -154,7 +154,7 @@ enum {
 	/** Barreto-Lynn-Scott curve with embedding degree 12. */
 	B12_P455,
 	/** Kachisa-Schaefer-Scott with negative x. */
-	KSS_P508,
+	K18_P508,
 	/** Barreto-Lynn-Scott curve with embedding degree 24. */
 	B24_P509,
 	/** Optimal TNFS-secure curve with embedding degree 8. */
