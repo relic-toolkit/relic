@@ -2272,16 +2272,10 @@ static int recoding(void) {
 				bn_mul(v2[1], c, v1[0]);
 				bn_add(v2[1], v2[1], b);
 				bn_mod(v2[1], v2[1], v2[0]);
-				if (bn_sign(v2[1]) == RLC_NEG) {
-					bn_add(v2[1], v2[1], v2[0]);
-				}
 				/* Now try the other candidate. */
 				bn_mul(v2[2], c, v1[1]);
 				bn_add(v2[2], v2[2], b);
 				bn_mod(v2[2], v2[2], v2[0]);
-				if (bn_sign(v2[2]) == RLC_NEG) {
-					bn_add(v2[2], v2[2], v2[0]);
-				}
 				TEST_ASSERT(bn_cmp(a, v2[1]) == RLC_EQ ||
 					bn_cmp(a, v2[2]) == RLC_EQ, end);
 			}
