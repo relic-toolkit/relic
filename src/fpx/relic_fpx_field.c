@@ -56,13 +56,6 @@ int fp3_field_get_cnr() {
 	}
 #endif
 
-	switch (core_get()->mod8) {
-		case 3:
-			return 1;
-		case 7:
-			return 2;
-	}
-
 	return core_get()->cnr3;
 }
 
