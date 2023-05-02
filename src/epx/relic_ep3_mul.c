@@ -98,7 +98,7 @@ static void ep3_mul_glv_imp(ep3_t r, const ep3_t p, const bn_t k) {
 
 		fp_prime_get_par(u);
 		if (ep_curve_is_pairf() == EP_SG18) {
-			/* Compute base 3*u for the recoding below. */
+			/* Compute base -3*u for the recoding below. */
 			bn_dbl(n, u);
 			bn_add(u, u, n);
 			bn_neg(u, u);
@@ -117,6 +117,9 @@ static void ep3_mul_glv_imp(ep3_t r, const ep3_t p, const bn_t k) {
 
 		l = 0;
 		for (i = 0; i < 6; i++) {
+			if (bn_sign(_k[i]) == RLC_NEG) {
+				ep3_neg(q[i], q[i]);
+			}
 			_l[i] = RLC_FP_BITS + 1;
 			bn_rec_naf(naf[i], &_l[i], _k[i], 2);
 			l = RLC_MAX(l, _l[i]);

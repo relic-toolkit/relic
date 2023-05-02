@@ -678,53 +678,6 @@ fp_t *ep2_curve_get_b(void) {
 	return core_get()->ep2_b;
 }
 
-void ep2_curve_get_vs(bn_t *v) {
-	bn_t x, t;
-
-	bn_null(x);
-	bn_null(t);
-
-	RLC_TRY {
-		bn_new(x);
-		bn_new(t);
-
-		fp_prime_get_par(x);
-		bn_copy(v[1], x);
-		bn_copy(v[2], x);
-		bn_copy(v[3], x);
-
-		/* t = 2x^2. */
-		bn_sqr(t, x);
-		bn_dbl(t, t);
-
-		/* v0 = 2x^2 + 3x + 1. */
-		bn_mul_dig(v[0], x, 3);
-		bn_add_dig(v[0], v[0], 1);
-		bn_add(v[0], v[0], t);
-
-		/* v3 = -(2x^2 + x). */
-		bn_add(v[3], v[3], t);
-		bn_neg(v[3], v[3]);
-
-		/* v1 = 12x^3 + 8x^2 + x, v2 = 6x^3 + 4x^2 + x. */
-		bn_dbl(t, t);
-		bn_add(v[2], v[2], t);
-		bn_dbl(t, t);
-		bn_add(v[1], v[1], t);
-		bn_rsh(t, t, 2);
-		bn_mul(t, t, x);
-		bn_mul_dig(t, t, 3);
-		bn_add(v[2], v[2], t);
-		bn_dbl(t, t);
-		bn_add(v[1], v[1], t);
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		bn_free(x);
-		bn_free(t);
-	}
-}
-
 void ep2_curve_get_ord(bn_t n) {
 	ctx_t *ctx = core_get();
 	if (ctx->ep2_is_twist) {

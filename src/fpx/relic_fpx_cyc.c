@@ -1219,6 +1219,12 @@ void fp18_exp_cyc(fp18_t c, const fp18_t a, const bn_t b) {
 					l = RLC_MAX(l, _l[i]);
 				}
 
+				for (int i = 0; i < 6; i++) {
+					if (bn_sign(_b[i]) == RLC_NEG) {
+						fp18_inv_cyc(t[i], t[i]);
+					}
+				}
+
 				fp18_set_dig(c, 1);
 				for (j = l - 1; j >= 0; j--) {
 					fp18_sqr_cyc(c, c);

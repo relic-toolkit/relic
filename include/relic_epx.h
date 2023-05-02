@@ -915,13 +915,6 @@ fp_t *ep2_curve_get_a(void);
 fp_t *ep2_curve_get_b(void);
 
 /**
- * Returns the vector of coefficients required to perform GLV method.
- *
- * @param[out] b			- the vector of coefficients.
- */
-void ep2_curve_get_vs(bn_t *v);
-
-/**
  * Returns a optimization identifier based on the 'a' coefficient of the curve.
  *
  * @return the optimization identifier.
@@ -1566,13 +1559,6 @@ void ep3_curve_get_a(fp3_t a);
 void ep3_curve_get_b(fp3_t b);
 
 /**
- * Returns the vector of coefficients required to perform GLV method.
- *
- * @param[out] b			- the vector of coefficients.
- */
-void ep3_curve_get_vs(bn_t *v);
-
-/**
  * Returns a optimization identifier based on the 'a' coefficient of the curve.
  *
  * @return the optimization identifier.
@@ -2180,13 +2166,6 @@ void ep4_curve_get_a(fp4_t a);
  * @param[out] b			- the 'b' coefficient of the elliptic curve.
  */
 void ep4_curve_get_b(fp4_t b);
-
-/**
- * Returns the vector of coefficients required to perform GLV method.
- *
- * @param[out] b			- the vector of coefficients.
- */
-void ep4_curve_get_vs(bn_t *v);
 
 /**
  * Returns a optimization identifier based on the 'a' coefficient of the curve.
@@ -2797,13 +2776,6 @@ void ep8_curve_get_a(fp8_t a);
  * @param[out] b			- the 'b' coefficient of the elliptic curve.
  */
 void ep8_curve_get_b(fp8_t b);
-
-/**
- * Returns the vector of coefficients required to perform GLV method.
- *
- * @param[out] b			- the vector of coefficients.
- */
-void ep8_curve_get_vs(bn_t *v);
 
 /**
  * Returns a optimization identifier based on the 'a' coefficient of the curve.

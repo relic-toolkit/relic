@@ -36,7 +36,27 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-/* See ep/relic_ep_param.c for discussion of MAP_U parameters. */
+#if defined(EP_ENDOM) && FP_PRIME == 508
+/**
+ * Parameters for a pairing-friendly prime curve over a quadratic extension.
+ */
+/** @{ */
+#define K18_P508_A0		"0"
+#define K18_P508_A1		"0"
+#define K18_P508_A2		"0"
+#define K18_P508_B0		"0"
+#define K18_P508_B1		"0"
+#define K18_P508_B2		"1"
+#define K18_P508_X0		"0481B38AB0B95B9F699145EE9E0F5BB85063ADEC07039B7464F659BEAB3CC3AE5157FCB2D4F5D88503AAF143C9A9D039A351AA833A08506F7F079885DF87D8D"
+#define K18_P508_X1		"AE31CBE29A26EF9A326FC66011A14B6DE0C28B0E117DD8EB86741147BDC64FEE7676A00F3E824BAAEF393CC9BED562D2E5B2F307278ACE7F75A9664F06331FC"
+#define K18_P508_X2		"A7B35C55E843DD3D9C8D1785C3023D5983AF01D86662DCFAED2BB86798BE458539192D4E3CCA863D6A9D1E7B9DEBF7DCAB8AD3D8708BE2D79057F3191ADDD16"
+#define K18_P508_Y0		"A9E391BA5067387349BAB815425F98056D9841347A1D4B18EBD2C3AA409389F972559F3605324A71BDB3D6AD2F019AA11078B9CF6DE4CF2BEEAF383AFD2936E"
+#define K18_P508_Y1		"B4783EC28E495F56D7E84F616367F95BC34F4A23031E5944066F611AA47EB1538EFACDC386CDA4BE64F845ACC2097B93891ECB5DAF450BF817A5CEA3ED70021"
+#define K18_P508_Y2		"016AAD68D7ABF2F5AA8910FDE09231927194F3EE1507264418367CBA2DAC99666E0FE4E7FD65D604198E858E0DF718AC2F1B35246DC4087ECE1580FCFA9FE14"
+#define K18_P508_R		"BF33E1C9934E7868ECE51D291E5644DA8A2F179CEE74854EE6819B240F20CE4E7D19F4CDABA6EAEA5B0E3000000001"
+#define K18_P508_H		"9806E5E0CE73547F36E994F52B22DD8416121B7A9BA69D6384DFD0B9B51D54E2090C657EF80A51D82E653A1E7902C7FB690AC973C4CA83469894F5F75495B65B1185A9AD5AF835E3F2B54A4E90CDA9F00FF09AFF09AC5BF7B13ACCE2E862BB30718D4D9806D5488EB4BDA0B0D5A5B770050C4FA6C9148DA1C77BEBE19701967DAA73F47B10D257F2A942F1860DCEB6B"
+/** @} */
+#endif
 
 #if defined(EP_ENDOM) && FP_PRIME == 638
 /** @{ */
@@ -219,53 +239,6 @@ void ep3_curve_get_b(fp3_t b) {
 	fp3_copy(b, core_get()->ep3_b);
 }
 
-void ep3_curve_get_vs(bn_t *v) {
-	bn_t x, t;
-
-	bn_null(x);
-	bn_null(t);
-
-	RLC_TRY {
-		bn_new(x);
-		bn_new(t);
-
-		fp_prime_get_par(x);
-		bn_copy(v[1], x);
-		bn_copy(v[2], x);
-		bn_copy(v[3], x);
-
-		/* t = 2x^2. */
-		bn_sqr(t, x);
-		bn_dbl(t, t);
-
-		/* v0 = 2x^2 + 3x + 1. */
-		bn_mul_dig(v[0], x, 3);
-		bn_add_dig(v[0], v[0], 1);
-		bn_add(v[0], v[0], t);
-
-		/* v3 = -(2x^2 + x). */
-		bn_add(v[3], v[3], t);
-		bn_neg(v[3], v[3]);
-
-		/* v1 = 12x^3 + 8x^2 + x, v2 = 6x^3 + 4x^2 + x. */
-		bn_dbl(t, t);
-		bn_add(v[2], v[2], t);
-		bn_dbl(t, t);
-		bn_add(v[1], v[1], t);
-		bn_rsh(t, t, 2);
-		bn_mul(t, t, x);
-		bn_mul_dig(t, t, 3);
-		bn_add(v[2], v[2], t);
-		bn_dbl(t, t);
-		bn_add(v[1], v[1], t);
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		bn_free(x);
-		bn_free(t);
-	}
-}
-
 void ep3_curve_get_ord(bn_t n) {
 	ctx_t *ctx = core_get();
 	if (ctx->ep3_is_twist) {
@@ -322,7 +295,11 @@ void ep3_curve_set_twist(int type) {
 		bn_new(h);
 
 		switch (ep_param_get()) {
-#if FP_PRIME == 638
+#if FP_PRIME == 508
+			case K18_P508:
+				ASSIGN(K18_P508);
+				break;
+#elif FP_PRIME == 638
 			case K18_P638:
 				ASSIGN(K18_P638);
 				break;
@@ -359,6 +336,8 @@ void ep3_curve_set_twist(int type) {
 		if (type == RLC_EP_MTYPE) {
 			fp3_inv(ctx->ep3_frb[0], ctx->ep3_frb[0]);
 			fp3_inv(ctx->ep3_frb[1], ctx->ep3_frb[1]);
+		} else {
+			fp3_mul_art(ctx->ep3_frb[0], ctx->ep3_frb[0]);
 		}
 
 		fp18_zero(c);
