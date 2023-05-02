@@ -365,9 +365,9 @@ int fp_smb_binar(const fp_t a) {
 int fp_smb_divst(const fp_t a) {
 	/* Compute number of iterations based on modulus size. */
 #if FP_PRIME < 46
-	int r, d = (49 * FP_PRIME + 80)/17;
+	int r = 0, d = (49 * FP_PRIME + 80)/17;
 #else
-	int r, d = (49 * FP_PRIME + 57)/17;
+	int r = 0, d = (49 * FP_PRIME + 57)/17;
 #endif
 	dig_t delta = 1, g0, d0, fs, gs, k, mask, s;
 	bn_t _t;
@@ -462,7 +462,7 @@ int fp_smb_divst(const fp_t a) {
 int fp_smb_jmpds(const fp_t a) {
 	const int s = RLC_DIG - 2;
 	dis_t m[4], d = 0;
-	int r, i;
+	int i, r = 0;
 	/* Iterations taken directly from https://github.com/sipa/safegcd-bounds */
 	int iterations = (45907 * FP_PRIME + 26313) / 19929;
 	dv_t f, g, t0, t1, u0, u1;

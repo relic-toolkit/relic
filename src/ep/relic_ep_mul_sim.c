@@ -488,14 +488,13 @@ void ep_mul_sim_lot_endom(ep_t r, const ep_t p[], const bn_t k[], int n) {
  */
 static void ep_mul_sim_plain(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 		const bn_t m, const ep_t *t) {
-	int i, w, gen;
+	int i, w, gen = (t == NULL ? 0 : 1);
 	int8_t naf0[RLC_FP_BITS + 1], naf1[RLC_FP_BITS + 1], n0, n1, *u, *v;
 	ep_t t0[1 << (RLC_WIDTH - 2)];
 	ep_t t1[1 << (RLC_WIDTH - 2)];
 	size_t l, l0, l1;
 
 	RLC_TRY {
-		gen = (t == NULL ? 0 : 1);
 		if (!gen) {
 			for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
 				ep_null(t0[i]);

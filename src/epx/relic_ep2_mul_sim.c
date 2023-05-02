@@ -162,14 +162,13 @@ static void ep2_mul_sim_endom(ep2_t r, const ep2_t p, const bn_t k,
  */
 static void ep2_mul_sim_plain(ep2_t r, const ep2_t p, const bn_t k,
 		const ep2_t q, const bn_t m, const ep2_t *t) {
-	int i, n0, n1, w, gen;
+	int i, n0, n1, w, gen = (t == NULL ? 0 : 1);
 	int8_t naf0[2 * RLC_FP_BITS + 1], naf1[2 * RLC_FP_BITS + 1], *_k, *_m;
 	ep2_t t0[1 << (RLC_WIDTH - 2)];
 	ep2_t t1[1 << (RLC_WIDTH - 2)];
 	size_t l, l0, l1;
 
 	RLC_TRY {
-		gen = (t == NULL ? 0 : 1);
 		if (!gen) {
 			for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
 				ep2_null(t0[i]);

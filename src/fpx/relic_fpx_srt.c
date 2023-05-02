@@ -38,7 +38,7 @@
 
 int fp2_is_sqr(const fp2_t a) {
 	fp2_t t;
-	int r;
+	int r = 0;
 
 	fp2_null(t);
 

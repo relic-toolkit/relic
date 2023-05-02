@@ -178,7 +178,7 @@ static void eb_mul_sim_kbltz(eb_t r, const eb_t p, const bn_t k, const eb_t q,
  */
 static void eb_mul_sim_plain(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 		const bn_t m, const eb_t *t) {
-	int i, n0, n1, w, g;
+	int i, n0, n1, w, g = (t == NULL ? 0 : 1);
 	int8_t naf0[RLC_FB_BITS + 1], naf1[RLC_FB_BITS + 1], *_k, *_m;
 	eb_t t0[1 << (RLC_WIDTH - 2)];
 	eb_t t1[1 << (RLC_WIDTH - 2)];
@@ -190,7 +190,6 @@ static void eb_mul_sim_plain(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 	}
 
 	RLC_TRY {
-		g = (t == NULL ? 0 : 1);
 		if (!g) {
 			for (i =  0; i < (1 << (RLC_WIDTH - 2)); i++) {
 				eb_new(t0[i]);

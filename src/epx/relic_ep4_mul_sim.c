@@ -52,7 +52,7 @@
  */
 static void ep4_mul_sim_plain(ep4_t r, const ep4_t p, const bn_t k,
 		const ep4_t q, const bn_t m, ep4_t *t) {
-	int i, n0, n1, w, gen;
+	int i, n0, n1, w, gen = (t == NULL ? 0 : 1);
 	int8_t naf0[2 * RLC_FP_BITS + 1], naf1[2 * RLC_FP_BITS + 1], *_k, *_m;
 	ep4_t t0[1 << (RLC_WIDTH - 2)];
 	ep4_t t1[1 << (RLC_WIDTH - 2)];
