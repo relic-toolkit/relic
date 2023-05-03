@@ -82,7 +82,14 @@ void ep_mul_cof(ep_t r, const ep_t p) {
 				ep_mul_dig(r, r, 7);
 				break;
 			case EP_SG18:
-				/* TODO: fast cofactor clearing. */
+				/* Compute [3u^2-1]P. */
+				fp_prime_get_par(k);
+				ep_mul_basic(v, p, k);
+				bn_mul_dig(k, k, 3);
+				ep_mul_basic(v, v, k);
+				ep_sub(v, v, p);
+				ep_norm(r, v);
+				break;
 #endif
 			default:
 				/* multiply by cofactor to get the correct group. */

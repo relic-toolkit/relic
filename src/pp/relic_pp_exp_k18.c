@@ -228,6 +228,7 @@ void pp_exp_sg(fp18_t c, fp18_t a) {
 		fp18_mul(t2, t2, t3);
 		fp18_mul(t2, t2, t0);
 
+		/* Compute t2 = t2^(3*u^2-1). */
 		fp18_exp_cyc_sps(t3, t2, b, l, RLC_POS);
 		fp18_exp_cyc_sps(t3, t3, b, l, RLC_POS);
 		fp18_sqr_cyc(t0, t3);
@@ -235,13 +236,14 @@ void pp_exp_sg(fp18_t c, fp18_t a) {
 		fp18_inv_cyc(t2, t2),
 		fp18_mul(t2, t2, t3);
 
+		/* Compute t2 = t2^(3*u^2-1). */
 		fp18_exp_cyc_sps(t3, t2, b, l, RLC_POS);
 		fp18_exp_cyc_sps(t3, t3, b, l, RLC_POS);
 		fp18_sqr_cyc(t0, t3);
 		fp18_mul(t3, t3, t0);
-
 		fp18_inv_cyc(t2, t2),
 		fp18_mul(t2, t2, t3);
+
 		fp18_mul(c, t1, t2);
 	}
 	RLC_CATCH_ANY {
