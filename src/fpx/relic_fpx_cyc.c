@@ -1158,13 +1158,22 @@ static void fp18_gls(fp18_t c, const fp18_t a) {
 	RLC_TRY {
 		fp18_new(b);
 
-		/* We have that x = p^4 - 3*p = (p^3 - 3)p mod n. */
-		fp18_sqr_cyc(b, a);
-		fp18_mul(b, b, a);
-		fp18_frb(c, a, 3);
-		fp18_inv_cyc(b, b);
-		fp18_mul(c, c, b);
-		fp18_frb(c, c, 1);
+		if (ep_curve_is_pairf() == EP_SG18) {
+			/* -3*u = (2*p^2 - p^5) mod r */
+			fp18_frb(b, a, 5);
+			fp18_inv_cyc(b, b);
+			fp18_frb(c, a, 2);
+			fp18_sqr_cyc(c, c);
+			fp18_mul(c, c, b);
+		} else {
+			/* For KSS18, we have that x = p^4 - 3*p = (p^3 - 3)p mod n. */
+			fp18_sqr_cyc(b, a);
+			fp18_mul(b, b, a);
+			fp18_frb(c, a, 3);
+			fp18_inv_cyc(b, b);
+			fp18_mul(c, c, b);
+			fp18_frb(c, c, 1);
+		}
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -1201,8 +1210,14 @@ void fp18_exp_cyc(fp18_t c, const fp18_t a, const bn_t b) {
 				fp18_new(t[i]);
 			}
 
-			ep_curve_get_ord(n);
 			fp_prime_get_par(x);
+			if (ep_curve_is_pairf() == EP_SG18) {
+				/* Compute base -3*u for the recoding below. */
+				bn_dbl(n, x);
+				bn_add(x, x, n);
+				bn_neg(x, x);
+			}
+			ep_curve_get_ord(n);
 			bn_mod(_b[0], b, n);
 			bn_rec_frb(_b, 6, _b[0], x, n, ep_curve_is_pairf() == EP_BN);
 
@@ -1210,13 +1225,13 @@ void fp18_exp_cyc(fp18_t c, const fp18_t a, const bn_t b) {
 				l = 0;
 
 				fp18_copy(t[0], a);
-				for (i = 0; i < 6; i++) {
-					if (i > 0) {
-						fp18_gls(t[i], t[i - 1]);
-					}
+				for (int i = 0; i < 6; i++) {
 					_l[i] = RLC_FP_BITS + 1;
 					bn_rec_naf(naf[i], &_l[i], _b[i], 2);
 					l = RLC_MAX(l, _l[i]);
+					if (i > 0) {
+						fp18_gls(t[i], t[i - 1]);
+					}
 				}
 
 				for (int i = 0; i < 6; i++) {
@@ -1226,16 +1241,16 @@ void fp18_exp_cyc(fp18_t c, const fp18_t a, const bn_t b) {
 				}
 
 				fp18_set_dig(c, 1);
-				for (j = l - 1; j >= 0; j--) {
+				for (int i = l - 1; i >= 0; i--) {
 					fp18_sqr_cyc(c, c);
-					for (i = 0; i < 6; i++) {
-						if (naf[i][j] > 0) {
-							fp18_mul(c, c, t[i]);
+					for (int j = 0; j < 6; j++) {
+						if (naf[j][i] > 0) {
+							fp18_mul(c, c, t[j]);
 						}
-						if (naf[i][j] < 0) {
-							fp18_inv_cyc(t[i], t[i]);
-							fp18_mul(c, c, t[i]);
-							fp18_inv_cyc(t[i], t[i]);
+						if (naf[j][i] < 0) {
+							fp18_inv_cyc(t[j], t[j]);
+							fp18_mul(c, c, t[j]);
+							fp18_inv_cyc(t[j], t[j]);
 						}
 					}
 				}
