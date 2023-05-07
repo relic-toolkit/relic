@@ -87,11 +87,9 @@ int fp_srt(fp_t c, const fp_t a) {
 				/* Compute progenitor as x^(p-1-2^f)/2^(f+1) where 2^f|(p-1). */
 
 				/* Write p - 1 as (e * 2^f), odd e. */
-				bn_sub_dig(e, e, 1);
-				while (bn_is_even(e)) {
-					bn_rsh(e, e, 1);
-					f++;
-				}
+				f = fp_prime_get_2ad();
+				bn_rsh(e, e, f);
+
 				/* Make it e = (p - 1 - 2^f)/2^(f + 1), compute t0 = a^e. */
 				bn_rsh(e, e, 1);
 				fp_exp(t0, a, e);

@@ -213,20 +213,22 @@ int fp3_srt(fp3_t c, const fp3_t a) {
 				/* Implement constant-time version of Tonelli-Shanks algorithm
 				 * as per https://eprint.iacr.org/2020/1497.pdf */
 
-				/* Compute progenitor as x^(p^3-1-2^f)/2^{f+1) for 2^f|(p-1). */
-
-				/* Write p^3 - 1 as (e * 2^f), odd e. */
+				/* Compute progenitor as x^(p^3-1-2^f)/2^(f+1) for 2^f|(p-1).
+				 * Let q = (p-1)/2^f. We will write the exponent in p and q.
+				 * Write (p^3-1-2^f)/2^(f+1) as (q*(p^2+p))/2 + (q - 1)/2 */
 				bn_sqr(d, e);
-				bn_mul(e, e, d);
+				bn_add(d, d, e);
+				bn_rsh(d, d, 1);
+				/* Compute (q - 1)/2 = (p-1)/2^(f+1).*/
+				f = fp_prime_get_2ad();
 				bn_sub_dig(e, e, 1);
-				while (bn_is_even(e)) {
-					bn_rsh(e, e, 1);
-					f++;
-				}
-
-				/* Make it e = (p^3 - 1 - 2^f)/2^(f + 1), compute t0 = a^e. */
-				bn_rsh(e, e, 1);
-				fp3_exp(t0, a, e);
+				bn_rsh(e, e, f + 1);
+				fp3_exp(t1, a, e);
+				/* Now compute the power (q*(p^2+p))/2. */
+				fp3_sqr(t0, t1);
+				fp3_mul(t0, t0, a);
+				fp3_exp(t0, t0, d);
+				fp3_mul(t0, t0, t1);
 
 				/* Generate root of unity, and continue algorithm. */
 				dv_copy(root, fp_prime_get_srt(), RLC_FP_DIGS);

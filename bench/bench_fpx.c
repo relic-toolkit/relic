@@ -380,7 +380,7 @@ static void arith2(void) {
 
 	BENCH_RUN("fp2_mul_frb") {
 		fp2_rand(a);
-		BENCH_ADD(fp2_mul_frb(c, a, 1, 0));
+		BENCH_ADD(fp2_mul_frb(c, a, 1, 1));
 	}
 	BENCH_END;
 

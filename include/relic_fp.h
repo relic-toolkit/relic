@@ -137,7 +137,7 @@ enum {
 	/** 477-bit prime for BLS curve of embedding degree 24. */
 	B24_509,
 	/** 508-bit prime for KSS16 curve. */
-	KSS_508,
+	K18_508,
 	/** 511-bit prime for Optimal TNFS-secure curve. */
 	OT_511,
 	/** Random 544-bit prime for Cocks-Pinch curve with embedding degree 8. */
@@ -157,7 +157,7 @@ enum {
 	/** 1536-bit prime for supersingular curve with embedding degree k = 2. */
 	SS_1536,
 	/** 3072-bit prime for supersingular curve with embedding degree k = 1. */
-	SS_3072,
+	K1_3072,
 };
 
 /**

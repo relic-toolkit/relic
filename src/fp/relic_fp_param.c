@@ -66,7 +66,7 @@
 /**
  * Cofactor description of 3072-bit prime modulus.
  */
-#define STR_P3072	"D2DECB54BA1C33C49BD7B174FBC6E56AD9B05D1B2B4100708AA3B6AA620B5CD167F66D33818B608FC25C9F56A0C685129B9DDAA342ADB37B2CEA7E09DEB49F3BC85B467801ED7507149CF025A021D8109926CAC3C774AD8E3C0B4D175CF1C94A6641A8E5BBBE63FB40EC52B206315D20C074B538785E63174FB8A72C912F51B6A3D132A185FD95B067B817AB9F4C01ABA6CC7BF1546D94FD79AC2D0183814FD8"
+#define STR_P3072	"E4C6467513F6DA5D303FCF2C5285C33206AC48901ADBE523D00F9F3B9E4895075BEB07DD1AAEEBF957F2DCBBEC4FB900E2ADE744AA7206BC2A60709BA08CA540"
 
 #endif
 
@@ -406,7 +406,7 @@ void fp_param_set(int param) {
 				fp_prime_set_pairf(t0, EP_B12);
 				break;
 #elif FP_PRIME == 508
-			case KSS_508:
+			case K508:
 				/* x = -(2^64 + 2^51 - 2^46 - 2^12). */
 				bn_set_2b(t0, 64);
 				bn_set_2b(t1, 51);
@@ -550,12 +550,14 @@ void fp_param_set(int param) {
 				fp_prime_set_pairf(t0, EP_SS2);
 				break;
 #elif FP_PRIME == 3072
-			case SS_3072:
+			case K1_3072:
 				/* x = 2^256 + 2^96 - 1. */
 				bn_set_2b(t0, 256);
-				bn_set_bit(t0, 96, 1);
+				bn_set_2b(p, 96);
+				bn_add(t0, t0, p);
 				bn_sub_dig(t0, t0, 1);
 				bn_read_str(p, STR_P3072, strlen(STR_P3072), 16);
+				bn_lsh(p, p, 768);
 				bn_mul(p, p, t0);
 				bn_sqr(p, p);
 				bn_add_dig(p, p, 1);
@@ -690,7 +692,7 @@ int fp_param_set_any_tower(void) {
 #elif FP_PRIME == 455
 	fp_param_set(B12_455);
 #elif FP_PRIME == 508
-	fp_param_set(KSS_508);
+	fp_param_set(K18_508);
 #elif FP_PRIME == 509
 	fp_param_set(B24_509);
 #elif FP_PRIME == 511
@@ -711,6 +713,8 @@ int fp_param_set_any_tower(void) {
 #endif
 #elif FP_PRIME == 1536
 	fp_param_set(SS_1536);
+#elif FP_PRIME == 3072
+	fp_param_set(K1_3072);
 #else
 	do {
 		/* Since we have to generate a prime number, pick a nice towering. */
@@ -725,9 +729,5 @@ int fp_param_set_any_tower(void) {
 void fp_param_print(void) {
 	util_banner("Prime modulus:", 0);
 	util_print("   ");
-#if ALLOC == AUTO
-	fp_print(fp_prime_get());
-#else
-	fp_print((const fp_t)fp_prime_get());
-#endif
+	bn_print(&(core_get()->prime));
 }
