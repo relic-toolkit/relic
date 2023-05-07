@@ -157,20 +157,22 @@ static void fp_prime_set(const bn_t p) {
 		};
 
 		/* Check if cnr it is a cubic non-residue or find another. */
-		if (ctx->cnr > 0) {
-			fp_set_dig(r, ctx->cnr);
-			while (fp_is_cub(r)) {
-				ctx->cnr++;
+		if (ctx->mod18 % 3 == 1) {
+			if (ctx->cnr > 0) {
 				fp_set_dig(r, ctx->cnr);
-			};
-		} else {
-			fp_set_dig(r, -ctx->cnr);
-			fp_neg(r, r);
-			while (fp_is_cub(r)) {
-				ctx->cnr--;
+				while (fp_is_cub(r)) {
+					ctx->cnr++;
+					fp_set_dig(r, ctx->cnr);
+				};
+			} else {
 				fp_set_dig(r, -ctx->cnr);
 				fp_neg(r, r);
-			};
+				while (fp_is_cub(r)) {
+					ctx->cnr--;
+					fp_set_dig(r, -ctx->cnr);
+					fp_neg(r, r);
+				};
+			}
 		}
 
 #ifdef FP_QNRES

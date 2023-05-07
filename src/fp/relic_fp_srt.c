@@ -36,7 +36,11 @@
 /*============================================================================*/
 
 int fp_is_sqr(const fp_t a) {
-	return fp_smb(a) == 1;
+	if (fp_is_zero(a)) {
+		return 1;
+	}
+	
+	return (fp_smb(a) == 1);
 }
 
 int fp_srt(fp_t c, const fp_t a) {

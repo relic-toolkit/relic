@@ -1070,7 +1070,7 @@ static int square_root(void) {
 
 		TEST_CASE("quadratic residuosity test is correct") {
 			fp_zero(a);
-			TEST_ASSERT(fp_is_sqr(a) == 0, end);
+			TEST_ASSERT(fp_is_sqr(a) == 1, end);
 			fp_rand(a);
 			fp_sqr(a, a);
 			TEST_ASSERT(fp_is_sqr(a) == 1, end);
@@ -1127,15 +1127,18 @@ static int cube_root(void) {
 
 		TEST_CASE("cubic residuosity test is correct") {
 			fp_zero(a);
-			TEST_ASSERT(fp_is_cub(a) == 0, end);
+			TEST_ASSERT(fp_is_cub(a) == 1, end);
 			fp_rand(a);
 			fp_sqr(b, a);
 			fp_mul(a, a, b);
 			TEST_ASSERT(fp_is_cub(a) == 1, end);
-			do {
-				fp_rand(a);
-			} while(fp_crt(b, a) == 1);
-			TEST_ASSERT(fp_is_cub(a) == 0, end);
+			/* If p = 2 mod 3, all elements are cubic residues. */
+			if (fp_prime_get_mod18() % 3 != 2) {
+				do {
+					fp_rand(a);
+				} while(fp_crt(b, a) == 1);
+				TEST_ASSERT(fp_is_cub(a) == 0, end);
+			}
 		}
 		TEST_END;
 

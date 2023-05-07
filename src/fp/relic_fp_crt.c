@@ -41,6 +41,10 @@ int fp_is_cub(const fp_t a) {
 
 	bn_null(t);
 
+	if (fp_is_zero(a) || (fp_prime_get_mod18() % 3 == 2)) {
+		return 1;
+	}
+
 	RLC_TRY {
 		bn_new(t);
 
