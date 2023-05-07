@@ -53,8 +53,8 @@
  * Pairing-friendly elliptic curve identifiers.
  */
 enum {
-    /** Supersingular curves with embedding degree 1. */
-    EP_SS1 = 1,
+    /** Ordinary curves with embedding degree 1. */
+    EP_K1 = 1,
     /** Supersingular curves with embedding degree 2. */
     EP_SS2,
     /** Barreto-Naehrig. */

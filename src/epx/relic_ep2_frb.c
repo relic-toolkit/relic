@@ -37,14 +37,34 @@
 /*============================================================================*/
 
 void ep2_frb(ep2_t r, const ep2_t p, int i) {
-	ctx_t *ctx = core_get();
+	if (ep2_curve_opt_a() == RLC_ZERO) {
+		ctx_t *ctx = core_get();
 
-	ep2_copy(r, p);
-	for (; i > 0; i--) {
-		fp2_frb(r->x, r->x, 1);
-		fp2_frb(r->y, r->y, 1);
-		fp2_frb(r->z, r->z, 1);
-		fp2_mul(r->x, r->x, ctx->ep2_frb[0]);
-		fp2_mul(r->y, r->y, ctx->ep2_frb[1]);
+		ep2_copy(r, p);
+		for (; i > 0; i--) {
+			fp2_frb(r->x, r->x, 1);
+			fp2_frb(r->y, r->y, 1);
+			fp2_frb(r->z, r->z, 1);
+			fp2_mul(r->x, r->x, ctx->ep2_frb[0]);
+			fp2_mul(r->y, r->y, ctx->ep2_frb[1]);
+		}
+	} else {
+		bn_t t;
+
+		bn_null(t);
+
+		RLC_TRY {
+			bn_new(t);
+			
+			/* Can we do faster than this? */
+			fp_prime_get_par(t);
+			for (; i > 0; i--) {
+				ep2_mul_basic(r, p, t);
+			}
+		} RLC_CATCH_ANY {
+			RLC_THROW(ERR_NO_MEMORY);
+		} RLC_FINALLY {
+			bn_free(t);
+		}
 	}
 }

@@ -112,9 +112,11 @@ static void ep2_mul_glv_imp(ep2_t r, const ep2_t p, const bn_t k) {
 
 #endif /* EP_ENDOM */
 
+#if defined(EP_PLAIN) || defined(EP_SUPER)
+
 static void ep2_mul_naf_imp(ep2_t r, const ep2_t p, const bn_t k) {
-	size_t l, n;
-	int8_t naf[RLC_FP_BITS + 1];
+	size_t l;
+	int8_t n, naf[RLC_FP_BITS + 1];
 	ep2_t t[1 << (RLC_WIDTH - 2)];
 
 	RLC_TRY {
@@ -159,6 +161,7 @@ static void ep2_mul_naf_imp(ep2_t r, const ep2_t p, const bn_t k) {
 	}
 }
 
+#endif /* EP_PLAIN || EP_SUPER */
 #endif /* EP_MUL == LWNAF */
 
 /*============================================================================*/
@@ -368,11 +371,7 @@ void ep2_mul_lwnaf(ep2_t r, const ep2_t p, const bn_t k) {
 
 #if defined(EP_ENDOM)
 	if (ep_curve_is_endom()) {
-		if (ep2_curve_opt_a() == RLC_ZERO) {
-			ep2_mul_glv_imp(r, p, k);
-		} else {
-			ep2_mul_naf_imp(r, p, k);
-		}
+		ep2_mul_glv_imp(r, p, k);
 		return;
 	}
 #endif

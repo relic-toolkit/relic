@@ -56,8 +56,7 @@ static void ep2_mul_sim_endom(ep2_t r, const ep2_t p, const bn_t k,
 		const ep2_t q, const bn_t m) {
 	size_t l, _l[4];
 	bn_t _k[4], _m[4], n, u;
-	int8_t naf0[4][RLC_FP_BITS + 1];
-	int8_t naf1[4][RLC_FP_BITS + 1];
+	int8_t naf0[4][RLC_FP_BITS + 1], naf1[4][RLC_FP_BITS + 1];
 	ep2_t _p[4], _q[4];
 
 	bn_null(n);
@@ -162,10 +161,9 @@ static void ep2_mul_sim_endom(ep2_t r, const ep2_t p, const bn_t k,
  */
 static void ep2_mul_sim_plain(ep2_t r, const ep2_t p, const bn_t k,
 		const ep2_t q, const bn_t m, const ep2_t *t) {
-	int i, n0, n1, w, gen = (t == NULL ? 0 : 1);
-	int8_t naf0[2 * RLC_FP_BITS + 1], naf1[2 * RLC_FP_BITS + 1], *_k, *_m;
-	ep2_t t0[1 << (RLC_WIDTH - 2)];
-	ep2_t t1[1 << (RLC_WIDTH - 2)];
+	int i, w, gen = (t == NULL ? 0 : 1);
+	int8_t n0, n1, naf0[2 * RLC_FP_BITS + 1], naf1[2 * RLC_FP_BITS + 1];
+	ep2_t t0[1 << (RLC_WIDTH - 2)], t1[1 << (RLC_WIDTH - 2)];
 	size_t l, l0, l1;
 
 	RLC_TRY {
@@ -197,8 +195,6 @@ static void ep2_mul_sim_plain(ep2_t r, const ep2_t p, const bn_t k,
 		bn_rec_naf(naf1, &l1, m, RLC_WIDTH);
 
 		l = RLC_MAX(l0, l1);
-		_k = naf0 + l - 1;
-		_m = naf1 + l - 1;
 		if (bn_sign(k) == RLC_NEG) {
 			for (i =  0; i < l0; i++) {
 				naf0[i] = -naf0[i];
@@ -211,11 +207,11 @@ static void ep2_mul_sim_plain(ep2_t r, const ep2_t p, const bn_t k,
 		}
 
 		ep2_set_infty(r);
-		for (i = l - 1; i >= 0; i--, _k--, _m--) {
+		for (i = l - 1; i >= 0; i--) {
 			ep2_dbl(r, r);
 
-			n0 = *_k;
-			n1 = *_m;
+			n0 = naf0[i];
+			n1 = naf1[i];
 			if (n0 > 0) {
 				ep2_add(r, r, t[n0 / 2]);
 			}
@@ -249,7 +245,6 @@ static void ep2_mul_sim_plain(ep2_t r, const ep2_t p, const bn_t k,
 }
 
 #endif /* EP_PLAIN || EP_SUPER */
-
 #endif /* EP_SIM == INTER */
 
 /*============================================================================*/
@@ -387,7 +382,6 @@ void ep2_mul_sim_trick(ep2_t r, const ep2_t p, const bn_t k, const ep2_t q,
 
 void ep2_mul_sim_inter(ep2_t r, const ep2_t p, const bn_t k, const ep2_t q,
 		const bn_t m) {
-	int flag = 0;
 	bn_t n, _k, _m;
 
 	if (bn_is_zero(k) || ep2_is_infty(p)) {
@@ -416,16 +410,14 @@ void ep2_mul_sim_inter(ep2_t r, const ep2_t p, const bn_t k, const ep2_t q,
 #if defined(EP_ENDOM)
 		if (ep_curve_is_endom()) {
 			ep2_mul_sim_endom(r, p, _k, q, _m);
-			flag = 1;
+			return;
 		}
 #endif
 
 #if defined(EP_PLAIN) || defined(EP_SUPER)
-		if (!flag) {
-			ep2_mul_sim_plain(r, p, _k, q, _m, NULL);
-		}
+		ep2_mul_sim_plain(r, p, _k, q, _m, NULL);
 #endif
-		(void)flag;
+
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	}
