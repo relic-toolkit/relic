@@ -36,9 +36,7 @@
 #ifndef RLC_PC_H
 #define RLC_PC_H
 
-#include "relic_fbx.h"
 #include "relic_ep.h"
-#include "relic_eb.h"
 #include "relic_pp.h"
 #include "relic_bn.h"
 #include "relic_util.h"
@@ -60,35 +58,42 @@
 
 #if FP_PRIME == 575
 #define RLC_G2_LOWER			ep8_
+#define RLC_G2_BASEF(A)		A[0][0][0]
 #elif FP_PRIME == 315 || FP_PRIME == 317 || FP_PRIME == 509
 #define RLC_G2_LOWER			ep4_
+#define RLC_G2_BASEF(A)		A[0][0]
 #elif FP_PRIME == 508 || FP_PRIME == 638 && !defined(FP_QNRES)
-#define RLC_G2_LOWER            ep3_
+#define RLC_G2_LOWER			ep3_
+#define RLC_G2_BASEF(A)		A[0]
 #else
 #define RLC_G2_LOWER			ep2_
+#define RLC_G2_BASEF(A)		A[0]
 #endif
 
 #define RLC_G2_UPPER			EP
 
 #if FP_PRIME == 575
 #define RLC_GT_LOWER			fp48_
+#define RLC_GT_EMBED      48
 #elif FP_PRIME == 315 || FP_PRIME == 317 || FP_PRIME == 509
 #define RLC_GT_LOWER			fp24_
+#define RLC_GT_EMBED      24
 #elif FP_PRIME == 508 || FP_PRIME == 638 && !defined(FP_QNRES)
-#define RLC_GT_LOWER            fp18_
+#define RLC_GT_LOWER			fp18_
+#define RLC_GT_EMBED      18
 #else
 #define RLC_GT_LOWER			fp12_
+#define RLC_GT_EMBED      12
 #endif
-
-#define RLC_PC_LOWER			pp_
 
 #else
 #define RLC_G1_LOWER			ep_
 #define RLC_G1_UPPER			EP
 #define RLC_G2_LOWER			ep_
 #define RLC_G2_UPPER			EP
+#define RLC_G2_BASEF(A)		A
 #define RLC_GT_LOWER			fp2_
-#define RLC_PC_LOWER			pp_
+#define RLC_GT_EMBED      2
 #endif
 /** @} */
 
@@ -206,8 +211,6 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
  */
 #define gt_free(A)			RLC_CAT(RLC_GT_LOWER, free)(A)
 
-
-
 /**
  * Returns the generator of the group G_1.
  *
@@ -312,18 +315,40 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
 #define gt_is_unity(A)		(RLC_CAT(RLC_GT_LOWER, cmp_dig)(A, 1) == RLC_EQ)
 
 /**
- * Assigns a G_1 element to the unity.
+ * Assigns a G_1 element to the identity.
  *
  * @param[out] P			- the element to assign.
  */
 #define g1_set_infty(P)		RLC_CAT(RLC_G1_LOWER, set_infty)(P)
 
 /**
- * Assigns a G_2 element to the unity.
+ * Assigns a G_2 element to the identity.
  *
  * @param[out] P			- the element to assign.
  */
 #define g2_set_infty(P)		RLC_CAT(RLC_G2_LOWER, set_infty)(P)
+
+/**
+ * Assigns a G_1 element to a pair of coordinates in the extension field.
+ *
+ * @param[out] P			- the element to assign.
+ * @param[out] Q			- the G_2 element storing the coordinates.
+ */
+#define g1_set_g2(P, Q)																												\
+	fp_copy((P)->x, RLC_G2_BASEF((Q)->x));																			\
+  fp_copy((P)->y, RLC_G2_BASEF((Q)->y));																			\
+  fp_copy((P)->z, RLC_G2_BASEF((Q)->z));																			\
+
+/**
+ * Assigns a G_2 element to a pair of coordinates in the base field.
+ *
+ * @param[out] Q			- the element to assign.
+ * @param[out] P			- the G_1 element storing the coordinates.
+ */
+#define g2_set_g1(Q, P)																												\
+	fp_copy(RLC_G2_BASEF((Q)->x), (P)->x);																			\
+  fp_copy(RLC_G2_BASEF((Q)->y), (P)->y);																			\
+  fp_copy(RLC_G2_BASEF((Q)->z), (P)->z);																			\
 
 /**
  * Assigns a G_T element to zero.
@@ -333,7 +358,7 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
 #define gt_zero(A)			RLC_CAT(RLC_GT_LOWER, zero)(A)
 
 /**
- * Assigns a G_T element to the unity.
+ * Assigns a G_T element to the identity.
  *
  * @param[out] A			- the element to assign.
  */
@@ -419,7 +444,7 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
  * @param[out] R			- the blinded G_1 element.
  * @param[in] P				- the G_1 element to blind.
  */
- #define g1_blind(R, P)		RLC_CAT(RLC_G1_LOWER, blind)(R, P)
+#define g1_blind(R, P)		RLC_CAT(RLC_G1_LOWER, blind)(R, P)
 
  /**
   * Randomizes coordinates of a G_2 element.
@@ -861,7 +886,7 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
  * @param[in] M				- the byte array to map.
  * @param[in] L				- the array length in bytes.
  */
-#define g1_map(P, M, L);	RLC_CAT(RLC_G1_LOWER, map)(P, M, L)
+#define g1_map(P, M, L)	  RLC_CAT(RLC_G1_LOWER, map)(P, M, L)
 
 /**
  * Maps a byte array to an element in G_2.
@@ -870,7 +895,7 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
  * @param[in] M				- the byte array to map.
  * @param[in] L				- the array length in bytes.
  */
-#define g2_map(P, M, L);	RLC_CAT(RLC_G2_LOWER, map)(P, M, L)
+#define g2_map(P, M, L)	  RLC_CAT(RLC_G2_LOWER, map)(P, M, L)
 
 /**
  * Computes the bilinear pairing of a G_1 element and a G_2 element. Computes
@@ -880,23 +905,7 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
  * @param[in] P				- the first element.
  * @param[in] Q				- the second element.
  */
-#if FP_PRIME < 1536
-
-#if FP_PRIME == 575
-#define pc_map(R, P, Q);		RLC_CAT(RLC_PC_LOWER, map_k48)(R, P, Q)
-#elif FP_PRIME == 315 || FP_PRIME == 317 || FP_PRIME == 509
-#define pc_map(R, P, Q);		RLC_CAT(RLC_PC_LOWER, map_k24)(R, P, Q)
-#elif FP_PRIME == 508 || FP_PRIME == 638 && !defined(FP_QNRES)
-#define pc_map(R, P, Q);		RLC_CAT(RLC_PC_LOWER, map_k18)(R, P, Q)
-#else
-#define pc_map(R, P, Q);		RLC_CAT(RLC_PC_LOWER, map_k12)(R, P, Q)
-#endif
-
-#else
-
-#define pc_map(R, P, Q);		RLC_CAT(RLC_PC_LOWER, map_k2)(R, P, Q)
-
-#endif
+#define pc_map(R, P, Q)	  RLC_CAT(pp_map_k, RLC_GT_EMBED)(R, P, Q)
 
 /**
  * Computes the multi-pairing of G_1 elements and G_2 elements. Computes
@@ -907,21 +916,7 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
  * @param[in] Q				- the second pairing arguments.
  * @param[in] M 			- the number of pairing arguments.
  */
-#if FP_PRIME < 1536
-
-#if FP_PRIME == 575
-#define pc_map_sim(R, P, Q, M);	RLC_CAT(RLC_PC_LOWER, map_sim_k48)(R, P, Q, M)
-#elif FP_PRIME == 315 || FP_PRIME == 317 || FP_PRIME == 509
-#define pc_map_sim(R, P, Q, M);	RLC_CAT(RLC_PC_LOWER, map_sim_k24)(R, P, Q, M)
-#elif FP_PRIME == 508 || FP_PRIME == 638 && !defined(FP_QNRES)
-#define pc_map_sim(R, P, Q, M);	RLC_CAT(RLC_PC_LOWER, map_sim_k18)(R, P, Q, M)
-#else
-#define pc_map_sim(R, P, Q, M);	RLC_CAT(RLC_PC_LOWER, map_sim_k12)(R, P, Q, M)
-#endif
-
-#else
-#define pc_map_sim(R, P, Q, M);	RLC_CAT(RLC_PC_LOWER, map_sim_k2)(R, P, Q, M)
-#endif
+#define pc_map_sim(R, P, Q, M)  RLC_CAT(pp_map_sim_k, RLC_GT_EMBED)(R, P, Q, M)
 
 /**
  * Computes the final exponentiation of the pairing.
@@ -929,19 +924,7 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
  * @param[out] C			- the result.
  * @param[in] A				- the field element to exponentiate.
  */
-#if FP_PRIME < 1536
-
-#if FP_PRIME == 315 || FP_PRIME == 317 || FP_PRIME == 509
-#define pc_exp(C, A);			RLC_CAT(RLC_PC_LOWER, exp_k24)(C, A)
-#elif FP_PRIME == 508 || FP_PRIME == 638 && !defined(FP_QNRES)
-#define pc_exp(C, A);			RLC_CAT(RLC_PC_LOWER, exp_k18)(C, A)
-#else
-#define pc_exp(C, A);			RLC_CAT(RLC_PC_LOWER, exp_k12)(C, A)
-#endif
-
-#else
-#define pc_exp(C, A);			RLC_CAT(RLC_PC_LOWER, exp_k2)(C, A)
-#endif
+#define pc_exp(C, A);			RLC_CAT(pp_exp_k, RLC_GT_EMBED)(C, A)
 
 /*============================================================================*/
 /* Function prototypes                                                        */

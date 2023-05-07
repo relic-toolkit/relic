@@ -51,14 +51,14 @@
  * coordinates.
  *
  * @param[out] L			- the result of the evaluation.
- * @param[in, out] R		- the resulting point and first point to add.
+ * @param[in, out] R		        - the resulting point and first point to add.
  * @param[in] P				- the second point to add.
  * @param[in] Q				- the affine point to evaluate the line function.
  */
 #if PP_EXT == BASIC
-#define pp_add_k2_projc(L, R, P, Q)		pp_add_k2_projc_basic(L, R, P, Q)
+#define pp_add_k2_projc(L, R, P, Q)	pp_add_k2_projc_basic(L, R, P, Q)
 #else
-#define pp_add_k2_projc(L, R, P, Q)		pp_add_k2_projc_lazyr(L, R, P, Q)
+#define pp_add_k2_projc(L, R, P, Q)	pp_add_k2_projc_lazyr(L, R, P, Q)
 #endif
 
 /**
@@ -66,7 +66,7 @@
  * point on an elliptic curve with embedding degree 2.
  *
  * @param[out] L			- the result of the evaluation.
- * @param[in, out] R		- the resulting point and first point to add.
+ * @param[in, out] R		        - the resulting point and first point to add.
  * @param[in] P				- the second point to add.
  * @param[in] Q				- the affine point to evaluate the line function.
  */
@@ -82,7 +82,7 @@
  * coordinates.
  *
  * @param[out] L			- the result of the evaluation.
- * @param[in, out] R		- the resulting point and first point to add.
+ * @param[in, out] R		        - the resulting point and first point to add.
  * @param[in] Q				- the second point to add.
  * @param[in] P				- the affine point to evaluate the line function.
  */
@@ -97,7 +97,7 @@
  * point on an elliptic curve with embedding degree 8.
  *
  * @param[out] L			- the result of the evaluation.
- * @param[in, out] R		- the resulting point and first point to add.
+ * @param[in, out] R		        - the resulting point and first point to add.
  * @param[in] Q				- the second point to add.
  * @param[in] P				- the affine point to evaluate the line function.
  */
@@ -113,7 +113,7 @@
  * coordinates.
  *
  * @param[out] L			- the result of the evaluation.
- * @param[in, out] R		- the resulting point and first point to add.
+ * @param[in, out] R		        - the resulting point and first point to add.
  * @param[in] Q				- the second point to add.
  * @param[in] P				- the affine point to evaluate the line function.
  */
@@ -128,7 +128,7 @@
  * point on an elliptic curve with embedding degree 12.
  *
  * @param[out] L			- the result of the evaluation.
- * @param[in, out] R		- the resulting point and first point to add.
+ * @param[in, out] R		        - the resulting point and first point to add.
  * @param[in] Q				- the second point to add.
  * @param[in] P				- the affine point to evaluate the line function.
  */
@@ -144,7 +144,7 @@
  * coordinates.
  *
  * @param[out] L			- the result of the evaluation.
- * @param[in, out] R		- the resulting point and first point to add.
+ * @param[in, out] R		        - the resulting point and first point to add.
  * @param[in] Q				- the second point to add.
  * @param[in] P				- the affine point to evaluate the line function.
  */
@@ -159,7 +159,7 @@
  * point on an elliptic curve with embedding degree 18.
  *
  * @param[out] L			- the result of the evaluation.
- * @param[in, out] R		- the resulting point and first point to add.
+ * @param[in, out] R		        - the resulting point and first point to add.
  * @param[in] Q				- the second point to add.
  * @param[in] P				- the affine point to evaluate the line function.
  */
@@ -174,7 +174,7 @@
  * point on an elliptic curve with embedding degree 24.
  *
  * @param[out] L			- the result of the evaluation.
- * @param[in, out] R		- the resulting point and first point to add.
+ * @param[in, out] R		        - the resulting point and first point to add.
  * @param[in] Q				- the second point to add.
  * @param[in] P				- the affine point to evaluate the line function.
  */
@@ -189,14 +189,14 @@
  * point on an elliptic curve with embedding degree 48.
  *
  * @param[out] L			- the result of the evaluation.
- * @param[in, out] R		- the resulting point and first point to add.
+ * @param[in, out] R		        - the resulting point and first point to add.
  * @param[in] Q				- the second point to add.
  * @param[in] P				- the affine point to evaluate the line function.
  */
 #if EP_ADD == BASIC
-#define pp_add_k48(L, R, Q, P)	pp_add_k48_basic(L, R, Q, P)
+#define pp_add_k48(L, R, Q, P)	        pp_add_k48_basic(L, R, Q, P)
 #else
-#define pp_add_k48(L, R, Q, P)	pp_add_k48_projc(L, R, Q, P)
+#define pp_add_k48(L, R, Q, P)	        pp_add_k48_projc(L, R, Q, P)
 #endif
 
 /**
@@ -204,7 +204,7 @@
  * point on an elliptic curve with embedding degree 54.
  *
  * @param[out] L			- the result of the evaluation.
- * @param[in, out] R		- the resulting point and first point to add.
+ * @param[in, out] R		        - the resulting point and first point to add.
  * @param[in] Q				- the second point to add.
  * @param[in] P				- the affine point to evaluate the line function.
  */
@@ -220,14 +220,14 @@
  * coordinates.
  *
  * @param[out] L			- the result of the evaluation.
- * @param[in, out] R		- the resulting point.
+ * @param[in, out] R		        - the resulting point.
  * @param[in] Q				- the point to double.
  * @param[in] P				- the affine point to evaluate the line function.
  */
 #if PP_EXT == BASIC
-#define pp_dbl_k2_projc(L, R, P, Q)		pp_dbl_k2_projc_basic(L, R, P, Q)
+#define pp_dbl_k2_projc(L, R, P, Q)	pp_dbl_k2_projc_basic(L, R, P, Q)
 #elif PP_EXT == LAZYR
-#define pp_dbl_k2_projc(L, R, P, Q)		pp_dbl_k2_projc_lazyr(L, R, P, Q)
+#define pp_dbl_k2_projc(L, R, P, Q)	pp_dbl_k2_projc_lazyr(L, R, P, Q)
 #endif
 
 /**
@@ -240,9 +240,9 @@
  * @param[in] Q				- the affine point to evaluate the line function.
  */
 #if EP_ADD == BASIC
-#define pp_dbl_k2(L, R, P, Q)			pp_dbl_k2_basic(L, R, P, Q)
+#define pp_dbl_k2(L, R, P, Q)		pp_dbl_k2_basic(L, R, P, Q)
 #else
-#define pp_dbl_k2(L, R, P, Q)			pp_dbl_k2_projc(L, R, P, Q)
+#define pp_dbl_k2(L, R, P, Q)		pp_dbl_k2_projc(L, R, P, Q)
 #endif
 
 /**
@@ -256,9 +256,9 @@
  * @param[in] P				- the affine point to evaluate the line function.
  */
 #if PP_EXT == BASIC
-#define pp_dbl_k8_projc(L, R, Q, P)		pp_dbl_k8_projc_basic(L, R, Q, P)
+#define pp_dbl_k8_projc(L, R, Q, P)	pp_dbl_k8_projc_basic(L, R, Q, P)
 #elif PP_EXT == LAZYR
-#define pp_dbl_k8_projc(L, R, Q, P)		pp_dbl_k8_projc_lazyr(L, R, Q, P)
+#define pp_dbl_k8_projc(L, R, Q, P)	pp_dbl_k8_projc_lazyr(L, R, Q, P)
 #endif
 
 /**
@@ -271,9 +271,9 @@
  * @param[in] P				- the affine point to evaluate the line function.
  */
 #if EP_ADD == BASIC
-#define pp_dbl_k8(L, R, Q, P)			pp_dbl_k8_basic(L, R, Q, P)
+#define pp_dbl_k8(L, R, Q, P)		pp_dbl_k8_basic(L, R, Q, P)
 #else
-#define pp_dbl_k8(L, R, Q, P)			pp_dbl_k8_projc(L, R, Q, P)
+#define pp_dbl_k8(L, R, Q, P)		pp_dbl_k8_projc(L, R, Q, P)
 #endif
 
 /**
@@ -302,9 +302,9 @@
  * @param[in] P				- the affine point to evaluate the line function.
  */
 #if EP_ADD == BASIC
-#define pp_dbl_k12(L, R, Q, P)			pp_dbl_k12_basic(L, R, Q, P)
+#define pp_dbl_k12(L, R, Q, P)		pp_dbl_k12_basic(L, R, Q, P)
 #else
-#define pp_dbl_k12(L, R, Q, P)			pp_dbl_k12_projc(L, R, Q, P)
+#define pp_dbl_k12(L, R, Q, P)		pp_dbl_k12_projc(L, R, Q, P)
 #endif
 
 /**
@@ -313,7 +313,7 @@
  * coordinates.
  *
  * @param[out] L			- the result of the evaluation.
- * @param[in, out] R		- the resulting point.
+ * @param[in, out] R		        - the resulting point.
  * @param[in] Q				- the point to double.
  * @param[in] P				- the affine point to evaluate the line function.
  */
@@ -333,9 +333,9 @@
  * @param[in] P				- the affine point to evaluate the line function.
  */
 #if EP_ADD == BASIC
-#define pp_dbl_k18(L, R, Q, P)			pp_dbl_k18_basic(L, R, Q, P)
+#define pp_dbl_k18(L, R, Q, P)		pp_dbl_k18_basic(L, R, Q, P)
 #else
-#define pp_dbl_k18(L, R, Q, P)			pp_dbl_k18_projc(L, R, Q, P)
+#define pp_dbl_k18(L, R, Q, P)		pp_dbl_k18_projc(L, R, Q, P)
 #endif
 
 /**
@@ -348,9 +348,9 @@
  * @param[in] P				- the affine point to evaluate the line function.
  */
 #if EP_ADD == BASIC
-#define pp_dbl_k24(L, R, Q, P)			pp_dbl_k24_basic(L, R, Q, P)
+#define pp_dbl_k24(L, R, Q, P)		pp_dbl_k24_basic(L, R, Q, P)
 #else
-#define pp_dbl_k24(L, R, Q, P)			pp_dbl_k24_projc(L, R, Q, P)
+#define pp_dbl_k24(L, R, Q, P)		pp_dbl_k24_projc(L, R, Q, P)
 #endif
 
 /**
@@ -363,9 +363,9 @@
  * @param[in] P				- the affine point to evaluate the line function.
  */
 #if EP_ADD == BASIC
-#define pp_dbl_k48(L, R, Q, P)			pp_dbl_k48_basic(L, R, Q, P)
+#define pp_dbl_k48(L, R, Q, P)		pp_dbl_k48_basic(L, R, Q, P)
 #else
-#define pp_dbl_k48(L, R, Q, P)			pp_dbl_k48_projc(L, R, Q, P)
+#define pp_dbl_k48(L, R, Q, P)		pp_dbl_k48_projc(L, R, Q, P)
 #endif
 
 /**
@@ -392,11 +392,11 @@
  * @param[in] Q				- the second elliptic curve point.
  */
 #if PP_MAP == TATEP
-#define pp_map_k2(R, P, Q)				pp_map_tatep_k2(R, P, Q)
+#define pp_map_k2(R, P, Q)		pp_map_tatep_k2(R, P, Q)
 #elif PP_MAP == WEILP
-#define pp_map_k2(R, P, Q)				pp_map_weilp_k2(R, P, Q)
+#define pp_map_k2(R, P, Q)		pp_map_weilp_k2(R, P, Q)
 #elif PP_MAP == OATEP
-#define pp_map_k2(R, P, Q)				pp_map_tatep_k2(R, P, Q)
+#define pp_map_k2(R, P, Q)		pp_map_tatep_k2(R, P, Q)
 #endif
 
 /**
@@ -408,11 +408,11 @@
  * @param[in] Q				- the second elliptic curve point.
  */
 #if PP_MAP == TATEP
-#define pp_map_k12(R, P, Q)				pp_map_tatep_k12(R, P, Q)
+#define pp_map_k12(R, P, Q)		pp_map_tatep_k12(R, P, Q)
 #elif PP_MAP == WEILP
-#define pp_map_k12(R, P, Q)				pp_map_weilp_k12(R, P, Q)
+#define pp_map_k12(R, P, Q)		pp_map_weilp_k12(R, P, Q)
 #elif PP_MAP == OATEP
-#define pp_map_k12(R, P, Q)				pp_map_oatep_k12(R, P, Q)
+#define pp_map_k12(R, P, Q)		pp_map_oatep_k12(R, P, Q)
 #endif
 
 /**
@@ -424,11 +424,11 @@
  * @param[in] Q				- the second elliptic curve point.
  */
 #if PP_MAP == TATEP
-#define pp_map_k18(R, P, Q)				pp_map_tatep_k18(R, P, Q)
+#define pp_map_k18(R, P, Q)		pp_map_tatep_k18(R, P, Q)
 #elif PP_MAP == WEILP
-#define pp_map_k18(R, P, Q)				pp_map_weilp_k18(R, P, Q)
+#define pp_map_k18(R, P, Q)		pp_map_weilp_k18(R, P, Q)
 #elif PP_MAP == OATEP
-#define pp_map_k18(R, P, Q)				pp_map_oatep_k18(R, P, Q)
+#define pp_map_k18(R, P, Q)		pp_map_oatep_k18(R, P, Q)
 #endif
 
 /**
@@ -441,9 +441,9 @@
  * @param[in] M 			- the number of pairings to evaluate.
  */
 #if PP_MAP == WEILP
-#define pp_map_sim_k2(R, P, Q, M)		pp_map_sim_weilp_k2(R, P, Q, M)
+#define pp_map_sim_k2(R, P, Q, M)	pp_map_sim_weilp_k2(R, P, Q, M)
 #elif PP_MAP == TATEP || PP_MAP == OATEP
-#define pp_map_sim_k2(R, P, Q, M)		pp_map_sim_tatep_k2(R, P, Q, M)
+#define pp_map_sim_k2(R, P, Q, M)	pp_map_sim_tatep_k2(R, P, Q, M)
 #endif
 
 
@@ -457,11 +457,11 @@
  * @param[in] M 			- the number of pairings to evaluate.
  */
 #if PP_MAP == TATEP
-#define pp_map_sim_k12(R, P, Q, M)		pp_map_sim_tatep_k12(R, P, Q, M)
+#define pp_map_sim_k12(R, P, Q, M)	pp_map_sim_tatep_k12(R, P, Q, M)
 #elif PP_MAP == WEILP
-#define pp_map_sim_k12(R, P, Q, M)		pp_map_sim_weilp_k12(R, P, Q, M)
+#define pp_map_sim_k12(R, P, Q, M)	pp_map_sim_weilp_k12(R, P, Q, M)
 #elif PP_MAP == OATEP
-#define pp_map_sim_k12(R, P, Q, M)		pp_map_sim_oatep_k12(R, P, Q, M)
+#define pp_map_sim_k12(R, P, Q, M)	pp_map_sim_oatep_k12(R, P, Q, M)
 #endif
 
 /**
@@ -474,11 +474,11 @@
  * @param[in] M 			- the number of pairings to evaluate.
  */
 #if PP_MAP == TATEP
-#define pp_map_sim_k18(R, P, Q, M)		pp_map_sim_tatep_k18(R, P, Q, M)
+#define pp_map_sim_k18(R, P, Q, M)	pp_map_sim_tatep_k18(R, P, Q, M)
 #elif PP_MAP == WEILP
-#define pp_map_sim_k18(R, P, Q, M)		pp_map_sim_weilp_k18(R, P, Q, M)
+#define pp_map_sim_k18(R, P, Q, M)	pp_map_sim_weilp_k18(R, P, Q, M)
 #elif PP_MAP == OATEP
-#define pp_map_sim_k18(R, P, Q, M)		pp_map_sim_oatep_k18(R, P, Q, M)
+#define pp_map_sim_k18(R, P, Q, M)	pp_map_sim_oatep_k18(R, P, Q, M)
 #endif
 
 /*============================================================================*/

@@ -79,8 +79,7 @@ int cp_cmlhs_gen(bn_t x[], gt_t hs[], size_t len, uint8_t prf[], size_t plen,
 			result = cp_bls_gen(sk, pk);
 		} else {
 			if (cp_ecdsa_gen(sk, g1) == RLC_OK) {
-				fp_copy(pk->x[0], g1->x);
-				fp_copy(pk->y[0], g1->y);
+				g2_set_g1(pk, g1);
 			} else {
 				result = RLC_ERR;
 			}
@@ -249,8 +248,7 @@ int cp_cmlhs_ver(const g1_t r, const g2_t s, const g1_t sig[], const g2_t z[],
 			} else {
 				fp_prime_back(k, sig[i]->x);
 				fp_prime_back(n, sig[i]->y);
-				fp_copy(g1->x, pk[i]->x[0]);
-				fp_copy(g1->y, pk[i]->y[0]);
+				g1_set_g2(g1, pk[i]);
 				fp_set_dig(g1->z, 1);
 				result &= cp_ecdsa_ver(k, n, buf, len + dlen, 0, g1);
 			}
@@ -370,9 +368,7 @@ int cp_cmlhs_onv(const g1_t r, const g2_t s, const g1_t sig[], const g2_t z[],
 			} else {
 				fp_prime_back(k, sig[i]->x);
 				fp_prime_back(n, sig[i]->y);
-				fp_copy(g1->x, pk[i]->x[0]);
-				fp_copy(g1->y, pk[i]->y[0]);
-				fp_set_dig(g1->z, 1);
+				g1_set_g2(g1, pk[i]);
 				result &= cp_ecdsa_ver(k, n, buf, len + dlen, 0, g1);
 			}
 		}
