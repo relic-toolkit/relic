@@ -562,7 +562,7 @@ void fp_param_set(int param) {
 				bn_sqr(p, p);
 				bn_add_dig(p, p, 1);
 				fp_prime_set_dense(p);
-				fp_prime_set_pairf(t0, EP_SS1);
+				fp_prime_set_pairf(t0, EP_K1);
 				break;
 #else
 			default:
