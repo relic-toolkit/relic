@@ -785,7 +785,7 @@ static int square_root2(void) {
 
 		TEST_CASE("quadratic residuosity test is correct") {
 			fp2_zero(a);
-			TEST_ASSERT(fp2_is_sqr(a) == 0, end);
+			TEST_ASSERT(fp2_is_sqr(a) == 1, end);
 			fp2_rand(a);
 			fp2_sqr(a, a);
 			TEST_ASSERT(fp2_is_sqr(a) == 1, end);
@@ -1538,7 +1538,7 @@ static int square_root3(void) {
 
 		TEST_CASE("quadratic residuosity test is correct") {
 			fp3_zero(a);
-			TEST_ASSERT(fp3_is_sqr(a) == 0, end);
+			TEST_ASSERT(fp3_is_sqr(a) == 1, end);
 			fp3_rand(a);
 			fp3_sqr(a, a);
 			TEST_ASSERT(fp3_is_sqr(a) == 1, end);
@@ -2196,7 +2196,7 @@ static int square_root4(void) {
 
 		TEST_CASE("quadratic residuosity test is correct") {
 			fp4_zero(a);
-			TEST_ASSERT(fp4_is_sqr(a) == 0, end);
+			TEST_ASSERT(fp4_is_sqr(a) == 1, end);
 			fp4_rand(a);
 			fp4_sqr(a, a);
 			TEST_ASSERT(fp4_is_sqr(a) == 1, end);
@@ -3479,7 +3479,7 @@ static int square_root8(void) {
 
 		TEST_CASE("quadratic residuosity test is correct") {
 			fp8_zero(a);
-			TEST_ASSERT(fp8_is_sqr(a) == 0, end);
+			TEST_ASSERT(fp8_is_sqr(a) == 1, end);
 			fp8_rand(a);
 			fp8_sqr(a, a);
 			TEST_ASSERT(fp8_is_sqr(a) == 1, end);
