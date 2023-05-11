@@ -154,6 +154,8 @@ enum {
 	K18_638,
     /** 638-bit prime for SG curve with embedding degree 18. */
     SG18_638,
+	/** 766-bit prime for KSS curve with embedding degree 16. */
+	K16_766,
 	/** 1536-bit prime for supersingular curve with embedding degree k = 2. */
 	SS_1536,
 	/** 3072-bit prime for supersingular curve with embedding degree k = 1. */

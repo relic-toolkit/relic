@@ -661,6 +661,18 @@
 /** @} */
 #endif
 
+/**
+ * Parameters for a 638-bit pairing-friendly prime curve.
+ */
+/** @{ */
+#define K16_P766_A		"1"
+#define K16_P766_B		"0"
+#define K16_P766_X		"137792836731FEF604DE6F5E1447866482AA83477894E7A09A64589BD3E047E7275BF3A99E4E20172C5E0EE1B665862EF0908A70BEA48E81A93DABD736FA06D6F8B71272A8A138EF67F7B47FA66EE4585BEE432A5B91F3F073BC3826DECC595B"
+#define K16_P766_Y		"1B830E403CAB92DD1F60D7D039900FA9AB9AE9E2B09AA6CAABBE2C563131B83089C94E3A09AD6518B50BD8C89CB9D472FA9939CA46AD32B0B0A496D3A99686ABDF7EB323F4CA1A3329C9742B563A6FC1F92315F54075129E71AD85AE1D2649B0"
+#define K16_P766_R		"1B6C1BFC8E56CCE359E1D8A9B94553D096A506CE2ECF4A33C5D526AC5F3B61CB0A6D76FCD8487EDEE0B0F9BA2DFA29D5AB0B164B8792C233ED1E6EB350BA9F4D37112A98DE816BEB1EA8DDB1"
+#define K16_P766_H		"2327FFFFFFFFE8905E7E6E0003E7E080C57EE9EF4"
+/** @} */
+
 #if defined(EP_SUPER) && FP_PRIME == 1536
 /**
  * Parameters for a 1536-bit supersingular elliptic curve.
@@ -1109,6 +1121,13 @@ void ep_param_set(int param) {
 				pairf = EP_SG18;
 				break;
 #endif
+#if defined(EP_ENDOM) && FP_PRIME == 766
+			case K16_P766:
+				ASSIGN(K16_P766, K16_766);
+				endom = 1;
+				pairf = EP_K16;
+				break;
+#endif
 #if defined(EP_SUPER) && FP_PRIME == 1536
 			case SS_P1536:
 				ASSIGN(SS_P1536, SS_1536);
@@ -1132,12 +1151,19 @@ void ep_param_set(int param) {
 #if defined(EP_ENDOM)
 		if (endom) {
 			if (fp_is_zero(beta)) {
-				/* beta = (-1+sqrt(-3))/2 */
-				fp_set_dig(beta, 3);
-				fp_neg(beta, beta);
-				fp_srt(beta, beta);
-				fp_sub_dig(beta, beta, 1);
-				fp_hlv(beta, beta);
+				if (fp_is_zero(b)) {
+					/* beta = sqrt(-1). */
+					fp_set_dig(beta, 1);
+					fp_neg(beta, beta);
+					fp_srt(beta, beta);
+				} else {
+					/* beta = (-1+sqrt(-3))/2 */
+					fp_set_dig(beta, 3);
+					fp_neg(beta, beta);
+					fp_srt(beta, beta);
+					fp_sub_dig(beta, beta, 1);
+					fp_hlv(beta, beta);
+				}
 			}
 
 			if (bn_is_zero(lamb)) {
@@ -1160,6 +1186,14 @@ void ep_param_set(int param) {
 					/* lambda = z^2 - 1 */
 					bn_sqr(lamb, lamb);
 					bn_sub_dig(lamb, lamb, 1);
+					break;
+				case EP_K16:
+					/* lambda = -(z^4 + 24)/7 */
+					bn_sqr(t, lamb);
+					bn_sqr(lamb, t);
+					bn_add_dig(lamb, lamb, 24);
+					bn_div_dig(lamb, lamb, 7);
+					bn_neg(lamb, lamb);
 					break;
 				case EP_K18:
 					/* lambda = z^3 + 18 */
@@ -1224,6 +1258,7 @@ void ep_param_set(int param) {
 		if (plain) {
 			ep_curve_set_plain(a, b, g, r, h, ctmap);
 		}
+
 #endif
 
 #if defined(EP_ENDOM)
@@ -1355,6 +1390,8 @@ int ep_param_set_any_endom(void) {
 	ep_param_set(K18_P638);
 	//ep_param_set(SG18_P638);
 #endif
+#elif FP_PRIME == 766
+	ep_param_set(K16_P766);
 #else
 	r = RLC_ERR;
 #endif
@@ -1459,6 +1496,10 @@ int ep_param_set_any_pairf(void) {
 	ep_param_set(B12_P638);
 	type = RLC_EP_MTYPE;
 	extension = 2;
+#elif FP_PRIME == 508
+	ep_param_set(K16_P766);
+	type = RLC_EP_MTYPE;
+	extension = 4;
 #else
 	//ep_param_set(BN_P638);
 	//type = RLC_EP_DTYPE;
@@ -1617,6 +1658,9 @@ void ep_param_print(void) {
 		case SG18_P638:
 			util_banner("Curve SG18-P638:", 0);
 			break;
+		case K16_P766:
+			util_banner("Curve K16-P766:", 0);
+			break;
 		case SS_P1536:
 			util_banner("Curve SS-P1536:", 0);
 			break;
@@ -1675,6 +1719,7 @@ int ep_param_level(void) {
 		case B12_P455:
 			return 140;
 		case NIST_P384:
+		case K16_P766:
 		case K18_P638:
 		case B24_P509:
 			return 192;

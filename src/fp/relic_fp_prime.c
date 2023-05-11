@@ -429,6 +429,40 @@ void fp_prime_set_pairf(const bn_t x, int pairf) {
 				bn_div_dig(p, p, 4);
 				fp_prime_set_dense(p);
 				break;
+			case EP_K16:
+				/* p = (u^10 + 2*u^9 + 5*u^8 + 48*u^6 + 152*u^5 + 240*u^4 +
+						625*u^2 + 2398*u + 3125) div 980 */
+				bn_add_dig(p, t0, 2);
+				bn_mul(p, p, t0);
+				bn_add_dig(p, p, 5);
+				bn_mul(p, p, t0);
+				bn_mul(p, p, t0);
+				bn_add_dig(p, p, 48);
+				bn_mul(p, p, t0);
+				bn_add_dig(p, p, 152);
+				bn_mul(p, p, t0);
+				bn_add_dig(p, p, 240);
+				bn_mul(p, p, t0);
+				bn_mul(p, p, t0);
+				bn_add_dig(p, p, 256);
+				bn_add_dig(p, p, 256);
+				bn_add_dig(p, p, 113);
+				bn_mul(p, p, t0);
+				bn_set_dig(t1, 9);
+				bn_lsh(t1, t1, 8);
+				bn_add_dig(t1, t1, 94);
+				bn_add(p, p, t1);
+				bn_mul(p, p, t0);
+				bn_set_dig(t0, 12);
+				bn_lsh(t0, t0, 8);
+				bn_add_dig(t0, t0, 53);
+				bn_add(p, p, t0);
+				bn_set_dig(t1, 3);
+				bn_lsh(t1, t1, 8);
+				bn_add_dig(t1, t1, 212);
+ 				bn_div(p, p, t1);
+ 				fp_prime_set_dense(p);
+ 				break;
 			case EP_K18:
 				/* p = (x^8 + 5x^7 + 7x^6 + 37x^5 + 188x^4 + 259x^3 + 343x^2 +
 				       1763x + 2401)/21 */

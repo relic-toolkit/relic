@@ -173,6 +173,8 @@ enum {
 	K18_P638,
     /** Scott-Guillevic curve with embedding degree 18. */
     SG18_P638,
+	/** Kachisa-Schaefer-Scott with embedding degree 16. */
+	K16_P766,
 	/** 1536-bit supersingular curve. */
 	SS_P1536,
 	/** 3072-bit supersingular curve. */
