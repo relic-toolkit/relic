@@ -39,6 +39,10 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
+void pp_norm_k1(ep_t r, const ep_t p) {
+	ep_norm(r, p);
+}
+
 void pp_norm_k2(ep_t r, const ep_t p) {
 	ep_norm(r, p);
 }

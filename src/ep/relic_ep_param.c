@@ -1120,6 +1120,7 @@ void ep_param_set(int param) {
 			case K1_P3072:
 				ASSIGN(K1_P3072, K1_3072);
 				plain = 1;
+				pairf = EP_K1;
 				break;
 #endif
 			default:
@@ -1219,25 +1220,23 @@ void ep_param_set(int param) {
 #if defined(EP_PLAIN)
 		if (plain) {
 			ep_curve_set_plain(a, b, g, r, h, ctmap);
-			core_get()->ep_id = param;
 		}
 #endif
 
 #if defined(EP_ENDOM)
 		if (endom) {
 			ep_curve_set_endom(a, b, g, r, h, beta, lamb, ctmap);
-			core_get()->ep_id = param;
-			core_get()->ep_is_pairf = pairf;
 		}
 #endif
 
 #if defined(EP_SUPER)
 		if (super) {
 			ep_curve_set_super(a, b, g, r, h, ctmap);
-			core_get()->ep_id = param;
-			core_get()->ep_is_pairf = pairf;
 		}
 #endif
+
+		core_get()->ep_id = param;
+		core_get()->ep_is_pairf = pairf;
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -1379,102 +1378,102 @@ int ep_param_set_any_super(void) {
 }
 
 int ep_param_set_any_pairf(void) {
-	int type = 0, degree = 0, r = RLC_OK;
+	int type = 0, extension = 0, r = RLC_OK;
 #if defined(EP_ENDOM)
 #if FP_PRIME == 158
 	ep_param_set(BN_P158);
 	type = RLC_EP_DTYPE;
-	degree = 2;
+	extension = 2;
 #elif FP_PRIME == 254
 	ep_param_set(BN_P254);
 	type = RLC_EP_DTYPE;
-	degree = 2;
+	extension = 2;
 #elif FP_PRIME == 256
 	ep_param_set(BN_P256);
 	type = RLC_EP_DTYPE;
-	degree = 2;
+	extension = 2;
 #elif FP_PRIME == 315
 	ep_param_set(B24_P315);
 	type = RLC_EP_DTYPE;
-	degree = 4;
+	extension = 4;
 #elif FP_PRIME == 317
 	ep_param_set(B24_P317);
 	type = RLC_EP_MTYPE;
-	degree = 4;
+	extension = 4;
 #elif FP_PRIME == 377
 	ep_param_set(B12_P377);
 	type = RLC_EP_DTYPE;
-	degree = 2;
+	extension = 2;
 #elif FP_PRIME == 381
 	ep_param_set(B12_P381);
 	type = RLC_EP_MTYPE;
-	degree = 2;
+	extension = 2;
 #elif FP_PRIME == 382
 	ep_param_set(BN_P382);
 	type = RLC_EP_DTYPE;
-	degree = 2;
+	extension = 2;
 #elif FP_PRIME == 383
 	ep_param_set(B12_P383);
 	type = RLC_EP_MTYPE;
-	degree = 2;
+	extension = 2;
 #elif FP_PRIME == 446
 #ifdef FP_QNRES
 	ep_param_set(B12_P446);
 	type = RLC_EP_MTYPE;
-	degree = 2;
+	extension = 2;
 #else
 	ep_param_set(BN_P446);
 	type = RLC_EP_DTYPE;
-	degree = 2;
+	extension = 2;
 #endif
 #elif FP_PRIME == 455
 	ep_param_set(B12_P455);
 	type = RLC_EP_DTYPE;
-	degree = 2;
+	extension = 2;
 #elif FP_PRIME == 508
 	ep_param_set(K18_P508);
 	type = RLC_EP_DTYPE;
-	degree = 3;
+	extension = 3;
 #elif FP_PRIME == 509
 	ep_param_set(B24_P509);
 	type = RLC_EP_DTYPE;
-	degree = 4;
+	extension = 4;
 #elif FP_PRIME == 511
 	ep_param_set(OT8_P511);
 	type = RLC_EP_DTYPE;
-	degree = 2;
+	extension = 2;
 #elif FP_PRIME == 544
 	ep_param_set(GMT8_P544);
 	type = RLC_EP_MTYPE;
-	degree = 2;
+	extension = 2;
 #elif FP_PRIME == 569
 	ep_param_set(SG54_P569);
 	type = RLC_EP_MTYPE;
-	degree = 9;
+	extension = 9;
 #elif FP_PRIME == 575
 	ep_param_set(B48_P575);
 	type = RLC_EP_MTYPE;
-	degree = 8;
+	extension = 8;
 #elif FP_PRIME == 638
 #ifdef FP_QNRES
 	ep_param_set(B12_P638);
 	type = RLC_EP_MTYPE;
-	degree = 2;
+	extension = 2;
 #else
 	//ep_param_set(BN_P638);
 	//type = RLC_EP_DTYPE;
-	//degree = 2;
+	//extension = 2;
 	//ep_param_set(K18_P638);
 	ep_param_set(SG18_P638);
 	type = RLC_EP_MTYPE;
-	degree = 3;
+	extension = 3;
 #endif
 #elif FP_PRIME == 1536
 	ep_param_set(SS_P1536);
-	degree = 0;
+	extension = 1;
 #elif FP_PRIME == 3072
 	ep_param_set(K1_P3072);
-	degree = 0;
+	extension = 1;
 #else
 	r = RLC_ERR;
 #endif
@@ -1483,10 +1482,8 @@ int ep_param_set_any_pairf(void) {
 #endif
 #ifdef WITH_PP
 	if (r == RLC_OK) {
-		switch (degree) {
-			case 0:
-				ep2_curve_set_twist(0);
-				/* Compute pairing generator. */
+		switch (extension) {
+			case 1:
 				pc_core_calc();
 				break;
 			case 2:
