@@ -60,7 +60,11 @@ void gt_rand(gt_t a) {
 	pp_exp_k12(a, a);
 #endif
 #else
+#if FP_PRIME == 1536
 	pp_exp_k2(a, a);
+#else
+	pp_exp_k1(a, a);
+#endif
 #endif
 }
 
@@ -189,9 +193,7 @@ int g1_is_valid(const g1_t a) {
 
 int g2_is_valid(const g2_t a) {
 #if FP_PRIME >= 1536
-	if (pc_map_is_type1()) {
-		return g1_is_valid(a);
-	}
+	return g1_is_valid(a);
 #else
 
 	if (g2_is_infty(a)) {
