@@ -1217,6 +1217,9 @@ void ep_param_set(int param) {
 		fp_set_dig(g->z, 1);
 		g->coord = BASIC;
 
+		core_get()->ep_id = param;
+		core_get()->ep_is_pairf = pairf;
+
 #if defined(EP_PLAIN)
 		if (plain) {
 			ep_curve_set_plain(a, b, g, r, h, ctmap);
@@ -1234,9 +1237,6 @@ void ep_param_set(int param) {
 			ep_curve_set_super(a, b, g, r, h, ctmap);
 		}
 #endif
-
-		core_get()->ep_id = param;
-		core_get()->ep_is_pairf = pairf;
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -1463,8 +1463,8 @@ int ep_param_set_any_pairf(void) {
 	//ep_param_set(BN_P638);
 	//type = RLC_EP_DTYPE;
 	//extension = 2;
-	//ep_param_set(K18_P638);
-	ep_param_set(SG18_P638);
+	ep_param_set(K18_P638);
+	//ep_param_set(SG18_P638);
 	type = RLC_EP_MTYPE;
 	extension = 3;
 #endif
