@@ -1229,6 +1229,17 @@ void pp_norm_k48(ep8_t c, const ep8_t a);
 void pp_map_tatep_k1(fp_t r, const ep_t p, const ep_t q);
 
 /**
+ * Computes the Tate multi-pairing in a parameterized elliptic curve with
+ * embedding degree 1.
+ *
+ * @param[out] r			- the result.
+ * @param[in] q				- the first pairing arguments.
+ * @param[in] p				- the second pairing arguments.
+ * @param[in] m 			- the number of pairings to evaluate.
+ */
+void pp_map_sim_tatep_k1(fp_t r, const ep_t *p, const ep_t *q, int m);
+
+/**
  * Computes the Tate pairing of two points in a parameterized elliptic curve
  * with embedding degree 2.
  *
@@ -1260,6 +1271,17 @@ void pp_map_sim_tatep_k2(fp2_t r, const ep_t *p, const ep_t *q, int m);
 void pp_map_weilp_k1(fp_t r, const ep_t p, const ep_t q);
 
 /**
+ * Computes the Weil multi-pairing in a parameterized elliptic curve with
+ * embedding degree 1.
+ *
+ * @param[out] r			- the result.
+ * @param[in] q				- the first pairing arguments.
+ * @param[in] p				- the second pairing arguments.
+ * @param[in] m 			- the number of pairings to evaluate.
+ */
+void pp_map_sim_weilp_k1(fp_t r, const ep_t *p, const ep_t *q, int m);
+
+/**
  * Computes the Weil pairing of two points in a parameterized elliptic curve
  * with embedding degree 2.
  *
@@ -1268,16 +1290,6 @@ void pp_map_weilp_k1(fp_t r, const ep_t p, const ep_t q);
  * @param[in] p				- the second elliptic curve point.
  */
 void pp_map_weilp_k2(fp2_t r, const ep_t p, const ep_t q);
-
-/**
- * Computes the optimal ate pairing of two points in a parameterized elliptic
- * curve with embedding degree 8.
- *
- * @param[out] r			- the result.
- * @param[in] q				- the first elliptic curve point.
- * @param[in] p				- the second elliptic curve point.
- */
-void pp_map_oatep_k8(fp8_t r, const ep_t p, const ep2_t q);
 
 /**
  * Computes the Weil multi-pairing in a parameterized elliptic curve with
@@ -1289,6 +1301,16 @@ void pp_map_oatep_k8(fp8_t r, const ep_t p, const ep2_t q);
  * @param[in] m 			- the number of pairings to evaluate.
  */
 void pp_map_sim_weilp_k2(fp2_t r, const ep_t *p, const ep_t *q, int m);
+
+/**
+ * Computes the optimal ate pairing of two points in a parameterized elliptic
+ * curve with embedding degree 8.
+ *
+ * @param[out] r			- the result.
+ * @param[in] q				- the first elliptic curve point.
+ * @param[in] p				- the second elliptic curve point.
+ */
+void pp_map_oatep_k8(fp8_t r, const ep_t p, const ep2_t q);
 
 /**
  * Computes the Tate pairing of two points in a parameterized elliptic curve
