@@ -1400,7 +1400,6 @@
 #undef ep2_curve_clean
 #undef ep2_curve_get_a
 #undef ep2_curve_get_b
-#undef ep2_curve_get_vs
 #undef ep2_curve_opt_a
 #undef ep2_curve_opt_b
 #undef ep2_curve_is_twist
@@ -1473,7 +1472,6 @@
 #define ep2_curve_clean 	RLC_PREFIX(ep2_curve_clean)
 #define ep2_curve_get_a 	RLC_PREFIX(ep2_curve_get_a)
 #define ep2_curve_get_b 	RLC_PREFIX(ep2_curve_get_b)
-#define ep2_curve_get_vs 	RLC_PREFIX(ep2_curve_get_vs)
 #define ep2_curve_opt_a 	RLC_PREFIX(ep2_curve_opt_a)
 #define ep2_curve_opt_b 	RLC_PREFIX(ep2_curve_opt_b)
 #define ep2_curve_is_twist 	RLC_PREFIX(ep2_curve_is_twist)
@@ -1551,7 +1549,6 @@
 #undef ep3_curve_clean
 #undef ep3_curve_get_a
 #undef ep3_curve_get_b
-#undef ep3_curve_get_vs
 #undef ep3_curve_opt_a
 #undef ep3_curve_opt_b
 #undef ep3_curve_is_twist
@@ -1620,7 +1617,6 @@
 #define ep3_curve_clean 	RLC_PREFIX(ep3_curve_clean)
 #define ep3_curve_get_a 	RLC_PREFIX(ep3_curve_get_a)
 #define ep3_curve_get_b 	RLC_PREFIX(ep3_curve_get_b)
-#define ep3_curve_get_vs 	RLC_PREFIX(ep3_curve_get_vs)
 #define ep3_curve_opt_a 	RLC_PREFIX(ep3_curve_opt_a)
 #define ep3_curve_opt_b 	RLC_PREFIX(ep3_curve_opt_b)
 #define ep3_curve_is_twist 	RLC_PREFIX(ep3_curve_is_twist)
@@ -1694,7 +1690,6 @@
 #undef ep4_curve_clean
 #undef ep4_curve_get_a
 #undef ep4_curve_get_b
-#undef ep4_curve_get_vs
 #undef ep4_curve_opt_a
 #undef ep4_curve_opt_b
 #undef ep4_curve_is_twist
@@ -1763,7 +1758,6 @@
 #define ep4_curve_clean 	RLC_PREFIX(ep4_curve_clean)
 #define ep4_curve_get_a 	RLC_PREFIX(ep4_curve_get_a)
 #define ep4_curve_get_b 	RLC_PREFIX(ep4_curve_get_b)
-#define ep4_curve_get_vs 	RLC_PREFIX(ep4_curve_get_vs)
 #define ep4_curve_opt_a 	RLC_PREFIX(ep4_curve_opt_a)
 #define ep4_curve_opt_b 	RLC_PREFIX(ep4_curve_opt_b)
 #define ep4_curve_is_twist 	RLC_PREFIX(ep4_curve_is_twist)
@@ -1837,7 +1831,6 @@
 #undef ep8_curve_clean
 #undef ep8_curve_get_a
 #undef ep8_curve_get_b
-#undef ep8_curve_get_vs
 #undef ep8_curve_opt_a
 #undef ep8_curve_opt_b
 #undef ep8_curve_is_twist
@@ -1906,7 +1899,6 @@
 #define ep8_curve_clean 	RLC_PREFIX(ep8_curve_clean)
 #define ep8_curve_get_a 	RLC_PREFIX(ep8_curve_get_a)
 #define ep8_curve_get_b 	RLC_PREFIX(ep8_curve_get_b)
-#define ep8_curve_get_vs 	RLC_PREFIX(ep8_curve_get_vs)
 #define ep8_curve_opt_a 	RLC_PREFIX(ep8_curve_opt_a)
 #define ep8_curve_opt_b 	RLC_PREFIX(ep8_curve_opt_b)
 #define ep8_curve_is_twist 	RLC_PREFIX(ep8_curve_is_twist)
@@ -2964,6 +2956,8 @@
 
 #undef pp_map_init
 #undef pp_map_clean
+#undef pp_add_k1_basic
+#undef pp_add_k1_projc
 #undef pp_add_k2_basic
 #undef pp_add_k2_projc_basic
 #undef pp_add_k2_projc_lazyr
@@ -2984,6 +2978,8 @@
 #undef pp_add_k48_projc
 #undef pp_add_k54_basic
 #undef pp_add_k54_projc
+#undef pp_dbl_k1_basic
+#undef pp_dbl_k1_projc
 #undef pp_dbl_k2_basic
 #undef pp_dbl_k2_projc_basic
 #undef pp_dbl_k2_projc_lazyr
@@ -3004,6 +3000,7 @@
 #undef pp_dbl_k54_projc
 #undef pp_dbl_lit_k12
 #undef pp_dbl_lit_k18
+#undef pp_exp_k1
 #undef pp_exp_k2
 #undef pp_exp_k8
 #undef pp_exp_k12
@@ -3011,16 +3008,22 @@
 #undef pp_exp_k24
 #undef pp_exp_k48
 #undef pp_exp_k54
+#undef pp_norm_k1
 #undef pp_norm_k2
 #undef pp_norm_k8
 #undef pp_norm_k12
 #undef pp_norm_k18
 #undef pp_norm_k24
+#undef pp_norm_k48
+#undef pp_map_tatep_k1
+#undef pp_map_sim_tatep_k1
 #undef pp_map_tatep_k2
 #undef pp_map_sim_tatep_k2
+#undef pp_map_weilp_k1
+#undef pp_map_sim_weilp_k1
 #undef pp_map_weilp_k2
-#undef pp_map_oatep_k8
 #undef pp_map_sim_weilp_k2
+#undef pp_map_oatep_k8
 #undef pp_map_tatep_k12
 #undef pp_map_sim_tatep_k12
 #undef pp_map_weilp_k12
@@ -3036,10 +3039,13 @@
 #undef pp_map_k24
 #undef pp_map_sim_k24
 #undef pp_map_k48
+#undef pp_map_sim_k48
 #undef pp_map_k54
 
 #define pp_map_init 	RLC_PREFIX(pp_map_init)
 #define pp_map_clean 	RLC_PREFIX(pp_map_clean)
+#define pp_add_k1_basic 	RLC_PREFIX(pp_add_k1_basic)
+#define pp_add_k1_projc 	RLC_PREFIX(pp_add_k1_projc)
 #define pp_add_k2_basic 	RLC_PREFIX(pp_add_k2_basic)
 #define pp_add_k2_projc_basic 	RLC_PREFIX(pp_add_k2_projc_basic)
 #define pp_add_k2_projc_lazyr 	RLC_PREFIX(pp_add_k2_projc_lazyr)
@@ -3060,6 +3066,8 @@
 #define pp_add_k48_projc 	RLC_PREFIX(pp_add_k48_projc)
 #define pp_add_k54_basic 	RLC_PREFIX(pp_add_k54_basic)
 #define pp_add_k54_projc 	RLC_PREFIX(pp_add_k54_projc)
+#define pp_dbl_k1_basic 	RLC_PREFIX(pp_dbl_k1_basic)
+#define pp_dbl_k1_projc 	RLC_PREFIX(pp_dbl_k1_projc)
 #define pp_dbl_k2_basic 	RLC_PREFIX(pp_dbl_k2_basic)
 #define pp_dbl_k2_projc_basic 	RLC_PREFIX(pp_dbl_k2_projc_basic)
 #define pp_dbl_k2_projc_lazyr 	RLC_PREFIX(pp_dbl_k2_projc_lazyr)
@@ -3080,6 +3088,7 @@
 #define pp_dbl_k54_projc 	RLC_PREFIX(pp_dbl_k54_projc)
 #define pp_dbl_lit_k12 	RLC_PREFIX(pp_dbl_lit_k12)
 #define pp_dbl_lit_k18 	RLC_PREFIX(pp_dbl_lit_k18)
+#define pp_exp_k1 	RLC_PREFIX(pp_exp_k1)
 #define pp_exp_k2 	RLC_PREFIX(pp_exp_k2)
 #define pp_exp_k8 	RLC_PREFIX(pp_exp_k8)
 #define pp_exp_k12 	RLC_PREFIX(pp_exp_k12)
@@ -3087,16 +3096,22 @@
 #define pp_exp_k24 	RLC_PREFIX(pp_exp_k24)
 #define pp_exp_k48 	RLC_PREFIX(pp_exp_k48)
 #define pp_exp_k54 	RLC_PREFIX(pp_exp_k54)
+#define pp_norm_k1 	RLC_PREFIX(pp_norm_k1)
 #define pp_norm_k2 	RLC_PREFIX(pp_norm_k2)
 #define pp_norm_k8 	RLC_PREFIX(pp_norm_k8)
 #define pp_norm_k12 	RLC_PREFIX(pp_norm_k12)
 #define pp_norm_k18 	RLC_PREFIX(pp_norm_k18)
 #define pp_norm_k24 	RLC_PREFIX(pp_norm_k24)
+#define pp_norm_k48 	RLC_PREFIX(pp_norm_k48)
+#define pp_map_tatep_k1 	RLC_PREFIX(pp_map_tatep_k1)
+#define pp_map_sim_tatep_k1 	RLC_PREFIX(pp_map_sim_tatep_k1)
 #define pp_map_tatep_k2 	RLC_PREFIX(pp_map_tatep_k2)
 #define pp_map_sim_tatep_k2 	RLC_PREFIX(pp_map_sim_tatep_k2)
+#define pp_map_weilp_k1 	RLC_PREFIX(pp_map_weilp_k1)
+#define pp_map_sim_weilp_k1 	RLC_PREFIX(pp_map_sim_weilp_k1)
 #define pp_map_weilp_k2 	RLC_PREFIX(pp_map_weilp_k2)
-#define pp_map_oatep_k8 	RLC_PREFIX(pp_map_oatep_k8)
 #define pp_map_sim_weilp_k2 	RLC_PREFIX(pp_map_sim_weilp_k2)
+#define pp_map_oatep_k8 	RLC_PREFIX(pp_map_oatep_k8)
 #define pp_map_tatep_k12 	RLC_PREFIX(pp_map_tatep_k12)
 #define pp_map_sim_tatep_k12 	RLC_PREFIX(pp_map_sim_tatep_k12)
 #define pp_map_weilp_k12 	RLC_PREFIX(pp_map_weilp_k12)
@@ -3112,6 +3127,7 @@
 #define pp_map_k24 	RLC_PREFIX(pp_map_k24)
 #define pp_map_sim_k24 	RLC_PREFIX(pp_map_sim_k24)
 #define pp_map_k48 	RLC_PREFIX(pp_map_k48)
+#define pp_map_sim_k48 	RLC_PREFIX(pp_map_sim_k48)
 #define pp_map_k54 	RLC_PREFIX(pp_map_k54)
 
 #undef pc_core_init
