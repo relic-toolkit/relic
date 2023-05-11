@@ -160,7 +160,11 @@ void gt_exp(gt_t c, const gt_t a, const bn_t b) {
 		pc_get_ord(n);
 		bn_mod(_b, b, n);
 
+#if FP_PRIME <= 1536
 		RLC_CAT(RLC_GT_LOWER, exp_cyc)(c, a, _b);
+#else
+		RLC_CAT(RLC_GT_LOWER, exp)(c, a, _b);
+#endif
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
@@ -202,27 +206,36 @@ void gt_exp_dig(gt_t c, const gt_t a, dig_t b) {
 
 void gt_exp_sim(gt_t e, const gt_t a, const bn_t b, const gt_t c, const bn_t d) {
 	bn_t n, _b, _d;
+	gt_t t;
 
 	bn_null(n);
 	bn_null(_b);
 	bn_null(_d);
+	gt_null(t);
 
 	RLC_TRY {
 		bn_new(n);
 		bn_new(_b);
 		bn_new(_d);
+		gt_new(t);
 
 		gt_get_ord(n);
 		bn_mod(_b, b, n);
 		bn_mod(_d, d, n);
-
+#if FP_PRIME <= 1536
 		RLC_CAT(RLC_GT_LOWER, exp_cyc_sim)(e, a, _b, c, _d);
+#else
+		gt_exp(t, a, _b);
+		gt_exp(e, c, _d);
+		gt_mul(e, e, t);
+#endif
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		bn_free(n);
 		bn_free(_b);
 		bn_free(_d);
+		gt_free(t);
 	}
 }
 

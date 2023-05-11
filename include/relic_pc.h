@@ -58,32 +58,32 @@
 
 #if FP_PRIME == 575
 #define RLC_G2_LOWER			ep8_
-#define RLC_G2_BASEF(A)		A[0][0][0]
+#define RLC_G2_BASEF(A)			A[0][0][0]
 #elif FP_PRIME == 315 || FP_PRIME == 317 || FP_PRIME == 509
 #define RLC_G2_LOWER			ep4_
-#define RLC_G2_BASEF(A)		A[0][0]
+#define RLC_G2_BASEF(A)			A[0][0]
 #elif FP_PRIME == 508 || FP_PRIME == 638 && !defined(FP_QNRES)
 #define RLC_G2_LOWER			ep3_
-#define RLC_G2_BASEF(A)		A[0]
+#define RLC_G2_BASEF(A)			A[0]
 #else
 #define RLC_G2_LOWER			ep2_
-#define RLC_G2_BASEF(A)		A[0]
+#define RLC_G2_BASEF(A)			A[0]
 #endif
 
 #define RLC_G2_UPPER			EP
 
 #if FP_PRIME == 575
 #define RLC_GT_LOWER			fp48_
-#define RLC_GT_EMBED      48
+#define RLC_GT_EMBED      		48
 #elif FP_PRIME == 315 || FP_PRIME == 317 || FP_PRIME == 509
 #define RLC_GT_LOWER			fp24_
-#define RLC_GT_EMBED      24
+#define RLC_GT_EMBED      		24
 #elif FP_PRIME == 508 || FP_PRIME == 638 && !defined(FP_QNRES)
 #define RLC_GT_LOWER			fp18_
-#define RLC_GT_EMBED      18
+#define RLC_GT_EMBED      		18
 #else
 #define RLC_GT_LOWER			fp12_
-#define RLC_GT_EMBED      12
+#define RLC_GT_EMBED      		12
 #endif
 
 #else
@@ -91,9 +91,14 @@
 #define RLC_G1_UPPER			EP
 #define RLC_G2_LOWER			ep_
 #define RLC_G2_UPPER			EP
-#define RLC_G2_BASEF(A)		A
+#define RLC_G2_BASEF(A)			A
+#if FP_PRIME == 1536
 #define RLC_GT_LOWER			fp2_
-#define RLC_GT_EMBED      2
+#define RLC_GT_EMBED      		2
+#else
+#define RLC_GT_LOWER			fp_
+#define RLC_GT_EMBED      		1
+#endif
 #endif
 /** @} */
 
@@ -507,7 +512,11 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
  * @param[in] A				- the element of G_T.
  * @param[in] C 			- the flag to indicate compression.
  */
+#if FP_PRIME <= 1536
 #define gt_size_bin(A, C)	RLC_CAT(RLC_GT_LOWER, size_bin)(A, C)
+#else
+#define gt_size_bin(A, C)	RLC_FP_BYTES
+#endif
 
 /**
  * Reads a G_1 element from a byte vector in big-endian format.
@@ -573,7 +582,11 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
  * @param[in] C 			- the flag to indicate point compression.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is not sufficient.
  */
+#if FP_PRIME <= 1536
 #define gt_write_bin(B, L, A, C)	RLC_CAT(RLC_GT_LOWER, write_bin)(B, L, A, C)
+#else
+#define gt_write_bin(B, L, A, C)	RLC_CAT(RLC_GT_LOWER, write_bin)(B, L, A)
+#endif
 
 /**
  * Negates a element from G_1. Computes R = -P.
@@ -597,7 +610,11 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
  * @param[out] C			- the result.
  * @param[in] A				- the element to invert.
  */
+#if FP_PRIME <= 1536
 #define gt_inv(C, A)		RLC_CAT(RLC_GT_LOWER, inv_cyc)(C, A)
+#else
+#define gt_inv(C, A)		RLC_CAT(RLC_GT_LOWER, inv)(C, A)
+#endif
 
 /**
  * Adds two elliptic elements from G_1. Computes R = P + Q.
@@ -887,7 +904,11 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
  * @param[in] A				- the element to exponentiate.
  * @param[in] I				- the power of the Frobenius map.
  */
+#if FP_PRIME <= 1536
 #define gt_frb(C, A, I)		RLC_CAT(RLC_GT_LOWER, frb)(C, A, I)
+#else
+#define gt_frb(C, A, I)		(A)
+#endif
 
 /**
  * Maps a byte array to an element in G_1.

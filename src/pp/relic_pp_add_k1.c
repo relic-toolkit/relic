@@ -50,12 +50,8 @@ void pp_add_k1_basic(fp_t l, fp_t m, ep_t r, const ep_t p, const ep_t q) {
 		fp_new(s);
 
 		if (fp_cmp(r->x, p->x) == RLC_EQ) {
-			fp_set_dig(l, 1);
-			if (fp_cmp(q->x, p->x) == RLC_EQ) {
-				fp_set_dig(m, 1);
-			} else {
-				fp_sub(m, q->x, p->x);
-			}
+			fp_set_dig(m, 1);
+			fp_sub(l, q->x, p->x);
 		} else {
 			fp_sub(l, q->x, p->x);
 			ep_add_slp_basic(r, s, r, p);
@@ -66,9 +62,6 @@ void pp_add_k1_basic(fp_t l, fp_t m, ep_t r, const ep_t p, const ep_t q) {
 				fp_set_dig(l, 1);
 			}
 			fp_sub(m, q->x, r->x);
-			if (fp_is_zero(m)) {
-				fp_set_dig(m, 1);
-			}
 		}
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);

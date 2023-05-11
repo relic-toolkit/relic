@@ -54,9 +54,6 @@ void pp_dbl_k1_basic(fp_t l, fp_t m, ep_t r, const ep_t p, const ep_t q) {
 
 		ep_dbl_slp_basic(r, s, p);
 		fp_sub(m, q->x, r->x);
-		if (fp_is_zero(m)) {
-			fp_set_dig(m, 1);
-		}
 		fp_mul(l, m, s);
 		fp_sub(l, r->y, l);
 		fp_add(l, l, q->y);

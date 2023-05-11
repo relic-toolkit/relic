@@ -600,11 +600,6 @@ static void util(void) {
 	}
 	BENCH_END;
 
-	BENCH_RUN("gt_size_bin (0)") {
-		gt_rand(a);
-		BENCH_ADD(gt_size_bin(a, 0));
-	} BENCH_END;
-
 	BENCH_RUN("gt_write_bin (0)") {
 		gt_rand(a);
 		l = gt_size_bin(a, 0);
@@ -619,11 +614,6 @@ static void util(void) {
 	} BENCH_END;
 
 	if (ep_param_embed() == 12) {
-		BENCH_RUN("gt_size_bin (1)") {
-			gt_rand(a);
-			BENCH_ADD(gt_size_bin(a, 1));
-		} BENCH_END;
-
 		BENCH_RUN("gt_write_bin (1)") {
 			gt_rand(a);
 			l = gt_size_bin(a, 1);

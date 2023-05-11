@@ -80,8 +80,12 @@ static void pp_mil_k1(fp_t r, ep_t *t, ep_t *p, ep_t *q, int n, bn_t a) {
 			}
 		}
 
-		fp_inv(s, s);
-		fp_mul(r, r, s);
+		if (!fp_is_zero(s)) {
+			fp_inv(s, s);
+			fp_mul(r, r, s);
+		} else {
+			fp_set_dig(r, 1);
+		}
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -114,10 +118,7 @@ void pp_map_tatep_k1(fp_t r, const ep_t p, const ep_t q) {
 
 		ep_norm(_p[0], p);
 		ep_norm(_q[0], q);
-		ep_norm(_q[0], _q[0]);
 		ep_curve_get_ord(n);
-		/* Since p has order n, we do not have to perform last iteration. */
-		//bn_sub_dig(n, n, 1);
 		fp_set_dig(r, 1);
 
 		if (!ep_is_infty(p) && !ep_is_infty(q)) {
