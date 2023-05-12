@@ -385,6 +385,46 @@ void fp12_exp_dig(fp12_t c, const fp12_t a, dig_t b) {
 	}
 }
 
+void fp16_exp(fp16_t c, const fp16_t a, const bn_t b) {
+	fp16_t t;
+
+	if (bn_is_zero(b)) {
+		fp16_set_dig(c, 1);
+		return;
+	}
+
+	fp16_null(t);
+
+	RLC_TRY {
+		fp16_new(t);
+
+		if (fp16_test_cyc(a)) {
+			fp16_exp_cyc(c, a, b);
+		} else {
+			fp16_copy(t, a);
+
+			for (int i = bn_bits(b) - 2; i >= 0; i--) {
+				fp16_sqr(t, t);
+				if (bn_get_bit(b, i)) {
+					fp16_mul(t, t, a);
+				}
+			}
+
+			if (bn_sign(b) == RLC_NEG) {
+				fp16_inv(c, t);
+			} else {
+				fp16_copy(c, t);
+			}
+		}
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		fp16_free(t);
+	}
+}
+
 void fp18_exp(fp18_t c, const fp18_t a, const bn_t b) {
 	fp18_t t;
 

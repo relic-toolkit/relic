@@ -123,6 +123,20 @@ void fp12_frb(fp12_t c, const fp12_t a, int i) {
 	}
 }
 
+void fp16_frb(fp16_t c, const fp16_t a, int i) {
+	/* Cost of four multiplication in Fp^2 per Frobenius. */
+	fp16_copy(c, a);
+	for (; i % 8 > 0; i--) {
+		fp8_frb(c[0], c[0], 1);
+		fp8_frb(c[1], c[1], 1);
+		fp2_mul_frb(c[1][0], c[1][0], 2, 1);
+		fp2_mul_frb(c[1][1], c[1][1], 2, 1);
+		if (fp_prime_get_mod8() != 1 && fp_prime_get_mod8() != 5) {
+			fp8_mul_art(c[1], c[1]);
+		}
+	}
+}
+
 void fp18_frb(fp18_t c, const fp18_t a, int i) {
 	/* Cost of five multiplication in Fp^3 per Frobenius. */
 	fp18_copy(c, a);

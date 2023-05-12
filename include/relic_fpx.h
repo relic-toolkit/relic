@@ -3728,7 +3728,7 @@ void fp16_dbl(fp16_t c, const fp16_t a);
  * @param[in] a				- the sextadecic extension field element.
  * @param[in] b				- the sextadecic extension field element.
  */
-void fp16_mul_unr(dv8_t c, const fp16_t a, const fp16_t b);
+void fp16_mul_unr(dv16_t c, const fp16_t a, const fp16_t b);
 
 /**
  * Multiples two sextadecic extension field elements.
@@ -3783,7 +3783,7 @@ void fp16_mul_dxs(fp16_t c, const fp16_t a, const fp16_t b);
  * @param[out] c			- the result.
  * @param[in] a				- the sextadecic extension field element to square.
  */
-void fp16_sqr_unr(dv8_t c, const fp16_t a);
+void fp16_sqr_unr(dv16_t c, const fp16_t a);
 
 /**
  * Computes the squares of an sextadecic extension field element using basic
