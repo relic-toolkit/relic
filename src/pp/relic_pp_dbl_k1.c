@@ -110,30 +110,18 @@ void pp_dbl_k1_projc(fp_t l, fp_t m, ep_t r, const ep_t p, const ep_t q) {
 		fp_sub(t4, t4, t3);
 		fp_dbl(t4, t4);
 
-		/* t5 = M = 3*XX+a*ZZ^2. */
-		fp_dbl(t5, t2);
-		fp_add(t5, t5, t2);
-		fp_sqr(t2, t0);
-		fp_mul(t2, t2, ep_curve_get_a());
-		fp_add(t5, t5, t2);
-
 		/* z3 = (Y1+Z1)^2-YY-ZZ, */
 		fp_add(r->z, p->y, p->z);
 		fp_sqr(r->z, r->z);
 		fp_sub(r->z, r->z, t1);
 		fp_sub(r->z, r->z, t0);
 
-		/* l = z3*t0*yQ − (2t1 − t5*(t0*xQ + x1)). */
-		/* Consider \psi(xQ, yQ) = (-xQ, A * yQ).  */
-		fp_mul(t2, t0, q->x);
-		fp_sub(t2, p->x, t2);
-		fp_mul(t2, t2, t5);
-		fp_dbl(t1, t1);
-		fp_sub(t1, t1, t2);
-		fp_mul(l, r->z, q->y);
-		fp_mul(l, l, t0);
-		fp_mul(l, l, core_get()->beta);
-		fp_sub(l, l, t1);
+		/* t5 = M = 3*XX+a*ZZ^2. */
+		fp_dbl(t5, t2);
+		fp_add(t5, t5, t2);
+		fp_sqr(t2, t0);
+		fp_mul(t1, t2, ep_curve_get_a());
+		fp_add(t5, t5, t1);
 
 		/* x3 = T = M^2 - 2S. */
 		fp_sqr(r->x, t5);
@@ -141,12 +129,26 @@ void pp_dbl_k1_projc(fp_t l, fp_t m, ep_t r, const ep_t p, const ep_t q) {
 		fp_sub(r->x, r->x, t4);
 
 		/* y3 = M*(S-T)-8*YYYY. */
-		fp_sub(t2, t4, r->x);
-		fp_mul(t5, t5, t2);
+		fp_sub(t1, t4, r->x);
+		fp_mul(t1, t5, t1);
 		fp_dbl(t3, t3);
 		fp_dbl(t3, t3);
 		fp_dbl(t3, t3);
-		fp_sub(r->y, t5, t3);
+		fp_sub(r->y, t1, t3);
+
+		/* l = z3*z3^2*yQ + y3 − t5*(z3^2*xQ - x3), v = z3*(z3^2*xQ - x3)). */
+		fp_sqr(t2, r->z);
+		fp_mul(l, r->z, t2);
+		fp_mul(l, l, q->y);
+		fp_add(l, l, r->y);
+		fp_mul(t2, t2, q->x);
+		fp_sub(t2, t2, r->x);
+		fp_mul(m, r->z, t2);
+		fp_mul(t2, t2, t5);
+		fp_sub(l, l, t2);
+		if (fp_is_zero(l)) {
+			fp_set_dig(l, 1);
+		}
 
 		r->coord = JACOB;
 	}

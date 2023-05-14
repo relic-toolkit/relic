@@ -92,54 +92,71 @@ void pp_add_k1_projc(fp_t l, fp_t m, ep_t r, const ep_t p, const ep_t q) {
 		fp_new(t4);
 		fp_new(t5);
 
-		/* t0 = z1^2. */
-		fp_sqr(t0, r->z);
+		fp_sqr(l, r->z);
+		fp_mul(l, l, p->x);
+		if (fp_cmp(l, r->x) == RLC_EQ) {
+			fp_set_dig(m, 1);
+			fp_sub(l, q->x, p->x);
+		} else {
+			/* t0 = z1^2. */
+			fp_sqr(t0, r->z);
 
-		/* t3 = x2 * z1^2. */
-		fp_mul(t3, p->x, t0);
+			/* t3 = U = x2 * z1^2. */
+			fp_mul(t3, p->x, t0);
 
-		/* t1 = y2 * z1^3. */
-		fp_mul(t1, t0, r->z);
-		fp_mul(t1, t1, p->y);
+			/* t1 = S = y2 * z1^3. */
+			fp_mul(t1, t0, r->z);
+			fp_mul(t1, t1, p->y);
 
-		/* t2 = x1 - t3. */
-		fp_sub(t2, r->x, t3);
+			/* t2 = H = U - x1. */
+			fp_sub(t2, t3, r->x);
 
-		/* t4 = y1 - t1. */
-		fp_sub(t4, r->y, t1);
+			/* t4 = L = S - y1. */
+			fp_sub(t4, t1, r->y);
 
-		/* l0 = slope * (x2 + xq) - z3 * y2. */
-		fp_sub(l, p->x, q->x);
-		fp_mul(l, l, t4);
+			/* t5 = H_2 = 2H, t3 = I = 4H^2. */
+			fp_dbl(t5, t2);
+			fp_sqr(t3, t5);
 
-		fp_dbl(t0, t3);
-		fp_add(t3, t0, t2);
-		fp_dbl(t0, t1);
-		fp_add(t1, t0, t4);
+			/* Z3 = (Z1 + H)^2 - Z1^2 - H^2 = 2 * z1 * H. */
+			fp_mul(r->z, r->z, t5);
 
-		fp_mul(r->z, t2, r->z);
-		fp_sqr(t0, t2);
-		fp_mul(t2, t0, t2);
-		fp_mul(t0, t0, t3);
-		fp_sqr(t3, t4);
+			/* t4 = M = 2L, t5 = M3 = (L + Z3)^2 - L^2 - Z3^2 = 2 * L * Z3. */
+			fp_dbl(t4, t4);
+			fp_mul(t5, t4, r->z);
 
-		fp_sub(r->x, t3, t0);
-		fp_sub(t0, t0, r->x);
-		fp_sub(t0, t0, r->x);
-		fp_mul(t5, t0, t4);
-		fp_mul(t2, t2, t1);
-		fp_sub(t1, t5, t2);
+			/* l = Z3^2 * (yQ - y2) - M3*(xQ - x2). */
+			fp_sqr(m, r->z);
+			fp_sub(l, q->y, p->y);
+			fp_mul(l, l, m);
+			fp_sub(t0, q->x, p->x);
+			fp_mul(t0, t0, t5);
+			fp_sub(l, l, t0);
+			if (fp_is_zero(l)) {
+				fp_set_dig(l, 1);
+			}
 
-		fp_mul(t5, r->z, p->y);
-		fp_sub(l, l, t5);
+			/* t0 = V = x1 * I, t3 = J = HI, x3 = 4L^2 - J - 2V*/
+			fp_mul(t0, r->x, t3);
+			fp_mul(t3, t3, t2);
+			fp_sqr(r->x, t4);
+			fp_sub(r->x, r->x, t3);
+			fp_sub(r->x, r->x, t0);
+			fp_sub(r->x, r->x, t0);
 
-		fp_mul(t0, r->z, q->y);
-		fp_mul(t0, t0, ep_curve_get_beta());
-		fp_add(l, l, t0);
+			/* y3 = M * (V - X3) - 2y1 * J. */
+			fp_mul(r->y, r->y, t3);
+			fp_dbl(r->y, r->y);
+			fp_sub(t0, t0, r->x);
+			fp_mul(t0, t4, t0);
+			fp_sub(r->y, t0, r->y);
 
-		fp_hlv(r->y, t1);
+			/* v = Z3^2 * xQ - X3. */
+			fp_mul(m, m, q->x);
+			fp_sub(m, m, r->x);
 
-		r->coord = JACOB;
+			r->coord = JACOB;
+		}
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);

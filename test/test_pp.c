@@ -110,7 +110,7 @@ static int addition1(void) {
 			fp_inv(e3, e3);
 			fp_mul(e2, e2, e3);
 			pp_exp_k1(e2, e2);
-			//TEST_ASSERT(fp_cmp(e1, e2) == RLC_EQ, end);
+			TEST_ASSERT(fp_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
 #endif /* EP_ADD = PROJC */
 	}
@@ -206,7 +206,7 @@ static int doubling1(void) {
 			fp_inv(e3, e3);
 			fp_mul(e2, e2, e3);
 			pp_exp_k1(e2, e2);
-			//TEST_ASSERT(fp_cmp(e1, e2) == RLC_EQ, end);
+			TEST_ASSERT(fp_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
 #endif /* EP_ADD = PROJC */
 	}
