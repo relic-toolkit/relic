@@ -444,13 +444,13 @@ typedef struct _ctx_t {
 	dis_t qnr2;
 	/** Constants for computing Frobenius maps in higher extensions. @{ */
 	fp2_st fp2_p1[5];
-	fp2_st fp2_p2[3];
+	fp2_st fp2_p2[4];
 	int frb3[3];
 	/** Integer part of the cubic non-residue in the cubic extension. */
 	dis_t cnr3;
 	fp_st fp3_p0[2];
 	fp3_st fp3_p1[5];
-	fp3_st fp3_p2[3];
+	fp3_st fp3_p2[2];
 	int frb4;
 	fp2_st fp4_p1;
 	int frb8;
