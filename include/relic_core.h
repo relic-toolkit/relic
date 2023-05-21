@@ -450,7 +450,7 @@ typedef struct _ctx_t {
 	dis_t cnr3;
 	fp_st fp3_p0[2];
 	fp3_st fp3_p1[5];
-	fp3_st fp3_p2[2];
+	fp3_st fp3_p2[3];
 	int frb4;
 	fp2_st fp4_p1;
 	int frb8;

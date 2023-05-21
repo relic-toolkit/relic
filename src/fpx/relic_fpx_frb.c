@@ -129,11 +129,12 @@ void fp16_frb(fp16_t c, const fp16_t a, int i) {
 	for (; i % 8 > 0; i--) {
 		fp8_frb(c[0], c[0], 1);
 		fp8_frb(c[1], c[1], 1);
-		fp2_mul_frb(c[1][0], c[1][0], 2, 1);
-		fp2_mul_frb(c[1][1], c[1][1], 2, 1);
-		if (fp_prime_get_mod8() != 1 && fp_prime_get_mod8() != 5) {
-			fp8_mul_art(c[1], c[1]);
-		}
+		fp2_mul_frb(c[1][0][0], c[1][0][0], 2, 2);
+		fp2_mul_frb(c[1][0][1], c[1][0][1], 2, 2);
+		fp2_mul_frb(c[1][1][0], c[1][1][0], 2, 2);
+		fp2_mul_frb(c[1][1][1], c[1][1][1], 2, 2);
+		fp4_mul_art(c[1][0], c[1][0]);
+		fp4_mul_art(c[1][1], c[1][1]);
 	}
 }
 
@@ -160,7 +161,7 @@ void fp24_frb(fp24_t c, const fp24_t a, int i) {
 		fp8_frb(c[2], c[2], 1);
 		for (int j = 0; j < 2; j++) {
 			for (int l = 0; l < 2; l++) {
-				fp2_mul_frb(c[1][j][l], c[1][j][l], 2, 2);
+				fp2_mul_frb(c[1][j][l], c[1][j][l], 2, 3);
 				fp2_mul_frb(c[2][j][l], c[2][j][l], 1, 1);
 			}
 			if ((fp_prime_get_mod8() % 4) == 3) {
@@ -179,7 +180,7 @@ void fp48_frb(fp48_t c, const fp48_t a, int i) {
 		for (int j = 0; j < 3; j++) {
 			for (int k = 0; k < 2; k++) {
 				for (int l = 0; l < 2; l++) {
-					fp2_mul_frb(c[1][j][k][l], c[1][j][k][l], 2, 3);
+					fp2_mul_frb(c[1][j][k][l], c[1][j][k][l], 2, 4);
 				}
 				if (fp_prime_get_mod8() == 3) {
 					fp4_mul_art(c[1][j][k], c[1][j][k]);
@@ -201,7 +202,7 @@ void fp54_frb(fp54_t c, const fp54_t a, int i) {
 		fp18_frb(c[2], c[2], 1);
 		for (int j = 0; j < 2; j++) {
 			for (int l = 0; l < 3; l++) {
-				fp3_mul_frb(c[1][j][l], c[1][j][l], 2, 2);
+				fp3_mul_frb(c[1][j][l], c[1][j][l], 2, 3);
 				fp3_mul_frb(c[2][j][l], c[2][j][l], 2, 1);
 			}
 			/* This is not genreal enough, so hard code parameters needing the

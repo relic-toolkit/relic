@@ -129,6 +129,17 @@ void fp2_field_init(void) {
 		fp_copy(ctx->fp2_p2[0][0], t0[0]);
 		fp_copy(ctx->fp2_p2[0][1], t0[1]);
 
+		/* Compute QNR^(p - (p mod 8))/8. */
+		fp2_set_dig(t1, 1);
+		fp2_mul_nor(t0, t1);
+		e->used = RLC_FP_DIGS;
+		dv_copy(e->dp, fp_prime_get(), RLC_FP_DIGS);
+		bn_div_dig(e, e, 8);
+		fp2_exp(t0, t0, e);
+		fp2_print(t0);
+		fp_copy(ctx->fp2_p2[1][0], t0[0]);
+		fp_copy(ctx->fp2_p2[1][1], t0[1]);
+
 		/* Compute QNR^(p - (p mod 12))/12. */
 		fp2_set_dig(t1, 1);
 		fp2_mul_nor(t0, t1);
@@ -136,8 +147,8 @@ void fp2_field_init(void) {
 		dv_copy(e->dp, fp_prime_get(), RLC_FP_DIGS);
 		bn_div_dig(e, e, 12);
 		fp2_exp(t0, t0, e);
-		fp_copy(ctx->fp2_p2[1][0], t0[0]);
-		fp_copy(ctx->fp2_p2[1][1], t0[1]);
+		fp_copy(ctx->fp2_p2[2][0], t0[0]);
+		fp_copy(ctx->fp2_p2[2][1], t0[1]);
 
 		/* Compute QNR^(p - (p mod 24))/24. */
 		fp2_set_dig(t1, 1);
@@ -146,8 +157,8 @@ void fp2_field_init(void) {
 		dv_copy(e->dp, fp_prime_get(), RLC_FP_DIGS);
 		bn_div_dig(e, e, 24);
 		fp2_exp(t0, t0, e);
-		fp_copy(ctx->fp2_p2[2][0], t0[0]);
-		fp_copy(ctx->fp2_p2[2][1], t0[1]);
+		fp_copy(ctx->fp2_p2[3][0], t0[0]);
+		fp_copy(ctx->fp2_p2[3][1], t0[1]);
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
