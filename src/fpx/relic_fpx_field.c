@@ -136,7 +136,6 @@ void fp2_field_init(void) {
 		dv_copy(e->dp, fp_prime_get(), RLC_FP_DIGS);
 		bn_div_dig(e, e, 8);
 		fp2_exp(t0, t0, e);
-		fp2_print(t0);
 		fp_copy(ctx->fp2_p2[1][0], t0[0]);
 		fp_copy(ctx->fp2_p2[1][1], t0[1]);
 
