@@ -4993,7 +4993,7 @@ static int util16(void) {
 
 		TEST_CASE("reading and writing a finite field element are consistent") {
 			fp16_rand(a);
-			fp16_write_bin(bin, sizeof(bin), a);
+			fp16_write_bin(bin, sizeof(bin), a, 0);
 			fp16_read_bin(b, bin, sizeof(bin));
 			TEST_ASSERT(fp16_cmp(a, b) == RLC_EQ, end);
 		}
@@ -5002,8 +5002,6 @@ static int util16(void) {
 		TEST_CASE("getting the size of a finite field element is correct") {
 			fp16_rand(a);
 			TEST_ASSERT(fp16_size_bin(a, 0) == 16 * RLC_FP_BYTES, end);
-			fp16_conv_cyc(a, a);
-			//TEST_ASSERT(fp16_size_bin(a, 1) == 8 * RLC_FP_BYTES, end);
 		}
 		TEST_END;
 	}

@@ -66,6 +66,28 @@ void ep_mul_cof(ep_t r, const ep_t p) {
 					ep_mul_basic(r, p, k);
 				}
 				break;
+			case EP_K16:
+				/* Compute 1250*(P + [(u+1)/2]phi(P)) */
+				fp_prime_get_par(k);
+				bn_add_dig(k, k, 1);
+				bn_hlv(k, k);
+				ep_dbl(r, p);
+				ep_norm(r, r);
+				ep_psi(v, r);
+				ep_neg(v, v);
+				ep_mul_dig(v, v, 182);
+				ep_add(r, r, v);
+				ep_norm(r, r);
+				ep_psi(v, r);
+				ep_neg(v, v);
+				if (bn_bits(k) < RLC_DIG) {
+					ep_mul_dig(v, v, k->dp[0]);
+				} else {
+					ep_mul_basic(v, v, k);
+				}
+				ep_add(r, r, v);
+				ep_norm(r, r);
+				break;
 			case EP_K18:
 				/* Compute 343*(P + [u+3]psi(P)). */
 				fp_prime_get_par(k);

@@ -3653,9 +3653,10 @@ void fp16_read_bin(fp16_t a, const uint8_t *bin, size_t len);
  * @param[out] bin			- the byte vector.
  * @param[in] len			- the buffer capacity.
  * @param[in] a				- the extension field element to write.
+ * @param[in] pack			- the flag to indicate compression.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is not correct.
  */
-void fp16_write_bin(uint8_t *bin, size_t len, const fp16_t a);
+void fp16_write_bin(uint8_t *bin, size_t len, const fp16_t a, int pack);
 
 /**
  * Returns the result of a comparison between two sextadecic extension field

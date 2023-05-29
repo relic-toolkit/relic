@@ -549,7 +549,7 @@ void fp16_read_bin(fp16_t a, const uint8_t *bin, size_t len) {
 	fp8_read_bin(a[1], bin + 8 * RLC_FP_BYTES, 8 * RLC_FP_BYTES);
 }
 
-void fp16_write_bin(uint8_t *bin, size_t len, const fp16_t a) {
+void fp16_write_bin(uint8_t *bin, size_t len, const fp16_t a, int pack) {
 	if (len != 16 * RLC_FP_BYTES) {
 		RLC_THROW(ERR_NO_BUFFER);
 		return;

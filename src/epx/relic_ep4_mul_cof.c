@@ -38,7 +38,13 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void ep4_mul_cof(ep4_t r, const ep4_t p) {
+/**
+ * Multiplies a point by the cofactor in a KSS16 curve.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to multiply.
+ */
+static void ep4_mul_cof_k16(ep4_t r, const ep4_t p) {
 	bn_t z;
 	ep4_t t0, t1, t2, t3;
 
@@ -90,5 +96,36 @@ void ep4_mul_cof(ep4_t r, const ep4_t p) {
 		ep4_free(t3);
 		bn_free(z);
 
+	}
+}
+
+/*============================================================================*/
+/* Public definitions                                                         */
+/*============================================================================*/
+
+void ep4_mul_cof(ep4_t r, const ep4_t p) {
+	bn_t k;
+
+	bn_null(k);
+
+	RLC_TRY {
+		switch (ep_curve_is_pairf()) {
+			case EP_K16:
+				ep4_mul_cof_k16(r, p);
+				break;
+			default:
+				/* Now, multiply by cofactor to get the correct group. */
+				ep4_curve_get_cof(k);
+				if (bn_bits(k) < RLC_DIG) {
+					ep4_mul_dig(r, p, k->dp[0]);
+				} else {
+					ep4_mul_basic(r, p, k);
+				}
+				break;
+		}
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		bn_free(k);
 	}
 }

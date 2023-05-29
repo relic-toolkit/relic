@@ -86,6 +86,25 @@ void pp_norm_k12(ep2_t r, const ep2_t p) {
 #endif
 }
 
+void pp_norm_k16(ep4_t r, const ep4_t p) {
+	if (ep4_is_infty(p)) {
+		ep4_set_infty(r);
+		return;
+	}
+
+	if (p->coord == BASIC) {
+		/* If the point is represented in affine coordinates, we just copy it. */
+		ep4_copy(r, p);
+	}
+#if EP_ADD == PROJC || !defined(STRIP)
+	fp4_inv(r->z, p->z);
+	fp4_mul(r->x, p->x, r->z);
+	fp4_mul(r->y, p->y, r->z);
+	fp4_set_dig(r->z, 1);
+	r->coord = BASIC;
+#endif
+}
+
 void pp_norm_k18(ep3_t r, const ep3_t p) {
 	if (ep3_is_infty(p)) {
 		ep3_set_infty(r);

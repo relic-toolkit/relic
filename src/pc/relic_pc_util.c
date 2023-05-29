@@ -74,7 +74,7 @@ void gt_get_gen(gt_t g) {
 
 int g1_is_valid(const g1_t a) {
 	bn_t n, t;
-	g1_t u, v;
+	g1_t u, v, w;
 	size_t l0, l1, r = 0;
 	int8_t naf0[RLC_FP_BITS + 1], naf1[RLC_FP_BITS + 1];
 
@@ -86,12 +86,14 @@ int g1_is_valid(const g1_t a) {
 	bn_null(t);
 	g1_null(u);
 	g1_null(v);
+	g1_null(w);
 
 	RLC_TRY {
 		bn_new(n);
 		bn_new(t);
 		g1_new(u);
 		g1_new(v);
+		g1_new(w);
 
 		ep_curve_get_cof(n);
 		if (bn_cmp_dig(n, 1) == RLC_EQ) {
@@ -114,6 +116,27 @@ int g1_is_valid(const g1_t a) {
 					bn_sub_dig(n, n, 1);
 					g1_mul_any(u, a, n);
 					ep_psi(v, a);
+					r = g1_on_curve(a) && (g1_cmp(v, u) == RLC_EQ);
+					break;
+				case EP_K16:
+				    /* If u= 25 or 45 mod 70 then a1 = ((u//5)**4 + 5)//14
+					 * is an integer by definition.  */
+					fp_prime_get_par(n);
+					bn_div_dig(n, n, 5);
+					bn_sqr(n, n);
+					bn_sqr(n, n);
+					bn_add_dig(n, n, 5);
+					bn_div_dig(n, n, 14);
+					/* Compute P1 = a1*P. */
+					g1_mul_any(w, a, n);
+					/* Compute P0= -443*P1 + 157*P. */
+					g1_mul_dig(v, a, 157);
+					g1_mul_dig(u, w, 256);
+					g1_sub(v, v, u);
+					g1_mul_dig(u, w, 187);
+					g1_sub(v, v, u);
+					ep_psi(u, w);
+					/* Check that P0 == -\psi(P1).*/
 					r = g1_on_curve(a) && (g1_cmp(v, u) == RLC_EQ);
 					break;
 				case EP_K18:
@@ -186,6 +209,7 @@ int g1_is_valid(const g1_t a) {
 		bn_free(t);
 		g1_free(u);
 		g1_free(v);
+		g1_free(w);
 	}
 
 	return r;

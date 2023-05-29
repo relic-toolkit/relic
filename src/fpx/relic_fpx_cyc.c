@@ -67,7 +67,7 @@ int fp2_test_cyc(const fp2_t a) {
 
 	RLC_TRY {
 		fp2_new(t);
-		fp2_frb(t, a, 1);
+		fp2_inv_cyc(t, a);
 		fp2_mul(t, t, a);
 		result = ((fp2_cmp_dig(t, 1) == RLC_EQ) ? 1 : 0);
 	}
@@ -916,7 +916,7 @@ void fp12_exp_cyc_sps(fp12_t c, const fp12_t a, const int *b, size_t len,
 }
 
 void fp16_conv_cyc(fp16_t c, const fp16_t a) {
-	fp16_t t;
+	fp16_t t, u;
 
 	fp16_null(t);
 
@@ -1021,6 +1021,108 @@ void fp16_exp_cyc(fp16_t c, const fp16_t a, const bn_t b) {
 		fp16_free(s);
 		for (int i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
 			fp16_free(t[i]);
+		}
+	}
+}
+
+void fp16_exp_cyc_sim(fp16_t e, const fp16_t a, const bn_t b, const fp16_t c,
+		const bn_t d) {
+	int n0, n1;
+	int8_t naf0[RLC_FP_BITS + 1], naf1[RLC_FP_BITS + 1], *_k, *_m;
+	fp16_t r, t0[1 << (RLC_WIDTH - 2)];
+	fp16_t s, t1[1 << (RLC_WIDTH - 2)];
+	size_t l, l0, l1;
+
+	if (bn_is_zero(b)) {
+		return fp16_exp_cyc(e, c, d);
+	}
+
+	if (bn_is_zero(d)) {
+		return fp16_exp_cyc(e, a, b);
+	}
+
+	fp16_null(r);
+	fp16_null(s);
+
+	RLC_TRY {
+		fp16_new(r);
+		fp16_new(s);
+		for (int i = 0; i < (1 << (RLC_WIDTH - 2)); i ++) {
+			fp16_null(t0[i]);
+			fp16_null(t1[i]);
+			fp16_new(t0[i]);
+			fp16_new(t1[i]);
+		}
+
+#if RLC_WIDTH > 2
+		fp16_sqr_cyc(t0[0], a);
+		fp16_mul(t0[1], t0[0], a);
+		for (int i = 2; i < (1 << (RLC_WIDTH - 2)); i++) {
+			fp16_mul(t0[i], t0[i - 1], t0[0]);
+		}
+
+		fp16_sqr_cyc(t1[0], c);
+		fp16_mul(t1[1], t1[0], c);
+		for (int i = 2; i < (1 << (RLC_WIDTH - 2)); i++) {
+			fp16_mul(t1[i], t1[i - 1], t1[0]);
+		}
+#endif
+		fp16_copy(t0[0], a);
+		fp16_copy(t1[0], c);
+
+		l0 = l1 = RLC_FP_BITS + 1;
+		bn_rec_naf(naf0, &l0, b, RLC_WIDTH);
+		bn_rec_naf(naf1, &l1, d, RLC_WIDTH);
+
+		l = RLC_MAX(l0, l1);
+		if (bn_sign(b) == RLC_NEG) {
+			for (size_t i = 0; i < l0; i++) {
+				naf0[i] = -naf0[i];
+			}
+		}
+		if (bn_sign(d) == RLC_NEG) {
+			for (size_t i = 0; i < l1; i++) {
+				naf1[i] = -naf1[i];
+			}
+		}
+
+		_k = naf0 + l - 1;
+		_m = naf1 + l - 1;
+
+		fp16_set_dig(r, 1);
+		for (int i = l - 1; i >= 0; i--, _k--, _m--) {
+			fp16_sqr(r, r);
+
+			n0 = *_k;
+			n1 = *_m;
+
+			if (n0 > 0) {
+				fp16_mul(r, r, t0[n0 / 2]);
+			}
+			if (n0 < 0) {
+				fp16_inv_cyc(s, t0[-n0 / 2]);
+				fp16_mul(r, r, s);
+			}
+			if (n1 > 0) {
+				fp16_mul(r, r, t1[n1 / 2]);
+			}
+			if (n1 < 0) {
+				fp16_inv_cyc(s, t1[-n1 / 2]);
+				fp16_mul(r, r, s);
+			}
+		}
+
+		fp16_copy(e, r);
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		fp16_free(r);
+		fp16_free(s);
+		for (int i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
+			fp16_free(t0[i]);
+			fp16_free(t1[i]);
 		}
 	}
 }

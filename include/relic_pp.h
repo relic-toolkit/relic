@@ -156,6 +156,37 @@
 
 /**
  * Adds two points and evaluates the corresponding line function at another
+ * point on an elliptic curve with embedding degree 16 using projective
+ * coordinates.
+ *
+ * @param[out] L			- the result of the evaluation.
+ * @param[in, out] R		- the resulting point and first point to add.
+ * @param[in] Q				- the second point to add.
+ * @param[in] P				- the affine point to evaluate the line function.
+ */
+#if PP_EXT == BASIC
+#define pp_add_k16_projc(L, R, Q, P)	pp_add_k16_projc_basic(L, R, Q, P)
+#elif PP_EXT == LAZYR
+#define pp_add_k16_projc(L, R, Q, P)	pp_add_k16_projc_lazyr(L, R, Q, P)
+#endif
+
+/**
+ * Adds two points and evaluates the corresponding line function at another
+ * point on an elliptic curve with embedding degree 16.
+ *
+ * @param[out] L			- the result of the evaluation.
+ * @param[in, out] R		- the resulting point and first point to add.
+ * @param[in] Q				- the second point to add.
+ * @param[in] P				- the affine point to evaluate the line function.
+ */
+#if EP_ADD == BASIC
+#define pp_add_k16(L, R, Q, P)		pp_add_k16_basic(L, R, Q, P)
+#else
+#define pp_add_k16(L, R, Q, P)		pp_add_k16_projc(L, R, Q, P)
+#endif
+
+/**
+ * Adds two points and evaluates the corresponding line function at another
  * point on an elliptic curve with embedding degree 18 using projective
  * coordinates.
  *
@@ -341,6 +372,37 @@
 
 /**
  * Doubles a point and evaluates the corresponding line function at another
+ * point on an elliptic curve with embedding degree 16 using projective
+ * coordinates.
+ *
+ * @param[out] L			- the result of the evaluation.
+ * @param[in, out] R		- the resulting point.
+ * @param[in] Q				- the point to double.
+ * @param[in] P				- the affine point to evaluate the line function.
+ */
+#if PP_EXT == BASIC
+#define pp_dbl_k16_projc(L, R, Q, P)	pp_dbl_k16_projc_basic(L, R, Q, P)
+#elif PP_EXT == LAZYR
+#define pp_dbl_k16_projc(L, R, Q, P)	pp_dbl_k16_projc_lazyr(L, R, Q, P)
+#endif
+
+/**
+ * Doubles a point and evaluates the corresponding line function at another
+ * point on an elliptic curve with embedding degree 16.
+ *
+ * @param[out] L			- the result of the evaluation.
+ * @param[out] R			- the resulting point.
+ * @param[in] Q				- the point to double.
+ * @param[in] P				- the affine point to evaluate the line function.
+ */
+#if EP_ADD == BASIC
+#define pp_dbl_k16(L, R, Q, P)		pp_dbl_k16_basic(L, R, Q, P)
+#else
+#define pp_dbl_k16(L, R, Q, P)		pp_dbl_k16_projc(L, R, Q, P)
+#endif
+
+/**
+ * Doubles a point and evaluates the corresponding line function at another
  * point on an elliptic curve with embedding degree 18 using projective
  * coordinates.
  *
@@ -431,7 +493,7 @@
 #define pp_map_k1(R, P, Q)		pp_map_tatep_k1(R, P, Q)
 #endif
 
-/**
+/**pp_map
  * Computes a pairing of two prime elliptic curve points defined on an elliptic
  * curves of embedding degree 2. Computes e(P, Q).
  *
@@ -461,6 +523,22 @@
 #define pp_map_k12(R, P, Q)		pp_map_weilp_k12(R, P, Q)
 #elif PP_MAP == OATEP
 #define pp_map_k12(R, P, Q)		pp_map_oatep_k12(R, P, Q)
+#endif
+
+/**
+ * Computes a pairing of two prime elliptic curve points defined on an elliptic
+ * curve of embedding degree 16. Computes e(P, Q).
+ *
+ * @param[out] R			- the result.
+ * @param[in] P				- the first elliptic curve point.
+ * @param[in] Q				- the second elliptic curve point.
+ */
+#if PP_MAP == TATEP
+#define pp_map_k16(R, P, Q)		pp_map_tatep_k16(R, P, Q)
+#elif PP_MAP == WEILP
+#define pp_map_k16(R, P, Q)		pp_map_weilp_k16(R, P, Q)
+#elif PP_MAP == OATEP
+#define pp_map_k16(R, P, Q)		pp_map_oatep_k16(R, P, Q)
 #endif
 
 /**
@@ -524,6 +602,23 @@
 #define pp_map_sim_k12(R, P, Q, M)	pp_map_sim_weilp_k12(R, P, Q, M)
 #elif PP_MAP == OATEP
 #define pp_map_sim_k12(R, P, Q, M)	pp_map_sim_oatep_k12(R, P, Q, M)
+#endif
+
+/**
+ * Computes a multi-pairing of elliptic curve points defined on an elliptic
+ * curve of embedding degree 16. Computes \prod e(P_i, Q_i).
+ *
+ * @param[out] R			- the result.
+ * @param[in] P				- the first pairing arguments.
+ * @param[in] Q				- the second pairing arguments.
+ * @param[in] M 			- the number of pairings to evaluate.
+ */
+#if PP_MAP == TATEP
+#define pp_map_sim_k16(R, P, Q, M)	pp_map_sim_tatep_k16(R, P, Q, M)
+#elif PP_MAP == WEILP
+#define pp_map_sim_k16(R, P, Q, M)	pp_map_sim_weilp_k16(R, P, Q, M)
+#elif PP_MAP == OATEP
+#define pp_map_sim_k16(R, P, Q, M)	pp_map_sim_oatep_k16(R, P, Q, M)
 #endif
 
 /**

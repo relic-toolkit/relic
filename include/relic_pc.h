@@ -59,7 +59,7 @@
 #if FP_PRIME == 575
 #define RLC_G2_LOWER			ep8_
 #define RLC_G2_BASEF(A)			A[0][0][0]
-#elif FP_PRIME == 315 || FP_PRIME == 317 || FP_PRIME == 509
+#elif FP_PRIME == 315 || FP_PRIME == 317 || FP_PRIME == 509 || FP_PRIME == 766
 #define RLC_G2_LOWER			ep4_
 #define RLC_G2_BASEF(A)			A[0][0]
 #elif FP_PRIME == 508 || FP_PRIME == 638 && !defined(FP_QNRES)
@@ -81,6 +81,9 @@
 #elif FP_PRIME == 508 || FP_PRIME == 638 && !defined(FP_QNRES)
 #define RLC_GT_LOWER			fp18_
 #define RLC_GT_EMBED      		18
+#elif FP_PRIME == 766
+#define RLC_GT_LOWER			fp16_
+#define RLC_GT_EMBED      		16
 #else
 #define RLC_GT_LOWER			fp12_
 #define RLC_GT_EMBED      		12
@@ -349,10 +352,10 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
  * @param[out] P			- the element to assign.
  * @param[out] Q			- the G_2 element storing the coordinates.
  */
-#define g1_set_g2(P, Q)																												\
+#define g1_set_g2(P, Q)																								\
 	fp_copy((P)->x, RLC_G2_BASEF((Q)->x));																			\
-  fp_copy((P)->y, RLC_G2_BASEF((Q)->y));																			\
-  fp_copy((P)->z, RLC_G2_BASEF((Q)->z));																			\
+	fp_copy((P)->y, RLC_G2_BASEF((Q)->y));																			\
+	fp_copy((P)->z, RLC_G2_BASEF((Q)->z));																			\
 
 /**
  * Assigns a G_2 element to a pair of coordinates in the base field.
@@ -360,10 +363,10 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
  * @param[out] Q			- the element to assign.
  * @param[out] P			- the G_1 element storing the coordinates.
  */
-#define g2_set_g1(Q, P)																												\
+#define g2_set_g1(Q, P)																								\
 	fp_copy(RLC_G2_BASEF((Q)->x), (P)->x);																			\
-  fp_copy(RLC_G2_BASEF((Q)->y), (P)->y);																			\
-  fp_copy(RLC_G2_BASEF((Q)->z), (P)->z);																			\
+	fp_copy(RLC_G2_BASEF((Q)->y), (P)->y);																			\
+	fp_copy(RLC_G2_BASEF((Q)->z), (P)->z);																			\
 
 /**
  * Assigns a G_T element to zero.
