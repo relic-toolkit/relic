@@ -24,7 +24,7 @@
 /**
  * @file
  *
- * Implementation of Miller addition for curves of embedding degree 12.
+ * Implementation of Miller addition for curves of embedding degree 16.
  *
  * @ingroup pp
  */
@@ -61,12 +61,13 @@ void pp_add_k16_basic(fp16_t l, ep4_t r, const ep4_t q, const ep_t p) {
 			zero ^= 1;
 		}
 
-		fp_mul(l[one][zero][0], s[0], p->x);
-		fp_mul(l[one][zero][1], s[1], p->x);
-		fp_mul(l[one][zero][2], s[2], p->x);
+		fp_mul(l[one][zero][0][0], s[0][0], p->x);
+		fp_mul(l[one][zero][0][1], s[0][1], p->x);
+		fp_mul(l[one][zero][1][0], s[1][0], p->x);
+		fp_mul(l[one][zero][1][1], s[1][1], p->x);
 		fp4_mul(l[one][one], s, t->x);
 		fp4_sub(l[one][one], t->y, l[one][one]);
-		fp_neg(l[zero][zero][0], p->y);
+		fp_copy(l[zero][zero][0][0], p->y);
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -84,7 +85,7 @@ void pp_add_k16_basic(fp16_t l, ep4_t r, const ep4_t q, const ep_t p) {
 #if PP_EXT == BASIC || !defined(STRIP)
 
 void pp_add_k16_projc_basic(fp16_t l, ep4_t r, const ep4_t q, const ep_t p) {
-	fp4_t t0, t1, t2, t3, t4;
+	fp4_t t0, t1, t2, t3, t4, t5;
 	int one = 1, zero = 0;
 
 	fp4_null(t0);
@@ -93,67 +94,73 @@ void pp_add_k16_projc_basic(fp16_t l, ep4_t r, const ep4_t q, const ep_t p) {
 	fp4_null(t3);
 	fp4_null(t4);
 
-	if (ep4_curve_is_twist() == RLC_EP_MTYPE) {
-		one ^= 1;
-		zero ^= 1;
-	}
-
 	RLC_TRY {
 		fp4_new(t0);
 		fp4_new(t1);
 		fp4_new(t2);
 		fp4_new(t3);
 		fp4_new(t4);
+		fp4_new(t5);
 
-		/* B = t0 = x1 - x2 * z1. */
-		fp4_mul(t0, r->z, q->x);
-		fp4_sub(t0, r->x, t0);
-		/* A = t1 = y1 - y2 * z1. */
-		fp4_mul(t1, r->z, q->y);
-		fp4_sub(t1, r->y, t1);
+		if (ep4_curve_is_twist() == RLC_EP_MTYPE) {
+			one ^= 1;
+			zero ^= 1;
+		}
 
-		/* D = B^2. */
-		fp4_sqr(t2, t0);
-		/* G = x1 * D. */
-		fp4_mul(r->x, r->x, t2);
-		/* E = B^3. */
-		fp4_mul(t2, t2, t0);
-		/* C = A^2. */
-		fp4_sqr(t3, t1);
-		/* F = E + z1 * C. */
-		fp4_mul(t3, t3, r->z);
-		fp4_add(t3, t2, t3);
+		/* t0 = A = Z1^2, t1 = B = X2*Z1. */
+		fp4_sqr(t0, r->z);
+		fp4_mul(t1, r->z, q->x);
 
-		/* l10 = - (A * xp). */
-		fp_neg(t4[0], p->x);
-		fp_mul(l[one][zero][0], t1[0], t4[0]);
-		fp_mul(l[one][zero][1], t1[1], t4[0]);
-		fp_mul(l[one][zero][2], t1[2], t4[0]);
+		/* t0 = C = y2*A, t2 = D = (x1 - B) */
+		fp4_mul(t0, t0, q->y);
+		fp4_sub(t2, r->x, t1);
 
-		/* t4 = B * x2. */
-		fp4_mul(t4, q->x, t1);
+		/* t3 = E = 2*(y1 - C), t4 = F = 2*D*z1, t2 = G = 4*D*F. */
+		fp4_sub(t3, r->y, t0);
+		fp4_dbl(t3, t3);
+		fp4_dbl(t2, t2);
+		fp4_mul(t4, t2, r->z);
+		fp4_mul(t2, t2, t4);
+		fp4_dbl(t2, t2);
 
-		/* H = F - 2 * G. */
-		fp4_sub(t3, t3, r->x);
-		fp4_sub(t3, t3, r->x);
-		/* y3 = A * (G - H) - y1 * E. */
-		fp4_sub(r->x, r->x, t3);
-		fp4_mul(t1, t1, r->x);
-		fp4_mul(r->y, t2, r->y);
-		fp4_sub(r->y, t1, r->y);
-		/* x3 = B * H. */
-		fp4_mul(r->x, t0, t3);
-		/* z3 = z1 * E. */
-		fp4_mul(r->z, r->z, t2);
+		/* l = E*X2 - F*Y2 - E*xQ + F*yQ. */
+		fp4_mul(l[one][one], t3, q->x);
+		fp4_mul(t0, t4, q->y);
+		fp4_sub(l[one][one], l[one][one], t0);
+		fp_mul(l[one][zero][0][0], t3[0][0], p->x);
+		fp_mul(l[one][zero][0][1], t3[0][1], p->x);
+		fp_mul(l[one][zero][1][0], t3[1][0], p->x);
+		fp_mul(l[one][zero][1][1], t3[1][1], p->x);
+		fp_mul(l[zero][zero][0][0], t4[0][0], p->y);
+		fp_mul(l[zero][zero][0][1], t4[0][1], p->y);
+		fp_mul(l[zero][zero][1][0], t4[1][0], p->y);
+		fp_mul(l[zero][zero][1][1], t4[1][1], p->y);
 
-		/* l11 = J = A * x2 - B * y2. */
-		fp4_mul(t2, q->y, t0);
-		fp4_sub(l[one][one], t4, t2);
+		/* z3 = F^2, t4 = (F + E)^2, t3 = E^2. */
+		fp4_sqr(r->z, t4);
+		fp4_add(t4, t4, t3);
+		fp4_sqr(t4, t4);
+		fp4_sqr(t3, t3);
 
-		/* l00 = B * yp. */
-		fp_mul(l[zero][zero][0], t0[0], p->y);
-		fp_mul(l[zero][zero][1], t0[1], p->y);
-		fp_mul(l[zero][zero][2], t0[2], p->y);
+		/* t5 = x3 = 2*E^2 - (x1 + B)*G. */
+		fp4_add(t1, t1, r->x);
+		fp4_mul(t1, t1, t2);
+		fp4_dbl(t5, t3);
+		fp4_sub(t5, t5, t1);
+
+		/* y3 = ((F + E)^2 - E^2 - F^2)*(x1*G - x3) - y1*G^2. */
+		fp4_sub(t4, t4, r->z);
+		fp4_sub(t4, t4, t3);
+		fp4_mul(t1, r->x, t2);
+		fp4_sub(t1, t1, t5);
+		fp4_mul(t4, t4, t1);
+		fp4_sqr(t2, t2);
+		fp4_mul(r->y, r->y, t2);
+		fp4_sub(r->y, t4, r->y);
+
+		/* Z3 = 2*F^2. */
+		fp4_dbl(r->z, r->z);
+		fp4_copy(r->x, t5);
 
 		r->coord = PROJC;
 	}
@@ -166,6 +173,7 @@ void pp_add_k16_projc_basic(fp16_t l, ep4_t r, const ep4_t q, const ep_t p) {
 		fp4_free(t2);
 		fp4_free(t3);
 		fp4_free(t4);
+		fp4_free(t5);
 	}
 }
 
@@ -174,76 +182,82 @@ void pp_add_k16_projc_basic(fp16_t l, ep4_t r, const ep4_t q, const ep_t p) {
 #if PP_EXT == LAZYR || !defined(STRIP)
 
 void pp_add_k16_projc_lazyr(fp16_t l, ep4_t r, const ep4_t q, const ep_t p) {
-	fp4_t t0, t1, t2, t3;
-	dv3_t u0, u1;
+	fp4_t t0, t1, t2, t3, t4, t5;
 	int one = 1, zero = 0;
 
 	fp4_null(t0);
 	fp4_null(t1);
 	fp4_null(t2);
 	fp4_null(t3);
-	dv3_null(u0);
-	dv3_null(u1);
-
-	if (ep4_curve_is_twist() == RLC_EP_MTYPE) {
-		one ^= 1;
-		zero ^= 1;
-	}
+	fp4_null(t4);
 
 	RLC_TRY {
 		fp4_new(t0);
 		fp4_new(t1);
 		fp4_new(t2);
 		fp4_new(t3);
-		dv3_new(u0);
-		dv3_new(u1);
+		fp4_new(t4);
+		fp4_new(t5);
 
-		fp4_mul(t0, r->z, q->x);
-		fp4_sub(t0, r->x, t0);
-		fp4_mul(t1, r->z, q->y);
-		fp4_sub(t1, r->y, t1);
+		if (ep4_curve_is_twist() == RLC_EP_MTYPE) {
+			one ^= 1;
+			zero ^= 1;
+		}
 
-		fp4_sqr(t2, t0);
-		fp4_mul(r->x, t2, r->x);
-		fp4_mul(t2, t0, t2);
-		fp4_sqr(t3, t1);
-		fp4_mul(t3, t3, r->z);
-		fp4_add(t3, t2, t3);
+		/* t0 = A = Z1^2, t1 = B = X2*Z1. */
+		fp4_sqr(t0, r->z);
+		fp4_mul(t1, r->z, q->x);
 
-		fp4_sub(t3, t3, r->x);
-		fp4_sub(t3, t3, r->x);
-		fp4_sub(r->x, r->x, t3);
+		/* t0 = C = y2*A, t2 = D = (x1 - B) */
+		fp4_mul(t0, t0, q->y);
+		fp4_sub(t2, r->x, t1);
 
-		fp2_muln_low(u0[0], t1[0], r->x[0]);
-		fp2_muln_low(u0[1], t1[1], r->x[1]);
-		fp2_muln_low(u1[0], t2[0], r->y[0]);
-		fp2_muln_low(u1[1], t2[1], r->y[1]);
+		/* t3 = E = 2*(y1 - C), t4 = F = 2*D*z1, t2 = G = 4*D*F. */
+		fp4_sub(t3, r->y, t0);
+		fp4_dbl(t3, t3);
+		fp4_dbl(t2, t2);
+		fp4_mul(t4, t2, r->z);
+		fp4_mul(t2, t2, t4);
+		fp4_dbl(t2, t2);
 
-		fp2_subc_low(u1[0], u0[0], u1[0]);
-		fp2_subc_low(u1[1], u0[1], u1[1]);
-		fp2_rdcn_low(r->y[0], u1[0]);
-		fp2_rdcn_low(r->y[1], u1[1]);
-		fp4_mul(r->x, t0, t3);
-		fp4_mul(r->z, r->z, t2);
+		/* l = E*X2 - F*Y2 - E*xQ + F*yQ. */
+		fp4_mul(l[one][one], t3, q->x);
+		fp4_mul(t0, t4, q->y);
+		fp4_sub(l[one][one], l[one][one], t0);
+		fp_mul(l[one][zero][0][0], t3[0][0], p->x);
+		fp_mul(l[one][zero][0][1], t3[0][1], p->x);
+		fp_mul(l[one][zero][1][0], t3[1][0], p->x);
+		fp_mul(l[one][zero][1][1], t3[1][1], p->x);
+		fp_mul(l[zero][zero][0][0], t4[0][0], p->y);
+		fp_mul(l[zero][zero][0][1], t4[0][1], p->y);
+		fp_mul(l[zero][zero][1][0], t4[1][0], p->y);
+		fp_mul(l[zero][zero][1][1], t4[1][1], p->y);
 
-		fp_neg(t3[0], p->x);
-		fp_mul(l[one][zero][0], t1[0], t3[0]);
-		fp_mul(l[one][zero][1], t1[1], t3[0]);
-		fp_mul(l[one][zero][2], t1[2], t3[0]);
+		/* z3 = F^2, t4 = (F + E)^2, t3 = E^2. */
+		fp4_sqr(r->z, t4);
+		fp4_add(t4, t4, t3);
+		fp4_sqr(t4, t4);
+		fp4_sqr(t3, t3);
 
-		fp2_muln_low(u0[0], q->x[0], t1[0]);
-		fp2_muln_low(u0[1], q->x[1], t1[1]);
-		fp2_muln_low(u1[0], q->y[0], t0[0]);
-		fp2_muln_low(u1[1], q->y[1], t0[1]);
+		/* t5 = x3 = 2*E^2 - (x1 + B)*G. */
+		fp4_add(t1, t1, r->x);
+		fp4_mul(t1, t1, t2);
+		fp4_dbl(t5, t3);
+		fp4_sub(t5, t5, t1);
 
-		fp2_subc_low(u0[0], u0[0], u1[0]);
-		fp2_subc_low(u0[1], u0[1], u1[1]);
-		fp2_rdcn_low(l[one][one][0], u0[0]);
-		fp2_rdcn_low(l[one][one][1], u0[1]);
+		/* y3 = ((F + E)^2 - E^2 - F^2)*(x1*G - x3) - y1*G^2. */
+		fp4_sub(t4, t4, r->z);
+		fp4_sub(t4, t4, t3);
+		fp4_mul(t1, r->x, t2);
+		fp4_sub(t1, t1, t5);
+		fp4_mul(t4, t4, t1);
+		fp4_sqr(t2, t2);
+		fp4_mul(r->y, r->y, t2);
+		fp4_sub(r->y, t4, r->y);
 
-		fp_mul(l[zero][zero][0], t0[0], p->y);
-		fp_mul(l[zero][zero][1], t0[1], p->y);
-		fp_mul(l[zero][zero][2], t0[2], p->y);
+		/* Z3 = 2*F^2. */
+		fp4_dbl(r->z, r->z);
+		fp4_copy(r->x, t5);
 
 		r->coord = PROJC;
 	}
@@ -255,8 +269,8 @@ void pp_add_k16_projc_lazyr(fp16_t l, ep4_t r, const ep4_t q, const ep_t p) {
 		fp4_free(t1);
 		fp4_free(t2);
 		fp4_free(t3);
-		dv3_free(u0);
-		dv3_free(u1);
+		fp4_free(t4);
+		fp4_free(t5);
 	}
 }
 
@@ -286,7 +300,7 @@ void pp_add_lit_k16(fp16_t l, ep_t r, const ep_t p, const ep4_t q) {
 		fp_mul(t2, p->x, t1);
 		r->coord = PROJC;
 
-		fp_mul(l[zero][zero][0], t0, p->y);
+		fp_mul(l[zero][zero][0][0], t0, p->y);
 		fp_sub(l[zero][zero][0], t2, l[zero][zero][0]);
 
 		fp_mul(l[zero][two][0], q->x[0], t1);

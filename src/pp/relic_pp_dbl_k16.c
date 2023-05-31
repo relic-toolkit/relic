@@ -24,7 +24,7 @@
 /**
  * @file
  *
- * Implementation of Miller doubling for curves of embedding degree 12.
+ * Implementation of Miller doubling for curves of embedding degree 16.
  *
  * @ingroup pp
  */
@@ -109,119 +109,77 @@ void pp_dbl_k16_projc_basic(fp16_t l, ep4_t r, const ep4_t q, const ep_t p) {
 			zero ^= 1;
 		}
 
-		/* A = x1^2. */
+		/* t0 = A = X1^2, t1 = B = Y1^2, t2 = C = Z1^2, t3 = D = a*C. */
 		fp4_sqr(t0, q->x);
-		/* B = y1^2. */
 		fp4_sqr(t1, q->y);
-		/* C = z1^2. */
 		fp4_sqr(t2, q->z);
-
-		if (ep_curve_opt_a() == RLC_ZERO) {
-			/* D = 3bC, general b. */
-			fp4_dbl(t3, t2);
-			fp4_add(t3, t3, t2);
-			ep4_curve_get_b(t4);
-			fp4_mul(t3, t3, t4);
-			/* E = (x1 + y1)^2 - A - B. */
-			fp4_add(t4, q->x, q->y);
-			fp4_sqr(t4, t4);
-			fp4_sub(t4, t4, t0);
-			fp4_sub(t4, t4, t1);
-
-			/* F = (y1 + z1)^2 - B - C. */
-			fp4_add(t5, q->y, q->z);
-			fp4_sqr(t5, t5);
-			fp4_sub(t5, t5, t1);
-			fp4_sub(t5, t5, t2);
-
-			/* G = 3D. */
-			fp4_dbl(t6, t3);
-			fp4_add(t6, t6, t3);
-
-			/* x3 = E * (B - G). */
-			fp4_sub(r->x, t1, t6);
-			fp4_mul(r->x, r->x, t4);
-
-			/* y3 = (B + G)^2 -12D^2. */
-			fp4_add(t6, t6, t1);
-			fp4_sqr(t6, t6);
-			fp4_sqr(t2, t3);
-			fp4_dbl(r->y, t2);
-			fp4_dbl(t2, r->y);
-			fp4_dbl(r->y, t2);
-			fp4_add(r->y, r->y, t2);
-			fp4_sub(r->y, t6, r->y);
-
-			/* z3 = 4B * F. */
-			fp4_dbl(r->z, t1);
-			fp4_dbl(r->z, r->z);
-			fp4_mul(r->z, r->z, t5);
-
-			/* l11 = D - B. */
-			fp4_sub(l[one][one], t3, t1);
-
-			/* l10 = (3 * xp) * A. */
-			fp_mul(l[one][zero][0][0], p->x, t0[0][0]);
-			fp_mul(l[one][zero][0][1], p->x, t0[0][1]);
-			fp_mul(l[one][zero][1][0], p->x, t0[1][0]);
-			fp_mul(l[one][zero][1][1], p->x, t0[1][1]);
-
-			/* l00 = F * (-yp). */
-			fp_mul(l[zero][zero][0][0], t5[0][0], p->y);
-			fp_mul(l[zero][zero][0][1], t5[0][1], p->y);
-			fp_mul(l[zero][zero][1][0], t5[1][0], p->y);
-			fp_mul(l[zero][zero][1][1], t5[1][1], p->y);
-		} else {
-			/* D = aC, general a. */
-			fp4_mul_art(t3, t2);
-
-			/* X3 = (A - D)^2, l00 = (X1 + A - D)^2 - X3 - A. */
-			fp4_sub(t6, t0, t3);
-			fp4_add(l[one][one], t6, q->x);
-			fp4_sqr(l[one][one], l[one][one]);
-			fp4_sqr(r->x, t6);
-			fp4_sub(l[one][one], l[one][one], r->x);
-			fp4_sub(l[one][one], l[one][one], t0);
-
-        	/* E = 2*(A + D)^2 - X3. */
-			fp4_add(t5, t0, t3);
-			fp4_sqr(t5, t5);
-			fp4_dbl(t5, t5)	;
-			fp4_sub(t5, t5, r->x);
-
-			/* F = ((A - D + Y1)^2 -B - X3). */
-			fp4_add(t6, t6, q->y);
-			fp4_sqr(t6, t6);
-			fp4_sub(t6, t6, t1);
-			fp4_sub(t6, t6, r->x);
-
-			/* l = - 2*Z1*(3*A + D)*xP + 2*((Y1+Z1)^2-B-C)*yP. */
-			fp4_dbl(l[one][zero], t0);
-			fp4_dbl(l[one][zero], l[one][zero]);
-			fp4_add(l[one][zero], l[one][zero], t3);
-			fp4_mul(l[one][zero], l[one][zero], q->z);
-			fp_mul(l[one][zero][0][0], l[one][zero][0][0], p->x);
-			fp_mul(l[one][zero][0][1], l[one][zero][0][1], p->x);
-			fp_mul(l[one][zero][1][0], l[one][zero][1][0], p->x);
-			fp_mul(l[one][zero][1][1], l[one][zero][1][1], p->x);	
-			fp4_dbl(l[one][zero], l[one][zero]);
-			fp4_neg(l[one][zero], l[one][zero]);
-
-			fp4_add(l[zero][zero], q->y, q->z);
-			fp4_sqr(l[zero][zero], l[zero][zero]);
-			fp4_sub(l[zero][zero], l[zero][zero], t1);
-			fp4_sub(l[zero][zero], l[zero][zero], t2);
-			fp4_dbl(l[zero][zero], l[zero][zero]);
-			fp_mul(l[zero][zero][0][0], l[zero][zero][0][0], p->y);
-			fp_mul(l[zero][zero][0][1], l[zero][zero][0][1], p->y);
-			fp_mul(l[zero][zero][1][0], l[zero][zero][1][0], p->y);
-			fp_mul(l[zero][zero][1][1], l[zero][zero][1][1], p->y);	
-
-			/* Y3 = E*F, Z3 = 4*B. */
-			fp4_mul(r->y, t5, t6);
-			fp4_dbl(r->z, t1);
-			fp4_dbl(r->z, r->z);
+		switch (ep_curve_opt_a()) {
+			case RLC_ZERO:
+				fp4_zero(t3);
+				break;
+			case RLC_ONE:
+				fp4_copy(t3, t2);
+				break;
+#if FP_RDC != MONTY
+			case RLC_TINY:
+				fp_mul_dig(t3[0][0], t2[0][0], ep_curve_get_a()[0]);
+				fp_mul_dig(t3[0][1], t2[0][1], ep_curve_get_a()[0]);
+				fp_mul_dig(t3[1][0], t2[1][0], ep_curve_get_a()[0]);
+				fp_mul_dig(t3[1][1], t2[1][1], ep_curve_get_a()[0]);
+				break;
+#endif
+			default:
+				fp_mul(t3[0][0], t2[0][0], ep_curve_get_a());
+				fp_mul(t3[0][1], t2[0][1], ep_curve_get_a());
+				fp_mul(t3[1][0], t2[1][0], ep_curve_get_a());
+				fp_mul(t3[1][1], t2[1][1], ep_curve_get_a());
+				break;
 		}
+		fp4_mul_art(t3, t3);
+
+		/* x3 = (A - D)^2, l11 = (A - D + x1)^2 - x3 - A. */
+		fp4_sub(t5, t0, t3);
+		fp4_add(l[one][one], t5, q->x);
+		fp4_sqr(r->x, t5);
+		fp4_sqr(l[one][one], l[one][one]);
+		fp4_sub(l[one][one], l[one][one], r->x);
+		fp4_sub(l[one][one], l[one][one], t0);
+
+		/* l10 := -xp*z1*2*(3A + D). */
+		fp4_add(t6, t0, t3);
+		fp4_dbl(t0, t0);
+		fp4_add(t0, t0, t6);
+		fp4_dbl(t0, t0);
+		fp4_mul(l[one][zero], t0, q->z);
+		fp_mul(l[one][zero][0][0], l[one][zero][0][0], p->x);
+		fp_mul(l[one][zero][0][1], l[one][zero][0][1], p->x);
+		fp_mul(l[one][zero][1][0], l[one][zero][1][0], p->x);
+		fp_mul(l[one][zero][1][1], l[one][zero][1][1], p->x);
+
+		/* l01 = 2*((y1 + z1)^2 - B - C)*yP. */
+		fp4_add(l[zero][zero], q->y, q->z);
+		fp4_sqr(l[zero][zero], l[zero][zero]);
+		fp4_sub(l[zero][zero], l[zero][zero], t1);
+		fp4_sub(l[zero][zero], l[zero][zero], t2);
+		fp4_dbl(l[zero][zero], l[zero][zero]);
+		fp_mul(l[zero][zero][0][0], l[zero][zero][0][0], p->y);
+		fp_mul(l[zero][zero][0][1], l[zero][zero][0][1], p->y);
+		fp_mul(l[zero][zero][1][0], l[zero][zero][1][0], p->y);
+		fp_mul(l[zero][zero][1][1], l[zero][zero][1][1], p->y);
+
+		/* t4 = E = 2*(A + D)^2 - x3. */
+		fp4_sqr(t4, t6);
+		fp4_dbl(t4, t4);
+		fp4_sub(t4, t4, r->x);
+		/* y3 = E * ((A - D + y1)^2 - B - x3). */
+		fp4_add(r->y, t5, q->y);
+		fp4_sqr(r->y, r->y);
+		fp4_sub(r->y, r->y, t1);
+		fp4_sub(r->y, r->y, r->x);
+		fp4_mul(r->y, r->y, t4);
+		/* z3 = 4*B. */
+		fp4_dbl(r->z, t1);
+		fp4_dbl(r->z, r->z);
 
 		r->coord = PROJC;
 	}
@@ -274,67 +232,77 @@ void pp_dbl_k16_projc_lazyr(fp16_t l, ep4_t r, const ep4_t q, const ep_t p) {
 			zero ^= 1;
 		}
 
-		/* A = x1^2. */
+		/* t0 = A = X1^2, t1 = B = Y1^2, t2 = C = Z1^2, t3 = D = a*C. */
 		fp4_sqr(t0, q->x);
-		/* B = y1^2. */
 		fp4_sqr(t1, q->y);
-		/* C = z1^2. */
 		fp4_sqr(t2, q->z);
-		/* D = 3bC, for general b. */
-		fp4_dbl(t3, t2);
-		fp4_add(t3, t3, t2);
-		ep4_curve_get_b(t4);
-		fp4_mul(t3, t3, t4);
-		/* E = (x1 + y1)^2 - A - B. */
-		fp4_add(t4, q->x, q->y);
-		fp4_sqr(t4, t4);
-		fp4_sub(t4, t4, t0);
-		fp4_sub(t4, t4, t1);
+		switch (ep_curve_opt_a()) {
+			case RLC_ZERO:
+				fp4_zero(t3);
+				break;
+			case RLC_ONE:
+				fp4_copy(t3, t2);
+				break;
+#if FP_RDC != MONTY
+			case RLC_TINY:
+				fp_mul_dig(t3[0][0], t2[0][0], ep_curve_get_a()[0]);
+				fp_mul_dig(t3[0][1], t2[0][1], ep_curve_get_a()[0]);
+				fp_mul_dig(t3[1][0], t2[1][0], ep_curve_get_a()[0]);
+				fp_mul_dig(t3[1][1], t2[1][1], ep_curve_get_a()[0]);
+				break;
+#endif
+			default:
+				fp_mul(t3[0][0], t2[0][0], ep_curve_get_a());
+				fp_mul(t3[0][1], t2[0][1], ep_curve_get_a());
+				fp_mul(t3[1][0], t2[1][0], ep_curve_get_a());
+				fp_mul(t3[1][1], t2[1][1], ep_curve_get_a());
+				break;
+		}
+		fp4_mul_art(t3, t3);
 
-		/* F = (y1 + z1)^2 - B - C. */
-		fp4_add(t5, q->y, q->z);
-		fp4_sqr(t5, t5);
-		fp4_sub(t5, t5, t1);
-		fp4_sub(t5, t5, t2);
+		/* x3 = (A - D)^2, l11 = (A - D + x1)^2 - x3 - A. */
+		fp4_sub(t5, t0, t3);
+		fp4_add(l[one][one], t5, q->x);
+		fp4_sqr(r->x, t5);
+		fp4_sqr(l[one][one], l[one][one]);
+		fp4_sub(l[one][one], l[one][one], r->x);
+		fp4_sub(l[one][one], l[one][one], t0);
 
-		/* G = 3D. */
-		fp4_dbl(t6, t3);
-		fp4_add(t6, t6, t3);
+		/* l10 := -xp*z1*2*(3A + D). */
+		fp4_add(t6, t0, t3);
+		fp4_dbl(t0, t0);
+		fp4_add(t0, t0, t6);
+		fp4_dbl(t0, t0);
+		fp4_mul(l[one][zero], t0, q->z);
+		fp_mul(l[one][zero][0][0], l[one][zero][0][0], p->x);
+		fp_mul(l[one][zero][0][1], l[one][zero][0][1], p->x);
+		fp_mul(l[one][zero][1][0], l[one][zero][1][0], p->x);
+		fp_mul(l[one][zero][1][1], l[one][zero][1][1], p->x);
 
-		/* x3 = E * (B - G). */
-		fp4_sub(r->x, t1, t6);
-		fp4_mul(r->x, r->x, t4);
+		/* l01 = 2*((y1 + z1)^2 - B - C)*yP. */
+		fp4_add(l[zero][zero], q->y, q->z);
+		fp4_sqr(l[zero][zero], l[zero][zero]);
+		fp4_sub(l[zero][zero], l[zero][zero], t1);
+		fp4_sub(l[zero][zero], l[zero][zero], t2);
+		fp4_dbl(l[zero][zero], l[zero][zero]);
+		fp_mul(l[zero][zero][0][0], l[zero][zero][0][0], p->y);
+		fp_mul(l[zero][zero][0][1], l[zero][zero][0][1], p->y);
+		fp_mul(l[zero][zero][1][0], l[zero][zero][1][0], p->y);
+		fp_mul(l[zero][zero][1][1], l[zero][zero][1][1], p->y);
 
-		/* y3 = (B + G)^2 -12D^2. */
-		fp4_add(t6, t6, t1);
-		fp4_sqr(t6, t6);
-		fp4_sqr(t2, t3);
-		fp4_dbl(r->y, t2);
-		fp4_dbl(t2, r->y);
-		fp4_dbl(r->y, t2);
-		fp4_add(r->y, r->y, t2);
-		fp4_sub(r->y, t6, r->y);
-
-		/* z3 = 4B * F. */
+		/* t4 = E = 2*(A + D)^2 - x3. */
+		fp4_sqr(t4, t6);
+		fp4_dbl(t4, t4);
+		fp4_sub(t4, t4, r->x);
+		/* y3 = E * ((A - D + y1)^2 - B - x3). */
+		fp4_add(r->y, t5, q->y);
+		fp4_sqr(r->y, r->y);
+		fp4_sub(r->y, r->y, t1);
+		fp4_sub(r->y, r->y, r->x);
+		fp4_mul(r->y, r->y, t4);
+		/* z3 = 4*B. */
 		fp4_dbl(r->z, t1);
 		fp4_dbl(r->z, r->z);
-		fp4_mul(r->z, r->z, t5);
-
-		/* l00 = D - B. */
-		fp4_sub(l[one][one], t3, t1);
-
-		/* l10 = (3 * xp) * A. */
-		fp_mul(l[one][zero][0][0], p->x, t0[0][0]);
-		fp_mul(l[one][zero][0][1], p->x, t0[0][1]);
-		fp_mul(l[one][zero][1][0], p->x, t0[1][0]);
-		fp_mul(l[one][zero][1][1], p->x, t0[1][1]);
-
-		/* l00 = F * (-yp). */
-		fp_mul(l[zero][zero][0][0], t5[0][0], p->y);
-		fp_mul(l[zero][zero][0][1], t5[0][1], p->y);
-		fp_mul(l[zero][zero][1][0], t5[1][0], p->y);
-		fp_mul(l[zero][zero][1][1], t5[1][1], p->y);
-
 		r->coord = PROJC;
 	}
 	RLC_CATCH_ANY {

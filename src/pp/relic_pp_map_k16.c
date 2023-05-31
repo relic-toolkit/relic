@@ -24,7 +24,7 @@
 /**
  * @file
  *
- * Implementation of pairing computation for curves with embedding degree 12.
+ * Implementation of pairing computation for curves with embedding degree 16.
  *
  * @ingroup pp
  */

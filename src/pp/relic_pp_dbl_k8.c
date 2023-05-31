@@ -24,7 +24,7 @@
 /**
  * @file
  *
- * Implementation of Miller doubling for curves of embedding degree 2.
+ * Implementation of Miller doubling for curves of embedding degree 8.
  *
  * @ingroup pp
  */
