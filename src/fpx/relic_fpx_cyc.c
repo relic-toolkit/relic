@@ -916,7 +916,7 @@ void fp12_exp_cyc_sps(fp12_t c, const fp12_t a, const int *b, size_t len,
 }
 
 void fp16_conv_cyc(fp16_t c, const fp16_t a) {
-	fp16_t t, u;
+	fp16_t t;
 
 	fp16_null(t);
 
@@ -1126,6 +1126,7 @@ void fp16_exp_cyc_sim(fp16_t e, const fp16_t a, const bn_t b, const fp16_t c,
 		}
 	}
 }
+
 
 void fp18_conv_cyc(fp18_t c, const fp18_t a) {
 	fp18_t t;

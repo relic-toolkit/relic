@@ -100,6 +100,9 @@ void pp_norm_k16(ep4_t r, const ep4_t p) {
 	fp4_inv(r->z, p->z);
 	fp4_mul(r->x, p->x, r->z);
 	fp4_mul(r->y, p->y, r->z);
+	if (ep_curve_opt_b() == RLC_ZERO) {
+		fp4_mul(r->y, r->y, r->z);
+	}
 	fp4_set_dig(r->z, 1);
 	r->coord = BASIC;
 #endif

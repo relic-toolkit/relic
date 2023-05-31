@@ -225,17 +225,23 @@ int g2_is_valid(const g2_t a) {
 	}
 
 	bn_t n;
-	g2_t u, v;
+	g2_t s, t, u, v, w;
 	int r = 0;
 
 	bn_null(n);
+	g2_null(s);
+	g2_null(t);
 	g2_null(u);
 	g2_null(v);
+	g2_null(w);
 
 	RLC_TRY {
 		bn_new(n);
+		g2_new(s);
+		g2_new(t);
 		g2_new(u);
 		g2_new(v);
+		g2_new(w);
 
 		switch (ep_curve_is_pairf()) {
 #if defined(EP_ENDOM) && !defined(STRIP)
@@ -274,6 +280,48 @@ int g2_is_valid(const g2_t a) {
                 g2_dbl(v, v);
 				r = g2_on_curve(a) && (g2_cmp(u, v) == RLC_EQ);
 				break;
+			case EP_K16:
+				fp_prime_get_par(n);
+				/* Compute s = (u - 25)/70. */
+				bn_sub_dig(n, n, 25);
+				bn_div_dig(n, n, 70);
+				/* TODO: optimize further. */
+				/* [27*s+10, 3*s+2, 15*s+6, 13*s+5, 19*s+7, 21*s+7, 5*s+2, s] */
+				g2_mul_any(u, a, n);	/* u = a^s*/
+				g2_dbl(s, u);
+				g2_frb(w, u, 7);
+				g2_add(v, u, a);
+				g2_dbl(v, v);
+				g2_add(t, v, u);		/* t = a^(3s + 2) */
+				g2_copy(u, v);
+				g2_frb(v, t, 1);
+				g2_add(w, w, v);
+				g2_add(t, t, s);		/* t = a^(5s + 2). */
+				g2_frb(v, t, 6);
+				g2_add(w, w, v);
+				g2_dbl(v, t);
+				g2_add(t, t, v);		/* t = a^(15s + 6). */
+				g2_frb(v, t, 2);
+				g2_add(w, w, v);
+				g2_sub(v, t, s);
+				g2_sub(v, v, a);		/* t = a^(13s + 5). */
+				g2_frb(v, v, 3);
+				g2_add(w, w, v);
+				g2_add(t, t, a);		/* t = a^(15s + 7). */
+				g2_dbl(v, s);
+				g2_add(t, t, v);		/* t = a^(19s + 7). */
+				g2_frb(v, t, 4);
+				g2_add(w, w, v);
+				g2_add(t, t, s);		/* t = a^(21s + 7). */
+				g2_frb(v, t, 5);
+				g2_add(w, w, v);
+				g2_add(t, t, u);		/* t = a^(23s + 9). */
+				g2_dbl(s, s);
+				g2_add(t, t, s);
+				g2_add(t, t, a);		/* t = a^(27s + 10). */
+				g2_neg(t, t);
+				r = g2_on_curve(a) && (g2_cmp(w, t) == RLC_EQ);
+				break;
 			case EP_K18:
 				/* Check that P + u*psi2P + 2*psi3P == \mathcal{O}. */
 				fp_prime_get_par(n);
@@ -311,8 +359,11 @@ int g2_is_valid(const g2_t a) {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		bn_free(n);
+		g2_free(s);
+		g2_free(t);
 		g2_free(u);
 		g2_free(v);
+		g2_free(w);
 	}
 
 	return r;

@@ -45,48 +45,82 @@
  * @param[in] p				- the point to multiply.
  */
 static void ep4_mul_cof_k16(ep4_t r, const ep4_t p) {
-	bn_t z;
-	ep4_t t0, t1, t2, t3;
+	bn_t x;
+	ep4_t t0, t1, t2, t3, t4, t5;
 
 	ep4_null(t0);
 	ep4_null(t1);
 	ep4_null(t2);
 	ep4_null(t3);
-	bn_null(z);
+	ep4_null(t4);
+	ep4_null(t5);
+	bn_null(x);
 
 	RLC_TRY {
-		bn_new(z);
+		bn_new(x);
 		ep4_new(t0);
 		ep4_new(t1);
 		ep4_new(t2);
 		ep4_new(t3);
+		ep4_new(t4);
+		ep4_new(t5);
 
-		fp_prime_get_par(z);
+		fp_prime_get_par(x);
 
-		bn_sub_dig(z, z, 1);
-		ep4_mul_basic(t0, p, z);
-		bn_add_dig(z, z, 1);
-		ep4_mul_basic(t1, t0, z);
-		ep4_mul_basic(t2, t1, z);
-		ep4_mul_basic(t3, t2, z);
+		/* [x^3-3*x^2, 3*x^2+11*x, -11*x-7, 2*x^3+14, -2*x^3-4*x^2, 4*x^2-2*x, 2*x+24, x^4+x^3] */
+		ep4_mul_basic(t1, p, x);
+		ep4_mul_basic(t2, t1, x);
+		ep4_mul_basic(t3, t2, x);
 
-		/* Compute t0 = [u - 1]*\psi^3(P). */
-		ep4_frb(t0, t0, 3);
-		/* Compute t2 = [u^2*(u-1)]\psi(P). */
-		ep4_frb(t2, t2, 1);
-		/* Compute t1 = [u*(u-1)]\psi^2(P). */
-		ep4_frb(t1, t1, 2);
-		/* Compute t3 = [u^3(u-1) - 1]P. */
-		ep4_sub(t3, t3, p);
+		ep4_dbl(t0, t2);
+		ep4_sub(t5, t3, t0);
+		ep4_sub(t5, t5, t2);
 
-		ep4_dbl(r, p);
-		ep4_frb(r, r, 4);
-		ep4_add(r, r, t0);
-		ep4_add(r, r, t1);
-		ep4_add(r, r, t2);
-		ep4_add(r, r, t3);
+		ep4_dbl(t0, t0);
+		ep4_dbl(t4, t3);
+		ep4_add(t4, t4, t0);
+		ep4_frb(t4, t4, 4);
+		ep4_sub(t5, t5, t4);
 
-		ep4_norm(r, r);
+		ep4_mul_dig(t4, t1, 11);
+		ep4_add(t4, t4, t2);
+		ep4_add(t4, t4, t2);
+		ep4_add(t4, t4, t2);
+		ep4_frb(t4, t4, 1);
+		ep4_add(t5, t5, t4);
+
+		ep4_dbl(t0, t0);
+		ep4_sub(t4, t0, t1);
+		ep4_sub(t4, t0, t1);
+		ep4_frb(t4, t4, 5);
+		ep4_add(t5, t5, t4);
+
+		ep4_add(t4, t1, p);
+		ep4_mul_dig(t4, t4, 7);
+		ep4_dbl(t0, t1);
+		ep4_dbl(t0, t0);
+		ep4_add(t4, t4, t0);
+		ep4_frb(t4, t4, 2);
+		ep4_sub(t5, t5, t4);
+
+		ep4_dbl(t0, t3);
+		ep4_mul_dig(t4, p, 14);
+		ep4_add(t4, t4, t0);
+		ep4_frb(t4, t4, 3);
+		ep4_add(t5, t5, t4);
+
+		ep4_dbl(t0, t1);
+		ep4_mul_dig(t4, p, 24);
+		ep4_add(t4, t4, t0);
+		ep4_frb(t4, t4, 6);
+		ep4_add(t5, t5, t4);
+
+		ep4_mul_basic(t4, t3, x);
+		ep4_add(t4, t4, t3);
+		ep4_frb(t4, t4, 7);
+		ep4_add(t5, t5, t4);
+
+		ep4_norm(r, t5);
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
@@ -94,7 +128,9 @@ static void ep4_mul_cof_k16(ep4_t r, const ep4_t p) {
 		ep4_free(t1);
 		ep4_free(t2);
 		ep4_free(t3);
-		bn_free(z);
+		ep4_free(t4);
+		ep4_free(t5);
+		bn_free(x);
 
 	}
 }

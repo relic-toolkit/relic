@@ -44,10 +44,8 @@
  * @param[in] a				- the extension field element to exponentiate.
  */
 static void pp_exp_kss(fp16_t c, fp16_t a) {
-	fp16_t t0, t1, t2, t3, t4, t5;
-	const int *b;
+	fp16_t t0, t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12, t13;
 	bn_t x;
-	int l;
 
 	bn_null(x);
 	fp16_null(t0);
@@ -56,6 +54,14 @@ static void pp_exp_kss(fp16_t c, fp16_t a) {
 	fp16_null(t3);
 	fp16_null(t4);
 	fp16_null(t5);
+	fp16_null(t6);
+	fp16_null(t7);
+	fp16_null(t8);
+	fp16_null(t9);
+	fp16_null(t10);
+	fp16_null(t11);
+	fp16_null(t12);
+	fp16_null(t13);
 
 	RLC_TRY {
 		bn_new(x);
@@ -65,7 +71,116 @@ static void pp_exp_kss(fp16_t c, fp16_t a) {
 		fp16_new(t3);
 		fp16_new(t4);
 		fp16_new(t5);
+		fp16_new(t6);
+		fp16_new(t7);
+		fp16_new(t8);
+		fp16_new(t9);
+		fp16_new(t10);
+		fp16_new(t11);
+		fp16_new(t12);
+		fp16_new(t13);
 
+		fp_prime_get_par(x);
+
+		/* First, compute m = f^(p^8 - 1). */
+		fp16_conv_cyc(c, a);
+
+		/* Now compute m^((p^8 + 1) / r). */
+		fp16_sqr_cyc(t0, c);
+		fp16_sqr_cyc(t1, t0);
+
+		bn_add_dig(x, x, 1);
+		fp16_exp_cyc(t2, c, x);
+		fp16_exp_cyc(t3, t2, x);
+		fp16_mul(t4, t3, t1);
+		bn_sub_dig(x, x, 1);
+
+		fp16_exp_cyc(t5, t4, x);
+		fp16_sqr_cyc(t6, t4);
+		fp16_sqr_cyc(t6, t6);
+		fp16_mul(t6, t6, t4);
+		fp16_sqr_cyc(t7, t1);
+		fp16_sqr_cyc(t7, t7);
+		fp16_sqr_cyc(t7, t7);
+		fp16_sqr_cyc(t8, t7);
+		fp16_inv_cyc(t9, t1);
+		fp16_mul(t9, t7, t9);
+		fp16_sqr_cyc(t10, t9);
+		fp16_exp_cyc(t11, t5, x);
+		fp16_exp_cyc(t12, t11, x);
+		fp16_mul(t13, t12, t9);
+
+		fp16_exp_cyc(t9, t13, x);
+		fp16_inv_cyc(t2, t9);
+		fp16_sqr_cyc(t2, t2);
+		fp16_sqr_cyc(t10, t6);
+		fp16_sqr_cyc(t10, t10);
+		fp16_mul(t10, t10, t6);
+		fp16_sqr_cyc(t0, t10);
+		fp16_sqr_cyc(t0, t0);
+		fp16_mul(t10, t10, t0);
+		fp16_inv_cyc(t0, t10);
+		fp16_mul(t0, t2, t0);
+
+		fp16_sqr_cyc(t3, t0);
+		fp16_sqr_cyc(t2, t2);
+		fp16_sqr_cyc(t2, t2);
+		fp16_mul(t2, t2, t9);
+		fp16_mul(t2, t2, t3);
+		fp16_exp_cyc(t3, t9, x);
+		fp16_exp_cyc(t6, t3, x);
+		fp16_exp_cyc(t7, t6, x);
+		fp16_sqr_cyc(t10, t3);
+
+		fp16_sqr_cyc(t9, t5);
+		fp16_sqr_cyc(t9, t9);
+		fp16_mul(t9, t9, t5);
+		fp16_sqr_cyc(t4, t9);
+		fp16_sqr_cyc(t4, t4);
+		fp16_mul(t9, t4, t9);
+		fp16_sqr_cyc(t4, t9);
+		fp16_mul(t4, t4, t9);
+		fp16_mul(t9, t4, t9);
+		fp16_sqr_cyc(t10, t10);
+		fp16_mul(c, t10, t4);
+		fp16_inv_cyc(c, c);
+		fp16_inv_cyc(t3, t3);
+		fp16_mul(t3, t3, t10);
+		fp16_mul(t3, t3, t9);
+		fp16_sqr_cyc(t9, t11);
+		fp16_sqr_cyc(t9, t9);
+		fp16_mul(t11, t11, t9);
+		fp16_sqr_cyc(t9, t11);
+		fp16_mul(t4, t9, t6);
+
+		fp16_sqr_cyc(t6, t6);
+		fp16_sqr_cyc(t10, t9);
+		fp16_sqr_cyc(t10, t10);
+		fp16_mul(t9, t9, t10);
+		fp16_mul(t9, t9, t11);
+		fp16_mul(t9, t9, t6);
+		fp16_exp_dig(t12, t12, 24);
+		fp16_mul(t5, t7, t12);
+		fp16_inv_cyc(t5, t5);
+		fp16_sqr_cyc(t10, t8);
+		fp16_mul(t8, t8, t10);
+		fp16_mul(t6, t8, t1);
+		fp16_mul(t7, t5, t6);
+		fp16_exp_dig(t8, t13, 7);
+		fp16_frb(c, c, 1);
+		fp16_frb(t7, t7, 3);
+		fp16_frb(t3, t3, 5);
+		fp16_frb(t8, t8, 7);
+		fp16_mul(t1, c, t7);
+		fp16_mul(t1, t1, t3);
+		fp16_mul(t1, t1, t8);
+		fp16_frb(t0, t0, 2);
+		fp16_frb(t4, t4, 4);
+		fp16_frb(t2, t2, 6);
+		fp16_mul(t2, t2, t0);
+		fp16_mul(c, t2, t9);
+		fp16_mul(c, c, t1);
+		fp16_mul(c, c, t4);
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -78,6 +193,14 @@ static void pp_exp_kss(fp16_t c, fp16_t a) {
 		fp16_free(t3);
 		fp16_free(t4);
 		fp16_free(t5);
+		fp16_free(t6);
+		fp16_free(t7);
+		fp16_free(t8);
+		fp16_free(t9);
+		fp16_free(t10);
+		fp16_free(t11);
+		fp16_free(t12);
+		fp16_free(t13);
 	}
 }
 

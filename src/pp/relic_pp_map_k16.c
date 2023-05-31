@@ -48,10 +48,10 @@
  * @param[in] n 			- the number of pairings to evaluate.
  * @param[in] a				- the loop parameter.
  */
-static void pp_mil_k16(fp16_t r, ep3_t *t, ep3_t *q, ep_t *p, int m, bn_t a) {
+static void pp_mil_k16(fp16_t r, ep4_t *t, ep4_t *q, ep_t *p, int m, bn_t a) {
 	fp16_t l;
 	ep_t *_p = RLC_ALLOCA(ep_t, m);
-	ep3_t *_q = RLC_ALLOCA(ep3_t, m);
+	ep4_t *_q = RLC_ALLOCA(ep4_t, m);
 	int i, j;
 	size_t len = bn_bits(a) + 1;
 	int8_t s[RLC_FP_BITS + 1];
@@ -69,11 +69,11 @@ static void pp_mil_k16(fp16_t r, ep3_t *t, ep3_t *q, ep_t *p, int m, bn_t a) {
 		}
 		for (j = 0; j < m; j++) {
 			ep_null(_p[j]);
-			ep3_null(_q[j]);
+			ep4_null(_q[j]);
 			ep_new(_p[j]);
-			ep3_new(_q[j]);
-			ep3_copy(t[j], q[j]);
-			ep3_neg(_q[j], q[j]);
+			ep4_new(_q[j]);
+			ep4_copy(t[j], q[j]);
+			ep4_neg(_q[j], q[j]);
 #if EP_ADD == BASIC
 			ep_neg(_p[j], p[j]);
 #else
@@ -126,7 +126,7 @@ static void pp_mil_k16(fp16_t r, ep3_t *t, ep3_t *q, ep_t *p, int m, bn_t a) {
 		fp16_free(l);
 		for (j = 0; j < m; j++) {
 			ep_free(_p[j]);
-			ep3_free(_q[j]);
+			ep4_free(_q[j]);
 		}
 		RLC_FREE(_p);
 		RLC_FREE(_q);
@@ -144,9 +144,9 @@ static void pp_mil_k16(fp16_t r, ep3_t *t, ep3_t *q, ep_t *p, int m, bn_t a) {
  * @param[in] n 			- the number of pairings to evaluate.
  * @param[in] a				- the loop parameter.
  */
-static void pp_mil_lit_k16(fp16_t r, ep_t *t, ep_t *p, ep3_t *q, int m, bn_t a) {
+static void pp_mil_lit_k16(fp16_t r, ep_t *t, ep_t *p, ep4_t *q, int m, bn_t a) {
 	fp16_t l;
-	ep3_t *_q = RLC_ALLOCA(ep3_t, m);
+	ep4_t *_q = RLC_ALLOCA(ep4_t, m);
 	int j;
 
 	fp16_null(l);
@@ -158,10 +158,10 @@ static void pp_mil_lit_k16(fp16_t r, ep_t *t, ep_t *p, ep3_t *q, int m, bn_t a) 
 		fp16_new(l);
 
 		for (j = 0; j < m; j++) {
-			ep3_null(_q[j]);
-			ep3_new(_q[j]);
+			ep4_null(_q[j]);
+			ep4_new(_q[j]);
 			ep_copy(t[j], p[j]);
-			ep3_neg(_q[j], q[j]);
+			ep4_neg(_q[j], q[j]);
 		}
 
 		fp16_zero(l);
@@ -183,70 +183,10 @@ static void pp_mil_lit_k16(fp16_t r, ep_t *t, ep_t *p, ep3_t *q, int m, bn_t a) 
 	RLC_FINALLY {
 		fp16_free(l);
 		for (j = 0; j < m; j++) {
-			ep3_free(_q[j]);
+			ep4_free(_q[j]);
 		}
 		RLC_FREE(_q);
 	}
-}
-
-/**
- * Compute the final lines for optimal ate pairings.
- *
- * @param[out] r			- the result.
- * @param[out] t			- the resulting point.
- * @param[in] q				- the first point of the pairing, in G_2.
- * @param[in] p				- the second point of the pairing, in G_1.
- * @param[in] a				- the loop parameter.
- */
-static void pp_fin_k16_oatep(fp16_t r, ep3_t t, ep3_t q, ep_t p, int f) {
-    fp16_t u, v;
-    ep3_t _q;
-    ep_t _p;
-
-    fp16_null(u);
-    fp16_null(v);
-    ep3_null(_q);
-    ep_null(_p);
-
-    RLC_TRY {
-        fp16_new(u);
-        fp16_new(v);
-        ep3_new(_q);
-        ep3_null(_p);
-
-		/* Compute additional line function. */
-		fp16_zero(u);
-		fp16_zero(v);
-
-		switch (ep_curve_is_pairf()) {
-			case EP_K16:
-#if EP_ADD == BASIC
-				ep_neg(_p, p);
-#else
-				fp_add(_p->x, p->x, p->x);
-				fp_add(_p->x, _p->x, p->x);
-				fp_neg(_p->y, p->y);
-#endif
-				/* _q = 3*p*Q. */
-		        pp_dbl_k16(u, _q, q, _p);
-		        pp_add_k16(v, _q, q, p);
-		        pp_norm_k16(_q, _q);
-		        fp16_mul_dxs(u, u, v);
-		        fp16_frb(u, u, 1);
-		        fp16_mul(r, r, u);
-		        ep3_frb(_q, _q, 1);
-		        pp_add_k16(u, t, _q, p);
-		        fp16_mul_dxs(r, r, u);
-				break;
-		}
-    } RLC_CATCH_ANY {
-        RLC_THROW(ERR_CAUGHT);
-    } RLC_FINALLY {
-        fp16_free(u);
-        fp16_free(v);
-        ep3_free(_q);
-        ep_free(_p);
-    }
 }
 
 /*============================================================================*/
@@ -255,30 +195,28 @@ static void pp_fin_k16_oatep(fp16_t r, ep3_t t, ep3_t q, ep_t p, int f) {
 
 #if PP_MAP == TATEP || !defined(STRIP)
 
-void pp_map_tatep_k16(fp16_t r, const ep_t p, const ep3_t q) {
+void pp_map_tatep_k16(fp16_t r, const ep_t p, const ep4_t q) {
 	ep_t _p[1], t[1];
-	ep3_t _q[1];
+	ep4_t _q[1];
 	bn_t n;
 
 	ep_null(_p[0]);
 	ep_null(t[0]);
-	ep3_null(_q[0]);
+	ep4_null(_q[0]);
 	bn_null(n);
 
 	RLC_TRY {
 		ep_new(_p[0]);
 		ep_new(t[0]);
-		ep3_new(_q[0]);
+		ep4_new(_q[0]);
 		bn_new(n);
 
 		ep_norm(_p[0], p);
-		ep3_norm(_q[0], q);
-		fp3_mul(_q[0]->x, _q[0]->x, core_get()->ep3_frb[2]);
-		fp3_mul(_q[0]->y, _q[0]->y, core_get()->ep3_frb[2]);
+		ep4_norm(_q[0], q);
 		ep_curve_get_ord(n);
 		fp16_set_dig(r, 1);
 
-		if (!ep_is_infty(p) && !ep3_is_infty(q)) {
+		if (!ep_is_infty(p) && !ep4_is_infty(q)) {
 			pp_mil_lit_k16(r, t, _p, _q, 1, n);
 			pp_exp_k16(r, r);
 		}
@@ -289,14 +227,14 @@ void pp_map_tatep_k16(fp16_t r, const ep_t p, const ep3_t q) {
 	RLC_FINALLY {
 		ep_free(_p[0]);
 		ep_free(t[0]);
-		ep3_free(_q[0]);
+		ep4_free(_q[0]);
 		bn_free(n);
 	}
 }
 
-void pp_map_sim_tatep_k16(fp16_t r, const ep_t *p, const ep3_t *q, int m) {
+void pp_map_sim_tatep_k16(fp16_t r, const ep_t *p, const ep4_t *q, int m) {
 	ep_t *_p = RLC_ALLOCA(ep_t, m), *t = RLC_ALLOCA(ep_t, m);
-	ep3_t *_q = RLC_ALLOCA(ep3_t, m);
+	ep4_t *_q = RLC_ALLOCA(ep4_t, m);
 	bn_t n;
 	int i, j;
 
@@ -310,19 +248,17 @@ void pp_map_sim_tatep_k16(fp16_t r, const ep_t *p, const ep3_t *q, int m) {
 		for (i = 0; i < m; i++) {
 			ep_null(_p[i]);
 			ep_null(t[i]);
-			ep3_null(_q[i]);
+			ep4_null(_q[i]);
 			ep_new(_p[i]);
 			ep_new(t[i]);
-			ep3_new(_q[i]);
+			ep4_new(_q[i]);
 		}
 
 		j = 0;
 		for (i = 0; i < m; i++) {
-			if (!ep_is_infty(p[i]) && !ep3_is_infty(q[i])) {
+			if (!ep_is_infty(p[i]) && !ep4_is_infty(q[i])) {
 				ep_norm(_p[j], p[i]);
-				ep3_norm(_q[j], q[i]);
-				fp3_mul(_q[j]->x, _q[j]->x, core_get()->ep3_frb[2]);
-				fp3_mul(_q[j]->y, _q[j]->y, core_get()->ep3_frb[2]);
+				ep4_norm(_q[j], q[i]);
 				j++;
 			}
 		}
@@ -342,7 +278,7 @@ void pp_map_sim_tatep_k16(fp16_t r, const ep_t *p, const ep3_t *q, int m) {
 		for (i = 0; i < m; i++) {
 			ep_free(_p[i]);
 			ep_free(t[i]);
-			ep3_free(_q[i]);
+			ep4_free(_q[i]);
 		}
 		RLC_FREE(_p);
 		RLC_FREE(t);
@@ -354,16 +290,16 @@ void pp_map_sim_tatep_k16(fp16_t r, const ep_t *p, const ep3_t *q, int m) {
 
 #if PP_MAP == WEILP || !defined(STRIP)
 
-void pp_map_weilp_k16(fp16_t r, const ep_t p, const ep3_t q) {
+void pp_map_weilp_k16(fp16_t r, const ep_t p, const ep4_t q) {
 	ep_t _p[1], t0[1];
-	ep3_t _q[1], t1[1];
+	ep4_t _q[1], t1[1];
 	fp16_t r0, r1;
 	bn_t n;
 
 	ep_null(_p[0]);
 	ep_null(t0[0]);
-	ep3_null(_q[0]);
-	ep3_null(t1[0]);
+	ep4_null(_q[0]);
+	ep4_null(t1[0]);
 	fp16_null(r0);
 	fp16_null(r1);
 	bn_null(n);
@@ -371,24 +307,22 @@ void pp_map_weilp_k16(fp16_t r, const ep_t p, const ep3_t q) {
 	RLC_TRY {
 		ep_new(_p[0]);
 		ep_new(t0[0]);
-		ep3_new(_q[0]);
-		ep3_new(t1[0]);
+		ep4_new(_q[0]);
+		ep4_new(t1[0]);
 		fp16_new(r0);
 		fp16_new(r1);
 		bn_new(n);
 
 		ep_norm(_p[0], p);
-		ep3_norm(_q[0], q);
+		ep4_norm(_q[0], q);
 
 		ep_curve_get_ord(n);
 		bn_sub_dig(n, n, 1);
 		fp16_set_dig(r0, 1);
 		fp16_set_dig(r1, 1);
 
-		if (!ep_is_infty(_p[0]) && !ep3_is_infty(_q[0])) {
+		if (!ep_is_infty(_p[0]) && !ep4_is_infty(_q[0])) {
 			pp_mil_k16(r1, t1, _q, _p, 1, n);
-			fp3_mul(_q[0]->x, _q[0]->x, core_get()->ep3_frb[2]);
-			fp3_mul(_q[0]->y, _q[0]->y, core_get()->ep3_frb[2]);
 			pp_mil_lit_k16(r0, t0, _p, _q, 1, n);
 			fp16_inv(r1, r1);
 			fp16_mul(r0, r0, r1);
@@ -404,17 +338,17 @@ void pp_map_weilp_k16(fp16_t r, const ep_t p, const ep3_t q) {
 	RLC_FINALLY {
 		ep_free(_p[0]);
 		ep_free(t0[0]);
-		ep3_free(_q[0]);
-		ep3_free(t1[0]);
+		ep4_free(_q[0]);
+		ep4_free(t1[0]);
 		fp16_free(r0);
 		fp16_free(r1);
 		bn_free(n);
 	}
 }
 
-void pp_map_sim_weilp_k16(fp16_t r, const ep_t *p, const ep3_t *q, int m) {
+void pp_map_sim_weilp_k16(fp16_t r, const ep_t *p, const ep4_t *q, int m) {
 	ep_t *_p = RLC_ALLOCA(ep_t, m), *t0 = RLC_ALLOCA(ep_t, m);
-	ep3_t *_q = RLC_ALLOCA(ep3_t, m), *t1 = RLC_ALLOCA(ep3_t, m);
+	ep4_t *_q = RLC_ALLOCA(ep4_t, m), *t1 = RLC_ALLOCA(ep4_t, m);
 	fp16_t r0, r1;
 	bn_t n;
 	int i, j;
@@ -433,19 +367,19 @@ void pp_map_sim_weilp_k16(fp16_t r, const ep_t *p, const ep3_t *q, int m) {
 		for (i = 0; i < m; i++) {
 			ep_null(_p[i]);
 			ep_null(t0[i]);
-			ep3_null(_q[i]);
-			ep3_null(t1[i]);
+			ep4_null(_q[i]);
+			ep4_null(t1[i]);
 			ep_new(_p[i]);
 			ep_new(t0[i]);
-			ep3_new(_q[i]);
-			ep3_new(t1[i]);
+			ep4_new(_q[i]);
+			ep4_new(t1[i]);
 		}
 
 		j = 0;
 		for (i = 0; i < m; i++) {
-			if (!ep_is_infty(p[i]) && !ep3_is_infty(q[i])) {
+			if (!ep_is_infty(p[i]) && !ep4_is_infty(q[i])) {
 				ep_norm(_p[j], p[i]);
-				ep3_norm(_q[j++], q[i]);
+				ep4_norm(_q[j++], q[i]);
 			}
 		}
 
@@ -456,10 +390,6 @@ void pp_map_sim_weilp_k16(fp16_t r, const ep_t *p, const ep3_t *q, int m) {
 
 		if (j > 0) {
 			pp_mil_k16(r1, t1, _q, _p, j, n);
-			for (i = 0; i < j; i++) {
-				fp3_mul(_q[i]->x, _q[i]->x, core_get()->ep3_frb[2]);
-				fp3_mul(_q[i]->y, _q[i]->y, core_get()->ep3_frb[2]);
-			}
 			pp_mil_lit_k16(r0, t0, _p, _q, j, n);
 			fp16_inv(r1, r1);
 			fp16_mul(r0, r0, r1);
@@ -479,8 +409,8 @@ void pp_map_sim_weilp_k16(fp16_t r, const ep_t *p, const ep3_t *q, int m) {
 		for (i = 0; i < m; i++) {
 			ep_free(_p[i]);
 			ep_free(t0[i]);
-			ep3_free(_q[i]);
-			ep3_free(t1[i]);
+			ep4_free(_q[i]);
+			ep4_free(t1[i]);
 		}
 		RLC_FREE(_p);
 		RLC_FREE(_q);
@@ -493,29 +423,29 @@ void pp_map_sim_weilp_k16(fp16_t r, const ep_t *p, const ep3_t *q, int m) {
 
 #if PP_MAP == OATEP || !defined(STRIP)
 
-void pp_map_oatep_k16(fp16_t r, const ep_t p, const ep3_t q) {
+void pp_map_oatep_k16(fp16_t r, const ep_t p, const ep4_t q) {
 	ep_t _p[1];
-	ep3_t t[1], _q[1];
+	ep4_t t[1], _q[1];
 	bn_t a;
 
 	ep_null(_p[0]);
-	ep3_null(_q[0]);
-	ep3_null(t[0]);
+	ep4_null(_q[0]);
+	ep4_null(t[0]);
 	bn_null(a);
 
 	RLC_TRY {
 		ep_new(_p[0]);
-		ep3_new(_q[0]);
-		ep3_new(t[0]);
+		ep4_new(_q[0]);
+		ep4_new(t[0]);
 		bn_new(a);
 
 		fp_prime_get_par(a);
 		fp16_set_dig(r, 1);
 
 		ep_norm(_p[0], p);
-		ep3_norm(_q[0], q);
+		ep4_norm(_q[0], q);
 
-		if (!ep_is_infty(_p[0]) && !ep3_is_infty(_q[0])) {
+		if (!ep_is_infty(_p[0]) && !ep4_is_infty(_q[0])) {
 			switch (ep_curve_is_pairf()) {
 				case EP_K16:
 					/* r = f_{|a|,Q}(P). */
@@ -523,9 +453,8 @@ void pp_map_oatep_k16(fp16_t r, const ep_t p, const ep3_t q) {
 					if (bn_sign(a) == RLC_NEG) {
 						/* f_{-a,Q}(P) = 1/f_{a,Q}(P). */
 						fp16_inv_cyc(r, r);
-						ep3_neg(t[0], t[0]);
+						ep4_neg(t[0], t[0]);
 					}
-					pp_fin_k16_oatep(r, t[0], _q[0], _p[0], 0);
 					pp_exp_k16(r, r);
 					break;
 			}
@@ -536,15 +465,15 @@ void pp_map_oatep_k16(fp16_t r, const ep_t p, const ep3_t q) {
 	}
 	RLC_FINALLY {
 		ep_free(_p[0]);
-		ep3_free(_q[0]);
-		ep3_free(t[0]);
+		ep4_free(_q[0]);
+		ep4_free(t[0]);
 		bn_free(a);
 	}
 }
 
-void pp_map_sim_oatep_k16(fp16_t r, const ep_t *p, const ep3_t *q, int m) {
+void pp_map_sim_oatep_k16(fp16_t r, const ep_t *p, const ep4_t *q, int m) {
 	ep_t *_p = RLC_ALLOCA(ep_t, m);
-	ep3_t *t = RLC_ALLOCA(ep3_t, m), *_q = RLC_ALLOCA(ep3_t, m);
+	ep4_t *t = RLC_ALLOCA(ep4_t, m), *_q = RLC_ALLOCA(ep4_t, m);
 	bn_t a;
 	int i, j;
 
@@ -556,18 +485,18 @@ void pp_map_sim_oatep_k16(fp16_t r, const ep_t *p, const ep3_t *q, int m) {
 		}
 		for (i = 0; i < m; i++) {
 			ep_null(_p[i]);
-			ep3_null(_q[i]);
-			ep3_null(t[i]);
+			ep4_null(_q[i]);
+			ep4_null(t[i]);
 			ep_new(_p[i]);
-			ep3_new(_q[i]);
-			ep3_new(t[i]);
+			ep4_new(_q[i]);
+			ep4_new(t[i]);
 		}
 
 		j = 0;
 		for (i = 0; i < m; i++) {
-			if (!ep_is_infty(p[i]) && !ep3_is_infty(q[i])) {
+			if (!ep_is_infty(p[i]) && !ep4_is_infty(q[i])) {
 				ep_norm(_p[j], p[i]);
-				ep3_norm(_q[j++], q[i]);
+				ep4_norm(_q[j++], q[i]);
 			}
 		}
 
@@ -585,9 +514,8 @@ void pp_map_sim_oatep_k16(fp16_t r, const ep_t *p, const ep3_t *q, int m) {
 					}
 					for (i = 0; i < j; i++) {
 						if (bn_sign(a) == RLC_NEG) {
-							ep3_neg(t[i], t[i]);
+							ep4_neg(t[i], t[i]);
 						}
-						pp_fin_k16_oatep(r, t[i], _q[i], _p[i], 0);
 					}
 					pp_exp_k16(r, r);
 					break;
@@ -601,8 +529,8 @@ void pp_map_sim_oatep_k16(fp16_t r, const ep_t *p, const ep3_t *q, int m) {
 		bn_free(a);
 		for (i = 0; i < m; i++) {
 			ep_free(_p[i]);
-			ep3_free(_q[i]);
-			ep3_free(t[i]);
+			ep4_free(_q[i]);
+			ep4_free(t[i]);
 		}
 		RLC_FREE(_p);
 		RLC_FREE(_q);

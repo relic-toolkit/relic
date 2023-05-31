@@ -425,6 +425,67 @@ void fp16_exp(fp16_t c, const fp16_t a, const bn_t b) {
 	}
 }
 
+void fp16_exp_dig(fp16_t c, const fp16_t a, dig_t b) {
+	bn_t _b;
+	fp16_t t, v;
+	int8_t u, naf[RLC_DIG + 1];
+	size_t l;
+
+	if (b == 0) {
+		fp16_set_dig(c, 1);
+		return;
+	}
+
+	bn_null(_b);
+	fp16_null(t);
+	fp16_null(v);
+
+	RLC_TRY {
+		bn_new(_b);
+		fp16_new(t);
+		fp16_new(v);
+
+		fp16_copy(t, a);
+
+		if (fp16_test_cyc(a)) {
+			fp16_inv_cyc(v, a);
+			bn_set_dig(_b, b);
+
+			l = RLC_DIG + 1;
+			bn_rec_naf(naf, &l, _b, 2);
+
+			for (int i = bn_bits(_b) - 2; i >= 0; i--) {
+				fp16_sqr_cyc(t, t);
+
+				u = naf[i];
+				if (u > 0) {
+					fp16_mul(t, t, a);
+				} else if (u < 0) {
+					fp16_mul(t, t, v);
+				}
+			}
+		} else {
+			for (int i = util_bits_dig(b) - 2; i >= 0; i--) {
+				fp16_sqr(t, t);
+				if (b & ((dig_t)1 << i)) {
+					fp16_mul(t, t, a);
+				}
+			}
+		}
+
+		fp16_copy(c, t);
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		bn_free(_b);
+		fp16_free(t);
+		fp16_free(v);
+	}
+}
+
+
 void fp18_exp(fp18_t c, const fp18_t a, const bn_t b) {
 	fp18_t t;
 
