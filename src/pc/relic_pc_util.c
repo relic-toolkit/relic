@@ -54,6 +54,8 @@ void gt_rand(gt_t a) {
 	pp_exp_k48(a, a);
 #elif FP_PRIME == 315 || FP_PRIME == 317 || FP_PRIME == 509
 	pp_exp_k24(a, a);
+#elif FP_PRIME == 766
+	pp_exp_k16(a, a);
 #elif FP_PRIME == 508 || FP_PRIME == 638 && !defined(FP_QNRES)
 	pp_exp_k18(a, a);
 #else
@@ -298,9 +300,7 @@ int g2_is_valid(const g2_t a) {
 				/* Compute s = (u - 25)/70. */
 				bn_sub_dig(n, n, 25);
 				bn_div_dig(n, n, 70);
-				/* TODO: optimize further. */
 				/* [11s + 4, 9s+3, 3s+1, -(3s+1), -13*u-5, -7*u-3, u, -11s-4] */
-				/* [2*c6+c1+1,3*c2,3*c6+1,c3,2*c5+c6+14,-(2*c2+c6+1),c6,-c0] */
 				g2_mul_any(u, a, n);	/* u = a^s*/
 				g2_frb(w, u, 6);
 				g2_dbl(s, u);
@@ -376,7 +376,7 @@ int g2_is_valid(const g2_t a) {
 
 int gt_is_valid(const gt_t a) {
 	bn_t n;
-	gt_t u, v;
+	gt_t s, t, u, v, w;
 	int l, r = 0;
 	const int *b;
 
@@ -385,13 +385,19 @@ int gt_is_valid(const gt_t a) {
 	}
 
 	bn_null(n);
+	gt_null(s);
+	gt_null(t);
 	gt_null(u);
 	gt_null(v);
+	gt_null(w);
 
 	RLC_TRY {
 		bn_new(n);
+		gt_new(s);
+		gt_new(t);
 		gt_new(u);
 		gt_new(v);
+		gt_new(w);
 
 		fp_prime_get_par(n);
 		b = fp_prime_get_par_sps(&l);
@@ -434,6 +440,41 @@ int gt_is_valid(const gt_t a) {
 				r = (gt_cmp(u, v) == RLC_EQ);
 				r &= fp12_test_cyc((void *)a);
 				break;
+			case EP_K16:
+				/* Compute s = (u - 25)/70. */
+				bn_sub_dig(n, n, 25);
+				bn_div_dig(n, n, 70);
+				/* [11s + 4, 9s+3, 3s+1, -(3s+1), -13*u-5, -7*u-3, u, -11s-4] */
+				gt_exp(u, a, n);	/* u = a^s*/
+				gt_frb(w, u, 6);
+				gt_sqr(s, u);
+				gt_mul(v, s, a);
+				gt_mul(t, v, u);		/* t = a^(3s + 1) */
+				gt_copy(u, v);			/* u = a^(2s + 1)*/
+				gt_frb(v, t, 2);
+				gt_mul(w, w, v);
+				gt_frb(v, t, 3);
+				gt_inv(v, v);
+				gt_mul(w, w, v);
+				gt_sqr(v, t);
+				gt_mul(t, t, v);		/* t = a^(9s + 3). */
+				gt_frb(v, t, 1);
+				gt_mul(w, w, v);
+				gt_inv(s, s);
+				gt_mul(s, t, s);		/* s = a^(7s + 3). */
+				gt_frb(v, s, 5);
+				gt_inv(v, v);
+				gt_mul(w, w, v);
+				gt_mul(t, t, u);		/* t = a^(11s + 4). */
+				gt_mul(w, w, t);
+				gt_frb(v, t, 7);
+				gt_inv(v, v);
+				gt_mul(w, w, v);
+				gt_mul(t, t, u);		/* t = a^(13s + 5). */
+				gt_frb(t, t, 4);
+				r = (gt_cmp(w, t) == RLC_EQ);
+				r &= fp16_test_cyc((void *)a);
+				break;
 			case EP_K18:
 				/* Check that P + u*psi2P + 2*psi3P == \mathcal{O}. */
 				gt_frb(u, a, 2);
@@ -469,8 +510,11 @@ int gt_is_valid(const gt_t a) {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		bn_free(n);
+		gt_free(s);
+		gt_free(t);
 		gt_free(u);
 		gt_free(v);
+		gt_free(w);
 	}
 
 	return r;

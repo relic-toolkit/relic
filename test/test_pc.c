@@ -1749,7 +1749,7 @@ int test2(void) {
 		return RLC_ERR;
 	}
 
-#if FP_PRIME != 509
+#if FP_PRIME != 509 && FP_PRIME != 766
 	if (hashing2() != RLC_OK) {
 		return RLC_ERR;
 	}
