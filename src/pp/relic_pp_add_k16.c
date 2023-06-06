@@ -280,7 +280,7 @@ void pp_add_k16_projc_lazyr(fp16_t l, ep4_t r, const ep4_t q, const ep_t p) {
 
 void pp_add_lit_k16(fp16_t l, ep_t r, const ep_t p, const ep4_t q) {
 	fp_t t0, t1, t2, t3;
-	int two = 2, one = 1, zero = 0;
+	int one = 1, zero = 0;
 
 	fp_null(t0);
 	fp_null(t1);
@@ -300,17 +300,24 @@ void pp_add_lit_k16(fp16_t l, ep_t r, const ep_t p, const ep4_t q) {
 		fp_mul(t2, p->x, t1);
 		r->coord = PROJC;
 
+		if (ep4_curve_is_twist() == RLC_EP_MTYPE) {
+			one ^= 1;
+			zero ^= 1;
+		}
+
 		fp_mul(l[zero][zero][0][0], t0, p->y);
-		fp_sub(l[zero][zero][0], t2, l[zero][zero][0]);
+		fp_sub(l[zero][zero][0][0], t2, l[zero][zero][0][0]);
 
-		fp_mul(l[zero][two][0], q->x[0], t1);
-		fp_mul(l[zero][two][1], q->x[1], t1);
-		fp_mul(l[zero][two][2], q->x[2], t1);
-		fp4_neg(l[zero][two], l[zero][two]);
+		fp_mul(l[zero][one][0][0], q->x[0][0], t1);
+		fp_mul(l[zero][one][0][1], q->x[0][1], t1);
+		fp_mul(l[zero][one][1][0], q->x[1][0], t1);
+		fp_mul(l[zero][one][1][1], q->x[1][1], t1);
+		fp4_neg(l[zero][one], l[zero][one]);
 
-		fp_mul(l[one][one][0], q->y[0], t0);
-		fp_mul(l[one][one][1], q->y[1], t0);
-		fp_mul(l[one][one][2], q->y[2], t0);
+		fp_mul(l[one][one][0][0], q->y[0][0], t0);
+		fp_mul(l[one][one][0][1], q->y[0][1], t0);
+		fp_mul(l[one][one][1][0], q->y[1][0], t0);
+		fp_mul(l[one][one][1][1], q->y[1][1], t0);
 
 		fp_sqr(t2, t0);
 		fp_mul(r->x, t2, r->x);

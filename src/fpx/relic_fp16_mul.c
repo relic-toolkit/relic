@@ -80,99 +80,56 @@ void fp16_mul_basic(fp16_t c, const fp16_t a, const fp16_t b) {
 	}
 }
 
-#endif
-
-#if PP_EXT == LAZYR || !defined(STRIP)
-
-static void fp8_mul_dxs_unr(dv8_t c, const fp8_t a, const fp8_t b) {
-	fp2_t t0, t1;
-	dv2_t u0, u1;
-
-	fp2_null(t0);
-	fp2_null(t1);
-	dv2_null(u0);
-	dv2_null(u1);
-
-	RLC_TRY {
-		fp2_new(t0);
-		fp2_new(t1);
-		dv2_new(u0);
-		dv2_new(u1);
-
-		fp2_muln_low(u1, a[1], b[1]);
-		fp2_addm_low(t0, b[0], b[1]);
-		fp2_addm_low(t1, a[0], a[1]);
-
-		fp2_muln_low(c[1], t1, t0);
-		fp2_subc_low(c[1], c[1], u1);
-		fp2_norh_low(c[0], u1);
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		fp2_free(t0);
-		dv2_free(t1);
-		dv2_free(u0);
-		dv2_free(u1);
-	}
-}
-
-void fp16_mul_dxs(fp16_t c, const fp16_t a, const fp16_t b) {
-	fp8_t t0, t1;
-	dv8_t u0, u1, u2, u3;
+void fp16_mul_dxs_basic(fp16_t c, const fp16_t a, const fp16_t b) {
+	fp8_t t0, t1, t4;
 
 	fp8_null(t0);
 	fp8_null(t1);
-	dv8_null(u0);
-	dv8_null(u1);
-	dv8_null(u2);
-	dv8_null(u3);
+	fp8_null(t4);
 
 	RLC_TRY {
 		fp8_new(t0);
 		fp8_new(t1);
-		dv8_new(u0);
-		dv8_new(u1);
-		dv8_new(u2);
-		dv8_new(u3);
+		fp8_new(t4);
 
 		/* Karatsuba algorithm. */
 
-		/* u0 = a_0 * b_0. */
-		fp8_mul_unr(u0, a[0], b[0]);
-		/* u1 = a_1 * b_1. */
-		fp8_mul_dxs_unr(u1, a[1], b[1]);
+		/* t0 = a_0 * b_0. */
+		fp8_mul(t0, a[0], b[0]);
 
-		/* t1 = a_0 + a_1. */
-		fp8_add(t0, a[0], a[1]);
-		/* t0 = b_0 + b_1. */
-		fp8_add(t1, b[0], b[1]);
-		/* u2 = (a_0 + a_1) * (b_0 + b_1) */
-		fp8_mul_unr(u2, t0, t1);
-		/* c_1 = u2 - a_0b_0 - a_1b_1. */
-		for (int i = 0; i < 2; i++) {
-			fp2_addc_low(u3[i], u0[i], u1[i]);
-			fp2_subc_low(u2[i], u2[i], u3[i]);
-			fp2_rdcn_low(c[1][i], u2[i]);
-		}
+		/* t1 = a_1 * b_1. */
+		fp4_mul(t1[0], a[1][1], b[1][1]);
+		fp4_add(t1[1], a[1][0], a[1][1]);
+		fp4_mul(t1[1], t1[1], b[1][1]);
+		fp4_sub(t1[1], t1[1], t1[0]);
+		fp4_mul_art(t1[0], t1[0]);
+
+		/* t4 = b_0 + b_1. */
+		fp8_add(t4, b[0], b[1]);
+
+		/* c_1 = a_0 + a_1. */
+		fp8_add(c[1], a[0], a[1]);
+
+		/* c_1 = (a_0 + a_1) * (b_0 + b_1) */
+		fp8_mul(c[1], c[1], t4);
+		fp8_sub(c[1], c[1], t0);
+		fp8_sub(c[1], c[1], t1);
+
 		/* c_0 = a_0b_0 + v * a_1b_1. */
-		fp2_nord_low(u2[0], u1[1]);
-		dv_copy(u2[1][0], u1[0][0], 2 * RLC_FP_DIGS);
-		dv_copy(u2[1][1], u1[0][1], 2 * RLC_FP_DIGS);
-		for (int i = 0; i < 2; i++) {
-			fp2_addc_low(u2[i], u0[i], u2[i]);
-			fp2_rdcn_low(c[0][i], u2[i]);
-		}
+		fp8_mul_art(t4, t1);
+		fp8_add(c[0], t0, t4);
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		fp8_free(t0);
-		dv8_free(t1);
-		dv8_free(u0);
-		dv8_free(u1);
-		dv8_free(u2);
-		dv8_free(u3);
+		fp8_free(t1);
+		fp8_free(t4);
 	}
 }
+
+#endif
+
+#if PP_EXT == LAZYR || !defined(STRIP)
 
 void fp16_mul_unr(dv16_t c, const fp16_t a, const fp16_t b) {
 	fp8_t t0, t1;
@@ -255,6 +212,90 @@ void fp16_mul_lazyr(fp16_t c, const fp16_t a, const fp16_t b) {
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
+		dv16_free(t);
+	}
+}
+
+void fp16_mul_dxs_lazyr(fp16_t c, const fp16_t a, const fp16_t b) {
+	fp8_t t0, t1;
+	dv8_t u0, u1, u2, u3;
+	dv16_t t;
+
+	fp8_null(t0);
+	fp8_null(t1);
+	dv8_null(t);
+	dv8_null(u0);
+	dv8_null(u1);
+	dv8_null(u2);
+	dv8_null(u3);
+	dv16_null(t);
+
+	RLC_TRY {
+		fp8_new(t0);
+		fp8_new(t1);
+		dv8_new(u0);
+		dv8_new(u1);
+		dv8_new(u2);
+		dv8_new(u3);
+		dv16_new(t);
+
+		/* Karatsuba algorithm. */
+
+		/* u0 = a_0 * b_0. */
+		fp8_mul_unr(u0, a[0], b[0]);
+
+		/* u1 = a_1 * b_1. */
+		fp4_mul_unr(u1[0], a[1][1], b[1][1]);
+		fp4_add(t1[0], a[1][0], a[1][1]);
+		fp4_mul_unr(u1[1], t1[0], b[1][1]);
+		fp2_subc_low(u2[1][0], u1[1][0], u1[0][0]);
+		fp2_subc_low(u2[1][1], u1[1][1], u1[0][1]);
+		fp2_nord_low(u2[0][0], u1[0][1]);
+		dv_copy(u2[0][1][0], u1[0][0][0], 2 * RLC_FP_DIGS);
+		dv_copy(u2[0][1][1], u1[0][0][1], 2 * RLC_FP_DIGS);
+
+		/* t1 = a_0 + a_1. */
+		fp8_add(t0, a[0], a[1]);
+		/* t0 = b_0 + b_1. */
+		fp8_add(t1, b[0], b[1]);
+		/* u2 = (a_0 + a_1) * (b_0 + b_1) */
+		fp8_mul_unr(u1, t0, t1);
+		/* c_1 = u2 - a_0b_0 - a_1b_1. */
+		for (int i = 0; i < 2; i++) {
+			for (int j = 0; j < 2; j++) {
+				fp2_subc_low(t[1][i][j], u1[i][j], u0[i][j]);
+				fp2_subc_low(t[1][i][j], t[1][i][j], u2[i][j]);
+			}
+		}
+		/* c_0 = a_0b_0 + v * a_1b_1. */
+		fp2_nord_low(u1[0][0], u2[1][1]);
+		dv_copy(u1[0][1][0], u2[1][0][0], 2 * RLC_FP_DIGS);
+		dv_copy(u1[0][1][1], u2[1][0][1], 2 * RLC_FP_DIGS);
+		dv_copy(u1[1][0][0], u2[0][0][0], 2 * RLC_FP_DIGS);
+		dv_copy(u1[1][0][1], u2[0][0][1], 2 * RLC_FP_DIGS);
+		dv_copy(u1[1][1][0], u2[0][1][0], 2 * RLC_FP_DIGS);
+		dv_copy(u1[1][1][1], u2[0][1][1], 2 * RLC_FP_DIGS);
+		for (int i = 0; i < 2; i++) {
+			for (int j = 0; j < 2; j++) {
+				fp2_addc_low(t[0][i][j], u0[i][j], u1[i][j]);
+			}
+		}
+		for (int i = 0; i < 2; i++) {
+			for (int j = 0; j < 2; j++) {
+				for (int k = 0; k < 2; k++) {
+					fp2_rdcn_low(c[i][j][k], t[i][j][k]);
+				}
+			}
+		}
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		fp8_free(t0);
+		fp8_free(t1);
+		dv8_free(u0);
+		dv8_free(u1);
+		dv8_free(u2);
+		dv8_free(u3);
 		dv16_free(t);
 	}
 }

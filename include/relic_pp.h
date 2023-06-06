@@ -796,6 +796,53 @@ void pp_add_lit_k12(fp12_t l, ep_t r, const ep_t p, const ep2_t q);
 
 /**
  * Adds two points and evaluates the corresponding line function at another
+ * point on an elliptic curve with embedding degree 16 using affine coordinates.
+ *
+ * @param[out] l			- the result of the evaluation.
+ * @param[in, out] r		- the resulting point and first point to add.
+ * @param[in] q				- the second point to add.
+ * @param[in] p				- the affine point to evaluate the line function.
+ */
+void pp_add_k16_basic(fp16_t l, ep4_t r, const ep4_t q, const ep_t p);
+
+/**
+ * Adds two points and evaluates the corresponding line function at another
+ * point on an elliptic curve with embedding degree 16 using projective
+ * coordinates.
+ *
+ * @param[out] l			- the result of the evaluation.
+ * @param[in, out] r		- the resulting point and first point to add.
+ * @param[in] q				- the second point to add.
+ * @param[in] p				- the affine point to evaluate the line function.
+ */
+void pp_add_k16_projc_basic(fp16_t l, ep4_t r, const ep4_t q, const ep_t p);
+
+/**
+ * Adds two points and evaluates the corresponding line function at another
+ * point on an elliptic curve with embedding degree 16 using projective
+ * coordinates and lazy reduction.
+ *
+ * @param[out] l			- the result of the evaluation.
+ * @param[in, out] r		- the resulting point and first point to add.
+ * @param[in] q				- the second point to add.
+ * @param[in] p				- the affine point to evaluate the line function.
+ */
+void pp_add_k16_projc_lazyr(fp16_t l, ep4_t r, const ep4_t q, const ep_t p);
+
+/**
+ * Adds two points and evaluates the corresponding line function at another
+ * point on an elliptic curve twist with embedding degree 16 using projective
+ * coordinates.
+ *
+ * @param[out] l			- the result of the evaluation.
+ * @param[in, out] r		- the resulting point and first point to add.
+ * @param[in] p				- the second point to add.
+ * @param[in] q				- the affine point to evaluate the line function.
+ */
+void pp_add_lit_k16(fp16_t l, ep_t r, const ep_t p, const ep4_t q);
+
+/**
+ * Adds two points and evaluates the corresponding line function at another
  * point on an elliptic curve with embedding degree 18 using affine coordinates.
  *
  * @param[out] l			- the result of the evaluation.
@@ -1048,6 +1095,42 @@ void pp_dbl_k12_projc_lazyr(fp12_t l, ep2_t r, const ep2_t q, const ep_t p);
 
 /**
  * Doubles a point and evaluates the corresponding line function at another
+ * point on an elliptic curve with embedding degree 16 using affine
+ * coordinates.
+ *
+ * @param[out] l			- the result of the evaluation.
+ * @param[in, out] r		- the resulting point.
+ * @param[in] q				- the point to double.
+ * @param[in] p				- the affine point to evaluate the line function.
+ */
+void pp_dbl_k16_basic(fp16_t l, ep4_t r, const ep4_t q, const ep_t p);
+
+/**
+ * Doubles a point and evaluates the corresponding line function at another
+ * point on an elliptic curve with embedding degree 16 using projective
+ * coordinates.
+ *
+ * @param[out] l			- the result of the evaluation.
+ * @param[in, out] r		- the resulting point.
+ * @param[in] q				- the point to double.
+ * @param[in] p				- the affine point to evaluate the line function.
+ */
+void pp_dbl_k16_projc_basic(fp16_t l, ep4_t r, const ep4_t q, const ep_t p);
+
+/**
+ * Doubles a point and evaluates the corresponding line function at another
+ * point on an elliptic curve with embedding degree 16 using projective
+ * coordinates and lazy reduction.
+ *
+ * @param[out] l			- the result of the evaluation.
+ * @param[in, out] r		- the resulting point.
+ * @param[in] q				- the point to double.
+ * @param[in] p				- the affine point to evaluate the line function.
+ */
+void pp_dbl_k16_projc_lazyr(fp16_t l, ep4_t r, const ep4_t q, const ep_t p);
+
+/**
+ * Doubles a point and evaluates the corresponding line function at another
  * point on an elliptic curve with embedding degree 18 using affine
  * coordinates.
  *
@@ -1168,6 +1251,18 @@ void pp_dbl_lit_k12(fp12_t l, ep_t r, const ep_t p, const ep2_t q);
 
 /**
  * Doubles a point and evaluates the corresponding line function at another
+ * point on an elliptic curve twist with embedding degree 16 using projective
+ * coordinates.
+ *
+ * @param[out] l			- the result of the evaluation.
+ * @param[in, out] r		- the resulting point.
+ * @param[in] p				- the point to double.
+ * @param[in] q				- the affine point to evaluate the line function.
+ */
+void pp_dbl_lit_k16(fp16_t l, ep_t r, const ep_t p, const ep4_t q);
+
+/**
+ * Doubles a point and evaluates the corresponding line function at another
  * point on an elliptic curve twist with embedding degree 18 using projective
  * coordinates.
  *
@@ -1213,6 +1308,15 @@ void pp_exp_k8(fp8_t c, fp8_t a);
  * @param[in] a				- the extension field element to exponentiate.
  */
 void pp_exp_k12(fp12_t c, fp12_t a);
+
+/**
+ * Computes the final exponentiation for a pairing defined over curves of
+ * embedding degree 16. Computes c = a^(p^16 - 1)/r.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the extension field element to exponentiate.
+ */
+void pp_exp_k16(fp16_t c, fp16_t a);
 
 /**
  * Computes the final exponentiation for a pairing defined over curves of
@@ -1285,6 +1389,15 @@ void pp_norm_k8(ep2_t c, const ep2_t a);
  * @param[in] p				- the point to normalize.
  */
 void pp_norm_k12(ep2_t c, const ep2_t a);
+
+/**
+ * Normalizes the accumulator point used inside pairing computation defined
+ * over curves of embedding degree 16.
+ *
+ * @param[out] r			- the resulting point.
+ * @param[in] p				- the point to normalize.
+ */
+void pp_norm_k16(ep4_t c, const ep4_t a);
 
 /**
  * Normalizes the accumulator point used inside pairing computation defined
@@ -1469,6 +1582,69 @@ void pp_map_oatep_k12(fp12_t r, const ep_t p, const ep2_t q);
  * @param[in] m 			- the number of pairings to evaluate.
  */
 void pp_map_sim_oatep_k12(fp12_t r, const ep_t *p, const ep2_t *q, int m);
+
+/**
+ * Computes the Tate pairing of two points in a parameterized elliptic curve
+ * with embedding degree 16.
+ *
+ * @param[out] r			- the result.
+ * @param[in] q				- the first elliptic curve point.
+ * @param[in] p				- the second elliptic curve point.
+ */
+void pp_map_tatep_k16(fp16_t r, const ep_t p, const ep4_t q);
+
+/**
+ * Computes the Tate multi-pairing in a parameterized elliptic curve with
+ * embedding degree 16.
+ *
+ * @param[out] r			- the result.
+ * @param[in] q				- the first pairing arguments.
+ * @param[in] p				- the second pairing arguments.
+ * @param[in] m 			- the number of pairings to evaluate.
+ */
+void pp_map_sim_tatep_k16(fp16_t r, const ep_t *p, const ep4_t *q, int m);
+
+/**
+ * Computes the Weil pairing of two points in a parameterized elliptic curve
+ * with embedding degree 16.
+ *
+ * @param[out] r			- the result.
+ * @param[in] q				- the first elliptic curve point.
+ * @param[in] p				- the second elliptic curve point.
+ */
+void pp_map_weilp_k16(fp16_t r, const ep_t p, const ep4_t q);
+
+/**
+ * Computes the Weil multi-pairing in a parameterized elliptic curve with
+ * embedding degree 16.
+ *
+ * @param[out] r			- the result.
+ * @param[in] q				- the first pairing arguments.
+ * @param[in] p				- the second pairing arguments.
+ * @param[in] m 			- the number of pairings to evaluate.
+ */
+void pp_map_sim_weilp_k16(fp16_t r, const ep_t *p, const ep4_t *q, int m);
+
+/**
+ * Computes the optimal ate pairing of two points in a parameterized elliptic
+ * curve with embedding degree 16.
+ *
+ * @param[out] r			- the result.
+ * @param[in] q				- the first elliptic curve point.
+ * @param[in] p				- the second elliptic curve point.
+ */
+void pp_map_oatep_k16(fp16_t r, const ep_t p, const ep4_t q);
+
+/**
+ * Computes the optimal ate multi-pairing in a parameterized elliptic
+ * curve with embedding degree 16.
+ *
+ * @param[out] r			- the result.
+ * @param[in] q				- the first pairing arguments.
+ * @param[in] p				- the second pairing arguments.
+ * @param[in] m 			- the number of pairings to evaluate.
+ */
+void pp_map_sim_oatep_k16(fp16_t r, const ep_t *p, const ep4_t *q, int m);
 
 /**
  * Computes the Tate pairing of two points in a parameterized elliptic curve

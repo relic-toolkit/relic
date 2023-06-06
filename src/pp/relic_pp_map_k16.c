@@ -67,6 +67,7 @@ static void pp_mil_k16(fp16_t r, ep4_t *t, ep4_t *q, ep_t *p, int m, bn_t a) {
 		if (_p == NULL || _q == NULL) {
 			RLC_THROW(ERR_NO_MEMORY);
 		}
+		
 		for (j = 0; j < m; j++) {
 			ep_null(_p[j]);
 			ep4_null(_q[j]);
@@ -77,9 +78,8 @@ static void pp_mil_k16(fp16_t r, ep4_t *t, ep4_t *q, ep_t *p, int m, bn_t a) {
 #if EP_ADD == BASIC
 			ep_neg(_p[j], p[j]);
 #else
-			fp_add(_p[j]->x, p[j]->x, p[j]->x);
-			fp_add(_p[j]->x, _p[j]->x, p[j]->x);
-			fp_neg(_p[j]->y, p[j]->y);
+			fp_neg(_p[j]->x, p[j]->x);
+			fp_copy(_p[j]->y, p[j]->y);
 #endif
 		}
 
@@ -92,13 +92,13 @@ static void pp_mil_k16(fp16_t r, ep4_t *t, ep4_t *q, ep_t *p, int m, bn_t a) {
 		}
 		if (s[len - 2] > 0) {
 			for (j = 0; j < m; j++) {
-				pp_add_k16(l, t[j], q[j], p[j]);
+				pp_add_k16(l, t[j], q[j], _p[j]);
 				fp16_mul_dxs(r, r, l);
 			}
 		}
 		if (s[len - 2] < 0) {
 			for (j = 0; j < m; j++) {
-				pp_add_k16(l, t[j], _q[j], p[j]);
+				pp_add_k16(l, t[j], _q[j], _p[j]);
 				fp16_mul_dxs(r, r, l);
 			}
 		}
@@ -109,11 +109,11 @@ static void pp_mil_k16(fp16_t r, ep4_t *t, ep4_t *q, ep_t *p, int m, bn_t a) {
 				pp_dbl_k16(l, t[j], t[j], _p[j]);
 				fp16_mul_dxs(r, r, l);
 				if (s[i] > 0) {
-					pp_add_k16(l, t[j], q[j], p[j]);
+					pp_add_k16(l, t[j], q[j], _p[j]);
 					fp16_mul_dxs(r, r, l);
 				}
 				if (s[i] < 0) {
-					pp_add_k16(l, t[j], _q[j], p[j]);
+					pp_add_k16(l, t[j], _q[j], _p[j]);
 					fp16_mul_dxs(r, r, l);
 				}
 			}
@@ -186,6 +186,48 @@ static void pp_mil_lit_k16(fp16_t r, ep_t *t, ep_t *p, ep4_t *q, int m, bn_t a) 
 			ep4_free(_q[j]);
 		}
 		RLC_FREE(_q);
+	}
+}
+
+/**
+ * Compute the final lines for optimal ate pairings.
+ *
+ * @param[out] r			- the result.
+ * @param[out] t			- the resulting point.
+ * @param[in] q				- the first point of the pairing, in G_2.
+ * @param[in] p				- the second point of the pairing, in G_1.
+ * @param[in] a				- the loop parameter.
+ */
+static void pp_fin_k16_oatep(fp16_t r, ep4_t t, ep4_t q, ep_t p) {
+	ep4_t q1, q2;
+	fp16_t tmp;
+
+	fp16_null(tmp);
+	ep4_null(q1);
+	ep4_null(q2);
+
+	RLC_TRY {
+		ep4_new(q1);
+		ep4_new(q2);
+		fp16_new(tmp);
+		fp16_zero(tmp);
+
+#if EP_ADD == PROJC
+		fp_neg(p->x, p->x);
+#endif
+		ep4_frb(q1, q, 1);
+		pp_add_k16(tmp, t, q1, p);
+		fp16_frb(tmp, tmp, 3);
+		fp16_mul_dxs(r, r, tmp);
+
+		pp_dbl_k16(tmp, q2, q, p);
+		fp16_mul_dxs(r, r, tmp);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		fp16_free(tmp);
+		ep4_free(q1);
+		ep4_free(q2);
 	}
 }
 
@@ -455,6 +497,8 @@ void pp_map_oatep_k16(fp16_t r, const ep_t p, const ep4_t q) {
 						fp16_inv_cyc(r, r);
 						ep4_neg(t[0], t[0]);
 					}
+					fp16_frb(r, r, 3);
+					pp_fin_k16_oatep(r, t[0], _q[0], _p[0]);
 					pp_exp_k16(r, r);
 					break;
 			}
@@ -512,10 +556,12 @@ void pp_map_sim_oatep_k16(fp16_t r, const ep_t *p, const ep4_t *q, int m) {
 						/* f_{-a,Q}(P) = 1/f_{a,Q}(P). */
 						fp16_inv_cyc(r, r);
 					}
+					fp16_frb(r, r, 3);
 					for (i = 0; i < j; i++) {
 						if (bn_sign(a) == RLC_NEG) {
 							ep4_neg(t[i], t[i]);
 						}
+						pp_fin_k16_oatep(r, t[i], _q[i], _p[i]);
 					}
 					pp_exp_k16(r, r);
 					break;

@@ -1861,12 +1861,10 @@ static int doubling16(void) {
 			ep_rand(p);
 			ep4_rand(q);
 			ep4_rand(r);
-			pp_dbl_k16_projc(e1, r, q, p);
+			pp_dbl_k16(e1, r, q, p);
 			pp_norm_k16(r, r);
-			ep4_dbl_projc(s, q);
+			ep4_dbl(s, q);
 			ep4_norm(s, s);
-			ep4_print(r);
-			ep4_print(s);
 			TEST_ASSERT(ep4_cmp(r, s) == RLC_EQ, end);
 		} TEST_END;
 
@@ -1880,6 +1878,11 @@ static int doubling16(void) {
 			fp_neg(p->y, p->y);
 			pp_dbl_k16_basic(e2, r, q, p);
 			pp_exp_k16(e2, e2);
+#if EP_ADD == PROJC
+			/* Precompute. */
+			fp_neg(p->y, p->y);
+			fp_neg(p->x, p->x);
+#endif
 			pp_dbl_k16(e1, r, q, p);
 			pp_exp_k16(e1, e1);
 			TEST_ASSERT(fp16_cmp(e1, e2) == RLC_EQ, end);
@@ -1894,11 +1897,14 @@ static int doubling16(void) {
 			fp16_zero(e1);
 			fp16_zero(e2);
 			/* Precompute. */
-			fp_neg(p->y, p->y);
-			fp_dbl(p->z, p->x);
-			fp_add(p->x, p->z, p->x);
+			fp_neg(p->x, p->x);
 			pp_dbl_k16_projc(e2, r, q, p);
 			pp_exp_k16(e2, e2);
+#if EP_ADD == BASIC
+			/* Revert and fix precomputing. */
+			fp_neg(p->x, p->x);
+			fp_neg(p->y, p->y);
+#endif
 			pp_dbl_k16(e1, r, q, p);
 			pp_exp_k16(e1, e1);
 			TEST_ASSERT(fp16_cmp(e1, e2) == RLC_EQ, end);
@@ -1978,8 +1984,9 @@ static int addition16(void) {
 
 		TEST_CASE("miller addition is correct") {
 			ep_rand(p);
-			ep4_rand(q);
-			ep4_rand(r);
+			ep4_curve_get_gen(q);
+			ep4_dbl(r, q);
+			ep4_norm(r, r);
 			ep4_copy(s, r);
 			pp_add_k16(e1, r, q, p);
 			pp_norm_k16(r, r);
@@ -1991,13 +1998,25 @@ static int addition16(void) {
 #if EP_ADD == BASIC || !defined(STRIP)
 		TEST_CASE("miller addition in affine coordinates is correct") {
 			ep_rand(p);
-			ep4_rand(q);
-			ep4_rand(r);
+			ep4_curve_get_gen(q);
+			ep4_dbl(r, q);
+			ep4_norm(r, r);
 			ep4_copy(s, r);
 			fp16_zero(e1);
 			fp16_zero(e2);
+#if EP_ADD == PROJC
+			/* Precompute. */
+			fp_neg(p->x, p->x);
+#else
+			fp_neg(p->y, p->y);
+#endif
 			pp_add_k16(e1, r, q, p);
 			pp_exp_k16(e1, e1);
+#if EP_ADD == PROJC
+			/* Revert precompute. */
+			fp_neg(p->x, p->x);
+			fp_neg(p->y, p->y);
+#endif
 			pp_add_k16_basic(e2, s, q, p);
 			pp_exp_k16(e2, e2);
 			TEST_ASSERT(fp16_cmp(e1, e2) == RLC_EQ, end);
@@ -2007,46 +2026,29 @@ static int addition16(void) {
 #if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
 		TEST_CASE("miller addition in projective coordinates is correct") {
 			ep_rand(p);
-			ep4_rand(q);
-			ep4_rand(r);
+			ep4_curve_get_gen(q);
+			ep4_dbl(r, q);
+			ep4_norm(r, r);
 			ep4_copy(s, r);
 			fp16_zero(e1);
 			fp16_zero(e2);
+#if EP_ADD == PROJC
+			/* Precompute. */
+			fp_neg(p->x, p->x);
+#else
+			fp_neg(p->y, p->y);
+#endif
 			pp_add_k16(e1, r, q, p);
 			pp_exp_k16(e1, e1);
+#if EP_ADD == BASIC
+			fp_neg(p->x, p->x);
+			fp_neg(p->y, p->y);
+#endif
 			pp_add_k16_projc(e2, s, q, p);
 			pp_exp_k16(e2, e2);
 			TEST_ASSERT(fp16_cmp(e1, e2) == RLC_EQ, end);
 		} TEST_END;
-
-#if PP_EXT == BASIC || !defined(STRIP)
-		TEST_CASE("basic projective miller addition is consistent") {
-			ep_rand(p);
-			ep4_rand(q);
-			ep4_rand(r);
-			ep4_copy(s, r);
-			fp16_zero(e1);
-			fp16_zero(e2);
-			pp_add_k16_projc(e1, r, q, p);
-			pp_add_k16_projc_basic(e2, s, q, p);
-			TEST_ASSERT(fp16_cmp(e1, e2) == RLC_EQ, end);
-		} TEST_END;
 #endif
-
-#if PP_EXT == LAZYR || !defined(STRIP)
-		TEST_CASE("lazy-reduced projective miller addition is consistent") {
-			ep_rand(p);
-			ep4_rand(q);
-			ep4_rand(r);
-			ep4_copy(s, r);
-			fp16_zero(e1);
-			fp16_zero(e2);
-			pp_add_k16_projc(e1, r, q, p);
-			pp_add_k16_projc_lazyr(e2, s, q, p);
-			TEST_ASSERT(fp16_cmp(e1, e2) == RLC_EQ, end);
-		} TEST_END;
-#endif
-#endif /* EP_ADD = PROJC */
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");

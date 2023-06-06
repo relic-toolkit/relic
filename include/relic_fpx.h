@@ -941,6 +941,20 @@ typedef fp18_t fp54_t[3];
 #endif
 
 /**
+ * Multiplies a dense and a sparse sextic extension field elements. Computes
+ * C = A * B.
+ *
+ * @param[out] C			- the result.
+ * @param[in] A				- the dense dodecic extension field element.
+ * @param[in] B				- the sparse dodecic extension field element.
+ */
+#if FPX_RDC == BASIC
+#define fp16_mul_dxs(C, A, B)	fp16_mul_dxs_basic(C, A, B)
+#elif FPX_RDC == LAZYR
+#define fp16_mul_dxs(C, A, B)	fp16_mul_dxs_lazyr(C, A, B)
+#endif
+
+/**
  * Squares an sextadecic extension field element. Computes C = A * A.
  *
  * @param[out] C			- the result.
@@ -3867,6 +3881,16 @@ void fp16_conv_cyc(fp16_t c, const fp16_t a);
 void fp16_exp(fp16_t c, const fp16_t a, const bn_t b);
 
 /**
+ * Computes a power of a sextic extension field element by a small exponent.
+ * Faster formulas are used if the extension field element is cyclotomic.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the basis.
+ * @param[in] b				- the exponent.
+ */
+void fp16_exp_dig(fp16_t c, const fp16_t a, dig_t b);
+
+/**
  * Computes a power of a cyclotomic sextadecic extension field element.
  *
  * @param[out] c			- the result.
@@ -4230,7 +4254,7 @@ void fp18_frb(fp18_t c, const fp18_t a, int i);
 void fp18_exp(fp18_t c, const fp18_t a, const bn_t b);
 
 /**
- * Computes a power of a dodecic extension field element by a small exponent.
+ * Computes a power of a octdecic extension field element by a small exponent.
  * Faster formulas are used if the extension field element is cyclotomic.
  *
  * @param[out] c			- the result.

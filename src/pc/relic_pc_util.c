@@ -118,6 +118,9 @@ int g1_is_valid(const g1_t a) {
 					ep_psi(v, a);
 					r = g1_on_curve(a) && (g1_cmp(v, u) == RLC_EQ);
 					break;
+				/* Formular from "Fast Subgroup Membership Testings on Pairing-
+				 * friendly Curves" by Yu Dai, Kaizhan Lin, Chang-An Zhao,
+				 * Zijian Zhou. https://eprint.iacr.org/2022/348.pdf */
 				case EP_K16:
 				    /* If u= 25 or 45 mod 70 then a1 = ((u//5)**4 + 5)//14
 					 * is an integer by definition.  */
@@ -127,17 +130,23 @@ int g1_is_valid(const g1_t a) {
 					bn_sqr(n, n);
 					bn_add_dig(n, n, 5);
 					bn_div_dig(n, n, 14);
+					bn_mul_dig(n, n, 17);
+					bn_neg(n, n);
+					bn_add_dig(n, n, 6);
 					/* Compute P1 = a1*P. */
 					g1_mul_any(w, a, n);
-					/* Compute P0= -443*P1 + 157*P. */
-					g1_mul_dig(v, a, 157);
-					g1_mul_dig(u, w, 256);
-					g1_sub(v, v, u);
-					g1_mul_dig(u, w, 187);
-					g1_sub(v, v, u);
-					ep_psi(u, w);
-					/* Check that P0 == -\psi(P1).*/
-					r = g1_on_curve(a) && (g1_cmp(v, u) == RLC_EQ);
+					/* Compute \psi([17]P1) - [31]P1 */
+					g1_dbl(u, w);
+					g1_dbl(u, u);
+					g1_dbl(u, u);
+					g1_dbl(v, u);
+					g1_add(u, v, w);
+					g1_dbl(v, v);
+					g1_sub(v, v, w);
+					ep_psi(u, u);
+					g1_add(u, u, v);
+					g1_neg(u, u);
+					r = g1_on_curve(a) && (g1_cmp(u, a) == RLC_EQ);
 					break;
 				case EP_K18:
 					/* Check that [a_0]P + [a_1]\psi(P)) == O, for
@@ -280,46 +289,41 @@ int g2_is_valid(const g2_t a) {
                 g2_dbl(v, v);
 				r = g2_on_curve(a) && (g2_cmp(u, v) == RLC_EQ);
 				break;
+			/* Formulas from "Fast Subgroup Membership Testings for G1,
+			 * G2 and GT on Pairing-friendly Curves" by Dai et al.
+			 * https://eprint.iacr.org/2022/348.pdf
+			 * Paper has u = 45 mod 70, we ran their code for u = 25 mod 70. */
 			case EP_K16:
 				fp_prime_get_par(n);
 				/* Compute s = (u - 25)/70. */
 				bn_sub_dig(n, n, 25);
 				bn_div_dig(n, n, 70);
 				/* TODO: optimize further. */
-				/* [27*s+10, 3*s+2, 15*s+6, 13*s+5, 19*s+7, 21*s+7, 5*s+2, s] */
+				/* [11s + 4, 9s+3, 3s+1, -(3s+1), -13*u-5, -7*u-3, u, -11s-4] */
+				/* [2*c6+c1+1,3*c2,3*c6+1,c3,2*c5+c6+14,-(2*c2+c6+1),c6,-c0] */
 				g2_mul_any(u, a, n);	/* u = a^s*/
+				g2_frb(w, u, 6);
 				g2_dbl(s, u);
-				g2_frb(w, u, 7);
-				g2_add(v, u, a);
-				g2_dbl(v, v);
-				g2_add(t, v, u);		/* t = a^(3s + 2) */
-				g2_copy(u, v);
-				g2_frb(v, t, 1);
-				g2_add(w, w, v);
-				g2_add(t, t, s);		/* t = a^(5s + 2). */
-				g2_frb(v, t, 6);
-				g2_add(w, w, v);
-				g2_dbl(v, t);
-				g2_add(t, t, v);		/* t = a^(15s + 6). */
+				g2_add(v, s, a);
+				g2_add(t, v, u);		/* t = a^(3s + 1) */
+				g2_copy(u, v);			/* u = a^(2s + 1)*/
 				g2_frb(v, t, 2);
 				g2_add(w, w, v);
-				g2_sub(v, t, s);
-				g2_sub(v, v, a);		/* t = a^(13s + 5). */
-				g2_frb(v, v, 3);
+				g2_frb(v, t, 3);
+				g2_sub(w, w, v);
+				g2_dbl(v, t);
+				g2_add(t, t, v);		/* t = a^(9s + 3). */
+				g2_frb(v, t, 1);
 				g2_add(w, w, v);
-				g2_add(t, t, a);		/* t = a^(15s + 7). */
-				g2_dbl(v, s);
-				g2_add(t, t, v);		/* t = a^(19s + 7). */
-				g2_frb(v, t, 4);
-				g2_add(w, w, v);
-				g2_add(t, t, s);		/* t = a^(21s + 7). */
-				g2_frb(v, t, 5);
-				g2_add(w, w, v);
-				g2_add(t, t, u);		/* t = a^(23s + 9). */
-				g2_dbl(s, s);
-				g2_add(t, t, s);
-				g2_add(t, t, a);		/* t = a^(27s + 10). */
-				g2_neg(t, t);
+				g2_sub(s, t, s);		/* s = a^(7s + 3). */
+				g2_frb(v, s, 5);
+				g2_sub(w, w, v);
+				g2_add(t, t, u);		/* t = a^(11s + 4). */
+				g2_add(w, w, t);
+				g2_frb(v, t, 7);
+				g2_sub(w, w, v);
+				g2_add(t, t, u);		/* t = a^(13s + 5). */
+				g2_frb(t, t, 4);
 				r = g2_on_curve(a) && (g2_cmp(w, t) == RLC_EQ);
 				break;
 			case EP_K18:

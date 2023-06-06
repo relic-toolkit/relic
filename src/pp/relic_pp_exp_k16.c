@@ -108,7 +108,7 @@ static void pp_exp_kss(fp16_t c, fp16_t a) {
 		fp16_sqr_cyc(t10, t9);
 		fp16_exp_cyc(t11, t5, x);
 		fp16_exp_cyc(t12, t11, x);
-		fp16_mul(t13, t12, t9);
+		fp16_mul(t13, t12, t10);
 
 		fp16_exp_cyc(t9, t13, x);
 		fp16_inv_cyc(t2, t9);
@@ -159,14 +159,21 @@ static void pp_exp_kss(fp16_t c, fp16_t a) {
 		fp16_mul(t9, t9, t10);
 		fp16_mul(t9, t9, t11);
 		fp16_mul(t9, t9, t6);
-		fp16_exp_dig(t12, t12, 24);
+		fp16_sqr_cyc(t5, t12);
+		fp16_mul(t5, t5, t12);
+		fp16_sqr_cyc(t5, t5);
+		fp16_sqr_cyc(t5, t5);
+		fp16_sqr_cyc(t12, t5);
 		fp16_mul(t5, t7, t12);
 		fp16_inv_cyc(t5, t5);
 		fp16_sqr_cyc(t10, t8);
 		fp16_mul(t8, t8, t10);
 		fp16_mul(t6, t8, t1);
 		fp16_mul(t7, t5, t6);
-		fp16_exp_dig(t8, t13, 7);
+		fp16_sqr_cyc(t8, t13);
+		fp16_mul(t8, t8, t13);
+		fp16_sqr_cyc(t8, t8);
+		fp16_mul(t8, t8, t13);
 		fp16_frb(c, c, 1);
 		fp16_frb(t7, t7, 3);
 		fp16_frb(t3, t3, 5);
@@ -178,6 +185,7 @@ static void pp_exp_kss(fp16_t c, fp16_t a) {
 		fp16_frb(t4, t4, 4);
 		fp16_frb(t2, t2, 6);
 		fp16_mul(t2, t2, t0);
+
 		fp16_mul(c, t2, t9);
 		fp16_mul(c, c, t1);
 		fp16_mul(c, c, t4);
