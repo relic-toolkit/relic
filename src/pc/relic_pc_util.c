@@ -307,6 +307,19 @@ int g2_is_valid(const g2_t a) {
                 g2_dbl(v, v);
 				r = g2_on_curve(a) && (g2_cmp(u, v) == RLC_EQ);
 				break;
+			/* If u is even, check that [u*p^3]P = P
+			 * else check [p^5]P = [u]P. */
+			case EP_N16:
+				fp_prime_get_par(n);
+				g2_mul_any(u, a, n);
+				if (bn_is_even(n)) {
+					g2_frb(v, u, 3);
+					g2_copy(u, a);
+				} else {
+					g2_frb(v, a, 5);
+				}
+				r = g2_on_curve(a) && (g2_cmp(u, v) == RLC_EQ);
+				break;
 			/* Formulas from "Fast Subgroup Membership Testings for G1,
 			 * G2 and GT on Pairing-friendly Curves" by Dai et al.
 			 * https://eprint.iacr.org/2022/348.pdf
