@@ -536,6 +536,17 @@ void fp_param_set(int param) {
 				bn_neg(t0, t0);
 				fp_prime_set_pairf(t0, EP_SG18);
 				break;
+#elif FP_PRIME == 765
+			case N16_765:
+				/* u = -(2^48 - 2^44 + 2^37) */
+				bn_set_2b(t0, 48);
+				bn_set_2b(t1, 44);
+				bn_sub(t0, t0, t1);
+				bn_set_2b(t1, 37);
+				bn_add(t0, t0, t1);
+				bn_neg(t0, t0);
+				fp_prime_set_pairf(t0, EP_N16);
+				break;
 #elif FP_PRIME == 766
 			case K16_766:
 				/* u = 2^78-2^76-2^28+2^14+2^7+1 */
@@ -725,6 +736,8 @@ int fp_param_set_any_tower(void) {
 	fp_param_set(K18_638);
 	//fp_param_set(SG18_638);
 #endif
+#elif FP_PRIME == 765
+	fp_param_set(N16_765);
 #elif FP_PRIME == 766
 	fp_param_set(K16_766);
 #elif FP_PRIME == 1536

@@ -665,6 +665,18 @@
  * Parameters for a 638-bit pairing-friendly prime curve.
  */
 /** @{ */
+#define N16_P765_A		"1"
+#define N16_P765_B		"0"
+#define N16_P765_X		"142C0C1D97081512EADDEC26AD675BB8AC57ABE66E245D39CD4F33A52E5FD6F2314C3AF9FC30A7C1474206E73245002E7C5DBBE2C1EF60C67835D0E39F21747AA403C63B433EB0366FC1885132192C3DEBD0649F74299F53083538194022C6B1"
+#define N16_P765_Y		"16F7F007A327D9BB672592E8A71586E835DA81B008E9CACFE0BFB56A95E3C02F1C0923870E3F255F67E5B1267F4C27368D91EC3A02D251F394777C64BBC9C6146F7E07EC6C5831CB783D6589B77A9650457AEAB26D61379272122D879DA68B85"
+#define N16_P765_R		"9965D956A0DBC8AF273C0100000000000000000000000000000000000000000000000000000000000000000000000001"
+#define N16_P765_H		"26597655A836F22BC9CF003FFFFFFFFFFFFFA30FAB330D5A7F0000000000000000000000384F01000000000000000000"
+/** @} */
+
+/**
+ * Parameters for a 638-bit pairing-friendly prime curve.
+ */
+/** @{ */
 #define K16_P766_A		"1"
 #define K16_P766_B		"0"
 #define K16_P766_X		"025F4A0BE80AC747A4C260A96F17BACD76B068415EC40DBAC38FCDD5FF14A5974A3B73AFE417CB4391CFC9A5E8F5DA2C7E6244E30CFE1097AE864DD3FC5B45450043F0EFE0C181D198E6C07129367CF4A7E78ACD4D1C438AD486AF79BB712017"
@@ -1121,6 +1133,13 @@ void ep_param_set(int param) {
 				pairf = EP_SG18;
 				break;
 #endif
+#if defined(EP_ENDOM) && FP_PRIME == 765
+			case N16_P765:
+				ASSIGN(N16_P765, N16_765);
+				endom = 1;
+				pairf = EP_N16;
+				break;
+#endif
 #if defined(EP_ENDOM) && FP_PRIME == 766
 			case K16_P766:
 				ASSIGN(K16_P766, K16_766);
@@ -1186,6 +1205,11 @@ void ep_param_set(int param) {
 					/* lambda = z^2 - 1 */
 					bn_sqr(lamb, lamb);
 					bn_sub_dig(lamb, lamb, 1);
+					break;
+				case EP_N16:
+					bn_sqr(lamb, lamb);
+					bn_sqr(lamb, lamb);
+					bn_neg(lamb, lamb);
 					break;
 				case EP_K16:
 					/* lambda = -(z^4 + 24)/7 */
@@ -1390,6 +1414,8 @@ int ep_param_set_any_endom(void) {
 	ep_param_set(K18_P638);
 	//ep_param_set(SG18_P638);
 #endif
+#elif FP_PRIME == 765
+	ep_param_set(N16_P765);
 #elif FP_PRIME == 766
 	ep_param_set(K16_P766);
 #else
@@ -1496,7 +1522,11 @@ int ep_param_set_any_pairf(void) {
 	ep_param_set(B12_P638);
 	type = RLC_EP_MTYPE;
 	extension = 2;
-#elif FP_PRIME == 508
+#elif FP_PRIME == 765
+	ep_param_set(N16_P765);
+	type = RLC_EP_MTYPE;
+	extension = 4;
+#elif FP_PRIME == 766
 	ep_param_set(K16_P766);
 	type = RLC_EP_MTYPE;
 	extension = 4;

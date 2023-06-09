@@ -223,7 +223,6 @@ void fp16_mul_dxs_lazyr(fp16_t c, const fp16_t a, const fp16_t b) {
 
 	fp8_null(t0);
 	fp8_null(t1);
-	dv8_null(t);
 	dv8_null(u0);
 	dv8_null(u1);
 	dv8_null(u2);

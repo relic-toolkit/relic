@@ -147,7 +147,7 @@ static void fp_prime_set(const bn_t p) {
 				break;
 		}
 
-		/* Check if qnr it is a quadratic non-residue or find another. */
+		/* Check if qnr is a quadratic non-residue or find another. */
 		fp_set_dig(r, -ctx->qnr);
 		fp_neg(r, r);
 		while (fp_is_sqr(r)) {
@@ -156,7 +156,7 @@ static void fp_prime_set(const bn_t p) {
 			fp_neg(r, r);
 		};
 
-		/* Check if cnr it is a cubic non-residue or find another. */
+		/* Check if cnr is a cubic non-residue or find another. */
 		if (ctx->mod18 % 3 == 1) {
 			if (ctx->cnr > 0) {
 				fp_set_dig(r, ctx->cnr);
@@ -173,6 +173,8 @@ static void fp_prime_set(const bn_t p) {
 					fp_neg(r, r);
 				};
 			}
+		} else {
+			ctx->cnr = 0;
 		}
 
 #ifdef FP_QNRES
@@ -426,6 +428,32 @@ void fp_prime_set_pairf(const bn_t x, int pairf) {
 				bn_add(p, p, t1);
 				bn_mul(t1, t1, t0);
 				bn_add(p, p, t1);
+				bn_div_dig(p, p, 4);
+				fp_prime_set_dense(p);
+				break;
+			case EP_N16:
+				/* p = (x^16 + 2*x^13 + x^10 + 5*x^8 + 6*x^5 + x^2 + 4)/4 */
+				bn_sqr(p, t0);
+				bn_mul(p, p, t0);
+				bn_add_dig(p, p, 2);
+				bn_mul(p, p, t0);
+				bn_mul(p, p, t0);
+				bn_mul(p, p, t0);
+				bn_add_dig(p, p, 1);
+				bn_mul(p, p, t0);
+				bn_mul(p, p, t0);
+				bn_add_dig(p, p, 5);
+				bn_mul(p, p, t0);
+				bn_mul(p, p, t0);
+				bn_mul(p, p, t0);
+				bn_add_dig(p, p, 6);
+				bn_mul(p, p, t0);
+				bn_mul(p, p, t0);
+				bn_mul(p, p, t0);
+				bn_add_dig(p, p, 1);
+				bn_mul(p, p, t0);
+				bn_mul(p, p, t0);
+				bn_add_dig(p, p, 4);
 				bn_div_dig(p, p, 4);
 				fp_prime_set_dense(p);
 				break;
