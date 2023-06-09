@@ -40,12 +40,15 @@
 void ep_mul_cof(ep_t r, const ep_t p) {
 	ep_t v;
 	bn_t k;
+	bn_t l;
 
 	bn_null(k);
+	bn_null(l);
 	ep_null(v);
 
 	RLC_TRY {
 		bn_new(k);
+		bn_new(l);
 		ep_new(v);
 
 		switch (ep_curve_is_pairf()) {
@@ -60,6 +63,23 @@ void ep_mul_cof(ep_t r, const ep_t p) {
 				fp_prime_get_par(k);
 				bn_neg(k, k);
 				bn_add_dig(k, k, 1);
+				if (bn_bits(k) < RLC_DIG) {
+					ep_mul_dig(r, p, k->dp[0]);
+				} else {
+					ep_mul_basic(r, p, k);
+				}
+				break;
+			case EP_N16:
+				/* if (u % 2) == 0, compute = (u * (u**3+1)//2)*P
+    			 * else Compute (u * (u**3+1))*P */
+				fp_prime_get_par(k);
+				bn_sqr(l, k);
+				bn_mul(l, l, k);
+				bn_add_dig(l, l, 1);
+				bn_mul(k, l, k);
+				if (bn_is_even(k)) {
+					bn_hlv(k, k);
+				}
 				if (bn_bits(k) < RLC_DIG) {
 					ep_mul_dig(r, p, k->dp[0]);
 				} else {
@@ -126,6 +146,7 @@ void ep_mul_cof(ep_t r, const ep_t p) {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		bn_free(k);
+		bn_free(l);
 		ep_free(v);
 	}
 }

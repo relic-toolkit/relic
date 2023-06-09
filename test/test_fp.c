@@ -1148,22 +1148,24 @@ static int cube_root(void) {
 			fp_sqr(c, a);
 			fp_mul(c, c, a);
 			TEST_ASSERT(fp_crt(b, c), end);
-			fp_copy(d, fp_prime_get_crt());
-			while (fp_cmp_dig(d, 1) != RLC_EQ) {
-				fp_copy(c, d);
-				fp_sqr(d, d);
-				fp_mul(d, d, c);
-			}
-			if (fp_cmp(b, a) != RLC_EQ) {
-				fp_mul(b, b, c);
+			if (fp_prime_get_cnr()) {
+				fp_copy(d, fp_prime_get_crt());
+				while (fp_cmp_dig(d, 1) != RLC_EQ) {
+					fp_copy(c, d);
+					fp_sqr(d, d);
+					fp_mul(d, d, c);
+				}
 				if (fp_cmp(b, a) != RLC_EQ) {
 					fp_mul(b, b, c);
 					if (fp_cmp(b, a) != RLC_EQ) {
-						r = 0;
+						fp_mul(b, b, c);
+						if (fp_cmp(b, a) != RLC_EQ) {
+							r = 0;
+						}
 					}
 				}
+				TEST_ASSERT(r == 1, end);
 			}
-			TEST_ASSERT(r == 1, end);
 			fp_rand(a);
 			if (fp_crt(b, a)) {
 				fp_sqr(c, b);

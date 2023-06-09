@@ -1522,14 +1522,6 @@ int ep_param_set_any_pairf(void) {
 	ep_param_set(B12_P638);
 	type = RLC_EP_MTYPE;
 	extension = 2;
-#elif FP_PRIME == 765
-	ep_param_set(N16_P765);
-	type = RLC_EP_MTYPE;
-	extension = 4;
-#elif FP_PRIME == 766
-	ep_param_set(K16_P766);
-	type = RLC_EP_MTYPE;
-	extension = 4;
 #else
 	//ep_param_set(BN_P638);
 	//type = RLC_EP_DTYPE;
@@ -1539,6 +1531,10 @@ int ep_param_set_any_pairf(void) {
 	type = RLC_EP_MTYPE;
 	extension = 3;
 #endif
+#elif FP_PRIME == 765
+	ep_param_set(N16_P765);
+	type = RLC_EP_MTYPE;
+	extension = 4;
 #elif FP_PRIME == 766
 	ep_param_set(K16_P766);
 	type = RLC_EP_MTYPE;
@@ -1691,6 +1687,9 @@ void ep_param_print(void) {
 			break;
 		case SG18_P638:
 			util_banner("Curve SG18-P638:", 0);
+			break;
+		case N16_P765:
+			util_banner("Curve N16-P765:", 0);
 			break;
 		case K16_P766:
 			util_banner("Curve K16-P766:", 0);

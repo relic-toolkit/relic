@@ -120,7 +120,23 @@ int g1_is_valid(const g1_t a) {
 					ep_psi(v, a);
 					r = g1_on_curve(a) && (g1_cmp(v, u) == RLC_EQ);
 					break;
-				/* Formular from "Fast Subgroup Membership Testings on Pairing-
+				/* if (u % 2) == 0, check (u**4)*\psi(P) == P
+    		 	* else check (u**4-1)//2 * (\psi(P) - P) == P */
+				case EP_N16:
+					fp_prime_get_par(n);
+					bn_sqr(n, n);
+					bn_sqr(n, n);
+					ep_psi(u, a);
+					if (!bn_is_even(n)) {
+						bn_sub_dig(n, n, 1);
+						bn_hlv(n, n);
+						g1_sub(u, u, a);
+						g1_norm(u, u);
+					}
+					g1_mul_any(u, u, n);
+					r = g1_on_curve(a) && (g1_cmp(u, a) == RLC_EQ);
+					break;
+				/* Formulas from "Fast Subgroup Membership Testings on Pairing-
 				 * friendly Curves" by Yu Dai, Kaizhan Lin, Chang-An Zhao,
 				 * Zijian Zhou. https://eprint.iacr.org/2022/348.pdf */
 				case EP_K16:
