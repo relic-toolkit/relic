@@ -469,6 +469,20 @@ int gt_is_valid(const gt_t a) {
 				r = (gt_cmp(u, v) == RLC_EQ);
 				r &= fp12_test_cyc((void *)a);
 				break;
+			/* If u is even, check that [u*p^3]P = P
+			 * else check [p^5]P = [u]P. */
+			case EP_N16:
+				fp_prime_get_par(n);
+				gt_exp(u, a, n);
+				if (bn_is_even(n)) {
+					gt_frb(v, u, 3);
+					gt_copy(u, a);
+				} else {
+					gt_frb(v, a, 5);
+				}
+				r = (gt_cmp(u, v) == RLC_EQ);
+				r &= fp16_test_cyc((void *)a);
+				break;
 			case EP_K16:
 				/* Compute s = (u - 25)/70. */
 				bn_sub_dig(n, n, 25);
