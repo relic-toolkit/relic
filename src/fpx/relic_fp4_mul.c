@@ -177,6 +177,9 @@ void fp4_mul_frb(fp4_t c, const fp4_t a, int i, int j) {
 				/* If constant in base field, then second component is zero. */
 				if (core_get()->frb4 == 1) {
 					fp4_mul_art(c, c);
+					if (fp_prime_get_mod18() % 3 == 2) {
+						fp4_mul_art(c, c);
+					}
 				}
 			}
 	    } else {
