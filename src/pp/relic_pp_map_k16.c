@@ -489,6 +489,16 @@ void pp_map_oatep_k16(fp16_t r, const ep_t p, const ep4_t q) {
 
 		if (!ep_is_infty(_p[0]) && !ep4_is_infty(_q[0])) {
 			switch (ep_curve_is_pairf()) {
+				case EP_N16:
+					/* r = f_{|a|,Q}(P). */
+					pp_mil_k16(r, t, _q, _p, 1, a);
+					if (bn_sign(a) == RLC_NEG) {
+						/* f_{-a,Q}(P) = 1/f_{a,Q}(P). */
+						fp16_inv_cyc(r, r);
+						ep4_neg(t[0], t[0]);
+					}
+					pp_exp_k16(r, r);
+					break;
 				case EP_K16:
 					/* r = f_{|a|,Q}(P). */
 					pp_mil_k16(r, t, _q, _p, 1, a);
@@ -549,6 +559,15 @@ void pp_map_sim_oatep_k16(fp16_t r, const ep_t *p, const ep4_t *q, int m) {
 
 		if (j > 0) {
 			switch (ep_curve_is_pairf()) {
+				case EP_N16:
+					/* r = f_{|a|,Q}(P). */
+					pp_mil_k16(r, t, _q, _p, j, a);
+					if (bn_sign(a) == RLC_NEG) {
+						/* f_{-a,Q}(P) = 1/f_{a,Q}(P). */
+						fp16_inv_cyc(r, r);
+					}
+					pp_exp_k16(r, r);
+					break;
 				case EP_K16:
 					/* r = f_{|a|,Q}(P). */
 					pp_mil_k16(r, t, _q, _p, j, a);
