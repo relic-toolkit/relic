@@ -243,7 +243,7 @@ void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 	fp_t c, t, u, v, w, y, x1, y1, z1;
 	ctx_t *ctx = core_get();
 	bn_t k, n;
-	dig_t r;
+	dig_t r = 0;
 
 	bn_null(k);
 	bn_null(n);
@@ -284,8 +284,6 @@ void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 			 * https://eprint.iacr.org/2021/1604.pdf */
 			fp_set_dig(c, -fp_prime_get_qnr());
 			fp_neg(c, c);
-			fp_print(u);
-			fp_print(t);
 
 			/* u = t0, t = t1, v = t0^4, y = t1^4, w = c^2, z1 = 8*a^2*c. */
 			fp_sqr(v, u);
