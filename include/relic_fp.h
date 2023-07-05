@@ -1199,6 +1199,15 @@ void fp_exp_slide(fp_t c, const fp_t a, const bn_t b);
 void fp_exp_monty(fp_t c, const fp_t a, const bn_t b);
 
 /**
+ * Computes a power of a field element by a small exponent.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the basis.
+ * @param[in] b				- the exponent.
+ */
+void fp_exp_dig(fp_t c, const fp_t a, dig_t b);
+
+/**
  * Tests if a prime field element is a quadratic residue.
  *
  * @param[in] a				- the prime field element to test.

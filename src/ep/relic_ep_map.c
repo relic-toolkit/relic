@@ -242,8 +242,7 @@ void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 	uint8_t s, *pseudo_random_bytes = RLC_ALLOCA(uint8_t, 2 * len_per_elm + 1);
 	fp_t c, t, u, v, w, y, x1, y1, z1;
 	ctx_t *ctx = core_get();
-	bn_t k, n;
-	dig_t r = 0;
+	bn_t k;
 
 	bn_null(k);
 	bn_null(n);
@@ -259,7 +258,6 @@ void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 
 	RLC_TRY {
 		bn_new(k);
-		bn_new(n);
 		fp_new(c);
 		fp_new(t);
 		fp_new(u);
@@ -338,85 +336,62 @@ void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 			fp_mul(v, v, p->z);
 
 			bn_read_raw(k, fp_prime_get(), RLC_FP_DIGS);
-			bn_read_raw(n, fp_prime_get(), RLC_FP_DIGS);
-
 			if ((k->dp[0] & 0xF) == 5) {
-				r = 1;
-				bn_mul_dig(n, n, 3);
-				bn_add_dig(n, n, 1);
+				/* n = (3p + 1)/16 */
+				bn_mul_dig(k, k, 3);
+				bn_add_dig(k, k, 1);
 			} else if ((k->dp[0] & 0xF) == 13) {
-				r = 3;
-				bn_add_dig(n, n, 3);
-			} else {
-				RLC_THROW(ERR_NO_VALID);
+				/* n = (p + 3)/16 */
+				bn_add_dig(k, k, 3);
 			}
-			bn_rsh(n, n, 4);
-			/* Compute y1 = d = c^n. */
-			fp_exp(y1, c, n);
+			bn_rsh(k, k, 4);
 			/* Compute x1 = f = t^3 + a*t = t(t^2 + a). */
 			fp_sqr(x1, v);
 			fp_add(x1, x1, ep_curve_get_a());
 			fp_mul(x1, x1, v);
-			/* Compute c = i = (c|p)_4*/
-			bn_sub_dig(k, k, 1);
-			bn_rsh(k, k, 2);
-			fp_exp(c, c, k);
 			/* Compute y = theta, w = theta^4. */
-			fp_exp(y, x1, n);
+			fp_exp(y, x1, k);
 			fp_sqr(w, y);
 			fp_sqr(w, w);
 			/* Compute c = i^r * f. */
-			bn_set_dig(n, r);
-			fp_exp(c, c, n);
-			fp_mul(c, c, x1);
+			fp_mul(c, ctx->ep_map_c[5], x1);
+			/* TODO: sorting + endomorphisms */
+			fp_copy(p->x, v);
+			fp_sqr(p->y, y);
 			fp_set_dig(p->z, 1);
 			p->coord = BASIC;
-			if (fp_cmp(w, x1) == RLC_EQ) {
-				fp_copy(p->x, v);
-				fp_sqr(p->y, y);
-			} else {
-				fp_neg(x1, x1);
-				if (fp_cmp(w, x1) == RLC_EQ) {
-					fp_copy(p->x, v);
-					fp_sqr(p->y, y);
-					fp_neg(z1, p->z);
-					fp_srt(z1, z1);
-					fp_inv(z1, z1);
-					fp_mul(p->y, p->y, z1);
-				} else {
-					fp_mul(y, y, y1);
-					fp_inv(y, y);
-					if (fp_cmp(w, c) == RLC_EQ) {
-						fp_mul(p->x, u, y);
-						fp_mul(p->x, p->x, y);
-						fp_mul(p->y, w, y);
-						fp_mul(p->y, p->y, y);
-						fp_mul(p->y, p->y, y);
-					} else {
-						fp_inv(y1, y1);
-						fp_neg(c, c);
-						if (fp_cmp(w, c) == RLC_EQ) {
-							fp_mul(p->x, t, y);
-							fp_mul(p->x, p->x, y);
-							fp_mul(p->x, p->x, y1);
-							fp_mul(p->x, p->x, y1);
-							fp_mul(p->x, p->x, y1);
-							fp_mul(p->x, p->x, y1);
-							fp_mul(p->y, z1, y);
-							fp_mul(p->y, p->y, y);
-							fp_mul(p->y, p->y, y);
-							fp_mul(p->y, p->y, y1);
-							fp_mul(p->y, p->y, y1);
-							fp_mul(p->y, p->y, y1);
-							fp_mul(p->y, p->y, y1);
-							fp_mul(p->y, p->y, y1);
-							fp_mul(p->y, p->y, y1);
-						} else {
-							RLC_THROW(ERR_NO_VALID);
-						}
-					}
-				}
-			}
+			fp_neg(y1, x1);
+			/* Compute 1/d * 1/theta. */
+			fp_inv(y, y);
+			fp_mul(y, y, ctx->ep_map_c[4]);
+			dig_t c0 = fp_cmp(w, x1);
+			dig_t c1 = fp_cmp(w, y1);
+			dig_t c2 = fp_cmp(w, c);
+			fp_neg(c, c);
+			dig_t c3 = fp_cmp(w, c);
+			c2 = (c0 != RLC_EQ) && (c1 != RLC_EQ) && (c2 == RLC_EQ);
+			c3 = (c0 != RLC_EQ) && (c1 != RLC_EQ) && (c2 != RLC_EQ) && (c3 == RLC_EQ);
+			fp_copy(y1, ctx->ep_map_c[4]);
+			/* Compute (x,y) = (x0/(d\theta)^2, y0/(d\theta)^3). */
+			fp_mul(w, w, y);
+			fp_sqr(y, y);
+			fp_mul(u, u, y);
+			fp_mul(w, w, y);
+			dv_copy_cond(p->x, u, RLC_FP_DIGS, c2);
+			dv_copy_cond(p->y, w, RLC_FP_DIGS, c2);
+			/* Compute (x,y) = (x1/(d^3\theta)^2, y1/(d^3\theta)^3). */
+			fp_mul(z1, z1, y);
+			fp_sqr(y, y);
+			fp_mul(t, t, y);
+			fp_mul(z1, z1, y);
+			fp_sqr(y1, y1);
+			fp_mul(z1, z1, y1);
+			fp_sqr(y1, y1);
+			fp_mul(t, t, y1);
+			fp_mul(z1, z1, y1);
+			dv_copy_cond(p->x, t, RLC_FP_DIGS, c3);
+			dv_copy_cond(p->y, z1, RLC_FP_DIGS, c3);
+			/* Multiply by cofactor. */
 			ep_mul_cof(p, p);
 		} else {
 			/* This is the SwiftEC case per se. */

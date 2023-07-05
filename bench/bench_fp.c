@@ -641,6 +641,13 @@ static void arith(void) {
 	BENCH_END;
 #endif
 
+	BENCH_RUN("fp_exp_dig") {
+		fp_rand(a);
+		bn_rand(e, RLC_POS, RLC_DIG);
+		BENCH_ADD(fp_exp_dig(b, a, e->dp[0]));
+	}
+	BENCH_END;
+
 	BENCH_RUN("fp_is_sqr") {
 		fp_rand(a);
 		BENCH_ADD(fp_is_sqr(a));

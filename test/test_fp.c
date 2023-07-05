@@ -1191,17 +1191,20 @@ static int digit(void) {
 	int code = RLC_ERR;
 	fp_t a, b, c, d;
 	dig_t g;
+	bn_t e;
 
 	fp_null(a);
 	fp_null(b);
 	fp_null(c);
 	fp_null(d);
+	bn_null(e);
 
 	RLC_TRY {
 		fp_new(a);
 		fp_new(b);
 		fp_new(c);
 		fp_new(d);
+		bn_new(e);
 
 		TEST_CASE("addition of a single digit is consistent") {
 			fp_rand(a);
@@ -1232,6 +1235,15 @@ static int digit(void) {
 			fp_mul_dig(d, a, g);
 			TEST_ASSERT(fp_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
+
+		TEST_CASE("exponentiation by a single digit is consistent") {
+			fp_rand(a);
+			bn_rand(e, RLC_POS, RLC_DIG);
+			fp_exp_dig(b, a, e->dp[0]);
+			fp_exp(c, a, e);
+			TEST_ASSERT(fp_cmp(b, c) == RLC_EQ, end);
+		} TEST_END;
+
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);
@@ -1242,6 +1254,7 @@ static int digit(void) {
 	fp_free(b);
 	fp_free(c);
 	fp_free(d);
+	bn_free(e);
 	return code;
 }
 
