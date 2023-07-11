@@ -1181,8 +1181,6 @@ static int validity2(void) {
 	return code;
 }
 
-#if FP_PRIME != 509
-
 static int hashing2(void) {
 	int code = RLC_ERR;
 	g2_t a;
@@ -1215,8 +1213,6 @@ static int hashing2(void) {
 	bn_free(n);
 	return code;
 }
-
-#endif
 
 static int memory(void) {
 	err_t e = ERR_CAUGHT;
@@ -1749,11 +1745,9 @@ int test2(void) {
 		return RLC_ERR;
 	}
 
-#if FP_PRIME != 509 && FP_PRIME != 766
 	if (hashing2() != RLC_OK) {
 		return RLC_ERR;
 	}
-#endif
 
 	return RLC_OK;
 }
