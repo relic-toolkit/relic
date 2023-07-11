@@ -205,7 +205,6 @@ static void ep_curve_set_map(void) {
 			fp_set_dig(c6, 1);
 			fp_neg(c6, c6);
 			fp_srt(c6, c6);
-			fp_inv(c6, c6);
 		}
 
 		/* If a = 0, precompute and store a square root of -3. */

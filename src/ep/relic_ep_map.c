@@ -276,7 +276,77 @@ void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 		fp_prime_conv(t, k);
 		s = pseudo_random_bytes[2 * len_per_elm] & 1;
 
-		if (ep_curve_opt_b() == RLC_ZERO) {
+		if ((ep_curve_opt_b() == RLC_ZERO) && (ctx->mod8 == 1)) {
+			/* This is the approach due to Koshelev introduced in
+			 * https://eprint.iacr.org/2021/1034.pdf */
+			
+			/* Compute t^2 = 3c*sqrt(a)*(2c^3*x^6 - 3*c^2*x^4 - 3*c*x^2 + 2).*/
+			/* Compute w = 3*c. */
+			fp_set_dig(c, -fp_prime_get_qnr());
+			fp_neg(c, c);
+			fp_dbl(w, c);
+			fp_add(w, w, c);
+
+			/* Compute x^2, x^4 and x^6 in sequence. */
+			fp_sqr(z1, u);
+			fp_sqr(y1, z1);
+			fp_mul(t, z1, y1);
+
+			fp_dbl(t, t);
+			fp_mul(t, t, c);
+			fp_mul(t, t, c);
+			fp_mul(t, t, c);
+
+			fp_mul(v, y1, c);
+			fp_mul(v, v, w);
+			fp_sub(t, t, v);
+
+			/* v = -3*c*x^2. */
+			fp_mul(v, w, z1);
+			fp_neg(v, v);
+			fp_add(t, t, v);
+			fp_add_dig(t, t, 2);
+
+			/* Assume a = 1 for simplicitly. */
+			fp_mul(t, t, w);
+			fp_mul(t, t, ctx->ep_map_c[6]);
+			dig_t c1 = fp_is_sqr(t);
+			/* If t is not square, compute u = 1/(uc), t = sqrt(t/c)/(c*u^3)*/
+			fp_inv(v, c);
+			fp_inv(x1, u);
+			fp_mul(y1, t, v);
+			/* If t is a square, extract its square root. */
+			dv_copy_cond(t, y1, RLC_FP_DIGS, !c1);
+			fp_srt(t, t);
+			fp_mul(y1, t, v);
+			fp_sqr(y, x1);
+			fp_mul(y, y, x1);
+			fp_mul(y1, y1, y);
+			fp_mul(x1, x1, v);
+			dv_copy_cond(u, x1, RLC_FP_DIGS, !c1);
+			dv_copy_cond(t, y1, RLC_FP_DIGS, !c1);
+
+			/* Compute x = sqrt(a)*(c*x^2 - 2)/(-3*c*x^2). */
+			fp_sqr(z1, u);
+			fp_mul(v, w, z1);
+			fp_neg(v, v);
+			fp_inv(v, v);
+			fp_mul(p->x, z1, c);
+			fp_sub_dig(p->x, p->x, 2);
+			fp_mul(p->x, p->x, v);
+			fp_mul(p->x, p->x, ctx->ep_map_c[6]);
+
+			/* Compute y = y*2*sqrt(a)/(3^2*c^2*x^3). */
+			fp_mul(z1, z1, u);
+			fp_sqr(w, w);
+			fp_mul(w, w, z1);
+			fp_inv(w, w);
+			fp_dbl(p->y, ctx->ep_map_c[6]);
+			fp_mul(p->y, p->y, t);
+			fp_mul(p->y, p->y, w);
+			fp_set_dig(p->z, 1);
+			p->coord = BASIC;
+		} else if ((ep_curve_opt_b() == RLC_ZERO) && (ctx->mod8 != 1)) {
 			/* This is the approach due to Koshelev introduced in
 			 * https://eprint.iacr.org/2021/1604.pdf */
 			fp_set_dig(c, -fp_prime_get_qnr());

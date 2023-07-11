@@ -74,7 +74,6 @@ void ep4_map(ep4_t p, const uint8_t *msg, size_t len) {
 			/* This is the approach due to Koshelev introduced in
 			 * https://eprint.iacr.org/2021/1034.pdf */
 			
-			/* Compute c = 3*a^2, t^2 = 6a(9u^5 − 14au^3 + 3cu).*/
 			md_xmd(h, 4 * elm + 1, msg, len, (const uint8_t *)"RELIC", 5);
 			for (int i = 0; i < 2; i++) {
 				for (int j = 0; j < 2; j++) {
@@ -84,9 +83,9 @@ void ep4_map(ep4_t p, const uint8_t *msg, size_t len) {
 				}
 			}
 
+			/* Compute c = 3*a^2, t^2 = 6a(9u^5 − 14au^3 + 3cu).*/
 			ep4_curve_get_a(a);
 			fp4_neg(a, a);
-			/* Compute c = 3a^2, t = 9a^2u. */
 			fp4_sqr(c, a);
 			fp4_dbl(t, c);
 			fp4_add(c, c, t);
