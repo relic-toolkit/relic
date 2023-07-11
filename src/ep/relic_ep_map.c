@@ -245,7 +245,6 @@ void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 	bn_t k;
 
 	bn_null(k);
-	bn_null(n);
 	fp_null(c);
 	fp_null(t);
 	fp_null(u);
@@ -307,7 +306,7 @@ void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 			fp_mul(z1, z1, c);
 			fp_mul(z1, z1, ep_curve_get_a());
 			fp_dbl(z1, z1);
-			/* v = num2 = c^4*t0^8 - 2*c^2t0^4t1^4 + t1^8 - 16*a^3*c^2*/
+			/* v = num2 = c^4*t0^8 - 2*c^2t0^4*t1^4 + t1^8 - 16*a^3*c^2*/
 			fp_sub(v, y1, x1);
 			fp_add(v, v, y);
 			fp_sub(v, v, z1);
@@ -317,8 +316,8 @@ void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 			fp_sub(w, w, y1);
 			fp_sub(w, w, y1);
 			fp_sub(w, w, y1);
-			fp_mul(w, w, c);
 			fp_mul(w, w, u);
+			fp_mul(w, w, c);
 			fp_mul(w, w, ep_curve_get_a());
 			/* z1 = num1 = t1 * ac^2(c^4t0^8 + 2c^2t0^4*t1^4 - 3^t1^8 + 16a^3c^2)*/
 			fp_sub(z1, z1, y);
@@ -330,10 +329,11 @@ void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 			fp_mul(z1, z1, c);
 			fp_mul(z1, z1, c);
 			fp_mul(z1, z1, ep_curve_get_a());
-			/* v2 = num2/den = z1/w. */
+			/* v2 = num2/den = v/w. */
 			fp_mul(w, w, p->z);
 			fp_mul(z1, z1, p->z);
 			fp_mul(v, v, p->z);
+			fp_inv(v, v);
 
 			bn_read_raw(k, fp_prime_get(), RLC_FP_DIGS);
 			if ((k->dp[0] & 0xF) == 5) {
@@ -343,55 +343,80 @@ void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 			} else if ((k->dp[0] & 0xF) == 13) {
 				/* n = (p + 3)/16 */
 				bn_add_dig(k, k, 3);
+			} else {
+				RLC_THROW(ERR_NO_VALID);
 			}
 			bn_rsh(k, k, 4);
-			/* Compute x1 = f = t^3 + a*t = t(t^2 + a). */
+			/* Compute x1 = f = (1/v2)^3 + a*(1/v2) = (1/v2)((1/v2)^2 + a). */
 			fp_sqr(x1, v);
 			fp_add(x1, x1, ep_curve_get_a());
 			fp_mul(x1, x1, v);
-			/* Compute y = theta, w = theta^4. */
+			/* Compute y = theta, zp = theta^4. */
 			fp_exp(y, x1, k);
-			fp_sqr(w, y);
-			fp_sqr(w, w);
+			fp_sqr(p->z, y);
+			fp_sqr(p->z, p->z);
+			/* Perform the base change from (t0,t1) to (u0, u1). */
+			fp_sqr(u, u);
+			fp_mul(u, u, c);
+			fp_sqr(t, t);
+			fp_mul(t, t, c);
 			/* Compute c = i^r * f. */
 			fp_mul(c, ctx->ep_map_c[5], x1);
-			/* TODO: sorting + endomorphisms */
 			fp_copy(p->x, v);
 			fp_sqr(p->y, y);
-			fp_set_dig(p->z, 1);
 			p->coord = BASIC;
+			/* We use zp as temporary, but there is no problem with \psi. */
+			int index = 0;
+			fp_copy(y1, u);
+			/* Make the following constant-time. */
+			for (int m = 0; m < 4; m++) {
+				fp_mul(y1, y1, ctx->ep_map_c[5]);
+				index += (fp_bits(y1) < fp_bits(u));
+			}
+			for (int m = 0; m < index; m++) {
+				ep_psi(p, p);
+			}
 			fp_neg(y1, x1);
 			/* Compute 1/d * 1/theta. */
 			fp_inv(y, y);
 			fp_mul(y, y, ctx->ep_map_c[4]);
-			dig_t c0 = fp_cmp(w, x1);
-			dig_t c1 = fp_cmp(w, y1);
-			dig_t c2 = fp_cmp(w, c);
+			dig_t c0 = fp_cmp(p->z, x1) == RLC_EQ;
+			dig_t c1 = fp_cmp(p->z, y1) == RLC_EQ;
+			dig_t c2 = fp_cmp(p->z, c) == RLC_EQ;
 			fp_neg(c, c);
-			dig_t c3 = fp_cmp(w, c);
-			c2 = (c0 != RLC_EQ) && (c1 != RLC_EQ) && (c2 == RLC_EQ);
-			c3 = (c0 != RLC_EQ) && (c1 != RLC_EQ) && (c2 != RLC_EQ) && (c3 == RLC_EQ);
+			dig_t c3 = fp_cmp(p->z, c) == RLC_EQ;
+			c2 = !c0 && !c1 && c2;
+			c3 = !c0 && !c1 && !c2 && c3;
+			fp_copy(p->z, ctx->ep_map_c[6]);
+			fp_mul(p->z, p->z, p->y);
+			dv_copy_cond(p->y, p->z, RLC_FP_DIGS, c1);
 			fp_copy(y1, ctx->ep_map_c[4]);
-			/* Compute (x,y) = (x0/(d\theta)^2, y0/(d\theta)^3). */
+			/* Convert from projective coordinates on the surface to affine. */
+			fp_mul(u, u, v);
+			fp_mul(t, t, v);
+			fp_sqr(v, v);
+			fp_mul(w, w, v);
+			fp_mul(z1, z1, v);
+			/* Compute (x,y) = (x0/(d*theta)^2, y0/(d*theta)^3). */
+			fp_sqr(y1, y);
+			fp_mul(u, u, y1);
 			fp_mul(w, w, y);
-			fp_sqr(y, y);
-			fp_mul(u, u, y);
-			fp_mul(w, w, y);
+			fp_mul(w, w, y1);
 			dv_copy_cond(p->x, u, RLC_FP_DIGS, c2);
 			dv_copy_cond(p->y, w, RLC_FP_DIGS, c2);
-			/* Compute (x,y) = (x1/(d^3\theta)^2, y1/(d^3\theta)^3). */
+			/* Compute (x,y) = (x1/(d^3*theta)^2, y1/(d^3*theta)^3). */
+			fp_mul(z1, z1, y);
+			fp_mul(t, t, y1);
+			fp_mul(z1, z1, y1);
+			fp_sqr(y, ctx->ep_map_c[4]);
 			fp_mul(z1, z1, y);
 			fp_sqr(y, y);
 			fp_mul(t, t, y);
 			fp_mul(z1, z1, y);
-			fp_sqr(y1, y1);
-			fp_mul(z1, z1, y1);
-			fp_sqr(y1, y1);
-			fp_mul(t, t, y1);
-			fp_mul(z1, z1, y1);
 			dv_copy_cond(p->x, t, RLC_FP_DIGS, c3);
 			dv_copy_cond(p->y, z1, RLC_FP_DIGS, c3);
 			/* Multiply by cofactor. */
+			fp_set_dig(p->z, 1);
 			ep_mul_cof(p, p);
 		} else {
 			/* This is the SwiftEC case per se. */
@@ -469,7 +494,6 @@ void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 	}
 	RLC_FINALLY {
 		bn_free(k);
-		bn_free(n);
 		fp_free(c);
 		fp_free(t);
 		fp_free(u);

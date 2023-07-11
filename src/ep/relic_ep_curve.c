@@ -92,6 +92,7 @@ static void ep_curve_set_map(void) {
 	dig_t *c3 = ctx->ep_map_c[3];
 	dig_t *c4 = ctx->ep_map_c[4];
 	dig_t *c5 = ctx->ep_map_c[5];
+	dig_t *c6 = ctx->ep_map_c[6];
 
 	RLC_TRY {
 		bn_new(t);
@@ -200,6 +201,11 @@ static void ep_curve_set_map(void) {
 			fp_exp(c4, c4, t);
 			fp_inv(c4, c4);
 			fp_exp_dig(c5, c5, r);
+			/* Compute 1/sqrt(-1) as well. */
+			fp_set_dig(c6, 1);
+			fp_neg(c6, c6);
+			fp_srt(c6, c6);
+			fp_inv(c6, c6);
 		}
 
 		/* If a = 0, precompute and store a square root of -3. */

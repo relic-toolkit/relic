@@ -274,7 +274,7 @@ typedef struct _ctx_t {
 	/** The distinguished non-square used by the mapping function */
 	fp_st ep_map_u;
 	/** Precomputed constants for hashing. */
-	fp_st ep_map_c[6];
+	fp_st ep_map_c[7];
 #ifdef EP_ENDOM
 #if EP_MUL == LWNAF || EP_FIX == COMBS || EP_FIX == LWNAF || EP_SIM == INTER || !defined(STRIP)
 	/** Parameters required by the GLV method. @{ */
@@ -379,8 +379,6 @@ typedef struct _ctx_t {
 	bn_st ep4_r;
 	/** The cofactor of the group order in the elliptic curve. */
 	bn_st ep4_h;
-	/** The constants needed for hashing. */
-	fp4_t ep4_map_c[2];
 	/** Optimization identifier for the a-coefficient. */
 	int ep4_opt_a;
 	/** Optimization identifier for the b-coefficient. */

@@ -86,7 +86,10 @@ void ep4_map(ep4_t p, const uint8_t *msg, size_t len) {
 
 			ep4_curve_get_a(a);
 			fp4_neg(a, a);
-			fp4_copy(c, ctx->ep4_map_c[0]);
+			/* Compute c = 3a^2, t = 9a^2u. */
+			fp4_sqr(c, a);
+			fp4_dbl(t, c);
+			fp4_add(c, c, t);
 			fp4_dbl(t, c);
 			fp4_add(t, t, c);
 			fp4_mul(t, t, u);
@@ -132,7 +135,8 @@ void ep4_map(ep4_t p, const uint8_t *msg, size_t len) {
 			dv_copy_cond(t[1][1], y1[1][1], RLC_FP_DIGS, !c1);
 
 			/* Compute x = 2^4*i*3*a^2*u / (3*(3*u^2 - a))^2. */
-			fp4_copy(y, ctx->ep4_map_c[1]);
+			fp4_zero(y);
+			fp_copy(y[0][0], ctx->ep_map_c[6]);
 			fp4_mul(c, c, u);
 			for (int i = 0; i < 2; i++) {
 				for (int j = 0; j < 2; j++) {
