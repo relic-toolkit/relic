@@ -128,6 +128,80 @@ static void ep4_mul_cof_k16(ep4_t r, const ep4_t p) {
 	}
 }
 
+/**
+ * Multiplies a point by the cofactor in a KSS16 curve.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to multiply.
+ */
+static void ep4_mul_cof_n16(ep4_t r, const ep4_t p) {
+	bn_t x;
+	ep4_t t0, t1, t2, t3, t4, t5;
+
+	ep4_null(t0);
+	ep4_null(t1);
+	ep4_null(t2);
+	ep4_null(t3);
+	ep4_null(t4);
+	ep4_null(t5);
+	bn_null(x);
+
+	RLC_TRY {
+		bn_new(x);
+		ep4_new(t0);
+		ep4_new(t1);
+		ep4_new(t2);
+		ep4_new(t3);
+		ep4_new(t4);
+		ep4_new(t5);
+
+		fp_prime_get_par(x);
+
+		/* [2*(1+u^3), -u^3*(1+u^3), -2*u, u*(1+u^3), -u^4*(u^3+1), -2*u^2,  u^2*(1+u^3), 2] */
+		ep4_mul_basic(t1, p, x);
+		ep4_mul_basic(t2, t1, x);
+		ep4_mul_basic(t3, t2, x);
+
+		ep4_frb(t5, p, 7);
+		ep4_frb(t4, t1, 2);
+		ep4_sub(t5, t5, t4);
+		ep4_frb(t4, t2, 5);
+		ep4_sub(t5, t5, t4);
+		ep4_add(t3, t3, p);
+		ep4_add(t5, t5, t3);
+		ep4_dbl(t5, t5);
+
+		ep4_mul_basic(t0, t3, x);
+		ep4_frb(t4, t0, 3);
+		ep4_add(t5, t5, t4);
+
+		ep4_mul_basic(t0, t0, x);
+		ep4_frb(t4, t0, 6);
+		ep4_add(t5, t5, t4);
+
+		ep4_mul_basic(t0, t0, x);
+		ep4_frb(t4, t0, 1);
+		ep4_sub(t5, t5, t4);
+
+		ep4_mul_basic(t0, t0, x);
+		ep4_frb(t4, t0, 4);
+		ep4_sub(t5, t5, t4);
+
+		ep4_norm(r, t5);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		ep4_free(t0);
+		ep4_free(t1);
+		ep4_free(t2);
+		ep4_free(t3);
+		ep4_free(t4);
+		ep4_free(t5);
+		bn_free(x);
+
+	}
+}
+
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
@@ -141,6 +215,9 @@ void ep4_mul_cof(ep4_t r, const ep4_t p) {
 		switch (ep_curve_is_pairf()) {
 			case EP_K16:
 				ep4_mul_cof_k16(r, p);
+				break;
+			case EP_N16:
+				ep4_mul_cof_n16(r, p);
 				break;
 			default:
 				/* Now, multiply by cofactor to get the correct group. */
