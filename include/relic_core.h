@@ -379,6 +379,8 @@ typedef struct _ctx_t {
 	bn_st ep4_r;
 	/** The cofactor of the group order in the elliptic curve. */
 	bn_st ep4_h;
+	/** The constants needed for hashing. */
+	fp4_t ep4_map_c[2];
 	/** Optimization identifier for the a-coefficient. */
 	int ep4_opt_a;
 	/** Optimization identifier for the b-coefficient. */

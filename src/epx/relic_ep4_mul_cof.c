@@ -73,8 +73,8 @@ static void ep4_mul_cof_k16(ep4_t r, const ep4_t p) {
 		ep4_mul_basic(t3, t2, x);
 
 		ep4_dbl(t0, t2);
-		ep4_sub(t5, t3, t0);
-		ep4_sub(t5, t5, t2);
+		ep4_add(t2, t2, t0);
+		ep4_sub(t5, t3, t2);
 
 		ep4_dbl(t0, t0);
 		ep4_dbl(t4, t3);
@@ -82,37 +82,30 @@ static void ep4_mul_cof_k16(ep4_t r, const ep4_t p) {
 		ep4_frb(t4, t4, 4);
 		ep4_sub(t5, t5, t4);
 
-		ep4_mul_dig(t4, t1, 11);
-		ep4_add(t4, t4, t2);
-		ep4_add(t4, t4, t2);
-		ep4_add(t4, t4, t2);
-		ep4_frb(t4, t4, 1);
-		ep4_add(t5, t5, t4);
-
-		ep4_dbl(t0, t0);
 		ep4_sub(t4, t0, t1);
-		ep4_sub(t4, t0, t1);
+		ep4_sub(t4, t4, t1);
 		ep4_frb(t4, t4, 5);
-		ep4_add(t5, t5, t4);
-
-		ep4_add(t4, t1, p);
-		ep4_mul_dig(t4, t4, 7);
-		ep4_dbl(t0, t1);
-		ep4_dbl(t0, t0);
-		ep4_add(t4, t4, t0);
-		ep4_frb(t4, t4, 2);
-		ep4_sub(t5, t5, t4);
-
-		ep4_dbl(t0, t3);
-		ep4_mul_dig(t4, p, 14);
-		ep4_add(t4, t4, t0);
-		ep4_frb(t4, t4, 3);
 		ep4_add(t5, t5, t4);
 
 		ep4_dbl(t0, t1);
 		ep4_mul_dig(t4, p, 24);
 		ep4_add(t4, t4, t0);
 		ep4_frb(t4, t4, 6);
+		ep4_add(t5, t5, t4);
+
+		ep4_mul_dig(t4, t1, 11);
+		ep4_mul_dig(t0, p, 7);
+		ep4_add(t0, t0, t4);
+		ep4_add(t4, t4, t2);
+		ep4_frb(t4, t4, 1);
+		ep4_add(t5, t5, t4);
+		ep4_frb(t4, t0, 2);
+		ep4_sub(t5, t5, t4);
+
+		ep4_dbl(t0, t3);
+		ep4_mul_dig(t4, p, 14);
+		ep4_add(t4, t4, t0);
+		ep4_frb(t4, t4, 3);
 		ep4_add(t5, t5, t4);
 
 		ep4_mul_basic(t4, t3, x);

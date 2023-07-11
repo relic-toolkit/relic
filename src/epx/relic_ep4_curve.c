@@ -424,6 +424,19 @@ void ep4_curve_set_twist(int type) {
 			}
 		}
 
+		/* if b = 0, precompute sqrt(-1) and 3*a^2 for hashing. */
+		if (ep4_curve_opt_b() == RLC_ZERO) {
+			ep4_curve_get_a(ctx->ep4_map_c[0]);
+			fp4_neg(ctx->ep4_map_c[0], ctx->ep4_map_c[0]);
+			fp4_sqr(ctx->ep4_map_c[0], ctx->ep4_map_c[0]);
+			fp4_dbl(ctx->ep4_map_c[1], ctx->ep4_map_c[0]);
+			fp4_add(ctx->ep4_map_c[0], ctx->ep4_map_c[0], ctx->ep4_map_c[1]);
+
+			fp4_set_dig(ctx->ep4_map_c[1], 1);
+			fp4_neg(ctx->ep4_map_c[1], ctx->ep4_map_c[1]);
+			fp4_srt(ctx->ep4_map_c[1], ctx->ep4_map_c[1]);
+		}
+
 #if defined(WITH_PC)
 		/* Compute pairing generator. */
 		pc_core_calc();

@@ -140,7 +140,7 @@ int g1_is_valid(const g1_t a) {
 				 * friendly Curves" by Yu Dai, Kaizhan Lin, Chang-An Zhao,
 				 * Zijian Zhou. https://eprint.iacr.org/2022/348.pdf */
 				case EP_K16:
-				    /* If u= 25 or 45 mod 70 then a1 = ((u//5)**4 + 5)//14
+				    /* If u = 25 or 45 mod 70 then a1 = ((u//5)**4 + 5)//14
 					 * is an integer by definition.  */
 					fp_prime_get_par(n);
 					bn_div_dig(n, n, 5);
