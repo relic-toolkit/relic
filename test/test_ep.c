@@ -1365,9 +1365,9 @@ static int hashing(void) {
 		TEST_CASE("point hashing is correct") {
 			rand_bytes(msg, sizeof(msg));
 			ep_map(a, msg, sizeof(msg));
-			TEST_ASSERT(ep_is_infty(a) == 0, end);
+			TEST_ASSERT(ep_on_curve(a) && ep_is_infty(a) == 0, end);
 			ep_mul(a, a, n);
-			TEST_ASSERT(ep_is_infty(a) == 1, end);
+			TEST_ASSERT(ep_on_curve(a) && ep_is_infty(a) == 1, end);
 		}
 		TEST_END;
 
@@ -1375,9 +1375,9 @@ static int hashing(void) {
 		TEST_CASE("basic point hashing is correct") {
 			rand_bytes(msg, sizeof(msg));
 			ep_map_basic(a, msg, sizeof(msg));
-			TEST_ASSERT(ep_is_infty(a) == 0, end);
+			TEST_ASSERT(ep_on_curve(a) && ep_is_infty(a) == 0, end);
 			ep_mul(a, a, n);
-			TEST_ASSERT(ep_is_infty(a) == 1, end);
+			TEST_ASSERT(ep_on_curve(a) && ep_is_infty(a) == 1, end);
 		}
 		TEST_END;
 #endif
@@ -1386,21 +1386,21 @@ static int hashing(void) {
 		TEST_CASE("simplified SWU point hashing is correct") {
 			rand_bytes(msg, sizeof(msg));
 			ep_map_sswum(a, msg, sizeof(msg));
-			TEST_ASSERT(ep_is_infty(a) == 0, end);
+			TEST_ASSERT(ep_on_curve(a) && ep_is_infty(a) == 0, end);
 			ep_mul(a, a, n);
-			TEST_ASSERT(ep_is_infty(a) == 1, end);
+			TEST_ASSERT(ep_on_curve(a) && ep_is_infty(a) == 1, end);
 		}
 		TEST_END;
 #endif
 
 #if EP_MAP == SWIFT || !defined(STRIP)
-		if (ep_curve_opt_a() == RLC_ZERO) {
+		if (ep_curve_opt_a() == RLC_ZERO || ep_curve_opt_b() == RLC_ZERO) {
 			TEST_CASE("swift point hashing is correct") {
 				rand_bytes(msg, sizeof(msg));
 				ep_map_swift(a, msg, sizeof(msg));
-				TEST_ASSERT(ep_is_infty(a) == 0, end);
+				TEST_ASSERT(ep_on_curve(a) && ep_is_infty(a) == 0, end);
 				ep_mul(a, a, n);
-				TEST_ASSERT(ep_is_infty(a) == 1, end);
+				TEST_ASSERT(ep_on_curve(a) && ep_is_infty(a) == 1, end);
 			}
 			TEST_END;
 #endif
