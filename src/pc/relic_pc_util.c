@@ -243,6 +243,11 @@ int g1_is_valid(const g1_t a) {
 }
 
 int g2_is_valid(const g2_t a) {
+	g2_t s, t, u, v, w;
+	bn_t n;
+	dig_t rem;
+	int r = 0;
+
 #if FP_PRIME >= 1536
 	return g1_is_valid(a);
 #else
@@ -250,10 +255,6 @@ int g2_is_valid(const g2_t a) {
 	if (g2_is_infty(a)) {
 		return 0;
 	}
-
-	bn_t n;
-	g2_t s, t, u, v, w;
-	int r = 0;
 
 	bn_null(n);
 	g2_null(s);
@@ -325,7 +326,6 @@ int g2_is_valid(const g2_t a) {
 			 * https://eprint.iacr.org/2022/348.pdf
 			 * Paper has u = 45 mod 70, we ran their code for u = 25 mod 70. */
 			case EP_K16:
-				dig_t rem;
 				fp_prime_get_par(n);
 				bn_mod_dig(&rem, n, 70);
 				if (rem == 45) {
@@ -429,6 +429,7 @@ int gt_is_valid(const gt_t a) {
 	gt_t s, t, u, v, w;
 	int l, r = 0;
 	const int *b;
+	dig_t rem;
 
 	if (gt_is_unity(a)) {
 		return 0;
@@ -505,7 +506,6 @@ int gt_is_valid(const gt_t a) {
 				r &= fp16_test_cyc((void *)a);
 				break;
 			case EP_K16:
-				dig_t rem;
 				fp_prime_get_par(n);
 				bn_mod_dig(&rem, n, 70);
 				if (rem == 45) {
