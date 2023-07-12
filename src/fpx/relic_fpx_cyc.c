@@ -90,6 +90,10 @@ void fp2_exp_cyc(fp2_t c, const fp2_t a, const bn_t b) {
 		return fp2_set_dig(c, 1);
 	}
 
+	if (bn_bits(b) <= RLC_DIG) {
+		return fp2_exp_dig(c, a, b->dp[0]);
+	}
+
 	fp2_null(r);
 	fp2_null(s);
 
@@ -962,11 +966,15 @@ int fp16_test_cyc(const fp16_t a) {
 
 void fp16_exp_cyc(fp16_t c, const fp16_t a, const bn_t b) {
 	fp16_t r, s, t[1 << (RLC_WIDTH - 2)];
-	int8_t naf[RLC_FP_BITS + 1], *k;
+	int8_t naf[RLC_FP_BITS + 1], *k, w;
 	size_t l;
 
 	if (bn_is_zero(b)) {
 		return fp16_set_dig(c, 1);
+	}
+
+	if (bn_bits(b) <= RLC_DIG) {
+		return fp16_exp_dig(c, a, b->dp[0]);
 	}
 
 	fp16_null(r);
@@ -1399,8 +1407,7 @@ void fp18_exp_cyc(fp18_t c, const fp18_t a, const bn_t b) {
 	int i, j, k, w = bn_ham(b);
 
 	if (bn_is_zero(b)) {
-		fp18_set_dig(c, 1);
-		return;
+		return fp18_set_dig(c, 1);
 	}
 
 	if ((bn_bits(b) > RLC_DIG) && ((w << 3) > bn_bits(b))) {
