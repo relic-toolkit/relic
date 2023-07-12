@@ -2189,21 +2189,30 @@ static void arith16(void) {
 	}
 	BENCH_END;
 
-#if FPX_RDC == BASIC || !defined(STRIP)
-	BENCH_RUN("fp16_sqr_basic") {
+	BENCH_RUN("fp16_sqr_cyc") {
 		fp16_rand(a);
-		BENCH_ADD(fp16_sqr_basic(c, a));
+		BENCH_ADD(fp16_sqr_cyc(c, a));
 	}
 	BENCH_END;
-#endif
 
-#if FPX_RDC == LAZYR || !defined(STRIP)
-	BENCH_RUN("fp16_sqr_lazyr") {
+	BENCH_RUN("fp16_test_cyc") {
 		fp16_rand(a);
-		BENCH_ADD(fp16_sqr_lazyr(c, a));
+		fp16_conv_cyc(a, a);
+		BENCH_ADD(fp16_test_cyc(a));
 	}
 	BENCH_END;
-#endif
+
+	BENCH_RUN("fp16_conv_cyc") {
+		fp16_rand(a);
+		BENCH_ADD(fp16_conv_cyc(c, a));
+	}
+	BENCH_END;
+
+	BENCH_RUN("fp16_conv_cyc") {
+		fp16_rand(a);
+		BENCH_ADD(fp16_conv_cyc(c, a));
+	}
+	BENCH_END;
 
 	BENCH_RUN("fp16_inv") {
 		fp16_rand(a);
@@ -2211,11 +2220,45 @@ static void arith16(void) {
 	}
 	BENCH_END;
 
+	BENCH_RUN("fp16_inv_cyc") {
+		fp16_rand(a);
+		BENCH_ADD(fp16_inv_cyc(c, a));
+	}
+	BENCH_END;
+
 	BENCH_RUN("fp16_exp") {
 		fp16_rand(a);
-		e->used = RLC_FP_DIGS;
-		dv_copy(e->dp, fp_prime_get(), RLC_FP_DIGS);
+		bn_rand(e, RLC_POS, RLC_FP_BITS);
 		BENCH_ADD(fp16_exp(c, a, e));
+	}
+	BENCH_END;
+
+	BENCH_RUN("fp16_exp (cyc)") {
+		fp16_rand(a);
+		fp16_conv_cyc(a, a);
+		bn_rand(e, RLC_POS, RLC_FP_BITS);
+		BENCH_ADD(fp16_exp(c, a, e));
+	}
+	BENCH_END;
+
+	BENCH_RUN("fp16_exp_cyc (param or sparse)") {
+		fp16_rand(a);
+		fp16_conv_cyc(a, a);
+		bn_zero(e);
+		fp_prime_get_par(e);
+		if (bn_is_zero(e)) {
+			bn_set_2b(e, RLC_FP_BITS - 1);
+			bn_set_bit(e, RLC_FP_BITS / 2, 1);
+			bn_set_bit(e, 0, 1);
+		}
+		BENCH_ADD(fp16_exp_cyc(c, a, e));
+	}
+	BENCH_END;
+
+	BENCH_RUN("fp16_exp_dig") {
+		fp16_rand(a);
+		bn_rand(e, RLC_POS, RLC_DIG);
+		BENCH_ADD(fp16_exp_dig(c, a, e->dp[0]));
 	}
 	BENCH_END;
 
