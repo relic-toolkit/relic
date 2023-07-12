@@ -2050,6 +2050,187 @@ static void arith12(void) {
 	bn_free(e);
 }
 
+static void memory16(void) {
+	fp16_t a[BENCH];
+
+	BENCH_FEW("fp16_null", fp16_null(a[i]), 1);
+
+	BENCH_FEW("fp16_new", fp16_new(a[i]), 1);
+	for (int i = 0; i < BENCH; i++) {
+		fp16_free(a[i]);
+	}
+
+	for (int i = 0; i < BENCH; i++) {
+		fp16_new(a[i]);
+	}
+	BENCH_FEW("fp16_free", fp16_free(a[i]), 1);
+
+	(void)a;
+}
+
+static void util16(void) {
+	fp16_t a, b;
+
+	fp16_null(a);
+	fp16_null(b);
+
+	fp16_new(a);
+	fp16_new(b);
+
+	BENCH_RUN("fp16_copy") {
+		fp16_rand(a);
+		BENCH_ADD(fp16_copy(b, a));
+	}
+	BENCH_END;
+
+	BENCH_RUN("fp16_neg") {
+		fp16_rand(a);
+		BENCH_ADD(fp16_neg(b, a));
+	}
+	BENCH_END;
+
+	BENCH_RUN("fp16_zero") {
+		fp16_rand(a);
+		BENCH_ADD(fp16_zero(a));
+	}
+	BENCH_END;
+
+	BENCH_RUN("fp16_is_zero") {
+		fp16_rand(a);
+		BENCH_ADD((void)fp16_is_zero(a));
+	}
+	BENCH_END;
+
+	BENCH_RUN("fp16_set_dig (1)") {
+		fp16_rand(a);
+		BENCH_ADD(fp16_set_dig(a, 1));
+	}
+	BENCH_END;
+
+	BENCH_RUN("fp16_set_dig") {
+		fp16_rand(a);
+		BENCH_ADD(fp16_set_dig(a, a[0][0][0][0][0]));
+	}
+	BENCH_END;
+
+	BENCH_RUN("fp16_rand") {
+		BENCH_ADD(fp16_rand(a));
+	}
+	BENCH_END;
+
+	BENCH_RUN("fp16_cmp") {
+		fp16_rand(a);
+		fp16_rand(b);
+		BENCH_ADD(fp16_cmp(b, a));
+	}
+	BENCH_END;
+
+	BENCH_RUN("fp16_cmp_dig") {
+		fp16_rand(a);
+		BENCH_ADD(fp16_cmp_dig(a, (dig_t)0));
+	}
+	BENCH_END;
+
+	fp16_free(a);
+	fp16_free(b);
+}
+
+static void arith16(void) {
+	fp16_t a, b, c;
+	bn_t e;
+
+	fp16_new(a);
+	fp16_new(b);
+	fp16_new(c);
+	bn_new(e);
+
+	BENCH_RUN("fp16_add") {
+		fp16_rand(a);
+		fp16_rand(b);
+		BENCH_ADD(fp16_add(c, a, b));
+	}
+	BENCH_END;
+
+	BENCH_RUN("fp16_sub") {
+		fp16_rand(a);
+		fp16_rand(b);
+		BENCH_ADD(fp16_sub(c, a, b));
+	}
+	BENCH_END;
+
+	BENCH_RUN("fp16_mul") {
+		fp16_rand(a);
+		fp16_rand(b);
+		BENCH_ADD(fp16_mul(c, a, b));
+	}
+	BENCH_END;
+
+#if FPX_RDC == BASIC || !defined(STRIP)
+	BENCH_RUN("fp16_mul_basic") {
+		fp16_rand(a);
+		fp16_rand(b);
+		BENCH_ADD(fp16_mul_basic(c, a, b));
+	}
+	BENCH_END;
+#endif
+
+#if FPX_RDC == LAZYR || !defined(STRIP)
+	BENCH_RUN("fp16_mul_lazyr") {
+		fp16_rand(a);
+		fp16_rand(b);
+		BENCH_ADD(fp16_mul_lazyr(c, a, b));
+	}
+	BENCH_END;
+#endif
+
+	BENCH_RUN("fp16_sqr") {
+		fp16_rand(a);
+		BENCH_ADD(fp16_sqr(c, a));
+	}
+	BENCH_END;
+
+#if FPX_RDC == BASIC || !defined(STRIP)
+	BENCH_RUN("fp16_sqr_basic") {
+		fp16_rand(a);
+		BENCH_ADD(fp16_sqr_basic(c, a));
+	}
+	BENCH_END;
+#endif
+
+#if FPX_RDC == LAZYR || !defined(STRIP)
+	BENCH_RUN("fp16_sqr_lazyr") {
+		fp16_rand(a);
+		BENCH_ADD(fp16_sqr_lazyr(c, a));
+	}
+	BENCH_END;
+#endif
+
+	BENCH_RUN("fp16_inv") {
+		fp16_rand(a);
+		BENCH_ADD(fp16_inv(c, a));
+	}
+	BENCH_END;
+
+	BENCH_RUN("fp16_exp") {
+		fp16_rand(a);
+		e->used = RLC_FP_DIGS;
+		dv_copy(e->dp, fp_prime_get(), RLC_FP_DIGS);
+		BENCH_ADD(fp16_exp(c, a, e));
+	}
+	BENCH_END;
+
+	BENCH_RUN("fp16_frb") {
+		fp16_rand(a);
+		BENCH_ADD(fp16_frb(c, a, 1));
+	}
+	BENCH_END;
+
+	fp16_free(a);
+	fp16_free(b);
+	fp16_free(c);
+	bn_free(e);
+}
+
 static void memory18(void) {
 	fp18_t a[BENCH];
 
@@ -3336,6 +3517,16 @@ int main(void) {
 		util12();
 		util_banner("Arithmetic:", 1);
 		arith12();
+	}
+
+	if (fp_prime_get_qnr() && (ep_param_embed() >= 16)) {
+		util_banner("Octdecic extension:", 0);
+		util_banner("Utilities:", 1);
+		memory16();
+		util16();
+
+		util_banner("Arithmetic:", 1);
+		arith16();
 	}
 
 	if (fp_prime_get_cnr() && (ep_param_embed() >= 18)) {
