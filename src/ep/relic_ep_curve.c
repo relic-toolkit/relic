@@ -525,7 +525,10 @@ void ep_curve_set_endom(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
 		/* Fix beta in case it is the wrong value. */
 		if (ep_cmp(q, p) != RLC_EQ) {
 			fp_neg(ctx->beta, ctx->beta);
-			fp_sub_dig(ctx->beta, ctx->beta, 1);
+			if (fp_is_zero(a)) {
+				/* In this case, look for other choice of beta. */
+				fp_sub_dig(ctx->beta, ctx->beta, 1);
+			}
 			ep_psi(p, g);
 			ep_mul_basic(q, g, m);
 			if (ep_cmp(q, p) != RLC_EQ) {
