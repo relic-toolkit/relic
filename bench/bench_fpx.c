@@ -3746,7 +3746,7 @@ int main(void) {
 		arith9();
 	}
 
-	if (fp_prime_get_qnr() && (ep_param_embed() >= 12)) {
+	if (fp_prime_get_qnr() && fp_prime_get_cnr() && (ep_param_embed() >= 12)) {
 		util_banner("Dodecic extension:", 0);
 		util_banner("Utilities:", 1);
 		memory12();
@@ -3756,7 +3756,7 @@ int main(void) {
 	}
 
 	if (fp_prime_get_qnr() && (ep_param_embed() >= 16)) {
-		util_banner("Octdecic extension:", 0);
+		util_banner("Sextadecic extension:", 0);
 		util_banner("Utilities:", 1);
 		memory16();
 		util16();
