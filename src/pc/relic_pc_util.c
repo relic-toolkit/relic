@@ -325,11 +325,17 @@ int g2_is_valid(const g2_t a) {
 			 * https://eprint.iacr.org/2022/348.pdf
 			 * Paper has u = 45 mod 70, we ran their code for u = 25 mod 70. */
 			case EP_K16:
+				dig_t rem;
 				fp_prime_get_par(n);
-				/* Compute s = (u - 25)/70. */
+				bn_mod_dig(&rem, n, 70);
+				if (rem == 45) {
+					bn_neg(n, n);
+				}
+				/* Compute s = (\pm u - 25)/70. */
 				bn_sub_dig(n, n, 25);
 				bn_div_dig(n, n, 70);
-				/* [11s + 4, 9s+3, 3s+1, -(3s+1), -13*u-5, -7*u-3, u, -11s-4] */
+				/* [11s+4, 9s+3, 3s+1, -(3s+1), -13*u-5, -7*u-3, u, -11s-4] */
+				/* or [11s+4, -9s-3, 3s+1, 3s+1, -13*u-5, 7*u+3, u, 11s+4]. */
 				g2_mul_any(u, a, n);	/* u = a^s*/
 				g2_frb(w, u, 6);
 				g2_dbl(s, u);
@@ -339,18 +345,33 @@ int g2_is_valid(const g2_t a) {
 				g2_frb(v, t, 2);
 				g2_add(w, w, v);
 				g2_frb(v, t, 3);
-				g2_sub(w, w, v);
+				if (rem == 45) {
+					g2_add(w, w, v);
+				} else {
+					g2_sub(w, w, v);
+				}
 				g2_dbl(v, t);
 				g2_add(t, t, v);		/* t = a^(9s + 3). */
 				g2_frb(v, t, 1);
+				if (rem == 45) {
+					g2_neg(v, v);
+				}
 				g2_add(w, w, v);
 				g2_sub(s, t, s);		/* s = a^(7s + 3). */
 				g2_frb(v, s, 5);
-				g2_sub(w, w, v);
+				if (rem == 45) {
+					g2_add(w, w, v);
+				} else {
+					g2_sub(w, w, v);
+				}
 				g2_add(t, t, u);		/* t = a^(11s + 4). */
 				g2_add(w, w, t);
 				g2_frb(v, t, 7);
-				g2_sub(w, w, v);
+				if (rem == 45) {
+					g2_add(w, w, v);
+				} else {
+					g2_sub(w, w, v);
+				}
 				g2_add(t, t, u);		/* t = a^(13s + 5). */
 				g2_frb(t, t, 4);
 				r = g2_on_curve(a) && (g2_cmp(w, t) == RLC_EQ);
