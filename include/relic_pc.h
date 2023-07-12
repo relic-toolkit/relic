@@ -59,7 +59,7 @@
 #if FP_PRIME == 575
 #define RLC_G2_LOWER			ep8_
 #define RLC_G2_BASEF(A)			A[0][0][0]
-#elif FP_PRIME == 315 || FP_PRIME == 317 || FP_PRIME == 509 || FP_PRIME == 765 || FP_PRIME == 766
+#elif FP_PRIME == 315 || FP_PRIME == 317 || FP_PRIME == 330 || FP_PRIME == 509 || FP_PRIME == 765 || FP_PRIME == 766
 #define RLC_G2_LOWER			ep4_
 #define RLC_G2_BASEF(A)			A[0][0]
 #elif FP_PRIME == 508 || FP_PRIME == 638 && !defined(FP_QNRES)
