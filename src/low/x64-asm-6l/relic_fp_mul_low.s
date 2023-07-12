@@ -42,6 +42,7 @@ fp_muln_low:
 	FP_MULN_LOW %rdi, %r8, %r9, %r10, %rsi, %rcx
 	ret
 
+#if FP_PRIME != 381
 fp_mulm_low:
 	push	%r12
 	push	%r13
@@ -67,3 +68,9 @@ fp_mulm_low:
 	pop		%r13
 	pop		%r12
 	ret
+
+#else
+
+#include "relic_fp_mul_low_cryptopt.s"
+
+#endif
