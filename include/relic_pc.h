@@ -81,7 +81,7 @@
 #elif FP_PRIME == 508 || FP_PRIME == 638 && !defined(FP_QNRES)
 #define RLC_GT_LOWER			fp18_
 #define RLC_GT_EMBED      		18
-#elif FP_PRIME == 765 || FP_PRIME == 766
+#elif FP_PRIME == 330 || FP_PRIME == 765 || FP_PRIME == 766
 #define RLC_GT_LOWER			fp16_
 #define RLC_GT_EMBED      		16
 #else

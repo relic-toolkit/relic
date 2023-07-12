@@ -505,10 +505,18 @@ int gt_is_valid(const gt_t a) {
 				r &= fp16_test_cyc((void *)a);
 				break;
 			case EP_K16:
+				dig_t rem;
+				fp_prime_get_par(n);
+				bn_mod_dig(&rem, n, 70);
+				if (rem == 45) {
+					bn_neg(n, n);
+				}
 				/* Compute s = (u - 25)/70. */
 				bn_sub_dig(n, n, 25);
 				bn_div_dig(n, n, 70);
-				/* [11s + 4, 9s+3, 3s+1, -(3s+1), -13*u-5, -7*u-3, u, -11s-4] */
+				/* Vectors for u = 25 or 45 mod 70 below, respectively:     */
+				/* [11s+4, 9s+3, 3s+1, -(3s+1), -13*u-5, -7*u-3, u, -11s-4] */
+				/* or [11s+4, -9s-3, 3s+1, 3s+1, -13*u-5, 7*u+3, u, 11s+4]. */
 				gt_exp(u, a, n);	/* u = a^s*/
 				gt_frb(w, u, 6);
 				gt_sqr(s, u);
@@ -518,21 +526,30 @@ int gt_is_valid(const gt_t a) {
 				gt_frb(v, t, 2);
 				gt_mul(w, w, v);
 				gt_frb(v, t, 3);
-				gt_inv(v, v);
+				if (rem != 45) {
+					gt_inv(v, v);
+				}
 				gt_mul(w, w, v);
 				gt_sqr(v, t);
 				gt_mul(t, t, v);		/* t = a^(9s + 3). */
 				gt_frb(v, t, 1);
+				if (rem == 45) {
+					gt_inv(v, v);
+				}
 				gt_mul(w, w, v);
 				gt_inv(s, s);
 				gt_mul(s, t, s);		/* s = a^(7s + 3). */
 				gt_frb(v, s, 5);
-				gt_inv(v, v);
+				if (rem != 45) {
+					gt_inv(v, v);
+				}
 				gt_mul(w, w, v);
 				gt_mul(t, t, u);		/* t = a^(11s + 4). */
 				gt_mul(w, w, t);
 				gt_frb(v, t, 7);
-				gt_inv(v, v);
+				if (rem != 45) {
+					gt_inv(v, v);
+				}
 				gt_mul(w, w, v);
 				gt_mul(t, t, u);		/* t = a^(13s + 5). */
 				gt_frb(t, t, 4);
