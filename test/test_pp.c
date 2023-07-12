@@ -998,7 +998,7 @@ static int doubling8(void) {
 			fp_neg(p->y, p->y);
 			pp_dbl_k8_basic(e2, r, q, p);
 			pp_exp_k8(e2, e2);
-#if EP_ADD == PROJC
+#if EP_ADD == PROJC || EP_ADD == JACOB
 			/* Precompute. */
 			fp_neg(p->y, p->y);
 			fp_neg(p->x, p->x);
@@ -1878,7 +1878,7 @@ static int doubling16(void) {
 			fp_neg(p->y, p->y);
 			pp_dbl_k16_basic(e2, r, q, p);
 			pp_exp_k16(e2, e2);
-#if EP_ADD == PROJC
+#if EP_ADD == PROJC || EP_ADD == JACOB
 			/* Precompute. */
 			fp_neg(p->y, p->y);
 			fp_neg(p->x, p->x);
