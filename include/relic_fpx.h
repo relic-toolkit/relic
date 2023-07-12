@@ -2920,6 +2920,15 @@ void fp8_conv_cyc(fp8_t c, const fp8_t a);
 void fp8_exp(fp8_t c, const fp8_t a, const bn_t b);
 
 /**
+ * Computes a power of an octic extension field element by a small exponent.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the basis.
+ * @param[in] b				- the exponent.
+ */
+void fp8_exp_dig(fp8_t c, const fp8_t a, dig_t b);
+
+/**
  * Computes a power of a cyclotomic octic extension field element.
  *
  * @param[out] c			- the result.

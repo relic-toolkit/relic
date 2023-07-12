@@ -91,7 +91,11 @@ void fp2_exp_cyc(fp2_t c, const fp2_t a, const bn_t b) {
 	}
 
 	if (bn_bits(b) <= RLC_DIG) {
-		return fp2_exp_dig(c, a, b->dp[0]);
+		fp2_exp_dig(c, a, b->dp[0]);
+		if (bn_sign(b) == RLC_NEG) {
+			fp2_inv_cyc(c, c);
+		}
+		return;
 	}
 
 	fp2_null(r);
@@ -304,6 +308,14 @@ void fp8_exp_cyc(fp8_t c, const fp8_t a, const bn_t b) {
 
 	if (bn_is_zero(b)) {
 		return fp8_set_dig(c, 1);
+	}
+
+	if (bn_bits(b) <= RLC_DIG) {
+		fp8_exp_dig(c, a, b->dp[0]);
+		if (bn_sign(b) == RLC_NEG) {
+			fp8_inv_cyc(c, c);
+		}
+		return;
 	}
 
 	fp8_null(r);
@@ -966,7 +978,7 @@ int fp16_test_cyc(const fp16_t a) {
 
 void fp16_exp_cyc(fp16_t c, const fp16_t a, const bn_t b) {
 	fp16_t r, s, t[1 << (RLC_WIDTH - 2)];
-	int8_t naf[RLC_FP_BITS + 1], *k, w;
+	int8_t naf[RLC_FP_BITS + 1], *k, w = RLC_WIDTH;
 	size_t l;
 
 	if (bn_is_zero(b)) {
@@ -974,7 +986,7 @@ void fp16_exp_cyc(fp16_t c, const fp16_t a, const bn_t b) {
 	}
 
 	if (bn_bits(b) <= RLC_DIG) {
-		return fp16_exp_dig(c, a, b->dp[0]);
+		w = 2;
 	}
 
 	fp16_null(r);
@@ -991,7 +1003,7 @@ void fp16_exp_cyc(fp16_t c, const fp16_t a, const bn_t b) {
 #if RLC_WIDTH > 2
 		fp16_sqr_cyc(t[0], a);
 		fp16_mul(t[1], t[0], a);
-		for (int i = 2; i < (1 << (RLC_WIDTH - 2)); i++) {
+		for (int i = 2; i < (1 << (w - 2)); i++) {
 			fp16_mul(t[i], t[i - 1], t[0]);
 		}
 #endif
@@ -999,7 +1011,7 @@ void fp16_exp_cyc(fp16_t c, const fp16_t a, const bn_t b) {
 
 		l = RLC_FP_BITS + 1;
 		fp16_set_dig(r, 1);
-		bn_rec_naf(naf, &l, b, RLC_WIDTH);
+		bn_rec_naf(naf, &l, b, w);
 
 		k = naf + l - 1;
 
