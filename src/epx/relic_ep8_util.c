@@ -121,20 +121,24 @@ void ep8_rhs(fp8_t rhs, const ep8_t p) {
 				break;
 #if FP_RDC != MONTY
 			case RLC_MIN3:
-				fp_sub_dig(t0[0][0], t0[0][0], 3);
+				fp_sub_dig(t0[0][0][0], t0[0][0][0], 3);
 				break;
 			case RLC_ONE:
-				fp_add_dig(t0[0][0], t0[0][0], 1);
+				fp_add_dig(t0[0][0][0], t0[0][0][0], 1);
 				break;
 			case RLC_TWO:
-				fp_add_dig(t0[0][0], t0[0][0], 2);
+				fp_add_dig(t0[0][0][0], t0[0][0][0], 2);
 				break;
 			case RLC_TINY:
 				ep8_curve_get_a(t1);
-				fp_mul_dig(t0[0][0], t0[0][0], t1[0][0][0]);
-				fp_mul_dig(t0[0][1], t0[0][1], t1[0][0][0]);
-				fp_mul_dig(t0[1][0], t0[0][0], t1[0][0][0]);
-				fp_mul_dig(t0[1][1], t0[1][1], t1[0][0][0]);
+				fp_mul_dig(t0[0][0][0], t0[0][0][0], t1[0][0][0]);
+				fp_mul_dig(t0[0][0][1], t0[0][0][1], t1[0][0][0]);
+				fp_mul_dig(t0[0][1][0], t0[0][1][0], t1[0][0][0]);
+				fp_mul_dig(t0[0][1][1], t0[0][1][1], t1[0][0][0]);
+				fp_mul_dig(t0[1][0][0], t0[1][0][0], t1[0][0][0]);
+				fp_mul_dig(t0[1][0][1], t0[1][0][1], t1[0][0][0]);
+				fp_mul_dig(t0[1][1][0], t0[1][1][0], t1[0][0][0]);
+				fp_mul_dig(t0[1][1][1], t0[1][1][1], t1[0][0][0]);
 				break;
 #endif
 			default:
