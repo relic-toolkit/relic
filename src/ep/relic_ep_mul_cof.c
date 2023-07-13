@@ -58,6 +58,7 @@ void ep_mul_cof(ep_t r, const ep_t p) {
 				break;
 			case EP_B12:
 			case EP_B24:
+			case EP_B48:
 				/* Multiply by (1-x) to get the correct group, as proven in
 				 * Piellard. https://eprint.iacr.org/2022/352.pdf */
 				fp_prime_get_par(k);

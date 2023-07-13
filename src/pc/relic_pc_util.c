@@ -109,10 +109,17 @@ int g1_is_valid(const g1_t a) {
 				 * Piellard. https://eprint.iacr.org/2022/352.pdf */
 				case EP_B12:
 				case EP_B24:
+				case EP_B48:
 					/* Check [\psi(P) == [z^2 - 1]P. */
 					fp_prime_get_par(n);
 					bn_sqr(n, n);
 					if (ep_curve_is_pairf() == EP_B24) {
+						/* Check [\psi(P) == [z^4 - 1]P. */
+						bn_sqr(n, n);
+					}
+					if (ep_curve_is_pairf() == EP_B48) {
+						/* Check [\psi(P) == [z^8 - 1]P. */
+						bn_sqr(n, n);
 						bn_sqr(n, n);
 					}
 					bn_sub_dig(n, n, 1);
@@ -278,6 +285,7 @@ int g2_is_valid(const g2_t a) {
 			* Piellard. https://eprint.iacr.org/2022/352.pdf */
 			case EP_B12:
 			case EP_B24:
+			case EP_B48:
 				if (core_get()->ep_id == B12_383) {
 					/* Since p mod n = r, we can check instead that
 					* psi^4(P) + P == \psi^2(P). */
@@ -474,6 +482,13 @@ int gt_is_valid(const gt_t a) {
 				fp24_exp_cyc_sps((void *)v, (void *)a, b, l, bn_sign(n));
 				r = (gt_cmp(u, v) == RLC_EQ);
 				r &= fp24_test_cyc((void *)a);
+				break;
+			case EP_B48:
+				/* Check that a^u = a^p. */
+				gt_frb(u, a, 1);
+				fp48_exp_cyc_sps((void *)v, (void *)a, b, l, bn_sign(n));
+				r = (gt_cmp(u, v) == RLC_EQ);
+				r &= fp48_test_cyc((void *)a);
 				break;
 			/* Formulas from "Fast Subgroup Membership Testings for G1,
 			 * G2 and GT on Pairing-friendly Curves" by Dai et al.
