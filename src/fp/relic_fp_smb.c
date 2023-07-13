@@ -59,7 +59,7 @@ static void bn_negs_low(dig_t c[], const dig_t a[], dig_t sa, size_t n) {
 
 static dis_t jumpdivstep(dis_t m[4], dig_t *k, dis_t delta,
 		dis_t x, dis_t y, int s) {
-	dig_t t0, t1, t2, c0, c1, yi, ai = 1, bi = 0, ci = 0, di = 1, u = 0;
+	dig_t d0, t0, t1, t2, c0, c1, yi, ai = 1, bi = 0, ci = 0, di = 1, u = 0;
 
 	/* Unrolling twice makes it faster. */
 	for (s -= 2; s >= 0; s -= 2) {
@@ -69,9 +69,10 @@ static dis_t jumpdivstep(dis_t m[4], dig_t *k, dis_t delta,
 		c1 = -(x & 1);
 		c0 &= c1;
 
-		t0 = (delta < 0 ? y : -y);
-		t1 = (delta < 0 ? ci : -ci);
-		t2 = (delta < 0 ? di : -di);
+		d0 = (delta >= 0);
+		t0 = (y ^ -d0) + d0;
+		t1 = (ci ^ -d0) + d0;
+		t2 = (di ^ -d0) + d0;
 		x  += t0 & c1;
 		ai += t1 & c1;
 		bi += t2 & c1;
@@ -95,9 +96,10 @@ static dis_t jumpdivstep(dis_t m[4], dig_t *k, dis_t delta,
 		c1 = -(x & 1);
 		c0 &= c1;
 
-		t0 = (delta < 0 ? y : -y);
-		t1 = (delta < 0 ? ci : -ci);
-		t2 = (delta < 0 ? di : -di);
+		d0 = (delta >= 0);
+		t0 = (y ^ -d0) + d0;
+		t1 = (ci ^ -d0) + d0;
+		t2 = (di ^ -d0) + d0;
 		x  += t0 & c1;
 		ai += t1 & c1;
 		bi += t2 & c1;
