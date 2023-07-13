@@ -597,11 +597,13 @@ static void arith(void) {
 #endif
 
 #if EP_MAP == SWIFT || !defined(STRIP)
-	BENCH_RUN("ep_map_swift") {
-		uint8_t msg[5];
-		rand_bytes(msg, 5);
-		BENCH_ADD(ep_map_swift(p, msg, 5));
-	} BENCH_END;
+	if (ep_curve_opt_a() == RLC_ZERO || ep_curve_opt_b() == RLC_ZERO) {
+		BENCH_RUN("ep_map_swift") {
+			uint8_t msg[5];
+			rand_bytes(msg, 5);
+			BENCH_ADD(ep_map_swift(p, msg, 5));
+		} BENCH_END;
+	}
 #endif
 
 	BENCH_RUN("ep_pck") {
