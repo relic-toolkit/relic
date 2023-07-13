@@ -777,7 +777,6 @@ void fp_inv_jmpds(fp_t c, const fp_t a) {
 		dv_copy(p + j + 1, fp_prime_get(), RLC_FP_DIGS);
 
 		/* Update column vector below. */
-		/* Update column vector below. */
 		bn_mul2_low(v0, p01, m[0], RLC_FP_DIGS + j);
 		fp_subd_low(t, p, v0);
 		dv_copy_cond(v0, t, RLC_FP_DIGS + j + 1, RLC_SIGN(m[0]));
