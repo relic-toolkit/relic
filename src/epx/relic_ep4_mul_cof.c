@@ -202,6 +202,67 @@ static void ep4_mul_cof_n16(ep4_t r, const ep4_t p) {
 	}
 }
 
+/**
+ * Multiplies a point by the cofactor in a BLS24 curve.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to multiply.
+ */
+void ep4_mul_cof_b24(ep4_t r, const ep4_t p) {
+	bn_t z;
+	ep4_t t0, t1, t2, t3;
+
+	ep4_null(t0);
+	ep4_null(t1);
+	ep4_null(t2);
+	ep4_null(t3);
+	bn_null(z);
+
+	RLC_TRY {
+		bn_new(z);
+		ep4_new(t0);
+		ep4_new(t1);
+		ep4_new(t2);
+		ep4_new(t3);
+
+		fp_prime_get_par(z);
+
+		bn_sub_dig(z, z, 1);
+		ep4_mul_basic(t0, p, z);
+		bn_add_dig(z, z, 1);
+		ep4_mul_basic(t1, t0, z);
+		ep4_mul_basic(t2, t1, z);
+		ep4_mul_basic(t3, t2, z);
+
+		/* Compute t0 = [u - 1]*\psi^3(P). */
+		ep4_frb(t0, t0, 3);
+		/* Compute t2 = [u^2*(u-1)]\psi(P). */
+		ep4_frb(t2, t2, 1);
+		/* Compute t1 = [u*(u-1)]\psi^2(P). */
+		ep4_frb(t1, t1, 2);
+		/* Compute t3 = [u^3(u-1) - 1]P. */
+		ep4_sub(t3, t3, p);
+
+		ep4_dbl(r, p);
+		ep4_frb(r, r, 4);
+		ep4_add(r, r, t0);
+		ep4_add(r, r, t1);
+		ep4_add(r, r, t2);
+		ep4_add(r, r, t3);
+
+		ep4_norm(r, r);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		ep4_free(t0);
+		ep4_free(t1);
+		ep4_free(t2);
+		ep4_free(t3);
+		bn_free(z);
+
+	}
+}
+
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
@@ -218,6 +279,9 @@ void ep4_mul_cof(ep4_t r, const ep4_t p) {
 				break;
 			case EP_N16:
 				ep4_mul_cof_n16(r, p);
+				break;
+			case EP_B24:
+				ep4_mul_cof_b24(r, p);
 				break;
 			default:
 				/* Now, multiply by cofactor to get the correct group. */
