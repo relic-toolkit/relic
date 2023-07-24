@@ -450,7 +450,7 @@ void fp_param_set(int param) {
 #elif FP_PRIME == 511
 			case CTIDH_511:
 				bn_read_str(p, STR_P511, strlen(STR_P511), 16);
-				fp_prime_set_dense(t0´);
+				fp_prime_set_dense(t0);
 				break;
 			case PRIME_511187:
 				bn_set_2b(p, 511);
