@@ -37,7 +37,6 @@
 /*============================================================================*/
 
 #if FP_PRIME == 255
-
 /**
  * Primes with high 2-adicity for curves Tweedledum and Tweedledee.
  */
@@ -47,7 +46,13 @@
 /**
  * Random prime modulus for the Brainpool P256r1.
  */
-#define STR_P256	"A9FB57DBA1EEA9BC3E660A909D838D726E3BF623D52620282013481D1F6E5377"
+#define STR_P256	"AA9FB57DBA1EEA9BC3E660A909D838D726E3BF623D52620282013481D1F6E5377"
+
+#elif FP_PRIME == 511
+/**
+ * CTIDH prime with 511 bits. */
+ */
+#define STR_P511	"65B48E8F740F89BFFC8AB0D15E3E4C4AB42D083AEDC88C425AFBFCC69322C9CDA7AAC6C567F35507516730CC1F0B4F25C2721BF457ACA8351B81B90533C6C87B"
 
 #elif FP_PRIME == 544
 /**
@@ -443,11 +448,9 @@ void fp_param_set(int param) {
 				fp_prime_set_pairf(t0, EP_B24);
 				break;
 #elif FP_PRIME == 511
-			case OT_511:
-				bn_set_2b(t0, 52);
-				bn_add_dig(t0, t0, 0xAB);
-				bn_lsh(t0, t0, 12);
-				fp_prime_set_pairf(t0, EP_OT8);
+			case CTIDH_511:
+				bn_read_str(p, STR_P511, strlen(STR_P511), 16);
+				fp_prime_set_dense(t0´);
 				break;
 			case PRIME_511187:
 				bn_set_2b(p, 511);
@@ -734,8 +737,6 @@ int fp_param_set_any_tower(void) {
 	fp_param_set(K18_508);
 #elif FP_PRIME == 509
 	fp_param_set(B24_509);
-#elif FP_PRIME == 511
-	fp_param_set(OT_511);
 #elif FP_PRIME == 544
 	fp_param_set(GMT8_544);
 #elif FP_PRIME == 569

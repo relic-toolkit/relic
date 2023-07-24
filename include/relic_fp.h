@@ -104,6 +104,8 @@ enum {
 	NIST_384,
 	/** Curve448 prime. */
 	PRIME_448,
+	/** 511-bit prime for CTIDH. */
+	CTIDH_511,
 	/** Curve511187 511-bit prime modulus. */
 	PRIME_511187,
 	/** NIST 521-bit fast reduction polynomial. */
@@ -140,8 +142,6 @@ enum {
 	B24_509,
 	/** 508-bit prime for KSS16 curve. */
 	K18_508,
-	/** 511-bit prime for Optimal TNFS-secure curve. */
-	OT_511,
 	/** Random 544-bit prime for Cocks-Pinch curve with embedding degree 8. */
 	GMT8_544,
 	/** 569-bit prime for SG curve with embedding degree 54. */

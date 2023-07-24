@@ -411,26 +411,6 @@ void fp_prime_set_pairf(const bn_t x, int pairf) {
 				bn_add(p, p, t0);
 				fp_prime_set_dense(p);
 				break;
-			case EP_OT8:
-				/* p = (x^8 + x^6 + 5*x^4 + x^2 + 4*x + 4) / 4. */
-				bn_set_dig(p, 4);
-				bn_mul_dig(t1, t0, 4);
-				bn_add(p, p, t1);
-				bn_sqr(t0, t0);
-				bn_add(p, p, t0);
-				bn_sqr(t1, t0);
-				bn_add(p, p, t1);
-				bn_add(p, p, t1);
-				bn_add(p, p, t1);
-				bn_add(p, p, t1);
-				bn_add(p, p, t1);
-				bn_mul(t1, t1, t0);
-				bn_add(p, p, t1);
-				bn_mul(t1, t1, t0);
-				bn_add(p, p, t1);
-				bn_div_dig(p, p, 4);
-				fp_prime_set_dense(p);
-				break;
 			case EP_N16:
 				/* p = (x^16 + 2*x^13 + x^10 + 5*x^8 + 6*x^5 + x^2 + 4)/4 */
 				bn_sqr(p, t0);

@@ -563,22 +563,6 @@
 /** @} */
 #endif
 
-#if defined(EP_ENDOM) && FP_PRIME == 511
-/**
- * Parameters for the 511-bit jacobi quartic curve.
- */
-/** @{ */
-#define OT8_P511_A		"1"
-#define OT8_P511_B		"0"
-#define OT8_P511_X		"17D8A9281052D5C14B26B88FBDA0DE7001F384C09F7425270874BD187725FF7D68887EC3539658E3C60F6FFADCED61F47267CCDAF5B850DF4A441105AE49CE6"
-#define OT8_P511_Y		"9CB933777C7E567A2040EC255073F2C271F632E6E81490D85377DD77659416965584F5F44DFB146E33393CE36D908F79A4ED5B4B411D78572E6CA972F66DEC8"
-#define OT8_P511_R		"100000000002AC000000002AD56000000131304C0000032F6D0B1000000000001"
-#define OT8_P511_H		"40000000000AB000000000AB5580000044C4C130000564BDB42C401C8E400000"
-#define OT8_P511_BETA	"20000000000AB0000000018FC7800000816148500019C9EF620CC291655380BA94133E310D1CC71ED0A7EBD9B2AB859C0F60AC90F7A2E5A1140C3FCBF1DD5400"
-#define OT8_P511_LAMB	"100000000002AC000000002AD55FFFFFF131304BFFFEAD2F6D0B0FF8DC7000001"
-/** @} */
-#endif
-
 #if defined(EP_ENDOM) && FP_PRIME == 544
 /**
  * Parameters for the 544-bit Cocks-Pinch curve.
@@ -1093,12 +1077,6 @@ void ep_param_set(int param) {
 				pairf = EP_B24;
 				break;
 #endif
-#if defined(EP_ENDOM) && FP_PRIME == 511
-			case OT8_P511:
-				ASSIGNK(OT8_P511, OT_511);
-				endom = 1;
-				break;
-#endif
 #if defined(EP_PLAIN) && FP_PRIME == 511
 			case CURVE_511187:
 				ASSIGN(CURVE_511187, PRIME_511187);
@@ -1426,8 +1404,6 @@ int ep_param_set_any_endom(void) {
 	ep_param_set(K18_P508);
 #elif FP_PRIME == 509
 	ep_param_set(B24_P509);
-#elif FP_PRIME == 511
-	ep_param_set(OT8_P511);
 #elif FP_PRIME == 544
 	ep_param_set(GMT8_P544);
 #elif FP_PRIME == 638
@@ -1528,10 +1504,6 @@ int ep_param_set_any_pairf(void) {
 	ep_param_set(B24_P509);
 	type = RLC_EP_DTYPE;
 	extension = 4;
-#elif FP_PRIME == 511
-	ep_param_set(OT8_P511);
-	type = RLC_EP_DTYPE;
-	extension = 2;
 #elif FP_PRIME == 544
 	ep_param_set(GMT8_P544);
 	type = RLC_EP_MTYPE;
@@ -1697,9 +1669,6 @@ void ep_param_print(void) {
 		case B24_P509:
 			util_banner("Curve B24-P509:", 0);
 			break;
-		case OT8_P511:
-			util_banner("Curve OT8-P511:", 0);
-			break;
 		case SG54_P569:
 			util_banner("Curve SG54-P569:", 0);
 			break;
@@ -1803,7 +1772,6 @@ int ep_param_embed(void) {
 			return 1;
 		case EP_SS2:
 			return 2;
-		case EP_OT8:
 		case EP_GMT8:
 			return 8;
 		case EP_BN:

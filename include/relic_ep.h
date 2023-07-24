@@ -59,8 +59,6 @@ enum {
     EP_SS2,
     /** Barreto-Naehrig. */
     EP_BN,
-    /* Optimal TNFS-secure. */
-    EP_OT8,
     /* Cocks-Pinch family discovered by Guillevic, Masson and Thomé (GMT). */
     EP_GMT8,
     /* Barreto-Lynn-Scott family with embedding degree 12. */
