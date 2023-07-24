@@ -450,7 +450,7 @@ void fp_param_set(int param) {
 #elif FP_PRIME == 511
 			case CTIDH_511:
 				bn_read_str(p, STR_P511, strlen(STR_P511), 16);
-				fp_prime_set_dense(t0);
+				fp_prime_set_dense(p);
 				break;
 			case PRIME_511187:
 				bn_set_2b(p, 511);
@@ -737,6 +737,8 @@ int fp_param_set_any_tower(void) {
 	fp_param_set(K18_508);
 #elif FP_PRIME == 509
 	fp_param_set(B24_509);
+#elif FP_PRIME == 511
+	fp_param_set(CTIDH_511);
 #elif FP_PRIME == 544
 	fp_param_set(GMT8_544);
 #elif FP_PRIME == 569
