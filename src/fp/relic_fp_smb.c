@@ -368,13 +368,14 @@ int fp_smb_binar(const fp_t a) {
 int fp_smb_divst(const fp_t a) {
 	/* Compute number of iterations based on modulus size. */
 #if FP_PRIME < 46
-	int r = 0, d = (49 * FP_PRIME + 80) / 17;
+	const int d = (49 * FP_PRIME + 80) / 17;
 #else
-	int r = 0, d = (49 * FP_PRIME + 57) / 17;
+	const int d = (49 * FP_PRIME + 57) / 17;
 #endif
 	dig_t delta = 1, g0, d0, fs, gs, k, mask, s;
 	bn_t _t;
 	dv_t f, g, t;
+	int r = 0;
 
 	bn_null(_t);
 	dv_null(f);

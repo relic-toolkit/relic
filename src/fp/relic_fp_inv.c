@@ -469,9 +469,9 @@ void fp_inv_exgcd(fp_t c, const fp_t a) {
 void fp_inv_divst(fp_t c, const fp_t a) {
 	/* Compute number of iterations based on modulus size. */
 #if FP_PRIME < 46
-	int d = (49 * FP_PRIME + 80) / 17;
+	const int d = (49 * FP_PRIME + 80) / 17;
 #else
-	int d = (49 * FP_PRIME + 57) / 17;
+	const int d = (49 * FP_PRIME + 57) / 17;
 #endif
 	int g0, d0;
 	dig_t fs, gs, delta = 1;
