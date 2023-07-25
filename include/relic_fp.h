@@ -160,10 +160,16 @@ enum {
 	N16_765,
 	/** 766-bit prime for KSS curve with embedding degree 16. */
 	K16_766,
+	/** 1024-bit prime for CTIDH. */
+	CTIDH_1024,
 	/** 1536-bit prime for supersingular curve with embedding degree k = 2. */
 	SS_1536,
+	/** 2048-bit prime for CTDIH. */
+	CTIDH_2048,
 	/** 3072-bit prime for supersingular curve with embedding degree k = 1. */
 	K1_3072,
+	/** 4096-bit prime for SQALE. */
+	SQALE_4096,
 };
 
 /**
