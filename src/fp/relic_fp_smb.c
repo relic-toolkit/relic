@@ -464,11 +464,10 @@ int fp_smb_divst(const fp_t a) {
 #if FP_SMB == JMPDS || !defined(STRIP)
 
 int fp_smb_jmpds(const fp_t a) {
-	const int s = RLC_DIG - 2;
 	dis_t m[4], d = 0;
-	int i, r = 0;
 	/* Iterations taken directly from https://github.com/sipa/safegcd-bounds */
-	int iterations = (45907 * FP_PRIME + 26313) / 19929;
+	const int iterations = (45907 * FP_PRIME + 26313) / 19929;
+	int loops, precision, i, r = 0, s = RLC_DIG - 2;
 	dv_t f, g, t0, t1, u0, u1;
 	dig_t sf, sg, j, k;
 
@@ -499,9 +498,11 @@ int fp_smb_jmpds(const fp_t a) {
 #else
 		fp_copy(f, a);
 #endif
+		precision = RLC_FP_DIGS;
+		loops = iterations / s;
+		loops = (iterations % s == 0 ? loops - 1 : loops);
 
-		for (i = j = k = 0; i < iterations; i += s) {
-			int precision = RLC_FP_DIGS;
+		for (i = j = k = 0; i < loops; i++) {
 			d = jumpdivstep(m, &k, d, f[0], g[0], s);
 
 			sf = RLC_SIGN(f[precision]);
@@ -523,7 +524,26 @@ int fp_smb_jmpds(const fp_t a) {
 			j = (j + ((j & 1) ^ (RLC_SIGN(g[precision])))) % 4;
 		}
 
-		r = 0;
+		s = iterations - loops * s;
+		d = jumpdivstep(m, &k, d, f[0], g[0], s);
+
+		sf = RLC_SIGN(f[precision]);
+		sg = RLC_SIGN(g[precision]);
+		bn_negs_low(u0, f, sf, precision);
+		bn_negs_low(u1, g, sg, precision);
+
+		t0[precision] = bn_muls_low(t0, u0, sf, m[0], precision);
+		t1[precision] = bn_muls_low(t1, u1, sg, m[1], precision);
+		bn_addn_low(t0, t0, t1, precision + 1);
+		bn_rshs_low(f, t0, precision + 1, s);
+
+		t0[precision] = bn_muls_low(t0, u0, sf, m[2], precision);
+		t1[precision] = bn_muls_low(t1, u1, sg, m[3], precision);
+		bn_addn_low(t1, t1, t0, precision + 1);
+		bn_rshs_low(g, t1, precision + 1, s);
+
+		j = (j + k) % 4;
+		j = (j + ((j & 1) ^ (RLC_SIGN(g[precision])))) % 4;
 		j = (j + (j & 1)) % 4;
 
 		fp_zero(t0);

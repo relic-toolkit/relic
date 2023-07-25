@@ -577,11 +577,11 @@ void fp_inv_divst(fp_t c, const fp_t a) {
 #if FP_INV == JMPDS || !defined(STRIP)
 
 void fp_inv_jmpds(fp_t c, const fp_t a) {
-	dis_t m[4];
+	dis_t m[4], d = -1;
 	/* Compute number of iterations based on modulus size. */
-	int i, d = -1, s = RLC_DIG - 2;
 	/* Iterations taken directly from https://github.com/sipa/safegcd-bounds */
-	int iterations = (45907 * FP_PRIME + 26313) / 19929;
+	const int iterations = (45907 * FP_PRIME + 26313) / 19929;
+	int loops, precison, i, r = 0, s = RLC_DIG - 2;
 	dv_t f, g, t, p, t0, t1, u0, u1, v0, v1, p01, p11;
 	dig_t sf, sg;
 	fp_t pre;
@@ -671,7 +671,7 @@ void fp_inv_jmpds(fp_t c, const fp_t a) {
 		dv_copy(p01, v1, 2 * RLC_FP_DIGS);
 		dv_copy(p11, u1, 2 * RLC_FP_DIGS);
 
-		int loops = iterations / s;
+		loops = iterations / s;
 		loops = (iterations % s == 0 ? loops - 1 : loops);
 
 		for (i = 1; i < loops; i++) {
