@@ -581,7 +581,7 @@ void fp_inv_jmpds(fp_t c, const fp_t a) {
 	/* Compute number of iterations based on modulus size. */
 	/* Iterations taken directly from https://github.com/sipa/safegcd-bounds */
 	const int iterations = (45907 * FP_PRIME + 26313) / 19929;
-	int loops, precison, i, r = 0, s = RLC_DIG - 2;
+	int loops, i, r = 0, s = RLC_DIG - 2;
 	dv_t f, g, t, p, t0, t1, u0, u1, v0, v1, p01, p11;
 	dig_t sf, sg;
 	fp_t pre;
