@@ -407,9 +407,6 @@ int fp_smb_divst(const fp_t a) {
 			d0 = g[0] & ((int)delta > 0);
 			/* Conditionally negate delta if d0 is set. */
 			delta = (delta ^ -d0) + d0;
-			k ^= (((g[0] >> (dig_t)1) & ((f[0] >> (dig_t)1) ^ 1)) ^ (~fs & gs))
-					& d0;
-
 			/* Conditionally swap and negate based on d0. */
 			mask = -d0;
 			s = (fs ^ gs) & mask;
@@ -422,6 +419,7 @@ int fp_smb_divst(const fp_t a) {
 			}
 			fp_add1_low(g, g, d0);
 
+			k ^= (((g[0] & f[0]) >> (dig_t)1) ^ (fs & gs)) & d0;
 			k ^= (f[0] >> 1) ^ (f[0] >> 2);
 			k &= 1;
 
