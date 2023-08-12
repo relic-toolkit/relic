@@ -10,7 +10,8 @@ for script in preset/x64-pbc-*; do
  make
  ./bin/test_fpx && ./bin/test_pc
  if [ $? -ne 0 ]; then
-   exit 1
+	echo "FAILED: target-$file"
+	exit 1
  fi
  cd ..
 done
