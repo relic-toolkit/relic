@@ -65,11 +65,10 @@ static dis_t jumpdivstep(dis_t m[4], dig_t *k, dis_t delta,
 	for (s -= 2; s >= 0; s -= 2) {
 		yi = y;
 
-		c0 = ~(delta >> (RLC_DIG - 1));
-		c1 = -(x & 1);
-		c0 &= c1;
-
 		d0 = (delta >= 0);
+		c1 = -(x & 1);
+		c0 = (-d0) & c1;
+
 		t0 = (y ^ -d0) + d0;
 		t1 = (ci ^ -d0) + d0;
 		t2 = (di ^ -d0) + d0;
@@ -92,11 +91,10 @@ static dis_t jumpdivstep(dis_t m[4], dig_t *k, dis_t delta,
 
 		yi = y;
 
-		c0 = ~(delta >> (RLC_DIG - 1));
-		c1 = -(x & 1);
-		c0 &= c1;
-
 		d0 = (delta >= 0);
+		c1 = -(x & 1);
+		c0 = (-d0) & c1;
+
 		t0 = (y ^ -d0) + d0;
 		t1 = (ci ^ -d0) + d0;
 		t2 = (di ^ -d0) + d0;
