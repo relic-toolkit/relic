@@ -57,8 +57,8 @@ static void bn_negs_low(dig_t c[], const dig_t a[], dig_t sa, size_t n) {
 	}
 }
 
-static dis_t jumpdivstep(dis_t m[4], dig_t *k, dis_t delta,
-		dis_t x, dis_t y, int s) {
+static dis_t jumpdivstep(dis_t m[4], dig_t *k, dis_t delta, dis_t y, dis_t x, 
+		int s) {
 	dig_t d0, t0, t1, t2, c0, c1, yi, ai = 1, bi = 0, ci = 0, di = 1, u = 0;
 
 	/* Unrolling twice makes it faster. */
@@ -287,17 +287,17 @@ int fp_smb_jmpds(const fp_t a) {
 		dv_new(u0);
 		dv_new(u1);
 
-		dv_zero(f, RLC_FP_DIGS + 1);
-		dv_copy(g, fp_prime_get(), RLC_FP_DIGS);
+		dv_copy(f, fp_prime_get(), RLC_FP_DIGS);
+		f[RLC_FP_DIGS] = 0;
+		dv_zero(g, RLC_FP_DIGS + 1);
 		dv_zero(t0 + RLC_FP_DIGS, RLC_FP_DIGS);
-		g[RLC_FP_DIGS] = 0;
 
 #if FP_RDC == MONTY
 		/* Convert a from Montgomery form. */
 		fp_copy(t0, a);
-		fp_rdcn_low(f, t0);
+		fp_rdcn_low(g, t0);
 #else
-		fp_copy(f, a);
+		fp_copy(g, a);
 #endif
 		precision = RLC_FP_DIGS;
 		loops = iterations / s;
@@ -310,19 +310,19 @@ int fp_smb_jmpds(const fp_t a) {
 			sg = RLC_SIGN(g[precision]);
 			bn_negs_low(u0, f, sf, precision);
 			bn_negs_low(u1, g, sg, precision);
-
-			t0[precision] = bn_muls_low(t0, u0, sf, m[0], precision);
-			t1[precision] = bn_muls_low(t1, u1, sg, m[1], precision);
+			
+			t0[precision] = bn_muls_low(t0, u0, sf, m[3], precision);
+			t1[precision] = bn_muls_low(t1, u1, sg, m[2], precision);
 			bn_addn_low(t0, t0, t1, precision + 1);
 			bn_rshs_low(f, t0, precision + 1, s);
 
-			t0[precision] = bn_muls_low(t0, u0, sf, m[2], precision);
-			t1[precision] = bn_muls_low(t1, u1, sg, m[3], precision);
+			t0[precision] = bn_muls_low(t0, u0, sf, m[1], precision);
+			t1[precision] = bn_muls_low(t1, u1, sg, m[0], precision);
 			bn_addn_low(t1, t1, t0, precision + 1);
 			bn_rshs_low(g, t1, precision + 1, s);
 
 			j = (j + k) % 4;
-			j = (j + ((j & 1) ^ (RLC_SIGN(g[precision])))) % 4;
+			j = (j + ((j & 1) ^ (RLC_SIGN(f[precision])))) % 4;
 		}
 
 		s = iterations - loops * s;
@@ -333,15 +333,14 @@ int fp_smb_jmpds(const fp_t a) {
 		bn_negs_low(u0, f, sf, precision);
 		bn_negs_low(u1, g, sg, precision);
 
-		t0[precision] = bn_muls_low(t0, u0, sf, m[0], precision);
-		t1[precision] = bn_muls_low(t1, u1, sg, m[1], precision);
+		t0[precision] = bn_muls_low(t0, u0, sf, m[3], precision);
+		t1[precision] = bn_muls_low(t1, u1, sg, m[2], precision);
 		bn_addn_low(t0, t0, t1, precision + 1);
 		bn_rshs_low(f, t0, precision + 1, s);
 
 		j = (j + k) % 4;
-		j = (j + ((j & 1) ^ (RLC_SIGN(g[precision])))) % 4;
-		j = (j + (j & 1)) % 4;
-		j = 1 - j;
+		j = (j + ((j & 1) ^ (RLC_SIGN(f[precision])))) % 4;
+		j = 1 - ((j + (j & 1)) % 4);
 
 		fp_zero(t0);
 		t0[0] = 1;
