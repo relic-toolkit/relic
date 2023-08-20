@@ -266,8 +266,6 @@
 
 /** Legendre by Fermat's Little Theorem. */
 #define BASIC    1
-/** Binary method. */
-#define BINAR    2
 /** Constant-time inversion by Bernstein-Yang division steps. */
 #define DIVST    5
 /** Constant-time inversion by Bernstein-Yang jump division steps. */

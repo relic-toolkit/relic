@@ -936,13 +936,6 @@ static int symbol(void) {
 		} TEST_END;
 #endif
 
-#if FP_SMB == BINAR || !defined(STRIP)
-		TEST_CASE("binary symbol computation is correct") {
-			fp_rand(a);
-			TEST_ASSERT(fp_smb(a) == fp_smb_binar(a), end);
-		} TEST_END;
-#endif
-
 #if FP_SMB == DIVST || !defined(STRIP)
 		TEST_CASE("division step symbol computation is correct") {
 			fp_rand(a);
