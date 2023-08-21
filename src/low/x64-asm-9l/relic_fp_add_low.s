@@ -424,6 +424,19 @@ cdecl(fp_subc_low):
 	ret
 
 cdecl(fp_negm_low):
+	push	%rbx
+	push	%rbp
+	push	%r12
+
+	xorq	%r9, %r9
+	xorq	%r10, %r10
+	xorq	%r11, %r11
+	xorq	%r12, %r12
+	xorq	%rbx, %rbx
+	xorq	%rbp, %rbp
+	xorq	%rax, %rax
+	xorq	%rcx, %rcx
+
     movq    0(%rsi) , %r8
     or 	    8(%rsi) , %r8
     or 	    16(%rsi), %r8
@@ -434,34 +447,39 @@ cdecl(fp_negm_low):
     or 	    56(%rsi), %r8
     or 	    64(%rsi), %r8
     test    %r8, %r8
-    cmovnz 	p0(%rip), %r8
-    subq 	0(%rsi) , %r8
-    movq 	%r8     , 0(%rdi)
-    cmovnz 	p1(%rip), %r8
-    sbbq 	8(%rsi) , %r8
-    movq 	%r8     , 8(%rdi)
-    cmovnz 	p2(%rip), %r8
-    sbbq 	16(%rsi), %r8
-    movq 	%r8     , 16(%rdi)
-    cmovnz 	p3(%rip), %r8
-    sbbq 	24(%rsi), %r8
-    movq 	%r8     , 24(%rdi)
-    cmovnz 	p4(%rip), %r8
-    sbbq 	32(%rsi), %r8
-    movq 	%r8     , 32(%rdi)
-    cmovnz 	p5(%rip), %r8
-    sbbq 	40(%rsi), %r8
-    movq 	%r8     , 40(%rdi)
-    cmovnz 	p6(%rip), %r8
-    sbbq 	48(%rsi), %r8
-    movq 	%r8     , 48(%rdi)
-    cmovnz 	p7(%rip), %r8
-    sbbq 	56(%rsi), %r8
-    movq 	%r8     , 56(%rdi)
-    cmovnz 	p8(%rip), %r8
-    sbbq 	64(%rsi), %r8
-    movq 	%r8     , 64(%rdi)
-    ret
+	cmovnz 	p0(%rip), %r8
+	cmovnz 	p1(%rip), %r9
+	cmovnz 	p2(%rip), %r10
+	cmovnz 	p3(%rip), %r11
+	cmovnz 	p4(%rip), %rbx
+	cmovnz 	p5(%rip), %rbp
+	cmovnz 	p6(%rip), %r12
+	cmovnz 	p7(%rip), %rax
+	cmovnz 	p8(%rip), %rcx
+	subq 	0(%rsi) , %r8
+	movq 	%r8     , 0(%rdi)
+	sbbq 	8(%rsi) , %r9
+	movq 	%r9     , 8(%rdi)
+	sbbq 	16(%rsi), %r10
+	movq 	%r10    , 16(%rdi)
+	sbbq 	24(%rsi), %r11
+	movq 	%r11    , 24(%rdi)
+	sbbq 	32(%rsi), %rbx
+	movq 	%rbx    , 32(%rdi)
+	sbbq 	40(%rsi), %rbp
+	movq 	%rbp    , 40(%rdi)
+	sbbq 	48(%rsi), %r12
+	movq 	%r12    , 48(%rdi)
+	sbbq 	56(%rsi), %rax
+	movq 	%rax    , 56(%rdi)
+	sbbq 	64(%rsi), %rcx
+	movq 	%rcx    , 64(%rdi)
+
+	pop		%r12
+	pop		%rbp
+	pop		%rbx
+  	ret
+
 
 cdecl(fp_dbln_low):
 	movq	0(%rsi), %r8

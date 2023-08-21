@@ -799,6 +799,9 @@ static int inversion(void) {
 			fp_inv(b, a);
 			fp_mul(c, a, b);
 			TEST_ASSERT(fp_cmp_dig(c, 1) == RLC_EQ, end);
+			fp_set_dig(a, 1);
+			fp_inv(b, a);
+			TEST_ASSERT(fp_cmp_dig(b, 1) == RLC_EQ, end);
 		} TEST_END;
 
 #if FP_INV == BASIC || !defined(STRIP)

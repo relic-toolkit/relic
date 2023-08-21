@@ -572,25 +572,25 @@ cdecl(fp_negm_low):
 	sbbq 	8(%rsi) , %r9
 	movq 	%r9     , 8(%rdi)
 	sbbq 	16(%rsi), %r10
-	movq 	%r10     , 16(%rdi)
+	movq 	%r10    , 16(%rdi)
 	sbbq 	24(%rsi), %r11
-	movq 	%r11     , 24(%rdi)
+	movq 	%r11    , 24(%rdi)
 	sbbq 	32(%rsi), %rbx
-	movq 	%rbx     , 32(%rdi)
+	movq 	%rbx    , 32(%rdi)
 	sbbq 	40(%rsi), %rbp
-	movq 	%rbp     , 40(%rdi)
+	movq 	%rbp    , 40(%rdi)
 	sbbq 	48(%rsi), %r12
-	movq 	%r12     , 48(%rdi)
+	movq 	%r12    , 48(%rdi)
 	sbbq 	56(%rsi), %r13
-	movq 	%r13     , 56(%rdi)
+	movq 	%r13    , 56(%rdi)
 	sbbq 	64(%rsi), %r14
-	movq 	%r14     , 64(%rdi)
+	movq 	%r14    , 64(%rdi)
 	sbbq 	72(%rsi), %r15
-	movq 	%r15     , 72(%rdi)
+	movq 	%r15    , 72(%rdi)
 	sbbq 	80(%rsi), %rax
-	movq 	%rax     , 80(%rdi)
+	movq 	%rax    , 80(%rdi)
 	sbbq 	88(%rsi), %rcx
-	movq 	%rcx     , 88(%rdi)
+	movq 	%rcx    , 88(%rdi)
 
 	pop		%r15
 	pop		%r14
