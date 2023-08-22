@@ -24,7 +24,7 @@
 /**
  * @file
  *
- * Implementation of pairing computation for curves with embedding degree 12.
+ * Implementation of pairing computation for curves with embedding degree 18.
  *
  * @ingroup pp
  */
@@ -198,7 +198,7 @@ static void pp_mil_lit_k18(fp18_t r, ep_t *t, ep_t *p, ep3_t *q, int m, bn_t a) 
  * @param[in] p				- the second point of the pairing, in G_1.
  * @param[in] a				- the loop parameter.
  */
-static void pp_fin_k18_oatep(fp18_t r, ep3_t t, ep3_t q, ep_t p) {
+static void pp_fin_k18_oatep(fp18_t r, ep3_t t, ep3_t q, ep_t p, int f) {
     fp18_t u, v;
     ep3_t _q;
     ep_t _p;
@@ -214,28 +214,41 @@ static void pp_fin_k18_oatep(fp18_t r, ep3_t t, ep3_t q, ep_t p) {
         ep3_new(_q);
         ep3_null(_p);
 
-        /* _q = 3*p*Q. */
-        fp18_zero(u);
-        fp18_zero(v);
+		/* Compute additional line function. */
+		fp18_zero(u);
+		fp18_zero(v);
 
-        /* Compute additional line function. */
+		switch (ep_curve_is_pairf()) {
+			case EP_K18:
 #if EP_ADD == BASIC
-		ep_neg(_p, p);
+				ep_neg(_p, p);
 #else
-		fp_add(_p->x, p->x, p->x);
-		fp_add(_p->x, _p->x, p->x);
-		fp_neg(_p->y, p->y);
+				fp_add(_p->x, p->x, p->x);
+				fp_add(_p->x, _p->x, p->x);
+				fp_neg(_p->y, p->y);
 #endif
-
-        pp_dbl_k18(u, _q, q, _p);
-        pp_add_k18(v, _q, q, p);
-        pp_norm_k18(_q, _q);
-        fp18_mul_dxs(u, u, v);
-        fp18_frb(u, u, 1);
-        fp18_mul(r, r, u);
-        ep3_frb(_q, _q, 1);
-        pp_add_k18(u, t, _q, p);
-        fp18_mul_dxs(r, r, u);
+				/* _q = 3*p*Q. */
+		        pp_dbl_k18(u, _q, q, _p);
+		        pp_add_k18(v, _q, q, p);
+		        pp_norm_k18(_q, _q);
+		        fp18_mul_dxs(u, u, v);
+		        fp18_frb(u, u, 1);
+		        fp18_mul(r, r, u);
+		        ep3_frb(_q, _q, 1);
+		        pp_add_k18(u, t, _q, p);
+		        fp18_mul_dxs(r, r, u);
+				break;
+			case EP_SG18:
+				if (f == 1) {
+					fp18_frb(u, r, 3);
+					fp18_mul(r, r, u);
+				}
+				ep3_frb(t, t, 3);
+				ep3_frb(_q, q, 2);
+				pp_add_k18(v, t, _q, p);
+				fp18_mul_dxs(r, r, v);
+				break;
+		}
     } RLC_CATCH_ANY {
         RLC_THROW(ERR_CAUGHT);
     } RLC_FINALLY {
@@ -522,7 +535,18 @@ void pp_map_oatep_k18(fp18_t r, const ep_t p, const ep3_t q) {
 						fp18_inv_cyc(r, r);
 						ep3_neg(t[0], t[0]);
 					}
-					pp_fin_k18_oatep(r, t[0], _q[0], _p[0]);
+					pp_fin_k18_oatep(r, t[0], _q[0], _p[0], 0);
+					pp_exp_k18(r, r);
+					break;
+				case EP_SG18:
+					/* r = f_{|a|,Q}(P). */
+					pp_mil_k18(r, t, _q, _p, 1, a);
+					if (bn_sign(a) == RLC_NEG) {
+						/* f_{-a,Q}(P) = 1/f_{a,Q}(P). */
+						fp18_inv_cyc(r, r);
+						ep3_neg(t[0], t[0]);
+					}
+					pp_fin_k18_oatep(r, t[0], _q[0], _p[0], 1);
 					pp_exp_k18(r, r);
 					break;
 			}
@@ -584,7 +608,23 @@ void pp_map_sim_oatep_k18(fp18_t r, const ep_t *p, const ep3_t *q, int m) {
 						if (bn_sign(a) == RLC_NEG) {
 							ep3_neg(t[i], t[i]);
 						}
-						pp_fin_k18_oatep(r, t[i], _q[i], _p[i]);
+						pp_fin_k18_oatep(r, t[i], _q[i], _p[i], 0);
+					}
+					pp_exp_k18(r, r);
+					break;
+				case EP_SG18:
+					/* r = f_{|a|,Q}(P). */
+					pp_mil_k18(r, t, _q, _p, j, a);
+					if (bn_sign(a) == RLC_NEG) {
+						/* f_{-a,Q}(P) = 1/f_{a,Q}(P). */
+						fp18_inv_cyc(r, r);
+					}
+					for (i = 0; i < j; i++) {
+						if (bn_sign(a) == RLC_NEG) {
+							ep3_neg(t[i], t[i]);
+						}
+						/* Apply Frobenius only once. */
+						pp_fin_k18_oatep(r, t[i], _q[i], _p[i], i == 0);
 					}
 					pp_exp_k18(r, r);
 					break;

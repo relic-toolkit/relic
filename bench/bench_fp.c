@@ -81,6 +81,12 @@ static void util(void) {
 	}
 	BENCH_END;
 
+	BENCH_RUN("fp_is_even") {
+		fp_rand(a);
+		BENCH_ADD(fp_is_even(a));
+	}
+	BENCH_END;
+
 	BENCH_RUN("fp_get_bit") {
 		fp_rand(a);
 		BENCH_ADD(fp_get_bit(a, RLC_DIG / 2));
@@ -626,10 +632,37 @@ static void arith(void) {
 	BENCH_END;
 #endif
 
+	BENCH_RUN("fp_exp_dig") {
+		fp_rand(a);
+		bn_rand(e, RLC_POS, RLC_DIG);
+		BENCH_ADD(fp_exp_dig(b, a, e->dp[0]));
+	}
+	BENCH_END;
+
+	BENCH_RUN("fp_is_sqr") {
+		fp_rand(a);
+		BENCH_ADD(fp_is_sqr(a));
+	}
+	BENCH_END;
+
 	BENCH_RUN("fp_srt") {
 		fp_rand(a);
 		fp_sqr(a, a);
 		BENCH_ADD(fp_srt(c, a));
+	}
+	BENCH_END;
+
+	BENCH_RUN("fp_is_cub") {
+		fp_rand(a);
+		BENCH_ADD(fp_is_cub(a));
+	}
+	BENCH_END;
+
+	BENCH_RUN("fp_crt") {
+		fp_rand(a);
+		fp_sqr(b, a);
+		fp_mul(b, b, a);
+		BENCH_ADD(fp_crt(c, a));
 	}
 	BENCH_END;
 

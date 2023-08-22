@@ -437,7 +437,7 @@ static int doubling(void) {
 		} TEST_END;
 #endif
 
-#if EP_ADD == PROJC || !defined(STRIP)
+#if EP_ADD == JACOB || !defined(STRIP)
 		TEST_CASE("point doubling in jacobian coordinates is correct") {
 			ep_rand(a);
 			/* a in projective coordinates. */
@@ -525,7 +525,7 @@ static int endomorphism(void) {
 			}
 			TEST_END;
 
-#if EB_ADD == BASIC || !defined(STRIP)
+#if EP_ADD == BASIC || !defined(STRIP)
 			TEST_CASE("endomorphism in affine coordinates is correct") {
 				ep_rand(a);
 				ep_psi(b, a);
@@ -537,11 +537,24 @@ static int endomorphism(void) {
 			TEST_END;
 #endif
 
-#if EB_ADD == PROJC || !defined(STRIP)
+#if EP_ADD == PROJC || !defined(STRIP)
 			TEST_CASE("endomorphism in projective coordinates is correct") {
 				ep_rand(a);
 				ep_dbl_projc(a, a);
 				ep_psi(b, a);
+				ep_norm(a, a);
+				ep_mul(c, a, l);
+				ep_neg(a, b);
+			}
+			TEST_END;
+#endif
+
+#if EP_ADD == JACOB || !defined(STRIP)
+			TEST_CASE("endomorphism in jacobian coordinates is correct") {
+				ep_rand(a);
+				ep_dbl_jacob(a, a);
+				ep_psi(b, a);
+				ep_norm(a, a);
 				ep_mul(c, a, l);
 				ep_neg(a, b);
 				TEST_ASSERT(ep_cmp(b, c) == RLC_EQ ||
@@ -1337,17 +1350,14 @@ static int compression(void) {
 static int hashing(void) {
 	int code = RLC_ERR;
 	ep_t a;
-	ep_t b;
 	bn_t n;
 	uint8_t msg[5];
 
 	ep_null(a);
-	ep_null(b);
 	bn_null(n);
 
 	RLC_TRY {
 		ep_new(a);
-		ep_new(b);
 		bn_new(n);
 
 		ep_curve_get_ord(n);
@@ -1355,13 +1365,46 @@ static int hashing(void) {
 		TEST_CASE("point hashing is correct") {
 			rand_bytes(msg, sizeof(msg));
 			ep_map(a, msg, sizeof(msg));
-			TEST_ASSERT(ep_is_infty(a) == 0, end);
-			ep_map_dst(b, msg, sizeof(msg), (const uint8_t *)"RELIC", 5);
-			TEST_ASSERT(ep_cmp(a, b) == RLC_EQ, end);
+			TEST_ASSERT(ep_on_curve(a) && ep_is_infty(a) == 0, end);
 			ep_mul(a, a, n);
-			TEST_ASSERT(ep_is_infty(a) == 1, end);
+			TEST_ASSERT(ep_on_curve(a) && ep_is_infty(a) == 1, end);
 		}
 		TEST_END;
+
+#if EP_MAP == BASIC || !defined(STRIP)
+		TEST_CASE("basic point hashing is correct") {
+			rand_bytes(msg, sizeof(msg));
+			ep_map_basic(a, msg, sizeof(msg));
+			TEST_ASSERT(ep_on_curve(a) && ep_is_infty(a) == 0, end);
+			ep_mul(a, a, n);
+			TEST_ASSERT(ep_on_curve(a) && ep_is_infty(a) == 1, end);
+		}
+		TEST_END;
+#endif
+
+#if EP_MAP == SSWUM || !defined(STRIP)
+		TEST_CASE("simplified SWU point hashing is correct") {
+			rand_bytes(msg, sizeof(msg));
+			ep_map_sswum(a, msg, sizeof(msg));
+			TEST_ASSERT(ep_on_curve(a) && ep_is_infty(a) == 0, end);
+			ep_mul(a, a, n);
+			TEST_ASSERT(ep_on_curve(a) && ep_is_infty(a) == 1, end);
+		}
+		TEST_END;
+#endif
+
+#if EP_MAP == SWIFT || !defined(STRIP)
+		if (ep_curve_opt_a() == RLC_ZERO || ep_curve_opt_b() == RLC_ZERO) {
+			TEST_CASE("swift point hashing is correct") {
+				rand_bytes(msg, sizeof(msg));
+				ep_map_swift(a, msg, sizeof(msg));
+				TEST_ASSERT(ep_on_curve(a) && ep_is_infty(a) == 0, end);
+				ep_mul(a, a, n);
+				TEST_ASSERT(ep_on_curve(a) && ep_is_infty(a) == 1, end);
+			}
+			TEST_END;
+#endif
+		}
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);
@@ -1369,7 +1412,6 @@ static int hashing(void) {
 	code = RLC_OK;
   end:
 	ep_free(a);
-	ep_free(b);
 	bn_free(n);
 	return code;
 }
@@ -1431,6 +1473,7 @@ int test(void) {
 
 int main(void) {
 	int r0 = RLC_ERR, r1 = RLC_ERR, r2 = RLC_ERR, r3 = RLC_ERR;
+	int c0 = 0, c1 = 0, c2 = 0, c3 = 0;
 
 	if (core_init() != RLC_OK) {
 		core_clean();
@@ -1442,6 +1485,7 @@ int main(void) {
 #if defined(EP_PLAIN)
 	r0 = ep_param_set_any_plain();
 	if (r0 == RLC_OK) {
+		c0 = ep_param_get();
 		if (test() != RLC_OK) {
 			core_clean();
 			return 1;
@@ -1452,27 +1496,36 @@ int main(void) {
 #if defined(EP_ENDOM)
 	r1 = ep_param_set_any_endom();
 	if (r1 == RLC_OK) {
-		if (test() != RLC_OK) {
-			core_clean();
-			return 1;
+		c1 = ep_param_get();
+		if (c1 != c0) {
+			if (test() != RLC_OK) {
+				core_clean();
+				return 1;
+			}
 		}
 	}
 #endif
 
 	r2 = ep_param_set_any_pairf();
 	if (r2 == RLC_OK) {
-		if (test() != RLC_OK) {
-			core_clean();
-			return 1;
+		c2 = ep_param_get();
+		if (c2 != c1) {
+			if (test() != RLC_OK) {
+				core_clean();
+				return 1;
+			}
 		}
 	}
 
 #if defined(EP_SUPER)
 	r3 = ep_param_set_any_super();
 	if (r3 == RLC_OK) {
-		if (test() != RLC_OK) {
-			core_clean();
-			return 1;
+		c3 = ep_param_get();
+		if (c3 != c2) {
+			if (test() != RLC_OK) {
+				core_clean();
+				return 1;
+			}
 		}
 	}
 #endif
@@ -1489,6 +1542,11 @@ int main(void) {
 			}
 		}
 	}
+
+	(void)c0;
+	(void)c1;
+	(void)c2;
+	(void)c3;
 
 	util_banner("All tests have passed.\n", 0);
 

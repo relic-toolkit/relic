@@ -267,7 +267,7 @@ void fp9_mul_art(fp9_t c, const fp9_t a) {
 	RLC_TRY {
 		fp3_new(t0);
 
-		/* (a_0 + a_1 * v + a_2 * v^2) * v = a_2 + a_0 * v + a_1 * v^2 */
+		/* (a_0 + a_1 * v + a_2 * v^2) * v = a_2 * v^3 + a_0 * v + a_1 * v^2 */
 		fp3_copy(t0, a[0]);
 		fp3_mul_nor(c[0], a[2]);
 		fp3_copy(c[2], a[1]);

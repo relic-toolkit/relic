@@ -286,7 +286,7 @@ int bn_is_prime_rabin(const bn_t a) {
 			bn_set_dig(t, primes[i]);
 
 			/* Ensure t <= n - 2 as per HAC */
-			if( bn_cmp(t, n1) != RLC_LT ) {
+			if (bn_cmp(t, n1) != RLC_LT) {
 				result = 1;
 				break;
 			}
@@ -523,32 +523,34 @@ int bn_gen_prime_factor(bn_t a, bn_t b, size_t abits, size_t bbits) {
 	bn_t t, u;
 	int result = RLC_OK;
 
-    if (! (bbits>abits) ) {
+	if (!(bbits > abits)) {
 		return RLC_ERR;
-    }
+	}
 
-    bn_null(t);
+	bn_null(t);
 	bn_null(u);
 
-    RLC_TRY {
-        bn_new(t);
-		bn_gen_prime(a, abits);
-        bn_set_dig(t,1);
-        bn_lsh(t, t, bbits - bn_bits(a) - 1);
-        do {
-            bn_rand(u, RLC_POS, bbits - bn_bits(a) - 1);
-            bn_add(u, u, t);
-            bn_mul(b, a, u);
-            bn_add_dig(b, b, 1);
-        } while ((bn_bits(b) != bbits) || (! bn_is_prime(b)));
-    }
-    RLC_CATCH_ANY {
-		result = RLC_ERR;
-    }
-    RLC_FINALLY {
-        bn_free(t);
-		bn_free(u);
-    }
+	RLC_TRY {
+		bn_new(t);
+		bn_new(u);
 
-    return result;
+		bn_gen_prime(a, abits);
+		bn_set_dig(t, 1);
+		bn_lsh(t, t, bbits - bn_bits(a) - 1);
+		do {
+			bn_rand(u, RLC_POS, bbits - bn_bits(a) - 1);
+			bn_add(u, u, t);
+			bn_mul(b, a, u);
+			bn_add_dig(b, b, 1);
+		} while ((bn_bits(b) != bbits) || (!bn_is_prime(b)));
+	}
+	RLC_CATCH_ANY {
+		result = RLC_ERR;
+	}
+	RLC_FINALLY {
+		bn_free(t);
+		bn_free(u);
+	}
+
+	return result;
 }

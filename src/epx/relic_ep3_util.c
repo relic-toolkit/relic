@@ -248,7 +248,7 @@ int ep3_size_bin(const ep3_t a, int pack) {
 	return size;
 }
 
-void ep3_read_bin(ep3_t a, const uint8_t *bin, int len) {
+void ep3_read_bin(ep3_t a, const uint8_t *bin, size_t len) {
 	if (len == 1) {
 		if (bin[0] == 0) {
 			ep3_set_infty(a);
@@ -282,7 +282,7 @@ void ep3_read_bin(ep3_t a, const uint8_t *bin, int len) {
 	}
 }
 
-void ep3_write_bin(uint8_t *bin, int len, const ep3_t a, int pack) {
+void ep3_write_bin(uint8_t *bin, size_t len, const ep3_t a, int pack) {
 	ep3_t t;
 
 	ep3_null(t);

@@ -342,6 +342,15 @@ fp_subc_low:
 	ret
 
 fp_negm_low:
+	push	%rbx
+
+	xorq	%r9, %r9
+	xorq	%r10, %r10
+	xorq	%r11, %r11
+	xorq	%rbx, %rbx
+	xorq	%rax, %rax
+	xorq	%rcx, %rcx
+
     movq    0(%rsi) , %r8
     or 	    8(%rsi) , %r8
     or 	    16(%rsi), %r8
@@ -357,6 +366,12 @@ fp_negm_low:
 	cmovnz 	p4(%rip), %rbx
 	cmovnz 	p5(%rip), %rax
 	cmovnz 	p6(%rip), %rcx
+	cmovnz 	p1(%rip), %r9
+	cmovnz 	p2(%rip), %r10
+	cmovnz 	p3(%rip), %r11
+	cmovnz 	p4(%rip), %rbx
+	cmovnz 	p5(%rip),%rax
+	cmovnz 	p6(%rip),%rcx
 	subq 	0(%rsi) , %r8
 	movq 	%r8     , 0(%rdi)
 	sbbq 	8(%rsi) , %r9

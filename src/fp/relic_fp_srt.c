@@ -35,15 +35,24 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
+int fp_is_sqr(const fp_t a) {
+	if (fp_is_zero(a)) {
+		return 1;
+	}
+	
+	return (fp_smb(a) == 1);
+}
+
 int fp_srt(fp_t c, const fp_t a) {
 	bn_t e;
-	fp_t t0;
-	fp_t t1;
-	int r = 0;
+	fp_t t0, t1, t2, t3;
+	int f = 0, r = 0;
 
 	bn_null(e);
 	fp_null(t0);
 	fp_null(t1);
+	fp_null(t2);
+	fp_null(t3);
 
 	if (fp_is_zero(a)) {
 		fp_zero(c);
@@ -54,75 +63,64 @@ int fp_srt(fp_t c, const fp_t a) {
 		bn_new(e);
 		fp_new(t0);
 		fp_new(t1);
+		fp_new(t2);
+		fp_new(t3);
 
 		/* Make e = p. */
 		e->used = RLC_FP_DIGS;
 		dv_copy(e->dp, fp_prime_get(), RLC_FP_DIGS);
 
-		if (fp_prime_get_mod8() == 3 || fp_prime_get_mod8() == 7) {
-			/* Easy case, compute a^((p + 1)/4). */
-			bn_add_dig(e, e, 1);
-			bn_rsh(e, e, 2);
+		switch(fp_prime_get_mod8() % 4) {
+			case 3:
+				/* Easy case, compute a^((p + 1)/4). */
+				bn_add_dig(e, e, 1);
+				bn_rsh(e, e, 2);
 
-			fp_exp(t0, a, e);
-			fp_sqr(t1, t0);
-			r = (fp_cmp(t1, a) == RLC_EQ);
-			fp_copy(c, t0);
-		} else {
-			int f = 0, m = 0;
+				fp_exp(t0, a, e);
+				fp_sqr(t1, t0);
+				r = (fp_cmp(t1, a) == RLC_EQ);
+				fp_copy(c, t0);
+				break;
+			default:
+				/* Implement constant-time version of Tonelli-Shanks algorithm
+				 * as per https://eprint.iacr.org/2020/1497.pdf */
 
-			/* First, check if there is a root. Compute t1 = a^((p - 1)/2). */
-			bn_rsh(e, e, 1);
-			fp_exp(t0, a, e);
+				/* First check that a is a square. */
+				r = fp_is_sqr(a);
 
-			if (fp_cmp_dig(t0, 1) != RLC_EQ) {
-				/* Nope, there is no square root. */
-				r = 0;
-			} else {
-				r = 1;
-				/* Find a quadratic non-residue modulo p, that is a number t2
-				 * such that (t2 | p) = t2^((p - 1)/2)!= 1. */
-				do {
-					fp_rand(t1);
-					fp_exp(t0, t1, e);
-				} while (fp_cmp_dig(t0, 1) == RLC_EQ);
+				/* Compute progenitor as x^(p-1-2^f)/2^(f+1) where 2^f|(p-1). */
 
 				/* Write p - 1 as (e * 2^f), odd e. */
-				bn_lsh(e, e, 1);
-				while (bn_is_even(e)) {
-					bn_rsh(e, e, 1);
-					f++;
-				}
+				f = fp_prime_get_2ad();
+				bn_rsh(e, e, f);
 
-				/* Compute t2 = t2^e. */
-				fp_exp(t1, t1, e);
-
-				/* Compute t1 = a^e, c = a^((e + 1)/2) = a^(e/2 + 1), odd e. */
+				/* Make it e = (p - 1 - 2^f)/2^(f + 1), compute t0 = a^e. */
 				bn_rsh(e, e, 1);
 				fp_exp(t0, a, e);
-				fp_mul(e->dp, t0, a);
-				fp_sqr(t0, t0);
-				fp_mul(t0, t0, a);
-				fp_copy(c, e->dp);
 
-				while (1) {
-					if (fp_cmp_dig(t0, 1) == RLC_EQ) {
-						break;
+				/* Recover 2^f-root of unity, and continue algorithm. */
+				fp_copy(t3, fp_prime_get_srt());
+
+				fp_sqr(t1, t0);
+				fp_mul(t1, t1, a);
+				fp_mul(c, t0, a);
+				for (int j = f; j > 1; j--) {
+					fp_copy(t2, t1);
+					for (int i = 1; i < j - 1; i++) {
+						fp_sqr(t2, t2);
 					}
-					fp_copy(e->dp, t0);
-					for (m = 0; (m < f) && (fp_cmp_dig(t0, 1) != RLC_EQ); m++) {
-						fp_sqr(t0, t0);
-					}
-					fp_copy(t0, e->dp);
-					for (int i = 0; i < f - m - 1; i++) {
-						fp_sqr(t1, t1);
-					}
-					fp_mul(c, c, t1);
-					fp_sqr(t1, t1);
-					fp_mul(t0, t0, t1);
-					f = m;
+					fp_mul(t0, c, t3);
+					dv_copy_cond(c, t0, RLC_FP_DIGS,
+							fp_cmp_dig(t2, 1) != RLC_EQ);
+					fp_sqr(t3, t3);
+					fp_mul(t0, t1, t3);
+					dv_copy_cond(t1, t0, RLC_FP_DIGS,
+							fp_cmp_dig(t2, 1) != RLC_EQ);
 				}
-			}
+
+				fp_neg(t0, c);
+				dv_copy_cond(c, t0, RLC_FP_DIGS, fp_is_even(c) == 0);
+				break;
 		}
 	}
 	RLC_CATCH_ANY {
@@ -132,6 +130,8 @@ int fp_srt(fp_t c, const fp_t a) {
 		bn_free(e);
 		fp_free(t0);
 		fp_free(t1);
+		fp_free(t2);
+		fp_free(t3);
 	}
 	return r;
 }

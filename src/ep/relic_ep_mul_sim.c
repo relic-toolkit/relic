@@ -488,14 +488,13 @@ void ep_mul_sim_lot_endom(ep_t r, const ep_t p[], const bn_t k[], int n) {
  */
 static void ep_mul_sim_plain(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 		const bn_t m, const ep_t *t) {
-	int i, w, gen;
+	int i, w, gen = (t == NULL ? 0 : 1);
 	int8_t naf0[RLC_FP_BITS + 1], naf1[RLC_FP_BITS + 1], n0, n1, *u, *v;
 	ep_t t0[1 << (RLC_WIDTH - 2)];
 	ep_t t1[1 << (RLC_WIDTH - 2)];
 	size_t l, l0, l1;
 
 	RLC_TRY {
-		gen = (t == NULL ? 0 : 1);
 		if (!gen) {
 			for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
 				ep_null(t0[i]);
@@ -719,18 +718,12 @@ void ep_mul_sim_trick(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 
 		ep_set_infty(t0[0]);
 		ep_copy(t0[1], p);
-		if (bn_sign(_k) == RLC_NEG) {
-			ep_neg(t0[1], t0[1]);
-		}
 		for (int i = 2; i < (1 << w); i++) {
 			ep_add(t0[i], t0[i - 1], t0[1]);
 		}
 
 		ep_set_infty(t1[0]);
 		ep_copy(t1[1], q);
-		if (bn_sign(_m) == RLC_NEG) {
-			ep_neg(t1[1], t1[1]);
-		}
 		for (int i = 2; i < (1 << w); i++) {
 			ep_add(t1[i], t1[i - 1], t1[1]);
 		}
@@ -742,18 +735,12 @@ void ep_mul_sim_trick(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 		}
 
 #if RLC_WIDTH > 2 && defined(EP_MIXED)
-		ep_norm_sim(t + 1, (const ep_t *)(t + 1), (1 << RLC_WIDTH) - 1);
+		ep_norm_sim(t + 2, (const ep_t *)(t + 2), (1 << (w + w)) - 2);
 #endif
 
 		l0 = l1 = RLC_CEIL(RLC_FP_BITS + 1, w);
 		bn_rec_win(w0, &l0, _k, w);
 		bn_rec_win(w1, &l1, _m, w);
-		for (int i = l0; i < l1; i++) {
-			w0[i] = 0;
-		}
-		for (int i = l1; i < l0; i++) {
-			w1[i] = 0;
-		}
 
 		ep_set_infty(r);
 		for (int i = RLC_MAX(l0, l1) - 1; i >= 0; i--) {

@@ -56,8 +56,6 @@ void eb_map(eb_t p, const uint8_t *msg, size_t len) {
 		fb_set_dig(p->z, 1);
 
 		while (1) {
-			bn_add_dig(k, k, 1);
-			bn_mod_2b(k, k, RLC_FB_BITS);
 			dv_copy(p->x, k->dp, RLC_FB_DIGS);
 
 			eb_rhs(t1, p);
@@ -68,7 +66,10 @@ void eb_map(eb_t p, const uint8_t *msg, size_t len) {
 			/* t0 = t1/x1^2. */
 			fb_mul(t0, t0, t1);
 			/* Solve t1^2 + t1 = t0. */
-			if (fb_trc(t0) == 0) {
+			if (fb_trc(t0) != 0) {
+				bn_add_dig(k, k, 1);
+				bn_mod_2b(k, k, RLC_FB_BITS);
+			} else {
 				fb_slv(t1, t0);
 				/* x3 = x1, y3 = t1 * x1, z3 = 1. */
 				fb_mul(p->y, t1, p->x);

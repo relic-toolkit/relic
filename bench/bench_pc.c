@@ -303,7 +303,7 @@ static void memory2(void) {
 
 static void util2(void) {
 	g2_t p, q;
-	uint8_t bin[8 * RLC_PC_BYTES + 1];
+	uint8_t bin[16 * RLC_PC_BYTES + 1];
 	int l;
 
 	g2_null(p);
@@ -519,13 +519,11 @@ static void arith2(void) {
 	}
 	BENCH_END;
 
-#if FP_PRIME != 509
 	BENCH_RUN("g2_map") {
 		uint8_t msg[5];
 		rand_bytes(msg, 5);
 		BENCH_ADD(g2_map(p, msg, 5));
 	} BENCH_END;
-#endif
 
 	g2_free(p);
 	g2_free(q);
@@ -557,7 +555,7 @@ static void memory(void) {
 
 static void util(void) {
 	gt_t a, b;
-	uint8_t bin[24 * RLC_PC_BYTES];
+	uint8_t bin[48 * RLC_PC_BYTES];
 	int l;
 
 	gt_null(a);
@@ -602,11 +600,6 @@ static void util(void) {
 	}
 	BENCH_END;
 
-	BENCH_RUN("gt_size_bin (0)") {
-		gt_rand(a);
-		BENCH_ADD(gt_size_bin(a, 0));
-	} BENCH_END;
-
 	BENCH_RUN("gt_write_bin (0)") {
 		gt_rand(a);
 		l = gt_size_bin(a, 0);
@@ -621,11 +614,6 @@ static void util(void) {
 	} BENCH_END;
 
 	if (ep_param_embed() == 12) {
-		BENCH_RUN("gt_size_bin (1)") {
-			gt_rand(a);
-			BENCH_ADD(gt_size_bin(a, 1));
-		} BENCH_END;
-
 		BENCH_RUN("gt_write_bin (1)") {
 			gt_rand(a);
 			l = gt_size_bin(a, 1);

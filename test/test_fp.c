@@ -799,6 +799,9 @@ static int inversion(void) {
 			fp_inv(b, a);
 			fp_mul(c, a, b);
 			TEST_ASSERT(fp_cmp_dig(c, 1) == RLC_EQ, end);
+			fp_set_dig(a, 1);
+			fp_inv(b, a);
+			TEST_ASSERT(fp_cmp_dig(b, 1) == RLC_EQ, end);
 		} TEST_END;
 
 #if FP_INV == BASIC || !defined(STRIP)
@@ -935,6 +938,7 @@ static int symbol(void) {
 			TEST_ASSERT(fp_smb(a) == fp_smb_basic(a), end);
 		} TEST_END;
 #endif
+
 #if FP_SMB == DIVST || !defined(STRIP)
 		TEST_CASE("division step symbol computation is correct") {
 			fp_rand(a);
@@ -1060,6 +1064,19 @@ static int square_root(void) {
 		fp_new(b);
 		fp_new(c);
 
+		TEST_CASE("quadratic residuosity test is correct") {
+			fp_zero(a);
+			TEST_ASSERT(fp_is_sqr(a) == 1, end);
+			fp_rand(a);
+			fp_sqr(a, a);
+			TEST_ASSERT(fp_is_sqr(a) == 1, end);
+			do {
+				fp_rand(a);
+			} while(fp_srt(b, a) == 1);
+			TEST_ASSERT(fp_is_sqr(a) == 0, end);
+		}
+		TEST_END;
+
 		TEST_CASE("square root extraction is correct") {
 			fp_rand(a);
 			fp_sqr(c, a);
@@ -1071,6 +1088,10 @@ static int square_root(void) {
 				fp_sqr(c, b);
 				TEST_ASSERT(fp_cmp(c, a) == RLC_EQ, end);
 			}
+			do {
+				fp_rand(a);
+			} while(fp_is_sqr(a) == 1);
+			TEST_ASSERT(fp_srt(b, a) == 0, end);
 		}
 		TEST_END;
 	}
@@ -1085,10 +1106,9 @@ static int square_root(void) {
 	return code;
 }
 
-static int digit(void) {
+static int cube_root(void) {
 	int code = RLC_ERR;
 	fp_t a, b, c, d;
-	dig_t g;
 
 	fp_null(a);
 	fp_null(b);
@@ -1100,6 +1120,87 @@ static int digit(void) {
 		fp_new(b);
 		fp_new(c);
 		fp_new(d);
+
+		TEST_CASE("cubic residuosity test is correct") {
+			fp_zero(a);
+			TEST_ASSERT(fp_is_cub(a) == 1, end);
+			fp_rand(a);
+			fp_sqr(b, a);
+			fp_mul(a, a, b);
+			TEST_ASSERT(fp_is_cub(a) == 1, end);
+			/* If p = 2 mod 3, all elements are cubic residues. */
+			if (fp_prime_get_mod18() % 3 != 2) {
+				do {
+					fp_rand(a);
+				} while(fp_crt(b, a) == 1);
+				TEST_ASSERT(fp_is_cub(a) == 0, end);
+			}
+		}
+		TEST_END;
+
+		TEST_CASE("cube root extraction is correct") {
+			int r = 1;
+			fp_rand(a);
+			fp_sqr(c, a);
+			fp_mul(c, c, a);
+			TEST_ASSERT(fp_crt(b, c), end);
+			if (fp_prime_get_cnr()) {
+				fp_copy(d, fp_prime_get_crt());
+				while (fp_cmp_dig(d, 1) != RLC_EQ) {
+					fp_copy(c, d);
+					fp_sqr(d, d);
+					fp_mul(d, d, c);
+				}
+				if (fp_cmp(b, a) != RLC_EQ) {
+					fp_mul(b, b, c);
+					if (fp_cmp(b, a) != RLC_EQ) {
+						fp_mul(b, b, c);
+						if (fp_cmp(b, a) != RLC_EQ) {
+							r = 0;
+						}
+					}
+				}
+				TEST_ASSERT(r == 1, end);
+			}
+			fp_rand(a);
+			if (fp_crt(b, a)) {
+				fp_sqr(c, b);
+				fp_mul(c, c, b);
+				TEST_ASSERT(fp_cmp(c, a) == RLC_EQ, end);
+			}
+		}
+		TEST_END;
+	}
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
+	}
+	code = RLC_OK;
+  end:
+	fp_free(a);
+	fp_free(b);
+	fp_free(c);
+	fp_free(d);
+	return code;
+}
+
+static int digit(void) {
+	int code = RLC_ERR;
+	fp_t a, b, c, d;
+	dig_t g;
+	bn_t e;
+
+	fp_null(a);
+	fp_null(b);
+	fp_null(c);
+	fp_null(d);
+	bn_null(e);
+
+	RLC_TRY {
+		fp_new(a);
+		fp_new(b);
+		fp_new(c);
+		fp_new(d);
+		bn_new(e);
 
 		TEST_CASE("addition of a single digit is consistent") {
 			fp_rand(a);
@@ -1130,6 +1231,15 @@ static int digit(void) {
 			fp_mul_dig(d, a, g);
 			TEST_ASSERT(fp_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
+
+		TEST_CASE("exponentiation by a single digit is consistent") {
+			fp_rand(a);
+			bn_rand(e, RLC_POS, RLC_DIG);
+			fp_exp_dig(b, a, e->dp[0]);
+			fp_exp(c, a, e);
+			TEST_ASSERT(fp_cmp(b, c) == RLC_EQ, end);
+		} TEST_END;
+
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);
@@ -1140,6 +1250,7 @@ static int digit(void) {
 	fp_free(b);
 	fp_free(c);
 	fp_free(d);
+	bn_free(e);
 	return code;
 }
 
@@ -1222,6 +1333,11 @@ int main(void) {
 	}
 
 	if (square_root() != RLC_OK) {
+		core_clean();
+		return 1;
+	}
+
+	if (cube_root() != RLC_OK) {
 		core_clean();
 		return 1;
 	}

@@ -189,3 +189,34 @@ void fp_exp_monty(fp_t c, const fp_t a, const bn_t b) {
 }
 
 #endif
+
+void fp_exp_dig(fp_t c, const fp_t a, dig_t b) {
+	fp_t t;
+
+	if (b == 0) {
+		fp_set_dig(c, 1);
+		return;
+	}
+
+	fp_null(t);
+
+	RLC_TRY {
+		fp_new(t);
+
+		fp_copy(t, a);
+		for (int i = util_bits_dig(b) - 2; i >= 0; i--) {
+			fp_sqr(t, t);
+			if (b & ((dig_t)1 << i)) {
+				fp_mul(t, t, a);
+			}
+		}
+
+		fp_copy(c, t);
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		fp_free(t);
+	}
+}

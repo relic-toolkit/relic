@@ -36,7 +36,7 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-#if EP_ADD == PROJC || !defined(STRIP)
+#if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
 
 /**
  * Normalizes a point represented in projective coordinates.
@@ -95,7 +95,7 @@ void ep4_norm(ep4_t r, const ep4_t p) {
 		/* If the point is represented in affine coordinates, we just copy it. */
 		ep4_copy(r, p);
 	}
-#if EP_ADD == PROJC || !defined(STRIP)
+#if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
 	ep4_norm_imp(r, p, 0);
 #endif
 }
@@ -121,10 +121,11 @@ void ep4_norm_sim(ep4_t *r, const ep4_t *t, int n) {
 			fp4_copy(r[i]->y, t[i]->y);
 			fp4_copy(r[i]->z, a[i]);
 		}
-
+#if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
 		for (i = 0; i < n; i++) {
 			ep4_norm_imp(r[i], r[i], 1);
 		}
+#endif
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);

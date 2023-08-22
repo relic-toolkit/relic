@@ -79,8 +79,7 @@ int cp_cmlhs_gen(bn_t x[], gt_t hs[], size_t len, uint8_t prf[], size_t plen,
 			result = cp_bls_gen(sk, pk);
 		} else {
 			if (cp_ecdsa_gen(sk, g1) == RLC_OK) {
-				fp_copy(pk->x[0], g1->x);
-				fp_copy(pk->y[0], g1->y);
+				g2_set_g1(pk, g1);
 			} else {
 				result = RLC_ERR;
 			}
@@ -106,7 +105,7 @@ int cp_cmlhs_sig(g1_t sig, g2_t z, g1_t a, g1_t c, g1_t r, g2_t s,
 	g1_t t;
 	uint8_t mac[RLC_MD_LEN];
 	size_t len, dlen = strlen(data);
-	uint8_t *buf = RLC_ALLOCA(uint8_t, 1 + 8 * RLC_PC_BYTES + dlen);
+	uint8_t *buf = RLC_ALLOCA(uint8_t, 1 + 16 * RLC_PC_BYTES + dlen);
 	int result = RLC_OK;
 
 	bn_null(k);
@@ -217,7 +216,7 @@ int cp_cmlhs_ver(const g1_t r, const g2_t s, const g1_t sig[], const g2_t z[],
 	gt_t e, u, v;
 	bn_t k, n;
 	size_t len, dlen = strlen(data);
-	uint8_t *buf = RLC_ALLOCA(uint8_t, 1 + 8 * RLC_PC_BYTES + dlen);
+	uint8_t *buf = RLC_ALLOCA(uint8_t, 1 + g2_size_bin(s, 0) + dlen);
 	int result = 1;
 
 	g1_null(g1);
@@ -249,8 +248,7 @@ int cp_cmlhs_ver(const g1_t r, const g2_t s, const g1_t sig[], const g2_t z[],
 			} else {
 				fp_prime_back(k, sig[i]->x);
 				fp_prime_back(n, sig[i]->y);
-				fp_copy(g1->x, pk[i]->x[0]);
-				fp_copy(g1->y, pk[i]->y[0]);
+				g1_set_g2(g1, pk[i]);
 				fp_set_dig(g1->z, 1);
 				result &= cp_ecdsa_ver(k, n, buf, len + dlen, 0, g1);
 			}
@@ -338,7 +336,7 @@ int cp_cmlhs_onv(const g1_t r, const g2_t s, const g1_t sig[], const g2_t z[],
 	gt_t e, u, v;
 	bn_t k, n;
 	size_t len, dlen = strlen(data);
-	uint8_t *buf = RLC_ALLOCA(uint8_t, 1 + 8 * RLC_FP_BYTES + dlen);
+	uint8_t *buf = RLC_ALLOCA(uint8_t, 1 + g2_size_bin(s, 0) + dlen);
 	int result = 1;
 
 	g1_null(g1);
@@ -370,9 +368,7 @@ int cp_cmlhs_onv(const g1_t r, const g2_t s, const g1_t sig[], const g2_t z[],
 			} else {
 				fp_prime_back(k, sig[i]->x);
 				fp_prime_back(n, sig[i]->y);
-				fp_copy(g1->x, pk[i]->x[0]);
-				fp_copy(g1->y, pk[i]->y[0]);
-				fp_set_dig(g1->z, 1);
+				g1_set_g2(g1, pk[i]);
 				result &= cp_ecdsa_ver(k, n, buf, len + dlen, 0, g1);
 			}
 		}

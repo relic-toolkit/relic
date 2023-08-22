@@ -53,12 +53,20 @@ static void ep3_psi(ep3_t r, const ep3_t p) {
 	RLC_TRY {
 		ep3_new(q);
 
-		/* We have that u mod n = p^4 - 3*p mod n. */
-		ep3_dbl(q, p);
-		ep3_add(q, q, p);
-		ep3_frb(r, p, 3);
-		ep3_sub(r, r, q);
-		ep3_frb(r, r, 1);
+		if (ep_curve_is_pairf() == EP_SG18) {
+			/* -3*u = (2*p^2 - p^5) mod r */
+			ep3_frb(q, p, 5);
+			ep3_frb(r, p, 2);
+			ep3_dbl(r, r);
+			ep3_sub(r, r, q);
+		} else {
+			/* For KSS18, we have that u = p^4 - 3*p mod r. */
+			ep3_dbl(q, p);
+			ep3_add(q, q, p);
+			ep3_frb(r, p, 3);
+			ep3_sub(r, r, q);
+			ep3_frb(r, r, 1);
+		}
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -88,8 +96,14 @@ static void ep3_mul_glv_imp(ep3_t r, const ep3_t p, const bn_t k) {
 			ep3_new(q[i]);
 		}
 
-		ep3_curve_get_ord(n);
 		fp_prime_get_par(u);
+		if (ep_curve_is_pairf() == EP_SG18) {
+			/* Compute base -3*u for the recoding below. */
+			bn_dbl(n, u);
+			bn_add(u, u, n);
+			bn_neg(u, u);
+		}
+		ep3_curve_get_ord(n);
 		bn_mod(_k[0], k, n);
 		bn_rec_frb(_k, 6, _k[0], u, n, ep_curve_is_pairf() == EP_BN);
 
@@ -103,6 +117,9 @@ static void ep3_mul_glv_imp(ep3_t r, const ep3_t p, const bn_t k) {
 
 		l = 0;
 		for (i = 0; i < 6; i++) {
+			if (bn_sign(_k[i]) == RLC_NEG) {
+				ep3_neg(q[i], q[i]);
+			}
 			_l[i] = RLC_FP_BITS + 1;
 			bn_rec_naf(naf[i], &_l[i], _k[i], 2);
 			l = RLC_MAX(l, _l[i]);
@@ -197,22 +214,25 @@ static void ep3_mul_naf_imp(ep3_t r, const ep3_t p, const bn_t k) {
 
 void ep3_mul_basic(ep3_t r, const ep3_t p, const bn_t k) {
 	ep3_t t;
-	int8_t u, naf[2 * RLC_FP_BITS + 1];
+	int8_t u, *naf = RLC_ALLOCA(int8_t, bn_bits(k) + 1);
 	size_t l;
 
 	ep3_null(t);
 
 	if (bn_is_zero(k) || ep3_is_infty(p)) {
+		RLC_FREE(naf);
 		ep3_set_infty(r);
 		return;
 	}
 
 	RLC_TRY {
 		ep3_new(t);
+		if (naf == NULL) {
+			RLC_THROW(ERR_NO_BUFFER);
+		}
 
-		l = 2 * RLC_FP_BITS + 1;
+		l = bn_bits(k) + 1;
 		bn_rec_naf(naf, &l, k, 2);
-
 		ep3_set_infty(t);
 		for (int i = l - 1; i >= 0; i--) {
 			ep3_dbl(t, t);
@@ -235,6 +255,7 @@ void ep3_mul_basic(ep3_t r, const ep3_t p, const bn_t k) {
 	}
 	RLC_FINALLY {
 		ep3_free(t);
+		RLC_FREE(naf);
 	}
 }
 
@@ -313,7 +334,12 @@ void ep3_mul_slide(ep3_t r, const ep3_t p, const bn_t k) {
 
 void ep3_mul_monty(ep3_t r, const ep3_t p, const bn_t k) {
 	ep3_t t[2];
+	bn_t n, l, _k;
+	size_t bits;
 
+	bn_null(n);
+	bn_null(l);
+	bn_null(_k);
 	ep3_null(t[0]);
 	ep3_null(t[1]);
 
@@ -323,14 +349,32 @@ void ep3_mul_monty(ep3_t r, const ep3_t p, const bn_t k) {
 	}
 
 	RLC_TRY {
+		bn_new(n);
+		bn_new(l);
+		bn_new(_k);
 		ep3_new(t[0]);
 		ep3_new(t[1]);
 
-		ep3_set_infty(t[0]);
-		ep3_copy(t[1], p);
+		ep3_curve_get_ord(n);
+		bits = bn_bits(n);
 
-		for (int i = bn_bits(k) - 1; i >= 0; i--) {
-			int j = bn_get_bit(k, i);
+		bn_mod(_k, k, n);
+		bn_abs(l, _k);
+		bn_add(l, l, n);
+		bn_add(n, l, n);
+		dv_swap_cond(l->dp, n->dp, RLC_MAX(l->used, n->used),
+			bn_get_bit(l, bits) == 0);
+		l->used = RLC_SEL(l->used, n->used, bn_get_bit(l, bits) == 0);
+
+		ep3_norm(t[0], p);
+		ep3_dbl(t[1], t[0]);
+
+		/* Blind both points independently. */
+		ep3_blind(t[0], t[0]);
+		ep3_blind(t[1], t[1]);
+
+		for (int i = bits - 1; i >= 0; i--) {
+			int j = bn_get_bit(l, i);
 			dv_swap_cond(t[0]->x[0], t[1]->x[0], RLC_FP_DIGS, j ^ 1);
 			dv_swap_cond(t[0]->x[1], t[1]->x[1], RLC_FP_DIGS, j ^ 1);
 			dv_swap_cond(t[0]->x[2], t[1]->x[2], RLC_FP_DIGS, j ^ 1);
@@ -354,13 +398,13 @@ void ep3_mul_monty(ep3_t r, const ep3_t p, const bn_t k) {
 		}
 
 		ep3_norm(r, t[0]);
-		if (bn_sign(k) == RLC_NEG) {
-			ep3_neg(r, r);
-		}
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
+		bn_free(n);
+		bn_free(l);
+		bn_free(_k);
 		ep3_free(t[1]);
 		ep3_free(t[0]);
 	}

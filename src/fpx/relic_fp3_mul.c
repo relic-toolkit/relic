@@ -178,40 +178,43 @@ void fp3_mul_art(fp3_t c, const fp3_t a) {
 }
 
 void fp3_mul_nor(fp3_t c, const fp3_t a) {
-	fp3_t t;
-	bn_t b;
+	fp3_t t, u;
 
 	fp3_null(t);
-	bn_null(b);
+	fp3_null(u);
 
 	RLC_TRY {
 		fp3_new(t);
-		bn_new(b);
+		fp3_new(u);
+
+		fp3_mul_art(t, a);
 
 		int cnr = fp3_field_get_cnr();
-
 		switch (fp_prime_get_mod18()) {
+			case 1:
 			case 7:
-				/* If p = 7 mod 18, we choose (2^k + j) as a QNR/CNR. */
-				fp3_mul_art(t, a);
-				fp3_copy(c, a);
-				while (cnr > 1) {
-					fp3_dbl(c, c);
-					cnr = cnr >> 1;
+				if (cnr != 0) {
+					fp3_copy(u, a);
+					while (cnr > 1) {
+						fp3_dbl(u, u);
+						if (cnr & 1) {
+							fp3_add(u, u, a);
+						}
+						cnr = cnr >> 1;
+					}
+					fp3_add(t, t, u);
 				}
-				fp3_add(c, c, t);
-				break;
-			default:
-				fp3_mul_art(c, a);
 				break;
 		}
+
+		fp3_copy(c, t);
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
 		fp3_free(t);
-		bn_free(b);
+		fp3_free(u);
 	}
 }
 
@@ -272,15 +275,15 @@ void fp3_mul_frb(fp3_t c, const fp3_t a, int i, int j) {
 					fp_copy(t[0], ctx->fp3_p1[j - 1][0]);
 					fp_copy(t[1], ctx->fp3_p1[j - 1][1]);
 					fp_copy(t[2], ctx->fp3_p1[j - 1][2]);
+					fp3_mul(c, c, t);
 					break;
 				case 2:
 					fp_copy(t[0], ctx->fp3_p2[j - 1][0]);
 					fp_copy(t[1], ctx->fp3_p2[j - 1][1]);
 					fp_copy(t[2], ctx->fp3_p2[j - 1][2]);
+					fp3_mul(c, c, t);
 					break;
 			}
-
-			fp3_mul(c, c, t);
 		}
 		RLC_CATCH_ANY {
 			RLC_THROW(ERR_CAUGHT);

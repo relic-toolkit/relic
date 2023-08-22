@@ -117,10 +117,6 @@ static void ed_mul_reg_imp(ed_t r, const ed_t p, const bn_t k) {
 	size_t l;
 
 	bn_null(_k);
-	if (bn_is_zero(k)) {
-		ed_set_infty(r);
-		return;
-	}
 
 	RLC_TRY {
 		bn_new(_k);
@@ -139,7 +135,7 @@ static void ed_mul_reg_imp(ed_t r, const ed_t p, const bn_t k) {
 		_k->dp[0] |= bn_is_even(_k);
 
 		/* Compute the w-NAF representation of k. */
-		l = RLC_CEIL(RLC_FP_BITS + 1, RLC_WIDTH - 1);
+		l = RLC_CEIL(RLC_FP_BITS + 1, RLC_WIDTH - 1) + 1;
 		bn_rec_reg(reg, &l, _k, RLC_FP_BITS, RLC_WIDTH);
 
 		ed_set_infty(r);
@@ -197,22 +193,34 @@ static void ed_mul_reg_imp(ed_t r, const ed_t p, const bn_t k) {
 
 void ed_mul_basic(ed_t r, const ed_t p, const bn_t k) {
 	ed_t t;
+	int8_t u, *naf = RLC_ALLOCA(int8_t, bn_bits(k) + 1);
+	size_t l;
 
 	ed_null(t);
 
 	if (bn_is_zero(k) || ed_is_infty(p)) {
+		RLC_FREE(naf);
 		ed_set_infty(r);
 		return;
 	}
 
 	RLC_TRY {
 		ed_new(t);
+		if (naf == NULL) {
+			RLC_THROW(ERR_NO_BUFFER);
+		}
 
-		ed_copy(t, p);
-		for (int i = bn_bits(k) - 2; i >= 0; i--) {
+		l = bn_bits(k) + 1;
+		bn_rec_naf(naf, &l, k, 2);
+		ed_set_infty(t);
+		for (int i = l - 1; i >= 0; i--) {
 			ed_dbl(t, t);
-			if (bn_get_bit(k, i)) {
+
+			u = naf[i];
+			if (u > 0) {
 				ed_add(t, t, p);
+			} else if (u < 0) {
+				ed_sub(t, t, p);
 			}
 		}
 
@@ -226,6 +234,7 @@ void ed_mul_basic(ed_t r, const ed_t p, const bn_t k) {
 	}
 	RLC_FINALLY {
 		ed_free(t);
+		RLC_FREE(naf);
 	}
 }
 

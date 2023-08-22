@@ -52,14 +52,13 @@
  */
 static void ep3_mul_sim_plain(ep3_t r, const ep3_t p, const bn_t k,
 		const ep3_t q, const bn_t m, ep3_t *t) {
-	int i, n0, n1, w, gen;
+	int i, n0, n1, w, gen = (t == NULL ? 0 : 1);
 	size_t l, l0, l1;
 	int8_t naf0[2 * RLC_FP_BITS + 1], naf1[2 * RLC_FP_BITS + 1], *_k, *_m;
 	ep3_t t0[1 << (RLC_WIDTH - 2)];
 	ep3_t t1[1 << (RLC_WIDTH - 2)];
 
 	RLC_TRY {
-		gen = (t == NULL ? 0 : 1);
 		if (!gen) {
 			for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
 				ep3_null(t0[i]);
@@ -390,14 +389,14 @@ void ep3_mul_sim_gen(ep3_t r, const bn_t k, const ep3_t q, const bn_t m) {
 	}
 }
 
-void ep3_mul_sim_dig(ep3_t r, const ep3_t p[], const dig_t k[], int len) {
+void ep3_mul_sim_dig(ep3_t r, const ep3_t p[], const dig_t k[], size_t len) {
 	ep3_t t;
 	int max;
 
 	ep3_null(t);
 
 	max = util_bits_dig(k[0]);
-	for (int i = 1; i < len; i++) {
+	for (size_t i = 1; i < len; i++) {
 		max = RLC_MAX(max, util_bits_dig(k[i]));
 	}
 

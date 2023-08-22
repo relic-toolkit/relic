@@ -64,8 +64,10 @@
  * Finite field identifiers.
  */
 enum {
+    /** Mersenne prime with 127 bits. */
+    MP_127 = 1,
 	/** SECG 160-bit fast reduction prime. */
-	SECG_160 = 1,
+	SECG_160,
 	/** SECG 160-bit denser reduction prime. */
 	SECG_160D,
 	/** NIST 192-bit fast reduction prime. */
@@ -102,6 +104,8 @@ enum {
 	NIST_384,
 	/** Curve448 prime. */
 	PRIME_448,
+	/** 511-bit prime for CTIDH. */
+	CTIDH_511,
 	/** Curve511187 511-bit prime modulus. */
 	PRIME_511187,
 	/** NIST 521-bit fast reduction polynomial. */
@@ -118,6 +122,8 @@ enum {
 	B24_315,
 	/** 317-bit prime for BLS curve of embedding degree 24 (SNARKs). */
 	B24_317,
+	/** 330-bit prime for KSS curve with embedding degree 16. */
+	K16_330,
 	/** 381-bit prime for BLS curve of embedding degree 12 (SNARKs). */
 	B12_377,
 	/** 381-bit prime for BLS curve of embedding degree 12 (Zcash). */
@@ -135,9 +141,7 @@ enum {
 	/** 477-bit prime for BLS curve of embedding degree 24. */
 	B24_509,
 	/** 508-bit prime for KSS16 curve. */
-	KSS_508,
-	/** 511-bit prime for Optimal TNFS-secure curve. */
-	OT_511,
+	K18_508,
 	/** Random 544-bit prime for Cocks-Pinch curve with embedding degree 8. */
 	GMT8_544,
 	/** 569-bit prime for SG curve with embedding degree 54. */
@@ -152,10 +156,20 @@ enum {
 	K18_638,
     /** 638-bit prime for SG curve with embedding degree 18. */
     SG18_638,
+	/** 765-bit prime for new family with embedding degree 16. */
+	N16_765,
+	/** 766-bit prime for KSS curve with embedding degree 16. */
+	K16_766,
+	/** 1024-bit prime for CTIDH. */
+	CTIDH_1024,
 	/** 1536-bit prime for supersingular curve with embedding degree k = 2. */
 	SS_1536,
+	/** 2048-bit prime for CTDIH. */
+	CTIDH_2048,
 	/** 3072-bit prime for supersingular curve with embedding degree k = 1. */
-	SS_3072,
+	K1_3072,
+	/** 4096-bit prime for SQALE. */
+	SQALE_4096,
 };
 
 /**
@@ -386,8 +400,6 @@ typedef rlc_align dig_t fp_st[RLC_FP_DIGS + RLC_PAD(RLC_FP_BYTES)/(RLC_DIG / 8)]
  */
 #if FP_SMB == BASIC
 #define fp_smb(A)		fp_smb_basic(A)
-#elif FP_SMB == BINAR
-#define fp_smb(A)		fp_smb_binar(A)
 #elif FP_SMB == DIVST
 #define fp_smb(A)		fp_smb_divst(A)
 #elif FP_SMB == JMPDS
@@ -446,6 +458,22 @@ const dig_t *fp_prime_get_rdc(void);
  * @return the additional value used for importing integers.
  */
 const dig_t *fp_prime_get_conv(void);
+
+/**
+ * Returns a 2^f-root of unity modulo the prime field modulus, for the maximum f
+ * such that 2^f divides (p-1).
+ *
+ * @return the root of unity.
+ */
+const dig_t *fp_prime_get_srt(void);
+
+/**
+ * Returns a 3^f-root of unity modulo the prime field modulus, for the maximum f
+ * such that 3^f divides (p-1).
+ *
+ * @return the root of unity.
+ */
+const dig_t *fp_prime_get_crt(void);
 
 /**
  * Returns the result of prime order mod 8.
@@ -1113,14 +1141,6 @@ void fp_inv_sim(fp_t *c, const fp_t *a, int n);
 int fp_smb_basic(const fp_t a);
 
 /**
- * Computes Legendre symbol of a prime field element using the binary method.
- *
- * @param[in] a				- the prime field element to compute.
- * @return the result.
- */
-int fp_smb_binar(const fp_t a);
-
-/**
  * Computes Legendre symbol of a prime field element using the constant-time
  * division step approach by Bernstein and Bo-Yin Yang.
  *
@@ -1177,6 +1197,23 @@ void fp_exp_slide(fp_t c, const fp_t a, const bn_t b);
 void fp_exp_monty(fp_t c, const fp_t a, const bn_t b);
 
 /**
+ * Computes a power of a field element by a small exponent.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the basis.
+ * @param[in] b				- the exponent.
+ */
+void fp_exp_dig(fp_t c, const fp_t a, dig_t b);
+
+/**
+ * Tests if a prime field element is a quadratic residue.
+ *
+ * @param[in] a				- the prime field element to test.
+ * @return 1 if the argument is even, 0 otherwise.
+ */
+int fp_is_sqr(const fp_t a);
+
+/**
  * Extracts the square root of a prime field element. Computes c = sqrt(a). The
  * other square root is the negation of c.
  *
@@ -1185,5 +1222,23 @@ void fp_exp_monty(fp_t c, const fp_t a, const bn_t b);
  * @return					- 1 if there is a square root, 0 otherwise.
  */
 int fp_srt(fp_t c, const fp_t a);
+
+/**
+ * Tests if a prime field element is a cubic residue.
+ *
+ * @param[in] a				- the prime field element to test.
+ * @return 1 if the argument is even, 0 otherwise.
+ */
+int fp_is_cub(const fp_t a);
+
+/**
+ * Extracts the cube root of a prime field element. Computes c = crt(a). The
+ * other cube root is the square of c.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the prime field element.
+ * @return					- 1 if there is a cube root, 0 otherwise.
+ */
+int fp_crt(fp_t c, const fp_t a);
 
 #endif /* !RLC_FP_H */

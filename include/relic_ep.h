@@ -53,20 +53,18 @@
  * Pairing-friendly elliptic curve identifiers.
  */
 enum {
-    /** Supersingular curves with embedding degree 1. */
-    EP_SS1 = 1,
+    /** Ordinary curves with embedding degree 1. */
+    EP_K1 = 1,
     /** Supersingular curves with embedding degree 2. */
     EP_SS2,
     /** Barreto-Naehrig. */
     EP_BN,
-    /* Optimal TNFS-secure. */
-    EP_OT8,
     /* Cocks-Pinch family discovered by Guillevic, Masson and Thomé (GMT). */
     EP_GMT8,
     /* Barreto-Lynn-Scott family with embedding degree 12. */
     EP_B12,
-    /* Fotiadis-Martindale family with embedding degree 16. */
-    EP_FM16,
+    /* New family from Fotiadis-Martindale family with embedding degree 16. */
+    EP_N16,
     /* Kachisa-Schaefer-Scott family with embedding degree 16. */
     EP_K16,
     /* Fotiadis-Martindale family with embedding degree 18. */
@@ -139,6 +137,8 @@ enum {
 	B24_P315,
 	/** Barreto-Lynn-Scott curve with embedding degree 24 (SNARK curve). */
 	B24_P317,
+	/** Kachisa-Schaefer-Scott with embedding degree 16. */
+	K16_P330,
 	/** Barreto-Lynn-Scott curve with embedding degree 12 (SNARK curve). */
 	B12_P377,
 	/** Barreto-Lynn-Scott curve with embedding degree 12 (ZCash curve). */
@@ -154,7 +154,7 @@ enum {
 	/** Barreto-Lynn-Scott curve with embedding degree 12. */
 	B12_P455,
 	/** Kachisa-Schaefer-Scott with negative x. */
-	KSS_P508,
+	K18_P508,
 	/** Barreto-Lynn-Scott curve with embedding degree 24. */
 	B24_P509,
 	/** Optimal TNFS-secure curve with embedding degree 8. */
@@ -173,10 +173,14 @@ enum {
 	K18_P638,
     /** Scott-Guillevic curve with embedding degree 18. */
     SG18_P638,
+	/** New family with embeeding degree 16. */
+	N16_P765,
+	/** Kachisa-Schaefer-Scott with embedding degree 16. */
+	K16_P766,
 	/** 1536-bit supersingular curve. */
 	SS_P1536,
 	/** 3072-bit supersingular curve. */
-	SS_P3072,
+	K1_P3072,
 };
 
 /*============================================================================*/
@@ -455,6 +459,22 @@ typedef iso_st *iso_t;
 #define ep_mul_sim(R, P, K, Q, M)	ep_mul_sim_joint(R, P, K, Q, M)
 #endif
 
+/**
+ * Hashes a byte string to a prime elliptic point or the right order.
+ * Computes R = H(s).
+ *
+ * @param[out] R				- the result.
+ * @param[in] S					- the string to hash.
+ * @param[in] L					- the string length.
+ */
+#if EP_MAP == BASIC
+#define ep_map(R, S, L)			ep_map_basic(R, S, L)
+#elif EP_MAP == SSWUM
+#define ep_map(R, S, L)			ep_map_sswum(R, S, L)
+#elif EP_MAP == SWIFT
+#define ep_map(R, S, L)			ep_map_swift(R, S, L)
+#endif
+
 /*============================================================================*/
 /* Function prototypes                                                        */
 /*============================================================================*/
@@ -620,11 +640,10 @@ iso_t ep_curve_get_iso(void);
  * @param[in] g			- the generator.
  * @param[in] r			- the order of the group of points.
  * @param[in] h			- the cofactor of the group order.
- * @param[in] u			- the non-square used for hashing to this curve.
  * @param[in] ctmap	- true if this curve will use an isogeny for mapping.
  */
 void ep_curve_set_plain(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
-		const bn_t h, const fp_t u, int ctmap);
+		const bn_t h, int ctmap);
 
 /**
  * Configures a supersingular prime elliptic curve by its coefficients and
@@ -635,11 +654,10 @@ void ep_curve_set_plain(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
  * @param[in] g			- the generator.
  * @param[in] r			- the order of the group of points.
  * @param[in] h			- the cofactor of the group order.
- * @param[in] u			- the non-square used for hashing to this curve.
  * @param[in] ctmap	- true if this curve will use an isogeny for mapping.
  */
 void ep_curve_set_super(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
-		const bn_t h, const fp_t u, int ctmap);
+		const bn_t h, int ctmap);
 
 /**
  * Configures a prime elliptic curve with endomorphisms by its coefficients and
@@ -652,11 +670,10 @@ void ep_curve_set_super(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
  * @param[in] beta		- the constant associated with the endomorphism.
  * @param[in] l			- the exponent corresponding to the endomorphism.
  * @param[in] h			- the cofactor of the group order.
- * @param[in] u			- the non-square used for hashing to this curve.
  * @param[in] ctmap	- true if this curve will use an isogeny for mapping.
  */
 void ep_curve_set_endom(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
-		const bn_t h, const fp_t beta, const bn_t l, const fp_t u, int ctmap);
+		const bn_t h, const fp_t beta, const bn_t l, int ctmap);
 
 /**
  * Configures a prime elliptic curve by its parameter identifier.
@@ -1002,6 +1019,15 @@ void ep_mul_gen(ep_t r, const bn_t k);
 void ep_mul_dig(ep_t r, const ep_t p, dig_t k);
 
 /**
+ * Multiplies a point in an elliptic curve over by the curve cofactor.
+ * In short, it takes a point in the curve to the large prime-order subgroup.
+ *
+ * @param[out] R				- the result.
+ * @param[in] P					- the point to multiply.
+ */
+void ep_mul_cof(ep_t r, const ep_t p);
+
+/**
  * Builds a precomputation table for multiplying a fixed prime elliptic point
  * using the binary method.
  *
@@ -1218,38 +1244,33 @@ void ep_norm(ep_t r, const ep_t p);
 void ep_norm_sim(ep_t *r, const ep_t *t, int n);
 
 /**
- * Maps an array of uniformly random bytes to a point in a prime elliptic
- * curve.
- * That array is expected to have a length suitable for two field elements plus
- * extra bytes for uniformity.
-  *
+ * Maps a byte array to a point in a prime elliptic curve using the hash and
+ * increment approach.
  * @param[out] p			- the result.
- * @param[in] uniform_bytes		- the array of uniform bytes to map.
+ * @param[in] msg			- the byte array to map.
  * @param[in] len			- the array length in bytes.
  */
-void ep_map_from_field(ep_t p, const uint8_t *uniform_bytes, size_t len);
+void ep_map_basic(ep_t p, const uint8_t *msg, size_t len);
 
 /**
- * Maps a byte array to a point in a prime elliptic curve.
+ * Maps a byte array to a point in a prime elliptic curve using the
+ * (Simplified) Shallue-van de Woestijne-Ulas map.
  *
  * @param[out] p			- the result.
  * @param[in] msg			- the byte array to map.
  * @param[in] len			- the array length in bytes.
  */
-void ep_map(ep_t p, const uint8_t *msg, size_t len);
+void ep_map_sswum(ep_t p, const uint8_t *msg, size_t len);
 
 /**
- * Maps a byte array to a point in a prime elliptic curve with specified
- * domain separation tag (aka personalization string).
+ * Maps a byte array to a point in a prime elliptic curve using the
+ * SwiftEC approach.
  *
  * @param[out] p			- the result.
  * @param[in] msg			- the byte array to map.
  * @param[in] len			- the array length in bytes.
- * @param[in] dst			- the domain separation tag.
- * @param[in] dst_len		- the domain separation tag length in bytes.
  */
-void ep_map_dst(ep_t p, const uint8_t *msg, size_t len, const uint8_t *dst,
-		size_t dst_len);
+void ep_map_swift(ep_t p, const uint8_t *msg, size_t len);
 
 /**
  * Compresses a point.

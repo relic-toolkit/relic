@@ -231,7 +231,30 @@ void fp48_sqr_pck_basic(fp48_t c, const fp48_t a) {
 
 void fp48_sqr_lazyr(fp48_t c, const fp48_t a) {
 	/* TODO: implement lazy reduction. */
-	fp48_sqr_basic(c, a);
+	fp24_t t0, t1;
+
+	fp24_null(t0);
+	fp24_null(t1);
+
+	RLC_TRY {
+		fp24_new(t0);
+		fp24_new(t1);
+
+		fp24_add(t0, a[0], a[1]);
+		fp24_mul_art(t1, a[1]);
+		fp24_add(t1, a[0], t1);
+		fp24_mul(t0, t0, t1);
+		fp24_mul(c[1], a[0], a[1]);
+		fp24_sub(c[0], t0, c[1]);
+		fp24_mul_art(t1, c[1]);
+		fp24_sub(c[0], c[0], t1);
+		fp24_dbl(c[1], c[1]);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		fp24_free(t0);
+		fp24_free(t1);
+	}
 }
 
 void fp48_sqr_cyc_lazyr(fp48_t c, const fp48_t a) {

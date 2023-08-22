@@ -263,6 +263,26 @@ void fp12_dbl(fp12_t c, const fp12_t a) {
 	fp6_dbl(c[1], a[1]);
 }
 
+void fp16_add(fp16_t c, const fp16_t a, const fp16_t b) {
+	fp8_add(c[0], a[0], b[0]);
+	fp8_add(c[1], a[1], b[1]);
+}
+
+void fp16_sub(fp16_t c, const fp16_t a, const fp16_t b) {
+	fp8_sub(c[0], a[0], b[0]);
+	fp8_sub(c[1], a[1], b[1]);
+}
+
+void fp16_dbl(fp16_t c, const fp16_t a) {
+	fp8_dbl(c[0], a[0]);
+	fp8_dbl(c[1], a[1]);
+}
+
+void fp16_neg(fp16_t c, const fp16_t a) {
+	fp8_neg(c[0], a[0]);
+	fp8_neg(c[1], a[1]);
+}
+
 void fp18_add(fp18_t c, const fp18_t a, const fp18_t b) {
 	fp9_add(c[0], a[0], b[0]);
 	fp9_add(c[1], a[1], b[1]);

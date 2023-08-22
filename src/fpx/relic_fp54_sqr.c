@@ -276,12 +276,165 @@ void fp54_sqr_pck_basic(fp54_t c, const fp54_t a) {
 
 void fp54_sqr_lazyr(fp54_t c, const fp54_t a) {
 	/* TODO: implement lazy reduction. */
-	fp54_sqr_basic(c, a);
+	fp18_t t0, t1, t2, t3, t4;
+
+	fp18_null(t0);
+	fp18_null(t1);
+	fp18_null(t2);
+	fp18_null(t3);
+	fp18_null(t4);
+
+	RLC_TRY {
+		fp18_new(t0);
+		fp18_new(t1);
+		fp18_new(t2);
+		fp18_new(t3);
+		fp18_new(t4);
+
+		/* t0 = a_0^2 */
+		fp18_sqr(t0, a[0]);
+
+		/* t1 = 2 * a_1 * a_2 */
+		fp18_mul(t1, a[1], a[2]);
+		fp18_dbl(t1, t1);
+
+		/* t2 = a_2^2. */
+		fp18_sqr(t2, a[2]);
+
+		/* c_2 = a_0 + a_2. */
+		fp18_add(c[2], a[0], a[2]);
+
+		/* t3 = (a_0 + a_2 + a_1)^2. */
+		fp18_add(t3, c[2], a[1]);
+		fp18_sqr(t3, t3);
+
+		/* c_2 = (a_0 + a_2 - a_1)^2. */
+		fp18_sub(c[2], c[2], a[1]);
+		fp18_sqr(c[2], c[2]);
+
+		/* c_2 = (c_2 + t3)/2. */
+		fp18_add(c[2], c[2], t3);
+		for (int i = 0; i < 3; i++) {
+			for (int j = 0; j < 3; j++) {
+				fp_hlv(c[2][0][i][j], c[2][0][i][j]);
+				fp_hlv(c[2][1][i][j], c[2][1][i][j]);
+			}
+		}
+
+		/* t3 = t3 - c_2 - t1. */
+		fp18_sub(t3, t3, c[2]);
+		fp18_sub(t3, t3, t1);
+
+		/* c_2 = c_2 - t0 - t2. */
+		fp18_sub(c[2], c[2], t0);
+		fp18_sub(c[2], c[2], t2);
+
+		/* c_0 = t0 + t1 * E. */
+		fp18_mul_art(t4, t1);
+		fp18_add(c[0], t0, t4);
+
+		/* c_1 = t3 + t2 * E. */
+		fp18_mul_art(t4, t2);
+		fp18_add(c[1], t3, t4);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		fp18_free(t0);
+		fp18_free(t1);
+		fp18_free(t2);
+		fp18_free(t3);
+		fp18_free(t4);
+	}
 }
 
 void fp54_sqr_cyc_lazyr(fp54_t c, const fp54_t a) {
 	/* TODO: implement lazy reduction. */
-	fp54_sqr_cyc_basic(c, a);
+	fp9_t t0, t1, t2, t3, t4, t5, t6;
+
+	fp9_null(t0);
+	fp9_null(t1);
+	fp9_null(t2);
+	fp9_null(t3);
+	fp9_null(t4);
+	fp9_null(t5);
+	fp9_null(t6);
+
+	RLC_TRY {
+		fp9_new(t0);
+		fp9_new(t1);
+		fp9_new(t2);
+		fp9_new(t3);
+		fp9_new(t4);
+		fp9_new(t5);
+		fp9_new(t6);
+
+		fp9_sqr(t2, a[0][0]);
+		fp9_sqr(t3, a[0][1]);
+		fp9_add(t1, a[0][0], a[0][1]);
+
+		fp9_mul_art(t0, t3);
+		fp9_add(t0, t0, t2);
+
+		fp9_sqr(t1, t1);
+		fp9_sub(t1, t1, t2);
+		fp9_sub(t1, t1, t3);
+
+		fp9_sub(c[0][0], t0, a[0][0]);
+		fp9_add(c[0][0], c[0][0], c[0][0]);
+		fp9_add(c[0][0], t0, c[0][0]);
+
+		fp9_add(c[0][1], t1, a[0][1]);
+		fp9_add(c[0][1], c[0][1], c[0][1]);
+		fp9_add(c[0][1], t1, c[0][1]);
+
+		fp9_sqr(t0, a[2][0]);
+		fp9_sqr(t1, a[2][1]);
+		fp9_add(t5, a[2][0], a[2][1]);
+		fp9_sqr(t2, t5);
+
+		fp9_add(t3, t0, t1);
+		fp9_sub(t5, t2, t3);
+
+		fp9_add(t6, a[1][0], a[1][1]);
+		fp9_sqr(t3, t6);
+		fp9_sqr(t2, a[1][0]);
+
+		fp9_mul_art(t6, t5);
+		fp9_add(t5, t6, a[1][0]);
+		fp9_dbl(t5, t5);
+		fp9_add(c[1][0], t5, t6);
+
+		fp9_mul_art(t4, t1);
+		fp9_add(t5, t0, t4);
+		fp9_sub(t6, t5, a[1][1]);
+
+		fp9_sqr(t1, a[1][1]);
+
+		fp9_dbl(t6, t6);
+		fp9_add(c[1][1], t6, t5);
+
+		fp9_mul_art(t4, t1);
+		fp9_add(t5, t2, t4);
+		fp9_sub(t6, t5, a[2][0]);
+		fp9_dbl(t6, t6);
+		fp9_add(c[2][0], t6, t5);
+
+		fp9_add(t0, t2, t1);
+		fp9_sub(t5, t3, t0);
+		fp9_add(t6, t5, a[2][1]);
+		fp9_dbl(t6, t6);
+		fp9_add(c[2][1], t5, t6);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		fp9_free(t0);
+		fp9_free(t1);
+		fp9_free(t2);
+		fp9_free(t3);
+		fp9_free(t4);
+		fp9_free(t5);
+		fp9_free(t6);
+	}
 }
 
 void fp54_sqr_pck_lazyr(fp54_t c, const fp54_t a) {

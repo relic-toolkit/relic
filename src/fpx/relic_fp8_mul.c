@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (c) 4007-4019 RELIC Authors
+ * Copyright (c) 2019 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -176,14 +176,13 @@ void fp8_mul_dxs(fp8_t c, const fp8_t a, const fp8_t b) {
 
 void fp8_mul_unr(dv8_t c, const fp8_t a, const fp8_t b) {
 	fp4_t t0, t1;
-	dv4_t u0, u1, u2, u3;
+	dv4_t u0, u1, u2;
 
 	fp4_null(t0);
 	fp4_null(t1);
 	dv4_null(u0);
 	dv4_null(u1);
 	dv4_null(u2);
-	dv4_null(u3);
 
 	RLC_TRY {
 		fp4_new(t0);
@@ -191,7 +190,6 @@ void fp8_mul_unr(dv8_t c, const fp8_t a, const fp8_t b) {
 		dv4_new(u0);
 		dv4_new(u1);
 		dv4_new(u2);
-		dv4_new(u3);
 
 		/* Karatsuba algorithm. */
 
@@ -207,8 +205,8 @@ void fp8_mul_unr(dv8_t c, const fp8_t a, const fp8_t b) {
 		fp4_mul_unr(u2, t0, t1);
 		/* c_1 = u2 - a_0b_0 - a_1b_1. */
 		for (int i = 0; i < 2; i++) {
-			fp2_addc_low(u3[i], u0[i], u1[i]);
-			fp2_subc_low(c[1][i], u2[i], u3[i]);
+			fp2_subc_low(c[1][i], u2[i], u0[i]);
+			fp2_subc_low(c[1][i], c[1][i], u1[i]);
 		}
 		/* c_0 = a_0b_0 + v * a_1b_1. */
 		fp2_nord_low(u2[0], u1[1]);
@@ -225,7 +223,6 @@ void fp8_mul_unr(dv8_t c, const fp8_t a, const fp8_t b) {
 		dv4_free(u0);
 		dv4_free(u1);
 		dv4_free(u2);
-		dv4_free(u3);
 	}
 }
 
@@ -266,5 +263,38 @@ void fp8_mul_art(fp8_t c, const fp8_t a) {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		fp4_free(t0);
+	}
+}
+
+void fp8_mul_frb(fp8_t c, const fp8_t a, int i, int j) {
+	fp2_t t;
+
+	fp2_null(t);
+
+	RLC_TRY {
+		fp4_new(t);
+
+		fp_copy(t[0], core_get()->fp8_p1[0]);
+		fp_copy(t[1], core_get()->fp8_p1[1]);
+
+	    if (i == 1) {
+			fp8_copy(c, a);
+			for (int k = 0; k < j; k++) {
+	        	fp2_mul(c[0][0], c[0][0], t);
+				fp2_mul(c[0][1], c[0][1], t);
+				fp2_mul(c[1][0], c[1][0], t);
+				fp2_mul(c[1][1], c[1][1], t);
+				/* If constant in base field, then second component is zero. */
+				if (core_get()->frb8 == 1) {
+					fp8_mul_art(c, c);
+				}
+			}
+	    } else {
+			RLC_THROW(ERR_NO_VALID);
+		}
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		fp4_free(t);
 	}
 }

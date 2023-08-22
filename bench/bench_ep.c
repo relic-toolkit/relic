@@ -394,6 +394,11 @@ static void arith(void) {
 		BENCH_ADD(ep_mul_gen(q, k));
 	} BENCH_END;
 
+	BENCH_RUN("ep_mul_cof") {
+		ep_rand(p);
+		BENCH_ADD(ep_mul_cof(q, p));
+	} BENCH_END;
+
 	BENCH_RUN("ep_mul_dig") {
 		bn_rand(k, RLC_POS, RLC_DIG);
 		bn_rand_mod(k, n);
@@ -574,6 +579,32 @@ static void arith(void) {
 		rand_bytes(msg, 5);
 		BENCH_ADD(ep_map(p, msg, 5));
 	} BENCH_END;
+
+#if EP_MAP == BASIC || !defined(STRIP)
+	BENCH_RUN("ep_map_basic") {
+		uint8_t msg[5];
+		rand_bytes(msg, 5);
+		BENCH_ADD(ep_map_basic(p, msg, 5));
+	} BENCH_END;
+#endif
+
+#if EP_MAP == SSWUM || !defined(STRIP)
+	BENCH_RUN("ep_map_sswum") {
+		uint8_t msg[5];
+		rand_bytes(msg, 5);
+		BENCH_ADD(ep_map_sswum(p, msg, 5));
+	} BENCH_END;
+#endif
+
+#if EP_MAP == SWIFT || !defined(STRIP)
+	if (ep_curve_opt_a() == RLC_ZERO || ep_curve_opt_b() == RLC_ZERO) {
+		BENCH_RUN("ep_map_swift") {
+			uint8_t msg[5];
+			rand_bytes(msg, 5);
+			BENCH_ADD(ep_map_swift(p, msg, 5));
+		} BENCH_END;
+	}
+#endif
 
 	BENCH_RUN("ep_pck") {
 		ep_rand(p);

@@ -241,23 +241,6 @@
 /** @} */
 #endif
 
-#if defined(EP_ENDOM) && FP_PRIME == 511
-/** @{ */
-#define OT8_P511_A0		"0"
-#define OT8_P511_A1		"1"
-#define OT8_P511_B0		"0"
-#define OT8_P511_B1		"0"
-#define OT8_P511_X0		"09541B7BB446EBE58277E0183B448E09D567ACFAAA07F2D3C01967088544C6FA844B803CFC8C8A91D0DFFAB5F55B95372C5AB5DD38E13EE92DAA6882535A1244"
-#define OT8_P511_X1		"332FBBD88DA3493CAF2F082C9C43E463523C8611AC52AB498F1D28D7844E42C67AF62A9BF0F4D9DDD38F79F51C9DBDB10735AC3CD69FF7867E27EBD65DD8D3EF"
-#define OT8_P511_Y0		"2E298CA6C71CE0C6CABA9208E6350B73B0E8BF3EE7CC1777C64BD3680AC857D1823993C8877CBD0203CD3A9835A053F5549BDF7DC206EE1B40BA43A2BD59B793"
-#define OT8_P511_Y1		"109CF99B6C312D74CEFF87959789AF53D231988B0E77FF424C8738C20EA91E7F634399A3899E101EBF5C6A0DBE2E40ACA8D0DBCE0F2C6A0300987BBABD9097DC"
-#define OT8_P511_R		"100000000002AC000000002AD56000000131304C0000032F6D0B1000000000001"
-#define OT8_P511_H		"1000000000080400000001D72B20000061916054001384B3D863F2EBD23CF44774A8836D060A488CB13701DF690F23AF2A5394A1F9EE0B564F725AD505A8F75463E3DBDF97FBE852B96A19E4477DB82D7C260034DEDA6C75853BB18EE3956002"
-#define OT8_P511_MAPU0 "0"
-#define OT8_P511_MAPU1 "1"
-/** @} */
-#endif
-
 #if defined(EP_ENDOM) && FP_PRIME == 544
 /** @{ */
 #define GMT8_P544_A0		"0"
@@ -678,53 +661,6 @@ fp_t *ep2_curve_get_b(void) {
 	return core_get()->ep2_b;
 }
 
-void ep2_curve_get_vs(bn_t *v) {
-	bn_t x, t;
-
-	bn_null(x);
-	bn_null(t);
-
-	RLC_TRY {
-		bn_new(x);
-		bn_new(t);
-
-		fp_prime_get_par(x);
-		bn_copy(v[1], x);
-		bn_copy(v[2], x);
-		bn_copy(v[3], x);
-
-		/* t = 2x^2. */
-		bn_sqr(t, x);
-		bn_dbl(t, t);
-
-		/* v0 = 2x^2 + 3x + 1. */
-		bn_mul_dig(v[0], x, 3);
-		bn_add_dig(v[0], v[0], 1);
-		bn_add(v[0], v[0], t);
-
-		/* v3 = -(2x^2 + x). */
-		bn_add(v[3], v[3], t);
-		bn_neg(v[3], v[3]);
-
-		/* v1 = 12x^3 + 8x^2 + x, v2 = 6x^3 + 4x^2 + x. */
-		bn_dbl(t, t);
-		bn_add(v[2], v[2], t);
-		bn_dbl(t, t);
-		bn_add(v[1], v[1], t);
-		bn_rsh(t, t, 2);
-		bn_mul(t, t, x);
-		bn_mul_dig(t, t, 3);
-		bn_add(v[2], v[2], t);
-		bn_dbl(t, t);
-		bn_add(v[1], v[1], t);
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		bn_free(x);
-		bn_free(t);
-	}
-}
-
 void ep2_curve_get_ord(bn_t n) {
 	ctx_t *ctx = core_get();
 	if (ctx->ep2_is_twist) {
@@ -834,10 +770,6 @@ void ep2_curve_set_twist(int type) {
 #elif FP_PRIME == 455
 			case B12_P455:
 				ASSIGN(B12_P455);
-				break;
-#elif FP_PRIME == 511
-			case OT8_P511:
-				ASSIGN(OT8_P511);
 				break;
 #elif FP_PRIME == 544
 			case GMT8_P544:

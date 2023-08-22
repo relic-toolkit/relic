@@ -1096,31 +1096,61 @@ static int compression2(void) {
 static int hashing2(void) {
 	int code = RLC_ERR;
 	bn_t n;
-	ep2_t p;
-	ep2_t q;
+	ep2_t a;
 	uint8_t msg[5];
 
 	bn_null(n);
-	ep2_null(p);
-	ep2_null(q);
+	ep2_null(a);
 
 	RLC_TRY {
 		bn_new(n);
-		ep2_new(p);
-		ep2_new(q);
+		ep2_new(a);
 
 		ep2_curve_get_ord(n);
 
 		TEST_CASE("point hashing is correct") {
 			rand_bytes(msg, sizeof(msg));
-			ep2_map(p, msg, sizeof(msg));
-			TEST_ASSERT(ep2_is_infty(p) == 0, end);
-			ep2_map_dst(q, msg, sizeof(msg), (const uint8_t *)"RELIC", 5);
-			TEST_ASSERT(ep2_cmp(p, q) == RLC_EQ, end);
-			ep2_mul(p, p, n);
-			TEST_ASSERT(ep2_is_infty(p) == 1, end);
+			ep2_map(a, msg, sizeof(msg));
+			TEST_ASSERT(ep2_on_curve(a) == 1, end);
+			ep2_mul(a, a, n);
+			TEST_ASSERT(ep2_is_infty(a) == 1, end);
 		}
 		TEST_END;
+
+#if EP_MAP == BASIC || !defined(STRIP)
+		TEST_CASE("basic point hashing is correct") {
+			rand_bytes(msg, sizeof(msg));
+			ep2_map_basic(a, msg, sizeof(msg));
+			TEST_ASSERT(ep2_is_infty(a) == 0, end);
+			ep2_mul(a, a, n);
+			TEST_ASSERT(ep2_is_infty(a) == 1, end);
+		}
+		TEST_END;
+#endif
+
+#if EP_MAP == SSWUM || !defined(STRIP)
+		TEST_CASE("simplified SWU point hashing is correct") {
+			rand_bytes(msg, sizeof(msg));
+			ep2_map_sswum(a, msg, sizeof(msg));
+			TEST_ASSERT(ep2_is_infty(a) == 0, end);
+			ep2_mul(a, a, n);
+			TEST_ASSERT(ep2_is_infty(a) == 1, end);
+		}
+		TEST_END;
+#endif
+
+		if (ep_curve_is_pairf()) {
+			#if EP_MAP == SWIFT || !defined(STRIP)
+					TEST_CASE("swift point hashing is correct") {
+						rand_bytes(msg, sizeof(msg));
+						ep2_map_swift(a, msg, sizeof(msg));
+						TEST_ASSERT(ep2_is_infty(a) == 0, end);
+						ep2_mul(a, a, n);
+						TEST_ASSERT(ep2_is_infty(a) == 1, end);
+					}
+					TEST_END;
+			#endif
+		}
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -1129,8 +1159,7 @@ static int hashing2(void) {
 	code = RLC_OK;
   end:
 	bn_free(n);
-	ep2_free(p);
-	ep2_free(q);
+	ep2_free(a);
 	return code;
 }
 
@@ -2316,23 +2345,25 @@ static int util4(void) {
 		} TEST_END;
 
 		TEST_CASE("reading and writing a point are consistent") {
-			ep4_set_infty(a);
-			l = ep4_size_bin(a, 0);
-			ep4_write_bin(bin, l, a, 0);
-			ep4_read_bin(b, bin, l);
-			TEST_ASSERT(ep4_cmp(a, b) == RLC_EQ, end);
-			ep4_rand(a);
-			l = ep4_size_bin(a, 0);
-			ep4_write_bin(bin, l, a, 0);
-			ep4_read_bin(b, bin, l);
-			TEST_ASSERT(ep4_cmp(a, b) == RLC_EQ, end);
-			ep4_rand(a);
-			ep4_dbl(a, a);
-			l = ep4_size_bin(a, 0);
-			ep4_norm(a, a);
-			ep4_write_bin(bin, l, a, 0);
-			ep4_read_bin(b, bin, l);
-			TEST_ASSERT(ep4_cmp(a, b) == RLC_EQ, end);
+			for (int j = 0; j < 2; j++) {
+				ep4_set_infty(a);
+				l = ep4_size_bin(a, j);
+				ep4_write_bin(bin, l, a, j);
+				ep4_read_bin(b, bin, l);
+				TEST_ASSERT(ep4_cmp(a, b) == RLC_EQ, end);
+				ep4_rand(a);
+				l = ep4_size_bin(a, j);
+				ep4_write_bin(bin, l, a, j);
+				ep4_read_bin(b, bin, l);
+				TEST_ASSERT(ep4_cmp(a, b) == RLC_EQ, end);
+				ep4_rand(a);
+				ep4_dbl(a, a);
+				l = ep4_size_bin(a, j);
+				ep4_norm(a, a);
+				ep4_write_bin(bin, l, a, j);
+				ep4_read_bin(b, bin, l);
+				TEST_ASSERT(ep4_cmp(a, b) == RLC_EQ, end);
+			}
 		}
 		TEST_END;
 	}
@@ -3171,7 +3202,7 @@ static int hashing4(void) {
 		TEST_CASE("point hashing is correct") {
 			rand_bytes(msg, sizeof(msg));
 			ep4_map(p, msg, sizeof(msg));
-			TEST_ASSERT(ep4_is_infty(p) == 0, end);
+			TEST_ASSERT(ep4_on_curve(p) == 1, end);
 			ep4_mul(p, p, n);
 			TEST_ASSERT(ep4_is_infty(p) == 1, end);
 		}
@@ -3232,8 +3263,1037 @@ static int frobenius4(void) {
 	return code;
 }
 
+static int memory8(void) {
+	err_t e = ERR_CAUGHT;
+	int code = RLC_ERR;
+	ep8_t a;
+
+	ep8_null(a);
+
+	RLC_TRY {
+		TEST_CASE("memory can be allocated") {
+			ep8_new(a);
+			ep8_free(a);
+		} TEST_END;
+	} RLC_CATCH(e) {
+		switch (e) {
+			case ERR_NO_MEMORY:
+				util_print("FATAL ERROR!\n");
+				RLC_ERROR(end);
+				break;
+		}
+	}
+	(void)a;
+	code = RLC_OK;
+  end:
+	return code;
+}
+
+static int util8(void) {
+	int l, code = RLC_ERR;
+	ep8_t a, b, c;
+	uint8_t bin[16 * RLC_FP_BYTES + 1];
+
+	ep8_null(a);
+	ep8_null(b);
+	ep8_null(c);
+
+	RLC_TRY {
+		ep8_new(a);
+		ep8_new(b);
+		ep8_new(c);
+
+		TEST_CASE("copy and comparison are consistent") {
+			ep8_rand(a);
+			ep8_rand(b);
+			ep8_rand(c);
+			/* Compare points in affine coordinates. */
+			if (ep8_cmp(a, c) != RLC_EQ) {
+				ep8_copy(c, a);
+				TEST_ASSERT(ep8_cmp(c, a) == RLC_EQ, end);
+			}
+			if (ep8_cmp(b, c) != RLC_EQ) {
+				ep8_copy(c, b);
+				TEST_ASSERT(ep8_cmp(b, c) == RLC_EQ, end);
+			}
+			/* Compare with one point in projective. */
+			ep8_dbl(c, a);
+			ep8_norm(c, c);
+			ep8_dbl(a, a);
+			TEST_ASSERT(ep8_cmp(c, a) == RLC_EQ, end);
+			TEST_ASSERT(ep8_cmp(a, c) == RLC_EQ, end);
+			/* Compare with two points in projective. */
+			ep8_dbl(c, c);
+			ep8_dbl(a, a);
+			TEST_ASSERT(ep8_cmp(c, a) == RLC_EQ, end);
+			TEST_ASSERT(ep8_cmp(a, c) == RLC_EQ, end);
+		}
+		TEST_END;
+
+		TEST_CASE("negation and comparison are consistent") {
+			ep8_rand(a);
+			ep8_neg(b, a);
+			TEST_ASSERT(ep8_cmp(a, b) != RLC_EQ, end);
+			ep8_neg(b, b);
+			TEST_ASSERT(ep8_cmp(a, b) == RLC_EQ, end);
+			ep8_neg(b, a);
+			ep8_add(a, a, b);
+			ep8_set_infty(b);
+			TEST_ASSERT(ep8_cmp(a, b) == RLC_EQ, end);
+		}
+		TEST_END;
+
+		TEST_CASE("assignment to random and comparison are consistent") {
+			ep8_rand(a);
+			ep8_set_infty(c);
+			TEST_ASSERT(ep8_cmp(a, c) != RLC_EQ, end);
+			TEST_ASSERT(ep8_cmp(c, a) != RLC_EQ, end);
+		}
+		TEST_END;
+
+		TEST_CASE("assignment to infinity and infinity test are consistent") {
+			ep8_set_infty(a);
+			TEST_ASSERT(ep8_is_infty(a), end);
+		}
+		TEST_END;
+
+		TEST_CASE("validity test is correct") {
+			ep8_set_infty(a);
+			TEST_ASSERT(ep8_on_curve(a), end);
+			ep8_rand(a);
+			TEST_ASSERT(ep8_on_curve(a), end);
+			fp8_rand(a->x);
+			TEST_ASSERT(!ep8_on_curve(a), end);
+		}
+		TEST_END;
+
+		TEST_CASE("blinding is consistent") {
+			ep8_rand(a);
+			ep8_blind(a, a);
+			TEST_ASSERT(ep8_on_curve(a), end);
+		} TEST_END;
+
+		TEST_CASE("reading and writing a point are consistent") {
+			for (int j = 0; j < 2; j++) {
+				ep8_set_infty(a);
+				l = ep8_size_bin(a, j);
+				ep8_write_bin(bin, l, a, j);
+				ep8_read_bin(b, bin, l);
+				TEST_ASSERT(ep8_cmp(a, b) == RLC_EQ, end);
+				ep8_rand(a);
+				l = ep8_size_bin(a, j);
+				ep8_write_bin(bin, l, a, j);
+				ep8_read_bin(b, bin, l);
+				TEST_ASSERT(ep8_cmp(a, b) == RLC_EQ, end);
+				ep8_rand(a);
+				ep8_dbl(a, a);
+				l = ep8_size_bin(a, j);
+				ep8_norm(a, a);
+				ep8_write_bin(bin, l, a, j);
+				ep8_read_bin(b, bin, l);
+				TEST_ASSERT(ep8_cmp(a, b) == RLC_EQ, end);
+			}
+		}
+		TEST_END;
+	}
+	RLC_CATCH_ANY {
+		util_print("FATAL ERROR!\n");
+		RLC_ERROR(end);
+	}
+	code = RLC_OK;
+  end:
+	ep8_free(a);
+	ep8_free(b);
+	ep8_free(c);
+	return code;
+}
+
+static int addition8(void) {
+	int code = RLC_ERR;
+	ep8_t a, b, c, d, e;
+
+	ep8_null(a);
+	ep8_null(b);
+	ep8_null(c);
+	ep8_null(d);
+	ep8_null(e);
+
+	RLC_TRY {
+		ep8_new(a);
+		ep8_new(b);
+		ep8_new(c);
+		ep8_new(d);
+		ep8_new(e);
+
+		TEST_CASE("point addition is commutative") {
+			ep8_rand(a);
+			ep8_rand(b);
+			ep8_add(d, a, b);
+			ep8_add(e, b, a);
+			TEST_ASSERT(ep8_cmp(d, e) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("point addition is associative") {
+			ep8_rand(a);
+			ep8_rand(b);
+			ep8_rand(c);
+			ep8_add(d, a, b);
+			ep8_add(d, d, c);
+			ep8_add(e, b, c);
+			ep8_add(e, e, a);
+			TEST_ASSERT(ep8_cmp(d, e) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("point addition has identity") {
+			ep8_rand(a);
+			ep8_set_infty(d);
+			ep8_add(e, a, d);
+			TEST_ASSERT(ep8_cmp(e, a) == RLC_EQ, end);
+			ep8_add(e, d, a);
+			TEST_ASSERT(ep8_cmp(e, a) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("point addition has inverse") {
+			ep8_rand(a);
+			ep8_neg(d, a);
+			ep8_add(e, a, d);
+			TEST_ASSERT(ep8_is_infty(e), end);
+		} TEST_END;
+
+#if EP_ADD == BASIC || !defined(STRIP)
+		TEST_CASE("point addition in affine coordinates is correct") {
+			ep8_rand(a);
+			ep8_rand(b);
+			ep8_add(d, a, b);
+			ep8_add_basic(e, a, b);
+			TEST_ASSERT(ep8_cmp(e, d) == RLC_EQ, end);
+		} TEST_END;
+#endif
+
+#if EP_ADD == PROJC || !defined(STRIP)
+#if !defined(EP_MIXED) || !defined(STRIP)
+		TEST_CASE("point addition in projective coordinates is correct") {
+			ep8_rand(a);
+			ep8_rand(b);
+			ep8_rand(c);
+			ep8_add_projc(a, a, b);
+			ep8_add_projc(b, b, c);
+			/* a and b in projective coordinates. */
+			ep8_add_projc(d, a, b);
+			/* normalize before mixing coordinates. */
+			ep8_norm(a, a);
+			ep8_norm(b, b);
+			ep8_add(e, a, b);
+			TEST_ASSERT(ep8_cmp(d, e) == RLC_EQ, end);
+		} TEST_END;
+#endif
+
+		TEST_CASE("point addition in mixed coordinates (z2 = 1) is correct") {
+			ep8_rand(a);
+			ep8_rand(b);
+			/* a in projective, b in affine coordinates. */
+			ep8_add_projc(a, a, b);
+			ep8_add_projc(d, a, b);
+			/* a in affine coordinates. */
+			ep8_norm(a, a);
+			ep8_add(e, a, b);
+			TEST_ASSERT(ep8_cmp(d, e) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("point addition in mixed coordinates (z1,z2 = 1) is correct") {
+			ep8_rand(a);
+			ep8_rand(b);
+			/* a and b in affine coordinates. */
+			ep8_add(d, a, b);
+			ep8_add_projc(e, a, b);
+			TEST_ASSERT(ep8_cmp(d, e) == RLC_EQ, end);
+		} TEST_END;
+#endif
+
+	}
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
+	}
+	code = RLC_OK;
+  end:
+	ep8_free(a);
+	ep8_free(b);
+	ep8_free(c);
+	ep8_free(d);
+	ep8_free(e);
+	return code;
+}
+
+static int subtraction8(void) {
+	int code = RLC_ERR;
+	ep8_t a, b, c, d;
+
+	ep8_null(a);
+	ep8_null(b);
+	ep8_null(c);
+	ep8_null(d);
+
+	RLC_TRY {
+		ep8_new(a);
+		ep8_new(b);
+		ep8_new(c);
+		ep8_new(d);
+
+		TEST_CASE("point subtraction is anti-commutative") {
+			ep8_rand(a);
+			ep8_rand(b);
+			ep8_sub(c, a, b);
+			ep8_sub(d, b, a);
+			ep8_neg(d, d);
+			TEST_ASSERT(ep8_cmp(c, d) == RLC_EQ, end);
+		}
+		TEST_END;
+
+		TEST_CASE("point subtraction has identity") {
+			ep8_rand(a);
+			ep8_set_infty(c);
+			ep8_sub(d, a, c);
+			TEST_ASSERT(ep8_cmp(d, a) == RLC_EQ, end);
+		}
+		TEST_END;
+
+		TEST_CASE("point subtraction has inverse") {
+			ep8_rand(a);
+			ep8_sub(c, a, a);
+			TEST_ASSERT(ep8_is_infty(c), end);
+		}
+		TEST_END;
+	}
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
+	}
+	code = RLC_OK;
+  end:
+	ep8_free(a);
+	ep8_free(b);
+	ep8_free(c);
+	ep8_free(d);
+	return code;
+}
+
+static int doubling8(void) {
+	int code = RLC_ERR;
+	ep8_t a, b, c;
+
+	ep8_null(a);
+	ep8_null(b);
+	ep8_null(c);
+
+	RLC_TRY {
+		ep8_new(a);
+		ep8_new(b);
+		ep8_new(c);
+
+		TEST_CASE("point doubling is correct") {
+			ep8_rand(a);
+			ep8_add(b, a, a);
+			ep8_dbl(c, a);
+			TEST_ASSERT(ep8_cmp(b, c) == RLC_EQ, end);
+		} TEST_END;
+
+#if EP_ADD == BASIC || !defined(STRIP)
+		TEST_CASE("point doubling in affine coordinates is correct") {
+			ep8_rand(a);
+			ep8_dbl(b, a);
+			ep8_dbl_basic(c, a);
+			TEST_ASSERT(ep8_cmp(b, c) == RLC_EQ, end);
+		} TEST_END;
+#endif
+
+#if EP_ADD == PROJC || !defined(STRIP)
+		TEST_CASE("point doubling in projective coordinates is correct") {
+			ep8_rand(a);
+			/* a in projective coordinates. */
+			ep8_dbl_projc(a, a);
+			ep8_dbl_projc(b, a);
+			ep8_norm(a, a);
+			ep8_dbl(c, a);
+			TEST_ASSERT(ep8_cmp(b, c) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("point doubling in mixed coordinates (z1 = 1) is correct") {
+			ep8_rand(a);
+			ep8_dbl_projc(b, a);
+			ep8_norm(b, b);
+			ep8_dbl(c, a);
+			TEST_ASSERT(ep8_cmp(b, c) == RLC_EQ, end);
+		} TEST_END;
+#endif
+	}
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
+	}
+	code = RLC_OK;
+  end:
+	ep8_free(a);
+	ep8_free(b);
+	ep8_free(c);
+	return code;
+}
+
+static int multiplication8(void) {
+	int code = RLC_ERR;
+	bn_t n, k;
+	ep8_t p, q, r;
+
+	bn_null(n);
+	bn_null(k);
+	ep8_null(p);
+	ep8_null(q);
+	ep8_null(r);
+
+	RLC_TRY {
+		bn_new(n);
+		bn_new(k);
+		ep8_new(p);
+		ep8_new(q);
+		ep8_new(r);
+
+		ep8_curve_get_gen(p);
+		ep8_curve_get_ord(n);
+
+		TEST_ONCE("generator has the right order") {
+			TEST_ASSERT(ep8_on_curve(p), end);
+			ep8_mul(r, p, n);
+			TEST_ASSERT(ep8_is_infty(r) == 1, end);
+		} TEST_END;
+
+		TEST_CASE("generator multiplication is correct") {
+			bn_zero(k);
+			ep8_mul_gen(r, k);
+			TEST_ASSERT(ep8_is_infty(r), end);
+			bn_set_dig(k, 1);
+			ep8_mul_gen(r, k);
+			TEST_ASSERT(ep8_cmp(p, r) == RLC_EQ, end);
+			bn_rand_mod(k, n);
+			ep8_mul(q, p, k);
+			ep8_mul_gen(r, k);
+			TEST_ASSERT(ep8_cmp(q, r) == RLC_EQ, end);
+			bn_neg(k, k);
+			ep8_mul_gen(r, k);
+			ep8_neg(r, r);
+			TEST_ASSERT(ep8_cmp(q, r) == RLC_EQ, end);
+			bn_rand_mod(k, n);
+			ep8_mul_gen(q, k);
+			bn_add(k, k, n);
+			ep8_mul_gen(r, k);
+			TEST_ASSERT(ep8_cmp(q, r) == RLC_EQ, end);
+		} TEST_END;
+
+#if EP_MUL == BASIC || !defined(STRIP)
+		TEST_CASE("binary point multiplication is correct") {
+			bn_zero(k);
+			ep8_mul_basic(r, p, k);
+			TEST_ASSERT(ep8_is_infty(r), end);
+			bn_set_dig(k, 1);
+			ep8_mul_basic(r, p, k);
+			TEST_ASSERT(ep8_cmp(p, r) == RLC_EQ, end);
+			ep8_rand(p);
+			ep8_mul(r, p, n);
+			TEST_ASSERT(ep8_is_infty(r), end);
+			bn_rand_mod(k, n);
+			ep8_mul(q, p, k);
+			ep8_mul_basic(r, p, k);
+			TEST_ASSERT(ep8_cmp(q, r) == RLC_EQ, end);
+			bn_neg(k, k);
+			ep8_mul_basic(r, p, k);
+			ep8_neg(r, r);
+			TEST_ASSERT(ep8_cmp(q, r) == RLC_EQ, end);
+		} TEST_END;
+#endif
+
+#if EP_MUL == MONTY || !defined(STRIP)
+		TEST_CASE("sliding window point multiplication is correct") {
+			bn_zero(k);
+			ep8_mul_slide(r, p, k);
+			TEST_ASSERT(ep8_is_infty(r), end);
+			bn_set_dig(k, 1);
+			ep8_mul_slide(r, p, k);
+			TEST_ASSERT(ep8_cmp(p, r) == RLC_EQ, end);
+			ep8_rand(p);
+			ep8_mul(r, p, n);
+			TEST_ASSERT(ep8_is_infty(r), end);
+			bn_rand_mod(k, n);
+			ep8_mul(q, p, k);
+			ep8_mul_slide(r, p, k);
+			TEST_ASSERT(ep8_cmp(q, r) == RLC_EQ, end);
+			bn_neg(k, k);
+			ep8_mul_slide(r, p, k);
+			ep8_neg(r, r);
+			TEST_ASSERT(ep8_cmp(q, r) == RLC_EQ, end);
+		}
+		TEST_END;
+#endif
+
+#if EP_MUL == MONTY || !defined(STRIP)
+		TEST_CASE("montgomery ladder point multiplication is correct") {
+			bn_zero(k);
+			ep8_mul_monty(r, p, k);
+			TEST_ASSERT(ep8_is_infty(r), end);
+			bn_set_dig(k, 1);
+			ep8_mul_monty(r, p, k);
+			TEST_ASSERT(ep8_cmp(p, r) == RLC_EQ, end);
+			ep8_rand(p);
+			ep8_mul(r, p, n);
+			TEST_ASSERT(ep8_is_infty(r), end);
+			bn_rand_mod(k, n);
+			ep8_mul(q, p, k);
+			ep8_mul_monty(r, p, k);
+			TEST_ASSERT(ep8_cmp(q, r) == RLC_EQ, end);
+			bn_neg(k, k);
+			ep8_mul_monty(r, p, k);
+			ep8_neg(r, r);
+			TEST_ASSERT(ep8_cmp(q, r) == RLC_EQ, end);
+		}
+		TEST_END;
+#endif
+
+#if EP_MUL == LWNAF || !defined(STRIP)
+		TEST_CASE("left-to-right w-naf point multiplication is correct") {
+			bn_zero(k);
+			ep8_mul_lwnaf(r, p, k);
+			TEST_ASSERT(ep8_is_infty(r), end);
+			bn_set_dig(k, 1);
+			ep8_mul_lwnaf(r, p, k);
+			TEST_ASSERT(ep8_cmp(p, r) == RLC_EQ, end);
+			ep8_rand(p);
+			ep8_mul(r, p, n);
+			TEST_ASSERT(ep8_is_infty(r), end);
+			bn_rand_mod(k, n);
+			ep8_mul(q, p, k);
+			ep8_mul_lwnaf(r, p, k);
+			TEST_ASSERT(ep8_cmp(q, r) == RLC_EQ, end);
+			bn_neg(k, k);
+			ep8_mul_lwnaf(r, p, k);
+			ep8_neg(r, r);
+			TEST_ASSERT(ep8_cmp(q, r) == RLC_EQ, end);
+		}
+		TEST_END;
+#endif
+
+		TEST_CASE("multiplication by digit is correct") {
+			ep8_mul_dig(r, p, 0);
+			TEST_ASSERT(ep8_is_infty(r), end);
+			ep8_mul_dig(r, p, 1);
+			TEST_ASSERT(ep8_cmp(p, r) == RLC_EQ, end);
+			bn_rand(k, RLC_POS, RLC_DIG);
+			ep8_mul(q, p, k);
+			ep8_mul_dig(r, p, k->dp[0]);
+			TEST_ASSERT(ep8_cmp(q, r) == RLC_EQ, end);
+		}
+		TEST_END;
+	}
+	RLC_CATCH_ANY {
+		util_print("FATAL ERROR!\n");
+		RLC_ERROR(end);
+	}
+	code = RLC_OK;
+  end:
+	bn_free(n);
+	bn_free(k);
+	ep8_free(p);
+	ep8_free(q);
+	ep8_free(r);
+	return code;
+}
+
+static int fixed8(void) {
+	int code = RLC_ERR;
+	bn_t n, k;
+	ep8_t p, q, r, t[RLC_EPX_TABLE_MAX];
+
+	bn_null(n);
+	bn_null(k);
+	ep8_null(p);
+	ep8_null(q);
+	ep8_null(r);
+
+	for (int i = 0; i < RLC_EPX_TABLE_MAX; i++) {
+		ep8_null(t[i]);
+	}
+
+	RLC_TRY {
+		bn_new(n);
+		bn_new(k);
+		ep8_new(p);
+		ep8_new(q);
+		ep8_new(r);
+
+		ep8_curve_get_gen(p);
+		ep8_curve_get_ord(n);
+
+		for (int i = 0; i < RLC_EP_TABLE; i++) {
+			ep8_new(t[i]);
+		}
+		TEST_CASE("fixed point multiplication is correct") {
+			ep8_rand(p);
+			ep8_mul_pre(t, p);
+			bn_zero(k);
+			ep8_mul_fix(r, t, k);
+			TEST_ASSERT(ep8_is_infty(r), end);
+			bn_set_dig(k, 1);
+			ep8_mul_fix(r, t, k);
+			TEST_ASSERT(ep8_cmp(p, r) == RLC_EQ, end);
+			bn_rand_mod(k, n);
+			ep8_mul(q, p, k);
+			ep8_mul_fix(q, t, k);
+			ep8_mul(r, p, k);
+			TEST_ASSERT(ep8_cmp(q, r) == RLC_EQ, end);
+			bn_neg(k, k);
+			ep8_mul_fix(r, t, k);
+			ep8_neg(r, r);
+			TEST_ASSERT(ep8_cmp(q, r) == RLC_EQ, end);
+		} TEST_END;
+		for (int i = 0; i < RLC_EP_TABLE; i++) {
+			ep8_free(t[i]);
+		}
+
+#if EP_FIX == BASIC || !defined(STRIP)
+		for (int i = 0; i < RLC_EP_TABLE_BASIC; i++) {
+			ep8_new(t[i]);
+		}
+		TEST_CASE("binary fixed point multiplication is correct") {
+			ep8_rand(p);
+			ep8_mul_pre_basic(t, p);
+			bn_zero(k);
+			ep8_mul_fix_basic(r, t, k);
+			TEST_ASSERT(ep8_is_infty(r), end);
+			bn_set_dig(k, 1);
+			ep8_mul_fix_basic(r, t, k);
+			TEST_ASSERT(ep8_cmp(p, r) == RLC_EQ, end);
+			bn_rand_mod(k, n);
+			ep8_mul(r, p, k);
+			ep8_mul_fix_basic(q, t, k);
+			TEST_ASSERT(ep8_cmp(q, r) == RLC_EQ, end);
+			bn_neg(k, k);
+			ep8_mul_fix_basic(r, t, k);
+			ep8_neg(r, r);
+			TEST_ASSERT(ep8_cmp(q, r) == RLC_EQ, end);
+		} TEST_END;
+		for (int i = 0; i < RLC_EP_TABLE_BASIC; i++) {
+			ep8_free(t[i]);
+		}
+#endif
+
+#if EP_FIX == COMBS || !defined(STRIP)
+		for (int i = 0; i < RLC_EP_TABLE_COMBS; i++) {
+			ep8_new(t[i]);
+		}
+		TEST_CASE("single-table comb fixed point multiplication is correct") {
+			ep8_rand(p);
+			ep8_mul_pre_combs(t, p);
+			bn_zero(k);
+			ep8_mul_fix_combs(r, t, k);
+			TEST_ASSERT(ep8_is_infty(r), end);
+			bn_set_dig(k, 1);
+			ep8_mul_fix_combs(r, t, k);
+			TEST_ASSERT(ep8_cmp(p, r) == RLC_EQ, end);
+			bn_rand_mod(k, n);
+			ep8_mul(r, p, k);
+			ep8_mul_fix_combs(q, t, k);
+			TEST_ASSERT(ep8_cmp(q, r) == RLC_EQ, end);
+			bn_neg(k, k);
+			ep8_mul_fix_combs(r, t, k);
+			ep8_neg(r, r);
+			TEST_ASSERT(ep8_cmp(q, r) == RLC_EQ, end);
+		} TEST_END;
+		for (int i = 0; i < RLC_EP_TABLE_COMBS; i++) {
+			ep8_free(t[i]);
+		}
+#endif
+
+#if EP_FIX == COMBD || !defined(STRIP)
+		for (int i = 0; i < RLC_EP_TABLE_COMBD; i++) {
+			ep8_new(t[i]);
+		}
+		TEST_CASE("double-table comb fixed point multiplication is correct") {
+			ep8_rand(p);
+			ep8_mul_pre_combd(t, p);
+			bn_zero(k);
+			ep8_mul_fix_combd(r, t, k);
+			TEST_ASSERT(ep8_is_infty(r), end);
+			bn_set_dig(k, 1);
+			ep8_mul_fix_combd(r, t, k);
+			TEST_ASSERT(ep8_cmp(p, r) == RLC_EQ, end);
+			bn_rand_mod(k, n);
+			ep8_mul(r, p, k);
+			ep8_mul_fix_combd(q, t, k);
+			TEST_ASSERT(ep8_cmp(q, r) == RLC_EQ, end);
+			bn_neg(k, k);
+			ep8_mul_fix_combd(r, t, k);
+			ep8_neg(r, r);
+			TEST_ASSERT(ep8_cmp(q, r) == RLC_EQ, end);
+		} TEST_END;
+		for (int i = 0; i < RLC_EP_TABLE_COMBD; i++) {
+			ep8_free(t[i]);
+		}
+#endif
+
+#if EP_FIX == LWNAF || !defined(STRIP)
+		for (int i = 0; i < RLC_EP_TABLE_LWNAF; i++) {
+			ep8_new(t[i]);
+		}
+		TEST_CASE("left-to-right w-naf fixed point multiplication is correct") {
+			ep8_rand(p);
+			ep8_mul_pre_lwnaf(t, p);
+			bn_zero(k);
+			ep8_mul_fix_lwnaf(r, t, k);
+			TEST_ASSERT(ep8_is_infty(r), end);
+			bn_set_dig(k, 1);
+			ep8_mul_fix_lwnaf(r, t, k);
+			TEST_ASSERT(ep8_cmp(p, r) == RLC_EQ, end);
+			bn_rand_mod(k, n);
+			ep8_mul(r, p, k);
+			ep8_mul_fix_lwnaf(q, t, k);
+			TEST_ASSERT(ep8_cmp(q, r) == RLC_EQ, end);
+			bn_neg(k, k);
+			ep8_mul_fix_lwnaf(r, t, k);
+			ep8_neg(r, r);
+			TEST_ASSERT(ep8_cmp(q, r) == RLC_EQ, end);
+		} TEST_END;
+		for (int i = 0; i < RLC_EP_TABLE_LWNAF; i++) {
+			ep8_free(t[i]);
+		}
+#endif
+	}
+	RLC_CATCH_ANY {
+		util_print("FATAL ERROR!\n");
+		RLC_ERROR(end);
+	}
+	code = RLC_OK;
+  end:
+	ep8_free(p);
+	ep8_free(q);
+	ep8_free(r);
+	bn_free(n);
+	bn_free(k);
+	return code;
+}
+
+static int simultaneous8(void) {
+	int code = RLC_ERR;
+	bn_t n, k[2];
+	ep8_t p[2], r;
+
+	bn_null(n);
+	bn_null(k[0]);
+	bn_null(k[1]);
+	ep8_null(p[0]);
+	ep8_null(p[1]);
+	ep8_null(r);
+
+	RLC_TRY {
+		bn_new(n);
+		bn_new(k[0]);
+		bn_new(k[1]);
+		ep8_new(p[0]);
+		ep8_new(p[1]);
+		ep8_new(r);
+
+		ep8_curve_get_gen(p[0]);
+		ep8_curve_get_ord(n);
+
+		TEST_CASE("simultaneous point multiplication is correct") {
+			bn_zero(k[0]);
+			bn_rand_mod(k[1], n);
+			ep8_mul(p[1], p[0], k[1]);
+			ep8_mul_sim(r, p[0], k[0], p[0], k[1]);
+			TEST_ASSERT(ep8_cmp(p[1], r) == RLC_EQ, end);
+			bn_rand_mod(k[0], n);
+			bn_zero(k[1]);
+			ep8_mul(p[1], p[0], k[0]);
+			ep8_mul_sim(r, p[0], k[0], p[0], k[1]);
+			TEST_ASSERT(ep8_cmp(p[1], r) == RLC_EQ, end);
+			bn_rand_mod(k[0], n);
+			bn_rand_mod(k[1], n);
+			ep8_mul_sim(r, p[0], k[0], p[1], k[1]);
+			ep8_mul(p[0], p[0], k[0]);
+			ep8_mul(p[1], p[1], k[1]);
+			ep8_add(p[1], p[1], p[0]);
+			TEST_ASSERT(ep8_cmp(p[1], r) == RLC_EQ, end);
+			bn_neg(k[0], k[0]);
+			ep8_mul_sim(r, p[0], k[0], p[1], k[1]);
+			ep8_mul(p[0], p[0], k[0]);
+			ep8_mul(p[1], p[1], k[1]);
+			ep8_add(p[1], p[1], p[0]);
+			TEST_ASSERT(ep8_cmp(p[1], r) == RLC_EQ, end);
+			bn_neg(k[1], k[1]);
+			ep8_mul_sim(r, p[0], k[0], p[1], k[1]);
+			ep8_mul(p[0], p[0], k[0]);
+			ep8_mul(p[1], p[1], k[1]);
+			ep8_add(p[1], p[1], p[0]);
+			TEST_ASSERT(ep8_cmp(p[1], r) == RLC_EQ, end);
+			ep8_mul_sim(r, p[0], k[0], p[1], k[1]);
+			ep8_mul_sim_lot(p[1], p, k, 2);
+			TEST_ASSERT(ep8_cmp(p[1], r) == RLC_EQ, end);
+		} TEST_END;
+
+#if EP_SIM == BASIC || !defined(STRIP)
+		TEST_CASE("basic simultaneous point multiplication is correct") {
+			bn_zero(k[0]);
+			bn_rand_mod(k[1], n);
+			ep8_mul(p[1], p[0], k[1]);
+			ep8_mul_sim_basic(r, p[0], k[0], p[0], k[1]);
+			TEST_ASSERT(ep8_cmp(p[1], r) == RLC_EQ, end);
+			bn_rand_mod(k[0], n);
+			bn_zero(k[1]);
+			ep8_mul(p[1], p[0], k[0]);
+			ep8_mul_sim_basic(r, p[0], k[0], p[0], k[1]);
+			TEST_ASSERT(ep8_cmp(p[1], r) == RLC_EQ, end);
+			bn_rand_mod(k[0], n);
+			bn_rand_mod(k[1], n);
+			ep8_mul_sim_basic(r, p[0], k[0], p[1], k[1]);
+			ep8_mul(p[0], p[0], k[0]);
+			ep8_mul(p[1], p[1], k[1]);
+			ep8_add(p[1], p[1], p[0]);
+			TEST_ASSERT(ep8_cmp(p[1], r) == RLC_EQ, end);
+			bn_neg(k[0], k[0]);
+			ep8_mul_sim_basic(r, p[0], k[0], p[1], k[1]);
+			ep8_mul(p[0], p[0], k[0]);
+			ep8_mul(p[1], p[1], k[1]);
+			ep8_add(p[1], p[1], p[0]);
+			TEST_ASSERT(ep8_cmp(p[1], r) == RLC_EQ, end);
+			bn_neg(k[1], k[1]);
+			ep8_mul_sim_basic(r, p[0], k[0], p[1], k[1]);
+			ep8_mul(p[0], p[0], k[0]);
+			ep8_mul(p[1], p[1], k[1]);
+			ep8_add(p[1], p[1], p[0]);
+			TEST_ASSERT(ep8_cmp(p[1], r) == RLC_EQ, end);
+		} TEST_END;
+#endif
+
+#if EP_SIM == TRICK || !defined(STRIP)
+		TEST_CASE("shamir's trick for simultaneous multiplication is correct") {
+			bn_zero(k[0]);
+			bn_rand_mod(k[1], n);
+			ep8_mul(p[1], p[0], k[1]);
+			ep8_mul_sim_trick(r, p[0], k[0], p[0], k[1]);
+			TEST_ASSERT(ep8_cmp(p[1], r) == RLC_EQ, end);
+			bn_rand_mod(k[0], n);
+			bn_zero(k[1]);
+			ep8_mul(p[1], p[0], k[0]);
+			ep8_mul_sim_trick(r, p[0], k[0], p[0], k[1]);
+			TEST_ASSERT(ep8_cmp(p[1], r) == RLC_EQ, end);
+			bn_rand_mod(k[0], n);
+			bn_rand_mod(k[1], n);
+			ep8_mul_sim_trick(r, p[0], k[0], p[1], k[1]);
+			ep8_mul(p[0], p[0], k[0]);
+			ep8_mul(p[1], p[1], k[1]);
+			ep8_add(p[1], p[1], p[0]);
+			TEST_ASSERT(ep8_cmp(p[1], r) == RLC_EQ, end);
+			bn_neg(k[0], k[0]);
+			ep8_mul_sim_trick(r, p[0], k[0], p[1], k[1]);
+			ep8_mul(p[0], p[0], k[0]);
+			ep8_mul(p[1], p[1], k[1]);
+			ep8_add(p[1], p[1], p[0]);
+			TEST_ASSERT(ep8_cmp(p[1], r) == RLC_EQ, end);
+			bn_neg(k[1], k[1]);
+			ep8_mul_sim_trick(r, p[0], k[0], p[1], k[1]);
+			ep8_mul(p[0], p[0], k[0]);
+			ep8_mul(p[1], p[1], k[1]);
+			ep8_add(p[1], p[1], p[0]);
+			TEST_ASSERT(ep8_cmp(p[1], r) == RLC_EQ, end);
+		} TEST_END;
+#endif
+
+#if EP_SIM == INTER || !defined(STRIP)
+		TEST_CASE("interleaving for simultaneous multiplication is correct") {
+			bn_zero(k[0]);
+			bn_rand_mod(k[1], n);
+			ep8_mul(p[1], p[0], k[1]);
+			ep8_mul_sim_inter(r, p[0], k[0], p[0], k[1]);
+			TEST_ASSERT(ep8_cmp(p[1], r) == RLC_EQ, end);
+			bn_rand_mod(k[0], n);
+			bn_zero(k[1]);
+			ep8_mul(p[1], p[0], k[0]);
+			ep8_mul_sim_inter(r, p[0], k[0], p[0], k[1]);
+			TEST_ASSERT(ep8_cmp(p[1], r) == RLC_EQ, end);
+			bn_rand_mod(k[0], n);
+			bn_rand_mod(k[1], n);
+			ep8_mul_sim_inter(r, p[0], k[0], p[1], k[1]);
+			ep8_mul(p[0], p[0], k[0]);
+			ep8_mul(p[1], p[1], k[1]);
+			ep8_add(p[1], p[1], p[0]);
+			TEST_ASSERT(ep8_cmp(p[1], r) == RLC_EQ, end);
+			bn_neg(k[0], k[0]);
+			ep8_mul_sim_inter(r, p[0], k[0], p[1], k[1]);
+			ep8_mul(p[0], p[0], k[0]);
+			ep8_mul(p[1], p[1], k[1]);
+			ep8_add(p[1], p[1], p[0]);
+			TEST_ASSERT(ep8_cmp(p[1], r) == RLC_EQ, end);
+			bn_neg(k[1], k[1]);
+			ep8_mul_sim_inter(r, p[0], k[0], p[1], k[1]);
+			ep8_mul(p[0], p[0], k[0]);
+			ep8_mul(p[1], p[1], k[1]);
+			ep8_add(p[1], p[1], p[0]);
+			TEST_ASSERT(ep8_cmp(p[1], r) == RLC_EQ, end);
+		} TEST_END;
+#endif
+
+#if EP_SIM == JOINT || !defined(STRIP)
+		TEST_CASE("jsf for simultaneous multiplication is correct") {
+			bn_zero(k[0]);
+			bn_rand_mod(k[1], n);
+			ep8_mul(p[1], p[0], k[1]);
+			ep8_mul_sim_joint(r, p[0], k[0], p[0], k[1]);
+			TEST_ASSERT(ep8_cmp(p[1], r) == RLC_EQ, end);
+			bn_rand_mod(k[0], n);
+			bn_zero(k[1]);
+			ep8_mul(p[1], p[0], k[0]);
+			ep8_mul_sim_joint(r, p[0], k[0], p[0], k[1]);
+			TEST_ASSERT(ep8_cmp(p[1], r) == RLC_EQ, end);
+			bn_rand_mod(k[0], n);
+			bn_rand_mod(k[1], n);
+			ep8_mul_sim_joint(r, p[0], k[0], p[1], k[1]);
+			ep8_mul(p[0], p[0], k[0]);
+			ep8_mul(p[1], p[1], k[1]);
+			ep8_add(p[1], p[1], p[0]);
+			TEST_ASSERT(ep8_cmp(p[1], r) == RLC_EQ, end);
+			bn_neg(k[0], k[0]);
+			ep8_mul_sim_joint(r, p[0], k[0], p[1], k[1]);
+			ep8_mul(p[0], p[0], k[0]);
+			ep8_mul(p[1], p[1], k[1]);
+			ep8_add(p[1], p[1], p[0]);
+			TEST_ASSERT(ep8_cmp(p[1], r) == RLC_EQ, end);
+			bn_neg(k[1], k[1]);
+			ep8_mul_sim_joint(r, p[0], k[0], p[1], k[1]);
+			ep8_mul(p[0], p[0], k[0]);
+			ep8_mul(p[1], p[1], k[1]);
+			ep8_add(p[1], p[1], p[0]);
+			TEST_ASSERT(ep8_cmp(p[1], r) == RLC_EQ, end);
+		} TEST_END;
+#endif
+
+		TEST_CASE("simultaneous multiplication with generator is correct") {
+			bn_zero(k[0]);
+			bn_rand_mod(k[1], n);
+			ep8_mul(p[1], p[0], k[1]);
+			ep8_mul_sim_gen(r, k[0], p[0], k[1]);
+			TEST_ASSERT(ep8_cmp(p[1], r) == RLC_EQ, end);
+			bn_rand_mod(k[0], n);
+			bn_zero(k[1]);
+			ep8_mul_gen(p[1], k[0]);
+			ep8_mul_sim_gen(r, k[0], p[0], k[1]);
+			TEST_ASSERT(ep8_cmp(p[1], r) == RLC_EQ, end);
+			bn_rand_mod(k[0], n);
+			bn_rand_mod(k[1], n);
+			ep8_mul_sim_gen(r, k[0], p[1], k[1]);
+			ep8_curve_get_gen(p[0]);
+			ep8_mul_sim(p[1], p[0], k[0], p[1], k[1]);
+			TEST_ASSERT(ep8_cmp(p[1], r) == RLC_EQ, end);
+			bn_neg(k[0], k[0]);
+			ep8_mul_sim_gen(r, k[0], p[1], k[1]);
+			ep8_curve_get_gen(p[0]);
+			ep8_mul_sim(p[1], p[0], k[0], p[1], k[1]);
+			TEST_ASSERT(ep8_cmp(p[1], r) == RLC_EQ, end);
+			bn_neg(k[1], k[1]);
+			ep8_mul_sim_gen(r, k[0], p[1], k[1]);
+			ep8_curve_get_gen(p[0]);
+			ep8_mul_sim(p[1], p[0], k[0], p[1], k[1]);
+			TEST_ASSERT(ep8_cmp(p[1], r) == RLC_EQ, end);
+		} TEST_END;
+	}
+	RLC_CATCH_ANY {
+		util_print("FATAL ERROR!\n");
+		RLC_ERROR(end);
+	}
+	code = RLC_OK;
+  end:
+	bn_free(n);
+	bn_free(k[0]);
+	bn_free(k[1]);
+	ep8_free(p[0]);
+	ep8_free(p[1]);
+	ep8_free(r);
+	return code;
+}
+
+static int hashing8(void) {
+	int code = RLC_ERR;
+	bn_t n;
+	ep8_t p;
+	uint8_t msg[5];
+
+	bn_null(n);
+	ep8_null(p);
+
+	RLC_TRY {
+		bn_new(n);
+		ep8_new(p);
+
+		ep8_curve_get_ord(n);
+
+		TEST_CASE("point hashing is correct") {
+			rand_bytes(msg, sizeof(msg));
+			ep8_map(p, msg, sizeof(msg));
+			TEST_ASSERT(ep8_on_curve(p) == 1, end);
+			ep8_mul(p, p, n);
+			TEST_ASSERT(ep8_is_infty(p) == 1, end);
+		}
+		TEST_END;
+	}
+	RLC_CATCH_ANY {
+		util_print("FATAL ERROR!\n");
+		RLC_ERROR(end);
+	}
+	code = RLC_OK;
+  end:
+	bn_free(n);
+	ep8_free(p);
+	return code;
+}
+
+static int frobenius8(void) {
+	int code = RLC_ERR;
+	ep8_t a, b, c;
+	bn_t d, n;
+
+	ep8_null(a);
+	ep8_null(b);
+	ep8_null(c);
+	bn_null(d);
+	bn_null(n);
+
+	RLC_TRY {
+		ep8_new(a);
+		ep8_new(b);
+		ep8_new(c);
+		bn_new(d);
+		bn_new(n);
+
+		ep8_curve_get_ord(n);
+
+		TEST_CASE("frobenius and point multiplication are consistent") {
+			ep8_rand(a);
+			ep8_frb(b, a, 1);
+			d->used = RLC_FP_DIGS;
+			dv_copy(d->dp, fp_prime_get(), RLC_FP_DIGS);
+			bn_mod(d, d, n);
+			ep8_mul(c, a, d);
+			TEST_ASSERT(ep8_cmp(c, b) == RLC_EQ, end);
+		} TEST_END;
+	}
+	RLC_CATCH_ANY {
+		util_print("FATAL ERROR!\n");
+		RLC_ERROR(end);
+	}
+	code = RLC_OK;
+  end:
+	ep8_free(a);
+	ep8_free(b);
+	ep8_free(c);
+	bn_free(d);
+	bn_free(n);
+	return code;
+}
+
 int main(void) {
-	int r0, r1, r2;
+	int r0, r1, r2, r3;
 
 	if (core_init() != RLC_OK) {
 		core_clean();
@@ -3427,7 +4487,65 @@ int main(void) {
 		}
 	}
 
-	if (!r0 && !r1 && !r2) {
+	if ((r3 = ep8_curve_is_twist())) {
+		ep_param_print();
+
+		util_banner("Utilities:", 1);
+
+		if (memory8() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (util8() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		util_banner("Arithmetic:", 1);
+
+		if (addition8() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (subtraction8() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (doubling8() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (multiplication8() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (fixed8() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (simultaneous8() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (frobenius8() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (hashing8() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+	}
+
+	if (!r0 && !r1 && !r2 && !r3) {
 		RLC_THROW(ERR_NO_CURVE);
 		core_clean();
 		return 0;

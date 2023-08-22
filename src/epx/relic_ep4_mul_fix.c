@@ -140,21 +140,35 @@ void ep4_mul_pre_basic(ep4_t *t, const ep4_t p) {
 }
 
 void ep4_mul_fix_basic(ep4_t r, const ep4_t *t, const bn_t k) {
+	bn_t n, _k;
+
 	if (bn_is_zero(k)) {
 		ep4_set_infty(r);
 		return;
 	}
 
-	ep4_set_infty(r);
+	bn_null(n);
+	bn_null(_k);
 
-	for (int i = 0; i < bn_bits(k); i++) {
-		if (bn_get_bit(k, i)) {
-			ep4_add(r, r, t[i]);
+	RLC_TRY {
+		bn_new(n);
+		bn_new(_k);
+
+		ep4_curve_get_ord(n);
+		bn_mod(_k, k, n);
+
+		ep4_set_infty(r);
+		for (int i = 0; i < bn_bits(_k); i++) {
+			if (bn_get_bit(_k, i)) {
+				ep4_add(r, r, t[i]);
+			}
 		}
-	}
-	ep4_norm(r, r);
-	if (bn_sign(k) == RLC_NEG) {
-		ep4_neg(r, r);
+		ep4_norm(r, r);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		bn_free(n);
+		bn_free(_k);
 	}
 }
 
@@ -206,7 +220,7 @@ void ep4_mul_pre_combs(ep4_t *t, const ep4_t p) {
 
 void ep4_mul_fix_combs(ep4_t r, const ep4_t *t, const bn_t k) {
 	int i, j, l, w, n0, p0, p1;
-	bn_t n;
+	bn_t n, _k;
 
 	if (bn_is_zero(k)) {
 		ep4_set_infty(r);
@@ -214,15 +228,18 @@ void ep4_mul_fix_combs(ep4_t r, const ep4_t *t, const bn_t k) {
 	}
 
 	bn_null(n);
+	bn_null(_k);
 
 	RLC_TRY {
 		bn_new(n);
+		bn_new(_k);
 
 		ep4_curve_get_ord(n);
 		l = bn_bits(n);
 		l = ((l % RLC_DEPTH) == 0 ? (l / RLC_DEPTH) : (l / RLC_DEPTH) + 1);
 
-		n0 = bn_bits(k);
+		bn_mod(_k, k, n);
+		n0 = bn_bits(_k);
 
 		p0 = (RLC_DEPTH) * l - 1;
 
@@ -230,7 +247,7 @@ void ep4_mul_fix_combs(ep4_t r, const ep4_t *t, const bn_t k) {
 		p1 = p0--;
 		for (j = RLC_DEPTH - 1; j >= 0; j--, p1 -= l) {
 			w = w << 1;
-			if (p1 < n0 && bn_get_bit(k, p1)) {
+			if (p1 < n0 && bn_get_bit(_k, p1)) {
 				w = w | 1;
 			}
 		}
@@ -243,7 +260,7 @@ void ep4_mul_fix_combs(ep4_t r, const ep4_t *t, const bn_t k) {
 			p1 = p0--;
 			for (j = RLC_DEPTH - 1; j >= 0; j--, p1 -= l) {
 				w = w << 1;
-				if (p1 < n0 && bn_get_bit(k, p1)) {
+				if (p1 < n0 && bn_get_bit(_k, p1)) {
 					w = w | 1;
 				}
 			}
@@ -252,15 +269,13 @@ void ep4_mul_fix_combs(ep4_t r, const ep4_t *t, const bn_t k) {
 			}
 		}
 		ep4_norm(r, r);
-		if (bn_sign(k) == RLC_NEG) {
-			ep4_neg(r, r);
-		}
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
 		bn_free(n);
+		bn_free(_k);
 	}
 }
 

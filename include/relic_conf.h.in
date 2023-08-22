@@ -266,8 +266,6 @@
 
 /** Legendre by Fermat's Little Theorem. */
 #define BASIC    1
-/** Binary method. */
-#define BINAR    2
 /** Constant-time inversion by Bernstein-Yang division steps. */
 #define DIVST    5
 /** Constant-time inversion by Bernstein-Yang jump division steps. */
@@ -464,6 +462,15 @@
 #define JOINT    4
 /** Chosen prime elliptic curve simulteanous point multiplication method. */
 #define EP_SIM   @EP_SIM@
+
+/** Basic hash to x-coordinate and increment. */
+#define BASIC    1
+/** (Simplified) Shallue-van de Woestijne-Ulas map. */
+#define SSWUM    2
+/** SwiftEC method. */
+#define SWIFT    3
+/** Chosen prime elliptic curve hashing method. */
+#define EP_MAP   @EP_MAP@
 
 /** Prime elliptic curve arithmetic method. */
 #define EP_METHD "@EP_METHD@"

@@ -53,14 +53,13 @@
  */
 static void ed_mul_sim_plain(ed_t r, const ed_t p, const bn_t k, const ed_t q,
 		const bn_t m, const ed_t *t) {
-	int i, n0, n1, w, gen;
+	int i, n0, n1, w, 		gen = (t == NULL ? 0 : 1);
 	int8_t naf0[RLC_FP_BITS + 1], naf1[RLC_FP_BITS + 1], *_k, *_m;
 	ed_t t0[1 << (RLC_WIDTH - 2)];
 	ed_t t1[1 << (RLC_WIDTH - 2)];
 	size_t l, l0, l1;
 
 	RLC_TRY {
-		gen = (t == NULL ? 0 : 1);
 		if (!gen) {
 			for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
 				ed_null(t0[i]);
@@ -232,19 +231,12 @@ void ed_mul_sim_trick(ed_t r, const ed_t p, const bn_t k, const ed_t q,
 		}
 
 #if defined(ED_MIXED)
-		ed_norm_sim(t + 1, (const ed_t *)t + 1, (1 << (RLC_WIDTH)) - 1);
+		ed_norm_sim(t + 2, (const ed_t *)t + 2, (1 << ((w + w))) - 2);
 #endif
 
 		l0 = l1 = RLC_CEIL(RLC_FP_BITS, w);
 		bn_rec_win(w0, &l0, k, w);
 		bn_rec_win(w1, &l1, m, w);
-
-		for (int i = l0; i < l1; i++) {
-			w0[i] = 0;
-		}
-		for (int i = l1; i < l0; i++) {
-			w1[i] = 0;
-		}
 
 		ed_set_infty(r);
 		for (int i = RLC_MAX(l0, l1) - 1; i >= 0; i--) {

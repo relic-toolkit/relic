@@ -111,7 +111,7 @@ dig_t fp_dbln_low(dig_t *c, const dig_t *a) {
 void fp_dblm_low(dig_t *c, const dig_t *a) {
 	dig_t carry = mpn_add_n(c, a, a, RLC_FP_DIGS);
 	if (carry || (dv_cmp(c, fp_prime_get(), RLC_FP_DIGS) != RLC_LT)) {
-		carry = fp_subn_low(c, c, fp_prime_get());
+		carry = mpn_sub_n(c, c, fp_prime_get(), RLC_FP_DIGS);
 	}
 }
 

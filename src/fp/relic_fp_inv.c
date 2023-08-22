@@ -34,6 +34,71 @@
 #include "relic_bn_low.h"
 
 /*============================================================================*/
+/* Private definitions                                                        */
+/*============================================================================*/
+
+#if FP_INV == JMPDS || !defined(STRIP)
+
+/**
+ * Conditionally negate a digit vector using two's complement representation.
+ *
+ * @param[out] c 		- the result.
+ * @param[in] a 		- the digit vector to conditionally negate.
+ * @param[in] sa 		- the sign of the digit vector.
+ * @param[in] n			- the number of digits to conditionally negate.
+ */
+static void bn_negs_low(dig_t c[], const dig_t a[], dig_t sa, size_t n) {
+    dig_t carry = sa & 1;
+
+	sa = -sa;
+    for (int i = 0; i < n; i++) {
+        c[i] = (a[i] ^ sa) + carry;
+		carry = (c[i] < carry);
+    }
+}
+
+static void bn_mul2_low(dig_t *c, const dig_t *a, dis_t digit, int size) {
+	int sd = digit >> (RLC_DIG - 1);
+	digit = (digit ^ sd) - sd;
+	c[size] = bn_mul1_low(c, a, digit, size);
+}
+
+static dis_t jumpdivstep(dis_t m[4], dis_t delta, dig_t f, dig_t g, int s) {
+	dig_t u = 1, v = 0, q = 0, r = 1, c0, c1;
+
+	/* This is actually faster than my previous version, several tricks from
+	 * https://github.com/bitcoin-core/secp256k1/blob/master/src/modinv64_impl.h
+	 */
+	for (s--; s >= 0; s--) {
+		/* First handle the else part: if delta < 0, compute -(f,u,v). */
+		c0 = delta >> (RLC_DIG - 1);
+		c1 = -(g & 1);
+		c0 &= c1;
+		/* Conditionally add -(f,u,v) to (g,q,r) */
+		g += ((f ^ c0) - c0) & c1;
+		q += ((u ^ c0) - c0) & c1;
+		r += ((v ^ c0) - c0) & c1;
+		/* Now handle the 'if' part, so c0 will be (delta < 0) && (g & 1)) */
+		/* delta = RLC_SEL(delta, -delta, c0 & 1) - 2 (for half-divstep), thus
+		 * delta = - delta - 2 or delta - 1 */
+		delta = (delta ^ c0) - 1;
+		f = f + (g & c0);
+		u = u + (q & c0);
+		v = v + (r & c0);
+		g >>= 1;
+		u += u;
+		v += v;
+	}
+	m[0] = u;
+	m[1] = v;
+	m[2] = q;
+	m[3] = r;
+	return delta;
+}
+
+#endif
+
+/*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
@@ -404,9 +469,9 @@ void fp_inv_exgcd(fp_t c, const fp_t a) {
 void fp_inv_divst(fp_t c, const fp_t a) {
 	/* Compute number of iterations based on modulus size. */
 #if FP_PRIME < 46
-	int d = (49 * FP_PRIME + 80) / 17;
+	const int d = (49 * FP_PRIME + 80) / 17;
 #else
-	int d = (49 * FP_PRIME + 57) / 17;
+	const int d = (49 * FP_PRIME + 57) / 17;
 #endif
 	int g0, d0;
 	dig_t fs, gs, delta = 1;
@@ -511,52 +576,14 @@ void fp_inv_divst(fp_t c, const fp_t a) {
 
 #if FP_INV == JMPDS || !defined(STRIP)
 
-static dis_t jumpdivstep(dis_t m[4], dis_t delta, dig_t f, dig_t g, int s) {
-	dig_t u = 1, v = 0, q = 0, r = 1, c0, c1;
-
-	/* This is actually faster than my previous version, several tricks from
-	 * https://github.com/bitcoin-core/secp256k1/blob/master/src/modinv64_impl.h
-	 */
-	for (s--; s >= 0; s--) {
-		/* First handle the else part: if delta < 0, compute -(f,u,v). */
-		c0 = delta >> (RLC_DIG - 1);
-		c1 = -(g & 1);
-		c0 &= c1;
-		/* Conditionally add -(f,u,v) to (g,q,r) */
-		g += ((f ^ c0) - c0) & c1;
-		q += ((u ^ c0) - c0) & c1;
-		r += ((v ^ c0) - c0) & c1;
-		/* Now handle the 'if' part, so c0 will be (delta < 0) && (g & 1)) */
-		/* delta = RLC_SEL(delta, -delta, c0 & 1) - 2 (for half-divstep), thus
-		 * delta = - delta - 2 or delta - 1 */
-		delta = (delta ^ c0) - 1;
-		f = f + (g & c0);
-		u = u + (q & c0);
-		v = v + (r & c0);
-		g >>= 1;
-		u += u;
-		v += v;
-	}
-	m[0] = u;
-	m[1] = v;
-	m[2] = q;
-	m[3] = r;
-	return delta;
-}
-
-static inline void bn_mul2_low(dig_t *c, const dig_t *a, dis_t digit, int size) {
-	int sd = digit >> (RLC_DIG - 1);
-	digit = (digit ^ sd) - sd;
-	c[size] = bn_mul1_low(c, a, digit, size);
-}
-
 void fp_inv_jmpds(fp_t c, const fp_t a) {
-	dis_t m[4];
+	dis_t m[4], d = -1;
 	/* Compute number of iterations based on modulus size. */
-	int i, d = -1, s = RLC_DIG - 2;
 	/* Iterations taken directly from https://github.com/sipa/safegcd-bounds */
-	int iterations = (45907 * FP_PRIME + 26313) / 19929;
+	const int iterations = (45907 * FP_PRIME + 26313) / 19929;
+	int loops, i, s = RLC_DIG - 2;
 	dv_t f, g, t, p, t0, t1, u0, u1, v0, v1, p01, p11;
+	dig_t sf, sg;
 	fp_t pre;
 
 	if (fp_is_zero(a)) {
@@ -593,7 +620,7 @@ void fp_inv_jmpds(fp_t c, const fp_t a) {
 		dv_new(p11);
 		fp_new(pre);
 
-#if (FP_PRIME % WSIZE) != 0
+#ifdef RLC_FP_ROOM
 		int j = 0;
 		fp_copy(pre, core_get()->inv.dp);
 #else
@@ -601,7 +628,6 @@ void fp_inv_jmpds(fp_t c, const fp_t a) {
 		fp_mul(pre, pre, core_get()->conv.dp);
 		fp_mul(pre, pre, core_get()->inv.dp);
 #endif
-
 		f[RLC_FP_DIGS] = g[RLC_FP_DIGS] = 0;
 		dv_zero(t, 2 * RLC_FP_DIGS);
 		dv_zero(p, 2 * RLC_FP_DIGS);
@@ -644,25 +670,28 @@ void fp_inv_jmpds(fp_t c, const fp_t a) {
 		dv_copy(p01, v1, 2 * RLC_FP_DIGS);
 		dv_copy(p11, u1, 2 * RLC_FP_DIGS);
 
-		int loops = iterations / s;
+		loops = iterations / s;
 		loops = (iterations % s == 0 ? loops - 1 : loops);
 
 		for (i = 1; i < loops; i++) {
 			d = jumpdivstep(m, d, f[0] & RLC_MASK(s), g[0] & RLC_MASK(s), s);
 
-			t0[RLC_FP_DIGS] = bn_muls_low(t0, f, RLC_SIGN(f[RLC_FP_DIGS]), m[0], RLC_FP_DIGS);
-			t1[RLC_FP_DIGS] = bn_muls_low(t1, g, RLC_SIGN(g[RLC_FP_DIGS]), m[1], RLC_FP_DIGS);
+			sf = RLC_SIGN(f[RLC_FP_DIGS]);
+			sg = RLC_SIGN(g[RLC_FP_DIGS]);
+			bn_negs_low(u0, f, sf, RLC_FP_DIGS);
+			bn_negs_low(u1, g, sg, RLC_FP_DIGS);
+
+			t0[RLC_FP_DIGS] = bn_muls_low(t0, u0, sf, m[0], RLC_FP_DIGS);
+			t1[RLC_FP_DIGS] = bn_muls_low(t1, u1, sg, m[1], RLC_FP_DIGS);
 			bn_addn_low(t0, t0, t1, RLC_FP_DIGS + 1);
-
-			f[RLC_FP_DIGS] = bn_muls_low(f, f, RLC_SIGN(f[RLC_FP_DIGS]), m[2], RLC_FP_DIGS);
-			t1[RLC_FP_DIGS] = bn_muls_low(t1, g, RLC_SIGN(g[RLC_FP_DIGS]), m[3], RLC_FP_DIGS);
-			bn_addn_low(t1, t1, f, RLC_FP_DIGS + 1);
-
-			/* Update f and g. */
 			bn_rshs_low(f, t0, RLC_FP_DIGS + 1, s);
+
+			t0[RLC_FP_DIGS] = bn_muls_low(t0, u0, sf, m[2], RLC_FP_DIGS);
+			t1[RLC_FP_DIGS] = bn_muls_low(t1, u1, sg, m[3], RLC_FP_DIGS);
+			bn_addn_low(t1, t1, t0, RLC_FP_DIGS + 1);
 			bn_rshs_low(g, t1, RLC_FP_DIGS + 1, s);
 
-#if (FP_PRIME % WSIZE) != 0
+#ifdef RLC_FP_ROOM
 			p[j] = 0;
 			dv_copy(p + j + 1, fp_prime_get(), RLC_FP_DIGS);
 
@@ -727,23 +756,25 @@ void fp_inv_jmpds(fp_t c, const fp_t a) {
 		s = iterations - loops * s;
 		d = jumpdivstep(m, d, f[0] & RLC_MASK(s), g[0] & RLC_MASK(s), s);
 
-		t0[RLC_FP_DIGS] = bn_muls_low(t0, f, RLC_SIGN(f[RLC_FP_DIGS]), m[0], RLC_FP_DIGS);
-		t1[RLC_FP_DIGS] = bn_muls_low(t1, g, RLC_SIGN(g[RLC_FP_DIGS]), m[1], RLC_FP_DIGS);
+		sf = RLC_SIGN(f[RLC_FP_DIGS]);
+		sg = RLC_SIGN(g[RLC_FP_DIGS]);
+		bn_negs_low(u0, f, sf, RLC_FP_DIGS);
+		bn_negs_low(u1, g, sg, RLC_FP_DIGS);
+
+		t0[RLC_FP_DIGS] = bn_muls_low(t0, u0, sf, m[0], RLC_FP_DIGS);
+		t1[RLC_FP_DIGS] = bn_muls_low(t1, u1, sg, m[1], RLC_FP_DIGS);
 		bn_addn_low(t0, t0, t1, RLC_FP_DIGS + 1);
-
-		f[RLC_FP_DIGS] = bn_muls_low(f, f, RLC_SIGN(f[RLC_FP_DIGS]), m[2], RLC_FP_DIGS);
-		t1[RLC_FP_DIGS] = bn_muls_low(t1, g, RLC_SIGN(g[RLC_FP_DIGS]), m[3], RLC_FP_DIGS);
-		bn_addn_low(t1, t1, f, RLC_FP_DIGS + 1);
-
-		/* Update f and g. */
 		bn_rshs_low(f, t0, RLC_FP_DIGS + 1, s);
+
+		t0[RLC_FP_DIGS] = bn_muls_low(t0, u0, sf, m[2], RLC_FP_DIGS);
+		t1[RLC_FP_DIGS] = bn_muls_low(t1, u1, sg, m[3], RLC_FP_DIGS);
+		bn_addn_low(t1, t1, t0, RLC_FP_DIGS + 1);
 		bn_rshs_low(g, t1, RLC_FP_DIGS + 1, s);
 
-#if (FP_PRIME % WSIZE) != 0
+#ifdef RLC_FP_ROOM
 		p[j] = 0;
 		dv_copy(p + j + 1, fp_prime_get(), RLC_FP_DIGS);
 
-		/* Update column vector below. */
 		/* Update column vector below. */
 		bn_mul2_low(v0, p01, m[0], RLC_FP_DIGS + j);
 		fp_subd_low(t, p, v0);

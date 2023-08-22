@@ -124,9 +124,6 @@ static void ep_mul_glv_imp(ep_t r, const ep_t p, const bn_t k) {
 		}
 		/* Convert r to affine coordinates. */
 		ep_norm(r, r);
-		if (bn_sign(_k) == RLC_NEG) {
-			ep_neg(r, r);
-		}
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -145,7 +142,6 @@ static void ep_mul_glv_imp(ep_t r, const ep_t p, const bn_t k) {
 			bn_free(v1[i]);
 			bn_free(v2[i]);
 		}
-
 	}
 }
 
@@ -195,9 +191,6 @@ static void ep_mul_naf_imp(ep_t r, const ep_t p, const bn_t k) {
 		}
 		/* Convert r to affine coordinates. */
 		ep_norm(r, r);
-		if (bn_sign(_k) == RLC_NEG) {
-			ep_neg(r, r);
-		}
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -214,8 +207,6 @@ static void ep_mul_naf_imp(ep_t r, const ep_t p, const bn_t k) {
 
 #endif /* EP_PLAIN || EP_SUPER */
 #endif /* EP_MUL == LWNAF */
-
-#if EP_MUL == LWREG || !defined(STRIP)
 
 #if defined(EP_ENDOM)
 
@@ -260,8 +251,7 @@ static void ep_mul_reg_glv(ep_t r, const ep_t p, const bn_t k) {
 		ep_curve_get_v1(v1);
 		ep_curve_get_v2(v2);
 
-		bn_abs(_k, k);
-		bn_mod(_k, _k, n);
+		bn_mod(_k, k, n);
 
 		bn_rec_glv(k0, k1, _k, n, (const bn_t *)v1, (const bn_t *)v2);
 		s0 = bn_sign(k0);
@@ -341,8 +331,6 @@ static void ep_mul_reg_glv(ep_t r, const ep_t p, const bn_t k) {
 
 		/* Convert r to affine coordinates. */
 		ep_norm(r, r);
-		ep_neg(u, r);
-		dv_copy_cond(r->y, u->y, RLC_FP_DIGS, bn_sign(k) == RLC_NEG);
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -377,11 +365,6 @@ static void ep_mul_reg_imp(ep_t r, const ep_t p, const bn_t k) {
 	int8_t s, reg[1 + RLC_CEIL(RLC_FP_BITS + 1, RLC_WIDTH - 1)];
 	ep_t t[1 << (RLC_WIDTH - 2)], u, v;
 	size_t l;
-
-	if (bn_is_zero(k)) {
-		ep_set_infty(r);
-		return;
-	}
 
 	bn_null(_k);
 
@@ -460,7 +443,6 @@ static void ep_mul_reg_imp(ep_t r, const ep_t p, const bn_t k) {
 }
 
 #endif /* EP_PLAIN || EP_SUPER */
-#endif /* EP_MUL == LWNAF */
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -468,22 +450,34 @@ static void ep_mul_reg_imp(ep_t r, const ep_t p, const bn_t k) {
 
 void ep_mul_basic(ep_t r, const ep_t p, const bn_t k) {
 	ep_t t;
+	int8_t u, *naf = RLC_ALLOCA(int8_t, bn_bits(k) + 1);
+	size_t l;
 
 	ep_null(t);
 
 	if (bn_is_zero(k) || ep_is_infty(p)) {
 		ep_set_infty(r);
+		RLC_FREE(naf);
 		return;
 	}
 
 	RLC_TRY {
 		ep_new(t);
+		if (naf == NULL) {
+			RLC_THROW(ERR_NO_BUFFER);
+		}
 
-		ep_copy(t, p);
-		for (int i = bn_bits(k) - 2; i >= 0; i--) {
+		l = bn_bits(k) + 1;
+		bn_rec_naf(naf, &l, k, 2);
+		ep_set_infty(t);
+		for (int i = l - 1; i >= 0; i--) {
 			ep_dbl(t, t);
-			if (bn_get_bit(k, i)) {
+
+			u = naf[i];
+			if (u > 0) {
 				ep_add(t, t, p);
+			} else if (u < 0) {
+				ep_sub(t, t, p);
 			}
 		}
 
@@ -497,6 +491,7 @@ void ep_mul_basic(ep_t r, const ep_t p, const bn_t k) {
 	}
 	RLC_FINALLY {
 		ep_free(t);
+		RLC_FREE(naf);
 	}
 }
 
@@ -560,9 +555,6 @@ void ep_mul_slide(ep_t r, const ep_t p, const bn_t k) {
 		}
 
 		ep_norm(r, q);
-		if (bn_sign(_k) == RLC_NEG) {
-			ep_neg(r, r);
-		}
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -578,7 +570,7 @@ void ep_mul_slide(ep_t r, const ep_t p, const bn_t k) {
 }
 
 #endif
-#include "assert.h"
+
 #if EP_MUL == MONTY || !defined(STRIP)
 
 void ep_mul_monty(ep_t r, const ep_t p, const bn_t k) {
@@ -623,7 +615,7 @@ void ep_mul_monty(ep_t r, const ep_t p, const bn_t k) {
 		ep_blind(t[1], t[1]);
 
 		for (int i = bits - 1; i >= 0; i--) {
-			int j = bn_get_bit(l, i);
+ 			int j = bn_get_bit(l, i);
 			dv_swap_cond(t[0]->x, t[1]->x, RLC_FP_DIGS, j ^ 1);
 			dv_swap_cond(t[0]->y, t[1]->y, RLC_FP_DIGS, j ^ 1);
 			dv_swap_cond(t[0]->z, t[1]->z, RLC_FP_DIGS, j ^ 1);
@@ -635,8 +627,6 @@ void ep_mul_monty(ep_t r, const ep_t p, const bn_t k) {
 		}
 
 		ep_norm(r, t[0]);
-		ep_neg(t[0], r);
-		dv_copy_cond(r->y, t[0]->y, RLC_FP_DIGS, bn_sign(_k) == RLC_NEG);
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	}
@@ -673,8 +663,8 @@ void ep_mul_lwnaf(ep_t r, const ep_t p, const bn_t k) {
 
 #endif
 
-#if EP_MUL == LWREG || !defined(STRIP)
-
+/* Conditional compilation of the function below was turned off because it
+ * is used by the default for protected scalar multiplication in G1. */
 void ep_mul_lwreg(ep_t r, const ep_t p, const bn_t k) {
 	if (bn_is_zero(k) || ep_is_infty(p)) {
 		ep_set_infty(r);
@@ -692,8 +682,6 @@ void ep_mul_lwreg(ep_t r, const ep_t p, const bn_t k) {
 	ep_mul_reg_imp(r, p, k);
 #endif
 }
-
-#endif
 
 void ep_mul_gen(ep_t r, const bn_t k) {
 	if (bn_is_zero(k)) {

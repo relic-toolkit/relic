@@ -246,7 +246,7 @@ static uint8_t *hash_id(int md, int *len) {
  */
 static int pad_pkcs1(bn_t m, int *p_len, size_t m_len, size_t k_len, int op) {
 	uint8_t *id, pad = 0;
-	size_t len;
+	size_t len = 0;
 	int result = RLC_ERR;
 	bn_t t;
 

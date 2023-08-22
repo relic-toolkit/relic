@@ -50,15 +50,23 @@
 void gt_rand(gt_t a) {
 	gt_rand_imp(a);
 #if FP_PRIME < 1536
-#if FP_PRIME == 315 || FP_PRIME == 317 || FP_PRIME == 509
+#if FP_PRIME == 575
+	pp_exp_k48(a, a);
+#elif FP_PRIME == 315 || FP_PRIME == 317 || FP_PRIME == 509
 	pp_exp_k24(a, a);
-#elif FP_PRIME == 638 && !defined(FP_QNRES)
+#elif FP_PRIME == 330 || FP_PRIME == 765 || FP_PRIME == 766
+	pp_exp_k16(a, a);
+#elif FP_PRIME == 508 || FP_PRIME == 638 && !defined(FP_QNRES)
 	pp_exp_k18(a, a);
 #else
 	pp_exp_k12(a, a);
 #endif
 #else
+#if FP_PRIME == 1536
 	pp_exp_k2(a, a);
+#else
+	pp_exp_k1(a, a);
+#endif
 #endif
 }
 
@@ -68,7 +76,7 @@ void gt_get_gen(gt_t g) {
 
 int g1_is_valid(const g1_t a) {
 	bn_t n, t;
-	g1_t u, v;
+	g1_t u, v, w;
 	size_t l0, l1, r = 0;
 	int8_t naf0[RLC_FP_BITS + 1], naf1[RLC_FP_BITS + 1];
 
@@ -80,12 +88,14 @@ int g1_is_valid(const g1_t a) {
 	bn_null(t);
 	g1_null(u);
 	g1_null(v);
+	g1_null(w);
 
 	RLC_TRY {
 		bn_new(n);
 		bn_new(t);
 		g1_new(u);
 		g1_new(v);
+		g1_new(w);
 
 		ep_curve_get_cof(n);
 		if (bn_cmp_dig(n, 1) == RLC_EQ) {
@@ -99,16 +109,69 @@ int g1_is_valid(const g1_t a) {
 				 * Piellard. https://eprint.iacr.org/2022/352.pdf */
 				case EP_B12:
 				case EP_B24:
+				case EP_B48:
 					/* Check [\psi(P) == [z^2 - 1]P. */
 					fp_prime_get_par(n);
 					bn_sqr(n, n);
 					if (ep_curve_is_pairf() == EP_B24) {
+						/* Check [\psi(P) == [z^4 - 1]P. */
+						bn_sqr(n, n);
+					}
+					if (ep_curve_is_pairf() == EP_B48) {
+						/* Check [\psi(P) == [z^8 - 1]P. */
+						bn_sqr(n, n);
 						bn_sqr(n, n);
 					}
 					bn_sub_dig(n, n, 1);
 					g1_mul_any(u, a, n);
 					ep_psi(v, a);
 					r = g1_on_curve(a) && (g1_cmp(v, u) == RLC_EQ);
+					break;
+				/* if (u % 2) == 0, check (u**4)*\psi(P) == P
+    		 	* else check (u**4-1)//2 * (\psi(P) - P) == P */
+				case EP_N16:
+					fp_prime_get_par(n);
+					bn_sqr(n, n);
+					bn_sqr(n, n);
+					ep_psi(u, a);
+					if (!bn_is_even(n)) {
+						bn_sub_dig(n, n, 1);
+						bn_hlv(n, n);
+						g1_sub(u, u, a);
+						g1_norm(u, u);
+					}
+					g1_mul_any(u, u, n);
+					r = g1_on_curve(a) && (g1_cmp(u, a) == RLC_EQ);
+					break;
+				/* Formulas from "Fast Subgroup Membership Testings on Pairing-
+				 * friendly Curves" by Yu Dai, Kaizhan Lin, Chang-An Zhao,
+				 * Zijian Zhou. https://eprint.iacr.org/2022/348.pdf */
+				case EP_K16:
+				    /* If u = 25 or 45 mod 70 then a1 = ((u//5)**4 + 5)//14
+					 * is an integer by definition.  */
+					fp_prime_get_par(n);
+					bn_div_dig(n, n, 5);
+					bn_sqr(n, n);
+					bn_sqr(n, n);
+					bn_add_dig(n, n, 5);
+					bn_div_dig(n, n, 14);
+					bn_mul_dig(n, n, 17);
+					bn_neg(n, n);
+					bn_add_dig(n, n, 6);
+					/* Compute P1 = a1*P. */
+					g1_mul_any(w, a, n);
+					/* Compute \psi([17]P1) - [31]P1 */
+					g1_dbl(u, w);
+					g1_dbl(u, u);
+					g1_dbl(u, u);
+					g1_dbl(v, u);
+					g1_add(u, v, w);
+					g1_dbl(v, v);
+					g1_sub(v, v, w);
+					ep_psi(u, u);
+					g1_add(u, u, v);
+					g1_neg(u, u);
+					r = g1_on_curve(a) && (g1_cmp(u, a) == RLC_EQ);
 					break;
 				case EP_K18:
 					/* Check that [a_0]P + [a_1]\psi(P)) == O, for
@@ -146,6 +209,22 @@ int g1_is_valid(const g1_t a) {
 					}
 					r = g1_on_curve(a) && g1_is_infty(u);
 					break;
+				case EP_SG18:
+					/* Check that [9u^3+2]\psi(P) == -P. */
+					fp_prime_get_par(n);
+					/* Apply \psi twice to get the other beta. */
+					ep_psi(u, a);
+					ep_psi(u, u);
+					g1_mul_any(v, u, n);
+					g1_mul_any(v, v, n);
+					g1_mul_any(v, v, n);
+					g1_mul_dig(v, v, 9);
+					g1_dbl(u, u);
+					g1_add(v, v, u);
+					g1_norm(v, v);
+					g1_neg(v, v);
+					r = g1_on_curve(a) && (g1_cmp(a, v) == RLC_EQ);
+					break;
 #endif
 				default:
 					pc_get_ord(n);
@@ -164,34 +243,40 @@ int g1_is_valid(const g1_t a) {
 		bn_free(t);
 		g1_free(u);
 		g1_free(v);
+		g1_free(w);
 	}
 
 	return r;
 }
 
 int g2_is_valid(const g2_t a) {
+	g2_t s, t, u, v, w;
+	bn_t n;
+	dig_t rem;
+	int r = 0;
+
 #if FP_PRIME >= 1536
-	if (pc_map_is_type1()) {
-		return g1_is_valid(a);
-	}
+	return g1_is_valid(a);
 #else
 
 	if (g2_is_infty(a)) {
 		return 0;
 	}
 
-	bn_t n;
-	g2_t u, v;
-	int r = 0;
-
 	bn_null(n);
+	g2_null(s);
+	g2_null(t);
 	g2_null(u);
 	g2_null(v);
+	g2_null(w);
 
 	RLC_TRY {
 		bn_new(n);
+		g2_new(s);
+		g2_new(t);
 		g2_new(u);
 		g2_new(v);
+		g2_new(w);
 
 		switch (ep_curve_is_pairf()) {
 #if defined(EP_ENDOM) && !defined(STRIP)
@@ -200,6 +285,7 @@ int g2_is_valid(const g2_t a) {
 			* Piellard. https://eprint.iacr.org/2022/352.pdf */
 			case EP_B12:
 			case EP_B24:
+			case EP_B48:
 				if (core_get()->ep_id == B12_383) {
 					/* Since p mod n = r, we can check instead that
 					* psi^4(P) + P == \psi^2(P). */
@@ -230,17 +316,96 @@ int g2_is_valid(const g2_t a) {
                 g2_dbl(v, v);
 				r = g2_on_curve(a) && (g2_cmp(u, v) == RLC_EQ);
 				break;
-			case EP_K18:
-				/* Check that [2z/7]P + \psi(P) + [z/7]\psi^3(P) == O. */
+			/* If u is even, check that [u*p^3]P = P
+			 * else check [p^5]P = [u]P. */
+			case EP_N16:
 				fp_prime_get_par(n);
-				bn_div_dig(n, n, 7);
 				g2_mul_any(u, a, n);
-				g2_frb(v, u, 2);
-				g2_dbl(u, u);
-				g2_add(v, v, a);
-				g2_frb(v, v, 1);
-				g2_neg(v, v);
+				if (bn_is_even(n)) {
+					g2_frb(v, u, 3);
+					g2_copy(u, a);
+				} else {
+					g2_frb(v, a, 5);
+				}
 				r = g2_on_curve(a) && (g2_cmp(u, v) == RLC_EQ);
+				break;
+			/* Formulas from "Fast Subgroup Membership Testings for G1,
+			 * G2 and GT on Pairing-friendly Curves" by Dai et al.
+			 * https://eprint.iacr.org/2022/348.pdf
+			 * Paper has u = 45 mod 70, we ran their code for u = 25 mod 70. */
+			case EP_K16:
+				fp_prime_get_par(n);
+				bn_mod_dig(&rem, n, 70);
+				if (rem == 45) {
+					bn_neg(n, n);
+				}
+				/* Compute s = (\pm u - 25)/70. */
+				bn_sub_dig(n, n, 25);
+				bn_div_dig(n, n, 70);
+				/* [11s+4, 9s+3, 3s+1, -(3s+1), -13*u-5, -7*u-3, u, -11s-4] */
+				/* or [11s+4, -9s-3, 3s+1, 3s+1, -13*u-5, 7*u+3, u, 11s+4]. */
+				g2_mul_any(u, a, n);	/* u = a^s*/
+				g2_frb(w, u, 6);
+				g2_dbl(s, u);
+				g2_add(v, s, a);
+				g2_add(t, v, u);		/* t = a^(3s + 1) */
+				g2_copy(u, v);			/* u = a^(2s + 1)*/
+				g2_frb(v, t, 2);
+				g2_add(w, w, v);
+				g2_frb(v, t, 3);
+				if (rem == 45) {
+					g2_add(w, w, v);
+				} else {
+					g2_sub(w, w, v);
+				}
+				g2_dbl(v, t);
+				g2_add(t, t, v);		/* t = a^(9s + 3). */
+				g2_frb(v, t, 1);
+				if (rem == 45) {
+					g2_neg(v, v);
+				}
+				g2_add(w, w, v);
+				g2_sub(s, t, s);		/* s = a^(7s + 3). */
+				g2_frb(v, s, 5);
+				if (rem == 45) {
+					g2_add(w, w, v);
+				} else {
+					g2_sub(w, w, v);
+				}
+				g2_add(t, t, u);		/* t = a^(11s + 4). */
+				g2_add(w, w, t);
+				g2_frb(v, t, 7);
+				if (rem == 45) {
+					g2_add(w, w, v);
+				} else {
+					g2_sub(w, w, v);
+				}
+				g2_add(t, t, u);		/* t = a^(13s + 5). */
+				g2_frb(t, t, 4);
+				r = g2_on_curve(a) && (g2_cmp(w, t) == RLC_EQ);
+				break;
+			case EP_K18:
+				/* Check that P + u*psi2P + 2*psi3P == \mathcal{O}. */
+				fp_prime_get_par(n);
+				g2_frb(u, a, 2);
+				g2_frb(v, u, 1);
+				g2_dbl(v, v);
+				g2_mul_any(u, u, n);
+				g2_add(v, v, u);
+				g2_neg(u, v);
+				r = g2_on_curve(a) && (g2_cmp(u, a) == RLC_EQ);
+				break;
+			case EP_SG18:
+				/* Check that 3u*P + 2\psi^2(P) == \psi^5P] and [3]P \eq O. */
+				fp_prime_get_par(n);
+				bn_mul_dig(n, n, 3);
+				g2_mul_any(u, a, n);
+				r = g2_is_infty(a) == 0;
+				g2_frb(v, a, 2);
+				g2_add(u, u, v);
+				g2_add(u, u, v);
+				g2_frb(v, a, 5);
+				r &= g2_on_curve(a) && (g2_cmp(u, v) == RLC_EQ);
 				break;
 #endif
 			default:
@@ -256,8 +421,11 @@ int g2_is_valid(const g2_t a) {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		bn_free(n);
+		g2_free(s);
+		g2_free(t);
 		g2_free(u);
 		g2_free(v);
+		g2_free(w);
 	}
 
 	return r;
@@ -266,22 +434,29 @@ int g2_is_valid(const g2_t a) {
 
 int gt_is_valid(const gt_t a) {
 	bn_t n;
-	gt_t u, v;
+	gt_t s, t, u, v, w;
 	int l, r = 0;
 	const int *b;
+	dig_t rem;
 
 	if (gt_is_unity(a)) {
 		return 0;
 	}
 
 	bn_null(n);
+	gt_null(s);
+	gt_null(t);
 	gt_null(u);
 	gt_null(v);
+	gt_null(w);
 
 	RLC_TRY {
 		bn_new(n);
+		gt_new(s);
+		gt_new(t);
 		gt_new(u);
 		gt_new(v);
+		gt_new(w);
 
 		fp_prime_get_par(n);
 		b = fp_prime_get_par_sps(&l);
@@ -308,6 +483,13 @@ int gt_is_valid(const gt_t a) {
 				r = (gt_cmp(u, v) == RLC_EQ);
 				r &= fp24_test_cyc((void *)a);
 				break;
+			case EP_B48:
+				/* Check that a^u = a^p. */
+				gt_frb(u, a, 1);
+				fp48_exp_cyc_sps((void *)v, (void *)a, b, l, bn_sign(n));
+				r = (gt_cmp(u, v) == RLC_EQ);
+				r &= fp48_test_cyc((void *)a);
+				break;
 			/* Formulas from "Fast Subgroup Membership Testings for G1,
 			 * G2 and GT on Pairing-friendly Curves" by Dai et al.
 			 * https://eprint.iacr.org/2022/348.pdf */
@@ -324,21 +506,93 @@ int gt_is_valid(const gt_t a) {
 				r = (gt_cmp(u, v) == RLC_EQ);
 				r &= fp12_test_cyc((void *)a);
 				break;
-			case EP_K18:
-			    /* Check that [2z]P + [z]\psi^3(P) == -7\psi(P). */
-				fp18_exp_cyc_sps((void *)u, (void *)a, b, l, bn_sign(n));
-				gt_frb(v, u, 3);
-				gt_sqr(u, u);
-				gt_mul(u, u, v);
-				gt_sqr(v, a);
-				gt_mul(v, v, a);
-				gt_sqr(v, v);
-				gt_mul(v, v, a);
-				gt_frb(v, v, 1);
-				gt_inv(v, v);
+			/* If u is even, check that [u*p^3]P = P
+			 * else check [p^5]P = [u]P. */
+			case EP_N16:
+				fp_prime_get_par(n);
+				gt_exp(u, a, n);
+				if (bn_is_even(n)) {
+					gt_frb(v, u, 3);
+					gt_copy(u, a);
+				} else {
+					gt_frb(v, a, 5);
+				}
 				r = (gt_cmp(u, v) == RLC_EQ);
+				r &= fp16_test_cyc((void *)a);
+				break;
+			case EP_K16:
+				fp_prime_get_par(n);
+				bn_mod_dig(&rem, n, 70);
+				if (rem == 45) {
+					bn_neg(n, n);
+				}
+				/* Compute s = (u - 25)/70. */
+				bn_sub_dig(n, n, 25);
+				bn_div_dig(n, n, 70);
+				/* Vectors for u = 25 or 45 mod 70 below, respectively:     */
+				/* [11s+4, 9s+3, 3s+1, -(3s+1), -13*u-5, -7*u-3, u, -11s-4] */
+				/* or [11s+4, -9s-3, 3s+1, 3s+1, -13*u-5, 7*u+3, u, 11s+4]. */
+				gt_exp(u, a, n);	/* u = a^s*/
+				gt_frb(w, u, 6);
+				gt_sqr(s, u);
+				gt_mul(v, s, a);
+				gt_mul(t, v, u);		/* t = a^(3s + 1) */
+				gt_copy(u, v);			/* u = a^(2s + 1)*/
+				gt_frb(v, t, 2);
+				gt_mul(w, w, v);
+				gt_frb(v, t, 3);
+				if (rem != 45) {
+					gt_inv(v, v);
+				}
+				gt_mul(w, w, v);
+				gt_sqr(v, t);
+				gt_mul(t, t, v);		/* t = a^(9s + 3). */
+				gt_frb(v, t, 1);
+				if (rem == 45) {
+					gt_inv(v, v);
+				}
+				gt_mul(w, w, v);
+				gt_inv(s, s);
+				gt_mul(s, t, s);		/* s = a^(7s + 3). */
+				gt_frb(v, s, 5);
+				if (rem != 45) {
+					gt_inv(v, v);
+				}
+				gt_mul(w, w, v);
+				gt_mul(t, t, u);		/* t = a^(11s + 4). */
+				gt_mul(w, w, t);
+				gt_frb(v, t, 7);
+				if (rem != 45) {
+					gt_inv(v, v);
+				}
+				gt_mul(w, w, v);
+				gt_mul(t, t, u);		/* t = a^(13s + 5). */
+				gt_frb(t, t, 4);
+				r = (gt_cmp(w, t) == RLC_EQ);
+				r &= fp16_test_cyc((void *)a);
+				break;
+			case EP_K18:
+				/* Check that P + u*psi2P + 2*psi3P == \mathcal{O}. */
+				gt_frb(u, a, 2);
+				gt_frb(v, u, 1);
+				gt_sqr(v, v);
+				fp18_exp_cyc_sps((void *)u, (void *)u, b, l, bn_sign(n));
+				gt_mul(v, v, u);
+				gt_inv(u, v);
+				r = (gt_cmp(u, a) == RLC_EQ);
 				r &= fp18_test_cyc((void *)a);
 				break;
+			case EP_SG18:
+				/* Check that 3u*P + 2\psi^2(P) == \psi^5P] and [3]P \eq O. */
+				fp_prime_get_par(n);
+				bn_mul_dig(n, n, 3);
+				gt_exp(u, a, n);
+				r = gt_is_unity(a) == 0;
+				gt_frb(v, a, 2);
+				gt_mul(u, u, v);
+				gt_mul(u, u, v);
+				gt_frb(v, a, 5);
+				r &= fp18_test_cyc((void *)a);
 			default:
 				/* Common case. */
 				pc_get_ord(n);
@@ -352,8 +606,11 @@ int gt_is_valid(const gt_t a) {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		bn_free(n);
+		gt_free(s);
+		gt_free(t);
 		gt_free(u);
 		gt_free(v);
+		gt_free(w);
 	}
 
 	return r;

@@ -7,7 +7,7 @@ all: lib
 
 lib:
 	mkdir -p target
-	cd target; ${RELIC_ROOT}/../preset/gmp-ecc-tweedledum.sh ${RELIC_ROOT}/../; cmake -DEP_METHD='JACOB;LWNAF;COMBS;INTER' .; make
+	cd target; ${RELIC_ROOT}/../preset/gmp-ecc-tweedledum.sh ${RELIC_ROOT}/../; cmake -DEP_METHD='JACOB;LWNAF;COMBS;INTER;SSWUM' .; make
 
 clean:
 	rm -rf target *.o main

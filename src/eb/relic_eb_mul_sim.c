@@ -109,12 +109,6 @@ static void eb_mul_sim_kbltz(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 		l = RLC_MAX(l0, l1);
 		_k = tnaf0 + l - 1;
 		_m = tnaf1 + l - 1;
-		for (i =  l0; i < l; i++) {
-			tnaf0[i] = 0;
-		}
-		for (i =  l1; i < l; i++) {
-			tnaf1[i] = 0;
-		}
 
 		if (bn_sign(k) == RLC_NEG) {
 			for (i =  0; i < l0; i++) {
@@ -184,7 +178,7 @@ static void eb_mul_sim_kbltz(eb_t r, const eb_t p, const bn_t k, const eb_t q,
  */
 static void eb_mul_sim_plain(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 		const bn_t m, const eb_t *t) {
-	int i, n0, n1, w, g;
+	int i, n0, n1, w, g = (t == NULL ? 0 : 1);
 	int8_t naf0[RLC_FB_BITS + 1], naf1[RLC_FB_BITS + 1], *_k, *_m;
 	eb_t t0[1 << (RLC_WIDTH - 2)];
 	eb_t t1[1 << (RLC_WIDTH - 2)];
@@ -196,7 +190,6 @@ static void eb_mul_sim_plain(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 	}
 
 	RLC_TRY {
-		g = (t == NULL ? 0 : 1);
 		if (!g) {
 			for (i =  0; i < (1 << (RLC_WIDTH - 2)); i++) {
 				eb_new(t0[i]);
@@ -368,18 +361,12 @@ void eb_mul_sim_trick(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 		}
 
 #if RLC_WIDTH > 2 && defined(EB_MIXED)
-		eb_norm_sim(t + 1, (const eb_t *)(t + 1), (1 << RLC_WIDTH) - 1);
+		eb_norm_sim(t + 2, (const eb_t *)(t + 2), (1 << (w + w)) - 2);
 #endif
 
 		l0 = l1 = RLC_CEIL(RLC_FB_BITS + 1, w);
 		bn_rec_win(w0, &l0, k, w);
 		bn_rec_win(w1, &l1, m, w);
-		for (int i = l0; i < l1; i++) {
-			w0[i] = 0;
-		}
-		for (int i = l1; i < l0; i++) {
-			w1[i] = 0;
-		}
 
 		eb_set_infty(r);
 		for (int i = RLC_MAX(l0, l1) - 1; i >= 0; i--) {

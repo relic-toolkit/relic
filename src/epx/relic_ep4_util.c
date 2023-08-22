@@ -238,7 +238,7 @@ int ep4_size_bin(const ep4_t a, int pack) {
 		ep4_norm(t, a);
 
 		size = 1 + 8 * RLC_FP_BYTES;
-		//TODO: Implement compression.
+		//TODO: implement compression properly
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {

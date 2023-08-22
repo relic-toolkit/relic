@@ -24,7 +24,7 @@
 /**
  * @file
  *
- * Implementation of Miller addition for curves of embedding degree 12.
+ * Implementation of Miller addition for curves of embedding degree 18.
  *
  * @ingroup pp
  */

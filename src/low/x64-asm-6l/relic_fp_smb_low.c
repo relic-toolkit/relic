@@ -41,27 +41,5 @@
 /*============================================================================*/
 
 int fp_smbm_low(const dig_t *a) {
-	mpz_t n, p;
-	rlc_align dig_t t[2 * RLC_FP_DIGS], u[RLC_FP_DIGS];
-	int res;
-
-	mpz_init(n);
-	mpz_init(p);
-
-#if FP_RDC == MONTY
-	dv_zero(t + RLC_FP_DIGS, RLC_FP_DIGS);
-	dv_copy(t, a, RLC_FP_DIGS);
-	fp_rdcn_low(u, t);
-#else
-	fp_copy(u, a);
-#endif
-
-	mpz_import(n, RLC_FP_DIGS, -1, sizeof(dig_t), 0, 0, u);
-	mpz_import(p, RLC_FP_DIGS, -1, sizeof(dig_t), 0, 0, fp_prime_get());
-
-	res = mpz_jacobi(n, p);
-
-	mpz_clear(n);
-	mpz_clear(p);
-	return res;
+	return (fp_is_zero(a) ? 0 : (ct_is_square_mod_384(a, fp_prime_get()) ? 1 : -1));
 }

@@ -24,7 +24,7 @@
 /**
  * @file
  *
- * Implementation of the final exponentiation for curves of embedding degree 2.
+ * Implementation of the final exponentiation for curves of embedding degree 8.
  *
  * @ingroup pp
  */

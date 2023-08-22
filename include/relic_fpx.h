@@ -170,10 +170,29 @@ typedef fp6_t fp12_t[2];
 typedef dv6_t dv12_t[2];
 
 /**
+ * Represents an octic extension prime field element.
+ *
+ * This extension is constructed with the basis {1, w}, where v^2 = v is an
+ * adjoined root in the underlying octic extension.
+ */
+typedef fp8_t fp16_t[2];
+
+/**
+ * Represents a double-precision octic extension field element.
+ */
+typedef dv8_t dv16_t[2];
+
+/**
+ * Represents an octic extension field element with automatic memory
+ * allocation.
+ */
+typedef fp8_st fp16_st[2];
+
+/**
  * Represents an octdecic extension field element.
  *
  * This extension is constructed with the basis {1, w}, where w^2 = v is an
- * adjoined root in the underlying sextic extension.
+ * adjoined root in the underlying nonic extension.
  */
 typedef fp9_t fp18_t[2];
 
@@ -185,8 +204,8 @@ typedef dv9_t dv18_t[2];
 /**
  * Represents a 24-degree extension field element.
  *
- * This extension is constructed with the basis {1, t, t^2}, where t^3 = w is an
- * adjoined root in the underlying dodecic extension.
+ * This extension is constructed with the basis {1, t, t^2}, where t^3 = v is an
+ * adjoined root in the underlying octic extension.
  */
 typedef fp8_t fp24_t[3];
 
@@ -199,7 +218,7 @@ typedef dv8_t dv24_t[3];
  * Represents a 48-degree extension field element.
  *
  * This extension is constructed with the basis {1, u}, where u^2 = t is an
- * adjoined root in the underlying dodecic extension.
+ * adjoined root in the underlying extension of degree 24.
  */
 typedef fp24_t fp48_t[2];
 
@@ -207,7 +226,7 @@ typedef fp24_t fp48_t[2];
  * Represents a 54-degree extension field element.
  *
  * This extension is constructed with the basis {1, u, u^2}, where u^3 = t is an
- * adjoined root in the underlying dodecic extension.
+ * adjoined root in the underlying octdecic extension.
  */
 typedef fp18_t fp54_t[3];
 
@@ -291,7 +310,7 @@ typedef fp18_t fp54_t[3];
 #define fp2_sub(C, A, B)	fp2_sub_integ(C, A, B)
 #endif
 
-/**
+/**ffp8
  * Doubles a quadratic extension field element. Computes C = A + A.
  *
  * @param[out] C			- the result.
@@ -858,6 +877,93 @@ typedef fp18_t fp54_t[3];
 #define fp12_sqr_pck(C, A)		fp12_sqr_pck_basic(C, A)
 #elif FPX_RDC == LAZYR
 #define fp12_sqr_pck(C, A)		fp12_sqr_pck_lazyr(C, A)
+#endif
+
+/**
+ * Initializes a double-precision sextadecic extension field with null.
+ *
+ * @param[out] A			- the sextadecic extension element to initialize.
+ */
+#define dv16_null(A)														\
+		dv8_null(A[0]); dv8_null(A[1]);										\
+
+/**
+ * Allocates a double-precision sextadecic extension field element.
+ *
+ * @param[out] A			- the new sextadecic extension field element.
+ */
+#define dv16_new(A)															\
+		dv8_new(A[0]); dv8_new(A[1]);										\
+
+/**
+ * Frees a double-precision sextadecic extension field element.
+ *
+ * @param[out] A			- the sextadecic extension field element to free.
+ */
+#define dv16_free(A)														\
+		dv8_free(A[0]); dv8_free(A[1]);										\
+
+/**
+ * Initializes an sextadecic extension field with null.
+ *
+ * @param[out] A			- the sextadecic extension element to initialize.
+ */
+#define fp16_null(A)														\
+		fp8_null(A[0]); fp8_null(A[1]);										\
+
+/**
+ * Allocates an sextadecic extension field element.
+ *
+ * @param[out] A			- the new sextadecic extension field element.
+ */
+#define fp16_new(A)															\
+		fp8_new(A[0]); fp8_new(A[1]);										\
+
+/**
+ * Frees an sextadecic extension field element.
+ *
+ * @param[out] A			- the sextadecic extension field element to free.
+ */
+#define fp16_free(A)														\
+		fp8_free(A[0]); fp8_free(A[1]);										\
+
+/**
+ * Multiplies two sextadecic extension field elements. Computes C = A * B.
+ *
+ * @param[out] C			- the result.
+ * @param[in] A				- the first sextadecic extension field element.
+ * @param[in] B				- the second sextadecic extension field element.
+ */
+#if FPX_RDC == BASIC
+#define fp16_mul(C, A, B)	fp16_mul_basic(C, A, B)
+#elif FPX_RDC == LAZYR
+#define fp16_mul(C, A, B)	fp16_mul_lazyr(C, A, B)
+#endif
+
+/**
+ * Multiplies a dense and a sparse sextic extension field elements. Computes
+ * C = A * B.
+ *
+ * @param[out] C			- the result.
+ * @param[in] A				- the dense dodecic extension field element.
+ * @param[in] B				- the sparse dodecic extension field element.
+ */
+#if FPX_RDC == BASIC
+#define fp16_mul_dxs(C, A, B)	fp16_mul_dxs_basic(C, A, B)
+#elif FPX_RDC == LAZYR
+#define fp16_mul_dxs(C, A, B)	fp16_mul_dxs_lazyr(C, A, B)
+#endif
+
+/**
+ * Squares an sextadecic extension field element. Computes C = A * A.
+ *
+ * @param[out] C			- the result.
+ * @param[in] A				- the sextadecic extension field element to square.
+ */
+#if FPX_RDC == BASIC
+#define fp16_sqr(C, A)		fp16_sqr_basic(C, A)
+#elif FPX_RDC == LAZYR
+#define fp16_sqr(C, A)		fp16_sqr_lazyr(C, A)
 #endif
 
 /**
@@ -1642,6 +1748,14 @@ void fp2_exp_cyc_sim(fp2_t e, const fp2_t a, const bn_t b, const fp2_t c,
 void fp2_frb(fp2_t c, const fp2_t a, int i);
 
 /**
+ * Tests if a quadratic extension field element is a quadratic residue.
+ *
+ * @param[in] a				- the prime field element to test.
+ * @return 1 if the argument is even, 0 otherwise.
+ */
+int fp2_is_sqr(const fp2_t a);
+
+/**
  * Extracts the square root of a quadratic extension field element. Computes
  * c = sqrt(a). The other square root is the negation of c.
  *
@@ -1967,6 +2081,14 @@ void fp3_exp(fp3_t c, const fp3_t a, const bn_t b);
 void fp3_frb(fp3_t c, const fp3_t a, int i);
 
 /**
+ * Tests if a cubic extension field element is a quadratic residue.
+ *
+ * @param[in] a				- the prime field element to test.
+ * @return 1 if the argument is even, 0 otherwise.
+ */
+int fp3_is_sqr(const fp3_t a);
+
+/**
  * Extracts the square root of a cubic extension field element. Computes
  * c = sqrt(a). The other square root is the negation of c.
  *
@@ -2270,6 +2392,14 @@ void fp4_exp(fp4_t c, const fp4_t a, const bn_t b);
 void fp4_frb(fp4_t c, const fp4_t a, int i);
 
 /**
+ * Tests if a quartic extension field element is a quadratic residue.
+ *
+ * @param[in] a				- the prime field element to test.
+ * @return 1 if the argument is even, 0 otherwise.
+ */
+int fp4_is_sqr(const fp4_t a);
+
+/**
  * Extracts the square root of a quartic extension field element. Computes
  * c = sqrt(a). The other square root is the negation of c.
  *
@@ -2509,6 +2639,11 @@ void fp6_exp(fp6_t c, const fp6_t a, const bn_t b);
 void fp6_frb(fp6_t c, const fp6_t a, int i);
 
 /**
+ * Initializes the octic extension field arithmetic module.
+ */
+void fp8_field_init(void);
+
+/**
  * Copies the second argument to the first argument.
  *
  * @param[out] c			- the result.
@@ -2677,6 +2812,17 @@ void fp8_mul_lazyr(fp8_t c, const fp8_t a, const fp8_t b);
 void fp8_mul_art(fp8_t c, const fp8_t a);
 
 /**
+ * Multiplies an octic extension field element by a power of the constant
+ * needed to compute a power of the Frobenius map.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the field element to multiply.
+ * @param[in] i				- the power of the Frobenius map.
+ * @param[in] j				- the power of the constant.
+ */
+void fp8_mul_frb(fp8_t c, const fp8_t a, int i, int j);
+
+/**
  * Multiples a dense octic extension field element by a sparse element.
  *
  * @param[out] c			- the result.
@@ -2774,6 +2920,15 @@ void fp8_conv_cyc(fp8_t c, const fp8_t a);
 void fp8_exp(fp8_t c, const fp8_t a, const bn_t b);
 
 /**
+ * Computes a power of an octic extension field element by a small exponent.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the basis.
+ * @param[in] b				- the exponent.
+ */
+void fp8_exp_dig(fp8_t c, const fp8_t a, dig_t b);
+
+/**
  * Computes a power of a cyclotomic octic extension field element.
  *
  * @param[out] c			- the result.
@@ -2791,6 +2946,24 @@ void fp8_exp_cyc(fp8_t c, const fp8_t a, const bn_t b);
  * @param[in] i				- the power of the Frobenius map.
  */
 void fp8_frb(fp8_t c, const fp8_t a, int i);
+
+/**
+ * Tests if an octic extension field element is a quadratic residue.
+ *
+ * @param[in] a				- the prime field element to test.
+ * @return 1 if the argument is even, 0 otherwise.
+ */
+int fp8_is_sqr(const fp8_t a);
+
+/**
+ * Extracts the square root of an octic extension field element. Computes
+ * c = sqrt(a). The other square root is the negation of c.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the extension field element.
+ * @return					- 1 if there is a square root, 0 otherwise.
+ */
+int fp8_srt(fp8_t c, const fp8_t a);
 
 /**
  * Copies the second argument to the first argument.
@@ -3432,6 +3605,337 @@ void fp12_pck_max(fp12_t c, const fp12_t a);
  */
 int fp12_upk_max(fp12_t c, const fp12_t a);
 
+
+/**
+ * Initializes the sextadecic extension field arithmetic module.
+ */
+void fp16_field_init(void);
+
+/**
+ * Copies the second argument to the first argument.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the sextadecic extension field element to copy.
+ */
+void fp16_copy(fp16_t c, const fp16_t a);
+
+/**
+ * Assigns zero to an sextadecic extension field element.
+ *
+ * @param[out] a			- the sextadecic extension field element to zero.
+ */
+void fp16_zero(fp16_t a);
+
+/**
+ * Tests if an sextadecic extension field element is zero or not.
+ *
+ * @param[in] a				- the sextadecic extension field element to test.
+ * @return 1 if the argument is zero, 0 otherwise.
+ */
+int fp16_is_zero(const fp16_t a);
+
+/**
+ * Assigns a random value to an sextadecic extension field element.
+ *
+ * @param[out] a			- the sextadecic extension field element to assign.
+ */
+void fp16_rand(fp16_t a);
+
+/**
+ * Prints an sextadecic extension field element to standard output.
+ *
+ * @param[in] a				- the sextadecic extension field element to print.
+ */
+void fp16_print(const fp16_t a);
+
+/**
+ * Returns the number of bytes necessary to store an sextadecic extension field
+ * element.
+ *
+ * @param[in] a				- the extension field element.
+ * @param[in] pack			- the flag to indicate compression.
+ * @return the number of bytes.
+ */
+int fp16_size_bin(fp16_t a, int pack);
+
+/**
+ * Reads an sextadecic extension field element from a byte vector in big-endian
+ * format.
+ *
+ * @param[out] a			- the result.
+ * @param[in] bin			- the byte vector.
+ * @param[in] len			- the buffer capacity.
+ * @throw ERR_NO_BUFFER		- if the buffer capacity is not correct.
+ */
+void fp16_read_bin(fp16_t a, const uint8_t *bin, size_t len);
+
+/**
+ * Writes an sextadecic extension field element to a byte vector in big-endian
+ * format.
+ *
+ * @param[out] bin			- the byte vector.
+ * @param[in] len			- the buffer capacity.
+ * @param[in] a				- the extension field element to write.
+ * @param[in] pack			- the flag to indicate compression.
+ * @throw ERR_NO_BUFFER		- if the buffer capacity is not correct.
+ */
+void fp16_write_bin(uint8_t *bin, size_t len, const fp16_t a, int pack);
+
+/**
+ * Returns the result of a comparison between two sextadecic extension field
+ * elements.
+ *
+ * @param[in] a				- the first sextadecic extension field element.
+ * @param[in] b				- the second sextadecic extension field element.
+ * @return RLC_EQ if a == b, and RLC_NE otherwise.
+ */
+int fp16_cmp(const fp16_t a, const fp16_t b);
+
+/**
+ * Returns the result of a signed comparison between an sextadecic extension
+ * field element and a digit.
+ *
+ * @param[in] a				- the sextadecic extension field element.
+ * @param[in] b				- the digit.
+ * @return RLC_EQ if a == b, and RLC_NE otherwise.
+ */
+int fp16_cmp_dig(const fp16_t a, const dig_t b);
+
+/**
+ * Assigns an sextadecic extension field element to a digit.
+ *
+ * @param[in] a				- the sextadecic extension field element.
+ * @param[in] b				- the digit.
+ */
+void fp16_set_dig(fp16_t a, const dig_t b);
+
+/**
+ * Adds two sextadecic extension field elements. Computes c = a + b.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the first sextadecic extension field element.
+ * @param[in] b				- the second sextadecic extension field element.
+ */
+void fp16_add(fp16_t c, const fp16_t a, const fp16_t b);
+
+/**
+ * Subtracts an sextadecic extension field element from another. Computes
+ * c = a - b.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the sextadecic extension field element.
+ * @param[in] b				- the sextadecic extension field element.
+ */
+void fp16_sub(fp16_t c, const fp16_t a, const fp16_t b);
+
+/**
+ * Negates an sextadecic extension field element. Computes c = -a.
+ *
+ * @param[out] c			- the result.
+ * @param[out] a			- the sextadecic extension field element to negate.
+ */
+void fp16_neg(fp16_t c, const fp16_t a);
+
+/**
+ * Doubles an sextadecic extension field element. Computes c = 2 * a.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the sextadecic extension field element to double.
+ */
+void fp16_dbl(fp16_t c, const fp16_t a);
+
+/**
+ * Multiples two sextadecic extension field elements without performing modular
+ * reduction.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the sextadecic extension field element.
+ * @param[in] b				- the sextadecic extension field element.
+ */
+void fp16_mul_unr(dv16_t c, const fp16_t a, const fp16_t b);
+
+/**
+ * Multiples two sextadecic extension field elements.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the sextadecic extension field element.
+ * @param[in] b				- the sextadecic extension field element.
+ */
+void fp16_mul_basic(fp16_t c, const fp16_t a, const fp16_t b);
+
+/**
+ * Multiples two sextadecic extension field elements using lazy reduction.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the sextadecic extension field element.
+ * @param[in] b				- the sextadecic extension field element.
+ */
+void fp16_mul_lazyr(fp16_t c, const fp16_t a, const fp16_t b);
+
+/**
+ * Multiplies an sextadecic extension field element by the adjoined root.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the sextadecic extension field element to multiply.
+ */
+void fp16_mul_art(fp16_t c, const fp16_t a);
+
+/**
+ * Multiplies an sextadecic extension field element by a power of the constant
+ * needed to compute a power of the Frobenius map.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the field element to multiply.
+ * @param[in] i				- the power of the Frobenius map.
+ * @param[in] j				- the power of the constant.
+ */
+void fp16_mul_frb(fp16_t c, const fp16_t a, int i, int j);
+
+/**
+ * Multiples a dense sextadecic extension field element by a sparse element.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- an sextadecic extension field element.
+ * @param[in] b				- a sparse sextadecic extension field element.
+ */
+void fp16_mul_dxs(fp16_t c, const fp16_t a, const fp16_t b);
+
+/**
+ * Computes the square of an sextadecic extension field element without
+ * performing modular reduction.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the sextadecic extension field element to square.
+ */
+void fp16_sqr_unr(dv16_t c, const fp16_t a);
+
+/**
+ * Computes the squares of an sextadecic extension field element using basic
+ * arithmetic.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the sextadecic extension field element to square.
+ */
+void fp16_sqr_basic(fp16_t c, const fp16_t a);
+
+/**
+ * Computes the square of an sextadecic extension field element using lazy
+ * reduction.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the sextadecic extension field element to square.
+ */
+void fp16_sqr_lazyr(fp16_t c, const fp16_t a);
+
+/**
+ * Computes the square of a cyclotomic sextadecic extension field element.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the cyclotomic extension element to square.
+ */
+void fp16_sqr_cyc(fp16_t c, const fp16_t a);
+
+/**
+ * Inverts an sextadecic extension field element. Computes c = 1/a.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the sextadecic extension field element to invert.
+ */
+void fp16_inv(fp16_t c, const fp16_t a);
+
+/**
+ * Computes the inverse of a cyclotomic sextadecic extension field element.
+ *
+ * For cyclotomic elements, this is equivalent to computing the conjugate.
+ * A cyclotomic element is one previously raised to the (p^4 - 1)-th power.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the sextadecic extension field element to invert.
+ */
+void fp16_inv_cyc(fp16_t c, const fp16_t a);
+
+/**
+ * Inverts multiple sextadecic extension field elements simultaneously.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the sextadecic extension field elements to invert.
+ * @param[in] n				- the number of elements.
+ */
+void fp16_inv_sim(fp16_t *c, const fp16_t *a, int n);
+
+/**
+ * Tests if an sextadecic extension field element is cyclotomic.
+ *
+ * @param[in] a				- the sextadecic extension field element to test.
+ * @return 1 if the extension field element is cyclotomic, 0 otherwise.
+ */
+int fp16_test_cyc(const fp16_t a);
+
+/**
+ * Converts an sextadecic extension field element to a cyclotomic element.
+ * Computes c = a^(p^8 - 1).
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the sextadecic extension field element.
+ */
+void fp16_conv_cyc(fp16_t c, const fp16_t a);
+
+/**
+ * Computes a power of an sextadecic extension field element. Computes c = a^b.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the sextadecic extension element to exponentiate.
+ * @param[in] b				- the exponent.
+ */
+void fp16_exp(fp16_t c, const fp16_t a, const bn_t b);
+
+/**
+ * Computes a power of a sextic extension field element by a small exponent.
+ * Faster formulas are used if the extension field element is cyclotomic.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the basis.
+ * @param[in] b				- the exponent.
+ */
+void fp16_exp_dig(fp16_t c, const fp16_t a, dig_t b);
+
+/**
+ * Computes a power of a cyclotomic sextadecic extension field element.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the basis.
+ * @param[in] b				- the exponent.
+ */
+void fp16_exp_cyc(fp16_t c, const fp16_t a, const bn_t b);
+
+/**
+ * Computes a power of the Frobenius endomorphism of an sextadecic extension
+ * field element. Computes c = a^p^i.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- an sextadecic extension field element.
+ * @param[in] i				- the power of the Frobenius map.
+ */
+void fp16_frb(fp16_t c, const fp16_t a, int i);
+
+/**
+ * Tests if an sextadecic extension field element is a quadratic residue.
+ *
+ * @param[in] a				- the prime field element to test.
+ * @return 1 if the argument is even, 0 otherwise.
+ */
+int fp16_is_sqr(const fp16_t a);
+
+/**
+ * Extracts the square root of an sextadecic extension field element. Computes
+ * c = sqrt(a). The other square root is the negation of c.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the extension field element.
+ * @return					- 1 if there is a square root, 0 otherwise.
+ */
+int fp16_srt(fp16_t c, const fp16_t a);
+
 /**
  * Copies the second argument to the first argument.
  *
@@ -3759,7 +4263,7 @@ void fp18_frb(fp18_t c, const fp18_t a, int i);
 void fp18_exp(fp18_t c, const fp18_t a, const bn_t b);
 
 /**
- * Computes a power of a dodecic extension field element by a small exponent.
+ * Computes a power of a octdecic extension field element by a small exponent.
  * Faster formulas are used if the extension field element is cyclotomic.
  *
  * @param[out] c			- the result.

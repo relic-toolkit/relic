@@ -1283,9 +1283,7 @@ static int sokaka(void) {
 
 		cp_sokaka_gen(s);
 
-		TEST_CASE
-				("sakai-ohgishi-kasahara authenticated key agreement is correct")
-		{
+		TEST_CASE("sakai-ohgishi-kasahara auth key agreement is correct") {
 			TEST_ASSERT(cp_sokaka_gen_prv(k, ia, s) == RLC_OK, end);
 			TEST_ASSERT(cp_sokaka_key(k1, l, ia, k, ib) == RLC_OK, end);
 			TEST_ASSERT(cp_sokaka_gen_prv(k, ib, s) == RLC_OK, end);

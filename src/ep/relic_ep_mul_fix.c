@@ -175,9 +175,6 @@ static void ep_mul_combs_endom(ep_t r, const ep_t *t, const bn_t k) {
 			}
 		}
 		ep_norm(r, r);
-		if (bn_sign(_k) == RLC_NEG) {
-			ep_neg(r, r);
-		}
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -250,9 +247,6 @@ static void ep_mul_combs_plain(ep_t r, const ep_t *t, const bn_t k) {
 			}
 		}
 		ep_norm(r, r);
-		if (bn_sign(_k) == RLC_NEG) {
-			ep_neg(r, r);
-		}
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -323,9 +317,6 @@ void ep_mul_fix_basic(ep_t r, const ep_t *t, const bn_t k) {
 			}
 		}
 		ep_norm(r, r);
-		if (bn_sign(_k) == RLC_NEG) {
-			ep_neg(r, r);
-		}
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
@@ -500,9 +491,6 @@ void ep_mul_fix_combd(ep_t r, const ep_t *t, const bn_t k) {
 			ep_add(r, r, t[(1 << RLC_DEPTH) + w1]);
 		}
 		ep_norm(r, r);
-		if (bn_sign(_k) == RLC_NEG) {
-			ep_neg(r, r);
-		}
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
