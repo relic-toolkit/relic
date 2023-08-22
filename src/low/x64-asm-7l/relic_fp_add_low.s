@@ -358,10 +358,14 @@ fp_negm_low:
     or 	    32(%rsi), %r8
     or 	    40(%rsi), %r8
     or 	    48(%rsi), %r8
-    or 	    56(%rsi), %r8
-    or 	    64(%rsi), %r8
     test    %r8, %r8
 	cmovnz 	p0(%rip), %r8
+	cmovnz 	p1(%rip), %r9
+	cmovnz 	p2(%rip), %r10
+	cmovnz 	p3(%rip), %r11
+	cmovnz 	p4(%rip), %rbx
+	cmovnz 	p5(%rip), %rax
+	cmovnz 	p6(%rip), %rcx
 	cmovnz 	p1(%rip), %r9
 	cmovnz 	p2(%rip), %r10
 	cmovnz 	p3(%rip), %r11
@@ -373,17 +377,18 @@ fp_negm_low:
 	sbbq 	8(%rsi) , %r9
 	movq 	%r9     , 8(%rdi)
 	sbbq 	16(%rsi), %r10
-	movq 	%r10     , 16(%rdi)
+	movq 	%r10    , 16(%rdi)
 	sbbq 	24(%rsi), %r11
-	movq 	%r11     , 24(%rdi)
+	movq 	%r11    , 24(%rdi)
 	sbbq 	32(%rsi), %rbx
-	movq 	%rbx     , 32(%rdi)
+	movq 	%rbx    , 32(%rdi)
 	sbbq 	40(%rsi), %rax
-	movq 	%rax     , 40(%rdi)
+	movq 	%rax    , 40(%rdi)
 	sbbq 	48(%rsi), %rcx
-	movq 	%rcx     , 48(%rdi)
+	movq 	%rcx    , 48(%rdi)
 
 	pop		%rbx
+	ret
 
 fp_dbln_low:
 	movq	0(%rsi), %r8
