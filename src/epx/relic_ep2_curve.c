@@ -572,7 +572,6 @@ void ep2_curve_init(void) {
 	}
 #endif
 #endif
-	ep2_set_infty(ctx->ep2_g);
 	bn_make(&(ctx->ep2_r), RLC_FP_DIGS);
 	bn_make(&(ctx->ep2_h), RLC_FP_DIGS);
 

@@ -283,7 +283,6 @@ void ep4_curve_init(void) {
 	}
 #endif
 #endif
-	ep4_set_infty(ctx->ep4_g);
 	bn_make(&(ctx->ep4_r), RLC_FP_DIGS);
 	bn_make(&(ctx->ep4_h), RLC_FP_DIGS);
 }
