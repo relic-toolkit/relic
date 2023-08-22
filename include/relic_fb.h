@@ -112,6 +112,8 @@ enum {
 	NIST_409,
 	/** Hankerson's trinomial for genus 2 curves. */
 	TRINO_439,
+	/** Custom 511-bit fast reduction polynomial. */
+	TRINO_511,
 	/** NIST 571-bit fast reduction polynomial. */
 	NIST_571,
 	/** Square-root friendly 571-bit polynomial. */
