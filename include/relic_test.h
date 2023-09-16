@@ -36,6 +36,10 @@
 #ifndef RLC_TEST_H
 #define RLC_TEST_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <string.h>
 
 #include "relic_conf.h"
@@ -100,5 +104,9 @@ void test_fail(void);
  * Prints a string indicating that the test passed.
  */
 void test_pass(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* !RLC_TEST_H */

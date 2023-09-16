@@ -78,6 +78,10 @@
 #ifndef RELIC_H
 #define RELIC_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "relic_arch.h"
 #include "relic_conf.h"
 #include "relic_core.h"
@@ -102,5 +106,9 @@
 #include "relic_err.h"
 #include "relic_rand.h"
 #include "relic_util.h"
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* !RELIC_H */
