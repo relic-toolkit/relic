@@ -36,6 +36,10 @@
 #ifndef RLC_CORE_H
 #define RLC_CORE_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -546,6 +550,10 @@ void core_set(ctx_t *ctx);
  * @param[in] init_ptr a pointer which is passed to the initialized
  */
 void core_set_thread_initializer(void (*init)(void *init_ptr), void *init_ptr);
+#endif
+
+#ifdef __cplusplus
+}
 #endif
 
 #endif /* !RLC_CORE_H */

@@ -36,6 +36,10 @@
 #ifndef RLC_BENCH_H
 #define RLC_BENCH_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "relic_conf.h"
 #include "relic_label.h"
 #include "relic_util.h"
@@ -215,5 +219,9 @@ void bench_print(void);
  * @return the last benchmark.
  */
 ull_t bench_total(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* !RLC_BENCH_H */
