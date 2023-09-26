@@ -73,8 +73,6 @@ void fp2_mul_basic(fp2_t c, const fp2_t a, const fp2_t b) {
 
 		/* t1 = (a_0 * b_0) + i^2 * (a_1 * b_1). */
 		fp_subc_low(t1, t0, t4);
-
-		/* t1 = u^2 * (a_1 * b_1). */
 		for (int i = -1; i > fp_prime_get_qnr(); i--) {
 			fp_subc_low(t1, t1, t4);
 		}
