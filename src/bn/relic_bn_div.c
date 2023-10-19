@@ -215,7 +215,11 @@ void bn_div_rem_dig(bn_t c, dig_t *d, const bn_t a, dig_t b) {
 		}
 
 		if (d != NULL) {
-			*d = r;
+			if (bn_sign(a) == RLC_NEG) {
+				*d = b - r;
+			} else {
+				*d = r;
+			}
 		}
 	}
 	RLC_CATCH_ANY {
