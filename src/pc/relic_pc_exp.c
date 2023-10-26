@@ -140,11 +140,6 @@ void g2_mul_gen(g2_t c, const bn_t b) {
 }
 
 void gt_exp(gt_t c, const gt_t a, const bn_t b) {
-	bn_t n, _b;
-
-	bn_null(n);
-	bn_null(_b);
-
 	if (bn_bits(b) <= RLC_DIG) {
 		gt_exp_dig(c, a, b->dp[0]);
 		if (bn_sign(b) == RLC_NEG) {
@@ -153,44 +148,47 @@ void gt_exp(gt_t c, const gt_t a, const bn_t b) {
 		return;
 	}
 
-	RLC_TRY {
-		bn_new(n);
-		bn_new(_b);
-
-		pc_get_ord(n);
-		bn_mod(_b, b, n);
-
 #if FP_PRIME <= 1536
-		RLC_CAT(RLC_GT_LOWER, exp_cyc)(c, a, _b);
+	RLC_CAT(RLC_GT_LOWER, exp_cyc_gls)(c, a, b);
 #else
-		RLC_CAT(RLC_GT_LOWER, exp)(c, a, _b);
+	RLC_CAT(RLC_GT_LOWER, exp)(c, a, b);
 #endif
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		bn_free(n);
-		bn_free(_b);
-	}
 }
 
 void gt_exp_dig(gt_t c, const gt_t a, dig_t b) {
-	gt_t t;
+	gt_t s, t;
+	bn_t _b;
+	int8_t u, naf[RLC_DIG + 1];
+	size_t l;
 
 	if (b == 0) {
 		gt_set_unity(c);
 		return;
 	}
 
+	gt_null(s);
 	gt_null(t);
+	bn_null(_k);
 
 	RLC_TRY {
+		gt_new(s);
 		gt_new(t);
+		bn_new(_b);
 
+		bn_set_dig(_b, b);
+
+		l = RLC_DIG + 1;
+		bn_rec_naf(naf, &l, _b, 2);
+
+		gt_inv(s, a);
 		gt_copy(t, a);
 		for (int i = util_bits_dig(b) - 2; i >= 0; i--) {
 			gt_sqr(t, t);
-			if (b & ((dig_t)1 << i)) {
+			u = naf[i];
+			if (u > 0) {
 				gt_mul(t, t, a);
+			} else if (u < 0) {
+				gt_mul(t, t, s);
 			}
 		}
 
@@ -200,7 +198,9 @@ void gt_exp_dig(gt_t c, const gt_t a, dig_t b) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
+		gt_free(s);
 		gt_free(t);
+		bn_free(_b);
 	}
 }
 
@@ -222,8 +222,10 @@ void gt_exp_sim(gt_t e, const gt_t a, const bn_t b, const gt_t c, const bn_t d) 
 		gt_get_ord(n);
 		bn_mod(_b, b, n);
 		bn_mod(_d, d, n);
+
 #if FP_PRIME <= 1536
 		RLC_CAT(RLC_GT_LOWER, exp_cyc_sim)(e, a, _b, c, _d);
+		(void)t;
 #else
 		gt_exp(t, a, _b);
 		gt_exp(e, c, _d);
@@ -240,27 +242,18 @@ void gt_exp_sim(gt_t e, const gt_t a, const bn_t b, const gt_t c, const bn_t d) 
 }
 
 void gt_exp_gen(gt_t c, const bn_t b) {
-	bn_t n, _b;
 	gt_t g;
 
-	bn_null(n);
-	bn_null(_b);
 	gt_null(g);
 
 	RLC_TRY {
-		bn_new(n);
-		bn_new(_b);
 		gt_new(g);
 
-		pc_get_ord(n);
-		bn_mod(_b, b, n);
 		gt_get_gen(g);
-		gt_exp(c, g, _b);
+		gt_exp(c, g, b);
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		bn_free(n);
-		bn_free(_b);
 		gt_free(g);
 	}
 }

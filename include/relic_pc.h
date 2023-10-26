@@ -1040,7 +1040,7 @@ void gt_exp(gt_t c, const gt_t a, const bn_t b);
 void gt_exp_dig(gt_t c, const gt_t a, const dig_t b);
 
 /**
- * Exponentiates two element from G_T by integers simultaneously. Computes
+ * Exponentiates two elements from G_T by integers simultaneously. Computes
  * e = a^b * c^d.
  *
  * @param[out] e			- the result.
