@@ -1189,7 +1189,7 @@ static int frobenius2(void) {
 			d->used = RLC_FP_DIGS;
 			dv_copy(d->dp, fp_prime_get(), RLC_FP_DIGS);
 			bn_mod(d, d, n);
-			ep2_mul(c, a, d);
+			ep2_mul_basic(c, a, d);
 			TEST_ASSERT(ep2_cmp(c, b) == RLC_EQ, end);
 		} TEST_END;
 	}
@@ -2216,7 +2216,7 @@ static int frobenius3(void) {
 			d->used = RLC_FP_DIGS;
 			dv_copy(d->dp, fp_prime_get(), RLC_FP_DIGS);
 			bn_mod(d, d, n);
-			ep3_mul(c, a, d);
+			ep3_mul_basic(c, a, d);
 			TEST_ASSERT(ep3_cmp(c, b) == RLC_EQ, end);
 		} TEST_END;
 	}
@@ -3245,7 +3245,7 @@ static int frobenius4(void) {
 			d->used = RLC_FP_DIGS;
 			dv_copy(d->dp, fp_prime_get(), RLC_FP_DIGS);
 			bn_mod(d, d, n);
-			ep4_mul(c, a, d);
+			ep4_mul_basic(c, a, d);
 			TEST_ASSERT(ep4_cmp(c, b) == RLC_EQ, end);
 		} TEST_END;
 	}
@@ -4274,7 +4274,7 @@ static int frobenius8(void) {
 			d->used = RLC_FP_DIGS;
 			dv_copy(d->dp, fp_prime_get(), RLC_FP_DIGS);
 			bn_mod(d, d, n);
-			ep8_mul(c, a, d);
+			ep8_mul_basic(c, a, d);
 			TEST_ASSERT(ep8_cmp(c, b) == RLC_EQ, end);
 		} TEST_END;
 	}
@@ -4340,6 +4340,11 @@ int main(void) {
 			return 1;
 		}
 
+		if (frobenius2() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
 		if (multiplication2() != RLC_OK) {
 			core_clean();
 			return 1;
@@ -4361,11 +4366,6 @@ int main(void) {
 		}
 
 		if (hashing2() != RLC_OK) {
-			core_clean();
-			return 1;
-		}
-
-		if (frobenius2() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
@@ -4403,6 +4403,11 @@ int main(void) {
 			return 1;
 		}
 
+		if (frobenius3() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
 		if (multiplication3() != RLC_OK) {
 			core_clean();
 			return 1;
@@ -4419,11 +4424,6 @@ int main(void) {
 		}
 
 		if (hashing3() != RLC_OK) {
-			core_clean();
-			return 1;
-		}
-
-		if (frobenius3() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
@@ -4461,6 +4461,11 @@ int main(void) {
 			return 1;
 		}
 
+		if (frobenius4() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
 		if (multiplication4() != RLC_OK) {
 			core_clean();
 			return 1;
@@ -4477,11 +4482,6 @@ int main(void) {
 		}
 
 		if (hashing4() != RLC_OK) {
-			core_clean();
-			return 1;
-		}
-
-		if (frobenius4() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
@@ -4519,6 +4519,11 @@ int main(void) {
 			return 1;
 		}
 
+		if (frobenius8() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
 		if (multiplication8() != RLC_OK) {
 			core_clean();
 			return 1;
@@ -4530,11 +4535,6 @@ int main(void) {
 		}
 
 		if (simultaneous8() != RLC_OK) {
-			core_clean();
-			return 1;
-		}
-
-		if (frobenius8() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
