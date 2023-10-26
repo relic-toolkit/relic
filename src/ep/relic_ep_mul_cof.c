@@ -71,7 +71,7 @@ void ep_mul_cof(ep_t r, const ep_t p) {
 				}
 				break;
 			case EP_N16:
-				/* if (u % 2) == 0, compute = (u * (u**3+1)//2)*P
+				/* if (u % 2) == 0, compute = (u * (u**3+1)/2)*P
     			 * else Compute (u * (u**3+1))*P */
 				fp_prime_get_par(k);
 				bn_sqr(l, k);
@@ -86,6 +86,22 @@ void ep_mul_cof(ep_t r, const ep_t p) {
 				} else {
 					ep_mul_basic(r, p, k);
 				}
+				break;
+			case EP_FM16:
+				/* Compute (u/2)*P + [u^3]*phi([u/2]P) */
+				fp_prime_get_par(k);
+				bn_sqr(l, k);
+				bn_mul(l, l, k);
+				if (bn_is_even(k)) {
+					bn_hlv(k, k);
+				}
+				if (bn_bits(k) < RLC_DIG) {
+					ep_mul_dig(r, p, k->dp[0]);
+				} else {
+					ep_mul_basic(r, p, k);
+				}
+				ep_psi(r, r);
+				ep_mul_basic(r, r, l);
 				break;
 			case EP_K16:
 				/* Compute 1250*(P + [(u+1)/2]phi(P)) */

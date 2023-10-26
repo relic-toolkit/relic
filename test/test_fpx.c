@@ -8951,7 +8951,8 @@ int main(void) {
 		}
 	}
 
-	if (fp_prime_get_qnr() && fp_prime_get_cnr() && (ep_param_embed() >= 12)) {
+	if (fp_prime_get_qnr() && fp_prime_get_cnr() &&
+			(ep_param_embed() >= 12) && (ep_param_embed() != 16)) {
 		util_banner("Dodecic extension:", 0);
 		util_banner("Utilities:", 1);
 
