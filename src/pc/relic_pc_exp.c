@@ -182,7 +182,7 @@ void gt_exp_dig(gt_t c, const gt_t a, dig_t b) {
 
 		gt_inv(s, a);
 		gt_copy(t, a);
-		for (int i = util_bits_dig(b) - 2; i >= 0; i--) {
+		for (int i = l - 2; i >= 0; i--) {
 			gt_sqr(t, t);
 			u = naf[i];
 			if (u > 0) {
