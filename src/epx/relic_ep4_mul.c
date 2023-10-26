@@ -66,6 +66,10 @@ static void ep4_psi(ep4_t r, const ep4_t p) {
 				ep4_frb(r, p, 5);
 				ep4_neg(r, r);
 				break;
+			case EP_FM16:
+				/* u = p mod r */
+				ep4_frb(r, p, 1);
+				break;
 		}
 	}
 	RLC_CATCH_ANY {
