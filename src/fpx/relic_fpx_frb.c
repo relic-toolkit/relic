@@ -215,7 +215,7 @@ void fp54_frb(fp54_t c, const fp54_t a, int i) {
 				fp3_mul_frb(c[1][j][l], c[1][j][l], 2, 3);
 				fp3_mul_frb(c[2][j][l], c[2][j][l], 2, 1);
 			}
-			/* This is not genreal enough, so hard code parameters needing the
+			/* This is not general enough, so hard code parameters needing the
 			tweak. */
 #if FP_PRIME == 256
 			fp9_mul_art(c[1][j], c[1][j]);
