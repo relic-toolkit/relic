@@ -1394,7 +1394,7 @@ static void fp18_gls(fp18_t c, const fp18_t a) {
 			fp18_sqr_cyc(c, c);
 			fp18_mul(c, c, b);
 		} else {
-			/* For KSS18, we have that x = p^4 - 3*p = (p^3 - 3)p mod n. */
+			/* For KSS18, we have that u = p^4 - 3*p = (p^3 - 3)p mod n. */
 			fp18_sqr_cyc(b, a);
 			fp18_mul(b, b, a);
 			fp18_frb(c, a, 3);

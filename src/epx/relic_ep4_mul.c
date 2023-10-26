@@ -40,6 +40,42 @@
 
 #if defined(EP_ENDOM)
 
+static void ep4_psi(ep4_t r, const ep4_t p) {
+	ep4_t q;
+
+	ep4_null(q);
+
+	if (ep4_is_infty(p)) {
+		ep4_set_infty(r);
+		return;
+	}
+
+	RLC_TRY {
+		ep4_new(q);
+
+		switch (ep_curve_is_pairf()) {
+			case EP_K16:
+				/* u = (2*p^5 - p) mod r */
+				ep4_frb(q, p, 1);
+				ep4_frb(r, q, 4);
+				ep4_dbl(r, r);
+				ep4_sub(r, r, q);
+				break;
+			case EP_N16:
+				/* u = -p^5 mod r */
+				ep4_frb(r, p, 5);
+				ep4_neg(r, r);
+				break;
+		}
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		ep4_free(q);
+	}
+}
+
 static void ep4_mul_glv_imp(ep4_t r, const ep4_t p, const bn_t k) {
 	size_t l, _l[8];
 	bn_t n, _k[8], u;
@@ -66,8 +102,11 @@ static void ep4_mul_glv_imp(ep4_t r, const ep4_t p, const bn_t k) {
 
 		ep4_norm(q[0], p);
 		for (size_t i = 1; i < 8; i++) {
-            ep4_frb(q[i], q[i - 1], 1);
+            ep4_psi(q[i], q[i - 1]);
 		}
+#if defined(EP_MIXED)
+		ep4_norm_sim(q + 1, q + 1, 7);
+#endif
 
 		l = 0;
 		for (size_t i = 0; i < 8; i++) {
@@ -111,6 +150,8 @@ static void ep4_mul_glv_imp(ep4_t r, const ep4_t p, const bn_t k) {
 }
 
 #endif /* EP_ENDOM */
+
+#if defined(EP_PLAIN) || defined(EP_SUPER)
 
 static void ep4_mul_naf_imp(ep4_t r, const ep4_t p, const bn_t k) {
 	int i, n;
@@ -160,6 +201,7 @@ static void ep4_mul_naf_imp(ep4_t r, const ep4_t p, const bn_t k) {
 	}
 }
 
+#endif /* EP_PLAIN || EP_SUPER */
 #endif /* EP_MUL == LWNAF */
 
 /*============================================================================*/
@@ -381,11 +423,7 @@ void ep4_mul_lwnaf(ep4_t r, const ep4_t p, const bn_t k) {
 
 #if defined(EP_ENDOM)
 	if (ep_curve_is_endom()) {
-		if (ep4_curve_opt_a() == RLC_ZERO) {
-			ep4_mul_glv_imp(r, p, k);
-		} else {
-			ep4_mul_naf_imp(r, p, k);
-		}
+		ep4_mul_glv_imp(r, p, k);
 		return;
 	}
 #endif
