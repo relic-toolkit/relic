@@ -66,6 +66,9 @@ static void ep4_psi(ep4_t r, const ep4_t p) {
 				ep4_frb(r, p, 5);
 				ep4_neg(r, r);
 				break;
+			default:
+				ep4_frb(r, p, 1);
+				break;
 		}
 	}
 	RLC_CATCH_ANY {
