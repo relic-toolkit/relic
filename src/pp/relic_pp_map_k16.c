@@ -212,7 +212,7 @@ static void pp_fin_k16_oatep(fp16_t r, ep4_t t, ep4_t q, ep_t p) {
 		fp16_new(tmp);
 		fp16_zero(tmp);
 
-#if EP_ADD == PROJC
+#if EP_ADD == PROJC || EP_ADD == JACOB
 		fp_neg(p->x, p->x);
 #endif
 		ep4_frb(q1, q, 1);
