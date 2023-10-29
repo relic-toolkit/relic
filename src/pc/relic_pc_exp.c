@@ -168,7 +168,7 @@ void gt_exp_dig(gt_t c, const gt_t a, dig_t b) {
 
 	gt_null(s);
 	gt_null(t);
-	bn_null(_k);
+	bn_null(_b);
 
 	RLC_TRY {
 		gt_new(s);
