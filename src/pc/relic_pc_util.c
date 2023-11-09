@@ -588,6 +588,14 @@ int gt_is_valid(const gt_t a) {
 				r = (gt_cmp(w, t) == RLC_EQ);
 				r &= fp16_test_cyc((void *)a);
 				break;
+			case EP_FM16:
+				/* Check that u*Q == psi(Q). */
+				fp_prime_get_par(n);
+				gt_exp(u, a, n);
+				gt_frb(v, a, 1);
+				r = (gt_cmp(u, v) == RLC_EQ);
+				r &= fp16_test_cyc((void *)a);
+				break;
 			case EP_K18:
 				/* Check that P + u*psi2P + 2*psi3P == \mathcal{O}. */
 				gt_frb(u, a, 2);

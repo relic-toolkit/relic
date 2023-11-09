@@ -1057,6 +1057,9 @@ static void fp16_gls(fp16_t c, const fp16_t a) {
 				fp16_frb(c, a, 5);
 				fp16_inv_cyc(c, c);
 				break;
+			case EP_FM16:
+				fp16_frb(c, a, 1);
+				break;
 		}
 	}
 	RLC_CATCH_ANY {
