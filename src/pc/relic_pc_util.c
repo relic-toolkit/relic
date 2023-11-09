@@ -173,6 +173,16 @@ int g1_is_valid(const g1_t a) {
 					g1_neg(u, u);
 					r = g1_on_curve(a) && (g1_cmp(u, a) == RLC_EQ);
 					break;
+				case EP_FM16:
+					/* Check that P == (u**4)*\phi(P). */
+					fp_prime_get_par(n);
+					g1_mul_any(u, a, n);
+					g1_mul_any(u, u, n);
+					g1_mul_any(u, u, n);
+					g1_mul_any(u, u, n);
+					ep_psi(u, u);
+					r = g1_on_curve(a) && (g1_cmp(u, a) == RLC_EQ);
+					break;
 				case EP_K18:
 					/* Check that [a_0]P + [a_1]\psi(P)) == O, for
 					 * a_0 = 19a_1 + 1, a_1 = (x/7)^3 */
@@ -383,6 +393,13 @@ int g2_is_valid(const g2_t a) {
 				g2_add(t, t, u);		/* t = a^(13s + 5). */
 				g2_frb(t, t, 4);
 				r = g2_on_curve(a) && (g2_cmp(w, t) == RLC_EQ);
+				break;
+			case EP_FM16:
+				/* Check that u*Q == psi(Q). */
+				fp_prime_get_par(n);
+				g2_mul_any(u, a, n);
+				g2_frb(v, a, 1);
+				r = g2_on_curve(a) && (g2_cmp(u, v) == RLC_EQ);
 				break;
 			case EP_K18:
 				/* Check that P + u*psi2P + 2*psi3P == \mathcal{O}. */
