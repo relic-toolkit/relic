@@ -334,6 +334,100 @@ static void pp_exp_new(fp16_t c, fp16_t a) {
 	}
 }
 
+/**
+ * Computes the final exponentiation of a pairing defined over a FM16 curve.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the extension field element to exponentiate.
+ */
+static void pp_exp_fm16(fp16_t c, fp16_t a) {
+	fp16_t t0, t1, t2, t3, t4, t5, t6, t7;
+	bn_t x, x_;
+
+	bn_null(x);
+	bn_null(x_);
+	fp16_null(t0);
+	fp16_null(t1);
+	fp16_null(t2);
+	fp16_null(t3);
+	fp16_null(t4);
+	fp16_null(t5);
+	fp16_null(t6);
+	fp16_null(t7);
+
+	RLC_TRY {
+		bn_new(x);
+		bn_new(x_);
+		fp16_new(t0);
+		fp16_new(t1);
+		fp16_new(t2);
+		fp16_new(t3);
+		fp16_new(t4);
+		fp16_new(t5);
+		fp16_new(t6);
+		fp16_new(t7);
+
+		fp_prime_get_par(x);
+
+		/* First, compute m = f^(p^8 - 1). */
+		fp16_conv_cyc(c, a);
+
+		/* Now compute m^((p^8 + 1) / r). */
+		bn_hlv(x_, x);
+
+		fp16_exp_cyc(t1, c, x_);
+		fp16_exp_cyc(t1, t1, x_);
+		fp16_exp_cyc(t2, t1, x);
+		fp16_exp_cyc(t3, t2, x);
+		fp16_exp_cyc(t4, t3, x);
+		fp16_exp_cyc(t5, t4, x);
+		fp16_exp_cyc(t6, t5, x);
+		fp16_exp_cyc(t7, t6, x);
+
+		fp16_mul(t0, t1, c);
+		fp16_mul(t0, t0, t7);
+		fp16_frb(t7, t0, 7);
+		fp16_exp_cyc(t0, t0, x);
+		fp16_frb(t1, t0, 6);
+		fp16_mul(t7, t7, t1);
+		fp16_exp_cyc(t0, t0, x);
+		fp16_frb(t1, t0, 5);
+		fp16_mul(t7, t7, t1);
+		fp16_exp_cyc(t0, t0, x);
+		fp16_frb(t1, t0, 4);
+		fp16_mul(t7, t7, t1);
+		fp16_exp_cyc(t0, t0, x);
+		fp16_frb(t1, t0, 3);
+		fp16_mul(t7, t7, t1);
+		fp16_exp_cyc(t0, t0, x);
+		fp16_frb(t1, t0, 2);
+		fp16_mul(t7, t7, t1);
+		fp16_exp_cyc(t0, t0, x);
+		fp16_frb(t1, t0, 1);
+		fp16_mul(t7, t7, t1);
+		fp16_exp_cyc(t0, t0, x);
+		fp16_mul(t7, t7, t0);
+		fp16_mul(c, c, t7);
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		bn_free(x);
+		bn_free(x_);
+		fp16_free(t0);
+		fp16_free(t1);
+		fp16_free(t2);
+		fp16_free(t3);
+		fp16_free(t4);
+		fp16_free(t5);
+		fp16_free(t6);
+		fp16_free(t7);
+	}
+}
+ 
+
+
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -346,6 +440,9 @@ void pp_exp_k16(fp16_t c, fp16_t a) {
 			break;
 		case EP_N16:
 			pp_exp_new(c, a);
+			break;
+		case EP_FM16:
+			pp_exp_fm16(c, a);
 			break;
 	}
 }

@@ -601,7 +601,7 @@ void fp12_exp_cyc(fp12_t c, const fp12_t a, const bn_t b) {
 		return fp12_set_dig(c, 1);
 	}
 
-	if (1) {//(bn_bits(b) > RLC_DIG) && ((bn_ham(b) << 3) > bn_bits(b))) {
+	if ((bn_bits(b) > RLC_DIG) && ((bn_ham(b) << 3) > bn_bits(b))) {
 		fp12_t r, s, t[1 << (RLC_WIDTH - 2)];
 		int8_t naf[RLC_FP_BITS + 1], *k, w = RLC_WIDTH;
 
