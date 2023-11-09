@@ -100,8 +100,10 @@ void ep_mul_cof(ep_t r, const ep_t p) {
 				} else {
 					ep_mul_basic(r, p, k);
 				}
-				ep_psi(r, r);
-				ep_mul_basic(r, r, l);
+				ep_psi(v, r);
+				ep_mul_basic(v, v, l);
+				ep_add(r, r, v);
+				ep_norm(r, r);
 				break;
 			case EP_K16:
 				/* Compute 1250*(P + [(u+1)/2]phi(P)) */
