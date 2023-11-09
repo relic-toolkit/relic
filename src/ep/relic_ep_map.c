@@ -346,6 +346,7 @@ void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 			fp_mul(p->y, p->y, w);
 			fp_set_dig(p->z, 1);
 			p->coord = BASIC;
+			ep_mul_cof(p, p);
 		} else if ((ep_curve_opt_b() == RLC_ZERO) && (ctx->mod8 != 1)) {
 			/* This is the approach due to Koshelev introduced in
 			 * https://eprint.iacr.org/2021/1604.pdf */

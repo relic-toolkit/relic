@@ -1725,7 +1725,7 @@ void fp2_exp_dig(fp2_t c, const fp2_t a, dig_t b);
 void fp2_exp_cyc(fp2_t c, const fp2_t a, const bn_t b);
 
 /**
- * Computes a power of a cyclotomic quadratic extension field element.
+ * Computes a power of two cyclotomic quadratic extension field elements.
  *
  * @param[out] e			- the result.
  * @param[in] a				- the first element to exponentiate.
@@ -3549,7 +3549,17 @@ void fp12_exp_dig(fp12_t c, const fp12_t a, dig_t b);
 void fp12_exp_cyc(fp12_t c, const fp12_t a, const bn_t b);
 
 /**
- * Computes a power of a cyclotomic dodecic extension field element.
+ * Computes a power of a cyclotomic dodecic extension field element in the
+ * prime-order subgroup.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the basis.
+ * @param[in] b				- the exponent.
+ */
+void fp12_exp_cyc_gls(fp12_t c, const fp12_t a, const bn_t b);
+
+/**
+ * Computes a power of two cyclotomic dodecic extension field elements.
  *
  * @param[out] e			- the result.
  * @param[in] a				- the first element to exponentiate.
@@ -3604,7 +3614,6 @@ void fp12_pck_max(fp12_t c, const fp12_t a);
  * @return if the decompression was successful
  */
 int fp12_upk_max(fp12_t c, const fp12_t a);
-
 
 /**
  * Initializes the sextadecic extension field arithmetic module.
@@ -3907,6 +3916,28 @@ void fp16_exp_dig(fp16_t c, const fp16_t a, dig_t b);
  * @param[in] b				- the exponent.
  */
 void fp16_exp_cyc(fp16_t c, const fp16_t a, const bn_t b);
+
+/**
+ * Computes a power of a cyclotomic sextadecic extension field element in the
+ * prime-order subgroup.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the basis.
+ * @param[in] b				- the exponent.
+ */
+void fp16_exp_cyc_gls(fp16_t c, const fp16_t a, const bn_t b);
+
+/**
+ * Computes a power of two cyclotomic sextadecic extension field elements.
+ *
+ * @param[out] e			- the result.
+ * @param[in] a				- the first element to exponentiate.
+ * @param[in] b				- the first exponent.
+ * @param[in] c				- the second element to exponentiate.
+ * @param[in] d				- the second exponent.
+ */
+void fp16_exp_cyc_sim(fp16_t e, const fp16_t a, const bn_t b, const fp16_t c,
+		const bn_t d);
 
 /**
  * Computes a power of the Frobenius endomorphism of an sextadecic extension
@@ -4282,7 +4313,17 @@ void fp18_exp_dig(fp18_t c, const fp18_t a, dig_t b);
 void fp18_exp_cyc(fp18_t c, const fp18_t a, const bn_t b);
 
 /**
- * Computes a power of a cyclotomic octdecic extension field element.
+ * Computes a power of a cyclotomic octdecic extension field element in the
+ * prime-order subgroup.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the basis.
+ * @param[in] b				- the exponent.
+ */
+void fp18_exp_cyc_gls(fp18_t c, const fp18_t a, const bn_t b);
+
+/**
+ * Computes a power of two cyclotomic octdecic extension field elements.
  *
  * @param[out] e			- the result.
  * @param[in] a				- the first element to exponentiate.
@@ -4290,7 +4331,8 @@ void fp18_exp_cyc(fp18_t c, const fp18_t a, const bn_t b);
  * @param[in] c				- the second element to exponentiate.
  * @param[in] d				- the second exponent.
  */
-void fp18_exp_cyc_sim(fp18_t e, const fp18_t a, const bn_t b, const fp18_t c, const bn_t d);
+void fp18_exp_cyc_sim(fp18_t e, const fp18_t a, const bn_t b, const fp18_t c,
+		const bn_t d);
 
 /**
  * Computes a power of a cyclotomic octdecic extension field element.
@@ -4672,7 +4714,17 @@ void fp24_exp_dig(fp24_t c, const fp24_t a, dig_t b);
 void fp24_exp_cyc(fp24_t c, const fp24_t a, const bn_t b);
 
 /**
- * Computes a power of a cyclotomic dodecic extension field element.
+ * Computes a power of a cyclotomic 24-extension field element in the
+ * prime-order subgroup.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the basis.
+ * @param[in] b				- the exponent.
+ */
+void fp24_exp_cyc_gls(fp24_t c, const fp24_t a, const bn_t b);
+
+/**
+ * Computes a power of two cyclotomic dodecic extension field elements.
  *
  * @param[out] e			- the result.
  * @param[in] a				- the first element to exponentiate.
@@ -5028,6 +5080,16 @@ void fp48_exp_dig(fp48_t c, const fp48_t a, dig_t b);
 void fp48_exp_cyc(fp48_t c, const fp48_t a, const bn_t b);
 
 /**
+ * Computes a power of a cyclotomic 48-extension field element in the
+ * prime-order subgroup.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the basis.
+ * @param[in] b				- the exponent.
+ */
+void fp48_exp_cyc_gls(fp48_t c, const fp48_t a, const bn_t b);
+
+/**
  * Computes a power of a cyclotomic 48-extension field element.
  *
  * @param[out] c			- the result.
@@ -5037,6 +5099,18 @@ void fp48_exp_cyc(fp48_t c, const fp48_t a, const bn_t b);
  * @param[in] s				- the sign of the exponent.
  */
 void fp48_exp_cyc_sps(fp48_t c, const fp48_t a, const int *b, size_t l, int s);
+
+/**
+ * Computes a power of two cyclotomic 48-extension field elements.
+ *
+ * @param[out] e			- the result.
+ * @param[in] a				- the first element to exponentiate.
+ * @param[in] b				- the first exponent.
+ * @param[in] c				- the second element to exponentiate.
+ * @param[in] d				- the second exponent.
+ */
+void fp48_exp_cyc_sim(fp48_t e, const fp48_t a, const bn_t b, const fp48_t c,
+		const bn_t d);
 
 /**
  * Compresses a 48-extension field element.

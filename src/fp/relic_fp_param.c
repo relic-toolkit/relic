@@ -498,7 +498,7 @@ void fp_param_set(int param) {
 				break;
 #elif FP_PRIME == 569
 			case SG54_569:
-				/* 2^27 + 2^26 + 2^22 + 2^14 + 2^6 + 2 */
+				/* x = 2^27 + 2^26 + 2^22 + 2^14 + 2^6 + 2 */
 				bn_set_2b(t0, 27);
 				bn_set_2b(t1, 26);
 				bn_add(t0, t0, t1);

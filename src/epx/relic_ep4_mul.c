@@ -68,6 +68,7 @@ static void ep4_psi(ep4_t r, const ep4_t p) {
 				break;
 			case EP_FM16:
 				/* u = p mod r */
+			default:
 				ep4_frb(r, p, 1);
 				break;
 		}

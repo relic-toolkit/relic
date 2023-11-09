@@ -57,7 +57,7 @@ void pp_norm_k8(ep2_t r, const ep2_t p) {
 		/* If the point is represented in affine coordinates, we just copy it. */
 		ep2_copy(r, p);
 	}
-#if EP_ADD == PROJC || !defined(STRIP)
+#if EP_ADD != BASIC || !defined(STRIP)
 	fp2_inv(r->z, p->z);
 	fp2_mul(r->x, p->x, r->z);
 	fp2_mul(r->y, p->y, r->z);
@@ -77,7 +77,7 @@ void pp_norm_k12(ep2_t r, const ep2_t p) {
 		/* If the point is represented in affine coordinates, we just copy it. */
 		ep2_copy(r, p);
 	}
-#if EP_ADD == PROJC || !defined(STRIP)
+#if EP_ADD != BASIC || !defined(STRIP)
 	fp2_inv(r->z, p->z);
 	fp2_mul(r->x, p->x, r->z);
 	fp2_mul(r->y, p->y, r->z);
@@ -96,7 +96,7 @@ void pp_norm_k16(ep4_t r, const ep4_t p) {
 		/* If the point is represented in affine coordinates, we just copy it. */
 		ep4_copy(r, p);
 	}
-#if EP_ADD == PROJC || !defined(STRIP)
+#if EP_ADD != BASIC || !defined(STRIP)
 	fp4_inv(r->z, p->z);
 	fp4_mul(r->x, p->x, r->z);
 	fp4_mul(r->y, p->y, r->z);
@@ -118,7 +118,7 @@ void pp_norm_k18(ep3_t r, const ep3_t p) {
 		/* If the point is represented in affine coordinates, we just copy it. */
 		ep3_copy(r, p);
 	}
-#if EP_ADD == PROJC || !defined(STRIP)
+#if EP_ADD != BASIC || !defined(STRIP)
 	fp3_inv(r->z, p->z);
 	fp3_mul(r->x, p->x, r->z);
 	fp3_mul(r->y, p->y, r->z);
@@ -137,7 +137,7 @@ void pp_norm_k24(ep4_t r, const ep4_t p) {
 		/* If the point is represented in affine coordinates, we just copy it. */
 		ep4_copy(r, p);
 	}
-#if EP_ADD == PROJC || !defined(STRIP)
+#if EP_ADD != BASIC || !defined(STRIP)
 	fp4_inv(r->z, p->z);
 	fp4_mul(r->x, p->x, r->z);
 	fp4_mul(r->y, p->y, r->z);
@@ -156,7 +156,7 @@ void pp_norm_k48(ep8_t r, const ep8_t p) {
 		/* If the point is represented in affine coordinates, we just copy it. */
 		ep8_copy(r, p);
 	}
-#if EP_ADD == PROJC || !defined(STRIP)
+#if EP_ADD != BASIC || !defined(STRIP)
 	fp8_inv(r->z, p->z);
 	fp8_mul(r->x, p->x, r->z);
 	fp8_mul(r->y, p->y, r->z);
