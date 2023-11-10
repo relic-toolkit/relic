@@ -47,6 +47,7 @@
 #define P11 0x3C410B7E6EC19106
 #define U0	0xC18CA908C52344BB
 #elif FP_PRIME == 765
+/* AFG16-765 */
 #define P0	0x0000000000000001
 #define P1	0x00000000384F0100
 #define P2	0x7D00000000000000
@@ -57,9 +58,24 @@
 #define P7	0xEE9C1E7F21BD9E92
 #define P8	0x249F514A2A836FBF
 #define P9	0x8866F5670199231B
-#define P10 0xB2847B1232833CC3
-#define P11 0x16FAB993B0C96754
+#define P10	0xB2847B1232833CC3
+#define P11	0x16FAB993B0C96754
 #define U0	0xFFFFFFFFFFFFFFFF
+/* FM16-765
+#define P0	0x1000EFC080000001
+#define P1	0x0000000038223FF0
+#define P2	0x0000000000000000
+#define P3	0x0140000000000000
+#define P4	0x93D3AA2586A9BB7B
+#define P5	0x2C9088558A226AF0
+#define P6	0x7071D6BA0697D5A1
+#define P7	0xFE00400021385D1A
+#define P8	0x1629227BB6527E4E
+#define P9	0xD4A66E04AA631EEA
+#define P10 0xBC5664C6F237BCB4
+#define P11 0x166A30BEAF4CE221
+#define U0	0xD000EFC07FFFFFFF
+*/
 #endif
 
 #if defined(__APPLE__)
@@ -193,13 +209,31 @@
 
 .macro _RDCN0 i, j, k, R0, R1, R2 A, P
 	movq	8*\i(\A), %rax
+#if U0 == 0xFFFFFFFFFFFFFF
+	.if \j != 2
+		mulq	8*\j(\P)
+		addq	%rax, \R0
+		adcq	%rdx, \R1
+		adcq	$0, \R2
+	.endif
+#else
 	mulq	8*\j(\P)
 	addq	%rax, \R0
 	adcq	%rdx, \R1
 	adcq	$0, \R2
+#endif
 	.if \j > 1
 		_RDCN0 "(\i + 1)", "(\j - 1)", \k, \R0, \R1, \R2, \A, \P
 	.else
+#if U0 == 0xFFFFFFFFFFFFFFFF
+		addq	8*\k(\A), \R0
+		adcq	$0, \R1
+		adcq	$0, \R2
+		negq	\R0
+		movq	\R0, 8*\k(\A)
+		adcq	$0, \R1
+		adcq	$0, \R2
+#else
 		addq	8*\k(\A), \R0
 		adcq	$0, \R1
 		adcq	$0, \R2
@@ -210,6 +244,7 @@
 		addq	%rax , \R0
 		adcq	%rdx , \R1
 		adcq	$0   , \R2
+#endif
 		xorq	\R0, \R0
 	.endif
 .endm
@@ -219,11 +254,21 @@
 .endm
 
 .macro _RDCN1 i, j, k, l, R0, R1, R2 A, P
+#if U0 == 0xFFFFFFFFFFFFFF
+	.if \j != 2
+		movq	8*\i(\A), %rax
+		mulq	8*\j(\P)
+		addq	%rax, \R0
+		adcq	%rdx, \R1
+		adcq	$0, \R2
+	.endif
+#else
 	movq	8*\i(\A), %rax
 	mulq	8*\j(\P)
 	addq	%rax, \R0
 	adcq	%rdx, \R1
 	adcq	$0, \R2
+#endif
 	.if \j > \l
 		_RDCN1 "(\i + 1)", "(\j - 1)", \k, \l, \R0, \R1, \R2, \A, \P
 	.else
@@ -242,6 +287,12 @@
 // r8, r9, r10, r11, r12, r13, r14, r15, rbp, rbx, rsp, //rsi, rdi, //rax, rcx, rdx
 .macro FP_RDCN_LOW C, R0, R1, R2, A, P
 	xorq	\R1, \R1
+#if U0 == 0xFFFFFFFFFFFFFFFF
+	movq	0(\A), \R0
+	negq	\R0
+	movq	\R0 , 0(\A)
+	adcq	$0   , \R1
+#else
 	movq	$U0, %rcx
 
 	movq	0(\A), \R0
@@ -251,9 +302,9 @@
 	mulq	0(\P)
 	addq	%rax , \R0
 	adcq	%rdx , \R1
+#endif
 	xorq    \R2  , \R2
 	xorq    \R0  , \R0
-
 	RDCN0	0, 1, \R1, \R2, \R0, \A, \P
 	RDCN0	0, 2, \R2, \R0, \R1, \A, \P
 	RDCN0	0, 3, \R0, \R1, \R2, \A, \P

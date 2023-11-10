@@ -82,7 +82,7 @@ void fp2_field_init(void) {
 		fp_zero(t0[0]);
 		fp_set_dig(t0[1], 1);
 		/* If it does not work, attempt (u + 2), otherwise double. */
-		/* We cannot used QR test here because Frobenius constants below. */
+		/* We cannot used QR test here due to Frobenius constants below. */
 		if (fp2_srt(t1, t0)) {
 			ctx->qnr2 = 2;
 			fp_set_dig(t0[0], ctx->qnr2);
