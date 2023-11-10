@@ -258,6 +258,7 @@ void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 
 	RLC_TRY {
 		bn_new(k);
+		fp_new(a);
 		fp_new(c);
 		fp_new(t);
 		fp_new(u);
