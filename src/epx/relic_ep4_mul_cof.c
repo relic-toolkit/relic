@@ -235,36 +235,28 @@ static void ep4_mul_cof_fm16(ep4_t r, const ep4_t p) {
 		/* Compute [1 - u/2]\psi^7(P). */
 		ep4_mul_basic(t1, p, x);
 		ep4_sub(t0, p, t1);
-		ep4_norm(t0, t0);
 		ep4_frb(t0, t0, 7);
 		bn_dbl(x, x);
 		/* Compute [u - u^2/2]\psi^6(P). */
 		ep4_mul_basic(t2, t1, x);
 		ep4_dbl(t1, t1);
-		ep4_norm(t1, t1);
 		ep4_sub(t3, t1, t2);
-		ep4_norm(t3, t3);
 		ep4_frb(t3, t3, 6);
 		ep4_add(t0, t0, t3);
 		/* Compute [u^2 - u^3/2]\psi^5(P). */
 		ep4_mul_basic(t1, t2, x);
 		ep4_dbl(t2, t2);
-		ep4_norm(t2, t2);
 		ep4_sub(t3, t2, t1);
-		ep4_norm(t3, t3);
 		ep4_frb(t3, t3, 5);
 		ep4_add(t0, t0, t3);
 		/* Compute [u^3 - u^4/2]\psi^4(P). */
 		ep4_mul_basic(t2, t1, x);
 		ep4_dbl(t1, t1);
-		ep4_norm(t1, t1);
 		ep4_sub(t3, t1, t2);
-		ep4_norm(t3, t3);
 		ep4_frb(t3, t3, 4);
 		ep4_add(t0, t0, t3);
 		/* Compute [u^4/2]\psi^3(P). */
 		ep4_frb(t3, t2, 3);
-		ep4_norm(t3, t3);
 		ep4_add(t0, t0, t3);
 		/* Compute [u^5/2]\psi^2(P). */
 		ep4_mul_basic(t2, t2, x);
