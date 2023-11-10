@@ -1437,8 +1437,8 @@ int ep_param_set_any_endom(void) {
 	//ep_param_set(SG18_P638);
 #endif
 #elif FP_PRIME == 765
-	//ep_param_set(N16_P765);
-	ep_param_set(FM16_P765);
+	ep_param_set(N16_P765);
+	//ep_param_set(FM16_P765);
 #elif FP_PRIME == 766
 	ep_param_set(K16_P766);
 #else

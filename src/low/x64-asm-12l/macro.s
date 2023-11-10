@@ -47,7 +47,7 @@
 #define P11 0x3C410B7E6EC19106
 #define U0	0xC18CA908C52344BB
 #elif FP_PRIME == 765
-/* AFG16-765
+/* AFG16-765 */
 #define P0	0x0000000000000001
 #define P1	0x00000000384F0100
 #define P2	0x7D00000000000000
@@ -58,10 +58,10 @@
 #define P7	0xEE9C1E7F21BD9E92
 #define P8	0x249F514A2A836FBF
 #define P9	0x8866F5670199231B
-#define P10 0xB2847B1232833CC3
-#define P11 0x16FAB993B0C96754
+#define P10	0xB2847B1232833CC3
+#define P11	0x16FAB993B0C96754
 #define U0	0xFFFFFFFFFFFFFFFF
-*/
+/* FM16-765
 #define P0	0x1000EFC080000001
 #define P1	0x0000000038223FF0
 #define P2	0x0000000000000000
@@ -75,6 +75,7 @@
 #define P10 0xBC5664C6F237BCB4
 #define P11 0x166A30BEAF4CE221
 #define U0	0xD000EFC07FFFFFFF
+*/
 #endif
 
 #if defined(__APPLE__)
@@ -208,7 +209,7 @@
 
 .macro _RDCN0 i, j, k, R0, R1, R2 A, P
 	movq	8*\i(\A), %rax
-#if U0 != 0xFFFFFFFFFFFFFF
+#if U0 == 0xFFFFFFFFFFFFFF
 	.if \j != 2
 		mulq	8*\j(\P)
 		addq	%rax, \R0
@@ -253,7 +254,7 @@
 .endm
 
 .macro _RDCN1 i, j, k, l, R0, R1, R2 A, P
-#if U0 != 0xFFFFFFFFFFFFFF
+#if U0 == 0xFFFFFFFFFFFFFF
 	.if \j != 2
 		movq	8*\i(\A), %rax
 		mulq	8*\j(\P)
@@ -344,9 +345,7 @@
 
 	subq	p0(%rip), %r11
 	sbbq	p1(%rip), %r12
-#if U0 == 0xFFFFFFFFFFFFFF
 	sbbq	p2(%rip), %r13
-#endif
 	sbbq	p3(%rip), %r14
 	sbbq	p4(%rip), %r15
 	sbbq	p5(%rip), %rcx

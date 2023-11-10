@@ -797,8 +797,8 @@ int fp_param_set_any_tower(void) {
 	//fp_param_set(SG18_638);
 #endif
 #elif FP_PRIME == 765
-	//fp_param_set(N16_765);
-	fp_param_set(FM16_765);
+	fp_param_set(N16_765);
+	//fp_param_set(FM16_765);
 #elif FP_PRIME == 766
 	fp_param_set(K16_766);
 #elif FP_PRIME == 1536
