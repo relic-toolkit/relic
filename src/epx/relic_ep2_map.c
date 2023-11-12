@@ -294,6 +294,7 @@ void ep2_map_swift(ep2_t p, const uint8_t *msg, size_t len) {
 			r += elm;
 		}
 		sign = r[0] & 1;
+		r -= 4 * elm;
 
 		/* Assume that a = 0. */
 		fp2_sqr(x1, u);

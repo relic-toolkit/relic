@@ -82,6 +82,7 @@ void ep8_map(ep8_t p, const uint8_t *msg, size_t len) {
 			}
 		}
 		sign = r[0] & 1;
+		r -= 16*elm;
 
 		/* Assume that a = 0. */
 		fp8_sqr(x1, u);

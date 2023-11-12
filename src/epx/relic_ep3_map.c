@@ -69,7 +69,7 @@ void ep3_map(ep3_t p, const uint8_t *msg, size_t len) {
 
 		md_xmd(r, 6 * elm + 1, msg, len, (const uint8_t *)"RELIC", 5);
 
-		for (int i = 0; i <= 2; i++) {
+		for (int i = 0; i < 3; i++) {
 			bn_read_bin(k, r, elm);
 			fp_prime_conv(u[i], k);
 			r += elm;
@@ -78,6 +78,7 @@ void ep3_map(ep3_t p, const uint8_t *msg, size_t len) {
 			r += elm;
 		}
 		sign = r[0] & 1;
+		r -= 6*elm;
 
 		/* Assume that a = 0. */
 		fp3_sqr(x1, u);
@@ -131,7 +132,7 @@ void ep3_map(ep3_t p, const uint8_t *msg, size_t len) {
 			c2 = fp3_is_sqr(u);
 			c3 = fp3_is_sqr(v);
 
-			for (int i = 0; i <= 2; i++) {
+			for (int i = 0; i < 3; i++) {
 				dv_swap_cond(x1[i], y1[i], RLC_FP_DIGS, c2);
 				dv_swap_cond(t[i], u[i], RLC_FP_DIGS, c2);
 				dv_swap_cond(x1[i], z1[i], RLC_FP_DIGS, c3);

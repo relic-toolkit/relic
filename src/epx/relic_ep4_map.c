@@ -185,6 +185,7 @@ void ep4_map(ep4_t p, const uint8_t *msg, size_t len) {
 				}
 			}
 			sign = h[0] & 1;
+			h -= 8*elm;
 
 			fp4_sqr(x1, u);
 			fp4_mul(x1, x1, u);
