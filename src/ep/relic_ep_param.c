@@ -1555,8 +1555,8 @@ int ep_param_set_any_pairf(void) {
 	extension = 3;
 #endif
 #elif FP_PRIME == 765
-	//ep_param_set(N16_P765);
-	ep_param_set(FM16_P765);
+	ep_param_set(N16_P765);
+	//ep_param_set(FM16_P765);
 	type = RLC_EP_MTYPE;
 	extension = 4;
 #elif FP_PRIME == 766
