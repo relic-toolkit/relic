@@ -382,8 +382,6 @@ void ep2_mul_sim_trick(ep2_t r, const ep2_t p, const bn_t k, const ep2_t q,
 
 void ep2_mul_sim_inter(ep2_t r, const ep2_t p, const bn_t k, const ep2_t q,
 		const bn_t m) {
-	bn_t n, _k, _m;
-
 	if (bn_is_zero(k) || ep2_is_infty(p)) {
 		ep2_mul(r, q, m);
 		return;
@@ -393,39 +391,16 @@ void ep2_mul_sim_inter(ep2_t r, const ep2_t p, const bn_t k, const ep2_t q,
 		return;
 	}
 
-	bn_null(n);
-	bn_null(_k);
-	bn_null(_m);
-
-	RLC_TRY {
-		bn_new(n);
-		bn_new(_k);
-		bn_new(_m);
-
-		/* Handle this here to reduce complexity of static functions. */
-		ep2_curve_get_ord(n);
-		bn_mod(_k, k, n);
-		bn_mod(_m, m, n);
-
 #if defined(EP_ENDOM)
-		if (ep_curve_is_endom()) {
-			ep2_mul_sim_endom(r, p, _k, q, _m);
-			return;
-		}
+	if (ep_curve_is_endom()) {
+		ep2_mul_sim_endom(r, p, k, q, m);
+		return;
+	}
 #endif
 
 #if defined(EP_PLAIN) || defined(EP_SUPER)
-		ep2_mul_sim_plain(r, p, _k, q, _m, NULL);
+	ep2_mul_sim_plain(r, p, k, q, m, NULL);
 #endif
-
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		bn_free(n);
-		bn_free(_k);
-		bn_free(_m);
-	}
 }
 
 #endif
