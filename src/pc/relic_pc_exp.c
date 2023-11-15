@@ -148,8 +148,10 @@ void gt_exp(gt_t c, const gt_t a, const bn_t b) {
 		return;
 	}
 
-#if FP_PRIME <= 1536
+#if FP_PRIME < 1536
 	RLC_CAT(RLC_GT_LOWER, exp_cyc_gls)(c, a, b);
+#elif FP_PRIME == 1536
+	RLC_CAT(RLC_GT_LOWER, exp_cyc)(c, a, b);
 #else
 	RLC_CAT(RLC_GT_LOWER, exp)(c, a, b);
 #endif
