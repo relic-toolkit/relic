@@ -128,14 +128,14 @@ static void ep3_dbl_projc_imp(ep3_t r, const ep3_t p) {
 	fp3_null(t5);
 
 	RLC_TRY {
-		if (ep_curve_opt_a() == RLC_ZERO) {
-			fp3_new(t0);
-			fp3_new(t1);
-			fp3_new(t2);
-			fp3_new(t3);
-			fp3_new(t4);
-			fp3_new(t5);
+		fp3_new(t0);
+		fp3_new(t1);
+		fp3_new(t2);
+		fp3_new(t3);
+		fp3_new(t4);
+		fp3_new(t5);
 
+		if (ep_curve_opt_a() == RLC_ZERO) {
 			fp3_sqr(t0, p->x);
 			fp3_add(t2, t0, t0);
 			fp3_add(t0, t2, t0);

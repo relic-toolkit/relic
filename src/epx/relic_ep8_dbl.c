@@ -128,14 +128,14 @@ static void ep8_dbl_projc_imp(ep8_t r, const ep8_t p) {
 	fp8_null(t5);
 
 	RLC_TRY {
-		if (ep_curve_opt_a() == RLC_ZERO) {
-			fp8_new(t0);
-			fp8_new(t1);
-			fp8_new(t2);
-			fp8_new(t3);
-			fp8_new(t4);
-			fp8_new(t5);
+		fp8_new(t0);
+		fp8_new(t1);
+		fp8_new(t2);
+		fp8_new(t3);
+		fp8_new(t4);
+		fp8_new(t5);
 
+		if (ep_curve_opt_a() == RLC_ZERO) {
 			fp8_sqr(t0, p->x);
 			fp8_add(t2, t0, t0);
 			fp8_add(t0, t2, t0);
