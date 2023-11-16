@@ -102,6 +102,7 @@ int g1_is_valid(const g1_t a) {
 			/* If curve has prime order, simpler to check if point on curve. */
 			r = g1_on_curve(a);
 		} else {
+			fp_prime_get_par(n);
 			switch (ep_curve_is_pairf()) {
 #if defined(EP_ENDOM) && !defined(STRIP)
 				/* Formulas from "Co-factor clearing and subgroup membership
@@ -111,7 +112,6 @@ int g1_is_valid(const g1_t a) {
 				case EP_B24:
 				case EP_B48:
 					/* Check [\psi(P) == [z^2 - 1]P. */
-					fp_prime_get_par(n);
 					bn_sqr(n, n);
 					if (ep_curve_is_pairf() == EP_B24) {
 						/* Check [\psi(P) == [z^4 - 1]P. */
@@ -130,7 +130,6 @@ int g1_is_valid(const g1_t a) {
 				/* if (u % 2) == 0, check (u**4)*\psi(P) == P
     		 	* else check (u**4-1)//2 * (\psi(P) - P) == P */
 				case EP_N16:
-					fp_prime_get_par(n);
 					bn_sqr(n, n);
 					bn_sqr(n, n);
 					ep_psi(u, a);
@@ -148,8 +147,7 @@ int g1_is_valid(const g1_t a) {
 				 * Zijian Zhou. https://eprint.iacr.org/2022/348.pdf */
 				case EP_K16:
 				    /* If u = 25 or 45 mod 70 then a1 = ((u//5)**4 + 5)//14
-					 * is an integer by definition.  */
-					fp_prime_get_par(n);
+					 * is an integer by definition. */
 					bn_div_dig(n, n, 5);
 					bn_sqr(n, n);
 					bn_sqr(n, n);
@@ -175,7 +173,6 @@ int g1_is_valid(const g1_t a) {
 					break;
 				case EP_FM16:
 					/* Check that P == (u**4)*\phi(P). */
-					fp_prime_get_par(n);
 					g1_mul_any(u, a, n);
 					g1_mul_any(u, u, n);
 					g1_mul_any(u, u, n);
@@ -186,7 +183,6 @@ int g1_is_valid(const g1_t a) {
 				case EP_K18:
 					/* Check that [a_0]P + [a_1]\psi(P)) == O, for
 					 * a_0 = 19a_1 + 1, a_1 = (x/7)^3 */
-					fp_prime_get_par(n);
 					bn_div_dig(n, n, 7);
 					bn_sqr(t, n);
 					bn_mul(n, n, t);
@@ -219,9 +215,17 @@ int g1_is_valid(const g1_t a) {
 					}
 					r = g1_on_curve(a) && g1_is_infty(u);
 					break;
+				case EP_FM18:
+					/* Check that [u^3 - 1]P == \psi(P). */
+					ep_psi(u, a);
+					bn_sqr(t, n);
+					bn_mul(t, t, n);
+					bn_sub_dig(t, t, 1);
+					g1_mul_any(v, a, t);
+					r = g1_on_curve(a) && (g1_cmp(u, v) == RLC_EQ);
+					break;
 				case EP_SG18:
 					/* Check that [9u^3+2]\psi(P) == -P. */
-					fp_prime_get_par(n);
 					/* Apply \psi twice to get the other beta. */
 					ep_psi(u, a);
 					ep_psi(u, u);

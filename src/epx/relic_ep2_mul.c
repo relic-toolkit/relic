@@ -181,6 +181,15 @@ void ep2_mul_basic(ep2_t r, const ep2_t p, const bn_t k) {
 		return;
 	}
 
+	if (bn_bits(k) <= RLC_DIG) {
+		ep2_mul_dig(r, p, k->dp[0]);
+		if (bn_sign(k) == RLC_NEG) {
+			ep2_neg(r, r);
+		}
+		RLC_FREE(naf);
+		return;
+	}
+
 	RLC_TRY {
 		ep2_new(t);
 		if (naf == NULL) {

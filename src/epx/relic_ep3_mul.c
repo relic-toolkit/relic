@@ -228,6 +228,15 @@ void ep3_mul_basic(ep3_t r, const ep3_t p, const bn_t k) {
 		return;
 	}
 
+	if (bn_bits(k) <= RLC_DIG) {
+		ep3_mul_dig(r, p, k->dp[0]);
+		if (bn_sign(k) == RLC_NEG) {
+			ep3_neg(r, r);
+		}
+		RLC_FREE(naf);
+		return;
+	}
+
 	RLC_TRY {
 		ep3_new(t);
 		if (naf == NULL) {
