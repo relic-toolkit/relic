@@ -174,7 +174,10 @@ void fp4_mul_frb(fp4_t c, const fp4_t a, int i, int j) {
 			for (int k = 0; k < j; k++) {
 	        	fp2_mul(c[0], c[0], t);
 				fp2_mul(c[1], c[1], t);
-				fp4_mul_art(c, c);
+				if (ep_curve_is_pairf() == EP_FM16) {
+					/* TODO: fix this ugly hack. */
+					fp4_mul_art(c, c);
+				}
 				/* If constant in base field, then second component is zero. */
 				if (core_get()->frb4 == 1) {
 					fp4_mul_art(c, c);
