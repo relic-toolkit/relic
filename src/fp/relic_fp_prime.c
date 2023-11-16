@@ -519,6 +519,34 @@ void fp_prime_set_pairf(const bn_t x, int pairf) {
  				bn_div_dig(p, p, 21);
  				fp_prime_set_dense(p);
  				break;
+			case EP_FM18:
+				/* p = (3x^{12} - 3x^9 + x^8 - 2x^7 + 7x^6 - x^5 - x^4 - 4x^3 +
+						+ x^2 - 2x + 4)/3 */
+				bn_sqr(p, t0);
+				bn_mul(p, p, t0);
+				bn_mul_dig(p, p, 3);
+				bn_sub_dig(p, p, 3);
+				bn_mul(p, p, t0);
+				bn_add_dig(p, p, 1);
+				bn_mul(p, p, t0);
+				bn_sub_dig(p, p, 2);
+				bn_mul(p, p, t0);
+				bn_add_dig(p, p, 7);
+				bn_mul(p, p, t0);
+				bn_sub_dig(p, p, 1);
+				bn_mul(p, p, t0);
+				bn_sub_dig(p, p, 1);
+				bn_mul(p, p, t0);
+				bn_sub_dig(p, p, 4);
+				bn_mul(p, p, t0);
+				bn_add_dig(p, p, 1);
+				bn_mul(p, p, t0);
+				bn_sub_dig(p, p, 2);
+				bn_mul(p, p, t0);
+				bn_add_dig(p, p, 4);
+ 				bn_div_dig(p, p, 3);
+				fp_prime_set_dense(p);
+				break;
  			case EP_SG18:
  				/* p = 243x^10 - 162x^8 + 81*x^7 + 27x^6 - 54x^5 + 9x^4 + 9x^3 -
  				       3x^2 + 1 */

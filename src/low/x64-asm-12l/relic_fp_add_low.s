@@ -94,22 +94,30 @@ p11:.quad P11
 .global cdecl(fp_hlvd_low)
 
 cdecl(fp_add1_low):
+	xorq	%rax, %rax
 	movq	0(%rsi), %r10
 	addq	%rdx   , %r10
 	movq	%r10   , 0(%rdi)
 
 	ADD1	1, (RLC_FP_DIGS - 1)
 
+#if FP_PRIME == 768
+	adcq	$0, %rax
+#endif
+
 	ret
 
 cdecl(fp_addn_low):
+	xorq	%rax, %rax
 	movq	0(%rdx), %r10
 	addq	0(%rsi), %r10
 	movq	%r10   , 0(%rdi)
 
 	ADDN 	1, (RLC_FP_DIGS - 1)
 
-	xorq	%rax, %rax
+#if FP_PRIME == 768
+	adcq	$0, %rax
+#endif
 
 	ret
 
@@ -156,6 +164,10 @@ cdecl(fp_addm_low):
 	adcq	88(%rsi), %rcx
 	movq	%rcx    , 64(%rdi)
 	movq	%rcx    , 72(%rdi)
+#if FP_PRIME == 768
+	movq	$0		, 80(%rdi)
+	adcq	$0		, 80(%rdi)
+#endif
 
 	movq	%rdi, %r15
 
@@ -193,6 +205,9 @@ cdecl(fp_addm_low):
 	movq	72(%rdi) , %r15
 	sbbq	p11(%rip), %r15
 	movq	%r15, 72(%rdi)
+#if FP_PRIME == 768
+	sbbq	$0, 80(%rdi)
+#endif
 
 	pop		%rdi
 	cmovnc	%rax, %r8
@@ -244,6 +259,9 @@ cdecl(fp_addd_low):
 	ADDN 	1, (2 * RLC_FP_DIGS - 1)
 	
 	xorq	%rax, %rax
+#if FP_PRIME == 768
+	adcq	$0, %rax
+#endif
 
 	ret
 
@@ -296,6 +314,10 @@ cdecl(fp_addc_low):
 	adcq	184(%rsi), %rcx
 	movq	%rcx    , 160(%rdi)
 	movq	%rcx    , 168(%rdi)
+#if FP_PRIME == 768
+	movq	$0		, 176(%rdi)
+	adcq	$0		, 176(%rdi)
+#endif
 
 	movq	%rdi, %r15
 
@@ -333,6 +355,9 @@ cdecl(fp_addc_low):
 	movq	168(%rdi), %r15
 	sbbq	p11(%rip), %r15
 	movq	%r15, 168(%rdi)
+#if FP_PRIME == 768
+	sbbq	$0, 176(%rdi)
+#endif
 
 	pop		%rdi
 
@@ -608,6 +633,10 @@ cdecl(fp_dbln_low):
 	DBLN 	1, (RLC_FP_DIGS - 1)
 
 	xorq	%rax,%rax
+#if FP_PRIME == 768
+	adcq	$0, %rax
+#endif
+
 	ret
 
 cdecl(fp_dblm_low):
@@ -658,6 +687,11 @@ cdecl(fp_dblm_low):
 	movq	%rcx    , 64(%rdi)
 	movq	%rcx    , 72(%rdi)
 
+#if FP_PRIME == 768
+	adcq	$0, %rdx
+	movq	%rdx    , 80(%rdi)
+#endif
+
 	movq	%rdi, %r15
 
 	movq 	%r8 , %rax
@@ -694,6 +728,9 @@ cdecl(fp_dblm_low):
 	movq	72(%rdi), %r15
 	sbbq	p11(%rip), %r15
 	movq	%r15, 72(%rdi)
+#if FP_PRIME == 768
+	sbbq	$0, 80(%rdi)
+#endif
 
 	pop		%rdi
 
@@ -712,6 +749,7 @@ cdecl(fp_dblm_low):
 	movq	32(%rdi), %rcx
 	movq	48(%rdi), %rbx
 	movq	64(%rdi), %rbp
+
 	cmovnc	8(%rdi), %r15
 	cmovnc  24(%rdi), %rax
 	cmovnc  40(%rdi), %rcx
