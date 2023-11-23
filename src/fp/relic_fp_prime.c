@@ -83,7 +83,7 @@ static void fp_prime_set(const bn_t p) {
 
 #endif /* FP_RDC == MONTY */
 
-#if FP_INV == JUMPDS || !defined(STRIP)
+#if FP_INV == JMPDS || !defined(STRIP)
 
 		int d = (45907 * FP_PRIME + 26313) / 19929;
 
@@ -243,7 +243,7 @@ void fp_prime_init(void) {
 	bn_make(&(ctx->conv), RLC_FP_DIGS);
 	bn_make(&(ctx->one), RLC_FP_DIGS);
 #endif
-#if FP_INV == JUMPDS || !defined(STRIP)
+#if FP_INV == JMPDS || !defined(STRIP)
 	bn_make(&(ctx->inv), RLC_FP_DIGS);
 #endif /* FP_INV */
 	bn_make(&(ctx->srt), RLC_FP_DIGS);
@@ -262,7 +262,7 @@ void fp_prime_clean(void) {
 		bn_clean(&(ctx->one));
 		bn_clean(&(ctx->conv));
 #endif
-#if FP_INV == JUMPDS || !defined(STRIP)
+#if FP_INV == JMPDS || !defined(STRIP)
 		bn_clean(&(ctx->inv));
 #endif /* FP_INV */
 		bn_clean(&(ctx->srt));

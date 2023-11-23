@@ -232,7 +232,7 @@ typedef struct _ctx_t {
 	/** Value of constant one in Montgomery form. */
 	bn_st one;
 #endif /* FP_RDC == MONTY */
-#if FP_INV == JUMPDS || !defined(STRIP)
+#if FP_INV == JMPDS || !defined(STRIP)
 	/** Value of constant for divstep-based inversion. */
 	bn_st inv;
 #endif /* FP_INV */

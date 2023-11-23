@@ -1847,6 +1847,7 @@ int ep_param_embed(void) {
 		case EP_K16:
 			return 16;
 		case EP_K18:
+		case EP_FM18:
 		case EP_SG18:
 			return 18;
 		case EP_B24:

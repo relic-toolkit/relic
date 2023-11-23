@@ -440,7 +440,7 @@ void fp_param_set(int param) {
 				fp_prime_set_pairf(t0, EP_B12);
 				break;
 #elif FP_PRIME == 508
-			case K508:
+			case K18_508:
 				/* x = -(2^64 + 2^51 - 2^46 - 2^12). */
 				bn_set_2b(t0, 64);
 				bn_set_2b(t1, 51);
