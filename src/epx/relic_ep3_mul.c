@@ -62,7 +62,7 @@ static void ep3_psi(ep3_t r, const ep3_t p) {
 				ep3_sub(r, r, q);
 				break;
 			case EP_K18:
-				/* For KSS18, we have that u = p^4 - 3*p mod r. */
+				/* For KSS18, we have that u = (p^4 - 3*p) mod r. */
 				ep3_dbl(q, p);
 				ep3_add(q, q, p);
 				ep3_frb(r, p, 3);
@@ -70,7 +70,10 @@ static void ep3_psi(ep3_t r, const ep3_t p) {
 				ep3_frb(r, r, 1);
 				break;
 			case EP_FM18:
-				ep3_frb(r, p, 1);
+				/* For FM18, we have that -u = (p-p^4) mod r. */
+				ep3_frb(q, p, 3);
+				ep3_sub(r, p, q);
+				ep3_frb(r, r, 1);
 				break;
 		}
 	}
