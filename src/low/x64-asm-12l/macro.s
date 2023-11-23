@@ -30,8 +30,21 @@
  *
  * @ingroup fp
  */
-
-#if FP_PRIME == 766
+#if FP_PRIME == 768
+#define P0	0x591ADE1200800001
+#define P1	0xACE2A12843C534B1
+#define P2	0x9FBEDDEE98705380
+#define P3	0x1429BCDA53E20A8F
+#define P4	0x31B6221831F61A72
+#define P5	0x828EC90E320E3793
+#define P6	0x9AD532EA851862BD
+#define P7	0x6A6D9D80470079AE
+#define P8	0xBA1AF14A9BC88DBA
+#define P9	0x172EC88A91CFC7D2
+#define P10 0x3290395E476657BA
+#define P11 0xFFFFFFE4FF400142
+#define U0	0x471A9E12007FFFFF
+#elif FP_PRIME == 766
 /* KSS16-P766 */
 #define P0	0xB955C8905EF99F8D
 #define P1	0x7D1C278139EFCE97
@@ -329,6 +342,10 @@
 	RDCN1	11,11,\R1, \R2, \R0, \A, \P
 	addq	184(\A), \R2
 	movq	\R2, 184(\A)
+#if FP_PRIME == 768
+	movq	$0, 192(\A)
+	adcq	$0, 192(\A)
+#endif
 
 	movq	96(\A), %r11
 	movq	104(\A), %r12
@@ -355,6 +372,9 @@
 	sbbq	p9(%rip), %r9
 	sbbq	p10(%rip), %r10
 	sbbq	p11(%rip), %rax
+#if FP_PRIME == 768
+	sbbq	$0, 192(\A)
+#endif
 
 	cmovc	96(\A), %r11
 	cmovc	104(\A), %r12

@@ -169,8 +169,8 @@ void fp16_sqr_cyc(fp16_t c, const fp16_t a) {
 		fp8_mul_art(c[0], t0);
 		fp8_sub(c[1], t2, c[0]);
 		fp8_dbl(c[0], c[0]);
-		fp_add_dig(c[0][0][0], c[0][0][0], 1);
-		fp_sub_dig(c[1][0][0], c[1][0][0], 1);
+		fp_add_dig(c[0][0][0][0], c[0][0][0][0], 1);
+		fp_sub_dig(c[1][0][0][0], c[1][0][0][0], 1);
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {

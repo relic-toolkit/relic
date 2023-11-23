@@ -82,6 +82,7 @@ void ep4_map(ep4_t p, const uint8_t *msg, size_t len) {
 					h += elm;
 				}
 			}
+			h -= 4*elm;
 
 			/* Compute c = 3*a^2, t^2 = 6a(9u^5 − 14au^3 + 3cu).*/
 			ep4_curve_get_a(a);

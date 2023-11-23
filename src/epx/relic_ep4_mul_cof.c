@@ -370,11 +370,7 @@ void ep4_mul_cof(ep4_t r, const ep4_t p) {
 			default:
 				/* Now, multiply by cofactor to get the correct group. */
 				ep4_curve_get_cof(k);
-				if (bn_bits(k) < RLC_DIG) {
-					ep4_mul_dig(r, p, k->dp[0]);
-				} else {
-					ep4_mul_basic(r, p, k);
-				}
+				ep4_mul_basic(r, p, k);
 				break;
 		}
 	} RLC_CATCH_ANY {

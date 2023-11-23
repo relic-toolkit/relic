@@ -160,6 +160,8 @@ enum {
 	N16_765,
 	/** 765-bit prime for FM curve with embeddind degree 16. */
 	FM16_765,
+	/** 768-bit prime for FM curve with embedding degree 18. */
+	FM18_768,
 	/** 766-bit prime for KSS curve with embedding degree 16. */
 	K16_766,
 	/** 1024-bit prime for CTIDH. */

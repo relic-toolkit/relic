@@ -65,14 +65,14 @@ enum {
     EP_B12,
     /* New family from Fotiadis-Martindale family with embedding degree 16. */
     EP_N16,
-	/* Fotiadis-Martindale famile with embedding degree 16. */
+	/* Fotiadis-Martindale family with embedding degree 16. */
 	EP_FM16,
     /* Kachisa-Schaefer-Scott family with embedding degree 16. */
     EP_K16,
-    /* Fotiadis-Martindale family with embedding degree 18. */
-    EP_FM18,
     /* Kachisa-Schaefer-Scott family with embedding degree 18. */
     EP_K18,
+    /* Fotiadis-Martindale family with embedding degree 18. */
+    EP_FM18,
     /* Scott-Guillevic family with embedding degree 18. */
     EP_SG18,
     /* Barreto-Lynn-Scott family with embedding degree 24. */
@@ -179,6 +179,8 @@ enum {
 	N16_P765,
 	/* Fotiadis-Moartindale with embedding degree 16. */
 	FM16_P765,
+	/* Fotiadis-Moartindale with embedding degree 18. */
+	FM18_P768,
 	/** Kachisa-Schaefer-Scott with embedding degree 16. */
 	K16_P766,
 	/** 1536-bit supersingular curve. */
