@@ -70,9 +70,9 @@ static void ep3_psi(ep3_t r, const ep3_t p) {
 				ep3_frb(r, r, 1);
 				break;
 			case EP_FM18:
-				/* For FM18, we have that -u = (p-p^4) mod r. */
+				/* For FM18, we have that u = (p^4-p) mod r. */
 				ep3_frb(q, p, 3);
-				ep3_sub(r, p, q);
+				ep3_sub(r, q, p);
 				ep3_frb(r, r, 1);
 				break;
 		}

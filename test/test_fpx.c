@@ -1333,8 +1333,13 @@ static int multiplication3(void) {
 			fp3_rand(a);
 			fp3_mul_nor(b, a);
 			switch (fp_prime_get_mod18()) {
+				case 1:
 				case 7:
 					fp_set_dig(c[0], fp3_field_get_cnr());
+					if (fp3_field_get_cnr() < 0) {
+						fp_set_dig(c[0], -fp3_field_get_cnr());
+						fp_neg(c[0], c[0]);
+					}
 					fp_set_dig(c[1], 1);
 					fp_zero(c[2]);
 					fp3_mul(c, a, c);

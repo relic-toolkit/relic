@@ -190,6 +190,7 @@ void fp3_mul_nor(fp3_t c, const fp3_t a) {
 		fp3_mul_art(t, a);
 
 		int cnr = fp3_field_get_cnr();
+		cnr = (cnr < 0 ? -cnr : cnr);
 		switch (fp_prime_get_mod18()) {
 			case 1:
 			case 7:
@@ -202,7 +203,11 @@ void fp3_mul_nor(fp3_t c, const fp3_t a) {
 						}
 						cnr = cnr >> 1;
 					}
-					fp3_add(t, t, u);
+					if (fp3_field_get_cnr() > 0) {
+						fp3_add(t, t, u);
+					} else {
+						fp3_sub(t, t, u);
+					}
 				}
 				break;
 		}
