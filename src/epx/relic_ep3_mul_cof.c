@@ -134,6 +134,7 @@ static void ep3_mul_cof_k18(ep3_t r, const ep3_t p) {
 		ep3_dbl(t4, t4);
 		/* r = [5u+18, u^3+3u^2+1, -3u^2-8u, -3u+1, -u^2-2, u^2+5u]. */
 		ep3_add(r, t4, t3);
+		ep3_norm(r, r);
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
@@ -202,6 +203,86 @@ static void ep3_mul_cof_sg18(ep3_t r, const ep3_t p) {
 		ep3_dbl(t4, t0);
 		ep3_frb(t4, t4, 3);
 		ep3_sub(r, t3, t4);
+		ep3_norm(r, r);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		ep3_free(t0);
+		ep3_free(t1);
+		ep3_free(t2);
+		ep3_free(t3);
+		ep3_free(t4);
+		bn_free(x);
+	}
+}
+
+/**
+ * Multiplies a point by the cofactor in a Fotiadis-Mardindale curve.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to multiply.
+ */
+static void ep3_mul_cof_fm18(ep3_t r, const ep3_t p) {
+	ep3_t t0, t1, t2, t3, t4;
+	bn_t x;
+
+	ep3_null(t0);
+	ep3_null(t1);
+	ep3_null(t2);
+	ep3_null(t3);
+	ep3_null(t4);
+	bn_null(x);
+
+	RLC_TRY {
+		ep3_new(t0);
+		ep3_new(t1);
+		ep3_new(t2);
+		ep3_new(t3);
+		ep3_new(t4);
+		bn_new(x);
+
+		/* Vector computed by Guillevic's MAGMA script:
+		[2*x*(x+2)/3, x^3-(x+2)/3, -2*x^2*(x+2)/3, -x*(x^3+(x+2)/3), 2*(x+2)/3, x^2*(x^3+(x+2)/3)-1] */
+		fp_prime_get_par(x);
+
+		/* t0 = [(x+2)/3]P, t1 = [x]P. */
+		bn_add_dig(x, x, 2);
+		bn_div_dig(x, x, 3);
+		ep3_mul_basic(t0, p, x);
+		ep3_dbl(t1, t0);
+		ep3_add(t1, t1, t0);
+		ep3_dbl(t2, p);
+		ep3_sub(t1, t1, t2);
+
+		/* Compute t2 = [x*(x+2)/3]P, t1 = [3*x*(x+2)/3-2x]P = [x^2]P. */
+		fp_prime_get_par(x);
+		ep3_frb(t3, t0, 4);
+		ep3_mul_basic(t2, t0, x);
+		ep3_add(t3, t3, t2);
+		ep3_dbl(t4, t2);
+		ep3_add(t4, t4, t2);
+		ep3_dbl(t1, t1);
+		ep3_sub(t1, t4, t1);
+		ep3_norm(t1, t1);
+		/* Compute t2 = [x^2*(x+2)/3]P, */
+		ep3_mul_basic(t2, t2, x);
+		ep3_frb(t4, t2, 2);
+		ep3_sub(t3, t3, t4);
+		ep3_dbl(t3, t3);
+		ep3_mul_basic(t2, t1, x);
+		ep3_sub(t4, t2, t0);
+		ep3_frb(t4, t4, 1);
+		ep3_add(t3, t3, t4);
+		ep3_add(t4, t2, t0);
+		ep3_norm(t4, t4);
+		ep3_mul_basic(t2, t4, x);
+		ep3_frb(t4, t2, 3);
+		ep3_sub(t3, t3, t4);
+		ep3_mul_basic(t2, t2, x);
+		ep3_sub(t2, t2, p);
+		ep3_frb(t2, t2, 5);
+		ep3_add(t3, t3, t2);
+		ep3_norm(r, t3);
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
@@ -230,6 +311,9 @@ void ep3_mul_cof(ep3_t r, const ep3_t p) {
 				break;
 			case EP_SG18:
 				ep3_mul_cof_sg18(r, p);
+				break;
+			case EP_FM18:
+				ep3_mul_cof_fm18(r, p);
 				break;
 			default:
 				/* Now, multiply by cofactor to get the correct group. */
