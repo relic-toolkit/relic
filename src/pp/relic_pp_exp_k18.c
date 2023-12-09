@@ -258,6 +258,116 @@ void pp_exp_sg(fp18_t c, fp18_t a) {
 	}
 }
 
+/**
+ * Computes the final exponentiation of a pairing defined over an FM curve.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the extension field element to exponentiate.
+ */
+void pp_exp_fm(fp18_t c, fp18_t a) {
+	fp18_t t0, t1, t2, t3, t4;
+	const int *b;
+	bn_t x;
+	int l;
+
+	bn_null(x);
+	fp18_null(t0);
+	fp18_null(t1);
+	fp18_null(t2);
+	fp18_null(t3);
+	fp18_null(t4);
+
+	RLC_TRY {
+		bn_new(x);
+		fp18_new(t0);
+		fp18_new(t1);
+		fp18_new(t2);
+		fp18_new(t3);
+		fp18_new(t4);
+
+		fp_prime_get_par(x);
+		b = fp_prime_get_par_sps(&l);
+		/* First, compute m^(p^9 - 1)(p^3 + 1). */
+		fp18_conv_cyc(c, a);
+
+		/* Compute t0 = f^|u|. */
+		fp18_exp_cyc_sps(t0, c, b, l, RLC_POS);
+		if (bn_sign(x) == RLC_POS) {
+			fp18_inv_cyc(t0, t0);
+		}
+		fp18_frb(t1, c, 1);
+		fp18_mul(t0, t0, t1);
+
+		fp18_exp_cyc_sps(t1, t0, b, l, RLC_POS);
+
+		fp18_frb(t2, t1, 3);
+		fp18_frb(t3, t0, 1);
+		if (bn_sign(x) == RLC_POS) {
+			fp18_inv_cyc(t3, t3);
+			fp18_mul(t2, t2, t3);
+			fp18_inv_cyc(t1, t1);
+		} else {
+			fp18_mul(t2, t2, t3);
+			fp18_inv_cyc(t2, t2);
+		}
+		fp18_mul(t1, t1, t2);
+		fp18_exp_cyc_sps(t1, t1, b, l, RLC_POS);
+		if (bn_sign(x) == RLC_NEG) {
+			fp18_inv_cyc(t1, t1);
+		}
+
+		fp18_frb(t0, t0, 4);
+		fp18_mul(t0, t0, t2);
+		fp18_exp_cyc_sps(t3, t1, b, l, RLC_POS);
+		fp18_exp_cyc_sps(t3, t3, b, l, RLC_POS);
+		fp18_inv_cyc(t3, t3);
+		fp18_mul(t0, t0, t3);
+
+		bn_sub_dig(x, x, 1);
+		bn_abs(x, x);
+		fp18_exp_cyc(t2, t0, x);
+		if (bn_sign(x) == RLC_NEG) {
+			fp18_sqr_cyc(t3, t2);
+			fp18_mul(t3, t3, t0);
+		} else {
+			fp18_inv_cyc(t3, t2);
+			fp18_sqr_cyc(t3, t3);
+			fp18_mul(t3, t3, t0);
+		}
+
+		bn_div_dig(x, x, 3);
+		fp18_exp_cyc(t2, t2, x);
+		fp18_sqr_cyc(t4, t2);
+		fp18_mul(t4, t4, t2);
+
+		fp_prime_get_par(x);
+		bn_add_dig(x, x, 1);
+		bn_abs(x, x);
+		fp18_exp_cyc(t0, t4, x);
+		fp18_exp_cyc(t0, t0, x);
+		fp18_mul(t4, t4, t0);
+		fp18_mul(t4, t4, t3);
+
+		fp18_exp_cyc_sps(t0, t4, b, l, RLC_POS);
+		fp18_exp_cyc_sps(t0, t0, b, l, RLC_POS);
+		fp18_mul(t4, t4, t0);
+		fp18_mul(t2, t2, t4);
+		fp18_mul(c, c, t1);
+		fp18_mul(c, c, t2);
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		bn_free(x);
+		fp18_free(t0);
+		fp18_free(t1);
+		fp18_free(t2);
+		fp18_free(t3);
+		fp18_free(t4);
+	}
+}
+
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
@@ -269,6 +379,9 @@ void pp_exp_k18(fp18_t c, fp18_t a) {
 			break;
 		case EP_SG18:
 			pp_exp_sg(c, a);
+			break;
+		case EP_FM18:
+			pp_exp_fm(c, a);
 			break;
 	}
 }
