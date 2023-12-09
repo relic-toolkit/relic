@@ -549,6 +549,16 @@ void pp_map_oatep_k18(fp18_t r, const ep_t p, const ep3_t q) {
 					pp_fin_k18_oatep(r, t[0], _q[0], _p[0], 1);
 					pp_exp_k18(r, r);
 					break;
+				case EP_FM18:
+					/* r = f_{|a|,Q}(P). */
+					pp_mil_k18(r, t, _q, _p, 1, a);
+					if (bn_sign(a) == RLC_NEG) {
+						/* f_{-a,Q}(P) = 1/f_{a,Q}(P). */
+						fp18_inv_cyc(r, r);
+						ep3_neg(t[0], t[0]);
+					}
+					pp_exp_k18(r, r);
+					break;
 			}
 		}
 	}
@@ -625,6 +635,15 @@ void pp_map_sim_oatep_k18(fp18_t r, const ep_t *p, const ep3_t *q, int m) {
 						}
 						/* Apply Frobenius only once. */
 						pp_fin_k18_oatep(r, t[i], _q[i], _p[i], i == 0);
+					}
+					pp_exp_k18(r, r);
+					break;
+				case EP_FM18:
+					/* r = f_{|a|,Q}(P). */
+					pp_mil_k18(r, t, _q, _p, j, a);
+					if (bn_sign(a) == RLC_NEG) {
+						/* f_{-a,Q}(P) = 1/f_{a,Q}(P). */
+						fp18_inv_cyc(r, r);
 					}
 					pp_exp_k18(r, r);
 					break;

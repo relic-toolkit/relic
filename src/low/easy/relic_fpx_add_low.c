@@ -306,6 +306,7 @@ void fp3_nord_low(dv3_t c, dv3_t a) {
 		dv_copy(t[1], a[0], 2 * RLC_FP_DIGS);
 
 		int cnr = fp3_field_get_cnr();
+		cnr = (cnr < 0 ? -cnr : cnr);
 		switch (fp_prime_get_mod18()) {
 			case 1:
 			case 7:
@@ -320,7 +321,11 @@ void fp3_nord_low(dv3_t c, dv3_t a) {
 						}
 						cnr = cnr >> 1;
 					}
-					fp3_addc_low(t, t, u);
+					if (fp3_field_get_cnr() > 0) {
+						fp3_addc_low(t, t, u);
+					} else {
+						fp3_subc_low(t, t, u);
+					}
 				}
 				break;
 		}

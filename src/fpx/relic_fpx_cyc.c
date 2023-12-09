@@ -1557,21 +1557,32 @@ static void fp18_gls(fp18_t c, const fp18_t a) {
 	RLC_TRY {
 		fp18_new(b);
 
-		if (ep_curve_is_pairf() == EP_SG18) {
-			/* -3*u = (2*p^2 - p^5) mod r */
-			fp18_frb(b, a, 5);
-			fp18_inv_cyc(b, b);
-			fp18_frb(c, a, 2);
-			fp18_sqr_cyc(c, c);
-			fp18_mul(c, c, b);
-		} else {
-			/* For KSS18, we have that x = p^4 - 3*p = (p^3 - 3)p mod n. */
-			fp18_sqr_cyc(b, a);
-			fp18_mul(b, b, a);
-			fp18_frb(c, a, 3);
-			fp18_inv_cyc(b, b);
-			fp18_mul(c, c, b);
-			fp18_frb(c, c, 1);
+		switch (ep_curve_is_pairf()) {
+			case EP_SG18:
+				/* -3*u = (2*p^2 - p^5) mod r */
+				fp18_frb(b, a, 5);
+				fp18_inv_cyc(b, b);
+				fp18_frb(c, a, 2);
+				fp18_sqr_cyc(c, c);
+				fp18_mul(c, c, b);
+				break;
+			case EP_K18:
+				/* For KSS18, we have that x = p^4 - 3*p = (p^3 - 3)p mod n. */
+				fp18_sqr_cyc(b, a);
+				fp18_mul(b, b, a);
+				fp18_frb(c, a, 3);
+				fp18_inv_cyc(b, b);
+				fp18_mul(c, c, b);
+				fp18_frb(c, c, 1);
+				break;
+			case EP_FM18:
+				/* For FM18, we have that u = (p^4-p) mod r. */
+				fp18_frb(b, a, 3);
+				fp18_inv_cyc(b, b);
+				fp18_mul(c, a, b);
+				fp18_frb(c, c, 1);
+				fp18_inv_cyc(c, c);
+				break;
 		}
 	}
 	RLC_CATCH_ANY {

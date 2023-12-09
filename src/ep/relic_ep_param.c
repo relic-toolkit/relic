@@ -1756,6 +1756,9 @@ void ep_param_print(void) {
 		case K16_P766:
 			util_banner("Curve K16-P766:", 0);
 			break;
+		case FM18_P768:
+			util_banner("Curve FM18-P768:", 0);
+			break;
 		case SS_P1536:
 			util_banner("Curve SS-P1536:", 0);
 			break;
@@ -1818,6 +1821,7 @@ int ep_param_level(void) {
 		case N16_P765:
 		case FM16_P765:
 		case K16_P766:
+		case FM18_P768:
 		case K18_P638:
 		case B24_P509:
 			return 192;
