@@ -62,7 +62,7 @@
 #elif FP_PRIME == 315 || FP_PRIME == 317 || FP_PRIME == 330 || FP_PRIME == 509 || FP_PRIME == 765 || FP_PRIME == 766
 #define RLC_G2_LOWER			ep4_
 #define RLC_G2_BASEF(A)			A[0][0]
-#elif FP_PRIME == 508 || FP_PRIME == 638 && !defined(FP_QNRES)
+#elif FP_PRIME == 508 || FP_PRIME == 768 || FP_PRIME == 638 && !defined(FP_QNRES)
 #define RLC_G2_LOWER			ep3_
 #define RLC_G2_BASEF(A)			A[0]
 #else
@@ -78,7 +78,7 @@
 #elif FP_PRIME == 315 || FP_PRIME == 317 || FP_PRIME == 509
 #define RLC_GT_LOWER			fp24_
 #define RLC_GT_EMBED      		24
-#elif FP_PRIME == 508 || FP_PRIME == 638 && !defined(FP_QNRES)
+#elif FP_PRIME == 508 || FP_PRIME == 768 || FP_PRIME == 638 && !defined(FP_QNRES)
 #define RLC_GT_LOWER			fp18_
 #define RLC_GT_EMBED      		18
 #elif FP_PRIME == 330 || FP_PRIME == 765 || FP_PRIME == 766
