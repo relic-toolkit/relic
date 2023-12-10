@@ -315,6 +315,7 @@ void pp_exp_fm(fp18_t c, fp18_t a) {
 		if (bn_sign(x) == RLC_NEG) {
 			fp18_inv_cyc(t1, t1);
 		}
+		fp18_mul(c, c, t1);
 
 		fp18_frb(t0, t0, 4);
 		fp18_mul(t0, t0, t2);
@@ -325,7 +326,8 @@ void pp_exp_fm(fp18_t c, fp18_t a) {
 
 		bn_sub_dig(x, x, 1);
 		bn_abs(x, x);
-		fp18_exp_cyc(t2, t0, x);
+		/* Trick that only works when param is negative and last power is -1. */
+		fp18_exp_cyc_sps(t2, t0, b+2, l-2, RLC_POS);
 		if (bn_sign(x) == RLC_NEG) {
 			fp18_sqr_cyc(t3, t2);
 			fp18_mul(t3, t3, t0);
@@ -343,17 +345,16 @@ void pp_exp_fm(fp18_t c, fp18_t a) {
 		fp_prime_get_par(x);
 		bn_add_dig(x, x, 1);
 		bn_abs(x, x);
-		fp18_exp_cyc(t0, t4, x);
-		fp18_exp_cyc(t0, t0, x);
+		fp18_exp_cyc_sps(t0, t4, b+1, l-1, RLC_POS);
+		fp18_exp_cyc_sps(t0, t0, b+1, l-1, RLC_POS);
 		fp18_mul(t4, t4, t0);
 		fp18_mul(t4, t4, t3);
 
 		fp18_exp_cyc_sps(t0, t4, b, l, RLC_POS);
 		fp18_exp_cyc_sps(t0, t0, b, l, RLC_POS);
 		fp18_mul(t4, t4, t0);
-		fp18_mul(t2, t2, t4);
-		fp18_mul(c, c, t1);
-		fp18_mul(c, c, t2);
+		fp18_mul(t4, t4, t2);
+		fp18_mul(c, c, t4);
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
