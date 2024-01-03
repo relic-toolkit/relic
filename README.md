@@ -59,4 +59,4 @@ Starting from version 0.3.3, static linking and changes in the configuration or 
 
 ### Disclaimer
 
-RELIC is at best alpha-quality software. Implementations may not be correct or secure and may include patented algorithms. There are *many* configuration options which make the library horribly insecure. Backward API compatibility with early versions may not necessarily be maintained. Use at your own risk.
+RELIC is at best alpha-quality software. Implementations may not be correct or secure and may include patented algorithms. There are *many* configuration options which make the library horribly insecure. Backward API compatibility with early versions may not necessarily be maintained. Side-channel and fault injection attacks are not considered in particular, unless it is explicitly noted. Use at your own risk.
