@@ -240,12 +240,13 @@ void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 	/* enough space for two field elements plus extra bytes for uniformity */
 	const size_t len_per_elm = (FP_PRIME + ep_param_level() + 7) / 8;
 	uint8_t s, *pseudo_random_bytes = RLC_ALLOCA(uint8_t, 2 * len_per_elm + 1);
-	fp_t a, c, t, u, v, w, y, x1, y1, z1;
+	fp_t a, b, c, t, u, v, w, y, x1, y1, z1;
 	ctx_t *ctx = core_get();
 	bn_t k;
 
 	bn_null(k);
 	fp_null(a);
+	fp_null(b);
 	fp_null(c);
 	fp_null(t);
 	fp_null(u);
@@ -259,6 +260,7 @@ void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 	RLC_TRY {
 		bn_new(k);
 		fp_new(a);
+		fp_new(b);
 		fp_new(c);
 		fp_new(t);
 		fp_new(u);
@@ -283,7 +285,6 @@ void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 		if ((ep_curve_opt_b() == RLC_ZERO) && (ctx->mod8 == 1)) {
 			/* This is the approach due to Koshelev introduced in
 			 * https://eprint.iacr.org/2021/1034.pdf */
-			
 			if (fp_is_sqr(a)) {
 				/* Compute t^2 = 3c*sqrt(a)*(2c^3*x^6 - 3*c^2*x^4 - 3*c*x^2 + 2).*/
 				/* Compute w = 3*c. */
@@ -437,7 +438,7 @@ void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 			fp_sqr(y, t);
 			fp_sqr(y, y);
 			fp_sqr(w, c);
-			fp_sqr(z1, ep_curve_get_a());
+			fp_sqr(z1, a);
 			fp_mul(z1, z1, c);
 			fp_dbl(z1, z1);
 			fp_dbl(z1, z1);
@@ -453,7 +454,7 @@ void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 			fp_mul(w, w, z1);
 			fp_inv(p->z, w);
 			fp_mul(z1, z1, c);
-			fp_mul(z1, z1, ep_curve_get_a());
+			fp_mul(z1, z1, a);
 			fp_dbl(z1, z1);
 			/* v = num2 = c^4*t0^8 - 2*c^2t0^4*t1^4 + t1^8 - 16*a^3*c^2*/
 			fp_sub(v, y1, x1);
@@ -467,7 +468,7 @@ void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 			fp_sub(w, w, y1);
 			fp_mul(w, w, u);
 			fp_mul(w, w, c);
-			fp_mul(w, w, ep_curve_get_a());
+			fp_mul(w, w, a);
 			/* z1 = num1 = t1 * ac^2(c^4t0^8 + 2c^2t0^4*t1^4 - 3^t1^8 + 16a^3c^2)*/
 			fp_sub(z1, z1, y);
 			fp_sub(z1, z1, y);
@@ -477,7 +478,7 @@ void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 			fp_mul(z1, z1, t);
 			fp_mul(z1, z1, c);
 			fp_mul(z1, z1, c);
-			fp_mul(z1, z1, ep_curve_get_a());
+			fp_mul(z1, z1, a);
 			/* v2 = num2/den = v/w. */
 			fp_mul(w, w, p->z);
 			fp_mul(z1, z1, p->z);
@@ -498,7 +499,7 @@ void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 			bn_rsh(k, k, 4);
 			/* Compute x1 = f = (1/v2)^3 + a*(1/v2) = (1/v2)((1/v2)^2 + a). */
 			fp_sqr(x1, v);
-			fp_add(x1, x1, ep_curve_get_a());
+			fp_add(x1, x1, a);
 			fp_mul(x1, x1, v);
 			/* Compute y = theta, zp = theta^4. */
 			fp_exp(y, x1, k);
@@ -511,18 +512,24 @@ void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 			fp_mul(t, t, c);
 			/* Compute c = i^r * f. */
 			fp_mul(c, ctx->ep_map_c[5], x1);
-			fp_copy(p->x, v);
 			fp_sqr(p->y, y);
 			/* We use zp as temporary, but there is no problem with \psi. */
 			int index = 0;
 			fp_copy(y1, u);
-			/* Make the following constant-time. */
+			fp_copy(a, v);
+			fp_sqr(b, y);
+			fp_copy(p->x, a);
+			fp_copy(p->y, b);
 			for (int m = 0; m < 4; m++) {
 				fp_mul(y1, y1, ctx->ep_map_c[5]);
-				index += (fp_bits(y1) < fp_bits(u));
+				index += (fp_cmp(y1, u) == RLC_LT);
 			}
-			for (int m = 0; m < index; m++) {
-				ep_psi(p, p);
+			/* Apply consecutive endomorphisms. */
+			for (int m = 0; m < 4; m++) {
+				fp_neg(a, a);
+				fp_mul(b, b, ep_curve_get_beta());
+				dv_copy_cond(p->x, a, RLC_FP_DIGS, m < index);
+				dv_copy_cond(p->y, b, RLC_FP_DIGS, m < index);
 			}
 			fp_neg(y1, x1);
 			/* Compute 1/d * 1/theta. */
@@ -643,6 +650,7 @@ void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 	RLC_FINALLY {
 		bn_free(k);
 		fp_free(a);
+		fp_free(b);
 		fp_free(c);
 		fp_free(t);
 		fp_free(u);

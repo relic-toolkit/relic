@@ -69,7 +69,7 @@ int fp_cmp(const fp_t a, const fp_t b) {
 		fp_norm(u, a);
 		fp_norm(v, b);
 		fp_sub(t, u, v);
-		r = fp_is_zero(t) ?  RLC_EQ : RLC_NE;
+		r = fp_is_zero(t) ? RLC_EQ : RLC_NE;
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
