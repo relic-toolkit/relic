@@ -106,7 +106,7 @@ void fp_set_bit(fp_t a, uint_t bit, int value) {
 size_t fp_bits(const fp_t a) {
 	int i = RLC_FP_DIGS - 1;
 
-	while (i >= 0 && a[i] == 0) {
+	while (i > 0 && a[i] == 0) {
 		i--;
 	}
 

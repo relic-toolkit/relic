@@ -119,7 +119,7 @@ void fb_set_bit(fb_t a, uint_t bit, int value) {
 size_t fb_bits(const fb_t a) {
 	int i = RLC_FB_DIGS - 1;
 
-	while (i >= 0 && a[i] == 0) {
+	while (i > 0 && a[i] == 0) {
 		i--;
 	}
 
