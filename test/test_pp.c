@@ -3586,6 +3586,7 @@ static int doubling54(void) {
 
 		ep_curve_get_ord(n);
 
+#if EP_ADD == BASIC || !defined(STRIP)
 		TEST_CASE("miller doubling is correct") {
 			ep_rand(p);
 			fp9_copy(rx, qx);
@@ -3599,7 +3600,6 @@ static int doubling54(void) {
 			TEST_ASSERT(fp9_cmp(rx, qx) == RLC_EQ && fp9_cmp(ry, qy) == RLC_EQ, end);
 		} TEST_END;
 
-#if EP_ADD == BASIC || !defined(STRIP)
 		TEST_CASE("miller doubling in affine coordinates is correct") {
 			ep_rand(p);
 			fp9_copy(rx, qx);
@@ -3727,6 +3727,7 @@ static int addition54(void) {
 
 		ep_curve_get_ord(n);
 
+#if EP_ADD == BASIC || !defined(STRIP)
 		TEST_CASE("miller addition is correct") {
 			ep_rand(p);
 			fp9_copy(rx, qx);
@@ -3752,7 +3753,6 @@ static int addition54(void) {
 			TEST_ASSERT(fp9_cmp(rx, e1[0][0]) == RLC_EQ && fp9_cmp(ry, e1[0][1]) == RLC_EQ, end);
 		} TEST_END;
 
-#if EP_ADD == BASIC || !defined(STRIP)
 		TEST_CASE("miller addition in affine coordinates is correct") {
 			ep_rand(p);
 			fp9_copy(rx, qx);

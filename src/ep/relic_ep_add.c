@@ -567,7 +567,7 @@ static void ep_add_jacob_mix(ep_t r, const ep_t p, const ep_t q) {
 		fp_free(t6);
 	}
 }
-#include <assert.h>
+
 /**
  * Adds two points represented in Jacobian coordinates on an ordinary prime
  * elliptic curve.
@@ -580,7 +580,6 @@ static void ep_add_jacob_imp(ep_t r, const ep_t p, const ep_t q) {
 #if defined(EP_MIXED) && defined(STRIP)
 	/* If code size is a problem, leave only the mixed version. */
 	ep_add_jacob_mix(r, p, q);
-	assert(q->coord == BASIC);
 #else /* General addition. */
 
 #if defined(EP_MIXED) || !defined(STRIP)

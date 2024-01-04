@@ -204,7 +204,11 @@ void eb_tab(eb_t *t, const eb_t p, int w) {
 			eb_norm_sim(t + 1, (const eb_t *)t + 1, (1 << (w - 2)) - 1);
 #endif
 		}
+#if defined(EB_MIXED)
+		eb_norm(t[0], p);
+#else
 		eb_copy(t[0], p);
+#endif
 	}
 #endif /* EB_PLAIN */
 

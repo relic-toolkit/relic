@@ -104,7 +104,7 @@ int g1_is_valid(const g1_t a) {
 		} else {
 			fp_prime_get_par(n);
 			switch (ep_curve_is_pairf()) {
-#if defined(EP_ENDOM) && !defined(STRIP)
+#if defined(EP_ENDOM)
 				/* Formulas from "Co-factor clearing and subgroup membership
 				 * testing on pairing-friendly curves" by El Housni, Guillevic,
 				 * Piellard. https://eprint.iacr.org/2022/352.pdf */
@@ -294,7 +294,7 @@ int g2_is_valid(const g2_t a) {
 
 		fp_prime_get_par(n);
 		switch (ep_curve_is_pairf()) {
-#if defined(EP_ENDOM) && !defined(STRIP)
+#if defined(EP_ENDOM)
 			/* Formulas from "Co-factor clearing and subgroup membership
 			* testing on pairing-friendly curves" by El Housni, Guillevic,
 			* Piellard. https://eprint.iacr.org/2022/352.pdf */
