@@ -79,7 +79,7 @@ void pp_add_k48_basic(fp48_t l, ep8_t r, const ep8_t q, const ep_t p) {
 
 #endif
 
-#if EP_ADD == PROJC || !defined(STRIP)
+#if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
 
 void pp_add_k48_projc(fp48_t l, ep8_t r, const ep8_t q, const ep_t p) {
 	fp8_t t0, t1, t2, t3, t4;

@@ -148,7 +148,7 @@ void pp_add_k54_basic(fp54_t l, fp9_t rx, fp9_t ry, const fp9_t qx, const fp9_t 
 
 #endif
 
-#if EP_ADD == PROJC || !defined(STRIP)
+#if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
 
 void pp_add_k54_projc(fp54_t l, fp9_t rx, fp9_t ry, fp9_t rz, const fp9_t qx,
 		const fp9_t qy, const ep_t p) {

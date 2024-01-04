@@ -84,7 +84,7 @@ void pp_add_k24_basic(fp24_t l, ep4_t r, const ep4_t q, const ep_t p) {
 
 #endif
 
-#if EP_ADD == PROJC || !defined(STRIP)
+#if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
 
 void pp_add_k24_projc(fp24_t l, ep4_t r, const ep4_t q, const ep_t p) {
 	fp4_t t0, t1, t2, t3, t4;
