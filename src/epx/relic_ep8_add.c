@@ -111,7 +111,7 @@ static void ep8_add_basic_imp(ep8_t r, fp8_t s, const ep8_t p, const ep8_t q) {
 
 #endif /* EP_ADD == BASIC */
 
-#if EP_ADD == PROJC || !defined(STRIP)
+#if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
 
 #if defined(EP_MIXED) || !defined(STRIP)
 
@@ -385,7 +385,7 @@ void ep8_add_slp_basic(ep8_t r, fp8_t s, const ep8_t p, const ep8_t q) {
 
 #endif
 
-#if EP_ADD == PROJC || !defined(STRIP)
+#if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
 
 void ep8_add_projc(ep8_t r, const ep8_t p, const ep8_t q) {
 	if (ep8_is_infty(p)) {

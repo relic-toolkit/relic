@@ -111,7 +111,7 @@ static void ep4_add_basic_imp(ep4_t r, fp4_t s, const ep4_t p, const ep4_t q) {
 
 #endif /* EP_ADD == BASIC */
 
-#if EP_ADD == PROJC || !defined(STRIP)
+#if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
 
 #if defined(EP_MIXED) || !defined(STRIP)
 
@@ -385,7 +385,7 @@ void ep4_add_slp_basic(ep4_t r, fp4_t s, const ep4_t p, const ep4_t q) {
 
 #endif
 
-#if EP_ADD == PROJC || !defined(STRIP)
+#if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
 
 void ep4_add_projc(ep4_t r, const ep4_t p, const ep4_t q) {
 	if (ep4_is_infty(p)) {

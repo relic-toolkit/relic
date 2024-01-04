@@ -108,7 +108,7 @@ static void ep3_dbl_basic_imp(ep3_t r, fp3_t s, const ep3_t p) {
 
 #endif /* EP_ADD == BASIC */
 
-#if EP_ADD == PROJC || !defined(STRIP)
+#if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
 
 /**
  * Doubles a point represented in affine coordinates on an ordinary prime
@@ -262,7 +262,7 @@ void ep3_dbl_slp_basic(ep3_t r, fp3_t s, const ep3_t p) {
 
 #endif
 
-#if EP_ADD == PROJC || !defined(STRIP)
+#if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
 
 void ep3_dbl_projc(ep3_t r, const ep3_t p) {
 	if (ep3_is_infty(p)) {
