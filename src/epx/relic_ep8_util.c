@@ -223,7 +223,11 @@ void ep8_tab(ep8_t *t, const ep8_t p, int w) {
 		ep8_norm_sim(t + 1, t + 1, (1 << (w - 2)) - 1);
 #endif
 	}
+#if defined(EP_MIXED)
+	ep8_norm(t[0], p);
+#else
 	ep8_copy(t[0], p);
+#endif
 }
 
 void ep8_print(const ep8_t p) {

@@ -213,7 +213,11 @@ void ep3_tab(ep3_t *t, const ep3_t p, int w) {
 		ep3_norm_sim(t + 1, t + 1, (1 << (w - 2)) - 1);
 #endif
 	}
+#if defined(EP_MIXED)
+	ep3_norm(t[0], p);
+#else
 	ep3_copy(t[0], p);
+#endif
 }
 
 void ep3_print(const ep3_t p) {

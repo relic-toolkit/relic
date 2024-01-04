@@ -213,7 +213,11 @@ void ep4_tab(ep4_t *t, const ep4_t p, int w) {
 		ep4_norm_sim(t + 1, t + 1, (1 << (w - 2)) - 1);
 #endif
 	}
+#if defined(EP_MIXED)
+	ep4_norm(t[0], p);
+#else
 	ep4_copy(t[0], p);
+#endif
 }
 
 void ep4_print(const ep4_t p) {

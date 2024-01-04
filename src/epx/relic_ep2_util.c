@@ -206,7 +206,11 @@ void ep2_tab(ep2_t *t, const ep2_t p, int w) {
 		ep2_norm_sim(t + 1, t + 1, (1 << (w - 2)) - 1);
 #endif
 	}
+#if defined(EP_MIXED)
+	ep2_norm(t[0], p);
+#else
 	ep2_copy(t[0], p);
+#endif
 }
 
 void ep2_print(const ep2_t p) {
