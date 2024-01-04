@@ -522,7 +522,7 @@ void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 			fp_copy(p->y, b);
 			for (int m = 0; m < 4; m++) {
 				fp_mul(y1, y1, ctx->ep_map_c[5]);
-				index += (fp_cmp(y1, u) == RLC_LT);
+				index += (fp_bits(y1) < fp_bits(u));
 			}
 			/* Apply consecutive endomorphisms. */
 			for (int m = 0; m < 4; m++) {
