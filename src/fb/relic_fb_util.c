@@ -123,11 +123,7 @@ size_t fb_bits(const fb_t a) {
 		i--;
 	}
 
-	if (i > 0) {
-		return (i << RLC_DIG_LOG) + util_bits_dig(a[i]);
-	} else {
-		return util_bits_dig(a[0]);
-	}
+	return (i << RLC_DIG_LOG) + util_bits_dig(a[i]);
 }
 
 void fb_set_dig(fb_t c, dig_t a) {

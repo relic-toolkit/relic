@@ -110,11 +110,7 @@ size_t fp_bits(const fp_t a) {
 		i--;
 	}
 
-	if (i > 0) {
-		return (i << RLC_DIG_LOG) + util_bits_dig(a[i]);
-	} else {
-		return util_bits_dig(a[0]);
-	}
+	return (i << RLC_DIG_LOG) + util_bits_dig(a[i]);
 }
 
 void fp_set_dig(fp_t c, dig_t a) {
