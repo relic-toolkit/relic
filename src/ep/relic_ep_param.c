@@ -713,8 +713,6 @@
 /** @} */
 #endif
 
-
-
 #if defined(EP_SUPER) && FP_PRIME == 1536
 /**
  * Parameters for a 1536-bit supersingular elliptic curve.
