@@ -63,8 +63,7 @@ void fp2_sqr_basic(fp2_t c, const fp2_t a) {
 		for (int i = 1; i < fp_prime_get_qnr(); i++) {
 			fp_add(t1, t1, a[1]);
 		}
-
-
+		
 		if (fp_prime_get_qnr() == -1) {
 			/* t2 = 2 * a_0. */
 			fp_dbl(t2, a[0]);
