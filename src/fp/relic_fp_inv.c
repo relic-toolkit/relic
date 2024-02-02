@@ -256,7 +256,7 @@ void fp_inv_monty(fp_t c, const fp_t a) {
 	bn_t _a, _p, u, v, x1, x2;
 	const dig_t *p = NULL;
 	dig_t carry;
-	int i, k, flag = 0;
+	int i, k;
 
 	bn_null(_a);
 	bn_null(_p);
@@ -340,18 +340,18 @@ void fp_inv_monty(fp_t c, const fp_t a) {
 			fp_subn_low(x1->dp, x1->dp, fp_prime_get());
 		}
 
-		dv_copy(x2->dp, fp_prime_get_conv(), RLC_FP_DIGS);
-
 		/* If k < Wt then x1 = x1 * R^2 * R^{-1} mod p. */
 		if (k <= RLC_FP_DIGS * RLC_DIG) {
-			flag = 1;
-			fp_mul(x1->dp, x1->dp, x2->dp);
 			k = k + RLC_FP_DIGS * RLC_DIG;
+#if FP_RDC == MONTY
+			fp_mul(x1->dp, x1->dp, fp_prime_get_conv());
+#endif
 		}
 
+#if FP_RDC == MONTY
 		/* x1 = x1 * R^2 * R^{-1} mod p. */
-		fp_mul(x1->dp, x1->dp, x2->dp);
-
+		fp_mul(x1->dp, x1->dp, fp_prime_get_conv());
+#endif
 		/* c = x1 * 2^(2Wt - k) * R^{-1} mod p. */
 		fp_copy(c, x1->dp);
 		dv_zero(x1->dp, RLC_FP_DIGS);
@@ -360,23 +360,14 @@ void fp_inv_monty(fp_t c, const fp_t a) {
 
 #if FP_RDC != MONTY
 		/*
-		 * If we do not use Montgomery reduction, the result of inversion is
-		 * a^{-1}R^3 mod p or a^{-1}R^4 mod p, depending on flag.
-		 * Hence we must reduce the result three or four times.
+		 * If we do not use Montgomery reduction, convert back.
 		 */
-		_a->used = RLC_FP_DIGS;
-		dv_copy(_a->dp, c, RLC_FP_DIGS);
-		bn_mod_monty_back(_a, _a, _p);
-		bn_mod_monty_back(_a, _a, _p);
+		bn_read_raw(_a, c, RLC_FP_DIGS);
 		bn_mod_monty_back(_a, _a, _p);
 
-		if (flag) {
-			bn_mod_monty_back(_a, _a, _p);
-		}
 		fp_zero(c);
 		dv_copy(c, _a->dp, _a->used);
 #endif
-		(void)flag;
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);

@@ -40,10 +40,6 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-dig_t fp_addn_low(dig_t *c, const dig_t *a, const dig_t *b) {
-	return mpn_add_n(c, a, b, RLC_FP_DIGS);
-}
-
 dig_t fp_addd_low(dig_t *c, const dig_t *a, const dig_t *b) {
 	return mpn_add_n(c, a, b, 2 * RLC_FP_DIGS);
 }
@@ -62,10 +58,6 @@ dig_t fp_sub1_low(dig_t *c, const dig_t *a, const dig_t digit) {
 	return mpn_sub_1(c, a, RLC_FP_DIGS, digit);
 }
 
-dig_t fp_subn_low(dig_t *c, const dig_t *a, const dig_t *b) {
-	return mpn_sub_n(c, a, b, RLC_FP_DIGS);
-}
-
 dig_t fp_subd_low(dig_t *c, const dig_t *a, const dig_t *b) {
 	return mpn_sub_n(c, a, b, 2 * RLC_FP_DIGS);
 }
@@ -80,16 +72,12 @@ void fp_negm_low(dig_t *c, const dig_t *a) {
 	if (fp_is_zero(a)) {
 		fp_zero(c);
 	} else {
-		fp_copy(c, a);
-		if (dv_cmp(c, fp_prime_get(), RLC_FP_DIGS) == RLC_GT) {
-			mpn_sub_n(c, c, fp_prime_get(), RLC_FP_DIGS);
-		}
-		mpn_sub_n(c, fp_prime_get(), c, RLC_FP_DIGS);
+		fp_subm_low(c, fp_prime_get(), a);
 	}
 }
 
 dig_t fp_dbln_low(dig_t *c, const dig_t *a) {
-	return mpn_add_n(c, a, a, RLC_FP_DIGS);
+	return fp_addn_low(c, a, a);
 }
 
 void fp_dblm_low(dig_t *c, const dig_t *a) {
@@ -100,7 +88,7 @@ void fp_hlvm_low(dig_t *c, const dig_t *a) {
     dig_t carry = 0;
 
     if (a[0] & 1) {
-            carry = mpn_add_n(c, a, fp_prime_get(), RLC_FP_DIGS);
+            carry = fp_addn_low(c, a, fp_prime_get());
     } else {
             dv_copy(c, a, RLC_FP_DIGS);
     }
@@ -112,7 +100,7 @@ void fp_hlvd_low(dig_t *c, const dig_t *a) {
 	dig_t carry = 0;
 
 	if (a[0] & 1) {
-		carry = mpn_add_n(c, a, fp_prime_get(), RLC_FP_DIGS);
+		carry = fp_addn_low(c, a, fp_prime_get());
 	} else {
 		dv_copy(c, a, RLC_FP_DIGS);
 	}

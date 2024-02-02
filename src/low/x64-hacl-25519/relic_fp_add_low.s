@@ -25,6 +25,26 @@ fp_add1_low:
   pop %rdi
   ret
 
+.global fp_addn_low
+fp_addn_low:
+  xorq	%rax, %rax
+  movq 0(%rdx), %r8
+  addq 0(%rsi), %r8
+  movq 8(%rdx), %r9
+  adcxq 8(%rsi), %r9
+  movq 16(%rdx), %r10
+  adcxq 16(%rsi), %r10
+  movq 24(%rdx), %r11
+  adcxq 24(%rsi), %r11
+
+  movq %r8, 0(%rdi)
+  movq %r9, 8(%rdi)
+  movq %r10, 16(%rdi)
+  movq %r11, 24(%rdi)
+
+  adcq	$0, %rax
+  ret
+
 .global fp_addm_low
 fp_addm_low:
   ;# Compute the raw addition of f1 + f2
@@ -57,6 +77,29 @@ fp_addm_low:
   cmovc %rdx, %rax
   add %rax, %r8
   movq %r8, 0(%rdi)
+  ret
+
+.global fp_subn_low
+fp_subn_low:
+  xorq	%rax, %rax
+
+  ;# Compute the raw substraction of f1-f2
+  movq 0(%rsi), %r8
+  subq 0(%rdx), %r8
+  movq 8(%rsi), %r9
+  sbbq 8(%rdx), %r9
+  movq 16(%rsi), %r10
+  sbbq 16(%rdx), %r10
+  movq 24(%rsi), %r11
+  sbbq 24(%rdx), %r11
+
+  ;# Store the result
+  movq %r8, 0(%rdi)
+  movq %r9, 8(%rdi)
+  movq %r10, 16(%rdi)
+  movq %r11, 24(%rdi)
+
+  adcq	$0, %rax
   ret
 
 .global fp_subm_low

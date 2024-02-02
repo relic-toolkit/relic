@@ -157,6 +157,8 @@ void fp_print(const fp_t a) {
 		}
 #else
 		bn_read_raw(t, a, RLC_FP_DIGS);
+		fp_norm(t->dp, t->dp);
+		bn_trim(t);
 #endif
 
 		for (i = RLC_FP_DIGS - 1; i > 0; i--) {
