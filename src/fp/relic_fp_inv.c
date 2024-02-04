@@ -467,12 +467,13 @@ void fp_inv_divst(fp_t c, const fp_t a) {
 	int g0, d0;
 	dig_t fs, gs, delta = 1;
 	bn_t _t;
-	fp_t f, g, t, u, v, r;
+	fp_t f, g, u, v, r;
+	dv_t t;
 
 	bn_null(_t);
+	dv_null(t);
 	fp_null(f);
 	fp_null(g);
-	fp_null(t);
 	fp_null(u);
 	fp_null(v);
 	fp_null(r);
@@ -484,19 +485,24 @@ void fp_inv_divst(fp_t c, const fp_t a) {
 
 	RLC_TRY {
 		bn_new(_t);
+		dv_new(t);
 		fp_new(f);
 		fp_new(g);
-		fp_new(t);
 		fp_new(u);
 		fp_new(v);
 		fp_new(r);
 
 		fp_zero(v);
 		fp_set_dig(r, 1);
-		fp_prime_back(_t, a);
-		dv_zero(g, RLC_FP_DIGS);
-		dv_copy(g, _t->dp, _t->used);
 		dv_copy(f, fp_prime_get(), RLC_FP_DIGS);
+#if FP_RDC == MONTY
+		/* Convert a from Montgomery form. */
+		dv_zero(t, 2 * RLC_FP_DIGS);
+		fp_copy(t, a);
+		fp_rdcn_low(g, t);
+#else
+		fp_copy(g, a);
+#endif
 		fs = gs = RLC_POS;
 
 		for (int i = 0; i < d; i++) {
@@ -554,9 +560,9 @@ void fp_inv_divst(fp_t c, const fp_t a) {
 		RLC_THROW(ERR_CAUGHT)
 	} RLC_FINALLY {
 		bn_free(_t);
+		dv_free(t);
 		fp_free(f);
 		fp_free(g);
-		fp_free(t);
 		fp_free(u);
 		fp_free(v);
 		fp_free(r);
@@ -615,9 +621,13 @@ void fp_inv_jmpds(fp_t c, const fp_t a) {
 		int j = 0;
 		fp_copy(pre, core_get()->inv.dp);
 #else
+#if FP_RDC == MONTY
 		fp_copy(pre, core_get()->conv.dp);
 		fp_mul(pre, pre, core_get()->conv.dp);
 		fp_mul(pre, pre, core_get()->inv.dp);
+#else
+		fp_copy(pre, core_get()->inv.dp);
+#endif
 #endif
 		f[RLC_FP_DIGS] = g[RLC_FP_DIGS] = 0;
 		dv_zero(t, 2 * RLC_FP_DIGS);
@@ -740,7 +750,9 @@ void fp_inv_jmpds(fp_t c, const fp_t a) {
 			fp_rdcn_low(p11, t);
 			fp_addc_low(t, v0, v1);
 			fp_rdcn_low(p01, t);
+#if FP_RDC == MONTY
 			fp_mulm_low(pre, pre, core_get()->conv.dp);
+#endif
 #endif
 		}
 

@@ -1630,7 +1630,7 @@ int ep_param_set_any_pairf(void) {
 	}
 #else
 	(void)type;
-	(void)degree;
+	(void)extension;
 #endif
 	return r;
 }
