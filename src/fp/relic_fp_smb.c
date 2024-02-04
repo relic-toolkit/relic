@@ -197,9 +197,14 @@ int fp_smb_divst(const fp_t a) {
 #endif
 
 		k = 0;
-		fp_prime_back(_t, a);
-		dv_zero(g, RLC_FP_DIGS);
-		dv_copy(g, _t->dp, _t->used);
+#if FP_RDC == MONTY
+		/* Convert a from Montgomery form. */
+		dv_zero(t, 2 * RLC_FP_DIGS);
+		fp_copy(t, a);
+		fp_rdcn_low(g, t);
+#else
+		fp_copy(g, a);
+#endif
 		dv_copy(f, fp_prime_get(), RLC_FP_DIGS);
 		fs = gs = RLC_POS;
 
@@ -240,15 +245,13 @@ int fp_smb_divst(const fp_t a) {
 		k = (2*k) % 4;
 		fp_zero(t);
 		t[0] = 1;
-		for (int j = 0; j < RLC_FP_DIGS; j++) {
-			f[j] ^= -fs;
-		}
-		fp_add1_low(f, f, fs);
-
+		bn_negs_low(f, f, fs, RLC_FP_DIGS);
+		
 		r = RLC_SEL(r, 1 - k, dv_cmp_const(f, t, RLC_FP_DIGS) == RLC_EQ);
 		bn_negs_low(t, t, 1, RLC_FP_DIGS);
 		r = RLC_SEL(r, 1 - k, dv_cmp_const(f, t, RLC_FP_DIGS) == RLC_EQ);
 		r = RLC_SEL(r, 1 - k, fp_is_zero(f));
+		r = RLC_SEL(r, 0, fp_is_zero(a));
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT)
 	} RLC_FINALLY {
