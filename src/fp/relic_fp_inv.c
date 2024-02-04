@@ -625,7 +625,6 @@ void fp_inv_jmpds(fp_t c, const fp_t a) {
 		dv_zero(v0, 2 * RLC_FP_DIGS);
 		dv_zero(v1, 2 * RLC_FP_DIGS);
 		dv_copy(f, fp_prime_get(), RLC_FP_DIGS);
-		dv_copy(p + 1, fp_prime_get(), RLC_FP_DIGS);
 #if FP_RDC == MONTY
 		/* Convert a from Montgomery form. */
 		fp_copy(t, a);
@@ -704,9 +703,9 @@ void fp_inv_jmpds(fp_t c, const fp_t a) {
 			j = i % RLC_FP_DIGS;
 			if (j == 0) {
 				fp_addd_low(t, u0, u1);
-				fp_rdcn_low(p11, t);
+				fp_rdc(p11, t);
 				fp_addd_low(t, v0, v1);
-				fp_rdcn_low(p01, t);
+				fp_rdc(p01, t);
 				dv_zero(v0, 2 * RLC_FP_DIGS);
 				dv_zero(v1, 2 * RLC_FP_DIGS);
 			} else {
@@ -735,9 +734,9 @@ void fp_inv_jmpds(fp_t c, const fp_t a) {
 			dv_copy_cond(u1, t, 2 * RLC_FP_DIGS, RLC_SIGN(m[3]));
 
 			fp_addc_low(t, u0, u1);
-			fp_rdcn_low(p11, t);
+			fp_rdc(p11, t);
 			fp_addc_low(t, v0, v1);
-			fp_rdcn_low(p01, t);
+			fp_rdc(p01, t);
 #if FP_RDC == MONTY
 			fp_mulm_low(pre, pre, core_get()->conv.dp);
 #endif
@@ -776,7 +775,7 @@ void fp_inv_jmpds(fp_t c, const fp_t a) {
 		dv_copy_cond(v1, t, RLC_FP_DIGS + j + 1, RLC_SIGN(m[1]));
 
 		fp_addd_low(t, v0, v1);
-		fp_rdcn_low(p01, t);
+		fp_rdc(p01, t);
 #else
 		(void)j;
 		fp_zero(p);
@@ -792,12 +791,13 @@ void fp_inv_jmpds(fp_t c, const fp_t a) {
 		dv_copy_cond(v1, t, 2 * RLC_FP_DIGS, RLC_SIGN(m[1]));
 
 		fp_addc_low(t, v0, v1);
-		fp_rdcn_low(p01, t);
+		fp_rdc(p01, t);
 #endif
 
 		/* Negate based on sign of f at the end. */
 		fp_negm_low(t, p01);
 		dv_copy_cond(p01, t, RLC_FP_DIGS, f[RLC_FP_DIGS] >> (RLC_DIG - 1));
+	
 		/* Multiply by (precomp * R^j) % p, one for each iteration of the loop,
 		 * one for the constant, one more to be removed by reduction. */
 		fp_mul(c, p01, pre);

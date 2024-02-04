@@ -197,6 +197,7 @@ int fp_smb_divst(const fp_t a) {
 #endif
 
 		k = 0;
+		dv_copy(f, fp_prime_get(), RLC_FP_DIGS);
 #if FP_RDC == MONTY
 		/* Convert a from Montgomery form. */
 		dv_zero(t, 2 * RLC_FP_DIGS);
@@ -205,7 +206,10 @@ int fp_smb_divst(const fp_t a) {
 #else
 		fp_copy(g, a);
 #endif
-		dv_copy(f, fp_prime_get(), RLC_FP_DIGS);
+		r = dv_cmp(g, f, RLC_FP_DIGS);
+		fp_subn_low(t, g, f);
+		dv_copy_cond(g, t, RLC_FP_DIGS, r != RLC_LT);
+
 		fs = gs = RLC_POS;
 
 		for (int i = 0; i < d; i++) {
