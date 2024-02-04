@@ -101,11 +101,10 @@ static void fp_prime_set(const bn_t p) {
 		fp_exp(ctx->inv.dp, ctx->inv.dp, t);
 
 #if FP_RDC == MONTY
-
+		/* Convert to Montgomery form by multiplying by R^2. */
+		fp_mul(ctx->inv.dp, ctx->inv.dp, ctx->conv.dp);
+		fp_mul(ctx->inv.dp, ctx->inv.dp, ctx->conv.dp);
 #ifdef RLC_FP_ROOM
-		fp_mul(ctx->inv.dp, ctx->inv.dp, ctx->conv.dp);
-		fp_mul(ctx->inv.dp, ctx->inv.dp, ctx->conv.dp);
-
 		for (int i = 1, j = 0; i < d / (RLC_DIG - 2); i++) {
 			j = i % RLC_FP_DIGS;
 			if (j == 0) {

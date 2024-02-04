@@ -578,7 +578,7 @@ void fp_inv_jmpds(fp_t c, const fp_t a) {
 	/* Compute number of iterations based on modulus size. */
 	/* Iterations taken directly from https://github.com/sipa/safegcd-bounds */
 	const int iterations = (45907 * FP_PRIME + 26313) / 19929;
-	int loops, i, s = RLC_DIG - 2;
+	int loops, i, j = 0, s = RLC_DIG - 2;
 	dv_t f, g, t, p, t0, t1, u0, u1, v0, v1, p01, p11;
 	dig_t sf, sg;
 	fp_t pre;
@@ -617,26 +617,13 @@ void fp_inv_jmpds(fp_t c, const fp_t a) {
 		dv_new(p11);
 		fp_new(pre);
 
-#ifdef RLC_FP_ROOM
-		int j = 0;
 		fp_copy(pre, core_get()->inv.dp);
-#else
-#if FP_RDC == MONTY
-		fp_copy(pre, core_get()->conv.dp);
-		fp_mul(pre, pre, core_get()->conv.dp);
-		fp_mul(pre, pre, core_get()->inv.dp);
-#else
-		fp_copy(pre, core_get()->inv.dp);
-#endif
-#endif
-		f[RLC_FP_DIGS] = g[RLC_FP_DIGS] = 0;
 		dv_zero(t, 2 * RLC_FP_DIGS);
 		dv_zero(p, 2 * RLC_FP_DIGS);
 		dv_zero(u0, 2 * RLC_FP_DIGS);
 		dv_zero(u1, 2 * RLC_FP_DIGS);
 		dv_zero(v0, 2 * RLC_FP_DIGS);
 		dv_zero(v1, 2 * RLC_FP_DIGS);
-
 		dv_copy(f, fp_prime_get(), RLC_FP_DIGS);
 		dv_copy(p + 1, fp_prime_get(), RLC_FP_DIGS);
 #if FP_RDC == MONTY
@@ -646,6 +633,7 @@ void fp_inv_jmpds(fp_t c, const fp_t a) {
 #else
 		fp_copy(g, a);
 #endif
+		f[RLC_FP_DIGS] = g[RLC_FP_DIGS] = 0;
 		d = jumpdivstep(m, d, f[0] & RLC_MASK(s), g[0] & RLC_MASK(s), s);
 
 		t0[RLC_FP_DIGS] = bn_muls_low(t0, f, RLC_POS, m[0], RLC_FP_DIGS);
@@ -790,6 +778,7 @@ void fp_inv_jmpds(fp_t c, const fp_t a) {
 		fp_addd_low(t, v0, v1);
 		fp_rdcn_low(p01, t);
 #else
+		(void)j;
 		fp_zero(p);
 		dv_copy(p + RLC_FP_DIGS, fp_prime_get(), RLC_FP_DIGS);
 
