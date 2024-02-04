@@ -141,9 +141,6 @@ static void ed_mul_reg_imp(ed_t r, const ed_t p, const bn_t k) {
 		ed_set_infty(r);
 		for (i = l - 1; i >= 0; i--) {
 			for (j = 0; j < RLC_WIDTH - 1; j++) {
-#if ED_ADD == EXTND
-				r->coord = EXTND;
-#endif
 				ed_dbl(r, r);
 			}
 
@@ -155,9 +152,15 @@ static void ed_mul_reg_imp(ed_t r, const ed_t p, const bn_t k) {
 				dv_copy_cond(u->x, t[j]->x, RLC_FP_DIGS, j == n);
 				dv_copy_cond(u->y, t[j]->y, RLC_FP_DIGS, j == n);
 				dv_copy_cond(u->z, t[j]->z, RLC_FP_DIGS, j == n);
+#if ED_ADD == EXTND
+				dv_copy_cond(u->t, t[j]->t, RLC_FP_DIGS, j == n);
+#endif
 			}
 			ed_neg(v, u);
 			dv_copy_cond(u->x, v->x, RLC_FP_DIGS, s != 0);
+#if ED_ADD == EXTND
+			dv_copy_cond(u->t, v->t, RLC_FP_DIGS, s != 0);
+#endif
 			ed_add(r, r, u);
 		}
 
@@ -166,10 +169,16 @@ static void ed_mul_reg_imp(ed_t r, const ed_t p, const bn_t k) {
 		dv_copy_cond(r->x, u->x, RLC_FP_DIGS, bn_is_even(k));
 		dv_copy_cond(r->y, u->y, RLC_FP_DIGS, bn_is_even(k));
 		dv_copy_cond(r->z, u->z, RLC_FP_DIGS, bn_is_even(k));
+#if ED_ADD == EXTND
+		dv_copy_cond(r->t, u->t, RLC_FP_DIGS, bn_is_even(k));
+#endif
 		/* Convert r to affine coordinates. */
 		ed_norm(r, r);
 		ed_neg(u, r);
 		dv_copy_cond(r->x, u->x, RLC_FP_DIGS, bn_sign(k) == RLC_NEG);
+#if ED_ADD == EXTND
+		dv_copy_cond(r->t, u->t, RLC_FP_DIGS, bn_sign(k) == RLC_NEG);
+#endif
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
