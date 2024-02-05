@@ -40,7 +40,7 @@
 #include "assert.h"
 
 static void ers(void) {
-	int size;
+	size_t size;
 	ec_t pp, pk[MAX_KEYS], *ptr;
 	bn_t sk[MAX_KEYS], td;
 	ers_t ring[MAX_KEYS];
@@ -121,7 +121,7 @@ static void ers(void) {
 }
 
 static void smlers(void) {
-	int size;
+	size_t size;
 	ec_t pp, pk[MAX_KEYS], *ptr;
 	bn_t sk[MAX_KEYS], td[MAX_KEYS], y[MAX_KEYS];
 	smlers_t ring[MAX_KEYS];
@@ -214,7 +214,7 @@ static void smlers(void) {
 #define MIN_KEYS	64
 
 static void etrs(void) {
-	int size;
+	size_t size;
 	ec_t pp, pk[MAX_KEYS], *ptr;
 	bn_t sk[MAX_KEYS], td[MAX_KEYS], y[MAX_KEYS];
 	etrs_t ring[MAX_KEYS];
