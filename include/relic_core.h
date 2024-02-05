@@ -280,9 +280,9 @@ typedef struct _ctx_t {
 	/** Precomputed constants for hashing. */
 	fp_st ep_map_c[7];
 #ifdef EP_ENDOM
+	fp_st beta;
 #if EP_MUL == LWNAF || EP_FIX == COMBS || EP_FIX == LWNAF || EP_SIM == INTER || !defined(STRIP)
 	/** Parameters required by the GLV method. @{ */
-	fp_st beta;
 	bn_st ep_v1[3];
 	bn_st ep_v2[3];
 	/** @} */

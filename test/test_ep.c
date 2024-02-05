@@ -1403,8 +1403,8 @@ static int hashing(void) {
 				TEST_ASSERT(ep_on_curve(a) && ep_is_infty(a) == 1, end);
 			}
 			TEST_END;
-#endif
 		}
+#endif
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);

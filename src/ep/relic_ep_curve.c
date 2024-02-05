@@ -459,6 +459,7 @@ void ep_curve_set_plain(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
 	ctx->ep_is_endom = 0;
 	ctx->ep_is_super = 0;
 
+#ifdef EP_ENDOM
 	/* We do not use beta due to lack of endomorphisms so compute and cache
 	 * square root of -1 for evaluating the distortion map in pairing-friendly
 	 * curves with embedding degree 1. */
@@ -467,6 +468,7 @@ void ep_curve_set_plain(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
 		fp_neg(ctx->beta, ctx->beta);
 		fp_srt(ctx->beta, ctx->beta);
 	}
+#endif
 
 	ep_curve_set(a, b, g, r, h, ctmap);
 }
