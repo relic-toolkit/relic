@@ -191,7 +191,6 @@ void ep8_curve_init(void) {
 	}
 #endif
 #endif
-	ep8_set_infty(ctx->ep8_g);
 	bn_make(&(ctx->ep8_r), RLC_FP_DIGS);
 	bn_make(&(ctx->ep8_h), RLC_FP_DIGS);
 }

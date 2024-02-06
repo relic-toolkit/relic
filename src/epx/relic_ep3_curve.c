@@ -211,7 +211,6 @@ void ep3_curve_init(void) {
 	}
 #endif
 #endif
-	ep3_set_infty(ctx->ep3_g);
 	bn_make(&(ctx->ep3_r), RLC_FP_DIGS);
 	bn_make(&(ctx->ep3_h), RLC_FP_DIGS);
 }
