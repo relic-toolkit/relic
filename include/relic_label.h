@@ -3260,6 +3260,10 @@
 #undef cp_lvprv_ask
 #undef cp_lvprv_ans
 #undef cp_lvprv_ver
+#undef cp_ampub_gen
+#undef cp_ampub_ask
+#undef cp_ampub_ans
+#undef cp_ampub_ver
 #undef cp_sokaka_gen
 #undef cp_sokaka_gen_prv
 #undef cp_sokaka_key
@@ -3410,6 +3414,10 @@
 #define cp_lvprv_ask 	RLC_PREFIX(cp_lvprv_ask)
 #define cp_lvprv_ans 	RLC_PREFIX(cp_lvprv_ans)
 #define cp_lvprv_ver 	RLC_PREFIX(cp_lvprv_ver)
+#define cp_ampub_gen 	RLC_PREFIX(cp_ampub_gen)
+#define cp_ampub_ask 	RLC_PREFIX(cp_ampub_ask)
+#define cp_ampub_ans 	RLC_PREFIX(cp_ampub_ans)
+#define cp_ampub_ver 	RLC_PREFIX(cp_ampub_ver)
 #define cp_sokaka_gen 	RLC_PREFIX(cp_sokaka_gen)
 #define cp_sokaka_gen_prv 	RLC_PREFIX(cp_sokaka_gen_prv)
 #define cp_sokaka_key 	RLC_PREFIX(cp_sokaka_key)

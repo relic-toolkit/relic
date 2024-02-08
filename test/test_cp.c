@@ -1092,11 +1092,12 @@ end:
 
 static int pdpub(void) {
 	int code = RLC_ERR;
-	bn_t r1, r2;
+	bn_t t, r1, r2;
 	g1_t p, u1, v1;
 	g2_t q, u2, v2, w2;
 	gt_t e, r, g[3];
 
+	bn_null(t);
 	bn_null(r1);
 	bn_null(r2);
 	g1_null(p);
@@ -1113,6 +1114,7 @@ static int pdpub(void) {
 	gt_null(g[2]);
 
 	RLC_TRY {
+		bn_new(t);
 		bn_new(r1);
 		bn_new(r2);
 		g1_new(p);
@@ -1149,12 +1151,24 @@ static int pdpub(void) {
 			pc_map(e, p, q);
 			TEST_ASSERT(gt_cmp(r, e) == RLC_EQ, end);
 		} TEST_END;
+
+		TEST_CASE("fastest delegated pairing with public inputs is correct") {
+			TEST_ASSERT(cp_ampub_gen(r2, u1, u2, t, e) == RLC_OK, end);
+			g1_rand(p);
+			g2_rand(q);
+			TEST_ASSERT(cp_ampub_ask(r1, v1, w2, p, q, r2, u1, u2, t) == RLC_OK, end);
+			TEST_ASSERT(cp_ampub_ans(g, p, q, v1, t, w2) == RLC_OK, end);
+			TEST_ASSERT(cp_ampub_ver(r, g, r1, e) == 1, end);
+			pc_map(e, p, q);
+			TEST_ASSERT(gt_cmp(r, e) == RLC_EQ, end);
+		} TEST_END;
 	} RLC_CATCH_ANY {
 		RLC_ERROR(end);
 	}
 	code = RLC_OK;
 
   end:
+	bn_free(t);
 	bn_free(r1);
 	bn_free(r2);
 	g1_free(p);

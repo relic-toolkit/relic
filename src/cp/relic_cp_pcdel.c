@@ -469,3 +469,120 @@ int cp_lvprv_ver(gt_t r, const gt_t g[4], const bn_t c, const gt_t e[2]) {
 	}
 	return result;
 }
+
+int cp_ampub_gen(bn_t r, g1_t u1, g2_t u2, bn_t v2, gt_t e) {
+	bn_t n, t1, t2;
+	int result = RLC_OK;
+
+	bn_null(n);
+
+	RLC_TRY {
+		bn_new(n);
+		bn_new(t1);
+		bn_new(t2);
+
+		/* Generate random c, U1, r, U2. */
+		pc_get_ord(n);
+		bn_rand_mod(t1, n);
+		bn_rand_mod(t2, n);
+		g1_mul_gen(u1, t1);
+		g2_mul_gen(u2, t2);
+		bn_rand_mod(r, n);
+		/* Compute gamma = e(U1, U2) and V2 = [1/r2]U2. */
+		bn_mod_inv(v2, r, n);
+		bn_mul(v2, v2, t2);
+		gt_get_gen(e);
+		bn_mul(t1, t1, t2);
+		bn_mod(t1, t1, n);
+		gt_exp(e, e, t1);
+	}
+	RLC_CATCH_ANY {
+		result = RLC_ERR;
+	}
+	RLC_FINALLY {
+		bn_free(n);
+		bn_free(t1);
+		bn_free(t2);
+	}
+	return result;
+}
+
+int cp_ampub_ask(bn_t c, g1_t v1, g2_t w2, const g1_t p, const g2_t q,
+		const bn_t r, const g1_t u1, const g2_t u2, const bn_t v2) {
+	int result = RLC_OK;
+
+	/* Sample random c. */
+	bn_rand(c, RLC_POS, 50);
+	/* Compute V1 = [r](P - U1). */
+	g1_sub(v1, p, u1);
+	g1_mul(v1, v1, r);
+	/* Compute W2 = [c]Q + U_2. */
+	g2_mul(w2, q, c);
+	g2_add(w2, w2, u2);
+
+	return result;
+}
+
+int cp_ampub_ans(gt_t g[2], const g1_t p, const g2_t q, const g1_t v1,
+		const bn_t v2, const g2_t w2) {
+	int result = RLC_OK;
+	g1_t _p[2];
+	g2_t _q[2];
+
+	g1_null(_p[0]);
+	g1_null(_p[1]);
+	g2_null(_q[0]);
+	g2_null(_q[1]);
+
+	RLC_TRY {
+		g1_new(_p[0]);
+		g1_new(_p[1]);
+		g2_new(_q[0]);
+		g2_new(_q[1]);
+
+		g1_copy(_p[0], p);
+		g1_neg(_p[1], v1);
+		g2_copy(_q[0], w2);
+		g2_mul_gen(_q[1], v2);
+		pc_map_sim(g[1], _p, _q, 2);
+		pc_map(g[0], p, q);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		g1_free(_p[0]);
+		g1_free(_p[1]);
+		g2_free(_q[0]);
+		g2_free(_q[1]);
+	}
+
+	return result;
+}
+
+int cp_ampub_ver(gt_t r, const gt_t g[2], const bn_t c, const gt_t e) {
+	int result = 1;
+	gt_t t;
+
+	gt_null(t);
+
+	RLC_TRY {
+		gt_new(t);
+
+		result &= gt_is_valid(g[0]);
+
+		gt_exp(t, g[0], c);
+		gt_inv(t, t);
+		gt_mul(t, t, g[1]);
+
+		if (!result || gt_cmp(t, e) != RLC_EQ) {
+			gt_set_unity(r);
+		} else {
+			gt_copy(r, g[0]);
+		}
+	} RLC_CATCH_ANY {
+		result = RLC_ERR;
+	}
+	RLC_FINALLY {
+		gt_free(t);
+	}
+	return result;
+}
