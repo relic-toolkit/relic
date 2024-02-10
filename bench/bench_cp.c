@@ -782,27 +782,36 @@ static void pdpub(void) {
 		BENCH_ADD(cp_lvpub_ver(r, g, r1, e));
 	} BENCH_END;
 
-	BENCH_RUN("cp_ampub_gen") {
-		BENCH_ADD(cp_ampub_gen(r2, u1, u2, t, e));
+	BENCH_RUN("cp_ampub_gen (first)") {
+		BENCH_ADD(cp_ampub_gen(r2, u1, u2, t, e, NULL, NULL, NULL));
 	} BENCH_END;
 
-	BENCH_RUN("cp_ampub_ask") {
+	BENCH_RUN("cp_ampub_ask (first)") {
 		g1_rand(p);
 		g2_rand(q);
 		BENCH_ADD(cp_ampub_ask(r1, v1, w2, p, q, r2, u1, u2, t));
 	} BENCH_END;
 
-	BENCH_RUN("cp_ampub_ans") {
+	BENCH_RUN("cp_ampub_ans (first)") {
 		g1_rand(p);
 		g2_rand(q);
-		BENCH_ADD(cp_ampub_ans(g, p, q, v1, t, w2));
+		BENCH_ADD(cp_ampub_ans(g, p, q, v1, t, w2, NULL));
+	} BENCH_END;
+
+	BENCH_RUN("cp_ampub_gen") {
+		BENCH_ADD(cp_ampub_gen(r2, u1, u2, t, e, r1, p, q));
+	} BENCH_END;
+
+	BENCH_RUN("cp_ampub_ans") {
+		BENCH_ADD(cp_ampub_ask(r1, v1, w2, p, q, r2, u1, u2, t));
+		BENCH_ADD(cp_ampub_ans(g, p, q, v1, t, w2, q));
 	} BENCH_END;
 
 	BENCH_RUN("cp_ampub_ver") {
 		g1_rand(p);
 		g2_rand(q);
 		pc_map(e, p, q);
-		BENCH_ADD(cp_ampub_ver(r, g, r1, e));
+		BENCH_ADD(cp_ampub_ver(r, e, g, r1));
 	} BENCH_END;
 
 	bn_free(t);
@@ -889,13 +898,13 @@ static void pdprv(void) {
 	} BENCH_END;
 
 	BENCH_RUN("cp_lvprv_gen") {
-		BENCH_ADD(cp_lvprv_gen(r1, r2, u1, u2, v2, e));
+		BENCH_ADD(cp_lvprv_gen(r2, u1, u2, v2, e));
 	} BENCH_END;
 
 	BENCH_RUN("cp_lvprv_ask") {
 		g1_rand(p);
 		g2_rand(q);
-		BENCH_ADD(cp_lvprv_ask(v1, w2, p, q, r1, r2, u1, u2, v2));
+		BENCH_ADD(cp_lvprv_ask(r1, v1, w2, p, q, r2, u1, u2, v2));
 	} BENCH_END;
 
 	BENCH_RUN("cp_lvprv_ans") {

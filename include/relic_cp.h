@@ -1319,8 +1319,7 @@ int cp_lvpub_ver(gt_t r, const gt_t g[2], const bn_t c, const gt_t e);
  * @param[out] e			- the precomputed values e(U1, U2).
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_lvprv_gen(bn_t c, bn_t r[3], g1_t u1[2], g2_t u2[2], g2_t v2[4],
-		gt_t e[2]);
+int cp_lvprv_gen(bn_t r[3], g1_t u1[2], g2_t u2[2], g2_t v2[4], gt_t e[2]);
 
 /**
  * Execute the client-side request for the LOVE pairing delegation protocol.
@@ -1336,9 +1335,8 @@ int cp_lvprv_gen(bn_t c, bn_t r[3], g1_t u1[2], g2_t u2[2], g2_t v2[4],
  * @param[in] v2			- the image of the randomness in G_2.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_lvprv_ask(g1_t v1[3], g2_t w2[4], const g1_t p, const g2_t q,
-		const bn_t c, const bn_t r[3], const g1_t u1[2], const g2_t u2[2],
-		const g2_t v2[4]);
+int cp_lvprv_ask(bn_t c, g1_t v1[3], g2_t w2[4], const g1_t p, const g2_t q,
+		const bn_t r[3], const g1_t u1[2], const g2_t u2[2], const g2_t v2[4]);
 
 /**
  * Execute the server-side response for the LOVE pairing delegation protocol.
@@ -1366,16 +1364,20 @@ int cp_lvprv_ver(gt_t r, const gt_t g[4], const bn_t c, const gt_t e[2]);
 
 /**
  * Generate parameters for the AMORE pairing delegation protocol with public
- * inputs.
+ * inputs, using the result of a previous execution.
  *
  * @param[out] r			- the randomness.
  * @param[out] u1			- the U1 precomputed value in G_1.
  * @param[out] u2			- the U2 precomputed value in G_2.
  * @param[out] v2			- the randomness for G_2.
  * @param[out] e			- the precomputed values e(U1, U2).
+ * @param[in] c				- the previous challenge, NULL if first.
+ * @param[in] p				- the previous first argument, NULL if first.
+ * @param[in] q				- the previous second argument, NULL if first.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_ampub_gen(bn_t r, g1_t u1, g2_t u2, bn_t v2, gt_t e);
+int cp_ampub_gen(bn_t r, g1_t u1, g2_t u2, bn_t v2, gt_t e, const bn_t c,
+		const g1_t p, const g2_t q);
 
 /**
  * Execute the client-side request for the AMORE pairing delegation protocol.
@@ -1404,21 +1406,22 @@ int cp_ampub_ask(bn_t c, g1_t v1, g2_t w2, const g1_t p, const g2_t q,
  * @param[in] v1			- the blinded element in G_1.
  * @param[in] v2			- the randomness for G_2.
  * @param[in] w2			- the blinded element in G_2.
+ * @param[in] s				- the input to a previous execution, NULL if first.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_ampub_ans(gt_t g[2], const g1_t p, const g2_t q, const g1_t v1,
-		const bn_t v2, const g2_t w2);
+		const bn_t v2, const g2_t w2, const g2_t s);
 
 /**
  * Verifies the result of the AMORE pairing delegation protocol.
  *
  * @param[out] r			- the result of the computation.
+ * @param[in, out] e		- the precomputed values e(U1, U2).
  * @param[in] g				- the group elements returned by the server.
  * @param[in] c				- the challenge.
- * @param[in] e				- the precomputed values e(U1, U2).
  * @return a boolean value indicating if the computation is correct.
  */
-int cp_ampub_ver(gt_t r, const gt_t g[2], const bn_t c, const gt_t e);
+int cp_ampub_ver(gt_t r, gt_t e, const gt_t g[2], const bn_t c);
 
 /**
  * Generates a master key for the SOKAKA identity-based non-interactive
