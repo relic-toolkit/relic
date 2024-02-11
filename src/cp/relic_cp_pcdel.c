@@ -32,6 +32,15 @@
 #include "relic.h"
 
 /*============================================================================*/
+/* Private definitions                                                        */
+/*============================================================================*/
+
+/**
+ * Statistical distance 1/2^\lambda between sampling and uniform distribution.
+ */
+#define RAND_DIST		50
+
+/*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
@@ -46,7 +55,7 @@ int cp_pdpub_gen(bn_t c, bn_t r, g1_t u1, g2_t u2, g2_t v2, gt_t e) {
 
 		/* Generate random c, U1, U2, r. */
 		pc_get_ord(n);
-		bn_rand(c, RLC_POS, 50);
+		bn_rand_frb(c, &(core_get()->par), n, RAND_DIST);
 		g1_rand(u1);
 		bn_rand_mod(r, n);
 		g2_rand(u2);
@@ -129,7 +138,7 @@ int cp_pdprv_gen(bn_t c, bn_t r[3], g1_t u1[2], g2_t u2[2], g2_t v2[4],
 
 		pc_get_ord(n);
 		bn_rand_mod(r[2], n);
-		bn_rand(c, RLC_POS, 50);
+		bn_rand_frb(c, &(core_get()->par), n, RAND_DIST);
 		for (int i = 0; i < 2; i++) {
 			/* Generate random c, r, Ui. */
 			g1_rand(u1[i]);
@@ -258,17 +267,30 @@ int cp_lvpub_gen(bn_t r, g1_t u1, g2_t u2, g2_t v2, gt_t e) {
 
 int cp_lvpub_ask(bn_t c, g1_t v1, g2_t w2, const g1_t p, const g2_t q,
 		const bn_t r, const g1_t u1, const g2_t u2, const g2_t v2) {
+	bn_t n;
 	int result = RLC_OK;
 
-	/* Sample random c. */
-	bn_rand(c, RLC_POS, 50);
-	/* Compute V1 = [r](P - U1). */
-	g1_sub(v1, p, u1);
-	g1_mul(v1, v1, r);
-	/* Compute W2 = [c]Q + U_2. */
-	g2_mul(w2, q, c);
-	g2_add(w2, w2, u2);
+	bn_null(n);
 
+	RLC_TRY {
+		bn_new(n);
+
+		/* Sample random c. */
+		pc_get_ord(n);
+		bn_rand_frb(c, &(core_get()->par), n, RAND_DIST);
+		/* Compute V1 = [r](P - U1). */
+		g1_sub(v1, p, u1);
+		g1_mul(v1, v1, r);
+		/* Compute W2 = [c]Q + U_2. */
+		g2_mul(w2, q, c);
+		g2_add(w2, w2, u2);
+	}
+	RLC_CATCH_ANY {
+		result = RLC_ERR;
+	}
+	RLC_FINALLY {
+		bn_free(n);
+	}
 	return result;
 }
 
@@ -383,7 +405,7 @@ int cp_lvprv_ask(bn_t c, g1_t v1[3], g2_t w2[4], const g1_t p, const g2_t q,
 		bn_new(n);
 
 		pc_get_ord(n);
-		bn_rand(c, RLC_POS, 50);
+		bn_rand_frb(c, &(core_get()->par), n, RAND_DIST);
 		bn_mod_inv(n, r[2], n);
 		g1_mul(v1[2], p, n);
 		for (int i = 0; i < 2; i++) {
@@ -519,17 +541,32 @@ int cp_ampub_gen(bn_t r, g1_t u1, g2_t u2, bn_t v2, gt_t e, const bn_t c,
 
 int cp_ampub_ask(bn_t c, g1_t v1, g2_t w2, const g1_t p, const g2_t q,
 		const bn_t r, const g1_t u1, const g2_t u2, const bn_t v2) {
+	bn_t n;
 	int result = RLC_OK;
 
-	/* Sample random c. */
-	bn_rand(c, RLC_POS, 50);
-	/* Compute V1 = [r](P - U1). */
-	g1_sub(v1, p, u1);
-	g1_mul(v1, v1, r);
-	/* Compute W2 = [c]Q + U_2. */
-	g2_mul(w2, q, c);
-	g2_add(w2, w2, u2);
+	bn_null(n);
 
+	RLC_TRY {
+		bn_new(n);
+
+		/* Generate random c, U1, r, U2. */
+		pc_get_ord(n);
+		/* Sample random c. */
+		//bn_rand_frb(c, &(core_get()->par), n, RAND_DIST);
+		bn_rand(c, RLC_POS, RAND_DIST);
+		/* Compute V1 = [r](P - U1). */
+		g1_sub(v1, p, u1);
+		g1_mul(v1, v1, r);
+		/* Compute W2 = [c]Q + U_2. */
+		g2_mul(w2, q, c);
+		g2_add(w2, w2, u2);
+	}
+	RLC_CATCH_ANY {
+		result = RLC_ERR;
+	}
+	RLC_FINALLY {
+		bn_free(n);
+	}
 	return result;
 }
 

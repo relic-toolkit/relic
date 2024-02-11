@@ -230,6 +230,35 @@ void bn_rand_mod(bn_t a, const bn_t b) {
 	}
 }
 
+void bn_rand_frb(bn_t a, const bn_t x, const bn_t order, size_t bits) {
+	size_t i, dim = RLC_CEIL(bn_bits(order), bn_bits(x));
+	bn_t t, u;
+
+	bn_null(t);
+	bn_null(u);
+
+	RLC_TRY {
+		bn_new(t);
+		bn_new(u);
+
+		bits = RLC_CEIL(bits, dim);
+
+		bn_abs(u, x);
+		bn_zero(a);
+		for (i = 0; i < dim; i++) {
+			bn_rand(t, RLC_POS, bits);
+			bn_mul(a, a, u);
+			bn_add(a, a, t);
+		}
+		bn_mod(a, a, order);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		bn_free(t);
+		bn_free(u);
+	}
+}
+
 void bn_print(const bn_t a) {
 	int i;
 
