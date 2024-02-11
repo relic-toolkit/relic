@@ -552,8 +552,7 @@ int cp_ampub_ask(bn_t c, g1_t v1, g2_t w2, const g1_t p, const g2_t q,
 		/* Generate random c, U1, r, U2. */
 		pc_get_ord(n);
 		/* Sample random c. */
-		//bn_rand_frb(c, &(core_get()->par), n, RAND_DIST);
-		bn_rand(c, RLC_POS, RAND_DIST);
+		bn_rand_frb(c, &(core_get()->par), n, RAND_DIST);
 		/* Compute V1 = [r](P - U1). */
 		g1_sub(v1, p, u1);
 		g1_mul(v1, v1, r);
