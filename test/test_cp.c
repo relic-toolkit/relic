@@ -1107,6 +1107,7 @@ static int pdpub(void) {
 	g2_null(u2);
 	g2_null(v2);
 	g2_null(w2);
+	g2_null(s);
 	gt_null(e);
 	gt_null(r);
 	gt_null(g[0]);
@@ -1124,6 +1125,7 @@ static int pdpub(void) {
 		g2_new(u2);
 		g2_new(v2);
 		g2_new(w2);
+		g2_new(s);
 		gt_new(e);
 		gt_new(r);
 		gt_new(g[0]);
@@ -1188,6 +1190,7 @@ static int pdpub(void) {
 	g2_free(u2);
 	g2_free(v2);
 	g2_free(w2);
+	g2_free(s);
 	gt_free(e);
 	gt_free(r);
 	gt_free(g[0]);
