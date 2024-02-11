@@ -168,6 +168,8 @@ void pp_map_tatep_k2(fp2_t r, const ep_t p, const ep_t q) {
 	bn_null(n);
 
 	RLC_TRY {
+		ep_new(_p[0]);
+		ep_new(_q[0]);
 		ep_new(t[0]);
 		bn_new(n);
 
