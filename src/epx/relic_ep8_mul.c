@@ -185,7 +185,7 @@ void ep8_mul_basic(ep8_t r, const ep8_t p, const bn_t k) {
 	if (bn_bits(k) <= RLC_DIG) {
 		ep8_mul_dig(r, p, k->dp[0]);
 		if (bn_sign(k) == RLC_NEG) {
-			ep_neg(r, r);
+			ep8_neg(r, r);
 		}
 		RLC_FREE(naf);
 		return;
