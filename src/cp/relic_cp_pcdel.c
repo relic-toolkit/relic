@@ -511,10 +511,14 @@ int cp_ampub_gen(bn_t r, g1_t u1, g2_t u2, bn_t v2, gt_t e, const bn_t c,
 			g1_mul_gen(u1, t1);
 			g2_mul_gen(u2, t2);
 			/* Compute gamma = e(U1, U2). */
-			gt_get_gen(e);
 			bn_mul(t1, t1, t2);
 			bn_mod(t1, t1, n);
+#if FP_PRIME < 1536
+			gt_get_gen(e);
 			gt_exp(e, e, t1);
+#else
+			pc_map(e, u1, u2);
+#endif
 		} else {
 			bn_rand_mod(t1, n);
 			bn_mod_inv(t2, t1, n);
