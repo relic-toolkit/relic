@@ -803,7 +803,7 @@ static void pdpub(void) {
 	} BENCH_END;
 
 	BENCH_RUN("cp_ampub_ans") {
-		BENCH_ADD(cp_ampub_ask(r1, v1, w2, p, q, r2, u1, u2, t));
+		cp_ampub_ask(r1, v1, w2, p, q, r2, u1, u2, t);
 		BENCH_ADD(cp_ampub_ans(g, p, q, v1, t, w2, q));
 	} BENCH_END;
 
@@ -811,6 +811,7 @@ static void pdpub(void) {
 		g1_rand(p);
 		g2_rand(q);
 		pc_map(e, p, q);
+		cp_ampub_ask(r1, v1, w2, p, q, r2, u1, u2, t);
 		BENCH_ADD(cp_ampub_ver(r, e, g, r1));
 	} BENCH_END;
 
