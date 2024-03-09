@@ -797,7 +797,7 @@ void bn_gcd_ext_binar(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 		bn_div(y, y, u);
 		bn_hlv(_a, x);
 		bn_hlv(_b, y);
-		while (bn_cmp_abs(d, _b) == RLC_GT) {
+		while (bn_cmp_abs(d, _b) == RLC_GT || bn_cmp_abs(_e, _a) == RLC_GT) {
 			bn_div(t, d, _b);
 			if (bn_bits(t) > 1) {
 				bn_hlv(t, t);
