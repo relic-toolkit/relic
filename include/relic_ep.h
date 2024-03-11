@@ -177,9 +177,9 @@ enum {
     SG18_P638,
 	/** New family with embeeding degree 16. */
 	N16_P765,
-	/* Fotiadis-Moartindale with embedding degree 16. */
+	/* Fotiadis-Martindale with embedding degree 16. */
 	FM16_P765,
-	/* Fotiadis-Moartindale with embedding degree 18. */
+	/* Fotiadis-Martindale with embedding degree 18. */
 	FM18_P768,
 	/** Kachisa-Schaefer-Scott with embedding degree 16. */
 	K16_P766,
