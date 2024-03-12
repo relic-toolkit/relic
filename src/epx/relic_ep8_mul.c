@@ -185,7 +185,7 @@ void ep8_mul_basic(ep8_t r, const ep8_t p, const bn_t k) {
 	if (bn_bits(k) <= RLC_DIG) {
 		ep8_mul_dig(r, p, k->dp[0]);
 		if (bn_sign(k) == RLC_NEG) {
-			ep_neg(r, r);
+			ep8_neg(r, r);
 		}
 		RLC_FREE(naf);
 		return;
@@ -427,10 +427,13 @@ void ep8_mul_gen(ep8_t r, const bn_t k) {
 }
 
 void ep8_mul_dig(ep8_t r, const ep8_t p, const dig_t k) {
-	int i, l;
 	ep8_t t;
+	bn_t _k;
+	int8_t u, naf[RLC_DIG + 1];
+	size_t l;
 
 	ep8_null(t);
+	bn_null(_k);
 
 	if (k == 0 || ep8_is_infty(p)) {
 		ep8_set_infty(r);
@@ -439,15 +442,22 @@ void ep8_mul_dig(ep8_t r, const ep8_t p, const dig_t k) {
 
 	RLC_TRY {
 		ep8_new(t);
+		bn_new(_k);
 
-		l = util_bits_dig(k);
+		bn_set_dig(_k, k);
+
+		l = RLC_DIG + 1;
+		bn_rec_naf(naf, &l, _k, 2);
 
 		ep8_copy(t, p);
-
-		for (i = l - 2; i >= 0; i--) {
+		for (int i = l - 2; i >= 0; i--) {
 			ep8_dbl(t, t);
-			if (k & ((dig_t)1 << i)) {
+
+			u = naf[i];
+			if (u > 0) {
 				ep8_add(t, t, p);
+			} else if (u < 0) {
+				ep8_sub(t, t, p);
 			}
 		}
 
@@ -458,5 +468,6 @@ void ep8_mul_dig(ep8_t r, const ep8_t p, const dig_t k) {
 	}
 	RLC_FINALLY {
 		ep8_free(t);
+		bn_free(_k);
 	}
 }

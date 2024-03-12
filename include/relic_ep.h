@@ -179,10 +179,12 @@ enum {
 	N16_P765,
 	/* Fotiadis-Martindale with embedding degree 16. */
 	FM16_P765,
-	/* Fotiadis-Martindale with embedding degree 18. */
-	FM18_P768,
 	/** Kachisa-Schaefer-Scott with embedding degree 16. */
 	K16_P766,
+	/** New family with embeeding degree 16. */
+	N16_P766,
+	/* Fotiadis-Moartindale with embedding degree 18. */
+	FM18_P768,
 	/** 1536-bit supersingular curve. */
 	SS_P1536,
 	/** 3072-bit supersingular curve. */
