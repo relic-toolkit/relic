@@ -605,13 +605,14 @@ void fp_param_set(int param) {
 				fp_prime_set_pairf(t0, EP_K16);
 				break;
 			case N16_766:
-				/* u = 2^48-2^20+2^15+2^5 */
+				/* u = 2^48-2^22-2^20+2^14 */
 				bn_set_2b(t0, 48);
+				bn_set_2b(t1, 22);
+				bn_sub(t0, t0, t1);
 				bn_set_2b(t1, 20);
 				bn_sub(t0, t0, t1);
-				bn_set_2b(t1, 15);
+				bn_set_2b(t1, 14);
 				bn_add(t0, t0, t1);
-				bn_add_dig(t0, t0, 32);
 				fp_prime_set_pairf(t0, EP_N16);
 				break;
 #elif FP_PRIME == 768
