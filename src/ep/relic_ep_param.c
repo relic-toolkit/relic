@@ -659,19 +659,6 @@
 /** @} */
 #endif
 
-#if defined(EP_ENDOM) && FP_PRIME == 765
-/**
- * Parameters for a 765-bit pairing-friendly prime curve.
- */
-/** @{ */
-#define N16_P765_A		"1"
-#define N16_P765_B		"0"
-#define N16_P765_X		"71A955588AD4E8236811AA1770428A86CA487504E3964600E51FAD83E8EDF03883360471538D685B7CA156BC9AD56E6FED4BE76C099A752E70E867A8FD79CDFBD0C00294E59C4F2F348302FB270336BE8D2EC25E6234D33CB33C8840BC059D4"
-#define N16_P765_Y		"F6DEB4CAA67257010A3286CECBE4E4127D53701CF5897E3426F675BEFE36F60CD0E779433306B0A34C826584307F96100ECA6EB01F69637C2EB0B295E6C13E9721A5EA0FC05A04B47FC565AEBF41016525A69F554BC9D68D9EF2B5CD77D1D4"
-#define N16_P765_R		"9965D956A0DBC8AF273C0100000000000000000000000000000000000000000000000000000000000000000000000001"
-#define N16_P765_H		"26597655A836F22BC9CF003FFFFFFFFFFFFFA30FAB330D5A7F0000000000000000000000384F01000000000000000000"
-/** @} */
-
 /**
  * Parameters for a 765-bit pairing-friendly prime curve.
  */
@@ -1176,11 +1163,6 @@ void ep_param_set(int param) {
 				break;
 #endif
 #if defined(EP_ENDOM) && FP_PRIME == 765
-			case N16_P765:
-				ASSIGN(N16_P765, N16_765);
-				endom = 1;
-				pairf = EP_N16;
-				break;
 			case FM16_P765:
 				ASSIGN(FM16_P765, FM16_765);
 				endom = 1;
@@ -1482,8 +1464,7 @@ int ep_param_set_any_endom(void) {
 	//ep_param_set(SG18_P638);
 #endif
 #elif FP_PRIME == 765
-	ep_param_set(N16_P765);
-	//ep_param_set(FM16_P765);
+	ep_param_set(FM16_P765);
 #elif FP_PRIME == 766
 	//ep_param_set(K16_P766);
 	ep_param_set(N16_P766);
@@ -1603,8 +1584,7 @@ int ep_param_set_any_pairf(void) {
 	extension = 3;
 #endif
 #elif FP_PRIME == 765
-	ep_param_set(N16_P765);
-	//ep_param_set(FM16_P765);
+	ep_param_set(FM16_P765);
 	type = RLC_EP_MTYPE;
 	extension = 4;
 #elif FP_PRIME == 766
@@ -1765,9 +1745,6 @@ void ep_param_print(void) {
 		case SG18_P638:
 			util_banner("Curve SG18-P638:", 0);
 			break;
-		case N16_P765:
-			util_banner("Curve N16-P765:", 0);
-			break;
 		case N16_P766:
 			util_banner("Curve N16-P766:", 0);
 			break;
@@ -1839,7 +1816,6 @@ int ep_param_level(void) {
 		case B12_P455:
 			return 140;
 		case NIST_P384:
-		case N16_P765:
 		case FM16_P765:
 		case K16_P766:
 		case FM18_P768:

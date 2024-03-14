@@ -175,8 +175,6 @@ enum {
 	K18_P638,
     /** Scott-Guillevic curve with embedding degree 18. */
     SG18_P638,
-	/** New family with embeeding degree 16. */
-	N16_P765,
 	/* Fotiadis-Moartindale with embedding degree 16. */
 	FM16_P765,
 	/** Kachisa-Schaefer-Scott with embedding degree 16. */
