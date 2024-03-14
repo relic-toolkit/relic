@@ -278,7 +278,7 @@ typedef struct _ctx_t {
 	/** The distinguished non-square used by the mapping function */
 	fp_st ep_map_u;
 	/** Precomputed constants for hashing. */
-	fp_st ep_map_c[7];
+	fp_st ep_map_c[5];
 #ifdef EP_ENDOM
 	fp_st beta;
 #if EP_MUL == LWNAF || EP_FIX == COMBS || EP_FIX == LWNAF || EP_SIM == INTER || !defined(STRIP)

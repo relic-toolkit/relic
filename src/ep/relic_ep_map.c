@@ -291,8 +291,6 @@ void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 		fp_copy(a, ep_curve_get_a());
 
 		if (ep_curve_opt_b() == RLC_ZERO) {
-			fp_set_dig(u, 1);
-			fp_set_dig(t, 2);
 			fp_sqr(a, u);
 			fp_sqr(b, a);
 			fp_mul(c, b, a);
@@ -309,10 +307,10 @@ void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 
 			fp_sqr(w, b);
 			fp_mul(y, v, a);
-			fp_add(y, y, d);
-			fp_add(y, y, d);
-			fp_add(y, y, d);
-			fp_add(y, y, d);
+			fp_add(y, y, c);
+			fp_add(y, y, c);
+			fp_add(y, y, c);
+			fp_add(y, y, c);
 			fp_mul(y, y, p->x);
 
 			fp_add(den[0], c, v);
@@ -330,69 +328,74 @@ void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 			fp_mul(den[2], den[2], b);
 			fp_mul(den[2], den[2], d);
 
-			fp_inv_sim(den, den, 3);
-			fp_dbl(a, a);
-			fp_dbl(a, a);
-			fp_dbl(a, a);
-			fp_dbl(a, a);
-			fp_add(y1, a, v);
-			fp_dbl(y1, y1);
-			fp_dbl(y1, y1);
-			fp_add(y1, y1, w);
-			fp_mul(z1, y, p->x);
-			fp_add(x1, x1, z1);
-			fp_add(y1, y1, y);
-			fp_add(z1, a, b);
-			fp_add(z1, z1, b);
-			fp_add(z1, z1, b);
-			fp_add(z1, z1, b);
-			fp_dbl(t, z1);
-			fp_add(z1, z1, t);
-			fp_add(z1, z1, c);
-			fp_sub(z1, z1, v);
-			fp_mul(z1, z1, v);
-			fp_dbl(a, a);
-			fp_dbl(a, a);
-			fp_dbl(a, a);
-			fp_add(a, a, w);
-			fp_mul(u, a, b);
-			fp_sub(z1, u, z1);
-			fp_set_dig(d, 64);
-			fp_sqr(d, d);
-			fp_add(z1, z1, d);
+			if (fp_is_zero(den[0]) || fp_is_zero(den[1]) || fp_is_zero(den[2])) {
+				ep_set_infty(p);
+			} else {
+				fp_inv_sim(den, den, 3);
+				fp_dbl(a, a);
+				fp_dbl(a, a);
+				fp_dbl(a, a);
+				fp_dbl(a, a);
+				fp_add(y1, a, v);
+				fp_dbl(y1, y1);
+				fp_dbl(y1, y1);
+				fp_add(y1, y1, w);
+				fp_mul(z1, y, p->x);
+				fp_add(x1, y1, z1);
+				fp_add(y1, y1, y);
 
-			fp_mul(x1, x1, den[0]);
-			fp_mul(y1, y1, den[1]);
-			fp_mul(z1, z1, den[2]);
+				fp_add(z1, a, b);
+				fp_add(z1, z1, b);
+				fp_add(z1, z1, b);
+				fp_add(z1, z1, b);
+				fp_dbl(t, z1);
+				fp_add(z1, z1, t);
+				fp_sub(z1, c, z1);
+				fp_sub(z1, z1, v);
+				fp_mul(z1, z1, v);
+				fp_dbl(a, a);
+				fp_dbl(a, a);
+				fp_dbl(a, a);
+				fp_add(a, a, w);
+				fp_mul(u, a, b);
+				fp_sub(z1, u, z1);
+				fp_set_dig(d, 64);
+				fp_sqr(d, d);
+				fp_add(z1, z1, d);
 
-			fp_sqr(t, x1);
-			fp_add_dig(t, t, 1);
-			fp_mul(t, t, x1);
-			fp_sqr(u, y1);
-			fp_add_dig(u, u, 1);
-			fp_mul(u, u, y1);
-			fp_sqr(v, z1);
-			fp_add_dig(v, v, 1);
-			fp_mul(v, v, z1);
+				fp_mul(x1, x1, den[0]);
+				fp_mul(y1, y1, den[1]);
+				fp_mul(z1, z1, den[2]);
 
-			int c2 = fp_is_sqr(u);
-			int c3 = fp_is_sqr(v);
+				fp_sqr(t, x1);
+				fp_add_dig(t, t, 1);
+				fp_mul(t, t, x1);
+				fp_sqr(u, y1);
+				fp_add_dig(u, u, 1);
+				fp_mul(u, u, y1);
+				fp_sqr(v, z1);
+				fp_add_dig(v, v, 1);
+				fp_mul(v, v, z1);
 
-			dv_swap_cond(t, u, RLC_FP_DIGS, c2);
-			dv_swap_cond(x1, y1, RLC_FP_DIGS, c2);
-			dv_swap_cond(t, v, RLC_FP_DIGS, c3);
-			dv_swap_cond(x1, z1, RLC_FP_DIGS, c3);
+				int c2 = fp_is_sqr(u);
+				int c3 = fp_is_sqr(v);
 
-			if (!fp_srt(t, t)) {
-				RLC_THROW(ERR_NO_VALID);
+				dv_swap_cond(t, u, RLC_FP_DIGS, c2);
+				dv_swap_cond(x1, y1, RLC_FP_DIGS, c2);
+				dv_swap_cond(t, v, RLC_FP_DIGS, c3);
+				dv_swap_cond(x1, z1, RLC_FP_DIGS, c3);
+
+				if (!fp_srt(t, t)) {
+					RLC_THROW(ERR_NO_VALID);
+				}
+				fp_neg(u, t);
+				dv_swap_cond(t, u, RLC_FP_DIGS, fp_is_even(t) ^ s);
+
+				fp_copy(p->x, x1);
+				fp_copy(p->y, t);
+				fp_set_dig(p->z, 1);
+				p->coord = BASIC;
 			}
-			fp_neg(u, t);
-			dv_swap_cond(t, u, RLC_FP_DIGS, fp_is_even(t) ^ s);
-
-			fp_copy(p->x, x1);
-			fp_copy(p->y, t);
-			fp_set_dig(p->z, 1);
-			p->coord = BASIC;
 		} else {
 			/* This is the SwiftEC case per se. */
 			if (ep_curve_opt_a() != RLC_ZERO) {

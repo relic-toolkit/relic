@@ -91,8 +91,6 @@ static void ep_curve_set_map(void) {
 	dig_t *c2 = ctx->ep_map_c[2];
 	dig_t *c3 = ctx->ep_map_c[3];
 	dig_t *c4 = ctx->ep_map_c[4];
-	dig_t *c5 = ctx->ep_map_c[5];
-	dig_t *c6 = ctx->ep_map_c[6];
 
 	RLC_TRY {
 		bn_new(t);
@@ -173,47 +171,11 @@ static void ep_curve_set_map(void) {
 			fp_mul_dig(c3, c3, 4); /* c3 *= 4 */
 		}
 
-		/* if b = 0, precompute constants. */
-		if (ep_curve_opt_b() == RLC_ZERO) {
-			dig_t r = 0;
-
-			fp_set_dig(c4, -fp_prime_get_qnr());
-			fp_neg(c4, c4);
-
-			bn_read_raw(t, fp_prime_get(), RLC_FP_DIGS);
-			bn_sub_dig(t, t, 1);
-			bn_rsh(t, t, 2);
-			fp_exp(c5, c4, t);
-
-			bn_read_raw(t, fp_prime_get(), RLC_FP_DIGS);
-			if ((t->dp[0] & 0xF) == 5) {
-				/* n = (3p + 1)/16 */
-				bn_mul_dig(t, t, 3);
-				bn_add_dig(t, t, 1);
-				r = 1;
-			} else {
-				/* n = (p + 3)/16 */
-				bn_add_dig(t, t, 3);
-				r = 3;
-			}
-			bn_rsh(t, t, 4);
-			/* Compute d = 1/c^n. */
-			fp_exp(c4, c4, t);
-			fp_inv(c4, c4);
-			fp_exp_dig(c5, c5, r);
-			/* Compute 1/sqrt(-1) as well. */
-			fp_set_dig(c6, 1);
-			fp_neg(c6, c6);
-			fp_srt(c6, c6);
-		}
-
 		/* If a = 0, precompute and store a square root of -3. */
-		if (ep_curve_opt_a() == RLC_ZERO) {
-			fp_set_dig(c4, 3);
-			fp_neg(c4, c4);
-			if (!fp_srt(c4, c4)) {
-				RLC_THROW(ERR_NO_VALID);
-			}
+		fp_set_dig(c4, 3);
+		fp_neg(c4, c4);
+		if (!fp_srt(c4, c4)) {
+			RLC_THROW(ERR_NO_VALID);
 		}
 	}
 	RLC_CATCH_ANY {
