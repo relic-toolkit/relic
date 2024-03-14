@@ -41,13 +41,15 @@ void ep4_map(ep4_t p, const uint8_t *msg, size_t len) {
 	/* enough space for two field elements plus extra bytes for uniformity */
 	const size_t elm = (FP_PRIME + ep_param_level() + 7) / 8;
 	uint8_t t0z, t0, t1, s[2], sign, *h = RLC_ALLOCA(uint8_t, 8 * elm + 1);
-	fp4_t a, c, t, u, v, w, y, x1, y1, z1;
+	fp4_t a, b, c, d, t, u, v, w, y, x1, y1, z1, den[3];
 	ctx_t *ctx = core_get();
 	bn_t k;
 
 	bn_null(k);
 	fp4_null(a);
+	fp4_null(b);
 	fp4_null(c);
+	fp4_null(d);
 	fp4_null(t);
 	fp4_null(u);
 	fp4_null(v);
@@ -56,11 +58,16 @@ void ep4_map(ep4_t p, const uint8_t *msg, size_t len) {
 	fp4_null(x1);
 	fp4_null(y1);
 	fp4_null(z1);
+	fp4_null(den[0]);
+	fp4_null(den[1]);
+	fp4_null(den[2]);
 
 	RLC_TRY {
 		bn_new(k);
 		fp4_new(a);
+		fp4_new(b);
 		fp4_new(c);
+		fp4_new(d);
 		fp4_new(t);
 		fp4_new(u);
 		fp4_new(v);
@@ -69,213 +76,245 @@ void ep4_map(ep4_t p, const uint8_t *msg, size_t len) {
 		fp4_new(x1);
 		fp4_new(y1);
 		fp4_new(z1);
+		fp4_new(den[0]);
+		fp4_new(den[1]);
+		fp4_new(den[2]);
 
-		if (ep4_curve_opt_b() == RLC_ZERO) {
-			/* This is the approach due to Koshelev introduced in
-			 * https://eprint.iacr.org/2021/1034.pdf */
-			
-			md_xmd(h, 4 * elm + 1, msg, len, (const uint8_t *)"RELIC", 5);
-			for (int i = 0; i < 2; i++) {
-				for (int j = 0; j < 2; j++) {
-					bn_read_bin(k, h, elm);
-					fp_prime_conv(u[i][j], k);
-					h += elm;
-				}
+		md_xmd(h, 8 * elm + 1, msg, len, (const uint8_t *)"RELIC", 5);			
+		for (int i = 0; i < 2; i++) {
+			for (int j = 0; j < 2; j++) {
+				bn_read_bin(k, h, elm);
+				fp_prime_conv(u[i][j], k);
+				h += elm;
+				bn_read_bin(k, h, elm);
+				fp_prime_conv(t[i][j], k);
+				h += elm;
 			}
-			h -= 4*elm;
-
-			/* Compute c = 3*a^2, t^2 = 6a(9u^5 − 14au^3 + 3cu).*/
-			ep4_curve_get_a(a);
-			fp4_neg(a, a);
-			fp4_sqr(c, a);
-			fp4_dbl(t, c);
-			fp4_add(c, c, t);
-			fp4_dbl(t, c);
-			fp4_add(t, t, c);
-			fp4_mul(t, t, u);
-
-			fp4_sqr(v, u);
-			fp4_mul(w, v, u);
-			fp4_mul(x1, w, a);
-			fp4_mul_dig(x1, x1, 14);
-			fp4_sub(t, t, x1);
-
-			fp4_mul(w, w, v);
-			fp4_dbl(x1, w);
-			fp4_add(w, w, x1);
-			fp4_dbl(x1, w);
-			fp4_add(w, w, x1);
-			fp4_add(t, t, w);
-			fp4_mul(t, t, a);
-			fp4_dbl(t, t);
-			fp4_dbl(x1, t);
-			fp4_add(t, t, x1);
-			dig_t c1 = fp4_is_sqr(t);
-			/* If t is not square, compute u = a/u, t = a*sqrt(a*t)/u^3*/
-			fp4_inv(x1, u);
-			fp4_mul(y1, t, a);
-			/* If t is a square, extract its square root. */
-			dv_copy_cond(t[0][0], y1[0][0], RLC_FP_DIGS, !c1);
-			dv_copy_cond(t[0][1], y1[0][1], RLC_FP_DIGS, !c1);
-			dv_copy_cond(t[1][0], y1[1][0], RLC_FP_DIGS, !c1);
-			dv_copy_cond(t[1][1], y1[1][1], RLC_FP_DIGS, !c1);
-			fp4_srt(t, t);
-			fp4_mul(y1, t, a);
-			fp4_sqr(y, x1);
-			fp4_mul(y, y, x1);
-			fp4_mul(y1, y1, y);
-			fp4_mul(x1, x1, a);
-			dv_copy_cond(u[0][0], x1[0][0], RLC_FP_DIGS, !c1);
-			dv_copy_cond(u[0][1], x1[0][1], RLC_FP_DIGS, !c1);
-			dv_copy_cond(u[1][0], x1[1][0], RLC_FP_DIGS, !c1);
-			dv_copy_cond(u[1][1], x1[1][1], RLC_FP_DIGS, !c1);
-			dv_copy_cond(t[0][0], y1[0][0], RLC_FP_DIGS, !c1);
-			dv_copy_cond(t[0][1], y1[0][1], RLC_FP_DIGS, !c1);
-			dv_copy_cond(t[1][0], y1[1][0], RLC_FP_DIGS, !c1);
-			dv_copy_cond(t[1][1], y1[1][1], RLC_FP_DIGS, !c1);
-
-			/* Compute x = 2^4*i*3*a^2*u / (3*(3*u^2 - a))^2. */
-			fp4_zero(y);
-			fp_copy(y[0][0], ctx->ep_map_c[6]);
-			fp4_mul(c, c, u);
-			for (int i = 0; i < 2; i++) {
-				for (int j = 0; j < 2; j++) {
-					fp_mul(x1[i][j], c[i][j], y[0][0]);
-				}
-			}
-			fp4_dbl(x1, x1);
-			fp4_dbl(x1, x1);
-			fp4_dbl(x1, x1);
-			fp4_dbl(p->x, x1);
-			fp4_sqr(v, u);
-			fp4_dbl(z1, v);
-			fp4_add(z1, z1, v);
-			fp4_sub(z1, z1, a);
-			fp4_dbl(p->z, z1);
-			fp4_add(p->z, p->z, z1);
-
-			/* Compute y = 3*2*(i-1)*a*(3^2*u^2 + a)*t / (3*(3*u^2 - a))^3. */
-			fp_sub_dig(y[0][0], y[0][0], 1);
-			fp4_mul(y1, y, a);
-			fp4_dbl(y1, y1);
-			fp4_dbl(p->y, y1);
-			fp4_add(p->y, p->y, y1);
-			fp4_mul(p->y, p->y, t);
-			fp4_dbl(y1, v);
-			fp4_add(y1, y1, v);
-			fp4_dbl(v, y1);
-			fp4_add(y1, y1, v);
-			fp4_add(y1, y1, a);
-			fp4_mul(p->y, p->y, y1);
-
-			/* Multiply by cofactor. */
-			p->coord = JACOB;
-			ep4_norm(p, p);
 		}
+		sign = h[0] & 1;
+		h -= 8*elm;
 
-		if (ep_curve_opt_a() == RLC_ZERO) {
-			md_xmd(h, 8 * elm + 1, msg, len, (const uint8_t *)"RELIC", 5);			
-			for (int i = 0; i < 2; i++) {
-				for (int j = 0; j < 2; j++) {
-					bn_read_bin(k, h, elm);
-					fp_prime_conv(u[i][j], k);
-					h += elm;
-					bn_read_bin(k, h, elm);
-					fp_prime_conv(t[i][j], k);
-					h += elm;
-				}
-			}
-			sign = h[0] & 1;
-			h -= 8*elm;
+		if (ep_curve_opt_b() == RLC_ZERO) {
+			ep4_curve_get_a(p->y);
+			fp4_sqr(a, u);
+			fp4_sqr(b, a);
+			fp4_mul(c, b, a);
+			fp4_dbl(p->y, p->y);
+			fp4_dbl(p->y, p->y);
+			fp4_sqr(p->z, p->y);
+			fp4_mul(p->z, p->z, p->y);
+			fp4_add(c, c, p->z);
+			fp4_sqr(d, t);
 
-			fp4_sqr(x1, u);
-			fp4_mul(x1, x1, u);
-			fp4_sqr(y1, t);
-			fp4_add(x1, x1, ctx->ep4_b);
-			fp4_sub(x1, x1, y1);
-			fp4_dbl(y1, y1);
-			fp4_add(y1, y1, x1);
-			fp4_copy(z1, u);
-			fp_mul(z1[0][0], z1[0][0], ctx->ep_map_c[4]);
-			fp_mul(z1[0][1], z1[0][1], ctx->ep_map_c[4]);
-			fp_mul(z1[1][0], z1[1][0], ctx->ep_map_c[4]);
-			fp_mul(z1[1][1], z1[1][1], ctx->ep_map_c[4]);
-			fp4_mul(x1, x1, z1);
-			fp4_mul(z1, z1, t);
-			fp4_dbl(z1, z1);
+			fp4_mul(v, a, d);
+			fp4_mul(v, v, u);
+			fp4_mul_dig(v, v, 24);
+			fp_mul(v[0][0], v[0][0], core_get()->ep_map_c[4]);
+			fp_mul(v[0][1], v[0][1], core_get()->ep_map_c[4]);
+			fp_mul(v[1][0], v[1][0], core_get()->ep_map_c[4]);
+			fp_mul(v[1][1], v[1][1], core_get()->ep_map_c[4]);
 
-			fp4_dbl(y, y1);
-			fp4_sqr(y, y);
-			fp4_mul(v, y1, u);
-			fp4_sub(v, x1, v);
-			fp4_mul(v, v, z1);
-			fp4_mul(w, y1, z1);
-			fp4_dbl(w, w);
+			fp4_zero(p->x);
+			fp_sub_dig(p->x[0][0], core_get()->ep_map_c[4], 1);
+			fp_hlv(p->x[0][0], p->x[0][0]);
 
-			if (fp4_is_zero(w)) {
+			fp4_sqr(w, b);
+			fp4_mul(y, v, a);
+			fp4_mul(t, p->y, c);
+			fp4_add(y, y, t);
+			fp_mul(y[0][0], y[0][0], p->x[0][0]);
+			fp_mul(y[0][1], y[0][1], p->x[0][0]);
+			fp_mul(y[1][0], y[1][0], p->x[0][0]);
+			fp_mul(y[1][1], y[1][1], p->x[0][0]);
+
+			fp4_add(den[0], c, v);
+			fp4_mul(den[0], den[0], u);
+			fp_mul(den[0][0][0], den[0][0][0], core_get()->ep_map_c[4]);
+			fp_mul(den[0][0][1], den[0][0][1], core_get()->ep_map_c[4]);
+			fp_mul(den[0][1][0], den[0][1][0], core_get()->ep_map_c[4]);
+			fp_mul(den[0][1][1], den[0][1][1], core_get()->ep_map_c[4]);
+			fp4_mul(den[0], den[0], p->x);
+			fp4_dbl(den[0], den[0]);
+			fp4_neg(den[0], den[0]);
+			fp4_mul(den[1], den[0], p->x);
+			fp4_sub(den[2], a, p->y);
+			fp4_sqr(den[2], den[2]);
+			fp4_mul_dig(den[2], den[2], 216);
+			fp4_dbl(den[2], den[2]);
+			fp4_neg(den[2], den[2]);
+			fp4_mul(den[2], den[2], b);
+			fp4_mul(den[2], den[2], d);
+
+			if (fp4_is_zero(den[0]) || fp4_is_zero(den[1]) || fp4_is_zero(den[2])) {
 				ep4_set_infty(p);
 			} else {
-				fp4_inv(w, w);
-				fp4_mul(x1, v, w);
-				fp4_add(y1, u, x1);
-				fp4_neg(y1, y1);
-				fp4_mul(z1, y, w);
-				fp4_sqr(z1, z1);
-				fp4_add(z1, z1, u);
+				fp4_inv_sim(den, den, 3);
+				fp4_mul(t, a, p->z);
+				fp4_mul(y1, p->y, v);
+				fp4_add(y1, y1, t);
+				fp4_add(y1, y1, w);
+				fp_mul(z1[0][0], y[0][0], p->x[0][0]);
+				fp_mul(z1[0][1], y[0][1], p->x[0][0]);
+				fp_mul(z1[1][0], y[1][0], p->x[0][0]);
+				fp_mul(z1[1][1], y[1][1], p->x[0][0]);
+				fp4_add(x1, y1, z1);
+				fp4_add(y1, y1, y);
+				fp4_mul(z1, a, p->y);
+				fp4_add(z1, z1, b);
+				fp4_mul(z1, z1, p->y);
+				fp4_dbl(p->x, z1);
+				fp4_add(z1, z1, p->x);
+				fp4_add(z1, z1, v);
+				fp4_sub(z1, c, z1);
+				fp4_mul(z1, z1, v);
+				fp4_sqr(p->z, p->z);
+				fp4_sub(z1, p->z, z1);
+				fp4_add(w, w, t);
+				fp4_add(w, w, t);
+				fp4_mul(w, w, b);
+				fp4_add(z1, z1, w);
 
-				ep4_curve_get_b(w);
-
+				fp4_mul(x1, x1, den[0]);
+				fp4_mul(y1, y1, den[1]);
+				fp4_mul(z1, z1, den[2]);
+				
+				ep4_curve_get_a(p->y);
 				fp4_sqr(t, x1);
+				fp4_add(t, t, p->y);
 				fp4_mul(t, t, x1);
-				fp4_add(t, t, w);
-
 				fp4_sqr(u, y1);
+				fp4_add(u, u, p->y);
 				fp4_mul(u, u, y1);
-				fp4_add(u, u, w);
-
 				fp4_sqr(v, z1);
+				fp4_add(v, v, p->y);
 				fp4_mul(v, v, z1);
-				fp4_add(v, v, w);
 
-				dig_t c2 = fp4_is_sqr(u);
-				dig_t c3 = fp4_is_sqr(v);
+				int c2 = fp4_is_sqr(u);
+				int c3 = fp4_is_sqr(v);
 
-				for (int i = 0; i < 2; i++) {
-					for (int j = 0; j < 2; j++) {
-						dv_swap_cond(x1[i][j], y1[i][j], RLC_FP_DIGS, c2);
-						dv_swap_cond(t[i][j], u[i][j], RLC_FP_DIGS, c2);
-						dv_swap_cond(x1[i][j], z1[i][j], RLC_FP_DIGS, c3);
-						dv_swap_cond(t[i][j], v[i][j], RLC_FP_DIGS, c3);
-					}
-				}
+				dv_swap_cond(t[0][0], u[0][0], RLC_FP_DIGS, c2);
+				dv_swap_cond(t[0][1], u[0][1], RLC_FP_DIGS, c2);
+				dv_swap_cond(t[1][0], u[1][0], RLC_FP_DIGS, c2);
+				dv_swap_cond(t[1][1], u[1][1], RLC_FP_DIGS, c2);
+				dv_swap_cond(x1[0][0], y1[0][0], RLC_FP_DIGS, c2);
+				dv_swap_cond(x1[0][1], y1[0][1], RLC_FP_DIGS, c2);
+				dv_swap_cond(x1[1][0], y1[1][0], RLC_FP_DIGS, c2);
+				dv_swap_cond(x1[1][1], y1[1][1], RLC_FP_DIGS, c2);
+				dv_swap_cond(t[0][0], v[0][0], RLC_FP_DIGS, c3);
+				dv_swap_cond(t[0][1], v[0][1], RLC_FP_DIGS, c3);
+				dv_swap_cond(t[1][0], v[1][0], RLC_FP_DIGS, c3);
+				dv_swap_cond(t[1][1], v[1][1], RLC_FP_DIGS, c3);
+				dv_swap_cond(x1[0][0], z1[0][0], RLC_FP_DIGS, c3);
+				dv_swap_cond(x1[0][1], z1[0][1], RLC_FP_DIGS, c3);
+				dv_swap_cond(x1[1][0], z1[1][0], RLC_FP_DIGS, c3);
+				dv_swap_cond(x1[1][1], z1[1][1], RLC_FP_DIGS, c3);
 
 				if (!fp4_srt(t, t)) {
 					RLC_THROW(ERR_NO_VALID);
 				}
-
-				for (int i = 0; i < 2; i++) {
-					t0z = fp_is_zero(t[i][0]);
-					fp_prime_back(k, t[i][0]);
-					t0 = bn_get_bit(k, 0);
-					fp_prime_back(k, t[i][1]);
-					t1 = bn_get_bit(k, 0);
-					/* t[0] == 0 ? sgn0(t[1]) : sgn0(t[0]) */
-					s[i] = t0 | (t0z & t1);
-				}
-
-				t0z = fp2_is_zero(t[0]);
-				sign ^= (s[0] | (t0z & s[1]));
-
 				fp4_neg(u, t);
-				dv_swap_cond(t[0][0], u[0][0], RLC_FP_DIGS, sign);
-				dv_swap_cond(t[0][1], u[0][1], RLC_FP_DIGS, sign);
-				dv_swap_cond(t[1][0], u[1][0], RLC_FP_DIGS, sign);
-				dv_swap_cond(t[1][1], u[1][1], RLC_FP_DIGS, sign);
+				c2 = fp_is_even(t[0][0]);
+				dv_swap_cond(t[0][0], u[0][0], RLC_FP_DIGS, c2 ^ sign);
+				dv_swap_cond(t[0][1], u[0][1], RLC_FP_DIGS, c2 ^ sign);
+				dv_swap_cond(t[1][0], u[1][0], RLC_FP_DIGS, c2 ^ sign);
+				dv_swap_cond(t[1][1], u[1][1], RLC_FP_DIGS, c2 ^ sign);
 
 				fp4_copy(p->x, x1);
 				fp4_copy(p->y, t);
 				fp4_set_dig(p->z, 1);
 				p->coord = BASIC;
+			}
+		} else {
+			if (ep_curve_opt_a() == RLC_ZERO) {
+				fp4_sqr(x1, u);
+				fp4_mul(x1, x1, u);
+				fp4_sqr(y1, t);
+				fp4_add(x1, x1, ctx->ep4_b);
+				fp4_sub(x1, x1, y1);
+				fp4_dbl(y1, y1);
+				fp4_add(y1, y1, x1);
+				fp4_copy(z1, u);
+				fp_mul(z1[0][0], z1[0][0], ctx->ep_map_c[4]);
+				fp_mul(z1[0][1], z1[0][1], ctx->ep_map_c[4]);
+				fp_mul(z1[1][0], z1[1][0], ctx->ep_map_c[4]);
+				fp_mul(z1[1][1], z1[1][1], ctx->ep_map_c[4]);
+				fp4_mul(x1, x1, z1);
+				fp4_mul(z1, z1, t);
+				fp4_dbl(z1, z1);
+
+				fp4_dbl(y, y1);
+				fp4_sqr(y, y);
+				fp4_mul(v, y1, u);
+				fp4_sub(v, x1, v);
+				fp4_mul(v, v, z1);
+				fp4_mul(w, y1, z1);
+				fp4_dbl(w, w);
+
+				if (fp4_is_zero(w)) {
+					ep4_set_infty(p);
+				} else {
+					fp4_inv(w, w);
+					fp4_mul(x1, v, w);
+					fp4_add(y1, u, x1);
+					fp4_neg(y1, y1);
+					fp4_mul(z1, y, w);
+					fp4_sqr(z1, z1);
+					fp4_add(z1, z1, u);
+
+					ep4_curve_get_b(w);
+
+					fp4_sqr(t, x1);
+					fp4_mul(t, t, x1);
+					fp4_add(t, t, w);
+
+					fp4_sqr(u, y1);
+					fp4_mul(u, u, y1);
+					fp4_add(u, u, w);
+
+					fp4_sqr(v, z1);
+					fp4_mul(v, v, z1);
+					fp4_add(v, v, w);
+
+					dig_t c2 = fp4_is_sqr(u);
+					dig_t c3 = fp4_is_sqr(v);
+
+					for (int i = 0; i < 2; i++) {
+						for (int j = 0; j < 2; j++) {
+							dv_swap_cond(x1[i][j], y1[i][j], RLC_FP_DIGS, c2);
+							dv_swap_cond(t[i][j], u[i][j], RLC_FP_DIGS, c2);
+							dv_swap_cond(x1[i][j], z1[i][j], RLC_FP_DIGS, c3);
+							dv_swap_cond(t[i][j], v[i][j], RLC_FP_DIGS, c3);
+						}
+					}
+
+					if (!fp4_srt(t, t)) {
+						RLC_THROW(ERR_NO_VALID);
+					}
+
+					for (int i = 0; i < 2; i++) {
+						t0z = fp_is_zero(t[i][0]);
+						fp_prime_back(k, t[i][0]);
+						t0 = bn_get_bit(k, 0);
+						fp_prime_back(k, t[i][1]);
+						t1 = bn_get_bit(k, 0);
+						/* t[0] == 0 ? sgn0(t[1]) : sgn0(t[0]) */
+						s[i] = t0 | (t0z & t1);
+					}
+
+					t0z = fp2_is_zero(t[0]);
+					sign ^= (s[0] | (t0z & s[1]));
+
+					fp4_neg(u, t);
+					dv_swap_cond(t[0][0], u[0][0], RLC_FP_DIGS, sign);
+					dv_swap_cond(t[0][1], u[0][1], RLC_FP_DIGS, sign);
+					dv_swap_cond(t[1][0], u[1][0], RLC_FP_DIGS, sign);
+					dv_swap_cond(t[1][1], u[1][1], RLC_FP_DIGS, sign);
+
+					fp4_copy(p->x, x1);
+					fp4_copy(p->y, t);
+					fp4_set_dig(p->z, 1);
+					p->coord = BASIC;
+				}
 			}
 		}
 		
@@ -287,7 +326,9 @@ void ep4_map(ep4_t p, const uint8_t *msg, size_t len) {
 	RLC_FINALLY {
 		bn_free(k);
 		fp4_free(a);
+		fp4_free(b);
 		fp4_free(c);
+		fp4_free(d);
 		fp4_free(t);
 		fp4_free(u);
 		fp4_free(v);
@@ -296,6 +337,9 @@ void ep4_map(ep4_t p, const uint8_t *msg, size_t len) {
 		fp4_free(x1);
 		fp4_free(y1);
 		fp4_free(z1);
+		fp4_free(den[0]);
+		fp4_free(den[1]);
+		fp4_free(den[2]);
 		RLC_FREE(h);
 	}
 }
