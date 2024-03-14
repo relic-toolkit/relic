@@ -659,6 +659,7 @@
 /** @} */
 #endif
 
+#if defined(EP_ENDOM) && FP_PRIME == 765
 /**
  * Parameters for a 765-bit pairing-friendly prime curve.
  */
