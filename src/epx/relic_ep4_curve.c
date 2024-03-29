@@ -343,12 +343,12 @@ void ep4_curve_get_gen(ep4_t g) {
 	ep4_copy(g, core_get()->ep4_g);
 }
 
-void ep4_curve_get_a(fp4_t a) {
-	fp4_copy(a, core_get()->ep4_a);
+fp2_t *ep4_curve_get_a(void) {
+	return core_get()->ep4_a;
 }
 
-void ep4_curve_get_b(fp4_t b) {
-	fp4_copy(b, core_get()->ep4_b);
+fp2_t *ep4_curve_get_b(void) {
+	return core_get()->ep4_b;
 }
 
 void ep4_curve_get_ord(bn_t n) {

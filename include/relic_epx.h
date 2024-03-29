@@ -33,7 +33,7 @@
 
  * The scalar multiplication functions are only guaranteed to work
  * in the prime order subgroup used by pairings. If you need a generic scalar
- * multiplication function, use \sa ep2_mul_big().
+ * multiplication function, use epx_mul_big().
  *
  * @ingroup epx
  */
@@ -460,6 +460,16 @@ typedef iso2_st *iso2_t;
 #endif
 
 /**
+ * Multiplies a point in an elliptic curve over a quadratic extension field by
+ * an unrestricted integer scalar. Computes R = [k]P.
+ *
+ * @param[out] R				- the result.
+ * @param[in] P					- the point to multiply.
+ * @param[in] K					- the integer.
+ */
+#define ep2_mul_big(R, P, K)	ep2_mul_basic(R, P, K)
+
+/**
  * Multiplies a point in an elliptic curve over a quadratic extension field.
  * Computes R = [k]P.
  *
@@ -578,6 +588,16 @@ typedef iso2_st *iso2_t;
 #endif
 
 /**
+ * Multiplies a point in an elliptic curve over a cubic extension field by
+ * an unrestricted integer scalar. Computes R = [k]P.
+ *
+ * @param[out] R				- the result.
+ * @param[in] P					- the point to multiply.
+ * @param[in] K					- the integer.
+ */
+#define ep3_mul_big(R, P, K)	ep3_mul_basic(R, P, K)
+
+/**
  * Multiplies a point in an elliptic curve over a cubic extension field.
  * Computes R = [k]P.
  *
@@ -653,7 +673,7 @@ typedef iso2_st *iso2_t;
 #endif
 
 /**
- * Adds two points in an elliptic curve over a octic extension field.
+ * Adds two points in an elliptic curve over a quartic extension field.
  * Computes R = P + Q.
  *
  * @param[out] R				- the result.
@@ -667,7 +687,7 @@ typedef iso2_st *iso2_t;
 #endif
 
 /**
- * Doubles a point in an elliptic curve over a octic extension field.
+ * Doubles a point in an elliptic curve over a quartic extension field.
  * Computes R = 2P.
  *
  * @param[out] R				- the result.
@@ -680,7 +700,7 @@ typedef iso2_st *iso2_t;
 #endif
 
 /**
- * Multiplies a point in an elliptic curve over a octic extension field by
+ * Multiplies a point in an elliptic curve over a quartic extension field by
  * an unrestricted integer scalar. Computes R = [k]P.
  *
  * @param[out] R				- the result.
@@ -690,7 +710,7 @@ typedef iso2_st *iso2_t;
 #define ep4_mul_big(R, P, K)	ep4_mul_basic(R, P, K)
 
 /**
- * Multiplies a point in an elliptic curve over a octic extension field.
+ * Multiplies a point in an elliptic curve over a quartic extension field.
  * Computes R = [k]P.
  *
  * @param[out] R				- the result.
@@ -709,7 +729,7 @@ typedef iso2_st *iso2_t;
 
 /**
  * Builds a precomputation table for multiplying a fixed prime elliptic point
- * over a octic extension.
+ * over a quartic extension.
  *
  * @param[out] T				- the precomputation table.
  * @param[in] P					- the point to multiply.
@@ -726,7 +746,7 @@ typedef iso2_st *iso2_t;
 #endif
 
 /**
- * Multiplies a fixed prime elliptic point over a octic extension using a
+ * Multiplies a fixed prime elliptic point over a quartic extension using a
  * precomputation table. Computes R = [k]P.
  *
  * @param[out] R				- the result.
@@ -1539,14 +1559,14 @@ void ep3_curve_clean(void);
  *
  * @return the 'a' coefficient of the elliptic curve.
  */
-void ep3_curve_get_a(fp3_t a);
+fp_t *ep3_curve_get_a(void);
 
 /**
  * Returns the 'b' coefficient of the currently configured elliptic curve.
  *
  * @param[out] b			- the 'b' coefficient of the elliptic curve.
  */
-void ep3_curve_get_b(fp3_t b);
+fp_t *ep3_curve_get_b(void);
 
 /**
  * Returns a optimization identifier based on the 'a' coefficient of the curve.
@@ -2148,14 +2168,14 @@ void ep4_curve_clean(void);
  *
  * @return the 'a' coefficient of the elliptic curve.
  */
-void ep4_curve_get_a(fp4_t a);
+fp2_t *ep4_curve_get_a(void);
 
 /**
  * Returns the 'b' coefficient of the currently configured elliptic curve.
  *
  * @param[out] b			- the 'b' coefficient of the elliptic curve.
  */
-void ep4_curve_get_b(fp4_t b);
+fp2_t *ep4_curve_get_b(void);
 
 /**
  * Returns a optimization identifier based on the 'a' coefficient of the curve.
@@ -2758,14 +2778,14 @@ void ep8_curve_clean(void);
  *
  * @return the 'a' coefficient of the elliptic curve.
  */
-void ep8_curve_get_a(fp8_t a);
+fp4_t *ep8_curve_get_a(void);
 
 /**
  * Returns the 'b' coefficient of the currently configured elliptic curve.
  *
  * @param[out] b			- the 'b' coefficient of the elliptic curve.
  */
-void ep8_curve_get_b(fp8_t b);
+fp4_t *ep8_curve_get_b(void);
 
 /**
  * Returns a optimization identifier based on the 'a' coefficient of the curve.

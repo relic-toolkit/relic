@@ -105,14 +105,12 @@ void ep4_blind(ep4_t r, const ep4_t p) {
 }
 
 void ep4_rhs(fp4_t rhs, const ep4_t p) {
-	fp4_t t0, t1;
+	fp4_t t0;
 
 	fp4_null(t0);
-	fp4_null(t1);
 
 	RLC_TRY {
 		fp4_new(t0);
-		fp4_new(t1);
 
 		fp4_sqr(t0, p->x);                  /* x1^2 */
 
@@ -130,13 +128,11 @@ void ep4_rhs(fp4_t rhs, const ep4_t p) {
 				fp_add_dig(t0[0][0], t0[0][0], 2);
 				break;
 			case RLC_TINY:
-				ep4_curve_get_a(t1);
-				fp4_mul_dig(t0, t0, t1[0][0][0]);
+				fp4_mul_dig(t0, t0, ep4_curve_get_a()[0][0][0]);
 				break;
 #endif
 			default:
-				ep4_curve_get_a(t1);
-				fp4_add(t0, t0, t1);
+				fp4_add(t0, t0, ep4_curve_get_a());
 				break;
 		}
 
@@ -156,13 +152,11 @@ void ep4_rhs(fp4_t rhs, const ep4_t p) {
 				fp_add_dig(t0[0][0], t0[0][0], 2);
 				break;
 			case RLC_TINY:
-				ep4_curve_get_b(t1);
-				fp4_mul_dig(t0, t0, t1[0][0][0]);
+				fp4_mul_dig(t0, t0, ep4_curve_get_b()[0][0][0]);
 				break;
 #endif
 			default:
-				ep4_curve_get_b(t1);
-				fp4_add(t0, t0, t1);
+				fp4_add(t0, t0, ep4_curve_get_b());
 				break;
 		}
 
@@ -171,10 +165,8 @@ void ep4_rhs(fp4_t rhs, const ep4_t p) {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		fp4_free(t0);
-		fp4_free(t1);
 	}
 }
-
 
 int ep4_on_curve(const ep4_t p) {
 	ep4_t t;

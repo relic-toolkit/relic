@@ -95,11 +95,10 @@ void ep4_map(ep4_t p, const uint8_t *msg, size_t len) {
 		h -= 8*elm;
 
 		if (ep_curve_opt_b() == RLC_ZERO) {
-			ep4_curve_get_a(p->y);
 			fp4_sqr(a, u);
 			fp4_sqr(b, a);
 			fp4_mul(c, b, a);
-			fp4_dbl(p->y, p->y);
+			fp4_dbl(p->y, ep4_curve_get_a());
 			fp4_dbl(p->y, p->y);
 			fp4_sqr(p->z, p->y);
 			fp4_mul(p->z, p->z, p->y);
@@ -178,15 +177,14 @@ void ep4_map(ep4_t p, const uint8_t *msg, size_t len) {
 				fp4_mul(y1, y1, den[1]);
 				fp4_mul(z1, z1, den[2]);
 				
-				ep4_curve_get_a(p->y);
 				fp4_sqr(t, x1);
-				fp4_add(t, t, p->y);
+				fp4_add(t, t, ep4_curve_get_a());
 				fp4_mul(t, t, x1);
 				fp4_sqr(u, y1);
-				fp4_add(u, u, p->y);
+				fp4_add(u, u, ep4_curve_get_a());
 				fp4_mul(u, u, y1);
 				fp4_sqr(v, z1);
-				fp4_add(v, v, p->y);
+				fp4_add(v, v, ep4_curve_get_a());
 				fp4_mul(v, v, z1);
 
 				int c2 = fp4_is_sqr(u);
@@ -261,19 +259,17 @@ void ep4_map(ep4_t p, const uint8_t *msg, size_t len) {
 					fp4_sqr(z1, z1);
 					fp4_add(z1, z1, u);
 
-					ep4_curve_get_b(w);
-
 					fp4_sqr(t, x1);
 					fp4_mul(t, t, x1);
-					fp4_add(t, t, w);
+					fp4_add(t, t, ep4_curve_get_b());
 
 					fp4_sqr(u, y1);
 					fp4_mul(u, u, y1);
-					fp4_add(u, u, w);
+					fp4_add(u, u, ep4_curve_get_b());
 
 					fp4_sqr(v, z1);
 					fp4_mul(v, v, z1);
-					fp4_add(v, v, w);
+					fp4_add(v, v, ep4_curve_get_b());
 
 					dig_t c2 = fp4_is_sqr(u);
 					dig_t c3 = fp4_is_sqr(v);

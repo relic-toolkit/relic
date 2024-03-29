@@ -105,14 +105,12 @@ void ep8_blind(ep8_t r, const ep8_t p) {
 }
 
 void ep8_rhs(fp8_t rhs, const ep8_t p) {
-	fp8_t t0, t1;
+	fp8_t t0;
 
 	fp8_null(t0);
-	fp8_null(t1);
 
 	RLC_TRY {
 		fp8_new(t0);
-		fp8_new(t1);
 
 		fp8_sqr(t0, p->x);                  /* x1^2 */
 
@@ -130,20 +128,12 @@ void ep8_rhs(fp8_t rhs, const ep8_t p) {
 				fp_add_dig(t0[0][0][0], t0[0][0][0], 2);
 				break;
 			case RLC_TINY:
-				ep8_curve_get_a(t1);
-				fp_mul_dig(t0[0][0][0], t0[0][0][0], t1[0][0][0][0]);
-				fp_mul_dig(t0[0][0][1], t0[0][0][1], t1[0][0][0][0]);
-				fp_mul_dig(t0[0][1][0], t0[0][1][0], t1[0][0][0][0]);
-				fp_mul_dig(t0[0][1][1], t0[0][1][1], t1[0][0][0][0]);
-				fp_mul_dig(t0[1][0][0], t0[1][0][0], t1[0][0][0][0]);
-				fp_mul_dig(t0[1][0][1], t0[1][0][1], t1[0][0][0][0]);
-				fp_mul_dig(t0[1][1][0], t0[1][1][0], t1[0][0][0][0]);
-				fp_mul_dig(t0[1][1][1], t0[1][1][1], t1[0][0][0][0]);
+				fp_add_dig(t0[0][0][0], t0[0][0][0],
+					ep8_curve_get_a()[0][0][0][0])
 				break;
 #endif
 			default:
-				ep8_curve_get_a(t1);
-				fp8_add(t0, t0, t1);
+				fp8_add(t0, t0, ep8_curve_get_a());
 				break;
 		}
 
@@ -164,15 +154,12 @@ void ep8_rhs(fp8_t rhs, const ep8_t p) {
 				break;
 			case RLC_TINY:
 				ep8_curve_get_b(t1);
-				fp_mul_dig(t0[0][0][0], t0[0][0][0], t1[0][0][0][0]);
-				fp_mul_dig(t0[0][1][0], t0[0][1][0], t1[0][0][0][0]);
-				fp_mul_dig(t0[1][0][0], t0[0][0][0], t1[0][0][0][0]);
-				fp_mul_dig(t0[1][1][0], t0[1][1][0], t1[0][0][0][0]);
+				fp_add_dig(t0[0][0][0], t0[0][0][0],
+					ep8_curve_get_b()[0][0][0][0]);
 				break;
 #endif
 			default:
-				ep8_curve_get_b(t1);
-				fp8_add(t0, t0, t1);
+				fp8_add(t0, t0, ep8_curve_get_b());
 				break;
 		}
 
@@ -181,10 +168,8 @@ void ep8_rhs(fp8_t rhs, const ep8_t p) {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		fp8_free(t0);
-		fp8_free(t1);
 	}
 }
-
 
 int ep8_on_curve(const ep8_t p) {
 	ep8_t t;

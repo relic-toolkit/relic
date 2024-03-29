@@ -249,12 +249,12 @@ void ep3_curve_get_gen(ep3_t g) {
 	ep3_copy(g, core_get()->ep3_g);
 }
 
-void ep3_curve_get_a(fp3_t a) {
-	fp3_copy(a, core_get()->ep3_a);
+fp_t *ep3_curve_get_a(void) {
+	return core_get()->ep3_a;
 }
 
-void ep3_curve_get_b(fp3_t b) {
-	fp3_copy(b, core_get()->ep3_b);
+fp_t *ep3_curve_get_b(void) {
+	return core_get()->ep3_b;
 }
 
 void ep3_curve_get_ord(bn_t n) {

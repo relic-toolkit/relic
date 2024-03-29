@@ -31,6 +31,7 @@
  */
 
 #include "relic_core.h"
+#include "relic_ep_dbl_tmpl.h"
 
 /*============================================================================*/
 /* Private definitions                                                        */
@@ -46,65 +47,7 @@
  * @param[out] s			- the resulting slope.
  * @param[in] p				- the point to double.
  */
-static void ep3_dbl_basic_imp(ep3_t r, fp3_t s, const ep3_t p) {
-	fp3_t t0, t1, t2;
-
-	fp3_null(t0);
-	fp3_null(t1);
-	fp3_null(t2);
-
-	RLC_TRY {
-		fp3_new(t0);
-		fp3_new(t1);
-		fp3_new(t2);
-
-		/* t0 = 1/(2 * y1). */
-		fp3_dbl(t0, p->y);
-		fp3_inv(t0, t0);
-
-		/* t1 = 3 * x1^2 + a. */
-		fp3_sqr(t1, p->x);
-		fp3_copy(t2, t1);
-		fp3_dbl(t1, t1);
-		fp3_add(t1, t1, t2);
-
-		ep3_curve_get_a(t2);
-		fp3_add(t1, t1, t2);
-
-		/* t1 = (3 * x1^2 + a)/(2 * y1). */
-		fp3_mul(t1, t1, t0);
-
-		if (s != NULL) {
-			fp3_copy(s, t1);
-		}
-
-		/* t2 = t1^2. */
-		fp3_sqr(t2, t1);
-
-		/* x3 = t1^2 - 2 * x1. */
-		fp3_dbl(t0, p->x);
-		fp3_sub(t0, t2, t0);
-
-		/* y3 = t1 * (x1 - x3) - y1. */
-		fp3_sub(t2, p->x, t0);
-		fp3_mul(t1, t1, t2);
-
-		fp3_sub(r->y, t1, p->y);
-
-		fp3_copy(r->x, t0);
-		fp3_copy(r->z, p->z);
-
-		r->coord = BASIC;
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		fp3_free(t0);
-		fp3_free(t1);
-		fp3_free(t2);
-	}
-}
+TMPL_DBL_BASIC_IMP(ep3, fp3);
 
 #endif /* EP_ADD == BASIC */
 
@@ -169,7 +112,7 @@ static void ep3_dbl_projc_imp(ep3_t r, const ep3_t p) {
 				/* t3 = z1^2. */
 				fp3_sqr(t3, p->z);
 
-				if (ep_curve_get_a() == RLC_ZERO) {
+				if (ep_curve_opt_a() == RLC_ZERO) {
 					/* z3 = 2 * y1 * z1. */
 					fp3_mul(r->z, p->y, p->z);
 					fp3_dbl(r->z, r->z);
@@ -197,12 +140,10 @@ static void ep3_dbl_projc_imp(ep3_t r, const ep3_t p) {
 			fp3_add(t5, t5, t0);
 			if (p->coord != BASIC) {
 				fp3_sqr(t3, t3);
-				ep3_curve_get_a(t1);
-				fp3_mul(t1, t3, t1);
+				fp3_mul(t1, t3, ep3_curve_get_a());
 				fp3_add(t5, t5, t1);
 			} else {
-				ep3_curve_get_a(t1);
-				fp3_add(t5, t5, t1);
+				fp3_add(t5, t5, ep3_curve_get_a());
 			}
 
 			/* x3 = T = M^2 - 2 * S. */

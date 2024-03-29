@@ -229,12 +229,12 @@ void ep8_curve_get_gen(ep8_t g) {
 	ep8_copy(g, core_get()->ep8_g);
 }
 
-void ep8_curve_get_a(fp8_t a) {
-	fp8_copy(a, core_get()->ep8_a);
+fp4_t *ep8_curve_get_a(void) {
+	return core_get()->ep8_a;
 }
 
-void ep8_curve_get_b(fp8_t b) {
-	fp8_copy(b, core_get()->ep8_b);
+fp4_t *ep8_curve_get_b(void) {
+	return core_get()->ep8_b;
 }
 
 void ep8_curve_get_ord(bn_t n) {

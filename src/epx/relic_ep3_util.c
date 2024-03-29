@@ -105,14 +105,12 @@ void ep3_blind(ep3_t r, const ep3_t p) {
 }
 
 void ep3_rhs(fp3_t rhs, const ep3_t p) {
-	fp3_t t0, t1;
+	fp3_t t0;
 
 	fp3_null(t0);
-	fp3_null(t1);
 
 	RLC_TRY {
 		fp3_new(t0);
-		fp3_new(t1);
 
 		fp3_sqr(t0, p->x);                  /* x1^2 */
 
@@ -130,13 +128,11 @@ void ep3_rhs(fp3_t rhs, const ep3_t p) {
 				fp_add_dig(t0[0], t0[0], 2);
 				break;
 			case RLC_TINY:
-				ep3_curve_get_a(t1);
-				fp3_mul_dig(t0, t0, t1[0][0]);
+				fp3_mul_dig(t0, t0, ep3_curve_get_a()[0][0]);
 				break;
 #endif
 			default:
-				ep3_curve_get_a(t1);
-				fp3_add(t0, t0, t1);
+				fp3_add(t0, t0, ep3_curve_get_a());
 				break;
 		}
 
@@ -156,13 +152,11 @@ void ep3_rhs(fp3_t rhs, const ep3_t p) {
 				fp3_add_dig(t0, t0, 2);
 				break;
 			case RLC_TINY:
-				ep3_curve_get_b(t1);
-				fp3_mul_dig(t0, t0, t1[0][0]);
+				fp3_mul_dig(t0, t0, ep3_curve_get_b()[0][0]);
 				break;
 #endif
 			default:
-				ep3_curve_get_b(t1);
-				fp3_add(t0, t0, t1);
+				fp3_add(t0, t0, ep3_curve_get_b());
 				break;
 		}
 
@@ -171,10 +165,8 @@ void ep3_rhs(fp3_t rhs, const ep3_t p) {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		fp3_free(t0);
-		fp3_free(t1);
 	}
 }
-
 
 int ep3_on_curve(const ep3_t p) {
 	ep3_t t;

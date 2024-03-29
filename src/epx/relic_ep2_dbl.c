@@ -31,6 +31,7 @@
  */
 
 #include "relic_core.h"
+#include "relic_ep_dbl_tmpl.h"
 
 /*============================================================================*/
 /* Private definitions                                                        */
@@ -46,64 +47,7 @@
  * @param[out] s			- the resulting slope.
  * @param[in] p				- the point to double.
  */
-static void ep2_dbl_basic_imp(ep2_t r, fp2_t s, const ep2_t p) {
-	fp2_t t0, t1, t2;
-
-	fp2_null(t0);
-	fp2_null(t1);
-	fp2_null(t2);
-
-	RLC_TRY {
-		fp2_new(t0);
-		fp2_new(t1);
-		fp2_new(t2);
-
-		/* t0 = 1/(2 * y1). */
-		fp2_dbl(t0, p->y);
-		fp2_inv(t0, t0);
-
-		/* t1 = 3 * x1^2 + a. */
-		fp2_sqr(t1, p->x);
-		fp2_copy(t2, t1);
-		fp2_dbl(t1, t1);
-		fp2_add(t1, t1, t2);
-
-		fp2_add(t1, t1, ep2_curve_get_a());
-
-		/* t1 = (3 * x1^2 + a)/(2 * y1). */
-		fp2_mul(t1, t1, t0);
-
-		if (s != NULL) {
-			fp2_copy(s, t1);
-		}
-
-		/* t2 = t1^2. */
-		fp2_sqr(t2, t1);
-
-		/* x3 = t1^2 - 2 * x1. */
-		fp2_dbl(t0, p->x);
-		fp2_sub(t0, t2, t0);
-
-		/* y3 = t1 * (x1 - x3) - y1. */
-		fp2_sub(t2, p->x, t0);
-		fp2_mul(t1, t1, t2);
-
-		fp2_sub(r->y, t1, p->y);
-
-		fp2_copy(r->x, t0);
-		fp2_copy(r->z, p->z);
-
-		r->coord = BASIC;
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		fp2_free(t0);
-		fp2_free(t1);
-		fp2_free(t2);
-	}
-}
+TMPL_DBL_BASIC_IMP(ep2, fp2);
 
 #endif /* EP_ADD == BASIC */
 
@@ -168,7 +112,7 @@ static void ep2_dbl_projc_imp(ep2_t r, const ep2_t p) {
 				/* t3 = z1^2. */
 				fp2_sqr(t3, p->z);
 
-				if (ep_curve_get_a() == RLC_ZERO) {
+				if (ep_curve_opt_a() == RLC_ZERO) {
 					/* z3 = 2 * y1 * z1. */
 					fp2_mul(r->z, p->y, p->z);
 					fp2_dbl(r->z, r->z);

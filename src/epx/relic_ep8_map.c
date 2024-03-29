@@ -124,19 +124,17 @@ void ep8_map(ep8_t p, const uint8_t *msg, size_t len) {
 			fp8_sqr(z1, z1);
 			fp8_add(z1, z1, u);
 
-			ep8_curve_get_b(w);
-
 			fp8_sqr(t, x1);
 			fp8_mul(t, t, x1);
-			fp8_add(t, t, w);
+			fp8_add(t, t, ep8_curve_get_b());
 
 			fp8_sqr(u, y1);
 			fp8_mul(u, u, y1);
-			fp8_add(u, u, w);
+			fp8_add(u, u, ep8_curve_get_b());
 
 			fp8_sqr(v, z1);
 			fp8_mul(v, v, z1);
-			fp8_add(v, v, w);
+			fp8_add(v, v, ep8_curve_get_b());
 
 			c2 = fp8_is_sqr(u);
 			c3 = fp8_is_sqr(v);

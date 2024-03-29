@@ -115,19 +115,17 @@ void ep3_map(ep3_t p, const uint8_t *msg, size_t len) {
 			fp3_sqr(z1, z1);
 			fp3_add(z1, z1, u);
 
-			ep3_curve_get_b(w);
-
 			fp3_sqr(t, x1);
 			fp3_mul(t, t, x1);
-			fp3_add(t, t, w);
+			fp3_add(t, t, ep3_curve_get_b());
 
 			fp3_sqr(u, y1);
 			fp3_mul(u, u, y1);
-			fp3_add(u, u, w);
+			fp3_add(u, u, ep3_curve_get_b());
 
 			fp3_sqr(v, z1);
 			fp3_mul(v, v, z1);
-			fp3_add(v, v, w);
+			fp3_add(v, v, ep3_curve_get_b());
 
 			c2 = fp3_is_sqr(u);
 			c3 = fp3_is_sqr(v);
