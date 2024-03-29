@@ -219,9 +219,9 @@ static int addition2(void) {
 			ep2_rand(a);
 			ep2_set_infty(d);
 			ep2_add(e, a, d);
-			TEST_ASSERT(ep2_cmp(e, a) == RLC_EQ, end);
+			TEST_ASSERT(ep2_cmp(a, e) == RLC_EQ, end);
 			ep2_add(e, d, a);
-			TEST_ASSERT(ep2_cmp(e, a) == RLC_EQ, end);
+			TEST_ASSERT(ep2_cmp(a, e) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_CASE("point addition has inverse") {
@@ -237,7 +237,7 @@ static int addition2(void) {
 			ep2_rand(b);
 			ep2_add(d, a, b);
 			ep2_add_basic(e, a, b);
-			TEST_ASSERT(ep2_cmp(e, d) == RLC_EQ, end);
+			TEST_ASSERT(ep2_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 #endif
 
@@ -281,6 +281,46 @@ static int addition2(void) {
 		} TEST_END;
 #endif
 
+#if EP_ADD == JACOB || !defined(STRIP)
+#if !defined(EP_MIXED) || !defined(STRIP)
+		TEST_CASE("point addition in jacobian coordinates is correct") {
+			ep2_rand(a);
+			ep2_rand(b);
+			ep2_rand(c);
+			ep2_add_jacob(a, a, b);
+			ep2_add_jacob(b, b, c);
+			/* a and b in projective coordinates. */
+			ep2_add_jacob(d, a, b);
+			ep2_norm(a, a);
+			ep2_norm(b, b);
+			ep2_add(e, a, b);
+			TEST_ASSERT(ep2_cmp(d, e) == RLC_EQ, end);
+		} TEST_END;
+#endif
+
+		TEST_CASE("point addition in mixed coordinates (z2 = 1) is correct") {
+			ep2_rand(a);
+			ep2_rand(b);
+			/* a in projective, b in affine coordinates. */
+			ep2_add_jacob(a, a, b);
+			ep2_add_jacob(d, a, b);
+			/* a in affine coordinates. */
+			ep2_norm(a, a);
+			ep2_add(e, a, b);
+			TEST_ASSERT(ep2_cmp(d, e) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("point addition in mixed coordinates (z1,z2 = 1) is correct") {
+			ep2_rand(a);
+			ep2_rand(b);
+			ep2_norm(a, a);
+			ep2_norm(b, b);
+			/* a and b in affine coordinates. */
+			ep2_add(d, a, b);
+			ep2_add_jacob(e, a, b);
+			TEST_ASSERT(ep2_cmp(d, e) == RLC_EQ, end);
+		} TEST_END;
+#endif
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);
@@ -562,6 +602,34 @@ static int multiplication2(void) {
 			ep2_mul_lwnaf(q, p, k);
 			bn_add(k, k, n);
 			ep2_mul_lwnaf(r, p, k);
+			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
+		}
+		TEST_END;
+#endif
+
+#if EP_MUL == LWREG || !defined(STRIP)
+		TEST_CASE("left-to-right regular point multiplication is correct") {
+			bn_zero(k);
+			ep2_mul_lwreg(r, p, k);
+			TEST_ASSERT(ep2_is_infty(r), end);
+			bn_set_dig(k, 1);
+			ep2_mul_lwreg(r, p, k);
+			TEST_ASSERT(ep2_cmp(p, r) == RLC_EQ, end);
+			ep2_rand(p);
+			ep2_mul_lwreg(r, p, n);
+			TEST_ASSERT(ep2_is_infty(r), end);
+			bn_rand_mod(k, n);
+			ep2_mul(q, p, k);
+			ep2_mul_lwreg(r, p, k);
+			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
+			bn_neg(k, k);
+			ep2_mul_lwreg(r, p, k);
+			ep2_neg(r, r);
+			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
+			bn_rand_mod(k, n);
+			ep2_mul_lwreg(q, p, k);
+			bn_add(k, k, n);
+			ep2_mul_lwreg(r, p, k);
 			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
 		}
 		TEST_END;

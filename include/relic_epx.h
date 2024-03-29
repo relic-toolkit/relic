@@ -441,9 +441,11 @@ typedef iso2_st *iso2_t;
  * @param[in] Q					- the second point to add.
  */
 #if EP_ADD == BASIC
-#define ep2_add(R, P, Q)		ep2_add_basic(R, P, Q);
-#elif EP_ADD == PROJC || EP_ADD == JACOB
-#define ep2_add(R, P, Q)		ep2_add_projc(R, P, Q);
+#define ep2_add(R, P, Q)		ep2_add_basic(R, P, Q)
+#elif EP_ADD == PROJC
+#define ep2_add(R, P, Q)		ep2_add_projc(R, P, Q)
+#elif EP_ADD == JACOB
+#define ep2_add(R, P, Q)		ep2_add_jacob(R, P, Q)
 #endif
 
 /**
@@ -454,20 +456,12 @@ typedef iso2_st *iso2_t;
  * @param[in] P					- the point to double.
  */
 #if EP_ADD == BASIC
-#define ep2_dbl(R, P)			ep2_dbl_basic(R, P);
-#elif EP_ADD == PROJC || EP_ADD == JACOB
-#define ep2_dbl(R, P)			ep2_dbl_projc(R, P);
+#define ep2_dbl(R, P)			ep2_dbl_basic(R, P)
+#elif EP_ADD == PROJC
+#define ep2_dbl(R, P)			ep2_dbl_projc(R, P)
+#elif EP_ADD == JACOB
+#define ep2_dbl(R, P)			ep2_dbl_jacob(R, P)
 #endif
-
-/**
- * Multiplies a point in an elliptic curve over a quadratic extension field by
- * an unrestricted integer scalar. Computes R = [k]P.
- *
- * @param[out] R				- the result.
- * @param[in] P					- the point to multiply.
- * @param[in] K					- the integer.
- */
-#define ep2_mul_big(R, P, K)	ep2_mul_basic(R, P, K)
 
 /**
  * Multiplies a point in an elliptic curve over a quadratic extension field.
@@ -545,6 +539,16 @@ typedef iso2_st *iso2_t;
 #endif
 
 /**
+ * Multiplies a point in an elliptic curve over a quadratic extension field by
+ * an unrestricted integer scalar. Computes R = [k]P.
+ *
+ * @param[out] R				- the result.
+ * @param[in] P					- the point to multiply.
+ * @param[in] K					- the integer.
+ */
+#define ep2_mul_big(R, P, K)	ep2_mul_basic(R, P, K)
+
+/**
  * Hashes a byte string to a prime elliptic point or the right order.
  * Computes R = H(s).
  *
@@ -586,16 +590,6 @@ typedef iso2_st *iso2_t;
 #elif EP_ADD == PROJC || EP_ADD == JACOB
 #define ep3_dbl(R, P)			ep3_dbl_projc(R, P);
 #endif
-
-/**
- * Multiplies a point in an elliptic curve over a cubic extension field by
- * an unrestricted integer scalar. Computes R = [k]P.
- *
- * @param[out] R				- the result.
- * @param[in] P					- the point to multiply.
- * @param[in] K					- the integer.
- */
-#define ep3_mul_big(R, P, K)	ep3_mul_basic(R, P, K)
 
 /**
  * Multiplies a point in an elliptic curve over a cubic extension field.
@@ -673,6 +667,16 @@ typedef iso2_st *iso2_t;
 #endif
 
 /**
+ * Multiplies a point in an elliptic curve over a cubic extension field by
+ * an unrestricted integer scalar. Computes R = [k]P.
+ *
+ * @param[out] R				- the result.
+ * @param[in] P					- the point to multiply.
+ * @param[in] K					- the integer.
+ */
+#define ep3_mul_big(R, P, K)	ep3_mul_basic(R, P, K)
+
+/**
  * Adds two points in an elliptic curve over a quartic extension field.
  * Computes R = P + Q.
  *
@@ -698,16 +702,6 @@ typedef iso2_st *iso2_t;
 #elif EP_ADD == PROJC || EP_ADD == JACOB
 #define ep4_dbl(R, P)			ep4_dbl_projc(R, P);
 #endif
-
-/**
- * Multiplies a point in an elliptic curve over a quartic extension field by
- * an unrestricted integer scalar. Computes R = [k]P.
- *
- * @param[out] R				- the result.
- * @param[in] P					- the point to multiply.
- * @param[in] K					- the integer.
- */
-#define ep4_mul_big(R, P, K)	ep4_mul_basic(R, P, K)
 
 /**
  * Multiplies a point in an elliptic curve over a quartic extension field.
@@ -785,6 +779,16 @@ typedef iso2_st *iso2_t;
 #endif
 
 /**
+ * Multiplies a point in an elliptic curve over a quartic extension field by
+ * an unrestricted integer scalar. Computes R = [k]P.
+ *
+ * @param[out] R				- the result.
+ * @param[in] P					- the point to multiply.
+ * @param[in] K					- the integer.
+ */
+#define ep4_mul_big(R, P, K)	ep4_mul_basic(R, P, K)
+
+/**
  * Adds two points in an elliptic curve over a octic extension field.
  * Computes R = P + Q.
  *
@@ -810,16 +814,6 @@ typedef iso2_st *iso2_t;
 #elif EP_ADD == PROJC || EP_ADD == JACOB
 #define ep8_dbl(R, P)			ep8_dbl_projc(R, P);
 #endif
-
-/**
- * Multiplies a point in an elliptic curve over a octic extension field by
- * an unrestricted integer scalar. Computes R = [k]P.
- *
- * @param[out] R				- the result.
- * @param[in] P					- the point to multiply.
- * @param[in] K					- the integer.
- */
-#define ep8_mul_big(R, P, K)	ep8_mul_basic(R, P, K)
 
 /**
  * Multiplies a point in an elliptic curve over a octic extension field.
@@ -896,6 +890,16 @@ typedef iso2_st *iso2_t;
 #define ep8_mul_sim(R, P, K, Q, M)	ep8_mul_sim_joint(R, P, K, Q, M)
 #endif
 
+/**
+ * Multiplies a point in an elliptic curve over a octic extension field by
+ * an unrestricted integer scalar. Computes R = [k]P.
+ *
+ * @param[out] R				- the result.
+ * @param[in] P					- the point to multiply.
+ * @param[in] K					- the integer.
+ */
+#define ep8_mul_big(R, P, K)	ep8_mul_basic(R, P, K)
+
 /*============================================================================*/
 /* Function prototypes                                                        */
 /*============================================================================*/
@@ -937,6 +941,22 @@ int ep2_curve_opt_a(void);
  * @return the optimization identifier.
  */
 int ep2_curve_opt_b(void);
+
+/**
+ * Multiplies a field element by the a-coefficient of the curve.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the field element to multiply.
+ */
+void ep2_curve_mul_a(fp2_t c, const fp2_t a);
+
+/**
+ * Multiplies a field element by the b-coefficient of the curve.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the field element to multiply.
+ */
+void ep2_curve_mul_b(fp2_t c, const fp2_t a);
 
 /**
  * Tests if the configured elliptic curve is a twist.
@@ -1157,6 +1177,16 @@ void ep2_add_slp_basic(ep2_t r, fp2_t s, const ep2_t p, const ep2_t q);
  */
 void ep2_add_projc(ep2_t r, const ep2_t p, const ep2_t q);
 
+/**
+ * Adds two points represented in Jacobian coordinates in an elliptic curve
+ * over a quadratic extension.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the first point to add.
+ * @param[in] q				- the second point to add.
+ */
+void ep2_add_jacob(ep2_t r, const ep2_t p, const ep2_t q);
+
  /**
   * Subtracts a point in an elliptic curve over a quadratic extension from
   * another.
@@ -1168,7 +1198,7 @@ void ep2_add_projc(ep2_t r, const ep2_t p, const ep2_t q);
 void ep2_sub(ep2_t r, const ep2_t p, const ep2_t q);
 
 /**
- * Doubles a points represented in affine coordinates in an elliptic curve over
+ * Doubles a point represented in affine coordinates in an elliptic curve over
  * a quadratic extension.
  *
  * @param[out] r			- the result.
@@ -1177,7 +1207,7 @@ void ep2_sub(ep2_t r, const ep2_t p, const ep2_t q);
 void ep2_dbl_basic(ep2_t r, const ep2_t p);
 
 /**
- * Doubles a points represented in affine coordinates in an elliptic curve over
+ * Doubles a point represented in affine coordinates in an elliptic curve over
  * a quadratic extension and returns the computed slope.
  *
  * @param[out] r			- the result.
@@ -1187,13 +1217,22 @@ void ep2_dbl_basic(ep2_t r, const ep2_t p);
 void ep2_dbl_slp_basic(ep2_t r, fp2_t s, const ep2_t p);
 
 /**
- * Doubles a points represented in projective coordinates in an elliptic curve
+ * Doubles a point represented in projective coordinates in an elliptic curve
  * over a quadratic extension.
  *
  * @param[out] r			- the result.
  * @param[in] p				- the point to double.
  */
 void ep2_dbl_projc(ep2_t r, const ep2_t p);
+
+/**
+ * Doubles a point represented in Jacobian coordinates in an elliptic curve
+ * over a quadratic extension.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to double.
+ */
+void ep2_dbl_jacob(ep2_t r, const ep2_t p);
 
 /**
  * Multiplies a prime elliptic point by an integer using the binary method.
@@ -1800,7 +1839,7 @@ void ep3_add_projc(ep3_t r, const ep3_t p, const ep3_t q);
 void ep3_sub(ep3_t r, const ep3_t p, const ep3_t q);
 
 /**
- * Doubles a points represented in affine coordinates in an elliptic curve over
+ * Doubles a point represented in affine coordinates in an elliptic curve over
  * a octic extension.
  *
  * @param[out] r			- the result.
@@ -1809,7 +1848,7 @@ void ep3_sub(ep3_t r, const ep3_t p, const ep3_t q);
 void ep3_dbl_basic(ep3_t r, const ep3_t p);
 
 /**
- * Doubles a points represented in affine coordinates in an elliptic curve over
+ * Doubles a point represented in affine coordinates in an elliptic curve over
  * a octic extension and returns the computed slope.
  *
  * @param[out] r			- the result.
@@ -1819,7 +1858,7 @@ void ep3_dbl_basic(ep3_t r, const ep3_t p);
 void ep3_dbl_slp_basic(ep3_t r, fp3_t s, const ep3_t p);
 
 /**
- * Doubles a points represented in projective coordinates in an elliptic curve
+ * Doubles a point represented in projective coordinates in an elliptic curve
  * over a octic extension.
  *
  * @param[out] r			- the result.
@@ -2409,7 +2448,7 @@ void ep4_add_projc(ep4_t r, const ep4_t p, const ep4_t q);
 void ep4_sub(ep4_t r, const ep4_t p, const ep4_t q);
 
 /**
- * Doubles a points represented in affine coordinates in an elliptic curve over
+ * Doubles a point represented in affine coordinates in an elliptic curve over
  * a octic extension.
  *
  * @param[out] r			- the result.
@@ -2418,7 +2457,7 @@ void ep4_sub(ep4_t r, const ep4_t p, const ep4_t q);
 void ep4_dbl_basic(ep4_t r, const ep4_t p);
 
 /**
- * Doubles a points represented in affine coordinates in an elliptic curve over
+ * Doubles a point represented in affine coordinates in an elliptic curve over
  * a octic extension and returns the computed slope.
  *
  * @param[out] r			- the result.
@@ -2428,7 +2467,7 @@ void ep4_dbl_basic(ep4_t r, const ep4_t p);
 void ep4_dbl_slp_basic(ep4_t r, fp4_t s, const ep4_t p);
 
 /**
- * Doubles a points represented in projective coordinates in an elliptic curve
+ * Doubles a point represented in projective coordinates in an elliptic curve
  * over a octic extension.
  *
  * @param[out] r			- the result.
@@ -3019,7 +3058,7 @@ void ep8_add_projc(ep8_t r, const ep8_t p, const ep8_t q);
 void ep8_sub(ep8_t r, const ep8_t p, const ep8_t q);
 
 /**
- * Doubles a points represented in affine coordinates in an elliptic curve over
+ * Doubles a point represented in affine coordinates in an elliptic curve over
  * a octic extension.
  *
  * @param[out] r			- the result.
@@ -3028,7 +3067,7 @@ void ep8_sub(ep8_t r, const ep8_t p, const ep8_t q);
 void ep8_dbl_basic(ep8_t r, const ep8_t p);
 
 /**
- * Doubles a points represented in affine coordinates in an elliptic curve over
+ * Doubles a point represented in affine coordinates in an elliptic curve over
  * a octic extension and returns the computed slope.
  *
  * @param[out] r			- the result.
@@ -3038,7 +3077,7 @@ void ep8_dbl_basic(ep8_t r, const ep8_t p);
 void ep8_dbl_slp_basic(ep8_t r, fp8_t s, const ep8_t p);
 
 /**
- * Doubles a points represented in projective coordinates in an elliptic curve
+ * Doubles a point represented in projective coordinates in an elliptic curve
  * over a octic extension.
  *
  * @param[out] r			- the result.

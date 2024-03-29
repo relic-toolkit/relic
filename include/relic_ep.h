@@ -468,6 +468,16 @@ typedef iso_st *iso_t;
 #endif
 
 /**
+ * Multiplies a point in an elliptic curve over by an unrestricted scalar.
+ * Computes R = [k]P.
+ *
+ * @param[out] R				- the result.
+ * @param[in] P					- the point to multiply.
+ * @param[in] K					- the integer.
+ */
+#define ep_mul_big(R, P, K)	ep_mul_basic(R, P, K)
+
+/**
  * Hashes a byte string to a prime elliptic point or the right order.
  * Computes R = H(s).
  *
@@ -548,13 +558,6 @@ int ep_curve_opt_a(void);
 int ep_curve_opt_b(void);
 
 /**
- * Returns a optimization identifier based on the b-coefficient of the curve.
- *
- * @return the optimization identifier.
- */
-int ep_curve_opt_b3(void);
-
-/**
  * Multiplies a field element by the a-coefficient of the curve.
  *
  * @param[out] c			- the result.
@@ -570,13 +573,6 @@ void ep_curve_mul_a(fp_t c, const fp_t a);
  */
 void ep_curve_mul_b(fp_t c, const fp_t a);
 
-/**
- * Multiplies a field element by the b3 value of the curve.
- *
- * @param[out] c			- the result.
- * @param[in] a				- the field element to multiply.
- */
-void ep_curve_mul_b3(fp_t c, const fp_t a);
 /**
  * Tests if the configured prime elliptic curve is a Koblitz curve.
  *

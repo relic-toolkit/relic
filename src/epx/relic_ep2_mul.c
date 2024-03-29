@@ -40,7 +40,7 @@
 
 #if defined(EP_ENDOM)
 
-static void ep2_mul_glv_imp(ep2_t r, const ep2_t p, const bn_t k) {
+static void ep2_mul_gls_imp(ep2_t r, const ep2_t p, const bn_t k) {
 	size_t l, _l[4];
 	bn_t n, _k[4], u;
 	int8_t naf[4][RLC_FP_BITS + 1];
@@ -163,6 +163,196 @@ static void ep2_mul_naf_imp(ep2_t r, const ep2_t p, const bn_t k) {
 
 #endif /* EP_PLAIN || EP_SUPER */
 #endif /* EP_MUL == LWNAF */
+
+#if EP_MUL == LWREG || !defined(STRIP)
+
+#if defined(EP_ENDOM)
+
+static void ep2_mul_reg_gls(ep2_t r, const ep2_t p, const bn_t k) {
+	size_t l, _l[4];
+	bn_t n, _k[4], u;
+	int8_t reg[4][RLC_FP_BITS + 1], b[4], s[4], _s0, _s1;
+	ep2_t q[4], t;
+
+	bn_null(n);
+	bn_null(u);
+	ep2_null(t);
+
+	RLC_TRY {
+		bn_new(n);
+		bn_new(u);
+		for (int i = 0; i < 4; i++) {
+			bn_null(_k[i]);
+			ep2_null(q[i]);
+			bn_new(_k[i]);
+			ep2_new(q[i]);
+		}
+		ep2_new(t);
+
+		ep2_curve_get_ord(n);
+		fp_prime_get_par(u);
+		bn_mod(_k[0], k, n);
+		bn_rec_frb(_k, 4, _k[0], u, n, ep_curve_is_pairf() == EP_BN);
+
+		ep2_norm(q[0], p);
+		ep2_frb(q[1], q[0], 1);
+		ep2_frb(q[2], q[1], 1);
+		ep2_frb(q[3], q[2], 1);
+
+		l = 0;
+		for (int i = 0; i < 4; i++) {
+			s[i] = bn_sign(_k[i]);
+			bn_abs(_k[i], _k[i]);
+			b[i] = bn_is_even(_k[i]);
+			_k[i]->dp[0] |= b[i];
+
+			_l[i] = RLC_FP_BITS + 1;
+			bn_rec_reg(reg[i], &_l[i], _k[i], bn_bits(u), 2);
+			l = RLC_MAX(l, _l[i]);
+		}
+
+		ep2_set_infty(r);
+		for (int j = l - 1; j >= 0; j--) {
+			ep2_dbl(r, r);
+
+			for (int i = 0; i < 4; i++) {
+				_s0 = reg[i][j] > 0;
+				_s1 = s[i] == RLC_POS;
+
+				ep2_neg(t, q[i]);
+				dv_copy_cond(t->y[0], q[i]->y[0], RLC_FP_DIGS, _s0 == _s1);
+				dv_copy_cond(t->y[1], q[i]->y[1], RLC_FP_DIGS, _s0 == _s1);
+				ep2_add(r, r, t);
+			}
+		}
+
+		for (int i = 0; i < 4; i++) {
+			ep2_neg(t, q[i]);
+			dv_copy_cond(t->y[0], q[i]->y[0], RLC_FP_DIGS, s[i] == RLC_NEG);
+			dv_copy_cond(t->y[1], q[i]->y[1], RLC_FP_DIGS, s[i] == RLC_NEG);
+			ep2_add(t, r, t);
+			dv_copy_cond(r->x[0], t->x[0], RLC_FP_DIGS, b[i]);
+			dv_copy_cond(r->x[1], t->x[1], RLC_FP_DIGS, b[i]);
+			dv_copy_cond(r->y[0], t->y[0], RLC_FP_DIGS, b[i]);
+			dv_copy_cond(r->y[1], t->y[1], RLC_FP_DIGS, b[i]);
+			dv_copy_cond(r->z[0], t->z[0], RLC_FP_DIGS, b[i]);
+			dv_copy_cond(r->z[1], t->z[1], RLC_FP_DIGS, b[i]);
+		}
+
+		/* Convert r to affine coordinates. */
+		ep2_norm(r, r);
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		bn_free(n);
+		bn_free(u);
+		for (int i = 0; i < 4; i++) {
+			bn_free(_k[i]);
+			ep2_free(q[i]);
+		}
+		ep2_free(t);
+	}
+}
+
+#endif /* EP_ENDOM */
+
+#if defined(EP_PLAIN) || defined(EP_SUPER)
+
+static void ep2_mul_reg_imp(ep2_t r, const ep2_t p, const bn_t k) {
+	bn_t _k;
+	int i, j, n;
+	int8_t s, reg[1 + RLC_CEIL(RLC_FP_BITS + 1, RLC_WIDTH - 1)];
+	ep2_t t[1 << (RLC_WIDTH - 2)], u, v;
+	size_t l;
+
+	bn_null(_k);
+
+	RLC_TRY {
+		bn_new(_k);
+		ep2_new(u);
+		ep2_new(v);
+		/* Prepare the precomputation table. */
+		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
+			ep2_null(t[i]);
+			ep2_new(t[i]);
+		}
+		/* Compute the precomputation table. */
+		ep2_tab(t, p, RLC_WIDTH);
+
+		ep2_curve_get_ord(_k);
+		n = bn_bits(_k);
+
+		/* Make a copy of the scalar for processing. */
+		bn_abs(_k, k);
+		_k->dp[0] |= 1;
+
+		/* Compute the regular w-NAF representation of k. */
+		l = RLC_CEIL(n, RLC_WIDTH - 1) + 1;
+		bn_rec_reg(reg, &l, _k, n, RLC_WIDTH);
+
+#if defined(EP_MIXED)
+		fp_set_dig(u->z, 1);
+		u->coord = BASIC;
+#else
+		u->coord = EP_ADD;
+#endif
+		ep2_set_infty(r);
+		for (i = l - 1; i >= 0; i--) {
+			for (j = 0; j < RLC_WIDTH - 1; j++) {
+				ep2_dbl(r, r);
+			}
+
+			n = reg[i];
+			s = (n >> 7);
+			n = ((n ^ s) - s) >> 1;
+
+			for (j = 0; j < (1 << (RLC_WIDTH - 2)); j++) {
+				dv_copy_cond(u->x[0], t[j]->x[0], RLC_FP_DIGS, j == n);
+				dv_copy_cond(u->x[1], t[j]->x[1], RLC_FP_DIGS, j == n);
+				dv_copy_cond(u->y[0], t[j]->y[0], RLC_FP_DIGS, j == n);
+				dv_copy_cond(u->y[1], t[j]->y[1], RLC_FP_DIGS, j == n);
+#if !defined(EP_MIXED)
+				dv_copy_cond(u->z[0], t[j]->z[0], RLC_FP_DIGS, j == n);
+				dv_copy_cond(u->z[1], t[j]->z[1], RLC_FP_DIGS, j == n);
+#endif
+			}
+			ep2_neg(v, u);
+			dv_copy_cond(u->y[0], v->y[0], RLC_FP_DIGS, s != 0);
+			dv_copy_cond(u->y[1], v->y[1], RLC_FP_DIGS, s != 0);
+			ep2_add(r, r, u);
+		}
+		/* t[0] has an unmodified copy of p. */
+		ep2_sub(u, r, t[0]);
+		dv_copy_cond(r->x[0], u->x[0], RLC_FP_DIGS, bn_is_even(k));
+		dv_copy_cond(r->x[1], u->x[1], RLC_FP_DIGS, bn_is_even(k));
+		dv_copy_cond(r->y[0], u->y[0], RLC_FP_DIGS, bn_is_even(k));
+		dv_copy_cond(r->y[1], u->y[1], RLC_FP_DIGS, bn_is_even(k));
+		dv_copy_cond(r->z[0], u->z[0], RLC_FP_DIGS, bn_is_even(k));
+		dv_copy_cond(r->z[1], u->z[1], RLC_FP_DIGS, bn_is_even(k));
+		/* Convert r to affine coordinates. */
+		ep2_norm(r, r);
+		ep2_neg(u, r);
+		dv_copy_cond(r->y[0], u->y[0], RLC_FP_DIGS, bn_sign(k) == RLC_NEG);
+		dv_copy_cond(r->y[1], u->y[1], RLC_FP_DIGS, bn_sign(k) == RLC_NEG);
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		/* Free the precomputation table. */
+		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
+			ep2_free(t[i]);
+		}
+		bn_free(_k);
+		ep2_free(u);
+		ep2_free(v);
+	}
+}
+
+#endif /* EP_PLAIN || EP_SUPER */
+#endif /* EP_MUL == LWREG */
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -380,13 +570,35 @@ void ep2_mul_lwnaf(ep2_t r, const ep2_t p, const bn_t k) {
 
 #if defined(EP_ENDOM)
 	if (ep_curve_is_endom()) {
-		ep2_mul_glv_imp(r, p, k);
+		ep2_mul_gls_imp(r, p, k);
 		return;
 	}
 #endif
 
 #if defined(EP_PLAIN) || defined(EP_SUPER)
 	ep2_mul_naf_imp(r, p, k);
+#endif
+}
+
+#endif
+
+#if EP_MUL == LWREG || !defined(STRIP)
+
+void ep2_mul_lwreg(ep2_t r, const ep2_t p, const bn_t k) {
+	if (bn_is_zero(k) || ep2_is_infty(p)) {
+		ep2_set_infty(r);
+		return;
+	}
+
+#if defined(EP_ENDOM)
+	if (ep_curve_is_endom()) {
+		ep2_mul_reg_gls(r, p, k);
+		return;
+	}
+#endif
+
+#if defined(EP_PLAIN) || defined(EP_SUPER)
+	ep2_mul_reg_imp(r, p, k);
 #endif
 }
 

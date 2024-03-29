@@ -160,17 +160,17 @@
 					F##_add(t4, t4, p->y);									\
 					F##_mul(r->y, q->x, p->z);								\
 					F##_add(r->y, r->y, p->x);								\
-					C##_curve_mul_b(t2, p->z);								\
-					F##_dbl(t5, t2);										\
-					F##_add(t2, t2, t5);									\
+					F##_dbl(t2, p->z);										\
+					F##_add(t2, t2, p->z);									\
+					C##_curve_mul_b(t2, t2);								\
 					F##_add(r->z, t1, t2);									\
 					F##_sub(t1, t1, t2);									\
 				}															\
 				F##_dbl(r->x, t0);											\
 				F##_add(t0, t0, r->x);										\
-				C##_curve_mul_b(r->y, r->y);								\
 				F##_dbl(t5, r->y);											\
 				F##_add(r->y, r->y, t5);									\
+				C##_curve_mul_b(r->y, r->y);								\
 				F##_mul(r->x, t4, r->y);									\
 				F##_mul(t2, t3, t1);										\
 				F##_sub(r->x, t2, r->x);									\
@@ -348,13 +348,13 @@
 				F##_dbl(r->x, t0);											\
 				F##_add(t0, t0, r->x);										\
 				F##_dbl(t5, t2);											\
-				F##_add(t5, t5, t2);										\
-				C##_curve_mul_b(t2, t5);									\
+				F##_add(t2, t2, t5);										\
+				C##_curve_mul_b(t2, t2);									\
 				F##_add(r->z, t1, t2);										\
 				F##_sub(t1, t1, t2);										\
 				F##_dbl(t5, r->y);											\
-				F##_add(t5, t5, r->y);										\
-				C##_curve_mul_b(r->y, t5);									\
+				F##_add(r->y, r->y, t5);									\
+				C##_curve_mul_b(r->y, r->y);								\
 				F##_mul(r->x, t4, r->y);									\
 				F##_mul(t2, t3, t1);										\
 				F##_sub(r->x, t2, r->x);									\

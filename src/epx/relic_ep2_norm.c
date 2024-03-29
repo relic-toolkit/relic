@@ -43,36 +43,45 @@
  *
  * @param r			- the result.
  * @param p			- the point to normalize.
+ * @param inv		- the flag to indicate if z is already inverted.
  */
-static void ep2_norm_imp(ep2_t r, const ep2_t p, int inverted) {
+static void ep2_norm_imp(ep2_t r, const ep2_t p, int inv) {
 	if (p->coord != BASIC) {
-		fp2_t t0, t1;
+		fp2_t t;
 
-		fp2_null(t0);
-		fp2_null(t1);
+		fp2_null(t);
 
 		RLC_TRY {
+			fp2_new(t);
 
-			fp2_new(t0);
-			fp2_new(t1);
-
-			if (inverted) {
-				fp2_copy(t1, p->z);
+			if (inv) {
+				fp2_copy(r->z, p->z);
 			} else {
-				fp2_inv(t1, p->z);
+				fp2_inv(r->z, p->z);
 			}
-			fp2_sqr(t0, t1);
-			fp2_mul(r->x, p->x, t0);
-			fp2_mul(t0, t0, t1);
-			fp2_mul(r->y, p->y, t0);
+
+			switch (p->coord) {
+				case PROJC:
+					fp2_mul(r->x, p->x, r->z);
+					fp2_mul(r->y, p->y, r->z);
+					break;
+				case JACOB:
+					fp2_sqr(t, r->z);
+					fp2_mul(r->x, p->x, t);
+					fp2_mul(t, t, r->z);
+					fp2_mul(r->y, p->y, t);
+					break;
+				default:
+					ep2_copy(r, p);
+					break;
+			}
 			fp2_set_dig(r->z, 1);
 		}
 		RLC_CATCH_ANY {
 			RLC_THROW(ERR_CAUGHT);
 		}
 		RLC_FINALLY {
-			fp2_free(t0);
-			fp2_free(t1);
+			fp2_free(t);
 		}
 	}
 
@@ -92,17 +101,18 @@ void ep2_norm(ep2_t r, const ep2_t p) {
 	}
 
 	if (p->coord == BASIC) {
-		/* If the point is represented in affine coordinates, we just copy it. */
+		/* If the point is represented in affine coordinates, just copy it. */
 		ep2_copy(r, p);
+		return;
 	}
 #if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
 	ep2_norm_imp(r, p, 0);
-#endif
+#endif /* EP_ADD == PROJC */
 }
 
 void ep2_norm_sim(ep2_t *r, const ep2_t *t, int n) {
 	int i;
-	fp2_t *a = RLC_ALLOCA(fp2_t, n);
+	fp2_t* a = RLC_ALLOCA(fp2_t, n);
 
 	RLC_TRY {
 		if (a == NULL) {
@@ -114,19 +124,20 @@ void ep2_norm_sim(ep2_t *r, const ep2_t *t, int n) {
 			fp2_copy(a[i], t[i]->z);
 		}
 
-		fp2_inv_sim(a, a, n);
+		fp2_inv_sim(a, (const fp2_t *)a, n);
 
 		for (i = 0; i < n; i++) {
 			fp2_copy(r[i]->x, t[i]->x);
 			fp2_copy(r[i]->y, t[i]->y);
-			fp2_copy(r[i]->z, a[i]);
+			if (!ep2_is_infty(t[i])) {
+				fp2_copy(r[i]->z, a[i]);
+			}
 		}
-
 #if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
 		for (i = 0; i < n; i++) {
 			ep2_norm_imp(r[i], r[i], 1);
 		}
-#endif
+#endif /* EP_ADD == PROJC */
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
