@@ -32,7 +32,7 @@
 
 #include "relic_core.h"
 #include "relic_md.h"
-#include "relic_tmpl_map.h"
+#include "relic_ep_map_tmpl.h"
 
 /*============================================================================*/
 /* Private definitions                                                        */

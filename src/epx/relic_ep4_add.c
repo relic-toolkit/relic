@@ -31,6 +31,7 @@
  */
 
 #include "relic_core.h"
+#include "relic_ep_add_tmpl.h"
 
 /*============================================================================*/
 /* Private definitions                                                        */
@@ -42,72 +43,12 @@
  * Adds two points represented in affine coordinates on an ordinary prime
  * elliptic curve.
  *
- * @param r					- the result.
- * @param s					- the resulting slope.
- * @param p					- the first point to add.
- * @param q					- the second point to add.
+ * @param[out] r			- the result.
+ * @param[out] s			- the slope.
+ * @param[in] p				- the first point to add.
+ * @param[in] q				- the second point to add.
  */
-static void ep4_add_basic_imp(ep4_t r, fp4_t s, const ep4_t p, const ep4_t q) {
-	fp4_t t0, t1, t2;
-
-	fp4_null(t0);
-	fp4_null(t1);
-	fp4_null(t2);
-
-	RLC_TRY {
-		fp4_new(t0);
-		fp4_new(t1);
-		fp4_new(t2);
-
-		/* t0 = x2 - x1. */
-		fp4_sub(t0, q->x, p->x);
-		/* t1 = y2 - y1. */
-		fp4_sub(t1, q->y, p->y);
-
-		/* If t0 is zero. */
-		if (fp4_is_zero(t0)) {
-			if (fp4_is_zero(t1)) {
-				/* If t1 is zero, q = p, should have doubled. */
-				ep4_dbl_slp_basic(r, s, p);
-			} else {
-				/* If t1 is not zero and t0 is zero, q = -p and r = infty. */
-				ep4_set_infty(r);
-			}
-		} else {
-			/* t2 = 1/(x2 - x1). */
-			fp4_inv(t2, t0);
-			/* t2 = lambda = (y2 - y1)/(x2 - x1). */
-			fp4_mul(t2, t1, t2);
-
-			/* x3 = lambda^2 - x2 - x1. */
-			fp4_sqr(t1, t2);
-			fp4_sub(t0, t1, p->x);
-			fp4_sub(t0, t0, q->x);
-
-			/* y3 = lambda * (x1 - x3) - y1. */
-			fp4_sub(t1, p->x, t0);
-			fp4_mul(t1, t2, t1);
-			fp4_sub(r->y, t1, p->y);
-
-			fp4_copy(r->x, t0);
-			fp4_copy(r->z, p->z);
-
-			if (s != NULL) {
-				fp4_copy(s, t2);
-			}
-
-			r->coord = BASIC;
-		}
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		fp4_free(t0);
-		fp4_free(t1);
-		fp4_free(t2);
-	}
-}
+TMPL_ADD_BASIC_IMP(ep4, fp4);
 
 #endif /* EP_ADD == BASIC */
 

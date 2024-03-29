@@ -31,6 +31,7 @@
  */
 
 #include "relic_core.h"
+#include "relic_ep_add_tmpl.h"
 
 /*============================================================================*/
 /* Private definitions                                                        */
@@ -42,72 +43,12 @@
  * Adds two points represented in affine coordinates on an ordinary prime
  * elliptic curve.
  *
- * @param r					- the result.
- * @param s					- the resulting slope.
- * @param p					- the first point to add.
- * @param q					- the second point to add.
+ * @param[out] r			- the result.
+ * @param[out] s			- the slope.
+ * @param[in] p				- the first point to add.
+ * @param[in] q				- the second point to add.
  */
-static void ep8_add_basic_imp(ep8_t r, fp8_t s, const ep8_t p, const ep8_t q) {
-	fp8_t t0, t1, t2;
-
-	fp8_null(t0);
-	fp8_null(t1);
-	fp8_null(t2);
-
-	RLC_TRY {
-		fp8_new(t0);
-		fp8_new(t1);
-		fp8_new(t2);
-
-		/* t0 = x2 - x1. */
-		fp8_sub(t0, q->x, p->x);
-		/* t1 = y2 - y1. */
-		fp8_sub(t1, q->y, p->y);
-
-		/* If t0 is zero. */
-		if (fp8_is_zero(t0)) {
-			if (fp8_is_zero(t1)) {
-				/* If t1 is zero, q = p, should have doubled. */
-				ep8_dbl_slp_basic(r, s, p);
-			} else {
-				/* If t1 is not zero and t0 is zero, q = -p and r = infty. */
-				ep8_set_infty(r);
-			}
-		} else {
-			/* t2 = 1/(x2 - x1). */
-			fp8_inv(t2, t0);
-			/* t2 = lambda = (y2 - y1)/(x2 - x1). */
-			fp8_mul(t2, t1, t2);
-
-			/* x3 = lambda^2 - x2 - x1. */
-			fp8_sqr(t1, t2);
-			fp8_sub(t0, t1, p->x);
-			fp8_sub(t0, t0, q->x);
-
-			/* y3 = lambda * (x1 - x3) - y1. */
-			fp8_sub(t1, p->x, t0);
-			fp8_mul(t1, t2, t1);
-			fp8_sub(r->y, t1, p->y);
-
-			fp8_copy(r->x, t0);
-			fp8_copy(r->z, p->z);
-
-			if (s != NULL) {
-				fp8_copy(s, t2);
-			}
-
-			r->coord = BASIC;
-		}
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		fp8_free(t0);
-		fp8_free(t1);
-		fp8_free(t2);
-	}
-}
+TMPL_ADD_BASIC_IMP(ep8, fp8);
 
 #endif /* EP_ADD == BASIC */
 

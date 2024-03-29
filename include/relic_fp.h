@@ -166,6 +166,8 @@ enum {
 	FM18_768,
 	/** 1024-bit prime for CTIDH. */
 	CTIDH_1024,
+	/** 1150-bit prime for BLS curve with embedding degree 12. */
+	B12_1150,
 	/** 1536-bit prime for supersingular curve with embedding degree k = 2. */
 	SS_1536,
 	/** 2048-bit prime for CTDIH. */

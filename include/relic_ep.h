@@ -183,6 +183,8 @@ enum {
 	N16_P766,
 	/* Fotiadis-Moartindale with embedding degree 18. */
 	FM18_P768,
+	/** Barreto-Lynn-Scott curve with embedding degree 12. */
+	B12_P1150,
 	/** 1536-bit supersingular curve. */
 	SS_P1536,
 	/** 3072-bit supersingular curve. */

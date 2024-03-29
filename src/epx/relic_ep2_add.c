@@ -31,6 +31,7 @@
  */
 
 #include "relic_core.h"
+#include "relic_ep_add_tmpl.h"
 
 /*============================================================================*/
 /* Private definitions                                                        */
@@ -47,67 +48,7 @@
  * @param p					- the first point to add.
  * @param q					- the second point to add.
  */
-static void ep2_add_basic_imp(ep2_t r, fp2_t s, const ep2_t p, const ep2_t q) {
-	fp2_t t0, t1, t2;
-
-	fp2_null(t0);
-	fp2_null(t1);
-	fp2_null(t2);
-
-	RLC_TRY {
-		fp2_new(t0);
-		fp2_new(t1);
-		fp2_new(t2);
-
-		/* t0 = x2 - x1. */
-		fp2_sub(t0, q->x, p->x);
-		/* t1 = y2 - y1. */
-		fp2_sub(t1, q->y, p->y);
-
-		/* If t0 is zero. */
-		if (fp2_is_zero(t0)) {
-			if (fp2_is_zero(t1)) {
-				/* If t1 is zero, q = p, should have doubled. */
-				ep2_dbl_slp_basic(r, s, p);
-			} else {
-				/* If t1 is not zero and t0 is zero, q = -p and r = infty. */
-				ep2_set_infty(r);
-			}
-		} else {
-			/* t2 = 1/(x2 - x1). */
-			fp2_inv(t2, t0);
-			/* t2 = lambda = (y2 - y1)/(x2 - x1). */
-			fp2_mul(t2, t1, t2);
-
-			/* x3 = lambda^2 - x2 - x1. */
-			fp2_sqr(t1, t2);
-			fp2_sub(t0, t1, p->x);
-			fp2_sub(t0, t0, q->x);
-
-			/* y3 = lambda * (x1 - x3) - y1. */
-			fp2_sub(t1, p->x, t0);
-			fp2_mul(t1, t2, t1);
-			fp2_sub(r->y, t1, p->y);
-
-			fp2_copy(r->x, t0);
-			fp2_copy(r->z, p->z);
-
-			if (s != NULL) {
-				fp2_copy(s, t2);
-			}
-
-			r->coord = BASIC;
-		}
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		fp2_free(t0);
-		fp2_free(t1);
-		fp2_free(t2);
-	}
-}
+TMPL_ADD_BASIC_IMP(ep2, fp2);
 
 #endif /* EP_ADD == BASIC */
 

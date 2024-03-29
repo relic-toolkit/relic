@@ -24,7 +24,7 @@
 /**
  * @file
  *
- * Templates for hashing to elliptic curves.
+ * Template for hashing to prime elliptic curves.
  *
  * @ingroup tmpl
  */
@@ -34,7 +34,7 @@
 /*============================================================================*/
 
 /**
- * Evaluate a polynomial represented by its coefficients over a using Horner's
+ * Evaluates a polynomial represented by its coefficients over a using Horner's
  * rule. Might promove to an API if needed elsewhere in the future.
  */
 #define TMPL_MAP_HORNER(PFX, IN)											\

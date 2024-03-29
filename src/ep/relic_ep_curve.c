@@ -203,12 +203,9 @@ static void ep_curve_set(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
 
 	fp_copy(ctx->ep_a, a);
 	fp_copy(ctx->ep_b, b);
-	fp_dbl(ctx->ep_b3, b);
-	fp_add(ctx->ep_b3, ctx->ep_b3, b);
 
 	detect_opt(&(ctx->ep_opt_a), ctx->ep_a);
 	detect_opt(&(ctx->ep_opt_b), ctx->ep_b);
-	detect_opt(&(ctx->ep_opt_b3), ctx->ep_b3);
 
 	ctx->ep_is_ctmap = ctmap;
 	ep_curve_set_map();
@@ -264,10 +261,6 @@ dig_t *ep_curve_get_a(void) {
 
 dig_t *ep_curve_get_b(void) {
 	return core_get()->ep_b;
-}
-
-dig_t *ep_curve_get_b3(void) {
-	return core_get()->ep_b3;
 }
 
 #if defined(EP_ENDOM) && (EP_MUL == LWNAF || EP_FIX == COMBS || EP_FIX == LWNAF || EP_SIM == INTER || !defined(STRIP))
@@ -336,26 +329,6 @@ void ep_curve_mul_b(fp_t c, const fp_t a) {
 #endif
 		default:
 			fp_mul(c, a, ctx->ep_b);
-			break;
-	}
-}
-
-void ep_curve_mul_b3(fp_t c, const fp_t a) {
-	ctx_t *ctx = core_get();
-	switch (ctx->ep_opt_b3) {
-		case RLC_ZERO:
-			fp_zero(c);
-			break;
-		case RLC_ONE:
-			fp_copy(c, a);
-			break;
-#if FP_RDC != MONTY
-		case RLC_TINY:
-			fp_mul_dig(c, a, ctx->ep_b3[0]);
-			break;
-#endif
-		default:
-			fp_mul(c, a, ctx->ep_b3);
 			break;
 	}
 }

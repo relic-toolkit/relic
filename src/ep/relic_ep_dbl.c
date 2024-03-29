@@ -159,11 +159,14 @@ static void ep_dbl_projc_imp(ep_t r, const ep_t p) {
  			if (p->coord == BASIC) {
 				/* Save 1M + 1S + 1m_b3 if z1 = 1. */
 				fp_copy(t1, p->y);
-				fp_copy(t2, ep_curve_get_b3());
+				fp_dbl(t2, ep_curve_get_b());
+				fp_add(t2, t2, ep_curve_get_b());
  			} else {
 				fp_mul(t1, p->y, p->z);
 				fp_sqr(t2, p->z);
-				ep_curve_mul_b3(t2, t2);
+				fp_dbl(t5, t2);
+				fp_add(t5, t5, t2);
+				ep_curve_mul_b(t2, t5);
  			}
 			fp_dbl(r->z, t0);
 			fp_dbl(r->z, r->z);
@@ -218,11 +221,14 @@ static void ep_dbl_projc_imp(ep_t r, const ep_t p) {
 				/* Common cost of 8M + 3S + 3m_a + 2m_3b + 15a. */
 				if (p->coord == BASIC) {
 					/* Save 1S + 1m_b + 1m_a if z1 = 1. */
-					fp_copy(r->y, ep_curve_get_b3());
+					fp_dbl(r->y, ep_curve_get_b());
+					fp_add(r->y, r->y, ep_curve_get_b());
 					fp_copy(t2, ep_curve_get_a());
 				} else {
 					fp_sqr(t2, p->z);
-					ep_curve_mul_b3(r->y, t2);
+					fp_dbl(t5, t2);
+					fp_add(t5, t5, t2);
+					ep_curve_mul_b(r->y, t5);
 					ep_curve_mul_a(t2, t2);
 				}
 				fp_mul(r->z, p->x, p->z);
@@ -233,7 +239,9 @@ static void ep_dbl_projc_imp(ep_t r, const ep_t p) {
 				fp_add(r->y, t1, r->y);
 				fp_mul(r->y, r->x, r->y);
 				fp_mul(r->x, t3, r->x);
-				ep_curve_mul_b3(r->z, r->z);
+				fp_dbl(t5, r->z);
+				fp_add(t5, t5, r->z);
+				ep_curve_mul_b(r->z, t5);
 				fp_sub(t3, t0, t2);
 				ep_curve_mul_a(t3, t3);
 				fp_add(t3, t3, r->z);
