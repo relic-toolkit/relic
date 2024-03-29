@@ -226,10 +226,10 @@
 					F##_copy(t2, C##_curve_get_a());						\
 					F##_add(t4, q->x, p->x);								\
 					F##_add(t5, q->y, p->y);								\
-					F##_dbl(r->z, t4);										\
-					F##_add(r->z, r->z, t4);								\
-					C##_curve_mul_a(r->z, r->z);							\
-					C##_curve_mul_b(r->z, r->z);							\
+					C##_curve_mul_a(r->z, t4);								\
+					F##_dbl(r->y, C##_curve_get_b());						\
+					F##_add(r->y, r->y, C##_curve_get_b());					\
+					F##_add(r->z, r->z, r->y);								\
 				} else {													\
 					C##_curve_mul_a(t2, p->z);								\
 					F##_mul(t4, q->x, p->z);								\
@@ -238,8 +238,6 @@
 					F##_add(t5, t5, p->y);									\
 					F##_dbl(r->x, p->z);									\
 					F##_add(r->x, r->x, p->z);								\
-					F##_dbl(r->y, r->x);									\
-					F##_add(r->x, r->x, r->y);								\
 					C##_curve_mul_b(r->x, r->x);							\
 					C##_curve_mul_a(r->z, t4);								\
 					F##_add(r->z, r->x, r->z);								\

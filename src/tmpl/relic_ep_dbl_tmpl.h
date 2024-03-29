@@ -393,6 +393,7 @@
 				F##_dbl(t5, t0);											\
 				F##_add(t5, t5, t0);										\
 				if (p->coord != BASIC) {									\
+					F##_sqr(t3, t3);										\
 					C##_curve_mul_a(t1, t3);								\
 					F##_add(t5, t5, t1);									\
 				} else {													\
