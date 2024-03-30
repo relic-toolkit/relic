@@ -317,7 +317,7 @@ void ep3_mul_cof(ep3_t r, const ep3_t p) {
 			default:
 				/* Now, multiply by cofactor to get the correct group. */
 				ep3_curve_get_cof(k);
-				ep3_mul_basic(r, p, k);
+				ep3_mul_big(r, p, k);
 				break;
 		}
 	} RLC_CATCH_ANY {
