@@ -216,6 +216,14 @@ static void arith1(void) {
 	}
 	BENCH_END;
 
+	BENCH_RUN("g1_mul_sec") {
+		bn_rand(k, RLC_POS, bn_bits(n));
+		bn_rand_mod(k, n);
+		g1_rand(p);
+		BENCH_ADD(g1_mul_sec(q, p, k));
+	}
+	BENCH_END;
+
 	BENCH_RUN("g1_mul_gen") {
 		bn_rand(k, RLC_POS, bn_bits(n));
 		bn_rand_mod(k, n);
@@ -465,6 +473,14 @@ static void arith2(void) {
 		bn_rand_mod(k, n);
 		g2_rand(p);
 		BENCH_ADD(g2_mul(q, p, k));
+	}
+	BENCH_END;
+
+	BENCH_RUN("g2_mul_sec") {
+		bn_rand(k, RLC_POS, bn_bits(n));
+		bn_rand_mod(k, n);
+		g2_rand(p);
+		BENCH_ADD(g2_mul_sec(q, p, k));
 	}
 	BENCH_END;
 

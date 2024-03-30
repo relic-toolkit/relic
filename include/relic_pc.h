@@ -747,7 +747,7 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
  * @param[in] P					- the element to multiply.
  * @param[in] K					- the secret scalar.
  */
-#define g2_mul_sec(R, P, K)		RLC_CAT(RLC_G1_LOWER, mul_lwreg)(R, P, K)
+#define g2_mul_sec(R, P, K)		RLC_CAT(RLC_G2_LOWER, mul_lwreg)(R, P, K)
 
 /**
  * Multiplies an element from a larger group containing G_1 by a scalar.
