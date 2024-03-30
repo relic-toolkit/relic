@@ -480,7 +480,7 @@ typedef iso2_st *iso2_t;
 #elif EP_MUL == LWNAF
 #define ep2_mul(R, P, K)		ep2_mul_lwnaf(R, P, K)
 #elif EP_MUL == LWREG
-#define ep2_mul(R, P, K)		ep2_mul_lwnaf(R, P, K)
+#define ep2_mul(R, P, K)		ep2_mul_lwreg(R, P, K)
 #endif
 
 /**
