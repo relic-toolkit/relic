@@ -676,6 +676,14 @@ static void arith(void) {
 	}
 	BENCH_END;
 
+	BENCH_RUN("gt_exp_sec") {
+		gt_rand(a);
+		pc_get_ord(d);
+		bn_rand_mod(e, d);
+		BENCH_ADD(gt_exp_sec(c, a, e));
+	}
+	BENCH_END;
+
 	BENCH_RUN("gt_exp_gen") {
 		pc_get_ord(d);
 		bn_rand_mod(e, d);
