@@ -36,6 +36,72 @@
 /*============================================================================*/
 
 /**
+ * Apply Frobenius endomorphism in different pairing-friendly curve families.
+ *
+ * @param[in] c			- the result.
+ * @param[in] a			- the extension field element to exponentiate.
+ */
+static void gt_gls(gt_t c, const gt_t a) {
+	gt_t b;
+
+	gt_null(b);
+
+	RLC_TRY {
+		gt_new(b);
+
+		switch (ep_curve_is_pairf()) {
+			case EP_K16:
+				/* u = (2*p^5 - p) mod r */
+				gt_frb(b, a, 1);
+				gt_frb(c, b, 4);
+				gt_sqr(c, c);
+				gt_inv(b, b);
+				gt_mul(c, c, b);
+				break;
+			case EP_N16:
+				/* u = -p^5 mod r */
+				gt_frb(c, a, 5);
+				gt_inv(c, c);
+				break;
+			case EP_SG18:
+				/* -3*u = (2*p^2 - p^5) mod r */
+				gt_frb(b, a, 5);
+				gt_inv(b, b);
+				gt_frb(c, a, 2);
+				gt_sqr(c, c);
+				gt_mul(c, c, b);
+				break;
+			case EP_K18:
+				/* For KSS18, we have that x = p^4 - 3*p = (p^3 - 3)p mod n. */
+				gt_sqr(b, a);
+				gt_mul(b, b, a);
+				gt_frb(c, a, 3);
+				gt_inv(b, b);
+				gt_mul(c, c, b);
+				gt_frb(c, c, 1);
+				break;
+			case EP_FM18:
+				/* For FM18, we have that u = (p^4-p) mod r. */
+				gt_frb(b, a, 3);
+				gt_inv(b, b);
+				gt_mul(c, a, b);
+				gt_frb(c, c, 1);
+				gt_inv(c, c);
+				break;
+			default:
+				gt_frb(c, a, 1);
+				break;
+		}	
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		gt_free(b);
+	}
+}
+
+/**
  * Size of a precomputation table using the double-table comb method.
  */
 #define RLC_GT_TABLE		(1 << (RLC_WIDTH - 2))
@@ -112,7 +178,7 @@ void gt_exp_imp(gt_t c, const gt_t a, const bn_t b, size_t f) {
 			l = RLC_MAX(l, _l[i]);
 			/* Apply Frobenius before flipping sign to build table. */
 			if (i > 0) {
-				gt_frb(t[i * RLC_GT_TABLE], t[(i - 1) * RLC_GT_TABLE], 1);
+				gt_gls(t[i * RLC_GT_TABLE], t[(i - 1) * RLC_GT_TABLE]);
 			}
 		}
 
