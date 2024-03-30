@@ -46,9 +46,9 @@
 		}																	\
 	}
 
-/* TODO: remove the ugly hack due to lack of support for JACOB in ep2. */
 /* conditionally normalize result of isogeny map when not using projective coords */
 #if EP_ADD == JACOB
+
 #define TMPL_MAP_ISOMAP_NORM(PFX)											\
 	do {																	\
 		/* Y = Ny * Dx * Z^2. */											\
@@ -62,22 +62,11 @@
 		PFX##_mul(q->x, t0, t2);											\
 		PFX##_mul(q->x, q->x, q->z);										\
 		q->coord = JACOB;													\
-	} while (0)
+	} while (0)																\
+
 #elif EP_ADD == PROJC
+
 #define TMPL_MAP_ISOMAP_NORM(PFX)											\
-	if (#PFX[2] == '2') {													\
-		/* Y = Ny * Dx * Z^2. */											\
-		PFX##_mul(q->y, p->y, t1);											\
-		PFX##_mul(q->y, q->y, t3);											\
-		/* Z = Dx * Dy, t1 = Z^2. */										\
-		PFX##_mul(q->z, t2, t3);											\
-		PFX##_sqr(t1, q->z);												\
-		PFX##_mul(q->y, q->y, t1);											\
-		/* X = Nx * Dy * Z. */												\
-		PFX##_mul(q->x, t0, t2);											\
-		PFX##_mul(q->x, q->x, q->z);										\
-		q->coord = PROJC;													\
-	} else {																\
 		/* Z = Dx * Dy. */													\
 		PFX##_mul(q->z, t2, t3);											\
 		/* X = Nx * Dy. */													\
@@ -86,8 +75,9 @@
 		PFX##_mul(q->y, p->y, t1);											\
 		PFX##_mul(q->y, q->y, t3);											\
 		q->coord = PROJC;													\
-	}
+
 #else
+
 #define TMPL_MAP_ISOMAP_NORM(PFX)											\
 	do {																	\
 		/* when working with affine coordinates, clear denominator */		\
@@ -103,7 +93,8 @@
 		/* z coord == 1 */													\
 		PFX##_set_dig(q->z, 1);												\
 		q->coord = BASIC;													\
-	} while (0)
+	} while (0)																\
+
 #endif
 
 /**
@@ -153,7 +144,7 @@
 			PFX##_free(t2);													\
 			PFX##_free(t3);													\
 		}																	\
-	}
+	}																		\
 
 /* Conditionally call isogeny mapping function depending on whether EP_CTMAP is defined */
 #ifdef EP_CTMAP
@@ -162,9 +153,12 @@
 		if (CUR##_curve_is_ctmap()) {										\
 			CUR##_iso(PT, PT);												\
 		}																	\
-	} while (0)
+	} while (0)																\
+
 #else
+
 #define TMPL_MAP_CALL_ISOMAP(CUR, PT) /* No isogeny map call in this case. */
+
 #endif
 
 /**
@@ -241,7 +235,7 @@
 			PFX##_free(t2);													\
 			PFX##_free(t3);													\
 		}																	\
-	}
+	}																		\
 
 /**
  * Shallue--van de Woestijne map, based on the definition from
@@ -326,4 +320,5 @@
 			PFX##_free(t3);													\
 			PFX##_free(t4);													\
 		}																	\
-	}
+	}																		\
+

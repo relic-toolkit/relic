@@ -171,7 +171,7 @@ static void ep2_mul_naf_imp(ep2_t r, const ep2_t p, const bn_t k) {
 static void ep2_mul_reg_gls(ep2_t r, const ep2_t p, const bn_t k) {
 	size_t l, _l[4];
 	bn_t n, _k[4], u;
-	int8_t reg[4][RLC_FP_BITS + 1], b[4], s[4], _s0, _s1;
+	int8_t reg[4][RLC_FP_BITS + 1], b[4], s[4], c0, c1;
 	ep2_t q[4], t;
 
 	bn_null(n);
@@ -206,8 +206,10 @@ static void ep2_mul_reg_gls(ep2_t r, const ep2_t p, const bn_t k) {
 			b[i] = bn_is_even(_k[i]);
 			_k[i]->dp[0] |= b[i];
 
+			/* Make some extra room for BN curves that grow subscalars by 1. */
+			l = bn_bits(u) + (ep_curve_is_pairf() == EP_BN);
 			_l[i] = RLC_FP_BITS + 1;
-			bn_rec_reg(reg[i], &_l[i], _k[i], bn_bits(u), 2);
+			bn_rec_reg(reg[i], &_l[i], _k[i], l, 2);
 			l = RLC_MAX(l, _l[i]);
 		}
 
@@ -216,12 +218,12 @@ static void ep2_mul_reg_gls(ep2_t r, const ep2_t p, const bn_t k) {
 			ep2_dbl(r, r);
 
 			for (int i = 0; i < 4; i++) {
-				_s0 = reg[i][j] > 0;
-				_s1 = s[i] == RLC_POS;
+				c0 = reg[i][j] > 0;
+				c1 = s[i] == RLC_POS;
 
 				ep2_neg(t, q[i]);
-				dv_copy_cond(t->y[0], q[i]->y[0], RLC_FP_DIGS, _s0 == _s1);
-				dv_copy_cond(t->y[1], q[i]->y[1], RLC_FP_DIGS, _s0 == _s1);
+				dv_copy_cond(t->y[0], q[i]->y[0], RLC_FP_DIGS, c0 == c1);
+				dv_copy_cond(t->y[1], q[i]->y[1], RLC_FP_DIGS, c0 == c1);
 				ep2_add(r, r, t);
 			}
 		}
@@ -293,7 +295,7 @@ static void ep2_mul_reg_imp(ep2_t r, const ep2_t p, const bn_t k) {
 		bn_rec_reg(reg, &l, _k, n, RLC_WIDTH);
 
 #if defined(EP_MIXED)
-		fp_set_dig(u->z, 1);
+		fp2_set_dig(u->z, 1);
 		u->coord = BASIC;
 #else
 		u->coord = EP_ADD;

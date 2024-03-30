@@ -270,9 +270,9 @@ static void ep_mul_reg_glv(ep_t r, const ep_t p, const bn_t k) {
 		ep_tab(t, q, RLC_WIDTH);
 
 		l = RLC_FP_BITS + 1;
-		bn_rec_reg(reg0, &l, k0, bn_bits(n)/2, RLC_WIDTH);
+		bn_rec_reg(reg0, &l, k0, bn_bits(n) >> 1, RLC_WIDTH);
 		l = RLC_FP_BITS + 1;
-		bn_rec_reg(reg1, &l, k1, bn_bits(n)/2, RLC_WIDTH);
+		bn_rec_reg(reg1, &l, k1, bn_bits(n) >> 1, RLC_WIDTH);
 
 #if defined(EP_MIXED)
 		fp_set_dig(u->z, 1);
