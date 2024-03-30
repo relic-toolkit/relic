@@ -66,6 +66,18 @@ static void util2(void) {
 	}
 	BENCH_END;
 
+	BENCH_RUN("fp2_copy_sec (0)") {
+		fp2_rand(a);
+		BENCH_ADD(fp2_copy_sec(b, a, 0));
+	}
+	BENCH_END;
+
+	BENCH_RUN("fp2_copy_sec (1)") {
+		fp2_rand(a);
+		BENCH_ADD(fp2_copy_sec(b, a, 1));
+	}
+	BENCH_END;
+
 	BENCH_RUN("fp2_neg") {
 		fp2_rand(a);
 		BENCH_ADD(fp2_neg(b, a));
@@ -453,6 +465,18 @@ static void util3(void) {
 	}
 	BENCH_END;
 
+	BENCH_RUN("fp3_copy_sec (0)") {
+		fp3_rand(a);
+		BENCH_ADD(fp3_copy_sec(b, a, 0));
+	}
+	BENCH_END;
+
+	BENCH_RUN("fp3_copy_sec (1)") {
+		fp3_rand(a);
+		BENCH_ADD(fp3_copy_sec(b, a, 1));
+	}
+	BENCH_END;
+
 	BENCH_RUN("fp3_neg") {
 		fp3_rand(a);
 		BENCH_ADD(fp3_neg(b, a));
@@ -753,6 +777,18 @@ static void util4(void) {
 	}
 	BENCH_END;
 
+	BENCH_RUN("fp4_copy_sec (0)") {
+		fp4_rand(a);
+		BENCH_ADD(fp4_copy_sec(b, a, 0));
+	}
+	BENCH_END;
+
+	BENCH_RUN("fp4_copy_sec (1)") {
+		fp4_rand(a);
+		BENCH_ADD(fp4_copy_sec(b, a, 1));
+	}
+	BENCH_END;
+
 	BENCH_RUN("fp4_neg") {
 		fp4_rand(a);
 		BENCH_ADD(fp4_neg(b, a));
@@ -979,6 +1015,18 @@ static void util6(void) {
 	}
 	BENCH_END;
 
+	BENCH_RUN("fp6_copy_sec (0)") {
+		fp6_rand(a);
+		BENCH_ADD(fp6_copy_sec(b, a, 0));
+	}
+	BENCH_END;
+
+	BENCH_RUN("fp6_copy_sec (1)") {
+		fp6_rand(a);
+		BENCH_ADD(fp6_copy_sec(b, a, 1));
+	}
+	BENCH_END;
+
 	BENCH_RUN("fp6_neg") {
 		fp6_rand(a);
 		BENCH_ADD(fp6_neg(b, a));
@@ -1188,6 +1236,18 @@ static void util8(void) {
 	BENCH_RUN("fp8_copy") {
 		fp8_rand(a);
 		BENCH_ADD(fp8_copy(b, a));
+	}
+	BENCH_END;
+
+	BENCH_RUN("fp8_copy_sec (0)") {
+		fp8_rand(a);
+		BENCH_ADD(fp8_copy_sec(b, a, 0));
+	}
+	BENCH_END;
+
+	BENCH_RUN("fp8_copy_sec (1)") {
+		fp8_rand(a);
+		BENCH_ADD(fp8_copy_sec(b, a, 1));
 	}
 	BENCH_END;
 
@@ -1483,6 +1543,18 @@ static void util9(void) {
 	}
 	BENCH_END;
 
+	BENCH_RUN("fp9_copy_sec (0)") {
+		fp9_rand(a);
+		BENCH_ADD(fp9_copy_sec(b, a, 0));
+	}
+	BENCH_END;
+
+	BENCH_RUN("fp9_copy_sec (1)") {
+		fp9_rand(a);
+		BENCH_ADD(fp9_copy_sec(b, a, 1));
+	}
+	BENCH_END;
+
 	BENCH_RUN("fp9_neg") {
 		fp9_rand(a);
 		BENCH_ADD(fp9_neg(b, a));
@@ -1692,6 +1764,18 @@ static void util12(void) {
 	BENCH_RUN("fp12_copy") {
 		fp12_rand(a);
 		BENCH_ADD(fp12_copy(b, a));
+	}
+	BENCH_END;
+
+	BENCH_RUN("fp12_copy_sec (0)") {
+		fp12_rand(a);
+		BENCH_ADD(fp12_copy_sec(b, a, 0));
+	}
+	BENCH_END;
+
+	BENCH_RUN("fp12_copy_sec (1)") {
+		fp12_rand(a);
+		BENCH_ADD(fp12_copy_sec(b, a, 1));
 	}
 	BENCH_END;
 
@@ -2093,6 +2177,18 @@ static void util16(void) {
 	}
 	BENCH_END;
 
+	BENCH_RUN("fp16_copy_sec (0)") {
+		fp16_rand(a);
+		BENCH_ADD(fp16_copy_sec(b, a, 0));
+	}
+	BENCH_END;
+
+	BENCH_RUN("fp16_copy_sec (1)") {
+		fp16_rand(a);
+		BENCH_ADD(fp16_copy_sec(b, a, 1));
+	}
+	BENCH_END;
+
 	BENCH_RUN("fp16_neg") {
 		fp16_rand(a);
 		BENCH_ADD(fp16_neg(b, a));
@@ -2325,6 +2421,18 @@ static void util18(void) {
 	BENCH_RUN("fp18_copy") {
 		fp18_rand(a);
 		BENCH_ADD(fp18_copy(b, a));
+	}
+	BENCH_END;
+
+	BENCH_RUN("fp18_copy_sec (0)") {
+		fp18_rand(a);
+		BENCH_ADD(fp18_copy_sec(b, a, 0));
+	}
+	BENCH_END;
+
+	BENCH_RUN("fp18_copy_sec (1)") {
+		fp18_rand(a);
+		BENCH_ADD(fp18_copy_sec(b, a, 1));
 	}
 	BENCH_END;
 
@@ -2712,6 +2820,18 @@ static void util24(void) {
 	}
 	BENCH_END;
 
+	BENCH_RUN("fp24_copy_sec (0)") {
+		fp24_rand(a);
+		BENCH_ADD(fp24_copy_sec(b, a, 0));
+	}
+	BENCH_END;
+
+	BENCH_RUN("fp24_copy_sec (1)") {
+		fp24_rand(a);
+		BENCH_ADD(fp24_copy_sec(b, a, 1));
+	}
+	BENCH_END;
+
 	BENCH_RUN("fp24_neg") {
 		fp24_rand(a);
 		BENCH_ADD(fp24_neg(b, a));
@@ -3030,6 +3150,18 @@ static void util48(void) {
 	BENCH_RUN("fp48_copy") {
 		fp48_rand(a);
 		BENCH_ADD(fp48_copy(b, a));
+	}
+	BENCH_END;
+
+	BENCH_RUN("fp12_copy_sec (0)") {
+		fp12_rand(a);
+		BENCH_ADD(fp12_copy_sec(b, a, 0));
+	}
+	BENCH_END;
+
+	BENCH_RUN("fp48_copy_sec (1)") {
+		fp48_rand(a);
+		BENCH_ADD(fp48_copy_sec(b, a, 1));
 	}
 	BENCH_END;
 
@@ -3396,6 +3528,18 @@ static void util54(void) {
 	BENCH_RUN("fp54_copy") {
 		fp54_rand(a);
 		BENCH_ADD(fp54_copy(b, a));
+	}
+	BENCH_END;
+
+	BENCH_RUN("fp54_copy_sec (0)") {
+		fp54_rand(a);
+		BENCH_ADD(fp54_copy_sec(b, a, 0));
+	}
+	BENCH_END;
+
+	BENCH_RUN("fp54_copy_sec (1)") {
+		fp54_rand(a);
+		BENCH_ADD(fp54_copy_sec(b, a, 1));
 	}
 	BENCH_END;
 

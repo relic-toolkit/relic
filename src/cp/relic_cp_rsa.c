@@ -938,7 +938,7 @@ int cp_rsa_ver(uint8_t *sig, size_t sig_len, const uint8_t *msg, size_t msg_len,
 				memset(h1, 0, RLC_MD_LEN);
 				bn_write_bin(h1, size - pad_len, eb);
 				/* Everything went ok, so signature status is changed. */
-				result = util_cmp_const(h1, h2, RLC_MD_LEN);
+				result = util_cmp_sec(h1, h2, RLC_MD_LEN);
 			} else {
 				memcpy(h1 + 8, msg, msg_len);
 				md_map(h2, h1, RLC_MD_LEN + 8);
@@ -947,7 +947,7 @@ int cp_rsa_ver(uint8_t *sig, size_t sig_len, const uint8_t *msg, size_t msg_len,
 				bn_write_bin(h1, size - pad_len, eb);
 
 				/* Everything went ok, so signature status is changed. */
-				result = util_cmp_const(h1, h2, msg_len);
+				result = util_cmp_sec(h1, h2, msg_len);
 			}
 #else
 			memset(h1, 0, RLC_MAX(msg_len, RLC_MD_LEN));
@@ -956,10 +956,10 @@ int cp_rsa_ver(uint8_t *sig, size_t sig_len, const uint8_t *msg, size_t msg_len,
 			if (!hash) {
 				md_map(h2, msg, msg_len);
 				/* Everything went ok, so signature status is changed. */
-				result = util_cmp_const(h1, h2, RLC_MD_LEN);
+				result = util_cmp_sec(h1, h2, RLC_MD_LEN);
 			} else {
 				/* Everything went ok, so signature status is changed. */
-				result = util_cmp_const(h1, msg, msg_len);
+				result = util_cmp_sec(h1, msg, msg_len);
 			}
 #endif
 			result = (result == RLC_EQ ? 1 : 0);

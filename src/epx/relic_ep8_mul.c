@@ -327,7 +327,7 @@ void ep8_mul_monty(ep8_t r, const ep8_t p, const bn_t k) {
 		bn_abs(l, _k);
 		bn_add(l, l, n);
 		bn_add(n, l, n);
-		dv_swap_cond(l->dp, n->dp, RLC_MAX(l->used, n->used),
+		dv_swap_sec(l->dp, n->dp, RLC_MAX(l->used, n->used),
 			bn_get_bit(l, bits) == 0);
 		l->used = RLC_SEL(l->used, n->used, bn_get_bit(l, bits) == 0);
 
@@ -343,9 +343,9 @@ void ep8_mul_monty(ep8_t r, const ep8_t p, const bn_t k) {
 			for (int l = 0; l < 2; l++) {
 				for (int m = 0; m < 2; m++) {
 					for (int n = 0; n < 2; n++) {
-						dv_swap_cond(t[0]->x[l][m][n], t[1]->x[l][m][n], RLC_FP_DIGS, j ^ 1);
-						dv_swap_cond(t[0]->y[l][m][n], t[1]->y[l][m][n], RLC_FP_DIGS, j ^ 1);
-						dv_swap_cond(t[0]->z[l][m][n], t[1]->z[l][m][n], RLC_FP_DIGS, j ^ 1);
+						dv_swap_sec(t[0]->x[l][m][n], t[1]->x[l][m][n], RLC_FP_DIGS, j ^ 1);
+						dv_swap_sec(t[0]->y[l][m][n], t[1]->y[l][m][n], RLC_FP_DIGS, j ^ 1);
+						dv_swap_sec(t[0]->z[l][m][n], t[1]->z[l][m][n], RLC_FP_DIGS, j ^ 1);
 					}
 				}
 			}
@@ -354,9 +354,9 @@ void ep8_mul_monty(ep8_t r, const ep8_t p, const bn_t k) {
 			for (int l = 0; l < 2; l++) {
 				for (int m = 0; m < 2; m++) {
 					for (int n = 0; n < 2; n++) {
-						dv_swap_cond(t[0]->x[l][m][n], t[1]->x[l][m][n], RLC_FP_DIGS, j ^ 1);
-						dv_swap_cond(t[0]->y[l][m][n], t[1]->y[l][m][n], RLC_FP_DIGS, j ^ 1);
-						dv_swap_cond(t[0]->z[l][m][n], t[1]->z[l][m][n], RLC_FP_DIGS, j ^ 1);
+						dv_swap_sec(t[0]->x[l][m][n], t[1]->x[l][m][n], RLC_FP_DIGS, j ^ 1);
+						dv_swap_sec(t[0]->y[l][m][n], t[1]->y[l][m][n], RLC_FP_DIGS, j ^ 1);
+						dv_swap_sec(t[0]->z[l][m][n], t[1]->z[l][m][n], RLC_FP_DIGS, j ^ 1);
 					}
 				}
 			}

@@ -259,7 +259,7 @@ static void ep_mul_reg_glv(ep_t r, const ep_t p, const bn_t k) {
 
 		ep_norm(t[0], p);
 		ep_neg(q, t[0]);
-		dv_copy_cond(q->y, t[0]->y, RLC_FP_DIGS, s[0] == RLC_POS);
+		dv_copy_sec(q->y, t[0]->y, RLC_FP_DIGS, s[0] == RLC_POS);
 		ep_tab(t, q, RLC_WIDTH);
 
 		l = RLC_FP_BITS + 1;
@@ -288,38 +288,38 @@ static void ep_mul_reg_glv(ep_t r, const ep_t p, const bn_t k) {
 			n1 = ((n1 ^ c1) - c1) >> 1;
 
 			for (size_t j = 0; j < (1 << (RLC_WIDTH - 2)); j++) {
-				dv_copy_cond(u->x, t[j]->x, RLC_FP_DIGS, j == n0);
-				dv_copy_cond(w->x, t[j]->x, RLC_FP_DIGS, j == n1);
-				dv_copy_cond(u->y, t[j]->y, RLC_FP_DIGS, j == n0);
-				dv_copy_cond(w->y, t[j]->y, RLC_FP_DIGS, j == n1);
-#if !defined(EP_MIXED)
-				dv_copy_cond(u->z, t[j]->z, RLC_FP_DIGS, j == n0);
-				dv_copy_cond(w->z, t[j]->z, RLC_FP_DIGS, j == n1);
+				fp_copy_sec(u->x, t[j]->x, j == n0);
+				fp_copy_sec(w->x, t[j]->x, j == n1);
+				fp_copy_sec(u->y, t[j]->y, j == n0);
+				fp_copy_sec(w->y, t[j]->y, j == n1);
+#if !defined(EP_fpXED)
+				fp_copy_sec(u->z, t[j]->z, j == n0);
+				fp_copy_sec(w->z, t[j]->z, j == n1);
 #endif
 			}
 			ep_neg(q, u);
-			dv_copy_cond(q->y, u->y, RLC_FP_DIGS, c0 == 0);
+			fp_copy_sec(q->y, u->y, c0 == 0);
 			ep_add(r, r, q);
 
 			ep_psi(w, w);
 			ep_neg(q, w);
-			dv_copy_cond(w->y, q->y, RLC_FP_DIGS, (c1 != 0) ^ (s[0] != s[1]));
+			fp_copy_sec(w->y, q->y, (c1 != 0) ^ (s[0] != s[1]));
 			ep_add(r, r, w);
 		}
 
 		/* t[0] has an unmodified copy of p. */
 		ep_sub(u, r, t[0]);
-		dv_copy_cond(r->x, u->x, RLC_FP_DIGS, b[0]);
-		dv_copy_cond(r->y, u->y, RLC_FP_DIGS, b[0]);
-		dv_copy_cond(r->z, u->z, RLC_FP_DIGS, b[0]);
+		fp_copy_sec(r->x, u->x, b[0]);
+		fp_copy_sec(r->y, u->y, b[0]);
+		fp_copy_sec(r->z, u->z, b[0]);
 
 		ep_psi(w, t[0]);
 		ep_neg(q, w);
-		dv_copy_cond(q->y, w->y, RLC_FP_DIGS, s[0] == s[1]);
+		fp_copy_sec(q->y, w->y, s[0] == s[1]);
 		ep_sub(u, r, q);
-		dv_copy_cond(r->x, u->x, RLC_FP_DIGS, b[1]);
-		dv_copy_cond(r->y, u->y, RLC_FP_DIGS, b[1]);
-		dv_copy_cond(r->z, u->z, RLC_FP_DIGS, b[1]);
+		fp_copy_sec(r->x, u->x, b[1]);
+		fp_copy_sec(r->y, u->y, b[1]);
+		fp_copy_sec(r->z, u->z, b[1]);
 
 		/* Convert r to affine coordinates. */
 		ep_norm(r, r);
@@ -398,25 +398,25 @@ static void ep_mul_reg_imp(ep_t r, const ep_t p, const bn_t k) {
 			n = ((n ^ s) - s) >> 1;
 
 			for (j = 0; j < (1 << (RLC_WIDTH - 2)); j++) {
-				dv_copy_cond(u->x, t[j]->x, RLC_FP_DIGS, j == n);
-				dv_copy_cond(u->y, t[j]->y, RLC_FP_DIGS, j == n);
+				fp_copy_sec(u->x, t[j]->x, j == n);
+				fp_copy_sec(u->y, t[j]->y, j == n);
 #if !defined(EP_MIXED)
-				dv_copy_cond(u->z, t[j]->z, RLC_FP_DIGS, j == n);
+				fp_copy_sec(u->z, t[j]->z, j == n);
 #endif
 			}
 			ep_neg(v, u);
-			dv_copy_cond(u->y, v->y, RLC_FP_DIGS, s != 0);
+			fp_copy_sec(u->y, v->y, s != 0);
 			ep_add(r, r, u);
 		}
 		/* t[0] has an unmodified copy of p. */
 		ep_sub(u, r, t[0]);
-		dv_copy_cond(r->x, u->x, RLC_FP_DIGS, bn_is_even(k));
-		dv_copy_cond(r->y, u->y, RLC_FP_DIGS, bn_is_even(k));
-		dv_copy_cond(r->z, u->z, RLC_FP_DIGS, bn_is_even(k));
+		fp_copy_sec(r->x, u->x, bn_is_even(k));
+		fp_copy_sec(r->y, u->y, bn_is_even(k));
+		fp_copy_sec(r->z, u->z, bn_is_even(k));
 		/* Convert r to affine coordinates. */
 		ep_norm(r, r);
 		ep_neg(u, r);
-		dv_copy_cond(r->y, u->y, RLC_FP_DIGS, bn_sign(k) == RLC_NEG);
+		fp_copy_sec(r->y, u->y, bn_sign(k) == RLC_NEG);
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -603,7 +603,7 @@ void ep_mul_monty(ep_t r, const ep_t p, const bn_t k) {
 		bn_abs(l, _k);
 		bn_add(l, l, n);
 		bn_add(n, l, n);
-		dv_swap_cond(l->dp, n->dp, RLC_MAX(l->used, n->used),
+		dv_swap_sec(l->dp, n->dp, RLC_MAX(l->used, n->used),
 			bn_get_bit(l, bits) == 0);
 		l->used = RLC_SEL(l->used, n->used, bn_get_bit(l, bits) == 0);
 
@@ -616,14 +616,14 @@ void ep_mul_monty(ep_t r, const ep_t p, const bn_t k) {
 
 		for (int i = bits - 1; i >= 0; i--) {
  			int j = bn_get_bit(l, i);
-			dv_swap_cond(t[0]->x, t[1]->x, RLC_FP_DIGS, j ^ 1);
-			dv_swap_cond(t[0]->y, t[1]->y, RLC_FP_DIGS, j ^ 1);
-			dv_swap_cond(t[0]->z, t[1]->z, RLC_FP_DIGS, j ^ 1);
+			dv_swap_sec(t[0]->x, t[1]->x, RLC_FP_DIGS, j ^ 1);
+			dv_swap_sec(t[0]->y, t[1]->y, RLC_FP_DIGS, j ^ 1);
+			dv_swap_sec(t[0]->z, t[1]->z, RLC_FP_DIGS, j ^ 1);
 			ep_add(t[0], t[0], t[1]);
 			ep_dbl(t[1], t[1]);
-			dv_swap_cond(t[0]->x, t[1]->x, RLC_FP_DIGS, j ^ 1);
-			dv_swap_cond(t[0]->y, t[1]->y, RLC_FP_DIGS, j ^ 1);
-			dv_swap_cond(t[0]->z, t[1]->z, RLC_FP_DIGS, j ^ 1);
+			dv_swap_sec(t[0]->x, t[1]->x, RLC_FP_DIGS, j ^ 1);
+			dv_swap_sec(t[0]->y, t[1]->y, RLC_FP_DIGS, j ^ 1);
+			dv_swap_sec(t[0]->z, t[1]->z, RLC_FP_DIGS, j ^ 1);
 		}
 
 		ep_norm(r, t[0]);

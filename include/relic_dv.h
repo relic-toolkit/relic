@@ -166,9 +166,9 @@ void dv_copy(dig_t *c, const dig_t *a, size_t digits);
  * @param[out] c			- the destination.
  * @paraim[in] a			- the source.
  * @param[in] digits		- the number of digits to copy.
- * @param[in] cond			- the condition to evaluate.
+ * @param[in] bit			- the condition bit to evaluate.
  */
-void dv_copy_cond(dig_t *c, const dig_t *a, size_t digits, dig_t cond);
+void dv_copy_sec(dig_t *c, const dig_t *a, size_t digits, dig_t bit);
 
 /**
  * Conditionally swap two digit vectors.
@@ -176,9 +176,9 @@ void dv_copy_cond(dig_t *c, const dig_t *a, size_t digits, dig_t cond);
  * @param[in,out] c			- the destination.
  * @paraim[in,out] a		- the source.
  * @param[in] digits		- the number of digits to copy.
- * @param[in] cond			- the condition to evaluate.
+ * @param[in] bit			- the condition bit to evaluate.
  */
-void dv_swap_cond(dig_t *c, dig_t *a, size_t digits, dig_t cond);
+void dv_swap_sec(dig_t *c, dig_t *a, size_t digits, dig_t bit);
 
 /**
  * Returns the result of a comparison between two digit vectors.
@@ -198,7 +198,7 @@ int dv_cmp(const dig_t *a, const dig_t *b, size_t size);
  * @param[in] size			- the length in digits of the vectors.
  * @return RLC_EQ if they are equal and RLC_NE otherwise.
  */
-int dv_cmp_const(const dig_t *a, const dig_t *b, size_t size);
+int dv_cmp_sec(const dig_t *a, const dig_t *b, size_t size);
 
 /**
  * Allocates and initializes a temporary double-precision digit vector.

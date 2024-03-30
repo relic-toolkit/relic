@@ -295,7 +295,7 @@ size_t util_bits_dig(dig_t a);
  * @param[in] n				- the length in bytes of the buffers.
  * @return RLC_EQ if they are equal and RLC_NE otherwise.
  */
-int util_cmp_const(const void *a, const void *b, size_t n);
+int util_cmp_sec(const void *a, const void *b, size_t n);
 
 /**
  * Computes a random permutation in [0, n-1].

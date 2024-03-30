@@ -40,6 +40,10 @@ void fp_copy(fp_t c, const fp_t a) {
 	dv_copy(c, a, RLC_FP_DIGS);
 }
 
+void fp_copy_sec(fp_t c, const fp_t a, dig_t bit) {
+	dv_copy_sec(c, a, RLC_FP_DIGS, bit);
+}
+
 void fp_zero(fp_t a) {
 	dv_zero(a, RLC_FP_DIGS);
 }

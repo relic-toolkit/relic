@@ -142,10 +142,10 @@ void ep8_map(ep8_t p, const uint8_t *msg, size_t len) {
 			for (int i = 0; i < 2; i++) {
 				for (int j = 0; j < 2; j++) {
 					for (int l = 0; l < 2; l++) {
-						dv_swap_cond(x1[i][j][l], y1[i][j][l], RLC_FP_DIGS, c2);
-						dv_swap_cond(t[i][j][l], u[i][j][l], RLC_FP_DIGS, c2);
-						dv_swap_cond(x1[i][j][l], z1[i][j][l], RLC_FP_DIGS, c3);
-						dv_swap_cond(t[i][j][l], v[i][j][l], RLC_FP_DIGS, c3);
+						dv_swap_sec(x1[i][j][l], y1[i][j][l], RLC_FP_DIGS, c2);
+						dv_swap_sec(t[i][j][l], u[i][j][l], RLC_FP_DIGS, c2);
+						dv_swap_sec(x1[i][j][l], z1[i][j][l], RLC_FP_DIGS, c3);
+						dv_swap_sec(t[i][j][l], v[i][j][l], RLC_FP_DIGS, c3);
 					}
 				}
 			}
@@ -173,7 +173,7 @@ void ep8_map(ep8_t p, const uint8_t *msg, size_t len) {
 			for (int i = 0; i < 2; i++) {
 				for (int j = 0; j < 2; j++) {
 					for (int l = 0; l < 2; l++) {
-						dv_swap_cond(t[i][j][l], u[i][j][l], RLC_FP_DIGS, sign);
+						dv_swap_sec(t[i][j][l], u[i][j][l], RLC_FP_DIGS, sign);
 					}
 				}
 			}

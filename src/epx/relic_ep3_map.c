@@ -131,10 +131,10 @@ void ep3_map(ep3_t p, const uint8_t *msg, size_t len) {
 			c3 = fp3_is_sqr(v);
 
 			for (int i = 0; i < 3; i++) {
-				dv_swap_cond(x1[i], y1[i], RLC_FP_DIGS, c2);
-				dv_swap_cond(t[i], u[i], RLC_FP_DIGS, c2);
-				dv_swap_cond(x1[i], z1[i], RLC_FP_DIGS, c3);
-				dv_swap_cond(t[i], v[i], RLC_FP_DIGS, c3);
+				dv_swap_sec(x1[i], y1[i], RLC_FP_DIGS, c2);
+				dv_swap_sec(t[i], u[i], RLC_FP_DIGS, c2);
+				dv_swap_sec(x1[i], z1[i], RLC_FP_DIGS, c3);
+				dv_swap_sec(t[i], v[i], RLC_FP_DIGS, c3);
 			}
 
 			if (!fp3_srt(t, t)) {
@@ -154,9 +154,9 @@ void ep3_map(ep3_t p, const uint8_t *msg, size_t len) {
 			sign ^= (t0 | (t0z & (t1 | (t1z & t2))));
 
 			fp3_neg(u, t);
-			dv_swap_cond(t[0], u[0], RLC_FP_DIGS, sign);
-			dv_swap_cond(t[1], u[1], RLC_FP_DIGS, sign);
-			dv_swap_cond(t[2], u[2], RLC_FP_DIGS, sign);
+			dv_swap_sec(t[0], u[0], RLC_FP_DIGS, sign);
+			dv_swap_sec(t[1], u[1], RLC_FP_DIGS, sign);
+			dv_swap_sec(t[2], u[2], RLC_FP_DIGS, sign);
 
 			fp3_copy(p->x, x1);
 			fp3_copy(p->y, t);

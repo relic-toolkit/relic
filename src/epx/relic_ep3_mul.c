@@ -383,7 +383,7 @@ void ep3_mul_monty(ep3_t r, const ep3_t p, const bn_t k) {
 		bn_abs(l, _k);
 		bn_add(l, l, n);
 		bn_add(n, l, n);
-		dv_swap_cond(l->dp, n->dp, RLC_MAX(l->used, n->used),
+		dv_swap_sec(l->dp, n->dp, RLC_MAX(l->used, n->used),
 			bn_get_bit(l, bits) == 0);
 		l->used = RLC_SEL(l->used, n->used, bn_get_bit(l, bits) == 0);
 
@@ -396,26 +396,26 @@ void ep3_mul_monty(ep3_t r, const ep3_t p, const bn_t k) {
 
 		for (int i = bits - 1; i >= 0; i--) {
 			int j = bn_get_bit(l, i);
-			dv_swap_cond(t[0]->x[0], t[1]->x[0], RLC_FP_DIGS, j ^ 1);
-			dv_swap_cond(t[0]->x[1], t[1]->x[1], RLC_FP_DIGS, j ^ 1);
-			dv_swap_cond(t[0]->x[2], t[1]->x[2], RLC_FP_DIGS, j ^ 1);
-			dv_swap_cond(t[0]->y[0], t[1]->y[0], RLC_FP_DIGS, j ^ 1);
-			dv_swap_cond(t[0]->y[1], t[1]->y[1], RLC_FP_DIGS, j ^ 1);
-			dv_swap_cond(t[0]->y[2], t[1]->y[2], RLC_FP_DIGS, j ^ 1);
-			dv_swap_cond(t[0]->z[0], t[1]->z[0], RLC_FP_DIGS, j ^ 1);
-			dv_swap_cond(t[0]->z[1], t[1]->z[1], RLC_FP_DIGS, j ^ 1);
-			dv_swap_cond(t[0]->z[2], t[1]->z[2], RLC_FP_DIGS, j ^ 1);
+			dv_swap_sec(t[0]->x[0], t[1]->x[0], RLC_FP_DIGS, j ^ 1);
+			dv_swap_sec(t[0]->x[1], t[1]->x[1], RLC_FP_DIGS, j ^ 1);
+			dv_swap_sec(t[0]->x[2], t[1]->x[2], RLC_FP_DIGS, j ^ 1);
+			dv_swap_sec(t[0]->y[0], t[1]->y[0], RLC_FP_DIGS, j ^ 1);
+			dv_swap_sec(t[0]->y[1], t[1]->y[1], RLC_FP_DIGS, j ^ 1);
+			dv_swap_sec(t[0]->y[2], t[1]->y[2], RLC_FP_DIGS, j ^ 1);
+			dv_swap_sec(t[0]->z[0], t[1]->z[0], RLC_FP_DIGS, j ^ 1);
+			dv_swap_sec(t[0]->z[1], t[1]->z[1], RLC_FP_DIGS, j ^ 1);
+			dv_swap_sec(t[0]->z[2], t[1]->z[2], RLC_FP_DIGS, j ^ 1);
 			ep3_add(t[0], t[0], t[1]);
 			ep3_dbl(t[1], t[1]);
-			dv_swap_cond(t[0]->x[0], t[1]->x[0], RLC_FP_DIGS, j ^ 1);
-			dv_swap_cond(t[0]->x[1], t[1]->x[1], RLC_FP_DIGS, j ^ 1);
-			dv_swap_cond(t[0]->x[2], t[1]->x[2], RLC_FP_DIGS, j ^ 1);
-			dv_swap_cond(t[0]->y[0], t[1]->y[0], RLC_FP_DIGS, j ^ 1);
-			dv_swap_cond(t[0]->y[1], t[1]->y[1], RLC_FP_DIGS, j ^ 1);
-			dv_swap_cond(t[0]->y[2], t[1]->y[2], RLC_FP_DIGS, j ^ 1);
-			dv_swap_cond(t[0]->z[0], t[1]->z[0], RLC_FP_DIGS, j ^ 1);
-			dv_swap_cond(t[0]->z[1], t[1]->z[1], RLC_FP_DIGS, j ^ 1);
-			dv_swap_cond(t[0]->z[2], t[1]->z[2], RLC_FP_DIGS, j ^ 1);
+			dv_swap_sec(t[0]->x[0], t[1]->x[0], RLC_FP_DIGS, j ^ 1);
+			dv_swap_sec(t[0]->x[1], t[1]->x[1], RLC_FP_DIGS, j ^ 1);
+			dv_swap_sec(t[0]->x[2], t[1]->x[2], RLC_FP_DIGS, j ^ 1);
+			dv_swap_sec(t[0]->y[0], t[1]->y[0], RLC_FP_DIGS, j ^ 1);
+			dv_swap_sec(t[0]->y[1], t[1]->y[1], RLC_FP_DIGS, j ^ 1);
+			dv_swap_sec(t[0]->y[2], t[1]->y[2], RLC_FP_DIGS, j ^ 1);
+			dv_swap_sec(t[0]->z[0], t[1]->z[0], RLC_FP_DIGS, j ^ 1);
+			dv_swap_sec(t[0]->z[1], t[1]->z[1], RLC_FP_DIGS, j ^ 1);
+			dv_swap_sec(t[0]->z[2], t[1]->z[2], RLC_FP_DIGS, j ^ 1);
 		}
 
 		ep3_norm(r, t[0]);

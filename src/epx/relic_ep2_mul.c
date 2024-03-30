@@ -170,8 +170,8 @@ static void ep2_mul_naf_imp(ep2_t r, const ep2_t p, const bn_t k) {
 
 static void ep2_mul_reg_gls(ep2_t r, const ep2_t p, const bn_t k) {
 	int8_t reg[4][RLC_FP_BITS + 1], b[4], s[4], c0, n0;
-	bn_t n, _k[4], u;
 	ep2_t q, w, t[4][1 << (RLC_WIDTH - 2)];
+	bn_t n, _k[4], u;
 	size_t l, len, _l[4];
 
 	bn_null(n);
@@ -199,6 +199,7 @@ static void ep2_mul_reg_gls(ep2_t r, const ep2_t p, const bn_t k) {
 		bn_rec_frb(_k, 4, _k[0], u, n, ep_curve_is_pairf() == EP_BN);
 
 		l = 0;
+		/* Make some extra room for BN curves that grow subscalars by 1. */
 		len = bn_bits(u) + (ep_curve_is_pairf() == EP_BN);
 		ep2_norm(t[0][0], p);
 		for (size_t i = 0; i < 4; i++) {
@@ -207,7 +208,6 @@ static void ep2_mul_reg_gls(ep2_t r, const ep2_t p, const bn_t k) {
 			b[i] = bn_is_even(_k[i]);
 			_k[i]->dp[0] |= b[i];
 
-			/* Make some extra room for BN curves that grow subscalars by 1. */
 			_l[i] = RLC_FP_BITS + 1;
 			bn_rec_reg(reg[i], &_l[i], _k[i], len, RLC_WIDTH);
 			l = RLC_MAX(l, _l[i]);
@@ -220,8 +220,7 @@ static void ep2_mul_reg_gls(ep2_t r, const ep2_t p, const bn_t k) {
 
 		for (size_t i = 0; i < 4; i++) {
 			ep2_neg(q, t[i][0]);
-			dv_copy_cond(q->y[0], t[i][0]->y[0], RLC_FP_DIGS, s[i] == RLC_POS);
-			dv_copy_cond(q->y[1], t[i][0]->y[1], RLC_FP_DIGS, s[i] == RLC_POS);
+			fp2_copy_sec(q->y, t[i][0]->y, s[i] == RLC_POS);
 			ep2_tab(t[i], q, RLC_WIDTH);
 		}
 
@@ -244,19 +243,15 @@ static void ep2_mul_reg_gls(ep2_t r, const ep2_t p, const bn_t k) {
 				n0 = ((n0 ^ c0) - c0) >> 1;
 
 				for (size_t m = 0; m < (1 << (RLC_WIDTH - 2)); m++) {
-					dv_copy_cond(w->x[0], t[i][m]->x[0], RLC_FP_DIGS, m == n0);
-					dv_copy_cond(w->x[1], t[i][m]->x[1], RLC_FP_DIGS, m == n0);
-					dv_copy_cond(w->y[0], t[i][m]->y[0], RLC_FP_DIGS, m == n0);
-					dv_copy_cond(w->y[1], t[i][m]->y[1], RLC_FP_DIGS, m == n0);
+					fp2_copy_sec(w->x, t[i][m]->x, m == n0);
+					fp2_copy_sec(w->y, t[i][m]->y, m == n0);
 	#if !defined(EP_MIXED)
-					dv_copy_cond(w->z[0], t[i][m]->z[0], RLC_FP_DIGS, m == n0);
-					dv_copy_cond(w->z[1], t[i][m]->z[1], RLC_FP_DIGS, m == n0);
+					fp2_copy_sec(w->z, t[i][m]->z, m == n0);
 	#endif
 				}
 
 				ep2_neg(q, w);
-				dv_copy_cond(q->y[0], w->y[0], RLC_FP_DIGS, c0 == 0);
-				dv_copy_cond(q->y[1], w->y[1], RLC_FP_DIGS, c0 == 0);
+				fp2_copy_sec(q->y, w->y, c0 == 0);
 				ep2_add(r, r, q);
 			}
 		}
@@ -264,12 +259,9 @@ static void ep2_mul_reg_gls(ep2_t r, const ep2_t p, const bn_t k) {
 		for (size_t i = 0; i < 4; i++) {
 			/* Tables are built with points already negated, so no need here. */
 			ep2_sub(q, r, t[i][0]);
-			dv_copy_cond(r->x[0], q->x[0], RLC_FP_DIGS, b[i]);
-			dv_copy_cond(r->x[1], q->x[1], RLC_FP_DIGS, b[i]);
-			dv_copy_cond(r->y[0], q->y[0], RLC_FP_DIGS, b[i]);
-			dv_copy_cond(r->y[1], q->y[1], RLC_FP_DIGS, b[i]);
-			dv_copy_cond(r->z[0], q->z[0], RLC_FP_DIGS, b[i]);
-			dv_copy_cond(r->z[1], q->z[1], RLC_FP_DIGS, b[i]);
+			fp2_copy_sec(r->x, q->x, b[i]);
+			fp2_copy_sec(r->y, q->y, b[i]);
+			fp2_copy_sec(r->z, q->z, b[i]);
 		}
 
 		/* Convert r to affine coordinates. */
@@ -298,10 +290,9 @@ static void ep2_mul_reg_gls(ep2_t r, const ep2_t p, const bn_t k) {
 
 static void ep2_mul_reg_imp(ep2_t r, const ep2_t p, const bn_t k) {
 	bn_t _k;
-	int i, j, n;
 	int8_t s, reg[1 + RLC_CEIL(RLC_FP_BITS + 1, RLC_WIDTH - 1)];
 	ep2_t t[1 << (RLC_WIDTH - 2)], u, v;
-	size_t l;
+	size_t l, n;
 
 	bn_null(_k);
 
@@ -310,7 +301,7 @@ static void ep2_mul_reg_imp(ep2_t r, const ep2_t p, const bn_t k) {
 		ep2_new(u);
 		ep2_new(v);
 		/* Prepare the precomputation table. */
-		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
+		for (size_t i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
 			ep2_null(t[i]);
 			ep2_new(t[i]);
 		}
@@ -335,8 +326,8 @@ static void ep2_mul_reg_imp(ep2_t r, const ep2_t p, const bn_t k) {
 		u->coord = EP_ADD;
 #endif
 		ep2_set_infty(r);
-		for (i = l - 1; i >= 0; i--) {
-			for (j = 0; j < RLC_WIDTH - 1; j++) {
+		for (int i = l - 1; i >= 0; i--) {
+			for (size_t j = 0; j < RLC_WIDTH - 1; j++) {
 				ep2_dbl(r, r);
 			}
 
@@ -344,41 +335,33 @@ static void ep2_mul_reg_imp(ep2_t r, const ep2_t p, const bn_t k) {
 			s = (n >> 7);
 			n = ((n ^ s) - s) >> 1;
 
-			for (j = 0; j < (1 << (RLC_WIDTH - 2)); j++) {
-				dv_copy_cond(u->x[0], t[j]->x[0], RLC_FP_DIGS, j == n);
-				dv_copy_cond(u->x[1], t[j]->x[1], RLC_FP_DIGS, j == n);
-				dv_copy_cond(u->y[0], t[j]->y[0], RLC_FP_DIGS, j == n);
-				dv_copy_cond(u->y[1], t[j]->y[1], RLC_FP_DIGS, j == n);
+			for (size_t j = 0; j < (1 << (RLC_WIDTH - 2)); j++) {
+				fp2_copy_sec(u->x, t[j]->x, j == n);
+				fp2_copy_sec(u->y, t[j]->y, j == n);
 #if !defined(EP_MIXED)
-				dv_copy_cond(u->z[0], t[j]->z[0], RLC_FP_DIGS, j == n);
-				dv_copy_cond(u->z[1], t[j]->z[1], RLC_FP_DIGS, j == n);
+				fp_copy_sec(u->z, t[j]->z, j == n);
 #endif
 			}
 			ep2_neg(v, u);
-			dv_copy_cond(u->y[0], v->y[0], RLC_FP_DIGS, s != 0);
-			dv_copy_cond(u->y[1], v->y[1], RLC_FP_DIGS, s != 0);
+			fp2_copy_sec(u->y, v->y, s != 0);
 			ep2_add(r, r, u);
 		}
 		/* t[0] has an unmodified copy of p. */
 		ep2_sub(u, r, t[0]);
-		dv_copy_cond(r->x[0], u->x[0], RLC_FP_DIGS, bn_is_even(k));
-		dv_copy_cond(r->x[1], u->x[1], RLC_FP_DIGS, bn_is_even(k));
-		dv_copy_cond(r->y[0], u->y[0], RLC_FP_DIGS, bn_is_even(k));
-		dv_copy_cond(r->y[1], u->y[1], RLC_FP_DIGS, bn_is_even(k));
-		dv_copy_cond(r->z[0], u->z[0], RLC_FP_DIGS, bn_is_even(k));
-		dv_copy_cond(r->z[1], u->z[1], RLC_FP_DIGS, bn_is_even(k));
+		fp2_copy_sec(r->x, u->x, bn_is_even(k));
+		fp2_copy_sec(r->y, u->y, bn_is_even(k));
+		fp2_copy_sec(r->z, u->z, bn_is_even(k));
 		/* Convert r to affine coordinates. */
 		ep2_norm(r, r);
 		ep2_neg(u, r);
-		dv_copy_cond(r->y[0], u->y[0], RLC_FP_DIGS, bn_sign(k) == RLC_NEG);
-		dv_copy_cond(r->y[1], u->y[1], RLC_FP_DIGS, bn_sign(k) == RLC_NEG);
+		fp2_copy_sec(r->y, u->y, bn_sign(k) == RLC_NEG);
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
 		/* Free the precomputation table. */
-		for (i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
+		for (size_t i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
 			ep2_free(t[i]);
 		}
 		bn_free(_k);
@@ -552,7 +535,7 @@ void ep2_mul_monty(ep2_t r, const ep2_t p, const bn_t k) {
 		bn_abs(l, _k);
 		bn_add(l, l, n);
 		bn_add(n, l, n);
-		dv_swap_cond(l->dp, n->dp, RLC_MAX(l->used, n->used),
+		dv_swap_sec(l->dp, n->dp, RLC_MAX(l->used, n->used),
 			bn_get_bit(l, bits) == 0);
 		l->used = RLC_SEL(l->used, n->used, bn_get_bit(l, bits) == 0);
 
@@ -565,20 +548,20 @@ void ep2_mul_monty(ep2_t r, const ep2_t p, const bn_t k) {
 
 		for (int i = bits - 1; i >= 0; i--) {
 			int j = bn_get_bit(l, i);
-			dv_swap_cond(t[0]->x[0], t[1]->x[0], RLC_FP_DIGS, j ^ 1);
-			dv_swap_cond(t[0]->x[1], t[1]->x[1], RLC_FP_DIGS, j ^ 1);
-			dv_swap_cond(t[0]->y[0], t[1]->y[0], RLC_FP_DIGS, j ^ 1);
-			dv_swap_cond(t[0]->y[1], t[1]->y[1], RLC_FP_DIGS, j ^ 1);
-			dv_swap_cond(t[0]->z[0], t[1]->z[0], RLC_FP_DIGS, j ^ 1);
-			dv_swap_cond(t[0]->z[1], t[1]->z[1], RLC_FP_DIGS, j ^ 1);
+			dv_swap_sec(t[0]->x[0], t[1]->x[0], RLC_FP_DIGS, j ^ 1);
+			dv_swap_sec(t[0]->x[1], t[1]->x[1], RLC_FP_DIGS, j ^ 1);
+			dv_swap_sec(t[0]->y[0], t[1]->y[0], RLC_FP_DIGS, j ^ 1);
+			dv_swap_sec(t[0]->y[1], t[1]->y[1], RLC_FP_DIGS, j ^ 1);
+			dv_swap_sec(t[0]->z[0], t[1]->z[0], RLC_FP_DIGS, j ^ 1);
+			dv_swap_sec(t[0]->z[1], t[1]->z[1], RLC_FP_DIGS, j ^ 1);
 			ep2_add(t[0], t[0], t[1]);
 			ep2_dbl(t[1], t[1]);
-			dv_swap_cond(t[0]->x[0], t[1]->x[0], RLC_FP_DIGS, j ^ 1);
-			dv_swap_cond(t[0]->x[1], t[1]->x[1], RLC_FP_DIGS, j ^ 1);
-			dv_swap_cond(t[0]->y[0], t[1]->y[0], RLC_FP_DIGS, j ^ 1);
-			dv_swap_cond(t[0]->y[1], t[1]->y[1], RLC_FP_DIGS, j ^ 1);
-			dv_swap_cond(t[0]->z[0], t[1]->z[0], RLC_FP_DIGS, j ^ 1);
-			dv_swap_cond(t[0]->z[1], t[1]->z[1], RLC_FP_DIGS, j ^ 1);
+			dv_swap_sec(t[0]->x[0], t[1]->x[0], RLC_FP_DIGS, j ^ 1);
+			dv_swap_sec(t[0]->x[1], t[1]->x[1], RLC_FP_DIGS, j ^ 1);
+			dv_swap_sec(t[0]->y[0], t[1]->y[0], RLC_FP_DIGS, j ^ 1);
+			dv_swap_sec(t[0]->y[1], t[1]->y[1], RLC_FP_DIGS, j ^ 1);
+			dv_swap_sec(t[0]->z[0], t[1]->z[0], RLC_FP_DIGS, j ^ 1);
+			dv_swap_sec(t[0]->z[1], t[1]->z[1], RLC_FP_DIGS, j ^ 1);
 		}
 
 		ep2_norm(r, t[0]);

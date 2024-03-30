@@ -48,5 +48,5 @@ int fb_cmp_dig(const fb_t a, dig_t b) {
 }
 
 int fb_cmp(const fb_t a, const fb_t b) {
-	return dv_cmp_const(a, b, RLC_FB_DIGS);
+	return dv_cmp_sec(a, b, RLC_FB_DIGS);
 }

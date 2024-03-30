@@ -58,19 +58,19 @@ TMPL_MAP_ISOGENY_MAP(ep2, fp2, iso2)
 /**
  * Simplified SWU mapping.
  */
-#define EP2_MAP_COPY_COND(O, I, C)											\
+#define EP2_MAP_copy_sec(O, I, C)											\
 	do {																	\
-		dv_copy_cond(O[0], I[0], RLC_FP_DIGS, C);							\
-		dv_copy_cond(O[1], I[1], RLC_FP_DIGS, C);							\
+		fp_copy_sec(O[0], I[0], C);											\
+		fp_copy_sec(O[1], I[1], C);											\
 	} while (0)
-TMPL_MAP_SSWU(ep2, fp2, fp_t, EP2_MAP_COPY_COND)
+TMPL_MAP_SSWU(ep2, fp2, fp_t, EP2_MAP_copy_sec)
 
 /**
  * Shallue--van de Woestijne map.
  */
-TMPL_MAP_SVDW(ep2, fp2, fp_t, EP2_MAP_COPY_COND)
+TMPL_MAP_SVDW(ep2, fp2, fp_t, EP2_MAP_copy_sec)
 
-#undef EP2_MAP_COPY_COND
+#undef EP2_MAP_copy_sec
 
 /* caution: this function overwrites k, which it uses as an auxiliary variable */
 static inline int fp2_sgn0(const fp2_t t, bn_t k) {
@@ -140,8 +140,7 @@ static void ep2_map_from_field(ep2_t p, const uint8_t *r, size_t len) {
             /* compare sign of y to sign of t; fix if necessary */			\
             neg = neg != fp2_sgn0(PT->y, k);								\
             fp2_neg(t, PT->y);												\
-            dv_copy_cond(PT->y[0], t[0], RLC_FP_DIGS, neg);					\
-            dv_copy_cond(PT->y[1], t[1], RLC_FP_DIGS, neg);					\
+            fp2_copy_sec(PT->y, t, neg);									\
 		} while (0)
 
 		/* first map invocation */
@@ -346,10 +345,10 @@ void ep2_map_swift(ep2_t p, const uint8_t *msg, size_t len) {
 			c3 = fp2_is_sqr(v);
 
 			for (int i = 0; i < 2; i++) {
-				dv_swap_cond(x1[i], y1[i], RLC_FP_DIGS, c2);
-				dv_swap_cond(t[i], u[i], RLC_FP_DIGS, c2);
-				dv_swap_cond(x1[i], z1[i], RLC_FP_DIGS, c3);
-				dv_swap_cond(t[i], v[i], RLC_FP_DIGS, c3);
+				dv_swap_sec(x1[i], y1[i], RLC_FP_DIGS, c2);
+				dv_swap_sec(t[i], u[i], RLC_FP_DIGS, c2);
+				dv_swap_sec(x1[i], z1[i], RLC_FP_DIGS, c3);
+				dv_swap_sec(t[i], v[i], RLC_FP_DIGS, c3);
 			}
 
 			if (!fp2_srt(t, t)) {
@@ -365,8 +364,8 @@ void ep2_map_swift(ep2_t p, const uint8_t *msg, size_t len) {
 			sign ^= (t0 | (t0z & t1));
 
 			fp2_neg(u, t);
-			dv_swap_cond(t[0], u[0], RLC_FP_DIGS, sign);
-			dv_swap_cond(t[1], u[1], RLC_FP_DIGS, sign);
+			dv_swap_sec(t[0], u[0], RLC_FP_DIGS, sign);
+			dv_swap_sec(t[1], u[1], RLC_FP_DIGS, sign);
 
 			fp2_copy(p->x, x1);
 			fp2_copy(p->y, t);

@@ -221,7 +221,7 @@ enum {
 #define RLC_EP_TABLE_COMBD		(1 << (RLC_DEPTH + 1))
 
 /**
- * Size of a precomputation table using the w-(T)NAF method.
+ * Size of a precomputation table using the w-NAF method.
  */
 #define RLC_EP_TABLE_LWNAF		(1 << (RLC_DEPTH - 2))
 

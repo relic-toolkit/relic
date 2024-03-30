@@ -88,7 +88,7 @@ int cp_mklhs_sig(g1_t s, const bn_t m, const char *data, const char *id,
 		g1_map(a, str, strlen(id) + strlen(tag));
 		g1_add(s, s, a);
 		g1_norm(s, s);
-		g1_mul_key(s, s, sk);
+		g1_mul_sec(s, s, sk);
 	}
 	RLC_CATCH_ANY {
 		result = RLC_ERR;

@@ -57,20 +57,20 @@ TMPL_MAP_ISOGENY_MAP(ep, fp, iso);
 
 #endif /* EP_CTMAP */
 
-#define EP_MAP_COPY_COND(O, I, C) dv_copy_cond(O, I, RLC_FP_DIGS, C)
+#define EP_MAP_copy_sec(O, I, C) dv_copy_sec(O, I, RLC_FP_DIGS, C)
 /**
  * Simplified SWU mapping from Section 4 of
  * "Fast and simple constant-time hashing to the BLS12-381 Elliptic Curve"
  */
-TMPL_MAP_SSWU(ep, fp, dig_t, EP_MAP_COPY_COND);
+TMPL_MAP_SSWU(ep, fp, dig_t, EP_MAP_copy_sec);
 
 /**
  * Shallue--van de Woestijne map, based on the definition from
  * draft-irtf-cfrg-hash-to-curve-06, Section 6.6.1
  */
-TMPL_MAP_SVDW(ep, fp, dig_t, EP_MAP_COPY_COND);
+TMPL_MAP_SVDW(ep, fp, dig_t, EP_MAP_copy_sec);
 
-#undef EP_MAP_COPY_COND
+#undef EP_MAP_copy_sec
 
 /**
  * Maps an array of uniformly random bytes to a point in a prime elliptic
@@ -120,7 +120,7 @@ static void ep_map_from_field(ep_t p, const uint8_t *uniform_bytes, size_t len,
 		/* compare sign of y and sign of t; fix if necessary */				\
 		neg = neg != fp_is_even(PT->y);										\
 		fp_neg(t, PT->y);													\
-		dv_copy_cond(PT->y, t, RLC_FP_DIGS, neg);							\
+		dv_copy_sec(PT->y, t, RLC_FP_DIGS, neg);							\
     } while (0)
 
 		/* first map invocation */
@@ -380,16 +380,16 @@ void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 				int c2 = fp_is_sqr(u);
 				int c3 = fp_is_sqr(v);
 
-				dv_swap_cond(t, u, RLC_FP_DIGS, c2);
-				dv_swap_cond(x1, y1, RLC_FP_DIGS, c2);
-				dv_swap_cond(t, v, RLC_FP_DIGS, c3);
-				dv_swap_cond(x1, z1, RLC_FP_DIGS, c3);
+				dv_swap_sec(t, u, RLC_FP_DIGS, c2);
+				dv_swap_sec(x1, y1, RLC_FP_DIGS, c2);
+				dv_swap_sec(t, v, RLC_FP_DIGS, c3);
+				dv_swap_sec(x1, z1, RLC_FP_DIGS, c3);
 
 				if (!fp_srt(t, t)) {
 					RLC_THROW(ERR_NO_VALID);
 				}
 				fp_neg(u, t);
-				dv_swap_cond(t, u, RLC_FP_DIGS, fp_is_even(t) ^ s);
+				dv_swap_sec(t, u, RLC_FP_DIGS, fp_is_even(t) ^ s);
 
 				fp_copy(p->x, x1);
 				fp_copy(p->y, t);
@@ -447,16 +447,16 @@ void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 					int c2 = fp_is_sqr(u);
 					int c3 = fp_is_sqr(v);
 
-					dv_swap_cond(x1, y1, RLC_FP_DIGS, c2);
-					dv_swap_cond(t, u, RLC_FP_DIGS, c2);
-					dv_swap_cond(x1, z1, RLC_FP_DIGS, c3);
-					dv_swap_cond(t, v, RLC_FP_DIGS, c3);
+					dv_swap_sec(x1, y1, RLC_FP_DIGS, c2);
+					dv_swap_sec(t, u, RLC_FP_DIGS, c2);
+					dv_swap_sec(x1, z1, RLC_FP_DIGS, c3);
+					dv_swap_sec(t, v, RLC_FP_DIGS, c3);
 
 					if (!fp_srt(t, t)) {
 						RLC_THROW(ERR_NO_VALID);
 					}
 					fp_neg(u, t);
-					dv_swap_cond(t, u, RLC_FP_DIGS, fp_is_even(t) ^ s);
+					dv_swap_sec(t, u, RLC_FP_DIGS, fp_is_even(t) ^ s);
 
 					fp_copy(p->x, x1);
 					fp_copy(p->y, t);

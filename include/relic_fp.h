@@ -669,6 +669,15 @@ void fp_param_get_sps(int *s, int *len);
 void fp_copy(fp_t c, const fp_t a);
 
 /**
+ * Conditionally copies a field element to another field element.
+ *
+ * @param[out] c			- the destination.
+ * @paraim[in] a			- the source.
+ * @param[in] bit			- the condition bit to evaluate.
+ */
+void fp_copy_sec(fp_t c, const fp_t a, dig_t bit);
+
+/**
  * Assigns zero to a prime field element.
  *
  * @param[out] a			- the prime field element to asign.

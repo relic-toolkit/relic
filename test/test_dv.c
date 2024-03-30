@@ -81,17 +81,17 @@ static int copy(void) {
 				}
 			}
 			dv_copy(a, b, RLC_DV_DIGS);
-			TEST_ASSERT(dv_cmp_const(a, b, RLC_DV_DIGS) == RLC_EQ, end);
+			TEST_ASSERT(dv_cmp_sec(a, b, RLC_DV_DIGS) == RLC_EQ, end);
 		}
 		TEST_END;
 
 		TEST_CASE("conditional copy and comparison are consistent") {
 			rand_bytes((uint8_t *)a, RLC_DV_DIGS * sizeof(dig_t));
 			rand_bytes((uint8_t *)b, RLC_DV_DIGS * sizeof(dig_t));
-			dv_copy_cond(a, b, RLC_DV_DIGS, 0);
-			TEST_ASSERT(dv_cmp_const(a, b, RLC_DV_DIGS) == RLC_NE, end);
-			dv_copy_cond(a, b, RLC_DV_DIGS, 1);
-			TEST_ASSERT(dv_cmp_const(a, b, RLC_DV_DIGS) == RLC_EQ, end);
+			dv_copy_sec(a, b, RLC_DV_DIGS, 0);
+			TEST_ASSERT(dv_cmp_sec(a, b, RLC_DV_DIGS) == RLC_NE, end);
+			dv_copy_sec(a, b, RLC_DV_DIGS, 1);
+			TEST_ASSERT(dv_cmp_sec(a, b, RLC_DV_DIGS) == RLC_EQ, end);
 		}
 		TEST_END;
 	} RLC_CATCH_ANY {
@@ -123,8 +123,8 @@ static int swap(void) {
 			rand_bytes((uint8_t *)a, RLC_DV_DIGS * sizeof(dig_t));
 			rand_bytes((uint8_t *)b, RLC_DV_DIGS * sizeof(dig_t));
 			dv_copy(c, a, RLC_DV_DIGS);
-			dv_swap_cond(a, b, RLC_DV_DIGS, 1);
-			TEST_ASSERT(dv_cmp_const(c, b, RLC_DV_DIGS) == RLC_EQ, end);
+			dv_swap_sec(a, b, RLC_DV_DIGS, 1);
+			TEST_ASSERT(dv_cmp_sec(c, b, RLC_DV_DIGS) == RLC_EQ, end);
 		}
 		TEST_END;
 
@@ -133,16 +133,16 @@ static int swap(void) {
 			rand_bytes((uint8_t *)b, RLC_DV_DIGS * sizeof(dig_t));
 			dv_copy(c, a, RLC_DV_DIGS);
 			dv_copy(d, b, RLC_DV_DIGS);
-			dv_swap_cond(a, b, RLC_DV_DIGS, 0);
-			TEST_ASSERT(dv_cmp_const(c, a, RLC_DV_DIGS) == RLC_EQ, end);
-			TEST_ASSERT(dv_cmp_const(d, b, RLC_DV_DIGS) == RLC_EQ, end);
-			TEST_ASSERT(dv_cmp_const(c, b, RLC_DV_DIGS) == RLC_NE, end);
-			TEST_ASSERT(dv_cmp_const(d, a, RLC_DV_DIGS) == RLC_NE, end);
-			dv_swap_cond(a, b, RLC_DV_DIGS, 1);
-			TEST_ASSERT(dv_cmp_const(c, b, RLC_DV_DIGS) == RLC_EQ, end);
-			TEST_ASSERT(dv_cmp_const(d, a, RLC_DV_DIGS) == RLC_EQ, end);
-			TEST_ASSERT(dv_cmp_const(c, a, RLC_DV_DIGS) == RLC_NE, end);
-			TEST_ASSERT(dv_cmp_const(d, b, RLC_DV_DIGS) == RLC_NE, end);
+			dv_swap_sec(a, b, RLC_DV_DIGS, 0);
+			TEST_ASSERT(dv_cmp_sec(c, a, RLC_DV_DIGS) == RLC_EQ, end);
+			TEST_ASSERT(dv_cmp_sec(d, b, RLC_DV_DIGS) == RLC_EQ, end);
+			TEST_ASSERT(dv_cmp_sec(c, b, RLC_DV_DIGS) == RLC_NE, end);
+			TEST_ASSERT(dv_cmp_sec(d, a, RLC_DV_DIGS) == RLC_NE, end);
+			dv_swap_sec(a, b, RLC_DV_DIGS, 1);
+			TEST_ASSERT(dv_cmp_sec(c, b, RLC_DV_DIGS) == RLC_EQ, end);
+			TEST_ASSERT(dv_cmp_sec(d, a, RLC_DV_DIGS) == RLC_EQ, end);
+			TEST_ASSERT(dv_cmp_sec(c, a, RLC_DV_DIGS) == RLC_NE, end);
+			TEST_ASSERT(dv_cmp_sec(d, b, RLC_DV_DIGS) == RLC_NE, end);
 		}
 		TEST_END;
 	} RLC_CATCH_ANY {
