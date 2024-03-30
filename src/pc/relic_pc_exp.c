@@ -308,7 +308,7 @@ void gt_exp(gt_t c, const gt_t a, const bn_t b) {
 #endif
 }
 
-void gt_exp_key(gt_t c, const gt_t a, const bn_t b) {
+void gt_exp_sec(gt_t c, const gt_t a, const bn_t b) {
 	size_t f = 0;
 
 	if (bn_bits(b) <= RLC_DIG) {

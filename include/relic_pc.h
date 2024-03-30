@@ -741,6 +741,15 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
 #define g1_mul_sec(R, P, K)		RLC_CAT(RLC_G1_LOWER, mul_lwreg)(R, P, K)
 
 /**
+ * Multiplies an element from G_2 by a secret scalar. Computes R = [k]P.
+ *
+ * @param[out] R				- the result.
+ * @param[in] P					- the element to multiply.
+ * @param[in] K					- the secret scalar.
+ */
+#define g2_mul_sec(R, P, K)		RLC_CAT(RLC_G1_LOWER, mul_lwreg)(R, P, K)
+
+/**
  * Multiplies an element from a larger group containing G_1 by a scalar.
  * Computes R = [k]P.
  *
@@ -1046,7 +1055,7 @@ void gt_exp(gt_t c, const gt_t a, const bn_t b);
  * @param[in] a				- the element to exponentiate.
  * @param[in] b				- the integer exponent.
  */
-void gt_exp_key(gt_t c, const gt_t a, const bn_t b);
+void gt_exp_sec(gt_t c, const gt_t a, const bn_t b);
 
 /**
  * Exponentiates an element from G_T by a small integer. Computes c = a^b.

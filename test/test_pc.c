@@ -1494,7 +1494,7 @@ int exponentiation(void) {
 			TEST_ASSERT(gt_cmp(a, b) == RLC_EQ, end);
 			bn_rand_mod(d, n);
 			gt_exp(b, a, d);
-			gt_exp_key(c, a, d);
+			gt_exp_sec(c, a, d);
 			TEST_ASSERT(gt_cmp(b, c) == RLC_EQ, end);
 			gt_rand(b);
 			bn_rand_mod(e, n);
