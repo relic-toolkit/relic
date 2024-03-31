@@ -266,14 +266,13 @@ int g1_is_valid(const g1_t a) {
 }
 
 int g2_is_valid(const g2_t a) {
+#if FP_PRIME >= 1536
+	return g1_is_valid(a);
+#else
 	g2_t s, t, u, v, w;
 	bn_t n;
 	dig_t rem;
 	int r = 0;
-
-#if FP_PRIME >= 1536
-	return g1_is_valid(a);
-#else
 
 	if (g2_is_infty(a)) {
 		return 0;

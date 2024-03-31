@@ -381,8 +381,6 @@ void gt_exp(gt_t c, const gt_t a, const bn_t b) {
 }
 
 void gt_exp_sec(gt_t c, const gt_t a, const bn_t b) {
-	size_t f = 0;
-
 	if (bn_bits(b) <= RLC_DIG) {
 		gt_exp_dig(c, a, b->dp[0]);
 		if (bn_sign(b) == RLC_NEG) {
@@ -390,6 +388,10 @@ void gt_exp_sec(gt_t c, const gt_t a, const bn_t b) {
 		}
 		return;
 	}
+
+#if FP_PRIME <= 1536
+
+	size_t f = 0;
 
 	switch (ep_param_embed()) {
 		case 1:
@@ -412,7 +414,6 @@ void gt_exp_sec(gt_t c, const gt_t a, const bn_t b) {
 			break;
 	}
 
-#if FP_PRIME <= 1536
 	gt_exp_imp(c, a, b, f);
 #else
 	RLC_CAT(RLC_GT_LOWER, exp_monty)(c, a, b);
