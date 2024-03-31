@@ -38,7 +38,9 @@
 
 int fp2_field_get_qnr() {
 	/* Override some of the results when cubic non-residue is also needed. */
-#if FP_PRIME == 158 || FP_PRIME == 256
+#if FP_PRIME == 1150
+	return 32;
+#elif FP_PRIME == 158 || FP_PRIME == 256
 	return 4;
 #elif FP_PRIME == 446
 	return 16;

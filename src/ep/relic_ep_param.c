@@ -1785,6 +1785,9 @@ void ep_param_print(void) {
 		case FM18_P768:
 			util_banner("Curve FM18-P768:", 0);
 			break;
+		case B12_P1150:
+			util_banner("Curve B12-P1150:", 0);
+			break;
 		case SS_P1536:
 			util_banner("Curve SS-P1536:", 0);
 			break;

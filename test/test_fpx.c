@@ -476,10 +476,6 @@ static int multiplication2(void) {
 					fp2_mul_art(c, a);
 					break;
 				case 3:
-					fp_set_dig(c[0], 1);
-					fp_set_dig(c[1], 1);
-					fp2_mul(c, a, c);
-					break;
 				case 7:
 					fp_set_dig(c[0], fp2_field_get_qnr());
 					fp_set_dig(c[1], 1);
