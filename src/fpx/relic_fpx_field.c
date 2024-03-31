@@ -42,8 +42,6 @@ int fp2_field_get_qnr() {
 	return 32;
 #elif FP_PRIME == 158 || FP_PRIME == 256
 	return 4;
-#elif FP_PRIME == 446
-	return 16;
 #else
 	return core_get()->qnr2;
 #endif
