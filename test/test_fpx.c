@@ -8781,7 +8781,7 @@ int main(void) {
 	}
 
 	/* Only execute these if there is an assigned cubic non-residue. */
-	if (fp_prime_get_cnr()) {
+	if (fp_prime_get_cnr() && (ep_param_embed() >= 3)) {
 		util_print("\n-- Cubic extension: %d as CNR\n", fp_prime_get_cnr());
 		util_banner("Utilities:", 1);
 
@@ -8844,7 +8844,7 @@ int main(void) {
 	}
 
 	/* Fp^4 is defined as a quadratic extension of Fp^2. */
-	if (fp_prime_get_qnr()) {
+	if (fp_prime_get_qnr() && (ep_param_embed() >= 4)) {
 		util_print("\n-- Quartic extension: (i + %d) as QNR\n",
 				fp2_field_get_qnr());
 		util_banner("Utilities:", 1);
@@ -8908,7 +8908,7 @@ int main(void) {
 	}
 
 	/* Fp^6 is defined as a cubic extension of Fp^2. */
-	if (fp_prime_get_qnr() && fp_prime_get_cnr()) {
+	if (fp_prime_get_qnr() && fp_prime_get_cnr() && (ep_param_embed() >= 6)) {
 		util_print("\n-- Sextic extension: (i + %d) as CNR\n",
 				fp2_field_get_qnr());
 		util_banner("Utilities:", 1);
