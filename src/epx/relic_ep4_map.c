@@ -177,45 +177,23 @@ void ep4_map(ep4_t p, const uint8_t *msg, size_t len) {
 				fp4_mul(y1, y1, den[1]);
 				fp4_mul(z1, z1, den[2]);
 				
-				fp4_sqr(t, x1);
-				fp4_add(t, t, ep4_curve_get_a());
-				fp4_mul(t, t, x1);
-				fp4_sqr(u, y1);
-				fp4_add(u, u, ep4_curve_get_a());
-				fp4_mul(u, u, y1);
-				fp4_sqr(v, z1);
-				fp4_add(v, v, ep4_curve_get_a());
-				fp4_mul(v, v, z1);
+				ep4_rhs(t, x1);
+				ep4_rhs(u, y1);
+				ep4_rhs(v, z1);
 
 				int c2 = fp4_is_sqr(u);
 				int c3 = fp4_is_sqr(v);
 
-				dv_swap_sec(t[0][0], u[0][0], RLC_FP_DIGS, c2);
-				dv_swap_sec(t[0][1], u[0][1], RLC_FP_DIGS, c2);
-				dv_swap_sec(t[1][0], u[1][0], RLC_FP_DIGS, c2);
-				dv_swap_sec(t[1][1], u[1][1], RLC_FP_DIGS, c2);
-				dv_swap_sec(x1[0][0], y1[0][0], RLC_FP_DIGS, c2);
-				dv_swap_sec(x1[0][1], y1[0][1], RLC_FP_DIGS, c2);
-				dv_swap_sec(x1[1][0], y1[1][0], RLC_FP_DIGS, c2);
-				dv_swap_sec(x1[1][1], y1[1][1], RLC_FP_DIGS, c2);
-				dv_swap_sec(t[0][0], v[0][0], RLC_FP_DIGS, c3);
-				dv_swap_sec(t[0][1], v[0][1], RLC_FP_DIGS, c3);
-				dv_swap_sec(t[1][0], v[1][0], RLC_FP_DIGS, c3);
-				dv_swap_sec(t[1][1], v[1][1], RLC_FP_DIGS, c3);
-				dv_swap_sec(x1[0][0], z1[0][0], RLC_FP_DIGS, c3);
-				dv_swap_sec(x1[0][1], z1[0][1], RLC_FP_DIGS, c3);
-				dv_swap_sec(x1[1][0], z1[1][0], RLC_FP_DIGS, c3);
-				dv_swap_sec(x1[1][1], z1[1][1], RLC_FP_DIGS, c3);
+				fp4_copy_sec(t, u, c2);
+				fp4_copy_sec(x1, y1, c2);
+				fp4_copy_sec(t, v, c3);
+				fp4_copy_sec(x1, z1, c3);
 
 				if (!fp4_srt(t, t)) {
 					RLC_THROW(ERR_NO_VALID);
 				}
 				fp4_neg(u, t);
-				c2 = fp_is_even(t[0][0]);
-				dv_swap_sec(t[0][0], u[0][0], RLC_FP_DIGS, c2 ^ sign);
-				dv_swap_sec(t[0][1], u[0][1], RLC_FP_DIGS, c2 ^ sign);
-				dv_swap_sec(t[1][0], u[1][0], RLC_FP_DIGS, c2 ^ sign);
-				dv_swap_sec(t[1][1], u[1][1], RLC_FP_DIGS, c2 ^ sign);
+				fp4_copy_sec(t, u, fp_is_even(t[0][0]) ^ sign);
 
 				fp4_copy(p->x, x1);
 				fp4_copy(p->y, t);
@@ -259,29 +237,17 @@ void ep4_map(ep4_t p, const uint8_t *msg, size_t len) {
 					fp4_sqr(z1, z1);
 					fp4_add(z1, z1, u);
 
-					fp4_sqr(t, x1);
-					fp4_mul(t, t, x1);
-					fp4_add(t, t, ep4_curve_get_b());
-
-					fp4_sqr(u, y1);
-					fp4_mul(u, u, y1);
-					fp4_add(u, u, ep4_curve_get_b());
-
-					fp4_sqr(v, z1);
-					fp4_mul(v, v, z1);
-					fp4_add(v, v, ep4_curve_get_b());
+					ep4_rhs(t, x1);
+					ep4_rhs(u, y1);
+					ep4_rhs(v, z1);
 
 					dig_t c2 = fp4_is_sqr(u);
 					dig_t c3 = fp4_is_sqr(v);
 
-					for (int i = 0; i < 2; i++) {
-						for (int j = 0; j < 2; j++) {
-							dv_swap_sec(x1[i][j], y1[i][j], RLC_FP_DIGS, c2);
-							dv_swap_sec(t[i][j], u[i][j], RLC_FP_DIGS, c2);
-							dv_swap_sec(x1[i][j], z1[i][j], RLC_FP_DIGS, c3);
-							dv_swap_sec(t[i][j], v[i][j], RLC_FP_DIGS, c3);
-						}
-					}
+					fp4_copy_sec(x1, y1, c2);
+					fp4_copy_sec(t, u, c2);
+					fp4_copy_sec(x1, z1, c3);
+					fp4_copy_sec(t, v, c3);
 
 					if (!fp4_srt(t, t)) {
 						RLC_THROW(ERR_NO_VALID);
@@ -301,10 +267,7 @@ void ep4_map(ep4_t p, const uint8_t *msg, size_t len) {
 					sign ^= (s[0] | (t0z & s[1]));
 
 					fp4_neg(u, t);
-					dv_swap_sec(t[0][0], u[0][0], RLC_FP_DIGS, sign);
-					dv_swap_sec(t[0][1], u[0][1], RLC_FP_DIGS, sign);
-					dv_swap_sec(t[1][0], u[1][0], RLC_FP_DIGS, sign);
-					dv_swap_sec(t[1][1], u[1][1], RLC_FP_DIGS, sign);
+					fp4_copy_sec(t, u, sign);
 
 					fp4_copy(p->x, x1);
 					fp4_copy(p->y, t);

@@ -475,27 +475,17 @@ void ep2_map_swift(ep2_t p, const uint8_t *msg, size_t len) {
 					fp2_sqr(z1, z1);
 					fp2_add(z1, z1, u);
 
-					fp2_sqr(t, x1);
-					fp2_mul(t, t, x1);
-					fp2_add(t, t, ctx->ep2_b);
-
-					fp2_sqr(u, y1);
-					fp2_mul(u, u, y1);
-					fp2_add(u, u, ctx->ep2_b);
-
-					fp2_sqr(v, z1);
-					fp2_mul(v, v, z1);
-					fp2_add(v, v, ctx->ep2_b);
+					ep2_rhs(t, x1);
+					ep2_rhs(u, y1);
+					ep2_rhs(v, z1);
 
 					c2 = fp2_is_sqr(u);
 					c3 = fp2_is_sqr(v);
 
-					for (int i = 0; i < 2; i++) {
-						dv_swap_sec(x1[i], y1[i], RLC_FP_DIGS, c2);
-						dv_swap_sec(t[i], u[i], RLC_FP_DIGS, c2);
-						dv_swap_sec(x1[i], z1[i], RLC_FP_DIGS, c3);
-						dv_swap_sec(t[i], v[i], RLC_FP_DIGS, c3);
-					}
+					fp2_copy_sec(x1, y1, c2);
+					fp2_copy_sec(t, u, c2);
+					fp2_copy_sec(x1, z1, c3);
+					fp2_copy_sec(t, v, c3);
 
 					if (!fp2_srt(t, t)) {
 						RLC_THROW(ERR_NO_VALID);
@@ -510,8 +500,7 @@ void ep2_map_swift(ep2_t p, const uint8_t *msg, size_t len) {
 					sign ^= (t0 | (t0z & t1));
 
 					fp2_neg(u, t);
-					dv_swap_sec(t[0], u[0], RLC_FP_DIGS, sign);
-					dv_swap_sec(t[1], u[1], RLC_FP_DIGS, sign);
+					fp2_copy_sec(t, u, sign);
 
 					fp2_copy(p->x, x1);
 					fp2_copy(p->y, t);

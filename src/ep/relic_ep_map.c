@@ -485,16 +485,16 @@ void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 					int c2 = fp_is_sqr(u);
 					int c3 = fp_is_sqr(v);
 
-					dv_swap_sec(x1, y1, RLC_FP_DIGS, c2);
-					dv_swap_sec(t, u, RLC_FP_DIGS, c2);
-					dv_swap_sec(x1, z1, RLC_FP_DIGS, c3);
-					dv_swap_sec(t, v, RLC_FP_DIGS, c3);
+					fp_copy_sec(x1, y1, c2);
+					fp_copy_sec(t, u, c2);
+					fp_copy_sec(x1, z1, c3);
+					fp_copy_sec(t, v, c3);
 
 					if (!fp_srt(t, t)) {
 						RLC_THROW(ERR_NO_VALID);
 					}
 					fp_neg(u, t);
-					dv_swap_sec(t, u, RLC_FP_DIGS, fp_is_even(t) ^ s);
+					fp_copy_sec(t, u, fp_is_even(t) ^ s);
 
 					fp_copy(p->x, x1);
 					fp_copy(p->y, t);
