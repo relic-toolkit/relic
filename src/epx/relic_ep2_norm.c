@@ -24,8 +24,8 @@
 /**
  * @file
  *
- * Implementation of point normalization on prime elliptic curves over quadratic
- * extensions.
+ * Implementation of point normalization on prime elliptic curves over a
+ * quadratic extension.
  *
  * @ingroup epx
  */

@@ -24,8 +24,8 @@
 /**
  * @file
  *
- * Implementation of point multiplication on prime elliptic curves over
- * quadratic extensions.
+ * Implementation of point multiplication on prime elliptic curves over a
+ * quadratic extension field.
  *
  * @ingroup epx
  */
@@ -36,9 +36,9 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-#if EP_MUL == LWNAF || !defined(STRIP)
-
 #if defined(EP_ENDOM)
+
+#if EP_MUL == LWNAF || !defined(STRIP)
 
 static void ep2_mul_gls_imp(ep2_t r, const ep2_t p, const bn_t k) {
 	size_t l, _l[4];
@@ -110,63 +110,9 @@ static void ep2_mul_gls_imp(ep2_t r, const ep2_t p, const bn_t k) {
 	}
 }
 
-#endif /* EP_ENDOM */
-
-#if defined(EP_PLAIN) || defined(EP_SUPER)
-
-static void ep2_mul_naf_imp(ep2_t r, const ep2_t p, const bn_t k) {
-	size_t l;
-	int8_t n, naf[RLC_FP_BITS + 1];
-	ep2_t t[1 << (RLC_WIDTH - 2)];
-
-	RLC_TRY {
-		/* Prepare the precomputation table. */
-		for (int i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
-			ep2_null(t[i]);
-			ep2_new(t[i]);
-		}
-		/* Compute the precomputation table. */
-		ep2_tab(t, p, RLC_WIDTH);
-
-		/* Compute the w-NAF representation of k. */
-		l = sizeof(naf);
-		bn_rec_naf(naf, &l, k, RLC_WIDTH);
-
-		ep2_set_infty(r);
-		for (int i = l - 1; i >= 0; i--) {
-			ep2_dbl(r, r);
-
-			n = naf[i];
-			if (n > 0) {
-				ep2_add(r, r, t[n / 2]);
-			}
-			if (n < 0) {
-				ep2_sub(r, r, t[-n / 2]);
-			}
-		}
-		/* Convert r to affine coordinates. */
-		ep2_norm(r, r);
-		if (bn_sign(k) == RLC_NEG) {
-			ep2_neg(r, r);
-		}
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		/* Free the precomputation table. */
-		for (int i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
-			ep2_free(t[i]);
-		}
-	}
-}
-
-#endif /* EP_PLAIN || EP_SUPER */
 #endif /* EP_MUL == LWNAF */
 
 #if EP_MUL == LWREG || !defined(STRIP)
-
-#if defined(EP_ENDOM)
 
 static void ep2_mul_reg_gls(ep2_t r, const ep2_t p, const bn_t k) {
 	int8_t reg[4][RLC_FP_BITS + 1], b[4], s[4], c0, n0;
@@ -284,9 +230,63 @@ static void ep2_mul_reg_gls(ep2_t r, const ep2_t p, const bn_t k) {
 	}
 }
 
+#endif /* EP_MUL == LWREG */
 #endif /* EP_ENDOM */
 
 #if defined(EP_PLAIN) || defined(EP_SUPER)
+
+#if EP_MUL == LWNAF || !defined(STRIP)
+
+static void ep2_mul_naf_imp(ep2_t r, const ep2_t p, const bn_t k) {
+	size_t l;
+	int8_t n, naf[RLC_FP_BITS + 1];
+	ep2_t t[1 << (RLC_WIDTH - 2)];
+
+	RLC_TRY {
+		/* Prepare the precomputation table. */
+		for (int i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
+			ep2_null(t[i]);
+			ep2_new(t[i]);
+		}
+		/* Compute the precomputation table. */
+		ep2_tab(t, p, RLC_WIDTH);
+
+		/* Compute the w-NAF representation of k. */
+		l = sizeof(naf);
+		bn_rec_naf(naf, &l, k, RLC_WIDTH);
+
+		ep2_set_infty(r);
+		for (int i = l - 1; i >= 0; i--) {
+			ep2_dbl(r, r);
+
+			n = naf[i];
+			if (n > 0) {
+				ep2_add(r, r, t[n / 2]);
+			}
+			if (n < 0) {
+				ep2_sub(r, r, t[-n / 2]);
+			}
+		}
+		/* Convert r to affine coordinates. */
+		ep2_norm(r, r);
+		if (bn_sign(k) == RLC_NEG) {
+			ep2_neg(r, r);
+		}
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		/* Free the precomputation table. */
+		for (int i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
+			ep2_free(t[i]);
+		}
+	}
+}
+
+#endif /* EP_MUL == LWNAF */
+
+#if EP_MUL == LWREG || !defined(STRIP)
 
 static void ep2_mul_reg_imp(ep2_t r, const ep2_t p, const bn_t k) {
 	bn_t _k;
@@ -370,8 +370,8 @@ static void ep2_mul_reg_imp(ep2_t r, const ep2_t p, const bn_t k) {
 	}
 }
 
-#endif /* EP_PLAIN || EP_SUPER */
 #endif /* EP_MUL == LWREG */
+#endif /* EP_PLAIN || EP_SUPER */
 
 /*============================================================================*/
 /* Public definitions                                                         */

@@ -24,8 +24,8 @@
 /**
  * @file
  *
- * Implementation of doubling on elliptic prime curves over quartic
- * extensions.
+ * Implementation of doubling on elliptic prime curves over a cubic extension
+ * field.
  *
  * @ingroup epx
  */
@@ -44,141 +44,41 @@
  * elliptic curve.
  *
  * @param[out] r			- the result.
- * @param[out] s			- the resulting slope.
+ * @param[out] s			- the slope.
  * @param[in] p				- the point to double.
  */
 TMPL_DBL_BASIC_IMP(ep3, fp3);
 
 #endif /* EP_ADD == BASIC */
 
-#if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
+#if EP_ADD == PROJC || !defined(STRIP)
 
 /**
- * Doubles a point represented in affine coordinates on an ordinary prime
+ * Doubles a point represented in projective coordinates on an ordinary prime
  * elliptic curve.
  *
- * @param[out] r				- the result.
- * @param[in] p					- the point to double.
+ * @param r					- the result.
+ * @param p					- the point to double.
  */
-static void ep3_dbl_projc_imp(ep3_t r, const ep3_t p) {
-	fp3_t t0, t1, t2, t3, t4, t5;
-
-	fp3_null(t0);
-	fp3_null(t1);
-	fp3_null(t2);
-	fp3_null(t3);
-	fp3_null(t4);
-	fp3_null(t5);
-
-	RLC_TRY {
-		fp3_new(t0);
-		fp3_new(t1);
-		fp3_new(t2);
-		fp3_new(t3);
-		fp3_new(t4);
-		fp3_new(t5);
-
-		if (ep_curve_opt_a() == RLC_ZERO) {
-			fp3_sqr(t0, p->x);
-			fp3_add(t2, t0, t0);
-			fp3_add(t0, t2, t0);
-
-			fp3_sqr(t3, p->y);
-			fp3_mul(t1, t3, p->x);
-			fp3_add(t1, t1, t1);
-			fp3_add(t1, t1, t1);
-			fp3_sqr(r->x, t0);
-			fp3_add(t2, t1, t1);
-			fp3_sub(r->x, r->x, t2);
-			fp3_mul(r->z, p->z, p->y);
-			fp3_add(r->z, r->z, r->z);
-			fp3_add(t3, t3, t3);
-
-			fp3_sqr(t3, t3);
-			fp3_add(t3, t3, t3);
-			fp3_sub(t1, t1, r->x);
-			fp3_mul(r->y, t0, t1);
-			fp3_sub(r->y, r->y, t3);
-		} else {
-			/* dbl-2007-bl formulas: 1M + 8S + 1*a + 10add + 1*8 + 2*2 + 1*3 */
-			/* http://www.hyperelliptic.org/EFD/g1p/auto-shortw-jacobian.html#doubling-dbl-2007-bl */
-
-			/* t0 = x1^2, t1 = y1^2, t2 = y1^4. */
-			fp3_sqr(t0, p->x);
-			fp3_sqr(t1, p->y);
-			fp3_sqr(t2, t1);
-
-			if (p->coord != BASIC) {
-				/* t3 = z1^2. */
-				fp3_sqr(t3, p->z);
-
-				if (ep_curve_opt_a() == RLC_ZERO) {
-					/* z3 = 2 * y1 * z1. */
-					fp3_mul(r->z, p->y, p->z);
-					fp3_dbl(r->z, r->z);
-				} else {
-					/* z3 = (y1 + z1)^2 - y1^2 - z1^2. */
-					fp3_add(r->z, p->y, p->z);
-					fp3_sqr(r->z, r->z);
-					fp3_sub(r->z, r->z, t1);
-					fp3_sub(r->z, r->z, t3);
-				}
-			} else {
-				/* z3 = 2 * y1. */
-				fp3_dbl(r->z, p->y);
-			}
-
-			/* t4 = S = 2*((x1 + y1^2)^2 - x1^2 - y1^4). */
-			fp3_add(t4, p->x, t1);
-			fp3_sqr(t4, t4);
-			fp3_sub(t4, t4, t0);
-			fp3_sub(t4, t4, t2);
-			fp3_dbl(t4, t4);
-
-			/* t5 = M = 3 * x1^2 + a * z1^4. */
-			fp3_dbl(t5, t0);
-			fp3_add(t5, t5, t0);
-			if (p->coord != BASIC) {
-				fp3_sqr(t3, t3);
-				fp3_mul(t1, t3, ep3_curve_get_a());
-				fp3_add(t5, t5, t1);
-			} else {
-				fp3_add(t5, t5, ep3_curve_get_a());
-			}
-
-			/* x3 = T = M^2 - 2 * S. */
-			fp3_sqr(r->x, t5);
-			fp3_dbl(t1, t4);
-			fp3_sub(r->x, r->x, t1);
-
-			/* y3 = M * (S - T) - 8 * y1^4. */
-			fp3_dbl(t2, t2);
-			fp3_dbl(t2, t2);
-			fp3_dbl(t2, t2);
-			fp3_sub(t4, t4, r->x);
-			fp3_mul(t5, t5, t4);
-			fp3_sub(r->y, t5, t2);
-		}
-
-		r->coord = PROJC;
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		fp3_free(t0);
-		fp3_free(t1);
-		fp3_free(t2);
-		fp3_free(t3);
-		fp3_free(t4);
-		fp3_free(t5);
-	}
-}
+TMPL_DBL_PROJC_IMP(ep3, fp3);
 
 #endif /* EP_ADD == PROJC */
 
+#if EP_ADD == JACOB || !defined(STRIP)
+
+/**
+ * Doubles a point represented in Jacobian coordinates on an ordinary prime
+ * elliptic curve.
+ *
+ * @param r					- the result.
+ * @param p					- the point to double.
+ */
+TMPL_DBL_JACOB_IMP(ep3, fp3);
+
+#endif /* EP_ADD == JACOB */
+
 /*============================================================================*/
-	/* Public definitions                                                         */
+/* Public definitions                                                         */
 /*============================================================================*/
 
 #if EP_ADD == BASIC || !defined(STRIP)
@@ -188,7 +88,6 @@ void ep3_dbl_basic(ep3_t r, const ep3_t p) {
 		ep3_set_infty(r);
 		return;
 	}
-
 	ep3_dbl_basic_imp(r, NULL, p);
 }
 
@@ -203,7 +102,7 @@ void ep3_dbl_slp_basic(ep3_t r, fp3_t s, const ep3_t p) {
 
 #endif
 
-#if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
+#if EP_ADD == PROJC || !defined(STRIP)
 
 void ep3_dbl_projc(ep3_t r, const ep3_t p) {
 	if (ep3_is_infty(p)) {
@@ -212,6 +111,19 @@ void ep3_dbl_projc(ep3_t r, const ep3_t p) {
 	}
 
 	ep3_dbl_projc_imp(r, p);
+}
+
+#endif
+
+#if EP_ADD == JACOB || !defined(STRIP)
+
+void ep3_dbl_jacob(ep3_t r, const ep3_t p) {
+	if (ep3_is_infty(p)) {
+		ep3_set_infty(r);
+		return;
+	}
+
+	ep3_dbl_jacob_imp(r, p);
 }
 
 #endif

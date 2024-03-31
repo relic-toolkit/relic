@@ -24,8 +24,8 @@
 /**
  * @file
  *
- * Implementation of configuration of prime elliptic curves over quartic
- * extensions.
+ * Implementation of configuration of prime elliptic curves over a quartic
+ * extension field.
  *
  * @ingroup epx
  */
@@ -333,6 +333,67 @@ int ep4_curve_opt_a(void) {
 
 int ep4_curve_opt_b(void) {
 	return core_get()->ep4_opt_b;
+}
+
+void ep4_curve_mul_a(fp4_t c, const fp4_t a) {
+	ctx_t *ctx = core_get();
+	if (ep4_curve_is_twist() == RLC_EP_MTYPE) {
+		switch (ctx->ep_opt_a) {
+			case RLC_ZERO:
+				fp4_zero(c);
+				break;
+			case RLC_ONE:
+				fp4_copy(c, a);
+				break;
+			case RLC_TWO:
+				fp4_dbl(c, a);
+				break;
+			default:
+				fp4_mul(c, a, ctx->ep4_a);
+				break;
+		}
+		fp4_mul_art(c, c);
+	} else {
+		switch (ctx->ep8_opt_a) {
+			case RLC_ZERO:
+				fp4_zero(c);
+				break;
+			case RLC_ONE:
+				fp4_copy(c, a);
+				break;
+			case RLC_TWO:
+				fp4_dbl(c, a);
+				break;
+#if FP_RDC != MONTY
+			case RLC_TINY:
+				fp4_mul_dig(c, a, ctx->ep4_a[0]);
+				break;
+#endif
+			default:
+				fp4_mul(c, a, ctx->ep4_a);
+				break;
+		}
+	}
+}
+
+void ep4_curve_mul_b(fp4_t c, const fp4_t a) {
+	ctx_t *ctx = core_get();
+	switch (ctx->ep4_opt_b) {
+		case RLC_ZERO:
+			fp4_zero(c);
+			break;
+		case RLC_ONE:
+			fp4_copy(c, a);
+			break;
+#if FP_RDC != MONTY
+		case RLC_TINY:
+			fp4_mul_dig(c, a, ctx->ep4_b[0]);
+			break;
+#endif
+		default:
+			fp4_mul(c, a, ctx->ep4_b);
+			break;
+	}
 }
 
 int ep4_curve_is_twist(void) {

@@ -24,8 +24,8 @@
 /**
  * @file
  *
- * Implementation of doubling on elliptic prime curves over quadratic
- * extensions.
+ * Implementation of doubling on elliptic prime curves over a quadratic
+ * extension field.
  *
  * @ingroup epx
  */

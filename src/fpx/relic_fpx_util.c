@@ -367,7 +367,7 @@ void fp8_read_bin(fp8_t a, const uint8_t *bin, size_t len) {
 	fp4_read_bin(a[1], bin + 4 * RLC_FP_BYTES, 4 * RLC_FP_BYTES);
 }
 
-void fp8_write_bin(uint8_t *bin, size_t len, const fp8_t a) {
+void fp8_write_bin(uint8_t *bin, size_t len, const fp8_t a, int pack) {
 	if (len != 8 * RLC_FP_BYTES) {
 		RLC_THROW(ERR_NO_BUFFER);
 		return;
@@ -597,8 +597,8 @@ void fp16_write_bin(uint8_t *bin, size_t len, const fp16_t a, int pack) {
 		RLC_THROW(ERR_NO_BUFFER);
 		return;
 	}
-	fp8_write_bin(bin, 8 * RLC_FP_BYTES, a[0]);
-	fp8_write_bin(bin + 8 * RLC_FP_BYTES, 8 * RLC_FP_BYTES, a[1]);
+	fp8_write_bin(bin, 8 * RLC_FP_BYTES, a[0], 0);
+	fp8_write_bin(bin + 8 * RLC_FP_BYTES, 8 * RLC_FP_BYTES, a[1], 0);
 }
 
 void fp16_set_dig(fp16_t a, const dig_t b) {
@@ -791,9 +791,9 @@ void fp24_write_bin(uint8_t *bin, size_t len, const fp24_t a, int pack) {
 			if (len != 24 * RLC_FP_BYTES) {
 				RLC_THROW(ERR_NO_BUFFER);
 			}
-			fp8_write_bin(bin, 8 * RLC_FP_BYTES, a[0]);
-			fp8_write_bin(bin + 8 * RLC_FP_BYTES, 8 * RLC_FP_BYTES, a[1]);
-			fp8_write_bin(bin + 16 * RLC_FP_BYTES, 8 * RLC_FP_BYTES, a[2]);
+			fp8_write_bin(bin, 8 * RLC_FP_BYTES, a[0], 0);
+			fp8_write_bin(bin + 8 * RLC_FP_BYTES, 8 * RLC_FP_BYTES, a[1], 0);
+			fp8_write_bin(bin + 16 * RLC_FP_BYTES, 8 * RLC_FP_BYTES, a[2], 0);
 		}
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -882,10 +882,10 @@ void fp48_write_bin(uint8_t *bin, size_t len, const fp48_t a, int pack) {
 				RLC_THROW(ERR_NO_BUFFER);
 			}
 			fp48_pck(t, a);
-			fp8_write_bin(bin, 8 * RLC_FP_BYTES, a[0][1]);
-			fp8_write_bin(bin + 8 * RLC_FP_BYTES, 8 * RLC_FP_BYTES, a[0][2]);
-			fp8_write_bin(bin + 16 * RLC_FP_BYTES, 8 * RLC_FP_BYTES, a[1][0]);
-			fp8_write_bin(bin + 24 * RLC_FP_BYTES, 8 * RLC_FP_BYTES, a[1][2]);
+			fp8_write_bin(bin, 8 * RLC_FP_BYTES, a[0][1], 0);
+			fp8_write_bin(bin + 8 * RLC_FP_BYTES, 8 * RLC_FP_BYTES, a[0][2], 0);
+			fp8_write_bin(bin + 16 * RLC_FP_BYTES, 8 * RLC_FP_BYTES, a[1][0], 0);
+			fp8_write_bin(bin + 24 * RLC_FP_BYTES, 8 * RLC_FP_BYTES, a[1][2], 0);
 		} else {
 			if (len != 48 * RLC_FP_BYTES) {
 				RLC_THROW(ERR_NO_BUFFER);

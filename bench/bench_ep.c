@@ -130,7 +130,7 @@ static void util(void) {
 
 	BENCH_RUN("ep_rhs") {
 		ep_rand(p);
-		BENCH_ADD(ep_rhs(q->x, p));
+		BENCH_ADD(ep_rhs(q->x, p->x));
 	} BENCH_END;
 
 	BENCH_RUN("ep_tab (4)") {

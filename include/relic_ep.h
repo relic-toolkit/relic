@@ -794,13 +794,13 @@ void ep_rand(ep_t p);
 void ep_blind(ep_t r, const ep_t p);
 
 /**
- * Computes the right-hand side of the elliptic curve equation at a certain
- * prime elliptic curve point.
+ * Computes the right-hand side of the elliptic curve equation at the
+ * x-coordinate of a certain prime elliptic curve point.
  *
  * @param[out] rhs			- the result.
- * @param[in] p				- the point.
+ * @param[in] x				- the x-coordinate of the point.
  */
-void ep_rhs(fp_t rhs, const ep_t p);
+void ep_rhs(fp_t rhs, const fp_t x);
 
 /**
  * Tests if a point is in the curve.

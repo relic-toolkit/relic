@@ -155,8 +155,14 @@ void gt_exp_imp(gt_t c, const gt_t a, const bn_t b, size_t f) {
 			}
 		}
 
-		gt_get_ord(n);
 		fp_prime_get_par(u);
+		if (ep_curve_is_pairf() == EP_SG18) {
+			/* Compute base -3*u for the recoding below. */
+			bn_dbl(n, u);
+			bn_add(u, u, n);
+			bn_neg(u, u);
+		}
+		gt_get_ord(n);
 		bn_abs(_b[0], b);
 		bn_mod(_b[0], _b[0], n);
 		if (bn_sign(b) == RLC_NEG) {
@@ -218,7 +224,7 @@ void gt_exp_imp(gt_t c, const gt_t a, const bn_t b, size_t f) {
 			}
 		}
 
-		for (size_t i = 0; i < 4; i++) {
+		for (size_t i = 0; i < f; i++) {
 			/* Tables are built with points already negated, so no need here. */
 			gt_inv(q, t[i * RLC_GT_TABLE]);
 			gt_mul(q, c, q);
@@ -365,10 +371,10 @@ void gt_exp(gt_t c, const gt_t a, const bn_t b) {
 		return;
 	}
 
-#if FP_PRIME < 1536
-	RLC_CAT(RLC_GT_LOWER, exp_cyc_gls)(c, a, b);
-#elif FP_PRIME == 1536
+#if FP_PRIME == 1536 || FP_PRIME == 544
 	RLC_CAT(RLC_GT_LOWER, exp_cyc)(c, a, b);
+#elif FP_PRIME < 1536
+	RLC_CAT(RLC_GT_LOWER, exp_cyc_gls)(c, a, b);
 #else
 	RLC_CAT(RLC_GT_LOWER, exp)(c, a, b);
 #endif
@@ -388,6 +394,7 @@ void gt_exp_sec(gt_t c, const gt_t a, const bn_t b) {
 	switch (ep_param_embed()) {
 		case 1:
 		case 2:
+		case 8:
 			f = 1;
 			break;
 		case 12:

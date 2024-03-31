@@ -338,7 +338,7 @@ typedef fp18_t fp54_t[3];
 /**
  * Multiplies a quadratic extension field by the quadratic/cubic non-residue.
  * Computes C = A * E, where E is a non-square/non-cube in the quadratic
- * extension.
+ * extension field.
  *
  * @param[out] C			- the result.
  * @param[in] A				- the quadratic extension field element to multiply.
@@ -2754,9 +2754,10 @@ void fp8_read_bin(fp8_t a, const uint8_t *bin, size_t len);
  * @param[out] bin			- the byte vector.
  * @param[in] len			- the buffer capacity.
  * @param[in] a				- the extension field element to write.
+ * @param[in] pack			- the flag to indicate compression.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is not correct.
  */
-void fp8_write_bin(uint8_t *bin, size_t len, const fp8_t a);
+void fp8_write_bin(uint8_t *bin, size_t len, const fp8_t a, int pack);
 
 /**
  * Returns the result of a comparison between two octic extension field
@@ -2982,6 +2983,18 @@ void fp8_exp_dig(fp8_t c, const fp8_t a, dig_t b);
  * @param[in] b				- the exponent.
  */
 void fp8_exp_cyc(fp8_t c, const fp8_t a, const bn_t b);
+
+/**
+ * Computes a power of two cyclotomic octic extension field elements.
+ *
+ * @param[out] e			- the result.
+ * @param[in] a				- the first element to exponentiate.
+ * @param[in] b				- the first exponent.
+ * @param[in] c				- the second element to exponentiate.
+ * @param[in] d				- the second exponent.
+ */
+void fp8_exp_cyc_sim(fp8_t e, const fp8_t a, const bn_t b, const fp8_t c,
+		const bn_t d);
 
 /**
  * Computes a power of the Frobenius endomorphism of an octic extension field

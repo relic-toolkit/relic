@@ -84,12 +84,15 @@
 #elif FP_PRIME == 330 || FP_PRIME == 765 || FP_PRIME == 766
 #define RLC_GT_LOWER			fp16_
 #define RLC_GT_EMBED      		16
+#elif FP_PRIME == 544
+#define RLC_GT_LOWER			fp8_
+#define RLC_GT_EMBED      		8
 #else
 #define RLC_GT_LOWER			fp12_
 #define RLC_GT_EMBED      		12
 #endif
 
-#else
+#else /* FP_PRIME >= 1536*/
 #define RLC_G1_LOWER			ep_
 #define RLC_G1_UPPER			EP
 #define RLC_G2_LOWER			ep_
@@ -928,7 +931,7 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
 #if FP_PRIME <= 1536
 #define gt_frb(C, A, I)		RLC_CAT(RLC_GT_LOWER, frb)(C, A, I)
 #else
-#define gt_frb(C, A, I)		(A)
+#define gt_frb(C, A, I)		RLC_CAT(RLC_GT_LOWER, copy)(C, A)
 #endif
 
 /**

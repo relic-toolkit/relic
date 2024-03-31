@@ -181,6 +181,7 @@ void pp_map_k54(fp54_t r, const ep_t p, const fp9_t qx, const fp9_t qy) {
 					if (bn_sign(a) == RLC_NEG) {
 						fp54_inv_cyc(r, r);
 					}
+					fp18_print(r[0]);
 					pp_exp_k54(r, r);
 					break;
 			}

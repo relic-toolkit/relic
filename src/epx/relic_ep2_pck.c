@@ -24,8 +24,8 @@
 /**
  * @file
  *
- * Implementation of point compression on prime elliptic curves over quadratic
- * extensions.
+ * Implementation of point compression on prime elliptic curves over a quadratic
+ * extension field.
  *
  * @ingroup epx
  */
@@ -85,7 +85,7 @@ int ep2_upk(ep2_t r, const ep2_t p) {
 		bn_new(halfQ);
 		bn_new(yValue);
 
-		ep2_rhs(t, p);
+		ep2_rhs(t, p->x);
 
 		/* t0 = sqrt(x1^3 + a * x1 + b). */
 		result = fp2_srt(t, t);

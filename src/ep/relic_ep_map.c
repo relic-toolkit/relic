@@ -57,18 +57,17 @@ TMPL_MAP_ISOGENY_MAP(ep, fp, iso);
 
 #endif /* EP_CTMAP */
 
-#define EP_MAP_copy_sec(O, I, C) dv_copy_sec(O, I, RLC_FP_DIGS, C)
 /**
  * Simplified SWU mapping from Section 4 of
  * "Fast and simple constant-time hashing to the BLS12-381 Elliptic Curve"
  */
-TMPL_MAP_SSWU(ep, fp, dig_t, EP_MAP_copy_sec);
+TMPL_MAP_SSWU(ep, fp, dig_t);
 
 /**
  * Shallue--van de Woestijne map, based on the definition from
  * draft-irtf-cfrg-hash-to-curve-06, Section 6.6.1
  */
-TMPL_MAP_SVDW(ep, fp, dig_t, EP_MAP_copy_sec);
+TMPL_MAP_SVDW(ep, fp, dig_t);
 
 #undef EP_MAP_copy_sec
 
@@ -180,7 +179,7 @@ void ep_map_basic(ep_t p, const uint8_t *msg, size_t len) {
 		fp_set_dig(p->z, 1);
 
 		while (1) {
-			ep_rhs(t0, p);
+			ep_rhs(t0, p->x);
 
 			if (fp_smb(t0) == 1) {
 				fp_srt(p->y, t0);
@@ -240,15 +239,29 @@ void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 	/* enough space for two field elements plus extra bytes for uniformity */
 	const size_t len_per_elm = (FP_PRIME + ep_param_level() + 7) / 8;
 	uint8_t s, *pseudo_random_bytes = RLC_ALLOCA(uint8_t, 2 * len_per_elm + 1);
-	fp_t a, b, c, d, t, u, v, w, y, x1, y1, z1, den[3];
+	fp_t a, b, c, d, e, f, t, u, v, w, y, x1, y1, z1, den[3];
 	ctx_t *ctx = core_get();
 	bn_t k;
+
+	if (ep_curve_is_super()) {
+		RLC_FREE(pseudo_random_bytes); 
+		RLC_THROW(ERR_NO_CONFIG);
+		return;
+	}
+
+	if (ctx->mod18 % 3 == 2) {
+		RLC_FREE(pseudo_random_bytes); 
+		RLC_THROW(ERR_NO_CONFIG);
+		return;
+	}
 
 	bn_null(k);
 	fp_null(a);
 	fp_null(b);
 	fp_null(c);
 	fp_null(d);
+	fp_null(e);
+	fp_null(f);
 	fp_null(t);
 	fp_null(u);
 	fp_null(v);
@@ -267,6 +280,8 @@ void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 		fp_new(b);
 		fp_new(c);
 		fp_new(d);
+		fp_new(e);
+		fp_new(f);
 		fp_new(t);
 		fp_new(u);
 		fp_new(v);
@@ -288,39 +303,52 @@ void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 		fp_prime_conv(t, k);
 		s = pseudo_random_bytes[2 * len_per_elm] & 1;
 
-		fp_copy(a, ep_curve_get_a());
-
 		if (ep_curve_opt_b() == RLC_ZERO) {
 			fp_sqr(a, u);
 			fp_sqr(b, a);
 			fp_mul(c, b, a);
-			fp_add_dig(c, c, 64);
+			if (ep_curve_opt_a() == RLC_ONE) {
+				fp_add_dig(c, c, 64);
+			} else {
+				fp_dbl(f, ep_curve_get_a());
+				fp_dbl(f, f);
+				fp_sqr(e, f);
+				fp_mul(e, e, f);
+				fp_add(c, c, e);
+			}
 			fp_sqr(d, t);
 
 			fp_mul(v, a, d);
 			fp_mul(v, v, u);
 			fp_mul_dig(v, v, 24);
-			fp_mul(v, v, core_get()->ep_map_c[4]);
+			fp_mul(v, v, ctx->ep_map_c[4]);
 
-			fp_sub_dig(p->x, core_get()->ep_map_c[4], 1);
+			fp_sub_dig(p->x, ctx->ep_map_c[4], 1);
 			fp_hlv(p->x, p->x);
 
 			fp_sqr(w, b);
 			fp_mul(y, v, a);
-			fp_add(y, y, c);
-			fp_add(y, y, c);
-			fp_add(y, y, c);
-			fp_add(y, y, c);
+			if (ep_curve_opt_a() == RLC_ONE) {
+				fp_dbl(t, c);
+				fp_dbl(t, t);
+			} else {
+				fp_mul(t, f, c);
+			}
+			fp_add(y, y, t);
 			fp_mul(y, y, p->x);
 
 			fp_add(den[0], c, v);
 			fp_mul(den[0], den[0], u);
-			fp_mul(den[0], den[0], core_get()->ep_map_c[4]);
+			fp_mul(den[0], den[0], ctx->ep_map_c[4]);
 			fp_mul(den[0], den[0], p->x);
 			fp_dbl(den[0], den[0]);
 			fp_neg(den[0], den[0]);
 			fp_mul(den[1], den[0], p->x);
-			fp_sub_dig(den[2], a, 4);
+			if (ep_curve_opt_a() == RLC_ONE) {
+				fp_sub_dig(den[2], a, 4);
+			} else {
+				fp_sub(den[2], a, f);
+			}
 			fp_sqr(den[2], den[2]);
 			fp_mul_dig(den[2], den[2], 216);
 			fp_dbl(den[2], den[2]);
@@ -332,64 +360,74 @@ void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 				ep_set_infty(p);
 			} else {
 				fp_inv_sim(den, den, 3);
-				fp_dbl(a, a);
-				fp_dbl(a, a);
-				fp_dbl(a, a);
-				fp_dbl(a, a);
-				fp_add(y1, a, v);
-				fp_dbl(y1, y1);
-				fp_dbl(y1, y1);
+				if (ep_curve_opt_a() == RLC_ONE) {
+					fp_dbl(a, a);
+					fp_dbl(a, a);
+					fp_dbl(a, a);
+					fp_dbl(a, a);
+					fp_add(y1, a, v);
+					fp_dbl(y1, y1);
+					fp_dbl(y1, y1);
+				} else {
+					fp_mul(y1, f, v);
+					fp_mul(u, a, e);
+					fp_add(y1, y1, u);
+				}
 				fp_add(y1, y1, w);
 				fp_mul(z1, y, p->x);
 				fp_add(x1, y1, z1);
 				fp_add(y1, y1, y);
 
-				fp_add(z1, a, b);
-				fp_add(z1, z1, b);
-				fp_add(z1, z1, b);
-				fp_add(z1, z1, b);
+				if (ep_curve_opt_a() == RLC_ONE) {
+					fp_dbl(e, b);
+					fp_dbl(e, e);
+					fp_add(z1, a, e);
+				} else {
+					fp_mul(z1, f, a);
+					fp_add(z1, z1, b);
+					fp_mul(z1, z1, f);
+				}
 				fp_dbl(t, z1);
 				fp_add(z1, z1, t);
 				fp_sub(z1, c, z1);
 				fp_sub(z1, z1, v);
 				fp_mul(z1, z1, v);
-				fp_dbl(a, a);
-				fp_dbl(a, a);
-				fp_dbl(a, a);
+				if (ep_curve_opt_a() == RLC_ONE) {
+					fp_dbl(a, a);
+					fp_dbl(a, a);
+					fp_dbl(a, a);
+					fp_set_dig(d, 64);
+					fp_sqr(d, d);
+				} else {
+					fp_dbl(a, u);
+					fp_sqr(d, e);
+				}
 				fp_add(a, a, w);
 				fp_mul(u, a, b);
 				fp_sub(z1, u, z1);
-				fp_set_dig(d, 64);
-				fp_sqr(d, d);
 				fp_add(z1, z1, d);
 
 				fp_mul(x1, x1, den[0]);
 				fp_mul(y1, y1, den[1]);
 				fp_mul(z1, z1, den[2]);
 
-				fp_sqr(t, x1);
-				fp_add_dig(t, t, 1);
-				fp_mul(t, t, x1);
-				fp_sqr(u, y1);
-				fp_add_dig(u, u, 1);
-				fp_mul(u, u, y1);
-				fp_sqr(v, z1);
-				fp_add_dig(v, v, 1);
-				fp_mul(v, v, z1);
+				ep_rhs(t, x1);
+				ep_rhs(u, y1);
+				ep_rhs(v, z1);
 
 				int c2 = fp_is_sqr(u);
 				int c3 = fp_is_sqr(v);
 
-				dv_swap_sec(t, u, RLC_FP_DIGS, c2);
-				dv_swap_sec(x1, y1, RLC_FP_DIGS, c2);
-				dv_swap_sec(t, v, RLC_FP_DIGS, c3);
-				dv_swap_sec(x1, z1, RLC_FP_DIGS, c3);
+				fp_copy_sec(t, u, c2);
+				fp_copy_sec(x1, y1, c2);
+				fp_copy_sec(t, v, c3);
+				fp_copy_sec(x1, z1, c3);
 
 				if (!fp_srt(t, t)) {
 					RLC_THROW(ERR_NO_VALID);
 				}
 				fp_neg(u, t);
-				dv_swap_sec(t, u, RLC_FP_DIGS, fp_is_even(t) ^ s);
+				fp_copy_sec(t, u, fp_is_even(t) ^ s);
 
 				fp_copy(p->x, x1);
 				fp_copy(p->y, t);
@@ -477,6 +515,8 @@ void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 		fp_free(b);
 		fp_free(c);
 		fp_free(d);
+		fp_free(e);
+		fp_free(f);
 		fp_free(t);
 		fp_free(u);
 		fp_free(v);

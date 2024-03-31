@@ -24,8 +24,8 @@
 /**
  * @file
  *
- * Implementation of addition on prime elliptic curves over quadratic
- * extensions.
+ * Implementation of addition on prime elliptic curves over a quadratic
+ * extension field.
  *
  * @ingroup epx
  */

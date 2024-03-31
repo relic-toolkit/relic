@@ -2953,7 +2953,7 @@ static int util8(void) {
 
 		TEST_CASE("reading and writing a finite field element are consistent") {
 			fp8_rand(a);
-			fp8_write_bin(bin, sizeof(bin), a);
+			fp8_write_bin(bin, sizeof(bin), a, 0);
 			fp8_read_bin(b, bin, sizeof(bin));
 			TEST_ASSERT(fp8_cmp(a, b) == RLC_EQ, end);
 		}
@@ -8615,7 +8615,9 @@ static int inversion54(void) {
 			fp54_conv_cyc(a, a);
 			fp54_inv(b, a);
 			fp54_inv_cyc(c, a);
-			TEST_ASSERT(fp54_cmp(b, c) == RLC_EQ, end);
+			fp18_print(b[0]);
+			fp18_print(c[0]);
+			TEST_ASSERT(fp18_cmp(b[0], c[0]) == RLC_EQ, end);
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {

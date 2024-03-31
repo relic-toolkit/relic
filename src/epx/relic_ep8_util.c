@@ -24,8 +24,8 @@
 /**
  * @file
  *
- * Implementation of comparison for points on prime elliptic curves over
- * quartic extensions.
+ * Implementation of comparison for points on prime elliptic curves over an
+ * octic extensions.
  *
  * @ingroup epx
  */
@@ -89,13 +89,18 @@ void ep8_blind(ep8_t r, const ep8_t p) {
 #if EP_ADD == BASIC
 		(void)rand;
 		ep8_copy(r, p);
-#else
+#elif EP_ADD == PROJC
+		fp8_mul(r->x, p->x, rand);
+		fp8_mul(r->y, p->y, rand);
+		fp8_mul(r->z, p->z, rand);
+		r->coord = PROJC;
+#elif EP_ADD == JACOB
 		fp8_mul(r->z, p->z, rand);
 		fp8_mul(r->y, p->y, rand);
 		fp8_sqr(rand, rand);
 		fp8_mul(r->x, r->x, rand);
 		fp8_mul(r->y, r->y, rand);
-		r->coord = EP_ADD;
+		r->coord = JACOB;
 #endif
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -104,7 +109,7 @@ void ep8_blind(ep8_t r, const ep8_t p) {
 	}
 }
 
-void ep8_rhs(fp8_t rhs, const ep8_t p) {
+void ep8_rhs(fp8_t rhs, const fp8_t x) {
 	fp8_t t0;
 
 	fp8_null(t0);
@@ -112,7 +117,7 @@ void ep8_rhs(fp8_t rhs, const ep8_t p) {
 	RLC_TRY {
 		fp8_new(t0);
 
-		fp8_sqr(t0, p->x);                  /* x1^2 */
+		fp8_sqr(t0, x);
 
 		switch (ep8_curve_opt_a()) {
 			case RLC_ZERO:
@@ -129,7 +134,7 @@ void ep8_rhs(fp8_t rhs, const ep8_t p) {
 				break;
 			case RLC_TINY:
 				fp_add_dig(t0[0][0][0], t0[0][0][0],
-					ep8_curve_get_a()[0][0][0][0])
+					ep8_curve_get_a()[0][0][0][0]);
 				break;
 #endif
 			default:
@@ -137,7 +142,7 @@ void ep8_rhs(fp8_t rhs, const ep8_t p) {
 				break;
 		}
 
-		fp8_mul(t0, t0, p->x);				/* x1^3 + a * x */
+		fp8_mul(t0, t0, x);
 
 		switch (ep8_curve_opt_b()) {
 			case RLC_ZERO:
@@ -153,7 +158,6 @@ void ep8_rhs(fp8_t rhs, const ep8_t p) {
 				fp_add_dig(t0[0][0][0], t0[0][0][0], 2);
 				break;
 			case RLC_TINY:
-				ep8_curve_get_b(t1);
 				fp_add_dig(t0[0][0][0], t0[0][0][0],
 					ep8_curve_get_b()[0][0][0][0]);
 				break;
@@ -182,7 +186,7 @@ int ep8_on_curve(const ep8_t p) {
 
 		ep8_norm(t, p);
 
-		ep8_rhs(t->x, t);
+		ep8_rhs(t->x, t->x);
 		fp8_sqr(t->y, t->y);
 
 		r = (fp8_cmp(t->x, t->y) == RLC_EQ) || ep8_is_infty(p);
@@ -306,8 +310,8 @@ void ep8_write_bin(uint8_t *bin, size_t len, const ep8_t a, int pack) {
 			RLC_THROW(ERR_NO_BUFFER);
 		} else {
 			bin[0] = 4;
-			fp8_write_bin(bin + 1, 8 * RLC_FP_BYTES, t->x);
-			fp8_write_bin(bin + 8 * RLC_FP_BYTES + 1, 8 * RLC_FP_BYTES, t->y);
+			fp8_write_bin(bin + 1, 8 * RLC_FP_BYTES, t->x, 0);
+			fp8_write_bin(bin + 8 * RLC_FP_BYTES + 1, 8 * RLC_FP_BYTES, t->y, 0);
 		}
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);

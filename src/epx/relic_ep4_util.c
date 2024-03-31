@@ -24,8 +24,8 @@
 /**
  * @file
  *
- * Implementation of comparison for points on prime elliptic curves over
- * quartic extensions.
+ * Implementation of comparison for points on prime elliptic curves over a
+ * quartic extension field.
  *
  * @ingroup epx
  */
@@ -89,13 +89,18 @@ void ep4_blind(ep4_t r, const ep4_t p) {
 #if EP_ADD == BASIC
 		(void)rand;
 		ep4_copy(r, p);
-#else
+#elif EP_ADD == PROJC
+		fp4_mul(r->x, p->x, rand);
+		fp4_mul(r->y, p->y, rand);
+		fp4_mul(r->z, p->z, rand);
+		r->coord = PROJC;
+#elif EP_ADD == JACOB
 		fp4_mul(r->z, p->z, rand);
 		fp4_mul(r->y, p->y, rand);
 		fp4_sqr(rand, rand);
 		fp4_mul(r->x, r->x, rand);
 		fp4_mul(r->y, r->y, rand);
-		r->coord = EP_ADD;
+		r->coord = JACOB;
 #endif
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -104,7 +109,7 @@ void ep4_blind(ep4_t r, const ep4_t p) {
 	}
 }
 
-void ep4_rhs(fp4_t rhs, const ep4_t p) {
+void ep4_rhs(fp4_t rhs, const fp4_t x) {
 	fp4_t t0;
 
 	fp4_null(t0);
@@ -112,7 +117,7 @@ void ep4_rhs(fp4_t rhs, const ep4_t p) {
 	RLC_TRY {
 		fp4_new(t0);
 
-		fp4_sqr(t0, p->x);                  /* x1^2 */
+		fp4_sqr(t0, x);
 
 		switch (ep4_curve_opt_a()) {
 			case RLC_ZERO:
@@ -136,7 +141,7 @@ void ep4_rhs(fp4_t rhs, const ep4_t p) {
 				break;
 		}
 
-		fp4_mul(t0, t0, p->x);				/* x1^3 + a * x */
+		fp4_mul(t0, t0, x);
 
 		switch (ep4_curve_opt_b()) {
 			case RLC_ZERO:
@@ -179,7 +184,7 @@ int ep4_on_curve(const ep4_t p) {
 
 		ep4_norm(t, p);
 
-		ep4_rhs(t->x, t);
+		ep4_rhs(t->x, t->x);
 		fp4_sqr(t->y, t->y);
 
 		r = (fp4_cmp(t->x, t->y) == RLC_EQ) || ep4_is_infty(p);

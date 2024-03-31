@@ -25,7 +25,7 @@
  * @file
  *
  * Implementation of point multiplication of a prime elliptic curve over a
- * quadratic extension by the curve cofactor.
+ * cubic extension field by the curve cofactor.
  *
  * @ingroup epx
  */

@@ -949,6 +949,14 @@ static void arith3(void) {
 	} BENCH_END;
 #endif
 
+#if EP_MUL == LWREG || !defined(STRIP)
+	BENCH_RUN("ep3_mul_lwreg") {
+		bn_rand_mod(k, n);
+		ep3_rand(p);
+		BENCH_ADD(ep3_mul_lwreg(q, p, k));
+	} BENCH_END;
+#endif
+
 	BENCH_RUN("ep3_mul_gen") {
 		bn_rand_mod(k, n);
 		BENCH_ADD(ep3_mul_gen(q, k));
@@ -1443,6 +1451,14 @@ static void arith4(void) {
 	} BENCH_END;
 #endif
 
+#if EP_MUL == LWREG || !defined(STRIP)
+	BENCH_RUN("ep4_mul_lwreg") {
+		bn_rand_mod(k, n);
+		ep4_rand(p);
+		BENCH_ADD(ep4_mul_lwreg(q, p, k));
+	} BENCH_END;
+#endif
+
 	BENCH_RUN("ep4_mul_gen") {
 		bn_rand_mod(k, n);
 		BENCH_ADD(ep4_mul_gen(q, k));
@@ -1934,6 +1950,14 @@ static void arith8(void) {
 		bn_rand_mod(k, n);
 		ep8_rand(p);
 		BENCH_ADD(ep8_mul_lwnaf(q, p, k));
+	} BENCH_END;
+#endif
+
+#if EP_MUL == LWREG || !defined(STRIP)
+	BENCH_RUN("ep8_mul_lwreg") {
+		bn_rand_mod(k, n);
+		ep8_rand(p);
+		BENCH_ADD(ep8_mul_lwreg(q, p, k));
 	} BENCH_END;
 #endif
 

@@ -24,8 +24,8 @@
 /**
  * @file
  *
- * Implementation of hashing to a prime elliptic curve over a quadratic
- * extension.
+ * Implementation of hashing to a prime elliptic curve over an octic extension
+ * field.
  *
  * @ingroup epx
  */

@@ -25,7 +25,7 @@
  * @file
  *
  * Implementation of point multiplication of a prime elliptic curve over an
- * octic extension by the curve cofactor.
+ * octic extension field by the curve cofactor.
  *
  * @ingroup epx
  */

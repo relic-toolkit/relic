@@ -25,7 +25,7 @@
  * @file
  *
  * Implementation of simultaneous point multiplication on a prime elliptic
- * curve over a quadratic extension.
+ * curve over a quadratic extension field.
  *
  * @ingroup epx
  */

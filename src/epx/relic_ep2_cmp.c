@@ -24,8 +24,8 @@
 /**
  * @file
  *
- * Implementation of utilities for prime elliptic curves over quadratic
- * extensions.
+ * Implementation of utilities for prime elliptic curves over a quadratic
+ * extension field.
  *
  * @ingroup epx
  */

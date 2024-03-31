@@ -171,11 +171,14 @@ static void ep_curve_set_map(void) {
 			fp_mul_dig(c3, c3, 4); /* c3 *= 4 */
 		}
 
-		/* If a = 0, precompute and store a square root of -3. */
-		fp_set_dig(c4, 3);
-		fp_neg(c4, c4);
-		if (!fp_srt(c4, c4)) {
-			RLC_THROW(ERR_NO_VALID);
+		/* If curve is not supersingular, precompute and store sqrt(-3)
+		 * neeed for hashing using the SwiftEC algorithm and variants. */
+		if (!ep_curve_is_super()) {
+			fp_set_dig(c4, 3);
+			fp_neg(c4, c4);
+			if (!fp_srt(c4, c4)) {
+				RLC_THROW(ERR_NO_VALID);
+			}
 		}
 	}
 	RLC_CATCH_ANY {

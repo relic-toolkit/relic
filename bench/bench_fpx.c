@@ -1301,13 +1301,13 @@ static void util8(void) {
 
 	BENCH_RUN("fp8_write_bin") {
 		fp8_rand(a);
-		BENCH_ADD(fp8_write_bin(bin, sizeof(bin), a));
+		BENCH_ADD(fp8_write_bin(bin, sizeof(bin), a, 0));
 	}
 	BENCH_END;
 
 	BENCH_RUN("fp8_read_bin") {
 		fp8_rand(a);
-		fp8_write_bin(bin, sizeof(bin), a);
+		fp8_write_bin(bin, sizeof(bin), a, 0);
 		BENCH_ADD(fp8_read_bin(a, bin, sizeof(bin)));
 	}
 	BENCH_END;
@@ -3153,9 +3153,9 @@ static void util48(void) {
 	}
 	BENCH_END;
 
-	BENCH_RUN("fp12_copy_sec (0)") {
-		fp12_rand(a);
-		BENCH_ADD(fp12_copy_sec(b, a, 0));
+	BENCH_RUN("fp48_copy_sec (0)") {
+		fp48_rand(a);
+		BENCH_ADD(fp48_copy_sec(b, a, 0));
 	}
 	BENCH_END;
 
