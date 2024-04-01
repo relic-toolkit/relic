@@ -110,16 +110,14 @@ int fp_srt(fp_t c, const fp_t a) {
 						fp_sqr(t2, t2);
 					}
 					fp_mul(t0, c, t3);
-					dv_copy_cond(c, t0, RLC_FP_DIGS,
-							fp_cmp_dig(t2, 1) != RLC_EQ);
+					fp_copy_sec(c, t0, fp_cmp_dig(t2, 1) != RLC_EQ);
 					fp_sqr(t3, t3);
 					fp_mul(t0, t1, t3);
-					dv_copy_cond(t1, t0, RLC_FP_DIGS,
-							fp_cmp_dig(t2, 1) != RLC_EQ);
+					fp_copy_sec(t1, t0, fp_cmp_dig(t2, 1) != RLC_EQ);
 				}
 
 				fp_neg(t0, c);
-				dv_copy_cond(c, t0, RLC_FP_DIGS, fp_is_even(c) == 0);
+				fp_copy_sec(c, t0, fp_is_even(c) == 0);
 				break;
 		}
 	}

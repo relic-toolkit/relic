@@ -121,8 +121,7 @@ void pp_dbl_k24_projc(fp24_t l, ep4_t r, const ep4_t q, const ep_t p) {
 		/* D = 3bC, general b. */
 		fp4_dbl(t3, t2);
 		fp4_add(t3, t3, t2);
-		ep4_curve_get_b(t4);
-		fp4_mul(t3, t3, t4);
+		fp4_mul(t3, t3, ep4_curve_get_b());
 
 		/* E = (x1 + y1)^2 - A - B. */
 		fp4_add(t4, q->x, q->y);

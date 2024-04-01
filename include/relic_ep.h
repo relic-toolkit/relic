@@ -175,8 +175,6 @@ enum {
 	K18_P638,
     /** Scott-Guillevic curve with embedding degree 18. */
     SG18_P638,
-	/** New family with embeeding degree 16. */
-	N16_P765,
 	/* Fotiadis-Moartindale with embedding degree 16. */
 	FM16_P765,
 	/** Kachisa-Schaefer-Scott with embedding degree 16. */
@@ -185,6 +183,8 @@ enum {
 	N16_P766,
 	/* Fotiadis-Moartindale with embedding degree 18. */
 	FM18_P768,
+	/** Barreto-Lynn-Scott curve with embedding degree 12. */
+	B12_P1150,
 	/** 1536-bit supersingular curve. */
 	SS_P1536,
 	/** 3072-bit supersingular curve. */
@@ -221,7 +221,7 @@ enum {
 #define RLC_EP_TABLE_COMBD		(1 << (RLC_DEPTH + 1))
 
 /**
- * Size of a precomputation table using the w-(T)NAF method.
+ * Size of a precomputation table using the w-NAF method.
  */
 #define RLC_EP_TABLE_LWNAF		(1 << (RLC_DEPTH - 2))
 
@@ -468,6 +468,16 @@ typedef iso_st *iso_t;
 #endif
 
 /**
+ * Multiplies a point in an elliptic curve over by an unrestricted scalar.
+ * Computes R = [k]P.
+ *
+ * @param[out] R				- the result.
+ * @param[in] P					- the point to multiply.
+ * @param[in] K					- the integer.
+ */
+#define ep_mul_big(R, P, K)	ep_mul_basic(R, P, K)
+
+/**
  * Hashes a byte string to a prime elliptic point or the right order.
  * Computes R = H(s).
  *
@@ -548,13 +558,6 @@ int ep_curve_opt_a(void);
 int ep_curve_opt_b(void);
 
 /**
- * Returns a optimization identifier based on the b-coefficient of the curve.
- *
- * @return the optimization identifier.
- */
-int ep_curve_opt_b3(void);
-
-/**
  * Multiplies a field element by the a-coefficient of the curve.
  *
  * @param[out] c			- the result.
@@ -570,13 +573,6 @@ void ep_curve_mul_a(fp_t c, const fp_t a);
  */
 void ep_curve_mul_b(fp_t c, const fp_t a);
 
-/**
- * Multiplies a field element by the b3 value of the curve.
- *
- * @param[out] c			- the result.
- * @param[in] a				- the field element to multiply.
- */
-void ep_curve_mul_b3(fp_t c, const fp_t a);
 /**
  * Tests if the configured prime elliptic curve is a Koblitz curve.
  *
@@ -684,6 +680,17 @@ void ep_curve_set_endom(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
 		const bn_t h, const fp_t beta, const bn_t l, int ctmap);
 
 /**
+ * Returns the embedding degree of the currently configured elliptic curve.
+ */
+int ep_curve_embed(void);
+
+/**
+ * Returns the dimension of Frobenius expansions of the currently configured
+ * elliptic curve.
+ */
+int ep_curve_frdim(void);
+
+/**
  * Configures a prime elliptic curve by its parameter identifier.
  *
  * @param				- the parameter identifier.
@@ -746,11 +753,6 @@ void ep_param_print(void);
 int ep_param_level(void);
 
 /**
- * Returns the embedding degree of the currently configured elliptic curve.
- */
-int ep_param_embed(void);
-
-/**
  * Tests if a point on a prime elliptic curve is at the infinity.
  *
  * @param[in] p				- the point to test.
@@ -798,13 +800,13 @@ void ep_rand(ep_t p);
 void ep_blind(ep_t r, const ep_t p);
 
 /**
- * Computes the right-hand side of the elliptic curve equation at a certain
- * prime elliptic curve point.
+ * Computes the right-hand side of the elliptic curve equation at the
+ * x-coordinate of a certain prime elliptic curve point.
  *
  * @param[out] rhs			- the result.
- * @param[in] p				- the point.
+ * @param[in] x				- the x-coordinate of the point.
  */
-void ep_rhs(fp_t rhs, const ep_t p);
+void ep_rhs(fp_t rhs, const fp_t x);
 
 /**
  * Tests if a point is in the curve.

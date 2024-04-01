@@ -128,61 +128,46 @@ void ed_blind(ed_t r, const ed_t p) {
 	}
 }
 
-void ed_rhs(fp_t rhs, const ed_t p) {
-	fp_t t0, t1;
-
-	fp_null(t0);
-	fp_null(t1);
-
-	RLC_TRY {
-		fp_new(t0);
-		fp_new(t1);
-
-		// 1 = a * X^2 + Y^2 - d * X^2 * Y^2
-		fp_sqr(t0, p->x);
-		fp_mul(t0, t0, core_get()->ed_a);
-		fp_sqr(t1, p->y);
-		fp_add(t1, t1, t0);
-		fp_mul(t0, p->x, p->y);
-		fp_sqr(t0, t0);
-		fp_mul(t0, t0, core_get()->ed_d);
-		fp_sub(rhs, t1, t0);
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		fp_free(t0);
-		fp_free(t1);
-	}
+void ed_rhs(fp_t rhs, const fp_t x) {
+	/* y^2 * (d * x^2 - 1) = 1a * x^2 - 1. */
+	fp_sqr(rhs, x);
+	fp_mul(rhs, rhs, core_get()->ed_a);
+	fp_sub_dig(rhs, rhs, 1);
 }
 
 int ed_on_curve(const ed_t p) {
 	ed_t t;
-	int r = 0;
+	int r = 1;
 
 	ed_null(t);
 
 	if (fp_is_zero(p->z)) {
-		r = 0;
-	} else {
-		RLC_TRY {
-			ed_new(t);
-			ed_norm(t, p);
+		return 0;
+	}
 
-			ed_rhs(t->z, t);
+	RLC_TRY {
+		ed_new(t);
+		ed_norm(t, p);
+
+		/* Compute y^2 * (d * x^2 - 1) */
 #if ED_ADD == EXTND
-			fp_mul(t->y, t->x, t->y);
-			r = ((fp_cmp_dig(t->z, 1) == RLC_EQ) &&
-					(fp_cmp(t->y, t->t) == RLC_EQ)) || ed_is_infty(p);
-#else
-			r = (fp_cmp_dig(t->z, 1) == RLC_EQ) || ed_is_infty(p);
+		fp_mul(t->z, t->x, t->y);
+		r &= (fp_cmp(t->z, t->t) == RLC_EQ);
 #endif
-		}
-		RLC_CATCH_ANY {
-			RLC_THROW(ERR_CAUGHT);
-		}
-		RLC_FINALLY {
-			ed_free(t);
-		}
+		fp_sqr(t->z, t->y);
+		fp_sqr(t->t, t->x);
+		fp_mul(t->t, t->t, core_get()->ed_d);
+		fp_sub_dig(t->t, t->t, 1);
+		fp_mul(t->t, t->t, t->z);
+		ed_rhs(t->z, t->x);
+		r &= (fp_cmp(t->t, t->z) == RLC_EQ);
+		r |= ed_is_infty(p);
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		ed_free(t);
 	}
 	return r;
 }

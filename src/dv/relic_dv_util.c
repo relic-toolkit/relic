@@ -70,20 +70,20 @@ void dv_copy(dig_t *c, const dig_t *a, size_t digits) {
 	memcpy(c, a, digits * sizeof(dig_t));
 }
 
-void dv_copy_cond(dig_t *c, const dig_t *a, size_t digits, dig_t cond) {
+void dv_copy_sec(dig_t *c, const dig_t *a, size_t digits, dig_t bit) {
 	dig_t mask, t;
 
-	mask = -cond;
+	mask = -bit;
 	for (size_t i = 0; i < digits; i++) {
 		t = (a[i] ^ c[i]) & mask;
 		c[i] ^= t;
 	}
 }
 
-void dv_swap_cond(dig_t *c, dig_t *a, size_t digits, dig_t cond) {
+void dv_swap_sec(dig_t *c, dig_t *a, size_t digits, dig_t bit) {
 	dig_t mask, t;
 
-	mask = -cond;
+	mask = -bit;
 	for (size_t i = 0; i < digits; i++) {
 		t = (a[i] ^ c[i]) & mask;
 		a[i] ^= t;
@@ -106,7 +106,7 @@ int dv_cmp(const dig_t *a, const dig_t *b, size_t size) {
 	return r;
 }
 
-int dv_cmp_const(const dig_t *a, const dig_t *b, size_t size) {
+int dv_cmp_sec(const dig_t *a, const dig_t *b, size_t size) {
 	dig_t r = 0;
 
 	for (size_t i = 0; i < size; i++) {

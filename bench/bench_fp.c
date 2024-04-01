@@ -69,6 +69,18 @@ static void util(void) {
 	}
 	BENCH_END;
 
+	BENCH_RUN("fp_copy_sec (0)") {
+		fp_rand(a);
+		BENCH_ADD(fp_copy_sec(b, a, 0));
+	}
+	BENCH_END;
+
+	BENCH_RUN("fp_copy_sec (1)") {
+		fp_rand(a);
+		BENCH_ADD(fp_copy_sec(b, a, 1));
+	}
+	BENCH_END;
+
 	BENCH_RUN("fp_zero") {
 		fp_rand(a);
 		BENCH_ADD(fp_zero(a));

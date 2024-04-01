@@ -138,7 +138,7 @@ int cp_ecies_dec(uint8_t *out, size_t *out_len, const ec_t r, const uint8_t *in,
 		bn_write_bin(_x, l, x);
 		md_kdf(key, 2 * size, _x, l);
 		md_hmac(h, in, in_len - RLC_MD_LEN, key + size, size);
-		if (util_cmp_const(h, in + in_len - RLC_MD_LEN, RLC_MD_LEN)) {
+		if (util_cmp_sec(h, in + in_len - RLC_MD_LEN, RLC_MD_LEN)) {
 			result = RLC_ERR;
 		} else {
 			if (bc_aes_cbc_dec(out, out_len, in, in_len - RLC_MD_LEN,

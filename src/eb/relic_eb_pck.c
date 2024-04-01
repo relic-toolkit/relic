@@ -63,7 +63,7 @@ int eb_upk(eb_t r, const eb_t p) {
 		fb_new(t0);
 		fb_new(t1);
 
-		eb_rhs(t1, p);
+		eb_rhs(t1, p->x);
 
 		fb_sqr(t0, p->x);
 		/* t0 = 1/x1^2. */

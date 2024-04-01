@@ -24,8 +24,8 @@
 /**
  * @file
  *
- * Implementation of hashing to a prime elliptic curve over a quadratic
- * extension.
+ * Implementation of hashing to a prime elliptic curve over an octic extension
+ * field.
  *
  * @ingroup epx
  */
@@ -124,33 +124,17 @@ void ep8_map(ep8_t p, const uint8_t *msg, size_t len) {
 			fp8_sqr(z1, z1);
 			fp8_add(z1, z1, u);
 
-			ep8_curve_get_b(w);
-
-			fp8_sqr(t, x1);
-			fp8_mul(t, t, x1);
-			fp8_add(t, t, w);
-
-			fp8_sqr(u, y1);
-			fp8_mul(u, u, y1);
-			fp8_add(u, u, w);
-
-			fp8_sqr(v, z1);
-			fp8_mul(v, v, z1);
-			fp8_add(v, v, w);
+			ep8_rhs(t, x1);
+			ep8_rhs(u, y1);
+			ep8_rhs(v, z1);
 
 			c2 = fp8_is_sqr(u);
 			c3 = fp8_is_sqr(v);
 
-			for (int i = 0; i < 2; i++) {
-				for (int j = 0; j < 2; j++) {
-					for (int l = 0; l < 2; l++) {
-						dv_swap_cond(x1[i][j][l], y1[i][j][l], RLC_FP_DIGS, c2);
-						dv_swap_cond(t[i][j][l], u[i][j][l], RLC_FP_DIGS, c2);
-						dv_swap_cond(x1[i][j][l], z1[i][j][l], RLC_FP_DIGS, c3);
-						dv_swap_cond(t[i][j][l], v[i][j][l], RLC_FP_DIGS, c3);
-					}
-				}
-			}
+			fp8_copy_sec(t, u, c2);
+			fp8_copy_sec(x1, y1, c2);
+			fp8_copy_sec(t, v, c3);
+			fp8_copy_sec(x1, z1, c3);
 
 			if (!fp8_srt(t, t)) {
 				RLC_THROW(ERR_NO_VALID);
@@ -172,13 +156,7 @@ void ep8_map(ep8_t p, const uint8_t *msg, size_t len) {
 			}
 
 			fp8_neg(u, t);
-			for (int i = 0; i < 2; i++) {
-				for (int j = 0; j < 2; j++) {
-					for (int l = 0; l < 2; l++) {
-						dv_swap_cond(t[i][j][l], u[i][j][l], RLC_FP_DIGS, sign);
-					}
-				}
-			}
+			fp8_copy_sec(t, u, sign);
 
 			fp8_copy(p->x, x1);
 			fp8_copy(p->y, t);

@@ -24,8 +24,8 @@
 /**
  * @file
  *
- * Implementation of point negation on elliptic prime curves over quartic
- * extensions.
+ * Implementation of point negation on elliptic prime curves over a quartic
+ * extension field.
  *
  * @ingroup epx
  */

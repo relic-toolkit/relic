@@ -149,35 +149,35 @@ static void ed_mul_reg_imp(ed_t r, const ed_t p, const bn_t k) {
 			n = ((n ^ s) - s) >> 1;
 
 			for (j = 0; j < (1 << (RLC_WIDTH - 2)); j++) {
-				dv_copy_cond(u->x, t[j]->x, RLC_FP_DIGS, j == n);
-				dv_copy_cond(u->y, t[j]->y, RLC_FP_DIGS, j == n);
-				dv_copy_cond(u->z, t[j]->z, RLC_FP_DIGS, j == n);
+				fp_copy_sec(u->x, t[j]->x, j == n);
+				fp_copy_sec(u->y, t[j]->y, j == n);
+				fp_copy_sec(u->z, t[j]->z, j == n);
 #if ED_ADD == EXTND
-				dv_copy_cond(u->t, t[j]->t, RLC_FP_DIGS, j == n);
+				fp_copy_sec(u->t, t[j]->t, j == n);
 #endif
 			}
 			ed_neg(v, u);
-			dv_copy_cond(u->x, v->x, RLC_FP_DIGS, s != 0);
+			fp_copy_sec(u->x, v->x, s != 0);
 #if ED_ADD == EXTND
-			dv_copy_cond(u->t, v->t, RLC_FP_DIGS, s != 0);
+			fp_copy_sec(u->t, v->t, s != 0);
 #endif
 			ed_add(r, r, u);
 		}
 
 		/* t[0] has an unmodified copy of p. */
 		ed_sub(u, r, t[0]);
-		dv_copy_cond(r->x, u->x, RLC_FP_DIGS, bn_is_even(k));
-		dv_copy_cond(r->y, u->y, RLC_FP_DIGS, bn_is_even(k));
-		dv_copy_cond(r->z, u->z, RLC_FP_DIGS, bn_is_even(k));
-#if ED_ADD == EXTND
-		dv_copy_cond(r->t, u->t, RLC_FP_DIGS, bn_is_even(k));
+		fp_copy_sec(r->x, u->x, bn_is_even(k));
+		fp_copy_sec(r->y, u->y, bn_is_even(k));
+		fp_copy_sec(r->z, u->z, bn_is_even(k));
+#if ED_Afp == EXTND
+		fp_copy_sec(r->t, u->t, bn_is_even(k));
 #endif
 		/* Convert r to affine coordinates. */
 		ed_norm(r, r);
 		ed_neg(u, r);
-		dv_copy_cond(r->x, u->x, RLC_FP_DIGS, bn_sign(k) == RLC_NEG);
+		fp_copy_sec(r->x, u->x, bn_sign(k) == RLC_NEG);
 #if ED_ADD == EXTND
-		dv_copy_cond(r->t, u->t, RLC_FP_DIGS, bn_sign(k) == RLC_NEG);
+		fp_copy_sec(r->t, u->t, bn_sign(k) == RLC_NEG);
 #endif
 	}
 	RLC_CATCH_ANY {
@@ -342,19 +342,19 @@ void ed_mul_monty(ed_t r, const ed_t p, const bn_t k) {
 		for (int i = bn_bits(k) - 1; i >= 0; i--) {
 			int j = bn_get_bit(k, i);
 
-			dv_swap_cond(t[0]->x, t[1]->x, RLC_FP_DIGS, j ^ 1);
-			dv_swap_cond(t[0]->y, t[1]->y, RLC_FP_DIGS, j ^ 1);
-			dv_swap_cond(t[0]->z, t[1]->z, RLC_FP_DIGS, j ^ 1);
+			dv_swap_sec(t[0]->x, t[1]->x, RLC_FP_DIGS, j ^ 1);
+			dv_swap_sec(t[0]->y, t[1]->y, RLC_FP_DIGS, j ^ 1);
+			dv_swap_sec(t[0]->z, t[1]->z, RLC_FP_DIGS, j ^ 1);
 #if ED_ADD == EXTND
-			dv_swap_cond(t[0]->t, t[1]->t, RLC_FP_DIGS, j ^ 1);
+			dv_swap_sec(t[0]->t, t[1]->t, RLC_FP_DIGS, j ^ 1);
 #endif
 			ed_add(t[0], t[0], t[1]);
 			ed_dbl(t[1], t[1]);
-			dv_swap_cond(t[0]->x, t[1]->x, RLC_FP_DIGS, j ^ 1);
-			dv_swap_cond(t[0]->y, t[1]->y, RLC_FP_DIGS, j ^ 1);
-			dv_swap_cond(t[0]->z, t[1]->z, RLC_FP_DIGS, j ^ 1);
+			dv_swap_sec(t[0]->x, t[1]->x, RLC_FP_DIGS, j ^ 1);
+			dv_swap_sec(t[0]->y, t[1]->y, RLC_FP_DIGS, j ^ 1);
+			dv_swap_sec(t[0]->z, t[1]->z, RLC_FP_DIGS, j ^ 1);
 #if ED_ADD == EXTND
-			dv_swap_cond(t[0]->t, t[1]->t, RLC_FP_DIGS, j ^ 1);
+			dv_swap_sec(t[0]->t, t[1]->t, RLC_FP_DIGS, j ^ 1);
 #endif
 		}
 

@@ -25,7 +25,7 @@
  * @file
  *
  * Implementation of fixed point multiplication on a prime elliptic curve over
- * a quadratic extension.
+ * a quadratic extension field.
  *
  * @ingroup epx
  */

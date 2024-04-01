@@ -163,3 +163,61 @@ void pp_map_oatep_k8(fp8_t r, const ep_t p, const ep2_t q) {
 		bn_free(a);
 	}
 }
+
+void pp_map_sim_oatep_k8(fp8_t r, const ep_t *p, const ep2_t *q, int m) {
+	ep_t *_p = RLC_ALLOCA(ep_t, m);
+	ep2_t *t = RLC_ALLOCA(ep2_t, m), *_q = RLC_ALLOCA(ep2_t, m);
+	bn_t a;
+	int i, j;
+
+	RLC_TRY {
+		bn_null(a);
+		bn_new(a);
+		if (_p == NULL || _q == NULL || t == NULL) {
+			RLC_THROW(ERR_NO_MEMORY);
+		}
+		for (i = 0; i < m; i++) {
+			ep_null(_p[i]);
+			ep2_null(_q[i]);
+			ep2_null(t[i]);
+			ep_new(_p[i]);
+			ep2_new(_q[i]);
+			ep2_new(t[i]);
+		}
+
+		j = 0;
+		for (i = 0; i < m; i++) {
+			if (!ep_is_infty(p[i]) && !ep2_is_infty(q[i])) {
+				ep_norm(_p[j], p[i]);
+				ep2_norm(_q[j++], q[i]);
+			}
+		}
+
+		fp_prime_get_par(a);
+		fp8_set_dig(r, 1);
+
+		if (j > 0) {
+			/* r = f_{|a|,Q}(P). */
+			pp_mil_k8(r, t, _q, _p, j, a);
+			if (bn_sign(a) == RLC_NEG) {
+				fp8_inv_cyc(r, r);
+				ep2_neg(t[i], t[i]);
+			}
+			pp_exp_k8(r, r);
+		}
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		bn_free(a);
+		for (i = 0; i < m; i++) {
+			ep_free(_p[i]);
+			ep4_free(_q[i]);
+			ep4_free(t[i]);
+		}
+		RLC_FREE(_p);
+		RLC_FREE(_q);
+		RLC_FREE(t);
+	}
+}

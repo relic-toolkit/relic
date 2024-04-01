@@ -24,8 +24,8 @@
 /**
  * @file
  *
- * Implementation of hashing to a prime elliptic curve over a quadratic
- * extension.
+ * Implementation of hashing to a prime elliptic curve over a cubic extension
+ * field.
  *
  * @ingroup epx
  */
@@ -115,29 +115,17 @@ void ep3_map(ep3_t p, const uint8_t *msg, size_t len) {
 			fp3_sqr(z1, z1);
 			fp3_add(z1, z1, u);
 
-			ep3_curve_get_b(w);
-
-			fp3_sqr(t, x1);
-			fp3_mul(t, t, x1);
-			fp3_add(t, t, w);
-
-			fp3_sqr(u, y1);
-			fp3_mul(u, u, y1);
-			fp3_add(u, u, w);
-
-			fp3_sqr(v, z1);
-			fp3_mul(v, v, z1);
-			fp3_add(v, v, w);
+			ep3_rhs(t, x1);
+			ep3_rhs(u, y1);
+			ep3_rhs(v, z1);
 
 			c2 = fp3_is_sqr(u);
 			c3 = fp3_is_sqr(v);
 
-			for (int i = 0; i < 3; i++) {
-				dv_swap_cond(x1[i], y1[i], RLC_FP_DIGS, c2);
-				dv_swap_cond(t[i], u[i], RLC_FP_DIGS, c2);
-				dv_swap_cond(x1[i], z1[i], RLC_FP_DIGS, c3);
-				dv_swap_cond(t[i], v[i], RLC_FP_DIGS, c3);
-			}
+			fp3_copy_sec(t, u, c2);
+			fp3_copy_sec(x1, y1, c2);
+			fp3_copy_sec(t, v, c3);
+			fp3_copy_sec(x1, z1, c3);
 
 			if (!fp3_srt(t, t)) {
 				RLC_THROW(ERR_NO_VALID);
@@ -156,9 +144,7 @@ void ep3_map(ep3_t p, const uint8_t *msg, size_t len) {
 			sign ^= (t0 | (t0z & (t1 | (t1z & t2))));
 
 			fp3_neg(u, t);
-			dv_swap_cond(t[0], u[0], RLC_FP_DIGS, sign);
-			dv_swap_cond(t[1], u[1], RLC_FP_DIGS, sign);
-			dv_swap_cond(t[2], u[2], RLC_FP_DIGS, sign);
+			fp3_copy_sec(t, u, sign);
 
 			fp3_copy(p->x, x1);
 			fp3_copy(p->y, t);

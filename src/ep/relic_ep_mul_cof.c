@@ -149,7 +149,7 @@ void ep_mul_cof(ep_t r, const ep_t p) {
 			default:
 				/* multiply by cofactor to get the correct group. */
 				ep_curve_get_cof(k);
-				ep_mul_basic(r, p, k);
+				ep_mul_big(r, p, k);
 		}
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);

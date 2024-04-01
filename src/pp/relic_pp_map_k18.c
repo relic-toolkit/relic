@@ -196,9 +196,10 @@ static void pp_mil_lit_k18(fp18_t r, ep_t *t, ep_t *p, ep3_t *q, int m, bn_t a) 
  * @param[out] t			- the resulting point.
  * @param[in] q				- the first point of the pairing, in G_2.
  * @param[in] p				- the second point of the pairing, in G_1.
- * @param[in] a				- the loop parameter.
+ * @param[in] f				- the flag to correct for the curve family.
  */
-static void pp_fin_k18_oatep(fp18_t r, ep3_t t, ep3_t q, ep_t p, int f) {
+static void pp_fin_k18_oatep(fp18_t r, ep3_t t, const ep3_t q, const ep_t p,
+		int f) {
     fp18_t u, v;
     ep3_t _q;
     ep_t _p;

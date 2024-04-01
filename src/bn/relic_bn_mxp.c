@@ -265,7 +265,7 @@ void bn_mxp_monty(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 		bn_grow(tab[1], m->alloc);
 		for (i = bn_bits(b) - 1; i >= 0; i--) {
 			j = bn_get_bit(b, i);
-			dv_swap_cond(tab[0]->dp, tab[1]->dp, m->alloc, j ^ 1);
+			dv_swap_sec(tab[0]->dp, tab[1]->dp, m->alloc, j ^ 1);
 			mask = -(j ^ 1);
 			t = (tab[0]->used ^ tab[1]->used) & mask;
 			tab[0]->used ^= t;
@@ -277,7 +277,7 @@ void bn_mxp_monty(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 			bn_mod(tab[0], tab[0], m, u);
 			bn_sqr(tab[1], tab[1]);
 			bn_mod(tab[1], tab[1], m, u);
-			dv_swap_cond(tab[0]->dp, tab[1]->dp, m->alloc, j ^ 1);
+			dv_swap_sec(tab[0]->dp, tab[1]->dp, m->alloc, j ^ 1);
 			mask = -(j ^ 1);
 			t = (tab[0]->used ^ tab[1]->used) & mask;
 			tab[0]->used ^= t;

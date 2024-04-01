@@ -107,7 +107,7 @@ void ep_blind(ep_t r, const ep_t p) {
 	}
 }
 
-void ep_rhs(fp_t rhs, const ep_t p) {
+void ep_rhs(fp_t rhs, const fp_t x) {
 	fp_t t0;
 
 	fp_null(t0);
@@ -116,7 +116,7 @@ void ep_rhs(fp_t rhs, const ep_t p) {
 		fp_new(t0);
 
 		/* t0 = x1^2. */
-		fp_sqr(t0, p->x);
+		fp_sqr(t0, x);
 
 		/* t0 = x1^2 + a */
 		switch (ep_curve_opt_a()) {
@@ -142,7 +142,7 @@ void ep_rhs(fp_t rhs, const ep_t p) {
 		}
 
 		/* t0 = x1^3 + a * x */
-		fp_mul(t0, t0, p->x);
+		fp_mul(t0, t0, x);
 
 		/* t0 = x1^3 + a * x + b */
 		switch (ep_curve_opt_b()) {
@@ -185,7 +185,7 @@ int ep_on_curve(const ep_t p) {
 		ep_new(t);
 
 		ep_norm(t, p);
-		ep_rhs(t->x, t);
+		ep_rhs(t->x, t->x);
 		fp_sqr(t->y, t->y);
 		r = (fp_cmp(t->x, t->y) == RLC_EQ) || ep_is_infty(p);
 	} RLC_CATCH_ANY {

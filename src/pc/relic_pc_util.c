@@ -58,6 +58,8 @@ void gt_rand(gt_t a) {
 	pp_exp_k16(a, a);
 #elif FP_PRIME == 508 || FP_PRIME == 768 || FP_PRIME == 638 && !defined(FP_QNRES)
 	pp_exp_k18(a, a);
+#elif FP_PRIME == 544
+	pp_exp_k8(a, a);
 #else
 	pp_exp_k12(a, a);
 #endif
@@ -264,14 +266,13 @@ int g1_is_valid(const g1_t a) {
 }
 
 int g2_is_valid(const g2_t a) {
+#if FP_PRIME >= 1536
+	return g1_is_valid(a);
+#else
 	g2_t s, t, u, v, w;
 	bn_t n;
 	dig_t rem;
 	int r = 0;
-
-#if FP_PRIME >= 1536
-	return g1_is_valid(a);
-#else
 
 	if (g2_is_infty(a)) {
 		return 0;

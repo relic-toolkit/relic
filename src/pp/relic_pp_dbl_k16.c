@@ -113,29 +113,7 @@ void pp_dbl_k16_projc_basic(fp16_t l, ep4_t r, const ep4_t q, const ep_t p) {
 		fp4_sqr(t0, q->x);
 		fp4_sqr(t1, q->y);
 		fp4_sqr(t2, q->z);
-		switch (ep_curve_opt_a()) {
-			case RLC_ZERO:
-				fp4_zero(t3);
-				break;
-			case RLC_ONE:
-				fp4_copy(t3, t2);
-				break;
-#if FP_RDC != MONTY
-			case RLC_TINY:
-				fp_mul_dig(t3[0][0], t2[0][0], ep_curve_get_a()[0]);
-				fp_mul_dig(t3[0][1], t2[0][1], ep_curve_get_a()[0]);
-				fp_mul_dig(t3[1][0], t2[1][0], ep_curve_get_a()[0]);
-				fp_mul_dig(t3[1][1], t2[1][1], ep_curve_get_a()[0]);
-				break;
-#endif
-			default:
-				fp_mul(t3[0][0], t2[0][0], ep_curve_get_a());
-				fp_mul(t3[0][1], t2[0][1], ep_curve_get_a());
-				fp_mul(t3[1][0], t2[1][0], ep_curve_get_a());
-				fp_mul(t3[1][1], t2[1][1], ep_curve_get_a());
-				break;
-		}
-		fp4_mul_art(t3, t3);
+		ep4_curve_mul_a(t3, t2);
 
 		/* x3 = (A - D)^2, l11 = (A - D + x1)^2 - x3 - A. */
 		fp4_sub(t5, t0, t3);
@@ -236,29 +214,7 @@ void pp_dbl_k16_projc_lazyr(fp16_t l, ep4_t r, const ep4_t q, const ep_t p) {
 		fp4_sqr(t0, q->x);
 		fp4_sqr(t1, q->y);
 		fp4_sqr(t2, q->z);
-		switch (ep_curve_opt_a()) {
-			case RLC_ZERO:
-				fp4_zero(t3);
-				break;
-			case RLC_ONE:
-				fp4_copy(t3, t2);
-				break;
-#if FP_RDC != MONTY
-			case RLC_TINY:
-				fp_mul_dig(t3[0][0], t2[0][0], ep_curve_get_a()[0]);
-				fp_mul_dig(t3[0][1], t2[0][1], ep_curve_get_a()[0]);
-				fp_mul_dig(t3[1][0], t2[1][0], ep_curve_get_a()[0]);
-				fp_mul_dig(t3[1][1], t2[1][1], ep_curve_get_a()[0]);
-				break;
-#endif
-			default:
-				fp_mul(t3[0][0], t2[0][0], ep_curve_get_a());
-				fp_mul(t3[0][1], t2[0][1], ep_curve_get_a());
-				fp_mul(t3[1][0], t2[1][0], ep_curve_get_a());
-				fp_mul(t3[1][1], t2[1][1], ep_curve_get_a());
-				break;
-		}
-		fp4_mul_art(t3, t3);
+		ep4_curve_mul_a(t3, t2);
 
 		/* x3 = (A - D)^2, l11 = (A - D + x1)^2 - x3 - A. */
 		fp4_sub(t5, t0, t3);

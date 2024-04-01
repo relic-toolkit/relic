@@ -134,7 +134,7 @@
 #undef util_conv_little
 #undef util_conv_char
 #undef util_bits_dig
-#undef util_cmp_const
+#undef util_cmp_sec
 #undef util_perm
 #undef util_printf
 #undef util_print_dig
@@ -144,7 +144,7 @@
 #define util_conv_little 	RLC_PREFIX(util_conv_little)
 #define util_conv_char 	RLC_PREFIX(util_conv_char)
 #define util_bits_dig 	RLC_PREFIX(util_bits_dig)
-#define util_cmp_const 	RLC_PREFIX(util_cmp_const)
+#define util_cmp_sec 	RLC_PREFIX(util_cmp_sec)
 #define util_perm 	RLC_PREFIX(util_perm)
 #define util_printf 	RLC_PREFIX(util_printf)
 #define util_print_dig 	RLC_PREFIX(util_print_dig)
@@ -158,10 +158,10 @@
 #undef dv_print
 #undef dv_zero
 #undef dv_copy
-#undef dv_copy_cond
-#undef dv_swap_cond
+#undef dv_copy_sec
+#undef dv_swap_sec
 #undef dv_cmp
-#undef dv_cmp_const
+#undef dv_cmp_sec
 #undef dv_new_dynam
 #undef dv_free_dynam
 #undef dv_lshd
@@ -170,10 +170,10 @@
 #define dv_print 	RLC_PREFIX(dv_print)
 #define dv_zero 	RLC_PREFIX(dv_zero)
 #define dv_copy 	RLC_PREFIX(dv_copy)
-#define dv_copy_cond 	RLC_PREFIX(dv_copy_cond)
-#define dv_swap_cond 	RLC_PREFIX(dv_swap_cond)
+#define dv_copy_sec 	RLC_PREFIX(dv_copy_sec)
+#define dv_swap_sec 	RLC_PREFIX(dv_swap_sec)
 #define dv_cmp 	RLC_PREFIX(dv_cmp)
-#define dv_cmp_const 	RLC_PREFIX(dv_cmp_const)
+#define dv_cmp_sec 	RLC_PREFIX(dv_cmp_sec)
 #define dv_new_dynam 	RLC_PREFIX(dv_new_dynam)
 #define dv_free_dynam 	RLC_PREFIX(dv_free_dynam)
 #define dv_lshd 	RLC_PREFIX(dv_lshd)
@@ -489,6 +489,7 @@
 #undef fp_prime_get_par_sps
 #undef fp_param_get_sps
 #undef fp_copy
+#undef fp_copy_sec
 #undef fp_zero
 #undef fp_is_zero
 #undef fp_is_even
@@ -586,6 +587,7 @@
 #define fp_prime_get_par_sps 	RLC_PREFIX(fp_prime_get_par_sps)
 #define fp_param_get_sps 	RLC_PREFIX(fp_param_get_sps)
 #define fp_copy 	RLC_PREFIX(fp_copy)
+#define fp_copy_sec 	RLC_PREFIX(fp_copy_sec)
 #define fp_zero 	RLC_PREFIX(fp_zero)
 #define fp_is_zero 	RLC_PREFIX(fp_is_zero)
 #define fp_is_even 	RLC_PREFIX(fp_is_even)
@@ -919,10 +921,8 @@
 #undef ep_curve_get_v2
 #undef ep_curve_opt_a
 #undef ep_curve_opt_b
-#undef ep_curve_opt_b3
 #undef ep_curve_mul_a
 #undef ep_curve_mul_b
-#undef ep_curve_mul_b3
 #undef ep_curve_is_endom
 #undef ep_curve_is_super
 #undef ep_curve_is_pairf
@@ -944,7 +944,7 @@
 #undef ep_param_get
 #undef ep_param_print
 #undef ep_param_level
-#undef ep_param_embed
+#undef ep_curve_embed
 #undef ep_is_infty
 #undef ep_set_infty
 #undef ep_copy
@@ -1014,10 +1014,8 @@
 #define ep_curve_get_v2 	RLC_PREFIX(ep_curve_get_v2)
 #define ep_curve_opt_a 	RLC_PREFIX(ep_curve_opt_a)
 #define ep_curve_opt_b 	RLC_PREFIX(ep_curve_opt_b)
-#define ep_curve_opt_b3 	RLC_PREFIX(ep_curve_opt_b3)
 #define ep_curve_mul_a 	RLC_PREFIX(ep_curve_mul_a)
 #define ep_curve_mul_b 	RLC_PREFIX(ep_curve_mul_b)
-#define ep_curve_mul_b3 	RLC_PREFIX(ep_curve_mul_b3)
 #define ep_curve_is_endom 	RLC_PREFIX(ep_curve_is_endom)
 #define ep_curve_is_super 	RLC_PREFIX(ep_curve_is_super)
 #define ep_curve_is_pairf 	RLC_PREFIX(ep_curve_is_pairf)
@@ -1039,7 +1037,7 @@
 #define ep_param_get 	RLC_PREFIX(ep_param_get)
 #define ep_param_print 	RLC_PREFIX(ep_param_print)
 #define ep_param_level 	RLC_PREFIX(ep_param_level)
-#define ep_param_embed 	RLC_PREFIX(ep_param_embed)
+#define ep_curve_embed 	RLC_PREFIX(ep_curve_embed)
 #define ep_is_infty 	RLC_PREFIX(ep_is_infty)
 #define ep_set_infty 	RLC_PREFIX(ep_set_infty)
 #define ep_copy 	RLC_PREFIX(ep_copy)
@@ -1402,6 +1400,8 @@
 #undef ep2_curve_get_b
 #undef ep2_curve_opt_a
 #undef ep2_curve_opt_b
+#undef ep2_curve_mul_a
+#undef ep2_curve_mul_b
 #undef ep2_curve_is_twist
 #undef ep2_curve_is_ctmap
 #undef ep2_curve_get_gen
@@ -1428,10 +1428,12 @@
 #undef ep2_add_basic
 #undef ep2_add_slp_basic
 #undef ep2_add_projc
+#undef ep2_add_jacob
 #undef ep2_sub
 #undef ep2_dbl_basic
 #undef ep2_dbl_slp_basic
 #undef ep2_dbl_projc
+#undef ep2_dbl_jacob
 #undef ep2_mul_basic
 #undef ep2_mul_slide
 #undef ep2_mul_monty
@@ -1474,6 +1476,8 @@
 #define ep2_curve_get_b 	RLC_PREFIX(ep2_curve_get_b)
 #define ep2_curve_opt_a 	RLC_PREFIX(ep2_curve_opt_a)
 #define ep2_curve_opt_b 	RLC_PREFIX(ep2_curve_opt_b)
+#define ep2_curve_mul_a 	RLC_PREFIX(ep2_curve_mul_a)
+#define ep2_curve_mul_b 	RLC_PREFIX(ep2_curve_mul_b)
 #define ep2_curve_is_twist 	RLC_PREFIX(ep2_curve_is_twist)
 #define ep2_curve_is_ctmap 	RLC_PREFIX(ep2_curve_is_ctmap)
 #define ep2_curve_get_gen 	RLC_PREFIX(ep2_curve_get_gen)
@@ -1500,10 +1504,12 @@
 #define ep2_add_basic 	RLC_PREFIX(ep2_add_basic)
 #define ep2_add_slp_basic 	RLC_PREFIX(ep2_add_slp_basic)
 #define ep2_add_projc 	RLC_PREFIX(ep2_add_projc)
+#define ep2_add_jacob 	RLC_PREFIX(ep2_add_jacob)
 #define ep2_sub 	RLC_PREFIX(ep2_sub)
 #define ep2_dbl_basic 	RLC_PREFIX(ep2_dbl_basic)
 #define ep2_dbl_slp_basic 	RLC_PREFIX(ep2_dbl_slp_basic)
 #define ep2_dbl_projc 	RLC_PREFIX(ep2_dbl_projc)
+#define ep2_dbl_jacob 	RLC_PREFIX(ep2_dbl_jacob)
 #define ep2_mul_basic 	RLC_PREFIX(ep2_mul_basic)
 #define ep2_mul_slide 	RLC_PREFIX(ep2_mul_slide)
 #define ep2_mul_monty 	RLC_PREFIX(ep2_mul_monty)
@@ -2027,6 +2033,7 @@
 #undef fp2_field_init
 #undef fp2_field_get_qnr
 #undef fp2_copy
+#undef fp2_copy_sec
 #undef fp2_zero
 #undef fp2_is_zero
 #undef fp2_rand
@@ -2073,6 +2080,7 @@
 #define fp2_field_init 	RLC_PREFIX(fp2_field_init)
 #define fp2_field_get_qnr 	RLC_PREFIX(fp2_field_get_qnr)
 #define fp2_copy 	RLC_PREFIX(fp2_copy)
+#define fp2_copy_sec 	RLC_PREFIX(fp2_copy_sec)
 #define fp2_zero 	RLC_PREFIX(fp2_zero)
 #define fp2_is_zero 	RLC_PREFIX(fp2_is_zero)
 #define fp2_rand 	RLC_PREFIX(fp2_rand)
@@ -2157,6 +2165,7 @@
 #undef fp3_field_init
 #undef fp3_field_get_cnr
 #undef fp3_copy
+#undef fp3_copy_sec
 #undef fp3_zero
 #undef fp3_is_zero
 #undef fp3_rand
@@ -2194,6 +2203,7 @@
 #define fp3_field_init 	RLC_PREFIX(fp3_field_init)
 #define fp3_field_get_cnr 	RLC_PREFIX(fp3_field_get_cnr)
 #define fp3_copy 	RLC_PREFIX(fp3_copy)
+#define fp3_copy_sec 	RLC_PREFIX(fp3_copy_sec)
 #define fp3_zero 	RLC_PREFIX(fp3_zero)
 #define fp3_is_zero 	RLC_PREFIX(fp3_is_zero)
 #define fp3_rand 	RLC_PREFIX(fp3_rand)
@@ -2266,6 +2276,7 @@
 
 #undef fp4_field_init
 #undef fp4_copy
+#undef fp4_copy_sec
 #undef fp4_zero
 #undef fp4_is_zero
 #undef fp4_rand
@@ -2302,6 +2313,7 @@
 
 #define fp4_field_init 	RLC_PREFIX(fp4_field_init)
 #define fp4_copy 	RLC_PREFIX(fp4_copy)
+#define fp4_copy_sec 	RLC_PREFIX(fp4_copy_sec)
 #define fp4_zero 	RLC_PREFIX(fp4_zero)
 #define fp4_is_zero 	RLC_PREFIX(fp4_is_zero)
 #define fp4_rand 	RLC_PREFIX(fp4_rand)
@@ -2337,6 +2349,7 @@
 #define fp4_srt 	RLC_PREFIX(fp4_srt)
 
 #undef fp6_copy
+#undef fp6_copy_sec
 #undef fp6_zero
 #undef fp6_is_zero
 #undef fp6_rand
@@ -2364,6 +2377,7 @@
 #undef fp6_frb
 
 #define fp6_copy 	RLC_PREFIX(fp6_copy)
+#define fp6_copy_sec 	RLC_PREFIX(fp6_copy_sec)
 #define fp6_zero 	RLC_PREFIX(fp6_zero)
 #define fp6_is_zero 	RLC_PREFIX(fp6_is_zero)
 #define fp6_rand 	RLC_PREFIX(fp6_rand)
@@ -2392,6 +2406,7 @@
 
 #undef fp8_field_init
 #undef fp8_copy
+#undef fp8_copy_sec
 #undef fp8_zero
 #undef fp8_is_zero
 #undef fp8_rand
@@ -2430,6 +2445,7 @@
 
 #define fp8_field_init 	RLC_PREFIX(fp8_field_init)
 #define fp8_copy 	RLC_PREFIX(fp8_copy)
+#define fp8_copy_sec 	RLC_PREFIX(fp8_copy_sec)
 #define fp8_zero 	RLC_PREFIX(fp8_zero)
 #define fp8_is_zero 	RLC_PREFIX(fp8_is_zero)
 #define fp8_rand 	RLC_PREFIX(fp8_rand)
@@ -2467,6 +2483,7 @@
 #define fp8_srt 	RLC_PREFIX(fp8_srt)
 
 #undef fp9_copy
+#undef fp9_copy_sec
 #undef fp9_zero
 #undef fp9_is_zero
 #undef fp9_rand
@@ -2495,6 +2512,7 @@
 #undef fp9_frb
 
 #define fp9_copy 	RLC_PREFIX(fp9_copy)
+#define fp9_copy_sec 	RLC_PREFIX(fp9_copy_sec)
 #define fp9_zero 	RLC_PREFIX(fp9_zero)
 #define fp9_is_zero 	RLC_PREFIX(fp9_is_zero)
 #define fp9_rand 	RLC_PREFIX(fp9_rand)
@@ -2523,6 +2541,7 @@
 #define fp9_frb 	RLC_PREFIX(fp9_frb)
 
 #undef fp12_copy
+#undef fp12_copy_sec
 #undef fp12_zero
 #undef fp12_is_zero
 #undef fp12_rand
@@ -2569,6 +2588,7 @@
 #undef fp12_upk_max
 
 #define fp12_copy 	RLC_PREFIX(fp12_copy)
+#define fp12_copy_sec 	RLC_PREFIX(fp12_copy_sec)
 #define fp12_zero 	RLC_PREFIX(fp12_zero)
 #define fp12_is_zero 	RLC_PREFIX(fp12_is_zero)
 #define fp12_rand 	RLC_PREFIX(fp12_rand)
@@ -2615,6 +2635,7 @@
 #define fp12_upk_max 	RLC_PREFIX(fp12_upk_max)
 
 #undef fp18_copy
+#undef fp18_copy_sec
 #undef fp18_zero
 #undef fp18_is_zero
 #undef fp18_rand
@@ -2661,6 +2682,7 @@
 #undef fp18_upk_max
 
 #define fp18_copy 	RLC_PREFIX(fp18_copy)
+#define fp18_copy_sec 	RLC_PREFIX(fp18_copy_sec)
 #define fp18_zero 	RLC_PREFIX(fp18_zero)
 #define fp18_is_zero 	RLC_PREFIX(fp18_is_zero)
 #define fp18_rand 	RLC_PREFIX(fp18_rand)
@@ -2707,6 +2729,7 @@
 #define fp18_upk_max 	RLC_PREFIX(fp18_upk_max)
 
 #undef fp24_copy
+#undef fp24_copy_sec
 #undef fp24_zero
 #undef fp24_is_zero
 #undef fp24_rand
@@ -2750,6 +2773,7 @@
 #undef fp24_upk
 
 #define fp24_copy 	RLC_PREFIX(fp24_copy)
+#define fp24_copy_sec 	RLC_PREFIX(fp24_copy_sec)
 #define fp24_zero 	RLC_PREFIX(fp24_zero)
 #define fp24_is_zero 	RLC_PREFIX(fp24_is_zero)
 #define fp24_rand 	RLC_PREFIX(fp24_rand)
@@ -2793,6 +2817,7 @@
 #define fp24_upk 	RLC_PREFIX(fp24_upk)
 
 #undef fp48_copy
+#undef fp48_copy_sec
 #undef fp48_zero
 #undef fp48_is_zero
 #undef fp48_rand
@@ -2834,6 +2859,7 @@
 #undef fp48_upk
 
 #define fp48_copy 	RLC_PREFIX(fp48_copy)
+#define fp48_copy_sec 	RLC_PREFIX(fp48_copy_sec)
 #define fp48_zero 	RLC_PREFIX(fp48_zero)
 #define fp48_is_zero 	RLC_PREFIX(fp48_is_zero)
 #define fp48_rand 	RLC_PREFIX(fp48_rand)
@@ -2875,6 +2901,7 @@
 #define fp48_upk 	RLC_PREFIX(fp48_upk)
 
 #undef fp54_copy
+#undef fp54_copy_sec
 #undef fp54_zero
 #undef fp54_is_zero
 #undef fp54_rand
@@ -2914,6 +2941,7 @@
 #undef fp54_upk
 
 #define fp54_copy 	RLC_PREFIX(fp54_copy)
+#define fp54_copy_sec 	RLC_PREFIX(fp54_copy_sec)
 #define fp54_zero 	RLC_PREFIX(fp54_zero)
 #define fp54_is_zero 	RLC_PREFIX(fp54_is_zero)
 #define fp54_rand 	RLC_PREFIX(fp54_rand)

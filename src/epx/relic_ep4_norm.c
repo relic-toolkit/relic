@@ -24,8 +24,8 @@
 /**
  * @file
  *
- * Implementation of point normalization on prime elliptic curves over quartic
- * extensions.
+ * Implementation of point normalization on prime elliptic curves over a quartic
+ * extension field.
  *
  * @ingroup epx
  */
@@ -43,36 +43,45 @@
  *
  * @param r			- the result.
  * @param p			- the point to normalize.
+ * @param inv		- the flag to indicate if z is already inverted.
  */
-static void ep4_norm_imp(ep4_t r, const ep4_t p, int inverted) {
+static void ep4_norm_imp(ep4_t r, const ep4_t p, int inv) {
 	if (p->coord != BASIC) {
-		fp4_t t0, t1;
+		fp4_t t;
 
-		fp4_null(t0);
-		fp4_null(t1);
+		fp4_null(t);
 
 		RLC_TRY {
+			fp4_new(t);
 
-			fp4_new(t0);
-			fp4_new(t1);
-
-			if (inverted) {
-				fp4_copy(t1, p->z);
+			if (inv) {
+				fp4_copy(r->z, p->z);
 			} else {
-				fp4_inv(t1, p->z);
+				fp4_inv(r->z, p->z);
 			}
-			fp4_sqr(t0, t1);
-			fp4_mul(r->x, p->x, t0);
-			fp4_mul(t0, t0, t1);
-			fp4_mul(r->y, p->y, t0);
+
+			switch (p->coord) {
+				case PROJC:
+					fp4_mul(r->x, p->x, r->z);
+					fp4_mul(r->y, p->y, r->z);
+					break;
+				case JACOB:
+					fp4_sqr(t, r->z);
+					fp4_mul(r->x, p->x, t);
+					fp4_mul(t, t, r->z);
+					fp4_mul(r->y, p->y, t);
+					break;
+				default:
+					ep4_copy(r, p);
+					break;
+			}
 			fp4_set_dig(r->z, 1);
 		}
 		RLC_CATCH_ANY {
 			RLC_THROW(ERR_CAUGHT);
 		}
 		RLC_FINALLY {
-			fp4_free(t0);
-			fp4_free(t1);
+			fp4_free(t);
 		}
 	}
 
@@ -92,17 +101,18 @@ void ep4_norm(ep4_t r, const ep4_t p) {
 	}
 
 	if (p->coord == BASIC) {
-		/* If the point is represented in affine coordinates, we just copy it. */
+		/* If the point is represented in affine coordinates, just copy it. */
 		ep4_copy(r, p);
+		return;
 	}
 #if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
 	ep4_norm_imp(r, p, 0);
-#endif
+#endif /* EP_ADD == PROJC */
 }
 
 void ep4_norm_sim(ep4_t *r, const ep4_t *t, int n) {
 	int i;
-	fp4_t *a = RLC_ALLOCA(fp4_t, n);
+	fp4_t* a = RLC_ALLOCA(fp4_t, n);
 
 	RLC_TRY {
 		if (a == NULL) {
@@ -114,18 +124,20 @@ void ep4_norm_sim(ep4_t *r, const ep4_t *t, int n) {
 			fp4_copy(a[i], t[i]->z);
 		}
 
-		fp4_inv_sim(a, a, n);
+		fp4_inv_sim(a, (const fp4_t *)a, n);
 
 		for (i = 0; i < n; i++) {
 			fp4_copy(r[i]->x, t[i]->x);
 			fp4_copy(r[i]->y, t[i]->y);
-			fp4_copy(r[i]->z, a[i]);
+			if (!ep4_is_infty(t[i])) {
+				fp4_copy(r[i]->z, a[i]);
+			}
 		}
 #if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
 		for (i = 0; i < n; i++) {
 			ep4_norm_imp(r[i], r[i], 1);
 		}
-#endif
+#endif /* EP_ADD == PROJC */
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);

@@ -24,8 +24,8 @@
 /**
  * @file
  *
- * Implementation of comparison for points on prime elliptic curves over
- * quartic extensions.
+ * Implementation of comparison for points on prime elliptic curves over a
+ * cubic extension field.
  *
  * @ingroup epx
  */
@@ -89,13 +89,18 @@ void ep3_blind(ep3_t r, const ep3_t p) {
 #if EP_ADD == BASIC
 		(void)rand;
 		ep3_copy(r, p);
-#else
+#elif EP_ADD == PROJC
+		fp3_mul(r->x, p->x, rand);
+		fp3_mul(r->y, p->y, rand);
+		fp3_mul(r->z, p->z, rand);
+		r->coord = PROJC;
+#elif EP_ADD == JACOB
 		fp3_mul(r->z, p->z, rand);
 		fp3_mul(r->y, p->y, rand);
 		fp3_sqr(rand, rand);
 		fp3_mul(r->x, r->x, rand);
 		fp3_mul(r->y, r->y, rand);
-		r->coord = EP_ADD;
+		r->coord = JACOB;
 #endif
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -104,17 +109,15 @@ void ep3_blind(ep3_t r, const ep3_t p) {
 	}
 }
 
-void ep3_rhs(fp3_t rhs, const ep3_t p) {
-	fp3_t t0, t1;
+void ep3_rhs(fp3_t rhs, const fp3_t x) {
+	fp3_t t0;
 
 	fp3_null(t0);
-	fp3_null(t1);
 
 	RLC_TRY {
 		fp3_new(t0);
-		fp3_new(t1);
 
-		fp3_sqr(t0, p->x);                  /* x1^2 */
+		fp3_sqr(t0, x);                  /* x1^2 */
 
 		switch (ep3_curve_opt_a()) {
 			case RLC_ZERO:
@@ -130,17 +133,15 @@ void ep3_rhs(fp3_t rhs, const ep3_t p) {
 				fp_add_dig(t0[0], t0[0], 2);
 				break;
 			case RLC_TINY:
-				ep3_curve_get_a(t1);
-				fp3_mul_dig(t0, t0, t1[0][0]);
+				fp3_mul_dig(t0, t0, ep3_curve_get_a()[0][0]);
 				break;
 #endif
 			default:
-				ep3_curve_get_a(t1);
-				fp3_add(t0, t0, t1);
+				fp3_add(t0, t0, ep3_curve_get_a());
 				break;
 		}
 
-		fp3_mul(t0, t0, p->x);				/* x1^3 + a * x */
+		fp3_mul(t0, t0, x);				/* x1^3 + a * x */
 
 		switch (ep3_curve_opt_b()) {
 			case RLC_ZERO:
@@ -156,13 +157,11 @@ void ep3_rhs(fp3_t rhs, const ep3_t p) {
 				fp3_add_dig(t0, t0, 2);
 				break;
 			case RLC_TINY:
-				ep3_curve_get_b(t1);
-				fp3_mul_dig(t0, t0, t1[0][0]);
+				fp3_mul_dig(t0, t0, ep3_curve_get_b()[0][0]);
 				break;
 #endif
 			default:
-				ep3_curve_get_b(t1);
-				fp3_add(t0, t0, t1);
+				fp3_add(t0, t0, ep3_curve_get_b());
 				break;
 		}
 
@@ -171,10 +170,8 @@ void ep3_rhs(fp3_t rhs, const ep3_t p) {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		fp3_free(t0);
-		fp3_free(t1);
 	}
 }
-
 
 int ep3_on_curve(const ep3_t p) {
 	ep3_t t;
@@ -187,7 +184,7 @@ int ep3_on_curve(const ep3_t p) {
 
 		ep3_norm(t, p);
 
-		ep3_rhs(t->x, t);
+		ep3_rhs(t->x, t->x);
 		fp3_sqr(t->y, t->y);
 
 		r = (fp3_cmp(t->x, t->y) == RLC_EQ) || ep3_is_infty(p);

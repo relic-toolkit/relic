@@ -156,8 +156,6 @@ enum {
 	K18_638,
     /** 638-bit prime for SG curve with embedding degree 18. */
     SG18_638,
-	/** 765-bit prime for new family with embedding degree 16. */
-	N16_765,
 	/** 765-bit prime for FM curve with embedding degree 16. */
 	FM16_765,
 	/** 766-bit prime for KSS curve with embedding degree 16. */
@@ -168,6 +166,8 @@ enum {
 	FM18_768,
 	/** 1024-bit prime for CTIDH. */
 	CTIDH_1024,
+	/** 1150-bit prime for BLS curve with embedding degree 12. */
+	B12_1150,
 	/** 1536-bit prime for supersingular curve with embedding degree k = 2. */
 	SS_1536,
 	/** 2048-bit prime for CTDIH. */
@@ -667,6 +667,15 @@ void fp_param_get_sps(int *s, int *len);
  * @param[in] a				- the prime field element to copy.
  */
 void fp_copy(fp_t c, const fp_t a);
+
+/**
+ * Conditionally copies a field element to another field element.
+ *
+ * @param[out] c			- the destination.
+ * @paraim[in] a			- the source.
+ * @param[in] bit			- the condition bit to evaluate.
+ */
+void fp_copy_sec(fp_t c, const fp_t a, dig_t bit);
 
 /**
  * Assigns zero to a prime field element.

@@ -91,8 +91,6 @@ static void ep_curve_set_map(void) {
 	dig_t *c2 = ctx->ep_map_c[2];
 	dig_t *c3 = ctx->ep_map_c[3];
 	dig_t *c4 = ctx->ep_map_c[4];
-	dig_t *c5 = ctx->ep_map_c[5];
-	dig_t *c6 = ctx->ep_map_c[6];
 
 	RLC_TRY {
 		bn_new(t);
@@ -173,42 +171,9 @@ static void ep_curve_set_map(void) {
 			fp_mul_dig(c3, c3, 4); /* c3 *= 4 */
 		}
 
-		/* if b = 0, precompute constants. */
-		if (ep_curve_opt_b() == RLC_ZERO) {
-			dig_t r = 0;
-
-			fp_set_dig(c4, -fp_prime_get_qnr());
-			fp_neg(c4, c4);
-
-			bn_read_raw(t, fp_prime_get(), RLC_FP_DIGS);
-			bn_sub_dig(t, t, 1);
-			bn_rsh(t, t, 2);
-			fp_exp(c5, c4, t);
-
-			bn_read_raw(t, fp_prime_get(), RLC_FP_DIGS);
-			if ((t->dp[0] & 0xF) == 5) {
-				/* n = (3p + 1)/16 */
-				bn_mul_dig(t, t, 3);
-				bn_add_dig(t, t, 1);
-				r = 1;
-			} else {
-				/* n = (p + 3)/16 */
-				bn_add_dig(t, t, 3);
-				r = 3;
-			}
-			bn_rsh(t, t, 4);
-			/* Compute d = 1/c^n. */
-			fp_exp(c4, c4, t);
-			fp_inv(c4, c4);
-			fp_exp_dig(c5, c5, r);
-			/* Compute 1/sqrt(-1) as well. */
-			fp_set_dig(c6, 1);
-			fp_neg(c6, c6);
-			fp_srt(c6, c6);
-		}
-
-		/* If a = 0, precompute and store a square root of -3. */
-		if (ep_curve_opt_a() == RLC_ZERO) {
+		/* If curve is not supersingular, precompute and store sqrt(-3)
+		 * neeed for hashing using the SwiftEC algorithm and variants. */
+		if (!ep_curve_is_super()) {
 			fp_set_dig(c4, 3);
 			fp_neg(c4, c4);
 			if (!fp_srt(c4, c4)) {
@@ -241,12 +206,9 @@ static void ep_curve_set(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
 
 	fp_copy(ctx->ep_a, a);
 	fp_copy(ctx->ep_b, b);
-	fp_dbl(ctx->ep_b3, b);
-	fp_add(ctx->ep_b3, ctx->ep_b3, b);
 
 	detect_opt(&(ctx->ep_opt_a), ctx->ep_a);
 	detect_opt(&(ctx->ep_opt_b), ctx->ep_b);
-	detect_opt(&(ctx->ep_opt_b3), ctx->ep_b3);
 
 	ctx->ep_is_ctmap = ctmap;
 	ep_curve_set_map();
@@ -304,10 +266,6 @@ dig_t *ep_curve_get_b(void) {
 	return core_get()->ep_b;
 }
 
-dig_t *ep_curve_get_b3(void) {
-	return core_get()->ep_b3;
-}
-
 #if defined(EP_ENDOM) && (EP_MUL == LWNAF || EP_FIX == COMBS || EP_FIX == LWNAF || EP_SIM == INTER || !defined(STRIP))
 
 dig_t *ep_curve_get_beta(void) {
@@ -347,6 +305,9 @@ void ep_curve_mul_a(fp_t c, const fp_t a) {
 		case RLC_ONE:
 			fp_copy(c, a);
 			break;
+		case RLC_TWO:
+			fp_dbl(c, a);
+			break;
 #if FP_RDC != MONTY
 		case RLC_TINY:
 			fp_mul_dig(c, a, ctx->ep_a[0]);
@@ -374,26 +335,6 @@ void ep_curve_mul_b(fp_t c, const fp_t a) {
 #endif
 		default:
 			fp_mul(c, a, ctx->ep_b);
-			break;
-	}
-}
-
-void ep_curve_mul_b3(fp_t c, const fp_t a) {
-	ctx_t *ctx = core_get();
-	switch (ctx->ep_opt_b3) {
-		case RLC_ZERO:
-			fp_zero(c);
-			break;
-		case RLC_ONE:
-			fp_copy(c, a);
-			break;
-#if FP_RDC != MONTY
-		case RLC_TINY:
-			fp_mul_dig(c, a, ctx->ep_b3[0]);
-			break;
-#endif
-		default:
-			fp_mul(c, a, ctx->ep_b3);
 			break;
 	}
 }
@@ -580,3 +521,57 @@ void ep_curve_set_endom(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
 }
 
 #endif
+
+int ep_curve_embed(void) {
+	switch (core_get()->ep_is_pairf) {
+		case EP_K1:
+			return 1;
+		case EP_SS2:
+			return 2;
+		case EP_GMT8:
+			return 8;
+		case EP_BN:
+		case EP_B12:
+			return 12;
+		case EP_N16:
+		case EP_FM16:
+		case EP_K16:
+			return 16;
+		case EP_K18:
+		case EP_FM18:
+		case EP_SG18:
+			return 18;
+		case EP_B24:
+			return 24;
+		case EP_B48:
+			return 48;
+		case EP_SG54:
+			return 54;
+	}
+	return 0;
+}
+
+int ep_curve_frdim(void) {
+	size_t f = 0;
+
+	switch (ep_curve_embed()) {
+		case 1:
+		case 2:
+		case 8:
+			return 1;
+			break;
+		case 12:
+			return 4;
+			break;
+		case 18:
+			return 6;
+			break;
+		case 16:
+		case 24:
+			return 8;
+			break;
+		case 48:
+			return 16;
+			break;
+	}
+}

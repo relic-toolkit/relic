@@ -1345,35 +1345,35 @@ int main(void) {
 	ep_param_print();
 	util_banner("Arithmetic:", 1);
 
-	if (ep_param_embed() == 2) {
+	if (ep_curve_embed() == 2) {
 		pairing2();
 	}
 
-	if (ep_param_embed() == 8) {
+	if (ep_curve_embed() == 8) {
 		pairing8();
 	}
 
-	if (ep_param_embed() == 12) {
+	if (ep_curve_embed() == 12) {
 		pairing12();
 	}
 
-	if (ep_param_embed() == 16) {
+	if (ep_curve_embed() == 16) {
 		pairing16();
 	}
 
-	if (ep_param_embed() == 18) {
+	if (ep_curve_embed() == 18) {
 		pairing18();
 	}
 
-	if (ep_param_embed() == 48) {
+	if (ep_curve_embed() == 48) {
 		pairing24();
 	}
 
-	if (ep_param_embed() == 48) {
+	if (ep_curve_embed() == 48) {
 		pairing48();
 	}
 
-	if (ep_param_embed() == 54) {
+	if (ep_curve_embed() == 54) {
 		pairing54();
 	}
 

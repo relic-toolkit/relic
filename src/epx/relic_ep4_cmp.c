@@ -24,8 +24,8 @@
 /**
  * @file
  *
- * Implementation of utilities for prime elliptic curves over quadratic
- * extensions.
+ * Implementation of utilities for prime elliptic curves over a quartic
+ * extension field.
  *
  * @ingroup epx
  */
@@ -37,46 +37,68 @@
 /*============================================================================*/
 
 int ep4_cmp(const ep4_t p, const ep4_t q) {
-    ep4_t r, s;
-    int result = RLC_NE;
+	ep4_t r, s;
+	int result = RLC_NE;
 
 	if (ep4_is_infty(p) && ep4_is_infty(q)) {
 		return RLC_EQ;
 	}
 
-    ep4_null(r);
-    ep4_null(s);
+	ep4_null(r);
+	ep4_null(s);
 
-    RLC_TRY {
-        ep4_new(r);
-        ep4_new(s);
+	RLC_TRY {
+		ep4_new(r);
+		ep4_new(s);
 
-        if ((p->coord != BASIC) && (q->coord != BASIC)) {
-            /* If the two points are not normalized, it is faster to compare
-             * x1 * z2^2 == x2 * z1^2 and y1 * z2^3 == y2 * z1^3. */
-            fp4_sqr(r->z, p->z);
-            fp4_sqr(s->z, q->z);
-            fp4_mul(r->x, p->x, s->z);
-            fp4_mul(s->x, q->x, r->z);
-            fp4_mul(r->z, r->z, p->z);
-            fp4_mul(s->z, s->z, q->z);
-            fp4_mul(r->y, p->y, s->z);
-            fp4_mul(s->y, q->y, r->z);
-        } else {
-			ep4_norm(r, p);
-            ep4_norm(s, q);
-        }
+		switch (q->coord) {
+			case PROJC:
+				/* If q is in homogeneous projective coordinates, compute
+				 * x1 * z2 and y1 * z2. */
+				fp4_mul(r->x, p->x, q->z);
+				fp4_mul(r->y, p->y, q->z);
+				break;
+			case JACOB:
+				/* If q is in Jacobian projective coordinates, compute
+				 * x2 * z1^2 and y2 * z1^3. */
+				fp4_sqr(r->z, q->z);
+				fp4_mul(r->x, p->x, r->z);
+				fp4_mul(r->z, r->z, q->z);
+				fp4_mul(r->y, p->y, r->z);
+				break;
+			default:
+				ep4_copy(r, p);
+				break;
+		}
 
-        if ((fp4_cmp(r->x, s->x) == RLC_EQ) &&
-				(fp4_cmp(r->y, s->y) == RLC_EQ)) {
-            result = RLC_EQ;
-        }
-    } RLC_CATCH_ANY {
-        RLC_THROW(ERR_CAUGHT);
-    } RLC_FINALLY {
-        ep4_free(r);
-        ep4_free(s);
-    }
+		switch (p->coord) {
+			/* Now do the same for the other point. */
+			case PROJC:
+				fp4_mul(s->x, q->x, p->z);
+				fp4_mul(s->y, q->y, p->z);
+				break;
+			case JACOB:
+				fp4_sqr(s->z, p->z);
+				fp4_mul(s->x, q->x, s->z);
+				fp4_mul(s->z, s->z, p->z);
+				fp4_mul(s->y, q->y, s->z);
+				break;
+			default:
+				ep4_copy(s, q);
+				break;
+		}
 
-    return result;
+		if ((fp4_cmp(r->x, s->x) == RLC_EQ) && (fp4_cmp(r->y, s->y) == RLC_EQ)) {
+			result = RLC_EQ;
+		}
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		ep4_free(r);
+		ep4_free(s);
+	}
+
+	return result;
 }

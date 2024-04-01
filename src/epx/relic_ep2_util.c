@@ -24,8 +24,8 @@
 /**
  * @file
  *
- * Implementation of comparison for points on prime elliptic curves over
- * quadratic extensions.
+ * Implementation of comparison for points on prime elliptic curves over a
+ * quadratic extension field.
  *
  * @ingroup epx
  */
@@ -89,13 +89,18 @@ void ep2_blind(ep2_t r, const ep2_t p) {
 #if EP_ADD == BASIC
 		(void)rand;
 		ep2_copy(r, p);
-#else
+#elif EP_ADD == PROJC
+		fp2_mul(r->x, p->x, rand);
+		fp2_mul(r->y, p->y, rand);
+		fp2_mul(r->z, p->z, rand);
+		r->coord = PROJC;
+#elif EP_ADD == JACOB
 		fp2_mul(r->z, p->z, rand);
 		fp2_mul(r->y, p->y, rand);
 		fp2_sqr(rand, rand);
 		fp2_mul(r->x, r->x, rand);
 		fp2_mul(r->y, r->y, rand);
-		r->coord = EP_ADD;
+		r->coord = JACOB;
 #endif
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -104,7 +109,7 @@ void ep2_blind(ep2_t r, const ep2_t p) {
 	}
 }
 
-void ep2_rhs(fp2_t rhs, const ep2_t p) {
+void ep2_rhs(fp2_t rhs, const fp2_t x) {
 	fp2_t t0;
 
 	fp2_null(t0);
@@ -112,7 +117,7 @@ void ep2_rhs(fp2_t rhs, const ep2_t p) {
 	RLC_TRY {
 		fp2_new(t0);
 
-		fp2_sqr(t0, p->x);                  /* x1^2 */
+		fp2_sqr(t0, x);                  /* x1^2 */
 
 		switch (ep2_curve_opt_a()) {
 			case RLC_ZERO:
@@ -136,7 +141,7 @@ void ep2_rhs(fp2_t rhs, const ep2_t p) {
 				break;
 		}
 
-		fp2_mul(t0, t0, p->x);				/* x1^3 + a * x */
+		fp2_mul(t0, t0, x);				/* x1^3 + a * x */
 
 		switch (ep2_curve_opt_b()) {
 			case RLC_ZERO:
@@ -180,7 +185,7 @@ int ep2_on_curve(const ep2_t p) {
 
 		ep2_norm(t, p);
 
-		ep2_rhs(t->x, t);
+		ep2_rhs(t->x, t->x);
 		fp2_sqr(t->y, t->y);
 
 		r = (fp2_cmp(t->x, t->y) == RLC_EQ) || ep2_is_infty(p);

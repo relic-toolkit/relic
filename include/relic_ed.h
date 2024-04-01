@@ -321,13 +321,13 @@ void ed_rand(ed_t p);
 void ed_blind(ed_t r, const ed_t p);
 
 /**
- * Computes the right-hand side of the elliptic curve equation at a certain
- * Edwards elliptic curve point.
+ * Computes the right-hand side of the elliptic curve equation at the
+ * x-coordinate of a certain Edwards elliptic curve point.
  *
  * @param[out] rhs			- the result.
- * @param[in] p				- the point.
+ * @param[in] x				- the x-coordinate of the point.
  */
-void ed_rhs(fp_t rhs, const ed_t p);
+void ed_rhs(fp_t rhs, const fp_t p);
 
 /**
  * Copies the second argument to the first argument.

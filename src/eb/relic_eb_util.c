@@ -78,7 +78,7 @@ void eb_rand(eb_t p) {
 	}
 }
 
-void eb_rhs(fb_t rhs, const eb_t p) {
+void eb_rhs(fb_t rhs, const fb_t x) {
 	fb_t t0, t1;
 
 	fb_null(t0);
@@ -89,9 +89,9 @@ void eb_rhs(fb_t rhs, const eb_t p) {
 		fb_new(t1);
 
 		/* t0 = x1^2. */
-		fb_sqr(t0, p->x);
+		fb_sqr(t0, x);
 		/* t1 = x1^3. */
-		fb_mul(t1, t0, p->x);
+		fb_mul(t1, t0, x);
 
 		/* t1 = x1^3 + a * x1^2 + b. */
 		switch (eb_curve_opt_a()) {
@@ -171,7 +171,7 @@ int eb_on_curve(const eb_t p) {
 		eb_norm(t, p);
 
 		fb_mul(lhs, t->x, t->y);
-		eb_rhs(t->x, t);
+		eb_rhs(t->x, t->x);
 		fb_sqr(t->y, t->y);
 		fb_add(lhs, lhs, t->y);
 		r = (fb_cmp(lhs, t->x) == RLC_EQ) || eb_is_infty(p);

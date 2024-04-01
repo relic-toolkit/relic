@@ -493,7 +493,7 @@
 #define pp_map_k1(R, P, Q)		pp_map_tatep_k1(R, P, Q)
 #endif
 
-/**pp_map
+/**
  * Computes a pairing of two prime elliptic curve points defined on an elliptic
  * curves of embedding degree 2. Computes e(P, Q).
  *
@@ -508,6 +508,16 @@
 #elif PP_MAP == OATEP
 #define pp_map_k2(R, P, Q)		pp_map_tatep_k2(R, P, Q)
 #endif
+
+/**
+ * Computes a pairing of two prime elliptic curve points defined on an elliptic
+ * curves of embedding degree 8. Computes e(P, Q).
+ *
+ * @param[out] R			- the result.
+ * @param[in] P				- the first elliptic curve point.
+ * @param[in] Q				- the second elliptic curve point.
+ */
+#define pp_map_k8(R, P, Q)		pp_map_oatep_k8(R, P, Q)
 
 /**
  * Computes a pairing of two prime elliptic curve points defined on an elliptic
@@ -586,6 +596,17 @@
 #elif PP_MAP == TATEP || PP_MAP == OATEP
 #define pp_map_sim_k2(R, P, Q, M)	pp_map_sim_tatep_k2(R, P, Q, M)
 #endif
+
+/**
+ * Computes a multi-pairing of elliptic curve points defined on an elliptic
+ * curve of embedding degree 8. Computes \prod e(P_i, Q_i).
+ *
+ * @param[out] R			- the result.
+ * @param[in] P				- the first pairing arguments.
+ * @param[in] Q				- the second pairing arguments.
+ * @param[in] M 			- the number of pairings to evaluate.
+ */
+#define pp_map_sim_k8(R, P, Q, M)	pp_map_sim_oatep_k8(R, P, Q, M)
 
 /**
  * Computes a multi-pairing of elliptic curve points defined on an elliptic
@@ -1519,6 +1540,17 @@ void pp_map_sim_weilp_k2(fp2_t r, const ep_t *p, const ep_t *q, int m);
  * @param[in] p				- the second elliptic curve point.
  */
 void pp_map_oatep_k8(fp8_t r, const ep_t p, const ep2_t q);
+
+/**
+ * Computes the optimal ate multi-pairing in a parameterized elliptic
+ * curve with embedding degree 8.
+ *
+ * @param[out] r			- the result.
+ * @param[in] q				- the first pairing arguments.
+ * @param[in] p				- the second pairing arguments.
+ * @param[in] m 			- the number of pairings to evaluate.
+ */
+void pp_map_sim_oatep_k8(fp8_t r, const ep_t *p, const ep2_t *q, int m);
 
 /**
  * Computes the Tate pairing of two points in a parameterized elliptic curve

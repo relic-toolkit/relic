@@ -61,6 +61,7 @@ jobs:
             gcc
             cmake
             gmp
+            gmp-devel
           update: true
 
       - name: Run CMake (MingW)
