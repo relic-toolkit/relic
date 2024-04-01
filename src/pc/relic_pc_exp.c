@@ -41,7 +41,7 @@
  * @param[in] c			- the result.
  * @param[in] a			- the extension field element to exponentiate.
  */
-static void gt_gls(gt_t c, const gt_t a) {
+static void gt_psi(gt_t c, const gt_t a) {
 	gt_t b;
 
 	gt_null(b);
@@ -184,7 +184,7 @@ void gt_exp_imp(gt_t c, const gt_t a, const bn_t b, size_t f) {
 			l = RLC_MAX(l, _l[i]);
 			/* Apply Frobenius before flipping sign to build table. */
 			if (i > 0) {
-				gt_gls(t[i * RLC_GT_TABLE], t[(i - 1) * RLC_GT_TABLE]);
+				gt_psi(t[i * RLC_GT_TABLE], t[(i - 1) * RLC_GT_TABLE]);
 			}
 		}
 
@@ -331,7 +331,7 @@ void gt_exp_gls_imp(gt_t c, const gt_t a, const bn_t b, size_t f) {
 			l = RLC_MAX(l, _l[i]);
 			/* Apply Frobenius before flipping sign to build table. */
 			if (i > 0) {
-				gt_gls(t[i * RLC_GT_TABLE], t[(i - 1) * RLC_GT_TABLE]);
+				gt_psi(t[i * RLC_GT_TABLE], t[(i - 1) * RLC_GT_TABLE]);
 			}
 		}
 
