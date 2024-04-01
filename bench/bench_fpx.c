@@ -2060,7 +2060,7 @@ static void arith12(void) {
 	}
 	BENCH_END;
 
-	if (ep_curve_is_pairf() && ep_param_embed() == 12) {
+	if (ep_curve_is_pairf() && ep_curve_embed() == 12) {
 		BENCH_RUN("fp12_exp_cyc (gls)") {
 			fp12_rand(a);
 			fp12_conv_cyc(a, a);
@@ -2347,7 +2347,7 @@ static void arith16(void) {
 	}
 	BENCH_END;
 
-	if (ep_curve_is_pairf() && ep_param_embed() == 16) {
+	if (ep_curve_is_pairf() && ep_curve_embed() == 16) {
 		BENCH_RUN("fp16_exp_cyc (gls)") {
 			fp16_rand(a);
 			fp16_conv_cyc(a, a);
@@ -2717,7 +2717,7 @@ static void arith18(void) {
 	}
 	BENCH_END;
 
-	if (ep_curve_is_pairf() && ep_param_embed() == 18) {
+	if (ep_curve_is_pairf() && ep_curve_embed() == 18) {
 		BENCH_RUN("fp18_exp_cyc (gls)") {
 			fp18_rand(a);
 			fp18_conv_cyc(a, a);
@@ -3050,7 +3050,7 @@ static void arith24(void) {
 	}
 	BENCH_END;
 
-	if (ep_curve_is_pairf() && ep_param_embed() == 24) {
+	if (ep_curve_is_pairf() && ep_curve_embed() == 24) {
 		BENCH_RUN("fp24_exp_cyc (gls)") {
 			fp24_rand(a);
 			fp24_conv_cyc(a, a);
@@ -3428,7 +3428,7 @@ static void arith48(void) {
 	}
 	BENCH_END;
 
-	if (ep_curve_is_pairf() && ep_param_embed() == 48) {
+	if (ep_curve_is_pairf() && ep_curve_embed() == 48) {
 		BENCH_RUN("fp48_exp_cyc (gls)") {
 			fp48_rand(a);
 			fp48_conv_cyc(a, a);
@@ -3922,7 +3922,7 @@ int main(void) {
 		arith6();
 	}
 
-	if (fp_prime_get_qnr() && (ep_param_embed() >= 8)) {
+	if (fp_prime_get_qnr() && (ep_curve_embed() >= 8)) {
 		util_banner("Octic extension:", 0);
 		util_banner("Utilities:", 1);
 		memory8();
@@ -3931,7 +3931,7 @@ int main(void) {
 		arith8();
 	}
 
-	if (fp_prime_get_cnr() && (ep_param_embed() >= 9)) {
+	if (fp_prime_get_cnr() && (ep_curve_embed() >= 9)) {
 		util_banner("Nonic extension:", 0);
 		util_banner("Utilities:", 1);
 		memory9();
@@ -3940,7 +3940,7 @@ int main(void) {
 		arith9();
 	}
 
-	if (fp_prime_get_qnr() && fp_prime_get_cnr() && (ep_param_embed() >= 12)) {
+	if (fp_prime_get_qnr() && fp_prime_get_cnr() && (ep_curve_embed() >= 12)) {
 		util_banner("Dodecic extension:", 0);
 		util_banner("Utilities:", 1);
 		memory12();
@@ -3949,7 +3949,7 @@ int main(void) {
 		arith12();
 	}
 
-	if (fp_prime_get_qnr() && (ep_param_embed() >= 16)) {
+	if (fp_prime_get_qnr() && (ep_curve_embed() >= 16)) {
 		util_banner("Sextadecic extension:", 0);
 		util_banner("Utilities:", 1);
 		memory16();
@@ -3959,7 +3959,7 @@ int main(void) {
 		arith16();
 	}
 
-	if (fp_prime_get_cnr() && (ep_param_embed() >= 18)) {
+	if (fp_prime_get_cnr() && (ep_curve_embed() >= 18)) {
 		util_banner("Octdecic extension:", 0);
 		util_banner("Utilities:", 1);
 		memory18();
@@ -3969,7 +3969,7 @@ int main(void) {
 		arith18();
 	}
 
-	if (fp_prime_get_qnr() && (ep_param_embed() >= 24)) {
+	if (fp_prime_get_qnr() && (ep_curve_embed() >= 24)) {
 		util_banner("Extension of degree 24:", 0);
 		util_banner("Utilities:", 1);
 		memory24();
@@ -3978,7 +3978,7 @@ int main(void) {
 		arith24();
 	}
 
-	if (fp_prime_get_qnr() && (ep_param_embed() >= 48)) {
+	if (fp_prime_get_qnr() && (ep_curve_embed() >= 48)) {
 		util_banner("Extension of degree 48:", 0);
 		util_banner("Utilities:", 1);
 		memory48();
@@ -3987,7 +3987,7 @@ int main(void) {
 		arith48();
 	}
 
-	if (fp_prime_get_cnr() && (ep_param_embed() >= 54)) {
+	if (fp_prime_get_cnr() && (ep_curve_embed() >= 54)) {
 		util_banner("Extension of degree 54:", 0);
 		util_banner("Utilities:", 1);
 		memory54();

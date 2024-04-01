@@ -744,7 +744,7 @@ int ep_param_level(void);
 /**
  * Returns the embedding degree of the currently configured elliptic curve.
  */
-int ep_param_embed(void);
+int ep_curve_embed(void);
 
 /**
  * Tests if a point on a prime elliptic curve is at the infinity.

@@ -4677,7 +4677,7 @@ static int cyclotomic12(void) {
 			TEST_ASSERT(fp12_cmp(b, c) == RLC_EQ, end);
         } TEST_END;
 
-		if (ep_curve_is_pairf() && ep_param_embed() == 12) {
+		if (ep_curve_is_pairf() && ep_curve_embed() == 12) {
 			TEST_CASE("cyclotomic exponentiation in subgroup is correct") {
 				fp12_rand(a);
 				pp_exp_k12(a, a);
@@ -5407,7 +5407,7 @@ static int cyclotomic16(void) {
 			TEST_ASSERT(fp16_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
-		if (ep_curve_is_pairf() && ep_param_embed() == 16) {
+		if (ep_curve_is_pairf() && ep_curve_embed() == 16) {
 			TEST_CASE("cyclotomic exponentiation in subgroup is correct") {
 				fp16_rand(a);
 				pp_exp_k16(a, a);
@@ -6177,7 +6177,7 @@ static int cyclotomic18(void) {
 			TEST_ASSERT(fp18_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
-		if (ep_curve_is_pairf() && ep_param_embed() == 18) {
+		if (ep_curve_is_pairf() && ep_curve_embed() == 18) {
 			TEST_CASE("cyclotomic exponentiation in subgroup is correct") {
 				fp18_rand(a);
 				pp_exp_k18(a, a);
@@ -6953,7 +6953,7 @@ static int cyclotomic24(void) {
 			TEST_ASSERT(fp24_cmp(b, c) == RLC_EQ, end);
         } TEST_END;
 
-		if (ep_curve_is_pairf() && ep_param_embed() == 24) {
+		if (ep_curve_is_pairf() && ep_curve_embed() == 24) {
 			TEST_CASE("cyclotomic exponentiation in subgroup is correct") {
 				fp24_rand(a);
 				pp_exp_k24(a, a);
@@ -7768,7 +7768,7 @@ static int cyclotomic48(void) {
 			TEST_ASSERT(fp48_cmp(b, c) == RLC_EQ, end);
         } TEST_END;
 
-		if (ep_curve_is_pairf() && ep_param_embed() == 48) {
+		if (ep_curve_is_pairf() && ep_curve_embed() == 48) {
 			TEST_CASE("cyclotomic exponentiation in subgroup is correct") {
 				fp48_rand(a);
 				pp_exp_k48(a, a);
@@ -8781,7 +8781,7 @@ int main(void) {
 	}
 
 	/* Only execute these if there is an assigned cubic non-residue. */
-	if (fp_prime_get_cnr() && (ep_param_embed() >= 3)) {
+	if (fp_prime_get_cnr() && (ep_curve_embed() >= 3)) {
 		util_print("\n-- Cubic extension: %d as CNR\n", fp_prime_get_cnr());
 		util_banner("Utilities:", 1);
 
@@ -8844,7 +8844,7 @@ int main(void) {
 	}
 
 	/* Fp^4 is defined as a quadratic extension of Fp^2. */
-	if (fp_prime_get_qnr() && (ep_param_embed() >= 4)) {
+	if (fp_prime_get_qnr() && (ep_curve_embed() >= 4)) {
 		util_print("\n-- Quartic extension: (i + %d) as QNR\n",
 				fp2_field_get_qnr());
 		util_banner("Utilities:", 1);
@@ -8908,7 +8908,7 @@ int main(void) {
 	}
 
 	/* Fp^6 is defined as a cubic extension of Fp^2. */
-	if (fp_prime_get_qnr() && fp_prime_get_cnr() && (ep_param_embed() >= 6)) {
+	if (fp_prime_get_qnr() && fp_prime_get_cnr() && (ep_curve_embed() >= 6)) {
 		util_print("\n-- Sextic extension: (i + %d) as CNR\n",
 				fp2_field_get_qnr());
 		util_banner("Utilities:", 1);
@@ -8961,7 +8961,7 @@ int main(void) {
 		}
 	}
 
-	if (fp_prime_get_qnr() && (ep_param_embed() >= 8)) {
+	if (fp_prime_get_qnr() && (ep_curve_embed() >= 8)) {
 		util_banner("Octic extension: (j) as CNR", 0);
 		util_banner("Utilities:", 1);
 
@@ -9024,7 +9024,7 @@ int main(void) {
 	}
 
 	/* Only execute these if there is an assigned cubic non-residue. */
-	if (fp_prime_get_cnr() && (ep_param_embed() >= 9)) {
+	if (fp_prime_get_cnr() && (ep_curve_embed() >= 9)) {
 		util_print("\n-- Nonic extension: (j + %d) as CNR\n",
 				fp3_field_get_cnr());
 		util_banner("Utilities:", 1);
@@ -9078,7 +9078,7 @@ int main(void) {
 	}
 
 	if (fp_prime_get_qnr() && fp_prime_get_cnr() &&
-			(ep_param_embed() >= 12) && (ep_param_embed() != 16)) {
+			(ep_curve_embed() >= 12) && (ep_curve_embed() != 16)) {
 		util_banner("Dodecic extension:", 0);
 		util_banner("Utilities:", 1);
 
@@ -9135,7 +9135,7 @@ int main(void) {
 		}
 	}
 
-	if (fp_prime_get_qnr() && (ep_param_embed() >= 16)) {
+	if (fp_prime_get_qnr() && (ep_curve_embed() >= 16)) {
 		util_banner("Sextadecic extension:", 0);
 		util_banner("Utilities:", 1);
 
@@ -9197,7 +9197,7 @@ int main(void) {
 		}
 	}
 
-	if (fp_prime_get_cnr() && (ep_param_embed() >= 18)) {
+	if (fp_prime_get_cnr() && (ep_curve_embed() >= 18)) {
 		util_banner("Octdecic extension:", 0);
 		util_banner("Utilities:", 1);
 
@@ -9254,7 +9254,7 @@ int main(void) {
 		}
 	}
 
-	if (fp_prime_get_qnr() && (ep_param_embed() >= 24)) {
+	if (fp_prime_get_qnr() && (ep_curve_embed() >= 24)) {
 		util_banner("Extension of degree 24:", 0);
 		util_banner("Utilities:", 1);
 
@@ -9311,7 +9311,7 @@ int main(void) {
 		}
 	}
 
-	if (fp_prime_get_qnr() && (ep_param_embed() >= 48)) {
+	if (fp_prime_get_qnr() && (ep_curve_embed() >= 48)) {
 		util_banner("Extension of degree 48:", 0);
 		util_banner("Utilities:", 1);
 
@@ -9368,7 +9368,7 @@ int main(void) {
 		}
 	}
 
-	if (fp_prime_get_cnr() && (ep_param_embed() == 54)) {
+	if (fp_prime_get_cnr() && (ep_curve_embed() == 54)) {
 		util_banner("Extension of degree 54:", 0);
 		util_banner("Utilities:", 1);
 

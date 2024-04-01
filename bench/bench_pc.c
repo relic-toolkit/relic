@@ -629,7 +629,7 @@ static void util(void) {
 		BENCH_ADD(gt_read_bin(a, bin, l));
 	} BENCH_END;
 
-	if (ep_param_embed() == 12) {
+	if (ep_curve_embed() == 12) {
 		BENCH_RUN("gt_write_bin (1)") {
 			gt_rand(a);
 			l = gt_size_bin(a, 1);

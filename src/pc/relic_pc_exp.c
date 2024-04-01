@@ -254,6 +254,138 @@ void gt_exp_imp(gt_t c, const gt_t a, const bn_t b, size_t f) {
 	}
 }
 
+/**
+ * Size of a precomputation table using the double-table comb method.
+ */
+#define RLC_GT_TABLE		(1 << (RLC_WIDTH - 2))
+
+/**
+ * Exponentiates an element from G_T in constant time.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the element to exponentiate.
+ * @param[in] b				- the exponent.
+ * @param[in] f				- the maximum Frobenius power.
+ */
+void gt_exp_gls_imp(gt_t c, const gt_t a, const bn_t b, size_t f) {
+	int8_t *naf  = RLC_ALLOCA(int8_t, f * (RLC_FP_BITS + 1));
+	int8_t n0, *s = RLC_ALLOCA(int8_t, f);
+	gt_t q, *t = RLC_ALLOCA(gt_t, f * RLC_GT_TABLE);
+	bn_t n, u, *_b = RLC_ALLOCA(bn_t, f);
+	size_t l, *_l = RLC_ALLOCA(size_t, f);
+
+	if (naf == NULL || t == NULL || _b == NULL || _l == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
+		return;
+	}
+
+	if (bn_is_zero(b)) {
+		RLC_FREE(naf);
+		RLC_FREE(s);
+		RLC_FREE(t);
+		RLC_FREE(_b);
+		RLC_FREE(_l);
+		return gt_set_unity(c);
+	}
+
+	bn_null(n);
+	bn_null(u);
+	gt_null(q);
+
+	RLC_TRY {
+		bn_new(n);
+		bn_new(u);
+		gt_new(q);
+		for (size_t i = 0; i < f; i++) {
+			bn_null(_b[i]);
+			bn_new(_b[i]);
+			for (size_t j = 0; j < RLC_GT_TABLE; j++) {
+				gt_null(t[i * RLC_GT_TABLE + j]);
+				gt_new(t[i * RLC_GT_TABLE + j]);
+			}
+		}
+
+		fp_prime_get_par(u);
+		if (ep_curve_is_pairf() == EP_SG18) {
+			/* Compute base -3*u for the recoding below. */
+			bn_dbl(n, u);
+			bn_add(u, u, n);
+			bn_neg(u, u);
+		}
+		gt_get_ord(n);
+		bn_abs(_b[0], b);
+		bn_mod(_b[0], _b[0], n);
+		if (bn_sign(b) == RLC_NEG) {
+			bn_neg(_b[0], _b[0]);
+		}
+		bn_rec_frb(_b, f, _b[0], u, n, ep_curve_is_pairf() == EP_BN);
+
+		l = 0;
+		gt_copy(t[0], a);
+		for (size_t i = 0; i < f; i++) {
+			s[i] = bn_sign(_b[i]);
+			bn_abs(_b[i], _b[i]);
+
+			_l[i] = RLC_FP_BITS + 1;
+			bn_rec_naf(naf + i * (RLC_FP_BITS + 1), &_l[i], _b[i], RLC_WIDTH);
+			l = RLC_MAX(l, _l[i]);
+			/* Apply Frobenius before flipping sign to build table. */
+			if (i > 0) {
+				gt_gls(t[i * RLC_GT_TABLE], t[(i - 1) * RLC_GT_TABLE]);
+			}
+		}
+
+		for (size_t i = 0; i < f; i++) {
+			gt_inv(q, t[i * RLC_GT_TABLE]);
+			gt_copy_sec(q, t[i * RLC_GT_TABLE], s[i] == RLC_POS);
+			if (RLC_WIDTH > 2) {
+				gt_sqr(t[i * RLC_GT_TABLE], q);
+				gt_mul(t[i * RLC_GT_TABLE + 1], t[i * RLC_GT_TABLE], q);
+				for (size_t j = 2; j < RLC_GT_TABLE; j++) {
+					gt_mul(t[i * RLC_GT_TABLE + j], t[i * RLC_GT_TABLE + j - 1],
+							t[i * (RLC_GT_TABLE)]);
+				}
+			}
+			gt_copy(t[i * RLC_GT_TABLE], q);
+		}
+
+		gt_set_unity(c);
+		for (int j = l - 1; j >= 0; j--) {
+			gt_sqr(c, c);
+
+			for (size_t i = 0; i < f; i++) {
+				n0 = naf[i * (RLC_FP_BITS + 1) + j];
+				if (n0 > 0) {
+					gt_mul(c, c, t[i * RLC_GT_TABLE + n0 / 2]);
+				}
+				if (n0 < 0) {
+					gt_inv(q, t[i * RLC_GT_TABLE - n0 / 2]);
+					gt_mul(c, c, q);
+				}
+			}
+		}
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		bn_free(n);
+		bn_free(u);
+		gt_free(q);
+		for (size_t i = 0; i < f; i++) {
+			bn_free(_b[i]);
+			for (size_t j = 0; j < RLC_GT_TABLE; j++) {
+				gt_free(t[i * RLC_GT_TABLE + j]);
+			}
+		}
+		RLC_FREE(naf);
+		RLC_FREE(s);
+		RLC_FREE(t);
+		RLC_FREE(_b);
+		RLC_FREE(_l);
+	}
+}
+
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
@@ -393,7 +525,7 @@ void gt_exp_sec(gt_t c, const gt_t a, const bn_t b) {
 
 	size_t f = 0;
 
-	switch (ep_param_embed()) {
+	switch (ep_curve_embed()) {
 		case 1:
 		case 2:
 		case 8:

@@ -937,7 +937,7 @@ void fp12_exp_cyc_sim(fp12_t e, const fp12_t a, const bn_t b, const fp12_t c,
 		}
 		bn_rec_frb(_d, 4, _d[0], x, n, ep_curve_is_pairf() == EP_BN);
 
-		if (ep_curve_is_pairf() && ep_param_embed() == 12) {
+		if (ep_curve_is_pairf() && ep_curve_embed() == 12) {
 			for (i = 0; i < 4; i++) {
 				fp12_frb(t[i], a, i);
 				fp12_frb(u[i], c, i);

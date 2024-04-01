@@ -521,3 +521,33 @@ void ep_curve_set_endom(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
 }
 
 #endif
+
+
+int ep_curve_embed(void) {
+	switch (core_get()->ep_is_pairf) {
+		case EP_K1:
+			return 1;
+		case EP_SS2:
+			return 2;
+		case EP_GMT8:
+			return 8;
+		case EP_BN:
+		case EP_B12:
+			return 12;
+		case EP_N16:
+		case EP_FM16:
+		case EP_K16:
+			return 16;
+		case EP_K18:
+		case EP_FM18:
+		case EP_SG18:
+			return 18;
+		case EP_B24:
+			return 24;
+		case EP_B48:
+			return 48;
+		case EP_SG54:
+			return 54;
+	}
+	return 0;
+}

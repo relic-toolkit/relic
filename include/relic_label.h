@@ -944,7 +944,7 @@
 #undef ep_param_get
 #undef ep_param_print
 #undef ep_param_level
-#undef ep_param_embed
+#undef ep_curve_embed
 #undef ep_is_infty
 #undef ep_set_infty
 #undef ep_copy
@@ -1037,7 +1037,7 @@
 #define ep_param_get 	RLC_PREFIX(ep_param_get)
 #define ep_param_print 	RLC_PREFIX(ep_param_print)
 #define ep_param_level 	RLC_PREFIX(ep_param_level)
-#define ep_param_embed 	RLC_PREFIX(ep_param_embed)
+#define ep_curve_embed 	RLC_PREFIX(ep_curve_embed)
 #define ep_is_infty 	RLC_PREFIX(ep_is_infty)
 #define ep_set_infty 	RLC_PREFIX(ep_set_infty)
 #define ep_copy 	RLC_PREFIX(ep_copy)
