@@ -216,6 +216,14 @@ static void arith1(void) {
 	}
 	BENCH_END;
 
+	BENCH_RUN("g1_mul_sec") {
+		bn_rand(k, RLC_POS, bn_bits(n));
+		bn_rand_mod(k, n);
+		g1_rand(p);
+		BENCH_ADD(g1_mul_sec(q, p, k));
+	}
+	BENCH_END;
+
 	BENCH_RUN("g1_mul_gen") {
 		bn_rand(k, RLC_POS, bn_bits(n));
 		bn_rand_mod(k, n);
@@ -468,6 +476,14 @@ static void arith2(void) {
 	}
 	BENCH_END;
 
+	BENCH_RUN("g2_mul_sec") {
+		bn_rand(k, RLC_POS, bn_bits(n));
+		bn_rand_mod(k, n);
+		g2_rand(p);
+		BENCH_ADD(g2_mul_sec(q, p, k));
+	}
+	BENCH_END;
+
 	BENCH_RUN("g2_mul_gen") {
 		bn_rand(k, RLC_POS, bn_bits(n));
 		bn_rand_mod(k, n);
@@ -621,7 +637,7 @@ static void util(void) {
 		BENCH_ADD(gt_read_bin(a, bin, l));
 	} BENCH_END;
 
-	if (ep_param_embed() == 12) {
+	if (ep_curve_embed() == 12) {
 		BENCH_RUN("gt_write_bin (1)") {
 			gt_rand(a);
 			l = gt_size_bin(a, 1);
@@ -681,6 +697,14 @@ static void arith(void) {
 		pc_get_ord(d);
 		bn_rand_mod(e, d);
 		BENCH_ADD(gt_exp(c, a, e));
+	}
+	BENCH_END;
+
+	BENCH_RUN("gt_exp_sec") {
+		gt_rand(a);
+		pc_get_ord(d);
+		bn_rand_mod(e, d);
+		BENCH_ADD(gt_exp_sec(c, a, e));
 	}
 	BENCH_END;
 

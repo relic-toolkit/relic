@@ -24,7 +24,7 @@
 /**
  * @file
  *
- * Templates for hashing to elliptic curves.
+ * Template for hashing to prime elliptic curves.
  *
  * @ingroup tmpl
  */
@@ -34,7 +34,7 @@
 /*============================================================================*/
 
 /**
- * Evaluate a polynomial represented by its coefficients over a using Horner's
+ * Evaluates a polynomial represented by its coefficients over a using Horner's
  * rule. Might promove to an API if needed elsewhere in the future.
  */
 #define TMPL_MAP_HORNER(PFX, IN)											\
@@ -46,9 +46,9 @@
 		}																	\
 	}
 
-/* TODO: remove the ugly hack due to lack of support for JACOB in ep2. */
 /* conditionally normalize result of isogeny map when not using projective coords */
 #if EP_ADD == JACOB
+
 #define TMPL_MAP_ISOMAP_NORM(PFX)											\
 	do {																	\
 		/* Y = Ny * Dx * Z^2. */											\
@@ -62,22 +62,11 @@
 		PFX##_mul(q->x, t0, t2);											\
 		PFX##_mul(q->x, q->x, q->z);										\
 		q->coord = JACOB;													\
-	} while (0)
+	} while (0)																\
+
 #elif EP_ADD == PROJC
+
 #define TMPL_MAP_ISOMAP_NORM(PFX)											\
-	if (#PFX[2] == '2') {													\
-		/* Y = Ny * Dx * Z^2. */											\
-		PFX##_mul(q->y, p->y, t1);											\
-		PFX##_mul(q->y, q->y, t3);											\
-		/* Z = Dx * Dy, t1 = Z^2. */										\
-		PFX##_mul(q->z, t2, t3);											\
-		PFX##_sqr(t1, q->z);												\
-		PFX##_mul(q->y, q->y, t1);											\
-		/* X = Nx * Dy * Z. */												\
-		PFX##_mul(q->x, t0, t2);											\
-		PFX##_mul(q->x, q->x, q->z);										\
-		q->coord = PROJC;													\
-	} else {																\
 		/* Z = Dx * Dy. */													\
 		PFX##_mul(q->z, t2, t3);											\
 		/* X = Nx * Dy. */													\
@@ -86,8 +75,9 @@
 		PFX##_mul(q->y, p->y, t1);											\
 		PFX##_mul(q->y, q->y, t3);											\
 		q->coord = PROJC;													\
-	}
+
 #else
+
 #define TMPL_MAP_ISOMAP_NORM(PFX)											\
 	do {																	\
 		/* when working with affine coordinates, clear denominator */		\
@@ -103,7 +93,8 @@
 		/* z coord == 1 */													\
 		PFX##_set_dig(q->z, 1);												\
 		q->coord = BASIC;													\
-	} while (0)
+	} while (0)																\
+
 #endif
 
 /**
@@ -153,7 +144,7 @@
 			PFX##_free(t2);													\
 			PFX##_free(t3);													\
 		}																	\
-	}
+	}																		\
 
 /* Conditionally call isogeny mapping function depending on whether EP_CTMAP is defined */
 #ifdef EP_CTMAP
@@ -162,16 +153,19 @@
 		if (CUR##_curve_is_ctmap()) {										\
 			CUR##_iso(PT, PT);												\
 		}																	\
-	} while (0)
+	} while (0)																\
+
 #else
+
 #define TMPL_MAP_CALL_ISOMAP(CUR, PT) /* No isogeny map call in this case. */
+
 #endif
 
 /**
  * Simplified SWU mapping from Section 4 of
  * "Fast and simple constant-time hashing to the BLS12-381 Elliptic Curve"
  */
-#define TMPL_MAP_SSWU(CUR, PFX, PTR_TY, COPY_COND)							\
+#define TMPL_MAP_SSWU(CUR, PFX, PTR_TY)										\
 	static void CUR##_map_sswu(CUR##_t p, const PFX##_t t) {				\
 		PFX##_t t0, t1, t2, t3;												\
 		ctx_t *ctx = core_get();											\
@@ -203,11 +197,11 @@
 				const int e1 = PFX##_is_zero(t2);							\
 				PFX##_neg(t3, u);           /* t3 = -u */					\
 				/* exception: -u instead of u^2t^4 + ut^2 */				\
-				COPY_COND(t2, t3, e1);      								\
+				PFX##_copy_sec(t2, t3, e1);      							\
 				/* t2 = -1/u or 1/(u^2 * t^4 + u*t^2) */					\
 				PFX##_inv(t2, t2);          								\
 				PFX##_add_dig(t3, t2, 1);   /* t3 = 1 + t2 */				\
-				COPY_COND(t2, t3, e1 == 0); /* only add 1 if t2 != -1/u */	\
+				PFX##_copy_sec(t2, t3, e1 == 0); /* add 1 if t2 != -1/u */	\
 			}																\
 			/* e1 goes out of scope */										\
 			/* compute x1, g(x1) */											\
@@ -225,8 +219,8 @@
 			{																\
 				/* try x2, g(x2) */											\
 				const int e1 = PFX##_is_sqr(p->y);							\
-				COPY_COND(p->x, t2, e1 == 0);								\
-				COPY_COND(p->y, t3, e1 == 0);								\
+				PFX##_copy_sec(p->x, t2, e1 == 0);								\
+				PFX##_copy_sec(p->y, t3, e1 == 0);								\
 			}																\
 			if (!PFX##_srt(p->y, p->y)) {									\
 				RLC_THROW(ERR_NO_VALID);									\
@@ -241,13 +235,13 @@
 			PFX##_free(t2);													\
 			PFX##_free(t3);													\
 		}																	\
-	}
+	}																		\
 
 /**
  * Shallue--van de Woestijne map, based on the definition from
  * draft-irtf-cfrg-hash-to-curve-06, Section 6.6.1
  */
-#define TMPL_MAP_SVDW(CUR, PFX, PTR_TY, COPY_COND)							\
+#define TMPL_MAP_SVDW(CUR, PFX, PTR_TY)										\
 	static void CUR##_map_svdw(CUR##_t p, const PFX##_t t) {				\
 		PFX##_t t1, t2, t3, t4;												\
 		ctx_t *ctx = core_get();											\
@@ -280,10 +274,10 @@
 			{																\
 				/* compute inv0(t3), i.e., 0 if t3 == 0, 1/t3 otherwise */	\
 				const int e0 = PFX##_is_zero(t3);							\
-				COPY_COND(t3, gU, e0); /* g(u) is nonzero */				\
+				PFX##_copy_sec(t3, gU, e0); /* g(u) is nonzero */			\
 				PFX##_inv(t3, t3);											\
 				PFX##_zero(t4);												\
-				COPY_COND(t3, t4, e0);										\
+				PFX##_copy_sec(t3, t4, e0);									\
 			}																\
 			/* e0 goes out of scope */										\
 			PFX##_mul(t4, t, t1);											\
@@ -292,14 +286,14 @@
 																			\
 			/* compute x1 and g(x1) */										\
 			PFX##_sub(p->x, mUover2, t4);									\
-			CUR##_rhs(p->y, p);												\
+			CUR##_rhs(p->y, p->x);											\
 			{																\
 				const int e0 = PFX##_is_sqr(p->y);							\
 				/* compute x2 and g(x2) */									\
 				PFX##_add(t4, mUover2, t4);									\
-				COPY_COND(p->x, t4, e0 == 0);								\
-				CUR##_rhs(t1, p);											\
-				COPY_COND(p->y, t1, e0 == 0);								\
+				PFX##_copy_sec(p->x, t4, e0 == 0);							\
+				CUR##_rhs(t1, p->x);										\
+				PFX##_copy_sec(p->y, t1, e0 == 0);							\
 			}																\
 			{																\
 				const int e1 = PFX##_is_sqr(p->y);							\
@@ -309,9 +303,9 @@
 				PFX##_sqr(t1, t1);											\
 				PFX##_mul(t1, t1, c4);										\
 				PFX##_add(t1, t1, u);										\
-				COPY_COND(p->x, t1, e1 == 0);								\
-				CUR##_rhs(t2, p);											\
-				COPY_COND(p->y, t2, e1 == 0);								\
+				PFX##_copy_sec(p->x, t1, e1 == 0);							\
+				CUR##_rhs(t2, p->x);										\
+				PFX##_copy_sec(p->y, t2, e1 == 0);							\
 			}																\
 			if (!PFX##_srt(p->y, p->y)) {									\
 				RLC_THROW(ERR_NO_VALID);									\
@@ -326,4 +320,5 @@
 			PFX##_free(t3);													\
 			PFX##_free(t4);													\
 		}																	\
-	}
+	}																		\
+

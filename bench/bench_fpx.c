@@ -66,6 +66,18 @@ static void util2(void) {
 	}
 	BENCH_END;
 
+	BENCH_RUN("fp2_copy_sec (0)") {
+		fp2_rand(a);
+		BENCH_ADD(fp2_copy_sec(b, a, 0));
+	}
+	BENCH_END;
+
+	BENCH_RUN("fp2_copy_sec (1)") {
+		fp2_rand(a);
+		BENCH_ADD(fp2_copy_sec(b, a, 1));
+	}
+	BENCH_END;
+
 	BENCH_RUN("fp2_neg") {
 		fp2_rand(a);
 		BENCH_ADD(fp2_neg(b, a));
@@ -453,6 +465,18 @@ static void util3(void) {
 	}
 	BENCH_END;
 
+	BENCH_RUN("fp3_copy_sec (0)") {
+		fp3_rand(a);
+		BENCH_ADD(fp3_copy_sec(b, a, 0));
+	}
+	BENCH_END;
+
+	BENCH_RUN("fp3_copy_sec (1)") {
+		fp3_rand(a);
+		BENCH_ADD(fp3_copy_sec(b, a, 1));
+	}
+	BENCH_END;
+
 	BENCH_RUN("fp3_neg") {
 		fp3_rand(a);
 		BENCH_ADD(fp3_neg(b, a));
@@ -753,6 +777,18 @@ static void util4(void) {
 	}
 	BENCH_END;
 
+	BENCH_RUN("fp4_copy_sec (0)") {
+		fp4_rand(a);
+		BENCH_ADD(fp4_copy_sec(b, a, 0));
+	}
+	BENCH_END;
+
+	BENCH_RUN("fp4_copy_sec (1)") {
+		fp4_rand(a);
+		BENCH_ADD(fp4_copy_sec(b, a, 1));
+	}
+	BENCH_END;
+
 	BENCH_RUN("fp4_neg") {
 		fp4_rand(a);
 		BENCH_ADD(fp4_neg(b, a));
@@ -979,6 +1015,18 @@ static void util6(void) {
 	}
 	BENCH_END;
 
+	BENCH_RUN("fp6_copy_sec (0)") {
+		fp6_rand(a);
+		BENCH_ADD(fp6_copy_sec(b, a, 0));
+	}
+	BENCH_END;
+
+	BENCH_RUN("fp6_copy_sec (1)") {
+		fp6_rand(a);
+		BENCH_ADD(fp6_copy_sec(b, a, 1));
+	}
+	BENCH_END;
+
 	BENCH_RUN("fp6_neg") {
 		fp6_rand(a);
 		BENCH_ADD(fp6_neg(b, a));
@@ -1191,6 +1239,18 @@ static void util8(void) {
 	}
 	BENCH_END;
 
+	BENCH_RUN("fp8_copy_sec (0)") {
+		fp8_rand(a);
+		BENCH_ADD(fp8_copy_sec(b, a, 0));
+	}
+	BENCH_END;
+
+	BENCH_RUN("fp8_copy_sec (1)") {
+		fp8_rand(a);
+		BENCH_ADD(fp8_copy_sec(b, a, 1));
+	}
+	BENCH_END;
+
 	BENCH_RUN("fp8_neg") {
 		fp8_rand(a);
 		BENCH_ADD(fp8_neg(b, a));
@@ -1241,13 +1301,13 @@ static void util8(void) {
 
 	BENCH_RUN("fp8_write_bin") {
 		fp8_rand(a);
-		BENCH_ADD(fp8_write_bin(bin, sizeof(bin), a));
+		BENCH_ADD(fp8_write_bin(bin, sizeof(bin), a, 0));
 	}
 	BENCH_END;
 
 	BENCH_RUN("fp8_read_bin") {
 		fp8_rand(a);
-		fp8_write_bin(bin, sizeof(bin), a);
+		fp8_write_bin(bin, sizeof(bin), a, 0);
 		BENCH_ADD(fp8_read_bin(a, bin, sizeof(bin)));
 	}
 	BENCH_END;
@@ -1483,6 +1543,18 @@ static void util9(void) {
 	}
 	BENCH_END;
 
+	BENCH_RUN("fp9_copy_sec (0)") {
+		fp9_rand(a);
+		BENCH_ADD(fp9_copy_sec(b, a, 0));
+	}
+	BENCH_END;
+
+	BENCH_RUN("fp9_copy_sec (1)") {
+		fp9_rand(a);
+		BENCH_ADD(fp9_copy_sec(b, a, 1));
+	}
+	BENCH_END;
+
 	BENCH_RUN("fp9_neg") {
 		fp9_rand(a);
 		BENCH_ADD(fp9_neg(b, a));
@@ -1692,6 +1764,18 @@ static void util12(void) {
 	BENCH_RUN("fp12_copy") {
 		fp12_rand(a);
 		BENCH_ADD(fp12_copy(b, a));
+	}
+	BENCH_END;
+
+	BENCH_RUN("fp12_copy_sec (0)") {
+		fp12_rand(a);
+		BENCH_ADD(fp12_copy_sec(b, a, 0));
+	}
+	BENCH_END;
+
+	BENCH_RUN("fp12_copy_sec (1)") {
+		fp12_rand(a);
+		BENCH_ADD(fp12_copy_sec(b, a, 1));
 	}
 	BENCH_END;
 
@@ -1976,16 +2060,6 @@ static void arith12(void) {
 	}
 	BENCH_END;
 
-	if (ep_curve_is_pairf() && ep_param_embed() == 12) {
-		BENCH_RUN("fp12_exp_cyc (gls)") {
-			fp12_rand(a);
-			fp12_conv_cyc(a, a);
-			bn_rand(e, RLC_POS, RLC_FP_BITS);
-			BENCH_ADD(fp12_exp_cyc_gls(c, a, e));
-		}
-		BENCH_END;
-	}
-
 	BENCH_RUN("fp12_exp_cyc (param or sparse)") {
 		fp12_rand(a);
 		fp12_conv_cyc(a, a);
@@ -2090,6 +2164,18 @@ static void util16(void) {
 	BENCH_RUN("fp16_copy") {
 		fp16_rand(a);
 		BENCH_ADD(fp16_copy(b, a));
+	}
+	BENCH_END;
+
+	BENCH_RUN("fp16_copy_sec (0)") {
+		fp16_rand(a);
+		BENCH_ADD(fp16_copy_sec(b, a, 0));
+	}
+	BENCH_END;
+
+	BENCH_RUN("fp16_copy_sec (1)") {
+		fp16_rand(a);
+		BENCH_ADD(fp16_copy_sec(b, a, 1));
 	}
 	BENCH_END;
 
@@ -2251,16 +2337,6 @@ static void arith16(void) {
 	}
 	BENCH_END;
 
-	if (ep_curve_is_pairf() && ep_param_embed() == 16) {
-		BENCH_RUN("fp16_exp_cyc (gls)") {
-			fp16_rand(a);
-			fp16_conv_cyc(a, a);
-			bn_rand(e, RLC_POS, RLC_FP_BITS);
-			BENCH_ADD(fp16_exp_cyc_gls(c, a, e));
-		}
-		BENCH_END;
-	}
-
 	BENCH_RUN("fp16_exp_cyc (param or sparse)") {
 		fp16_rand(a);
 		fp16_conv_cyc(a, a);
@@ -2325,6 +2401,18 @@ static void util18(void) {
 	BENCH_RUN("fp18_copy") {
 		fp18_rand(a);
 		BENCH_ADD(fp18_copy(b, a));
+	}
+	BENCH_END;
+
+	BENCH_RUN("fp18_copy_sec (0)") {
+		fp18_rand(a);
+		BENCH_ADD(fp18_copy_sec(b, a, 0));
+	}
+	BENCH_END;
+
+	BENCH_RUN("fp18_copy_sec (1)") {
+		fp18_rand(a);
+		BENCH_ADD(fp18_copy_sec(b, a, 1));
 	}
 	BENCH_END;
 
@@ -2609,16 +2697,6 @@ static void arith18(void) {
 	}
 	BENCH_END;
 
-	if (ep_curve_is_pairf() && ep_param_embed() == 18) {
-		BENCH_RUN("fp18_exp_cyc (gls)") {
-			fp18_rand(a);
-			fp18_conv_cyc(a, a);
-			bn_rand(e, RLC_POS, RLC_FP_BITS);
-			BENCH_ADD(fp18_exp_cyc_gls(c, a, e));
-		}
-		BENCH_END;
-	}
-
 	BENCH_RUN("fp18_exp_cyc (param or sparse)") {
 		fp18_rand(a);
 		fp18_conv_cyc(a, a);
@@ -2709,6 +2787,18 @@ static void util24(void) {
 	BENCH_RUN("fp24_copy") {
 		fp24_rand(a);
 		BENCH_ADD(fp24_copy(b, a));
+	}
+	BENCH_END;
+
+	BENCH_RUN("fp24_copy_sec (0)") {
+		fp24_rand(a);
+		BENCH_ADD(fp24_copy_sec(b, a, 0));
+	}
+	BENCH_END;
+
+	BENCH_RUN("fp24_copy_sec (1)") {
+		fp24_rand(a);
+		BENCH_ADD(fp24_copy_sec(b, a, 1));
 	}
 	BENCH_END;
 
@@ -2930,16 +3020,6 @@ static void arith24(void) {
 	}
 	BENCH_END;
 
-	if (ep_curve_is_pairf() && ep_param_embed() == 24) {
-		BENCH_RUN("fp24_exp_cyc (gls)") {
-			fp24_rand(a);
-			fp24_conv_cyc(a, a);
-			bn_rand(e, RLC_POS, RLC_FP_BITS);
-			BENCH_ADD(fp24_exp_cyc_gls(c, a, e));
-		}
-		BENCH_END;
-	}
-
 	BENCH_RUN("fp24_exp_cyc (param or sparse)") {
 		fp24_rand(a);
 		fp24_conv_cyc(a, a);
@@ -3030,6 +3110,18 @@ static void util48(void) {
 	BENCH_RUN("fp48_copy") {
 		fp48_rand(a);
 		BENCH_ADD(fp48_copy(b, a));
+	}
+	BENCH_END;
+
+	BENCH_RUN("fp48_copy_sec (0)") {
+		fp48_rand(a);
+		BENCH_ADD(fp48_copy_sec(b, a, 0));
+	}
+	BENCH_END;
+
+	BENCH_RUN("fp48_copy_sec (1)") {
+		fp48_rand(a);
+		BENCH_ADD(fp48_copy_sec(b, a, 1));
 	}
 	BENCH_END;
 
@@ -3296,16 +3388,6 @@ static void arith48(void) {
 	}
 	BENCH_END;
 
-	if (ep_curve_is_pairf() && ep_param_embed() == 48) {
-		BENCH_RUN("fp48_exp_cyc (gls)") {
-			fp48_rand(a);
-			fp48_conv_cyc(a, a);
-			bn_rand(e, RLC_POS, RLC_FP_BITS);
-			BENCH_ADD(fp48_exp_cyc_gls(c, a, e));
-		}
-		BENCH_END;
-	}
-
 	BENCH_RUN("fp48_exp_cyc (param or sparse)") {
 		fp48_rand(a);
 		fp48_conv_cyc(a, a);
@@ -3396,6 +3478,18 @@ static void util54(void) {
 	BENCH_RUN("fp54_copy") {
 		fp54_rand(a);
 		BENCH_ADD(fp54_copy(b, a));
+	}
+	BENCH_END;
+
+	BENCH_RUN("fp54_copy_sec (0)") {
+		fp54_rand(a);
+		BENCH_ADD(fp54_copy_sec(b, a, 0));
+	}
+	BENCH_END;
+
+	BENCH_RUN("fp54_copy_sec (1)") {
+		fp54_rand(a);
+		BENCH_ADD(fp54_copy_sec(b, a, 1));
 	}
 	BENCH_END;
 
@@ -3778,7 +3872,7 @@ int main(void) {
 		arith6();
 	}
 
-	if (fp_prime_get_qnr() && (ep_param_embed() >= 8)) {
+	if (fp_prime_get_qnr() && (ep_curve_embed() >= 8)) {
 		util_banner("Octic extension:", 0);
 		util_banner("Utilities:", 1);
 		memory8();
@@ -3787,7 +3881,7 @@ int main(void) {
 		arith8();
 	}
 
-	if (fp_prime_get_cnr() && (ep_param_embed() >= 9)) {
+	if (fp_prime_get_cnr() && (ep_curve_embed() >= 9)) {
 		util_banner("Nonic extension:", 0);
 		util_banner("Utilities:", 1);
 		memory9();
@@ -3796,7 +3890,7 @@ int main(void) {
 		arith9();
 	}
 
-	if (fp_prime_get_qnr() && fp_prime_get_cnr() && (ep_param_embed() >= 12)) {
+	if (fp_prime_get_qnr() && fp_prime_get_cnr() && (ep_curve_embed() >= 12)) {
 		util_banner("Dodecic extension:", 0);
 		util_banner("Utilities:", 1);
 		memory12();
@@ -3805,7 +3899,7 @@ int main(void) {
 		arith12();
 	}
 
-	if (fp_prime_get_qnr() && (ep_param_embed() >= 16)) {
+	if (fp_prime_get_qnr() && (ep_curve_embed() >= 16)) {
 		util_banner("Sextadecic extension:", 0);
 		util_banner("Utilities:", 1);
 		memory16();
@@ -3815,7 +3909,7 @@ int main(void) {
 		arith16();
 	}
 
-	if (fp_prime_get_cnr() && (ep_param_embed() >= 18)) {
+	if (fp_prime_get_cnr() && (ep_curve_embed() >= 18)) {
 		util_banner("Octdecic extension:", 0);
 		util_banner("Utilities:", 1);
 		memory18();
@@ -3825,7 +3919,7 @@ int main(void) {
 		arith18();
 	}
 
-	if (fp_prime_get_qnr() && (ep_param_embed() >= 24)) {
+	if (fp_prime_get_qnr() && (ep_curve_embed() >= 24)) {
 		util_banner("Extension of degree 24:", 0);
 		util_banner("Utilities:", 1);
 		memory24();
@@ -3834,7 +3928,7 @@ int main(void) {
 		arith24();
 	}
 
-	if (fp_prime_get_qnr() && (ep_param_embed() >= 48)) {
+	if (fp_prime_get_qnr() && (ep_curve_embed() >= 48)) {
 		util_banner("Extension of degree 48:", 0);
 		util_banner("Utilities:", 1);
 		memory48();
@@ -3843,7 +3937,7 @@ int main(void) {
 		arith48();
 	}
 
-	if (fp_prime_get_cnr() && (ep_param_embed() >= 54)) {
+	if (fp_prime_get_cnr() && (ep_curve_embed() >= 54)) {
 		util_banner("Extension of degree 54:", 0);
 		util_banner("Utilities:", 1);
 		memory54();

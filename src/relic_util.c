@@ -138,7 +138,7 @@ size_t util_bits_dig(dig_t a) {
     return RLC_DIG - arch_lzcnt(a);
 }
 
-int util_cmp_const(const void *a, const void *b, size_t size) {
+int util_cmp_sec(const void *a, const void *b, size_t size) {
 	const uint8_t *_a = (const uint8_t *)a;
 	const uint8_t *_b = (const uint8_t *)b;
 	uint8_t result = 0;

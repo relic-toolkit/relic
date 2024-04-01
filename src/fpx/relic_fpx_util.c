@@ -41,6 +41,11 @@ void fp2_copy(fp2_t c, const fp2_t a) {
 	fp_copy(c[1], a[1]);
 }
 
+void fp2_copy_sec(fp2_t c, const fp2_t a, dig_t bit) {
+	fp_copy_sec(c[0], a[0], bit);
+	fp_copy_sec(c[1], a[1], bit);
+}
+
 void fp2_zero(fp2_t a) {
 	fp_zero(a[0]);
 	fp_zero(a[1]);
@@ -134,6 +139,12 @@ void fp3_copy(fp3_t c, const fp3_t a) {
 	fp_copy(c[2], a[2]);
 }
 
+void fp3_copy_sec(fp3_t c, const fp3_t a, dig_t bit) {
+	fp_copy_sec(c[0], a[0], bit);
+	fp_copy_sec(c[1], a[1], bit);
+	fp_copy_sec(c[2], a[2], bit);
+}
+
 void fp3_zero(fp3_t a) {
 	fp_zero(a[0]);
 	fp_zero(a[1]);
@@ -191,6 +202,11 @@ void fp4_copy(fp4_t c, const fp4_t a) {
 	fp2_copy(c[1], a[1]);
 }
 
+void fp4_copy_sec(fp4_t c, const fp4_t a, dig_t bit) {
+	fp2_copy_sec(c[0], a[0], bit);
+	fp2_copy_sec(c[1], a[1], bit);
+}
+
 void fp4_zero(fp4_t a) {
 	fp2_zero(a[0]);
 	fp2_zero(a[1]);
@@ -241,6 +257,12 @@ void fp6_copy(fp6_t c, const fp6_t a) {
 	fp2_copy(c[0], a[0]);
 	fp2_copy(c[1], a[1]);
 	fp2_copy(c[2], a[2]);
+}
+
+void fp6_copy_sec(fp6_t c, const fp6_t a, dig_t bit) {
+	fp2_copy_sec(c[0], a[0], bit);
+	fp2_copy_sec(c[1], a[1], bit);
+	fp2_copy_sec(c[2], a[2], bit);
 }
 
 void fp6_zero(fp6_t a) {
@@ -300,6 +322,11 @@ void fp8_copy(fp8_t c, const fp8_t a) {
 	fp4_copy(c[1], a[1]);
 }
 
+void fp8_copy_sec(fp8_t c, const fp8_t a, dig_t bit) {
+	fp4_copy_sec(c[0], a[0], bit);
+	fp4_copy_sec(c[1], a[1], bit);
+}
+
 void fp8_zero(fp8_t a) {
 	fp4_zero(a[0]);
 	fp4_zero(a[1]);
@@ -340,7 +367,7 @@ void fp8_read_bin(fp8_t a, const uint8_t *bin, size_t len) {
 	fp4_read_bin(a[1], bin + 4 * RLC_FP_BYTES, 4 * RLC_FP_BYTES);
 }
 
-void fp8_write_bin(uint8_t *bin, size_t len, const fp8_t a) {
+void fp8_write_bin(uint8_t *bin, size_t len, const fp8_t a, int pack) {
 	if (len != 8 * RLC_FP_BYTES) {
 		RLC_THROW(ERR_NO_BUFFER);
 		return;
@@ -358,6 +385,12 @@ void fp9_copy(fp9_t c, const fp9_t a) {
 	fp3_copy(c[0], a[0]);
 	fp3_copy(c[1], a[1]);
 	fp3_copy(c[2], a[2]);
+}
+
+void fp9_copy_sec(fp9_t c, const fp9_t a, dig_t bit) {
+	fp3_copy_sec(c[0], a[0], bit);
+	fp3_copy_sec(c[1], a[1], bit);
+	fp3_copy_sec(c[2], a[2], bit);
 }
 
 void fp9_zero(fp9_t a) {
@@ -415,6 +448,11 @@ void fp9_set_dig(fp9_t a, const dig_t b) {
 void fp12_copy(fp12_t c, const fp12_t a) {
 	fp6_copy(c[0], a[0]);
 	fp6_copy(c[1], a[1]);
+}
+
+void fp12_copy_sec(fp12_t c, const fp12_t a, dig_t bit) {
+	fp6_copy_sec(c[0], a[0], bit);
+	fp6_copy_sec(c[1], a[1], bit);
 }
 
 void fp12_zero(fp12_t a) {
@@ -509,6 +547,11 @@ void fp16_copy(fp16_t c, const fp16_t a) {
 	fp8_copy(c[1], a[1]);
 }
 
+void fp16_copy_sec(fp16_t c, const fp16_t a, dig_t bit) {
+	fp8_copy_sec(c[0], a[0], bit);
+	fp8_copy_sec(c[1], a[1], bit);
+}
+
 void fp16_zero(fp16_t a) {
 	fp8_zero(a[0]);
 	fp8_zero(a[1]);
@@ -554,8 +597,8 @@ void fp16_write_bin(uint8_t *bin, size_t len, const fp16_t a, int pack) {
 		RLC_THROW(ERR_NO_BUFFER);
 		return;
 	}
-	fp8_write_bin(bin, 8 * RLC_FP_BYTES, a[0]);
-	fp8_write_bin(bin + 8 * RLC_FP_BYTES, 8 * RLC_FP_BYTES, a[1]);
+	fp8_write_bin(bin, 8 * RLC_FP_BYTES, a[0], 0);
+	fp8_write_bin(bin + 8 * RLC_FP_BYTES, 8 * RLC_FP_BYTES, a[1], 0);
 }
 
 void fp16_set_dig(fp16_t a, const dig_t b) {
@@ -566,6 +609,11 @@ void fp16_set_dig(fp16_t a, const dig_t b) {
 void fp18_copy(fp18_t c, const fp18_t a) {
 	fp9_copy(c[0], a[0]);
 	fp9_copy(c[1], a[1]);
+}
+
+void fp18_copy_sec(fp18_t c, const fp18_t a, dig_t bit) {
+	fp9_copy_sec(c[0], a[0], bit);
+	fp9_copy_sec(c[1], a[1], bit);
 }
 
 void fp18_zero(fp18_t a) {
@@ -661,6 +709,12 @@ void fp24_copy(fp24_t c, const fp24_t a) {
 	fp8_copy(c[2], a[2]);
 }
 
+void fp24_copy_sec(fp24_t c, const fp24_t a, dig_t bit) {
+	fp8_copy_sec(c[0], a[0], bit);
+	fp8_copy_sec(c[1], a[1], bit);
+	fp8_copy_sec(c[2], a[2], bit);
+}
+
 void fp24_zero(fp24_t a) {
 	fp8_zero(a[0]);
 	fp8_zero(a[1]);
@@ -737,9 +791,9 @@ void fp24_write_bin(uint8_t *bin, size_t len, const fp24_t a, int pack) {
 			if (len != 24 * RLC_FP_BYTES) {
 				RLC_THROW(ERR_NO_BUFFER);
 			}
-			fp8_write_bin(bin, 8 * RLC_FP_BYTES, a[0]);
-			fp8_write_bin(bin + 8 * RLC_FP_BYTES, 8 * RLC_FP_BYTES, a[1]);
-			fp8_write_bin(bin + 16 * RLC_FP_BYTES, 8 * RLC_FP_BYTES, a[2]);
+			fp8_write_bin(bin, 8 * RLC_FP_BYTES, a[0], 0);
+			fp8_write_bin(bin + 8 * RLC_FP_BYTES, 8 * RLC_FP_BYTES, a[1], 0);
+			fp8_write_bin(bin + 16 * RLC_FP_BYTES, 8 * RLC_FP_BYTES, a[2], 0);
 		}
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -757,6 +811,11 @@ void fp24_set_dig(fp24_t a, const dig_t b) {
 void fp48_copy(fp48_t c, const fp48_t a) {
 	fp24_copy(c[0], a[0]);
 	fp24_copy(c[1], a[1]);
+}
+
+void fp48_copy_sec(fp48_t c, const fp48_t a, dig_t bit) {
+	fp24_copy_sec(c[0], a[0], bit);
+	fp24_copy_sec(c[1], a[1], bit);
 }
 
 void fp48_zero(fp48_t a) {
@@ -823,10 +882,10 @@ void fp48_write_bin(uint8_t *bin, size_t len, const fp48_t a, int pack) {
 				RLC_THROW(ERR_NO_BUFFER);
 			}
 			fp48_pck(t, a);
-			fp8_write_bin(bin, 8 * RLC_FP_BYTES, a[0][1]);
-			fp8_write_bin(bin + 8 * RLC_FP_BYTES, 8 * RLC_FP_BYTES, a[0][2]);
-			fp8_write_bin(bin + 16 * RLC_FP_BYTES, 8 * RLC_FP_BYTES, a[1][0]);
-			fp8_write_bin(bin + 24 * RLC_FP_BYTES, 8 * RLC_FP_BYTES, a[1][2]);
+			fp8_write_bin(bin, 8 * RLC_FP_BYTES, a[0][1], 0);
+			fp8_write_bin(bin + 8 * RLC_FP_BYTES, 8 * RLC_FP_BYTES, a[0][2], 0);
+			fp8_write_bin(bin + 16 * RLC_FP_BYTES, 8 * RLC_FP_BYTES, a[1][0], 0);
+			fp8_write_bin(bin + 24 * RLC_FP_BYTES, 8 * RLC_FP_BYTES, a[1][2], 0);
 		} else {
 			if (len != 48 * RLC_FP_BYTES) {
 				RLC_THROW(ERR_NO_BUFFER);
@@ -850,6 +909,12 @@ void fp54_copy(fp54_t c, const fp54_t a) {
 	fp18_copy(c[0], a[0]);
 	fp18_copy(c[1], a[1]);
 	fp18_copy(c[2], a[2]);
+}
+
+void fp54_copy_sec(fp54_t c, const fp54_t a, dig_t bit) {
+	fp18_copy_sec(c[0], a[0], bit);
+	fp18_copy_sec(c[1], a[1], bit);
+	fp18_copy_sec(c[2], a[2], bit);
 }
 
 void fp54_zero(fp54_t a) {

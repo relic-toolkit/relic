@@ -173,7 +173,7 @@ int cp_ecdsa_ver(const bn_t r, const bn_t s, const uint8_t *msg, size_t len,
 
 				bn_mod(v, v, n);
 
-				cmp = dv_cmp_const(v->dp, r->dp, RLC_MIN(v->used, r->used));
+				cmp = dv_cmp_sec(v->dp, r->dp, RLC_MIN(v->used, r->used));
 				result = (cmp == RLC_NE ? 0 : 1);
 
 				if (v->used != r->used) {

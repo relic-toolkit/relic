@@ -97,7 +97,7 @@ void ed_map_ell2_5mod8(ed_t p, fp_t t) {
 		fp_mul(p->x, p->x, p->z);
 		{
 			const int e1 = fp_cmp(p->x, tv4);
-			dv_copy_cond(p->y, tv2, RLC_FP_DIGS, e1 == RLC_EQ);
+			fp_copy_sec(p->y, tv2, e1 == RLC_EQ);
 		} /* e1 goes out of scope */
 
 		/* compute numerator of g(x2) */
@@ -111,7 +111,7 @@ void ed_map_ell2_5mod8(ed_t p, fp_t t) {
 		fp_mul(tv2, tv2, p->z);
 		{
 			const int e2 = fp_cmp(p->x, tv2);
-			dv_copy_cond(tv5, tv3, RLC_FP_DIGS, e2 == RLC_EQ);
+			fp_copy_sec(tv5, tv3, e2 == RLC_EQ);
 		} /* e2 goes out of scope */
 
 		/* figure out whether we wanted y1 or y2 and x1 or x2 */
@@ -120,16 +120,16 @@ void ed_map_ell2_5mod8(ed_t p, fp_t t) {
 		{
 			const int e3 = fp_cmp(tv2, tv4);
 			fp_set_dig(p->x, 1);
-			dv_copy_cond(p->x, tv1, RLC_FP_DIGS, e3 != RLC_EQ);
+			fp_copy_sec(p->x, tv1, e3 != RLC_EQ);
 			fp_mul(p->x, p->x, c_486662);
 			fp_neg(p->x, p->x);
-			dv_copy_cond(p->y, tv5, RLC_FP_DIGS, e3 != RLC_EQ);
+			fp_copy_sec(p->y, tv5, e3 != RLC_EQ);
 
 			/* fix sign of y */
 			fp_prime_back(h, p->y);
 			const int e4 = bn_get_bit(h, 0);
 			fp_neg(tv2, p->y);
-			dv_copy_cond(p->y, tv2, RLC_FP_DIGS, (e3 == RLC_EQ) ^ (e4 == 1));
+			fp_copy_sec(p->y, tv2, (e3 == RLC_EQ) ^ (e4 == 1));
 		} /* e3 and e4 go out of scope */
 		fp_add_dig(p->z, tv1, 1);
 
@@ -147,9 +147,9 @@ void ed_map_ell2_5mod8(ed_t p, fp_t t) {
 			/* exceptional case: either denominator == 0 */
 			const int e4 = fp_is_zero(p->z);
 			fp_set_dig(tv5, 1);
-			dv_copy_cond(p->x, p->z, RLC_FP_DIGS, e4); /* set x to 0 */
-			dv_copy_cond(p->y, tv5, RLC_FP_DIGS, e4);
-			dv_copy_cond(p->z, tv5, RLC_FP_DIGS, e4);
+			dv_copy_sec(p->x, p->z, RLC_FP_DIGS, e4); /* set x to 0 */
+			dv_copy_sec(p->y, tv5, RLC_FP_DIGS, e4);
+			dv_copy_sec(p->z, tv5, RLC_FP_DIGS, e4);
 		} /* e4 goes out of scope */
 
 		/* clear denominator / compute extended coordinates if necessary */

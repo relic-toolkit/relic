@@ -25,14 +25,13 @@
  * @file
  *
  * Implementation of point multiplication of a prime elliptic curve over a
- * quadratic extension by the curve cofactor.
+ * quadratic extension field by the curve cofactor.
  *
  * @ingroup epx
  */
 
 #include "relic_core.h"
 #include "relic_md.h"
-#include "relic_tmpl_map.h"
 
 /*============================================================================*/
 /* Private definitions                                                        */
@@ -166,7 +165,7 @@ void ep2_mul_cof(ep2_t r, const ep2_t p) {
 			default:
 				/* Now, multiply by cofactor to get the correct group. */
 				ep2_curve_get_cof(k);
-				ep2_mul_basic(r, p, k);
+				ep2_mul_big(r, p, k);
 				break;
 		}		
 	} RLC_CATCH_ANY {

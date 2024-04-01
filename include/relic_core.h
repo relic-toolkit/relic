@@ -267,8 +267,6 @@ typedef struct _ctx_t {
 	fp_st ep_a;
 	/** The b-coefficient of the elliptic curve. */
 	fp_st ep_b;
-	/** The value 3b used in elliptic curve arithmetic. */
-	fp_st ep_b3;
 	/** The generator of the elliptic curve. */
 	ep_st ep_g;
 	/** The order of the group of points in the elliptic curve. */
@@ -292,8 +290,6 @@ typedef struct _ctx_t {
 	int ep_opt_a;
 	/** Optimization identifier for the b-coefficient. */
 	int ep_opt_b;
-	/** Optimization identifier for the b3 value. */
-	int ep_opt_b3;
 	/** Flag that stores if the prime curve has efficient endomorphisms. */
 	int ep_is_endom;
 	/** Flag that stores if the prime curve is supersingular. */

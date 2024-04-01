@@ -25,7 +25,7 @@
  * @file
  *
  * Implementation of fixed point multiplication on a prime elliptic curve over
- * a quartic extension.
+ * an octic extension field.
  *
  * @ingroup epx
  */

@@ -89,7 +89,7 @@ int ep_upk(ep_t r, const ep_t p) {
 		bn_new(halfQ);
 		bn_new(yValue);
 
-		ep_rhs(t, p);
+		ep_rhs(t, p->x);
 
 		/* t0 = sqrt(x1^3 + a * x1 + b). */
 		result = fp_srt(t, t);

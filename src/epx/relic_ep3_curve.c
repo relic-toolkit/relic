@@ -24,8 +24,8 @@
 /**
  * @file
  *
- * Implementation of configuration of prime elliptic curves over quartic
- * extensions.
+ * Implementation of configuration of prime elliptic curves over a cubic
+ * extension field.
  *
  * @ingroup epx
  */
@@ -241,6 +241,49 @@ int ep3_curve_opt_b(void) {
 	return core_get()->ep3_opt_b;
 }
 
+void ep3_curve_mul_a(fp3_t c, const fp3_t a) {
+	ctx_t *ctx = core_get();
+	switch (ctx->ep3_opt_a) {
+		case RLC_ZERO:
+			fp3_zero(c);
+			break;
+		case RLC_ONE:
+			fp3_copy(c, a);
+			break;
+		case RLC_TWO:
+			fp3_dbl(c, a);
+			break;
+#if FP_RDC != MONTY
+		case RLC_TINY:
+			fp3_mul_dig(c, a, ctx->ep3_a[0]);
+			break;
+#endif
+		default:
+			fp3_mul(c, a, ctx->ep3_a);
+			break;
+	}
+}
+
+void ep3_curve_mul_b(fp3_t c, const fp3_t a) {
+	ctx_t *ctx = core_get();
+	switch (ctx->ep3_opt_b) {
+		case RLC_ZERO:
+			fp3_zero(c);
+			break;
+		case RLC_ONE:
+			fp3_copy(c, a);
+			break;
+#if FP_RDC != MONTY
+		case RLC_TINY:
+			fp3_mul_dig(c, a, ctx->ep3_b[0]);
+			break;
+#endif
+		default:
+			fp3_mul(c, a, ctx->ep3_b);
+			break;
+	}
+}
+
 int ep3_curve_is_twist(void) {
 	return core_get()->ep3_is_twist;
 }
@@ -249,12 +292,12 @@ void ep3_curve_get_gen(ep3_t g) {
 	ep3_copy(g, core_get()->ep3_g);
 }
 
-void ep3_curve_get_a(fp3_t a) {
-	fp3_copy(a, core_get()->ep3_a);
+fp_t *ep3_curve_get_a(void) {
+	return core_get()->ep3_a;
 }
 
-void ep3_curve_get_b(fp3_t b) {
-	fp3_copy(b, core_get()->ep3_b);
+fp_t *ep3_curve_get_b(void) {
+	return core_get()->ep3_b;
 }
 
 void ep3_curve_get_ord(bn_t n) {

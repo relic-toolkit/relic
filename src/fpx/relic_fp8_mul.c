@@ -298,3 +298,8 @@ void fp8_mul_frb(fp8_t c, const fp8_t a, int i, int j) {
 		fp4_free(t);
 	}
 }
+
+void fp8_mul_dig(fp8_t c, const fp8_t a, dig_t b) {
+	fp4_mul_dig(c[0], a[0], b);
+	fp4_mul_dig(c[1], a[1], b);
+}

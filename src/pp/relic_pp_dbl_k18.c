@@ -117,8 +117,7 @@ void pp_dbl_k18_projc_basic(fp18_t l, ep3_t r, const ep3_t q, const ep_t p) {
 		/* D = 3bC, general b. */
 		fp3_dbl(t3, t2);
 		fp3_add(t3, t3, t2);
-		ep3_curve_get_b(t4);
-		fp3_mul(t3, t3, t4);
+		fp3_mul(t3, t3, ep3_curve_get_b());
 		/* E = (x1 + y1)^2 - A - B. */
 		fp3_add(t4, q->x, q->y);
 		fp3_sqr(t4, t4);
@@ -227,8 +226,7 @@ void pp_dbl_k18_projc_lazyr(fp18_t l, ep3_t r, const ep3_t q, const ep_t p) {
 		/* D = 3bC, for general b. */
 		fp3_dbl(t3, t2);
 		fp3_add(t3, t3, t2);
-		ep3_curve_get_b(t4);
-		fp3_mul(t3, t3, t4);
+		fp3_mul(t3, t3, ep3_curve_get_b());
 		/* E = (x1 + y1)^2 - A - B. */
 		fp3_add(t4, q->x, q->y);
 		fp3_sqr(t4, t4);

@@ -31,7 +31,7 @@
 
 #include "relic_core.h"
 #include "relic_md.h"
-#include "relic_tmpl_map.h"
+#include "relic_ep_map_tmpl.h"
 
 /*============================================================================*/
 /* Private definitions                                                        */
@@ -57,20 +57,19 @@ TMPL_MAP_ISOGENY_MAP(ep, fp, iso);
 
 #endif /* EP_CTMAP */
 
-#define EP_MAP_COPY_COND(O, I, C) dv_copy_cond(O, I, RLC_FP_DIGS, C)
 /**
  * Simplified SWU mapping from Section 4 of
  * "Fast and simple constant-time hashing to the BLS12-381 Elliptic Curve"
  */
-TMPL_MAP_SSWU(ep, fp, dig_t, EP_MAP_COPY_COND);
+TMPL_MAP_SSWU(ep, fp, dig_t);
 
 /**
  * Shallue--van de Woestijne map, based on the definition from
  * draft-irtf-cfrg-hash-to-curve-06, Section 6.6.1
  */
-TMPL_MAP_SVDW(ep, fp, dig_t, EP_MAP_COPY_COND);
+TMPL_MAP_SVDW(ep, fp, dig_t);
 
-#undef EP_MAP_COPY_COND
+#undef EP_MAP_copy_sec
 
 /**
  * Maps an array of uniformly random bytes to a point in a prime elliptic
@@ -120,7 +119,7 @@ static void ep_map_from_field(ep_t p, const uint8_t *uniform_bytes, size_t len,
 		/* compare sign of y and sign of t; fix if necessary */				\
 		neg = neg != fp_is_even(PT->y);										\
 		fp_neg(t, PT->y);													\
-		dv_copy_cond(PT->y, t, RLC_FP_DIGS, neg);							\
+		dv_copy_sec(PT->y, t, RLC_FP_DIGS, neg);							\
     } while (0)
 
 		/* first map invocation */
@@ -180,7 +179,7 @@ void ep_map_basic(ep_t p, const uint8_t *msg, size_t len) {
 		fp_set_dig(p->z, 1);
 
 		while (1) {
-			ep_rhs(t0, p);
+			ep_rhs(t0, p->x);
 
 			if (fp_smb(t0) == 1) {
 				fp_srt(p->y, t0);
@@ -240,14 +239,29 @@ void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 	/* enough space for two field elements plus extra bytes for uniformity */
 	const size_t len_per_elm = (FP_PRIME + ep_param_level() + 7) / 8;
 	uint8_t s, *pseudo_random_bytes = RLC_ALLOCA(uint8_t, 2 * len_per_elm + 1);
-	fp_t a, b, c, t, u, v, w, y, x1, y1, z1;
+	fp_t a, b, c, d, e, f, t, u, v, w, y, x1, y1, z1, den[3];
 	ctx_t *ctx = core_get();
 	bn_t k;
+
+	if (ep_curve_is_super()) {
+		RLC_FREE(pseudo_random_bytes); 
+		RLC_THROW(ERR_NO_CONFIG);
+		return;
+	}
+
+	if (ctx->mod18 % 3 == 2) {
+		RLC_FREE(pseudo_random_bytes); 
+		RLC_THROW(ERR_NO_CONFIG);
+		return;
+	}
 
 	bn_null(k);
 	fp_null(a);
 	fp_null(b);
 	fp_null(c);
+	fp_null(d);
+	fp_null(e);
+	fp_null(f);
 	fp_null(t);
 	fp_null(u);
 	fp_null(v);
@@ -256,12 +270,18 @@ void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 	fp_null(x1);
 	fp_null(y1);
 	fp_null(z1);
+	fp_null(den[0]);
+	fp_null(den[1]);
+	fp_null(den[2]);
 
 	RLC_TRY {
 		bn_new(k);
 		fp_new(a);
 		fp_new(b);
 		fp_new(c);
+		fp_new(d);
+		fp_new(e);
+		fp_new(f);
 		fp_new(t);
 		fp_new(u);
 		fp_new(v);
@@ -270,6 +290,9 @@ void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 		fp_new(x1);
 		fp_new(y1);
 		fp_new(z1);
+		fp_new(den[0]);
+		fp_new(den[1]);
+		fp_new(den[2]);
 
 		md_xmd(pseudo_random_bytes, 2 * len_per_elm + 1, msg, len,
 				(const uint8_t *)"RELIC", 5);
@@ -280,298 +303,137 @@ void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 		fp_prime_conv(t, k);
 		s = pseudo_random_bytes[2 * len_per_elm] & 1;
 
-		fp_copy(a, ep_curve_get_a());
+		if (ep_curve_opt_b() == RLC_ZERO) {
+			fp_sqr(a, u);
+			fp_sqr(b, a);
+			fp_mul(c, b, a);
+			if (ep_curve_opt_a() == RLC_ONE) {
+				fp_add_dig(c, c, 64);
+			} else {
+				fp_dbl(f, ep_curve_get_a());
+				fp_dbl(f, f);
+				fp_sqr(e, f);
+				fp_mul(e, e, f);
+				fp_add(c, c, e);
+			}
+			fp_sqr(d, t);
 
-		if ((ep_curve_opt_b() == RLC_ZERO) && (ctx->mod8 == 1)) {
-			/* This is the approach due to Koshelev introduced in
-			 * https://eprint.iacr.org/2021/1034.pdf */
-			if (fp_is_sqr(a)) {
-				/* Compute t^2 = 3c*sqrt(a)*(2c^3*x^6 - 3*c^2*x^4 - 3*c*x^2 + 2).*/
-				/* Compute w = 3*c. */
-				fp_set_dig(c, -fp_prime_get_qnr());
-				fp_neg(c, c);
-				fp_dbl(w, c);
-				fp_add(w, w, c);
+			fp_mul(v, a, d);
+			fp_mul(v, v, u);
+			fp_mul_dig(v, v, 24);
+			fp_mul(v, v, ctx->ep_map_c[4]);
 
-				/* Compute x^2, x^4 and x^6 in sequence. */
-				fp_sqr(z1, u);
-				fp_sqr(y1, z1);
-				fp_mul(t, z1, y1);
+			fp_sub_dig(p->x, ctx->ep_map_c[4], 1);
+			fp_hlv(p->x, p->x);
 
+			fp_sqr(w, b);
+			fp_mul(y, v, a);
+			if (ep_curve_opt_a() == RLC_ONE) {
+				fp_dbl(t, c);
 				fp_dbl(t, t);
-				fp_mul(t, t, c);
-				fp_mul(t, t, c);
-				fp_mul(t, t, c);
+			} else {
+				fp_mul(t, f, c);
+			}
+			fp_add(y, y, t);
+			fp_mul(y, y, p->x);
 
-				fp_mul(v, y1, c);
-				fp_mul(v, v, w);
-				fp_sub(t, t, v);
+			fp_add(den[0], c, v);
+			fp_mul(den[0], den[0], u);
+			fp_mul(den[0], den[0], ctx->ep_map_c[4]);
+			fp_mul(den[0], den[0], p->x);
+			fp_dbl(den[0], den[0]);
+			fp_neg(den[0], den[0]);
+			fp_mul(den[1], den[0], p->x);
+			if (ep_curve_opt_a() == RLC_ONE) {
+				fp_sub_dig(den[2], a, 4);
+			} else {
+				fp_sub(den[2], a, f);
+			}
+			fp_sqr(den[2], den[2]);
+			fp_mul_dig(den[2], den[2], 216);
+			fp_dbl(den[2], den[2]);
+			fp_neg(den[2], den[2]);
+			fp_mul(den[2], den[2], b);
+			fp_mul(den[2], den[2], d);
 
-				/* v = -3*c*x^2. */
-				fp_mul(v, w, z1);
-				fp_neg(v, v);
-				fp_add(t, t, v);
-				fp_add_dig(t, t, 2);
+			if (fp_is_zero(den[0]) || fp_is_zero(den[1]) || fp_is_zero(den[2])) {
+				ep_set_infty(p);
+			} else {
+				fp_inv_sim(den, den, 3);
+				if (ep_curve_opt_a() == RLC_ONE) {
+					fp_dbl(a, a);
+					fp_dbl(a, a);
+					fp_dbl(a, a);
+					fp_dbl(a, a);
+					fp_add(y1, a, v);
+					fp_dbl(y1, y1);
+					fp_dbl(y1, y1);
+				} else {
+					fp_mul(y1, f, v);
+					fp_mul(u, a, e);
+					fp_add(y1, y1, u);
+				}
+				fp_add(y1, y1, w);
+				fp_mul(z1, y, p->x);
+				fp_add(x1, y1, z1);
+				fp_add(y1, y1, y);
 
-				/* Assume a = 1 for simplicitly. */
-				fp_mul(t, t, w);
-				fp_mul(t, t, ctx->ep_map_c[6]);
-				dig_t c1 = fp_is_sqr(t);
-				/* If t is not square, compute u = 1/(uc), t = sqrt(t/c)/(c*u^3)*/
-				fp_inv(v, c);
-				fp_inv(x1, u);
-				fp_mul(y1, t, v);
-				/* If t is a square, extract its square root. */
-				dv_copy_cond(t, y1, RLC_FP_DIGS, !c1);
-				fp_srt(t, t);
-				fp_mul(y1, t, v);
-				fp_sqr(y, x1);
-				fp_mul(y, y, x1);
-				fp_mul(y1, y1, y);
-				fp_mul(x1, x1, v);
-				dv_copy_cond(u, x1, RLC_FP_DIGS, !c1);
-				dv_copy_cond(t, y1, RLC_FP_DIGS, !c1);
+				if (ep_curve_opt_a() == RLC_ONE) {
+					fp_dbl(e, b);
+					fp_dbl(e, e);
+					fp_add(z1, a, e);
+				} else {
+					fp_mul(z1, f, a);
+					fp_add(z1, z1, b);
+					fp_mul(z1, z1, f);
+				}
+				fp_dbl(t, z1);
+				fp_add(z1, z1, t);
+				fp_sub(z1, c, z1);
+				fp_sub(z1, z1, v);
+				fp_mul(z1, z1, v);
+				if (ep_curve_opt_a() == RLC_ONE) {
+					fp_dbl(a, a);
+					fp_dbl(a, a);
+					fp_dbl(a, a);
+					fp_set_dig(d, 64);
+					fp_sqr(d, d);
+				} else {
+					fp_dbl(a, u);
+					fp_sqr(d, e);
+				}
+				fp_add(a, a, w);
+				fp_mul(u, a, b);
+				fp_sub(z1, u, z1);
+				fp_add(z1, z1, d);
 
-				/* Compute x = sqrt(a)*(c*x^2 - 2)/(-3*c*x^2). */
-				fp_sqr(z1, u);
-				fp_mul(v, w, z1);
-				fp_neg(v, v);
-				fp_inv(v, v);
-				fp_mul(p->x, z1, c);
-				fp_sub_dig(p->x, p->x, 2);
-				fp_mul(p->x, p->x, v);
-				fp_mul(p->x, p->x, ctx->ep_map_c[6]);
+				fp_mul(x1, x1, den[0]);
+				fp_mul(y1, y1, den[1]);
+				fp_mul(z1, z1, den[2]);
 
-				/* Compute y = y*2*sqrt(a)/(3^2*c^2*x^3). */
-				fp_mul(z1, z1, u);
-				fp_sqr(w, w);
-				fp_mul(w, w, z1);
-				fp_inv(w, w);
-				fp_dbl(p->y, ctx->ep_map_c[6]);
-				fp_mul(p->y, p->y, t);
-				fp_mul(p->y, p->y, w);
+				ep_rhs(t, x1);
+				ep_rhs(u, y1);
+				ep_rhs(v, z1);
+
+				int c2 = fp_is_sqr(u);
+				int c3 = fp_is_sqr(v);
+
+				fp_copy_sec(t, u, c2);
+				fp_copy_sec(x1, y1, c2);
+				fp_copy_sec(t, v, c3);
+				fp_copy_sec(x1, z1, c3);
+
+				if (!fp_srt(t, t)) {
+					RLC_THROW(ERR_NO_VALID);
+				}
+				fp_neg(u, t);
+				fp_copy_sec(t, u, fp_is_even(t) ^ s);
+
+				fp_copy(p->x, x1);
+				fp_copy(p->y, t);
 				fp_set_dig(p->z, 1);
 				p->coord = BASIC;
-			} else {
-				/* Compute c = 3*a^2, t^2 = 6a(9u^5 − 14au^3 + 3cu).*/
-				fp_neg(a, a);
-				fp_sqr(c, a);
-				fp_dbl(t, c);
-				fp_add(c, c, t);
-				fp_dbl(t, c);
-				fp_add(t, t, c);
-				fp_mul(t, t, u);
-
-				fp_sqr(v, u);
-				fp_mul(w, v, u);
-				fp_mul(x1, w, a);
-				fp_mul_dig(x1, x1, 14);
-				fp_sub(t, t, x1);
-
-				fp_mul(w, w, v);
-				fp_dbl(x1, w);
-				fp_add(w, w, x1);
-				fp_dbl(x1, w);
-				fp_add(w, w, x1);
-				fp_add(t, t, w);
-				fp_mul(t, t, a);
-				fp_dbl(t, t);
-				fp_dbl(x1, t);
-				fp_add(t, t, x1);
-				dig_t c1 = fp_is_sqr(t);
-				/* If t is not square, compute u = a/u, t = a*sqrt(a*t)/u^3*/
-				fp_inv(x1, u);
-				fp_mul(y1, t, a);
-				/* If t is a square, extract its square root. */
-				dv_copy_cond(t, y1, RLC_FP_DIGS, !c1);
-				fp_srt(t, t);
-				fp_mul(y1, t, a);
-				fp_sqr(y, x1);
-				fp_mul(y, y, x1);
-				fp_mul(y1, y1, y);
-				fp_mul(x1, x1, a);
-				dv_copy_cond(u, x1, RLC_FP_DIGS, !c1);
-				dv_copy_cond(t, y1, RLC_FP_DIGS, !c1);
-
-				/* Compute x = 2^4*i*3*a^2*u / (3*(3*u^2 - a))^2. */
-				fp_copy(y, ctx->ep_map_c[6]);
-				fp_mul(c, c, u);
-				fp_mul(x1, c, y);
-				fp_dbl(x1, x1);
-				fp_dbl(x1, x1);
-				fp_dbl(x1, x1);
-				fp_dbl(p->x, x1);
-				fp_sqr(v, u);
-				fp_dbl(z1, v);
-				fp_add(z1, z1, v);
-				fp_sub(z1, z1, a);
-				fp_dbl(p->z, z1);
-				fp_add(p->z, p->z, z1);
-
-				/* Compute y = 3*2*(i-1)*a*(3^2*u^2 + a)*t / (3*(3*u^2 - a))^3. */
-				fp_sub_dig(y, y, 1);
-				fp_mul(y1, y, a);
-				fp_dbl(y1, y1);
-				fp_dbl(p->y, y1);
-				fp_add(p->y, p->y, y1);
-				fp_mul(p->y, p->y, t);
-				fp_dbl(y1, v);
-				fp_add(y1, y1, v);
-				fp_dbl(v, y1);
-				fp_add(y1, y1, v);
-				fp_add(y1, y1, a);
-				fp_mul(p->y, p->y, y1);
-
-				/* Multiply by cofactor. */
-				p->coord = JACOB;
-				ep_norm(p, p);
 			}
-		} else if ((ep_curve_opt_b() == RLC_ZERO) && (ctx->mod8 != 1)) {
-			/* This is the approach due to Koshelev introduced in
-			 * https://eprint.iacr.org/2021/1604.pdf */
-			fp_set_dig(c, -fp_prime_get_qnr());
-			fp_neg(c, c);
-
-			/* u = t0, t = t1, v = t0^4, y = t1^4, w = c^2, z1 = 8*a^2*c. */
-			fp_sqr(v, u);
-			fp_sqr(v, v);
-			fp_sqr(y, t);
-			fp_sqr(y, y);
-			fp_sqr(w, c);
-			fp_sqr(z1, a);
-			fp_mul(z1, z1, c);
-			fp_dbl(z1, z1);
-			fp_dbl(z1, z1);
-			fp_dbl(z1, z1);
-			/* w = c^2*t0^4+t1^4, y1 = c^4*t0^8, x1 = 2*c^2*t0^4*t1^4, y = t1^8. */
-			fp_mul(w, w, v);
-			fp_sqr(y1, w);
-			fp_mul(x1, w, y);
-			fp_dbl(x1, x1);
-			fp_add(w, w, y);
-			fp_sqr(y, y);
-			/* w = den = 8*a^2*c(c^2*t0^4 + t1^4), z1 = 16*a^3*c^2. */
-			fp_mul(w, w, z1);
-			fp_inv(p->z, w);
-			fp_mul(z1, z1, c);
-			fp_mul(z1, z1, a);
-			fp_dbl(z1, z1);
-			/* v = num2 = c^4*t0^8 - 2*c^2t0^4*t1^4 + t1^8 - 16*a^3*c^2*/
-			fp_sub(v, y1, x1);
-			fp_add(v, v, y);
-			fp_sub(v, v, z1);
-			/* w = num0 = t0 * ac(-3*c^4t0^8 + 2c^2*t0^4*t1^4 + t1^8 + 16*a^3*c^2)*/
-			fp_add(w, y, z1);
-			fp_add(w, w, x1);
-			fp_sub(w, w, y1);
-			fp_sub(w, w, y1);
-			fp_sub(w, w, y1);
-			fp_mul(w, w, u);
-			fp_mul(w, w, c);
-			fp_mul(w, w, a);
-			/* z1 = num1 = t1 * ac^2(c^4t0^8 + 2c^2t0^4*t1^4 - 3^t1^8 + 16a^3c^2)*/
-			fp_sub(z1, z1, y);
-			fp_sub(z1, z1, y);
-			fp_sub(z1, z1, y);
-			fp_add(z1, z1, x1);
-			fp_add(z1, z1, y1);
-			fp_mul(z1, z1, t);
-			fp_mul(z1, z1, c);
-			fp_mul(z1, z1, c);
-			fp_mul(z1, z1, a);
-			/* v2 = num2/den = v/w. */
-			fp_mul(w, w, p->z);
-			fp_mul(z1, z1, p->z);
-			fp_mul(v, v, p->z);
-			fp_inv(v, v);
-
-			bn_read_raw(k, fp_prime_get(), RLC_FP_DIGS);
-			if ((k->dp[0] & 0xF) == 5) {
-				/* n = (3p + 1)/16 */
-				bn_mul_dig(k, k, 3);
-				bn_add_dig(k, k, 1);
-			} else if ((k->dp[0] & 0xF) == 13) {
-				/* n = (p + 3)/16 */
-				bn_add_dig(k, k, 3);
-			} else {
-				RLC_THROW(ERR_NO_VALID);
-			}
-			bn_rsh(k, k, 4);
-			/* Compute x1 = f = (1/v2)^3 + a*(1/v2) = (1/v2)((1/v2)^2 + a). */
-			fp_sqr(x1, v);
-			fp_add(x1, x1, a);
-			fp_mul(x1, x1, v);
-			/* Compute y = theta, zp = theta^4. */
-			fp_exp(y, x1, k);
-			fp_sqr(p->z, y);
-			fp_sqr(p->z, p->z);
-			/* Perform the base change from (t0,t1) to (u0, u1). */
-			fp_sqr(u, u);
-			fp_mul(u, u, c);
-			fp_sqr(t, t);
-			fp_mul(t, t, c);
-			/* Compute c = i^r * f. */
-			fp_mul(c, ctx->ep_map_c[5], x1);
-			fp_sqr(p->y, y);
-			/* We use zp as temporary, but there is no problem with \psi. */
-			int index = 0;
-			fp_copy(y1, u);
-			fp_copy(a, v);
-			fp_sqr(b, y);
-			fp_copy(p->x, a);
-			fp_copy(p->y, b);
-			for (int m = 0; m < 4; m++) {
-				fp_mul(y1, y1, ctx->ep_map_c[5]);
-				index += (fp_bits(y1) < fp_bits(u));
-			}
-			/* Apply consecutive endomorphisms. */
-			for (int m = 0; m < 4; m++) {
-				fp_neg(a, a);
-				fp_mul(b, b, ep_curve_get_beta());
-				dv_copy_cond(p->x, a, RLC_FP_DIGS, m < index);
-				dv_copy_cond(p->y, b, RLC_FP_DIGS, m < index);
-			}
-			fp_neg(y1, x1);
-			/* Compute 1/d * 1/theta. */
-			fp_inv(y, y);
-			fp_mul(y, y, ctx->ep_map_c[4]);
-			dig_t c0 = fp_cmp(p->z, x1) == RLC_EQ;
-			dig_t c1 = fp_cmp(p->z, y1) == RLC_EQ;
-			dig_t c2 = fp_cmp(p->z, c) == RLC_EQ;
-			fp_neg(c, c);
-			dig_t c3 = fp_cmp(p->z, c) == RLC_EQ;
-			c2 = !c0 && !c1 && c2;
-			c3 = !c0 && !c1 && !c2 && c3;
-			fp_copy(p->z, ctx->ep_map_c[6]);
-			fp_mul(p->z, p->z, p->y);
-			dv_copy_cond(p->y, p->z, RLC_FP_DIGS, c1);
-			fp_copy(y1, ctx->ep_map_c[4]);
-			/* Convert from projective coordinates on the surface to affine. */
-			fp_mul(u, u, v);
-			fp_mul(t, t, v);
-			fp_sqr(v, v);
-			fp_mul(w, w, v);
-			fp_mul(z1, z1, v);
-			/* Compute (x,y) = (x0/(d*theta)^2, y0/(d*theta)^3). */
-			fp_sqr(y1, y);
-			fp_mul(u, u, y1);
-			fp_mul(w, w, y);
-			fp_mul(w, w, y1);
-			dv_copy_cond(p->x, u, RLC_FP_DIGS, c2);
-			dv_copy_cond(p->y, w, RLC_FP_DIGS, c2);
-			/* Compute (x,y) = (x1/(d^3*theta)^2, y1/(d^3*theta)^3). */
-			fp_mul(z1, z1, y);
-			fp_mul(t, t, y1);
-			fp_mul(z1, z1, y1);
-			fp_sqr(y, ctx->ep_map_c[4]);
-			fp_mul(z1, z1, y);
-			fp_sqr(y, y);
-			fp_mul(t, t, y);
-			fp_mul(z1, z1, y);
-			dv_copy_cond(p->x, t, RLC_FP_DIGS, c3);
-			dv_copy_cond(p->y, z1, RLC_FP_DIGS, c3);
-			p->coord = BASIC;
-			fp_set_dig(p->z, 1);
 		} else {
 			/* This is the SwiftEC case per se. */
 			if (ep_curve_opt_a() != RLC_ZERO) {
@@ -623,16 +485,16 @@ void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 					int c2 = fp_is_sqr(u);
 					int c3 = fp_is_sqr(v);
 
-					dv_swap_cond(x1, y1, RLC_FP_DIGS, c2);
-					dv_swap_cond(t, u, RLC_FP_DIGS, c2);
-					dv_swap_cond(x1, z1, RLC_FP_DIGS, c3);
-					dv_swap_cond(t, v, RLC_FP_DIGS, c3);
+					fp_copy_sec(x1, y1, c2);
+					fp_copy_sec(t, u, c2);
+					fp_copy_sec(x1, z1, c3);
+					fp_copy_sec(t, v, c3);
 
 					if (!fp_srt(t, t)) {
 						RLC_THROW(ERR_NO_VALID);
 					}
 					fp_neg(u, t);
-					dv_swap_cond(t, u, RLC_FP_DIGS, fp_is_even(t) ^ s);
+					fp_copy_sec(t, u, fp_is_even(t) ^ s);
 
 					fp_copy(p->x, x1);
 					fp_copy(p->y, t);
@@ -652,6 +514,9 @@ void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 		fp_free(a);
 		fp_free(b);
 		fp_free(c);
+		fp_free(d);
+		fp_free(e);
+		fp_free(f);
 		fp_free(t);
 		fp_free(u);
 		fp_free(v);
@@ -660,6 +525,9 @@ void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 		fp_free(x1);
 		fp_free(y1);
 		fp_free(z1);
+		fp_free(den[0]);
+		fp_free(den[1]);
+		fp_free(den[2]);
 		RLC_FREE(pseudo_random_bytes);
 	}
 }

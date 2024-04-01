@@ -511,13 +511,13 @@ void eb_rand(eb_t p);
 void eb_blind(eb_t r, const eb_t p);
 
 /**
- * Computes the right-hand side of the elliptic curve equation at a certain
- * elliptic curve point.
+ * Computes the right-hand side of the elliptic curve equation at the
+ * x-coordinate of a certain binary elliptic curve point.
  *
  * @param[out] rhs			- the result.
- * @param[in] p				- the point.
+ * @param[in] x				- the x-coordinate of the point.
  */
-void eb_rhs(fb_t rhs, const eb_t p);
+void eb_rhs(fb_t rhs, const fb_t p);
 
 /** Tests if a point is in the curve.
  *

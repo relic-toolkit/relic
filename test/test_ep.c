@@ -1394,15 +1394,17 @@ static int hashing(void) {
 #endif
 
 #if EP_MAP == SWIFT || !defined(STRIP)
-		if (ep_curve_opt_a() == RLC_ZERO || ep_curve_opt_b() == RLC_ZERO) {
-			TEST_CASE("swift point hashing is correct") {
-				rand_bytes(msg, sizeof(msg));
-				ep_map_swift(a, msg, sizeof(msg));
-				TEST_ASSERT(ep_on_curve(a) && ep_is_infty(a) == 0, end);
-				ep_mul(a, a, n);
-				TEST_ASSERT(ep_on_curve(a) && ep_is_infty(a) == 1, end);
+		if (!ep_curve_is_super()) {
+			if (ep_curve_opt_a() == RLC_ZERO || ep_curve_opt_b() == RLC_ZERO) {
+				TEST_CASE("swift point hashing is correct") {
+					rand_bytes(msg, sizeof(msg));
+					ep_map_swift(a, msg, sizeof(msg));
+					TEST_ASSERT(ep_on_curve(a) && ep_is_infty(a) == 0, end);
+					ep_mul(a, a, n);
+					TEST_ASSERT(ep_on_curve(a) && ep_is_infty(a) == 1, end);
+				}
+				TEST_END;
 			}
-			TEST_END;
 		}
 #endif
 	}

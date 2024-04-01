@@ -36,7 +36,18 @@ if (GMP_INCLUDE_DIR AND GMP_LIBRARIES)
 	unset(GMP_LIBRARIES CACHE)
 endif (GMP_INCLUDE_DIR AND GMP_LIBRARIES)
 
-find_path(GMP_INCLUDE_DIR NAMES gmp.h)
+find_path(GMP_INCLUDE_DIR gmp.h
+	PATHS
+		ENV GMP_ROOT
+		ENV GMP_INCLUDE_DIR
+		${GMP_ROOT}
+		/usr
+		/usr/local
+		$ENV{HOME}/.local
+	PATH_SUFFIXES
+		include
+)
+
 if(STBIN)
 	find_library(GMP_LIBRARIES NAMES libgmp.a gmp.lib libgmp-10 libgmp gmp)
 else(STBIN)

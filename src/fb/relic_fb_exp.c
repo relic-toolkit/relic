@@ -173,10 +173,10 @@ void fb_exp_monty(fb_t c, const fb_t a, const bn_t b) {
 
 		for (int i = bn_bits(b) - 1; i >= 0; i--) {
 			int j = bn_get_bit(b, i);
-			dv_swap_cond(t[0], t[1], RLC_FB_DIGS, j ^ 1);
+			dv_swap_sec(t[0], t[1], RLC_FB_DIGS, j ^ 1);
 			fb_mul(t[0], t[0], t[1]);
 			fb_sqr(t[1], t[1]);
-			dv_swap_cond(t[0], t[1], RLC_FB_DIGS, j ^ 1);
+			dv_swap_sec(t[0], t[1], RLC_FB_DIGS, j ^ 1);
 		}
 
 		if (bn_sign(b) == RLC_NEG) {

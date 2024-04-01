@@ -240,8 +240,7 @@ static void arith2(void) {
 		ep2_rand(p);
 		ep2_add_projc(q, q, p);
 		BENCH_ADD(ep2_add_projc(r, p, q));
-	}
-	BENCH_END;
+	} BENCH_END;
 
 	BENCH_RUN("ep2_add_projc (z2 = 1)") {
 		ep2_rand(p);
@@ -250,8 +249,7 @@ static void arith2(void) {
 		ep2_rand(q);
 		ep2_norm(q, q);
 		BENCH_ADD(ep2_add_projc(r, p, q));
-	}
-	BENCH_END;
+	} BENCH_END;
 
 	BENCH_RUN("ep2_add_projc (z1,z2 = 1)") {
 		ep2_rand(p);
@@ -259,8 +257,36 @@ static void arith2(void) {
 		ep2_rand(q);
 		ep2_norm(q, q);
 		BENCH_ADD(ep2_add_projc(r, p, q));
-	}
-	BENCH_END;
+	} BENCH_END;
+#endif
+
+#if EP_ADD == JACOB || !defined(STRIP)
+	BENCH_RUN("ep2_add_jacob") {
+		ep2_rand(p);
+		ep2_rand(q);
+		ep2_add_jacob(p, p, q);
+		ep2_rand(q);
+		ep2_rand(p);
+		ep2_add_jacob(q, q, p);
+		BENCH_ADD(ep2_add_jacob(r, p, q));
+	} BENCH_END;
+
+	BENCH_RUN("ep2_add_jacob (z2 = 1)") {
+		ep2_rand(p);
+		ep2_rand(q);
+		ep2_add_jacob(p, p, q);
+		ep2_rand(q);
+		ep2_norm(q, q);
+		BENCH_ADD(ep2_add_jacob(r, p, q));
+	} BENCH_END;
+
+	BENCH_RUN("ep2_add_jacob (z1,z2 = 1)") {
+		ep2_rand(p);
+		ep2_norm(p, p);
+		ep2_rand(q);
+		ep2_norm(q, q);
+		BENCH_ADD(ep2_add_jacob(r, p, q));
+	} BENCH_END;
 #endif
 
 	BENCH_RUN("ep2_sub") {
@@ -302,15 +328,28 @@ static void arith2(void) {
 		ep2_rand(q);
 		ep2_add_projc(p, p, q);
 		BENCH_ADD(ep2_dbl_projc(r, p));
-	}
-	BENCH_END;
+	} BENCH_END;
 
 	BENCH_RUN("ep2_dbl_projc (z1 = 1)") {
 		ep2_rand(p);
 		ep2_norm(p, p);
 		BENCH_ADD(ep2_dbl_projc(r, p));
-	}
-	BENCH_END;
+	} BENCH_END;
+#endif
+
+#if EP_ADD == JACOB || !defined(STRIP)
+	BENCH_RUN("ep2_dbl_jacob") {
+		ep2_rand(p);
+		ep2_rand(q);
+		ep2_add_jacob(p, p, q);
+		BENCH_ADD(ep2_dbl_jacob(r, p));
+	} BENCH_END;
+
+	BENCH_RUN("ep2_dbl_jacob (z1 = 1)") {
+		ep2_rand(p);
+		ep2_norm(p, p);
+		BENCH_ADD(ep2_dbl_jacob(r, p));
+	} BENCH_END;
 #endif
 
 	BENCH_RUN("ep2_neg") {
@@ -354,6 +393,14 @@ static void arith2(void) {
 		bn_rand_mod(k, n);
 		ep2_rand(p);
 		BENCH_ADD(ep2_mul_lwnaf(q, p, k));
+	} BENCH_END;
+#endif
+
+#if EP_MUL == LWREG || !defined(STRIP)
+	BENCH_RUN("ep2_mul_lwreg") {
+		bn_rand_mod(k, n);
+		ep2_rand(p);
+		BENCH_ADD(ep2_mul_lwreg(q, p, k));
 	} BENCH_END;
 #endif
 
@@ -902,6 +949,14 @@ static void arith3(void) {
 	} BENCH_END;
 #endif
 
+#if EP_MUL == LWREG || !defined(STRIP)
+	BENCH_RUN("ep3_mul_lwreg") {
+		bn_rand_mod(k, n);
+		ep3_rand(p);
+		BENCH_ADD(ep3_mul_lwreg(q, p, k));
+	} BENCH_END;
+#endif
+
 	BENCH_RUN("ep3_mul_gen") {
 		bn_rand_mod(k, n);
 		BENCH_ADD(ep3_mul_gen(q, k));
@@ -1396,6 +1451,14 @@ static void arith4(void) {
 	} BENCH_END;
 #endif
 
+#if EP_MUL == LWREG || !defined(STRIP)
+	BENCH_RUN("ep4_mul_lwreg") {
+		bn_rand_mod(k, n);
+		ep4_rand(p);
+		BENCH_ADD(ep4_mul_lwreg(q, p, k));
+	} BENCH_END;
+#endif
+
 	BENCH_RUN("ep4_mul_gen") {
 		bn_rand_mod(k, n);
 		BENCH_ADD(ep4_mul_gen(q, k));
@@ -1887,6 +1950,14 @@ static void arith8(void) {
 		bn_rand_mod(k, n);
 		ep8_rand(p);
 		BENCH_ADD(ep8_mul_lwnaf(q, p, k));
+	} BENCH_END;
+#endif
+
+#if EP_MUL == LWREG || !defined(STRIP)
+	BENCH_RUN("ep8_mul_lwreg") {
+		bn_rand_mod(k, n);
+		ep8_rand(p);
+		BENCH_ADD(ep8_mul_lwreg(q, p, k));
 	} BENCH_END;
 #endif
 

@@ -58,7 +58,7 @@ void eb_map(eb_t p, const uint8_t *msg, size_t len) {
 		while (1) {
 			dv_copy(p->x, k->dp, RLC_FB_DIGS);
 
-			eb_rhs(t1, p);
+			eb_rhs(t1, p->x);
 
 			/* t0 = 1/x1^2. */
 			fb_sqr(t0, p->x);

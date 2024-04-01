@@ -24,8 +24,8 @@
 /**
  * @file
  *
- * Implementation of point normalization on prime elliptic curves over octic
- * extensions.
+ * Implementation of point normalization on prime elliptic curves over an octic
+ * extension field.
  *
  * @ingroup epx
  */
@@ -43,36 +43,45 @@
  *
  * @param r			- the result.
  * @param p			- the point to normalize.
+ * @param inv		- the flag to indicate if z is already inverted.
  */
-static void ep8_norm_imp(ep8_t r, const ep8_t p, int inverted) {
+static void ep8_norm_imp(ep8_t r, const ep8_t p, int inv) {
 	if (p->coord != BASIC) {
-		fp8_t t0, t1;
+		fp8_t t;
 
-		fp8_null(t0);
-		fp8_null(t1);
+		fp8_null(t);
 
 		RLC_TRY {
+			fp8_new(t);
 
-			fp8_new(t0);
-			fp8_new(t1);
-
-			if (inverted) {
-				fp8_copy(t1, p->z);
+			if (inv) {
+				fp8_copy(r->z, p->z);
 			} else {
-				fp8_inv(t1, p->z);
+				fp8_inv(r->z, p->z);
 			}
-			fp8_sqr(t0, t1);
-			fp8_mul(r->x, p->x, t0);
-			fp8_mul(t0, t0, t1);
-			fp8_mul(r->y, p->y, t0);
+
+			switch (p->coord) {
+				case PROJC:
+					fp8_mul(r->x, p->x, r->z);
+					fp8_mul(r->y, p->y, r->z);
+					break;
+				case JACOB:
+					fp8_sqr(t, r->z);
+					fp8_mul(r->x, p->x, t);
+					fp8_mul(t, t, r->z);
+					fp8_mul(r->y, p->y, t);
+					break;
+				default:
+					ep8_copy(r, p);
+					break;
+			}
 			fp8_set_dig(r->z, 1);
 		}
 		RLC_CATCH_ANY {
 			RLC_THROW(ERR_CAUGHT);
 		}
 		RLC_FINALLY {
-			fp8_free(t0);
-			fp8_free(t1);
+			fp8_free(t);
 		}
 	}
 
@@ -92,17 +101,18 @@ void ep8_norm(ep8_t r, const ep8_t p) {
 	}
 
 	if (p->coord == BASIC) {
-		/* If the point is represented in affine coordinates, we just copy it. */
+		/* If the point is represented in affine coordinates, just copy it. */
 		ep8_copy(r, p);
+		return;
 	}
-#if EP_ADD == PROJC || !defined(STRIP)
+#if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
 	ep8_norm_imp(r, p, 0);
-#endif
+#endif /* EP_ADD == PROJC */
 }
 
 void ep8_norm_sim(ep8_t *r, const ep8_t *t, int n) {
 	int i;
-	fp8_t *a = RLC_ALLOCA(fp8_t, n);
+	fp8_t* a = RLC_ALLOCA(fp8_t, n);
 
 	RLC_TRY {
 		if (a == NULL) {
@@ -114,17 +124,20 @@ void ep8_norm_sim(ep8_t *r, const ep8_t *t, int n) {
 			fp8_copy(a[i], t[i]->z);
 		}
 
-		fp8_inv_sim(a, a, n);
+		fp8_inv_sim(a, (const fp8_t *)a, n);
 
 		for (i = 0; i < n; i++) {
 			fp8_copy(r[i]->x, t[i]->x);
 			fp8_copy(r[i]->y, t[i]->y);
-			fp8_copy(r[i]->z, a[i]);
+			if (!ep8_is_infty(t[i])) {
+				fp8_copy(r[i]->z, a[i]);
+			}
 		}
-
+#if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
 		for (i = 0; i < n; i++) {
 			ep8_norm_imp(r[i], r[i], 1);
 		}
+#endif /* EP_ADD == PROJC */
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);

@@ -116,7 +116,7 @@ static void util(void) {
 
 	BENCH_RUN("eb_rhs") {
 		eb_rand(p);
-		BENCH_ADD(eb_rhs(q->x, p));
+		BENCH_ADD(eb_rhs(q->x, p->x));
 	} BENCH_END;
 
 	BENCH_RUN("eb_tab (4)") {

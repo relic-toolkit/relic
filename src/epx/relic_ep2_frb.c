@@ -24,8 +24,8 @@
 /**
  * @file
  *
- * Implementation of frobenius action on prime elliptic curves over
- * quadratic extensions.
+ * Implementation of frobenius action on prime elliptic curves over a quadratic
+ * extension field.
  *
  * @ingroup epx
  */

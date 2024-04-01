@@ -3927,7 +3927,7 @@ int main(void) {
 
 	util_banner("Arithmetic", 1);
 
-	if (ep_param_embed() == 1) {
+	if (ep_curve_embed() == 1) {
 		if (doubling1() != RLC_OK) {
 			core_clean();
 			return 1;
@@ -3944,7 +3944,7 @@ int main(void) {
 		}
 	}
 
-	if (ep_param_embed() == 2) {
+	if (ep_curve_embed() == 2) {
 		if (doubling2() != RLC_OK) {
 			core_clean();
 			return 1;
@@ -3961,7 +3961,7 @@ int main(void) {
 		}
 	}
 
-	if (ep_param_embed() == 8) {
+	if (ep_curve_embed() == 8) {
 		if (doubling8() != RLC_OK) {
 			core_clean();
 			return 1;
@@ -3978,7 +3978,7 @@ int main(void) {
 		}
 	}
 
-	if (ep_param_embed() == 12) {
+	if (ep_curve_embed() == 12) {
 		if (doubling12() != RLC_OK) {
 			core_clean();
 			return 1;
@@ -3995,7 +3995,7 @@ int main(void) {
 		}
 	}
 
-	if (ep_param_embed() == 16) {
+	if (ep_curve_embed() == 16) {
 		if (doubling16() != RLC_OK) {
 			core_clean();
 			return 1;
@@ -4012,7 +4012,7 @@ int main(void) {
 		}
 	}
 
-	if (ep_param_embed() == 18) {
+	if (ep_curve_embed() == 18) {
 		if (doubling18() != RLC_OK) {
 			core_clean();
 			return 1;
@@ -4029,7 +4029,7 @@ int main(void) {
 		}
 	}
 
-	if (ep_param_embed() == 24) {
+	if (ep_curve_embed() == 24) {
 		if (doubling24() != RLC_OK) {
 			core_clean();
 			return 1;
@@ -4046,7 +4046,7 @@ int main(void) {
 		}
 	}
 
-	if (ep_param_embed() == 48) {
+	if (ep_curve_embed() == 48) {
 		if (doubling48() != RLC_OK) {
 			core_clean();
 			return 1;
@@ -4063,7 +4063,7 @@ int main(void) {
 		}
 	}
 
-	if (ep_param_embed() == 54) {
+	if (ep_curve_embed() == 54) {
 		if (doubling54() != RLC_OK) {
 			core_clean();
 			return 1;

@@ -712,7 +712,7 @@ void eb_mul_lodah(eb_t r, const eb_t p, const bn_t k) {
 		bn_abs(t, k);
 		bn_add(t, t, n);
 		bn_add(n, t, n);
-		dv_swap_cond(t->dp, n->dp, RLC_MAX(t->used, n->used),
+		dv_swap_sec(t->dp, n->dp, RLC_MAX(t->used, n->used),
 			bn_get_bit(t, bits) == 0);
 		t->used = RLC_SEL(t->used, n->used, bn_get_bit(t, bits) == 0);
 
@@ -743,8 +743,8 @@ void eb_mul_lodah(eb_t r, const eb_t p, const bn_t k) {
 			fb_mul(r2, x2, z1);
 			fb_add(r3, r1, r2);
 			fb_muln_low(r4, r1, r2);
-			dv_swap_cond(x1, x2, RLC_FB_DIGS, j ^ 1);
-			dv_swap_cond(z1, z2, RLC_FB_DIGS, j ^ 1);
+			dv_swap_sec(x1, x2, RLC_FB_DIGS, j ^ 1);
+			dv_swap_sec(z1, z2, RLC_FB_DIGS, j ^ 1);
 			fb_sqr(z1, r3);
 			fb_muln_low(r1, z1, p->x);
 			fb_addd_low(x1, r1, r4, 2 * RLC_FB_DIGS);
@@ -775,8 +775,8 @@ void eb_mul_lodah(eb_t r, const eb_t p, const bn_t k) {
 					fb_rdcn_low(x2, x2);
 					break;
 			}
-			dv_swap_cond(x1, x2, RLC_FB_DIGS, j ^ 1);
-			dv_swap_cond(z1, z2, RLC_FB_DIGS, j ^ 1);
+			dv_swap_sec(x1, x2, RLC_FB_DIGS, j ^ 1);
+			dv_swap_sec(z1, z2, RLC_FB_DIGS, j ^ 1);
 		}
 
 		if (fb_is_zero(z1)) {

@@ -1488,18 +1488,31 @@ int exponentiation(void) {
 
 		TEST_CASE("exponentiation is correct") {
 			gt_rand(a);
-			gt_rand(b);
+			bn_set_dig(d, 0);
+			gt_exp(b, a, d);
+			TEST_ASSERT(gt_is_unity(b), end);
+			bn_set_dig(d, 1);
+			gt_exp(b, a, d);
+			TEST_ASSERT(gt_cmp(a, b) == RLC_EQ, end);
 			bn_rand_mod(d, n);
+			RLC_CAT(RLC_GT_LOWER, exp)(b, a, d);
+			gt_exp(c, a, d);
+			TEST_ASSERT(gt_cmp(b, c) == RLC_EQ, end);
+			bn_rand_mod(d, n);
+			gt_exp(b, a, d);
+			gt_exp_sec(c, a, d);
+			TEST_ASSERT(gt_cmp(b, c) == RLC_EQ, end);
+			bn_neg(d, d);
+			gt_exp(b, a, d);
+			gt_exp_sec(c, a, d);
+			TEST_ASSERT(gt_cmp(b, c) == RLC_EQ, end);
+			gt_rand(b);
 			bn_rand_mod(e, n);
 			gt_exp_sim(c, a, d, b, e);
 			gt_exp(a, a, d);
 			gt_exp(b, b, e);
 			gt_mul(b, a, b);
 			TEST_ASSERT(gt_cmp(b, c) == RLC_EQ, end);
-			gt_exp_dig(b, a, 0);
-			TEST_ASSERT(gt_is_unity(b), end);
-			gt_exp_dig(b, a, 1);
-			TEST_ASSERT(gt_cmp(a, b) == RLC_EQ, end);
 			bn_rand(d, RLC_POS, RLC_DIG);
 			gt_exp(b, a, d);
 			gt_exp_dig(c, a, d->dp[0]);

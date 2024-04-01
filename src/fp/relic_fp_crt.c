@@ -157,7 +157,7 @@ int fp_crt(fp_t c, const fp_t a) {
 			fp_exp(t0, a, e);
 
 			/* Recover 3^f-root of unity, and continue algorithm. */
-			fp_copy(t3, fp_prime_get_crt());
+			fp_copy(t3, (const dig_t *)fp_prime_get_crt());
 
 			fp_copy(c, t3);
 			for (int i = 0; i < f - 1; i++) {

@@ -24,8 +24,8 @@
 /**
  * @file
  *
- * Implementation of configuration of prime elliptic curves over octic
- * extensions.
+ * Implementation of configuration of prime elliptic curves over an octic
+ * extension field.
  *
  * @ingroup epx
  */
@@ -221,6 +221,49 @@ int ep8_curve_opt_b(void) {
 	return core_get()->ep8_opt_b;
 }
 
+void ep8_curve_mul_a(fp8_t c, const fp8_t a) {
+	ctx_t *ctx = core_get();
+	switch (ctx->ep8_opt_a) {
+		case RLC_ZERO:
+			fp8_zero(c);
+			break;
+		case RLC_ONE:
+			fp8_copy(c, a);
+			break;
+		case RLC_TWO:
+			fp8_dbl(c, a);
+			break;
+#if FP_RDC != MONTY
+		case RLC_TINY:
+			fp8_mul_dig(c, a, ctx->ep8_a[0]);
+			break;
+#endif
+		default:
+			fp8_mul(c, a, ctx->ep8_a);
+			break;
+	}
+}
+
+void ep8_curve_mul_b(fp8_t c, const fp8_t a) {
+	ctx_t *ctx = core_get();
+	switch (ctx->ep8_opt_b) {
+		case RLC_ZERO:
+			fp8_zero(c);
+			break;
+		case RLC_ONE:
+			fp8_copy(c, a);
+			break;
+#if FP_RDC != MONTY
+		case RLC_TINY:
+			fp8_mul_dig(c, a, ctx->ep8_b[0]);
+			break;
+#endif
+		default:
+			fp8_mul(c, a, ctx->ep8_b);
+			break;
+	}
+}
+
 int ep8_curve_is_twist(void) {
 	return core_get()->ep8_is_twist;
 }
@@ -229,12 +272,12 @@ void ep8_curve_get_gen(ep8_t g) {
 	ep8_copy(g, core_get()->ep8_g);
 }
 
-void ep8_curve_get_a(fp8_t a) {
-	fp8_copy(a, core_get()->ep8_a);
+fp4_t *ep8_curve_get_a(void) {
+	return core_get()->ep8_a;
 }
 
-void ep8_curve_get_b(fp8_t b) {
-	fp8_copy(b, core_get()->ep8_b);
+fp4_t *ep8_curve_get_b(void) {
+	return core_get()->ep8_b;
 }
 
 void ep8_curve_get_ord(bn_t n) {

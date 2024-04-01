@@ -126,7 +126,7 @@ int fp2_srt(fp2_t c, const fp2_t a) {
 				/* t1 = (a_0 - sqrt(t0)) / 2 */
 				fp_sub(t1, a[0], t1);
 				fp_hlv(t1, t1);
-				dv_copy_cond(t0, t1, RLC_FP_DIGS, !fp_is_sqr(t0));
+				fp_copy_sec(t0, t1, !fp_is_sqr(t0));
 
 				/* Should always be a quadratic residue. */
 				fp_srt(t2, t0);
@@ -244,22 +244,12 @@ int fp3_srt(fp3_t c, const fp3_t a) {
 					fp_mul(t0[0], t3[0], root);
 					fp_mul(t0[1], t3[1], root);
 					fp_mul(t0[2], t3[2], root);
-					dv_copy_cond(t3[0], t0[0], RLC_FP_DIGS,
-							fp3_cmp_dig(t2, 1) != RLC_EQ);
-					dv_copy_cond(t3[1], t0[1], RLC_FP_DIGS,
-							fp3_cmp_dig(t2, 1) != RLC_EQ);
-					dv_copy_cond(t3[2], t0[2], RLC_FP_DIGS,
-							fp3_cmp_dig(t2, 1) != RLC_EQ);
+					fp3_copy_sec(t3, t0, fp3_cmp_dig(t2, 1) != RLC_EQ);
 					fp_sqr(root, root);
 					fp_mul(t0[0], t1[0], root);
 					fp_mul(t0[1], t1[1], root);
 					fp_mul(t0[2], t1[2], root);
-					dv_copy_cond(t1[0], t0[0], RLC_FP_DIGS,
-							fp3_cmp_dig(t2, 1) != RLC_EQ);
-					dv_copy_cond(t1[1], t0[1], RLC_FP_DIGS,
-							fp3_cmp_dig(t2, 1) != RLC_EQ);
-					dv_copy_cond(t1[2], t0[2], RLC_FP_DIGS,
-							fp3_cmp_dig(t2, 1) != RLC_EQ);
+					fp3_copy_sec(t1, t0, fp3_cmp_dig(t2, 1) != RLC_EQ);
 					fp3_copy(t2, t1);
 				}
 				break;
@@ -311,9 +301,7 @@ int fp3_srt(fp3_t c, const fp3_t a) {
 		fp3_sqr(t0, t3);
 		r = (fp3_cmp(t0, a) == RLC_EQ ? 1 : 0);
 		fp3_zero(c);
-		dv_copy_cond(c[0], t3[0], RLC_FP_DIGS, r);
-		dv_copy_cond(c[1], t3[1], RLC_FP_DIGS, r);
-		dv_copy_cond(c[2], t3[2], RLC_FP_DIGS, r);
+		fp3_copy_sec(c, t3, r);
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
@@ -412,8 +400,7 @@ int fp4_srt(fp4_t c, const fp4_t a) {
 				fp2_sub(t1, a[0], t1);
 				fp_hlv(t1[0], t1[0]);
 				fp_hlv(t1[1], t1[1]);
-				dv_copy_cond(t0[0], t1[0], RLC_FP_DIGS, !c0);
-				dv_copy_cond(t0[1], t1[1], RLC_FP_DIGS, !c0);
+				fp2_copy_sec(t0, t1, !c0);
 				/* Should always be a quadratic residue. */
 				fp2_srt(t2, t0);
 				/* c_0 = sqrt(t0) */
@@ -523,10 +510,7 @@ int fp8_srt(fp8_t c, const fp8_t a) {
 				fp_hlv(t1[0][1], t1[0][1]);
 				fp_hlv(t1[1][0], t1[1][0]);
 				fp_hlv(t1[1][1], t1[1][1]);
-				dv_copy_cond(t0[0][0], t1[0][0], RLC_FP_DIGS, !c0);
-				dv_copy_cond(t0[0][1], t1[0][1], RLC_FP_DIGS, !c0);
-				dv_copy_cond(t0[1][0], t1[1][0], RLC_FP_DIGS, !c0);
-				dv_copy_cond(t0[1][1], t1[1][1], RLC_FP_DIGS, !c0);
+				fp4_copy_sec(t0, t1, !c0);
 				/* Should always be a quadratic residue. */
 				fp4_srt(t2, t0);
 				/* c_0 = sqrt(t0) */
@@ -640,8 +624,7 @@ int fp16_srt(fp16_t c, const fp16_t a) {
 					for (int j = 0; j < 2; j++) {
 						for (int k = 0; k < 2; k++) {
 							fp_hlv(t1[i][j][k], t1[i][j][k]);
-							dv_copy_cond(t0[i][j][k], t1[i][j][k], RLC_FP_DIGS,
-								!c0);
+							fp_copy_sec(t0[i][j][k], t1[i][j][k], !c0);
 						}
 					}
 				}
