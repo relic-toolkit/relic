@@ -4677,29 +4677,6 @@ static int cyclotomic12(void) {
 			TEST_ASSERT(fp12_cmp(b, c) == RLC_EQ, end);
         } TEST_END;
 
-		if (ep_curve_is_pairf() && ep_curve_embed() == 12) {
-			TEST_CASE("cyclotomic exponentiation in subgroup is correct") {
-				fp12_rand(a);
-				pp_exp_k12(a, a);
-				bn_zero(f);
-				fp12_exp_cyc_gls(c, a, f);
-				TEST_ASSERT(fp12_cmp_dig(c, 1) == RLC_EQ, end);
-				bn_set_dig(f, 1);
-				fp12_exp_cyc_gls(c, a, f);
-				TEST_ASSERT(fp12_cmp(c, a) == RLC_EQ, end);
-				bn_rand(f, RLC_POS, RLC_FP_BITS);
-				fp12_exp(b, a, f);
-				fp12_exp_cyc_gls(c, a, f);
-				TEST_ASSERT(fp12_cmp(b, c) == RLC_EQ, end);
-				bn_rand(f, RLC_POS, RLC_FP_BITS);
-				fp12_exp_cyc_gls(b, a, f);
-				bn_neg(f, f);
-				fp12_exp_cyc_gls(c, a, f);
-				fp12_inv_cyc(c, c);
-				TEST_ASSERT(fp12_cmp(b, c) == RLC_EQ, end);
-			} TEST_END;
-		}
-
 		TEST_CASE("sparse cyclotomic exponentiation is correct") {
 			int g[3] = {0, 0, RLC_FP_BITS - 1};
 			do {
@@ -6177,29 +6154,6 @@ static int cyclotomic18(void) {
 			TEST_ASSERT(fp18_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
-		if (ep_curve_is_pairf() && ep_curve_embed() == 18) {
-			TEST_CASE("cyclotomic exponentiation in subgroup is correct") {
-				fp18_rand(a);
-				pp_exp_k18(a, a);
-				bn_zero(f);
-				fp18_exp_cyc_gls(c, a, f);
-				TEST_ASSERT(fp18_cmp_dig(c, 1) == RLC_EQ, end);
-				bn_set_dig(f, 1);
-				fp18_exp_cyc_gls(c, a, f);
-				TEST_ASSERT(fp18_cmp(c, a) == RLC_EQ, end);
-				bn_rand(f, RLC_POS, RLC_FP_BITS);
-				fp18_exp(b, a, f);
-				fp18_exp_cyc_gls(c, a, f);
-				TEST_ASSERT(fp18_cmp(b, c) == RLC_EQ, end);
-				bn_rand(f, RLC_POS, RLC_FP_BITS);
-				fp18_exp_cyc_gls(b, a, f);
-				bn_neg(f, f);
-				fp18_exp_cyc_gls(c, a, f);
-				fp18_inv_cyc(c, c);
-				TEST_ASSERT(fp18_cmp(b, c) == RLC_EQ, end);
-			} TEST_END;
-		}
-
 		TEST_CASE("sparse cyclotomic exponentiation is correct") {
 			int g[3] = {0, 0, RLC_FP_BITS - 1};
 			do {
@@ -6952,29 +6906,6 @@ static int cyclotomic24(void) {
 			fp24_inv_cyc(c, c);
 			TEST_ASSERT(fp24_cmp(b, c) == RLC_EQ, end);
         } TEST_END;
-
-		if (ep_curve_is_pairf() && ep_curve_embed() == 24) {
-			TEST_CASE("cyclotomic exponentiation in subgroup is correct") {
-				fp24_rand(a);
-				pp_exp_k24(a, a);
-				bn_zero(f);
-				fp24_exp_cyc_gls(c, a, f);
-				TEST_ASSERT(fp24_cmp_dig(c, 1) == RLC_EQ, end);
-				bn_set_dig(f, 1);
-				fp24_exp_cyc_gls(c, a, f);
-				TEST_ASSERT(fp24_cmp(c, a) == RLC_EQ, end);
-				bn_rand(f, RLC_POS, RLC_DIG);
-				fp24_exp(b, a, f);
-				fp24_exp_cyc_gls(c, a, f);
-				TEST_ASSERT(fp24_cmp(b, c) == RLC_EQ, end);
-				bn_rand(f, RLC_POS, RLC_FP_BITS);
-				fp24_exp_cyc_gls(b, a, f);
-				bn_neg(f, f);
-				fp24_exp_cyc_gls(c, a, f);
-				fp24_inv_cyc(c, c);
-				TEST_ASSERT(fp24_cmp(b, c) == RLC_EQ, end);
-			} TEST_END;
-		}
 
 		TEST_CASE("sparse cyclotomic exponentiation is correct") {
 			int g[3] = {0, 0, RLC_FP_BITS - 1};
@@ -7767,29 +7698,6 @@ static int cyclotomic48(void) {
 			fp48_inv_cyc(c, c);
 			TEST_ASSERT(fp48_cmp(b, c) == RLC_EQ, end);
         } TEST_END;
-
-		if (ep_curve_is_pairf() && ep_curve_embed() == 48) {
-			TEST_CASE("cyclotomic exponentiation in subgroup is correct") {
-				fp48_rand(a);
-				pp_exp_k48(a, a);
-				bn_zero(f);
-				fp48_exp_cyc_gls(c, a, f);
-				TEST_ASSERT(fp48_cmp_dig(c, 1) == RLC_EQ, end);
-				bn_set_dig(f, 1);
-				fp48_exp_cyc_gls(c, a, f);
-				TEST_ASSERT(fp48_cmp(c, a) == RLC_EQ, end);
-				bn_rand(f, RLC_POS, RLC_DIG);
-				fp48_exp(b, a, f);
-				fp48_exp_cyc_gls(c, a, f);
-				TEST_ASSERT(fp48_cmp(b, c) == RLC_EQ, end);
-				bn_rand(f, RLC_POS, RLC_FP_BITS);
-				fp48_exp_cyc_gls(b, a, f);
-				bn_neg(f, f);
-				fp48_exp_cyc_gls(c, a, f);
-				fp48_inv_cyc(c, c);
-				TEST_ASSERT(fp48_cmp(b, c) == RLC_EQ, end);
-			} TEST_END;
-		}
 
 		TEST_CASE("sparse cyclotomic exponentiation is correct") {
 			int g[3] = {0, 0, RLC_FP_BITS - 1};

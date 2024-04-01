@@ -1488,11 +1488,21 @@ int exponentiation(void) {
 
 		TEST_CASE("exponentiation is correct") {
 			gt_rand(a);
-			gt_exp_dig(b, a, 0);
+			bn_set_dig(d, 0);
+			gt_exp(b, a, d);
 			TEST_ASSERT(gt_is_unity(b), end);
-			gt_exp_dig(b, a, 1);
+			bn_set_dig(d, 1);
+			gt_exp(b, a, d);
 			TEST_ASSERT(gt_cmp(a, b) == RLC_EQ, end);
 			bn_rand_mod(d, n);
+			RLC_CAT(RLC_GT_LOWER, exp)(b, a, d);
+			gt_exp(c, a, d);
+			TEST_ASSERT(gt_cmp(b, c) == RLC_EQ, end);
+			bn_rand_mod(d, n);
+			gt_exp(b, a, d);
+			gt_exp_sec(c, a, d);
+			TEST_ASSERT(gt_cmp(b, c) == RLC_EQ, end);
+			bn_neg(d, d);
 			gt_exp(b, a, d);
 			gt_exp_sec(c, a, d);
 			TEST_ASSERT(gt_cmp(b, c) == RLC_EQ, end);

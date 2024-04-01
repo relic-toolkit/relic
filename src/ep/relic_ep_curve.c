@@ -522,7 +522,6 @@ void ep_curve_set_endom(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
 
 #endif
 
-
 int ep_curve_embed(void) {
 	switch (core_get()->ep_is_pairf) {
 		case EP_K1:
@@ -550,4 +549,29 @@ int ep_curve_embed(void) {
 			return 54;
 	}
 	return 0;
+}
+
+int ep_curve_frdim(void) {
+	size_t f = 0;
+
+	switch (ep_curve_embed()) {
+		case 1:
+		case 2:
+		case 8:
+			return 1;
+			break;
+		case 12:
+			return 4;
+			break;
+		case 18:
+			return 6;
+			break;
+		case 16:
+		case 24:
+			return 8;
+			break;
+		case 48:
+			return 16;
+			break;
+	}
 }

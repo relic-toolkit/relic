@@ -506,7 +506,7 @@ void gt_exp(gt_t c, const gt_t a, const bn_t b) {
 #if FP_PRIME == 1536 || FP_PRIME == 544
 	RLC_CAT(RLC_GT_LOWER, exp_cyc)(c, a, b);
 #elif FP_PRIME < 1536
-	RLC_CAT(RLC_GT_LOWER, exp_cyc_gls)(c, a, b);
+	gt_exp_gls_imp(c, a, b, ep_curve_frdim());
 #else
 	RLC_CAT(RLC_GT_LOWER, exp)(c, a, b);
 #endif
@@ -522,31 +522,7 @@ void gt_exp_sec(gt_t c, const gt_t a, const bn_t b) {
 	}
 
 #if FP_PRIME <= 1536
-
-	size_t f = 0;
-
-	switch (ep_curve_embed()) {
-		case 1:
-		case 2:
-		case 8:
-			f = 1;
-			break;
-		case 12:
-			f = 4;
-			break;
-		case 18:
-			f = 6;
-			break;
-		case 16:
-		case 24:
-			f = 8;
-			break;
-		case 48:
-			f = 16;
-			break;
-	}
-
-	gt_exp_imp(c, a, b, f);
+	gt_exp_imp(c, a, b, ep_curve_frdim());
 #else
 	RLC_CAT(RLC_GT_LOWER, exp_monty)(c, a, b);
 #endif

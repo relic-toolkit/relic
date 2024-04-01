@@ -2060,16 +2060,6 @@ static void arith12(void) {
 	}
 	BENCH_END;
 
-	if (ep_curve_is_pairf() && ep_curve_embed() == 12) {
-		BENCH_RUN("fp12_exp_cyc (gls)") {
-			fp12_rand(a);
-			fp12_conv_cyc(a, a);
-			bn_rand(e, RLC_POS, RLC_FP_BITS);
-			BENCH_ADD(fp12_exp_cyc_gls(c, a, e));
-		}
-		BENCH_END;
-	}
-
 	BENCH_RUN("fp12_exp_cyc (param or sparse)") {
 		fp12_rand(a);
 		fp12_conv_cyc(a, a);
@@ -2346,16 +2336,6 @@ static void arith16(void) {
 		BENCH_ADD(fp16_exp(c, a, e));
 	}
 	BENCH_END;
-
-	if (ep_curve_is_pairf() && ep_curve_embed() == 16) {
-		BENCH_RUN("fp16_exp_cyc (gls)") {
-			fp16_rand(a);
-			fp16_conv_cyc(a, a);
-			bn_rand(e, RLC_POS, RLC_FP_BITS);
-			BENCH_ADD(fp16_exp_cyc_gls(c, a, e));
-		}
-		BENCH_END;
-	}
 
 	BENCH_RUN("fp16_exp_cyc (param or sparse)") {
 		fp16_rand(a);
@@ -2717,16 +2697,6 @@ static void arith18(void) {
 	}
 	BENCH_END;
 
-	if (ep_curve_is_pairf() && ep_curve_embed() == 18) {
-		BENCH_RUN("fp18_exp_cyc (gls)") {
-			fp18_rand(a);
-			fp18_conv_cyc(a, a);
-			bn_rand(e, RLC_POS, RLC_FP_BITS);
-			BENCH_ADD(fp18_exp_cyc_gls(c, a, e));
-		}
-		BENCH_END;
-	}
-
 	BENCH_RUN("fp18_exp_cyc (param or sparse)") {
 		fp18_rand(a);
 		fp18_conv_cyc(a, a);
@@ -3049,16 +3019,6 @@ static void arith24(void) {
 		BENCH_ADD(fp24_exp(c, a, e));
 	}
 	BENCH_END;
-
-	if (ep_curve_is_pairf() && ep_curve_embed() == 24) {
-		BENCH_RUN("fp24_exp_cyc (gls)") {
-			fp24_rand(a);
-			fp24_conv_cyc(a, a);
-			bn_rand(e, RLC_POS, RLC_FP_BITS);
-			BENCH_ADD(fp24_exp_cyc_gls(c, a, e));
-		}
-		BENCH_END;
-	}
 
 	BENCH_RUN("fp24_exp_cyc (param or sparse)") {
 		fp24_rand(a);
@@ -3427,16 +3387,6 @@ static void arith48(void) {
 		BENCH_ADD(fp48_exp(c, a, e));
 	}
 	BENCH_END;
-
-	if (ep_curve_is_pairf() && ep_curve_embed() == 48) {
-		BENCH_RUN("fp48_exp_cyc (gls)") {
-			fp48_rand(a);
-			fp48_conv_cyc(a, a);
-			bn_rand(e, RLC_POS, RLC_FP_BITS);
-			BENCH_ADD(fp48_exp_cyc_gls(c, a, e));
-		}
-		BENCH_END;
-	}
 
 	BENCH_RUN("fp48_exp_cyc (param or sparse)") {
 		fp48_rand(a);

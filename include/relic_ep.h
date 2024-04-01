@@ -680,6 +680,17 @@ void ep_curve_set_endom(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
 		const bn_t h, const fp_t beta, const bn_t l, int ctmap);
 
 /**
+ * Returns the embedding degree of the currently configured elliptic curve.
+ */
+int ep_curve_embed(void);
+
+/**
+ * Returns the dimension of Frobenius expansions of the currently configured
+ * elliptic curve.
+ */
+int ep_curve_frdim(void);
+
+/**
  * Configures a prime elliptic curve by its parameter identifier.
  *
  * @param				- the parameter identifier.
@@ -740,11 +751,6 @@ void ep_param_print(void);
  * Returns the current security level.
  */
 int ep_param_level(void);
-
-/**
- * Returns the embedding degree of the currently configured elliptic curve.
- */
-int ep_curve_embed(void);
 
 /**
  * Tests if a point on a prime elliptic curve is at the infinity.
