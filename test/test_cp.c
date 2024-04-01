@@ -1266,6 +1266,25 @@ static int pdprv(void) {
 			pc_map(e[0], p, q);
 			TEST_ASSERT(gt_cmp(r, e[0]) == RLC_EQ, end);
 		} TEST_END;
+
+		TEST_CASE("amortized delegated pairing with private inputs is correct") {
+			TEST_ASSERT(cp_amprv_gen(r1, r2[0], r2[1], r2[2], e[0], v1[0], v2[0], 1) == RLC_OK, end);
+			g1_rand(p);
+			g2_rand(q);
+			TEST_ASSERT(cp_amprv_ask(u1, u2, p, q, r1, r2[0], r2[1], v1[0], v2[0]) == RLC_OK, end);
+			TEST_ASSERT(cp_amprv_ans(r, g[0], r1, u1, u2) == RLC_OK, end);
+			TEST_ASSERT(cp_amprv_ver(r, g[0], r2[0], e[0]) == 1, end);
+			pc_map(g[0], p, q);
+			TEST_ASSERT(gt_cmp(r, g[0]) == RLC_EQ, end);
+			TEST_ASSERT(cp_amprv_gen(r1, r2[0], r2[1], r2[2], e[0], v1[0], v2[0], 0) == RLC_OK, end);
+			g1_rand(p);
+			g2_rand(q);
+			TEST_ASSERT(cp_amprv_ask(u1, u2, p, q, r1, r2[0], r2[1], v1[0], v2[0]) == RLC_OK, end);
+			TEST_ASSERT(cp_amprv_ans(r, g[0], r1, u1, u2) == RLC_OK, end);
+			TEST_ASSERT(cp_amprv_ver(r, g[0], r2[0], e[0]) == 1, end);
+			pc_map(g[0], p, q);
+			TEST_ASSERT(gt_cmp(r, g[0]) == RLC_EQ, end);
+		} TEST_END;
 	} RLC_CATCH_ANY {
 		RLC_ERROR(end);
 	}

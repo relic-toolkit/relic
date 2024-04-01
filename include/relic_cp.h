@@ -1424,6 +1424,64 @@ int cp_ampub_ans(gt_t g[2], const g1_t p, const g2_t q, const g1_t v1,
 int cp_ampub_ver(gt_t r, gt_t e, const gt_t g[2], const bn_t c);
 
 /**
+ * Generate parameters for the AMORE pairing delegation protocol with private
+ * inputs.
+ *
+ * @param[out] c			- the delta value binding randomness together.
+ * @param[out] c			- the challenge.
+ * @param[out] r			- the randomness.
+ * @param[out] x			- the secret value preserved across iterations.
+ * @param[out] e			- the precomputed value in G_T.
+ * @param[out] u			- the U precomputed value in G_1.
+ * @param[out] v			- the V precomputed value in G_2.
+ * @param[in] first			- the flag to indicate if the first iteration.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int cp_amprv_gen(bn_t d, bn_t c, bn_t r, bn_t x, gt_t e, g1_t u, g2_t v,
+		int first);
+
+/**
+ * Execute the client-side request for the AMORE pairing delegation protocol.
+ *
+ * @param[out] a			- the blinded elements in G_1.
+ * @param[out] b			- the blinded elements in G_2.
+ * @param[in] p				- the first argument of the pairing.
+ * @param[in] q				- the second argument of the pairing.
+ * @param[in] d				- the delta value generated at setup.
+ * @param[in] c				- the challenge.
+ * @param[in] r				- the randomness.
+ * @param[in] u				- the U precomputed value in G_1.
+ * @param[in] v				- the V precomputed value in G_2.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int cp_amprv_ask(g1_t a[2], g2_t b[2], const g1_t p, const g2_t q, const bn_t d,
+		const bn_t c, const bn_t r, const g1_t u, const g2_t v);
+
+/**
+ * Execute the server-side response for the AMORE pairing delegation protocol.
+ *
+ * @param[out] r			- the result of the computation.
+ * @param[out] g			- the other group element returned by the server.
+ * @param[in] d				- the delta value generated at setup.
+ * @param[in] a				- the blinded elements in G_1.
+ * @param[in] b				- the blinded elements in G_2.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int cp_amprv_ans(gt_t r, gt_t g, const bn_t d, const g1_t a[2],
+		const g2_t b[2]);
+
+/**
+ * Verifies the result of the AMORE pairing delegation protocol.
+ *
+ * @param[out] r			- the result of the computation.
+ * @param[in] g				- the other group element returned by the server.
+ * @param[in] c				- the challenge.
+ * @param[in] e				- the precomputed value in G_T.
+ * @return a boolean value indicating if the computation is correct.
+ */
+int cp_amprv_ver(gt_t r, const gt_t g, const bn_t c, const gt_t e);
+
+/**
  * Generates a master key for the SOKAKA identity-based non-interactive
  * authenticated key agreement protocol.
  *

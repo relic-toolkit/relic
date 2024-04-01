@@ -920,6 +920,32 @@ static void pdprv(void) {
 		BENCH_ADD(cp_lvprv_ver(r, g, r1, e));
 	} BENCH_END;
 
+	BENCH_RUN("cp_amprv_gen (first)") {
+		BENCH_ADD(cp_amprv_gen(r1, r2[0], r2[1], r2[2], e[0], v1[0], v2[0], 1));
+	} BENCH_END;
+
+	BENCH_RUN("cp_amprv_ask") {
+		g1_rand(p);
+		g2_rand(q);
+		BENCH_ADD(cp_amprv_ask(u1, u2, p, q, r1, r2[0], r2[1], v1[0], v2[0]));
+	} BENCH_END;
+
+	BENCH_RUN("cp_amprv_ans") {
+		g1_rand(p);
+		g2_rand(q);
+		BENCH_ADD(cp_amprv_ans(r, g[0], r1, u1, u2));
+	} BENCH_END;
+
+	BENCH_RUN("cp_amprv_ver") {
+		g1_rand(p);
+		g2_rand(q);
+		BENCH_ADD(cp_amprv_ver(r, g[0], r2[0], e[0]));
+	} BENCH_END;
+
+	BENCH_RUN("cp_amprv_gen") {
+		BENCH_ADD(cp_amprv_gen(r1, r2[0], r2[1], r2[2], e[0], v1[0], v2[0], 1));
+	} BENCH_END;
+
 	bn_free(r1);
 	g1_free(p);
 	g2_free(q);
