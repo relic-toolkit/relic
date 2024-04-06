@@ -162,7 +162,7 @@ static void ep_map_from_field(ep_t p, const uint8_t *uniform_bytes, size_t len,
 void ep_map_basic(ep_t p, const uint8_t *msg, size_t len) {
 	bn_t x;
 	fp_t t0;
-	uint8_t digest[RLC_MD_LEN];
+	uint8_t h[RLC_MD_LEN];
 
 	bn_null(x);
 	fp_null(t0);
@@ -171,8 +171,8 @@ void ep_map_basic(ep_t p, const uint8_t *msg, size_t len) {
 		bn_new(x);
 		fp_new(t0);
 
-		md_map(digest, msg, len);
-		bn_read_bin(x, digest, RLC_MIN(RLC_FP_BYTES, RLC_MD_LEN));
+		md_map(h, msg, len);
+		bn_read_bin(x, h, RLC_MIN(RLC_FP_BYTES, RLC_MD_LEN));
 
 		fp_zero(p->x);
 		fp_prime_conv(p->x, x);
@@ -239,7 +239,7 @@ void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 	/* enough space for two field elements plus extra bytes for uniformity */
 	const size_t len_per_elm = (FP_PRIME + ep_param_level() + 7) / 8;
 	uint8_t s, *pseudo_random_bytes = RLC_ALLOCA(uint8_t, 2 * len_per_elm + 1);
-	fp_t a, b, c, d, e, f, t, u, v, w, y, x1, y1, z1, den[3];
+	fp_t h[8], t1, t2, v, w, y, x1, x2, x3, d[3];
 	ctx_t *ctx = core_get();
 	bn_t k;
 
@@ -256,253 +256,218 @@ void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 	}
 
 	bn_null(k);
-	fp_null(a);
-	fp_null(b);
-	fp_null(c);
-	fp_null(d);
-	fp_null(e);
-	fp_null(f);
-	fp_null(t);
-	fp_null(u);
 	fp_null(v);
 	fp_null(w);
-	fp_null(y);
+	fp_null(t1);
+	fp_null(t2);
 	fp_null(x1);
-	fp_null(y1);
-	fp_null(z1);
-	fp_null(den[0]);
-	fp_null(den[1]);
-	fp_null(den[2]);
+	fp_null(x2);
+	fp_null(x3);
+	fp_null(d[0]);
+	fp_null(d[1]);
+	fp_null(d[2]);
 
 	RLC_TRY {
 		bn_new(k);
-		fp_new(a);
-		fp_new(b);
-		fp_new(c);
-		fp_new(d);
-		fp_new(e);
-		fp_new(f);
-		fp_new(t);
-		fp_new(u);
 		fp_new(v);
 		fp_new(w);
-		fp_new(y);
+		fp_new(t1);
+		fp_new(t2);
 		fp_new(x1);
-		fp_new(y1);
-		fp_new(z1);
-		fp_new(den[0]);
-		fp_new(den[1]);
-		fp_new(den[2]);
+		fp_new(x2);
+		fp_new(x3);
+		fp_new(d[0]);
+		fp_new(d[1]);
+		fp_new(d[2]);
+		for (size_t i = 0; i < 8; i++) {
+			fp_null(h[i]);
+			fp_new(h[i]);
+		}
 
 		md_xmd(pseudo_random_bytes, 2 * len_per_elm + 1, msg, len,
 				(const uint8_t *)"RELIC", 5);
 
 		bn_read_bin(k, pseudo_random_bytes, len_per_elm);
-		fp_prime_conv(u, k);
+		fp_prime_conv(t1, k);
 		bn_read_bin(k, pseudo_random_bytes + len_per_elm, len_per_elm);
-		fp_prime_conv(t, k);
+		fp_prime_conv(t2, k);
 		s = pseudo_random_bytes[2 * len_per_elm] & 1;
 
 		if (ep_curve_opt_b() == RLC_ZERO) {
-			fp_sqr(a, u);
-			fp_sqr(b, a);
-			fp_mul(c, b, a);
+			/* h0 = t1^2, h1 = h0^2, h2 = 4a, h3 = h2^3, h4 = h0 * h1 + h3. */
+			fp_sqr(h[0], t1);
+			fp_sqr(h[1], h[0]);
+			fp_mul(h[4], h[0], h[1]);
 			if (ep_curve_opt_a() == RLC_ONE) {
-				fp_add_dig(c, c, 64);
+				fp_add_dig(h[4], h[4], 64);
 			} else {
-				fp_dbl(f, ep_curve_get_a());
-				fp_dbl(f, f);
-				fp_sqr(e, f);
-				fp_mul(e, e, f);
-				fp_add(c, c, e);
+				fp_dbl(h[2], ep_curve_get_a());
+				fp_dbl(h[2], h[2]);
+				fp_sqr(h[3], h[2]);
+				fp_mul(h[3], h[2], h[2]);
+				fp_add(h[4], h[4], h[3]);
 			}
-			fp_sqr(d, t);
-
-			fp_mul(v, a, d);
-			fp_mul(v, v, u);
-			fp_mul_dig(v, v, 24);
-			fp_mul(v, v, ctx->ep_map_c[4]);
-
+			/* h5 = t2^2, h6 = \tau * t1, h7 = 24*h0*h5*h6. */
+			fp_sqr(h[5], t2);
+			fp_mul(h[6], ctx->ep_map_c[4], t1);
+			fp_mul(h[7], h[0], h[5]);
+			fp_mul(h[7], h[7], h[6]);
+			fp_mul_dig(h[7], h[7], 24);
+			/* \tau = (\omega - 1)/2. */
 			fp_sub_dig(p->x, ctx->ep_map_c[4], 1);
 			fp_hlv(p->x, p->x);
-
-			fp_sqr(w, b);
-			fp_mul(y, v, a);
+			/* w = h9 = h1^2, v = h10 = \omega(h2h4 + h0h7). */
+			fp_sqr(w, h[1]);
+			fp_mul(v, h[0], h[7]);
 			if (ep_curve_opt_a() == RLC_ONE) {
-				fp_dbl(t, c);
-				fp_dbl(t, t);
+				fp_dbl(t1, h[4]);
+				fp_dbl(t1, t1);
 			} else {
-				fp_mul(t, f, c);
+				fp_mul(t1, h[2], h[4]);
 			}
-			fp_add(y, y, t);
-			fp_mul(y, y, p->x);
+			fp_add(v, v, t1);
+			fp_mul(v, v, p->x);
 
-			fp_add(den[0], c, v);
-			fp_mul(den[0], den[0], u);
-			fp_mul(den[0], den[0], ctx->ep_map_c[4]);
-			fp_mul(den[0], den[0], p->x);
-			fp_dbl(den[0], den[0]);
-			fp_neg(den[0], den[0]);
-			fp_mul(den[1], den[0], p->x);
+			/* d0 = -2h6\omega(h4 + h7), d1 = d0\omega. */
+			fp_add(d[0], h[4], h[7]);
+			fp_mul(d[0], d[0], h[6]);
+			fp_mul(d[0], d[0], p->x);
+			fp_dbl(d[0], d[0]);
+			fp_neg(d[0], d[0]);
+			fp_mul(d[1], d[0], p->x);
 			if (ep_curve_opt_a() == RLC_ONE) {
-				fp_sub_dig(den[2], a, 4);
+				fp_sub_dig(d[2], h[0], 4);
 			} else {
-				fp_sub(den[2], a, f);
+				fp_sub(d[2], h[0], h[2]);
 			}
-			fp_sqr(den[2], den[2]);
-			fp_mul_dig(den[2], den[2], 216);
-			fp_dbl(den[2], den[2]);
-			fp_neg(den[2], den[2]);
-			fp_mul(den[2], den[2], b);
-			fp_mul(den[2], den[2], d);
+			/* d2 = -432*h1h5(h0 - h2)^2. */
+			fp_sqr(d[2], d[2]);
+			fp_mul_dig(d[2], d[2], 216);
+			fp_dbl(d[2], d[2]);
+			fp_neg(d[2], d[2]);
+			fp_mul(d[2], d[2], h[1]);
+			fp_mul(d[2], d[2], h[5]);
 
-			if (fp_is_zero(den[0]) || fp_is_zero(den[1]) || fp_is_zero(den[2])) {
+			if (fp_is_zero(d[0]) || fp_is_zero(d[1]) || fp_is_zero(d[2])) {
 				ep_set_infty(p);
 			} else {
-				fp_inv_sim(den, den, 3);
 				if (ep_curve_opt_a() == RLC_ONE) {
-					fp_dbl(a, a);
-					fp_dbl(a, a);
-					fp_dbl(a, a);
-					fp_dbl(a, a);
-					fp_add(y1, a, v);
-					fp_dbl(y1, y1);
-					fp_dbl(y1, y1);
+					/* n2 = 4(16h0 + h7). */
+					fp_dbl(h[0], h[0]);
+					fp_dbl(h[0], h[0]);
+					fp_dbl(h[0], h[0]);
+					fp_dbl(h[0], h[0]);
+					fp_add(x2, h[0], h[7]);
+					fp_dbl(x2, x2);
+					fp_dbl(x2, x2);
 				} else {
-					fp_mul(y1, f, v);
-					fp_mul(u, a, e);
-					fp_add(y1, y1, u);
+					/* n2 = h8 + h9 + h2h7 + h10. */
+					fp_mul(t1, h[0], h[3]);
+					fp_mul(x2, h[2], h[7]);
+					fp_add(x2, x2, t1);
 				}
-				fp_add(y1, y1, w);
-				fp_mul(z1, y, p->x);
-				fp_add(x1, y1, z1);
-				fp_add(y1, y1, y);
-
+				/* n1 = n2 + h9 + h10\omega, n2 = n1 + h10. */
+				fp_add(x2, x2, w);
+				fp_mul(x3, v, p->x);
+				fp_add(x1, x2, x3);
+				fp_add(x2, x2, v);
+				/* n3 = h1(h9 + 8*16h0) + 4096 - h7(h4 - 3(4h1 + 16h0) - h7). */
 				if (ep_curve_opt_a() == RLC_ONE) {
-					fp_dbl(e, b);
-					fp_dbl(e, e);
-					fp_add(z1, a, e);
+					fp_dbl(h[2], h[1]);
+					fp_dbl(h[2], h[2]);
+					fp_add(x3, h[2], h[0]);
 				} else {
-					fp_mul(z1, f, a);
-					fp_add(z1, z1, b);
-					fp_mul(z1, z1, f);
+					fp_mul(x3, h[2], h[0]);
+					fp_add(x3, x3, h[1]);
+					fp_mul(x3, x3, h[2]);
 				}
-				fp_dbl(t, z1);
-				fp_add(z1, z1, t);
-				fp_sub(z1, c, z1);
-				fp_sub(z1, z1, v);
-				fp_mul(z1, z1, v);
+				fp_dbl(t1, x3);
+				fp_add(x3, x3, t1);
+				fp_sub(x3, h[4], x3);
+				fp_sub(x3, x3, h[7]);
+				fp_mul(x3, x3, h[7]);
 				if (ep_curve_opt_a() == RLC_ONE) {
-					fp_dbl(a, a);
-					fp_dbl(a, a);
-					fp_dbl(a, a);
-					fp_set_dig(d, 64);
-					fp_sqr(d, d);
+					fp_dbl(h[0], h[0]);
+					fp_dbl(h[0], h[0]);
+					fp_dbl(h[0], h[0]);
+					fp_set_dig(t2, 64);
+					fp_sqr(t2, t2);
 				} else {
-					fp_dbl(a, u);
-					fp_sqr(d, e);
+					fp_dbl(h[0], t1);
+					fp_sqr(t2, h[3]);
 				}
-				fp_add(a, a, w);
-				fp_mul(u, a, b);
-				fp_sub(z1, u, z1);
-				fp_add(z1, z1, d);
+				fp_add(h[0], h[0], w);
+				fp_mul(t1, h[0], h[1]);
+				fp_sub(x3, t1, x3);
+				fp_add(x3, x3, t2);
 
-				fp_mul(x1, x1, den[0]);
-				fp_mul(y1, y1, den[1]);
-				fp_mul(z1, z1, den[2]);
-
-				ep_rhs(t, x1);
-				ep_rhs(u, y1);
-				ep_rhs(v, z1);
-
-				int c2 = fp_is_sqr(u);
-				int c3 = fp_is_sqr(v);
-
-				fp_copy_sec(t, u, c2);
-				fp_copy_sec(x1, y1, c2);
-				fp_copy_sec(t, v, c3);
-				fp_copy_sec(x1, z1, c3);
-
-				if (!fp_srt(t, t)) {
-					RLC_THROW(ERR_NO_VALID);
-				}
-				fp_neg(u, t);
-				fp_copy_sec(t, u, fp_is_even(t) ^ s);
-
-				fp_copy(p->x, x1);
-				fp_copy(p->y, t);
-				fp_set_dig(p->z, 1);
-				p->coord = BASIC;
+				/* Invert d0, d1 and d2 simultaneously. */
+				fp_inv_sim(d, d, 3);
+				fp_mul(p->x, x1, d[0]);
+				fp_mul(x2, x2, d[1]);
+				fp_mul(x3, x3, d[2]);
 			}
 		} else {
 			/* This is the SwiftEC case per se. */
 			if (ep_curve_opt_a() != RLC_ZERO) {
 				RLC_THROW(ERR_NO_VALID);
 			} else {
-				fp_sqr(x1, u);
-				fp_mul(x1, x1, u);
-				fp_sqr(y1, t);
-				fp_add(x1, x1, ctx->ep_b);
-				fp_sub(x1, x1, y1);
-				fp_dbl(y1, y1);
-				fp_add(y1, y1, x1);
-				fp_mul(z1, u, ctx->ep_map_c[4]);
-				fp_mul(x1, x1, z1);
-				fp_mul(z1, z1, t);
-				fp_dbl(z1, z1);
+				/* h_0 = t1^3, h1 = t2^2, h2 = h0 + b - h1, h3 = 2h1 + h2. */
+				fp_sqr(h[0], t1);
+				fp_mul(h[0], h[0], t1);
+				fp_sqr(h[1], t2);
+				fp_add(h[2], h[0], ctx->ep_b);
+				fp_sub(h[2], h[2], h[1]);
+				fp_dbl(h[3], h[1]);
+				fp_add(h[3], h[3], h[2]);
+				/* h6 = t1\tau, v = h7 = h2h6, h8 = 2h6t2.*/
+				fp_mul(x3, t1, ctx->ep_map_c[4]);
+				fp_mul(v, h[2], x3);
+				fp_mul(x3, x3, t2);
+				fp_dbl(x3, x3);
 
-				fp_dbl(y, y1);
+				/* n1 = h8(h7 - t1h3), n2 = 2h3^2, d1 = 2h3h8*/
+				fp_mul(x1, t1, h[3]);
+				fp_sub(x1, v, x1);
+				fp_mul(x1, x1, x3);
+				fp_dbl(y, h[3]);
 				fp_sqr(y, y);
-				fp_mul(v, y1, u);
-				fp_sub(v, x1, v);
-				fp_mul(v, v, z1);
-				fp_mul(w, y1, z1);
+				fp_mul(w, h[3], x3);
 				fp_dbl(w, w);
 
 				if (fp_is_zero(w)) {
 					ep_set_infty(p);
 				} else {
 					fp_inv(w, w);
-					fp_mul(x1, v, w);
-					fp_add(y1, u, x1);
-					fp_neg(y1, y1);
-					fp_mul(z1, y, w);
-					fp_sqr(z1, z1);
-					fp_add(z1, z1, u);
-
-					fp_sqr(t, x1);
-					fp_mul(t, t, x1);
-					fp_add(t, t, ep_curve_get_b());
-
-					fp_sqr(u, y1);
-					fp_mul(u, u, y1);
-					fp_add(u, u, ep_curve_get_b());
-
-					fp_sqr(v, z1);
-					fp_mul(v, v, z1);
-					fp_add(v, v, ep_curve_get_b());
-
-					int c2 = fp_is_sqr(u);
-					int c3 = fp_is_sqr(v);
-
-					fp_copy_sec(x1, y1, c2);
-					fp_copy_sec(t, u, c2);
-					fp_copy_sec(x1, z1, c3);
-					fp_copy_sec(t, v, c3);
-
-					if (!fp_srt(t, t)) {
-						RLC_THROW(ERR_NO_VALID);
-					}
-					fp_neg(u, t);
-					fp_copy_sec(t, u, fp_is_even(t) ^ s);
-
-					fp_copy(p->x, x1);
-					fp_copy(p->y, t);
-					fp_set_dig(p->z, 1);
-					p->coord = BASIC;
+					fp_mul(p->x, x1, w);
+					fp_add(x2, t1, p->x);
+					fp_neg(x2, x2);
+					fp_mul(x3, y, w);
+					fp_sqr(x3, x3);
+					fp_add(x3, x3, t1);
 				}
 			}
 		}
+
+		ep_rhs(p->y, p->x);
+		ep_rhs(v, x2);
+		ep_rhs(w, x3);
+
+		int c2 = fp_is_sqr(v);
+		int c3 = fp_is_sqr(w);
+		printf("%d %d\n", c2, c3);
+		fp_copy_sec(p->y, v, c2);
+		fp_copy_sec(p->x, x2, c2);
+		fp_copy_sec(p->y, w, c3);
+		fp_copy_sec(p->x, x3, c3);
+
+		if (!fp_srt(p->y, p->y)) {
+			RLC_THROW(ERR_NO_VALID);
+		}
+		fp_neg(w, p->y);
+		fp_copy_sec(p->y, w, fp_is_even(p->y) ^ s);
+		fp_set_dig(p->z, 1);
+		p->coord = BASIC;
 		/* Multiply by cofactor. */
 		ep_mul_cof(p, p);
 	}
@@ -511,24 +476,21 @@ void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 	}
 	RLC_FINALLY {
 		bn_free(k);
-		fp_free(a);
-		fp_free(b);
-		fp_free(c);
-		fp_free(d);
-		fp_free(e);
-		fp_free(f);
-		fp_free(t);
-		fp_free(u);
 		fp_free(v);
 		fp_free(w);
-		fp_free(y);
+		fp_free(t1);
+		fp_free(t2);
 		fp_free(x1);
-		fp_free(y1);
-		fp_free(z1);
-		fp_free(den[0]);
-		fp_free(den[1]);
-		fp_free(den[2]);
+		fp_free(x2);
+		fp_free(x3);
+		fp_free(d[0]);
+		fp_free(d[1]);
+		fp_free(d[2]);
 		RLC_FREE(pseudo_random_bytes);
+		for (size_t i = 0; i < 8; i++) {
+			fp_null(h[i]);
+			fp_new(h[i]);
+		}
 	}
 }
 
