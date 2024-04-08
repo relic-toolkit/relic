@@ -304,7 +304,7 @@ void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 				fp_dbl(h[2], ep_curve_get_a());
 				fp_dbl(h[2], h[2]);
 				fp_sqr(h[3], h[2]);
-				fp_mul(h[3], h[2], h[2]);
+				fp_mul(h[3], h[3], h[2]);
 				fp_add(h[4], h[4], h[3]);
 			}
 			/* h5 = t2^2, h6 = \tau * t1, h7 = 24*h0*h5*h6. */
@@ -455,7 +455,7 @@ void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 
 		int c2 = fp_is_sqr(v);
 		int c3 = fp_is_sqr(w);
-		printf("%d %d\n", c2, c3);
+
 		fp_copy_sec(p->y, v, c2);
 		fp_copy_sec(p->x, x2, c2);
 		fp_copy_sec(p->y, w, c3);
