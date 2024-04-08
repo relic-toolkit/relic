@@ -3320,8 +3320,6 @@
 #undef cp_lvprv_ask
 #undef cp_lvprv_ans
 #undef cp_lvprv_ver
-<<<<<<< Updated upstream
-=======
 #undef cp_ampub_gen
 #undef cp_ampub_ask
 #undef cp_ampub_ans
@@ -3330,7 +3328,6 @@
 #undef cp_amprv_ask
 #undef cp_amprv_ans
 #undef cp_amprv_ver
->>>>>>> Stashed changes
 #undef cp_sokaka_gen
 #undef cp_sokaka_gen_prv
 #undef cp_sokaka_key
