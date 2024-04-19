@@ -74,7 +74,7 @@
  * @param[in] size			- the number of digits in the first operand.
  * @return the carry of the last digit addition.
  */
-dig_t bn_add1_low(dig_t *c, const dig_t *a, const dig_t digit, const int size);
+dig_t bn_add1_low(dig_t *c, const dig_t *a, const dig_t digit, size_t size);
 
 /**
  * Adds two digit vectors of the same size. Computes c = a + b.
@@ -85,7 +85,7 @@ dig_t bn_add1_low(dig_t *c, const dig_t *a, const dig_t digit, const int size);
  * @param[in] size			- the number of digits to add.
  * @return the carry of the last digit addition.
  */
-dig_t bn_addn_low(dig_t *c, const dig_t *a, const dig_t *b, int size);
+dig_t bn_addn_low(dig_t *c, const dig_t *a, const dig_t *b, size_t size);
 
 /**
  * Subtracts a digit from a digit vector. Computes c = a - digit.
@@ -96,7 +96,7 @@ dig_t bn_addn_low(dig_t *c, const dig_t *a, const dig_t *b, int size);
  * @param[in] size			- the number of digits in a.
  * @return the carry of the last digit subtraction.
  */
-dig_t bn_sub1_low(dig_t *c, const dig_t *a, dig_t digit, int size);
+dig_t bn_sub1_low(dig_t *c, const dig_t *a, dig_t digit, size_t size);
 
 /**
  * Subtracts a digit vector from another digit vector. Computes c = a - b.
@@ -107,7 +107,17 @@ dig_t bn_sub1_low(dig_t *c, const dig_t *a, dig_t digit, int size);
  * @param[in] size			- the number of digits to subtract.
  * @return the carry of the last digit subtraction.
  */
-dig_t bn_subn_low(dig_t *c, const dig_t *a, const dig_t *b, int size);
+dig_t bn_subn_low(dig_t *c, const dig_t *a, const dig_t *b, size_t size);
+
+/**
+ * Conditionally negate a digit vector using two's complement representation.
+ *
+ * @param[out] c 			- the result.
+ * @param[in] a 			- the digit vector to conditionally negate.
+ * @param[in] sa 			- the sign of the digit vector.
+ * @param[in] n				- the number of digits to conditionally negate.
+ */
+void bn_negs_low(dig_t *c, const dig_t *a, dig_t sa, size_t size);
 
 /**
  * Compares two digits.
@@ -126,7 +136,7 @@ int bn_cmp1_low(dig_t a, dig_t b);
  * @param[in] size			- the number of digits to compare.
  * @return BN_LT if a < b, BN_EQ if a == b and BN_GT if a > b.
  */
-int bn_cmpn_low(const dig_t *a, const dig_t *b, int size);
+int bn_cmpn_low(const dig_t *a, const dig_t *b, size_t size);
 
 /**
  * Shifts a digit vector to the left by 1 bit. Computes c = a << 1.
@@ -136,7 +146,7 @@ int bn_cmpn_low(const dig_t *a, const dig_t *b, int size);
  * @param[in] size			- the number of digits to shift.
  * @return the carry of the last digit shift.
  */
-dig_t bn_lsh1_low(dig_t *c, const dig_t *a, int size);
+dig_t bn_lsh1_low(dig_t *c, const dig_t *a, size_t size);
 
 /**
  * Shifts a digit vector to the left by an amount smaller than a digit. Computes
@@ -148,7 +158,7 @@ dig_t bn_lsh1_low(dig_t *c, const dig_t *a, int size);
  * @param[in] bits			- the shift amount.
  * @return the carry of the last digit shift.
  */
-dig_t bn_lshb_low(dig_t *c, const dig_t *a, int size, int bits);
+dig_t bn_lshb_low(dig_t *c, const dig_t *a, size_t size, uint_t bits);
 
 /**
  * Shifts a digit vector to the right by 1 bit. Computes c = a >> 1.
@@ -158,7 +168,7 @@ dig_t bn_lshb_low(dig_t *c, const dig_t *a, int size, int bits);
  * @param[in] size			- the number of digits to shift.
  * @return the carry of the last digit shift.
  */
-dig_t bn_rsh1_low(dig_t *c, const dig_t *a, int size);
+dig_t bn_rsh1_low(dig_t *c, const dig_t *a, size_t size);
 
 /**
  * Shifts a digit vector to the right by an amount smaller than a digit.
@@ -170,7 +180,7 @@ dig_t bn_rsh1_low(dig_t *c, const dig_t *a, int size);
  * @param[in] bits			- the shift amount.
  * @return the carry of the last digit shift.
  */
-dig_t bn_rshb_low(dig_t *c, const dig_t *a, int size, int bits);
+dig_t bn_rshb_low(dig_t *c, const dig_t *a, size_t size, uint_t bits);
 
 /**
  * Shifts a signed digit vector to the right by an amount smaller than a digit.
@@ -182,7 +192,7 @@ dig_t bn_rshb_low(dig_t *c, const dig_t *a, int size, int bits);
  * @param[in] bits			- the shift amount.
  * @return the carry of the last digit shift.
  */
-dig_t bn_rshs_low(dig_t *c, const dig_t *a, int size, int bits);
+dig_t bn_rshs_low(dig_t *c, const dig_t *a, size_t size, uint_t bits);
 
 /**
  * Multiplies a digit vector by a digit and adds this result to another digit
@@ -194,7 +204,7 @@ dig_t bn_rshs_low(dig_t *c, const dig_t *a, int size, int bits);
  * @param[in] size			- the number of digits to multiply.
  * @return the carry of the last addition.
  */
-dig_t bn_mula_low(dig_t *c, const dig_t *a, dig_t digit, int size);
+dig_t bn_mula_low(dig_t *c, const dig_t *a, dig_t digit, size_t size);
 
 /**
  * Multiplies a digit vector by a digit and stores this result in another digit
@@ -206,7 +216,7 @@ dig_t bn_mula_low(dig_t *c, const dig_t *a, dig_t digit, int size);
  * @param[in] size			- the number of digits to multiply.
  * @return the most significant digit.
  */
-dig_t bn_mul1_low(dig_t *c, const dig_t *a, dig_t digit, int size);
+dig_t bn_mul1_low(dig_t *c, const dig_t *a, dig_t digit, size_t size);
 
 /**
  * Multiplies a signed digit vector by a signed digit and stores this result in
@@ -219,7 +229,7 @@ dig_t bn_mul1_low(dig_t *c, const dig_t *a, dig_t digit, int size);
  * @param[in] size			- the number of digits to multiply.
  * @return the most significant digit.
  */
-dig_t bn_muls_low(dig_t *c, const dig_t *a, dig_t sa, dis_t digit, int size);
+dig_t bn_muls_low(dig_t *c, const dig_t *a, dig_t sa, dis_t digit, size_t size);
 
 /**
  * Multiplies two digit vectors of the same size. Computes c = a * b.
@@ -229,7 +239,7 @@ dig_t bn_muls_low(dig_t *c, const dig_t *a, dig_t sa, dis_t digit, int size);
  * @param[in] b				- the second digit vector to multiply.
  * @param[in] size			- the number of digits to multiply.
  */
-void bn_muln_low(dig_t *c, const dig_t *a, const dig_t *b, int size);
+void bn_muln_low(dig_t *c, const dig_t *a, const dig_t *b, size_t size);
 
 /**
  * Multiplies two digit vectors of different sizes, with sa > sb. Computes
@@ -244,8 +254,8 @@ void bn_muln_low(dig_t *c, const dig_t *a, const dig_t *b, int size);
  * @param[in] low			- the first digit to compute.
  * @param[in] high			- the last digit to compute.
  */
-void bn_muld_low(dig_t *c, const dig_t *a, int sa, const dig_t *b, int sb,
-		int low, int high);
+void bn_muld_low(dig_t *c, const dig_t *a, size_t sa, const dig_t *b, size_t sb,
+		uint_t low, uint_t high);
 
 /**
  * Squares a digit vector and adds this result to another digit vector.
@@ -256,7 +266,7 @@ void bn_muld_low(dig_t *c, const dig_t *a, int sa, const dig_t *b, int sb,
  * @param[in] size			- the number of digits to square.
  * @return the carry of the last addition.
  */
-dig_t bn_sqra_low(dig_t *c, const dig_t *a, int size);
+dig_t bn_sqra_low(dig_t *c, const dig_t *a, size_t size);
 
 /**
  * Squares a digit vector. Computes c = a * a.
@@ -265,7 +275,7 @@ dig_t bn_sqra_low(dig_t *c, const dig_t *a, int size);
  * @param[in] a				- the digit vector to square.
  * @param[in] size			- the number of digits to square.
  */
-void bn_sqrn_low(dig_t *c, const dig_t *a, int size);
+void bn_sqrn_low(dig_t *c, const dig_t *a, size_t size);
 
 /**
  * Divides a digit vector by another digit vector. Computes c = floor(a / b) and
@@ -278,7 +288,7 @@ void bn_sqrn_low(dig_t *c, const dig_t *a, int size);
  * @param[in,out] b			- the divisor.
  * @param[in] sb			- the size of the divisor.
  */
-void bn_divn_low(dig_t *c, dig_t *d, dig_t *a, int sa, dig_t *b, int sb);
+void bn_divn_low(dig_t *c, dig_t *d, dig_t *a, size_t sa, dig_t *b, size_t sb);
 
 /**
  * Divides a digit vector by a digit. Computes c = floor(a / digit) and
@@ -290,7 +300,7 @@ void bn_divn_low(dig_t *c, dig_t *d, dig_t *a, int sa, dig_t *b, int sb);
  * @param[in] size			- the size of the dividend.
  * @param[in] digit			- the divisor.
  */
-void bn_div1_low(dig_t *c, dig_t *d, const dig_t *a, int size, dig_t digit);
+void bn_div1_low(dig_t *c, dig_t *d, const dig_t *a, dig_t digit, size_t size);
 
 /**
  * Reduces a digit vector modulo m by Montgomery's algorithm.
@@ -302,7 +312,7 @@ void bn_div1_low(dig_t *c, dig_t *d, const dig_t *a, int size, dig_t digit);
  * @param[in] sm			- the size of the modulus.
  * @param[in] u				- the reciprocal of the modulus.
  */
-void bn_modn_low(dig_t *c, const dig_t *a, int sa, const dig_t *m, int sm,
+void bn_modn_low(dig_t *c, const dig_t *a, size_t sa, const dig_t *m, size_t sm,
 	dig_t u);
 
 #endif /* !ASM */

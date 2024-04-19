@@ -62,7 +62,8 @@ static int memory(void) {
 }
 
 static int util(void) {
-	int bits, code = RLC_ERR;
+	int code = RLC_ERR;
+	uint_t bits;
 	/* Allocate two extra for sign and null terminator. */
 	char str[RLC_FP_BITS + 2];
 	uint8_t bin[RLC_FP_BYTES];
@@ -944,6 +945,13 @@ static int symbol(void) {
 		TEST_CASE("basic symbol computation is correct") {
 			fp_rand(a);
 			TEST_ASSERT(fp_smb(a) == fp_smb_basic(a), end);
+		} TEST_END;
+#endif
+
+#if FP_SMB == BINAR || !defined(STRIP)
+		TEST_CASE("binary symbol computation is correct") {
+			fp_rand(a);
+			TEST_ASSERT(fp_smb(a) == fp_smb_binar(a), end);
 		} TEST_END;
 #endif
 

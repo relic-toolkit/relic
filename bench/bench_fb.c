@@ -165,7 +165,7 @@ static void arith(void) {
 	fb_st t[RLC_FB_TABLE_MAX];
 	dv_t e;
 	bn_t f;
-	int bits;
+	uint_t bits;
 
 	fb_null(a);
 	fb_null(b);

@@ -489,8 +489,8 @@ void eb_print(const eb_t p) {
 	fb_print(p->z);
 }
 
-int eb_size_bin(const eb_t a, int pack) {
-	int size = 0;
+size_t eb_size_bin(const eb_t a, int pack) {
+	size_t size = 0;
 
 	if (eb_is_infty(a)) {
 		return 1;

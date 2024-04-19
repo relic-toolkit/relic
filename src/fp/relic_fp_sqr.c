@@ -49,7 +49,7 @@
  * @param[in] size			- the number of digits to square.
  * @param[in] level			- the number of Karatsuba steps to apply.
  */
-static void fp_sqr_karat_imp(dv_t c, const fp_t a, int size, int level) {
+static void fp_sqr_karat_imp(dv_t c, const fp_t a, size_t size, uint_t level) {
 	int i, h, h1;
 	dv_t t0, t1, a0a0, a1a1;
 	dig_t carry;

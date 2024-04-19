@@ -46,7 +46,7 @@ void fb_add1_low(dig_t *c, const dig_t *a, dig_t digit) {
 		(*c) = (*a);
 }
 
-void fb_addd_low(dig_t *c, const dig_t *a, const dig_t *b, int size) {
+void fb_addd_low(dig_t *c, const dig_t *a, const dig_t *b, size_t size) {
 	int i;
 
 	for (i = 0; i < size; i++, a++, b++, c++)

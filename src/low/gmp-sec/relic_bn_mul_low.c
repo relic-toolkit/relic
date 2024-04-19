@@ -41,20 +41,21 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-dig_t bn_mula_low(dig_t *c, const dig_t *a, dig_t digit, int size) {
+dig_t bn_mula_low(dig_t *c, const dig_t *a, dig_t digit, size_t size) {
 	dig_t u[size + 1], *t = RLC_ALLOCA(dig_t, mpn_sec_mul_itch(size, 1));
 	mpn_sec_mul(u, a, size, &digit, 1, t);
 	return u[size] + mpn_add_n(c, c, u, size);
 }
 
-dig_t bn_mul1_low(dig_t *c, const dig_t *a, dig_t digit, int size) {
+dig_t bn_mul1_low(dig_t *c, const dig_t *a, dig_t digit, size_t size) {
 	dig_t u[size + 1], *t = RLC_ALLOCA(dig_t, mpn_sec_mul_itch(size, 1));
 	mpn_sec_mul(u, a, size, &digit, 1, t);
 	mpn_copyd(c, u, size);
 	return u[size];
 }
 
-dig_t bn_muls_low(dig_t *c, const dig_t *a, dig_t sa, dis_t digit, int size) {
+dig_t bn_muls_low(dig_t *c, const dig_t *a, dig_t sa, dis_t digit,
+		size_t size) {
 	dig_t _a[size], carry, sign, sd = digit >> (RLC_DIG - 1);
 
 	sa = -sa;
@@ -68,14 +69,14 @@ dig_t bn_muls_low(dig_t *c, const dig_t *a, dig_t sa, dis_t digit, int size) {
 	return (carry ^ sign) + bn_add1_low(c, c, -sign, size);
 }
 
-void bn_muln_low(dig_t *c, const dig_t *a, const dig_t *b, int size) {
+void bn_muln_low(dig_t *c, const dig_t *a, const dig_t *b, size_t size) {
 	dig_t *t = RLC_ALLOCA(dig_t, mpn_sec_mul_itch(size, size));
 	mpn_sec_mul(c, a, size, b, size, t);
 	RLC_FREE(t);
 }
 
-void bn_muld_low(dig_t *c, const dig_t *a, int sa, const dig_t *b, int sb,
-		int low, int high) {
+void bn_muld_low(dig_t *c, const dig_t *a, size_t sa, const dig_t *b, size_t sb,
+		uint_t low, uint_t high) {
 	(void)low;
 	(void)high;
 	dig_t *t = RLC_ALLOCA(dig_t, mpn_sec_mul_itch(sa, sb));

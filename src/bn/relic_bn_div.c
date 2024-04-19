@@ -170,7 +170,7 @@ void bn_div_dig(bn_t c, const bn_t a, dig_t b) {
 		bn_new(q);
 
 		bn_copy(q, a);
-		bn_div1_low(q->dp, &r, (const dig_t *)a->dp, a->used, b);
+		bn_div1_low(q->dp, &r, (const dig_t *)a->dp, b, a->used);
 		if (c != NULL) {
 			bn_copy(c, q);
 		}
@@ -208,7 +208,7 @@ void bn_div_rem_dig(bn_t c, dig_t *d, const bn_t a, dig_t b) {
 		bn_new(q);
 
 		bn_copy(q, a);
-		bn_div1_low(q->dp, &r, (const dig_t *)a->dp, a->used, b);
+		bn_div1_low(q->dp, &r, (const dig_t *)a->dp, b, a->used);
 
 		if (c != NULL) {
 			bn_copy(c, q);

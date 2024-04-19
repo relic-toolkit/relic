@@ -406,6 +406,8 @@ typedef rlc_align dig_t fp_st[RLC_FP_DIGS + RLC_PAD(RLC_FP_BYTES)/(RLC_DIG / 8)]
  */
 #if FP_SMB == BASIC
 #define fp_smb(A)		fp_smb_basic(A)
+#elif FP_SMB == BINAR
+#define fp_smb(A)		fp_smb_binar(A)
 #elif FP_SMB == DIVST
 #define fp_smb(A)		fp_smb_divst(A)
 #elif FP_SMB == JMPDS
@@ -1154,6 +1156,14 @@ void fp_inv_sim(fp_t *c, const fp_t *a, int n);
  * @return the result.
  */
 int fp_smb_basic(const fp_t a);
+
+/**
+ * Computes Legendre symbol of a prime field element using the binary method.
+ *
+ * @param[in] a				- the prime field element to compute.
+ * @return the result.
+ */
+int fp_smb_binar(const fp_t a);
 
 /**
  * Computes Legendre symbol of a prime field element using the constant-time

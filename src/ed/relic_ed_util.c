@@ -198,8 +198,8 @@ void ed_print(const ed_t p) {
 	fp_print(p->z);
 }
 
-int ed_size_bin(const ed_t a, int pack) {
-	int size = 0;
+size_t ed_size_bin(const ed_t a, int pack) {
+	size_t size = 0;
 
 	if (ed_is_infty(a)) {
 		return 1;

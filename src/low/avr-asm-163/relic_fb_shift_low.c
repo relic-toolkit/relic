@@ -46,20 +46,20 @@
  * @param size		- the size of the digit vector.
  * @return the carry of the last shift.
  */
-dig_t fb_lsha1_low(dig_t *c, const dig_t *a, int size);
-dig_t fb_lsha2_low(dig_t *c, const dig_t *a, int size);
-dig_t fb_lsha3_low(dig_t *c, const dig_t *a, int size);
-dig_t fb_lsha4_low(dig_t *c, const dig_t *a, int size);
-dig_t fb_lsha5_low(dig_t *c, const dig_t *a, int size);
-dig_t fb_lsha6_low(dig_t *c, const dig_t *a, int size);
-dig_t fb_lsha7_low(dig_t *c, const dig_t *a, int size);
+dig_t fb_lsha1_low(dig_t *c, const dig_t *a, size_t size);
+dig_t fb_lsha2_low(dig_t *c, const dig_t *a, size_t size);
+dig_t fb_lsha3_low(dig_t *c, const dig_t *a, size_t size);
+dig_t fb_lsha4_low(dig_t *c, const dig_t *a, size_t size);
+dig_t fb_lsha5_low(dig_t *c, const dig_t *a, size_t size);
+dig_t fb_lsha6_low(dig_t *c, const dig_t *a, size_t size);
+dig_t fb_lsha7_low(dig_t *c, const dig_t *a, size_t size);
 /*@} */
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
-dig_t fb_lshb_low(dig_t *c, const dig_t *a, int bits) {
+dig_t fb_lshb_low(dig_t *c, const dig_t *a, uint_t bits) {
 	int i;
 	dig_t r, carry, shift;
 
@@ -80,7 +80,7 @@ dig_t fb_lshb_low(dig_t *c, const dig_t *a, int bits) {
 	return carry;
 }
 
-dig_t fb_rshb_low(dig_t *c, const dig_t *a, int bits) {
+dig_t fb_rshb_low(dig_t *c, const dig_t *a, uint_t bits) {
 	int i;
 	dig_t r, carry, mask, shift;
 
@@ -106,7 +106,7 @@ dig_t fb_rshb_low(dig_t *c, const dig_t *a, int bits) {
 
 #if FB_INV == EXGCD || !defined(STRIP)
 
-dig_t fb_lsha_low(dig_t *c, const dig_t *a, int bits, int size) {
+dig_t fb_lsha_low(dig_t *c, const dig_t *a, uint_t bits, size_t size) {
 	if (bits == 1)
 		return fb_lsha1_low(c, a, size);
 	if (bits == 2)
@@ -129,7 +129,7 @@ dig_t fb_lsha_low(dig_t *c, const dig_t *a, int bits, int size) {
 
 #else
 
-dig_t fb_lsha_low(dig_t *c, const dig_t *a, int bits, int size) {
+dig_t fb_lsha_low(dig_t *c, const dig_t *a, uint_t bits, size_t size) {
 	int i, j;
 	dig_t b1, b2;
 

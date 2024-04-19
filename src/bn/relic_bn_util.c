@@ -106,7 +106,7 @@ int bn_is_even(const bn_t a) {
 }
 
 size_t bn_bits(const bn_t a) {
-	int bits;
+	size_t bits;
 
 	if (bn_is_zero(a)) {
 		return 0;
@@ -458,7 +458,7 @@ void bn_read_bin(bn_t a, const uint8_t *bin, size_t len) {
 }
 
 void bn_write_bin(uint8_t *bin, size_t len, const bn_t a) {
-	int size, k;
+	size_t size, k;
 	dig_t d;
 
 	size = bn_size_bin(a);

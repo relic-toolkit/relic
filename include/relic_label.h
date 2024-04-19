@@ -543,6 +543,7 @@
 #undef fp_inv_lower
 #undef fp_inv_sim
 #undef fp_smb_basic
+#undef fp_smb_binar
 #undef fp_smb_divst
 #undef fp_smb_jmpds
 #undef fp_smb_lower
@@ -641,6 +642,7 @@
 #define fp_inv_lower 	RLC_PREFIX(fp_inv_lower)
 #define fp_inv_sim 	RLC_PREFIX(fp_inv_sim)
 #define fp_smb_basic 	RLC_PREFIX(fp_smb_basic)
+#define fp_smb_binar 	RLC_PREFIX(fp_smb_binar)
 #define fp_smb_divst 	RLC_PREFIX(fp_smb_divst)
 #define fp_smb_jmpds 	RLC_PREFIX(fp_smb_jmpds)
 #define fp_smb_lower 	RLC_PREFIX(fp_smb_lower)

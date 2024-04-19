@@ -830,7 +830,7 @@ int ed_on_curve(const ed_t p);
  * @param[in] pack			- the flag to indicate compression.
  * @return the number of bytes.
  */
-int ed_size_bin(const ed_t a, int pack);
+size_t ed_size_bin(const ed_t a, int pack);
 
 /**
  * Reads an Edwards elliptic curve point from a byte vector in big-endian format.

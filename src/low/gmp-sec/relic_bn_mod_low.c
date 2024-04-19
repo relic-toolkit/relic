@@ -42,7 +42,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void bn_modn_low(dig_t *c, const dig_t *a, int sa, const dig_t *m, int sm,
+void bn_modn_low(dig_t *c, const dig_t *a, size_t sa, const dig_t *m, size_t sm,
 		dig_t u) {
 	dig_t *s = RLC_ALLOCA(dig_t, mpn_sec_mul_itch(sm, 1));
 	dig_t r, *tc = c, t[sm + 1];
