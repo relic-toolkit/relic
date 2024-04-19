@@ -552,8 +552,6 @@ int ep_curve_embed(void) {
 }
 
 int ep_curve_frdim(void) {
-	size_t f = 0;
-
 	switch (ep_curve_embed()) {
 		case 1:
 		case 2:
