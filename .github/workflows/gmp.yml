@@ -56,12 +56,12 @@ jobs:
         with:
           msystem: MINGW64
           install: >-
+            gmp
+            gmp-devel
             git
             base-devel
             gcc
             cmake
-            gmp
-            gmp-devel
           update: true
 
       - name: Run CMake (MingW)
