@@ -54,14 +54,14 @@ jobs:
         if: ${{ (runner.os == 'Windows') && (matrix.config.cc == 'gcc') }}
         uses: msys2/setup-msys2@v2
         with:
-          msystem: MINGW64
+          msystem: UCRT64
           install: >-
-            gmp
-            gmp-devel
             git
             base-devel
             gcc
             cmake
+            gmp
+            gmp-devel
           update: true
 
       - name: Run CMake (MingW)
