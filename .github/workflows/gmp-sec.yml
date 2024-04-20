@@ -62,7 +62,7 @@ jobs:
             cmake
             gmp
             gmp-devel
-            mingw-w64-gmp
+            mingw-w64-x86_64-gmp
           update: true
 
       - name: Run CMake (MingW)
