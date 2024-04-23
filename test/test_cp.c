@@ -1509,27 +1509,66 @@ static int bgn(void) {
 static int bls(void) {
 	int code = RLC_ERR;
 	bn_t d;
-	g1_t s;
-	g2_t q;
+	g1_t s[2];
+	g2_t q[2];
 	uint8_t m[5] = { 0, 1, 2, 3, 4 };
+	uint8_t n[5] = { 4, 3, 2, 1, 0 };
+	const uint8_t *ms[2] = { m, n };
+	const size_t ls[2] = { sizeof(m), sizeof(n) };
 
 	bn_null(d);
-	g1_null(s);
-	g2_null(q);
+	g1_null(s[0]);
+	g1_null(s[1]);
+	g2_null(q[0]);
+	g2_null(q[1]);
 
 	RLC_TRY {
 		bn_new(d);
-		g1_new(s);
-		g2_new(q);
+		g1_new(s[0]);
+		g1_new(s[1]);
+		g2_new(q[0]);
+		g2_new(q[1]);
 
 		TEST_CASE("boneh-lynn-schacham short signature is correct") {
-			TEST_ASSERT(cp_bls_gen(d, q) == RLC_OK, end);
-			TEST_ASSERT(cp_bls_sig(s, m, sizeof(m), d) == RLC_OK, end);
-			TEST_ASSERT(cp_bls_ver(s, m, sizeof(m), q) == 1, end);
+			TEST_ASSERT(cp_bls_gen(d, q[0]) == RLC_OK, end);
+			TEST_ASSERT(cp_bls_sig(s[0], m, sizeof(m), d) == RLC_OK, end);
+			TEST_ASSERT(cp_bls_ver(s[0], m, sizeof(m), q[0]) == 1, end);
 			/* Check adversarial signature. */
 			memset(m, 0, sizeof(m));
-			g2_set_infty(q);
-			TEST_ASSERT(cp_bls_ver(s, m, sizeof(m), q) == 0, end);
+			g2_set_infty(q[0]);
+			TEST_ASSERT(cp_bls_ver(s[0], m, sizeof(m), q[0]) == 0, end);
+		}
+		TEST_END;
+
+		TEST_CASE("boneh-gentry-lynn-schacham aggregate signature is correct") {
+			TEST_ASSERT(cp_bls_gen(d, q[0]) == RLC_OK, end);
+			TEST_ASSERT(cp_bls_sig(s[0], m, sizeof(m), d) == RLC_OK, end);
+			TEST_ASSERT(cp_bls_gen(d, q[1]) == RLC_OK, end);
+			TEST_ASSERT(cp_bls_sig(s[1], m, sizeof(m), d) == RLC_OK, end);
+			g1_add(s[0], s[0], s[1]);
+			g2_add(q[0], q[0], q[1]);
+			TEST_ASSERT(cp_bls_ver(s[0], m, sizeof(m), q[0]) == 1, end);
+		}
+		TEST_END;
+
+		TEST_CASE("boneh-drijvers-neven aggregate signature is correct") {
+			g1_set_infty(s[0]);
+			g2_set_infty(q[0]);
+			TEST_ASSERT(cp_bls_gen(d, q[1]) == RLC_OK, end);
+			TEST_ASSERT(cp_bls_sig(s[1], m, sizeof(m), d) == RLC_OK, end);
+			TEST_ASSERT(cp_bls_agg_sig(s[0], q[0], s[1], q[1]) == RLC_OK, end);
+			TEST_ASSERT(cp_bls_gen(d, q[1]) == RLC_OK, end);
+			TEST_ASSERT(cp_bls_sig(s[1], m, sizeof(m), d) == RLC_OK, end);
+			TEST_ASSERT(cp_bls_agg_sig(s[0], q[0], s[1], q[1]) == RLC_OK, end);
+			TEST_ASSERT(cp_bls_ver(s[1], m, sizeof(m), q[1]) == 1, end);
+			g1_set_infty(s[0]);
+			g2_set_infty(q[0]);
+			TEST_ASSERT(cp_bls_gen(d, q[0]) == RLC_OK, end);
+			TEST_ASSERT(cp_bls_sig(s[0], ms[0], ls[0], d) == RLC_OK, end);
+			TEST_ASSERT(cp_bls_gen(d, q[1]) == RLC_OK, end);
+			TEST_ASSERT(cp_bls_sig(s[1], ms[1], ls[1], d) == RLC_OK, end);
+			g1_add(s[0], s[0], s[1]);
+			TEST_ASSERT(cp_bls_agg_ver(s[0], ms, ls, 2, q) == 1, end);
 		}
 		TEST_END;
 	}
@@ -1540,8 +1579,10 @@ static int bls(void) {
 
   end:
 	bn_free(d);
-	g1_free(s);
-	g2_free(q);
+	g1_free(s[0]);
+	g1_free(s[1]);
+	g2_free(q[0]);
+	g2_free(q[1]);
 	return code;
 }
 

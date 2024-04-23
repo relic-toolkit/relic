@@ -1671,6 +1671,33 @@ int cp_bls_sig(g1_t s, const uint8_t *msg, size_t len, const bn_t d);
 int cp_bls_ver(const g1_t s, const uint8_t *msg, size_t len, const g2_t q);
 
 /**
+ * Aggregates a pair (signature, public key) into a signature over the same
+ * message, as in the Boneh-Drijvers-Neven scheme.
+ * The aggregate signature can then be verified as in the original BLS scheme.
+ *
+ * @param[in,out] sig		- the aggregate signature.
+ * @param[in,out] a			- the aggregate public key
+ * @param[in] s				- the signature to aggregate.
+ * @param[in] q				- the public key to aggregate.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int cp_bls_agg_sig(g1_t sig, g2_t a, const g1_t s, const g2_t q);
+
+/**
+ * Verifies an aggregate signature over distinct messages, given an aggregate
+ * signature in the Boneh-Gentry-Lynn-Schacham format and the public keys.
+ * 
+ * @param[in,out] s			- the aggregate signature.
+ * @param[in] m				- the signed messages.
+ * @param[in] l				- the message lengths.
+ * @param[in] size			- the number of messages or aggregated signatures.
+ * @param[in] q				- the public keys.
+ * @return a boolean value indicating if the signature is valid.
+ */
+int cp_bls_agg_ver(const g1_t s, const uint8_t **m, const size_t *l,
+		size_t size, const g2_t q[]);
+
+/**
  * Generates a key pair for the Boneh-Boyen (BB) signature protocol.
  *
  * @param[out] d			- the private key.
