@@ -173,7 +173,7 @@ static void ep_curve_set_map(void) {
 
 		/* If curve is not supersingular, precompute and store sqrt(-3)
 		 * neeed for hashing using the SwiftEC algorithm and variants. */
-		if (!ep_curve_is_super()) {
+		if (!ep_curve_is_super() && (ep_curve_opt_a() == RLC_ZERO || ep_curve_opt_b() == RLC_ZERO)) {
 			fp_set_dig(c4, 3);
 			fp_neg(c4, c4);
 			if (!fp_srt(c4, c4)) {
@@ -574,4 +574,5 @@ int ep_curve_frdim(void) {
 			return 16;
 			break;
 	}
+	return 0;
 }
