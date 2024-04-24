@@ -40,6 +40,11 @@
  */
 #define RAND_DIST		50
 
+/**
+ * Statistical distance 1/2^\lambda between sampling and uniform distribution.
+ */
+#define BND_STORE		80
+
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
@@ -237,7 +242,7 @@ int cp_pdprv_ver(gt_t r, const gt_t g[4], const bn_t c, const gt_t e[2]) {
 	return result;
 }
 
-int cp_lvpub_gen(bn_t r, g1_t u1, g2_t u2, g2_t v2, gt_t e) {
+int cp_lvpub_gen(bn_t c, bn_t r, g1_t u1, g2_t u2, g2_t v2, gt_t e) {
 	bn_t n;
 	int result = RLC_OK;
 
@@ -251,6 +256,7 @@ int cp_lvpub_gen(bn_t r, g1_t u1, g2_t u2, g2_t v2, gt_t e) {
 		g1_rand(u1);
 		bn_rand_mod(r, n);
 		g2_rand(u2);
+		bn_rand(c, RLC_POS, RAND_DIST);
 		/* Compute gamma = e(U1, U2) and V2 = [1/r2]U2. */
 		bn_mod_inv(n, r, n);
 		g2_mul(v2, u2, n);
@@ -265,7 +271,7 @@ int cp_lvpub_gen(bn_t r, g1_t u1, g2_t u2, g2_t v2, gt_t e) {
 	return result;
 }
 
-int cp_lvpub_ask(bn_t c, g1_t v1, g2_t w2, const g1_t p, const g2_t q,
+int cp_lvpub_ask(g1_t v1, g2_t w2, const bn_t c, const g1_t p, const g2_t q,
 		const bn_t r, const g1_t u1, const g2_t u2, const g2_t v2) {
 	bn_t n;
 	int result = RLC_OK;
@@ -277,7 +283,6 @@ int cp_lvpub_ask(bn_t c, g1_t v1, g2_t w2, const g1_t p, const g2_t q,
 
 		/* Sample random c. */
 		pc_get_ord(n);
-		bn_rand_frb(c, &(core_get()->par), n, RAND_DIST);
 		/* Compute V1 = [r](P - U1). */
 		g1_sub(v1, p, u1);
 		g1_mul(v1, v1, r);
@@ -358,7 +363,7 @@ int cp_lvpub_ver(gt_t r, const gt_t g[2], const bn_t c, const gt_t e) {
 	return result;
 }
 
-int cp_lvprv_gen(bn_t r[3], g1_t u1[2], g2_t u2[2], g2_t v2[4],
+int cp_lvprv_gen(bn_t c, bn_t r[3], g1_t u1[2], g2_t u2[2], g2_t v2[4],
 		gt_t e[2]) {
 	bn_t n;
 	int result = RLC_OK;
@@ -369,6 +374,7 @@ int cp_lvprv_gen(bn_t r[3], g1_t u1[2], g2_t u2[2], g2_t v2[4],
 		bn_new(n);
 
 		pc_get_ord(n);
+		bn_rand(c, RLC_POS, RAND_DIST);
 		bn_rand_mod(r[2], n);
 		for (int i = 0; i < 2; i++) {
 			/* Generate random c, r, Ui. */
@@ -394,8 +400,9 @@ int cp_lvprv_gen(bn_t r[3], g1_t u1[2], g2_t u2[2], g2_t v2[4],
 	return result;
 }
 
-int cp_lvprv_ask(bn_t c, g1_t v1[3], g2_t w2[4], const g1_t p, const g2_t q,
-		const bn_t r[3], const g1_t u1[2], const g2_t u2[2], const g2_t v2[4]) {
+int cp_lvprv_ask(g1_t v1[3], g2_t w2[4], const bn_t c, const g1_t p,
+		const g2_t q, const bn_t r[3], const g1_t u1[2], const g2_t u2[2],
+		const g2_t v2[4]) {
 	int result = RLC_OK;
 	bn_t n;
 
@@ -405,7 +412,6 @@ int cp_lvprv_ask(bn_t c, g1_t v1[3], g2_t w2[4], const g1_t p, const g2_t q,
 		bn_new(n);
 
 		pc_get_ord(n);
-		bn_rand_frb(c, &(core_get()->par), n, RAND_DIST);
 		bn_mod_inv(n, r[2], n);
 		g1_mul(v1[2], p, n);
 		for (int i = 0; i < 2; i++) {
@@ -491,8 +497,8 @@ int cp_lvprv_ver(gt_t r, const gt_t g[4], const bn_t c, const gt_t e[2]) {
 	return result;
 }
 
-int cp_ampub_gen(bn_t r, g1_t u1, g2_t u2, bn_t v2, gt_t e, const bn_t c,
-		const g1_t p, const g2_t q) {
+int cp_ampub_gen(bn_t c, bn_t r, g1_t u1, g2_t u2, bn_t d, bn_t x, gt_t e,
+		int first) {
 	bn_t n, t1, t2;
 	int result = RLC_OK;
 
@@ -504,33 +510,37 @@ int cp_ampub_gen(bn_t r, g1_t u1, g2_t u2, bn_t v2, gt_t e, const bn_t c,
 		bn_new(t2);
 
 		pc_get_ord(n);
-		if (c == NULL || p == NULL || q == NULL) {
-			/* Generate random U1, U2, r. */
+		if (first) {
+			/* Generate random U1, U2, x, c. */
+			bn_rand_mod(x, n);
 			bn_rand_mod(t1, n);
-			bn_rand_mod(t2, n);
+			bn_mod_inv(t2, t1, n);
+			bn_mul(t2, t2, x);
+			bn_mod(t2, t2, n);
 			g1_mul_gen(u1, t1);
 			g2_mul_gen(u2, t2);
 			/* Compute gamma = e(U1, U2). */
-			bn_mul(t1, t1, t2);
-			bn_mod(t1, t1, n);
 #if FP_PRIME < 1536
 			gt_get_gen(e);
-			gt_exp(e, e, t1);
+			gt_exp(e, e, x);
 #else
 			pc_map(e, u1, u2);
 #endif
+			bn_rand_frb(c, &(core_get()->par), n, RAND_DIST);
 		} else {
 			bn_rand_mod(t1, n);
 			bn_mod_inv(t2, t1, n);
-			bn_mul(t2, t2, c);
-			g1_mul(u1, p, t1);
-			g2_mul(u2, q, t2);
+			bn_mul(t2, t2, x);
+			bn_mod(t2, t2, n);
+			g1_mul_gen(u1, t1);
+			g2_mul_gen(u2, t2);
+			bn_rand_frb(c, &(core_get()->par), n, RAND_DIST + BND_STORE);
 		}
  		/* Compute v2 = [1/r]u2 mod q. */
 		bn_rand_mod(r, n);
-		bn_mod_inv(v2, r, n);
-		bn_mul(v2, v2, t2);
-		bn_mod(v2, v2, n);
+		bn_mod_inv(d, r, n);
+		bn_mul(d, d, t2);
+		bn_mod(d, d, n);
 	}
 	RLC_CATCH_ANY {
 		result = RLC_ERR;
@@ -543,7 +553,7 @@ int cp_ampub_gen(bn_t r, g1_t u1, g2_t u2, bn_t v2, gt_t e, const bn_t c,
 	return result;
 }
 
-int cp_ampub_ask(bn_t c, g1_t v1, g2_t w2, const g1_t p, const g2_t q,
+int cp_ampub_ask(g1_t v1, g2_t w2, const bn_t c, const g1_t p, const g2_t q,
 		const bn_t r, const g1_t u1, const g2_t u2, const bn_t v2) {
 	bn_t n;
 	int result = RLC_OK;
@@ -555,12 +565,10 @@ int cp_ampub_ask(bn_t c, g1_t v1, g2_t w2, const g1_t p, const g2_t q,
 
 		/* Generate random c, U1, r, U2. */
 		pc_get_ord(n);
-		/* Sample random c. */
-		bn_rand_frb(c, &(core_get()->par), n, RAND_DIST);
-		/* Compute V1 = [r](P - U1). */
-		g1_sub(v1, p, u1);
+		/* Compute V1 = [r](U1 - A). */
+		g1_sub(v1, u1, p);
 		g1_mul(v1, v1, r);
-		/* Compute W2 = [c]Q + U_2. */
+		/* Compute W2 = [c]Q + U2. */
 		g2_mul(w2, q, c);
 		g2_add(w2, w2, u2);
 	}
@@ -573,8 +581,8 @@ int cp_ampub_ask(bn_t c, g1_t v1, g2_t w2, const g1_t p, const g2_t q,
 	return result;
 }
 
-int cp_ampub_ans(gt_t g[2], const g1_t p, const g2_t q, const g1_t v1,
-		const bn_t v2, const g2_t w2, const g2_t s) {
+int cp_ampub_ans(gt_t r, gt_t g, const g1_t p, const g2_t q, const g1_t v1,
+		const bn_t v2, const g2_t w2) {
 	int result = RLC_OK;
 	g1_t _p[2];
 	g2_t _q[2];
@@ -591,15 +599,11 @@ int cp_ampub_ans(gt_t g[2], const g1_t p, const g2_t q, const g1_t v1,
 		g2_new(_q[1]);
 
 		g1_copy(_p[0], p);
-		g1_neg(_p[1], v1);
+		g1_copy(_p[1], v1);
 		g2_copy(_q[0], w2);
-		if (s == NULL) {
-			g2_mul_gen(_q[1], v2);
-		} else {
-			g2_mul(_q[1], s, v2);
-		}
-		pc_map_sim(g[1], _p, _q, 2);
-		pc_map(g[0], p, q);
+		g2_mul_gen(_q[1], v2);
+		pc_map_sim(g, _p, _q, 2);
+		pc_map(r, p, q);
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
@@ -612,7 +616,7 @@ int cp_ampub_ans(gt_t g[2], const g1_t p, const g2_t q, const g1_t v1,
 	return result;
 }
 
-int cp_ampub_ver(gt_t r, gt_t e, const gt_t g[2], const bn_t c) {
+int cp_ampub_ver(gt_t r, const gt_t g, const bn_t c, const gt_t e) {
 	int result = 1;
 	gt_t t;
 
@@ -621,17 +625,13 @@ int cp_ampub_ver(gt_t r, gt_t e, const gt_t g[2], const bn_t c) {
 	RLC_TRY {
 		gt_new(t);
 
-		result &= gt_is_valid(g[0]);
+		result &= gt_is_valid(r);
 
-		gt_exp(t, g[0], c);
-		gt_mul(e, e, t);
+		gt_exp(t, r, c);
+		gt_mul(t, t, e);
 
-		if (!result || gt_cmp(g[1], e) != RLC_EQ) {
+		if (!result || gt_cmp(g, t) != RLC_EQ) {
 			gt_set_unity(r);
-			gt_set_unity(e);
-		} else {
-			gt_copy(r, g[0]);
-			gt_copy(e, t);
 		}
 	} RLC_CATCH_ANY {
 		result = RLC_ERR;
@@ -642,54 +642,66 @@ int cp_ampub_ver(gt_t r, gt_t e, const gt_t g[2], const bn_t c) {
 	return result;
 }
 
-int cp_amprv_gen(bn_t d, bn_t c, bn_t r, bn_t x, gt_t e, g1_t u, g2_t v,
+int cp_amprv_gen(bn_t c, bn_t r, g1_t u, g2_t v, bn_t d, bn_t x, gt_t e,
 		int first) {
-	bn_t n, t;
+	bn_t n, t1, t2;
 	int result = RLC_OK;
 
 	bn_null(n);
-	bn_null(t);
 
 	RLC_TRY {
 		bn_new(n);
-		bn_new(t);
+		bn_new(t1);
+		bn_new(t2);
 
 		pc_get_ord(n);
 		if (first) {
+			/* Generate random U1, U2, x, c. */
 			bn_rand_mod(x, n);
+			bn_rand_mod(t1, n);
+			bn_mod_inv(t2, t1, n);
+			bn_mul(t2, t2, x);
+			bn_mod(t2, t2, n);
+			g1_mul_gen(u, t1);
+			g2_mul_gen(v, t2);
+			/* Compute gamma = e(U1, U2). */
+#if FP_PRIME < 1536
 			gt_get_gen(e);
 			gt_exp(e, e, x);
+#else
+			pc_map(e, u1, u2);
+#endif
 			bn_rand_frb(c, &(core_get()->par), n, RAND_DIST);
 		} else {
-			bn_rand_frb(c, &(core_get()->par), n, RAND_DIST + ep_param_level());
+			bn_rand_mod(t1, n);
+			bn_mod_inv(t2, t1, n);
+			bn_mul(t2, t2, x);
+			bn_mod(t2, t2, n);
+			g1_mul_gen(u, t1);
+			g2_mul_gen(v, t2);
+			bn_rand_frb(c, &(core_get()->par), n, RAND_DIST + BND_STORE);
 		}
-		bn_rand_mod(t, n);
+ 		/* Compute v2 = [1/r]u2 mod q. */
 		bn_rand_mod(r, n);
-		g1_mul_gen(u, t);
-		bn_mul(d, c, r);
-		bn_mod(d, d, n);
-		bn_mul(d, d, t);
+		bn_mul(d, r, c);
 		bn_mod(d, d, n);
 		bn_mod_inv(d, d, n);
-		bn_mul(d, d, x);
+		bn_mul(d, d, t2);
 		bn_mod(d, d, n);
-		bn_mod_inv(t, t, n);
-		bn_mul(t, t, x);
-		bn_mod(t, t, n);
-		g2_mul_gen(v, t);
 	}
 	RLC_CATCH_ANY {
 		result = RLC_ERR;
 	}
 	RLC_FINALLY {
 		bn_free(n);
-		bn_free(t);
+		bn_free(t1);
+		bn_free(t2);
 	}
 	return result;
 }
 
-int cp_amprv_ask(g1_t a[2], g2_t b[2], const g1_t p, const g2_t q, const bn_t d,
-		const bn_t c, const bn_t r, const g1_t u, const g2_t v) {
+int cp_amprv_ask(g1_t a[2], g2_t b[2], const g1_t p, const g2_t q, const bn_t c,
+		const bn_t r, const bn_t d, const g1_t u, const g2_t v) {
 	int result = RLC_OK;
 	bn_t n;
 
