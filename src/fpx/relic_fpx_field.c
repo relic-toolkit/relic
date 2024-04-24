@@ -84,10 +84,10 @@ void fp2_field_init(void) {
 		ctx->qnr2 = 0;
 		fp_zero(t0[0]);
 		fp_set_dig(t0[1], 1);
-		/* If it does not work, attempt (u + 2), otherwise double. */
+		/* If it does not work, attempt (u + 1), otherwise double. */
 		/* We cannot used QR test here due to Frobenius constants below. */
 		if (fp2_srt(t1, t0)) {
-			ctx->qnr2 = 2;
+			ctx->qnr2 = 1;
 			fp_set_dig(t0[0], ctx->qnr2);
 			while (fp2_srt(t1, t0) && util_bits_dig(ctx->qnr2) < RLC_DIG - 1) {
 				/* Pick a power of 2 for efficiency. */
