@@ -38,12 +38,12 @@
 /**
  * Statistical distance 1/2^\lambda between sampling and uniform distribution.
  */
-#define RAND_DIST		50
+#define RAND_DIST		40
 
 /**
  * Statistical distance 1/2^\lambda between sampling and uniform distribution.
  */
-#define BND_STORE		80
+#define BND_STORE		72
 
 /*============================================================================*/
 /* Public definitions                                                         */
