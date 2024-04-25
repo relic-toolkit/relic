@@ -1367,58 +1367,60 @@ int cp_lvprv_ans(gt_t g[4], const g1_t v1[3], const g2_t w2[4]);
 int cp_lvprv_ver(gt_t r, const gt_t g[4], const bn_t c, const gt_t e[2]);
 
 /**
- * Generate parameters for the AMORE pairing delegation protocol with public
- * inputs, using the result of a previous execution.
+ * Generate parameters for the AMORE pairing delegation protocol.
  *
  * @param[out] c			- the challenge.
  * @param[out] r			- the randomness.
- 
- * @param[out] u1			- the U1 precomputed value in G_1.
- * @param[out] u2			- the U2 precomputed value in G_2.
- * @param[out] d			- the randomness for G_2.
+ * @param[out] d			- the delta value computed during setup.
+ * @param[out] u			- the mask in G_1.
+ * @param[out] v			- the mask in G_2.
  * @param[in,out] x			- the secret key.
  * @param[in,out] e			- the precomputed values e(U1, U2).
- * @param[in] c				- the previous challenge, NULL if first.
- * @param[in] p				- the previous first argument, NULL if first.
- * @param[in] q				- the previous second argument, NULL if first.
  * @param[in] first			- the flag to indicate if the first iteration.
+ * @param[in] priva			- the flag to indicate if first point is private.
+ * @param[in] privb			- the flag to indicate if second point is private.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_ampub_gen(bn_t c, bn_t r, g1_t u1, g2_t u2, bn_t d, bn_t x, gt_t e,
-		int first);
+int cp_amore_gen(bn_t c, bn_t r, bn_t d, g1_t u, g2_t v, bn_t x, gt_t e,
+		int first, int priva, int privb);
 
 /**
  * Execute the client-side request for the AMORE pairing delegation protocol.
  *
- * @param[out] v1			- the blinded element in G_1.
- * @param[out] w2			- the blinded element in G_2.
- * @param[in] c			- the challenge.
- * @param[in] p				- the first argument of the pairing.
- * @param[in] q				- the second argument of the pairing.
+ * @param[out] a1			- the first element in G_1.
+ * @param[out] b1			- the first element in G_2.
+ * @param[out] a2			- the second element in G_1.
+ * @param[out] b2			- the second element in G_2.
  * @param[in] c				- the challenge.
  * @param[in] r				- the randomness.
- * @param[in] u1			- the U1 precomputed value in G_1.
- * @param[in] u2			- the U2 precomputed value in G_2.
- * @param[in] v2			- the randomness for G_2.
+ * @param[in] d				- the delta value computed during setup.
+ * @param[in] p				- the first argument of the pairing.
+ * @param[in] q				- the second argument of the pairing.
+ * @param[in] u				- the U1 precomputed value in G_1.
+ * @param[in] v				- the U2 precomputed value in G_2.
+ * @param[in] priva			- the flag to indicate if first point is private.
+ * @param[in] privb			- the flag to indicate if second point is private.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_ampub_ask(g1_t v1, g2_t w2, const bn_t c, const g1_t p, const g2_t q,
-		const bn_t r, const g1_t u1, const g2_t u2, const bn_t v2);
+int cp_amore_ask(g1_t a1, g2_t b1, g1_t a2, g2_t b2, const bn_t c, const bn_t r,
+		const bn_t d, const g1_t p, const g2_t q, const g1_t u, const g2_t v,
+		int priva, int privb);
 
 /**
  * Execute the server-side response for the AMORE pairing delegation protocol.
  *
- * @param[out] r			- the result of the computation.
- * @param[out] g			- the group element computed by the server.
- * @param[in] p				- the first argument of the pairing.
- * @param[in] q				- the second argument of the pairing.
- * @param[in] v1			- the blinded element in G_1.
- * @param[in] v2			- the randomness for G_2.
- * @param[in] w2			- the blinded element in G_2.
+ * @param[out] g			- the group elements computed by the server.
+ * @param[in] d				- the delta value computed during setup.
+ * @param[in] a1			- the first element in G_1.
+ * @param[in] b1			- the first element in G_2.
+ * @param[in] a2			- the second element in G_1.
+ * @param[in] b2			- the second element in G_2.
+ * @param[in] priva			- the flag to indicate if first point is private.
+ * @param[in] privb			- the flag to indicate if second point is private.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_ampub_ans(gt_t r, gt_t g, const g1_t p, const g2_t q, const g1_t v1,
-		const bn_t v2, const g2_t w2);
+int cp_amore_ans(gt_t g[2], const bn_t d, const g1_t a1, const g2_t b1,
+		const g1_t a2, const g2_t b2, int priva, int privb);
 
 /**
  * Verifies the result of the AMORE pairing delegation protocol.
@@ -1427,9 +1429,12 @@ int cp_ampub_ans(gt_t r, gt_t g, const g1_t p, const g2_t q, const g1_t v1,
  * @param[in] g				- the group elements returned by the server.
  * @param[in] c				- the challenge.
  * @param[in] e				- the precomputed values e(U1, U2).
+ * @param[in] priva			- the flag to indicate if first point is private.
+ * @param[in] privb			- the flag to indicate if second point is private.
  * @return a boolean value indicating if the computation is correct.
  */
-int cp_ampub_ver(gt_t r, const gt_t g, const bn_t c, const gt_t e);
+int cp_amore_ver(gt_t r, const gt_t g[2], const bn_t c, const gt_t e,
+		int priva, int privb);
 
 /**
  * Generate parameters for the AMORE pairing delegation protocol with private
