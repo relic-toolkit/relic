@@ -30,6 +30,8 @@
  * @ingroup bn
  */
 
+#include "relic_bn_low.h"
+
 .text
 .global bn_muls_low
 

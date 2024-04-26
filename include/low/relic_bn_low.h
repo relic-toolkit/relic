@@ -42,6 +42,7 @@
 #ifdef ASM
 
 #include "relic_conf.h"
+#include "relic_label.h"
 
 #if (BN_PRECI % WSIZE) > 0
 #define RLC_BN_DIGS		(BN_PRECI/WSIZE + 1)
