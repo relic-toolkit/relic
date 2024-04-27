@@ -1004,7 +1004,7 @@ int cp_ecdh_gen(bn_t d, ec_t q);
 int cp_ecdh_key(uint8_t *key, size_t key_len, const bn_t d, const ec_t q);
 
 /**
- * Generate an ECMQV key pair.
+ * Generates an ECMQV key pair.
  *
  * Should also be used to generate the ephemeral key pair.
  *
@@ -1139,7 +1139,7 @@ int cp_ecss_sig(bn_t e, bn_t s, const uint8_t *msg, size_t len, const bn_t d);
 int cp_ecss_ver(bn_t e, bn_t s, const uint8_t *msg, size_t len, const ec_t q);
 
 /**
- * Generate parameters for the DCKKS pairing delegation protocol described at
+ * Generates parameters for the DCKKS pairing delegation protocol described at
  * "Secure and Efficient Delegationof Pairings with Online Inputs" (CARDIS 2020)
  *
  * @param[out] c			- the challenge.
@@ -1153,7 +1153,7 @@ int cp_ecss_ver(bn_t e, bn_t s, const uint8_t *msg, size_t len, const ec_t q);
 int cp_pdpub_gen(bn_t c, bn_t r, g1_t u1, g2_t u2, g2_t v2, gt_t e);
 
 /**
- * Execute the client-side request for the DCKKS pairing delegation protocol.
+ * Executes the client-side request for the DCKKS pairing delegation protocol.
  *
  * @param[out] v1			- the blinded element in G_1.
  * @param[out] w2			- the blinded element in G_2.
@@ -1170,7 +1170,7 @@ int cp_pdpub_ask(g1_t v1, g2_t w2, const g1_t p, const g2_t q, const bn_t c,
 		const bn_t r, const g1_t u1, const g2_t u2, const g2_t v2);
 
 /**
- * Execute the server-side response for the DCKKS pairing delegation protocol.
+ * Executes the server-side response for the DCKKS pairing delegation protocol.
  *
  * @param[out] g			- the group elements computed by the server.
  * @param[in] p				- the first argument of the pairing.
@@ -1195,7 +1195,7 @@ int cp_pdpub_ans(gt_t g[3], const g1_t p, const g2_t q, const g1_t v1,
 int cp_pdpub_ver(gt_t r, const gt_t g[3], const bn_t c, const gt_t e);
 
 /**
- * Generate parameters for the DCKKS pairing delegation protocol described at
+ * Generates parameters for the DCKKS pairing delegation protocol described at
  * "Secure and Efficient Delegationof Pairings with Online Inputs" (CARDIS 2020)
  *
  * @param[out] c			- the challenge.
@@ -1210,7 +1210,7 @@ int cp_pdprv_gen(bn_t c, bn_t r[3], g1_t u1[2], g2_t u2[2], g2_t v2[4],
 		gt_t e[2]);
 
 /**
- * Execute the client-side request for the DCKKS pairing delegation protocol.
+ * Executes the client-side request for the DCKKS pairing delegation protocol.
  *
  * @param[out] v1			- the blinded element in G_1.
  * @param[out] w2			- the blinded element in G_2.
@@ -1228,7 +1228,7 @@ int cp_pdprv_ask(g1_t v1[3], g2_t w2[4], const g1_t p, const g2_t q,
 		const g2_t v2[4]);
 
 /**
- * Execute the server-side response for the DCKKS pairing delegation protocol.
+ * Executes the server-side response for the DCKKS pairing delegation protocol.
  *
  * @param[out] g			- the group elements computed by the server.
  * @param[in] p				- the first argument of the pairing.
@@ -1252,7 +1252,7 @@ int cp_pdprv_ans(gt_t g[4], const g1_t v1[3], const g2_t w2[4]);
 int cp_pdprv_ver(gt_t r, const gt_t g[4], const bn_t c, const gt_t e[2]);
 
 /**
- * Generate parameters for the LOVE pairing delegation protocol with public
+ * Generates parameters for the LOVE pairing delegation protocol with public
  * inputs.
  *
  * @param[out] c			- the challenge.
@@ -1266,7 +1266,7 @@ int cp_pdprv_ver(gt_t r, const gt_t g[4], const bn_t c, const gt_t e[2]);
 int cp_lvpub_gen(bn_t c, bn_t r, g1_t u1, g2_t u2, g2_t v2, gt_t e);
 
 /**
- * Execute the client-side request for the LOVE pairing delegation protocol.
+ * Executes the client-side request for the LOVE pairing delegation protocol.
  *
  * @param[out] v1			- the blinded element in G_1.
  * @param[out] w2			- the blinded element in G_2.
@@ -1284,7 +1284,7 @@ int cp_lvpub_ask(g1_t v1, g2_t w2, const bn_t c, const g1_t p, const g2_t q,
 		const bn_t r, const g1_t u1, const g2_t u2, const g2_t v2);
 
 /**
- * Execute the server-side response for the LOVE pairing delegation protocol.
+ * Executes the server-side response for the LOVE pairing delegation protocol.
  *
  * @param[out] g			- the group elements computed by the server.
  * @param[in] p				- the first argument of the pairing.
@@ -1309,7 +1309,7 @@ int cp_lvpub_ans(gt_t g[2], const g1_t p, const g2_t q, const g1_t v1,
 int cp_lvpub_ver(gt_t r, const gt_t g[2], const bn_t c, const gt_t e);
 
 /**
- * Generate parameters for the LOVE pairing delegation protocol with private
+ * Generates parameters for the LOVE pairing delegation protocol with private
  * inputs.
  *
  * @param[out] c			- the challenge.
@@ -1324,7 +1324,7 @@ int cp_lvprv_gen(bn_t c, bn_t r[3], g1_t u1[2], g2_t u2[2], g2_t v2[4],
 		gt_t e[2]);
 
 /**
- * Execute the client-side request for the LOVE pairing delegation protocol.
+ * Executes the client-side request for the LOVE pairing delegation protocol.
  *
  * @param[out] v1			- the blinded element in G_1.
  * @param[out] w2			- the blinded element in G_2.
@@ -1343,7 +1343,7 @@ int cp_lvprv_ask(g1_t v1[3], g2_t w2[4], const bn_t c, const g1_t p,
 		const g2_t v2[4]);
 
 /**
- * Execute the server-side response for the LOVE pairing delegation protocol.
+ * Executes the server-side response for the LOVE pairing delegation protocol.
  *
  * @param[out] g			- the group elements computed by the server.
  * @param[in] p				- the first argument of the pairing.
@@ -1367,7 +1367,7 @@ int cp_lvprv_ans(gt_t g[4], const g1_t v1[3], const g2_t w2[4]);
 int cp_lvprv_ver(gt_t r, const gt_t g[4], const bn_t c, const gt_t e[2]);
 
 /**
- * Generate parameters for the AMORE pairing delegation protocol.
+ * Generates parameters for the AMORE pairing delegation protocol.
  *
  * @param[out] c			- the challenge.
  * @param[out] r			- the randomness.
@@ -1377,15 +1377,16 @@ int cp_lvprv_ver(gt_t r, const gt_t g[4], const bn_t c, const gt_t e[2]);
  * @param[in,out] x			- the secret key.
  * @param[in,out] e			- the precomputed values e(U1, U2).
  * @param[in] first			- the flag to indicate if the first iteration.
+ * @param[in] longc			- the flag to indicate if challenge is long.
  * @param[in] priva			- the flag to indicate if first point is private.
  * @param[in] privb			- the flag to indicate if second point is private.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_amore_gen(bn_t c, bn_t r, bn_t d, g1_t u, g2_t v, bn_t x, gt_t e,
-		int first, int priva, int privb);
+		int first, int longc, int priva, int privb);
 
 /**
- * Execute the client-side request for the AMORE pairing delegation protocol.
+ * Executes the client-side request for the AMORE pairing delegation protocol.
  *
  * @param[out] a1			- the first element in G_1.
  * @param[out] b1			- the first element in G_2.
@@ -1407,7 +1408,7 @@ int cp_amore_ask(g1_t a1, g2_t b1, g1_t a2, g2_t b2, const bn_t c, const bn_t r,
 		int priva, int privb);
 
 /**
- * Execute the server-side response for the AMORE pairing delegation protocol.
+ * Executes the server-side response for the AMORE pairing delegation protocol.
  *
  * @param[out] g			- the group elements computed by the server.
  * @param[in] d				- the delta value computed during setup.
@@ -1437,62 +1438,79 @@ int cp_amore_ver(gt_t r, const gt_t g[2], const bn_t c, const gt_t e,
 		int priva, int privb);
 
 /**
- * Generate parameters for the AMORE pairing delegation protocol with private
- * inputs.
+ * Generates parameters for the AMORE delegation protocol to compute the
+ * product of m pairings using a pairing delegation protocol.
  *
- * @param[out] c			- the challenge.
- * @param[out] r			- the randomness.
- * @param[out] u			- the U precomputed value in G_1.
- * @param[out] v			- the V precomputed value in G_2.
- * @param[out] v1			- the value binding the randomness and challenge.
- * @param[in,out] x			- the secret value preserved across iterations.
- * @param[in,out] e			- the precomputed value in G_T.
- * @param[in] first			- the flag to indicate if the first iteration.
+ * @param[out] ls			- the (m+1) scalars for the protocol.
+ * @param[out] rs			- the (m+1) points for the protocol.
+ * @param[out] c			- the challenge for the pairing delegation.
+ * @param[out] r			- the randomness for the pairing delegation.
+ * @param[out] d			- the delta value computed during setup.
+ * @param[out] u			- the mask in G_1 for the pairing delegation.
+ * @param[out] v			- the mask in G_2 for the pairing delegation.
+ * @param[in,out] x			- the secret key.
+ * @param[in,out] e			- the precomputed values e(U1, U2).
+ * @param[in] m				- the number of pairing to compute.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_amprv_gen(bn_t c, bn_t r, g1_t u, g2_t v, bn_t v1, bn_t x, gt_t e,
-		int first);
+int cp_amprd_gen(bn_t *ls, g2_t *rs, bn_t c, bn_t r, bn_t d, g1_t u, g2_t v,
+		bn_t x, gt_t e, size_t m);
 
 /**
- * Execute the client-side request for the AMORE pairing delegation protocol.
+ * Executes the client-side request for the AMORE pairing product delegation
+ * protocol.
  *
- * @param[out] a			- the blinded elements in G_1.
- * @param[out] b			- the blinded elements in G_2.
- * @param[in] p				- the first argument of the pairing.
- * @param[in] q				- the second argument of the pairing.
- * @param[in] d				- the delta value generated at setup.
+ * @param[out] ds			- the m points for the protocol.
+ * @param[out] a1			- the first element in G_1.
+ * @param[out] b1			- the first element in G_2.
+ * @param[out] a2			- the second element in G_1.
+ * @param[out] b2			- the second element in G_2.
  * @param[in] c				- the challenge.
  * @param[in] r				- the randomness.
- * @param[in] u				- the U precomputed value in G_1.
- * @param[in] v				- the V precomputed value in G_2.
+ * @param[in] d				- the delta value computed during setup.
+ * @param[in] p				- the first argument inputs for the pairings.
+ * @param[in] q				- the second argument inputs for the pairings.
+ * @param[in] u				- the U1 precomputed value in G_1.
+ * @param[in] v				- the U2 precomputed value in G_2.
+ * @param[in] m				- the number of pairing to compute.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_amprv_ask(g1_t a[2], g2_t b[2], const g1_t p, const g2_t q, const bn_t c, 
-		const bn_t r, const bn_t d, const g1_t u, const g2_t v);
+int cp_amprd_ask(g2_t *ds, g1_t a1, g2_t b1, g1_t a2, g2_t b2, const bn_t c,
+		const bn_t r, const bn_t d, const g1_t *p, const g2_t *q, const g1_t u,
+		const g2_t v, const bn_t *ls, const g2_t *rs, size_t m);
 
 /**
- * Execute the server-side response for the AMORE pairing delegation protocol.
+ * Executes the server-side response for the AMORE pairing product delegation
+ * protocol.
  *
- * @param[out] r			- the result of the computation.
- * @param[out] g			- the other group element returned by the server.
- * @param[in] d				- the delta value generated at setup.
- * @param[in] a				- the blinded elements in G_1.
- * @param[in] b				- the blinded elements in G_2.
+ * @param[out] g			- the group elements computed by the server.
+ * @param[in] ds			- the m points for the protocol.
+ * @param[in] d				- the delta value computed during setup.
+ * @param[in] a1			- the first element in G_1.
+ * @param[in] b1			- the first element in G_2.
+ * @param[in] a2			- the second element in G_1.
+ * @param[in] b2			- the second element in G_2.
+ * @param[in] p				- the first argument inputs for the pairings.
+ * @param[in] q				- the second argument inputs for the pairings.
+ * @param[in] m				- the number of pairing to compute.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_amprv_ans(gt_t r, gt_t g, const bn_t d, const g1_t a[2],
-		const g2_t b[2]);
+int cp_amprd_ans(gt_t g[4], const g2_t *ds, const bn_t d, const g1_t a1,
+		const g2_t b1, const g1_t a2, const g2_t b2, const g1_t *p,
+		const g2_t *q, size_t m);
 
 /**
  * Verifies the result of the AMORE pairing delegation protocol.
  *
  * @param[out] r			- the result of the computation.
- * @param[in] g				- the other group element returned by the server.
- * @param[in] c				- the challenge.
- * @param[in] e				- the precomputed value in G_T.
+ * @param[in] g				- the group elements returned by the server.
+ * @param[in] c				- the pairing product delegation challenge.
+ * @param[in] c				- the pairing delegation challenge.
+ * @param[in] e				- the precomputed values e(U1, U2).
+ * @param[in] m				- the number of pairing to compute.
  * @return a boolean value indicating if the computation is correct.
  */
-int cp_amprv_ver(gt_t r, const gt_t g, const bn_t c, const gt_t e);
+int cp_amprd_ver(gt_t r, const gt_t g[4], const bn_t l, const bn_t c, const gt_t e);
 
 /**
  * Generates a master key for the SOKAKA identity-based non-interactive

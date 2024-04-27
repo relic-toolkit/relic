@@ -1157,7 +1157,7 @@ static int pdpub(void) {
 		} TEST_END;
 
 		TEST_CASE("amortized delegated pairing with public inputs is correct") {
-			TEST_ASSERT(cp_amore_gen(r1, r2, t, u1, u2, x, e, 1, 0, 0) == RLC_OK, end);
+			TEST_ASSERT(cp_amore_gen(r1, r2, t, u1, u2, x, e, 1, 0, 0, 0) == RLC_OK, end);
 			g1_rand(p);
 			g2_rand(q);
 			TEST_ASSERT(cp_amore_ask(v1, v2, w1, w2, r1, r2, t, p, q, u1, u2, 0, 0) == RLC_OK, end);
@@ -1165,7 +1165,7 @@ static int pdpub(void) {
 			TEST_ASSERT(cp_amore_ver(r, g, r1, e, 0, 0) == 1, end);
 			pc_map(g[0], p, q);
 			TEST_ASSERT(gt_cmp(r, g[0]) == RLC_EQ, end);
-			TEST_ASSERT(cp_amore_gen(r1, r2, t, u1, u2, x, e, 0, 0, 0) == RLC_OK, end);
+			TEST_ASSERT(cp_amore_gen(r1, r2, t, u1, u2, x, e, 0, 0, 0, 0) == RLC_OK, end);
 			g1_rand(p);
 			g2_rand(q);
 			TEST_ASSERT(cp_amore_ask(v1, v2, w1, w2, r1, r2, t, p, q, u1, u2, 0, 0) == RLC_OK, end);
@@ -1275,7 +1275,7 @@ static int pdprv(void) {
 						/* Public inputs has been tested before. */
 						continue;
 					}
-					TEST_ASSERT(cp_amore_gen(r1, r2[0], r2[1], v1[0], v2[0], r2[2], e[0], 1, pa, pb) == RLC_OK, end);
+					TEST_ASSERT(cp_amore_gen(r1, r2[0], r2[1], v1[0], v2[0], r2[2], e[0], 1, 0, pa, pb) == RLC_OK, end);
 					g1_rand(p);
 					g2_rand(q);
 					TEST_ASSERT(cp_amore_ask(u1[0], u2[0], u1[1], u2[1], r1, r2[0], r2[1], p, q, v1[0], v2[0], pa, pb) == RLC_OK, end);
@@ -1283,7 +1283,7 @@ static int pdprv(void) {
 					TEST_ASSERT(cp_amore_ver(r, g, r1, e[0], pa, pb) == 1, end);
 					pc_map(g[0], p, q);
 					TEST_ASSERT(gt_cmp(r, g[0]) == RLC_EQ, end);
-					TEST_ASSERT(cp_amore_gen(r1, r2[0], r2[1], v1[0], v2[0], r2[2], e[0], 0, pa, pb) == RLC_OK, end);
+					TEST_ASSERT(cp_amore_gen(r1, r2[0], r2[1], v1[0], v2[0], r2[2], e[0], 0, 0, pa, pb) == RLC_OK, end);
 					g1_rand(p);
 					g2_rand(q);
 					TEST_ASSERT(cp_amore_ask(u1[0], u2[0], u1[1], u2[1], r1, r2[0], r2[1], p, q, v1[0], v2[0], pa, pb) == RLC_OK, end);
@@ -1318,6 +1318,105 @@ static int pdprv(void) {
 		g2_free(w2[i]);
 		gt_free(g[i]);
 	}
+	return code;
+}
+
+static int pdprd(void) {
+	int code = RLC_ERR;
+	bn_t x, t, r1, r2, ls[3];
+	g1_t p[2], u1, v1, w1;
+	g2_t q[2], u2, v2, w2, rs[3], ds[2];
+	gt_t e, r, g[4];
+
+	bn_null(t);
+	bn_null(x);
+	bn_null(r1);
+	bn_null(r2);
+	g1_null(u1);
+	g1_null(v1);
+	g1_null(w1);
+	g2_null(u2);
+	g2_null(v2);
+	g2_null(w2);
+	gt_null(e);
+	gt_null(r);
+
+	RLC_TRY {
+		bn_new(t);
+		bn_new(x);
+		bn_new(r1);
+		bn_new(r2);
+		g1_new(u1);
+		g1_new(v1);
+		g1_new(w1);
+		g2_new(u2);
+		g2_new(v2);
+		g2_new(w2);
+		gt_new(e);
+		gt_new(r);
+		for (size_t i = 0; i < 2; i++) {
+			g1_null(p[i]);
+			g2_null(q[i]);
+			g2_null(rs[i]);
+			g2_null(ds[i]);
+			g1_new(p[i]);
+			g2_new(q[i]);
+			g2_new(ds[i]);
+			g2_new(rs[i]);
+		}
+		for (size_t i = 0; i < 3; i++) {
+			bn_null(ls[i]);
+			bn_new(ls[i]);
+			g2_null(rs[i]);
+			g2_new(rs[i]);
+			gt_null(g[i]);
+			gt_new(g[i]);
+		}
+		gt_null(g[3]);
+		gt_new(g[3]);
+
+		TEST_CASE("amortized delegated pairing product is correct") {
+			TEST_ASSERT(cp_amprd_gen(ls, rs, r1, r2, t, u1, u2, x, e, 2) == RLC_OK, end);
+			g1_rand(p[0]);
+			g1_rand(p[1]);
+			g2_rand(q[0]);
+			g2_rand(q[1]);
+			TEST_ASSERT(cp_amprd_ask(ds, v1, v2, w1, w2, r1, r2, t, p, q, u1, u2, ls, rs, 2) == RLC_OK, end);
+			TEST_ASSERT(cp_amprd_ans(g, ds, t, v1, v2, w1, w2, p, q, 2) == RLC_OK, end);
+			TEST_ASSERT(cp_amprd_ver(r, g, ls[0], r1, e) == 1, end);
+			pc_map_sim(g[0], p, q, 2);
+			TEST_ASSERT(gt_cmp(r, g[0]) == RLC_EQ, end);
+		} TEST_END;
+	} RLC_CATCH_ANY {
+		RLC_ERROR(end);
+	}
+	code = RLC_OK;
+
+  end:
+	bn_free(t);
+	bn_free(x);
+	bn_free(r1);
+	bn_free(r2);
+	g1_free(u1);
+	g1_free(v1);
+	g1_free(w1);
+	g2_free(u2);
+	g2_free(v2);
+	g2_free(w2);
+	gt_free(e);
+	gt_free(r);
+		for (size_t i = 0; i < 2; i++) {
+			g1_free(p[i]);
+			g2_free(q[i]);
+			g2_free(rs[i]);
+			g2_free(ds[i]);
+		}
+		for (size_t i = 0; i < 3; i++) {
+			bn_free(ls[i]);
+			g2_free(rs[i]);
+			gt_free(g[i]);
+		}
+		gt_free(g[3]);
 	return code;
 }
 
@@ -2495,6 +2594,11 @@ int main(void) {
 		}
 
 		if (pdprv() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (pdprd() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
