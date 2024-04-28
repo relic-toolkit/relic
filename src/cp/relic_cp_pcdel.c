@@ -60,7 +60,7 @@ int cp_pdpub_gen(bn_t c, bn_t r, g1_t u1, g2_t u2, g2_t v2, gt_t e) {
 
 		/* Generate random c, U1, U2, r. */
 		pc_get_ord(n);
-		bn_rand_frb(c, &(core_get()->par), n, RAND_DIST);
+		bn_rand(c, RLC_POS, RAND_DIST);
 		g1_rand(u1);
 		bn_rand_mod(r, n);
 		g2_rand(u2);
@@ -143,7 +143,7 @@ int cp_pdprv_gen(bn_t c, bn_t r[3], g1_t u1[2], g2_t u2[2], g2_t v2[4],
 
 		pc_get_ord(n);
 		bn_rand_mod(r[2], n);
-		bn_rand_frb(c, &(core_get()->par), n, RAND_DIST);
+		bn_rand(c, RLC_POS, RAND_DIST);
 		for (int i = 0; i < 2; i++) {
 			/* Generate random c, r, Ui. */
 			g1_rand(u1[i]);
@@ -527,9 +527,17 @@ int cp_amore_gen(bn_t c, bn_t r, bn_t d, g1_t u, g2_t v, bn_t x, gt_t e,
 			pc_map(e, u, v);
 #endif
 			if (longc) {
-				bn_rand_frb(c, &(core_get()->par), n, RAND_DIST + BND_STORE);
+				if (ep_curve_is_pairf() == EP_BN) {
+					bn_rand(c, RLC_POS, RAND_DIST + BND_STORE);
+				} else {
+					bn_rand_frb(c, &(core_get()->par), n, RAND_DIST + BND_STORE);
+				}
 			} else {
-				bn_rand_frb(c, &(core_get()->par), n, RAND_DIST);
+				if (ep_curve_is_pairf() == EP_BN) {
+					bn_rand(c, RLC_POS, RAND_DIST);
+				} else {
+					bn_rand_frb(c, &(core_get()->par), n, RAND_DIST);
+				}
 			}
 		} else {
 			bn_rand_mod(u1, n);
@@ -538,7 +546,11 @@ int cp_amore_gen(bn_t c, bn_t r, bn_t d, g1_t u, g2_t v, bn_t x, gt_t e,
 			bn_mod(u2, u2, n);
 			g1_mul_gen(u, u1);
 			g2_mul_gen(v, u2);
-			bn_rand_frb(c, &(core_get()->par), n, RAND_DIST + BND_STORE);
+			if (ep_curve_is_pairf() == EP_BN) {
+				bn_rand(c, RLC_POS, RAND_DIST + BND_STORE);
+			} else {
+				bn_rand_frb(c, &(core_get()->par), n, RAND_DIST + BND_STORE);
+			}
 		}
 
 		bn_rand_mod(r, n);
@@ -713,7 +725,11 @@ int cp_amprd_gen(bn_t *ls, g2_t *rs, bn_t c, bn_t r, bn_t d, g1_t u, g2_t v,
 		pc_get_ord(n);
 		g2_rand(rs[0]);
 
-		bn_rand_frb(ls[0], &(core_get()->par), n, RAND_DIST);
+		if (ep_curve_is_pairf() == EP_BN) {
+			bn_rand(ls[0], RLC_POS, RAND_DIST);
+		} else {
+			bn_rand_frb(ls[0], &(core_get()->par), n, RAND_DIST);
+		}
 		for (size_t i = 0; i < m; i++) {
 			bn_rand_mod(ls[i + 1], n);
 			g2_mul(rs[i + 1], rs[0], ls[i + 1]);

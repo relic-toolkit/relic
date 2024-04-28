@@ -302,7 +302,7 @@ int g2_is_valid(const g2_t a) {
 			case EP_B12:
 			case EP_B24:
 			case EP_B48:
-				if (core_get()->ep_id == B12_383) {
+				if (core_get()->ep_id == B12_P383) {
 					/* Since p mod n = r, we can check instead that
 					* psi^4(P) + P == \psi^2(P). */
 					g2_frb(u, a, 4);
@@ -489,7 +489,7 @@ int gt_is_valid(const gt_t a) {
 			 * elliptic curves" by Housni and Guillevic.
 			 * https://eprint.iacr.org/2021/1359.pdf */
 			case EP_B12:
-				if (core_get()->ep_id == B12_383) {
+				if (core_get()->ep_id == B12_P383) {
 					/* GT-strong, so test for cyclotomic only. */
 					r = 1;
 				} else {
