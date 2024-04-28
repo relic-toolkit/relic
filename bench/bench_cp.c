@@ -833,6 +833,51 @@ static void pdpub(void) {
 		BENCH_ADD(cp_amore_ver(r, g, r1, e, 0, 0));
 	} BENCH_END;
 
+	BENCH_RUN("cp_amore_gen (1, 0, 1)") {
+		BENCH_ADD(cp_amore_gen(r1, r2, t, u1, u2, x, e, 1, 0, 0, 1));
+	} BENCH_END;
+
+	BENCH_RUN("cp_amore_ask (1, 0, 1)") {
+		g1_rand(p);
+		g2_rand(q);
+		BENCH_ADD(cp_amore_ask(v1, v2, w1, w2, r1, r2, t, p, q, u1, u2, 0, 1));
+	} BENCH_END;
+
+	BENCH_RUN("cp_amore_ans (0, 1)") {
+		g1_rand(p);
+		g2_rand(q);
+		BENCH_ADD(cp_amore_ans(g, t, v1, v2, w1, w2, 0, 1));
+	} BENCH_END;
+
+	BENCH_RUN("cp_amore_ver (1, 0, 1)") {
+		g1_rand(p);
+		g2_rand(q);
+		cp_amore_gen(r1, r2, t, u1, u2, x, e, 1, 0, 0, 1);
+		cp_amore_ask(v1, v2, w1, w2, r1, r2, t, p, q, u1, u2, 0, 1);
+		cp_amore_ans(g, t, v1, v2, w1, w2, 0, 1);
+		BENCH_ADD(cp_amore_ver(r, g, r1, e, 0, 1));
+	} BENCH_END;
+
+	BENCH_RUN("cp_amore_gen (0, 0, 1)") {
+		BENCH_ADD(cp_amore_gen(r1, r2, t, u1, u2, x, e, 0, 0, 0, 1));
+	} BENCH_END;
+
+	BENCH_RUN("cp_amore_ask (0, 0, 1)") {
+		g1_rand(p);
+		g2_rand(q);
+		BENCH_ADD(cp_amore_ask(v1, v2, w1, w2, r1, r2, t, p, q, u1, u2, 0, 1));
+	} BENCH_END;
+
+	BENCH_RUN("cp_amore_ver (0, 0, 1)") {
+		g1_rand(p);
+		g2_rand(q);
+		cp_amore_gen(r1, r2, t, u1, u2, x, e, 1, 0, 0, 1);
+		cp_amore_gen(r1, r2, t, u1, u2, x, e, 0, 0, 0, 1);
+		cp_amore_ask(v1, v2, w1, w2, r1, r2, t, p, q, u1, u2, 0, 1);
+		cp_amore_ans(g, t, v1, v2, w1, w2, 0, 1);
+		BENCH_ADD(cp_amore_ver(r, g, r1, e, 0, 1));
+	} BENCH_END;
+
 	BENCH_RUN("cp_amore_gen (1, 1, 1)") {
 		BENCH_ADD(cp_amore_gen(r1, r2, t, u1, u2, x, e, 1, 0, 1, 1));
 	} BENCH_END;
