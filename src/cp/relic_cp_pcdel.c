@@ -717,19 +717,16 @@ int cp_amprd_gen(bn_t *ls, g2_t *rs, bn_t c, bn_t r, bn_t d, g1_t u, g2_t v,
 	bn_t n;
 	int result = RLC_OK;
 	g2_t t[RLC_G2_TABLE];
+	bn_t k, n, l[2];
+	fp2_t s;
 
 	bn_null(n);
 
 	RLC_TRY {
 		bn_new(n);
-		for (int i = 0; i < RLC_G2_TABLE; i++) {
-			g2_null(t[i]);
-			g2_new(t[i]);
-		}
 
 		pc_get_ord(n);
 		g2_rand(rs[0]);
-		g2_mul_pre(t, rs[0]);
 
 		if (ep_curve_is_pairf() == EP_BN) {
 			bn_rand(ls[0], RLC_POS, RAND_DIST);
@@ -742,7 +739,7 @@ int cp_amprd_gen(bn_t *ls, g2_t *rs, bn_t c, bn_t r, bn_t d, g1_t u, g2_t v,
 			} else {
 				bn_rand_frb(ls[i + 1], &(core_get()->par), n, RAND_DIST + BND_STORE);
 			}
-			g2_mul_fix(rs[i + 1], t, ls[i + 1]);
+			g2_mul(rs[i + 1], rs[0], ls[i + 1]);
 		}
 		cp_amore_gen(c, r, d, u, v, x, e, 1, 1, 0, 1);
 	}
@@ -751,9 +748,6 @@ int cp_amprd_gen(bn_t *ls, g2_t *rs, bn_t c, bn_t r, bn_t d, g1_t u, g2_t v,
 	}
 	RLC_FINALLY {
 		bn_free(n);
-		for (int i = 0; i < RLC_G2_TABLE; i++) {
-			g2_free(t[i]);
-		}
 	}
 	return result;
 }
