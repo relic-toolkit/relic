@@ -716,9 +716,6 @@ int cp_amprd_gen(bn_t *ls, g2_t *rs, bn_t c, bn_t r, bn_t d, g1_t u, g2_t v,
 		bn_t x, gt_t e, size_t m) {
 	bn_t n;
 	int result = RLC_OK;
-	g2_t t[RLC_G2_TABLE];
-	bn_t k, n, l[2];
-	fp2_t s;
 
 	bn_null(n);
 
