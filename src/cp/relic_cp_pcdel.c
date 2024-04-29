@@ -731,7 +731,11 @@ int cp_amprd_gen(bn_t *ls, g2_t *rs, bn_t c, bn_t r, bn_t d, g1_t u, g2_t v,
 			bn_rand_frb(ls[0], &(core_get()->par), n, RAND_DIST);
 		}
 		for (size_t i = 0; i < m; i++) {
-			bn_rand_mod(ls[i + 1], n);
+			if (ep_curve_is_pairf() == EP_BN) {
+				bn_rand(ls[i + 1], RLC_POS, RAND_DIST + BND_STORE);
+			} else {
+				bn_rand_frb(ls[i + 1], &(core_get()->par), n, RAND_DIST + BND_STORE);
+			}
 			g2_mul(rs[i + 1], rs[0], ls[i + 1]);
 		}
 		cp_amore_gen(c, r, d, u, v, x, e, 1, 1, 0, 1);
