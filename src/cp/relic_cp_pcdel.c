@@ -767,8 +767,8 @@ int cp_amprd_ask(g2_t *ds, g1_t a1, g2_t b1, g1_t a2, g2_t b2, const bn_t c,
 			g1_add(a, a, t);
 			g2_mul(ds[i], q[i], ls[0]);
 			g2_add(ds[i], ds[i], rs[i + 1]);
-			g2_norm(ds[i], ds[i]);
 		}
+		g2_norm_sim(ds, ds, m);
 		g1_norm(a, a);
 		cp_amore_ask(a1, b1, a2, b2, c, r, d, a, rs[0], u, v, 0, 1);
 	} RLC_CATCH_ANY {
