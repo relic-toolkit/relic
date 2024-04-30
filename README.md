@@ -28,6 +28,7 @@ RELIC implements to date:
  * Elliptic curves over prime and binary fields (NIST curves and pairing-friendly curves)
  * Bilinear maps and related extension fields
  * Cryptographic protocols (RSA, Rabin, ECDSA, ECMQV, ECSS (Schnorr), ECIES, Sakai-Ohgishi-Kasahara ID-based authenticated key agreement, Boneh-Lynn-Schacham and Boneh-Boyen short signatures, Paillier and Benaloh homomorphic encryption systems)
+ * [**Pairing delegation protocols**](https://anonymous.4open.science/r/relic-32F2/src/cp/relic_cp_pcdel.c) with public and private inputs
 
 ### Citing
 
