@@ -36,12 +36,12 @@
 /*============================================================================*/
 
 /**
- * Statistical distance 1/2^\lambda between sampling and uniform distribution.
+ * Statistical distance 1/2^\sigma between sampling and uniform distribution.
  */
 #define RAND_DIST		40
 
 /**
- * Statistical distance 1/2^\lambda between sampling and uniform distribution.
+ * Bound \tau on how many elements the adversary can store.
  */
 #define BND_STORE		72
 
