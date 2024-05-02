@@ -978,8 +978,6 @@ static void pdprv(void) {
 	g2_null(rs[AGGS]);
 
 	bn_new(r1);
-	g1_new(p);
-	g2_new(q);
 	gt_new(r);
 	for (int i = 0; i < 2; i++) {
 		g1_new(u1[i]);
@@ -1068,8 +1066,6 @@ static void pdprv(void) {
 	} BENCH_END;
 	
 	bn_free(r1);
-	g1_free(p);
-	g2_free(q);
 	gt_free(r);
 	for (int i = 0; i < 2; i++) {
 		g1_free(u1[i]);
