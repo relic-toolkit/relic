@@ -173,8 +173,7 @@ int SHA224FinalBits( SHA224Context *context,
  * Returns:
  *   sha Error Code.
  */
-int SHA224Result(SHA224Context *context,
-    uint8_t Message_Digest[SHA224HashSize])
+int SHA224Result(SHA224Context *context, uint8_t Message_Digest[SHA224HashSize])
 {
   return SHA224_256ResultN(context, Message_Digest, SHA224HashSize);
 }
@@ -326,7 +325,7 @@ int SHA256FinalBits(SHA256Context *context,
  * Returns:
  *   sha Error Code.
  */
-int SHA256Result(SHA256Context *context, uint8_t Message_Digest[])
+int SHA256Result(SHA256Context *context, uint8_t Message_Digest[SHA256HashSize])
 {
   return SHA224_256ResultN(context, Message_Digest, SHA256HashSize);
 }
