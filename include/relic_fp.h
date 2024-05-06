@@ -86,6 +86,8 @@ enum {
 	PRIME_25109,
 	/** Prime with high 2-adicity for curve Tweedledum. */
 	PRIME_H2ADC,
+	/** 254-bit prime modulus for SQISign at NIST level 1. */
+	SQI_254,
 	/** Curve25519 255-bit prime modulus. */
 	PRIME_25519,
 	/** NIST 256-bit fast reduction polynomial. */

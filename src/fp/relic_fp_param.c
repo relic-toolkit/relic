@@ -36,7 +36,13 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-#if FP_PRIME == 255
+#if FP_PRIME == 254
+/**
+ * Prime with 254 bits for the SQISign signature scheme at NIST-I level.
+ */
+#define STR_P254	"29234DBD832FCAA9CF08FCD"
+
+#elif FP_PRIME == 255
 /**
  * Primes with high 2-adicity for curves Tweedledum and Tweedledee.
  */
@@ -223,6 +229,14 @@ void fp_param_set(int param) {
 				bn_add_dig(t0, t0, 1);
 				bn_neg(t0, t0);
 				fp_prime_set_pairf(t0, EP_BN);
+				break;
+			case SQI_254:
+				bn_read_str(t0, STR_P254, strlen(STR_P254), 16);
+				bn_lsh(t0, t0, 37);
+				bn_sqr(t0, t0);
+				bn_dbl(t0, t0);
+				bn_sub_dig(t0, t0, 1);
+				fp_prime_set_dense(t0);
 				break;
 #elif FP_PRIME == 255
 			case PRIME_25519:
@@ -781,7 +795,8 @@ int fp_param_set_any_tower(void) {
 #if FP_PRIME == 158
 	fp_param_set(BN_158);
 #elif FP_PRIME == 254
-	fp_param_set(BN_254);
+	//fp_param_set(BN_254);
+	fp_param_set(SQI_254);
 #elif FP_PRIME == 256
 	fp_param_set(BN_256);
 #elif FP_PRIME == 315
