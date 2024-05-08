@@ -223,9 +223,9 @@ void ep4_print(const ep4_t p) {
 	fp4_print(p->z);
 }
 
-int ep4_size_bin(const ep4_t a, int pack) {
+size_t ep4_size_bin(const ep4_t a, int pack) {
 	ep4_t t;
-	int size = 0;
+	size_t size = 0;
 
 	ep4_null(t);
 

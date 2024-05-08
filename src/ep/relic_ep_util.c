@@ -223,8 +223,8 @@ void ep_print(const ep_t p) {
 	fp_print(p->z);
 }
 
-int ep_size_bin(const ep_t a, int pack) {
-	int size = 0;
+size_t ep_size_bin(const ep_t a, int pack) {
+	size_t size = 0;
 
 	if (ep_is_infty(a)) {
 		return 1;

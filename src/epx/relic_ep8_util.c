@@ -225,9 +225,9 @@ void ep8_print(const ep8_t p) {
 	fp8_print(p->z);
 }
 
-int ep8_size_bin(const ep8_t a, int pack) {
+size_t ep8_size_bin(const ep8_t a, int pack) {
 	ep8_t t;
-	int size = 0;
+	size_t size = 0;
 
 	ep8_null(t);
 

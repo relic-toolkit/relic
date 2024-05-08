@@ -44,7 +44,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void fb_muld_low(dig_t *c, const dig_t *a, const dig_t *b, int size) {
+void fb_muld_low(dig_t *c, const dig_t *a, const dig_t *b, size_t size) {
 	rlc_align dig_t t[16][size + 1];
 	dig_t u, r0, r1, r2, r4, r8, *tmpc;
 	const dig_t *tmpa;

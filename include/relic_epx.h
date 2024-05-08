@@ -1131,7 +1131,7 @@ void ep2_print(const ep2_t p);
  * @param[in] pack			- the flag to indicate compression.
  * @return the number of bytes.
  */
-int ep2_size_bin(const ep2_t a, int pack);
+size_t ep2_size_bin(const ep2_t a, int pack);
 
 /**
  * Reads a prime elliptic curve point over a quadratic extension from a byte
@@ -1798,7 +1798,7 @@ void ep3_print(const ep3_t p);
  * @param[in] pack			- the flag to indicate compression.
  * @return the number of bytes.
  */
-int ep3_size_bin(const ep3_t a, int pack);
+size_t ep3_size_bin(const ep3_t a, int pack);
 
 /**
  * Reads a prime elliptic curve point over a cubic extension from a byte
@@ -2442,7 +2442,7 @@ void ep4_print(const ep4_t p);
  * @param[in] pack			- the flag to indicate compression.
  * @return the number of bytes.
  */
-int ep4_size_bin(const ep4_t a, int pack);
+size_t ep4_size_bin(const ep4_t a, int pack);
 
 /**
  * Reads a prime elliptic curve point over a quartic extension from a byte
@@ -3087,7 +3087,7 @@ void ep8_print(const ep8_t p);
  * @param[in] pack			- the flag to indicate compression.
  * @return the number of bytes.
  */
-int ep8_size_bin(const ep8_t a, int pack);
+size_t ep8_size_bin(const ep8_t a, int pack);
 
 /**
  * Reads a prime elliptic curve point over an octic extension from a byte

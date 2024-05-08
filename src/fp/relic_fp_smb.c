@@ -39,24 +39,6 @@
 
 #if FP_SMB == JMPDS || !defined(STRIP)
 
-/**
- * Conditionally negate a digit vector using two's complement representation.
- *
- * @param[out] c 		- the result.
- * @param[in] a 		- the digit vector to conditionally negate.
- * @param[in] sa 		- the sign of the digit vector.
- * @param[in] n			- the number of digits to conditionally negate.
- */
-static void bn_negs_low(dig_t c[], const dig_t a[], dig_t sa, size_t n) {
-	dig_t carry = sa & 1;
-
-	sa = -sa;
-	for (int i = 0; i < n; i++) {
-		c[i] = (a[i] ^ sa) + carry;
-		carry = (c[i] < carry);
-	}
-}
-
 static dis_t jumpdivstep(dis_t m[4], dig_t *k, dis_t delta, dis_t y, dis_t x, 
 		int s) {
 	dig_t d0, t0, t1, t2, c0, c1, yi, ai = 1, bi = 0, ci = 0, di = 1, u = 0;

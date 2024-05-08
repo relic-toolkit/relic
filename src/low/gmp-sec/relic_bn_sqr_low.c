@@ -43,7 +43,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-dig_t bn_sqra_low(dig_t *c, const dig_t *a, int size) {
+dig_t bn_sqra_low(dig_t *c, const dig_t *a, size_t size) {
 	dig_t c0, c1, digit = a[0];
 
 	c0 = mpn_addmul_1(c, a, size, a[0]);
@@ -55,7 +55,7 @@ dig_t bn_sqra_low(dig_t *c, const dig_t *a, int size) {
 	return c1;
 }
 
-void bn_sqrn_low(dig_t *c, const dig_t *a, int size) {
+void bn_sqrn_low(dig_t *c, const dig_t *a, size_t size) {
 	dig_t *t = RLC_ALLOCA(dig_t, mpn_sec_sqr_itch(size));
 	mpn_sec_sqr(c, a, size, t);
 	RLC_FREE(t);

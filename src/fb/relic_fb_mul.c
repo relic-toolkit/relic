@@ -51,7 +51,8 @@
  * @param b					- the second binary field element.
  * @param size				- the number of digits to multiply.
  */
-static void fb_mul_basic_imp(dig_t *c, const dig_t *a, const dig_t *b, int size) {
+static void fb_mul_basic_imp(dig_t *c, const dig_t *a, const dig_t *b,
+		size_t size) {
 	int i;
 	dv_t s;
 
@@ -96,8 +97,8 @@ static void fb_mul_basic_imp(dig_t *c, const dig_t *a, const dig_t *b, int size)
  * @param[in] size			- the number of digits to multiply.
  * @param[in] level			- the number of Karatsuba steps to apply.
  */
-static void fb_mul_karat_imp(dv_t c, const fb_t a, const fb_t b, int size,
-		int level) {
+static void fb_mul_karat_imp(dv_t c, const fb_t a, const fb_t b, size_t size,
+		uint_t level) {
 	int i, h, h1;
 	dv_t a1, b1, ab;
 	dig_t *a0b0, *a1b1;

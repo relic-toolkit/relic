@@ -62,7 +62,8 @@ static int memory(void) {
 }
 
 static int util(void) {
-	int bits, code = RLC_ERR;
+	uint_t bits;
+	int code = RLC_ERR;
 	fb_t a, b;
 	char str[RLC_FB_BITS + 1];
 	uint8_t bin[RLC_FB_BYTES];

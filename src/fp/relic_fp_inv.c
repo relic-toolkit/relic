@@ -39,25 +39,7 @@
 
 #if FP_INV == JMPDS || !defined(STRIP)
 
-/**
- * Conditionally negate a digit vector using two's complement representation.
- *
- * @param[out] c 		- the result.
- * @param[in] a 		- the digit vector to conditionally negate.
- * @param[in] sa 		- the sign of the digit vector.
- * @param[in] n			- the number of digits to conditionally negate.
- */
-static void bn_negs_low(dig_t c[], const dig_t a[], dig_t sa, size_t n) {
-    dig_t carry = sa & 1;
-
-	sa = -sa;
-    for (int i = 0; i < n; i++) {
-        c[i] = (a[i] ^ sa) + carry;
-		carry = (c[i] < carry);
-    }
-}
-
-static void bn_mul2_low(dig_t *c, const dig_t *a, dis_t digit, int size) {
+static void bn_mul2_low(dig_t *c, const dig_t *a, dis_t digit, size_t size) {
 	int sd = digit >> (RLC_DIG - 1);
 	digit = (digit ^ sd) - sd;
 	c[size] = bn_mul1_low(c, a, digit, size);
@@ -714,24 +696,24 @@ void fp_inv_jmpds(fp_t c, const fp_t a) {
 			}
 #else
 			fp_zero(p);
-			dv_copy(p + RLC_FP_DIGS, fp_prime_get(), RLC_FP_DIGS);
+			dv_copy(p + 1, fp_prime_get(), RLC_FP_DIGS);
 
 			/* Update column vector below. */
 			bn_mul2_low(v0, p01, m[0], 2 * RLC_FP_DIGS);
 			fp_subd_low(t, p, v0);
-			dv_copy_sec(v0, t, 2 * RLC_FP_DIGS, RLC_SIGN(m[0]));
+			dv_copy_sec(v0, t, RLC_FP_DIGS + 1, RLC_SIGN(m[0]));
 
 			bn_mul2_low(v1, p11, m[1], 2 * RLC_FP_DIGS);
 			fp_subd_low(t, p, v1);
-			dv_copy_sec(v1, t, 2 * RLC_FP_DIGS, RLC_SIGN(m[1]));
+			dv_copy_sec(v1, t, RLC_FP_DIGS + 1, RLC_SIGN(m[1]));
 
 			bn_mul2_low(u0, p01, m[2], 2 * RLC_FP_DIGS);
 			fp_subd_low(t, p, u0);
-			dv_copy_sec(u0, t, 2 * RLC_FP_DIGS, RLC_SIGN(m[2]));
+			dv_copy_sec(u0, t, RLC_FP_DIGS + 1, RLC_SIGN(m[2]));
 
 			bn_mul2_low(u1, p11, m[3], 2 * RLC_FP_DIGS);
 			fp_subd_low(t, p, u1);
-			dv_copy_sec(u1, t, 2 * RLC_FP_DIGS, RLC_SIGN(m[3]));
+			dv_copy_sec(u1, t, RLC_FP_DIGS + 1, RLC_SIGN(m[3]));
 
 			fp_addc_low(t, u0, u1);
 			fp_rdc(p11, t);

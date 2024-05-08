@@ -224,9 +224,9 @@ void ep2_print(const ep2_t p) {
 	fp2_print(p->z);
 }
 
-int ep2_size_bin(const ep2_t a, int pack) {
+size_t ep2_size_bin(const ep2_t a, int pack) {
 	ep2_t t;
-	int size = 0;
+	size_t size = 0;
 
 	ep2_null(t);
 

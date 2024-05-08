@@ -53,6 +53,6 @@ void fb_addn_low(dig_t *c, const dig_t *a, const dig_t *b) {
 	mpn_xor_n(c, a, b, RLC_FB_DIGS);
 }
 
-void fb_addd_low(dig_t *c, const dig_t *a, const dig_t *b, int size) {
+void fb_addd_low(dig_t *c, const dig_t *a, const dig_t *b, size_t size) {
 	mpn_xor_n(c, a, b, size);
 }

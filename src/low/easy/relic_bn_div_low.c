@@ -125,7 +125,7 @@ void bn_divn_low(dig_t *c, dig_t *d, dig_t *a, int sa, dig_t *b, int sb) {
 	bn_rshb_low(d, a, sb, norm);
 }
 
-void bn_div1_low(dig_t *c, dig_t *d, const dig_t *a, int size, dig_t b) {
+void bn_div1_low(dig_t *c, dig_t *d, const dig_t *a, size_t size, dig_t b) {
 	dig_t q, r, w = 0;
 
 	for (int i = size - 1; i >= 0; i--) {

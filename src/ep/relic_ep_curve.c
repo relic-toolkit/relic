@@ -433,7 +433,7 @@ void ep_curve_set_super(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
 
 void ep_curve_set_endom(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
 		const bn_t h, const fp_t beta, const bn_t l, int ctmap) {
-	int bits = bn_bits(r);
+	uint_t bits = bn_bits(r);
 	ctx_t *ctx = core_get();
 	ctx->ep_is_endom = 1;
 	ctx->ep_is_super = 0;

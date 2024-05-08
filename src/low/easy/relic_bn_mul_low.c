@@ -38,7 +38,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-dig_t bn_mula_low(dig_t *c, const dig_t *a, dig_t digit, int size) {
+dig_t bn_mula_low(dig_t *c, const dig_t *a, dig_t digit, size_t size) {
 	dig_t _c, r0, r1, carry = 0;
 	for (int i = 0; i < size; i++, a++, c++) {
 		/* Multiply the digit *a by d and accumulate with the previous
@@ -54,7 +54,7 @@ dig_t bn_mula_low(dig_t *c, const dig_t *a, dig_t digit, int size) {
 	return carry;
 }
 
-dig_t bn_mul1_low(dig_t *c, const dig_t *a, dig_t digit, int size) {
+dig_t bn_mul1_low(dig_t *c, const dig_t *a, dig_t digit, size_t size) {
 	dig_t r0, r1, carry = 0;
 	for (int i = 0; i < size; i++, a++, c++) {
 		RLC_MUL_DIG(r1, r0, *a, digit);
@@ -65,7 +65,7 @@ dig_t bn_mul1_low(dig_t *c, const dig_t *a, dig_t digit, int size) {
 }
 
 dig_t bn_muls_low(dig_t *c, const dig_t *a, dig_t sa, dis_t digit,
-		int size) {
+		size_t size) {
 	dig_t r, _c, c0, c1, sign, sd = digit >> (RLC_DIG - 1);
 
 	sa = -sa;
@@ -88,7 +88,7 @@ dig_t bn_muls_low(dig_t *c, const dig_t *a, dig_t sa, dis_t digit,
 	return (c0 ^ sign) + c1;
 }
 
-void bn_muln_low(dig_t *c, const dig_t *a, const dig_t *b, int size) {
+void bn_muln_low(dig_t *c, const dig_t *a, const dig_t *b, size_t size) {
 	int i, j;
 	const dig_t *tmpa, *tmpb;
 	dig_t r0, r1, r2;
@@ -119,7 +119,7 @@ void bn_muln_low(dig_t *c, const dig_t *a, const dig_t *b, int size) {
 }
 
 void bn_muld_low(dig_t *c, const dig_t *a, int sa, const dig_t *b, int sb,
-		int l, int h) {
+		uint_t l, uint_t h) {
 	int i, j, ta;
 	const dig_t *tmpa, *tmpb;
 	dig_t r0, r1, r2;

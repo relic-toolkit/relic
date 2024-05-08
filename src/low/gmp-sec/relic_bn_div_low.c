@@ -48,7 +48,7 @@ void bn_divn_low(dig_t *c, dig_t *d, dig_t *a, int sa, dig_t *b, int sb) {
 	RLC_FREE(t);
 }
 
-void bn_div1_low(dig_t *c, dig_t *d, const dig_t *a, int size, dig_t b) {
+void bn_div1_low(dig_t *c, dig_t *d, const dig_t *a, size_t size, dig_t b) {
 	dig_t u[size], *t = RLC_ALLOCA(dig_t, mpn_sec_div_qr_itch(size, 1));
 
 	mpn_copyd(u, a, size);

@@ -53,7 +53,7 @@ dig_t fp_lsh1_low(dig_t *c, const dig_t *a) {
 	return carry;
 }
 
-dig_t fp_lshb_low(dig_t *c, const dig_t *a, int bits) {
+dig_t fp_lshb_low(dig_t *c, const dig_t *a, uint_t bits) {
 	int i;
 	dig_t r, carry, mask, shift;
 
@@ -91,7 +91,7 @@ dig_t fp_rsh1_low(dig_t *c, const dig_t *a) {
 	return carry;
 }
 
-dig_t fp_rshb_low(dig_t *c, const dig_t *a, int bits) {
+dig_t fp_rshb_low(dig_t *c, const dig_t *a, uint_t bits) {
 	int i;
 	dig_t r, carry, mask, shift;
 

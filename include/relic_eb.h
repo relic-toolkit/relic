@@ -549,7 +549,7 @@ void eb_print(const eb_t p);
  * @param[in] pack			- the flag to indicate compression.
  * @return the number of bytes.
  */
-int eb_size_bin(const eb_t a, int pack);
+size_t eb_size_bin(const eb_t a, int pack);
 
 /**
  * Reads a binary elliptic curve point from a byte vector in big-endian format.

@@ -839,7 +839,7 @@ void ep_print(const ep_t p);
  * @param[in] pack			- the flag to indicate compression.
  * @return the number of bytes.
  */
-int ep_size_bin(const ep_t a, int pack);
+size_t ep_size_bin(const ep_t a, int pack);
 
 /**
  * Reads a prime elliptic curve point from a byte vector in big-endian format.

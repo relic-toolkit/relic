@@ -62,7 +62,8 @@ static int memory(void) {
 }
 
 static int util(void) {
-	int bits, code = RLC_ERR;
+	uint_t bits;
+	int code = RLC_ERR;
 	/* Allocate two extra for sign and null terminator. */
 	char str[RLC_FP_BITS + 2];
 	uint8_t bin[RLC_FP_BYTES];

@@ -38,7 +38,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-dig_t bn_sqra_low(dig_t *c, const dig_t *a, int size) {
+dig_t bn_sqra_low(dig_t *c, const dig_t *a, size_t size) {
 	int i;
 	dig_t c0, c1;
 
@@ -105,7 +105,7 @@ dig_t bn_sqra_low(dig_t *c, const dig_t *a, int size) {
 	return c1;
 }
 
-void bn_sqrn_low(dig_t *c, const dig_t *a, int size) {
+void bn_sqrn_low(dig_t *c, const dig_t *a, size_t size) {
 	int i, j;
 	const dig_t *tmpa, *tmpb;
 	dig_t r0, r1, r2;
