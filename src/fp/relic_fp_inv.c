@@ -613,8 +613,8 @@ void fp_inv_jmpds(fp_t c, const fp_t a) {
 		dv_copy(f, fp_prime_get(), RLC_FP_DIGS);
 #if FP_RDC == MONTY
 		/* Convert a from Montgomery form. */
-		fp_copy(t, a);
-		fp_rdcn_low(g, t);
+		fp_copy(p, a);
+		fp_rdcn_low(g, p);
 #else
 		fp_copy(g, a);
 #endif
