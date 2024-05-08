@@ -2870,6 +2870,16 @@ void fp8_mul_art(fp8_t c, const fp8_t a);
 void fp8_mul_frb(fp8_t c, const fp8_t a, int i, int j);
 
 /**
+ * Multiplies an octic extension field element by a digit.
+ * Computes c = a * b.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the octic extension field element.
+ * @param[in] b				- the digit to multiply.
+ */
+void fp8_mul_dig(fp8_t c, const fp8_t a, dig_t b);
+
+/**
  * Multiples a dense octic extension field element by a sparse element.
  *
  * @param[out] c			- the result.
