@@ -1154,9 +1154,9 @@ static void bbs(void) {
 
 static int cls(void) {
 	int i, code = RLC_ERR;
-	bn_t r, t, u, v, _v[4];
-	g1_t a, A, b, B, c, _A[4], _B[4];
-	g2_t x, y, z, _z[4];
+	bn_t r, t, u, v, vs[4];
+	g1_t a, A, b, B, c, As[4], Bs[4];
+	g2_t x, y, z, zs[4];
 	uint8_t m[5] = { 0, 1, 2, 3, 4 };
 	const uint8_t *ms[5] = {m, m, m, m, m};
 	const size_t ls[5] = {sizeof(m), sizeof(m), sizeof(m), sizeof(m), sizeof(m)};
@@ -1174,10 +1174,10 @@ static int cls(void) {
 	g2_null(y);
 	g2_null(z);
 	for (i = 0; i < 4; i++) {
-		bn_null(_v[i]);
-		g1_null(_A[i]);
-		g1_null(_B[i]);
-		g2_null(_z[i]);
+		bn_null(vs[i]);
+		g1_null(As[i]);
+		g1_null(Bs[i]);
+		g2_null(zs[i]);
 	}
 
 	bn_new(r);
@@ -1193,10 +1193,10 @@ static int cls(void) {
 	g2_new(y);
 	g2_new(z);
 	for (i = 0; i < 4; i++) {
-		bn_new(_v[i]);
-		g1_new(_A[i]);
-		g1_new(_B[i]);
-		g2_new(_z[i]);
+		bn_new(vs[i]);
+		g1_new(As[i]);
+		g1_new(Bs[i]);
+		g2_new(zs[i]);
 	}
 
 	BENCH_RUN("cp_cls_gen") {
@@ -1225,15 +1225,15 @@ static int cls(void) {
 	} BENCH_END;
 
 	BENCH_RUN("cp_clb_gen (5)") {
-		BENCH_ADD(cp_clb_gen(t, u, _v, x, y, _z, 5));
+		BENCH_ADD(cp_clb_gen(t, u, vs, x, y, zs, 5));
 	} BENCH_END;
 
 	BENCH_RUN("cp_clb_sig (5)") {
-		BENCH_ADD(cp_clb_sig(a, _A, b, _B, c, ms, ls, t, u, _v, 5));
+		BENCH_ADD(cp_clb_sig(a, As, b, Bs, c, ms, ls, t, u, vs, 5));
 	} BENCH_END;
 
 	BENCH_RUN("cp_clb_ver (5)") {
-		BENCH_ADD(cp_clb_ver(a, _A, b, _B, c, ms, ls, x, y, _z, 5));
+		BENCH_ADD(cp_clb_ver(a, As, b, Bs, c, ms, ls, x, y, zs, 5));
 	} BENCH_END;
 
 	bn_free(r);
@@ -1249,18 +1249,18 @@ static int cls(void) {
 	g2_free(y);
 	g2_free(z);
 	for (i = 0; i < 4; i++) {
-		bn_free(_v[i]);
-		g1_free(_A[i]);
-		g1_free(_B[i]);
-		g2_free(_z[i]);
+		bn_free(vs[i]);
+		g1_free(As[i]);
+		g1_free(Bs[i]);
+		g2_free(zs[i]);
 	}
 	return code;
 }
 
 static void pss(void) {
-	bn_t ms[10], n, u, v, _v[10];
+	bn_t ms[10], n, u, v, vs[10];
 	g1_t a, b;
-	g2_t g, x, y, _y[10];
+	g2_t g, x, y, ys[10];
 
 	bn_null(n);
 	bn_null(u);
@@ -1286,8 +1286,8 @@ static void pss(void) {
 		g2_null(_y[i]);
 		bn_new(ms[i]);
 		bn_rand_mod(ms[i], n);
-		bn_new(_v[i]);
-		g2_new(_y[i]);
+		bn_new(vs[i]);
+		g2_new(ys[i]);
 	}
 
 	BENCH_RUN("cp_pss_gen") {
@@ -1303,15 +1303,15 @@ static void pss(void) {
 	} BENCH_END;
 
 	BENCH_RUN("cp_psb_gen (10)") {
-		BENCH_ADD(cp_psb_gen(u, _v, g, x, _y, 10));
+		BENCH_ADD(cp_psb_gen(u, vs, g, x, ys, 10));
 	} BENCH_END;
 
 	BENCH_RUN("cp_psb_sig (10)") {
-		BENCH_ADD(cp_psb_sig(a, b, ms, u, _v, 10));
+		BENCH_ADD(cp_psb_sig(a, b, ms, u, vs, 10));
 	} BENCH_END;
 
 	BENCH_RUN("cp_psb_ver (10)") {
-		BENCH_ADD(cp_psb_ver(a, b, ms, g, x, _y, 10));
+		BENCH_ADD(cp_psb_ver(a, b, ms, g, x, ys, 10));
 	} BENCH_END;
 
 	bn_free(u);
@@ -1323,17 +1323,17 @@ static void pss(void) {
 	g2_free(y);
 	for (int i = 0; i < 10; i++) {
 		bn_free(ms[i]);
-		bn_free(_v[i]);
-		g1_free(_y[i]);
+		bn_free(zs[i]);
+		g1_free(ys[i]);
 	}
 }
 
 #if defined(WITH_MPC)
 
 static void mpss(void) {
-	bn_t m[2], n, u[2], v[2], ms[10][2], _v[10][2];
+	bn_t m[2], n, u[2], v[2], ms[10][2], vs[10][2];
 	g1_t g, s[2];
-	g2_t h, x[2], y[2], _y[10][2];
+	g2_t h, x[2], y[2], ys[10][2];
 	gt_t r[2];
 	mt_t tri[3][2];
 	pt_t t[2];
@@ -1376,8 +1376,8 @@ static void mpss(void) {
 			g2_null(_y[j][i]);
 			bn_new(ms[j][i]);
 			bn_rand_mod(ms[j][i], n);
-			bn_new(_v[j][i]);
-			g2_new(_y[j][i]);
+			bn_new(vs[j][i]);
+			g2_new(ys[j][i]);
 		}
 	}
 
@@ -1422,23 +1422,23 @@ static void mpss(void) {
 	mpc_mt_gen(tri[2], n);
 
 	BENCH_RUN("cp_mpsb_gen (10)") {
-		BENCH_ADD(cp_mpsb_gen(u, _v, h, x, _y, 10));
+		BENCH_ADD(cp_mpsb_gen(u, vs, h, x, ys, 10));
 	} BENCH_END;
 
 	BENCH_RUN("cp_mpsb_bct (10)") {
-		BENCH_ADD(cp_mpsb_bct(x, _y, 10));
+		BENCH_ADD(cp_mpsb_bct(x, ys, 10));
 	} BENCH_END;
 
 	BENCH_RUN("cp_mpsb_sig (10)") {
-		BENCH_ADD(cp_mpsb_sig(g, s, ms, u, _v, tri[0], tri[1], 10));
+		BENCH_ADD(cp_mpsb_sig(g, s, ms, u, vs, tri[0], tri[1], 10));
 	} BENCH_DIV(2);
 
 	BENCH_RUN("cp_mpsb_ver (10)") {
-		BENCH_ADD(cp_mpsb_ver(r[1], g, s, ms, h, x[0], _y, NULL, tri[2], t, 10));
+		BENCH_ADD(cp_mpsb_ver(r[1], g, s, ms, h, x[0], ys, NULL, tri[2], t, 10));
 	} BENCH_DIV(2);
 
 	BENCH_RUN("cp_mpsb_ver (10,sk)") {
-		BENCH_ADD(cp_mpsb_ver(r[1], g, s, ms, h, x[0], _y, _v, tri[2], t, 10));
+		BENCH_ADD(cp_mpsb_ver(r[1], g, s, ms, h, x[0], ys, vs, tri[2], t, 10));
 	} BENCH_DIV(2);
 
 	bn_free(n);
@@ -1458,8 +1458,8 @@ static void mpss(void) {
 		pt_free(t[i]);
 		for (int j = 0; j < 10; j++) {
 			bn_free(ms[j][i]);
-			bn_free(_v[j][i]);
-			g2_free(_y[j][i]);
+			bn_free(vs[j][i]);
+			g2_free(ys[j][i]);
 		}
 	}
 }
