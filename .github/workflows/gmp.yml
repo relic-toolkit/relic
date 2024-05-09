@@ -1,5 +1,9 @@
 name: Faster configuration (GMP)
 
+defaults:
+  run:
+    shell: ${{ matrix.os == 'windows-latest' && 'msys2 {0}' || 'bash' }}
+
 on:
   push:
     branches:
@@ -51,7 +55,6 @@ jobs:
       - name: Set MinGW enviroment
         if: ${{ (runner.os == 'Windows') && (matrix.config.cc == 'gcc') }}
         uses: msys2/setup-msys2@v2
-        shell: msys2
         with:
           msystem: UCRT64
           install: >-
@@ -66,7 +69,6 @@ jobs:
 
       - name: Run CMake (MingW)
         if: ${{ (runner.os == 'Windows') && (matrix.config.cc == 'gcc') }}
-        shell: bash
         run: |
           mkdir build
           cd build
@@ -74,7 +76,6 @@ jobs:
 
       - name: Run CMake (standard)
         if: ${{ !(runner.os == 'Windows') }}
-        shell: bash
         run: |
           mkdir build
           cd build
