@@ -1,9 +1,5 @@
 name: Faster configuration (GMP)
 
-defaults:
-  run:
-    shell: ${{ matrix.os == 'windows-latest' && 'msys2 {0}' || 'bash' }}
-
 on:
   push:
     branches:
@@ -41,6 +37,11 @@ jobs:
             os: macos-latest,
             cc: "clang",
           }
+
+    defaults:
+      run:
+        shell: ${{ matrix.os == 'windows-latest' && 'msys2 {0}' || 'bash' }}
+
     steps:
       - uses: actions/checkout@v4
 
