@@ -106,7 +106,7 @@ int bn_is_even(const bn_t a) {
 }
 
 size_t bn_bits(const bn_t a) {
-	size_t bits;
+	uint_t bits;
 
 	if (bn_is_zero(a)) {
 		return 0;

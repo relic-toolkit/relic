@@ -38,7 +38,7 @@
 /*============================================================================*/
 
 dig_t bn_add1_low(dig_t *c, const dig_t *a, dig_t digit, size_t size) {
-	int i;
+	size_t i;
 	register dig_t carry, r0;
 
 	carry = digit;
@@ -54,11 +54,10 @@ dig_t bn_add1_low(dig_t *c, const dig_t *a, dig_t digit, size_t size) {
 }
 
 dig_t bn_addn_low(dig_t *c, const dig_t *a, const dig_t *b, size_t size) {
-	int i;
 	register dig_t carry, c0, c1, r0, r1;
 
 	carry = 0;
-	for (i = 0; i < size; i++, a++, b++, c++) {
+	for (size_t i = 0; i < size; i++, a++, b++, c++) {
 		r0 = (*a) + (*b);
 		c0 = (r0 < (*a));
 		r1 = r0 + carry;
@@ -70,7 +69,7 @@ dig_t bn_addn_low(dig_t *c, const dig_t *a, const dig_t *b, size_t size) {
 }
 
 dig_t bn_sub1_low(dig_t *c, const dig_t *a, dig_t digit, size_t size) {
-	int i;
+	size_t i;
 	dig_t carry, r0;
 
 	carry = digit;
@@ -86,12 +85,11 @@ dig_t bn_sub1_low(dig_t *c, const dig_t *a, dig_t digit, size_t size) {
 }
 
 dig_t bn_subn_low(dig_t *c, const dig_t *a, const dig_t *b, size_t size) {
-	int i;
 	dig_t carry, r0, diff;
 
 	/* Zero the carry. */
 	carry = 0;
-	for (i = 0; i < size; i++, a++, b++, c++) {
+	for (size_t i = 0; i < size; i++, a++, b++, c++) {
 		diff = (*a) - (*b);
 		r0 = diff - carry;
 		carry = ((*a) < (*b)) || (carry && !diff);
@@ -100,12 +98,13 @@ dig_t bn_subn_low(dig_t *c, const dig_t *a, const dig_t *b, size_t size) {
 	return carry;
 }
 
-void bn_negs_low(dig_t *c, const dig_t *a, dig_t sa, size_t size) {
+dig_t bn_negs_low(dig_t *c, const dig_t *a, dig_t sa, size_t size) {
     dig_t carry = sa & 1;
 
 	sa = -sa;
-    for (int i = 0; i < size; i++) {
+    for (size_t i = 0; i < size; i++) {
         c[i] = (a[i] ^ sa) + carry;
 		carry = (c[i] < carry);
     }
+	return carry;
 }

@@ -63,11 +63,12 @@ dig_t bn_subn_low(dig_t *c, const dig_t *a, const dig_t *b, size_t size) {
 	return mpn_sub_n(c, a, b, size);
 }
 
-void bn_negs_low(dig_t *c, const dig_t *a, dig_t sa, size_t size) {
-	dig_t *t = RLC_ALLOCA(dig_t, size);
+dig_t bn_negs_low(dig_t *c, const dig_t *a, dig_t sa, size_t size) {
+	dig_t carry, *t = RLC_ALLOCA(dig_t, size);
 	mpn_com(t, a, size);
-	bn_add1_low(t, t, sa, size);
+	carry = bn_add1_low(t, t, sa, size);
 	dv_copy(c, a, size);
 	dv_copy_sec(c, t, size, sa);
 	RLC_FREE(t);
+	return carry;
 }

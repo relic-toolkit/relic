@@ -42,6 +42,7 @@
 #ifdef ASM
 
 #include "relic_conf.h"
+#include "relic_label.h"
 
 #if (BN_PRECI % WSIZE) > 0
 #define RLC_BN_DIGS		(BN_PRECI/WSIZE + 1)
@@ -112,12 +113,13 @@ dig_t bn_subn_low(dig_t *c, const dig_t *a, const dig_t *b, size_t size);
 /**
  * Conditionally negate a digit vector using two's complement representation.
  *
- * @param[out] c 			- the result.
- * @param[in] a 			- the digit vector to conditionally negate.
- * @param[in] sa 			- the sign of the digit vector.
- * @param[in] n				- the number of digits to conditionally negate.
+ * @param[out] c 		- the result.
+ * @param[in] a 		- the digit vector to conditionally negate.
+ * @param[in] sa 		- the sign of the digit vector.
+ * @param[in] n			- the number of digits to conditionally negate.
+ * @return the carry of the last digit negation.
  */
-void bn_negs_low(dig_t *c, const dig_t *a, dig_t sa, size_t size);
+dig_t bn_negs_low(dig_t *c, const dig_t *a, dig_t sa, size_t size);
 
 /**
  * Compares two digits.

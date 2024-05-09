@@ -39,11 +39,15 @@
 
 #if FP_INV == JMPDS || !defined(STRIP)
 
+#ifdef RLC_FP_ROOM
+
 static void bn_mul2_low(dig_t *c, const dig_t *a, dis_t digit, size_t size) {
 	int sd = digit >> (RLC_DIG - 1);
 	digit = (digit ^ sd) - sd;
 	c[size] = bn_mul1_low(c, a, digit, size);
 }
+
+#endif /* RLC_FP_ROOM */
 
 static dis_t jumpdivstep(dis_t m[4], dis_t delta, dig_t f, dig_t g, int s) {
 	dig_t u = 1, v = 0, q = 0, r = 1, c0, c1;
@@ -609,8 +613,8 @@ void fp_inv_jmpds(fp_t c, const fp_t a) {
 		dv_copy(f, fp_prime_get(), RLC_FP_DIGS);
 #if FP_RDC == MONTY
 		/* Convert a from Montgomery form. */
-		fp_copy(t, a);
-		fp_rdcn_low(g, t);
+		fp_copy(p, a);
+		fp_rdcn_low(g, p);
 #else
 		fp_copy(g, a);
 #endif
@@ -631,11 +635,11 @@ void fp_inv_jmpds(fp_t c, const fp_t a) {
 
 		/* Update column vector below. */
 		v1[0] = RLC_SEL(m[1], -m[1], RLC_SIGN(m[1]));
-		fp_negm_low(t, v1);
-		fp_copy_sec(v1, t, RLC_SIGN(m[1]));
+		fp_negm_low(t1, v1);
+		fp_copy_sec(v1, t1, RLC_SIGN(m[1]));
 		u1[0] = RLC_SEL(m[3], -m[3], RLC_SIGN(m[3]));
-		fp_negm_low(t, u1);
-		fp_copy_sec(u1, t, RLC_SIGN(m[3]));
+		fp_negm_low(t1, u1);
+		fp_copy_sec(u1, t1, RLC_SIGN(m[3]));
 
 		dv_copy(p01, v1, 2 * RLC_FP_DIGS);
 		dv_copy(p11, u1, 2 * RLC_FP_DIGS);
@@ -695,30 +699,29 @@ void fp_inv_jmpds(fp_t c, const fp_t a) {
 				fp_addd_low(p01, v0, v1);
 			}
 #else
-			fp_zero(p);
-			dv_copy(p + RLC_FP_DIGS, fp_prime_get(), RLC_FP_DIGS);
-
 			/* Update column vector below. */
-			bn_mul2_low(v0, p01, m[0], 2 * RLC_FP_DIGS);
-			fp_subd_low(t, p, v0);
-			dv_copy_sec(v0, t, 2 * RLC_FP_DIGS, RLC_SIGN(m[0]));
+			t[0] = RLC_SEL(m[0], -m[0], RLC_SIGN(m[0]));
+			fp_mul(v0, p01, t);
+			fp_neg(t0, v0);
+			fp_copy_sec(v0, t0, RLC_SIGN(m[0]));
 
-			bn_mul2_low(v1, p11, m[1], 2 * RLC_FP_DIGS);
-			fp_subd_low(t, p, v1);
-			dv_copy_sec(v1, t, 2 * RLC_FP_DIGS, RLC_SIGN(m[1]));
+			t[0] = RLC_SEL(m[1], -m[1], RLC_SIGN(m[1]));
+			fp_mul(v1, p11, t);
+			fp_neg(t1, v1);
+			fp_copy_sec(v1, t1, RLC_SIGN(m[1]));
 
-			bn_mul2_low(u0, p01, m[2], 2 * RLC_FP_DIGS);
-			fp_subd_low(t, p, u0);
-			dv_copy_sec(u0, t, 2 * RLC_FP_DIGS, RLC_SIGN(m[2]));
+			t[0] = RLC_SEL(m[2], -m[2], RLC_SIGN(m[2]));
+			fp_mul(u0, p01, t);
+			fp_neg(t0, u0);
+			fp_copy_sec(u0, t0, RLC_SIGN(m[2]));
 
-			bn_mul2_low(u1, p11, m[3], 2 * RLC_FP_DIGS);
-			fp_subd_low(t, p, u1);
-			dv_copy_sec(u1, t, 2 * RLC_FP_DIGS, RLC_SIGN(m[3]));
+			t[0] = RLC_SEL(m[3], -m[3], RLC_SIGN(m[3]));
+			fp_mul(u1, p11, t);
+			fp_neg(t1, u1);
+			fp_copy_sec(u1, t1, RLC_SIGN(m[3]));
 
-			fp_addc_low(t, u0, u1);
-			fp_rdc(p11, t);
-			fp_addc_low(t, v0, v1);
-			fp_rdc(p01, t);
+			fp_add(p11, u0, u1);
+			fp_add(p01, v0, v1);
 #if FP_RDC == MONTY
 			fp_mulm_low(pre, pre, core_get()->conv.dp);
 #endif
@@ -760,20 +763,18 @@ void fp_inv_jmpds(fp_t c, const fp_t a) {
 		fp_rdc(p01, t);
 #else
 		(void)j;
-		fp_zero(p);
-		dv_copy(p + RLC_FP_DIGS, fp_prime_get(), RLC_FP_DIGS);
 
-		/* Update column vector below. */
-		bn_mul2_low(v0, p01, m[0], 2 * RLC_FP_DIGS);
-		fp_subd_low(t, p, v0);
-		dv_copy_sec(v0, t, 2 * RLC_FP_DIGS, RLC_SIGN(m[0]));
+		t[0] = RLC_SEL(m[0], -m[0], RLC_SIGN(m[0]));
+		fp_mul(v0, p01, t);
+		fp_neg(t0, v0);
+		fp_copy_sec(v0, t0, RLC_SIGN(m[0]));
 
-		bn_mul2_low(v1, p11, m[1], 2 * RLC_FP_DIGS);
-		fp_subd_low(t, p, v1);
-		dv_copy_sec(v1, t, 2 * RLC_FP_DIGS, RLC_SIGN(m[1]));
+		t[0] = RLC_SEL(m[1], -m[1], RLC_SIGN(m[1]));
+		fp_mul(v1, p11, t);
+		fp_neg(t1, v1);
+		fp_copy_sec(v1, t1, RLC_SIGN(m[1]));
 
-		fp_addc_low(t, v0, v1);
-		fp_rdc(p01, t);
+		fp_add(p01, v0, v1);
 #endif
 
 		/* Negate based on sign of f at the end. */

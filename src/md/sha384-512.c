@@ -391,8 +391,7 @@ int SHA384FinalBits(SHA384Context *context,
  *   sha Error Code.
  *
  */
-int SHA384Result(SHA384Context *context,
-    uint8_t Message_Digest[SHA384HashSize])
+int SHA384Result(SHA384Context *context, uint8_t Message_Digest[SHA384HashSize])
 {
   return SHA384_512ResultN(context, Message_Digest, SHA384HashSize);
 }
@@ -592,8 +591,7 @@ static void SHA384_512Finalize(SHA512Context *context,
  *   sha Error Code.
  *
  */
-int SHA512Result(SHA512Context *context,
-    uint8_t Message_Digest[SHA512HashSize])
+int SHA512Result(SHA512Context *context, uint8_t Message_Digest[SHA512HashSize])
 {
   return SHA384_512ResultN(context, Message_Digest, SHA512HashSize);
 }

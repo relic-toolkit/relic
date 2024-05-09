@@ -63,7 +63,8 @@ static int memory(void) {
 }
 
 static int util(void) {
-	uint_t bits, code = RLC_ERR;
+	uint_t bits;
+	int code = RLC_ERR;
 	char str[RLC_BN_BITS + 2];
 	dig_t digit, raw[RLC_BN_DIGS];
 	uint8_t bin[RLC_CEIL(RLC_BN_BITS, 8)];

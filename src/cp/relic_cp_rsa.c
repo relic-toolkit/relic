@@ -115,11 +115,10 @@
  * @param[out] p_len	- the number of added pad bytes.
  * @param[in] m_len		- the message length in bytes.
  * @param[in] k_len		- the key length in bytes.
- * @param[in] operation	- flag to indicate the operation type.
+ * @param[in] op		- flag to indicate the operation type.
  * @return RLC_ERR if errors occurred, RLC_OK otherwise.
  */
-static int pad_basic(bn_t m, size_t *p_len, size_t m_len, size_t k_len,
-		int operation) {
+static int pad_basic(bn_t m, size_t *p_len, size_t m_len, size_t k_len, int op) {
 	uint8_t pad = 0;
 	int result = RLC_ERR;
 	bn_t t;
@@ -128,7 +127,7 @@ static int pad_basic(bn_t m, size_t *p_len, size_t m_len, size_t k_len,
 		bn_null(t);
 		bn_new(t);
 
-		switch (operation) {
+		switch (op) {
 			case RSA_ENC:
 			case RSA_SIG:
 			case RSA_SIG_HASH:
@@ -215,7 +214,7 @@ static const uint8_t sh512_id[] = {
  * @param[in, out] len		- the length of the identifier.
  * @return The pointer to the hash function identifier.
  */
-static uint8_t *hash_id(int md, int *len) {
+static uint8_t *hash_id(int md, size_t *len) {
 	switch (md) {
 		case SH224:
 			*len = sizeof(sh224_id);
@@ -242,7 +241,7 @@ static uint8_t *hash_id(int md, int *len) {
  * @param[out] p_len	- the number of added pad bytes.
  * @param[in] m_len		- the message length in bytes.
  * @param[in] k_len		- the key length in bytes.
- * @param[in] operation	- flag to indicate the operation type.
+ * @param[in] op		- flag to indicate the operation type.
  * @return RLC_ERR if errors occurred, RLC_OK otherwise.
  */
 static int pad_pkcs1(bn_t m, size_t *p_len, size_t m_len, size_t k_len,

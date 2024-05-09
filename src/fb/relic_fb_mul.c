@@ -97,7 +97,7 @@ static void fb_mul_basic_imp(dig_t *c, const dig_t *a, const dig_t *b,
  * @param[in] level			- the number of Karatsuba steps to apply.
  */
 static void fb_mul_karat_imp(dv_t c, const fb_t a, const fb_t b, size_t size,
-		int level) {
+		uint_t level) {
 	int i, h, h1;
 	dv_t a1, b1, ab;
 	dig_t *a0b0, *a1b1;

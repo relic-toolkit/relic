@@ -235,7 +235,7 @@ void ep8_curve_mul_a(fp8_t c, const fp8_t a) {
 			break;
 #if FP_RDC != MONTY
 		case RLC_TINY:
-			fp8_mul_dig(c, a, ctx->ep8_a[0]);
+			fp8_mul_dig(c, a, ctx->ep8_a[0][0][0][0]);
 			break;
 #endif
 		default:
@@ -255,7 +255,7 @@ void ep8_curve_mul_b(fp8_t c, const fp8_t a) {
 			break;
 #if FP_RDC != MONTY
 		case RLC_TINY:
-			fp8_mul_dig(c, a, ctx->ep8_b[0]);
+			fp8_mul_dig(c, a, ctx->ep8_b[0][0][0][0]);
 			break;
 #endif
 		default:
