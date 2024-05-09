@@ -18,19 +18,16 @@ jobs:
         config:
           - {
             name: "Windows Latest - MinGW",
-            artifact: "windows-mingw.tar.xz",
             os: windows-latest,
             cc: "gcc"
           }
           - {
             name: "Ubuntu Latest - GCC",
-            artifact: "linux-gcc.tar.xz",
             os: ubuntu-latest,
             cc: "gcc",
           }
           - {
             name: "Ubuntu Latest - Clang",
-            artifact: "linux-clang.tar.xz",
             os: ubuntu-latest,
             cc: "clang",
           }
@@ -39,6 +36,11 @@ jobs:
             os: macos-latest,
             cc: "clang",
           }
+
+    defaults:
+      run:
+        shell: ${{ matrix.config.os == 'windows-latest' && 'msys2 {0}' || 'bash' }}
+
     steps:
       - uses: actions/checkout@v4
 
