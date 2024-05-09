@@ -40,7 +40,7 @@ jobs:
 
     defaults:
       run:
-        shell: ${{ matrix.os == 'windows-latest' && 'msys2 {0}' || 'bash' }}
+        shell: ${{ matrix.config.os == 'windows-latest' && 'msys2 {0}' || 'bash' }}
 
     steps:
       - uses: actions/checkout@v4
