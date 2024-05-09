@@ -70,7 +70,7 @@ jobs:
         run: |
           mkdir build
           cd build
-          cmake -DSEED= -DBENCH=0 -DARITH=gmp -G "MinGW Makefiles" ..
+          cmake -DSEED= -DBENCH=0 -DARITH=gmp -G "Unix Makefiles" ..
 
       - name: Run CMake (standard)
         if: ${{ !(runner.os == 'Windows') }}
