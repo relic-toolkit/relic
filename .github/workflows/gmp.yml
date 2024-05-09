@@ -18,21 +18,19 @@ jobs:
         config:
           - {
             name: "Windows Latest - MinGW",
-            # artifact: "windows-mingw.tar.xz",
             os: windows-latest,
             cc: "gcc"
           }
           - {
             name: "Ubuntu Latest - GCC",
-            artifact: "linux-gcc.tar.xz",
             os: ubuntu-latest,
             cc: "gcc",
           }
           - {
             name: "Ubuntu Latest - Clang",
-            artifact: "linux-clang.tar.xz",
             os: ubuntu-latest,
             cc: "clang",
+            
           }
           - {
             name: "MacOS Latest",
@@ -62,6 +60,7 @@ jobs:
             cmake
             gmp
             gmp-devel
+            mingw-w64-x86_64-gmp
           update: true
 
       - name: Run CMake (MingW)
