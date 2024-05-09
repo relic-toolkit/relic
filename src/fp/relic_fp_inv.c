@@ -722,9 +722,6 @@ void fp_inv_jmpds(fp_t c, const fp_t a) {
 
 			fp_add(p11, u0, u1);
 			fp_add(p01, v0, v1);
-#if FP_RDC == MONTY
-			fp_mulm_low(pre, pre, core_get()->conv.dp);
-#endif
 #endif
 		}
 
