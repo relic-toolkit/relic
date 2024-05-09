@@ -64,16 +64,14 @@ jobs:
             cmake
             gmp
             gmp-devel
-            mingw-w64-x86_64-gmp
           update: true
 
       - name: Run CMake (MingW)
         if: ${{ (runner.os == 'Windows') && (matrix.config.cc == 'gcc') }}
-        shell: bash
         run: |
           mkdir build
           cd build
-          cmake -DSEED= -DBENCH=0 -DARITH=gmp-sec -G "MinGW Makefiles" ..
+          cmake -DSEED= -DBENCH=0 -DARITH=gmp-sec -G "Unix Makefiles" ..
 
       - name: Run CMake (standard)
         if: ${{ !(runner.os == 'Windows') }}
