@@ -206,10 +206,10 @@ int cp_cmlhs_evl(g1_t r, g2_t s, const g1_t rs[], const g2_t ss[],
 	return result;
 }
 
-int cp_cmlhs_ver(const g1_t r, const g2_t s, const g1_t sig[], const g2_t z[],
-		const g1_t a[], const g1_t c[], const bn_t msg, const char *data,
-		const g1_t h, const int label[], const gt_t *hs[], const dig_t *f[],
-		const size_t flen[], const g2_t y[], const g2_t pk[], size_t slen,
+int cp_cmlhs_ver(const g1_t r, const g2_t s, const g1_t *sig, const g2_t *z,
+		const g1_t *a, const g1_t *c, const bn_t m, const char *data,
+		const g1_t h, const int *label, const gt_t *hs[], const dig_t *f[],
+		const size_t *flen, const g2_t *y, const g2_t *pk, size_t slen,
 		int bls) {
 	g1_t g1;
 	g2_t g2;
@@ -282,7 +282,7 @@ int cp_cmlhs_ver(const g1_t r, const g2_t s, const g1_t sig[], const g2_t z[],
 		pc_map(u, g1, g2);
 		gt_mul(e, e, u);
 
-		g1_mul(g1, h, msg);
+		g1_mul(g1, h, m);
 		pc_map(v, g1, g2);
 		if (gt_cmp(e, v) != RLC_EQ) {
 			result = 0;

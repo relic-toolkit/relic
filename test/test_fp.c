@@ -1161,7 +1161,7 @@ static int cube_root(void) {
 			fp_mul(c, c, a);
 			TEST_ASSERT(fp_crt(b, c), end);
 			if (fp_prime_get_cnr()) {
-				fp_copy(d, (const dig_t *)fp_prime_get_crt());
+				fp_copy(d, (dig_t *)fp_prime_get_crt());
 				while (fp_cmp_dig(d, 1) != RLC_EQ) {
 					fp_copy(c, d);
 					fp_sqr(d, d);
