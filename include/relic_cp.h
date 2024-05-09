@@ -1696,7 +1696,7 @@ int cp_cli_ver(g1_t a, g1_t A, g1_t b, g1_t B, g1_t c, const uint8_t *msg,
  * @param[in] l				- the number of messages to sign.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_clb_gen(bn_t t, bn_t u, bn_t v[], g2_t x, g2_t y, g2_t z[], size_t l);
+int cp_clb_gen(bn_t t, bn_t u, bn_t *v, g2_t x, g2_t y, g2_t *z, size_t l);
 
 /**
  * Signs a block of messages using the CLB protocol.
@@ -1714,8 +1714,8 @@ int cp_clb_gen(bn_t t, bn_t u, bn_t v[], g2_t x, g2_t y, g2_t z[], size_t l);
  * @param[in] l				- the number of messages to sign.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_clb_sig(g1_t a, g1_t A[], g1_t b, g1_t B[], g1_t c, const uint8_t *ms[],
-		const size_t ls[], const bn_t t, const bn_t u, const bn_t v[],
+int cp_clb_sig(g1_t a, g1_t *A, g1_t b, g1_t *B, g1_t c, const uint8_t *ms[],
+		const size_t *ls, const bn_t t, const bn_t u, const bn_t *v,
 		const size_t l);
 
 /**
@@ -1734,9 +1734,9 @@ int cp_clb_sig(g1_t a, g1_t A[], g1_t b, g1_t B[], g1_t c, const uint8_t *ms[],
  * @param[in] l				- the number of messages to sign.
  * @return a boolean value indicating the verification result.
  */
-int cp_clb_ver(const g1_t a, const g1_t A[], const g1_t b, const g1_t B[],
- 		const g1_t c, const uint8_t *ms[], const size_t ls[], const g2_t x,
- 		const g2_t y, const g2_t z[], size_t l);
+int cp_clb_ver(const g1_t a, const g1_t *A, const g1_t b, const g1_t *B,
+ 		const g1_t c, const uint8_t *ms[], const size_t *ls, const g2_t x,
+ 		const g2_t y, const g2_t *z, size_t l);
 
 /**
  * Generates a key pair for the Pointcheval-Sanders simple signature (PSS)
@@ -1844,7 +1844,7 @@ int cp_mpss_ver(gt_t e, const g1_t a, const g1_t b[2], const bn_t m[2],
  * @param[out] y			- the third part of the public key.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_psb_gen(bn_t r, bn_t s[], g2_t g, g2_t x, g2_t y[], size_t l);
+int cp_psb_gen(bn_t r, bn_t *s, g2_t g, g2_t x, g2_t *y, size_t l);
 
 /**
  * Signs a block of messages using the PSB protocol.
@@ -1857,7 +1857,7 @@ int cp_psb_gen(bn_t r, bn_t s[], g2_t g, g2_t x, g2_t y[], size_t l);
  * @param[in] l				- the number of messages to sign.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_psb_sig(g1_t a, g1_t b, const bn_t ms[], const bn_t r, const bn_t s[],
+int cp_psb_sig(g1_t a, g1_t b, const bn_t *ms, const bn_t r, const bn_t *s,
 		size_t l);
 
 /**
@@ -1872,8 +1872,8 @@ int cp_psb_sig(g1_t a, g1_t b, const bn_t ms[], const bn_t r, const bn_t s[],
  * @param[in] l				- the number of messages to sign.
  * @return a boolean value indicating the verification result.
  */
-int cp_psb_ver(const g1_t a, const g1_t b, const bn_t ms[], const g2_t g,
-		const g2_t x, const g2_t y[], size_t l);
+int cp_psb_ver(const g1_t a, const g1_t b, const bn_t *ms, const g2_t g,
+		const g2_t x, const g2_t *y, size_t l);
 
 /**
  * Generates a key pair for the multi-part version of the Pointcheval-Sanders
@@ -2324,7 +2324,7 @@ int cp_cmlhs_init(g1_t h);
  * @param[in] bls			- the flag for selecting BLS or ECDSA.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_cmlhs_gen(bn_t x[], gt_t hs[], size_t len, uint8_t prf[], size_t plen,
+int cp_cmlhs_gen(bn_t *x, gt_t *hs, size_t len, uint8_t *prf, size_t plen,
 		bn_t sk, g2_t pk, bn_t d, g2_t y, int bls);
 
 /**
@@ -2350,7 +2350,7 @@ int cp_cmlhs_gen(bn_t x[], gt_t hs[], size_t len, uint8_t prf[], size_t plen,
  */
 int cp_cmlhs_sig(g1_t sig, g2_t z, g1_t a, g1_t c, g1_t r, g2_t s,
 		const bn_t msg, const char *data, int label, const bn_t x, const g1_t h,
-		const uint8_t prf[], size_t plen, const bn_t sk, const bn_t d, int bls);
+		const uint8_t *prf, size_t plen, const bn_t sk, const bn_t d, int bls);
 
 /**
  * Applies a function over a set of CMLHS signatures from the same user.
@@ -2364,7 +2364,7 @@ int cp_cmlhs_sig(g1_t sig, g2_t z, g1_t a, g1_t c, g1_t r, g2_t s,
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_cmlhs_fun(g1_t a, g1_t c, const g1_t as[], const g1_t cs[],
-		const dig_t f[], size_t len);
+		const dig_t *f, size_t len);
 
 /**
  * Evaluates a function over a set of CMLHS signatures.
@@ -2378,7 +2378,7 @@ int cp_cmlhs_fun(g1_t a, g1_t c, const g1_t as[], const g1_t cs[],
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_cmlhs_evl(g1_t r, g2_t s, const g1_t rs[], const g2_t ss[],
-		const dig_t f[], size_t len);
+		const dig_t *f, size_t len);
 
 /**
  * Verifies a CMLHS signature over a set of messages.
@@ -2402,10 +2402,10 @@ int cp_cmlhs_evl(g1_t r, g2_t s, const g1_t rs[], const g2_t ss[],
  * @param[in] bls			- the flag for selecting BLS or ECDSA.
  * @return a boolean value indicating the verification result.
  */
-int cp_cmlhs_ver(const g1_t r, const g2_t s, const g1_t sig[], const g2_t z[],
-		const g1_t a[], const g1_t c[], const bn_t m, const char *data,
-		const g1_t h, const int label[], const gt_t * hs[], const dig_t *f[],
-		const size_t flen[], const g2_t y[], const g2_t pk[], size_t slen,
+int cp_cmlhs_ver(const g1_t r, const g2_t s, const g1_t *sig, const g2_t *z,
+		const g1_t *a, const g1_t *c, const bn_t m, const char *data,
+		const g1_t h, const int *label, const gt_t *hs[], const dig_t *f[],
+		const size_t *flen, const g2_t *y, const g2_t *pk, size_t slen,
 		int bls);
 
 /**
@@ -2422,8 +2422,8 @@ int cp_cmlhs_ver(const g1_t r, const g2_t s, const g1_t sig[], const g2_t z[],
  * @param[in] slen			- the number of signatures.
  * @return a boolean value indicating the verification result.
  */
-void cp_cmlhs_off(gt_t vk, const g1_t h, const int label[], const gt_t *hs[],
-		const dig_t *f[], const size_t flen[], size_t slen);
+void cp_cmlhs_off(gt_t vk, const g1_t h, const int *label, const gt_t *hs[],
+		const dig_t *f[], const size_t *flen, size_t slen);
 
 /**
  * Perform the online verification of a CMLHS signature over a set of messages.
@@ -2441,9 +2441,9 @@ void cp_cmlhs_off(gt_t vk, const g1_t h, const int label[], const gt_t *hs[],
  * @param[in] bls			- the flag for selecting BLS or ECDSA.
  * @return a boolean value indicating the verification result.
  */
-int cp_cmlhs_onv(const g1_t r, const g2_t s, const g1_t sig[], const g2_t z[],
-		const g1_t a[], const g1_t c[], const bn_t msg, const char *data,
-		const g1_t h, const gt_t vk, const g2_t y[], const g2_t pk[],
+int cp_cmlhs_onv(const g1_t r, const g2_t s, const g1_t *sig, const g2_t *z,
+		const g1_t *a, const g1_t *c, const bn_t msg, const char *data,
+		const g1_t h, const gt_t vk, const g2_t *y, const g2_t *pk,
 		size_t slen, int bls);
 /**
  * Generates a key pair for the Multi-Key Homomorphic Signature (MKLHS) scheme.
@@ -2477,7 +2477,7 @@ int cp_mklhs_sig(g1_t s, const bn_t m, const char *data, const char *id,
  * @param[in] len			- the number of coefficients.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_mklhs_fun(bn_t mu, const bn_t m[], const dig_t f[], size_t len);
+int cp_mklhs_fun(bn_t mu, const bn_t *m, const dig_t *f, size_t len);
 
 /**
  * Evaluates a function over a set of MKLHS signatures.
@@ -2488,7 +2488,7 @@ int cp_mklhs_fun(bn_t mu, const bn_t m[], const dig_t f[], size_t len);
  * @param[in] len			- the number of coefficients.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_mklhs_evl(g1_t sig, const g1_t s[], const dig_t f[], size_t len);
+int cp_mklhs_evl(g1_t sig, const g1_t *s, const dig_t *f, size_t len);
 
 /**
  * Verifies a MKLHS signature over a set of messages.
@@ -2505,9 +2505,9 @@ int cp_mklhs_evl(g1_t sig, const g1_t s[], const dig_t f[], size_t len);
  * @param[in] slen			- the number of signatures.
  * @return a boolean value indicating the verification result.
  */
-int cp_mklhs_ver(const g1_t sig, const bn_t m, const bn_t mu[],
+int cp_mklhs_ver(const g1_t sig, const bn_t m, const bn_t *mu,
 		const char *data, const char *id[], const char *tag[], const dig_t *f[],
-		const size_t flen[], const g2_t pk[], size_t slen);
+		const size_t *flen, const g2_t *pk, size_t slen);
 
 /**
  * Computes the offline part of veryfying a MKLHS signature over a set of
@@ -2522,8 +2522,8 @@ int cp_mklhs_ver(const g1_t sig, const bn_t m, const bn_t mu[],
  * @param[in] slen			- the number of signatures.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_mklhs_off(g1_t h[], dig_t ft[], const char *id[], const char *tag[],
-		const dig_t *f[], const size_t flen[], size_t slen);
+int cp_mklhs_off(g1_t *h, dig_t *ft, const char *id[], const char *tag[],
+		const dig_t *f[], const size_t *flen, size_t slen);
 
 /**
  * Computes the online part of veryfying a MKLHS signature over a set of
@@ -2540,9 +2540,9 @@ int cp_mklhs_off(g1_t h[], dig_t ft[], const char *id[], const char *tag[],
  * @param[in] slen			- the number of signatures.
  * @return a boolean value indicating the verification result.
  */
-int cp_mklhs_onv(const g1_t sig, const bn_t m, const bn_t mu[],
-		const char *data, const char *id[], const g1_t h[], const dig_t ft[],
-		const g2_t pk[], size_t slen);
+int cp_mklhs_onv(const g1_t sig, const bn_t m, const bn_t *mu,
+		const char *data, const char *id[], const g1_t *h, const dig_t *ft,
+		const g2_t *pk, size_t slen);
 
 /**
  * Generates the trusted setup parameters for the factoring-based laconic
@@ -2565,8 +2565,8 @@ int cp_rsapsi_gen(bn_t g, bn_t n, size_t bits);
  * @param[in] x				- the receiver's input set.
  * @param[in] m				- the receiver's input set size.
  */
-int cp_rsapsi_ask(bn_t d, bn_t r, bn_t p[], const bn_t g, const bn_t n,
-		const bn_t x[], size_t m);
+int cp_rsapsi_ask(bn_t d, bn_t r, bn_t *p, const bn_t g, const bn_t n,
+		const bn_t *x, size_t m);
 
 /**
  * Computes the sender part of the RSA-PSI protocol, given its input set.
@@ -2579,8 +2579,8 @@ int cp_rsapsi_ask(bn_t d, bn_t r, bn_t p[], const bn_t g, const bn_t n,
  * @param[in] y				- the server's input set.
  * @param[in] l				- the sender's input set size.
  */
-int cp_rsapsi_ans(bn_t t[], bn_t u[], const bn_t d, const bn_t g, const bn_t n,
-		const bn_t y[], size_t l);
+int cp_rsapsi_ans(bn_t *t, bn_t *u, const bn_t d, const bn_t g, const bn_t n,
+		const bn_t *y, size_t l);
 
 /**
  * Computes the intersection as the final part of the RSA-PSI protocol.
@@ -2596,9 +2596,9 @@ int cp_rsapsi_ans(bn_t t[], bn_t u[], const bn_t d, const bn_t g, const bn_t n,
  * @param[in] u				- the missing elements in the exponent.
  * @param[in] l				- the sender's input set size.
  */
-int cp_rsapsi_int(bn_t z[], size_t *len, const bn_t r, const bn_t p[],
-		const bn_t n, const bn_t x[], const size_t m, const bn_t t[],
-		const bn_t u[], size_t l);
+int cp_rsapsi_int(bn_t *z, size_t *len, const bn_t r, const bn_t *p,
+		const bn_t n, const bn_t *x, const size_t m, const bn_t *t,
+		const bn_t *u, size_t l);
 
 /**
  * Generates the trusted setup parameters for the factoring-based size-hiding
@@ -2621,8 +2621,8 @@ int cp_shipsi_gen(bn_t g, crt_t crt, size_t bits);
  * @param[in] x				- the receiver's input set.
  * @param[in] m				- the receiver's input set size.
  */
-int cp_shipsi_ask(bn_t d, bn_t r, bn_t p[], const bn_t g, const bn_t n,
-		const bn_t x[], size_t m);
+int cp_shipsi_ask(bn_t d, bn_t r, bn_t *p, const bn_t g, const bn_t n,
+		const bn_t *x, size_t m);
 
 /**
  * Computes the sender part of the SHI-PSI protocol, given its input set.
@@ -2635,8 +2635,8 @@ int cp_shipsi_ask(bn_t d, bn_t r, bn_t p[], const bn_t g, const bn_t n,
  * @param[in] y				- the server's input set.
  * @param[in] n				- the sender's input set size.
  */
-int cp_shipsi_ans(bn_t t[], bn_t u, bn_t d, const bn_t g, const crt_t crt,
-		const bn_t y[], const size_t n);
+int cp_shipsi_ans(bn_t *t, bn_t u, bn_t d, const bn_t g, const crt_t crt,
+		const bn_t *y, const size_t n);
 
 /**
  * Computes the intersection as the final part of the SHI-PSI protocol.
@@ -2652,8 +2652,8 @@ int cp_shipsi_ans(bn_t t[], bn_t u, bn_t d, const bn_t g, const crt_t crt,
  * @param[in] u				- the hint in the exponent.
  * @param[in] l				- the sender's input set size.
  */
-int cp_shipsi_int(bn_t z[], size_t *len, const bn_t r, const bn_t p[],
-		const bn_t n, const bn_t x[], size_t m, const bn_t t[], const bn_t u,
+int cp_shipsi_int(bn_t *z, size_t *len, const bn_t r, const bn_t *p,
+		const bn_t n, const bn_t *x, size_t m, const bn_t *t, const bn_t u,
 		size_t l);
 
 /**
@@ -2665,7 +2665,7 @@ int cp_shipsi_int(bn_t z[], size_t *len, const bn_t r, const bn_t p[],
  * @param[out] s			- the consecutive powers in G_1.
  * @param[in] m				- the maximum set size.
  */
-int cp_pbpsi_gen(bn_t sk, g1_t ss, g2_t s[], size_t m);
+int cp_pbpsi_gen(bn_t sk, g1_t ss, g2_t *s, size_t m);
 
 /**
  * Computes the receiver part of the PB-PSI protocol, given its input set.
@@ -2676,7 +2676,7 @@ int cp_pbpsi_gen(bn_t sk, g1_t ss, g2_t s[], size_t m);
  * @param[in] s				- the consecutive powers.
  * @param[in] m				- the receiver's input set size.
  */
-int cp_pbpsi_ask(g2_t d[], bn_t r, const bn_t x[], const g2_t s[], size_t m);
+int cp_pbpsi_ask(g2_t *d, bn_t r, const bn_t *x, const g2_t *s, size_t m);
 
 /**
  * Computes the sender part of the PB-PSI protocol, given its input set.
@@ -2688,8 +2688,8 @@ int cp_pbpsi_ask(g2_t d[], bn_t r, const bn_t x[], const g2_t s[], size_t m);
  * @param[in] y				- the server's input set.
  * @param[in] n				- the sender's input set size.
  */
-int cp_pbpsi_ans(gt_t t[], g1_t u[], const g1_t ss, const g2_t d,
-		const bn_t y[], size_t n);
+int cp_pbpsi_ans(gt_t *t, g1_t *u, const g1_t ss, const g2_t d,
+		const bn_t *y, size_t n);
 
 /**
  * Computes the intersection as the final part of the PB-PSI protocol.
@@ -2704,7 +2704,7 @@ int cp_pbpsi_ans(gt_t t[], g1_t u[], const g1_t ss, const g2_t d,
  * @param[in] u				- the missing elements in the exponent.
  * @param[in] n				- the sender's input set size.
  */
-int cp_pbpsi_int(bn_t z[], size_t *len, const g2_t d[], const bn_t x[], size_t m,
-		const gt_t t[], const g1_t u[], size_t n);
+int cp_pbpsi_int(bn_t *z, size_t *len, const g2_t *d, const bn_t *x, size_t m,
+		const gt_t *t, const g1_t *u, size_t n);
 
 #endif /* !RLC_CP_H */

@@ -38,7 +38,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void bn_divn_low(dig_t *c, dig_t *d, dig_t *a, int sa, dig_t *b, int sb) {
+void bn_divn_low(dig_t *c, dig_t *d, dig_t *a, size_t sa, dig_t *b, size_t sb) {
 	int norm, i, n, t, sd;
 	dig_t carry, t1[3], t2[3];
 
@@ -125,7 +125,7 @@ void bn_divn_low(dig_t *c, dig_t *d, dig_t *a, int sa, dig_t *b, int sb) {
 	bn_rshb_low(d, a, sb, norm);
 }
 
-void bn_div1_low(dig_t *c, dig_t *d, const dig_t *a, size_t size, dig_t b) {
+void bn_div1_low(dig_t *c, dig_t *d, const dig_t *a, dig_t b, size_t size) {
 	dig_t q, r, w = 0;
 
 	for (int i = size - 1; i >= 0; i--) {

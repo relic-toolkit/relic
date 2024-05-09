@@ -18,19 +18,16 @@ jobs:
         config:
           - {
             name: "Windows Latest - MinGW",
-            artifact: "windows-mingw.tar.xz",
             os: windows-latest,
             cc: "gcc"
           }
           - {
             name: "Ubuntu Latest - GCC",
-            artifact: "linux-gcc.tar.xz",
             os: ubuntu-latest,
             cc: "gcc",
           }
           - {
             name: "Ubuntu Latest - Clang",
-            artifact: "linux-clang.tar.xz",
             os: ubuntu-latest,
             cc: "clang",
           }
@@ -39,6 +36,11 @@ jobs:
             os: macos-latest,
             cc: "clang",
           }
+
+    defaults:
+      run:
+        shell: ${{ matrix.config.os == 'windows-latest' && 'msys2 {0}' || 'bash' }}
+
     steps:
       - uses: actions/checkout@v4
 
@@ -66,11 +68,10 @@ jobs:
 
       - name: Run CMake (MingW)
         if: ${{ (runner.os == 'Windows') && (matrix.config.cc == 'gcc') }}
-        shell: bash
         run: |
           mkdir build
           cd build
-          cmake -DSEED= -DBENCH=0 -DARITH=gmp-sec -G "MinGW Makefiles" ..
+          cmake -DSEED= -DBENCH=0 -DARITH=gmp-sec -G "Unix Makefiles" ..
 
       - name: Run CMake (standard)
         if: ${{ !(runner.os == 'Windows') }}

@@ -41,7 +41,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void bn_modn_low(dig_t *c, const dig_t *a, int sa, const dig_t *m, int sm,
+void bn_modn_low(dig_t *c, const dig_t *a, size_t sa, const dig_t *m, size_t sm,
 		dig_t u) {
 	int i;
 	dig_t r, *tmpc;

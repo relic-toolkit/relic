@@ -53,7 +53,6 @@
  */
 static void fb_mul_basic_imp(dig_t *c, const dig_t *a, const dig_t *b,
 		size_t size) {
-	int i;
 	dv_t s;
 
 	dv_null(s);
@@ -69,7 +68,7 @@ static void fb_mul_basic_imp(dig_t *c, const dig_t *a, const dig_t *b,
 		if (a[0] & 1) {
 			dv_copy(c, b, size);
 		}
-		for (i = 1; i <= (RLC_DIG * size) - 1; i++) {
+		for (uint_t i = 1; i <= (RLC_DIG * size) - 1; i++) {
 			fb_lsh1_low(s, s);
 			fb_rdc(s, s);
 			if (fb_get_bit(a, i)) {

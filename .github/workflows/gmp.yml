@@ -18,27 +18,30 @@ jobs:
         config:
           - {
             name: "Windows Latest - MinGW",
-            artifact: "windows-mingw.tar.xz",
             os: windows-latest,
             cc: "gcc"
           }
           - {
             name: "Ubuntu Latest - GCC",
-            artifact: "linux-gcc.tar.xz",
             os: ubuntu-latest,
             cc: "gcc",
           }
           - {
             name: "Ubuntu Latest - Clang",
-            artifact: "linux-clang.tar.xz",
             os: ubuntu-latest,
             cc: "clang",
+            
           }
           - {
             name: "MacOS Latest",
             os: macos-latest,
             cc: "clang",
           }
+
+    defaults:
+      run:
+        shell: ${{ matrix.config.os == 'windows-latest' && 'msys2 {0}' || 'bash' }}
+
     steps:
       - uses: actions/checkout@v4
 
@@ -54,27 +57,25 @@ jobs:
         if: ${{ (runner.os == 'Windows') && (matrix.config.cc == 'gcc') }}
         uses: msys2/setup-msys2@v2
         with:
-          msystem: MINGW64
+          msystem: UCRT64
           install: >-
-            gmp
-            gmp-devel
             git
             base-devel
             gcc
             cmake
+            gmp
+            gmp-devel
           update: true
 
       - name: Run CMake (MingW)
         if: ${{ (runner.os == 'Windows') && (matrix.config.cc == 'gcc') }}
-        shell: bash
         run: |
           mkdir build
           cd build
-          cmake -DSEED= -DBENCH=0 -DARITH=gmp -G "MinGW Makefiles" ..
+          cmake -DSEED= -DBENCH=0 -DARITH=gmp -G "Unix Makefiles" ..
 
       - name: Run CMake (standard)
         if: ${{ !(runner.os == 'Windows') }}
-        shell: bash
         run: |
           mkdir build
           cd build

@@ -48,7 +48,8 @@ dig_t bn_mul1_low(dig_t *c, const dig_t *a, dig_t digit, size_t size) {
 	return mpn_mul_1(c, a, size, digit);
 }
 
-dig_t bn_muls_low(dig_t *c, const dig_t *a, dig_t sa, dis_t digit, size_t size) {
+dig_t bn_muls_low(dig_t *c, const dig_t *a, dig_t sa, dis_t digit,
+		size_t size) {
 	dig_t carry, sign, sd = digit >> (RLC_DIG - 1);
 
 	sa = -sa;

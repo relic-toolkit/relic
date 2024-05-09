@@ -290,7 +290,7 @@ void bn_sqrn_low(dig_t *c, const dig_t *a, size_t size);
  * @param[in,out] b			- the divisor.
  * @param[in] sb			- the size of the divisor.
  */
-void bn_divn_low(dig_t *c, dig_t *d, dig_t *a, int sa, dig_t *b, int sb);
+void bn_divn_low(dig_t *c, dig_t *d, dig_t *a, size_t sa, dig_t *b, size_t sb);
 
 /**
  * Divides a digit vector by a digit. Computes c = floor(a / digit) and
@@ -302,7 +302,7 @@ void bn_divn_low(dig_t *c, dig_t *d, dig_t *a, int sa, dig_t *b, int sb);
  * @param[in] size			- the size of the dividend.
  * @param[in] digit			- the divisor.
  */
-void bn_div1_low(dig_t *c, dig_t *d, const dig_t *a, size_t size, dig_t digit);
+void bn_div1_low(dig_t *c, dig_t *d, const dig_t *a, dig_t digit, size_t size);
 
 /**
  * Reduces a digit vector modulo m by Montgomery's algorithm.
@@ -314,7 +314,7 @@ void bn_div1_low(dig_t *c, dig_t *d, const dig_t *a, size_t size, dig_t digit);
  * @param[in] sm			- the size of the modulus.
  * @param[in] u				- the reciprocal of the modulus.
  */
-void bn_modn_low(dig_t *c, const dig_t *a, int sa, const dig_t *m, int sm,
+void bn_modn_low(dig_t *c, const dig_t *a, size_t sa, const dig_t *m, size_t sm,
 	dig_t u);
 
 #endif /* !ASM */
