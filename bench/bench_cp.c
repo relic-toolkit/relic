@@ -1282,8 +1282,8 @@ static void pss(void) {
 	g1_get_ord(n);
 	for (int i = 0; i < 10; i++) {
 		bn_null(ms[i]);
-		bn_null(_v[i]);
-		g2_null(_y[i]);
+		bn_null(vs[i]);
+		g2_null(ys[i]);
 		bn_new(ms[i]);
 		bn_rand_mod(ms[i], n);
 		bn_new(vs[i]);
@@ -1323,7 +1323,7 @@ static void pss(void) {
 	g2_free(y);
 	for (int i = 0; i < 10; i++) {
 		bn_free(ms[i]);
-		bn_free(zs[i]);
+		bn_free(vs[i]);
 		g1_free(ys[i]);
 	}
 }
@@ -1372,8 +1372,8 @@ static void mpss(void) {
 		g1_get_ord(n);
 		for (int j = 0; j < 10; j++) {
 			bn_null(ms[j][i]);
-			bn_null(_v[j][i]);
-			g2_null(_y[j][i]);
+			bn_null(vs[j][i]);
+			g2_null(ys[j][i]);
 			bn_new(ms[j][i]);
 			bn_rand_mod(ms[j][i], n);
 			bn_new(vs[j][i]);
