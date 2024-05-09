@@ -51,6 +51,7 @@ jobs:
       - name: Set MinGW enviroment
         if: ${{ (runner.os == 'Windows') && (matrix.config.cc == 'gcc') }}
         uses: msys2/setup-msys2@v2
+        shell: msys2
         with:
           msystem: UCRT64
           install: >-
