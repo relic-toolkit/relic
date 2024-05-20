@@ -468,7 +468,7 @@ int fp_smb_divst(const fp_t a) {
 #if FP_SMB == JMPDS || !defined(STRIP)
 
 int fp_smb_jmpds(const fp_t a) {
-	dis_t m[4], d = 0;
+	dis_t m[4], d = 1;
 	/* Iterations taken directly from https://github.com/sipa/safegcd-bounds */
 	const int iterations = (45907 * FP_PRIME + 26313) / 19929;
 	int loops, precision, i, r = 0, s = RLC_DIG - 2;
