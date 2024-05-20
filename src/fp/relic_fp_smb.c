@@ -181,7 +181,7 @@ static dis_t jumpdivstep(dis_t m[4], dig_t *k, dis_t delta, dis_t y, dis_t x,
 		ai += t1 & c1;
 		bi += t2 & c1;
 
-		/* delta = RLC_SEL(delta + 1, -delta, c0) */
+		/* delta = RLC_SEL(2 + delta, 2 - delta, c0) */
 		y  += x  & c0;
 		ci += ai & c0;
 		di += bi & c0;
@@ -189,7 +189,7 @@ static dis_t jumpdivstep(dis_t m[4], dig_t *k, dis_t delta, dis_t y, dis_t x,
 		x  >>= 1;
 		ci <<= 1;
 		di <<= 1;
-		delta = (delta ^ c0) + 1;
+		delta = (delta ^ c0) - 1;
 
 		u += ((yi & y) ^ (y >> 1)) & 2;
 		u += (u & 1) ^ RLC_SIGN(ci);
@@ -207,7 +207,7 @@ static dis_t jumpdivstep(dis_t m[4], dig_t *k, dis_t delta, dis_t y, dis_t x,
 		ai += t1 & c1;
 		bi += t2 & c1;
 
-		/* delta = RLC_SEL(delta + 1, -delta, c0) */
+		/* delta = RLC_SEL(2 + delta, 2 - delta, c0) */
 		y  += x  & c0;
 		ci += ai & c0;
 		di += bi & c0;
@@ -215,7 +215,7 @@ static dis_t jumpdivstep(dis_t m[4], dig_t *k, dis_t delta, dis_t y, dis_t x,
 		x  >>= 1;
 		ci <<= 1;
 		di <<= 1;
-		delta = (delta ^ c0) + 1;
+		delta = (delta ^ c0) - 1;
 
 		u += ((yi & y) ^ (y >> 1)) & 2;
 		u += (u & 1) ^ RLC_SIGN(ci);
@@ -468,7 +468,7 @@ int fp_smb_divst(const fp_t a) {
 #if FP_SMB == JMPDS || !defined(STRIP)
 
 int fp_smb_jmpds(const fp_t a) {
-	dis_t m[4], d = 1;
+	dis_t m[4], d = -1;
 	/* Iterations taken directly from https://github.com/sipa/safegcd-bounds */
 	const int iterations = (45907 * FP_PRIME + 26313) / 19929;
 	int loops, precision, i, r = 0, s = RLC_DIG - 2;
