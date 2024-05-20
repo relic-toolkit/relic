@@ -164,19 +164,19 @@ static dig_t porninstep(dis_t m[4],const dig_t f[2], const dig_t g[2],
 
 static dis_t jumpdivstep(dis_t m[4], dig_t *k, dis_t delta, dis_t y, dis_t x, 
 		int s) {
-	dig_t d0, t0, t1, t2, c0, c1, yi, ai = 1, bi = 0, ci = 0, di = 1, u = 0;
+	dig_t t0, t1, t2, c0, c1, yi, ai = 1, bi = 0, ci = 0, di = 1, u = 0;
 
 	/* Unrolling twice makes it faster. */
 	for (s -= 2; s >= 0; s -= 2) {
 		yi = y;
 
-		d0 = (delta >= 0);
+		c0 = delta >> (RLC_DIG - 1);
 		c1 = -(x & 1);
-		c0 = (-d0) & c1;
+		c0 &= c1;
 
-		t0 = (y ^ -d0) + d0;
-		t1 = (ci ^ -d0) + d0;
-		t2 = (di ^ -d0) + d0;
+		t0 = (y ^ c0) - c0;
+		t1 = (ci ^ c0) - c0;
+		t2 = (di ^ c0) - c0;
 		x  += t0 & c1;
 		ai += t1 & c1;
 		bi += t2 & c1;
@@ -196,13 +196,13 @@ static dis_t jumpdivstep(dis_t m[4], dig_t *k, dis_t delta, dis_t y, dis_t x,
 
 		yi = y;
 
-		d0 = (delta >= 0);
+		c0 = delta >> (RLC_DIG - 1);
 		c1 = -(x & 1);
-		c0 = (-d0) & c1;
+		c0 &= c1;
 
-		t0 = (y ^ -d0) + d0;
-		t1 = (ci ^ -d0) + d0;
-		t2 = (di ^ -d0) + d0;
+		t0 = (y ^ c0) - c0;
+		t1 = (ci ^ c0) - c0;
+		t2 = (di ^ c0) - c0;
 		x  += t0 & c1;
 		ai += t1 & c1;
 		bi += t2 & c1;
