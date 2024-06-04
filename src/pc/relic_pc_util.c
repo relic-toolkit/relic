@@ -57,7 +57,7 @@ void gt_rand(gt_t a) {
 #elif FP_PRIME == 330 || FP_PRIME == 765 || FP_PRIME == 766
 	pp_exp_k16(a, a);
 #elif FP_PRIME == 508 || FP_PRIME == 768 || FP_PRIME == 638 && !defined(FP_QNRES)
-	pp_exp_k18(a, a);
+	pp_exp_k12(a, a);
 #elif FP_PRIME == 544
 	pp_exp_k8(a, a);
 #else

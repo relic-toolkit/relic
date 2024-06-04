@@ -1482,7 +1482,8 @@ int ep_param_set_any_endom(void) {
 #ifdef FP_QNRES
 	ep_param_set(B12_P638);
 #else
-	ep_param_set(K18_P638);
+	ep_param_set(BN_P638);
+	//ep_param_set(K18_P638);
 	//ep_param_set(SG18_P638);
 #endif
 #elif FP_PRIME == 765
@@ -1599,13 +1600,13 @@ int ep_param_set_any_pairf(void) {
 	type = RLC_EP_MTYPE;
 	extension = 2;
 #else
-	//ep_param_set(BN_P638);
-	//type = RLC_EP_DTYPE;
-	//extension = 2;
-	ep_param_set(K18_P638);
+	ep_param_set(BN_P638);
+	type = RLC_EP_DTYPE;
+	extension = 2;
+	//ep_param_set(K18_P638);
 	//ep_param_set(SG18_P638);
-	type = RLC_EP_MTYPE;
-	extension = 3;
+	//type = RLC_EP_MTYPE;
+	//extension = 3;
 #endif
 #elif FP_PRIME == 765
 	ep_param_set(FM16_P765);
