@@ -77,12 +77,16 @@ int bn_smb_leg(const bn_t a, const bn_t b) {
 }
 
 int bn_smb_jac(const bn_t a, const bn_t b) {
-	bn_t t0, t1, r;
-	int t, h, res;
+	bn_t t0, t1, *_t0, *_t1, *_t;
+	size_t z, a1, m1;
+	int t;
 
 	bn_null(t0);
 	bn_null(t1);
 	bn_null(r);
+
+	/* Algorithm from "Optimized Computation of the Jacobi Symbol", by
+	 * Lindstrøm and Chalkias: https://eprint.iacr.org/2024/1054.pdf */
 
 	/* Argument b must be odd. */
 	if (bn_is_even(b) || bn_sign(b) == RLC_NEG) {
@@ -93,55 +97,37 @@ int bn_smb_jac(const bn_t a, const bn_t b) {
 	RLC_TRY {
 		bn_new(t0);
 		bn_new(t1);
-		bn_new(r);
-		t = 1;
 
-		if (bn_sign(a) == RLC_NEG) {
-			bn_add(t0, a, b);
-		} else {
-			bn_copy(t0, a);
-		}
+		bn_mod(t0, a, b);
 		bn_copy(t1, b);
+		t = 1;
+		m1 = bn_get_bit(t1, 1);
 
-		while (1) {
-			/* t0 = a mod b. */
-			bn_mod(t0, t0, t1);
-			/* If a = 0 then if n = 1 return t else return 0. */
-			if (bn_is_zero(t0)) {
-				if (bn_cmp_dig(t1, 1) == RLC_EQ) {
-					res = 1;
-					if (t == -1) {
-						res = -1;
-					}
-					break;
-				} else {
-					res = 0;
-					break;
-				}
+		_t0 = &t0;
+		_t1 = &t1;
+
+		while (!bn_is_zero(*_t0)) {
+			z = 0;
+			while (bn_is_even(*_t0)) {
+				z++;
+				bn_rsh(*_t0, *_t0, 1);
 			}
-			/* Write t0 as 2^h * t0. */
-			h = 0;
-			while (bn_is_even(t0) && !bn_is_zero(t0)) {
-				h++;
-				bn_rsh(t0, t0, 1);
-			}
-			/* If h != 0 (mod 2) and n != +-1 (mod 8) then t = -t. */
-			bn_mod_2b(r, t1, 3);
-			if ((h % 2 != 0) && (bn_cmp_dig(r, 1) != RLC_EQ) &&
-					(bn_cmp_dig(r, 7) != RLC_EQ)) {
+			a1 = bn_get_bit(*_t0, 1);
+			if (((z & 1) & (m1 ^ bn_get_bit(*_t1, 2))) ^ (a1 & m1)) {
 				t = -t;
 			}
-			/* If t0 != 1 (mod 4) and n != 1 (mod 4) then t = -t. */
-			bn_mod_2b(r, t0, 2);
-			if (bn_cmp_dig(r, 1) != RLC_EQ) {
-				bn_mod_2b(r, t1, 2);
-				if (bn_cmp_dig(r, 1) != RLC_EQ) {
-					t = -t;
-				}
-			}
-			bn_copy(r, t0);
-			bn_copy(t0, t1);
-			bn_copy(t1, r);
+
+			_t = _t0;
+			_t0 = _t1;
+			_t1 = _t;
+
+			m1 = a1;
+
+			bn_mod(*_t0, *_t0, *_t1);
+		}
+
+		if (bn_cmp_dig(*_t1, 1) != RLC_EQ) {
+			t = 0;
 		}
 	}
 	RLC_CATCH_ANY {
@@ -150,8 +136,7 @@ int bn_smb_jac(const bn_t a, const bn_t b) {
 	RLC_FINALLY {
 		bn_free(t0);
 		bn_free(t1);
-		bn_free(r);
 	}
 
-	return res;
+	return t;
 }
