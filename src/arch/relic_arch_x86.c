@@ -68,5 +68,5 @@ uint_t arch_lzcnt(dig_t x) {
 }
 
 uint_t arch_tzcnt(dig_t x) {
-	return core_get()->tzcnt_ptr((uint32_t)x) - (8 * sizeof(uint32_t) - WSIZE);
+	return core_get()->tzcnt_ptr(x);
 }

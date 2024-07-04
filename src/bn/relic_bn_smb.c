@@ -80,7 +80,7 @@ int bn_smb_jac(const bn_t a, const bn_t b) {
 	dis_t ai, bi, ci, di;
 	dig_t n, d, t;
 	bn_t r, t0, t1, t2, t3;
-	size_t z, i, s = (RLC_DIG >> 1) - 2;
+	uint_t z, i, s = (RLC_DIG >> 1) - 2;
 
 	bn_null(t0);
 	bn_null(t1);
@@ -159,7 +159,7 @@ int bn_smb_jac(const bn_t a, const bn_t b) {
 					t ^= d ^ (d >> 1);
 					i -= 1;
 				} else {
-					size_t z = RLC_MIN(i, arch_tzcnt(n));
+					z = RLC_MIN(i, arch_tzcnt(n));
 					t ^= (d ^ (d >> 1)) & (z << 1);
 					ci = ci << z;
 					di = di << z;
