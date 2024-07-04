@@ -49,6 +49,7 @@ void arch_init(void) {
 
 void arch_clean(void) {
 	core_get()->lzcnt_ptr = NULL;
+	core_get()->tzcnt_ptr = NULL;
 }
 
 ull_t arch_cycles(void) {

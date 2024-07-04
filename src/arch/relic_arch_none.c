@@ -83,7 +83,7 @@ uint_t arch_lzcnt(dig_t a) {
 #ifdef _MSC_VER
     return __lzcnt64(a);
 #else
-	return __builtin_clzll(a);
+	return __builtin_clzl(a);
 #endif
 #endif
 }
@@ -126,7 +126,7 @@ uint_t arch_tzcnt(dig_t a) {
 #ifdef _MSC_VER
     return __tzcnt64(a);
 #else
-	return __builtin_ctzll(a);
+	return __builtin_ctzl(a);
 #endif
 #endif
 }
