@@ -36,6 +36,7 @@
 #include "relic_core.h"
 
 #include "lzcnt.inc"
+#include "tzcnt.inc"
 
 /**
  * Renames the inline assembly macro to a prettier name.
@@ -51,6 +52,8 @@ void arch_init(void) {
 	if (ctx != NULL) {
 		core_get()->lzcnt_ptr =
 			(has_lzcnt_hard() ? lzcnt64_hard : lzcnt64_soft);
+		core_get()->tzcnt_ptr =
+			(has_tzcnt_hard() ? tzcnt64_hard : tzcnt64_soft);
 	}
 }
 
@@ -58,6 +61,7 @@ void arch_clean(void) {
 	ctx_t *ctx = core_get();
 	if (ctx != NULL) {
 		core_get()->lzcnt_ptr = NULL;
+		core_get()->tzcnt_ptr = NULL;
 	}
 }
 
@@ -102,4 +106,8 @@ ull_t arch_cycles(void) {
 
 uint_t arch_lzcnt(dig_t x) {
 	return core_get()->lzcnt_ptr((ull_t)x) - (8 * sizeof(ull_t) - WSIZE);
+}
+
+uint_t arch_tzcnt(dig_t x) {
+	return core_get()->tzcnt_ptr((ull_t)x) - (8 * sizeof(ull_t) - WSIZE);
 }

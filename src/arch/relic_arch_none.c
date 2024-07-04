@@ -87,3 +87,46 @@ uint_t arch_lzcnt(dig_t a) {
 #endif
 #endif
 }
+
+uint_t arch_tzcnt(dig_t a) {
+#if WSIZE == 8 || WSIZE == 16
+	static const uint8_t table[16] = {
+		4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0
+	};
+#endif
+#if WSIZE == 8
+	if (a >> 4 != 0) {
+		return table[a & 0xF];
+	} else {
+		return table[a >> 4] + 4;
+	}
+	return 0;
+#elif WSIZE == 16
+	int offset;
+
+	if (a & 0xFF == 0) {
+		offset = 8;
+	} else {
+		offset = 0;
+	}
+	a = a >> offset;
+	if (a >> 4 != 0) {
+		return table[a & 0xF] + offset;
+	} else {
+		return table[a >> 4] + 4 + offset;
+	}
+	return 0;
+#elif WSIZE == 32
+#ifdef _MSC_VER
+    return __tzcnt(a);
+#else
+	return __builtin_ctz(a);
+#endif
+#elif WSIZE == 64
+#ifdef _MSC_VER
+    return __tzcnt64(a);
+#else
+	return __builtin_ctzll(a);
+#endif
+#endif
+}
