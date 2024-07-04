@@ -155,15 +155,15 @@ int bn_smb_jac(const bn_t a, const bn_t b) {
 					n = (n - d) >> 1;
 					ai = ai - ci;
 					bi = bi - di;
-					ci = ci << 1;
-					di = di << 1;
+					ci += ci;
+					di += di;
 					t ^= d ^ (d >> 1);
 					i -= 1;
 				} else {
 					z = RLC_MIN(i, arch_tzcnt(n));
 					t ^= (d ^ (d >> 1)) & (z << 1);
-					ci = ci << z;
-					di = di << z;
+					ci = (dig_t)ci << z;
+					di = (dig_t)di << z;
 					n >>= z;
 					i -= z;
 				}
