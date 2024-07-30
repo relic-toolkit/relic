@@ -206,7 +206,8 @@ int bn_smb_jac(const bn_t a, const bn_t b) {
 			if (bn_sign(t0) == RLC_NEG) {
 				t ^= t1->dp[0];
 				bn_neg(t0, t0);
-			} else if (bn_sign(t1) == RLC_NEG) {
+			}
+			if (bn_sign(t1) == RLC_NEG) {
 				bn_neg(t1, t1);
 			}
 		}
