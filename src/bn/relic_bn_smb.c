@@ -126,7 +126,7 @@ int bn_smb_jac(const bn_t a, const bn_t b) {
 						n = (n - d) >> 1;
 						t ^= d ^ (d >> 1);
 					} else {
-						z = arch_tzcnt(n);
+						z = __builtin_ctz(n);
 						t ^= (d ^ (d >> 1)) & (z << 1);
 						n >>= z;
 					}
@@ -135,7 +135,7 @@ int bn_smb_jac(const bn_t a, const bn_t b) {
 				break;
 			}
 
-			z = RLC_MIN(arch_lzcnt(t0->dp[i - 1]), arch_lzcnt(t1->dp[i - 1]));
+			z = RLC_MIN(__builtin_clz(t0->dp[i - 1]), __builtin_clz(t1->dp[i - 1]));
 			n = t0->dp[i - 1] << z;
 			d = t1->dp[i - 1] << z;
 			if (z > (RLC_DIG >> 1)) {
