@@ -354,7 +354,7 @@ static int has_tzcnt_hard()
         #if defined(_MSC_VER) && !defined(__clang__)
             static unsigned int tzcnt64_msvc_x64(unsigned long long x)
             {
-                return __builtin_ctzl(x);
+                return _tzcnt_u64(x);
             }
         #elif defined(__GNUC__) || defined(__clang__)
             static unsigned int tzcnt64_gcc_x64(unsigned long long x)
