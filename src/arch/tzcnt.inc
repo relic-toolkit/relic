@@ -354,11 +354,7 @@ static int has_tzcnt_hard()
         #if defined(_MSC_VER) && !defined(__clang__)
             static unsigned int tzcnt64_msvc_x64(unsigned long long x)
             {
-                if (x == 0) {
-                    return sizeof(x) << 3;
-                }
-
-                return 63 - (unsigned int)__lzcnt64(x);
+                return __builtin_ctzl(x);
             }
         #elif defined(__GNUC__) || defined(__clang__)
             static unsigned int tzcnt64_gcc_x64(unsigned long long x)
@@ -378,20 +374,9 @@ static int has_tzcnt_hard()
     #endif
     #if defined(ARCH_ARM)
         #if defined(__GNUC__) || defined(__clang__)
-            /* The ARM implementation needs to be written in terms of the CLZ instruction. This can probably be optimized by implementing the whole function in assembly. */
             static unsigned int tzcnt64_gcc_arm(unsigned long long x)
             {
-                unsigned long long r;
-
-                if (x == 0) {
-                    return sizeof(x) << 3;
-                }
-
-                __asm__ __volatile__ (
-                    "clz %[out], %[in]" : [out]"=r"(r) : [in]"r"(x)
-                );
-                
-                return 63 - r;
+				return __builtin_ctzl(x);
             }
         #endif
     #endif
