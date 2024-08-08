@@ -1542,6 +1542,18 @@ void bn_rec_frb(bn_t *ki, int sub, const bn_t k, const bn_t x, const bn_t n,
 	int cof);
 
 /**
+ * Recodes subscalars in the signed aligned column representation..
+ *
+ * @param[out] b			- the recoded subscalars.
+ * @param[in] len			- the length in bytes of the recoding.
+ * @param[in] k				- the subscalars to recode.
+ * @param[in] m				- the number of subscallars to recode.
+ * @param[in] n				- the elliptic curve group order.
+ * @throw ERR_NO_BUFFER		- if the buffer capacity is insufficient.
+ */
+void bn_rec_sac(int8_t *b, size_t *len, bn_t *k, size_t m, bn_t n);
+
+/**
  * Computes the coefficients of the polynomial representing the Lagrange
  * interpolation for a modulus and a given set of roots.
  * Computes c(x) = \prod_{0 <= i < n}(x - ai) mod q.

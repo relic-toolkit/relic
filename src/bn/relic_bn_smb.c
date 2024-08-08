@@ -81,6 +81,7 @@ int bn_smb_jac(const bn_t a, const bn_t b) {
 	dig_t n, d, t;
 	bn_t t0, t1, t2, t3;
 	uint_t z, i, s = (RLC_DIG >> 1) - 2;
+	int r;
 
 	bn_null(t0);
 	bn_null(t1);
@@ -130,7 +131,8 @@ int bn_smb_jac(const bn_t a, const bn_t b) {
 						n >>= z;
 					}
 				}
-				return (d == 1 ? 1 - (t & 2) : 0);
+				r = (d == 1 ? 1 - (t & 2) : 0);
+				break;
 			}
 
 			z = RLC_MIN(arch_lzcnt(t0->dp[i - 1]), arch_lzcnt(t1->dp[i - 1]));
@@ -200,7 +202,8 @@ int bn_smb_jac(const bn_t a, const bn_t b) {
 			bn_rsh(t0, t3, s);
 
 			if (bn_is_zero(t0)) {
-				return (bn_cmp_dig(t1, 1) == RLC_EQ ? 1 - (t & 2) : 0);
+				r = (bn_cmp_dig(t1, 1) == RLC_EQ ? 1 - (t & 2) : 0);
+				break;
 			}
 
 			if (bn_sign(t0) == RLC_NEG) {
@@ -222,5 +225,5 @@ int bn_smb_jac(const bn_t a, const bn_t b) {
 		bn_free(t3);
 	}
 
-	return t;
+	return r;
 }

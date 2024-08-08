@@ -876,13 +876,21 @@ void bn_rec_glv(bn_t k0, bn_t k1, const bn_t k, const bn_t n, const bn_t *v1,
 	}
 }
 
-void bn_rec_sac(bn_t *b, bn_t *k, size_t m, bn_t n) {
+void bn_rec_sac(int8_t *b, size_t *len, bn_t *k, size_t m, bn_t n) {
 	/* Assume k0 is the sign-aligner. */
 	bn_t *t = RLC_ALLOCA(bn_t, m);
 	size_t l = RLC_CEIL(bn_bits(n), m) + 1;
+	int8_t bji;
 
 	if (t == NULL) {
 		RLC_THROW(ERR_NO_MEMORY);
+		return;
+	}
+
+	if (*len <= l) {
+		*len = 0;
+		RLC_FREE(t);
+		RLC_THROW(ERR_NO_BUFFER);
 		return;
 	}
 
@@ -893,25 +901,32 @@ void bn_rec_sac(bn_t *b, bn_t *k, size_t m, bn_t n) {
 			bn_copy(t[i], k[i]);
 		}
 
-		bn_set_bit(b[0], l - 1, 0);
+		/* The current basis for BN curves might be one bit longer. */
+		for (size_t i = 0; i < m; i++) {
+			l = RLC_MAX(l, bn_bits(k[i]) + 1);
+		}
+
+		b[l - 1] = 0;
 		for (size_t i = 0; i < l - 1; i++) {
-			bn_set_bit(b[0], i, 1 - bn_get_bit(k[0], i + 1));
+			b[i] = 1 - bn_get_bit(k[0], i + 1);
 		}
 		for (size_t j = 1; j < m; j++) {
-			for (size_t i = 0; i < l; i++) {
-				uint8_t bji = bn_get_bit(t[j], 0);
-				bn_set_bit(b[j], i, bji);
+			for (size_t i = 0; i < l - 1; i++) {
+				bji = bn_get_bit(t[j], 0);
+				b[j * l + i] = bji;
 				bn_hlv(t[j], t[j]);
-				bn_add_dig(t[j], t[j], bji & bn_get_bit(b[0], i));
+				bn_add_dig(t[j], t[j], bji & b[i]);
 			}
+			b[j * l + l - 1] = bn_get_bit(t[j], 0);
 		}
+		*len = l;
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		for (size_t i = 0; i < m; i++) {
 			bn_free(t[i]);
-			RLC_FREE(t);
 		}
+		RLC_FREE(t);
 	}
 }
 
