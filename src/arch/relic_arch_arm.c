@@ -32,6 +32,7 @@
 #include "relic_types.h"
 
 #include "lzcnt.inc"
+#include "tzcnt.inc"
 
 /**
  * Renames the inline assembly macro to a prettier name.
@@ -109,5 +110,13 @@ uint_t arch_lzcnt(uint_t x) {
 	return lzcnt32_gcc_arm(x);
 #elif WSIZE == 64
 	return lzcnt64_gcc_arm(x);
+#endif
+}
+
+uint_t arch_tzcnt(uint_t x) {
+#ifdef WSIZE == 32
+	return tzcnt32_gcc_arm(x);
+#elif WSIZE == 64
+	return tzcnt64_gcc_arm(x);
 #endif
 }

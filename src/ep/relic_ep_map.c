@@ -258,6 +258,7 @@ void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 	bn_null(k);
 	fp_null(v);
 	fp_null(w);
+	fp_null(y);
 	fp_null(t1);
 	fp_null(t2);
 	fp_null(x1);
@@ -271,6 +272,7 @@ void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 		bn_new(k);
 		fp_new(v);
 		fp_new(w);
+		fp_new(y);
 		fp_new(t1);
 		fp_new(t2);
 		fp_new(x1);
@@ -478,6 +480,7 @@ void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 		bn_free(k);
 		fp_free(v);
 		fp_free(w);
+		fp_free(y);
 		fp_free(t1);
 		fp_free(t2);
 		fp_free(x1);
@@ -488,8 +491,7 @@ void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 		fp_free(d[2]);
 		RLC_FREE(pseudo_random_bytes);
 		for (size_t i = 0; i < 8; i++) {
-			fp_null(h[i]);
-			fp_new(h[i]);
+			fp_free(h[i]);
 		}
 	}
 }

@@ -95,6 +95,11 @@ ull_t arch_cycles(void);
  */
 uint_t arch_lzcnt(dig_t);
 
+/**
+ * Return the number of trailing zeros in an integer.
+ */
+uint_t arch_tzcnt(dig_t);
+
 #if ARCH == AVR
 
 /**

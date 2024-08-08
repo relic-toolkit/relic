@@ -164,24 +164,24 @@ static dig_t porninstep(dis_t m[4],const dig_t f[2], const dig_t g[2],
 
 static dis_t jumpdivstep(dis_t m[4], dig_t *k, dis_t delta, dis_t y, dis_t x, 
 		int s) {
-	dig_t d0, t0, t1, t2, c0, c1, yi, ai = 1, bi = 0, ci = 0, di = 1, u = 0;
+	dig_t t0, t1, t2, c0, c1, yi, ai = 1, bi = 0, ci = 0, di = 1, u = 0;
 
 	/* Unrolling twice makes it faster. */
 	for (s -= 2; s >= 0; s -= 2) {
 		yi = y;
 
-		d0 = (delta >= 0);
+		c0 = delta >> (RLC_DIG - 1);
 		c1 = -(x & 1);
-		c0 = (-d0) & c1;
+		c0 &= c1;
 
-		t0 = (y ^ -d0) + d0;
-		t1 = (ci ^ -d0) + d0;
-		t2 = (di ^ -d0) + d0;
+		t0 = (y ^ c0) - c0;
+		t1 = (ci ^ c0) - c0;
+		t2 = (di ^ c0) - c0;
 		x  += t0 & c1;
 		ai += t1 & c1;
 		bi += t2 & c1;
 
-		/* delta = RLC_SEL(delta + 1, -delta, c0) */
+		/* delta = RLC_SEL(2 + delta, 2 - delta, c0) */
 		y  += x  & c0;
 		ci += ai & c0;
 		di += bi & c0;
@@ -189,25 +189,25 @@ static dis_t jumpdivstep(dis_t m[4], dig_t *k, dis_t delta, dis_t y, dis_t x,
 		x  >>= 1;
 		ci <<= 1;
 		di <<= 1;
-		delta = (delta ^ c0) + 1;
+		delta = (delta ^ c0) - 1;
 
 		u += ((yi & y) ^ (y >> 1)) & 2;
 		u += (u & 1) ^ RLC_SIGN(ci);
 
 		yi = y;
 
-		d0 = (delta >= 0);
+		c0 = delta >> (RLC_DIG - 1);
 		c1 = -(x & 1);
-		c0 = (-d0) & c1;
+		c0 &= c1;
 
-		t0 = (y ^ -d0) + d0;
-		t1 = (ci ^ -d0) + d0;
-		t2 = (di ^ -d0) + d0;
+		t0 = (y ^ c0) - c0;
+		t1 = (ci ^ c0) - c0;
+		t2 = (di ^ c0) - c0;
 		x  += t0 & c1;
 		ai += t1 & c1;
 		bi += t2 & c1;
 
-		/* delta = RLC_SEL(delta + 1, -delta, c0) */
+		/* delta = RLC_SEL(2 + delta, 2 - delta, c0) */
 		y  += x  & c0;
 		ci += ai & c0;
 		di += bi & c0;
@@ -215,7 +215,7 @@ static dis_t jumpdivstep(dis_t m[4], dig_t *k, dis_t delta, dis_t y, dis_t x,
 		x  >>= 1;
 		ci <<= 1;
 		di <<= 1;
-		delta = (delta ^ c0) + 1;
+		delta = (delta ^ c0) - 1;
 
 		u += ((yi & y) ^ (y >> 1)) & 2;
 		u += (u & 1) ^ RLC_SIGN(ci);
@@ -468,7 +468,7 @@ int fp_smb_divst(const fp_t a) {
 #if FP_SMB == JMPDS || !defined(STRIP)
 
 int fp_smb_jmpds(const fp_t a) {
-	dis_t m[4], d = 0;
+	dis_t m[4], d = -1;
 	/* Iterations taken directly from https://github.com/sipa/safegcd-bounds */
 	const int iterations = (45907 * FP_PRIME + 26313) / 19929;
 	int loops, precision, i, r = 0, s = RLC_DIG - 2;

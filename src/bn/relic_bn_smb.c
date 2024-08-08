@@ -77,14 +77,21 @@ int bn_smb_leg(const bn_t a, const bn_t b) {
 }
 
 int bn_smb_jac(const bn_t a, const bn_t b) {
-	bn_t t0, t1, r;
-	int t, h, res;
+	dis_t ai, bi, ci, di;
+	dig_t n, d, t;
+	bn_t t0, t1, t2, t3;
+	uint_t z, i, s = (RLC_DIG >> 1) - 2;
+	int r;
 
 	bn_null(t0);
 	bn_null(t1);
-	bn_null(r);
+	bn_null(t2);
+	bn_null(t3);
 
-	/* Argument b must be odd. */
+	/* Optimized Pornin's Algorithm by Aleksei Vambol from
+	 * https://github.com/privacy-scaling-explorations/halo2curves/pull/95 */
+
+	/* Argument b must be odd for Jacobi symbol. */
 	if (bn_is_even(b) || bn_sign(b) == RLC_NEG) {
 		RLC_THROW(ERR_NO_VALID);
 		return 0;
@@ -93,55 +100,119 @@ int bn_smb_jac(const bn_t a, const bn_t b) {
 	RLC_TRY {
 		bn_new(t0);
 		bn_new(t1);
-		bn_new(r);
-		t = 1;
+		bn_new(t2);
+		bn_new(t3);
 
-		if (bn_sign(a) == RLC_NEG) {
-			bn_add(t0, a, b);
-		} else {
-			bn_copy(t0, a);
-		}
+		bn_mod(t0, a, b);
 		bn_copy(t1, b);
+		t = 0;
 
 		while (1) {
-			/* t0 = a mod b. */
-			bn_mod(t0, t0, t1);
-			/* If a = 0 then if n = 1 return t else return 0. */
-			if (bn_is_zero(t0)) {
-				if (bn_cmp_dig(t1, 1) == RLC_EQ) {
-					res = 1;
-					if (t == -1) {
-						res = -1;
+			ai = di = 1;
+			bi = ci = 0;
+
+			i = RLC_MAX(t0->used, t1->used);
+			dv_zero(t0->dp + t0->used, i - t0->used);
+			dv_zero(t1->dp + t1->used, i - t1->used);
+			if (i == 1) {
+				n = t0->dp[0];
+				d = t1->dp[0];
+				while (n != 0) {
+					if (n & 1) {
+						if (n < d) {
+							RLC_SWAP(n, d);
+							t ^= (n & d);
+						}
+						n = (n - d) >> 1;
+						t ^= d ^ (d >> 1);
+					} else {
+						z = arch_tzcnt(n);
+						t ^= (d ^ (d >> 1)) & (z << 1);
+						n >>= z;
 					}
-					break;
+				}
+				r = (d == 1 ? 1 - (t & 2) : 0);
+				break;
+			}
+
+			z = RLC_MIN(arch_lzcnt(t0->dp[i - 1]), arch_lzcnt(t1->dp[i - 1]));
+			n = t0->dp[i - 1] << z;
+			d = t1->dp[i - 1] << z;
+			if (z > (RLC_DIG >> 1)) {
+				n |= t0->dp[i - 2] >> z;
+				d |= t1->dp[i - 2] >> z;
+			}
+			n = (n & RLC_HMASK) | (t0->dp[0] & RLC_LMASK);
+			d = (d & RLC_HMASK) | (t1->dp[0] & RLC_LMASK);
+
+			i = s;
+			while (i > 0) {
+				if (n & 1) {
+					if (n < d) {
+						RLC_SWAP(ai, ci);
+						RLC_SWAP(bi, di);
+						RLC_SWAP(n, d);
+						t ^= (n & d);
+					}
+					n = (n - d) >> 1;
+					ai = ai - ci;
+					bi = bi - di;
+					ci += ci;
+					di += di;
+					t ^= d ^ (d >> 1);
+					i -= 1;
 				} else {
-					res = 0;
-					break;
+					z = RLC_MIN(i, arch_tzcnt(n));
+					t ^= (d ^ (d >> 1)) & (z << 1);
+					ci = (dig_t)ci << z;
+					di = (dig_t)di << z;
+					n >>= z;
+					i -= z;
 				}
 			}
-			/* Write t0 as 2^h * t0. */
-			h = 0;
-			while (bn_is_even(t0) && !bn_is_zero(t0)) {
-				h++;
-				bn_rsh(t0, t0, 1);
+
+			if (ai < 0) {
+				bn_mul_dig(t2, t0, -ai);
+				bn_neg(t2, t2);
+			} else {
+				bn_mul_dig(t2, t0, ai);
 			}
-			/* If h != 0 (mod 2) and n != +-1 (mod 8) then t = -t. */
-			bn_mod_2b(r, t1, 3);
-			if ((h % 2 != 0) && (bn_cmp_dig(r, 1) != RLC_EQ) &&
-					(bn_cmp_dig(r, 7) != RLC_EQ)) {
-				t = -t;
+			if (bi < 0) {
+				bn_mul_dig(t3, t1, -bi);
+				bn_neg(t3, t3);
+			} else {
+				bn_mul_dig(t3, t1, bi);
 			}
-			/* If t0 != 1 (mod 4) and n != 1 (mod 4) then t = -t. */
-			bn_mod_2b(r, t0, 2);
-			if (bn_cmp_dig(r, 1) != RLC_EQ) {
-				bn_mod_2b(r, t1, 2);
-				if (bn_cmp_dig(r, 1) != RLC_EQ) {
-					t = -t;
-				}
+			bn_add(t3, t3, t2);
+
+			if (ci < 0) {
+				bn_mul_dig(t2, t0, -ci);
+				bn_neg(t2, t2);
+			} else {
+				bn_mul_dig(t2, t0, ci);
 			}
-			bn_copy(r, t0);
-			bn_copy(t0, t1);
-			bn_copy(t1, r);
+			if (di < 0) {
+				bn_mul_dig(t1, t1, -di);
+				bn_neg(t1, t1);
+			} else {
+				bn_mul_dig(t1, t1, di);
+			}
+			bn_add(t1, t1, t2);
+			bn_rsh(t1, t1, s);
+			bn_rsh(t0, t3, s);
+
+			if (bn_is_zero(t0)) {
+				r = (bn_cmp_dig(t1, 1) == RLC_EQ ? 1 - (t & 2) : 0);
+				break;
+			}
+
+			if (bn_sign(t0) == RLC_NEG) {
+				t ^= t1->dp[0];
+				bn_neg(t0, t0);
+			}
+			if (bn_sign(t1) == RLC_NEG) {
+				bn_neg(t1, t1);
+			}
 		}
 	}
 	RLC_CATCH_ANY {
@@ -150,8 +221,9 @@ int bn_smb_jac(const bn_t a, const bn_t b) {
 	RLC_FINALLY {
 		bn_free(t0);
 		bn_free(t1);
-		bn_free(r);
+		bn_free(t2);
+		bn_free(t3);
 	}
 
-	return res;
+	return r;
 }
