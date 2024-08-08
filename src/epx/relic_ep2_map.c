@@ -516,6 +516,12 @@ void ep2_map_swift(ep2_t p, const uint8_t *msg, size_t len) {
 	}
 	RLC_FINALLY {
 		bn_free(k);
+		fp2_free(a);
+		fp2_free(b);
+		fp2_free(c);
+		fp2_free(d);
+		fp2_free(e);
+		fp2_free(f);
 		fp2_free(t);
 		fp2_free(u);
 		fp2_free(v);
