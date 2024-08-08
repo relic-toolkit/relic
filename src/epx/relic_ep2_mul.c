@@ -115,100 +115,102 @@ static void ep2_mul_gls_imp(ep2_t r, const ep2_t p, const bn_t k) {
 #if EP_MUL == LWREG || !defined(STRIP)
 
 static void ep2_mul_reg_gls(ep2_t r, const ep2_t p, const bn_t k) {
-	int8_t reg[4][RLC_FP_BITS + 1], b[4], s[4], c0, n0;
-	ep2_t q, w, t[4][1 << (RLC_WIDTH - 2)];
+	size_t l;
 	bn_t n, _k[4], u;
-	size_t l, len, _l[4];
+	int8_t even, col, sac[4 * (RLC_FP_BITS + 1)];
+	ep2_t q[4], t[1 << 3];
 
 	bn_null(n);
 	bn_null(u);
-	ep2_null(q);
-	ep2_null(w);
 
 	RLC_TRY {
 		bn_new(n);
 		bn_new(u);
-		ep2_new(q);
-		ep2_new(w);
-		for (size_t i = 0; i < 4; i++) {
+		for (int i = 0; i < 4; i++) {
 			bn_null(_k[i]);
+			ep2_null(q[i]);
 			bn_new(_k[i]);
-			for (size_t j = 0; j < (1 << (RLC_WIDTH - 2)); j++) {
-				ep2_null(t[i][j]);
-				ep2_new(t[i][j]);
-			}
+			ep2_new(q[i]);
+		}
+		for (int i = 0; i < (1 << 3); i++) {
+			ep2_null(t[i]);
+			ep2_new(t[i]);
 		}
 
 		ep2_curve_get_ord(n);
 		fp_prime_get_par(u);
 		bn_mod(_k[0], k, n);
 		bn_rec_frb(_k, 4, _k[0], u, n, ep_curve_is_pairf() == EP_BN);
-
-		l = 0;
-		/* Make some extra room for BN curves that grow subscalars by 1. */
-		len = bn_bits(u) + (ep_curve_is_pairf() == EP_BN);
-		ep2_norm(t[0][0], p);
+		ep2_norm(q[0], p);
+		ep2_frb(q[1], q[0], 1);
+		ep2_frb(q[2], q[1], 1);
+		ep2_frb(q[3], q[2], 1);
 		for (size_t i = 0; i < 4; i++) {
-			s[i] = bn_sign(_k[i]);
-			bn_abs(_k[i], _k[i]);
-			b[i] = bn_is_even(_k[i]);
-			_k[i]->dp[0] |= b[i];
+			ep2_neg(r, q[i]);
+			fp2_copy_sec(q[i]->y, r->y, bn_sign(_k[i]) == RLC_NEG);
+			_k[i]->sign = RLC_POS;
+		}
+		even = bn_is_even(_k[0]);
+		bn_add_dig(_k[0], _k[0], even);
 
-			_l[i] = RLC_FP_BITS + 1;
-			bn_rec_reg(reg[i], &_l[i], _k[i], len, RLC_WIDTH);
-			l = RLC_MAX(l, _l[i]);
-			
-			/* Apply Frobenius before flipping sign to build table. */
-			if (i > 0) {
-				ep2_frb(t[i][0], t[i - 1][0], 1);
-			}
+		ep2_copy(t[0], q[0]);
+		for (size_t i = 1; i < (1 << 3); i++) {
+			l = util_bits_dig(i);
+			ep2_add(t[i], t[i ^ (1 << (l - 1))], q[l]);
 		}
 
-		for (size_t i = 0; i < 4; i++) {
-			ep2_neg(q, t[i][0]);
-			fp2_copy_sec(q->y, t[i][0]->y, s[i] == RLC_POS);
-			ep2_tab(t[i], q, RLC_WIDTH);
-		}
+		l = RLC_FP_BITS + 1;
+		bn_rec_sac(sac, &l, _k, 4, n);
 
 #if defined(EP_MIXED)
-		fp2_set_dig(w->z, 1);
-		w->coord = BASIC;
+		ep2_norm_sim(t + 1, t + 1, (1 << 3) - 1);
+		fp2_set_dig(r->z, 1);
+		fp2_set_dig(q[1]->z, 1);
+		r->coord = q[1]->coord = BASIC;
 #else
-		w->coord = = EP_ADD;
+		r->coord = q[1]->coord = EP_ADD;
 #endif
 
-		ep2_set_infty(r);
-		for (int j = l - 1; j >= 0; j--) {
-			for (size_t i = 0; i < RLC_WIDTH - 1; i++) {
-				ep2_dbl(r, r);
-			}
-
-			for (size_t i = 0; i < 4; i++) {
-				n0 = reg[i][j];
-				c0 = (n0 >> 7);
-				n0 = ((n0 ^ c0) - c0) >> 1;
-
-				for (size_t m = 0; m < (1 << (RLC_WIDTH - 2)); m++) {
-					fp2_copy_sec(w->x, t[i][m]->x, m == n0);
-					fp2_copy_sec(w->y, t[i][m]->y, m == n0);
-	#if !defined(EP_MIXED)
-					fp2_copy_sec(w->z, t[i][m]->z, m == n0);
-	#endif
-				}
-
-				ep2_neg(q, w);
-				fp2_copy_sec(q->y, w->y, c0 == 0);
-				ep2_add(r, r, q);
-			}
+		col = 0;
+		for (int i = 3; i > 0; i--) {
+			col <<= 1;
+			col += sac[i * l + l - 1];
+		}
+		for (size_t m = 0; m < (1 << 3); m++) {
+			fp2_copy_sec(r->x, t[m]->x, m == col);
+			fp2_copy_sec(r->y, t[m]->y, m == col);
+#if !defined(EP_MIXED)
+			fp2_copy_sec(r->z, t[m]->z, m == col);
+#endif
 		}
 
-		for (size_t i = 0; i < 4; i++) {
-			/* Tables are built with points already negated, so no need here. */
-			ep2_sub(q, r, t[i][0]);
-			fp2_copy_sec(r->x, q->x, b[i]);
-			fp2_copy_sec(r->y, q->y, b[i]);
-			fp2_copy_sec(r->z, q->z, b[i]);
+		ep2_neg(q[1], r);
+		fp2_copy_sec(r->y, q[1]->y, sac[l - 1] != 0);
+		for (int j = l - 2; j >= 0; j--) {
+			ep2_dbl(r, r);
+
+			col = 0;
+			for (int i = 3; i > 0; i--) {
+				col <<= 1;
+				col += sac[i * l + j];
+			}
+			
+			for (size_t m = 0; m < (1 << 3); m++) {
+				fp2_copy_sec(q[1]->x, t[m]->x, m == col);
+				fp2_copy_sec(q[1]->y, t[m]->y, m == col);
+#if !defined(EP_MIXED)
+				fp2_copy_sec(q[1]->z, t[m]->z, m == col);
+#endif
+			}
+			ep2_neg(q[2], q[1]);
+			fp2_copy_sec(q[1]->y, q[2]->y, sac[j]);
+			ep2_add(r, r, q[1]);
 		}
+
+		ep2_sub(q[1], r, q[0]);
+		fp2_copy_sec(r->x, q[1]->x, even);
+		fp2_copy_sec(r->y, q[1]->y, even);
+		fp2_copy_sec(r->z, q[1]->z, even);
 
 		/* Convert r to affine coordinates. */
 		ep2_norm(r, r);
@@ -219,13 +221,12 @@ static void ep2_mul_reg_gls(ep2_t r, const ep2_t p, const bn_t k) {
 	RLC_FINALLY {
 		bn_free(n);
 		bn_free(u);
-		ep2_free(q);
-		ep2_free(w);
 		for (int i = 0; i < 4; i++) {
 			bn_free(_k[i]);
-			for (size_t j = 0; j < (1 << (RLC_WIDTH - 2)); j++) {
-				ep2_free(t[i][j]);
-			}
+			ep2_free(q[i]);
+		}
+		for (int i = 0; i < (1 << 3); i++) {
+			ep2_free(t[i]);
 		}
 	}
 }
