@@ -785,9 +785,9 @@ int cp_rsa_dec(uint8_t *out, size_t *out_len, const uint8_t *in, size_t in_len,
 int cp_rsa_sig(uint8_t *sig, size_t *sig_len, const uint8_t *msg,
 		size_t msg_len, int hash, const rsa_t prv) {
 	bn_t m, eb;
-	size_t size, pad_len;
-	int result = RLC_OK;
+	size_t pad_len, size;
 	uint8_t h[RLC_MD_LEN];
+	int result = RLC_OK;
 
 	if (prv == NULL || msg_len < 0) {
 		return RLC_ERR;
