@@ -112,6 +112,8 @@ int bn_smb_jac(const bn_t a, const bn_t b) {
 			bi = ci = 0;
 
 			i = RLC_MAX(t0->used, t1->used);
+			bn_grow(t0, i);
+			bn_grow(t1, i);
 			dv_zero(t0->dp + t0->used, i - t0->used);
 			dv_zero(t1->dp + t1->used, i - t1->used);
 			if (i == 1) {
