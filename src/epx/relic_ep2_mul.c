@@ -44,7 +44,7 @@ static void ep2_mul_gls_imp(ep2_t r, const ep2_t p, const bn_t k) {
 	size_t l, _l[4];
 	bn_t n, _k[4], u;
 	int8_t naf[4][RLC_FP_BITS + 1];
-	ep2_t q[4];
+	ep2_t q[4], t[4][1 << (RLC_WIDTH - 2)];
 
 	bn_null(n);
 	bn_null(u);
@@ -52,11 +52,15 @@ static void ep2_mul_gls_imp(ep2_t r, const ep2_t p, const bn_t k) {
 	RLC_TRY {
 		bn_new(n);
 		bn_new(u);
-		for (int i = 0; i < 4; i++) {
+		for (size_t i = 0; i < 4; i++) {
 			bn_null(_k[i]);
 			ep2_null(q[i]);
 			bn_new(_k[i]);
 			ep2_new(q[i]);
+			for (size_t j = 0; j < (1 << (RLC_WIDTH - 2)); j++) {
+				ep2_null(t[i][j]);
+				ep2_new(t[i][j]);
+			}	
 		}
 
 		ep2_curve_get_ord(n);
@@ -70,25 +74,35 @@ static void ep2_mul_gls_imp(ep2_t r, const ep2_t p, const bn_t k) {
 		ep2_frb(q[3], q[2], 1);
 
 		l = 0;
-		for (int i = 0; i < 4; i++) {
-			if (bn_sign(_k[i]) == RLC_NEG) {
-				ep2_neg(q[i], q[i]);
-			}
+		for (size_t i = 0; i < 4; i++) {
 			_l[i] = RLC_FP_BITS + 1;
-			bn_rec_naf(naf[i], &_l[i], _k[i], 2);
+			bn_rec_naf(naf[i], &_l[i], _k[i], RLC_WIDTH);
 			l = RLC_MAX(l, _l[i]);
+			if (i == 0) {
+				if (bn_sign(_k[0]) == RLC_NEG) {
+					ep2_neg(q[0], q[0]);
+				}
+				ep2_tab(t[0], q[0], RLC_WIDTH);
+			} else {
+				for (size_t j = 0; j < (1 << (RLC_WIDTH - 2)); j++) {
+					ep2_frb(t[i][j], t[i - 1][j], 1);
+					if (bn_sign(_k[i]) != bn_sign(_k[i - 1])) {
+						ep2_neg(t[i][j], t[i][j]);
+					}
+				}
+			}
 		}
 
 		ep2_set_infty(r);
 		for (int j = l - 1; j >= 0; j--) {
 			ep2_dbl(r, r);
 
-			for (int i = 0; i < 4; i++) {
+			for (size_t i = 0; i < 4; i++) {
 				if (naf[i][j] > 0) {
-					ep2_add(r, r, q[i]);
+					ep2_add(r, r, t[i][naf[i][j] / 2]);
 				}
 				if (naf[i][j] < 0) {
-					ep2_sub(r, r, q[i]);
+					ep2_sub(r, r, t[i][-naf[i][j] / 2]);
 				}
 			}
 		}
@@ -102,11 +116,13 @@ static void ep2_mul_gls_imp(ep2_t r, const ep2_t p, const bn_t k) {
 	RLC_FINALLY {
 		bn_free(n);
 		bn_free(u);
-		for (int i = 0; i < 4; i++) {
+		for (size_t i = 0; i < 4; i++) {
 			bn_free(_k[i]);
 			ep2_free(q[i]);
+			for (size_t j = 0; j < (1 << (RLC_WIDTH - 2)); j++) {
+				ep2_free(t[i][j]);
+			}	
 		}
-
 	}
 }
 

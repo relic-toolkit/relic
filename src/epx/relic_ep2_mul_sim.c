@@ -280,9 +280,7 @@ void ep2_mul_sim_basic(ep2_t r, const ep2_t p, const bn_t k, const ep2_t q,
 
 void ep2_mul_sim_trick(ep2_t r, const ep2_t p, const bn_t k, const ep2_t q,
 		const bn_t m) {
-	ep2_t t0[1 << (RLC_WIDTH / 2)];
-	ep2_t t1[1 << (RLC_WIDTH / 2)];
-	ep2_t t[1 << RLC_WIDTH];
+	ep2_t t0[1 << (RLC_WIDTH / 2)], t1[1 << (RLC_WIDTH / 2)], t[1 << RLC_WIDTH];
 	bn_t n, _k, _m;
 	size_t l0, l1, w = RLC_WIDTH / 2;
 	uint8_t w0[2 * RLC_FP_BITS], w1[2 * RLC_FP_BITS];
@@ -305,10 +303,6 @@ void ep2_mul_sim_trick(ep2_t r, const ep2_t p, const bn_t k, const ep2_t q,
 		bn_new(_k);
 		bn_new(_m);
 
-		ep2_curve_get_ord(n);
-		bn_mod(_k, k, n);
-		bn_mod(_m, m, n);
-
 		for (int i = 0; i < (1 << w); i++) {
 			ep2_null(t0[i]);
 			ep2_null(t1[i]);
@@ -320,21 +314,19 @@ void ep2_mul_sim_trick(ep2_t r, const ep2_t p, const bn_t k, const ep2_t q,
 			ep2_new(t[i]);
 		}
 
+		ep2_curve_get_ord(n);
+		bn_mod(_k, k, n);
+		bn_mod(_m, m, n);
+
 		ep2_set_infty(t0[0]);
 		ep2_copy(t0[1], p);
-		if (bn_sign(k) == RLC_NEG) {
-			ep2_neg(t0[1], t0[1]);
-		}
 		for (int i = 2; i < (1 << w); i++) {
 			ep2_add(t0[i], t0[i - 1], t0[1]);
 		}
 
 		ep2_set_infty(t1[0]);
 		ep2_copy(t1[1], q);
-		if (bn_sign(m) == RLC_NEG) {
-			ep2_neg(t1[1], t1[1]);
-		}
-		for (int i = 1; i < (1 << w); i++) {
+		for (int i = 2; i < (1 << w); i++) {
 			ep2_add(t1[i], t1[i - 1], t1[1]);
 		}
 
@@ -345,12 +337,12 @@ void ep2_mul_sim_trick(ep2_t r, const ep2_t p, const bn_t k, const ep2_t q,
 		}
 
 #if defined(EP_MIXED)
-		ep2_norm_sim(t + 1, t + 1, (1 << (RLC_WIDTH)) - 1);
+		ep2_norm_sim(t + 2, (const ep2_t *)(t + 2), (1 << (w + w)) - 2);
 #endif
 
 		l0 = l1 = RLC_CEIL(2 * RLC_FP_BITS, w);
-		bn_rec_win(w0, &l0, k, w);
-		bn_rec_win(w1, &l1, m, w);
+		bn_rec_win(w0, &l0, _k, w);
+		bn_rec_win(w1, &l1, _m, w);
 
 		ep2_set_infty(r);
 		for (int i = RLC_MAX(l0, l1) - 1; i >= 0; i--) {
