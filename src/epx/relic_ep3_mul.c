@@ -118,17 +118,18 @@ static void ep3_mul_gls_imp(ep3_t r, const ep3_t p, const bn_t k) {
 		}
 		bn_mod(_k[0], k, n);
 		bn_rec_frb(_k, 6, _k[0], u, n, ep_curve_is_pairf() == EP_BN);
-		ep3_norm(q[0], p);
-		for (size_t i = 0; i < 6; i++) {
-			ep3_neg(r, q[i]);
-			fp3_copy_sec(q[i]->y, r->y, bn_sign(_k[i]) == RLC_NEG);
-			_k[i]->sign = RLC_POS;
-			if (i > 0) {
-				ep3_psi(q[i], q[i - 1]);
-			}
-		}
 		even = bn_is_even(_k[0]);
 		bn_add_dig(_k[0], _k[0], even);
+		ep3_norm(q[0], p);
+		for (size_t i = 1; i < 6; i++) {
+			ep3_psi(q[i], q[i - 1]);
+		}
+		for (size_t i = 0; i < 6; i++) {
+			if (bn_sign(_k[i]) == RLC_NEG) {
+				ep3_neg(q[i], q[i]);
+			}
+			bn_abs(_k[i], _k[i]);
+		}
 
 		ep3_copy(t[0], q[0]);
 		for (size_t i = 1; i < (1 << 5); i++) {
@@ -225,17 +226,17 @@ static void ep3_mul_reg_gls(ep3_t r, const ep3_t p, const bn_t k) {
 		}
 		bn_mod(_k[0], k, n);
 		bn_rec_frb(_k, 6, _k[0], u, n, ep_curve_is_pairf() == EP_BN);
+		even = bn_is_even(_k[0]);
+		bn_add_dig(_k[0], _k[0], even);
 		ep3_norm(q[0], p);
+		for (size_t i = 1; i < 6; i++) {
+			ep3_psi(q[i], q[i - 1]);
+		}
 		for (size_t i = 0; i < 6; i++) {
 			ep3_neg(r, q[i]);
 			fp3_copy_sec(q[i]->y, r->y, bn_sign(_k[i]) == RLC_NEG);
-			_k[i]->sign = RLC_POS;
-			if (i > 0) {
-				ep3_psi(q[i], q[i - 1]);
-			}
+			bn_abs(_k[i], _k[i]);
 		}
-		even = bn_is_even(_k[0]);
-		bn_add_dig(_k[0], _k[0], even);
 
 		ep3_copy(t[0], q[0]);
 		for (size_t i = 1; i < (1 << 5); i++) {
