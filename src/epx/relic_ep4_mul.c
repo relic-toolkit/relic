@@ -115,13 +115,23 @@ static void ep4_mul_gls_imp(ep4_t r, const ep4_t p, const bn_t k) {
 			_l[i] = RLC_FP_BITS + 1;
 			bn_rec_naf(naf[i], &_l[i], _k[i], RLC_WIDTH);
 			l = RLC_MAX(l, _l[i]);
-			if (i == 0) {
-				ep4_norm(q, p);
-				if (bn_sign(_k[0]) == RLC_NEG) {
+		}
+		ep4_norm(q, p);
+		if (bn_sign(_k[0]) == RLC_NEG) {
+			ep4_neg(q, q);
+		}
+		ep4_tab(t[0], q, RLC_WIDTH);
+
+		if (ep_curve_is_pairf() == EP_K16) {
+			for (size_t i = 1; i < 8; i++) {
+				ep4_psi(q, t[i - 1][0]);
+				if (bn_sign(_k[i]) == RLC_NEG) {
 					ep4_neg(q, q);
 				}
-				ep4_tab(t[0], q, RLC_WIDTH);
-			} else {
+				ep4_tab(t[i], q, RLC_WIDTH);
+			}
+		} else {
+			for (size_t i = 1; i < 8; i++) {
 				for (size_t j = 0; j < (1 << (RLC_WIDTH - 2)); j++) {
 					ep4_psi(t[i][j], t[i - 1][j]);
 					if (bn_sign(_k[i]) != bn_sign(_k[i - 1])) {
