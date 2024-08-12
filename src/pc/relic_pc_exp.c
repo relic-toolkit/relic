@@ -168,7 +168,6 @@ void gt_exp_gls_imp(gt_t c, const gt_t a, const bn_t b, size_t f) {
 		bn_rec_frb(_b, f, _b[0], u, n, ep_curve_is_pairf() == EP_BN);
 
 		l = 0;
-		gt_copy(t[0], a);
 		for (size_t i = 0; i < f; i++) {
 			s[i] = bn_sign(_b[i]);
 			_l[i] = RLC_FP_BITS + 1;
@@ -176,23 +175,45 @@ void gt_exp_gls_imp(gt_t c, const gt_t a, const bn_t b, size_t f) {
 			l = RLC_MAX(l, _l[i]);
 		}
 
-		gt_copy(q, a);
-		if (bn_sign(_b[0]) == RLC_NEG) {
-			gt_inv(q, q);
-		}
-		if (RLC_WIDTH > 2) {
-			gt_sqr(t[0], q);
-			gt_mul(t[1], t[0], q);
-			for (size_t j = 2; j < RLC_GT_TABLE; j++) {
-				gt_mul(t[j], t[j - 1], t[0]);
+		if (ep_curve_is_pairf() == EP_K16 || ep_curve_embed() == 18) {
+			gt_copy(t[0], a);
+			for (size_t i = 1; i < f; i++) {
+				gt_psi(t[i * RLC_GT_TABLE], t[(i - 1) * RLC_GT_TABLE]);
 			}
-		}
-		gt_copy(t[0], q);
-		for (size_t i = 1; i < f; i++) {
-			for (size_t j = 0; j < RLC_GT_TABLE; j++) {
-				gt_psi(t[i * RLC_GT_TABLE + j], t[(i - 1) * RLC_GT_TABLE + j]);
-				if (s[i] != s[i - 1]) {
-					gt_inv(t[i * RLC_GT_TABLE + j], t[i * RLC_GT_TABLE + j]);
+			for (size_t i = 0; i < f; i++) {
+				gt_copy(q, t[i * RLC_GT_TABLE]);
+				if (s[i] == RLC_NEG) {
+					gt_inv(q, t[i * RLC_GT_TABLE]);
+				}
+				if (RLC_WIDTH > 2) {
+					gt_sqr(t[i * RLC_GT_TABLE], q);
+					gt_mul(t[i * RLC_GT_TABLE + 1], t[i * RLC_GT_TABLE], q);
+					for (size_t j = 2; j < RLC_GT_TABLE; j++) {
+						gt_mul(t[i * RLC_GT_TABLE + j], t[i * RLC_GT_TABLE + j - 1],
+								t[i * (RLC_GT_TABLE)]);
+					}
+				}
+				gt_copy(t[i * RLC_GT_TABLE], q);
+			}
+		} else {
+			gt_copy(q, a);
+			if (bn_sign(_b[0]) == RLC_NEG) {
+				gt_inv(q, q);
+			}
+			if (RLC_WIDTH > 2) {
+				gt_sqr(t[0], q);
+				gt_mul(t[1], t[0], q);
+				for (size_t j = 2; j < RLC_GT_TABLE; j++) {
+					gt_mul(t[j], t[j - 1], t[0]);
+				}
+			}
+			gt_copy(t[0], q);
+			for (size_t i = 1; i < f; i++) {
+				for (size_t j = 0; j < RLC_GT_TABLE; j++) {
+					gt_psi(t[i * RLC_GT_TABLE + j], t[(i - 1) * RLC_GT_TABLE + j]);
+					if (s[i] != s[i - 1]) {
+						gt_inv(t[i * RLC_GT_TABLE + j], t[i * RLC_GT_TABLE + j]);
+					}
 				}
 			}
 		}
@@ -310,22 +331,42 @@ void gt_exp_reg_gls(gt_t c, const gt_t a, const bn_t b, size_t f) {
 			l = RLC_MAX(l, _l[i]);
 		}
 
-		gt_copy(t[0], a);
-		gt_inv(q, t[0]);
-		gt_copy_sec(q, t[0], bn_sign(_b[0]) == RLC_POS);
-		if (RLC_WIDTH > 2) {
-			gt_sqr(t[0], q);
-			gt_mul(t[1], t[0], q);
-			for (size_t j = 2; j < RLC_GT_TABLE; j++) {
-				gt_mul(t[j], t[j - 1], t[0]);
+		if (ep_curve_is_pairf() == EP_K16 || ep_curve_embed() == 18) {
+			gt_copy(t[0], a);
+			for (size_t i = 1; i < f; i++) {
+				gt_psi(t[i * RLC_GT_TABLE], t[(i - 1) * RLC_GT_TABLE]);
 			}
-		}
-		gt_copy(t[0], q);
-		for (size_t i = 1; i < f; i++) {
-			for (size_t j = 0; j < RLC_GT_TABLE; j++) {
-				gt_psi(t[i * RLC_GT_TABLE + j], t[(i - 1) * RLC_GT_TABLE + j]);
-				if (s[i] != s[i - 1]) {
-					gt_inv(t[i * RLC_GT_TABLE + j], t[i * RLC_GT_TABLE + j]);
+			for (size_t i = 0; i < f; i++) {
+				gt_inv(q, t[i * RLC_GT_TABLE]);
+				gt_copy_sec(q, t[i * RLC_GT_TABLE], s[i] == RLC_POS);
+				if (RLC_WIDTH > 2) {
+					gt_sqr(t[i * RLC_GT_TABLE], q);
+					gt_mul(t[i * RLC_GT_TABLE + 1], t[i * RLC_GT_TABLE], q);
+					for (size_t j = 2; j < RLC_GT_TABLE; j++) {
+						gt_mul(t[i * RLC_GT_TABLE + j], t[i * RLC_GT_TABLE + j - 1],
+								t[i * (RLC_GT_TABLE)]);
+					}
+				}
+				gt_copy(t[i * RLC_GT_TABLE], q);
+			}
+		} else {
+			gt_copy(t[0], a);
+			gt_inv(q, t[0]);
+			gt_copy_sec(q, t[0], bn_sign(_b[0]) == RLC_POS);
+			if (RLC_WIDTH > 2) {
+				gt_sqr(t[0], q);
+				gt_mul(t[1], t[0], q);
+				for (size_t j = 2; j < RLC_GT_TABLE; j++) {
+					gt_mul(t[j], t[j - 1], t[0]);
+				}
+			}
+			gt_copy(t[0], q);
+			for (size_t i = 1; i < f; i++) {
+				for (size_t j = 0; j < RLC_GT_TABLE; j++) {
+					gt_psi(t[i * RLC_GT_TABLE + j], t[(i - 1) * RLC_GT_TABLE + j]);
+					if (s[i] != s[i - 1]) {
+						gt_inv(t[i * RLC_GT_TABLE + j], t[i * RLC_GT_TABLE + j]);
+					}
 				}
 			}
 		}
