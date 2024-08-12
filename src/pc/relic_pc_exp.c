@@ -174,10 +174,6 @@ void gt_exp_gls_imp(gt_t c, const gt_t a, const bn_t b, size_t f) {
 			_l[i] = RLC_FP_BITS + 1;
 			bn_rec_naf(naf + i * (RLC_FP_BITS + 1), &_l[i], _b[i], RLC_WIDTH);
 			l = RLC_MAX(l, _l[i]);
-			/* Apply Frobenius before flipping sign to build table. */
-			if (i > 0) {
-				gt_psi(t[i * RLC_GT_TABLE], t[(i - 1) * RLC_GT_TABLE]);
-			}
 		}
 
 		gt_copy(q, a);
