@@ -194,8 +194,7 @@ void gt_exp_gls_imp(gt_t c, const gt_t a, const bn_t b, size_t f) {
 		gt_copy(t[0], q);
 		for (size_t i = 1; i < f; i++) {
 			for (size_t j = 0; j < RLC_GT_TABLE; j++) {
-				gt_frb(t[i * RLC_GT_TABLE + j],
-						t[(i - 1) * RLC_GT_TABLE + j], 1);
+				gt_psi(t[i * RLC_GT_TABLE + j], t[(i - 1) * RLC_GT_TABLE + j]);
 				if (s[i] != s[i - 1]) {
 					gt_inv(t[i * RLC_GT_TABLE + j], t[i * RLC_GT_TABLE + j]);
 				}
@@ -328,8 +327,7 @@ void gt_exp_reg_gls(gt_t c, const gt_t a, const bn_t b, size_t f) {
 		gt_copy(t[0], q);
 		for (size_t i = 1; i < f; i++) {
 			for (size_t j = 0; j < RLC_GT_TABLE; j++) {
-				gt_frb(t[i * RLC_GT_TABLE + j],
-						t[(i - 1) * RLC_GT_TABLE + j], 1);
+				gt_psi(t[i * RLC_GT_TABLE + j], t[(i - 1) * RLC_GT_TABLE + j]);
 				if (s[i] != s[i - 1]) {
 					gt_inv(t[i * RLC_GT_TABLE + j], t[i * RLC_GT_TABLE + j]);
 				}
