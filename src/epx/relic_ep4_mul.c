@@ -82,23 +82,27 @@ static void ep4_psi(ep4_t r, const ep4_t p) {
 
 #if EP_MUL == LWNAF || !defined(STRIP)
 
-static void ep4_mul_glv_imp(ep4_t r, const ep4_t p, const bn_t k) {
+static void ep4_mul_gls_imp(ep4_t r, const ep4_t p, const bn_t k) {
 	size_t l, _l[8];
 	bn_t n, _k[8], u;
 	int8_t naf[8][RLC_FP_BITS + 1];
-	ep4_t q[8];
+	ep4_t q, t[8][1 << (RLC_WIDTH - 2)];
 
 	bn_null(n);
 	bn_null(u);
+	ep4_null(q);
 
 	RLC_TRY {
 		bn_new(n);
 		bn_new(u);
-		for (int i = 0; i < 8; i++) {
+		ep4_new(q);
+		for (size_t i = 0; i < 8; i++) {
 			bn_null(_k[i]);
-			ep4_null(q[i]);
 			bn_new(_k[i]);
-			ep4_new(q[i]);
+			for (size_t j = 0; j < (1 << (RLC_WIDTH - 2)); j++) {
+				ep4_null(t[i][j]);
+				ep4_new(t[i][j]);
+			}	
 		}
 
 		ep4_curve_get_ord(n);
@@ -106,34 +110,37 @@ static void ep4_mul_glv_imp(ep4_t r, const ep4_t p, const bn_t k) {
 		bn_mod(_k[0], k, n);
 		bn_rec_frb(_k, 8, _k[0], u, n, ep_curve_is_pairf() == EP_BN);
 
-		ep4_norm(q[0], p);
-		for (size_t i = 1; i < 8; i++) {
-            ep4_psi(q[i], q[i - 1]);
-		}
-#if defined(EP_MIXED)
-		ep4_norm_sim(q + 1, q + 1, 7);
-#endif
-
 		l = 0;
 		for (size_t i = 0; i < 8; i++) {
-			if (bn_sign(_k[i]) == RLC_NEG) {
-				ep4_neg(q[i], q[i]);
-			}
 			_l[i] = RLC_FP_BITS + 1;
-			bn_rec_naf(naf[i], &_l[i], _k[i], 2);
+			bn_rec_naf(naf[i], &_l[i], _k[i], RLC_WIDTH);
 			l = RLC_MAX(l, _l[i]);
+			if (i == 0) {
+				ep4_norm(q, p);
+				if (bn_sign(_k[0]) == RLC_NEG) {
+					ep4_neg(q, q);
+				}
+				ep4_tab(t[0], q, RLC_WIDTH);
+			} else {
+				for (size_t j = 0; j < (1 << (RLC_WIDTH - 2)); j++) {
+					ep4_frb(t[i][j], t[i - 1][j], 1);
+					if (bn_sign(_k[i]) != bn_sign(_k[i - 1])) {
+						ep4_neg(t[i][j], t[i][j]);
+					}
+				}
+			}
 		}
 
 		ep4_set_infty(r);
 		for (int j = l - 1; j >= 0; j--) {
 			ep4_dbl(r, r);
 
-			for (int i = 0; i < 8; i++) {
+			for (size_t i = 0; i < 8; i++) {
 				if (naf[i][j] > 0) {
-					ep4_add(r, r, q[i]);
+					ep4_add(r, r, t[i][naf[i][j] / 2]);
 				}
 				if (naf[i][j] < 0) {
-					ep4_sub(r, r, q[i]);
+					ep4_sub(r, r, t[i][-naf[i][j] / 2]);
 				}
 			}
 		}
@@ -147,11 +154,13 @@ static void ep4_mul_glv_imp(ep4_t r, const ep4_t p, const bn_t k) {
 	RLC_FINALLY {
 		bn_free(n);
 		bn_free(u);
-		for (int i = 0; i < 8; i++) {
+		ep4_free(q);
+		for (size_t i = 0; i < 8; i++) {
 			bn_free(_k[i]);
-			ep4_free(q[i]);
+			for (size_t j = 0; j < (1 << (RLC_WIDTH - 2)); j++) {
+				ep4_free(t[i][j]);
+			}	
 		}
-
 	}
 }
 
@@ -647,7 +656,7 @@ void ep4_mul_lwnaf(ep4_t r, const ep4_t p, const bn_t k) {
 
 #if defined(EP_ENDOM)
 	if (ep_curve_is_endom()) {
-		ep4_mul_glv_imp(r, p, k);
+		ep4_mul_gls_imp(r, p, k);
 		return;
 	}
 #endif
