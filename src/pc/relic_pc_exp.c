@@ -181,7 +181,7 @@ void gt_exp_gls_imp(gt_t c, const gt_t a, const bn_t b, size_t f) {
 		}
 
 		gt_copy(q, a);
-		if (s[0] == RLC_NEG) {
+		if (bn_sign(_b[0]) == RLC_NEG) {
 			gt_inv(q, q);
 		}
 		if (RLC_WIDTH > 2) {
