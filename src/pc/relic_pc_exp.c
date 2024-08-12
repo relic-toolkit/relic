@@ -317,7 +317,7 @@ void gt_exp_reg_gls(gt_t c, const gt_t a, const bn_t b, size_t f) {
 
 		gt_copy(t[0], a);
 		gt_inv(q, t[0]);
-		gt_copy_sec(q, t[0], s[0] == RLC_POS);
+		gt_copy_sec(q, t[0], bn_sign(_b[0]) == RLC_POS);
 		if (RLC_WIDTH > 2) {
 			gt_sqr(t[0], q);
 			gt_mul(t[1], t[0], q);
