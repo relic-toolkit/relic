@@ -123,7 +123,7 @@ static void ep4_mul_gls_imp(ep4_t r, const ep4_t p, const bn_t k) {
 				ep4_tab(t[0], q, RLC_WIDTH);
 			} else {
 				for (size_t j = 0; j < (1 << (RLC_WIDTH - 2)); j++) {
-					ep4_frb(t[i][j], t[i - 1][j], 1);
+					ep4_psi(t[i][j], t[i - 1][j]);
 					if (bn_sign(_k[i]) != bn_sign(_k[i - 1])) {
 						ep4_neg(t[i][j], t[i][j]);
 					}
