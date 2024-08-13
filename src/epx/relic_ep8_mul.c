@@ -127,25 +127,25 @@ static void ep8_mul_gls_imp(ep8_t r, const ep8_t p, const bn_t k) {
 #if EP_MUL == LWREG || !defined(STRIP)
 
 static void ep8_mul_reg_gls(ep8_t r, const ep8_t p, const bn_t k) {
-	int8_t reg[16][RLC_FP_BITS + 1], b[16], s[16], c0, n0;
-	ep8_t q, w, t[16][1 << (RLC_WIDTH - 2)];
+	size_t l, c = 4, m = 16;
 	bn_t n, _k[16], u;
-	size_t l, len, _l[16];
+	int8_t even[4], col, sac[4][4 * (RLC_FP_BITS + 1)];
+	ep8_t q[16], t[4][1 << 3];
 
 	bn_null(n);
 	bn_null(u);
-	ep8_null(q);
-	ep8_null(w);
 
 	RLC_TRY {
 		bn_new(n);
 		bn_new(u);
-		ep8_new(q);
-		ep8_new(w);
-		for (size_t i = 0; i < 16; i++) {
+		for (int i = 0; i < 16; i++) {
 			bn_null(_k[i]);
+			ep8_null(q[i]);
 			bn_new(_k[i]);
-			for (size_t j = 0; j < (1 << (RLC_WIDTH - 2)); j++) {
+			ep8_new(q[i]);
+		}
+		for (size_t i = 0; i < c; i++) {
+			for (int j = 0; j < (j << 3); i++) {
 				ep8_null(t[i][j]);
 				ep8_new(t[i][j]);
 			}
@@ -156,70 +156,89 @@ static void ep8_mul_reg_gls(ep8_t r, const ep8_t p, const bn_t k) {
 		bn_mod(_k[0], k, n);
 		bn_rec_frb(_k, 16, _k[0], u, n, ep_curve_is_pairf() == EP_BN);
 
-		l = 0;
-		/* Make some extra room for BN curves that grow subscalars by 1. */
-		len = bn_bits(u) + (ep_curve_is_pairf() == EP_BN);
-		ep8_norm(t[0][0], p);
+		for (size_t i = 0; i < c; i++) {
+			even[i] = bn_is_even(_k[i * m / c]);
+			bn_add_dig(_k[i * m / c], _k[i * m / c], even[i]);
+		}
+		
+		ep8_norm(q[0], p);
+		for (size_t i = 1; i < 16; i++) {
+			ep8_frb(q[i], q[i - 1], 1);
+		}
 		for (size_t i = 0; i < 16; i++) {
-			s[i] = bn_sign(_k[i]);
+			ep8_neg(r, q[i]);
+			fp8_copy_sec(q[i]->y, r->y, bn_sign(_k[i]) == RLC_NEG);
 			bn_abs(_k[i], _k[i]);
-			b[i] = bn_is_even(_k[i]);
-			_k[i]->dp[0] |= b[i];
-
-			_l[i] = RLC_FP_BITS + 1;
-			bn_rec_reg(reg[i], &_l[i], _k[i], len, RLC_WIDTH);
-			l = RLC_MAX(l, _l[i]);
-			
-			/* Apply Frobenius before flipping sign to build table. */
-			if (i > 0) {
-				ep8_frb(t[i][0], t[i - 1][0], 1);
-			}
 		}
 
-		for (size_t i = 0; i < 16; i++) {
-			ep8_neg(q, t[i][0]);
-			fp8_copy_sec(q->y, t[i][0]->y, s[i] == RLC_POS);
-			ep8_tab(t[i], q, RLC_WIDTH);
+		for (size_t i = 0; i < c; i++) {
+			ep8_copy(t[i][0], q[i * m / c]);
+			for (size_t j = 1; j < (1 << 3); j++) {
+				l = util_bits_dig(j);
+				ep8_add(t[i][j], t[i][j ^ (1 << (l - 1))], q[l + i * m / c]);
+			}
+			l = RLC_FP_BITS + 1;
+			bn_rec_sac(sac[i], &l, _k + i * m / c, m / c, bn_bits(n));
 		}
 
 #if defined(EP_MIXED)
-		fp8_set_dig(w->z, 1);
-		w->coord = BASIC;
+		for (size_t i = 0; i < c; i++) {
+			ep8_norm_sim(t[i] + 1, t[i] + 1, (1 << 3) - 1);
+		}
+		fp8_set_dig(r->z, 1);
+		fp8_set_dig(q[1]->z, 1);
+		r->coord = q[1]->coord = BASIC;
 #else
-		w->coord = = EP_ADD;
+		r->coord = q[1]->coord = EP_ADD;
 #endif
 
 		ep8_set_infty(r);
-		for (int j = l - 1; j >= 0; j--) {
-			for (size_t i = 0; i < RLC_WIDTH - 1; i++) {
-				ep8_dbl(r, r);
+		for (size_t i = 0; i < c; i++) {
+			col = 0;
+			for (int j = 3; j > 0; j--) {
+				col <<= 1;
+				col += sac[i][j * l + l - 1];
 			}
+			for (size_t m = 0; m < (1 << 3); m++) {
+				fp8_copy_sec(q[1]->x, t[i][m]->x, m == col);
+				fp8_copy_sec(q[1]->y, t[i][m]->y, m == col);
+#if !defined(EP_MIXED)
+				fp8_copy_sec(q[1]->z, t[i][m]->z, m == col);
+#endif
+			}
+			ep8_neg(q[2], q[1]);
+			fp8_copy_sec(q[1]->y, q[2]->y, sac[i][l - 1]);
+			ep8_add(r, r, q[1]);
+		}
 
-			for (size_t i = 0; i < 16; i++) {
-				n0 = reg[i][j];
-				c0 = (n0 >> 7);
-				n0 = ((n0 ^ c0) - c0) >> 1;
+		for (int j = l - 2; j >= 0; j--) {
+			ep8_dbl(r, r);
 
-				for (size_t m = 0; m < (1 << (RLC_WIDTH - 2)); m++) {
-					fp8_copy_sec(w->x, t[i][m]->x, m == n0);
-					fp8_copy_sec(w->y, t[i][m]->y, m == n0);
-	#if !defined(EP_MIXED)
-					fp8_copy_sec(w->z, t[i][m]->z, m == n0);
-	#endif
+			for (size_t i = 0; i < c; i++) {
+				col = 0;
+				for (int k = 3; k > 0; k--) {
+					col <<= 1;
+					col += sac[i][k * l + j];
 				}
-
-				ep8_neg(q, w);
-				fp8_copy_sec(q->y, w->y, c0 == 0);
-				ep8_add(r, r, q);
+			
+				for (size_t m = 0; m < (1 << 3); m++) {
+					fp8_copy_sec(q[1]->x, t[i][m]->x, m == col);
+					fp8_copy_sec(q[1]->y, t[i][m]->y, m == col);
+#if !defined(EP_MIXED)
+					fp8_copy_sec(q[1]->z, t[i][m]->z, m == col);
+#endif
+				}
+				ep8_neg(q[2], q[1]);
+				fp8_copy_sec(q[1]->y, q[2]->y, sac[i][j]);
+				ep8_add(r, r, q[1]);
 			}
 		}
 
-		for (size_t i = 0; i < 16; i++) {
-			/* Tables are built with points already negated, so no need here. */
-			ep8_sub(q, r, t[i][0]);
-			fp8_copy_sec(r->x, q->x, b[i]);
-			fp8_copy_sec(r->y, q->y, b[i]);
-			fp8_copy_sec(r->z, q->z, b[i]);
+		for (size_t i = 0; i < c; i++) {
+			ep8_sub(q[1], r, q[i * m / c]);
+			fp8_copy_sec(r->x, q[1]->x, even[i]);
+			fp8_copy_sec(r->y, q[1]->y, even[i]);
+			fp8_copy_sec(r->z, q[1]->z, even[i]);
 		}
 
 		/* Convert r to affine coordinates. */
@@ -231,11 +250,12 @@ static void ep8_mul_reg_gls(ep8_t r, const ep8_t p, const bn_t k) {
 	RLC_FINALLY {
 		bn_free(n);
 		bn_free(u);
-		ep8_free(q);
-		ep8_free(w);
 		for (int i = 0; i < 16; i++) {
 			bn_free(_k[i]);
-			for (size_t j = 0; j < (1 << (RLC_WIDTH - 2)); j++) {
+			ep8_free(q[i]);
+		}
+		for (size_t i = 0; i < c; i++) {
+			for (int j = 0; j < (j << 3); i++) {
 				ep8_free(t[i][j]);
 			}
 		}

@@ -179,11 +179,10 @@ static void ep4_mul_gls_imp(ep4_t r, const ep4_t p, const bn_t k) {
 #if EP_MUL == LWREG || !defined(STRIP)
 
 static void ep4_mul_reg_gls(ep4_t r, const ep4_t p, const bn_t k) {
-	size_t l;
+	size_t l, c = 2, m = 8;
 	bn_t n, _k[8], u;
-	int8_t even0, even1, col;
-	int8_t sac0[4 * (RLC_FP_BITS + 1)], sac1[4 * (RLC_FP_BITS + 1)];
-	ep4_t q[8], t0[1 << 3], t1[1 << 3]
+	int8_t even[2], col, sac[2][4 * (RLC_FP_BITS + 1)];
+	ep4_t q[8], t[2][1 << 3];
 
 	bn_null(n);
 	bn_null(u);
@@ -197,11 +196,11 @@ static void ep4_mul_reg_gls(ep4_t r, const ep4_t p, const bn_t k) {
 			bn_new(_k[i]);
 			ep4_new(q[i]);
 		}
-		for (int i = 0; i < (1 << 3); i++) {
-			ep4_null(t0[i]);
-			ep4_new(t0[i]);
-			ep4_null(t1[i]);
-			ep4_new(t1[i]);
+		for (size_t i = 0; i < c; i++) {
+			for (int j = 0; j < (j << 3); i++) {
+				ep4_null(t[i][j]);
+				ep4_new(t[i][j]);
+			}
 		}
 
 		ep4_curve_get_ord(n);
@@ -209,11 +208,11 @@ static void ep4_mul_reg_gls(ep4_t r, const ep4_t p, const bn_t k) {
 		bn_mod(_k[0], k, n);
 		bn_rec_frb(_k, 8, _k[0], u, n, ep_curve_is_pairf() == EP_BN);
 
-		even0 = bn_is_even(_k[0]);
-		bn_add_dig(_k[0], _k[0], even0);
-		even1 = bn_is_even(_k[4]);
-		bn_add_dig(_k[4], _k[4], even1);
-
+		for (size_t i = 0; i < c; i++) {
+			even[i] = bn_is_even(_k[i * m / c]);
+			bn_add_dig(_k[i * m / c], _k[i * m / c], even[i]);
+		}
+		
 		ep4_norm(q[0], p);
 		for (size_t i = 1; i < 8; i++) {
 			ep4_psi(q[i], q[i - 1]);
@@ -224,25 +223,20 @@ static void ep4_mul_reg_gls(ep4_t r, const ep4_t p, const bn_t k) {
 			bn_abs(_k[i], _k[i]);
 		}
 
-		ep4_copy(t0[0], q[0]);
-		for (size_t i = 1; i < (1 << 3); i++) {
-			l = util_bits_dig(i);
-			ep4_add(t0[i], t0[i ^ (1 << (l - 1))], q[l]);
+		for (size_t i = 0; i < c; i++) {
+			ep4_copy(t[i][0], q[i * m / c]);
+			for (size_t j = 1; j < (1 << 3); j++) {
+				l = util_bits_dig(j);
+				ep4_add(t[i][j], t[i][j ^ (1 << (l - 1))], q[l + i * m / c]);
+			}
+			l = RLC_FP_BITS + 1;
+			bn_rec_sac(sac[i], &l, _k + i * m / c, m / c, bn_bits(n));
 		}
-		ep4_copy(t1[0], q[4]);
-		for (size_t i = 1; i < (1 << 3); i++) {
-			l = util_bits_dig(i);
-			ep4_add(t1[i], t1[i ^ (1 << (l - 1))], q[4 + l]);
-		}
-
-		l = RLC_FP_BITS + 1;
-		bn_rec_sac(sac0, &l, _k, 4, bn_bits(n));
-		l = RLC_FP_BITS + 1;
-		bn_rec_sac(sac1, &l, _k + 4, 4, bn_bits(n));
 
 #if defined(EP_MIXED)
-		ep4_norm_sim(t0 + 1, t0 + 1, (1 << 3) - 1);
-		ep4_norm_sim(t1 + 1, t1 + 1, (1 << 3) - 1);
+		for (size_t i = 0; i < c; i++) {
+			ep4_norm_sim(t[i] + 1, t[i] + 1, (1 << 3) - 1);
+		}
 		fp4_set_dig(r->z, 1);
 		fp4_set_dig(q[1]->z, 1);
 		r->coord = q[1]->coord = BASIC;
@@ -250,84 +244,54 @@ static void ep4_mul_reg_gls(ep4_t r, const ep4_t p, const bn_t k) {
 		r->coord = q[1]->coord = EP_ADD;
 #endif
 
-		col = 0;
-		for (int i = 3; i > 0; i--) {
-			col <<= 1;
-			col += sac0[i * l + l - 1];
-		}
-		for (size_t m = 0; m < (1 << 3); m++) {
-			fp4_copy_sec(r->x, t0[m]->x, m == col);
-			fp4_copy_sec(r->y, t0[m]->y, m == col);
+		ep4_set_infty(r);
+		for (size_t i = 0; i < c; i++) {
+			col = 0;
+			for (int j = 3; j > 0; j--) {
+				col <<= 1;
+				col += sac[i][j * l + l - 1];
+			}
+			for (size_t m = 0; m < (1 << 3); m++) {
+				fp4_copy_sec(q[1]->x, t[i][m]->x, m == col);
+				fp4_copy_sec(q[1]->y, t[i][m]->y, m == col);
 #if !defined(EP_MIXED)
-			fp4_copy_sec(r->z, t0[m]->z, m == col);
+				fp4_copy_sec(q[1]->z, t[i][m]->z, m == col);
 #endif
+			}
+			ep4_neg(q[2], q[1]);
+			fp4_copy_sec(q[1]->y, q[2]->y, sac[i][l - 1]);
+			ep4_add(r, r, q[1]);
 		}
-		ep4_neg(q[1], r);
-		fp4_copy_sec(r->y, q[1]->y, sac0[l - 1]);
-
-		col = 0;
-		for (int i = 3; i > 0; i--) {
-			col <<= 1;
-			col += sac1[i * l + l - 1];
-		}
-		for (size_t m = 0; m < (1 << 3); m++) {
-			fp4_copy_sec(q[1]->x, t1[m]->x, m == col);
-			fp4_copy_sec(q[1]->y, t1[m]->y, m == col);
-#if !defined(EP_MIXED)
-			fp4_copy_sec(q[1]->z, t1[m]->z, m == col);
-#endif
-		}
-		ep4_neg(q[2], q[1]);
-		fp4_copy_sec(q[1]->y, q[2]->y, sac1[l - 1]);
-		ep4_add(r, r, q[1]);
 
 		for (int j = l - 2; j >= 0; j--) {
 			ep4_dbl(r, r);
 
-			col = 0;
-			for (int i = 3; i > 0; i--) {
-				col <<= 1;
-				col += sac0[i * l + j];
-			}
+			for (size_t i = 0; i < c; i++) {
+				col = 0;
+				for (int k = 3; k > 0; k--) {
+					col <<= 1;
+					col += sac[i][k * l + j];
+				}
 			
-			for (size_t m = 0; m < (1 << 3); m++) {
-				fp4_copy_sec(q[1]->x, t0[m]->x, m == col);
-				fp4_copy_sec(q[1]->y, t0[m]->y, m == col);
+				for (size_t m = 0; m < (1 << 3); m++) {
+					fp4_copy_sec(q[1]->x, t[i][m]->x, m == col);
+					fp4_copy_sec(q[1]->y, t[i][m]->y, m == col);
 #if !defined(EP_MIXED)
-				fp4_copy_sec(q[1]->z, t0[m]->z, m == col);
+					fp4_copy_sec(q[1]->z, t[i][m]->z, m == col);
 #endif
+				}
+				ep4_neg(q[2], q[1]);
+				fp4_copy_sec(q[1]->y, q[2]->y, sac[i][j]);
+				ep4_add(r, r, q[1]);
 			}
-			ep4_neg(q[2], q[1]);
-			fp4_copy_sec(q[1]->y, q[2]->y, sac0[j]);
-			ep4_add(r, r, q[1]);
-
-			col = 0;
-			for (int i = 3; i > 0; i--) {
-				col <<= 1;
-				col += sac1[i * l + j];
-			}
-			
-			for (size_t m = 0; m < (1 << 3); m++) {
-				fp4_copy_sec(q[1]->x, t1[m]->x, m == col);
-				fp4_copy_sec(q[1]->y, t1[m]->y, m == col);
-#if !defined(EP_MIXED)
-				fp4_copy_sec(q[1]->z, t1[m]->z, m == col);
-#endif
-			}
-			ep4_neg(q[2], q[1]);
-			fp4_copy_sec(q[1]->y, q[2]->y, sac1[j]);
-			ep4_add(r, r, q[1]);
 		}
 
-		ep4_sub(q[1], r, q[0]);
-		fp4_copy_sec(r->x, q[1]->x, even0);
-		fp4_copy_sec(r->y, q[1]->y, even0);
-		fp4_copy_sec(r->z, q[1]->z, even0);
-
-		ep4_sub(q[1], r, q[4]);
-		fp4_copy_sec(r->x, q[1]->x, even1);
-		fp4_copy_sec(r->y, q[1]->y, even1);
-		fp4_copy_sec(r->z, q[1]->z, even1);
+		for (size_t i = 0; i < c; i++) {
+			ep4_sub(q[1], r, q[i * m / c]);
+			fp4_copy_sec(r->x, q[1]->x, even[i]);
+			fp4_copy_sec(r->y, q[1]->y, even[i]);
+			fp4_copy_sec(r->z, q[1]->z, even[i]);
+		}
 
 		/* Convert r to affine coordinates. */
 		ep4_norm(r, r);
@@ -338,13 +302,14 @@ static void ep4_mul_reg_gls(ep4_t r, const ep4_t p, const bn_t k) {
 	RLC_FINALLY {
 		bn_free(n);
 		bn_free(u);
-		for (int i = 0; i < 7; i++) {
+		for (int i = 0; i < 8; i++) {
 			bn_free(_k[i]);
 			ep4_free(q[i]);
 		}
-		for (int i = 0; i < (1 << 3); i++) {
-			ep4_free(t0[i]);
-			ep4_free(t1[i]);
+		for (size_t i = 0; i < c; i++) {
+			for (int j = 0; j < (j << 3); i++) {
+				ep4_free(t[i][j]);
+			}
 		}
 	}
 }
