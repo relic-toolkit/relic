@@ -876,10 +876,10 @@ void bn_rec_glv(bn_t k0, bn_t k1, const bn_t k, const bn_t n, const bn_t *v1,
 	}
 }
 
-void bn_rec_sac(int8_t *b, size_t *len, bn_t *k, size_t m, bn_t n) {
+void bn_rec_sac(int8_t *b, size_t *len, bn_t *k, size_t m, size_t n) {
 	/* Assume k0 is the sign-aligner. */
 	bn_t *t = RLC_ALLOCA(bn_t, m);
-	size_t l = RLC_CEIL(bn_bits(n), m) + 1;
+	size_t l = RLC_CEIL(n, m) + 1;
 	int8_t bji;
 
 	if (t == NULL) {

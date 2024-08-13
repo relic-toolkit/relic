@@ -179,28 +179,29 @@ static void ep4_mul_gls_imp(ep4_t r, const ep4_t p, const bn_t k) {
 #if EP_MUL == LWREG || !defined(STRIP)
 
 static void ep4_mul_reg_gls(ep4_t r, const ep4_t p, const bn_t k) {
-	int8_t reg[8][RLC_FP_BITS + 1], b[8], s[8], c0, n0;
-	ep4_t q, w, t[8][1 << (RLC_WIDTH - 2)];
+	size_t l;
 	bn_t n, _k[8], u;
-	size_t l, len, _l[8];
+	int8_t even0, even1, col;
+	int8_t sac0[4 * (RLC_FP_BITS + 1)], sac1[4 * (RLC_FP_BITS + 1)];
+	ep4_t q[8], t0[1 << 3], t1[1 << 3]
 
 	bn_null(n);
 	bn_null(u);
-	ep4_null(q);
-	ep4_null(w);
 
 	RLC_TRY {
 		bn_new(n);
 		bn_new(u);
-		ep4_new(q);
-		ep4_new(w);
-		for (size_t i = 0; i < 8; i++) {
+		for (int i = 0; i < 8; i++) {
 			bn_null(_k[i]);
+			ep4_null(q[i]);
 			bn_new(_k[i]);
-			for (size_t j = 0; j < (1 << (RLC_WIDTH - 2)); j++) {
-				ep4_null(t[i][j]);
-				ep4_new(t[i][j]);
-			}
+			ep4_new(q[i]);
+		}
+		for (int i = 0; i < (1 << 3); i++) {
+			ep4_null(t0[i]);
+			ep4_new(t0[i]);
+			ep4_null(t1[i]);
+			ep4_new(t1[i]);
 		}
 
 		ep4_curve_get_ord(n);
@@ -208,71 +209,125 @@ static void ep4_mul_reg_gls(ep4_t r, const ep4_t p, const bn_t k) {
 		bn_mod(_k[0], k, n);
 		bn_rec_frb(_k, 8, _k[0], u, n, ep_curve_is_pairf() == EP_BN);
 
-		l = 0;
-		/* Make some extra room for BN curves that grow subscalars by 1. */
-		len = bn_bits(u) + (ep_curve_is_pairf() == EP_BN);
-		ep4_norm(t[0][0], p);
+		even0 = bn_is_even(_k[0]);
+		bn_add_dig(_k[0], _k[0], even0);
+		even1 = bn_is_even(_k[4]);
+		bn_add_dig(_k[4], _k[4], even1);
+
+		ep4_norm(q[0], p);
+		for (size_t i = 1; i < 8; i++) {
+			ep4_psi(q[i], q[i - 1]);
+		}
 		for (size_t i = 0; i < 8; i++) {
-			s[i] = bn_sign(_k[i]);
+			ep4_neg(r, q[i]);
+			fp4_copy_sec(q[i]->y, r->y, bn_sign(_k[i]) == RLC_NEG);
 			bn_abs(_k[i], _k[i]);
-			b[i] = bn_is_even(_k[i]);
-			_k[i]->dp[0] |= b[i];
-
-			_l[i] = RLC_FP_BITS + 1;
-			bn_rec_reg(reg[i], &_l[i], _k[i], len, RLC_WIDTH);
-			l = RLC_MAX(l, _l[i]);
-			
-			/* Apply Frobenius before flipping sign to build table. */
-			if (i > 0) {
-				ep4_psi(t[i][0], t[i - 1][0]);
-			}
 		}
 
-		for (size_t i = 0; i < 8; i++) {
-			ep4_neg(q, t[i][0]);
-			fp4_copy_sec(q->y, t[i][0]->y, s[i] == RLC_POS);
-			ep4_tab(t[i], q, RLC_WIDTH);
+		ep4_copy(t0[0], q[0]);
+		for (size_t i = 1; i < (1 << 3); i++) {
+			l = util_bits_dig(i);
+			ep4_add(t0[i], t0[i ^ (1 << (l - 1))], q[l]);
 		}
+		ep4_copy(t1[0], q[4]);
+		for (size_t i = 1; i < (1 << 3); i++) {
+			l = util_bits_dig(i);
+			ep4_add(t1[i], t1[i ^ (1 << (l - 1))], q[4 + l]);
+		}
+
+		l = RLC_FP_BITS + 1;
+		bn_rec_sac(sac0, &l, _k, 4, bn_bits(n));
+		l = RLC_FP_BITS + 1;
+		bn_rec_sac(sac1, &l, _k + 4, 4, bn_bits(n));
 
 #if defined(EP_MIXED)
-		fp4_set_dig(w->z, 1);
-		w->coord = BASIC;
+		ep4_norm_sim(t0 + 1, t0 + 1, (1 << 3) - 1);
+		ep4_norm_sim(t1 + 1, t1 + 1, (1 << 3) - 1);
+		fp4_set_dig(r->z, 1);
+		fp4_set_dig(q[1]->z, 1);
+		r->coord = q[1]->coord = BASIC;
 #else
-		w->coord = = EP_ADD;
+		r->coord = q[1]->coord = EP_ADD;
 #endif
 
-		ep4_set_infty(r);
-		for (int j = l - 1; j >= 0; j--) {
-			for (size_t i = 0; i < RLC_WIDTH - 1; i++) {
-				ep4_dbl(r, r);
+		col = 0;
+		for (int i = 3; i > 0; i--) {
+			col <<= 1;
+			col += sac0[i * l + l - 1];
+		}
+		for (size_t m = 0; m < (1 << 3); m++) {
+			fp4_copy_sec(r->x, t0[m]->x, m == col);
+			fp4_copy_sec(r->y, t0[m]->y, m == col);
+#if !defined(EP_MIXED)
+			fp4_copy_sec(r->z, t0[m]->z, m == col);
+#endif
+		}
+		ep4_neg(q[1], r);
+		fp4_copy_sec(r->y, q[1]->y, sac0[l - 1]);
+
+		col = 0;
+		for (int i = 3; i > 0; i--) {
+			col <<= 1;
+			col += sac1[i * l + l - 1];
+		}
+		for (size_t m = 0; m < (1 << 3); m++) {
+			fp4_copy_sec(q[1]->x, t1[m]->x, m == col);
+			fp4_copy_sec(q[1]->y, t1[m]->y, m == col);
+#if !defined(EP_MIXED)
+			fp4_copy_sec(q[1]->z, t1[m]->z, m == col);
+#endif
+		}
+		ep4_neg(q[2], q[1]);
+		fp4_copy_sec(q[1]->y, q[2]->y, sac1[l - 1]);
+		ep4_add(r, r, q[1]);
+
+		for (int j = l - 2; j >= 0; j--) {
+			ep4_dbl(r, r);
+
+			col = 0;
+			for (int i = 3; i > 0; i--) {
+				col <<= 1;
+				col += sac0[i * l + j];
 			}
-
-			for (size_t i = 0; i < 8; i++) {
-				n0 = reg[i][j];
-				c0 = (n0 >> 7);
-				n0 = ((n0 ^ c0) - c0) >> 1;
-
-				for (size_t m = 0; m < (1 << (RLC_WIDTH - 2)); m++) {
-					fp4_copy_sec(w->x, t[i][m]->x, m == n0);
-					fp4_copy_sec(w->y, t[i][m]->y, m == n0);
-	#if !defined(EP_MIXED)
-					fp4_copy_sec(w->z, t[i][m]->z, m == n0);
-	#endif
-				}
-
-				ep4_neg(q, w);
-				fp4_copy_sec(q->y, w->y, c0 == 0);
-				ep4_add(r, r, q);
+			
+			for (size_t m = 0; m < (1 << 3); m++) {
+				fp4_copy_sec(q[1]->x, t0[m]->x, m == col);
+				fp4_copy_sec(q[1]->y, t0[m]->y, m == col);
+#if !defined(EP_MIXED)
+				fp4_copy_sec(q[1]->z, t0[m]->z, m == col);
+#endif
 			}
+			ep4_neg(q[2], q[1]);
+			fp4_copy_sec(q[1]->y, q[2]->y, sac0[j]);
+			ep4_add(r, r, q[1]);
+
+			col = 0;
+			for (int i = 3; i > 0; i--) {
+				col <<= 1;
+				col += sac1[i * l + j];
+			}
+			
+			for (size_t m = 0; m < (1 << 3); m++) {
+				fp4_copy_sec(q[1]->x, t1[m]->x, m == col);
+				fp4_copy_sec(q[1]->y, t1[m]->y, m == col);
+#if !defined(EP_MIXED)
+				fp4_copy_sec(q[1]->z, t1[m]->z, m == col);
+#endif
+			}
+			ep4_neg(q[2], q[1]);
+			fp4_copy_sec(q[1]->y, q[2]->y, sac1[j]);
+			ep4_add(r, r, q[1]);
 		}
 
-		for (size_t i = 0; i < 8; i++) {
-			/* Tables are built with points already negated, so no need here. */
-			ep4_sub(q, r, t[i][0]);
-			fp4_copy_sec(r->x, q->x, b[i]);
-			fp4_copy_sec(r->y, q->y, b[i]);
-			fp4_copy_sec(r->z, q->z, b[i]);
-		}
+		ep4_sub(q[1], r, q[0]);
+		fp4_copy_sec(r->x, q[1]->x, even0);
+		fp4_copy_sec(r->y, q[1]->y, even0);
+		fp4_copy_sec(r->z, q[1]->z, even0);
+
+		ep4_sub(q[1], r, q[4]);
+		fp4_copy_sec(r->x, q[1]->x, even1);
+		fp4_copy_sec(r->y, q[1]->y, even1);
+		fp4_copy_sec(r->z, q[1]->z, even1);
 
 		/* Convert r to affine coordinates. */
 		ep4_norm(r, r);
@@ -283,13 +338,13 @@ static void ep4_mul_reg_gls(ep4_t r, const ep4_t p, const bn_t k) {
 	RLC_FINALLY {
 		bn_free(n);
 		bn_free(u);
-		ep4_free(q);
-		ep4_free(w);
-		for (int i = 0; i < 4; i++) {
+		for (int i = 0; i < 7; i++) {
 			bn_free(_k[i]);
-			for (size_t j = 0; j < (1 << (RLC_WIDTH - 2)); j++) {
-				ep4_free(t[i][j]);
-			}
+			ep4_free(q[i]);
+		}
+		for (int i = 0; i < (1 << 3); i++) {
+			ep4_free(t0[i]);
+			ep4_free(t1[i]);
 		}
 	}
 }

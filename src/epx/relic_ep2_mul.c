@@ -172,7 +172,7 @@ static void ep2_mul_reg_gls(ep2_t r, const ep2_t p, const bn_t k) {
 		}
 
 		l = RLC_FP_BITS + 1;
-		bn_rec_sac(sac, &l, _k, 4, n);
+		bn_rec_sac(sac, &l, _k, 4, bn_bits(n));
 
 #if defined(EP_MIXED)
 		ep2_norm_sim(t + 1, t + 1, (1 << 3) - 1);
@@ -197,7 +197,7 @@ static void ep2_mul_reg_gls(ep2_t r, const ep2_t p, const bn_t k) {
 		}
 
 		ep2_neg(q[1], r);
-		fp2_copy_sec(r->y, q[1]->y, sac[l - 1] != 0);
+		fp2_copy_sec(r->y, q[1]->y, sac[l - 1]);
 		for (int j = l - 2; j >= 0; j--) {
 			ep2_dbl(r, r);
 

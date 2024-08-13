@@ -1547,11 +1547,11 @@ void bn_rec_frb(bn_t *ki, int sub, const bn_t k, const bn_t x, const bn_t n,
  * @param[out] b			- the recoded subscalars.
  * @param[in] len			- the length in bytes of the recoding.
  * @param[in] k				- the subscalars to recode.
- * @param[in] m				- the number of subscallars to recode.
- * @param[in] n				- the elliptic curve group order.
+ * @param[in] m				- the number of subscalars to recode.
+ * @param[in] n				- the bit length of the group order.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is insufficient.
  */
-void bn_rec_sac(int8_t *b, size_t *len, bn_t *k, size_t m, bn_t n);
+void bn_rec_sac(int8_t *b, size_t *len, bn_t *k, size_t m, size_t n);
 
 /**
  * Computes the coefficients of the polynomial representing the Lagrange
