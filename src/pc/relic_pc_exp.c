@@ -344,6 +344,7 @@ static void gt_exp_gls_sac(gt_t c, const gt_t a, const bn_t b, size_t d,
 			
 				if (sac[i * f * RLC_FP_BITS + j]) {
 					gt_inv(q[1], t[i * s + col]);
+					gt_mul(c, c, q[1]);
 				} else {
 					gt_mul(c, c, t[i * s + col]);
 				}	
