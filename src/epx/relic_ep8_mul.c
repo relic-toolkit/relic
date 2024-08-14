@@ -177,7 +177,7 @@ static void ep8_mul_reg_gls(ep8_t r, const ep8_t p, const bn_t k) {
 				ep8_add(t[i][j], t[i][j ^ (1 << (l - 1))], q[l + i * m / c]);
 			}
 			l = RLC_FP_BITS + 1;
-			bn_rec_sac(sac[i], &l, _k + i * m / c, m / c, bn_bits(n));
+			bn_rec_sac(sac[i], &l, _k + i * m / c, c, m / c, bn_bits(n));
 		}
 
 #if defined(EP_MIXED)

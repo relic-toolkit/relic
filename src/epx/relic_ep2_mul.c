@@ -172,7 +172,7 @@ static void ep2_mul_reg_gls(ep2_t r, const ep2_t p, const bn_t k) {
 		}
 
 		l = RLC_FP_BITS;
-		bn_rec_sac(sac, &l, _k, 4, bn_bits(n));
+		bn_rec_sac(sac, &l, _k, 1, 4, bn_bits(n));
 
 #if defined(EP_MIXED)
 		ep2_norm_sim(t + 1, t + 1, (1 << 3) - 1);

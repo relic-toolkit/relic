@@ -329,7 +329,7 @@ static void gt_exp_gls_sac(gt_t c, const gt_t a, const bn_t b, size_t d,
 				gt_mul(t[i * s + j], t[i * s + (j ^ (1 << (l - 1)))], q[l + i * f / d]);
 			}
 			l = RLC_FP_BITS;
-			bn_rec_sac(sac + i * f * RLC_FP_BITS, &l, _b + i * f / d, f / d, bn_bits(n));
+			bn_rec_sac(sac + i * f * RLC_FP_BITS, &l, _b + i * f / d, d, f / d, bn_bits(n));
 		}
 
 		gt_set_unity(c);
@@ -453,7 +453,7 @@ static void gt_exp_reg_sac(gt_t c, const gt_t a, const bn_t b, size_t d,
 				gt_mul(t[i * s + j], t[i * s + (j ^ (1 << (l - 1)))], q[l + i * f / d]);
 			}
 			l = RLC_FP_BITS;
-			bn_rec_sac(sac + i * f * RLC_FP_BITS, &l, _b + i * f / d, f / d, bn_bits(n));
+			bn_rec_sac(sac + i * f * RLC_FP_BITS, &l, _b + i * f / d, d, f / d, bn_bits(n));
 		}
 
 		gt_set_unity(c);

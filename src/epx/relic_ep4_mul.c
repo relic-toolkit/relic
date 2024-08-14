@@ -229,7 +229,7 @@ static void ep4_mul_reg_gls(ep4_t r, const ep4_t p, const bn_t k) {
 				ep4_add(t[i][j], t[i][j ^ (1 << (l - 1))], q[l + i * m / c]);
 			}
 			l = RLC_FP_BITS + 1;
-			bn_rec_sac(sac[i], &l, _k + i * m / c, m / c, bn_bits(n));
+			bn_rec_sac(sac[i], &l, _k + i * m / c, c, m / c, bn_bits(n));
 		}
 
 #if defined(EP_MIXED)
@@ -293,7 +293,7 @@ static void ep4_mul_reg_gls(ep4_t r, const ep4_t p, const bn_t k) {
 		}
 
 		/* Convert r to affine coordinates. */
-		ep4_norm(r, r);
+		//ep4_norm(r, r);
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
