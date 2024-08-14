@@ -122,7 +122,8 @@ static void ep4_mul_gls_imp(ep4_t r, const ep4_t p, const bn_t k) {
 		}
 		ep4_tab(t[0], q, RLC_WIDTH);
 
-		if (ep_curve_is_pairf() == EP_K16) {
+		if (ep_curve_is_pairf() == EP_K16 || ep_curve_is_pairf() == EP_N16) {
+			/* Minimize use of endomorphism when it's expensive. */
 			for (size_t i = 1; i < 8; i++) {
 				ep4_psi(q, t[i - 1][0]);
 				if (bn_sign(_k[i]) == RLC_NEG) {
