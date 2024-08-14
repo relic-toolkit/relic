@@ -295,7 +295,6 @@ static void gt_exp_gls_sac(gt_t c, const gt_t a, const bn_t b, size_t d,
 			}
 		}
 
-		gt_get_ord(n);
 		fp_prime_get_par(u);
 		if (ep_curve_is_pairf() == EP_SG18) {
 			/* Compute base -3*u for the recoding below. */
@@ -303,6 +302,7 @@ static void gt_exp_gls_sac(gt_t c, const gt_t a, const bn_t b, size_t d,
 			bn_add(u, u, n);
 			bn_neg(u, u);
 		}
+		gt_get_ord(n);
 		bn_mod(_b[0], b, n);
 		bn_rec_frb(_b, f, _b[0], u, n, ep_curve_is_pairf() == EP_BN);
 
@@ -421,7 +421,6 @@ static void gt_exp_reg_sac(gt_t c, const gt_t a, const bn_t b, size_t d,
 			}
 		}
 
-		gt_get_ord(n);
 		fp_prime_get_par(u);
 		if (ep_curve_is_pairf() == EP_SG18) {
 			/* Compute base -3*u for the recoding below. */
@@ -429,6 +428,7 @@ static void gt_exp_reg_sac(gt_t c, const gt_t a, const bn_t b, size_t d,
 			bn_add(u, u, n);
 			bn_neg(u, u);
 		}
+		gt_get_ord(n);
 		bn_mod(_b[0], b, n);
 		bn_rec_frb(_b, f, _b[0], u, n, ep_curve_is_pairf() == EP_BN);
 
@@ -773,6 +773,7 @@ void gt_exp(gt_t c, const gt_t a, const bn_t b) {
 	RLC_CAT(RLC_GT_LOWER, exp_cyc)(c, a, b);
 #elif FP_PRIME < 1536
 	if (ep_curve_embed() == 18) {
+		/* A variable-time GLS-SAC is actually faster due to shorter table. */
 		gt_exp_gls_sac(c, a, b, 1, ep_curve_frdim());
 	} else {
 		gt_exp_gls_naf(c, a, b, ep_curve_frdim());
