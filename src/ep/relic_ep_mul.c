@@ -77,8 +77,6 @@ static void ep_mul_glv_imp(ep_t r, const ep_t p, const bn_t k) {
 		bn_rec_glv(k0, k1, _k, n, (const bn_t *)v1, (const bn_t *)v2);
 		s0 = bn_sign(k0);
 		s1 = bn_sign(k1);
-		bn_abs(k0, k0);
-		bn_abs(k1, k1);
 
 		if (s0 == RLC_POS) {
 			ep_tab(t, p, RLC_WIDTH);

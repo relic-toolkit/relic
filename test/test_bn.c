@@ -2292,7 +2292,7 @@ static int recoding(void) {
 				bn_rand_mod(a, b);
 				bn_rec_glv(b, c, a, b, (const bn_t *)v1, (const bn_t *)v2);
 				ep_curve_get_ord(v2[0]);
-				bn_rec_sac(ptr, &l, v1, 2, v2[0]);
+				bn_rec_sac(ptr, &l, v1, 2, bn_bits(v2[0]));
 				if (bn_is_even(b)) {
 					bn_add_dig(b, b, 1);
 				}

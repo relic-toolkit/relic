@@ -114,7 +114,283 @@ static void gt_psi(gt_t c, const gt_t a) {
  * @param[in] b				- the exponent.
  * @param[in] f				- the maximum Frobenius power.
  */
-void gt_exp_imp(gt_t c, const gt_t a, const bn_t b, size_t f) {
+void gt_exp_gls_imp(gt_t c, const gt_t a, const bn_t b, size_t f) {
+	int8_t *naf  = RLC_ALLOCA(int8_t, f * (RLC_FP_BITS + 1));
+	int8_t n0, *s = RLC_ALLOCA(int8_t, f);
+	gt_t q, *t = RLC_ALLOCA(gt_t, f * RLC_GT_TABLE);
+	bn_t n, u, *_b = RLC_ALLOCA(bn_t, f);
+	size_t l, *_l = RLC_ALLOCA(size_t, f);
+
+	if (naf == NULL || t == NULL || _b == NULL || _l == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
+		return;
+	}
+
+	if (bn_is_zero(b)) {
+		RLC_FREE(naf);
+		RLC_FREE(s);
+		RLC_FREE(t);
+		RLC_FREE(_b);
+		RLC_FREE(_l);
+		return gt_set_unity(c);
+	}
+
+	bn_null(n);
+	bn_null(u);
+	gt_null(q);
+
+	RLC_TRY {
+		bn_new(n);
+		bn_new(u);
+		gt_new(q);
+		for (size_t i = 0; i < f; i++) {
+			bn_null(_b[i]);
+			bn_new(_b[i]);
+			for (size_t j = 0; j < RLC_GT_TABLE; j++) {
+				gt_null(t[i * RLC_GT_TABLE + j]);
+				gt_new(t[i * RLC_GT_TABLE + j]);
+			}
+		}
+
+		fp_prime_get_par(u);
+		if (ep_curve_is_pairf() == EP_SG18) {
+			/* Compute base -3*u for the recoding below. */
+			bn_dbl(n, u);
+			bn_add(u, u, n);
+			bn_neg(u, u);
+		}
+		gt_get_ord(n);
+		bn_abs(_b[0], b);
+		bn_mod(_b[0], _b[0], n);
+		if (bn_sign(b) == RLC_NEG) {
+			bn_neg(_b[0], _b[0]);
+		}
+		bn_rec_frb(_b, f, _b[0], u, n, ep_curve_is_pairf() == EP_BN);
+
+		l = 0;
+		for (size_t i = 0; i < f; i++) {
+			s[i] = bn_sign(_b[i]);
+			_l[i] = RLC_FP_BITS + 1;
+			bn_rec_naf(naf + i * (RLC_FP_BITS + 1), &_l[i], _b[i], RLC_WIDTH);
+			l = RLC_MAX(l, _l[i]);
+		}
+
+		if (ep_curve_is_pairf() == EP_K16 || ep_curve_embed() == 18) {
+			gt_copy(t[0], a);
+			for (size_t i = 1; i < f; i++) {
+				gt_psi(t[i * RLC_GT_TABLE], t[(i - 1) * RLC_GT_TABLE]);
+			}
+			for (size_t i = 0; i < f; i++) {
+				gt_copy(q, t[i * RLC_GT_TABLE]);
+				if (s[i] == RLC_NEG) {
+					gt_inv(q, t[i * RLC_GT_TABLE]);
+				}
+				if (RLC_WIDTH > 2) {
+					gt_sqr(t[i * RLC_GT_TABLE], q);
+					gt_mul(t[i * RLC_GT_TABLE + 1], t[i * RLC_GT_TABLE], q);
+					for (size_t j = 2; j < RLC_GT_TABLE; j++) {
+						gt_mul(t[i * RLC_GT_TABLE + j], t[i * RLC_GT_TABLE + j - 1],
+								t[i * (RLC_GT_TABLE)]);
+					}
+				}
+				gt_copy(t[i * RLC_GT_TABLE], q);
+			}
+		} else {
+			gt_copy(q, a);
+			if (bn_sign(_b[0]) == RLC_NEG) {
+				gt_inv(q, q);
+			}
+			if (RLC_WIDTH > 2) {
+				gt_sqr(t[0], q);
+				gt_mul(t[1], t[0], q);
+				for (size_t j = 2; j < RLC_GT_TABLE; j++) {
+					gt_mul(t[j], t[j - 1], t[0]);
+				}
+			}
+			gt_copy(t[0], q);
+			for (size_t i = 1; i < f; i++) {
+				for (size_t j = 0; j < RLC_GT_TABLE; j++) {
+					gt_psi(t[i * RLC_GT_TABLE + j], t[(i - 1) * RLC_GT_TABLE + j]);
+					if (s[i] != s[i - 1]) {
+						gt_inv(t[i * RLC_GT_TABLE + j], t[i * RLC_GT_TABLE + j]);
+					}
+				}
+			}
+		}
+
+		gt_set_unity(c);
+		for (int j = l - 1; j >= 0; j--) {
+			gt_sqr(c, c);
+
+			for (size_t i = 0; i < f; i++) {
+				n0 = naf[i * (RLC_FP_BITS + 1) + j];
+				if (n0 > 0) {
+					gt_mul(c, c, t[i * RLC_GT_TABLE + n0 / 2]);
+				}
+				if (n0 < 0) {
+					gt_inv(q, t[i * RLC_GT_TABLE - n0 / 2]);
+					gt_mul(c, c, q);
+				}
+			}
+		}
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		bn_free(n);
+		bn_free(u);
+		gt_free(q);
+		for (size_t i = 0; i < f; i++) {
+			bn_free(_b[i]);
+			for (size_t j = 0; j < RLC_GT_TABLE; j++) {
+				gt_free(t[i * RLC_GT_TABLE + j]);
+			}
+		}
+		RLC_FREE(naf);
+		RLC_FREE(s);
+		RLC_FREE(t);
+		RLC_FREE(_b);
+		RLC_FREE(_l);
+	}
+}
+
+#if FP_PRIME < 1536
+
+/**
+ * Exponentiates an element from G_T in constant time.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the element to exponentiate.
+ * @param[in] b				- the exponent.
+ * @param[in] f				- the maximum Frobenius power.
+ */
+static void gt_exp_reg_gls(gt_t c, const gt_t a, const bn_t b, size_t d,
+		size_t f) {
+	size_t l, s = (1 << (f / d - 1));
+	bn_t n, *_b = RLC_ALLOCA(bn_t, f), u;
+	int8_t col, *e = RLC_ALLOCA(int8_t, d);
+	int8_t *sac = RLC_ALLOCA(int8_t, d * f * RLC_FP_BITS);
+	gt_t *q = RLC_ALLOCA(gt_t, f), *t = RLC_ALLOCA(gt_t, d * s);
+
+	if (sac == NULL || e == NULL || t == NULL || _b == NULL || q == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
+		return;
+	}
+
+	bn_null(n);
+	bn_null(u);
+
+	RLC_TRY {
+		bn_new(n);
+		bn_new(u);
+		for (int i = 0; i < f; i++) {
+			bn_null(_b[i]);
+			gt_null(q[i]);
+			bn_new(_b[i]);
+			gt_new(q[i]);
+		}
+		for (size_t i = 0; i < d; i++) {
+			for (int j = 0; j < s; j++) {
+				gt_null(t[i * s + j]);
+				gt_new(t[i * s + j]);
+			}
+		}
+
+		gt_get_ord(n);
+		fp_prime_get_par(u);
+		if (ep_curve_is_pairf() == EP_SG18) {
+			/* Compute base -3*u for the recoding below. */
+			bn_dbl(n, u);
+			bn_add(u, u, n);
+			bn_neg(u, u);
+		}
+		bn_mod(_b[0], b, n);
+		bn_rec_frb(_b, f, _b[0], u, n, ep_curve_is_pairf() == EP_BN);
+
+		gt_copy(q[0], a);
+		for (size_t i = 1; i < f; i++) {
+			gt_psi(q[i], q[i - 1]);
+		}
+		for (size_t i = 0; i < f; i++) {
+			gt_inv(c, q[i]);
+			gt_copy_sec(q[i], c, bn_sign(_b[i]) == RLC_NEG);
+			bn_abs(_b[i], _b[i]);
+		}
+		for (size_t i = 0; i < d; i++) {
+			e[i] = bn_is_even(_b[i * f / d]);
+			bn_add_dig(_b[i * f / d], _b[i * f / d], e[i]);
+		}
+		
+		for (size_t i = 0; i < d; i++) {
+			gt_copy(t[i * s], q[i * f / d]);
+			for (size_t j = 1; j < s; j++) {
+				l = util_bits_dig(j);
+				gt_mul(t[i * s + j], t[i * s + (j ^ (1 << (l - 1)))], q[l + i * f / d]);
+			}
+			l = RLC_FP_BITS;
+			bn_rec_sac(sac + i * f * RLC_FP_BITS, &l, _b + i * f / d, f / d, bn_bits(n));
+		}
+
+		gt_set_unity(c);
+		for (int j = l - 1; j >= 0; j--) {
+			gt_sqr(c, c);
+			for (size_t i = 0; i < d; i++) {
+				col = 0;
+				for (int k = f / d - 1; k > 0; k--) {
+					col <<= 1;
+					col += sac[i * f * RLC_FP_BITS + k * l + j];
+				}
+			
+				for (size_t m = 0; m < s; m++) {
+					gt_copy_sec(q[1], t[i * s + m], m == col);
+				}
+				gt_inv(q[2], q[1]);
+				gt_copy_sec(q[1], q[2], sac[i * f * RLC_FP_BITS + j]);
+				gt_mul(c, c, q[1]);
+			}
+		}
+
+		for (size_t i = 0; i < d; i++) {
+			gt_inv(q[1], q[i * f / d]);
+			gt_mul(q[1], q[1], c);
+			gt_copy_sec(c, q[1], e[i]);
+		}
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		bn_free(n);
+		bn_free(u);
+		for (int i = 0; i < f; i++) {
+			bn_free(_b[i]);
+			gt_free(q[i]);
+		}
+		for (size_t i = 0; i < d; i++) {
+			for (int j = 0; j < s; j++) {
+				gt_free(t[i * d + j]);
+			}
+		}
+		RLC_FREE(e);
+		RLC_FREE(_b);
+		RLC_FREE(q);
+		RLC_FREE(t);
+		RLC_FREE(sac);
+	}
+}
+
+#else
+
+/**
+ * Exponentiates an element from G_T in constant time.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the element to exponentiate.
+ * @param[in] b				- the exponent.
+ * @param[in] f				- the maximum Frobenius power.
+ */
+void gt_exp_reg_gls(gt_t c, const gt_t a, const bn_t b, size_t f) {
 	int8_t c0, n0, *reg  = RLC_ALLOCA(int8_t, f * (RLC_FP_BITS + 1));
 	int8_t *e = RLC_ALLOCA(int8_t, f), *s = RLC_ALLOCA(int8_t, f);
 	gt_t q, w, *t = RLC_ALLOCA(gt_t, f * RLC_GT_TABLE);
@@ -254,137 +530,7 @@ void gt_exp_imp(gt_t c, const gt_t a, const bn_t b, size_t f) {
 	}
 }
 
-/**
- * Size of a precomputation table using the double-table comb method.
- */
-#define RLC_GT_TABLE		(1 << (RLC_WIDTH - 2))
-
-/**
- * Exponentiates an element from G_T in constant time.
- *
- * @param[out] c			- the result.
- * @param[in] a				- the element to exponentiate.
- * @param[in] b				- the exponent.
- * @param[in] f				- the maximum Frobenius power.
- */
-void gt_exp_gls_imp(gt_t c, const gt_t a, const bn_t b, size_t f) {
-	int8_t *naf  = RLC_ALLOCA(int8_t, f * (RLC_FP_BITS + 1));
-	int8_t n0, *s = RLC_ALLOCA(int8_t, f);
-	gt_t q, *t = RLC_ALLOCA(gt_t, f * RLC_GT_TABLE);
-	bn_t n, u, *_b = RLC_ALLOCA(bn_t, f);
-	size_t l, *_l = RLC_ALLOCA(size_t, f);
-
-	if (naf == NULL || t == NULL || _b == NULL || _l == NULL) {
-		RLC_THROW(ERR_NO_MEMORY);
-		return;
-	}
-
-	if (bn_is_zero(b)) {
-		RLC_FREE(naf);
-		RLC_FREE(s);
-		RLC_FREE(t);
-		RLC_FREE(_b);
-		RLC_FREE(_l);
-		return gt_set_unity(c);
-	}
-
-	bn_null(n);
-	bn_null(u);
-	gt_null(q);
-
-	RLC_TRY {
-		bn_new(n);
-		bn_new(u);
-		gt_new(q);
-		for (size_t i = 0; i < f; i++) {
-			bn_null(_b[i]);
-			bn_new(_b[i]);
-			for (size_t j = 0; j < RLC_GT_TABLE; j++) {
-				gt_null(t[i * RLC_GT_TABLE + j]);
-				gt_new(t[i * RLC_GT_TABLE + j]);
-			}
-		}
-
-		fp_prime_get_par(u);
-		if (ep_curve_is_pairf() == EP_SG18) {
-			/* Compute base -3*u for the recoding below. */
-			bn_dbl(n, u);
-			bn_add(u, u, n);
-			bn_neg(u, u);
-		}
-		gt_get_ord(n);
-		bn_abs(_b[0], b);
-		bn_mod(_b[0], _b[0], n);
-		if (bn_sign(b) == RLC_NEG) {
-			bn_neg(_b[0], _b[0]);
-		}
-		bn_rec_frb(_b, f, _b[0], u, n, ep_curve_is_pairf() == EP_BN);
-
-		l = 0;
-		gt_copy(t[0], a);
-		for (size_t i = 0; i < f; i++) {
-			s[i] = bn_sign(_b[i]);
-			bn_abs(_b[i], _b[i]);
-
-			_l[i] = RLC_FP_BITS + 1;
-			bn_rec_naf(naf + i * (RLC_FP_BITS + 1), &_l[i], _b[i], RLC_WIDTH);
-			l = RLC_MAX(l, _l[i]);
-			/* Apply Frobenius before flipping sign to build table. */
-			if (i > 0) {
-				gt_psi(t[i * RLC_GT_TABLE], t[(i - 1) * RLC_GT_TABLE]);
-			}
-		}
-
-		for (size_t i = 0; i < f; i++) {
-			gt_inv(q, t[i * RLC_GT_TABLE]);
-			gt_copy_sec(q, t[i * RLC_GT_TABLE], s[i] == RLC_POS);
-			if (RLC_WIDTH > 2) {
-				gt_sqr(t[i * RLC_GT_TABLE], q);
-				gt_mul(t[i * RLC_GT_TABLE + 1], t[i * RLC_GT_TABLE], q);
-				for (size_t j = 2; j < RLC_GT_TABLE; j++) {
-					gt_mul(t[i * RLC_GT_TABLE + j], t[i * RLC_GT_TABLE + j - 1],
-							t[i * (RLC_GT_TABLE)]);
-				}
-			}
-			gt_copy(t[i * RLC_GT_TABLE], q);
-		}
-
-		gt_set_unity(c);
-		for (int j = l - 1; j >= 0; j--) {
-			gt_sqr(c, c);
-
-			for (size_t i = 0; i < f; i++) {
-				n0 = naf[i * (RLC_FP_BITS + 1) + j];
-				if (n0 > 0) {
-					gt_mul(c, c, t[i * RLC_GT_TABLE + n0 / 2]);
-				}
-				if (n0 < 0) {
-					gt_inv(q, t[i * RLC_GT_TABLE - n0 / 2]);
-					gt_mul(c, c, q);
-				}
-			}
-		}
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		bn_free(n);
-		bn_free(u);
-		gt_free(q);
-		for (size_t i = 0; i < f; i++) {
-			bn_free(_b[i]);
-			for (size_t j = 0; j < RLC_GT_TABLE; j++) {
-				gt_free(t[i * RLC_GT_TABLE + j]);
-			}
-		}
-		RLC_FREE(naf);
-		RLC_FREE(s);
-		RLC_FREE(t);
-		RLC_FREE(_b);
-		RLC_FREE(_l);
-	}
-}
+#endif
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -521,8 +667,12 @@ void gt_exp_sec(gt_t c, const gt_t a, const bn_t b) {
 		return;
 	}
 
-#if FP_PRIME <= 1536
-	gt_exp_imp(c, a, b, ep_curve_frdim());
+#if FP_PRIME < 1536
+	size_t d = ep_curve_frdim();
+	d = (d > 4 ? d / 4 : 1);
+	gt_exp_reg_gls(c, a, b, d, ep_curve_frdim());
+#elif FP_PRIME == 1536
+	gt_exp_reg_gls(c, a, b, 1);
 #else
 	RLC_CAT(RLC_GT_LOWER, exp_monty)(c, a, b);
 #endif
