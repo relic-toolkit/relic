@@ -390,20 +390,21 @@ static void gt_exp_reg_gls(gt_t c, const gt_t a, const bn_t b, size_t d,
  * @param[in] b				- the exponent.
  * @param[in] f				- the maximum Frobenius power.
  */
-void gt_exp_gls_imp(gt_t c, const gt_t a, const bn_t b, size_t f) {
-	int8_t *naf  = RLC_ALLOCA(int8_t, f * (RLC_FP_BITS + 1));
-	int8_t n0, *s = RLC_ALLOCA(int8_t, f);
-	gt_t q, *t = RLC_ALLOCA(gt_t, f * RLC_GT_TABLE);
+void gt_exp_reg_gls(gt_t c, const gt_t a, const bn_t b, size_t f) {
+	int8_t c0, n0, *reg  = RLC_ALLOCA(int8_t, f * (RLC_FP_BITS + 1));
+	int8_t *e = RLC_ALLOCA(int8_t, f), *s = RLC_ALLOCA(int8_t, f);
+	gt_t q, w, *t = RLC_ALLOCA(gt_t, f * RLC_GT_TABLE);
 	bn_t n, u, *_b = RLC_ALLOCA(bn_t, f);
-	size_t l, *_l = RLC_ALLOCA(size_t, f);
+	size_t l, len, *_l = RLC_ALLOCA(size_t, f);
 
-	if (naf == NULL || t == NULL || _b == NULL || _l == NULL) {
+	if (reg == NULL || e == NULL || t == NULL || _b == NULL || _l == NULL) {
 		RLC_THROW(ERR_NO_MEMORY);
 		return;
 	}
 
 	if (bn_is_zero(b)) {
-		RLC_FREE(naf);
+		RLC_FREE(reg);
+		RLC_FREE(e);
 		RLC_FREE(s);
 		RLC_FREE(t);
 		RLC_FREE(_b);
@@ -414,11 +415,13 @@ void gt_exp_gls_imp(gt_t c, const gt_t a, const bn_t b, size_t f) {
 	bn_null(n);
 	bn_null(u);
 	gt_null(q);
+	gt_null(w);
 
 	RLC_TRY {
 		bn_new(n);
 		bn_new(u);
 		gt_new(q);
+		gt_new(w);
 		for (size_t i = 0; i < f; i++) {
 			bn_null(_b[i]);
 			bn_new(_b[i]);
@@ -444,13 +447,16 @@ void gt_exp_gls_imp(gt_t c, const gt_t a, const bn_t b, size_t f) {
 		bn_rec_frb(_b, f, _b[0], u, n, ep_curve_is_pairf() == EP_BN);
 
 		l = 0;
+		len = bn_bits(u) + (ep_curve_is_pairf() == EP_BN);
 		gt_copy(t[0], a);
 		for (size_t i = 0; i < f; i++) {
 			s[i] = bn_sign(_b[i]);
 			bn_abs(_b[i], _b[i]);
+			e[i] = bn_is_even(_b[i]);
+			_b[i]->dp[0] |= e[i];
 
 			_l[i] = RLC_FP_BITS + 1;
-			bn_rec_naf(naf + i * (RLC_FP_BITS + 1), &_l[i], _b[i], RLC_WIDTH);
+			bn_rec_reg(reg + i * (RLC_FP_BITS + 1), &_l[i], _b[i], len, RLC_WIDTH);
 			l = RLC_MAX(l, _l[i]);
 			/* Apply Frobenius before flipping sign to build table. */
 			if (i > 0) {
@@ -474,18 +480,31 @@ void gt_exp_gls_imp(gt_t c, const gt_t a, const bn_t b, size_t f) {
 
 		gt_set_unity(c);
 		for (int j = l - 1; j >= 0; j--) {
-			gt_sqr(c, c);
+			for (size_t i = 0; i < RLC_WIDTH - 1; i++) {
+				gt_sqr(c, c);
+			}
 
 			for (size_t i = 0; i < f; i++) {
-				n0 = naf[i * (RLC_FP_BITS + 1) + j];
-				if (n0 > 0) {
-					gt_mul(c, c, t[i * RLC_GT_TABLE + n0 / 2]);
+				n0 = reg[i * (RLC_FP_BITS + 1) + j];
+				c0 = (n0 >> 7);
+				n0 = ((n0 ^ c0) - c0) >> 1;
+
+				for (size_t m = 0; m < RLC_GT_TABLE; m++) {
+					gt_copy_sec(w, t[i * RLC_GT_TABLE + m], m == n0);
 				}
-				if (n0 < 0) {
-					gt_inv(q, t[i * RLC_GT_TABLE - n0 / 2]);
-					gt_mul(c, c, q);
-				}
+
+				gt_inv(q, w);
+				gt_copy_sec(q, w, c0 == 0);
+				gt_mul(c, c, q);
+
 			}
+		}
+
+		for (size_t i = 0; i < f; i++) {
+			/* Tables are built with points already negated, so no need here. */
+			gt_inv(q, t[i * RLC_GT_TABLE]);
+			gt_mul(q, c, q);
+			gt_copy_sec(c, q, e[i]);
 		}
 	}
 	RLC_CATCH_ANY {
@@ -495,13 +514,15 @@ void gt_exp_gls_imp(gt_t c, const gt_t a, const bn_t b, size_t f) {
 		bn_free(n);
 		bn_free(u);
 		gt_free(q);
+		gt_free(w);
 		for (size_t i = 0; i < f; i++) {
 			bn_free(_b[i]);
 			for (size_t j = 0; j < RLC_GT_TABLE; j++) {
 				gt_free(t[i * RLC_GT_TABLE + j]);
 			}
 		}
-		RLC_FREE(naf);
+		RLC_FREE(reg);
+		RLC_FREE(e);
 		RLC_FREE(s);
 		RLC_FREE(t);
 		RLC_FREE(_b);
@@ -646,10 +667,12 @@ void gt_exp_sec(gt_t c, const gt_t a, const bn_t b) {
 		return;
 	}
 
-#if FP_PRIME <= 1536
+#if FP_PRIME < 1536
 	size_t d = ep_curve_frdim();
 	d = (d > 4 ? d / 4 : 1);
 	gt_exp_reg_gls(c, a, b, d, ep_curve_frdim());
+#elif FP_PRIME == 1536
+	gt_exp_reg_gls(c, a, b, 1);
 #else
 	RLC_CAT(RLC_GT_LOWER, exp_monty)(c, a, b);
 #endif
