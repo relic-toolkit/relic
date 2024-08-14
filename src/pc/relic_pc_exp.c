@@ -513,7 +513,7 @@ void gt_exp_sec(gt_t c, const gt_t a, const bn_t b) {
 		return;
 	}
 
-#if FP_PRIME <= 1536
+#if FP_PRIME < 1536
 	size_t d = ep_curve_frdim();
 	d = (d > 4 ? d / 4 : 1);
 	gt_exp_reg_gls(c, a, b, d, ep_curve_frdim());
