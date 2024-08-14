@@ -129,7 +129,7 @@ static void ep2_mul_gls_imp(ep2_t r, const ep2_t p, const bn_t k) {
 static void ep2_mul_reg_gls(ep2_t r, const ep2_t p, const bn_t k) {
 	size_t l;
 	bn_t n, _k[4], u;
-	int8_t even, col, sac[4 * (RLC_FP_BITS + 1)];
+	int8_t even, col, sac[4 * RLC_FP_BITS];
 	ep2_t q[4], t[1 << 3];
 
 	bn_null(n);
@@ -171,7 +171,7 @@ static void ep2_mul_reg_gls(ep2_t r, const ep2_t p, const bn_t k) {
 			ep2_add(t[i], t[i ^ (1 << (l - 1))], q[l]);
 		}
 
-		l = RLC_FP_BITS + 1;
+		l = RLC_FP_BITS;
 		bn_rec_sac(sac, &l, _k, 4, bn_bits(n));
 
 #if defined(EP_MIXED)

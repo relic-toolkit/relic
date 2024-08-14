@@ -145,7 +145,7 @@ static void ep8_mul_reg_gls(ep8_t r, const ep8_t p, const bn_t k) {
 			ep8_new(q[i]);
 		}
 		for (size_t i = 0; i < c; i++) {
-			for (int j = 0; j < (j << 3); i++) {
+			for (int j = 0; j < (1 << 3); j++) {
 				ep8_null(t[i][j]);
 				ep8_new(t[i][j]);
 			}
@@ -156,11 +156,6 @@ static void ep8_mul_reg_gls(ep8_t r, const ep8_t p, const bn_t k) {
 		bn_mod(_k[0], k, n);
 		bn_rec_frb(_k, 16, _k[0], u, n, ep_curve_is_pairf() == EP_BN);
 
-		for (size_t i = 0; i < c; i++) {
-			even[i] = bn_is_even(_k[i * m / c]);
-			bn_add_dig(_k[i * m / c], _k[i * m / c], even[i]);
-		}
-		
 		ep8_norm(q[0], p);
 		for (size_t i = 1; i < 16; i++) {
 			ep8_frb(q[i], q[i - 1], 1);
@@ -170,7 +165,11 @@ static void ep8_mul_reg_gls(ep8_t r, const ep8_t p, const bn_t k) {
 			fp8_copy_sec(q[i]->y, r->y, bn_sign(_k[i]) == RLC_NEG);
 			bn_abs(_k[i], _k[i]);
 		}
-
+		for (size_t i = 0; i < c; i++) {
+			even[i] = bn_is_even(_k[i * m / c]);
+			bn_add_dig(_k[i * m / c], _k[i * m / c], even[i]);
+		}
+		
 		for (size_t i = 0; i < c; i++) {
 			ep8_copy(t[i][0], q[i * m / c]);
 			for (size_t j = 1; j < (1 << 3); j++) {
@@ -255,7 +254,7 @@ static void ep8_mul_reg_gls(ep8_t r, const ep8_t p, const bn_t k) {
 			ep8_free(q[i]);
 		}
 		for (size_t i = 0; i < c; i++) {
-			for (int j = 0; j < (j << 3); i++) {
+			for (int j = 0; j < (1 << 3); j++) {
 				ep8_free(t[i][j]);
 			}
 		}
