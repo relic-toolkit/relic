@@ -63,7 +63,8 @@ static int memory(void) {
 }
 
 static int util(void) {
-	int bits, code = RLC_ERR;
+	uint_t bits;
+	int code = RLC_ERR;
 	char str[RLC_BN_BITS + 2];
 	dig_t digit, raw[RLC_BN_DIGS];
 	uint8_t bin[RLC_CEIL(RLC_BN_BITS, 8)];
@@ -2278,6 +2279,29 @@ static int recoding(void) {
 				bn_mod(v2[2], v2[2], v2[0]);
 				TEST_ASSERT(bn_cmp(a, v2[1]) == RLC_EQ ||
 					bn_cmp(a, v2[2]) == RLC_EQ, end);
+			}
+		} TEST_END;
+
+		TEST_CASE("glv-sac recoding is correct") {
+			size_t l = RLC_BN_BITS;
+			int8_t ptr[2 * RLC_BN_BITS] = { 0 };
+			if (ep_param_set_any_endom() == RLC_OK) {
+				ep_curve_get_v1(v1);
+				ep_curve_get_v2(v2);
+				ep_curve_get_ord(b);
+				bn_rand_mod(a, b);
+				bn_rec_glv(b, c, a, b, (const bn_t *)v1, (const bn_t *)v2);
+				ep_curve_get_ord(v2[0]);
+				bn_rec_sac(ptr, &l, v1, 1, 2, bn_bits(v2[0]));
+				if (bn_is_even(b)) {
+					bn_add_dig(b, b, 1);
+				}
+				bn_copy(v1[0], b);
+				bn_copy(v1[1], c);
+				for (size_t i = 0; i < l; i++) {
+					TEST_ASSERT(ptr[i] == 0 || ptr[i] == 1, end);
+					TEST_ASSERT(ptr[l + i] == 0 || ptr[l + i] == 1, end);
+				}
 			}
 		} TEST_END;
 #endif /* WITH_EP && EP_ENDOM */

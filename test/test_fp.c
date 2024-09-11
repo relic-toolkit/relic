@@ -62,7 +62,8 @@ static int memory(void) {
 }
 
 static int util(void) {
-	int bits, code = RLC_ERR;
+	uint_t bits;
+	int code = RLC_ERR;
 	/* Allocate two extra for sign and null terminator. */
 	char str[RLC_FP_BITS + 2];
 	uint8_t bin[RLC_FP_BYTES];
@@ -947,6 +948,13 @@ static int symbol(void) {
 		} TEST_END;
 #endif
 
+#if FP_SMB == BINAR || !defined(STRIP)
+		TEST_CASE("binary symbol computation is correct") {
+			fp_rand(a);
+			TEST_ASSERT(fp_smb(a) == fp_smb_binar(a), end);
+		} TEST_END;
+#endif
+
 #if FP_SMB == DIVST || !defined(STRIP)
 		TEST_CASE("division step symbol computation is correct") {
 			fp_rand(a);
@@ -1153,7 +1161,7 @@ static int cube_root(void) {
 			fp_mul(c, c, a);
 			TEST_ASSERT(fp_crt(b, c), end);
 			if (fp_prime_get_cnr()) {
-				fp_copy(d, (const dig_t *)fp_prime_get_crt());
+				fp_copy(d, (dig_t *)fp_prime_get_crt());
 				while (fp_cmp_dig(d, 1) != RLC_EQ) {
 					fp_copy(c, d);
 					fp_sqr(d, d);

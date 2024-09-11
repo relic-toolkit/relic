@@ -223,9 +223,9 @@ void ep3_print(const ep3_t p) {
 	fp3_print(p->z);
 }
 
-int ep3_size_bin(const ep3_t a, int pack) {
+size_t ep3_size_bin(const ep3_t a, int pack) {
 	ep3_t t;
-	int size = 0;
+	size_t size = 0;
 
 	ep3_null(t);
 

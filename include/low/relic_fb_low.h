@@ -85,7 +85,7 @@ void fb_addn_low(dig_t *c, const dig_t *a, const dig_t *b);
  * @param[in] b				- the second digit vector to add.
  * @param[in] size			- the number of digits to add.
  */
-void fb_addd_low(dig_t *c, const dig_t *a, const dig_t *b, int size);
+void fb_addd_low(dig_t *c, const dig_t *a, const dig_t *b, size_t size);
 
 /**
  * Shifts a digit vector to the left by 1 bit. Computes c = a * z.
@@ -106,7 +106,7 @@ dig_t fb_lsh1_low(dig_t *c, const dig_t *a);
  * @param[in] bits			- the shift ammount.
  * @return the carry of the last digit shift.
  */
-dig_t fb_lshb_low(dig_t *c, const dig_t *a, int bits);
+dig_t fb_lshb_low(dig_t *c, const dig_t *a, uint_t bits);
 
 /**
  * Shifts a digit vector to the right by 1 bit. Computes c = a / z.
@@ -127,7 +127,7 @@ dig_t fb_rsh1_low(dig_t *c, const dig_t *a);
  * @param[in] bits			- the shift amount.
  * @return the carry of the last digit shift.
  */
-dig_t fb_rshb_low(dig_t *c, const dig_t *a, int bits);
+dig_t fb_rshb_low(dig_t *c, const dig_t *a, uint_t bits);
 
 /**
  * Adds a left-shifted digit vector to another digit vector.
@@ -140,7 +140,7 @@ dig_t fb_rshb_low(dig_t *c, const dig_t *a, int bits);
  * @param[in] bits			- the shift amount.
  * @return the carry of the last shift.
  */
-dig_t fb_lsha_low(dig_t *c, const dig_t *a, int bits, int size);
+dig_t fb_lsha_low(dig_t *c, const dig_t *a, uint_t bits, size_t size);
 
 /**
  * Multiplies a digit vector by a digit.
@@ -169,7 +169,7 @@ void fb_muln_low(dig_t *c, const dig_t *a, const dig_t *b);
  * @param[in] b				- the second digit vector to multiply.
  * @param[in] size			- the size of the digit vectors.
  */
-void fb_muld_low(dig_t *c, const dig_t *a, const dig_t *b, int size);
+void fb_muld_low(dig_t *c, const dig_t *a, const dig_t *b, size_t size);
 
 /**
  * Multiplies two digit vectors of the same size with embedded modular

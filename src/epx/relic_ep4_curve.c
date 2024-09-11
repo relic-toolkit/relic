@@ -366,7 +366,7 @@ void ep4_curve_mul_a(fp4_t c, const fp4_t a) {
 				break;
 #if FP_RDC != MONTY
 			case RLC_TINY:
-				fp4_mul_dig(c, a, ctx->ep4_a[0]);
+				fp4_mul_dig(c, a, ctx->ep4_a[0][0][0]);
 				break;
 #endif
 			default:
@@ -387,7 +387,7 @@ void ep4_curve_mul_b(fp4_t c, const fp4_t a) {
 			break;
 #if FP_RDC != MONTY
 		case RLC_TINY:
-			fp4_mul_dig(c, a, ctx->ep4_b[0]);
+			fp4_mul_dig(c, a, ctx->ep4_b[0][0][0]);
 			break;
 #endif
 		default:

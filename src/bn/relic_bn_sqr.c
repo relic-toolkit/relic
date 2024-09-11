@@ -47,7 +47,7 @@
  * @param[in] a				- the multiple precision integer to square.
  * @param[in] level			- the number of Karatsuba steps to apply.
  */
-static void bn_sqr_karat_imp(bn_t c, const bn_t a, int level) {
+static void bn_sqr_karat_imp(bn_t c, const bn_t a, uint_t level) {
 	bn_t a0, a1, a0a0, a1a1, t;
 	int h = a->used >> 1;
 

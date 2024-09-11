@@ -122,7 +122,7 @@ void fp_set_dig(fp_t c, dig_t a) {
 }
 
 void fp_rand(fp_t a) {
-	int bits, digits;
+	uint_t bits, digits;
 
 	rand_bytes((uint8_t *)a, RLC_FP_DIGS * sizeof(dig_t));
 

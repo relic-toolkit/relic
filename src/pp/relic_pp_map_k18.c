@@ -213,7 +213,7 @@ static void pp_fin_k18_oatep(fp18_t r, ep3_t t, const ep3_t q, const ep_t p,
         fp18_new(u);
         fp18_new(v);
         ep3_new(_q);
-        ep3_null(_p);
+        ep_new(_p);
 
 		/* Compute additional line function. */
 		fp18_zero(u);

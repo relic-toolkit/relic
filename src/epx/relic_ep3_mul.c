@@ -85,12 +85,11 @@ static void ep3_psi(ep3_t r, const ep3_t p) {
 
 #if EP_MUL == LWNAF || !defined(STRIP)
 
-static void ep3_mul_glv_imp(ep3_t r, const ep3_t p, const bn_t k) {
-	int i, j;
-	size_t l, _l[6];
+static void ep3_mul_gls_imp(ep3_t r, const ep3_t p, const bn_t k) {
+	size_t l;
 	bn_t n, _k[6], u;
-	int8_t naf[6][RLC_FP_BITS + 1];
-	ep3_t q[6];
+	int8_t even, col, sac[6 * (RLC_FP_BITS + 1)];
+	ep3_t q[6], t[1 << 5];
 
 	bn_null(n);
 	bn_null(u);
@@ -98,11 +97,15 @@ static void ep3_mul_glv_imp(ep3_t r, const ep3_t p, const bn_t k) {
 	RLC_TRY {
 		bn_new(n);
 		bn_new(u);
-		for (i = 0; i < 6; i++) {
+		for (int i = 0; i < 6; i++) {
 			bn_null(_k[i]);
 			ep3_null(q[i]);
 			bn_new(_k[i]);
 			ep3_new(q[i]);
+		}
+		for (int i = 0; i < (1 << 5); i++) {
+			ep3_null(t[i]);
+			ep3_new(t[i]);
 		}
 
 		fp_prime_get_par(u);
@@ -115,37 +118,56 @@ static void ep3_mul_glv_imp(ep3_t r, const ep3_t p, const bn_t k) {
 		ep3_curve_get_ord(n);
 		bn_mod(_k[0], k, n);
 		bn_rec_frb(_k, 6, _k[0], u, n, ep_curve_is_pairf() == EP_BN);
-
+		even = bn_is_even(_k[0]);
+		bn_add_dig(_k[0], _k[0], even);
 		ep3_norm(q[0], p);
-		for (int i = 1; i < 6; i++) {
+		for (size_t i = 1; i < 6; i++) {
 			ep3_psi(q[i], q[i - 1]);
 		}
-#if defined(EP_MIXED)
-		ep3_norm_sim(q + 1, q + 1, 5);
-#endif
-
-		l = 0;
-		for (i = 0; i < 6; i++) {
+		for (size_t i = 0; i < 6; i++) {
 			if (bn_sign(_k[i]) == RLC_NEG) {
 				ep3_neg(q[i], q[i]);
 			}
-			_l[i] = RLC_FP_BITS + 1;
-			bn_rec_naf(naf[i], &_l[i], _k[i], 2);
-			l = RLC_MAX(l, _l[i]);
+			bn_abs(_k[i], _k[i]);
 		}
 
+		ep3_copy(t[0], q[0]);
+		for (size_t i = 1; i < (1 << 5); i++) {
+			l = util_bits_dig(i);
+			ep3_add(t[i], t[i ^ (1 << (l - 1))], q[l]);
+		}
+
+		l = RLC_FP_BITS + 1;
+		bn_rec_sac(sac, &l, _k, 1, 6, bn_bits(n));
+
+#if defined(EP_MIXED)
+		ep3_norm_sim(t + 1, t + 1, (1 << 5) - 1);
+		fp3_set_dig(r->z, 1);
+		fp3_set_dig(q[1]->z, 1);
+		r->coord = q[1]->coord = BASIC;
+#else
+		r->coord = q[1]->coord = EP_ADD;
+#endif
+
 		ep3_set_infty(r);
-		for (j = l - 1; j >= 0; j--) {
+		for (int j = l - 1; j >= 0; j--) {
 			ep3_dbl(r, r);
 
-			for (i = 0; i < 6; i++) {
-				if (naf[i][j] > 0) {
-					ep3_add(r, r, q[i]);
-				}
-				if (naf[i][j] < 0) {
-					ep3_sub(r, r, q[i]);
-				}
+			col = 0;
+			for (int i = 5; i > 0; i--) {
+				col <<= 1;
+				col += sac[i * l + j];
 			}
+
+			if (sac[j]) {
+				ep3_sub(r, r, t[col]);
+			} else {
+				ep3_add(r, r, t[col]);
+			}			
+		}
+
+		if (even) {
+			ep3_sub(r, r, q[0]);
 		}
 
 		/* Convert r to affine coordinates. */
@@ -157,11 +179,13 @@ static void ep3_mul_glv_imp(ep3_t r, const ep3_t p, const bn_t k) {
 	RLC_FINALLY {
 		bn_free(n);
 		bn_free(u);
-		for (i = 0; i < 3; i++) {
+		for (int i = 0; i < 6; i++) {
 			bn_free(_k[i]);
 			ep3_free(q[i]);
 		}
-
+		for (int i = 0; i < (1 << 5); i++) {
+			ep3_free(t[i]);
+		}
 	}
 }
 
@@ -170,100 +194,108 @@ static void ep3_mul_glv_imp(ep3_t r, const ep3_t p, const bn_t k) {
 #if EP_MUL == LWREG || !defined(STRIP)
 
 static void ep3_mul_reg_gls(ep3_t r, const ep3_t p, const bn_t k) {
-	int8_t reg[6][RLC_FP_BITS + 1], b[6], s[6], c0, n0;
-	ep3_t q, w, t[6][1 << (RLC_WIDTH - 2)];
+	size_t l;
 	bn_t n, _k[6], u;
-	size_t l, len, _l[6];
+	int8_t even, col, sac[6 * (RLC_FP_BITS + 1)];
+	ep3_t q[6], t[1 << 5];
 
 	bn_null(n);
 	bn_null(u);
-	ep3_null(q);
-	ep3_null(w);
 
 	RLC_TRY {
 		bn_new(n);
 		bn_new(u);
-		ep3_new(q);
-		ep3_new(w);
-		for (size_t i = 0; i < 6; i++) {
+		for (int i = 0; i < 6; i++) {
 			bn_null(_k[i]);
+			ep3_null(q[i]);
 			bn_new(_k[i]);
-			for (size_t j = 0; j < (1 << (RLC_WIDTH - 2)); j++) {
-				ep3_null(t[i][j]);
-				ep3_new(t[i][j]);
-			}
+			ep3_new(q[i]);
+		}
+		for (int i = 0; i < (1 << 5); i++) {
+			ep3_null(t[i]);
+			ep3_new(t[i]);
 		}
 
-		ep3_curve_get_ord(n);
 		fp_prime_get_par(u);
+		if (ep_curve_is_pairf() == EP_SG18) {
+			/* Compute base -3*u for the recoding below. */
+			bn_dbl(n, u);
+			bn_add(u, u, n);
+			bn_neg(u, u);
+		}
+		ep3_curve_get_ord(n);
 		bn_mod(_k[0], k, n);
 		bn_rec_frb(_k, 6, _k[0], u, n, ep_curve_is_pairf() == EP_BN);
-
-		l = 0;
-		/* Make some extra room for BN curves that grow subscalars by 1. */
-		len = bn_bits(u) + (ep_curve_is_pairf() == EP_BN);
-		ep3_norm(t[0][0], p);
+		even = bn_is_even(_k[0]);
+		bn_add_dig(_k[0], _k[0], even);
+		ep3_norm(q[0], p);
+		for (size_t i = 1; i < 6; i++) {
+			ep3_psi(q[i], q[i - 1]);
+		}
 		for (size_t i = 0; i < 6; i++) {
-			s[i] = bn_sign(_k[i]);
+			ep3_neg(r, q[i]);
+			fp3_copy_sec(q[i]->y, r->y, bn_sign(_k[i]) == RLC_NEG);
 			bn_abs(_k[i], _k[i]);
-			b[i] = bn_is_even(_k[i]);
-			_k[i]->dp[0] |= b[i];
-
-			_l[i] = RLC_FP_BITS + 1;
-			bn_rec_reg(reg[i], &_l[i], _k[i], len, RLC_WIDTH);
-			l = RLC_MAX(l, _l[i]);
-			
-			/* Apply Frobenius before flipping sign to build table. */
-			if (i > 0) {
-				ep3_psi(t[i][0], t[i - 1][0]);
-			}
 		}
 
-		for (size_t i = 0; i < 6; i++) {
-			ep3_neg(q, t[i][0]);
-			fp3_copy_sec(q->y, t[i][0]->y, s[i] == RLC_POS);
-			ep3_tab(t[i], q, RLC_WIDTH);
+		ep3_copy(t[0], q[0]);
+		for (size_t i = 1; i < (1 << 5); i++) {
+			l = util_bits_dig(i);
+			ep3_add(t[i], t[i ^ (1 << (l - 1))], q[l]);
 		}
+
+		l = RLC_FP_BITS + 1;
+		bn_rec_sac(sac, &l, _k, 1, 6, bn_bits(n));
 
 #if defined(EP_MIXED)
-		fp3_set_dig(w->z, 1);
-		w->coord = BASIC;
+		ep3_norm_sim(t + 1, t + 1, (1 << 5) - 1);
+		fp3_set_dig(r->z, 1);
+		fp3_set_dig(q[1]->z, 1);
+		r->coord = q[1]->coord = BASIC;
 #else
-		w->coord = = EP_ADD;
+		r->coord = q[1]->coord = EP_ADD;
 #endif
 
-		ep3_set_infty(r);
-		for (int j = l - 1; j >= 0; j--) {
-			for (size_t i = 0; i < RLC_WIDTH - 1; i++) {
-				ep3_dbl(r, r);
-			}
-
-			for (size_t i = 0; i < 6; i++) {
-				n0 = reg[i][j];
-				c0 = (n0 >> 7);
-				n0 = ((n0 ^ c0) - c0) >> 1;
-
-				for (size_t m = 0; m < (1 << (RLC_WIDTH - 2)); m++) {
-					fp3_copy_sec(w->x, t[i][m]->x, m == n0);
-					fp3_copy_sec(w->y, t[i][m]->y, m == n0);
-	#if !defined(EP_MIXED)
-					fp3_copy_sec(w->z, t[i][m]->z, m == n0);
-	#endif
-				}
-
-				ep3_neg(q, w);
-				fp3_copy_sec(q->y, w->y, c0 == 0);
-				ep3_add(r, r, q);
-			}
+		col = 0;
+		for (int i = 5; i > 0; i--) {
+			col <<= 1;
+			col += sac[i * l + l - 1];
+		}
+		for (size_t m = 0; m < (1 << 5); m++) {
+			fp3_copy_sec(r->x, t[m]->x, m == col);
+			fp3_copy_sec(r->y, t[m]->y, m == col);
+#if !defined(EP_MIXED)
+			fp3_copy_sec(r->z, t[m]->z, m == col);
+#endif
 		}
 
-		for (size_t i = 0; i < 6; i++) {
-			/* Tables are built with points already negated, so no need here. */
-			ep3_sub(q, r, t[i][0]);
-			fp3_copy_sec(r->x, q->x, b[i]);
-			fp3_copy_sec(r->y, q->y, b[i]);
-			fp3_copy_sec(r->z, q->z, b[i]);
+		ep3_neg(q[1], r);
+		fp3_copy_sec(r->y, q[1]->y, sac[l - 1] != 0);
+		for (int j = l - 2; j >= 0; j--) {
+			ep3_dbl(r, r);
+
+			col = 0;
+			for (int i = 5; i > 0; i--) {
+				col <<= 1;
+				col += sac[i * l + j];
+			}
+			
+			for (size_t m = 0; m < (1 << 5); m++) {
+				fp3_copy_sec(q[1]->x, t[m]->x, m == col);
+				fp3_copy_sec(q[1]->y, t[m]->y, m == col);
+#if !defined(EP_MIXED)
+				fp3_copy_sec(q[1]->z, t[m]->z, m == col);
+#endif
+			}
+			ep3_neg(q[2], q[1]);
+			fp3_copy_sec(q[1]->y, q[2]->y, sac[j]);
+			ep3_add(r, r, q[1]);
 		}
+
+		ep3_sub(q[1], r, q[0]);
+		fp3_copy_sec(r->x, q[1]->x, even);
+		fp3_copy_sec(r->y, q[1]->y, even);
+		fp3_copy_sec(r->z, q[1]->z, even);
 
 		/* Convert r to affine coordinates. */
 		ep3_norm(r, r);
@@ -274,13 +306,12 @@ static void ep3_mul_reg_gls(ep3_t r, const ep3_t p, const bn_t k) {
 	RLC_FINALLY {
 		bn_free(n);
 		bn_free(u);
-		ep3_free(q);
-		ep3_free(w);
 		for (int i = 0; i < 6; i++) {
 			bn_free(_k[i]);
-			for (size_t j = 0; j < (1 << (RLC_WIDTH - 2)); j++) {
-				ep3_free(t[i][j]);
-			}
+			ep3_free(q[i]);
+		}
+		for (int i = 0; i < (1 << 5); i++) {
+			ep3_free(t[i]);
 		}
 	}
 }
@@ -652,7 +683,7 @@ void ep3_mul_lwnaf(ep3_t r, const ep3_t p, const bn_t k) {
 
 #if defined(EP_ENDOM)
 	if (ep_curve_is_endom()) {
-		ep3_mul_glv_imp(r, p, k);
+		ep3_mul_gls_imp(r, p, k);
 		return;
 	}
 #endif

@@ -36,7 +36,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-dig_t bn_lsh1_low(dig_t *c, const dig_t *a, int size) {
+dig_t bn_lsh1_low(dig_t *c, const dig_t *a, size_t size) {
 	int i;
 	dig_t r, carry;
 
@@ -52,7 +52,7 @@ dig_t bn_lsh1_low(dig_t *c, const dig_t *a, int size) {
 	return carry;
 }
 
-dig_t bn_lshb_low(dig_t *c, const dig_t *a, int size, int bits) {
+dig_t bn_lshb_low(dig_t *c, const dig_t *a, size_t size, uint_t bits) {
 	int i;
 	dig_t r, carry, shift, mask;
 
@@ -70,26 +70,7 @@ dig_t bn_lshb_low(dig_t *c, const dig_t *a, int size, int bits) {
 	return carry;
 }
 
-//dig_t bn_rsh1_low(dig_t *c, dig_t *a, int size) {
-//	int i;
-//	dig_t r, carry;
-//
-//	c += size - 1;
-//	a += size - 1;
-//	carry = 0;
-//	for (i = size - 1; i >= 0; i--, a--, c--) {
-//		/* Get the least significant bit. */
-//		r = *a & 0x01;
-//		/* Shift the operand and insert the carry. */
-//		carry <<= RLC_DIG - 1;
-//		*c = (*a >> 1) | carry;
-//		/* Update the carry. */
-//		carry = r;
-//	}
-//	return carry;
-//}
-
-dig_t bn_rshb_low(dig_t *c, const dig_t *a, int size, int bits) {
+dig_t bn_rshb_low(dig_t *c, const dig_t *a, size_t size, uint_t bits) {
 	int i;
 	dig_t r, carry, shift, mask;
 

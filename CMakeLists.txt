@@ -269,6 +269,11 @@ else()
 	set(CFLAGS "$ENV{CFLAGS}" CACHE STRING "User-chosen compiler flags.")
 endif()
 
+# Remove annoying flags when compiler cannot compute buffer sizes.
+if (CMAKE_C_COMPILER_ID STREQUAL "GNU")
+	set(CFLAGS "${CFLAGS} -Wno-stringop-overflow -Wno-stringop-overread")
+endif()
+
 if(AUSAN)
 	set(DFLAGS "${DFLAGS} -ggdb -fsanitize=address -fsanitize=undefined")
 endif()

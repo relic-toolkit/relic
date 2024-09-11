@@ -216,7 +216,7 @@ dig_t fp_lsh1_low(dig_t *c, const dig_t *a);
  * @param[in] bits			- the shift amount.
  * @return the carry of the last digit shift.
  */
-dig_t fp_lshb_low(dig_t *c, const dig_t *a, int bits);
+dig_t fp_lshb_low(dig_t *c, const dig_t *a, uint_t bits);
 
 /**
  * Shifts a digit vector to the right by 1 bit. Computes c = a >> 1.
@@ -236,7 +236,7 @@ dig_t fp_rsh1_low(dig_t *c, const dig_t *a);
  * @param[in] bits			- the shift amount.
  * @return the carry of the last digit shift.
  */
-dig_t fp_rshb_low(dig_t *c, const dig_t *a, int bits);
+dig_t fp_rshb_low(dig_t *c, const dig_t *a, uint_t bits);
 
 /**
  * Multiplies a digit vector by a digit and adds this result to another digit

@@ -40,7 +40,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
-static void test_bytes(uint8_t *buf, int size, void *args) {
+static void test_bytes(uint8_t *buf, size_t size, void *args) {
 	int c, l, fd = *(int *)args;
 
 	if (fd == -1) {

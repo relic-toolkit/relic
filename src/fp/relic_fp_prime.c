@@ -111,6 +111,10 @@ static void fp_prime_set(const bn_t p) {
 				fp_mulm_low(ctx->inv.dp, ctx->inv.dp, ctx->conv.dp);
 			}
 		}
+#else
+		for (int i = 0; i < d / (RLC_DIG - 2) - 1; i++) {
+			fp_mulm_low(ctx->inv.dp, ctx->inv.dp, ctx->conv.dp);
+		}
 #endif
 
 #endif /* FP_RDC == MONTY */

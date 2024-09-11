@@ -62,3 +62,15 @@ uint_t arch_lzcnt() {
 	}
 	return 0;
 }
+
+uint_t arch_tzcnt() {
+	static const uint8_t table[16] = {
+		4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0
+	};
+	if (a >> 4 != 0) {
+		return table[a & 0xF];
+	} else {
+		return table[a >> 4] + 4;
+	}
+	return 0;
+}

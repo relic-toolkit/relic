@@ -876,6 +876,63 @@ void bn_rec_glv(bn_t k0, bn_t k1, const bn_t k, const bn_t n, const bn_t *v1,
 	}
 }
 
+void bn_rec_sac(int8_t *b, size_t *len, bn_t *k, size_t c, size_t m, size_t n) {
+	/* Assume k0 is the sign-aligner. */
+	bn_t *t = RLC_ALLOCA(bn_t, m);
+	size_t l = RLC_CEIL(n, c * m) + 1;
+	int8_t bji;
+
+	if (t == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
+		return;
+	}
+
+	if (*len <= l) {
+		*len = 0;
+		RLC_FREE(t);
+		RLC_THROW(ERR_NO_BUFFER);
+		return;
+	}
+
+	RLC_TRY {
+		fp_prime_get_par(t[0]);
+		l = RLC_MAX(l, bn_bits(t[0]) + 1);
+		for (size_t i = 0; i < m; i++) {
+			bn_null(t[i]);
+			bn_new(t[i]);
+			bn_copy(t[i], k[i]);
+			/* The current basis for some curves might be one bit longer. */
+			if (ep_curve_is_pairf() == EP_BN) {
+				l = RLC_MAX(l, bn_bits(t[i]) + 1);
+			}
+		}
+
+		memset(b, 0, *len);
+
+		b[l - 1] = 0;
+		for (size_t i = 0; i < l - 1; i++) {
+			b[i] = 1 - bn_get_bit(k[0], i + 1);
+		}
+		for (size_t j = 1; j < m; j++) {
+			for (size_t i = 0; i < l - 1; i++) {
+				bji = bn_get_bit(t[j], 0);
+				b[j * l + i] = bji;
+				bn_hlv(t[j], t[j]);
+				bn_add_dig(t[j], t[j], bji & b[i]);
+			}
+			b[j * l + l - 1] = bn_get_bit(t[j], 0);
+		}
+		*len = l;
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		for (size_t i = 0; i < m; i++) {
+			bn_free(t[i]);
+		}
+		RLC_FREE(t);
+	}
+}
+
 void bn_rec_frb(bn_t *ki, int sub, const bn_t k, const bn_t x, const bn_t n,
 		int cof) {
 	int i, l, sk, sx;

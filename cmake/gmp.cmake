@@ -49,9 +49,9 @@ find_path(GMP_INCLUDE_DIR gmp.h
 )
 
 if(STBIN)
-	find_library(GMP_LIBRARIES NAMES libgmp.a gmp.lib libgmp-10 libgmp gmp)
+	find_library(GMP_LIBRARIES NAMES libgmp.a libgmp.dll.a gmp.lib libgmp-10 libgmp gmp)
 else(STBIN)
-	find_library(GMP_LIBRARIES NAMES libgmp.so gmp.lib libgmp-10 libgmp gmp)
+	find_library(GMP_LIBRARIES NAMES libgmp.so libgmp.dll.so gmp.lib libgmp-10 libgmp gmp)
 endif(STBIN)
 
 if(GMP_INCLUDE_DIR AND GMP_LIBRARIES)
@@ -61,7 +61,7 @@ endif()
 if(GMP_FOUND)
 	message(STATUS "Configured GMP: -I${GMP_INCLUDE_DIR} -L${GMP_LIBRARIES}")
 else(GMP_FOUND)
-	message(STATUS "Could NOT find GMP")
+	message(STATUS "Could NOT find GMP!")
 endif(GMP_FOUND)
 
 mark_as_advanced(GMP_INCLUDE_DIR GMP_LIBRARIES)

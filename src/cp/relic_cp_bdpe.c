@@ -109,7 +109,8 @@ int cp_bdpe_gen(bdpe_t pub, bdpe_t prv, dig_t block, size_t bits) {
 
 int cp_bdpe_enc(uint8_t *out, size_t *out_len, dig_t in, const bdpe_t pub) {
 	bn_t m, u;
-	int size, result = RLC_OK;
+	size_t size;
+	int result = RLC_OK;
 
 	bn_null(m);
 	bn_null(u);
@@ -154,7 +155,8 @@ int cp_bdpe_enc(uint8_t *out, size_t *out_len, dig_t in, const bdpe_t pub) {
 int cp_bdpe_dec(dig_t *out, const uint8_t *in, size_t in_len,
 		const bdpe_t prv) {
 	bn_t m, t, z;
-	int size, result = RLC_OK;
+	size_t size;
+	int result = RLC_OK;
 	dig_t i;
 
 	size = bn_size_bin(prv->n);

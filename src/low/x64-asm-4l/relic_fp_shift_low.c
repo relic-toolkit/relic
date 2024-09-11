@@ -38,10 +38,10 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-dig_t fp_lshb_low(dig_t *c, const dig_t *a, int bits) {
+dig_t fp_lshb_low(dig_t *c, const dig_t *a, uint_t bits) {
 	return mpn_lshift(c, a, RLC_FP_DIGS, bits);
 }
 
-dig_t fp_rshb_low(dig_t *c, const dig_t *a, int bits) {
+dig_t fp_rshb_low(dig_t *c, const dig_t *a, uint_t bits) {
 	return mpn_rshift(c, a, RLC_FP_DIGS, bits);
 }

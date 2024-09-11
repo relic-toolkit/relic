@@ -692,6 +692,12 @@ static void arith(void) {
 	}
 	BENCH_END;
 
+	BENCH_RUN("gt_frb (1)") {
+		gt_rand(a);
+		BENCH_ADD(gt_frb(c, a, 1));
+	}
+	BENCH_END;
+
 	BENCH_RUN("gt_exp") {
 		gt_rand(a);
 		pc_get_ord(d);

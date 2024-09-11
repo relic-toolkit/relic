@@ -414,6 +414,7 @@
 #undef bn_addn_low
 #undef bn_sub1_low
 #undef bn_subn_low
+#undef bn_negs_low
 #undef bn_cmp1_low
 #undef bn_cmpn_low
 #undef bn_lsh1_low
@@ -436,6 +437,7 @@
 #define bn_addn_low 	RLC_PREFIX(bn_addn_low)
 #define bn_sub1_low 	RLC_PREFIX(bn_sub1_low)
 #define bn_subn_low 	RLC_PREFIX(bn_subn_low)
+#define bn_negs_low 	RLC_PREFIX(bn_negs_low)
 #define bn_cmp1_low 	RLC_PREFIX(bn_cmp1_low)
 #define bn_cmpn_low 	RLC_PREFIX(bn_cmpn_low)
 #define bn_lsh1_low 	RLC_PREFIX(bn_lsh1_low)
@@ -545,6 +547,7 @@
 #undef fp_inv_lower
 #undef fp_inv_sim
 #undef fp_smb_basic
+#undef fp_smb_binar
 #undef fp_smb_divst
 #undef fp_smb_jmpds
 #undef fp_smb_lower
@@ -643,6 +646,7 @@
 #define fp_inv_lower 	RLC_PREFIX(fp_inv_lower)
 #define fp_inv_sim 	RLC_PREFIX(fp_inv_sim)
 #define fp_smb_basic 	RLC_PREFIX(fp_smb_basic)
+#define fp_smb_binar 	RLC_PREFIX(fp_smb_binar)
 #define fp_smb_divst 	RLC_PREFIX(fp_smb_divst)
 #define fp_smb_jmpds 	RLC_PREFIX(fp_smb_jmpds)
 #define fp_smb_lower 	RLC_PREFIX(fp_smb_lower)
@@ -2454,6 +2458,7 @@
 #undef fp8_mul_lazyr
 #undef fp8_mul_art
 #undef fp8_mul_frb
+#undef fp8_mul_dig
 #undef fp8_mul_dxs
 #undef fp8_sqr_unr
 #undef fp8_sqr_basic
@@ -2494,6 +2499,7 @@
 #define fp8_mul_lazyr 	RLC_PREFIX(fp8_mul_lazyr)
 #define fp8_mul_art 	RLC_PREFIX(fp8_mul_art)
 #define fp8_mul_frb 	RLC_PREFIX(fp8_mul_frb)
+#define fp8_mul_dig 	RLC_PREFIX(fp8_mul_dig)
 #define fp8_mul_dxs 	RLC_PREFIX(fp8_mul_dxs)
 #define fp8_sqr_unr 	RLC_PREFIX(fp8_sqr_unr)
 #define fp8_sqr_basic 	RLC_PREFIX(fp8_sqr_basic)
