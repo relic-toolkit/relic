@@ -419,7 +419,7 @@
 
 #if defined(EP_ENDOM) && FP_PRIME == 330
 /**
- * Parameters for a 766-bit pairing-friendly prime curve.
+ * Parameters for a 330-bit pairing-friendly prime curve.
  */
 /** @{ */
 #define K16_P330_A		"1"
@@ -428,6 +428,20 @@
 #define K16_P330_Y		"1FCDBF207B0F767A67CFCFB017C7EEB580CF5C9D39B6D872AE2F091E12028107C097DCB606B30388E5D"
 #define K16_P330_R		"A9AE90F426EE7F9DB56D9C82F1C0B2CA3CB15B2F8ABF5803C963444D043D2731"
 #define K16_P330_H		"3772AC7257379575CB4"
+/** @} */
+#endif
+
+#if defined(EP_ENDOM) && FP_PRIME == 354
+/**
+ * Parameters for a 354-bit pairing-friendly prime curve.
+ */
+/** @{ */
+#define K18_P354_A		"0"
+#define K18_P354_B		"2"
+#define K18_P354_X		"2FF2367676645FED0C3D8ACD28BE62A86B5D4FA670073CF2ECC52B9C0605E22F3A160D93F4FFAD78C16662"
+#define K18_P354_Y		"34210146B78362C463D0AE93AC24EEA5DB23E938A2411E34BCD35DAC55BE7D05CE9C0321D8783772527649"
+#define K18_P354_R		"22D4230DB8342C5981301C8070000000BCA4DE1983DCC0000000000000000001"
+#define K18_P354_H		"942D1B947092D3F06AAAB1D"
 /** @} */
 #endif
 
@@ -1039,6 +1053,13 @@ void ep_param_set(int param) {
 				pairf = EP_K16;
 				break;
 #endif
+#if defined(EP_ENDOM) & FP_PRIME == 354
+			case K18_P354:
+				ASSIGN(K18_P354, K18_354);
+				endom = 1;
+				pairf = EP_K18;
+				break;
+#endif
 #if defined(EP_ENDOM) & FP_PRIME == 377
 			case B12_P377:
 				ASSIGN(B12_P377, B12_377);
@@ -1456,6 +1477,8 @@ int ep_param_set_any_endom(void) {
 	ep_param_set(B24_P317);
 #elif FP_PRIME == 330
 	ep_param_set(K16_P330);
+#elif FP_PRIME == 354
+	ep_param_set(K18_P354);
 #elif FP_PRIME == 377
 	ep_param_set(B12_P377);
 #elif FP_PRIME == 381
@@ -1543,6 +1566,10 @@ int ep_param_set_any_pairf(void) {
 	ep_param_set(K16_P330);
 	type = RLC_EP_MTYPE;
 	extension = 4;
+#elif FP_PRIME == 354
+	ep_param_set(K18_P354);
+	type = RLC_EP_DTYPE;
+	extension = 3;
 #elif FP_PRIME == 377
 	ep_param_set(B12_P377);
 	type = RLC_EP_DTYPE;
@@ -1725,6 +1752,9 @@ void ep_param_print(void) {
 		case K16_P330:
 			util_banner("Curve K16-P330:", 0);
 			break;
+		case K18_P354:
+			util_banner("Curve K18-P354:", 0);
+			break;
 		case B12_P377:
 			util_banner("Curve B12-P377:", 0);
 			break;
@@ -1834,6 +1864,7 @@ int ep_param_level(void) {
 			return 128;
 		case B24_P315:
 		case B24_P317:
+		case K18_P354:
 		case B12_P377:
 		case K16_P330:
 		case B12_P381:
@@ -1841,7 +1872,7 @@ int ep_param_level(void) {
 		case B12_P383:
 		case BN_P446:
 		case B12_P446:
-		case GMT8_544:
+		case GMT8_P544:
 		case SS_P1536:
 			return 128;
 		case B12_P455:

@@ -170,8 +170,8 @@ int fp3_is_sqr(const fp3_t a) {
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		fp2_free(t);
-		fp2_free(u);
+		fp3_free(t);
+		fp3_free(u);
 	}
 
 	return r;

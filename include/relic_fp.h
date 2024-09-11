@@ -126,6 +126,8 @@ enum {
 	K16_330,
 	/** 381-bit prime for BLS curve of embedding degree 12 (SNARKs). */
 	B12_377,
+	/** 354-bit prime for KSS curve of embedding degree 18. */
+	K18_354,
 	/** 381-bit prime for BLS curve of embedding degree 12 (Zcash). */
 	B12_381,
 	/** 382-bit prime provided by Barreto for BN curve. */

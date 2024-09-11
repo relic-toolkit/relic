@@ -36,9 +36,31 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-#if defined(EP_ENDOM) && FP_PRIME == 508
+#if defined(EP_ENDOM) && FP_PRIME == 354
 /**
  * Parameters for a pairing-friendly prime curve over a quadratic extension.
+ */
+/** @{ */
+#define K18_P354_A0		"0"
+#define K18_P354_A1		"0"
+#define K18_P354_A2		"0"
+#define K18_P354_B0		"0"
+#define K18_P354_B1		"0"
+#define K18_P354_B2		"1"
+#define K18_P354_X0		"0610B9E63ACF3075E9FD16A5DAD4122E5B75B025295B7E8F49AB263FCA33640C66DA49DDC2E602CC8A65707"
+#define K18_P354_X1		"12BE42281E4312CE6D00FA52B1EE0B533F26195FBBF7A629A0154E37BAA6DF23907DD58CCAD1F86AD589B6F"
+#define K18_P354_X2		"07F6A46EC13CD2CAC91A5F603234270AD7C568D6200C74F5440AFD2F9F7EC86EB8AEF7EEBA205D093F389F8"
+#define K18_P354_Y0		"1109E1AEBA3644FCEA4BB3628A41AB34991705F9DEFF5C6D71DC8F1BD3F6AC9763939B285322652D920F85F"
+#define K18_P354_Y1		"0CFD794CFDFF35D3C72F8EC1E7FF3C1F3F9827BC4568DAB9A7B924D6FDA4436D08A46174F6E7A6A1DDA9267"
+#define K18_P354_Y2		"0FFC2B0D999E6593B18B2A623B3D1175A082D896385107A18121938C730CC7A23BF21CC21E278F17A38F268"
+#define K18_P354_R		"22D4230DB8342C5981301C8070000000BCA4DE1983DCC0000000000000000001"
+#define K18_P354_H		"EB3A5DFCC91261F375C5967288E92C811BB4A588A6B8E3EF6FB8F0D7E82DC1643EAC9D700CF4C79FD0C1106A41A118CD0DCFEBFE5E4A6E75ABD641D569347216AA11E7F972AEA3F8108366A1220A3F4A15F1C1B638F897EC0A5976F6EC47B0D4B6B"
+/** @} */
+#endif
+
+#if defined(EP_ENDOM) && FP_PRIME == 508
+/**
+ * Parameters for a pairing-friendly prime curve over a cubic extension.
  */
 /** @{ */
 #define K18_P508_A0		"0"
@@ -200,6 +222,9 @@ void ep3_curve_init(void) {
 	ep3_new(ctx->ep3_g);
 	fp3_new(ctx->ep3_a);
 	fp3_new(ctx->ep3_b);
+	fp3_new(ctx->ep3_frb[0]);
+	fp3_new(ctx->ep3_frb[1]);
+	fp3_new(ctx->ep3_frb[2]);
 #endif
 
 #ifdef EP_PRECO
@@ -230,6 +255,9 @@ void ep3_curve_clean(void) {
 		ep3_free(ctx->ep3_g);
 		fp3_free(ctx->ep3_a);
 		fp3_free(ctx->ep3_b);
+		fp3_free(ctx->ep3_frb[0]);
+		fp3_free(ctx->ep3_frb[1]);
+		fp3_free(ctx->ep3_frb[2]);
 	}
 }
 
@@ -356,7 +384,11 @@ void ep3_curve_set_twist(int type) {
 		bn_new(h);
 
 		switch (ep_param_get()) {
-#if FP_PRIME == 508
+#if FP_PRIME == 354
+			case K18_P354:
+				ASSIGN(K18_P354);
+				break;
+#elif FP_PRIME == 508
 			case K18_P508:
 				ASSIGN(K18_P508);
 				break;
