@@ -895,13 +895,16 @@ void bn_rec_sac(int8_t *b, size_t *len, bn_t *k, size_t c, size_t m, size_t n) {
 	}
 
 	RLC_TRY {
-		/* The current basis for some curves might be one bit longer. */
 		fp_prime_get_par(t[0]);
 		l = RLC_MAX(l, bn_bits(t[0]) + 1);
 		for (size_t i = 0; i < m; i++) {
 			bn_null(t[i]);
 			bn_new(t[i]);
 			bn_copy(t[i], k[i]);
+			/* The current basis for some curves might be one bit longer. */
+			if (ep_curve_is_pairf() == EP_BN) {
+				l = RLC_MAX(l, bn_bits(t[i]) + 1);
+			}
 		}
 
 		memset(b, 0, *len);
