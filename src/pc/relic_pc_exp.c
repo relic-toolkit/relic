@@ -312,9 +312,9 @@ static void gt_exp_gls_sac(gt_t c, const gt_t a, const bn_t b, size_t d,
 			gt_psi(q[i], q[i - 1]);
 		}
 		for (size_t i = 0; i < f; i++) {
-			gt_copy(c, q[i]);
+			gt_inv(c, q[i]);
 			if (bn_sign(_b[i]) == RLC_NEG) {
-				gt_copy(c, q[i]);
+				gt_copy(q[i], c);
 			}
 			bn_abs(_b[i], _b[i]);
 		}
