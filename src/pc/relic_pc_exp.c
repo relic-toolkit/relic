@@ -119,7 +119,7 @@ void gt_exp_gls_naf(gt_t c, const gt_t a, const bn_t b, size_t f) {
 	int8_t n0, *s = RLC_ALLOCA(int8_t, f);
 	gt_t q, *t = RLC_ALLOCA(gt_t, f * RLC_GT_TABLE);
 	bn_t n, u, *_b = RLC_ALLOCA(bn_t, f);
-	size_t l, *_l = RLC_ALLOCA(size_t, f);
+	size_t l, *_l = RLC_ALLOCA(size_t, f), w = RLC_WIDTH;
 
 	if (naf == NULL || t == NULL || _b == NULL || _l == NULL) {
 		RLC_THROW(ERR_NO_MEMORY);
@@ -169,6 +169,14 @@ void gt_exp_gls_naf(gt_t c, const gt_t a, const bn_t b, size_t f) {
 
 		l = 0;
 		for (size_t i = 0; i < f; i++) {
+			l = RLC_MAX(l, bn_bits(_b[i]));
+		}
+		if (l < bn_bits(u) / 2) {
+			w = 2;
+		}
+
+		l = 0;
+		for (size_t i = 0; i < f; i++) {
 			s[i] = bn_sign(_b[i]);
 			_l[i] = RLC_FP_BITS + 1;
 			bn_rec_naf(naf + i * (RLC_FP_BITS + 1), &_l[i], _b[i], RLC_WIDTH);
@@ -186,7 +194,7 @@ void gt_exp_gls_naf(gt_t c, const gt_t a, const bn_t b, size_t f) {
 				if (s[i] == RLC_NEG) {
 					gt_inv(q, t[i * RLC_GT_TABLE]);
 				}
-				if (RLC_WIDTH > 2) {
+				if (w > 2) {
 					gt_sqr(t[i * RLC_GT_TABLE], q);
 					gt_mul(t[i * RLC_GT_TABLE + 1], t[i * RLC_GT_TABLE], q);
 					for (size_t j = 2; j < RLC_GT_TABLE; j++) {
@@ -201,7 +209,7 @@ void gt_exp_gls_naf(gt_t c, const gt_t a, const bn_t b, size_t f) {
 			if (bn_sign(_b[0]) == RLC_NEG) {
 				gt_inv(q, q);
 			}
-			if (RLC_WIDTH > 2) {
+			if (w > 2) {
 				gt_sqr(t[0], q);
 				gt_mul(t[1], t[0], q);
 				for (size_t j = 2; j < RLC_GT_TABLE; j++) {
@@ -210,10 +218,10 @@ void gt_exp_gls_naf(gt_t c, const gt_t a, const bn_t b, size_t f) {
 			}
 			gt_copy(t[0], q);
 			for (size_t i = 1; i < f; i++) {
-				for (size_t j = 0; j < RLC_GT_TABLE; j++) {
-					gt_psi(t[i * RLC_GT_TABLE + j], t[(i - 1) * RLC_GT_TABLE + j]);
+				for (size_t j = 0; j < (1 << (w - 2)); j++) {
+					gt_psi(t[i * (1 << (w - 2)) + j], t[(i - 1) * (1 << (w - 2)) + j]);
 					if (s[i] != s[i - 1]) {
-						gt_inv(t[i * RLC_GT_TABLE + j], t[i * RLC_GT_TABLE + j]);
+						gt_inv(t[i * (1 << (w - 2)) + j], t[i * (1 << (w - 2)) + j]);
 					}
 				}
 			}
@@ -226,10 +234,10 @@ void gt_exp_gls_naf(gt_t c, const gt_t a, const bn_t b, size_t f) {
 			for (size_t i = 0; i < f; i++) {
 				n0 = naf[i * (RLC_FP_BITS + 1) + j];
 				if (n0 > 0) {
-					gt_mul(c, c, t[i * RLC_GT_TABLE + n0 / 2]);
+					gt_mul(c, c, t[i * (1 << (w - 2)) + n0 / 2]);
 				}
 				if (n0 < 0) {
-					gt_inv(q, t[i * RLC_GT_TABLE - n0 / 2]);
+					gt_inv(q, t[i * (1 << (w - 2)) - n0 / 2]);
 					gt_mul(c, c, q);
 				}
 			}
