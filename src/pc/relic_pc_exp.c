@@ -179,7 +179,7 @@ void gt_exp_gls_naf(gt_t c, const gt_t a, const bn_t b, size_t f) {
 		for (size_t i = 0; i < f; i++) {
 			s[i] = bn_sign(_b[i]);
 			_l[i] = RLC_FP_BITS + 1;
-			bn_rec_naf(naf + i * (RLC_FP_BITS + 1), &_l[i], _b[i], RLC_WIDTH);
+			bn_rec_naf(naf + i * (RLC_FP_BITS + 1), &_l[i], _b[i], w);
 			l = RLC_MAX(l, _l[i]);
 		}
 
@@ -212,7 +212,7 @@ void gt_exp_gls_naf(gt_t c, const gt_t a, const bn_t b, size_t f) {
 			if (w > 2) {
 				gt_sqr(t[0], q);
 				gt_mul(t[1], t[0], q);
-				for (size_t j = 2; j < RLC_GT_TABLE; j++) {
+				for (size_t j = 2; j < (1 << (w - 2)); j++) {
 					gt_mul(t[j], t[j - 1], t[0]);
 				}
 			}
