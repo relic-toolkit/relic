@@ -756,7 +756,9 @@ int cp_amprd_gen(bn_t *ls, g2_t *rs, bn_t c, bn_t r, bn_t d, g1_t u, g2_t v,
 				}
 			}
 			bn_mod(ls[i + 1], ls[i + 1], n);
-			g2_norm(rs[i + 1], rs[i + 1]);
+			g2_norm_sim(rs + RLC_MIN(m, pc_param_level() - RAND_DIST), 
+					rs + RLC_MIN(m, pc_param_level() - RAND_DIST),
+					m - RLC_MIN(m, pc_param_level() - RAND_DIST));
 		}
 	}
 	RLC_CATCH_ANY {
