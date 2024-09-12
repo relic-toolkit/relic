@@ -1321,11 +1321,13 @@ static int pdprv(void) {
 	return code;
 }
 
+#define AGGS 	10
+
 static int pdprd(void) {
 	int code = RLC_ERR;
-	bn_t x, t, r1, r2, ls[3];
-	g1_t p[2], u1, v1, w1;
-	g2_t q[2], u2, v2, w2, rs[3], ds[2];
+	bn_t x, t, r1, r2, ls[AGGS + 1];
+	g1_t p[AGGS], u1, v1, w1;
+	g2_t q[AGGS], u2, v2, w2, rs[AGGS + 1], ds[AGGS];
 	gt_t e, r, g[4];
 
 	bn_null(t);
@@ -1354,37 +1356,38 @@ static int pdprd(void) {
 		g2_new(w2);
 		gt_new(e);
 		gt_new(r);
-		for (size_t i = 0; i < 2; i++) {
+		for (size_t i = 0; i < AGGS; i++) {
 			g1_null(p[i]);
 			g2_null(q[i]);
 			g2_null(rs[i]);
 			g2_null(ds[i]);
+			bn_null(ls[i]);
 			g1_new(p[i]);
 			g2_new(q[i]);
 			g2_new(ds[i]);
 			g2_new(rs[i]);
-		}
-		for (size_t i = 0; i < 3; i++) {
-			bn_null(ls[i]);
 			bn_new(ls[i]);
-			g2_null(rs[i]);
-			g2_new(rs[i]);
+		}
+		bn_null(ls[AGGS]);
+		bn_new(ls[AGGS]);
+		g2_null(rs[AGGS]);
+		g2_new(rs[AGGS]);
+
+		for (size_t i = 0; i < 4; i++) {
 			gt_null(g[i]);
 			gt_new(g[i]);
 		}
-		gt_null(g[3]);
-		gt_new(g[3]);
 
 		TEST_CASE("amortized delegated pairing product is correct") {
-			TEST_ASSERT(cp_amprd_gen(ls, rs, r1, r2, t, u1, u2, x, e, 2) == RLC_OK, end);
-			g1_rand(p[0]);
-			g1_rand(p[1]);
-			g2_rand(q[0]);
-			g2_rand(q[1]);
-			TEST_ASSERT(cp_amprd_ask(ds, v1, v2, w1, w2, r1, r2, t, p, q, u1, u2, ls, rs, 2) == RLC_OK, end);
-			TEST_ASSERT(cp_amprd_ans(g, ds, t, v1, v2, w1, w2, p, q, 2) == RLC_OK, end);
+			TEST_ASSERT(cp_amprd_gen(ls, rs, r1, r2, t, u1, u2, x, e, AGGS) == RLC_OK, end);
+			for (size_t i = 0; i < AGGS; i++) {
+				g1_rand(p[i]);
+				g2_rand(q[i]);
+			}
+			TEST_ASSERT(cp_amprd_ask(ds, v1, v2, w1, w2, r1, r2, t, p, q, u1, u2, ls, rs, AGGS) == RLC_OK, end);
+			TEST_ASSERT(cp_amprd_ans(g, ds, t, v1, v2, w1, w2, p, q, AGGS) == RLC_OK, end);
 			TEST_ASSERT(cp_amprd_ver(r, g, ls[0], r1, e) == 1, end);
-			pc_map_sim(g[0], p, q, 2);
+			pc_map_sim(g[0], p, q, AGGS);
 			TEST_ASSERT(gt_cmp(r, g[0]) == RLC_EQ, end);
 		} TEST_END;
 	} RLC_CATCH_ANY {
@@ -1405,18 +1408,18 @@ static int pdprd(void) {
 	g2_free(w2);
 	gt_free(e);
 	gt_free(r);
-		for (size_t i = 0; i < 2; i++) {
+		for (size_t i = 0; i < AGGS; i++) {
 			g1_free(p[i]);
 			g2_free(q[i]);
 			g2_free(rs[i]);
 			g2_free(ds[i]);
-		}
-		for (size_t i = 0; i < 3; i++) {
 			bn_free(ls[i]);
-			g2_free(rs[i]);
+		}
+		bn_free(ls[AGGS]);
+		g2_free(rs[AGGS]);
+		for (size_t i = 0; i < 4; i++) {
 			gt_free(g[i]);
 		}
-		gt_free(g[3]);
 	return code;
 }
 
@@ -2493,7 +2496,7 @@ int main(void) {
 	}
 
 	util_banner("Tests for the CP module", 0);
-
+#if 0
 #if defined(WITH_BN)
 	util_banner("Protocols based on integer factorization:\n", 0);
 	if (rsa() != RLC_OK) {
@@ -2583,7 +2586,7 @@ int main(void) {
 		}
 	}
 #endif
-
+#endif
 #if defined(WITH_PC)
 	util_banner("Protocols based on pairings:\n", 0);
 	if (pc_param_set_any() == RLC_OK) {

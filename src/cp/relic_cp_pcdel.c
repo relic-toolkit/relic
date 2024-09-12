@@ -714,13 +714,16 @@ int cp_amore_ver(gt_t r, const gt_t g[2], const bn_t c, const gt_t e,
 
 int cp_amprd_gen(bn_t *ls, g2_t *rs, bn_t c, bn_t r, bn_t d, g1_t u, g2_t v,
 		bn_t x, gt_t e, size_t m) {
-	bn_t n;
+	bn_t n, xi;
 	int result = RLC_OK;
+	size_t i, j, eps;
 
 	bn_null(n);
+	bn_null(xi);
 
 	RLC_TRY {
 		bn_new(n);
+		bn_new(xi);
 
 		pc_get_ord(n);
 		g2_rand(rs[0]);
@@ -730,21 +733,38 @@ int cp_amprd_gen(bn_t *ls, g2_t *rs, bn_t c, bn_t r, bn_t d, g1_t u, g2_t v,
 		} else {
 			bn_rand_frb(ls[0], &(core_get()->par), n, RAND_DIST);
 		}
-		for (size_t i = 0; i < m; i++) {
+		
+		cp_amore_gen(c, r, d, u, v, x, e, 1, 1, 0, 1);
+		eps = gt_size_bin(e, 1) / g2_size_bin(rs[0], 1);
+
+		for (i = 0; i < RLC_MIN(m, pc_param_level() - RAND_DIST); i++) {
 			if (ep_curve_is_pairf() == EP_BN) {
-				bn_rand(ls[i + 1], RLC_POS, RAND_DIST + BND_STORE);
+				bn_rand(ls[i + 1], RLC_POS, eps + BND_STORE);
 			} else {
-				bn_rand_frb(ls[i + 1], &(core_get()->par), n, RAND_DIST + BND_STORE);
+				bn_rand_frb(ls[i + 1], &(core_get()->par), n, eps + BND_STORE);
 			}
 			g2_mul(rs[i + 1], rs[0], ls[i + 1]);
 		}
-		cp_amore_gen(c, r, d, u, v, x, e, 1, 1, 0, 1);
+		for (; i < m; i++) {
+			bn_rand(xi, RLC_POS, pc_param_level() - RAND_DIST);
+			bn_zero(ls[i + 1]);
+			g2_set_infty(rs[i + 1]);
+			for (j = 0; j < pc_param_level() - RAND_DIST; j++) {
+				if (bn_get_bit(xi, j)) {
+					bn_add(ls[i + 1], ls[i + 1], ls[j + 1]);
+					g2_add(rs[i + 1], rs[i + 1], rs[j + 1]);
+				}
+			}
+			bn_mod(ls[i + 1], ls[i + 1], n);
+			g2_norm(rs[i + 1], rs[i + 1]);
+		}
 	}
 	RLC_CATCH_ANY {
 		result = RLC_ERR;
 	}
 	RLC_FINALLY {
 		bn_free(n);
+		bn_free(xi);
 	}
 	return result;
 }
