@@ -69,7 +69,7 @@ static void ep8_mul_gls_imp(ep8_t r, const ep8_t p, const bn_t k) {
 		bn_rec_frb(_k, 16, _k[0], u, n, ep_curve_is_pairf() == EP_BN);
 
 		l = 0;
-		for (size_t i = 0; i < 8; i++) {
+		for (size_t i = 0; i < 16; i++) {
 			l = RLC_MAX(l, bn_bits(_k[i]));
 		}
 		if (l < bn_bits(u) / 2) {
