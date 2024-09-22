@@ -753,11 +753,13 @@ int cp_amprd_gen(bn_t *ls, g2_t *rs, bn_t c, bn_t r, bn_t d, g1_t u, g2_t v,
 			bn_zero(ls[i + 1]);
 			g2_set_infty(rs[i + 1]);
 			for (j = 0; j < l; j++) {
-				if (j > 0) {
+				if (naf[j] > 0) {
+					counter++;
 					bn_add(ls[i + 1], ls[i + 1], ls[j + 1]);
 					g2_add(rs[i + 1], rs[i + 1], rs[j + 1]);
 				}
-				if (j < 0) {
+				if (naf[j] < 0) {
+					counter++;
 					bn_sub(ls[i + 1], ls[i + 1], ls[j + 1]);
 					g2_sub(rs[i + 1], rs[i + 1], rs[j + 1]);
 				}
