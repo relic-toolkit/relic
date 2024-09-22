@@ -528,9 +528,9 @@ int cp_amore_gen(bn_t c, bn_t r, bn_t d, g1_t u, g2_t v, bn_t x, gt_t e,
 #endif
 			if (longc) {
 				if (ep_curve_is_pairf() == EP_BN) {
-					bn_rand(c, RLC_POS, RAND_DIST + BND_STORE);
+					bn_rand(c, RLC_POS, pc_param_level());
 				} else {
-					bn_rand_frb(c, &(core_get()->par), n, RAND_DIST + BND_STORE);
+					bn_rand_frb(c, &(core_get()->par), n, pc_param_level());
 				}
 			} else {
 				if (ep_curve_is_pairf() == EP_BN) {
@@ -716,7 +716,8 @@ int cp_amprd_gen(bn_t *ls, g2_t *rs, bn_t c, bn_t r, bn_t d, g1_t u, g2_t v,
 		bn_t x, gt_t e, size_t m) {
 	bn_t n, xi;
 	int result = RLC_OK;
-	size_t i, j, eps;
+	size_t i, j, l, eps;
+	int8_t naf[RLC_FP_BITS + 1];
 
 	bn_null(n);
 	bn_null(xi);
@@ -747,12 +748,18 @@ int cp_amprd_gen(bn_t *ls, g2_t *rs, bn_t c, bn_t r, bn_t d, g1_t u, g2_t v,
 		}
 		for (; i < m; i++) {
 			bn_rand(xi, RLC_POS, pc_param_level() - RAND_DIST);
+			l = RLC_FP_BITS + 1;
+			bn_rec_naf(naf, &l, xi, 2);
 			bn_zero(ls[i + 1]);
 			g2_set_infty(rs[i + 1]);
-			for (j = 0; j < pc_param_level() - RAND_DIST; j++) {
-				if (bn_get_bit(xi, j)) {
+			for (j = 0; j < l; j++) {
+				if (j > 0) {
 					bn_add(ls[i + 1], ls[i + 1], ls[j + 1]);
 					g2_add(rs[i + 1], rs[i + 1], rs[j + 1]);
+				}
+				if (j < 9) {
+					bn_sub(ls[i + 1], ls[i + 1], ls[j + 1]);
+					g2_sub(rs[i + 1], rs[i + 1], rs[j + 1]);
 				}
 			}
 			bn_mod(ls[i + 1], ls[i + 1], n);
