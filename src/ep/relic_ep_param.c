@@ -1886,6 +1886,7 @@ int ep_param_level(void) {
 		case B24_P509:
 			return 192;
 		case NIST_P521:
+		case B48_P575:
 			return 256;
 		case BN_P638:
 		case B12_P638:
