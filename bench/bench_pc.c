@@ -755,15 +755,19 @@ static void arith(void) {
 	bn_free(f);
 }
 
+#define AGGS 	10
+
 static void pairing(void) {
-	g1_t p[2];
-	g2_t q[2];
+	g1_t p[AGGS];
+	g2_t q[AGGS];
 	gt_t r;
 
-	g1_new(p[0]);
-	g2_new(q[0]);
-	g1_new(p[1]);
-	g2_new(q[1]);
+	for (size_t i = 0; i < AGGS; i++) {
+		g1_null(p[i]);
+		g2_null(q[i]);
+		g1_new(p[i]);
+		g2_new(q[i]);
+	}
 	gt_new(r);
 
 	BENCH_RUN("pc_map") {
@@ -779,17 +783,19 @@ static void pairing(void) {
 	}
 	BENCH_END;
 
-	BENCH_RUN("pc_map_sim (2)") {
-		g1_rand(p[1]);
-		g2_rand(q[1]);
-		BENCH_ADD(pc_map_sim(r, p, q, 2));
+	BENCH_RUN("pc_map_sim (AGGS)") {
+		for (size_t i = 0; i < AGGS; i++) {
+			g1_rand(p[i]);
+			g2_rand(q[i]);
+		}
+		BENCH_ADD(pc_map_sim(r, p, q, AGGS));
 	}
 	BENCH_END;
 
-	g1_free(p[0]);
-	g2_free(q[0]);
-	g1_free(p[1]);
-	g2_free(q[1]);
+	for (size_t i = 0; i < AGGS; i++) {
+		g1_free(p[i]);
+		g2_free(q[i]);
+	}
 	gt_free(r);
 }
 
