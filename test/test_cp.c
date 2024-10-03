@@ -1160,7 +1160,7 @@ static int pdpub(void) {
 			TEST_ASSERT(cp_amore_gen(r1, r2, t, u1, u2, x, e, 1, 0, 0, 0) == RLC_OK, end);
 			g1_rand(p);
 			g2_rand(q);
-			TEST_ASSERT(cp_amore_ask(v1, v2, w1, w2, r1, r2, t, p, q, u1, u2, 0, 0) == RLC_OK, end);
+			TEST_ASSERT(cp_amore_ask(t, v1, v2, w1, w2, r1, r2, p, q, u1, u2, 0, 0) == RLC_OK, end);
 			TEST_ASSERT(cp_amore_ans(g, t, v1, v2, w1, w2, 0, 0) == RLC_OK, end);
 			TEST_ASSERT(cp_amore_ver(r, g, r1, e, 0, 0) == 1, end);
 			pc_map(g[0], p, q);
@@ -1168,7 +1168,7 @@ static int pdpub(void) {
 			TEST_ASSERT(cp_amore_gen(r1, r2, t, u1, u2, x, e, 0, 0, 0, 0) == RLC_OK, end);
 			g1_rand(p);
 			g2_rand(q);
-			TEST_ASSERT(cp_amore_ask(v1, v2, w1, w2, r1, r2, t, p, q, u1, u2, 0, 0) == RLC_OK, end);
+			TEST_ASSERT(cp_amore_ask(t, v1, v2, w1, w2, r1, r2, p, q, u1, u2, 0, 0) == RLC_OK, end);
 			TEST_ASSERT(cp_amore_ans(g, t, v1, v2, w1, w2, 0, 0) == RLC_OK, end);
 			TEST_ASSERT(cp_amore_ver(r, g, r1, e, 0, 0) == 1, end);
 			pc_map(e, p, q);
@@ -1278,7 +1278,7 @@ static int pdprv(void) {
 					TEST_ASSERT(cp_amore_gen(r1, r2[0], r2[1], v1[0], v2[0], r2[2], e[0], 1, 0, pa, pb) == RLC_OK, end);
 					g1_rand(p);
 					g2_rand(q);
-					TEST_ASSERT(cp_amore_ask(u1[0], u2[0], u1[1], u2[1], r1, r2[0], r2[1], p, q, v1[0], v2[0], pa, pb) == RLC_OK, end);
+					TEST_ASSERT(cp_amore_ask(r2[1], u1[0], u2[0], u1[1], u2[1], r1, r2[0], p, q, v1[0], v2[0], pa, pb) == RLC_OK, end);
 					TEST_ASSERT(cp_amore_ans(g, r2[1], u1[0], u2[0], u1[1], u2[1], pa, pb) == RLC_OK, end);
 					TEST_ASSERT(cp_amore_ver(r, g, r1, e[0], pa, pb) == 1, end);
 					pc_map(g[0], p, q);
@@ -1286,7 +1286,7 @@ static int pdprv(void) {
 					TEST_ASSERT(cp_amore_gen(r1, r2[0], r2[1], v1[0], v2[0], r2[2], e[0], 0, 0, pa, pb) == RLC_OK, end);
 					g1_rand(p);
 					g2_rand(q);
-					TEST_ASSERT(cp_amore_ask(u1[0], u2[0], u1[1], u2[1], r1, r2[0], r2[1], p, q, v1[0], v2[0], pa, pb) == RLC_OK, end);
+					TEST_ASSERT(cp_amore_ask(r2[1], u1[0], u2[0], u1[1], u2[1], r1, r2[0], p, q, v1[0], v2[0], pa, pb) == RLC_OK, end);
 					TEST_ASSERT(cp_amore_ans(g, r2[1], u1[0], u2[0], u1[1], u2[1], pa, pb) == RLC_OK, end);
 					TEST_ASSERT(cp_amore_ver(r, g, r1, e[0], pa, pb) == 1, end);
 					pc_map(g[0], p, q);
@@ -1384,7 +1384,7 @@ static int pdprd(void) {
 				g1_rand(p[i]);
 				g2_rand(q[i]);
 			}
-			TEST_ASSERT(cp_amprd_ask(ds, v1, v2, w1, w2, r1, r2, t, p, q, u1, u2, ls, rs, AGGS) == RLC_OK, end);
+			TEST_ASSERT(cp_amprd_ask(t, ds, v1, v2, w1, w2, r1, r2, p, q, u1, u2, ls, rs, AGGS) == RLC_OK, end);
 			TEST_ASSERT(cp_amprd_ans(g, ds, t, v1, v2, w1, w2, p, q, AGGS) == RLC_OK, end);
 			TEST_ASSERT(cp_amprd_ver(r, g, ls[0], r1, e) == 1, end);
 			pc_map_sim(g[0], p, q, AGGS);

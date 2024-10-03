@@ -1388,13 +1388,13 @@ int cp_amore_gen(bn_t c, bn_t r, bn_t d, g1_t u, g2_t v, bn_t x, gt_t e,
 /**
  * Executes the client-side request for the AMORE pairing delegation protocol.
  *
+ * @param[in, out] d		- the delta value computed during setup.
  * @param[out] a1			- the first element in G_1.
  * @param[out] b1			- the first element in G_2.
  * @param[out] a2			- the second element in G_1.
  * @param[out] b2			- the second element in G_2.
  * @param[in] c				- the challenge.
  * @param[in] r				- the randomness.
- * @param[in] d				- the delta value computed during setup.
  * @param[in] p				- the first argument of the pairing.
  * @param[in] q				- the second argument of the pairing.
  * @param[in] u				- the U1 precomputed value in G_1.
@@ -1403,8 +1403,8 @@ int cp_amore_gen(bn_t c, bn_t r, bn_t d, g1_t u, g2_t v, bn_t x, gt_t e,
  * @param[in] privb			- the flag to indicate if second point is private.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_amore_ask(g1_t a1, g2_t b1, g1_t a2, g2_t b2, const bn_t c, const bn_t r,
-		const bn_t d, const g1_t p, const g2_t q, const g1_t u, const g2_t v,
+int cp_amore_ask(bn_t d, g1_t a1, g2_t b1, g1_t a2, g2_t b2, const bn_t c,
+		const bn_t r, const g1_t p, const g2_t q, const g1_t u, const g2_t v,
 		int priva, int privb);
 
 /**
@@ -1460,6 +1460,7 @@ int cp_amprd_gen(bn_t *ls, g2_t *rs, bn_t c, bn_t r, bn_t d, g1_t u, g2_t v,
  * Executes the client-side request for the AMORE pairing product delegation
  * protocol.
  *
+ * @param[in,out] d			- the delta value computed during setup.
  * @param[out] ds			- the m points for the protocol.
  * @param[out] a1			- the first element in G_1.
  * @param[out] b1			- the first element in G_2.
@@ -1467,7 +1468,6 @@ int cp_amprd_gen(bn_t *ls, g2_t *rs, bn_t c, bn_t r, bn_t d, g1_t u, g2_t v,
  * @param[out] b2			- the second element in G_2.
  * @param[in] c				- the challenge.
  * @param[in] r				- the randomness.
- * @param[in] d				- the delta value computed during setup.
  * @param[in] p				- the first argument inputs for the pairings.
  * @param[in] q				- the second argument inputs for the pairings.
  * @param[in] u				- the U1 precomputed value in G_1.
@@ -1475,8 +1475,8 @@ int cp_amprd_gen(bn_t *ls, g2_t *rs, bn_t c, bn_t r, bn_t d, g1_t u, g2_t v,
  * @param[in] m				- the number of pairing to compute.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_amprd_ask(g2_t *ds, g1_t a1, g2_t b1, g1_t a2, g2_t b2, const bn_t c,
-		const bn_t r, const bn_t d, const g1_t *p, const g2_t *q, const g1_t u,
+int cp_amprd_ask(bn_t d, g2_t *ds, g1_t a1, g2_t b1, g1_t a2, g2_t b2,
+		const bn_t c, const bn_t r, const g1_t *p, const g2_t *q, const g1_t u,
 		const g2_t v, const bn_t *ls, const g2_t *rs, size_t m);
 
 /**

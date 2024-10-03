@@ -499,26 +499,26 @@ int cp_lvprv_ver(gt_t r, const gt_t g[4], const bn_t c, const gt_t e[2]) {
 
 int cp_amore_gen(bn_t c, bn_t r, bn_t d, g1_t u, g2_t v, bn_t x, gt_t e,
 		int first, int longc, int priva, int privb) {
-	bn_t n, u1, u2;
+	bn_t n, t;
 	int result = RLC_OK;
 
 	bn_null(n);
+	bn_null(t);
 
 	RLC_TRY {
 		bn_new(n);
-		bn_new(u1);
-		bn_new(u2);
+		bn_new(t);
 
 		pc_get_ord(n);
 		if (first) {
 			/* Generate random U1, U2, x, c. */
 			bn_rand_mod(x, n);
-			bn_rand_mod(u1, n);
-			bn_mod_inv(u2, u1, n);
-			bn_mul(u2, u2, x);
-			bn_mod(u2, u2, n);
-			g1_mul_gen(u, u1);
-			g2_mul_gen(v, u2);
+			bn_rand_mod(t, n);
+			bn_mod_inv(d, t, n);
+			bn_mul(d, d, x);
+			bn_mod(d, d, n);
+			g1_mul_gen(u, t);
+			g2_mul_gen(v, d);
 			/* Compute gamma = e(U1, U2). */
 #if FP_PRIME < 1536
 			gt_get_gen(e);
@@ -540,12 +540,13 @@ int cp_amore_gen(bn_t c, bn_t r, bn_t d, g1_t u, g2_t v, bn_t x, gt_t e,
 				}
 			}
 		} else {
-			bn_rand_mod(u1, n);
-			bn_mod_inv(u2, u1, n);
-			bn_mul(u2, u2, x);
-			bn_mod(u2, u2, n);
-			g1_mul_gen(u, u1);
-			g2_mul_gen(v, u2);
+			bn_rand_mod(t, n);
+			/* d = x/u here. */
+			bn_mod_inv(d, t, n);
+			bn_mul(d, d, x);
+			bn_mod(d, d, n);
+			g1_mul_gen(u, t);
+			g2_mul_gen(v, d);
 			if (ep_curve_is_pairf() == EP_BN) {
 				bn_rand(c, RLC_POS, RAND_DIST + BND_STORE);
 			} else {
@@ -555,45 +556,46 @@ int cp_amore_gen(bn_t c, bn_t r, bn_t d, g1_t u, g2_t v, bn_t x, gt_t e,
 
 		bn_rand_mod(r, n);
 		if (priva && !privb) {
-			/* Compute d = (xu)/r mod q. */
-			bn_mul(d, r, u2);
-			bn_mod(d, d, n);
-			bn_copy(u2, x);
-		} else if (priva && privb) {
-			/* Compute d = x/(rcu) mod q. */
-			bn_mul(d, r, c);
-			bn_mod(d, d, n);
-		} else {
-			/* Compute d = x/(ru) mod q. */
-			bn_copy(d, r);
+			/* In this case, make d = u. */
+			bn_copy(d, t);
 		}
-		bn_mod_inv(d, d, n);
-		bn_mul(d, d, u2);
-		bn_mod(d, d, n);
 	}
 	RLC_CATCH_ANY {
 		result = RLC_ERR;
 	}
 	RLC_FINALLY {
 		bn_free(n);
-		bn_free(u1);
-		bn_free(u2);
+		bn_free(t);
 	}
 	return result;
 }
 
-int cp_amore_ask(g1_t a1, g2_t b1, g1_t a2, g2_t b2, const bn_t c, const bn_t r,
-		const bn_t d, const g1_t p, const g2_t q, const g1_t u, const g2_t v,
+int cp_amore_ask(bn_t d, g1_t a1, g2_t b1, g1_t a2, g2_t b2, const bn_t c,
+		const bn_t r, const g1_t p, const g2_t q, const g1_t u, const g2_t v,
 		int priva, int privb) {
-	bn_t n;
+	bn_t n, t;
 	int result = RLC_OK;
 
 	bn_null(n);
+	bn_null(t);
 
 	RLC_TRY {
 		bn_new(n);
+		bn_new(t);
 
 		pc_get_ord(n);
+		if (priva && privb) {
+			/* Compute t = 1/(rc) mod q, so d/t = x/(rcu) mod q.  */
+			bn_mul(t, r, c);
+			bn_mod(t, t, n);
+		} else {
+			/* Compute t = 1/r mod q. */			
+			bn_copy(t, r);
+		}
+		bn_mod_inv(t, t, n);
+		bn_mul(d, d, t);
+		bn_mod(d, d, n);
+
 		if (!priva && !privb) {
 			g1_copy(a1, p);
 			g2_copy(b1, q);
@@ -629,6 +631,7 @@ int cp_amore_ask(g1_t a1, g2_t b1, g1_t a2, g2_t b2, const bn_t c, const bn_t r,
 	}
 	RLC_FINALLY {
 		bn_free(n);
+		bn_free(t);
 	}
 	return result;
 }
@@ -780,8 +783,8 @@ int cp_amprd_gen(bn_t *ls, g2_t *rs, bn_t c, bn_t r, bn_t d, g1_t u, g2_t v,
 	return result;
 }
 
-int cp_amprd_ask(g2_t *ds, g1_t a1, g2_t b1, g1_t a2, g2_t b2, const bn_t c,
-		const bn_t r, const bn_t d, const g1_t *p, const g2_t *q, const g1_t u,
+int cp_amprd_ask(bn_t d, g2_t *ds, g1_t a1, g2_t b1, g1_t a2, g2_t b2,
+		const bn_t c, const bn_t r, const g1_t *p, const g2_t *q, const g1_t u,
 		const g2_t v, const bn_t *ls, const g2_t *rs, size_t m) {
 	g1_t a, t;
 	int result = RLC_OK;
@@ -801,7 +804,7 @@ int cp_amprd_ask(g2_t *ds, g1_t a1, g2_t b1, g1_t a2, g2_t b2, const bn_t c,
 		}
 		g2_norm_sim(ds, ds, m);
 		g1_norm(a, a);
-		cp_amore_ask(a1, b1, a2, b2, c, r, d, a, rs[0], u, v, 0, 1);
+		cp_amore_ask(d, a1, b1, a2, b2, c, r, a, rs[0], u, v, 0, 1);
 	} RLC_CATCH_ANY {
 		g1_free(a);
 		g1_free(t);
