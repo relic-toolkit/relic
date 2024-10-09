@@ -829,8 +829,8 @@ int cp_ambat_ans(gt_t *gs, const g2_t *rs, const g1_t a, const g2_t b,
 		}
 		g1_norm(ps[0], ps[0]);
 		g2_copy(qs[0], b);
-		g1_copy(ps[1], a);
-		g2_mul_gen(qs[1], d);
+		g1_mul(ps[1], a, d);
+		g2_get_gen(qs[1]);
 		
 		pc_map_sim(gs[m], ps, qs, 2);
 	} RLC_CATCH_ANY {
@@ -965,6 +965,7 @@ int cp_amprd_ask(bn_t d, g2_t *ds, g1_t a1, g2_t b1, g1_t a2, g2_t b2,
 
 	RLC_TRY {
 		g1_new(t);
+		g1_new(a);
 
 		g1_set_infty(a);
 		for (size_t i = 0; i < m; i++) {

@@ -136,7 +136,8 @@ int cp_bls_agg_sig(g1_t sig, g2_t a, const g1_t s, const g2_t q) {
 			RLC_THROW(ERR_NO_MEMORY);
 		}
 		bn_new(t);
-		g1_new(p);
+		g1_new(u);
+		g2_new(p);
 
 		md_map(h, buf, g2_size_bin(q, 0));
 		bn_read_bin(t, h, RLC_MIN(RLC_MD_LEN, RLC_CEIL(pc_param_level(), 8)));
