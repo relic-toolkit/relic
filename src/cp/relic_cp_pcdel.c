@@ -781,9 +781,7 @@ int cp_amprd_gen(bn_t *ls, g2_t *rs, bn_t c, bn_t r, bn_t d, g1_t u, g2_t v,
 			bn_mod(ls[i + 1], ls[i + 1], n);
 		}
 		if (m != bound) {
-			g2_norm_sim(rs + RLC_MIN(m, pc_param_level() - RAND_DIST) + 1, 
-					rs + RLC_MIN(m, pc_param_level() - RAND_DIST) + 1,
-					m - RLC_MIN(m, pc_param_level() - RAND_DIST) - 1);
+			g2_norm_sim(rs + bound + 1,  rs + bound + 1, m - bound - 1);
 		}
 	}
 	RLC_CATCH_ANY {
