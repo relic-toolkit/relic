@@ -1321,14 +1321,14 @@ static int pdprv(void) {
 	return code;
 }
 
-#define AGGS 	10
+#define AGGS 	1000
 
 static int pdprd(void) {
 	int code = RLC_ERR;
 	bn_t x, t, r1, r2, ls[AGGS + 1];
 	g1_t p[AGGS], u1, v1, w1;
 	g2_t q[AGGS], u2, v2, w2, rs[AGGS + 1], ds[AGGS];
-	gt_t e, r, g[4];
+	gt_t e, r, g[RLC_MAX(4, AGGS + 1)];
 
 	bn_null(t);
 	bn_null(x);
@@ -1356,6 +1356,10 @@ static int pdprd(void) {
 		g2_new(w2);
 		gt_new(e);
 		gt_new(r);
+		for (size_t i = 0; i < RLC_MAX(4, AGGS + 1); i++) {
+			gt_null(g[i]);
+			gt_new(g[i]);
+		}
 		for (size_t i = 0; i < AGGS; i++) {
 			g1_null(p[i]);
 			g2_null(q[i]);
@@ -1373,10 +1377,20 @@ static int pdprd(void) {
 		g2_null(rs[AGGS]);
 		g2_new(rs[AGGS]);
 
-		for (size_t i = 0; i < 4; i++) {
-			gt_null(g[i]);
-			gt_new(g[i]);
-		}
+		TEST_CASE("batch delegated pairing with (n - 1) public inputs is correct") {
+			TEST_ASSERT(cp_ambat_gen(r1, r2, u1, u2, e) == RLC_OK, end);
+			for (size_t i = 0; i < AGGS; i++) {
+				g1_rand(p[i]);
+			}
+			g2_rand(q[0]);
+			TEST_ASSERT(cp_ambat_ask(ls, rs, v1, v2, r1, r2, p, q[0], u1, u2, e, AGGS) == RLC_OK, end);
+			TEST_ASSERT(cp_ambat_ans(g, rs, v1, v2, r2, p, AGGS) == RLC_OK, end);
+			TEST_ASSERT(cp_ambat_ver(g, g, ls, e, AGGS) == 1, end);
+			for (size_t i = 0; i < AGGS; i++) {
+				pc_map(e, p[i], q[0]);
+				TEST_ASSERT(gt_cmp(e, g[i]) == RLC_EQ, end);
+			}
+		} TEST_END;
 
 		TEST_CASE("amortized delegated pairing product is correct") {
 			TEST_ASSERT(cp_amprd_gen(ls, rs, r1, r2, t, u1, u2, x, e, AGGS) == RLC_OK, end);
@@ -1408,18 +1422,18 @@ static int pdprd(void) {
 	g2_free(w2);
 	gt_free(e);
 	gt_free(r);
-		for (size_t i = 0; i < AGGS; i++) {
-			g1_free(p[i]);
-			g2_free(q[i]);
-			g2_free(rs[i]);
-			g2_free(ds[i]);
-			bn_free(ls[i]);
-		}
-		bn_free(ls[AGGS]);
-		g2_free(rs[AGGS]);
-		for (size_t i = 0; i < 4; i++) {
-			gt_free(g[i]);
-		}
+	for (size_t i = 0; i < RLC_MAX(4, AGGS + 1); i++) {
+		gt_free(g[i]);
+	}
+	for (size_t i = 0; i < AGGS; i++) {
+		g1_free(p[i]);
+		g2_free(q[i]);
+		g2_free(rs[i]);
+		g2_free(ds[i]);
+		bn_free(ls[i]);
+	}
+	bn_free(ls[AGGS]);
+	g2_free(rs[AGGS]);
 	return code;
 }
 

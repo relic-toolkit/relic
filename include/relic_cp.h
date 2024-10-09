@@ -1147,7 +1147,7 @@ int cp_ecss_ver(bn_t e, bn_t s, const uint8_t *msg, size_t len, const ec_t q);
  * @param[out] u1			- the U1 precomputed value in G_1.
  * @param[out] u2			- the U2 precomputed value in G_2.
  * @param[out] v2			- the image of the randomness in G_2.
- * @param[out] e			- the precomputed values e(U1, U2).
+ * @param[out] e			- the precomputed value e(U1, U2).
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_pdpub_gen(bn_t c, bn_t r, g1_t u1, g2_t u2, g2_t v2, gt_t e);
@@ -1189,7 +1189,7 @@ int cp_pdpub_ans(gt_t g[3], const g1_t p, const g2_t q, const g1_t v1,
  * @param[out] r			- the result of the computation.
  * @param[in] g				- the group elements returned by the server.
  * @param[in] c				- the challenge.
- * @param[in] e				- the precomputed values e(U1, U2).
+ * @param[in] e				- the precomputed value e(U1, U2).
  * @return a boolean value indicating if the computation is correct.
  */
 int cp_pdpub_ver(gt_t r, const gt_t g[3], const bn_t c, const gt_t e);
@@ -1260,7 +1260,7 @@ int cp_pdprv_ver(gt_t r, const gt_t g[4], const bn_t c, const gt_t e[2]);
  * @param[out] u1			- the U1 precomputed value in G_1.
  * @param[out] u2			- the U2 precomputed value in G_2.
  * @param[out] v2			- the image of the randomness in G_2.
- * @param[out] e			- the precomputed values e(U1, U2).
+ * @param[out] e			- the precomputed value e(U1, U2).
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_lvpub_gen(bn_t c, bn_t r, g1_t u1, g2_t u2, g2_t v2, gt_t e);
@@ -1303,7 +1303,7 @@ int cp_lvpub_ans(gt_t g[2], const g1_t p, const g2_t q, const g1_t v1,
  * @param[out] r			- the result of the computation.
  * @param[in] g				- the group elements returned by the server.
  * @param[in] c				- the challenge.
- * @param[in] e				- the precomputed values e(U1, U2).
+ * @param[in] e				- the precomputed value e(U1, U2).
  * @return a boolean value indicating if the computation is correct.
  */
 int cp_lvpub_ver(gt_t r, const gt_t g[2], const bn_t c, const gt_t e);
@@ -1375,7 +1375,7 @@ int cp_lvprv_ver(gt_t r, const gt_t g[4], const bn_t c, const gt_t e[2]);
  * @param[out] u			- the mask in G_1.
  * @param[out] v			- the mask in G_2.
  * @param[in,out] x			- the secret key.
- * @param[in,out] e			- the precomputed values e(U1, U2).
+ * @param[in,out] e			- the precomputed value e(U1, U2).
  * @param[in] first			- the flag to indicate if the first iteration.
  * @param[in] longc			- the flag to indicate if challenge is long.
  * @param[in] priva			- the flag to indicate if first point is private.
@@ -1429,13 +1429,76 @@ int cp_amore_ans(gt_t g[2], const bn_t d, const g1_t a1, const g2_t b1,
  * @param[out] r			- the result of the computation.
  * @param[in] g				- the group elements returned by the server.
  * @param[in] c				- the challenge.
- * @param[in] e				- the precomputed values e(U1, U2).
+ * @param[in] e				- the precomputed value e(U1, U2).
  * @param[in] priva			- the flag to indicate if first point is private.
  * @param[in] privb			- the flag to indicate if second point is private.
  * @return a boolean value indicating if the computation is correct.
  */
 int cp_amore_ver(gt_t r, const gt_t g[2], const bn_t c, const gt_t e,
 		int priva, int privb);
+
+/**
+ * Generates parameters for the AMORE batch pairing delegation protocol.
+ *
+ * @param[out] r			- the randomness.
+ * @param[out] d			- the delta value computed during setup.
+ * @param[out] u			- the mask in G_1.
+ * @param[out] v			- the mask in G_2.
+ * @param[out] e			- the precomputed value e(U1, U2).
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int cp_ambat_gen(bn_t r, bn_t d, g1_t u, g2_t v, gt_t e);
+
+/**
+ * Executes the client-side request for the AMORE batch pairing delegation
+ * protocol.
+ *
+ * @param[out] ls			- the challenges.
+ * @param[out] rs			- the group elements computed by the client.
+ * @param[out] a			- the element in G_1 computed by the client.
+ * @param[out] b			- the element in G_2 computed by the client.
+ * @param[in] r				- the randomness.
+ * @param[in] d				- the delta value computed during setup.
+ * @param[in] p				- the first arguments of the pairing.
+ * @param[in] q				- the second argument of the pairing.
+ * @param[in] u				- the U1 precomputed value in G_1.
+ * @param[in] v				- the U2 precomputed value in G_2.
+ * @param[in] e				- the precomputed value e(U1, U2).
+ * @param[in] m				- the number of pairings delegated in the batch.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int cp_ambat_ask(bn_t *ls, g2_t *rs, g1_t a, g2_t b, const bn_t r, const bn_t d,
+		const g1_t *p, const g2_t q, const g1_t u, const g2_t v, gt_t e,
+		size_t m);
+
+/**
+ * Executes the server-side response for the AMORE batch pairing delegation
+ * protocol.
+ *
+ * @param[out] gs			- the group elements computed by the server.
+ * @param[out] rs			- the group elements sent by the client.
+ * @param[in] a				- the element in G_1 computed by the client.
+ * @param[in] b				- the element in G_2 computed by the client.
+ * @param[in] d				- the delta value computed during setup.
+ * @param[in] p				- the first arguments of the delegated pairings.
+ * @param[in] m				- the number of pairings delegated in the batch.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int cp_ambat_ans(gt_t *gs, const g2_t *rs, const g1_t a, const g2_t b, 
+		const bn_t d, const g1_t *p, size_t m);
+
+/**
+ * Verifies the result of the AMORE batch pairing delegation protocol.
+ *
+ * @param[out] es			- the results of the computation.
+ * @param[in] gs			- the group elements returned by the server.
+ * @param[in] ls			- the challenges.
+ * @param[in] e				- the precomputed value e(U1, U2).
+ * @param[in] m				- the number of pairings delegated in the batch.
+ * @return a boolean value indicating if the computation is correct.
+ */
+int cp_ambat_ver(gt_t *es, const gt_t *gs, const bn_t *ls, const gt_t e,
+		size_t m);
 
 /**
  * Generates parameters for the AMORE delegation protocol to compute the
@@ -1449,7 +1512,7 @@ int cp_amore_ver(gt_t r, const gt_t g[2], const bn_t c, const gt_t e,
  * @param[out] u			- the mask in G_1 for the pairing delegation.
  * @param[out] v			- the mask in G_2 for the pairing delegation.
  * @param[in,out] x			- the secret key.
- * @param[in,out] e			- the precomputed values e(U1, U2).
+ * @param[in,out] e			- the precomputed value e(U1, U2).
  * @param[in] m				- the number of pairing to compute.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
@@ -1506,11 +1569,12 @@ int cp_amprd_ans(gt_t g[4], const g2_t *ds, const bn_t d, const g1_t a1,
  * @param[in] g				- the group elements returned by the server.
  * @param[in] c				- the pairing product delegation challenge.
  * @param[in] c				- the pairing delegation challenge.
- * @param[in] e				- the precomputed values e(U1, U2).
+ * @param[in] e				- the precomputed value e(U1, U2).
  * @param[in] m				- the number of pairing to compute.
  * @return a boolean value indicating if the computation is correct.
  */
-int cp_amprd_ver(gt_t r, const gt_t g[4], const bn_t l, const bn_t c, const gt_t e);
+int cp_amprd_ver(gt_t r, const gt_t g[4], const bn_t l, const bn_t c,
+		const gt_t e);
 
 /**
  * Generates a master key for the SOKAKA identity-based non-interactive
