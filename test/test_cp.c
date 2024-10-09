@@ -1321,7 +1321,7 @@ static int pdprv(void) {
 	return code;
 }
 
-#define AGGS 	1000
+#define AGGS 	10
 
 static int pdprd(void) {
 	int code = RLC_ERR;
