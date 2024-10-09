@@ -719,7 +719,7 @@ int cp_amprd_gen(bn_t *ls, g2_t *rs, bn_t c, bn_t r, bn_t d, g1_t u, g2_t v,
 		bn_t x, gt_t e, size_t m) {
 	bn_t n, xi;
 	int result = RLC_OK;
-	size_t i, j, l, eps;
+	size_t i, j, l, eps, bound = RLC_MIN(m, pc_param_level() - RAND_DIST);
 	int8_t naf[RLC_FP_BITS + 1];
 
 	bn_null(n);
@@ -741,7 +741,7 @@ int cp_amprd_gen(bn_t *ls, g2_t *rs, bn_t c, bn_t r, bn_t d, g1_t u, g2_t v,
 		cp_amore_gen(c, r, d, u, v, x, e, 1, 1, 0, 1);
 		eps = gt_size_bin(e, 1) / g2_size_bin(rs[0], 1);
 
-		for (i = 0; i < RLC_MIN(m, pc_param_level() - RAND_DIST); i++) {
+		for (i = 0; i < bound; i++) {
 			if (ep_curve_is_pairf() == EP_BN) {
 				bn_rand(ls[i + 1], RLC_POS, eps + BND_STORE);
 			} else {
@@ -749,7 +749,8 @@ int cp_amprd_gen(bn_t *ls, g2_t *rs, bn_t c, bn_t r, bn_t d, g1_t u, g2_t v,
 			}
 			g2_mul(rs[i + 1], rs[0], ls[i + 1]);
 		}
-		for (; i < m; i++) {
+		for (; i < 0; i++) {
+			/* Case 2 is too slow in practice, so move directly to case 3. */
 			bn_rand(xi, RLC_POS, pc_param_level() - RAND_DIST);
 			l = RLC_FP_BITS + 1;
 			bn_rec_naf(naf, &l, xi, 2);
@@ -767,7 +768,19 @@ int cp_amprd_gen(bn_t *ls, g2_t *rs, bn_t c, bn_t r, bn_t d, g1_t u, g2_t v,
 			}
 			bn_mod(ls[i + 1], ls[i + 1], n);
 		}
-		if (m != RLC_MIN(m, pc_param_level() - RAND_DIST)) {
+		for (; i < m; i++) {
+			bn_zero(ls[i + 1]);
+			g2_set_infty(rs[i + 1]);
+			for (j = 0; j < bound/3; j++) {
+				size_t index;
+				rand_bytes((unsigned char *)&index, sizeof(size_t));
+				index = index % i;
+				bn_add(ls[i + 1], ls[i + 1], ls[index + 1]);
+				g2_add(rs[i + 1], rs[i + 1], rs[index + 1]);
+			}
+			bn_mod(ls[i + 1], ls[i + 1], n);
+		}
+		if (m != bound) {
 			g2_norm_sim(rs + RLC_MIN(m, pc_param_level() - RAND_DIST) + 1, 
 					rs + RLC_MIN(m, pc_param_level() - RAND_DIST) + 1,
 					m - RLC_MIN(m, pc_param_level() - RAND_DIST) - 1);
