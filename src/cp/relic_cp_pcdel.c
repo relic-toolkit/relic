@@ -800,6 +800,7 @@ int cp_ambat_ask(bn_t *ls, g2_t *rs, g1_t a, g2_t b, const bn_t r, const bn_t d,
 		for (size_t i = 0; i < m; i++) {
 			bn_free(t[i]);
 		}
+		RLC_FREE(t);
 	}
 
 	return result;
@@ -978,6 +979,8 @@ int cp_amprd_ask(bn_t d, g2_t *ds, g1_t a1, g2_t b1, g1_t a2, g2_t b2,
 		g1_norm(a, a);
 		cp_amore_ask(d, a1, b1, a2, b2, c, r, a, rs[0], u, v, 0, 1);
 	} RLC_CATCH_ANY {
+		result = RLC_ERR;
+	} RLC_FINALLY {
 		g1_free(a);
 		g1_free(t);
 	}
