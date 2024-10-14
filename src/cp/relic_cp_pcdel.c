@@ -758,9 +758,9 @@ int cp_ambat_ask(bn_t *ls, g2_t *rs, g1_t a, g2_t b, const bn_t r,
 		pc_get_ord(n);
 		eps = gt_size_bin(e, 1) / g2_size_bin(q, 1);
 		if (longc) {
-			len = pc_param_level();
+			len = 2 * (pc_param_level() - eps);
 		} else {
-			len = RAND_DIST + BND_STORE + eps;
+			len = RAND_DIST/2 + BND_STORE + eps;
 		}
 
 		for (size_t i = 0; i < m; i++) {
