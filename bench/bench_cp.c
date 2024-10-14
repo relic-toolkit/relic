@@ -1079,27 +1079,27 @@ static void pdprv(void) {
 		BENCH_ADD(cp_ambat_ask(ls, rs, u1[1], u2[1], r1, p, q[0], u1[0], u2[0], e[0], 0, AGGS));
 	} BENCH_END;
 
-	BENCH_RUN("cp_amprd_ans (AGGS)") {
+	BENCH_RUN("cp_ambat_ans (AGGS)") {
 		BENCH_ADD(cp_ambat_ans(g, rs, u1[1], u2[1], p, AGGS));
 	} BENCH_END;
 
-	BENCH_RUN("cp_amprd_ver (AGGS)") {
+	BENCH_RUN("cp_ambat_ver (AGGS)") {
 		BENCH_ADD(cp_ambat_ver(g, g, ls, e[0], AGGS));
 	} BENCH_END;
 	
-	BENCH_RUN("cp_amprd_gen (AGGS)") {
+	BENCH_RUN("cp_amprd_gen (AGGS²)") {
 		BENCH_ADD(cp_amprd_gen(ls, rs, w2[0], r1, u1[0], u2[0], e[0], AGGS, AGGS));
 	} BENCH_END;
 
-	BENCH_RUN("cp_amprd_ask (AGGS)") {
+	BENCH_RUN("cp_amprd_ask (AGGS²)") {
 		BENCH_ADD(cp_amprd_ask(ks, ds, cs, fs, bs, v1[0], v2[0], ls, rs, w2[0], r1, p, q, u1[0], u2[0], e[0], AGGS, AGGS));
 	} BENCH_END;
 
-	BENCH_RUN("cp_amprd_ans (AGGS)") {
+	BENCH_RUN("cp_amprd_ans (AGGS²)") {
 		BENCH_ADD(cp_amprd_ans(g, ds, fs, bs, v1[0], v2[0], p, q, AGGS, AGGS));
 	} BENCH_END;
 
-	BENCH_RUN("cp_amprd_ver (AGGS)") {
+	BENCH_RUN("cp_amprd_ver (AGGS²)") {
 		BENCH_ADD(cp_amprd_ver(ts, g, ks, cs, e[0], AGGS));
 	} BENCH_END;
 	
