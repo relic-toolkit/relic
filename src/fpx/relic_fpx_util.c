@@ -65,7 +65,7 @@ void fp2_print(const fp2_t a) {
 	fp_print(a[1]);
 }
 
-int fp2_size_bin(fp2_t a, int pack) {
+int fp2_size_bin(const fp2_t a, int pack) {
 	if (pack) {
 		if (fp2_test_cyc(a)) {
 			return RLC_FP_BYTES + 1;
@@ -167,7 +167,7 @@ void fp3_print(const fp3_t a) {
 	fp_print(a[2]);
 }
 
-int fp3_size_bin(fp3_t a) {
+int fp3_size_bin(const fp3_t a) {
 	return 3 * RLC_FP_BYTES;
 }
 
@@ -226,7 +226,7 @@ void fp4_print(const fp4_t a) {
 	fp2_print(a[1]);
 }
 
-int fp4_size_bin(fp4_t a) {
+int fp4_size_bin(const fp4_t a) {
 	return 4 * RLC_FP_BYTES;
 }
 
@@ -287,7 +287,7 @@ void fp6_print(const fp6_t a) {
 	fp2_print(a[2]);
 }
 
-int fp6_size_bin(fp6_t a) {
+int fp6_size_bin(const fp6_t a) {
 	return 6 * RLC_FP_BYTES;
 }
 
@@ -346,7 +346,7 @@ void fp8_print(const fp8_t a) {
 	fp4_print(a[1]);
 }
 
-int fp8_size_bin(fp8_t a, int pack) {
+int fp8_size_bin(const fp8_t a, int pack) {
 	if (pack) {
 		if (fp8_test_cyc(a)) {
 			return 4 * RLC_FP_BYTES;
@@ -415,7 +415,7 @@ void fp9_print(const fp9_t a) {
 	fp3_print(a[2]);
 }
 
-int fp9_size_bin(fp9_t a) {
+int fp9_size_bin(const fp9_t a) {
 	return 9 * RLC_FP_BYTES;
 }
 
@@ -474,7 +474,7 @@ void fp12_print(const fp12_t a) {
 	fp6_print(a[1]);
 }
 
-int fp12_size_bin(fp12_t a, int pack) {
+int fp12_size_bin(const fp12_t a, int pack) {
 	if (pack) {
 		if (fp12_test_cyc(a)) {
 			return 8 * RLC_FP_BYTES;
@@ -571,7 +571,7 @@ void fp16_print(const fp16_t a) {
 	fp8_print(a[1]);
 }
 
-int fp16_size_bin(fp16_t a, int pack) {
+int fp16_size_bin(const fp16_t a, int pack) {
 	if (pack) {
 		if (fp16_test_cyc(a)) {
 			return 8 * RLC_FP_BYTES;
@@ -635,7 +635,7 @@ void fp18_print(const fp18_t a) {
 	fp9_print(a[1]);
 }
 
-int fp18_size_bin(fp18_t a, int pack) {
+int fp18_size_bin(const fp18_t a, int pack) {
 	if (pack) {
 		if (fp18_test_cyc(a)) {
 			return 12 * RLC_FP_BYTES;
@@ -737,7 +737,7 @@ void fp24_print(const fp24_t a) {
 	fp8_print(a[2]);
 }
 
-int fp24_size_bin(fp24_t a, int pack) {
+int fp24_size_bin(const fp24_t a, int pack) {
 	if (pack) {
 		if (fp24_test_cyc(a)) {
 			return 16 * RLC_FP_BYTES;
@@ -837,7 +837,7 @@ void fp48_print(const fp48_t a) {
 	fp24_print(a[1]);
 }
 
-int fp48_size_bin(fp48_t a, int pack) {
+int fp48_size_bin(const fp48_t a, int pack) {
 	if (pack) {
 		if (fp48_test_cyc(a)) {
 			return 32 * RLC_FP_BYTES;
@@ -939,7 +939,7 @@ void fp54_print(const fp54_t a) {
 	fp18_print(a[2]);
 }
 
-int fp54_size_bin(fp54_t a, int pack) {
+int fp54_size_bin(const fp54_t a, int pack) {
 	if (pack) {
 		if (fp54_test_cyc(a)) {
 			return 36 * RLC_FP_BYTES;

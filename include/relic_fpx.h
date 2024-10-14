@@ -1444,7 +1444,7 @@ void fp2_print(const fp2_t a);
  * @param[in] pack			- the flag to indicate compression.
  * @return the number of bytes.
  */
-int fp2_size_bin(fp2_t a, int pack);
+int fp2_size_bin(const fp2_t a, int pack);
 
 /**
  * Reads a quadratic extension field element from a byte vector in big-endian
@@ -1854,7 +1854,7 @@ void fp3_print(const fp3_t a);
  * @param[out] size			- the result.
  * @param[in] a				- the extension field element.
  */
-int fp3_size_bin(fp3_t a);
+int fp3_size_bin(const fp3_t a);
 
 /**
  * Reads a cubic extension field element from a byte vector in big-endian
@@ -2174,7 +2174,7 @@ void fp4_print(const fp4_t a);
  * @param[out] size			- the result.
  * @param[in] a				- the extension field element.
  */
-int fp4_size_bin(fp4_t a);
+int fp4_size_bin(const fp4_t a);
 
 /**
  * Reads a quartic extension field element from a byte vector in big-endian
@@ -2490,7 +2490,7 @@ void fp6_print(const fp6_t a);
  * @param[out] size			- the result.
  * @param[in] a				- the extension field element.
  */
-int fp6_size_bin(fp6_t a);
+int fp6_size_bin(const fp6_t a);
 
 /**
  * Reads a quadratic extension field element from a byte vector in big-endian
@@ -2734,7 +2734,7 @@ void fp8_print(const fp8_t a);
  * @param[in] pack			- the flag to indicate compression.
  * @return the number of bytes.
  */
-int fp8_size_bin(fp8_t a, int pack);
+int fp8_size_bin(const fp8_t a, int pack);
 
 /**
  * Reads an octic extension field element from a byte vector in big-endian
@@ -3087,7 +3087,7 @@ void fp9_print(const fp9_t a);
  * @param[out] size			- the result.
  * @param[in] a				- the extension field element.
  */
-int fp9_size_bin(fp9_t a);
+int fp9_size_bin(const fp9_t a);
 
 /**
  * Reads a quadratic extension field element from a byte vector in big-endian
@@ -3335,7 +3335,7 @@ void fp12_print(const fp12_t a);
  * @param[in] pack			- the flag to indicate compression.
  * @return the number of bytes.
  */
-int fp12_size_bin(fp12_t a, int pack);
+int fp12_size_bin(const fp12_t a, int pack);
 
 /**
  * Reads a dodecic extension field element from a byte vector in big-endian
@@ -3761,7 +3761,7 @@ void fp16_print(const fp16_t a);
  * @param[in] pack			- the flag to indicate compression.
  * @return the number of bytes.
  */
-int fp16_size_bin(fp16_t a, int pack);
+int fp16_size_bin(const fp16_t a, int pack);
 
 /**
  * Reads an sextadecic extension field element from a byte vector in big-endian
@@ -4117,7 +4117,7 @@ void fp18_print(const fp18_t a);
  * @param[in] pack			- the flag to indicate compression.
  * @return the number of bytes.
  */
-int fp18_size_bin(fp18_t a, int pack);
+int fp18_size_bin(const fp18_t a, int pack);
 
 /**
  * Reads a octdecic extension field element from a byte vector in big-endian
@@ -4538,7 +4538,7 @@ void fp24_print(const fp24_t a);
  * @param[in] pack			- the flag to indicate compression.
  * @return the number of bytes.
  */
-int fp24_size_bin(fp24_t a, int pack);
+int fp24_size_bin(const fp24_t a, int pack);
 
 /**
  * Reads a 24-degree extension field element from a byte vector in big-endian
@@ -4930,7 +4930,7 @@ void fp48_print(const fp48_t a);
  * @param[in] pack			- the flag to indicate compression.
  * @return the number of bytes.
  */
-int fp48_size_bin(fp48_t a, int pack);
+int fp48_size_bin(const fp48_t a, int pack);
 
 /**
  * Reads a 48-extension field element from a byte vector in big-endian
@@ -5306,7 +5306,7 @@ void fp54_print(const fp54_t a);
  * @param[in] pack			- the flag to indicate compression.
  * @return the number of bytes.
  */
-int fp54_size_bin(fp54_t a, int pack);
+int fp54_size_bin(const fp54_t a, int pack);
 
 /**
  * Reads a 54-extension field element from a byte vector in big-endian
