@@ -949,7 +949,7 @@ static void pdprv(void) {
 	bn_t r1, r2[3], ls[AGGS * AGGS], cs[AGGS], ks[AGGS];
 	g1_t fs[AGGS], p[AGGS * AGGS], u1[2], v1[3];
 	g2_t q[AGGS * AGGS], u2[2], v2[4], w2[4], ds[AGGS * AGGS], bs[AGGS], rs[AGGS * AGGS];
-	gt_t e[2], r, ts[AGGS], g[3 * AGGS + 1];
+	gt_t e[2], r, ts[AGGS + 1], g[3 * AGGS + 1];
 
 	bn_null(r1);
 	gt_null(r);
@@ -976,8 +976,7 @@ static void pdprv(void) {
 		g2_null(ds[i])
 		g2_null(rs[i])
 	}
-	bn_null(ls[AGGS]);
-	g2_null(rs[AGGS]);
+	gt_null(ts[AGGS]);
 
 	bn_new(r1);
 	gt_new(r);
@@ -1024,6 +1023,7 @@ static void pdprv(void) {
 		g2_new(bs[i]);
 		gt_new(ts[i]);
 	}
+	gt_new(ts[AGGS]);
 
 	BENCH_RUN("cp_pdprv_gen") {
 		BENCH_ADD(cp_pdprv_gen(r1, r2, u1, u2, v2, e));
@@ -1067,6 +1067,22 @@ static void pdprv(void) {
 		g1_rand(p[0]);
 		g2_rand(q[0]);
 		BENCH_ADD(cp_lvprv_ver(r, g, r1, e));
+	} BENCH_END;
+
+	BENCH_RUN("cp_mvbat_gen (AGGS)") {
+		BENCH_ADD(cp_mvbat_gen(r1, fs, AGGS));
+	} BENCH_END;
+
+	BENCH_RUN("cp_mvbat_ask (AGGS)") {
+		BENCH_ADD(cp_mvbat_ask(u1[0], fs, u2[0], g, r1, p, q[0], fs, AGGS));
+	} BENCH_END;
+
+	BENCH_RUN("cp_mvbat_ans (AGGS)") {
+		BENCH_ADD(cp_mvbat_ans(ts, u1[0], fs, u2[0], AGGS));
+	} BENCH_END;
+
+	BENCH_RUN("cp_mvbat_ver (AGGS)") {
+		BENCH_ADD(cp_mvbat_ver(g, ts, g, AGGS));
 	} BENCH_END;
 
 	BENCH_RUN("cp_ambat_gen (AGGS)") {
@@ -1135,6 +1151,7 @@ static void pdprv(void) {
 		g2_free(bs[i]);
 		gt_free(ts[i]);
 	}
+	gt_free(ts[AGGS]);
 }
 
 static void sokaka(void) {

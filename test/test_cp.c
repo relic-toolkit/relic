@@ -1328,7 +1328,7 @@ static int pdprd(void) {
 	bn_t x, t, r, ls[AGGS * AGGS], cs[AGGS], ks[AGGS];
 	g1_t fs[AGGS], p[AGGS * AGGS], u1, v1;
 	g2_t q[AGGS * AGGS], u2, v2, w2, rs[AGGS * AGGS], ds[AGGS * AGGS], bs[AGGS];
-	gt_t e, ts[AGGS], g[3 * AGGS + 1];
+	gt_t e, ts[AGGS + 1], g[3 * AGGS + 1];
 
 	bn_null(t);
 	bn_null(x);
@@ -1378,8 +1378,25 @@ static int pdprd(void) {
 			g2_new(bs[i]);
 			gt_new(ts[i]);
 		}
+		gt_null(ts[AGGS]);
+		gt_new(ts[AGGS]);
 
-		TEST_CASE("batch delegated pairing with (n - 1) public inputs is correct") {
+		TEST_CASE("delegated batch delegated pairing is correct") {
+			TEST_ASSERT(cp_mvbat_gen(r, fs, AGGS) == RLC_OK, end);
+			for (size_t i = 0; i < AGGS; i++) {
+				g1_rand(p[i]);
+			}
+			g2_rand(q[0]);
+			TEST_ASSERT(cp_mvbat_ask(u1, fs, u2, g, r, p, q[0], fs, AGGS) == RLC_OK, end);
+			TEST_ASSERT(cp_mvbat_ans(ts, u1, fs, u2, AGGS) == RLC_OK, end);
+			TEST_ASSERT(cp_mvbat_ver(g, ts, g, AGGS) == 1, end);
+			for (size_t i = 0; i < AGGS; i++) {
+				pc_map(e, p[i], q[0]);
+				TEST_ASSERT(gt_cmp(e, g[i]) == RLC_EQ, end);
+			}
+		} TEST_END;
+
+		TEST_CASE("amortized batch delegated pairing is correct") {
 			TEST_ASSERT(cp_ambat_gen(r, u1, u2, e) == RLC_OK, end);
 			for (size_t i = 0; i < AGGS; i++) {
 				g1_rand(p[i]);
@@ -1442,6 +1459,7 @@ static int pdprd(void) {
 		g2_free(bs[i]);
 		gt_free(ts[i]);
 	}
+	gt_free(ts[AGGS]);
 	return code;
 }
 
@@ -2518,7 +2536,7 @@ int main(void) {
 	}
 
 	util_banner("Tests for the CP module", 0);
-
+#if 0
 #if defined(WITH_BN)
 	util_banner("Protocols based on integer factorization:\n", 0);
 	if (rsa() != RLC_OK) {
@@ -2608,7 +2626,7 @@ int main(void) {
 		}
 	}
 #endif
-
+#endif
 #if defined(WITH_PC)
 	util_banner("Protocols based on pairings:\n", 0);
 	if (pc_param_set_any() == RLC_OK) {

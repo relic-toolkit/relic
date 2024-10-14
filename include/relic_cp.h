@@ -1437,6 +1437,60 @@ int cp_amore_ver(gt_t r, const gt_t g[2], const bn_t c, const gt_t e,
 		int priva, int privb);
 
 /**
+ * Generates parameters for the Mefenza-Vergnaud (MV) delegated batch pairing
+ * protocol.
+ *
+ * @param[out] r			- the randomness.
+ * @param[out] x			- the masks in G_1.
+ * @param[out] m			- the number of pairings to delegate in a batch.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int cp_mvbat_gen(bn_t r, g1_t *x, size_t m);
+
+/**
+ * Executes the client-side request for the MV batch pairing delegation
+ * protocol.
+ *
+ * @param[out] p0			- the challenge point in G_1.
+ * @param[out] ps			- the group elements computed by the client.
+ * @param[out] q0			- the challenge point in G_2.
+ * @param[out] e			- the pairings computed by the client.
+ * @param[in] r				- the randomness.
+ * @param[in] p				- the first arguments of the pairing.
+ * @param[in] q				- the second argument of the pairing.
+ * @param[in] x			- the masks in G_1.
+ * @param[in] m				- the number of pairings delegated in the batch.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int cp_mvbat_ask(g1_t p0, g1_t *ps, g2_t q0, gt_t *e, const bn_t r,
+		const g1_t *p, const g2_t q, const g1_t *x, size_t m);
+
+/**
+ * Executes the server-side response for the MV batch pairing delegation
+ * protocol.
+ *
+ * @param[out] as			- the group elements computed by the server.
+ * @param[in] p0			- the challenge point in G_1.
+ * @param[in] ps			- the group elements computed by the client.
+ * @param[in] q0			- the challenge point in G_2.
+ * @param[in] m				- the number of pairings delegated in the batch.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int cp_mvbat_ans(gt_t *as, const g1_t p0, const g1_t *ps, const g2_t q0,
+		size_t m);
+
+/**
+ * Verifies the result of the MV batch pairing delegation protocol.
+ *
+ * @param[out] rs			- the results of the computation.
+ * @param[in] as			- the group elements returned by the server.
+ * @param[in] e				- the pairings computed by the client.
+ * @param[in] m				- the number of pairings delegated in the batch.
+ * @return a boolean value indicating if the computation is correct.
+ */
+int cp_mvbat_ver(gt_t *rs, const gt_t *as, const gt_t *e, size_t m);
+
+/**
  * Generates parameters for the AMORE batch pairing delegation protocol.
  *
  * @param[out] r			- the randomness.
