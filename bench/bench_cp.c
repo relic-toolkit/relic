@@ -948,7 +948,7 @@ static void pdpub(void) {
 static void pdprv(void) {
 	bn_t r1, r2[3], ls[AGGS * AGGS], cs[AGGS], ks[AGGS];
 	g1_t fs[AGGS], p[AGGS * AGGS], u1[2], v1[3];
-	g2_t q[AGGS * AGGS], u2[2], v2[4], w2[4], ds[AGGS], bs[AGGS], rs[AGGS * AGGS];
+	g2_t q[AGGS * AGGS], u2[2], v2[4], w2[4], ds[AGGS * AGGS], bs[AGGS], rs[AGGS * AGGS];
 	gt_t e[2], r, ts[AGGS], g[3 * AGGS + 1];
 
 	bn_null(r1);
@@ -1004,25 +1004,23 @@ static void pdprv(void) {
 			g1_null(p[i * AGGS + j]);
 			g2_null(q[i * AGGS + j]);
 			g2_null(rs[i * AGGS + j]);
+			g2_null(ds[i * AGGS + j]);
 			bn_new(ls[i * AGGS + j]);
 			g1_new(p[i * AGGS + j]);
 			g2_new(q[i * AGGS + j]);
 			g2_new(rs[i * AGGS + j]);
+			g2_new(ds[i * AGGS + j]);
 			g1_rand(p[i * AGGS + j]);
 			g2_rand(q[i * AGGS + j]);
 		}
 		bn_null(ks[i]);
 		bn_null(cs[i]);
 		g1_null(fs[i]);
-		g2_null(rs[i]);
-		g2_null(ds[i]);
 		g2_null(bs[i]);
 		gt_null(ts[i]);
 		bn_new(ks[i]);
 		bn_new(cs[i])
 		g1_new(fs[i]);
-		g2_new(rs[i]);
-		g2_new(ds[i]);
 		g2_new(bs[i]);
 		gt_new(ts[i]);
 	}
@@ -1127,12 +1125,12 @@ static void pdprv(void) {
 			g1_free(p[i * AGGS + j]);
 			g2_free(q[i * AGGS + j]);
 			g2_free(rs[i * AGGS + j]);
+			g2_free(ds[i * AGGS + j]);
 		}
 		bn_free(ls[i]);
 		bn_free(cs[i]);
 		bn_free(ks[i]);
 		g1_free(fs[i]);
-		g2_free(ds[i]);
 		g2_free(rs[i]);
 		g2_free(bs[i]);
 		gt_free(ts[i]);
