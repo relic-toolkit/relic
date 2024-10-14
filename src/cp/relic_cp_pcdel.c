@@ -822,8 +822,7 @@ int cp_mvbat_ver(gt_t *rs, const gt_t *as, const gt_t *e, size_t m) {
 			gt_frb(t, t, 1);
 			gt_mul(alpha, alpha, t);
 		}
-		if (!result|| (gt_cmp(alpha, as[0]))) {
-			printf("eita\n");
+		if (!result || (gt_cmp(alpha, as[0]) != RLC_EQ)) {
 			for (size_t i = 0; i < m; i++) {
 				gt_set_unity(rs[i]);
 			}
