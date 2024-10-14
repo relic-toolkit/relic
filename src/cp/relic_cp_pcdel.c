@@ -771,8 +771,9 @@ int cp_mvbat_ask(g1_t p0, g1_t *ps, g2_t q0, gt_t *e, const bn_t r,
 		g1_norm_sim(ps, ps, m);
 
 		g1_set_infty(u);
-		for (size_t i = 0; i < RLC_MIN(m, pc_param_level()); i++) {
-			g1_mul_dig(t, ps[i], i + 1);
+		for (size_t i = 0; i < pc_param_level() - 2; i++) {
+			uint_t j = i % RLC_MIN(m, pc_param_level());
+			g1_mul_dig(t, ps[j], j);
 			g1_add(u, u, t);
 		}
 		g1_norm(u, u);
@@ -817,18 +818,19 @@ int cp_mvbat_ver(gt_t *rs, const gt_t *as, const gt_t *e, size_t m) {
 		}
 
 		gt_copy(alpha, e[0]);
-		for (size_t i = 1; i <= RLC_MIN(m, pc_param_level()); i++) {
-			gt_exp_dig(t, as[i], i);
+		for (size_t i = 1; i <= pc_param_level() - 2; i++) {
+			uint_t j = i % RLC_MIN(m, pc_param_level());
+			gt_exp_dig(t, as[j + 1], j);
 			gt_frb(t, t, 1);
 			gt_mul(alpha, alpha, t);
 		}
+		for (size_t i = 0; i < m; i++) {
+			gt_mul(rs[i], as[i + 1], e[i + 1]);
+		}
+
 		if (!result || (gt_cmp(alpha, as[0]) != RLC_EQ)) {
 			for (size_t i = 0; i < m; i++) {
 				gt_set_unity(rs[i]);
-			}
-		} else {
-			for (size_t i = 0; i < m; i++) {
-				gt_mul(rs[i], as[i + 1], e[i + 1]);
 			}
 		}
 	} RLC_CATCH_ANY {
