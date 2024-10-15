@@ -34,7 +34,7 @@ RELIC implements to date:
 
 Instructions for building the library can be found in the [Wiki](https://github.com/relic-toolkit/relic/wiki/Building).
 
-For the pairing delegation protocols, look for the corresponding entries in the output of the `test_cp` testing binary, and entries with prefix `cp_amore` (for the sequential version), `cp_ambat` (for the batch version) and `cp_amprd` (for the product version) in the output of the `bench_cp`benchmarking binary. You can adjust the parameter `AGGS` in the binaries to adjust the number of pairings (or aggregated signatures).
+For the pairing delegation protocols, look for the corresponding entries in the output of the `test_cp` testing binary, and entries with prefix `cp_amore` (for the sequential version), `cp_ambat` (for the batch version) and `cp_amprd` (for the product version) in the output of the `bench_cp` benchmarking binary. You can adjust the parameter `AGGS` in the binaries to adjust the number of pairings (or aggregated signatures).
 
 ### Support
 
