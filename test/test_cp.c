@@ -1412,6 +1412,16 @@ static int pdprd(void) {
 		} TEST_END;
 
 		TEST_CASE("amortized delegated pairing product is correct") {
+			TEST_ASSERT(cp_amprd_gen(ls, rs, w2, x, u1, u2, e, 1, AGGS) == RLC_OK, end);
+			for (size_t i = 0; i < AGGS * AGGS; i++) {
+				g1_rand(p[i]);
+				g2_rand(q[i]);
+			}
+			TEST_ASSERT(cp_amprd_ask(ks, ds, cs, fs, bs, v1, v2, ls, rs, w2, x, p, q, u1, u2, e, 1, AGGS) == RLC_OK, end);
+			TEST_ASSERT(cp_amprd_ans(g, ds, fs, bs, v1, v2, p, q, 1, AGGS) == RLC_OK, end);
+			TEST_ASSERT(cp_amprd_ver(ts, g, ks, cs, e, 1) == 1, end);
+			pc_map_sim(g[0], p, q, AGGS);
+			TEST_ASSERT(gt_cmp(ts[0], g[0]) == RLC_EQ, end);
 			TEST_ASSERT(cp_amprd_gen(ls, rs, w2, x, u1, u2, e, AGGS, AGGS) == RLC_OK, end);
 			for (size_t i = 0; i < AGGS * AGGS; i++) {
 				g1_rand(p[i]);

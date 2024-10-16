@@ -1100,6 +1100,22 @@ static void pdprv(void) {
 	BENCH_RUN("cp_ambat_ver (AGGS)") {
 		BENCH_ADD(cp_ambat_ver(g, g, ls, e[0], AGGS));
 	} BENCH_END;
+
+	BENCH_RUN("cp_amprd_gen (AGGS)") {
+		BENCH_ADD(cp_amprd_gen(ls, rs, w2[0], r1, u1[0], u2[0], e[0], 1, AGGS));
+	} BENCH_END;
+
+	BENCH_RUN("cp_amprd_ask (AGGS)") {
+		BENCH_ADD(cp_amprd_ask(ks, ds, cs, fs, bs, v1[0], v2[0], ls, rs, w2[0], r1, p, q, u1[0], u2[0], e[0], 1, AGGS));
+	} BENCH_END;
+
+	BENCH_RUN("cp_amprd_ans (AGGS)") {
+		BENCH_ADD(cp_amprd_ans(g, ds, fs, bs, v1[0], v2[0], p, q, 1, AGGS));
+	} BENCH_END;
+
+	BENCH_RUN("cp_amprd_ver (AGGS)") {
+		BENCH_ADD(cp_amprd_ver(ts, g, ks, cs, e[0], 1));
+	} BENCH_END;
 	
 	BENCH_RUN("cp_amprd_gen (AGGS²)") {
 		BENCH_ADD(cp_amprd_gen(ls, rs, w2[0], r1, u1[0], u2[0], e[0], AGGS, AGGS));
