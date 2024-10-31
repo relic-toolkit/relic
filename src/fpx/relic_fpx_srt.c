@@ -80,6 +80,8 @@ int fp2_srt(fp2_t c, const fp2_t a) {
 		fp_new(t[1]);
 
 		if (fp_prime_get_mod8() % 4 == 3) {
+			/* "From Optimized One-Dimensional SQIsign Verification on Intel and
+			 * Cortex-M4" by Aardal et al: https://eprint.iacr.org/2024/1563 */
 			fp_sqr(t[0], a[0]);
 			fp_sqr(t[1], a[1]);
 			fp_add(t[0], t[0], t[1]);
