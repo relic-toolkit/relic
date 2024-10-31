@@ -93,6 +93,7 @@ int fp2_srt(fp2_t c, const fp2_t a) {
 			bn_rsh(e, e, 2);
 
 			fp_exp(t[0], t[0], e);
+			fp_copy_sec(t[0], a[0], fp_is_zero(a[1]));
 			fp_add(t[0], t[0], a[0]);
 			fp_dbl(u[0], t[0]);
 
@@ -102,11 +103,11 @@ int fp2_srt(fp2_t c, const fp2_t a) {
 			fp_mul(t[1], t[1], a[1]);
 			fp_dbl(u[1], t[0]);
 			fp_sqr(u[1], u[1]);
-			int f = (fp_cmp(u[0], u[1]) == RLC_EQ);
+			fp_sub(u[0], u[0], u[1]);
+			int f = fp_is_zero(u[0]);
 			fp_neg(u[1], t[0]);
 			fp_copy(u[0], t[1]);
-			fp_copy_sec(u[0], t[0], f);
-			fp_copy_sec(u[1], t[1], f);
+			fp2_copy_sec(u, t, f);
 			fp2_sqr(t, u);
 			r = (fp2_cmp(a, t) == RLC_EQ);
 			fp2_copy(c, u);
