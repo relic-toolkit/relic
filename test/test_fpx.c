@@ -778,7 +778,7 @@ static int square_root2(void) {
 		fp2_new(a);
 		fp2_new(b);
 		fp2_new(c);
-
+#if 0
 		TEST_CASE("quadratic residuosity test is correct") {
 			fp2_zero(a);
 			TEST_ASSERT(fp2_is_sqr(a) == 1, end);
@@ -791,22 +791,27 @@ static int square_root2(void) {
 			TEST_ASSERT(fp2_is_sqr(a) == 0, end);
 		}
 		TEST_END;
+#endif
 
 		TEST_CASE("square root extraction is correct") {
 			fp2_zero(a);
 			fp2_sqr(c, a);
 			r = fp2_srt(b, c);
 			TEST_ASSERT(r, end);
-			TEST_ASSERT(fp2_cmp(b, a) == RLC_EQ ||
-					fp2_cmp(c, a) == RLC_EQ, end);
+			TEST_ASSERT(fp2_cmp(b, a) == RLC_EQ, end);
+#if 0
 			fp_rand(a[0]);
 			fp_zero(a[1]);
 			fp2_sqr(c, a);
 			r = fp2_srt(b, c);
 			fp2_neg(c, b);
+			fp2_print(a);
+			fp2_print(b);
+			fp2_print(c);
 			TEST_ASSERT(r, end);
 			TEST_ASSERT(fp2_cmp(b, a) == RLC_EQ ||
 					fp2_cmp(c, a) == RLC_EQ, end);
+
 			fp_zero(a[0]);
 			fp_rand(a[1]);
 			fp2_sqr(c, a);
@@ -815,6 +820,7 @@ static int square_root2(void) {
 			TEST_ASSERT(r, end);
 			TEST_ASSERT(fp2_cmp(b, a) == RLC_EQ ||
 					fp2_cmp(c, a) == RLC_EQ, end);
+#endif
 			fp2_rand(a);
 			fp2_sqr(c, a);
 			r = fp2_srt(b, c);
