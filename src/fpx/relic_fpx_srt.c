@@ -64,10 +64,11 @@ int fp2_is_sqr(const fp2_t a) {
 int fp2_srt(fp2_t c, const fp2_t a) {
 	int r = 0;
 	bn_t e;
-	fp2_t t;
+	fp2_t t, u;
 
 	bn_null(e);
 	fp2_null(t);
+	fp2_null(u);
 
 	if (fp2_is_zero(a)) {
 		fp2_zero(c);
@@ -76,12 +77,12 @@ int fp2_srt(fp2_t c, const fp2_t a) {
 
 	RLC_TRY {
 		bn_new(e);
-		fp_new(t[0]);
-		fp_new(t[1]);
+		fp2_new(t);
+		fp2_new(u);
 
 		if (fp_prime_get_mod8() % 4 == 3) {
 			/* "From Optimized One-Dimensional SQIsign Verification on Intel and
-			 * Cortex-M4" by Aardal et al: https://eprint.iacr.org/2024/1563 */
+			 * Cortex-M4" by Aardal et al.: https://eprint.iacr.org/2024/1563 */
 			fp_sqr(t[0], a[0]);
 			fp_sqr(t[1], a[1]);
 			fp_add(t[0], t[0], t[1]);
@@ -93,21 +94,22 @@ int fp2_srt(fp2_t c, const fp2_t a) {
 
 			fp_exp(t[0], t[0], e);
 			fp_add(t[0], t[0], a[0]);
-			fp_dbl(c[0], t[0]);
+			fp_dbl(u[0], t[0]);
 
 			bn_sub_dig(e, e, 1);
-			fp_exp(t[1], c[0], e);
+			fp_exp(t[1], u[0], e);
 			fp_mul(t[0], t[0], t[1]);
 			fp_mul(t[1], t[1], a[1]);
-			fp_dbl(c[1], t[0]);
-			fp_sqr(c[1], c[1]);
-			int f = (fp_cmp(c[0], c[1]) == RLC_EQ);
-			fp_neg(c[1], t[0]);
-			fp_copy(c[0], t[1]);
-			fp_copy_sec(c[0], t[0], f);
-			fp_copy_sec(c[1], t[1], f);
-			fp2_sqr(t, c);
+			fp_dbl(u[1], t[0]);
+			fp_sqr(u[1], u[1]);
+			int f = (fp_cmp(u[0], u[1]) == RLC_EQ);
+			fp_neg(u[1], t[0]);
+			fp_copy(u[0], t[1]);
+			fp_copy_sec(u[0], t[0], f);
+			fp_copy_sec(u[1], t[1], f);
+			fp2_sqr(t, u);
 			r = (fp2_cmp(a, t) == RLC_EQ);
+			fp2_copy(c, u);
 		} else {
 			if (fp_is_zero(a[1])) {
 				/* special case: either a[0] is square and sqrt is purely 'real'
@@ -175,6 +177,7 @@ int fp2_srt(fp2_t c, const fp2_t a) {
 	RLC_FINALLY {
 		bn_free(e);
 		fp2_free(t);
+		fp2_free(u);
 	}
 	return r;
 }
