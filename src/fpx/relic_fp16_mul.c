@@ -105,6 +105,7 @@ void fp16_mul_dxs_basic(fp16_t c, const fp16_t a, const fp16_t b) {
 			fp4_sub(t1[1], t1[1], t1[0]);
 			fp4_mul_art(t1[0], t1[0]);
 		} else {
+#if EP_ADD == BASIC
 			/* t0 = a_0 * b_0. */
 			for (int i = 0; i < 2; i++) {
 				for (int j = 0; j < 2; j++) {
@@ -113,6 +114,12 @@ void fp16_mul_dxs_basic(fp16_t c, const fp16_t a, const fp16_t b) {
 					}
 				}
 			}
+#else
+			/* t0 = a_0 * b_0. */
+			for (int i = 0; i < 2; i++) {
+				fp4_mul(t0[i], a[0][i], b[0][0]);
+			}
+#endif
 			/* t1 = a_1 * b_1. */
 			fp8_mul(t1, a[1], b[1]);
 		}
@@ -266,6 +273,7 @@ void fp16_mul_dxs_lazyr(fp16_t c, const fp16_t a, const fp16_t b) {
 			dv_copy(u1[0][1][0], u2[0][0][0], 2 * RLC_FP_DIGS);
 			dv_copy(u1[0][1][1], u2[0][0][1], 2 * RLC_FP_DIGS);
 		} else {
+#if EP_ADD == BASIC
 			/* u0 = a_0 * b_0. */
 			for (int i = 0; i < 2; i++) {
 				for (int j = 0; j < 2; j++) {
@@ -274,6 +282,12 @@ void fp16_mul_dxs_lazyr(fp16_t c, const fp16_t a, const fp16_t b) {
 					}
 				}
 			}
+#else
+			/* u0 = a_0 * b_0. */
+			for (int i = 0; i < 2; i++) {
+				fp4_mul_unr(u0[i], a[0][i], b[0][0]);
+			}
+#endif
 			/* u1 = a_1 * b_1. */
 			fp8_mul_unr(u1, a[1], b[1]);
 		}
