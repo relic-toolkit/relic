@@ -58,7 +58,7 @@ static void gt_psi(gt_t c, const gt_t a) {
 				gt_inv(b, b);
 				gt_mul(c, c, b);
 				break;
-			case EP_N16:
+			case EP_AFG16:
 				/* u = -p^5 mod r */
 				gt_frb(c, a, 5);
 				gt_inv(c, c);
@@ -175,7 +175,7 @@ void gt_exp_gls_naf(gt_t c, const gt_t a, const bn_t b, size_t f) {
 			l = RLC_MAX(l, _l[i]);
 		}
 
-		if (ep_curve_is_pairf() == EP_K16 || ep_curve_is_pairf() == EP_N16 ||
+		if (ep_curve_is_pairf() == EP_K16 || ep_curve_is_pairf() == EP_AFG16 ||
 				ep_curve_embed() == 18) {
 			gt_copy(t[0], a);
 			for (size_t i = 1; i < f; i++) {

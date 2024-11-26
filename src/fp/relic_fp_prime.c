@@ -414,7 +414,7 @@ void fp_prime_set_pairf(const bn_t x, int pairf) {
 				bn_add(p, p, t0);
 				fp_prime_set_dense(p);
 				break;
-			case EP_N16:
+			case EP_AFG16:
 				/* p = (x^16 + 2*x^13 + x^10 + 5*x^8 + 6*x^5 + x^2 + 4)/4 */
 				bn_sqr(p, t0);
 				bn_mul(p, p, t0);

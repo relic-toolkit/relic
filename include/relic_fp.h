@@ -140,10 +140,12 @@ enum {
 	B12_446,
 	/** 455-bit prime for BLS curve of embedding degree 12. */
 	B12_455,
-	/** 477-bit prime for BLS curve of embedding degree 24. */
-	B24_509,
 	/** 508-bit prime for KSS16 curve. */
 	K18_508,
+	/** 477-bit prime for BLS curve of embedding degree 24. */
+	B24_509,
+	/** 510-bit prime for new family with embedding degree 16. */
+	AFG16_510,
 	/** Random 544-bit prime for Cocks-Pinch curve with embedding degree 8. */
 	GMT8_544,
 	/** 569-bit prime for SG curve with embedding degree 54. */
@@ -163,7 +165,7 @@ enum {
 	/** 766-bit prime for KSS curve with embedding degree 16. */
 	K16_766,
 	/** 766-bit prime for new family with embedding degree 16. */
-	N16_766,
+	AFG16_766,
 	/** 768-bit prime for FM curve with embedding degree 18. */
 	FM18_768,
 	/** 1024-bit prime for CTIDH. */

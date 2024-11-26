@@ -577,6 +577,20 @@
 /** @} */
 #endif
 
+#if defined(EP_ENDOM) && FP_PRIME == 510
+/**
+ * Parameters for a 510-bit pairing-friendly prime curve.
+ */
+/** @{ */
+#define AFG16_P510_A		"1"
+#define AFG16_P510_B		"0"
+#define AFG16_P510_X		"1B28C3BEC45CD9C234F465962ECE64778E165478A23196AB96FDCC96158DB382D54A07059A286B6C1E55B96C4A8C618F47A6A36A26C99E3E1FE8BC25D74E1498"
+#define AFG16_P510_Y		"BA2C88F672B5A4B486E8A86442B9B1A41917DB750072E398FC106020C3ADECC12A87CB01F0D19B1803A97C300D97545941DADE18CB8A648A79F3BB0744F9F8C"
+#define AFG16_P510_R		"E1B262AFF36AB56C7EFDECD784FACE4291A5FFE880A4AAD37C71010000000001"
+#define AFG16_P510_H		"5922DDB02112D02D09E6928213608A7AC1EE7A916706E3DA46FA55988D318CFF"
+/** @} */
+#endif
+
 #if defined(EP_ENDOM) && FP_PRIME == 544
 /**
  * Parameters for the 544-bit Cocks-Pinch curve.
@@ -704,12 +718,12 @@
  * Parameters for a 766-bit pairing-friendly prime curve.
  */
 /** @{ */
-#define N16_P766_A		"1"
-#define N16_P766_B		"0"
-#define N16_P766_X		"177E5E088795AE368F68ADB4938F647BCCB7D0BCB70456E3B3BC0C6EE12FA3D0E1DFC2FD81C215EC25E602DE8BCEE98A7F8FC23E4A296B9DDEF34BB90A27DD4804B90F7783FE2C891A820941DB16535E1FD73E73038A520AAE396F0949D7E46D"
-#define N16_P766_Y		"1CE39931AB952C962CBF6F4E8BE79D6AD3D931B2B100185707032C109C9476305F44D30E1D551E965D44D661327D878EC47ED7A9D1DCDDCA96091E74FB4FF6D42CE809579AB9C72417C55849377E4BA31A0B5F687D840E4CE99E63D583050147"
-#define N16_P766_R		"FFFF7000238FFAF4807374994CF93FE6E28D406881B18D350193FE6E3E533E4073749FEBD2000238FFFFDC0000010001"
-#define N16_P766_H		"3FFFDC0008E3FEBD201CDD26533E4FF9B8A3D019F36C69AB3FF0479FDCFCBD856CEE5D9B2D34778FD7D2F6D2DC004204"
+#define AFG16_P766_A		"1"
+#define AFG16_P766_B		"0"
+#define AFG16_P766_X		"177E5E088795AE368F68ADB4938F647BCCB7D0BCB70456E3B3BC0C6EE12FA3D0E1DFC2FD81C215EC25E602DE8BCEE98A7F8FC23E4A296B9DDEF34BB90A27DD4804B90F7783FE2C891A820941DB16535E1FD73E73038A520AAE396F0949D7E46D"
+#define AFG16_P766_Y		"1CE39931AB952C962CBF6F4E8BE79D6AD3D931B2B100185707032C109C9476305F44D30E1D551E965D44D661327D878EC47ED7A9D1DCDDCA96091E74FB4FF6D42CE809579AB9C72417C55849377E4BA31A0B5F687D840E4CE99E63D583050147"
+#define AFG16_P766_R		"FFFF7000238FFAF4807374994CF93FE6E28D406881B18D350193FE6E3E533E4073749FEBD2000238FFFFDC0000010001"
+#define AFG16_P766_H		"3FFFDC0008E3FEBD201CDD26533E4FF9B8A3D019F36C69AB3FF0479FDCFCBD856CEE5D9B2D34778FD7D2F6D2DC004204"
 /** @} */
 
 #endif
@@ -1143,6 +1157,13 @@ void ep_param_set(int param) {
 				pairf = EP_B24;
 				break;
 #endif
+#if defined(EP_ENDOM) && FP_PRIME == 510
+			case AFG16_P510:
+				ASSIGN(AFG16_P510, AFG16_510);
+				endom = 1;
+				pairf = EP_AFG16;
+				break;
+#endif
 #if defined(EP_PLAIN) && FP_PRIME == 511
 			case CURVE_511187:
 				ASSIGN(CURVE_511187, PRIME_511187);
@@ -1211,10 +1232,10 @@ void ep_param_set(int param) {
 				endom = 1;
 				pairf = EP_K16;
 				break;
-			case N16_P766:
-				ASSIGN(N16_P766, N16_766);
+			case AFG16_P766:
+				ASSIGN(AFG16_P766, AFG16_766);
 				endom = 1;
-				pairf = EP_N16;
+				pairf = EP_AFG16;
 				break;
 #endif
 #if defined(EP_ENDOM) && FP_PRIME == 768
@@ -1290,7 +1311,7 @@ void ep_param_set(int param) {
 					bn_sqr(lamb, lamb);
 					bn_sub_dig(lamb, lamb, 1);
 					break;
-				case EP_N16:
+				case EP_AFG16:
 				case EP_FM16:
 					/* lambda = -u^4. */
 					bn_sqr(lamb, lamb);
@@ -1499,6 +1520,8 @@ int ep_param_set_any_endom(void) {
 	ep_param_set(K18_P508);
 #elif FP_PRIME == 509
 	ep_param_set(B24_P509);
+#elif FP_PRIME == 510
+	ep_param_set(AFG16_P510);
 #elif FP_PRIME == 544
 	ep_param_set(GMT8_P544);
 #elif FP_PRIME == 638
@@ -1512,7 +1535,7 @@ int ep_param_set_any_endom(void) {
 	ep_param_set(FM16_P765);
 #elif FP_PRIME == 766
 	//ep_param_set(K16_P766);
-	ep_param_set(N16_P766);
+	ep_param_set(AFG16_P766);
 #elif FP_PRIME == 768
 	ep_param_set(FM18_P768);
 #elif FP_PRIME == 1150
@@ -1608,6 +1631,10 @@ int ep_param_set_any_pairf(void) {
 	ep_param_set(B24_P509);
 	type = RLC_EP_DTYPE;
 	extension = 4;
+#elif FP_PRIME == 510
+	ep_param_set(AFG16_P510);
+	type = RLC_EP_DTYPE;
+	extension = 4;
 #elif FP_PRIME == 544
 	ep_param_set(GMT8_P544);
 	type = RLC_EP_MTYPE;
@@ -1640,7 +1667,7 @@ int ep_param_set_any_pairf(void) {
 	extension = 4;
 #elif FP_PRIME == 766
 	//ep_param_set(K16_P766);
-	ep_param_set(N16_P766);
+	ep_param_set(AFG16_P766);
 	type = RLC_EP_MTYPE;
 	extension = 4;
 #elif FP_PRIME == 768
@@ -1785,6 +1812,9 @@ void ep_param_print(void) {
 		case B24_P509:
 			util_banner("Curve B24-P509:", 0);
 			break;
+		case AFG16_P510:
+			util_banner("Curve AFG16-P510:", 0);
+			break;
 		case SG54_P569:
 			util_banner("Curve SG54-P569:", 0);
 			break;
@@ -1803,8 +1833,8 @@ void ep_param_print(void) {
 		case SG18_P638:
 			util_banner("Curve SG18-P638:", 0);
 			break;
-		case N16_P766:
-			util_banner("Curve N16-P766:", 0);
+		case AFG16_P766:
+			util_banner("Curve AFG16-P766:", 0);
 			break;
 		case FM16_P765:
 			util_banner("Curve FM16-P765:", 0);
@@ -1872,6 +1902,7 @@ int ep_param_level(void) {
 		case B12_P383:
 		case BN_P446:
 		case B12_P446:
+		case AFG16_P510:
 		case GMT8_P544:
 		case SS_P1536:
 			return 128;

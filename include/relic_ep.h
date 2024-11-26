@@ -64,7 +64,7 @@ enum {
     /* Barreto-Lynn-Scott family with embedding degree 12. */
     EP_B12,
     /* New family from Fotiadis-Martindale family with embedding degree 16. */
-    EP_N16,
+    EP_AFG16,
 	/* Fotiadis-Martindale family with embedding degree 16. */
 	EP_FM16,
     /* Kachisa-Schaefer-Scott family with embedding degree 16. */
@@ -161,6 +161,8 @@ enum {
 	K18_P508,
 	/** Barreto-Lynn-Scott curve with embedding degree 24. */
 	B24_P509,
+	/** New family with embeeding degree 16. */
+	AFG16_P510,
 	/** Optimal TNFS-secure curve with embedding degree 8. */
 	OT8_P511,
 	/** Cocks-pinch curve with embedding degree 8. */
@@ -182,7 +184,7 @@ enum {
 	/** Kachisa-Schaefer-Scott with embedding degree 16. */
 	K16_P766,
 	/** New family with embeeding degree 16. */
-	N16_P766,
+	AFG16_P766,
 	/* Fotiadis-Moartindale with embedding degree 18. */
 	FM18_P768,
 	/** Barreto-Lynn-Scott curve with embedding degree 12. */

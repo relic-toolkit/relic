@@ -778,7 +778,7 @@ static int square_root2(void) {
 		fp2_new(a);
 		fp2_new(b);
 		fp2_new(c);
-#if 0
+
 		TEST_CASE("quadratic residuosity test is correct") {
 			fp2_zero(a);
 			TEST_ASSERT(fp2_is_sqr(a) == 1, end);
@@ -791,7 +791,6 @@ static int square_root2(void) {
 			TEST_ASSERT(fp2_is_sqr(a) == 0, end);
 		}
 		TEST_END;
-#endif
 
 		TEST_CASE("square root extraction is correct") {
 			fp2_zero(a);
@@ -799,15 +798,11 @@ static int square_root2(void) {
 			r = fp2_srt(b, c);
 			TEST_ASSERT(r, end);
 			TEST_ASSERT(fp2_cmp(b, a) == RLC_EQ, end);
-#if 0
 			fp_rand(a[0]);
 			fp_zero(a[1]);
 			fp2_sqr(c, a);
 			r = fp2_srt(b, c);
 			fp2_neg(c, b);
-			fp2_print(a);
-			fp2_print(b);
-			fp2_print(c);
 			TEST_ASSERT(r, end);
 			TEST_ASSERT(fp2_cmp(b, a) == RLC_EQ ||
 					fp2_cmp(c, a) == RLC_EQ, end);
@@ -820,7 +815,6 @@ static int square_root2(void) {
 			TEST_ASSERT(r, end);
 			TEST_ASSERT(fp2_cmp(b, a) == RLC_EQ ||
 					fp2_cmp(c, a) == RLC_EQ, end);
-#endif
 			fp2_rand(a);
 			fp2_sqr(c, a);
 			r = fp2_srt(b, c);
@@ -5023,7 +5017,7 @@ static int util16(void) {
 	return code;
 }
 
-static int addition16(void) {
+static int additioAFG16(void) {
 	int code = RLC_ERR;
 	fp16_t a, b, c, d, e;
 
@@ -5087,7 +5081,7 @@ static int addition16(void) {
 	return code;
 }
 
-static int subtraction16(void) {
+static int subtractioAFG16(void) {
 	int code = RLC_ERR;
 	fp16_t a, b, c, d;
 
@@ -5172,7 +5166,7 @@ static int doubling16(void) {
 	return code;
 }
 
-static int multiplication16(void) {
+static int multiplicatioAFG16(void) {
 	int code = RLC_ERR;
 	fp16_t a, b, c, d, e, f;
 
@@ -5426,7 +5420,7 @@ static int cyclotomic16(void) {
 	return code;
 }
 
-static int inversion16(void) {
+static int inversioAFG16(void) {
 	int code = RLC_ERR;
 	fp16_t a, b, c, d[2];
 
@@ -5490,7 +5484,7 @@ static int inversion16(void) {
 	return code;
 }
 
-static int exponentiation16(void) {
+static int exponentiatioAFG16(void) {
 	int code = RLC_ERR;
 	fp16_t a, b, c;
 	bn_t d;
@@ -9065,12 +9059,12 @@ int main(void) {
 
 		util_banner("Arithmetic:", 1);
 
-		if (addition16() != RLC_OK) {
+		if (additioAFG16() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
 
-		if (subtraction16() != RLC_OK) {
+		if (subtractioAFG16() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
@@ -9080,7 +9074,7 @@ int main(void) {
 			return 1;
 		}
 
-		if (multiplication16() != RLC_OK) {
+		if (multiplicatioAFG16() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
@@ -9095,12 +9089,12 @@ int main(void) {
 			return 1;
 		}
 
-		if (inversion16() != RLC_OK) {
+		if (inversioAFG16() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
 
-		if (exponentiation16() != RLC_OK) {
+		if (exponentiatioAFG16() != RLC_OK) {
 			core_clean();
 			return 1;
 		}

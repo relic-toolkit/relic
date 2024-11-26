@@ -533,7 +533,7 @@ int ep_curve_embed(void) {
 		case EP_BN:
 		case EP_B12:
 			return 12;
-		case EP_N16:
+		case EP_AFG16:
 		case EP_FM16:
 		case EP_K16:
 			return 16;
