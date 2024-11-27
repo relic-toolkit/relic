@@ -946,6 +946,14 @@ void fp_hlv_basic(fp_t c, const fp_t a);
 void fp_hlv_integ(fp_t c, const fp_t a);
 
 /**
+ * Divides a prime field element by 3 (trisecting). Computes C = A/3.
+ *
+ * @param[out] C			- the result.
+ * @param[in] A				- the first prime field element.
+ */
+void fp_trs(fp_t c, const fp_t a);
+
+/**
  * Multiples two prime field elements using Schoolbook multiplication.
  *
  * @param[out] c			- the result.

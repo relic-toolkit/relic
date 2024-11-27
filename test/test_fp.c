@@ -569,7 +569,7 @@ static int squaring(void) {
 	return code;
 }
 
-static int doubling_halving(void) {
+static int doubling_halving_trisecting(void) {
 	int code = RLC_ERR;
 	fp_t a, b, c;
 
@@ -632,6 +632,14 @@ static int doubling_halving(void) {
 			TEST_ASSERT(fp_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 #endif
+
+		TEST_CASE("trisecting is consistent") {
+			fp_rand(a);
+			fp_dbl(b, a);
+			fp_add(b, b, a);
+			fp_trs(c, b);
+			TEST_ASSERT(fp_cmp(a, c) == RLC_EQ, end);
+		} TEST_END;
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -1318,7 +1326,7 @@ int main(void) {
 		return 1;
 	}
 
-	if (doubling_halving() != RLC_OK) {
+	if (doubling_halving_trisecting() != RLC_OK) {
 		core_clean();
 		return 1;
 	}

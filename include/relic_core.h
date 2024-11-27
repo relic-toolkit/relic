@@ -220,6 +220,8 @@ typedef struct _ctx_t {
 	int fp_id;
 	/** Prime modulus. */
 	bn_st prime;
+	/** Prime modulus divided by 3. */
+	bn_st over3;
 	/** Parameter for generating prime. */
 	bn_st par;
 	/** Parameter in sparse form. */

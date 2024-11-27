@@ -63,6 +63,8 @@ static void fp_prime_set(const bn_t p) {
 		fp_new(r);
 
 		bn_copy(&(ctx->prime), p);
+		bn_sub_dig(&(ctx->over3), p, 1);
+		bn_div_dig(&(ctx->over3), &(ctx->over3), 3);
 
 #if FP_RDC == MONTY || !defined(STRIP)
 
@@ -237,6 +239,7 @@ void fp_prime_init(void) {
 	ctx_t *ctx = core_get();
 	ctx->fp_id = 0;
 	bn_make(&(ctx->prime), RLC_FP_DIGS);
+	bn_make(&(ctx->over3), RLC_FP_DIGS);
 	bn_make(&(ctx->par), RLC_FP_DIGS);
 #if FP_RDC == QUICK || !defined(STRIP)
 	ctx->sps_len = 0;
@@ -271,6 +274,7 @@ void fp_prime_clean(void) {
 		bn_clean(&(ctx->srt));
 		bn_clean(&(ctx->crt));
 		bn_clean(&(ctx->prime));
+		bn_clean(&(ctx->over3));
 		bn_clean(&(ctx->par));
 	}
 }
