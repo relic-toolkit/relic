@@ -73,7 +73,7 @@ void fp_trs(fp_t c, const fp_t a) {
 	fp_null(t);
 
 	RLC_TRY {
-		dv_new(t);
+		fp_new(t);
 		
 		RLC_MUL_DIG(t[RLC_FP_DIGS - 1], f0, a[RLC_FP_DIGS - 1], mask);
 		t[RLC_FP_DIGS - 1] >>= 1;
