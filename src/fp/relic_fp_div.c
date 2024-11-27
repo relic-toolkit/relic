@@ -65,9 +65,12 @@ void fp_hlv_integ(fp_t c, const fp_t a) {
 void fp_trs(fp_t c, const fp_t a) {
 	const dig_t mask = (2 * RLC_3MASK + 1);
 	dig_t c0, c1, f0, f1;
-	dv_t t;
+	fp_t t;
 
-	dv_null(t);
+	/* From "Efficient Multiplication in Finite Field Extensions of Degree 5"
+	 * by El Mrabet, Guillevic and Ionica at ASIACRYPT 2011. */
+
+	fp_null(t);
 
 	RLC_TRY {
 		dv_new(t);
@@ -97,6 +100,6 @@ void fp_trs(fp_t c, const fp_t a) {
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		dv_free(t);
+		fp_free(t);
 	}
 }
