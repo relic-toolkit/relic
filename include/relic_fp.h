@@ -84,6 +84,8 @@ enum {
 	PRIME_22605,
 	/* Curve1174 251-bit prime modulus. */
 	PRIME_25109,
+	/* SQIsign lvl1 251-bit prime modulus. */
+	SQI_251,
 	/** Prime with high 2-adicity for curve Tweedledum. */
 	PRIME_H2ADC,
 	/** Curve25519 255-bit prime modulus. */

@@ -215,6 +215,12 @@ void fp_param_set(int param) {
 				bn_sub_dig(p, p, 9);
 				fp_prime_set_dense(p);
 				break;
+			case SQI_251:
+				bn_set_2b(p, 248);
+				bn_mul_dig(p, p, 5);
+				bn_sub_dig(p, p, 1);
+				fp_prime_set_dense(p);
+				break;
 #elif FP_PRIME == 254
 			case BN_254:
 				/* x = -(2^62 + 2^55 + 1). */
@@ -774,6 +780,8 @@ int fp_param_set_any_pmers(void) {
 	fp_param_set(NIST_192);
 #elif FP_PRIME == 224
 	fp_param_set(NIST_224);
+#elif FP_PRIME == 251
+	fp_param_set(SQI_251);
 #elif FP_PRIME == 255
 	fp_param_set(PRIME_25519);
 #elif FP_PRIME == 256
