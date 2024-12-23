@@ -1368,6 +1368,10 @@ static int hashing(void) {
 			TEST_ASSERT(ep_on_curve(a) && ep_is_infty(a) == 0, end);
 			ep_mul(a, a, n);
 			TEST_ASSERT(ep_on_curve(a) && ep_is_infty(a) == 1, end);
+			ep_map_rnd(a, msg, sizeof(msg));
+			TEST_ASSERT(ep_on_curve(a) && ep_is_infty(a) == 0, end);
+			ep_mul(a, a, n);
+			TEST_ASSERT(ep_on_curve(a) && ep_is_infty(a) == 1, end);
 		}
 		TEST_END;
 

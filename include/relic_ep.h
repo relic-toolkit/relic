@@ -1287,6 +1287,15 @@ void ep_map_sswum(ep_t p, const uint8_t *msg, size_t len);
 void ep_map_swift(ep_t p, const uint8_t *msg, size_t len);
 
 /**
+ * Maps a random byte array to a point in a prime elliptic curve.
+ *
+ * @param[out] p			- the result.
+ * @param[in] uniform_bytes	- the random byte array to map.
+ * @param[in] len			- the array length in bytes.
+ */
+void ep_map_rnd(ep_t p, const uint8_t *uniform_bytes, size_t len);
+
+/**
  * Compresses a point.
  *
  * @param[out] r			- the result.

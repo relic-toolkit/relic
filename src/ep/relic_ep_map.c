@@ -37,6 +37,11 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
+/**
+ * Domain separation string.
+ */
+#define MAP_STRING		(const uint8_t *)"RELIC"
+
 #ifdef EP_CTMAP
 
 /**
@@ -69,7 +74,43 @@ TMPL_MAP_SSWU(ep, fp, dig_t);
  */
 TMPL_MAP_SVDW(ep, fp, dig_t);
 
-#undef EP_MAP_copy_sec
+static void ep_map_basic_impl(ep_t p, const uint8_t *bytes, size_t len) {
+	bn_t x;
+	fp_t t0;
+
+	bn_null(x);
+	fp_null(t0);
+
+	RLC_TRY {
+		bn_new(x);
+		fp_new(t0);
+
+		bn_read_bin(x, bytes, len);
+		fp_prime_conv(p->x, x);
+		fp_set_dig(p->z, 1);
+
+		while (1) {
+			ep_rhs(t0, p->x);
+
+			if (fp_smb(t0) == 1) {
+				fp_srt(p->y, t0);
+				p->coord = BASIC;
+				break;
+			}
+
+			fp_add_dig(p->x, p->x, 1);
+		}
+
+		ep_mul_cof(p, p);
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		bn_free(x);
+		fp_free(t0);
+	}
+}
 
 /**
  * Maps an array of uniformly random bytes to a point in a prime elliptic
@@ -82,31 +123,27 @@ TMPL_MAP_SVDW(ep, fp, dig_t);
  * @param[in] len			- the array length in bytes.
  * @param[in] map_fn		- the mapping function.
  */
-static void ep_map_from_field(ep_t p, const uint8_t *uniform_bytes, size_t len,
+static void ep_map_sswum_impl(ep_t p, const uint8_t *bytes, size_t len,
 		void (*const map_fn)(ep_t, const fp_t)) {
 	bn_t k;
 	fp_t t;
 	ep_t q;
 	int neg;
 	/* enough space for two field elements plus extra bytes for uniformity */
-	const size_t len_per_elm = (FP_PRIME + ep_param_level() + 7) / 8;
+	const size_t elm = (FP_PRIME + ep_param_level() + 7) / 8;
 
 	bn_null(k);
 	fp_null(t);
 	ep_null(q);
 
 	RLC_TRY {
-		if (len != 2 * len_per_elm) {
-			RLC_THROW(ERR_NO_VALID);
-		}
-
 		bn_new(k);
 		fp_new(t);
 		ep_new(q);
 
 #define EP_MAP_CONVERT_BYTES(IDX)											\
     do {																	\
-		bn_read_bin(k, uniform_bytes + IDX * len_per_elm, len_per_elm);		\
+		bn_read_bin(k, bytes + IDX * elm, elm);						\
 		fp_prime_conv(t, k);												\
     } while (0)
 
@@ -153,107 +190,11 @@ static void ep_map_from_field(ep_t p, const uint8_t *uniform_bytes, size_t len,
 	}
 }
 
-/*============================================================================*/
-/* Public definitions                                                         */
-/*============================================================================*/
-
-#if EP_MAP == BASIC || !defined(STRIP)
-
-void ep_map_basic(ep_t p, const uint8_t *msg, size_t len) {
-	bn_t x;
-	fp_t t0;
-	uint8_t h[RLC_MD_LEN];
-
-	bn_null(x);
-	fp_null(t0);
-
-	RLC_TRY {
-		bn_new(x);
-		fp_new(t0);
-
-		md_map(h, msg, len);
-		bn_read_bin(x, h, RLC_MIN(RLC_FP_BYTES, RLC_MD_LEN));
-
-		fp_zero(p->x);
-		fp_prime_conv(p->x, x);
-		fp_set_dig(p->z, 1);
-
-		while (1) {
-			ep_rhs(t0, p->x);
-
-			if (fp_smb(t0) == 1) {
-				fp_srt(p->y, t0);
-				p->coord = BASIC;
-				break;
-			}
-
-			fp_add_dig(p->x, p->x, 1);
-		}
-
-		ep_mul_cof(p, p);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		bn_free(x);
-		fp_free(t0);
-	}
-}
-
-#endif
-
-#if EP_MAP == SSWUM || !defined(STRIP)
-
-void ep_map_sswum(ep_t p, const uint8_t *msg, size_t len) {
-	/* enough space for two field elements plus extra bytes for uniformity */
-	const size_t elm = (FP_PRIME + ep_param_level() + 7) / 8;
-	uint8_t *r = RLC_ALLOCA(uint8_t, 2 * elm);
-
-	RLC_TRY {
-		/* for hash_to_field, need to hash to a pseudorandom string */
-		/* XXX(rsw) the below assumes that we want to use MD_MAP for hashing.
-		 *          Consider making the hash function a per-curve option!
-		 */
-		md_xmd(r, 2 * elm, msg, len, (const uint8_t *)"RELIC", 5);
-		/* figure out which hash function to use */
-		const int abNeq0 = (ep_curve_opt_a() != RLC_ZERO) &&
-				(ep_curve_opt_b() != RLC_ZERO);
-		void (*const map_fn)(ep_t, const fp_t) = 
-				(ep_curve_is_ctmap() || abNeq0 ? ep_map_sswu : ep_map_svdw);
-		ep_map_from_field(p, r, 2 * elm, map_fn);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		RLC_FREE(r);
-	}
-}
-
-#endif
-
-#if EP_MAP == SWIFT || !defined(STRIP)
-
-void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
-	/* enough space for two field elements plus extra bytes for uniformity */
-	const size_t len_per_elm = (FP_PRIME + ep_param_level() + 7) / 8;
-	uint8_t s, *pseudo_random_bytes = RLC_ALLOCA(uint8_t, 2 * len_per_elm + 1);
+static void ep_map_swift_impl(ep_t p, const uint8_t *random, size_t len) {
 	fp_t h[8], t1, t2, v, w, y, x1, x2, x3, d[3];
 	ctx_t *ctx = core_get();
 	bn_t k;
-
-	if (ep_curve_is_super()) {
-		RLC_FREE(pseudo_random_bytes); 
-		RLC_THROW(ERR_NO_CONFIG);
-		return;
-	}
-
-	if (ctx->mod18 % 3 == 2) {
-		RLC_FREE(pseudo_random_bytes); 
-		RLC_THROW(ERR_NO_CONFIG);
-		return;
-	}
+	uint8_t s;
 
 	bn_null(k);
 	fp_null(v);
@@ -286,14 +227,11 @@ void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 			fp_new(h[i]);
 		}
 
-		md_xmd(pseudo_random_bytes, 2 * len_per_elm + 1, msg, len,
-				(const uint8_t *)"RELIC", 5);
-
-		bn_read_bin(k, pseudo_random_bytes, len_per_elm);
+		bn_read_bin(k, random, len / 2);
 		fp_prime_conv(t1, k);
-		bn_read_bin(k, pseudo_random_bytes + len_per_elm, len_per_elm);
+		bn_read_bin(k, random + len / 2, len / 2);
 		fp_prime_conv(t2, k);
-		s = pseudo_random_bytes[2 * len_per_elm] & 1;
+		s = random[len - 1] & 1;
 
 		if (ep_curve_opt_b() == RLC_ZERO) {
 			/* h0 = t1^2, h1 = h0^2, h2 = 4a, h3 = h2^3, h4 = h0 * h1 + h3. */
@@ -489,11 +427,115 @@ void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 		fp_free(d[0]);
 		fp_free(d[1]);
 		fp_free(d[2]);
-		RLC_FREE(pseudo_random_bytes);
 		for (size_t i = 0; i < 8; i++) {
 			fp_free(h[i]);
 		}
 	}
 }
 
+/*============================================================================*/
+/* Public definitions                                                         */
+/*============================================================================*/
+
+#if EP_MAP == BASIC || !defined(STRIP)
+
+void ep_map_basic(ep_t p, const uint8_t *msg, size_t len) {
+	/* enough space for two field elements plus extra bytes for uniformity */
+	const size_t elm = (FP_PRIME + ep_param_level() + 7) / 8;
+	uint8_t *r = RLC_ALLOCA(uint8_t, elm);
+
+	RLC_TRY {
+		md_xmd(r, elm, msg, len, MAP_STRING, sizeof(MAP_STRING));
+		ep_map_basic_impl(p, r, elm);
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		RLC_FREE(r);
+	}
+}
+
 #endif
+
+#if EP_MAP == SSWUM || !defined(STRIP)
+
+void ep_map_sswum(ep_t p, const uint8_t *msg, size_t len) {
+	/* enough space for two field elements plus extra bytes for uniformity */
+	const size_t elm = (FP_PRIME + ep_param_level() + 7) / 8;
+	uint8_t *r = RLC_ALLOCA(uint8_t, 2 * elm);
+
+	RLC_TRY {
+		/* for hash_to_field, need to hash to a pseudorandom string */
+		/* XXX(rsw) the below assumes that we want to use MD_MAP for hashing.
+		 *          Consider making the hash function a per-curve option!
+		 */
+		md_xmd(r, 2 * elm, msg, len, MAP_STRING, sizeof(MAP_STRING));
+		/* figure out which hash function to use */
+		const int abNeq0 = (ep_curve_opt_a() != RLC_ZERO) &&
+				(ep_curve_opt_b() != RLC_ZERO);
+		void (*const map_fn)(ep_t, const fp_t) = 
+				(ep_curve_is_ctmap() || abNeq0 ? ep_map_sswu : ep_map_svdw);
+
+		ep_map_sswum_impl(p, r, len, map_fn);
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		RLC_FREE(r);
+	}
+}
+
+#endif
+
+#if EP_MAP == SWIFT || !defined(STRIP)
+
+void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
+	/* enough space for two field elements plus extra bytes for uniformity */
+	const size_t elm = (FP_PRIME + ep_param_level() + 7) / 8;
+	uint8_t *r = RLC_ALLOCA(uint8_t, 2 * elm + 1);
+	ctx_t *ctx = core_get();
+
+	if (ep_curve_is_super()) {
+		RLC_FREE(r); 
+		RLC_THROW(ERR_NO_CONFIG);
+		return;
+	}
+
+	if (ctx->mod18 % 3 == 2) {
+		RLC_FREE(r); 
+		RLC_THROW(ERR_NO_CONFIG);
+		return;
+	}
+
+	RLC_TRY {
+		md_xmd(r, 2 * elm + 1, msg, len, MAP_STRING, sizeof(MAP_STRING));
+
+		ep_map_swift_impl(p, r, 2 * elm + 1);
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		RLC_FREE(r);
+	}
+}
+
+#endif
+
+void ep_map_rnd(ep_t p, const uint8_t *uniform_bytes, size_t len) {
+	#if EP_MAP == BASIC || !defined(STRIP)
+	ep_map_basic_impl(p, uniform_bytes, len);
+	#elif EP_MAP == SWIFT || !defined(STRIP)
+	/* figure out which hash function to use */
+	const int abNeq0 = (ep_curve_opt_a() != RLC_ZERO) &&
+			(ep_curve_opt_b() != RLC_ZERO);
+	void (*const map_fn)(ep_t, const fp_t) = 
+			(ep_curve_is_ctmap() || abNeq0 ? ep_map_sswu : ep_map_svdw);
+
+	ep_map_sswum_impl(p, bytes, len, map_fn);
+	#elif EP_MAP == SSWUM || !defined(STRIP)
+	ep_map_swift_impl(p, uniform_bytes, len);
+	#endif
+}
