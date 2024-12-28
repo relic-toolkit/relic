@@ -877,7 +877,8 @@ void bn_rec_glv(bn_t k0, bn_t k1, const bn_t k, const bn_t n, const bn_st *v1,
 	}
 }
 
-void bn_rec_sac(int8_t *b, size_t *len, const bn_t *k, size_t c, size_t m, size_t n) {
+void bn_rec_sac(int8_t *b, size_t *len, const bn_t *k, size_t c, size_t m,
+		size_t n) {
 	/* Assume k0 is the sign-aligner. */
 	bn_t *t = RLC_ALLOCA(bn_t, m);
 	size_t l = RLC_CEIL(n, c * m) + 1;
