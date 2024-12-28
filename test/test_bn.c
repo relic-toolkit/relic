@@ -2243,8 +2243,10 @@ static int recoding(void) {
 #if defined(WITH_EP) && defined(EP_ENDOM) && (EP_MUL == LWNAF || EP_FIX == COMBS || EP_FIX == LWNAF || EP_SIM == INTER || !defined(STRIP))
 		TEST_CASE("glv recoding is correct") {
 			if (ep_param_set_any_endom() == RLC_OK) {
-				ep_curve_get_v1(v1);
-				ep_curve_get_v2(v2);
+				for (size_t i = 0; i < 3; i++) {
+					bn_copy(v1[i], ep_curve_get_v1()[i]);
+					bn_copy(v2[i], ep_curve_get_v2()[i]);
+				}
 				ep_curve_get_ord(b);
 				bn_rand_mod(a, b);
 				bn_rec_glv(b, c, a, b, (const bn_t *)v1, (const bn_t *)v2);
@@ -2286,8 +2288,10 @@ static int recoding(void) {
 			size_t l = RLC_BN_BITS;
 			int8_t ptr[2 * RLC_BN_BITS] = { 0 };
 			if (ep_param_set_any_endom() == RLC_OK) {
-				ep_curve_get_v1(v1);
-				ep_curve_get_v2(v2);
+				for (size_t i = 0; i < 3; i++) {
+					bn_copy(v1[i], ep_curve_get_v1()[i]);
+					bn_copy(v2[i], ep_curve_get_v2()[i]);
+				}
 				ep_curve_get_ord(b);
 				bn_rand_mod(a, b);
 				bn_rec_glv(b, c, a, b, (const bn_t *)v1, (const bn_t *)v2);

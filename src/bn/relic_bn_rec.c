@@ -30,6 +30,7 @@
  */
 
 #include "relic_core.h"
+#include "relic_bn_low.h"
 
 /*============================================================================*/
 /* Private definitions                                                        */
@@ -832,7 +833,7 @@ void bn_rec_glv(bn_t k0, bn_t k1, const bn_t k, const bn_t n, const bn_t *v1,
 		const bn_t *v2) {
 	bn_t t, b1, b2;
 	int r1, r2;
-	size_t bits;
+	size_t bits = bn_bits(n), d = bits >> (RLC_DIG_LOG), b = bits % RLC_DIG;
 
 	bn_null(b1);
 	bn_null(b2);
@@ -843,17 +844,26 @@ void bn_rec_glv(bn_t k0, bn_t k1, const bn_t k, const bn_t n, const bn_t *v1,
 		bn_new(b2);
 		bn_new(t);
 
-		bn_abs(t, k);
-		bits = bn_bits(n);
-
-		bn_mul(b1, t, v1[0]);
-		r1 = bn_get_bit(b1, bits);
-		bn_rsh(b1, b1, bits + 1);
+		dv_zero(t->dp, RLC_BN_SIZE);
+		dv_copy(t->dp, k->dp, k->used);
+		
+		dv_zero(b1->dp, RLC_BN_SIZE);
+		dv_copy(b1->dp, v1[0]->dp, v1[0]->used);
+		b1->sign = v1[0]->sign;
+		b1->used = v1[0]->used;
+		
+		dv_zero(b2->dp, RLC_BN_SIZE);
+		t->used = k->used;
+		bn_mul(b1, b1, t);
+		r1 = (b1->dp[d] >> b) & (dig_t)1;
+		dv_rshd(b1->dp, b1->dp, RLC_BN_SIZE, d);
+		bn_rshb_low(b1->dp, b1->dp, RLC_BN_SIZE, b + 1);
 		bn_add_dig(b1, b1, r1);
 
 		bn_mul(b2, t, v2[0]);
-		r2 = bn_get_bit(b2, bits);
-		bn_rsh(b2, b2, bits + 1);
+		r2 = (b2->dp[d] >> b) & (dig_t)1;
+		dv_rshd(b2->dp, b2->dp, RLC_BN_SIZE, d);
+		bn_rshb_low(b2->dp, b2->dp, RLC_BN_SIZE, b + 1);
 		bn_add_dig(b2, b2, r2);
 
 		bn_mul(k0, b1, v1[1]);

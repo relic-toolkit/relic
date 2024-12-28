@@ -95,35 +95,27 @@ static void ep_mul_fix_plain(ep_t r, const ep_t *t, const bn_t k) {
  */
 static void ep_mul_combs_endom(ep_t r, const ep_t *t, const bn_t k) {
 	int i, j, l, w0, w1, n0, n1, p0, p1, s0, s1;
-	bn_t n, _k, k0, k1, v1[3], v2[3];
+	bn_t n, m, k0, k1;
 	ep_t u;
 
 	bn_null(n);
-	bn_null(_k);
+	bn_null(m);
 	bn_null(k0);
 	bn_null(k1);
 	ep_null(u);
 
 	RLC_TRY {
 		bn_new(n);
-		bn_new(_k);
+		bn_new(m);
 		bn_new(k0);
 		bn_new(k1);
 		ep_new(u);
-		for (i = 0; i < 3; i++) {
-			bn_null(v1[i]);
-			bn_null(v2[i]);
-			bn_new(v1[i]);
-			bn_new(v2[i]);
-		}
 
 		ep_curve_get_ord(n);
-		ep_curve_get_v1(v1);
-		ep_curve_get_v2(v2);
 		l = RLC_CEIL(bn_bits(n), (2 * RLC_DEPTH));
 
-		bn_mod(_k, k, n);
-		bn_rec_glv(k0, k1, _k, n, (const bn_t *)v1, (const bn_t *)v2);
+		bn_mod(m, k, n);
+		bn_rec_glv(k0, k1, m, n, ep_curve_get_v1(), ep_curve_get_v2());
 		s0 = bn_sign(k0);
 		s1 = bn_sign(k1);
 		bn_abs(k0, k0);
@@ -181,14 +173,10 @@ static void ep_mul_combs_endom(ep_t r, const ep_t *t, const bn_t k) {
 	}
 	RLC_FINALLY {
 		bn_free(n);
-		bn_free(_k);
+		bn_free(m);
 		bn_free(k0);
 		bn_free(k1);
 		ep_free(u);
-		for (i = 0; i < 3; i++) {
-			bn_free(v1[i]);
-			bn_free(v2[i]);
-		}
 	}
 }
 
@@ -205,27 +193,27 @@ static void ep_mul_combs_endom(ep_t r, const ep_t *t, const bn_t k) {
  */
 static void ep_mul_combs_plain(ep_t r, const ep_t *t, const bn_t k) {
 	int i, j, l, w, n0, p0, p1;
-	bn_t n, _k;
+	bn_t n, m;
 
 	bn_null(n);
-	bn_null(_k);
+	bn_null(m);
 
 	RLC_TRY {
 		bn_new(n);
-		bn_new(_k);
+		bn_new(m);
 
 		ep_curve_get_ord(n);
 		l = RLC_CEIL(bn_bits(n), RLC_DEPTH);
 
-		bn_mod(_k, k, n);
-		n0 = bn_bits(_k);
+		bn_mod(m, k, n);
+		n0 = bn_bits(m);
 		p0 = (RLC_DEPTH) * l - 1;
 
 		w = 0;
 		p1 = p0--;
 		for (j = RLC_DEPTH - 1; j >= 0; j--, p1 -= l) {
 			w = w << 1;
-			if (p1 < n0 && bn_get_bit(_k, p1)) {
+			if (p1 < n0 && bn_get_bit(m, p1)) {
 				w = w | 1;
 			}
 		}
@@ -238,7 +226,7 @@ static void ep_mul_combs_plain(ep_t r, const ep_t *t, const bn_t k) {
 			p1 = p0--;
 			for (j = RLC_DEPTH - 1; j >= 0; j--, p1 -= l) {
 				w = w << 1;
-				if (p1 < n0 && bn_get_bit(_k, p1)) {
+				if (p1 < n0 && bn_get_bit(m, p1)) {
 					w = w | 1;
 				}
 			}
@@ -253,7 +241,7 @@ static void ep_mul_combs_plain(ep_t r, const ep_t *t, const bn_t k) {
 	}
 	RLC_FINALLY {
 		bn_free(n);
-		bn_free(_k);
+		bn_free(m);
 	}
 }
 
@@ -293,7 +281,7 @@ void ep_mul_pre_basic(ep_t *t, const ep_t p) {
 }
 
 void ep_mul_fix_basic(ep_t r, const ep_t *t, const bn_t k) {
-	bn_t n, _k;
+	bn_t n, m;
 
 	if (bn_is_zero(k)) {
 		ep_set_infty(r);
@@ -301,18 +289,18 @@ void ep_mul_fix_basic(ep_t r, const ep_t *t, const bn_t k) {
 	}
 
 	bn_null(n);
-	bn_null(_k);
+	bn_null(m);
 
 	RLC_TRY {
 		bn_new(n);
-		bn_new(_k);
+		bn_new(m);
 
 		ep_curve_get_ord(n);
-		bn_mod(_k, k, n);
+		bn_mod(m, k, n);
 
 		ep_set_infty(r);
-		for (int i = 0; i < bn_bits(_k); i++) {
-			if (bn_get_bit(_k, i)) {
+		for (int i = 0; i < bn_bits(m); i++) {
+			if (bn_get_bit(m, i)) {
 				ep_add(r, r, t[i]);
 			}
 		}
@@ -321,7 +309,7 @@ void ep_mul_fix_basic(ep_t r, const ep_t *t, const bn_t k) {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		bn_free(n);
-		bn_free(_k);
+		bn_free(m);
 	}
 }
 
@@ -443,7 +431,7 @@ void ep_mul_pre_combd(ep_t *t, const ep_t p) {
 
 void ep_mul_fix_combd(ep_t r, const ep_t *t, const bn_t k) {
 	int i, j, d, e, w0, w1, n0, p0, p1;
-	bn_t n, _k;
+	bn_t n, m;
 
 	if (bn_is_zero(k)) {
 		ep_set_infty(r);
@@ -451,19 +439,19 @@ void ep_mul_fix_combd(ep_t r, const ep_t *t, const bn_t k) {
 	}
 
 	bn_null(n);
-	bn_null(_k);
+	bn_null(m);
 
 	RLC_TRY {
 		bn_new(n);
-		bn_new(_k);
+		bn_new(m);
 
 		ep_curve_get_ord(n);
 		d = RLC_CEIL(bn_bits(n), RLC_DEPTH);
 		e = (d % 2 == 0 ? (d / 2) : (d / 2) + 1);
 
-		bn_mod(_k, k, n);
+		bn_mod(m, k, n);
 		ep_set_infty(r);
-		n0 = bn_bits(_k);
+		n0 = bn_bits(m);
 
 		p1 = (e - 1) + (RLC_DEPTH - 1) * d;
 		for (i = e - 1; i >= 0; i--) {
@@ -473,7 +461,7 @@ void ep_mul_fix_combd(ep_t r, const ep_t *t, const bn_t k) {
 			p0 = p1;
 			for (j = RLC_DEPTH - 1; j >= 0; j--, p0 -= d) {
 				w0 = w0 << 1;
-				if (p0 < n0 && bn_get_bit(_k, p0)) {
+				if (p0 < n0 && bn_get_bit(m, p0)) {
 					w0 = w0 | 1;
 				}
 			}
@@ -482,7 +470,7 @@ void ep_mul_fix_combd(ep_t r, const ep_t *t, const bn_t k) {
 			p0 = p1-- + e;
 			for (j = RLC_DEPTH - 1; j >= 0; j--, p0 -= d) {
 				w1 = w1 << 1;
-				if (i + e < d && p0 < n0 && bn_get_bit(_k, p0)) {
+				if (i + e < d && p0 < n0 && bn_get_bit(m, p0)) {
 					w1 = w1 | 1;
 				}
 			}
@@ -497,7 +485,7 @@ void ep_mul_fix_combd(ep_t r, const ep_t *t, const bn_t k) {
 	}
 	RLC_FINALLY {
 		bn_free(n);
-		bn_free(_k);
+		bn_free(m);
 	}
 }
 
@@ -510,7 +498,7 @@ void ep_mul_pre_lwnaf(ep_t *t, const ep_t p) {
 }
 
 void ep_mul_fix_lwnaf(ep_t r, const ep_t *t, const bn_t k) {
-	bn_t n, _k;
+	bn_t n, m;
 
 	if (bn_is_zero(k)) {
 		ep_set_infty(r);
@@ -518,20 +506,20 @@ void ep_mul_fix_lwnaf(ep_t r, const ep_t *t, const bn_t k) {
 	}
 
 	bn_null(n);
-	bn_null(_k);
+	bn_null(m);
 
 	RLC_TRY {
 		bn_new(n);
-		bn_new(_k);
+		bn_new(m);
 
 		ep_curve_get_ord(n);
-		bn_mod(_k, k, n);
-		ep_mul_fix_plain(r, t, _k);
+		bn_mod(m, k, n);
+		ep_mul_fix_plain(r, t, m);
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		bn_free(n);
-		bn_free(_k);
+		bn_free(m);
 	}
 }
 
