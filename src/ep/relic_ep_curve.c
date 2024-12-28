@@ -272,12 +272,12 @@ dig_t *ep_curve_get_beta(void) {
 	return core_get()->beta;
 }
 
-const bn_t *ep_curve_get_v1(void) {
-	return (const bn_t *)core_get()->ep_v1;
+const bn_st *ep_curve_get_v1(void) {
+	return (const bn_st *)core_get()->ep_v1;
 }
 
-const bn_t *ep_curve_get_v2(void) {
-	return (const bn_t *)core_get()->ep_v2;
+const bn_st *ep_curve_get_v2(void) {
+	return (const bn_st *)core_get()->ep_v2;
 }
 
 #endif

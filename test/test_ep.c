@@ -500,8 +500,8 @@ static int endomorphism(void) {
 		if (ep_curve_is_endom()) {
 			/* Recover lambda parameter. */
 			for (size_t i = 0; i < 3; i++) {
-				bn_copy(v1[i], ep_curve_get_v1()[i]);
-				bn_copy(v2[i], ep_curve_get_v2()[i]);
+				bn_copy(v1[i], &(core_get()->ep_v1[i]));
+				bn_copy(v2[i], &(core_get()->ep_v2[i]));
 			}
 			ep_curve_get_ord(v2[0]);
 			if (bn_cmp_dig(v1[2], 1) == RLC_EQ) {

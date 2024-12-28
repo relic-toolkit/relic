@@ -829,11 +829,11 @@ void bn_rec_jsf(int8_t *jsf, size_t *len, const bn_t k, const bn_t l) {
 
 }
 
-void bn_rec_glv(bn_t k0, bn_t k1, const bn_t k, const bn_t n, const bn_t *v1,
-		const bn_t *v2) {
+void bn_rec_glv(bn_t k0, bn_t k1, const bn_t k, const bn_t n, const bn_st *v1,
+		const bn_st *v2) {
 	bn_t t, b1, b2;
 	int r1, r2;
-	size_t bits = bn_bits(n), d = bits >> (RLC_DIG_LOG), b = bits % RLC_DIG;
+	size_t bits;
 
 	bn_null(b1);
 	bn_null(b2);
@@ -844,35 +844,26 @@ void bn_rec_glv(bn_t k0, bn_t k1, const bn_t k, const bn_t n, const bn_t *v1,
 		bn_new(b2);
 		bn_new(t);
 
-		dv_zero(t->dp, RLC_BN_SIZE);
-		dv_copy(t->dp, k->dp, k->used);
-		
-		dv_zero(b1->dp, RLC_BN_SIZE);
-		dv_copy(b1->dp, v1[0]->dp, v1[0]->used);
-		b1->sign = v1[0]->sign;
-		b1->used = v1[0]->used;
-		
-		dv_zero(b2->dp, RLC_BN_SIZE);
-		t->used = k->used;
-		bn_mul(b1, b1, t);
-		r1 = (b1->dp[d] >> b) & (dig_t)1;
-		dv_rshd(b1->dp, b1->dp, RLC_BN_SIZE, d);
-		bn_rshb_low(b1->dp, b1->dp, RLC_BN_SIZE, b + 1);
+		bn_abs(t, k);
+		bits = bn_bits(n);
+
+		bn_mul(b1, t, &(v1[0]));
+		r1 = bn_get_bit(b1, bits);
+		bn_rsh(b1, b1, bits + 1);
 		bn_add_dig(b1, b1, r1);
 
-		bn_mul(b2, t, v2[0]);
-		r2 = (b2->dp[d] >> b) & (dig_t)1;
-		dv_rshd(b2->dp, b2->dp, RLC_BN_SIZE, d);
-		bn_rshb_low(b2->dp, b2->dp, RLC_BN_SIZE, b + 1);
+		bn_mul(b2, t, &(v2[0]));
+		r2 = bn_get_bit(b2, bits);
+		bn_rsh(b2, b2, bits + 1);
 		bn_add_dig(b2, b2, r2);
 
-		bn_mul(k0, b1, v1[1]);
-		bn_mul(k1, b2, v2[1]);
+		bn_mul(k0, b1, &(v1[1]));
+		bn_mul(k1, b2, &(v2[1]));
 		bn_add(k0, k0, k1);
 		bn_sub(k0, t, k0);
 
-		bn_mul(k1, b1, v1[2]);
-		bn_mul(t, b2, v2[2]);
+		bn_mul(k1, b1, &(v1[2]));
+		bn_mul(t, b2, &(v2[2]));
 		bn_add(k1, k1, t);
 		bn_neg(k1, k1);
 	}
@@ -886,7 +877,7 @@ void bn_rec_glv(bn_t k0, bn_t k1, const bn_t k, const bn_t n, const bn_t *v1,
 	}
 }
 
-void bn_rec_sac(int8_t *b, size_t *len, bn_t *k, size_t c, size_t m, size_t n) {
+void bn_rec_sac(int8_t *b, size_t *len, const bn_t *k, size_t c, size_t m, size_t n) {
 	/* Assume k0 is the sign-aligner. */
 	bn_t *t = RLC_ALLOCA(bn_t, m);
 	size_t l = RLC_CEIL(n, c * m) + 1;
@@ -905,11 +896,14 @@ void bn_rec_sac(int8_t *b, size_t *len, bn_t *k, size_t c, size_t m, size_t n) {
 	}
 
 	RLC_TRY {
-		fp_prime_get_par(t[0]);
-		l = RLC_MAX(l, bn_bits(t[0]) + 1);
 		for (size_t i = 0; i < m; i++) {
 			bn_null(t[i]);
 			bn_new(t[i]);
+		}
+
+		fp_prime_get_par(t[0]);
+		l = RLC_MAX(l, bn_bits(t[0]) + 1);
+		for (size_t i = 0; i < m; i++) {
 			bn_copy(t[i], k[i]);
 			/* The current basis for some curves might be one bit longer. */
 			if (ep_curve_is_pairf() == EP_BN) {
