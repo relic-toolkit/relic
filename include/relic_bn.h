@@ -1525,8 +1525,8 @@ void bn_rec_jsf(int8_t *jsf, size_t *len, const bn_t k, const bn_t l);
  * @param[in] v1			- the set of parameters v1 for the GLV method.
  * @param[in] v2			- the set of parameters v2 for the GLV method.
  */
-void bn_rec_glv(bn_t k0, bn_t k1, const bn_t k, const bn_t n, const bn_t v1[],
-		const bn_t v2[]);
+void bn_rec_glv(bn_t k0, bn_t k1, const bn_t k, const bn_t n, const bn_st *v1,
+		const bn_st *v2);
 
 /**
  * Recodes a scalar in subscalars according to Frobenius endomorphism.
@@ -1545,14 +1545,15 @@ void bn_rec_frb(bn_t *ki, int sub, const bn_t k, const bn_t x, const bn_t n,
  * Recodes subscalars in the signed aligned column representation..
  *
  * @param[out] b			- the recoded subscalars.
- * @param[in] len			- the length in bytes of the recoding.
+ * @param[in,out] len		- the length in bytes of the recoding.
  * @param[in] k				- the subscalars to recode.
  * @param[in] c				- the splitting factor.
  * @param[in] m				- the number of subscalars to recode.
  * @param[in] n				- the bit length of the group order.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is insufficient.
  */
-void bn_rec_sac(int8_t *b, size_t *len, bn_t *k, size_t c, size_t m, size_t n);
+void bn_rec_sac(int8_t *b, size_t *len, const bn_t *k, size_t c, size_t m,
+		size_t n);
 
 /**
  * Computes the coefficients of the polynomial representing the Lagrange
