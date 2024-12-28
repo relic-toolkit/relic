@@ -407,7 +407,7 @@ void bn_rec_tnaf_mod(bn_t r0, bn_t r1, const bn_t k, int u, size_t m) {
 			bn_neg(t0, t);
 		}
 
-		/*r 0 = r0 + b0, r1 = r1 + b1. */
+		/* r0 = r0 + b0, r1 = r1 + b1. */
 		bn_add(r0, r0, t2);
 		bn_add(r1, r1, t3);
 	}
