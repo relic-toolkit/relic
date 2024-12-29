@@ -699,11 +699,9 @@ void bn_rec_rtnaf(int8_t *tnaf, size_t *len, const bn_t k, int8_t u, size_t m,
 
 void bn_rec_reg(int8_t *naf, size_t *len, const bn_t k, size_t n, size_t w) {
 	/* Leave some room in case n and w do not align perfectly. */
-	size_t l = RLC_CEIL(n, w - 1), d = RLC_CEIL(n, RLC_DIG) + 1;
-	dig_t mask, *t = RLC_ALLOCA(dig_t, d);
-	int8_t i, u_i;
-
-	mask = RLC_MASK(w);
+	size_t i, l = RLC_CEIL(n, w - 1), d = RLC_CEIL(l * (w - 1), RLC_DIG);
+	dig_t mask = RLC_MASK(w), *t = RLC_ALLOCA(dig_t, d);
+	int8_t u_i;
 
 	if (t == NULL) {
 		RLC_THROW(ERR_NO_MEMORY);
@@ -824,49 +822,82 @@ void bn_rec_jsf(int8_t *jsf, size_t *len, const bn_t k, const bn_t l) {
 
 void bn_rec_glv(bn_t k0, bn_t k1, const bn_t k, const bn_t n, const bn_st *v1,
 		const bn_st *v2) {
-	bn_t t, b1, b2;
-	int r1, r2;
-	size_t bits;
+	size_t bits = bn_bits(n), d = bits >> RLC_DIG_LOG, b = bits % RLC_DIG;
+	dig_t r, b1[2 * RLC_FP_DIGS + 1] = { 0 }, b2[2 * RLC_FP_DIGS + 1] = { 0 };
+	dig_t _k[2 * RLC_FP_DIGS + 1] = { 0 }, _v[2 * RLC_FP_DIGS] = { 0 };
+	bn_t t, u;
 
-	bn_null(b1);
-	bn_null(b2);
 	bn_null(t);
 
 	RLC_TRY {
-		bn_new(b1);
-		bn_new(b2);
 		bn_new(t);
+		bn_new(u);
 
 		bn_abs(t, k);
 		bits = bn_bits(n);
 
-		bn_mul(b1, t, &v1[0]);
-		r1 = bn_get_bit(b1, bits);
-		bn_rsh(b1, b1, bits + 1);
-		bn_add_dig(b1, b1, r1);
+		/* b1 = (k * v10) >> (bits + 1). */
+		dv_copy(_k, k->dp, k->used);
+		dv_copy(_v, v1[0].dp, v1[0].used);
+		bn_muln_low(b1, _k, _v, RLC_FP_DIGS);
+		r = (b1[d] >> b) & (dig_t)1;
+		dv_rshd(b1, b1, 2 * RLC_FP_DIGS + 1, d);
+		bn_rshb_low(b1, b1, 2 * RLC_FP_DIGS + 1, b);
+		bn_rsh1_low(b1, b1, 2 * RLC_FP_DIGS + 1);
+		bn_add1_low(b1, b1, r, 2 * RLC_FP_DIGS + 1);
 
-		bn_mul(b2, t, &v2[0]);
-		r2 = bn_get_bit(b2, bits);
-		bn_rsh(b2, b2, bits + 1);
-		bn_add_dig(b2, b2, r2);
+		/* b2 = (k * v20) >> (bits + 1). */
+		dv_zero(_v, 2 * RLC_FP_DIGS);
+		dv_copy(_v, v2[0].dp, v2[0].used);
+		bn_muln_low(b2, _k, _v, RLC_FP_DIGS);
+		r = (b2[d] >> b) & (dig_t)1;
+		dv_rshd(b2, b2, 2 * RLC_FP_DIGS + 1, d);
+		bn_rshb_low(b2, b2, 2 * RLC_FP_DIGS + 1, b);
+		bn_rsh1_low(b2, b2, 2 * RLC_FP_DIGS + 1);
+		bn_add1_low(b2, b2, r, 2 * RLC_FP_DIGS + 1);
 
-		bn_mul(k0, b1, &v1[1]);
-		bn_mul(k1, b2, &v2[1]);
-		bn_add(k0, k0, k1);
+		/* k0 = b1 * v11 */
+		dv_zero(_v, 2 * RLC_FP_DIGS);
+		dv_copy(_v, v1[1].dp, v1[1].used);
+		bn_muln_low(k0->dp, b1, _v, RLC_FP_DIGS);
+		k0->used = 2 * RLC_FP_DIGS;
+		k0->sign = v1[0].sign ^ v1[1].sign;
+		bn_trim(k0);
+
+		/* k1 = b2 * v21 */
+		dv_zero(_v, 2 * RLC_FP_DIGS);
+		dv_copy(_v, v2[1].dp, v2[1].used);
+		bn_muln_low(k1->dp, b2, _v, RLC_FP_DIGS);
+		k1->used = 2 * RLC_FP_DIGS;
+		k1->sign = v2[0].sign ^ v2[1].sign;
+		bn_trim(k1);
+
 		bn_sub(k0, t, k0);
+		bn_sub(k0, k0, k1);
 
-		bn_mul(k1, b1, &v1[2]);
-		bn_mul(t, b2, &v2[2]);
+		dv_zero(_v, 2 * RLC_FP_DIGS);
+		dv_copy(_v, v1[2].dp, v1[2].used);
+		bn_muln_low(k1->dp, b1, _v, RLC_FP_DIGS);
+		k1->used = 2 * RLC_FP_DIGS;
+		k1->sign = v1[0].sign ^ v1[2].sign;
+		bn_trim(k1);
+
+		dv_zero(_v, 2 * RLC_FP_DIGS);
+		dv_copy(_v, v2[2].dp, v2[2].used);
+		bn_muln_low(t->dp, b2, _v, RLC_FP_DIGS);
+		t->used = 2 * RLC_FP_DIGS;
+		t->sign = v2[0].sign ^ v2[2].sign;
+		bn_trim(t);
+
 		bn_add(k1, k1, t);
-		bn_neg(k1, k1);
+		k1->sign ^= 1;
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(b1);
-		bn_free(b2);
 		bn_free(t);
+		bn_free(u);
 	}
 }
 
