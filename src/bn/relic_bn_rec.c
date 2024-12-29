@@ -825,86 +825,73 @@ void bn_rec_glv(bn_t k0, bn_t k1, const bn_t k, const bn_t n, const bn_st *v1,
 	size_t bits = bn_bits(n), d = bits >> RLC_DIG_LOG, b = bits % RLC_DIG;
 	dig_t r, b1[2 * RLC_FP_DIGS + 1] = { 0 }, b2[2 * RLC_FP_DIGS + 1] = { 0 };
 	dig_t _k[2 * RLC_FP_DIGS + 1] = { 0 }, _v[2 * RLC_FP_DIGS] = { 0 };
-	bn_t t;
 
-	bn_null(t);
+	/* Constant-time, except for the first scalar copy. */
 
-	RLC_TRY {
-		bn_new(t);
+	/* b1 = (k * v10) >> (bits + 1). */
+	dv_copy(_k, k->dp, k->used);
+	dv_copy(_v, v1[0].dp, v1[0].used);
+	bn_muln_low(b1, _k, _v, RLC_FP_DIGS);
+	r = (b1[d] >> b) & (dig_t)1;
+	dv_rshd(b1, b1, 2 * RLC_FP_DIGS + 1, d);
+	bn_rshb_low(b1, b1, 2 * RLC_FP_DIGS + 1, b);
+	bn_rsh1_low(b1, b1, 2 * RLC_FP_DIGS + 1);
+	bn_add1_low(b1, b1, r, 2 * RLC_FP_DIGS + 1);
 
-		bn_abs(t, k);
+	/* b2 = (k * v20) >> (bits + 1). */
+	dv_zero(_v, 2 * RLC_FP_DIGS);
+	dv_copy(_v, v2[0].dp, v2[0].used);
+	bn_muln_low(b2, _k, _v, RLC_FP_DIGS);
+	r = (b2[d] >> b) & (dig_t)1;
+	dv_rshd(b2, b2, 2 * RLC_FP_DIGS + 1, d);
+	bn_rshb_low(b2, b2, 2 * RLC_FP_DIGS + 1, b);
+	bn_rsh1_low(b2, b2, 2 * RLC_FP_DIGS + 1);
+	bn_add1_low(b2, b2, r, 2 * RLC_FP_DIGS + 1);
 
-		/* b1 = (k * v10) >> (bits + 1). */
-		dv_copy(_k, k->dp, k->used);
-		dv_copy(_v, v1[0].dp, v1[0].used);
-		bn_muln_low(b1, _k, _v, RLC_FP_DIGS);
-		r = (b1[d] >> b) & (dig_t)1;
-		dv_rshd(b1, b1, 2 * RLC_FP_DIGS + 1, d);
-		bn_rshb_low(b1, b1, 2 * RLC_FP_DIGS + 1, b);
-		bn_rsh1_low(b1, b1, 2 * RLC_FP_DIGS + 1);
-		bn_add1_low(b1, b1, r, 2 * RLC_FP_DIGS + 1);
+	/* k0 = b1 * v11 */
+	dv_zero(_v, 2 * RLC_FP_DIGS);
+	dv_copy(_v, v1[1].dp, v1[1].used);
+	bn_muln_low(k0->dp, b1, _v, RLC_FP_DIGS);
+	k0->dp[2 * RLC_FP_DIGS] = 0;
+	k0->sign = v1[0].sign ^ v1[1].sign;
 
-		/* b2 = (k * v20) >> (bits + 1). */
-		dv_zero(_v, 2 * RLC_FP_DIGS);
-		dv_copy(_v, v2[0].dp, v2[0].used);
-		bn_muln_low(b2, _k, _v, RLC_FP_DIGS);
-		r = (b2[d] >> b) & (dig_t)1;
-		dv_rshd(b2, b2, 2 * RLC_FP_DIGS + 1, d);
-		bn_rshb_low(b2, b2, 2 * RLC_FP_DIGS + 1, b);
-		bn_rsh1_low(b2, b2, 2 * RLC_FP_DIGS + 1);
-		bn_add1_low(b2, b2, r, 2 * RLC_FP_DIGS + 1);
+	/* k1 = b2 * v21 */
+	dv_zero(_v, 2 * RLC_FP_DIGS);
+	dv_copy(_v, v2[1].dp, v2[1].used);
+	bn_muln_low(k1->dp, b2, _v, RLC_FP_DIGS);
+	k1->dp[2 * RLC_FP_DIGS] = 0;
+	k1->sign = v2[0].sign ^ v2[1].sign;
 
-		/* k0 = b1 * v11 */
-		dv_zero(_v, 2 * RLC_FP_DIGS);
-		dv_copy(_v, v1[1].dp, v1[1].used);
-		bn_muln_low(k0->dp, b1, _v, RLC_FP_DIGS);
-		k0->dp[2 * RLC_FP_DIGS] = 0;
-		k0->sign = v1[0].sign ^ v1[1].sign;
+	/* k0 = k - k0 - k1. */
+	bn_negs_low(k0->dp, k0->dp, k0->sign ^ 1, 2 * RLC_FP_DIGS + 1);
+	bn_negs_low(k1->dp, k1->dp, k1->sign ^ 1, 2 * RLC_FP_DIGS + 1);
+	bn_addn_low(k0->dp, k0->dp, k1->dp, 2 * RLC_FP_DIGS + 1);
+	bn_addn_low(k0->dp, k0->dp, _k, 2 * RLC_FP_DIGS + 1);
+	k0->sign = k0->dp[2 * RLC_FP_DIGS] & 1;
+	bn_negs_low(k0->dp, k0->dp, k0->sign, 2 * RLC_FP_DIGS + 1);
+	k0->used = 2 * RLC_FP_DIGS;
+	bn_trim(k0);
 
-		/* k1 = b2 * v21 */
-		dv_zero(_v, 2 * RLC_FP_DIGS);
-		dv_copy(_v, v2[1].dp, v2[1].used);
-		bn_muln_low(k1->dp, b2, _v, RLC_FP_DIGS);
-		k1->dp[2 * RLC_FP_DIGS] = 0;
-		k1->sign = v2[0].sign ^ v2[1].sign;
+	/* k1 = 0 - b1 * v21 - b2 * v21. */
+	dv_zero(_v, 2 * RLC_FP_DIGS);
+	dv_copy(_v, v1[2].dp, v1[2].used);
+	bn_muln_low(k1->dp, b1, _v, RLC_FP_DIGS);
+	k1->dp[2 * RLC_FP_DIGS] = 0;
+	k1->sign = v1[0].sign ^ v1[2].sign;
 
-		/* k0 = k - k0 - k1. */
-		bn_negs_low(k0->dp, k0->dp, k0->sign ^ 1, 2 * RLC_FP_DIGS + 1);
-		bn_negs_low(k1->dp, k1->dp, k1->sign ^ 1, 2 * RLC_FP_DIGS + 1);
-		bn_addn_low(k0->dp, k0->dp, k1->dp, 2 * RLC_FP_DIGS + 1);
-		bn_addn_low(k0->dp, k0->dp, _k, 2 * RLC_FP_DIGS + 1);
-		k0->sign = k0->dp[2 * RLC_FP_DIGS] & 1;
-		bn_negs_low(k0->dp, k0->dp, k0->sign, 2 * RLC_FP_DIGS + 1);
-		k0->used = 2 * RLC_FP_DIGS;
-		bn_trim(k0);
+	dv_zero(_v, 2 * RLC_FP_DIGS);
+	dv_copy(_v, v2[2].dp, v2[2].used);
+	bn_muln_low(_k, b2, _v, RLC_FP_DIGS);
+	_k[2 * RLC_FP_DIGS] = 0;
+	r = v2[0].sign ^ v2[2].sign;
 
-		/* k1 = 0 - b1 * v21 - b2 * v21. */
-		dv_zero(_v, 2 * RLC_FP_DIGS);
-		dv_copy(_v, v1[2].dp, v1[2].used);
-		bn_muln_low(k1->dp, b1, _v, RLC_FP_DIGS);
-		k1->dp[2 * RLC_FP_DIGS] = 0;
-		k1->sign = v1[0].sign ^ v1[2].sign;
-
-		dv_zero(_v, 2 * RLC_FP_DIGS);
-		dv_copy(_v, v2[2].dp, v2[2].used);
-		bn_muln_low(t->dp, b2, _v, RLC_FP_DIGS);
-		t->dp[2 * RLC_FP_DIGS] = 0;
-		t->sign = v2[0].sign ^ v2[2].sign;
-
-		bn_negs_low(t->dp, t->dp, t->sign ^ 1, 2 * RLC_FP_DIGS + 1);
-		bn_negs_low(k1->dp, k1->dp, k1->sign ^ 1, 2 * RLC_FP_DIGS + 1);
-		bn_addn_low(k1->dp, k1->dp, t->dp, 2 * RLC_FP_DIGS + 1);
-		k1->sign = k1->dp[2 * RLC_FP_DIGS] & 1;
-		bn_negs_low(k1->dp, k1->dp, k1->sign, 2 * RLC_FP_DIGS + 1);
-		k1->used = 2 * RLC_FP_DIGS;
-		bn_trim(k1);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		bn_free(t);
-	}
+	bn_negs_low(_k, _k, r ^ 1, 2 * RLC_FP_DIGS + 1);
+	bn_negs_low(k1->dp, k1->dp, k1->sign ^ 1, 2 * RLC_FP_DIGS + 1);
+	bn_addn_low(k1->dp, k1->dp, _k, 2 * RLC_FP_DIGS + 1);
+	k1->sign = k1->dp[2 * RLC_FP_DIGS] & 1;
+	bn_negs_low(k1->dp, k1->dp, k1->sign, 2 * RLC_FP_DIGS + 1);
+	k1->used = 2 * RLC_FP_DIGS;
+	bn_trim(k1);
 }
 
 void bn_rec_sac(int8_t *b, size_t *len, const bn_t *k, size_t c, size_t m,
