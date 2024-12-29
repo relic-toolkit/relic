@@ -699,7 +699,7 @@ void bn_rec_rtnaf(int8_t *tnaf, size_t *len, const bn_t k, int8_t u, size_t m,
 
 void bn_rec_reg(int8_t *naf, size_t *len, const bn_t k, size_t n, size_t w) {
 	int i, l;
-	dig_t mask, t[RLC_FP_DIGS + 1] = { 0 };
+	dig_t mask, t[RLC_BN_DIGS] = { 0 };
 	int8_t u_i;
 
 	mask = RLC_MASK(w);
@@ -720,7 +720,7 @@ void bn_rec_reg(int8_t *naf, size_t *len, const bn_t k, size_t n, size_t w) {
 			u_i = (t[0] & mask) - 2;
 			t[0] -= u_i;
 			naf[i] = u_i;
-			bn_rsh1_low(t, t, RLC_FP_DIGS + 1);
+			bn_rsh1_low(t, t, RLC_BN_DIGS);
 		}
 		naf[i] = t[0];
 	} else {
@@ -728,7 +728,7 @@ void bn_rec_reg(int8_t *naf, size_t *len, const bn_t k, size_t n, size_t w) {
 			u_i = (t[0] & mask) - (1 << (w - 1));
 			t[0] -= u_i;
 			naf[i] = u_i;
-			bn_rshb_low(t, t, RLC_FP_DIGS + 1, w - 1);
+			bn_rshb_low(t, t, RLC_BN_DIGS, w - 1);
 		}
 		naf[i] = t[0];
 	}
