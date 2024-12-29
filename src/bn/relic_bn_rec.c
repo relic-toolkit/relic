@@ -698,20 +698,26 @@ void bn_rec_rtnaf(int8_t *tnaf, size_t *len, const bn_t k, int8_t u, size_t m,
 }
 
 void bn_rec_reg(int8_t *naf, size_t *len, const bn_t k, size_t n, size_t w) {
-	int i, l;
-	dig_t mask, t[RLC_BN_DIGS] = { 0 };
+	int i, l = RLC_CEIL(n, w - 1), d = RLC_CEIL(n, RLC_DIG);
+	dig_t mask, *t = RLC_ALLOCA(dig_t, d);
 	int8_t u_i;
 
 	mask = RLC_MASK(w);
-	l = RLC_CEIL(n, w - 1);
+
+	if (t == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
+		return;
+	}
 
 	if (*len <= l) {
 		*len = 0;
+		RLC_FREE(t);
 		RLC_THROW(ERR_NO_BUFFER);
 		return;
 	}
 
 	memset(naf, 0, *len);
+	dv_zero(t, d);
 	dv_copy(t, k->dp, k->used);
 
 	i = 0;
@@ -720,7 +726,7 @@ void bn_rec_reg(int8_t *naf, size_t *len, const bn_t k, size_t n, size_t w) {
 			u_i = (t[0] & mask) - 2;
 			t[0] -= u_i;
 			naf[i] = u_i;
-			bn_rsh1_low(t, t, RLC_BN_DIGS);
+			bn_rsh1_low(t, t, d);
 		}
 		naf[i] = t[0];
 	} else {
@@ -728,11 +734,12 @@ void bn_rec_reg(int8_t *naf, size_t *len, const bn_t k, size_t n, size_t w) {
 			u_i = (t[0] & mask) - (1 << (w - 1));
 			t[0] -= u_i;
 			naf[i] = u_i;
-			bn_rshb_low(t, t, RLC_BN_DIGS, w - 1);
+			bn_rshb_low(t, t, d, w - 1);
 		}
 		naf[i] = t[0];
 	}
 	*len = l + 1;
+	RLC_FREE(t);
 }
 
 void bn_rec_jsf(int8_t *jsf, size_t *len, const bn_t k, const bn_t l) {
