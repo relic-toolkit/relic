@@ -698,9 +698,10 @@ void bn_rec_rtnaf(int8_t *tnaf, size_t *len, const bn_t k, int8_t u, size_t m,
 }
 
 void bn_rec_reg(int8_t *naf, size_t *len, const bn_t k, size_t n, size_t w) {
-	int i, l = RLC_CEIL(n, w - 1), d = RLC_CEIL(n, RLC_DIG);
+	/* Leave some room in case n and w do not align perfectly. */
+	size_t l = RLC_CEIL(n, w - 1), d = RLC_CEIL(n, RLC_DIG) + 1;
 	dig_t mask, *t = RLC_ALLOCA(dig_t, d);
-	int8_t u_i;
+	int8_t i, u_i;
 
 	mask = RLC_MASK(w);
 
