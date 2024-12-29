@@ -817,7 +817,6 @@ void bn_rec_jsf(int8_t *jsf, size_t *len, const bn_t k, const bn_t l) {
 		bn_free(n0);
 		bn_free(n1);
 	}
-
 }
 
 void bn_rec_glv(bn_t k0, bn_t k1, const bn_t k, const bn_t n, const bn_st *v1,
