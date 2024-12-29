@@ -834,7 +834,6 @@ void bn_rec_glv(bn_t k0, bn_t k1, const bn_t k, const bn_t n, const bn_st *v1,
 		bn_new(u);
 
 		bn_abs(t, k);
-		bits = bn_bits(n);
 
 		/* b1 = (k * v10) >> (bits + 1). */
 		dv_copy(_k, k->dp, k->used);
@@ -872,8 +871,20 @@ void bn_rec_glv(bn_t k0, bn_t k1, const bn_t k, const bn_t n, const bn_st *v1,
 		k1->sign = v2[0].sign ^ v2[1].sign;
 		bn_trim(k1);
 
-		bn_sub(k0, t, k0);
-		bn_sub(k0, k0, k1);
+		k0->sign ^= 1;
+		bn_negs_low(k0->dp, k0->dp, k0->sign, 2 * RLC_FP_DIGS);
+		bn_addn_low(k0->dp, k0->dp, _k, 2 * RLC_FP_DIGS);
+		k0->sign = k0->dp[2 * RLC_FP_DIGS - 1] & 1;
+		k0->used = 2 * RLC_FP_DIGS;
+		bn_trim(k0);
+		k1->sign ^= 1;
+		k1->used = 2 * RLC_FP_DIGS;
+		bn_negs_low(k1->dp, k1->dp, k1->sign, 2 * RLC_FP_DIGS);
+		bn_addn_low(k0->dp, k0->dp, k1->dp, 2 * RLC_FP_DIGS);
+		k0->sign = k0->dp[2 * RLC_FP_DIGS - 1] & 1;
+		bn_negs_low(k0->dp, k0->dp, k0->sign, 2 * RLC_FP_DIGS);
+		k0->used = 2 * RLC_FP_DIGS;
+		bn_trim(k0);
 
 		dv_zero(_v, 2 * RLC_FP_DIGS);
 		dv_copy(_v, v1[2].dp, v1[2].used);
