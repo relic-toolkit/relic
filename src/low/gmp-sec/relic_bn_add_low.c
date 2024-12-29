@@ -35,6 +35,7 @@
 #include "relic_dv.h"
 #include "relic_bn.h"
 #include "relic_bn_low.h"
+#include "relic_core.h"
 #include "relic_alloc.h"
 
 /*============================================================================*/
@@ -42,7 +43,7 @@
 /*============================================================================*/
 
 dig_t bn_add1_low(dig_t *c, const dig_t *a, dig_t digit, size_t size) {
-	dig_t *t = RLC_ALLOCA(dig_t, mpn_sec_add_1_itch(size));
+	dig_t *t = (dig_t *)RLC_ALLOCA(dig_t, mpn_sec_add_1_itch(size));
 	dig_t r = mpn_sec_add_1(c, a, size, digit, t);
 	RLC_FREE(t);
 	return r;
@@ -53,7 +54,7 @@ dig_t bn_addn_low(dig_t *c, const dig_t *a, const dig_t *b, size_t size) {
 }
 
 dig_t bn_sub1_low(dig_t *c, const dig_t *a, dig_t digit, size_t size) {
-	dig_t *t = RLC_ALLOCA(dig_t, mpn_sec_sub_1_itch(size));
+	dig_t *t = (dig_t *)RLC_ALLOCA(dig_t, mpn_sec_sub_1_itch(size));
 	dig_t r = mpn_sec_sub_1(c, a, size, digit, t);
 	RLC_FREE(t);
 	return r;
@@ -64,7 +65,7 @@ dig_t bn_subn_low(dig_t *c, const dig_t *a, const dig_t *b, size_t size) {
 }
 
 dig_t bn_negs_low(dig_t *c, const dig_t *a, dig_t sa, size_t size) {
-	dig_t carry, *t = RLC_ALLOCA(dig_t, size);
+	dig_t carry, *t = (dig_t *)RLC_ALLOCA(dig_t, size);
 	mpn_com(t, a, size);
 	carry = bn_add1_low(t, t, sa, size);
 	dv_copy(c, a, size);

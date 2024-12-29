@@ -700,7 +700,7 @@ void bn_rec_rtnaf(int8_t *tnaf, size_t *len, const bn_t k, int8_t u, size_t m,
 void bn_rec_reg(int8_t *naf, size_t *len, const bn_t k, size_t n, size_t w) {
 	/* Leave some room in case n and w do not align perfectly. */
 	size_t i, l = RLC_CEIL(n, w - 1), d = RLC_CEIL(l * (w - 1), RLC_DIG);
-	dig_t mask = RLC_MASK(w), *t = RLC_ALLOCA(dig_t, d);
+	dig_t mask = RLC_MASK(w), *t = (dig_t *)RLC_ALLOCA(dig_t, d);
 	int8_t u_i;
 
 	if (t == NULL) {
@@ -897,7 +897,7 @@ void bn_rec_glv(bn_t k0, bn_t k1, const bn_t k, const bn_t n, const bn_st *v1,
 void bn_rec_sac(int8_t *b, size_t *len, const bn_t *k, size_t c, size_t m,
 		size_t n) {
 	/* Assume k0 is the sign-aligner. */
-	bn_t *t = RLC_ALLOCA(bn_t, m);
+	bn_t *t = (bn_t *)RLC_ALLOCA(bn_t, m);
 	size_t l = RLC_CEIL(n, c * m) + 1;
 	int8_t bji;
 
