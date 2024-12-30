@@ -40,7 +40,7 @@
 /**
  * Domain separation string.
  */
-#define MAP_STRING		(const uint8_t *)"RELIC"
+#define MAPDST		"RELIC"
 
 #ifdef EP_CTMAP
 
@@ -444,8 +444,13 @@ void ep_map_basic(ep_t p, const uint8_t *msg, size_t len) {
 	const size_t elm = (FP_PRIME + ep_param_level() + 7) / 8;
 	uint8_t *r = RLC_ALLOCA(uint8_t, elm);
 
+	if (r == NULL) {
+		RLC_THROW(ERR_NO_BUFFER);
+		return;
+	}
+
 	RLC_TRY {
-		md_xmd(r, elm, msg, len, MAP_STRING, sizeof(MAP_STRING));
+		md_xmd(r, elm, msg, len, (const uint8_t *)MAPDST, strlen(MAPDST));
 		ep_map_basic_impl(p, r, elm);
 	}
 	RLC_CATCH_ANY {
@@ -465,12 +470,17 @@ void ep_map_sswum(ep_t p, const uint8_t *msg, size_t len) {
 	const size_t elm = (FP_PRIME + ep_param_level() + 7) / 8;
 	uint8_t *r = RLC_ALLOCA(uint8_t, 2 * elm);
 
+	if (r == NULL) {
+		RLC_THROW(ERR_NO_BUFFER);
+		return;
+	}
+
 	RLC_TRY {
 		/* for hash_to_field, need to hash to a pseudorandom string */
 		/* XXX(rsw) the below assumes that we want to use MD_MAP for hashing.
 		 *          Consider making the hash function a per-curve option!
 		 */
-		md_xmd(r, 2 * elm, msg, len, MAP_STRING, sizeof(MAP_STRING));
+		md_xmd(r, 2 * elm, msg, len, (const uint8_t *)MAPDST, sizeof(MAPDST));
 		/* figure out which hash function to use */
 		const int abNeq0 = (ep_curve_opt_a() != RLC_ZERO) &&
 				(ep_curve_opt_b() != RLC_ZERO);
@@ -510,7 +520,7 @@ void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 	}
 
 	RLC_TRY {
-		md_xmd(r, 2 * elm + 1, msg, len, MAP_STRING, sizeof(MAP_STRING));
+		md_xmd(r, 2*elm + 1, msg, len, (const uint8_t *)MAPDST, sizeof(MAPDST));
 
 		ep_map_swift_impl(p, r, 2 * elm + 1);
 	}

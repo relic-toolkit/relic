@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (c) 2015 RELIC Authors
+ * Copyright (c) 2009 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -34,8 +34,10 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "relic_dv.h"
 #include "relic_bn.h"
 #include "relic_bn_low.h"
+#include "relic_alloc.h"
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -46,7 +48,12 @@ dig_t bn_lsh1_low(dig_t *c, const dig_t *a, size_t size) {
 }
 
 dig_t bn_lshb_low(dig_t *c, const dig_t *a, size_t size, uint_t bits) {
-	return mpn_lshift(c, a, size, bits);
+	dig_t carry, *t = (dig_t *)RLC_ALLOCA(dig_t, size);
+	carry = mpn_lshift(t, a, size, bits);
+	dv_copy(c, a, size);
+	dv_copy_sec(c, t, size, bits > 0);
+	RLC_FREE(t);
+	return RLC_SEL(0, carry, bits > 0);
 }
 
 dig_t bn_rsh1_low(dig_t *c, const dig_t *a, size_t size) {
@@ -54,7 +61,12 @@ dig_t bn_rsh1_low(dig_t *c, const dig_t *a, size_t size) {
 }
 
 dig_t bn_rshb_low(dig_t *c, const dig_t *a, size_t size, uint_t bits) {
-	return mpn_rshift(c, a, size, bits);
+	dig_t carry, *t = (dig_t *)RLC_ALLOCA(dig_t, size);
+	carry = mpn_rshift(t, a, size, bits);
+	dv_copy(c, a, size);
+	dv_copy_sec(c, t, size, bits > 0);
+	RLC_FREE(t);
+	return RLC_SEL(0, carry, bits > 0);
 }
 
 dig_t bn_rshs_low(dig_t *c, const dig_t *a, size_t size, uint_t bits) {

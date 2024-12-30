@@ -540,12 +540,12 @@ dig_t *ep_curve_get_beta(void);
 /**
  * Returns the parameter V1 of the prime curve.
  */
-void ep_curve_get_v1(bn_t v[]);
+const bn_st *ep_curve_get_v1(void);
 
 /**
  * Returns the parameter V2 of the prime curve.
  */
-void ep_curve_get_v2(bn_t v[]);
+const bn_st *ep_curve_get_v2(void);
 
 /**
  * Returns a optimization identifier based on the a-coefficient of the curve.

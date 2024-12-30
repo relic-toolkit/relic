@@ -58,7 +58,6 @@ static void ep_mul_sim_endom(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 	int8_t naf0[RLC_FP_BITS + 1], naf1[RLC_FP_BITS + 1], *t0, *t1, u;
 	int8_t naf2[RLC_FP_BITS + 1], naf3[RLC_FP_BITS + 1], *t2, *t3;
 	bn_t n, k0, k1, m0, m1;
-	bn_t v1[3], v2[3];
 	ep_t v;
 	ep_t tab0[1 << (RLC_WIDTH - 2)];
 	ep_t tab1[1 << (RLC_WIDTH - 2)];
@@ -84,24 +83,14 @@ static void ep_mul_sim_endom(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 		bn_new(m1);
 		ep_new(v);
 
-		for (i = 0; i < 3; i++) {
-			bn_null(v1[i]);
-			bn_null(v2[i]);
-			bn_new(v1[i]);
-			bn_new(v2[i]);
-		}
-
 		ep_curve_get_ord(n);
-		ep_curve_get_v1(v1);
-		ep_curve_get_v2(v2);
-
-		bn_rec_glv(k0, k1, k, n, (const bn_t *)v1, (const bn_t *)v2);
+		bn_rec_glv(k0, k1, k, n, ep_curve_get_v1(), ep_curve_get_v2());
 		sk0 = bn_sign(k0);
 		sk1 = bn_sign(k1);
 		bn_abs(k0, k0);
 		bn_abs(k1, k1);
 
-		bn_rec_glv(m0, m1, m, n, (const bn_t *)v1, (const bn_t *)v2);
+		bn_rec_glv(m0, m1, m, n, ep_curve_get_v1(), ep_curve_get_v2());
 		sl0 = bn_sign(m0);
 		sl1 = bn_sign(m1);
 		bn_abs(m0, m0);
@@ -247,10 +236,6 @@ static void ep_mul_sim_endom(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 		for (i = 0; i < 1 << (RLC_WIDTH - 2); i++) {
 			ep_free(tab1[i]);
 		}
-		for (i = 0; i < 3; i++) {
-			bn_free(v1[i]);
-			bn_free(v2[i]);
-		}
 	}
 }
 
@@ -266,7 +251,7 @@ static void ep_mul_sim_endom(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 void ep_mul_sim_lot_endom(ep_t r, const ep_t p[], const bn_t k[], int n) {
 	const int len = RLC_FP_BITS + 1;
 	int i, j, m, sk;
-	bn_t _k[2], q, v1[3], v2[3];
+	bn_t _k[2], q;
 	int8_t ptr, *naf = RLC_ALLOCA(int8_t, 2 * n * len);
 	size_t l, _l[2];
 
@@ -289,23 +274,15 @@ void ep_mul_sim_lot_endom(ep_t r, const ep_t p[], const bn_t k[], int n) {
 				ep_new(_p[i]);
 			}
 
-			for (i = 0; i < 3; i++) {
-				bn_null(v1[i]);
-				bn_null(v2[i]);
-				bn_new(v1[i]);
-				bn_new(v2[i]);
-			}
-
 			l = 0;
 			ep_curve_get_ord(q);
-			ep_curve_get_v1(v1);
-			ep_curve_get_v2(v2);
 			for (i = 0; i < n; i++) {
 				ep_norm(_p[2*i], p[i]);
 				ep_psi(_p[2*i + 1], _p[2*i]);
 				bn_mod(_k[0], k[i], q);
 				sk = bn_sign(_k[0]);
-				bn_rec_glv(_k[0], _k[1], _k[0], q, (const bn_t *)v1, (const bn_t *)v2);
+				bn_rec_glv(_k[0], _k[1], _k[0], q,
+						ep_curve_get_v1(), ep_curve_get_v2());
 				if (sk == RLC_NEG) {
 					bn_neg(_k[0], _k[0]);
 					bn_neg(_k[1], _k[1]);
@@ -346,10 +323,6 @@ void ep_mul_sim_lot_endom(ep_t r, const ep_t p[], const bn_t k[], int n) {
 			}
 			RLC_FREE(_p);
 			RLC_FREE(naf);
-			for (i = 0; i < 3; i++) {
-				bn_free(v1[i]);
-				bn_free(v2[i]);
-			}
 		}
 	} else {
 		const int w = RLC_MAX(2, util_bits_dig(n) - 2), c = (1 << (w - 2));
@@ -378,21 +351,14 @@ void ep_mul_sim_lot_endom(ep_t r, const ep_t p[], const bn_t k[], int n) {
 					ep_set_infty(_p[i*c + j]);
 				}
 			}
-			for (i = 0; i < 3; i++) {
-				bn_null(v1[i]);
-				bn_null(v2[i]);
-				bn_new(v1[i]);
-				bn_new(v2[i]);
-			}
 
 			l = 0;
 			ep_curve_get_ord(q);
-			ep_curve_get_v1(v1);
-			ep_curve_get_v2(v2);
 			for (i = 0; i < n; i++) {
 				bn_mod(_k[0], k[i], q);
 				sk = bn_sign(_k[0]);
-				bn_rec_glv(_k[0], _k[1], _k[0], q, (const bn_t *)v1, (const bn_t *)v2);
+				bn_rec_glv(_k[0], _k[1], _k[0], q,
+						ep_curve_get_v1(), ep_curve_get_v2());
 				if (sk == RLC_NEG) {
 					bn_neg(_k[0], _k[0]);
 					bn_neg(_k[1], _k[1]);
@@ -420,7 +386,8 @@ void ep_mul_sim_lot_endom(ep_t r, const ep_t p[], const bn_t k[], int n) {
 								ptr = -ptr;
 								ep_neg(t, t);
 							}
-							ep_add(_p[m*c + (ptr >> 1)], _p[m*c + (ptr >> 1)], t);
+							ptr >>= 1;
+							ep_add(_p[m*c + ptr], _p[m*c + ptr], t);
 						}
 					}
 				}
@@ -462,10 +429,6 @@ void ep_mul_sim_lot_endom(ep_t r, const ep_t p[], const bn_t k[], int n) {
 			}
 			RLC_FREE(_p);
 			RLC_FREE(naf);
-			for (i = 0; i < 3; i++) {
-				bn_free(v1[i]);
-				bn_free(v2[i]);
-			}
 		}
 	}
 }
