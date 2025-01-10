@@ -544,7 +544,7 @@ void ep_map_rnd(ep_t p, const uint8_t *uniform_bytes, size_t len) {
 	void (*const map_fn)(ep_t, const fp_t) = 
 			(ep_curve_is_ctmap() || abNeq0 ? ep_map_sswu : ep_map_svdw);
 
-	ep_map_sswum_impl(p, bytes, len, map_fn);
+	ep_map_sswum_impl(p, uniform_bytes, len, map_fn);
 	#elif EP_MAP == SSWUM || !defined(STRIP)
 	ep_map_swift_impl(p, uniform_bytes, len);
 	#endif
