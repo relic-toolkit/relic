@@ -38,9 +38,11 @@
 /*============================================================================*/
 
 /**
- * Domain separation string.
+ * Domain separation tag.
  */
-#define MAPDST		"RELIC"
+#ifndef RLC_DSTAG
+#define RLC_DSTAG		RLC_STRING
+#endif
 
 #ifdef EP_CTMAP
 
@@ -450,7 +452,7 @@ void ep_map_basic(ep_t p, const uint8_t *msg, size_t len) {
 	}
 
 	RLC_TRY {
-		md_xmd(r, elm, msg, len, (const uint8_t *)MAPDST, strlen(MAPDST));
+		md_xmd(r, elm, msg, len, (const uint8_t *)RLC_DSTAG, strlen(RLC_DSTAG));
 		ep_map_basic_impl(p, r, elm);
 	}
 	RLC_CATCH_ANY {
@@ -480,7 +482,8 @@ void ep_map_sswum(ep_t p, const uint8_t *msg, size_t len) {
 		/* XXX(rsw) the below assumes that we want to use MD_MAP for hashing.
 		 *          Consider making the hash function a per-curve option!
 		 */
-		md_xmd(r, 2 * elm, msg, len, (const uint8_t *)MAPDST, sizeof(MAPDST));
+		md_xmd(r, 2 * elm, msg, len, (const uint8_t *)RLC_DSTAG,
+				sizeof(RLC_DSTAG));
 		/* figure out which hash function to use */
 		const int abNeq0 = (ep_curve_opt_a() != RLC_ZERO) &&
 				(ep_curve_opt_b() != RLC_ZERO);
@@ -520,7 +523,8 @@ void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 	}
 
 	RLC_TRY {
-		md_xmd(r, 2*elm + 1, msg, len, (const uint8_t *)MAPDST, sizeof(MAPDST));
+		md_xmd(r, 2*elm + 1, msg, len, (const uint8_t *)RLC_DSTAG,
+				sizeof(RLC_DSTAG));
 
 		ep_map_swift_impl(p, r, 2 * elm + 1);
 	}
@@ -535,9 +539,9 @@ void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 #endif
 
 void ep_map_rnd(ep_t p, const uint8_t *uniform_bytes, size_t len) {
-	#if EP_MAP == BASIC || !defined(STRIP)
+#if EP_MAP == BASIC || !defined(STRIP)
 	ep_map_basic_impl(p, uniform_bytes, len);
-	#elif EP_MAP == SWIFT || !defined(STRIP)
+#elif EP_MAP == SWIFT || !defined(STRIP)
 	/* figure out which hash function to use */
 	const int abNeq0 = (ep_curve_opt_a() != RLC_ZERO) &&
 			(ep_curve_opt_b() != RLC_ZERO);
@@ -545,7 +549,7 @@ void ep_map_rnd(ep_t p, const uint8_t *uniform_bytes, size_t len) {
 			(ep_curve_is_ctmap() || abNeq0 ? ep_map_sswu : ep_map_svdw);
 
 	ep_map_sswum_impl(p, uniform_bytes, len, map_fn);
-	#elif EP_MAP == SSWUM || !defined(STRIP)
+#elif EP_MAP == SSWUM || !defined(STRIP)
 	ep_map_swift_impl(p, uniform_bytes, len);
-	#endif
+#endif
 }
