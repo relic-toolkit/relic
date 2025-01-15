@@ -1369,42 +1369,31 @@ int cp_lvprv_ver(gt_t r, const gt_t g[4], const bn_t c, const gt_t e[2]);
 /**
  * Generates parameters for the AMORE pairing delegation protocol.
  *
- * @param[out] c			- the challenge.
- * @param[out] r			- the randomness.
- * @param[out] d			- the delta value computed during setup.
- * @param[out] u			- the mask in G_1.
- * @param[out] v			- the mask in G_2.
- * @param[in,out] x			- the secret key.
- * @param[in,out] e			- the precomputed value e(U1, U2).
- * @param[in] first			- the flag to indicate if the first iteration.
- * @param[in] priva			- the flag to indicate if first point is private.
- * @param[in] privb			- the flag to indicate if second point is private.
+ * @param[out] x			- the secret key.
+ * @param[out] e			- the precomputed value e(U1, U2).
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_amore_gen(bn_t c, bn_t r, bn_t d, g1_t u, g2_t v, bn_t x, gt_t e,
-		int first, int priva, int privb);
+int cp_amore_gen(bn_t x, gt_t e);
 
 /**
  * Executes the client-side request for the AMORE pairing delegation protocol.
  *
- * @param[in, out] d		- the delta value computed during setup.
+ * @param[out] d			- the delta value computed during setup.
  * @param[out] a1			- the first element in G_1.
  * @param[out] b1			- the first element in G_2.
  * @param[out] a2			- the second element in G_1.
  * @param[out] b2			- the second element in G_2.
- * @param[in] c				- the challenge.
- * @param[in] r				- the randomness.
+ * @param[out] c			- the challenge.
+ * @param[out] r			- the randomness.
+ * @param[in] x				- the secret key.
  * @param[in] p				- the first argument of the pairing.
  * @param[in] q				- the second argument of the pairing.
- * @param[in] u				- the U1 precomputed value in G_1.
- * @param[in] v				- the U2 precomputed value in G_2.
  * @param[in] priva			- the flag to indicate if first point is private.
  * @param[in] privb			- the flag to indicate if second point is private.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_amore_ask(bn_t d, g1_t a1, g2_t b1, g1_t a2, g2_t b2, const bn_t c,
-		const bn_t r, const g1_t p, const g2_t q, const g1_t u, const g2_t v,
-		int priva, int privb);
+int cp_amore_ask(bn_t d, g1_t a1, g2_t b1, g1_t a2, g2_t b2, bn_t c, bn_t r,
+		const bn_t x, const g1_t p, const g2_t q, int priva, int privb);
 
 /**
  * Executes the server-side response for the AMORE pairing delegation protocol.
