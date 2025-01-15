@@ -1766,7 +1766,8 @@ int fp2_is_sqr(const fp2_t a);
 
 /**
  * Extracts the square root of a quadratic extension field element. Computes
- * c = sqrt(a). The other square root is the negation of c.
+ * c = sqrt(a). The other square root is the negation of c. The output value
+ * shall not be used in case 0 is returned.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the extension field element.
@@ -2108,7 +2109,8 @@ int fp3_is_sqr(const fp3_t a);
 
 /**
  * Extracts the square root of a cubic extension field element. Computes
- * c = sqrt(a). The other square root is the negation of c.
+ * c = sqrt(a). The other square root is the negation of c.  The output value
+ * shall not be used in case 0 is returned.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the extension field element.
@@ -2428,7 +2430,8 @@ int fp4_is_sqr(const fp4_t a);
 
 /**
  * Extracts the square root of a quartic extension field element. Computes
- * c = sqrt(a). The other square root is the negation of c.
+ * c = sqrt(a). The other square root is the negation of c. The output value
+ * shall not be used in case 0 is returned. 
  *
  * @param[out] c			- the result.
  * @param[in] a				- the extension field element.
@@ -3026,7 +3029,8 @@ int fp8_is_sqr(const fp8_t a);
 
 /**
  * Extracts the square root of an octic extension field element. Computes
- * c = sqrt(a). The other square root is the negation of c.
+ * c = sqrt(a). The other square root is the negation of c. The output value
+ * shall not be used in case 0 is returned.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the extension field element.
@@ -4055,7 +4059,8 @@ int fp16_is_sqr(const fp16_t a);
 
 /**
  * Extracts the square root of an sextadecic extension field element. Computes
- * c = sqrt(a). The other square root is the negation of c.
+ * c = sqrt(a). The other square root is the negation of c. The output value
+ * shall not be used in case 0 is returned.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the extension field element.

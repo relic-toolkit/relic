@@ -430,6 +430,12 @@ static void arith(void) {
 	BENCH_END;
 #endif
 
+	BENCH_RUN("fp_trs") {
+		fp_rand(a);
+		BENCH_ADD(fp_trs(c, a));
+	}
+	BENCH_END;
+
 	BENCH_RUN("fp_lsh") {
 		fp_rand(a);
 		a[RLC_FP_DIGS - 1] = 0;

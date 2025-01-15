@@ -55,13 +55,13 @@
 #ifdef WITH_FB
 #define RLC_DV_MAX		(RLC_MAX(FP_PRIME, FB_POLYN))
 #else /* !WITH_FB */
-#define RLC_DV_MAX		(FP_PRIME)
+#define RLC_DV_MAX		((size_t)(2 * FP_PRIME))
 #endif
 
 #else /* !WITH_FP */
 
 #ifdef WITH_FB
-#define RLC_DV_MAX		(FB_POLYN)
+#define RLC_DV_MAX		((size_t)(2 * FP_PRIME))
 #else /* !WITH_FB */
 #define RLC_DV_MAX		(0)
 #endif

@@ -32,6 +32,8 @@
 #ifndef RLC_CONF_H
 #define RLC_CONF_H
 
+/** Project name */
+#define RLC_STRING	"@CMAKE_PROJECT_NAME@"
 /** Project version. */
 #define RLC_VERSION "@VERSION@"
 

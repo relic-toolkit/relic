@@ -499,7 +499,7 @@ void pp_map_oatep_k16(fp16_t r, const ep_t p, const ep4_t q) {
 		if (!ep_is_infty(_p[0]) && !ep4_is_infty(_q[0])) {
 			switch (ep_curve_is_pairf()) {
 				case EP_FM16:
-				case EP_N16:
+				case EP_AFG16:
 					/* r = f_{|a|,Q}(P). */
 					pp_mil_k16(r, t, _q, _p, 1, a);
 					if (bn_sign(a) == RLC_NEG) {
@@ -570,7 +570,7 @@ void pp_map_sim_oatep_k16(fp16_t r, const ep_t *p, const ep4_t *q, int m) {
 		if (j > 0) {
 			switch (ep_curve_is_pairf()) {
 				case EP_FM16:
-				case EP_N16:
+				case EP_AFG16:
 					/* r = f_{|a|,Q}(P). */
 					pp_mil_k16(r, t, _q, _p, j, a);
 					if (bn_sign(a) == RLC_NEG) {

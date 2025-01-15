@@ -68,7 +68,7 @@ void ep_mul_cof(ep_t r, const ep_t p) {
 				bn_add_dig(k, k, 1);
 				ep_mul_basic(r, p, k);
 				break;
-			case EP_N16:
+			case EP_AFG16:
 				/* if (u % 2) == 0, compute = (u * (u**3+1)/2)*P
     			 * else Compute (u * (u**3+1))*P */
 				bn_sqr(l, k);

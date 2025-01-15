@@ -272,18 +272,12 @@ dig_t *ep_curve_get_beta(void) {
 	return core_get()->beta;
 }
 
-void ep_curve_get_v1(bn_t v[]) {
-	ctx_t *ctx = core_get();
-	for (int i = 0; i < 3; i++) {
-		bn_copy(v[i], &(ctx->ep_v1[i]));
-	}
+const bn_st *ep_curve_get_v1(void) {
+	return (const bn_st *)core_get()->ep_v1;
 }
 
-void ep_curve_get_v2(bn_t v[]) {
-	ctx_t *ctx = core_get();
-	for (int i = 0; i < 3; i++) {
-		bn_copy(v[i], &(ctx->ep_v2[i]));
-	}
+const bn_st *ep_curve_get_v2(void) {
+	return (const bn_st *)core_get()->ep_v2;
 }
 
 #endif
@@ -443,16 +437,20 @@ void ep_curve_set_endom(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
 	/* Precompute endomorphism constants. */
 #if EP_MUL == LWNAF || EP_FIX == COMBS || EP_FIX == LWNAF || EP_SIM == INTER || !defined(STRIP)
 	ep_t p, q;
-	bn_t m;
+	bn_t m, n, t;
 
 	ep_null(p);
 	ep_null(q);
 	bn_null(m);
+	bn_null(n);
+	bn_null(t);
 
 	RLC_TRY {
 		ep_new(p);
 		ep_new(q);
 		bn_new(m);
+		bn_new(n);
+		bn_new(t);
 
 		/* Check if [m]P = \psi(P). */
 		fp_copy(ctx->beta, beta);
@@ -478,45 +476,70 @@ void ep_curve_set_endom(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
 				RLC_THROW(ERR_NO_VALID);
 			}
 		}
-		bn_gcd_ext_mid(&(ctx->ep_v1[1]), &(ctx->ep_v1[2]), &(ctx->ep_v2[1]),
-				&(ctx->ep_v2[2]), m, r);
-		/* m = (v1[1] * v2[2] - v1[2] * v2[1]) / 2. */
-		bn_mul(&(ctx->ep_v1[0]), &(ctx->ep_v1[1]), &(ctx->ep_v2[2]));
-		bn_mul(&(ctx->ep_v2[0]), &(ctx->ep_v1[2]), &(ctx->ep_v2[1]));
-		bn_sub(m, &(ctx->ep_v1[0]), &(ctx->ep_v2[0]));
-		bn_hlv(m, m);
-		/* v1[0] = round(v2[2] * 2^|n| / m). */
-		bn_lsh(&(ctx->ep_v1[0]), &(ctx->ep_v2[2]), bits + 1);
-		if (bn_sign(&(ctx->ep_v1[0])) == RLC_POS) {
-			bn_add(&(ctx->ep_v1[0]), &(ctx->ep_v1[0]), m);
-		} else {
-			bn_sub(&(ctx->ep_v1[0]), &(ctx->ep_v1[0]), m);
-		}
-		bn_dbl(m, m);
-		bn_div(&(ctx->ep_v1[0]), &(ctx->ep_v1[0]), m);
-		if (bn_sign(&ctx->ep_v1[0]) == RLC_NEG) {
-			bn_add_dig(&(ctx->ep_v1[0]), &(ctx->ep_v1[0]), 1);
-		}
-		/* v2[0] = round(v1[2] * 2^|n| / m). */
-		bn_lsh(&(ctx->ep_v2[0]), &(ctx->ep_v1[2]), bits + 1);
-		if (bn_sign(&(ctx->ep_v2[0])) == RLC_POS) {
-			bn_add(&(ctx->ep_v2[0]), &(ctx->ep_v2[0]), m);
-		} else {
-			bn_sub(&(ctx->ep_v2[0]), &(ctx->ep_v2[0]), m);
-		}
-		bn_div(&(ctx->ep_v2[0]), &(ctx->ep_v2[0]), m);
-		if (bn_sign(&ctx->ep_v2[0]) == RLC_NEG) {
+		if (fp_is_zero(a)) {
+			/* Compute trace of Frobenius t = (p + 1) - n. */
+			bn_mul(n, r, h);
+			bn_add_dig(t, &(ctx->prime), 1);
+			bn_sub(t, t, n);
+			/* c = (4q - t^2)/3. */
+			bn_lsh(&(ctx->ep_v1[1]), &(ctx->prime), 2);
+			bn_sqr(&(ctx->ep_v1[0]), t);
+			bn_sub(&(ctx->ep_v1[1]), &(ctx->ep_v1[1]), &(ctx->ep_v1[0]));
+			bn_div_dig(&(ctx->ep_v1[1]), &(ctx->ep_v1[1]), 3);
+			/* v1 = ((t - c)/2 - 1, c), v2 = ((t + c)/2 + 1, 1 - (t - c)/2). */
+			bn_sub(&(ctx->ep_v1[0]), t, &(ctx->ep_v1[1]));
+			bn_hlv(&(ctx->ep_v1[0]), &(ctx->ep_v1[0]));
+			bn_add(&(ctx->ep_v2[0]), t, &(ctx->ep_v1[1]));
+			bn_hlv(&(ctx->ep_v2[0]), &(ctx->ep_v2[0]));
 			bn_add_dig(&(ctx->ep_v2[0]), &(ctx->ep_v2[0]), 1);
+			bn_neg(&(ctx->ep_v2[1]), &(ctx->ep_v1[0]));
+			bn_add_dig(&(ctx->ep_v2[1]), &(ctx->ep_v2[1]), 1);
+			bn_sub_dig(&(ctx->ep_v1[0]), &(ctx->ep_v1[0]), 1);
+			bn_copy(&(ctx->ep_v1[2]), &(ctx->ep_v1[1]));
+			bn_copy(&(ctx->ep_v1[1]), &(ctx->ep_v1[0]));
+			bn_copy(&(ctx->ep_v2[2]), &(ctx->ep_v2[1]));
+			bn_copy(&(ctx->ep_v2[1]), &(ctx->ep_v2[0]));
 		}
-		bn_neg(&(ctx->ep_v2[0]), &(ctx->ep_v2[0]));
+			bn_gcd_ext_mid(&(ctx->ep_v1[1]), &(ctx->ep_v1[2]), &(ctx->ep_v2[1]),
+					&(ctx->ep_v2[2]), m, r);
+			/* m = (v1[1] * v2[2] - v1[2] * v2[1]) / 2. */
+			bn_mul(&(ctx->ep_v1[0]), &(ctx->ep_v1[1]), &(ctx->ep_v2[2]));
+			bn_mul(&(ctx->ep_v2[0]), &(ctx->ep_v1[2]), &(ctx->ep_v2[1]));
+			bn_sub(m, &(ctx->ep_v1[0]), &(ctx->ep_v2[0]));
+			bn_hlv(m, m);
+			/* v1[0] = round(v2[2] * 2^|n| / m). */
+			bn_lsh(&(ctx->ep_v1[0]), &(ctx->ep_v2[2]), bits + 1);
+			if (bn_sign(&(ctx->ep_v1[0])) == RLC_POS) {
+				bn_add(&(ctx->ep_v1[0]), &(ctx->ep_v1[0]), m);
+			} else {
+				bn_sub(&(ctx->ep_v1[0]), &(ctx->ep_v1[0]), m);
+			}
+			bn_dbl(m, m);
+			bn_div(&(ctx->ep_v1[0]), &(ctx->ep_v1[0]), m);
+			if (bn_sign(&ctx->ep_v1[0]) == RLC_NEG) {
+				bn_add_dig(&(ctx->ep_v1[0]), &(ctx->ep_v1[0]), 1);
+			}
+			/* v2[0] = round(v1[2] * 2^|n| / m). */
+			bn_lsh(&(ctx->ep_v2[0]), &(ctx->ep_v1[2]), bits + 1);
+			if (bn_sign(&(ctx->ep_v2[0])) == RLC_POS) {
+				bn_add(&(ctx->ep_v2[0]), &(ctx->ep_v2[0]), m);
+			} else {
+				bn_sub(&(ctx->ep_v2[0]), &(ctx->ep_v2[0]), m);
+			}
+			bn_div(&(ctx->ep_v2[0]), &(ctx->ep_v2[0]), m);
+			if (bn_sign(&ctx->ep_v2[0]) == RLC_NEG) {
+				bn_add_dig(&(ctx->ep_v2[0]), &(ctx->ep_v2[0]), 1);
+			}
+			bn_neg(&(ctx->ep_v2[0]), &(ctx->ep_v2[0]));
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		ep_free(p);
 		ep_free(q);
 		bn_free(m);
+		bn_free(n);
+		bn_free(t);
 	}
-
 #endif
 }
 
@@ -533,7 +556,7 @@ int ep_curve_embed(void) {
 		case EP_BN:
 		case EP_B12:
 			return 12;
-		case EP_N16:
+		case EP_AFG16:
 		case EP_FM16:
 		case EP_K16:
 			return 16;

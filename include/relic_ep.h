@@ -64,7 +64,7 @@ enum {
     /* Barreto-Lynn-Scott family with embedding degree 12. */
     EP_B12,
     /* New family from Fotiadis-Martindale family with embedding degree 16. */
-    EP_N16,
+    EP_AFG16,
 	/* Fotiadis-Martindale family with embedding degree 16. */
 	EP_FM16,
     /* Kachisa-Schaefer-Scott family with embedding degree 16. */
@@ -161,6 +161,8 @@ enum {
 	K18_P508,
 	/** Barreto-Lynn-Scott curve with embedding degree 24. */
 	B24_P509,
+	/** New family with embeeding degree 16. */
+	AFG16_P510,
 	/** Optimal TNFS-secure curve with embedding degree 8. */
 	OT8_P511,
 	/** Cocks-pinch curve with embedding degree 8. */
@@ -184,7 +186,7 @@ enum {
 	/** Kachisa-Schaefer-Scott with embedding degree 16. */
 	K16_P766,
 	/** New family with embeeding degree 16. */
-	N16_P766,
+	AFG16_P766,
 	/* Fotiadis-Moartindale with embedding degree 18. */
 	FM18_P768,
 	/** Barreto-Lynn-Scott curve with embedding degree 12. */
@@ -540,12 +542,12 @@ dig_t *ep_curve_get_beta(void);
 /**
  * Returns the parameter V1 of the prime curve.
  */
-void ep_curve_get_v1(bn_t v[]);
+const bn_st *ep_curve_get_v1(void);
 
 /**
  * Returns the parameter V2 of the prime curve.
  */
-void ep_curve_get_v2(bn_t v[]);
+const bn_st *ep_curve_get_v2(void);
 
 /**
  * Returns a optimization identifier based on the a-coefficient of the curve.
@@ -1285,6 +1287,15 @@ void ep_map_sswum(ep_t p, const uint8_t *msg, size_t len);
  * @param[in] len			- the array length in bytes.
  */
 void ep_map_swift(ep_t p, const uint8_t *msg, size_t len);
+
+/**
+ * Maps a random byte array to a point in a prime elliptic curve.
+ *
+ * @param[out] p			- the result.
+ * @param[in] uniform_bytes	- the random byte array to map.
+ * @param[in] len			- the array length in bytes.
+ */
+void ep_map_rnd(ep_t p, const uint8_t *uniform_bytes, size_t len);
 
 /**
  * Compresses a point.

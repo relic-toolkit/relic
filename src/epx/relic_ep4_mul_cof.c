@@ -132,7 +132,7 @@ static void ep4_mul_cof_k16(ep4_t r, const ep4_t p) {
  * @param[out] r			- the result.
  * @param[in] p				- the point to multiply.
  */
-static void ep4_mul_cof_n16(ep4_t r, const ep4_t p) {
+static void ep4_mul_cof_afg16(ep4_t r, const ep4_t p) {
 	bn_t x;
 	ep4_t t0, t1, t2, t3, t4, t5;
 
@@ -357,8 +357,8 @@ void ep4_mul_cof(ep4_t r, const ep4_t p) {
 			case EP_K16:
 				ep4_mul_cof_k16(r, p);
 				break;
-			case EP_N16:
-				ep4_mul_cof_n16(r, p);
+			case EP_AFG16:
+				ep4_mul_cof_afg16(r, p);
 				break;
 			case EP_FM16:
 				ep4_mul_cof_fm16(r, p);

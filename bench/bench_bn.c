@@ -1001,11 +1001,9 @@ static void arith(void) {
 #if defined(WITH_EP) && defined(EP_ENDOM) && (EP_MUL == LWNAF || EP_FIX == COMBS || EP_FIX == LWNAF || EP_SIM == INTER || !defined(STRIP))
 	if (ep_param_set_any_endom() == RLC_OK) {
 		BENCH_RUN("bn_rec_glv") {
-			ep_curve_get_v1(d);
-			ep_curve_get_v2(e);
 			ep_curve_get_ord(c);
 			bn_rand_mod(a, c);
-			BENCH_ADD(bn_rec_glv(a, b, a, c, (const bn_t *)d, (const bn_t *)e));
+			BENCH_ADD(bn_rec_glv(a, b, a, c, ep_curve_get_v1(), ep_curve_get_v2()));
 		}
 		BENCH_END;
 	}

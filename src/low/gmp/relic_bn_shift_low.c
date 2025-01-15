@@ -34,6 +34,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "relic_dv.h"
 #include "relic_bn.h"
 #include "relic_bn_low.h"
 
@@ -46,7 +47,13 @@ dig_t bn_lsh1_low(dig_t *c, const dig_t *a, size_t size) {
 }
 
 dig_t bn_lshb_low(dig_t *c, const dig_t *a, size_t size, uint_t bits) {
-	return mpn_lshift(c, a, size, bits);
+	dig_t carry = 0;
+	if (bits > 0) {
+		carry = mpn_lshift(c, a, size, bits);
+	} else {
+		dv_copy(c, a, size);
+	}
+	return carry;
 }
 
 dig_t bn_rsh1_low(dig_t *c, const dig_t *a, size_t size) {
@@ -54,7 +61,13 @@ dig_t bn_rsh1_low(dig_t *c, const dig_t *a, size_t size) {
 }
 
 dig_t bn_rshb_low(dig_t *c, const dig_t *a, size_t size, uint_t bits) {
-	return mpn_rshift(c, a, size, bits);
+	dig_t carry = 0;
+	if (bits > 0) {
+		carry = mpn_rshift(c, a, size, bits);
+	} else {
+		dv_copy(c, a, size);
+	}
+	return carry;
 }
 
 dig_t bn_rshs_low(dig_t *c, const dig_t *a, size_t size, uint_t bits) {

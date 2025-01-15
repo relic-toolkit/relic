@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (c) 2021 RELIC Authors
+ * Copyright (c) 2013 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -71,12 +71,14 @@
 #undef arch_clean
 #undef arch_cycles
 #undef arch_lzcnt
+#undef arch_tzcnt
 #undef arch_copy_rom
 
 #define arch_init 	RLC_PREFIX(arch_init)
 #define arch_clean 	RLC_PREFIX(arch_clean)
 #define arch_cycles 	RLC_PREFIX(arch_cycles)
 #define arch_lzcnt 	RLC_PREFIX(arch_lzcnt)
+#define arch_tzcnt 	RLC_PREFIX(arch_tzcnt)
 #define arch_copy_rom 	RLC_PREFIX(arch_copy_rom)
 
 #undef bench_init
@@ -295,6 +297,7 @@
 #undef bn_rec_jsf
 #undef bn_rec_glv
 #undef bn_rec_frb
+#undef bn_rec_sac
 #undef bn_lag
 #undef bn_evl
 
@@ -407,6 +410,7 @@
 #define bn_rec_jsf 	RLC_PREFIX(bn_rec_jsf)
 #define bn_rec_glv 	RLC_PREFIX(bn_rec_glv)
 #define bn_rec_frb 	RLC_PREFIX(bn_rec_frb)
+#define bn_rec_sac 	RLC_PREFIX(bn_rec_sac)
 #define bn_lag 	RLC_PREFIX(bn_lag)
 #define bn_evl 	RLC_PREFIX(bn_evl)
 
@@ -523,6 +527,7 @@
 #undef fp_dbl_integ
 #undef fp_hlv_basic
 #undef fp_hlv_integ
+#undef fp_trs
 #undef fp_mul_basic
 #undef fp_mul_comba
 #undef fp_mul_integ
@@ -622,6 +627,7 @@
 #define fp_dbl_integ 	RLC_PREFIX(fp_dbl_integ)
 #define fp_hlv_basic 	RLC_PREFIX(fp_hlv_basic)
 #define fp_hlv_integ 	RLC_PREFIX(fp_hlv_integ)
+#define fp_trs 	RLC_PREFIX(fp_trs)
 #define fp_mul_basic 	RLC_PREFIX(fp_mul_basic)
 #define fp_mul_comba 	RLC_PREFIX(fp_mul_comba)
 #define fp_mul_integ 	RLC_PREFIX(fp_mul_integ)
@@ -1008,6 +1014,7 @@
 #undef ep_map_basic
 #undef ep_map_sswum
 #undef ep_map_swift
+#undef ep_map_rnd
 #undef ep_pck
 #undef ep_upk
 
@@ -1102,6 +1109,7 @@
 #define ep_map_basic 	RLC_PREFIX(ep_map_basic)
 #define ep_map_sswum 	RLC_PREFIX(ep_map_sswum)
 #define ep_map_swift 	RLC_PREFIX(ep_map_swift)
+#define ep_map_rnd 	RLC_PREFIX(ep_map_rnd)
 #define ep_pck 	RLC_PREFIX(ep_pck)
 #define ep_upk 	RLC_PREFIX(ep_upk)
 

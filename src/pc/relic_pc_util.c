@@ -54,7 +54,7 @@ void gt_rand(gt_t a) {
 	pp_exp_k48(a, a);
 #elif FP_PRIME == 315 || FP_PRIME == 317 || FP_PRIME == 509
 	pp_exp_k24(a, a);
-#elif FP_PRIME == 330 || FP_PRIME == 765 || FP_PRIME == 766
+#elif FP_PRIME == 330 || FP_PRIME == 510 || FP_PRIME == 765 || FP_PRIME == 766
 	pp_exp_k16(a, a);
 #elif FP_PRIME == 354 || FP_PRIME == 508 || FP_PRIME == 768 || FP_PRIME == 638 && !defined(FP_QNRES)
 	pp_exp_k18(a, a);
@@ -131,7 +131,7 @@ int g1_is_valid(const g1_t a) {
 					break;
 				/* if (u % 2) == 0, check (u**4)*\psi(P) == P
     		 	* else check (u**4-1)//2 * (\psi(P) - P) == P */
-				case EP_N16:
+				case EP_AFG16:
 					bn_sqr(n, n);
 					bn_sqr(n, n);
 					ep_psi(u, a);
@@ -333,7 +333,7 @@ int g2_is_valid(const g2_t a) {
 				break;
 			/* If u is even, check that [u*p^3]P = P
 			 * else check [p^5]P = [u]P. */
-			case EP_N16:
+			case EP_AFG16:
 				g2_mul_any(u, a, n);
 				if (bn_is_even(n)) {
 					g2_frb(v, u, 3);
@@ -532,7 +532,7 @@ int gt_is_valid(const gt_t a) {
 				break;
 			/* If u is even, check that [u*p^3]P = P
 			 * else check [p^5]P = [u]P. */
-			case EP_N16:
+			case EP_AFG16:
 				fp_prime_get_par(n);
 				gt_exp(u, a, n);
 				if (bn_is_even(n)) {

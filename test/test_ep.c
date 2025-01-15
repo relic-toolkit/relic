@@ -499,8 +499,10 @@ static int endomorphism(void) {
 #if defined(EP_ENDOM)
 		if (ep_curve_is_endom()) {
 			/* Recover lambda parameter. */
-			ep_curve_get_v1(v1);
-			ep_curve_get_v2(v2);
+			for (size_t i = 0; i < 3; i++) {
+				bn_copy(v1[i], &(core_get()->ep_v1[i]));
+				bn_copy(v2[i], &(core_get()->ep_v2[i]));
+			}
 			ep_curve_get_ord(v2[0]);
 			if (bn_cmp_dig(v1[2], 1) == RLC_EQ) {
 				bn_gcd_ext(v1[0], v2[1], NULL, v1[1], v2[0]);
@@ -1365,6 +1367,10 @@ static int hashing(void) {
 		TEST_CASE("point hashing is correct") {
 			rand_bytes(msg, sizeof(msg));
 			ep_map(a, msg, sizeof(msg));
+			TEST_ASSERT(ep_on_curve(a) && ep_is_infty(a) == 0, end);
+			ep_mul(a, a, n);
+			TEST_ASSERT(ep_on_curve(a) && ep_is_infty(a) == 1, end);
+			ep_map_rnd(a, msg, sizeof(msg));
 			TEST_ASSERT(ep_on_curve(a) && ep_is_infty(a) == 0, end);
 			ep_mul(a, a, n);
 			TEST_ASSERT(ep_on_curve(a) && ep_is_infty(a) == 1, end);

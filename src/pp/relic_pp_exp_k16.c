@@ -213,12 +213,12 @@ static void pp_exp_kss(fp16_t c, fp16_t a) {
 }
 
 /**
- * Computes the final exponentiation of a pairing defined over a KSS curve.
+ * Computes the final exponentiation of a pairing defined over an AFG16 curve.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the extension field element to exponentiate.
  */
-static void pp_exp_new(fp16_t c, fp16_t a) {
+static void pp_exp_afg16(fp16_t c, fp16_t a) {
 	fp16_t t0, t1, t2, t3, t4;
 	bn_t x, x_;
 
@@ -438,8 +438,8 @@ void pp_exp_k16(fp16_t c, fp16_t a) {
 		case EP_K16:
 			pp_exp_kss(c, a);
 			break;
-		case EP_N16:
-			pp_exp_new(c, a);
+		case EP_AFG16:
+			pp_exp_afg16(c, a);
 			break;
 		case EP_FM16:
 			pp_exp_fm16(c, a);

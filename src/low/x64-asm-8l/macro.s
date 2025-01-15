@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (c) 2019 RELIC Authors
+ * Copyright (c) 2021 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -42,6 +42,16 @@
 #define P6	0x555955557955572A
 #define P7	0x0000000000000055
 #define U0	0x4B3EF8137F4017FD
+#elif FP_PRIME == 510
+#define P0	0xDD5F62C1A3044101
+#define P1	0x393DDECB1D3C5517
+#define P2	0x8E97A75A70B54410
+#define P3	0xBA09F4BACE3AC558
+#define P4	0x13BA8856149CDCB6
+#define P5	0xB32E21F17F8B0A67
+#define P6	0x5A1673FA252B4DAA
+#define P7	0X31BEC371AB26D0A6
+#define U0	0x766D29254B8340FF
 #elif FP_PRIME == 511
 #define P0	0x84DD401C8E4AB001
 #define P1	0x98707BD8B8D7F1F5
@@ -52,7 +62,7 @@
 #define P6	0x0000031F8F000000
 #define P7	0x4000000000156000
 #define U0	0xDF085042554AAFFF
-#else
+#else /* B24_P509 */
 #define P0	0xA13D118DB8BFD2AB
 #define P1	0xEE63BD076E8D9300
 #define P2	0xCFCB5C6071BAD3D2

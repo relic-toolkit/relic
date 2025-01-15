@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (c) 2012 RELIC Authors
+ * Copyright (c) 2022 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -109,13 +109,13 @@ static uint64_t g_counters[COUNTERS_COUNT];
 static uint64_t g_config[COUNTERS_COUNT];
 
 static void configure_rdtsc() {
-	if (kpc_set_config(KPC_MASK, g_config)) {
-		printf("kpc_set_config failed\n");
+	if (kpc_force_all_ctrs_set(1)) {
+		printf("kpc_force_all_ctrs_set failed\n");
 		return;
 	}
 
-	if (kpc_force_all_ctrs_set(1)) {
-		printf("kpc_force_all_ctrs_set failed\n");
+	if (kpc_set_config(KPC_MASK, g_config)) {
+		printf("kpc_set_config failed\n");
 		return;
 	}
 
@@ -192,7 +192,6 @@ void arch_init(void) {
 		pthread_set_qos_class_self_np(QOS_CLASS_BACKGROUND, 0);
 	}
 	init_rdtsc();
-	configure_rdtsc();
 #endif
 
 #endif /* TIMER = CYCLE */

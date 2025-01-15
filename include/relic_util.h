@@ -102,6 +102,11 @@
 #define RLC_DMASK				(RLC_HMASK | RLC_LMASK)
 
 /**
+ * Bit mask used to divide by 3.
+ */
+#define RLC_3MASK				((RLC_DMASK - 1)/3 + 1)
+
+/**
  * Returns the lowest half of a digit.
  *
  * @param[in] D			- the digit.

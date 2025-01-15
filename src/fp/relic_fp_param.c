@@ -215,6 +215,12 @@ void fp_param_set(int param) {
 				bn_sub_dig(p, p, 9);
 				fp_prime_set_dense(p);
 				break;
+			case SQI_251:
+				bn_set_2b(p, 248);
+				bn_mul_dig(p, p, 5);
+				bn_sub_dig(p, p, 1);
+				fp_prime_set_dense(p);
+				break;
 #elif FP_PRIME == 254
 			case BN_254:
 				/* x = -(2^62 + 2^55 + 1). */
@@ -475,6 +481,17 @@ void fp_param_set(int param) {
 				bn_neg(t0, t0);
 				fp_prime_set_pairf(t0, EP_B24);
 				break;
+#elif FP_PRIME == 510
+			case AFG16_510:
+				/* x = 2^32-2^26+2^10+2^5. */
+				bn_set_2b(t0, 32);
+				bn_set_2b(t1, 26);
+				bn_sub(t0, t0, t1);
+				bn_set_2b(t1, 10);
+				bn_add(t0, t0, t1);
+				bn_add_dig(t0, t0, 32);
+				fp_prime_set_pairf(t0, EP_AFG16);
+				break;
 #elif FP_PRIME == 511
 			case CTIDH_511:
 				bn_read_str(p, STR_P511, strlen(STR_P511), 16);
@@ -605,7 +622,7 @@ void fp_param_set(int param) {
 				bn_add_dig(t0, t0, 1);
 				fp_prime_set_pairf(t0, EP_K16);
 				break;
-			case N16_766:
+			case AFG16_766:
 				/* u = 2^48-2^28-2^25+2^2 */
 				bn_set_2b(t0, 48);
 				bn_set_2b(t1, 28);
@@ -613,7 +630,7 @@ void fp_param_set(int param) {
 				bn_set_2b(t1, 25);
 				bn_sub(t0, t0, t1);
 				bn_add_dig(t0, t0, 4);
-				fp_prime_set_pairf(t0, EP_N16);
+				fp_prime_set_pairf(t0, EP_AFG16);
 				break;
 #elif FP_PRIME == 768
 			case FM18_768:
@@ -763,6 +780,8 @@ int fp_param_set_any_pmers(void) {
 	fp_param_set(NIST_192);
 #elif FP_PRIME == 224
 	fp_param_set(NIST_224);
+#elif FP_PRIME == 251
+	fp_param_set(SQI_251);
 #elif FP_PRIME == 255
 	fp_param_set(PRIME_25519);
 #elif FP_PRIME == 256
@@ -823,6 +842,8 @@ int fp_param_set_any_tower(void) {
 	fp_param_set(K18_508);
 #elif FP_PRIME == 509
 	fp_param_set(B24_509);
+#elif FP_PRIME == 510
+	fp_param_set(AFG16_510);
 #elif FP_PRIME == 511
 	fp_param_set(CTIDH_511);
 #elif FP_PRIME == 544
@@ -842,7 +863,7 @@ int fp_param_set_any_tower(void) {
 #elif FP_PRIME == 765
 	fp_param_set(FM16_765);
 #elif FP_PRIME == 766
-	fp_param_set(N16_766);
+	fp_param_set(AFG16_766);
 	//fp_param_set(K16_766);
 #elif FP_PRIME == 768
 	fp_param_set(FM18_768);

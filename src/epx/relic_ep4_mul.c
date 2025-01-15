@@ -60,7 +60,7 @@ static void ep4_psi(ep4_t r, const ep4_t p) {
 				ep4_dbl(r, r);
 				ep4_sub(r, r, q);
 				break;
-			case EP_N16:
+			case EP_AFG16:
 				/* u = -p^5 mod r */
 				ep4_frb(r, p, 5);
 				ep4_neg(r, r);
@@ -130,7 +130,7 @@ static void ep4_mul_gls_imp(ep4_t r, const ep4_t p, const bn_t k) {
 		}
 		ep4_tab(t[0], q, w);
 
-		if (ep_curve_is_pairf() == EP_K16 || ep_curve_is_pairf() == EP_N16) {
+		if (ep_curve_is_pairf() == EP_K16 || ep_curve_is_pairf() == EP_AFG16) {
 			/* Minimize use of endomorphism when it's expensive. */
 			for (size_t i = 1; i < 8; i++) {
 				ep4_psi(q, t[i - 1][0]);
