@@ -877,83 +877,69 @@ static void pdpub(void) {
 
 static void pdprv(void) {
 	bn_t r1, r2[3], ls[AGGS * AGGS], cs[AGGS], ks[AGGS];
-	g1_t fs[AGGS], p[AGGS * AGGS], u1[2], v1[3];
-	g2_t q[AGGS * AGGS], u2[2], v2[4], w2[4], ds[AGGS * AGGS], bs[AGGS], rs[AGGS * AGGS];
-	gt_t e[2], r, ts[AGGS + 1], g[3 * AGGS + 1];
+	g1_t fs[AGGS], p[AGGS * AGGS], u1[2], v1[3], rs[AGGS * AGGS], ds[AGGS * AGGS];
+	g2_t q[AGGS * AGGS], u2[2], v2[4], w2[4], bs[AGGS * AGGS];
+	gt_t e[2], r, ts[2 * AGGS + 1], g[AGGS * AGGS + 1];
 
 	bn_null(r1);
 	gt_null(r);
-	for (int i = 0; i < 2; i++) {
-		g1_null(u1[i]);
-		g2_null(u2[i]);
-		gt_null(e[i]);
-	}
-	for (int i = 0; i < 3; i++) {
-		g1_null(v1[i]);
-		bn_null(r2[i]);
-	}
-	for (int i = 0; i < 4; i++) {
-		g2_null(v2[i]);
-		g2_null(w2[i]);
-	}
-	for (int i = 0; i < RLC_MAX(4, AGGS + 1); i++) {
-		gt_null(g[i]);
-	}
-	for (int i = 0; i < AGGS; i++) {
-		g1_null(p[i]);
-		g2_null(q[i]);
-		bn_null(ls[i]);
-		g2_null(ds[i])
-		g2_null(rs[i])
-	}
-	gt_null(ts[AGGS]);
 
 	bn_new(r1);
 	gt_new(r);
 	for (int i = 0; i < 2; i++) {
+		g1_null(u1[i]);
+		g2_null(u2[i]);
+		gt_null(e[i]);
 		g1_new(u1[i]);
 		g2_new(u2[i]);
 		gt_new(e[i]);
 	}
 	for (int i = 0; i < 3; i++) {
+		g1_null(v1[i]);
+		bn_null(r2[i]);
 		g1_new(v1[i]);
 		bn_new(r2[i]);
 	}
 	for (int i = 0; i < 4; i++) {
+		g2_null(v2[i]);
+		g2_null(w2[i]);
 		g2_new(v2[i]);
 		g2_new(w2[i]);
-	}
-	for (size_t i = 0; i < 3 * AGGS + 1; i++) {
-		gt_null(g[i]);
-		gt_new(g[i]);
 	}
 	for (size_t i = 0; i < AGGS; i++) {
 		for (size_t j = 0; j < AGGS; j++) {
 			bn_null(ls[i * AGGS + j]);
 			g1_null(p[i * AGGS + j]);
 			g2_null(q[i * AGGS + j]);
-			g2_null(rs[i * AGGS + j]);
-			g2_null(ds[i * AGGS + j]);
+			g1_null(rs[i * AGGS + j]);
+			g1_null(ds[i * AGGS + j]);
+			g2_null(bs[i * AGGS + j]);
+			gt_null(g[i * AGGS + j]);
 			bn_new(ls[i * AGGS + j]);
 			g1_new(p[i * AGGS + j]);
 			g2_new(q[i * AGGS + j]);
-			g2_new(rs[i * AGGS + j]);
-			g2_new(ds[i * AGGS + j]);
+			g1_new(rs[i * AGGS + j]);
+			g1_new(ds[i * AGGS + j]);
+			g2_new(bs[i * AGGS + j]);
+			gt_new(g[i * AGGS + j]);
 			g1_rand(p[i * AGGS + j]);
 			g2_rand(q[i * AGGS + j]);
 		}
 		bn_null(ks[i]);
 		bn_null(cs[i]);
 		g1_null(fs[i]);
-		g2_null(bs[i]);
 		gt_null(ts[i]);
+		gt_null(ts[i + AGGS]);
 		bn_new(ks[i]);
 		bn_new(cs[i])
 		g1_new(fs[i]);
-		g2_new(bs[i]);
 		gt_new(ts[i]);
+		gt_new(ts[i + AGGS]);
 	}
-	gt_new(ts[AGGS]);
+	gt_null(ts[2 * AGGS]);
+	gt_new(ts[2 * AGGS]);
+	gt_null(g[AGGS * AGGS]);
+	gt_new(g[AGGS * AGGS]);
 
 	BENCH_RUN("cp_pdprv_gen") {
 		BENCH_ADD(cp_pdprv_gen(r1, r2, u1, u2, v2, e));
@@ -1020,11 +1006,11 @@ static void pdprv(void) {
 	} BENCH_END;
 
 	BENCH_RUN("cp_ambat_ask (AGGS)") {
-		BENCH_ADD(cp_ambat_ask(ls, rs, u1[1], u2[1], r1, p, q[0], u1[0], u2[0], e[0], 0, AGGS));
+		BENCH_ADD(cp_ambat_ask(ls, rs, u1[1], u2[1], w2[0], r1, p[0], q, u1[0], u2[0], e[0], AGGS));
 	} BENCH_END;
 
 	BENCH_RUN("cp_ambat_ans (AGGS)") {
-		BENCH_ADD(cp_ambat_ans(g, rs, u1[1], u2[1], p, AGGS));
+		BENCH_ADD(cp_ambat_ans(g, rs, u1[1], u2[1], w2[0], q, AGGS));
 	} BENCH_END;
 
 	BENCH_RUN("cp_ambat_ver (AGGS)") {
@@ -1032,37 +1018,38 @@ static void pdprv(void) {
 	} BENCH_END;
 
 	BENCH_RUN("cp_amprd_gen (AGGS)") {
-		BENCH_ADD(cp_amprd_gen(ls, rs, w2[0], r1, u1[0], u2[0], e[0], 1, AGGS));
+		BENCH_ADD(cp_amprd_gen(fs[0], r1, u1[0], u2[0], e[0]));
 	} BENCH_END;
 
 	BENCH_RUN("cp_amprd_ask (AGGS)") {
-		BENCH_ADD(cp_amprd_ask(ks, ds, cs, fs, bs, v1[0], v2[0], ls, rs, w2[0], r1, p, q, u1[0], u2[0], e[0], 1, AGGS));
+		BENCH_ADD(cp_amprd_ask(ks, ds, ls, rs, v1[0], v2[0], w2[0], bs, fs[0], r1, u1[0], u2[0], e[0], p, q, 1, AGGS));
 	} BENCH_END;
 
 	BENCH_RUN("cp_amprd_ans (AGGS)") {
-		BENCH_ADD(cp_amprd_ans(g, ds, fs, bs, v1[0], v2[0], p, q, 1, AGGS));
+		BENCH_ADD(cp_amprd_ans(g, ts, ds, rs, v1[0], v2[0], w2[0], bs, p, q, 1, AGGS));
 	} BENCH_END;
 
 	BENCH_RUN("cp_amprd_ver (AGGS)") {
-		BENCH_ADD(cp_amprd_ver(ts, g, ks, cs, e[0], 1));
+		BENCH_ADD(cp_amprd_ver(g, ts, ks, ls, e[0], 1, AGGS));
 	} BENCH_END;
 	
 	BENCH_RUN("cp_amprd_gen (AGGS²)") {
-		BENCH_ADD(cp_amprd_gen(ls, rs, w2[0], r1, u1[0], u2[0], e[0], AGGS, AGGS));
+		BENCH_ADD(cp_amprd_gen(fs[0], r1, u1[0], u2[0], e[0]));
 	} BENCH_END;
 
 	BENCH_RUN("cp_amprd_ask (AGGS²)") {
-		BENCH_ADD(cp_amprd_ask(ks, ds, cs, fs, bs, v1[0], v2[0], ls, rs, w2[0], r1, p, q, u1[0], u2[0], e[0], AGGS, AGGS));
+		BENCH_ADD(cp_amprd_ask(ks, ds, ls, rs, v1[0], v2[0], w2[0], bs, fs[0], r1, u1[0], u2[0], e[0], p, q, AGGS, AGGS));
 	} BENCH_END;
 
 	BENCH_RUN("cp_amprd_ans (AGGS²)") {
-		BENCH_ADD(cp_amprd_ans(g, ds, fs, bs, v1[0], v2[0], p, q, AGGS, AGGS));
+		BENCH_ADD(cp_amprd_ans(g, ts, ds, rs, v1[0], v2[0], w2[0], bs, p, q, AGGS, AGGS));
 	} BENCH_END;
 
 	BENCH_RUN("cp_amprd_ver (AGGS²)") {
-		BENCH_ADD(cp_amprd_ver(ts, g, ks, cs, e[0], AGGS));
+		BENCH_ADD(cp_amprd_ver(g, ts, ks, ls, e[0], AGGS, AGGS));
 	} BENCH_END;
 	
+
 	bn_free(r1);
 	gt_free(r);
 	for (int i = 0; i < 2; i++) {
@@ -1078,26 +1065,25 @@ static void pdprv(void) {
 		g2_free(v2[i]);
 		g2_free(w2[i]);
 	}
-	for (size_t i = 0; i < 3 * AGGS + 1; i++) {
-		gt_free(g[i]);
-	}
 	for (size_t i = 0; i < AGGS; i++) {
 		for (size_t j = 0; j < AGGS; j++) {
 			bn_free(ls[i * AGGS + j]);
 			g1_free(p[i * AGGS + j]);
 			g2_free(q[i * AGGS + j]);
-			g2_free(rs[i * AGGS + j]);
-			g2_free(ds[i * AGGS + j]);
+			g1_free(rs[i * AGGS + j]);
+			g1_free(ds[i * AGGS + j]);
+			g2_free(bs[i * AGGS + j]);
+			gt_free(g[i * AGGS + j]);
 		}
 		bn_free(ls[i]);
 		bn_free(cs[i]);
 		bn_free(ks[i]);
 		g1_free(fs[i]);
-		g2_free(rs[i]);
-		g2_free(bs[i]);
 		gt_free(ts[i]);
+		gt_free(ts[i + AGGS]);
 	}
-	gt_free(ts[AGGS]);
+	gt_free(ts[2 * AGGS]);
+	gt_free(g[AGGS * AGGS]);
 }
 
 static void sokaka(void) {

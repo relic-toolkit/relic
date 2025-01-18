@@ -504,6 +504,7 @@ int cp_amore_gen(bn_t x, gt_t e) {
 	bn_null(n);
 
 	RLC_TRY {
+		bn_new(n);
 		pc_get_ord(n);
 		bn_rand_mod(x, n);
 
@@ -517,7 +518,6 @@ int cp_amore_gen(bn_t x, gt_t e) {
 		result = RLC_ERR;
 	} RLC_FINALLY {
 		bn_free(n);
-		bn_free(t);
 	}
 	return result;
 }
@@ -537,6 +537,8 @@ int cp_amore_ask(bn_t d, g1_t a1, g2_t b1, g1_t a2, g2_t b2, bn_t c, bn_t r,
 	RLC_TRY {
 		bn_new(n);
 		bn_new(t);
+		g1_new(u);
+		g2_new(v);
 
 		pc_get_ord(n);
 		bn_rand_mod(t, n);
@@ -843,10 +845,10 @@ int cp_ambat_gen(bn_t r, g1_t u, g2_t v, gt_t e) {
 
 		pc_get_ord(n);
 		bn_rand_mod(r, n);
-		g2_mul_gen(v, r);
-
 		bn_rand_mod(t, n);
-		g1_mul_gen(u, t);
+
+		g1_mul_gen(u, r);
+		g2_mul_gen(v, t);
 
 		bn_mul(t, t, r);
 		bn_mod(t, t, n);
@@ -862,11 +864,10 @@ int cp_ambat_gen(bn_t r, g1_t u, g2_t v, gt_t e) {
 	return result;
 }
 
-int cp_ambat_ask(bn_t *ls, g2_t *rs, g1_t a, g2_t b, const bn_t r, 
-		const g1_t *p, const g2_t q, const g1_t u, const g2_t v, const gt_t e,
-		uint_t longc, size_t m) {
+int cp_ambat_ask(bn_t *ls, g1_t *rs, g1_t a, g2_t b, g2_t c, const bn_t r, 
+		const g1_t p, const g2_t *q, const g1_t u, const g2_t v, const gt_t e,
+		size_t m) {
 	bn_t n, *t = RLC_ALLOCA(bn_t, m);
-	size_t eps, len;
 	int result = RLC_OK;
 
 	bn_null(n);
@@ -875,36 +876,29 @@ int cp_ambat_ask(bn_t *ls, g2_t *rs, g1_t a, g2_t b, const bn_t r,
 		bn_new(n);
 
 		pc_get_ord(n);
-		eps = gt_size_bin(e, 1) / g2_size_bin(q, 1);
-		if (longc) {
-			len = 2 * (pc_param_level() - eps);
-		} else {
-			len = RAND_DIST/2 + BND_STORE + eps;
-		}
-
 		for (size_t i = 0; i < m; i++) {
 			bn_null(t[i]);
 			bn_new(t[i]);
 
 			if (ep_curve_is_pairf() == EP_BN) {
-				bn_rand(ls[i], RLC_POS, len);
+				bn_rand(ls[i], RLC_POS, RAND_DIST + BND_STORE);
 			} else {
-				bn_rand_frb(ls[i], &(core_get()->par), n, len);
+				bn_rand_frb(ls[i], &(core_get()->par), n, RAND_DIST + BND_STORE);
 			}
 		}
 
-		g1_set_infty(a);
+		g2_set_infty(c);
 		bn_mod_inv_sim(t, ls, n, m);
 		for (size_t i = 0; i < m; i++) {
-			g1_add(a, a, p[i]);
-			g2_mul(rs[i], q, t[i]);
+			g1_mul(rs[i], p, t[i]);
+			g2_add(c, c, q[i]);
 		}
 
-		g1_sub(a, u, a);
+		g1_sub(a, u, p);
 		g1_norm(a, a);
-		g1_mul(a, a, r);
-		g2_sub(b, v, q);
+		g2_sub(b, v, c);
 		g2_norm(b, b);
+		g2_mul(b, b, r);
 	} RLC_CATCH_ANY {
 		result = RLC_ERR;
 	} RLC_FINALLY {
@@ -918,8 +912,8 @@ int cp_ambat_ask(bn_t *ls, g2_t *rs, g1_t a, g2_t b, const bn_t r,
 	return result;
 }
 
-int cp_ambat_ans(gt_t *gs, const g2_t *rs, const g1_t a, const g2_t b, 
-		const g1_t *p, size_t m) {
+int cp_ambat_ans(gt_t *gs, const g1_t *rs, const g1_t a, const g2_t b, 
+		const g2_t c, const g2_t *q, size_t m) {
 	g1_t ps[2];
 	g2_t qs[2];
 	int result = RLC_OK;
@@ -935,15 +929,13 @@ int cp_ambat_ans(gt_t *gs, const g2_t *rs, const g1_t a, const g2_t b,
 		g2_new(qs[0]);
 		g2_new(qs[1]);
 
-		g1_set_infty(ps[0]);
 		for (size_t i = 0; i < m; i++) {
-			g1_add(ps[0], ps[0], p[i]);
-			pc_map(gs[i], p[i], rs[i]);
+			pc_map(gs[i], rs[i], q[i]);
 		}
-		g1_norm(ps[0], ps[0]);
-		g2_copy(qs[0], b);
-		g1_copy(ps[1], a);
-		g2_get_gen(qs[1]);
+		g1_copy(ps[0], a);
+		g2_copy(qs[0], c);
+		g1_get_gen(ps[1]);
+		g2_copy(qs[1], b);
 		
 		pc_map_sim(gs[m], ps, qs, 2);
 	} RLC_CATCH_ANY {
@@ -989,156 +981,100 @@ int cp_ambat_ver(gt_t *es, const gt_t *gs, const bn_t *ls, const gt_t e,
 	return result;
 }
 
-int cp_amprd_gen(bn_t *ls, g2_t *rs, g2_t r, bn_t c, g1_t u, g2_t v, gt_t e, 
-		size_t l, size_t m) {
-	bn_t n, xi;
+int cp_amprd_gen(g1_t c, bn_t r, g1_t u, g2_t v, gt_t e) {
+		g1_rand(c);
+		return cp_ambat_gen(r, u, v, e);
+}
+
+int cp_amprd_ask(bn_t *ks, g1_t *ds, bn_t *ls, g1_t *rs, g1_t a, g2_t b, g2_t d,
+		g2_t *bs, const g1_t c, const bn_t r, const g1_t u, const g2_t v,
+		gt_t e,  const g1_t *p, const g2_t *q, size_t l, size_t m) {
+	bn_t n;
 	int result = RLC_OK;
-	size_t i, j, eps, bound = RLC_MIN(l * m, pc_param_level() - RAND_DIST);
-	int8_t naf[RLC_FP_BITS + 1];
 
 	bn_null(n);
-	bn_null(xi);
 
 	RLC_TRY {
 		bn_new(n);
-		bn_new(xi);
 
 		pc_get_ord(n);
-		g2_rand(r);
+		for (size_t i = 0; i < l; i++) {
+			g2_set_infty(bs[i]);
+			for (size_t j = 0; j < m; j++) {
+				g2_add(bs[i], bs[i], q[i * m + j]);
+			}
+		}
+		g2_norm_sim(bs, bs, l);
 
-		cp_ambat_gen(c, u, v, e);
-		eps = gt_size_bin(e, 1) / g2_size_bin(rs[0], 1);
-
-		for (i = 0; i < bound; i++) {
+		for (size_t i = 0; i < l * m; i++) {
 			if (ep_curve_is_pairf() == EP_BN) {
-				bn_rand(ls[i], RLC_POS, eps + BND_STORE - RAND_DIST/2);
+				bn_rand(ls[i], RLC_POS, RAND_DIST + BND_STORE);
 			} else {
-				bn_rand_frb(ls[i], &(core_get()->par), n, eps + BND_STORE - RAND_DIST/2);
+				bn_rand_frb(ls[i], &(core_get()->par), n, RAND_DIST + BND_STORE);
 			}
-			g2_mul(rs[i], r, ls[i]);
+			g1_mul(rs[i], p[i], ls[i]);
+			g1_add(rs[i], rs[i], c);
 		}
-		for (; i < 0; i++) {
-			/* Case 2 is too slow in practice, so move directly to case 3. */
-			bn_rand(xi, RLC_POS, pc_param_level() - RAND_DIST);
-			l = RLC_FP_BITS + 1;
-			bn_rec_naf(naf, &l, xi, 2);
-			bn_zero(ls[i + 1]);
-			g2_set_infty(rs[i + 1]);
-			for (j = 0; j < l; j++) {
-				if (naf[j] > 0) {
-					bn_add(ls[i], ls[i], ls[j]);
-					g2_add(rs[i], rs[i], rs[j]);
-				}
-				if (naf[j] < 0) {
-					bn_sub(ls[i], ls[i], ls[j]);
-					g2_sub(rs[i], rs[i], rs[j]);
-				}
-			}
-			bn_mod(ls[i], ls[i], n);
-		}
-		for (; i < l * m; i++) {
-			bn_zero(ls[i]);
-			g2_set_infty(rs[i]);
-			for (j = 0; j < bound/3; j++) {
-				size_t index;
-				rand_bytes((unsigned char *)&index, sizeof(size_t));
-				index = index % i;
-				bn_add(ls[i], ls[i], ls[index]);
-				g2_add(rs[i], rs[i], rs[index]);
-			}
-			bn_mod(ls[i], ls[i], n);
-		}
-		if (l * m != bound) {
-			g2_norm_sim(rs + bound + 1,  rs + bound + 1, l * m - bound - 1);
-		}
+		g1_norm_sim(rs, rs, l * m);
+		cp_ambat_ask(ks, ds, a, b, d, r, c, bs, u, v, e, l);
 	}
 	RLC_CATCH_ANY {
 		result = RLC_ERR;
 	}
 	RLC_FINALLY {
 		bn_free(n);
-		bn_free(xi);
 	}
 	return result;
 }
 
-int cp_amprd_ask(bn_t *ks, g2_t *ds, bn_t *cs, g1_t *fs, g2_t *bs, g1_t a,
-		g2_t b, const bn_t *ls, const g2_t *rs, const g2_t r, const bn_t c,
-		const g1_t *p, const g2_t *q, const g1_t u, const g2_t v, const gt_t e,
-		size_t l, size_t m) {
-	bn_t n;
-	g1_t t;
-	int result = RLC_OK;
-
-	bn_null(n);
-	g1_null(t);
-
-	RLC_TRY {
-		bn_new(n);
-		g1_new(t);
-
-		pc_get_ord(n);
-		for (size_t j = 0; j < l; j++) {
-			if (ep_curve_is_pairf() == EP_BN) {
-				bn_rand(ks[j], RLC_POS, RAND_DIST);
-			} else {
-				bn_rand_frb(ks[j], &(core_get()->par), n, RAND_DIST);
-			}
-			g1_set_infty(fs[j]);
-			for (size_t i = 0; i < m; i++) {
-				g1_mul(t, p[j * m + i], ls[j * m + i]);
-				g1_add(fs[j], fs[j], t);
-				g2_mul(ds[j * m + i], q[j * m + i], ks[j]);
-				g2_add(ds[j * m + i], ds[j * m + i], rs[j * m + i]);
-			}
-		}
-		g2_norm_sim(ds, ds, l * m);
-		g1_norm_sim(fs, fs, l);
-		cp_ambat_ask(cs, bs, a, b, c, fs, r, u, v, e, 1, l);
-	} RLC_CATCH_ANY {
-		result = RLC_ERR;
-	} RLC_FINALLY {
-		bn_free(n);
-		g1_free(t);
-	}
-
-	return result;
-}
-
-int cp_amprd_ans(gt_t *gs, const g2_t *ds, const g1_t *fs, const g2_t *bs,
-		const g1_t a, const g2_t b, const g1_t *p, const g2_t *q,
-		size_t l, size_t m) {
-	cp_ambat_ans(gs, bs, a, b, fs, l);
+int cp_amprd_ans(gt_t *gs, gt_t *ts, const g1_t *ds, const g1_t *rs, const g1_t a,
+		const g2_t b, const g2_t d, const g2_t *bs, const g1_t *p,
+		const g2_t *q, size_t l, size_t m) {
 	for (size_t i = 0; i < l; i++) {
-		pc_map_sim(gs[l+i*2+1], p + i * m, ds + i * m, m);
-		pc_map_sim(gs[l+i*2+2], p + i * m, q + i * m, m);		
+		pc_map_sim(ts[i], rs + i * m, q + i * m, m);
+	}
+	cp_ambat_ans(ts + l, ds, a, b, d, bs, l);
+	for (size_t i = 0; i < l * m; i++) {
+		pc_map(gs[i], p[i], q[i]);
 	}
 	return RLC_OK;
 }
 
-int cp_amprd_ver(gt_t *ts, const gt_t *gs, const bn_t *ks, const bn_t *cs,
-		const gt_t e, size_t l) {
+int cp_amprd_ver(gt_t *gs, gt_t *ts, const bn_t *ks, const bn_t *ls,
+		const gt_t e, size_t l, size_t m) {
 	int result = 1;
-	gt_t t;
+	gt_t t, u;
 
 	gt_null(t);
+	gt_null(u);
 
 	RLC_TRY {
 		gt_new(t);
+		gt_new(u);
 
-		result = cp_ambat_ver(ts, gs, cs, e, l);
+		result = cp_ambat_ver((gt_t *)ts + l, ts + l, ks, e, l);
 		for (size_t i = 0; i < l; i++) {
 			result &= !gt_is_unity(ts[i]);
-			result &= gt_is_valid(gs[l+i+2]);
-			gt_exp(t, gs[l+i*2+2], ks[i]);
-			gt_mul(t, t, ts[i]);
-			gt_copy(ts[i], gs[l+i*2+2]);
-			result &= (gt_cmp(gs[l+i*2+1], t) == RLC_EQ);
+			result &= gt_is_valid(ts[i]);
 		}
-
+		for (size_t i = 0; i < l; i++) {
+			gt_set_unity(t);
+			for (size_t j = 0; j < m; j++) {
+				gt_exp(u, gs[i * m + j], ls[i * m + j]);
+				gt_mul(t, t, u);
+			}
+			gt_mul(t, t, ts[l + i]);
+			result &= (gt_cmp(t, ts[i]) == RLC_EQ);
+		}
 		if (!result) {
+			for (size_t i = 0; i < l * m; i++) {
+				gt_set_unity(gs[i]);
+			}
+		} else {
 			for (size_t i = 0; i < l; i++) {
-				gt_set_unity(ts[i]);
+				for (size_t j = 1; j < m; j++) {
+					gt_mul(gs[i * m], gs[i * m], gs[i * m + j]);
+				}
 			}
 		}
 	} RLC_CATCH_ANY {
@@ -1146,6 +1082,7 @@ int cp_amprd_ver(gt_t *ts, const gt_t *gs, const bn_t *ks, const bn_t *cs,
 	}
 	RLC_FINALLY {
 		gt_free(t);
+		gt_free(u);
 	}
 	return result;
 }

@@ -1309,9 +1309,9 @@ static int pdprv(void) {
 static int pdprd(void) {
 	int code = RLC_ERR;
 	bn_t x, t, r, ls[AGGS * AGGS], cs[AGGS], ks[AGGS];
-	g1_t fs[AGGS], p[AGGS * AGGS], u1, v1;
-	g2_t q[AGGS * AGGS], u2, v2, w2, rs[AGGS * AGGS], ds[AGGS * AGGS], bs[AGGS];
-	gt_t e, ts[AGGS + 1], g[3 * AGGS + 1];
+	g1_t fs[AGGS], p[AGGS * AGGS], u1, v1, rs[AGGS * AGGS], ds[AGGS * AGGS];
+	g2_t q[AGGS * AGGS], u2, v2, w2, bs[AGGS * AGGS];
+	gt_t e, ts[2 * AGGS + 1], g[AGGS * AGGS + 1];
 
 	bn_null(t);
 	bn_null(x);
@@ -1333,38 +1333,40 @@ static int pdprd(void) {
 		g2_new(v2);
 		g2_new(w2);
 		gt_new(e);
-		for (size_t i = 0; i < 3 * AGGS + 1; i++) {
-			gt_null(g[i]);
-			gt_new(g[i]);
-		}
 		for (size_t i = 0; i < AGGS; i++) {
 			for (size_t j = 0; j < AGGS; j++) {
 				bn_null(ls[i * AGGS + j]);
 				g1_null(p[i * AGGS + j]);
 				g2_null(q[i * AGGS + j]);
-				g2_null(rs[i * AGGS + j]);
-				g2_null(ds[i * AGGS + j]);
+				g1_null(rs[i * AGGS + j]);
+				g1_null(ds[i * AGGS + j]);
+				g2_null(bs[i * AGGS + j]);
+				gt_null(g[i * AGGS + j]);
 				bn_new(ls[i * AGGS + j]);
 				g1_new(p[i * AGGS + j]);
 				g2_new(q[i * AGGS + j]);
-				g2_new(rs[i * AGGS + j]);
-				g2_new(ds[i * AGGS + j]);
+				g1_new(rs[i * AGGS + j]);
+				g1_new(ds[i * AGGS + j]);
+				g2_new(bs[i * AGGS + j]);
+				gt_new(g[i * AGGS + j]);
 			}
 			bn_null(ks[i]);
 			bn_null(cs[i]);
 			g1_null(fs[i]);
-			g2_null(bs[i]);
 			gt_null(ts[i]);
+			gt_null(ts[i + AGGS]);
 			bn_new(ks[i]);
 			bn_new(cs[i])
 			g1_new(fs[i]);
-			g2_new(bs[i]);
 			gt_new(ts[i]);
+			gt_new(ts[i + AGGS]);
 		}
-		gt_null(ts[AGGS]);
-		gt_new(ts[AGGS]);
+		gt_null(ts[2 * AGGS]);
+		gt_new(ts[2 * AGGS]);
+		gt_null(g[AGGS * AGGS]);
+		gt_new(g[AGGS * AGGS]);
 
-		TEST_CASE("delegated batch delegated pairing is correct") {
+		TEST_CASE("delegated batch pairing is correct") {
 			TEST_ASSERT(cp_mvbat_gen(r, fs, AGGS) == RLC_OK, end);
 			for (size_t i = 0; i < AGGS; i++) {
 				g1_rand(p[i]);
@@ -1379,46 +1381,42 @@ static int pdprd(void) {
 			}
 		} TEST_END;
 
-		TEST_CASE("amortized batch delegated pairing is correct") {
+		TEST_CASE("amortized delegated batch pairing is correct") {
 			TEST_ASSERT(cp_ambat_gen(r, u1, u2, e) == RLC_OK, end);
+			g1_rand(p[0]);
 			for (size_t i = 0; i < AGGS; i++) {
-				g1_rand(p[i]);
+				g2_rand(q[i]);
 			}
-			g2_rand(q[0]);
-			TEST_ASSERT(cp_ambat_ask(ls, rs, v1, v2, r, p, q[0], u1, u2, e, 0, AGGS) == RLC_OK, end);
-			TEST_ASSERT(cp_ambat_ans(g, rs, v1, v2, p, AGGS) == RLC_OK, end);
+			TEST_ASSERT(cp_ambat_ask(ls, rs, v1, v2, w2, r, p[0], q, u1, u2, e, AGGS) == RLC_OK, end);
+			TEST_ASSERT(cp_ambat_ans(g, rs, v1, v2, w2, q, AGGS) == RLC_OK, end);
 			TEST_ASSERT(cp_ambat_ver(g, g, ls, e, AGGS) == 1, end);
 			for (size_t i = 0; i < AGGS; i++) {
-				pc_map(e, p[i], q[0]);
+				pc_map(e, p[0], q[i]);
 				TEST_ASSERT(gt_cmp(e, g[i]) == RLC_EQ, end);
 			}
 		} TEST_END;
 
 		TEST_CASE("amortized delegated pairing product is correct") {
-			TEST_ASSERT(cp_amprd_gen(ls, rs, w2, x, u1, u2, e, 1, AGGS) == RLC_OK, end);
+			TEST_ASSERT(cp_amprd_gen(fs[0], r, u1, u2, e) == RLC_OK, end);
 			for (size_t i = 0; i < AGGS * AGGS; i++) {
 				g1_rand(p[i]);
 				g2_rand(q[i]);
 			}
-			TEST_ASSERT(cp_amprd_ask(ks, ds, cs, fs, bs, v1, v2, ls, rs, w2, x, p, q, u1, u2, e, 1, AGGS) == RLC_OK, end);
-			TEST_ASSERT(cp_amprd_ans(g, ds, fs, bs, v1, v2, p, q, 1, AGGS) == RLC_OK, end);
-			TEST_ASSERT(cp_amprd_ver(ts, g, ks, cs, e, 1) == 1, end);
-			pc_map_sim(g[0], p, q, AGGS);
-			TEST_ASSERT(gt_cmp(ts[0], g[0]) == RLC_EQ, end);
-			TEST_ASSERT(cp_amprd_gen(ls, rs, w2, x, u1, u2, e, AGGS, AGGS) == RLC_OK, end);
-			for (size_t i = 0; i < AGGS * AGGS; i++) {
-				g1_rand(p[i]);
-				g2_rand(q[i]);
-			}
-			TEST_ASSERT(cp_amprd_ask(ks, ds, cs, fs, bs, v1, v2, ls, rs, w2, x, p, q, u1, u2, e, AGGS, AGGS) == RLC_OK, end);
-			TEST_ASSERT(cp_amprd_ans(g, ds, fs, bs, v1, v2, p, q, AGGS, AGGS) == RLC_OK, end);
-			TEST_ASSERT(cp_amprd_ver(ts, g, ks, cs, e, AGGS) == 1, end);
+			TEST_ASSERT(cp_amprd_ask(ks, ds, ls, rs, v1, v2, w2, bs, fs[0], r, u1, u2, e, p, q, 1, AGGS) == RLC_OK, end);
+			TEST_ASSERT(cp_amprd_ans(g, ts, ds, rs, v1, v2, w2, bs, p, q, 1, AGGS) == RLC_OK, end);
+			TEST_ASSERT(cp_amprd_ver(g, ts, ks, ls, e, 1, AGGS) == 1, end);
+			pc_map_sim(e, p, q, AGGS);
+			TEST_ASSERT(gt_cmp(g[0], e) == RLC_EQ, end);
+
+			TEST_ASSERT(cp_amprd_gen(fs[0], r, u1, u2, e) == RLC_OK, end);
+			TEST_ASSERT(cp_amprd_ask(ks, ds, ls, rs, v1, v2, w2, bs, fs[0], r, u1, u2, e, p, q, AGGS, AGGS) == RLC_OK, end);
+			TEST_ASSERT(cp_amprd_ans(g, ts, ds, rs, v1, v2, w2, bs, p, q, AGGS, AGGS) == RLC_OK, end);
+			TEST_ASSERT(cp_amprd_ver(g, ts, ks, ls, e, AGGS, AGGS) == 1, end);
 			for (size_t i = 0; i < AGGS; i++) {
-				pc_map_sim(g[0], p + i * AGGS, q + i * AGGS, AGGS);
-				TEST_ASSERT(gt_cmp(ts[i], g[0]) == RLC_EQ, end);
+				pc_map_sim(e, p + i * AGGS, q + i * AGGS, AGGS);
+				TEST_ASSERT(gt_cmp(g[i * AGGS], e) == RLC_EQ, end);
 			}
 		} TEST_END;
-
 	} RLC_CATCH_ANY {
 		RLC_ERROR(end);
 	}
@@ -1434,25 +1432,25 @@ static int pdprd(void) {
 	g2_free(v2);
 	g2_free(w2);
 	gt_free(e);
-	for (size_t i = 0; i < 3 * AGGS + 1; i++) {
-		gt_free(g[i]);
-	}
 	for (size_t i = 0; i < AGGS; i++) {
 		for (size_t j = 0; j < AGGS; j++) {
 			bn_free(ls[i * AGGS + j]);
 			g1_free(p[i * AGGS + j]);
 			g2_free(q[i * AGGS + j]);
-			g2_free(rs[i * AGGS + j]);
-			g2_free(ds[i * AGGS + j]);
+			g1_free(rs[i * AGGS + j]);
+			g1_free(ds[i * AGGS + j]);
+			g2_free(bs[i * AGGS + j]);
+			gt_free(g[i * AGGS + j]);
 		}
 		bn_free(ls[i]);
 		bn_free(cs[i]);
 		bn_free(ks[i]);
 		g1_free(fs[i]);
-		g2_free(bs[i]);
 		gt_free(ts[i]);
+		gt_free(ts[i + AGGS]);
 	}
-	gt_free(ts[AGGS]);
+	gt_free(ts[2 * AGGS]);
+	gt_free(g[AGGS * AGGS]);
 	return code;
 }
 
