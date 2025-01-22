@@ -508,12 +508,8 @@ int cp_amore_gen(bn_t x, gt_t e) {
 		pc_get_ord(n);
 		bn_rand_mod(x, n);
 
-#if FP_PRIME < 1536
 		gt_get_gen(e);
 		gt_exp(e, e, x);
-#else
-		pc_map(e, u, v);
-#endif
 	} RLC_CATCH_ANY {
 		result = RLC_ERR;
 	} RLC_FINALLY {
