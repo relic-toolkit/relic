@@ -490,7 +490,7 @@ void ep_map_sswum(ep_t p, const uint8_t *msg, size_t len) {
 		void (*const map_fn)(ep_t, const fp_t) = 
 				(ep_curve_is_ctmap() || abNeq0 ? ep_map_sswu : ep_map_svdw);
 
-		ep_map_sswum_impl(p, r, len, map_fn);
+		ep_map_sswum_impl(p, r, 2 * elm, map_fn);
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -538,9 +538,30 @@ void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 
 #endif
 
+size_t ep_map_rnd_size(void) {
+	const size_t elm = (FP_PRIME + ep_param_level() + 7) / 8;
+
+#if EP_MAP == BASIC || !defined(STRIP)
+	return elm;
+#elif EP_MAP == SSWUM || !defined(STRIP)
+	return 2 * elm;
+#elif EP_MAP == SWIFT || !defined(STRIP)
+	return 2 * elm + 1;
+#endif
+}
+
 void ep_map_rnd(ep_t p, const uint8_t *uniform_bytes, size_t len) {
+	/* Make sure that input is long enough for any of the hash functons. */
+	if (len < ep_map_rnd_size()) {
+		RLC_THROW(ERR_NO_BUFFER);
+		ep_set_infty(p);
+		return;
+	}
+
 #if EP_MAP == BASIC || !defined(STRIP)
 	ep_map_basic_impl(p, uniform_bytes, len);
+#elif EP_MAP == SSWUM || !defined(STRIP)
+	ep_map_swift_impl(p, uniform_bytes, len);
 #elif EP_MAP == SWIFT || !defined(STRIP)
 	/* figure out which hash function to use */
 	const int abNeq0 = (ep_curve_opt_a() != RLC_ZERO) &&
@@ -549,7 +570,5 @@ void ep_map_rnd(ep_t p, const uint8_t *uniform_bytes, size_t len) {
 			(ep_curve_is_ctmap() || abNeq0 ? ep_map_sswu : ep_map_svdw);
 
 	ep_map_sswum_impl(p, uniform_bytes, len, map_fn);
-#elif EP_MAP == SSWUM || !defined(STRIP)
-	ep_map_swift_impl(p, uniform_bytes, len);
 #endif
 }
