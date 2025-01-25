@@ -575,15 +575,15 @@ static void arith(void) {
 	}
 
 	BENCH_RUN("ep_map") {
-		uint8_t msg[5];
-		rand_bytes(msg, 5);
-		BENCH_ADD(ep_map(p, msg, 5));
+		uint8_t msg[4 * RLC_FP_BYTES];
+		rand_bytes(msg, ep_map_rnd_size());
+		BENCH_ADD(ep_map(p, msg, ep_map_rnd_size()));
 	} BENCH_END;
 
 	BENCH_RUN("ep_map_rnd") {
-		uint8_t msg[5];
-		rand_bytes(msg, 5);
-		BENCH_ADD(ep_map_rnd(p, msg, 5));
+		uint8_t msg[4 * RLC_FP_BYTES];
+		rand_bytes(msg, ep_map_rnd_size());
+		BENCH_ADD(ep_map_rnd(p, msg, ep_map_rnd_size()));
 	} BENCH_END;
 
 #if EP_MAP == BASIC || !defined(STRIP)

@@ -1012,6 +1012,7 @@
 #undef ep_map_basic
 #undef ep_map_sswum
 #undef ep_map_swift
+#undef ep_map_rnd_size
 #undef ep_map_rnd
 #undef ep_pck
 #undef ep_upk
@@ -1107,6 +1108,7 @@
 #define ep_map_basic 	RLC_PREFIX(ep_map_basic)
 #define ep_map_sswum 	RLC_PREFIX(ep_map_sswum)
 #define ep_map_swift 	RLC_PREFIX(ep_map_swift)
+#define ep_map_rnd_size 	RLC_PREFIX(ep_map_rnd_size)
 #define ep_map_rnd 	RLC_PREFIX(ep_map_rnd)
 #define ep_pck 	RLC_PREFIX(ep_pck)
 #define ep_upk 	RLC_PREFIX(ep_upk)
