@@ -1480,137 +1480,63 @@ int cp_mvbat_ans(gt_t *as, const g1_t p0, const g1_t *ps, const g2_t q0,
 int cp_mvbat_ver(gt_t *rs, const gt_t *as, const gt_t *e, size_t m);
 
 /**
- * Generates parameters for the AMORE batch pairing delegation protocol.
+ * Generates parameters for the AMORE batch pairing delegation protocol to
+ * compute m pairings.
  *
- * @param[out] r			- the randomness.
- * @param[out] u			- the mask in G_1.
- * @param[out] v			- the mask in G_2.
- * @param[out] e			- the precomputed value e(U1, U2).
- * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ * @param[out] r			- the secret key for the pairing delegation.
+ * @param[out] u			- the mask in G_1 for the pairing delegation.
+ * @param[out] v			- the mask in G_2 for the pairing delegation.
+ * @param[out] w			- the random point for the pairing delegation.
+ * @param[out] e			- the precomputed value e(U1, U2). 
  */
-int cp_ambat_gen(bn_t r, g1_t u, g2_t v, gt_t e);
+int cp_ambat_gen(bn_t r, g1_t u, g2_t v, g1_t w, gt_t e);
 
-/**
+/*
  * Executes the client-side request for the AMORE batch pairing delegation
  * protocol.
  *
- * @param[out] ls			- the challenges.
- * @param[out] rs			- the group elements computed by the client.
- * @param[out] a			- the element in G_1 computed by the client.
- * @param[out] b			- the element in G_2 computed by the client.
- * @param[out] c			- the element in G_2 computed by the client.
- * @param[in] r				- the randomness.
- * @param[in] p				- the first argument of the pairing.
- * @param[in] q				- the second arguments of the pairing.
- * @param[in] u				- the U1 precomputed value in G_1.
- * @param[in] v				- the U2 precomputed value in G_2.
- * @param[in] e				- the precomputed value e(U1, U2).
- * @param[in] m				- the number of pairings delegated in the batch.
+ * @param[out] ls			- the m scalars for the protocol.
+ * @param[out] rs			- the m points for the protocol.
+ * @param[out] a			- the first element in G_1.
+ * @param[out] b			- the second element in G_2.
+ * @param[out] d			- the addition of G_2 elements.
+ * @param[in] r				- the secret key for the pairing delegation.
+ * @param[in] u				- the mask in G_1 for the pairing delegation.
+ * @param[in] v				- the mask in G_2 for the pairing delegation.
+ * @param[in] w				- the random point for the pairing delegation.
+ * @param[in] m				- the number of pairings to compute.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_ambat_ask(bn_t *ls, g1_t *rs, g1_t a, g2_t b, g2_t c, const bn_t r, 
-		const g1_t p, const g2_t *q, const g1_t u, const g2_t v, const gt_t e,
-		size_t m);
-
+int cp_ambat_ask(bn_t *ls, g1_t *rs, g1_t a, g2_t b, g2_t d, const bn_t r,
+		const g1_t u, const g2_t v, const g1_t w, const gt_t e, const g1_t *p,
+		const g2_t *q, size_t m);
 /**
  * Executes the server-side response for the AMORE batch pairing delegation
  * protocol.
  *
- * @param[out] gs			- the group elements computed by the server.
- * @param[out] rs			- the group elements sent by the client.
- * @param[in] a				- the element in G_1 computed by the client.
- * @param[in] b				- the element in G_2 computed by the client.
- * @param[in] c				- the element in G_2 computed by the client.
- * @param[in] q				- the second arguments of the delegated pairings.
- * @param[in] m				- the number of pairings delegated in the batch.
+ * @param[out] gs			- the results computed by the server.
+ * @param[in] rs			- the m points in G_1 for the protocol.
+ * @param[in] a				- the first element in G_1.
+ * @param[in] b				- the second element in G_2.
+ * @param[in] d				- the addition of G_2 elements.
+ * @param[in] p				- the first argument inputs for the pairings.
+ * @param[in] q				- the second argument inputs for the pairings.
+ * @param[in] m				- the number of pairings to compute.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_ambat_ans(gt_t *gs, const g1_t *rs, const g1_t a, const g2_t b, 
-		const g2_t c, const g2_t *q, size_t m);
+int cp_ambat_ans(gt_t *gs, const g1_t *rs, const g1_t a, const g2_t b,
+		const g2_t d, const g1_t *p, const g2_t *q, size_t m);
 
 /**
  * Verifies the result of the AMORE batch pairing delegation protocol.
  *
- * @param[out] es			- the results of the computation.
- * @param[in] gs			- the group elements returned by the server.
- * @param[in] ls			- the challenges.
- * @param[in] e				- the precomputed value e(U1, U2).
- * @param[in] m				- the number of pairings delegated in the batch.
- * @return a boolean value indicating if the computation is correct.
- */
-int cp_ambat_ver(gt_t *es, const gt_t *gs, const bn_t *ls, const gt_t e,
-		size_t m);
-
-/**
- * Generates parameters for the AMORE delegation protocol to compute the
- * product of m pairings using a pairing delegation protocol.
- *
- * @param[out] r			- the random point in G_1.
- * @param[out] c			- the randomness for the batch AMORE protocol.
- * @param[out] u			- the mask in G_1 for batch AMORE.
- * @param[out] v			- the mask in G_2 for batch AMORE.
- * @param[out] e			- the precomputed value e(U1, U2). 
- */
-int cp_amprd_gen(g1_t r, bn_t c, g1_t u, g2_t v, gt_t e);
-
-/*
- * Executes the client-side request for the AMORE pairing product delegation
- * protocol.
- *
- * @param[out] ks			- the (l) keys for the batch AMORE protocol.
- * @param[out] ds			- the (l) points for the batch AMORE protocol.
- * @param[out] ls			- the (l * m) scalars for the protocol.
- * @param[out] rs			- the (l * m) points for the protocol.
- * @param[out] a			- the setup for the batch AMORE protocol.
- * @param[out] b			- the setup for the batch AMORE protocol.
- * @param[out] d			- the setup for the batch AMORE protocol.
- * @param[out] bs			- the row-wise addition of the second arguments.
- * @param[out] r			- the additional random point for the protocol.
- * @param[out] c			- the challenge for the pairing delegation.
- * @param[out] u			- the mask in G_1 for the pairing delegation.
- * @param[out] v			- the mask in G_2 for the pairing delegation.
- * @param[in] l				- the number of pairing products to compute.
- * @param[in] m				- the number of pairings per product to compute.
- * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
- */
-int cp_amprd_ask(bn_t *ks, g1_t *ds, bn_t *ls, g1_t *rs, g1_t a, g2_t b, g2_t d,
-		g2_t *bs, const g1_t c, const bn_t r, const g1_t u, const g2_t v,
-		gt_t e,  const g1_t *p, const g2_t *q, size_t l, size_t m);
-/**
- * Executes the server-side response for the AMORE pairing product delegation
- * protocol.
- *
- * @param[out] gs			- the results computed by the server.
- * @param[out] ts			- the group elements computed by the server.
- * @param[in] ds			- the (l) points for the batch AMORE protocol.
- * @param[in] rs			- the (l * m) points for the protocol.
- * @param[in] a				- the first element in G_1.
- * @param[in] b				- the first element in G_2.
- * @param[in] b				- the second element in G_2.
- * @param[in] p				- the first argument inputs for the pairings.
- * @param[in] q				- the second argument inputs for the pairings.
- * @param[in] l				- the number of pairing products to compute.
- * @param[in] m				- the number of pairings per product to compute.
- * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
- */
-int cp_amprd_ans(gt_t *gs, gt_t *ts, const g1_t *ds, const g1_t *rs,
-		const g1_t a, const g2_t b, const g2_t d, const g2_t *bs, const g1_t *p,
-		const g2_t *q,  size_t l, size_t m);
-
-/**
- * Verifies the result of the AMORE pairing delegation protocol.
- *
  * @param[out] gs			- the results of the computation.
- * @param[in,out] ts		- the group elements returned by the server.
- * @param[in] ks			- the pairing product keys.
- * @param[in] cs			- the challenges for the batch protocol.
+ * @param[in] ls			- the scalars for the batch protocol.
  * @param[in] e				- the precomputed value e(U1, U2).
- * @param[in] l				- the number of pairing products to compute.
- * @param[in] m				- the number of pairings per product to compute.
+ * @param[in] m				- the number of pairings to compute.
  * @return a boolean value indicating if the computation is correct.
  */
-int cp_amprd_ver(gt_t *gs, gt_t *ts, const bn_t *ks, const bn_t *ls,
-		const gt_t e, size_t l, size_t m);
+int cp_ambat_ver(gt_t *gs, const bn_t *ls, const gt_t e, size_t m);
 
 /**
  * Generates a master key for the SOKAKA identity-based non-interactive
