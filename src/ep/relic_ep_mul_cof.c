@@ -147,6 +147,8 @@ void ep_mul_cof(ep_t r, const ep_t p) {
 				break;
 #endif
 			default:
+				(void)u;
+				(void)v;
 				/* multiply by cofactor to get the correct group. */
 				ep_curve_get_cof(k);
 				ep_mul_big(r, p, k);

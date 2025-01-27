@@ -485,12 +485,10 @@
  * @param[in] P				- the first elliptic curve point.
  * @param[in] Q				- the second elliptic curve point.
  */
-#if PP_MAP == TATEP
+#if PP_MAP == TATEP || PP_MAP == OATEP
 #define pp_map_k1(R, P, Q)		pp_map_tatep_k1(R, P, Q)
 #elif PP_MAP == WEILP
 #define pp_map_k1(R, P, Q)		pp_map_weilp_k1(R, P, Q)
-#elif PP_MAP == OATEP
-#define pp_map_k1(R, P, Q)		pp_map_tatep_k1(R, P, Q)
 #endif
 
 /**
@@ -501,12 +499,10 @@
  * @param[in] P				- the first elliptic curve point.
  * @param[in] Q				- the second elliptic curve point.
  */
-#if PP_MAP == TATEP
+#if PP_MAP == TATEP || PP_MAP == OATEP
 #define pp_map_k2(R, P, Q)		pp_map_tatep_k2(R, P, Q)
 #elif PP_MAP == WEILP
 #define pp_map_k2(R, P, Q)		pp_map_weilp_k2(R, P, Q)
-#elif PP_MAP == OATEP
-#define pp_map_k2(R, P, Q)		pp_map_tatep_k2(R, P, Q)
 #endif
 
 /**

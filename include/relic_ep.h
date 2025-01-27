@@ -1289,6 +1289,13 @@ void ep_map_sswum(ep_t p, const uint8_t *msg, size_t len);
 void ep_map_swift(ep_t p, const uint8_t *msg, size_t len);
 
 /**
+ * Returns number of bytes required as input for secure hashing.
+ * 
+ @return the number of uniform bytes required for hashing.
+ */
+size_t ep_map_rnd_size(void);
+
+/**
  * Maps a random byte array to a point in a prime elliptic curve.
  *
  * @param[out] p			- the result.

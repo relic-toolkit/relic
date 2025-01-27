@@ -112,10 +112,8 @@ typedef struct {
 	fp_st y;
 	/** The third coordinate (projective representation). */
 	fp_st z;
-#if ED_ADD == EXTND || !defined(STRIP)
 	/** The forth coordinate (extended coordinates) */
 	fp_st t;
-#endif
 	/** Flag to indicate the coordinate system of this point. */
 	int coord;
 } ed_st;
