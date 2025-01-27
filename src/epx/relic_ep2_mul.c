@@ -124,8 +124,6 @@ static void ep2_mul_gls_imp(ep2_t r, const ep2_t p, const bn_t k) {
 
 #endif /* EP_MUL == LWNAF */
 
-#if EP_MUL == LWREG || !defined(STRIP)
-
 static void ep2_mul_reg_gls(ep2_t r, const ep2_t p, const bn_t k) {
 	size_t l;
 	bn_t n, _k[4], u;
@@ -243,7 +241,6 @@ static void ep2_mul_reg_gls(ep2_t r, const ep2_t p, const bn_t k) {
 	}
 }
 
-#endif /* EP_MUL == LWREG */
 #endif /* EP_ENDOM */
 
 #if defined(EP_PLAIN) || defined(EP_SUPER)
@@ -614,8 +611,6 @@ void ep2_mul_lwnaf(ep2_t r, const ep2_t p, const bn_t k) {
 
 #endif
 
-#if EP_MUL == LWREG || !defined(STRIP)
-
 void ep2_mul_lwreg(ep2_t r, const ep2_t p, const bn_t k) {
 	if (bn_is_zero(k) || ep2_is_infty(p)) {
 		ep2_set_infty(r);
@@ -633,8 +628,6 @@ void ep2_mul_lwreg(ep2_t r, const ep2_t p, const bn_t k) {
 	ep2_mul_reg_imp(r, p, k);
 #endif
 }
-
-#endif
 
 void ep2_mul_gen(ep2_t r, const bn_t k) {
 	if (bn_is_zero(k)) {

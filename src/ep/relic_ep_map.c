@@ -554,9 +554,9 @@ void ep_map_rnd(ep_t p, const uint8_t *uniform_bytes, size_t len) {
 
 #if EP_MAP == BASIC
 	ep_map_basic_impl(p, uniform_bytes, len);
-#elif EP_MAP == SSWUM
-	ep_map_swift_impl(p, uniform_bytes, len);
 #elif EP_MAP == SWIFT
+	ep_map_swift_impl(p, uniform_bytes, len);
+#elif EP_MAP == SSWUM
 	/* figure out which hash function to use */
 	const int abNeq0 = (ep_curve_opt_a() != RLC_ZERO) &&
 			(ep_curve_opt_b() != RLC_ZERO);
