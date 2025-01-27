@@ -541,7 +541,13 @@ void ep_map_swift(ep_t p, const uint8_t *msg, size_t len) {
 size_t ep_map_rnd_size(void) {
 	const size_t elm = (FP_PRIME + ep_param_level() + 7) / 8;
 
+#if EP_MAP == BASIC
+	return elm;
+#elif EP_MAP == SSWUM
+	return 2 * elm;
+#elif EP_MAP == SWIFT
 	return 2 * elm + 1;
+#endif
 }
 
 void ep_map_rnd(ep_t p, const uint8_t *uniform_bytes, size_t len) {
