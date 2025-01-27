@@ -802,8 +802,9 @@ void ep2_curve_set_twist(int type) {
 		fp2_new(u);
 		bn_new(r);
 		bn_new(h);
-
+		
 		switch (ep_param_get()) {
+#if defined(EP_ENDOM)
 #if FP_PRIME == 158
 			case BN_P158:
 				ASSIGN(BN_P158);
@@ -866,6 +867,7 @@ void ep2_curve_set_twist(int type) {
 				ASSIGN(B12_P1150);
 				break;
 #endif
+#endif /* EP_ENDOM */
 			default:
 				(void)str;
 				RLC_THROW(ERR_NO_VALID);
