@@ -1425,6 +1425,63 @@ int cp_amore_ans(gt_t g[2], const bn_t d, const g1_t a1, const g2_t b1,
 int cp_amore_ver(gt_t r, const gt_t g[2], const bn_t c, const gt_t e,
 		int priva, int privb);
 
+/** 
+ * Generates parameters for the DCKC delegated batch pairing protocol.
+ *
+ * @param[out] u			- the random point in G_1.
+ * @param[out] v			- the random point in G_2.
+ * @param[out] e			- the result of e(U, V).
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int cp_pdbat_gen(g1_t u, g2_t v, gt_t e);
+
+/**
+ * Executes the client-side request for the DCKC batch pairing delegation
+ * protocol.
+ *
+ * @param[out] l			- the random scalars.
+ * @param[out] b			- the random challenges.
+ * @param[out] z			- the client-side element in G_1.
+ * @param[out] c			- the client-side element in G_2.
+ * @param[in] u				- the setup point in G_1.
+ * @param[in] v				- the setup point in G_2.
+ * @param[in] p				- the first arguments of the pairing.
+ * @param[in] q				- the second argument of the pairing.
+ * @param[in] m				- the number of pairings delegated in the batch.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int cp_pdbat_ask(bn_t *l, bn_t *b, g1_t *z, g2_t c, const g1_t u, const g2_t v,
+		const g1_t *p, const g2_t *q, size_t m);
+
+/**
+ * Executes the server-side response for the DCKC batch pairing delegation
+ * protocol.
+ *
+ * @param[out] w			- the pairing results returned by the server.
+ * @param[in] z				- the client-side element in G_1.
+ * @param[in] c				- the client-side element in G_2.
+ * @param[in] u				- the setup point in G_1.
+ * @param[in] p				- the first arguments of the pairing.
+ * @param[in] q				- the second argument of the pairing.
+ * @param[in] m				- the number of pairings delegated in the batch.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int cp_pdbat_ans(gt_t *w, const g1_t *z, const g2_t c, const g1_t u,
+		const g1_t *p, const g2_t *q, size_t m);
+
+/**
+ * Verifies the result of the DCKC batch pairing delegation protocol.
+ *
+ * @param[out] rs			- the results of the computation.
+ * @param[in] w				- the pairing results returned by the server.
+ * @param[in] bs			- the random challenges.
+ * @param[in] e				- the setup pairing result.
+ * @param[in] m				- the number of pairings delegated in the batch.
+ * @return a boolean value indicating if the computation is correct.
+ */
+int cp_pdbat_ver(gt_t *rs, const gt_t *w, const bn_t *b, const gt_t e,
+		size_t m);
+
 /**
  * Generates parameters for the Mefenza-Vergnaud (MV) delegated batch pairing
  * protocol.

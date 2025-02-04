@@ -977,6 +977,22 @@ static void pdprv(void) {
 		BENCH_ADD(cp_lvprv_ver(r, g, r1, e));
 	} BENCH_END;
 
+	BENCH_RUN("cp_pdbat_gen (AGGS)") {
+		BENCH_ADD(cp_pdbat_gen(u1[0], u2[0], e[0]));
+	} BENCH_END;
+
+	BENCH_RUN("cp_pdbat_ask (AGGS)") {
+		BENCH_ADD(cp_pdbat_ask(ls, b, rs, v2[0], u1[0], u2[0], p, q, AGGS));
+	} BENCH_END;
+
+	BENCH_RUN("cp_pdbat_ans (AGGS)") {
+		BENCH_ADD(cp_pdbat_ans(ts, rs, v2[0], u1[0], p, q, AGGS));
+	} BENCH_END;
+
+	BENCH_RUN("cp_pdbat_ver (AGGS)") {
+		BENCH_ADD(cp_pdbat_ver(g, ts, b, e[0], AGGS));
+	} BENCH_END;
+
 	BENCH_RUN("cp_mvbat_gen (AGGS)") {
 		BENCH_ADD(cp_mvbat_gen(ls, u2[0], s, AGGS));
 	} BENCH_END;
