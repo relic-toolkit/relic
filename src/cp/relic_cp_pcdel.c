@@ -118,6 +118,7 @@ int cp_pdpub_ver(gt_t r, const gt_t g[3], const bn_t c, const gt_t e) {
 		gt_mul(t, t, e);
 
 		if (!result || gt_cmp(t, g[1]) != RLC_EQ) {
+			result = 0;
 			gt_set_unity(r);
 		} else {
 			gt_copy(r, g[0]);
@@ -231,6 +232,7 @@ int cp_pdprv_ver(gt_t r, const gt_t g[4], const bn_t c, const gt_t e[2]) {
 		gt_mul(t, t, e[1]);
 
 		if (!result || gt_cmp(t, g[3]) != RLC_EQ) {
+			result = 0;
 			gt_set_unity(r);
 		}
 	} RLC_CATCH_ANY {
@@ -350,6 +352,7 @@ int cp_lvpub_ver(gt_t r, const gt_t g[2], const bn_t c, const gt_t e) {
 		gt_mul(t, t, g[1]);
 
 		if (!result || gt_cmp(t, e) != RLC_EQ) {
+			result = 0;
 			gt_set_unity(r);
 		} else {
 			gt_copy(r, g[0]);
@@ -486,6 +489,7 @@ int cp_lvprv_ver(gt_t r, const gt_t g[4], const bn_t c, const gt_t e[2]) {
 		gt_mul(t, t, e[1]);
 
 		if (!result || gt_cmp(t, g[2]) != RLC_EQ) {
+			result = 0;
 			gt_set_unity(r);
 		}
 	} RLC_CATCH_ANY {
@@ -546,9 +550,9 @@ int cp_amore_ask(bn_t d, g1_t a1, g2_t b1, g1_t a2, g2_t b2, bn_t c, bn_t r,
 		g2_mul_gen(v, d);
 
 		if (ep_curve_is_pairf() == EP_BN || ep_curve_embed() <= 2) {
-			bn_rand(c, RLC_POS, RAND_DIST + BND_STORE);
+			bn_rand(c, RLC_POS, RAND_DIST/2 + BND_STORE - 1);
 		} else {
-			bn_rand_frb(c, &(core_get()->par), n, RAND_DIST + BND_STORE);
+			bn_rand_frb(c, &(core_get()->par), n, RAND_DIST/2 + BND_STORE - 1);
 		}
 
 		bn_rand_mod(r, n);
@@ -685,6 +689,7 @@ int cp_amore_ver(gt_t r, const gt_t g[2], const bn_t c, const gt_t e,
 			gt_mul(t, r, g[1]);
 		}
 		if (!result || gt_cmp(e, t) != RLC_EQ) {
+			result = 0;
 			gt_set_unity(r);
 		}
 	} RLC_CATCH_ANY {
@@ -777,7 +782,7 @@ int cp_mvbat_ver(gt_t *rs, const gt_t *as, const gt_t *bs, const bn_t *b,
 		gt_new(w);
 		gt_new(alpha);
 
-		for (size_t i = 0; i <= m; i++) {
+		for (size_t i = 0; i < m; i++) {
 			result &= gt_is_valid(as[i]);
 			result &= gt_is_valid(bs[i]);
 		}
@@ -798,6 +803,7 @@ int cp_mvbat_ver(gt_t *rs, const gt_t *as, const gt_t *bs, const bn_t *b,
 		}
 
 		if (!result || (gt_cmp(v, alpha) != RLC_EQ)) {
+			result = 0;
 			for (size_t i = 0; i < m; i++) {
 				gt_set_unity(rs[i]);
 			}
@@ -852,6 +858,7 @@ int cp_ambat_ask(bn_t *ls, g1_t *rs, g1_t a, g2_t b, g2_t d, const bn_t r,
 		const g2_t *q, size_t m) {
 	bn_t n;
 	int result = RLC_OK;
+	size_t eps = RAND_DIST/2 + BND_STORE - 1;
 
 	bn_null(n);
 
@@ -867,9 +874,9 @@ int cp_ambat_ask(bn_t *ls, g1_t *rs, g1_t a, g2_t b, g2_t d, const bn_t r,
 
 		for (size_t i = 0; i < m; i++) {
 			if (ep_curve_is_pairf() == EP_BN || ep_curve_embed() <= 2) {
-				bn_rand(ls[i], RLC_POS, RAND_DIST + BND_STORE);
+				bn_rand(ls[i], RLC_POS, eps);
 			} else {
-				bn_rand_frb(ls[i], &(core_get()->par), n, RAND_DIST + BND_STORE);
+				bn_rand_frb(ls[i], &(core_get()->par), n, eps);
 			}
 			g1_mul(rs[i], p[i], ls[i]);
 			g1_add(rs[i], rs[i], w);
@@ -957,6 +964,7 @@ int cp_ambat_ver(gt_t *gs, const bn_t *ls, const gt_t e, size_t m) {
 		result &= gt_is_valid(gs[m]);
 
 		if (!result) {
+			result = 0;
 			for (size_t i = 0; i < m; i++) {
 				gt_set_unity(gs[i]);
 			}

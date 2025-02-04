@@ -877,7 +877,7 @@ static void pdpub(void) {
 
 static void pdprv(void) {
 	bn_t r1, r2[3], ls[AGGS], b[AGGS];
-	g1_t fs[AGGS], p[AGGS], u1[2], v1[3], rs[AGGS];
+	g1_t p[AGGS], u1[2], v1[3], rs[AGGS];
 	g2_t q[AGGS], s[AGGS], qs[AGGS], u2[2], v2[4], w2[4];
 	gt_t e[2], r, ts[AGGS + 1], g[RLC_MAX(4, AGGS + 1)];
 
@@ -912,7 +912,6 @@ static void pdprv(void) {
 		g1_null(p[i]);
 		g2_null(q[i]);
 		g1_null(rs[i]);
-		g1_null(fs[i]);
 		g2_null(s[i]);
 		g2_null(qs[i]);
 		gt_null(ts[i]);
@@ -924,7 +923,6 @@ static void pdprv(void) {
 		g1_rand(p[i]);
 		g2_rand(q[i]);
 		g1_new(rs[i]);
-		g1_new(fs[i]);
 		g2_new(s[i]);
 		g2_new(qs[i]);
 		gt_new(ts[i]);
@@ -996,11 +994,11 @@ static void pdprv(void) {
 	} BENCH_END;
 
 	BENCH_RUN("cp_ambat_gen (AGGS)") {
-		BENCH_ADD(cp_ambat_gen(r1, u1[0], u2[0], fs[0], e[0]));
+		BENCH_ADD(cp_ambat_gen(r1, u1[0], u2[0], u1[1], e[0]));
 	} BENCH_END;
 
 	BENCH_RUN("cp_ambat_ask (AGGS)") {
-		BENCH_ADD(cp_ambat_ask(ls, rs, v1[0], v2[0], w2[0], r1, u1[0], u2[0], fs[0], e[0], p, q, AGGS));
+		BENCH_ADD(cp_ambat_ask(ls, rs, v1[0], v2[0], w2[0], r1, u1[0], u2[0], u1[1], e[0], p, q, AGGS));
 	} BENCH_END;
 
 	BENCH_RUN("cp_ambat_ans (AGGS)") {
@@ -1032,7 +1030,6 @@ static void pdprv(void) {
 		g1_free(p[i]);
 		g2_free(q[i]);
 		g1_free(rs[i]);
-		g1_free(fs[i]);
 		g2_free(s[i]);
 		g2_free(qs[i]);
 		gt_free(ts[i]);
