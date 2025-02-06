@@ -407,10 +407,10 @@ int cp_ambat_ver(gt_t *gs, const bn_t *ls, const gt_t e, size_t m) {
 		for (size_t i = 0; i < m; i++) {
 			gt_exp(u, gs[i], ls[i]);
 			gt_mul(t, t, u);
+			result &= gt_is_valid(gs[i]);
 		}
 		gt_mul(t, t, e);
 		result &= (gt_cmp(t, gs[m]) == RLC_EQ);
-		result &= gt_is_valid(gs[m]);
 
 		if (!result) {
 			for (size_t i = 0; i < m; i++) {
