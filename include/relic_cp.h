@@ -1367,6 +1367,44 @@ int cp_lvprv_ans(gt_t g[4], const g1_t v1[3], const g2_t w2[4]);
 int cp_lvprv_ver(gt_t r, const gt_t g[4], const bn_t c, const gt_t e[2]);
 
 /**
+ * Executes the client-side request for the CDS pairing delegation protocol.
+ *
+ * @param[out] t			- the inverse product of scalars (challenge).
+ * @param[out] t1			- the group element in G_1.
+ * @param[out] t2			- the group element in G_2.
+ * @param[out] e			- the precomputed value e(T1, T2).
+ * @param[in] p				- the first argument of the pairing.
+ * @param[in] q				- the second argument of the pairing.
+ * @return a boolean value indicating if the computation is correct.
+ */
+int cp_cades_ask(bn_t t, g1_t t1, g2_t t2, gt_t e, const g1_t p,
+		const g2_t q);
+
+/**
+ * Executes the server-side response for the CDS pairing delegation protocol.
+ *
+ * @param[out] g			- the group elements computed by the server.
+ * @param[out] t1			- the group element in G_1.
+ * @param[out] t2			- the group element in G_2.
+ * @param[in] p				- the first argument of the pairing.
+ * @param[in] q				- the second argument of the pairing.
+ * @return a boolean value indicating if the computation is correct.
+ */
+int cp_cades_ans(gt_t g[2], const g1_t t1, const g2_t t2, const g1_t p,
+		const g2_t q);
+
+/**
+ * Verifies the result of the CDS pairing delegation protocol.
+ *
+ * @param[out] r			- the result of the computation.
+ * @param[in] g				- the group elements returned by the server.
+ * @param[in] t				- the challenge.
+ * @param[in] e				- the precomputed value e(T1, T2).
+ * @return a boolean value indicating if the computation is correct.
+ */
+int cp_cades_ver(gt_t r, const gt_t g[2], const bn_t t, const gt_t e);
+
+/**
  * Generates parameters for the AMORE pairing delegation protocol.
  *
  * @param[out] x			- the secret key.

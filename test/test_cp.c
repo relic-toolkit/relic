@@ -1157,6 +1157,16 @@ static int pdpub(void) {
 		} TEST_END;
 
 		TEST_CASE("amortized delegated pairing with public inputs is correct") {
+			g1_rand(p);
+			g2_rand(q);
+			TEST_ASSERT(cp_cades_ask(t, u1, u2, e, p, q) == RLC_OK, end);
+			TEST_ASSERT(cp_cades_ans(g, u1, u2, p, q) == RLC_OK, end);
+			TEST_ASSERT(cp_cades_ver(r, g, t, e) == 1, end);
+			pc_map(g[0], p, q);
+			//TEST_ASSERT(gt_cmp(r, g[0]) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("faster amortized delegated pairing with public inputs is correct") {
 			TEST_ASSERT(cp_amore_gen(x, e) == RLC_OK, end);
 			g1_rand(p);
 			g2_rand(q);

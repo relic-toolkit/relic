@@ -49,6 +49,111 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
+int cp_cades_ask(bn_t t, g1_t t1, g2_t t2, gt_t e, const g1_t p,
+		const g2_t q) {
+	bn_t x1, x2, n;
+	g1_t a1;
+	g2_t a2;
+	int result = RLC_OK;
+
+	bn_null(n);
+	bn_null(x1);
+	bn_null(x2);
+	g1_null(a1);
+	g2_null(a2);
+
+	RLC_TRY {
+		bn_new(n);
+		bn_new(x1);
+		bn_new(x2);
+		g1_new(a1);
+		g1_new(a2);
+
+		pc_get_ord(n);
+		bn_rand_mod(x1, n);
+		bn_rand_mod(x2, n);
+		g1_mul_gen(a1, x1);
+		g2_mul_gen(a2, x2);
+
+		bn_mul(t, x1, x2);
+		bn_mod(t, t, n);
+		gt_exp_gen(e, t);
+		bn_mod_inv(t, t, n);
+
+		bn_mod_inv(x2, x2, n);
+		bn_mod_inv(x1, x1, n);
+		g1_mul(t1, p, x2);
+		g1_add(t1, t1, a1);
+		g1_norm(t1, t1);
+		g2_mul(t2, q, x1);
+		g2_add(t2, t2, a2);
+		g2_norm(t2, t2);
+	}
+	RLC_CATCH_ANY {
+		result = RLC_ERR;
+	}
+	RLC_FINALLY {
+		bn_free(n);
+		bn_free(x1);
+		bn_free(x2);
+		g1_free(a1);
+		g2_free(a2);
+	}
+	return result;
+}
+
+int cp_cades_ans(gt_t g[2], const g1_t t1, const g2_t t2, const g1_t p,
+		const g2_t q) {
+	g1_t ps[3];
+	g2_t qs[3];
+	int result = RLC_OK;
+
+	RLC_TRY {
+		for (size_t i = 0; i < 3; i++) {
+			g1_null(ps[i]);
+			g2_null(qs[i]);
+			g1_new(ps[i]);
+			g2_new(qs[i]);
+		}
+
+		g1_copy(ps[0], t1);
+		g1_get_gen(ps[1]);
+		g1_neg(ps[2], p);
+		g2_copy(qs[0], t2);
+		g2_neg(qs[1], q);
+		g2_get_gen(qs[2]);
+		pc_map_sim(g[0], ps, qs, 3);
+
+		pc_map(g[1], p, q);
+	}
+	RLC_CATCH_ANY {
+		result = RLC_ERR;
+	}
+	RLC_FINALLY {
+		bn_free(n);
+		bn_free(t);
+		g1_free(a1);
+		g2_free(a2);
+	}
+	return result;
+}
+
+int cp_cades_ver(gt_t r, const gt_t g[2], const bn_t t, const gt_t e) {
+	int result = 1;
+
+	result &= gt_is_valid(g[1]);
+	gt_exp(r, g[1], t);
+	gt_mul(r, r, e);
+	result &= (gt_cmp(g[0], r) == RLC_EQ);
+
+	gt_copy(r, g[1]);
+
+	if (!result) {
+		gt_set_unity(r);
+	}
+	return result;
+}
+
 int cp_pdpub_gen(bn_t c, bn_t r, g1_t u1, g2_t u2, g2_t v2, gt_t e) {
 	bn_t n;
 	int result = RLC_OK;
@@ -118,10 +223,9 @@ int cp_pdpub_ver(gt_t r, const gt_t g[3], const bn_t c, const gt_t e) {
 		gt_mul(t, t, e);
 
 		result &= (gt_cmp(t, g[1]) == RLC_EQ);
+		gt_copy(r, g[0]);
 		if (!result) {
 			gt_set_unity(r);
-		} else {
-			gt_copy(r, g[0]);
 		}
 	} RLC_CATCH_ANY {
 		result = RLC_ERR;

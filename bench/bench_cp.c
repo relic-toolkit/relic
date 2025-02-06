@@ -788,6 +788,27 @@ static void pdpub(void) {
 		BENCH_ADD(cp_lvpub_ver(r, g, r1, e));
 	} BENCH_END;
 
+	BENCH_RUN("cp_cades_ask") {
+		g1_rand(p);
+		g2_rand(q);
+		BENCH_ADD(cp_cades_ask(t, u1, u2, e, p, q));
+	} BENCH_END;
+
+	BENCH_RUN("cp_cades_ans") {
+		g1_rand(p);
+		g2_rand(q);
+		BENCH_ADD(cp_cades_ans(g, u1, u2, p, q));
+	} BENCH_END;
+
+	BENCH_RUN("cp_cades_ver") {
+		g1_rand(p);
+		g2_rand(q);
+		cp_cades_ask(t, u1, u2, e, p, q);
+		cp_cades_ans(g, u1, u2, p, q);
+		BENCH_ADD(cp_cades_ver(r, g, t, e));
+	} BENCH_END;
+
+
 	BENCH_RUN("cp_amore_gen") {
 		BENCH_ADD(cp_amore_gen(x, e));
 	} BENCH_END;
