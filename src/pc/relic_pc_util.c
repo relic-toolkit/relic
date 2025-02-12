@@ -114,19 +114,23 @@ int g1_is_valid(const g1_t a) {
 				case EP_B24:
 				case EP_B48:
 					/* Check [\psi(P) == [z^2 - 1]P. */
-					bn_sqr(n, n);
+					g1_mul_any(u, a, n);
+					g1_mul_any(u, u, n);
 					if (ep_curve_is_pairf() == EP_B24) {
 						/* Check [\psi(P) == [z^4 - 1]P. */
-						bn_sqr(n, n);
+						g1_mul_any(u, u, n);
+						g1_mul_any(u, u, n);
 					}
 					if (ep_curve_is_pairf() == EP_B48) {
 						/* Check [\psi(P) == [z^8 - 1]P. */
-						bn_sqr(n, n);
-						bn_sqr(n, n);
+						g1_mul_any(u, u, n);
+						g1_mul_any(u, u, n);
+						g1_mul_any(u, u, n);
+						g1_mul_any(u, u, n);
 					}
-					bn_sub_dig(n, n, 1);
-					g1_mul_any(u, a, n);
+					g1_neg(u, u);
 					ep_psi(v, a);
+					ep_psi(v, v);
 					r = g1_on_curve(a) && (g1_cmp(v, u) == RLC_EQ);
 					break;
 				/* if (u % 2) == 0, check (u**4)*\psi(P) == P
