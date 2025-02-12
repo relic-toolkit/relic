@@ -127,6 +127,8 @@ int g1_is_valid(const g1_t a) {
 						g1_mul_any(u, u, n);
 						g1_mul_any(u, u, n);
 						g1_mul_any(u, u, n);
+						g1_mul_any(u, u, n);
+						g1_mul_any(u, u, n);
 					}
 					g1_neg(u, u);
 					ep_psi(v, a);
