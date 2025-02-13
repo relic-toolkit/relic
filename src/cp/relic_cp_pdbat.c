@@ -312,37 +312,40 @@ int cp_ambat_ask(bn_t *r, g1_t *c, g1_t x, g2_t y, g2_t d, g1_t u, g2_t v,
 		pc_get_ord(n);
 		/* Sample r from Z_q* and compute U = [z]P. */
 		bn_rand_mod(z, n);
-		g1_mul_gen(u, z);
 		/* Compute V = [s/z]Q. */
 		bn_mod_inv(t, z, n);
 		bn_mul(t, t, s);
 		bn_mod(t, t, n);
-		g2_mul_gen(v, t);
 
 		if (m == 1) {
 			g1_copy(c[0], p[0]);
-			g1_sub(x, u, p[0]);
-			g1_mul(x, x, t);
+			g2_mul_gen(v, t);
+			bn_sub(t, n, t);
+			g1_mul_sim_gen(x, s, p[0], t);
+			
+			g2_rand(w2);
 			if (ep_curve_is_pairf() == EP_BN || ep_curve_embed() <= 2) {
 				bn_rand(r[0], RLC_POS, eps);
 			} else {
 				bn_rand_frb(r[0], &(core_get()->par), n, eps);
 			}
-			g2_rand(w2);
 			g2_mul(d, q[0], r[0]);
 			g2_add(d, d, w2);
 			g2_sub(y, v, w2);
 			g2_norm(y, y);
 		} else {
+			g1_mul_gen(u, z);
 			g1_rand(w1);
 			g1_sub(x, u, w1);
 			g1_norm(x, x);
+			
 			g2_copy(d, q[0]);
 			for (size_t j = 1; j < m; j++) {
 				g2_add(d, d, q[j]);
 			}
-			g2_sub(y, v, d);
-			g2_mul(y, y, z);
+			g2_neg(d, d);
+			g2_mul_sim_gen(y, s, d, z);
+			g2_neg(d, d);
 
 			for (size_t i = 0; i < m; i++) {
 				if (ep_curve_is_pairf() == EP_BN || ep_curve_embed() <= 2) {
