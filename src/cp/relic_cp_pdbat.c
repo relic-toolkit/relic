@@ -292,26 +292,24 @@ int cp_ambat_gen(bn_t s, gt_t e) {
 int cp_ambat_ask(bn_t *r, g1_t *c, g1_t x, g2_t y, g2_t d, g1_t u, g2_t v,
 		const bn_t s, const gt_t e, const g1_t *p, const g2_t *q, size_t m) {
 	bn_t n, t, z;
-	g1_t w1;
-	g2_t w2;
+	g1_t w;
 	int result = RLC_OK;
 	size_t eps = RAND_DIST/2 + BND_STORE - 1;
 
 	bn_null(n);
 	bn_null(t);
 	g1_null(w1);
-	g2_null(w2);
 
 	RLC_TRY {
 		bn_new(n);
 		bn_new(t);
 		bn_new(z);
-		g1_new(w1);
-		g2_new(w2);
+		g1_new(w);
 
 		pc_get_ord(n);
 		/* Sample r from Z_q* and compute U = [z]P. */
 		bn_rand_mod(z, n);
+		g1_mul_gen(u, z);
 		/* Compute V = [s/z]Q. */
 		bn_mod_inv(t, z, n);
 		bn_mul(t, t, s);
@@ -319,33 +317,28 @@ int cp_ambat_ask(bn_t *r, g1_t *c, g1_t x, g2_t y, g2_t d, g1_t u, g2_t v,
 
 		if (m == 1) {
 			g1_copy(c[0], p[0]);
-			g2_mul_gen(v, t);
-			bn_sub(t, n, t);
-			g1_mul_sim_gen(x, s, p[0], t);
-			
-			g2_rand(w2);
+			g1_sub(x, u, p[0]);
+			g1_mul(x, x, t);
 			if (ep_curve_is_pairf() == EP_BN || ep_curve_embed() <= 2) {
 				bn_rand(r[0], RLC_POS, eps);
 			} else {
 				bn_rand_frb(r[0], &(core_get()->par), n, eps);
 			}
-			g2_mul(d, q[0], r[0]);
-			g2_add(d, d, w2);
-			g2_sub(y, v, w2);
-			g2_norm(y, y);
+			bn_rand_mod(z, n);
+			g2_mul_sim_gen(d, z, q[0], r[0]);
+			bn_sub(t, t, z);
+			g2_mul_gen(y, t);
 		} else {
-			g1_mul_gen(u, z);
-			g1_rand(w1);
-			g1_sub(x, u, w1);
+			g1_rand(w);
+			g1_sub(x, u, w);
 			g1_norm(x, x);
-			
 			g2_copy(d, q[0]);
 			for (size_t j = 1; j < m; j++) {
 				g2_add(d, d, q[j]);
 			}
-			g2_neg(d, d);
-			g2_mul_sim_gen(y, s, d, z);
-			g2_neg(d, d);
+			g2_mul_gen(v, t);
+			g2_sub(y, v, d);
+			g2_mul(y, y, z);
 
 			for (size_t i = 0; i < m; i++) {
 				if (ep_curve_is_pairf() == EP_BN || ep_curve_embed() <= 2) {
@@ -354,7 +347,7 @@ int cp_ambat_ask(bn_t *r, g1_t *c, g1_t x, g2_t y, g2_t d, g1_t u, g2_t v,
 					bn_rand_frb(r[i], &(core_get()->par), n, eps);
 				}
 				g1_mul(c[i], p[i], r[i]);
-				g1_add(c[i], c[i], w1);
+				g1_add(c[i], c[i], w);
 				result &= (g1_is_infty(p[i]) == 0);
 				result &= (g2_is_infty(q[i]) == 0);
 				result &= (g1_is_infty(c[i]) == 0);
@@ -374,8 +367,7 @@ int cp_ambat_ask(bn_t *r, g1_t *c, g1_t x, g2_t y, g2_t d, g1_t u, g2_t v,
 		bn_free(n);
 		bn_free(t);
 		bn_free(z);
-		g1_free(w1);
-		g2_free(w2);
+		g1_free(w);
 	}
 	return result;
 }
