@@ -441,13 +441,12 @@ int cp_ambat_ver(gt_t *gs, const bn_t *c, const gt_t e, size_t m) {
 		gt_new(t);
 		gt_new(u);
 
-		gt_set_unity(t);
+		gt_copy(t, e);
 		for (size_t i = 0; i < m; i++) {
 			gt_exp(u, gs[i], c[i]);
 			gt_mul(t, t, u);
 			result &= gt_is_valid(gs[i]);
 		}
-		gt_mul(t, t, e);
 		result &= (gt_cmp(t, gs[m]) == RLC_EQ);
 
 		if (!result) {
