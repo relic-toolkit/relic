@@ -1134,7 +1134,17 @@ static int pdpub(void) {
 		gt_new(g[1]);
 		gt_new(g[2]);
 
-		TEST_CASE("delegated pairing computation with public inputs is correct") {
+		TEST_CASE("delegated pairing with public inputs is correct") {
+			g1_rand(p);
+			g2_rand(q);
+			TEST_ASSERT(cp_cades_ask(t, u1, u2, e, p, q) == RLC_OK, end);
+			TEST_ASSERT(cp_cades_ans(g, u1, u2, p, q) == RLC_OK, end);
+			TEST_ASSERT(cp_cades_ver(r, g, t, e) == 1, end);
+			pc_map(g[0], p, q);
+			TEST_ASSERT(gt_cmp(r, g[0]) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("preprocessed pairing computation with public inputs is correct") {
 			TEST_ASSERT(cp_pdpub_gen(r1, r2, u1, u2, v2, e) == RLC_OK, end);
 			g1_rand(p);
 			g2_rand(q);
@@ -1156,25 +1166,13 @@ static int pdpub(void) {
 			TEST_ASSERT(gt_cmp(r, e) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_CASE("amortized delegated pairing with public inputs is correct") {
-			g1_rand(p);
-			g2_rand(q);
-			TEST_ASSERT(cp_cades_ask(t, u1, u2, e, p, q) == RLC_OK, end);
-			TEST_ASSERT(cp_cades_ans(g, u1, u2, p, q) == RLC_OK, end);
-			TEST_ASSERT(cp_cades_ver(r, g, t, e) == 1, end);
-			pc_map(g[0], p, q);
-			//TEST_ASSERT(gt_cmp(r, g[0]) == RLC_EQ, end);
-		} TEST_END;
-
-		TEST_CASE("faster amortized delegated pairing w/ public inputs is correct") {
-			TEST_ASSERT(cp_amore_gen(x, e) == RLC_OK, end);
-			g1_rand(p);
-			g2_rand(q);
-			TEST_ASSERT(cp_amore_ask(t, v1, v2, w1, w2, r1, r2, x, p, q, 0, 0) == RLC_OK, end);
-			TEST_ASSERT(cp_amore_ans(g, t, v1, v2, w1, w2, 0, 0) == RLC_OK, end);
-			TEST_ASSERT(cp_amore_ver(r, g, r1, e, 0, 0) == 1, end);
-			pc_map(g[0], p, q);
-			TEST_ASSERT(gt_cmp(r, g[0]) == RLC_EQ, end);
+		TEST_CASE("amortized delegated batch pairing is correct") {
+			TEST_ASSERT(cp_amore_gen(r1, e) == RLC_OK, end);
+			TEST_ASSERT(cp_amore_ask(&r2, &w1, v1, v2, w2, u1, u2, r1, e, &p, &q, 1) == RLC_OK, end);
+			TEST_ASSERT(cp_amore_ans(g, &w1, v1, v2, w2, &p, &q, 1) == RLC_OK, end);
+			TEST_ASSERT(cp_amore_ver(g, &r2, e, 1) == 1, end);
+			pc_map(e, p, q);
+			TEST_ASSERT(gt_cmp(e, g[0]) == RLC_EQ, end);
 		} TEST_END;
 	} RLC_CATCH_ANY {
 		RLC_ERROR(end);
@@ -1268,25 +1266,6 @@ static int pdprv(void) {
 			TEST_ASSERT(cp_lvprv_ver(r, g, r1, e) == 1, end);
 			pc_map(e[0], p, q);
 			TEST_ASSERT(gt_cmp(r, e[0]) == RLC_EQ, end);
-		} TEST_END;
-
-		TEST_CASE("amortized delegated pairing with private inputs is correct") {
-			TEST_ASSERT(cp_amore_gen(r2[2], e[0]) == RLC_OK, end);
-			for (int pa = 0; pa < 2; pa++) {
-				for (int pb = 0; pb < 2; pb++) {
-					if (pa == 0 && pb == 0) {
-						/* Public inputs has been tested before. */
-						continue;
-					}
-					g1_rand(p);
-					g2_rand(q);
-					TEST_ASSERT(cp_amore_ask(r2[1], u1[0], u2[0], u1[1], u2[1], r1, r2[0], r2[2], p, q, pa, pb) == RLC_OK, end);
-					TEST_ASSERT(cp_amore_ans(g, r2[1], u1[0], u2[0], u1[1], u2[1], pa, pb) == RLC_OK, end);
-					TEST_ASSERT(cp_amore_ver(r, g, r1, e[0], pa, pb) == 1, end);
-					pc_map(g[0], p, q);
-					TEST_ASSERT(gt_cmp(r, g[0]) == RLC_EQ, end);
-				}
-			}
 		} TEST_END;
 	} RLC_CATCH_ANY {
 		RLC_ERROR(end);
@@ -1390,16 +1369,16 @@ static int pdbat(void) {
 		} TEST_END;
 
 		TEST_CASE("amortized delegated batch pairing is correct") {
-			TEST_ASSERT(cp_ambat_gen(r, e) == RLC_OK, end);
-			TEST_ASSERT(cp_ambat_ask(ls, rs, v1, v2, w2, u1, u2, r, e, p, q, 1) == RLC_OK, end);
-			TEST_ASSERT(cp_ambat_ans(g, rs, v1, v2, w2, p, q, 1) == RLC_OK, end);
-			TEST_ASSERT(cp_ambat_ver(g, ls, e, 1) == 1, end);
+			TEST_ASSERT(cp_amore_gen(r, e) == RLC_OK, end);
+			TEST_ASSERT(cp_amore_ask(ls, rs, v1, v2, w2, u1, u2, r, e, p, q, 1) == RLC_OK, end);
+			TEST_ASSERT(cp_amore_ans(g, rs, v1, v2, w2, p, q, 1) == RLC_OK, end);
+			TEST_ASSERT(cp_amore_ver(g, ls, e, 1) == 1, end);
 			pc_map(e, p[0], q[0]);
 			TEST_ASSERT(gt_cmp(e, g[0]) == RLC_EQ, end);
-			TEST_ASSERT(cp_ambat_gen(r, e) == RLC_OK, end);
-			TEST_ASSERT(cp_ambat_ask(ls, rs, v1, v2, w2, u1, u2, r, e, p, q, AGGS) == RLC_OK, end);
-			TEST_ASSERT(cp_ambat_ans(g, rs, v1, v2, w2, p, q, AGGS) == RLC_OK, end);
-			TEST_ASSERT(cp_ambat_ver(g, ls, e, AGGS) == 1, end);
+			TEST_ASSERT(cp_amore_gen(r, e) == RLC_OK, end);
+			TEST_ASSERT(cp_amore_ask(ls, rs, v1, v2, w2, u1, u2, r, e, p, q, AGGS) == RLC_OK, end);
+			TEST_ASSERT(cp_amore_ans(g, rs, v1, v2, w2, p, q, AGGS) == RLC_OK, end);
+			TEST_ASSERT(cp_amore_ver(g, ls, e, AGGS) == 1, end);
 			for (size_t i = 0; i < AGGS; i++) {
 				pc_map(e, p[i], q[i]);
 				TEST_ASSERT(gt_cmp(e, g[i]) == RLC_EQ, end);

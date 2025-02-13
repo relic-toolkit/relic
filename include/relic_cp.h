@@ -1404,65 +1404,6 @@ int cp_cades_ans(gt_t g[2], const g1_t t1, const g2_t t2, const g1_t p,
  */
 int cp_cades_ver(gt_t r, const gt_t g[2], const bn_t t, const gt_t e);
 
-/**
- * Generates parameters for the AMORE pairing delegation protocol.
- *
- * @param[out] x			- the secret key.
- * @param[out] e			- the precomputed value e(U1, U2).
- * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
- */
-int cp_amore_gen(bn_t x, gt_t e);
-
-/**
- * Executes the client-side request for the AMORE pairing delegation protocol.
- *
- * @param[out] d			- the delta value computed during setup.
- * @param[out] a1			- the first element in G_1.
- * @param[out] b1			- the first element in G_2.
- * @param[out] a2			- the second element in G_1.
- * @param[out] b2			- the second element in G_2.
- * @param[out] c			- the challenge.
- * @param[out] r			- the randomness.
- * @param[in] x				- the secret key.
- * @param[in] p				- the first argument of the pairing.
- * @param[in] q				- the second argument of the pairing.
- * @param[in] priva			- the flag to indicate if first point is private.
- * @param[in] privb			- the flag to indicate if second point is private.
- * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
- */
-int cp_amore_ask(bn_t d, g1_t a1, g2_t b1, g1_t a2, g2_t b2, bn_t c, bn_t r,
-		const bn_t x, const g1_t p, const g2_t q, int priva, int privb);
-
-/**
- * Executes the server-side response for the AMORE pairing delegation protocol.
- *
- * @param[out] g			- the group elements computed by the server.
- * @param[in] d				- the delta value computed during setup.
- * @param[in] a1			- the first element in G_1.
- * @param[in] b1			- the first element in G_2.
- * @param[in] a2			- the second element in G_1.
- * @param[in] b2			- the second element in G_2.
- * @param[in] priva			- the flag to indicate if first point is private.
- * @param[in] privb			- the flag to indicate if second point is private.
- * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
- */
-int cp_amore_ans(gt_t g[2], const bn_t d, const g1_t a1, const g2_t b1,
-		const g1_t a2, const g2_t b2, int priva, int privb);
-
-/**
- * Verifies the result of the AMORE pairing delegation protocol.
- *
- * @param[out] r			- the result of the computation.
- * @param[in] g				- the group elements returned by the server.
- * @param[in] c				- the challenge.
- * @param[in] e				- the precomputed value e(U1, U2).
- * @param[in] priva			- the flag to indicate if first point is private.
- * @param[in] privb			- the flag to indicate if second point is private.
- * @return a boolean value indicating if the computation is correct.
- */
-int cp_amore_ver(gt_t r, const gt_t g[2], const bn_t c, const gt_t e,
-		int priva, int privb);
-
 /** 
  * Generates parameters for the DCKC delegated batch pairing protocol.
  *
@@ -1585,7 +1526,7 @@ int cp_mvbat_ver(gt_t *rs, const gt_t *as, const gt_t *bs, const bn_t *b,
  * @param[out] s			- the secret key for the pairing delegation.
  * @param[out] e			- the precomputed value e(U1, U2). 
  */
- int cp_ambat_gen(bn_t s, gt_t e);
+ int cp_amore_gen(bn_t s, gt_t e);
 
 /*
  * Executes the client-side request for the AMORE batch pairing delegation
@@ -1605,7 +1546,7 @@ int cp_mvbat_ver(gt_t *rs, const gt_t *as, const gt_t *bs, const bn_t *b,
  * @param[in] m				- the number of pairings to compute.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
- int cp_ambat_ask(bn_t *r, g1_t *c, g1_t x, g2_t y, g2_t d, g1_t u, g2_t v,
+ int cp_amore_ask(bn_t *r, g1_t *c, g1_t x, g2_t y, g2_t d, g1_t u, g2_t v,
 	const bn_t s, const gt_t e, const g1_t *p, const g2_t *q, size_t m);
 
 /**
@@ -1622,7 +1563,7 @@ int cp_mvbat_ver(gt_t *rs, const gt_t *as, const gt_t *bs, const bn_t *b,
  * @param[in] m				- the number of pairings to compute.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_ambat_ans(gt_t *gs, const g1_t *c, const g1_t x, const g2_t y,
+int cp_amore_ans(gt_t *gs, const g1_t *c, const g1_t x, const g2_t y,
 		const g2_t d, const g1_t *p, const g2_t *q, size_t m);
 
 /**
@@ -1634,7 +1575,7 @@ int cp_ambat_ans(gt_t *gs, const g1_t *c, const g1_t x, const g2_t y,
  * @param[in] m				- the number of pairings to compute.
  * @return a boolean value indicating if the computation is correct.
  */
-int cp_ambat_ver(gt_t *gs, const bn_t *c, const gt_t e, size_t m);
+int cp_amore_ver(gt_t *gs, const bn_t *c, const gt_t e, size_t m);
 
 /**
  * Generates a master key for the SOKAKA identity-based non-interactive

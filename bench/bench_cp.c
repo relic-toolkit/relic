@@ -808,69 +808,20 @@ static void pdpub(void) {
 		BENCH_ADD(cp_cades_ver(r, g, t, e));
 	} BENCH_END;
 
-	BENCH_RUN("cp_amore_gen") {
-		BENCH_ADD(cp_amore_gen(x, e));
+	BENCH_RUN("cp_amore_gen (1)") {
+		BENCH_ADD(cp_amore_gen(r1, e));
 	} BENCH_END;
 
-	BENCH_RUN("cp_amore_ask (0, 0)") {
-		g1_rand(p);
-		g2_rand(q);
-		BENCH_ADD(cp_amore_ask(t, v1, v2, w1, w2, r1, r2, x, p, q, 0, 0));
+	BENCH_RUN("cp_amore_ask (1)") {
+		BENCH_ADD(cp_amore_ask(&r1, &w1, v1, v2, w2, u1, u2, r1, e, &p, &q, 1));
 	} BENCH_END;
 
-	BENCH_RUN("cp_amore_ans (0, 0)") {
-		g1_rand(p);
-		g2_rand(q);
-		BENCH_ADD(cp_amore_ans(g, t, v1, v2, w1, w2, 0, 0));
+	BENCH_RUN("cp_amore_ans (1)") {
+		BENCH_ADD(cp_amore_ans(g, &w1, v1, v2, w2, &p, &q, 1));
 	} BENCH_END;
 
-	BENCH_RUN("cp_amore_ver (0, 0)") {
-		g1_rand(p);
-		g2_rand(q);
-		cp_amore_ask(t, v1, v2, w1, w2, r1, r2, x, p, q, 0, 0);
-		cp_amore_ans(g, t, v1, v2, w1, w2, 0, 0);
-		BENCH_ADD(cp_amore_ver(r, g, r1, e, 0, 0));
-	} BENCH_END;
-
-	BENCH_RUN("cp_amore_ask (0, 1)") {
-		g1_rand(p);
-		g2_rand(q);
-		BENCH_ADD(cp_amore_ask(t, v1, v2, w1, w2, r1, r2, x, p, q, 0, 1));
-	} BENCH_END;
-
-	BENCH_RUN("cp_amore_ans (0, 1)") {
-		g1_rand(p);
-		g2_rand(q);
-		BENCH_ADD(cp_amore_ans(g, t, v1, v2, w1, w2, 0, 1));
-	} BENCH_END;
-
-	BENCH_RUN("cp_amore_ver (0, 1)") {
-		g1_rand(p);
-		g2_rand(q);
-		cp_amore_ask(t, v1, v2, w1, w2, r1, r2, x, p, q, 0, 1);
-		cp_amore_ans(g, t, v1, v2, w1, w2, 0, 1);
-		BENCH_ADD(cp_amore_ver(r, g, r1, e, 0, 1));
-	} BENCH_END;
-
-	BENCH_RUN("cp_amore_ask (1, 1)") {
-		g1_rand(p);
-		g2_rand(q);
-		BENCH_ADD(cp_amore_ask(t, v1, v2, w1, w2, r1, r2, x, p, q, 1, 1));
-	} BENCH_END;
-
-	BENCH_RUN("cp_amore_ans (1, 1)") {
-		g1_rand(p);
-		g2_rand(q);
-		BENCH_ADD(cp_amore_ans(g, t, v1, v2, w1, w2, 1, 1));
-	} BENCH_END;
-
-	BENCH_RUN("cp_amore_ver (1, 1)") {
-		g1_rand(p);
-		g2_rand(q);
-		pc_map(e, p, q);
-		cp_amore_ask(t, v1, v2, w1, w2, r1, r2, x, p, q, 1, 1);
-		cp_amore_ans(g, t, v1, v2, w1, w2, 1, 1);
-		BENCH_ADD(cp_amore_ver(r, g, r1, e, 1, 1));
+	BENCH_RUN("cp_amore_ver (1)") {
+		BENCH_ADD(cp_amore_ver(g, &r1, e, 1));
 	} BENCH_END;
 
 	bn_free(t);
@@ -1029,32 +980,16 @@ static void pdprv(void) {
 		BENCH_ADD(cp_mvbat_ver(g, ts, g, b, ls, u2[0], p, AGGS));
 	} BENCH_END;
 
-	BENCH_RUN("cp_ambat_gen (1)") {
-		BENCH_ADD(cp_ambat_gen(r1, e[0]));
+	BENCH_RUN("cp_amore_ask (AGGS)") {
+		BENCH_ADD(cp_amore_ask(ls, rs, v1[0], v2[0], w2[0], u1[0], u2[0], r1, e[0], p, q, AGGS));
 	} BENCH_END;
 
-	BENCH_RUN("cp_ambat_ask (1)") {
-		BENCH_ADD(cp_ambat_ask(ls, rs, v1[0], v2[0], w2[0], u1[0], u2[0], r1, e[0], p, q, 1));
+	BENCH_RUN("cp_amore_ans (AGGS)") {
+		BENCH_ADD(cp_amore_ans(g, rs, v1[0], v2[0], w2[0], p, q, AGGS));
 	} BENCH_END;
 
-	BENCH_RUN("cp_ambat_ans (1)") {
-		BENCH_ADD(cp_ambat_ans(g, rs, v1[0], v2[0], w2[0], p, q, 1));
-	} BENCH_END;
-
-	BENCH_RUN("cp_ambat_ver (1)") {
-		BENCH_ADD(cp_ambat_ver(g, ls, e[0], 1));
-	} BENCH_END;
-
-	BENCH_RUN("cp_ambat_ask (AGGS)") {
-		BENCH_ADD(cp_ambat_ask(ls, rs, v1[0], v2[0], w2[0], u1[0], u2[0], r1, e[0], p, q, AGGS));
-	} BENCH_END;
-
-	BENCH_RUN("cp_ambat_ans (AGGS)") {
-		BENCH_ADD(cp_ambat_ans(g, rs, v1[0], v2[0], w2[0], p, q, AGGS));
-	} BENCH_END;
-
-	BENCH_RUN("cp_ambat_ver (AGGS)") {
-		BENCH_ADD(cp_ambat_ver(g, ls, e[0], AGGS));
+	BENCH_RUN("cp_amore_ver (AGGS)") {
+		BENCH_ADD(cp_amore_ver(g, ls, e[0], AGGS));
 	} BENCH_END;
 
 	bn_free(r1);

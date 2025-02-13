@@ -29,12 +29,13 @@ RELIC implements to date:
  * Bilinear maps and related extension fields
  * Cryptographic protocols (RSA, Rabin, ECDSA, ECMQV, ECSS (Schnorr), ECIES, Sakai-Ohgishi-Kasahara ID-based authenticated key agreement, Boneh-Lynn-Schacham and Boneh-Boyen short signatures, Paillier and Benaloh homomorphic encryption systems)
  * [**Pairing delegation protocols**](https://anonymous.4open.science/r/relic-32F2/src/cp/relic_cp_pcdel.c) with public and private inputs
+ * [**Batch pairing delegation protocols**](https://anonymous.4open.science/r/relic-32F2/src/cp/relic_cp_pdbat.c) with public inputs
 
 ### Build instructions
 
 Instructions for building the library can be found in the [Wiki](https://github.com/relic-toolkit/relic/wiki/Building).
 
-For the pairing delegation protocols, look for the corresponding entries in the output of the `test_cp` testing binary, and entries with prefix `cp_amore` (for the sequential version), `cp_ambat` (for the batch version) and `cp_amprd` (for the product version) in the output of the `bench_cp` benchmarking binary. You can adjust the parameter `AGGS` in the binaries to adjust the number of pairings (or aggregated signatures).
+For the pairing delegation protocols, look for the corresponding entries in the output of the `test_cp` testing binary, and entries with prefix `cp_amore_* (1)` (for the sequential version), `cp_amore_* (AGGS)` (for the batch version) in the output of the `bench_cp` benchmarking binary. You can change the parameter `AGGS` in the source code to adjust the number of pairings.
 
 ### Support
 

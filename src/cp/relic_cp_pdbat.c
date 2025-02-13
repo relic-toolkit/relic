@@ -110,7 +110,7 @@ int cp_pdbat_ans(gt_t *w, const g1_t *z, const g2_t i, const g1_t u,
 	} RLC_FINALLY {
 		for (size_t i = 0; i <= m; i++) {	
 			g1_free(_p[i]);
-			g2_free(_1[i]);
+			g2_free(_q[i]);
 		}
 		RLC_FREE(_p);
 		RLC_FREE(_q);
@@ -231,7 +231,6 @@ int cp_mvbat_ver(gt_t *rs, const gt_t *as, const gt_t *bs, const bn_t *b,
 	gt_null(alpha);
 
 	RLC_TRY {
-		g1_new(t);
 		g1_new(u);
 		gt_new(v);
 		gt_new(w);
@@ -270,7 +269,7 @@ int cp_mvbat_ver(gt_t *rs, const gt_t *as, const gt_t *bs, const bn_t *b,
 	return result;
 }
 
-int cp_ambat_gen(bn_t s, gt_t e) {
+int cp_amore_gen(bn_t s, gt_t e) {
 	bn_t n;
 	int result = RLC_OK;
 
@@ -290,7 +289,7 @@ int cp_ambat_gen(bn_t s, gt_t e) {
 	return result;
 }
 
-int cp_ambat_ask(bn_t *r, g1_t *c, g1_t x, g2_t y, g2_t d, g1_t u, g2_t v,
+int cp_amore_ask(bn_t *r, g1_t *c, g1_t x, g2_t y, g2_t d, g1_t u, g2_t v,
 		const bn_t s, const gt_t e, const g1_t *p, const g2_t *q, size_t m) {
 	bn_t n, t, z;
 	g1_t w;
@@ -371,7 +370,7 @@ int cp_ambat_ask(bn_t *r, g1_t *c, g1_t x, g2_t y, g2_t d, g1_t u, g2_t v,
 	return result;
 }
 
-int cp_ambat_ans(gt_t *gs, const g1_t *c, const g1_t x, const g2_t y,
+int cp_amore_ans(gt_t *gs, const g1_t *c, const g1_t x, const g2_t y,
 		const g2_t d, const g1_t *p, const g2_t *q, size_t m) {
 	g1_t ps[2];
 	g2_t qs[2];
@@ -423,7 +422,7 @@ int cp_ambat_ans(gt_t *gs, const g1_t *c, const g1_t x, const g2_t y,
 	return result;
 }
 
-int cp_ambat_ver(gt_t *gs, const bn_t *r, const gt_t e, size_t m) {
+int cp_amore_ver(gt_t *gs, const bn_t *r, const gt_t e, size_t m) {
 	int result = 1;
 	gt_t t, u;
 
