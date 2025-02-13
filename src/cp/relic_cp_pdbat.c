@@ -24,7 +24,7 @@
 /**
  * @file
  *
- * Implementation of pairing batch delegation protocols.
+ * Implementation of batch pairing delegation protocols.
  *
  * @ingroup cp
  */
