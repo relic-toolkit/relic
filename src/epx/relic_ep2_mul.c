@@ -60,7 +60,7 @@ static void ep2_mul_gls_imp(ep2_t r, const ep2_t p, const bn_t k) {
 			for (size_t j = 0; j < (1 << (RLC_WIDTH - 2)); j++) {
 				ep2_null(t[i][j]);
 				ep2_new(t[i][j]);
-			}	
+			}
 		}
 
 		ep2_curve_get_ord(n);

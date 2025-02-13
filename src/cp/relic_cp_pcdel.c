@@ -67,7 +67,7 @@ int cp_cades_ask(bn_t t, g1_t t1, g2_t t2, gt_t e, const g1_t p,
 		bn_new(x1);
 		bn_new(x2);
 		g1_new(a1);
-		g1_new(a2);
+		g2_new(a2);
 
 		pc_get_ord(n);
 		bn_rand_mod(x1, n);
@@ -130,10 +130,10 @@ int cp_cades_ans(gt_t g[2], const g1_t t1, const g2_t t2, const g1_t p,
 		result = RLC_ERR;
 	}
 	RLC_FINALLY {
-		bn_free(n);
-		bn_free(t);
-		g1_free(a1);
-		g2_free(a2);
+		for (size_t i = 0; i < 3; i++) {
+			g1_free(ps[i]);
+			g2_free(qs[i]);
+		}
 	}
 	return result;
 }
