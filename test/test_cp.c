@@ -1166,7 +1166,7 @@ static int pdpub(void) {
 			//TEST_ASSERT(gt_cmp(r, g[0]) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_CASE("faster amortized delegated pairing with public inputs is correct") {
+		TEST_CASE("faster amortized delegated pairing w/ public inputs is correct") {
 			TEST_ASSERT(cp_amore_gen(x, e) == RLC_OK, end);
 			g1_rand(p);
 			g2_rand(q);
@@ -1320,14 +1320,13 @@ static int pdprv(void) {
 static int pdbat(void) {
 	int code = RLC_ERR;
 	bn_t r, ls[AGGS], b[AGGS];
-	g1_t p[AGGS], rs[AGGS], u1, v1, w1;
+	g1_t p[AGGS], rs[AGGS], u1, v1;
 	g2_t q[AGGS], s[AGGS], qs[AGGS], u2, v2, w2;
 	gt_t e, ts[AGGS + 1], g[AGGS + 1];
 
 	bn_null(r);
 	g1_null(u1);
 	g1_null(v1);
-	g1_null(w1);
 	g2_null(u2);
 	g2_null(v2);
 	g2_null(w2);
@@ -1337,7 +1336,6 @@ static int pdbat(void) {
 		bn_new(r);
 		g1_new(u1);
 		g1_new(v1);
-		g1_new(w1);
 		g2_new(u2);
 		g2_new(v2);
 		g2_new(w2);
@@ -1392,8 +1390,14 @@ static int pdbat(void) {
 		} TEST_END;
 
 		TEST_CASE("amortized delegated batch pairing is correct") {
-			TEST_ASSERT(cp_ambat_gen(r, u1, u2, w1, e) == RLC_OK, end);
-			TEST_ASSERT(cp_ambat_ask(ls, rs, v1, v2, w2, r, u1, u2, w1, e, p, q, AGGS) == RLC_OK, end);
+			TEST_ASSERT(cp_ambat_gen(r, e) == RLC_OK, end);
+			TEST_ASSERT(cp_ambat_ask(ls, rs, v1, v2, w2, u1, u2, r, e, p, q, 1) == RLC_OK, end);
+			TEST_ASSERT(cp_ambat_ans(g, rs, v1, v2, w2, p, q, 1) == RLC_OK, end);
+			TEST_ASSERT(cp_ambat_ver(g, ls, e, 1) == 1, end);
+			pc_map(e, p[0], q[0]);
+			TEST_ASSERT(gt_cmp(e, g[0]) == RLC_EQ, end);
+			TEST_ASSERT(cp_ambat_gen(r, e) == RLC_OK, end);
+			TEST_ASSERT(cp_ambat_ask(ls, rs, v1, v2, w2, u1, u2, r, e, p, q, AGGS) == RLC_OK, end);
 			TEST_ASSERT(cp_ambat_ans(g, rs, v1, v2, w2, p, q, AGGS) == RLC_OK, end);
 			TEST_ASSERT(cp_ambat_ver(g, ls, e, AGGS) == 1, end);
 			for (size_t i = 0; i < AGGS; i++) {
@@ -1410,7 +1414,6 @@ static int pdbat(void) {
 	bn_free(r);
 	g1_free(u1);
 	g1_free(v1);
-	g1_free(w1);
 	g2_free(u2);
 	g2_free(v2);
 	g2_free(w2);
