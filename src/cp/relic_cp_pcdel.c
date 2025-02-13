@@ -708,6 +708,8 @@ int cp_amore_ask(bn_t d, g1_t a1, g2_t b1, g1_t a2, g2_t b2, bn_t c, bn_t r,
 			g2_sub(b2, v, q);
 			g2_mul(b2, b2, r);
 		}
+		g1_norm(a2, a2);
+		g2_norm(b2, b2);
 	}
 	RLC_CATCH_ANY {
 		result = RLC_ERR;
@@ -779,6 +781,7 @@ int cp_amore_ver(gt_t r, const gt_t g[2], const bn_t c, const gt_t e,
 		gt_new(t);
 
 		result &= gt_is_valid(g[0]);
+		result &= gt_is_valid(g[1]);
 
 		if (priva && privb) {
 			gt_exp(t, g[1], c);

@@ -807,7 +807,7 @@ static void pdpub(void) {
 		cp_cades_ans(g, u1, u2, p, q);
 		BENCH_ADD(cp_cades_ver(r, g, t, e));
 	} BENCH_END;
-
+w
 	BENCH_RUN("cp_amore_gen") {
 		BENCH_ADD(cp_amore_gen(x, e));
 	} BENCH_END;
