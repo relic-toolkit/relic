@@ -91,7 +91,7 @@ int cp_pdbat_ans(gt_t *w, const g1_t *z, const g2_t i, const g1_t u,
 	int result = RLC_OK;
 
 	RLC_TRY {
-		for (size_t i = 0; i <= m; i++) {	
+		for (size_t i = 0; i < m; i++) {	
 			g1_null(_p[i]);
 			g2_null(_q[i]);
 			g1_new(_p[i]);
@@ -99,6 +99,10 @@ int cp_pdbat_ans(gt_t *w, const g1_t *z, const g2_t i, const g1_t u,
 			g1_copy(_p[i], z[i]);
 			g2_copy(_q[i], q[i]);
 		}
+		g1_null(_p[m]);
+		g1_new(_p[m]);
+		g2_null(_q[m]);
+		g2_new(_q[m]);
 		g1_neg(_p[m], u);
 		g2_copy(_q[m], i);
 		pc_map_sim(w[0], _p, _q, m + 1);
@@ -112,6 +116,8 @@ int cp_pdbat_ans(gt_t *w, const g1_t *z, const g2_t i, const g1_t u,
 			g1_free(_p[i]);
 			g2_free(_q[i]);
 		}
+		g1_free(_p[m]);
+		g2_free(_q[m]);
 		RLC_FREE(_p);
 		RLC_FREE(_q);
 	}
