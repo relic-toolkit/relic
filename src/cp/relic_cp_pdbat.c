@@ -69,7 +69,7 @@ int cp_pdbat_ask(bn_t *l, bn_t *b, g1_t *z, g2_t c, const g1_t u, const g2_t v,
 		pc_get_ord(n);
 		for (size_t i = 0; i < m; i++) {
 			bn_rand_mod(l[i], n);
-			bn_rand(b[i], RLC_POS, pc_param_level());
+			bn_rand(b[i], RLC_POS, RAND_DIST);
 			g1_mul_sim(z[i], p[i], b[i], u, l[i]);
 		}
 		g2_mul_sim_lot(c, q, l, m);
