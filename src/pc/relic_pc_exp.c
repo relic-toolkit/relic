@@ -332,7 +332,7 @@ static void gt_exp_gls_sac(gt_t c, const gt_t a, const bn_t b, size_t d,
 			}
 			l = RLC_FP_BITS;
 			bn_rec_sac(sac + i * f * RLC_FP_BITS, &l, _b + i * f/d, u, d, f/d,
-					bn_bits(n), 0);
+					bn_bits(n), ep_curve_is_pairf() == EP_BN);
 		}
 
 		gt_set_unity(c);
@@ -458,7 +458,7 @@ static void gt_exp_reg_sac(gt_t c, const gt_t a, const bn_t b, size_t d,
 			}
 			l = RLC_FP_BITS;
 			bn_rec_sac(sac + i * f * RLC_FP_BITS, &l, _b + i * f/d, u, d, f/d,
-					bn_bits(n), 0);
+					bn_bits(n), ep_curve_is_pairf() == EP_BN);
 		}
 
 		gt_set_unity(c);
