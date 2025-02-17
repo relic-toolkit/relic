@@ -327,10 +327,12 @@ static void gt_exp_gls_sac(gt_t c, const gt_t a, const bn_t b, size_t d,
 			gt_copy(t[i * s], q[i * f / d]);
 			for (size_t j = 1; j < s; j++) {
 				l = util_bits_dig(j);
-				gt_mul(t[i * s + j], t[i * s + (j ^ (1 << (l - 1)))], q[l + i * f / d]);
+				gt_mul(t[i * s + j], t[i * s + (j ^ (1 << (l - 1)))],
+						q[l + i * f / d]);
 			}
 			l = RLC_FP_BITS;
-			bn_rec_sac(sac + i * f * RLC_FP_BITS, &l, _b + i * f / d, d, f / d, bn_bits(n));
+			bn_rec_sac(sac + i * f * RLC_FP_BITS, &l, _b + i * f/d, u, d, f/d,
+					bn_bits(n), 0);
 		}
 
 		gt_set_unity(c);
@@ -451,10 +453,12 @@ static void gt_exp_reg_sac(gt_t c, const gt_t a, const bn_t b, size_t d,
 			gt_copy(t[i * s], q[i * f / d]);
 			for (size_t j = 1; j < s; j++) {
 				l = util_bits_dig(j);
-				gt_mul(t[i * s + j], t[i * s + (j ^ (1 << (l - 1)))], q[l + i * f / d]);
+				gt_mul(t[i * s + j], t[i * s + (j ^ (1 << (l - 1)))],
+						q[l + i * f/d]);
 			}
 			l = RLC_FP_BITS;
-			bn_rec_sac(sac + i * f * RLC_FP_BITS, &l, _b + i * f / d, d, f / d, bn_bits(n));
+			bn_rec_sac(sac + i * f * RLC_FP_BITS, &l, _b + i * f/d, u, d, f/d,
+					bn_bits(n), 0);
 		}
 
 		gt_set_unity(c);

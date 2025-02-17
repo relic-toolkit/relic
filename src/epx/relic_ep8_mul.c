@@ -174,10 +174,10 @@ static void ep8_mul_reg_gls(ep8_t r, const ep8_t p, const bn_t k) {
 			ep8_copy(t[i][0], q[i * m / c]);
 			for (size_t j = 1; j < (1 << 3); j++) {
 				l = util_bits_dig(j);
-				ep8_add(t[i][j], t[i][j ^ (1 << (l - 1))], q[l + i * m / c]);
+				ep8_add(t[i][j], t[i][j ^ (1 << (l - 1))], q[l + i * m/c]);
 			}
 			l = RLC_FP_BITS + 1;
-			bn_rec_sac(sac[i], &l, _k + i * m / c, c, m / c, bn_bits(n));
+			bn_rec_sac(sac[i], &l, _k + i * m/c, u, c, m/c, bn_bits(n), 0);
 		}
 
 #if defined(EP_MIXED)

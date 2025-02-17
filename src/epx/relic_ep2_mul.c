@@ -127,7 +127,7 @@ static void ep2_mul_gls_imp(ep2_t r, const ep2_t p, const bn_t k) {
 static void ep2_mul_reg_gls(ep2_t r, const ep2_t p, const bn_t k) {
 	size_t l;
 	bn_t n, _k[4], u;
-	int8_t even, col, sac[4 * RLC_FP_BITS];
+	int8_t even, col, sac[4 * RLC_FP_BITS], flag = ep_curve_is_pairf() == EP_BN;
 	ep2_t q[4], t[1 << 3];
 
 	bn_null(n);
@@ -150,7 +150,7 @@ static void ep2_mul_reg_gls(ep2_t r, const ep2_t p, const bn_t k) {
 		ep2_curve_get_ord(n);
 		fp_prime_get_par(u);
 		bn_mod(_k[0], k, n);
-		bn_rec_frb(_k, 4, _k[0], u, n, ep_curve_is_pairf() == EP_BN);
+		bn_rec_frb(_k, 4, _k[0], u, n, flag);
 		ep2_norm(q[0], p);
 		ep2_frb(q[1], q[0], 1);
 		ep2_frb(q[2], q[1], 1);
@@ -170,7 +170,7 @@ static void ep2_mul_reg_gls(ep2_t r, const ep2_t p, const bn_t k) {
 		}
 
 		l = RLC_FP_BITS;
-		bn_rec_sac(sac, &l, _k, 1, 4, bn_bits(n));
+		bn_rec_sac(sac, &l, _k, u, 1, 4, bn_bits(n), flag);
 
 #if defined(EP_MIXED)
 		ep2_norm_sim(t + 1, t + 1, (1 << 3) - 1);
