@@ -41,9 +41,9 @@
 #define RAND_DIST		40
 
 /**
- * Bound \tau on how many elements the adversary can store.
+ * Bound \tau on how many elements the adversary can compute.
  */
-#define BND_STORE		72
+#define BND_TIME		72
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -300,7 +300,7 @@ int cp_amore_ask(bn_t *r, g1_t *c, g1_t x, g2_t y, g2_t d, g1_t u, g2_t v,
 	bn_t n, t, z;
 	g1_t w;
 	int result = RLC_OK;
-	size_t eps = RAND_DIST/2 + BND_STORE - 1;
+	size_t eps = (RAND_DIST - 1)/2 + BND_TIME;
 
 	bn_null(n);
 	bn_null(t);
