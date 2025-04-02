@@ -110,7 +110,7 @@ void bn_divn_low(dig_t *c, dig_t *d, dig_t *a, size_t sa, dig_t *b, size_t sb) {
 
 		carry = bn_subn_low(a + (i - t - 1), a + (i - t - 1), d, sd);
 		sd += (i - t - 1);
-		if (sa - sd > 0) {
+		if (sa > sd) {
 			carry = bn_sub1_low(a + sd, a + sd, carry, sa - sd);
 		}
 
