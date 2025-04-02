@@ -1545,7 +1545,7 @@ void bn_rec_glv(bn_t k0, bn_t k1, const bn_t k, const bn_t n, const bn_st *v1,
  * @param[out] ki			- the recoded subscalars.
  * @param[in] sub			- the number of subscalars.
  * @param[in] k				- the scalar to recode.
- * @param[in] x			- the elliptic curve parameter.
+ * @param[in] x				- the elliptic curve parameter.
  * @param[in] n				- the elliptic curve group order.
  * @param[in] cof 			- flag to indicate if it is a curve with cofactor 1.
  */
@@ -1558,13 +1558,15 @@ void bn_rec_frb(bn_t *ki, int sub, const bn_t k, const bn_t x, const bn_t n,
  * @param[out] b			- the recoded subscalars.
  * @param[in,out] len		- the length in bytes of the recoding.
  * @param[in] k				- the subscalars to recode.
+ * @param[in] u				- the curve parameter.
  * @param[in] c				- the splitting factor.
  * @param[in] m				- the number of subscalars to recode.
  * @param[in] n				- the bit length of the group order.
+ * @param[in] cof 			- flag to indicate if it is a curve with cofactor 1.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is insufficient.
  */
-void bn_rec_sac(int8_t *b, size_t *len, const bn_t *k, size_t c, size_t m,
-		size_t n);
+void bn_rec_sac(int8_t *b, size_t *len, const bn_t *k, const bn_t u, size_t c,
+		size_t m, size_t n, int cof);
 
 /**
  * Computes the coefficients of the polynomial representing the Lagrange
@@ -1590,5 +1592,5 @@ void bn_lag(bn_t *c, const bn_t *a, const bn_t b, size_t n);
  * @param[in] n				- the degree of the polynomial.
  */
 void bn_evl(bn_t c, const bn_t *a, const bn_t x, const bn_t b, size_t n);
-
+	
 #endif /* !RLC_BN_H */

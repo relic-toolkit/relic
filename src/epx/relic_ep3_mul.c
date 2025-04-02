@@ -138,7 +138,7 @@ static void ep3_mul_gls_imp(ep3_t r, const ep3_t p, const bn_t k) {
 		}
 
 		l = RLC_FP_BITS + 1;
-		bn_rec_sac(sac, &l, _k, 1, 6, bn_bits(n));
+		bn_rec_sac(sac, &l, _k, u, 1, 6, bn_bits(n), 0);
 
 #if defined(EP_MIXED)
 		ep3_norm_sim(t + 1, t + 1, (1 << 5) - 1);
@@ -245,7 +245,7 @@ static void ep3_mul_reg_gls(ep3_t r, const ep3_t p, const bn_t k) {
 		}
 
 		l = RLC_FP_BITS + 1;
-		bn_rec_sac(sac, &l, _k, 1, 6, bn_bits(n));
+		bn_rec_sac(sac, &l, _k, u, 1, 6, bn_bits(n), 0);
 
 #if defined(EP_MIXED)
 		ep3_norm_sim(t + 1, t + 1, (1 << 5) - 1);
