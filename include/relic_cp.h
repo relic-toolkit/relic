@@ -2160,6 +2160,7 @@ int cp_ers_gen_key(bn_t sk, ec_t pk);
  * @param[in] sk			- the signer's private key.
  * @param[in] pk			- the singer's public key.
  * @param[in] pp			- the public parameters.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_ers_sig(bn_t td, ers_t p, const uint8_t *msg, size_t len, const bn_t sk,
 		const ec_t pk, const ec_t pp);
@@ -2168,12 +2169,12 @@ int cp_ers_sig(bn_t td, ers_t p, const uint8_t *msg, size_t len, const bn_t sk,
  * Verifies an extendable ring signature scheme over some messages.
  *
  * @param[in] td			- the signature trapdoor.
- * @param[in] s
- - the ring of signatures.
+ * @param[in] s				- the ring of signatures.
  * @param[in] size			- the number of signatures in the ring.
  * @param[in] msg			- the message to sign.
  * @param[in] len			- the message length.
  * @param[in] pp			- the public parameters.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_ers_ver(const bn_t td, const ers_t *s, size_t size, const uint8_t *msg,
 		size_t len, const ec_t pp);
@@ -2188,6 +2189,7 @@ int cp_ers_ver(const bn_t td, const ers_t *s, size_t size, const uint8_t *msg,
  * @param[in] len			- the message length.
  * @param[in] pk			- the singer's public key.
  * @param[in] pp			- the public parameters.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_ers_ext(bn_t td, ers_t *p, size_t *size, const uint8_t *msg, size_t len,
 		const ec_t pk, const ec_t pp);
@@ -2203,6 +2205,7 @@ int cp_ers_ext(bn_t td, ers_t *p, size_t *size, const uint8_t *msg, size_t len,
  * @param[in] sk			- the signer's private key.
  * @param[in] pk			- the singer's public key.
  * @param[in] pp			- the public parameters.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_smlers_sig(bn_t td, smlers_t p, const uint8_t *msg, size_t len,
 		const bn_t sk, const ec_t pk, const ec_t pp);
@@ -2216,6 +2219,7 @@ int cp_smlers_sig(bn_t td, smlers_t p, const uint8_t *msg, size_t len,
  * @param[in] msg			- the message to sign.
  * @param[in] len			- the message length.
  * @param[in] pp			- the public parameters.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_smlers_ver(bn_t td, smlers_t *s, size_t size, const uint8_t *msg,
 		size_t len, const ec_t pp);
@@ -2230,6 +2234,7 @@ int cp_smlers_ver(bn_t td, smlers_t *s, size_t size, const uint8_t *msg,
  * @param[in] len			- the message length.
  * @param[in] pk			- the singer's public key.
  * @param[in] pp			- the public parameters.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_smlers_ext(bn_t td, smlers_t *p, size_t *size, const uint8_t *msg,
 		size_t len, const ec_t pk, const ec_t pp);
@@ -2245,7 +2250,8 @@ int cp_smlers_ext(bn_t td, smlers_t *p, size_t *size, const uint8_t *msg,
  * @param[in] len			- the message length.
  * @param[in] sk			- the signer's private key.
  * @param[in] pk			- the singer's public key.
- * @param[in] pp			- the public parametetrs.
+ * @param[in] pp			- the public parameters.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_etrs_sig(bn_t *td, bn_t *y, size_t max, etrs_t p, const uint8_t *msg,
 		size_t len, const bn_t sk, const ec_t pk, const ec_t pp);
@@ -2261,7 +2267,8 @@ int cp_etrs_sig(bn_t *td, bn_t *y, size_t max, etrs_t p, const uint8_t *msg,
  * @param[in] size			- the number of signatures in the ring.
  * @param[in] msg			- the message to sign.
  * @param[in] len			- the message length.
- * @param[in] pp			- the public parametetrs.
+ * @param[in] pp			- the public parameters.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_etrs_ver(size_t thres, const bn_t *td, const bn_t *y, size_t max,
 		const etrs_t *s, size_t size, const uint8_t *msg, size_t len,
@@ -2278,7 +2285,8 @@ int cp_etrs_ver(size_t thres, const bn_t *td, const bn_t *y, size_t max,
  * @param[in] msg			- the message to sign.
  * @param[in] len			- the message length.
  * @param[in] pk			- the singer's public key.
- * @param[in] pp			- the public parametetrs.
+ * @param[in] pp			- the public parameters.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_etrs_ext(bn_t *td, bn_t *y, size_t max, etrs_t *p, size_t *size,
 		const uint8_t *msg, size_t len, const ec_t pk, const ec_t pp);
@@ -2295,11 +2303,24 @@ int cp_etrs_ext(bn_t *td, bn_t *y, size_t max, etrs_t *p, size_t *size,
  * @param[in] len			- the message length.
  * @param[in] sk			- the signer's private key.
  * @param[in] pk			- the singer's public key.
- * @param[in] pp			- the public parametetrs.
+ * @param[in] pp			- the public parameters.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
 int cp_etrs_uni(int thres, bn_t *td, bn_t *y, int max, etrs_t *p, size_t *size,
 		const uint8_t *msg, size_t len, const bn_t sk, const ec_t pk,
 		const ec_t pp);
+
+/**
+ * Compute a Pedersen commitment for randomness r and message x.
+ * 
+ * @param[out] c			- the commitment.
+ * @param[in] h				- the generator.
+ * @param[in] r				- the randomness.
+ * @param[in] x				- the message.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int cp_ped_com(ec_t c, ec_t h, bn_t r, bn_t x);
+
 /**
  * Initialize the Context-hiding Multi-key Homomorphic Signature scheme (CMLHS).
  * The scheme due to Schabhuser et al. signs a vector of messages.

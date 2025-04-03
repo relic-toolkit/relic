@@ -1086,6 +1086,78 @@ end:
 	return code;
 }
 
+static int pedersen(void) {
+	int code = RLC_ERR;
+	ec_t c1, c2, h;
+	bn_t r1, r2, m, n;
+
+	bn_null(m);
+	bn_null(n);
+	bn_null(r1);
+	bn_null(r2);
+	ec_null(h);
+	ec_null(c1);
+	ec_null(c2);
+
+	RLC_TRY {
+		bn_new(m);
+		bn_new(n);
+		bn_new(r1);
+		bn_new(r2);
+		ec_new(h);
+		ec_new(c1);
+		ec_new(c2);
+
+		ec_rand(h);
+		ec_curve_get_ord(n);
+
+		TEST_CASE("pedersen commitment is consistent") {
+			bn_rand_mod(r1, n);
+			bn_zero(m);
+			TEST_ASSERT(cp_ped_com(c1, h, r1, m) == RLC_ERR, end);
+			do {
+				bn_rand_mod(m, n);
+			} while (bn_is_zero(m));
+			TEST_ASSERT(cp_ped_com(c1, h, r1, m) == RLC_OK, end);
+			/* Verify the opening. */
+			cp_ped_com(c2, h, r1, m);
+			TEST_ASSERT(ec_cmp(c1, c2) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("pedersen commitment is homomorphic") {
+			bn_rand_mod(r1, n);
+			bn_rand_mod(r2, n);
+			do {
+				bn_rand_mod(m, n);
+			} while (bn_is_zero(m));
+			TEST_ASSERT(cp_ped_com(c1, h, r1, m) == RLC_OK, end);
+			TEST_ASSERT(cp_ped_com(c2, h, r2, m) == RLC_OK, end);
+			ec_add(c1, c1, c2);
+			ec_norm(c1, c1);
+			bn_add(r1, r1, r2);
+			bn_mod(r1, r1, n);
+			bn_dbl(m, m);
+			bn_mod(m, m, n);
+			TEST_ASSERT(cp_ped_com(c2, h, r1, m) == RLC_OK, end);
+			TEST_ASSERT(ec_cmp(c1, c2) == RLC_EQ, end);
+		} TEST_END;
+
+	} RLC_CATCH_ANY {
+		RLC_ERROR(end);
+	}
+	code = RLC_OK;
+
+  end:
+	bn_free(m);
+	bn_free(n);
+	bn_free(r1);
+	bn_free(r2);
+	ec_free(h);
+	ec_free(c1);
+	ec_free(c2);
+	return code;
+}
+
 #endif /* WITH_EC */
 
 #if defined(WITH_PC)
@@ -2383,6 +2455,11 @@ int main(void) {
 		}
 
 		if (etrs() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (pedersen() != RLC_OK) {
 			core_clean();
 			return 1;
 		}

@@ -694,6 +694,45 @@ static void etrs(void) {
 	}
 }
 
+static int pedersen(void) {
+	int code = RLC_ERR;
+	ec_t c, h;
+	bn_t r, m, n;
+
+	bn_null(m);
+	bn_null(n);
+	bn_null(r);
+	ec_null(h);
+	ec_null(c);
+
+	bn_new(m);
+	bn_new(n);
+	bn_new(r);
+	ec_new(h);
+	ec_new(c);
+
+	ec_rand(h);
+	ec_curve_get_ord(n);
+
+	do {
+		bn_rand_mod(m, n);
+	} while (bn_is_zero(m));
+
+	BENCH_RUN("cp_ped_com") {
+		bn_rand_mod(m, n);
+		BENCH_ADD(cp_ped_com(c, h, r, m))
+	} BENCH_END;
+
+	bn_free(m);
+	bn_free(n);
+	bn_free(r1);
+	bn_free(r2);
+	ec_free(h);
+	ec_free(c1);
+	ec_free(c2);
+	return code;
+}
+
 #endif /* WITH_EC */
 
 #if defined(WITH_PC)
@@ -2053,6 +2092,7 @@ int main(void) {
 		ers();
 		smlers();
 		etrs();
+		pedersen();
 	}
 #endif
 
