@@ -47,9 +47,13 @@ int cp_ped_com(ec_t c, ec_t h, bn_t r, bn_t x) {
 
 		if (ec_is_infty(h) || bn_is_zero(x) || bn_cmp(x, n) != RLC_LT) {
 			result = RLC_ERR;
+		} else {
+			ec_mul_sim_gen(c, x, h, r);	
 		}
-		ec_mul_sim_gen(c, x, h, r);	
+	} RLC_CATCH_ANY {
+		result = RLC_ERR;
+	} RLC_FINALLY {
+		bn_free(n);
 	}
-
 	return result;
 }
