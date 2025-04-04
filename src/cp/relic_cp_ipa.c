@@ -35,6 +35,224 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-int cp_ipa_prv(ec_t *g, ec_t *h, ec_t u, bn_t *a, bn_t *b, bn_t c, size_t n) {
+int cp_ipa_prv(bn_t y, ec_t p, ec_t *ls, ec_t *rs, bn_t *a, ec_t *g, ec_t u,
+		size_t n) {
+	uint8_t buf[2 * RLC_FP_BYTES + 2], hash[RLC_MD_LEN];
+	int result = RLC_OK;
+	size_t m, k;
+	bn_t *b = RLC_ALLOCA(bn_t, n);
+	bn_t *x = RLC_ALLOCA(bn_t, n);
+	bn_t *c = RLC_ALLOCA(bn_t, n);
+	ec_t *h = RLC_ALLOCA(ec_t, n);
+	bn_t t, r, c_l, c_r;
+	ec_t q, s;
 
+	ec_null(q);
+	ec_null(s);
+	bn_null(r);
+	bn_null(t);
+	bn_null(c_l);
+	bn_null(c_r);
+
+	if (b == NULL || c == NULL || h == NULL) {
+		RLC_FREE(b);
+		RLC_FREE(c);
+		RLC_FREE(h);
+		RLC_THROW(ERR_NO_MEMORY);
+		return RLC_ERR;
+	}
+	
+	RLC_TRY {
+		ec_new(q);
+		ec_new(s);
+		bn_new(r);
+		bn_new(t);
+		bn_new(c_l);
+		bn_new(c_r);
+
+		bn_zero(c_l);
+		for (size_t i = 0; i < n; i++) {
+			bn_null(b[i]);
+			bn_null(c[i]);
+			bn_null(x[i]);
+			ec_null(h[i]);
+			bn_new(b[i]);
+			bn_new(c[i]);
+			bn_new(x[i]);
+			ec_new(h[i]);
+			ec_copy(h[i], g[i]);
+			bn_set_dig(b[i], 1);
+			bn_copy(c[i], a[i]);
+			bn_add(c_l, c_l, a[i]);
+		}
+
+		k = 0;
+		m = n;
+		while (m >>= 1) ++k;
+		ec_curve_get_ord(r);
+		bn_mod(c_l, c_l, r);
+		ec_mul_sim_lot(p, g, a, n);
+		ec_mul(q, u, c_l);
+		ec_add(p, p, q);
+		ec_norm(p, p);
+
+		m = n;
+		ec_copy(q, p);
+		for (size_t i = 0; i < k; i++) {
+			m = m >> 1;
+			bn_zero(c_l);
+			bn_zero(c_r);
+			for (size_t j = 0; j < m; j++) {
+				bn_mul(t, c[j], b[m + j]);
+				bn_add(c_l, c_l, t);
+				bn_mul(t, c[m + j], b[j]);
+				bn_add(c_r, c_r, t);
+			}
+			bn_mod(c_l, c_l, r);
+			bn_mod(c_r, c_r, r);
+			ec_mul_sim_lot(rs[i], h + m, c, m);
+			ec_mul(s, u, c_l);
+			ec_add(rs[i], rs[i], s);
+			ec_norm(rs[i], rs[i]);
+			ec_mul_sim_lot(ls[i], h, c + m, m);
+			ec_mul(s, u, c_r);
+			ec_add(ls[i], ls[i], s);
+			ec_norm(ls[i], ls[i]);
+
+			ec_write_bin(buf, RLC_FP_BYTES + 1, ls[i], 1);
+			ec_write_bin(buf + RLC_FP_BYTES + 1, RLC_FP_BYTES + 1, rs[i], 1);
+			md_map(hash, buf, sizeof(buf));
+			bn_read_bin(x[i], hash, RLC_MD_LEN);
+
+			bn_mod_inv(t, x[i], r);
+			for (size_t j = 0; j < m; j++) {
+				ec_mul_sim(h[j], h[j], x[i], h[m + j], t);
+				bn_mul(c[j], c[j], t);
+				bn_mul(c[m + j], c[m + j], x[i]);
+				bn_add(c[j], c[j], c[m + j]);
+				bn_mod(c[j], c[j], r);
+				bn_mul(b[j], b[j], x[i]);
+				bn_mul(b[m + j], b[m + j], t);
+				bn_add(b[j], b[j], b[m + j]);
+				bn_mod(b[j], b[j], r);
+			}
+			bn_sqr(x[i], x[i]);
+			bn_mod(x[i], x[i], r);
+			bn_sqr(t, t);
+			bn_mod(t, t, r);
+			ec_mul_sim(s, ls[i], x[i], rs[i], t);
+			ec_add(q, q, s);
+		}
+		ec_norm(q, q);
+		bn_copy(y, c[0]);
+	} RLC_CATCH_ANY {
+		result = RLC_ERR;
+	} RLC_FINALLY {
+		ec_free(q);
+		ec_free(s);
+		bn_free(r);
+		bn_free(t);
+		bn_free(c_l);
+		bn_free(c_r);
+		for (size_t i = 0; i < n; i++) {
+			bn_free(b[i]);
+			bn_free(c[i]);
+			bn_free(x[i]);
+			ec_free(h[i]);
+		}
+		RLC_FREE(b);
+		RLC_FREE(c);
+		RLC_FREE(x);
+		RLC_FREE(h);
+	}
+	return result;
+}
+
+int cp_ipa_ver(bn_t y, ec_t p, ec_t *ls, ec_t *rs, ec_t *g, ec_t u, size_t n) {
+	uint8_t buf[2 * RLC_FP_BYTES + 2], hash[RLC_MD_LEN];
+	int result = 1;
+	size_t m, k;
+	bn_t *b = RLC_ALLOCA(bn_t, n);
+	ec_t *h = RLC_ALLOCA(ec_t, n);
+	bn_t t, r, x;
+	ec_t q, s;
+
+	ec_null(q);
+	ec_null(s);
+	bn_null(r);
+	bn_null(t);
+	bn_null(x);
+
+	if (b == NULL || h == NULL) {
+		RLC_FREE(b);
+		RLC_FREE(h);
+		RLC_THROW(ERR_NO_MEMORY);
+		return 0;
+	}
+
+	RLC_TRY {
+		ec_new(q);
+		ec_new(s);
+		bn_new(r);
+		bn_new(t);
+		bn_new(x);
+		for (size_t i = 0; i < n; i++) {
+			bn_null(b[i]);
+			ec_null(h[i]);
+			bn_new(b[i]);
+			ec_new(h[i]);
+			ec_copy(h[i], g[i]);
+			bn_set_dig(b[i], 1);
+		}
+
+		k = 0;
+		m = n;
+		while (m >>= 1) ++k;
+		ec_curve_get_ord(r);
+
+		m = n;
+		ec_copy(q, p);
+		for (size_t i = 0; i < k; i++) {
+			m = m >> 1;
+			ec_write_bin(buf, RLC_FP_BYTES + 1, ls[i], 1);
+			ec_write_bin(buf + RLC_FP_BYTES + 1, RLC_FP_BYTES + 1, rs[i], 1);
+			md_map(hash, buf, sizeof(buf));
+			bn_read_bin(x, hash, RLC_MD_LEN);
+			bn_mod_inv(t, x, r);
+			for (size_t j = 0; j < m; j++) {
+				ec_mul_sim(h[j], h[j], x, h[m + j], t);
+				bn_mul(b[j], b[j], x);
+				bn_mul(b[m + j], b[m + j], t);
+				bn_add(b[j], b[j], b[m + j]);
+				bn_mod(b[j], b[j], r);
+			}
+			bn_sqr(x, x);
+			bn_mod(x, x, r);
+			bn_sqr(t, t);
+			bn_mod(t, t, r);
+			ec_mul_sim(s, ls[i], x, rs[i], t);
+			ec_add(q, q, s);
+		}
+
+		bn_mul(t, y, b[0]);
+		bn_mod(t, t, r);
+		ec_mul_sim(h[0], h[0], y, u, t);
+		ec_norm(q, q);
+		result = (ec_cmp(q, h[0]) == RLC_EQ);
+	} RLC_CATCH_ANY {
+		result = 0;
+	} RLC_FINALLY {
+		ec_free(q);
+		ec_free(s);
+		bn_free(r);
+		bn_free(t);
+		bn_null(x);
+		for (size_t i = 0; i < n; i++) {
+			bn_free(b[i]);
+			ec_free(h[i]);
+		}
+		RLC_FREE(b);
+		RLC_FREE(h);
+	}
+	return result;
 }

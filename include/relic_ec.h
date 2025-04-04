@@ -421,6 +421,15 @@ typedef RLC_CAT(RLC_EC_LOWER, t) ec_t;
 #define ec_norm(R, P)			RLC_CAT(RLC_EC_LOWER, norm)(R, P)
 
 /**
+ * Converts multiple points to affine coordinates.
+ *
+ * @param[out] R				- the result.
+ * @param[in] P					- the points to convert.
+ * @param[in] N					- the number of points.
+ */
+ #define ec_norm_sim(R, P, N)	RLC_CAT(RLC_EC_LOWER, norm_sim)(R, P, N)
+
+/**
  * Maps a byte array to a point in an elliptic curve.
  *
  * @param[out] P				- the result.

@@ -2321,6 +2321,11 @@ int cp_etrs_uni(int thres, bn_t *td, bn_t *y, int max, etrs_t *p, size_t *size,
  */
 int cp_ped_com(ec_t c, ec_t h, bn_t r, bn_t x);
 
+int cp_ipa_prv(bn_t y, ec_t p, ec_t *ls, ec_t *rs, bn_t *a, ec_t *g, ec_t u,
+		size_t n);
+
+int cp_ipa_ver(bn_t y, ec_t p, ec_t *ls, ec_t *rs, ec_t *g, ec_t u, size_t n);
+
 /**
  * Initialize the Context-hiding Multi-key Homomorphic Signature scheme (CMLHS).
  * The scheme due to Schabhuser et al. signs a vector of messages.

@@ -26,7 +26,6 @@
  *
  * Tests for implementation of cryptographic protocols.
  *
- * @version $Id$
  * @ingroup test
  */
 
@@ -1155,6 +1154,77 @@ static int pedersen(void) {
 	ec_free(h);
 	ec_free(c1);
 	ec_free(c2);
+	return code;
+}
+
+static int ipa(void) {
+	int code = RLC_ERR;
+	bn_t y, n, a[16];
+	ec_t p, u, ls[4], rs[4], g[16];
+
+	bn_null(y);
+	bn_null(n);
+	ec_null(p);
+	ec_null(u);
+	RLC_TRY {
+		bn_new(y);
+		bn_new(n);
+		ec_new(p);
+		ec_new(u);
+
+		for (size_t i = 0; i < 16; i++) {
+			bn_null(a[i]);
+			bn_new(a[i]);
+			ec_null(g[i]);
+			ec_new(g[i]);
+		}
+
+		for (size_t i = 0; i < 4; i++) {
+			ec_null(ls[i]);
+			ec_null(rs[i]);
+			ec_new(ls[i]);
+			ec_new(rs[i]);
+		}
+
+		TEST_ONCE("inner product arg is consistent") {
+			ec_curve_get_ord(n);
+			for (size_t i = 0; i < 4; i++) {
+				ec_rand(u);
+				for (size_t j = 0; j < (1 << i); j++) {
+					ec_rand(g[j]);
+					bn_rand_mod(a[j], n);
+				}
+				TEST_ASSERT(cp_ipa_prv(n, p, ls, rs, a, g, u, 1 << i) == RLC_OK, end);
+				if (i == 0) {
+					TEST_ASSERT(cp_ipa_ver(n, p, NULL, NULL, g, u, 1 << i) == 1, end);
+				} else {
+					TEST_ASSERT(cp_ipa_ver(n, p, ls, rs, g, u, 1 << i) == 1, end);
+				}
+				bn_zero(y);
+				TEST_ASSERT(cp_ipa_ver(y, p, ls, rs, g, u, 1 << i) == 0, end);
+				ec_set_infty(u);
+				TEST_ASSERT(cp_ipa_ver(n, p, ls, rs, g, u, 1 << i) == 0, end);
+			}
+		} TEST_END;
+
+	} RLC_CATCH_ANY {
+		RLC_ERROR(end);
+	}
+	code = RLC_OK;
+
+  end:
+	bn_free(y);
+	bn_free(n);
+	ec_free(p);
+	ec_free(u);
+	for (size_t i = 0; i < 16; i++) {
+		bn_free(a[i]);
+		ec_free(g[i]);
+	}
+	for (size_t i = 0; i < 4; i++) {
+		ec_free(ls[i]);
+		ec_free(rs[i]);
+	}
 	return code;
 }
 
@@ -2460,6 +2530,11 @@ int main(void) {
 		}
 
 		if (pedersen() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (ipa() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
