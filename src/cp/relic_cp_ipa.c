@@ -54,7 +54,7 @@ int cp_ipa_prv(bn_t y, ec_t p, ec_t *ls, ec_t *rs, bn_t *a, ec_t *g, ec_t u,
 	bn_null(c_l);
 	bn_null(c_r);
 
-	if (b == NULL || c == NULL || h == NULL) {
+	if (n == 0 || b == NULL || c == NULL || h == NULL) {
 		RLC_FREE(b);
 		RLC_FREE(c);
 		RLC_FREE(h);
@@ -110,14 +110,14 @@ int cp_ipa_prv(bn_t y, ec_t p, ec_t *ls, ec_t *rs, bn_t *a, ec_t *g, ec_t u,
 			}
 			bn_mod(c_l, c_l, r);
 			bn_mod(c_r, c_r, r);
-			ec_mul_sim_lot(rs[i], h + m, c, m);
+			ec_mul_sim_lot(ls[i], h + m, c, m);
 			ec_mul(s, u, c_l);
-			ec_add(rs[i], rs[i], s);
-			ec_norm(rs[i], rs[i]);
-			ec_mul_sim_lot(ls[i], h, c + m, m);
-			ec_mul(s, u, c_r);
 			ec_add(ls[i], ls[i], s);
 			ec_norm(ls[i], ls[i]);
+			ec_mul_sim_lot(rs[i], h, c + m, m);
+			ec_mul(s, u, c_r);
+			ec_add(rs[i], rs[i], s);
+			ec_norm(rs[i], rs[i]);
 
 			ec_write_bin(buf, RLC_FP_BYTES + 1, ls[i], 1);
 			ec_write_bin(buf + RLC_FP_BYTES + 1, RLC_FP_BYTES + 1, rs[i], 1);
@@ -126,13 +126,13 @@ int cp_ipa_prv(bn_t y, ec_t p, ec_t *ls, ec_t *rs, bn_t *a, ec_t *g, ec_t u,
 
 			bn_mod_inv(t, x[i], r);
 			for (size_t j = 0; j < m; j++) {
-				ec_mul_sim(h[j], h[j], x[i], h[m + j], t);
-				bn_mul(c[j], c[j], t);
-				bn_mul(c[m + j], c[m + j], x[i]);
+				ec_mul_sim(h[j], h[j], t, h[m + j], x[i]);
+				bn_mul(c[j], c[j], x[i]);
+				bn_mul(c[m + j], c[m + j], t);
 				bn_add(c[j], c[j], c[m + j]);
 				bn_mod(c[j], c[j], r);
-				bn_mul(b[j], b[j], x[i]);
-				bn_mul(b[m + j], b[m + j], t);
+				bn_mul(b[j], b[j], t);
+				bn_mul(b[m + j], b[m + j], x[i]);
 				bn_add(b[j], b[j], b[m + j]);
 				bn_mod(b[j], b[j], r);
 			}
@@ -220,9 +220,9 @@ int cp_ipa_ver(bn_t y, ec_t p, ec_t *ls, ec_t *rs, ec_t *g, ec_t u, size_t n) {
 			bn_read_bin(x, hash, RLC_MD_LEN);
 			bn_mod_inv(t, x, r);
 			for (size_t j = 0; j < m; j++) {
-				ec_mul_sim(h[j], h[j], x, h[m + j], t);
-				bn_mul(b[j], b[j], x);
-				bn_mul(b[m + j], b[m + j], t);
+				ec_mul_sim(h[j], h[j], t, h[m + j], x);
+				bn_mul(b[j], b[j], t);
+				bn_mul(b[m + j], b[m + j], x);
 				bn_add(b[j], b[j], b[m + j]);
 				bn_mod(b[j], b[j], r);
 			}
