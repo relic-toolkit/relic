@@ -944,6 +944,15 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
 #define g1_map(P, M, L)	  RLC_CAT(RLC_G1_LOWER, map)(P, M, L)
 
 /**
+ * Maps a byte array to an element in G_1.
+ *
+ * @param[out] P			- the result.
+ * @param[in] M				- the byte array to map.
+ * @param[in] L				- the array length in bytes.
+ */
+ #define g1_chf(P, Q, R, M, L)	  RLC_CAT(RLC_G1_LOWER, map_chf)(P, Q, R, M, L)
+
+/**
  * Maps a byte array to an element in G_2.
  *
  * @param[out] P			- the result.

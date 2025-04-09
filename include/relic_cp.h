@@ -2573,17 +2573,18 @@ int cp_mklhs_onv(const g1_t sig, const bn_t m, const bn_t *mu,
 
 int cp_smklhs_set(ec_t u, g1_t t1, g1_t p1, g2_t t2, g2_t p2);
 int cp_smklhs_gen(bn_t sk1, bn_t sk2, g1_t pk1, g2_t pk2, g1_t pk3);
-int cp_smklhs_sig(g1_t s, const bn_t m, const char *data, const char *id,
-		const char *tag, const g1_t t1, const g1_t p1, const bn_t sk1,
-		const bn_t sk2);
+int cp_smklhs_sig(g1_t s, const bn_t m, const bn_t r, const char *data,
+		const char *id, const char *tag, const g1_t t1, const g1_t p1,
+		const bn_t sk1, const bn_t sk2, const g1_t pk1);
 int cp_smklhs_fun(bn_t mu, const bn_t m[], const dig_t f[], size_t len);
 int cp_smklhs_evl(g1_t sig, const g1_t s[], const dig_t f[], size_t len);
-int cp_smklhs_ver(const g1_t sig, const bn_t m, const bn_t y1, const ec_t ps1,
-	const ec_t *ls1, const ec_t *rs1, const bn_t y2, const ec_t ps2,
-	const ec_t *ls2, const ec_t *rs2, const ec_t u, const char *data,
-	const char *id[], const char *tag[], const dig_t *f[],
-	const size_t flen[], const g1_t pk1[], const g2_t pk2[], 
-	const g1_t pk3[], const g2_t t2, const g2_t p2, size_t slen);
+int cp_smklhs_ver(const g1_t sig, const bn_t m, const bn_t r,
+	const bn_t y1, const ec_t ps1, const ec_t *ls1, const ec_t *rs1,
+	const bn_t y2, const ec_t ps2, const ec_t *ls2, const ec_t *rs2,
+	const ec_t u, const char *data, const char *id[], const char *tag[],
+	const dig_t *f[], const size_t flen[], const g1_t pk1[],
+	const g2_t pk2[],  const g1_t pk3[], const g2_t t2, const g2_t p2,
+	size_t slen);
 
 /**
  * Generates the trusted setup parameters for the factoring-based laconic

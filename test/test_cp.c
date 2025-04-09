@@ -2072,7 +2072,7 @@ static int zss(void) {
 static int lhs(void) {
 	int code = RLC_ERR;
 	uint8_t k[S][K];
-	bn_t y1, y2, m, n, msg[S][L], sk1[S], sk2[S], d[S], x[S][L];
+	bn_t y1, y2, m, n, t, msg[S][L], sk1[S], sk2[S], d[S], x[S][L];
 	g1_t h, t1, p1, pk1[S], pk3[S], as[S], cs[S], sig[S];
 	g1_t a[S][L], c[S][L], r[S][L];
 	g2_t t2, p2, s[S][L], pk2[S], y[S], z[S];
@@ -2086,6 +2086,7 @@ static int lhs(void) {
 
 	bn_null(m);
 	bn_null(n);
+	bn_null(t);
 	bn_null(y1);
 	bn_null(y2);
 	ec_null(ps1)
@@ -2101,6 +2102,7 @@ static int lhs(void) {
 	RLC_TRY {
 		bn_new(m);
 		bn_new(n);
+		bn_new(t);
 		bn_new(y1);
 		bn_new(y2);	
 		ec_new(ps1);
@@ -2178,7 +2180,7 @@ static int lhs(void) {
 		}
 
 		/* Initialize scheme for messages of single components. */
-		g1_get_ord(n);
+		pc_get_ord(n);
 		cp_cmlhs_set(h);
 
 		TEST_CASE("context-hiding linear homomorphic signature is correct") {
@@ -2264,14 +2266,15 @@ static int lhs(void) {
 		TEST_END;
 
 		cp_smklhs_set(u, t1, p1, t2, p2);
+		bn_rand_mod(t, n);
 		TEST_CASE("succint linear multi-key homomorphic signature is correct") {
 			for (int j = 0; j < S; j++) {
 				cp_smklhs_gen(sk1[j], sk2[j], pk1[j], pk2[j], pk3[j]);
 				for (int l = 0; l < L; l++) {
 					ls[l] = "l";
 					bn_rand_mod(msg[j][l], n);
-					cp_smklhs_sig(a[j][l], msg[j][l], data, id[j], ls[l],
-							t1, p1, sk1[j], sk2[j]);
+					cp_smklhs_sig(a[j][l], msg[j][l], t, data, id[j], ls[l],
+							t1, p1, sk1[j], sk2[j], pk1[j]);
 				}
 			}
 
@@ -2292,7 +2295,7 @@ static int lhs(void) {
 			cp_ipa_prv(y1, ps1, ls1, rs1, pk1, d, u, S);
 			cp_ipa_prv(y2, ps2, ls2, rs2, pk3, d, u, S);
 
-			TEST_ASSERT(cp_smklhs_ver(h, m, y1, ps1, ls1, rs1, y2, ps2, ls2,
+			TEST_ASSERT(cp_smklhs_ver(h, m, t, y1, ps1, ls1, rs1, y2, ps2, ls2,
 					rs2, u, data, id, (const char **)ls, (const dig_t **)f,
 					flen, pk1, pk2, pk3, t2, p2, S), end);
 		}
@@ -2304,8 +2307,9 @@ static int lhs(void) {
 	code = RLC_OK;
 
   end:
-	bn_free(n);
 	bn_free(m);
+	bn_free(n);
+	bn_free(t);
 	bn_free(y1);
 	bn_free(y2);
 	ec_free(ps1);
@@ -2617,11 +2621,6 @@ int main(void) {
 	util_banner("Protocols based on pairings:\n", 0);
 	if (pc_param_set_any() == RLC_OK) {
 
-		if (lhs() != RLC_OK) {
-			core_clean();
-			return 1;
-		}
-
 		if (pdpub() != RLC_OK) {
 			core_clean();
 			return 1;
@@ -2675,6 +2674,11 @@ int main(void) {
 #endif
 
 		if (zss() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+		
+		if (lhs() != RLC_OK) {
 			core_clean();
 			return 1;
 		}

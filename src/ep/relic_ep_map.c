@@ -572,3 +572,26 @@ void ep_map_rnd(ep_t p, const uint8_t *uniform_bytes, size_t len) {
 	ep_map_sswum_impl(p, uniform_bytes, len, map_fn);
 #endif
 }
+
+void ep_map_chf(ep_t p, const bn_t r, const ep_t q, const uint8_t *bytes,
+		size_t len) {
+	bn_t m, n;
+
+	bn_null(m);
+	bn_null(n);
+
+	RLC_TRY {
+		bn_new(m);
+		bn_new(n);
+
+		ep_curve_get_ord(n);
+		bn_read_bin(m, bytes, len);
+		bn_mod(m, m, n);
+		ep_mul_sim_gen(p, m, q, r);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		bn_free(m);
+		bn_free(n);
+	}
+}

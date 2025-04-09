@@ -1303,6 +1303,19 @@ size_t ep_map_rnd_size(void);
 void ep_map_rnd(ep_t p, const uint8_t *uniform_bytes, size_t len);
 
 /**
+ * Maps a byte array to a point in a prime elliptic curve using a Chameleon
+ * Hash Function (CHF).
+ *
+ * @param[out] p			- the result.
+ * @param[in] r				- the randomess.
+ * @param[in] q				- the public key.
+ * @param[in] bytes			- the byte array to map.
+ * @param[in] len			- the array length in bytes.
+ */
+void ep_map_chf(ep_t p, const bn_t r, const ep_t q, const uint8_t *bytes,
+		size_t len);
+
+/**
  * Compresses a point.
  *
  * @param[out] r			- the result.
