@@ -35,7 +35,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-int cp_cmlhs_init(g1_t h) {
+int cp_cmlhs_set(g1_t h) {
 	g1_rand(h);
 	return RLC_OK;
 }

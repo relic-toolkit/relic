@@ -725,11 +725,9 @@ static int pedersen(void) {
 
 	bn_free(m);
 	bn_free(n);
-	bn_free(r1);
-	bn_free(r2);
+	bn_free(r);
 	ec_free(h);
-	ec_free(c1);
-	ec_free(c2);
+	ec_free(c);
 	return code;
 }
 
@@ -1642,7 +1640,7 @@ static void lhs(void) {
 	}
 
 	/* Initialize scheme for messages of single components. */
-	cp_cmlhs_init(h);
+	cp_cmlhs_set(h);
 
 	BENCH_ONE("cp_cmlhs_gen (ecdsa)",
 		for (int j = 0; j < S; j++) {

@@ -3405,7 +3405,7 @@
 #undef cp_etrs_ver
 #undef cp_etrs_ext
 #undef cp_etrs_uni
-#undef cp_cmlhs_init
+#undef cp_cmlhs_set
 #undef cp_cmlhs_gen
 #undef cp_cmlhs_sig
 #undef cp_cmlhs_fun
@@ -3555,7 +3555,7 @@
 #define cp_etrs_ver 	RLC_PREFIX(cp_etrs_ver)
 #define cp_etrs_ext 	RLC_PREFIX(cp_etrs_ext)
 #define cp_etrs_uni 	RLC_PREFIX(cp_etrs_uni)
-#define cp_cmlhs_init 	RLC_PREFIX(cp_cmlhs_init)
+#define cp_cmlhs_set 	RLC_PREFIX(cp_cmlhs_set)
 #define cp_cmlhs_gen 	RLC_PREFIX(cp_cmlhs_gen)
 #define cp_cmlhs_sig 	RLC_PREFIX(cp_cmlhs_sig)
 #define cp_cmlhs_fun 	RLC_PREFIX(cp_cmlhs_fun)

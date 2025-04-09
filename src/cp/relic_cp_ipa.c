@@ -35,8 +35,8 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-int cp_ipa_prv(bn_t y, ec_t p, ec_t *ls, ec_t *rs, bn_t *a, ec_t *g, ec_t u,
-		size_t n) {
+int cp_ipa_prv(bn_t y, ec_t p, ec_t *ls, ec_t *rs, const ec_t *g, const bn_t *a,
+		const ec_t u, size_t n) {
 	uint8_t buf[2 * RLC_FP_BYTES + 2], hash[RLC_MD_LEN];
 	int result = RLC_OK;
 	size_t m, k;
@@ -168,7 +168,8 @@ int cp_ipa_prv(bn_t y, ec_t p, ec_t *ls, ec_t *rs, bn_t *a, ec_t *g, ec_t u,
 	return result;
 }
 
-int cp_ipa_ver(bn_t y, ec_t p, ec_t *ls, ec_t *rs, ec_t *g, ec_t u, size_t n) {
+int cp_ipa_ver(const bn_t y, const ec_t p, const ec_t *ls, const ec_t *rs,
+		const ec_t *g, const ec_t u, size_t n) {
 	uint8_t buf[2 * RLC_FP_BYTES + 2], hash[RLC_MD_LEN];
 	int result = 1;
 	size_t m, k;
@@ -233,12 +234,12 @@ int cp_ipa_ver(bn_t y, ec_t p, ec_t *ls, ec_t *rs, ec_t *g, ec_t u, size_t n) {
 			ec_mul_sim(s, ls[i], x, rs[i], t);
 			ec_add(q, q, s);
 		}
+		ec_norm(q, q);
 
 		bn_mul(t, y, b[0]);
 		bn_mod(t, t, r);
-		ec_mul_sim(h[0], h[0], y, u, t);
-		ec_norm(q, q);
-		result = (ec_cmp(q, h[0]) == RLC_EQ);
+		ec_mul_sim(s, h[0], y, u, t);
+		result = (ec_cmp(q, s) == RLC_EQ);
 	} RLC_CATCH_ANY {
 		result = 0;
 	} RLC_FINALLY {
@@ -246,7 +247,7 @@ int cp_ipa_ver(bn_t y, ec_t p, ec_t *ls, ec_t *rs, ec_t *g, ec_t u, size_t n) {
 		ec_free(s);
 		bn_free(r);
 		bn_free(t);
-		bn_null(x);
+		bn_free(x);
 		for (size_t i = 0; i < n; i++) {
 			bn_free(b[i]);
 			ec_free(h[i]);

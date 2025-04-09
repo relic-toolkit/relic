@@ -1194,7 +1194,7 @@ static int ipa(void) {
 					ec_rand(g[j]);
 					bn_rand_mod(a[j], n);
 				}
-				TEST_ASSERT(cp_ipa_prv(n, p, ls, rs, a, g, u, 1 << i) == RLC_OK, end);
+				TEST_ASSERT(cp_ipa_prv(n, p, ls, rs, g, a, u, 1 << i) == RLC_OK, end);
 				if (i == 0) {
 					TEST_ASSERT(cp_ipa_ver(n, p, NULL, NULL, g, u, 1 << i) == 1, end);
 				} else {
@@ -2072,11 +2072,12 @@ static int zss(void) {
 static int lhs(void) {
 	int code = RLC_ERR;
 	uint8_t k[S][K];
-	bn_t m, n, msg[S][L], sk[S], d[S], x[S][L];
-	g1_t _r, h, as[S], cs[S], sig[S];
+	bn_t y1, y2, m, n, msg[S][L], sk1[S], sk2[S], d[S], x[S][L];
+	g1_t h, t1, p1, pk1[S], pk3[S], as[S], cs[S], sig[S];
 	g1_t a[S][L], c[S][L], r[S][L];
-	g2_t _s, s[S][L], pk[S], y[S], z[S];
+	g2_t t2, p2, s[S][L], pk2[S], y[S], z[S];
 	gt_t *hs[S], vk;
+	ec_t u, ps1, ps2, ls1[S], rs1[S], ls2[S], rs2[S];
 	const char *data = "database-identifier";
 	const char *id[S] = { "Alice", "Bob" };
 	dig_t ft[S], *f[S] = { NULL };
@@ -2085,17 +2086,31 @@ static int lhs(void) {
 
 	bn_null(m);
 	bn_null(n);
+	bn_null(y1);
+	bn_null(y2);
+	ec_null(ps1)
+	ec_null(ps2)
+	ec_null(u);
 	g1_null(h);
-	g1_null(_r);
-	g2_null(_s);
+	g1_null(t1);
+	g1_null(p1);
+	g2_null(t2);
+	g2_null(p2);
 	gt_null(vk);
 
 	RLC_TRY {
 		bn_new(m);
 		bn_new(n);
+		bn_new(y1);
+		bn_new(y2);	
+		ec_new(ps1);
+		ec_new(ps2);
+		ec_new(u);
 		g1_new(h);
-		g1_new(_r);
-		g2_new(_s);
+		g1_new(t1);
+		g1_new(p1);
+		g2_new(t2);
+		g2_new(p2);
 		gt_new(vk);
 
 		for (int i = 0; i < S; i++) {
@@ -2118,23 +2133,37 @@ static int lhs(void) {
 				g1_new(r[i][j]);
 				g2_new(s[i][j]);
 			}
-			bn_null(sk[i]);
+			bn_null(sk1[i]);
+			bn_null(sk2[i]);
 			bn_null(d[i]);
+			ec_null(ls1[i]);
+			ec_null(ls2[i]);
+			ec_null(rs1[i]);
+			ec_null(rs2[i]);
 			g1_null(sig[i]);
 			g1_null(as[i]);
 			g1_null(cs[i]);
+			g1_null(pk1[i]);
+			g1_null(pk3[i]);
 			g2_null(y[i]);
 			g2_null(z[i]);
-			g2_null(pk[i]);
+			g2_null(pk2[i]);
 
-			bn_new(sk[i]);
+			bn_new(sk1[i]);
+			bn_new(sk2[i]);
 			bn_new(d[i]);
 			g1_new(sig[i]);
+			ec_new(ls1[i]);
+			ec_new(ls2[i]);
+			ec_new(rs1[i]);
+			ec_new(rs2[i]);
 			g1_new(as[i]);
 			g1_new(cs[i]);
+			g1_new(pk1[i]);
+			g1_new(pk3[i]);
 			g2_new(y[i]);
 			g2_new(z[i]);
-			g2_new(pk[i]);
+			g2_new(pk2[i]);
 		}
 
 		/* Define linear function. */
@@ -2150,13 +2179,13 @@ static int lhs(void) {
 
 		/* Initialize scheme for messages of single components. */
 		g1_get_ord(n);
-		cp_cmlhs_init(h);
+		cp_cmlhs_set(h);
 
 		TEST_CASE("context-hiding linear homomorphic signature is correct") {
 			int label[L], b = i % 2;
 
 			for (int j = 0; j < S; j++) {
-				cp_cmlhs_gen(x[j], hs[j], L, k[j], K, sk[j], pk[j], d[j], y[j], b);
+				cp_cmlhs_gen(x[j], hs[j], L, k[j], K, sk1[j], pk2[j], d[j], y[j], b);
 			}
 			/* Compute all signatures (ECDSA if b = 0; BLS if b = 1). */
 			for (int j = 0; j < S; j++) {
@@ -2165,7 +2194,7 @@ static int lhs(void) {
 					bn_rand_mod(msg[j][l], n);
 					cp_cmlhs_sig(sig[j], z[j], a[j][l], c[j][l], r[j][l],
 						s[j][l], msg[j][l], data, label[l], x[j][l], h, k[j], K,
-						d[j], sk[j], b);
+						d[j], sk1[j], b);
 				}
 			}
 			/* Apply linear function over signatures. */
@@ -2173,14 +2202,14 @@ static int lhs(void) {
 				cp_cmlhs_fun(as[j], cs[j], a[j], c[j], f[j], flen[j]);
 			}
 
-			cp_cmlhs_evl(_r, _s, r[0], s[0], f[0], flen[0]);
+			cp_cmlhs_evl(t1, t2, r[0], s[0], f[0], flen[0]);
 			for (int j = 1; j < S; j++) {
 				cp_cmlhs_evl(r[0][0], s[0][0], r[j], s[j], f[j], flen[j]);
-				g1_add(_r, _r, r[0][0]);
-				g2_add(_s, _s, s[0][0]);
+				g1_add(t1, t1, r[0][0]);
+				g2_add(t2, t2, s[0][0]);
 			}
-			g1_norm(_r, _r);
-			g2_norm(_s, _s);
+			g1_norm(t1, t1);
+			g2_norm(t2, t2);
 			/* We share messages between users to simplify tests. */
 			bn_zero(m);
 			for (int j = 0; j < S; j++) {
@@ -2191,52 +2220,81 @@ static int lhs(void) {
 				}
 			}
 
-			TEST_ASSERT(cp_cmlhs_ver(_r, _s, sig, z, as, cs, m, data, h, label,
-				(const gt_t **)hs, (const dig_t **)f, flen, y, pk, S, b), end);
+			TEST_ASSERT(cp_cmlhs_ver(t1, t2, sig, z, as, cs, m, data, h, label,
+				(const gt_t **)hs, (const dig_t **)f, flen, y, pk2, S, b), end);
 
 			cp_cmlhs_off(vk, h, label, (const gt_t **)hs, (const dig_t **)f,
 				flen, S);
-			TEST_ASSERT(cp_cmlhs_onv(_r, _s, sig, z, as, cs, m, data, h, vk,
-				y, pk, S, b) == 1, end);
+			TEST_ASSERT(cp_cmlhs_onv(t1, t2, sig, z, as, cs, m, data, h, vk,
+				y, pk2, S, b) == 1, end);
 		}
 		TEST_END;
 
 		TEST_CASE("simple linear multi-key homomorphic signature is correct") {
 			for (int j = 0; j < S; j++) {
-				cp_mklhs_gen(sk[j], pk[j]);
+				cp_mklhs_gen(sk1[j], pk2[j]);
 				for (int l = 0; l < L; l++) {
 					ls[l] = "l";
 					bn_rand_mod(msg[j][l], n);
-					cp_mklhs_sig(a[j][l], msg[j][l], data, id[j], ls[l], sk[j]);
+					cp_mklhs_sig(a[j][l], msg[j][l], data, id[j], ls[l], sk1[j]);
 				}
 			}
-
-			for (int j = 0; j < S; j++) {
-				cp_mklhs_fun(d[j], msg[j], f[j], L);
-			}
-
-			g1_set_infty(_r);
-			for (int j = 0; j < S; j++) {
-				cp_mklhs_evl(r[0][j], a[j], f[j], L);
-				g1_add(_r, _r, r[0][j]);
-			}
-			g1_norm(_r, _r);
 
 			bn_zero(m);
 			for (int j = 0; j < S; j++) {
-				for (int l = 0; l < L; l++) {
-					bn_mul_dig(msg[j][l], msg[j][l], f[j][l]);
-					bn_add(m, m, msg[j][l]);
-					bn_mod(m, m, n);
-				}
+				cp_mklhs_fun(d[j], msg[j], f[j], L);
+				bn_add(m, m, d[j]);
+				bn_mod(m, m, n);
 			}
 
-			TEST_ASSERT(cp_mklhs_ver(_r, m, d, data, id, (const char **)ls,
-					(const dig_t **)f, flen, pk, S), end);
+			g1_set_infty(t1);
+			for (int j = 0; j < S; j++) {
+				cp_mklhs_evl(r[0][j], a[j], f[j], L);
+				g1_add(t1, t1, r[0][j]);
+			}
+			g1_norm(t1, t1);
+
+			TEST_ASSERT(cp_mklhs_ver(t1, m, d, data, id, (const char **)ls,
+					(const dig_t **)f, flen, pk2, S), end);
 
 			cp_mklhs_off(as, ft, id, (const char **)ls, (const dig_t **)f,
 					flen, S);
-			TEST_ASSERT(cp_mklhs_onv(_r, m, d, data, id, as, ft, pk, S), end);
+			TEST_ASSERT(cp_mklhs_onv(t1, m, d, data, id, as, ft, pk2, S), end);
+		}
+		TEST_END;
+
+		cp_smklhs_set(u, t1, p1, t2, p2);
+		TEST_CASE("succint linear multi-key homomorphic signature is correct") {
+			for (int j = 0; j < S; j++) {
+				cp_smklhs_gen(sk1[j], sk2[j], pk1[j], pk2[j], pk3[j]);
+				for (int l = 0; l < L; l++) {
+					ls[l] = "l";
+					bn_rand_mod(msg[j][l], n);
+					cp_smklhs_sig(a[j][l], msg[j][l], data, id[j], ls[l],
+							t1, p1, sk1[j], sk2[j]);
+				}
+			}
+
+			bn_zero(m);
+			for (int j = 0; j < S; j++) {
+				cp_mklhs_fun(d[j], msg[j], f[j], L);
+				bn_add(m, m, d[j]);
+				bn_mod(m, m, n);
+			}
+
+			g1_set_infty(h);
+			for (int j = 0; j < S; j++) {
+				cp_mklhs_evl(r[0][j], a[j], f[j], L);
+				g1_add(h, h, r[0][j]);
+			}
+			g1_norm(h, h);
+
+			cp_ipa_prv(y1, ps1, ls1, rs1, pk1, d, u, S);
+			cp_ipa_prv(y2, ps2, ls2, rs2, pk3, d, u, S);
+
+			TEST_ASSERT(cp_smklhs_ver(h, m, y1, ps1, ls1, rs1, y2, ps2, ls2,
+					rs2, u, data, id, (const char **)ls, (const dig_t **)f,
+					flen, pk1, pk2, pk3, t2, p2, S), end);
 		}
 		TEST_END;
 	}
@@ -2248,9 +2306,16 @@ static int lhs(void) {
   end:
 	bn_free(n);
 	bn_free(m);
+	bn_free(y1);
+	bn_free(y2);
+	ec_free(ps1);
+	ec_free(ps2);
+	ec_free(u);
 	g1_free(h);
-	g1_free(_r);
-	g2_free(_s);
+	g1_free(t1);
+	g1_free(p1);
+	g2_free(t2);
+	g2_free(p2);
 	gt_free(vk);
 
 	for (int i = 0; i < S; i++) {
@@ -2267,14 +2332,21 @@ static int lhs(void) {
 			g1_free(r[i][j]);
 			g2_free(s[i][j]);
 		}
-		bn_free(sk[i]);
+		bn_free(sk1[i]);
+		bn_free(sk2[i]);
 		bn_free(d[i]);
+		ec_free(ls1[i]);
+		ec_free(ls2[i]);
+		ec_free(rs1[i]);
+		ec_free(rs2[i]);
 		g1_free(sig[i]);
 		g1_free(as[i]);
 		g1_free(cs[i]);
+		g1_free(pk1[i]);
+		g1_free(pk3[i]);
 		g2_free(y[i]);
 		g2_free(z[i]);
-		g2_free(pk[i]);
+		g2_free(pk2[i]);
 	}
 	return code;
 }
@@ -2545,6 +2617,11 @@ int main(void) {
 	util_banner("Protocols based on pairings:\n", 0);
 	if (pc_param_set_any() == RLC_OK) {
 
+		if (lhs() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
 		if (pdpub() != RLC_OK) {
 			core_clean();
 			return 1;
@@ -2598,11 +2675,6 @@ int main(void) {
 #endif
 
 		if (zss() != RLC_OK) {
-			core_clean();
-			return 1;
-		}
-
-		if (lhs() != RLC_OK) {
 			core_clean();
 			return 1;
 		}

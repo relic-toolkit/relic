@@ -2321,10 +2321,11 @@ int cp_etrs_uni(int thres, bn_t *td, bn_t *y, int max, etrs_t *p, size_t *size,
  */
 int cp_ped_com(ec_t c, ec_t h, bn_t r, bn_t x);
 
-int cp_ipa_prv(bn_t y, ec_t p, ec_t *ls, ec_t *rs, bn_t *a, ec_t *g, ec_t u,
-		size_t n);
+int cp_ipa_prv(bn_t y, ec_t p, ec_t *ls, ec_t *rs, const ec_t *g, const bn_t *a,
+		const ec_t u, size_t n);
 
-int cp_ipa_ver(bn_t y, ec_t p, ec_t *ls, ec_t *rs, ec_t *g, ec_t u, size_t n);
+int cp_ipa_ver(const bn_t y, const ec_t p, const ec_t *ls, const ec_t *rs,
+		const ec_t *g, const ec_t u, size_t n);
 
 /**
  * Initialize the Context-hiding Multi-key Homomorphic Signature scheme (CMLHS).
@@ -2333,7 +2334,7 @@ int cp_ipa_ver(bn_t y, ec_t p, ec_t *ls, ec_t *rs, ec_t *g, ec_t u, size_t n);
  * @param[out] h			- the random element (message as one component).
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_cmlhs_init(g1_t h);
+int cp_cmlhs_set(g1_t h);
 
 /**
  * Generates a key pair for the CMLHS scheme using BLS as underlying signature.
@@ -2569,6 +2570,20 @@ int cp_mklhs_off(g1_t *h, dig_t *ft, const char *id[], const char *tag[],
 int cp_mklhs_onv(const g1_t sig, const bn_t m, const bn_t *mu,
 		const char *data, const char *id[], const g1_t *h, const dig_t *ft,
 		const g2_t *pk, size_t slen);
+
+int cp_smklhs_set(ec_t u, g1_t t1, g1_t p1, g2_t t2, g2_t p2);
+int cp_smklhs_gen(bn_t sk1, bn_t sk2, g1_t pk1, g2_t pk2, g1_t pk3);
+int cp_smklhs_sig(g1_t s, const bn_t m, const char *data, const char *id,
+		const char *tag, const g1_t t1, const g1_t p1, const bn_t sk1,
+		const bn_t sk2);
+int cp_smklhs_fun(bn_t mu, const bn_t m[], const dig_t f[], size_t len);
+int cp_smklhs_evl(g1_t sig, const g1_t s[], const dig_t f[], size_t len);
+int cp_smklhs_ver(const g1_t sig, const bn_t m, const bn_t y1, const ec_t ps1,
+	const ec_t *ls1, const ec_t *rs1, const bn_t y2, const ec_t ps2,
+	const ec_t *ls2, const ec_t *rs2, const ec_t u, const char *data,
+	const char *id[], const char *tag[], const dig_t *f[],
+	const size_t flen[], const g1_t pk1[], const g2_t pk2[], 
+	const g1_t pk3[], const g2_t t2, const g2_t p2, size_t slen);
 
 /**
  * Generates the trusted setup parameters for the factoring-based laconic
