@@ -1014,6 +1014,7 @@
 #undef ep_map_swift
 #undef ep_map_rnd_size
 #undef ep_map_rnd
+#undef ep_map_chf
 #undef ep_pck
 #undef ep_upk
 
@@ -1110,6 +1111,7 @@
 #define ep_map_swift 	RLC_PREFIX(ep_map_swift)
 #define ep_map_rnd_size 	RLC_PREFIX(ep_map_rnd_size)
 #define ep_map_rnd 	RLC_PREFIX(ep_map_rnd)
+#define ep_map_chf 	RLC_PREFIX(ep_map_chf)
 #define ep_pck 	RLC_PREFIX(ep_pck)
 #define ep_upk 	RLC_PREFIX(ep_upk)
 
@@ -3405,6 +3407,9 @@
 #undef cp_etrs_ver
 #undef cp_etrs_ext
 #undef cp_etrs_uni
+#undef cp_ped_com
+#undef cp_ipa_prv
+#undef cp_ipa_ver
 #undef cp_cmlhs_set
 #undef cp_cmlhs_gen
 #undef cp_cmlhs_sig
@@ -3420,6 +3425,12 @@
 #undef cp_mklhs_ver
 #undef cp_mklhs_off
 #undef cp_mklhs_onv
+#undef cp_smklhs_set
+#undef cp_smklhs_gen
+#undef cp_smklhs_sig
+#undef cp_smklhs_fun
+#undef cp_smklhs_evl
+#undef cp_smklhs_ver
 #undef cp_rsapsi_gen
 #undef cp_rsapsi_ask
 #undef cp_rsapsi_ans
@@ -3555,6 +3566,9 @@
 #define cp_etrs_ver 	RLC_PREFIX(cp_etrs_ver)
 #define cp_etrs_ext 	RLC_PREFIX(cp_etrs_ext)
 #define cp_etrs_uni 	RLC_PREFIX(cp_etrs_uni)
+#define cp_ped_com 	RLC_PREFIX(cp_ped_com)
+#define cp_ipa_prv 	RLC_PREFIX(cp_ipa_prv)
+#define cp_ipa_ver 	RLC_PREFIX(cp_ipa_ver)
 #define cp_cmlhs_set 	RLC_PREFIX(cp_cmlhs_set)
 #define cp_cmlhs_gen 	RLC_PREFIX(cp_cmlhs_gen)
 #define cp_cmlhs_sig 	RLC_PREFIX(cp_cmlhs_sig)
@@ -3570,6 +3584,12 @@
 #define cp_mklhs_ver 	RLC_PREFIX(cp_mklhs_ver)
 #define cp_mklhs_off 	RLC_PREFIX(cp_mklhs_off)
 #define cp_mklhs_onv 	RLC_PREFIX(cp_mklhs_onv)
+#define cp_smklhs_set 	RLC_PREFIX(cp_smklhs_set)
+#define cp_smklhs_gen 	RLC_PREFIX(cp_smklhs_gen)
+#define cp_smklhs_sig 	RLC_PREFIX(cp_smklhs_sig)
+#define cp_smklhs_fun 	RLC_PREFIX(cp_smklhs_fun)
+#define cp_smklhs_evl 	RLC_PREFIX(cp_smklhs_evl)
+#define cp_smklhs_ver 	RLC_PREFIX(cp_smklhs_ver)
 #define cp_rsapsi_gen 	RLC_PREFIX(cp_rsapsi_gen)
 #define cp_rsapsi_ask 	RLC_PREFIX(cp_rsapsi_ask)
 #define cp_rsapsi_ans 	RLC_PREFIX(cp_rsapsi_ans)
