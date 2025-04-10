@@ -1188,22 +1188,22 @@ static int ipa(void) {
 
 		TEST_ONCE("inner product arg is consistent") {
 			ec_curve_get_ord(n);
-			for (size_t i = 0; i < 4; i++) {
+			for (size_t i = 1; i < 16; i++) {
 				ec_rand(u);
-				for (size_t j = 0; j < (1 << i); j++) {
+				for (size_t j = 0; j < i; j++) {
 					ec_rand(g[j]);
 					bn_rand_mod(a[j], n);
 				}
-				TEST_ASSERT(cp_ipa_prv(n, p, ls, rs, g, a, u, 1 << i) == RLC_OK, end);
-				if (i == 0) {
-					TEST_ASSERT(cp_ipa_ver(n, p, NULL, NULL, g, u, 1 << i) == 1, end);
+				TEST_ASSERT(cp_ipa_prv(n, p, ls, rs, g, a, u, i) == RLC_OK, end);
+				if (i == 1) {
+					TEST_ASSERT(cp_ipa_ver(n, p, NULL, NULL, g, u, i) == 1, end);
 				} else {
-					TEST_ASSERT(cp_ipa_ver(n, p, ls, rs, g, u, 1 << i) == 1, end);
+					TEST_ASSERT(cp_ipa_ver(n, p, ls, rs, g, u, i) == 1, end);
 				}
 				bn_zero(y);
-				TEST_ASSERT(cp_ipa_ver(y, p, ls, rs, g, u, 1 << i) == 0, end);
+				TEST_ASSERT(cp_ipa_ver(y, p, ls, rs, g, u, i) == 0, end);
 				ec_set_infty(u);
-				TEST_ASSERT(cp_ipa_ver(n, p, ls, rs, g, u, 1 << i) == 0, end);
+				TEST_ASSERT(cp_ipa_ver(n, p, ls, rs, g, u, i) == 0, end);
 			}
 		} TEST_END;
 

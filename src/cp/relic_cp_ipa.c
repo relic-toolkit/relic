@@ -39,13 +39,18 @@ int cp_ipa_prv(bn_t y, ec_t p, ec_t *ls, ec_t *rs, const ec_t *g, const bn_t *a,
 		const ec_t u, size_t n) {
 	uint8_t buf[2 * RLC_FP_BYTES + 2], hash[RLC_MD_LEN];
 	int result = RLC_OK;
-	size_t m, k;
-	bn_t *b = RLC_ALLOCA(bn_t, n);
-	bn_t *x = RLC_ALLOCA(bn_t, n);
-	bn_t *c = RLC_ALLOCA(bn_t, n);
-	ec_t *h = RLC_ALLOCA(ec_t, n);
-	bn_t t, r, c_l, c_r;
-	ec_t q, s;
+	size_t m = n, k = 0;
+	bn_t *b, *x, *c, t, r, c_l, c_r;
+	ec_t q, s, *h;
+
+	do {
+		k++;
+	} while (m >>= 1);
+	k = ( n == 1 ? 0 : k);
+	b = RLC_ALLOCA(bn_t, 1 << k);
+	x = RLC_ALLOCA(bn_t, 1 << k);
+	c = RLC_ALLOCA(bn_t, 1 << k);
+	h = RLC_ALLOCA(ec_t, 1 << k);
 
 	ec_null(q);
 	ec_null(s);
@@ -54,9 +59,10 @@ int cp_ipa_prv(bn_t y, ec_t p, ec_t *ls, ec_t *rs, const ec_t *g, const bn_t *a,
 	bn_null(c_l);
 	bn_null(c_r);
 
-	if (n == 0 || b == NULL || c == NULL || h == NULL) {
+	if (n == 0 || b == NULL || c == NULL || x == NULL || h == NULL) {
 		RLC_FREE(b);
 		RLC_FREE(c);
+		RLC_FREE(x);
 		RLC_FREE(h);
 		RLC_THROW(ERR_NO_MEMORY);
 		return RLC_ERR;
@@ -71,7 +77,7 @@ int cp_ipa_prv(bn_t y, ec_t p, ec_t *ls, ec_t *rs, const ec_t *g, const bn_t *a,
 		bn_new(c_r);
 
 		bn_zero(c_l);
-		for (size_t i = 0; i < n; i++) {
+		for (size_t i = 0; i < (1 << k); i++) {
 			bn_null(b[i]);
 			bn_null(c[i]);
 			bn_null(x[i]);
@@ -80,15 +86,17 @@ int cp_ipa_prv(bn_t y, ec_t p, ec_t *ls, ec_t *rs, const ec_t *g, const bn_t *a,
 			bn_new(c[i]);
 			bn_new(x[i]);
 			ec_new(h[i]);
-			ec_copy(h[i], g[i]);
 			bn_set_dig(b[i], 1);
-			bn_copy(c[i], a[i]);
-			bn_add(c_l, c_l, a[i]);
+			if (i < n) {
+				ec_copy(h[i], g[i]);
+				bn_copy(c[i], a[i]);
+			} else {
+				ec_set_infty(h[i]);
+				bn_zero(c[i]);
+			}
+			bn_add(c_l, c_l, c[i]);
 		}
 
-		k = 0;
-		m = n;
-		while (m >>= 1) ++k;
 		ec_curve_get_ord(r);
 		bn_mod(c_l, c_l, r);
 		ec_mul_sim_lot(p, g, a, n);
@@ -96,7 +104,7 @@ int cp_ipa_prv(bn_t y, ec_t p, ec_t *ls, ec_t *rs, const ec_t *g, const bn_t *a,
 		ec_add(p, p, q);
 		ec_norm(p, p);
 
-		m = n;
+		m = (1 << k);
 		ec_copy(q, p);
 		for (size_t i = 0; i < k; i++) {
 			m = m >> 1;
@@ -154,7 +162,7 @@ int cp_ipa_prv(bn_t y, ec_t p, ec_t *ls, ec_t *rs, const ec_t *g, const bn_t *a,
 		bn_free(t);
 		bn_free(c_l);
 		bn_free(c_r);
-		for (size_t i = 0; i < n; i++) {
+		for (size_t i = 0; i < (1 << k); i++) {
 			bn_free(b[i]);
 			bn_free(c[i]);
 			bn_free(x[i]);
@@ -172,11 +180,16 @@ int cp_ipa_ver(const bn_t y, const ec_t p, const ec_t *ls, const ec_t *rs,
 		const ec_t *g, const ec_t u, size_t n) {
 	uint8_t buf[2 * RLC_FP_BYTES + 2], hash[RLC_MD_LEN];
 	int result = 1;
-	size_t m, k;
-	bn_t *b = RLC_ALLOCA(bn_t, n);
-	ec_t *h = RLC_ALLOCA(ec_t, n);
-	bn_t t, r, x;
-	ec_t q, s;
+	size_t m = n, k = 0;
+	bn_t t, r, x, *b;
+	ec_t q, s, *h;
+
+	do {
+		k++;
+	} while (m >>= 1);
+	k = (n == 1 ? 0 : k);
+	b = RLC_ALLOCA(bn_t, 1 << k);
+	h = RLC_ALLOCA(ec_t, 1 << k);
 
 	ec_null(q);
 	ec_null(s);
@@ -197,21 +210,22 @@ int cp_ipa_ver(const bn_t y, const ec_t p, const ec_t *ls, const ec_t *rs,
 		bn_new(r);
 		bn_new(t);
 		bn_new(x);
-		for (size_t i = 0; i < n; i++) {
+		for (size_t i = 0; i < (1 << k); i++) {
 			bn_null(b[i]);
 			ec_null(h[i]);
 			bn_new(b[i]);
 			ec_new(h[i]);
-			ec_copy(h[i], g[i]);
 			bn_set_dig(b[i], 1);
+			if (i < n) {
+				ec_copy(h[i], g[i]);
+			} else {
+				ec_set_infty(h[i]);
+			}
 		}
 
-		k = 0;
-		m = n;
-		while (m >>= 1) ++k;
 		ec_curve_get_ord(r);
 
-		m = n;
+		m = (1 << k);
 		ec_copy(q, p);
 		for (size_t i = 0; i < k; i++) {
 			m = m >> 1;
@@ -248,7 +262,7 @@ int cp_ipa_ver(const bn_t y, const ec_t p, const ec_t *ls, const ec_t *rs,
 		bn_free(r);
 		bn_free(t);
 		bn_free(x);
-		for (size_t i = 0; i < n; i++) {
+		for (size_t i = 0; i < (1 << k); i++) {
 			bn_free(b[i]);
 			ec_free(h[i]);
 		}
