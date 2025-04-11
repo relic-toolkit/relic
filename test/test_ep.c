@@ -1351,18 +1351,21 @@ static int compression(void) {
 
 static int hashing(void) {
 	int code = RLC_ERR;
-	ep_t a;
+	ep_t a, b;
 	bn_t n;
 	/* Allocate buffer with plenty of room. */
 	uint8_t msg[4 * RLC_FP_BYTES];
 
 	ep_null(a);
+	ep_null(b);
 	bn_null(n);
 
 	RLC_TRY {
 		ep_new(a);
+		ep_new(b);
 		bn_new(n);
 
+		ep_rand(b);
 		ep_curve_get_ord(n);
 
 		TEST_CASE("point hashing is correct") {
@@ -1373,6 +1376,12 @@ static int hashing(void) {
 			TEST_ASSERT(ep_on_curve(a) && ep_is_infty(a) == 1, end);
 			ep_map_rnd(a, msg, ep_map_rnd_size());
 			TEST_ASSERT(ep_on_curve(a) && ep_is_infty(a) == 0, end);
+			ep_mul(a, a, n);
+			TEST_ASSERT(ep_on_curve(a) && ep_is_infty(a) == 1, end);
+			bn_rand_mod(n, n);
+			ep_map_chf(a, n, b, msg, ep_map_rnd_size());
+			TEST_ASSERT(ep_on_curve(a) && ep_is_infty(a) == 0, end);
+			ep_curve_get_ord(n);
 			ep_mul(a, a, n);
 			TEST_ASSERT(ep_on_curve(a) && ep_is_infty(a) == 1, end);
 		}
@@ -1421,6 +1430,7 @@ static int hashing(void) {
 	code = RLC_OK;
   end:
 	ep_free(a);
+	ep_free(b);
 	bn_free(n);
 	return code;
 }

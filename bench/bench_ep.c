@@ -612,6 +612,13 @@ static void arith(void) {
 	}
 #endif
 
+	BENCH_RUN("ep_map_chf") {
+		uint8_t msg[4 * RLC_FP_BYTES];
+		rand_bytes(msg, ep_map_rnd_size());
+		bn_rand_mod(k, n);
+		BENCH_ADD(ep_map_chf(p, k, q, msg, ep_map_rnd_size()));
+	} BENCH_END;
+
 	BENCH_RUN("ep_pck") {
 		ep_rand(p);
 		BENCH_ADD(ep_pck(q, p));

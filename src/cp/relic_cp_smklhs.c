@@ -90,9 +90,9 @@ int cp_smklhs_gen(bn_t sk1, bn_t sk2, g1_t pk1, g2_t pk2, g1_t pk3) {
 	return result;
 }
 
-int cp_smklhs_sig(g1_t s, const bn_t m, const bn_t r, const char *data,
-		const char *id, const char *tag, const g1_t t1, const g1_t p1,
-		const bn_t sk1, const bn_t sk2, const g1_t pk1) {
+int cp_smklhs_sig(g1_t s, const bn_t m, const char *data, const char *id,
+		const char *tag, const g1_t t1, const g1_t p1, const bn_t sk1,
+		const bn_t sk2, const g1_t pk1) {
 	bn_t k, n;
 	g1_t a;
 	int result = RLC_OK;
@@ -116,7 +116,7 @@ int cp_smklhs_sig(g1_t s, const bn_t m, const bn_t r, const char *data,
 		memcpy(str, data, strlen(data));
 		memcpy(str + strlen(data), id, strlen(id));
 		memcpy(str + strlen(data) + strlen(id), tag, strlen(tag));
-		g1_chf(s, r, pk1, str, strlen(data) + strlen(id) + strlen(tag));
+		g1_map(s, str, strlen(data) + strlen(id) + strlen(tag));
 		g1_add(s, s, a);
 		g1_norm(s, s);
 		g1_mul_sec(s, s, sk1);
@@ -139,13 +139,12 @@ int cp_smklhs_sig(g1_t s, const bn_t m, const bn_t r, const char *data,
 	return result;
 }
 
-int cp_smklhs_ver(const g1_t sig, const bn_t m, const bn_t r,
-		const bn_t y1, const ec_t ps1, const ec_t *ls1, const ec_t *rs1,
-		const bn_t y2, const ec_t ps2, const ec_t *ls2, const ec_t *rs2,
-		const ec_t u, const char *data, const char *id[], const char *tag[],
-		const dig_t *f[], const size_t flen[], const g1_t pk1[],
-		const g2_t pk2[],  const g1_t pk3[], const g2_t t2, const g2_t p2,
-		size_t slen) {
+int cp_smklhs_ver(const g1_t sig, const bn_t m, const bn_t y1, const ec_t ps1,
+		const ec_t *ls1, const ec_t *rs1, const bn_t y2, const ec_t ps2,
+		const ec_t *ls2, const ec_t *rs2, const ec_t u, const char *data,
+		const char *id[], const char *tag[], const dig_t *f[],
+		const size_t flen[], const g1_t pk1[], const g2_t pk2[],
+		const g1_t pk3[], const g2_t t2, const g2_t p2, size_t slen) {
 	bn_t t, n;
 	g1_t *g1 = RLC_ALLOCA(g1_t, slen + 2);
 	g2_t *g2 = RLC_ALLOCA(g2_t, slen + 2);
@@ -203,7 +202,7 @@ int cp_smklhs_ver(const g1_t sig, const bn_t m, const bn_t r,
 			memcpy(str + strlen(data), id[i], strlen(id[i]));
 			for (int j = 0; j < flen[i]; j++) {
 				memcpy(str + strlen(data) + strlen(id[i]), tag[j], strlen(tag[j]));
-				g1_chf(h[j], r, pk1[i], str, strlen(data) + strlen(id[i]) + strlen(tag[j]));
+				g1_map(h[j], str, strlen(data) + strlen(id[i]) + strlen(tag[j]));
 			}
 			g1_norm_sim(h, h, slen);
 			g1_mul_sim_dig(g1[i], h, f[i], flen[i]);
