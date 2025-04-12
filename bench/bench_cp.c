@@ -1556,7 +1556,7 @@ static void zss(void) {
 #define S	10			/* Number of signers. */
 #define L	16			/* Number of labels, must be <= RLC_TERMS. */
 #define K	RLC_MD_LEN	/* Size of PRF key. */
-#define BENCH_LHS		/* Uncomment for fine-grained benchmarking. */
+//#define BENCH_LHS		/* Uncomment for fine-grained benchmarking. */
 
 static void lhs(void) {
 	uint8_t k[S][K];
@@ -2011,7 +2011,7 @@ static void lhs(void) {
 		} BENCH_END;
 	}
 
-	for (int t = 3; t <= 3; t++) {
+	for (int t = 1; t <= L; t++) {
 		util_print("(%2d lbs) ", t);
 		for (int u = 0; u < S; u++) {
 			flen[u] = t;
