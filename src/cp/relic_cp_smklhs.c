@@ -204,7 +204,7 @@ int cp_smklhs_ver(const g1_t sig, const bn_t m, const bn_t y1, const ec_t ps1,
 				memcpy(str + strlen(data) + strlen(id[i]), tag[j], strlen(tag[j]));
 				g1_map(h[j], str, strlen(data) + strlen(id[i]) + strlen(tag[j]));
 			}
-			g1_norm_sim(h, h, slen);
+			g1_norm_sim(h, h, flen[i]);
 			g1_mul_sim_dig(g1[i], h, f[i], flen[i]);
 			g2_copy(g2[i], pk2[i]);
 		}

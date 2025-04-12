@@ -203,7 +203,7 @@ int cp_mklhs_ver(const g1_t sig, const bn_t m, const bn_t mu[],
 				g1_map(h[j], str, strlen(id[i]) + strlen(tag[j]));
 				g1_add(h[j], h[j], d);
 			}
-			g1_norm_sim(h, h, slen);
+			g1_norm_sim(h, h, flen[i]);
 			g1_mul_sim_dig(g[i], h, f[i], flen[i]);
 			g1_mul_gen(h[0], mu[i]);
 			g1_add(g[i], g[i], h[0]);
