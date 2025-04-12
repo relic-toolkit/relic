@@ -318,6 +318,11 @@ int main(int argc, char *argv[]) {
 
 		printf("Total Expected: %6lu\n", res->dp[0] / FIXED);
 
+		BENCH_ONE("Time elapsed", cp_smklhs_ver(sig, res, y1, ps1, ls1, rs1, y2,
+			ps2, ls2, rs2, u, DATABASE, acs, (const char **)l[0],
+			(const dig_t **)f, (const size_t *)flen, pk1, pk2, pk3, t2, p2,
+			STATES), 1);
+
 		bn_zero(res);
 		g1_set_infty(p1);
 		g1_set_infty(sig);
@@ -335,8 +340,6 @@ int main(int argc, char *argv[]) {
 		}
 		g1_norm(sig, sig);
 
-		printf("Total Observed: %6lu\n", res->dp[0]);
-		
 		cp_ipa_prv(y1, ps1, ls1, rs1, pk1, t, u, STATES);
 		cp_ipa_prv(y2, ps2, ls2, rs2, pk3, t, u, STATES);
 
@@ -345,6 +348,8 @@ int main(int argc, char *argv[]) {
 			(const dig_t **)f, (const size_t *)flen, pk1, pk2, pk3, t2, p2,
 			STATES));
 
+		printf("Total Observed: %6lu\n", res->dp[0]);
+		
 		BENCH_ONE("Time elapsed", cp_smklhs_ver(sig, res, y1, ps1, ls1, rs1, y2,
 			ps2, ls2, rs2, u, DATABASE, acs, 
 			(const char **)&l[0][2 * GROUPS * DAYS], (const dig_t **)f,
