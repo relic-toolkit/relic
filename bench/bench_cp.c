@@ -1952,7 +1952,7 @@ static void lhs(void) {
 				ls[l] = "l";
 				bn_mod(msg[l], msg[l], n);
 				BENCH_ADD(cp_smklhs_sig(a[j][l], msg[l], data, id[j], ls[l],
-						t1, p1, sk1[j], sk2[j], pk1[j]));
+						t1, p1, sk1[j], sk2[j]));
 			}
 		}
 	} BENCH_DIV(S * L);

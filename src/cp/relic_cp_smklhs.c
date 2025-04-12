@@ -92,7 +92,7 @@ int cp_smklhs_gen(bn_t sk1, bn_t sk2, g1_t pk1, g2_t pk2, g1_t pk3) {
 
 int cp_smklhs_sig(g1_t s, const bn_t m, const char *data, const char *id,
 		const char *tag, const g1_t t1, const g1_t p1, const bn_t sk1,
-		const bn_t sk2, const g1_t pk1) {
+		const bn_t sk2) {
 	bn_t k, n;
 	g1_t a;
 	int result = RLC_OK;

@@ -2271,7 +2271,7 @@ static int lhs(void) {
 					ls[l] = "l";
 					bn_rand_mod(msg[j][l], n);
 					cp_smklhs_sig(a[j][l], msg[j][l], data, id[j], ls[l],
-							t1, p1, sk1[j], sk2[j], pk1[j]);
+							t1, p1, sk1[j], sk2[j]);
 				}
 			}
 

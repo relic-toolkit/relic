@@ -104,7 +104,7 @@ const double pyramids[STATES][GROUPS] = {
 /* Read data from CSV in a given time interval. */
 void read_region(g1_t s[], char *l[], bn_t m[], int *counter,
 		uint64_t metric[3], const char *file, int region, char *start,
-		char *end, bn_t sk) {
+		char *end, g1_t t1, g1_t p1, bn_t sk1, bn_t sk2) {
 	FILE *stream = fopen(file, "r");
 	int found = 0;
 	char line[1024];
@@ -142,8 +142,8 @@ void read_region(g1_t s[], char *l[], bn_t m[], int *counter,
 
 			bn_set_dig(m[*counter], n);
 			l[*counter] = strdup(ptr[8]);
-			cp_mklhs_sig(s[*counter], m[*counter], DATABASE, acs[region - 1],
-				l[*counter], sk);
+			cp_smklhs_sig(s[*counter], m[*counter], DATABASE, acs[region - 1],
+				l[*counter], t1, p1, sk1, sk2);
 			(*counter)++;
 		}
 
@@ -159,9 +159,10 @@ int main(int argc, char *argv[]) {
 	uint64_t observed[STATES][GROUPS];
 	uint64_t ratios[STATES][GROUPS];
 	dig_t ft[STATES];
-	bn_t res, t[STATES], sk[STATES], m[STATES][3 * GROUPS * DAYS];
-	g1_t u, sig, sigs[STATES][3 * GROUPS * DAYS], cs[STATES];
-	g2_t pk[STATES];
+	bn_t y1, y2, res, t[STATES], sk1[STATES], sk2[STATES], m[STATES][3 * GROUPS * DAYS];
+	g1_t t1, p1, sig, sigs[STATES][3 * GROUPS * DAYS], cs[STATES], pk1[STATES], pk3[STATES];
+	g2_t t2, p2, pk2[STATES];
+	ec_t u, ps1, ps2, ls1[STATES], rs1[STATES], ls2[STATES], rs2[STATES];
 	char *l[STATES][3 * GROUPS * DAYS];
 	dig_t *f[STATES];
 	size_t flen[STATES];
@@ -183,21 +184,39 @@ int main(int argc, char *argv[]) {
 		/* Initialize and generate keys for signers. */
 		bn_null(res);
 		bn_new(res);
+		bn_null(y1);
+		bn_null(y2);	
+		bn_new(y1);
+		bn_new(y2);
 		g1_null(u);
 		g1_new(u);
+		g1_null(t1);
+		g1_null(p1);
+		g1_new(t1);
+		g1_new(p1);
 		g1_null(sig);
 		g1_new(sig);
+		g2_null(t2);
+		g2_null(p2);
+		g2_new(t2);
+		g2_new(p2);
 		for (int i = 0; i < STATES; i++) {
 			f[i] = RLC_ALLOCA(dig_t, 2 * GROUPS * DAYS);
 			bn_null(t[i]);
 			bn_new(t[i]);
-			bn_null(sk[i]);
-			bn_new(sk[i]);
+			bn_null(sk1[i]);
+			bn_null(sk2[i]);
+			bn_new(sk1[i]);
+			bn_new(sk2[i]);
 			g1_null(cs[i]);
 			g1_new(cs[i]);
-			g2_null(sk[i]);
-			g2_new(sk[i]);
-			cp_mklhs_gen(sk[i], pk[i]);
+			g1_null(pk1[i]);
+			g1_new(pk1[i]);
+			g2_null(pk2[i]);
+			g2_new(pk2[i]);
+			g1_null(pk3[i]);
+			g1_new(pk3[i]);
+			cp_smklhs_gen(sk1[i], sk2[i], pk1[i], pk2[i], pk3[i]);
 			for (int j = 0; j < GROUPS; j++) {
 				for (int k = 0; k < 3 * DAYS; k++) {
 					bn_null(m[i][j * 3 * DAYS + k]);
@@ -216,15 +235,16 @@ int main(int argc, char *argv[]) {
 			}
 		}
 
+		cp_smklhs_set(u, t1, p1, t2, p2);
 		for (int i = 0; i < STATES; i++) {
 			counter = 0;
 			observed[i][0] = observed[i][1] = observed[i][2] = 0;
 			read_region(sigs[i], l[i], m[i], &counter, baseline,
-					"data_04_13.csv", i + 1, BEG_2018, END_2018, sk[i]);
+					"data_04_13.csv", i + 1, BEG_2018, END_2018, t1, p1, sk1[i], sk2[i]);
 			read_region(sigs[i], l[i], m[i], &counter, baseline,
-					"data_04_13.csv", i + 1, BEG_2019, END_2019, sk[i]);
+					"data_04_13.csv", i + 1, BEG_2019, END_2019, t1, p1, sk1[i], sk2[i]);
 			read_region(sigs[i], l[i], m[i], &counter, observed[i], "data.csv",
-					i + 1, BEG_2020, END_2020, sk[i]);
+					i + 1, BEG_2020, END_2020, t1, p1, sk1[i], sk2[i]);
 		}
 
 		for (int j = 0; j < GROUPS; j++) {
@@ -268,7 +288,7 @@ int main(int argc, char *argv[]) {
 		util_banner("Authenticated computation:", 1);
 
 		bn_zero(res);
-		g1_set_infty(u);
+		g1_set_infty(p1);
 		g1_set_infty(sig);
 		for (int i = 0; i < STATES; i++) {
 			flen[i] = 2 * GROUPS * DAYS;
@@ -283,18 +303,23 @@ int main(int argc, char *argv[]) {
 				}
 			}
 			cp_mklhs_fun(t[i], m[i], f[i], 2 * GROUPS * DAYS);
-			cp_mklhs_evl(u, sigs[i], f[i], 2 * GROUPS * DAYS);
+			cp_mklhs_evl(p1, sigs[i], f[i], 2 * GROUPS * DAYS);
 			bn_add(res, res, t[i]);
-			g1_add(sig, sig, u);
+			g1_add(sig, sig, p1);
 		}
 		g1_norm(sig, sig);
-		assert(cp_mklhs_ver(sig, res, t, DATABASE, acs, (const char **)l[0],
-			(const dig_t **)f, (const size_t *)flen, pk, STATES));
+
+		cp_ipa_prv(y1, ps1, ls1, rs1, pk1, t, u, STATES);
+		cp_ipa_prv(y2, ps2, ls2, rs2, pk3, t, u, STATES);
+
+		assert(cp_smklhs_ver(sig, res, y1, ps1, ls1, rs1, y2, ps2, ls2,
+				rs2, u, DATABASE, acs, (const char **)l[0], (const dig_t **)f,
+				(const size_t *)flen, pk1, pk2, pk3, t2, p2, STATES));
 
 		printf("Total Expected: %6lu\n", res->dp[0] / FIXED);
 
 		bn_zero(res);
-		g1_set_infty(u);
+		g1_set_infty(p1);
 		g1_set_infty(sig);
 		for (int i = 0; i < STATES; i++) {
 			flen[i] = GROUPS * DAYS;
@@ -304,39 +329,48 @@ int main(int argc, char *argv[]) {
 				}
 			}
 			cp_mklhs_fun(t[i], &m[i][2 * GROUPS * DAYS], f[i], GROUPS * DAYS);
-			cp_mklhs_evl(u, &sigs[i][2 * GROUPS * DAYS], f[i], GROUPS * DAYS);
+			cp_mklhs_evl(p1, &sigs[i][2 * GROUPS * DAYS], f[i], GROUPS * DAYS);
 			bn_add(res, res, t[i]);
-			g1_add(sig, sig, u);
+			g1_add(sig, sig, p1);
 		}
 		g1_norm(sig, sig);
 
 		printf("Total Observed: %6lu\n", res->dp[0]);
+		
+		cp_ipa_prv(y1, ps1, ls1, rs1, pk1, t, u, STATES);
+		cp_ipa_prv(y2, ps2, ls2, rs2, pk3, t, u, STATES);
 
-		assert(cp_mklhs_ver(sig, res, t, DATABASE, acs,
-				(const char **)&l[0][2 * GROUPS * DAYS], (const dig_t **)f,
-				(const size_t *)flen, pk, STATES));
-		BENCH_ONE("Time elapsed", cp_mklhs_ver(sig, res, t, DATABASE, acs,
-				(const char **)&l[0][2 * GROUPS * DAYS], (const dig_t **)f,
-				(const size_t *)flen, pk, STATES), 1);
+		assert(cp_smklhs_ver(sig, res, y1, ps1, ls1, rs1, y2, ps2, ls2,
+			rs2, u, DATABASE, acs, (const char **)&l[0][2 * GROUPS * DAYS],
+			(const dig_t **)f, (const size_t *)flen, pk1, pk2, pk3, t2, p2,
+			STATES));
 
-		cp_mklhs_off(cs, ft, acs, (const char **)&l[0][2 * GROUPS * DAYS],
-				(const dig_t **)f, (const size_t *)flen, STATES);
-		assert(cp_mklhs_onv(sig, res, t, DATABASE, acs, cs, ft, pk, STATES));
-		BENCH_ONE("Time with precomputation", cp_mklhs_onv(sig, res, t,
-			DATABASE, acs, cs, ft, pk, STATES), 1);
+		BENCH_ONE("Time elapsed", cp_smklhs_ver(sig, res, y1, ps1, ls1, rs1, y2,
+			ps2, ls2, rs2, u, DATABASE, acs, 
+			(const char **)&l[0][2 * GROUPS * DAYS], (const dig_t **)f,
+			(const size_t *)flen, pk1, pk2, pk3, t2, p2, STATES), 1);
 
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		bn_free(res);
+		bn_free(y1);
+		bn_free(y2);	
 		g1_free(u);
 		g1_free(sig);
+		g1_free(t1);
+		g1_free(p1);
+		g2_free(t2);
+		g2_free(p2);
 		for (int i = 0; i < STATES; i++) {
 			RLC_FREE(f[i]);
 			bn_free(t[i]);
-			bn_free(sk[i]);
+			bn_free(sk1[i]);
+			bn_free(sk2[i]);
 			g1_free(cs[i]);
-			g2_free(pk[i]);
+			g1_free(pk1[i]);
+			g2_free(pk2[i]);
+			g1_free(pk3[i]);
 			for (int j = 0; j < GROUPS; j++) {
 				for (int k = 0; k < 3 * DAYS; k++) {
 					bn_free(m[i][j * 3 * DAYS + k]);
