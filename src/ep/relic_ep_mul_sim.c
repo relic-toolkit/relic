@@ -978,24 +978,29 @@ void ep_mul_sim_dig(ep_t r, const ep_t p[], const dig_t k[], int n) {
 }
 
 void ep_mul_sim_lot(ep_t r, const ep_t p[], const bn_t k[], int n) {
-	int flag = 0;
-
 	if (n == 0) {
 		ep_set_infty(r);
+		return;
+	}
+
+	if (n == 1) {
+		ep_mul(r, p[0], k[0]);
+		return;
+	}
+
+	if (n == 2) {
+		ep_mul_sim(r, p[0], k[0], p[1], k[1]);
 		return;
 	}
 
 #if defined(EP_ENDOM)
 	if (ep_curve_is_endom()) {
 		ep_mul_sim_lot_endom(r, p, k, n);
-		flag = 1;
+		return;
 	}
 #endif
 
 #if defined(EP_PLAIN) || defined(EP_SUPER)
-	if (!flag) {
-		ep_mul_sim_lot_plain(r, p, k, n);
-	}
+	ep_mul_sim_lot_plain(r, p, k, n);
 #endif
-	(void)flag;
 }
