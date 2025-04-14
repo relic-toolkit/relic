@@ -1794,19 +1794,19 @@ static void lhs(void) {
 		util_print("(%2d ids) ", t);
 		BENCH_RUN("cp_cmlhs_ver") {
 			BENCH_ADD(cp_cmlhs_ver(t1, t2, sig, z, as, cs, m, data, h, label,
-				(const gt_t **)hs, (const dig_t **)f, flen, y, pk2, S, 1));
+				(const gt_t **)hs, (const dig_t **)f, flen, y, pk2, t, 1));
 		} BENCH_END;
 
 		util_print("(%2d ids) ", t);
 		BENCH_RUN("cp_cmlhs_off") {
 			BENCH_ADD(cp_cmlhs_off(vk, h, label, (const gt_t **)hs,
-				(const dig_t **)f, flen, S));
+				(const dig_t **)f, flen, t));
 		} BENCH_END;
 
 		util_print("(%2d ids) ", t);
 		BENCH_RUN("cp_cmlhs_onv") {
 			BENCH_ADD(cp_cmlhs_onv(t1, t2, sig, z, as, cs, m, data, h, vk, y,
-				pk2, S, 1));
+				pk2, t, 1));
 		} BENCH_END;
 	}
 
