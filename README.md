@@ -29,7 +29,7 @@ RELIC implements to date:
  * Bilinear maps and related extension fields
  * Cryptographic protocols (RSA, Rabin, ECDSA, ECMQV, ECSS (Schnorr), ECIES, Sakai-Ohgishi-Kasahara ID-based authenticated key agreement, Boneh-Lynn-Schacham and Boneh-Boyen short signatures, Paillier and Benaloh homomorphic encryption systems)
  * [**Non-interactive Inner-product arguments**](https://anonymous.4open.science/r/relic-379B/src/cp/relic_cp_ipa.c) in the style of Bulletproofs
- * [**Succint Multi-Key Linearly Homomorphic Signatures**](https://anonymous.4open.science/r/relic-379B/src/cp/relic_cp_smklhs.c) for [**certified statistics**](https://anonymous.4open.science/r/relic-379B/demo/public-stats)
+ * [**Succint Multi-Key Linearly Homomorphic Signatures**](https://anonymous.4open.science/r/relic-379B/src/cp/relic_cp_smklhs.c) for [**certified statistics**](https://anonymous.4open.science/r/relic-379B/demo/public-stats/README.md)
 
 ### Citing
 
