@@ -2321,9 +2321,36 @@ int cp_etrs_uni(int thres, bn_t *td, bn_t *y, int max, etrs_t *p, size_t *size,
  */
 int cp_ped_com(ec_t c, ec_t h, bn_t r, bn_t x);
 
+/**
+ * Compute a non-interactive inner-product argument proof, given a set of points
+ * and scalars.
+ *
+ * @param[out] y			- the first component of the proof.
+ * @param[out] p			- the result of the computation.
+ * @param[out] ls			- the left recursion coefficients.
+ * @param[out] rs			- the right recursion coefficients.
+ * @param[in] g				- the input points.
+ * @param[in] a				- the input scalars.
+ * @param[in] u				- the random point.
+ * @param[in] n				- the number of points to compute the proof over.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
 int cp_ipa_prv(bn_t y, ec_t p, ec_t *ls, ec_t *rs, const ec_t *g, const bn_t *a,
 		const ec_t u, size_t n);
 
+/**
+ * Verifies a non-interactive inner-product argument proof, given a set of points
+ * and scalars.
+ *
+ * @param[in] y				- the first component of the proof.
+ * @param[in] p				- the result of the computation.
+ * @param[in] ls			- the left recursion coefficients.
+ * @param[in] rs			- the right recursion coefficients.
+ * @param[in] g				- the input points.
+ * @param[in] u				- the random point.
+ * @param[in] n				- the number of points to compute the proof over.
+ * @return a boolean value indicating the verification result.
+ */
 int cp_ipa_ver(const bn_t y, const ec_t p, const ec_t *ls, const ec_t *rs,
 		const ec_t *g, const ec_t u, size_t n);
 
@@ -2571,13 +2598,72 @@ int cp_mklhs_onv(const g1_t sig, const bn_t m, const bn_t *mu,
 		const char *data, const char *id[], const g1_t *h, const dig_t *ft,
 		const g2_t *pk, size_t slen);
 
+/**
+ * Generates the parameters for Succint Multi-Key Linearly Homomorphic
+ * Signatures (SMKLHS).
+ *
+ * @param[out] u			- the random point for the proofs.
+ * @param[out] t1			- the first generator in G_1.
+ * @param[out] p1			- the second generator in G_1.
+ * @param[out] t2			- the first generator in G_2.
+ * @param[out] p2			- the second generator in G_2.
+ */
 int cp_smklhs_set(ec_t u, g1_t t1, g1_t p1, g2_t t2, g2_t p2);
+
+/**
+ * Generates an SMKLHS key pair.
+ *
+ * @param[out] sk1			- the private key in G_1.
+ * @param[out] sk2			- the private key in G_2.
+ * @param[out] pk1			- the first public key in G_1.
+ * @param[out] pk2			- the public key in G_2.
+ * @param[out] pk3			- the public key in G_1.
+ */
 int cp_smklhs_gen(bn_t sk1, bn_t sk2, g1_t pk1, g2_t pk2, g1_t pk3);
+
+/**
+ * Computes an SMKLHS signature.
+ *
+ * @param[out] s			- the resulting signature.
+ * @param[in] m				- the message to sign.
+ * @param[in] data			- the dataset identifier.
+ * @param[in] id			- the identity.
+ * @param[in] tag			- the tag.
+ * @param[in] t1			- the first generator in G_1.
+ * @param[in] p1			- the second generator in G_1.
+ * @param[in] sk1			- the private key in G_1.
+ * @param[in] sk2			- the private key in G_2.
+ */
 int cp_smklhs_sig(g1_t s, const bn_t m, const char *data, const char *id,
 		const char *tag, const g1_t t1, const g1_t p1, const bn_t sk1,
 		const bn_t sk2);
-int cp_smklhs_fun(bn_t mu, const bn_t m[], const dig_t f[], size_t len);
-int cp_smklhs_evl(g1_t sig, const g1_t s[], const dig_t f[], size_t len);
+
+/**
+ * Verifies an SMKLHS signature.
+ *
+ * @param[in] sig			- the aggregated signature.
+ * @param[in] m				- the aggregated message to verify.
+ * @param[in] y1			- the first component of the first proof.
+ * @param[in] ps1			- the result of the first inner product.
+ * @param[in] ls1			- the first left recursion coefficients.
+ * @param[in] rs1			- the first right recursion coefficients.
+ * @param[in] y2			- the first component of the second proof.
+ * @param[in] ps2			- the result of the second inner product.
+ * @param[in] ls2			- the second left recursion coefficients.
+ * @param[in] rs2			- the second right recursion coefficients.
+ * @param[in] u				- the random point.
+ * @param[in] data			- the dataset identifier.
+ * @param[in] id			- the identity.
+ * @param[in] tag			- the tag.
+ * @param[in] f				- the linear coefficients in the function.
+ * @param[in] flen			- the number of coefficients.
+ * @param[in] pk1			- the public keys of the users in G_1.
+ * @param[in] pk2			- the public keys of the users in G_2.
+ * @param[in] pk3			- the second public keys of the users in G_1.
+ * @param[in] t2			- the first generator in G_2.
+ * @param[in] p2			- the second generator in G_2.
+ * @param[in] slen			- the number of singers.
+ */
 int cp_smklhs_ver(const g1_t sig, const bn_t m, const bn_t y1, const ec_t ps1,
 		const ec_t *ls1, const ec_t *rs1, const bn_t y2, const ec_t ps2,
 		const ec_t *ls2, const ec_t *rs2, const ec_t u, const char *data,
