@@ -3428,8 +3428,6 @@
 #undef cp_smklhs_set
 #undef cp_smklhs_gen
 #undef cp_smklhs_sig
-#undef cp_smklhs_fun
-#undef cp_smklhs_evl
 #undef cp_smklhs_ver
 #undef cp_rsapsi_gen
 #undef cp_rsapsi_ask
@@ -3587,8 +3585,6 @@
 #define cp_smklhs_set 	RLC_PREFIX(cp_smklhs_set)
 #define cp_smklhs_gen 	RLC_PREFIX(cp_smklhs_gen)
 #define cp_smklhs_sig 	RLC_PREFIX(cp_smklhs_sig)
-#define cp_smklhs_fun 	RLC_PREFIX(cp_smklhs_fun)
-#define cp_smklhs_evl 	RLC_PREFIX(cp_smklhs_evl)
 #define cp_smklhs_ver 	RLC_PREFIX(cp_smklhs_ver)
 #define cp_rsapsi_gen 	RLC_PREFIX(cp_rsapsi_gen)
 #define cp_rsapsi_ask 	RLC_PREFIX(cp_rsapsi_ask)
