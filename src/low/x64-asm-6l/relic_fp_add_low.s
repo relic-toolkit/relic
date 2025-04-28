@@ -21,18 +21,16 @@
  * or <https://www.apache.org/licenses/>.
  */
 
-#include "relic_fp_low.h"
-
 /**
  * @file
  *
  * Implementation of the low-level prime field addition and subtraction
  * functions.
  *
- * @version $Id: relic_fp_add_low.c 88 2009-09-06 21:27:19Z dfaranha $
  * @ingroup fp
  */
 
+#include "relic_fp_low.h"
 #include "macro.s"
 
 .data
@@ -97,29 +95,6 @@ fp_addn_low:
 	movq	%r11   , 0(%rdi)
 
 	ADDN 	1 (RLC_FP_DIGS - 1)
-
-	adcq    $0, %rax
-
-	ret
-
-bn_incp_low:
-	movq	0(%rsi), %r10
-	addq	%rdx   , %r10
-	movq	%r10   , 0(%rdi)
-
-	ADD1 1 (RLC_FP_DIGS)
-	xorq	%rax, %rax
-
-	ret
-
-.global bn_addp_low
-bn_addp_low:
-	xorq	%rax, %rax
-	movq	0(%rdx), %r11
-	addq	0(%rsi), %r11
-	movq	%r11   , 0(%rdi)
-
-	ADDN 	1 (RLC_FP_DIGS)
 
 	adcq    $0, %rax
 
