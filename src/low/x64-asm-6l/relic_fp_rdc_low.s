@@ -41,7 +41,6 @@
 /*
  * Function: fp_rdcn_low
  * Inputs: rdi = c, rsi = a
- * Output: rax
  */
 fp_rdcn_low:
 	push	%r12
@@ -50,9 +49,70 @@ fp_rdcn_low:
 	push	%r15
 	push 	%rbx
 	push	%rbp
-	leaq 	p0(%rip), %rbx
 
-	FP_RDCN_LOW %rdi, %r8, %r9, %r10, %rsi, %rbx
+	movq	0(%rsi),%r8
+	movq	8(%rsi),%r9
+	movq	16(%rsi),%r10
+	movq	24(%rsi),%r11
+	movq	32(%rsi),%r12
+	movq	40(%rsi),%r13
+	movq	48(%rsi),%r14
+	xorq	%rax, %rax
+
+	movq	$U0, %rdx
+	mulx	%r8, %rdx, %rcx
+	MULADD	%r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, p0(%rip)
+	movq	56(%rsi),%r8
+	adox	%rax, %r8
+	movq	$U0, %rdx
+	mulx	%r9, %rdx, %rcx
+    MULADD	%r9, %r10, %r11, %r12, %r13, %r14, %r8, %r15, %rbx, p0(%rip)
+	movq	64(%rsi),%r9
+	adox	%rax, %r9
+	movq	$U0, %rdx
+	mulx	%r10, %rdx, %rcx
+    MULADD	%r10, %r11, %r12, %r13, %r14, %r8, %r9, %r15, %rbx, p0(%rip)
+	movq	72(%rsi),%r10
+	adox	%rax, %r10
+	movq	$U0, %rdx
+	mulx	%r11, %rdx, %rcx
+    MULADD	%r11, %r12, %r13, %r14, %r8, %r9, %r10, %r15, %rbx, p0(%rip)
+	movq	80(%rsi),%r11
+	adox	%rax, %r11
+	movq	$U0, %rdx
+	mulx	%r12, %rdx, %rcx
+    MULADD	%r12, %r13, %r14, %r8, %r9, %r10, %r11, %r15, %rbx, p0(%rip)
+	movq	88(%rsi),%r12
+	adox	%rax, %r12
+	movq	$U0, %rdx
+	mulx	%r13, %rdx, %rcx
+    MULADD	%r13, %r14, %r8, %r9, %r10, %r11, %r12, %r15, %rbx, p0(%rip)
+	
+	// Final correction
+	movq	%r14, %r13
+	movq	%r8, %r15
+	movq	%r9, %rbx
+	movq	%r10, %rcx
+	movq	%r11, %rdx
+	movq	%r12, %rsi
+	subq	p0(%rip), %r13
+	sbbq	p1(%rip), %r15
+	sbbq	p2(%rip), %rbx
+	sbbq	p3(%rip), %rcx
+	sbbq	p4(%rip), %rdx
+	sbbq	p5(%rip), %rsi
+	cmovc	%r14, %r13
+	cmovc	%r8, %r15
+	cmovc	%r9, %rbx
+	cmovc	%r10, %rcx
+	cmovc	%r11, %rdx
+	cmovc	%r12, %rsi
+    movq	%r13, 0(%rdi)
+	movq	%r15, 8(%rdi)
+	movq	%rbx, 16(%rdi)
+	movq	%rcx, 24(%rdi)
+	movq	%rdx, 32(%rdi)
+	movq	%rsi, 40(%rdi)
 
 	pop		%rbp
 	pop		%rbx
