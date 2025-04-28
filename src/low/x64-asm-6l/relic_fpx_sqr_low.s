@@ -93,7 +93,7 @@ fp2_sqrm_c0:
     // [r8:r14] <- z += z0 x (a0 - a1)
 	MULR	%r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15
 
-	FP_MULM_LOW	p0(%rip), 48(%rsp), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx
+	FP_MULM_LOW	0(%rsp), 48(%rsp), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, p0(%rip)
 
 	// Final correction
 	movq	%r14, %r13
@@ -158,9 +158,9 @@ fp2_sqrm_c1:
 	movq	%r13,40(%rsp)
 	
     // [r8:r14] <- z = 2 x a00 x a1
-	MULM	48(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15
+	MULM	0(%rsp), 48(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15
 
-	FP_MULM_LOW	p0(%rip), 48(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx
+	FP_MULM_LOW	0(%rsp), 48(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, p0(%rip)
 
 	// Final correction
 	movq	%r14, %r13

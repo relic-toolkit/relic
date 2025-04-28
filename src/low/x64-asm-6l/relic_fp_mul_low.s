@@ -42,35 +42,53 @@ fp_muln_low:
 	FP_MULN_LOW %rdi, %r8, %r9, %r10, %rsi, %rcx
 	ret
 
-#if FP_PRIME != 381
 fp_mulm_low:
 	push	%r12
 	push	%r13
 	push	%r14
 	push	%r15
 	push 	%rbx
-	push	%rbp
-	subq 	$96, %rsp
+	push 	%rbp
+	subq 	$48, %rsp
 
-	movq 	%rdx,%rcx
-	leaq 	p0(%rip), %rbx
+	movq	%rdx, %rbp
 
-	FP_MULN_LOW %rsp, %r8, %r9, %r10, %rsi, %rcx
+    // [r8:r14] <- z = 2 x a00 x a1
+	MULM	0(%rsi), 0(%rbp), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15
 
-	FP_RDCN_LOW %rdi, %r8, %r9, %r10, %rsp, %rbx
+	FP_MULM_LOW	0(%rsi), 0(%rbp), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, p0(%rip)
 
-	addq	$96, %rsp
+	// Final correction
+	movq	%r14, %r13
+	movq	%r8, %r15
+	movq	%r9, %rbx
+	movq	%r10, %rcx
+	movq	%r11, %rdx
+	movq	%r12, %rsi
+	subq	p0(%rip), %r13
+	sbbq	p1(%rip), %r15
+	sbbq	p2(%rip), %rbx
+	sbbq	p3(%rip), %rcx
+	sbbq	p4(%rip), %rdx
+	sbbq	p5(%rip), %rsi
+	cmovc	%r14, %r13
+	cmovc	%r8, %r15
+	cmovc	%r9, %rbx
+	cmovc	%r10, %rcx
+	cmovc	%r11, %rdx
+	cmovc	%r12, %rsi
+    movq	%r13, 0(%rdi)
+	movq	%r15, 8(%rdi)
+	movq	%rbx, 16(%rdi)
+	movq	%rcx, 24(%rdi)
+	movq	%rdx, 32(%rdi)
+	movq	%rsi, 40(%rdi)
 
-	pop		%rbp
-	pop		%rbx
-	pop		%r15
-	pop		%r14
-	pop		%r13
-	pop		%r12
-	ret
-
-#else
-
-#include "relic_fp_mul_low_cryptopt.s"
-
-#endif
+	addq	$48, %rsp
+	popq	%rbp
+    popq	%rbx
+    popq	%r15
+    popq	%r14
+    popq	%r13
+    popq	%r12
+    ret
