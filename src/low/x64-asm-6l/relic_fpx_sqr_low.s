@@ -96,37 +96,30 @@ fp2_sqrm_c0:
 	FP_MULM_LOW	p0(%rip), 48(%rsp), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx
 
 	// Final correction
-	movq	p0(%rip), %r13
-	movq	p1(%rip), %r15
-	movq	p2(%rip), %rbx
-	movq	p3(%rip), %rcx
-	movq	p4(%rip), %rdx
-	movq	p5(%rip), %rsi
-	subq	%r13, %r14
-	sbbq	%r15, %r8
-	sbbq	%rbx, %r9
-	sbbq	%rcx, %r10
-	sbbq	%rdx, %r11
-	sbbq	%rsi, %r12
-	sbbq	$0, %rax
-	andq    %rax, %r13
-	andq	%rax, %r15
-	andq	%rax, %rbx
-	andq	%rax, %rcx
-	andq	%rax, %rdx
-	andq	%rax, %rsi
-	addq	%r13, %r14
-	adcq	%r15, %r8
-	adcq	%rbx, %r9
-	adcq	%rcx, %r10
-	adcq	%rdx, %r11
-	adcq	%rsi, %r12
-    movq	%r14,0(%rdi)
-	movq	%r8, 8(%rdi)
-	movq	%r9, 16(%rdi)
-	movq	%r10,24(%rdi)
-	movq	%r11,32(%rdi)
-	movq	%r12,40(%rdi)
+	movq	%r14, %r13
+	movq	%r8, %r15
+	movq	%r9, %rbx
+	movq	%r10, %rcx
+	movq	%r11, %rdx
+	movq	%r12, %rsi
+	subq	p0(%rip), %r13
+	sbbq	p1(%rip), %r15
+	sbbq	p2(%rip), %rbx
+	sbbq	p3(%rip), %rcx
+	sbbq	p4(%rip), %rdx
+	sbbq	p5(%rip), %rsi
+	cmovc	%r14, %r13
+	cmovc	%r8, %r15
+	cmovc	%r9, %rbx
+	cmovc	%r10, %rcx
+	cmovc	%r11, %rdx
+	cmovc	%r12, %rsi
+    movq	%r13, 0(%rdi)
+	movq	%r15, 8(%rdi)
+	movq	%rbx, 16(%rdi)
+	movq	%rcx, 24(%rdi)
+	movq	%rdx, 32(%rdi)
+	movq	%rsi, 40(%rdi)
 
 	addq	$96, %rsp
     popq	%rbx
@@ -170,37 +163,30 @@ fp2_sqrm_c1:
 	FP_MULM_LOW	p0(%rip), 48(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx
 
 	// Final correction
-	movq	p0(%rip), %r13
-	movq	p1(%rip), %r15
-	movq	p2(%rip), %rbx
-	movq	p3(%rip), %rcx
-	movq	p4(%rip), %rdx
-	movq	p5(%rip), %rsi
-	subq	%r13, %r14
-	sbbq	%r15, %r8
-	sbbq	%rbx, %r9
-	sbbq	%rcx, %r10
-	sbbq	%rdx, %r11
-	sbbq	%rsi, %r12
-	sbbq	$0, %rax
-	andq    %rax, %r13
-	andq	%rax, %r15
-	andq	%rax, %rbx
-	andq	%rax, %rcx
-	andq	%rax, %rdx
-	andq	%rax, %rsi
-	addq	%r13, %r14
-	adcq	%r15, %r8
-	adcq	%rbx, %r9
-	adcq	%rcx, %r10
-	adcq	%rdx, %r11
-	adcq	%rsi, %r12
-    movq	%r14, 0(%rdi)
-	movq	%r8, 8(%rdi)
-	movq	%r9, 16(%rdi)
-	movq	%r10, 24(%rdi)
-	movq	%r11, 32(%rdi)
-	movq	%r12, 40(%rdi)
+	movq	%r14, %r13
+	movq	%r8, %r15
+	movq	%r9, %rbx
+	movq	%r10, %rcx
+	movq	%r11, %rdx
+	movq	%r12, %rsi
+	subq	p0(%rip), %r13
+	sbbq	p1(%rip), %r15
+	sbbq	p2(%rip), %rbx
+	sbbq	p3(%rip), %rcx
+	sbbq	p4(%rip), %rdx
+	sbbq	p5(%rip), %rsi
+	cmovc	%r14, %r13
+	cmovc	%r8, %r15
+	cmovc	%r9, %rbx
+	cmovc	%r10, %rcx
+	cmovc	%r11, %rdx
+	cmovc	%r12, %rsi
+    movq	%r13, 0(%rdi)
+	movq	%r15, 8(%rdi)
+	movq	%rbx, 16(%rdi)
+	movq	%rcx, 24(%rdi)
+	movq	%rdx, 32(%rdi)
+	movq	%rsi, 40(%rdi)
 
 	addq	$48, %rsp
     popq	%rbx
