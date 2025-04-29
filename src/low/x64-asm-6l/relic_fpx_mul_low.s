@@ -32,11 +32,19 @@
 #include "relic_fp_low.h"
 #include "macro.s"
 
+/* Based on paper+code 
+
 .text
 .global fp2_muln_c0
 .global fp2_muln_c1
 .global fp2_mulm_c0
 .global fp2_mulm_c1
+
+/*
+ * Techniques and code heavily inspired from "Efficient Algorithms for Large
+ * Prime Characteristic Fields and Their Application toBilinear Pairings" by
+ * Longa at TCHES'23.
+ */
 
 fp2_muln_c0:
 	push	%r12

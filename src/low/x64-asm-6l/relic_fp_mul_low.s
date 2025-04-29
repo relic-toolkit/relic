@@ -32,8 +32,13 @@
 
 #include "macro.s"
 
-.text
+/*
+ * Techniques and code heavily inspired from "Efficient Algorithms for Large
+ * Prime Characteristic Fields and Their Application toBilinear Pairings" by
+ * Longa at TCHES'23.
+ */
 
+.text
 .global fp_muln_low
 .global fp_mulm_low
 

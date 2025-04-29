@@ -32,6 +32,12 @@
 #include "relic_fp_low.h"
 #include "macro.s"
 
+/*
+ * Techniques and code heavily inspired from "Efficient Algorithms for Large
+ * Prime Characteristic Fields and Their Application toBilinear Pairings" by
+ * Longa at TCHES'23.
+ */
+
 .text
 .global fp2_sqrn_c0
 .global fp2_sqrn_c1
