@@ -40,7 +40,6 @@
 .global cdecl(fp2_dblm_low)
 .global cdecl(fp2_norm_low)
 .global cdecl(fp2_nord_low)
-.global cdecl(fp2_norh_low)
 .global cdecl(fp2_hlvm_low)
 
 /*
@@ -782,70 +781,6 @@ cdecl(fp2_nord_low):
 	pop	%r14
 	pop	%r13
 	pop	%r12
-
-	ret
-
-cdecl(fp2_norh_low):
-	movq    0(%rsi), %r8
-	addq    8*RLC_DV_DIGS(%rsi), %r8
-	movq    %r8, 8*RLC_DV_DIGS(%rdi)
-	movq    8(%rsi), %r8
-	adcq    8*RLC_DV_DIGS+8(%rsi), %r8
-	movq    %r8, 8*RLC_DV_DIGS+8(%rdi)
-	movq    16(%rsi), %r8
-	adcq    8*RLC_DV_DIGS+16(%rsi), %r8
-	movq    %r8, 8*RLC_DV_DIGS+16(%rdi)
-	movq    24(%rsi), %r8
-	adcq    8*RLC_DV_DIGS+24(%rsi), %r8
-	movq    %r8, 8*RLC_DV_DIGS+24(%rdi)
-	movq    32(%rsi), %r8
-	adcq    8*RLC_DV_DIGS+32(%rsi), %r8
-	movq    %r8, 8*RLC_DV_DIGS+32(%rdi)
-	movq    40(%rsi), %r8
-	adcq    8*RLC_DV_DIGS+40(%rsi), %r8
-	movq    %r8, 8*RLC_DV_DIGS+40(%rdi)
-	movq    48(%rsi), %r8
-	adcq    8*RLC_DV_DIGS+48(%rsi), %r8
-	movq    %r8, 8*RLC_DV_DIGS+48(%rdi)
-	movq    56(%rsi), %r8
-	adcq    8*RLC_DV_DIGS+56(%rsi), %r8
-	movq    %r8, 8*RLC_DV_DIGS+56(%rdi)
-
-	movq    NP20, %rax
-	movq    NP21, %r8
-	movq    NP22, %r9
-	movq    NP23, %r10
-	movq    NP24, %r11
-	movq    24(%rsi), %rcx
-	addq    %rcx, %rax
-	movq    32(%rsi), %rcx
-	adcq    %rcx, %r8
-	movq    40(%rsi), %rcx
-	adcq    %rcx, %r9
-	movq    48(%rsi), %rcx
-	adcq    %rcx, %r10
-	movq    56(%rsi), %rcx
-	adcq    %rcx, %r11
-
-	movq    0(%rsi), %rcx
-	subq    8*RLC_DV_DIGS(%rsi), %rcx
-	movq    %rcx, 0(%rdi)
-	movq    8(%rsi), %rcx
-	sbbq    8*RLC_DV_DIGS+8(%rsi), %rcx
-	movq    %rcx, 8(%rdi)
-	movq    16(%rsi), %rcx
-	sbbq    8*RLC_DV_DIGS+16(%rsi), %rcx
-	movq    %rcx, 16(%rdi)
-	sbbq    8*RLC_DV_DIGS+24(%rsi), %rax
-	movq    %rax, 24(%rdi)
-	sbbq    8*RLC_DV_DIGS+32(%rsi), %r8
-	movq    %r8, 32(%rdi)
-	sbbq    8*RLC_DV_DIGS+40(%rsi), %r9
-	movq    %r9, 40(%rdi)
-	sbbq    8*RLC_DV_DIGS+48(%rsi), %r10
-	movq    %r10, 48(%rdi)
-	sbbq    8*RLC_DV_DIGS+56(%rsi), %r11
-	movq    %r11, 56(%rdi)
 
 	ret
 

@@ -197,37 +197,6 @@ void fp2_nord_low(dv2_t c, dv2_t a) {
 	}
 }
 
-void fp2_norh_low(dv2_t c, dv2_t a) {
-#ifdef FP_QNRES
-	dv2_t t;
-
-	dv2_null(t);
-
-	RLC_TRY {
-		dv2_new(t);
-
-		/* If p = 3 mod 8, (1 + i) is a QNR/CNR. */
-		/* (a_0 + a_1 * i) * (1 + i) = (a_0 - a_1) + (a_0 + a_1) * u. */
-		dv_copy(t[1], a[1], 2 * RLC_FP_DIGS);
-		fp_addd_low(c[1], a[0], a[1]);
-		/* c_0 = c_0 + 2^N * p/2. */
-		dv_copy(t[0], a[0], 2 * RLC_FP_DIGS);
-		bn_lshb_low(t[0] + RLC_FP_DIGS - 1, t[0] + RLC_FP_DIGS - 1, RLC_FP_DIGS + 1, 1);
-		fp_addn_low(t[0] + RLC_FP_DIGS, t[0] + RLC_FP_DIGS, fp_prime_get());
-		bn_rshb_low(t[0] + RLC_FP_DIGS - 1, t[0] + RLC_FP_DIGS - 1, RLC_FP_DIGS + 1, 1);
-		fp_subd_low(c[0], t[0], t[1]);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		dv2_free(t);
-	}
-#else
-		fp2_nord_low(c, a);
-#endif
-}
-
 void fp3_addn_low(fp3_t c, fp3_t a, fp3_t b) {
 	fp_addn_low(c[0], a[0], b[0]);
 	fp_addn_low(c[1], a[1], b[1]);

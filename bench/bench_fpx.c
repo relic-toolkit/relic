@@ -1954,6 +1954,22 @@ static void arith12(void) {
 	}
 	BENCH_END;
 
+#if FPX_RDC == BASIC || !defined(STRIP)
+	BENCH_RUN("fp12_sqr_basic") {
+		fp12_rand(a);
+		BENCH_ADD(fp12_sqr_basic(c, a));
+	}
+	BENCH_END;
+#endif
+
+#if FPX_RDC == LAZYR || !defined(STRIP)
+	BENCH_RUN("fp12_sqr_lazyr") {
+		fp12_rand(a);
+		BENCH_ADD(fp12_sqr_lazyr(c, a));
+	}
+	BENCH_END;
+#endif
+
 	BENCH_RUN("fp12_sqr_cyc") {
 		fp12_rand(a);
 		BENCH_ADD(fp12_sqr_cyc(c, a));
