@@ -33,18 +33,20 @@
 #include "macro.s"
 
 .text
+.global fp2_sqrn_c0
+.global fp2_sqrn_c1
 .global fp2_sqrm_c0
 .global fp2_sqrm_c1
 
-fp2_sqrm_c0:   
-    push	%r12
-    push	%r13 
-    push	%r14  
-    push	%r15  
-    push	%rbx
+fp2_sqrn_c0:
+	push	%r12
+	push	%r13 
+	push	%r14  
+	push	%r15  
+	push	%rbx
 	subq	$96, %rsp
-    
-    // rsp[0..5] <- z = a0 + a1
+
+	// rsp[0..5] <- z = a0 + a1
 	movq	0(%rsi), %r8
 	addq	48(%rsi),%r8
 	movq	8(%rsi), %r9
@@ -90,54 +92,26 @@ fp2_sqrm_c0:
 	movq	%r14,80(%rsp)
 	movq	%r15,88(%rsp)
 
-    // [r8:r14] <- z += z0 x (a0 - a1)
-	MULR	%r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15
-
-	FP_MULM_LOW	0(%rsp), 48(%rsp), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, p0(%rip)
-
-	// Final correction
-	movq	%r14, %r13
-	movq	%r8, %r15
-	movq	%r9, %rbx
-	movq	%r10, %rcx
-	movq	%r11, %rdx
-	movq	%r12, %rsi
-	subq	p0(%rip), %r13
-	sbbq	p1(%rip), %r15
-	sbbq	p2(%rip), %rbx
-	sbbq	p3(%rip), %rcx
-	sbbq	p4(%rip), %rdx
-	sbbq	p5(%rip), %rsi
-	cmovc	%r14, %r13
-	cmovc	%r8, %r15
-	cmovc	%r9, %rbx
-	cmovc	%r10, %rcx
-	cmovc	%r11, %rdx
-	cmovc	%r12, %rsi
-    movq	%r13, 0(%rdi)
-	movq	%r15, 8(%rdi)
-	movq	%rbx, 16(%rdi)
-	movq	%rcx, 24(%rdi)
-	movq	%rdx, 32(%rdi)
-	movq	%rsi, 40(%rdi)
+	MULR	0(%rsp), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15
+	FP_MULM_LOW	0(%rsp), 48(%rsp), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, p0(%rip), 0
 
 	addq	$96, %rsp
-    popq	%rbx
-    popq	%r15
-    popq	%r14
-    popq	%r13
-    popq	%r12
-    ret
+	popq	%rbx
+	popq	%r15
+	popq	%r14
+	popq	%r13
+	popq	%r12
+	ret
 
-fp2_sqrm_c1:
-    push	%r12
-    push	%r13 
-    push	%r14  
-    push	%r15  
-    push	%rbx
+fp2_sqrn_c1:
+	push	%r12
+	push	%r13 
+	push	%r14  
+	push	%r15  
+	push	%rbx
 	subq	$48, %rsp
 
-    // rsp[0..5] <- z = 2 x a0
+	// rsp[0..5] <- z = 2 x a0
 	movq	0(%rsi), %r8
 	movq	8(%rsi), %r9
 	movq	16(%rsi),%r10
@@ -157,41 +131,117 @@ fp2_sqrm_c1:
 	movq	%r12,32(%rsp)
 	movq	%r13,40(%rsp)
 	
-    // [r8:r14] <- z = 2 x a00 x a1
 	MULM	0(%rsp), 48(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15
-
-	FP_MULM_LOW	0(%rsp), 48(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, p0(%rip)
-
-	// Final correction
-	movq	%r14, %r13
-	movq	%r8, %r15
-	movq	%r9, %rbx
-	movq	%r10, %rcx
-	movq	%r11, %rdx
-	movq	%r12, %rsi
-	subq	p0(%rip), %r13
-	sbbq	p1(%rip), %r15
-	sbbq	p2(%rip), %rbx
-	sbbq	p3(%rip), %rcx
-	sbbq	p4(%rip), %rdx
-	sbbq	p5(%rip), %rsi
-	cmovc	%r14, %r13
-	cmovc	%r8, %r15
-	cmovc	%r9, %rbx
-	cmovc	%r10, %rcx
-	cmovc	%r11, %rdx
-	cmovc	%r12, %rsi
-    movq	%r13, 0(%rdi)
-	movq	%r15, 8(%rdi)
-	movq	%rbx, 16(%rdi)
-	movq	%rcx, 24(%rdi)
-	movq	%rdx, 32(%rdi)
-	movq	%rsi, 40(%rdi)
+	FP_MULM_LOW	0(%rsp), 48(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, p0(%rip), 0
 
 	addq	$48, %rsp
-    popq	%rbx
-    popq	%r15
-    popq	%r14
-    popq	%r13
-    popq	%r12
-    ret
+	popq	%rbx
+	popq	%r15
+	popq	%r14
+	popq	%r13
+	popq	%r12
+	ret
+
+fp2_sqrm_c0:
+	push	%r12
+	push	%r13 
+	push	%r14  
+	push	%r15  
+	push	%rbx
+	subq	$96, %rsp
+
+	// rsp[0..5] <- z = a0 + a1
+	movq	0(%rsi), %r8
+	addq	48(%rsi),%r8
+	movq	8(%rsi), %r9
+	adcq	56(%rsi),%r9
+	movq	16(%rsi),%r10
+	adcq	64(%rsi),%r10
+	movq	24(%rsi),%r11
+	adcq	72(%rsi),%r11
+	movq	32(%rsi),%r12
+	adcq	80(%rsi),%r12
+	movq	40(%rsi),%r13
+	adcq	88(%rsi),%r13
+	movq	%r8, 0(%rsp)
+	movq	%r9, 8(%rsp)
+	movq	%r10,16(%rsp)
+	movq	%r11,24(%rsp)
+	movq	%r12,32(%rsp)
+	movq	%r13,40(%rsp)
+
+	// rsp[6..11] <- a0 - a1 + p
+	movq	0(%rsi), %r8
+	subq	48(%rsi),%r8
+	movq	8(%rsi), %r10
+	sbbq	56(%rsi),%r10
+	movq	16(%rsi),%r12
+	sbbq	64(%rsi),%r12
+	movq	24(%rsi),%r13
+	sbbq	72(%rsi),%r13
+	movq	32(%rsi),%r14
+	sbbq	80(%rsi),%r14
+	movq	40(%rsi),%r15
+	sbbq	88(%rsi),%r15
+	addq	p0(%rip),%r8
+	adcq	p1(%rip),%r10
+	adcq	p2(%rip),%r12
+	adcq	p3(%rip),%r13
+	adcq	p4(%rip),%r14
+	adcq	p5(%rip),%r15
+	movq	%r8, 48(%rsp)
+	movq	%r10,56(%rsp)
+	movq	%r12,64(%rsp)
+	movq	%r13,72(%rsp)
+	movq	%r14,80(%rsp)
+	movq	%r15,88(%rsp)
+
+	MULR	0(%rsp), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15
+	FP_MULM_LOW	0(%rsp), 48(%rsp), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, p0(%rip), 1
+
+	addq	$96, %rsp
+	popq	%rbx
+	popq	%r15
+	popq	%r14
+	popq	%r13
+	popq	%r12
+	ret
+
+fp2_sqrm_c1:
+	push	%r12
+	push	%r13 
+	push	%r14  
+	push	%r15  
+	push	%rbx
+	subq	$48, %rsp
+
+	// rsp[0..5] <- z = 2 x a0
+	movq	0(%rsi), %r8
+	movq	8(%rsi), %r9
+	movq	16(%rsi),%r10
+	movq	24(%rsi),%r11
+	movq	32(%rsi),%r12
+	movq	40(%rsi),%r13
+	addq	%r8, %r8
+	adcq	%r9, %r9
+	adcq	%r10,%r10
+	adcq	%r11,%r11
+	adcq	%r12,%r12
+	adcq	%r13,%r13
+	movq	%r8, 0(%rsp)
+	movq	%r9, 8(%rsp)
+	movq	%r10,16(%rsp)
+	movq	%r11,24(%rsp)
+	movq	%r12,32(%rsp)
+	movq	%r13,40(%rsp)
+	
+	MULM	0(%rsp), 48(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15
+	FP_MULM_LOW	0(%rsp), 48(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, p0(%rip), 1
+
+	addq	$48, %rsp
+	popq	%rbx
+	popq	%r15
+	popq	%r14
+	popq	%r13
+	popq	%r12
+	ret

@@ -37,6 +37,28 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
+#ifdef FP_QNRES
+
+void fp2_sqrn_c0(fp_t c, const fp2_t a);
+void fp2_sqrn_c1(fp_t c, const fp2_t a);
+void fp2_sqrm_c0(fp_t c, const fp2_t a);
+void fp2_sqrm_c1(fp_t c, const fp2_t a);
+
+void fp2_sqrn_low(dv2_t c, const fp2_t a) {
+	fp2_sqrn_c0(c[0], a);
+	fp2_sqrn_c1(c[1], a);
+}
+
+void fp2_sqrm_low(fp2_t c, const fp2_t a) {    
+	rlc_align dig_t t[RLC_FP_DIGS];
+
+	fp2_sqrm_c0(t, a);
+	fp2_sqrm_c1(c[1], a);
+	fp_copy(c[0], t);
+}
+
+#else
+
 void fp2_sqrn_low(dv2_t c, const fp2_t a) {
 	rlc_align dig_t t0[2 * RLC_FP_DIGS], t1[2 * RLC_FP_DIGS], t2[2 * RLC_FP_DIGS];
 
@@ -103,16 +125,23 @@ void fp2_sqrn_low(dv2_t c, const fp2_t a) {
 	/* c = c0 + c1 * u. */
 }
 
-void fp2_sqrm_c0(fp_t c, const fp2_t a);
-void fp2_sqrm_c1(fp_t c, const fp2_t a);
+void fp2_sqrm_low(fp2_t c, const fp2_t a) {
+	rlc_align dv2_t t;
 
-void fp2_sqrm_low(fp2_t c, const fp2_t a) {    
-	rlc_align dig_t t[RLC_FP_DIGS];
+	dv2_null(t);
 
-	fp2_sqrm_c0(t, a);
-	fp2_sqrm_c1(c[1], a);
-	fp_copy(c[0], t);
+	RLC_TRY {
+		dv2_new(t);
+		fp2_sqrn_low(t, a);
+		fp2_rdcn_low(c, t);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		dv2_free(t);
+	}
 }
+
+#endif
 
 void fp3_sqrn_low(dv3_t c, const fp3_t a) {
 	rlc_align dig_t t0[2 * RLC_FP_DIGS], t1[2 * RLC_FP_DIGS], t2[2 * RLC_FP_DIGS];
