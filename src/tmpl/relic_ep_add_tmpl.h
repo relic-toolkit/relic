@@ -466,7 +466,7 @@
  */
 #define TMPL_ADD_JACOB_MIX(C, F)											\
 	static void C##_add_jacob_mix(C##_t r, const C##_t p, const C##_t q) {	\
-		F##_t t0, t1, t2, t3, t4, t5, t6;									\
+		F##_t t0, t1, t2, t3, t4, t5;										\
 																			\
 		F##_null(t0);														\
 		F##_null(t1);														\
@@ -474,7 +474,6 @@
 		F##_null(t3);														\
 		F##_null(t4);														\
 		F##_null(t5);														\
-		F##_null(t6);														\
 																			\
 		RLC_TRY {															\
 			F##_new(t0);													\
@@ -483,7 +482,6 @@
 			F##_new(t3);													\
 			F##_new(t4);													\
 			F##_new(t5);													\
-			F##_new(t6);													\
 																			\
 			if (p->coord != BASIC) {										\
 				/* t0 = z1^2. */											\
@@ -537,8 +535,8 @@
 				/* x3 = R^2 - J - 2 * V. */									\
 				F##_sqr(r->x, t1);											\
 				F##_sub(r->x, r->x, t5);									\
-				F##_dbl(t6, t4);											\
-				F##_sub(r->x, r->x, t6);									\
+				F##_sub(r->x, r->x, t4);									\
+				F##_sub(r->x, r->x, t4);									\
 																			\
 				/* y3 = R * (V - x3) - 2 * Y1 * J. */						\
 				F##_sub(t4, t4, r->x);										\
@@ -569,7 +567,6 @@
 			F##_free(t3);													\
 			F##_free(t4);													\
 			F##_free(t5);													\
-			F##_free(t6);													\
 		}																	\
 	}																		\
 
