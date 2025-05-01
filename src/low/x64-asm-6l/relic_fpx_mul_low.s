@@ -32,8 +32,6 @@
 #include "relic_fp_low.h"
 #include "macro.s"
 
-/* Based on paper+code 
-
 .text
 .global fp2_muln_c0
 .global fp2_muln_c1
