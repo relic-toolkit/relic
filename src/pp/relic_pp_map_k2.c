@@ -52,6 +52,8 @@ static void pp_mil_k2(fp2_t r, ep_t *t, ep_t *p, ep_t *q, int m, bn_t a) {
 	fp2_t l;
 	ep_t *_q = RLC_ALLOCA(ep_t, m);
 	int i, j;
+	size_t len = bn_bits(a) + 1;
+	int8_t b[RLC_FP_BITS + 1];
 
 	fp2_null(l);
 
@@ -68,13 +70,20 @@ static void pp_mil_k2(fp2_t r, ep_t *t, ep_t *p, ep_t *q, int m, bn_t a) {
 		}
 
 		fp2_zero(l);
+		bn_rec_naf(b, &len, a, 2);
 		for (i = bn_bits(a) - 2; i >= 0; i--) {
 			fp2_sqr(r, r);
 			for (j = 0; j < m; j++) {
 				pp_dbl_k2(l, t[j], t[j], _q[j]);
 				fp2_mul(r, r, l);
-				if (bn_get_bit(a, i)) {
+				if (b[i] > 0) {
 					pp_add_k2(l, t[j], p[j], q[j]);
+					fp2_mul(r, r, l);
+				}
+				if (b[i] < 0) {
+					ep_neg(p[j], p[j]);
+					pp_add_k2(l, t[j], p[j], q[j]);
+					ep_neg(p[j], p[j]);
 					fp2_mul(r, r, l);
 				}
 			}
@@ -106,6 +115,8 @@ static void pp_mil_lit_k2(fp2_t r, ep_t *t, ep_t *p, ep_t *q, int m, bn_t a) {
 	fp2_t l, _l;
 	ep_t *_q = RLC_ALLOCA(ep_t, m);
 	int i, j;
+	size_t len = bn_bits(a) + 1;
+	int8_t b[RLC_FP_BITS + 1];
 
 	fp2_null(l);
 	fp2_null(_l);
@@ -123,6 +134,8 @@ static void pp_mil_lit_k2(fp2_t r, ep_t *t, ep_t *p, ep_t *q, int m, bn_t a) {
 			ep_neg(_q[j], q[j]);
 		}
 
+		fp2_zero(l);
+		bn_rec_naf(b, &len, a, 2);
 		for (i = bn_bits(a) - 2; i >= 0; i--) {
 			fp2_sqr(r, r);
 			for (j = 0; j < m; j++) {
@@ -130,8 +143,16 @@ static void pp_mil_lit_k2(fp2_t r, ep_t *t, ep_t *p, ep_t *q, int m, bn_t a) {
 				fp_copy(_l[0], l[1]);
 				fp_copy(_l[1], l[0]);
 				fp2_mul(r, r, _l);
-				if (bn_get_bit(a, i)) {
+				if (b[i] > 0) {
 					pp_add_k2(l, t[j], p[j], q[j]);
+					fp_copy(_l[0], l[1]);
+					fp_copy(_l[1], l[0]);
+					fp2_mul(r, r, _l);
+				}
+				if (b[i] < 0) {
+					ep_neg(p[j], p[j]);
+					pp_add_k2(l, t[j], p[j], q[j]);
+					ep_neg(p[j], p[j]);
 					fp_copy(_l[0], l[1]);
 					fp_copy(_l[1], l[0]);
 					fp2_mul(r, r, _l);
