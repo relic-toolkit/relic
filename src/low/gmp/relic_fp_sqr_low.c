@@ -39,7 +39,7 @@
 /*============================================================================*/
 
 void fp_sqrn_low(dig_t *c, const dig_t *a) {
-	mpn_mul_n(c, a, a, RLC_FP_DIGS);
+	mpn_sqr(c, a, RLC_FP_DIGS);
 }
 
 void fp_sqrm_low(dig_t *c, const dig_t *a) {

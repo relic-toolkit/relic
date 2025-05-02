@@ -163,7 +163,10 @@ void pp_map_sim_tatep_k1(fp_t r, const ep_t *p, const ep_t *q, int m) {
 		for (i = 0; i < m; i++) {
 			if (!ep_is_infty(p[i]) && !ep_is_infty(q[i])) {
 				ep_norm(_p[j], p[i]);
-				ep_norm(_q[j++], q[i]);
+				ep_psi(_q[j], p[i]);
+				ep_add(_q[j], _q[j], q[i]);
+				ep_norm(_q[j], _q[j]);
+				j++;
 			}
 		}
 
@@ -218,20 +221,22 @@ void pp_map_weilp_k1(fp_t r, const ep_t p, const ep_t q) {
 
 		ep_norm(_p[0], p);
 		ep_norm(_q[0], q);
+		ep_psi(_q[0], _q[0]);
 		ep_curve_get_ord(n);
-		fp_set_dig(r0, 1);
-		fp_set_dig(r1, 1);
+		fp_set_dig(r, 1);
 
 		if (!ep_is_infty(_p[0]) && !ep_is_infty(_q[0])) {
+			fp_set_dig(r0, 1);
+			fp_set_dig(r1, 1);	
 			pp_mil_k1(r0, t0, _p, _q, 1, n);
 			pp_mil_k1(r1, t1, _q, _p, 1, n);
-			if (fp_cmp(r0, r1) != RLC_EQ) {
-				fp_neg(r0, r0);
-			}
 			fp_inv(r1, r1);
+			fp_mul(r, r0, r1);
+			if (!bn_is_even(n)) {
+				fp_neg(r, r);
+			}	
 		}
 		/* Compute r = (-1)^n * r0/r1. */
-		fp_mul(r, r0, r1);
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -281,21 +286,27 @@ void pp_map_sim_weilp_k1(fp_t r, const ep_t *p, const ep_t *q, int m) {
 		for (i = 0; i < m; i++) {
 			if (!ep_is_infty(p[i]) && !ep_is_infty(q[i])) {
 				ep_norm(_p[j], p[i]);
-				ep_norm(_q[j++], q[i]);
+				ep_norm(_q[j], q[i]);
+				ep_psi(_q[j], _q[j]);
+				j++;
 			}
 		}
 
 		ep_curve_get_ord(n);
 		bn_sub_dig(n, n, 1);
-		fp_set_dig(r0, 1);
-		fp_set_dig(r1, 1);
+		fp_set_dig(r, 1);
 
 		if (j > 0) {
+			fp_set_dig(r0, 1);
+			fp_set_dig(r1, 1);	
 			pp_mil_k1(r0, t0, _p, _q, j, n);
 			pp_mil_k1(r1, t1, _q, _p, j, n);
 			fp_inv(r1, r1);
+			fp_mul(r, r0, r1);
+			if (!bn_is_even(n)) {
+				fp_neg(r, r);
+			}	
 		}
-		fp_mul(r, r0, r1);
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
