@@ -51,6 +51,8 @@
 static void pp_mil_k1(fp_t r, ep_t *t, ep_t *p, ep_t *q, int n, bn_t a) {
 	fp_t l, m, s;
 	int i, j;
+	size_t len = bn_bits(a) + 1;
+	int8_t b[RLC_FP_BITS + 1];
 
 	fp_null(l);
 	fp_null(m);
@@ -65,14 +67,15 @@ static void pp_mil_k1(fp_t r, ep_t *t, ep_t *p, ep_t *q, int n, bn_t a) {
 		}
 
 		fp_set_dig(s, 1);
-		for (i = bn_bits(a) - 2; i >= 0; i--) {
+		bn_rec_naf(b, &len, a, 2);
+		for (i = len - 2; i >= 0; i--) {
 			fp_sqr(r, r);
 			fp_sqr(s, s);
 			for (j = 0; j < n; j++) {
 				pp_dbl_k1(l, m, t[j], t[j], q[j]);
 				fp_mul(r, r, l);
 				fp_mul(s, s, m);
-				if (bn_get_bit(a, i)) {
+				if (b[i] > 0) {
 					pp_add_k1(l, m, t[j], p[j], q[j]);
 					fp_mul(r, r, l);
 					fp_mul(s, s, m);
@@ -230,13 +233,13 @@ void pp_map_weilp_k1(fp_t r, const ep_t p, const ep_t q) {
 			fp_set_dig(r1, 1);	
 			pp_mil_k1(r0, t0, _p, _q, 1, n);
 			pp_mil_k1(r1, t1, _q, _p, 1, n);
+			/* Compute r = (-1)^n * r0/r1. */
 			fp_inv(r1, r1);
 			fp_mul(r, r0, r1);
 			if (!bn_is_even(n)) {
 				fp_neg(r, r);
-			}	
+			}
 		}
-		/* Compute r = (-1)^n * r0/r1. */
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -293,7 +296,6 @@ void pp_map_sim_weilp_k1(fp_t r, const ep_t *p, const ep_t *q, int m) {
 		}
 
 		ep_curve_get_ord(n);
-		bn_sub_dig(n, n, 1);
 		fp_set_dig(r, 1);
 
 		if (j > 0) {
@@ -303,7 +305,7 @@ void pp_map_sim_weilp_k1(fp_t r, const ep_t *p, const ep_t *q, int m) {
 			pp_mil_k1(r1, t1, _q, _p, j, n);
 			fp_inv(r1, r1);
 			fp_mul(r, r0, r1);
-			if (!bn_is_even(n)) {
+			if (!bn_is_even(n) && (j & 1)) {
 				fp_neg(r, r);
 			}	
 		}

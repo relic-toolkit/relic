@@ -71,7 +71,7 @@ static void pp_mil_k2(fp2_t r, ep_t *t, ep_t *p, ep_t *q, int m, bn_t a) {
 
 		fp2_zero(l);
 		bn_rec_naf(b, &len, a, 2);
-		for (i = bn_bits(a) - 2; i >= 0; i--) {
+		for (i = len - 2; i >= 0; i--) {
 			fp2_sqr(r, r);
 			for (j = 0; j < m; j++) {
 				pp_dbl_k2(l, t[j], t[j], _q[j]);
@@ -136,7 +136,7 @@ static void pp_mil_lit_k2(fp2_t r, ep_t *t, ep_t *p, ep_t *q, int m, bn_t a) {
 
 		fp2_zero(l);
 		bn_rec_naf(b, &len, a, 2);
-		for (i = bn_bits(a) - 2; i >= 0; i--) {
+		for (i = len - 2; i >= 0; i--) {
 			fp2_sqr(r, r);
 			for (j = 0; j < m; j++) {
 				pp_dbl_k2(l, t[j], t[j], _q[j]);
