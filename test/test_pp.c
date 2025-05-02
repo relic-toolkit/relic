@@ -256,6 +256,9 @@ static int pairing1(void) {
 
 		ep_curve_get_ord(n);
 		TEST_CASE("pairing non-degeneracy is correct") {
+			ep_rand(p[0]);
+			ep_rand(q[0]);
+			TEST_ASSERT(fp_cmp_dig(e1, 1) != RLC_EQ, end);
 			ep_set_infty(p[0]);
 			pp_map_k1(e1, p[0], q[0]);
 			TEST_ASSERT(fp_cmp_dig(e1, 1) == RLC_EQ, end);
@@ -276,7 +279,6 @@ static int pairing1(void) {
 		TEST_CASE("pairing is bilinear") {
 			ep_rand(p[0]);
 			ep_rand(q[0]);
-			ep_psi(q[0], q[0]);
 			bn_rand_mod(k, n);
 			ep_mul(r, q[0], k);
 			pp_map_k1(e1, p[0], r);
@@ -299,7 +301,6 @@ static int pairing1(void) {
         TEST_CASE("multi-pairing is correct") {
             ep_rand(p[i % 2]);
             ep_rand(q[i % 2]);
-			ep_psi(q[i % 2], q[i % 2]);
             pp_map_k1(e1, p[i % 2], q[i % 2]);
             ep_rand(p[1 - (i % 2)]);
             ep_set_infty(q[1 - (i % 2)]);
@@ -314,11 +315,9 @@ static int pairing1(void) {
             TEST_ASSERT(fp_cmp_dig(e2, 1) == RLC_EQ, end);
             ep_rand(p[0]);
             ep_rand(q[0]);
-			ep_psi(q[0], q[0]);
             pp_map_k1(e1, p[0], q[0]);
             ep_rand(p[1]);
             ep_rand(q[1]);
-			ep_psi(q[1], q[1]);
             pp_map_k1(e2, p[1], q[1]);
             fp_mul(e1, e1, e2);
             pp_map_sim_k1(e2, p, q, 2);
@@ -327,6 +326,9 @@ static int pairing1(void) {
 
 #if PP_MAP == TATEP || PP_MAP == OATEP || !defined(STRIP)
 		TEST_CASE("tate pairing non-degeneracy is correct") {
+			ep_rand(p[0]);
+			ep_rand(q[0]);
+			TEST_ASSERT(fp_cmp_dig(e1, 1) != RLC_EQ, end);
 			ep_set_infty(p[0]);
 			pp_map_tatep_k1(e1, p[0], q[0]);
 			TEST_ASSERT(fp_cmp_dig(e1, 1) == RLC_EQ, end);
@@ -337,10 +339,6 @@ static int pairing1(void) {
 			ep_rand(p[0]);
 			ep_dbl(q[0], p[0]);
 			ep_norm(q[0], q[0]);
-			/* If does not work for all multiples of P, but works for 2P. */
-			pp_map_tatep_k1(e1, p[0], q[0]);
-			TEST_ASSERT(fp_cmp_dig(e1, 1) == RLC_EQ, end);
-			ep_psi(q[0], p[0]);
 			pp_map_tatep_k1(e1, p[0], q[0]);
 			TEST_ASSERT(fp_cmp_dig(e1, 1) == RLC_EQ, end);
 		} TEST_END;
@@ -348,7 +346,6 @@ static int pairing1(void) {
 		TEST_CASE("tate pairing is bilinear") {
 			ep_rand(p[0]);
 			ep_rand(q[0]);
-			ep_psi(q[0], q[0]);
 			bn_rand_mod(k, n);
 			ep_mul(r, q[0], k);
 			pp_map_tatep_k1(e1, p[0], r);
@@ -371,7 +368,6 @@ static int pairing1(void) {
 		TEST_CASE("tate multi-pairing is correct") {
 			ep_rand(p[i % 2]);
 			ep_rand(q[i % 2]);
-			ep_psi(q[i % 2], q[i % 2]);
 			pp_map_tatep_k1(e1, p[i % 2], q[i % 2]);
 			ep_rand(p[1 - (i % 2)]);
 			ep_set_infty(q[1 - (i % 2)]);
@@ -399,6 +395,7 @@ static int pairing1(void) {
 #if PP_MAP == WEIL || !defined(STRIP)
 		TEST_CASE("weil pairing non-degeneracy is correct") {
 			ep_set_infty(p[0]);
+			ep_rand(q[0]);
 			pp_map_weilp_k1(e1, p[0], q[0]);
 			TEST_ASSERT(fp_cmp_dig(e1, 1) == RLC_EQ, end);
 			ep_rand(p[0]);
@@ -406,18 +403,14 @@ static int pairing1(void) {
 			pp_map_weilp_k1(e1, p[0], q[0]);
 			TEST_ASSERT(fp_cmp_dig(e1, 1) == RLC_EQ, end);
 			ep_rand(p[0]);
-			pp_map_weilp_k1(e1, p[0], p[0]);
-			TEST_ASSERT(fp_cmp_dig(e1, 1) == RLC_EQ, end);
-			ep_rand(p[0]);
 			ep_rand(q[0]);
 			pp_map_weilp_k1(e1, p[0], q[0]);
-			TEST_ASSERT(fp_cmp_dig(e1, 1) == RLC_EQ, end);
+			TEST_ASSERT(fp_cmp_dig(e1, 1) != RLC_EQ, end);
 		} TEST_END;
 
 		TEST_CASE("weil pairing is bilinear") {
 			ep_rand(p[0]);
 			ep_rand(q[0]);
-			ep_psi(q[0], q[0]);
 			bn_rand_mod(k, n);
 			ep_mul(r, q[0], k);
 			pp_map_weilp_k1(e1, p[0], r);

@@ -117,8 +117,12 @@ void fp_rdcn_low(dig_t *c, dig_t *a) {
 	const dig_t *m = fp_prime_get();
 
 	for (int i = 0; i < RLC_FP_DIGS; i++, a++) {
+#if FP_PRIME == 3072
 		r = (dig_t)(*a * u);
+		*a = mpn_add_1(a, a, RLC_FP_DIGS, r);
+		*a = mpn_addmul_1(a + RLC_FP_DIGS/2, m + RLC_FP_DIGS/2, RLC_FP_DIGS/2, r);
+#else
 		*a = mpn_addmul_1(a, m, RLC_FP_DIGS, r);
-	}
+#endif
 	fp_addm_low(c, a, a - RLC_FP_DIGS);
 }
