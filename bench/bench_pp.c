@@ -37,7 +37,7 @@
 static void pairing1(void) {
 	bn_t k, n, l;
 	ep_t p[2], q[2];
-	fp_t e1, e2;
+	fp_t e1, e2, e3;
 	int j;
 
 	bn_null(k);
@@ -45,12 +45,14 @@ static void pairing1(void) {
 	bn_null(l);
 	fp_null(e1);
 	fp_null(e2);
+	fp_null(e3);
 
 	bn_new(k);
 	bn_new(n);
 	bn_new(l);
 	fp_new(e1);
 	fp_new(e2);
+	fp_new(e3);
 
 	for (j = 0; j < 2; j++) {
 		ep_null(p[j]);
@@ -90,7 +92,8 @@ static void pairing1(void) {
 	BENCH_RUN("pp_dbl_k1") {
 		ep_rand(p[0]);
 		ep_rand(q[0]);
-		BENCH_ADD(pp_dbl_k1(e1, e2, p[0], p[0], q[0]));
+		fp_set_dig(e3, 1);
+		BENCH_ADD(pp_dbl_k1(e1, e2, p[0], e3, p[0], e3, q[0]));
 	}
 	BENCH_END;
 
@@ -107,7 +110,8 @@ static void pairing1(void) {
 	BENCH_RUN("pp_dbl_k1_projc") {
 		ep_rand(p[0]);
 		ep_rand(q[0]);
-		BENCH_ADD(pp_dbl_k1_projc(e1, e2, p[0], p[0], q[0]));
+		fp_set_dig(e3, 1);
+		BENCH_ADD(pp_dbl_k1_projc(e1, e2, p[0], e3, p[0], e3, q[0]));
 	}
 	BENCH_END;
 #endif
@@ -166,6 +170,7 @@ static void pairing1(void) {
 	bn_free(l);
 	fp_free(e1);
 	fp_free(e2);
+	fp_free(e3);
 	for (j = 0; j < 2; j++) {
 		ep_free(p[j]);
 		ep_free(q[j]);

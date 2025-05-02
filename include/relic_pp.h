@@ -268,13 +268,15 @@
  * @param[out] L			- the numerator of the result of the evaluation.
  * @param[out] M			- the denominator of the result of the evaluation.
  * @param[out] R			- the resulting point.
+ * @param[out] W			- the extended coordinate of the resulting point.
  * @param[in] P				- the point to double.
+ * @param[in] V				- the extended coordinate of the point to double.
  * @param[in] Q				- the affine point to evaluate the line function.
  */
 #if EP_ADD == BASIC
-#define pp_dbl_k1(L, M, R, P, Q)	pp_dbl_k1_basic(L, M, R, P, Q)
+#define pp_dbl_k1(L, M, R, W, P, V, Q)	pp_dbl_k1_basic(L, M, R, P, Q)
 #else
-#define pp_dbl_k1(L, M, R, P, Q)	pp_dbl_k1_projc(L, M, R, P, Q)
+#define pp_dbl_k1(L, M, R, W, P, V, Q)	pp_dbl_k1_projc(L, M, R, W, P, V, Q)
 #endif
 
 /**
@@ -996,11 +998,14 @@ void pp_dbl_k1_basic(fp_t l, fp_t m, ep_t r, const ep_t p, const ep_t q);
  *
  * @param[out] l			- the numerator of the result of the evaluation.
  * @param[out] m			- the denominator of the result of the evaluation.
- * @param[in, out] r		- the resulting point.
+ * @param[out] r			- the resulting point.
+ * @param[out] w			- the extended coordinate of the resulting point.
  * @param[in] p				- the point to double.
+ * @param[in] v				- the extended coordinate of the point to double.
  * @param[in] q				- the affine point to evaluate the line function.
  */
-void pp_dbl_k1_projc(fp_t l, fp_t m, ep_t r, const ep_t p, const ep_t q);
+ void pp_dbl_k1_projc(fp_t l, fp_t m, ep_t r, fp_t w, const ep_t p, const fp_t v,
+	const ep_t q);
 
 /**
  * Doubles a point and evaluates the corresponding line function at another

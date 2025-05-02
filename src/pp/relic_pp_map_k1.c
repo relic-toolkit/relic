@@ -49,7 +49,7 @@
  * @param[in] a				- the loop parameter.
  */
 static void pp_mil_k1(fp_t r, ep_t *t, ep_t *p, ep_t *q, int n, bn_t a) {
-	fp_t l, m, s;
+	fp_t l, m, s, *w = RLC_ALLOCA(fp_t, n);
 	int i, j;
 	size_t len = bn_bits(a) + 1;
 	int8_t b[RLC_FP_BITS + 1];
@@ -57,13 +57,21 @@ static void pp_mil_k1(fp_t r, ep_t *t, ep_t *p, ep_t *q, int n, bn_t a) {
 	fp_null(l);
 	fp_null(m);
 	fp_null(s);
+	if (w == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
+		return;
+	}
 
 	RLC_TRY {
 		fp_new(l);
 		fp_new(m);
+		fp_new(w);
 		fp_new(s);
 		for (j = 0; j < n; j++) {
+			fp_null(w[j]);
+			fp_new(w[j]);
 			ep_copy(t[j], p[j]);
+			fp_set_dig(w[j], 1);
 		}
 
 		fp_set_dig(s, 1);
@@ -72,11 +80,13 @@ static void pp_mil_k1(fp_t r, ep_t *t, ep_t *p, ep_t *q, int n, bn_t a) {
 			fp_sqr(r, r);
 			fp_sqr(s, s);
 			for (j = 0; j < n; j++) {
-				pp_dbl_k1(l, m, t[j], t[j], q[j]);
+				pp_dbl_k1(l, m, t[j], w[j], t[j], w[j], q[j]);
 				fp_mul(r, r, l);
 				fp_mul(s, s, m);
 				if (b[i] > 0) {
 					pp_add_k1(l, m, t[j], p[j], q[j]);
+					/* Correct extended coordinate for next doubling. */
+					fp_sqr(w[j], t[j]->z);
 					fp_mul(r, r, l);
 					fp_mul(s, s, m);
 				}
@@ -96,7 +106,10 @@ static void pp_mil_k1(fp_t r, ep_t *t, ep_t *p, ep_t *q, int n, bn_t a) {
 	RLC_FINALLY {
 		fp_free(l);
 		fp_free(m);
-		fp_free(s);
+		for (j = 0; j < n; j++) {
+			fp_free(w[j]);
+		}
+		RLC_FREE(w);
 	}
 }
 
