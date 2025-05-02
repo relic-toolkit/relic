@@ -34,6 +34,143 @@
 #include "relic.h"
 #include "relic_bench.h"
 
+static void pairing1(void) {
+	bn_t k, n, l;
+	ep_t p[2], q[2];
+	fp_t e1, e2;
+	int j;
+
+	bn_null(k);
+	bn_null(n);
+	bn_null(l);
+	fp_null(e1);
+	fp_null(e2);
+
+	bn_new(k);
+	bn_new(n);
+	bn_new(l);
+	fp_new(e1);
+	fp_new(e2);
+
+	for (j = 0; j < 2; j++) {
+		ep_null(p[j]);
+		ep_null(q[j]);
+		ep_new(p[0]);
+		ep_new(q[0]);
+	}
+
+	ep_curve_get_ord(n);
+
+	BENCH_RUN("pp_add_k1") {
+		ep_rand(p[0]);
+		ep_rand(q[0]);
+		BENCH_ADD(pp_add_k1(e1, e2, p[0], p[0], q[0]));
+	}
+	BENCH_END;
+
+#if EP_ADD == BASIC || !defined(STRIP)
+	BENCH_RUN("pp_add_k1_basic") {
+		ep_rand(p[0]);
+		ep_rand(q[0]);
+		BENCH_ADD(pp_add_k1_basic(e1, e2, p[0], p[0], q[0]));
+	}
+	BENCH_END;
+#endif
+
+#if EP_ADD == PROJC || !defined(STRIP)
+	BENCH_RUN("pp_add_k1_projc") {
+		ep_rand(p[0]);
+		ep_rand(q[0]);
+		BENCH_ADD(pp_add_k1_projc(e1, e2, p[0], p[0], q[0]));
+	}
+	BENCH_END;
+#endif
+
+	BENCH_RUN("pp_dbl_k1") {
+		ep_rand(p[0]);
+		ep_rand(q[0]);
+		BENCH_ADD(pp_dbl_k1(e1, e2, p[0], p[0], q[0]));
+	}
+	BENCH_END;
+
+#if EP_ADD == BASIC || !defined(STRIP)
+	BENCH_RUN("pp_dbl_k1_basic") {
+		ep_rand(p[0]);
+		ep_rand(q[0]);
+		BENCH_ADD(pp_dbl_k1_basic(e1, e2, p[0], p[0], q[0]));
+	}
+	BENCH_END;
+#endif
+
+#if EP_ADD == PROJC || !defined(STRIP)
+	BENCH_RUN("pp_dbl_k1_projc") {
+		ep_rand(p[0]);
+		ep_rand(q[0]);
+		BENCH_ADD(pp_dbl_k1_projc(e1, e2, p[0], p[0], q[0]));
+	}
+	BENCH_END;
+#endif
+
+	BENCH_RUN("pp_exp_k1") {
+		fp_rand(e1);
+		BENCH_ADD(pp_exp_k1(e1, e1));
+	}
+	BENCH_END;
+
+	BENCH_RUN("pp_map_k1") {
+		ep_rand(p[0]);
+		ep_rand(q[0]);
+		BENCH_ADD(pp_map_k1(e1, q[0], p[0]));
+	}
+	BENCH_END;
+
+#if PP_MAP == TATEP || PP_MAP == OATEP || !defined(STRIP)
+	BENCH_RUN("pp_map_tatep_k1") {
+		ep_rand(p[0]);
+		ep_rand(q[0]);
+		BENCH_ADD(pp_map_tatep_k1(e1, q[0], p[0]));
+	}
+	BENCH_END;
+
+	BENCH_RUN("pp_map_tatep_sim_k1 (2)") {
+		ep_rand(p[0]);
+		ep_rand(q[0]);
+		ep_rand(p[1]);
+		ep_rand(q[1]);
+		BENCH_ADD(pp_map_sim_tatep_k1(e1, q, p, 2));
+	}
+	BENCH_END;
+#endif
+
+#if PP_MAP == WEILP || !defined(STRIP)
+	BENCH_RUN("pp_map_weilp_k1") {
+		ep_rand(p[0]);
+		ep_rand(q[0]);
+		BENCH_ADD(pp_map_weilp_k1(e1, q[0], p[0]));
+	}
+	BENCH_END;
+
+	BENCH_RUN("pp_map_weilp_sim_k1 (2)") {
+		ep_rand(p[0]);
+		ep_rand(q[0]);
+		ep_rand(p[1]);
+		ep_rand(q[1]);
+		BENCH_ADD(pp_map_sim_weilp_k1(e1, q, p, 2));
+	}
+	BENCH_END;
+#endif
+
+	bn_free(k);
+	bn_free(n);
+	bn_free(l);
+	fp_free(e1);
+	fp_free(e2);
+	for (j = 0; j < 2; j++) {
+		ep_free(p[j]);
+		ep_free(q[j]);
+	}
+}
+
 static void pairing2(void) {
 	bn_t k, n, l;
 	ep_t p[2], q[2];
@@ -169,7 +306,7 @@ static void pairing2(void) {
 	}
 	BENCH_END;
 
-	BENCH_RUN("pp_map_tatep_sim_k12 (2)") {
+	BENCH_RUN("pp_map_tatep_sim_k2 (2)") {
 		ep_rand(p[0]);
 		ep_rand(q[0]);
 		ep_rand(p[1]);
@@ -187,7 +324,7 @@ static void pairing2(void) {
 	}
 	BENCH_END;
 
-	BENCH_RUN("pp_map_weilp_sim_k12 (2)") {
+	BENCH_RUN("pp_map_weilp_sim_k2 (2)") {
 		ep_rand(p[0]);
 		ep_rand(q[0]);
 		ep_rand(p[1]);
@@ -1344,6 +1481,10 @@ int main(void) {
 
 	ep_param_print();
 	util_banner("Arithmetic:", 1);
+
+	if (ep_curve_embed() == 1) {
+		pairing1();
+	}
 
 	if (ep_curve_embed() == 2) {
 		pairing2();
