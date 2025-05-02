@@ -63,8 +63,9 @@ static void pairing1(void) {
 
 	BENCH_RUN("pp_add_k1") {
 		ep_rand(p[0]);
+		ep_rand(p[1]);
 		ep_rand(q[0]);
-		BENCH_ADD(pp_add_k1(e1, e2, p[0], p[0], q[0]));
+		BENCH_ADD(pp_add_k1(e1, e2, p[0], p[1], q[0]));
 	}
 	BENCH_END;
 
@@ -72,7 +73,7 @@ static void pairing1(void) {
 	BENCH_RUN("pp_add_k1_basic") {
 		ep_rand(p[0]);
 		ep_rand(q[0]);
-		BENCH_ADD(pp_add_k1_basic(e1, e2, p[0], p[0], q[0]));
+		BENCH_ADD(pp_add_k1_basic(e1, e2, p[0], p[1], q[0]));
 	}
 	BENCH_END;
 #endif
@@ -81,7 +82,7 @@ static void pairing1(void) {
 	BENCH_RUN("pp_add_k1_projc") {
 		ep_rand(p[0]);
 		ep_rand(q[0]);
-		BENCH_ADD(pp_add_k1_projc(e1, e2, p[0], p[0], q[0]));
+		BENCH_ADD(pp_add_k1_projc(e1, e2, p[0], p[1], q[0]));
 	}
 	BENCH_END;
 #endif
