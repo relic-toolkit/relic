@@ -165,7 +165,8 @@ static int doubling1(void) {
 			ep_rand(p);
 			ep_rand(q);
 			ep_rand(r);
-			pp_dbl_k1(e1, e2, r, q, p);
+			fp_sqr(e3, q->z);
+			pp_dbl_k1(e1, e2, r, e3, q, e3, p);
 			pp_norm_k1(r, r);
 			ep_dbl(s, q);
 			ep_norm(s, s);
@@ -179,7 +180,8 @@ static int doubling1(void) {
 			ep_rand(r);
 			fp_zero(e1);
 			fp_zero(e2);
-			pp_dbl_k1(e1, e2, r, q, p);
+			fp_sqr(e3, q->z);
+			pp_dbl_k1(e1, e2, r, e3, q, e3, p);
 			fp_inv(e2, e2);
 			fp_mul(e1, e1, e2);
 			pp_exp_k1(e1, e1);
@@ -198,11 +200,13 @@ static int doubling1(void) {
 			ep_rand(r);
 			fp_zero(e1);
 			fp_zero(e2);
-			pp_dbl_k1(e1, e2, r, q, p);
+			fp_sqr(e3, q->z);
+			pp_dbl_k1(e1, e2, r, e3, q, e3, p);
 			fp_inv(e2, e2);
 			fp_mul(e1, e1, e2);			
 			pp_exp_k1(e1, e1);
-			pp_dbl_k1_projc(e2, e3, r, q, p);
+			fp_set_dig(e3, 1);
+			pp_dbl_k1_projc(e2, e3, r, e3, q, e3, p);
 			fp_inv(e3, e3);
 			fp_mul(e2, e2, e3);
 			pp_exp_k1(e2, e2);
