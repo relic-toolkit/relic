@@ -633,13 +633,15 @@ static int doubling_halving_trisecting(void) {
 		} TEST_END;
 #endif
 
-		TEST_CASE("trisecting is consistent") {
-			fp_rand(a);
-			fp_dbl(b, a);
-			fp_add(b, b, a);
-			fp_trs(c, b);
-			TEST_ASSERT(fp_cmp(a, c) == RLC_EQ, end);
-		} TEST_END;
+		if (fp_prime_get_mod18() % 3 == 1) {
+			TEST_CASE("trisecting is consistent") {
+				fp_rand(a);
+				fp_dbl(b, a);
+				fp_add(b, b, a);
+				fp_trs(c, b);
+				TEST_ASSERT(fp_cmp(a, c) == RLC_EQ, end);
+			} TEST_END;
+		}
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
