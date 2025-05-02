@@ -706,7 +706,7 @@ void ep2_curve_mul_b(fp2_t c, const fp2_t a) {
 			if (ep2_curve_is_twist() == RLC_EP_MTYPE) {
 				fp_mul(c[0], a[0], ep_curve_get_b());
 				fp_mul(c[1], a[1], ep_curve_get_b());
-				fp2_mul_nor(c, a);
+				fp2_mul_nor(c, c);
 			} else {
 				fp2_mul(c, a, ctx->ep2_b);
 			}
