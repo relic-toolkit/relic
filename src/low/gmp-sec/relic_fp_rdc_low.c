@@ -124,5 +124,6 @@ void fp_rdcn_low(dig_t *c, dig_t *a) {
 #else
 		*a = mpn_addmul_1(a, m, RLC_FP_DIGS, r);
 #endif
+	}
 	fp_addm_low(c, a, a - RLC_FP_DIGS);
 }
