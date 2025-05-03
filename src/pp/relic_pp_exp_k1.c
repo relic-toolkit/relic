@@ -57,6 +57,7 @@ void pp_exp_k1(fp_t c, fp_t a) {
 		while (bn_get_bit(e, l) == 0) {
 			l++;
 		}
+		bn_rsh(e, e, l);
 		fp_sqr(c, a);
 		for (size_t i = 1; i < l; i++) {
 			fp_sqr(c, c);
