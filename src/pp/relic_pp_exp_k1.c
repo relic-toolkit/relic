@@ -39,6 +39,7 @@
 
 void pp_exp_k1(fp_t c, fp_t a) {
 	bn_t e, n;
+	size_t l;
 
 	bn_null(n);
 	bn_null(e);
@@ -52,7 +53,15 @@ void pp_exp_k1(fp_t c, fp_t a) {
 		bn_read_raw(e, fp_prime_get(), RLC_FP_DIGS);
 		bn_sub_dig(e, e, 1);
 		bn_div(e, e, n);
-		fp_exp(c, a, e);
+		l = 0;
+		while (bn_get_bit(e, l) == 0) {
+			l++;
+		}
+		fp_sqr(c, a);
+		for (size_t i = 1; i < l; i++) {
+			fp_sqr(c, c);
+		}
+		fp_exp(c, c, e);
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
