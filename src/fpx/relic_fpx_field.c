@@ -42,7 +42,7 @@ int fp2_field_get_qnr() {
 	return 32;
 #elif FP_PRIME == 158 || FP_PRIME == 256
 	return 4;
-#elif FP_PRIME == 382
+#elif defined(EP_SUPER) && FP_PRIME == 382
 	return 8;
 #elif FP_PRIME == 446 && !defined(FP_QNRES)
 	return 16;

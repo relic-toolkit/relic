@@ -1602,13 +1602,9 @@ int ep_param_set_any_pairf(void) {
 	type = RLC_EP_MTYPE;
 	extension = 2;
 #elif FP_PRIME == 382
-#if defined(EC_ENDOM)
 	ep_param_set(BN_P382);
 	type = RLC_EP_DTYPE;
 	extension = 2;
-#else
-	r = RLC_ERR;
-#endif
 #elif FP_PRIME == 383
 	ep_param_set(B12_P383);
 	type = RLC_EP_MTYPE;

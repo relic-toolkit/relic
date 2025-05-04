@@ -72,6 +72,9 @@ void fp4_frb(fp4_t c, const fp4_t a, int i) {
 		} else {
 			fp2_mul_frb(c[1], c[1], 2, 1);
 			fp2_mul_frb(c[1], c[1], 2, 1);
+			if (fp_prime_get_mod18() == 5) {
+				fp2_mul_nor(c[1], c[1]);
+			}
 		}
 	}
 }

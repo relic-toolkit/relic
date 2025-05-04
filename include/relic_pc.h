@@ -252,15 +252,6 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
 #define gt_get_ord			pc_get_ord
 
 /**
- * Configures some set of curve parameters for the current security level.
- */
-#if EC_CUR == PRIME
-#define pc_param_set_any()	ep_param_set_any_pairf()
-#else
-#define pc_param_set_any()	RLC_ERR
-#endif
-
-/**
  * Returns the type of the configured pairing.
  * @{
  */
@@ -284,16 +275,6 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
 /**
  * @}
  */
-
-/**
- * Prints the current configured binary elliptic curve.
- */
-#define pc_param_print()	RLC_CAT(RLC_G1_LOWER, param_print)()
-
-/*
- * Returns the current security level.
- */
-#define pc_param_level()	RLC_CAT(RLC_G1_LOWER, param_level)()
 
 /**
  * Tests if a G_1 element is on the curve.
@@ -1000,6 +981,22 @@ void pc_core_calc(void);
  */
 void pc_core_clean(void);
 
+/**
+ * Configures a pairing-friendly curve matching the current configuration.
+ *
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int pc_param_set_any(void);
+
+/**
+ * Prints the current configured prime elliptic curve.
+ */
+ void pc_param_print(void);
+
+ /**
+  * Returns the current security level.
+  */
+ int pc_param_level(void); 
 
 /**
  * Assigns a random value to an element from G_T.
