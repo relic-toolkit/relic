@@ -1602,7 +1602,7 @@ int ep_param_set_any_pairf(void) {
 	type = RLC_EP_MTYPE;
 	extension = 2;
 #elif FP_PRIME == 382
-#if defined(EN_ENDOM)
+#if defined(EC_ENDOM)
 	ep_param_set(BN_P382);
 	type = RLC_EP_DTYPE;
 	extension = 2;

@@ -4713,6 +4713,7 @@ int main(void) {
 	util_banner("Tests for the EPX module", 0);
 
 	if (ep_param_set_any_pairf() == RLC_ERR) {
+#if defined(EP_SUPER)
 		ep4_curve_set_super();
 		util_banner("Curve SS3-P382:", 0);
 		if (test4() != RLC_OK) {
@@ -4720,6 +4721,7 @@ int main(void) {
 			return 1;
 		}
 		return 0;
+#endif
 	}
 
 	if ((r0 = ep2_curve_is_twist())) {
