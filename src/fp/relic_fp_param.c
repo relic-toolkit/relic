@@ -393,6 +393,15 @@ void fp_param_set(int param) {
 				bn_neg(t0, t0);
 				fp_prime_set_pairf(t0, EP_BN);
 				break;
+			case SS3_382:
+				/* d = 2^95 - 2^31 - 2^18. */
+				bn_set_2b(t0, 95);
+				bn_set_2b(t1, 31);
+				bn_sub(t0, t0, t1);
+				bn_set_2b(t1, 18);
+				bn_sub(t0, t0, t1);
+				fp_prime_set_pairf(t0, EP_SS3);
+				break;
 #elif FP_PRIME == 383
 			case PRIME_383187:
 				bn_set_2b(p, 383);
@@ -827,7 +836,11 @@ int fp_param_set_any_tower(void) {
 #elif FP_PRIME == 381
 	fp_param_set(B12_381);
 #elif FP_PRIME == 382
+#ifdef EC_ENDOM
 	fp_param_set(BN_382);
+#else
+	fp_param_set(SS3_382);
+#endif
 #elif FP_PRIME == 383
 	fp_param_set(B12_383);
 #elif FP_PRIME == 446

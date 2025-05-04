@@ -57,7 +57,9 @@ enum {
     EP_K1 = 1,
     /** Supersingular curves with embedding degree 2. */
     EP_SS2,
-    /** Barreto-Naehrig. */
+    /** Supersingular curves with embedding degree 2. */
+    EP_SS3,
+	/** Barreto-Naehrig. */
     EP_BN,
     /* Cocks-Pinch family discovered by Guillevic, Masson and Thomé (GMT). */
     EP_GMT8,
@@ -147,6 +149,8 @@ enum {
 	B12_P377,
 	/** Barreto-Lynn-Scott curve with embedding degree 12 (ZCash curve). */
 	B12_P381,
+	/** Supersingular curve with embedding degree 3. */
+	SS3_P382,
 	/** Barreto-Naehrig curve with negative x. */
 	BN_P382,
 	/** Barreto-Lynn-Scott curve with embedding degree 12 (GT-strong). */
@@ -189,8 +193,8 @@ enum {
 	FM18_P768,
 	/** Barreto-Lynn-Scott curve with embedding degree 12. */
 	B12_P1150,
-	/** 1536-bit supersingular curve. */
-	SS_P1536,
+	/** 1536-bit supersingular curve with embedding degree 2. */
+	SS2_P1536,
 	/** 3072-bit supersingular curve. */
 	K1_P3072,
 };

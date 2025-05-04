@@ -2349,6 +2349,11 @@ void ep4_curve_set(const fp4_t a, const fp4_t b, const ep4_t g, const bn_t r,
 		const bn_t h);
 
 /**
+ * Configures a supersingular elliptic curve.
+ */
+void ep4_curve_set_super(void);
+
+/**
  * Configures an elliptic curve by twisting the curve over the base prime field.
  *
  *  @param				- the type of twist (multiplicative or divisive)

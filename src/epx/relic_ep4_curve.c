@@ -107,6 +107,29 @@
 /** @} */
 #endif
 
+#if defined(EP_SUPER) && FP_PRIME == 382
+/** @{ */
+#define SS3_P382_A0		"0"
+#define SS3_P382_A1		"0"
+#define SS3_P382_A2		"0"
+#define SS3_P382_A3		"0"
+#define SS3_P382_B0		"0"
+#define SS3_P382_B1		"0"
+#define SS3_P382_B2		"1"
+#define SS3_P382_B3		"0"
+#define SS3_P382_X0		"275655FAEDB055031B15089804E9040EB47C164011393EAD6A4E61A3EBB08B082D5754C98B5985D3D02F2C7C81C8CD61"
+#define SS3_P382_X1		"2AE9E3D7AAFFC01FB464BCCA391B2E0E19C9645298E7782FCEC5AC2BDE27E99E426E4CEE853638DAAA33F7DD896978CF"
+#define SS3_P382_X2		"264EEF0B8413D7CCEB24E392F023E2188D53429BDE972823FBC49CD98D61263983CF514FFF3C224E0BB8CAFE7E1A18FD"
+#define SS3_P382_X3		"14716078BA804AFC19A5FF3D38DE8E35C16B2BA86B99F8654017EB8B02477C198EB4AFFADFB75775F3C81FE4422C2800"
+#define SS3_P382_Y0		"27BFCEB62C7501C59835E7B1ABA58A46F1461107E5A8DBB55839E44B1F6445FDF7CE43A7AE00F85DF57FCE112886EE85"
+#define SS3_P382_Y1		"08828282FF96599D35D2733CEE67A4433D8148A067E8311FCFF82F8082BE10856694A59885D35CAB8B29E50C35B7BE43"
+#define SS3_P382_Y2		"053BCFAEDB5CD6D43D106C02695FB7ED7061DFC80D8DAC11B7C4EC0048492FB971A937E84619E4E5E2427C37A3D01DA3"
+#define SS3_P382_Y3		"2AEF32E159F930F6D60529399B07957414F6D37E8988C1BD794AE699510AD048FF734AE84FCC5D0867698E5CFEF33206"
+#define SS3_P382_R		"FFFFFFFFFFFFFFFBFFE00000000000060060017FFFFFFFF7FF9FFCFFF80000090060018008000FFBFFBFFF000000001"
+#define SS3_P382_H		"50FFFFFFFFFFFFFC33E1A00000000014E34E25387FFFFFB691792BCA74C800C2ABC48AF6C501C84A5A27E29B0ADEB30D718DDEBBC64A330186735EC9F2C526C35275F8A3C4BABF03DE013FC163888EB2C0C420831C6475925B45C7B5779D12BCCFE278F32319852456200558C15C386DDE90F4DBB8A364D5F7A4D8FFF9090619F7AEDF045E5B9F3302FF48CFE680049"
+/** @} */
+#endif
+
 #if defined(EP_ENDOM) && FP_PRIME == 509
 /** @{ */
 #define B24_P509_A0		"0"
@@ -460,6 +483,80 @@ ep4_t *ep4_curve_get_tab(void) {
 
 #endif
 
+#if defined(EP_SUPER)
+
+void ep4_curve_set_super(void) {
+	char str[8 * RLC_FP_BYTES + 1];
+	ctx_t *ctx = core_get();
+	ep4_t g;
+	fp4_t a, b;
+	bn_t r, h;
+
+	ep4_null(g);
+	fp4_null(a);
+	fp4_null(b);
+	bn_null(r);
+	bn_null(h);
+
+	ctx->ep4_is_twist = 0;
+
+	RLC_TRY {
+		ep4_new(g);
+		fp4_new(a);
+		fp4_new(b);
+		bn_new(r);
+		bn_new(h);
+
+#if FP_PRIME == 382
+		fp_param_set(SS3_382);
+		ASSIGN(SS3_P382);
+		ctx->ep_is_pairf = EP_SS3;
+#else
+		(void)str;
+		RLC_THROW(ERR_NO_VALID);
+#endif
+		fp4_zero(g->z);
+		fp4_set_dig(g->z, 1);
+		g->coord = BASIC;
+
+		ep4_copy(ctx->ep4_g, g);
+		fp4_copy(ctx->ep4_a, a);
+		fp4_copy(ctx->ep4_b, b);
+
+		detect_opt(&(ctx->ep4_opt_a), ctx->ep4_a);
+		detect_opt(&(ctx->ep4_opt_b), ctx->ep4_b);
+
+		bn_copy(&(ctx->ep4_r), r);
+		bn_copy(&(ctx->ep4_h), h);
+
+		fp_copy(ctx->fp4_p1[0], ctx->fp2_p2[1][0]);
+		fp_copy(ctx->fp4_p1[1], ctx->fp2_p2[1][1]);
+
+#if defined(WITH_PC)
+		/* Compute pairing generator. */
+		pc_core_calc();
+#endif
+
+#if defined(EP_PRECO)
+		ep4_mul_pre((ep4_t *)ep4_curve_get_tab(), ctx->ep4_g);
+#endif
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		ep4_free(g);
+		fp4_free(a);
+		fp4_free(b);
+		bn_free(r);
+		bn_free(h);
+	}
+}
+
+#endif
+
+#if defined(EP_ENDOM)
+
 void ep4_curve_set_twist(int type) {
 	char str[8 * RLC_FP_BYTES + 1];
 	ctx_t *ctx = core_get();
@@ -588,6 +685,8 @@ void ep4_curve_set_twist(int type) {
 		bn_free(h);
 	}
 }
+
+#endif
 
 void ep4_curve_set(const fp4_t a, const fp4_t b, const ep4_t g, const bn_t r, const bn_t h) {
 	ctx_t *ctx = core_get();

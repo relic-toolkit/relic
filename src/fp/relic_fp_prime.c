@@ -386,6 +386,16 @@ void fp_prime_set_pairf(const bn_t x, int pairf) {
 		bn_copy(t0, x);
 
 		switch (pairf) {
+			case EP_SS3:
+				/* p = 3*(d^4 - d^2 + 1) + d. */
+				bn_sqr(t1, t0);
+				bn_sqr(p, t1);
+				bn_sub(p, p, t1);
+				bn_add_dig(p, p, 1);
+				bn_mul_dig(p, p, 3);
+				bn_add(p, p, t0);
+				fp_prime_set_dense(p);
+				break;
 			case EP_BN:
 				/* p = 36 * x^4 + 36 * x^3 + 24 * x^2 + 6 * x + 1. */
 				bn_set_dig(p, 1);
