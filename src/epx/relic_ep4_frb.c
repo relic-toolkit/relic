@@ -37,12 +37,26 @@
 /*============================================================================*/
 
 void ep4_frb(ep4_t r, const ep4_t p, int i) {
-	ep4_copy(r, p);
-	for (; i > 0; i--) {
-		fp4_frb(r->x, r->x, 1);
-		fp4_frb(r->y, r->y, 1);
-		fp4_frb(r->z, r->z, 1);
-		fp4_mul_frb(r->x, r->x, 1, 2);
-		fp4_mul_frb(r->y, r->y, 1, 3);
+	fp4_t t, u;
+	if (ep4_curve_is_twist()) {
+		ep4_copy(r, p);
+		for (; i > 0; i--) {
+			fp4_frb(r->x, r->x, 1);
+			fp4_frb(r->y, r->y, 1);
+			fp4_frb(r->z, r->z, 1);
+			fp4_mul_frb(r->x, r->x, 1, 2);
+			fp4_mul_frb(r->y, r->y, 1, 3);
+		}
+	} else {
+		ep4_copy(r, p);
+		for (; i > 0; i--) {
+			fp4_frb(r->x, r->x, 2);
+			fp4_frb(r->y, r->y, 2);
+			fp4_frb(r->z, r->z, 2);
+			fp2_mul(r->x[0], r->x[0], core_get()->fp4_p1);
+			fp2_mul(r->x[1], r->x[1], core_get()->fp4_p1);
+			fp2_mul_art(r->y[0], r->y[0]);
+			fp2_mul_art(r->y[1], r->y[1]);
+		}
 	}
 }

@@ -8752,7 +8752,7 @@ int main(void) {
 	}
 
 	/* Fp^4 is defined as a quadratic extension of Fp^2. */
-	if (fp_prime_get_qnr() && (ep_curve_embed() >= 3)) {
+	if (fp_prime_get_qnr() && (ep_curve_embed() >= 4 || ep4_curve_is_super())) {
 		util_print("\n-- Quartic extension: (i + %d) as QNR\n",
 				fp2_field_get_qnr());
 		util_banner("Utilities:", 1);

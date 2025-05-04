@@ -2302,6 +2302,13 @@ void ep4_curve_mul_a(fp4_t c, const fp4_t a);
 void ep4_curve_mul_b(fp4_t c, const fp4_t a);
 
 /**
+ * Tests if the configured elliptic curve is supersingular.
+ *
+ * @return 1 if the elliptic curve is supersingular, 0 otherwise.
+ */
+ int ep4_curve_is_super(void);
+
+/**
  * Tests if the configured elliptic curve is a twist.
  *
  * @return the type of the elliptic curve twist, 0 if non-twisted curve.

@@ -446,6 +446,10 @@ int ep4_curve_is_twist(void) {
 	return core_get()->ep4_is_twist;
 }
 
+int ep4_curve_is_super(void) {
+	return core_get()->ep4_is_super;
+}
+
 void ep4_curve_get_gen(ep4_t g) {
 	ep4_copy(g, core_get()->ep4_g);
 }
@@ -499,6 +503,7 @@ void ep4_curve_set_super(void) {
 	bn_null(h);
 
 	ctx->ep4_is_twist = 0;
+	ctx->ep4_is_super = 1;
 
 	RLC_TRY {
 		ep4_new(g);
@@ -528,6 +533,18 @@ void ep4_curve_set_super(void) {
 
 		bn_copy(&(ctx->ep4_r), r);
 		bn_copy(&(ctx->ep4_h), h);
+
+		/* Fix constant to what is needed here. */
+		fp4_set_dig(a, 1);
+		fp4_mul_art(a, a);
+		fp4_mul_frb(a, a, 1, 2);
+		fp2_copy(a[0], a[1]);
+		fp2_zero(a[1]);
+		fp4_inv(b, a);
+		fp4_frb(a, a, 1);
+		fp4_mul(a, a, b);
+		fp4_inv(a, a);
+		fp2_copy(ctx->fp4_p1, a[0]);
 
 #if defined(WITH_PC)
 		/* Compute pairing generator. */
@@ -567,7 +584,7 @@ void ep4_curve_set_twist(int type) {
 	bn_null(r);
 	bn_null(h);
 
-	ctx->ep4_is_twist = 0;
+	ctx->ep4_is_twist = ctx->ep4_is_super = 0;
 	if (type == RLC_EP_MTYPE || type == RLC_EP_DTYPE) {
 		ctx->ep4_is_twist = type;
 	} else {

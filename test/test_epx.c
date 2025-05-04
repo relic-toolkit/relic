@@ -4644,64 +4644,6 @@ static int frobenius8(void) {
 	return code;
 }
 
-int test4(void) {
-	util_banner("Utilities:", 1);
-
-	if (memory4() != RLC_OK) {
-		core_clean();
-		return RLC_ERR;
-	}
-
-	if (util4() != RLC_OK) {
-		core_clean();
-		return RLC_ERR;
-	}
-
-	util_banner("Arithmetic:", 1);
-
-	if (addition4() != RLC_OK) {
-		core_clean();
-		return RLC_ERR;
-	}
-
-	if (subtraction4() != RLC_OK) {
-		core_clean();
-		return RLC_ERR;
-	}
-
-	if (doubling4() != RLC_OK) {
-		core_clean();
-		return RLC_ERR;
-	}
-
-	if (frobenius4() != RLC_OK) {
-		core_clean();
-		return RLC_ERR;
-	}
-
-	if (multiplication4() != RLC_OK) {
-		core_clean();
-		return RLC_ERR;
-	}
-
-	if (fixed4() != RLC_OK) {
-		core_clean();
-		return RLC_ERR;
-	}
-
-	if (simultaneous4() != RLC_OK) {
-		core_clean();
-		return RLC_ERR;
-	}
-
-	if (hashing4() != RLC_OK) {
-		core_clean();
-		return RLC_ERR;
-	}
-
-	return RLC_OK;
-}
-
 int main(void) {
 	int r0, r1, r2, r3;
 
@@ -4712,16 +4654,10 @@ int main(void) {
 
 	util_banner("Tests for the EPX module", 0);
 
-	if (ep_param_set_any_pairf() == RLC_ERR) {
-#if defined(EP_SUPER)
-		ep4_curve_set_super();
-		util_banner("Curve SS3-P382:", 0);
-		if (test4() != RLC_OK) {
-			core_clean();
-			return 1;
-		}
+	if (pc_param_set_any() == RLC_ERR) {
+		RLC_THROW(ERR_NO_CURVE);
+		core_clean();
 		return 0;
-#endif
 	}
 
 	if ((r0 = ep2_curve_is_twist())) {
@@ -4845,9 +4781,59 @@ int main(void) {
 		}
 	}
 
-	if ((r2 = ep4_curve_is_twist())) {
-		ep_param_print();
-		if (test4() != RLC_OK) {
+	if ((r2 = ep4_curve_is_twist() || ep4_curve_is_super())) {
+		pc_param_print();
+
+		util_banner("Utilities:", 1);
+
+		if (memory4() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (util4() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		util_banner("Arithmetic:", 1);
+
+		if (addition4() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (subtraction4() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (doubling4() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (frobenius4() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (multiplication4() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (fixed4() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (simultaneous4() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (hashing4() != RLC_OK) {
 			core_clean();
 			return 1;
 		}

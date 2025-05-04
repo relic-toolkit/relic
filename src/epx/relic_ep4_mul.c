@@ -684,8 +684,8 @@ void ep4_mul_lwnaf(ep4_t r, const ep4_t p, const bn_t k) {
 		return;
 	}
 
-#if defined(EP_ENDOM)
-	if (ep_curve_is_endom()) {
+#if defined(EP_ENDOM) || defined(EP_SUPER)
+	if (ep_curve_is_endom() || ep4_curve_is_super()) {
 		ep4_mul_gls_imp(r, p, k);
 		return;
 	}

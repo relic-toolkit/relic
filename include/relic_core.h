@@ -387,6 +387,8 @@ typedef struct _ctx_t {
 	int ep4_opt_b;
 	/** Flag that stores if the prime curve is a twist. */
 	int ep4_is_twist;
+	/** Flag that stores if the prime curve is supersingular. */
+	int ep4_is_super;
 #ifdef EP_PRECO
 	/** Precomputation table for generator multiplication.*/
 	ep4_st ep4_pre[RLC_EP_TABLE];
