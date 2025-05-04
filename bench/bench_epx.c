@@ -2162,7 +2162,7 @@ int main(void) {
 
 	util_banner("Benchmarks for the EPX module:", 0);
 
-	if (ep_param_set_any_pairf() != RLC_OK) {
+	if (pc_param_set_any() != RLC_OK) {
 		RLC_THROW(ERR_NO_CURVE);
 		core_clean();
 		return 0;
@@ -2190,7 +2190,7 @@ int main(void) {
 		arith3();
 	}
 
-	if ((r2 = ep4_curve_is_twist())) {
+	if ((r2 = ep4_curve_is_twist() || ep4_curve_is_super())) {
 		ep_param_print();
 
 		util_banner("Utilities:", 1);

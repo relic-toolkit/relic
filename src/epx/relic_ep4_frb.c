@@ -37,7 +37,6 @@
 /*============================================================================*/
 
 void ep4_frb(ep4_t r, const ep4_t p, int i) {
-	fp4_t t, u;
 	if (ep4_curve_is_twist()) {
 		ep4_copy(r, p);
 		for (; i > 0; i--) {
