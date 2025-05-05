@@ -431,13 +431,20 @@ void ep4_curve_mul_b(fp4_t c, const fp4_t a) {
 		case RLC_ONE:
 			fp4_copy(c, a);
 			break;
+		case RLC_TWO:
+			fp4_dbl(c, a);
+			break;
 #if FP_RDC != MONTY
 		case RLC_TINY:
 			fp4_mul_dig(c, a, ctx->ep4_b[0][0][0]);
 			break;
 #endif
 		default:
-			fp4_mul(c, a, ctx->ep4_b);
+			if (ep4_curve_is_super()) {
+				fp4_mul_art(c, a);
+			} else {
+				fp4_mul(c, a, ctx->ep4_b);
+			}
 			break;
 	}
 }

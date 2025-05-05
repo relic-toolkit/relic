@@ -38,7 +38,7 @@
 /*============================================================================*/
 
 int pc_param_set_any(void) {
-#if defined(EP_SUPER)
+#if defined(EP_SUPER) && FP_PRIME == 382
 	ep4_curve_set_super();
 	return RLC_OK;
 #else
@@ -50,7 +50,7 @@ int pc_param_set_any(void) {
 }
 
 void pc_param_print(void) {
-#if defined(EP_SUPER)
+#if defined(EP_SUPER) && FP_PRIME == 382
 	util_banner("Curve SS3-P382:", 0);
 #else
 	ep_param_print();

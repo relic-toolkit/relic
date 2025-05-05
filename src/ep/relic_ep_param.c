@@ -1905,6 +1905,7 @@ int ep_param_level(void) {
 		case AFG16_P510:
 		case GMT8_P544:
 		case SS2_P1536:
+		case SS3_P382:
 			return 128;
 		case B12_P455:
 			return 140;
