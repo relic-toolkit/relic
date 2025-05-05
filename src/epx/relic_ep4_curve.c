@@ -551,7 +551,8 @@ void ep4_curve_set_super(void) {
 		fp4_frb(a, a, 1);
 		fp4_mul(a, a, b);
 		fp4_inv(a, a);
-		fp2_copy(ctx->fp4_p1, a[0]);
+		fp_copy(ctx->fp4_p1[0], a[0][0]);
+		fp_copy(ctx->fp4_p1[1], a[0][1]);
 
 #if defined(WITH_PC)
 		/* Compute pairing generator. */
