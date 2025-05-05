@@ -855,6 +855,35 @@ static void arith3(void) {
 	BENCH_END;
 #endif
 
+#if EP_ADD == JACOB || !defined(STRIP)
+	BENCH_RUN("ep3_add_jacob") {
+		ep3_rand(p);
+		ep3_rand(q);
+		ep3_add_jacob(p, p, q);
+		ep3_rand(q);
+		ep3_rand(p);
+		ep3_add_jacob(q, q, p);
+		BENCH_ADD(ep3_add_jacob(r, p, q));
+	} BENCH_END;
+
+	BENCH_RUN("ep3_add_jacob (z2 = 1)") {
+		ep3_rand(p);
+		ep3_rand(q);
+		ep3_add_jacob(p, p, q);
+		ep3_rand(q);
+		ep3_norm(q, q);
+		BENCH_ADD(ep3_add_jacob(r, p, q));
+	} BENCH_END;
+
+	BENCH_RUN("ep3_add_jacob (z1,z2 = 1)") {
+		ep3_rand(p);
+		ep3_norm(p, p);
+		ep3_rand(q);
+		ep3_norm(q, q);
+		BENCH_ADD(ep3_add_jacob(r, p, q));
+	} BENCH_END;
+#endif
+
 	BENCH_RUN("ep3_sub") {
 		ep3_rand(p);
 		ep3_rand(q);
@@ -903,6 +932,21 @@ static void arith3(void) {
 		BENCH_ADD(ep3_dbl_projc(r, p));
 	}
 	BENCH_END;
+#endif
+
+#if EP_ADD == JACOB || !defined(STRIP)
+	BENCH_RUN("ep3_dbl_jacob") {
+		ep3_rand(p);
+		ep3_rand(q);
+		ep3_add_jacob(p, p, q);
+		BENCH_ADD(ep3_dbl_jacob(r, p));
+	} BENCH_END;
+
+	BENCH_RUN("ep3_dbl_jacob (z1 = 1)") {
+		ep3_rand(p);
+		ep3_norm(p, p);
+		BENCH_ADD(ep3_dbl_jacob(r, p));
+	} BENCH_END;
 #endif
 
 	BENCH_RUN("ep3_neg") {
@@ -1357,6 +1401,35 @@ static void arith4(void) {
 	BENCH_END;
 #endif
 
+#if EP_ADD == JACOB || !defined(STRIP)
+	BENCH_RUN("ep4_add_jacob") {
+		ep4_rand(p);
+		ep4_rand(q);
+		ep4_add_jacob(p, p, q);
+		ep4_rand(q);
+		ep4_rand(p);
+		ep4_add_jacob(q, q, p);
+		BENCH_ADD(ep4_add_jacob(r, p, q));
+	} BENCH_END;
+
+	BENCH_RUN("ep4_add_jacob (z2 = 1)") {
+		ep4_rand(p);
+		ep4_rand(q);
+		ep4_add_jacob(p, p, q);
+		ep4_rand(q);
+		ep4_norm(q, q);
+		BENCH_ADD(ep4_add_jacob(r, p, q));
+	} BENCH_END;
+
+	BENCH_RUN("ep4_add_jacob (z1,z2 = 1)") {
+		ep4_rand(p);
+		ep4_norm(p, p);
+		ep4_rand(q);
+		ep4_norm(q, q);
+		BENCH_ADD(ep4_add_jacob(r, p, q));
+	} BENCH_END;
+#endif
+
 	BENCH_RUN("ep4_sub") {
 		ep4_rand(p);
 		ep4_rand(q);
@@ -1405,6 +1478,21 @@ static void arith4(void) {
 		BENCH_ADD(ep4_dbl_projc(r, p));
 	}
 	BENCH_END;
+#endif
+
+#if EP_ADD == JACOB || !defined(STRIP)
+	BENCH_RUN("ep4_dbl_jacob") {
+		ep4_rand(p);
+		ep4_rand(q);
+		ep4_add_jacob(p, p, q);
+		BENCH_ADD(ep4_dbl_jacob(r, p));
+	} BENCH_END;
+
+	BENCH_RUN("ep4_dbl_jacob (z1 = 1)") {
+		ep4_rand(p);
+		ep4_norm(p, p);
+		BENCH_ADD(ep4_dbl_jacob(r, p));
+	} BENCH_END;
 #endif
 
 	BENCH_RUN("ep4_neg") {
@@ -1859,6 +1947,35 @@ static void arith8(void) {
 	BENCH_END;
 #endif
 
+#if EP_ADD == JACOB || !defined(STRIP)
+	BENCH_RUN("ep8_add_jacob") {
+		ep8_rand(p);
+		ep8_rand(q);
+		ep8_add_jacob(p, p, q);
+		ep8_rand(q);
+		ep8_rand(p);
+		ep8_add_jacob(q, q, p);
+		BENCH_ADD(ep8_add_jacob(r, p, q));
+	} BENCH_END;
+
+	BENCH_RUN("ep8_add_jacob (z2 = 1)") {
+		ep8_rand(p);
+		ep8_rand(q);
+		ep8_add_jacob(p, p, q);
+		ep8_rand(q);
+		ep8_norm(q, q);
+		BENCH_ADD(ep8_add_jacob(r, p, q));
+	} BENCH_END;
+
+	BENCH_RUN("ep8_add_jacob (z1,z2 = 1)") {
+		ep8_rand(p);
+		ep8_norm(p, p);
+		ep8_rand(q);
+		ep8_norm(q, q);
+		BENCH_ADD(ep8_add_jacob(r, p, q));
+	} BENCH_END;
+#endif
+
 	BENCH_RUN("ep8_sub") {
 		ep8_rand(p);
 		ep8_rand(q);
@@ -1907,6 +2024,21 @@ static void arith8(void) {
 		BENCH_ADD(ep8_dbl_projc(r, p));
 	}
 	BENCH_END;
+#endif
+
+#if EP_ADD == JACOB || !defined(STRIP)
+	BENCH_RUN("ep2_dbl_jacob") {
+		ep8_rand(p);
+		ep8_rand(q);
+		ep8_add_jacob(p, p, q);
+		BENCH_ADD(ep8_dbl_jacob(r, p));
+	} BENCH_END;
+
+	BENCH_RUN("ep8_dbl_jacob (z1 = 1)") {
+		ep8_rand(p);
+		ep8_norm(p, p);
+		BENCH_ADD(ep8_dbl_jacob(r, p));
+	} BENCH_END;
 #endif
 
 	BENCH_RUN("ep8_neg") {

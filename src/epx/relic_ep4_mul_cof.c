@@ -354,6 +354,10 @@ void ep4_mul_cof(ep4_t r, const ep4_t p) {
 
 	RLC_TRY {
 		switch (ep_curve_is_pairf()) {
+			case EP_SS3:
+				fp_prime_get_par(k);
+				ep4_mul_basic(r, p, k);
+				break;
 			case EP_K16:
 				ep4_mul_cof_k16(r, p);
 				break;
