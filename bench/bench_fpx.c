@@ -3873,7 +3873,7 @@ int main(void) {
 		arith3();
 	}
 
-	if (fp_prime_get_qnr()) {
+	if (fp_prime_get_qnr() || ep4_curve_is_super()) {
 		util_banner("Quartic extension:", 0);
 		util_banner("Utilities:", 1);
 		memory4();
