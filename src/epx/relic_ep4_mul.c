@@ -67,6 +67,8 @@ static void ep4_psi(ep4_t r, const ep4_t p) {
 				break;
 			case EP_FM16:
 				/* u = p mod r */
+			case EP_SS3:
+				/* d = p mod r */
 			default:
 				ep4_frb(r, p, 1);
 				break;
@@ -83,7 +85,7 @@ static void ep4_psi(ep4_t r, const ep4_t p) {
 #if EP_MUL == LWNAF || !defined(STRIP)
 
 static void ep4_mul_gls_imp(ep4_t r, const ep4_t p, const bn_t k) {
-	size_t l, _l[8];
+	size_t l, _l[8], dim = 8;
 	bn_t n, _k[8], u;
 	int8_t naf[8][RLC_FP_BITS + 1];
 	ep4_t q, t[8][1 << (RLC_WIDTH - 2)];
@@ -105,13 +107,17 @@ static void ep4_mul_gls_imp(ep4_t r, const ep4_t p, const bn_t k) {
 			}	
 		}
 
+		if (ep4_curve_is_super()) {
+			dim = 4;
+		}
+
 		ep4_curve_get_ord(n);
 		fp_prime_get_par(u);
 		bn_mod(_k[0], k, n);
-		bn_rec_frb(_k, 8, _k[0], u, n, ep_curve_is_pairf() == EP_BN);
+		bn_rec_frb(_k, dim, _k[0], u, n, ep_curve_is_pairf() == EP_BN);
 
 		l = 0;
-		for (size_t i = 0; i < 8; i++) {
+		for (size_t i = 0; i < dim; i++) {
 			_l[i] = RLC_FP_BITS + 1;
 			bn_rec_naf(naf[i], &_l[i], _k[i], RLC_WIDTH);
 			l = RLC_MAX(l, _l[i]);
@@ -124,7 +130,7 @@ static void ep4_mul_gls_imp(ep4_t r, const ep4_t p, const bn_t k) {
 
 		if (ep_curve_is_pairf() == EP_K16 || ep_curve_is_pairf() == EP_AFG16) {
 			/* Minimize use of endomorphism when it's expensive. */
-			for (size_t i = 1; i < 8; i++) {
+			for (size_t i = 1; i < dim; i++) {
 				ep4_psi(q, t[i - 1][0]);
 				if (bn_sign(_k[i]) == RLC_NEG) {
 					ep4_neg(q, q);
@@ -132,7 +138,7 @@ static void ep4_mul_gls_imp(ep4_t r, const ep4_t p, const bn_t k) {
 				ep4_tab(t[i], q, RLC_WIDTH);
 			}
 		} else {
-			for (size_t i = 1; i < 8; i++) {
+			for (size_t i = 1; i < dim; i++) {
 				for (size_t j = 0; j < (1 << (RLC_WIDTH - 2)); j++) {
 					ep4_psi(t[i][j], t[i - 1][j]);
 					if (bn_sign(_k[i]) != bn_sign(_k[i - 1])) {
@@ -146,7 +152,7 @@ static void ep4_mul_gls_imp(ep4_t r, const ep4_t p, const bn_t k) {
 		for (int j = l - 1; j >= 0; j--) {
 			ep4_dbl(r, r);
 
-			for (size_t i = 0; i < 8; i++) {
+			for (size_t i = 0; i < dim; i++) {
 				if (naf[i][j] > 0) {
 					ep4_add(r, r, t[i][naf[i][j] / 2]);
 				}
@@ -166,7 +172,7 @@ static void ep4_mul_gls_imp(ep4_t r, const ep4_t p, const bn_t k) {
 		bn_free(n);
 		bn_free(u);
 		ep4_free(q);
-		for (size_t i = 0; i < 8; i++) {
+		for (size_t i = 0; i < dim; i++) {
 			bn_free(_k[i]);
 			for (size_t j = 0; j < (1 << (RLC_WIDTH - 2)); j++) {
 				ep4_free(t[i][j]);
@@ -707,7 +713,7 @@ void ep4_mul_lwreg(ep4_t r, const ep4_t p, const bn_t k) {
 	}
 
 #if defined(EP_ENDOM)
-	if (ep_curve_is_endom()) {
+	if (ep_curve_is_endom() || ep4_curve_is_super()) {
 		ep4_mul_reg_gls(r, p, k);
 		return;
 	}
