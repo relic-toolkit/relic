@@ -89,6 +89,7 @@ void fp2_dblm_low(fp2_t c, fp2_t a) {
 }
 
 void fp2_norm_low(fp2_t c, fp2_t a) {
+	int qnr = fp2_field_get_qnr();
 	fp2_t t;
 
 	fp2_null(t);
@@ -96,13 +97,6 @@ void fp2_norm_low(fp2_t c, fp2_t a) {
 	RLC_TRY {
 		fp2_new(t);
 
-#ifdef FP_QNRES
-		/* If p = 3 mod 8, (1 + i) is a QNR/CNR. */
-		fp_copy(t[0], a[1]);
-		fp_add(c[1], a[0], a[1]);
-		fp_sub(c[0], a[0], t[0]);
-#else
-		int qnr = fp2_field_get_qnr();
 		switch (fp_prime_get_mod8()) {
 			case 1:
 			case 5:
@@ -128,7 +122,6 @@ void fp2_norm_low(fp2_t c, fp2_t a) {
 				fp2_add(c, c, t);
 				break;
 		}
-#endif
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -139,14 +132,6 @@ void fp2_norm_low(fp2_t c, fp2_t a) {
 }
 
 void fp2_nord_low(dv2_t c, dv2_t a) {
-#ifdef FP_QNRES
-	rlc_align dig_t t[2 * RLC_FP_DIGS];
-	/* If p = 3 mod 8, (1 + i) is a QNR/CNR. */
-	/* (a_0 + a_1 * i) * (1 + i) = (a_0 - a_1) + (a_0 + a_1) * u. */
-	dv_copy(t, a[1], 2 * RLC_FP_DIGS);
-	fp_addc_low(c[1], a[0], a[1]);
-	fp_subc_low(c[0], a[0], t);
-#else
 	int qnr = fp2_field_get_qnr();
 	dv2_t t;
 
@@ -196,7 +181,6 @@ void fp2_nord_low(dv2_t c, dv2_t a) {
 	} RLC_FINALLY {
 		dv2_free(t);
 	}
-#endif
 }
 
 void fp3_addn_low(fp3_t c, fp3_t a, fp3_t b) {

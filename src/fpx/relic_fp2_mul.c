@@ -102,6 +102,7 @@ void fp2_mul_basic(fp2_t c, const fp2_t a, const fp2_t b) {
 }
 
 void fp2_mul_nor_basic(fp2_t c, const fp2_t a) {
+	int qnr = fp2_field_get_qnr();
 	fp2_t t;
 	bn_t b;
 
@@ -111,14 +112,6 @@ void fp2_mul_nor_basic(fp2_t c, const fp2_t a) {
 	RLC_TRY {
 		fp2_new(t);
 		bn_new(b);
-
-#ifdef FP_QNRES
-		/* If p = 3 mod 8, (1 + i) is a QNR/CNR. */
-		fp_neg(t[0], a[1]);
-		fp_add(c[1], a[0], a[1]);
-		fp_add(c[0], t[0], a[0]);
-#else
-		int qnr = fp2_field_get_qnr();
 
 		switch (fp_prime_get_mod8()) {
 			case 1:
@@ -149,7 +142,6 @@ void fp2_mul_nor_basic(fp2_t c, const fp2_t a) {
 				RLC_THROW(ERR_NO_VALID);
 				break;
 		}
-#endif
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
