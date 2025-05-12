@@ -550,7 +550,9 @@ void ep4_curve_set_super(void) {
 		fp4_inv(b, a);
 		fp4_frb(a, a, 1);
 		fp4_mul(a, a, b);
+		fp4_print(a);
 		fp4_inv(a, a);
+		fp4_print(a);
 		fp_copy(ctx->fp4_p1[0], a[0][0]);
 		fp_copy(ctx->fp4_p1[1], a[0][1]);
 

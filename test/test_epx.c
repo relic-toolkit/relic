@@ -3466,7 +3466,7 @@ static int hashing4(void) {
 		TEST_CASE("point hashing is correct") {
 			rand_bytes(msg, sizeof(msg));
 			ep4_map(p, msg, sizeof(msg));
-			TEST_ASSERT(ep4_on_curve(p) == 1, end);
+			TEST_ASSERT(ep4_on_curve(p) == 1 && !ep4_is_infty(p), end);
 			ep4_mul(p, p, n);
 			TEST_ASSERT(ep4_is_infty(p) == 1, end);
 		}

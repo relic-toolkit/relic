@@ -47,6 +47,25 @@ void pp_norm_k2(ep_t r, const ep_t p) {
 	ep_norm(r, p);
 }
 
+void pp_norm_k3(ep4_t r, const ep4_t p) {
+	if (ep4_is_infty(p)) {
+		ep4_set_infty(r);
+		return;
+	}
+
+	if (p->coord == BASIC) {
+		/* If the point is represented in affine coordinates, we just copy it. */
+		ep4_copy(r, p);
+	}
+#if EP_ADD != BASIC || !defined(STRIP)
+	fp4_inv(r->z, p->z);
+	fp4_mul(r->x, p->x, r->z);
+	fp4_mul(r->y, p->y, r->z);
+	fp4_set_dig(r->z, 1);
+	r->coord = BASIC;
+#endif
+}
+
 void pp_norm_k8(ep2_t r, const ep2_t p) {
 	if (ep2_is_infty(p)) {
 		ep2_set_infty(r);

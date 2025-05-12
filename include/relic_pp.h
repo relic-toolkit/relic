@@ -94,6 +94,22 @@
 
 /**
  * Adds two points and evaluates the corresponding line function at another
+ * point on an elliptic curve with embedding degree 3.
+ *
+ * @param[out] L			- the result of the evaluation.
+ * @param[in, out] R		- the resulting point and first point to add.
+ * @param[in] Q				- the second point to add.
+ * @param[in] P				- the affine point to evaluate the line function.
+ */
+ #if EP_ADD == BASIC
+ #define pp_add_k3(L, R, Q, P)		pp_add_k3_basic(L, R, Q, P)
+ #else
+ #define pp_add_k3(L, R, Q, P)		pp_add_k3_projc(L, R, Q, P)
+ #endif
+ 
+
+/**
+ * Adds two points and evaluates the corresponding line function at another
  * point on an elliptic curve with embedding degree 8 using projective
  * coordinates.
  *
@@ -309,6 +325,21 @@
 #else
 #define pp_dbl_k2(L, R, P, Q)		pp_dbl_k2_projc(L, R, P, Q)
 #endif
+
+/**
+ * Doubles a point and evaluates the corresponding line function at another
+ * point on an elliptic curve with embedding degree 3.
+ *
+ * @param[out] L			- the result of the evaluation.
+ * @param[out] R			- the resulting point.
+ * @param[in] Q				- the point to double.
+ * @param[in] P				- the affine point to evaluate the line function.
+ */
+ #if EP_ADD == BASIC
+ #define pp_dbl_k3(L, R, Q, P)		pp_dbl_k3_basic(L, R, Q, P)
+ #else
+ #define pp_dbl_k3(L, R, Q, P)		pp_dbl_k3_projc(L, R, Q, P)
+ #endif
 
 /**
  * Doubles a point and evaluates the corresponding line function at another
@@ -709,7 +740,7 @@ void pp_add_k2_basic(fp2_t l, ep_t r, const ep_t p, const ep_t q);
 
 /**
  * Adds two points and evaluates the corresponding line function at another
- * point on an elliptic curve with embedding degree 12 using projective
+ * point on an elliptic curve with embedding degree 2 using projective
  * coordinates.
  *
  * @param[out] l			- the result of the evaluation.
@@ -721,7 +752,7 @@ void pp_add_k2_projc_basic(fp2_t l, ep_t r, const ep_t p, const ep_t q);
 
 /**
  * Adds two points and evaluates the corresponding line function at another
- * point on an elliptic curve with embedding degree 12 using projective
+ * point on an elliptic curve with embedding degree 2 using projective
  * coordinates and lazy reduction.
  *
  * @param[out] l			- the result of the evaluation.
@@ -730,6 +761,29 @@ void pp_add_k2_projc_basic(fp2_t l, ep_t r, const ep_t p, const ep_t q);
  * @param[in] q				- the affine point to evaluate the line function.
  */
 void pp_add_k2_projc_lazyr(fp2_t l, ep_t r, const ep_t p, const ep_t q);
+
+/**
+ * Adds two points and evaluates the corresponding line function at another
+ * point on an elliptic curve with embedding degree 3 using affine coordinates.
+ *
+ * @param[out] l			- the result of the evaluation.
+ * @param[in, out] r		- the resulting point and first point to add.
+ * @param[in] q				- the second point to add.
+ * @param[in] p				- the affine point to evaluate the line function.
+ */
+ void pp_add_k3_basic(fp12_t l, ep4_t r, const ep4_t q, const ep4_t p);
+
+ /**
+  * Adds two points and evaluates the corresponding line function at another
+  * point on an elliptic curve with embedding degree 3 using projective
+  * coordinates.
+  *
+  * @param[out] l			- the result of the evaluation.
+  * @param[in, out] r		- the resulting point and first point to add.
+  * @param[in] q				- the second point to add.
+  * @param[in] p				- the affine point to evaluate the line function.
+  */
+ void pp_add_k3_projc(fp12_t l, ep4_t r, const ep4_t q, const ep4_t p);
 
 /**
  * Adds two points and evaluates the corresponding line function at another
@@ -1045,6 +1099,30 @@ void pp_dbl_k2_projc_lazyr(fp2_t l, ep_t r, const ep_t p, const ep_t q);
 
 /**
  * Doubles a point and evaluates the corresponding line function at another
+ * point on an elliptic curve with embedding degree 3 using affine
+ * coordinates.
+ *
+ * @param[out] l			- the result of the evaluation.
+ * @param[in, out] r		- the resulting point.
+ * @param[in] q				- the point to double.
+ * @param[in] p				- the affine point to evaluate the line function.
+ */
+ void pp_dbl_k3_basic(fp12_t l, ep4_t r, const ep4_t q, const ep4_t p);
+
+ /**
+  * Doubles a point and evaluates the corresponding line function at another
+  * point on an elliptic curve with embedding degree 3 using projective
+  * coordinates.
+  *
+  * @param[out] l			- the result of the evaluation.
+  * @param[in, out] r		- the resulting point.
+  * @param[in] q			- the point to double.
+  * @param[in] p			- the affine point to evaluate the line function.
+  */
+ void pp_dbl_k3_projc(fp12_t l, ep4_t r, const ep4_t q, const ep4_t p);
+
+/**
+ * Doubles a point and evaluates the corresponding line function at another
  * point on an elliptic curve with embedding degree 8 using affine
  * coordinates.
  *
@@ -1315,6 +1393,15 @@ void pp_exp_k2(fp2_t c, fp2_t a);
 
 /**
  * Computes the final exponentiation for a pairing defined over curves of
+ * embedding degree 3. Computes c = a^(p^12 - 1)/r.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the extension field element to exponentiate.
+ */
+ void pp_exp_k3(fp12_t c, fp12_t a);
+
+/**
+ * Computes the final exponentiation for a pairing defined over curves of
  * embedding degree 8. Computes c = a^(p^8 - 1)/r.
  *
  * @param[out] c			- the result.
@@ -1393,6 +1480,15 @@ void pp_norm_k1(ep_t c, const ep_t a);
  * @param[in] p				- the point to normalize.
  */
 void pp_norm_k2(ep_t c, const ep_t a);
+
+/**
+ * Normalizes the accumulator point used inside pairing computation defined
+ * over curves of embedding degree 3.
+ *
+ * @param[out] r			- the resulting point.
+ * @param[in] p				- the point to normalize.
+ */
+ void pp_norm_k3(ep4_t c, const ep4_t a);
 
 /**
  * Normalizes the accumulator point used inside pairing computation defined
@@ -1489,6 +1585,27 @@ void pp_map_tatep_k2(fp2_t r, const ep_t p, const ep_t q);
  * @param[in] m 			- the number of pairings to evaluate.
  */
 void pp_map_sim_tatep_k2(fp2_t r, const ep_t *p, const ep_t *q, int m);
+
+/**
+ * Computes the Optimal Ate pairing of two points in a parameterized elliptic
+ * curve with embedding degree 3.
+ *
+ * @param[out] r			- the result.
+ * @param[in] q				- the first elliptic curve point.
+ * @param[in] p				- the second elliptic curve point.
+ */
+ void pp_map_k3(fp12_t r, const ep4_t p, const ep4_t q);
+
+ /**
+  * Computes the optimal ate multi-pairing in a parameterized elliptic
+  * curve with embedding degree 3.
+  *
+  * @param[out] r			- the result.
+  * @param[in] q			- the first pairing arguments.
+  * @param[in] p			- the second pairing arguments.
+  * @param[in] m 			- the number of pairings to evaluate.
+  */
+ void pp_map_sim_k3(fp12_t r, const ep4_t *p, const ep4_t *q, int m);
 
 /**
  * Computes the Weil pairing of two points in a parameterized elliptic curve
