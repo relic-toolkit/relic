@@ -83,7 +83,7 @@ static void ep4_psi(ep4_t r, const ep4_t p) {
 #if EP_MUL == LWNAF || !defined(STRIP)
 
 static void ep4_mul_gls_imp(ep4_t r, const ep4_t p, const bn_t k) {
-	size_t l, _l[8];
+	size_t l, _l[8], w = RLC_WIDTH;
 	bn_t n, _k[8], u;
 	int8_t naf[8][RLC_FP_BITS + 1];
 	ep4_t q, t[8][1 << (RLC_WIDTH - 2)];
@@ -112,15 +112,23 @@ static void ep4_mul_gls_imp(ep4_t r, const ep4_t p, const bn_t k) {
 
 		l = 0;
 		for (size_t i = 0; i < 8; i++) {
+			l = RLC_MAX(l, bn_bits(_k[i]));
+		}
+		if (l < bn_bits(u) / 2) {
+			w = 2;
+		}
+
+		l = 0;
+		for (size_t i = 0; i < 8; i++) {
 			_l[i] = RLC_FP_BITS + 1;
-			bn_rec_naf(naf[i], &_l[i], _k[i], RLC_WIDTH);
+			bn_rec_naf(naf[i], &_l[i], _k[i], w);
 			l = RLC_MAX(l, _l[i]);
 		}
 		ep4_norm(q, p);
 		if (bn_sign(_k[0]) == RLC_NEG) {
 			ep4_neg(q, q);
 		}
-		ep4_tab(t[0], q, RLC_WIDTH);
+		ep4_tab(t[0], q, w);
 
 		if (ep_curve_is_pairf() == EP_K16 || ep_curve_is_pairf() == EP_AFG16) {
 			/* Minimize use of endomorphism when it's expensive. */
@@ -129,11 +137,11 @@ static void ep4_mul_gls_imp(ep4_t r, const ep4_t p, const bn_t k) {
 				if (bn_sign(_k[i]) == RLC_NEG) {
 					ep4_neg(q, q);
 				}
-				ep4_tab(t[i], q, RLC_WIDTH);
+				ep4_tab(t[i], q, w);
 			}
 		} else {
 			for (size_t i = 1; i < 8; i++) {
-				for (size_t j = 0; j < (1 << (RLC_WIDTH - 2)); j++) {
+				for (size_t j = 0; j < (1 << (w - 2)); j++) {
 					ep4_psi(t[i][j], t[i - 1][j]);
 					if (bn_sign(_k[i]) != bn_sign(_k[i - 1])) {
 						ep4_neg(t[i][j], t[i][j]);

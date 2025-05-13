@@ -1905,6 +1905,7 @@ int ep_param_level(void) {
 		case AFG16_P510:
 		case GMT8_P544:
 		case SS_P1536:
+		case K1_P3072:
 			return 128;
 		case B12_P455:
 			return 140;
@@ -1917,6 +1918,7 @@ int ep_param_level(void) {
 		case B24_P509:
 			return 192;
 		case NIST_P521:
+		case B48_P575:
 			return 256;
 		case BN_P638:
 		case B12_P638:
