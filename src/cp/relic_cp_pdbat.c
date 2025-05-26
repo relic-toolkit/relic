@@ -43,7 +43,7 @@
 /**
  * Bound \tau on how many elements the adversary can compute.
  */
-#define BND_TIME		72
+#define BND_TIME		70
 
 /*============================================================================*/
 /* Public definitions                                                         */
