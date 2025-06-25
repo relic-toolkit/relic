@@ -93,7 +93,7 @@ static char get_bits(const bn_t a, size_t from, size_t to) {
 /*============================================================================*/
 
 void bn_rec_win(uint8_t *win, size_t *len, const bn_t k, size_t w) {
-	int i, j, l;
+	size_t i, j, l;
 
 	l = bn_bits(k);
 
@@ -114,7 +114,8 @@ void bn_rec_win(uint8_t *win, size_t *len, const bn_t k, size_t w) {
 }
 
 void bn_rec_slw(uint8_t *win, size_t *len, const bn_t k, size_t w) {
-	int i, j, l, s;
+	int i, j, s;
+	size_t l;
 
 	l = bn_bits(k);
 
