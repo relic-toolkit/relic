@@ -60,7 +60,8 @@ void fp_invm_low(dig_t *c, const dig_t *a) {
 	dv_zero(s, RLC_FP_DIGS);
 	dv_copy(s + RLC_FP_DIGS, c, RLC_FP_DIGS);
 	dig_t *v = RLC_ALLOCA(dig_t, mpn_sec_div_qr_itch(RLC_FP_DIGS, RLC_FP_DIGS));
-	mpn_sec_div_r(s, 2 * RLC_FP_DIGS, fp_prime_get(), RLC_FP_DIGS, v);
+	mpn_sec_div_r((mp_ptr)s, 2 * RLC_FP_DIGS, (mp_srcptr)fp_prime_get(),
+		RLC_FP_DIGS, (mp_ptr)v);
 	dv_copy(c, s, RLC_FP_DIGS);
 	RLC_FREE(v);
 #endif

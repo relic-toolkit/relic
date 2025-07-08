@@ -39,17 +39,17 @@
 /*============================================================================*/
 
 dig_t fp_lsh1_low(dig_t *c, const dig_t *a) {
-	return mpn_lshift(c, a, RLC_FP_DIGS, 1);
+	return mpn_lshift((mp_ptr)c, (mp_srcptr)a, RLC_FP_DIGS, 1);
 }
 
 dig_t fp_lshb_low(dig_t *c, const dig_t *a, uint_t bits) {
-	return mpn_lshift(c, a, RLC_FP_DIGS, bits);
+	return mpn_lshift((mp_ptr)c, (mp_srcptr)a, RLC_FP_DIGS, bits);
 }
 
 dig_t fp_rsh1_low(dig_t *c, const dig_t *a) {
-	return mpn_rshift(c, a, RLC_FP_DIGS, 1);
+	return mpn_rshift((mp_ptr)c, (mp_srcptr)a, RLC_FP_DIGS, 1);
 }
 
 dig_t fp_rshb_low(dig_t *c, const dig_t *a, uint_t bits) {
-	return mpn_rshift(c, a, RLC_FP_DIGS, bits);
+	return mpn_rshift((mp_ptr)c, (mp_srcptr)a, RLC_FP_DIGS, bits);
 }
