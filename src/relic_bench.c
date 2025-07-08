@@ -29,6 +29,12 @@
  * @ingroup relic
  */
 
+#if TIMER == PERF
+#define _GNU_SOURCE
+#include <sys/syscall.h>      /* Definition of SYS_* constants */
+#include <unistd.h>
+#endif
+
 #include <stdio.h>
 #include <string.h>
 
