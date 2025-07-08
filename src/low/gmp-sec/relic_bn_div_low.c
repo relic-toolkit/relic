@@ -43,7 +43,8 @@ void bn_divn_low(dig_t *c, dig_t *d, dig_t *a, size_t sa, dig_t *b, size_t sb) {
 	dig_t u[sa], *t = RLC_ALLOCA(dig_t, mpn_sec_div_qr_itch(sa, sb));
 
 	mpn_copyd(u, a, sa);
-	c[sa - sb] = mpn_sec_div_qr(c, u, sa, b, sb, t);
+	c[sa - sb] =
+		mpn_sec_div_qr((mp_ptr)c, (mp_ptr)u, sa, (mp_srcptr)b, sb,(mp_ptr)t);
 	mpn_copyd(d, u, sa);
 	RLC_FREE(t);
 }
@@ -52,6 +53,7 @@ void bn_div1_low(dig_t *c, dig_t *d, const dig_t *a, dig_t b, size_t size) {
 	dig_t u[size], *t = RLC_ALLOCA(dig_t, mpn_sec_div_qr_itch(size, 1));
 
 	mpn_copyd(u, a, size);
-	c[size - 1] = mpn_sec_div_qr(c, u, size, &b, 1, t);
+	c[size - 1] =
+		mpn_sec_div_qr((mp_ptr)c, (mp_ptr)u, size, &b, 1, (mp_ptr)t);
 	*d = u[0];
 }

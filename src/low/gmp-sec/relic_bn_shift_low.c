@@ -44,12 +44,12 @@
 /*============================================================================*/
 
 dig_t bn_lsh1_low(dig_t *c, const dig_t *a, size_t size) {
-	return mpn_lshift(c, a, size, 1);
+	return mpn_lshift((mp_ptr)c, (mp_srcptr)a, size, 1);
 }
 
 dig_t bn_lshb_low(dig_t *c, const dig_t *a, size_t size, uint_t bits) {
 	dig_t carry, *t = (dig_t *)RLC_ALLOCA(dig_t, size);
-	carry = mpn_lshift(t, a, size, bits);
+	carry = mpn_lshift((mp_ptr)t, (mp_srcptr)a, size, bits);
 	dv_copy(c, a, size);
 	dv_copy_sec(c, t, size, bits > 0);
 	RLC_FREE(t);
@@ -57,12 +57,12 @@ dig_t bn_lshb_low(dig_t *c, const dig_t *a, size_t size, uint_t bits) {
 }
 
 dig_t bn_rsh1_low(dig_t *c, const dig_t *a, size_t size) {
-	return mpn_rshift(c, a, size, 1);
+	return mpn_rshift((mp_ptr)c, (mp_srcptr)a, size, 1);
 }
 
 dig_t bn_rshb_low(dig_t *c, const dig_t *a, size_t size, uint_t bits) {
 	dig_t carry, *t = (dig_t *)RLC_ALLOCA(dig_t, size);
-	carry = mpn_rshift(t, a, size, bits);
+	carry = mpn_rshift((mp_ptr)t, (mp_srcptr)a, size, bits);
 	dv_copy(c, a, size);
 	dv_copy_sec(c, t, size, bits > 0);
 	RLC_FREE(t);
@@ -77,7 +77,7 @@ dig_t bn_rshs_low(dig_t *c, const dig_t *a, size_t size, uint_t bits) {
 	mask = RLC_MASK(bits);
 	r = a[size - 1] & mask;
 	c[size - 1] = (dis_t)a[size - 1] >> bits;
-	carry = mpn_rshift(c, a, size - 1, bits);
+	carry = mpn_rshift((mp_ptr)c, (mp_srcptr)a, size - 1, bits);
 	c[size - 2] |= (r << shift);
 	return carry;
 }
