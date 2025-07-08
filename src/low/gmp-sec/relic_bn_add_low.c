@@ -44,29 +44,29 @@
 
 dig_t bn_add1_low(dig_t *c, const dig_t *a, dig_t digit, size_t size) {
 	dig_t *t = (dig_t *)RLC_ALLOCA(dig_t, mpn_sec_add_1_itch(size));
-	dig_t r = mpn_sec_add_1(c, a, size, digit, t);
+	dig_t r = mpn_sec_add_1((mp_ptr)c, (mp_srcptr)a, size, digit, (mp_ptr)t);
 	RLC_FREE(t);
 	return r;
 }
 
 dig_t bn_addn_low(dig_t *c, const dig_t *a, const dig_t *b, size_t size) {
-	return mpn_add_n(c, a, b, size);
+	return mpn_add_n((mp_ptr)c, (mp_srcptr)a, (mp_srcptr)b, size);
 }
 
 dig_t bn_sub1_low(dig_t *c, const dig_t *a, dig_t digit, size_t size) {
 	dig_t *t = (dig_t *)RLC_ALLOCA(dig_t, mpn_sec_sub_1_itch(size));
-	dig_t r = mpn_sec_sub_1(c, a, size, digit, t);
+	dig_t r = mpn_sec_sub_1((mp_ptr)c, (mp_srcptr)a, size, digit, (mp_ptr)t);
 	RLC_FREE(t);
 	return r;
 }
 
 dig_t bn_subn_low(dig_t *c, const dig_t *a, const dig_t *b, size_t size) {
-	return mpn_sub_n(c, a, b, size);
+	return mpn_sub_n((mp_ptr)c, (mp_srcptr)a, (mp_srcptr)b, size);
 }
 
 dig_t bn_negs_low(dig_t *c, const dig_t *a, dig_t sa, size_t size) {
 	dig_t carry, *t = (dig_t *)RLC_ALLOCA(dig_t, size);
-	mpn_com(t, a, size);
+	mpn_com((mp_ptr)t, a, size);
 	carry = bn_add1_low(t, t, sa, size);
 	dv_copy(c, a, size);
 	dv_copy_sec(c, t, size, sa);
