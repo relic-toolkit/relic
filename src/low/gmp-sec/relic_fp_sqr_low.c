@@ -41,7 +41,7 @@
 
 void fp_sqrn_low(dig_t *c, const dig_t *a) {
 	dig_t *t = RLC_ALLOCA(dig_t, mpn_sec_sqr_itch(RLC_FP_DIGS));
-	mpn_sec_sqr(c, a, RLC_FP_DIGS, t);
+	mpn_sec_sqr((mp_ptr)c, (mp_srcptr)a, RLC_FP_DIGS, (mp_ptr)t);
 	RLC_FREE(t);
 }
 

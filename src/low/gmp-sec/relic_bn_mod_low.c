@@ -50,7 +50,7 @@ void bn_modn_low(dig_t *c, const dig_t *a, size_t sa, const dig_t *m, size_t sm,
 	mpn_copyd(c, a, sa);
 	for (int i = 0; i < sm; i++, tc++) {
 		r = (dig_t)(*tc * u);
-		mpn_sec_mul((mp_ptr)t, (mp_srcptr)m, sm, &r, 1, (mp_ptr)s);
+		mpn_sec_mul((mp_ptr)t, (mp_srcptr)m, sm, (mp_srcptr)&r, 1, (mp_ptr)s);
 		*tc = t[sm] + mpn_add_n(tc, tc, t, sm);
 	}
 	mpn_cnd_sub_n(mpn_add_n((mp_ptr)c, (mp_srcptr)c, (mp_srcptr)tc, sm),
