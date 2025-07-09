@@ -54,7 +54,8 @@ void fp_invm_low(dig_t *c, const dig_t *a) {
 	fp_copy(u, a);
 #endif
 
-	mpn_sec_invert(c, u, fp_prime_get(), RLC_FP_DIGS, cnt, t);
+	mpn_sec_invert((mp_ptr)c, (mp_srcptr)u, (mp_srcptr)fp_prime_get(),
+		RLC_FP_DIGS, cnt, (mp_ptr)t);
 
 #if FP_RDC == MONTY
 	dv_zero(s, RLC_FP_DIGS);
