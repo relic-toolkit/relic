@@ -1512,7 +1512,7 @@ int main(void) {
 		pairing18();
 	}
 
-	if (ep_curve_embed() == 48) {
+	if (ep_curve_embed() == 24) {
 		pairing24();
 	}
 
