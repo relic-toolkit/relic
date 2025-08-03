@@ -114,9 +114,9 @@ void fp2_mul_nor_basic(fp2_t c, const fp2_t a) {
 
 #ifdef FP_QNRES
 		/* If p = 3 mod 8, (1 + i) is a QNR/CNR. */
-		fp_neg(t[0], a[1]);
+		fp_copy(t[0], a[1]);
 		fp_add(c[1], a[0], a[1]);
-		fp_add(c[0], t[0], a[0]);
+		fp_sub(c[0], a[0], t[0]);
 #else
 		int qnr = fp2_field_get_qnr();
 
