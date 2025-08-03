@@ -2663,12 +2663,16 @@ static int multiplication6(void) {
 			TEST_ASSERT(fp6_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
 
+void fp6_mul_basic3(fp6_t c, fp6_t a, fp6_t b);
+
 #if FPX_RDC == BASIC | !defined(STRIP)
 		TEST_CASE("basic multiplication is correct") {
 			fp6_rand(a);
 			fp6_rand(b);
 			fp6_mul(c, a, b);
 			fp6_mul_basic(d, a, b);
+			TEST_ASSERT(fp6_cmp(c, d) == RLC_EQ, end);
+			fp6_mul_basic3(d, a, b);
 			TEST_ASSERT(fp6_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
 #endif

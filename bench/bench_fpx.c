@@ -1142,6 +1142,13 @@ static void arith6(void) {
 		BENCH_ADD(fp6_mul_basic(c, a, b));
 	}
 	BENCH_END;
+void fp6_mul_basic3(fp6_t c, fp6_t a, fp6_t b);
+	BENCH_RUN("fp6_mul_basic3") {
+		fp6_rand(a);
+		fp6_rand(b);
+		BENCH_ADD(fp6_mul_basic3(c, a, b));
+	}
+	BENCH_END;
 #endif
 
 #if FPX_RDC == LAZYR || !defined(STRIP)
