@@ -109,9 +109,9 @@ void fp2_norm_low(fp2_t c, fp2_t a) {
 		switch (fp_prime_get_mod8()) {
 			case 3:
 				/* If p = 3 mod 8, (1 + i) is a QNR/CNR. */
-				fp_neg(t[0], a[1]);
+				fp_copy(t[0], a[1]);
 				fp_add(c[1], a[0], a[1]);
-				fp_add(c[0], t[0], a[0]);
+				fp_sub(c[0], a[0], t[0]);
 				break;
 			case 1:
 			case 5:
