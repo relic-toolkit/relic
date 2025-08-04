@@ -2958,6 +2958,14 @@ static void arith24(void) {
 		BENCH_ADD(fp24_mul_basic(c, a, b));
 	}
 	BENCH_END;
+
+void fp24_mul_basic3(fp24_t c, fp24_t a, fp24_t b);
+	BENCH_RUN("fp24_mul_basic3") {
+		fp24_rand(a);
+		fp24_rand(b);
+		BENCH_ADD(fp24_mul_basic3(c, a, b));
+	}
+	BENCH_END;
 #endif
 
 #if FPX_RDC == LAZYR || !defined(STRIP)
