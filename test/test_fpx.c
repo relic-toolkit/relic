@@ -6679,12 +6679,16 @@ static int multiplication24(void) {
 			TEST_ASSERT(fp24_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
 
+void fp24_mul_basic3(fp24_t c, fp24_t a, fp24_t b);
+
 #if FPX_RDC == BASIC | !defined(STRIP)
 		TEST_CASE("basic multiplication is correct") {
 			fp24_rand(a);
 			fp24_rand(b);
 			fp24_mul(c, a, b);
 			fp24_mul_basic(d, a, b);
+			TEST_ASSERT(fp24_cmp(c, d) == RLC_EQ, end);
+			fp24_mul_basic3(d, a, b);
 			TEST_ASSERT(fp24_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
 #endif
