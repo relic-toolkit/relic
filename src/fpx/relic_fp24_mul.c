@@ -34,12 +34,313 @@
 #include "relic_fpx_low.h"
 
 /*============================================================================*/
+/* Private definitions                                                        */
+/*============================================================================*/
+
+#if FPX_RDC == BASIC || !defined(STRIP)
+
+/**
+ * Multiples two 24-degree extension field elements using Toom3 formula and
+ * basic arithmetic.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the 24-degree extension field element.
+ * @param[in] b				- the 24-degree extension field element.
+ */
+static void fp24_mul_toom3(fp24_t c, const fp24_t a, const fp24_t b) {
+	fp8_t v0, v1, v2, t0, t1, t2, c3, c4;
+
+	fp8_null(v0);
+	fp8_null(v1);
+	fp8_null(v2);
+	fp8_null(t0);
+	fp8_null(t1);
+	fp8_null(t2);
+	fp8_null(c3);
+	fp8_null(c4);
+
+	RLC_TRY {
+		fp8_new(v0);
+		fp8_new(v1);
+		fp8_new(v2);
+		fp8_new(t0);
+		fp8_new(t1);
+		fp8_new(t2);
+		fp8_new(c3);
+		fp8_new(c4);
+
+		fp8_add(v2, a[0], a[2]);
+		fp8_add(v0, v2, a[1]);
+		fp8_sub(v1, v2, a[1]);
+		fp2_mul_art(v2[0][0], a[1][0][0]);
+		fp2_mul_art(v2[0][1], a[1][0][1]);
+		fp2_mul_art(v2[1][0], a[1][1][0]);
+		fp2_mul_art(v2[1][1], a[1][1][1]);
+		fp8_add(v2, v2, a[0]);
+		fp8_sub(v2, v2, a[2]);
+
+		fp8_add(t2, b[0], b[2]);
+		fp8_add(t0, t2, b[1]);
+		fp8_sub(t1, t2, b[1]);
+		fp2_mul_art(t2[0][0], b[1][0][0]);
+		fp2_mul_art(t2[0][1], b[1][0][1]);
+		fp2_mul_art(t2[1][0], b[1][1][0]);
+		fp2_mul_art(t2[1][1], b[1][1][1]);
+		fp8_add(t2, t2, b[0]);
+		fp8_sub(t2, t2, b[2]);
+
+		fp8_mul(c[0], a[0], b[0]);
+		fp8_mul(c[1], v0, t0);
+		fp8_mul(c[2], v1, t1);
+		fp8_mul(c3, v2, t2);
+		fp8_mul(c4, a[2], b[2]);
+		for (size_t i = 0; i < 2; i++) {
+			for (size_t j = 0; j < 2; j++) {
+				for (size_t k = 0; k < 2; k++) {
+					fp_hlv(c[1][i][j][k], c[1][i][j][k]);
+					fp_hlv(t0[i][j][k], c[1][i][j][k]);
+					fp_hlv(c[2][i][j][k], c[2][i][j][k]);
+					fp_hlv(v0[i][j][k], c[2][i][j][k]);
+					fp_hlv(c3[i][j][k], c3[i][j][k]);
+				}
+			}
+		}
+
+		fp2_mul_art(v1[0][0], t0[0][0]);
+		fp2_mul_art(v1[0][1], t0[0][1]);
+		fp2_mul_art(v1[1][0], t0[1][0]);
+		fp2_mul_art(v1[1][1], t0[1][1]);
+		fp8_sub(v2, t0, v1);
+		fp8_add(v1, t0, v1);
+
+		fp2_mul_art(t1[0][0], v0[0][0]);
+		fp2_mul_art(t1[0][1], v0[0][1]);
+		fp2_mul_art(t1[1][0], v0[1][0]);
+		fp2_mul_art(t1[1][1], v0[1][1]);
+		fp8_sub(t2, v0, t1);
+		fp8_add(t1, v0, t1);
+
+		fp8_add(v0, c[0], c4);
+		fp8_add(c[2], c[2], c[1]);
+		fp8_sub(c[2], c[2], v0);
+
+		fp8_sub(v0, v0, c3);
+		fp2_mul_art(v0[0][0], v0[0][0]);
+		fp2_mul_art(v0[0][1], v0[0][1]);
+		fp2_mul_art(v0[1][0], v0[1][0]);
+		fp2_mul_art(v0[1][1], v0[1][1]);
+		fp8_sub(c[1], v2, t1);
+		fp8_add(c[1], c[1], v0);
+		fp8_sub(c3, v1, t2);
+		fp8_sub(c3, c3, v0);
+
+		fp4_add(c[0][1], c[0][1], c3[0]);
+		fp2_mul_nor(c3[1][1], c3[1][1]);
+		fp2_add(c[0][0][0], c[0][0][0], c3[1][1]);
+		fp2_add(c[0][0][1], c[0][0][1], c3[1][0]);
+		fp4_add(c[1][1], c[1][1], c4[0]);
+		fp2_mul_nor(c4[1][1], c4[1][1]);
+		fp2_add(c[1][0][0], c[1][0][0], c4[1][1]);
+		fp2_add(c[1][0][1], c[1][0][1], c4[1][0]);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		fp8_free(t2);
+		fp8_free(t1);
+		fp8_free(t0);
+		fp8_free(v2);
+		fp8_free(v1);
+		fp8_free(v0);
+		fp8_free(c3);
+		fp8_free(c4);
+	}
+}
+
+#endif
+
+#if FPX_RDC == LAZYR || !defined(STRIP)
+
+/**
+ * Multiples two 24-degree extension field elements using Toom3 formula and
+ * lazy-reduced arithmetic.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the 24-degree extension field element.
+ * @param[in] b				- the 24-degree extension field element.
+ */
+static void fp24_mul_unr3(fp24_t c, const fp24_t a, const fp24_t b) {
+	fp8_t v0, v1, v2, t0, t1, t2, c3, c4;
+	dv8_t u0, u1, u2, u3, u4, _t0, _v0;
+
+	fp8_null(v0);
+	fp8_null(v1);
+	fp8_null(v2);
+	fp8_null(t0);
+	fp8_null(t1);
+	fp8_null(t2);
+	fp8_null(c3);
+	fp8_null(c4);
+	dv8_null(u0);
+	dv8_null(u1);
+	dv8_null(u2);
+	dv8_null(u3);
+	dv8_null(u4);
+
+	RLC_TRY {
+		fp8_new(v0);
+		fp8_new(v1);
+		fp8_new(v2);
+		fp8_new(t0);
+		fp8_new(t1);
+		fp8_new(t2);
+		fp8_new(c3);
+		fp8_new(c4);
+		dv8_new(u0);
+		dv8_new(u1);
+		dv8_new(u2);
+		dv8_new(u3);
+		dv8_new(u4);
+
+		fp8_add(v2, a[0], a[2]);
+		fp8_add(v0, v2, a[1]);
+		fp8_sub(v1, v2, a[1]);
+		fp2_mul_art(v2[0][0], a[1][0][0]);
+		fp2_mul_art(v2[0][1], a[1][0][1]);
+		fp2_mul_art(v2[1][0], a[1][1][0]);
+		fp2_mul_art(v2[1][1], a[1][1][1]);
+		fp8_add(v2, v2, a[0]);
+		fp8_sub(v2, v2, a[2]);
+
+		fp8_add(t2, b[0], b[2]);
+		fp8_add(t0, t2, b[1]);
+		fp8_sub(t1, t2, b[1]);
+		fp2_mul_art(t2[0][0], b[1][0][0]);
+		fp2_mul_art(t2[0][1], b[1][0][1]);
+		fp2_mul_art(t2[1][0], b[1][1][0]);
+		fp2_mul_art(t2[1][1], b[1][1][1]);
+		fp8_add(t2, t2, b[0]);
+		fp8_sub(t2, t2, b[2]);
+
+		fp8_mul_unr(u0, a[0], b[0]);
+		fp8_mul_unr(u4, a[2], b[2]);
+		fp8_mul_unr(u1, v0, t0);
+		fp8_mul_unr(u2, v1, t1);
+		fp8_mul_unr(u3, v2, t2);
+		for (size_t i = 0; i < 2; i++) {
+			for (size_t j = 0; j < 2; j++) {
+				for (size_t k = 0; k < 2; k++) {
+					fp_hlvd_low(u1[i][j][k], u1[i][j][k]);
+					fp_hlvd_low(_t0[i][j][k], u1[i][j][k]);
+					fp_hlvd_low(u2[i][j][k], u2[i][j][k]);
+					fp_hlvd_low(_v0[i][j][k], u2[i][j][k]);
+					fp_hlvd_low(u3[i][j][k], u3[i][j][k]);
+				}
+			}
+		}
+		fp2_rdcn_low(c3[0][0], u3[0][0]);
+		fp2_rdcn_low(c3[0][1], u3[0][1]);
+		fp2_rdcn_low(c3[1][0], u3[1][0]);
+		fp2_rdcn_low(c3[1][1], u3[1][1]);
+		fp2_rdcn_low(c[2][0][0], u2[0][0]);
+		fp2_rdcn_low(c[2][0][1], u2[0][1]);
+		fp2_rdcn_low(c[2][1][0], u2[1][0]);
+		fp2_rdcn_low(c[2][1][1], u2[1][1]);
+		fp2_rdcn_low(c[1][0][0], u1[0][0]);
+		fp2_rdcn_low(c[1][0][1], u1[0][1]);
+		fp2_rdcn_low(c[1][1][0], u1[1][0]);
+		fp2_rdcn_low(c[1][1][1], u1[1][1]);
+		fp2_rdcn_low(t0[0][0], _t0[0][0]);
+		fp2_rdcn_low(t0[0][1], _t0[0][1]);
+		fp2_rdcn_low(t0[1][0], _t0[1][0]);
+		fp2_rdcn_low(t0[1][1], _t0[1][1]);
+		fp2_rdcn_low(v0[0][0], _v0[0][0]);
+		fp2_rdcn_low(v0[0][1], _v0[0][1]);
+		fp2_rdcn_low(v0[1][0], _v0[1][0]);
+		fp2_rdcn_low(v0[1][1], _v0[1][1]);
+
+		fp2_mul_art(v1[0][0], t0[0][0]);
+		fp2_mul_art(v1[0][1], t0[0][1]);
+		fp2_mul_art(v1[1][0], t0[1][0]);
+		fp2_mul_art(v1[1][1], t0[1][1]);
+		fp8_sub(v2, t0, v1);
+		fp8_add(v1, t0, v1);
+
+		fp2_mul_art(t1[0][0], v0[0][0]);
+		fp2_mul_art(t1[0][1], v0[0][1]);
+		fp2_mul_art(t1[1][0], v0[1][0]);
+		fp2_mul_art(t1[1][1], v0[1][1]);
+		fp8_sub(t2, v0, t1);
+		fp8_add(t1, v0, t1);
+
+		fp2_addc_low(u1[0][0], u0[0][0], u4[0][0]);
+		fp2_addc_low(u1[0][1], u0[0][1], u4[0][1]);
+		fp2_addc_low(u1[1][0], u0[1][0], u4[1][0]);
+		fp2_addc_low(u1[1][1], u0[1][1], u4[1][1]);
+		fp2_rdcn_low(v0[0][0], u1[0][0]);
+		fp2_rdcn_low(v0[0][1], u1[0][1]);
+		fp2_rdcn_low(v0[1][0], u1[1][0]);
+		fp2_rdcn_low(v0[1][1], u1[1][1]);
+		fp8_add(c[2], c[2], c[1]);
+		fp8_sub(c[2], c[2], v0);
+
+		fp8_sub(v0, v0, c3);
+		fp2_mul_art(v0[0][0], v0[0][0]);
+		fp2_mul_art(v0[0][1], v0[0][1]);
+		fp2_mul_art(v0[1][0], v0[1][0]);
+		fp2_mul_art(v0[1][1], v0[1][1]);
+		fp8_sub(c[1], v2, t1);
+		fp8_add(c[1], c[1], v0);
+		fp8_sub(c3, v1, t2);
+		fp8_sub(c3, c3, v0);
+
+		fp2_rdcn_low(c[0][0][0], u0[0][0]);
+		fp2_rdcn_low(c[0][0][1], u0[0][1]);
+		fp2_rdcn_low(c[0][1][0], u0[1][0]);
+		fp2_rdcn_low(c[0][1][1], u0[1][1]);
+
+		fp4_add(c[0][1], c[0][1], c3[0]);
+		fp2_mul_nor(c3[1][1], c3[1][1]);
+		fp2_add(c[0][0][0], c[0][0][0], c3[1][1]);
+		fp2_add(c[0][0][1], c[0][0][1], c3[1][0]);
+		fp2_rdcn_low(c4[0][0], u4[0][0]);
+		fp2_rdcn_low(c4[0][1], u4[0][1]);
+		fp2_rdcn_low(c4[1][0], u4[1][0]);
+		fp2_rdcn_low(c4[1][1], u4[1][1]);
+		fp4_add(c[1][1], c[1][1], c4[0]);
+		fp2_mul_nor(c4[1][1], c4[1][1]);
+		fp2_add(c[1][0][0], c[1][0][0], c4[1][1]);
+		fp2_add(c[1][0][1], c[1][0][1], c4[1][0]);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		fp8_free(t2);
+		fp8_free(t1);
+		fp8_free(t0);
+		fp8_free(v2);
+		fp8_free(v1);
+		fp8_free(v0);
+		fp8_free(c3);
+		fp8_free(c4);
+		dv8_free(u0);
+		dv8_free(u1);
+		dv8_free(u2);
+		dv8_free(u3);
+		dv8_free(u4);
+	}
+}
+
+#endif
+
+/*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
 #if FPX_RDC == BASIC || !defined(STRIP)
 
 void fp24_mul_basic(fp24_t c, const fp24_t a, const fp24_t b) {
+#ifdef FP_QNRES
+	return fp24_mul_unr3(c, a, b);
+#else
 	fp8_t t0, t1, t2, t3, t4, t5;
 
 	fp8_null(t0);
@@ -100,140 +401,7 @@ void fp24_mul_basic(fp24_t c, const fp24_t a, const fp24_t b) {
 		fp8_free(t4);
 		fp8_free(t5);
 	}
-}
-
-void fp24_mul_basic3(fp24_t c, const fp24_t a, const fp24_t b) {
-	fp8_t v0, v1, v2, t0, t1, t2, c3, c4;
-
-	fp8_null(v0);
-	fp8_null(v1);
-	fp8_null(v2);
-	fp8_null(t0);
-	fp8_null(t1);
-	fp8_null(t2);
-	fp8_null(c3);
-	fp8_null(c4);
-
-	RLC_TRY {
-		fp8_new(v0);
-		fp8_new(v1);
-		fp8_new(v2);
-		fp8_new(t0);
-		fp8_new(t1);
-		fp8_new(t2);
-		fp8_new(c3);
-		fp8_new(c4);
-
-		fp8_add(v2, a[0], a[2]);
-		fp8_add(v0, v2, a[1]);
-		fp8_sub(v1, v2, a[1]);
-		fp2_mul_art(v2[0][0], a[1][0][0]);
-		fp2_mul_art(v2[0][1], a[1][0][1]);
-		fp2_mul_art(v2[1][0], a[1][1][0]);
-		fp2_mul_art(v2[1][1], a[1][1][1]);
-		fp8_add(v2, v2, a[0]);
-		fp8_sub(v2, v2, a[2]);
-
-		fp8_add(t2, b[0], b[2]);
-		fp8_add(t0, t2, b[1]);
-		fp8_sub(t1, t2, b[1]);
-		fp2_mul_art(t2[0][0], b[1][0][0]);
-		fp2_mul_art(t2[0][1], b[1][0][1]);
-		fp2_mul_art(t2[1][0], b[1][1][0]);
-		fp2_mul_art(t2[1][1], b[1][1][1]);
-		fp8_add(t2, t2, b[0]);
-		fp8_sub(t2, t2, b[2]);
-
-		fp8_mul(c[0], a[0], b[0]);
-		fp8_mul(c[1], v0, t0);
-		fp_hlv(c[1][0][0][0], c[1][0][0][0]);
-		fp_hlv(c[1][0][0][1], c[1][0][0][1]);
-		fp_hlv(c[1][0][1][0], c[1][0][1][0]);
-		fp_hlv(c[1][0][1][1], c[1][0][1][1]);
-		fp_hlv(c[1][1][0][0], c[1][1][0][0]);
-		fp_hlv(c[1][1][0][1], c[1][1][0][1]);
-		fp_hlv(c[1][1][1][0], c[1][1][1][0]);
-		fp_hlv(c[1][1][1][1], c[1][1][1][1]);
-		fp8_mul(c[2], v1, t1);
-		fp_hlv(c[2][0][0][0], c[2][0][0][0]);
-		fp_hlv(c[2][0][0][1], c[2][0][0][1]);
-		fp_hlv(c[2][0][1][0], c[2][0][1][0]);
-		fp_hlv(c[2][0][1][1], c[2][0][1][1]);
-		fp_hlv(c[2][1][0][0], c[2][1][0][0]);
-		fp_hlv(c[2][1][0][1], c[2][1][0][1]);
-		fp_hlv(c[2][1][1][0], c[2][1][1][0]);
-		fp_hlv(c[2][1][1][1], c[2][1][1][1]);
-		fp8_mul(c3, v2, t2);
-		fp_hlv(c3[0][0][0], c3[0][0][0]);
-		fp_hlv(c3[0][0][1], c3[0][0][1]);
-		fp_hlv(c3[0][1][0], c3[0][1][0]);
-		fp_hlv(c3[0][1][1], c3[0][1][1]);
-		fp_hlv(c3[1][0][0], c3[1][0][0]);
-		fp_hlv(c3[1][0][1], c3[1][0][1]);
-		fp_hlv(c3[1][1][0], c3[1][1][0]);
-		fp_hlv(c3[1][1][1], c3[1][1][1]);
-		fp8_mul(c4, a[2], b[2]);
-
-		fp8_add(v0, c[0], c4);
-		fp_hlv(t0[0][0][0], c[1][0][0][0]);
-		fp_hlv(t0[0][0][1], c[1][0][0][1]);
-		fp_hlv(t0[0][1][0], c[1][0][1][0]);
-		fp_hlv(t0[0][1][1], c[1][0][1][1]);
-		fp_hlv(t0[1][0][0], c[1][1][0][0]);
-		fp_hlv(t0[1][0][1], c[1][1][0][1]);
-		fp_hlv(t0[1][1][0], c[1][1][1][0]);
-		fp_hlv(t0[1][1][1], c[1][1][1][1]);
-		fp2_mul_art(v1[0][0], t0[0][0]);
-		fp2_mul_art(v1[0][1], t0[0][1]);
-		fp2_mul_art(v1[1][0], t0[1][0]);
-		fp2_mul_art(v1[1][1], t0[1][1]);
-		fp8_sub(v2, t0, v1);
-		fp8_add(v1, t0, v1);
-
-		fp_hlv(t0[0][0][0], c[2][0][0][0]);
-		fp_hlv(t0[0][0][1], c[2][0][0][1]);
-		fp_hlv(t0[0][1][0], c[2][0][1][0]);
-		fp_hlv(t0[0][1][1], c[2][0][1][1]);
-		fp_hlv(t0[1][0][0], c[2][1][0][0]);
-		fp_hlv(t0[1][0][1], c[2][1][0][1]);
-		fp_hlv(t0[1][1][0], c[2][1][1][0]);
-		fp_hlv(t0[1][1][1], c[2][1][1][1]);
-		fp2_mul_art(t1[0][0], t0[0][0]);
-		fp2_mul_art(t1[0][1], t0[0][1]);
-		fp2_mul_art(t1[1][0], t0[1][0]);
-		fp2_mul_art(t1[1][1], t0[1][1]);
-		fp8_sub(t2, t0, t1);
-		fp8_add(t1, t0, t1);
-
-		fp8_add(c[2], c[2], c[1]);
-		fp8_sub(c[2], c[2], v0);
-
-		fp8_sub(v0, v0, c3);
-		fp2_mul_art(v0[0][0], v0[0][0]);
-		fp2_mul_art(v0[0][1], v0[0][1]);
-		fp2_mul_art(v0[1][0], v0[1][0]);
-		fp2_mul_art(v0[1][1], v0[1][1]);
-		fp8_sub(c[1], v2, t1);
-		fp8_add(c[1], c[1], v0);
-		fp8_sub(c3, v1, t2);
-		fp8_sub(c3, c3, v0);
-
-		fp8_mul_art(c3, c3);
-		fp8_add(c[0], c[0], c3);
-		fp8_mul_art(c4, c4);
-		fp8_add(c[1], c[1], c4);
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		fp8_free(t2);
-		fp8_free(t1);
-		fp8_free(t0);
-		fp8_free(v2);
-		fp8_free(v1);
-		fp8_free(v0);
-		fp8_free(c3);
-		fp8_free(c4);
-	}
+#endif
 }
 
 #endif

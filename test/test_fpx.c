@@ -6679,16 +6679,12 @@ static int multiplication24(void) {
 			TEST_ASSERT(fp24_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
 
-void fp24_mul_basic3(fp24_t c, fp24_t a, fp24_t b);
-
 #if FPX_RDC == BASIC | !defined(STRIP)
 		TEST_CASE("basic multiplication is correct") {
 			fp24_rand(a);
 			fp24_rand(b);
 			fp24_mul(c, a, b);
 			fp24_mul_basic(d, a, b);
-			TEST_ASSERT(fp24_cmp(c, d) == RLC_EQ, end);
-			fp24_mul_basic3(d, a, b);
 			TEST_ASSERT(fp24_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
 #endif
@@ -8624,6 +8620,62 @@ int main(void) {
 	}
 
 	fp_param_print();
+	if (fp_prime_get_qnr() && (ep_curve_embed() >= 24)) {
+		util_banner("Extension of degree 24:", 0);
+		util_banner("Utilities:", 1);
+
+		if (memory24() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (util24() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		util_banner("Arithmetic:", 1);
+
+		if (addition24() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (subtraction24() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (multiplication24() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (squaring24() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (inversion24() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (exponentiation24() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (cyclotomic24() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (compression24() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+	}
 
 	/* Only execute these if there is an assigned quadratic non-residue. */
 	if (fp_prime_get_qnr()) {
@@ -9165,63 +9217,6 @@ int main(void) {
 		}
 
 		if (compression18() != RLC_OK) {
-			core_clean();
-			return 1;
-		}
-	}
-
-	if (fp_prime_get_qnr() && (ep_curve_embed() >= 24)) {
-		util_banner("Extension of degree 24:", 0);
-		util_banner("Utilities:", 1);
-
-		if (memory24() != RLC_OK) {
-			core_clean();
-			return 1;
-		}
-
-		if (util24() != RLC_OK) {
-			core_clean();
-			return 1;
-		}
-
-		util_banner("Arithmetic:", 1);
-
-		if (addition24() != RLC_OK) {
-			core_clean();
-			return 1;
-		}
-
-		if (subtraction24() != RLC_OK) {
-			core_clean();
-			return 1;
-		}
-
-		if (multiplication24() != RLC_OK) {
-			core_clean();
-			return 1;
-		}
-
-		if (squaring24() != RLC_OK) {
-			core_clean();
-			return 1;
-		}
-
-		if (inversion24() != RLC_OK) {
-			core_clean();
-			return 1;
-		}
-
-		if (exponentiation24() != RLC_OK) {
-			core_clean();
-			return 1;
-		}
-
-		if (cyclotomic24() != RLC_OK) {
-			core_clean();
-			return 1;
-		}
-
-		if (compression24() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
