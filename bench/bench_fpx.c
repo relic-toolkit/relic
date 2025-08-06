@@ -2883,7 +2883,7 @@ static void util24(void) {
 	BENCH_RUN("fp24_write_bin (1)") {
 		fp24_rand(a);
 		fp24_conv_cyc(a, a);
-		BENCH_ADD(fp24_write_bin(bin, 32 * RLC_FP_BYTES, a, 1));
+		BENCH_ADD(fp24_write_bin(bin, 16 * RLC_FP_BYTES, a, 1));
 	}
 	BENCH_END;
 
@@ -2898,7 +2898,7 @@ static void util24(void) {
 		fp24_rand(a);
 		fp24_conv_cyc(a, a);
 		fp24_write_bin(bin, fp24_size_bin(a, 1), a, 1);
-		BENCH_ADD(fp24_read_bin(a, bin, 32 * RLC_FP_BYTES));
+		BENCH_ADD(fp24_read_bin(a, bin, 16 * RLC_FP_BYTES));
 	}
 	BENCH_END;
 
@@ -2956,14 +2956,6 @@ static void arith24(void) {
 		fp24_rand(a);
 		fp24_rand(b);
 		BENCH_ADD(fp24_mul_basic(c, a, b));
-	}
-	BENCH_END;
-
-void fp24_mul_basic3(fp24_t c, fp24_t a, fp24_t b);
-	BENCH_RUN("fp24_mul_basic3") {
-		fp24_rand(a);
-		fp24_rand(b);
-		BENCH_ADD(fp24_mul_basic3(c, a, b));
 	}
 	BENCH_END;
 #endif
