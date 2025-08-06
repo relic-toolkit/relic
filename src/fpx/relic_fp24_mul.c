@@ -103,34 +103,14 @@ static void fp24_mul_toom3(fp24_t c, const fp24_t a, const fp24_t b) {
 					fp_hlv(v0[i][j][k], c[2][i][j][k]);
 					fp_hlv(c3[i][j][k], c3[i][j][k]);
 				}
+				fp2_mul_nor(v1[i][j], t0[i][j]);
+				fp_copy(v2[i][j][0], v1[i][j][1]);
+				fp_neg(v2[i][j][1], v1[i][j][0]);
+				fp2_mul_nor(t1[i][j], v0[i][j]);
+				fp_copy(t2[i][j][0], t1[i][j][1]);
+				fp_neg(t2[i][j][1], t1[i][j][0]);
 			}
 		}
-
-		fp2_mul_nor(v1[0][0], t0[0][0]);
-		fp2_mul_nor(v1[0][1], t0[0][1]);
-		fp2_mul_nor(v1[1][0], t0[1][0]);
-		fp2_mul_nor(v1[1][1], t0[1][1]);
-		fp_copy(v2[0][0][0], v1[0][0][1]);
-		fp_copy(v2[0][1][0], v1[0][1][1]);
-		fp_copy(v2[1][0][0], v1[1][0][1]);
-		fp_copy(v2[1][1][0], v1[1][1][1]);
-		fp_neg(v2[0][0][1], v1[0][0][0]);
-		fp_neg(v2[0][1][1], v1[0][1][0]);
-		fp_neg(v2[1][0][1], v1[1][0][0]);
-		fp_neg(v2[1][1][1], v1[1][1][0]);
-
-		fp2_mul_nor(t1[0][0], v0[0][0]);
-		fp2_mul_nor(t1[0][1], v0[0][1]);
-		fp2_mul_nor(t1[1][0], v0[1][0]);
-		fp2_mul_nor(t1[1][1], v0[1][1]);
-		fp_copy(t2[0][0][0], t1[0][0][1]);
-		fp_copy(t2[0][1][0], t1[0][1][1]);
-		fp_copy(t2[1][0][0], t1[1][0][1]);
-		fp_copy(t2[1][1][0], t1[1][1][1]);
-		fp_neg(t2[0][0][1], t1[0][0][0]);
-		fp_neg(t2[0][1][1], t1[0][1][0]);
-		fp_neg(t2[1][0][1], t1[1][0][0]);
-		fp_neg(t2[1][1][1], t1[1][1][0]);
 
 		fp8_add(v0, c[0], c4);
 		fp8_add(c[2], c[2], c[1]);
