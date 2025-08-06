@@ -180,9 +180,9 @@ static void fp24_mul_toom3(fp24_t c, const fp24_t a, const fp24_t b) {
  * @param[in] a				- the 24-degree extension field element.
  * @param[in] b				- the 24-degree extension field element.
  */
-static void fp24_mul_unr3(fp24_t c, const fp24_t a, const fp24_t b) {
-	fp8_t v0, v1, v2, t0, t1, t2, c3, c4;
-	dv8_t u0, u1, u2, u3, u4, _t0, _v0;
+static void fp24_mul_unr3(dv24_t c, const fp24_t a, const fp24_t b) {
+	fp8_t v0, v1, v2, t0, t1, t2;
+	dv8_t u0, u1, u2, u3, u4;
 
 	fp8_null(v0);
 	fp8_null(v1);
@@ -190,8 +190,6 @@ static void fp24_mul_unr3(fp24_t c, const fp24_t a, const fp24_t b) {
 	fp8_null(t0);
 	fp8_null(t1);
 	fp8_null(t2);
-	fp8_null(c3);
-	fp8_null(c4);
 	dv8_null(u0);
 	dv8_null(u1);
 	dv8_null(u2);
@@ -205,8 +203,6 @@ static void fp24_mul_unr3(fp24_t c, const fp24_t a, const fp24_t b) {
 		fp8_new(t0);
 		fp8_new(t1);
 		fp8_new(t2);
-		fp8_new(c3);
-		fp8_new(c4);
 		dv8_new(u0);
 		dv8_new(u1);
 		dv8_new(u2);
@@ -233,124 +229,61 @@ static void fp24_mul_unr3(fp24_t c, const fp24_t a, const fp24_t b) {
 		fp8_add(t2, t2, b[0]);
 		fp8_sub(t2, t2, b[2]);
 
-		fp8_mul_unr(u0, a[0], b[0]);
-		fp8_mul_unr(u4, a[2], b[2]);
-		fp8_mul_unr(u1, v0, t0);
-		fp8_mul_unr(u2, v1, t1);
-		fp8_mul_unr(u3, v2, t2);
+		fp8_mul_unr(c[0], a[0], b[0]);
+		fp8_mul_unr(u1, a[2], b[2]);
+		fp8_mul_unr(c[1], v0, t0);
+		fp8_mul_unr(c[2], v1, t1);
+		fp8_mul_unr(u0, v2, t2);
 		for (size_t i = 0; i < 2; i++) {
 			for (size_t j = 0; j < 2; j++) {
 				for (size_t k = 0; k < 2; k++) {
-					fp_hlvd_low(u1[i][j][k], u1[i][j][k]);
-					fp_hlvd_low(_t0[i][j][k], u1[i][j][k]);
-					fp_hlvd_low(u2[i][j][k], u2[i][j][k]);
-					fp_hlvd_low(_v0[i][j][k], u2[i][j][k]);
-					fp_hlvd_low(u3[i][j][k], u3[i][j][k]);
+					fp_hlvd_low(c[1][i][j][k], c[1][i][j][k]);
+					fp_hlvd_low(u2[i][j][k], c[1][i][j][k]);
+					fp_hlvd_low(c[2][i][j][k], c[2][i][j][k]);
+					fp_hlvd_low(u3[i][j][k], c[2][i][j][k]);
+					fp_hlvd_low(u0[i][j][k], u0[i][j][k]);
 				}
+				fp2_nord_low(u2[i][j], u2[i][j]);
+				fp2_nord_low(u3[i][j], u3[i][j]);
 			}
 		}
-		fp2_rdcn_low(c3[0][0], u3[0][0]);
-		fp2_rdcn_low(c3[0][1], u3[0][1]);
-		fp2_rdcn_low(c3[1][0], u3[1][0]);
-		fp2_rdcn_low(c3[1][1], u3[1][1]);
-		fp2_rdcn_low(c[2][0][0], u2[0][0]);
-		fp2_rdcn_low(c[2][0][1], u2[0][1]);
-		fp2_rdcn_low(c[2][1][0], u2[1][0]);
-		fp2_rdcn_low(c[2][1][1], u2[1][1]);
-		fp2_rdcn_low(c[1][0][0], u1[0][0]);
-		fp2_rdcn_low(c[1][0][1], u1[0][1]);
-		fp2_rdcn_low(c[1][1][0], u1[1][0]);
-		fp2_rdcn_low(c[1][1][1], u1[1][1]);
 
-		fp2_nord_low(_t0[0][0], _t0[0][0]);
-		fp2_nord_low(_t0[0][1], _t0[0][1]);
-		fp2_nord_low(_t0[1][0], _t0[1][0]);
-		fp2_nord_low(_t0[1][1], _t0[1][1]);
-		fp2_rdcn_low(v1[0][0], _t0[0][0]);
-		fp2_rdcn_low(v1[0][1], _t0[0][1]);
-		fp2_rdcn_low(v1[1][0], _t0[1][0]);
-		fp2_rdcn_low(v1[1][1], _t0[1][1]);
+		for (size_t i = 0; i < 2; i++) {
+			for (size_t j = 0; j < 2; j++) {
+				fp2_addc_low(u4[i][j], c[0][i][j], u1[i][j]);
+				fp2_addc_low(c[2][i][j], c[2][i][j], c[1][i][j]);
+				fp2_subc_low(c[2][i][j], c[2][i][j], u4[i][j]);
+				fp2_subc_low(u4[i][j], u4[i][j], u0[i][j]);
+				fp_subc_low(c[1][i][j][0], u2[i][j][1], u3[i][j][0]);
+				fp_subc_low(c[1][i][j][1], u4[i][j][0], u3[i][j][1]);
+				fp_subc_low(c[1][i][j][0], c[1][i][j][0], u4[i][j][1]);
+				fp_subc_low(c[1][i][j][1], c[1][i][j][1], u2[i][j][0]);
+				fp_subc_low(u0[i][j][0], u2[i][j][0], u3[i][j][1]);
+				fp_addc_low(u0[i][j][1], u2[i][j][1], u3[i][j][0]);
+				fp_addc_low(u0[i][j][0], u0[i][j][0], u4[i][j][1]);
+				fp_subc_low(u0[i][j][1], u0[i][j][1], u4[i][j][0]);
+			}
+		}
 
-		fp2_nord_low(_v0[0][0], _v0[0][0]);
-		fp2_nord_low(_v0[0][1], _v0[0][1]);
-		fp2_nord_low(_v0[1][0], _v0[1][0]);
-		fp2_nord_low(_v0[1][1], _v0[1][1]);
-		fp2_rdcn_low(t1[0][0], _v0[0][0]);
-		fp2_rdcn_low(t1[0][1], _v0[0][1]);
-		fp2_rdcn_low(t1[1][0], _v0[1][0]);
-		fp2_rdcn_low(t1[1][1], _v0[1][1]);
-		fp_copy(t2[0][0][0], t1[0][0][1]);
-		fp_copy(t2[0][1][0], t1[0][1][1]);
-		fp_copy(t2[1][0][0], t1[1][0][1]);
-		fp_copy(t2[1][1][0], t1[1][1][1]);
-		fp_neg(t2[0][0][1], t1[0][0][0]);
-		fp_neg(t2[0][1][1], t1[0][1][0]);
-		fp_neg(t2[1][0][1], t1[1][0][0]);
-		fp_neg(t2[1][1][1], t1[1][1][0]);
-
-		fp2_addc_low(u1[0][0], u0[0][0], u4[0][0]);
-		fp2_addc_low(u1[0][1], u0[0][1], u4[0][1]);
-		fp2_addc_low(u1[1][0], u0[1][0], u4[1][0]);
-		fp2_addc_low(u1[1][1], u0[1][1], u4[1][1]);
-		fp2_rdcn_low(v0[0][0], u1[0][0]);
-		fp2_rdcn_low(v0[0][1], u1[0][1]);
-		fp2_rdcn_low(v0[1][0], u1[1][0]);
-		fp2_rdcn_low(v0[1][1], u1[1][1]);
-		fp8_add(c[2], c[2], c[1]);
-		fp8_sub(c[2], c[2], v0);
-
-		fp8_sub(v0, v0, c3);
-		fp2_mul_art(v0[0][0], v0[0][0]);
-		fp2_mul_art(v0[0][1], v0[0][1]);
-		fp2_mul_art(v0[1][0], v0[1][0]);
-		fp2_mul_art(v0[1][1], v0[1][1]);
-		fp_sub(c[1][0][0][0], v1[0][0][1], t1[0][0][0]);
-		fp_sub(c[1][0][1][0], v1[0][1][1], t1[0][1][0]);
-		fp_sub(c[1][1][0][0], v1[1][0][1], t1[1][0][0]);
-		fp_sub(c[1][1][1][0], v1[1][1][1], t1[1][1][0]);
-		fp_sub(c[1][0][0][1], v0[0][0][1], t1[0][0][1]);
-		fp_sub(c[1][0][1][1], v0[0][1][1], t1[0][1][1]);
-		fp_sub(c[1][1][0][1], v0[1][0][1], t1[1][0][1]);
-		fp_sub(c[1][1][1][1], v0[1][1][1], t1[1][1][1]);
-		fp_add(c[1][0][0][0], c[1][0][0][0], v0[0][0][0]);
-		fp_add(c[1][0][1][0], c[1][0][1][0], v0[0][1][0]);
-		fp_add(c[1][1][0][0], c[1][1][0][0], v0[1][0][0]);
-		fp_add(c[1][1][1][0], c[1][1][1][0], v0[1][1][0]);
-		fp_sub(c[1][0][0][1], c[1][0][0][1], v1[0][0][0]);
-		fp_sub(c[1][0][1][1], c[1][0][1][1], v1[0][1][0]);
-		fp_sub(c[1][1][0][1], c[1][1][0][1], v1[1][0][0]);
-		fp_sub(c[1][1][1][1], c[1][1][1][1], v1[1][1][0]);
-		fp8_sub(c3, v1, t2);
-		fp8_sub(c3, c3, v0);
-
-		fp2_rdcn_low(c[0][0][0], u0[0][0]);
-		fp2_rdcn_low(c[0][0][1], u0[0][1]);
-		fp2_rdcn_low(c[0][1][0], u0[1][0]);
-		fp2_rdcn_low(c[0][1][1], u0[1][1]);
-
-		fp4_add(c[0][1], c[0][1], c3[0]);
-		fp2_mul_nor(c3[1][1], c3[1][1]);
-		fp2_add(c[0][0][0], c[0][0][0], c3[1][1]);
-		fp2_add(c[0][0][1], c[0][0][1], c3[1][0]);
-		fp2_rdcn_low(c4[0][0], u4[0][0]);
-		fp2_rdcn_low(c4[0][1], u4[0][1]);
-		fp2_rdcn_low(c4[1][0], u4[1][0]);
-		fp2_rdcn_low(c4[1][1], u4[1][1]);
-		fp4_add(c[1][1], c[1][1], c4[0]);
-		fp2_mul_nor(c4[1][1], c4[1][1]);
-		fp2_add(c[1][0][0], c[1][0][0], c4[1][1]);
-		fp2_add(c[1][0][1], c[1][0][1], c4[1][0]);
+		fp2_addc_low(c[0][1][0], c[0][1][0], u0[0][0]);
+		fp2_addc_low(c[0][1][1], c[0][1][1], u0[0][1]);
+		fp2_nord_low(u0[1][1], u0[1][1]);
+		fp2_addc_low(c[0][0][0], c[0][0][0], u0[1][1]);
+		fp2_addc_low(c[0][0][1], c[0][0][1], u0[1][0]);
+		fp2_addc_low(c[1][1][0], c[1][1][0], u1[0][0]);
+		fp2_addc_low(c[1][1][1], c[1][1][1], u1[0][1]);
+		fp2_nord_low(u1[1][1], u1[1][1]);
+		fp2_addc_low(c[1][0][0], c[1][0][0], u1[1][1]);
+		fp2_addc_low(c[1][0][1], c[1][0][1], u1[1][0]);
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		fp8_free(t2);
-		fp8_free(t1);
 		fp8_free(t0);
-		fp8_free(v2);
-		fp8_free(v1);
+		fp8_free(t1);
+		fp8_free(t2);
 		fp8_free(v0);
-		fp8_free(c3);
-		fp8_free(c4);
+		fp8_free(v1);
+		fp8_free(v2);
 		dv8_free(u0);
 		dv8_free(u1);
 		dv8_free(u2);
@@ -369,7 +302,7 @@ static void fp24_mul_unr3(fp24_t c, const fp24_t a, const fp24_t b) {
 
 void fp24_mul_basic(fp24_t c, const fp24_t a, const fp24_t b) {
 #ifdef FP_QNRES
-	return fp24_mul_unr3(c, a, b);
+	return fp24_mul_toom3(c, a, b);
 #else
 	fp8_t t0, t1, t2, t3, t4, t5;
 
@@ -439,6 +372,9 @@ void fp24_mul_basic(fp24_t c, const fp24_t a, const fp24_t b) {
 #if FPX_RDC == LAZYR || !defined(STRIP)
 
 void fp24_mul_unr(dv24_t c, const fp24_t a, const fp24_t b) {
+#ifdef FP_QNRES
+	return fp24_mul_unr3(c, a, b);
+#else
 	dv8_t u0, u1, u2, u3, u4;
 	fp8_t t0, t1;
 
@@ -524,6 +460,7 @@ void fp24_mul_unr(dv24_t c, const fp24_t a, const fp24_t b) {
 		fp8_free(t0);
 		fp8_free(t1);
 	}
+#endif
 }
 
 void fp24_mul_lazyr(fp24_t c, const fp24_t a, const fp24_t b) {
