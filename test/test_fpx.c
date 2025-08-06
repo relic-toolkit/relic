@@ -8620,62 +8620,6 @@ int main(void) {
 	}
 
 	fp_param_print();
-	if (fp_prime_get_qnr() && (ep_curve_embed() >= 24)) {
-		util_banner("Extension of degree 24:", 0);
-		util_banner("Utilities:", 1);
-
-		if (memory24() != RLC_OK) {
-			core_clean();
-			return 1;
-		}
-
-		if (util24() != RLC_OK) {
-			core_clean();
-			return 1;
-		}
-
-		util_banner("Arithmetic:", 1);
-
-		if (addition24() != RLC_OK) {
-			core_clean();
-			return 1;
-		}
-
-		if (subtraction24() != RLC_OK) {
-			core_clean();
-			return 1;
-		}
-
-		if (multiplication24() != RLC_OK) {
-			core_clean();
-			return 1;
-		}
-
-		if (squaring24() != RLC_OK) {
-			core_clean();
-			return 1;
-		}
-
-		if (inversion24() != RLC_OK) {
-			core_clean();
-			return 1;
-		}
-
-		if (exponentiation24() != RLC_OK) {
-			core_clean();
-			return 1;
-		}
-
-		if (cyclotomic24() != RLC_OK) {
-			core_clean();
-			return 1;
-		}
-
-		if (compression24() != RLC_OK) {
-			core_clean();
-			return 1;
-		}
-	}
 
 	/* Only execute these if there is an assigned quadratic non-residue. */
 	if (fp_prime_get_qnr()) {
@@ -9217,6 +9161,63 @@ int main(void) {
 		}
 
 		if (compression18() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+	}
+
+	if (fp_prime_get_qnr() && (ep_curve_embed() >= 24)) {
+		util_banner("Extension of degree 24:", 0);
+		util_banner("Utilities:", 1);
+
+		if (memory24() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (util24() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		util_banner("Arithmetic:", 1);
+
+		if (addition24() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (subtraction24() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (multiplication24() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (squaring24() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (inversion24() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (exponentiation24() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (cyclotomic24() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (compression24() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
