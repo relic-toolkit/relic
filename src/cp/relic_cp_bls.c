@@ -165,7 +165,7 @@ int cp_bls_agg_ver(const g1_t s, const uint8_t **m, const size_t *l,
 	g1_t *p = RLC_ALLOCA(g1_t, size + 1);
 	g2_t *r = RLC_ALLOCA(g2_t, size + 1);
 	gt_t e;
-	int result = 1;
+	int result = 0;
 
 	gt_null(e);
 
