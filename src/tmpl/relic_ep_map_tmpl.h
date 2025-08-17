@@ -219,8 +219,8 @@
 			{																\
 				/* try x2, g(x2) */											\
 				const int e1 = PFX##_is_sqr(p->y);							\
-				PFX##_copy_sec(p->x, t2, e1 == 0);								\
-				PFX##_copy_sec(p->y, t3, e1 == 0);								\
+				PFX##_copy_sec(p->x, t2, e1 == 0);							\
+				PFX##_copy_sec(p->y, t3, e1 == 0);							\
 			}																\
 			if (!PFX##_srt(p->y, p->y)) {									\
 				RLC_THROW(ERR_NO_VALID);									\
