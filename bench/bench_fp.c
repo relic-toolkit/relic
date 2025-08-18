@@ -507,7 +507,8 @@ static void arith(void) {
 	BENCH_RUN("fp_inv") {
 		dig_t b = 0;
 		fp_rand(a);
-		BENCH_ADD(fp_inv(c, a); a[RLC_FP_DIGS - 1] ^= b++);
+		BENCH_ADD(fp_inv(c, a); a[RLC_FP_DIGS - 1] ^= (1 << b);
+				b = (b + 1) % FP_PRIME);
 	}
 	BENCH_END;
 
@@ -563,7 +564,8 @@ static void arith(void) {
 	BENCH_RUN("fp_inv_lower") {
 		dig_t b = 0;
 		fp_rand(a);
-		BENCH_ADD(fp_inv_lower(c, a); a[RLC_FP_DIGS - 1] ^= b++);
+		BENCH_ADD(fp_inv_lower(c, a); a[RLC_FP_DIGS - 1] ^= (1 << b);
+				b = (b + 1) % FP_PRIME);
 	}
 	BENCH_END;
 #endif
@@ -579,7 +581,8 @@ static void arith(void) {
 		dig_t b = 0;
 		fp_rand(a);
 		fp_sqr(a, a);
-		BENCH_ADD(fp_smb(a); a[RLC_FP_DIGS - 1] ^= b++);
+		BENCH_ADD(fp_smb(a); a[RLC_FP_DIGS - 1] ^= (1 << b);
+				b = (b + 1) % FP_PRIME);
 	}
 	BENCH_END;
 
@@ -624,7 +627,8 @@ static void arith(void) {
 		dig_t b = 0;
 		fp_rand(a);
 		fp_sqr(a, a);
-		BENCH_ADD(fp_smb_lower(a); a[RLC_FP_DIGS - 1] ^= b++);
+		BENCH_ADD(fp_smb_lower(a); a[RLC_FP_DIGS - 1] ^= (1 << b);
+				b = (b + 1) % FP_PRIME);
 	}
 	BENCH_END;
 #endif
