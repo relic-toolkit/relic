@@ -212,25 +212,25 @@
 	movq	\Z6, \Z5
 	movq	\Z0, \T0
 	movq	\Z1, \T1
-	movq	\Z2, %rcx
+	movq	\Z2, %rax
 	movq	\Z3, %rdx
 	movq	\Z4, %rsi
 	subq	p0(%rip), \Z5
 	sbbq	p1(%rip), \T0
 	sbbq	p2(%rip), \T1
-	sbbq	p3(%rip), %rcx
+	sbbq	p3(%rip), %rax
 	sbbq	p4(%rip), %rdx
 	sbbq	p5(%rip), %rsi
 	cmovc	\Z6, \Z5
 	cmovc	\Z0, \T0
 	cmovc	\Z1, \T1
-	cmovc	\Z2, %rcx
+	cmovc	\Z2, %rax
 	cmovc	\Z3, %rdx
 	cmovc	\Z4, %rsi
 	movq	\Z5, 0(%rdi)
 	movq	\T0, 8(%rdi)
 	movq	\T1, 16(%rdi)
-	movq	%rcx, 24(%rdi)
+	movq	%rax, 24(%rdi)
 	movq	%rdx, 32(%rdi)
 	movq	%rsi, 40(%rdi)
 .endm

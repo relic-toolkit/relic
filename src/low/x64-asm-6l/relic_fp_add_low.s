@@ -41,6 +41,7 @@ p2: .quad P2
 p3: .quad P3
 p4: .quad P4
 p5: .quad P5
+u0: .quad U0
 
 .global p0
 .global p1
@@ -48,6 +49,7 @@ p5: .quad P5
 .global p3
 .global p4
 .global p5
+.global u0
 
 #if OPSYS != WINDOWS
 
