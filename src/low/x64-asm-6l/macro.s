@@ -148,8 +148,8 @@
 
 .macro MULM A, B, Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7
 	movq	0+\A, %rdx
-	xorq	%rax, %rax
 	mulx	0+\B, \Z0, \Z1
+	xorq	%rax, %rax
 	mulx	8+\B, \Z3, \Z2
 	adox	\Z3, \Z1
 	mulx	16+\B, \Z4, \Z3
@@ -182,7 +182,8 @@
 	mulx   40+\M, \T1, \T0
 	adcx   \T1, \Z5
 	adox   \T0, \Z6
-	adcx   %rax,\Z6
+	movq   $0, \T1
+	adcx   \T1,\Z6
 .endm
 
 .macro MULSUB Z0, Z1, Z2, Z3, Z4, Z5, Z6, T0, T1, M
@@ -204,7 +205,7 @@
 	mulx	32+\M, \T1, \T0
 	sbbq	\T1, \Z4
 	sbbq	\T0, \Z5
-	sbbq	%rax, \Z6
+	sbbq	$0, \Z6
 .endm
 
 // Final correction
@@ -339,7 +340,6 @@
 
 	// [r9:r14, r8] <- z = a0 x b01 - a1 x b11 + z 
 	movq	8+\A, %rdx
-	xorq	%rax, %rax
 	MULADD	\Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z0, \T0, \T1, \B
 	movq	56+\A, %rdx
 	MULSUB	\Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z0, \T0, \T1, 48+\B
@@ -357,7 +357,6 @@
 
 	// [r10:r14, r8:r9] <- z = a0 x b02 - a1 x b12 + z 
 	movq	16+\A, %rdx
-	xorq	%rax, %rax
 	MULADD	\Z2, \Z3, \Z4, \Z5, \Z6, \Z0, \Z1, \T0, \T1, \B
 	movq	64+\A, %rdx
 	MULSUB	\Z2, \Z3, \Z4, \Z5, \Z6, \Z0, \Z1, \T0, \T1, 48+\B
@@ -375,7 +374,6 @@
 
 	// [r11:r14, r8:r10] <- z = a0 x b03 - a1 x b13 + z
 	movq	24+\A, %rdx
-	xorq	%rax, %rax
 	MULADD	\Z3, \Z4, \Z5, \Z6, \Z0, \Z1, \Z2, \T0, \T1, \B
 	movq	72+\A, %rdx
 	MULSUB	\Z3, \Z4, \Z5, \Z6, \Z0, \Z1, \Z2, \T0, \T1, 48+\B
@@ -393,7 +391,6 @@
 
 	// [r12:r14, r8:r11] <- z = a0 x b04 - a1 x b14 + z 
 	movq	32+\A, %rdx
-	xorq	%rax, %rax
 	MULADD	\Z4, \Z5, \Z6, \Z0, \Z1, \Z2, \Z3, \T0, \T1, \B
 	movq	80+\A, %rdx
 	MULSUB	\Z4, \Z5, \Z6, \Z0, \Z1, \Z2, \Z3, \T0, \T1, 48+\B
@@ -411,7 +408,6 @@
 
 	// [r13:r14, r8:r12] <- z = a0 x b05 - a1 x b15 + z 
 	movq	40+\A, %rdx
-	xorq	%rax, %rax
 	MULADD	\Z5, \Z6, \Z0, \Z1, \Z2, \Z3, \Z4, \T0, \T1, \B
 	movq	88+\A, %rdx
 	MULSUB	\Z5, \Z6, \Z0, \Z1, \Z2, \Z3, \Z4, \T0, \T1, 48+\B
