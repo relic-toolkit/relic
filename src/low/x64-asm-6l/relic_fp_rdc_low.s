@@ -48,7 +48,6 @@ fp_rdcn_low:
 	push	%r14
 	push	%r15
 	push 	%rbx
-	push	%rbp
 
 	movq	0(%rsi),%r8
 	movq	8(%rsi),%r9
@@ -88,33 +87,8 @@ fp_rdcn_low:
 	mulx	%r13, %rdx, %rcx
     MULADD	%r13, %r14, %r8, %r9, %r10, %r11, %r12, %r15, %rbx, p0(%rip)
 	
-	// Final correction
-	movq	%r14, %r13
-	movq	%r8, %r15
-	movq	%r9, %rbx
-	movq	%r10, %rcx
-	movq	%r11, %rdx
-	movq	%r12, %rsi
-	subq	p0(%rip), %r13
-	sbbq	p1(%rip), %r15
-	sbbq	p2(%rip), %rbx
-	sbbq	p3(%rip), %rcx
-	sbbq	p4(%rip), %rdx
-	sbbq	p5(%rip), %rsi
-	cmovc	%r14, %r13
-	cmovc	%r8, %r15
-	cmovc	%r9, %rbx
-	cmovc	%r10, %rcx
-	cmovc	%r11, %rdx
-	cmovc	%r12, %rsi
-    movq	%r13, 0(%rdi)
-	movq	%r15, 8(%rdi)
-	movq	%rbx, 16(%rdi)
-	movq	%rcx, 24(%rdi)
-	movq	%rdx, 32(%rdi)
-	movq	%rsi, 40(%rdi)
+	FINALC	%r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx
 
-	pop		%rbp
 	pop		%rbx
 	pop		%r15
 	pop		%r14
