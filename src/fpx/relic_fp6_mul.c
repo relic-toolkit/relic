@@ -33,12 +33,112 @@
 #include "relic_fpx_low.h"
 
 /*============================================================================*/
+/* Private definitions                                                        */
+/*============================================================================*/
+
+static void fp6_mul_toom3(fp6_t c, const fp6_t a, const fp6_t b) {
+	fp2_t v0, v1, v2, t0, t1, t2, c3, c4;
+
+	fp2_null(v0);
+	fp2_null(v1);
+	fp2_null(v2);
+	fp2_null(t0);
+	fp2_null(t1);
+	fp2_null(t2);
+	fp2_null(c3);
+	fp2_null(c4);
+
+	RLC_TRY {
+		fp2_new(v0);
+		fp2_new(v1);
+		fp2_new(v2);
+		fp2_new(t0);
+		fp2_new(t1);
+		fp2_new(t2);
+		fp2_new(c3);
+		fp2_new(c4);
+
+		fp2_add(v2, a[0], a[2]);
+		fp2_add(v0, v2, a[1]);
+		fp2_sub(v1, v2, a[1]);
+		fp2_sub(v2, a[0], a[2]);
+		fp_sub(v2[0], v2[0], a[1][1]);
+		fp_add(v2[1], v2[1], a[1][0]);
+
+		fp2_add(t2, b[0], b[2]);
+		fp2_add(t0, t2, b[1]);
+		fp2_sub(t1, t2, b[1]);
+		fp2_sub(t2, b[0], b[2]);
+		fp_sub(t2[0], t2[0], b[1][1]);
+		fp_add(t2[1], t2[1], b[1][0]);
+
+		fp2_mul(c4, a[2], b[2]);
+		fp2_mul(c[0], a[0], b[0]);
+		fp2_mul(c[1], v0, t0);
+		fp2_mul(c[2], v1, t1);
+		fp2_mul(c3, v2, t2);
+		fp_hlv(c[1][0], c[1][0]);
+		fp_hlv(c[1][1], c[1][1]);
+		fp_hlv(c[2][0], c[2][0]);
+		fp_hlv(c[2][1], c[2][1]);
+		fp_hlv(c3[0], c3[0]);
+		fp_hlv(c3[1], c3[1]);
+
+		fp2_add(v0, c[0], c4);
+		fp_hlv(t0[0], c[1][0]);
+		fp_hlv(t0[1], c[1][1]);
+		fp_sub(v1[0], t0[0], t0[1]);
+		fp_add(v1[1], t0[0], t0[1]);
+		fp_hlv(t0[0], c[2][0]);
+		fp_hlv(t0[1], c[2][1]);
+		fp_sub(t1[0], t0[0], t0[1]);
+		fp_add(t1[1], t0[0], t0[1]);
+
+		fp2_add(c[2], c[2], c[1]);
+		fp2_sub(c[2], c[2], v0);
+		fp_sub(t0[0], v0[1], c3[1]);
+		fp_sub(t0[1], v0[0], c3[0]);
+		fp_sub(c[1][0], v1[1], t0[0]);
+		fp_sub(c[1][1], t0[1], v1[0]);
+		fp_sub(c[1][0], c[1][0], t1[0]);
+		fp_sub(c[1][1], c[1][1], t1[1]);
+		fp_add(c3[0], v1[0], t0[0]);
+		fp_sub(c3[1], v1[1], t0[1]);
+		fp_sub(c3[0], c3[0], t1[1]);
+		fp_add(c3[1], c3[1], t1[0]);
+
+		fp_add(c[0][1], c[0][1], c3[0]);
+		fp_add(c[0][1], c[0][1], c3[1]);
+		fp_add(c[0][0], c[0][0], c3[0]);
+		fp_sub(c[0][0], c[0][0], c3[1]);
+		fp_add(c[1][1], c[1][1], c4[0]);
+		fp_add(c[1][1], c[1][1], c4[1]);
+		fp_add(c[1][0], c[1][0], c4[0]);
+		fp_sub(c[1][0], c[1][0], c4[1]);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		fp2_free(t2);
+		fp2_free(t1);
+		fp2_free(t0);
+		fp2_free(v2);
+		fp2_free(v1);
+		fp2_free(v0);
+		fp2_free(c3);
+		fp2_free(c4);
+	}
+}
+
+/*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
 #if FPX_RDC == BASIC || !defined(STRIP)
 
 void fp6_mul_basic(fp6_t c, const fp6_t a, const fp6_t b) {
+#ifdef FP_QNRES
+	fp6_mul_toom3(c, a, b);
+#else
 	fp2_t v0, v1, v2, t0, t1, t2;
 
 	fp2_null(v0);
@@ -103,6 +203,7 @@ void fp6_mul_basic(fp6_t c, const fp6_t a, const fp6_t b) {
 		fp2_free(v1);
 		fp2_free(v0);
 	}
+#endif
 }
 
 void fp6_mul_basic3(fp6_t c, const fp6_t a, const fp6_t b) {
