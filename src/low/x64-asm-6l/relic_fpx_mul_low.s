@@ -50,13 +50,11 @@ fp2_muln_c0:
 	push	%r14  
 	push	%r15  
 	push	%rbx
-	push	%rbp
-	movq	%rdx, %rbp
+	movq	%rdx, %rcx
 
-	MULM	0(%rbp), 0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15
-	FP2_MUL0_LOW 0(%rbp), 0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, p0(%rip), 0
+	MULM	0(%rcx), 0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15
+	FP2_MUL0_LOW 0(%rcx), 0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, p0(%rip), 0
 
-	popq	%rbp
     popq	%rbx
     popq	%r15
     popq	%r14
@@ -70,13 +68,11 @@ fp2_mulm_c0:
     push	%r14  
     push	%r15  
     push	%rbx
-    push	%rbp
-    movq	%rdx, %rbp
+    movq	%rdx, %rcx
 
-	MULM	0(%rbp), 0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15
-	FP2_MUL0_LOW 0(%rbp), 0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, p0(%rip), 1
+	MULM	0(%rcx), 0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15
+	FP2_MUL0_LOW 0(%rcx), 0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, p0(%rip), 1
 
-    popq	%rbp
     popq	%rbx
     popq	%r15
     popq	%r14
@@ -90,14 +86,12 @@ fp2_muln_c1:
     push	%r14  
     push	%r15  
     push	%rbx
-    push	%rbp
-    movq	%rdx, %rbp
+    movq	%rdx, %rcx
     
     // [r8:r14] <- z = a0 x b10 + a1 x b00
-	MULM	0(%rbp), 48(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15
-	FP2_MUL1_LOW	0(%rbp), 0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, p0(%rip), 0
+	MULM	0(%rcx), 48(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15
+	FP2_MUL1_LOW	0(%rcx), 0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, p0(%rip), 0
 
-    popq	%rbp
     popq	%rbx
     popq	%r15
     popq	%r14
@@ -111,14 +105,12 @@ fp2_mulm_c1:
     push	%r14  
     push	%r15  
     push	%rbx
-    push	%rbp
-    movq	%rdx, %rbp
+    movq	%rdx, %rcx
     
     // [r8:r14] <- z = a0 x b10 + a1 x b00
-	MULM	0(%rbp), 48(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15
-	FP2_MUL1_LOW	0(%rbp), 0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, p0(%rip), 1
+	MULM	0(%rcx), 48(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15
+	FP2_MUL1_LOW	0(%rcx), 0(%rsi), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, p0(%rip), 1
 
-    popq	%rbp
     popq	%rbx
     popq	%r15
     popq	%r14

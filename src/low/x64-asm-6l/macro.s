@@ -241,7 +241,7 @@
 .else
 	// [r9:r14] <- z = ((z0 x u0) x p + z)/2^64
 	movq	$U0, %rdx
-	mulx	\Z0, %rdx, %rcx
+	mulx	\Z0, %rdx, %rbx
 	MULADD	\Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \T0, \T1, \P
 .endif
 	
@@ -254,7 +254,7 @@
 .else
 	// [r10:r14, r8] <- z = ((z0 x u0) x p + z)/2^64
 	movq	$U0, %rdx
-	mulx	\Z1, %rdx, %rcx
+	mulx	\Z1, %rdx, %rbx
 	MULADD	\Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z0, \T0, \T1, \P
 .endif
 
@@ -267,7 +267,7 @@
 .else
 	// [r11:r14, r8:r9] <- z = ((z0 x u0) x p + z)/2^64
 	movq	$U0, %rdx
-	mulx	\Z2, %rdx, %rcx
+	mulx	\Z2, %rdx, %rbx
 	MULADD	\Z2, \Z3, \Z4, \Z5, \Z6, \Z0, \Z1, \T0, \T1, \P
 .endif
 
@@ -280,7 +280,7 @@
 .else
 	// [r12:r14, r8:r10] <- z = ((z0 x u0) x p + z)/2^64
 	movq	$U0, %rdx
-	mulx	\Z3, %rdx, %rcx
+	mulx	\Z3, %rdx, %rbx
 	MULADD	\Z3, \Z4, \Z5, \Z6, \Z0, \Z1, \Z2, \T0, \T1, \P
 .endif
 
@@ -293,7 +293,7 @@
 .else
 	// [r13:r14, r8:r11] <- z = ((z0 x u0) x p + z)/2^64
 	movq	$U0, %rdx
-	mulx	\Z4, %rdx, %rcx
+	mulx	\Z4, %rdx, %rbx
 	MULADD	\Z4, \Z5, \Z6, \Z0, \Z1, \Z2, \Z3, \T0, \T1, \P
 .endif
 
@@ -306,7 +306,7 @@
 .else
 	// [r14, r8:r12] <- z = ((z0 x u0) x p + z)/2^64
 	movq	$U0, %rdx
-	mulx	\Z5, %rdx, %rcx
+	mulx	\Z5, %rdx, %rbx
 	MULADD	\Z5, \Z6, \Z0, \Z1, \Z2, \Z3, \Z4, \T0, \T1, \P
 .endif
 
@@ -330,7 +330,7 @@
 .else
 	// [r9:r14] <- z = ((z0 x u0) x p + z)/2^64
 	movq	$U0, %rdx
-	mulx	\Z0, %rdx, %rcx
+	mulx	\Z0, %rdx, %rbx
 	MULADD	\Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \T0, \T1, \P
 .endif
 	xorq	\Z0, \Z0
@@ -348,7 +348,7 @@
 .else
 	// [r10:r14, r8] <- z = ((z0 x u0) x p + z)/2^64
 	movq	$U0, %rdx
-	mulx	\Z1, %rdx, %rcx
+	mulx	\Z1, %rdx, %rbx
 	MULADD	\Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z0, \T0, \T1, \P
 .endif
 	xorq	\Z1, \Z1
@@ -366,7 +366,7 @@
 .else
 	// [r11:r14, r8:r9] <- z = ((z0 x u0) x p + z)/2^64
 	movq	$U0, %rdx
-	mulx	\Z2, %rdx, %rcx
+	mulx	\Z2, %rdx, %rbx
 	MULADD	\Z2, \Z3, \Z4, \Z5, \Z6, \Z0, \Z1, \T0, \T1, \P
 .endif
 	xorq	\Z2, \Z2
@@ -384,7 +384,7 @@
 .else
 	// [r12:r14, r8:r10] <- z = ((z0 x u0) x p + z)/2^64
 	movq	$U0, %rdx
-	mulx	\Z3, %rdx, %rcx
+	mulx	\Z3, %rdx, %rbx
 	MULADD	\Z3, \Z4, \Z5, \Z6, \Z0, \Z1, \Z2, \T0, \T1, \P
 .endif
 	xorq	\Z3, \Z3
@@ -402,7 +402,7 @@
 .else
 	// [r13:r14, r8:r11] <- z = ((z0 x u0) x p + z)/2^64
 	movq	$U0, %rdx
-	mulx	\Z4, %rdx, %rcx
+	mulx	\Z4, %rdx, %rbx
 	MULADD	\Z4, \Z5, \Z6, \Z0, \Z1, \Z2, \Z3, \T0, \T1, \P
 .endif
 	xorq	\Z4, \Z4
@@ -420,30 +420,28 @@
 .else
 	// [r14, r8:r12] <- z = ((z0 x u0) x p + z)/2^64
 	movq	$U0, %rdx
-	mulx	\Z5, %rdx, %rcx
+	mulx	\Z5, %rdx, %rbx
 	MULADD	\Z5, \Z6, \Z0, \Z1, \Z2, \Z3, \Z4, \T0, \T1, \P
 .endif
-	xorq	%rax, %rax
 	btq		$63, \Z4
-	sbbq	$0, %rax
 
 	// Correction if result < 0
-	movq	p0(%rip), \Z5
-	movq	p1(%rip), \T0
-	movq	p2(%rip), \T1
-	movq	p3(%rip), %rcx
-	movq	p4(%rip), %rdx
-	movq	p5(%rip), %rsi
-	andq	%rax, \Z5
-	andq	%rax, \T0
-	andq	%rax, \T1
-	andq	%rax, %rcx
-	andq	%rax, %rdx
-	andq	%rax, %rsi
+    movq 	$0, \Z5
+    movq 	$0, \T0
+    movq 	$0, \T1
+    movq 	$0, %rax
+    movq	$0, %rdx
+    movq	$0, %rsi
+    cmovc	p0(%rip), \Z5
+    cmovc	p1(%rip), \T0
+    cmovc	p2(%rip), \T1
+    cmovc	p3(%rip), %rax
+    cmovc	p4(%rip), %rdx
+    cmovc	p5(%rip), %rsi
 	addq	\Z5, \Z6
 	adcq	\T0, \Z0
 	adcq	\T1, \Z1
-	adcq	%rcx, \Z2
+	adcq	%rax, \Z2
 	adcq	%rdx, \Z3
 	adcq	%rsi, \Z4
 .if \RDC != 1
@@ -466,7 +464,7 @@
 .else
 	// [r9:r14] <- z = ((z0 x u0) x p + z)/2^64
 	movq	$U0, %rdx
-	mulx	\Z0, %rdx, %rcx
+	mulx	\Z0, %rdx, %rbx
 	MULADD	\Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \T0, \T1, \P
 .endif
 
@@ -481,7 +479,7 @@
 .else
 	// [r10:r14, r8] <- z = ((z0 x u0) x p + z)/2^64
 	movq	$U0, %rdx
-	mulx	\Z1, %rdx, %rcx
+	mulx	\Z1, %rdx, %rbx
 	MULADD	\Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z0, \T0, \T1, \P
 .endif
 
@@ -496,7 +494,7 @@
 .else
 	// [r11:r14, r8:r9] <- z = ((z0 x u0) x p + z)/2^64
 	movq	$U0, %rdx
-	mulx	\Z2, %rdx, %rcx
+	mulx	\Z2, %rdx, %rbx
 	MULADD	\Z2, \Z3, \Z4, \Z5, \Z6, \Z0, \Z1, \T0, \T1, \P
 .endif
 
@@ -511,7 +509,7 @@
 .else
 	// [r12:r14, r8:r10] <- z = ((z0 x u0) x p + z)/2^64
 	movq	$U0, %rdx
-	mulx	\Z3, %rdx, %rcx
+	mulx	\Z3, %rdx, %rbx
 	MULADD	\Z3, \Z4, \Z5, \Z6, \Z0, \Z1, \Z2, \T0, \T1, \P
 .endif
 
@@ -526,7 +524,7 @@
 .else
 	// [r13:r14, r8:r11] <- z = ((z0 x u0) x p + z)/2^64
 	movq	$U0, %rdx
-	mulx	\Z4, %rdx, %rcx
+	mulx	\Z4, %rdx, %rbx
 	MULADD	\Z4, \Z5, \Z6, \Z0, \Z1, \Z2, \Z3, \T0, \T1, \P
 .endif
 
@@ -541,7 +539,7 @@
 .else
 	// [r14, r8:r12] <- z = ((z0 x u0) x p + z)/2^64
 	movq	$U0, %rdx
-	mulx	\Z5, %rdx, %rcx
+	mulx	\Z5, %rdx, %rbx
 	MULADD	\Z5, \Z6, \Z0, \Z1, \Z2, \Z3, \Z4, \T0, \T1, \P
 .endif
 
