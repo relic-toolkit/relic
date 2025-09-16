@@ -151,7 +151,7 @@
 	mulx	24+\M, \T1, \T0
 	sbbq	\T1, \Z3
 	sbbq	\T0, \Z4
-	sbbq	%rax, \Z5
+	sbbq	$0, \Z5
 	mulx	0+\M, \T1, \T0
 	subq	\T1, \Z0
 	sbbq	\T0, \Z1
@@ -161,26 +161,7 @@
 	mulx	32+\M, \T1, \T0
 	sbbq	\T1, \Z4
 	sbbq	\T0, \Z5
-	sbbq	%rax, \T0
-.endm
-
-.macro _MULSUB Z0, Z1, Z2, Z3, Z4, Z5, T0, T1, M
-	mulx	0+\M, \T1, \T0
-	subq	\T1, \Z0
-	sbbq	\T0, \Z1
-	mulx	8+\M, \T1, \T0
-	sbbq	\T1, \Z1
-	sbbq	\T0, \Z2
-	mulx	16+\M, \T1, \T0
-	sbbq	\T1, \Z2
-	sbbq	\T0, \Z3
-	mulx	24+\M, \T1, \T0
-	sbbq	\T1, \Z3
-	sbbq	\T0, \Z4
-	mulx	32+\M, \T1, \T0
-	sbbq	\T1, \Z4
-	sbbq	\T0, \Z5
-	sbbq	%rax, \Z5
+	sbbq	$0, \T0
 .endm
 
 // Final correction
