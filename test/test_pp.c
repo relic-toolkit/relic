@@ -2952,7 +2952,7 @@ static int doubling24(void) {
 			fp_neg(p->y, p->y);
 			pp_dbl_k24_basic(e2, r, q, p);
 			pp_exp_k24(e2, e2);
-#if EP_ADD == PROJC
+#if EP_ADD == PROJC || EP_ADD == JACOB
 			/* Precompute. */
 			fp_dbl(p->z, p->x);
 			fp_add(p->x, p->z, p->x);
