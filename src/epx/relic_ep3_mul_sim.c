@@ -231,7 +231,7 @@ void ep3_mul_sim_trick(ep3_t r, const ep3_t p, const bn_t k, const ep3_t q,
 		}
 
 #if defined(EP_MIXED)
-		ep3_norm_sim(t + 1, t + 1, (1 << (RLC_WIDTH - RLC_WIDTH % 2)) - 1);
+		ep3_norm_sim(t + 2, (const ep3_t *)(t + 2), (1 << (w + w)) - 2);
 #endif
 
 		l0 = l1 = RLC_CEIL(2 * RLC_FP_BITS, w);

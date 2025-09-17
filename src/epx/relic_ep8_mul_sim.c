@@ -232,7 +232,7 @@ void ep8_mul_sim_trick(ep8_t r, const ep8_t p, const bn_t k, const ep8_t q,
 		}
 
 #if defined(EP_MIXED)
-		ep8_norm_sim(t + 1, t + 1, (1 << (RLC_WIDTH)) - 1);
+		ep8_norm_sim(t + 2, (const ep8_t *)(t + 2), (1 << (w + w)) - 2);
 #endif
 
 		l0 = l1 = RLC_CEIL(2 * RLC_FP_BITS, w);
