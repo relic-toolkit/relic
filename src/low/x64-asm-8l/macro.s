@@ -121,6 +121,27 @@
 	.endif
 .endm
 
+.macro MULR A, Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, Z9
+	movq	0+\A, %rdx
+	mulx	\Z0, \Z0, \Z1
+	xorq	%rax, %rax
+	mulx	\Z2, \Z3, \Z2
+	adox	\Z3, \Z1
+	mulx	\Z4, \Z4, \Z3
+	adox	\Z4, \Z2
+	mulx	\Z5, \Z5, \Z4
+	adox	\Z5, \Z3
+	mulx	\Z6, \Z6, \Z5
+	adox	\Z6, \Z4
+	mulx	\Z7, \Z7, \Z6
+	adox	\Z7, \Z5
+	mulx	\Z8, \Z8, \Z7
+	adox	\Z8, \Z6
+	mulx	\Z9, \Z9, \Z8
+	adox	\Z9, \Z7
+	adox	%rax, \Z8
+.endm
+
 .macro MULM A, B, Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, Z9
 	movq	0+\A, %rdx
 	mulx	0+\B, \Z0, \Z1

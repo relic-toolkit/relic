@@ -33,6 +33,7 @@
 #define RLC_FPX_LOW_H
 
 #include "relic_fpx.h"
+#include "relic_fp_low.h"
 
 /*============================================================================*/
 /* Function prototypes                                                        */
