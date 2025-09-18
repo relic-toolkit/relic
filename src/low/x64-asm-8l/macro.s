@@ -218,6 +218,7 @@
 	sbbq	\T1, \Z6
 	sbbq	\T0, \Z7
 	sbbq	$0, \Z8
+	sbbq	$0, \T1
 .endm
 
 // Final correction
