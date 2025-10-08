@@ -946,8 +946,8 @@ void bn_div_rem_dig(bn_t c, dig_t *d, const bn_t a, const dig_t b);
  *
  * @param[out] c			- the result.
  * @param[in] a				- the element to invert.
- * param[in] b				- the modulus.
- *
+ * @param[in] b				- the modulus.
+ * @throw ERR_NO_VALID		- if the operands are not co-prime.
  */
 void bn_mod_inv(bn_t c, const bn_t a, const bn_t b);
 

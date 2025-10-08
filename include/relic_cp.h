@@ -2562,6 +2562,37 @@ int cp_etrs_uni(int thres, bn_t *td, bn_t *y, int max, etrs_t *p, size_t *size,
 int cp_ped_com(ec_t c, ec_t h, bn_t r, bn_t x);
 
 /**
+ * Compute the client-side part of an OPRF evaluation.
+ *
+ * @param[out] b			- the randomized basis.
+ * @param[out] x			- the inverted random scalar.
+ * @param[in] a				- the client-side input.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int cp_oprf_ask(ec_t b, bn_t x, const ec_t a);
+
+/**
+ * Compute the server-side part of an OPRF evaluation.
+ *
+ * @param[out] c			- the server-side answer.
+ * @param[out] alpha		- the server-side secret.
+ * @param[in] a				- the randomized basis.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int cp_oprf_ans(ec_t c, const bn_t alpha, const ec_t b);
+
+/**
+ * Compute the result of an OPRF evaluation, i.e., the client-side input
+ * multiplied by the server-side secret.
+ *
+ * @param[out] r			- the result.
+ * @param[in] x				- the inverted random scalar.
+ * @param[in] c				- the server-side answer.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int cp_oprf_res(ec_t r, const bn_t x, const ec_t c);
+
+/**
  * Initialize the Context-hiding Multi-key Homomorphic Signature scheme (CMLHS).
  * The scheme due to Schabhuser et al. signs a vector of messages.
  *
