@@ -74,8 +74,8 @@ static void fp_mul_karat_imp(dv_t c, const fp_t a, const fp_t b, size_t size,
 		/* a0b0 = a0 * b0 and a1b1 = a1 * b1 */
 		if (level <= 1) {
 #if FP_MUL == BASIC
-			dv_zero(a0b0, h);
-			dv_zero(a1b1, h);
+			dv_zero(a0b0, h + 1);
+			dv_zero(a1b1, h + 1);
 			for (int i = 0; i < h; i++) {
 				carry = bn_mula_low(a0b0 + i, a, *(b + i), h);
 				*(a0b0 + i + h) = carry;
