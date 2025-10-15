@@ -26,7 +26,6 @@
  *
  * Implementation of low-level prime field modular reduction.
  *
- * @version $Id: relic_fp_add_low.c 88 2009-09-06 21:27:19Z dfaranha $
  * @ingroup fp
  */
 
