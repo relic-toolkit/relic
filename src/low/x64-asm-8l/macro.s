@@ -232,7 +232,7 @@
 	movq	\Z3, %rdx
 	movq	\Z4, %rsi
 	movq	\Z5, %rdi
-	movq	\Z6, %rbx
+	movq	\Z6, \Z8
 	subq	p0(%rip), \Z7
 	sbbq	p1(%rip), \T0
 	sbbq	p2(%rip), \T1
@@ -240,7 +240,7 @@
 	sbbq	p4(%rip), %rdx
 	sbbq	p5(%rip), %rsi
 	sbbq	p6(%rip), %rdi
-	sbbq	p7(%rip), %rbx
+	sbbq	p7(%rip), \Z8
 	cmovnc  \Z8, \Z6
 	popq	\Z8
 	cmovnc	\Z7, \Z8

@@ -24,47 +24,37 @@
 /**
  * @file
  *
- * Implementation of the low-level inversion functions.
+ * Implementation of the multiple precision integer arithmetic multiplication
+ * functions.
  *
- * @&version $Id$
- * @ingroup fp
+ * @ingroup bn
  */
 
 #include <gmp.h>
 
-#include "relic_fp.h"
-#include "relic_fp_low.h"
-#include "relic_core.h"
+#include "relic_bn.h"
+#include "relic_bn_low.h"
+#include "relic_util.h"
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void fp_invm_low(dig_t *c, const dig_t *a) {
-	mp_size_t cn;
-	rlc_align dig_t s[RLC_FP_DIGS], t[2 * RLC_FP_DIGS], u[RLC_FP_DIGS + 1];
+dig_t bn_mula_low(dig_t *c, const dig_t *a, dig_t digit, size_t size) {
+	return mpn_addmul_1(c, a, size, digit);
+}
 
-#if FP_RDC == MONTY
-	dv_zero(t + RLC_FP_DIGS, RLC_FP_DIGS);
-	dv_copy(t, a, RLC_FP_DIGS);
-	fp_rdcn_low(u, t);
-#else
-	fp_copy(u, a);
-#endif
+dig_t bn_mul1_low(dig_t *c, const dig_t *a, dig_t digit, size_t size) {
+	return mpn_mul_1(c, a, size, digit);
+}
 
-	dv_copy(s, fp_prime_get(), RLC_FP_DIGS);
+void bn_muln_low(dig_t *c, const dig_t *a, const dig_t *b, size_t size) {
+	mpn_mul_n(c, a, b, size);
+}
 
-	mpn_gcdext(t, c, &cn, u, RLC_FP_DIGS, s, RLC_FP_DIGS);
-	if (cn < 0) {
-		dv_zero(c - cn, RLC_FP_DIGS + cn);
-		mpn_sub_n(c, fp_prime_get(), c, RLC_FP_DIGS);
-	} else {
-		dv_zero(c + cn, RLC_FP_DIGS - cn);
-	}
-
-#if FP_RDC == MONTY
-	dv_zero(t, RLC_FP_DIGS);
-	dv_copy(t + RLC_FP_DIGS, c, RLC_FP_DIGS);
-	mpn_tdiv_qr(u, c, 0, t, 2 * RLC_FP_DIGS, fp_prime_get(), RLC_FP_DIGS);
-#endif
+void bn_muld_low(dig_t *c, const dig_t *a, size_t sa, const dig_t *b, size_t sb,
+		uint_t low, uint_t high) {
+	(void)low;
+	(void)high;
+	mpn_mul(c, a, sa, b, sb);
 }
