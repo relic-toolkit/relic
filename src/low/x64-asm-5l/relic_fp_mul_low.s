@@ -42,14 +42,12 @@ fp_muln_low:
 	push	%r13
 	push	%r14
 	push 	%rbx
-	subq 	$40, %rsp
 
 	movq	%rdx, %rcx
 
 	MULM	0(%rsi), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14
 	FP_MULM_LOW	0(%rsi), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %rbx, p0(%rip), 0
 
-	addq	$40, %rsp
     popq	%rbx
     popq	%r14
     popq	%r13
@@ -62,14 +60,12 @@ fp_mulm_low:
 	push	%r14
 	push 	%rbx
 	push 	%rbp
-	subq 	$40, %rsp
 
 	movq	%rdx, %rbp
 
 	MULM	0(%rsi), 0(%rbp), %r8, %r9, %r10, %r11, %r12, %r13, %r14
 	FP_MULM_LOW	0(%rsi), 0(%rbp), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %rbx, p0(%rip), 1
 
-	addq	$40, %rsp
 	popq	%rbp
     popq	%rbx
     popq	%r14

@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (c) 2021 RELIC Authors
+ * Copyright (c) 2022 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -24,27 +24,37 @@
 /**
  * @file
  *
- * Implementation of the low-level extension field modular reduction functions.
+ * Implementation of the multiple precision integer arithmetic multiplication
+ * functions.
  *
- * @ingroup fpx
+ * @ingroup bn
  */
 
-#include "relic_core.h"
-#include "relic_fp_low.h"
-#include "relic_fpx_low.h"
+#include <gmp.h>
+
+#include "relic_bn.h"
+#include "relic_bn_low.h"
+#include "relic_util.h"
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void fp3_rdcn_low(fp3_t c, dv3_t a) {
-#if FP_RDC == MONTY
-	fp_rdcn_low(c[0], a[0]);
-	fp_rdcn_low(c[1], a[1]);
-	fp_rdcn_low(c[2], a[2]);
-#else
-	fp_rdc(c[0], a[0]);
-	fp_rdc(c[1], a[1]);
-	fp_rdc(c[2], a[2]);
-#endif
+dig_t bn_mula_low(dig_t *c, const dig_t *a, dig_t digit, size_t size) {
+	return mpn_addmul_1(c, a, size, digit);
+}
+
+dig_t bn_mul1_low(dig_t *c, const dig_t *a, dig_t digit, size_t size) {
+	return mpn_mul_1(c, a, size, digit);
+}
+
+void bn_muln_low(dig_t *c, const dig_t *a, const dig_t *b, size_t size) {
+	mpn_mul_n(c, a, b, size);
+}
+
+void bn_muld_low(dig_t *c, const dig_t *a, size_t sa, const dig_t *b, size_t sb,
+		uint_t low, uint_t high) {
+	(void)low;
+	(void)high;
+	mpn_mul(c, a, sa, b, sb);
 }

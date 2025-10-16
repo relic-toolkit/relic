@@ -26,20 +26,42 @@
  *
  * Implementation of the low-level prime field multiplication functions.
  *
+ * @version $Id: relic_fp_mul_low.c 683 2011-03-10 23:51:23Z dfaranha $
  * @ingroup bn
  */
 
 #include "macro.s"
 
-.text
+/*
+ * Techniques and code heavily inspired from "Efficient Algorithms for Large
+ * Prime Characteristic Fields and Their Application toBilinear Pairings" by
+ * Longa at TCHES'23.
+ */
 
+.text
 .global fp_muln_low
 .global fp_mulm_low
 
 fp_muln_low:
-	movq %rdx,%rcx
-	FP_MULN_LOW %rdi, %r8, %r9, %r10, %rsi, %rcx
-	ret
+	push	%r12
+	push	%r13
+	push	%r14
+	push	%r15
+	push 	%rbx
+	push	%rbp
+
+	movq	%rdx, %rcx
+
+	MULM	0(%rsi), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp
+	FP_MULM_LOW	0(%rsi), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, %rax, p0(%rip), 0
+
+	popq	%rbp
+    popq	%rbx
+    popq	%r15
+    popq	%r14
+    popq	%r13
+    popq	%r12
+    ret
 
 fp_mulm_low:
 	push	%r12
@@ -48,21 +70,16 @@ fp_mulm_low:
 	push	%r15
 	push 	%rbx
 	push	%rbp
-	subq 	$128, %rsp
 
-	movq 	%rdx,%rcx
-	leaq 	p0(%rip), %rbx
+	movq	%rdx, %rcx
 
-	FP_MULN_LOW %rsp, %r8, %r9, %r10, %rsi, %rcx
+	MULM	0(%rsi), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp
+	FP_MULM_LOW	0(%rsi), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, %rbp, %rax, p0(%rip), 1
 
-	FP_RDCN_LOW %rdi, %r8, %r9, %r10, %rsp, %rbx
-
-	addq	$128, %rsp
-
-	pop		%rbp
-	pop		%rbx
-	pop		%r15
-	pop		%r14
-	pop		%r13
-	pop		%r12
-	ret
+	popq	%rbp
+    popq	%rbx
+    popq	%r15
+    popq	%r14
+    popq	%r13
+    popq	%r12
+    ret

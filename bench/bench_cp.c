@@ -731,6 +731,53 @@ static int pedersen(void) {
 	return code;
 }
 
+static int oprf(void) {
+	int code = RLC_ERR;
+	ec_t c, h;
+	bn_t r, m, n;
+
+	bn_null(m);
+	bn_null(n);
+	bn_null(r);
+	ec_null(h);
+	ec_null(c);
+
+	bn_new(m);
+	bn_new(n);
+	bn_new(r);
+	ec_new(h);
+	ec_new(c);
+
+	ec_rand(h);
+	ec_curve_get_ord(n);
+
+	do {
+		bn_rand_mod(m, n);
+	} while (bn_is_zero(m));
+
+	BENCH_RUN("cp_oprf_ask") {
+		bn_rand_mod(m, n);
+		BENCH_ADD(cp_oprf_ask(c, m, h));
+	} BENCH_END;
+
+	BENCH_RUN("cp_oprf_ans") {
+		bn_rand_mod(r, n);
+		BENCH_ADD(cp_oprf_ans(c, r, c));
+	} BENCH_END;
+
+	BENCH_RUN("cp_oprf_res") {
+		bn_rand_mod(m, n);
+		BENCH_ADD(cp_oprf_ans(c, m, c));
+	} BENCH_END;
+
+	bn_free(m);
+	bn_free(n);
+	bn_free(r);
+	ec_free(h);
+	ec_free(c);
+	return code;
+}
+
 #endif /* WITH_EC */
 
 #if defined(WITH_PC)
@@ -2209,6 +2256,7 @@ int main(void) {
 		smlers();
 		etrs();
 		pedersen();
+		oprf();
 	}
 #endif
 

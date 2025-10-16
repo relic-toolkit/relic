@@ -1158,6 +1158,53 @@ static int pedersen(void) {
 	return code;
 }
 
+static int oprf(void) {
+	int code = RLC_ERR;
+	ec_t c, h;
+	bn_t r, m, n;
+
+	bn_null(m);
+	bn_null(n);
+	bn_null(r);
+	ec_null(h);
+	ec_null(c);
+
+	RLC_TRY {
+		bn_new(m);
+		bn_new(n);
+		bn_new(r);
+		ec_new(h);
+		ec_new(c);
+
+		ec_curve_get_ord(n);
+
+		TEST_CASE("oprf evaluation is consistent") {
+			ec_set_infty(h);
+			TEST_ASSERT(cp_oprf_ask(c, m, h) == RLC_ERR, end);
+			ec_rand(h);
+			do {
+				bn_rand_mod(r, n);
+			} while (bn_is_zero(r));
+			TEST_ASSERT(cp_oprf_ask(c, m, h) == RLC_OK, end);
+			TEST_ASSERT(cp_oprf_ans(c, r, c) == RLC_OK, end);
+			TEST_ASSERT(cp_oprf_res(c, m, c) == RLC_OK, end);
+			ec_mul(h, h, r);
+			TEST_ASSERT(ec_cmp(c, h) == RLC_EQ, end);
+		} TEST_END;
+	} RLC_CATCH_ANY {
+		RLC_ERROR(end);
+	}
+	code = RLC_OK;
+
+  end:
+	bn_free(m);
+	bn_free(n);
+	bn_free(r);
+	ec_free(h);
+	ec_free(c);
+	return code;
+}
+
 #endif /* WITH_EC */
 
 #if defined(WITH_PC)
@@ -2594,7 +2641,7 @@ int main(void) {
 #if defined(WITH_EC)
 	util_banner("Protocols based on elliptic curves:\n", 0);
 	if (ec_param_set_any() == RLC_OK) {
-
+		
 		if (ecdh() != RLC_OK) {
 			core_clean();
 			return 1;
@@ -2652,6 +2699,11 @@ int main(void) {
 		}
 
 		if (pedersen() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (oprf() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
