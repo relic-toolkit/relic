@@ -56,11 +56,11 @@ void fp2_mulm_c0(dv_t c, const fp2_t a, const fp2_t b);
 void fp2_mulm_c1(dv_t c, const fp2_t a, const fp2_t b);
 
 void fp2_mulm_low(fp2_t c, const fp2_t a, const fp2_t b) {
-    rlc_align dig_t t0[RLC_FP_DIGS];
+    rlc_align dig_t t[2 * RLC_FP_DIGS];
 
-    fp2_mulm_c0(t0, a, b);
+    fp2_muln_c0(t, a, b);
     fp2_mulm_c1(c[1], a, b);
-    fp_copy(c[0], t0);
+    fp_rdcn_low(c[0], t);
 }
 
 #else
