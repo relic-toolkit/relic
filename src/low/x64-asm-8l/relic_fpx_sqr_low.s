@@ -237,7 +237,7 @@ fp2_sqrm_c0:
 	adcq	p6(%rip),%rbx
 	adcq	p7(%rip),%rbp
 	movq	%r8, 64(%rsp)
-	movq	%r10, 72(%rsp)
+	movq	%r10,72(%rsp)
 	movq	%r12,80(%rsp)
 	movq	%r13,88(%rsp)
 	movq	%r14,96(%rsp)
