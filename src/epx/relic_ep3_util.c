@@ -238,7 +238,7 @@ size_t ep3_size_bin(const ep3_t a, int pack) {
 
 		ep3_norm(t, a);
 
-		size = 1 + 8 * RLC_FP_BYTES;
+		size = 1 + 6 * RLC_FP_BYTES;
 		//TODO: Implement compression.
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -260,7 +260,7 @@ void ep3_read_bin(ep3_t a, const uint8_t *bin, size_t len) {
 		}
 	}
 
-	if (len != (8 * RLC_FP_BYTES + 1)) {
+	if (len != (6 * RLC_FP_BYTES + 1)) {
 		RLC_THROW(ERR_NO_BUFFER);
 		return;
 	}
@@ -269,7 +269,7 @@ void ep3_read_bin(ep3_t a, const uint8_t *bin, size_t len) {
 	fp3_set_dig(a->z, 1);
 	fp3_read_bin(a->x, bin + 1, 3 * RLC_FP_BYTES);
 
-	if (len == 8 * RLC_FP_BYTES + 1) {
+	if (len == 6 * RLC_FP_BYTES + 1) {
 		if (bin[0] == 4) {
 			fp3_read_bin(a->y, bin + 3 * RLC_FP_BYTES + 1, 3 * RLC_FP_BYTES);
 		} else {
@@ -304,7 +304,7 @@ void ep3_write_bin(uint8_t *bin, size_t len, const ep3_t a, int pack) {
 
 		ep3_norm(t, a);
 
-		if (len < 8 * RLC_FP_BYTES + 1) {
+		if (len < 6 * RLC_FP_BYTES + 1) {
 			RLC_THROW(ERR_NO_BUFFER);
 		} else {
 			bin[0] = 4;
