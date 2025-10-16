@@ -50,7 +50,7 @@ void fp2_sqrn_low(dv2_t c, const fp2_t a) {
 }
 
 void fp2_sqrm_low(fp2_t c, const fp2_t a) {    
-	rlc_align dig_t t[2 * RLC_FP_DIGS];
+	rlc_align dig_t t[RLC_FP_DIGS];
 
 	fp2_sqrm_c0(t, a);
 	fp2_sqrm_c1(c[1], a);
