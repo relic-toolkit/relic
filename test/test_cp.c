@@ -1233,7 +1233,7 @@ static int ipa(void) {
 			ec_new(rs[i]);
 		}
 
-		TEST_ONCE("inner product arg is consistent") {
+		TEST_ONCE("inner product argument is consistent") {
 			ec_curve_get_ord(n);
 			for (size_t i = 1; i < 16; i++) {
 				ec_rand(u);
