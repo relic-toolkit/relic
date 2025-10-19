@@ -2311,24 +2311,21 @@ static int zss(void) {
 static int lhs(void) {
 	int code = RLC_ERR;
 	uint8_t k[S][K];
-	bn_t y1, y2, m, n, msg[S][L], sk1[S], sk2[S], d[S], x[S][L];
+	bn_t ys[2], m, n, msg[S][L], sk1[S], sk2[S], d[S], x[S][L];
 	g1_t h, t1, p1, pk1[S], pk3[S], as[S], cs[S], sig[S];
 	g1_t a[S][L], c[S][L], r[S][L];
 	g2_t t2, p2, s[S][L], pk2[S], y[S], z[S];
 	gt_t *hs[S], vk;
-	ec_t u, ps1, ps2, ls1[S], rs1[S], ls2[S], rs2[S];
+	ec_t u, ps[2], ls[2][S], rs[2][S];
 	const char *data = "database-identifier";
 	const char *id[S] = { "Alice", "Bob" };
 	dig_t ft[S], *f[S] = { NULL };
 	size_t flen[S];
-	char *ls[L] = { NULL };
+	char *labs[L] = { NULL };
 
 	bn_null(m);
 	bn_null(n);
-	bn_null(y1);
-	bn_null(y2);
-	ec_null(ps1)
-	ec_null(ps2)
+	
 	ec_null(u);
 	g1_null(h);
 	g1_null(t1);
@@ -2340,10 +2337,6 @@ static int lhs(void) {
 	RLC_TRY {
 		bn_new(m);
 		bn_new(n);
-		bn_new(y1);
-		bn_new(y2);	
-		ec_new(ps1);
-		ec_new(ps2);
 		ec_new(u);
 		g1_new(h);
 		g1_new(t1);
@@ -2352,9 +2345,15 @@ static int lhs(void) {
 		g2_new(p2);
 		gt_new(vk);
 
-		for (int i = 0; i < S; i++) {
+		for (size_t i = 0; i < 2; i++) {
+			bn_null(ys[i]);
+			bn_new(ys[i]);
+			ec_null(ps[i]);
+			ec_new(ps[i]);
+		}
+		for (size_t i = 0; i < S; i++) {
 			hs[i] = RLC_ALLOCA(gt_t, RLC_TERMS);
-			for (int j = 0; j < RLC_TERMS; j++) {
+			for (size_t j = 0; j < RLC_TERMS; j++) {
 				gt_null(hs[i][j]);
 				gt_new(hs[i][j]);
 			}
@@ -2375,10 +2374,12 @@ static int lhs(void) {
 			bn_null(sk1[i]);
 			bn_null(sk2[i]);
 			bn_null(d[i]);
-			ec_null(ls1[i]);
-			ec_null(ls2[i]);
-			ec_null(rs1[i]);
-			ec_null(rs2[i]);
+			for (size_t j = 0; j < 2; j++) {
+				ec_null(ls[j][i]);
+				ec_null(rs[j][i]);
+				ec_new(ls[j][i]);
+				ec_new(rs[j][i]);
+			}
 			g1_null(sig[i]);
 			g1_null(as[i]);
 			g1_null(cs[i]);
@@ -2387,15 +2388,10 @@ static int lhs(void) {
 			g2_null(y[i]);
 			g2_null(z[i]);
 			g2_null(pk2[i]);
-
 			bn_new(sk1[i]);
 			bn_new(sk2[i]);
 			bn_new(d[i]);
 			g1_new(sig[i]);
-			ec_new(ls1[i]);
-			ec_new(ls2[i]);
-			ec_new(rs1[i]);
-			ec_new(rs2[i]);
 			g1_new(as[i]);
 			g1_new(cs[i]);
 			g1_new(pk1[i]);
@@ -2473,9 +2469,9 @@ static int lhs(void) {
 			for (int j = 0; j < S; j++) {
 				cp_mklhs_gen(sk1[j], pk2[j]);
 				for (int l = 0; l < L; l++) {
-					ls[l] = "l";
+					labs[l] = "l";
 					bn_rand_mod(msg[j][l], n);
-					cp_mklhs_sig(a[j][l], msg[j][l], data, id[j], ls[l], sk1[j]);
+					cp_mklhs_sig(a[j][l], msg[j][l], data, id[j], labs[l], sk1[j]);
 				}
 			}
 
@@ -2493,10 +2489,10 @@ static int lhs(void) {
 			}
 			g1_norm(t1, t1);
 
-			TEST_ASSERT(cp_mklhs_ver(t1, m, d, data, id, (const char **)ls,
+			TEST_ASSERT(cp_mklhs_ver(t1, m, d, data, id, (const char **)labs,
 					(const dig_t **)f, flen, pk2, S), end);
 
-			cp_mklhs_off(as, ft, id, (const char **)ls, (const dig_t **)f,
+			cp_mklhs_off(as, ft, id, (const char **)labs, (const dig_t **)f,
 					flen, S);
 			TEST_ASSERT(cp_mklhs_onv(t1, m, d, data, id, as, ft, pk2, S), end);
 		}
@@ -2507,9 +2503,9 @@ static int lhs(void) {
 			for (int j = 0; j < S; j++) {
 				cp_smklhs_gen(sk1[j], sk2[j], pk1[j], pk2[j], pk3[j]);
 				for (int l = 0; l < L; l++) {
-					ls[l] = "l";
+					labs[l] = "l";
 					bn_rand_mod(msg[j][l], n);
-					cp_smklhs_sig(a[j][l], msg[j][l], data, id[j], ls[l],
+					cp_smklhs_sig(a[j][l], msg[j][l], data, id[j], labs[l],
 							t1, p1, sk1[j], sk2[j]);
 				}
 			}
@@ -2528,11 +2524,12 @@ static int lhs(void) {
 			}
 			g1_norm(h, h);
 
-			cp_ipa_prv(y1, ps1, ls1, rs1, pk1, d, u, S);
-			cp_ipa_prv(y2, ps2, ls2, rs2, pk3, d, u, S);
+			cp_ipa_prv(ys[0], ps[0], ls[0], rs[0], pk1, d, u, S);
+			cp_ipa_prv(ys[1], ps[1], ls[1], rs[1], pk3, d, u, S);
 
-			TEST_ASSERT(cp_smklhs_ver(h, m, y1, ps1, ls1, rs1, y2, ps2, ls2,
-					rs2, u, data, id, (const char **)ls, (const dig_t **)f,
+			TEST_ASSERT(cp_smklhs_ver(h, m, ys[0], ps[0], ls[0], rs[0],
+					ys[1], ps[1], ls[1], rs[1], u, data, id,
+					(const char **)labs, (const dig_t **)f,
 					flen, pk1, pk2, pk3, t2, p2, S), end);
 		}
 		TEST_END;
@@ -2545,10 +2542,6 @@ static int lhs(void) {
   end:
 	bn_free(m);
 	bn_free(n);
-	bn_free(y1);
-	bn_free(y2);
-	ec_free(ps1);
-	ec_free(ps2);
 	ec_free(u);
 	g1_free(h);
 	g1_free(t1);
@@ -2557,13 +2550,17 @@ static int lhs(void) {
 	g2_free(p2);
 	gt_free(vk);
 
-	for (int i = 0; i < S; i++) {
+	for (size_t i = 0; i < 2; i++) {
+		bn_free(ys[i]);
+		ec_free(ps[i]);
+	}
+	for (size_t i = 0; i < S; i++) {
 		RLC_FREE(f[i]);
 		for (int j = 0; j < RLC_TERMS; j++) {
 			  gt_free(hs[i][j]);
 		}
 		RLC_FREE(hs[i]);
-		for (int j = 0; j < L; j++) {
+		for (size_t j = 0; j < L; j++) {
 			bn_free(x[i][j]);
 			bn_free(msg[i][j]);
 			g1_free(a[i][j]);
@@ -2574,10 +2571,10 @@ static int lhs(void) {
 		bn_free(sk1[i]);
 		bn_free(sk2[i]);
 		bn_free(d[i]);
-		ec_free(ls1[i]);
-		ec_free(ls2[i]);
-		ec_free(rs1[i]);
-		ec_free(rs2[i]);
+		for (size_t j = 0; j < 2; j++) {
+			ec_free(ls[i][j]);
+			ec_free(rs[i][j]);
+		}
 		g1_free(sig[i]);
 		g1_free(as[i]);
 		g1_free(cs[i]);
