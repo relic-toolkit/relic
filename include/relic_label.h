@@ -208,6 +208,7 @@
 #undef bn_set_2b
 #undef bn_rand
 #undef bn_rand_mod
+#undef bn_rand_frb
 #undef bn_print
 #undef bn_size_str
 #undef bn_read_str
@@ -320,6 +321,7 @@
 #define bn_set_2b 	RLC_PREFIX(bn_set_2b)
 #define bn_rand 	RLC_PREFIX(bn_rand)
 #define bn_rand_mod 	RLC_PREFIX(bn_rand_mod)
+#define bn_rand_frb 	RLC_PREFIX(bn_rand_frb)
 #define bn_print 	RLC_PREFIX(bn_print)
 #define bn_size_str 	RLC_PREFIX(bn_size_str)
 #define bn_read_str 	RLC_PREFIX(bn_read_str)
@@ -2177,7 +2179,6 @@
 #undef fp2_dbln_low
 #undef fp2_dblm_low
 #undef fp2_norm_low
-#undef fp2_norh_low
 #undef fp2_nord_low
 #undef fp2_muln_low
 #undef fp2_mulm_low
@@ -2196,7 +2197,6 @@
 #define fp2_dbln_low 	RLC_PREFIX(fp2_dbln_low)
 #define fp2_dblm_low 	RLC_PREFIX(fp2_dblm_low)
 #define fp2_norm_low 	RLC_PREFIX(fp2_norm_low)
-#define fp2_norh_low 	RLC_PREFIX(fp2_norh_low)
 #define fp2_nord_low 	RLC_PREFIX(fp2_nord_low)
 #define fp2_muln_low 	RLC_PREFIX(fp2_muln_low)
 #define fp2_mulm_low 	RLC_PREFIX(fp2_mulm_low)
@@ -3336,6 +3336,14 @@
 #undef cp_lvprv_ask
 #undef cp_lvprv_ans
 #undef cp_lvprv_ver
+#undef cp_amore_gen
+#undef cp_amore_ask
+#undef cp_amore_ans
+#undef cp_amore_ver
+#undef cp_amprv_gen
+#undef cp_amprv_ask
+#undef cp_amprv_ans
+#undef cp_amprv_ver
 #undef cp_sokaka_gen
 #undef cp_sokaka_gen_prv
 #undef cp_sokaka_key
@@ -3354,6 +3362,8 @@
 #undef cp_bls_gen
 #undef cp_bls_sig
 #undef cp_bls_ver
+#undef cp_bls_agg_sig
+#undef cp_bls_agg_ver
 #undef cp_bbs_gen
 #undef cp_bbs_sig
 #undef cp_bbs_ver
@@ -3493,6 +3503,14 @@
 #define cp_lvprv_ask 	RLC_PREFIX(cp_lvprv_ask)
 #define cp_lvprv_ans 	RLC_PREFIX(cp_lvprv_ans)
 #define cp_lvprv_ver 	RLC_PREFIX(cp_lvprv_ver)
+#define cp_amore_gen 	RLC_PREFIX(cp_amore_gen)
+#define cp_amore_ask 	RLC_PREFIX(cp_amore_ask)
+#define cp_amore_ans 	RLC_PREFIX(cp_amore_ans)
+#define cp_amore_ver 	RLC_PREFIX(cp_amore_ver)
+#define cp_amprv_gen 	RLC_PREFIX(cp_amprv_gen)
+#define cp_amprv_ask 	RLC_PREFIX(cp_amprv_ask)
+#define cp_amprv_ans 	RLC_PREFIX(cp_amprv_ans)
+#define cp_amprv_ver 	RLC_PREFIX(cp_amprv_ver)
 #define cp_sokaka_gen 	RLC_PREFIX(cp_sokaka_gen)
 #define cp_sokaka_gen_prv 	RLC_PREFIX(cp_sokaka_gen_prv)
 #define cp_sokaka_key 	RLC_PREFIX(cp_sokaka_key)
@@ -3511,6 +3529,8 @@
 #define cp_bls_gen 	RLC_PREFIX(cp_bls_gen)
 #define cp_bls_sig 	RLC_PREFIX(cp_bls_sig)
 #define cp_bls_ver 	RLC_PREFIX(cp_bls_ver)
+#define cp_bls_agg_sig 	RLC_PREFIX(cp_bls_agg_sig)
+#define cp_bls_agg_ver 	RLC_PREFIX(cp_bls_agg_ver)
 #define cp_bbs_gen 	RLC_PREFIX(cp_bbs_gen)
 #define cp_bbs_sig 	RLC_PREFIX(cp_bbs_sig)
 #define cp_bbs_ver 	RLC_PREFIX(cp_bbs_ver)

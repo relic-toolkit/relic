@@ -49,31 +49,44 @@
  * @param[in] a				- the loop parameter.
  */
 static void pp_mil_k1(fp_t r, ep_t *t, ep_t *p, ep_t *q, int n, bn_t a) {
-	fp_t l, m, s;
+	fp_t l, m, s, *w = RLC_ALLOCA(fp_t, n);
 	int i, j;
+	size_t len = bn_bits(a) + 1;
+	int8_t b[RLC_FP_BITS + 1];
 
 	fp_null(l);
 	fp_null(m);
 	fp_null(s);
+	if (w == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
+		return;
+	}
 
 	RLC_TRY {
 		fp_new(l);
 		fp_new(m);
+		fp_new(w);
 		fp_new(s);
 		for (j = 0; j < n; j++) {
+			fp_null(w[j]);
+			fp_new(w[j]);
 			ep_copy(t[j], p[j]);
+			fp_set_dig(w[j], 1);
 		}
 
 		fp_set_dig(s, 1);
-		for (i = bn_bits(a) - 2; i >= 0; i--) {
+		bn_rec_naf(b, &len, a, 2);
+		for (i = len - 2; i >= 0; i--) {
 			fp_sqr(r, r);
 			fp_sqr(s, s);
 			for (j = 0; j < n; j++) {
-				pp_dbl_k1(l, m, t[j], t[j], q[j]);
+				pp_dbl_k1(l, m, t[j], w[j], t[j], w[j], q[j]);
 				fp_mul(r, r, l);
 				fp_mul(s, s, m);
-				if (bn_get_bit(a, i)) {
+				if (b[i] > 0) {
 					pp_add_k1(l, m, t[j], p[j], q[j]);
+					/* Correct extended coordinate for next doubling. */
+					fp_sqr(w[j], t[j]->z);
 					fp_mul(r, r, l);
 					fp_mul(s, s, m);
 				}
@@ -93,7 +106,10 @@ static void pp_mil_k1(fp_t r, ep_t *t, ep_t *p, ep_t *q, int n, bn_t a) {
 	RLC_FINALLY {
 		fp_free(l);
 		fp_free(m);
-		fp_free(s);
+		for (j = 0; j < n; j++) {
+			fp_free(w[j]);
+		}
+		RLC_FREE(w);
 	}
 }
 
@@ -163,7 +179,10 @@ void pp_map_sim_tatep_k1(fp_t r, const ep_t *p, const ep_t *q, int m) {
 		for (i = 0; i < m; i++) {
 			if (!ep_is_infty(p[i]) && !ep_is_infty(q[i])) {
 				ep_norm(_p[j], p[i]);
-				ep_norm(_q[j++], q[i]);
+				ep_psi(_q[j], p[i]);
+				ep_add(_q[j], _q[j], q[i]);
+				ep_norm(_q[j], _q[j]);
+				j++;
 			}
 		}
 
@@ -218,20 +237,22 @@ void pp_map_weilp_k1(fp_t r, const ep_t p, const ep_t q) {
 
 		ep_norm(_p[0], p);
 		ep_norm(_q[0], q);
+		ep_psi(_q[0], _q[0]);
 		ep_curve_get_ord(n);
-		fp_set_dig(r0, 1);
-		fp_set_dig(r1, 1);
+		fp_set_dig(r, 1);
 
 		if (!ep_is_infty(_p[0]) && !ep_is_infty(_q[0])) {
+			fp_set_dig(r0, 1);
+			fp_set_dig(r1, 1);	
 			pp_mil_k1(r0, t0, _p, _q, 1, n);
 			pp_mil_k1(r1, t1, _q, _p, 1, n);
-			if (fp_cmp(r0, r1) != RLC_EQ) {
-				fp_neg(r0, r0);
-			}
+			/* Compute r = (-1)^n * r0/r1. */
 			fp_inv(r1, r1);
+			fp_mul(r, r0, r1);
+			if (!bn_is_even(n)) {
+				fp_neg(r, r);
+			}
 		}
-		/* Compute r = (-1)^n * r0/r1. */
-		fp_mul(r, r0, r1);
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -281,21 +302,26 @@ void pp_map_sim_weilp_k1(fp_t r, const ep_t *p, const ep_t *q, int m) {
 		for (i = 0; i < m; i++) {
 			if (!ep_is_infty(p[i]) && !ep_is_infty(q[i])) {
 				ep_norm(_p[j], p[i]);
-				ep_norm(_q[j++], q[i]);
+				ep_norm(_q[j], q[i]);
+				ep_psi(_q[j], _q[j]);
+				j++;
 			}
 		}
 
 		ep_curve_get_ord(n);
-		bn_sub_dig(n, n, 1);
-		fp_set_dig(r0, 1);
-		fp_set_dig(r1, 1);
+		fp_set_dig(r, 1);
 
 		if (j > 0) {
+			fp_set_dig(r0, 1);
+			fp_set_dig(r1, 1);	
 			pp_mil_k1(r0, t0, _p, _q, j, n);
 			pp_mil_k1(r1, t1, _q, _p, j, n);
 			fp_inv(r1, r1);
+			fp_mul(r, r0, r1);
+			if (!bn_is_even(n) && (j & 1)) {
+				fp_neg(r, r);
+			}	
 		}
-		fp_mul(r, r0, r1);
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);

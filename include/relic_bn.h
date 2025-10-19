@@ -620,6 +620,17 @@ void bn_rand(bn_t a, int sign, size_t bits);
 void bn_rand_mod(bn_t a, const bn_t b);
 
 /**
+ * Assigns a random value to a multiple precision integer with absolute value
+ * smaller tha a given modulus and encoded in a given basis.
+ *
+ * @param[out] a			- the multiple precision integer to assign.
+ * @param[in] b				- the basis.
+ * @param[in] n				- the modulus.
+ * @param[in] bits			- the precision in bits.
+ */
+void bn_rand_frb(bn_t a, const bn_t b, const bn_t n, size_t bits);
+
+/**
  * Prints a multiple precision integer to standard output.
  *
  * @param[in] a				- the multiple precision integer to print.
@@ -935,8 +946,8 @@ void bn_div_rem_dig(bn_t c, dig_t *d, const bn_t a, const dig_t b);
  *
  * @param[out] c			- the result.
  * @param[in] a				- the element to invert.
- * param[in] b				- the modulus.
- *
+ * @param[in] b				- the modulus.
+ * @throw ERR_NO_VALID		- if the operands are not co-prime.
  */
 void bn_mod_inv(bn_t c, const bn_t a, const bn_t b);
 

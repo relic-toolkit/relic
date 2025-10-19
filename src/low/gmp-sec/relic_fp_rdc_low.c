@@ -118,7 +118,13 @@ void fp_rdcn_low(dig_t *c, dig_t *a) {
 
 	for (int i = 0; i < RLC_FP_DIGS; i++, a++) {
 		r = (dig_t)(*a * u);
-		*a = mpn_addmul_1(a, m, RLC_FP_DIGS, r);
+#if FP_PRIME == 3072
+		*a = mpn_add_1((mp_ptr)a, (mp_srcptr)a, RLC_FP_DIGS, r);
+		*a = mpn_addmul_1((mp_ptr)a + RLC_FP_DIGS/2,
+			(mp_srcptr)m + RLC_FP_DIGS/2, RLC_FP_DIGS/2, r);
+#else
+		*a = mpn_addmul_1((mp_ptr)a, (mp_srcptr)m, RLC_FP_DIGS, r);
+#endif
 	}
 	fp_addm_low(c, a, a - RLC_FP_DIGS);
 }

@@ -129,158 +129,428 @@
 	.endif
 .endm
 
-.macro MULN i, j, k, C, R0, R1, R2, A, B
-	.if \j > \k
-		movq	8*\i(\A), %rax
-		mulq	8*\j(\B)
-		addq	%rax    , \R0
-		adcq	%rdx    , \R1
-		adcq	$0      , \R2
-		MULN	"(\i + 1)", "(\j - 1)", \k, \C, \R0, \R1, \R2, \A, \B
-	.else
-		movq	8*\i(\A), %rax
-		mulq	8*\j(\B)
-		addq	%rax    , \R0
-		movq	\R0     , 8*(\i+\j)(\C)
-		adcq	%rdx    , \R1
-		adcq	$0      , \R2
-	.endif
+.macro MULR A, Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7
+	movq	0+\A, %rdx
+	mulx	\Z0, \Z0, \Z1
+	xorq	%rax, %rax
+	mulx	\Z2, \Z3, \Z2
+	adox	\Z3, \Z1
+	mulx	\Z4, \Z4, \Z3
+	adox	\Z4, \Z2
+	mulx	\Z5, \Z5, \Z4
+	adox	\Z5, \Z3
+	mulx	\Z6, \Z6, \Z5
+	adox	\Z6, \Z4
+	mulx	\Z7, \Z7, \Z6
+	adox	\Z7, \Z5
+	adox	%rax, \Z6
 .endm
 
-.macro FP_MULN_LOW C, R0, R1, R2, A, B
-	movq 	0(\A),%rax
-	mulq 	0(\B)
-	movq 	%rax ,0(\C)
-	movq 	%rdx ,\R0
-
-	xorq 	\R1,\R1
-	xorq 	\R2,\R2
-	MULN 	0, 1, 0, \C, \R0, \R1, \R2, \A, \B
-	xorq 	\R0,\R0
-	MULN	0, 2, 0, \C, \R1, \R2, \R0, \A, \B
-	xorq 	\R1,\R1
-	MULN	0, 3, 0, \C, \R2, \R0, \R1, \A, \B
-	xorq 	\R2,\R2
-	MULN	0, 4, 0, \C, \R0, \R1, \R2, \A, \B
-	xorq 	\R0,\R0
-	MULN	0, 5, 0, \C, \R1, \R2, \R0, \A, \B
-	xorq 	\R1,\R1
-	MULN	1, 5, 1, \C, \R2, \R0, \R1, \A, \B
-	xorq 	\R2,\R2
-	MULN	2, 5, 2, \C, \R0, \R1, \R2, \A, \B
-	xorq 	\R0,\R0
-	MULN	3, 5, 3, \C, \R1, \R2, \R0, \A, \B
-	xorq 	\R1,\R1
-	MULN	4, 5, 4, \C, \R2, \R0, \R1, \A, \B
-
-	movq	40(\A),%rax
-	mulq	40(\B)
-	addq	%rax  ,\R0
-	movq	\R0   ,80(\C)
-	adcq	%rdx  ,\R1
-	movq	\R1   ,88(\C)
+.macro MULM A, B, Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7
+	movq	0+\A, %rdx
+	mulx	0+\B, \Z0, \Z1
+	xorq	%rax, %rax
+	mulx	8+\B, \Z3, \Z2
+	adox	\Z3, \Z1
+	mulx	16+\B, \Z4, \Z3
+	adox	\Z4, \Z2
+	mulx	24+\B, \Z5, \Z4
+	adox	\Z5, \Z3
+	mulx	32+\B, \Z6, \Z5
+	adox	\Z6, \Z4
+	mulx	40+\B, \Z7, \Z6
+	adox	\Z7, \Z5
+	adox	%rax, \Z6
 .endm
 
-.macro _RDCN0 i, j, k, R0, R1, R2 A, P
-	movq	8*\i(\A), %rax
-	mulq	8*\j(\P)
-	addq	%rax, \R0
-	adcq	%rdx, \R1
-	adcq	$0, \R2
-	.if \j > 1
-		_RDCN0 "(\i + 1)", "(\j - 1)", \k, \R0, \R1, \R2, \A, \P
-	.else
-		addq	8*\k(\A), \R0
-		adcq	$0, \R1
-		adcq	$0, \R2
-		movq	\R0, %rax
-		mulq	%rcx
-		movq	%rax, 8*\k(\A)
-		mulq	0(\P)
-		addq	%rax , \R0
-		adcq	%rdx , \R1
-		adcq	$0   , \R2
-		xorq	\R0, \R0
-	.endif
+.macro MULADD Z0, Z1, Z2, Z3, Z4, Z5, Z6, T0, T1, M
+	mulx   0+\M, \T1, \T0
+	adox   \T1, \Z0
+	adox   \T0, \Z1
+	mulx   8+\M, \T1, \T0
+	adcx   \T1, \Z1
+	adox   \T0, \Z2
+	mulx   16+\M, \T1, \T0
+	adcx   \T1, \Z2
+	adox   \T0, \Z3
+	mulx   24+\M, \T1, \T0
+	adcx   \T1, \Z3
+	adox   \T0, \Z4
+	mulx   32+\M, \T1, \T0
+	adcx   \T1, \Z4
+	adox   \T0, \Z5
+	mulx   40+\M, \T1, \T0
+	adcx   \T1, \Z5
+	adox   \T0, \Z6
+	adcx   %rax,\Z6
 .endm
 
-.macro RDCN0 i, j, R0, R1, R2, A, P
-	_RDCN0	\i, \j, \j, \R0, \R1, \R2, \A, \P
+.macro MULSUB Z0, Z1, Z2, Z3, Z4, Z5, Z6, T0, T1, M
+	mulx	8+\M, \T1, \T0
+	subq	\T1, \Z1
+	sbbq	\T0, \Z2
+	mulx	24+\M, \T1, \T0
+	sbbq	\T1, \Z3
+	sbbq	\T0, \Z4
+	mulx	40+\M, \T1, \T0
+	sbbq	\T1, \Z5
+	sbbq	\T0, \Z6
+	mulx	0+\M, \T1, \T0
+	subq	\T1, \Z0
+	sbbq	\T0, \Z1
+	mulx	16+\M, \T1, \T0
+	sbbq	\T1, \Z2
+	sbbq	\T0, \Z3
+	mulx	32+\M, \T1, \T0
+	sbbq	\T1, \Z4
+	sbbq	\T0, \Z5
+	sbbq	$0, \Z6
 .endm
 
-.macro _RDCN1 i, j, k, l, R0, R1, R2 A, P
-	movq	8*\i(\A), %rax
-	mulq	8*\j(\P)
-	addq	%rax, \R0
-	adcq	%rdx, \R1
-	adcq	$0, \R2
-	.if \j > \l
-		_RDCN1 "(\i + 1)", "(\j - 1)", \k, \l, \R0, \R1, \R2, \A, \P
-	.else
-		addq	8*\k(\A), \R0
-		adcq	$0, \R1
-		adcq	$0, \R2
-		movq	\R0, 8*\k(\A)
-		xorq	\R0, \R0
-	.endif
+// Final correction
+.macro FINALC Z0, Z1, Z2, Z3, Z4, Z5, Z6, T0, T1
+	movq	\Z6, \Z5
+	movq	\Z0, \T0
+	movq	\Z1, \T1
+	movq	\Z2, %rax
+	movq	\Z3, %rdx
+	movq	\Z4, %rsi
+	subq	p0(%rip), \Z5
+	sbbq	p1(%rip), \T0
+	sbbq	p2(%rip), \T1
+	sbbq	p3(%rip), %rax
+	sbbq	p4(%rip), %rdx
+	sbbq	p5(%rip), %rsi
+	cmovc	\Z6, \Z5
+	cmovc	\Z0, \T0
+	cmovc	\Z1, \T1
+	cmovc	\Z2, %rax
+	cmovc	\Z3, %rdx
+	cmovc	\Z4, %rsi
+	movq	\Z5, 0(%rdi)
+	movq	\T0, 8(%rdi)
+	movq	\T1, 16(%rdi)
+	movq	%rax, 24(%rdi)
+	movq	%rdx, 32(%rdi)
+	movq	%rsi, 40(%rdi)
 .endm
 
-.macro RDCN1 i, j, R0, R1, R2, A, P
-	_RDCN1	\i, \j, "(\i + \j)", \i, \R0, \R1, \R2, \A, \P
+.macro FP_MULM_LOW A, B, Z0, Z1, Z2, Z3, Z4, Z5, Z6, T0, T1, P, RDC
+.if \RDC != 1
+	movq	\Z0, 0(%rdi)
+.else
+	// [r9:r14] <- z = ((z0 x u0) x p + z)/2^64
+	movq	$U0, %rdx
+	mulx	\Z0, %rdx, %rbx
+	MULADD	\Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \T0, \T1, \P
+.endif
+	
+	// [r9:r14, r8] <- z += 2 x a01 x a1
+	xorq	\Z0, \Z0
+	movq	8+\A, %rdx
+	MULADD	\Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z0, \T0, \T1, \B
+.if \RDC != 1
+	movq	\Z1, 8(%rdi)
+.else
+	// [r10:r14, r8] <- z = ((z0 x u0) x p + z)/2^64
+	movq	$U0, %rdx
+	mulx	\Z1, %rdx, %rbx
+	MULADD	\Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z0, \T0, \T1, \P
+.endif
+
+	// [r10:r14, r8:r9] <- z += 2 x a02 x a1
+	xorq	\Z1, \Z1
+	movq	16+\A, %rdx
+	MULADD	\Z2, \Z3, \Z4, \Z5, \Z6, \Z0, \Z1, \T0, \T1, \B
+.if \RDC != 1
+	movq	\Z2, 16(%rdi)
+.else
+	// [r11:r14, r8:r9] <- z = ((z0 x u0) x p + z)/2^64
+	movq	$U0, %rdx
+	mulx	\Z2, %rdx, %rbx
+	MULADD	\Z2, \Z3, \Z4, \Z5, \Z6, \Z0, \Z1, \T0, \T1, \P
+.endif
+
+	// [r11:r14, r8:r10] <- z += 2 x a03 x a1
+	xorq	\Z2, \Z2
+	movq	24+\A, %rdx
+	MULADD	\Z3, \Z4, \Z5, \Z6, \Z0, \Z1, \Z2, \T0, \T1, \B
+.if \RDC != 1
+	movq	\Z3, 24(%rdi)
+.else
+	// [r12:r14, r8:r10] <- z = ((z0 x u0) x p + z)/2^64
+	movq	$U0, %rdx
+	mulx	\Z3, %rdx, %rbx
+	MULADD	\Z3, \Z4, \Z5, \Z6, \Z0, \Z1, \Z2, \T0, \T1, \P
+.endif
+
+	// [r12:r14, r8:r11] <- z += 2 x a04 x a1
+	xorq	\Z3, \Z3
+	movq	32+\A, %rdx
+	MULADD	\Z4, \Z5, \Z6, \Z0, \Z1, \Z2, \Z3, \T0, \T1, \B
+.if \RDC != 1
+	movq	\Z4, 32(%rdi)
+.else
+	// [r13:r14, r8:r11] <- z = ((z0 x u0) x p + z)/2^64
+	movq	$U0, %rdx
+	mulx	\Z4, %rdx, %rbx
+	MULADD	\Z4, \Z5, \Z6, \Z0, \Z1, \Z2, \Z3, \T0, \T1, \P
+.endif
+
+	// [r13:r14, r8:r12] <- z += 2 x a05 x a1
+	xorq	\Z4, \Z4
+	movq	40+\A, %rdx
+	MULADD	\Z5, \Z6, \Z0, \Z1, \Z2, \Z3, \Z4, \T0, \T1, \B
+.if \RDC != 1
+	movq	\Z5, 40(%rdi)
+.else
+	// [r14, r8:r12] <- z = ((z0 x u0) x p + z)/2^64
+	movq	$U0, %rdx
+	mulx	\Z5, %rdx, %rbx
+	MULADD	\Z5, \Z6, \Z0, \Z1, \Z2, \Z3, \Z4, \T0, \T1, \P
+.endif
+
+.if \RDC != 1
+	movq	\Z6, 48(%rdi)
+	movq	\Z0, 56(%rdi)
+	movq	\Z1, 64(%rdi)
+	movq	\Z2, 72(%rdi)
+	movq	\Z3, 80(%rdi)
+	movq	\Z4, 88(%rdi)
+.else
+	FINALC	\Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \T0, \T1
+.endif
 .endm
 
-// r8, r9, r10, r11, r12, r13, r14, r15, rbp, rbx, rsp, //rsi, rdi, //rax, rcx, rdx
-.macro FP_RDCN_LOW C, R0, R1, R2, A, P
-	xorq	\R1, \R1
-	movq	$U0, %rcx
+.macro FP2_MUL0_LOW A, B, Z0, Z1, Z2, Z3, Z4, Z5, Z6, T0, T1, P, RDC
+	movq	48+\A, %rdx
+	MULSUB	\Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \T0, \T1, 48+\B
+.if \RDC != 1
+	movq	\Z0, 0(%rdi)
+.else
+	// [r9:r14] <- z = ((z0 x u0) x p + z)/2^64
+	movq	$U0, %rdx
+	mulx	\Z0, %rdx, %rbx
+	MULADD	\Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \T0, \T1, \P
+.endif
+	xorq	\Z0, \Z0
+	btq		$63, \Z6
+	sbbq	$0, \Z0
 
-	movq	0(\A), \R0
-	movq	\R0  , %rax
-	mulq	%rcx
-	movq	%rax , 0(\A)
-	mulq	0(\P)
-	addq	%rax , \R0
-	adcq	%rdx , \R1
-	xorq    \R2  , \R2
-	xorq    \R0  , \R0
+	// [r9:r14, r8] <- z = a0 x b01 - a1 x b11 + z 
+	movq	8+\A, %rdx
+	xorq	%rax, %rax
+	MULADD	\Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z0, \T0, \T1, \B
+	movq	56+\A, %rdx
+	MULSUB	\Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z0, \T0, \T1, 48+\B
+.if \RDC != 1
+	movq	\Z1, 8(%rdi)
+.else
+	// [r10:r14, r8] <- z = ((z0 x u0) x p + z)/2^64
+	movq	$U0, %rdx
+	mulx	\Z1, %rdx, %rbx
+	MULADD	\Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z0, \T0, \T1, \P
+.endif
+	xorq	\Z1, \Z1
+	btq		$63, \Z0
+	sbbq	$0, \Z1
 
-	RDCN0	0, 1, \R1, \R2, \R0, \A, \P
-	RDCN0	0, 2, \R2, \R0, \R1, \A, \P
-	RDCN0	0, 3, \R0, \R1, \R2, \A, \P
-	RDCN0	0, 4, \R1, \R2, \R0, \A, \P
-	RDCN0	0, 5, \R2, \R0, \R1, \A, \P
-	RDCN1	1, 5, \R0, \R1, \R2, \A, \P
-	RDCN1	2, 5, \R1, \R2, \R0, \A, \P
-	RDCN1	3, 5, \R2, \R0, \R1, \A, \P
-	RDCN1	4, 5, \R0, \R1, \R2, \A, \P
-	RDCN1	5, 5, \R1, \R2, \R0, \A, \P
-	addq	8*11(\A), \R2
-	movq	\R2, 8*11(\A)
+	// [r10:r14, r8:r9] <- z = a0 x b02 - a1 x b12 + z 
+	movq	16+\A, %rdx
+	xorq	%rax, %rax
+	MULADD	\Z2, \Z3, \Z4, \Z5, \Z6, \Z0, \Z1, \T0, \T1, \B
+	movq	64+\A, %rdx
+	MULSUB	\Z2, \Z3, \Z4, \Z5, \Z6, \Z0, \Z1, \T0, \T1, 48+\B
+.if \RDC != 1
+	movq	\Z2, 16(%rdi)
+.else
+	// [r11:r14, r8:r9] <- z = ((z0 x u0) x p + z)/2^64
+	movq	$U0, %rdx
+	mulx	\Z2, %rdx, %rbx
+	MULADD	\Z2, \Z3, \Z4, \Z5, \Z6, \Z0, \Z1, \T0, \T1, \P
+.endif
+	xorq	\Z2, \Z2
+	btq		$63, \Z1
+	sbbq	$0, \Z2
 
-	movq	48(\A), %r11
-	movq	56(\A), %r12
-	movq	64(\A), %r13
-	movq	72(\A), %r14
-	movq	80(\A), %r15
-	movq	88(\A), %rcx
+	// [r11:r14, r8:r10] <- z = a0 x b03 - a1 x b13 + z
+	movq	24+\A, %rdx
+	xorq	%rax, %rax
+	MULADD	\Z3, \Z4, \Z5, \Z6, \Z0, \Z1, \Z2, \T0, \T1, \B
+	movq	72+\A, %rdx
+	MULSUB	\Z3, \Z4, \Z5, \Z6, \Z0, \Z1, \Z2, \T0, \T1, 48+\B
+.if \RDC != 1
+	movq	\Z3, 24(%rdi)
+.else
+	// [r12:r14, r8:r10] <- z = ((z0 x u0) x p + z)/2^64
+	movq	$U0, %rdx
+	mulx	\Z3, %rdx, %rbx
+	MULADD	\Z3, \Z4, \Z5, \Z6, \Z0, \Z1, \Z2, \T0, \T1, \P
+.endif
+	xorq	\Z3, \Z3
+	btq		$63, \Z2
+	sbbq	$0, \Z3
 
-	subq	p0(%rip), %r11
-	sbbq	p1(%rip), %r12
-	sbbq	p2(%rip), %r13
-	sbbq	p3(%rip), %r14
-	sbbq	p4(%rip), %r15
-	sbbq	p5(%rip), %rcx
+	// [r12:r14, r8:r11] <- z = a0 x b04 - a1 x b14 + z 
+	movq	32+\A, %rdx
+	xorq	%rax, %rax
+	MULADD	\Z4, \Z5, \Z6, \Z0, \Z1, \Z2, \Z3, \T0, \T1, \B
+	movq	80+\A, %rdx
+	MULSUB	\Z4, \Z5, \Z6, \Z0, \Z1, \Z2, \Z3, \T0, \T1, 48+\B
+.if \RDC != 1
+	movq	\Z4, 32(%rdi)
+.else
+	// [r13:r14, r8:r11] <- z = ((z0 x u0) x p + z)/2^64
+	movq	$U0, %rdx
+	mulx	\Z4, %rdx, %rbx
+	MULADD	\Z4, \Z5, \Z6, \Z0, \Z1, \Z2, \Z3, \T0, \T1, \P
+.endif
+	xorq	\Z4, \Z4
+	btq		$63, \Z3
+	sbbq	$0, \Z4
 
-	cmovc	48(\A), %r11
-	cmovc	56(\A), %r12
-	cmovc	64(\A), %r13
-	cmovc	72(\A), %r14
-	cmovc	80(\A), %r15
-	cmovc	88(\A), %rcx
-	movq	%r11,0(\C)
-	movq	%r12,8(\C)
-	movq	%r13,16(\C)
-	movq	%r14,24(\C)
-	movq	%r15,32(\C)
-	movq	%rcx,40(\C)
+	// [r13:r14, r8:r12] <- z = a0 x b05 - a1 x b15 + z 
+	movq	40+\A, %rdx
+	xorq	%rax, %rax
+	MULADD	\Z5, \Z6, \Z0, \Z1, \Z2, \Z3, \Z4, \T0, \T1, \B
+	movq	88+\A, %rdx
+	MULSUB	\Z5, \Z6, \Z0, \Z1, \Z2, \Z3, \Z4, \T0, \T1, 48+\B
+.if \RDC != 1
+	movq	\Z5, 40(%rdi)
+.else
+	// [r14, r8:r12] <- z = ((z0 x u0) x p + z)/2^64
+	movq	$U0, %rdx
+	mulx	\Z5, %rdx, %rbx
+	MULADD	\Z5, \Z6, \Z0, \Z1, \Z2, \Z3, \Z4, \T0, \T1, \P
+.endif
+	btq		$63, \Z4
+
+	// Correction if result < 0
+    movq 	$0, \Z5
+    movq 	$0, \T0
+    movq 	$0, \T1
+    movq 	$0, %rax
+    movq	$0, %rdx
+    movq	$0, %rsi
+    cmovc	p0(%rip), \Z5
+    cmovc	p1(%rip), \T0
+    cmovc	p2(%rip), \T1
+    cmovc	p3(%rip), %rax
+    cmovc	p4(%rip), %rdx
+    cmovc	p5(%rip), %rsi
+	addq	\Z5, \Z6
+	adcq	\T0, \Z0
+	adcq	\T1, \Z1
+	adcq	%rax, \Z2
+	adcq	%rdx, \Z3
+	adcq	%rsi, \Z4
+.if \RDC != 1
+	movq	\Z6, 48(%rdi)
+	movq	\Z0, 56(%rdi)
+	movq	\Z1, 64(%rdi)
+	movq	\Z2, 72(%rdi)
+	movq	\Z3, 80(%rdi)
+	movq	\Z4, 88(%rdi)
+.else
+	FINALC	\Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \T0, \T1
+.endif
+.endm
+
+.macro FP2_MUL1_LOW A, B, Z0, Z1, Z2, Z3, Z4, Z5, Z6, T0, T1, P, RDC
+	movq	48+\A, %rdx
+	MULADD	\Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \T0, \T1, \B
+.if \RDC != 1
+	movq	\Z0, 0(%rdi)
+.else
+	// [r9:r14] <- z = ((z0 x u0) x p + z)/2^64
+	movq	$U0, %rdx
+	mulx	\Z0, %rdx, %rbx
+	MULADD	\Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \T0, \T1, \P
+.endif
+
+	// [r9:r14, r8] <- z = a0 x b11 + a1 x b01 + z		
+	xorq	\Z0, \Z0 
+	movq	8+\A, %rdx
+	MULADD	\Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z0, \T0, \T1, 48+\B
+	movq	56+\A, %rdx
+	MULADD	\Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z0, \T0, \T1, \B
+.if \RDC != 1
+	movq	\Z1, 8(%rdi)
+.else
+	// [r10:r14, r8] <- z = ((z0 x u0) x p + z)/2^64
+	movq	$U0, %rdx
+	mulx	\Z1, %rdx, %rbx
+	MULADD	\Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \Z0, \T0, \T1, \P
+.endif
+
+	// [r10:r14, r8:r9] <- z = a0 x b12 + a1 x b02 + z		
+	xorq	\Z1, \Z1 
+	movq	16+\A, %rdx
+	MULADD	\Z2, \Z3, \Z4, \Z5, \Z6, \Z0, \Z1, \T0, \T1, 48+\B
+	movq	64+\A, %rdx
+	MULADD	\Z2, \Z3, \Z4, \Z5, \Z6, \Z0, \Z1, \T0, \T1, \B
+.if \RDC != 1
+	movq	\Z2, 16(%rdi)
+.else
+	// [r11:r14, r8:r9] <- z = ((z0 x u0) x p + z)/2^64
+	movq	$U0, %rdx
+	mulx	\Z2, %rdx, %rbx
+	MULADD	\Z2, \Z3, \Z4, \Z5, \Z6, \Z0, \Z1, \T0, \T1, \P
+.endif
+
+	// [r11:r14, r8:r10] <- z = a0 x b13 + a1 x b03 + z		
+	xorq	\Z2, \Z2 
+	movq	24+\A, %rdx
+	MULADD	\Z3, \Z4, \Z5, \Z6, \Z0, \Z1, \Z2, \T0, \T1, 48+\B
+	movq	72+\A, %rdx
+	MULADD	\Z3, \Z4, \Z5, \Z6, \Z0, \Z1, \Z2, \T0, \T1, \B
+.if \RDC != 1
+	movq	\Z3, 24(%rdi)
+.else
+	// [r12:r14, r8:r10] <- z = ((z0 x u0) x p + z)/2^64
+	movq	$U0, %rdx
+	mulx	\Z3, %rdx, %rbx
+	MULADD	\Z3, \Z4, \Z5, \Z6, \Z0, \Z1, \Z2, \T0, \T1, \P
+.endif
+
+	// [r12:r14, r8:r11] <- z = a0 x b14 + a1 x b04 + z		
+	xorq	\Z3, \Z3 
+	movq	32+\A, %rdx
+	MULADD	\Z4, \Z5, \Z6, \Z0, \Z1, \Z2, \Z3, \T0, \T1, 48+\B
+	movq	80+\A, %rdx
+	MULADD	\Z4, \Z5, \Z6, \Z0, \Z1, \Z2, \Z3, \T0, \T1, \B
+.if \RDC != 1
+	movq	\Z4, 32(%rdi)
+.else
+	// [r13:r14, r8:r11] <- z = ((z0 x u0) x p + z)/2^64
+	movq	$U0, %rdx
+	mulx	\Z4, %rdx, %rbx
+	MULADD	\Z4, \Z5, \Z6, \Z0, \Z1, \Z2, \Z3, \T0, \T1, \P
+.endif
+
+	// [r13:r14, r8:r12] <- z = a0 x b15 + a1 x b05 + z
+	xorq	\Z4, \Z4 
+	movq	40+\A, %rdx
+	MULADD	\Z5, \Z6, \Z0, \Z1, \Z2, \Z3, \Z4, \T0, \T1, 48+\B
+	movq	88+\A, %rdx
+	MULADD	\Z5, \Z6, \Z0, \Z1, \Z2, \Z3, \Z4, \T0, \T1, \B
+.if \RDC != 1
+	movq	\Z5, 40(%rdi)
+.else
+	// [r14, r8:r12] <- z = ((z0 x u0) x p + z)/2^64
+	movq	$U0, %rdx
+	mulx	\Z5, %rdx, %rbx
+	MULADD	\Z5, \Z6, \Z0, \Z1, \Z2, \Z3, \Z4, \T0, \T1, \P
+.endif
+
+.if \RDC != 1
+	movq	\Z6, 48(%rdi)
+	movq	\Z0, 56(%rdi)
+	movq	\Z1, 64(%rdi)
+	movq	\Z2, 72(%rdi)
+	movq	\Z3, 80(%rdi)
+	movq	\Z4, 88(%rdi)
+.else
+	FINALC	\Z0, \Z1, \Z2, \Z3, \Z4, \Z5, \Z6, \T0, \T1
+.endif
 .endm

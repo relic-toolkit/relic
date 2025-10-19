@@ -46,8 +46,9 @@ void bn_mod_inv(bn_t c, const bn_t a, const bn_t b) {
 		bn_new(t);
 		bn_new(u);
 
+		bn_mod(t, a, b);
 		bn_copy(u, b);
-		bn_gcd_ext(t, c, NULL, a, b);
+		bn_gcd_ext(t, c, NULL, t, b);
 
 		if (bn_sign(c) == RLC_NEG) {
 			bn_add(c, c, u);

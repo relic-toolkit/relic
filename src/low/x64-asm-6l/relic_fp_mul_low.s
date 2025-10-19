@@ -32,45 +32,50 @@
 
 #include "macro.s"
 
-.text
+/*
+ * Techniques and code heavily inspired from "Efficient Algorithms for Large
+ * Prime Characteristic Fields and Their Application toBilinear Pairings" by
+ * Longa at TCHES'23.
+ */
 
+.text
 .global fp_muln_low
 .global fp_mulm_low
 
 fp_muln_low:
-	movq %rdx,%rcx
-	FP_MULN_LOW %rdi, %r8, %r9, %r10, %rsi, %rcx
-	ret
+	push	%r12
+	push	%r13
+	push	%r14
+	push	%r15
+	push 	%rbx
 
-#if FP_PRIME != 381
+	movq	%rdx, %rcx
+
+	MULM	0(%rsi), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15
+	FP_MULM_LOW	0(%rsi), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, p0(%rip), 0
+
+    popq	%rbx
+    popq	%r15
+    popq	%r14
+    popq	%r13
+    popq	%r12
+    ret
+
 fp_mulm_low:
 	push	%r12
 	push	%r13
 	push	%r14
 	push	%r15
 	push 	%rbx
-	push	%rbp
-	subq 	$96, %rsp
 
-	movq 	%rdx,%rcx
-	leaq 	p0(%rip), %rbx
+	movq	%rdx, %rcx
 
-	FP_MULN_LOW %rsp, %r8, %r9, %r10, %rsi, %rcx
+	MULM	0(%rsi), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15
+	FP_MULM_LOW	0(%rsi), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %r15, %rbx, p0(%rip), 1
 
-	FP_RDCN_LOW %rdi, %r8, %r9, %r10, %rsp, %rbx
-
-	addq	$96, %rsp
-
-	pop		%rbp
-	pop		%rbx
-	pop		%r15
-	pop		%r14
-	pop		%r13
-	pop		%r12
-	ret
-
-#else
-
-#include "relic_fp_mul_low_cryptopt.s"
-
-#endif
+    popq	%rbx
+    popq	%r15
+    popq	%r14
+    popq	%r13
+    popq	%r12
+    ret

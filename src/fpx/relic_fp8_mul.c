@@ -105,7 +105,7 @@ static void fp4_mul_dxs_unr(dv4_t c, const fp4_t a, const fp4_t b) {
 
 		fp2_muln_low(c[1], t1, t0);
 		fp2_subc_low(c[1], c[1], u1);
-		fp2_norh_low(c[0], u1);
+		fp2_nord_low(c[0], u1);
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {

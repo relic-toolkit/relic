@@ -41,7 +41,7 @@
 #if EP_MUL == LWNAF || !defined(STRIP)
 
 static void ep8_mul_gls_imp(ep8_t r, const ep8_t p, const bn_t k) {
-	size_t l, _l[16];
+	size_t l, _l[16], w = RLC_WIDTH;
 	bn_t n, _k[16], u;
 	int8_t naf[16][RLC_FP_BITS + 1];
 	ep8_t q, t[16][1 << (RLC_WIDTH - 2)];
@@ -70,17 +70,25 @@ static void ep8_mul_gls_imp(ep8_t r, const ep8_t p, const bn_t k) {
 
 		l = 0;
 		for (size_t i = 0; i < 16; i++) {
+			l = RLC_MAX(l, bn_bits(_k[i]));
+		}
+		if (l < bn_bits(u) / 2) {
+			w = 2;
+		}
+
+		l = 0;
+		for (size_t i = 0; i < 16; i++) {
 			_l[i] = RLC_FP_BITS + 1;
-			bn_rec_naf(naf[i], &_l[i], _k[i], RLC_WIDTH);
+			bn_rec_naf(naf[i], &_l[i], _k[i], w);
 			l = RLC_MAX(l, _l[i]);
 			if (i == 0) {
 				ep8_norm(q, p);
 				if (bn_sign(_k[0]) == RLC_NEG) {
 					ep8_neg(q, q);
 				}
-				ep8_tab(t[0], q, RLC_WIDTH);
+				ep8_tab(t[0], q, w);
 			} else {
-				for (size_t j = 0; j < (1 << (RLC_WIDTH - 2)); j++) {
+				for (size_t j = 0; j < (1 << (w - 2)); j++) {
 					ep8_frb(t[i][j], t[i - 1][j], 1);
 					if (bn_sign(_k[i]) != bn_sign(_k[i - 1])) {
 						ep8_neg(t[i][j], t[i][j]);

@@ -40,16 +40,17 @@
 /*============================================================================*/
 
 dig_t fp_mula_low(dig_t *c, const dig_t *a, dig_t digit) {
-	return mpn_addmul_1(c, a, RLC_FP_DIGS, digit);
+	return mpn_addmul_1((mp_ptr)c, (mp_srcptr)a, RLC_FP_DIGS, digit);
 }
 
 dig_t fp_mul1_low(dig_t *c, const dig_t *a, dig_t digit) {
-	return mpn_mul_1(c, a, RLC_FP_DIGS, digit);
+	return mpn_mul_1((mp_ptr)c, (mp_srcptr)a, RLC_FP_DIGS, digit);
 }
 
 void fp_muln_low(dig_t *c, const dig_t *a, const dig_t *b) {
 	dig_t *t = RLC_ALLOCA(dig_t, mpn_sec_mul_itch(RLC_FP_DIGS, RLC_FP_DIGS));
-	mpn_sec_mul(c, a, RLC_FP_DIGS, b, RLC_FP_DIGS, t);
+	mpn_sec_mul((mp_ptr)c, (mp_srcptr)a, RLC_FP_DIGS, (mp_srcptr)b, RLC_FP_DIGS,
+		(mp_ptr)t);
 	RLC_FREE(t);
 }
 
