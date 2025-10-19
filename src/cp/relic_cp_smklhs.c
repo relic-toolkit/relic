@@ -119,13 +119,9 @@ int cp_smklhs_sig(g1_t s, const bn_t m, const char *data, const char *id,
 		g1_map(s, str, strlen(data) + strlen(id) + strlen(tag));
 		g1_add(s, s, a);
 		g1_norm(s, s);
-		g1_mul_sec(s, s, sk1);
-
 		bn_mul(k, m, sk2);
 		bn_mod(k, k, n);
-		g1_mul(a, p1, k);
-		g1_add(s, s, a);
-		g1_norm(s, s);
+		g1_mul_sim(s, s, sk1, p1, k);
 	}
 	RLC_CATCH_ANY {
 		result = RLC_ERR;
@@ -146,9 +142,9 @@ int cp_smklhs_ver(const g1_t sig, const bn_t m, const bn_t y1, const ec_t ps1,
 		const size_t flen[], const g1_t pk1[], const g2_t pk2[],
 		const g1_t pk3[], const g2_t t2, const g2_t p2, size_t slen) {
 	bn_t t, n;
-	g1_t *g1 = RLC_ALLOCA(g1_t, slen + 2);
-	g2_t *g2 = RLC_ALLOCA(g2_t, slen + 2);
-	gt_t c, e;
+	g1_t *g1 = RLC_ALLOCA(g1_t, slen + 3);
+	g2_t *g2 = RLC_ALLOCA(g2_t, slen + 3);
+	gt_t e;
 	int imax = 0, lmax = 0, fmax = 0, ver1 = 0, ver2 = 0, ver3 = 0;
 	for (size_t i = 0; i < slen; i++) {
 		fmax = RLC_MAX(fmax, flen[i]);
@@ -162,13 +158,11 @@ int cp_smklhs_ver(const g1_t sig, const bn_t m, const bn_t y1, const ec_t ps1,
 
 	bn_null(t);
 	bn_null(n);
-	gt_null(c);
 	gt_null(e);
 
 	RLC_TRY {
 		bn_new(t);
 		bn_new(n);
-		gt_new(c);
 		gt_new(e);
 		if (g1 == NULL || g2 == NULL || h == NULL || str == NULL) {
 			RLC_FREE(g1);
@@ -179,7 +173,7 @@ int cp_smklhs_ver(const g1_t sig, const bn_t m, const bn_t y1, const ec_t ps1,
 
 		bn_zero(t);
 		pc_get_ord(n);
-		for (size_t j = 0; j < slen + 2; j++) {
+		for (size_t j = 0; j < slen + 3; j++) {
 			g1_null(g1[j]);
 			g1_new(g1[j]);
 			g2_null(g2[j]);
@@ -221,11 +215,11 @@ int cp_smklhs_ver(const g1_t sig, const bn_t m, const bn_t y1, const ec_t ps1,
 		}
 		g2_copy(g2[slen], t2);
 		g2_copy(g2[slen + 1], p2);
-		
-		pc_map_sim(c, g1, g2, slen + 2);
-		g2_get_gen(g2[0]);
-		pc_map(e, sig, g2[0]);
-		if (gt_cmp(c, e) == RLC_EQ) {
+		g1_neg(g1[slen + 2], sig);
+		g2_get_gen(g2[slen + 2]);
+		pc_map_sim(e, g1, g2, slen + 3);
+
+		if (gt_cmp_dig(e, 1) == RLC_EQ) {
 			ver3 = 1;
 		}
 	}
@@ -235,9 +229,8 @@ int cp_smklhs_ver(const g1_t sig, const bn_t m, const bn_t y1, const ec_t ps1,
 	RLC_FINALLY {
 		bn_free(t);
 		bn_free(n);
-		gt_free(c);
 		gt_free(e);
-		for (int j = 0; j < slen + 2; j++) {
+		for (int j = 0; j < slen + 3; j++) {
 			g1_free(g1[j]);
 			g2_free(g2[j]);
 		}
