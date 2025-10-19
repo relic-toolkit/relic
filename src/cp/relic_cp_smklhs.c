@@ -119,9 +119,13 @@ int cp_smklhs_sig(g1_t s, const bn_t m, const char *data, const char *id,
 		g1_map(s, str, strlen(data) + strlen(id) + strlen(tag));
 		g1_add(s, s, a);
 		g1_norm(s, s);
+		g1_mul_sec(s, s, sk1);
+
 		bn_mul(k, m, sk2);
 		bn_mod(k, k, n);
-		g1_mul_sim(s, s, sk1, p1, k);
+		g1_mul(a, p1, k);
+		g1_add(s, s, a);
+		g1_norm(s, s);
 	}
 	RLC_CATCH_ANY {
 		result = RLC_ERR;
