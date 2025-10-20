@@ -2162,10 +2162,10 @@ static void lhs(void) {
 		for (int j = 0; j < S; j++) {
 			flen[j] = 1;
 			for (int l = 0; l < L; l++) {
-				BENCH_ADD(cp_smklhs_ver(a[j][l], msg[j], y1, ps1,
-							ls1, rs1, y2, ps2, ls2, rs2,
-							u, data, &id[j], (const char **)&ls[l], NULL,
-							flen, &pk1[j], &pk2[j], &pk3[j], t2, p2, 1));
+				BENCH_ADD(cp_smklhs_ver(a[j][l], msg[j], y1, ps1, ls1, rs1,
+						y2, ps2, ls2, rs2, u, data, &id[j],
+						(const char **)&ls[l], NULL, flen,
+						&pk1[j], &pk2[j], &pk3[j], t2, p2, 1));
 			}
 		}
 	} BENCH_DIV(S * L);
