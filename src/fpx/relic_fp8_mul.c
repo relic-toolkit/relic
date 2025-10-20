@@ -272,7 +272,7 @@ void fp8_mul_frb(fp8_t c, const fp8_t a, int i, int j) {
 	fp2_null(t);
 
 	RLC_TRY {
-		fp4_new(t);
+		fp2_new(t);
 
 		fp_copy(t[0], core_get()->fp8_p1[0]);
 		fp_copy(t[1], core_get()->fp8_p1[1]);
@@ -295,7 +295,7 @@ void fp8_mul_frb(fp8_t c, const fp8_t a, int i, int j) {
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		fp4_free(t);
+		fp2_free(t);
 	}
 }
 
