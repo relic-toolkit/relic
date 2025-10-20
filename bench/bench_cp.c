@@ -1850,7 +1850,7 @@ static void lhs(void) {
 		},
 	S * L);
 
-	BENCH_FEW("cp_chmklhs_sig (fresh ecdsa)",
+	BENCH_FEW("cp_chmklhs_ver (fresh ecdsa)",
 		for (int j = 0; j < S; j++) {
 			flen[j] = 1;
 			for (int l = 0; l < L; l++) {
@@ -1923,7 +1923,7 @@ static void lhs(void) {
 		},
 	S * L);
 
-	BENCH_FEW("cp_chmklhs_sig (fresh bls)",
+	BENCH_FEW("cp_chmklhs_ver (fresh bls)",
 		for (int j = 0; j < S; j++) {
 			flen[j] = 1;
 			for (int l = 0; l < L; l++) {
@@ -2157,7 +2157,7 @@ static void lhs(void) {
 		}
 	} BENCH_DIV(S * L);
 
-	BENCH_RUN("cp_smklhs_sig") {
+	BENCH_RUN("cp_smklhs_ver (fresh)") {
 		for (int j = 0; j < S; j++) {
 			flen[j] = 1;
 			for (int l = 0; l < L; l++) {
