@@ -554,14 +554,19 @@ void ep2_mul_sim_gen(ep2_t r, const bn_t k, const ep2_t q, const bn_t m) {
 	}
 }
 
-void ep2_mul_sim_dig(ep2_t r, const ep2_t p[], const dig_t k[], size_t len) {
+void ep2_mul_sim_dig(ep2_t r, const ep2_t p[], const dig_t k[], size_t n) {
 	ep2_t t;
 	int max;
+
+	if (n == 0) {
+		ep2_set_infty(r);
+		return;
+	}
 
 	ep2_null(t);
 
 	max = util_bits_dig(k[0]);
-	for (int i = 1; i < len; i++) {
+	for (size_t i = 1; i < n; i++) {
 		max = RLC_MAX(max, util_bits_dig(k[i]));
 	}
 
@@ -571,7 +576,7 @@ void ep2_mul_sim_dig(ep2_t r, const ep2_t p[], const dig_t k[], size_t len) {
 		ep2_set_infty(t);
 		for (int i = max - 1; i >= 0; i--) {
 			ep2_dbl(t, t);
-			for (int j = 0; j < len; j++) {
+			for (int j = 0; j < n; j++) {
 				if (k[j] & ((dig_t)1 << i)) {
 					ep2_add(t, t, p[j]);
 				}
@@ -596,7 +601,26 @@ void ep2_mul_sim_lot(ep2_t r, const ep2_t p[], const bn_t k[], size_t n) {
 	size_t l, _l[4];
 
 	if (n == 0) {
+		RLC_FREE(naf);
 		ep2_set_infty(r);
+		return;
+	}
+
+	if (n == 0) {
+		RLC_FREE(naf);
+		ep2_set_infty(r);
+		return;
+	}
+
+	if (n == 1) {
+		RLC_FREE(naf);
+		ep2_mul(r, p[0], k[0]);
+		return;
+	}
+
+	if (n == 2) {
+		RLC_FREE(naf);
+		ep2_mul_sim(r, p[0], k[0], p[1], k[1]);
 		return;
 	}
 

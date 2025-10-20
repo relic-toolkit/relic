@@ -389,14 +389,19 @@ void ep3_mul_sim_gen(ep3_t r, const bn_t k, const ep3_t q, const bn_t m) {
 	}
 }
 
-void ep3_mul_sim_dig(ep3_t r, const ep3_t p[], const dig_t k[], size_t len) {
+void ep3_mul_sim_dig(ep3_t r, const ep3_t p[], const dig_t k[], size_t n) {
 	ep3_t t;
 	int max;
+
+	if (n == 0) {
+		ep3_set_infty(r);
+		return;
+	}
 
 	ep3_null(t);
 
 	max = util_bits_dig(k[0]);
-	for (size_t i = 1; i < len; i++) {
+	for (size_t i = 1; i < n; i++) {
 		max = RLC_MAX(max, util_bits_dig(k[i]));
 	}
 
@@ -406,7 +411,7 @@ void ep3_mul_sim_dig(ep3_t r, const ep3_t p[], const dig_t k[], size_t len) {
 		ep3_set_infty(t);
 		for (int i = max - 1; i >= 0; i--) {
 			ep3_dbl(t, t);
-			for (int j = 0; j < len; j++) {
+			for (int j = 0; j < n; j++) {
 				if (k[j] & ((dig_t)1 << i)) {
 					ep3_add(t, t, p[j]);
 				}
@@ -429,6 +434,27 @@ void ep3_mul_sim_lot(ep3_t r, const ep3_t p[], const bn_t k[], int n) {
 	size_t l, *_l = RLC_ALLOCA(size_t, 8 * n);
 	bn_t _k[8], q, x;
 	int8_t *naf = RLC_ALLOCA(int8_t, 8 * n * len);
+
+	if (n == 0) {
+		RLC_FREE(naf);
+		RLC_FREE(_l);
+		ep3_set_infty(r);
+		return;
+	}
+
+	if (n == 1) {
+		RLC_FREE(naf);
+		RLC_FREE(_l);
+		ep3_mul(r, p[0], k[0]);
+		return;
+	}
+
+	if (n == 2) {
+		RLC_FREE(naf);
+		RLC_FREE(_l);
+		ep3_mul_sim(r, p[0], k[0], p[1], k[1]);
+		return;
+	}
 
 	bn_null(q);
 	bn_null(x);

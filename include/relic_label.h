@@ -3420,14 +3420,14 @@
 #undef cp_ped_com
 #undef cp_ipa_prv
 #undef cp_ipa_ver
-#undef cp_cmlhs_set
-#undef cp_cmlhs_gen
-#undef cp_cmlhs_sig
-#undef cp_cmlhs_fun
-#undef cp_cmlhs_evl
-#undef cp_cmlhs_ver
-#undef cp_cmlhs_off
-#undef cp_cmlhs_onv
+#undef cp_chmklhs_set
+#undef cp_chmklhs_gen
+#undef cp_chmklhs_sig
+#undef cp_chmklhs_fun
+#undef cp_chmklhs_evl
+#undef cp_chmklhs_ver
+#undef cp_chmklhs_off
+#undef cp_chmklhs_onv
 #undef cp_mklhs_gen
 #undef cp_mklhs_sig
 #undef cp_mklhs_fun
@@ -3587,14 +3587,14 @@
 #define cp_ped_com 	RLC_PREFIX(cp_ped_com)
 #define cp_ipa_prv 	RLC_PREFIX(cp_ipa_prv)
 #define cp_ipa_ver 	RLC_PREFIX(cp_ipa_ver)
-#define cp_cmlhs_set 	RLC_PREFIX(cp_cmlhs_set)
-#define cp_cmlhs_gen 	RLC_PREFIX(cp_cmlhs_gen)
-#define cp_cmlhs_sig 	RLC_PREFIX(cp_cmlhs_sig)
-#define cp_cmlhs_fun 	RLC_PREFIX(cp_cmlhs_fun)
-#define cp_cmlhs_evl 	RLC_PREFIX(cp_cmlhs_evl)
-#define cp_cmlhs_ver 	RLC_PREFIX(cp_cmlhs_ver)
-#define cp_cmlhs_off 	RLC_PREFIX(cp_cmlhs_off)
-#define cp_cmlhs_onv 	RLC_PREFIX(cp_cmlhs_onv)
+#define cp_chmklhs_set 	RLC_PREFIX(cp_chmklhs_set)
+#define cp_chmklhs_gen 	RLC_PREFIX(cp_chmklhs_gen)
+#define cp_chmklhs_sig 	RLC_PREFIX(cp_chmklhs_sig)
+#define cp_chmklhs_fun 	RLC_PREFIX(cp_chmklhs_fun)
+#define cp_chmklhs_evl 	RLC_PREFIX(cp_chmklhs_evl)
+#define cp_chmklhs_ver 	RLC_PREFIX(cp_chmklhs_ver)
+#define cp_chmklhs_off 	RLC_PREFIX(cp_chmklhs_off)
+#define cp_chmklhs_onv 	RLC_PREFIX(cp_chmklhs_onv)
 #define cp_mklhs_gen 	RLC_PREFIX(cp_mklhs_gen)
 #define cp_mklhs_sig 	RLC_PREFIX(cp_mklhs_sig)
 #define cp_mklhs_fun 	RLC_PREFIX(cp_mklhs_fun)

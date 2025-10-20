@@ -88,6 +88,7 @@ int cp_mklhs_sig(g1_t s, const bn_t m, const char *data, const char *id,
 		g1_map(a, str, strlen(id) + strlen(tag));
 		g1_add(s, s, a);
 		g1_norm(s, s);
+		
 		g1_mul_sec(s, s, sk);
 	}
 	RLC_CATCH_ANY {
@@ -193,7 +194,7 @@ int cp_mklhs_ver(const g1_t sig, const bn_t m, const bn_t mu[],
 			ver1 = 1;
 		}
 
-		for (int i = 0; i < slen; i++) {
+		for (size_t i = 0; i < slen; i++) {
 			memcpy(str, data, strlen(data));
 			memcpy(str + strlen(data), id[i], strlen(id[i]));
 			g1_map(d, str, strlen(data) + strlen(id[i]));
@@ -204,7 +205,13 @@ int cp_mklhs_ver(const g1_t sig, const bn_t m, const bn_t mu[],
 				g1_add(h[j], h[j], d);
 			}
 			g1_norm_sim(h, h, flen[i]);
-			g1_mul_sim_dig(g[i], h, f[i], flen[i]);
+			if (f != NULL) {
+				g1_mul_sim_dig(g[i], h, f[i], flen[i]);
+			} else {
+				for (size_t j = 0; j < flen[i]; j++) {
+					g1_copy(g[i], h[j]);
+				}
+			}
 			g1_mul_gen(h[0], mu[i]);
 			g1_add(g[i], g[i], h[0]);
 		}

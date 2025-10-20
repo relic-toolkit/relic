@@ -2409,37 +2409,47 @@ static int lhs(void) {
 				rand_bytes((uint8_t *)&t, sizeof(dig_t));
 				f[i][j] = t & RLC_MASK(RLC_DIG / 2);
 			}
-			flen[i] = L;
 		}
 
 		/* Initialize scheme for messages of single components. */
 		pc_get_ord(n);
-		cp_cmlhs_set(h);
+		cp_chmklhs_set(h);
 
 		TEST_CASE("context-hiding linear homomorphic signature is correct") {
 			int label[L], b = i % 2;
 
 			for (int j = 0; j < S; j++) {
-				cp_cmlhs_gen(x[j], hs[j], L, k[j], K, sk1[j], pk2[j], d[j], y[j], b);
+				cp_chmklhs_gen(x[j], hs[j], L, k[j], K, sk1[j], pk2[j], d[j], y[j], b);
 			}
 			/* Compute all signatures (ECDSA if b = 0; BLS if b = 1). */
 			for (int j = 0; j < S; j++) {
 				for (int l = 0; l < L; l++) {
 					label[l] = l;
 					bn_rand_mod(msg[j][l], n);
-					cp_cmlhs_sig(sig[j], z[j], a[j][l], c[j][l], r[j][l],
-						s[j][l], msg[j][l], data, label[l], x[j][l], h, k[j], K,
+					cp_chmklhs_sig(sig[j], z[j], a[j][l], c[j][l], r[j][l],
+						s[j][l], msg[j][l], data, label[l], x[j], h, k[j], K,
 						d[j], sk1[j], b);
 				}
 			}
+			for (int j = 0; j < S; j++) {
+				flen[j] = 1;
+				for (int l = 0; l < L; l++) {
+					TEST_ASSERT(cp_chmklhs_ver(r[j][l], s[j][l], &sig[j], &z[j],
+						&a[j][l], &c[j][l], msg[j][l], data, h, &label[l],
+						(const gt_t**)&hs[j], NULL, flen, &y[j], &pk2[j], 1, b),
+						end);
+				}
+			}
+			
 			/* Apply linear function over signatures. */
 			for (int j = 0; j < S; j++) {
-				cp_cmlhs_fun(as[j], cs[j], a[j], c[j], f[j], flen[j]);
+				flen[j] = L;
+				cp_chmklhs_fun(as[j], cs[j], a[j], c[j], f[j], flen[j]);
 			}
 
-			cp_cmlhs_evl(t1, t2, r[0], s[0], f[0], flen[0]);
+			cp_chmklhs_evl(t1, t2, r[0], s[0], f[0], flen[0]);
 			for (int j = 1; j < S; j++) {
-				cp_cmlhs_evl(r[0][0], s[0][0], r[j], s[j], f[j], flen[j]);
+				cp_chmklhs_evl(r[0][0], s[0][0], r[j], s[j], f[j], flen[j]);
 				g1_add(t1, t1, r[0][0]);
 				g2_add(t2, t2, s[0][0]);
 			}
@@ -2455,12 +2465,12 @@ static int lhs(void) {
 				}
 			}
 
-			TEST_ASSERT(cp_cmlhs_ver(t1, t2, sig, z, as, cs, m, data, h, label,
+			TEST_ASSERT(cp_chmklhs_ver(t1, t2, sig, z, as, cs, m, data, h, label,
 				(const gt_t **)hs, (const dig_t **)f, flen, y, pk2, S, b), end);
 
-			cp_cmlhs_off(vk, h, label, (const gt_t **)hs, (const dig_t **)f,
+			cp_chmklhs_off(vk, h, label, (const gt_t **)hs, (const dig_t **)f,
 				flen, S);
-			TEST_ASSERT(cp_cmlhs_onv(t1, t2, sig, z, as, cs, m, data, h, vk,
+			TEST_ASSERT(cp_chmklhs_onv(t1, t2, sig, z, as, cs, m, data, h, vk,
 				y, pk2, S, b) == 1, end);
 		}
 		TEST_END;
@@ -2474,9 +2484,18 @@ static int lhs(void) {
 					cp_mklhs_sig(a[j][l], msg[j][l], data, id[j], labs[l], sk1[j]);
 				}
 			}
+			for (int j = 0; j < S; j++) {
+				flen[j] = 1;
+				for (int l = 0; l < L; l++) {
+					TEST_ASSERT(cp_mklhs_ver(a[j][l], msg[j][l], &msg[j][l],
+						data, &id[j], (const char **)&labs[l], NULL, flen,
+						&pk2[j], 1), end);
+				}
+			}
 
 			bn_zero(m);
 			for (int j = 0; j < S; j++) {
+				flen[j] = L;
 				cp_mklhs_fun(d[j], msg[j], f[j], L);
 				bn_add(m, m, d[j]);
 				bn_mod(m, m, n);
@@ -2509,9 +2528,19 @@ static int lhs(void) {
 							t1, p1, sk1[j], sk2[j]);
 				}
 			}
+			for (int j = 0; j < S; j++) {
+				flen[j] = 1;
+				for (int l = 0; l < L; l++) {
+					TEST_ASSERT(cp_smklhs_ver(a[j][l], msg[j][l], ys[0], ps[0],
+							ls[0], rs[0], ys[1], ps[1], ls[1], rs[1],
+							u, data, &id[j], (const char **)&labs[l], NULL,
+							flen, &pk1[j], &pk2[j], &pk3[j], t2, p2, 1), end);
+				}
+			}
 
 			bn_zero(m);
 			for (int j = 0; j < S; j++) {
+				flen[j] = L;
 				cp_mklhs_fun(d[j], msg[j], f[j], L);
 				bn_add(m, m, d[j]);
 				bn_mod(m, m, n);

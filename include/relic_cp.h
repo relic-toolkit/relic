@@ -2665,7 +2665,7 @@ int cp_ipa_ver(const bn_t y, const ec_t p, const ec_t *ls, const ec_t *rs,
  * @param[out] h			- the random element (message as one component).
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_cmlhs_set(g1_t h);
+int cp_chmklhs_set(g1_t h);
 
 /**
  * Generates a key pair for the CMLHS scheme using BLS as underlying signature.
@@ -2682,7 +2682,7 @@ int cp_cmlhs_set(g1_t h);
  * @param[in] bls			- the flag for selecting BLS or ECDSA.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_cmlhs_gen(bn_t *x, gt_t *hs, size_t len, uint8_t *prf, size_t plen,
+int cp_chmklhs_gen(bn_t *x, gt_t *hs, size_t len, uint8_t *prf, size_t plen,
 		bn_t sk, g2_t pk, bn_t d, g2_t y, int bls);
 
 /**
@@ -2697,18 +2697,19 @@ int cp_cmlhs_gen(bn_t *x, gt_t *hs, size_t len, uint8_t *prf, size_t plen,
  * @param[in] msg			- the message vector to sign (one component).
  * @param[in] data			- the dataset identifier.
  * @param[in] label			- the integer label.
- * @param[in] x				- the exponent value for the label.
+ * @param[in] x				- the exponent values.
  * @param[in] h				- the random value (message has one component).
  * @param[in] prf			- the key for the pseudo-random function (PRF).
  * @param[in] plen			- the PRF key length.
- * @param[in] sk			- the private key for the signature scheme.
  * @param[in] d				- the secret exponent.
+ * @param[in] sk			- the private key for the signature scheme.
  * @param[in] bls			- the flag for selecting BLS or ECDSA.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_cmlhs_sig(g1_t sig, g2_t z, g1_t a, g1_t c, g1_t r, g2_t s,
-		const bn_t msg, const char *data, int label, const bn_t x, const g1_t h,
-		const uint8_t *prf, size_t plen, const bn_t sk, const bn_t d, int bls);
+int cp_chmklhs_sig(g1_t sig, g2_t z, g1_t a, g1_t c, g1_t r, g2_t s,
+		const bn_t msg, const char *data, int label, const bn_t *x,
+		const g1_t h, const uint8_t *prf, size_t plen, const bn_t d,
+		const bn_t sk, int bls);
 
 /**
  * Applies a function over a set of CMLHS signatures from the same user.
@@ -2721,7 +2722,7 @@ int cp_cmlhs_sig(g1_t sig, g2_t z, g1_t a, g1_t c, g1_t r, g2_t s,
  * @param[in] len			- the number of coefficients.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_cmlhs_fun(g1_t a, g1_t c, const g1_t as[], const g1_t cs[],
+int cp_chmklhs_fun(g1_t a, g1_t c, const g1_t as[], const g1_t cs[],
 		const dig_t *f, size_t len);
 
 /**
@@ -2735,7 +2736,7 @@ int cp_cmlhs_fun(g1_t a, g1_t c, const g1_t as[], const g1_t cs[],
  * @param[in] len			- the number of coefficients.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_cmlhs_evl(g1_t r, g2_t s, const g1_t rs[], const g2_t ss[],
+int cp_chmklhs_evl(g1_t r, g2_t s, const g1_t rs[], const g2_t ss[],
 		const dig_t *f, size_t len);
 
 /**
@@ -2760,7 +2761,7 @@ int cp_cmlhs_evl(g1_t r, g2_t s, const g1_t rs[], const g2_t ss[],
  * @param[in] bls			- the flag for selecting BLS or ECDSA.
  * @return a boolean value indicating the verification result.
  */
-int cp_cmlhs_ver(const g1_t r, const g2_t s, const g1_t *sig, const g2_t *z,
+int cp_chmklhs_ver(const g1_t r, const g2_t s, const g1_t *sig, const g2_t *z,
 		const g1_t *a, const g1_t *c, const bn_t m, const char *data,
 		const g1_t h, const int *label, const gt_t *hs[], const dig_t *f[],
 		const size_t *flen, const g2_t *y, const g2_t *pk, size_t slen,
@@ -2780,7 +2781,7 @@ int cp_cmlhs_ver(const g1_t r, const g2_t s, const g1_t *sig, const g2_t *z,
  * @param[in] slen			- the number of signatures.
  * @return a boolean value indicating the verification result.
  */
-void cp_cmlhs_off(gt_t vk, const g1_t h, const int *label, const gt_t *hs[],
+void cp_chmklhs_off(gt_t vk, const g1_t h, const int *label, const gt_t *hs[],
 		const dig_t *f[], const size_t *flen, size_t slen);
 
 /**
@@ -2799,7 +2800,7 @@ void cp_cmlhs_off(gt_t vk, const g1_t h, const int *label, const gt_t *hs[],
  * @param[in] bls			- the flag for selecting BLS or ECDSA.
  * @return a boolean value indicating the verification result.
  */
-int cp_cmlhs_onv(const g1_t r, const g2_t s, const g1_t *sig, const g2_t *z,
+int cp_chmklhs_onv(const g1_t r, const g2_t s, const g1_t *sig, const g2_t *z,
 		const g1_t *a, const g1_t *c, const bn_t msg, const char *data,
 		const g1_t h, const gt_t vk, const g2_t *y, const g2_t *pk,
 		size_t slen, int bls);

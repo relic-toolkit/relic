@@ -35,12 +35,12 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-int cp_cmlhs_set(g1_t h) {
+int cp_chmklhs_set(g1_t h) {
 	g1_rand(h);
 	return RLC_OK;
 }
 
-int cp_cmlhs_gen(bn_t x[], gt_t hs[], size_t len, uint8_t prf[], size_t plen,
+int cp_chmklhs_gen(bn_t x[], gt_t hs[], size_t len, uint8_t prf[], size_t plen,
 		bn_t sk, g2_t pk, bn_t d, g2_t y, int bls) {
 	g1_t g1;
 	g2_t g2;
@@ -97,10 +97,10 @@ int cp_cmlhs_gen(bn_t x[], gt_t hs[], size_t len, uint8_t prf[], size_t plen,
 	return result;
 }
 
-int cp_cmlhs_sig(g1_t sig, g2_t z, g1_t a, g1_t c, g1_t r, g2_t s,
-		const bn_t msg, const char *data, int label, const bn_t x, const g1_t h,
-		const uint8_t prf[], size_t plen, const bn_t d, const bn_t sk,
-		int bls) {
+int cp_chmklhs_sig(g1_t sig, g2_t z, g1_t a, g1_t c, g1_t r, g2_t s,
+		const bn_t msg, const char *data, int label, const bn_t x[],
+		const g1_t h, const uint8_t prf[], size_t plen, const bn_t d,
+		const bn_t sk, int bls) {
 	bn_t k, m, n;
 	g1_t t;
 	uint8_t mac[RLC_MD_LEN];
@@ -132,14 +132,14 @@ int cp_cmlhs_sig(g1_t sig, g2_t z, g1_t a, g1_t c, g1_t r, g2_t s,
 		g2_neg(s, s);
 		g1_mul_gen(c, m);
 		/* Compute R = g1^(r - ys). */
-		bn_mul(m, d, m);
+		bn_mul(m, m, d);
 		bn_mod(m, m, n);
 		bn_sub(m, k, m);
 		bn_mod(m, m, n);
 		g1_mul_gen(r, m);
 
 		/* Compute A = g1^(x + r) * \prod H_j^(y * m_j). */
-		bn_add(k, x, k);
+		bn_add(k, x[label], k);
 		bn_mod(k, k, n);
 		g1_mul_gen(a, k);
 		bn_mul(k, d, msg);
@@ -186,7 +186,7 @@ int cp_cmlhs_sig(g1_t sig, g2_t z, g1_t a, g1_t c, g1_t r, g2_t s,
 	return result;
 }
 
-int cp_cmlhs_fun(g1_t a, g1_t c, const g1_t as[], const g1_t cs[],
+int cp_chmklhs_fun(g1_t a, g1_t c, const g1_t as[], const g1_t cs[],
 		const dig_t f[], size_t len) {
 	int result = RLC_OK;
 
@@ -196,7 +196,7 @@ int cp_cmlhs_fun(g1_t a, g1_t c, const g1_t as[], const g1_t cs[],
 	return result;
 }
 
-int cp_cmlhs_evl(g1_t r, g2_t s, const g1_t rs[], const g2_t ss[],
+int cp_chmklhs_evl(g1_t r, g2_t s, const g1_t rs[], const g2_t ss[],
 		const dig_t f[], size_t len) {
 	int result = RLC_OK;
 
@@ -206,7 +206,7 @@ int cp_cmlhs_evl(g1_t r, g2_t s, const g1_t rs[], const g2_t ss[],
 	return result;
 }
 
-int cp_cmlhs_ver(const g1_t r, const g2_t s, const g1_t *sig, const g2_t *z,
+int cp_chmklhs_ver(const g1_t r, const g2_t s, const g1_t *sig, const g2_t *z,
 		const g1_t *a, const g1_t *c, const bn_t m, const char *data,
 		const g1_t h, const int *label, const gt_t *hs[], const dig_t *f[],
 		const size_t *flen, const g2_t *y, const g2_t *pk, size_t slen,
@@ -264,8 +264,13 @@ int cp_cmlhs_ver(const g1_t r, const g2_t s, const g1_t *sig, const g2_t *z,
 		gt_mul(u, u, v);
 
 		for (int i = 0; i < slen; i++) {
+			/* Signatures are not fresh anymore. */
 			for (int j = 0; j < flen[i]; j++) {
-				gt_exp_dig(v, hs[i][label[j]], f[i][j]);
+				if (f != NULL) {
+					gt_exp_dig(v, hs[i][label[j]], f[i][j]);
+				} else {
+					gt_copy(v, hs[i][label[j]]);
+				}
 				gt_mul(u, u, v);
 			}
 		}
@@ -304,7 +309,7 @@ int cp_cmlhs_ver(const g1_t r, const g2_t s, const g1_t *sig, const g2_t *z,
 	return result;
 }
 
-void cp_cmlhs_off(gt_t vk, const g1_t h, const int label[], const gt_t *hs[],
+void cp_chmklhs_off(gt_t vk, const g1_t h, const int label[], const gt_t *hs[],
 		const dig_t *f[], const size_t flen[], size_t slen) {
 	gt_t v;
 
@@ -327,7 +332,7 @@ void cp_cmlhs_off(gt_t vk, const g1_t h, const int label[], const gt_t *hs[],
 	}
 }
 
-int cp_cmlhs_onv(const g1_t r, const g2_t s, const g1_t sig[], const g2_t z[],
+int cp_chmklhs_onv(const g1_t r, const g2_t s, const g1_t sig[], const g2_t z[],
 		const g1_t a[], const g1_t c[], const bn_t msg, const char *data,
 		const g1_t h, const gt_t vk, const g2_t y[], const g2_t pk[],
 		size_t slen, int bls) {
