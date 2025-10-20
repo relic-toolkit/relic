@@ -1936,6 +1936,7 @@ static void lhs(void) {
 
 	BENCH_RUN("cp_chmklhs_fun") {
 		for (int j = 0; j < S; j++) {
+			flen[j] = L;
 			BENCH_ADD(cp_chmklhs_fun(as[j], cs[j], a[j], c[j], f[j], L));
 		}
 	} BENCH_DIV(S);
@@ -2169,7 +2170,7 @@ static void lhs(void) {
 		}
 	} BENCH_DIV(S * L);
 
-	BENCH_RUN("cp_mklhs_fun") {
+	BENCH_RUN("cp_smklhs_fun") {
 		bn_zero(m);
 		for (int j = 0; j < S; j++) {
 			flen[j] = L;
@@ -2180,7 +2181,7 @@ static void lhs(void) {
 	}
 	BENCH_DIV(S);
 
-	BENCH_RUN("cp_mklhs_evl") {
+	BENCH_RUN("cp_smklhs_evl") {
 		g1_set_infty(t1);
 		for (int j = 0; j < S; j++) {
 			BENCH_ADD(cp_mklhs_evl(r[0][j], a[j], f[j], L));
