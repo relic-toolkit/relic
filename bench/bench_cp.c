@@ -2158,6 +2158,8 @@ static void lhs(void) {
 		}
 	} BENCH_DIV(S * L);
 
+	ec_set_infty(ps1);
+	ec_set_infty(ps2);
 	BENCH_RUN("cp_smklhs_ver (fresh)") {
 		for (int j = 0; j < S; j++) {
 			flen[j] = 1;

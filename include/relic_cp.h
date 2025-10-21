@@ -2779,9 +2779,9 @@ int cp_chmklhs_ver(const g1_t r, const g2_t s, const g1_t *sig, const g2_t *z,
  * @param[in] y				- the public elements of the users.
  * @param[in] pk			- the public keys of the users.
  * @param[in] slen			- the number of signatures.
- * @return a boolean value indicating the verification result.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-void cp_chmklhs_off(gt_t vk, const g1_t h, const int *label, const gt_t *hs[],
+int cp_chmklhs_off(gt_t vk, const g1_t h, const int *label, const gt_t *hs[],
 		const dig_t *f[], const size_t *flen, size_t slen);
 
 /**
@@ -2798,7 +2798,7 @@ void cp_chmklhs_off(gt_t vk, const g1_t h, const int *label, const gt_t *hs[],
  * @param[in] h				- the random element (message has one component).
  * @param[in] vk			- the verification key.
  * @param[in] bls			- the flag for selecting BLS or ECDSA.
- * @return a boolean value indicating the verification result.
+ * @return a Boolean value indicating the verification result.
  */
 int cp_chmklhs_onv(const g1_t r, const g2_t s, const g1_t *sig, const g2_t *z,
 		const g1_t *a, const g1_t *c, const bn_t msg, const char *data,
