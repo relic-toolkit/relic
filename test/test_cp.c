@@ -2311,45 +2311,46 @@ static int zss(void) {
 static int lhs(void) {
 	int code = RLC_ERR;
 	uint8_t k[S][K];
-	bn_t ys[2], m, n, msg[S][L], sk1[S], sk2[S], d[S], x[S][L];
-	g1_t h, t1, p1, pk1[S], pk3[S], as[S], cs[S], sig[S];
+	bn_t ys[6], l, m, n, msg[S][L], sk1[S][2], sk2[S][2], d[S], x[S][L];
+	g1_t g, h, t1[2], p1[2], pk1[S][3], pk3[S][3], as[S], cs[S], sig[S];
 	g1_t a[S][L], c[S][L], r[S][L];
-	g2_t t2, p2, s[S][L], pk2[S], y[S], z[S];
+	g2_t t2[2], p2[2], s[S][L], pk2[S][3], y[S], z[S], t[S];
 	gt_t *hs[S], vk;
-	ec_t u, ps[2], ls[2][S], rs[2][S];
+	ec_t u, ps[6], ls[6][S], rs[6][S];
 	const char *data = "database-identifier";
 	const char *id[S] = { "Alice", "Bob" };
 	dig_t ft[S], *f[S] = { NULL };
 	size_t flen[S];
 	char *labs[L] = { NULL };
 
+	bn_null(l);
 	bn_null(m);
 	bn_null(n);
-	
 	ec_null(u);
+	g1_null(g);
 	g1_null(h);
-	g1_null(t1);
-	g1_null(p1);
-	g2_null(t2);
-	g2_null(p2);
 	gt_null(vk);
 
 	RLC_TRY {
+		bn_new(l);
 		bn_new(m);
 		bn_new(n);
 		ec_new(u);
+		g1_new(g);
 		g1_new(h);
-		g1_new(t1);
-		g1_new(p1);
-		g2_new(t2);
-		g2_new(p2);
 		gt_new(vk);
 
-		for (size_t i = 0; i < 2; i++) {
+		for (size_t i = 0; i < 6; i++) {
 			bn_null(ys[i]);
 			bn_new(ys[i]);
 			ec_null(ps[i]);
 			ec_new(ps[i]);
+		}
+		for (size_t i = 0; i < 2; i++) {
+			g1_new(t1[i]);
+			g1_new(p1[i]);
+			g2_new(t2[i]);
+			g2_new(p2[i]);
 		}
 		for (size_t i = 0; i < S; i++) {
 			hs[i] = RLC_ALLOCA(gt_t, RLC_TERMS);
@@ -2371,72 +2372,82 @@ static int lhs(void) {
 				g1_new(r[i][j]);
 				g2_new(s[i][j]);
 			}
-			bn_null(sk1[i]);
-			bn_null(sk2[i]);
-			bn_null(d[i]);
-			for (size_t j = 0; j < 2; j++) {
+			for (size_t j = 0; j < 6; j++) {
 				ec_null(ls[j][i]);
 				ec_null(rs[j][i]);
 				ec_new(ls[j][i]);
 				ec_new(rs[j][i]);
 			}
+			for (size_t j = 0; j < 2; j++) {
+				bn_null(sk1[i][j]);
+				bn_null(sk2[i][j]);
+				bn_new(sk1[i][j]);
+				bn_new(sk2[i][j]);
+			}
+			for (size_t j = 0; j < 3; j++) {
+				g1_null(pk1[i][j]);
+				g2_null(pk2[i][j]);
+				g1_null(pk3[i][j]);
+				g1_new(pk1[i][j]);
+				g2_new(pk2[i][j]);
+				g1_new(pk3[i][j]);
+			}
+			bn_null(d[i]);
 			g1_null(sig[i]);
 			g1_null(as[i]);
 			g1_null(cs[i]);
-			g1_null(pk1[i]);
-			g1_null(pk3[i]);
 			g2_null(y[i]);
 			g2_null(z[i]);
-			g2_null(pk2[i]);
-			bn_new(sk1[i]);
-			bn_new(sk2[i]);
+			g2_null(t[i]);
 			bn_new(d[i]);
 			g1_new(sig[i]);
 			g1_new(as[i]);
 			g1_new(cs[i]);
-			g1_new(pk1[i]);
-			g1_new(pk3[i]);
 			g2_new(y[i]);
 			g2_new(z[i]);
-			g2_new(pk2[i]);
-		}
-
-		/* Define linear function. */
-		for (int i = 0; i < S; i++) {
-			f[i] = RLC_ALLOCA(dig_t, RLC_TERMS);
-			for (int j = 0; j < RLC_TERMS; j++) {
-				dig_t t;
-				rand_bytes((uint8_t *)&t, sizeof(dig_t));
-				f[i][j] = t & RLC_MASK(RLC_DIG / 2);
-			}
+			g2_new(t[i]);
 		}
 
 		/* Initialize scheme for messages of single components. */
 		pc_get_ord(n);
 		cp_chmklhs_set(h);
 
+		/* Define linear function, generat messages. */
+		for (size_t i = 0; i < S; i++) {
+			f[i] = RLC_ALLOCA(dig_t, RLC_TERMS);
+			for (size_t j = 0; j < RLC_TERMS; j++) {
+				dig_t t;
+				rand_bytes((uint8_t *)&t, sizeof(dig_t));
+				f[i][j] = t & RLC_MASK(RLC_DIG / 2);
+			}
+			for (size_t j = 0; j < L; j++) {
+				labs[j] = "l";
+				bn_rand_mod(msg[i][j], n);
+			}
+		}
+
 		TEST_CASE("context-hiding linear homomorphic signature is correct") {
 			int label[L], b = i % 2;
 
 			for (int j = 0; j < S; j++) {
-				cp_chmklhs_gen(x[j], hs[j], L, k[j], K, sk1[j], pk2[j], d[j], y[j], b);
+				cp_chmklhs_gen(x[j], hs[j], L, k[j], K, sk1[j][0], pk2[j][0], d[j], y[j], b);
 			}
 			/* Compute all signatures (ECDSA if b = 0; BLS if b = 1). */
 			for (int j = 0; j < S; j++) {
 				for (int l = 0; l < L; l++) {
 					label[l] = l;
-					bn_rand_mod(msg[j][l], n);
-					cp_chmklhs_sig(sig[j], z[j], a[j][l], c[j][l], r[j][l],
-						s[j][l], msg[j][l], data, label[l], x[j], h, k[j], K,
-						d[j], sk1[j], b);
+					TEST_ASSERT(cp_chmklhs_sig(sig[j], z[j], a[j][l], c[j][l],
+							r[j][l], s[j][l], msg[j][l], data, label[l], x[j],
+							h, k[j], K, d[j], sk1[j][0], b) == RLC_OK, end);
 				}
 			}
 			for (int j = 0; j < S; j++) {
 				flen[j] = 1;
+				g2_copy(t[j], pk2[j][0]);
 				for (int l = 0; l < L; l++) {
 					TEST_ASSERT(cp_chmklhs_ver(r[j][l], s[j][l], &sig[j], &z[j],
 						&a[j][l], &c[j][l], msg[j][l], data, h, &label[l],
-						(const gt_t**)&hs[j], NULL, flen, &y[j], &pk2[j], 1, b),
+						(const gt_t**)&hs[j], NULL, flen, &y[j], &pk2[j][0], 1, b),
 						end);
 				}
 			}
@@ -2447,41 +2458,41 @@ static int lhs(void) {
 				cp_chmklhs_fun(as[j], cs[j], a[j], c[j], f[j], flen[j]);
 			}
 
-			cp_chmklhs_evl(t1, t2, r[0], s[0], f[0], flen[0]);
+			cp_chmklhs_evl(t1[0], t2[0], r[0], s[0], f[0], flen[0]);
 			for (int j = 1; j < S; j++) {
 				cp_chmklhs_evl(r[0][0], s[0][0], r[j], s[j], f[j], flen[j]);
-				g1_add(t1, t1, r[0][0]);
-				g2_add(t2, t2, s[0][0]);
+				g1_add(t1[0], t1[0], r[0][0]);
+				g2_add(t2[0], t2[0], s[0][0]);
 			}
-			g1_norm(t1, t1);
-			g2_norm(t2, t2);
+			g1_norm(t1[0], t1[0]);
+			g2_norm(t2[0], t2[0]);
 			/* We share messages between users to simplify tests. */
 			bn_zero(m);
 			for (int j = 0; j < S; j++) {
 				for (int l = 0; l < L; l++) {
-					bn_mul_dig(msg[j][l], msg[j][l], f[j][l]);
-					bn_add(m, m, msg[j][l]);
+					bn_mul_dig(d[j], msg[j][l], f[j][l]);
+					bn_add(m, m, d[j]);
 					bn_mod(m, m, n);
 				}
 			}
 
-			TEST_ASSERT(cp_chmklhs_ver(t1, t2, sig, z, as, cs, m, data, h, label,
-				(const gt_t **)hs, (const dig_t **)f, flen, y, pk2, S, b), end);
+			TEST_ASSERT(cp_chmklhs_ver(t1[0], t2[0], sig, z, as, cs, m, data, h,
+					label, (const gt_t **)hs, (const dig_t **)f, flen, y, t,
+					S, b), end);
 
-			cp_chmklhs_off(vk, h, label, (const gt_t **)hs, (const dig_t **)f,
-				flen, S);
-			TEST_ASSERT(cp_chmklhs_onv(t1, t2, sig, z, as, cs, m, data, h, vk,
-				y, pk2, S, b) == 1, end);
+			TEST_ASSERT(cp_chmklhs_off(vk, h, label, (const gt_t **)hs, (const dig_t **)f,
+					flen, S) == RLC_OK, end);
+			TEST_ASSERT(cp_chmklhs_onv(t1[0], t2[0], sig, z, as, cs, m, data, h,
+					vk, y, t, S, b) == 1, end);
 		}
 		TEST_END;
 
 		TEST_CASE("simple linear multi-key homomorphic signature is correct") {
 			for (int j = 0; j < S; j++) {
-				cp_mklhs_gen(sk1[j], pk2[j]);
+				cp_mklhs_gen(sk1[j][0], pk2[j][0]);
 				for (int l = 0; l < L; l++) {
-					labs[l] = "l";
-					bn_rand_mod(msg[j][l], n);
-					cp_mklhs_sig(a[j][l], msg[j][l], data, id[j], labs[l], sk1[j]);
+					TEST_ASSERT(cp_mklhs_sig(a[j][l], msg[j][l], data, id[j],
+							labs[l], sk1[j][0]) == RLC_OK, end);
 				}
 			}
 			for (int j = 0; j < S; j++) {
@@ -2489,43 +2500,43 @@ static int lhs(void) {
 				for (int l = 0; l < L; l++) {
 					TEST_ASSERT(cp_mklhs_ver(a[j][l], msg[j][l], &msg[j][l],
 						data, &id[j], (const char **)&labs[l], NULL, flen,
-						&pk2[j], 1), end);
+						&pk2[j][0], 1), end);
 				}
 			}
 
 			bn_zero(m);
 			for (int j = 0; j < S; j++) {
 				flen[j] = L;
+				g2_copy(t[j], pk2[j][0]);
 				cp_mklhs_fun(d[j], msg[j], f[j], L);
 				bn_add(m, m, d[j]);
 				bn_mod(m, m, n);
 			}
 
-			g1_set_infty(t1);
+			g1_set_infty(t1[0]);
 			for (int j = 0; j < S; j++) {
-				cp_mklhs_evl(r[0][j], a[j], f[j], L);
-				g1_add(t1, t1, r[0][j]);
+				cp_mklhs_evl(r[j][0], a[j], f[j], L);
+				g1_add(t1[0], t1[0], r[j][0]);
 			}
-			g1_norm(t1, t1);
+			g1_norm(t1[0], t1[0]);
 
-			TEST_ASSERT(cp_mklhs_ver(t1, m, d, data, id, (const char **)labs,
-					(const dig_t **)f, flen, pk2, S), end);
+			TEST_ASSERT(cp_mklhs_ver(t1[0], m, d, data, id, (const char **)labs,
+					(const dig_t **)f, flen, t, S), end);
 
-			cp_mklhs_off(as, ft, id, (const char **)labs, (const dig_t **)f,
-					flen, S);
-			TEST_ASSERT(cp_mklhs_onv(t1, m, d, data, id, as, ft, pk2, S), end);
+			TEST_ASSERT(cp_mklhs_off(as, ft, id, (const char **)labs, (const dig_t **)f,
+					flen, S) == RLC_OK, end);
+			TEST_ASSERT(cp_mklhs_onv(t1[0], m, d, data, id, as, ft, t, S),
+					end);
 		}
 		TEST_END;
 
-		cp_smklhs_set(u, t1, p1, t2, p2);
+		cp_smklhs_set(u, t1[0], p1[0], t2[0], p2[0]);
 		TEST_CASE("succint linear multi-key homomorphic signature is correct") {
 			for (int j = 0; j < S; j++) {
-				cp_smklhs_gen(sk1[j], sk2[j], pk1[j], pk2[j], pk3[j]);
+				cp_smklhs_gen(sk1[j][0], sk2[j][0], pk1[j][0], pk2[j][0], pk3[j][0]);
 				for (int l = 0; l < L; l++) {
-					labs[l] = "l";
-					bn_rand_mod(msg[j][l], n);
 					cp_smklhs_sig(a[j][l], msg[j][l], data, id[j], labs[l],
-							t1, p1, sk1[j], sk2[j]);
+							t1[0], p1[0], sk1[j][0], sk2[j][0]);
 				}
 			}
 			for (int j = 0; j < S; j++) {
@@ -2534,13 +2545,17 @@ static int lhs(void) {
 					TEST_ASSERT(cp_smklhs_ver(a[j][l], msg[j][l], ys[0], ps[0],
 							ls[0], rs[0], ys[1], ps[1], ls[1], rs[1],
 							u, data, &id[j], (const char **)&labs[l], NULL,
-							flen, &pk1[j], &pk2[j], &pk3[j], t2, p2, 1), end);
+							flen, &pk1[j][0], &pk2[j][0], &pk3[j][0], t2[0],
+							p2[0], 1), end);
 				}
 			}
 
 			bn_zero(m);
 			for (int j = 0; j < S; j++) {
 				flen[j] = L;
+				g1_copy(as[j], pk1[j][0]);
+				g2_copy(t[j], pk2[j][0]);
+				g1_copy(cs[j], pk3[j][0]);
 				cp_mklhs_fun(d[j], msg[j], f[j], L);
 				bn_add(m, m, d[j]);
 				bn_mod(m, m, n);
@@ -2553,15 +2568,111 @@ static int lhs(void) {
 			}
 			g1_norm(h, h);
 
-			cp_ipa_prv(ys[0], ps[0], ls[0], rs[0], pk1, d, u, S);
-			cp_ipa_prv(ys[1], ps[1], ls[1], rs[1], pk3, d, u, S);
+			cp_ipa_prv(ys[0], ps[0], ls[0], rs[0], as, d, u, S);
+			cp_ipa_prv(ys[1], ps[1], ls[1], rs[1], cs, d, u, S);
 
 			TEST_ASSERT(cp_smklhs_ver(h, m, ys[0], ps[0], ls[0], rs[0],
 					ys[1], ps[1], ls[1], rs[1], u, data, id,
 					(const char **)labs, (const dig_t **)f,
-					flen, pk1, pk2, pk3, t2, p2, S), end);
+					flen, as, t, cs, t2[0], p2[0], S), end);
 		}
 		TEST_END;
+
+		int cp_sasmklhs_set(ec_t u, g1_t t1[2], g1_t p1[2], g2_t t2[2], g2_t p2[2]);
+		int cp_sasmklhs_gen(bn_t sk1[2], bn_t sk2[2], g1_t pk1[3], g2_t pk2[3], g1_t pk3[3]);
+		int cp_sasmklhs_sig(bn_t r, g1_t sr, g1_t su, const bn_t m, const char *data,
+		const char *id, const char *tag, const g1_t t1[2], const g1_t p1[2],
+		const bn_t sk1[2], const bn_t sk2[2]);
+	int cp_sasmklhs_ver(const bn_t r, const g1_t sr, const g1_t sm, const bn_t m,
+		const bn_t y[6], const ec_t ps[6], const ec_t *ls1, const ec_t *rs1,
+		const ec_t *ls2, const ec_t *rs2,
+		const ec_t *ls3, const ec_t *rs3,
+		const ec_t *ls4, const ec_t *rs4,
+		const ec_t *ls5, const ec_t *rs5,
+		const ec_t *ls6, const ec_t *rs6,
+		const ec_t u, const char *data, const char *id[], const char *tag[],
+		const dig_t *f[], const size_t flen[], const g1_t pk1[][3],
+		const g2_t pk2[][3], const g1_t pk3[][3], const g2_t t2[2],
+		const g2_t p2[2], size_t slen);
+
+		TEST_ASSERT(cp_sasmklhs_set(u, t1, p1, t2, p2) == RLC_OK, end);
+		TEST_CASE("succint adaptively-secure mklhs is correct") {
+			for (int j = 0; j < S; j++) {
+				cp_sasmklhs_gen(sk1[j], sk2[j], pk1[j], pk2[j], pk3[j]);
+				for (int l = 0; l < L; l++) {
+					TEST_ASSERT(cp_sasmklhs_sig(x[j][l], a[j][l], c[j][l],
+							msg[j][l], data, id[j], labs[l], t1, p1,
+							sk1[j], sk2[j]) == RLC_OK, end);
+				}
+			}
+			for (int j = 0; j < S; j++) {
+				flen[j] = 1;
+				for (int l = 0; l < L; l++) {
+					TEST_ASSERT(cp_sasmklhs_ver(x[j][l], a[j][l], c[j][l],
+							msg[j][l], ys, ps, ls[0], rs[0], ls[1], rs[1],
+							ls[2], rs[2],
+							ls[3], rs[3],
+							ls[4], rs[4],
+							ls[5], rs[5],
+							u, data, &id[j], (const char **)&labs[l], NULL,
+							flen, &pk1[j], &pk2[j], &pk3[j], t2, p2, 1), end);
+				}
+			}
+
+			bn_zero(l);
+			for (int j = 0; j < S; j++) {
+				flen[j] = L;
+				g1_copy(as[j], pk1[j][0]);
+				g1_copy(cs[j], pk3[j][0]);
+				cp_mklhs_fun(d[j], x[j], f[j], L);
+				bn_add(l, l, d[j]);
+				bn_mod(l, l, n);
+			}
+
+			cp_ipa_prv(ys[0], ps[0], ls[0], rs[0], as, d, u, S);
+			cp_ipa_prv(ys[1], ps[1], ls[1], rs[1], cs, d, u, S);
+
+			for (int j = 0; j < S; j++) {
+				g1_copy(as[j], pk1[j][2]);
+				g1_copy(cs[j], pk3[j][2]);
+			}
+
+			cp_ipa_prv(ys[4], ps[4], ls[4], rs[4], as, d, u, S);
+			cp_ipa_prv(ys[5], ps[5], ls[5], rs[5], cs, d, u, S);
+
+			bn_zero(m);
+			for (int j = 0; j < S; j++) {
+				g1_copy(as[j], pk1[j][1]);
+				g1_copy(cs[j], pk3[j][1]);
+				cp_mklhs_fun(d[j], msg[j], f[j], L);
+				bn_add(m, m, d[j]);
+				bn_mod(m, m, n);
+			}
+
+			cp_ipa_prv(ys[2], ps[2], ls[2], rs[2], as, d, u, S);
+			cp_ipa_prv(ys[3], ps[3], ls[3], rs[3], cs, d, u, S);
+
+			g1_set_infty(g);
+			g1_set_infty(h);
+			for (int j = 0; j < S; j++) {
+				cp_mklhs_evl(r[0][j], a[j], f[j], L);
+				g1_add(g, g, r[0][j]);
+				cp_mklhs_evl(r[0][j], c[j], f[j], L);
+				g1_add(h, h, r[0][j]);
+			}
+			g1_norm(g, g);
+			g1_norm(h, h);
+
+			TEST_ASSERT(cp_sasmklhs_ver(l, g, h, m, ys, ps, 
+					ls[0], rs[0],
+					ls[1], rs[1],
+					ls[2], rs[2],
+					ls[3], rs[3],
+					ls[4], rs[4],
+					ls[5], rs[5],
+					u, data, id, (const char **)labs, (const dig_t **)f,
+					flen, pk1, pk2, pk3, t2, p2, S), end);
+		} TEST_END;
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);
@@ -2569,19 +2680,23 @@ static int lhs(void) {
 	code = RLC_OK;
 
   end:
+	bn_free(l);
 	bn_free(m);
 	bn_free(n);
 	ec_free(u);
+	g1_free(g);
 	g1_free(h);
-	g1_free(t1);
-	g1_free(p1);
-	g2_free(t2);
-	g2_free(p2);
 	gt_free(vk);
 
-	for (size_t i = 0; i < 2; i++) {
+	for (size_t i = 0; i < 6; i++) {
 		bn_free(ys[i]);
 		ec_free(ps[i]);
+	}
+	for (size_t i = 0; i < 2; i++) {
+		g1_free(t1[i]);
+		g1_free(p1[i]);
+		g2_free(t2[i]);
+		g2_free(p2[i]);
 	}
 	for (size_t i = 0; i < S; i++) {
 		RLC_FREE(f[i]);
@@ -2597,21 +2712,26 @@ static int lhs(void) {
 			g1_free(r[i][j]);
 			g2_free(s[i][j]);
 		}
-		bn_free(sk1[i]);
-		bn_free(sk2[i]);
 		bn_free(d[i]);
 		for (size_t j = 0; j < 2; j++) {
-			ec_free(ls[i][j]);
-			ec_free(rs[i][j]);
+			bn_free(sk1[i][j]);
+			bn_free(sk2[i][j]);
+		}
+		for (size_t j = 0; j < 3; j++) {
+			g1_free(pk1[i][j]);
+			g2_free(pk2[i][j]);
+			g1_free(pk3[i][j]);
+		}
+		for (size_t j = 0; j < 6; j++) {
+			ec_free(ls[j][i]);
+			ec_free(rs[j][i]);
 		}
 		g1_free(sig[i]);
 		g1_free(as[i]);
 		g1_free(cs[i]);
-		g1_free(pk1[i]);
-		g1_free(pk3[i]);
 		g2_free(y[i]);
 		g2_free(z[i]);
-		g2_free(pk2[i]);
+		g2_free(t[i]);
 	}
 	return code;
 }

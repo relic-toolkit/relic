@@ -188,22 +188,16 @@ int cp_chmklhs_sig(g1_t sig, g2_t z, g1_t a, g1_t c, g1_t r, g2_t s,
 
 int cp_chmklhs_fun(g1_t a, g1_t c, const g1_t as[], const g1_t cs[],
 		const dig_t f[], size_t len) {
-	int result = RLC_OK;
-
 	g1_mul_sim_dig(a, as, f, len);
 	g1_mul_sim_dig(c, cs, f, len);
-
-	return result;
+	return RLC_OK;
 }
 
 int cp_chmklhs_evl(g1_t r, g2_t s, const g1_t rs[], const g2_t ss[],
 		const dig_t f[], size_t len) {
-	int result = RLC_OK;
-
 	g1_mul_sim_dig(r, rs, f, len);
 	g2_mul_sim_dig(s, ss, f, len);
-
-	return result;
+	return RLC_OK;
 }
 
 int cp_chmklhs_ver(const g1_t r, const g2_t s, const g1_t *sig, const g2_t *z,
@@ -309,9 +303,10 @@ int cp_chmklhs_ver(const g1_t r, const g2_t s, const g1_t *sig, const g2_t *z,
 	return result;
 }
 
-void cp_chmklhs_off(gt_t vk, const g1_t h, const int label[], const gt_t *hs[],
+int cp_chmklhs_off(gt_t vk, const g1_t h, const int label[], const gt_t *hs[],
 		const dig_t *f[], const size_t flen[], size_t slen) {
 	gt_t v;
+	int result = RLC_OK;
 
 	gt_null(v);
 
@@ -326,10 +321,11 @@ void cp_chmklhs_off(gt_t vk, const g1_t h, const int label[], const gt_t *hs[],
 			}
 		}
 	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
+		result = RLC_ERR;
 	} RLC_FINALLY {
 		gt_free(v);
 	}
+	return result;
 }
 
 int cp_chmklhs_onv(const g1_t r, const g2_t s, const g1_t sig[], const g2_t z[],
