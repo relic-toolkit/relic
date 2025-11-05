@@ -37,10 +37,10 @@
 
 int cp_ipa_prv(bn_t y, ec_t p, ec_t *ls, ec_t *rs, const ec_t *g, const bn_t *a,
 		const ec_t u, size_t n) {
-	uint8_t buf[2 * RLC_FP_BYTES + 2], hash[RLC_MD_LEN];
+	uint8_t buf[3 * RLC_FP_BYTES + 2], hash[RLC_MD_LEN];
 	int result = RLC_OK;
 	size_t m = n, k = 0;
-	bn_t *b, *x, *c, t, r, c_l, c_r;
+	bn_t *b, *c, t, r, c_l, c_r, x;
 	ec_t q, s, *h;
 
 	do {
@@ -48,7 +48,6 @@ int cp_ipa_prv(bn_t y, ec_t p, ec_t *ls, ec_t *rs, const ec_t *g, const bn_t *a,
 	} while (m >>= 1);
 	k = ( n == 1 ? 0 : k);
 	b = RLC_ALLOCA(bn_t, 1 << k);
-	x = RLC_ALLOCA(bn_t, 1 << k);
 	c = RLC_ALLOCA(bn_t, 1 << k);
 	h = RLC_ALLOCA(ec_t, 1 << k);
 
@@ -56,13 +55,13 @@ int cp_ipa_prv(bn_t y, ec_t p, ec_t *ls, ec_t *rs, const ec_t *g, const bn_t *a,
 	ec_null(s);
 	bn_null(r);
 	bn_null(t);
+	bn_null(x);
 	bn_null(c_l);
 	bn_null(c_r);
 
-	if (n == 0 || b == NULL || c == NULL || x == NULL || h == NULL) {
+	if (n == 0 || b == NULL || c == NULL || h == NULL) {
 		RLC_FREE(b);
 		RLC_FREE(c);
-		RLC_FREE(x);
 		RLC_FREE(h);
 		RLC_THROW(ERR_NO_MEMORY);
 		return RLC_ERR;
@@ -73,6 +72,7 @@ int cp_ipa_prv(bn_t y, ec_t p, ec_t *ls, ec_t *rs, const ec_t *g, const bn_t *a,
 		ec_new(s);
 		bn_new(r);
 		bn_new(t);
+		bn_new(x);
 		bn_new(c_l);
 		bn_new(c_r);
 
@@ -84,7 +84,6 @@ int cp_ipa_prv(bn_t y, ec_t p, ec_t *ls, ec_t *rs, const ec_t *g, const bn_t *a,
 			ec_null(h[i]);
 			bn_new(b[i]);
 			bn_new(c[i]);
-			bn_new(x[i]);
 			ec_new(h[i]);
 			bn_set_dig(b[i], 1);
 			if (i < n) {
@@ -105,6 +104,7 @@ int cp_ipa_prv(bn_t y, ec_t p, ec_t *ls, ec_t *rs, const ec_t *g, const bn_t *a,
 		ec_norm(p, p);
 
 		m = (1 << k);
+		bn_zero(x);
 		ec_copy(q, p);
 		for (size_t i = 0; i < k; i++) {
 			m = m >> 1;
@@ -129,26 +129,27 @@ int cp_ipa_prv(bn_t y, ec_t p, ec_t *ls, ec_t *rs, const ec_t *g, const bn_t *a,
 
 			ec_write_bin(buf, RLC_FP_BYTES + 1, ls[i], 1);
 			ec_write_bin(buf + RLC_FP_BYTES + 1, RLC_FP_BYTES + 1, rs[i], 1);
+			bn_write_bin(buf + 2 * RLC_FP_BYTES + 2, RLC_FP_BYTES, x);
 			md_map(hash, buf, sizeof(buf));
-			bn_read_bin(x[i], hash, RLC_MD_LEN);
+			bn_read_bin(x, hash, RLC_MD_LEN);
 
-			bn_mod_inv(t, x[i], r);
+			bn_mod_inv(t, x, r);
 			for (size_t j = 0; j < m; j++) {
-				ec_mul_sim(h[j], h[j], t, h[m + j], x[i]);
-				bn_mul(c[j], c[j], x[i]);
+				ec_mul_sim(h[j], h[j], t, h[m + j], x);
+				bn_mul(c[j], c[j], x);
 				bn_mul(c[m + j], c[m + j], t);
 				bn_add(c[j], c[j], c[m + j]);
 				bn_mod(c[j], c[j], r);
 				bn_mul(b[j], b[j], t);
-				bn_mul(b[m + j], b[m + j], x[i]);
+				bn_mul(b[m + j], b[m + j], x);
 				bn_add(b[j], b[j], b[m + j]);
 				bn_mod(b[j], b[j], r);
 			}
-			bn_sqr(x[i], x[i]);
-			bn_mod(x[i], x[i], r);
+			bn_sqr(x, x);
+			bn_mod(x, x, r);
 			bn_sqr(t, t);
 			bn_mod(t, t, r);
-			ec_mul_sim(s, ls[i], x[i], rs[i], t);
+			ec_mul_sim(s, ls[i], x, rs[i], t);
 			ec_add(q, q, s);
 		}
 		ec_norm(q, q);
@@ -160,6 +161,7 @@ int cp_ipa_prv(bn_t y, ec_t p, ec_t *ls, ec_t *rs, const ec_t *g, const bn_t *a,
 		ec_free(s);
 		bn_free(r);
 		bn_free(t);
+		bn_free(x);
 		bn_free(c_l);
 		bn_free(c_r);
 		for (size_t i = 0; i < (1 << k); i++) {
@@ -178,7 +180,7 @@ int cp_ipa_prv(bn_t y, ec_t p, ec_t *ls, ec_t *rs, const ec_t *g, const bn_t *a,
 
 int cp_ipa_ver(const bn_t y, const ec_t p, const ec_t *ls, const ec_t *rs,
 		const ec_t *g, const ec_t u, size_t n) {
-	uint8_t buf[2 * RLC_FP_BYTES + 2], hash[RLC_MD_LEN];
+	uint8_t buf[3 * RLC_FP_BYTES + 2], hash[RLC_MD_LEN];
 	int result = 1;
 	size_t m = n, k = 0;
 	bn_t t, r, x, *b;
@@ -226,11 +228,13 @@ int cp_ipa_ver(const bn_t y, const ec_t p, const ec_t *ls, const ec_t *rs,
 		ec_curve_get_ord(r);
 
 		m = (1 << k);
+		bn_zero(x);
 		ec_copy(q, p);
 		for (size_t i = 0; i < k; i++) {
 			m = m >> 1;
 			ec_write_bin(buf, RLC_FP_BYTES + 1, ls[i], 1);
 			ec_write_bin(buf + RLC_FP_BYTES + 1, RLC_FP_BYTES + 1, rs[i], 1);
+			bn_write_bin(buf + 2 * RLC_FP_BYTES + 2, RLC_FP_BYTES, x);
 			md_map(hash, buf, sizeof(buf));
 			bn_read_bin(x, hash, RLC_MD_LEN);
 			bn_mod_inv(t, x, r);
