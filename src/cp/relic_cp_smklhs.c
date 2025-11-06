@@ -337,9 +337,6 @@ int cp_sasmklhs_sig(bn_t r, g1_t sr, g1_t sm, const bn_t m, const char *data,
 		pc_get_ord(n);
 		bn_rand_mod(r, n);
 
-		cp_smklhs_sig(sr, r, data, id, tag, t1[0], p1[0], sk1[0], sk2[0],
-				pk1[0], pk2[0], pk3[0]);
-
 		memcpy(str, data, strlen(data));
 		memcpy(str + strlen(data), id, strlen(id));
 		memcpy(str + strlen(data) + strlen(id), tag, strlen(tag));
@@ -352,9 +349,19 @@ int cp_sasmklhs_sig(bn_t r, g1_t sr, g1_t sm, const bn_t m, const char *data,
 			g1_write_bin(ptr, RLC_FP_BYTES + 1, pk3[i], 1);
 			ptr += RLC_PC_BYTES + 1;
 		}
-		g1_map(sm, str, len);
+		g1_map(a, str, len);
+		g1_mul(sr, t1[0], r);
+		g1_add(sr, sr, a);
+		g1_norm(sr, sr);
+		g1_mul_sec(sr, sr, sk1[0]);
 
-		g1_mul(a, t1[1], m);
+		bn_mul(k, r, sk2[0]);
+		bn_mod(k, k, n);
+		g1_mul(sm, p1[0], k);
+		g1_add(sr, sr, sm);
+		g1_norm(sr, sr);
+
+		g1_mul(sm, t1[1], m);
 		g1_add(sm, sm, a);
 		g1_norm(sm, sm);
 		g1_mul_sec(sm, sm, sk1[1]);
@@ -434,11 +441,7 @@ int cp_sasmklhs_ver(const bn_t r, const g1_t sr, const g1_t sm, const bn_t m,
 			g1_new(h[j]);
 		}
 
-		if (slen == 1) {
-			ver_r &= cp_smklhs_ver(sr, r, NULL, NULL, NULL, NULL, NULL, NULL,
-					NULL, NULL, u, data, &id[0], &tag[0], &f[0], &flen[0],
-					&pk1[0][0], &pk2[0][0], &pk3[0][0], t2[0], p2[0], 1);
-		} else {
+		if (slen > 1) {
 			for (size_t i = 0; i < slen; i++) {
 				g1_copy(g1[i], pk1[i][0]);
 			}
@@ -456,39 +459,6 @@ int cp_sasmklhs_ver(const bn_t r, const g1_t sr, const g1_t sm, const bn_t m,
 			}
 			ver_m &= cp_ipa_ver(y[3], ps[3], ls4, rs4, g1, u, slen);
 			ver_r &= cp_ipa_ver(y[4], ps[4], ls5, rs5, g1, u, slen);
-
-			for (size_t i = 0; i < slen; i++) {
-				memcpy(str, data, strlen(data));
-				memcpy(str + strlen(data), id[i], strlen(id[i]));
-				for (size_t j = 0; j < flen[i]; j++) {
-					memcpy(str + strlen(data) + strlen(id[i]), tag[j], strlen(tag[j]));
-					len = strlen(data) + strlen(id[i]) + strlen(tag[j]);
-					ptr = str + len;
-					g1_write_bin(ptr, RLC_PC_BYTES + 1, pk1[i][0], 1);
-					ptr += RLC_PC_BYTES + 1;
-					g2_write_bin(ptr, 2 * RLC_FP_BYTES + 1, pk2[i][0], 1);
-					ptr += 2 * RLC_PC_BYTES + 1;
-					g1_write_bin(ptr, RLC_FP_BYTES + 1, pk3[i][0], 1);
-					ptr += RLC_PC_BYTES + 1;
-					len += 4 * RLC_PC_BYTES + 3;
-					g1_map(h[j], str, len);
-				}
-				g1_norm_sim(h, h, flen[i]);
-				g1_mul_sim_dig(g1[i], h, f[i], flen[i]);
-				g2_copy(g2[i], pk2[i][0]);
-			}
-			g1_mul(g1[slen], u, r);
-			g1_sub(g1[slen + 1], ps[1], g1[slen]);
-			g1_sub(g1[slen], ps[0], g1[slen]);
-			g1_norm_sim(g1 + slen, g1 + slen, 2);
-			g1_neg(g1[slen + 2], sr);
-			g2_copy(g2[slen], t2[0]);
-			g2_copy(g2[slen + 1], p2[0]);
-			g2_get_gen(g2[slen + 2]);
-			pc_map_sim(e, g1, g2, slen + 3);
-			if (gt_cmp_dig(e, 1) != RLC_EQ) {
-				ver_r = 0;
-			}
 		}
 
 		for (size_t i = 0; i < slen; i++) {
@@ -517,6 +487,26 @@ int cp_sasmklhs_ver(const bn_t r, const g1_t sr, const g1_t sm, const bn_t m,
 					g1_copy(g1[i], h[j]);
 				}
 			}
+			g2_copy(g2[i], pk2[i][0]);
+		}
+
+		if (slen == 1) {
+			g1_mul(g1[slen], pk1[0][0], r);
+			g1_mul(g1[slen + 1], pk3[0][0], r);
+		} else {
+			g1_mul(g1[slen], u, r);
+			g1_sub(g1[slen + 1], ps[1], g1[slen]);
+			g1_sub(g1[slen], ps[0], g1[slen]);
+			g1_norm_sim(g1 + slen, g1 + slen, 2);
+		}
+		g2_copy(g2[slen], t2[0]);
+		g2_copy(g2[slen + 1], p2[0]);
+		g1_neg(g1[slen + 2], sr);
+		g2_get_gen(g2[slen + 2]);
+		pc_map_sim(e, g1, g2, slen + 3);
+		ver_r = (gt_cmp_dig(e, 1) == RLC_EQ);
+		
+		for (size_t i = 0; i < slen; i++) {
 			g2_copy(g2[i], pk2[i][1]);
 		}
 
@@ -527,12 +517,6 @@ int cp_sasmklhs_ver(const bn_t r, const g1_t sr, const g1_t sm, const bn_t m,
 			g1_mul(g1[2], pk3[0][1], t);
 			g2_copy(g2[1], t2[1]);
 			g2_copy(g2[2], p2[1]);
-			g1_neg(g1[3], sm);
-			g2_get_gen(g2[3]);
-			pc_map_sim(e, g1, g2, slen + 3);
-			if (gt_cmp_dig(e, 1) != RLC_EQ) {
-				ver_m = 0;
-			}
 		} else {
 			g1_mul(g1[slen], u, r);
 			g1_sub(g1[slen], ps[4], g1[slen]);
@@ -543,13 +527,11 @@ int cp_sasmklhs_ver(const bn_t r, const g1_t sr, const g1_t sm, const bn_t m,
 			g1_norm_sim(g1 + slen, g1 + slen, 3);
 			g2_copy(g2[slen], p2[1]);
 			g2_copy(g2[slen + 1], t2[1]);
-			g1_neg(g1[slen + 2], sm);
-			g2_get_gen(g2[slen + 2]);
-			pc_map_sim(e, g1, g2, slen + 3);
-			if (gt_cmp_dig(e, 1) != RLC_EQ) {
-				ver_m = 0;
-			}
 		}
+		g1_neg(g1[slen + 2], sm);
+		g2_get_gen(g2[slen + 2]);
+		pc_map_sim(e, g1, g2, slen + 3);
+		ver_m = (gt_cmp_dig(e, 1) == RLC_EQ);
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
