@@ -2311,12 +2311,12 @@ static int zss(void) {
 static int lhs(void) {
 	int code = RLC_ERR;
 	uint8_t k[S][K];
-	bn_t ys[6], l, m, n, msg[S][L], sk1[S][2], sk2[S][2], d[S], x[S][L];
-	g1_t g, h, t1[2], p1[2], pk1[S][3], pk3[S][3], as[S], cs[S], sig[S];
+	bn_t ys[5], l, m, n, msg[S][L], sk1[S][2], sk2[S][2], d[S], x[S][L];
+	g1_t g, h, t1[2], p1[2], pk1[S][2], pk3[S][2], as[S], cs[S], sig[S];
 	g1_t a[S][L], c[S][L], r[S][L];
-	g2_t t2[2], p2[2], s[S][L], pk2[S][3], y[S], z[S], t[S];
+	g2_t t2[2], p2[2], s[S][L], pk2[S][2], y[S], z[S], t[S];
 	gt_t *hs[S], vk;
-	ec_t u, ps[6], ls[6][S], rs[6][S];
+	ec_t u, ps[5], ls[5][S], rs[5][S];
 	const char *data = "database-identifier";
 	const char *id[S] = { "Alice", "Bob" };
 	dig_t ft[S], *f[S] = { NULL };
@@ -2340,7 +2340,7 @@ static int lhs(void) {
 		g1_new(h);
 		gt_new(vk);
 
-		for (size_t i = 0; i < 6; i++) {
+		for (size_t i = 0; i < 5; i++) {
 			bn_null(ys[i]);
 			bn_new(ys[i]);
 			ec_null(ps[i]);
@@ -2372,7 +2372,7 @@ static int lhs(void) {
 				g1_new(r[i][j]);
 				g2_new(s[i][j]);
 			}
-			for (size_t j = 0; j < 6; j++) {
+			for (size_t j = 0; j < 5; j++) {
 				ec_null(ls[j][i]);
 				ec_null(rs[j][i]);
 				ec_new(ls[j][i]);
@@ -2383,8 +2383,6 @@ static int lhs(void) {
 				bn_null(sk2[i][j]);
 				bn_new(sk1[i][j]);
 				bn_new(sk2[i][j]);
-			}
-			for (size_t j = 0; j < 3; j++) {
 				g1_null(pk1[i][j]);
 				g2_null(pk2[i][j]);
 				g1_null(pk3[i][j]);
@@ -2536,7 +2534,8 @@ static int lhs(void) {
 				cp_smklhs_gen(sk1[j][0], sk2[j][0], pk1[j][0], pk2[j][0], pk3[j][0]);
 				for (int l = 0; l < L; l++) {
 					cp_smklhs_sig(a[j][l], msg[j][l], data, id[j], labs[l],
-							t1[0], p1[0], sk1[j][0], sk2[j][0]);
+							t1[0], p1[0], sk1[j][0], sk2[j][0], pk1[j][0],
+							pk2[j][0], pk3[j][0]);
 				}
 			}
 			for (int j = 0; j < S; j++) {
@@ -2580,19 +2579,19 @@ static int lhs(void) {
 
 		int cp_sasmklhs_set(ec_t u, g1_t t1[2], g1_t p1[2], g2_t t2[2], g2_t p2[2]);
 		int cp_sasmklhs_gen(bn_t sk1[2], bn_t sk2[2], g1_t pk1[3], g2_t pk2[3], g1_t pk3[3]);
-		int cp_sasmklhs_sig(bn_t r, g1_t sr, g1_t su, const bn_t m, const char *data,
+		int cp_sasmklhs_sig(bn_t r, g1_t sr, g1_t sm, const bn_t m, const char *data,
 		const char *id, const char *tag, const g1_t t1[2], const g1_t p1[2],
-		const bn_t sk1[2], const bn_t sk2[2]);
-	int cp_sasmklhs_ver(const bn_t r, const g1_t sr, const g1_t sm, const bn_t m,
-		const bn_t y[6], const ec_t ps[6], const ec_t *ls1, const ec_t *rs1,
+		const bn_t sk1[2], const bn_t sk2[2], const g1_t pk1[2],
+		const g2_t pk2[2], const g1_t pk3[2]);
+		int cp_sasmklhs_ver(const bn_t r, const g1_t sr, const g1_t sm, const bn_t m,
+		const bn_t y[5], const ec_t ps[5], const ec_t *ls1, const ec_t *rs1,
 		const ec_t *ls2, const ec_t *rs2,
 		const ec_t *ls3, const ec_t *rs3,
 		const ec_t *ls4, const ec_t *rs4,
 		const ec_t *ls5, const ec_t *rs5,
-		const ec_t *ls6, const ec_t *rs6,
 		const ec_t u, const char *data, const char *id[], const char *tag[],
-		const dig_t *f[], const size_t flen[], const g1_t pk1[][3],
-		const g2_t pk2[][3], const g1_t pk3[][3], const g2_t t2[2],
+		const dig_t *f[], const size_t flen[], const g1_t pk1[][2],
+		const g2_t pk2[][2], const g1_t pk3[][2], const g2_t t2[2],
 		const g2_t p2[2], size_t slen);
 
 		TEST_ASSERT(cp_sasmklhs_set(u, t1, p1, t2, p2) == RLC_OK, end);
@@ -2601,8 +2600,8 @@ static int lhs(void) {
 				cp_sasmklhs_gen(sk1[j], sk2[j], pk1[j], pk2[j], pk3[j]);
 				for (int l = 0; l < L; l++) {
 					TEST_ASSERT(cp_sasmklhs_sig(x[j][l], a[j][l], c[j][l],
-							msg[j][l], data, id[j], labs[l], t1, p1,
-							sk1[j], sk2[j]) == RLC_OK, end);
+							msg[j][l], data, id[j], labs[l], t1, p1, sk1[j],
+							sk2[j], pk1[j], pk2[j], pk3[j]) == RLC_OK, end);
 				}
 			}
 			for (int j = 0; j < S; j++) {
@@ -2610,12 +2609,9 @@ static int lhs(void) {
 				for (int l = 0; l < L; l++) {
 					TEST_ASSERT(cp_sasmklhs_ver(x[j][l], a[j][l], c[j][l],
 							msg[j][l], ys, ps, ls[0], rs[0], ls[1], rs[1],
-							ls[2], rs[2],
-							ls[3], rs[3],
-							ls[4], rs[4],
-							ls[5], rs[5],
-							u, data, &id[j], (const char **)&labs[l], NULL,
-							flen, &pk1[j], &pk2[j], &pk3[j], t2, p2, 1), end);
+							ls[2], rs[2], ls[3], rs[3], ls[4], rs[4], u, data, &id[j],
+							(const char **)&labs[l], NULL, flen, &pk1[j],
+							&pk2[j], &pk3[j], t2, p2, 1), end);
 				}
 			}
 
@@ -2633,12 +2629,9 @@ static int lhs(void) {
 			cp_ipa_prv(ys[1], ps[1], ls[1], rs[1], cs, d, u, S);
 
 			for (int j = 0; j < S; j++) {
-				g1_copy(as[j], pk1[j][2]);
-				g1_copy(cs[j], pk3[j][2]);
+				g1_copy(cs[j], pk3[j][1]);
 			}
-
-			cp_ipa_prv(ys[4], ps[4], ls[4], rs[4], as, d, u, S);
-			cp_ipa_prv(ys[5], ps[5], ls[5], rs[5], cs, d, u, S);
+			cp_ipa_prv(ys[4], ps[4], ls[4], rs[4], cs, d, u, S);
 
 			bn_zero(m);
 			for (int j = 0; j < S; j++) {
@@ -2669,7 +2662,6 @@ static int lhs(void) {
 					ls[2], rs[2],
 					ls[3], rs[3],
 					ls[4], rs[4],
-					ls[5], rs[5],
 					u, data, id, (const char **)labs, (const dig_t **)f,
 					flen, pk1, pk2, pk3, t2, p2, S), end);
 		} TEST_END;
@@ -2688,7 +2680,7 @@ static int lhs(void) {
 	g1_free(h);
 	gt_free(vk);
 
-	for (size_t i = 0; i < 6; i++) {
+	for (size_t i = 0; i < 5; i++) {
 		bn_free(ys[i]);
 		ec_free(ps[i]);
 	}
@@ -2716,13 +2708,11 @@ static int lhs(void) {
 		for (size_t j = 0; j < 2; j++) {
 			bn_free(sk1[i][j]);
 			bn_free(sk2[i][j]);
-		}
-		for (size_t j = 0; j < 3; j++) {
 			g1_free(pk1[i][j]);
 			g2_free(pk2[i][j]);
 			g1_free(pk3[i][j]);
 		}
-		for (size_t j = 0; j < 6; j++) {
+		for (size_t j = 0; j < 5; j++) {
 			ec_free(ls[j][i]);
 			ec_free(rs[j][i]);
 		}
@@ -3006,6 +2996,10 @@ int main(void) {
 #if defined(WITH_PC)
 	util_banner("Protocols based on pairings:\n", 0);
 	if (pc_param_set_any() == RLC_OK) {
+		if (lhs() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
 
 		if (pdpub() != RLC_OK) {
 			core_clean();
@@ -3065,11 +3059,6 @@ int main(void) {
 #endif
 
 		if (zss() != RLC_OK) {
-			core_clean();
-			return 1;
-		}
-		
-		if (lhs() != RLC_OK) {
 			core_clean();
 			return 1;
 		}

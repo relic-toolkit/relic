@@ -1721,7 +1721,7 @@ static void zss(void) {
 #define S	10			/* Number of signers. */
 #define L	16			/* Number of labels, must be <= RLC_TERMS. */
 #define K	RLC_MD_LEN	/* Size of PRF key. */
-//#define BENCH_LHS		/* Uncomment for fine-grained benchmarking. */
+#define BENCH_LHS		/* Uncomment for fine-grained benchmarking. */
 
 static void lhs(void) {
 	uint8_t k[S][K];
@@ -2153,7 +2153,7 @@ static void lhs(void) {
 				ls[l] = "l";
 				bn_mod(msg[l], msg[l], n);
 				BENCH_ADD(cp_smklhs_sig(a[j][l], msg[l], data, id[j], ls[l],
-						t1, p1, sk1[j], sk2[j]));
+						t1, p1, sk1[j], sk2[j], pk1[j], pk2[j], pk3[j]));
 			}
 		}
 	} BENCH_DIV(S * L);

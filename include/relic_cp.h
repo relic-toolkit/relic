@@ -2921,8 +2921,8 @@ int cp_smklhs_set(ec_t u, g1_t t1, g1_t p1, g2_t t2, g2_t p2);
  * @param[out] sk1			- the private key in G_1.
  * @param[out] sk2			- the private key in G_2.
  * @param[out] pk1			- the first public key in G_1.
- * @param[out] pk2			- the public key in G_2.
- * @param[out] pk3			- the public key in G_1.
+ * @param[out] pk2			- the second public key in G_2.
+ * @param[out] pk3			- the third public key in G_1.
  */
 int cp_smklhs_gen(bn_t sk1, bn_t sk2, g1_t pk1, g2_t pk2, g1_t pk3);
 
@@ -2938,10 +2938,13 @@ int cp_smklhs_gen(bn_t sk1, bn_t sk2, g1_t pk1, g2_t pk2, g1_t pk3);
  * @param[in] p1			- the second generator in G_1.
  * @param[in] sk1			- the private key in G_1.
  * @param[in] sk2			- the private key in G_2.
+ * @param[out] pk1			- the first public key in G_1.
+ * @param[out] pk2			- the second public key in G_2.
+ * @param[out] pk3			- the third public key in G_1.
  */
 int cp_smklhs_sig(g1_t s, const bn_t m, const char *data, const char *id,
 		const char *tag, const g1_t t1, const g1_t p1, const bn_t sk1,
-		const bn_t sk2);
+		const bn_t sk2, const g1_t pk1, const g2_t pk2, const g1_t pk3);
 
 /**
  * Verifies an SMKLHS signature.
@@ -2962,9 +2965,9 @@ int cp_smklhs_sig(g1_t s, const bn_t m, const char *data, const char *id,
  * @param[in] tag			- the tag.
  * @param[in] f				- the linear coefficients in the function.
  * @param[in] flen			- the number of coefficients.
- * @param[in] pk1			- the public keys of the users in G_1.
- * @param[in] pk2			- the public keys of the users in G_2.
- * @param[in] pk3			- the second public keys of the users in G_1.
+ * @param[in] pk1			- the first public keys of the users in G_1.
+ * @param[in] pk2			- the second public keys of the users in G_2.
+ * @param[in] pk3			- the third public keys of the users in G_1.
  * @param[in] t2			- the first generator in G_2.
  * @param[in] p2			- the second generator in G_2.
  * @param[in] slen			- the number of singers.
