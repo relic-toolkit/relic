@@ -2414,8 +2414,8 @@ static int lhs(void) {
 		for (size_t i = 0; i < S; i++) {
 			f[i] = RLC_ALLOCA(dig_t, RLC_TERMS);
 			for (size_t j = 0; j < RLC_TERMS; j++) {
-				dig_t t;
-				rand_bytes((uint8_t *)&t, sizeof(dig_t));
+				uint32_t t;
+				rand_bytes((uint8_t *)&t, sizeof(uint32_t));
 				f[i][j] = t & RLC_MASK(RLC_DIG / 2);
 			}
 			for (size_t j = 0; j < L; j++) {
@@ -2444,9 +2444,9 @@ static int lhs(void) {
 				g2_copy(t[j], pk2[j][0]);
 				for (int l = 0; l < L; l++) {
 					TEST_ASSERT(cp_chmklhs_ver(r[j][l], s[j][l], &sig[j], &z[j],
-						&a[j][l], &c[j][l], msg[j][l], data, h, &label[l],
-						(const gt_t**)&hs[j], NULL, flen, &y[j], &pk2[j][0], 1, b),
-						end);
+							&a[j][l], &c[j][l], msg[j][l], data, h, &label[l],
+							(const gt_t**)&hs[j], NULL, flen, &y[j], &pk2[j][0],
+							1, b), end);
 				}
 			}
 			
@@ -2478,8 +2478,8 @@ static int lhs(void) {
 					label, (const gt_t **)hs, (const dig_t **)f, flen, y, t,
 					S, b), end);
 
-			TEST_ASSERT(cp_chmklhs_off(vk, h, label, (const gt_t **)hs, (const dig_t **)f,
-					flen, S) == RLC_OK, end);
+			TEST_ASSERT(cp_chmklhs_off(vk, h, label, (const gt_t **)hs,
+					(const dig_t **)f, flen, S) == RLC_OK, end);
 			TEST_ASSERT(cp_chmklhs_onv(t1[0], t2[0], sig, z, as, cs, m, data, h,
 					vk, y, t, S, b) == 1, end);
 		}
@@ -2576,23 +2576,6 @@ static int lhs(void) {
 					flen, as, t, cs, t2[0], p2[0], S), end);
 		}
 		TEST_END;
-
-		int cp_sasmklhs_set(ec_t u, g1_t t1[2], g1_t p1[2], g2_t t2[2], g2_t p2[2]);
-		int cp_sasmklhs_gen(bn_t sk1[2], bn_t sk2[2], g1_t pk1[3], g2_t pk2[3], g1_t pk3[3]);
-		int cp_sasmklhs_sig(bn_t r, g1_t sr, g1_t sm, const bn_t m, const char *data,
-		const char *id, const char *tag, const g1_t t1[2], const g1_t p1[2],
-		const bn_t sk1[2], const bn_t sk2[2], const g1_t pk1[2],
-		const g2_t pk2[2], const g1_t pk3[2]);
-		int cp_sasmklhs_ver(const bn_t r, const g1_t sr, const g1_t sm, const bn_t m,
-		const bn_t y[5], const ec_t ps[5], const ec_t *ls1, const ec_t *rs1,
-		const ec_t *ls2, const ec_t *rs2,
-		const ec_t *ls3, const ec_t *rs3,
-		const ec_t *ls4, const ec_t *rs4,
-		const ec_t *ls5, const ec_t *rs5,
-		const ec_t u, const char *data, const char *id[], const char *tag[],
-		const dig_t *f[], const size_t flen[], const g1_t pk1[][2],
-		const g2_t pk2[][2], const g1_t pk3[][2], const g2_t t2[2],
-		const g2_t p2[2], size_t slen);
 
 		TEST_ASSERT(cp_sasmklhs_set(u, t1, p1, t2, p2) == RLC_OK, end);
 		TEST_CASE("succint adaptively-secure mklhs is correct") {
