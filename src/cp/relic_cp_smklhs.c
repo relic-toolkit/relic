@@ -387,7 +387,7 @@ int cp_sasmklhs_sig(bn_t r, g1_t sr, g1_t sm, const bn_t m, const char *data,
 }
 
 int cp_sasmklhs_ver(const bn_t r, const g1_t sr, const g1_t sm, const bn_t m,
-		const bn_t y[4], const ec_t ps[4], const ec_t *ls1, const ec_t *rs1,
+		const bn_t y[5], const ec_t ps[5], const ec_t *ls1, const ec_t *rs1,
 		const ec_t *ls2, const ec_t *rs2, const ec_t *ls3, const ec_t *rs3,
 		const ec_t *ls4, const ec_t *rs4, const ec_t *ls5, const ec_t *rs5,
 		const ec_t u, const char *data, const char *id[], const char *tag[],
