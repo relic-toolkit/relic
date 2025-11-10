@@ -3000,7 +3000,8 @@ int cp_sasmklhs_set(ec_t u, g1_t t1[2], g1_t p1[2], g2_t t2[2], g2_t p2[2]);
  * @param[out] pk2			- the second public key in G_2.
  * @param[out] pk3			- the third public key in G_1.
  */
-int cp_sasmklhs_gen(bn_t sk1[2], bn_t sk2[2], g1_t pk1[3], g2_t pk2[3], g1_t pk3[3]);
+int cp_sasmklhs_gen(bn_t sk1[2], bn_t sk2[2], g1_t pk1[2], g2_t pk2[2],
+		g1_t pk3[2]);
 
 /**
  * Computes an SASMKLHS signature.
