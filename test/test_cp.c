@@ -2592,9 +2592,9 @@ static int lhs(void) {
 				for (int l = 0; l < L; l++) {
 					TEST_ASSERT(cp_sasmklhs_ver(x[j][l], a[j][l], c[j][l],
 							msg[j][l], ys, ps, ls[0], rs[0], ls[1], rs[1],
-							ls[2], rs[2], ls[3], rs[3], ls[4], rs[4], u, data, &id[j],
-							(const char **)&labs[l], NULL, flen, &pk1[j],
-							&pk2[j], &pk3[j], t2, p2, 1), end);
+							ls[2], rs[2], ls[3], rs[3], ls[4], rs[4], u, data,
+							&id[j], (const char **)&labs[l], NULL, flen,
+							&pk1[j], &pk2[j], &pk3[j], t2, p2, 1), end);
 				}
 			}
 
