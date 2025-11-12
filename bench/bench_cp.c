@@ -1725,9 +1725,9 @@ static void zss(void) {
 
 static void lhs(void) {
 	uint8_t k[S][K];
-	bn_t ys[5], l, m, n, msg[S][L], sk1[S][2], sk2[S][2], d[S], x[S][L];
+	bn_t ys[5], l, m, n, msg[S][L], sk1[S][2], sk2[S][2], d[S], e[S], x[S][L];
 	g1_t h, t1[2], p1[2], pk1[S][2], pk3[S][2], as[S], cs[S], sig[S];
-	g1_t a[S][L], c[S][L], r[S][L];
+	g1_t *a[S], *c[S], *r[S];
 	g2_t t2[2], p2[2], pk2[S][2], s[S][L], y[S], z[S], t[S];
 	gt_t *hs[S], vk;
 	ec_t u, ps[5], ls[5][S], rs[5][S];
@@ -1768,6 +1768,9 @@ static void lhs(void) {
 	}
 	for (size_t i = 0; i < S; i++) {
 		hs[i] = RLC_ALLOCA(gt_t, RLC_TERMS);
+		a[i] = RLC_ALLOCA(g1_t, L);
+		c[i] = RLC_ALLOCA(g1_t, L);
+		r[i] = RLC_ALLOCA(g1_t, L);
 		for (size_t j = 0; j < RLC_TERMS; j++) {
 			gt_null(hs[i][j]);
 			gt_new(hs[i][j]);
@@ -1805,6 +1808,7 @@ static void lhs(void) {
 			g1_new(pk3[i][j]);
 		}
 		bn_null(d[i]);
+		bn_null(e[i]);
 		g1_null(sig[i]);
 		g1_null(as[i]);
 		g1_null(cs[i]);
@@ -1812,6 +1816,7 @@ static void lhs(void) {
 		g2_null(z[i]);
 		g2_null(t[i]);
 		bn_new(d[i]);
+		bn_new(e[i]);
 		g1_new(sig[i]);
 		g1_new(as[i]);
 		g1_new(cs[i]);
@@ -2066,14 +2071,10 @@ static void lhs(void) {
 	BENCH_DIV(S);
 
 	BENCH_RUN("cp_mklhs_evl") {
-		g1_set_infty(t1[0]);
-		for (int j = 0; j < S; j++) {
-			BENCH_ADD(cp_mklhs_evl(r[0][j], a[j], f[j], L));
-			g1_add(t1[0], t1[0], r[0][j]);
-		}
-		g1_norm(t1[0], t1[0]);
-	}
-	BENCH_DIV(S);
+		BENCH_ADD(cp_mklhs_evl(t1[0], (const g1_t **)a, (const dig_t **)f,
+				flen, S));
+	} BENCH_DIV(S);
+
 
 	bn_zero(m);
 	for (int j = 0; j < S; j++) {
@@ -2185,28 +2186,9 @@ static void lhs(void) {
 	BENCH_DIV(S);
 
 	BENCH_RUN("cp_smklhs_evl") {
-		g1_set_infty(t1[0]);
-		for (int j = 0; j < S; j++) {
-			BENCH_ADD(cp_mklhs_evl(r[0][j], a[j], f[j], L));
-			g1_add(t1[0], t1[0], r[0][j]);
-		}
-		g1_norm(t1[0], t1[0]);
-	}
-	BENCH_DIV(S);
-
-	bn_zero(l);
-	for (int j = 0; j < S; j++) {
-		flen[j] = L;
-		g1_copy(as[j], pk1[j][0]);
-		g1_copy(cs[j], pk3[j][0]);
-		cp_mklhs_fun(d[j], x[j], f[j], L);
-		bn_add(l, l, d[j]);
-		bn_mod(l, l, n);
-	}
-
-	BENCH_RUN("cp_smklhs_ipa") {
-		BENCH_ADD(cp_ipa_prv(ys[0], ps[0], ls[0], rs[0], &pk1[0][0], d, u, S));
-		BENCH_ADD(cp_ipa_prv(ys[1], ps[1], ls[1], rs[1], &pk3[0][0], d, u, S));
+		BENCH_ADD(cp_smklhs_evl(h, ys[0], ps[0], ls[0], rs[0],
+					ys[1], ps[1], ls[1], rs[1], (const g1_t **)a, d, u, 
+					(const dig_t **)f, flen, as, t, cs, S));
 	} BENCH_DIV(S);
 
 	BENCH_RUN("cp_smklhs_ver") {
@@ -2277,50 +2259,26 @@ static void lhs(void) {
 
 	BENCH_RUN("cp_sasmklhs_fun") {
 		bn_zero(l);
+		bn_zero(m);
 		for (int j = 0; j < S; j++) {
 			flen[j] = L;
-			g1_copy(as[j], pk1[j][0]);
-			g2_copy(t[j], pk2[j][0]);
-			g1_copy(cs[j], pk3[j][0]);
 			BENCH_ADD(cp_mklhs_fun(d[j], x[j], f[j], L));
 			bn_add(l, l, d[j]);
 			bn_mod(l, l, n);
-		}
-	}
-	BENCH_DIV(S);
-
-	BENCH_RUN("cp_sasmklhs_evl") {
-		g1_set_infty(t1[0]);
-		g1_set_infty(t1[1]);
-		for (int j = 0; j < S; j++) {
-			BENCH_ADD(cp_mklhs_evl(r[0][j], a[j], f[j], L));
-			g1_add(t1[0], t1[0], r[0][j]);
-			BENCH_ADD(cp_mklhs_evl(r[0][j], c[j], f[j], L));
-			g1_add(t1[1], t1[1], r[0][j]);
-		}
-		g1_norm(t1[0], t1[0]);
-		g1_norm(t1[1], t1[1]);
-	}
-	BENCH_DIV(S);
-
-	BENCH_RUN("cp_sasmklhs_ipa") {
-		BENCH_ADD(cp_ipa_prv(ys[0], ps[0], ls[0], rs[0], as, d, u, S));
-		BENCH_ADD(cp_ipa_prv(ys[1], ps[1], ls[1], rs[1], cs, d, u, S));
-		for (int j = 0; j < S; j++) {
-			g1_copy(cs[j], pk3[j][1]);
-		}
-		BENCH_ADD(cp_ipa_prv(ys[4], ps[4], ls[4], rs[4], cs, d, u, S));
-		bn_zero(m);
-		for (int j = 0; j < S; j++) {
-			g1_copy(as[j], pk1[j][1]);
-			g1_copy(cs[j], pk3[j][1]);
 			cp_mklhs_fun(d[j], msg[j], f[j], L);
 			bn_add(m, m, d[j]);
 			bn_mod(m, m, n);
 		}
-		BENCH_ADD(cp_ipa_prv(ys[2], ps[2], ls[2], rs[2], as, d, u, S));
-		BENCH_ADD(cp_ipa_prv(ys[3], ps[3], ls[3], rs[3], cs, d, u, S));
-	} BENCH_DIV(S);
+	}
+	BENCH_DIV(S);
+	
+	BENCH_RUN("cp_sasmklhs_evl") {
+		BENCH_ADD(cp_sasmklhs_evl(t1[0], t1[1], ys, ps, ls[0], rs[0],
+					ls[1], rs[1], ls[2], rs[2], ls[3], rs[3], ls[4], rs[4],
+					(const g1_t **)a, (const g1_t **)c, d, e, u,
+					(const dig_t **)f, flen, pk1, pk2, pk3, S));
+	}
+	BENCH_DIV(S);
 
 	BENCH_RUN("cp_sasmklhs_ver") {
 			BENCH_ADD(cp_sasmklhs_ver(l, t1[0], t1[1], m, ys, ps, ls[0], rs[0],
@@ -2378,6 +2336,9 @@ static void lhs(void) {
 			  gt_free(hs[i][j]);
 		}
 		RLC_FREE(hs[i]);
+		RLC_FREE(a[i]);
+		RLC_FREE(c[i]);
+		RLC_FREE(r[i]);
 		for (size_t j = 0; j < L; j++) {
 			bn_free(x[i][j]);
 			bn_free(msg[i][j]);
@@ -2387,6 +2348,7 @@ static void lhs(void) {
 			g2_free(s[i][j]);
 		}
 		bn_free(d[i]);
+		bn_free(e[i]);
 		for (size_t j = 0; j < 2; j++) {
 			bn_free(sk1[i][j]);
 			bn_free(sk2[i][j]);

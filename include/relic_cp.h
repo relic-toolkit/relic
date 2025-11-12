@@ -2659,8 +2659,8 @@ int cp_ipa_ver(const bn_t y, const ec_t p, const ec_t *ls, const ec_t *rs,
 		const ec_t *g, const ec_t u, size_t n);
 
 /**
- * Initialize the Context-hiding Multi-key Homomorphic Signature scheme (CMLHS).
- * The scheme due to Schabhuser et al. signs a vector of messages.
+ * Initialize the Context-Hiding Multi-key Homomorphic Signature (CHMKLHS)
+ * scheme due to Schabhuser et al..
  *
  * @param[out] h			- the random element (message as one component).
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
@@ -2668,7 +2668,8 @@ int cp_ipa_ver(const bn_t y, const ec_t p, const ec_t *ls, const ec_t *rs,
 int cp_chmklhs_set(g1_t h);
 
 /**
- * Generates a key pair for the CMLHS scheme using BLS as underlying signature.
+ * Generates a key pair for the CHMKLHS scheme possibly using BLS as underlying
+ * signature.
  *
  * @param[out] x			- the exponent values, one per label.
  * @param[out] hs			- the hash values, one per label.
@@ -2686,7 +2687,7 @@ int cp_chmklhs_gen(bn_t *x, gt_t *hs, size_t len, uint8_t *prf, size_t plen,
 		bn_t sk, g2_t pk, bn_t d, g2_t y, int bls);
 
 /**
- * Signs a message vector using the CMLHS.
+ * Signs a message vector using the CHMKLHS.
  *
  * @param[out] sig			- the resulting BLS signature.
  * @param[out] z			- the power of the output of the PRF.
@@ -2712,7 +2713,7 @@ int cp_chmklhs_sig(g1_t sig, g2_t z, g1_t a, g1_t c, g1_t r, g2_t s,
 		const bn_t sk, int bls);
 
 /**
- * Applies a function over a set of CMLHS signatures from the same user.
+ * Applies a function over a set of CHMKLHS signatures from the same user.
  *
  * @param[out] a			- the resulting first component of the signature.
  * @param[out] c			- the resulting second component of the signature.
@@ -2726,7 +2727,7 @@ int cp_chmklhs_fun(g1_t a, g1_t c, const g1_t as[], const g1_t cs[],
 		const dig_t *f, size_t len);
 
 /**
- * Evaluates a function over a set of CMLHS signatures.
+ * Evaluates a function over a set of CHMKLHS signatures.
  *
  * @param[out] r			- the resulting third component of the signature.
  * @param[out] s			- the resulting fourth component of the signature.
@@ -2740,7 +2741,7 @@ int cp_chmklhs_evl(g1_t r, g2_t s, const g1_t rs[], const g2_t ss[],
 		const dig_t *f, size_t len);
 
 /**
- * Verifies a CMLHS signature over a set of messages.
+ * Verifies a CHMKLHS signature over a set of messages.
  *
  * @param[in] r				- the first component of the homomorphic signature.
  * @param[in] s				- the second component of the homomorphic signature.
@@ -2841,13 +2842,15 @@ int cp_mklhs_fun(bn_t mu, const bn_t *m, const dig_t *f, size_t len);
 /**
  * Evaluates a function over a set of MKLHS signatures.
  *
- * @param[out] sig			- the resulting signature.
- * @param[in] s				- the set of signatures.
+ * @param[out] s			- the resulting signature.
+ * @param[in] sig			- the set of signatures.
  * @param[in] f				- the linear coefficients in the function.
- * @param[in] len			- the number of coefficients.
+ * @param[in] flen			- the number of coefficients.
+ * @param[in] slen			- the number of signatures.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_mklhs_evl(g1_t sig, const g1_t *s, const dig_t *f, size_t len);
+int cp_mklhs_evl(g1_t s, const g1_t **sig, const dig_t *f[],
+		const size_t flen[], size_t slen);
 
 /**
  * Verifies a MKLHS signature over a set of messages.
@@ -2947,6 +2950,34 @@ int cp_smklhs_sig(g1_t s, const bn_t m, const char *data, const char *id,
 		const bn_t sk2, const g1_t pk1, const g2_t pk2, const g1_t pk3);
 
 /**
+ * Evaluates a function over a set of SMKLHS signatures.
+ *
+ * @param[out] sig			- the resulting evaluated signature.
+ * @param[out] y1			- the first component of the first proof.
+ * @param[out] ps1			- the result of the first inner product.
+ * @param[out] ls1			- the first left recursion coefficients.
+ * @param[out] rs1			- the first right recursion coefficients.
+ * @param[out] y2			- the first component of the second proof.
+ * @param[out] ps2			- the result of the second inner product.
+ * @param[out] ls2			- the second left recursion coefficients.
+ * @param[out] rs2			- the second right recursion coefficients.
+ * @param[in] sig			- the signatures to evaluate.
+ * @param[in] d				- the vector of aggregated messages.
+ * @param[in] u				- the random point.
+ * @param[in] f				- the linear coefficients in the function.
+ * @param[in] flen			- the number of coefficients.
+ * @param[in] pk1			- the first public keys of the users in G_1.
+ * @param[in] pk2			- the second public keys of the users in G_2.
+ * @param[in] pk3			- the third public keys of the users in G_1.
+ * @param[in] slen			- the number of singers.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int cp_smklhs_evl(g1_t s, bn_t y1, ec_t ps1, ec_t *ls1, ec_t *rs1,
+		bn_t y2, ec_t ps2, ec_t *ls2, ec_t *rs2, const g1_t *sig[],
+		const bn_t *d, const ec_t u, const dig_t *f[], const size_t flen[],
+		const g1_t pk1[], const g2_t pk2[], const g1_t pk3[], size_t slen);
+
+/**
  * Verifies an SMKLHS signature.
  *
  * @param[in] sig			- the aggregated signature.
@@ -3025,6 +3056,42 @@ int cp_sasmklhs_sig(bn_t r, g1_t sr, g1_t sm, const bn_t m, const char *data,
 		const char *id, const char *tag, const g1_t t1[2], const g1_t p1[2],
 		const bn_t sk1[2], const bn_t sk2[2], const g1_t pk1[2],
 		const g2_t pk2[2], const g1_t pk3[2]);
+
+/**
+ * Evaluates a function over a set of SMKLHS signatures.
+ *
+ * @param[out] s			- the first part of the evaluated signature.
+ * @param[out] t			- the second part of the evaluated signature.
+ * @param[out] y			- the first part of inner product proofs.
+ * @param[out] ps			- the second part of inner product proofs.
+ * @param[out] ls1			- the first left recursion coefficients.
+ * @param[out] rs1			- the first right recursion coefficients.
+ * @param[out] ls2			- the second left recursion coefficients.
+ * @param[out] rs2			- the second right recursion coefficients.
+ * @param[out] ls3			- the third left recursion coefficients.
+ * @param[out] rs3			- the third right recursion coefficients.
+ * @param[out] ls4			- the fourth left recursion coefficients.
+ * @param[out] rs4			- the fourth right recursion coefficients.
+ * @param[out] ls5			- the fifth left recursion coefficients.
+ * @param[out] rs5			- the fifth right recursion coefficients.
+ * @param[in] sr			- the first part of the signatures to evaluate.
+ * @param[in] sm			- the second part of the signatures to evaluate.
+ * @param[in] d				- the vector of aggregated randomness.
+ * @param[in] e				- the vector or aggregated messages.
+ * @param[in] u				- the random point.
+ * @param[in] f				- the linear coefficients in the function.
+ * @param[in] flen			- the number of coefficients.
+ * @param[in] pk1			- the first public keys of the users in G_1.
+ * @param[in] pk2			- the second public keys of the users in G_2.
+ * @param[in] pk3			- the third public keys of the users in G_1.
+ * @param[in] slen			- the number of singers.
+ */
+int cp_sasmklhs_evl(g1_t s, g1_t t, bn_t y[5], ec_t ps[5], ec_t *ls1, ec_t *rs1,
+		ec_t *ls2, ec_t *rs2, ec_t *ls3, ec_t *rs3, ec_t *ls4, ec_t *rs4,
+		ec_t *ls5, ec_t *rs5, const g1_t *sr[], const g1_t *sm[], const bn_t *d,
+		const bn_t *e, const ec_t u, const dig_t *f[], const size_t flen[],
+		const g1_t pk1[][2], const g2_t pk2[][2], const g1_t pk3[][2],
+		size_t slen);
 
 /**
  * Verifies an SASMKLHS signature.

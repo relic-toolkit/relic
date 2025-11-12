@@ -2311,9 +2311,9 @@ static int zss(void) {
 static int lhs(void) {
 	int code = RLC_ERR;
 	uint8_t k[S][K];
-	bn_t ys[5], l, m, n, msg[S][L], sk1[S][2], sk2[S][2], d[S], x[S][L];
+	bn_t ys[5], l, m, n, msg[S][L], sk1[S][2], sk2[S][2], d[S], e[S], x[S][L];
 	g1_t g, h, t1[2], p1[2], pk1[S][2], pk3[S][2], as[S], cs[S], sig[S];
-	g1_t a[S][L], c[S][L], r[S][L];
+	g1_t *a[S], *c[S], *r[S];
 	g2_t t2[2], p2[2], s[S][L], pk2[S][2], y[S], z[S], t[S];
 	gt_t *hs[S], vk;
 	ec_t u, ps[5], ls[5][S], rs[5][S];
@@ -2354,6 +2354,9 @@ static int lhs(void) {
 		}
 		for (size_t i = 0; i < S; i++) {
 			hs[i] = RLC_ALLOCA(gt_t, RLC_TERMS);
+			a[i] = RLC_ALLOCA(g1_t, L);
+			c[i] = RLC_ALLOCA(g1_t, L);
+			r[i] = RLC_ALLOCA(g1_t, L);
 			for (size_t j = 0; j < RLC_TERMS; j++) {
 				gt_null(hs[i][j]);
 				gt_new(hs[i][j]);
@@ -2391,6 +2394,7 @@ static int lhs(void) {
 				g1_new(pk3[i][j]);
 			}
 			bn_null(d[i]);
+			bn_null(e[i]);
 			g1_null(sig[i]);
 			g1_null(as[i]);
 			g1_null(cs[i]);
@@ -2398,6 +2402,7 @@ static int lhs(void) {
 			g2_null(z[i]);
 			g2_null(t[i]);
 			bn_new(d[i]);
+			bn_new(e[i]);
 			g1_new(sig[i]);
 			g1_new(as[i]);
 			g1_new(cs[i]);
@@ -2511,12 +2516,8 @@ static int lhs(void) {
 				bn_mod(m, m, n);
 			}
 
-			g1_set_infty(t1[0]);
-			for (int j = 0; j < S; j++) {
-				cp_mklhs_evl(r[j][0], a[j], f[j], L);
-				g1_add(t1[0], t1[0], r[j][0]);
-			}
-			g1_norm(t1[0], t1[0]);
+			TEST_ASSERT(cp_mklhs_evl(t1[0], (const g1_t **)a, (const dig_t **)f,
+					flen, S) == RLC_OK, end);
 
 			TEST_ASSERT(cp_mklhs_ver(t1[0], m, d, data, id, (const char **)labs,
 					(const dig_t **)f, flen, t, S), end);
@@ -2560,15 +2561,9 @@ static int lhs(void) {
 				bn_mod(m, m, n);
 			}
 
-			g1_set_infty(h);
-			for (int j = 0; j < S; j++) {
-				cp_mklhs_evl(r[0][j], a[j], f[j], L);
-				g1_add(h, h, r[0][j]);
-			}
-			g1_norm(h, h);
-
-			cp_ipa_prv(ys[0], ps[0], ls[0], rs[0], as, d, u, S);
-			cp_ipa_prv(ys[1], ps[1], ls[1], rs[1], cs, d, u, S);
+			TEST_ASSERT(cp_smklhs_evl(h, ys[0], ps[0], ls[0], rs[0],
+					ys[1], ps[1], ls[1], rs[1], (const g1_t **)a, d, u, 
+					(const dig_t **)f, flen, as, t, cs, S) == RLC_OK, end);
 
 			TEST_ASSERT(cp_smklhs_ver(h, m, ys[0], ps[0], ls[0], rs[0],
 					ys[1], ps[1], ls[1], rs[1], u, data, id,
@@ -2599,54 +2594,26 @@ static int lhs(void) {
 			}
 
 			bn_zero(l);
+			bn_zero(m);
 			for (int j = 0; j < S; j++) {
 				flen[j] = L;
-				g1_copy(as[j], pk1[j][0]);
-				g1_copy(cs[j], pk3[j][0]);
 				cp_mklhs_fun(d[j], x[j], f[j], L);
 				bn_add(l, l, d[j]);
 				bn_mod(l, l, n);
-			}
-
-			cp_ipa_prv(ys[0], ps[0], ls[0], rs[0], as, d, u, S);
-			cp_ipa_prv(ys[1], ps[1], ls[1], rs[1], cs, d, u, S);
-
-			for (int j = 0; j < S; j++) {
-				g1_copy(cs[j], pk3[j][1]);
-			}
-			cp_ipa_prv(ys[4], ps[4], ls[4], rs[4], cs, d, u, S);
-
-			bn_zero(m);
-			for (int j = 0; j < S; j++) {
-				g1_copy(as[j], pk1[j][1]);
-				g1_copy(cs[j], pk3[j][1]);
-				cp_mklhs_fun(d[j], msg[j], f[j], L);
-				bn_add(m, m, d[j]);
+				cp_mklhs_fun(e[j], msg[j], f[j], L);
+				bn_add(m, m, e[j]);
 				bn_mod(m, m, n);
 			}
 
-			cp_ipa_prv(ys[2], ps[2], ls[2], rs[2], as, d, u, S);
-			cp_ipa_prv(ys[3], ps[3], ls[3], rs[3], cs, d, u, S);
-
-			g1_set_infty(g);
-			g1_set_infty(h);
-			for (int j = 0; j < S; j++) {
-				cp_mklhs_evl(r[0][j], a[j], f[j], L);
-				g1_add(g, g, r[0][j]);
-				cp_mklhs_evl(r[0][j], c[j], f[j], L);
-				g1_add(h, h, r[0][j]);
-			}
-			g1_norm(g, g);
-			g1_norm(h, h);
+			TEST_ASSERT(cp_sasmklhs_evl(g, h, ys, ps, ls[0], rs[0],
+					ls[1], rs[1], ls[2], rs[2], ls[3], rs[3], ls[4], rs[4],
+					(const g1_t **)a, (const g1_t **)c, d, e, u,
+					(const dig_t **)f, flen, pk1, pk2, pk3, S) == RLC_OK, end);
 
 			TEST_ASSERT(cp_sasmklhs_ver(l, g, h, m, ys, ps, 
-					ls[0], rs[0],
-					ls[1], rs[1],
-					ls[2], rs[2],
-					ls[3], rs[3],
-					ls[4], rs[4],
-					u, data, id, (const char **)labs, (const dig_t **)f,
-					flen, pk1, pk2, pk3, t2, p2, S), end);
+					ls[0], rs[0], ls[1], rs[1], ls[2], rs[2], ls[3], rs[3],
+					ls[4], rs[4], u, data, id, (const char **)labs,
+					(const dig_t **)f, flen, pk1, pk2, pk3, t2, p2, S), end);
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {
@@ -2675,6 +2642,9 @@ static int lhs(void) {
 	}
 	for (size_t i = 0; i < S; i++) {
 		RLC_FREE(f[i]);
+		RLC_FREE(a[i]);
+		RLC_FREE(c[i]);
+		RLC_FREE(r[i]);
 		for (int j = 0; j < RLC_TERMS; j++) {
 			  gt_free(hs[i][j]);
 		}

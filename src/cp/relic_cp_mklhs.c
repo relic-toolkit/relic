@@ -131,10 +131,29 @@ int cp_mklhs_fun(bn_t mu, const bn_t m[], const dig_t f[], size_t len) {
 	return result;
 }
 
-int cp_mklhs_evl(g1_t sig, const g1_t s[], const dig_t f[], size_t len) {
+int cp_mklhs_evl(g1_t s, const g1_t **sig, const dig_t *f[],
+		const size_t flen[], size_t slen) {
+	g1_t t;
 	int result = RLC_OK;
 
-	g1_mul_sim_dig(sig, s, f, len);
+	g1_null(t);
+
+	RLC_TRY {
+		g1_new(t);
+
+		g1_set_infty(s);
+		for (int j = 0; j < slen; j++) {
+			g1_mul_sim_dig(t, sig[j], f[j], flen[j]);
+			g1_add(s, s, t);
+		}
+		g1_norm(s, s);
+	}
+	RLC_CATCH_ANY {
+		result = RLC_ERR;
+	}
+	RLC_FINALLY {
+		g1_free(t);
+	}
 
 	return result;
 }

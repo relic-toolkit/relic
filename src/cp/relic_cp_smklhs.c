@@ -144,6 +144,25 @@ int cp_smklhs_sig(g1_t s, const bn_t m, const char *data, const char *id,
 	return result;
 }
 
+int cp_smklhs_evl(g1_t s, bn_t y1, ec_t ps1, ec_t *ls1, ec_t *rs1,
+		bn_t y2, ec_t ps2, ec_t *ls2, ec_t *rs2, const g1_t *sig[],
+		const bn_t *d, const ec_t u, const dig_t *f[], const size_t flen[],
+		const g1_t pk1[], const g2_t pk2[], const g1_t pk3[], size_t slen) {
+	int result = RLC_OK;
+
+	if (cp_mklhs_evl(s, sig, f, flen, slen) != RLC_OK) {
+		result = RLC_ERR;
+	}
+	if (cp_ipa_prv(y1, ps1, ls1, rs1, pk1, d, u, slen) != RLC_OK) {
+		result = RLC_ERR;
+	}
+	if (cp_ipa_prv(y2, ps2, ls2, rs2, pk3, d, u, slen) != RLC_OK) {
+		result = RLC_ERR;
+	}
+
+	return result;
+}
+
 int cp_smklhs_ver(const g1_t sig, const bn_t m, const bn_t y1, const ec_t ps1,
 		const ec_t *ls1, const ec_t *rs1, const bn_t y2, const ec_t ps2,
 		const ec_t *ls2, const ec_t *rs2, const ec_t u, const char *data,
@@ -382,6 +401,69 @@ int cp_sasmklhs_sig(bn_t r, g1_t sr, g1_t sm, const bn_t m, const char *data,
 		bn_free(k);
 		bn_free(n);
 		g1_free(a);
+	}
+	return result;
+}
+
+int cp_sasmklhs_evl(g1_t s, g1_t t, bn_t y[5], ec_t ps[5], ec_t *ls1, ec_t *rs1,
+		ec_t *ls2, ec_t *rs2, ec_t *ls3, ec_t *rs3, ec_t *ls4, ec_t *rs4,
+		ec_t *ls5, ec_t *rs5, const g1_t *sr[], const g1_t *sm[], const bn_t *d,
+		const bn_t *e, const ec_t u, const dig_t *f[], const size_t flen[],
+		const g1_t pk1[][2], const g2_t pk2[][2], const g1_t pk3[][2],
+		size_t slen) {
+	g1_t *g1 = RLC_ALLOCA(g1_t, slen);
+	int result = RLC_OK;
+
+	RLC_TRY {
+		if (g1 == NULL) {
+			RLC_THROW(ERR_NO_MEMORY);
+		}
+
+		for (size_t i = 0; i < slen; i++) {
+			g1_null(g1[i]);
+			g1_new(g1[i]);
+		}
+		if (cp_mklhs_evl(s, sr, f, flen, slen) != RLC_OK) {
+			result = RLC_ERR;
+		}
+		if (cp_mklhs_evl(t, sm, f, flen, slen) != RLC_OK) {
+			result = RLC_ERR;
+		}
+		for (size_t i = 0; i < slen; i++) {
+			g1_copy(g1[i], pk1[i][0]);
+		}
+		if (cp_ipa_prv(y[0], ps[0], ls1, rs1, g1, d, u, slen) != RLC_OK) {
+			result = RLC_ERR;
+		}
+		for (size_t i = 0; i < slen; i++) {
+			g1_copy(g1[i], pk3[i][0]);
+		}
+		if (cp_ipa_prv(y[1], ps[1], ls2, rs2, g1, d, u, slen) != RLC_OK) {
+			result = RLC_ERR;
+		}
+		for (size_t i = 0; i < slen; i++) {
+			g1_copy(g1[i], pk1[i][1]);
+		}
+		if (cp_ipa_prv(y[2], ps[2], ls3, rs4, g1, e, u, slen) != RLC_OK) {
+			result = RLC_ERR;
+		}
+		for (size_t i = 0; i < slen; i++) {
+			g1_copy(g1[i], pk3[i][1]);
+		}
+		if (cp_ipa_prv(y[3], ps[3], ls3, rs4, g1, e, u, slen) != RLC_OK) {
+			result = RLC_ERR;
+		}
+		if (cp_ipa_prv(y[4], ps[4], ls5, rs5, g1, d, u, slen) != RLC_OK) {
+			result = RLC_ERR;
+		}
+	} RLC_CATCH_ANY {
+		result = RLC_ERR;
+	}
+	RLC_FINALLY {
+		for (size_t i = 0; i < slen; i++) {
+			g1_free(g1[i]);
+		}
+		RLC_FREE(g1);
 	}
 	return result;
 }
