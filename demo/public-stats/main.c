@@ -293,7 +293,6 @@ int main(int argc, char *argv[]) {
 
 		bn_zero(res);
 		g1_set_infty(p1);
-		g1_set_infty(sig);
 		for (int i = 0; i < STATES; i++) {
 			flen[i] = 2 * GROUPS * DAYS;
 			for (int j = 0; j < GROUPS; j++) {
@@ -307,14 +306,12 @@ int main(int argc, char *argv[]) {
 				}
 			}
 			cp_mklhs_fun(t[i], m[i], f[i], 2 * GROUPS * DAYS);
-			cp_mklhs_evl(p1, sigs[i], f[i], 2 * GROUPS * DAYS);
 			bn_add(res, res, t[i]);
-			g1_add(sig, sig, p1);
 		}
-		g1_norm(sig, sig);
 
-		cp_ipa_prv(y1, ps1, ls1, rs1, pk1, t, u, STATES);
-		cp_ipa_prv(y2, ps2, ls2, rs2, pk3, t, u, STATES);
+		cp_smklhs_evl(sig, y1, ps1, ls1, rs1, y2, ps2, ls2, rs2,
+				(const g1_t **)sigs, t, u, (const dig_t **)f,
+				(const size_t *)flen, pk1, pk2, pk3, STATES);
 
 		assert(cp_smklhs_ver(sig, res, y1, ps1, ls1, rs1, y2, ps2, ls2,
 				rs2, u, DATABASE, acs, (const char **)l[0], (const dig_t **)f,
@@ -328,8 +325,6 @@ int main(int argc, char *argv[]) {
 			STATES), 1);
 
 		bn_zero(res);
-		g1_set_infty(p1);
-		g1_set_infty(sig);
 		for (int i = 0; i < STATES; i++) {
 			flen[i] = GROUPS * DAYS;
 			for (int j = 0; j < GROUPS; j++) {
@@ -338,14 +333,12 @@ int main(int argc, char *argv[]) {
 				}
 			}
 			cp_mklhs_fun(t[i], &m[i][2 * GROUPS * DAYS], f[i], GROUPS * DAYS);
-			cp_mklhs_evl(p1, &sigs[i][2 * GROUPS * DAYS], f[i], GROUPS * DAYS);
 			bn_add(res, res, t[i]);
-			g1_add(sig, sig, p1);
 		}
-		g1_norm(sig, sig);
 
-		cp_ipa_prv(y1, ps1, ls1, rs1, pk1, t, u, STATES);
-		cp_ipa_prv(y2, ps2, ls2, rs2, pk3, t, u, STATES);
+		cp_smklhs_evl(sig, y1, ps1, ls1, rs1, y2, ps2, ls2, rs2,
+				(const g1_t **)sigs, t, u, (const dig_t **)f,
+				(const size_t *)flen, pk1, pk2, pk3, STATES);
 
 		assert(cp_smklhs_ver(sig, res, y1, ps1, ls1, rs1, y2, ps2, ls2,
 			rs2, u, DATABASE, acs, (const char **)&l[0][2 * GROUPS * DAYS],
