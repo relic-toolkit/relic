@@ -161,7 +161,7 @@ int main(int argc, char *argv[]) {
 	uint64_t ratios[STATES][GROUPS];
 	dig_t ft[STATES];
 	bn_t y1, y2, res, t[STATES], sk1[STATES], sk2[STATES], m[STATES][3 * GROUPS * DAYS];
-	g1_t t1, p1, sig, sigs[STATES][3 * GROUPS * DAYS], cs[STATES], pk1[STATES], pk3[STATES];
+	g1_t t1, p1, sig, *sigs[STATES], cs[STATES], pk1[STATES], pk3[STATES];
 	g2_t t2, p2, pk2[STATES];
 	ec_t u, ps1, ps2, ls1[STATES], rs1[STATES], ls2[STATES], rs2[STATES];
 	char *l[STATES][3 * GROUPS * DAYS];
@@ -203,6 +203,7 @@ int main(int argc, char *argv[]) {
 		g2_new(p2);
 		for (int i = 0; i < STATES; i++) {
 			f[i] = RLC_ALLOCA(dig_t, 2 * GROUPS * DAYS);
+			sigs[i] = RLC_ALLOCA(g1_t, 3 * GROUPS * DAYS);
 			bn_null(t[i]);
 			bn_new(t[i]);
 			bn_null(sk1[i]);
@@ -366,6 +367,7 @@ int main(int argc, char *argv[]) {
 		g2_free(p2);
 		for (int i = 0; i < STATES; i++) {
 			RLC_FREE(f[i]);
+			RLC_FREE(sigs[i]);
 			bn_free(t[i]);
 			bn_free(sk1[i]);
 			bn_free(sk2[i]);
