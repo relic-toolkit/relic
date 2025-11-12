@@ -104,7 +104,8 @@ const double pyramids[STATES][GROUPS] = {
 /* Read data from CSV in a given time interval. */
 void read_region(g1_t s[], char *l[], bn_t m[], int *counter,
 		uint64_t metric[3], const char *file, int region, char *start,
-		char *end, g1_t t1, g1_t p1, bn_t sk1, bn_t sk2) {
+		char *end, g1_t t1, g1_t p1, bn_t sk1, bn_t sk2, g1_t pk1, g2_t pk2,
+		g1_t pk3) {
 	FILE *stream = fopen(file, "r");
 	int found = 0;
 	char line[1024];
@@ -143,7 +144,7 @@ void read_region(g1_t s[], char *l[], bn_t m[], int *counter,
 			bn_set_dig(m[*counter], n);
 			l[*counter] = strdup(ptr[8]);
 			cp_smklhs_sig(s[*counter], m[*counter], DATABASE, acs[region - 1],
-				l[*counter], t1, p1, sk1, sk2);
+				l[*counter], t1, p1, sk1, sk2, pk1, pk2, pk3);
 			(*counter)++;
 		}
 
@@ -240,11 +241,14 @@ int main(int argc, char *argv[]) {
 			counter = 0;
 			observed[i][0] = observed[i][1] = observed[i][2] = 0;
 			read_region(sigs[i], l[i], m[i], &counter, baseline,
-					"data_04_13.csv", i + 1, BEG_2018, END_2018, t1, p1, sk1[i], sk2[i]);
+					"data_04_13.csv", i + 1, BEG_2018, END_2018, t1, p1, sk1[i],
+					sk2[i], pk1[i], pk2[i], pk3[i]);
 			read_region(sigs[i], l[i], m[i], &counter, baseline,
-					"data_04_13.csv", i + 1, BEG_2019, END_2019, t1, p1, sk1[i], sk2[i]);
+					"data_04_13.csv", i + 1, BEG_2019, END_2019, t1, p1, sk1[i],
+					sk2[i], pk1[i], pk2[i], pk3[i]);
 			read_region(sigs[i], l[i], m[i], &counter, observed[i], "data.csv",
-					i + 1, BEG_2020, END_2020, t1, p1, sk1[i], sk2[i]);
+					i + 1, BEG_2020, END_2020, t1, p1, sk1[i],
+					sk2[i], pk1[i], pk2[i], pk3[i]);
 		}
 
 		for (int j = 0; j < GROUPS; j++) {
