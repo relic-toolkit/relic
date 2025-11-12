@@ -293,7 +293,6 @@ int main(int argc, char *argv[]) {
 		util_banner("Authenticated computation:", 1);
 
 		bn_zero(res);
-		g1_set_infty(p1);
 		for (int i = 0; i < STATES; i++) {
 			flen[i] = 2 * GROUPS * DAYS;
 			for (int j = 0; j < GROUPS; j++) {
@@ -334,6 +333,9 @@ int main(int argc, char *argv[]) {
 				}
 			}
 			cp_mklhs_fun(t[i], &m[i][2 * GROUPS * DAYS], f[i], GROUPS * DAYS);
+			for (int j = 0; j < GROUPS * DAYS; j++) {
+				g1_copy(sigs[i][j], sigs[i][2 * GROUPS * DAYS + j]);
+			}
 			bn_add(res, res, t[i]);
 		}
 
