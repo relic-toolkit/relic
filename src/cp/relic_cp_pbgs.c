@@ -147,9 +147,9 @@ int cp_pbgs_set(bn_t m, gt_t t, const g2_t pk2) {
 }
 
 int cp_pbgs_ask(g1_t r, g1_t s, bn_t x, bn_t y, gt_t k, const uint8_t *msg,
-		size_t len, const g1_t w, const gt_t t) {
+		size_t len, const g1_t w, const g2_t pk2, const gt_t t) {
 	bn_t n;
-	size_t l;
+	size_t l2 = g2_size_bin(pk2, 0), lt = gt_size_bin(k, 0);
 	uint8_t *buf = NULL, h[RLC_MD_LEN];
 	int result = RLC_OK;
 
@@ -158,9 +158,8 @@ int cp_pbgs_ask(g1_t r, g1_t s, bn_t x, bn_t y, gt_t k, const uint8_t *msg,
 
 	RLC_TRY {
 		bn_new(n);
-		bn_new(y);
 		gt_new(k);
-		buf = RLC_ALLOCA(uint8_t, len + gt_size_bin(t, 0));
+		buf = RLC_ALLOCA(uint8_t, len + l2 + lt);
 		if (buf == NULL) {
 			RLC_THROW(ERR_NO_MEMORY);
 		}
@@ -168,11 +167,11 @@ int cp_pbgs_ask(g1_t r, g1_t s, bn_t x, bn_t y, gt_t k, const uint8_t *msg,
 		pc_get_ord(n);
 		bn_rand_mod(x, n);
 		gt_exp(k, t, x);
-		/* y = H(msg, k). */
-		l = gt_size_bin(k, 0);
+		/* y = H(msg, pk2, k). */
 		memcpy(buf, msg, len);
-		gt_write_bin(buf + len, l, k, 0);
-		md_map(h, buf, len + l);
+		g2_write_bin(buf + len, l2, pk2, 0);
+		gt_write_bin(buf + len + l2, lt, k, 0);
+		md_map(h, buf, len + l2 + lt);
 		bn_read_bin(y, h, RLC_MD_LEN);
 		bn_mod(y, y, n);
 
@@ -191,7 +190,8 @@ int cp_pbgs_ask(g1_t r, g1_t s, bn_t x, bn_t y, gt_t k, const uint8_t *msg,
 	}
 	RLC_FINALLY {
 		bn_free(n);
-		bn_free(y);
+		gt_free(k);
+		RLC_FREE(buf);
 	}
 	return result;
 }
@@ -241,16 +241,23 @@ int cp_pbgs_sig(g1_t z, const bn_t x, const g1_t b, const bn_t y,
 	return result;
 }
 
-int cp_pbgs_ver(const g1_t z, const bn_t y, const g2_t pk2, const g1_t c,
-		const gt_t k) {
+int cp_pbgs_ver(const g1_t z, const uint8_t *msg, size_t len, const g1_t c,
+		const g2_t pk2, const gt_t k) {
+	bn_t y, n;
 	g1_t g1[2];
 	g2_t g2[2];
 	gt_t e;
+	size_t l2 = g2_size_bin(pk2, 0), lt = gt_size_bin(k, 0);
+	uint8_t *buf = NULL, h[RLC_MD_LEN];
 	int result = 1;
 
+	bn_null(y);
+	bn_null(n);
 	gt_null(e);
 
 	RLC_TRY {
+		bn_new(y);
+		bn_new(n);
 		gt_new(e);
 		for (size_t i = 0; i < 2; i++) {
 			g1_null(g1[i]);
@@ -258,6 +265,19 @@ int cp_pbgs_ver(const g1_t z, const bn_t y, const g2_t pk2, const g1_t c,
 			g1_new(g1[i]);
 			g2_new(g2[i]);
 		}
+		buf = RLC_ALLOCA(uint8_t, len + l2 + lt);
+		if (buf == NULL) {
+			RLC_THROW(ERR_NO_MEMORY);
+		}
+
+		/* y = H(msg, k). */
+		pc_get_ord(n);
+		memcpy(buf, msg, len);
+		g2_write_bin(buf + len, l2, pk2, 0);
+		gt_write_bin(buf + len + l2, lt, k, 0);
+		md_map(h, buf, len + l2 + lt);
+		bn_read_bin(y, h, RLC_MD_LEN);
+		bn_mod(y, y, n);
 
 		g1_copy(g1[0], z);
 		g2_copy(g2[0], pk2);
@@ -271,11 +291,14 @@ int cp_pbgs_ver(const g1_t z, const bn_t y, const g2_t pk2, const g1_t c,
 		result = RLC_ERR;
 	}
 	RLC_FINALLY {
+		bn_free(y);
+		bn_free(n);
 		gt_free(e);
 		for (size_t i = 0; i < 2; i++) {
 			g1_free(g1[i]);
 			g2_free(g2[i]);
 		}
+		RLC_FREE(buf);
 	}
 	return result;
 }
