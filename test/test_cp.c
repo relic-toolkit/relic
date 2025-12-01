@@ -1209,6 +1209,92 @@ static int oprf(void) {
 
 #if defined(WITH_PC)
 
+int cp_pbgs_gen(bn_t alpha, g1_t c, g1_t pk1, g2_t pk2);
+int cp_pbgs_gen_prv(g1_t ci, g1_t w, bn_t d, const char *id,
+		const uint8_t *pwd, size_t len, const bn_t alpha, const g1_t pk1);
+int cp_pbgs_set(bn_t m, gt_t t, const g2_t pk2);
+int cp_pbgs_ask(g1_t r, g1_t s, bn_t x, bn_t y, gt_t k, const uint8_t *msg,
+		size_t len, const g1_t w, const gt_t t);
+int cp_pbgs_ans(g1_t b, const g1_t r, const g1_t s, const bn_t m,
+		const bn_t alpha);
+int cp_pbgs_sig(g1_t z, const bn_t x, const g1_t b, const bn_t y,
+		const bn_t d, const g1_t ci);
+int cp_pbgs_ver(const g1_t z, const bn_t y, const g2_t pk2, const g1_t c,
+		const gt_t k);
+
+static int pbgs(void) {
+	int code = RLC_ERR;
+	bn_t alpha, d, m, x, y;
+	g1_t c, ci, w, r, s, z, pk1;
+	g2_t pk2;
+	gt_t t;
+	const char *id = "Alice", *pw = "alicepw";
+	const char *msg = "Sign this";
+
+	bn_null(alpha);
+	bn_null(d);
+	bn_null(m);
+	bn_null(x);
+	bn_null(y);
+	g1_null(c);
+	g1_null(ci);
+	g1_null(w);
+	g1_null(r);
+	g1_null(s);
+	g1_null(z);
+	g1_null(pk1);
+	g2_null(pk2);
+	gt_null(t);
+
+	RLC_TRY {
+		bn_new(alpha);
+		bn_new(d);
+		bn_new(m);
+		bn_new(x);
+		bn_new(y);
+		g1_new(c);
+		g1_new(ci);
+		g1_new(w);
+		g1_new(r);
+		g1_new(s);
+		g1_new(pk1);
+		g2_new(pk2);
+		gt_new(t);
+
+		TEST_CASE("password-based group signature is consistent") {
+			TEST_ASSERT(cp_pbgs_gen(alpha, c, pk1, pk2) == RLC_OK, end);
+			TEST_ASSERT(cp_pbgs_gen_prv(ci, w, d, id, (const uint8_t *)pw,
+				strlen(pw), alpha, pk1) == RLC_OK, end);
+			TEST_ASSERT(cp_pbgs_set(m, t, pk2) == RLC_OK, end);
+			TEST_ASSERT(cp_pbgs_ask(r, s, x, y, t, (const uint8_t *)msg,
+				strlen(msg), w, t) == RLC_OK, end);
+			TEST_ASSERT(cp_pbgs_ans(z, r, s, m, alpha) == RLC_OK, end);
+			TEST_ASSERT(cp_pbgs_sig(z, x, z, y, d, ci) == RLC_OK, end);
+			TEST_ASSERT(cp_pbgs_ver(z, y, pk2, c, t) == 1, end);
+		} TEST_END;
+	} RLC_CATCH_ANY {
+		RLC_ERROR(end);
+	}
+	code = RLC_OK;
+
+  end:
+  	bn_free(alpha);
+	bn_free(d);
+	bn_free(m);
+	bn_free(x);
+	bn_free(y);
+	g1_free(c);
+	g1_free(ci);
+	g1_free(w);
+	g1_free(r);
+	g1_free(s);
+	g1_free(z);
+	g1_free(pk1);
+	g2_free(pk2);
+	gt_free(t);
+	return code;
+}
+
 static int pdpub(void) {
 	int code = RLC_ERR;
 	bn_t x, t, r1, r2;
@@ -2713,6 +2799,9 @@ int main(void) {
 #if defined(WITH_PC)
 	util_banner("Protocols based on pairings:\n", 0);
 	if (pc_param_set_any() == RLC_OK) {
+		if (pbgs() != RLC_OK) {
+			return 1;
+		}
 
 		if (pdpub() != RLC_OK) {
 			core_clean();
