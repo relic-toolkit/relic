@@ -1214,7 +1214,7 @@ int cp_pbgs_gen_prv(g1_t ci, g1_t w, bn_t d, const char *id,
 		const uint8_t *pwd, size_t len, const bn_t alpha, const g1_t pk1);
 int cp_pbgs_set(bn_t m, gt_t t, const g2_t pk2);
 int cp_pbgs_ask(g1_t r, g1_t s, bn_t x, bn_t y, gt_t k, const uint8_t *msg,
-		size_t len, const g1_t w, const g2_t pk2, const gt_t t);
+		size_t len, const g1_t w, const g1_t c, const g2_t pk2, const gt_t t);
 int cp_pbgs_ans(g1_t b, const g1_t r, const g1_t s, const bn_t m,
 		const bn_t alpha);
 int cp_pbgs_sig(g1_t z, const bn_t x, const g1_t b, const bn_t y,
@@ -1267,7 +1267,7 @@ static int pbgs(void) {
 				strlen(pw), alpha, pk1) == RLC_OK, end);
 			TEST_ASSERT(cp_pbgs_set(m, t, pk2) == RLC_OK, end);
 			TEST_ASSERT(cp_pbgs_ask(r, s, x, y, t, (const uint8_t *)msg,
-				strlen(msg), w, pk2, t) == RLC_OK, end);
+				strlen(msg), w, c, pk2, t) == RLC_OK, end);
 			TEST_ASSERT(cp_pbgs_ans(z, r, s, m, alpha) == RLC_OK, end);
 			TEST_ASSERT(cp_pbgs_sig(z, x, z, y, d, ci) == RLC_OK, end);
 			TEST_ASSERT(cp_pbgs_ver(z, (const uint8_t *)msg, strlen(msg),

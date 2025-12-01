@@ -147,9 +147,10 @@ int cp_pbgs_set(bn_t m, gt_t t, const g2_t pk2) {
 }
 
 int cp_pbgs_ask(g1_t r, g1_t s, bn_t x, bn_t y, gt_t k, const uint8_t *msg,
-		size_t len, const g1_t w, const g2_t pk2, const gt_t t) {
+		size_t len, const g1_t w, const g1_t c, const g2_t pk2, const gt_t t) {
 	bn_t n;
-	size_t l2 = g2_size_bin(pk2, 0), lt = gt_size_bin(k, 0);
+	size_t l1 = g1_size_bin(c, 0), l2 = g2_size_bin(pk2, 0);
+	size_t lt = gt_size_bin(k, 0);
 	uint8_t *buf = NULL, h[RLC_MD_LEN];
 	int result = RLC_OK;
 
@@ -159,7 +160,7 @@ int cp_pbgs_ask(g1_t r, g1_t s, bn_t x, bn_t y, gt_t k, const uint8_t *msg,
 	RLC_TRY {
 		bn_new(n);
 		gt_new(k);
-		buf = RLC_ALLOCA(uint8_t, len + l2 + lt);
+		buf = RLC_ALLOCA(uint8_t, len + l1 + l2 + lt);
 		if (buf == NULL) {
 			RLC_THROW(ERR_NO_MEMORY);
 		}
@@ -169,8 +170,9 @@ int cp_pbgs_ask(g1_t r, g1_t s, bn_t x, bn_t y, gt_t k, const uint8_t *msg,
 		gt_exp(k, t, x);
 		/* y = H(msg, pk2, k). */
 		memcpy(buf, msg, len);
-		g2_write_bin(buf + len, l2, pk2, 0);
-		gt_write_bin(buf + len + l2, lt, k, 0);
+		g1_write_bin(buf + len, l1, c, 0);
+		g2_write_bin(buf + len + l1, l2, pk2, 0);
+		gt_write_bin(buf + len + l1 + l2, lt, k, 0);
 		md_map(h, buf, len + l2 + lt);
 		bn_read_bin(y, h, RLC_MD_LEN);
 		bn_mod(y, y, n);
@@ -247,7 +249,8 @@ int cp_pbgs_ver(const g1_t z, const uint8_t *msg, size_t len, const g1_t c,
 	g1_t g1[2];
 	g2_t g2[2];
 	gt_t e;
-	size_t l2 = g2_size_bin(pk2, 0), lt = gt_size_bin(k, 0);
+	size_t l1 = g1_size_bin(c, 0), l2 = g2_size_bin(pk2, 0);
+	size_t lt = gt_size_bin(k, 0);
 	uint8_t *buf = NULL, h[RLC_MD_LEN];
 	int result = 1;
 
@@ -265,7 +268,7 @@ int cp_pbgs_ver(const g1_t z, const uint8_t *msg, size_t len, const g1_t c,
 			g1_new(g1[i]);
 			g2_new(g2[i]);
 		}
-		buf = RLC_ALLOCA(uint8_t, len + l2 + lt);
+		buf = RLC_ALLOCA(uint8_t, len + l1 + l2 + lt);
 		if (buf == NULL) {
 			RLC_THROW(ERR_NO_MEMORY);
 		}
@@ -273,7 +276,8 @@ int cp_pbgs_ver(const g1_t z, const uint8_t *msg, size_t len, const g1_t c,
 		/* y = H(msg, k). */
 		pc_get_ord(n);
 		memcpy(buf, msg, len);
-		g2_write_bin(buf + len, l2, pk2, 0);
+		g1_write_bin(buf + len, l1, c, 0);
+		g2_write_bin(buf + len + l1, l2, pk2, 0);
 		gt_write_bin(buf + len + l2, lt, k, 0);
 		md_map(h, buf, len + l2 + lt);
 		bn_read_bin(y, h, RLC_MD_LEN);
