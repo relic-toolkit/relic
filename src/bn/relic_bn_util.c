@@ -180,10 +180,15 @@ void bn_set_int(bn_t a, int value) {
 	}
 
 	bn_zero(a);
-	while (value != 0) {
+	printf("%d\n", value);
+	while (value > 0) {
 		bn_lsh(a, a, RLC_DIG);
 		bn_add_dig(a, a, (value & RLC_MASK(RLC_DIG)));
-		value = value >> RLC_DIG;
+		if (sizeof(dig_t) < sizeof(int)) {
+			value = value >> RLC_DIG;
+		} else {
+			value = 0;
+		}
 	}
 	a->sign = sign;
 }
