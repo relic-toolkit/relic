@@ -205,6 +205,7 @@
 #undef bn_ham
 #undef bn_get_dig
 #undef bn_set_dig
+#undef bn_set_int
 #undef bn_set_2b
 #undef bn_rand
 #undef bn_rand_mod
@@ -318,6 +319,7 @@
 #define bn_ham 	RLC_PREFIX(bn_ham)
 #define bn_get_dig 	RLC_PREFIX(bn_get_dig)
 #define bn_set_dig 	RLC_PREFIX(bn_set_dig)
+#define bn_set_int 	RLC_PREFIX(bn_set_int)
 #define bn_set_2b 	RLC_PREFIX(bn_set_2b)
 #define bn_rand 	RLC_PREFIX(bn_rand)
 #define bn_rand_mod 	RLC_PREFIX(bn_rand_mod)
@@ -3067,7 +3069,7 @@
 #undef pp_add_k54_basic
 #undef pp_add_k54_projc
 #undef pp_dbl_k1_basic
-#undef pp_dbl_k1_projc
+ #undef pp_dbl_k1_projc
 #undef pp_dbl_k2_basic
 #undef pp_dbl_k2_projc_basic
 #undef pp_dbl_k2_projc_lazyr
@@ -3172,7 +3174,7 @@
 #define pp_add_k54_basic 	RLC_PREFIX(pp_add_k54_basic)
 #define pp_add_k54_projc 	RLC_PREFIX(pp_add_k54_projc)
 #define pp_dbl_k1_basic 	RLC_PREFIX(pp_dbl_k1_basic)
-#define pp_dbl_k1_projc 	RLC_PREFIX(pp_dbl_k1_projc)
+ #define pp_dbl_k1_projc 	RLC_PREFIX(pp_dbl_k1_projc)
 #define pp_dbl_k2_basic 	RLC_PREFIX(pp_dbl_k2_basic)
 #define pp_dbl_k2_projc_basic 	RLC_PREFIX(pp_dbl_k2_projc_basic)
 #define pp_dbl_k2_projc_lazyr 	RLC_PREFIX(pp_dbl_k2_projc_lazyr)
@@ -3334,14 +3336,21 @@
 #undef cp_lvprv_ask
 #undef cp_lvprv_ans
 #undef cp_lvprv_ver
+#undef cp_cades_ask
+#undef cp_cades_ans
+#undef cp_cades_ver
+#undef cp_pdbat_gen
+#undef cp_pdbat_ask
+#undef cp_pdbat_ans
+#undef cp_pdbat_ver
+#undef cp_mvbat_gen
+#undef cp_mvbat_ask
+#undef cp_mvbat_ans
+#undef cp_mvbat_ver
 #undef cp_amore_gen
 #undef cp_amore_ask
 #undef cp_amore_ans
 #undef cp_amore_ver
-#undef cp_amprv_gen
-#undef cp_amprv_ask
-#undef cp_amprv_ans
-#undef cp_amprv_ver
 #undef cp_sokaka_gen
 #undef cp_sokaka_gen_prv
 #undef cp_sokaka_key
@@ -3415,6 +3424,10 @@
 #undef cp_etrs_ver
 #undef cp_etrs_ext
 #undef cp_etrs_uni
+#undef cp_ped_com
+#undef cp_oprf_ask
+#undef cp_oprf_ans
+#undef cp_oprf_res
 #undef cp_cmlhs_init
 #undef cp_cmlhs_gen
 #undef cp_cmlhs_sig
@@ -3494,14 +3507,21 @@
 #define cp_lvprv_ask 	RLC_PREFIX(cp_lvprv_ask)
 #define cp_lvprv_ans 	RLC_PREFIX(cp_lvprv_ans)
 #define cp_lvprv_ver 	RLC_PREFIX(cp_lvprv_ver)
+#define cp_cades_ask 	RLC_PREFIX(cp_cades_ask)
+#define cp_cades_ans 	RLC_PREFIX(cp_cades_ans)
+#define cp_cades_ver 	RLC_PREFIX(cp_cades_ver)
+#define cp_pdbat_gen 	RLC_PREFIX(cp_pdbat_gen)
+#define cp_pdbat_ask 	RLC_PREFIX(cp_pdbat_ask)
+#define cp_pdbat_ans 	RLC_PREFIX(cp_pdbat_ans)
+#define cp_pdbat_ver 	RLC_PREFIX(cp_pdbat_ver)
+#define cp_mvbat_gen 	RLC_PREFIX(cp_mvbat_gen)
+#define cp_mvbat_ask 	RLC_PREFIX(cp_mvbat_ask)
+#define cp_mvbat_ans 	RLC_PREFIX(cp_mvbat_ans)
+#define cp_mvbat_ver 	RLC_PREFIX(cp_mvbat_ver)
 #define cp_amore_gen 	RLC_PREFIX(cp_amore_gen)
 #define cp_amore_ask 	RLC_PREFIX(cp_amore_ask)
 #define cp_amore_ans 	RLC_PREFIX(cp_amore_ans)
 #define cp_amore_ver 	RLC_PREFIX(cp_amore_ver)
-#define cp_amprv_gen 	RLC_PREFIX(cp_amprv_gen)
-#define cp_amprv_ask 	RLC_PREFIX(cp_amprv_ask)
-#define cp_amprv_ans 	RLC_PREFIX(cp_amprv_ans)
-#define cp_amprv_ver 	RLC_PREFIX(cp_amprv_ver)
 #define cp_sokaka_gen 	RLC_PREFIX(cp_sokaka_gen)
 #define cp_sokaka_gen_prv 	RLC_PREFIX(cp_sokaka_gen_prv)
 #define cp_sokaka_key 	RLC_PREFIX(cp_sokaka_key)
@@ -3575,6 +3595,10 @@
 #define cp_etrs_ver 	RLC_PREFIX(cp_etrs_ver)
 #define cp_etrs_ext 	RLC_PREFIX(cp_etrs_ext)
 #define cp_etrs_uni 	RLC_PREFIX(cp_etrs_uni)
+#define cp_ped_com 	RLC_PREFIX(cp_ped_com)
+#define cp_oprf_ask 	RLC_PREFIX(cp_oprf_ask)
+#define cp_oprf_ans 	RLC_PREFIX(cp_oprf_ans)
+#define cp_oprf_res 	RLC_PREFIX(cp_oprf_res)
 #define cp_cmlhs_init 	RLC_PREFIX(cp_cmlhs_init)
 #define cp_cmlhs_gen 	RLC_PREFIX(cp_cmlhs_gen)
 #define cp_cmlhs_sig 	RLC_PREFIX(cp_cmlhs_sig)

@@ -112,8 +112,7 @@ int cp_pbgs_gen_prv(g1_t ci, g1_t w, bn_t d, const char *id,
 	}
 	RLC_FINALLY {
 		bn_free(n);
-		bn_free(r);
-		bn_free(s);
+		bn_free(t);
 		RLC_FREE(buf);
 	}
 	return result;

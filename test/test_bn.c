@@ -226,11 +226,20 @@ static int util(void) {
 
 		bits = 0;
 		TEST_CASE("different forms of assignment are consistent") {
-			bn_set_dig(a, (dig_t)(1) << (dig_t)bits);
+			bn_set_dig(a, (dig_t)1 << bits);
 			bn_set_2b(b, bits);
+			TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
+			bn_set_dig(a, (dig_t)(1) << (bits % (8 * sizeof(int) - 1)));
+			bn_set_int(b, 1 << (bits % (8 * sizeof(int) - 1)));
+			TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
+			bn_neg(a, a);
+			bn_set_int(b, -(1 << (bits % (8 * sizeof(int) - 1))));
+			TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
+			bn_add_dig(a, a, 1);
+			bn_set_int(b, -(1 << (bits % (8 * sizeof(int) - 1))) + 1);
+			TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
 			bits++;
 			bits %= (RLC_DIG);
-			TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_CASE("reading and writing a positive number are consistent") {
@@ -2433,6 +2442,7 @@ int main(void) {
 		core_clean();
 		return 1;
 	}
+	
 	util_banner("All tests have passed.\n", 0);
 
 	core_clean();

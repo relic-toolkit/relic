@@ -87,9 +87,8 @@ typedef crt_st phpe_t[1];
 typedef crt_st *phpe_t;
 #endif
 
-
 /**
- * Represents a Subgroup Paillier's Probabilistic Encryption key pair.
+ * Represents a Subgroup-Paillier's Probabilistic Encryption key pair.
  */
 typedef struct {
 	/** The subgroup order. */
@@ -105,7 +104,7 @@ typedef struct {
 } shpe_st;
 
 /**
- * Pointer to a Subgroup-Paillier's Homomorphic Probabilistic Encryption key pair.
+ * Pointer to a Subgroup-Paillier's Probabilistic Encryption key pair.
  */
 #if ALLOC == AUTO
 typedef shpe_st shpe_t[1];
@@ -261,10 +260,102 @@ typedef etrs_st etrs_t[1];
 typedef etrs_st *etrs_t;
 #endif
 
-
 /*============================================================================*/
 /* Macro definitions                                                          */
 /*============================================================================*/
+
+/**
+ * Initializes an RSA key pair with a null value.
+ *
+ * @param[out] A			- the key pair to initialize.
+ */
+#define rsa_null(A)			RLC_NULL(A)
+
+/**
+ * Calls a function to allocate and initialize an RSA key pair.
+ *
+ * @param[out] A			- the new key pair.
+ */
+#if ALLOC == DYNAMIC
+#define rsa_new(A)															\
+	A = (rsa_t)calloc(1, sizeof(_rsa_st));									\
+	if (A == NULL) {														\
+		RLC_THROW(ERR_NO_MEMORY);											\
+	}																		\
+	bn_null((A)->d);														\
+	bn_null((A)->e);														\
+	bn_new((A)->d);															\
+	bn_new((A)->e);															\
+	crt_new((A)->crt);														\
+
+#elif ALLOC == AUTO
+#define rsa_new(A)															\
+	bn_new((A)->d);															\
+	bn_new((A)->e);															\
+	crt_new((A)->crt);														\
+
+#endif
+
+/**
+ * Calls a function to clean and free an RSA key pair.
+ *
+ * @param[out] A			- the key pair to clean and free.
+ */
+#if ALLOC == DYNAMIC
+#define rsa_free(A)															\
+	if (A != NULL) {														\
+		bn_free((A)->d);													\
+		bn_free((A)->e);													\
+		crt_free((A)->crt);													\
+		free(A);															\
+		A = NULL;															\
+	}																		\
+
+#elif ALLOC == AUTO
+#define rsa_free(A)				/* empty */
+#endif
+
+/**
+ * Initializes a Rabin key pair with a null value.
+ *
+ * @param[out] A			- the key pair to initialize.
+ */
+#define rabin_null(A)		RLC_NULL(A)
+
+/**
+ * Calls a function to allocate and initialize a Rabin key pair.
+ *
+ * @param[out] A			- the new key pair.
+ */
+#define rabin_new(A)		crt_new(A)
+
+/**
+ * Calls a function to clean and free a Rabin key pair.
+ *
+ * @param[out] A			- the key pair to clean and free.
+ */
+#define rabin_free(A)		crt_free(A)
+
+/**
+ * Initializes a Paillier key pair with a null value.
+ *
+ * @param[out] A			- the key pair to initialize.
+ */
+#define phpe_null(A)		RLC_NULL(A)
+
+/**
+ * Calls a function to allocate and initialize a Paillier key pair.
+ *
+ * @param[out] A			- the new key pair.
+ */
+#define phpe_new(A)			crt_new(A)
+
+/**
+ * Calls a function to clean and free a Paillier key pair.
+ *
+ * @param[out] A			- the key pair to clean and free.
+ */
+#define phpe_free(A)		crt_free(A)
 
 /**
  * Initializes a Subgroup Paillier key pair with a null value.
@@ -315,106 +406,11 @@ typedef etrs_st *etrs_t;
 		crt_free((A)->crt);													\
 		free(A);															\
 		A = NULL;															\
-	}
+	}																		\
 
 #elif ALLOC == AUTO
 #define shpe_free(A)				/* empty */
-
 #endif
-
-/**
- * Initializes an RSA key pair with a null value.
- *
- * @param[out] A			- the key pair to initialize.
- */
-#define rsa_null(A)			RLC_NULL(A)
-
-/**
- * Calls a function to allocate and initialize an RSA key pair.
- *
- * @param[out] A			- the new key pair.
- */
-#if ALLOC == DYNAMIC
-#define rsa_new(A)															\
-	A = (rsa_t)calloc(1, sizeof(_rsa_st));									\
-	if (A == NULL) {														\
-		RLC_THROW(ERR_NO_MEMORY);											\
-	}																		\
-	bn_null((A)->d);														\
-	bn_null((A)->e);														\
-	bn_new((A)->d);															\
-	bn_new((A)->e);															\
-	crt_new((A)->crt);														\
-
-#elif ALLOC == AUTO
-#define rsa_new(A)															\
-	bn_new((A)->d);															\
-	bn_new((A)->e);															\
-	crt_new((A)->crt);														\
-
-#endif
-
-/**
- * Calls a function to clean and free an RSA key pair.
- *
- * @param[out] A			- the key pair to clean and free.
- */
-#if ALLOC == DYNAMIC
-#define rsa_free(A)															\
-	if (A != NULL) {														\
-		bn_free((A)->d);													\
-		bn_free((A)->e);													\
-		crt_free((A)->crt);													\
-		free(A);															\
-		A = NULL;															\
-	}
-
-#elif ALLOC == AUTO
-#define rsa_free(A)				/* empty */
-
-#endif
-
-/**
- * Initializes a Rabin key pair with a null value.
- *
- * @param[out] A			- the key pair to initialize.
- */
-#define rabin_null(A)		RLC_NULL(A)
-
-/**
- * Calls a function to allocate and initialize a Rabin key pair.
- *
- * @param[out] A			- the new key pair.
- */
-#define rabin_new(A)		crt_new(A)
-
-/**
- * Calls a function to clean and free a Rabin key pair.
- *
- * @param[out] A			- the key pair to clean and free.
- */
-#define rabin_free(A)		crt_free(A)
-
-/**
- * Initializes a Paillier key pair with a null value.
- *
- * @param[out] A			- the key pair to initialize.
- */
-#define phpe_null(A)		RLC_NULL(A)
-
-/**
- * Calls a function to allocate and initialize a Paillier key pair.
- *
- * @param[out] A			- the new key pair.
- */
-#define phpe_new(A)			crt_new(A)
-
-/**
- * Calls a function to clean and free a Paillier key pair.
- *
- * @param[out] A			- the key pair to clean and free.
- */
-#define phpe_free(A)		crt_free(A)
 
 /**
  * Initializes a Benaloh's key pair with a null value.
@@ -465,7 +461,7 @@ typedef etrs_st *etrs_t;
 		(A)->t = 0;															\
 		free(A);															\
 		A = NULL;															\
-	}
+	}																		\
 
 #elif ALLOC == AUTO
 #define bdpe_free(A)			/* empty */
@@ -508,7 +504,7 @@ typedef etrs_st *etrs_t;
 		g2_free((A)->s2);													\
 		free(A);															\
 		A = NULL;															\
-	}
+	}																		\
 
 #elif ALLOC == AUTO
 #define sokaka_free(A)			/* empty */
@@ -565,7 +561,7 @@ typedef etrs_st *etrs_t;
 		g2_free((A)->hz);													\
 		free(A);															\
 		A = NULL;															\
-	}
+	}																		\
 
 #elif ALLOC == AUTO
 #define bgn_free(A)				/* empty */
@@ -616,7 +612,7 @@ typedef etrs_st *etrs_t;
 		bn_free((A)->r[1]);													\
 		free(A);															\
 		A = NULL;															\
-	}
+	}																		\
 
 #elif ALLOC == AUTO
 #define ers_free(A)				/* empty */
@@ -667,7 +663,7 @@ typedef etrs_st *etrs_t;
 		bn_free((A)->r[1]);													\
 		free(A);															\
 		A = NULL;															\
-	}
+	}																		\
 
 #elif ALLOC == AUTO
 #define smlers_free(A)		/* empty */
@@ -721,7 +717,7 @@ typedef etrs_st *etrs_t;
 		bn_free((A)->r[1]);													\
 		free(A);															\
 		A = NULL;															\
-	}
+	}																		\
 
 #elif ALLOC == AUTO
 #define etrs_free(A)		/* empty */
@@ -1526,7 +1522,7 @@ int cp_mvbat_ver(gt_t *rs, const gt_t *as, const gt_t *bs, const bn_t *b,
  * @param[out] s			- the secret key for the pairing delegation.
  * @param[out] e			- the precomputed value e(U1, U2). 
  */
- int cp_amore_gen(bn_t s, gt_t e);
+int cp_amore_gen(bn_t s, gt_t e);
 
 /*
  * Executes the client-side request for the AMORE batch pairing delegation
@@ -1546,7 +1542,7 @@ int cp_mvbat_ver(gt_t *rs, const gt_t *as, const gt_t *bs, const bn_t *b,
  * @param[in] m				- the number of pairings to compute.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
- int cp_amore_ask(bn_t *r, g1_t *c, g1_t x, g2_t y, g2_t d, g1_t u, g2_t v,
+int cp_amore_ask(bn_t *r, g1_t *c, g1_t x, g2_t y, g2_t d, g1_t u, g2_t v,
 	const bn_t s, const gt_t e, const g1_t *p, const g2_t *q, size_t m);
 
 /**

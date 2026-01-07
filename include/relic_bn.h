@@ -594,6 +594,14 @@ void bn_get_dig(dig_t *digit, const bn_t a);
 void bn_set_dig(bn_t a, dig_t digit);
 
 /**
+ * Assigns a small integer to a multiple precision integer.
+ *
+ * @param[out] a			- the result.
+ * @param[in] value			- the integer to assign.
+ */
+void bn_set_int(bn_t a, int value);
+
+/**
  * Assigns a multiple precision integer to 2^b.
  *
  * @param[out] a			- the result.
