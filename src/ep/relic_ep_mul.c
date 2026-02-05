@@ -707,9 +707,6 @@ void ep_mul_dig(ep_t r, const ep_t p, dig_t k) {
 			ep_dbl(t, t);
 
 			u = naf[i];
-		if (i == l - 2) {
-			printf("eita %d\n", u);
-		}
 			if (u > 0) {
 				ep_add(t, t, p);
 			} else if (u < 0) {
