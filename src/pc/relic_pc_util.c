@@ -122,6 +122,7 @@ int g1_is_valid(const g1_t a) {
 					if (ep_curve_is_pairf() == EP_B48) {
 						/* Check [\psi^2(P) == [-z^8]P. */
 						bn_sqr(n, n);
+						bn_sqr(n, n);
 					}
 					g1_mul_any(u, a, n);
 					g1_neg(u, u);
