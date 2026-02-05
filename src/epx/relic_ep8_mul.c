@@ -447,8 +447,8 @@ void ep8_mul_basic(ep8_t r, const ep8_t p, const bn_t k) {
 
 		l = bn_bits(k) + 1;
 		bn_rec_naf(naf, &l, k, 2);
-		ep8_set_infty(t);
-		for (int i = l - 1; i >= 0; i--) {
+		ep8_copy(t, p);
+		for (int i = l - 2; i >= 0; i--) {
 			ep8_dbl(t, t);
 
 			u = naf[i];
