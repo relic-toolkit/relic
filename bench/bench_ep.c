@@ -337,6 +337,50 @@ static void arith(void) {
 	} BENCH_END;
 #endif
 
+	BENCH_RUN("ep_tpl") {
+		ep_rand(p);
+		ep_rand(q);
+		ep_add(p, p, q);
+		BENCH_ADD(ep_tpl(r, p));
+	} BENCH_END;
+
+#if EP_ADD == BASIC || !defined(STRIP)
+	BENCH_RUN("ep_tpl_basic") {
+		ep_rand(p);
+		BENCH_ADD(ep_tpl_basic(r, p));
+	} BENCH_END;
+#endif
+
+#if EP_ADD == PROJC || !defined(STRIP)
+	BENCH_RUN("ep_tpl_projc") {
+		ep_rand(p);
+		ep_rand(q);
+		ep_add_projc(p, p, q);
+		BENCH_ADD(ep_tpl_projc(r, p));
+	} BENCH_END;
+
+	BENCH_RUN("ep_tpl_projc (z1 = 1)") {
+		ep_rand(p);
+		ep_norm(p, p);
+		BENCH_ADD(ep_tpl_projc(r, p));
+	} BENCH_END;
+#endif
+
+#if EP_ADD == JACOB || !defined(STRIP)
+	BENCH_RUN("ep_tpl_jacob") {
+		ep_rand(p);
+		ep_rand(q);
+		ep_add_jacob(p, p, q);
+		BENCH_ADD(ep_tpl_jacob(r, p));
+	} BENCH_END;
+
+	BENCH_RUN("ep_tpl_jacob (z1 = 1)") {
+		ep_rand(p);
+		ep_norm(p, p);
+		BENCH_ADD(ep_tpl_jacob(r, p));
+	} BENCH_END;
+#endif
+
 	BENCH_RUN("ep_neg") {
 		ep_rand(p);
 		ep_rand(q);
