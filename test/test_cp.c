@@ -1210,7 +1210,7 @@ static int oprf(void) {
 #if defined(WITH_PC)
 
 int cp_pbgs_gen(bn_t alpha, g1_t c, g1_t pk1, g2_t pk2);
-int cp_pbgs_gen_prv(g1_t ci, g1_t w, bn_t d, const char *id,
+int cp_pbgs_gen_pwd(g1_t ci, g1_t w, bn_t d, const char *id,
 		const uint8_t *pwd, size_t len, const bn_t alpha, const g1_t pk1);
 int cp_pbgs_set(bn_t m, gt_t t, const g2_t pk2);
 int cp_pbgs_ask(g1_t r, g1_t s, bn_t x, bn_t y, gt_t k, const uint8_t *msg,
@@ -1257,13 +1257,14 @@ static int pbgs(void) {
 		g1_new(w);
 		g1_new(r);
 		g1_new(s);
+		g1_new(z);
 		g1_new(pk1);
 		g2_new(pk2);
 		gt_new(t);
 
 		TEST_CASE("password-based group signature is consistent") {
 			TEST_ASSERT(cp_pbgs_gen(alpha, c, pk1, pk2) == RLC_OK, end);
-			TEST_ASSERT(cp_pbgs_gen_prv(ci, w, d, id, (const uint8_t *)pw,
+			TEST_ASSERT(cp_pbgs_gen_pwd(ci, w, d, id, (const uint8_t *)pw,
 				strlen(pw), alpha, pk1) == RLC_OK, end);
 			TEST_ASSERT(cp_pbgs_set(m, t, pk2) == RLC_OK, end);
 			TEST_ASSERT(cp_pbgs_ask(r, s, x, y, t, (const uint8_t *)msg,
