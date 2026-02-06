@@ -272,7 +272,7 @@
 				F##_sub(t4, t3, t4);										\
 				F##_mul(t4, t4, p->y);										\
 				/* Z3 = 3*XtX1Z1. */										\
-				if (p->coord != BASIC) {									\
+				if (p->coord == BASIC) {									\
 					F##_mul(t1, p->x, t2);									\
 				} else {													\
 					F##_mul(t1, p->x, p->z);								\
