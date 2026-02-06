@@ -438,8 +438,13 @@ void ep_mul_basic(ep_t r, const ep_t p, const bn_t k) {
 
 		l = bn_bits(k) + 1;
 		bn_rec_naf(naf, &l, k, 2);
-		ep_set_infty(t);
-		for (int i = l - 1; i >= 0; i--) {
+		ep_copy(t, p);
+		/* Detect case for point tripling. */
+		if (naf[l - 2] == 0 && naf[l - 3] == -1) {
+			ep_tpl(t, p);
+			l -= 2;
+		}
+		for (int i = l - 2; i >= 0; i--) {
 			ep_dbl(t, t);
 
 			u = naf[i];
@@ -702,8 +707,13 @@ void ep_mul_dig(ep_t r, const ep_t p, dig_t k) {
 		l = RLC_DIG + 1;
 		bn_rec_naf(naf, &l, m, 2);
 
-		ep_set_infty(t);
-		for (int i = l - 1; i >= 0; i--) {
+		ep_copy(t, p);
+		/* Detect case for point tripling. */
+		if (naf[l - 2] == 0 && naf[l - 3] == -1) {
+			ep_tpl(t, p);
+			l -= 2;
+		}
+		for (int i = l - 2; i >= 0; i--) {
 			ep_dbl(t, t);
 
 			u = naf[i];

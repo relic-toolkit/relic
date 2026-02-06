@@ -425,8 +425,8 @@ void ep2_mul_basic(ep2_t r, const ep2_t p, const bn_t k) {
 
 		l = bn_bits(k) + 1;
 		bn_rec_naf(naf, &l, k, 2);
-		ep2_set_infty(t);
-		for (int i = l - 1; i >= 0; i--) {
+		ep2_copy(t, p);
+		for (int i = l - 2; i >= 0; i--) {
 			ep2_dbl(t, t);
 
 			u = naf[i];

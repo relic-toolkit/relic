@@ -500,8 +500,8 @@ void ep4_mul_basic(ep4_t r, const ep4_t p, const bn_t k) {
 
 		l = bn_bits(k) + 1;
 		bn_rec_naf(naf, &l, k, 2);
-		ep4_set_infty(t);
-		for (int i = l - 1; i >= 0; i--) {
+		ep4_copy(t, p);
+		for (int i = l - 2; i >= 0; i--) {
 			ep4_dbl(t, t);
 
 			u = naf[i];
