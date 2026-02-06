@@ -36,7 +36,7 @@
 /*============================================================================*/
 
 /**
- * Defines a template for point addition in affine coordinates.
+ * Defines a template for point tripling in affine coordinates.
  *
  * @param[in] C			- the curve.
  * @param[in] F			- the field prefix.
@@ -114,7 +114,7 @@
 	}																		\
 
 /**
- * Defines a template for point addition in affine coordinates.
+ * Defines a template for point tripling in projective coordinates.
  *
  * @param[in] C			- the curve.
  * @param[in] F			- the field prefix.
@@ -138,7 +138,7 @@
 	}																		\
 
 /**
- * Defines a template for point addition in Jacobian coordinates.
+ * Defines a template for point tripling in Jacobian coordinates.
  *
  * Formulas from http://www.hyperelliptic.org/EFD/g1p/auto-shortw-jacobian-3.html
  *
