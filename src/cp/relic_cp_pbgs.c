@@ -51,6 +51,7 @@ int cp_pbgs_gen(bn_t alpha, g1_t c, g1_t pk1, g2_t pk2) {
 		pc_get_ord(n);
 		bn_rand_mod(r, n);
 		bn_rand_mod(s, n);
+		bn_rand_mod(alpha, n);
 
 		/* pk1 = g1^s, pk2 = g2^r, c = g1^(sr\alpha). */
 		g1_mul_gen(pk1, s);
@@ -71,7 +72,7 @@ int cp_pbgs_gen(bn_t alpha, g1_t c, g1_t pk1, g2_t pk2) {
 	return result;
 }
 
-int cp_pbgs_gen_prv(g1_t ci, g1_t w, bn_t d, const char *id,
+int cp_pbgs_gen_pwd(g1_t ci, g1_t w, bn_t d, const char *id,
 		const uint8_t *pwd, size_t len, const bn_t alpha, const g1_t pk1) {
 	bn_t n, t;
 	uint8_t h[RLC_MD_LEN];
@@ -94,9 +95,9 @@ int cp_pbgs_gen_prv(g1_t ci, g1_t w, bn_t d, const char *id,
 		memcpy(buf, id, strlen(id));
 		memcpy(buf + strlen(id), pwd, len);
 
+		pc_get_ord(n);
 		md_map(h, buf, strlen(id) + len);
 		g1_map(w, h, RLC_MD_LEN);
-		pc_get_ord(n);
 		bn_read_bin(d, h, RLC_MD_LEN);
 		bn_mod(d, d, n);
 		bn_mod_inv(t, d, n);
@@ -172,7 +173,7 @@ int cp_pbgs_ask(g1_t r, g1_t s, bn_t x, bn_t y, gt_t k, const uint8_t *msg,
 		g1_write_bin(buf + len, l1, c, 0);
 		g2_write_bin(buf + len + l1, l2, pk2, 0);
 		gt_write_bin(buf + len + l1 + l2, lt, k, 0);
-		md_map(h, buf, len + l2 + lt);
+		md_map(h, buf, len + l1 + l2 + lt);
 		bn_read_bin(y, h, RLC_MD_LEN);
 		bn_mod(y, y, n);
 
@@ -277,8 +278,8 @@ int cp_pbgs_ver(const g1_t z, const uint8_t *msg, size_t len, const g1_t c,
 		memcpy(buf, msg, len);
 		g1_write_bin(buf + len, l1, c, 0);
 		g2_write_bin(buf + len + l1, l2, pk2, 0);
-		gt_write_bin(buf + len + l2, lt, k, 0);
-		md_map(h, buf, len + l2 + lt);
+		gt_write_bin(buf + len + l1 + l2, lt, k, 0);
+		md_map(h, buf, len + l1 + l2 + lt);
 		bn_read_bin(y, h, RLC_MD_LEN);
 		bn_mod(y, y, n);
 
@@ -286,6 +287,7 @@ int cp_pbgs_ver(const g1_t z, const uint8_t *msg, size_t len, const g1_t c,
 		g2_copy(g2[0], pk2);
 		g1_mul(g1[1], c, y);
 		g2_get_gen(g2[1]);
+		g2_neg(g2[1], g2[1]);
 		pc_map_sim(e, g1, g2, 2);
 
 		result &= (gt_cmp(e, k) == RLC_EQ);
