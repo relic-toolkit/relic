@@ -116,111 +116,24 @@
 /**
  * Defines a template for point addition in affine coordinates.
  *
- * Formulas for point doubling from
- * "Complete addition formulas for prime order elliptic curves"
- * by Joost Renes, Craig Costello, and Lejla Batina
- * https://eprint.iacr.org/2015/1060.pdf
- *
  * @param[in] C			- the curve.
  * @param[in] F			- the field prefix.
  */
 #define TMPL_TPL_PROJC_IMP(C, F)											\
 	static void C##_tpl_projc_imp(C##_t r, const C##_t p) {					\
-		F##_t t0, t1, t2, t3, t4, t5, t6;									\
+		C##_t q;															\
 																			\
-		F##_null(t0);														\
-		F##_null(t1);														\
-		F##_null(t2);														\
-		F##_null(t3);														\
-		F##_null(t4);														\
-		F##_null(t5);														\
-		F##_null(t6);														\
+		C##_null(q);														\
 																			\
 		RLC_TRY {															\
-			F##_new(t0);													\
-			F##_new(t1);													\
-			F##_new(t2);													\
-			F##_new(t3);													\
-			F##_new(t4);													\
-			F##_new(t5);													\
-			F##_new(t6);													\
-																			\
-			if (C##_curve_opt_a() != RLC_ZERO) {							\
-			} else {														\
-				/* t0 = XX = X1^2 */										\
-				F##_sqr(t0, p->x);											\
-				/* t1 = YY = Y1^2 */										\
-				F##_sqr(t1, p->y);											\
-				/* t2 = ZZ = Z1^2 */										\
-				F##_sqr(t2, p->z);											\
-				/* t3 = YYYY = YY^2 */										\
-				F##_sqr(t3, t1);											\
-				/* t4 = M = 3*XX + a*ZZ^2 */								\
-				F##_dbl(t4, t0);											\
-				F##_add(t4, t4, t0);										\
-				F##_sqr(t5, t2);											\
-				F##_mul(t5, t5, ep_curve_get_a());							\
-				F##_add(t4, t4, t5);										\
-				/* t5 = MM = M^2 */											\
-				F##_sqr(t5, t4);											\
-				/* t6 = E = 6*((X1+YY)^2 - XX - YYYY) - MM */				\
-				F##_add(t6, p->x, t1);										\
-				F##_sqr(t6, t6);											\
-				F##_sub(t6, t6, t0);										\
-				F##_sub(t6, t6, t3);										\
-				F##_dbl(t0, t6);											\
-				F##_dbl(t1, t0);											\
-				F##_add(t6, t0, t1);										\
-				F##_sub(t6, t6, t5);										\
-				/* t0 = EE = E^2 */											\
-				F##_sqr(t0, t6);											\
-				/* t1 = T = 16*YYYY */										\
-				F##_dbl(t1, t3);											\
-				F##_dbl(t1, t1);											\
-				F##_dbl(t1, t1);											\
-				F##_dbl(t1, t1);											\
-				/* t2 = U = (M+E)^2 - MM - EE - T */						\
-				F##_add(t2, t4, t6);										\
-				F##_sqr(t2, t2);											\
-				F##_sub(t2, t2, t5);										\
-				F##_sub(t2, t2, t0);										\
-				F##_sub(t2, t2, t1);										\
-				/* X3 = 4*(X1*EE - 4*YY*U) */								\
-				F##_mul(t4, p->x, t0);										\
-				F##_dbl(t5, p->y); 											\
-				F##_dbl(t5, t5); 											\
-				F##_sqr(t5, t5);											\
-				F##_mul(t5, t5, t2);										\
-				F##_sub(r->x, t4, t5);										\
-				F##_dbl(r->x, r->x);										\
-				F##_dbl(r->x, r->x);										\
-				/* Y3 = 8*Y1*(U*(T-U) - E*EE) */							\
-				F##_sub(t4, t1, t2);										\
-				F##_mul(t4, t4, t2);										\
-				F##_mul(t5, t6, t0);										\
-				F##_sub(t4, t4, t5);										\
-				F##_mul(r->y, p->y, t4);									\
-				F##_dbl(r->y, r->y);										\
-				F##_dbl(r->y, r->y);										\
-				F##_dbl(r->y, r->y);										\
-				/* Z3 = (Z1+E)^2 - ZZ - EE */								\
-				F##_add(r->z, p->z, t6);									\
-				F##_sqr(r->z, r->z);										\
-				F##_sqr(t4, p->z);											\
-				F##_sub(r->z, r->z, t4);									\
-				F##_sub(r->z, r->z, t0);									\
-			}																\
-			r->coord = PROJC;												\
+			/* No particularly efficient formula is known, so reuse. */		\
+			C##_new(q);														\
+			C##_dbl_projc(q, p);											\
+			C##_add_projc(r, q, p);											\
 		} RLC_CATCH_ANY {													\
 			RLC_THROW(ERR_CAUGHT);											\
 		} RLC_FINALLY {														\
-			F##_free(t0);													\
-			F##_free(t1);													\
-			F##_free(t2);													\
-			F##_free(t3);													\
-			F##_free(t4);													\
-			F##_free(t5);													\
-			F##_free(t6);													\
+			C##_free(q);													\
 		}																	\
 	}																		\
 
