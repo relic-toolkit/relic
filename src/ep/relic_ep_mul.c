@@ -440,7 +440,7 @@ void ep_mul_basic(ep_t r, const ep_t p, const bn_t k) {
 		bn_rec_naf(naf, &l, k, 2);
 		ep_copy(t, p);
 		/* Detect case for point tripling. */
-		if (naf[l - 2] == 0 && naf[l - 3] == -1) {
+		if (l > 3 && naf[l - 2] == 0 && naf[l - 3] == -1) {
 			ep_tpl(t, p);
 			l -= 2;
 		}
@@ -709,7 +709,7 @@ void ep_mul_dig(ep_t r, const ep_t p, dig_t k) {
 
 		ep_copy(t, p);
 		/* Detect case for point tripling. */
-		if (naf[l - 2] == 0 && naf[l - 3] == -1) {
+		if (l > 3 && naf[l - 2] == 0 && naf[l - 3] == -1) {
 			ep_tpl(t, p);
 			l -= 2;
 		}
