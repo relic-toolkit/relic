@@ -155,11 +155,9 @@ int cp_pbgs_ask(g1_t r, g1_t s, bn_t x, bn_t y, gt_t k, const uint8_t *msg,
 	int result = RLC_OK;
 
 	bn_null(n);
-	gt_null(k);
 
 	RLC_TRY {
 		bn_new(n);
-		gt_new(k);
 		buf = RLC_ALLOCA(uint8_t, len + l1 + l2 + lt);
 		if (buf == NULL) {
 			RLC_THROW(ERR_NO_MEMORY);
@@ -192,7 +190,6 @@ int cp_pbgs_ask(g1_t r, g1_t s, bn_t x, bn_t y, gt_t k, const uint8_t *msg,
 	}
 	RLC_FINALLY {
 		bn_free(n);
-		gt_free(k);
 		RLC_FREE(buf);
 	}
 	return result;
