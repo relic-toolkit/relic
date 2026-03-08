@@ -245,10 +245,14 @@ static int util(void) {
 			bn_write_bin(bin, len, a);
 			bn_read_bin(b, bin, len);
 			TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
+			bn_read_bin(b, bin, 0);
+			TEST_ASSERT(bn_is_zero(b), end);
 			len = RLC_BN_DIGS;
 			bn_write_raw(raw, len, a);
 			bn_read_raw(b, raw, len);
 			TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
+			bn_read_raw(b, raw, 0);
+			TEST_ASSERT(bn_is_zero(b), end);
 		} TEST_END;
 
 		TEST_CASE("getting the size of a positive number is correct") {
