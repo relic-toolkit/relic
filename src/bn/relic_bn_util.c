@@ -463,7 +463,9 @@ void bn_read_bin(bn_t a, const uint8_t *bin, size_t len) {
 
 	bn_grow(a, digs);
 	bn_zero(a);
-	a->used = digs;
+	if (len == 0) {
+		return;
+	}
 
 	for (i = 0; i < digs - 1; i++) {
 		d = 0;
@@ -480,8 +482,8 @@ void bn_read_bin(bn_t a, const uint8_t *bin, size_t len) {
 			d |= bin[len - 1 - (i * (RLC_DIG / 8) + j)];
 		}
 	}
+	a->used = digs;
 	a->dp[i] = d;
-
 	a->sign = RLC_POS;
 	bn_trim(a);
 }
