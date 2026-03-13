@@ -1287,7 +1287,7 @@ static int pdpub(void) {
 
 		TEST_CASE("amortized delegated batch pairing is correct") {
 			TEST_ASSERT(cp_amore_gen(r1, e) == RLC_OK, end);
-			TEST_ASSERT(cp_amore_ask(&r2, &w1, v1, v2, w2, u1, u2, r1, e, &p, &q, 1) == RLC_OK, end);
+			TEST_ASSERT(cp_amore_ask(&r2, &w1, v1, v2, w2, r1, &p, &q, 1) == RLC_OK, end);
 			TEST_ASSERT(cp_amore_ans(g, &w1, v1, v2, w2, &p, &q, 1) == RLC_OK, end);
 			TEST_ASSERT(cp_amore_ver(g, &r2, e, 1) == 1, end);
 			pc_map(e, p, q);
@@ -1417,12 +1417,13 @@ static int pdprv(void) {
 
 static int pdbat(void) {
 	int code = RLC_ERR;
-	bn_t r, ls[AGGS], b[AGGS];
+	bn_t r, w, ls[AGGS], b[AGGS];
 	g1_t p[AGGS], rs[AGGS], u1, v1;
 	g2_t q[AGGS], s[AGGS], qs[AGGS], u2, v2, w2;
 	gt_t e, ts[AGGS + 1], g[AGGS + 1];
 
 	bn_null(r);
+	bn_null(w);
 	g1_null(u1);
 	g1_null(v1);
 	g2_null(u2);
@@ -1432,6 +1433,7 @@ static int pdbat(void) {
 
 	RLC_TRY {
 		bn_new(r);
+		bn_new(w);
 		g1_new(u1);
 		g1_new(v1);
 		g2_new(u2);
@@ -1489,18 +1491,42 @@ static int pdbat(void) {
 
 		TEST_CASE("amortized delegated batch pairing is correct") {
 			TEST_ASSERT(cp_amore_gen(r, e) == RLC_OK, end);
-			TEST_ASSERT(cp_amore_ask(ls, rs, v1, v2, w2, u1, u2, r, e, p, q, 1) == RLC_OK, end);
+			TEST_ASSERT(cp_amore_ask(ls, rs, v1, v2, w2, r, p, q, 1) == RLC_OK, end);
 			TEST_ASSERT(cp_amore_ans(g, rs, v1, v2, w2, p, q, 1) == RLC_OK, end);
 			TEST_ASSERT(cp_amore_ver(g, ls, e, 1) == 1, end);
 			pc_map(e, p[0], q[0]);
 			TEST_ASSERT(gt_cmp(e, g[0]) == RLC_EQ, end);
 			TEST_ASSERT(cp_amore_gen(r, e) == RLC_OK, end);
-			TEST_ASSERT(cp_amore_ask(ls, rs, v1, v2, w2, u1, u2, r, e, p, q, AGGS) == RLC_OK, end);
+			TEST_ASSERT(cp_amore_ask(ls, rs, v1, v2, w2, r, p, q, AGGS) == RLC_OK, end);
 			TEST_ASSERT(cp_amore_ans(g, rs, v1, v2, w2, p, q, AGGS) == RLC_OK, end);
 			TEST_ASSERT(cp_amore_ver(g, ls, e, AGGS) == 1, end);
 			for (size_t i = 0; i < AGGS; i++) {
 				pc_map(e, p[i], q[i]);
 				TEST_ASSERT(gt_cmp(e, g[i]) == RLC_EQ, end);
+			}
+		} TEST_END;
+
+		TEST_CASE("amortized delegated batch private-input pairing is correct") {
+			for (int prv = 0; prv < 4; prv++) {
+				TEST_ASSERT(cp_amore_gen(r, e) == RLC_OK, end);
+				TEST_ASSERT(cp_amprv_ask(ls, w, rs, qs, v1, v2, w2, r, p, q, prv, 1) == RLC_OK, end);
+				switch (prv) {
+					case 0:
+						TEST_ASSERT(cp_amprv_ans(g, w, rs, qs, v1, v2, w2, p, q, prv, 1) == RLC_OK, end);
+						break;
+					case 1:
+						TEST_ASSERT(cp_amprv_ans(g, w, rs, qs, v1, v2, w2, p, NULL, prv, 1) == RLC_OK, end);
+						break;
+					case 2:
+						TEST_ASSERT(cp_amprv_ans(g, w, rs, qs, v1, v2, w2, NULL, q, prv, 1) == RLC_OK, end);
+						break;
+					case 3:
+						TEST_ASSERT(cp_amprv_ans(g, w, rs, qs, v1, v2, w2, NULL, NULL, prv, 1) == RLC_OK, end);
+						break;
+				}
+				TEST_ASSERT(cp_amprv_ver(g, ls, e, prv, 1) == 1, end);
+				pc_map(e, p[0], q[0]);
+				TEST_ASSERT(gt_cmp(e, g[0]) == RLC_EQ, end);
 			}
 		} TEST_END;
 	} RLC_CATCH_ANY {
@@ -1510,6 +1536,7 @@ static int pdbat(void) {
 	code = RLC_OK;
   end:
 	bn_free(r);
+	bn_free(w);
 	g1_free(u1);
 	g1_free(v1);
 	g2_free(u2);

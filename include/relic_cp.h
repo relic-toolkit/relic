@@ -1537,17 +1537,14 @@ int cp_mvbat_ver(gt_t *rs, const gt_t *as, const gt_t *bs, const bn_t *b,
  * @param[out] x			- the first element in G_1.
  * @param[out] y			- the second element in G_2.
  * @param[out] d			- the addition of G_2 elements.
- * @param[out] u			- the mask in G_1 for the pairing delegation.
- * @param[out] v			- the mask in G_2 for the pairing delegation.
  * @param[in] s				- the secret key for the pairing delegation.
- * @param[in] e				- the precomputed value from the setup.
  * @param[in] p				- the first argument inputs for the pairings.
  * @param[in] q				- the second argument inputs for the pairings.
  * @param[in] m				- the number of pairings to compute.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
- int cp_amore_ask(bn_t *r, g1_t *c, g1_t x, g2_t y, g2_t d, g1_t u, g2_t v,
-	const bn_t s, const gt_t e, const g1_t *p, const g2_t *q, size_t m);
+ int cp_amore_ask(bn_t *r, g1_t *c, g1_t x, g2_t y, g2_t d, const bn_t s,
+		const g1_t *p, const g2_t *q, size_t m);
 
 /**
  * Executes the server-side response for the AMORE batch pairing delegation
@@ -1576,6 +1573,62 @@ int cp_amore_ans(gt_t *gs, const g1_t *c, const g1_t x, const g2_t y,
  * @return a boolean value indicating if the computation is correct.
  */
 int cp_amore_ver(gt_t *gs, const bn_t *c, const gt_t e, size_t m);
+
+/*
+ * Executes the client-side request for the AMORE batch pairing delegation
+ * protocol with private inputs.
+ *
+ * @param[out] r			- the m scalars for the protocol.
+ * @paran[out] w			- the additional scalar for the protocol.
+ * @param[out] c			- the m points in G_1 for the protocol.
+ * @param[out] d			- the m points in G_2 for the protocol.
+ * @param[out] x			- the first element in G_1.
+ * @param[out] y			- the second element in G_2.
+ * @param[out] z			- the third element in G_2.
+ * @param[in] s				- the secret key for the pairing delegation.
+ * @param[in] p				- the first argument inputs for the pairings.
+ * @param[in] q				- the second argument inputs for the pairings.
+ * @param[in] prv			- the flags to indicate which input is private.
+ * @param[in] m				- the number of pairings to compute.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+ int cp_amprv_ask(bn_t *r, bn_t w, g1_t *c, g2_t *d, g1_t x, g2_t y, g2_t z,
+	const bn_t s, const g1_t *p, const g2_t *q, int prv,
+	size_t m);
+
+/**
+ * Executes the server-side response for the AMORE batch pairing delegation
+ * protocol with private inputs.
+ *
+ * @param[out] gs			- the results computed by the server.
+ * @paran[in] w				- the additional scalar for the protocol.
+ * @param[in] c				- the m points in G_1 for the protocol.
+ * @param[in] d				- the m points in G_2 for the protocol.
+ * @param[in] x				- the first element in G_1.
+ * @param[in] y				- the second element in G_2.
+ * @param[in] z			- the third element in G_2.
+ * @param[in] p				- the first argument inputs for the pairings.
+ * @param[in] q				- the second argument inputs for the pairings.
+ * @param[in] prv			- the flags to indicate which input is private.
+ * @param[in] m				- the number of pairings to compute.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int cp_amprv_ans(gt_t *gs, const bn_t w, const g1_t *c, const g2_t *d,
+		const g1_t x, const g2_t y, const g2_t z, const g1_t *p, const g2_t *q,
+		int prv, size_t m);
+
+/**
+ * Verifies the result of the AMORE batch pairing delegation protocol with
+ * private inputs.
+ *
+ * @param[out] gs			- the results of the computation.
+ * @param[in] c				- the scalars for the batch protocol.
+ * @param[in] e				- the precomputed value e(U1, U2).
+ * @param[in] prv			- the flags to indicate which input is private.
+ * @param[in] m				- the number of pairings to compute.
+ * @return a boolean value indicating if the computation is correct.
+ */
+int cp_amprv_ver(gt_t *gs, const bn_t *c, const gt_t e, int prv, size_t m);
 
 /**
  * Generates a master key for the SOKAKA identity-based non-interactive
