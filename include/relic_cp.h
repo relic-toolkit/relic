@@ -1579,7 +1579,7 @@ int cp_amore_ver(gt_t *gs, const bn_t *c, const gt_t e, size_t m);
  * protocol with private inputs.
  *
  * @param[out] r			- the m scalars for the protocol.
- * @paran[out] w			- the additional scalar for the protocol.
+ * @param[out] w			- the additional scalars for the protocol.
  * @param[out] c			- the m points in G_1 for the protocol.
  * @param[out] d			- the m points in G_2 for the protocol.
  * @param[out] x			- the first element in G_1.
@@ -1592,7 +1592,7 @@ int cp_amore_ver(gt_t *gs, const bn_t *c, const gt_t e, size_t m);
  * @param[in] m				- the number of pairings to compute.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
- int cp_amprv_ask(bn_t *r, bn_t w, g1_t *c, g2_t *d, g1_t x, g2_t y, g2_t z,
+ int cp_amprv_ask(bn_t *r, bn_t *w, g1_t *c, g2_t *d, g1_t *x, g2_t y, g2_t z,
 	const bn_t s, const g1_t *p, const g2_t *q, int prv,
 	size_t m);
 
@@ -1601,7 +1601,7 @@ int cp_amore_ver(gt_t *gs, const bn_t *c, const gt_t e, size_t m);
  * protocol with private inputs.
  *
  * @param[out] gs			- the results computed by the server.
- * @paran[in] w				- the additional scalar for the protocol.
+ * @param[in] w				- the additional scalars for the protocol.
  * @param[in] c				- the m points in G_1 for the protocol.
  * @param[in] d				- the m points in G_2 for the protocol.
  * @param[in] x				- the first element in G_1.
@@ -1613,8 +1613,8 @@ int cp_amore_ver(gt_t *gs, const bn_t *c, const gt_t e, size_t m);
  * @param[in] m				- the number of pairings to compute.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_amprv_ans(gt_t *gs, const bn_t w, const g1_t *c, const g2_t *d,
-		const g1_t x, const g2_t y, const g2_t z, const g1_t *p, const g2_t *q,
+int cp_amprv_ans(gt_t *gs, const bn_t *w, const g1_t *c, const g2_t *d,
+		const g1_t *x, const g2_t y, const g2_t z, const g1_t *p, const g2_t *q,
 		int prv, size_t m);
 
 /**

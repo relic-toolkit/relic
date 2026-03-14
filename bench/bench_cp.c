@@ -932,10 +932,10 @@ static void pdpub(void) {
 
 static void pdprv(void) {
 	bn_t w, r1, r2[3], ls[AGGS], b[AGGS];
-	g1_t p[AGGS], u1[2], v1[3], rs[AGGS];
+	g1_t p[AGGS], u1[2], v1[3], rs[AGGS], xs[AGGS + 1];
 	g2_t q[AGGS], s[AGGS], qs[AGGS], u2[2], v2[4], w2[4];
 	gt_t e[2], r, ts[AGGS + 1], g[RLC_MAX(4, AGGS + 1)];
-
+	
 	bn_null(r1);
 	bn_null(w);
 	gt_null(r);
@@ -969,6 +969,7 @@ static void pdprv(void) {
 		g1_null(p[i]);
 		g2_null(q[i]);
 		g1_null(rs[i]);
+		g1_null(xs[i]);
 		g2_null(s[i]);
 		g2_null(qs[i]);
 		gt_null(ts[i]);
@@ -980,13 +981,16 @@ static void pdprv(void) {
 		g1_rand(p[i]);
 		g2_rand(q[i]);
 		g1_new(rs[i]);
+		g1_new(xs[i]);
 		g2_new(s[i]);
 		g2_new(qs[i]);
 		gt_new(ts[i]);
 		gt_new(g[i]);
 	}
+	g1_null(xs[AGGS]);
 	gt_null(ts[AGGS]);
 	gt_null(g[AGGS]);
+	g1_new(xs[AGGS]);
 	gt_new(ts[AGGS]);
 	gt_new(g[AGGS]);
 
@@ -1034,22 +1038,6 @@ static void pdprv(void) {
 		BENCH_ADD(cp_lvprv_ver(r, g, r1, e));
 	} BENCH_END;
 
-	cp_amore_gen(r1, e[0]);
-
-	for (int prv = 1; prv < 4; prv++) {
-		BENCH_RUN("cp_amprv_ask (1)") {
-			BENCH_ADD(cp_amprv_ask(ls, w, rs, s, v1[0], v2[0], w2[0], r1, p, q, prv, 1));
-		} BENCH_END;
-
-		BENCH_RUN("cp_amprv_ans (1)") {
-			BENCH_ADD(cp_amprv_ans(g, w, rs, s, v1[0], v2[0], w2[0], p, q, prv, 1));
-		} BENCH_END;
-
-		BENCH_RUN("cp_amprv_ver (1)") {
-			BENCH_ADD(cp_amprv_ver(g, ls, e[0], prv, 1));
-		} BENCH_END;
-	}
-
 	BENCH_RUN("cp_pdbat_gen (AGGS)") {
 		BENCH_ADD(cp_pdbat_gen(u1[0], u2[0], e[0]));
 	} BENCH_END;
@@ -1082,6 +1070,8 @@ static void pdprv(void) {
 		BENCH_ADD(cp_mvbat_ver(g, ts, g, b, ls, u2[0], p, AGGS));
 	} BENCH_END;
 
+	cp_amore_gen(r1, e[0]);
+
 	BENCH_RUN("cp_amore_ask (AGGS)") {
 		BENCH_ADD(cp_amore_ask(ls, rs, v1[0], v2[0], w2[0], r1, p, q, AGGS));
 	} BENCH_END;
@@ -1093,6 +1083,40 @@ static void pdprv(void) {
 	BENCH_RUN("cp_amore_ver (AGGS)") {
 		BENCH_ADD(cp_amore_ver(g, ls, e[0], AGGS));
 	} BENCH_END;
+
+	for (int prv = 1; prv < 4; prv++) {
+		util_print("(A = %d, B = %d) ", (prv >> 1) & 1, prv & 1);
+		BENCH_RUN("cp_amprv_ask (1)") {
+			BENCH_ADD(cp_amprv_ask(ls, b, rs, s, xs, v2[0], w2[0], r1, p, q, prv, 1));
+		} BENCH_END;
+
+		util_print("(A = %d, B = %d) ", (prv >> 1) & 1, prv & 1);
+		BENCH_RUN("cp_amprv_ans (1)") {
+			BENCH_ADD(cp_amprv_ans(g, b, rs, s, xs, v2[0], w2[0], p, q, prv, 1));
+		} BENCH_END;
+
+		util_print("(A = %d, B = %d) ", (prv >> 1) & 1, prv & 1);
+		BENCH_RUN("cp_amprv_ver (1)") {
+			BENCH_ADD(cp_amprv_ver(g, ls, e[0], prv, 1));
+		} BENCH_END;
+	}
+
+	for (int prv = 1; prv < 4; prv++) {
+		util_print("(A = %d, B = %d) ", (prv >> 1) & 1, prv & 1);
+		BENCH_RUN("cp_amprv_ask (AGGS)") {
+			BENCH_ADD(cp_amprv_ask(ls, b, rs, s, xs, v2[0], w2[0], r1, p, q, prv, AGGS));
+		} BENCH_END;
+
+		util_print("(A = %d, B = %d) ", (prv >> 1) & 1, prv & 1);
+		BENCH_RUN("cp_amprv_ans (AGGS)") {
+			BENCH_ADD(cp_amprv_ans(g, b, rs, s, xs, v2[0], w2[0], p, q, prv, AGGS));
+		} BENCH_END;
+
+		util_print("(A = %d, B = %d) ", (prv >> 1) & 1, prv & 1);
+		BENCH_RUN("cp_amprv_ver (AGGS)") {
+			BENCH_ADD(cp_amprv_ver(g, ls, e[0], prv, AGGS));
+		} BENCH_END;
+	}
 
 	bn_free(r1);
 	bn_free(w);
@@ -1116,11 +1140,13 @@ static void pdprv(void) {
 		g1_free(p[i]);
 		g2_free(q[i]);
 		g1_free(rs[i]);
+		g1_free(xs[i]);
 		g2_free(s[i]);
 		g2_free(qs[i]);
 		gt_free(ts[i]);
 		gt_free(g[i]);
 	}
+	g1_free(xs[AGGS]);
 	gt_free(ts[AGGS]);
 	gt_free(g[AGGS]);
 }
