@@ -750,7 +750,7 @@ static void arith(void) {
 	BENCH_RUN("gt_exp (frb)") {
 		gt_rand(a);
 		pc_get_ord(d);
-		bn_rand_frb(e, &(core_get()->par), d, RLC_DIG);
+		bn_rand_frb(e, &(core_get()->par), d, ep_param_level());
 		BENCH_ADD(gt_exp(c, a, e));
 	}
 	BENCH_END;
