@@ -29,7 +29,7 @@ RELIC implements to date:
  * Bilinear maps and related extension fields
  * Cryptographic protocols (RSA, Rabin, ECDSA, ECMQV, ECSS (Schnorr), ECIES, Sakai-Ohgishi-Kasahara ID-based authenticated key agreement, Boneh-Lynn-Schacham and Boneh-Boyen short signatures, Paillier and Benaloh homomorphic encryption systems)
  * [**Pairing delegation protocols**](https://anonymous.4open.science/r/relic-32F2/src/cp/relic_cp_pcdel.c) with public and private inputs
- * [**Batch pairing delegation protocols**](https://anonymous.4open.science/r/relic-32F2/src/cp/relic_cp_pdbat.c) with public inputs
+ * [**Batch pairing delegation protocols**](https://anonymous.4open.science/r/relic-32F2/src/cp/relic_cp_pdbat.c) with public and private inputs
 
 ### Build instructions
 
