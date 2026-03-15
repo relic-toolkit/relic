@@ -275,6 +275,14 @@ static void arith1(void) {
 	}
 	BENCH_END;
 
+	BENCH_RUN("g1_mul (frb)") {
+		g1_rand(p);
+		pc_get_ord(n);
+		bn_rand_frb(k, &(core_get()->par), n, ep_param_level());
+		BENCH_ADD(g1_mul(q, p, k));
+	}
+	BENCH_END;
+
 	BENCH_RUN("g1_map") {
 		uint8_t msg[5];
 		rand_bytes(msg, 5);
@@ -538,7 +546,7 @@ static void arith2(void) {
 	BENCH_RUN("g2_mul (frb)") {
 		g2_rand(p);
 		pc_get_ord(n);
-		bn_rand_frb(k, &(core_get()->par), n, RLC_DIG);
+		bn_rand_frb(k, &(core_get()->par), n, ep_param_level());
 		BENCH_ADD(g2_mul(q, p, k));
 	}
 	BENCH_END;
