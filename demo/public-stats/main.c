@@ -55,7 +55,7 @@
 #define BEG_2020	"2020-03-27"
 #define END_2020	"2020-09-23"
 
-#ifndef
+#ifndef MULTIPLE
 #define MULTIPLE	1
 #endif
 #define MSTATES 	(MULTIPLE * 19)
