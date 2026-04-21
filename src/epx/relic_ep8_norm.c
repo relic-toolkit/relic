@@ -121,7 +121,11 @@ void ep8_norm_sim(ep8_t *r, const ep8_t *t, int n) {
 		for (i = 0; i < n; i++) {
 			fp8_null(a[i]);
 			fp8_new(a[i]);
-			fp8_copy(a[i], t[i]->z);
+			if (ep8_is_infty(t[i])) {
+				fp8_set_dig(a[i], 1);
+			} else {
+				fp8_copy(a[i], t[i]->z);
+			}
 		}
 
 		fp8_inv_sim(a, (const fp8_t *)a, n);
@@ -129,7 +133,9 @@ void ep8_norm_sim(ep8_t *r, const ep8_t *t, int n) {
 		for (i = 0; i < n; i++) {
 			fp8_copy(r[i]->x, t[i]->x);
 			fp8_copy(r[i]->y, t[i]->y);
-			if (!ep8_is_infty(t[i])) {
+			if (ep8_is_infty(t[i])) {
+				ep8_set_infty(r[i]);
+			} else {
 				fp8_copy(r[i]->z, a[i]);
 			}
 		}

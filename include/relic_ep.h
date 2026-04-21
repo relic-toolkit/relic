@@ -401,6 +401,20 @@ typedef iso_st *iso_t;
 #endif
 
 /**
+ * Triples a prime elliptic curve point. Computes R = 3P.
+ *
+ * @param[out] R			- the result.
+ * @param[in] P				- the point to double.
+ */
+#if EP_ADD == BASIC
+#define ep_tpl(R, P)		ep_tpl_basic(R, P)
+#elif EP_ADD == PROJC
+#define ep_tpl(R, P)		ep_tpl_projc(R, P)
+#elif EP_ADD == JACOB
+#define ep_tpl(R, P)		ep_tpl_jacob(R, P)
+#endif
+
+/**
  * Multiplies a prime elliptic curve point by an integer. Computes R = [k]P.
  *
  * @param[out] R			- the result.
@@ -959,6 +973,31 @@ void ep_dbl_projc(ep_t r, const ep_t p);
  * @param[in] p				- the point to double.
  */
 void ep_dbl_jacob(ep_t r, const ep_t p);
+
+/**
+ * Doubles a prime elliptic curve point represented in affine coordinates.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to double.
+ */
+void ep_tpl_basic(ep_t r, const ep_t p);
+
+/**
+ * Doubles a prime elliptic curve point represented in projective coordinates.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to double.
+ */
+void ep_tpl_projc(ep_t r, const ep_t p);
+
+/**
+ * Doubles a prime elliptic curve point represented in Jacobian projective
+ * coordinates.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to double.
+ */
+void ep_tpl_jacob(ep_t r, const ep_t p);
 
 /**
  * Computes the endomorphism map of a prime elliptic curve point.

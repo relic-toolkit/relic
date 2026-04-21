@@ -494,8 +494,8 @@ void ep3_mul_basic(ep3_t r, const ep3_t p, const bn_t k) {
 
 		l = bn_bits(k) + 1;
 		bn_rec_naf(naf, &l, k, 2);
-		ep3_set_infty(t);
-		for (int i = l - 1; i >= 0; i--) {
+		ep3_copy(t, p);
+		for (int i = l - 2; i >= 0; i--) {
 			ep3_dbl(t, t);
 
 			u = naf[i];

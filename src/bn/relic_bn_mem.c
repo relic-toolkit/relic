@@ -114,11 +114,17 @@ void bn_clean(bn_t a) {
 
 void bn_grow(bn_t a, size_t digits) {
 #if ALLOC == DYNAMIC
-	dig_t *t;
+	dig_t *t = NULL;
 
 	if (a->alloc < digits) {
+		size_t pad = (RLC_BN_SIZE * 2) - (digits % RLC_BN_SIZE);
+		/* Check overflow. */
+        if (digits > SIZE_MAX - pad) {
+			RLC_THROW(ERR_NO_MEMORY);
+			return;
+        }
 		/* At least add RLC_BN_SIZE more digits. */
-		digits += (RLC_BN_SIZE * 2) - (digits % RLC_BN_SIZE);
+		digits += pad;
 		t = (dig_t *)realloc(a->dp, (RLC_DIG / 8) * digits);
 		if (t == NULL) {
 			RLC_THROW(ERR_NO_MEMORY);
