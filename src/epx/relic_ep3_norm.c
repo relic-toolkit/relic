@@ -121,7 +121,11 @@ void ep3_norm_sim(ep3_t *r, const ep3_t *t, int n) {
 		for (i = 0; i < n; i++) {
 			fp3_null(a[i]);
 			fp3_new(a[i]);
-			fp3_copy(a[i], t[i]->z);
+			if (ep3_is_infty(t[i])) {
+				fp3_set_dig(a[i], 1);
+			} else {
+				fp3_copy(a[i], t[i]->z);
+			}
 		}
 
 		fp3_inv_sim(a, (const fp3_t *)a, n);
@@ -129,7 +133,9 @@ void ep3_norm_sim(ep3_t *r, const ep3_t *t, int n) {
 		for (i = 0; i < n; i++) {
 			fp3_copy(r[i]->x, t[i]->x);
 			fp3_copy(r[i]->y, t[i]->y);
-			if (!ep3_is_infty(t[i])) {
+			if (ep3_is_infty(t[i])) {
+				ep3_set_infty(r[i]);
+			} else {
 				fp3_copy(r[i]->z, a[i]);
 			}
 		}

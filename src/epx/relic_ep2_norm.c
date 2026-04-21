@@ -121,6 +121,11 @@ void ep2_norm_sim(ep2_t *r, const ep2_t *t, int n) {
 		for (i = 0; i < n; i++) {
 			fp2_null(a[i]);
 			fp2_new(a[i]);
+			if (ep2_is_infty(t[i])) {
+				fp2_set_dig(a[i], 1);
+			} else {
+				fp2_copy(a[i], t[i]->z);
+			}
 			fp2_copy(a[i], t[i]->z);
 		}
 
@@ -129,7 +134,9 @@ void ep2_norm_sim(ep2_t *r, const ep2_t *t, int n) {
 		for (i = 0; i < n; i++) {
 			fp2_copy(r[i]->x, t[i]->x);
 			fp2_copy(r[i]->y, t[i]->y);
-			if (!ep2_is_infty(t[i])) {
+			if (ep2_is_infty(t[i])) {
+				ep2_set_infty(r[i]);
+			} else {
 				fp2_copy(r[i]->z, a[i]);
 			}
 		}

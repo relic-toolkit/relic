@@ -93,7 +93,11 @@ void ed_norm_sim(ed_t *r, const ed_t *t, int n) {
 		for (int i = 0; i < n; i++) {
 			fp_null(a[i]);
 			fp_new(a[i]);
-			fp_copy(a[i], t[i]->z);
+			if (ed_is_infty(t[i])) {
+				fp_set_dig(a[i], 1);
+			} else {
+				fp_copy(a[i], t[i]->z);
+			}
 		}
 
 		fp_inv_sim(a, (const fp_t *)a, n);
@@ -104,7 +108,9 @@ void ed_norm_sim(ed_t *r, const ed_t *t, int n) {
 #if ED_ADD == EXTND
 			fp_copy(r[i]->t, t[i]->t);
 #endif
-			if (!ed_is_infty(t[i])) {
+			if (ed_is_infty(t[i])) {
+				ed_set_infty(r[i]);
+			} else {
 				fp_copy(r[i]->z, a[i]);
 			}
 		}
