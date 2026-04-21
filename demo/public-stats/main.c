@@ -54,7 +54,10 @@
 #define END_2019	"23/09/2019"
 #define BEG_2020	"2020-03-27"
 #define END_2020	"2020-09-23"
-#define MULTIPLE	10
+
+#ifndef
+#define MULTIPLE	1
+#endif
 #define MSTATES 	(MULTIPLE * 19)
 
 /* First value is population in each of the autonomous communities in 2020. */
