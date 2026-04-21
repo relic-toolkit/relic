@@ -54,6 +54,8 @@
 #define END_2019	"23/09/2019"
 #define BEG_2020	"2020-03-27"
 #define END_2020	"2020-09-23"
+#define MULTIPLE	10
+#define MSTATES 	(MULTIPLE * 19)
 
 /* First value is population in each of the autonomous communities in 2020. */
 const uint64_t populations[STATES] = {
@@ -159,14 +161,13 @@ int main(int argc, char *argv[]) {
 	uint64_t expected[GROUPS] = { 0, 0, 0 };
 	uint64_t observed[STATES][GROUPS];
 	uint64_t ratios[STATES][GROUPS];
-	dig_t ft[STATES];
-	bn_t y1, y2, res, t[STATES], sk1[STATES], sk2[STATES], m[STATES][3 * GROUPS * DAYS];
-	g1_t t1, p1, sig, *sigs[STATES], cs[STATES], pk1[STATES], pk3[STATES];
-	g2_t t2, p2, pk2[STATES];
-	ec_t u, ps1, ps2, ls1[STATES], rs1[STATES], ls2[STATES], rs2[STATES];
-	char *l[STATES][3 * GROUPS * DAYS];
-	dig_t *f[STATES];
-	size_t flen[STATES];
+	bn_t y1, y2, res, t[MSTATES], sk1[MSTATES], sk2[MSTATES], m[MSTATES][3 * GROUPS * DAYS];
+	g1_t t1, p1, sig, *sigs[MSTATES], cs[MSTATES], pk1[MSTATES], pk3[MSTATES];
+	g2_t t2, p2, pk2[MSTATES];
+	ec_t u, ps1, ps2, ls1[MSTATES], rs1[MSTATES], ls2[MSTATES], rs2[MSTATES];
+	char *l[MSTATES][3 * GROUPS * DAYS], *acps[MSTATES];
+	dig_t *f[MSTATES];
+	size_t flen[MSTATES];
 	int counter;
 	uint64_t total;
 	uint64_t excess;
@@ -201,7 +202,7 @@ int main(int argc, char *argv[]) {
 		g2_null(p2);
 		g2_new(t2);
 		g2_new(p2);
-		for (int i = 0; i < STATES; i++) {
+		for (int i = 0; i < MSTATES; i++) {
 			f[i] = RLC_ALLOCA(dig_t, 2 * GROUPS * DAYS);
 			sigs[i] = RLC_ALLOCA(g1_t, 3 * GROUPS * DAYS);
 			bn_null(t[i]);
@@ -238,18 +239,22 @@ int main(int argc, char *argv[]) {
 		}
 
 		cp_smklhs_set(u, t1, p1, t2, p2);
-		for (int i = 0; i < STATES; i++) {
-			counter = 0;
-			observed[i][0] = observed[i][1] = observed[i][2] = 0;
-			read_region(sigs[i], l[i], m[i], &counter, baseline,
-					"data_04_13.csv", i + 1, BEG_2018, END_2018, t1, p1, sk1[i],
-					sk2[i], pk1[i], pk2[i], pk3[i]);
-			read_region(sigs[i], l[i], m[i], &counter, baseline,
-					"data_04_13.csv", i + 1, BEG_2019, END_2019, t1, p1, sk1[i],
-					sk2[i], pk1[i], pk2[i], pk3[i]);
-			read_region(sigs[i], l[i], m[i], &counter, observed[i], "data.csv",
-					i + 1, BEG_2020, END_2020, t1, p1, sk1[i],
-					sk2[i], pk1[i], pk2[i], pk3[i]);
+		memset(observed, 0, sizeof(observed));
+		for (int j = 0; j < MULTIPLE; j++) {
+			for (int i = 0; i < STATES; i++) {
+				int k = j * STATES + i;
+				counter = 0;
+				read_region(sigs[k], l[k], m[k], &counter, baseline,
+						"data_04_13.csv", i + 1, BEG_2018, END_2018, t1, p1, sk1[k],
+						sk2[k], pk1[k], pk2[k], pk3[k]);
+				read_region(sigs[k], l[k], m[k], &counter, baseline,
+						"data_04_13.csv", i + 1, BEG_2019, END_2019, t1, p1, sk1[k],
+						sk2[k], pk1[k], pk2[k], pk3[k]);
+				read_region(sigs[k], l[k], m[k], &counter, observed[i], "data.csv",
+						i + 1, BEG_2020, END_2020, t1, p1, sk1[k],
+						sk2[k], pk1[k], pk2[k], pk3[k]);
+				acps[k] = (char *)acs[i];
+			}
 		}
 
 		for (int j = 0; j < GROUPS; j++) {
@@ -293,7 +298,7 @@ int main(int argc, char *argv[]) {
 		util_banner("Authenticated computation:", 1);
 
 		bn_zero(res);
-		for (int i = 0; i < STATES; i++) {
+		for (int i = 0; i < MSTATES; i++) {
 			flen[i] = 2 * GROUPS * DAYS;
 			for (int j = 0; j < GROUPS; j++) {
 				total = 0;
@@ -309,23 +314,24 @@ int main(int argc, char *argv[]) {
 			bn_add(res, res, t[i]);
 		}
 
-		cp_smklhs_evl(sig, y1, ps1, ls1, rs1, y2, ps2, ls2, rs2,
+		assert(cp_smklhs_evl(sig, y1, ps1, ls1, rs1, y2, ps2, ls2, rs2,
 				(const g1_t **)sigs, t, u, (const dig_t **)f,
-				(const size_t *)flen, pk1, pk2, pk3, STATES);
+				(const size_t *)flen, pk1, pk2, pk3, MSTATES) == RLC_OK);
 
+		const char **p = (const char **)acps;
 		assert(cp_smklhs_ver(sig, res, y1, ps1, ls1, rs1, y2, ps2, ls2,
-				rs2, u, DATABASE, acs, (const char **)l[0], (const dig_t **)f,
-				(const size_t *)flen, pk1, pk2, pk3, t2, p2, STATES));
+				rs2, u, DATABASE, p, (const char **)l[0], (const dig_t **)f,
+				(const size_t *)flen, pk1, pk2, pk3, t2, p2, MSTATES));
 
 		printf("Total Expected: %6lu\n", res->dp[0] / FIXED);
 
 		BENCH_ONE("Time elapsed", cp_smklhs_ver(sig, res, y1, ps1, ls1, rs1, y2,
-			ps2, ls2, rs2, u, DATABASE, acs, (const char **)l[0],
+			ps2, ls2, rs2, u, DATABASE, p, (const char **)l[0],
 			(const dig_t **)f, (const size_t *)flen, pk1, pk2, pk3, t2, p2,
-			STATES), 1);
+			MSTATES), 1);
 
 		bn_zero(res);
-		for (int i = 0; i < STATES; i++) {
+		for (int i = 0; i < MSTATES; i++) {
 			flen[i] = GROUPS * DAYS;
 			for (int j = 0; j < GROUPS; j++) {
 				for (int k = 0; k < DAYS; k++) {
@@ -339,21 +345,21 @@ int main(int argc, char *argv[]) {
 			bn_add(res, res, t[i]);
 		}
 
-		cp_smklhs_evl(sig, y1, ps1, ls1, rs1, y2, ps2, ls2, rs2,
+		assert(cp_smklhs_evl(sig, y1, ps1, ls1, rs1, y2, ps2, ls2, rs2,
 				(const g1_t **)sigs, t, u, (const dig_t **)f,
-				(const size_t *)flen, pk1, pk2, pk3, STATES);
+				(const size_t *)flen, pk1, pk2, pk3, MSTATES) == RLC_OK);
 
 		assert(cp_smklhs_ver(sig, res, y1, ps1, ls1, rs1, y2, ps2, ls2,
-			rs2, u, DATABASE, acs, (const char **)&l[0][2 * GROUPS * DAYS],
+			rs2, u, DATABASE, p, (const char **)&l[0][2 * GROUPS * DAYS],
 			(const dig_t **)f, (const size_t *)flen, pk1, pk2, pk3, t2, p2,
-			STATES));
+			MSTATES));
 
 		printf("Total Observed: %6lu\n", res->dp[0]);
 		
 		BENCH_ONE("Time elapsed", cp_smklhs_ver(sig, res, y1, ps1, ls1, rs1, y2,
-			ps2, ls2, rs2, u, DATABASE, acs, 
+			ps2, ls2, rs2, u, DATABASE, p, 
 			(const char **)&l[0][2 * GROUPS * DAYS], (const dig_t **)f,
-			(const size_t *)flen, pk1, pk2, pk3, t2, p2, STATES), 1);
+			(const size_t *)flen, pk1, pk2, pk3, t2, p2, MSTATES), 1);
 
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -367,7 +373,7 @@ int main(int argc, char *argv[]) {
 		g1_free(p1);
 		g2_free(t2);
 		g2_free(p2);
-		for (int i = 0; i < STATES; i++) {
+		for (int i = 0; i < MSTATES; i++) {
 			RLC_FREE(f[i]);
 			RLC_FREE(sigs[i]);
 			bn_free(t[i]);
