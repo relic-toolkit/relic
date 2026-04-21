@@ -119,10 +119,10 @@ void eb_norm_sim(eb_t *r, const eb_t *t, int n) {
 		for (int i = 0; i < n; i++) {
 			fb_null(a[i]);
 			fb_new(a[i]);
-			if (!eb_is_infty(t[i])) {
-				fb_copy(a[i], t[i]->z);
-			} else {
+			if (eb_is_infty(t[i])) {
 				fb_set_dig(a[i], 1);
+			} else {
+				fb_copy(a[i], t[i]->z);
 			}
 		}
 
@@ -131,7 +131,9 @@ void eb_norm_sim(eb_t *r, const eb_t *t, int n) {
 		for (int i = 0; i < n; i++) {
 			fb_copy(r[i]->x, t[i]->x);
 			fb_copy(r[i]->y, t[i]->y);
-			if (!eb_is_infty(t[i])) {
+			if (eb_is_infty(t[i])) {
+				eb_set_infty(r[i]);
+			} else {
 				fb_copy(r[i]->z, a[i]);
 			}
 		}
