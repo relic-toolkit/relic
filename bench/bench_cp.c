@@ -1834,7 +1834,9 @@ static void lhs(void) {
 		f[i] = RLC_ALLOCA(dig_t, RLC_TERMS);
 		for (int j = 0; j < RLC_TERMS; j++) {
 			uint32_t t;
-			rand_bytes((uint8_t *)&t, sizeof(uint32_t));
+			do {
+				rand_bytes((uint8_t *)&t, sizeof(uint32_t));
+			} while (t == 0);
 			f[i][j] = t;
 		}
 		flen[i] = L;

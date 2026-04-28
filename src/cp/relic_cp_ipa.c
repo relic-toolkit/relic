@@ -80,7 +80,6 @@ int cp_ipa_prv(bn_t y, ec_t p, ec_t *ls, ec_t *rs, const ec_t *g, const bn_t *a,
 		for (size_t i = 0; i < (1 << k); i++) {
 			bn_null(b[i]);
 			bn_null(c[i]);
-			bn_null(x[i]);
 			ec_null(h[i]);
 			bn_new(b[i]);
 			bn_new(c[i]);
@@ -167,7 +166,6 @@ int cp_ipa_prv(bn_t y, ec_t p, ec_t *ls, ec_t *rs, const ec_t *g, const bn_t *a,
 		for (size_t i = 0; i < (1 << k); i++) {
 			bn_free(b[i]);
 			bn_free(c[i]);
-			bn_free(x[i]);
 			ec_free(h[i]);
 		}
 		RLC_FREE(b);
