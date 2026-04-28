@@ -213,11 +213,10 @@ int cp_smklhs_ver(const g1_t sig, const bn_t m, const bn_t y1, const ec_t ps1,
 			g1_new(h[j]);
 		}
 
-		if (slen == 1) {
-			ver1 = ver2 = 1;
-		} else {
-			ver1 = cp_ipa_ver(y1, ps1, ls1, rs1, pk1, u, slen);
-			ver2 = cp_ipa_ver(y2, ps2, ls2, rs2, pk3, u, slen);
+		ver1 = ver2 = 1;
+		if (slen > 1) {
+			ver1 &= cp_ipa_ver(y1, ps1, ls1, rs1, pk1, u, slen);
+			ver2 &= cp_ipa_ver(y2, ps2, ls2, rs2, pk3, u, slen);
 		}
 
 		for (int i = 0; i < slen; i++) {
