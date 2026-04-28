@@ -943,7 +943,7 @@ void ep_mul_sim_gen(ep_t r, const bn_t k, const ep_t q, const bn_t m) {
 	}
 }
 
-void ep_mul_sim_dig(ep_t r, const ep_t p[], const dig_t k[], int n) {
+void ep_mul_sim_dig(ep_t r, const ep_t p[], const dig_t k[], size_t n) {
 	ep_t t;
 	int max;
 
@@ -982,7 +982,7 @@ void ep_mul_sim_dig(ep_t r, const ep_t p[], const dig_t k[], int n) {
 	}
 }
 
-void ep_mul_sim_lot(ep_t r, const ep_t p[], const bn_t k[], int n) {
+void ep_mul_sim_lot(ep_t r, const ep_t p[], const bn_t k[], size_t n) {
 	if (n == 0) {
 		ep_set_infty(r);
 		return;

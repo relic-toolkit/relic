@@ -1257,7 +1257,7 @@ void ep_mul_sim_joint(ep_t r, const ep_t p, const bn_t k, const ep_t q,
  * @param[out] k			- the integer scalars.
  * @param[out] n			- the number of elements to multiply.
  */
-void ep_mul_sim_lot(ep_t r, const ep_t p[], const bn_t k[], int n);
+void ep_mul_sim_lot(ep_t r, const ep_t p[], const bn_t k[], size_t n);
 
 /**
  * Multiplies and adds the generator and a prime elliptic curve point
@@ -1279,7 +1279,7 @@ void ep_mul_sim_gen(ep_t r, const bn_t k, const ep_t q, const bn_t m);
  * @param[in] k				- the small scalars.
  * @param[in] n				- the number of points to multiply.
  */
-void ep_mul_sim_dig(ep_t r, const ep_t p[], const dig_t k[], int n);
+void ep_mul_sim_dig(ep_t r, const ep_t p[], const dig_t k[], size_t n);
 
 /**
  * Converts a point to affine coordinates.

@@ -428,7 +428,7 @@ void ep3_mul_sim_dig(ep3_t r, const ep3_t p[], const dig_t k[], size_t n) {
 	}
 }
 
-void ep3_mul_sim_lot(ep3_t r, const ep3_t p[], const bn_t k[], int n) {
+void ep3_mul_sim_lot(ep3_t r, const ep3_t p[], const bn_t k[], size_t n) {
 	const int len = RLC_FP_BITS + 1;
 	int i, j, m;
 	size_t l, *_l = RLC_ALLOCA(size_t, 8 * n);

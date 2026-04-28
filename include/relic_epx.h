@@ -2166,7 +2166,7 @@ void ep3_mul_sim_joint(ep3_t r, const ep3_t p, const bn_t k, const ep3_t q, cons
  * @param[in] k			- the integer scalars.
  * @param[in] n			- the number of elements to multiply.
  */
-void ep3_mul_sim_lot(ep3_t r, const ep3_t p[], const bn_t k[], int n);
+void ep3_mul_sim_lot(ep3_t r, const ep3_t p[], const bn_t k[], size_t n);
 
 /**
  * Multiplies and adds the generator and a prime elliptic curve point

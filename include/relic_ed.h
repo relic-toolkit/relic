@@ -784,7 +784,7 @@ void ed_mul_sim_joint(ed_t r, const ed_t p, const bn_t k, const ed_t q,
  * @param[out] k			- the integer scalars.
  * @param[out] n			- the number of elements to multiply.
  */
-void ed_mul_sim_lot(ed_t r, const ed_t p[], const bn_t k[], int n);
+void ed_mul_sim_lot(ed_t r, const ed_t p[], const bn_t k[], size_t n);
 
 /**
  * Multiplies and adds the generator and an Edwards elliptic curve point

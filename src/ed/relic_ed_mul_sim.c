@@ -391,7 +391,7 @@ void ed_mul_sim_gen(ed_t r, const bn_t k, const ed_t q, const bn_t m) {
 	}
 }
 
-void ed_mul_sim_lot(ed_t r, const ed_t p[], const bn_t k[], int n) {
+void ed_mul_sim_lot(ed_t r, const ed_t p[], const bn_t k[], size_t n) {
 	int i, j;
 	int8_t *naf = NULL;
 	ed_t *_p = RLC_ALLOCA(ed_t, n);
