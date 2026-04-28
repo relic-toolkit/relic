@@ -444,13 +444,13 @@ int cp_sasmklhs_evl(g1_t s, g1_t t, bn_t y[5], ec_t ps[5], ec_t *ls1, ec_t *rs1,
 		for (size_t i = 0; i < slen; i++) {
 			g1_copy(g1[i], pk1[i][1]);
 		}
-		if (cp_ipa_prv(y[2], ps[2], ls3, rs4, g1, e, u, slen) != RLC_OK) {
+		if (cp_ipa_prv(y[2], ps[2], ls3, rs3, g1, e, u, slen) != RLC_OK) {
 			result = RLC_ERR;
 		}
 		for (size_t i = 0; i < slen; i++) {
 			g1_copy(g1[i], pk3[i][1]);
 		}
-		if (cp_ipa_prv(y[3], ps[3], ls3, rs4, g1, e, u, slen) != RLC_OK) {
+		if (cp_ipa_prv(y[3], ps[3], ls4, rs4, g1, e, u, slen) != RLC_OK) {
 			result = RLC_ERR;
 		}
 		if (cp_ipa_prv(y[4], ps[4], ls5, rs5, g1, d, u, slen) != RLC_OK) {
@@ -480,7 +480,7 @@ int cp_sasmklhs_ver(const bn_t r, const g1_t sr, const g1_t sm, const bn_t m,
 	g1_t *g1 = RLC_ALLOCA(g1_t, slen + 3);
 	g2_t *g2 = RLC_ALLOCA(g2_t, slen + 3);
 	gt_t e;
-	int imax = 0, lmax = 0, fmax = 0, ver_r = 1, ver_m = 1;
+	int imax = 0, lmax = 0, fmax = 0, ver_r, ver_m;
 	for (size_t i = 0; i < slen; i++) {
 		fmax = RLC_MAX(fmax, flen[i]);
 		imax = RLC_MAX(imax, strlen(id[i]));
@@ -521,6 +521,7 @@ int cp_sasmklhs_ver(const bn_t r, const g1_t sr, const g1_t sm, const bn_t m,
 			g1_new(h[j]);
 		}
 
+		ver_r = ver_m = 1;
 		if (slen > 1) {
 			for (size_t i = 0; i < slen; i++) {
 				g1_copy(g1[i], pk1[i][0]);
@@ -584,7 +585,7 @@ int cp_sasmklhs_ver(const bn_t r, const g1_t sr, const g1_t sm, const bn_t m,
 		g1_neg(g1[slen + 2], sr);
 		g2_get_gen(g2[slen + 2]);
 		pc_map_sim(e, g1, g2, slen + 3);
-		ver_r = (gt_cmp_dig(e, 1) == RLC_EQ);
+		ver_r &= (gt_cmp_dig(e, 1) == RLC_EQ);
 		
 		for (size_t i = 0; i < slen; i++) {
 			g2_copy(g2[i], pk2[i][1]);
@@ -611,7 +612,7 @@ int cp_sasmklhs_ver(const bn_t r, const g1_t sr, const g1_t sm, const bn_t m,
 		g1_neg(g1[slen + 2], sm);
 		g2_get_gen(g2[slen + 2]);
 		pc_map_sim(e, g1, g2, slen + 3);
-		ver_m = (gt_cmp_dig(e, 1) == RLC_EQ);
+		ver_m &= (gt_cmp_dig(e, 1) == RLC_EQ);
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
