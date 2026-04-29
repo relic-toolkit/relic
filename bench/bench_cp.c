@@ -1721,7 +1721,7 @@ static void zss(void) {
 #define S	10			/* Number of signers. */
 #define L	16			/* Number of labels, must be <= RLC_TERMS. */
 #define K	RLC_MD_LEN	/* Size of PRF key. */
-#define BENCH_LHS		/* Uncomment for fine-grained benchmarking. */
+//#define BENCH_LHS		/* Uncomment for fine-grained benchmarking. */
 
 static void lhs(void) {
 	uint8_t k[S][K];
@@ -1742,7 +1742,6 @@ static void lhs(void) {
 	bn_null(m);
 	bn_null(n);
 	ec_null(u);
-	g1_null(g);
 	g1_null(h);
 	gt_null(vk);
 
@@ -1750,7 +1749,6 @@ static void lhs(void) {
 	bn_new(m);
 	bn_new(n);
 	ec_new(u);
-	g1_new(g);
 	g1_new(h);
 	gt_new(vk);
 
@@ -2180,6 +2178,9 @@ static void lhs(void) {
 		bn_zero(m);
 		for (int j = 0; j < S; j++) {
 			flen[j] = L;
+			g1_copy(as[j], pk1[j][0]);
+			g2_copy(t[j], pk2[j][0]);
+			g1_copy(cs[j], pk3[j][0]);
 			BENCH_ADD(cp_mklhs_fun(d[j], msg[j], f[j], L));
 			bn_add(m, m, d[j]);
 			bn_mod(m, m, n);
@@ -2196,9 +2197,20 @@ static void lhs(void) {
 	BENCH_RUN("cp_smklhs_ver") {
 		BENCH_ADD(cp_smklhs_ver(h, m, ys[0], ps[0], ls[0], rs[0],
 				ys[1], ps[1], ls[1], rs[1], u, data, id, (const char **)labs,
-				(const dig_t **)f, flen, &pk1[0][0], &pk2[0][0], &pk3[0][0],
+				(const dig_t **)f, flen, as, t, cs, t2[0], p2[0], S));
+	} BENCH_DIV(S);
+
+	BENCH_RUN("cp_smklhs_off") {
+		BENCH_ADD(cp_smklhs_off(sig, data, id, (const char **)labs,
+				(const dig_t **)f, flen, as, t, cs, t2[0], p2[0], S));
+	} BENCH_DIV(S);
+
+	BENCH_RUN("cp_smklhs_onv") {
+		BENCH_ADD(cp_smklhs_onv(h, m, ys[0], ps[0], ls[0], rs[0],
+				ys[1], ps[1], ls[1], rs[1], u, sig, as, t, cs,
 				t2[0], p2[0], S));
 	} BENCH_DIV(S);
+
 
 #ifdef BENCH_LHS
 	for (int k = 1; k <= S; k++) {
@@ -2318,7 +2330,6 @@ static void lhs(void) {
 	bn_free(m);
 	bn_free(n);
 	ec_free(u);
-	g1_free(g);
 	g1_free(h);
 	gt_free(vk);
 

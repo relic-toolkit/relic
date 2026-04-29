@@ -2872,7 +2872,7 @@ int cp_mklhs_ver(const g1_t sig, const bn_t m, const bn_t *mu,
 		const size_t *flen, const g2_t *pk, size_t slen);
 
 /**
- * Computes the offline part of veryfying a MKLHS signature over a set of
+ * Computes the offline part of verifying a MKLHS signature over a set of
  * messages.
  *
  * @param[out] h			- the hashes of labels
@@ -2888,7 +2888,7 @@ int cp_mklhs_off(g1_t *h, dig_t *ft, const char *id[], const char *tag[],
 		const dig_t *f[], const size_t *flen, size_t slen);
 
 /**
- * Computes the online part of veryfying a MKLHS signature over a set of
+ * Computes the online part of verifying a MKLHS signature over a set of
  * messages.
  *
  * @param[in] sig			- the homomorphic signature to verify.
@@ -3009,6 +3009,57 @@ int cp_smklhs_ver(const g1_t sig, const bn_t m, const bn_t y1, const ec_t ps1,
 		const char *id[], const char *tag[], const dig_t *f[],
 		const size_t flen[], const g1_t pk1[], const g2_t pk2[],
 		const g1_t pk3[], const g2_t t2, const g2_t p2, size_t slen);
+
+/**
+ * Computes the offline part of verifying a SMKLHS signature over a set of
+ * messages.
+ *
+ * @param[out] h			- the result of the offline part.
+ * @param[in] data			- the dataset identifier.
+ * @param[in] id			- the identity.
+ * @param[in] tag			- the tag.
+ * @param[in] f				- the linear coefficients in the function.
+ * @param[in] flen			- the number of coefficients.
+ * @param[in] pk1			- the first public keys of the users in G_1.
+ * @param[in] pk2			- the second public keys of the users in G_2.
+ * @param[in] pk3			- the third public keys of the users in G_1.
+ * @param[in] t2			- the first generator in G_2.
+ * @param[in] p2			- the second generator in G_2.
+ * @param[in] slen			- the number of singers.
+ */
+int cp_smklhs_off(g1_t *h, const char *data, const char *id[],
+		const char *tag[], const dig_t *f[], const size_t flen[],
+		const g1_t pk1[], const g2_t pk2[], const g1_t pk3[], const g2_t t2,
+		const g2_t p2, size_t slen);
+
+/**
+ * Computes the online part of verifying a SMKLHS signature over a set of
+ * messages.
+ *
+ * @param[in] sig			- the aggregated signature.
+ * @param[in] m				- the aggregated message to verify.
+ * @param[in] y1			- the first component of the first proof.
+ * @param[in] ps1			- the result of the first inner product.
+ * @param[in] ls1			- the first left recursion coefficients.
+ * @param[in] rs1			- the first right recursion coefficients.
+ * @param[in] y2			- the first component of the second proof.
+ * @param[in] ps2			- the result of the second inner product.
+ * @param[in] ls2			- the second left recursion coefficients.
+ * @param[in] rs2			- the second right recursion coefficients.
+ * @param[in] u				- the random point.
+ * @param[in] h				- the result of the offline verification.
+ * @param[in] pk1			- the first public keys of the users in G_1.
+ * @param[in] pk2			- the second public keys of the users in G_2.
+ * @param[in] pk3			- the third public keys of the users in G_1.
+ * @param[in] t2			- the first generator in G_2.
+ * @param[in] p2			- the second generator in G_2.
+ * @param[in] slen			- the number of singers.
+ */
+int cp_smklhs_onv(const g1_t sig, const bn_t m, const bn_t y1, const ec_t ps1,
+		const ec_t *ls1, const ec_t *rs1, const bn_t y2, const ec_t ps2,
+		const ec_t *ls2, const ec_t *rs2, const ec_t u, const g1_t h[],
+		const g1_t pk1[], const g2_t pk2[], const g1_t pk3[],
+		const g2_t t2, const g2_t p2, size_t slen);
 
 /**
  * Generates the parameters for Succint Adaptively Secure Multi-Key Linearly
