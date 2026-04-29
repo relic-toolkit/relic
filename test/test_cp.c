@@ -2304,7 +2304,7 @@ static int zss(void) {
 	return code;
 }
 
-#define S	2			/* Number of signers. */
+#define S	10			/* Number of signers. */
 #define L	4			/* Number of labels. */
 #define K	RLC_MD_LEN	/* Size of PRF key. */
 
@@ -2318,7 +2318,7 @@ static int lhs(void) {
 	gt_t *hs[S], vk;
 	ec_t u, ps[5], ls[5][S], rs[5][S];
 	const char *data = "database-identifier";
-	const char *id[S] = { "Alice", "Bob" };
+	const char *id[S] = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
 	dig_t ft[S], *f[S] = { NULL };
 	size_t flen[S];
 	char *labs[L] = { NULL };
@@ -2569,6 +2569,14 @@ static int lhs(void) {
 					ys[1], ps[1], ls[1], rs[1], u, data, id,
 					(const char **)labs, (const dig_t **)f,
 					flen, as, t, cs, t2[0], p2[0], S), end);
+
+			TEST_ASSERT(cp_smklhs_off(sig, data, id,
+					(const char **)labs, (const dig_t **)f,
+					flen, as, t, cs, t2[0], p2[0], S) == RLC_OK, end);
+
+			TEST_ASSERT(cp_smklhs_onv(h, m, ys[0], ps[0], ls[0], rs[0],
+					ys[1], ps[1], ls[1], rs[1], u, sig, as, t, cs,
+					t2[0], p2[0], S), end);
 		}
 		TEST_END;
 
@@ -2614,6 +2622,14 @@ static int lhs(void) {
 					ls[0], rs[0], ls[1], rs[1], ls[2], rs[2], ls[3], rs[3],
 					ls[4], rs[4], u, data, id, (const char **)labs,
 					(const dig_t **)f, flen, pk1, pk2, pk3, t2, p2, S), end);
+
+			TEST_ASSERT(cp_sasmklhs_off(sig, data, id, (const char **)labs,
+					(const dig_t **)f, flen, pk1, pk2, pk3, t2, p2, S)
+					== RLC_OK, end);
+
+			TEST_ASSERT(cp_sasmklhs_onv(l, g, h, m, ys, ps, 
+					ls[0], rs[0], ls[1], rs[1], ls[2], rs[2], ls[3], rs[3],
+					ls[4], rs[4], u, sig, pk1, pk2, pk3, t2, p2, S), end);
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {

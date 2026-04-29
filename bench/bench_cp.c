@@ -2295,11 +2295,23 @@ static void lhs(void) {
 	BENCH_DIV(S);
 
 	BENCH_RUN("cp_sasmklhs_ver") {
-			BENCH_ADD(cp_sasmklhs_ver(l, t1[0], t1[1], m, ys, ps, ls[0], rs[0],
-				ls[1], rs[1], ls[2], rs[2], ls[3], rs[3], ls[4], rs[4],
-				u, data, id, (const char **)labs, (const dig_t **)f, flen,
-				pk1, pk2, pk3, t2, p2, S));
+		BENCH_ADD(cp_sasmklhs_ver(l, t1[0], t1[1], m, ys, ps, ls[0], rs[0],
+			ls[1], rs[1], ls[2], rs[2], ls[3], rs[3], ls[4], rs[4],
+			u, data, id, (const char **)labs, (const dig_t **)f, flen,
+			pk1, pk2, pk3, t2, p2, S));
 	} BENCH_DIV(S);
+
+	BENCH_RUN("cp_sasmklhs_off") {
+		BENCH_ADD(cp_sasmklhs_off(sig, data, id, (const char **)labs,
+			(const dig_t **)f, flen, pk1, pk2, pk3, t2, p2, S));
+	} BENCH_DIV(S);
+
+	BENCH_RUN("cp_sasmklhs_onv") {
+		BENCH_ADD(cp_sasmklhs_onv(l, t1[0], t1[1], m, ys, ps, ls[0], rs[0],
+			ls[1], rs[1], ls[2], rs[2], ls[3], rs[3], ls[4], rs[4],
+			u, sig, pk1, pk2, pk3, t2, p2, S));
+	} BENCH_DIV(S);
+
 
 #ifdef BENCH_LHS
 	for (int k = 1; k <= S; k++) {

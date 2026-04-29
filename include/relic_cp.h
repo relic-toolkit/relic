@@ -3186,6 +3186,64 @@ int cp_sasmklhs_ver(const bn_t r, const g1_t sr, const g1_t sm, const bn_t m,
 		const g2_t p2[2], size_t slen);
 
 /**
+ * Computes the offline part of verifying a SASMKLHS signature over a set of
+ * messages.
+ *
+ * @param[out] h			- the result of the offline part.
+ * @param[in] data			- the dataset identifier.
+ * @param[in] id			- the identity.
+ * @param[in] tag			- the tag.
+ * @param[in] f				- the linear coefficients in the function.
+ * @param[in] flen			- the number of coefficients.
+ * @param[in] pk1			- the first public keys of the users in G_1.
+ * @param[in] pk2			- the second public keys of the users in G_2.
+ * @param[in] pk3			- the third public keys of the users in G_1.
+ * @param[in] t2			- the first generator in G_2.
+ * @param[in] p2			- the second generator in G_2.
+ * @param[in] slen			- the number of singers.
+ */
+int cp_sasmklhs_off(g1_t *h, const char *data, const char *id[], const char *tag[],
+		const dig_t *f[], const size_t flen[], const g1_t pk1[][2],
+		const g2_t pk2[][2], const g1_t pk3[][2], const g2_t t2[2],
+		const g2_t p2[2], size_t slen);
+
+/**
+ * Computes the online part of verifying a SASMKLHS signature over a set of
+ * messages.
+ *
+ * @param[out] r			- the aggregated randomness.
+ * @param[in] sr			- the first part of the aggregated signature.
+ * @param[in] sm			- the second part of the aggregated signature.
+ * @param[in] m				- the aggregated message to verify.
+ * @param[in] y1			- the first part of inner product proofs.
+ * @param[in] ps			- the second part of inner product proofs.
+ * @param[in] ls1			- the first left recursion coefficients.
+ * @param[in] rs1			- the first right recursion coefficients.
+ * @param[in] ls2			- the second left recursion coefficients.
+ * @param[in] rs2			- the second right recursion coefficients.
+ * @param[in] ls3			- the third left recursion coefficients.
+ * @param[in] rs3			- the third right recursion coefficients.
+ * @param[in] ls4			- the fourth left recursion coefficients.
+ * @param[in] rs4			- the fourth right recursion coefficients.
+ * @param[in] ls5			- the fifth left recursion coefficients.
+ * @param[in] rs5			- the fifth right recursion coefficients.
+ * @param[in] u				- the random point.
+ * @param[in] h				- the result of the offline part.
+ * @param[in] pk1			- the first public keys of the users in G_1.
+ * @param[in] pk2			- the second public keys of the users in G_2.
+ * @param[in] pk3			- the third public keys of the users in G_1.
+ * @param[in] t2			- the first generator in G_2.
+ * @param[in] p2			- the second generator in G_2.
+ * @param[in] slen			- the number of singers.
+ */
+int cp_sasmklhs_onv(const bn_t r, const g1_t sr, const g1_t sm, const bn_t m,
+		const bn_t y[5], const ec_t ps[5], const ec_t *ls1, const ec_t *rs1,
+		const ec_t *ls2, const ec_t *rs2, const ec_t *ls3, const ec_t *rs3,
+		const ec_t *ls4, const ec_t *rs4, const ec_t *ls5, const ec_t *rs5,
+		const ec_t u, const g1_t h[], const g1_t pk1[][2], const g2_t pk2[][2],
+		const g1_t pk3[][2], const g2_t t2[2], const g2_t p2[2], size_t slen);
+
+/**
  * Generates the trusted setup parameters for the factoring-based laconic
  * Private Set Intersection (RSA-PSI) protocol.
  *
