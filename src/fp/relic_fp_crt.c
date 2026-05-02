@@ -137,7 +137,7 @@ int fp_crt(fp_t c, const fp_t a) {
 		} else {
 			dig_t rem;
 
-			/* First check that a is a square. */
+			/* First check that a is a cube. */
 			r = fp_is_cub(a);
 
 			/* Compute progenitor as x^(p-1-3^f)/3^(f+1) where 3^f|(p-1). */
@@ -159,10 +159,10 @@ int fp_crt(fp_t c, const fp_t a) {
 			/* Recover 3^f-root of unity, and continue algorithm. */
 			fp_copy(t3, (const dig_t *)fp_prime_get_crt());
 
-			fp_copy(c, t3);
+			fp_copy(t5, t3);
 			for (int i = 0; i < f - 1; i++) {
-				fp_sqr(t4, c);
-				fp_mul(c, c, t4);
+				fp_sqr(t4, t5);
+				fp_mul(t5, t5, t4);
 			}
 			fp_sqr(t1, t0);
 			fp_mul(t1, t1, t0);
@@ -171,6 +171,7 @@ int fp_crt(fp_t c, const fp_t a) {
 				fp_mul(t0, t0, a);
 				fp_mul(t1, t1, a);
 			}
+			fp_copy(c, t5);
 			fp_set_dig(t5, 1);
 			for (int j = f; j > 1; j--) {
 				fp_copy(t2, t1);

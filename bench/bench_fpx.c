@@ -409,6 +409,20 @@ static void arith2(void) {
 	}
 	BENCH_END;
 
+	BENCH_RUN("fp2_is_cub") {
+		fp2_rand(a);
+		BENCH_ADD(fp2_is_cub(a));
+	}
+	BENCH_END;
+
+	BENCH_RUN("fp2_crt") {
+		fp2_rand(a);
+		fp2_crt(b, a);
+		fp2_mul(b, b, a);
+		BENCH_ADD(fp2_crt(c, a));
+	}
+	BENCH_END;
+
 	BENCH_RUN("fp2_pck") {
 		fp2_rand(a);
 		fp2_conv_cyc(a, a);

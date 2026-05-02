@@ -212,7 +212,7 @@ static void fp_prime_set(const bn_t p) {
 			bn_mod_dig(&rem, t, 3);
 		}
 
-		/* Compute root of unity by computing CNR to (p - 1)/3^f. */
+		/* Compute fth root of unity by computing CNR to (p - 1)/3^f. */
 		if (ctx->cnr < 0) {
 			fp_set_dig(ctx->crt.dp, -fp_prime_get_cnr());
 		} else {
