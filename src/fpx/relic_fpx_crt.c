@@ -106,7 +106,11 @@ int fp2_crt(fp2_t c, const fp2_t a) {
 	int r = 0;
 	bn_t d, e;
 	fp2_t t, u;
+#if ALLOC == AUTO	
 	const dig_t *crt = (const dig_t *)fp_prime_get_crt();
+#else
+	const fp_t crt = (fp_t)fp_prime_get_crt();
+#endif
 
 	/* Algorithm from "Fast cube roots in Fp2 via the algebraic torus" by
 	 * Youssef El Housni: https://eprint.iacr.org/2026/392.pdf */
@@ -177,13 +181,27 @@ int fp2_crt(fp2_t c, const fp2_t a) {
 				fp_mul(u[0], a[1], u[0]);
 				fp_mul(t[1], u[0], t[1]);
 
+				/* u = t^3, compare with a or correct if not equal. */
+				fp2_sqr(u, t);
+				fp2_mul(u, u, t);
+				if (fp2_cmp(u, a) == RLC_EQ) {
+					r = 1;
+					fp2_copy(c, t);
+				}
+				
 				if (fp_prime_get_mod18() % 9 == 1) {
-					/* u = t^3, compare with a or correct if not equal. */
-					fp2_sqr(u, t);
-					fp2_mul(u, u, t);
+					fp_mul(u[0], u[0], crt);
+					fp_mul(u[0], u[0], crt);
+					fp_mul(u[0], u[0], crt);
+					fp_mul(u[1], u[1], crt);
+					fp_mul(u[1], u[1], crt);
+					fp_mul(u[1], u[1], crt);
 					if (fp2_cmp(u, a) == RLC_EQ) {
 						r = 1;
-						fp2_copy(c, t);
+						fp_mul(c[0], t[0], crt);
+						fp_mul(c[0], c[0], crt);
+						fp_mul(c[1], t[1], crt);
+						fp_mul(c[1], c[1], crt);
 					} else {
 						fp_mul(u[0], u[0], crt);
 						fp_mul(u[0], u[0], crt);
@@ -194,25 +212,9 @@ int fp2_crt(fp2_t c, const fp2_t a) {
 						if (fp2_cmp(u, a) == RLC_EQ) {
 							r = 1;
 							fp_mul(c[0], t[0], crt);
-							fp_mul(c[0], c[0], crt);
 							fp_mul(c[1], t[1], crt);
-							fp_mul(c[1], c[1], crt);
-						} else {
-							fp_mul(u[0], u[0], crt);
-							fp_mul(u[0], u[0], crt);
-							fp_mul(u[0], u[0], crt);
-							fp_mul(u[1], u[1], crt);
-							fp_mul(u[1], u[1], crt);
-							fp_mul(u[1], u[1], crt);
-							if (fp2_cmp(u, a) == RLC_EQ) {
-								r = 1;
-								fp_mul(c[0], t[0], crt);
-								fp_mul(c[1], t[1], crt);
-							}
 						}
 					}
-				} else {
-					RLC_THROW(ERR_NO_VALID);
 				}
 			}
 		} else {
