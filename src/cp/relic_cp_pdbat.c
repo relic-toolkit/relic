@@ -582,7 +582,6 @@ int cp_amprv_ask(bn_t *r, bn_t *w, g1_t *c, g2_t *d, g1_t *x, g2_t y, g2_t z,
 				} else {
 					for (size_t i = 0; i < m; i++) {
 						cp_pdbat_sample(r[i], n, eps);
-						g1_mul(c[i], p[i], r[i]);
 						g2_copy(d[i], q[i]);
 						g1_add(x[i], p[i], g);
 						g2_add(y, y, d[i]);
@@ -591,7 +590,10 @@ int cp_amprv_ask(bn_t *r, bn_t *w, g1_t *c, g2_t *d, g1_t *x, g2_t y, g2_t z,
 					g2_norm(y, y);
 					g2_sub(z, y, v);
 					g2_mul(z, z, w[0]);
-					bn_mod_inv_sim(r, r, n, m);
+					bn_mod_inv_sim(t, r, n, m);
+					for (size_t i = 0; i < m; i++) {
+						g1_mul(c[i], p[i], t[i]);
+					}
 				}
 				break;
 			case 3:
@@ -753,7 +755,7 @@ int cp_amprv_ver(gt_t *gs, const bn_t *r, const gt_t e, int prv, size_t m) {
 			}
 			if (m == 1) {
 				/* Invert t to compensate for the sign difference in s
-					* between the single and batched versions. */
+				 * between the single and batched versions. */
 				gt_inv(t, t);
 			}
 			result &= (gt_cmp(t, e) == RLC_EQ);
