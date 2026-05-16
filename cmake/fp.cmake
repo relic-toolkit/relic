@@ -7,7 +7,7 @@ message("      FP_KARAT=n        The number of Karatsuba levels.")
 message("      FP_PMERS=[off|on] Prefer Pseudo-Mersenne primes over random primes.")
 message("      FP_QNRES=[off|on] Use -1 as quadratic non-residue (make sure that p = 3 mod 8).")
 
-message("   ** Available prime field arithmetic methods (default = BASIC;COMBA;COMBA;MONTY;MONTY;JMPDS;SLIDE):")
+message("   ** Available prime field arithmetic methods (default = BASIC;COMBA;COMBA;MONTY;JMPDS;JMPDS;SLIDE):")
 
 message("      Field addition:")
 message("      FP_METHD=BASIC    Schoolbook addition.")
@@ -65,7 +65,7 @@ option(FP_QNRES "Use -1 as quadratic non-residue." off)
 
 # Choose the arithmetic methods.
 if (NOT FP_METHD)
-	set(FP_METHD "INTEG;INTEG;INTEG;MONTY;MONTY;JMPDS;SLIDE")
+	set(FP_METHD "INTEG;INTEG;INTEG;MONTY;JMPDS;JMPDS;SLIDE")
 endif(NOT FP_METHD)
 list(LENGTH FP_METHD FP_LEN)
 if (FP_LEN LESS 7)

@@ -137,10 +137,6 @@ void fp2_nord_low(dv2_t c, dv2_t a) {
 	}
 }
 
-void fp2_norh_low(dv2_t c, dv2_t a) {
-	fp2_nord_low(c, a);
-}
-
 void fp3_addn_low(fp3_t c, fp3_t a, fp3_t b) {
 	fp_addn_low(c[0], a[0], b[0]);
 	fp_addn_low(c[1], a[1], b[1]);

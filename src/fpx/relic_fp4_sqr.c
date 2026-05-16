@@ -91,7 +91,7 @@ void fp4_sqr_unr(dv4_t c, const fp4_t a) {
 		fp2_addm_low(t, a[0], a[1]);
 
 		/* c = a^2  + b^2 * E. */
-		fp2_norh_low(c[0], u1);
+		fp2_nord_low(c[0], u1);
 		fp2_addc_low(c[0], c[0], u0);
 
 		/* d = (a + b)^2 - a^2 - b^2 = 2 * a * b. */

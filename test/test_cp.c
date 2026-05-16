@@ -1086,6 +1086,125 @@ end:
 	return code;
 }
 
+static int pedersen(void) {
+	int code = RLC_ERR;
+	ec_t c1, c2, h;
+	bn_t r1, r2, m, n;
+
+	bn_null(m);
+	bn_null(n);
+	bn_null(r1);
+	bn_null(r2);
+	ec_null(h);
+	ec_null(c1);
+	ec_null(c2);
+
+	RLC_TRY {
+		bn_new(m);
+		bn_new(n);
+		bn_new(r1);
+		bn_new(r2);
+		ec_new(h);
+		ec_new(c1);
+		ec_new(c2);
+
+		ec_rand(h);
+		ec_curve_get_ord(n);
+
+		TEST_CASE("pedersen commitment is consistent") {
+			bn_rand_mod(r1, n);
+			bn_zero(m);
+			TEST_ASSERT(cp_ped_com(c1, h, r1, m) == RLC_ERR, end);
+			do {
+				bn_rand_mod(m, n);
+			} while (bn_is_zero(m));
+			TEST_ASSERT(cp_ped_com(c1, h, r1, m) == RLC_OK, end);
+			/* Verify the opening. */
+			cp_ped_com(c2, h, r1, m);
+			TEST_ASSERT(ec_cmp(c1, c2) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("pedersen commitment is homomorphic") {
+			bn_rand_mod(r1, n);
+			bn_rand_mod(r2, n);
+			do {
+				bn_rand_mod(m, n);
+			} while (bn_is_zero(m));
+			TEST_ASSERT(cp_ped_com(c1, h, r1, m) == RLC_OK, end);
+			TEST_ASSERT(cp_ped_com(c2, h, r2, m) == RLC_OK, end);
+			ec_add(c1, c1, c2);
+			ec_norm(c1, c1);
+			bn_add(r1, r1, r2);
+			bn_mod(r1, r1, n);
+			bn_dbl(m, m);
+			bn_mod(m, m, n);
+			TEST_ASSERT(cp_ped_com(c2, h, r1, m) == RLC_OK, end);
+			TEST_ASSERT(ec_cmp(c1, c2) == RLC_EQ, end);
+		} TEST_END;
+
+	} RLC_CATCH_ANY {
+		RLC_ERROR(end);
+	}
+	code = RLC_OK;
+
+  end:
+	bn_free(m);
+	bn_free(n);
+	bn_free(r1);
+	bn_free(r2);
+	ec_free(h);
+	ec_free(c1);
+	ec_free(c2);
+	return code;
+}
+
+static int oprf(void) {
+	int code = RLC_ERR;
+	ec_t c, h;
+	bn_t r, m, n;
+
+	bn_null(m);
+	bn_null(n);
+	bn_null(r);
+	ec_null(h);
+	ec_null(c);
+
+	RLC_TRY {
+		bn_new(m);
+		bn_new(n);
+		bn_new(r);
+		ec_new(h);
+		ec_new(c);
+
+		ec_curve_get_ord(n);
+
+		TEST_CASE("oprf evaluation is consistent") {
+			ec_set_infty(h);
+			TEST_ASSERT(cp_oprf_ask(c, m, h) == RLC_ERR, end);
+			ec_rand(h);
+			do {
+				bn_rand_mod(r, n);
+			} while (bn_is_zero(r));
+			TEST_ASSERT(cp_oprf_ask(c, m, h) == RLC_OK, end);
+			TEST_ASSERT(cp_oprf_ans(c, r, c) == RLC_OK, end);
+			TEST_ASSERT(cp_oprf_res(c, m, c) == RLC_OK, end);
+			ec_mul(h, h, r);
+			TEST_ASSERT(ec_cmp(c, h) == RLC_EQ, end);
+		} TEST_END;
+	} RLC_CATCH_ANY {
+		RLC_ERROR(end);
+	}
+	code = RLC_OK;
+
+  end:
+	bn_free(m);
+	bn_free(n);
+	bn_free(r);
+	ec_free(h);
+	ec_free(c);
+	return code;
+}
+
 #endif /* WITH_EC */
 
 #if defined(WITH_PC)
@@ -1666,6 +1785,9 @@ static int bls(void) {
 	g1_t s[2];
 	g2_t q[2];
 	uint8_t m[5] = { 0, 1, 2, 3, 4 };
+	uint8_t n[5] = { 4, 3, 2, 1, 0 };
+	const uint8_t *ms[2] = { m, n };
+	const size_t ls[2] = { sizeof(m), sizeof(n) };
 
 	bn_null(d);
 	g1_null(s[0]);
@@ -1699,6 +1821,31 @@ static int bls(void) {
 			g1_add(s[0], s[0], s[1]);
 			g2_add(q[0], q[0], q[1]);
 			TEST_ASSERT(cp_bls_ver(s[0], m, sizeof(m), q[0]) == 1, end);
+		}
+		TEST_END;
+
+		TEST_CASE("boneh-drijvers-neven aggregate signature is correct") {
+			g1_set_infty(s[0]);
+			g2_set_infty(q[0]);
+			TEST_ASSERT(cp_bls_gen(d, q[1]) == RLC_OK, end);
+			TEST_ASSERT(cp_bls_sig(s[1], m, sizeof(m), d) == RLC_OK, end);
+			TEST_ASSERT(cp_bls_agg_sig(s[0], q[0], s[1], q[1]) == RLC_OK, end);
+			TEST_ASSERT(cp_bls_gen(d, q[1]) == RLC_OK, end);
+			TEST_ASSERT(cp_bls_sig(s[1], m, sizeof(m), d) == RLC_OK, end);
+			TEST_ASSERT(cp_bls_agg_sig(s[0], q[0], s[1], q[1]) == RLC_OK, end);
+			TEST_ASSERT(cp_bls_ver(s[1], m, sizeof(m), q[1]) == 1, end);
+			m[0] ^= 1;
+			TEST_ASSERT(cp_bls_ver(s[1], m, sizeof(m), q[1]) == 0, end);
+			g1_set_infty(s[0]);
+			g2_set_infty(q[0]);
+			TEST_ASSERT(cp_bls_gen(d, q[0]) == RLC_OK, end);
+			TEST_ASSERT(cp_bls_sig(s[0], ms[0], ls[0], d) == RLC_OK, end);
+			TEST_ASSERT(cp_bls_gen(d, q[1]) == RLC_OK, end);
+			TEST_ASSERT(cp_bls_sig(s[1], ms[1], ls[1], d) == RLC_OK, end);
+			g1_add(s[0], s[0], s[1]);
+			TEST_ASSERT(cp_bls_agg_ver(s[0], ms, ls, 2, q) == 1, end);
+			n[0] ^= 1;
+			TEST_ASSERT(cp_bls_agg_ver(s[0], ms, ls, 2, q) == 0, end);
 		}
 		TEST_END;
 	}
@@ -2600,6 +2747,16 @@ int main(void) {
 		}
 
 		if (etrs() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (pedersen() != RLC_OK) {
+			core_clean();
+			return 1;
+		}
+
+		if (oprf() != RLC_OK) {
 			core_clean();
 			return 1;
 		}

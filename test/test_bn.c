@@ -104,8 +104,7 @@ static int util(void) {
 				bn_copy(c, b);
 				TEST_ASSERT(bn_cmp(b, c) == RLC_EQ, end);
 			}
-		}
-		TEST_END;
+		} TEST_END;
 
 		TEST_CASE("absolute, negation and comparison are consistent") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
@@ -246,12 +245,15 @@ static int util(void) {
 			bn_write_bin(bin, len, a);
 			bn_read_bin(b, bin, len);
 			TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
+			bn_read_bin(b, bin, 0);
+			TEST_ASSERT(bn_is_zero(b), end);
 			len = RLC_BN_DIGS;
 			bn_write_raw(raw, len, a);
 			bn_read_raw(b, raw, len);
 			TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
-		}
-		TEST_END;
+			bn_read_raw(b, raw, 0);
+			TEST_ASSERT(bn_is_zero(b), end);
+		} TEST_END;
 
 		TEST_CASE("getting the size of a positive number is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
@@ -259,8 +261,7 @@ static int util(void) {
 			bits = (bn_bits(a) % 8 == 0 ? bn_bits(a) / 8 : bn_bits(a) / 8 + 1);
 			TEST_ASSERT(bn_size_bin(a) == bits, end);
 			TEST_ASSERT(bn_size_raw(a) == a->used, end);
-		}
-		TEST_END;
+		} TEST_END;
 
 		TEST_CASE("reading and writing a negative number are consistent") {
 			size_t len = RLC_CEIL(RLC_BN_BITS, 8);
@@ -280,8 +281,7 @@ static int util(void) {
 			bn_read_raw(b, raw, len);
 			bn_neg(b, b);
 			TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
-		}
-		TEST_END;
+		} TEST_END;
 
 		TEST_CASE("getting the size of a negative number is correct") {
 			bn_rand(a, RLC_NEG, RLC_BN_BITS);
@@ -289,8 +289,7 @@ static int util(void) {
 			bits = (bn_bits(a) % 8 == 0 ? bn_bits(a) / 8 : bn_bits(a) / 8 + 1);
 			TEST_ASSERT(bn_size_bin(a) == bits, end);
 			TEST_ASSERT(bn_size_raw(a) == a->used, end);
-		}
-		TEST_END;
+		} TEST_END;
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);
@@ -2292,7 +2291,9 @@ static int recoding(void) {
 				bn_rand_mod(a, b);
 				bn_rec_glv(b, c, a, b, ep_curve_get_v1(), ep_curve_get_v2());
 				ep_curve_get_ord(v2[0]);
-				bn_rec_sac(ptr, &l, v1, 1, 2, bn_bits(v2[0]));
+				fp_prime_get_par(v2[1]);
+				bn_rec_sac(ptr, &l, v1, v2[1], 1, 2, bn_bits(v2[0]),
+						ep_curve_is_pairf() == EP_BN);
 				if (bn_is_even(b)) {
 					bn_add_dig(b, b, 1);
 				}

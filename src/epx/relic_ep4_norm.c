@@ -121,7 +121,11 @@ void ep4_norm_sim(ep4_t *r, const ep4_t *t, int n) {
 		for (i = 0; i < n; i++) {
 			fp4_null(a[i]);
 			fp4_new(a[i]);
-			fp4_copy(a[i], t[i]->z);
+			if (ep4_is_infty(t[i])) {
+				fp4_set_dig(a[i], 1);
+			} else {
+				fp4_copy(a[i], t[i]->z);
+			}
 		}
 
 		fp4_inv_sim(a, (const fp4_t *)a, n);
@@ -129,7 +133,9 @@ void ep4_norm_sim(ep4_t *r, const ep4_t *t, int n) {
 		for (i = 0; i < n; i++) {
 			fp4_copy(r[i]->x, t[i]->x);
 			fp4_copy(r[i]->y, t[i]->y);
-			if (!ep4_is_infty(t[i])) {
+			if (ep4_is_infty(t[i])) {
+				ep4_set_infty(r[i]);
+			} else {
 				fp4_copy(r[i]->z, a[i]);
 			}
 		}

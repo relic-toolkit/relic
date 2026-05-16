@@ -409,6 +409,20 @@ static void arith2(void) {
 	}
 	BENCH_END;
 
+	BENCH_RUN("fp2_is_cub") {
+		fp2_rand(a);
+		BENCH_ADD(fp2_is_cub(a));
+	}
+	BENCH_END;
+
+	BENCH_RUN("fp2_crt") {
+		fp2_rand(a);
+		fp2_crt(b, a);
+		fp2_mul(b, b, a);
+		BENCH_ADD(fp2_crt(c, a));
+	}
+	BENCH_END;
+
 	BENCH_RUN("fp2_pck") {
 		fp2_rand(a);
 		fp2_conv_cyc(a, a);
@@ -1953,6 +1967,22 @@ static void arith12(void) {
 		BENCH_ADD(fp12_sqr(c, a));
 	}
 	BENCH_END;
+
+#if FPX_RDC == BASIC || !defined(STRIP)
+	BENCH_RUN("fp12_sqr_basic") {
+		fp12_rand(a);
+		BENCH_ADD(fp12_sqr_basic(c, a));
+	}
+	BENCH_END;
+#endif
+
+#if FPX_RDC == LAZYR || !defined(STRIP)
+	BENCH_RUN("fp12_sqr_lazyr") {
+		fp12_rand(a);
+		BENCH_ADD(fp12_sqr_lazyr(c, a));
+	}
+	BENCH_END;
+#endif
 
 	BENCH_RUN("fp12_sqr_cyc") {
 		fp12_rand(a);

@@ -36,7 +36,7 @@
 /*============================================================================*/
 
 /**
- * Defines a template for point addition in affine coordinates.
+ * Defines a template for point doubling in affine coordinates.
  *
  * @param[in] C			- the curve.
  * @param[in] F			- the field prefix.
@@ -54,7 +54,7 @@
 			F##_new(t1);													\
 			F##_new(t2);													\
 																			\
-			/* t0 = 1/2 * y1. */											\
+			/* t0 = 1/(2 * y1). */											\
 			F##_dbl(t0, p->y);												\
 			F##_inv(t0, t0);												\
 																			\
@@ -98,7 +98,7 @@
 	}																		\
 
 /**
- * Defines a template for point addition in affine coordinates.
+ * Defines a template for point tripling in projective coordinates.
  *
  * Formulas for point doubling from
  * "Complete addition formulas for prime order elliptic curves"
@@ -249,7 +249,7 @@
 	}																		\
 
 /**
- * Defines a template for point addition in Jacobian coordinates.
+ * Defines a template for point doubling in Jacobian coordinates.
  *
  * Formulas from http://www.hyperelliptic.org/EFD/g1p/auto-shortw-jacobian-3.html
  *

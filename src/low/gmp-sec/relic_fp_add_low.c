@@ -42,88 +42,100 @@
 
 dig_t fp_add1_low(dig_t *c, const dig_t *a, const dig_t digit) {
 	dig_t *t = RLC_ALLOCA(dig_t, mpn_sec_add_1_itch(RLC_FP_DIGS));
-	dig_t r = mpn_sec_add_1(c, a, RLC_FP_DIGS, digit, t);
+	dig_t r =
+		mpn_sec_add_1((mp_ptr)c, (mp_srcptr)a, RLC_FP_DIGS, digit, (mp_ptr)t);
 	RLC_FREE(t);
 	return r;
 }
 
 dig_t fp_addn_low(dig_t *c, const dig_t *a, const dig_t *b) {
-	return mpn_add_n(c, a, b, RLC_FP_DIGS);
+	return mpn_add_n((mp_ptr)c, (mp_srcptr)a, (mp_srcptr)b, RLC_FP_DIGS);
 }
 
 void fp_addm_low(dig_t *c, const dig_t *a, const dig_t *b) {
-	dig_t carry = mpn_add_n(c, a, b, RLC_FP_DIGS);
+	dig_t carry = mpn_add_n((mp_ptr)c, (mp_srcptr)a, (mp_srcptr)b, RLC_FP_DIGS);
 	dig_t cond = dv_cmp(c, fp_prime_get(), RLC_FP_DIGS) != RLC_LT;
-	mpn_cnd_sub_n(carry | cond, c, c, fp_prime_get(), RLC_FP_DIGS);
+	mpn_cnd_sub_n(carry | cond, (mp_ptr)c,
+		(mp_srcptr)c, (mp_srcptr)fp_prime_get(), RLC_FP_DIGS);
 }
 
 dig_t fp_addd_low(dig_t *c, const dig_t *a, const dig_t *b) {
-	return mpn_add_n(c, a, b, 2 * RLC_FP_DIGS);
+	return mpn_add_n((mp_ptr)c, (mp_srcptr)a, (mp_srcptr)b, 2 * RLC_FP_DIGS);
 }
 
 void fp_addc_low(dig_t *c, const dig_t *a, const dig_t *b) {
-	dig_t carry = mpn_add_n(c, a, b, 2 * RLC_FP_DIGS);
+	dig_t carry =
+		mpn_add_n((mp_ptr)c, (mp_srcptr)a, (mp_srcptr)b, 2 * RLC_FP_DIGS);
 	dig_t cond = dv_cmp(c + RLC_FP_DIGS, fp_prime_get(), RLC_FP_DIGS) != RLC_LT;
-	mpn_cnd_sub_n(carry | cond, c + RLC_FP_DIGS, c + RLC_FP_DIGS,
-		fp_prime_get(), RLC_FP_DIGS);
+	mpn_cnd_sub_n(carry | cond, (mp_ptr)c + RLC_FP_DIGS,
+		(mp_srcptr)c + RLC_FP_DIGS, (mp_srcptr)fp_prime_get(), RLC_FP_DIGS);
 }
 
 dig_t fp_sub1_low(dig_t *c, const dig_t *a, const dig_t digit) {
 	dig_t *t = RLC_ALLOCA(dig_t, mpn_sec_sub_1_itch(RLC_FP_DIGS));
-	dig_t r = mpn_sec_sub_1(c, a, RLC_FP_DIGS, digit, t);
+	dig_t r =
+		mpn_sec_sub_1((mp_ptr)c, (mp_srcptr)a, RLC_FP_DIGS, digit, (mp_ptr)t);
 	RLC_FREE(t);
 	return r;
 }
 
 dig_t fp_subn_low(dig_t *c, const dig_t *a, const dig_t *b) {
-	return mpn_sub_n(c, a, b, RLC_FP_DIGS);
+	return mpn_sub_n((mp_ptr)c, (mp_srcptr)a, (mp_srcptr)b, RLC_FP_DIGS);
 }
 
 void fp_subm_low(dig_t *c, const dig_t *a, const dig_t *b) {
-	dig_t carry = mpn_sub_n(c, a, b, RLC_FP_DIGS);
-	mpn_cnd_add_n(carry, c, c, fp_prime_get(), RLC_FP_DIGS);
+	dig_t carry = mpn_sub_n((mp_ptr)c, (mp_srcptr)a, (mp_srcptr)b, RLC_FP_DIGS);
+	mpn_cnd_add_n(carry, (mp_ptr)c, (mp_srcptr)c, (mp_srcptr)fp_prime_get(),
+		RLC_FP_DIGS);
 }
 
 dig_t fp_subd_low(dig_t *c, const dig_t *a, const dig_t *b) {
-	return mpn_sub_n(c, a, b, 2 * RLC_FP_DIGS);
+	return mpn_sub_n((mp_ptr)c, (mp_srcptr)a, (mp_srcptr)b, 2 * RLC_FP_DIGS);
 }
 
 void fp_subc_low(dig_t *c, const dig_t *a, const dig_t *b) {
-	dig_t carry = mpn_sub_n(c, a, b, 2 * RLC_FP_DIGS);
-	mpn_cnd_add_n(carry, c + RLC_FP_DIGS, c + RLC_FP_DIGS,
-		fp_prime_get(), RLC_FP_DIGS);
+	dig_t carry =
+		mpn_sub_n((mp_ptr)c, (mp_srcptr)a, (mp_srcptr)b, 2 * RLC_FP_DIGS);
+	mpn_cnd_add_n(carry, (mp_ptr)c + RLC_FP_DIGS, (mp_srcptr)c + RLC_FP_DIGS,
+		(mp_srcptr)fp_prime_get(), RLC_FP_DIGS);
 }
 
 void fp_negm_low(dig_t *c, const dig_t *a) {
 	if (fp_is_zero(a)) {
 		fp_zero(c);
 	} else {
-		mpn_sub_n(c, fp_prime_get(), a, RLC_FP_DIGS);
+		mpn_sub_n((mp_ptr)c, (mp_srcptr)fp_prime_get(), (mp_srcptr)a,
+			RLC_FP_DIGS);
 	}
 }
 
 dig_t fp_dbln_low(dig_t *c, const dig_t *a) {
-	return mpn_add_n(c, a, a, RLC_FP_DIGS);
+	return mpn_add_n((mp_ptr)c, (mp_srcptr)a, (mp_srcptr)a, RLC_FP_DIGS);
 }
 
 void fp_dblm_low(dig_t *c, const dig_t *a) {
-	dig_t carry = mpn_add_n(c, a, a, RLC_FP_DIGS);
+	dig_t carry = mpn_add_n((mp_ptr)c, (mp_srcptr)a, (mp_srcptr)a, RLC_FP_DIGS);
 	dig_t cond = dv_cmp(c, fp_prime_get(), RLC_FP_DIGS) != RLC_LT;
-	mpn_cnd_sub_n(carry | cond, c, c, fp_prime_get(), RLC_FP_DIGS);
+	mpn_cnd_sub_n(carry | cond, (mp_ptr)c, (mp_srcptr)c,
+		(mp_srcptr)fp_prime_get(), RLC_FP_DIGS);
 }
 
 void fp_hlvm_low(dig_t *c, const dig_t *a) {
-    dig_t carry = mpn_cnd_add_n(a[0] & 1, c, a, fp_prime_get(), RLC_FP_DIGS);
-    mpn_rshift(c, c, RLC_FP_DIGS, 1);
+    dig_t carry = mpn_cnd_add_n(a[0] & 1, (mp_ptr)c, (mp_srcptr)a,
+		(mp_srcptr)fp_prime_get(), RLC_FP_DIGS);
+    mpn_rshift((mp_ptr)c, (mp_srcptr)c, RLC_FP_DIGS, 1);
     c[RLC_FP_DIGS - 1] ^= ((dig_t)carry << (RLC_DIG - 1));
 }
 
 void fp_hlvd_low(dig_t *c, const dig_t *a) {
 	dig_t *t = RLC_ALLOCA(dig_t, mpn_sec_add_1_itch(RLC_FP_DIGS));
-	dig_t carry = mpn_cnd_add_n(a[0] & 1, c, a, fp_prime_get(), RLC_FP_DIGS);
-	mpn_sec_add_1(c + RLC_FP_DIGS, a + RLC_FP_DIGS, RLC_FP_DIGS, carry, t);
-	carry = mpn_rshift(c + RLC_FP_DIGS, c + RLC_FP_DIGS, RLC_FP_DIGS, 1);
-	mpn_rshift(c, c, RLC_FP_DIGS, 1);
+	dig_t carry = mpn_cnd_add_n(a[0] & 1, (mp_ptr)c, (mp_srcptr)a,
+		(mp_srcptr)fp_prime_get(), RLC_FP_DIGS);
+	mpn_sec_add_1((mp_ptr)c + RLC_FP_DIGS, (mp_srcptr)a + RLC_FP_DIGS,
+		RLC_FP_DIGS, carry, (mp_ptr)t);
+	carry = mpn_rshift((mp_ptr)c + RLC_FP_DIGS, (mp_srcptr)c + RLC_FP_DIGS,
+		RLC_FP_DIGS, 1);
+	mpn_rshift((mp_ptr)c, (mp_srcptr)c, RLC_FP_DIGS, 1);
 	c[RLC_FP_DIGS - 1] ^= carry;
 	RLC_FREE(t);
 }

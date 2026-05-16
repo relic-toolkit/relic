@@ -40,11 +40,6 @@
  */
 #define RAND_DIST		40
 
-/**
- * Bound \tau on how many elements the adversary can store.
- */
-#define BND_STORE		72
-
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/

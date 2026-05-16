@@ -33,6 +33,7 @@
 #define RLC_FPX_LOW_H
 
 #include "relic_fpx.h"
+#include "relic_fp_low.h"
 
 /*============================================================================*/
 /* Function prototypes                                                        */
@@ -145,16 +146,6 @@ void fp2_dblm_low(fp2_t c, const fp2_t a);
  * @param[in] a				- the field element to multiply.
  */
 void fp2_norm_low(fp2_t c, const fp2_t a);
-
-/**
- * Multiplies a double-precision quadratic extension field element by the
- * quadratic non-residue, reducing only half of the result. Computes
- * c = a * E.
- *
- * @param[out] c			- the result.
- * @param[in] a				- the field element to multiply.
- */
-void fp2_norh_low(dv2_t c, dv2_t a);
 
 /**
  * Multiplies a double-precision quadratic extension field element by the

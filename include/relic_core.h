@@ -240,7 +240,7 @@ typedef struct _ctx_t {
 #endif /* FP_INV */
 	/** Square root of unity for square root extraction. */
 	bn_st srt;
-	/** Cube root of unity for square root extraction. */
+	/** Primitive cube root of unity for cube root extraction. */
 	bn_st crt;
 	/** Prime modulus modulo 8. */
 	dig_t mod8;
@@ -481,7 +481,7 @@ typedef struct _ctx_t {
 	/** Internal state of the PRNG. */
 	uint8_t rand[RLC_RAND_SIZE];
 #else
-	void (*rand_call)(uint8_t *, int, void *);
+	void (*rand_call)(uint8_t *, size_t, void *);
 	void *rand_args;
 #endif
 	/** Flag to indicate if PRNG is seed. */

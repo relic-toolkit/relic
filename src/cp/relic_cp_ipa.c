@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (c) 2021 RELIC Authors
+ * Copyright (c) 2025 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -24,27 +24,17 @@
 /**
  * @file
  *
- * Implementation of the low-level extension field modular reduction functions.
+ * Implementation of inner product arguments.
  *
- * @ingroup fpx
+ * @ingroup cp
  */
 
-#include "relic_core.h"
-#include "relic_fp_low.h"
-#include "relic_fpx_low.h"
+#include "relic.h"
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void fp3_rdcn_low(fp3_t c, dv3_t a) {
-#if FP_RDC == MONTY
-	fp_rdcn_low(c[0], a[0]);
-	fp_rdcn_low(c[1], a[1]);
-	fp_rdcn_low(c[2], a[2]);
-#else
-	fp_rdc(c[0], a[0]);
-	fp_rdc(c[1], a[1]);
-	fp_rdc(c[2], a[2]);
-#endif
+int cp_ipa_prv(ec_t *g, ec_t *h, ec_t u, bn_t *a, bn_t *b, bn_t c, size_t n) {
+
 }

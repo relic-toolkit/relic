@@ -381,7 +381,7 @@ void fp12_sqr_cyc_lazyr(fp12_t c, const fp12_t a) {
 		fp2_sqrn_low(u3, a[1][1]);
 		fp2_addm_low(t1, a[0][0], a[1][1]);
 
-		fp2_norh_low(u0, u3);
+		fp2_nord_low(u0, u3);
 		fp2_addc_low(u0, u0, u2);
 		fp2_rdcn_low(t0, u0);
 
@@ -416,7 +416,7 @@ void fp12_sqr_cyc_lazyr(fp12_t c, const fp12_t a) {
 		fp2_addm_low(t0, t0, t0);
 		fp2_addm_low(c[1][0], t0, t1);
 
-		fp2_norh_low(u3, u1);
+		fp2_nord_low(u3, u1);
 		fp2_addc_low(u3, u0, u3);
 		fp2_rdcn_low(t0, u3);
 		fp2_subm_low(t1, t0, a[0][2]);
@@ -426,7 +426,7 @@ void fp12_sqr_cyc_lazyr(fp12_t c, const fp12_t a) {
 		fp2_addm_low(t1, t1, t1);
 		fp2_addm_low(c[0][2], t1, t0);
 
-		fp2_norh_low(u3, u1);
+		fp2_nord_low(u3, u1);
 		fp2_addc_low(u3, u2, u3);
 		fp2_rdcn_low(t0, u3);
 		fp2_subm_low(t1, t0, a[0][1]);
@@ -491,7 +491,7 @@ void fp12_sqr_pck_lazyr(fp12_t c, const fp12_t a) {
 		fp2_dblm_low(t0, t0);
 		fp2_addm_low(c[1][0], t0, t1);
 
-		fp2_norh_low(u3, u1);
+		fp2_nord_low(u3, u1);
 		fp2_sqrn_low(u1, a[0][2]);
 		fp2_addc_low(u3, u0, u3);
 		fp2_rdcn_low(t0, u3);
@@ -506,7 +506,7 @@ void fp12_sqr_pck_lazyr(fp12_t c, const fp12_t a) {
 		fp2_dblm_low(t1, t1);
 		fp2_addm_low(c[1][2], t0, t1);
 
-		fp2_norh_low(u3, u1);
+		fp2_nord_low(u3, u1);
 		fp2_addc_low(u3, u2, u3);
 		fp2_rdcn_low(t0, u3);
 		fp2_subm_low(t1, t0, a[0][1]);

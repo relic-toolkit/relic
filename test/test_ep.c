@@ -468,6 +468,90 @@ static int doubling(void) {
 	return code;
 }
 
+static int tripling(void) {
+	int code = RLC_ERR;
+	ep_t a, b, c;
+
+	ep_null(a);
+	ep_null(b);
+	ep_null(c);
+
+	RLC_TRY {
+		ep_new(a);
+		ep_new(b);
+		ep_new(c);
+
+		TEST_CASE("point tripling is correct") {
+			ep_curve_get_gen(a);
+			ep_dbl(b, a);
+			ep_add(b, b, a);
+			ep_tpl_basic(c, a);
+			ep_norm(b, b);
+			ep_norm(c, c);
+			TEST_ASSERT(ep_cmp(b, c) == RLC_EQ, end);
+		} TEST_END;
+
+#if EP_ADD == BASIC || !defined(STRIP)
+		TEST_CASE("point tripling in affine coordinates is correct") {
+			ep_rand(a);
+			ep_tpl(b, a);
+			ep_tpl_basic(c, a);
+			ep_norm(b, b);
+			TEST_ASSERT(ep_cmp(b, c) == RLC_EQ, end);
+		} TEST_END;
+#endif
+
+#if EP_ADD == PROJC || !defined(STRIP)
+		TEST_CASE("point tripling in projective coordinates is correct") {
+			ep_rand(a);
+			/* a in projective coordinates. */
+			ep_tpl_projc(a, a);
+			ep_tpl_projc(b, a);
+			ep_norm(a, a);
+			ep_tpl(c, a);
+			TEST_ASSERT(ep_cmp(b, c) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("point tripling in mixed coordinates (z1 = 1) is correct") {
+			ep_rand(a);
+			ep_tpl_projc(b, a);
+			ep_norm(b, b);
+			ep_tpl(c, a);
+			TEST_ASSERT(ep_cmp(b, c) == RLC_EQ, end);
+		} TEST_END;
+#endif
+
+#if EP_ADD == JACOB || !defined(STRIP)
+		TEST_CASE("point tripling in jacobian coordinates is correct") {
+			ep_rand(a);
+			/* a in projective coordinates. */
+			ep_tpl_jacob(a, a);
+			ep_tpl_jacob(b, a);
+			ep_norm(a, a);
+			ep_tpl(c, a);
+			TEST_ASSERT(ep_cmp(b, c) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("point tripling in mixed coordinates (z1 = 1) is correct") {
+			ep_rand(a);
+			ep_tpl_jacob(b, a);
+			ep_norm(b, b);
+			ep_tpl(c, a);
+			TEST_ASSERT(ep_cmp(b, c) == RLC_EQ, end);
+		} TEST_END;
+#endif
+	}
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
+	}
+	code = RLC_OK;
+  end:
+	ep_free(a);
+	ep_free(b);
+	ep_free(c);
+	return code;
+}
+
 static int endomorphism(void) {
 	int code = RLC_ERR;
 	bn_t l, n, v1[3], v2[3];
@@ -1450,6 +1534,10 @@ int test(void) {
 	}
 
 	if (doubling() != RLC_OK) {
+		return RLC_ERR;
+	}
+
+	if (tripling() != RLC_OK) {
 		return RLC_ERR;
 	}
 

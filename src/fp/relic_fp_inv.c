@@ -49,7 +49,11 @@ static void bn_mul2_low(dig_t *c, const dig_t *a, dis_t digit, size_t size) {
 
 #endif /* RLC_FP_ROOM */
 
+#if WSIZE == 8
+static int jumpdivstep(dis_t m[4], int delta, dig_t f, dig_t g, int s) {
+#else
 static dis_t jumpdivstep(dis_t m[4], dis_t delta, dig_t f, dig_t g, int s) {
+#endif
 	dig_t u = 1, v = 0, q = 0, r = 1, c0, c1;
 
 	/* This is actually faster than my previous version, several tricks from
@@ -57,7 +61,7 @@ static dis_t jumpdivstep(dis_t m[4], dis_t delta, dig_t f, dig_t g, int s) {
 	 */
 	for (s--; s >= 0; s--) {
 		/* First handle the else part: if delta < 0, compute -(f,u,v). */
-		c0 = delta >> (RLC_DIG - 1);
+		c0 = delta >> (8 * sizeof(delta) - 1);
 		c1 = -(g & 1);
 		c0 &= c1;
 		/* Conditionally add -(f,u,v) to (g,q,r) */
@@ -67,7 +71,11 @@ static dis_t jumpdivstep(dis_t m[4], dis_t delta, dig_t f, dig_t g, int s) {
 		/* Now handle the 'if' part, so c0 will be (delta < 0) && (g & 1)) */
 		/* delta = RLC_SEL(delta, -delta, c0 & 1) - 2 (for half-divstep), thus
 		 * delta = - delta - 2 or delta - 1 */
+#if WSIZE == 8
+		delta = RLC_SEL(delta, -delta, c0 & 1) - 2;
+#else
 		delta = (delta ^ c0) - 1;
+#endif
 		f = f + (g & c0);
 		u = u + (q & c0);
 		v = v + (r & c0);
@@ -560,7 +568,7 @@ void fp_inv_divst(fp_t c, const fp_t a) {
 #if FP_INV == JMPDS || !defined(STRIP)
 
 void fp_inv_jmpds(fp_t c, const fp_t a) {
-	dis_t m[4], d = -1;
+	dis_t m[4];
 	/* Compute number of iterations based on modulus size. */
 	/* Iterations taken directly from https://github.com/sipa/safegcd-bounds */
 	const int iterations = (45907 * FP_PRIME + 26313) / 19929;
@@ -568,6 +576,11 @@ void fp_inv_jmpds(fp_t c, const fp_t a) {
 	dv_t f, g, t, p, t0, t1, u0, u1, v0, v1, p01, p11;
 	dig_t sf, sg;
 	fp_t pre;
+#if WSIZE == 8
+	int d = -1;
+#else
+	dis_t d = -1;
+#endif
 
 	if (fp_is_zero(a)) {
 		RLC_THROW(ERR_NO_VALID);
@@ -773,11 +786,9 @@ void fp_inv_jmpds(fp_t c, const fp_t a) {
 
 		fp_add(p01, v0, v1);
 #endif
-
 		/* Negate based on sign of f at the end. */
 		fp_negm_low(t, p01);
 		dv_copy_sec(p01, t, RLC_FP_DIGS, f[RLC_FP_DIGS] >> (RLC_DIG - 1));
-	
 		/* Multiply by (precomp * R^j) % p, one for each iteration of the loop,
 		 * one for the constant, one more to be removed by reduction. */
 		fp_mul(c, p01, pre);

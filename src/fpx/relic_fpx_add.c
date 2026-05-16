@@ -39,19 +39,19 @@
 #if FPX_QDR == BASIC || !defined(STRIP)
 
 void fp2_add_basic(fp2_t c, const fp2_t a, const fp2_t b) {
-  fp_add(c[0], a[0], b[0]);
-  fp_add(c[1], a[1], b[1]);
+	fp_add(c[0], a[0], b[0]);
+	fp_add(c[1], a[1], b[1]);
 }
 
 void fp2_sub_basic(fp2_t c, const fp2_t a, const fp2_t b) {
-  fp_sub(c[0], a[0], b[0]);
-  fp_sub(c[1], a[1], b[1]);
+	fp_sub(c[0], a[0], b[0]);
+	fp_sub(c[1], a[1], b[1]);
 }
 
 void fp2_dbl_basic(fp2_t c, const fp2_t a) {
-  /* 2 * (a_0 + a_1 * u) = 2 * a_0 + 2 * a_1 * u. */
-  fp_dbl(c[0], a[0]);
-  fp_dbl(c[1], a[1]);
+	/* 2 * (a_0 + a_1 * u) = 2 * a_0 + 2 * a_1 * u. */
+	fp_dbl(c[0], a[0]);
+	fp_dbl(c[1], a[1]);
 }
 
 #endif
@@ -90,22 +90,22 @@ void fp2_neg(fp2_t c, const fp2_t a) {
 #if FPX_CBC == BASIC || !defined(STRIP)
 
 void fp3_add_basic(fp3_t c, const fp3_t a, const fp3_t b) {
-  fp_add(c[0], a[0], b[0]);
-  fp_add(c[1], a[1], b[1]);
-  fp_add(c[2], a[2], b[2]);
+	fp_add(c[0], a[0], b[0]);
+	fp_add(c[1], a[1], b[1]);
+	fp_add(c[2], a[2], b[2]);
 }
 
 void fp3_sub_basic(fp3_t c, const fp3_t a, const fp3_t b) {
-  fp_sub(c[0], a[0], b[0]);
-  fp_sub(c[1], a[1], b[1]);
-  fp_sub(c[2], a[2], b[2]);
+	fp_sub(c[0], a[0], b[0]);
+	fp_sub(c[1], a[1], b[1]);
+	fp_sub(c[2], a[2], b[2]);
 }
 
 void fp3_dbl_basic(fp3_t c, const fp3_t a) {
   /* 2 * (a_0 + a_1 * u) = 2 * a_0 + 2 * a_1 * u. */
-  fp_dbl(c[0], a[0]);
-  fp_dbl(c[1], a[1]);
-  fp_dbl(c[2], a[2]);
+	fp_dbl(c[0], a[0]);
+	fp_dbl(c[1], a[1]);
+	fp_dbl(c[2], a[2]);
 }
 
 #endif

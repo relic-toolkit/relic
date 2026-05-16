@@ -272,8 +272,8 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
 #define pc_map_is_typeb()	(0)
 #define pc_map_is_typec()	(0)
 #if FP_PRIME == 3072
-#undef pc_map_is_typeb
-#define pc_map_is_typeb()	(1)
+#undef pc_map_is_typea
+#define pc_map_is_typea()	(1)
 #elif FP_PRIME < 1536
 #undef pc_map_is_type3
 #define pc_map_is_type3()	(1)

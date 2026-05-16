@@ -660,48 +660,36 @@ int ep2_curve_opt_b(void) {
 void ep2_curve_mul_a(fp2_t c, const fp2_t a) {
 	ctx_t *ctx = core_get();
 
-	if (ep2_curve_is_twist() == RLC_EP_MTYPE) {
-		switch (ep_curve_opt_a()) {
-			case RLC_ZERO:
-				fp2_zero(c);
-				break;
-			case RLC_ONE:
-				fp2_copy(c, a);
-				break;
-			case RLC_TWO:
-				fp2_dbl(c, a);
-				break;
-			default:
+	switch (ctx->ep2_opt_a) {
+		case RLC_ZERO:
+			fp2_zero(c);
+			break;
+		case RLC_ONE:
+			fp2_copy(c, a);
+			break;
+		case RLC_TWO:
+			fp2_dbl(c, a);
+			break;
+#if FP_RDC != MONTY
+		case RLC_TINY:
+			fp2_mul_dig(c, a, ctx->ep2_a[0][0]);
+			break;
+#endif
+		default:
+			if (ep2_curve_is_twist() == RLC_EP_MTYPE) {
 				fp_mul(c[0], a[0], ep_curve_get_a());
 				fp_mul(c[1], a[1], ep_curve_get_a());
-				break;
-		}
-		fp2_mul_art(c, c);
-	} else {
-		switch (ctx->ep2_opt_a) {
-			case RLC_ZERO:
-				fp2_zero(c);
-				break;
-			case RLC_ONE:
-				fp2_copy(c, a);
-				break;
-			case RLC_TWO:
-				fp2_dbl(c, a);
-				break;
-#if FP_RDC != MONTY
-			case RLC_TINY:
-				fp2_mul_dig(c, a, ctx->ep2_a[0][0]);
-				break;
-#endif
-			default:
+				fp2_mul_art(c, c);
+			} else {
 				fp2_mul(c, a, ctx->ep2_a);
-				break;
-		}
+			}
+			break;
 	}
 }
 
 void ep2_curve_mul_b(fp2_t c, const fp2_t a) {
 	ctx_t *ctx = core_get();
+
 	switch (ctx->ep2_opt_b) {
 		case RLC_ZERO:
 			fp2_zero(c);
@@ -715,7 +703,13 @@ void ep2_curve_mul_b(fp2_t c, const fp2_t a) {
 			break;
 #endif
 		default:
-			fp2_mul(c, a, ctx->ep2_b);
+			if (ep2_curve_is_twist() == RLC_EP_MTYPE) {
+				fp_mul(c[0], a[0], ep_curve_get_b());
+				fp_mul(c[1], a[1], ep_curve_get_b());
+				fp2_mul_nor(c, c);
+			} else {
+				fp2_mul(c, a, ctx->ep2_b);
+			}
 			break;
 	}
 }

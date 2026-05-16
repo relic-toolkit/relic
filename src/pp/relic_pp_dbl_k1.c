@@ -71,15 +71,16 @@ void pp_dbl_k1_basic(fp_t l, fp_t m, ep_t r, const ep_t p, const ep_t q) {
 
 #if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
 
-void pp_dbl_k1_projc(fp_t l, fp_t m, ep_t r, const ep_t p, const ep_t q) {
-	fp_t t0, t1, t2, t3, t4, t5;
+void pp_dbl_k1_projc(fp_t l, fp_t m, ep_t r, fp_t w, const ep_t p, const fp_t v,
+		const ep_t q) {
+	fp_t t0, t1, t2, t3, t4;
 
+	fp_null(t0);
 	fp_null(t0);
 	fp_null(t1);
 	fp_null(t2);
 	fp_null(t3);
 	fp_null(t4);
-	fp_null(t5);
 
 	RLC_TRY {
 		fp_new(t0);
@@ -87,65 +88,65 @@ void pp_dbl_k1_projc(fp_t l, fp_t m, ep_t r, const ep_t p, const ep_t q) {
 		fp_new(t2);
 		fp_new(t3);
 		fp_new(t4);
-		fp_new(t5);
 
 		/* dbl-2007-bl formulas 1M + 8S + 1*a + 10add + 2*2 + 1*3 + 1*8 */
+		/* with the extended coordinate optimization w = z^2 applied.  */
 
-		/* t0 = z1^2. */
-		fp_sqr(t0, p->z);
+		/* t0 = y1^2. */
+		fp_sqr(t0, p->y);
 
-		/* t1 = y1^2. */
-		fp_sqr(t1, p->y);
+		/* t1 = x1^2. */
+		fp_sqr(t1, p->x);
 
-		/* t2 = x1^2. */
-		fp_sqr(t2, p->x);
+		/* t2 = y1^4.*/
+		fp_sqr(t2, t0);
 
-		/* t3 = y1^4.*/
-		fp_sqr(t3, t1);
-
-		/* t4 = S = 2*((X1+YY)^2-XX-YYYY). */
-		fp_add(t4, p->x, t1);
-		fp_sqr(t4, t4);
-		fp_sub(t4, t4, t2);
-		fp_sub(t4, t4, t3);
-		fp_dbl(t4, t4);
+		/* t3 = S = 2*((X1+YY)^2-XX-YYYY). */
+		fp_add(t3, p->x, t0);
+		fp_sqr(t3, t3);
+		fp_sub(t3, t3, t1);
+		fp_sub(t3, t3, t2);
+		fp_dbl(t3, t3);
 
 		/* z3 = (Y1+Z1)^2-YY-ZZ, */
 		fp_add(r->z, p->y, p->z);
 		fp_sqr(r->z, r->z);
-		fp_sub(r->z, r->z, t1);
 		fp_sub(r->z, r->z, t0);
+		fp_sub(r->z, r->z, v);
 
-		/* t5 = M = 3*XX+a*ZZ^2. */
-		fp_dbl(t5, t2);
-		fp_add(t5, t5, t2);
-		fp_sqr(t2, t0);
-		fp_mul(t1, t2, ep_curve_get_a());
-		fp_add(t5, t5, t1);
+		/* t4 = M = 3*XX+a*ZZ^2. */
+		fp_dbl(t4, t1);
+		fp_add(t4, t4, t1);
+		fp_sqr(t1, v);
+		/* We could use ep_curve_mul_a(t0, t1), but optimize for a = -4. */
+		fp_dbl(t0, t1);
+		fp_dbl(t0, t0);
+		fp_neg(t0, t0);
+		fp_add(t4, t4, t0);
 
 		/* x3 = T = M^2 - 2S. */
-		fp_sqr(r->x, t5);
-		fp_sub(r->x, r->x, t4);
-		fp_sub(r->x, r->x, t4);
+		fp_sqr(r->x, t4);
+		fp_sub(r->x, r->x, t3);
+		fp_sub(r->x, r->x, t3);
 
 		/* y3 = M*(S-T)-8*YYYY. */
-		fp_sub(t1, t4, r->x);
-		fp_mul(t1, t5, t1);
-		fp_dbl(t3, t3);
-		fp_dbl(t3, t3);
-		fp_dbl(t3, t3);
-		fp_sub(r->y, t1, t3);
+		fp_sub(t0, t3, r->x);
+		fp_mul(t0, t4, t0);
+		fp_dbl(t2, t2);
+		fp_dbl(t2, t2);
+		fp_dbl(t2, t2);
+		fp_sub(r->y, t0, t2);
 
-		/* l = z3*z3^2*yQ + y3 − t5*(z3^2*xQ - x3), v = z3*(z3^2*xQ - x3)). */
-		fp_sqr(t2, r->z);
-		fp_mul(l, r->z, t2);
+		/* l = z3*z3^2*yQ + y3 − t4*(z3^2*xQ - x3), v = z3*(z3^2*xQ - x3)). */
+		fp_sqr(w, r->z);
+		fp_mul(l, r->z, w);
 		fp_mul(l, l, q->y);
 		fp_add(l, l, r->y);
-		fp_mul(t2, t2, q->x);
-		fp_sub(t2, t2, r->x);
-		fp_mul(m, r->z, t2);
-		fp_mul(t2, t2, t5);
-		fp_sub(l, l, t2);
+		fp_mul(t1, w, q->x);
+		fp_sub(t1, t1, r->x);
+		fp_mul(m, r->z, t1);
+		fp_mul(t1, t1, t4);
+		fp_sub(l, l, t1);
 		if (fp_is_zero(l)) {
 			fp_set_dig(l, 1);
 		}
@@ -161,7 +162,6 @@ void pp_dbl_k1_projc(fp_t l, fp_t m, ep_t r, const ep_t p, const ep_t q) {
 		fp_free(t2);
 		fp_free(t3);
 		fp_free(t4);
-		fp_free(t5);
 	}
 }
 

@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (c) 2022 RELIC Authors
+ * Copyright (c) 2025 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -24,47 +24,60 @@
 /**
  * @file
  *
- * Implementation of the low-level inversion functions.
+ * Implementation of the oblivious pseudorandom function protocol.
  *
- * @&version $Id$
- * @ingroup fp
+ * @ingroup cp
  */
 
-#include <gmp.h>
-
-#include "relic_fp.h"
-#include "relic_fp_low.h"
-#include "relic_core.h"
+#include "relic.h"
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void fp_invm_low(dig_t *c, const dig_t *a) {
-	mp_size_t cn;
-	rlc_align dig_t s[RLC_FP_DIGS], t[2 * RLC_FP_DIGS], u[RLC_FP_DIGS + 1];
+int cp_oprf_ask(ec_t b, bn_t x, const ec_t a) {
+	bn_t n;
+	int result = RLC_OK;
 
-#if FP_RDC == MONTY
-	dv_zero(t + RLC_FP_DIGS, RLC_FP_DIGS);
-	dv_copy(t, a, RLC_FP_DIGS);
-	fp_rdcn_low(u, t);
-#else
-	fp_copy(u, a);
-#endif
+	bn_null(n);
 
-	dv_copy(s, fp_prime_get(), RLC_FP_DIGS);
-
-	mpn_gcdext(t, c, &cn, u, RLC_FP_DIGS, s, RLC_FP_DIGS);
-	if (cn < 0) {
-		dv_zero(c - cn, RLC_FP_DIGS + cn);
-		mpn_sub_n(c, fp_prime_get(), c, RLC_FP_DIGS);
-	} else {
-		dv_zero(c + cn, RLC_FP_DIGS - cn);
+	if (ec_is_infty(a)) {
+		return RLC_ERR;
 	}
 
-#if FP_RDC == MONTY
-	dv_zero(t, RLC_FP_DIGS);
-	dv_copy(t + RLC_FP_DIGS, c, RLC_FP_DIGS);
-	mpn_tdiv_qr(u, c, 0, t, 2 * RLC_FP_DIGS, fp_prime_get(), RLC_FP_DIGS);
-#endif
+	RLC_TRY {
+		bn_new(n);
+
+		ec_curve_get_ord(n);
+		do {
+			bn_rand_mod(x, n);
+		} while (bn_is_zero(x));
+		ec_mul(b, a, x);
+		bn_mod_inv(x, x, n);
+	}
+	RLC_CATCH_ANY {
+		result = RLC_ERR;
+	}
+	RLC_FINALLY {
+		bn_free(n);
+	}
+	return result;
+}
+
+int cp_oprf_ans(ec_t c, const bn_t alpha, const ec_t b) {
+	if (bn_is_zero(alpha) || ec_is_infty(b)) {
+		return RLC_ERR;
+	}
+
+	ec_mul(c, b, alpha);
+	return RLC_OK;
+}
+
+int cp_oprf_res(ec_t r, const bn_t x, const ec_t c) {
+	if (bn_is_zero(x) || ec_is_infty(c)) {
+		return RLC_ERR;
+	}
+
+	ec_mul(r, c, x);
+	return RLC_OK;
 }

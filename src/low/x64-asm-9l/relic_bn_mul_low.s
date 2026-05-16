@@ -42,7 +42,8 @@ bn_muls_low:
     pushq   %r14
     pushq   %r15
     pushq   %rbp
-	pushq   %rbx
+	pushq	%rbx
+	
     movq    %rcx, %rax
     shrq    $63, %rax
     xorq    %rdx, %rax     # sign = sa ^ sd;
@@ -108,8 +109,8 @@ bn_muls_low:
     movq    %r12,32(%rdi)
     movq    %r13,40(%rdi)
     movq    %r14,48(%rdi)
-    movq    %r15,56(%rdi)
-	movq    %rbp,64(%rdi)
+	movq    %r15,56(%rdi)
+    movq    %rbp,64(%rdi)
     movq    %rbx, %rax
 
 	popq	%rbx

@@ -505,8 +505,10 @@ static void arith(void) {
 #endif
 
 	BENCH_RUN("fp_inv") {
+		dig_t b = 0;
 		fp_rand(a);
-		BENCH_ADD(fp_inv(c, a));
+		BENCH_ADD(fp_inv(c, a); a[RLC_FP_DIGS - 1] ^= (1 << b);
+				b = (b + 1) % FP_PRIME);
 	}
 	BENCH_END;
 
@@ -560,8 +562,10 @@ static void arith(void) {
 
 #if FP_INV == LOWER || !defined(STRIP)
 	BENCH_RUN("fp_inv_lower") {
+		dig_t b = 0;
 		fp_rand(a);
-		BENCH_ADD(fp_inv_lower(c, a));
+		BENCH_ADD(fp_inv_lower(c, a); a[RLC_FP_DIGS - 1] ^= (1 << b);
+				b = (b + 1) % FP_PRIME);
 	}
 	BENCH_END;
 #endif
@@ -574,9 +578,11 @@ static void arith(void) {
 	BENCH_END;
 
 	BENCH_RUN("fp_smb") {
+		dig_t b = 0;
 		fp_rand(a);
 		fp_sqr(a, a);
-		BENCH_ADD(fp_smb(a));
+		BENCH_ADD(fp_smb(a); a[RLC_FP_DIGS - 1] ^= (1 << b);
+				b = (b + 1) % FP_PRIME);
 	}
 	BENCH_END;
 
@@ -618,9 +624,11 @@ static void arith(void) {
 
 #if FP_SMB == LOWER || !defined(STRIP)
 	BENCH_RUN("fp_smb_lower") {
+		dig_t b = 0;
 		fp_rand(a);
 		fp_sqr(a, a);
-		BENCH_ADD(fp_smb_lower(a));
+		BENCH_ADD(fp_smb_lower(a); a[RLC_FP_DIGS - 1] ^= (1 << b);
+				b = (b + 1) % FP_PRIME);
 	}
 	BENCH_END;
 #endif

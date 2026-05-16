@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (c) 2021 RELIC Authors
+ * Copyright (c) 2025 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -24,42 +24,36 @@
 /**
  * @file
  *
- * Implementation of low-level prime field modular reduction.
+ * Implementation of Pedersen commitment.
  *
- * @ingroup fp
+ * @ingroup cp
  */
 
-#include "relic_dv_low.h"
+#include "relic.h"
 
-#include "macro.s"
+/*============================================================================*/
+/* Public definitions                                                         */
+/*============================================================================*/
 
-.text
+int cp_ped_com(ec_t c, ec_t h, bn_t r, bn_t x) {
+	int result = RLC_OK;
+	bn_t n;
 
-.global cdecl(fp2_rdcn_low)
+	bn_null(n);
 
-/*
- * Function: fp_rdcn_low
- * Inputs: rdi = c, rsi = a
- * Output: rax
- */
-cdecl(fp2_rdcn_low):
-	push	%r12
-	push	%r13
-	push	%r14
-	push	%r15
-	push 	%rbx
-	push	%rbp
-	leaq 	p0(%rip), %rbx
+	RLC_TRY {
+		bn_new(n);
+		ec_curve_get_ord(n);
 
-	FP_RDCN_LOW %rdi, %r8, %r9, %r10, %rsi, %rbx
-	addq $(8*RLC_FP_DIGS), %rdi
-	addq $(8*RLC_DV_DIGS), %rsi
-	FP_RDCN_LOW %rdi, %r8, %r9, %r10, %rsi, %rbx
-
-	pop		%rbp
-	pop		%rbx
-	pop		%r15
-	pop		%r14
-	pop		%r13
-	pop		%r12
-	ret
+		if (ec_is_infty(h) || bn_is_zero(x) || bn_cmp(x, n) != RLC_LT) {
+			result = RLC_ERR;
+		} else {
+			ec_mul_sim_gen(c, x, h, r);	
+		}
+	} RLC_CATCH_ANY {
+		result = RLC_ERR;
+	} RLC_FINALLY {
+		bn_free(n);
+	}
+	return result;
+}

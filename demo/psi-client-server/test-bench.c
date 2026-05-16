@@ -8,7 +8,8 @@
 #define N	2			/* Number of client messages. */
 
 static int test(void) {
-	int len, result, code = RLC_ERR;
+	int result, code = RLC_ERR;
+	size_t len;
 	bn_t g, n, q, r, p[M], x[M], v[N], w[N], y[N], z[M];
 	g1_t u[M], ss;
 	g2_t d[M + 1], s[M + 1];
@@ -111,7 +112,7 @@ static void bench(void) {
 	g2_t d[M + 1], s[M + 1];
 	gt_t t[N];
 	crt_t crt;
-	int len;
+	size_t len;
 
 	bn_null(n);
 	bn_null(q);

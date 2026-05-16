@@ -29,3 +29,14 @@ include/relic_conf.h
 install_manifest.txt
 
 src/low/fiat/*.c
+
+demo/cert-input/test-bench
+demo/ers-etrs/test-bench
+demo/general-paillier/test
+demo/psi-client-server/receiver
+demo/psi-client-server/sender
+demo/psi-client-server/test-bench
+demo/public-stats/data.csv
+demo/public-stats/data_04_13.csv
+demo/public-stats/main
+demo/tweedledum/main

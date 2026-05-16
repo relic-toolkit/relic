@@ -38,32 +38,37 @@
 .global fp_mulm_low
 
 fp_muln_low:
-	movq %rdx,%rcx
-	FP_MULN_LOW %rdi, %r8, %r9, %r10, %rsi, %rcx
-	ret
+	push	%r12
+	push	%r13
+	push	%r14
+	push 	%rbx
+
+	movq	%rdx, %rcx
+
+	MULM	0(%rsi), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14
+	FP_MULM_LOW	0(%rsi), 0(%rcx), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %rbx, p0(%rip), 0
+
+    popq	%rbx
+    popq	%r14
+    popq	%r13
+    popq	%r12
+    ret
 
 fp_mulm_low:
 	push	%r12
 	push	%r13
 	push	%r14
-	push	%r15
 	push 	%rbx
-	push	%rbp
-	subq 	$80, %rsp
+	push 	%rbp
 
-	movq 	%rdx,%rcx
-	leaq 	p0(%rip), %rbx
+	movq	%rdx, %rbp
 
-	FP_MULN_LOW %rsp, %r8, %r9, %r10, %rsi, %rcx
+	MULM	0(%rsi), 0(%rbp), %r8, %r9, %r10, %r11, %r12, %r13, %r14
+	FP_MULM_LOW	0(%rsi), 0(%rbp), %r8, %r9, %r10, %r11, %r12, %r13, %r14, %rbx, p0(%rip), 1
 
-	FP_RDCN_LOW %rdi, %r8, %r9, %r10, %rsp, %rbx
-
-	addq	$80, %rsp
-
-	pop		%rbp
-	pop		%rbx
-	pop		%r15
-	pop		%r14
-	pop		%r13
-	pop		%r12
-	ret
+	popq	%rbp
+    popq	%rbx
+    popq	%r14
+    popq	%r13
+    popq	%r12
+    ret
