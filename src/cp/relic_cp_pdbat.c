@@ -299,7 +299,9 @@ int cp_amore_gen(bn_t s, gt_t e) {
 	RLC_TRY {
 		bn_new(n);
 		pc_get_ord(n);
-		bn_rand_mod(s, n);
+		do {
+			bn_rand_mod(s, n);
+		} while (bn_is_zero(s));
 		gt_exp_gen(e, s);
 		gt_inv(e, e);
 	} RLC_CATCH_ANY {
@@ -506,24 +508,26 @@ int cp_amprv_ask(bn_t *r, bn_t *w, g1_t *c, g2_t *d, g1_t *x, g2_t y, g2_t z,
 		}
 
 		pc_get_ord(n);
-		/* Sample r from Z_q* and compute U = [u]P. */
-		bn_rand_mod(w[0], n);
-		g1_mul_gen(u, w[0]);
-		/* Compute V = [s/u]Q. */
+		/* Sample v from Z_q* and compute V = [v]Q. */
+		cp_pdbat_sample(w[0], n, eps);
+		g2_mul_gen(v, w[0]);
+		/* Compute U = [s/v]P. */
 		bn_mod_inv(t[0], w[0], n);
 		bn_mul(t[0], t[0], s);
 		bn_mod(t[0], t[0], n);
-		g2_mul_gen(v, t[0]);
+		g1_mul_gen(u, t[0]);
 
 		g2_set_infty(y);
 		if (m == 1) {
-			if (prv == 1) {
-				/* w is a copy of s/u here. */
+			if (prv == 2) {
+				/* w is a copy of s/v here. */
 				bn_copy(w[0], t[0]);
 			}
 			cp_pdbat_sample(r[0], n, eps);
 			cp_pdbat_sample(t[0], n, eps);
 		} else {
+			/* w is a copy of s/v here. */
+			bn_copy(w[0], t[0]);
 			do {
 				g1_rand(g);
 			} while(g1_is_infty(g));
@@ -564,6 +568,7 @@ int cp_amprv_ask(bn_t *r, bn_t *w, g1_t *c, g2_t *d, g1_t *x, g2_t y, g2_t z,
 							result = RLC_ERR;
 						}
 					}
+					g1_norm_sim(x, x, m);
 				}
 				break;
 			case 2:
@@ -598,20 +603,20 @@ int cp_amprv_ask(bn_t *r, bn_t *w, g1_t *c, g2_t *d, g1_t *x, g2_t y, g2_t z,
 				break;
 			case 3:
 				if (m == 1) {
-					g2_mul(d[0], q[0], t[0]);
-					g2_sub(z, v, q[0]);
-					g2_mul(z, z, r[0]);
-					bn_copy(t[1], r[0]);
-					bn_mod_inv_sim(t, t, n, 2);
-					bn_mul(w[0], w[0], t[1]);
-					bn_mod(w[0], w[0], n);
 					g1_sub(x[0], u, p[0]);
 					g1_mul(x[0], x[0], t[0]);
-					g2_copy(y, d[0]);
-					bn_mul(t[0], t[0], t[1]);
-					bn_mod(t[0], t[0], n);
-					g1_mul(c[0], p[0], t[0]);
+					g2_mul(d[0], q[0], r[0]);
+					g2_sub(y, v, q[0]);
+					g2_norm(y, y);
+					bn_copy(t[1], r[0]);
+					bn_mod_inv_sim(t, t, n, 2);
+					bn_mul(w[0], w[0], t[0]);
+					bn_mul(w[0], w[0], t[1]);
+					bn_mod(w[0], w[0], n);
+					g1_mul(c[0], p[0], t[1]);
+					g2_set_infty(z);
 				} else {
+					cp_pdbat_sample(t[0], n, eps);
 					for (size_t i = 0; i < m; i++) {
 						cp_pdbat_sample(r[i], n, eps);
 						g2_mul(d[i], q[i], t[0]);
@@ -684,8 +689,10 @@ int cp_amprv_ans(gt_t *gs, const bn_t *w, const g1_t *c, const g2_t *d,
 		switch (prv) {
 			case 1:
 				if (m == 1) {
+					g1_copy(ps[0], x[0]);
 					g2_mul_gen(qs[0], w[0]);
 					g1_copy(ps[1], p[0]);
+					g2_copy(qs[1], z);
 				} else {
 					for (size_t i = 0; i < m; i++) {
 						g1_mul(ps[i], p[i], w[i]);
@@ -696,10 +703,25 @@ int cp_amprv_ans(gt_t *gs, const bn_t *w, const g1_t *c, const g2_t *d,
 				}
 				break;
 			case 2:
-			case 3:
 				if (m == 1) {
+					g1_copy(ps[0], x[0]);
 					g2_copy(qs[0], y);
 					g1_mul_gen(ps[1], w[0]);
+					g2_copy(qs[1], z);
+				} else {
+					for (size_t i = 0; i < m; i++) {
+						pc_map(gs[i], c[i], d[i]);
+						g1_neg(ps[i], x[i]);
+						g2_copy(qs[i], d[i]);
+					}
+				}
+				break;
+			case 3:
+				if (m == 1) {
+					g1_copy(ps[0], c[0]);
+					g2_copy(qs[0], y);
+					g1_copy(ps[1], x[0]);
+					g2_mul_gen(qs[1], w[0]);
 				} else {
 					for (size_t i = 0; i < m; i++) {
 						pc_map(gs[i], c[i], d[i]);
@@ -711,10 +733,13 @@ int cp_amprv_ans(gt_t *gs, const bn_t *w, const g1_t *c, const g2_t *d,
 		}
 
 		if (m == 1) {
-			g1_copy(ps[0], x[0]);
-			g2_copy(qs[1], z);
-			pc_map(gs[0], c[0], d[0]);
-			pc_map_sim(gs[1], ps, qs, 2);
+			if (prv == 3) {
+				pc_map_sim(gs[0], ps, qs, 2);
+				pc_map(gs[1], c[0], d[0]);
+			} else {
+				pc_map(gs[0], c[0], d[0]);
+				pc_map_sim(gs[1], ps, qs, 2);
+			}
 		} else {
 			g1_copy(ps[m], x[m]);
 			g2_copy(qs[m], y);
@@ -757,6 +782,10 @@ int cp_amprv_ver(gt_t *gs, const bn_t *r, const gt_t e, int prv, size_t m) {
 				/* Invert t to compensate for the sign difference in s
 				 * between the single and batched versions. */
 				gt_inv(t, t);
+				if (prv == 3) {
+					/* Return \gamma instead in this case. */
+					gt_copy(gs[0], gs[1]);
+				}
 			}
 			result &= (gt_cmp(t, e) == RLC_EQ);
 
