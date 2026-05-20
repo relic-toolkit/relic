@@ -931,9 +931,9 @@ static void pdpub(void) {
 #define AGGS 	2
 
 static void pdprv(void) {
-	bn_t w, r1, r2[3], ls[AGGS], b[AGGS];
+	bn_t w, r1, r2[3], ls[AGGS], a[AGGS], b[AGGS], c[AGGS];
 	g1_t p[AGGS], u1[2], v1[3], rs[AGGS], xs[AGGS + 1];
-	g2_t q[AGGS], s[AGGS], qs[AGGS], u2[2], v2[4], w2[4];
+	g2_t q[AGGS], s[AGGS], qs[AGGS], qqs[2 * AGGS], u2[2], v2[4], w2[4];
 	gt_t e[2], r, ts[AGGS + 1], g[RLC_MAX(4, AGGS + 1)];
 	
 	bn_null(r1);
@@ -964,7 +964,9 @@ static void pdprv(void) {
 		g2_new(w2[i]);
 	}
 	for (size_t i = 0; i < AGGS; i++) {
+		bn_null(a[i]);
 		bn_null(b[i]);
+		bn_null(c[i]);
 		bn_null(ls[i]);
 		g1_null(p[i]);
 		g2_null(q[i]);
@@ -972,9 +974,13 @@ static void pdprv(void) {
 		g1_null(xs[i]);
 		g2_null(s[i]);
 		g2_null(qs[i]);
+		g2_null(qqs[i]);
+		g2_null(qqs[i + AGGS]);
 		gt_null(ts[i]);
 		gt_null(g[i]);
+		bn_new(a[i]);
 		bn_new(b[i]);
+		bn_new(c[i]);
 		bn_new(ls[i]);
 		g1_new(p[i]);
 		g2_new(q[i]);
@@ -984,6 +990,8 @@ static void pdprv(void) {
 		g1_new(xs[i]);
 		g2_new(s[i]);
 		g2_new(qs[i]);
+		g2_new(qqs[i]);
+		g2_new(qqs[i + AGGS]);
 		gt_new(ts[i]);
 		gt_new(g[i]);
 	}
@@ -1084,6 +1092,42 @@ static void pdprv(void) {
 		BENCH_ADD(cp_amore_ver(g, ls, e[0], AGGS));
 	} BENCH_END;
 
+	cp_kstbat_gen(ls, u1[0], u2[0], s, e[0], AGGS);
+
+	for (int prv = 1; prv < 4; prv++) {
+		util_print("(A = %d, B = %d) ", (prv >> 1) & 1, prv & 1);
+		BENCH_RUN("cp_kstbat_ask (1)") {
+			BENCH_ADD(cp_kstbat_ask(a, b, c, xs, qs, qqs, p, q, ls, u1[0], u2[0], s, prv, 1));
+		} BENCH_END;
+
+		util_print("(A = %d, B = %d) ", (prv >> 1) & 1, prv & 1);
+		BENCH_RUN("cp_kstbat_ans (1)") {
+			BENCH_ADD(cp_kstbat_ans(g, ts, xs, qs, qqs, u2[0], 1));
+		} BENCH_END;
+
+		util_print("(A = %d, B = %d) ", (prv >> 1) & 1, prv & 1);
+		BENCH_RUN("cp_kstbat_ver (1)") {
+			BENCH_ADD(cp_kstbat_ver(g, ts, a, b, c, e[0], prv, 1));
+		} BENCH_END;
+	}
+
+	for (int prv = 1; prv < 4; prv++) {
+		util_print("(A = %d, B = %d) ", (prv >> 1) & 1, prv & 1);
+		BENCH_RUN("cp_kstbat_ask (AGGS)") {
+			BENCH_ADD(cp_kstbat_ask(a, b, c, xs, qs, qqs, p, q, ls, u1[0], u2[0], s, prv, AGGS));
+		} BENCH_END;
+
+		util_print("(A = %d, B = %d) ", (prv >> 1) & 1, prv & 1);
+		BENCH_RUN("cp_kstbat_ans (AGGS)") {
+			BENCH_ADD(cp_kstbat_ans(g, ts, xs, qs, qqs, u2[0], AGGS));
+		} BENCH_END;
+
+		util_print("(A = %d, B = %d) ", (prv >> 1) & 1, prv & 1);
+		BENCH_RUN("cp_kstbat_ver (AGGS)") {
+			BENCH_ADD(cp_kstbat_ver(g, ts, a, b, c, e[0], prv, AGGS));
+		} BENCH_END;
+	}
+
 	for (int prv = 1; prv < 4; prv++) {
 		util_print("(A = %d, B = %d) ", (prv >> 1) & 1, prv & 1);
 		BENCH_RUN("cp_amprv_ask (1)") {
@@ -1135,7 +1179,9 @@ static void pdprv(void) {
 		g2_free(w2[i]);
 	}
 	for (size_t i = 0; i < AGGS; i++) {
+		bn_free(a[i]);
 		bn_free(b[i]);
+		bn_free(c[i]);
 		bn_free(ls[i]);
 		g1_free(p[i]);
 		g2_free(q[i]);
@@ -1143,6 +1189,8 @@ static void pdprv(void) {
 		g1_free(xs[i]);
 		g2_free(s[i]);
 		g2_free(qs[i]);
+		g2_free(qqs[i]);
+		g2_free(qqs[i + m]);
 		gt_free(ts[i]);
 		gt_free(g[i]);
 	}

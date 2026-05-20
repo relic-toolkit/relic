@@ -290,6 +290,157 @@ int cp_mvbat_ver(gt_t *rs, const gt_t *as, const gt_t *bs, const bn_t *b,
 	return result;
 }
 
+int cp_kstbat_gen(bn_t *r, g1_t x, g2_t y, g2_t *ys, gt_t g, size_t m) {
+	bn_t s, t, n;
+	int result = RLC_OK;
+
+	bn_null(n);
+	bn_null(s);
+	bn_null(t);
+
+	RLC_TRY {
+		bn_new(n);
+		bn_new(s);
+		bn_new(t);
+
+		pc_get_ord(n);
+		bn_rand_mod(s, n);
+		g1_mul_gen(x, s);
+		bn_rand_mod(t, n);
+		g2_mul_gen(y, t);
+		for (size_t i = 0; i < m; i++) {
+			bn_rand_mod(r[i], n);
+			g2_mul(ys[i], y, r[i]);
+		}
+		
+		bn_mul(t, t, s);
+		bn_mod(t, t, n);
+		gt_exp_gen(g, t);
+	} RLC_CATCH_ANY {
+		result = RLC_ERR;
+	} RLC_FINALLY {
+		bn_free(n);
+		bn_free(s);
+		bn_free(t);
+	}
+
+	return result;
+}
+
+int cp_kstbat_ask(bn_t *a, bn_t *b, bn_t *c, g1_t *as, g2_t *bs, g2_t *bbs,
+		const g1_t *p, const g2_t *q, const bn_t *r, const g1_t x,
+		const g2_t y, const g2_t *ys, int prv, size_t m) {
+	bn_t n;
+	int result = RLC_OK;
+
+	bn_null(n);
+
+	RLC_TRY {
+		bn_new(n);
+
+		pc_get_ord(n);
+
+		for (size_t i = 0; i < m; i++) {
+			if (prv & 2) {
+				bn_rand_mod(a[i], n);
+			} else {
+				bn_set_dig(a[i], 1);
+			}
+			if (prv & 1) {
+				bn_rand_mod(b[i], n);
+			} else {
+				bn_set_dig(b[i], 1);
+			}
+			g1_mul(as[i], p[i], a[i]);
+			g2_mul(bs[i], q[i], b[i]);
+			bn_rand(c[i], RLC_POS, ep_param_level());
+			g2_mul(bbs[i], bs[i], c[i]);
+			g2_add(bbs[i], bbs[i], ys[i]);
+		}
+		g1_mul_sim_lot(as[m], as, r, m);		
+		g1_sub(as[m], as[m], x);
+		g1_norm(as[m], as[m]);
+		g2_norm_sim(bbs, bbs, m);
+	} RLC_CATCH_ANY {
+		result = RLC_ERR;
+	} RLC_FINALLY {
+		bn_free(n);
+	}
+
+	return result;
+}
+
+int cp_kstbat_ans(gt_t *ls, gt_t *rs, const g1_t *as, const g2_t *bs,
+		const g2_t *bbs, const g2_t y, size_t m) {
+	
+	pc_map(rs[m], as[m], y);
+	for (size_t i = 0; i < m; i++) {
+		pc_map(ls[i], as[i], bs[i]);
+		pc_map(rs[i], as[i], bbs[i]);
+	}
+
+	return RLC_OK;
+}
+
+int cp_kstbat_ver(gt_t *ls, gt_t *rs, const bn_t *a, const bn_t *b,
+		const bn_t *c, const gt_t g, int prv, size_t m) {
+	bn_t t, n;
+	gt_t u, v, w;
+	int result = 1;
+
+	bn_null(t);
+	bn_null(n);
+	gt_null(u);
+	gt_null(v);
+	gt_null(w);
+
+	RLC_TRY {
+		bn_new(t);
+		bn_new(n);
+		gt_new(u);
+		gt_new(v);
+		gt_new(w);
+
+		pc_get_ord(n);
+
+		gt_set_unity(u);
+		gt_set_unity(v);
+		for (size_t i = 0; i < m; i++) {
+			result &= gt_is_valid(ls[i]);
+			result &= gt_is_valid(rs[i]);
+			gt_mul(u, u, rs[i]);
+			gt_exp(w, ls[i], c[i]);
+			gt_mul(v, v, w);
+		}
+		result &= gt_is_valid(rs[m]);
+		gt_mul(v, v, rs[m]);
+		gt_mul(v, v, g);
+		result &= (gt_cmp(u, v) == RLC_EQ);
+
+		for (size_t i = 0; i < m; i++) {
+			if (result) {
+				bn_mul(t, a[i], b[i]);
+				bn_mod(t, t, n);
+				bn_mod_inv(t, t, n);
+				gt_exp(ls[i], ls[i], t);
+			} else {
+				gt_set_unity(ls[i]);
+			}
+		}
+	} RLC_CATCH_ANY {
+		result = RLC_ERR;
+	} RLC_FINALLY {
+		bn_free(t);
+		bn_free(n);
+		gt_free(u);
+		gt_free(v);
+		gt_free(w);
+		gt_free(alpha);
+	}
+
+	return result;
+}
+
 int cp_amore_gen(bn_t s, gt_t e) {
 	bn_t n;
 	int result = RLC_OK;
@@ -480,8 +631,7 @@ int cp_amore_ver(gt_t *gs, const bn_t *r, const gt_t e, size_t m) {
 }
 
 int cp_amprv_ask(bn_t *r, bn_t *w, g1_t *c, g2_t *d, g1_t *x, g2_t y, g2_t z,
-		const bn_t s, const g1_t *p, const g2_t *q, int prv,
-		size_t m) {
+		const bn_t s, const g1_t *p, const g2_t *q, int prv, size_t m) {
 	bn_t n, *t = (bn_t *)RLC_ALLOCA(bn_t, 2 * m);
 	g1_t u, g;
 	g2_t v;
