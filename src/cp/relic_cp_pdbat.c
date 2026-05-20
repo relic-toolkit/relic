@@ -392,7 +392,7 @@ int cp_kstbat_ans(gt_t *ls, gt_t *rs, const g1_t *as, const g2_t *bs,
 	return RLC_OK;
 }
 
-int cp_kstbat_ver(gt_t *ls, gt_t *rs, const bn_t *a, const bn_t *b,
+int cp_kstbat_ver(gt_t *ls, const gt_t *rs, const bn_t *a, const bn_t *b,
 		const bn_t *c, const gt_t g, int prv, size_t m, int opt) {
 	bn_t t, n;
 	gt_t u, v, w;

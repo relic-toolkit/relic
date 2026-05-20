@@ -1519,17 +1519,75 @@ int cp_mvbat_ans(gt_t *as, gt_t *bs, const g2_t *qs, const g1_t *p,
 int cp_mvbat_ver(gt_t *rs, const gt_t *as, const gt_t *bs, const bn_t *b,
 		const bn_t *l, const g2_t r, const g1_t *p, size_t m);
 
-
+/** 
+ * Generates parameters for the KST delegated batch pairing protocol.
+ *
+ * @param[out] r			- the random scalars.
+ * @param[out] x			- the generator in G_1.
+ * @param[out] y			- the generator in G_2.
+ * @param[out] ys			- the precomputed points in G_2.
+ * @param[out] g			- the generator in G_T.
+ * @param[in] m				- the number of pairings delegated in the batch.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
 int cp_kstbat_gen(bn_t *r, g1_t x, g2_t y, g2_t *ys, gt_t g, size_t m);
 
+/**
+ * Executes the client-side request for the KST batch pairing delegation
+ * protocol.
+ *
+ * @param[out] a			- the random scalars for G_1 points.
+ * @param[out] b			- the random scalars for G_2 points.
+ * @param[out] c			- the random challenges.
+ * @param[out] as			- the masked points in G_1.
+ * @param[out] bs			- the masked points in G_2.
+ * @param[out] bbs			- the doubly-masked points in G_2.
+ * @param[in] p				- the first arguments of the pairing.
+ * @param[in] q				- the second argument of the pairing.
+ * @param[in] r				- the random scalars.
+ * @param[in] x				- the generator in G_1.
+ * @param[in] y				- the generator in G_2.
+ * @param[in] ys			- the precomputed points in G_2.
+ * @param[in] prv			- the flags to indicate which input is private.
+ * @param[in] m				- the number of pairings delegated in the batch.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
 int cp_kstbat_ask(bn_t *a, bn_t *b, bn_t *c, g1_t *as, g2_t *bs, g2_t *bbs,
 		const g1_t *p, const g2_t *q, const bn_t *r, const g1_t x,
 		const g2_t y, const g2_t *ys, int prv, size_t m);
 
+/**
+ * Executes the server-side response for the KST batch pairing delegation
+ * protocol.
+ *
+ * @param[out] ls			- the first pairing results returned by the server.
+ * @param[out] rs			- the second pairing results returned by the server.
+ * @param[in] as			- the masked points in G_1.
+ * @param[in] bs			- the masked points in G_2.
+ * @param[in] bbs			- the doubly-masked points in G_2.
+ * @param[in] y				- the generator in G_2.
+ * @param[in] m				- the number of pairings delegated in the batch.
+ * @param[in] opt			- the flag to indicate optimization.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
 int cp_kstbat_ans(gt_t *ls, gt_t *rs, const g1_t *as, const g2_t *bs,
 		const g2_t *bbs, const g2_t y, size_t m, int opt);
 
-int cp_kstbat_ver(gt_t *ls, gt_t *rs, const bn_t *a, const bn_t *b,
+/**
+ * Verifies the result of the KST batch pairing delegation protocol.
+ *
+ * @param[in,out] ls		- the results of the computation.
+ * @param[in] rs			- the second pairing results returned by the server.
+ * @param[in] a				- the random scalars for G_1 points.
+ * @param[in] b				- the random scalars for G_2 points.
+ * @param[in] c				- the random challenges.
+ * @param[in] g				- the generator in G_T.
+ * @param[in] prv			- the flags to indicate which input is private.
+ * @param[in] m				- the number of pairings delegated in the batch.
+ * @param[in] opt			- the flag to indicate optimization.
+ * @return a boolean value indicating if the computation is correct.
+ */
+int cp_kstbat_ver(gt_t *ls, const gt_t *rs, const bn_t *a, const bn_t *b,
 		const bn_t *c, const gt_t g, int prv, size_t m, int opt);
 
 /**
@@ -1619,7 +1677,7 @@ int cp_amore_ver(gt_t *gs, const bn_t *c, const gt_t e, size_t m);
  * @param[in] d				- the m points in G_2 for the protocol.
  * @param[in] x				- the first element in G_1.
  * @param[in] y				- the second element in G_2.
- * @param[in] z			- the third element in G_2.
+ * @param[in] z				- the third element in G_2.
  * @param[in] p				- the first argument inputs for the pairings.
  * @param[in] q				- the second argument inputs for the pairings.
  * @param[in] prv			- the flags to indicate which input is private.
