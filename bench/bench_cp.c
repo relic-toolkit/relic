@@ -1102,12 +1102,12 @@ static void pdprv(void) {
 
 		util_print("(A = %d, B = %d) ", (prv >> 1) & 1, prv & 1);
 		BENCH_RUN("cp_kstbat_ans (1)") {
-			BENCH_ADD(cp_kstbat_ans(g, ts, xs, qs, qqs, u2[0], 1));
+			BENCH_ADD(cp_kstbat_ans(g, ts, xs, qs, qqs, u2[0], 1, 1));
 		} BENCH_END;
 
 		util_print("(A = %d, B = %d) ", (prv >> 1) & 1, prv & 1);
 		BENCH_RUN("cp_kstbat_ver (1)") {
-			BENCH_ADD(cp_kstbat_ver(g, ts, a, b, c, e[0], prv, 1));
+			BENCH_ADD(cp_kstbat_ver(g, ts, a, b, c, e[0], prv, 1, 1));
 		} BENCH_END;
 	}
 
@@ -1119,12 +1119,12 @@ static void pdprv(void) {
 
 		util_print("(A = %d, B = %d) ", (prv >> 1) & 1, prv & 1);
 		BENCH_RUN("cp_kstbat_ans (AGGS)") {
-			BENCH_ADD(cp_kstbat_ans(g, ts, xs, qs, qqs, u2[0], AGGS));
+			BENCH_ADD(cp_kstbat_ans(g, ts, xs, qs, qqs, u2[0], AGGS, 1));
 		} BENCH_END;
 
 		util_print("(A = %d, B = %d) ", (prv >> 1) & 1, prv & 1);
 		BENCH_RUN("cp_kstbat_ver (AGGS)") {
-			BENCH_ADD(cp_kstbat_ver(g, ts, a, b, c, e[0], prv, AGGS));
+			BENCH_ADD(cp_kstbat_ver(g, ts, a, b, c, e[0], prv, AGGS, 1));
 		} BENCH_END;
 	}
 
