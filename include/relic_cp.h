@@ -1519,6 +1519,19 @@ int cp_mvbat_ans(gt_t *as, gt_t *bs, const g2_t *qs, const g1_t *p,
 int cp_mvbat_ver(gt_t *rs, const gt_t *as, const gt_t *bs, const bn_t *b,
 		const bn_t *l, const g2_t r, const g1_t *p, size_t m);
 
+
+int cp_kstbat_gen(bn_t *r, g1_t x, g2_t y, g2_t *ys, gt_t g, size_t m);
+
+int cp_kstbat_ask(bn_t *a, bn_t *b, bn_t *c, g1_t *as, g2_t *bs, g2_t *bbs,
+		const g1_t *p, const g2_t *q, const bn_t *r, const g1_t x,
+		const g2_t y, const g2_t *ys, int prv, size_t m);
+
+int cp_kstbat_ans(gt_t *ls, gt_t *rs, const g1_t *as, const g2_t *bs,
+		const g2_t *bbs, const g2_t y, size_t m);
+
+int cp_kstbat_ver(gt_t *ls, gt_t *rs, const bn_t *a, const bn_t *b,
+		const bn_t *c, const gt_t g, int prv, size_t m);
+
 /**
  * Generates parameters for the AMORE batch pairing delegation protocol to
  * compute m pairings.

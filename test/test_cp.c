@@ -1417,9 +1417,9 @@ static int pdprv(void) {
 
 static int pdbat(void) {
 	int code = RLC_ERR;
-	bn_t r, w, ls[AGGS], b[AGGS];
+	bn_t r, w, ls[AGGS], a[AGGS], b[AGGS], c[AGGS];
 	g1_t p[AGGS], rs[AGGS], xs[AGGS + 1], u1;
-	g2_t q[AGGS], s[AGGS], qs[AGGS], u2, v2;
+	g2_t q[AGGS], s[AGGS], qs[AGGS], qqs[2 * AGGS], u2, v2;
 	gt_t e, ts[AGGS + 1], g[AGGS + 1];
 
 	bn_null(r);
@@ -1439,7 +1439,9 @@ static int pdbat(void) {
 		g2_new(v2);
 		gt_new(e);
 		for (size_t i = 0; i < AGGS; i++) {
+			bn_null(a[i]);
 			bn_null(b[i]);
+			bn_null(c[i]);
 			bn_null(ls[i]);
 			g1_null(p[i]);
 			g2_null(q[i]);
@@ -1447,9 +1449,13 @@ static int pdbat(void) {
 			g1_null(xs[i]);
 			g2_null(s[i]);
 			g2_null(qs[i]);
+			g2_null(qqs[i]);
+			g2_null(qqs[i + AGGS]);
 			gt_null(ts[i]);
 			gt_null(g[i]);
+			bn_new(a[i]);
 			bn_new(b[i]);
+			bn_new(c[i]);
 			bn_new(ls[i]);
 			g1_new(p[i]);
 			g2_new(q[i]);
@@ -1459,6 +1465,8 @@ static int pdbat(void) {
 			g1_new(x[i]);
 			g2_new(s[i]);
 			g2_new(qs[i]);
+			g2_new(qqs[i]);
+			g2_new(qqs[i + AGGS]);
 			gt_new(ts[i]);
 			gt_new(g[i]);
 		}
@@ -1505,6 +1513,25 @@ static int pdbat(void) {
 			for (size_t i = 0; i < AGGS; i++) {
 				pc_map(e, p[i], q[i]);
 				TEST_ASSERT(gt_cmp(e, g[i]) == RLC_EQ, end);
+			}
+		} TEST_END;
+
+		TEST_CASE("delegated batch private-input pairing is correct") {
+			for (int prv = 0; prv < 4; prv++) {
+				TEST_ASSERT(cp_kstbat_gen(ls, u1, u2, s, e, 1) == RLC_OK, end);
+				TEST_ASSERT(cp_kstbat_ask(a, b, c, xs, qs, qqs, p, q, ls, u1, u2, s, prv, 1) == RLC_OK, end);
+				TEST_ASSERT(cp_kstbat_ans(g, ts, xs, qs, qqs, u2, 1) == RLC_OK, end);
+				TEST_ASSERT(cp_kstbat_ver(g, ts, a, b, c, e, prv, 1) == 1, end);
+				pc_map(e, p[0], q[0]);
+				TEST_ASSERT(gt_cmp(e, g[0]) == RLC_EQ, end);
+				TEST_ASSERT(cp_kstbat_gen(ls, u1, u2, s, e, AGGS) == RLC_OK, end);
+				TEST_ASSERT(cp_kstbat_ask(a, b, c, xs, qs, qqs, p, q, ls, u1, u2, s, prv, AGGS) == RLC_OK, end);
+				TEST_ASSERT(cp_kstbat_ans(g, ts, xs, qs, qqs, u2, AGGS) == RLC_OK, end);
+				TEST_ASSERT(cp_kstbat_ver(g, ts, a, b, c, e, prv, AGGS) == 1, end);
+				for (size_t i = 0; i < AGGS; i++) {
+					pc_map(e, p[i], q[i]);
+					TEST_ASSERT(gt_cmp(e, g[i]) == RLC_EQ, end);
+				}
 			}
 		} TEST_END;
 
@@ -1568,7 +1595,9 @@ static int pdbat(void) {
 	g2_free(v2);
 	gt_free(e);
 	for (size_t i = 0; i < AGGS; i++) {
+		bn_free(a[i]);
 		bn_free(b[i]);
+		bn_free(c[i]);
 		bn_free(ls[i]);
 		g1_free(p[i]);
 		g2_free(q[i]);
@@ -1576,6 +1605,8 @@ static int pdbat(void) {
 		g1_free(xs[i]);
 		g2_free(s[i]);
 		g2_free(qs[i]);
+		g2_free(qqs[i]);
+		g2_free(qqs[i + AGGS]);
 		gt_free(ts[i]);
 		gt_free(g[i]);
 	}
