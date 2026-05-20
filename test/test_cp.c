@@ -1520,14 +1520,14 @@ static int pdbat(void) {
 			for (int prv = 0; prv < 4; prv++) {
 				TEST_ASSERT(cp_kstbat_gen(ls, u1, u2, s, e, 1) == RLC_OK, end);
 				TEST_ASSERT(cp_kstbat_ask(a, b, c, xs, qs, qqs, p, q, ls, u1, u2, s, prv, 1) == RLC_OK, end);
-				TEST_ASSERT(cp_kstbat_ans(g, ts, xs, qs, qqs, u2, 1) == RLC_OK, end);
-				TEST_ASSERT(cp_kstbat_ver(g, ts, a, b, c, e, prv, 1) == 1, end);
+				TEST_ASSERT(cp_kstbat_ans(g, ts, xs, qs, qqs, u2, 1, 1) == RLC_OK, end);
+				TEST_ASSERT(cp_kstbat_ver(g, ts, a, b, c, e, prv, 1, 1) == 1, end);
 				pc_map(e, p[0], q[0]);
 				TEST_ASSERT(gt_cmp(e, g[0]) == RLC_EQ, end);
 				TEST_ASSERT(cp_kstbat_gen(ls, u1, u2, s, e, AGGS) == RLC_OK, end);
 				TEST_ASSERT(cp_kstbat_ask(a, b, c, xs, qs, qqs, p, q, ls, u1, u2, s, prv, AGGS) == RLC_OK, end);
-				TEST_ASSERT(cp_kstbat_ans(g, ts, xs, qs, qqs, u2, AGGS) == RLC_OK, end);
-				TEST_ASSERT(cp_kstbat_ver(g, ts, a, b, c, e, prv, AGGS) == 1, end);
+				TEST_ASSERT(cp_kstbat_ans(g, ts, xs, qs, qqs, u2, AGGS, 1) == RLC_OK, end);
+				TEST_ASSERT(cp_kstbat_ver(g, ts, a, b, c, e, prv, AGGS, 1) == 1, end);
 				for (size_t i = 0; i < AGGS; i++) {
 					pc_map(e, p[i], q[i]);
 					TEST_ASSERT(gt_cmp(e, g[i]) == RLC_EQ, end);
