@@ -1479,9 +1479,20 @@ static int pdbat(void) {
 
 		TEST_CASE("delegated batch pairing is correct") {
 			TEST_ASSERT(cp_pdbat_gen(u1, u2, e) == RLC_OK, end);
-			TEST_ASSERT(cp_pdbat_ask(ls, b, rs, v2, u1, u2, p, q, AGGS) == RLC_OK, end);
-			TEST_ASSERT(cp_pdbat_ans(ts, rs, v2, u1, p, q, AGGS) == RLC_OK, end);
-			TEST_ASSERT(cp_pdbat_ver(g, ts, b, e, AGGS) == 1, end);
+			TEST_ASSERT(cp_pdbat_ask(ls, NULL, b, xs, rs, v2, u1, u2, p, q, 0, AGGS) == RLC_OK, end);
+			TEST_ASSERT(cp_pdbat_ans(ts, rs, v2, u1, xs, q, AGGS) == RLC_OK, end);
+			TEST_ASSERT(cp_pdbat_ver(g, ts, NULL, b, e, 0, AGGS) == 1, end);
+			for (size_t i = 0; i < AGGS; i++) {
+				pc_map(e, p[i], q[i]);
+				TEST_ASSERT(gt_cmp(e, g[i]) == RLC_EQ, end);
+			}
+		} TEST_END;
+
+		TEST_CASE("delegated batch private-input pairing is correct") {
+			TEST_ASSERT(cp_pdbat_gen(u1, u2, e) == RLC_OK, end);
+			TEST_ASSERT(cp_pdbat_ask(ls, a, b, xs, rs, v2, u1, u2, p, q, 1, AGGS) == RLC_OK, end);
+			TEST_ASSERT(cp_pdbat_ans(ts, rs, v2, u1, xs, q, AGGS) == RLC_OK, end);
+			TEST_ASSERT(cp_pdbat_ver(g, ts, a, b, e, 1, AGGS) == 1, end);
 			for (size_t i = 0; i < AGGS; i++) {
 				pc_map(e, p[i], q[i]);
 				TEST_ASSERT(gt_cmp(e, g[i]) == RLC_EQ, end);
