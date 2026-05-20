@@ -1419,18 +1419,22 @@ int cp_pdbat_gen(g1_t u, g2_t v, gt_t e);
  * protocol.
  *
  * @param[out] l			- the random scalars.
+ * @param[out] a			- the random scalars for private points in G_1.
  * @param[out] b			- the random challenges.
- * @param[out] z			- the client-side element in G_1.
+ * @param[out] as			- the masked elements in G_1.
+ * @param[out] z			- the client-side elements in G_1.
  * @param[out] c			- the client-side element in G_2.
  * @param[in] u				- the setup point in G_1.
  * @param[in] v				- the setup point in G_2.
  * @param[in] p				- the first arguments of the pairing.
  * @param[in] q				- the second argument of the pairing.
+ * @param[in] prv			- the flag to indicate if first input is private.
  * @param[in] m				- the number of pairings delegated in the batch.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-int cp_pdbat_ask(bn_t *l, bn_t *b, g1_t *z, g2_t c, const g1_t u, const g2_t v,
-		const g1_t *p, const g2_t *q, size_t m);
+int cp_pdbat_ask(bn_t *l, bn_t *a, bn_t *b, g1_t *as, g1_t *z, g2_t c,
+		const g1_t u, const g2_t v, const g1_t *p, const g2_t *q, int prv,
+		size_t m);
 
 /**
  * Executes the server-side response for the DCKC batch pairing delegation
@@ -1453,13 +1457,15 @@ int cp_pdbat_ans(gt_t *w, const g1_t *z, const g2_t c, const g1_t u,
  *
  * @param[out] rs			- the results of the computation.
  * @param[in] w				- the pairing results returned by the server.
- * @param[in] bs			- the random challenges.
+ * @param[in] a				- the random scalars for private points in G_1.
+ * @param[in] b				- the random challenges.
  * @param[in] e				- the setup pairing result.
+ * @param[in] prv			- the flag to indicate if first input is private.
  * @param[in] m				- the number of pairings delegated in the batch.
  * @return a boolean value indicating if the computation is correct.
  */
-int cp_pdbat_ver(gt_t *rs, const gt_t *w, const bn_t *b, const gt_t e,
-		size_t m);
+int cp_pdbat_ver(gt_t *rs, const gt_t *w, const bn_t *a, const bn_t *b,
+		const gt_t e, int prv, size_t m);
 
 /**
  * Generates parameters for the Mefenza-Vergnaud (MV) delegated batch pairing

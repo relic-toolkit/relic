@@ -1053,15 +1053,31 @@ static void pdprv(void) {
 	} BENCH_END;
 
 	BENCH_RUN("cp_pdbat_ask (AGGS)") {
-		BENCH_ADD(cp_pdbat_ask(ls, b, rs, v2[0], u1[0], u2[0], p, q, AGGS));
+		BENCH_ADD(cp_pdbat_ask(ls, NULL, b, xs, rs, v2[0], u1[0], u2[0], p, q, 0, AGGS));
 	} BENCH_END;
 
 	BENCH_RUN("cp_pdbat_ans (AGGS)") {
-		BENCH_ADD(cp_pdbat_ans(ts, rs, v2[0], u1[0], p, q, AGGS));
+		BENCH_ADD(cp_pdbat_ans(ts, rs, v2[0], u1[0], xs, q, AGGS));
 	} BENCH_END;
 
 	BENCH_RUN("cp_pdbat_ver (AGGS)") {
-		BENCH_ADD(cp_pdbat_ver(g, ts, b, e[0], AGGS));
+		BENCH_ADD(cp_pdbat_ver(g, ts, NULL, b, e[0], 0, AGGS));
+	} BENCH_END;
+
+	BENCH_RUN("cp_pdbat_gen (AGGS)") {
+		BENCH_ADD(cp_pdbat_gen(u1[0], u2[0], e[0]));
+	} BENCH_END;
+
+	BENCH_RUN("cp_pdbat_ask (AGGS)") {
+		BENCH_ADD(cp_pdbat_ask(ls, a, b, xs, rs, v2[0], u1[0], u2[0], p, q, 1, AGGS));
+	} BENCH_END;
+
+	BENCH_RUN("cp_pdbat_ans (AGGS)") {
+		BENCH_ADD(cp_pdbat_ans(ts, rs, v2[0], u1[0], xs, q, AGGS));
+	} BENCH_END;
+
+	BENCH_RUN("cp_pdbat_ver (AGGS)") {
+		BENCH_ADD(cp_pdbat_ver(g, ts, a, b, e[0], 1, AGGS));
 	} BENCH_END;
 
 	BENCH_RUN("cp_mvbat_gen (AGGS)") {
