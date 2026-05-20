@@ -371,19 +371,29 @@ int cp_kstbat_ask(bn_t *a, bn_t *b, bn_t *c, g1_t *as, g2_t *bs, g2_t *bbs,
 }
 
 int cp_kstbat_ans(gt_t *ls, gt_t *rs, const g1_t *as, const g2_t *bs,
-		const g2_t *bbs, const g2_t y, size_t m) {
-	
-	pc_map(rs[m], as[m], y);
-	for (size_t i = 0; i < m; i++) {
-		pc_map(ls[i], as[i], bs[i]);
-		pc_map(rs[i], as[i], bbs[i]);
+		const g2_t *bbs, const g2_t y, size_t m, int opt) {
+
+	if (opt == 0) {
+		pc_map(rs[m], as[m], y);
+		for (size_t i = 0; i < m; i++) {
+			pc_map(ls[i], as[i], bs[i]);
+			pc_map(rs[i], as[i], bbs[i]);
+		}
+	} else {
+		pc_map(rs[m], as[m], y);
+		pc_map_sim(rs[0], as, bbs, m);
+		gt_inv(rs[0], rs[0]);
+		gt_mul(rs[m], rs[m], rs[0]);
+		for (size_t i = 0; i < m; i++) {
+			pc_map(ls[i], as[i], bs[i]);
+		}
 	}
 
 	return RLC_OK;
 }
 
 int cp_kstbat_ver(gt_t *ls, gt_t *rs, const bn_t *a, const bn_t *b,
-		const bn_t *c, const gt_t g, int prv, size_t m) {
+		const bn_t *c, const gt_t g, int prv, size_t m, int opt) {
 	bn_t t, n;
 	gt_t u, v, w;
 	int result = 1;
@@ -403,18 +413,24 @@ int cp_kstbat_ver(gt_t *ls, gt_t *rs, const bn_t *a, const bn_t *b,
 
 		pc_get_ord(n);
 
-		gt_set_unity(u);
-		gt_set_unity(v);
+		if (opt == 0) {
+			gt_set_unity(u);
+			gt_copy(v, g);
+		} else {
+			gt_inv(u, g);
+			gt_set_unity(v);
+		}
 		for (size_t i = 0; i < m; i++) {
 			result &= gt_is_valid(ls[i]);
-			result &= gt_is_valid(rs[i]);
-			gt_mul(u, u, rs[i]);
+			if (opt == 0) {
+				result &= gt_is_valid(rs[i]);
+				gt_mul(u, u, rs[i]);
+			}
 			gt_exp(w, ls[i], c[i]);
 			gt_mul(v, v, w);
 		}
 		result &= gt_is_valid(rs[m]);
 		gt_mul(v, v, rs[m]);
-		gt_mul(v, v, g);
 		result &= (gt_cmp(u, v) == RLC_EQ);
 
 		for (size_t i = 0; i < m; i++) {

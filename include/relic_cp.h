@@ -1527,10 +1527,10 @@ int cp_kstbat_ask(bn_t *a, bn_t *b, bn_t *c, g1_t *as, g2_t *bs, g2_t *bbs,
 		const g2_t y, const g2_t *ys, int prv, size_t m);
 
 int cp_kstbat_ans(gt_t *ls, gt_t *rs, const g1_t *as, const g2_t *bs,
-		const g2_t *bbs, const g2_t y, size_t m);
+		const g2_t *bbs, const g2_t y, size_t m, int opt);
 
 int cp_kstbat_ver(gt_t *ls, gt_t *rs, const bn_t *a, const bn_t *b,
-		const bn_t *c, const gt_t g, int prv, size_t m);
+		const bn_t *c, const gt_t g, int prv, size_t m, int opt);
 
 /**
  * Generates parameters for the AMORE batch pairing delegation protocol to
