@@ -1827,6 +1827,9 @@ static int bls(void) {
 	g1_t s[2];
 	g2_t q[2];
 	uint8_t m[5] = { 0, 1, 2, 3, 4 };
+	uint8_t n[5] = { 4, 3, 2, 1, 0 };
+	const uint8_t *ms[2] = { m, n };
+	const size_t ls[2] = { sizeof(m), sizeof(n) };
 
 	bn_null(d);
 	g1_null(s[0]);
