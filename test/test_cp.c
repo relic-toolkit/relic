@@ -1528,7 +1528,7 @@ static int pdbat(void) {
 		} TEST_END;
 
 		TEST_CASE("delegated batch private-input pairing is correct") {
-			for (int prv = 0; prv < 4; prv++) {
+			for (int prv = 0; prv < 2; prv++) {
 				TEST_ASSERT(cp_kstbat_gen(ls, u1, u2, s, e, 1) == RLC_OK, end);
 				TEST_ASSERT(cp_kstbat_ask(a, b, c, xs, qs, qqs, p, q, ls, u1, u2, s, prv, 1) == RLC_OK, end);
 				TEST_ASSERT(cp_kstbat_ans(g, ts, xs, qs, qqs, u2, 1, 1) == RLC_OK, end);

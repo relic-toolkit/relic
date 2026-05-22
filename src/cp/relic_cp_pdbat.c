@@ -64,6 +64,10 @@ static void cp_pdbat_sample(bn_t r, const bn_t n, size_t bits) {
 /* Public definitions                                                         */
 /*============================================================================*/
 
+/* "Single-Server Batch Delegation of Variable-Input Pairings with Unbounded Client Lifetime."
+ * by di Crescenzo, Khodjaeva, Caro (ESORICS 2023)
+ * https://link.springer.com/chapter/10.1007/978-3-031-54129-2_14 */
+
 int cp_pdbat_gen(g1_t u, g2_t v, gt_t e) {
 	g1_rand(u);
 	g2_rand(v);
@@ -206,6 +210,10 @@ int cp_pdbat_ver(gt_t *rs, const gt_t *w, const bn_t *a, const bn_t *b,
 	return result;
 }
 
+/* Protocols from "Verifiable Outsourcing of Pairing Computations"
+ * by Mefenza and Vergnaud 
+ ' https://www.di.ens.fr/~mefenza/publications.html */
+
 int cp_mvbat_gen(bn_t *l, g2_t r, g2_t *rs, size_t m) {
 	bn_t n;
 	int result = RLC_OK;
@@ -318,6 +326,12 @@ int cp_mvbat_ver(gt_t *rs, const gt_t *as, const gt_t *bs, const bn_t *b,
 	return result;
 }
 
+/* Protocols from "On The Batch Outsourcing Of Pairing Computations Purchased"
+ * by Oznur Kalkar , Isa Sertkaya , Seher Tutdere.
+ * https://doi.org/10.1093/comjnl/bxac095 
+ * We do not implement all variants because some are proven insecure.
+ * The flat opt enables an optimized version using ideas from LOVE. */
+
 int cp_kstbat_gen(bn_t *r, g1_t x, g2_t y, g2_t *ys, gt_t g, size_t m) {
 	bn_t s, t, n;
 	int result = RLC_OK;
@@ -369,14 +383,11 @@ int cp_kstbat_ask(bn_t *a, bn_t *b, bn_t *c, g1_t *as, g2_t *bs, g2_t *bbs,
 		pc_get_ord(n);
 
 		for (size_t i = 0; i < m; i++) {
-			if (prv & 2) {
+			if (prv) {
 				bn_rand_mod(a[i], n);
-			} else {
-				bn_set_dig(a[i], 1);
-			}
-			if (prv & 1) {
 				bn_rand_mod(b[i], n);
 			} else {
+				bn_set_dig(a[i], 1);
 				bn_set_dig(b[i], 1);
 			}
 			g1_mul(as[i], p[i], a[i]);
@@ -590,6 +601,10 @@ int cp_amore_ask(bn_t *r, g1_t *c, g1_t x, g2_t y, g2_t d, const bn_t s,
 	}
 	return result;
 }
+
+/* Protocols from "That’s AmorE: Amortized Eﬃciency for Pairing Delegation"
+ * by Keilty, Aranha, Pagning and Rodriguez-Henriquez at
+ * https://eprint.iacr.org/2025/542 */
 
 int cp_amore_ans(gt_t *gs, const g1_t *c, const g1_t x, const g2_t y,
 		const g2_t d, const g1_t *p, const g2_t *q, size_t m) {
@@ -861,6 +876,8 @@ int cp_amprv_ask(bn_t *r, bn_t *w, g1_t *c, g2_t *d, g1_t *x, g2_t y, g2_t z,
 	}
 	return result;
 }
+
+/* Newly designed PrivAmorE protocols, or AmorE for private inputs. */
 
 int cp_amprv_ans(gt_t *gs, const bn_t *w, const g1_t *c, const g2_t *d,
 		const g1_t *x, const g2_t y, const g2_t z, const g1_t *p, const g2_t *q,

@@ -1068,15 +1068,15 @@ static void pdprv(void) {
 		BENCH_ADD(cp_pdbat_gen(u1[0], u2[0], e[0]));
 	} BENCH_END;
 
-	BENCH_RUN("cp_pdbat_ask (AGGS)") {
+	BENCH_RUN("cp_pdbat_ask (AGGS, prv)") {
 		BENCH_ADD(cp_pdbat_ask(ls, a, b, xs, rs, v2[0], u1[0], u2[0], p, q, 1, AGGS));
 	} BENCH_END;
 
-	BENCH_RUN("cp_pdbat_ans (AGGS)") {
+	BENCH_RUN("cp_pdbat_ans (AGGS, prv)") {
 		BENCH_ADD(cp_pdbat_ans(ts, rs, v2[0], u1[0], xs, q, AGGS));
 	} BENCH_END;
 
-	BENCH_RUN("cp_pdbat_ver (AGGS)") {
+	BENCH_RUN("cp_pdbat_ver (AGGS, prv)") {
 		BENCH_ADD(cp_pdbat_ver(g, ts, a, b, e[0], 1, AGGS));
 	} BENCH_END;
 
@@ -1110,41 +1110,33 @@ static void pdprv(void) {
 		BENCH_ADD(cp_amore_ver(g, ls, e[0], AGGS));
 	} BENCH_END;
 
-	cp_kstbat_gen(ls, u1[0], u2[0], s, e[0], AGGS);
+	BENCH_RUN("cp_kstbat_gen (AGGS)") {
+		BENCH_ADD(cp_kstbat_gen(ls, u1[0], u2[0], s, e[0], AGGS));
+	} BENCH_END;
 
-	for (int prv = 1; prv < 4; prv++) {
-		util_print("(A = %d, B = %d) ", (prv >> 1) & 1, prv & 1);
-		BENCH_RUN("cp_kstbat_ask (1)") {
-			BENCH_ADD(cp_kstbat_ask(a, b, c, xs, qs, qqs, p, q, ls, u1[0], u2[0], s, prv, 1));
-		} BENCH_END;
+	BENCH_RUN("cp_kstbat_ask (AGGS, prv)") {
+		BENCH_ADD(cp_kstbat_ask(a, b, c, xs, qs, qqs, p, q, ls, u1[0], u2[0], s, 1, AGGS));
+	} BENCH_END;
 
-		util_print("(A = %d, B = %d) ", (prv >> 1) & 1, prv & 1);
-		BENCH_RUN("cp_kstbat_ans (1)") {
-			BENCH_ADD(cp_kstbat_ans(g, ts, xs, qs, qqs, u2[0], 1, 1));
-		} BENCH_END;
+	BENCH_RUN("cp_kstbat_ans (AGGS, prv)") {
+		BENCH_ADD(cp_kstbat_ans(g, ts, xs, qs, qqs, u2[0], AGGS, 0));
+	} BENCH_END;
 
-		util_print("(A = %d, B = %d) ", (prv >> 1) & 1, prv & 1);
-		BENCH_RUN("cp_kstbat_ver (1)") {
-			BENCH_ADD(cp_kstbat_ver(g, ts, a, b, c, e[0], prv, 1, 1));
-		} BENCH_END;
-	}
+	BENCH_RUN("cp_kstbat_ver (AGGS, prv)") {
+		BENCH_ADD(cp_kstbat_ver(g, ts, a, b, c, e[0], 1, AGGS, 0));
+	} BENCH_END;
 
-	for (int prv = 1; prv < 4; prv++) {
-		util_print("(A = %d, B = %d) ", (prv >> 1) & 1, prv & 1);
-		BENCH_RUN("cp_kstbat_ask (AGGS)") {
-			BENCH_ADD(cp_kstbat_ask(a, b, c, xs, qs, qqs, p, q, ls, u1[0], u2[0], s, prv, AGGS));
-		} BENCH_END;
+	BENCH_RUN("cp_kstbat_ask (AGGS, prv, opt)") {
+		BENCH_ADD(cp_kstbat_ask(a, b, c, xs, qs, qqs, p, q, ls, u1[0], u2[0], s, 31, AGGS));
+	} BENCH_END;
 
-		util_print("(A = %d, B = %d) ", (prv >> 1) & 1, prv & 1);
-		BENCH_RUN("cp_kstbat_ans (AGGS)") {
-			BENCH_ADD(cp_kstbat_ans(g, ts, xs, qs, qqs, u2[0], AGGS, 1));
-		} BENCH_END;
+	BENCH_RUN("cp_kstbat_ans (AGGS, prv, opt)") {
+		BENCH_ADD(cp_kstbat_ans(g, ts, xs, qs, qqs, u2[0], AGGS, 1));
+	} BENCH_END;
 
-		util_print("(A = %d, B = %d) ", (prv >> 1) & 1, prv & 1);
-		BENCH_RUN("cp_kstbat_ver (AGGS)") {
-			BENCH_ADD(cp_kstbat_ver(g, ts, a, b, c, e[0], prv, AGGS, 1));
-		} BENCH_END;
-	}
+	BENCH_RUN("cp_kstbat_ver (AGGS, prv, opt)") {
+		BENCH_ADD(cp_kstbat_ver(g, ts, a, b, c, e[0], 1, AGGS, 1));
+	} BENCH_END;
 
 	for (int prv = 1; prv < 4; prv++) {
 		util_print("(A = %d, B = %d) ", (prv >> 1) & 1, prv & 1);
