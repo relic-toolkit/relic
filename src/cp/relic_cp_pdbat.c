@@ -212,7 +212,7 @@ int cp_pdbat_ver(gt_t *rs, const gt_t *w, const bn_t *a, const bn_t *b,
 
 /* Protocols from "Verifiable Outsourcing of Pairing Computations"
  * by Mefenza and Vergnaud 
- ' https://www.di.ens.fr/~mefenza/publications.html */
+ * https://www.di.ens.fr/~mefenza/publications.html */
 
 int cp_mvbat_gen(bn_t *l, g2_t r, g2_t *rs, size_t m) {
 	bn_t n;
