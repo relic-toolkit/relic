@@ -110,11 +110,6 @@ int fp2_srt(fp2_t c, const fp2_t a) {
 			fp2_copy_sec(u, t, f);
 			fp2_sqr(t, u);
 			r = (fp2_cmp(a, t) == RLC_EQ);
-			/* If input was (a[0], 0) and a[0] was not a QR, the test will fail.
-			 * However, we fix the sqrt to the value (0, a[0]^(p+1)/4). */
-			fp_zero(t[0]);
-			fp_copy_sec(u[0], t[0], fp_is_zero(a[1]) && !r);
-			fp_copy_sec(u[1], a[0], fp_is_zero(a[1]) && !r);
 			fp2_copy(c, u);
 		} else {
 			if (fp_is_zero(a[1])) {
