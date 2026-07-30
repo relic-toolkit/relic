@@ -72,16 +72,15 @@ static void fp_prime_set(const bn_t p) {
 		ctx->u = t->dp[0];
 
 		/* compute R mod p */
-		bn_set_2b(&(ctx->one), ctx->prime.used * RLC_DIG);
-		bn_mod(&(ctx->one), &(ctx->one), &(ctx->prime));
+		bn_set_2b(t, ctx->prime.used * RLC_DIG);
+		bn_mod(t, t, &(ctx->prime));
+		fp_copy(ctx->one, t->dp);
 
 		/* compute the R^2 mod p */
-		fp_add(r, ctx->one.dp, ctx->one.dp);
+		fp_add(r, ctx->one, ctx->one);
 		bn_set_dig(t, RLC_FP_DIGS);
 		bn_lsh(t, t, RLC_DIG_LOG);
-		fp_exp(ctx->conv.dp, r, t);
-		ctx->conv.used = RLC_FP_DIGS;
-		bn_trim(&(ctx->conv));
+		fp_exp(ctx->conv, r, t);
 
 #endif /* FP_RDC == MONTY */
 
@@ -96,26 +95,25 @@ static void fp_prime_set(const bn_t p) {
 #else
 		bn_set_dig(t, d);
 #endif
-		ctx->inv.used = RLC_FP_DIGS;
-		dv_copy(ctx->inv.dp, fp_prime_get(), RLC_FP_DIGS);
-		fp_add_dig(ctx->inv.dp, ctx->inv.dp, 1);
-		fp_hlv(ctx->inv.dp, ctx->inv.dp);
-		fp_exp(ctx->inv.dp, ctx->inv.dp, t);
+		dv_copy(ctx->inv, fp_prime_get(), RLC_FP_DIGS);
+		fp_add_dig(ctx->inv, ctx->inv, 1);
+		fp_hlv(ctx->inv, ctx->inv);
+		fp_exp(ctx->inv, ctx->inv, t);
 
 #if FP_RDC == MONTY
 		/* Convert to Montgomery form by multiplying by R^2. */
-		fp_mul(ctx->inv.dp, ctx->inv.dp, ctx->conv.dp);
-		fp_mul(ctx->inv.dp, ctx->inv.dp, ctx->conv.dp);
+		fp_mul(ctx->inv, ctx->inv, ctx->conv);
+		fp_mul(ctx->inv, ctx->inv, ctx->conv);
 #ifdef RLC_FP_ROOM
 		for (int i = 1, j = 0; i < d / (RLC_DIG - 2); i++) {
 			j = i % RLC_FP_DIGS;
 			if (j == 0) {
-				fp_mulm_low(ctx->inv.dp, ctx->inv.dp, ctx->conv.dp);
+				fp_mulm_low(ctx->inv, ctx->inv, ctx->conv);
 			}
 		}
 #else
 		for (int i = 0; i < d / (RLC_DIG - 2) - 1; i++) {
-			fp_mulm_low(ctx->inv.dp, ctx->inv.dp, ctx->conv.dp);
+			fp_mulm_low(ctx->inv, ctx->inv, ctx->conv);
 		}
 #endif
 
@@ -160,6 +158,7 @@ static void fp_prime_set(const bn_t p) {
 			fp_set_dig(r, -ctx->qnr);
 			fp_neg(r, r);
 		};
+		fp_inv(ctx->iqnr, r);
 
 		/* Check if cnr is a cubic non-residue or find another. */
 		if (ctx->mod18 % 3 == 1) {
@@ -196,13 +195,12 @@ static void fp_prime_set(const bn_t p) {
 			bn_hlv(t, t);
 		}
 
-		ctx->srt.used = RLC_FP_DIGS;
 		if (ctx->qnr < 0) {
-			fp_set_dig(ctx->srt.dp, -ctx->qnr);
+			fp_set_dig(ctx->srt, -ctx->qnr);
 		} else {
-			fp_set_dig(ctx->srt.dp, ctx->qnr);
+			fp_set_dig(ctx->srt, ctx->qnr);
 		}
-		fp_exp(ctx->srt.dp, ctx->srt.dp, t);
+		fp_exp(ctx->srt, ctx->srt, t);
 
 		/* Write p - 1 as (e * 3^f), with e = 3l \pm 1. */
 		bn_sub_dig(t, p, 1);
@@ -214,11 +212,11 @@ static void fp_prime_set(const bn_t p) {
 
 		/* Compute fth root of unity by computing CNR to (p - 1)/3^f. */
 		if (ctx->cnr < 0) {
-			fp_set_dig(ctx->crt.dp, -fp_prime_get_cnr());
+			fp_set_dig(ctx->crt, -fp_prime_get_cnr());
 		} else {
-			fp_set_dig(ctx->crt.dp, fp_prime_get_cnr());
+			fp_set_dig(ctx->crt, fp_prime_get_cnr());
 		}
-		fp_exp(ctx->crt.dp, ctx->crt.dp, t);
+		fp_exp(ctx->crt, ctx->crt, t);
 
 		fp_prime_calc();
 	}
@@ -245,15 +243,6 @@ void fp_prime_init(void) {
 	ctx->sps_len = 0;
 	memset(ctx->sps, 0, sizeof(ctx->sps));
 #endif
-#if FP_RDC == MONTY || !defined(STRIP)
-	bn_make(&(ctx->conv), RLC_FP_DIGS);
-	bn_make(&(ctx->one), RLC_FP_DIGS);
-#endif
-#if FP_INV == JMPDS || !defined(STRIP)
-	bn_make(&(ctx->inv), RLC_FP_DIGS);
-#endif /* FP_INV */
-	bn_make(&(ctx->srt), RLC_FP_DIGS);
-	bn_make(&(ctx->crt), RLC_FP_DIGS);
 }
 
 void fp_prime_clean(void) {
@@ -264,15 +253,6 @@ void fp_prime_clean(void) {
 		ctx->sps_len = 0;
 		memset(ctx->sps, 0, sizeof(ctx->sps));
 #endif
-#if FP_RDC == MONTY || !defined(STRIP)
-		bn_clean(&(ctx->one));
-		bn_clean(&(ctx->conv));
-#endif
-#if FP_INV == JMPDS || !defined(STRIP)
-		bn_clean(&(ctx->inv));
-#endif /* FP_INV */
-		bn_clean(&(ctx->srt));
-		bn_clean(&(ctx->crt));
 		bn_clean(&(ctx->prime));
 		bn_clean(&(ctx->over3));
 		bn_clean(&(ctx->par));
@@ -326,18 +306,18 @@ const int *fp_prime_get_sps(int *len) {
 
 const dig_t *fp_prime_get_conv(void) {
 #if FP_RDC == MONTY || !defined(STRIP)
-	return core_get()->conv.dp;
+	return core_get()->conv;
 #else
 	return NULL;
 #endif
 }
 
 const dig_t *fp_prime_get_srt(void) {
-	return core_get()->srt.dp;
+	return core_get()->srt;
 }
 
 const dig_t *fp_prime_get_crt(void) {
-	return core_get()->crt.dp;
+	return core_get()->crt;
 }
 
 dig_t fp_prime_get_mod8(void) {
@@ -755,7 +735,7 @@ void fp_prime_conv(fp_t c, const bn_t a) {
 			dv_copy(c, t->dp, t->used);
 			dv_zero(c + t->used, RLC_FP_DIGS - t->used);
 #if FP_RDC == MONTY
-			fp_mul(c, c, core_get()->conv.dp);
+			fp_mul(c, c, core_get()->conv);
 #endif
 		}
 	}
@@ -779,10 +759,10 @@ void fp_prime_conv_dig(fp_t c, dig_t a) {
 #if FP_RDC == MONTY
 		if (a != 1) {
 			dv_zero(t, 2 * RLC_FP_DIGS + 1);
-			t[RLC_FP_DIGS] = fp_mul1_low(t, ctx->conv.dp, a);
+			t[RLC_FP_DIGS] = fp_mul1_low(t, ctx->conv, a);
 			fp_rdc(c, t);
 		} else {
-			dv_copy(c, ctx->one.dp, RLC_FP_DIGS);
+			fp_copy(c, ctx->one);
 		}
 #else
 		(void)ctx;

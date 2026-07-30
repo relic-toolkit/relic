@@ -106,7 +106,7 @@ int fp2_crt(fp2_t c, const fp2_t a) {
 	int r = 0;
 	bn_t d, e;
 	fp2_t t, u;
-#if ALLOC == AUTO	
+#if ALLOC == AUTO
 	const dig_t *crt = (const dig_t *)fp_prime_get_crt();
 #else
 	const fp_t crt = (fp_t)fp_prime_get_crt();
@@ -141,9 +141,7 @@ int fp2_crt(fp2_t c, const fp2_t a) {
 #ifdef FP_QNRES
 				fp_copy(t[1], a[1]);
 #else
-				fp_set_dig(t[0], -fp_prime_get_qnr());
-				fp_inv(t[1], t[0]);
-				fp_mul(t[1], t[1], a[1]);
+				fp_mul(t[1], core_get()->iqnr, a[1]);
 #endif
 				fp_neg(t[1], t[1]);
 				fp_zero(c[0]);

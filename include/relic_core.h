@@ -230,30 +230,32 @@ typedef struct _ctx_t {
 	int par_len;
 #if FP_RDC == MONTY || !defined(STRIP)
 	/** Value (R^2 mod p) for converting small integers to Montgomery form. */
-	bn_st conv;
+	fp_st conv;
 	/** Value of constant one in Montgomery form. */
-	bn_st one;
+	fp_st one;
 #endif /* FP_RDC == MONTY */
 #if FP_INV == JMPDS || !defined(STRIP)
 	/** Value of constant for divstep-based inversion. */
-	bn_st inv;
+	fp_st inv;
 #endif /* FP_INV */
 	/** Square root of unity for square root extraction. */
-	bn_st srt;
+	fp_st srt;
 	/** Primitive cube root of unity for cube root extraction. */
-	bn_st crt;
-	/** Prime modulus modulo 8. */
-	dig_t mod8;
-	/** Prime modulus modulo 18. */
-	dig_t mod18;
-	/** Value derived from the prime used for modular reduction. */
-	dig_t u;
+	fp_st crt;
+	/** Inverse of qnr for root extraction. */
+	fp_st iqnr;
 	/** Quadratic non-residue. */
 	int qnr;
 	/** Cubic non-residue. */
 	int cnr;
+	/** Prime modulus modulo 8. */
+	dig_t mod8;
+	/** Prime modulus modulo 18. */
+	dig_t mod18;
 	/** 2-adicity. */
-	int ad2;
+	dig_t ad2;
+	/** Value derived from the prime used for modular reduction. */
+	dig_t u;
 #if FP_RDC == QUICK || !defined(STRIP)
 	/** Sparse representation of prime modulus. */
 	int sps[RLC_TERMS + 1];
