@@ -60,6 +60,10 @@
  */
 #define STR_P544	"BB9DFD549299F1C803DDD5D7C05E7CC0373D9B1AC15B47AA5AA84626F33E58FE66943943049031AE4CA1D2719B3A84FA363BCD2539A5CD02C6F4B6B645A58C1085E14411"
 
+#elif FP_PRIME == 672
+
+#define STR_P672	"9401FF90F28BFFB0C610FB10BF9E0FEFD59211629A7991563C5E468D43EC9CFE1549FD59C20AB5B9A7CDA7F27A0067B8303EEB4B31555CF4F24050ED155555CD7FA7A5F8AAAAAAAD47EDE1A6AAAAAAAAB69E6DCB"
+
 #elif FP_PRIME == 1024
 /**
  * CTIDH prime with 1024 bits.
@@ -510,7 +514,7 @@ void fp_param_set(int param) {
 				fp_prime_set_pmers(f, 2);
 				break;
 #elif FP_PRIME == 544
-			case GMT8_544:
+			case CP8_544:
 				bn_read_str(p, STR_P544, strlen(STR_P544), 16);
 				/* T = 2^64 - 2^54 + 2^37 + 2^32 - 4 */
 				bn_set_2b(t0, 64);
@@ -521,7 +525,7 @@ void fp_param_set(int param) {
 				bn_set_2b(t1, 32);
 				bn_add(t0, t0, t1);
 				bn_sub_dig(t0, t0, 4);
-				fp_prime_set_pairf(t0, EP_GMT8);
+				fp_prime_set_pairf(t0, EP_CP8);
 				fp_prime_set_dense(p);
 				break;
 #elif FP_PRIME == 569
@@ -595,6 +599,18 @@ void fp_param_set(int param) {
 				bn_add(t0, t0, t1);
 				bn_neg(t0, t0);
 				fp_prime_set_pairf(t0, EP_SG18);
+				break;
+#elif FP_PRIME == 672
+			case CP6_672:
+				bn_read_str(p, STR_P672, strlen(STR_P672), 16);
+				/* T = 2^128 - 2^124 - 2^69 */
+				bn_set_2b(t0, 128);
+				bn_set_2b(t1, 124);
+				bn_sub(t0, t0, t1);
+				bn_set_2b(t1, 69);
+				bn_sub(t0, t0, t1);
+				fp_prime_set_pairf(t0, EP_CP6);
+				fp_prime_set_dense(p);
 				break;
 #elif FP_PRIME == 765
 			case FM16_765:
@@ -847,7 +863,7 @@ int fp_param_set_any_tower(void) {
 #elif FP_PRIME == 511
 	fp_param_set(CTIDH_511);
 #elif FP_PRIME == 544
-	fp_param_set(GMT8_544);
+	fp_param_set(CP8_544);
 #elif FP_PRIME == 569
 	fp_param_set(SG54_569);
 #elif FP_PRIME == 575
@@ -860,6 +876,8 @@ int fp_param_set_any_tower(void) {
 	fp_param_set(K18_638);
 	//fp_param_set(SG18_638);
 #endif
+#elif FP_PRIME == 672
+	fp_param_set(CP6_672);
 #elif FP_PRIME == 765
 	fp_param_set(FM16_765);
 #elif FP_PRIME == 766

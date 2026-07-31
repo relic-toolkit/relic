@@ -551,7 +551,9 @@ int ep_curve_embed(void) {
 			return 1;
 		case EP_SS2:
 			return 2;
-		case EP_GMT8:
+		case EP_CP6:
+			return 6;
+		case EP_CP8:
 			return 8;
 		case EP_BN:
 		case EP_B12:

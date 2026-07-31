@@ -59,8 +59,10 @@ enum {
     EP_SS2,
     /** Barreto-Naehrig. */
     EP_BN,
-    /* Cocks-Pinch family discovered by Guillevic, Masson and Thomé (GMT). */
-    EP_GMT8,
+    /* Cocks-Pinch family discovered by Guillevic, Masson and Thomé. */
+    EP_CP6,
+    /* Cocks-Pinch family discovered by Guillevic, Masson and Thomé. */
+    EP_CP8,
     /* Barreto-Lynn-Scott family with embedding degree 12. */
     EP_B12,
     /* New family from Fotiadis-Martindale family with embedding degree 16. */
@@ -166,7 +168,7 @@ enum {
 	/** Optimal TNFS-secure curve with embedding degree 8. */
 	OT8_P511,
 	/** Cocks-pinch curve with embedding degree 8. */
-	GMT8_P544,
+	CP8_P544,
 	/** Kachisa-Scott-Schaefer curve with embedding degree 54. */
 	SG54_P569,
 	/** Barreto-Lynn-Scott curve with embedding degree 48. */
