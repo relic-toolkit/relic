@@ -128,9 +128,8 @@ int fp2_srt(fp2_t c, const fp2_t a) {
 					if (fp_prime_get_qnr() == -2) {
 						fp_hlv(t[0], a[0]);
 					} else {
-						fp_set_dig(t[0], -fp_prime_get_qnr());
-						fp_inv(t[0], t[0]);
-						fp_mul(t[0], t[0], a[0]);
+						fp_mul(t[0], core_get()->iqnr, a[0]);
+						fp_neg(t[0], t[0]);
 					}
 	#endif
 					fp_neg(t[0], t[0]);

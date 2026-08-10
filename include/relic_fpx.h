@@ -1765,6 +1765,25 @@ void fp2_frb(fp2_t c, const fp2_t a, int i);
 int fp2_is_sqr(const fp2_t a);
 
 /**
+ * Extracts the cubic root of a quadratic extension field element. Computes
+ * c = cbrt(a). The other cubic root is the square of c. The output value
+ * shall not be used in case 0 is returned.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the extension field element.
+ * @return					- 1 if there is a cubic root, 0 otherwise.
+ */
+int fp2_crt(fp2_t c, const fp2_t a);
+
+/**
+ * Tests if a quadratic extension field element is a cubic residue.
+ *
+ * @param[in] a				- the prime field element to test.
+ * @return 1 if the argument is even, 0 otherwise.
+ */
+int fp2_is_cub(const fp2_t a);
+
+/**
  * Extracts the square root of a quadratic extension field element. Computes
  * c = sqrt(a). The other square root is the negation of c. The output value
  * shall not be used in case 0 is returned.

@@ -251,6 +251,11 @@ void fp_inv_monty(fp_t c, const fp_t a) {
 	const dig_t *p = NULL;
 	dig_t carry;
 	int i, k;
+#if ALLOC == AUTO
+	const dig_t *conv = (const dig_t *)fp_prime_get_conv();
+#else
+	const fp_t conv = (fp_t)fp_prime_get_conv();
+#endif
 
 	bn_null(_a);
 	bn_null(_p);
@@ -338,13 +343,13 @@ void fp_inv_monty(fp_t c, const fp_t a) {
 		if (k <= RLC_FP_DIGS * RLC_DIG) {
 			k = k + RLC_FP_DIGS * RLC_DIG;
 #if FP_RDC == MONTY
-			fp_mul(x1->dp, x1->dp, fp_prime_get_conv());
+			fp_mul(x1->dp, x1->dp, conv);
 #endif
 		}
 
 #if FP_RDC == MONTY
 		/* x1 = x1 * R^2 * R^{-1} mod p. */
-		fp_mul(x1->dp, x1->dp, fp_prime_get_conv());
+		fp_mul(x1->dp, x1->dp, conv);
 #endif
 		/* c = x1 * 2^(2Wt - k) * R^{-1} mod p. */
 		fp_copy(c, x1->dp);
@@ -616,7 +621,7 @@ void fp_inv_jmpds(fp_t c, const fp_t a) {
 		dv_new(p11);
 		fp_new(pre);
 
-		fp_copy(pre, core_get()->inv.dp);
+		fp_copy(pre, core_get()->inv);
 		dv_zero(t, 2 * RLC_FP_DIGS);
 		dv_zero(p, 2 * RLC_FP_DIGS);
 		dv_zero(u0, 2 * RLC_FP_DIGS);

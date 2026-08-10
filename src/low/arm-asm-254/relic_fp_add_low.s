@@ -28,7 +28,7 @@
 #define RLC_GT	1
 
 .syntax unified
-.arch armv7-a
+.arch armv7e-m
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -276,7 +276,9 @@ fp_addm_low2:
 	SBCS r10, r10, r3
 
 	/**** Setima iteracao ****/
-	SBCS r11, r11, #0x40000001
+	MOVW r3, #0x0001
+	MOVT r3, #0x4000
+	SBCS r11, r11, r3
 
 	/**** Oitava iteracao ****/
 	MOVW r3, #0x6482
@@ -315,7 +317,9 @@ fp_addm_low2:
 	ADCS r10, r10, r4
 
 	/**** Setima iteracao ****/
-	AND  r4, r3, #0x40000001
+	MOVW r4, #0x0001
+	MOVT r4, #0x4000
+	AND  r4, r4, r3
 	ADCS r11, r11, r4
 
 	/**** Oitava iteracao ****/
@@ -394,7 +398,9 @@ fp_addm_low:
 	BLO LESS_THAN
 
 	/**** Segunda iteracao ****/
-	CMP r11, #0x40000001
+	MOVW r3, #0x0001
+	MOVT r3, #0x4000
+	CMP r11, r3
 	BHI GREATER_THAN_OR_EQUAL
 	BLO LESS_THAN
 
@@ -464,7 +470,9 @@ GREATER_THAN_OR_EQUAL:
 	STR r10, [r0, #20]
 
 	/**** Setima iteracao ****/
-	SBCS r11, r11, #0x40000001
+	MOVW r3, #0x0001
+	MOVT r3, #0x4000
+	SBCS r11, r11, r3
 	STR r11, [r0, #24]
 
 	/**** Oitava iteracao ****/
@@ -584,7 +592,9 @@ fp_subm_low2:
 	ADCNES r10, r10, r3
 
 	/**** Setima iteracao ****/
-	ADCNES r11, r11, #0x40000001
+	MOVW r3, #0x0001
+	MOVT r3, #0x4000
+	ADCNES r11, r11, r3
 
 	/**** Oitava iteracao ****/
 	MOVW r3, #0x6482
@@ -704,7 +714,9 @@ IS_ONE:
 	STR r10, [r0, #20]
 
 	/**** Setima iteracao ****/
-	ADCS r11, r11, #0x40000001
+	MOVW r3, #0x0001
+	MOVT r3, #0x4000
+	ADCS r11, r11, r3
 	STR r11, [r0, #24]
 
 	/**** Oitava iteracao ****/

@@ -47,6 +47,11 @@ int fp_srt(fp_t c, const fp_t a) {
 	bn_t e;
 	fp_t t0, t1, t2, t3;
 	int f = 0, r = 0;
+#if ALLOC == AUTO
+	const dig_t *srt = (const dig_t *)fp_prime_get_srt();
+#else
+	const fp_t srt = (fp_t)fp_prime_get_srt();
+#endif
 
 	bn_null(e);
 	fp_null(t0);
@@ -99,7 +104,7 @@ int fp_srt(fp_t c, const fp_t a) {
 				fp_exp(t0, a, e);
 
 				/* Recover 2^f-root of unity, and continue algorithm. */
-				fp_copy(t3, fp_prime_get_srt());
+				fp_copy(t3, srt);
 
 				fp_sqr(t1, t0);
 				fp_mul(t1, t1, a);
