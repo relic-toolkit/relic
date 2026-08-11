@@ -850,6 +850,7 @@ void bn_gcd_ext_mid(bn_t c, bn_t d, bn_t e, bn_t f, const bn_t a, const bn_t b) 
 		return;
 	}
 
+	bn_null(p);
 	bn_null(q);
 	bn_null(r);
 	bn_null(s);
