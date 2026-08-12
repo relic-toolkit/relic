@@ -885,7 +885,7 @@ void bn_lsh(bn_t c, const bn_t a, uint_t bits);
 
 /**
  * Shifts a multiple precision number to the right. Computes
- * c = floor(a / 2^bits).
+ * c = floor(a / 2^bits), which rounds down in case of negative inputs.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the multiple precision integer to shift.
