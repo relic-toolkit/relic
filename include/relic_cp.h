@@ -1526,7 +1526,7 @@ int cp_mvbat_ver(gt_t *rs, const gt_t *as, const gt_t *bs, const bn_t *b,
  * @param[out] s			- the secret key for the pairing delegation.
  * @param[out] e			- the precomputed value e(U1, U2). 
  */
- int cp_amore_gen(bn_t s, gt_t e);
+int cp_amore_gen(bn_t s, gt_t e);
 
 /*
  * Executes the client-side request for the AMORE batch pairing delegation
@@ -1546,7 +1546,7 @@ int cp_mvbat_ver(gt_t *rs, const gt_t *as, const gt_t *bs, const bn_t *b,
  * @param[in] m				- the number of pairings to compute.
  * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
- int cp_amore_ask(bn_t *r, g1_t *c, g1_t x, g2_t y, g2_t d, g1_t u, g2_t v,
+int cp_amore_ask(bn_t *r, g1_t *c, g1_t x, g2_t y, g2_t d, g1_t u, g2_t v,
 	const bn_t s, const gt_t e, const g1_t *p, const g2_t *q, size_t m);
 
 /**

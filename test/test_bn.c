@@ -1843,6 +1843,8 @@ static int prime(void) {
 		TEST_ONCE("prime generation is consistent") {
 			bn_gen_prime(p, RLC_BN_BITS);
 			TEST_ASSERT(bn_is_prime(p) == 1, end);
+			bn_next_prime(q, p);
+			TEST_ASSERT(bn_is_prime(q) == 1 && bn_cmp(q, p) == RLC_GT, end);
 		} TEST_END;
 
 #if BN_GEN == BASIC || !defined(STRIP)

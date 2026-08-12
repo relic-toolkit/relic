@@ -1388,6 +1388,13 @@ void bn_gen_prime_stron(bn_t a, size_t bits);
  */
 int bn_gen_prime_factor(bn_t a, bn_t b, size_t abits, size_t bbits);
 
+/**
+ * Compute the next prime q strictly greater than p.
+ *
+ * @param[out] q			- the result.
+ * @param[in] p				- the starting prime.
+ */
+void bn_next_prime(bn_t q, const bn_t p);
 
 /**
  * Tries to factorize an integer using Pollard (p - 1) factoring algorithm.
