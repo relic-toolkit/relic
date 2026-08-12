@@ -1230,7 +1230,7 @@ void bn_gcd_dig(bn_t c, const bn_t a, dig_t b);
  * integer using the Euclidean algorithm.
  *
  * @param[out] c			- the result.
- * @param[out] d			- the cofactor of the first operand, can be NULL.
+ * @param[out] d			- the cofactor of the first operand.
  * @param[out] e			- the cofactor of the second operand, can be NULL.
  * @param[in] a				- the first multiple precision integer.
  * @param[in] b				- the second multiple precision integer.
@@ -1242,7 +1242,7 @@ void bn_gcd_ext_basic(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b);
  * using Lehmer's algorithm.
  *
  * @param[out] c			- the result;
- * @param[out] d			- the cofactor of the first operand, can be NULL.
+ * @param[out] d			- the cofactor of the first operand.
  * @param[out] e			- the cofactor of the second operand, can be NULL.
  * @param[in] a				- the first multiple precision integer.
  * @param[in] b				- the second multiple precision integer.
@@ -1254,7 +1254,7 @@ void bn_gcd_ext_lehme(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b);
  * using the Binary algorithm.
  *
  * @param[out] c			- the result;
- * @param[out] d			- the cofactor of the first operand, can be NULL.
+ * @param[out] d			- the cofactor of the first operand.
  * @param[out] e			- the cofactor of the second operand, can be NULL.
  * @param[in] a				- the first multiple precision integer.
  * @param[in] b				- the second multiple precision integer.

@@ -75,7 +75,7 @@ void bn_gcd_basic(bn_t c, const bn_t a, const bn_t b) {
 }
 
 void bn_gcd_ext_basic(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
-	bn_t u, v, x_1, y_1, q, r;
+	bn_t t, u, v, x_1, y_1, q, r;
 
 	if (bn_is_zero(a)) {
 		bn_abs(c, b);
@@ -95,6 +95,7 @@ void bn_gcd_ext_basic(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 		return;
 	}
 
+	bn_null(t);
 	bn_null(u);
 	bn_null(v);
 	bn_null(x_1);
@@ -103,6 +104,7 @@ void bn_gcd_ext_basic(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 	bn_null(r);
 
 	RLC_TRY {
+		bn_new(t);
 		bn_new(u);
 		bn_new(v);
 		bn_new(x_1);
@@ -126,17 +128,23 @@ void bn_gcd_ext_basic(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 			bn_copy(u, v);
 			bn_copy(v, r);
 
-			bn_mul(c, q, x_1);
-			bn_sub(r, d, c);
+			bn_mul(t, q, x_1);
+			bn_sub(r, d, t);
 			bn_copy(d, x_1);
 			bn_copy(x_1, r);
 
 			if (e != NULL) {
-				bn_mul(c, q, y_1);
-				bn_sub(r, e, c);
+				bn_mul(t, q, y_1);
+				bn_sub(r, e, t);
 				bn_copy(e, y_1);
 				bn_copy(y_1, r);
 			}
+		}
+		if (bn_sign(a) == RLC_NEG) {
+			bn_neg(d, d);
+		}
+		if (e != NULL && bn_sign(b) == RLC_NEG) {
+			bn_neg(e, e);
 		}
 		bn_copy(c, u);
 	}
@@ -144,6 +152,7 @@ void bn_gcd_ext_basic(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
+		bn_free(t);
 		bn_free(u);
 		bn_free(v);
 		bn_free(x_1);
@@ -588,6 +597,18 @@ void bn_gcd_ext_lehme(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 			bn_mul(x, b, t4);
 			bn_sub(x, c, x);
 			bn_div(d, x, a);
+			if (bn_sign(b) == RLC_NEG) {
+				bn_neg(d, d);
+				if (bn_sign(a) == RLC_NEG) {
+					bn_sub_dig(d, d, 1);
+				}
+			}
+			if (e != NULL) {
+				bn_copy(e, t4);
+				if (bn_sign(b) == RLC_NEG) {
+					bn_neg(e, e);
+				}
+			}
 		} else {
 			bn_mul(t0, t4, u);
 			bn_mul(t1, d, v);
@@ -595,9 +616,18 @@ void bn_gcd_ext_lehme(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 			bn_mul(x, a, d);
 			bn_sub(x, c, x);
 			bn_div(t4, x, b);
-		}
-		if (e != NULL) {
-			bn_copy(e, t4);
+			if (bn_sign(a) == RLC_NEG) {
+				bn_neg(d, d);
+			}
+			if (e != NULL) {
+				bn_copy(e, t4);
+				if (bn_sign(a) == RLC_NEG) {
+					bn_neg(e, e);
+					if (bn_sign(b) == RLC_NEG) {
+						bn_sub_dig(e, e, 1);
+					}
+				}
+			}
 		}
 	}
 	RLC_CATCH_ANY {
@@ -812,8 +842,14 @@ void bn_gcd_ext_binar(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 				bn_add(_e, _e, v);
 			}
 		}
+		if (bn_sign(a) == RLC_NEG) {
+			bn_neg(d, d);
+		}
 		if (e != NULL) {
 			bn_copy(e, _e);
+			if (bn_sign(b) == RLC_NEG) {
+				bn_neg(e, e);
+			}
 		}
 	}
 	RLC_CATCH_ANY {

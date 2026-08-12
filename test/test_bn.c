@@ -1294,6 +1294,14 @@ static int gcd(void) {
 			bn_add(d, d, e);
 			bn_gcd(f, a, b);
 			TEST_ASSERT(bn_cmp(c, d) == RLC_EQ && bn_cmp(c, f) == RLC_EQ, end);
+			bn_rand(a, RLC_NEG, RLC_BN_BITS);
+			bn_rand(b, RLC_NEG, RLC_BN_BITS);
+			bn_gcd_ext(c, d, e, a, b);
+			bn_mul(d, d, a);
+			bn_mul(e, e, b);
+			bn_add(d, d, e);
+			bn_gcd(f, a, b);
+		TEST_ASSERT(bn_cmp(c, d) == RLC_EQ && bn_cmp(c, f) == RLC_EQ, end);
 		} TEST_END;
 
 #if BN_GCD == BASIC || !defined(STRIP)
@@ -1314,6 +1322,24 @@ static int gcd(void) {
 			bn_mul(e, e, b);
 			bn_add(d, d, e);
 			TEST_ASSERT(bn_cmp(c, d) == RLC_EQ && bn_cmp(c, f) == RLC_EQ, end);
+			bn_gcd_ext(c, d, e, a, b);
+			bn_gcd_ext_basic(f, g, h, a, b);
+			TEST_ASSERT(bn_cmp(c, f) == RLC_EQ && bn_cmp(d, g) == RLC_EQ
+				&& bn_cmp(e, h) == RLC_EQ, end);
+			bn_rand(a, RLC_POS, RLC_BN_BITS);
+			bn_rand(b, RLC_NEG, RLC_BN_BITS);
+			bn_gcd_ext(c, d, e, a, b);
+			bn_gcd_ext_basic(f, g, h, a, b);
+			TEST_ASSERT(bn_cmp(c, f) == RLC_EQ && bn_cmp(d, g) == RLC_EQ
+				&& bn_cmp(e, h) == RLC_EQ, end);
+			bn_rand(a, RLC_NEG, RLC_BN_BITS);
+			bn_rand(b, RLC_POS, RLC_BN_BITS);
+			bn_gcd_ext(c, d, e, a, b);
+			bn_gcd_ext_basic(f, g, h, a, b);
+			TEST_ASSERT(bn_cmp(c, f) == RLC_EQ && bn_cmp(d, g) == RLC_EQ
+				&& bn_cmp(e, h) == RLC_EQ, end);
+			bn_rand(a, RLC_NEG, RLC_BN_BITS);
+			bn_rand(b, RLC_NEG, RLC_BN_BITS);
 			bn_gcd_ext(c, d, e, a, b);
 			bn_gcd_ext_basic(f, g, h, a, b);
 			TEST_ASSERT(bn_cmp(c, f) == RLC_EQ && bn_cmp(d, g) == RLC_EQ
@@ -1343,6 +1369,24 @@ static int gcd(void) {
 			bn_gcd_ext_binar(f, g, h, a, b);
 			TEST_ASSERT(bn_cmp(c, f) == RLC_EQ && bn_cmp(d, g) == RLC_EQ
 				&& bn_cmp(e, h) == RLC_EQ, end);
+			bn_rand(a, RLC_POS, RLC_BN_BITS);
+			bn_rand(b, RLC_NEG, RLC_BN_BITS);
+			bn_gcd_ext(c, d, e, a, b);
+			bn_gcd_ext_binar(f, g, h, a, b);
+			TEST_ASSERT(bn_cmp(c, f) == RLC_EQ && bn_cmp(d, g) == RLC_EQ
+				&& bn_cmp(e, h) == RLC_EQ, end);
+			bn_rand(a, RLC_NEG, RLC_BN_BITS);
+			bn_rand(b, RLC_POS, RLC_BN_BITS);
+			bn_gcd_ext(c, d, e, a, b);
+			bn_gcd_ext_binar(f, g, h, a, b);
+			TEST_ASSERT(bn_cmp(c, f) == RLC_EQ && bn_cmp(d, g) == RLC_EQ
+				&& bn_cmp(e, h) == RLC_EQ, end);
+			bn_rand(a, RLC_NEG, RLC_BN_BITS);
+			bn_rand(b, RLC_NEG, RLC_BN_BITS);
+			bn_gcd_ext(c, d, e, a, b);
+			bn_gcd_ext_binar(f, g, h, a, b);
+			TEST_ASSERT(bn_cmp(c, f) == RLC_EQ && bn_cmp(d, g) == RLC_EQ
+				&& bn_cmp(e, h) == RLC_EQ, end);
 		} TEST_END;
 #endif
 
@@ -1364,6 +1408,24 @@ static int gcd(void) {
 			bn_mul(e, e, b);
 			bn_add(d, d, e);
 			TEST_ASSERT(bn_cmp(c, d) == RLC_EQ && bn_cmp(c, f) == RLC_EQ, end);
+			bn_gcd_ext(c, d, e, a, b);
+			bn_gcd_ext_lehme(f, g, h, a, b);
+			TEST_ASSERT(bn_cmp(c, f) == RLC_EQ && bn_cmp(d, g) == RLC_EQ
+				&& bn_cmp(e, h) == RLC_EQ, end);
+			bn_rand(a, RLC_POS, RLC_BN_BITS);
+			bn_rand(b, RLC_NEG, RLC_BN_BITS);
+			bn_gcd_ext(c, d, e, a, b);
+			bn_gcd_ext_lehme(f, g, h, a, b);
+			TEST_ASSERT(bn_cmp(c, f) == RLC_EQ && bn_cmp(d, g) == RLC_EQ
+				&& bn_cmp(e, h) == RLC_EQ, end);
+			bn_rand(a, RLC_NEG, RLC_BN_BITS);
+			bn_rand(b, RLC_POS, RLC_BN_BITS);
+			bn_gcd_ext(c, d, e, a, b);
+			bn_gcd_ext_lehme(f, g, h, a, b);
+			TEST_ASSERT(bn_cmp(c, f) == RLC_EQ && bn_cmp(d, g) == RLC_EQ
+				&& bn_cmp(e, h) == RLC_EQ, end);
+			bn_rand(a, RLC_NEG, RLC_BN_BITS);
+			bn_rand(b, RLC_NEG, RLC_BN_BITS);
 			bn_gcd_ext(c, d, e, a, b);
 			bn_gcd_ext_lehme(f, g, h, a, b);
 			TEST_ASSERT(bn_cmp(c, f) == RLC_EQ && bn_cmp(d, g) == RLC_EQ

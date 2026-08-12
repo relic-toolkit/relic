@@ -48,7 +48,7 @@
 
 void bn_mxp_basic(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 	int i, l;
-	bn_t t, u;
+	bn_t t, u, r;
 
 	if (bn_cmp_dig(m, 1) == RLC_EQ) {
 		bn_zero(c);
@@ -60,10 +60,12 @@ void bn_mxp_basic(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 		return;
 	}
 
+	bn_null(r);
 	bn_null(t);
 	bn_null(u);
 
 	RLC_TRY {
+		bn_new(r);
 		bn_new(t);
 		bn_new(u);
 
@@ -77,30 +79,28 @@ void bn_mxp_basic(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 		bn_copy(t, a);
 #endif
 
-		bn_copy(c, t);
+		bn_copy(r, t);
 		for (i = l - 2; i >= 0; i--) {
-			bn_sqr(c, c);
-			bn_mod(c, c, m, u);
+			bn_sqr(r, r);
+			bn_mod(r, r, m, u);
 			if (bn_get_bit(b, i)) {
-				bn_mul(c, c, t);
-				bn_mod(c, c, m, u);
+				bn_mul(r, r, t);
+				bn_mod(r, r, m, u);
 			}
 		}
 
 #if BN_MOD == MONTY
-		bn_mod_monty_back(c, c, m);
+		bn_mod_monty_back(c, r, m);
 #endif
-
 		if (bn_sign(b) == RLC_NEG) {
 			bn_mod_inv(c, c, m);
-		} else {
-			bn_copy(c, c);
 		}
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
+		bn_free(r);
 		bn_free(t);
 		bn_free(u);
 	}
