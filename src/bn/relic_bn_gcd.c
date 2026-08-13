@@ -1055,8 +1055,8 @@ void bn_gcd_ext_lower(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 			 * T = (G - U*S)/V.  Both operands were destroyed by mpn_gcdext, so
 			 * rebuild the magnitudes from the untouched inputs.
 			 */
-			bn_abs(u, (const bn_t)pu);
-			bn_abs(v, (const bn_t)pv);
+			bn_abs(u, pu);
+			bn_abs(v, pv);
 			bn_mul(t, u, s);
 			bn_sub(t, g, t);
 			bn_div(t, t, v);
