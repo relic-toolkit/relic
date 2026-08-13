@@ -30,6 +30,7 @@
  */
 
 #include "relic_core.h"
+#include "relic_bn_low.h"
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -79,16 +80,25 @@ void bn_gcd_ext_basic(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 
 	if (bn_is_zero(a)) {
 		bn_abs(c, b);
-		bn_zero(d);
+		if (d != NULL) {
+			bn_zero(d);
+		}
 		if (e != NULL) {
 			bn_set_dig(e, 1);
+			if (bn_sign(b) == RLC_NEG) {
+				bn_neg(e, e);
+			}
 		}
 		return;
 	}
-
 	if (bn_is_zero(b)) {
 		bn_abs(c, a);
-		bn_set_dig(d, 1);
+		if (d != NULL) {
+			bn_set_dig(d, 1);
+			if (bn_sign(a) == RLC_NEG) {
+				bn_neg(d, d);
+			}
+		}
 		if (e != NULL) {
 			bn_zero(e);
 		}
@@ -370,16 +380,25 @@ void bn_gcd_ext_lehme(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 
 	if (bn_is_zero(a)) {
 		bn_abs(c, b);
-		bn_zero(d);
+		if (d != NULL) {
+			bn_zero(d);
+		}
 		if (e != NULL) {
 			bn_set_dig(e, 1);
+			if (bn_sign(b) == RLC_NEG) {
+				bn_neg(e, e);
+			}
 		}
 		return;
 	}
-
 	if (bn_is_zero(b)) {
 		bn_abs(c, a);
-		bn_set_dig(d, 1);
+		if (d != NULL) {
+			bn_set_dig(d, 1);
+			if (bn_sign(a) == RLC_NEG) {
+				bn_neg(d, d);
+			}
+		}
 		if (e != NULL) {
 			bn_zero(e);
 		}
@@ -716,22 +735,31 @@ void bn_gcd_ext_binar(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 
 	if (bn_is_zero(a)) {
 		bn_abs(c, b);
-		bn_zero(d);
+		if (d != NULL) {
+			bn_zero(d);
+		}
 		if (e != NULL) {
 			bn_set_dig(e, 1);
+			if (bn_sign(b) == RLC_NEG) {
+				bn_neg(e, e);
+			}
 		}
 		return;
 	}
-
 	if (bn_is_zero(b)) {
 		bn_abs(c, a);
-		bn_set_dig(d, 1);
+		if (d != NULL) {
+			bn_set_dig(d, 1);
+			if (bn_sign(a) == RLC_NEG) {
+				bn_neg(d, d);
+			}
+		}
 		if (e != NULL) {
 			bn_zero(e);
 		}
 		return;
 	}
-
+	
 	bn_null(x);
 	bn_null(y);
 	bn_null(t);
@@ -864,6 +892,203 @@ void bn_gcd_ext_binar(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 		bn_free(_a);
 		bn_free(_b);
 		bn_free(_e);
+	}
+}
+
+#endif
+
+#if BN_GCD == LOWER || !defined(STRIP)
+
+void bn_gcd_lower(bn_t c, const bn_t a, const bn_t b) {
+	bn_t u, v, g, s, t;
+	size_t shift = 0;
+
+	if (bn_is_zero(a)) {
+		bn_abs(c, b);
+		return;
+	}
+	if (bn_is_zero(b)) {
+		bn_abs(c, a);
+		return;
+	}
+
+	bn_null(u);
+	bn_null(v);
+	bn_null(g);
+	bn_null(s);
+	bn_null(t);
+
+	RLC_TRY {
+		bn_new(u);
+		bn_new(v);
+		bn_new(g);
+		bn_new(s);
+		bn_new(t);
+
+		if (u->used >= v->used) {
+			bn_abs(u, a);
+			bn_abs(v, b);
+		} else {
+			/* swap the buffers so that u holds U and v holds V */
+			bn_abs(u, b);
+			bn_abs(v, a);
+		}
+
+		/* gp needs vn limbs, sp needs vn + 1 */
+		bn_grow(g, v->used);
+		bn_grow(s, v->used + 1);
+
+		while (bn_is_even(u) && bn_is_even(v)) {
+			bn_hlv(u, u);
+			bn_hlv(v, v);
+			shift++;
+		}
+
+		g->used = (size_t)bn_gcdn_low(g->dp, u->dp, u->used, v->dp, v->used);
+		g->sign = RLC_POS;
+		bn_trim(g);
+		bn_lsh(g, g, shift);
+
+		bn_copy(c, g);
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		bn_free(u);
+		bn_free(v);
+		bn_free(g);
+		bn_free(s);
+		bn_free(t);
+	}
+}
+
+void bn_gcd_ext_lower(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
+	bn_t u, v, g, s, t;
+	bn_st *ps, *pt;
+	const bn_st *pu, *pv;
+	size_t un, vn;
+	dis_t sn;
+	int su, sv;
+  
+	/* mpn_gcdext rejects a zero operand, so dispose of those first. */
+	if (bn_is_zero(a)) {
+		bn_abs(c, b);
+		if (d != NULL) {
+			bn_zero(d);
+		}
+		if (e != NULL) {
+			bn_set_dig(e, 1);
+			if (bn_sign(b) == RLC_NEG) {
+				bn_neg(e, e);
+			}
+		}
+		return;
+	}
+	if (bn_is_zero(b)) {
+		bn_abs(c, a);
+		if (d != NULL) {
+			bn_set_dig(d, 1);
+			if (bn_sign(a) == RLC_NEG) {
+				bn_neg(d, d);
+			}
+		}
+		if (e != NULL) {
+			bn_zero(e);
+		}
+		return;
+	}
+ 
+	bn_null(u);
+	bn_null(v);
+	bn_null(g);
+	bn_null(s);
+	bn_null(t);
+ 
+	RLC_TRY {
+		bn_new(u);
+		bn_new(v);
+		bn_new(g);
+		bn_new(s);
+		bn_new(t);
+ 
+		/*
+		 * un >= vn is a requirement on the limb counts, not on the values.
+		 * Whichever operand takes the role of U gets the cofactor S that
+		 * mpn_gcdext returns; the other one gets T.
+		 */
+		if (a->used >= b->used) {
+			pu = a;
+			pv = b;
+			ps = d;
+			pt = e;
+			su = bn_sign(a);
+			sv = bn_sign(b);
+			bn_abs(u, a);
+			bn_abs(v, b);
+		} else {
+			/* swap the buffers so that u holds U and v holds V */
+			pu = b;
+			pv = a;
+			ps = e;
+			pt = d;
+			su = bn_sign(b);
+			sv = bn_sign(a);
+			bn_abs(u, b);
+			bn_abs(v, a);
+		}
+		un = u->used;
+		vn = v->used;
+ 
+		bn_grow(g, (size_t)vn + 1); 
+		g->used = bn_gcde_low(g->dp, s->dp, &sn, u->dp, un, v->dp, vn);
+		g->sign = RLC_POS;
+		bn_trim(g);
+ 
+		bn_grow(s, (size_t)vn + 1);
+		s->used = (sn < 0 ? -sn : sn);
+		s->sign = (sn < 0) ? RLC_NEG : RLC_POS;
+		bn_trim(s);
+ 
+		if (pt != NULL) {
+			/*
+			 * T = (G - U*S)/V.  Both operands were destroyed by mpn_gcdext, so
+			 * rebuild the magnitudes from the untouched inputs.
+			 */
+			bn_abs(u, (const bn_t)pu);
+			bn_abs(v, (const bn_t)pv);
+			bn_mul(t, u, s);
+			bn_sub(t, g, t);
+			bn_div(t, t, v);
+		}
+ 
+		/*
+		 * G = |U|*S + |V|*T, and the caller wants a*d + b*e = c, so the
+		 * cofactor of a negative operand is negated.
+		 */
+		if (ps != NULL) {
+			bn_copy(ps, s);
+			if (su == RLC_NEG) {
+				bn_neg(ps, ps);
+			}
+		}
+		if (pt != NULL) {
+			bn_copy(pt, t);
+			if (sv == RLC_NEG) {
+				bn_neg(pt, pt);
+			}
+		}
+		bn_copy(c, g);
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		bn_free(u);
+		bn_free(v);
+		bn_free(g);
+		bn_free(s);
+		bn_free(t);
 	}
 }
 

@@ -122,23 +122,15 @@ dig_t bn_subn_low(dig_t *c, const dig_t *a, const dig_t *b, size_t size);
 dig_t bn_negs_low(dig_t *c, const dig_t *a, dig_t sa, size_t size);
 
 /**
- * Compares two digits.
- *
- * @param[in] a				- the first digit to compare.
- * @param[in] b				- the second digit to compare.
- * @return BN_LT if a < b, BN_EQ if a == b and BN_GT if a > b.
- */
-int bn_cmp1_low(dig_t a, dig_t b);
-
-/**
  * Compares two digit vectors of the same size.
  *
  * @param[in] a				- the first digit vector to compare.
+ * @param[in] sa			- the number of digits in the first argument.
  * @param[in] b				- the second digit vector to compare.
- * @param[in] size			- the number of digits to compare.
- * @return BN_LT if a < b, BN_EQ if a == b and BN_GT if a > b.
+ * @param[in] sb			- the number of digits in the second argument.
+ * @return RLC_LT if a < b, RLC_EQ if a == b and RLC_GT if a > b.
  */
-int bn_cmpn_low(const dig_t *a, const dig_t *b, size_t size);
+int bn_cmpn_low(const dig_t *a, size_t sa, const dig_t *b, size_t sb);
 
 /**
  * Shifts a digit vector to the left by 1 bit. Computes c = a << 1.
@@ -316,6 +308,33 @@ void bn_div1_low(dig_t *c, dig_t *d, const dig_t *a, dig_t digit, size_t size);
  */
 void bn_modn_low(dig_t *c, const dig_t *a, size_t sa, const dig_t *m, size_t sm,
 	dig_t u);
+
+/**
+ * Computes the greatest common divisor of two multiple precision integers
+ * using the standard Euclidean algorithm. One of the operands must be odd.
+ *
+ * @param[out] c			- the result;
+ * @param[in] a				- the first multiple precision integer.
+ * @param[in] sa			- the number of digits in the first argument.
+ * @param[in] b				- the second multiple precision integer.
+ * @param[in] sa			- the number of digits in the second argument.
+ */
+size_t bn_gcdn_low(dig_t *c, dig_t *a, size_t sa, dig_t *b, size_t sb);
+
+/**
+ * Computes the greatest common divisor of two multiple precision integers
+ * using the standard Euclidean algorithm. One of the operands must be odd.
+ *
+ * @param[out] c			- the result;
+ * @param[out] d			- the first cofactor.
+ * @param[out] sd			- the number of digits in the cofactor.
+ * @param[in] a				- the first multiple precision integer.
+ * @param[in] sa			- the number of digits in the first argument.
+ * @param[in] b				- the second multiple precision integer.
+ * @param[in] sa			- the number of digits in the second argument.
+ */
+size_t bn_gcde_low(dig_t *c, dig_t *d, dis_t *sd, dig_t *a, size_t sa,
+		dig_t *b, size_t sb);
 
 #endif /* !ASM */
 

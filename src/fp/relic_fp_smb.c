@@ -402,7 +402,7 @@ int fp_smb_divst(const fp_t a) {
 #else
 		fp_copy(g, a);
 #endif
-		r = dv_cmp(g, f, RLC_FP_DIGS);
+		r = dv_cmp_sec(g, f, RLC_FP_DIGS);
 		fp_subn_low(t, g, f);
 		fp_copy_sec(g, t, r != RLC_LT);
 

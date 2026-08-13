@@ -409,6 +409,8 @@ typedef crt_st *crt_t;
 #define bn_gcd(C, A, B)		bn_gcd_lehme(C, A, B)
 #elif BN_GCD == BINAR
 #define bn_gcd(C, A, B)		bn_gcd_binar(C, A, B)
+#elif BN_GCD == LOWER
+#define bn_gcd(C, A)		bn_gcd_lower(C, A)
 #endif
 
 /**
@@ -428,6 +430,8 @@ typedef crt_st *crt_t;
 #define bn_gcd_ext(C, D, E, A, B)		bn_gcd_ext_lehme(C, D, E, A, B)
 #elif BN_GCD == BINAR
 #define bn_gcd_ext(C, D, E, A, B)		bn_gcd_ext_binar(C, D, E, A, B)
+#elif BN_GCD == LOWER
+#define bn_gcd_ext(C, D, E, A, B)		bn_gcd_ext_lower(C, D, E, A, B)
 #endif
 
 /**
@@ -1216,6 +1220,16 @@ void bn_gcd_lehme(bn_t c, const bn_t a, const bn_t b);
 void bn_gcd_binar(bn_t c, const bn_t a, const bn_t b);
 
 /**
+ * Computes the greatest common divisor of two multiple precision integers
+ * using the lower-level algorithm.
+ *
+ * @param[out] c			- the result;
+ * @param[in] a				- the first multiple precision integer.
+ * @param[in] b				- the second multiple precision integer.
+ */
+void bn_gcd_lower(bn_t c, const bn_t a, const bn_t b);
+
+/**
  * Computes the greatest common divisor of a multiple precision integer and a
  * digit.
  *
@@ -1248,6 +1262,18 @@ void bn_gcd_ext_basic(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b);
  * @param[in] b				- the second multiple precision integer.
  */
 void bn_gcd_ext_lehme(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b);
+
+/**
+ * Computes the greatest common divisor of two multiple precision integers
+ * using a lower-level algorithm.
+ *
+ * @param[out] c			- the result;
+ * @param[out] d			- the cofactor of the first operand.
+ * @param[out] e			- the cofactor of the second operand, can be NULL.
+ * @param[in] a				- the first multiple precision integer.
+ * @param[in] b				- the second multiple precision integer.
+ */
+void bn_gcd_ext_lower(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b);
 
 /**
  * Computes the greatest common divisor of two multiple precision integers

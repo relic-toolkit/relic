@@ -1433,6 +1433,49 @@ static int gcd(void) {
 		} TEST_END;
 #endif
 
+#if BN_GCD == LOWER || !defined(STRIP)
+		TEST_CASE("lower greatest common divisor is correct") {
+			bn_rand(a, RLC_POS, RLC_BN_BITS);
+			bn_rand(b, RLC_POS, RLC_BN_BITS);
+			bn_gcd(c, a, b);
+			bn_gcd_lower(d, a, b);
+			TEST_ASSERT(bn_cmp(c, d) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("lower extended greatest common divisor is correct") {
+			bn_rand(a, RLC_POS, RLC_BN_BITS);
+			bn_rand(b, RLC_POS, RLC_BN_BITS);
+			bn_gcd_lower(f, a, b);
+			bn_gcd_ext_lower(c, d, e, a, b);
+			bn_mul(d, d, a);
+			bn_mul(e, e, b);
+			bn_add(d, d, e);
+			TEST_ASSERT(bn_cmp(c, d) == RLC_EQ && bn_cmp(c, f) == RLC_EQ, end);
+			bn_gcd_ext(c, d, e, a, b);
+			bn_gcd_ext_lower(f, g, h, a, b);
+			TEST_ASSERT(bn_cmp(c, f) == RLC_EQ && bn_cmp(d, g) == RLC_EQ
+				&& bn_cmp(e, h) == RLC_EQ, end);
+			bn_rand(a, RLC_POS, RLC_BN_BITS);
+			bn_rand(b, RLC_NEG, RLC_BN_BITS);
+			bn_gcd_ext(c, d, e, a, b);
+			bn_gcd_ext_lower(f, g, h, a, b);
+			TEST_ASSERT(bn_cmp(c, f) == RLC_EQ && bn_cmp(d, g) == RLC_EQ
+				&& bn_cmp(e, h) == RLC_EQ, end);
+			bn_rand(a, RLC_NEG, RLC_BN_BITS);
+			bn_rand(b, RLC_POS, RLC_BN_BITS);
+			bn_gcd_ext(c, d, e, a, b);
+			bn_gcd_ext_lower(f, g, h, a, b);
+			TEST_ASSERT(bn_cmp(c, f) == RLC_EQ && bn_cmp(d, g) == RLC_EQ
+				&& bn_cmp(e, h) == RLC_EQ, end);
+			bn_rand(a, RLC_NEG, RLC_BN_BITS);
+			bn_rand(b, RLC_NEG, RLC_BN_BITS);
+			bn_gcd_ext(c, d, e, a, b);
+			bn_gcd_ext_lower(f, g, h, a, b);
+			TEST_ASSERT(bn_cmp(c, f) == RLC_EQ && bn_cmp(d, g) == RLC_EQ
+				&& bn_cmp(e, h) == RLC_EQ, end);
+		} TEST_END;
+#endif
+
 		TEST_CASE("midway extended greatest common divisor is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_rand(b, RLC_POS, RLC_BN_BITS);
@@ -2446,13 +2489,13 @@ int main(void) {
 		core_clean();
 		return 1;
 	}
-
-	if (square_root() != RLC_OK) {
+	
+	if (gcd() != RLC_OK) {
 		core_clean();
 		return 1;
 	}
 
-	if (gcd() != RLC_OK) {
+	if (square_root() != RLC_OK) {
 		core_clean();
 		return 1;
 	}
