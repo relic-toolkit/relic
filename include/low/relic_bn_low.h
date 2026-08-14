@@ -333,7 +333,7 @@ size_t bn_gcdn_low(dig_t *c, dig_t *a, size_t sa, dig_t *b, size_t sb);
  * @param[in] b				- the second multiple precision integer.
  * @param[in] sa			- the number of digits in the second argument.
  */
-size_t bn_gcde_low(dig_t *c, dig_t *d, dis_t *sd, dig_t *a, size_t sa,
+size_t bn_gcde_low(dig_t *c, dig_t *d, int *sd, dig_t *a, size_t sa,
 		dig_t *b, size_t sb);
 
 #endif /* !ASM */
