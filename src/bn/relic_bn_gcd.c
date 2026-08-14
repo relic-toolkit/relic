@@ -900,7 +900,7 @@ void bn_gcd_ext_binar(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 #if BN_GCD == LOWER || !defined(STRIP)
 
 void bn_gcd_lower(bn_t c, const bn_t a, const bn_t b) {
-	bn_t u, v, g, s, t;
+	bn_t u, v, g;
 	size_t shift = 0;
 
 	if (bn_is_zero(a)) {
@@ -915,17 +915,13 @@ void bn_gcd_lower(bn_t c, const bn_t a, const bn_t b) {
 	bn_null(u);
 	bn_null(v);
 	bn_null(g);
-	bn_null(s);
-	bn_null(t);
 
 	RLC_TRY {
 		bn_new(u);
 		bn_new(v);
 		bn_new(g);
-		bn_new(s);
-		bn_new(t);
 
-		if (u->used >= v->used) {
+		if (a->used >= b->used) {
 			bn_abs(u, a);
 			bn_abs(v, b);
 		} else {
@@ -936,7 +932,6 @@ void bn_gcd_lower(bn_t c, const bn_t a, const bn_t b) {
 
 		/* gp needs vn limbs, sp needs vn + 1 */
 		bn_grow(g, v->used);
-		bn_grow(s, v->used + 1);
 
 		while (bn_is_even(u) && bn_is_even(v)) {
 			bn_hlv(u, u);
@@ -958,8 +953,6 @@ void bn_gcd_lower(bn_t c, const bn_t a, const bn_t b) {
 		bn_free(u);
 		bn_free(v);
 		bn_free(g);
-		bn_free(s);
-		bn_free(t);
 	}
 }
 
@@ -1040,12 +1033,13 @@ void bn_gcd_ext_lower(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 		un = u->used;
 		vn = v->used;
  
-		bn_grow(g, (size_t)vn + 1); 
+		bn_grow(g, vn + 1); 
+		bn_grow(s, vn + 1);
+
 		g->used = bn_gcde_low(g->dp, s->dp, &sn, u->dp, un, v->dp, vn);
 		g->sign = RLC_POS;
 		bn_trim(g);
  
-		bn_grow(s, (size_t)vn + 1);
 		s->used = (sn < 0 ? -sn : sn);
 		s->sign = (sn < 0) ? RLC_NEG : RLC_POS;
 		bn_trim(s);

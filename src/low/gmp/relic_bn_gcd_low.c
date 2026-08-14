@@ -41,10 +41,11 @@
 /*============================================================================*/
 
 size_t bn_gcdn_low(dig_t *c, dig_t *a, size_t sa, dig_t *b, size_t sb) {
-	return mpn_gcd(c, a, sa, b, sb);
+	return mpn_gcd((mp_ptr)c, (mp_ptr)a, sa, (mp_ptr)b, sb);
 }
 
 size_t bn_gcde_low(dig_t *c, dig_t *d, dis_t *sd, dig_t *a, size_t sa,
 		dig_t *b, size_t sb) {
-	return mpn_gcdext(c, d, (mp_size_t *)sd, a, sa, b, sb);
+	return mpn_gcdext((mp_ptr)c, (mp_ptr)d, (mp_size_t *)sd, (mp_ptr)a, sa,
+			(mp_ptr)b, sb);
 }
