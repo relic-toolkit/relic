@@ -30,6 +30,7 @@
  */
 
 #include <gmp.h>
+#include <stdlib.h>
 
 #include "relic_fp.h"
 #include "relic_fp_low.h"

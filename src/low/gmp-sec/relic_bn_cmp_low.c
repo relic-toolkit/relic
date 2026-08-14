@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (c) 2015 RELIC Authors
+ * Copyright (c) 2026 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -24,37 +24,28 @@
 /**
  * @file
  *
- * Implementation of the low-level multiple precision division functions.
+ * Implementation of the low-level multiple precision comparison functions.
  *
  * @ingroup bn
  */
 
 #include <gmp.h>
-#include <stdlib.h>
 
+#include "relic_core.h"
 #include "relic_bn.h"
 #include "relic_bn_low.h"
-#include "relic_alloc.h"
+#include "relic_util.h"
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void bn_divn_low(dig_t *c, dig_t *d, dig_t *a, size_t sa, dig_t *b, size_t sb) {
-	dig_t u[sa], *t = RLC_ALLOCA(dig_t, mpn_sec_div_qr_itch(sa, sb));
-
-	mpn_copyd((mp_ptr)u, (mp_srcptr)a, sa);
-	c[sa - sb] =
-		mpn_sec_div_qr((mp_ptr)c, (mp_ptr)u, sa, (mp_srcptr)b, sb,(mp_ptr)t);
-	mpn_copyd((mp_ptr)d, (mp_srcptr)u, sa);
-	RLC_FREE(t);
-}
-
-void bn_div1_low(dig_t *c, dig_t *d, const dig_t *a, dig_t b, size_t size) {
-	dig_t u[size], *t = RLC_ALLOCA(dig_t, mpn_sec_div_qr_itch(size, 1));
-
-	mpn_copyd((mp_ptr)u, (mp_srcptr)a, size);
-	c[size - 1] =
-		mpn_sec_div_qr((mp_ptr)c, (mp_ptr)u, size, (mp_srcptr)&b, 1, (mp_ptr)t);
-	*d = u[0];
+int bn_cmpn_low(const dig_t *a, size_t sa, const dig_t *b, size_t sb) {
+	if (sa != sb) {
+		return (sa > sb ? RLC_GT : RLC_LT);
+	}
+	if (sa == 0) {
+		return RLC_EQ;
+	}
+	return dv_cmp_sec(a, b, sa);
 }

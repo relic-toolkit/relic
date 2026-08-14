@@ -410,7 +410,7 @@ typedef crt_st *crt_t;
 #elif BN_GCD == BINAR
 #define bn_gcd(C, A, B)		bn_gcd_binar(C, A, B)
 #elif BN_GCD == LOWER
-#define bn_gcd(C, A)		bn_gcd_lower(C, A)
+#define bn_gcd(C, A, B)		bn_gcd_lower(C, A, B)
 #endif
 
 /**
@@ -964,7 +964,7 @@ void bn_mod_inv(bn_t c, const bn_t a, const bn_t b);
  * param[in] b				- the modulus.
  * @param[in] n				- the number of elements.
  */
-void bn_mod_inv_sim(bn_t *c, const bn_t *a, const bn_t b, int n);
+void bn_mod_inv_sim(bn_t *c, const bn_t *a, const bn_t b, size_t n);
 
 /**
  * Reduces a multiple precision integer modulo a power of 2. Computes

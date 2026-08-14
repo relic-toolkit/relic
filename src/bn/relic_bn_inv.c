@@ -64,9 +64,14 @@ void bn_mod_inv(bn_t c, const bn_t a, const bn_t b) {
 	}
 }
 
-void bn_mod_inv_sim(bn_t *c, const bn_t *a, const bn_t b, int n) {
+void bn_mod_inv_sim(bn_t *c, const bn_t *a, const bn_t b, size_t n) {
 	int i;
 	bn_t u, *t = RLC_ALLOCA(bn_t, n);
+
+	if (n == 0) {
+		RLC_THROW(ERR_NO_VALID);
+		return;
+	}
 
 	bn_null(u);
 
