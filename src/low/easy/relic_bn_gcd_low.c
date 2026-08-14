@@ -200,7 +200,7 @@ size_t bn_gcdn_low(dig_t *c, dig_t *a, size_t sa, dig_t *b, size_t sb) {
 	return sa;
 }
 
-size_t bn_gcde_low(dig_t *c, dig_t *d, dis_t *sd, dig_t *a, size_t sa,
+size_t bn_gcde_low(dig_t *c, dig_t *d, int *sd, dig_t *a, size_t sa,
 		dig_t *b, size_t sb) {
 	/*
 	 * A and B are the cofactors of the first working value, C and D those of
@@ -225,7 +225,7 @@ size_t bn_gcde_low(dig_t *c, dig_t *d, dis_t *sd, dig_t *a, size_t sa,
  
 		dv_copy(c, (sa == 0 ? b : a), sr);
 		d[0] = (sa == 0 || sr == 0 ? 0 : 1);
-		*sd = (ptrdiff_t)d[0];
+		*sd = d[0];
 		return sr;
 	}
  
@@ -391,6 +391,6 @@ size_t bn_gcde_low(dig_t *c, dig_t *d, dis_t *sd, dig_t *a, size_t sa,
 	sg = sy + shift;
  
 	dv_copy(d, C, sc);
-	*sd = (sgC == RLC_NEG ? -(ptrdiff_t)sc : (ptrdiff_t)sc);
+	*sd = (sgC == RLC_NEG ? -sc : sc);
 	return sg;
 }

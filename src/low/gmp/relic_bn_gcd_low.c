@@ -44,7 +44,7 @@ size_t bn_gcdn_low(dig_t *c, dig_t *a, size_t sa, dig_t *b, size_t sb) {
 	return mpn_gcd(c, a, sa, b, sb);
 }
  
-size_t bn_gcde_low(dig_t *c, dig_t *d, dis_t *sd, dig_t *a, size_t sa,
+size_t bn_gcde_low(dig_t *c, dig_t *d, int *sd, dig_t *a, size_t sa,
 		dig_t *b, size_t sb) {
 	mp_size_t sn;
 	size_t result;
@@ -57,7 +57,7 @@ size_t bn_gcde_low(dig_t *c, dig_t *d, dis_t *sd, dig_t *a, size_t sa,
 	 * indeterminate, which breaks the sign of the cofactor.
 	 */
 	result = mpn_gcdext(c, d, &sn, a, sa, b, sb);
-	*sd = (dis_t)sn;
+	*sd = sn;
 	return result;
 }
  

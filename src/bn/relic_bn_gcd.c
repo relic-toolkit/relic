@@ -991,8 +991,7 @@ void bn_gcd_ext_lower(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 	bn_st *ps, *pt;
 	const bn_st *pu, *pv;
 	size_t un, vn;
-	dis_t sn;
-	int su, sv, sgn_a, sgn_b;
+	int su, sv, sn, sgn_a, sgn_b;
   
 	/* mpn_gcdext rejects a zero operand, so dispose of those first. */
 	/*
