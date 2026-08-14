@@ -77,6 +77,16 @@ void bn_gcd_basic(bn_t c, const bn_t a, const bn_t b) {
 
 void bn_gcd_ext_basic(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 	bn_t t, u, v, x_1, y_1, q, r;
+	int sgn_a, sgn_b;
+
+	/*
+	 * Capture both signs before writing anything: the outputs may alias the
+	 * inputs, and bn_abs(c, b) with c aliasing b makes b positive, so a later
+	 * bn_sign(b) would read the wrong sign. The same applies to a d that
+	 * aliases b.
+	 */
+	sgn_a = bn_sign(a);
+	sgn_b = bn_sign(b);
 
 	if (bn_is_zero(a)) {
 		bn_abs(c, b);
@@ -85,7 +95,7 @@ void bn_gcd_ext_basic(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 		}
 		if (e != NULL) {
 			bn_set_dig(e, 1);
-			if (bn_sign(b) == RLC_NEG) {
+			if (sgn_b == RLC_NEG) {
 				bn_neg(e, e);
 			}
 		}
@@ -95,7 +105,7 @@ void bn_gcd_ext_basic(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 		bn_abs(c, a);
 		if (d != NULL) {
 			bn_set_dig(d, 1);
-			if (bn_sign(a) == RLC_NEG) {
+			if (sgn_a == RLC_NEG) {
 				bn_neg(d, d);
 			}
 		}
@@ -373,10 +383,20 @@ void bn_gcd_lehme(bn_t c, const bn_t a, const bn_t b) {
 }
 
 void bn_gcd_ext_lehme(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
+	int sgn_a, sgn_b;
 	bn_t x, y, u, v, t0, t1, t2, t3, t4;
 	dig_t _x, _y, q, _q, t, _t;
 	dis_t _a, _b, _c, _d;
 	int swap;
+
+	/*
+	 * Capture both signs before writing anything: the outputs may alias the
+	 * inputs, and bn_abs(c, b) with c aliasing b makes b positive, so a later
+	 * bn_sign(b) would read the wrong sign. The same applies to a d that
+	 * aliases b.
+	 */
+	sgn_a = bn_sign(a);
+	sgn_b = bn_sign(b);
 
 	if (bn_is_zero(a)) {
 		bn_abs(c, b);
@@ -385,7 +405,7 @@ void bn_gcd_ext_lehme(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 		}
 		if (e != NULL) {
 			bn_set_dig(e, 1);
-			if (bn_sign(b) == RLC_NEG) {
+			if (sgn_b == RLC_NEG) {
 				bn_neg(e, e);
 			}
 		}
@@ -395,7 +415,7 @@ void bn_gcd_ext_lehme(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 		bn_abs(c, a);
 		if (d != NULL) {
 			bn_set_dig(d, 1);
-			if (bn_sign(a) == RLC_NEG) {
+			if (sgn_a == RLC_NEG) {
 				bn_neg(d, d);
 			}
 		}
@@ -730,8 +750,18 @@ void bn_gcd_binar(bn_t c, const bn_t a, const bn_t b) {
 }
 
 void bn_gcd_ext_binar(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
+	int sgn_a, sgn_b;
 	bn_t x, y, t, u, v, _a, _b, _e;
 	int shift;
+
+	/*
+	 * Capture both signs before writing anything: the outputs may alias the
+	 * inputs, and bn_abs(c, b) with c aliasing b makes b positive, so a later
+	 * bn_sign(b) would read the wrong sign. The same applies to a d that
+	 * aliases b.
+	 */
+	sgn_a = bn_sign(a);
+	sgn_b = bn_sign(b);
 
 	if (bn_is_zero(a)) {
 		bn_abs(c, b);
@@ -740,7 +770,7 @@ void bn_gcd_ext_binar(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 		}
 		if (e != NULL) {
 			bn_set_dig(e, 1);
-			if (bn_sign(b) == RLC_NEG) {
+			if (sgn_b == RLC_NEG) {
 				bn_neg(e, e);
 			}
 		}
@@ -750,7 +780,7 @@ void bn_gcd_ext_binar(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 		bn_abs(c, a);
 		if (d != NULL) {
 			bn_set_dig(d, 1);
-			if (bn_sign(a) == RLC_NEG) {
+			if (sgn_a == RLC_NEG) {
 				bn_neg(d, d);
 			}
 		}
@@ -962,9 +992,18 @@ void bn_gcd_ext_lower(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 	const bn_st *pu, *pv;
 	size_t un, vn;
 	dis_t sn;
-	int su, sv;
+	int su, sv, sgn_a, sgn_b;
   
 	/* mpn_gcdext rejects a zero operand, so dispose of those first. */
+	/*
+	 * Capture both signs before writing anything: the outputs may alias the
+	 * inputs, and bn_abs(c, b) with c aliasing b makes b positive, so a later
+	 * bn_sign(b) would read the wrong sign. The same applies to a d that
+	 * aliases b.
+	 */
+	sgn_a = bn_sign(a);
+	sgn_b = bn_sign(b);
+
 	if (bn_is_zero(a)) {
 		bn_abs(c, b);
 		if (d != NULL) {
@@ -972,7 +1011,7 @@ void bn_gcd_ext_lower(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 		}
 		if (e != NULL) {
 			bn_set_dig(e, 1);
-			if (bn_sign(b) == RLC_NEG) {
+			if (sgn_b == RLC_NEG) {
 				bn_neg(e, e);
 			}
 		}
@@ -982,7 +1021,7 @@ void bn_gcd_ext_lower(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 		bn_abs(c, a);
 		if (d != NULL) {
 			bn_set_dig(d, 1);
-			if (bn_sign(a) == RLC_NEG) {
+			if (sgn_a == RLC_NEG) {
 				bn_neg(d, d);
 			}
 		}
@@ -1015,8 +1054,8 @@ void bn_gcd_ext_lower(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 			pv = b;
 			ps = d;
 			pt = e;
-			su = bn_sign(a);
-			sv = bn_sign(b);
+			su = sgn_a;
+			sv = sgn_b;
 			bn_abs(u, a);
 			bn_abs(v, b);
 		} else {
@@ -1025,8 +1064,8 @@ void bn_gcd_ext_lower(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 			pv = a;
 			ps = e;
 			pt = d;
-			su = bn_sign(b);
-			sv = bn_sign(a);
+			su = sgn_b;
+			sv = sgn_a;
 			bn_abs(u, b);
 			bn_abs(v, a);
 		}

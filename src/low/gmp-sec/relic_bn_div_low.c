@@ -57,4 +57,5 @@ void bn_div1_low(dig_t *c, dig_t *d, const dig_t *a, dig_t b, size_t size) {
 	c[size - 1] =
 		mpn_sec_div_qr((mp_ptr)c, (mp_ptr)u, size, (mp_srcptr)&b, 1, (mp_ptr)t);
 	*d = u[0];
+	RLC_FREE(t);
 }
