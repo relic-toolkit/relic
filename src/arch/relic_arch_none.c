@@ -59,20 +59,19 @@ uint_t arch_lzcnt(dig_t a) {
 	}
 	return 0;
 #elif WSIZE == 16
-	int offset;
+	uint_t offset;
 
-	if (a >= ((dig_t)1 << 8)) {
+	if (a >> 8 == 0) {
 		offset = 8;
 	} else {
 		offset = 0;
+		a >>= 8;
 	}
-	a = a >> offset;
 	if (a >> 4 == 0) {
-		return table[a & 0xF] + offset;
+		return table[a & 0xF] + 4 + offset;
 	} else {
-		return table[a >> 4] + 4 + offset;
+		return table[a >> 4] + offset;
 	}
-	return 0;
 #elif WSIZE == 32
 #ifdef _MSC_VER
     return __lzcnt(a);
@@ -104,7 +103,7 @@ uint_t arch_tzcnt(dig_t a) {
 #elif WSIZE == 16
 	int offset;
 
-	if (a & 0xFF == 0) {
+	if ((a & 0xFF) == 0) {
 		offset = 8;
 	} else {
 		offset = 0;
