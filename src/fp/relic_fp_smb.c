@@ -447,9 +447,9 @@ int fp_smb_divst(const fp_t a) {
 		t[0] = 1;
 		bn_negs_low(f, f, fs, RLC_FP_DIGS);
 		
-		r = RLC_SEL(r, 1 - k, dv_cmp_sec(f, t, RLC_FP_DIGS) == RLC_EQ);
+		r = RLC_SEL(r, 1 - k, dv_equ_sec(f, t, RLC_FP_DIGS) == RLC_EQ);
 		bn_negs_low(t, t, 1, RLC_FP_DIGS);
-		r = RLC_SEL(r, 1 - k, dv_cmp_sec(f, t, RLC_FP_DIGS) == RLC_EQ);
+		r = RLC_SEL(r, 1 - k, dv_equ_sec(f, t, RLC_FP_DIGS) == RLC_EQ);
 		r = RLC_SEL(r, 1 - k, fp_is_zero(f));
 		r = RLC_SEL(r, 0, fp_is_zero(a));
 	} RLC_CATCH_ANY {
