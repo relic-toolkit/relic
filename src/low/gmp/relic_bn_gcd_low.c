@@ -46,7 +46,6 @@ size_t bn_gcdn_low(dig_t *c, dig_t *a, size_t sa, dig_t *b, size_t sb) {
  
 size_t bn_gcde_low(dig_t *c, dig_t *d, dis_t *sd, dig_t *a, size_t sa,
 		dig_t *b, size_t sb) {
-	return mpn_gcdext(c, d, (mp_size_t *)sd, a, sa, b, sb);
 	mp_size_t sn;
 	size_t result;
 
