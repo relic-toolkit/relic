@@ -969,7 +969,7 @@ void bn_gcd_lower(bn_t c, const bn_t a, const bn_t b) {
 			shift++;
 		}
 
-		g->used = (size_t)bn_gcdn_low(g->dp, u->dp, u->used, v->dp, v->used);
+		g->used = bn_gcdn_low(g->dp, u->dp, u->used, v->dp, v->used);
 		g->sign = RLC_POS;
 		bn_trim(g);
 		bn_lsh(g, g, shift);

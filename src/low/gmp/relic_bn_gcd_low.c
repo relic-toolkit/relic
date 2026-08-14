@@ -41,8 +41,8 @@
 /*============================================================================*/
 
 size_t bn_gcdn_low(dig_t *c, dig_t *a, size_t sa, dig_t *b, size_t sb) {
- 	return mpn_gcd(c, a, sa, b, sb);
- }
+	return mpn_gcd(c, a, sa, b, sb);
+}
  
 size_t bn_gcde_low(dig_t *c, dig_t *d, dis_t *sd, dig_t *a, size_t sa,
 		dig_t *b, size_t sb) {
