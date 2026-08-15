@@ -223,16 +223,16 @@ typedef crt_st *crt_t;
 #endif
 
 /**
- * Initializes a CRT moduli set with a null value.
+ * Initializes a Chinese Remainder Theorem (CRT) moduli set with a null value.
  *
  * @param[out] A			- the moduli to initialize.
  */
 #define crt_null(A)			RLC_NULL(A)
 
 /**
- * Calls a function to allocate and initialize a Rabin key pair.
+ * Calls a function to allocate and initialize a CRT moduli set.
  *
- * @param[out] A			- the new key pair.
+ * @param[out] A			- the new CRT moduli set.
  */
 #if ALLOC == DYNAMIC
 #define crt_new(A)															\
@@ -259,9 +259,9 @@ typedef crt_st *crt_t;
 #endif
 
 /**
- * Calls a function to clean and free a Rabin key pair.
+ * Calls a function to clean and free a CRT moduli set.
  *
- * @param[out] A			- the key pair to clean and free.
+ * @param[out] A			- the CRT moduli set to clean and free.
  */
 #if ALLOC == DYNAMIC
 #define crt_free(A)															\
