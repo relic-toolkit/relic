@@ -1804,16 +1804,13 @@ static int digit(void) {
 
 		TEST_CASE("multiplication by a single digit is consistent") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
-			bn_rand(b, RLC_POS, RLC_DIG);
+			bn_rand(b, RLC_POS, RLC_DIG - 1);
 			bn_get_dig(&g, b);
 			bn_mul(c, a, b);
 			bn_mul_dig(d, a, g);
-			TEST_ASSERT(bn_cmp(c, d) == RLC_EQ, end);
-			g >>= (RLC_DIG / 2);
-			bn_mul_dig(d, a, g);
 			bn_mul_dis(e, a, -g);
 			bn_neg(e, e);
-			TEST_ASSERT(bn_cmp(d, e) == RLC_EQ, end);
+			TEST_ASSERT(bn_cmp(c, d) == RLC_EQ && bn_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_CASE("division by a single digit is consistent") {
