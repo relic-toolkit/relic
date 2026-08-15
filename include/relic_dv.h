@@ -201,6 +201,26 @@ int dv_cmp(const dig_t *a, const dig_t *b, size_t size);
 int dv_cmp_sec(const dig_t *a, const dig_t *b, size_t size);
 
 /**
+ * Returns the result of a equality test between two digit vectors.
+ *
+ * @param[in] a				- the first digit vector.
+ * @param[in] b				- the second digit vector.
+ * @param[in] size			- the length in digits of the vectors.
+ * @return RLC_EQ if a == b and RLC_NE otherwise.
+ */
+int dv_equ(const dig_t *a, const dig_t *b, size_t size);
+
+/**
+ * Tests two digit vectors for equality in constant time.
+ *
+ * @param[in] a				- the first digit vector.
+ * @param[in] b				- the second digit vector.
+ * @param[in] size			- the length in digits of the vectors.
+ * @return RLC_EQ if they are equal and RLC_NE otherwise.
+ */
+int dv_equ_sec(const dig_t *a, const dig_t *b, size_t size);
+
+/**
  * Allocates and initializes a temporary double-precision digit vector.
  *
  * @param[out] a			- the new temporary digit vector.

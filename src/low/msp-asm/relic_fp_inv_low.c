@@ -61,9 +61,11 @@ void fp_invm_low(dig_t *c, const dig_t *a) {
 	fp_prime_back(bna, a);
 #else
 	bna->used = RLC_FP_DIGS;
+	bna->sign = RLC_POS;
 	dv_copy(bna->dp, a, RLC_FP_DIGS);
 #endif
 	bnp->used = RLC_FP_DIGS;
+	bnp->sign = RLC_POS;
 	dv_copy(bnp->dp, p, RLC_FP_DIGS);
 
 	bn_gcd_ext(gcd, bnc, NULL, bna, bnp);

@@ -285,6 +285,7 @@
 #undef bn_gen_prime_safep
 #undef bn_gen_prime_stron
 #undef bn_gen_prime_factor
+#undef bn_next_prime
 #undef bn_factor
 #undef bn_is_factor
 #undef bn_rec_win
@@ -399,6 +400,7 @@
 #define bn_gen_prime_safep 	RLC_PREFIX(bn_gen_prime_safep)
 #define bn_gen_prime_stron 	RLC_PREFIX(bn_gen_prime_stron)
 #define bn_gen_prime_factor 	RLC_PREFIX(bn_gen_prime_factor)
+#define bn_next_prime 	RLC_PREFIX(bn_next_prime)
 #define bn_factor 	RLC_PREFIX(bn_factor)
 #define bn_is_factor 	RLC_PREFIX(bn_is_factor)
 #define bn_rec_win 	RLC_PREFIX(bn_rec_win)
@@ -983,6 +985,9 @@
 #undef ep_dbl_slp_basic
 #undef ep_dbl_projc
 #undef ep_dbl_jacob
+#undef ep_tpl_basic
+#undef ep_tpl_projc
+#undef ep_tpl_jacob
 #undef ep_psi
 #undef ep_mul_basic
 #undef ep_mul_slide
@@ -1079,6 +1084,9 @@
 #define ep_dbl_slp_basic 	RLC_PREFIX(ep_dbl_slp_basic)
 #define ep_dbl_projc 	RLC_PREFIX(ep_dbl_projc)
 #define ep_dbl_jacob 	RLC_PREFIX(ep_dbl_jacob)
+#define ep_tpl_basic 	RLC_PREFIX(ep_tpl_basic)
+#define ep_tpl_projc 	RLC_PREFIX(ep_tpl_projc)
+#define ep_tpl_jacob 	RLC_PREFIX(ep_tpl_jacob)
 #define ep_psi 	RLC_PREFIX(ep_psi)
 #define ep_mul_basic 	RLC_PREFIX(ep_mul_basic)
 #define ep_mul_slide 	RLC_PREFIX(ep_mul_slide)
@@ -2117,6 +2125,8 @@
 #undef fp2_exp_cyc_sim
 #undef fp2_frb
 #undef fp2_is_sqr
+#undef fp2_crt
+#undef fp2_is_cub
 #undef fp2_srt
 #undef fp2_pck
 #undef fp2_upk
@@ -2164,6 +2174,8 @@
 #define fp2_exp_cyc_sim 	RLC_PREFIX(fp2_exp_cyc_sim)
 #define fp2_frb 	RLC_PREFIX(fp2_frb)
 #define fp2_is_sqr 	RLC_PREFIX(fp2_is_sqr)
+#define fp2_crt 	RLC_PREFIX(fp2_crt)
+#define fp2_is_cub 	RLC_PREFIX(fp2_is_cub)
 #define fp2_srt 	RLC_PREFIX(fp2_srt)
 #define fp2_pck 	RLC_PREFIX(fp2_pck)
 #define fp2_upk 	RLC_PREFIX(fp2_upk)

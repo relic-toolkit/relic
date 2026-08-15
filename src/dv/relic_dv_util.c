@@ -89,22 +89,43 @@ void dv_swap_sec(dig_t *c, dig_t *a, size_t digits, dig_t bit) {
 	}
 }
 
-int dv_cmp(const dig_t *a, const dig_t *b, size_t size) {
-	int r;
-
-	a += (size - 1);
-	b += (size - 1);
-
-	r = RLC_EQ;
-	for (size_t i = 0; i < size; i++, --a, --b) {
-		if (*a != *b && r == RLC_EQ) {
-			r = (*a > *b ? RLC_GT : RLC_LT);
+ int dv_cmp(const dig_t *a, const dig_t *b, size_t size) {
+	for (size_t i = size; i > 0; i--) {
+		if (a[i - 1] != b[i - 1]) {
+			return (a[i - 1] > b[i - 1] ? RLC_GT : RLC_LT);
 		}
 	}
-	return r;
+	return RLC_EQ;
 }
 
 int dv_cmp_sec(const dig_t *a, const dig_t *b, size_t size) {
+	dig_t borrow = 0, diff = 0;
+
+	/*
+	 * Ordering comparison in constant time, for the hardened backends: the
+	 * borrow out of a - b decides a < b, and the accumulated difference
+	 * separates equality from a > b.  dv_cmp_sec only reports equality, so it
+	 * cannot serve the "is c >= p" test that the conditional subtraction in
+	 * fp_add and fp_rdc performs.
+	 */
+	for (size_t i = 0; i < size; i++) {
+		borrow = (dig_t)(a[i] < b[i]) | ((dig_t)(a[i] == b[i]) & borrow);
+		diff |= a[i] ^ b[i];
+	}
+	return (borrow ? RLC_LT : (diff == 0 ? RLC_EQ : RLC_GT));
+}
+
+int dv_equ(const dig_t *a, const dig_t *b, size_t size) {
+	for (size_t i = 0; i < size; i++) {
+		if (a[i] != b[i]) {
+			return RLC_NE;
+		}
+	}
+
+	return RLC_EQ;
+}
+
+int dv_equ_sec(const dig_t *a, const dig_t *b, size_t size) {
 	dig_t r = 0;
 
 	for (size_t i = 0; i < size; i++) {

@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (c) 2015 RELIC Authors
+ * Copyright (c) 2026 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -24,36 +24,26 @@
 /**
  * @file
  *
- * Implementation of the low-level multiple precision integer modular reduction
- * functions.
+ * Implementation of the low-level multiple precision comparison functions.
  *
  * @ingroup bn
  */
 
-#include <gmp.h>
-#include <stdlib.h>
-
+#include "relic_core.h"
 #include "relic_bn.h"
 #include "relic_bn_low.h"
 #include "relic_util.h"
-#include "relic_alloc.h"
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void bn_modn_low(dig_t *c, const dig_t *a, size_t sa, const dig_t *m, size_t sm,
-		dig_t u) {
-	dig_t *s = RLC_ALLOCA(dig_t, mpn_sec_mul_itch(sm, 1));
-	dig_t r, *tc = c, t[sm + 1];
-
-	mpn_copyd((mp_ptr)c, (mp_srcptr)a, sa);
-	for (int i = 0; i < sm; i++, tc++) {
-		r = (dig_t)(*tc * u);
-		mpn_sec_mul((mp_ptr)t, (mp_srcptr)m, sm, (mp_srcptr)&r, 1, (mp_ptr)s);
-		*tc = t[sm] + mpn_add_n((mp_ptr)tc, (mp_srcptr)tc, (mp_srcptr)t, sm);
+int bn_cmpn_low(const dig_t *a, size_t sa, const dig_t *b, size_t sb) {
+	if (sa != sb) {
+		return (sa > sb ? RLC_GT : RLC_LT);
 	}
-	mpn_cnd_sub_n(mpn_add_n((mp_ptr)c, (mp_srcptr)c, (mp_srcptr)tc, sm),
-		(mp_ptr)c, (mp_srcptr)c, (mp_srcptr)m, sm);
-	RLC_FREE(s);
+	if (sa == 0) {
+		return RLC_EQ;
+	}
+	return dv_cmp(a, b, sa);
 }

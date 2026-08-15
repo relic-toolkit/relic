@@ -24,7 +24,7 @@
 #include "relic_fp_low.h"
 
 .syntax unified
-.arch armv7-a
+.arch armv7e-m
 
 .global fp_muln_low
 

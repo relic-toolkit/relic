@@ -71,22 +71,6 @@ dig_t bn_lshb_low(dig_t *c, const dig_t *a, size_t size, uint_t bits) {
 	return carry;
 }
 
-void bn_lshd_low(dig_t *c, const dig_t *a, size_t size, int digits) {
-	dig_t *top;
-	const dig_t *bot;
-	int i;
-
-	top = c + size + digits - 1;
-	bot = a + size - 1;
-
-	for (i = 0; i < size; i++, top--, bot--) {
-		*top = *bot;
-	}
-	for (i = 0; i < digits; i++, c++) {
-		*c = 0;
-	}
-}
-
 dig_t bn_rsh1_low(dig_t *c, const dig_t *a, size_t size) {
 	int i;
 	dig_t r, carry;

@@ -554,3 +554,14 @@ int bn_gen_prime_factor(bn_t a, bn_t b, size_t abits, size_t bbits) {
 
 	return result;
 }
+
+void bn_next_prime(bn_t q, const bn_t p) {
+	if (bn_is_even(p)) {
+		bn_add_dig(q, p, 1);
+	} else {
+		bn_add_dig(q, p, 2);
+	}
+	while (!bn_is_prime(q)) {
+		bn_add_dig(q, q, 2);
+	}
+}

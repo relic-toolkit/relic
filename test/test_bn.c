@@ -254,10 +254,14 @@ static int util(void) {
 			bn_write_bin(bin, len, a);
 			bn_read_bin(b, bin, len);
 			TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
+			bn_read_bin(b, bin, 0);
+			TEST_ASSERT(bn_is_zero(b), end);
 			len = RLC_BN_DIGS;
 			bn_write_raw(raw, len, a);
 			bn_read_raw(b, raw, len);
 			TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
+			bn_read_raw(b, raw, 0);
+			TEST_ASSERT(bn_is_zero(b), end);
 		} TEST_END;
 
 		TEST_CASE("getting the size of a positive number is correct") {
@@ -1299,6 +1303,14 @@ static int gcd(void) {
 			bn_add(d, d, e);
 			bn_gcd(f, a, b);
 			TEST_ASSERT(bn_cmp(c, d) == RLC_EQ && bn_cmp(c, f) == RLC_EQ, end);
+			bn_rand(a, RLC_NEG, RLC_BN_BITS);
+			bn_rand(b, RLC_NEG, RLC_BN_BITS);
+			bn_gcd_ext(c, d, e, a, b);
+			bn_mul(d, d, a);
+			bn_mul(e, e, b);
+			bn_add(d, d, e);
+			bn_gcd(f, a, b);
+		TEST_ASSERT(bn_cmp(c, d) == RLC_EQ && bn_cmp(c, f) == RLC_EQ, end);
 		} TEST_END;
 
 #if BN_GCD == BASIC || !defined(STRIP)
@@ -1319,6 +1331,24 @@ static int gcd(void) {
 			bn_mul(e, e, b);
 			bn_add(d, d, e);
 			TEST_ASSERT(bn_cmp(c, d) == RLC_EQ && bn_cmp(c, f) == RLC_EQ, end);
+			bn_gcd_ext(c, d, e, a, b);
+			bn_gcd_ext_basic(f, g, h, a, b);
+			TEST_ASSERT(bn_cmp(c, f) == RLC_EQ && bn_cmp(d, g) == RLC_EQ
+				&& bn_cmp(e, h) == RLC_EQ, end);
+			bn_rand(a, RLC_POS, RLC_BN_BITS);
+			bn_rand(b, RLC_NEG, RLC_BN_BITS);
+			bn_gcd_ext(c, d, e, a, b);
+			bn_gcd_ext_basic(f, g, h, a, b);
+			TEST_ASSERT(bn_cmp(c, f) == RLC_EQ && bn_cmp(d, g) == RLC_EQ
+				&& bn_cmp(e, h) == RLC_EQ, end);
+			bn_rand(a, RLC_NEG, RLC_BN_BITS);
+			bn_rand(b, RLC_POS, RLC_BN_BITS);
+			bn_gcd_ext(c, d, e, a, b);
+			bn_gcd_ext_basic(f, g, h, a, b);
+			TEST_ASSERT(bn_cmp(c, f) == RLC_EQ && bn_cmp(d, g) == RLC_EQ
+				&& bn_cmp(e, h) == RLC_EQ, end);
+			bn_rand(a, RLC_NEG, RLC_BN_BITS);
+			bn_rand(b, RLC_NEG, RLC_BN_BITS);
 			bn_gcd_ext(c, d, e, a, b);
 			bn_gcd_ext_basic(f, g, h, a, b);
 			TEST_ASSERT(bn_cmp(c, f) == RLC_EQ && bn_cmp(d, g) == RLC_EQ
@@ -1348,6 +1378,24 @@ static int gcd(void) {
 			bn_gcd_ext_binar(f, g, h, a, b);
 			TEST_ASSERT(bn_cmp(c, f) == RLC_EQ && bn_cmp(d, g) == RLC_EQ
 				&& bn_cmp(e, h) == RLC_EQ, end);
+			bn_rand(a, RLC_POS, RLC_BN_BITS);
+			bn_rand(b, RLC_NEG, RLC_BN_BITS);
+			bn_gcd_ext(c, d, e, a, b);
+			bn_gcd_ext_binar(f, g, h, a, b);
+			TEST_ASSERT(bn_cmp(c, f) == RLC_EQ && bn_cmp(d, g) == RLC_EQ
+				&& bn_cmp(e, h) == RLC_EQ, end);
+			bn_rand(a, RLC_NEG, RLC_BN_BITS);
+			bn_rand(b, RLC_POS, RLC_BN_BITS);
+			bn_gcd_ext(c, d, e, a, b);
+			bn_gcd_ext_binar(f, g, h, a, b);
+			TEST_ASSERT(bn_cmp(c, f) == RLC_EQ && bn_cmp(d, g) == RLC_EQ
+				&& bn_cmp(e, h) == RLC_EQ, end);
+			bn_rand(a, RLC_NEG, RLC_BN_BITS);
+			bn_rand(b, RLC_NEG, RLC_BN_BITS);
+			bn_gcd_ext(c, d, e, a, b);
+			bn_gcd_ext_binar(f, g, h, a, b);
+			TEST_ASSERT(bn_cmp(c, f) == RLC_EQ && bn_cmp(d, g) == RLC_EQ
+				&& bn_cmp(e, h) == RLC_EQ, end);
 		} TEST_END;
 #endif
 
@@ -1371,6 +1419,67 @@ static int gcd(void) {
 			TEST_ASSERT(bn_cmp(c, d) == RLC_EQ && bn_cmp(c, f) == RLC_EQ, end);
 			bn_gcd_ext(c, d, e, a, b);
 			bn_gcd_ext_lehme(f, g, h, a, b);
+			TEST_ASSERT(bn_cmp(c, f) == RLC_EQ && bn_cmp(d, g) == RLC_EQ
+				&& bn_cmp(e, h) == RLC_EQ, end);
+			bn_rand(a, RLC_POS, RLC_BN_BITS);
+			bn_rand(b, RLC_NEG, RLC_BN_BITS);
+			bn_gcd_ext(c, d, e, a, b);
+			bn_gcd_ext_lehme(f, g, h, a, b);
+			TEST_ASSERT(bn_cmp(c, f) == RLC_EQ && bn_cmp(d, g) == RLC_EQ
+				&& bn_cmp(e, h) == RLC_EQ, end);
+			bn_rand(a, RLC_NEG, RLC_BN_BITS);
+			bn_rand(b, RLC_POS, RLC_BN_BITS);
+			bn_gcd_ext(c, d, e, a, b);
+			bn_gcd_ext_lehme(f, g, h, a, b);
+			TEST_ASSERT(bn_cmp(c, f) == RLC_EQ && bn_cmp(d, g) == RLC_EQ
+				&& bn_cmp(e, h) == RLC_EQ, end);
+			bn_rand(a, RLC_NEG, RLC_BN_BITS);
+			bn_rand(b, RLC_NEG, RLC_BN_BITS);
+			bn_gcd_ext(c, d, e, a, b);
+			bn_gcd_ext_lehme(f, g, h, a, b);
+			TEST_ASSERT(bn_cmp(c, f) == RLC_EQ && bn_cmp(d, g) == RLC_EQ
+				&& bn_cmp(e, h) == RLC_EQ, end);
+		} TEST_END;
+#endif
+
+#if BN_GCD == LOWER || !defined(STRIP)
+		TEST_CASE("lower greatest common divisor is correct") {
+			bn_rand(a, RLC_POS, RLC_BN_BITS);
+			bn_rand(b, RLC_POS, RLC_BN_BITS);
+			bn_gcd(c, a, b);
+			bn_gcd_lower(d, a, b);
+			TEST_ASSERT(bn_cmp(c, d) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("lower extended greatest common divisor is correct") {
+			bn_rand(a, RLC_POS, RLC_BN_BITS);
+			bn_rand(b, RLC_POS, RLC_BN_BITS);
+			bn_gcd_lower(f, a, b);
+			bn_gcd_ext_lower(c, d, e, a, b);
+			bn_mul(d, d, a);
+			bn_mul(e, e, b);
+			bn_add(d, d, e);
+			TEST_ASSERT(bn_cmp(c, d) == RLC_EQ && bn_cmp(c, f) == RLC_EQ, end);
+			bn_gcd_ext(c, d, e, a, b);
+			bn_gcd_ext_lower(f, g, h, a, b);
+			TEST_ASSERT(bn_cmp(c, f) == RLC_EQ && bn_cmp(d, g) == RLC_EQ
+				&& bn_cmp(e, h) == RLC_EQ, end);
+			bn_rand(a, RLC_POS, RLC_BN_BITS);
+			bn_rand(b, RLC_NEG, RLC_BN_BITS);
+			bn_gcd_ext(c, d, e, a, b);
+			bn_gcd_ext_lower(f, g, h, a, b);
+			TEST_ASSERT(bn_cmp(c, f) == RLC_EQ && bn_cmp(d, g) == RLC_EQ
+				&& bn_cmp(e, h) == RLC_EQ, end);
+			bn_rand(a, RLC_NEG, RLC_BN_BITS);
+			bn_rand(b, RLC_POS, RLC_BN_BITS);
+			bn_gcd_ext(c, d, e, a, b);
+			bn_gcd_ext_lower(f, g, h, a, b);
+			TEST_ASSERT(bn_cmp(c, f) == RLC_EQ && bn_cmp(d, g) == RLC_EQ
+				&& bn_cmp(e, h) == RLC_EQ, end);
+			bn_rand(a, RLC_NEG, RLC_BN_BITS);
+			bn_rand(b, RLC_NEG, RLC_BN_BITS);
+			bn_gcd_ext(c, d, e, a, b);
+			bn_gcd_ext_lower(f, g, h, a, b);
 			TEST_ASSERT(bn_cmp(c, f) == RLC_EQ && bn_cmp(d, g) == RLC_EQ
 				&& bn_cmp(e, h) == RLC_EQ, end);
 		} TEST_END;
@@ -1786,6 +1895,8 @@ static int prime(void) {
 		TEST_ONCE("prime generation is consistent") {
 			bn_gen_prime(p, RLC_BN_BITS);
 			TEST_ASSERT(bn_is_prime(p) == 1, end);
+			bn_next_prime(q, p);
+			TEST_ASSERT(bn_is_prime(q) == 1 && bn_cmp(q, p) == RLC_GT, end);
 		} TEST_END;
 
 #if BN_GEN == BASIC || !defined(STRIP)
@@ -2387,13 +2498,13 @@ int main(void) {
 		core_clean();
 		return 1;
 	}
-
-	if (square_root() != RLC_OK) {
+	
+	if (gcd() != RLC_OK) {
 		core_clean();
 		return 1;
 	}
 
-	if (gcd() != RLC_OK) {
+	if (square_root() != RLC_OK) {
 		core_clean();
 		return 1;
 	}

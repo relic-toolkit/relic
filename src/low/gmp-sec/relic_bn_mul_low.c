@@ -31,6 +31,7 @@
  */
 
 #include <gmp.h>
+#include <stdlib.h>
 
 #include "relic_bn.h"
 #include "relic_bn_low.h"

@@ -95,12 +95,22 @@ void bn_lsh(bn_t c, const bn_t a, uint_t bits) {
 }
 
 void bn_rsh(bn_t c, const bn_t a, uint_t bits) {
-	uint_t digits = 0;
+	uint_t digits = 0, down = 0;
 
 	RLC_RIP(bits, digits, bits);
 
 	RLC_TRY {
 		bn_grow(c, a->used);
+
+		if (bn_sign(a) == RLC_NEG) {
+			uint_t i;
+			for (i = 0; i < bits; i++) {
+				if (bn_get_bit(a, i)) {
+					down = 1;
+					break;
+				}
+			}
+		}
 
 		if (digits > 0) {
 			if (a->used > digits) {
@@ -119,6 +129,10 @@ void bn_rsh(bn_t c, const bn_t a, uint_t bits) {
 			bn_rshb_low(c->dp, c->dp, c->used, bits);
 		}
 		bn_trim(c);
+
+		if (down) {
+			bn_sub_dig(c, c, 1);
+		}
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	}
