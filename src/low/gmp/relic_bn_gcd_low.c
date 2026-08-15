@@ -41,13 +41,13 @@
 /*============================================================================*/
 
 size_t bn_gcdn_low(dig_t *c, dig_t *a, size_t sa, dig_t *b, size_t sb) {
-	return mpn_gcd(c, a, sa, b, sb);
+	return mpn_gcd((mp_ptr)c, (mp_ptr)a, sa, (mp_ptr)b, sb);
 }
  
 size_t bn_gcde_low(dig_t *c, dig_t *d, int *sd, dig_t *a, size_t sa,
 		dig_t *b, size_t sb) {
 	mp_size_t sn;
-	size_t result;
+	size_t r;
 
 	/*
 	 * Not (mp_size_t *)sd: mpn_gcdext writes an mp_size_t, which is a long,
@@ -56,8 +56,8 @@ size_t bn_gcde_low(dig_t *c, dig_t *d, int *sd, dig_t *a, size_t sa,
 	 * object, and under LLP64 it writes four into eight and leaves the rest
 	 * indeterminate, which breaks the sign of the cofactor.
 	 */
-	result = mpn_gcdext(c, d, &sn, a, sa, b, sb);
+	r = mpn_gcdext((mp_ptr)c, (mp_ptr)d, &sn, (mp_ptr)a, sa, (mp_ptr)b, sb);
 	*sd = sn;
-	return result;
+	return r;
 }
  
