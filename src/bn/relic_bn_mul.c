@@ -167,6 +167,15 @@ void bn_mul_dig(bn_t c, const bn_t a, dig_t b) {
 	}
 }
 
+void bn_mul_dis(bn_t t, const bn_t x, dis_t b) {
+	if (b < 0) {
+		bn_mul_dig(t, x, (dig_t)(-b));
+		bn_neg(t, t);
+	} else {
+		bn_mul_dig(t, x, (dig_t)b);
+	}
+}
+
 #if BN_MUL == BASIC || !defined(STRIP)
 
 void bn_mul_basic(bn_t c, const bn_t a, const bn_t b) {

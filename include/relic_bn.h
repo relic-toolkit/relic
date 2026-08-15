@@ -818,6 +818,16 @@ void bn_sub_dig(bn_t c, const bn_t a, const dig_t b);
 void bn_mul_dig(bn_t c, const bn_t a, dig_t b);
 
 /**
+ * Multiplies a multiple precision integer by a signed digit.
+ Computes c = a * b.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the multiple precision integer to multiply.
+ * @param[in] b				- the signed digit to multiply.
+ */
+void bn_mul_dis(bn_t c, const bn_t a, dis_t b);
+
+/**
  * Multiplies two multiple precision integers using Schoolbook multiplication.
  *
  * @param[out] c			- the result.
@@ -1310,6 +1320,24 @@ void bn_gcd_ext_binar(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b);
  */
 void bn_gcd_ext_mid(bn_t c, bn_t d, bn_t e, bn_t f, const bn_t a, const bn_t b);
 
+/*
+ * Computes a partial extended Euclidean algorithm until both operands are at
+ * most a certain bound, with matrix U such that (a, b)^T = U*(c, d)^T and
+ * det U = +1.
+ *
+ * @param[out] c			- the final value of the first argument.
+ * @param[out] d			- the final value of the second argument.
+ * @param[out] u00			- the first component of the matrix.
+ * @param[out] u01			- the second component of the matrix.
+ * @param[out] u10			- the third component of the matrix.
+ * @param[out] u11			- the fourth component of the matrix.
+ * @param[in] a				- the first multiple precision integer.
+ * @param[in] b				- the second multiple precision integer.
+ * @param[in] l				- the upper bound.
+ */
+void bn_gcd_ext_par(bn_t c, bn_t d, bn_t u00, bn_t u01, bn_t u10, bn_t u11,
+		const bn_t a, const bn_t b, const bn_t l);
+
 /**
  * Computes the extended greatest common divisor of a multiple precision integer
  * and a digit.
@@ -1351,6 +1379,15 @@ int bn_smb_leg(const bn_t a, const bn_t b);
  * @return the result.
  */
 int bn_smb_jac(const bn_t a, const bn_t b);
+
+/**
+ * Computes the Kronecker symbol c = (a|b) when b is a small digit.
+ *
+ * @param[in] a				- the first parameter.
+ * @param[in] b				- the second parameter.
+ * @return the result.
+ */
+int bn_smb_kro_dig(const bn_t a, dig_t b);
 
 /**
  * Tests if a number is a probable prime.
