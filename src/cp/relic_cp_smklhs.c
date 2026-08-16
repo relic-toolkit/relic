@@ -197,6 +197,7 @@ int cp_smklhs_ver(const g1_t sig, const bn_t m, const bn_t y1, const ec_t ps1,
 			RLC_FREE(g1);
 			RLC_FREE(g2);
 			RLC_FREE(h);
+			RLC_FREE(str);
 			RLC_THROW(ERR_NO_MEMORY);
 		}
 
@@ -215,8 +216,8 @@ int cp_smklhs_ver(const g1_t sig, const bn_t m, const bn_t y1, const ec_t ps1,
 
 		ver1 = ver2 = 1;
 		if (slen > 1) {
-			ver1 &= cp_ipa_ver(y1, ps1, ls1, rs1, pk1, u, slen);
-			ver2 &= cp_ipa_ver(y2, ps2, ls2, rs2, pk3, u, slen);
+			ver1 &= cp_ipa_ver(y1, ps1, m, ls1, rs1, pk1, u, slen);
+			ver2 &= cp_ipa_ver(y2, ps2, m, ls2, rs2, pk3, u, slen);
 		}
 
 		for (int i = 0; i < slen; i++) {
@@ -234,12 +235,15 @@ int cp_smklhs_ver(const g1_t sig, const bn_t m, const bn_t y1, const ec_t ps1,
 				len += 4 * RLC_FP_BYTES + 3;
 				g1_map(h[j], str, len);
 			}
+			g1_norm_sim(h, h, flen[i]);
 			if (f != NULL) {
 				g1_mul_sim_dig(g1[i], h, f[i], flen[i]);
 			} else {
+				g1_set_infty(g1[i]);
 				for (size_t j = 0; j < flen[i]; j++) {
-					g1_copy(g1[i], h[j]);
+					g1_add(g1[i], g1[i], h[j]);
 				}
+				g1_norm(g1[i], g1[i]);
 			}
 
 			g2_copy(g2[i], pk2[i]);
@@ -248,10 +252,10 @@ int cp_smklhs_ver(const g1_t sig, const bn_t m, const bn_t y1, const ec_t ps1,
 			g1_mul(g1[slen], pk1[0], m);
 			g1_mul(g1[slen + 1], pk3[0], m);
 		} else {
-			g1_mul(g1[slen], u, m);
-			g1_sub(g1[slen + 1], ps2, g1[slen]);
-			g1_sub(g1[slen], ps1, g1[slen]);
-			g1_norm_sim(g1 + slen, g1 + slen, 2);
+			/* Fig. 5 transmits M and Omega; P = M * u^(x_M * mu) is
+			 * reconstructed inside the inner product argument. */
+			g1_copy(g1[slen], ps1);
+			g1_copy(g1[slen + 1], ps2);
 		}
 		g2_copy(g2[slen], t2);
 		g2_copy(g2[slen + 1], p2);
@@ -303,7 +307,6 @@ int cp_smklhs_off(g1_t *h, const char *data, const char *id[],
 
 	bn_null(t);
 	bn_null(n);
-	gt_null(e);
 
 	RLC_TRY {
 		bn_new(t);
@@ -344,11 +347,10 @@ int cp_smklhs_off(g1_t *h, const char *data, const char *id[],
 	RLC_FINALLY {
 		bn_free(t);
 		bn_free(n);
-		gt_free(e);
 		for (int j = 0; j < fmax; j++) {
 			g1_free(_h[j]);
 		}
-		RLC_FREE(h);
+		RLC_FREE(_h);
 		RLC_FREE(str);
 	}
 	return result;
@@ -373,10 +375,9 @@ int cp_smklhs_onv(const g1_t sig, const bn_t m, const bn_t y1, const ec_t ps1,
 		bn_new(t);
 		bn_new(n);
 		gt_new(e);
-		if (g1 == NULL || g2 == NULL || h == NULL) {
+		if (g1 == NULL || g2 == NULL) {
 			RLC_FREE(g1);
 			RLC_FREE(g2);
-			RLC_FREE(h);
 			RLC_THROW(ERR_NO_MEMORY);
 		}
 
@@ -391,8 +392,8 @@ int cp_smklhs_onv(const g1_t sig, const bn_t m, const bn_t y1, const ec_t ps1,
 
 		ver1 = ver2 = 1;
 		if (slen > 1) {
-			ver1 &= cp_ipa_ver(y1, ps1, ls1, rs1, pk1, u, slen);
-			ver2 &= cp_ipa_ver(y2, ps2, ls2, rs2, pk3, u, slen);
+			ver1 &= cp_ipa_ver(y1, ps1, m, ls1, rs1, pk1, u, slen);
+			ver2 &= cp_ipa_ver(y2, ps2, m, ls2, rs2, pk3, u, slen);
 		}
 
 		for (int i = 0; i < slen; i++) {
@@ -403,10 +404,10 @@ int cp_smklhs_onv(const g1_t sig, const bn_t m, const bn_t y1, const ec_t ps1,
 			g1_mul(g1[slen], pk1[0], m);
 			g1_mul(g1[slen + 1], pk3[0], m);
 		} else {
-			g1_mul(g1[slen], u, m);
-			g1_sub(g1[slen + 1], ps2, g1[slen]);
-			g1_sub(g1[slen], ps1, g1[slen]);
-			g1_norm_sim(g1 + slen, g1 + slen, 2);
+			/* Fig. 5 transmits M and Omega; P = M * u^(x_M * mu) is
+			 * reconstructed inside the inner product argument. */
+			g1_copy(g1[slen], ps1);
+			g1_copy(g1[slen + 1], ps2);
 		}
 		g2_copy(g2[slen], t2);
 		g2_copy(g2[slen + 1], p2);
@@ -674,20 +675,20 @@ int cp_sasmklhs_ver(const bn_t r, const g1_t sr, const g1_t sm, const bn_t m,
 			for (size_t i = 0; i < slen; i++) {
 				g1_copy(g1[i], pk1[i][0]);
 			}
-			ver_r &= cp_ipa_ver(y[0], ps[0], ls1, rs1, g1, u, slen);
+			ver_r &= cp_ipa_ver(y[0], ps[0], r, ls1, rs1, g1, u, slen);
 			for (size_t i = 0; i < slen; i++) {
 				g1_copy(g1[i], pk3[i][0]);
 			}
-			ver_r &= cp_ipa_ver(y[1], ps[1], ls2, rs2, g1, u, slen);
+			ver_r &= cp_ipa_ver(y[1], ps[1], r, ls2, rs2, g1, u, slen);
 			for (size_t i = 0; i < slen; i++) {
 				g1_copy(g1[i], pk1[i][1]);
 			}
-			ver_m &= cp_ipa_ver(y[2], ps[2], ls3, rs3, g1, u, slen);
+			ver_m &= cp_ipa_ver(y[2], ps[2], m, ls3, rs3, g1, u, slen);
 			for (size_t i = 0; i < slen; i++) {
 				g1_copy(g1[i], pk3[i][1]);
 			}
-			ver_m &= cp_ipa_ver(y[3], ps[3], ls4, rs4, g1, u, slen);
-			ver_r &= cp_ipa_ver(y[4], ps[4], ls5, rs5, g1, u, slen);
+			ver_m &= cp_ipa_ver(y[3], ps[3], m, ls4, rs4, g1, u, slen);
+			ver_r &= cp_ipa_ver(y[4], ps[4], r, ls5, rs5, g1, u, slen);
 		}
 
 		for (size_t i = 0; i < slen; i++) {
@@ -712,9 +713,11 @@ int cp_sasmklhs_ver(const bn_t r, const g1_t sr, const g1_t sm, const bn_t m,
 			if (f != NULL) {
 				g1_mul_sim_dig(g1[i], h, f[i], flen[i]);
 			} else {
+				g1_set_infty(g1[i]);
 				for (size_t j = 0; j < flen[i]; j++) {
-					g1_copy(g1[i], h[j]);
+					g1_add(g1[i], g1[i], h[j]);
 				}
+				g1_norm(g1[i], g1[i]);
 			}
 			g2_copy(g2[i], pk2[i][0]);
 		}
@@ -723,10 +726,8 @@ int cp_sasmklhs_ver(const bn_t r, const g1_t sr, const g1_t sm, const bn_t m,
 			g1_mul(g1[slen], pk1[0][0], r);
 			g1_mul(g1[slen + 1], pk3[0][0], r);
 		} else {
-			g1_mul(g1[slen], u, r);
-			g1_sub(g1[slen + 1], ps[1], g1[slen]);
-			g1_sub(g1[slen], ps[0], g1[slen]);
-			g1_norm_sim(g1 + slen, g1 + slen, 2);
+			g1_copy(g1[slen], ps[0]);
+			g1_copy(g1[slen + 1], ps[1]);
 		}
 		g2_copy(g2[slen], t2[0]);
 		g2_copy(g2[slen + 1], p2[0]);
@@ -747,13 +748,11 @@ int cp_sasmklhs_ver(const bn_t r, const g1_t sr, const g1_t sm, const bn_t m,
 			g2_copy(g2[1], t2[1]);
 			g2_copy(g2[2], p2[1]);
 		} else {
-			g1_mul(g1[slen], u, r);
-			g1_sub(g1[slen], ps[4], g1[slen]);
-			g1_mul(g1[slen + 1], u, m);
-			g1_sub(g1[slen + 2], ps[3], g1[slen + 1]);
-			g1_add(g1[slen], g1[slen], g1[slen + 2]);
-			g1_sub(g1[slen + 1], ps[2], g1[slen + 1]);
-			g1_norm_sim(g1 + slen, g1 + slen, 3);
+			/* Psi_mu carries the exponent (mu-hat + r-hat), so the two
+			 * commitments over Omega_mu are summed. */
+			g1_add(g1[slen], ps[4], ps[3]);
+			g1_copy(g1[slen + 1], ps[2]);
+			g1_norm_sim(g1 + slen, g1 + slen, 2);
 			g2_copy(g2[slen], p2[1]);
 			g2_copy(g2[slen + 1], t2[1]);
 		}
@@ -803,7 +802,6 @@ int cp_sasmklhs_off(g1_t *h, const char *data, const char *id[], const char *tag
 
 	bn_null(t);
 	bn_null(n);
-	gt_null(e);
 
 	RLC_TRY {
 		bn_new(t);
@@ -897,20 +895,20 @@ int cp_sasmklhs_onv(const bn_t r, const g1_t sr, const g1_t sm, const bn_t m,
 			for (size_t i = 0; i < slen; i++) {
 				g1_copy(g1[i], pk1[i][0]);
 			}
-			ver_r &= cp_ipa_ver(y[0], ps[0], ls1, rs1, g1, u, slen);
+			ver_r &= cp_ipa_ver(y[0], ps[0], r, ls1, rs1, g1, u, slen);
 			for (size_t i = 0; i < slen; i++) {
 				g1_copy(g1[i], pk3[i][0]);
 			}
-			ver_r &= cp_ipa_ver(y[1], ps[1], ls2, rs2, g1, u, slen);
+			ver_r &= cp_ipa_ver(y[1], ps[1], r, ls2, rs2, g1, u, slen);
 			for (size_t i = 0; i < slen; i++) {
 				g1_copy(g1[i], pk1[i][1]);
 			}
-			ver_m &= cp_ipa_ver(y[2], ps[2], ls3, rs3, g1, u, slen);
+			ver_m &= cp_ipa_ver(y[2], ps[2], m, ls3, rs3, g1, u, slen);
 			for (size_t i = 0; i < slen; i++) {
 				g1_copy(g1[i], pk3[i][1]);
 			}
-			ver_m &= cp_ipa_ver(y[3], ps[3], ls4, rs4, g1, u, slen);
-			ver_r &= cp_ipa_ver(y[4], ps[4], ls5, rs5, g1, u, slen);
+			ver_m &= cp_ipa_ver(y[3], ps[3], m, ls4, rs4, g1, u, slen);
+			ver_r &= cp_ipa_ver(y[4], ps[4], r, ls5, rs5, g1, u, slen);
 		}
 
 		for (size_t i = 0; i < slen; i++) {
@@ -922,10 +920,8 @@ int cp_sasmklhs_onv(const bn_t r, const g1_t sr, const g1_t sm, const bn_t m,
 			g1_mul(g1[slen], pk1[0][0], r);
 			g1_mul(g1[slen + 1], pk3[0][0], r);
 		} else {
-			g1_mul(g1[slen], u, r);
-			g1_sub(g1[slen + 1], ps[1], g1[slen]);
-			g1_sub(g1[slen], ps[0], g1[slen]);
-			g1_norm_sim(g1 + slen, g1 + slen, 2);
+			g1_copy(g1[slen], ps[0]);
+			g1_copy(g1[slen + 1], ps[1]);
 		}
 		g2_copy(g2[slen], t2[0]);
 		g2_copy(g2[slen + 1], p2[0]);
@@ -946,13 +942,11 @@ int cp_sasmklhs_onv(const bn_t r, const g1_t sr, const g1_t sm, const bn_t m,
 			g2_copy(g2[1], t2[1]);
 			g2_copy(g2[2], p2[1]);
 		} else {
-			g1_mul(g1[slen], u, r);
-			g1_sub(g1[slen], ps[4], g1[slen]);
-			g1_mul(g1[slen + 1], u, m);
-			g1_sub(g1[slen + 2], ps[3], g1[slen + 1]);
-			g1_add(g1[slen], g1[slen], g1[slen + 2]);
-			g1_sub(g1[slen + 1], ps[2], g1[slen + 1]);
-			g1_norm_sim(g1 + slen, g1 + slen, 3);
+			/* Psi_mu carries the exponent (mu-hat + r-hat), so the two
+			 * commitments over Omega_mu are summed. */
+			g1_add(g1[slen], ps[4], ps[3]);
+			g1_copy(g1[slen + 1], ps[2]);
+			g1_norm_sim(g1 + slen, g1 + slen, 2);
 			g2_copy(g2[slen], p2[1]);
 			g2_copy(g2[slen + 1], t2[1]);
 		}

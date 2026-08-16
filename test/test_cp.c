@@ -1206,17 +1206,24 @@ static int oprf(void) {
 
 static int ipa(void) {
 	int code = RLC_ERR;
-	bn_t y, n, a[16];
-	ec_t p, u, ls[4], rs[4], g[16];
+	bn_t y, c, t, n, a[16];
+	ec_t p, q, u, ls[4], rs[4], g[16];
 
 	bn_null(y);
+	bn_null(c);
+	bn_null(t);
 	bn_null(n);
 	ec_null(p);
+	ec_null(q);
 	ec_null(u);
+
 	RLC_TRY {
 		bn_new(y);
+		bn_new(c);
+		bn_new(t);
 		bn_new(n);
 		ec_new(p);
+		ec_new(q);
 		ec_new(u);
 
 		for (size_t i = 0; i < 16; i++) {
@@ -1235,22 +1242,78 @@ static int ipa(void) {
 
 		TEST_ONCE("inner product argument is consistent") {
 			ec_curve_get_ord(n);
-			for (size_t i = 1; i < 16; i++) {
+			for (size_t i = 1; i <= 16; i++) {
 				ec_rand(u);
+				bn_zero(c);
 				for (size_t j = 0; j < i; j++) {
 					ec_rand(g[j]);
 					bn_rand_mod(a[j], n);
+					bn_add(c, c, a[j]);
+					bn_mod(c, c, n);
 				}
-				TEST_ASSERT(cp_ipa_prv(n, p, ls, rs, g, a, u, i) == RLC_OK, end);
+				TEST_ASSERT(cp_ipa_prv(y, p, ls, rs, g, a, u, i) == RLC_OK,
+						end);
 				if (i == 1) {
-					TEST_ASSERT(cp_ipa_ver(n, p, NULL, NULL, g, u, i) == 1, end);
+					TEST_ASSERT(cp_ipa_ver(y, p, c, NULL, NULL, g, u, i) == 1,
+							end);
 				} else {
-					TEST_ASSERT(cp_ipa_ver(n, p, ls, rs, g, u, i) == 1, end);
+					TEST_ASSERT(cp_ipa_ver(y, p, c, ls, rs, g, u, i) == 1, end);
 				}
-				bn_zero(y);
-				TEST_ASSERT(cp_ipa_ver(y, p, ls, rs, g, u, i) == 0, end);
+			}
+		} TEST_END;
+ 
+		TEST_ONCE("inner product argument rejects a tampered statement") {
+			ec_curve_get_ord(n);
+			for (size_t i = 2; i <= 16; i++) {
+				ec_rand(u);
+				bn_zero(c);
+				for (size_t j = 0; j < i; j++) {
+					ec_rand(g[j]);
+					bn_rand_mod(a[j], n);
+					bn_add(c, c, a[j]);
+					bn_mod(c, c, n);
+				}
+				TEST_ASSERT(cp_ipa_prv(y, p, ls, rs, g, a, u, i) == RLC_OK,
+						end);
+
+				/* Wrong folded scalar. */
+				bn_add_dig(t, y, 1);
+				bn_mod(t, t, n);
+				TEST_ASSERT(cp_ipa_ver(t, p, c, ls, rs, g, u, i) == 0, end);
+
+				/* Wrong claimed inner product. */
+				bn_add_dig(t, c, 1);
+				bn_mod(t, t, n);
+				TEST_ASSERT(cp_ipa_ver(y, p, t, ls, rs, g, u, i) == 0, end);
+
+				/* Wrong commitment. */
+				ec_add(q, p, g[0]);
+				ec_norm(q, q);
+				TEST_ASSERT(cp_ipa_ver(y, q, c, ls, rs, g, u, i) == 0, end);
+
+				/* Wrong auxiliary generator: only rejected once u is bound
+				 * into the transcript. */
+				ec_copy(q, u);
+				ec_rand(u);
+				TEST_ASSERT(cp_ipa_ver(y, p, c, ls, rs, g, u, i) == 0, end);
 				ec_set_infty(u);
-				TEST_ASSERT(cp_ipa_ver(n, p, ls, rs, g, u, i) == 0, end);
+				TEST_ASSERT(cp_ipa_ver(y, p, c, ls, rs, g, u, i) == 0, end);
+				ec_copy(u, q);
+
+				/* Wrong generator vector: only rejected once pp is bound. */
+				ec_copy(q, g[0]);
+				ec_rand(g[0]);
+				TEST_ASSERT(cp_ipa_ver(y, p, c, ls, rs, g, u, i) == 0, end);
+				ec_copy(g[0], q);
+
+				/* Wrong round element. */
+				ec_copy(q, ls[0]);
+				ec_rand(ls[0]);
+				TEST_ASSERT(cp_ipa_ver(y, p, c, ls, rs, g, u, i) == 0, end);
+				ec_copy(ls[0], q);
+
+				/* Restored statement still verifies. */
+				TEST_ASSERT(cp_ipa_ver(y, p, c, ls, rs, g, u, i) == 1, end);
 			}
 		} TEST_END;
 
@@ -1261,8 +1324,11 @@ static int ipa(void) {
 
   end:
 	bn_free(y);
+	bn_free(c);
+	bn_free(t);
 	bn_free(n);
 	ec_free(p);
+	ec_free(q);
 	ec_free(u);
 	for (size_t i = 0; i < 16; i++) {
 		bn_free(a[i]);

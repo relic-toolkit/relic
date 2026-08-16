@@ -2561,39 +2561,6 @@ int cp_etrs_uni(int thres, bn_t *td, bn_t *y, int max, etrs_t *p, size_t *size,
  */
 int cp_ped_com(ec_t c, ec_t h, bn_t r, bn_t x);
 
-/**
- * Compute a non-interactive inner-product argument proof, given a set of points
- * and scalars.
- *
- * @param[out] y			- the first component of the proof.
- * @param[out] p			- the result of the computation.
- * @param[out] ls			- the left recursion coefficients.
- * @param[out] rs			- the right recursion coefficients.
- * @param[in] g				- the input points.
- * @param[in] a				- the input scalars.
- * @param[in] u				- the random point.
- * @param[in] n				- the number of points to compute the proof over.
- * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
- */
-int cp_ipa_prv(bn_t y, ec_t p, ec_t *ls, ec_t *rs, const ec_t *g, const bn_t *a,
-		const ec_t u, size_t n);
-
-/**
- * Verifies a non-interactive inner-product argument proof, given a set of points
- * and scalars.
- *
- * @param[in] y				- the first component of the proof.
- * @param[in] p				- the result of the computation.
- * @param[in] ls			- the left recursion coefficients.
- * @param[in] rs			- the right recursion coefficients.
- * @param[in] g				- the input points.
- * @param[in] u				- the random point.
- * @param[in] n				- the number of points to compute the proof over.
- * @return a boolean value indicating the verification result.
- */
-int cp_ipa_ver(const bn_t y, const ec_t p, const ec_t *ls, const ec_t *rs,
-		const ec_t *g, const ec_t u, size_t n);
-
 /*
  * Compute the client-side part of an OPRF evaluation.
  *
@@ -2615,17 +2582,6 @@ int cp_oprf_ask(ec_t b, bn_t x, const ec_t a);
 int cp_oprf_ans(ec_t c, const bn_t alpha, const ec_t b);
 
 /**
- * Compute the result of an OPRF evaluation, i.e., the client-side input
- * multiplied by the server-side secret.
- *
- * @param[out] r			- the result.
- * @param[in] x				- the inverted random scalar.
- * @param[in] c				- the server-side answer.
- * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
- */
-int cp_oprf_res(ec_t r, const bn_t x, const ec_t c);
-
-/**
  * Compute a non-interactive inner-product argument proof, given a set of points
  * and scalars.
  *
@@ -2648,6 +2604,7 @@ int cp_ipa_prv(bn_t y, ec_t p, ec_t *ls, ec_t *rs, const ec_t *g, const bn_t *a,
  *
  * @param[in] y				- the first component of the proof.
  * @param[in] p				- the result of the computation.
+ * @param[in] c				- the claimed inner product.
  * @param[in] ls			- the left recursion coefficients.
  * @param[in] rs			- the right recursion coefficients.
  * @param[in] g				- the input points.
@@ -2655,8 +2612,19 @@ int cp_ipa_prv(bn_t y, ec_t p, ec_t *ls, ec_t *rs, const ec_t *g, const bn_t *a,
  * @param[in] n				- the number of points to compute the proof over.
  * @return a boolean value indicating the verification result.
  */
-int cp_ipa_ver(const bn_t y, const ec_t p, const ec_t *ls, const ec_t *rs,
-		const ec_t *g, const ec_t u, size_t n);
+int cp_ipa_ver(const bn_t y, const ec_t p, const bn_t c, const ec_t *ls,
+		const ec_t *rs, const ec_t *g, const ec_t u, size_t n);
+
+/**
+ * Compute the result of an OPRF evaluation, i.e., the client-side input
+ * multiplied by the server-side secret.
+ *
+ * @param[out] r			- the result.
+ * @param[in] x				- the inverted random scalar.
+ * @param[in] c				- the server-side answer.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int cp_oprf_res(ec_t r, const bn_t x, const ec_t c);
 
 /**
  * Initialize the Context-Hiding Multi-key Homomorphic Signature (CHMKLHS)
