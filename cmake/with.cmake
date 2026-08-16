@@ -2,8 +2,9 @@
 set(WITH "ALL" CACHE STRING "Selected modules")
 LIST(FIND WITH "ALL" TEMP)
 if(TEMP GREATER -1)
-	set(WITH_BN 1)
 	set(WITH_DV 1)
+	set(WITH_BN 1)
+	set(WITH_QF 1)
 	set(WITH_FP 1)
 	set(WITH_FPX 1)
 	set(WITH_FB 1)
@@ -21,16 +22,22 @@ if(TEMP GREATER -1)
 	set(WITH_MPC 1)
 endif(TEMP GREATER -1)
 
+# Check if temporary vectors are required.
+list(FIND WITH "DV" TEMP)
+if(TEMP GREATER -1)
+	set(WITH_DV 1)
+endif(TEMP GREATER -1)
+
 # Check if multiple precision integer arithmetic is required.
 list(FIND WITH "BN" TEMP)
 if(TEMP GREATER -1)
 	set(WITH_BN 1)
 endif(TEMP GREATER -1)
 
-# Check if temporary vectors are required.
-list(FIND WITH "DV" TEMP)
+# Check if multiple precision integer arithmetic is required.
+list(FIND WITH "QF" TEMP)
 if(TEMP GREATER -1)
-	set(WITH_DV 1)
+	set(WITH_QF 1)
 endif(TEMP GREATER -1)
 
 # Check if prime field arithmetic is required.

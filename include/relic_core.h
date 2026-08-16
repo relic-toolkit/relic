@@ -47,6 +47,7 @@ extern "C" {
 
 #include "relic_err.h"
 #include "relic_bn.h"
+#include "relic_qf.h"
 #include "relic_eb.h"
 #include "relic_epx.h"
 #include "relic_ed.h"

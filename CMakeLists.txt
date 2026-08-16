@@ -65,8 +65,9 @@ message("   CORES=n        If n > 1, enable multithreading support.\n")
 
 message(STATUS "Available modules (default = ALL)\n")
 
-message("   WITH=BN       Multiple precision arithmetic.")
 message("   WITH=DV       Temporary double-precision digit vectors.")
+message("   WITH=BN       Multiple precision arithmetic.")
+message("   WITH=QF       Binary quadratic form arithmetic.")
 message("   WITH=FP       Prime field arithmetic.")
 message("   WITH=FPX      Prime extension field arithmetic.")
 message("   WITH=FB       Binary field arithmetic.")
