@@ -2616,6 +2616,51 @@ int cp_ipa_ver(const bn_t y, const ec_t p, const bn_t c, const ec_t *ls,
 		const ec_t *rs, const ec_t *g, const ec_t u, size_t n);
 
 /**
+ * Compute two non-interactive inner-product argument proofs in parallel, given
+ * two sets of points and scalars.
+ *
+ * @param[out] y			- the first component of the proof.
+ * @param[out] p			- the result of the first computation.
+ * @param[out] q			- the result of the second computation.
+ * @param[out] ls			- the first left recursion coefficients.
+ * @param[out] rs			- the first right recursion coefficients.
+ * @param[out] lt			- the second left recursion coefficients.
+ * @param[out] rt			- the second right recursion coefficients.
+ * @param[in] g				- the input points for the first proof.
+ * @param[in] gt			- the input points for the second proof.
+ * @param[in] a				- the input scalars.
+ * @param[in] u				- the random point.
+ * @param[in] n				- the number of points to compute the proof over.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int cp_ipa_prv_par(bn_t y, ec_t p, ec_t q, ec_t *ls, ec_t *rs, ec_t *lt,
+        ec_t *rt, const ec_t *g, const ec_t *gt, const bn_t *a, const ec_t u,
+        size_t n);
+
+/**
+ * Verifies two non-interactive inner-product argument proofs in parallel, given
+ * two sets of points and scalars.
+ *
+ * @param[in] y			- the first component of the proof.
+ * @param[in] p			- the result of the first computation.
+ * @param[in] q			- the result of the second computation.
+ * @param[in] c				- the claimed inner product.
+ * @param[in] ls			- the first left recursion coefficients.
+ * @param[in] rs			- the first right recursion coefficients.
+ * @param[in] lt			- the second left recursion coefficients.
+ * @param[in] rt			- the second right recursion coefficients.
+ * @param[in] g				- the input points for the first proof.
+ * @param[in] gt			- the input points for the second proof.
+ * @param[in] a				- the input scalars.
+ * @param[in] u				- the random point.
+ * @param[in] n				- the number of points to compute the proof over.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int cp_ipa_ver_par(const bn_t y, const ec_t p, const ec_t q, const bn_t c,
+        const ec_t *ls, const ec_t *rs, const ec_t *lt, const ec_t *rt,
+        const ec_t *g, const ec_t *gt, const ec_t u, size_t n);
+
+/**
  * Compute the result of an OPRF evaluation, i.e., the client-side input
  * multiplied by the server-side secret.
  *
@@ -3105,7 +3150,7 @@ int cp_sasmklhs_sig(bn_t r, g1_t sr, g1_t sm, const bn_t m, const char *data,
  * @param[in] pk3			- the third public keys of the users in G_1.
  * @param[in] slen			- the number of singers.
  */
-int cp_sasmklhs_evl(g1_t s, g1_t t, bn_t y[5], ec_t ps[5], ec_t *ls1, ec_t *rs1,
+int cp_sasmklhs_evl(g1_t s, g1_t t, bn_t y[4], ec_t ps[5], ec_t *ls1, ec_t *rs1,
 		ec_t *ls2, ec_t *rs2, ec_t *ls3, ec_t *rs3, ec_t *ls4, ec_t *rs4,
 		ec_t *ls5, ec_t *rs5, const g1_t *sr[], const g1_t *sm[], const bn_t *d,
 		const bn_t *e, const ec_t u, const dig_t *f[], const size_t flen[],
@@ -3145,7 +3190,7 @@ int cp_sasmklhs_evl(g1_t s, g1_t t, bn_t y[5], ec_t ps[5], ec_t *ls1, ec_t *rs1,
  * @param[in] slen			- the number of singers.
  */
 int cp_sasmklhs_ver(const bn_t r, const g1_t sr, const g1_t sm, const bn_t m,
-		const bn_t y[5], const ec_t ps[5], const ec_t *ls1, const ec_t *rs1,
+		const bn_t y[4], const ec_t ps[5], const ec_t *ls1, const ec_t *rs1,
 		const ec_t *ls2, const ec_t *rs2, const ec_t *ls3, const ec_t *rs3,
 		const ec_t *ls4, const ec_t *rs4, const ec_t *ls5, const ec_t *rs5,
 		const ec_t u, const char *data, const char *id[], const char *tag[],
@@ -3205,7 +3250,7 @@ int cp_sasmklhs_off(g1_t *h, const char *data, const char *id[], const char *tag
  * @param[in] slen			- the number of singers.
  */
 int cp_sasmklhs_onv(const bn_t r, const g1_t sr, const g1_t sm, const bn_t m,
-		const bn_t y[5], const ec_t ps[5], const ec_t *ls1, const ec_t *rs1,
+		const bn_t y[4], const ec_t ps[4], const ec_t *ls1, const ec_t *rs1,
 		const ec_t *ls2, const ec_t *rs2, const ec_t *ls3, const ec_t *rs3,
 		const ec_t *ls4, const ec_t *rs4, const ec_t *ls5, const ec_t *rs5,
 		const ec_t u, const g1_t h[], const g1_t pk1[][2], const g2_t pk2[][2],

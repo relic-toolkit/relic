@@ -554,23 +554,28 @@ int cp_sasmklhs_sig(bn_t r, g1_t sr, g1_t sm, const bn_t m, const char *data,
 	return result;
 }
 
-int cp_sasmklhs_evl(g1_t s, g1_t t, bn_t y[5], ec_t ps[5], ec_t *ls1, ec_t *rs1,
+int cp_sasmklhs_evl(g1_t s, g1_t t, bn_t y[4], ec_t ps[5], ec_t *ls1, ec_t *rs1,
 		ec_t *ls2, ec_t *rs2, ec_t *ls3, ec_t *rs3, ec_t *ls4, ec_t *rs4,
 		ec_t *ls5, ec_t *rs5, const g1_t *sr[], const g1_t *sm[], const bn_t *d,
 		const bn_t *e, const ec_t u, const dig_t *f[], const size_t flen[],
 		const g1_t pk1[][2], const g2_t pk2[][2], const g1_t pk3[][2],
 		size_t slen) {
 	g1_t *g1 = RLC_ALLOCA(g1_t, slen);
+	g1_t *gg = RLC_ALLOCA(g1_t, slen);
 	int result = RLC_OK;
 
 	RLC_TRY {
-		if (g1 == NULL) {
+		if (g1 == NULL || gg == NULL) {
+			RLC_FREE(g1);
+			RLC_FREE(gg);
 			RLC_THROW(ERR_NO_MEMORY);
 		}
 
 		for (size_t i = 0; i < slen; i++) {
 			g1_null(g1[i]);
 			g1_new(g1[i]);
+			g1_null(gg[i]);
+			g1_new(gg[i]);
 		}
 		if (cp_mklhs_evl(s, sr, f, flen, slen) != RLC_OK) {
 			result = RLC_ERR;
@@ -584,10 +589,15 @@ int cp_sasmklhs_evl(g1_t s, g1_t t, bn_t y[5], ec_t ps[5], ec_t *ls1, ec_t *rs1,
 		if (cp_ipa_prv(y[0], ps[0], ls1, rs1, g1, d, u, slen) != RLC_OK) {
 			result = RLC_ERR;
 		}
+		/* Fig. 11, l.13: Omega_r and Omega share the witness r-hat over
+		 * two generator vectors, so they form one ParInPrd~ with a single
+		 * shared final scalar, not two independent arguments. */
 		for (size_t i = 0; i < slen; i++) {
 			g1_copy(g1[i], pk3[i][0]);
+			g1_copy(gg[i], pk3[i][1]);
 		}
-		if (cp_ipa_prv(y[1], ps[1], ls2, rs2, g1, d, u, slen) != RLC_OK) {
+		if (cp_ipa_prv_par(y[1], ps[1], ps[4], ls2, rs2, ls5, rs5,
+				g1, gg, d, u, slen) != RLC_OK) {
 			result = RLC_ERR;
 		}
 		for (size_t i = 0; i < slen; i++) {
@@ -602,23 +612,22 @@ int cp_sasmklhs_evl(g1_t s, g1_t t, bn_t y[5], ec_t ps[5], ec_t *ls1, ec_t *rs1,
 		if (cp_ipa_prv(y[3], ps[3], ls4, rs4, g1, e, u, slen) != RLC_OK) {
 			result = RLC_ERR;
 		}
-		if (cp_ipa_prv(y[4], ps[4], ls5, rs5, g1, d, u, slen) != RLC_OK) {
-			result = RLC_ERR;
-		}
 	} RLC_CATCH_ANY {
 		result = RLC_ERR;
 	}
 	RLC_FINALLY {
 		for (size_t i = 0; i < slen; i++) {
 			g1_free(g1[i]);
+			g1_free(gg[i]);
 		}
 		RLC_FREE(g1);
+		RLC_FREE(gg);
 	}
 	return result;
 }
 
 int cp_sasmklhs_ver(const bn_t r, const g1_t sr, const g1_t sm, const bn_t m,
-		const bn_t y[5], const ec_t ps[5], const ec_t *ls1, const ec_t *rs1,
+		const bn_t y[4], const ec_t ps[5], const ec_t *ls1, const ec_t *rs1,
 		const ec_t *ls2, const ec_t *rs2, const ec_t *ls3, const ec_t *rs3,
 		const ec_t *ls4, const ec_t *rs4, const ec_t *ls5, const ec_t *rs5,
 		const ec_t u, const char *data, const char *id[], const char *tag[],
@@ -627,6 +636,7 @@ int cp_sasmklhs_ver(const bn_t r, const g1_t sr, const g1_t sm, const bn_t m,
 		const g2_t p2[2], size_t slen) {
 	bn_t t, n;
 	g1_t *g1 = RLC_ALLOCA(g1_t, slen + 3);
+	g1_t *gg = NULL;
 	g2_t *g2 = RLC_ALLOCA(g2_t, slen + 3);
 	gt_t e;
 	int imax = 0, lmax = 0, fmax = 0, ver_r, ver_m;
@@ -679,16 +689,29 @@ int cp_sasmklhs_ver(const bn_t r, const g1_t sr, const g1_t sm, const bn_t m,
 			for (size_t i = 0; i < slen; i++) {
 				g1_copy(g1[i], pk3[i][0]);
 			}
-			ver_r &= cp_ipa_ver(y[1], ps[1], r, ls2, rs2, g1, u, slen);
+			/* Omega_r and Omega are one parallel argument over r-hat. */
+			gg = RLC_ALLOCA(g1_t, slen);
+			if (gg == NULL) {
+				RLC_THROW(ERR_NO_MEMORY);
+			}
 			for (size_t i = 0; i < slen; i++) {
+				g1_null(gg[i]);
+				g1_new(gg[i]);
+				g1_copy(gg[i], pk3[i][1]);
+			}
+			ver_r &= cp_ipa_ver_par(y[1], ps[1], ps[4], r, ls2, rs2, ls5, rs5,
+					g1, gg, u, slen);
+			for (size_t i = 0; i < slen; i++) {
+				g1_free(gg[i]);
 				g1_copy(g1[i], pk1[i][1]);
 			}
+			RLC_FREE(gg);
+			gg = NULL;
 			ver_m &= cp_ipa_ver(y[2], ps[2], m, ls3, rs3, g1, u, slen);
 			for (size_t i = 0; i < slen; i++) {
 				g1_copy(g1[i], pk3[i][1]);
 			}
 			ver_m &= cp_ipa_ver(y[3], ps[3], m, ls4, rs4, g1, u, slen);
-			ver_r &= cp_ipa_ver(y[4], ps[4], r, ls5, rs5, g1, u, slen);
 		}
 
 		for (size_t i = 0; i < slen; i++) {
@@ -856,13 +879,14 @@ int cp_sasmklhs_off(g1_t *h, const char *data, const char *id[], const char *tag
 }
 
 int cp_sasmklhs_onv(const bn_t r, const g1_t sr, const g1_t sm, const bn_t m,
-		const bn_t y[5], const ec_t ps[5], const ec_t *ls1, const ec_t *rs1,
+		const bn_t y[4], const ec_t ps[5], const ec_t *ls1, const ec_t *rs1,
 		const ec_t *ls2, const ec_t *rs2, const ec_t *ls3, const ec_t *rs3,
 		const ec_t *ls4, const ec_t *rs4, const ec_t *ls5, const ec_t *rs5,
 		const ec_t u, const g1_t h[], const g1_t pk1[][2], const g2_t pk2[][2],
 		const g1_t pk3[][2], const g2_t t2[2], const g2_t p2[2], size_t slen) {
 	bn_t t, n;
 	g1_t *g1 = RLC_ALLOCA(g1_t, slen + 3);
+	g1_t *gg = NULL;
 	g2_t *g2 = RLC_ALLOCA(g2_t, slen + 3);
 	gt_t e;
 	int ver_r, ver_m;
@@ -899,16 +923,29 @@ int cp_sasmklhs_onv(const bn_t r, const g1_t sr, const g1_t sm, const bn_t m,
 			for (size_t i = 0; i < slen; i++) {
 				g1_copy(g1[i], pk3[i][0]);
 			}
-			ver_r &= cp_ipa_ver(y[1], ps[1], r, ls2, rs2, g1, u, slen);
+			/* Omega_r and Omega are one parallel argument over r-hat. */
+			gg = RLC_ALLOCA(g1_t, slen);
+			if (gg == NULL) {
+				RLC_THROW(ERR_NO_MEMORY);
+			}
 			for (size_t i = 0; i < slen; i++) {
+				g1_null(gg[i]);
+				g1_new(gg[i]);
+				g1_copy(gg[i], pk3[i][1]);
+			}
+			ver_r &= cp_ipa_ver_par(y[1], ps[1], ps[4], r, ls2, rs2, ls5, rs5,
+					g1, gg, u, slen);
+			for (size_t i = 0; i < slen; i++) {
+				g1_free(gg[i]);
 				g1_copy(g1[i], pk1[i][1]);
 			}
+			RLC_FREE(gg);
+			gg = NULL;
 			ver_m &= cp_ipa_ver(y[2], ps[2], m, ls3, rs3, g1, u, slen);
 			for (size_t i = 0; i < slen; i++) {
 				g1_copy(g1[i], pk3[i][1]);
 			}
 			ver_m &= cp_ipa_ver(y[3], ps[3], m, ls4, rs4, g1, u, slen);
-			ver_r &= cp_ipa_ver(y[4], ps[4], r, ls5, rs5, g1, u, slen);
 		}
 
 		for (size_t i = 0; i < slen; i++) {
