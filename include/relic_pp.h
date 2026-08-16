@@ -1004,7 +1004,7 @@ void pp_dbl_k1_basic(fp_t l, fp_t m, ep_t r, const ep_t p, const ep_t q);
  * @param[in] v				- the extended coordinate of the point to double.
  * @param[in] q				- the affine point to evaluate the line function.
  */
- void pp_dbl_k1_projc(fp_t l, fp_t m, ep_t r, fp_t w, const ep_t p, const fp_t v,
+void pp_dbl_k1_projc(fp_t l, fp_t m, ep_t r, fp_t w, const ep_t p, const fp_t v,
 	const ep_t q);
 
 /**

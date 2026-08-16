@@ -164,6 +164,8 @@
 #undef dv_swap_sec
 #undef dv_cmp
 #undef dv_cmp_sec
+#undef dv_equ
+#undef dv_equ_sec
 #undef dv_new_dynam
 #undef dv_free_dynam
 #undef dv_lshd
@@ -176,6 +178,8 @@
 #define dv_swap_sec 	RLC_PREFIX(dv_swap_sec)
 #define dv_cmp 	RLC_PREFIX(dv_cmp)
 #define dv_cmp_sec 	RLC_PREFIX(dv_cmp_sec)
+#define dv_equ 	RLC_PREFIX(dv_equ)
+#define dv_equ_sec 	RLC_PREFIX(dv_equ_sec)
 #define dv_new_dynam 	RLC_PREFIX(dv_new_dynam)
 #define dv_free_dynam 	RLC_PREFIX(dv_free_dynam)
 #define dv_lshd 	RLC_PREFIX(dv_lshd)
@@ -267,9 +271,11 @@
 #undef bn_gcd_basic
 #undef bn_gcd_lehme
 #undef bn_gcd_binar
+#undef bn_gcd_lower
 #undef bn_gcd_dig
 #undef bn_gcd_ext_basic
 #undef bn_gcd_ext_lehme
+#undef bn_gcd_ext_lower
 #undef bn_gcd_ext_binar
 #undef bn_gcd_ext_mid
 #undef bn_gcd_ext_dig
@@ -284,6 +290,7 @@
 #undef bn_gen_prime_safep
 #undef bn_gen_prime_stron
 #undef bn_gen_prime_factor
+#undef bn_next_prime
 #undef bn_factor
 #undef bn_is_factor
 #undef bn_rec_win
@@ -380,9 +387,11 @@
 #define bn_gcd_basic 	RLC_PREFIX(bn_gcd_basic)
 #define bn_gcd_lehme 	RLC_PREFIX(bn_gcd_lehme)
 #define bn_gcd_binar 	RLC_PREFIX(bn_gcd_binar)
+#define bn_gcd_lower 	RLC_PREFIX(bn_gcd_lower)
 #define bn_gcd_dig 	RLC_PREFIX(bn_gcd_dig)
 #define bn_gcd_ext_basic 	RLC_PREFIX(bn_gcd_ext_basic)
 #define bn_gcd_ext_lehme 	RLC_PREFIX(bn_gcd_ext_lehme)
+#define bn_gcd_ext_lower 	RLC_PREFIX(bn_gcd_ext_lower)
 #define bn_gcd_ext_binar 	RLC_PREFIX(bn_gcd_ext_binar)
 #define bn_gcd_ext_mid 	RLC_PREFIX(bn_gcd_ext_mid)
 #define bn_gcd_ext_dig 	RLC_PREFIX(bn_gcd_ext_dig)
@@ -397,6 +406,7 @@
 #define bn_gen_prime_safep 	RLC_PREFIX(bn_gen_prime_safep)
 #define bn_gen_prime_stron 	RLC_PREFIX(bn_gen_prime_stron)
 #define bn_gen_prime_factor 	RLC_PREFIX(bn_gen_prime_factor)
+#define bn_next_prime 	RLC_PREFIX(bn_next_prime)
 #define bn_factor 	RLC_PREFIX(bn_factor)
 #define bn_is_factor 	RLC_PREFIX(bn_is_factor)
 #define bn_rec_win 	RLC_PREFIX(bn_rec_win)
@@ -419,7 +429,6 @@
 #undef bn_sub1_low
 #undef bn_subn_low
 #undef bn_negs_low
-#undef bn_cmp1_low
 #undef bn_cmpn_low
 #undef bn_lsh1_low
 #undef bn_lshb_low
@@ -436,13 +445,14 @@
 #undef bn_divn_low
 #undef bn_div1_low
 #undef bn_modn_low
+#undef bn_gcdn_low
+#undef bn_gcde_low
 
 #define bn_add1_low 	RLC_PREFIX(bn_add1_low)
 #define bn_addn_low 	RLC_PREFIX(bn_addn_low)
 #define bn_sub1_low 	RLC_PREFIX(bn_sub1_low)
 #define bn_subn_low 	RLC_PREFIX(bn_subn_low)
 #define bn_negs_low 	RLC_PREFIX(bn_negs_low)
-#define bn_cmp1_low 	RLC_PREFIX(bn_cmp1_low)
 #define bn_cmpn_low 	RLC_PREFIX(bn_cmpn_low)
 #define bn_lsh1_low 	RLC_PREFIX(bn_lsh1_low)
 #define bn_lshb_low 	RLC_PREFIX(bn_lshb_low)
@@ -459,6 +469,8 @@
 #define bn_divn_low 	RLC_PREFIX(bn_divn_low)
 #define bn_div1_low 	RLC_PREFIX(bn_div1_low)
 #define bn_modn_low 	RLC_PREFIX(bn_modn_low)
+#define bn_gcdn_low 	RLC_PREFIX(bn_gcdn_low)
+#define bn_gcde_low 	RLC_PREFIX(bn_gcde_low)
 
 #undef fp_st
 #undef fp_t
@@ -981,6 +993,9 @@
 #undef ep_dbl_slp_basic
 #undef ep_dbl_projc
 #undef ep_dbl_jacob
+#undef ep_tpl_basic
+#undef ep_tpl_projc
+#undef ep_tpl_jacob
 #undef ep_psi
 #undef ep_mul_basic
 #undef ep_mul_slide
@@ -1078,6 +1093,9 @@
 #define ep_dbl_slp_basic 	RLC_PREFIX(ep_dbl_slp_basic)
 #define ep_dbl_projc 	RLC_PREFIX(ep_dbl_projc)
 #define ep_dbl_jacob 	RLC_PREFIX(ep_dbl_jacob)
+#define ep_tpl_basic 	RLC_PREFIX(ep_tpl_basic)
+#define ep_tpl_projc 	RLC_PREFIX(ep_tpl_projc)
+#define ep_tpl_jacob 	RLC_PREFIX(ep_tpl_jacob)
 #define ep_psi 	RLC_PREFIX(ep_psi)
 #define ep_mul_basic 	RLC_PREFIX(ep_mul_basic)
 #define ep_mul_slide 	RLC_PREFIX(ep_mul_slide)
@@ -2117,6 +2135,8 @@
 #undef fp2_exp_cyc_sim
 #undef fp2_frb
 #undef fp2_is_sqr
+#undef fp2_crt
+#undef fp2_is_cub
 #undef fp2_srt
 #undef fp2_pck
 #undef fp2_upk
@@ -2164,6 +2184,8 @@
 #define fp2_exp_cyc_sim 	RLC_PREFIX(fp2_exp_cyc_sim)
 #define fp2_frb 	RLC_PREFIX(fp2_frb)
 #define fp2_is_sqr 	RLC_PREFIX(fp2_is_sqr)
+#define fp2_crt 	RLC_PREFIX(fp2_crt)
+#define fp2_is_cub 	RLC_PREFIX(fp2_is_cub)
 #define fp2_srt 	RLC_PREFIX(fp2_srt)
 #define fp2_pck 	RLC_PREFIX(fp2_pck)
 #define fp2_upk 	RLC_PREFIX(fp2_upk)
@@ -3336,14 +3358,21 @@
 #undef cp_lvprv_ask
 #undef cp_lvprv_ans
 #undef cp_lvprv_ver
+#undef cp_cades_ask
+#undef cp_cades_ans
+#undef cp_cades_ver
+#undef cp_pdbat_gen
+#undef cp_pdbat_ask
+#undef cp_pdbat_ans
+#undef cp_pdbat_ver
+#undef cp_mvbat_gen
+#undef cp_mvbat_ask
+#undef cp_mvbat_ans
+#undef cp_mvbat_ver
 #undef cp_amore_gen
 #undef cp_amore_ask
 #undef cp_amore_ans
 #undef cp_amore_ver
-#undef cp_amprv_gen
-#undef cp_amprv_ask
-#undef cp_amprv_ans
-#undef cp_amprv_ver
 #undef cp_sokaka_gen
 #undef cp_sokaka_gen_prv
 #undef cp_sokaka_key
@@ -3420,6 +3449,11 @@
 #undef cp_ped_com
 #undef cp_ipa_prv
 #undef cp_ipa_ver
+#undef cp_oprf_ask
+#undef cp_oprf_ans
+#undef cp_oprf_res
+#undef cp_ipa_prv
+#undef cp_ipa_ver
 #undef cp_chmklhs_set
 #undef cp_chmklhs_gen
 #undef cp_chmklhs_sig
@@ -3438,7 +3472,17 @@
 #undef cp_smklhs_set
 #undef cp_smklhs_gen
 #undef cp_smklhs_sig
+#undef cp_smklhs_evl
 #undef cp_smklhs_ver
+#undef cp_smklhs_off
+#undef cp_smklhs_onv
+#undef cp_sasmklhs_set
+#undef cp_sasmklhs_gen
+#undef cp_sasmklhs_sig
+#undef cp_sasmklhs_evl
+#undef cp_sasmklhs_ver
+#undef cp_sasmklhs_off
+#undef cp_sasmklhs_onv
 #undef cp_rsapsi_gen
 #undef cp_rsapsi_ask
 #undef cp_rsapsi_ans
@@ -3503,14 +3547,21 @@
 #define cp_lvprv_ask 	RLC_PREFIX(cp_lvprv_ask)
 #define cp_lvprv_ans 	RLC_PREFIX(cp_lvprv_ans)
 #define cp_lvprv_ver 	RLC_PREFIX(cp_lvprv_ver)
+#define cp_cades_ask 	RLC_PREFIX(cp_cades_ask)
+#define cp_cades_ans 	RLC_PREFIX(cp_cades_ans)
+#define cp_cades_ver 	RLC_PREFIX(cp_cades_ver)
+#define cp_pdbat_gen 	RLC_PREFIX(cp_pdbat_gen)
+#define cp_pdbat_ask 	RLC_PREFIX(cp_pdbat_ask)
+#define cp_pdbat_ans 	RLC_PREFIX(cp_pdbat_ans)
+#define cp_pdbat_ver 	RLC_PREFIX(cp_pdbat_ver)
+#define cp_mvbat_gen 	RLC_PREFIX(cp_mvbat_gen)
+#define cp_mvbat_ask 	RLC_PREFIX(cp_mvbat_ask)
+#define cp_mvbat_ans 	RLC_PREFIX(cp_mvbat_ans)
+#define cp_mvbat_ver 	RLC_PREFIX(cp_mvbat_ver)
 #define cp_amore_gen 	RLC_PREFIX(cp_amore_gen)
 #define cp_amore_ask 	RLC_PREFIX(cp_amore_ask)
 #define cp_amore_ans 	RLC_PREFIX(cp_amore_ans)
 #define cp_amore_ver 	RLC_PREFIX(cp_amore_ver)
-#define cp_amprv_gen 	RLC_PREFIX(cp_amprv_gen)
-#define cp_amprv_ask 	RLC_PREFIX(cp_amprv_ask)
-#define cp_amprv_ans 	RLC_PREFIX(cp_amprv_ans)
-#define cp_amprv_ver 	RLC_PREFIX(cp_amprv_ver)
 #define cp_sokaka_gen 	RLC_PREFIX(cp_sokaka_gen)
 #define cp_sokaka_gen_prv 	RLC_PREFIX(cp_sokaka_gen_prv)
 #define cp_sokaka_key 	RLC_PREFIX(cp_sokaka_key)
@@ -3587,6 +3638,11 @@
 #define cp_ped_com 	RLC_PREFIX(cp_ped_com)
 #define cp_ipa_prv 	RLC_PREFIX(cp_ipa_prv)
 #define cp_ipa_ver 	RLC_PREFIX(cp_ipa_ver)
+#define cp_oprf_ask 	RLC_PREFIX(cp_oprf_ask)
+#define cp_oprf_ans 	RLC_PREFIX(cp_oprf_ans)
+#define cp_oprf_res 	RLC_PREFIX(cp_oprf_res)
+#define cp_ipa_prv 	RLC_PREFIX(cp_ipa_prv)
+#define cp_ipa_ver 	RLC_PREFIX(cp_ipa_ver)
 #define cp_chmklhs_set 	RLC_PREFIX(cp_chmklhs_set)
 #define cp_chmklhs_gen 	RLC_PREFIX(cp_chmklhs_gen)
 #define cp_chmklhs_sig 	RLC_PREFIX(cp_chmklhs_sig)
@@ -3605,7 +3661,17 @@
 #define cp_smklhs_set 	RLC_PREFIX(cp_smklhs_set)
 #define cp_smklhs_gen 	RLC_PREFIX(cp_smklhs_gen)
 #define cp_smklhs_sig 	RLC_PREFIX(cp_smklhs_sig)
+#define cp_smklhs_evl 	RLC_PREFIX(cp_smklhs_evl)
 #define cp_smklhs_ver 	RLC_PREFIX(cp_smklhs_ver)
+#define cp_smklhs_off 	RLC_PREFIX(cp_smklhs_off)
+#define cp_smklhs_onv 	RLC_PREFIX(cp_smklhs_onv)
+#define cp_sasmklhs_set 	RLC_PREFIX(cp_sasmklhs_set)
+#define cp_sasmklhs_gen 	RLC_PREFIX(cp_sasmklhs_gen)
+#define cp_sasmklhs_sig 	RLC_PREFIX(cp_sasmklhs_sig)
+#define cp_sasmklhs_evl 	RLC_PREFIX(cp_sasmklhs_evl)
+#define cp_sasmklhs_ver 	RLC_PREFIX(cp_sasmklhs_ver)
+#define cp_sasmklhs_off 	RLC_PREFIX(cp_sasmklhs_off)
+#define cp_sasmklhs_onv 	RLC_PREFIX(cp_sasmklhs_onv)
 #define cp_rsapsi_gen 	RLC_PREFIX(cp_rsapsi_gen)
 #define cp_rsapsi_ask 	RLC_PREFIX(cp_rsapsi_ask)
 #define cp_rsapsi_ans 	RLC_PREFIX(cp_rsapsi_ans)

@@ -223,16 +223,16 @@ typedef crt_st *crt_t;
 #endif
 
 /**
- * Initializes a CRT moduli set with a null value.
+ * Initializes a Chinese Remainder Theorem (CRT) moduli set with a null value.
  *
  * @param[out] A			- the moduli to initialize.
  */
 #define crt_null(A)			RLC_NULL(A)
 
 /**
- * Calls a function to allocate and initialize a Rabin key pair.
+ * Calls a function to allocate and initialize a CRT moduli set.
  *
- * @param[out] A			- the new key pair.
+ * @param[out] A			- the new CRT moduli set.
  */
 #if ALLOC == DYNAMIC
 #define crt_new(A)															\
@@ -259,9 +259,9 @@ typedef crt_st *crt_t;
 #endif
 
 /**
- * Calls a function to clean and free a Rabin key pair.
+ * Calls a function to clean and free a CRT moduli set.
  *
- * @param[out] A			- the key pair to clean and free.
+ * @param[out] A			- the CRT moduli set to clean and free.
  */
 #if ALLOC == DYNAMIC
 #define crt_free(A)															\
@@ -409,6 +409,8 @@ typedef crt_st *crt_t;
 #define bn_gcd(C, A, B)		bn_gcd_lehme(C, A, B)
 #elif BN_GCD == BINAR
 #define bn_gcd(C, A, B)		bn_gcd_binar(C, A, B)
+#elif BN_GCD == LOWER
+#define bn_gcd(C, A, B)		bn_gcd_lower(C, A, B)
 #endif
 
 /**
@@ -428,6 +430,8 @@ typedef crt_st *crt_t;
 #define bn_gcd_ext(C, D, E, A, B)		bn_gcd_ext_lehme(C, D, E, A, B)
 #elif BN_GCD == BINAR
 #define bn_gcd_ext(C, D, E, A, B)		bn_gcd_ext_binar(C, D, E, A, B)
+#elif BN_GCD == LOWER
+#define bn_gcd_ext(C, D, E, A, B)		bn_gcd_ext_lower(C, D, E, A, B)
 #endif
 
 /**
@@ -885,7 +889,7 @@ void bn_lsh(bn_t c, const bn_t a, uint_t bits);
 
 /**
  * Shifts a multiple precision number to the right. Computes
- * c = floor(a / 2^bits).
+ * c = floor(a / 2^bits), which rounds down in case of negative inputs.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the multiple precision integer to shift.
@@ -960,7 +964,7 @@ void bn_mod_inv(bn_t c, const bn_t a, const bn_t b);
  * param[in] b				- the modulus.
  * @param[in] n				- the number of elements.
  */
-void bn_mod_inv_sim(bn_t *c, const bn_t *a, const bn_t b, int n);
+void bn_mod_inv_sim(bn_t *c, const bn_t *a, const bn_t b, size_t n);
 
 /**
  * Reduces a multiple precision integer modulo a power of 2. Computes
@@ -1216,6 +1220,16 @@ void bn_gcd_lehme(bn_t c, const bn_t a, const bn_t b);
 void bn_gcd_binar(bn_t c, const bn_t a, const bn_t b);
 
 /**
+ * Computes the greatest common divisor of two multiple precision integers
+ * using the lower-level algorithm.
+ *
+ * @param[out] c			- the result;
+ * @param[in] a				- the first multiple precision integer.
+ * @param[in] b				- the second multiple precision integer.
+ */
+void bn_gcd_lower(bn_t c, const bn_t a, const bn_t b);
+
+/**
  * Computes the greatest common divisor of a multiple precision integer and a
  * digit.
  *
@@ -1230,7 +1244,7 @@ void bn_gcd_dig(bn_t c, const bn_t a, dig_t b);
  * integer using the Euclidean algorithm.
  *
  * @param[out] c			- the result.
- * @param[out] d			- the cofactor of the first operand, can be NULL.
+ * @param[out] d			- the cofactor of the first operand.
  * @param[out] e			- the cofactor of the second operand, can be NULL.
  * @param[in] a				- the first multiple precision integer.
  * @param[in] b				- the second multiple precision integer.
@@ -1242,7 +1256,7 @@ void bn_gcd_ext_basic(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b);
  * using Lehmer's algorithm.
  *
  * @param[out] c			- the result;
- * @param[out] d			- the cofactor of the first operand, can be NULL.
+ * @param[out] d			- the cofactor of the first operand.
  * @param[out] e			- the cofactor of the second operand, can be NULL.
  * @param[in] a				- the first multiple precision integer.
  * @param[in] b				- the second multiple precision integer.
@@ -1251,10 +1265,22 @@ void bn_gcd_ext_lehme(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b);
 
 /**
  * Computes the greatest common divisor of two multiple precision integers
+ * using a lower-level algorithm.
+ *
+ * @param[out] c			- the result;
+ * @param[out] d			- the cofactor of the first operand.
+ * @param[out] e			- the cofactor of the second operand, can be NULL.
+ * @param[in] a				- the first multiple precision integer.
+ * @param[in] b				- the second multiple precision integer.
+ */
+void bn_gcd_ext_lower(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b);
+
+/**
+ * Computes the greatest common divisor of two multiple precision integers
  * using the Binary algorithm.
  *
  * @param[out] c			- the result;
- * @param[out] d			- the cofactor of the first operand, can be NULL.
+ * @param[out] d			- the cofactor of the first operand.
  * @param[out] e			- the cofactor of the second operand, can be NULL.
  * @param[in] a				- the first multiple precision integer.
  * @param[in] b				- the second multiple precision integer.
@@ -1388,6 +1414,13 @@ void bn_gen_prime_stron(bn_t a, size_t bits);
  */
 int bn_gen_prime_factor(bn_t a, bn_t b, size_t abits, size_t bbits);
 
+/**
+ * Compute the next prime q strictly greater than p.
+ *
+ * @param[out] q			- the result.
+ * @param[in] p				- the starting prime.
+ */
+void bn_next_prime(bn_t q, const bn_t p);
 
 /**
  * Tries to factorize an integer using Pollard (p - 1) factoring algorithm.
