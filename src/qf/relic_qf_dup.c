@@ -36,7 +36,9 @@
 /*============================================================================*/
 
 void qf_dup(qf_t r, const qf_t f, const bn_t d) {
-	bn_t Ax, Ay, Bx, By, Dx, Dy, q, t0, t1, t2, m00, m01, m10, m11, ra, rb, rc;
+	bn_t Ax, Ay, Bx, By, Dx, Dy;
+	bn_t q, t0, t1;
+	bn_t m00, m01, m10, m11;
 
 	bn_null(Ax);
 	bn_null(Ay);
@@ -47,14 +49,10 @@ void qf_dup(qf_t r, const qf_t f, const bn_t d) {
 	bn_null(q);
 	bn_null(t0);
 	bn_null(t1);
-	bn_null(t2);
 	bn_null(m00);
 	bn_null(m01);
 	bn_null(m10);
 	bn_null(m11);
-	bn_null(ra);
-	bn_null(rb);
-	bn_null(rc);
 
 	RLC_TRY {
 		bn_new(Ax);
@@ -66,16 +64,14 @@ void qf_dup(qf_t r, const qf_t f, const bn_t d) {
 		bn_new(q);
 		bn_new(t0);
 		bn_new(t1);
-		bn_new(t2);
 		bn_new(m00);
 		bn_new(m01);
 		bn_new(m10);
 		bn_new(m11);
-		bn_new(ra);
-		bn_new(rb);
-		bn_new(rc);
 
-		/* Ax = gcd(a, b) = m11*a + m01*b */
+		/*
+		 * Ax = gcd(a, b) = m11*a + m01*b
+		 */
 		bn_gcd_ext_lower(Ax, m11, m01, f->a, f->b);
 
 		if (bn_cmp_dig(Ax, 1) != RLC_EQ) {
@@ -86,51 +82,96 @@ void qf_dup(qf_t r, const qf_t f, const bn_t d) {
 			bn_copy(Dy, f->b);
 		}
 
+		/*
+		 * Dx = -c*m11
+		 * Bx =  c*m01
+		 */
 		bn_mul(Dx, f->c, m11);
 		bn_neg(Dx, Dx);
 		bn_mul(Bx, f->c, m01);
 
-		/* Bx <- Bx mod By, and apply [[1, -q], [0, 1]] to (Dx, Dy) */
+		/*
+		 * Bx <- Bx mod By
+		 *
+		 * Simultaneously:
+		 *     Dx <- Dx - q*Dy
+		 *
+		 * q must be retained because it is used here.
+		 */
 		bn_div_rem(q, t0, Bx, By);
 		bn_copy(Bx, t0);
+
 		bn_mul(t0, q, Dy);
 		bn_sub(Dx, Dx, t0);
 
+		/*
+		 * Partial extended gcd:
+		 *
+		 * [ Bx ]   [ m00 m01 ] [ ... ]
+		 * [ By ] = [ m10 m11 ] [ ... ]
+		 */
 		bn_gcd_ext_par(Bx, By, m00, m01, m10, m11, Bx, By, d);
 
-		/* apply the inverse matrix to (Ax, 0) and (Dx, Dy) */
+		/*
+		 * Apply the inverse matrix to (Ax, 0):
+		 *
+		 *   Ay = -Ax*m10
+		 *   Ax =  Ax*m11
+		 */
 		bn_mul(Ay, Ax, m10);
 		bn_neg(Ay, Ay);
 		bn_mul(Ax, Ax, m11);
 
+		/*
+		 * Apply the inverse matrix to (Dx, Dy):
+		 *
+		 *   Dx' = Dx*m11 - Dy*m01
+		 *   Dy' = Dy*m00 - Dx*m10
+		 *
+		 * t0 = Dx'
+		 * t1 is used for the intermediate products.
+		 */
 		bn_mul(t0, Dx, m11);
-		bn_mul(t2, Dy, m01);
-		bn_sub(t0, t0, t2);
-		bn_mul(Dy, Dy, m00);
-		bn_mul(t2, Dx, m10);
-		bn_sub(Dy, Dy, t2);
+		bn_mul(t1, Dy, m01);
+		bn_sub(t0, t0, t1);
+
+		bn_mul(t1, Dy, m00);
+		bn_mul(Dy, Dx, m10);
+		bn_sub(t1, t1, Dy);
+
 		bn_copy(Dx, t0);
+		bn_copy(Dy, t1);
 
-		/* a = By^2 - Ay*Dy, c = Bx^2 - Ax*Dx, b = Ax*Dy + Ay*Dx - 2*By*Bx */
+		/*
+		 * Final minors:
+		 *
+		 *   a = By^2 - Ay*Dy
+		 *   c = Bx^2 - Ax*Dx
+		 *   b = Ax*Dy + Ay*Dx - 2*By*Bx
+		 *
+		 * All accesses to f are finished, so write directly to r.
+		 */
+
+		/* t1 = 2*By*Bx */
 		bn_mul(t1, By, Bx);
-
-		bn_sqr(ra, By);
-		bn_mul(t0, Ay, Dy);
-		bn_sub(ra, ra, t0);
-
-		bn_sqr(rc, Bx);
-		bn_mul(t0, Ax, Dx);
-		bn_sub(rc, rc, t0);
-
-		bn_mul(rb, Ax, Dy);
-		bn_mul(t0, Ay, Dx);
-		bn_add(rb, rb, t0);
 		bn_lsh(t1, t1, 1);
-		bn_sub(rb, rb, t1);
 
-		bn_copy(r->a, ra);
-		bn_copy(r->b, rb);
-		bn_copy(r->c, rc);
+		/* a = By^2 - Ay*Dy */
+		bn_sqr(r->a, By);
+		bn_mul(t0, Ay, Dy);
+		bn_sub(r->a, r->a, t0);
+
+		/* c = Bx^2 - Ax*Dx */
+		bn_sqr(r->c, Bx);
+		bn_mul(t0, Ax, Dx);
+		bn_sub(r->c, r->c, t0);
+
+		/* b = Ax*Dy + Ay*Dx - 2*By*Bx */
+		bn_mul(r->b, Ax, Dy);
+		bn_mul(t0, Ay, Dx);
+		bn_add(r->b, r->b, t0);
+		bn_sub(r->b, r->b, t1);
+
 		qf_rdc(r, r);
 	}
 	RLC_CATCH_ANY {
@@ -146,13 +187,9 @@ void qf_dup(qf_t r, const qf_t f, const bn_t d) {
 		bn_free(q);
 		bn_free(t0);
 		bn_free(t1);
-		bn_free(t2);
 		bn_free(m00);
 		bn_free(m01);
 		bn_free(m10);
 		bn_free(m11);
-		bn_free(ra);
-		bn_free(rb);
-		bn_free(rc);
 	}
 }
