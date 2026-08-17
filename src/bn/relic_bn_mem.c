@@ -131,7 +131,6 @@ void bn_grow(bn_t a, size_t digits) {
 			return;
 		}
 		a->dp = t;
-		/* Set the newly allocated digits to zero. */
 		a->alloc = digits;
 	}
 #elif ALLOC == AUTO
