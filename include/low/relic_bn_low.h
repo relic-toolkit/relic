@@ -311,7 +311,8 @@ void bn_modn_low(dig_t *c, const dig_t *a, size_t sa, const dig_t *m, size_t sm,
 
 /**
  * Computes the greatest common divisor of two multiple precision integers
- * using the standard Euclidean algorithm. One of the operands must be odd.
+ * using the standard Euclidean algorithm. One of the operands must be odd,
+ * both source operands are destroyed.
  *
  * @param[out] c			- the result;
  * @param[in] a				- the first multiple precision integer.
@@ -323,18 +324,40 @@ size_t bn_gcdn_low(dig_t *c, dig_t *a, size_t sa, dig_t *b, size_t sb);
 
 /**
  * Computes the greatest common divisor of two multiple precision integers
- * using the standard Euclidean algorithm. One of the operands must be odd.
+ * using the standard Euclidean algorithm. One of the operands must be odd,
+ * both source operands are destroyed.
  *
  * @param[out] c			- the result;
  * @param[out] d			- the first cofactor.
  * @param[out] sd			- the number of digits in the cofactor.
- * @param[in] a				- the first multiple precision integer.
+ * @param[in,out] a				- the first multiple precision integer.
  * @param[in] sa			- the number of digits in the first argument.
- * @param[in] b				- the second multiple precision integer.
+ * @param[in,out] b				- the second multiple precision integer.
  * @param[in] sa			- the number of digits in the second argument.
+ * @return the size of the returned cofactor.
  */
 size_t bn_gcde_low(dig_t *c, dig_t *d, int *sd, dig_t *a, size_t sa,
 		dig_t *b, size_t sb);
+
+/**
+ * Performs one half-GCD step on a pair of digit vectors: reduces them until
+ * both fit size/2 + 1 digits and returns the transformation that does it. The
+ * full GCD is obtained by repeating this until the operands are small enough
+ * to finish directly, each call halving their length. Both source operands are
+ * destroyed.
+ *
+ * @param[out] m00			- the first entry of the matrix.
+ * @param[out] m01			- the second entry of the matrix.
+ * @param[out] m10			- the third entry of the matrix.
+ * @param[out] m11			- the fourth entry of the matrix.
+ * @param[out] sm			- the size of each matrix entry in digits.
+ * @param[in,out] a			- the first operand, and the first reduced value.
+ * @param[in,out] b			- the second operand, and the second reduced value.
+ * @param[in] size			- the size of both operands in digits.
+ * @return the new size of the operands, zero if no reduction was possible.
+ */
+size_t bn_gcdh_low(dig_t *m00, dig_t *m01, dig_t *m10, dig_t *m11, size_t *sm,
+		dig_t *a, dig_t *b, size_t size);
 
 #endif /* !ASM */
 

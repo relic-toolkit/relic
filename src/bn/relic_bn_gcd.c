@@ -42,20 +42,11 @@
  *
  *     (x', y')^T = [[m[0], m[1]], [m[2], m[3]]] * (x, y)^T.
  *
- * RELIC's Lehmer loop advances with the swapping recurrence
- * (x, y) <- (y, x mod y), whose matrix has determinant -1.  NUCOMP needs a
- * transform of determinant +1, since a GL2(Z) change of basis with determinant
- * -1 negates every minor of the 2x4 matrix and would compose the wrong form.
- * Steps are therefore committed in pairs: two swapping steps compose to
- * [[1, -q1], [-q2, 1 + q1*q2]], which is determinant +1, leaves x as the larger
- * of the two, and is exactly the pair of non-swapping elementary steps
- * "x -= q1*y" then "y -= q2*x".
- *
  * Returns the number of committed steps, always even, and zero when the leading
  * digits yield no trustworthy step, in which case the caller falls back to one
  * full-precision division.
  */
-int lehmer_step(dis_t *m, const bn_t x, const bn_t y, bn_t u, bn_t v) {
+static int lehmer_step(dis_t *m, const bn_t x, const bn_t y, bn_t u, bn_t v) {
 	dig_t X, Y, q, r, q2, r2;
 	dis_t a0 = 1, a1 = 0, b0 = 0, b1 = 1;
 	dis_t s0 = 1, s1 = 0, s2 = 0, s3 = 1, t;
@@ -116,6 +107,70 @@ int lehmer_step(dis_t *m, const bn_t x, const bn_t y, bn_t u, bn_t v) {
 	m[2] = s2;
 	m[3] = s3;
 	return even;
+}
+
+/**
+ * One half-GCD step wrapping the low-level abstraction.
+ */
+static int hgcd_step(bn_t u00, bn_t u01, bn_t u10, bn_t u11, bn_t a, bn_t b) {
+	bn_t t0, t1;
+	size_t n = RLC_MAX(a->used, b->used), sm = 0, nn, s = (n + 1) / 2 + 1;
+	dig_t *_a = a->dp, *_b = b->dp;
+	int result = 1;
+
+	if (n < 4) {
+		return 0;
+	}
+
+	bn_null(t0);
+	bn_null(t1);
+
+	RLC_TRY {
+		bn_new(t0);
+		bn_new(t1);
+
+		bn_grow(a, n + 1);
+		bn_grow(b, n + 1);
+		for (size_t i = a->used; i < n; i++) {
+			a->dp[i] = 0;
+		}
+		for (size_t i = b->used; i < n; i++) {
+			b->dp[i] = 0;
+		}
+		if ((a->dp[n - 1] | b->dp[n - 1]) == 0) {
+			return 0;
+		}
+		bn_grow(u00, s);
+		bn_grow(u01, s);
+		bn_grow(u10, s);
+		bn_grow(u11, s);
+		bn_grow(t1, 2 * (n + 1));
+		dv_copy(t1->dp, a->dp, n);
+		dv_copy(t1->dp + n, b->dp, n);
+
+		nn = bn_gcdh_low(u00->dp, u01->dp, u10->dp, u11->dp, &sm, _a, _b, n);
+		if (nn == 0) {
+			dv_copy(a->dp, t1->dp, n);
+			dv_copy(b->dp, t1->dp + n, n);
+			a->used = b->used = n;
+			bn_trim(a);
+			bn_trim(b);
+			result = 0;
+		} else {
+			a->used = b->used = nn;
+			a->sign = b->sign = RLC_POS;
+			bn_trim(a);
+			bn_trim(b);
+		}
+		u00->used = u01->used = u10->used = u11->used = sm;
+		u00->sign = u01->sign = u10->sign = u11->sign = RLC_POS;
+		bn_trim(u00);
+		bn_trim(u01);
+		bn_trim(u10);
+		bn_trim(u11);
+	}
+
+	return result;
 }
 
 /*============================================================================*/
@@ -1327,10 +1382,11 @@ void bn_gcd_ext_mid(bn_t c, bn_t d, bn_t e, bn_t f, const bn_t a, const bn_t b) 
 }
 
 void bn_gcd_ext_par(bn_t c, bn_t d, bn_t u00, bn_t u01, bn_t u10, bn_t u11,
-		const bn_t a, const bn_t b, const bn_t L) {
+		const bn_t a, const bn_t b, const bn_t l) {
 	bn_t q, t0, t1, t2, t3, t4, t5;
 	dis_t m[4], n[4];
 	int c_big, steps;
+	int flag = 0;
 
 	bn_null(q);
 	bn_null(t0);
@@ -1362,9 +1418,15 @@ void bn_gcd_ext_par(bn_t c, bn_t d, bn_t u00, bn_t u01, bn_t u10, bn_t u11,
 			bn_abs(d, a);
 		}
 
-		while (1) {
+		if (hgcd_step(u00, u01, u10, u11, c, d)) {
+			if (bn_cmp_abs(bn_cmp_abs(c, d) == RLC_GT ? c : d, l) != RLC_GT) {
+				flag = 1;
+			}
+		}
+
+		while (!flag) {
 			c_big = (bn_cmp_abs(c, d) == RLC_GT);
-			if (bn_cmp_abs(c_big ? c : d, L) != RLC_GT) {
+			if (bn_cmp_abs(c_big ? c : d, l) != RLC_GT) {
 				break;
 			}
 			if (bn_is_zero(c) || bn_is_zero(d)) {
