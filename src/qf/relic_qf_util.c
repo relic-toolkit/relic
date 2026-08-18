@@ -46,7 +46,7 @@ void qf_neg(qf_t f, const qf_t g) {
 	if (f != g) {
 		qf_copy(f, g);
 	}
-	if (bn_cmp(f->a, f->c) == RLC_NE && bn_cmp(f->a, f->b) == RLC_NE) {
+	if (bn_cmp(f->a, f->c) != RLC_EQ && bn_cmp(f->a, f->b) != RLC_EQ) {
 		bn_neg(f->b, f->b);
 	}
 }
@@ -275,14 +275,9 @@ void qf_copa(qf_t f, const bn_t l) {
 }
 
 void qf_prime(qf_t r, dig_t l, const bn_t dsc) {
-	bn_t t0;
 	dig_t d, b;
 
-	bn_null(t0);
-	bn_new(t0);
-
-	bn_abs(t0, dsc);
-	bn_mod_dig(&d, t0, l);
+	bn_mod_dig(&d, dsc, l);
 	if (bn_sign(dsc) == RLC_NEG && d != 0) {
 		d = l - d;
 	}
@@ -348,17 +343,19 @@ void qf_max(qf_t f, const bn_t l, const bn_t disc_k, int rdc) {
 }
 
 void qf_kern(bn_t r, const qf_t f, const bn_t l, const bn_t disc_k) {
-	bn_t t0, t1, t2, x, y;
+	bn_t t, x, y;
 	qf_t ft;
 	int cmp;
 
 	bn_null(x);
 	bn_null(y);
+	bn_null(t);
 	qf_null(ft);
 
 	RLC_TRY {
 		bn_new(x);
 		bn_new(y);
+		bn_new(t);
 		qf_new(ft);
 
 		qf_copy(ft, f);
@@ -373,14 +370,14 @@ void qf_kern(bn_t r, const qf_t f, const bn_t l, const bn_t disc_k) {
 		bn_zero(y);		/* g1 */
 		qf_norm(ft, ft);
 		while ((cmp = bn_cmp_abs(ft->a, ft->c)) == RLC_GT) {
-			bn_mul(t2, y, disc_k);
+			bn_mul(t, y, disc_k);
 			bn_mul(y, y, ft->b);
 			bn_add(y, y, x);
 			bn_mul(x, x, ft->b);
-			bn_add(x, x, t2);
-			bn_copy(t2, ft->a);
+			bn_add(x, x, t);
+			bn_copy(t, ft->a);
 			bn_copy(ft->a, ft->c);
-			bn_copy(ft->c, t2);
+			bn_copy(ft->c, t);
 			bn_neg(ft->b, ft->b);
 			qf_norm(ft, ft);
 		}
@@ -389,15 +386,15 @@ void qf_kern(bn_t r, const qf_t f, const bn_t l, const bn_t disc_k) {
 			RLC_THROW(ERR_NO_VALID);
 		}
 
-		bn_gcd_lower(t1, x, y);
-		bn_div(x, x, t1);
-		bn_div(y, y, t1);
+		bn_gcd_lower(t, x, y);
+		bn_div(x, x, t);
+		bn_div(y, y, t);
 
 		bn_mod(x, x, l);
-		bn_mod_inv(t0, x, l);
+		bn_mod_inv(t, x, l);
 		bn_neg(y, y);
-		bn_mul(t0, t0, y);
-		bn_mod(r, t0, l);
+		bn_mul(t, t, y);
+		bn_mod(r, t, l);
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -405,6 +402,7 @@ void qf_kern(bn_t r, const qf_t f, const bn_t l, const bn_t disc_k) {
 	RLC_FINALLY {
 		bn_free(x);
 		bn_free(y);
+		bn_free(t);
 		qf_free(ft);
 	}
 }

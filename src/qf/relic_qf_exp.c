@@ -39,11 +39,17 @@
 
 void qf_exp(qf_t r, const qf_t f, const bn_t n, const bn_t bound) {
 	qf_t ff, tab[1 << (QF_NAF_WIDTH - 2)];
-	int8_t *naf = NULL;
-	size_t i, u, w, bits, len;
+	int8_t *naf = (int8_t *)RLC_ALLOCA(int8_t, bn_bits(n) + 1);
+	size_t u, w, bits, len;
 	int j, first;
 
+	if (naf == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
+		return;
+	}
+
 	if (bn_is_zero(n)) {
+		RLC_FREE(naf);
 		qf_set_one(r, bound);
 		return;
 	}
@@ -58,23 +64,19 @@ void qf_exp(qf_t r, const qf_t f, const bn_t n, const bn_t bound) {
 	if (bits > 1024) w = 7;
 	u = (size_t)1 << (w - 2);
 
-	for (i = 0; i < u; i++) {
-		qf_new(tab[i]);
-	}
-	qf_new(ff);
-
 	RLC_TRY {
-		len = bn_bits(n) + 1;
-		naf = malloc(len);
-		if (naf == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
+		qf_new(ff);
+		for (size_t i = 0; i < u; i++) {
+			qf_new(tab[i]);
 		}
+
+		len = bn_bits(n) + 1;
 		bn_rec_naf(naf, &len, n, w);
 
 		/* tab[i] = f^(2i+1) for 0 <= i < 2^(w-2) */
 		qf_dup(ff, f, bound);
 		qf_copy(tab[0], f);
-		for (i = 1; i < u; i++) {
+		for (size_t i = 1; i < u; i++) {
 			qf_com(tab[i], tab[i - 1], ff, 0, bound);
 		}
 
@@ -108,35 +110,42 @@ void qf_exp(qf_t r, const qf_t f, const bn_t n, const bn_t bound) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		free(naf);
 		qf_free(ff);
-		for (i = 0; i < u; i++) {
+		for (size_t i = 0; i < u; i++) {
 			qf_free(tab[i]);
 		}
+		RLC_FREE(naf);
 	}
 }
 
 void qf_exp_sim(qf_t r, const qf_t f0, const bn_t n0, const qf_t f1,
 		const bn_t n1, const bn_t bound) {
+	size_t len, offset = RLC_MAX(bn_bits(n0), bn_bits(n1)) + 1;
+	int8_t *jsf = (int8_t *)RLC_ALLOCA(int8_t, 2 * offset);
 	qf_t tab[5];
-	int8_t *jsf = NULL;
-	size_t i, len, offset;
 	int j;
 
+	if (jsf == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
+		return;
+	}
+
 	if (bn_is_zero(n0)) {
+		RLC_FREE(jsf);
 		qf_exp(r, f1, n1, bound);
 		return;
 	}
 	if (bn_is_zero(n1)) {
+		RLC_FREE(jsf);
 		qf_exp(r, f0, n0, bound);
 		return;
 	}
 
-	for (i = 0; i < 5; i++) {
-		qf_new(tab[i]);
-	}
-
 	RLC_TRY {
+		for (size_t i = 0; i < 5; i++) {
+			qf_new(tab[i]);
+		}
+
 		/* Same table layout as RELIC's ep_mul_sim_joint. */
 		qf_set_one(tab[0], bound);
 		qf_copy(tab[1], f1);
@@ -144,12 +153,7 @@ void qf_exp_sim(qf_t r, const qf_t f0, const bn_t n0, const qf_t f1,
 		qf_com(tab[3], f0, f1, 0, bound);
 		qf_com(tab[4], f0, f1, 1, bound);
 
-		offset = RLC_MAX(bn_bits(n0), bn_bits(n1)) + 1;
 		len = 2 * offset;
-		jsf = malloc(len);
-		if (jsf == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
 		bn_rec_jsf(jsf, &len, n0, n1);
 
 		qf_set_one(r, bound);
@@ -168,10 +172,10 @@ void qf_exp_sim(qf_t r, const qf_t f0, const bn_t n0, const qf_t f1,
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		free(jsf);
-		for (i = 0; i < 5; i++) {
+		for (size_t i = 0; i < 5; i++) {
 			qf_free(tab[i]);
 		}
+		RLC_FREE(jsf);
 	}
 }
 

@@ -75,7 +75,7 @@ void qf_dup(qf_t r, const qf_t f, const bn_t d) {
 		/*
 		 * Ax = gcd(a, b) = m11*a + m01*b
 		 */
-		bn_gcd_ext_lower(Ax, m11, m01, f->a, f->b);
+		bn_gcd_ext(Ax, m11, m01, f->a, f->b);
 
 		if (bn_cmp_dig(Ax, 1) != RLC_EQ) {
 			bn_div(By, f->a, Ax);

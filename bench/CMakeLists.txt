@@ -13,13 +13,17 @@ if (CHECK)
 	ADD_MODULE(err)
 endif(CHECK)
 
+if (WITH_DV)
+	ADD_MODULE(dv)
+endif(WITH_DV)
+
 if (WITH_BN)
 	ADD_MODULE(bn)
 endif(WITH_BN)
 
-if (WITH_DV)
-	ADD_MODULE(dv)
-endif(WITH_DV)
+if (WITH_QF)
+	ADD_MODULE(qf)
+endif(WITH_QF)
 
 if (WITH_FP)
 	ADD_MODULE(fp)
