@@ -24,7 +24,7 @@
 /**
  * @file
  *
- * Implementation of the binary quadratic form duplication.
+ * Implementation of the binary quadratic form composition.
  *
  * @ingroup qf
  */

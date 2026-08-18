@@ -35,6 +35,9 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
+/*
+ * NUDUPL, following van der Poorten's formulation as implemented in BICYCL.
+ */
 void qf_dup(qf_t r, const qf_t f, const bn_t d) {
 	bn_t Ax, Ay, Bx, By, Dx, Dy;
 	bn_t q, t0, t1;
