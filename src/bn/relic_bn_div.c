@@ -172,7 +172,11 @@ void bn_div_dig(bn_t c, const bn_t a, dig_t b) {
 		bn_copy(q, a);
 		bn_div1_low(q->dp, &r, (const dig_t *)a->dp, b, a->used);
 		if (c != NULL) {
-			bn_copy(c, q);
+			if (bn_sign(a) == RLC_NEG && r != 0) {
+				bn_sub_dig(c, q, 1);
+			} else {
+				bn_copy(c, q);
+			}
 		}
 	}
 	RLC_CATCH_ANY {
@@ -211,11 +215,15 @@ void bn_div_rem_dig(bn_t c, dig_t *d, const bn_t a, dig_t b) {
 		bn_div1_low(q->dp, &r, (const dig_t *)a->dp, b, a->used);
 
 		if (c != NULL) {
-			bn_copy(c, q);
+			if (bn_sign(a) == RLC_NEG && r != 0) {
+				bn_sub_dig(c, q, 1);
+			} else {
+				bn_copy(c, q);
+			}
 		}
 
 		if (d != NULL) {
-			if (bn_sign(a) == RLC_NEG) {
+			if (bn_sign(a) == RLC_NEG && r != 0) {
 				*d = b - r;
 			} else {
 				*d = r;
