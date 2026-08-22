@@ -296,18 +296,24 @@ static void orders(void) {
 	 */
 	BENCH_RUN("qf_copa") {
 		bench_qf_rand(a);
-		BENCH_ADD({ qf_copy(b, a); qf_copa(b, bench_q); });
+		BENCH_ADD(qf_copa(b, a, bench_q));
 	} BENCH_END;
 
 	BENCH_RUN("qf_lift") {
 		bench_qf_rand(a);
-		qf_max(a, bench_q, bench_k, 1);
-		BENCH_ADD({ qf_copy(b, a); qf_lift(b, bench_q); });
+		qf_phi(a, a, bench_q, bench_k, 1);
+		BENCH_ADD(qf_lift(b, a, bench_q));
 	} BENCH_END;
 
-	BENCH_RUN("qf_max") {
+	BENCH_RUN("qf_psi") {
 		bench_qf_rand(a);
-		BENCH_ADD({ qf_copy(b, a); qf_max(b, bench_q, bench_k, 1); });
+		BENCH_ADD(qf_psi(b, a, bench_q, bench_k));
+	} BENCH_END;
+
+
+	BENCH_RUN("qf_phi") {
+		bench_qf_rand(a);
+		BENCH_ADD(qf_phi(b, a, bench_q, bench_k, 1));
 	} BENCH_END;
 
 	BENCH_RUN("qf_kern") {

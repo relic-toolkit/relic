@@ -626,9 +626,8 @@ static int orders(void) {
 			if (!test_qf_rand(a, test_k)) {
 				continue;
 			}
-			qf_copy(b, a);
-			qf_copa(b, test_q);
-			TEST_ASSERT(test_qf_dsc(b, test_k), end);
+			qf_copa(b, a, test_q);
+			TEST_ASSERT(test_qf_dsc(a, test_k), end);
 			bn_gcd(n, b->a, test_q);
 			TEST_ASSERT(bn_cmp_dig(n, 1) == RLC_EQ, end);
 		} TEST_END;
@@ -637,8 +636,7 @@ static int orders(void) {
 			if (!test_qf_rand(a, test_k)) {
 				continue;
 			}
-			qf_copy(b, a);
-			qf_lift(b, test_q);
+			qf_lift(b, a, test_q);
 			TEST_ASSERT(test_qf_dsc(b, test_d), end);
 		} TEST_END;
 
@@ -647,9 +645,8 @@ static int orders(void) {
 				continue;
 			}
 			qf_rdc(a, a);
-			qf_copy(b, a);
-			qf_lift(b, test_q);
-			qf_max(b, test_q, test_k, 1);
+			qf_lift(b, a, test_q);
+			qf_phi(b, b, test_q, test_k, 1);
 			TEST_ASSERT(test_qf_dsc(b, test_k), end);
 			TEST_ASSERT(qf_cmp(a, b) == RLC_EQ, end);
 		} TEST_END;
@@ -667,9 +664,9 @@ static int orders(void) {
 				continue;
 			}
 			qf_com(c, a, b, 0, test_d);
-			qf_max(c, test_q, test_k, 1);
-			qf_max(a, test_q, test_k, 1);
-			qf_max(b, test_q, test_k, 1);
+			qf_phi(c, c, test_q, test_k, 1);
+			qf_phi(a, a, test_q, test_k, 1);
+			qf_phi(b, b, test_q, test_k, 1);
 			qf_com(a, a, b, 0, test_k);
 			TEST_ASSERT(test_qf_dsc(c, test_k), end);
 			TEST_ASSERT(qf_cmp(a, c) == RLC_EQ, end);
@@ -705,6 +702,189 @@ static int orders(void) {
 	bn_free(m);
 	bn_free(n);
 	bn_free(s);
+	return code;
+}
+
+static int qpower(void) {
+	int code = RLC_ERR;
+	qf_t a, b, c, la, lb, lc, d, e;
+	bn_t m, n;
+
+	qf_null(a);
+	qf_null(b);
+	qf_null(c);
+	qf_null(la);
+	qf_null(lb);
+	qf_null(lc);
+	qf_null(d);
+	qf_null(e);
+	bn_null(m);
+	bn_null(n);
+
+	RLC_TRY {
+		qf_new(a);
+		qf_new(b);
+		qf_new(c);
+		qf_new(la);
+		qf_new(lb);
+		qf_new(lc);
+		qf_new(d);
+		qf_new(e);
+		bn_new(m);
+		bn_new(n);
+
+		TEST_CASE("the lift is not multiplicative on its own") {
+			/*
+			 * Documented rather than merely observed: qf_lift is a section of
+			 * qf_max, not a homomorphism, so the lift of a product and the
+			 * product of the lifts differ. Everything below describes exactly
+			 * how they differ, and a caller that assumes otherwise silently
+			 * computes in the wrong class.
+			 */
+			if (!test_qf_rand(a, test_k) || !test_qf_rand(b, test_k)) {
+				continue;
+			}
+			qf_com(c, a, b, 0, test_k);
+			qf_copa(la, a, test_q);
+			qf_lift(la, la, test_q);
+			qf_copa(lb, b, test_q);
+			qf_lift(lb, lb, test_q);
+			qf_copa(lc, c, test_q);
+			qf_lift(lc, lc, test_q);
+			qf_com(d, la, lb, 0, test_d);
+			TEST_ASSERT(test_qf_dsc(d, test_d), end);
+			TEST_ASSERT(test_qf_dsc(lc, test_d), end);
+			/*
+			 * The defect is a near-uniform element of a kernel of order q, so
+			 * it is trivial only with probability about 2^-|q|. Asserting the
+			 * difference documents the current contract and would flag a change
+			 * that made the lift a homomorphism, which callers relying on the
+			 * q-th power would want to know about.
+			 */
+			TEST_ASSERT(qf_cmp(d, lc) != RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("the defect of the lift lies in the kernel") {
+			if (!test_qf_rand(a, test_k) || !test_qf_rand(b, test_k)) {
+				continue;
+			}
+			qf_com(c, a, b, 0, test_k);
+			qf_copa(la, a, test_q);
+			qf_lift(la, la, test_q);
+			qf_copa(lb, b, test_q);
+			qf_lift(lb, lb, test_q);
+			qf_copa(lc, c, test_q);
+			qf_lift(lc, lc, test_q);
+			/* D = lift(a)*lift(b)*lift(ab)^-1 */
+			qf_com(d, la, lb, 0, test_d);
+			qf_com(d, d, lc, 1, test_d);
+			TEST_ASSERT(test_qf_dsc(d, test_d), end);
+			/* it projects to the identity, so it lies in ker qf_max */
+			qf_phi(e, d, test_q, test_k, 1);
+			TEST_ASSERT(qf_is_one(e) == 1, end);
+		} TEST_END;
+
+		TEST_CASE("the kernel logarithm reconstructs the defect") {
+			if (!test_qf_rand(a, test_k) || !test_qf_rand(b, test_k)) {
+				continue;
+			}
+			qf_com(c, a, b, 0, test_k);
+			qf_copa(la, a, test_q);
+			qf_lift(la, la, test_q);
+			qf_copa(lb, b, test_q);
+			qf_lift(lb, lb, test_q);
+			qf_copa(lc, c, test_q);
+			qf_lift(lc, lc, test_q);
+			qf_com(d, la, lb, 0, test_d);
+			qf_com(d, d, lc, 1, test_d);
+			/* F generates the kernel, so the defect is one of its powers */
+			bn_sqr(n, test_q);
+			qf_set_dsc(e, n, test_q, test_d);
+			qf_kern(m, d, test_q, test_k);
+			qf_exp(e, e, m, test_d);
+			if (qf_cmp(e, d) != RLC_EQ) {
+				/* the logarithm comes back only up to the sign of the class */
+				bn_sub(m, test_q, m);
+				bn_mod(m, m, test_q);
+				bn_sqr(n, test_q);
+				qf_set_dsc(e, n, test_q, test_d);
+				qf_exp(e, e, m, test_d);
+			}
+			TEST_ASSERT(qf_cmp(e, d) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("the q-th power annihilates the defect") {
+			if (!test_qf_rand(a, test_k) || !test_qf_rand(b, test_k)) {
+				continue;
+			}
+			qf_com(c, a, b, 0, test_k);
+			qf_copa(la, a, test_q);
+			qf_lift(la, la, test_q);
+			qf_copa(lb, b, test_q);
+			qf_lift(lb, lb, test_q);
+			qf_copa(lc, c, test_q);
+			qf_lift(lc, lc, test_q);
+			qf_com(d, la, lb, 0, test_d);
+			qf_com(d, d, lc, 1, test_d);
+			/* the kernel has order q, so raising to q returns the identity */
+			qf_exp(e, d, test_q, test_d);
+			TEST_ASSERT(qf_is_one(e) == 1, end);
+		} TEST_END;
+
+		TEST_CASE("the lift composed with the q-th power is multiplicative") {
+			if (!test_qf_rand(a, test_k) || !test_qf_rand(b, test_k)) {
+				continue;
+			}
+			qf_com(c, a, b, 0, test_k);
+			qf_psi(la, a, test_q, test_d);
+			qf_psi(lb, b, test_q, test_d);
+			qf_psi(lc, c, test_q, test_d);
+			qf_com(d, la, lb, 0, test_d);
+			TEST_ASSERT(qf_cmp(d, lc) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("the lift alone projects back to the element") {
+			if (!test_qf_rand(a, test_k)) {
+				continue;
+			}
+			qf_rdc(a, a);
+			qf_copa(la, a, test_q);
+			qf_lift(la, la, test_q);
+			qf_phi(e, la, test_q, test_k, 1);
+			TEST_ASSERT(qf_cmp(e, a) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("the q-th power of the lift projects to the q-th power") {
+			/*
+			 * Together with the case above this fixes the composite: the bare
+			 * lift inverts qf_max, so composing it with the q-th power gives
+			 * exactly the a^q that a caller of these maps expects.
+			 */
+			if (!test_qf_rand(a, test_k)) {
+				continue;
+			}
+			qf_rdc(a, a);
+			qf_psi(la, a, test_q, test_d);
+			qf_phi(e, la, test_q, test_k, 1);
+			qf_exp(b, a, test_q, test_k);
+			TEST_ASSERT(qf_cmp(e, b) == RLC_EQ, end);
+		} TEST_END;
+	}
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
+	}
+	code = RLC_OK;
+  end:
+	qf_free(a);
+	qf_free(b);
+	qf_free(c);
+	qf_free(la);
+	qf_free(lb);
+	qf_free(lc);
+	qf_free(d);
+	qf_free(e);
+	bn_free(m);
+	bn_free(n);
 	return code;
 }
 
@@ -762,9 +942,12 @@ int main(void) {
 		return 1;
 	}
 
-	util_banner("Maps between orders:", 1);
-
 	if (orders() != RLC_OK) {
+		core_clean();
+		return 1;
+	}
+
+	if (qpower() != RLC_OK) {
 		core_clean();
 		return 1;
 	}
