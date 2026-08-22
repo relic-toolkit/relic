@@ -1863,6 +1863,14 @@ static int digit(void) {
 			bn_div_rem_dig(e, &g, a, b->dp[0]);
 			TEST_ASSERT(bn_cmp(d, e) == RLC_EQ, end);
 			TEST_ASSERT(bn_cmp_dig(c, g) == RLC_EQ, end);
+			bn_neg(a, a);
+			bn_div(d, a, b);
+			bn_div_dig(e, a, b->dp[0]);
+			TEST_ASSERT(bn_cmp(d, e) == RLC_EQ, end);
+			bn_div_rem(d, c, a, b);
+			bn_div_rem_dig(e, &g, a, b->dp[0]);
+			TEST_ASSERT(bn_cmp(d, e) == RLC_EQ, end);
+			TEST_ASSERT(bn_cmp_dig(c, g) == RLC_EQ, end);
 		}
 		TEST_END;
 
@@ -1871,6 +1879,10 @@ static int digit(void) {
 			bn_rand(b, RLC_POS, RLC_DIG);
 			if (b->dp[0] == 0)
 				continue;
+			bn_div_rem(d, c, a, b);
+			bn_mod_dig(&g, a, b->dp[0]);
+			TEST_ASSERT(bn_cmp_dig(c, g) == RLC_EQ, end);
+			bn_neg(a, a);
 			bn_div_rem(d, c, a, b);
 			bn_mod_dig(&g, a, b->dp[0]);
 			TEST_ASSERT(bn_cmp_dig(c, g) == RLC_EQ, end);
@@ -2551,6 +2563,11 @@ int main(void) {
 		core_clean();
 		return 1;
 	}
+
+	if (digit() != RLC_OK) {
+		core_clean();
+		return 1;
+	}
 	
 	if (gcd() != RLC_OK) {
 		core_clean();
@@ -2568,11 +2585,6 @@ int main(void) {
 	}
 
 	if (symbol() != RLC_OK) {
-		core_clean();
-		return 1;
-	}
-
-	if (digit() != RLC_OK) {
 		core_clean();
 		return 1;
 	}
