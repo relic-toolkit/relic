@@ -109,15 +109,11 @@ static int lehmer_step(dis_t *m, const bn_t x, const bn_t y, bn_t u, bn_t v) {
 	return even;
 }
 
-#if WSIZE > 16
-
 /**
  * One half-GCD step wrapping the low-level abstraction.
  */
 static int hgcd_step(bn_t u00, bn_t u01, bn_t u10, bn_t u11, bn_t a, bn_t b) {
 	size_t n = RLC_MAX(a->used, b->used), sm = 0, nn, s = (n + 1) / 2 + 1;
-	dig_t *_a = a->dp, *_b = b->dp;
-	int result = 1;
 
 	if (n < 4) {
 		return 0;
@@ -139,15 +135,15 @@ static int hgcd_step(bn_t u00, bn_t u01, bn_t u10, bn_t u11, bn_t a, bn_t b) {
 	bn_grow(u01, s);
 	bn_grow(u10, s);
 	bn_grow(u11, s);
-	nn = bn_gcdh_low(u00->dp, u01->dp, u10->dp, u11->dp, &sm, _a, _b, n);
+	nn = bn_gcdh_low(u00->dp, u01->dp, u10->dp, u11->dp, &sm, a->dp, b->dp, n);
 	if (nn == 0) {
-		result = 0;
-	} else {
-		a->used = b->used = nn;
-		a->sign = b->sign = RLC_POS;
-		bn_trim(a);
-		bn_trim(b);
+		return 0;
 	}
+
+	a->used = b->used = nn;
+	a->sign = b->sign = RLC_POS;
+	bn_trim(a);
+	bn_trim(b);
 	u00->used = u01->used = u10->used = u11->used = sm;
 	u00->sign = u01->sign = u10->sign = u11->sign = RLC_POS;
 	bn_trim(u00);
@@ -155,10 +151,8 @@ static int hgcd_step(bn_t u00, bn_t u01, bn_t u10, bn_t u11, bn_t a, bn_t b) {
 	bn_trim(u10);
 	bn_trim(u11);
 
-	return result;
+	return 1;
 }
-
-#endif
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -1397,21 +1391,14 @@ void bn_gcd_ext_par(bn_t c, bn_t d, bn_t u00, bn_t u01, bn_t u10, bn_t u11,
 		bn_zero(u10);
 		bn_set_dig(u11, 1);
 
-		if (bn_cmp_abs(a, b) == RLC_LT) {
-			bn_abs(c, a);
-			bn_abs(d, b);
-		} else {
-			bn_abs(c, b);
-			bn_abs(d, a);
-		}
+		bn_abs(c, a);
+		bn_abs(d, b);
 
-#if WSIZE > 16
 		if (hgcd_step(u00, u01, u10, u11, c, d)) {
 			if (bn_cmp_abs(bn_cmp_abs(c, d) == RLC_GT ? c : d, l) != RLC_GT) {
 				flag = 1;
 			}
 		}
-#endif
 
 		while (!flag) {
 			c_big = (bn_cmp_abs(c, d) == RLC_GT);

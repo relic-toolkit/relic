@@ -449,10 +449,12 @@ size_t bn_gcdh_low(dig_t *m00, dig_t *m01, dig_t *m10, dig_t *m11, size_t *sm,
 		 * bn_divn_low destroys both operands and may extend either by a digit
 		 * while normalizing, so it is given copies with a spare digit each.
 		 */
+		dv_zero(num, size + 2);
+		dv_zero(den, size + 2);
+		dv_zero(quo, size + 2);
+		dv_zero(rem, size + 2);
 		dv_copy(num, big, sbig);
-		num[sbig] = 0;
 		dv_copy(den, sml, ssml);
-		den[ssml] = 0;
 		bn_divn_low(quo, rem, num, sbig, den, ssml);
 
 		/*
