@@ -354,9 +354,8 @@ void qf_norm(qf_t f, const qf_t g);
  *
  * @param[out] r			- the resulting quadratic form.
  * @param[in] f				- the quadratic form to lift.
- * @param[in] l				- the lifting parameter.
  */
-void qf_lift(qf_t r, const qf_t f, const bn_t l);
+void qf_lift(qf_t r, const qf_t f);
 
 /**
  * Constructs a quadratic form associated with a prime.
@@ -374,13 +373,12 @@ void qf_prime(qf_t r, dig_t l, const bn_t dsc);
  * Computes the coprime adjustment of a quadratic form.
  *
  * Modifies f so that its leading coefficient satisfies the required
- * coprimality condition with respect to l.
+ * coprimality condition with respect to the conductor.
  *
  * @param[out] r			- the resulting quadratic form.
  * @param[in] f				- the quadratic form to adjust.
- * @param[in] l				- the adjustment parameter.
  */
-void qf_copa(qf_t r, const qf_t f, const bn_t l);
+void qf_copa(qf_t r, const qf_t f);
 
 /**
  * Moves a quadratic form to the maximal order.
@@ -393,39 +391,20 @@ void qf_copa(qf_t r, const qf_t f, const bn_t l);
  *
  * @param[out] f			- the resulting quadratic form.
  * @param[in] f				- the quadratic form to transform.
- * @param[in] l				- the conductor or order parameter.
- * @param[in] disc_k		- the discriminant of the maximal order.
  * @param[in] rdc			- the flag indicating whether to reduce the result.
  */
-void qf_phi(qf_t r, const qf_t f, const bn_t l, const bn_t disc_k, int rdc);
+void qf_phi(qf_t r, const qf_t f, int rdc);
 
 /**
  * Maps a form from the maximal order into the order of the given conductor,
  * as a group homomorphism.
- *
- * This is the map psi_l of the Castagnos-Laguillaumie framework, and it is the
- * composition of qf_lift with exponentiation to l. The two steps belong
- * together: qf_lift alone extends an ideal and inverts qf_phi exactly, so it is
- * a section of the projection rather than a homomorphism, and the lift of a
- * product differs from the product of the lifts by an element of the kernel of
- * qf_phi. That kernel is cyclic of order l, so raising to l annihilates the
- * difference and leaves a multiplicative map. Together with qf_phi the two
- * satisfy
- *
- *     qf_phi(qf_psi(a)) = a^l    and    qf_psi(qf_phi(b)) = b^l,
- *
- * for a in the maximal order and b in the order of conductor l.
- *
- * Callers wanting the raw extension of ideals, for instance to build a
- * representative rather than to compute in the group, should use qf_lift
- * directly and take responsibility for the kernel component.
  *
  * @param[out] r			- the resulting quadratic form.
  * @param[in] f				- the form to map.
  * @param[in] l				- the conductor.
  * @param[in] d				- the discriminant of the order of conductor l.
  */
-void qf_psi(qf_t r, const qf_t f, const bn_t l, const bn_t d);
+void qf_psi(qf_t r, const qf_t f, const bn_t d);
 
 /**
  * Computes a kernel representative.
@@ -435,10 +414,8 @@ void qf_psi(qf_t r, const qf_t f, const bn_t l, const bn_t d);
  *
  * @param[out] r			- the kernel representative.
  * @param[in] f				- the quadratic form representing the class action.
- * @param[in] l				- the kernel parameter.
- * @param[in] disc_k		- the discriminant of the maximal order.
  */
-void qf_kern(bn_t r, const qf_t f, const bn_t l, const bn_t disc_k);
+void qf_kern(bn_t r, const qf_t f);
 
 /**
  * Reduces a binary quadratic form.

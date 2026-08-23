@@ -52,82 +52,8 @@ static bn_t bench_d;
 static bn_t bench_k;
 /** Conductor relating the two. */
 static bn_t bench_q;
-/** A generator of the group with discriminant bench_d. */
-static qf_t bench_g;
 /** Bound on the exponents, roughly the size of the class number. */
 static bn_t bench_n;
-
-/**
- * Builds the pair of discriminants and a generator. Delta_K = -p*q and
- * Delta = Delta_K*q^2, with Delta_K congruent to one modulo four, which asks
- * for exactly one of the two primes to be three modulo four.
- */
-static int bench_qf_setup(void) {
-	int code = RLC_ERR;
-	bn_t p, t, u;
-	dig_t l;
-
-	bn_null(p);
-	bn_null(t);
-	bn_null(u);
-
-	RLC_TRY {
-		bn_new(p);
-		bn_new(t);
-		bn_new(u);
-
-		do {
-			bn_gen_prime(bench_q, BENCH_QF_COND);
-		} while (bn_get_bit(bench_q, 1) != 0);
-		do {
-			bn_gen_prime(p, BENCH_QF_PRIME);
-		} while (bn_get_bit(p, 1) == 0);
-
-		bn_mul(bench_k, p, bench_q);
-		bn_neg(bench_k, bench_k);
-		bn_mul(bench_d, bench_k, bench_q);
-		bn_mul(bench_d, bench_d, bench_q);
-
-		/* the class number is about the square root of the discriminant */
-		bn_abs(t, bench_d);
-		bn_rsh(bench_n, t, bn_bits(t) / 2);
-
-		for (l = 2; l < 512; l++) {
-			if (l > 2 && (l % 2) == 0) {
-				continue;
-			}
-			qf_prime(bench_g, l, bench_d);
-			bn_sqr(t, bench_g->b);
-			bn_mul(u, bench_g->a, bench_g->c);
-			bn_lsh(u, u, 2);
-			bn_sub(t, t, u);
-			if (bn_cmp(t, bench_d) == RLC_EQ && !qf_is_one(bench_g)) {
-				code = RLC_OK;
-				break;
-			}
-		}
-	}
-	RLC_CATCH_ANY {
-		code = RLC_ERR;
-	}
-	RLC_FINALLY {
-		bn_free(p);
-		bn_free(t);
-		bn_free(u);
-	}
-	return code;
-}
-
-/** Replaces f by a random element of the group, off the clock. */
-static void bench_qf_rand(qf_t f) {
-	bn_t n;
-
-	bn_null(n);
-	bn_new(n);
-	bn_rand_mod(n, bench_n);
-	qf_exp(f, bench_g, n, bench_d);
-	bn_free(n);
-}
 
 static void util(void) {
 	qf_t a, b;
@@ -139,18 +65,18 @@ static void util(void) {
 	qf_new(b);
 
 	BENCH_RUN("qf_copy") {
-		bench_qf_rand(a);
+		qf_rand(a, bench_d);
 		BENCH_ADD(qf_copy(b, a));
 	} BENCH_END;
 
 	BENCH_RUN("qf_neg") {
-		bench_qf_rand(a);
+		qf_rand(a, bench_d);
 		BENCH_ADD(qf_neg(b, a));
 	} BENCH_END;
 
 	BENCH_RUN("qf_cmp") {
-		bench_qf_rand(a);
-		bench_qf_rand(b);
+		qf_rand(a, bench_d);
+		qf_rand(b, bench_d);
 		BENCH_ADD(qf_cmp(a, b));
 	} BENCH_END;
 
@@ -159,7 +85,7 @@ static void util(void) {
 	} BENCH_END;
 
 	BENCH_RUN("qf_is_one") {
-		bench_qf_rand(a);
+		qf_rand(a, bench_d);
 		BENCH_ADD(qf_is_one(a));
 	} BENCH_END;
 
@@ -191,7 +117,7 @@ static void arith(void) {
 	bn_new(n);
 
 	BENCH_RUN("qf_norm") {
-		bench_qf_rand(a);
+		qf_rand(a, bench_d);
 		BENCH_ADD(qf_norm(b, a));
 	} BENCH_END;
 
@@ -202,7 +128,7 @@ static void arith(void) {
 		 * a reduced form keeps the discriminant and leaves a form that fails
 		 * both reduction conditions, which is what the loop is meant to fix.
 		 */
-		bench_qf_rand(a);
+		qf_rand(a, bench_d);
 		bn_copy(m, a->a);
 		bn_copy(a->a, a->c);
 		bn_copy(a->c, m);
@@ -210,25 +136,25 @@ static void arith(void) {
 	} BENCH_END;
 
 	BENCH_RUN("qf_com") {
-		bench_qf_rand(a);
-		bench_qf_rand(b);
+		qf_rand(a, bench_d);
+		qf_rand(b, bench_d);
 		BENCH_ADD(qf_com(c, a, b, 0, bench_d));
 	} BENCH_END;
 
 	BENCH_RUN("qf_dup") {
-		bench_qf_rand(a);
+		qf_rand(a, bench_d);
 		BENCH_ADD(qf_dup(b, a, bench_d));
 	} BENCH_END;
 
 	BENCH_RUN("qf_exp") {
-		bench_qf_rand(a);
+		qf_rand(a, bench_d);
 		bn_rand_mod(n, bench_n);
 		BENCH_ADD(qf_exp(b, a, n, bench_d));
 	} BENCH_END;
 
 	BENCH_RUN("qf_exp_sim") {
-		bench_qf_rand(a);
-		bench_qf_rand(b);
+		qf_rand(a, bench_d);
+		qf_rand(b, bench_d);
 		bn_rand_mod(m, bench_n);
 		bn_rand_mod(n, bench_n);
 		BENCH_ADD(qf_exp_sim(c, a, m, b, n, bench_d));
@@ -243,7 +169,7 @@ static void arith(void) {
 	bn_rand_mod(n, bench_n);
 	se = (bn_bits(bench_n) + 3) / 4 + 1;
 	sd = 2 * se;
-	bench_qf_rand(a);
+	qf_rand(a, bench_d);
 	qf_copy(fe, a);
 	for (j = 0; j < se; j++) {
 		qf_dup(fe, fe, bench_d);
@@ -295,25 +221,25 @@ static void orders(void) {
 	 * greatest common divisor.
 	 */
 	BENCH_RUN("qf_copa") {
-		bench_qf_rand(a);
-		BENCH_ADD(qf_copa(b, a, bench_q));
+		qf_rand(a, bench_d);
+		BENCH_ADD(qf_copa(b, a));
 	} BENCH_END;
 
 	BENCH_RUN("qf_lift") {
-		bench_qf_rand(a);
-		qf_phi(a, a, bench_q, bench_k, 1);
-		BENCH_ADD(qf_lift(b, a, bench_q));
+		qf_rand(a, bench_d);
+		qf_phi(a, a, 1);
+		BENCH_ADD(qf_lift(b, a));
 	} BENCH_END;
 
 	BENCH_RUN("qf_psi") {
-		bench_qf_rand(a);
-		BENCH_ADD(qf_psi(b, a, bench_q, bench_k));
+		qf_rand(a, bench_d);
+		BENCH_ADD(qf_psi(b, a, bench_k));
 	} BENCH_END;
 
 
 	BENCH_RUN("qf_phi") {
-		bench_qf_rand(a);
-		BENCH_ADD(qf_phi(b, a, bench_q, bench_k, 1));
+		qf_rand(a, bench_d);
+		BENCH_ADD(qf_phi(b, a, 1));
 	} BENCH_END;
 
 	BENCH_RUN("qf_kern") {
@@ -321,7 +247,7 @@ static void orders(void) {
 		qf_set_dsc(a, n, bench_q, bench_d);
 		bn_rand_mod(n, bench_q);
 		qf_exp(b, a, n, bench_d);
-		BENCH_ADD(qf_kern(m, b, bench_q, bench_k));
+		BENCH_ADD(qf_kern(m, b));
 	} BENCH_END;
 
 	qf_free(a);
@@ -343,18 +269,22 @@ int main(void) {
 	bn_null(bench_k);
 	bn_null(bench_q);
 	bn_null(bench_n);
-	qf_null(bench_g);
 	bn_new(bench_d);
 	bn_new(bench_k);
 	bn_new(bench_q);
 	bn_new(bench_n);
-	qf_new(bench_g);
 
-	if (bench_qf_setup() != RLC_OK) {
-		util_print("FATAL ERROR!\n");
+	if (qf_group_set(BENCH_QF_COND, BENCH_QF_PRIME) != RLC_OK) {
 		core_clean();
 		return 1;
 	}
+
+	bn_copy(bench_d, &(core_get()->qf_d));
+	bn_copy(bench_k, &(core_get()->qf_k));
+	bn_copy(bench_q, &(core_get()->qf_q));
+	/* the class number is about the square root of the discriminant */
+	bn_abs(bench_n, bench_d);
+	bn_rsh(bench_n, bench_n, bn_bits(bench_n) / 2);
 
 	util_print("\n-- Discriminant of %zu bits, conductor of %zu bits.\n\n",
 			bn_bits(bench_d), bn_bits(bench_q));
@@ -372,7 +302,6 @@ int main(void) {
 	bn_free(bench_k);
 	bn_free(bench_q);
 	bn_free(bench_n);
-	qf_free(bench_g);
 
 	core_clean();
 	return 0;

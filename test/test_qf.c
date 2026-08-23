@@ -49,15 +49,6 @@
  */
 static bn_t test_d;
 static bn_t test_k;
-static bn_t test_q;
-
-/**
- * A generator of each group, found once: searching for a prime form means
- * trying candidates until one exists, and qf_prime looks for the square root
- * modulo l by trial, so it is far too costly to repeat per test iteration.
- */
-static qf_t test_g;
-static qf_t test_gk;
 
 static int memory(void) {
 	err_t e = ERR_CAUGHT;
@@ -448,6 +439,7 @@ static int exponentiation(void) {
 }
 
 static int orders(void) {
+	ctx_t *ctx = core_get();
 	int code = RLC_ERR;
 	qf_t a, b, c;
 	bn_t m, n, s;
@@ -469,23 +461,23 @@ static int orders(void) {
 
 		TEST_CASE("the coprime form has the same discriminant") {
 			qf_rand(a, test_k);
-			qf_copa(b, a, test_q);
+			qf_copa(b, a);
 			TEST_ASSERT(qf_has_dsc(a, test_k), end);
-			bn_gcd(n, b->a, test_q);
+			bn_gcd(n, b->a, &(core_get()->qf_q));
 			TEST_ASSERT(bn_cmp_dig(n, 1) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_CASE("lifting to the non-maximal order is consistent") {
 			qf_rand(a, test_k);
-			qf_lift(b, a, test_q);
+			qf_lift(b, a);
 			TEST_ASSERT(qf_has_dsc(b, test_d), end);
 		} TEST_END;
 
 		TEST_CASE("the map to the maximal order inverts the lift") {
 			qf_rand(a, test_k);
 			qf_rdc(a, a);
-			qf_lift(b, a, test_q);
-			qf_phi(b, b, test_q, test_k, 1);
+			qf_lift(b, a);
+			qf_phi(b, b, 1);
 			TEST_ASSERT(qf_has_dsc(b, test_k), end);
 			TEST_ASSERT(qf_cmp(a, b) == RLC_EQ, end);
 		} TEST_END;
@@ -502,9 +494,9 @@ static int orders(void) {
 			qf_rand(a, test_d);
 			qf_rand(b, test_d);
 			qf_com(c, a, b, 0, test_d);
-			qf_phi(c, c, test_q, test_k, 1);
-			qf_phi(a, a, test_q, test_k, 1);
-			qf_phi(b, b, test_q, test_k, 1);
+			qf_phi(c, c, 1);
+			qf_phi(a, a, 1);
+			qf_phi(b, b, 1);
 			qf_com(a, a, b, 0, test_k);
 			TEST_ASSERT(qf_has_dsc(c, test_k), end);
 			TEST_ASSERT(qf_cmp(a, c) == RLC_EQ, end);
@@ -517,15 +509,15 @@ static int orders(void) {
 			 * nothing else: handing qf_kern an arbitrary lift is rejected,
 			 * since such a class does not map to the principal one.
 			 */
-			bn_sqr(n, test_q);
-			qf_set_dsc(a, n, test_q, test_d);
+			bn_sqr(n, &(ctx->qf_q));
+			qf_set_dsc(a, n, &(ctx->qf_q), test_d);
 			TEST_ASSERT(qf_has_dsc(a, test_d), end);
-			bn_rand_mod(n, test_q);
+			bn_rand_mod(n, &(ctx->qf_q));
 			qf_exp(b, a, n, test_d);
-			qf_kern(m, b, test_q, test_k);
-			TEST_ASSERT(bn_cmp(m, test_q) == RLC_LT, end);
+			qf_kern(m, b);
+			TEST_ASSERT(bn_cmp(m, &(ctx->qf_q)) == RLC_LT, end);
 			/* the representative is recovered up to the sign of the class */
-			bn_sub(s, test_q, m);
+			bn_sub(s, &(ctx->qf_q), m);
 			TEST_ASSERT(bn_cmp(m, n) == RLC_EQ || bn_cmp(s, n) == RLC_EQ, end);
 		} TEST_END;
 	}
@@ -544,6 +536,7 @@ static int orders(void) {
 }
 
 static int qpower(void) {
+	ctx_t *ctx = core_get();
 	int code = RLC_ERR;
 	qf_t a, b, c, la, lb, lc, d, e;
 	bn_t m, n;
@@ -575,12 +568,12 @@ static int qpower(void) {
 			qf_rand(a, test_k);
 			qf_rand(b, test_k);
 			qf_com(c, a, b, 0, test_k);
-			qf_copa(la, a, test_q);
-			qf_lift(la, la, test_q);
-			qf_copa(lb, b, test_q);
-			qf_lift(lb, lb, test_q);
-			qf_copa(lc, c, test_q);
-			qf_lift(lc, lc, test_q);
+			qf_copa(la, a);
+			qf_lift(la, la);
+			qf_copa(lb, b);
+			qf_lift(lb, lb);
+			qf_copa(lc, c);
+			qf_lift(lc, lc);
 			qf_com(d, la, lb, 0, test_d);
 			TEST_ASSERT(qf_has_dsc(d, test_d), end);
 			TEST_ASSERT(qf_has_dsc(lc, test_d), end);
@@ -591,18 +584,18 @@ static int qpower(void) {
 			qf_rand(a, test_k);
 			qf_rand(b, test_k);
 			qf_com(c, a, b, 0, test_k);
-			qf_copa(la, a, test_q);
-			qf_lift(la, la, test_q);
-			qf_copa(lb, b, test_q);
-			qf_lift(lb, lb, test_q);
-			qf_copa(lc, c, test_q);
-			qf_lift(lc, lc, test_q);
+			qf_copa(la, a);
+			qf_lift(la, la);
+			qf_copa(lb, b);
+			qf_lift(lb, lb);
+			qf_copa(lc, c);
+			qf_lift(lc, lc);
 			/* D = lift(a)*lift(b)*lift(ab)^-1 */
 			qf_com(d, la, lb, 0, test_d);
 			qf_com(d, d, lc, 1, test_d);
 			TEST_ASSERT(qf_has_dsc(d, test_d), end);
 			/* it projects to the identity, so it lies in ker qf_max */
-			qf_phi(e, d, test_q, test_k, 1);
+			qf_phi(e, d, 1);
 			TEST_ASSERT(qf_is_one(e) == 1, end);
 		} TEST_END;
 
@@ -610,25 +603,25 @@ static int qpower(void) {
 			qf_rand(a, test_k);
 			qf_rand(b, test_k);
 			qf_com(c, a, b, 0, test_k);
-			qf_copa(la, a, test_q);
-			qf_lift(la, la, test_q);
-			qf_copa(lb, b, test_q);
-			qf_lift(lb, lb, test_q);
-			qf_copa(lc, c, test_q);
-			qf_lift(lc, lc, test_q);
+			qf_copa(la, a);
+			qf_lift(la, la);
+			qf_copa(lb, b);
+			qf_lift(lb, lb);
+			qf_copa(lc, c);
+			qf_lift(lc, lc);
 			qf_com(d, la, lb, 0, test_d);
 			qf_com(d, d, lc, 1, test_d);
 			/* F generates the kernel, so the defect is one of its powers */
-			bn_sqr(n, test_q);
-			qf_set_dsc(e, n, test_q, test_d);
-			qf_kern(m, d, test_q, test_k);
+			bn_sqr(n, &(ctx->qf_q));
+			qf_set_dsc(e, n, &(ctx->qf_q), test_d);
+			qf_kern(m, d);
 			qf_exp(e, e, m, test_d);
 			if (qf_cmp(e, d) != RLC_EQ) {
 				/* the logarithm comes back only up to the sign of the class */
-				bn_sub(m, test_q, m);
-				bn_mod(m, m, test_q);
-				bn_sqr(n, test_q);
-				qf_set_dsc(e, n, test_q, test_d);
+				bn_sub(m, &(ctx->qf_q), m);
+				bn_mod(m, m, &(ctx->qf_q));
+				bn_sqr(n, &(ctx->qf_q));
+				qf_set_dsc(e, n, &(ctx->qf_q), test_d);
 				qf_exp(e, e, m, test_d);
 			}
 			TEST_ASSERT(qf_cmp(e, d) == RLC_EQ, end);
@@ -638,16 +631,16 @@ static int qpower(void) {
 			qf_rand(a, test_k);
 			qf_rand(b, test_k);
 			qf_com(c, a, b, 0, test_k);
-			qf_copa(la, a, test_q);
-			qf_lift(la, la, test_q);
-			qf_copa(lb, b, test_q);
-			qf_lift(lb, lb, test_q);
-			qf_copa(lc, c, test_q);
-			qf_lift(lc, lc, test_q);
+			qf_copa(la, a);
+			qf_lift(la, la);
+			qf_copa(lb, b);
+			qf_lift(lb, lb);
+			qf_copa(lc, c);
+			qf_lift(lc, lc);
 			qf_com(d, la, lb, 0, test_d);
 			qf_com(d, d, lc, 1, test_d);
 			/* the kernel has order q, so raising to q returns the identity */
-			qf_exp(e, d, test_q, test_d);
+			qf_exp(e, d, &(ctx->qf_q), test_d);
 			TEST_ASSERT(qf_is_one(e) == 1, end);
 		} TEST_END;
 
@@ -655,9 +648,9 @@ static int qpower(void) {
 			qf_rand(a, test_k);
 			qf_rand(b, test_k);
 			qf_com(c, a, b, 0, test_k);
-			qf_psi(la, a, test_q, test_d);
-			qf_psi(lb, b, test_q, test_d);
-			qf_psi(lc, c, test_q, test_d);
+			qf_psi(la, a, test_d);
+			qf_psi(lb, b, test_d);
+			qf_psi(lc, c, test_d);
 			qf_com(d, la, lb, 0, test_d);
 			TEST_ASSERT(qf_cmp(d, lc) == RLC_EQ, end);
 		} TEST_END;
@@ -665,18 +658,18 @@ static int qpower(void) {
 		TEST_CASE("the lift alone projects back to the element") {
 			qf_rand(a, test_k);
 			qf_rdc(a, a);
-			qf_copa(la, a, test_q);
-			qf_lift(la, la, test_q);
-			qf_phi(e, la, test_q, test_k, 1);
+			qf_copa(la, a);
+			qf_lift(la, la);
+			qf_phi(e, la, 1);
 			TEST_ASSERT(qf_cmp(e, a) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_CASE("the q-th power of the lift projects to the q-th power") {
 			qf_rand(a, test_k);
 			qf_rdc(a, a);
-			qf_psi(la, a, test_q, test_d);
-			qf_phi(e, la, test_q, test_k, 1);
-			qf_exp(b, a, test_q, test_k);
+			qf_psi(la, a, test_d);
+			qf_phi(e, la, 1);
+			qf_exp(b, a, &(ctx->qf_q), test_k);
 			TEST_ASSERT(qf_cmp(e, b) == RLC_EQ, end);
 		} TEST_END;
 	}
@@ -708,14 +701,8 @@ int main(void) {
 
 	bn_null(test_d);
 	bn_null(test_k);
-	bn_null(test_q);
-	qf_null(test_g);
-	qf_null(test_gk);
 	bn_new(test_d);
 	bn_new(test_k);
-	bn_new(test_q);
-	qf_new(test_g);
-	qf_new(test_gk);
 
 	if (qf_group_set(TEST_QF_COND, TEST_QF_PRIME) != RLC_OK) {
 		core_clean();
@@ -723,13 +710,6 @@ int main(void) {
 	}
 	bn_copy(test_d, &(core_get()->qf_d));
 	bn_copy(test_k, &(core_get()->qf_k));
-	bn_copy(test_q, &(core_get()->qf_q));
-	bn_copy(test_g->a, &(core_get()->qf_ga));
-	bn_copy(test_g->b, &(core_get()->qf_gb));
-	bn_copy(test_g->c, &(core_get()->qf_gc));
-	bn_copy(test_gk->a, &(core_get()->qf_ka));
-	bn_copy(test_gk->b, &(core_get()->qf_kb));
-	bn_copy(test_gk->c, &(core_get()->qf_kc));
 
 	util_banner("Utilities:", 1);
 
@@ -772,9 +752,6 @@ int main(void) {
 
 	bn_free(test_d);
 	bn_free(test_k);
-	bn_free(test_q);
-	qf_free(test_g);
-	qf_free(test_gk);
 
 	util_banner("All tests have passed.\n", 0);
 

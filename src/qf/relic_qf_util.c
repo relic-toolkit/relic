@@ -295,7 +295,8 @@ void qf_rand(qf_t f, const bn_t d) {
 	}
 }
 
-void qf_copa(qf_t r, const qf_t f, const bn_t l) {
+void qf_copa(qf_t r, const qf_t f) {
+	ctx_t *ctx = core_get();
 	bn_t t;
 
 	bn_null(t);
@@ -304,9 +305,9 @@ void qf_copa(qf_t r, const qf_t f, const bn_t l) {
 		bn_new(t);
 
 		qf_copy(r, f);
-		bn_gcd(t, r->a, l);
+		bn_gcd(t, r->a, &(ctx->qf_q));
 		if (bn_cmp_dig(t, 1) == RLC_GT) {
-			bn_gcd(t, r->c, l);
+			bn_gcd(t, r->c, &(ctx->qf_q));
 			if (bn_cmp_dig(t, 1) == RLC_GT) {
 				/* (a, b, c) -> (a+b+c, -b-2a, a) */
 				bn_add(r->c, r->a, r->b);
@@ -353,15 +354,17 @@ void qf_print(const qf_t f) {
 	bn_print(f->c);
 }
 
-void qf_lift(qf_t g, const qf_t f, const bn_t l) {
-	qf_copa(g, f, l);
-	bn_mul(g->b, g->b, l);
-	bn_mul(g->c, g->c, l);
-	bn_mul(g->c, g->c, l);
+void qf_lift(qf_t g, const qf_t f) {
+	ctx_t *ctx = core_get();
+	qf_copa(g, f);
+	bn_mul(g->b, g->b, &(ctx->qf_q));
+	bn_mul(g->c, g->c, &(ctx->qf_q));
+	bn_mul(g->c, g->c, &(ctx->qf_q));
 	qf_rdc(g, g);
 }
 
-void qf_phi(qf_t r, const qf_t f, const bn_t l, const bn_t disc_k, int rdc) {
+void qf_phi(qf_t r, const qf_t f, int rdc) {
+	ctx_t *ctx = core_get();
 	bn_t t, x, y;
 
 	bn_null(t);
@@ -373,13 +376,13 @@ void qf_phi(qf_t r, const qf_t f, const bn_t l, const bn_t disc_k, int rdc) {
 		bn_new(x);
 		bn_new(y);
 
-		qf_copa(r, f, l);
+		qf_copa(r, f);
 		/* 1 = g0*l + g1*a, then b <- b*g0 + a*g1 (disc_k and l are odd) */
-		bn_gcd_ext(t, x, y, l, r->a);
+		bn_gcd_ext(t, x, y, &(ctx->qf_q), r->a);
 		bn_mul(r->b, r->b, x);
 		bn_mul(t, r->a, y);
 		bn_add(r->b, r->b, t);
-		qf_set_dsc(r, r->a, r->b, disc_k);
+		qf_set_dsc(r, r->a, r->b, &(ctx->qf_k));
 		if (rdc) {
 			qf_rdc(r, r);
 		}
@@ -392,7 +395,8 @@ void qf_phi(qf_t r, const qf_t f, const bn_t l, const bn_t disc_k, int rdc) {
 	}
 }
 
-void qf_kern(bn_t r, const qf_t f, const bn_t l, const bn_t disc_k) {
+void qf_kern(bn_t r, const qf_t f) {
+	ctx_t *ctx = core_get();
 	bn_t t, x, y;
 	qf_t ft;
 	int cmp;
@@ -408,7 +412,7 @@ void qf_kern(bn_t r, const qf_t f, const bn_t l, const bn_t disc_k) {
 		bn_new(t);
 		qf_new(ft);
 
-		qf_phi(ft, f, l, disc_k, 0);
+		qf_phi(ft, f, 0);
 
 		/*
 		 * Reduce ft while accumulating gamma = g0 + g1*sqrt(disc_k): each rho
@@ -419,7 +423,7 @@ void qf_kern(bn_t r, const qf_t f, const bn_t l, const bn_t disc_k) {
 		bn_zero(y);		/* g1 */
 		qf_norm(ft, ft);
 		while ((cmp = bn_cmp_abs(ft->a, ft->c)) == RLC_GT) {
-			bn_mul(t, y, disc_k);
+			bn_mul(t, y, &(ctx->qf_k));
 			bn_mul(y, y, ft->b);
 			bn_add(y, y, x);
 			bn_mul(x, x, ft->b);
@@ -439,11 +443,11 @@ void qf_kern(bn_t r, const qf_t f, const bn_t l, const bn_t disc_k) {
 		bn_div(x, x, t);
 		bn_div(y, y, t);
 
-		bn_mod(x, x, l);
-		bn_mod_inv(t, x, l);
+		bn_mod(x, x, &(ctx->qf_q));
+		bn_mod_inv(t, x, &(ctx->qf_q));
 		bn_neg(y, y);
 		bn_mul(t, t, y);
-		bn_mod(r, t, l);
+		bn_mod(r, t, &(ctx->qf_q));
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -456,8 +460,8 @@ void qf_kern(bn_t r, const qf_t f, const bn_t l, const bn_t disc_k) {
 	}
 }
 
-void qf_psi(qf_t r, const qf_t f, const bn_t l, const bn_t d) {
-	qf_copa(r, f, l);
-	qf_lift(r, r, l);
-	qf_exp(r, r, l, d);
+void qf_psi(qf_t r, const qf_t f, const bn_t d) {
+	qf_copa(r, f);
+	qf_lift(r, r);
+	qf_exp(r, r, &(core_get()->qf_q), d);
 }
