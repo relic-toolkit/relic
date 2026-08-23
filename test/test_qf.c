@@ -59,106 +59,6 @@ static bn_t test_q;
 static qf_t test_g;
 static qf_t test_gk;
 
-/**
- * Checks that a form really has the given discriminant, which is the invariant
- * every operation here must preserve.
- */
-static int test_qf_dsc(const qf_t f, const bn_t d) {
-	bn_t t, u;
-	int r = 0;
-
-	bn_null(t);
-	bn_null(u);
-
-	RLC_TRY {
-		bn_new(t);
-		bn_new(u);
-		bn_sqr(t, f->b);
-		bn_mul(u, f->a, f->c);
-		bn_lsh(u, u, 2);
-		bn_sub(t, t, u);
-		r = (bn_cmp(t, d) == RLC_EQ);
-	}
-	RLC_CATCH_ANY {
-		r = 0;
-	}
-	RLC_FINALLY {
-		bn_free(t);
-		bn_free(u);
-	}
-	return r;
-}
-
-/**
- * Finds a non-trivial prime form for a discriminant, by trying the small primes
- * in turn until one of them splits. Only used while setting up.
- */
-static int test_qf_gen(qf_t f, const bn_t d) {
-	dig_t l;
-
-	for (l = 2; l < 512; l++) {
-		if (l > 2 && (l % 2) == 0) {
-			continue;
-		}
-		qf_prime(f, l, d);
-		if (test_qf_dsc(f, d) && !qf_is_one(f)) {
-			return 1;
-		}
-	}
-	return 0;
-}
-
-/**
- * Builds a pair of discriminants for an imaginary quadratic order and its
- * maximal order. Taking Delta_K = -p*q and Delta = Delta_K*q^2 puts the two in
- * the relation the order maps expect, and Delta_K = 1 mod 4 requires p*q = 3
- * mod 4, so exactly one of the two primes is 3 mod 4.
- */
-static int test_qf_setup(void) {
-	int code = RLC_ERR;
-	bn_t p;
-
-	bn_null(p);
-
-	RLC_TRY {
-		bn_new(p);
-
-		do {
-			bn_gen_prime(test_q, TEST_QF_COND);
-		} while (bn_get_bit(test_q, 1) != 0);	/* q = 1 mod 4 */
-		do {
-			bn_gen_prime(p, TEST_QF_PRIME);
-		} while (bn_get_bit(p, 1) == 0);		/* p = 3 mod 4 */
-
-		bn_mul(test_k, p, test_q);
-		bn_neg(test_k, test_k);
-		bn_mul(test_d, test_k, test_q);
-		bn_mul(test_d, test_d, test_q);
-
-		if (!test_qf_gen(test_g, test_d) || !test_qf_gen(test_gk, test_k)) {
-			RLC_THROW(ERR_NO_VALID);
-		}
-
-		bn_copy(&(core_get()->qf_d), test_d);
-		bn_copy(&(core_get()->qf_k), test_k);
-		bn_copy(&(core_get()->qf_ga), test_g->a);
-		bn_copy(&(core_get()->qf_gb), test_g->b);
-		bn_copy(&(core_get()->qf_gc), test_g->c);
-		bn_copy(&(core_get()->qf_ka), test_gk->a);
-		bn_copy(&(core_get()->qf_kb), test_gk->b);
-		bn_copy(&(core_get()->qf_kc), test_gk->c);
-
-		code = RLC_OK;
-	}
-	RLC_CATCH_ANY {
-		code = RLC_ERR;
-	}
-	RLC_FINALLY {
-		bn_free(p);
-	}
-	return code;
-}
-
 static int memory(void) {
 	err_t e = ERR_CAUGHT;
 	int code = RLC_ERR;
@@ -210,7 +110,7 @@ static int util(void) {
 			qf_rand(a, test_d);
 			qf_copy(b, a);
 			TEST_ASSERT(qf_cmp(a, b) == RLC_EQ, end);
-			TEST_ASSERT(test_qf_dsc(b, test_d), end);
+			TEST_ASSERT(qf_has_dsc(b, test_d), end);
 		} TEST_END;
 
 		TEST_CASE("negation is involutory") {
@@ -223,13 +123,13 @@ static int util(void) {
 		TEST_CASE("negation preserves the discriminant") {
 			qf_rand(a, test_d);
 			qf_neg(b, a);
-			TEST_ASSERT(test_qf_dsc(b, test_d), end);
+			TEST_ASSERT(qf_has_dsc(b, test_d), end);
 		} TEST_END;
 
 		TEST_CASE("assignment to the identity is detected") {
 			qf_set_one(a, test_d);
 			TEST_ASSERT(qf_is_one(a) == 1, end);
-			TEST_ASSERT(test_qf_dsc(a, test_d), end);
+			TEST_ASSERT(qf_has_dsc(a, test_d), end);
 			qf_rand(b, test_d);
 			TEST_ASSERT(qf_is_one(b) == 0, end);
 		} TEST_END;
@@ -267,7 +167,7 @@ static int reduction(void) {
 		TEST_CASE("reduction preserves the discriminant") {
 			qf_rand(a, test_d);
 			qf_rdc(b, a);
-			TEST_ASSERT(test_qf_dsc(b, test_d), end);
+			TEST_ASSERT(qf_has_dsc(b, test_d), end);
 		} TEST_END;
 
 		TEST_CASE("reduction is idempotent") {
@@ -291,7 +191,7 @@ static int reduction(void) {
 		TEST_CASE("normalisation preserves the discriminant") {
 			qf_rand(a, test_d);
 			qf_norm(b, a);
-			TEST_ASSERT(test_qf_dsc(b, test_d), end);
+			TEST_ASSERT(qf_has_dsc(b, test_d), end);
 			/* normalisation puts b in (-a, a] */
 			TEST_ASSERT(bn_cmp_abs(b->b, b->a) != RLC_GT, end);
 		} TEST_END;
@@ -334,7 +234,7 @@ static int composition(void) {
 			qf_rand(a, test_d);
 			qf_rand(b, test_d);
 			qf_com(c, a, b, 0, test_d);
-			TEST_ASSERT(test_qf_dsc(c, test_d), end);
+			TEST_ASSERT(qf_has_dsc(c, test_d), end);
 		} TEST_END;
 
 		TEST_CASE("composition is commutative") {
@@ -356,7 +256,7 @@ static int composition(void) {
 			TEST_ASSERT(qf_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_CASE("the identity is neutral for composition") {
+		TEST_CASE("composition has a neutral element") {
 			qf_rand(a, test_d);
 			qf_set_one(b, test_d);
 			qf_com(c, a, b, 0, test_d);
@@ -387,7 +287,7 @@ static int composition(void) {
 			qf_dup(b, a, test_d);
 			qf_com(c, a, a, 0, test_d);
 			TEST_ASSERT(qf_cmp(b, c) == RLC_EQ, end);
-			TEST_ASSERT(test_qf_dsc(b, test_d), end);
+			TEST_ASSERT(qf_has_dsc(b, test_d), end);
 		} TEST_END;
 
 		TEST_CASE("doubling the identity gives the identity") {
@@ -570,7 +470,7 @@ static int orders(void) {
 		TEST_CASE("the coprime form has the same discriminant") {
 			qf_rand(a, test_k);
 			qf_copa(b, a, test_q);
-			TEST_ASSERT(test_qf_dsc(a, test_k), end);
+			TEST_ASSERT(qf_has_dsc(a, test_k), end);
 			bn_gcd(n, b->a, test_q);
 			TEST_ASSERT(bn_cmp_dig(n, 1) == RLC_EQ, end);
 		} TEST_END;
@@ -578,7 +478,7 @@ static int orders(void) {
 		TEST_CASE("lifting to the non-maximal order is consistent") {
 			qf_rand(a, test_k);
 			qf_lift(b, a, test_q);
-			TEST_ASSERT(test_qf_dsc(b, test_d), end);
+			TEST_ASSERT(qf_has_dsc(b, test_d), end);
 		} TEST_END;
 
 		TEST_CASE("the map to the maximal order inverts the lift") {
@@ -586,7 +486,7 @@ static int orders(void) {
 			qf_rdc(a, a);
 			qf_lift(b, a, test_q);
 			qf_phi(b, b, test_q, test_k, 1);
-			TEST_ASSERT(test_qf_dsc(b, test_k), end);
+			TEST_ASSERT(qf_has_dsc(b, test_k), end);
 			TEST_ASSERT(qf_cmp(a, b) == RLC_EQ, end);
 		} TEST_END;
 
@@ -606,7 +506,7 @@ static int orders(void) {
 			qf_phi(a, a, test_q, test_k, 1);
 			qf_phi(b, b, test_q, test_k, 1);
 			qf_com(a, a, b, 0, test_k);
-			TEST_ASSERT(test_qf_dsc(c, test_k), end);
+			TEST_ASSERT(qf_has_dsc(c, test_k), end);
 			TEST_ASSERT(qf_cmp(a, c) == RLC_EQ, end);
 		} TEST_END;
 
@@ -619,7 +519,7 @@ static int orders(void) {
 			 */
 			bn_sqr(n, test_q);
 			qf_set_dsc(a, n, test_q, test_d);
-			TEST_ASSERT(test_qf_dsc(a, test_d), end);
+			TEST_ASSERT(qf_has_dsc(a, test_d), end);
 			bn_rand_mod(n, test_q);
 			qf_exp(b, a, n, test_d);
 			qf_kern(m, b, test_q, test_k);
@@ -672,13 +572,6 @@ static int qpower(void) {
 		bn_new(n);
 
 		TEST_CASE("the lift is not multiplicative on its own") {
-			/*
-			 * Documented rather than merely observed: qf_lift is a section of
-			 * qf_max, not a homomorphism, so the lift of a product and the
-			 * product of the lifts differ. Everything below describes exactly
-			 * how they differ, and a caller that assumes otherwise silently
-			 * computes in the wrong class.
-			 */
 			qf_rand(a, test_k);
 			qf_rand(b, test_k);
 			qf_com(c, a, b, 0, test_k);
@@ -689,15 +582,8 @@ static int qpower(void) {
 			qf_copa(lc, c, test_q);
 			qf_lift(lc, lc, test_q);
 			qf_com(d, la, lb, 0, test_d);
-			TEST_ASSERT(test_qf_dsc(d, test_d), end);
-			TEST_ASSERT(test_qf_dsc(lc, test_d), end);
-			/*
-			 * The defect is a near-uniform element of a kernel of order q, so
-			 * it is trivial only with probability about 2^-|q|. Asserting the
-			 * difference documents the current contract and would flag a change
-			 * that made the lift a homomorphism, which callers relying on the
-			 * q-th power would want to know about.
-			 */
+			TEST_ASSERT(qf_has_dsc(d, test_d), end);
+			TEST_ASSERT(qf_has_dsc(lc, test_d), end);
 			TEST_ASSERT(qf_cmp(d, lc) != RLC_EQ, end);
 		} TEST_END;
 
@@ -714,7 +600,7 @@ static int qpower(void) {
 			/* D = lift(a)*lift(b)*lift(ab)^-1 */
 			qf_com(d, la, lb, 0, test_d);
 			qf_com(d, d, lc, 1, test_d);
-			TEST_ASSERT(test_qf_dsc(d, test_d), end);
+			TEST_ASSERT(qf_has_dsc(d, test_d), end);
 			/* it projects to the identity, so it lies in ker qf_max */
 			qf_phi(e, d, test_q, test_k, 1);
 			TEST_ASSERT(qf_is_one(e) == 1, end);
@@ -786,11 +672,6 @@ static int qpower(void) {
 		} TEST_END;
 
 		TEST_CASE("the q-th power of the lift projects to the q-th power") {
-			/*
-			 * Together with the case above this fixes the composite: the bare
-			 * lift inverts qf_max, so composing it with the q-th power gives
-			 * exactly the a^q that a caller of these maps expects.
-			 */
 			qf_rand(a, test_k);
 			qf_rdc(a, a);
 			qf_psi(la, a, test_q, test_d);
@@ -836,11 +717,19 @@ int main(void) {
 	qf_new(test_g);
 	qf_new(test_gk);
 
-	if (test_qf_setup() != RLC_OK) {
-		util_print("FATAL ERROR!\n");
+	if (qf_group_set(TEST_QF_COND, TEST_QF_PRIME) != RLC_OK) {
 		core_clean();
 		return 1;
 	}
+	bn_copy(test_d, &(core_get()->qf_d));
+	bn_copy(test_k, &(core_get()->qf_k));
+	bn_copy(test_q, &(core_get()->qf_q));
+	bn_copy(test_g->a, &(core_get()->qf_ga));
+	bn_copy(test_g->b, &(core_get()->qf_gb));
+	bn_copy(test_g->c, &(core_get()->qf_gc));
+	bn_copy(test_gk->a, &(core_get()->qf_ka));
+	bn_copy(test_gk->b, &(core_get()->qf_kb));
+	bn_copy(test_gk->c, &(core_get()->qf_kc));
 
 	util_banner("Utilities:", 1);
 

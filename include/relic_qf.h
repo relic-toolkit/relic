@@ -172,6 +172,20 @@ void qf_group_init(void);
 void qf_group_clean(void);
 
 /**
+ * Builds a pair of discriminants for an imaginary quadratic order and its
+ * maximal order.
+ *
+ * Taking Delta_K = -p*q and Delta = Delta_K*q^2 puts the two in
+ * the relation the order maps expect, and Delta_K = 1 mod 4 requires p*q = 3
+ * mod 4, so exactly one of the two primes is 3 mod 4.
+ *
+ * @param[in]				- the bit size of the conductor q.
+ * @param[in]				- the bit size of prime p.
+ * @return RLC_OK if it was possible to find discriminants, RLC_ERR otherwise.
+ */
+int qf_group_set(size_t cond, size_t bits);
+
+/**
  * Copies a quadratic form.
  *
  * @param[out] c			- the result.
