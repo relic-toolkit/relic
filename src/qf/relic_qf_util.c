@@ -202,14 +202,13 @@ void qf_set_dsc(qf_t f, const bn_t a, const bn_t b, const bn_t d) {
 	bn_rsh(f->c, f->c, 2);
 }
 
-void qf_dsc(bn_t d, const qf_t f) {
+void qf_get_dsc(bn_t d, const qf_t f) {
 	bn_t t;
 
 	bn_null(t);
 
 	RLC_TRY {
 		bn_new(t);
-
 		/* Compute d = b^2 - 4ac. */
 		bn_sqr(d, f->b);
 		bn_mul(t, f->a, f->c);
@@ -222,6 +221,27 @@ void qf_dsc(bn_t d, const qf_t f) {
 	}
 }
 
+int qf_has_dsc(const qf_t f, const bn_t d) {
+	bn_t t;
+	int r = 0;
+
+	bn_null(t);
+
+	RLC_TRY {
+		bn_new(t);
+		qf_get_dsc(t, f);
+		r = (bn_cmp(t, d) == RLC_EQ);
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		bn_free(t);
+	}
+	return r;
+}
+
+
 int qf_is_prime(const qf_t f) {
 	bn_t t;
 	int result;
@@ -230,7 +250,6 @@ int qf_is_prime(const qf_t f) {
 
 	RLC_TRY {
 		bn_new(t);
-
 		bn_gcd(t, f->a, f->b);
 		bn_gcd(t, t, f->c);
 		result = (bn_cmp_dig(t, 1) == RLC_EQ);
@@ -241,6 +260,39 @@ int qf_is_prime(const qf_t f) {
 	}
 
 	return result;
+}
+
+#include "assert.h"
+
+void qf_rand(qf_t f, const bn_t d) {
+	ctx_t *ctx = core_get();
+	bn_t n;
+
+	bn_null(n);
+
+	RLC_TRY {
+		bn_new(n);
+		bn_rand(n, RLC_POS, 64);
+		if (bn_cmp(d, &(ctx->qf_d)) == RLC_EQ) {
+			bn_copy(f->a, &(ctx->qf_ga));
+			bn_copy(f->b, &(ctx->qf_gb));
+			bn_copy(f->c, &(ctx->qf_gc));
+		} else if (bn_cmp(d, &(ctx->qf_k)) == RLC_EQ) {
+			bn_copy(f->a, &(ctx->qf_ka));
+			bn_copy(f->b, &(ctx->qf_kb));
+			bn_copy(f->c, &(ctx->qf_kc));
+		}
+		qf_exp(f, f, n, d);
+		if (!qf_has_dsc(f, d)) {
+			RLC_THROW(ERR_CAUGHT);
+		}
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		bn_free(n);
+	}
 }
 
 void qf_copa(qf_t r, const qf_t f, const bn_t l) {

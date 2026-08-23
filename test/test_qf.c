@@ -109,31 +109,6 @@ static int test_qf_gen(qf_t f, const bn_t d) {
 }
 
 /**
- * Produces a random element of the group with the given discriminant, by
- * raising the generator found during setup to a random power.
- */
-static int test_qf_rand(qf_t f, const bn_t d) {
-	bn_t n;
-	int ok = 0;
-
-	bn_null(n);
-
-	RLC_TRY {
-		bn_new(n);
-		bn_rand(n, RLC_POS, 64);
-		qf_exp(f, (bn_cmp(d, test_d) == RLC_EQ ? test_g : test_gk), n, d);
-		ok = test_qf_dsc(f, d);
-	}
-	RLC_CATCH_ANY {
-		ok = 0;
-	}
-	RLC_FINALLY {
-		bn_free(n);
-	}
-	return ok;
-}
-
-/**
  * Builds a pair of discriminants for an imaginary quadratic order and its
  * maximal order. Taking Delta_K = -p*q and Delta = Delta_K*q^2 puts the two in
  * the relation the order maps expect, and Delta_K = 1 mod 4 requires p*q = 3
@@ -163,6 +138,15 @@ static int test_qf_setup(void) {
 		if (!test_qf_gen(test_g, test_d) || !test_qf_gen(test_gk, test_k)) {
 			RLC_THROW(ERR_NO_VALID);
 		}
+
+		bn_copy(&(core_get()->qf_d), test_d);
+		bn_copy(&(core_get()->qf_k), test_k);
+		bn_copy(&(core_get()->qf_ga), test_g->a);
+		bn_copy(&(core_get()->qf_gb), test_g->b);
+		bn_copy(&(core_get()->qf_gc), test_g->c);
+		bn_copy(&(core_get()->qf_ka), test_gk->a);
+		bn_copy(&(core_get()->qf_kb), test_gk->b);
+		bn_copy(&(core_get()->qf_kc), test_gk->c);
 
 		code = RLC_OK;
 	}
@@ -215,36 +199,29 @@ static int util(void) {
 		qf_new(c);
 
 		TEST_CASE("comparison is consistent") {
-			if (!test_qf_rand(a, test_d) || !test_qf_rand(b, test_d)) {
-				continue;
-			}
+			qf_rand(a, test_d);
+			qf_rand(b, test_d);
 			qf_copy(c, a);
 			TEST_ASSERT(qf_cmp(a, c) == RLC_EQ, end);
 			TEST_ASSERT(qf_cmp(c, a) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_CASE("copy is consistent") {
-			if (!test_qf_rand(a, test_d)) {
-				continue;
-			}
+			qf_rand(a, test_d);
 			qf_copy(b, a);
 			TEST_ASSERT(qf_cmp(a, b) == RLC_EQ, end);
 			TEST_ASSERT(test_qf_dsc(b, test_d), end);
 		} TEST_END;
 
 		TEST_CASE("negation is involutory") {
-			if (!test_qf_rand(a, test_d)) {
-				continue;
-			}
+			qf_rand(a, test_d);
 			qf_neg(b, a);
 			qf_neg(b, b);
 			TEST_ASSERT(qf_cmp(a, b) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_CASE("negation preserves the discriminant") {
-			if (!test_qf_rand(a, test_d)) {
-				continue;
-			}
+			qf_rand(a, test_d);
 			qf_neg(b, a);
 			TEST_ASSERT(test_qf_dsc(b, test_d), end);
 		} TEST_END;
@@ -253,9 +230,7 @@ static int util(void) {
 			qf_set_one(a, test_d);
 			TEST_ASSERT(qf_is_one(a) == 1, end);
 			TEST_ASSERT(test_qf_dsc(a, test_d), end);
-			if (!test_qf_rand(b, test_d)) {
-				continue;
-			}
+			qf_rand(b, test_d);
 			TEST_ASSERT(qf_is_one(b) == 0, end);
 		} TEST_END;
 
@@ -290,26 +265,20 @@ static int reduction(void) {
 		qf_new(c);
 
 		TEST_CASE("reduction preserves the discriminant") {
-			if (!test_qf_rand(a, test_d)) {
-				continue;
-			}
+			qf_rand(a, test_d);
 			qf_rdc(b, a);
 			TEST_ASSERT(test_qf_dsc(b, test_d), end);
 		} TEST_END;
 
 		TEST_CASE("reduction is idempotent") {
-			if (!test_qf_rand(a, test_d)) {
-				continue;
-			}
+			qf_rand(a, test_d);
 			qf_rdc(b, a);
 			qf_rdc(c, b);
 			TEST_ASSERT(qf_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_CASE("a reduced form satisfies the reduction conditions") {
-			if (!test_qf_rand(a, test_d)) {
-				continue;
-			}
+			qf_rand(a, test_d);
 			qf_rdc(b, a);
 			/* |b| <= a <= c, and b >= 0 whenever a equals c */
 			TEST_ASSERT(bn_cmp_abs(b->b, b->a) != RLC_GT, end);
@@ -320,9 +289,7 @@ static int reduction(void) {
 		} TEST_END;
 
 		TEST_CASE("normalisation preserves the discriminant") {
-			if (!test_qf_rand(a, test_d)) {
-				continue;
-			}
+			qf_rand(a, test_d);
 			qf_norm(b, a);
 			TEST_ASSERT(test_qf_dsc(b, test_d), end);
 			/* normalisation puts b in (-a, a] */
@@ -364,27 +331,24 @@ static int composition(void) {
 		qf_new(e);
 
 		TEST_CASE("composition preserves the discriminant") {
-			if (!test_qf_rand(a, test_d) || !test_qf_rand(b, test_d)) {
-				continue;
-			}
+			qf_rand(a, test_d);
+			qf_rand(b, test_d);
 			qf_com(c, a, b, 0, test_d);
 			TEST_ASSERT(test_qf_dsc(c, test_d), end);
 		} TEST_END;
 
 		TEST_CASE("composition is commutative") {
-			if (!test_qf_rand(a, test_d) || !test_qf_rand(b, test_d)) {
-				continue;
-			}
+			qf_rand(a, test_d);
+			qf_rand(b, test_d);
 			qf_com(c, a, b, 0, test_d);
 			qf_com(d, b, a, 0, test_d);
 			TEST_ASSERT(qf_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_CASE("composition is associative") {
-			if (!test_qf_rand(a, test_d) || !test_qf_rand(b, test_d) ||
-					!test_qf_rand(c, test_d)) {
-				continue;
-			}
+			qf_rand(a, test_d);
+			qf_rand(b, test_d);
+			qf_rand(c, test_d);
 			qf_com(d, a, b, 0, test_d);
 			qf_com(d, d, c, 0, test_d);
 			qf_com(e, b, c, 0, test_d);
@@ -393,9 +357,7 @@ static int composition(void) {
 		} TEST_END;
 
 		TEST_CASE("the identity is neutral for composition") {
-			if (!test_qf_rand(a, test_d)) {
-				continue;
-			}
+			qf_rand(a, test_d);
 			qf_set_one(b, test_d);
 			qf_com(c, a, b, 0, test_d);
 			qf_rdc(d, a);
@@ -405,18 +367,15 @@ static int composition(void) {
 		} TEST_END;
 
 		TEST_CASE("composition with the negation gives the identity") {
-			if (!test_qf_rand(a, test_d)) {
-				continue;
-			}
+			qf_rand(a, test_d);
 			qf_neg(b, a);
 			qf_com(c, a, b, 0, test_d);
 			TEST_ASSERT(qf_is_one(c) == 1, end);
 		} TEST_END;
 
 		TEST_CASE("the negation flag composes with the inverse") {
-			if (!test_qf_rand(a, test_d) || !test_qf_rand(b, test_d)) {
-				continue;
-			}
+			qf_rand(a, test_d);
+			qf_rand(b, test_d);
 			qf_com(c, a, b, 1, test_d);
 			qf_neg(d, b);
 			qf_com(d, a, d, 0, test_d);
@@ -424,9 +383,7 @@ static int composition(void) {
 		} TEST_END;
 
 		TEST_CASE("doubling is composition with itself") {
-			if (!test_qf_rand(a, test_d)) {
-				continue;
-			}
+			qf_rand(a, test_d);
 			qf_dup(b, a, test_d);
 			qf_com(c, a, a, 0, test_d);
 			TEST_ASSERT(qf_cmp(b, c) == RLC_EQ, end);
@@ -482,9 +439,7 @@ static int exponentiation(void) {
 		bn_new(s);
 
 		TEST_CASE("exponentiation by zero and one is correct") {
-			if (!test_qf_rand(a, test_d)) {
-				continue;
-			}
+			qf_rand(a, test_d);
 			bn_zero(n);
 			qf_exp(b, a, n, test_d);
 			TEST_ASSERT(qf_is_one(b) == 1, end);
@@ -495,9 +450,7 @@ static int exponentiation(void) {
 		} TEST_END;
 
 		TEST_CASE("exponentiation by two is doubling") {
-			if (!test_qf_rand(a, test_d)) {
-				continue;
-			}
+			qf_rand(a, test_d);
 			bn_set_dig(n, 2);
 			qf_exp(b, a, n, test_d);
 			qf_dup(c, a, test_d);
@@ -505,9 +458,7 @@ static int exponentiation(void) {
 		} TEST_END;
 
 		TEST_CASE("exponentiation is additive in the exponent") {
-			if (!test_qf_rand(a, test_d)) {
-				continue;
-			}
+			qf_rand(a, test_d);
 			bn_rand(m, RLC_POS, 64);
 			bn_rand(n, RLC_POS, 64);
 			bn_add(s, m, n);
@@ -519,9 +470,7 @@ static int exponentiation(void) {
 		} TEST_END;
 
 		TEST_CASE("exponentiation agrees with repeated composition") {
-			if (!test_qf_rand(a, test_d)) {
-				continue;
-			}
+			qf_rand(a, test_d);
 			bn_set_dig(n, 10);
 			qf_exp(b, a, n, test_d);
 			qf_copy(c, a);
@@ -532,9 +481,8 @@ static int exponentiation(void) {
 		} TEST_END;
 
 		TEST_CASE("simultaneous exponentiation is correct") {
-			if (!test_qf_rand(a, test_d) || !test_qf_rand(b, test_d)) {
-				continue;
-			}
+			qf_rand(a, test_d);
+			qf_rand(b, test_d);
 			bn_rand(m, RLC_POS, 64);
 			bn_rand(n, RLC_POS, 64);
 			qf_exp_sim(r, a, m, b, n, test_d);
@@ -545,9 +493,8 @@ static int exponentiation(void) {
 		} TEST_END;
 
 		TEST_CASE("simultaneous exponentiation handles zero exponents") {
-			if (!test_qf_rand(a, test_d) || !test_qf_rand(b, test_d)) {
-				continue;
-			}
+			qf_rand(a, test_d);
+			qf_rand(b, test_d);
 			bn_zero(m);
 			bn_rand(n, RLC_POS, 64);
 			qf_exp_sim(r, a, m, b, n, test_d);
@@ -556,9 +503,7 @@ static int exponentiation(void) {
 		} TEST_END;
 
 		TEST_CASE("fixed base exponentiation is correct") {
-			if (!test_qf_rand(a, test_d)) {
-				continue;
-			}
+			qf_rand(a, test_d);
 			bn_rand(n, RLC_POS, 64);
 			/*
 			 * The four-way comb consumes the exponent in blocks at offsets
@@ -623,9 +568,7 @@ static int orders(void) {
 		bn_new(s);
 
 		TEST_CASE("the coprime form has the same discriminant") {
-			if (!test_qf_rand(a, test_k)) {
-				continue;
-			}
+			qf_rand(a, test_k);
 			qf_copa(b, a, test_q);
 			TEST_ASSERT(test_qf_dsc(a, test_k), end);
 			bn_gcd(n, b->a, test_q);
@@ -633,17 +576,13 @@ static int orders(void) {
 		} TEST_END;
 
 		TEST_CASE("lifting to the non-maximal order is consistent") {
-			if (!test_qf_rand(a, test_k)) {
-				continue;
-			}
+			qf_rand(a, test_k);
 			qf_lift(b, a, test_q);
 			TEST_ASSERT(test_qf_dsc(b, test_d), end);
 		} TEST_END;
 
 		TEST_CASE("the map to the maximal order inverts the lift") {
-			if (!test_qf_rand(a, test_k)) {
-				continue;
-			}
+			qf_rand(a, test_k);
 			qf_rdc(a, a);
 			qf_lift(b, a, test_q);
 			qf_phi(b, b, test_q, test_k, 1);
@@ -660,9 +599,8 @@ static int orders(void) {
 			 * homomorphism and composing before or after lifting need not
 			 * agree.
 			 */
-			if (!test_qf_rand(a, test_d) || !test_qf_rand(b, test_d)) {
-				continue;
-			}
+			qf_rand(a, test_d);
+			qf_rand(b, test_d);
 			qf_com(c, a, b, 0, test_d);
 			qf_phi(c, c, test_q, test_k, 1);
 			qf_phi(a, a, test_q, test_k, 1);
@@ -741,9 +679,8 @@ static int qpower(void) {
 			 * how they differ, and a caller that assumes otherwise silently
 			 * computes in the wrong class.
 			 */
-			if (!test_qf_rand(a, test_k) || !test_qf_rand(b, test_k)) {
-				continue;
-			}
+			qf_rand(a, test_k);
+			qf_rand(b, test_k);
 			qf_com(c, a, b, 0, test_k);
 			qf_copa(la, a, test_q);
 			qf_lift(la, la, test_q);
@@ -765,9 +702,8 @@ static int qpower(void) {
 		} TEST_END;
 
 		TEST_CASE("the defect of the lift lies in the kernel") {
-			if (!test_qf_rand(a, test_k) || !test_qf_rand(b, test_k)) {
-				continue;
-			}
+			qf_rand(a, test_k);
+			qf_rand(b, test_k);
 			qf_com(c, a, b, 0, test_k);
 			qf_copa(la, a, test_q);
 			qf_lift(la, la, test_q);
@@ -785,9 +721,8 @@ static int qpower(void) {
 		} TEST_END;
 
 		TEST_CASE("the kernel logarithm reconstructs the defect") {
-			if (!test_qf_rand(a, test_k) || !test_qf_rand(b, test_k)) {
-				continue;
-			}
+			qf_rand(a, test_k);
+			qf_rand(b, test_k);
 			qf_com(c, a, b, 0, test_k);
 			qf_copa(la, a, test_q);
 			qf_lift(la, la, test_q);
@@ -814,9 +749,8 @@ static int qpower(void) {
 		} TEST_END;
 
 		TEST_CASE("the q-th power annihilates the defect") {
-			if (!test_qf_rand(a, test_k) || !test_qf_rand(b, test_k)) {
-				continue;
-			}
+			qf_rand(a, test_k);
+			qf_rand(b, test_k);
 			qf_com(c, a, b, 0, test_k);
 			qf_copa(la, a, test_q);
 			qf_lift(la, la, test_q);
@@ -832,9 +766,8 @@ static int qpower(void) {
 		} TEST_END;
 
 		TEST_CASE("the lift composed with the q-th power is multiplicative") {
-			if (!test_qf_rand(a, test_k) || !test_qf_rand(b, test_k)) {
-				continue;
-			}
+			qf_rand(a, test_k);
+			qf_rand(b, test_k);
 			qf_com(c, a, b, 0, test_k);
 			qf_psi(la, a, test_q, test_d);
 			qf_psi(lb, b, test_q, test_d);
@@ -844,9 +777,7 @@ static int qpower(void) {
 		} TEST_END;
 
 		TEST_CASE("the lift alone projects back to the element") {
-			if (!test_qf_rand(a, test_k)) {
-				continue;
-			}
+			qf_rand(a, test_k);
 			qf_rdc(a, a);
 			qf_copa(la, a, test_q);
 			qf_lift(la, la, test_q);
@@ -860,9 +791,7 @@ static int qpower(void) {
 			 * lift inverts qf_max, so composing it with the q-th power gives
 			 * exactly the a^q that a caller of these maps expects.
 			 */
-			if (!test_qf_rand(a, test_k)) {
-				continue;
-			}
+			qf_rand(a, test_k);
 			qf_rdc(a, a);
 			qf_psi(la, a, test_q, test_d);
 			qf_phi(e, la, test_q, test_k, 1);

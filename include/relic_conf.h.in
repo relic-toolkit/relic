@@ -96,6 +96,8 @@
 
 /** Build multiple precision integer module. */
 #cmakedefine WITH_BN
+/** Build binary quadratic form module. */
+#cmakedefine WITH_QF
 /** Build prime field module. */
 #cmakedefine WITH_FP
 /** Build prime field extension module. */

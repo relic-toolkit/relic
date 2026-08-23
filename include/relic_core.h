@@ -154,6 +154,23 @@ typedef struct _ctx_t {
 	int caught;
 #endif /* CHECK */
 
+#ifdef WITH_QF
+	/** Discriminant \Delta of non-maximal order. */
+	bn_st qf_d;
+	/** Fundamental discrminant \Delta_K. */
+	bn_st qf_k;
+	/** Conductor relating the discriminants. */
+	bn_st qf_q;
+	/** Generator of ideal class group Cl(\Delta). */
+	bn_st qf_ga;
+	bn_st qf_gb;
+	bn_st qf_gc;
+	/** Generator of ideal class group Cl(\Delta_K). */
+	bn_st qf_ka;
+	bn_st qf_kb;
+	bn_st qf_kc;
+#endif /* WITH_QF */
+
 #ifdef WITH_FB
 	/** Identifier of the currently configured binary field. */
 	int fb_id;

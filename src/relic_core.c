@@ -128,6 +128,10 @@ int core_init(void) {
 		bench_init();
 #endif
 
+#ifdef WITH_QF
+		qf_group_init();
+#endif
+
 #ifdef WITH_FP
 		fp_prime_init();
 #endif
@@ -157,6 +161,9 @@ int core_init(void) {
 }
 
 int core_clean(void) {
+#ifdef WITH_QF
+	qf_group_clean();
+#endif
 #ifdef WITH_FP
 	fp_prime_clean();
 #endif

@@ -162,6 +162,16 @@ typedef qf_st *qf_t;
 /*============================================================================*/
 
 /**
+ * Initializes the class group represented in binary quadratic form.
+ */
+void qf_group_init(void);
+
+/**
+ * Finalizes the class group represented in binary quradratic form.
+ */
+void qf_group_clean(void);
+
+/**
  * Copies a quadratic form.
  *
  * @param[out] c			- the result.
@@ -249,6 +259,31 @@ void qf_set_one(qf_t r, const bn_t d);
  * @param[in] d				- the discriminant.
  */
 void qf_set_dsc(qf_t f, const bn_t a, const bn_t b, const bn_t d);
+
+/**
+ * Compute the discriminant of a quadratic binary form.
+ *
+ * @param[out] d			- the computed discriminant.
+ * @param[in] f				- the binary quadratic form to compute.
+ */
+void qf_get_dsc(bn_t d, const qf_t f);
+
+/**
+ * Tests if a quadratic binary form has the correct discrimnant.
+ *
+ * @param[in] f				- the binary quadratic form to test.
+ * @param[in] d				- the discriminant.
+ * @return a boolean value indicating if the discrimnant is correct.
+ */
+int qf_has_dsc(const qf_t f, const bn_t d);
+
+/**
+ * Generates a random element of the group with the given discriminant.
+ *
+ * @param[out] f			- the generated random element.
+ * @param[in] d				- the discriminant.
+ */
+void qf_rand(qf_t f, const bn_t d);
 
 /**
  * Prints a quadratic form.
