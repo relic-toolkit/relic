@@ -78,17 +78,17 @@ static void clhe_power_of_f(qf_t r, const clhe_t c, const bn_t m) {
 		bn_mod(t0, m, &(core_get()->qf_q));
 		if (bn_is_zero(t0)) {
 			qf_set_one(r, &(core_get()->qf_d));
-			return;
+		} else {
+			bn_mod_inv(t1, t0, &(core_get()->qf_q));
+			if (bn_is_even(t1)) {
+				bn_sub(t1, t1, &(core_get()->qf_q));
+			}
+			bn_sqr(r->c, t1);
+			bn_sub(r->c, r->c, &(core_get()->qf_dk));
+			bn_rsh(r->c, r->c, 2);
+			bn_mul(r->b, t1, &(core_get()->qf_q));
+			bn_sqr(r->a, &(core_get()->qf_q));
 		}
-		bn_mod_inv(t1, t0, &(core_get()->qf_q));
-		if (bn_is_even(t1)) {
-			bn_sub(t1, t1, &(core_get()->qf_q));
-		}
-		bn_sqr(r->c, t1);
-		bn_sub(r->c, r->c, &(core_get()->qf_dk));
-		bn_rsh(r->c, r->c, 2);
-		bn_mul(r->b, t1, &(core_get()->qf_q));
-		bn_sqr(r->a, &(core_get()->qf_q));
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
