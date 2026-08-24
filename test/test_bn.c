@@ -691,10 +691,18 @@ static int doubling_halving(void) {
 			bn_add(b, a, a);
 			bn_dbl(c, a);
 			TEST_ASSERT(bn_cmp(b, c) == RLC_EQ, end);
+			bn_rand(a, RLC_NEG, RLC_BN_BITS - 1);
+			bn_add(b, a, a);
+			bn_dbl(c, a);
+			TEST_ASSERT(bn_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_CASE("halving is consistent") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS - 1);
+			bn_dbl(b, a);
+			bn_hlv(c, b);
+			TEST_ASSERT(bn_cmp(c, a) == RLC_EQ, end);
+			bn_rand(a, RLC_NEG, RLC_BN_BITS - 1);
 			bn_dbl(b, a);
 			bn_hlv(c, b);
 			TEST_ASSERT(bn_cmp(c, a) == RLC_EQ, end);
@@ -726,6 +734,16 @@ static int shifting(void) {
 
 		TEST_CASE("shifting by 1 bit is consistent") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS - 1);
+			bn_lsh(b, a, 1);
+			bn_dbl(c, a);
+			TEST_ASSERT(bn_cmp(b, c) == RLC_EQ, end);
+			bn_rsh(b, a, 1);
+			bn_hlv(c, a);
+			TEST_ASSERT(bn_cmp(b, c) == RLC_EQ, end);
+			bn_lsh(b, a, 1);
+			bn_rsh(c, b, 1);
+			TEST_ASSERT(bn_cmp(a, c) == RLC_EQ, end);
+			bn_rand(a, RLC_NEG, RLC_BN_BITS - 1);
 			bn_lsh(b, a, 1);
 			bn_dbl(c, a);
 			TEST_ASSERT(bn_cmp(b, c) == RLC_EQ, end);
