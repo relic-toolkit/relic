@@ -688,11 +688,6 @@ int main(void) {
 
 	util_banner("Tests for the QF module:\n", 0);
 
-	bn_null(&(core_get()->qf_d));
-	bn_null(&(core_get()->qf_dk));
-	bn_new(&(core_get()->qf_d));
-	bn_new(&(core_get()->qf_dk));
-
 	if (qf_group_gen(TEST_QF_COND, TEST_QF_PRIME) != RLC_OK) {
 		core_clean();
 		return 1;
@@ -738,9 +733,6 @@ int main(void) {
 		core_clean();
 		return 1;
 	}
-
-	bn_free(&(core_get()->qf_d));
-	bn_free(&(core_get()->qf_dk));
 
 	util_banner("All tests have passed.\n", 0);
 

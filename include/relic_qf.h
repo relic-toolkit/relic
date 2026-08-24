@@ -439,6 +439,15 @@ void qf_kern(bn_t r, const qf_t f);
  */
 void qf_rdc(qf_t c, const qf_t a);
 
+/* Computes an Upper bound on the class number h(\Delta).
+ *
+ * It approximates (1/\pi)·sqrt(|\Delta|) * ln|\Delta|, using integer only.
+ *
+ * @param[out] bound			- the computed class number bound.
+ * @param[in] dsc				- the discriminant.
+ */
+void qf_class(bn_t bound, const bn_t dsc);
+
 /**
  * Raises a quadratic form to an integer power.
  *
