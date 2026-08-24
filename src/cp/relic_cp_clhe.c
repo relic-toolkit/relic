@@ -73,6 +73,8 @@ static void clhe_power_of_f(qf_t r, const clhe_t c, const bn_t m) {
 
 	RLC_TRY {
 		bn_new(t0);
+		bn_new(t1);
+
 		bn_mod(t0, m, &(core_get()->qf_q));
 		if (bn_is_zero(t0)) {
 			qf_set_one(r, &(core_get()->qf_d));
