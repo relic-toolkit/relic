@@ -46,15 +46,6 @@
  */
 #define BENCH_QF_PRIME	(1024 + BENCH_QF_COND)
 
-/** Discriminant of the non-maximal order. */
-static bn_t bench_d;
-/** Fundamental discriminant of the maximal order. */
-static bn_t bench_k;
-/** Conductor relating the two. */
-static bn_t bench_q;
-/** Bound on the exponents, roughly the size of the class number. */
-static bn_t bench_n;
-
 static void util(void) {
 	qf_t a, b;
 
@@ -65,27 +56,27 @@ static void util(void) {
 	qf_new(b);
 
 	BENCH_RUN("qf_copy") {
-		qf_rand(a, bench_d);
+		qf_rand(a, &(core_get()->qf_d));
 		BENCH_ADD(qf_copy(b, a));
 	} BENCH_END;
 
 	BENCH_RUN("qf_neg") {
-		qf_rand(a, bench_d);
+		qf_rand(a, &(core_get()->qf_d));
 		BENCH_ADD(qf_neg(b, a));
 	} BENCH_END;
 
 	BENCH_RUN("qf_cmp") {
-		qf_rand(a, bench_d);
-		qf_rand(b, bench_d);
+		qf_rand(a, &(core_get()->qf_d));
+		qf_rand(b, &(core_get()->qf_d));
 		BENCH_ADD(qf_cmp(a, b));
 	} BENCH_END;
 
 	BENCH_RUN("qf_set_one") {
-		BENCH_ADD(qf_set_one(a, bench_d));
+		BENCH_ADD(qf_set_one(a, &(core_get()->qf_d)));
 	} BENCH_END;
 
 	BENCH_RUN("qf_is_one") {
-		qf_rand(a, bench_d);
+		qf_rand(a, &(core_get()->qf_d));
 		BENCH_ADD(qf_is_one(a));
 	} BENCH_END;
 
@@ -95,7 +86,7 @@ static void util(void) {
 
 static void arith(void) {
 	qf_t a, b, c, fd, fe, fde;
-	bn_t m, n;
+	bn_t m, n, class;
 	size_t j, sd, se;
 
 	qf_null(a);
@@ -106,6 +97,7 @@ static void arith(void) {
 	qf_null(fde);
 	bn_null(m);
 	bn_null(n);
+	bn_null(class);
 
 	qf_new(a);
 	qf_new(b);
@@ -115,9 +107,14 @@ static void arith(void) {
 	qf_new(fde);
 	bn_new(m);
 	bn_new(n);
+	bn_new(class);
+
+	/* the class number is about the square root of the discriminant */
+	bn_abs(class, &(core_get()->qf_d));
+	bn_rsh(class, class, bn_bits(class) / 2);
 
 	BENCH_RUN("qf_norm") {
-		qf_rand(a, bench_d);
+		qf_rand(a, &(core_get()->qf_d));
 		BENCH_ADD(qf_norm(b, a));
 	} BENCH_END;
 
@@ -128,7 +125,7 @@ static void arith(void) {
 		 * a reduced form keeps the discriminant and leaves a form that fails
 		 * both reduction conditions, which is what the loop is meant to fix.
 		 */
-		qf_rand(a, bench_d);
+		qf_rand(a, &(core_get()->qf_d));
 		bn_copy(m, a->a);
 		bn_copy(a->a, a->c);
 		bn_copy(a->c, m);
@@ -136,28 +133,28 @@ static void arith(void) {
 	} BENCH_END;
 
 	BENCH_RUN("qf_com") {
-		qf_rand(a, bench_d);
-		qf_rand(b, bench_d);
-		BENCH_ADD(qf_com(c, a, b, 0, bench_d));
+		qf_rand(a, &(core_get()->qf_d));
+		qf_rand(b, &(core_get()->qf_d));
+		BENCH_ADD(qf_com(c, a, b, 0, &(core_get()->qf_d)));
 	} BENCH_END;
 
 	BENCH_RUN("qf_dup") {
-		qf_rand(a, bench_d);
-		BENCH_ADD(qf_dup(b, a, bench_d));
+		qf_rand(a, &(core_get()->qf_d));
+		BENCH_ADD(qf_dup(b, a, &(core_get()->qf_d)));
 	} BENCH_END;
 
 	BENCH_RUN("qf_exp") {
-		qf_rand(a, bench_d);
-		bn_rand_mod(n, bench_n);
-		BENCH_ADD(qf_exp(b, a, n, bench_d));
+		qf_rand(a, &(core_get()->qf_d));
+		bn_rand_mod(n, class);
+		BENCH_ADD(qf_exp(b, a, n, &(core_get()->qf_d)));
 	} BENCH_END;
 
 	BENCH_RUN("qf_exp_sim") {
-		qf_rand(a, bench_d);
-		qf_rand(b, bench_d);
-		bn_rand_mod(m, bench_n);
-		bn_rand_mod(n, bench_n);
-		BENCH_ADD(qf_exp_sim(c, a, m, b, n, bench_d));
+		qf_rand(a, &(core_get()->qf_d));
+		qf_rand(b, &(core_get()->qf_d));
+		bn_rand_mod(m, class);
+		bn_rand_mod(n, class);
+		BENCH_ADD(qf_exp_sim(c, a, m, b, n, &(core_get()->qf_d)));
 	} BENCH_END;
 
 	/*
@@ -166,26 +163,26 @@ static void arith(void) {
 	 * offsets have to span the exponent. Building them is part of a fixed-base
 	 * precomputation and is therefore left off the clock.
 	 */
-	bn_rand_mod(n, bench_n);
-	se = (bn_bits(bench_n) + 3) / 4 + 1;
+	bn_rand_mod(n, class);
+	se = (bn_bits(class) + 3) / 4 + 1;
 	sd = 2 * se;
-	qf_rand(a, bench_d);
+	qf_rand(a, &(core_get()->qf_d));
 	qf_copy(fe, a);
 	for (j = 0; j < se; j++) {
-		qf_dup(fe, fe, bench_d);
+		qf_dup(fe, fe, &(core_get()->qf_d));
 	}
 	qf_copy(fd, a);
 	for (j = 0; j < sd; j++) {
-		qf_dup(fd, fd, bench_d);
+		qf_dup(fd, fd, &(core_get()->qf_d));
 	}
 	qf_copy(fde, fd);
 	for (j = 0; j < se; j++) {
-		qf_dup(fde, fde, bench_d);
+		qf_dup(fde, fde, &(core_get()->qf_d));
 	}
 
 	BENCH_RUN("qf_exp_fix") {
-		bn_rand_mod(n, bench_n);
-		BENCH_ADD(qf_exp_fix(b, a, n, sd, se, fe, fd, fde, bench_d));
+		bn_rand_mod(n, class);
+		BENCH_ADD(qf_exp_fix(b, a, n, sd, se, fe, fd, fde, &(core_get()->qf_d)));
 	} BENCH_END;
 
 	qf_free(a);
@@ -196,6 +193,7 @@ static void arith(void) {
 	qf_free(fde);
 	bn_free(m);
 	bn_free(n);
+	bn_free(class);
 }
 
 static void orders(void) {
@@ -221,32 +219,32 @@ static void orders(void) {
 	 * greatest common divisor.
 	 */
 	BENCH_RUN("qf_copa") {
-		qf_rand(a, bench_d);
+		qf_rand(a, &(core_get()->qf_d));
 		BENCH_ADD(qf_copa(b, a));
 	} BENCH_END;
 
 	BENCH_RUN("qf_lift") {
-		qf_rand(a, bench_d);
+		qf_rand(a, &(core_get()->qf_d));
 		qf_phi(a, a, 1);
 		BENCH_ADD(qf_lift(b, a));
 	} BENCH_END;
 
 	BENCH_RUN("qf_psi") {
-		qf_rand(a, bench_d);
-		BENCH_ADD(qf_psi(b, a, bench_k));
+		qf_rand(a, &(core_get()->qf_d));
+		BENCH_ADD(qf_psi(b, a, &(core_get()->qf_dk)));
 	} BENCH_END;
 
 
 	BENCH_RUN("qf_phi") {
-		qf_rand(a, bench_d);
+		qf_rand(a, &(core_get()->qf_d));
 		BENCH_ADD(qf_phi(b, a, 1));
 	} BENCH_END;
 
 	BENCH_RUN("qf_kern") {
-		bn_sqr(n, bench_q);
-		qf_set_dsc(a, n, bench_q, bench_d);
-		bn_rand_mod(n, bench_q);
-		qf_exp(b, a, n, bench_d);
+		bn_sqr(n, &(core_get()->qf_q));
+		qf_set_dsc(a, n, &(core_get()->qf_q), &(core_get()->qf_d));
+		bn_rand_mod(n, &(core_get()->qf_q));
+		qf_exp(b, a, n, &(core_get()->qf_d));
 		BENCH_ADD(qf_kern(m, b));
 	} BENCH_END;
 
@@ -265,29 +263,13 @@ int main(void) {
 	conf_print();
 	util_banner("Benchmarks for the QF module:", 0);
 
-	bn_null(bench_d);
-	bn_null(bench_k);
-	bn_null(bench_q);
-	bn_null(bench_n);
-	bn_new(bench_d);
-	bn_new(bench_k);
-	bn_new(bench_q);
-	bn_new(bench_n);
-
 	if (qf_group_gen(BENCH_QF_COND, BENCH_QF_PRIME) != RLC_OK) {
 		core_clean();
 		return 1;
 	}
 
-	bn_copy(bench_d, &(core_get()->qf_d));
-	bn_copy(bench_k, &(core_get()->qf_dk));
-	bn_copy(bench_q, &(core_get()->qf_q));
-	/* the class number is about the square root of the discriminant */
-	bn_abs(bench_n, bench_d);
-	bn_rsh(bench_n, bench_n, bn_bits(bench_n) / 2);
-
 	util_print("\n-- Discriminant of %zu bits, conductor of %zu bits.\n\n",
-			bn_bits(bench_d), bn_bits(bench_q));
+			bn_bits(&(core_get()->qf_d)), bn_bits(&(core_get()->qf_q)));
 
 	util_banner("Utilities:\n", 0);
 	util();
@@ -297,11 +279,6 @@ int main(void) {
 
 	util_banner("Maps between orders:\n", 0);
 	orders();
-
-	bn_free(bench_d);
-	bn_free(bench_k);
-	bn_free(bench_q);
-	bn_free(bench_n);
 
 	core_clean();
 	return 0;

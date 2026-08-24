@@ -43,13 +43,6 @@
 /** Size in bits of the other prime factor of the fundamental discriminant. */
 #define TEST_QF_PRIME	(64 + TEST_QF_COND)
 
-/**
- * Discriminant of the non-maximal order, its fundamental discriminant, and the
- * conductor relating them, prepared once for all the test cases.
- */
-static bn_t test_d;
-static bn_t test_k;
-
 static int memory(void) {
 	err_t e = ERR_CAUGHT;
 	int code = RLC_ERR;
@@ -90,38 +83,38 @@ static int util(void) {
 		qf_new(c);
 
 		TEST_CASE("comparison is consistent") {
-			qf_rand(a, test_d);
-			qf_rand(b, test_d);
+			qf_rand(a, &(core_get()->qf_d));
+			qf_rand(b, &(core_get()->qf_d));
 			qf_copy(c, a);
 			TEST_ASSERT(qf_cmp(a, c) == RLC_EQ, end);
 			TEST_ASSERT(qf_cmp(c, a) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_CASE("copy is consistent") {
-			qf_rand(a, test_d);
+			qf_rand(a, &(core_get()->qf_d));
 			qf_copy(b, a);
 			TEST_ASSERT(qf_cmp(a, b) == RLC_EQ, end);
-			TEST_ASSERT(qf_has_dsc(b, test_d), end);
+			TEST_ASSERT(qf_has_dsc(b, &(core_get()->qf_d)), end);
 		} TEST_END;
 
 		TEST_CASE("negation is involutory") {
-			qf_rand(a, test_d);
+			qf_rand(a, &(core_get()->qf_d));
 			qf_neg(b, a);
 			qf_neg(b, b);
 			TEST_ASSERT(qf_cmp(a, b) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_CASE("negation preserves the discriminant") {
-			qf_rand(a, test_d);
+			qf_rand(a, &(core_get()->qf_d));
 			qf_neg(b, a);
-			TEST_ASSERT(qf_has_dsc(b, test_d), end);
+			TEST_ASSERT(qf_has_dsc(b, &(core_get()->qf_d)), end);
 		} TEST_END;
 
 		TEST_CASE("assignment to the identity is detected") {
-			qf_set_one(a, test_d);
+			qf_set_one(a, &(core_get()->qf_d));
 			TEST_ASSERT(qf_is_one(a) == 1, end);
-			TEST_ASSERT(qf_has_dsc(a, test_d), end);
-			qf_rand(b, test_d);
+			TEST_ASSERT(qf_has_dsc(a, &(core_get()->qf_d)), end);
+			qf_rand(b, &(core_get()->qf_d));
 			TEST_ASSERT(qf_is_one(b) == 0, end);
 		} TEST_END;
 
@@ -156,20 +149,20 @@ static int reduction(void) {
 		qf_new(c);
 
 		TEST_CASE("reduction preserves the discriminant") {
-			qf_rand(a, test_d);
+			qf_rand(a, &(core_get()->qf_d));
 			qf_rdc(b, a);
-			TEST_ASSERT(qf_has_dsc(b, test_d), end);
+			TEST_ASSERT(qf_has_dsc(b, &(core_get()->qf_d)), end);
 		} TEST_END;
 
 		TEST_CASE("reduction is idempotent") {
-			qf_rand(a, test_d);
+			qf_rand(a, &(core_get()->qf_d));
 			qf_rdc(b, a);
 			qf_rdc(c, b);
 			TEST_ASSERT(qf_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_CASE("a reduced form satisfies the reduction conditions") {
-			qf_rand(a, test_d);
+			qf_rand(a, &(core_get()->qf_d));
 			qf_rdc(b, a);
 			/* |b| <= a <= c, and b >= 0 whenever a equals c */
 			TEST_ASSERT(bn_cmp_abs(b->b, b->a) != RLC_GT, end);
@@ -180,15 +173,15 @@ static int reduction(void) {
 		} TEST_END;
 
 		TEST_CASE("normalisation preserves the discriminant") {
-			qf_rand(a, test_d);
+			qf_rand(a, &(core_get()->qf_d));
 			qf_norm(b, a);
-			TEST_ASSERT(qf_has_dsc(b, test_d), end);
+			TEST_ASSERT(qf_has_dsc(b, &(core_get()->qf_d)), end);
 			/* normalisation puts b in (-a, a] */
 			TEST_ASSERT(bn_cmp_abs(b->b, b->a) != RLC_GT, end);
 		} TEST_END;
 
 		TEST_CASE("the identity is reduced") {
-			qf_set_one(a, test_d);
+			qf_set_one(a, &(core_get()->qf_d));
 			qf_rdc(b, a);
 			TEST_ASSERT(qf_cmp(a, b) == RLC_EQ, end);
 		} TEST_END;
@@ -222,68 +215,68 @@ static int composition(void) {
 		qf_new(e);
 
 		TEST_CASE("composition preserves the discriminant") {
-			qf_rand(a, test_d);
-			qf_rand(b, test_d);
-			qf_com(c, a, b, 0, test_d);
-			TEST_ASSERT(qf_has_dsc(c, test_d), end);
+			qf_rand(a, &(core_get()->qf_d));
+			qf_rand(b, &(core_get()->qf_d));
+			qf_com(c, a, b, 0, &(core_get()->qf_d));
+			TEST_ASSERT(qf_has_dsc(c, &(core_get()->qf_d)), end);
 		} TEST_END;
 
 		TEST_CASE("composition is commutative") {
-			qf_rand(a, test_d);
-			qf_rand(b, test_d);
-			qf_com(c, a, b, 0, test_d);
-			qf_com(d, b, a, 0, test_d);
+			qf_rand(a, &(core_get()->qf_d));
+			qf_rand(b, &(core_get()->qf_d));
+			qf_com(c, a, b, 0, &(core_get()->qf_d));
+			qf_com(d, b, a, 0, &(core_get()->qf_d));
 			TEST_ASSERT(qf_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_CASE("composition is associative") {
-			qf_rand(a, test_d);
-			qf_rand(b, test_d);
-			qf_rand(c, test_d);
-			qf_com(d, a, b, 0, test_d);
-			qf_com(d, d, c, 0, test_d);
-			qf_com(e, b, c, 0, test_d);
-			qf_com(e, a, e, 0, test_d);
+			qf_rand(a, &(core_get()->qf_d));
+			qf_rand(b, &(core_get()->qf_d));
+			qf_rand(c, &(core_get()->qf_d));
+			qf_com(d, a, b, 0, &(core_get()->qf_d));
+			qf_com(d, d, c, 0, &(core_get()->qf_d));
+			qf_com(e, b, c, 0, &(core_get()->qf_d));
+			qf_com(e, a, e, 0, &(core_get()->qf_d));
 			TEST_ASSERT(qf_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_CASE("composition has a neutral element") {
-			qf_rand(a, test_d);
-			qf_set_one(b, test_d);
-			qf_com(c, a, b, 0, test_d);
+			qf_rand(a, &(core_get()->qf_d));
+			qf_set_one(b, &(core_get()->qf_d));
+			qf_com(c, a, b, 0, &(core_get()->qf_d));
 			qf_rdc(d, a);
 			TEST_ASSERT(qf_cmp(c, d) == RLC_EQ, end);
-			qf_com(c, b, a, 0, test_d);
+			qf_com(c, b, a, 0, &(core_get()->qf_d));
 			TEST_ASSERT(qf_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_CASE("composition with the negation gives the identity") {
-			qf_rand(a, test_d);
+			qf_rand(a, &(core_get()->qf_d));
 			qf_neg(b, a);
-			qf_com(c, a, b, 0, test_d);
+			qf_com(c, a, b, 0, &(core_get()->qf_d));
 			TEST_ASSERT(qf_is_one(c) == 1, end);
 		} TEST_END;
 
 		TEST_CASE("the negation flag composes with the inverse") {
-			qf_rand(a, test_d);
-			qf_rand(b, test_d);
-			qf_com(c, a, b, 1, test_d);
+			qf_rand(a, &(core_get()->qf_d));
+			qf_rand(b, &(core_get()->qf_d));
+			qf_com(c, a, b, 1, &(core_get()->qf_d));
 			qf_neg(d, b);
-			qf_com(d, a, d, 0, test_d);
+			qf_com(d, a, d, 0, &(core_get()->qf_d));
 			TEST_ASSERT(qf_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_CASE("doubling is composition with itself") {
-			qf_rand(a, test_d);
-			qf_dup(b, a, test_d);
-			qf_com(c, a, a, 0, test_d);
+			qf_rand(a, &(core_get()->qf_d));
+			qf_dup(b, a, &(core_get()->qf_d));
+			qf_com(c, a, a, 0, &(core_get()->qf_d));
 			TEST_ASSERT(qf_cmp(b, c) == RLC_EQ, end);
-			TEST_ASSERT(qf_has_dsc(b, test_d), end);
+			TEST_ASSERT(qf_has_dsc(b, &(core_get()->qf_d)), end);
 		} TEST_END;
 
 		TEST_CASE("doubling the identity gives the identity") {
-			qf_set_one(a, test_d);
-			qf_dup(b, a, test_d);
+			qf_set_one(a, &(core_get()->qf_d));
+			qf_dup(b, a, &(core_get()->qf_d));
 			TEST_ASSERT(qf_is_one(b) == 1, end);
 		} TEST_END;
 	}
@@ -330,71 +323,71 @@ static int exponentiation(void) {
 		bn_new(s);
 
 		TEST_CASE("exponentiation by zero and one is correct") {
-			qf_rand(a, test_d);
+			qf_rand(a, &(core_get()->qf_d));
 			bn_zero(n);
-			qf_exp(b, a, n, test_d);
+			qf_exp(b, a, n, &(core_get()->qf_d));
 			TEST_ASSERT(qf_is_one(b) == 1, end);
 			bn_set_dig(n, 1);
-			qf_exp(b, a, n, test_d);
+			qf_exp(b, a, n, &(core_get()->qf_d));
 			qf_rdc(c, a);
 			TEST_ASSERT(qf_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_CASE("exponentiation by two is doubling") {
-			qf_rand(a, test_d);
+			qf_rand(a, &(core_get()->qf_d));
 			bn_set_dig(n, 2);
-			qf_exp(b, a, n, test_d);
-			qf_dup(c, a, test_d);
+			qf_exp(b, a, n, &(core_get()->qf_d));
+			qf_dup(c, a, &(core_get()->qf_d));
 			TEST_ASSERT(qf_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_CASE("exponentiation is additive in the exponent") {
-			qf_rand(a, test_d);
+			qf_rand(a, &(core_get()->qf_d));
 			bn_rand(m, RLC_POS, 64);
 			bn_rand(n, RLC_POS, 64);
 			bn_add(s, m, n);
-			qf_exp(b, a, m, test_d);
-			qf_exp(c, a, n, test_d);
-			qf_com(b, b, c, 0, test_d);
-			qf_exp(c, a, s, test_d);
+			qf_exp(b, a, m, &(core_get()->qf_d));
+			qf_exp(c, a, n, &(core_get()->qf_d));
+			qf_com(b, b, c, 0, &(core_get()->qf_d));
+			qf_exp(c, a, s, &(core_get()->qf_d));
 			TEST_ASSERT(qf_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_CASE("exponentiation agrees with repeated composition") {
-			qf_rand(a, test_d);
+			qf_rand(a, &(core_get()->qf_d));
 			bn_set_dig(n, 10);
-			qf_exp(b, a, n, test_d);
+			qf_exp(b, a, n, &(core_get()->qf_d));
 			qf_copy(c, a);
 			for (j = 1; j < 10; j++) {
-				qf_com(c, c, a, 0, test_d);
+				qf_com(c, c, a, 0, &(core_get()->qf_d));
 			}
 			TEST_ASSERT(qf_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_CASE("simultaneous exponentiation is correct") {
-			qf_rand(a, test_d);
-			qf_rand(b, test_d);
+			qf_rand(a, &(core_get()->qf_d));
+			qf_rand(b, &(core_get()->qf_d));
 			bn_rand(m, RLC_POS, 64);
 			bn_rand(n, RLC_POS, 64);
-			qf_exp_sim(r, a, m, b, n, test_d);
-			qf_exp(c, a, m, test_d);
-			qf_exp(fd, b, n, test_d);
-			qf_com(c, c, fd, 0, test_d);
+			qf_exp_sim(r, a, m, b, n, &(core_get()->qf_d));
+			qf_exp(c, a, m, &(core_get()->qf_d));
+			qf_exp(fd, b, n, &(core_get()->qf_d));
+			qf_com(c, c, fd, 0, &(core_get()->qf_d));
 			TEST_ASSERT(qf_cmp(r, c) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_CASE("simultaneous exponentiation handles zero exponents") {
-			qf_rand(a, test_d);
-			qf_rand(b, test_d);
+			qf_rand(a, &(core_get()->qf_d));
+			qf_rand(b, &(core_get()->qf_d));
 			bn_zero(m);
 			bn_rand(n, RLC_POS, 64);
-			qf_exp_sim(r, a, m, b, n, test_d);
-			qf_exp(c, b, n, test_d);
+			qf_exp_sim(r, a, m, b, n, &(core_get()->qf_d));
+			qf_exp(c, b, n, &(core_get()->qf_d));
 			TEST_ASSERT(qf_cmp(r, c) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_CASE("fixed base exponentiation is correct") {
-			qf_rand(a, test_d);
+			qf_rand(a, &(core_get()->qf_d));
 			bn_rand(n, RLC_POS, 64);
 			/*
 			 * The four-way comb consumes the exponent in blocks at offsets
@@ -405,18 +398,18 @@ static int exponentiation(void) {
 			sd = 2 * se;
 			qf_copy(fe, a);
 			for (j = 0; j < se; j++) {
-				qf_dup(fe, fe, test_d);
+				qf_dup(fe, fe, &(core_get()->qf_d));
 			}
 			qf_copy(fd, a);
 			for (j = 0; j < sd; j++) {
-				qf_dup(fd, fd, test_d);
+				qf_dup(fd, fd, &(core_get()->qf_d));
 			}
 			qf_copy(fde, fd);
 			for (j = 0; j < se; j++) {
-				qf_dup(fde, fde, test_d);
+				qf_dup(fde, fde, &(core_get()->qf_d));
 			}
-			qf_exp_fix(r, a, n, sd, se, fe, fd, fde, test_d);
-			qf_exp(c, a, n, test_d);
+			qf_exp_fix(r, a, n, sd, se, fe, fd, fde, &(core_get()->qf_d));
+			qf_exp(c, a, n, &(core_get()->qf_d));
 			TEST_ASSERT(qf_cmp(r, c) == RLC_EQ, end);
 		} TEST_END;
 	}
@@ -460,25 +453,25 @@ static int orders(void) {
 		bn_new(s);
 
 		TEST_CASE("the coprime form has the same discriminant") {
-			qf_rand(a, test_k);
+			qf_rand(a, &(core_get()->qf_dk));
 			qf_copa(b, a);
-			TEST_ASSERT(qf_has_dsc(a, test_k), end);
+			TEST_ASSERT(qf_has_dsc(a, &(core_get()->qf_dk)), end);
 			bn_gcd(n, b->a, &(core_get()->qf_q));
 			TEST_ASSERT(bn_cmp_dig(n, 1) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_CASE("lifting to the non-maximal order is consistent") {
-			qf_rand(a, test_k);
+			qf_rand(a, &(core_get()->qf_dk));
 			qf_lift(b, a);
-			TEST_ASSERT(qf_has_dsc(b, test_d), end);
+			TEST_ASSERT(qf_has_dsc(b, &(core_get()->qf_d)), end);
 		} TEST_END;
 
 		TEST_CASE("the map to the maximal order inverts the lift") {
-			qf_rand(a, test_k);
+			qf_rand(a, &(core_get()->qf_dk));
 			qf_rdc(a, a);
 			qf_lift(b, a);
 			qf_phi(b, b, 1);
-			TEST_ASSERT(qf_has_dsc(b, test_k), end);
+			TEST_ASSERT(qf_has_dsc(b, &(core_get()->qf_dk)), end);
 			TEST_ASSERT(qf_cmp(a, b) == RLC_EQ, end);
 		} TEST_END;
 
@@ -491,14 +484,14 @@ static int orders(void) {
 			 * homomorphism and composing before or after lifting need not
 			 * agree.
 			 */
-			qf_rand(a, test_d);
-			qf_rand(b, test_d);
-			qf_com(c, a, b, 0, test_d);
+			qf_rand(a, &(core_get()->qf_d));
+			qf_rand(b, &(core_get()->qf_d));
+			qf_com(c, a, b, 0, &(core_get()->qf_d));
 			qf_phi(c, c, 1);
 			qf_phi(a, a, 1);
 			qf_phi(b, b, 1);
-			qf_com(a, a, b, 0, test_k);
-			TEST_ASSERT(qf_has_dsc(c, test_k), end);
+			qf_com(a, a, b, 0, &(core_get()->qf_dk));
+			TEST_ASSERT(qf_has_dsc(c, &(core_get()->qf_dk)), end);
 			TEST_ASSERT(qf_cmp(a, c) == RLC_EQ, end);
 		} TEST_END;
 
@@ -510,10 +503,10 @@ static int orders(void) {
 			 * since such a class does not map to the principal one.
 			 */
 			bn_sqr(n, &(ctx->qf_q));
-			qf_set_dsc(a, n, &(ctx->qf_q), test_d);
-			TEST_ASSERT(qf_has_dsc(a, test_d), end);
+			qf_set_dsc(a, n, &(ctx->qf_q), &(core_get()->qf_d));
+			TEST_ASSERT(qf_has_dsc(a, &(core_get()->qf_d)), end);
 			bn_rand_mod(n, &(ctx->qf_q));
-			qf_exp(b, a, n, test_d);
+			qf_exp(b, a, n, &(core_get()->qf_d));
 			qf_kern(m, b);
 			TEST_ASSERT(bn_cmp(m, &(ctx->qf_q)) == RLC_LT, end);
 			/* the representative is recovered up to the sign of the class */
@@ -565,25 +558,25 @@ static int qpower(void) {
 		bn_new(n);
 
 		TEST_CASE("the lift is not multiplicative on its own") {
-			qf_rand(a, test_k);
-			qf_rand(b, test_k);
-			qf_com(c, a, b, 0, test_k);
+			qf_rand(a, &(core_get()->qf_dk));
+			qf_rand(b, &(core_get()->qf_dk));
+			qf_com(c, a, b, 0, &(core_get()->qf_dk));
 			qf_copa(la, a);
 			qf_lift(la, la);
 			qf_copa(lb, b);
 			qf_lift(lb, lb);
 			qf_copa(lc, c);
 			qf_lift(lc, lc);
-			qf_com(d, la, lb, 0, test_d);
-			TEST_ASSERT(qf_has_dsc(d, test_d), end);
-			TEST_ASSERT(qf_has_dsc(lc, test_d), end);
+			qf_com(d, la, lb, 0, &(core_get()->qf_d));
+			TEST_ASSERT(qf_has_dsc(d, &(core_get()->qf_d)), end);
+			TEST_ASSERT(qf_has_dsc(lc, &(core_get()->qf_d)), end);
 			TEST_ASSERT(qf_cmp(d, lc) != RLC_EQ, end);
 		} TEST_END;
 
 		TEST_CASE("the defect of the lift lies in the kernel") {
-			qf_rand(a, test_k);
-			qf_rand(b, test_k);
-			qf_com(c, a, b, 0, test_k);
+			qf_rand(a, &(core_get()->qf_dk));
+			qf_rand(b, &(core_get()->qf_dk));
+			qf_com(c, a, b, 0, &(core_get()->qf_dk));
 			qf_copa(la, a);
 			qf_lift(la, la);
 			qf_copa(lb, b);
@@ -591,72 +584,72 @@ static int qpower(void) {
 			qf_copa(lc, c);
 			qf_lift(lc, lc);
 			/* D = lift(a)*lift(b)*lift(ab)^-1 */
-			qf_com(d, la, lb, 0, test_d);
-			qf_com(d, d, lc, 1, test_d);
-			TEST_ASSERT(qf_has_dsc(d, test_d), end);
+			qf_com(d, la, lb, 0, &(core_get()->qf_d));
+			qf_com(d, d, lc, 1, &(core_get()->qf_d));
+			TEST_ASSERT(qf_has_dsc(d, &(core_get()->qf_d)), end);
 			/* it projects to the identity, so it lies in ker qf_max */
 			qf_phi(e, d, 1);
 			TEST_ASSERT(qf_is_one(e) == 1, end);
 		} TEST_END;
 
 		TEST_CASE("the kernel logarithm reconstructs the defect") {
-			qf_rand(a, test_k);
-			qf_rand(b, test_k);
-			qf_com(c, a, b, 0, test_k);
+			qf_rand(a, &(core_get()->qf_dk));
+			qf_rand(b, &(core_get()->qf_dk));
+			qf_com(c, a, b, 0, &(core_get()->qf_dk));
 			qf_copa(la, a);
 			qf_lift(la, la);
 			qf_copa(lb, b);
 			qf_lift(lb, lb);
 			qf_copa(lc, c);
 			qf_lift(lc, lc);
-			qf_com(d, la, lb, 0, test_d);
-			qf_com(d, d, lc, 1, test_d);
+			qf_com(d, la, lb, 0, &(core_get()->qf_d));
+			qf_com(d, d, lc, 1, &(core_get()->qf_d));
 			/* F generates the kernel, so the defect is one of its powers */
 			bn_sqr(n, &(ctx->qf_q));
-			qf_set_dsc(e, n, &(ctx->qf_q), test_d);
+			qf_set_dsc(e, n, &(ctx->qf_q), &(core_get()->qf_d));
 			qf_kern(m, d);
-			qf_exp(e, e, m, test_d);
+			qf_exp(e, e, m, &(core_get()->qf_d));
 			if (qf_cmp(e, d) != RLC_EQ) {
 				/* the logarithm comes back only up to the sign of the class */
 				bn_sub(m, &(ctx->qf_q), m);
 				bn_mod(m, m, &(ctx->qf_q));
 				bn_sqr(n, &(ctx->qf_q));
-				qf_set_dsc(e, n, &(ctx->qf_q), test_d);
-				qf_exp(e, e, m, test_d);
+				qf_set_dsc(e, n, &(ctx->qf_q), &(core_get()->qf_d));
+				qf_exp(e, e, m, &(core_get()->qf_d));
 			}
 			TEST_ASSERT(qf_cmp(e, d) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_CASE("the q-th power annihilates the defect") {
-			qf_rand(a, test_k);
-			qf_rand(b, test_k);
-			qf_com(c, a, b, 0, test_k);
+			qf_rand(a, &(core_get()->qf_dk));
+			qf_rand(b, &(core_get()->qf_dk));
+			qf_com(c, a, b, 0, &(core_get()->qf_dk));
 			qf_copa(la, a);
 			qf_lift(la, la);
 			qf_copa(lb, b);
 			qf_lift(lb, lb);
 			qf_copa(lc, c);
 			qf_lift(lc, lc);
-			qf_com(d, la, lb, 0, test_d);
-			qf_com(d, d, lc, 1, test_d);
+			qf_com(d, la, lb, 0, &(core_get()->qf_d));
+			qf_com(d, d, lc, 1, &(core_get()->qf_d));
 			/* the kernel has order q, so raising to q returns the identity */
-			qf_exp(e, d, &(ctx->qf_q), test_d);
+			qf_exp(e, d, &(ctx->qf_q), &(core_get()->qf_d));
 			TEST_ASSERT(qf_is_one(e) == 1, end);
 		} TEST_END;
 
 		TEST_CASE("the lift composed with the q-th power is multiplicative") {
-			qf_rand(a, test_k);
-			qf_rand(b, test_k);
-			qf_com(c, a, b, 0, test_k);
-			qf_psi(la, a, test_d);
-			qf_psi(lb, b, test_d);
-			qf_psi(lc, c, test_d);
-			qf_com(d, la, lb, 0, test_d);
+			qf_rand(a, &(core_get()->qf_dk));
+			qf_rand(b, &(core_get()->qf_dk));
+			qf_com(c, a, b, 0, &(core_get()->qf_dk));
+			qf_psi(la, a, &(core_get()->qf_d));
+			qf_psi(lb, b, &(core_get()->qf_d));
+			qf_psi(lc, c, &(core_get()->qf_d));
+			qf_com(d, la, lb, 0, &(core_get()->qf_d));
 			TEST_ASSERT(qf_cmp(d, lc) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_CASE("the lift alone projects back to the element") {
-			qf_rand(a, test_k);
+			qf_rand(a, &(core_get()->qf_dk));
 			qf_rdc(a, a);
 			qf_copa(la, a);
 			qf_lift(la, la);
@@ -665,11 +658,11 @@ static int qpower(void) {
 		} TEST_END;
 
 		TEST_CASE("the q-th power of the lift projects to the q-th power") {
-			qf_rand(a, test_k);
+			qf_rand(a, &(core_get()->qf_dk));
 			qf_rdc(a, a);
-			qf_psi(la, a, test_d);
+			qf_psi(la, a, &(core_get()->qf_d));
 			qf_phi(e, la, 1);
-			qf_exp(b, a, &(ctx->qf_q), test_k);
+			qf_exp(b, a, &(ctx->qf_q), &(core_get()->qf_dk));
 			TEST_ASSERT(qf_cmp(e, b) == RLC_EQ, end);
 		} TEST_END;
 	}
@@ -699,17 +692,17 @@ int main(void) {
 
 	util_banner("Tests for the QF module:\n", 0);
 
-	bn_null(test_d);
-	bn_null(test_k);
-	bn_new(test_d);
-	bn_new(test_k);
+	bn_null(&(core_get()->qf_d));
+	bn_null(&(core_get()->qf_dk));
+	bn_new(&(core_get()->qf_d));
+	bn_new(&(core_get()->qf_dk));
 
 	if (qf_group_gen(TEST_QF_COND, TEST_QF_PRIME) != RLC_OK) {
 		core_clean();
 		return 1;
 	}
-	bn_copy(test_d, &(core_get()->qf_d));
-	bn_copy(test_k, &(core_get()->qf_dk));
+	bn_copy(&(core_get()->qf_d), &(core_get()->qf_d));
+	bn_copy(&(core_get()->qf_dk), &(core_get()->qf_dk));
 
 	util_banner("Utilities:", 1);
 
@@ -750,8 +743,8 @@ int main(void) {
 		return 1;
 	}
 
-	bn_free(test_d);
-	bn_free(test_k);
+	bn_free(&(core_get()->qf_d));
+	bn_free(&(core_get()->qf_dk));
 
 	util_banner("All tests have passed.\n", 0);
 
