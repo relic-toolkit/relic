@@ -176,9 +176,9 @@ typedef struct {
  * Pointer to a CLHE public key.
  */
 #if ALLOC == AUTO
-typedef clhe_st clhe_pk_t[1];
+typedef clhe_pk_st clhe_pk_t[1];
 #else
-typedef clhe_st *clhe_pk_t;
+typedef clhe_pk_st *clhe_pk_t;
 #endif
 
 /**
