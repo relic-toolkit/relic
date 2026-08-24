@@ -91,43 +91,27 @@ void qf_group_clean(void) {
  * mod 4, so exactly one of the two primes is 3 mod 4.
  */
 int qf_group_gen(size_t cond, size_t bits) {
-	ctx_t *ctx = core_get();
 	int code = RLC_ERR;
-	bn_t p;
+	bn_t p, q;
 	qf_t g;
 
 	bn_null(p);
+	bn_null(q);
 	qf_null(g);
 
 	RLC_TRY {
 		bn_new(p);
+		bn_new(q);
 		qf_new(g);
 
 		do {
-			bn_gen_prime(&(ctx->qf_q), cond);
-		} while (bn_get_bit(&(ctx->qf_q), 1) != 0);	/* q = 1 mod 4 */
+			bn_gen_prime(q, cond);
+		} while (bn_get_bit(q, 1) != 0);	/* q = 1 mod 4 */
 		do {
 			bn_gen_prime(p, bits - cond);
 		} while (bn_get_bit(p, 1) == 0);		/* p = 3 mod 4 */
 
-		bn_mul(&(ctx->qf_dk), p, &(ctx->qf_q));
-		bn_neg(&(ctx->qf_dk), &(ctx->qf_dk));
-		bn_mul(&(ctx->qf_d), &(ctx->qf_dk), &(ctx->qf_q));
-		bn_mul(&(ctx->qf_d), &(ctx->qf_d), &(ctx->qf_q));
-
-		if (!qf_find_gen(g, &(ctx->qf_d))) {
-			RLC_THROW(ERR_NO_VALID);
-		}
-		bn_copy(&(ctx->qf_ga), g->a);
-		bn_copy(&(ctx->qf_gb), g->b);
-		bn_copy(&(ctx->qf_gc), g->c);
-
-		if (!qf_find_gen(g, &(ctx->qf_dk))) {
-			RLC_THROW(ERR_NO_VALID);
-		}
-		bn_copy(&(ctx->qf_gka), g->a);
-		bn_copy(&(ctx->qf_gkb), g->b);
-		bn_copy(&(ctx->qf_gkc), g->c);
+		qf_group_set_both(q, p);
 
 		code = RLC_OK;
 	}
@@ -136,6 +120,7 @@ int qf_group_gen(size_t cond, size_t bits) {
 	}
 	RLC_FINALLY {
 		bn_free(p);
+		bn_free(q);
 		qf_free(g);
 	}
 	return code;

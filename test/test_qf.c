@@ -692,8 +692,6 @@ int main(void) {
 		core_clean();
 		return 1;
 	}
-	bn_copy(&(core_get()->qf_d), &(core_get()->qf_d));
-	bn_copy(&(core_get()->qf_dk), &(core_get()->qf_dk));
 
 	util_banner("Utilities:", 1);
 

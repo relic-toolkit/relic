@@ -32,96 +32,58 @@
 #include "relic_core.h"
 
 /*============================================================================*/
-/* Private definitions                                                         */
-/*============================================================================*/
-
-static void qf_norm_impl(qf_t f, bn_t q, bn_t r) {
-    bn_t t;
-
-	bn_null(t);
-
-	RLC_TRY {
-		bn_new(t);
-
-		bn_div_rem(q, r, f->b, f->a);
-		if (!bn_is_zero(r)) { /* b = q*a + r, -a < r <= 0 */
-			bn_add_dig(q, q, 1);
-			bn_sub(r, r, f->a);
-		}
-		if (!bn_is_even(q)) {
-			bn_add(r, r, f->a);			/* now -a < r <= a */
-		}
-		bn_rsh(q, q, 1);			/* b = (2a)*q + r */
-		bn_add(t, r, f->b);				/* w = b_new + b_old, even */
-		bn_rsh(t, t, 1);
-		bn_copy(f->b, r);
-		bn_mul(t, q, t);
-		bn_sub(f->c, f->c, t);
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		bn_free(t);
-	}
-}
-
-
-/*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
 void qf_norm(qf_t f, const qf_t g) {
-    bn_t q, r;
+    bn_t t, q, r;
 
+	bn_null(t);
 	bn_null(q);
 	bn_null(r);
 
 	RLC_TRY {
+		bn_new(t);
 		bn_new(q);
 		bn_new(r);
 
-		qf_copy(f, g);
-		qf_norm_impl(f, q, r);
+		bn_div_rem(q, r, g->b, g->a);
+		if (!bn_is_zero(r)) { /* b = q*a + r, -a < r <= 0 */
+			bn_add_dig(q, q, 1);
+			bn_sub(r, r, g->a);
+		}
+		if (!bn_is_even(q)) {
+			bn_add(r, r, g->a);			/* now -a < r <= a */
+		}
+		bn_rsh(q, q, 1);				/* b = (2a)*q + r */
+		bn_add(t, r, g->b);				/* w = b_new + b_old, even */
+		bn_rsh(t, t, 1);
+		bn_copy(f->b, r);
+		bn_mul(t, q, t);
+		bn_sub(f->c, g->c, t);
+		bn_copy(f->a, g->a);
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
+		bn_free(t);
 		bn_free(q);
 		bn_free(r);
-	}	
+	}
 }
 
 void qf_rdc(qf_t f, const qf_t g) {
 	int cmp;
-    bn_t q, r, t;
 
-	bn_null(q);
-	bn_null(r);
-	bn_null(t);
+	qf_norm(f, g);
 
-	RLC_TRY {
-		bn_new(q);
-		bn_new(r);
-		bn_new(t);
+	/* While a > c, normalize. */
+	while ((cmp = bn_cmp_abs(f->a, f->c)) == RLC_GT) {
+		bn_swap(f->a, f->c);
+		bn_neg(f->b, f->b);
+		qf_norm(f, f);
+	}
 
-		qf_copy(f, g);
-		qf_norm_impl(f, q, r);
-
-		/* While a > c, normalize. */
-		while ((cmp = bn_cmp_abs(f->a, f->c)) == RLC_GT) {
-			bn_copy(t, f->a),
-			bn_copy(f->a, f->c);
-			bn_copy(f->c, t);
-			bn_neg(f->b, f->b);
-			qf_norm_impl(f, q, r);
-		}
-
-    	if (cmp == RLC_EQ && bn_sign(f->b) == RLC_NEG) {
-			bn_neg(f->b, f->b);
-		}
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		bn_free(q);
-		bn_free(r);
-		bn_free(t);
+	if (cmp == RLC_EQ && bn_sign(f->b) == RLC_NEG) {
+		bn_neg(f->b, f->b);
 	}
 }
