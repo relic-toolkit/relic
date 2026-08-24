@@ -367,6 +367,256 @@ static int subgroup_paillier() {
 	return code;
 }
 
+#if defined(WITH_QF)
+
+/** Size in bits of the plaintext prime used by the CL tests. */
+#define TEST_CLHE_PLAIN		64
+/** Size in bits of the fundamental discriminant used by the CL tests. */
+#define TEST_CLHE_DISC		512
+
+/**
+ * Runs the whole suite for one variant, so that the compact and plain forms are
+ * exercised by exactly the same cases.
+ */
+static int clhe(int compact) {
+	int code = RLC_ERR;
+	clhe_t c;
+	clhe_pk_t pk;
+	bn_t q, sk, m, n, s, r, t, u, bound;
+	qf_t c1, c2, d1, d2, e1, e2;
+
+	clhe_null(c);
+	clhe_pk_null(pk);
+	bn_null(q);
+	bn_null(sk);
+	bn_null(m);
+	bn_null(n);
+	bn_null(s);
+	bn_null(r);
+	bn_null(t);
+	bn_null(u);
+	bn_null(bound);
+	qf_null(c1);
+	qf_null(c2);
+	qf_null(d1);
+	qf_null(d2);
+	qf_null(e1);
+	qf_null(e2);
+
+	RLC_TRY {
+		clhe_new(c);
+		clhe_pk_new(pk);
+		bn_new(q);
+		bn_new(sk);
+		bn_new(m);
+		bn_new(n);
+		bn_new(s);
+		bn_new(r);
+		bn_new(t);
+		bn_new(u);
+		bn_new(bound);
+		qf_new(c1);
+		qf_new(c2);
+		qf_new(d1);
+		qf_new(d2);
+		qf_new(e1);
+		qf_new(e2);
+
+		/*
+		 * Setting up generates a discriminant and a precomputation table, so it
+		 * is done once for the whole suite rather than inside the cases.
+		 */
+		bn_gen_prime(q, TEST_CLHE_PLAIN);
+		cp_clhe_set(c, q, TEST_CLHE_DISC, compact);
+		cp_clhe_gen(pk, sk, c);
+
+		/* the exponent bound, formed as cp_clhe_gen forms it */
+		qf_class(bound, &(core_get()->qf_dk));
+		bn_lsh(bound, bound, 40);
+
+		TEST_CASE("CL encryption and decryption are inverse") {
+			bn_zero(m);
+			bn_rand_mod(r, bound);
+			cp_clhe_enc(c1, c2, c, pk, m, r);
+			cp_clhe_dec(n, c, sk, c1, c2);
+			TEST_ASSERT(bn_is_zero(n), end);
+			/* one and q - 1 exercise the odd representative in power_of_f */
+			bn_set_dig(m, 1);
+			bn_rand_mod(r, bound);
+			cp_clhe_enc(c1, c2, c, pk, m, r);
+			cp_clhe_dec(n, c, sk, c1, c2);
+			TEST_ASSERT(bn_cmp(m, n) == RLC_EQ, end);
+			bn_sub_dig(m, &(core_get()->qf_q), 1);
+			bn_rand_mod(r, bound);
+			cp_clhe_enc(c1, c2, c, pk, m, r);
+			cp_clhe_dec(n, c, sk, c1, c2);
+			TEST_ASSERT(bn_cmp(m, n) == RLC_EQ, end);
+			bn_rand_mod(m, &(core_get()->qf_q));
+			bn_rand_mod(r, bound);
+			cp_clhe_enc(c1, c2, c, pk, m, r);
+			cp_clhe_dec(n, c, sk, c1, c2);
+			TEST_ASSERT(bn_cmp(m, n) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("CL ciphertext components lie in the right orders") {
+			bn_rand_mod(m, &(core_get()->qf_q));
+			bn_rand_mod(r, bound);
+			cp_clhe_enc(c1, c2, c, pk, m, r);
+			/* the first component follows the variant, the second is always
+			 * in the order of conductor q, where the kernel lives */
+			qf_get_dsc(t, c1);
+			TEST_ASSERT(bn_cmp(t, compact ? &(core_get()->qf_dk) :
+					&(core_get()->qf_d)) == RLC_EQ, end);
+			qf_get_dsc(t, c2);
+			TEST_ASSERT(bn_cmp(t, &(core_get()->qf_d)) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("CL encryption is probabilistic") {
+			bn_rand_mod(m, &(core_get()->qf_q));
+			bn_rand_mod(r, bound);
+			cp_clhe_enc(c1, c2, c, pk, m, r);
+			bn_rand_mod(r, bound);
+			cp_clhe_enc(d1, d2, c, pk, m, r);
+			TEST_ASSERT(qf_cmp(c1, d1) != RLC_EQ, end);
+			/* and both still decrypt to the same message */
+			cp_clhe_dec(n, c, sk, c1, c2);
+			cp_clhe_dec(s, c, sk, d1, d2);
+			TEST_ASSERT(bn_cmp(n, m) == RLC_EQ, end);
+			TEST_ASSERT(bn_cmp(s, m) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("CL encryption is additively homomorphic") {
+			bn_rand_mod(m, &(core_get()->qf_q));
+			bn_rand_mod(n, &(core_get()->qf_q));
+			bn_rand_mod(r, bound);
+			cp_clhe_enc(c1, c2, c, pk, m, r);
+			bn_rand_mod(r, bound);
+			cp_clhe_enc(d1, d2, c, pk, n, r);
+			bn_rand_mod(r, bound);
+			cp_clhe_add(e1, e2, c, pk, c1, c2, d1, d2, r);
+			cp_clhe_dec(s, c, sk, e1, e2);
+			bn_add(t, m, n);
+			bn_mod(t, t, &(core_get()->qf_q));
+			TEST_ASSERT(bn_cmp(s, t) == RLC_EQ, end);
+			/* two messages summing past q, so the reduction is exercised */
+			bn_sub_dig(m, &(core_get()->qf_q), 1);
+			bn_sub_dig(n, &(core_get()->qf_q), 2);
+			bn_rand_mod(r, bound);
+			cp_clhe_enc(c1, c2, c, pk, m, r);
+			bn_rand_mod(r, bound);
+			cp_clhe_enc(d1, d2, c, pk, n, r);
+			bn_rand_mod(r, bound);
+			cp_clhe_add(e1, e2, c, pk, c1, c2, d1, d2, r);
+			cp_clhe_dec(s, c, sk, e1, e2);
+			bn_add(t, m, n);
+			bn_mod(t, t, &(core_get()->qf_q));
+			TEST_ASSERT(bn_cmp(s, t) == RLC_EQ, end);
+			bn_rand_mod(m, &(core_get()->qf_q));
+			bn_rand_mod(n, &(core_get()->qf_q));
+			bn_rand_mod(r, bound);
+			cp_clhe_enc(c1, c2, c, pk, m, r);
+			bn_rand_mod(r, bound);
+			cp_clhe_enc(d1, d2, c, pk, n, r);
+			bn_rand_mod(r, bound);
+			cp_clhe_add(e1, e2, c, pk, c1, c2, d1, d2, r);
+			cp_clhe_dec(s, c, sk, e1, e2);
+			bn_rand_mod(r, bound);
+			cp_clhe_add(e1, e2, c, pk, d1, d2, c1, c2, r);
+			cp_clhe_dec(u, c, sk, e1, e2);
+			TEST_ASSERT(bn_cmp(s, u) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("CL encryption is linearly homomorphic") {
+			bn_rand_mod(m, &(core_get()->qf_q));
+			bn_rand_mod(s, &(core_get()->qf_q));
+			bn_rand_mod(r, bound);
+			cp_clhe_enc(c1, c2, c, pk, m, r);
+			bn_rand_mod(r, bound);
+			cp_clhe_mul(e1, e2, c, pk, c1, c2, s, r);
+			cp_clhe_dec(n, c, sk, e1, e2);
+			bn_mul(t, m, s);
+			bn_mod(t, t, &(core_get()->qf_q));
+			TEST_ASSERT(bn_cmp(n, t) == RLC_EQ, end);
+			bn_rand_mod(m, &(core_get()->qf_q));
+			bn_rand_mod(r, bound);
+			cp_clhe_enc(c1, c2, c, pk, m, r);
+			bn_set_dig(s, 1);
+			bn_rand_mod(r, bound);
+			cp_clhe_mul(e1, e2, c, pk, c1, c2, s, r);
+			cp_clhe_dec(n, c, sk, e1, e2);
+			TEST_ASSERT(bn_cmp(n, m) == RLC_EQ, end);
+			bn_rand_mod(m, &(core_get()->qf_q));
+			bn_rand_mod(r, bound);
+			cp_clhe_enc(c1, c2, c, pk, m, r);
+			bn_zero(s);
+			bn_rand_mod(r, bound);
+			cp_clhe_mul(e1, e2, c, pk, c1, c2, s, r);
+			cp_clhe_dec(n, c, sk, e1, e2);
+			TEST_ASSERT(bn_is_zero(n), end);
+			bn_rand_mod(m, &(core_get()->qf_q));
+			bn_rand_mod(r, bound);
+			cp_clhe_enc(c1, c2, c, pk, m, r);
+			/* three times the message, both ways */
+			bn_rand_mod(r, bound);
+			cp_clhe_add(e1, e2, c, pk, c1, c2, c1, c2, r);
+			bn_rand_mod(r, bound);
+			cp_clhe_add(e1, e2, c, pk, e1, e2, c1, c2, r);
+			cp_clhe_dec(n, c, sk, e1, e2);
+			bn_set_dig(s, 3);
+			bn_rand_mod(r, bound);
+			cp_clhe_mul(d1, d2, c, pk, c1, c2, s, r);
+			cp_clhe_dec(t, c, sk, d1, d2);
+			TEST_ASSERT(bn_cmp(n, t) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("CL does not decrypt under a wrong key/ciphertext") {
+			bn_rand_mod(m, &(core_get()->qf_q));
+			bn_rand_mod(r, bound);
+			cp_clhe_enc(c1, c2, c, pk, m, r);
+			/* squaring the second component multiplies the plaintext by two,
+			 * so anything but a message of zero must change */
+			if (!bn_is_zero(m)) {
+				qf_dup(d2, c2, &(core_get()->qf_d));
+				cp_clhe_dec(n, c, sk, c1, d2);
+				TEST_ASSERT(bn_cmp(n, m) != RLC_EQ, end);
+			}
+			bn_rand_mod(m, &(core_get()->qf_q));
+			bn_rand_mod(r, bound);
+			cp_clhe_enc(c1, c2, c, pk, m, r);
+			bn_rand_mod(t, bound);
+			if (!bn_is_zero(m) && bn_cmp(t, sk) != RLC_EQ) {
+				cp_clhe_dec(n, c, t, c1, c2);
+				TEST_ASSERT(bn_cmp(n, m) != RLC_EQ, end);
+			}
+		} TEST_END;
+	}
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
+	}
+	code = RLC_OK;
+  end:
+	clhe_free(c);
+	clhe_pk_free(pk);
+	bn_free(q);
+	bn_free(sk);
+	bn_free(m);
+	bn_free(n);
+	bn_free(s);
+	bn_free(r);
+	bn_free(t);
+	bn_free(u);
+	bn_free(bound);
+	qf_free(c1);
+	qf_free(c2);
+	qf_free(d1);
+	qf_free(d2);
+	qf_free(e1);
+	qf_free(e2);
+	return code;
+}
+
+#endif
+
 #if defined(WITH_EC)
 
 /* Test vectors generated by BouncyCastle. */
@@ -2721,6 +2971,19 @@ int main(void) {
 	}
 
 	if (subgroup_paillier() != RLC_OK) {
+		core_clean();
+		return 1;
+	}
+#endif
+
+#if defined(WITH_QF)
+	util_banner("Protocols based on class groups:\n", 0);
+	if (clhe(0) != RLC_OK) {
+		core_clean();
+		return 1;
+	}
+
+	if (clhe(1) != RLC_OK) {
 		core_clean();
 		return 1;
 	}

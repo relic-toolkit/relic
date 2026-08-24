@@ -270,6 +270,159 @@ static void paillier(void) {
 
 #endif
 
+#if defined(WITH_QF)
+
+/** Size in bits of the plaintext prime used by the CL benchmarks. */
+#define BENCH_CLHE_PLAIN	128
+/** Size in bits of the fundamental discriminant used by the CL benchmarks. */
+#define BENCH_CLHE_DISC		1827
+
+/**
+ * Benchmarks one variant of the CL system. Setting up and generating a key are
+ * measured separately, since both build precomputation tables and neither is on
+ * the path of an encryption.
+ */
+static void clhe(int compact) {
+	clhe_t c;
+	clhe_pk_t pk;
+	bn_t q, sk, m, n, s, r, bound;
+	qf_t c1, c2, d1, d2, e1, e2;
+
+	clhe_null(c);
+	clhe_pk_null(pk);
+	bn_null(q);
+	bn_null(sk);
+	bn_null(m);
+	bn_null(n);
+	bn_null(s);
+	bn_null(r);
+	bn_null(bound);
+	qf_null(c1);
+	qf_null(c2);
+	qf_null(d1);
+	qf_null(d2);
+	qf_null(e1);
+	qf_null(e2);
+
+	clhe_new(c);
+	clhe_pk_new(pk);
+	bn_new(q);
+	bn_new(sk);
+	bn_new(m);
+	bn_new(n);
+	bn_new(s);
+	bn_new(r);
+	bn_new(bound);
+	qf_new(c1);
+	qf_new(c2);
+	qf_new(d1);
+	qf_new(d2);
+	qf_new(e1);
+	qf_new(e2);
+
+	bn_gen_prime(q, BENCH_CLHE_PLAIN);
+	cp_clhe_set(c, q, BENCH_CLHE_DISC, compact);
+	cp_clhe_gen(pk, sk, c);
+	qf_class(bound, &(core_get()->qf_dk));
+	bn_lsh(bound, bound, 40);
+
+	util_print("\n-- %s variant, plaintext %zu bits, discriminants %zu and "
+			"%zu bits.\n\n", compact ? "compact" : "plain",
+			bn_bits(&(core_get()->qf_q)), bn_bits(&(core_get()->qf_dk)),
+			bn_bits(&(core_get()->qf_d)));
+
+	/*
+	 * Setting up samples a discriminant, so each repetition does fresh prime
+	 * generation and the figure is dominated by that rather than by the group
+	 * work. It is reported because it is what an application pays once, not
+	 * because it says anything about the arithmetic.
+	 */
+	BENCH_RUN("cp_clhe_set") {
+		BENCH_ADD(cp_clhe_set(c, q, BENCH_CLHE_DISC, compact));
+	} BENCH_END;
+
+	/* the parameters were replaced by the loop above, so rebuild the key */
+	cp_clhe_set(c, q, BENCH_CLHE_DISC, compact);
+	cp_clhe_gen(pk, sk, c);
+	qf_class(bound, &(core_get()->qf_dk));
+	bn_lsh(bound, bound, 40);
+
+	BENCH_RUN("cp_clhe_gen") {
+		BENCH_ADD(cp_clhe_gen(pk, sk, c));
+	} BENCH_END;
+
+	cp_clhe_gen(pk, sk, c);
+
+	BENCH_RUN("cp_clhe_enc") {
+		bn_rand_mod(m, &(core_get()->qf_q));
+		bn_rand_mod(r, bound);
+		BENCH_ADD(cp_clhe_enc(c1, c2, c, pk, m, r));
+	} BENCH_END;
+
+	BENCH_RUN("cp_clhe_dec") {
+		bn_rand_mod(m, &(core_get()->qf_q));
+		bn_rand_mod(r, bound);
+		cp_clhe_enc(c1, c2, c, pk, m, r);
+		BENCH_ADD(cp_clhe_dec(n, c, sk, c1, c2));
+	} BENCH_END;
+
+	BENCH_RUN("cp_clhe_dec (zero message)") {
+		/* the discrete logarithm exits immediately on the identity, so this
+		 * bounds the part of decryption that is not the exponentiation */
+		bn_zero(m);
+		bn_rand_mod(r, bound);
+		cp_clhe_enc(c1, c2, c, pk, m, r);
+		BENCH_ADD(cp_clhe_dec(n, c, sk, c1, c2));
+	} BENCH_END;
+
+	BENCH_RUN("cp_clhe_add") {
+		bn_rand_mod(m, &(core_get()->qf_q));
+		bn_rand_mod(r, bound);
+		cp_clhe_enc(c1, c2, c, pk, m, r);
+		bn_rand_mod(n, &(core_get()->qf_q));
+		bn_rand_mod(r, bound);
+		cp_clhe_enc(d1, d2, c, pk, n, r);
+		bn_rand_mod(r, bound);
+		BENCH_ADD(cp_clhe_add(e1, e2, c, pk, c1, c2, d1, d2, r));
+	} BENCH_END;
+
+	BENCH_RUN("cp_clhe_mul") {
+		bn_rand_mod(m, &(core_get()->qf_q));
+		bn_rand_mod(r, bound);
+		cp_clhe_enc(c1, c2, c, pk, m, r);
+		bn_rand_mod(s, &(core_get()->qf_q));
+		bn_rand_mod(r, bound);
+		BENCH_ADD(cp_clhe_mul(e1, e2, c, pk, c1, c2, s, r));
+	} BENCH_END;
+
+	BENCH_RUN("cp_clhe_mul (small scalar)") {
+		bn_rand_mod(m, &(core_get()->qf_q));
+		bn_rand_mod(r, bound);
+		cp_clhe_enc(c1, c2, c, pk, m, r);
+		bn_set_dig(s, 3);
+		bn_rand_mod(r, bound);
+		BENCH_ADD(cp_clhe_mul(e1, e2, c, pk, c1, c2, s, r));
+	} BENCH_END;
+
+	clhe_free(c);
+	clhe_pk_free(pk);
+	bn_free(q);
+	bn_free(sk);
+	bn_free(m);
+	bn_free(n);
+	bn_free(s);
+	bn_free(r);
+	bn_free(bound);
+	qf_free(c1);
+	qf_free(c2);
+	qf_free(d1);
+	qf_free(d2);
+	qf_free(e1);
+	qf_free(e2);
+}
+
+#endif
+
 #if defined(WITH_EC)
 
 static void ecdh(void) {
@@ -2241,6 +2394,12 @@ int main(void) {
 	rabin();
 	paillier();
 	benaloh();
+#endif
+
+#if defined(WITH_QF)
+	util_banner("Protocols based on class groups:\n", 0);
+	clhe(0);
+	clhe(1);
 #endif
 
 #if defined(WITH_EC)

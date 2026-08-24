@@ -321,10 +321,10 @@ static int exponentiation(void) {
 		TEST_CASE("exponentiation by zero and one is correct") {
 			qf_rand(a, &(core_get()->qf_d));
 			bn_zero(n);
-			qf_exp(b, a, n, &(core_get()->qf_d));
+			qf_exp(b, a, n, &(core_get()->qf_d), &(core_get()->qf_b));
 			TEST_ASSERT(qf_is_one(b) == 1, end);
 			bn_set_dig(n, 1);
-			qf_exp(b, a, n, &(core_get()->qf_d));
+			qf_exp(b, a, n, &(core_get()->qf_d), &(core_get()->qf_b));
 			qf_rdc(c, a);
 			TEST_ASSERT(qf_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
@@ -332,7 +332,7 @@ static int exponentiation(void) {
 		TEST_CASE("exponentiation by two is doubling") {
 			qf_rand(a, &(core_get()->qf_d));
 			bn_set_dig(n, 2);
-			qf_exp(b, a, n, &(core_get()->qf_d));
+			qf_exp(b, a, n, &(core_get()->qf_d), &(core_get()->qf_b));
 			qf_dup(c, a, &(core_get()->qf_d));
 			TEST_ASSERT(qf_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
@@ -342,17 +342,17 @@ static int exponentiation(void) {
 			bn_rand(m, RLC_POS, 64);
 			bn_rand(n, RLC_POS, 64);
 			bn_add(s, m, n);
-			qf_exp(b, a, m, &(core_get()->qf_d));
-			qf_exp(c, a, n, &(core_get()->qf_d));
+			qf_exp(b, a, m, &(core_get()->qf_d), &(core_get()->qf_b));
+			qf_exp(c, a, n, &(core_get()->qf_d), &(core_get()->qf_b));
 			qf_com(b, b, c, 0, &(core_get()->qf_d));
-			qf_exp(c, a, s, &(core_get()->qf_d));
+			qf_exp(c, a, s, &(core_get()->qf_d), &(core_get()->qf_b));
 			TEST_ASSERT(qf_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_CASE("exponentiation agrees with repeated composition") {
 			qf_rand(a, &(core_get()->qf_d));
 			bn_set_dig(n, 10);
-			qf_exp(b, a, n, &(core_get()->qf_d));
+			qf_exp(b, a, n, &(core_get()->qf_d), &(core_get()->qf_b));
 			qf_copy(c, a);
 			for (j = 1; j < 10; j++) {
 				qf_com(c, c, a, 0, &(core_get()->qf_d));
@@ -365,9 +365,9 @@ static int exponentiation(void) {
 			qf_rand(b, &(core_get()->qf_d));
 			bn_rand(m, RLC_POS, 64);
 			bn_rand(n, RLC_POS, 64);
-			qf_exp_sim(r, a, m, b, n, &(core_get()->qf_d));
-			qf_exp(c, a, m, &(core_get()->qf_d));
-			qf_exp(fd, b, n, &(core_get()->qf_d));
+			qf_exp_sim(r, a, m, b, n, &(core_get()->qf_d), &(core_get()->qf_b));
+			qf_exp(c, a, m, &(core_get()->qf_d), &(core_get()->qf_b));
+			qf_exp(fd, b, n, &(core_get()->qf_d), &(core_get()->qf_b));
 			qf_com(c, c, fd, 0, &(core_get()->qf_d));
 			TEST_ASSERT(qf_cmp(r, c) == RLC_EQ, end);
 		} TEST_END;
@@ -377,8 +377,8 @@ static int exponentiation(void) {
 			qf_rand(b, &(core_get()->qf_d));
 			bn_zero(m);
 			bn_rand(n, RLC_POS, 64);
-			qf_exp_sim(r, a, m, b, n, &(core_get()->qf_d));
-			qf_exp(c, b, n, &(core_get()->qf_d));
+			qf_exp_sim(r, a, m, b, n, &(core_get()->qf_d), &(core_get()->qf_b));
+			qf_exp(c, b, n, &(core_get()->qf_d), &(core_get()->qf_b));
 			TEST_ASSERT(qf_cmp(r, c) == RLC_EQ, end);
 		} TEST_END;
 
@@ -404,8 +404,8 @@ static int exponentiation(void) {
 			for (j = 0; j < se; j++) {
 				qf_dup(fde, fde, &(core_get()->qf_d));
 			}
-			qf_exp_fix(r, a, n, sd, se, fe, fd, fde, &(core_get()->qf_d));
-			qf_exp(c, a, n, &(core_get()->qf_d));
+			qf_exp_fix(r, a, n, sd, se, fe, fd, fde, &(core_get()->qf_d), &(core_get()->qf_b));
+			qf_exp(c, a, n, &(core_get()->qf_d), &(core_get()->qf_b));
 			TEST_ASSERT(qf_cmp(r, c) == RLC_EQ, end);
 		} TEST_END;
 	}
@@ -502,7 +502,7 @@ static int orders(void) {
 			qf_set_dsc(a, n, &(ctx->qf_q), &(core_get()->qf_d));
 			TEST_ASSERT(qf_has_dsc(a, &(core_get()->qf_d)), end);
 			bn_rand_mod(n, &(ctx->qf_q));
-			qf_exp(b, a, n, &(core_get()->qf_d));
+			qf_exp(b, a, n, &(core_get()->qf_d), &(core_get()->qf_b));
 			qf_kern(m, b);
 			TEST_ASSERT(bn_cmp(m, &(ctx->qf_q)) == RLC_LT, end);
 			/* the representative is recovered up to the sign of the class */
@@ -604,14 +604,14 @@ static int qpower(void) {
 			bn_sqr(n, &(ctx->qf_q));
 			qf_set_dsc(e, n, &(ctx->qf_q), &(core_get()->qf_d));
 			qf_kern(m, d);
-			qf_exp(e, e, m, &(core_get()->qf_d));
+			qf_exp(e, e, m, &(core_get()->qf_d), &(core_get()->qf_b));
 			if (qf_cmp(e, d) != RLC_EQ) {
 				/* the logarithm comes back only up to the sign of the class */
 				bn_sub(m, &(ctx->qf_q), m);
 				bn_mod(m, m, &(ctx->qf_q));
 				bn_sqr(n, &(ctx->qf_q));
 				qf_set_dsc(e, n, &(ctx->qf_q), &(core_get()->qf_d));
-				qf_exp(e, e, m, &(core_get()->qf_d));
+				qf_exp(e, e, m, &(core_get()->qf_d), &(core_get()->qf_b));
 			}
 			TEST_ASSERT(qf_cmp(e, d) == RLC_EQ, end);
 		} TEST_END;
@@ -629,7 +629,7 @@ static int qpower(void) {
 			qf_com(d, la, lb, 0, &(core_get()->qf_d));
 			qf_com(d, d, lc, 1, &(core_get()->qf_d));
 			/* the kernel has order q, so raising to q returns the identity */
-			qf_exp(e, d, &(ctx->qf_q), &(core_get()->qf_d));
+			qf_exp(e, d, &(ctx->qf_q), &(core_get()->qf_d), &(core_get()->qf_b));
 			TEST_ASSERT(qf_is_one(e) == 1, end);
 		} TEST_END;
 
@@ -637,9 +637,9 @@ static int qpower(void) {
 			qf_rand(a, &(core_get()->qf_dk));
 			qf_rand(b, &(core_get()->qf_dk));
 			qf_com(c, a, b, 0, &(core_get()->qf_dk));
-			qf_psi(la, a, &(core_get()->qf_d));
-			qf_psi(lb, b, &(core_get()->qf_d));
-			qf_psi(lc, c, &(core_get()->qf_d));
+			qf_psi(la, a, &(core_get()->qf_d), &(core_get()->qf_b));
+			qf_psi(lb, b, &(core_get()->qf_d), &(core_get()->qf_b));
+			qf_psi(lc, c, &(core_get()->qf_d), &(core_get()->qf_b));
 			qf_com(d, la, lb, 0, &(core_get()->qf_d));
 			TEST_ASSERT(qf_cmp(d, lc) == RLC_EQ, end);
 		} TEST_END;
@@ -656,9 +656,9 @@ static int qpower(void) {
 		TEST_CASE("the q-th power of the lift projects to the q-th power") {
 			qf_rand(a, &(core_get()->qf_dk));
 			qf_rdc(a, a);
-			qf_psi(la, a, &(core_get()->qf_d));
+			qf_psi(la, a, &(core_get()->qf_d), &(core_get()->qf_b));
 			qf_phi(e, la, 1);
-			qf_exp(b, a, &(ctx->qf_q), &(core_get()->qf_dk));
+			qf_exp(b, a, &(ctx->qf_q), &(core_get()->qf_dk), &(core_get()->qf_bk));
 			TEST_ASSERT(qf_cmp(e, b) == RLC_EQ, end);
 		} TEST_END;
 	}

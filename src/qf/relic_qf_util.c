@@ -266,23 +266,27 @@ int qf_is_prime(const qf_t f) {
 
 void qf_rand(qf_t f, const bn_t d) {
 	ctx_t *ctx = core_get();
-	bn_t n;
+	bn_t b, n;
 
+	bn_null(b);
 	bn_null(n);
 
 	RLC_TRY {
+		bn_new(b);
 		bn_new(n);
 		bn_rand(n, RLC_POS, 64);
 		if (bn_cmp(d, &(ctx->qf_d)) == RLC_EQ) {
 			bn_copy(f->a, &(ctx->qf_ga));
 			bn_copy(f->b, &(ctx->qf_gb));
 			bn_copy(f->c, &(ctx->qf_gc));
+			bn_copy(b, &(ctx->qf_b));
 		} else if (bn_cmp(d, &(ctx->qf_dk)) == RLC_EQ) {
 			bn_copy(f->a, &(ctx->qf_gka));
 			bn_copy(f->b, &(ctx->qf_gkb));
 			bn_copy(f->c, &(ctx->qf_gkc));
+			bn_copy(b, &(ctx->qf_bk));
 		}
-		qf_exp(f, f, n, d);
+		qf_exp(f, f, n, d, b);
 		if (!qf_has_dsc(f, d)) {
 			RLC_THROW(ERR_CAUGHT);
 		}
@@ -291,6 +295,7 @@ void qf_rand(qf_t f, const bn_t d) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
+		bn_free(b);
 		bn_free(n);
 	}
 }
@@ -460,8 +465,8 @@ void qf_kern(bn_t r, const qf_t f) {
 	}
 }
 
-void qf_psi(qf_t r, const qf_t f, const bn_t d) {
+void qf_psi(qf_t r, const qf_t f, const bn_t d, const bn_t b) {
 	qf_copa(r, f);
 	qf_lift(r, r);
-	qf_exp(r, r, &(core_get()->qf_q), d);
+	qf_exp(r, r, &(core_get()->qf_q), d, b);
 }

@@ -146,7 +146,7 @@ static void arith(void) {
 	BENCH_RUN("qf_exp") {
 		qf_rand(a, &(core_get()->qf_d));
 		bn_rand_mod(n, class);
-		BENCH_ADD(qf_exp(b, a, n, &(core_get()->qf_d)));
+		BENCH_ADD(qf_exp(b, a, n, &(core_get()->qf_d), &(core_get()->qf_b)));
 	} BENCH_END;
 
 	BENCH_RUN("qf_exp_sim") {
@@ -154,7 +154,7 @@ static void arith(void) {
 		qf_rand(b, &(core_get()->qf_d));
 		bn_rand_mod(m, class);
 		bn_rand_mod(n, class);
-		BENCH_ADD(qf_exp_sim(c, a, m, b, n, &(core_get()->qf_d)));
+		BENCH_ADD(qf_exp_sim(c, a, m, b, n, &(core_get()->qf_d), &(core_get()->qf_b)));
 	} BENCH_END;
 
 	/*
@@ -182,7 +182,7 @@ static void arith(void) {
 
 	BENCH_RUN("qf_exp_fix") {
 		bn_rand_mod(n, class);
-		BENCH_ADD(qf_exp_fix(b, a, n, sd, se, fe, fd, fde, &(core_get()->qf_d)));
+		BENCH_ADD(qf_exp_fix(b, a, n, sd, se, fe, fd, fde, &(core_get()->qf_d), &(core_get()->qf_b)));
 	} BENCH_END;
 
 	qf_free(a);
@@ -231,7 +231,7 @@ static void orders(void) {
 
 	BENCH_RUN("qf_psi") {
 		qf_rand(a, &(core_get()->qf_d));
-		BENCH_ADD(qf_psi(b, a, &(core_get()->qf_dk)));
+		BENCH_ADD(qf_psi(b, a, &(core_get()->qf_dk), &(core_get()->qf_bk)));
 	} BENCH_END;
 
 
@@ -244,7 +244,7 @@ static void orders(void) {
 		bn_sqr(n, &(core_get()->qf_q));
 		qf_set_dsc(a, n, &(core_get()->qf_q), &(core_get()->qf_d));
 		bn_rand_mod(n, &(core_get()->qf_q));
-		qf_exp(b, a, n, &(core_get()->qf_d));
+		qf_exp(b, a, n, &(core_get()->qf_d), &(core_get()->qf_b));
 		BENCH_ADD(qf_kern(m, b));
 	} BENCH_END;
 

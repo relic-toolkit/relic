@@ -414,9 +414,10 @@ void qf_phi(qf_t r, const qf_t f, int rdc);
  * @param[out] r			- the resulting quadratic form.
  * @param[in] f				- the form to map.
  * @param[in] l				- the conductor.
- * @param[in] d				- the discriminant of the order of conductor l.
+ * @param[in] d				- the discriminant of the order of conductor q.
+ * @param[in] b				- the bound for arithmetic.
  */
-void qf_psi(qf_t r, const qf_t f, const bn_t d);
+void qf_psi(qf_t r, const qf_t f, const bn_t d, const bn_t b);
 
 /**
  * Computes a kernel representative.
@@ -462,7 +463,8 @@ void qf_class(bn_t bound, const bn_t dsc);
  * @param[in] n				- the exponent.
  * @param[in] bound			- the reduction bound.
  */
-void qf_exp(qf_t r, const qf_t f, const bn_t n, const bn_t bound);
+void qf_exp(qf_t r, const qf_t f, const bn_t n, const bn_t dsc,
+		const bn_t bnd);
 
 /**
  * Simultaneously raises two quadratic forms to integer powers.
@@ -482,7 +484,7 @@ void qf_exp(qf_t r, const qf_t f, const bn_t n, const bn_t bound);
  * @param[in] bound			- the reduction bound.
  */
 void qf_exp_sim(qf_t r, const qf_t f0, const bn_t n0, const qf_t f1,
-		const bn_t n1, const bn_t bound);
+		const bn_t n1, const bn_t dsc, const bn_t bnd);
 
 /**
  * Raises a quadratic form to an integer power using a fixed
@@ -503,6 +505,7 @@ void qf_exp_sim(qf_t r, const qf_t f0, const bn_t n0, const qf_t f1,
  * @param[in] bound			- the reduction bound.
  */
 void qf_exp_fix(qf_t r, const qf_t f, const bn_t n, size_t d, size_t e,
-		const qf_t fe, const qf_t fd, const qf_t fde, const bn_t bound);
+		const qf_t fe, const qf_t fd, const qf_t fde, const bn_t dsc,
+		const bn_t bnd);
 
 #endif /* !RLC_QF_H */

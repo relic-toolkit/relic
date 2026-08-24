@@ -1118,6 +1118,101 @@ int cp_ghpe_enc(bn_t c, const bn_t m, const bn_t pub, size_t s);
 int cp_ghpe_dec(bn_t m, const bn_t c, const bn_t pub, const bn_t prv, size_t s);
 
 /**
+ * Frees a set of CL public parameters.
+ *
+ * @param[out] A			- the parameters to free.
+ */
+#if ALLOC == AUTO
+#define clhe_free(A)		/* empty */
+#else
+#define clhe_free(A)														\
+	if (A != NULL) {														\
+		qf_free((A)->h);													\
+		qf_free((A)->h_e);													\
+		qf_free((A)->h_d);													\
+		qf_free((A)->h_de);													\
+		RLC_FREE(A);														\
+		A = NULL;															\
+	}
+#endif
+
+/**
+ * Generates the public parameters of the CL encryption system.
+ *
+ * @param[out] c			- the resulting parameters.
+ * @param[in] q				- the prime defining the plaintext space.
+ * @param[in] disc_bits		- the size in bits of the fundamental discriminant.
+ * @param[in] compact		- nonzero to use the compact variant.
+ */
+void cp_clhe_set(clhe_t c, const bn_t q, size_t disc_bits, int compact);
+
+/**
+ * Generates a key pair for the CL encryption system.
+ *
+ * @param[out] pk			- the resulting public key.
+ * @param[out] sk			- the resulting private key.
+ * @param[in] c				- the public parameters.
+ */
+void cp_clhe_gen(clhe_pk_t pk, bn_t sk, const clhe_t c);
+
+/**
+ * Encrypts a message under the CL encryption system.
+ *
+ * @param[out] c1			- the first ciphertext component.
+ * @param[out] c2			- the second ciphertext component.
+ * @param[in] c				- the public parameters.
+ * @param[in] pk			- the public key.
+ * @param[in] m				- the message, reduced modulo the plaintext prime.
+ * @param[in] r				- the randomness.
+ */
+void cp_clhe_enc(qf_t c1, qf_t c2, const clhe_t c, const clhe_pk_t pk,
+		const bn_t m, const bn_t r);
+
+/**
+ * Decrypts a ciphertext of the CL encryption system.
+ *
+ * @param[out] m			- the recovered message.
+ * @param[in] c				- the public parameters.
+ * @param[in] sk			- the private key.
+ * @param[in] c1			- the first ciphertext component.
+ * @param[in] c2			- the second ciphertext component.
+ */
+void cp_clhe_dec(bn_t m, const clhe_t c, const bn_t sk, const qf_t c1,
+		const qf_t c2);
+
+/**
+ * Adds two ciphertexts, rerandomising the result.
+ *
+ * @param[out] r1			- the first component of the result.
+ * @param[out] r2			- the second component of the result.
+ * @param[in] c				- the public parameters.
+ * @param[in] pk			- the public key.
+ * @param[in] c1			- the first component of the first ciphertext.
+ * @param[in] c2			- the second component of the first ciphertext.
+ * @param[in] d1			- the first component of the second ciphertext.
+ * @param[in] d2			- the second component of the second ciphertext.
+ * @param[in] r				- the randomness.
+ */
+void cp_clhe_add(qf_t r1, qf_t r2, const clhe_t c, const clhe_pk_t pk,
+		const qf_t c1, const qf_t c2, const qf_t d1, const qf_t d2,
+		const bn_t r);
+
+/**
+ * Multiplies a ciphertext by a scalar, rerandomising the result.
+ *
+ * @param[out] r1			- the first component of the result.
+ * @param[out] r2			- the second component of the result.
+ * @param[in] c				- the public parameters.
+ * @param[in] pk			- the public key.
+ * @param[in] c1			- the first ciphertext component.
+ * @param[in] c2			- the second ciphertext component.
+ * @param[in] s				- the scalar.
+ * @param[in] r				- the randomness.
+ */
+void cp_clhe_mul(qf_t r1, qf_t r2, const clhe_t c, const clhe_pk_t pk,
+		const qf_t c1, const qf_t c2, const bn_t s, const bn_t r);
+
+/**
  * Generates an ECDH key pair.
  *
  * @param[out] d			- the private key.

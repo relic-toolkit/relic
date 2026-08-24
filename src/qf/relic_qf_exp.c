@@ -37,7 +37,8 @@
 
 #define QF_NAF_WIDTH	7
 
-void qf_exp(qf_t r, const qf_t f, const bn_t n, const bn_t bound) {
+void qf_exp(qf_t r, const qf_t f, const bn_t n, const bn_t dsc,
+		const bn_t bnd) {
 	qf_t ff, tab[1 << (QF_NAF_WIDTH - 2)];
 	int8_t *naf = (int8_t *)RLC_ALLOCA(int8_t, bn_bits(n) + 1);
 	size_t u, w, bits, len;
@@ -50,7 +51,7 @@ void qf_exp(qf_t r, const qf_t f, const bn_t n, const bn_t bound) {
 
 	if (bn_is_zero(n)) {
 		RLC_FREE(naf);
-		qf_set_one(r, bound);
+		qf_set_one(r, dsc);
 		return;
 	}
 
@@ -74,16 +75,16 @@ void qf_exp(qf_t r, const qf_t f, const bn_t n, const bn_t bound) {
 		bn_rec_naf(naf, &len, n, w);
 
 		/* tab[i] = f^(2i+1) for 0 <= i < 2^(w-2) */
-		qf_dup(ff, f, bound);
+		qf_dup(ff, f, bnd);
 		qf_copy(tab[0], f);
 		for (size_t i = 1; i < u; i++) {
-			qf_com(tab[i], tab[i - 1], ff, 0, bound);
+			qf_com(tab[i], tab[i - 1], ff, 0, bnd);
 		}
 
 		first = 1;
 		for (j = (int)len - 1; j >= 0; j--) {
 			if (!first) {
-				qf_dup(r, r, bound);
+				qf_dup(r, r, bnd);
 			}
 			if (naf[j] != 0) {
 				int d = naf[j];
@@ -95,12 +96,12 @@ void qf_exp(qf_t r, const qf_t f, const bn_t n, const bn_t bound) {
 					}
 					first = 0;
 				} else {
-					qf_com(r, r, tab[idx], d < 0, bound);
+					qf_com(r, r, tab[idx], d < 0, bnd);
 				}
 			}
 		}
 		if (first) {
-			qf_set_one(r, bound);
+			qf_set_one(r, dsc);
 		}
 		if (bn_sign(n) == RLC_NEG) {
 			qf_neg(r, r);
@@ -119,7 +120,7 @@ void qf_exp(qf_t r, const qf_t f, const bn_t n, const bn_t bound) {
 }
 
 void qf_exp_sim(qf_t r, const qf_t f0, const bn_t n0, const qf_t f1,
-		const bn_t n1, const bn_t bound) {
+		const bn_t n1, const bn_t dsc, const bn_t bnd) {
 	size_t len, offset = RLC_MAX(bn_bits(n0), bn_bits(n1)) + 1;
 	int8_t *jsf = (int8_t *)RLC_ALLOCA(int8_t, 2 * offset);
 	qf_t tab[5];
@@ -132,12 +133,12 @@ void qf_exp_sim(qf_t r, const qf_t f0, const bn_t n0, const qf_t f1,
 
 	if (bn_is_zero(n0)) {
 		RLC_FREE(jsf);
-		qf_exp(r, f1, n1, bound);
+		qf_exp(r, f1, n1, dsc, bnd);
 		return;
 	}
 	if (bn_is_zero(n1)) {
 		RLC_FREE(jsf);
-		qf_exp(r, f0, n0, bound);
+		qf_exp(r, f0, n0, dsc, bnd);
 		return;
 	}
 
@@ -147,24 +148,24 @@ void qf_exp_sim(qf_t r, const qf_t f0, const bn_t n0, const qf_t f1,
 		}
 
 		/* Same table layout as RELIC's ep_mul_sim_joint. */
-		qf_set_one(tab[0], bound);
+		qf_set_one(tab[0], dsc);
 		qf_copy(tab[1], f1);
 		qf_copy(tab[2], f0);
-		qf_com(tab[3], f0, f1, 0, bound);
-		qf_com(tab[4], f0, f1, 1, bound);
+		qf_com(tab[3], f0, f1, 0, bnd);
+		qf_com(tab[4], f0, f1, 1, bnd);
 
 		len = 2 * offset;
 		bn_rec_jsf(jsf, &len, n0, n1);
 
-		qf_set_one(r, bound);
+		qf_set_one(r, dsc);
 		for (j = (int)len - 1; j >= 0; j--) {
 			int d;
-			qf_dup(r, r, bound);
+			qf_dup(r, r, bnd);
 			d = jsf[j] * 2 + jsf[j + offset];
 			if (jsf[j] != 0 && jsf[j] == -jsf[j + offset]) {
-				qf_com(r, r, tab[4], d < 0, bound);
+				qf_com(r, r, tab[4], d < 0, bnd);
 			} else if (d != 0) {
-				qf_com(r, r, tab[d > 0 ? d : -d], d < 0, bound);
+				qf_com(r, r, tab[d > 0 ? d : -d], d < 0, bnd);
 			}
 		}
 	}
@@ -188,17 +189,18 @@ void qf_exp_sim(qf_t r, const qf_t f0, const bn_t n0, const qf_t f1,
  * way but pairs a width-2 comb with Solinas' JSF instead.
  */
 void qf_exp_fix(qf_t r, const qf_t f, const bn_t n, size_t d, size_t e,
-		const qf_t fe, const qf_t fd, const qf_t fde, const bn_t bound) {
+		const qf_t fe, const qf_t fd, const qf_t fde, const bn_t dsc,
+		const bn_t bnd) {
 	qf_t tab[16];
 	bn_t chunk[4];
 	size_t i, bits, max;
 
 	if (bn_is_zero(n)) {
-		qf_set_one(r, bound);
+		qf_set_one(r, dsc);
 		return;
 	}
 	if (bn_bits(n) < e) {
-		qf_exp(r, f, n, bound);
+		qf_exp(r, f, n, dsc, bnd);
 		return;
 	}
 
@@ -226,7 +228,7 @@ void qf_exp_fix(qf_t r, const qf_t f, const bn_t n, size_t d, size_t e,
 		bn_rsh(chunk[3], n, d + e);
 
 		/* tab[i] = product of the bases selected by the bits of i */
-		qf_set_one(tab[0], bound);
+		qf_set_one(tab[0], dsc);
 		qf_copy(tab[1], f);
 		qf_copy(tab[2], fe);
 		qf_copy(tab[4], fd);
@@ -238,7 +240,7 @@ void qf_exp_fix(qf_t r, const qf_t f, const bn_t n, size_t d, size_t e,
 			/* strip the lowest set bit and compose */
 			{
 				size_t low = i & (~i + 1);
-				qf_com(tab[i], tab[i - low], tab[low], 0, bound);
+				qf_com(tab[i], tab[i - low], tab[low], 0, bnd);
 			}
 		}
 
@@ -248,15 +250,15 @@ void qf_exp_fix(qf_t r, const qf_t f, const bn_t n, size_t d, size_t e,
 			max = RLC_MAX(max, bits);
 		}
 
-		qf_set_one(r, bound);
+		qf_set_one(r, dsc);
 		for (i = max; i > 0; i--) {
 			size_t idx = 0, j;
-			qf_dup(r, r, bound);
+			qf_dup(r, r, bnd);
 			for (j = 0; j < 4; j++) {
 				idx |= (size_t)bn_get_bit(chunk[j], i - 1) << j;
 			}
 			if (idx != 0) {
-				qf_com(r, r, tab[idx], 0, bound);
+				qf_com(r, r, tab[idx], 0, bnd);
 			}
 		}
 	}
