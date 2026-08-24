@@ -179,11 +179,23 @@ void qf_group_clean(void);
  * the relation the order maps expect, and Delta_K = 1 mod 4 requires p*q = 3
  * mod 4, so exactly one of the two primes is 3 mod 4.
  *
- * @param[in]				- the bit size of the conductor q.
- * @param[in]				- the bit size of prime p.
+ * @param[in] cond			- the bit length of the conductor q.
+ * @param[in] bits			- the bit length of the discriminant.
  * @return RLC_OK if it was possible to find discriminants, RLC_ERR otherwise.
  */
-int qf_group_set(size_t cond, size_t bits);
+int qf_group_gen(size_t cond, size_t bits);
+
+/**
+ * Generates a discriminant for an imaginary quadratic order and its
+ * maximal order, given a predefined conductor.
+ *
+ * @param[in] q				- the bit length of the conductor q.
+ * @param[in] bits			- the bit length of the discriminant.
+ * @return RLC_OK if it was possible to find discriminants, RLC_ERR otherwise.
+ */
+int qf_group_set_cond(const bn_t q, size_t bits);
+
+int qf_group_set_both(const bn_t q, const bn_t p);
 
 /**
  * Copies a quadratic form.

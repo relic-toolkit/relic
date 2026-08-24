@@ -157,8 +157,12 @@ typedef struct _ctx_t {
 #ifdef WITH_QF
 	/** Discriminant \Delta of non-maximal order. */
 	bn_st qf_d;
+	/** Partial reduction bound, floor(|\Delta|^(1/4)). */
+	bn_st qf_b;
 	/** Fundamental discrminant \Delta_K. */
-	bn_st qf_k;
+	bn_st qf_dk;
+	/** Partial reduction bound, floor(|\Delta|^(1/4)). */
+	bn_st qf_bk;
 	/** Conductor relating the discriminants. */
 	bn_st qf_q;
 	/** Generator of ideal class group Cl(\Delta). */
@@ -166,9 +170,9 @@ typedef struct _ctx_t {
 	bn_st qf_gb;
 	bn_st qf_gc;
 	/** Generator of ideal class group Cl(\Delta_K). */
-	bn_st qf_ka;
-	bn_st qf_kb;
-	bn_st qf_kc;
+	bn_st qf_gka;
+	bn_st qf_gkb;
+	bn_st qf_gkc;
 #endif /* WITH_QF */
 
 #ifdef WITH_FB

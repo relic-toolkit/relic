@@ -41,7 +41,7 @@
 /** Size in bits of the conductor used by the tests. */
 #define TEST_QF_COND	32
 /** Size in bits of the other prime factor of the fundamental discriminant. */
-#define TEST_QF_PRIME	64
+#define TEST_QF_PRIME	(64 + TEST_QF_COND)
 
 /**
  * Discriminant of the non-maximal order, its fundamental discriminant, and the
@@ -704,12 +704,12 @@ int main(void) {
 	bn_new(test_d);
 	bn_new(test_k);
 
-	if (qf_group_set(TEST_QF_COND, TEST_QF_PRIME) != RLC_OK) {
+	if (qf_group_gen(TEST_QF_COND, TEST_QF_PRIME) != RLC_OK) {
 		core_clean();
 		return 1;
 	}
 	bn_copy(test_d, &(core_get()->qf_d));
-	bn_copy(test_k, &(core_get()->qf_k));
+	bn_copy(test_k, &(core_get()->qf_dk));
 
 	util_banner("Utilities:", 1);
 

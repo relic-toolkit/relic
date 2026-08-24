@@ -52,7 +52,6 @@ static int qf_find_gen(qf_t f, const bn_t d) {
 	return 0;
 }
 
-
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
@@ -60,28 +59,28 @@ static int qf_find_gen(qf_t f, const bn_t d) {
 void qf_group_init(void) {
 	ctx_t *ctx = core_get();
 	bn_make(&(ctx->qf_d), RLC_BN_DIGS);
-	bn_make(&(ctx->qf_k), RLC_BN_DIGS);
+	bn_make(&(ctx->qf_dk), RLC_BN_DIGS);
 	bn_make(&(ctx->qf_q), RLC_BN_DIGS);
 	bn_make(&(ctx->qf_ga), RLC_BN_DIGS);
 	bn_make(&(ctx->qf_gb), RLC_BN_DIGS);
 	bn_make(&(ctx->qf_gc), RLC_BN_DIGS);
-	bn_make(&(ctx->qf_ka), RLC_BN_DIGS);
-	bn_make(&(ctx->qf_kb), RLC_BN_DIGS);
-	bn_make(&(ctx->qf_kc), RLC_BN_DIGS);
+	bn_make(&(ctx->qf_gka), RLC_BN_DIGS);
+	bn_make(&(ctx->qf_gkb), RLC_BN_DIGS);
+	bn_make(&(ctx->qf_gkc), RLC_BN_DIGS);
 }
 
 void qf_group_clean(void) {
 	ctx_t *ctx = core_get();
 	if (ctx != NULL) {
 		bn_clean(&(ctx->qf_d));
-		bn_clean(&(ctx->qf_k));
+		bn_clean(&(ctx->qf_dk));
 		bn_clean(&(ctx->qf_q));
 		bn_clean(&(ctx->qf_ga));
 		bn_clean(&(ctx->qf_gb));
 		bn_clean(&(ctx->qf_gc));
-		bn_clean(&(ctx->qf_ka));
-		bn_clean(&(ctx->qf_kb));
-		bn_clean(&(ctx->qf_kc));
+		bn_clean(&(ctx->qf_gka));
+		bn_clean(&(ctx->qf_gkb));
+		bn_clean(&(ctx->qf_gkc));
 	}
 }
 
@@ -91,7 +90,7 @@ void qf_group_clean(void) {
  * the relation the order maps expect, and Delta_K = 1 mod 4 requires p*q = 3
  * mod 4, so exactly one of the two primes is 3 mod 4.
  */
-int qf_group_set(size_t cond, size_t bits) {
+int qf_group_gen(size_t cond, size_t bits) {
 	ctx_t *ctx = core_get();
 	int code = RLC_ERR;
 	bn_t p;
@@ -108,12 +107,12 @@ int qf_group_set(size_t cond, size_t bits) {
 			bn_gen_prime(&(ctx->qf_q), cond);
 		} while (bn_get_bit(&(ctx->qf_q), 1) != 0);	/* q = 1 mod 4 */
 		do {
-			bn_gen_prime(p, bits);
+			bn_gen_prime(p, bits - cond);
 		} while (bn_get_bit(p, 1) == 0);		/* p = 3 mod 4 */
 
-		bn_mul(&(ctx->qf_k), p, &(ctx->qf_q));
-		bn_neg(&(ctx->qf_k), &(ctx->qf_k));
-		bn_mul(&(ctx->qf_d), &(ctx->qf_k), &(ctx->qf_q));
+		bn_mul(&(ctx->qf_dk), p, &(ctx->qf_q));
+		bn_neg(&(ctx->qf_dk), &(ctx->qf_dk));
+		bn_mul(&(ctx->qf_d), &(ctx->qf_dk), &(ctx->qf_q));
 		bn_mul(&(ctx->qf_d), &(ctx->qf_d), &(ctx->qf_q));
 
 		if (!qf_find_gen(g, &(ctx->qf_d))) {
@@ -123,12 +122,12 @@ int qf_group_set(size_t cond, size_t bits) {
 		bn_copy(&(ctx->qf_gb), g->b);
 		bn_copy(&(ctx->qf_gc), g->c);
 
-		if (!qf_find_gen(g, &(ctx->qf_k))) {
+		if (!qf_find_gen(g, &(ctx->qf_dk))) {
 			RLC_THROW(ERR_NO_VALID);
 		}
-		bn_copy(&(ctx->qf_ka), g->a);
-		bn_copy(&(ctx->qf_kb), g->b);
-		bn_copy(&(ctx->qf_kc), g->c);
+		bn_copy(&(ctx->qf_gka), g->a);
+		bn_copy(&(ctx->qf_gkb), g->b);
+		bn_copy(&(ctx->qf_gkc), g->c);
 
 		code = RLC_OK;
 	}
@@ -138,6 +137,117 @@ int qf_group_set(size_t cond, size_t bits) {
 	RLC_FINALLY {
 		bn_free(p);
 		qf_free(g);
+	}
+	return code;
+}
+
+int qf_group_set_both(const bn_t q, const bn_t p) {
+	ctx_t *ctx = core_get();
+	int code = RLC_ERR;
+	bn_t t;
+	qf_t g;
+	dig_t r;
+
+	if (!bn_is_prime(q)) {
+		return RLC_ERR;
+	}
+	if (bn_cmp_dig(p, 1) != RLC_EQ && !bn_is_prime(p)) {
+		return RLC_ERR;
+	}
+
+	bn_null(t);
+	qf_null(g);
+
+	RLC_TRY {
+		bn_new(t);
+		qf_new(g);
+
+		bn_mul(t, p, q);
+		bn_mod_dig(&r, t, 4);
+		if (r == 3) {
+			/* -p*q must be 1 mod 4 */
+			bn_copy(&(ctx->qf_q), q);
+			/* Delta_K = -p*q and Delta = q^2 * Delta_K = -p*q^3 */
+			bn_mul(&(ctx->qf_dk), &(ctx->qf_q), p);
+			bn_neg(&(ctx->qf_dk), &(ctx->qf_dk));
+			bn_mul(&(ctx->qf_d), &(ctx->qf_dk), &(ctx->qf_q));
+			bn_mul(&(ctx->qf_d), &(ctx->qf_d), &(ctx->qf_q));
+
+			/* Compute partial reduction bounds. */
+			bn_abs(t, &(ctx->qf_d));
+			bn_srt(t, t);
+			bn_srt(&(ctx->qf_b), t);
+
+			if (!qf_find_gen(g, &(ctx->qf_d))) {
+				RLC_THROW(ERR_NO_VALID);
+			}
+			bn_copy(&(ctx->qf_ga), g->a);
+			bn_copy(&(ctx->qf_gb), g->b);
+			bn_copy(&(ctx->qf_gc), g->c);
+
+			/* Compute partial reduction bounds. */
+			bn_abs(t, &(ctx->qf_dk));
+			bn_srt(t, t);
+			bn_srt(&(ctx->qf_bk), t);
+
+			if (!qf_find_gen(g, &(ctx->qf_dk))) {
+				RLC_THROW(ERR_NO_VALID);
+			}
+			bn_copy(&(ctx->qf_gka), g->a);
+			bn_copy(&(ctx->qf_gkb), g->b);
+			bn_copy(&(ctx->qf_gkc), g->c);
+
+			code = RLC_OK;
+		}
+	}
+	RLC_CATCH_ANY {
+		code = RLC_ERR;
+	}
+	RLC_FINALLY {
+		bn_free(t);
+		qf_free(g);
+	}
+	return code;
+}
+
+int qf_group_set_cond(const bn_t q, size_t bits) {
+	int code = RLC_ERR;
+	bn_t p;
+	dig_t want, r;
+
+	bn_null(p);
+
+	RLC_TRY {
+		bn_new(p);
+
+		if (bn_bits(q) >= bits) {
+			bn_set_dig(p, 1);
+			bn_mod_dig(&r, q, 4);
+			if (r != 3) {
+				/* would need p > 1 to fix p*q = 3 mod 4 */
+				RLC_THROW(ERR_NO_VALID);
+			}
+		} else {
+			/* p*q must be 3 mod 4, and p and q are odd, so they differ mod 4 */
+			bn_mod_dig(&r, q, 4);
+			want = (r == 3) ? 1 : 3;
+			bn_gen_prime(p, bits - bn_bits(q));
+			while (1) {
+				bn_mod_dig(&r, p, 4);
+				if (r == want && bn_smb_jac(q, p) == -1) {
+					break;
+				}
+				bn_next_prime(p, p);
+			}
+		}
+
+		qf_group_set_both(q, p);
+	}
+	RLC_CATCH_ANY {
+		code = RLC_ERR;
+	}
+	RLC_FINALLY {
+		bn_free(p);
 	}
 	return code;
 }

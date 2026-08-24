@@ -277,10 +277,10 @@ void qf_rand(qf_t f, const bn_t d) {
 			bn_copy(f->a, &(ctx->qf_ga));
 			bn_copy(f->b, &(ctx->qf_gb));
 			bn_copy(f->c, &(ctx->qf_gc));
-		} else if (bn_cmp(d, &(ctx->qf_k)) == RLC_EQ) {
-			bn_copy(f->a, &(ctx->qf_ka));
-			bn_copy(f->b, &(ctx->qf_kb));
-			bn_copy(f->c, &(ctx->qf_kc));
+		} else if (bn_cmp(d, &(ctx->qf_dk)) == RLC_EQ) {
+			bn_copy(f->a, &(ctx->qf_gka));
+			bn_copy(f->b, &(ctx->qf_gkb));
+			bn_copy(f->c, &(ctx->qf_gkc));
 		}
 		qf_exp(f, f, n, d);
 		if (!qf_has_dsc(f, d)) {
@@ -382,7 +382,7 @@ void qf_phi(qf_t r, const qf_t f, int rdc) {
 		bn_mul(r->b, r->b, x);
 		bn_mul(t, r->a, y);
 		bn_add(r->b, r->b, t);
-		qf_set_dsc(r, r->a, r->b, &(ctx->qf_k));
+		qf_set_dsc(r, r->a, r->b, &(ctx->qf_dk));
 		if (rdc) {
 			qf_rdc(r, r);
 		}
@@ -423,7 +423,7 @@ void qf_kern(bn_t r, const qf_t f) {
 		bn_zero(y);		/* g1 */
 		qf_norm(ft, ft);
 		while ((cmp = bn_cmp_abs(ft->a, ft->c)) == RLC_GT) {
-			bn_mul(t, y, &(ctx->qf_k));
+			bn_mul(t, y, &(ctx->qf_dk));
 			bn_mul(y, y, ft->b);
 			bn_add(y, y, x);
 			bn_mul(x, x, ft->b);

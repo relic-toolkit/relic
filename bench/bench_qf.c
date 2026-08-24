@@ -44,7 +44,7 @@
  * that the non-maximal discriminant reaches the width a 128-bit security level
  * calls for.
  */
-#define BENCH_QF_PRIME	1024
+#define BENCH_QF_PRIME	(1024 + BENCH_QF_COND)
 
 /** Discriminant of the non-maximal order. */
 static bn_t bench_d;
@@ -274,13 +274,13 @@ int main(void) {
 	bn_new(bench_q);
 	bn_new(bench_n);
 
-	if (qf_group_set(BENCH_QF_COND, BENCH_QF_PRIME) != RLC_OK) {
+	if (qf_group_gen(BENCH_QF_COND, BENCH_QF_PRIME) != RLC_OK) {
 		core_clean();
 		return 1;
 	}
 
 	bn_copy(bench_d, &(core_get()->qf_d));
-	bn_copy(bench_k, &(core_get()->qf_k));
+	bn_copy(bench_k, &(core_get()->qf_dk));
 	bn_copy(bench_q, &(core_get()->qf_q));
 	/* the class number is about the square root of the discriminant */
 	bn_abs(bench_n, bench_d);
