@@ -26,10 +26,6 @@
  *
  * Tests for arithmetic on binary quadratic forms.
  *
- * Note that TEST_CASE opens a loop of its own declaring an index named i, so
- * loops inside a case body must use a different name or they overwrite the
- * iteration counter of the framework.
- *
  * @ingroup test
  */
 
