@@ -226,7 +226,7 @@ int qf_group_set_cond(const bn_t q, size_t bits) {
 			}
 		}
 
-		qf_group_set_both(q, p);
+		code = qf_group_set_both(q, p);
 	}
 	RLC_CATCH_ANY {
 		code = RLC_ERR;
