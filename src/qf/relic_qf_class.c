@@ -32,7 +32,7 @@
 
 #include "relic_core.h"
 
-/** Constant to approximate ceil(2^32 · ln2/\pi). */
+/** Constant to approximate ceil(2^32 * ln2/\pi). */
 #define QF_CLASS_STR "947622687"
 
 /*============================================================================*/
@@ -55,7 +55,7 @@ void qf_class(bn_t bound, const bn_t dsc) {
         bn_srt(t, t);                         /* floor(sqrt(|\Delta|)) */
         bn_add_dig(t, t, 1);                  /* strictly > sqrt(|\Delta|) */
         bn_mul_dig(t, t, (dig_t)b);
-		
+
         bn_read_str(c, QF_CLASS_STR, sizeof(QF_CLASS_STR), 10);
         bn_mul(t, t, c);
         bn_rsh(t, t, 32);

@@ -202,17 +202,21 @@ void qf_exp_fix(qf_t r, const qf_t f, const bn_t n, size_t d, size_t e,
 		return;
 	}
 
-	for (i = 0; i < 16; i++) {
-		qf_new(tab[i]);
-	}
 	for (i = 0; i < 4; i++) {
 		bn_null(chunk[i]);
+	}
+	for (i = 0; i < 16; i++) {
+		qf_null(tab[i]);
 	}
 
 	RLC_TRY {
 		for (i = 0; i < 4; i++) {
 			bn_new(chunk[i]);
 		}
+		for (i = 0; i < 16; i++) {
+			qf_new(tab[i]);
+		}
+
 		/* chunks: bits [0, e), [e, d), [d, d+e), [d+e, .) */
 		bn_mod_2b(chunk[0], n, e);
 		bn_rsh(chunk[1], n, e);

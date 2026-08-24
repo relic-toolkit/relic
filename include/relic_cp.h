@@ -138,6 +138,50 @@ typedef bdpe_st *bdpe_t;
 #endif
 
 /**
+ * Represents the public parameters of CL linearly-homomorphic encryption.
+ */
+typedef struct {
+	/** Generator of H; lives in cl_k when compact, in cl_q otherwise. */
+	qf_t h;
+	/** Precomputation for h: h^(2^e), h^(2^d), h^(2^(d+e)). */
+	qf_t h_e;
+	qf_t h_d;
+	qf_t h_de;
+	size_t d;
+	size_t e;
+	/** Nonzero when the compact ("fast") variant is used. */
+	int compact;
+	/** Nonzero when 4*q^2 > |Delta_K|, so that f^m is not reduced. */
+	int large_msg;
+} clhe_st;
+
+/**
+ * Pointer to a set of CLHE public parameters.
+ */
+#if ALLOC == AUTO
+typedef clhe_st clhe_t[1];
+#else
+typedef clhe_st *clhe_t;
+#endif
+
+/** Public key: an element of H plus its exponentiation tables. */
+typedef struct {
+	qf_t pk;
+	qf_t pk_e;
+	qf_t pk_d;
+	qf_t pk_de;
+} clhe_pk_st;
+
+/**
+ * Pointer to a CLHE public key.
+ */
+#if ALLOC == AUTO
+typedef clhe_st clhe_pk_t[1];
+#else
+typedef clhe_st *clhe_pk_t;
+#endif
+
+/**
  * Represents a SOKAKA key pair.
  */
 typedef struct _sokaka {
@@ -312,7 +356,7 @@ typedef etrs_st *etrs_t;
 	}																		\
 
 #elif ALLOC == AUTO
-#define rsa_free(A)				/* empty */
+#define rsa_free(A)			/* empty */
 #endif
 
 /**
@@ -362,7 +406,7 @@ typedef etrs_st *etrs_t;
  *
  * @param[out] A			- the moduli to initialize.
  */
-#define shpe_null(A)			RLC_NULL(A)
+#define shpe_null(A)		RLC_NULL(A)
 
 /**
  * Calls a function to allocate and initialize a Subgroup Paillier key pair.
@@ -409,7 +453,7 @@ typedef etrs_st *etrs_t;
 	}																		\
 
 #elif ALLOC == AUTO
-#define shpe_free(A)				/* empty */
+#define shpe_free(A)		/* empty */
 #endif
 
 /**
@@ -464,7 +508,101 @@ typedef etrs_st *etrs_t;
 	}																		\
 
 #elif ALLOC == AUTO
-#define bdpe_free(A)			/* empty */
+#define bdpe_free(A)		/* empty */
+#endif
+
+/**
+ * Initializes CLHE parameters with a null value.
+ *
+ * @param[out] A			- the key pair to initialize.
+ */
+#define clhe_null(A)		RLC_NULL(A)
+
+/**
+ * Calls a function to allocate and initialize an CLHE key pair.
+ *
+ * @param[out] A				- the new key pair.
+ */
+#if ALLOC == DYNAMIC
+#define clhe_new(A)															\
+	A = (clhe_t)calloc(1, sizeof(clhe_st));									\
+	if (A == NULL) {														\
+		RLC_THROW(ERR_NO_MEMORY);											\
+	}																		\
+	qf_null((A)->h);														\
+	qf_null((A)->h_d);														\
+	qf_null((A)->h_e);														\
+	qf_null((A)->h_de);														\
+	qf_new((A)->h);															\
+	qf_new((A)->h_d);														\
+	qf_new((A)->h_e);														\
+	qf_new((A)->h_de);														\
+	(A)->d = (A)->e = (A)->compact  = (A->large_msg) = 0;					\
+
+#elif ALLOC == AUTO
+#define clhe_new(A)															\
+	qf_new((A)->h);															\
+	qf_new((A)->h_d);														\
+	qf_new((A)->h_e);														\
+	qf_new((A)->h_de);														\
+	(A)->d = (A)->e = (A)->compact  = (A->large_msg) = 0;					\
+
+#endif
+
+/**
+ * Initializes a CLHE key pair with a null value.
+ *
+ * @param[out] A			- the key pair to initialize.
+ */
+#define clhe_pk_null(A)		RLC_NULL(A)
+
+/**
+ * Calls a function to allocate and initialize an CLHE key pair.
+ *
+ * @param[out] A				- the new key pair.
+ */
+#if ALLOC == DYNAMIC
+#define clhe_pk_new(A)														\
+	A = (clhe_pk_t)calloc(1, sizeof(clhe_pk_st));							\
+	if (A == NULL) {														\
+		RLC_THROW(ERR_NO_MEMORY);											\
+	}																		\
+	qf_null((A)->pk);														\
+	qf_null((A)->pk_d);														\
+	qf_null((A)->pk_e);														\
+	qf_null((A)->pk_de);													\
+	qf_new((A)->pk);														\
+	qf_new((A)->pk_d);														\
+	qf_new((A)->pk_e);														\
+	qf_new((A)->pk_de);														\
+
+#elif ALLOC == AUTO
+#define clhe_pk_new(A)														\
+	qf_new((A)->pk);														\
+	qf_new((A)->pk_d);														\
+	qf_new((A)->pk_e);														\
+	qf_new((A)->pk_de);														\
+
+#endif
+
+/**
+ * Calls a function to clean and free an RSA key pair.
+ *
+ * @param[out] A				- the key pair to clean and free.
+ */
+#if ALLOC == DYNAMIC
+#define clhe_pk_free(A)														\
+	if (A != NULL) {														\
+		qf_free((A)->pk);													\
+		qf_free((A)->pk_d);													\
+		qf_free((A)->pk_e);													\
+		qf_free((A)->pk_de);												\
+		free(A);															\
+		A = NULL;															\
+	}																		\
+
+#elif ALLOC == AUTO
+#define clhe_pk_free(A)		/* empty */
 #endif
 
 /**
@@ -489,7 +627,7 @@ typedef etrs_st *etrs_t;
 	g2_new((A)->s2);														\
 
 #elif ALLOC == AUTO
-#define sokaka_new(A)			/* empty */
+#define sokaka_new(A)		/* empty */
 #endif
 
 /**
@@ -507,7 +645,7 @@ typedef etrs_st *etrs_t;
 	}																		\
 
 #elif ALLOC == AUTO
-#define sokaka_free(A)			/* empty */
+#define sokaka_free(A)		/* empty */
 #endif
 
 /**
@@ -539,7 +677,7 @@ typedef etrs_st *etrs_t;
 	g2_new((A)->hz);														\
 
 #elif ALLOC == AUTO
-#define bgn_new(A)				/* empty */
+#define bgn_new(A)			/* empty */
 #endif
 
 /**
@@ -564,7 +702,7 @@ typedef etrs_st *etrs_t;
 	}																		\
 
 #elif ALLOC == AUTO
-#define bgn_free(A)				/* empty */
+#define bgn_free(A)			/* empty */
 #endif
 
 /**
@@ -593,7 +731,7 @@ typedef etrs_st *etrs_t;
 	bn_new((A)->r[1]);														\
 
 #elif ALLOC == AUTO
-#define ers_new(A)				/* empty */
+#define ers_new(A)			/* empty */
 #endif
 
 /**
@@ -615,7 +753,7 @@ typedef etrs_st *etrs_t;
 	}																		\
 
 #elif ALLOC == AUTO
-#define ers_free(A)				/* empty */
+#define ers_free(A)			/* empty */
 #endif
 
 /**
