@@ -65,7 +65,7 @@ void bn_hlv(bn_t c, const bn_t a) {
 		return;
 	}
 
-	#if ALLOC == DYNAMIC
+#if ALLOC == DYNAMIC
 	RLC_TRY {
 		bn_grow(c, a->used);
 		bn_rsh1_low(c->dp, a->dp, a->used);
@@ -79,12 +79,11 @@ void bn_hlv(bn_t c, const bn_t a) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 #else
-	bn_rsh1_low(c->dp, a->dp, a->used);
 	c->used = a->used;
 	c->sign = a->sign;
-	if (down) {
-		bn_sub_dig(c, c, down);
-	}
+	bn_rsh1_low(c->dp, a->dp, a->used);
+	bn_sub_dig(c, c, down);
+	bn_trim(c);
 #endif
 }
 
