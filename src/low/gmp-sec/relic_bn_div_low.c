@@ -40,7 +40,8 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void bn_divn_low(dig_t *c, dig_t *d, dig_t *a, size_t sa, dig_t *b, size_t sb) {
+void bn_divn_low(dig_t *c, dig_t *d, const dig_t *a, size_t sa, const dig_t *b,
+		size_t sb) {
 	dig_t u[sa], *t = RLC_ALLOCA(dig_t, mpn_sec_div_qr_itch(sa, sb));
 
 	mpn_copyd((mp_ptr)u, (mp_srcptr)a, sa);

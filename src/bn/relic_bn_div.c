@@ -46,12 +46,10 @@
  * @param[in] b			- the the divisor.
  */
 static void bn_div_imp(bn_t c, bn_t d, const bn_t a, const bn_t b) {
-	bn_t q, x, y, r;
+	bn_t q, r;
 	int sign;
 
 	bn_null(q);
-	bn_null(x);
-	bn_null(y);
 	bn_null(r);
 
 	/* If |a| < |b|, we're done. */
@@ -76,19 +74,13 @@ static void bn_div_imp(bn_t c, bn_t d, const bn_t a, const bn_t b) {
 	}
 
 	RLC_TRY {
-		/* Be conservative about space for scratch memory, many attempts to
-		 * optimize these had invalid reads. */
-		bn_new_size(x, a->used + 1);
 		bn_new_size(q, a->used + 1);
-		bn_new_size(y, a->used + 1);
 		bn_new_size(r, a->used + 1);
-		bn_abs(x, a);
-		bn_abs(y, b);
 
 		/* Find the sign. */
 		sign = (a->sign == b->sign ? RLC_POS : RLC_NEG);
 
-		bn_divn_low(q->dp, r->dp, x->dp, a->used, y->dp, b->used);
+		bn_divn_low(q->dp, r->dp, a->dp, a->used, b->dp, b->used);
 
 		q->used = a->used - b->used + 1;
 		q->sign = sign;
@@ -119,10 +111,8 @@ static void bn_div_imp(bn_t c, bn_t d, const bn_t a, const bn_t b) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(r);
 		bn_free(q);
-		bn_free(x);
-		bn_free(y);
+		bn_free(r);
 	}
 }
 

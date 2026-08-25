@@ -38,7 +38,8 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void bn_divn_low(dig_t *c, dig_t *d, dig_t *a, size_t sa, dig_t *b, size_t sb) {
+void bn_divn_low(dig_t *c, dig_t *d, const dig_t *a, size_t sa, const dig_t *b,
+		size_t sb) {
 	mpn_tdiv_qr(c, d, 0, a, sa, b, sb);
 }
 
