@@ -143,20 +143,19 @@ void bn_add(bn_t c, const bn_t a, const bn_t b) {
 }
 
 void bn_add_dig(bn_t c, const bn_t a, dig_t b) {
-	dig_t carry;
+	dig_t carry = 0;
 
 	RLC_TRY {
-		bn_grow(c, a->used);
-
 		if (a->sign == RLC_POS) {
 			carry = bn_add1_low(c->dp, a->dp, b, a->used);
+			bn_grow(c, a->used + carry);
 			if (carry) {
-				bn_grow(c, a->used + 1);
 				c->dp[a->used] = carry;
 			}
 			c->used = a->used + carry;
 			c->sign = RLC_POS;
 		} else {
+			bn_grow(c, a->used + carry);
 			/* If a < 0 && |a| >= b, compute c = -(|a| - b). */
 			if (a->used > 1 || a->dp[0] >= b) {
 				carry = bn_sub1_low(c->dp, a->dp, b, a->used);
@@ -164,11 +163,7 @@ void bn_add_dig(bn_t c, const bn_t a, dig_t b) {
 				c->sign = RLC_NEG;
 			} else {
 				/* If a < 0 && |a| < b. */
-				if (a->used == 1) {
-					c->dp[0] = b - a->dp[0];
-				} else {
-					c->dp[0] = b;
-				}
+				c->dp[0] = b - a->dp[0];
 				c->used = 1;
 				c->sign = RLC_POS;
 			}
@@ -215,13 +210,14 @@ void bn_sub_dig(bn_t c, const bn_t a, dig_t b) {
 		/* If a < 0, compute c = -(|a| + b). */
 		if (a->sign == RLC_NEG) {
 			carry = bn_add1_low(c->dp, a->dp, b, a->used);
+			bn_grow(c, a->used + carry);
 			if (carry) {
-				bn_grow(c, a->used + 1);
 				c->dp[a->used] = carry;
 			}
 			c->used = a->used + carry;
 			c->sign = RLC_NEG;
 		} else {
+			bn_grow(c, a->used);
 			/* If a > 0 && |a| >= b, compute c = (|a| - b). */
 			if (a->used > 1 || a->dp[0] >= b) {
 				carry = bn_sub1_low(c->dp, a->dp, b, a->used);
@@ -229,11 +225,7 @@ void bn_sub_dig(bn_t c, const bn_t a, dig_t b) {
 				c->sign = RLC_POS;
 			} else {
 				/* If a > 0 && a < b. */
-				if (a->used == 1) {
-					c->dp[0] = b - a->dp[0];
-				} else {
-					c->dp[0] = b;
-				}
+				c->dp[0] = b - a->dp[0];
 				c->used = 1;
 				c->sign = RLC_NEG;
 			}
