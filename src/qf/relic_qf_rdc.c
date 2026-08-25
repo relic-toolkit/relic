@@ -52,7 +52,7 @@
  * @param[in] q				- scratch for the quotient.
  * @param[in] r				- scratch for the remainder.
  */
-static void qf_norm_imp(qf_t f, const qf_t g, bn_t t, bn_t q, bn_t r) {
+static inline void qf_norm_imp(qf_t f, const qf_t g, bn_t t, bn_t q, bn_t r) {
 	/* b = q*a + r with -a < r <= 0, which is what rounding up gives */
 	bn_div_rem_rup(q, r, g->b, g->a);
 	if (!bn_is_even(q)) {
