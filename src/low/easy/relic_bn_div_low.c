@@ -42,6 +42,7 @@ void bn_divn_low(dig_t *c, dig_t *d, dig_t *a, size_t sa, dig_t *b, size_t sb) {
 	int norm, i, n, t, sd;
 	dig_t carry, t1[3], t2[3];
 
+	dv_zero(c, sa + 1);
 	/* Normalize x and y so that the leading digit of y is bigger than
 	 * 2^(RLC_DIG-1). */
 	norm = util_bits_dig(b[sb - 1]) % RLC_DIG;
