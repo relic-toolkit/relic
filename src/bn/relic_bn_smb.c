@@ -92,7 +92,7 @@ int bn_smb_jac(const bn_t a, const bn_t b) {
 	 * https://github.com/privacy-scaling-explorations/halo2curves/pull/95 */
 
 	/* Argument b must be odd for Jacobi symbol. */
-	if (bn_is_even(b) || bn_sign(b) == RLC_NEG) {
+	if (bn_is_even(b)) {
 		RLC_THROW(ERR_NO_VALID);
 		return 0;
 	}
@@ -228,62 +228,4 @@ int bn_smb_jac(const bn_t a, const bn_t b) {
 	}
 
 	return r;
-}
-
-int bn_smb_kro_dig(const bn_t a, dig_t b) {
-	dig_t r, tmp;
-	bn_t t;
-	int res;
-
-	bn_null(t);
-
-	RLC_TRY {
-		bn_new(t);
-
-		bn_abs(t, a);
-		bn_mod_dig(&r, t, b);
-		if (bn_sign(a) == RLC_NEG && r != 0) {
-			r = b - r;
-		}
-		if (b == 2) {
-			/* (a/2) is 0 for even a, 1 for a = +-1 mod 8, -1 for a = +-3. */
-			if (bn_is_even(a)) {
-				res = 0;
-			} else {
-				tmp = a->dp[0] & 0x7;
-				if (bn_sign(a) == RLC_NEG) {
-					tmp = 8 - tmp;
-				}
-				res = (tmp == 1 || tmp == 7) ? 1 : -1;
-			}
-		} else {
-			res = 1;
-			r %= b;
-			while (r != 0) {
-				while ((r & 1) == 0) {
-					r >>= 1;
-					if ((b & 7) == 3 || (b & 7) == 5) {
-						res = -res;
-					}
-				}
-				/* swap */
-				tmp = r;
-				r = b;
-				b = tmp;
-				if ((r & 3) == 3 && (b & 3) == 3) {
-					res = -res;
-				}
-				r %= b;
-			}
-			res = (b == 1) ? res : 0;
-		}
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-		res = 0;
-	}
-	RLC_FINALLY {
-		bn_free(t);
-	}
-	return res;
 }

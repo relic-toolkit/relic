@@ -1392,19 +1392,10 @@ int bn_smb_leg(const bn_t a, const bn_t b);
  *
  * @param[in] a				- the first parameter.
  * @param[in] b				- the second parameter.
- * @throw ERR_NO_VALID		- if there input is even or negative.
+ * @throw ERR_NO_VALID		- if there input is even.
  * @return the result.
  */
 int bn_smb_jac(const bn_t a, const bn_t b);
-
-/**
- * Computes the Kronecker symbol c = (a|b) when b is a small digit.
- *
- * @param[in] a				- the first parameter.
- * @param[in] b				- the second parameter.
- * @return the result.
- */
-int bn_smb_kro_dig(const bn_t a, dig_t b);
 
 /**
  * Tests if a number is a probable prime.

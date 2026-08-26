@@ -1805,7 +1805,12 @@ static int symbol(void) {
 
 		TEST_CASE("jacobi symbol is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
-			TEST_ASSERT(bn_smb_leg(a, p) == bn_smb_jac(a, p), end);
+			int leg = bn_smb_leg(a, p);
+			TEST_ASSERT(leg == bn_smb_jac(a, p), end);
+			bn_neg(a, a);
+			bn_set_int(b, -1);
+			/* Check that (-a|p) == (-1|p) * (a|p). */
+			TEST_ASSERT(leg  * bn_smb_jac(b, p) == bn_smb_jac(a, p), end);
 		} TEST_END;
 
 		TEST_CASE("jacobi symbol is a homomorphism") {
