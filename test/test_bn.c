@@ -2066,6 +2066,7 @@ static int digit(void) {
 static int prime(void) {
 	int code = RLC_ERR;
 	bn_t p, q;
+	uint8_t msg[16];
 
 	bn_null(p);
 	bn_null(q);
@@ -2073,6 +2074,12 @@ static int prime(void) {
 	RLC_TRY {
 		bn_new(p);
 		bn_new(q);
+
+		TEST_ONCE("hashing to prime is consistent") {
+			rand_bytes(msg, sizeof(msg));
+			bn_map_prime(p, msg, sizeof(msg), RLC_BN_BITS);
+			TEST_ASSERT(bn_is_prime(p) == 1, end);
+		} TEST_END;
 
 		TEST_ONCE("prime generation is consistent") {
 			bn_gen_prime(p, RLC_BN_BITS);

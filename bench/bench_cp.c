@@ -273,9 +273,9 @@ static void paillier(void) {
 #if defined(WITH_QF)
 
 /** Size in bits of the plaintext prime used by the CL benchmarks. */
-#define BENCH_CLHE_PLAIN	128
+#define BENCH_CLHE_PLAIN	64
 /** Size in bits of the fundamental discriminant used by the CL benchmarks. */
-#define BENCH_CLHE_DISC		1827
+#define BENCH_CLHE_DISC		512
 
 /**
  * Benchmarks one variant of the CL system. Setting up and generating a key are
@@ -326,20 +326,13 @@ static void clhe(int compact) {
 	qf_class(bound, &(core_get()->qf_dk));
 	bn_lsh(bound, bound, 40);
 
-	util_print("\n-- %s variant, plaintext %zu bits, discriminants %zu and "
-			"%zu bits.\n\n", compact ? "compact" : "plain",
-			bn_bits(&(core_get()->qf_q)), bn_bits(&(core_get()->qf_dk)),
-			bn_bits(&(core_get()->qf_d)));
-
-	/*
-	 * Setting up samples a discriminant, so each repetition does fresh prime
-	 * generation and the figure is dominated by that rather than by the group
-	 * work. It is reported because it is what an application pays once, not
-	 * because it says anything about the arithmetic.
-	 */
-	BENCH_RUN("cp_clhe_set") {
-		BENCH_ADD(cp_clhe_set(c, q, BENCH_CLHE_DISC, compact));
-	} BENCH_END;
+	if (compact) {
+		BENCH_ONE("cp_clhe_set (compact)", cp_clhe_set(c, q, BENCH_CLHE_DISC,
+				compact), 1);
+	} else {
+		BENCH_ONE("cp_clhe_set (plain)", cp_clhe_set(c, q, BENCH_CLHE_DISC,
+				compact), 1);
+	}
 
 	/* the parameters were replaced by the loop above, so rebuild the key */
 	cp_clhe_set(c, q, BENCH_CLHE_DISC, compact);
@@ -419,6 +412,92 @@ static void clhe(int compact) {
 	qf_free(d2);
 	qf_free(e1);
 	qf_free(e2);
+}
+
+/** Size in bits of the prime defining the encoded value space. */
+#define BENCH_VDF_SPACE		64
+/** Size in bits of the fundamental discriminant. */
+#define BENCH_VDF_DISC		512
+/** Base delay for the benchmarks, as a number of squarings. */
+#define BENCH_VDF_DELAY		1024
+
+static void clvdf(void) {
+	qf_t f;
+	bn_t q, x, y;
+	qf_t u1, z1, y1;
+
+	qf_null(f);
+	bn_null(q);
+	bn_null(x);
+	bn_null(y);
+	qf_null(u1);
+	qf_null(z1);
+	qf_null(y1);
+
+	qf_new(f);
+	bn_new(q);
+	bn_new(x);
+	bn_new(y);
+	qf_new(u1);
+	qf_new(z1);
+	qf_new(y1);
+
+	/*
+	 * Sampling a discriminant does not succeed for every prime, so a caller
+	 * retries rather than treating the first refusal as fatal.
+	 */
+	do {
+		bn_gen_prime(q, BENCH_VDF_SPACE);
+	} while (cp_clvdf_set(f, q, BENCH_VDF_DISC) != RLC_OK);
+
+	util_print("\n-- Encoded space %zu bits, discriminants %zu and %zu bits.\n\n",
+			bn_bits(&(core_get()->qf_q)), bn_bits(&(core_get()->qf_dk)),
+			bn_bits(&(core_get()->qf_d)));
+
+	/*
+	 * Setting up samples a discriminant, so each repetition pays for prime
+	 * generation rather than for group arithmetic.
+	 */
+	BENCH_ONE("cp_clvdf_set", cp_clvdf_set(f, q, BENCH_VDF_DISC), 1);
+
+	BENCH_RUN("cp_clvdf_evl") {
+		bn_rand_mod(x, &(core_get()->qf_q));
+		BENCH_ADD(cp_clvdf_evl(u1, z1, y1, f, BENCH_VDF_DELAY, x));
+	} BENCH_END;
+
+	BENCH_RUN("cp_clvdf_dec") {
+		bn_rand_mod(x, &(core_get()->qf_q));
+		cp_clvdf_evl(u1, z1, y1, f, BENCH_VDF_DELAY, x);
+		BENCH_ADD(cp_clvdf_dec(y, BENCH_VDF_DELAY, u1, z1, y1));
+	} BENCH_END;
+
+	BENCH_RUN("cp_clvdf_dec2") {
+		bn_rand_mod(x, &(core_get()->qf_q));
+		cp_clvdf_evl(u1, z1, y1, f, BENCH_VDF_DELAY, x);
+		BENCH_ADD(cp_clvdf_dec2(y, BENCH_VDF_DELAY, u1, z1, y1));
+	} BENCH_END;
+
+	BENCH_RUN("cp_clvdf_ver") {
+		bn_rand_mod(x, &(core_get()->qf_q));
+		cp_clvdf_evl(u1, z1, y1, f, BENCH_VDF_DELAY, x);
+		BENCH_ADD(cp_clvdf_ver(BENCH_VDF_DELAY, x, u1, z1, y1));
+	} BENCH_END;
+
+	BENCH_RUN("cp_clvdf_dec (rejecting)") {
+		/* a triple that fails the kernel test exits before the logarithm */
+		bn_rand_mod(x, &(core_get()->qf_q));
+		cp_clvdf_evl(u1, z1, y1, f, BENCH_VDF_DELAY, x);
+		qf_dup(z1, z1, &(core_get()->qf_b));
+		BENCH_ADD(cp_clvdf_dec(y, BENCH_VDF_DELAY, u1, z1, y1));
+	} BENCH_END;
+
+	qf_free(f);
+	bn_free(q);
+	bn_free(x);
+	bn_free(y);
+	qf_free(u1);
+	qf_free(z1);
+	qf_free(y1);
 }
 
 #endif
@@ -2400,6 +2479,7 @@ int main(void) {
 	util_banner("Protocols based on class groups:\n", 0);
 	clhe(0);
 	clhe(1);
+	clvdf();
 #endif
 
 #if defined(WITH_EC)

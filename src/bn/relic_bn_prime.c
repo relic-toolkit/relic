@@ -44,6 +44,18 @@
 #define BASIC_TESTS	((int)(sizeof(primes)/sizeof(dig_t)))
 
 /**
+ * Domain separation tag.
+ */
+#ifndef RLC_DSTAG
+#define RLC_DSTAG		RLC_STRING
+#endif
+
+/**
+ * Maximum number of attempts when hashing to a prime.
+ */
+#define BN_MAP_TRIES	(1 << 20)
+
+/**
  * Small prime numbers table.
  */
 static const dig_t primes[] = {
@@ -564,4 +576,79 @@ void bn_next_prime(bn_t q, const bn_t p) {
 	while (!bn_is_prime(q)) {
 		bn_add_dig(q, q, 2);
 	}
+}
+
+/*
+ * RELIC is an Efficient LIbrary for Cryptography
+ * Copyright (c) 2026 RELIC Authors
+ * (licence header as in the rest of the tree)
+ */
+
+/**
+ * @file
+ *
+ * Implementation of hashing to prime numbers.
+ *
+ * @ingroup bn
+ */
+
+#include "relic_core.h"
+#include "relic_md.h"
+
+int bn_map_prime(bn_t p, const uint8_t *msg, size_t len, size_t bits) {
+	uint8_t *in, *out;
+	int32_t k = 0;
+	size_t i, nb = (bits + 7) / 8;
+	int result = RLC_OK;
+
+	if (bits < 2 || nb == 0) {
+		RLC_THROW(ERR_NO_VALID);
+		return RLC_ERR;
+	}
+
+	in = RLC_ALLOCA(uint8_t, len + sizeof(size_t));
+	out = RLC_ALLOCA(uint8_t, nb);
+	if (in == NULL || out == NULL) {
+		RLC_FREE(in);
+		RLC_FREE(out);
+		RLC_THROW(ERR_NO_MEMORY);
+		return RLC_ERR;
+	}
+
+	RLC_TRY {
+		if (len > 0) {
+			memcpy(in, msg, len);
+		}
+
+		/* Upper bund the number of tries. */
+		for (uint32_t k = 0; k < BN_MAP_TRIES; k++) {
+			/* Expand message to the whole prime so the output looks uniform. */
+			memcpy(in + len, &k, sizeof(uint32_t));
+			md_xmd(out, nb, in, len + sizeof(size_t),
+					(const uint8_t *)RLC_DSTAG, sizeof(RLC_DSTAG) - 1);
+
+			bn_read_bin(p, out, nb);
+			/* trim to the requested width, then fix the top and bottom bits */
+			for (i = bits; i < 8 * nb; i++) {
+				bn_set_bit(p, i, 0);
+			}
+			bn_set_bit(p, bits - 1, 1);
+			bn_set_bit(p, 0, 1);
+
+			if (bn_is_prime(p)) {
+				break;
+			}
+		}
+		if (k >= BN_MAP_TRIES) {
+			result = RLC_ERR;
+		}
+	}
+	RLC_CATCH_ANY {
+		result = RLC_ERR;
+	}
+	RLC_FINALLY {
+		RLC_FREE(in);
+		RLC_FREE(out);
+	}
+	return result;
 }
