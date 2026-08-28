@@ -33,6 +33,7 @@
  */
 
 #include "relic_core.h"
+#include "relic_md.h"
 
 /*============================================================================*/
 /* Private definitions                                                        */
@@ -577,23 +578,6 @@ void bn_next_prime(bn_t q, const bn_t p) {
 		bn_add_dig(q, q, 2);
 	}
 }
-
-/*
- * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (c) 2026 RELIC Authors
- * (licence header as in the rest of the tree)
- */
-
-/**
- * @file
- *
- * Implementation of hashing to prime numbers.
- *
- * @ingroup bn
- */
-
-#include "relic_core.h"
-#include "relic_md.h"
 
 int bn_map_prime(bn_t p, const uint8_t *msg, size_t len, size_t bits) {
 	uint8_t *in, *out;
