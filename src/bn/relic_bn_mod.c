@@ -293,10 +293,13 @@ void bn_mod_monty_comba(bn_t c, const bn_t a, const bn_t m, const bn_t u) {
 
 	RLC_TRY {
 		bn_new_size(t, digits);
-		bn_zero(t);
+		if (a->used < (size_t)digits) {
+			dv_zero(t->dp + a->used, digits - a->used);
+		}
 
 		bn_modn_low(t->dp, a->dp, a->used, m->dp, m->used, u->dp[0]);
 		t->used = m->used;
+		t->sign = RLC_POS;
 
 		bn_trim(t);
 		if (bn_cmp_abs(t, m) != RLC_LT) {
