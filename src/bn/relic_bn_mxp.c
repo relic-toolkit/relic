@@ -32,15 +32,6 @@
 #include "relic_core.h"
 
 /*============================================================================*/
-/* Private definitions                                                        */
-/*============================================================================*/
-
-/**
- * Size of precomputation table.
- */
-#define RLC_TABLE_SIZE			64
-
-/*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
@@ -111,7 +102,7 @@ void bn_mxp_basic(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 #if BN_MXP == SLIDE || !defined(STRIP)
 
 void bn_mxp_slide(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
-	bn_t tab[RLC_TABLE_SIZE], t, u;
+	bn_t *tab, t, u;
 	size_t l, w = 1;
 	uint8_t *win = RLC_ALLOCA(uint8_t, bn_bits(b));
 
@@ -134,10 +125,6 @@ void bn_mxp_slide(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 
 	bn_null(t);
 	bn_null(u);
-	/* Initialize table. */
-	for (size_t i = 0; i < RLC_TABLE_SIZE; i++) {
-		bn_null(tab[i]);
-	}
 
 	/* Find window size. */
 	l = bn_bits(b);
@@ -155,8 +142,15 @@ void bn_mxp_slide(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 		w = 7;
 	}
 
+	tab = RLC_ALLOCA(bn_t, (1 << (w - 1)));
+	if (tab == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
+		return;
+	}
+
 	RLC_TRY {
 		for (size_t i = 0; i < (1 << (w - 1)); i++) {
+			bn_null(tab[i]);
 			bn_new(tab[i]);
 		}
 
@@ -219,6 +213,7 @@ void bn_mxp_slide(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 		bn_free(u);
 		bn_free(t);
 		RLC_FREE(win);
+		RLC_FREE(tab);
 	}
 }
 
