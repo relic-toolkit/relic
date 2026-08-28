@@ -581,7 +581,6 @@ void bn_next_prime(bn_t q, const bn_t p) {
 
 int bn_map_prime(bn_t p, const uint8_t *msg, size_t len, size_t bits) {
 	uint8_t *in, *out;
-	int32_t k = 0;
 	size_t i, nb = (bits + 7) / 8;
 	int result = RLC_OK;
 
