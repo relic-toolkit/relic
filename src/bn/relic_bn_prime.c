@@ -581,6 +581,7 @@ void bn_next_prime(bn_t q, const bn_t p) {
 
 int bn_map_prime(bn_t p, const uint8_t *msg, size_t len, size_t bits) {
 	uint8_t *in, *out;
+	uint32_t k = 0;
 	size_t i, nb = (bits + 7) / 8;
 	int result = RLC_OK;
 
@@ -604,7 +605,7 @@ int bn_map_prime(bn_t p, const uint8_t *msg, size_t len, size_t bits) {
 		}
 
 		/* Upper bund the number of tries. */
-		for (uint32_t k = 0; k < BN_MAP_TRIES; k++) {
+		for (k = 0; k < BN_MAP_TRIES; k++) {
 			/* Expand message to the whole prime so the output looks uniform. */
 			memcpy(in + len, &k, sizeof(uint32_t));
 			md_xmd(out, nb, in, len + sizeof(uint32_t),
