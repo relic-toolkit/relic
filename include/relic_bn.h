@@ -393,6 +393,8 @@ typedef crt_st *crt_t;
 #define bn_mxp(C, A, B, M)	bn_mxp_slide(C, A, B, M)
 #elif BN_MXP == MONTY
 #define bn_mxp(C, A, B, M)	bn_mxp_monty(C, A, B, M)
+#elif BN_MXP == LOWER
+#define bn_mxp(C, A, B, M)	bn_mxp_lower(C, A, B, M)
 #endif
 
 /**
@@ -1153,6 +1155,17 @@ void bn_mxp_slide(bn_t c, const bn_t a, const bn_t b, const bn_t m);
  * @param[in] m				- the modulus.
  */
 void bn_mxp_monty(bn_t c, const bn_t a, const bn_t b, const bn_t m);
+
+/**
+ * Exponentiates a multiple precision integer modulo a positive integer using
+ * the lower-level method.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the basis.
+ * @param[in] b				- the exponent.
+ * @param[in] m				- the modulus.
+ */
+void bn_mxp_lower(bn_t c, const bn_t a, const bn_t b, const bn_t m);
 
 /**
  * Exponentiates a multiple precision integer by a small power modulo a positive

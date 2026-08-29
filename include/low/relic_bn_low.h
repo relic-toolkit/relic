@@ -360,6 +360,22 @@ size_t bn_gcde_low(dig_t *c, dig_t *d, int *sd, dig_t *a, size_t sa,
 size_t bn_gcdh_low(dig_t *m00, dig_t *m01, dig_t *m10, dig_t *m11, size_t *sm,
 		dig_t *a, dig_t *b, size_t size);
 
+/**
+ * Computes a modular exponentiation. The modulus must be odd and the base
+ * already reduced by it. Computes c = a^b mod m.
+ *
+ * @param[out] c			- the result, of sm digits.
+ * @param[in] a				- the base.
+ * @param[in] sa			- the size in digits of the base.
+ * @param[in] b				- the exponent.
+ * @param[in] sb			- the size in digits of the exponent.
+ * @param[in] m				- the modulus.
+ * @param[in] sm			- the size in digits of the modulus.
+ * @param[in] u				- minus the inverse of the modulus modulo the radix.
+ */
+void bn_mxpn_low(dig_t *c, const dig_t *a, size_t sa, const dig_t *b, size_t sb,
+		const dig_t *m, size_t sm, dig_t u);
+
 #endif /* !ASM */
 
 #endif /* !RLC_BN_LOW_H */

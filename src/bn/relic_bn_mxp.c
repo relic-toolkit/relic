@@ -30,12 +30,11 @@
  */
 
 #include "relic_core.h"
+#include "relic_bn_low.h"
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
-
-#if BN_MXP == BASIC || !defined(STRIP)
 
 void bn_mxp_basic(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 	int i, l;
@@ -96,8 +95,6 @@ void bn_mxp_basic(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 		bn_free(u);
 	}
 }
-
-#endif
 
 #if BN_MXP == SLIDE || !defined(STRIP)
 
@@ -300,6 +297,69 @@ void bn_mxp_monty(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 	RLC_FINALLY {
 		bn_free(tab[1]);
 		bn_free(tab[0]);
+		bn_free(u);
+	}
+}
+
+#endif
+
+#if BN_MXP == LOWER || !defined(STRIP)
+
+void bn_mxp_lower(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
+	bn_t t, u;
+	size_t sm;
+
+	if (bn_cmp_dig(m, 1) == RLC_EQ) {
+		bn_zero(c);
+		return;
+	}
+
+	if (bn_is_zero(b)) {
+		bn_set_dig(c, 1);
+		return;
+	}
+
+	if (bn_is_zero(a)) {
+		bn_zero(c);
+		return;
+	}
+
+	if (bn_is_even(m)) {
+		bn_mxp_basic(c, a, b, m);
+		return;
+	}
+
+	bn_null(t);
+	bn_null(u);
+
+	RLC_TRY {
+		bn_new(t);
+		bn_new(u);
+
+		sm = m->used;
+		bn_grow(u, sm);
+		bn_mod_pre(u, m);
+		bn_mod(t, a, m);
+		dv_zero(t->dp + t->used, sm - t->used);
+
+		bn_mxpn_low(u->dp, t->dp, sm, b->dp, b->used, m->dp, sm, u->dp[0]);
+		u->used = sm;
+		u->sign = RLC_POS;
+
+		if (bn_sign(a) == RLC_NEG && !bn_is_even(b)) {
+			bn_sub(c, m, u);
+		}
+		if (bn_sign(b) == RLC_NEG) {
+			bn_mod_inv(c, u, m);
+		} else {
+			bn_copy(c, u);
+		}
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		bn_free(t);
 		bn_free(u);
 	}
 }

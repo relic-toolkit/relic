@@ -1258,11 +1258,21 @@ static int exponentiation(void) {
 		TEST_END;
 #endif
 
-#if BN_MXP == CONST || !defined(STRIP)
+#if BN_MXP == MONTY || !defined(STRIP)
 		TEST_CASE("powering ladder modular exponentiation is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_mod(a, a, p);
 			bn_mxp_monty(b, a, p, p);
+			TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
+		}
+		TEST_END;
+#endif
+
+#if BN_MXP == LOWER || !defined(STRIP)
+		TEST_CASE("low-level modular exponentiation is correct") {
+			bn_rand(a, RLC_POS, RLC_BN_BITS);
+			bn_mod(a, a, p);
+			bn_mxp_lower(b, a, p, p);
 			TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
 		}
 		TEST_END;
@@ -2698,6 +2708,11 @@ int main(void) {
 		return 1;
 	}
 
+	if (exponentiation() != RLC_OK) {
+		core_clean();
+		return 1;
+	}
+
 	if (square_root() != RLC_OK) {
 		core_clean();
 		return 1;
@@ -2714,11 +2729,6 @@ int main(void) {
 	}
 
 	if (recoding() != RLC_OK) {
-		core_clean();
-		return 1;
-	}
-
-	if (exponentiation() != RLC_OK) {
 		core_clean();
 		return 1;
 	}
