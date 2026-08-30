@@ -37,22 +37,17 @@
 /** Window width, and so half the number of odd powers held in the table. */
 #define MXP_WIN(B)		((B) > 512 ? 7 : ((B) > 256 ? 6 : ((B) > 128 ? 5 : 4)))
 
-/** Largest window this implementation will use. */
-#define MXP_WMAX		7
-
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
 void bn_mxpn_low(dig_t *c, const dig_t *a, size_t sa, const dig_t *b, size_t sb,
 		const dig_t *m, size_t sm, dig_t u) {
-	dig_t *pro, *acc, *nxt, *tab, *swp;
-	dig_t *t = RLC_ALLOCA(dig_t, 4 * sm + ((size_t)1 << (MXP_WMAX - 1)) * sm);
-	size_t i, k, w, nb, tn;
+	size_t nb = sb * RLC_DIG, w = MXP_WIN(nb), tn = (size_t)1 << (w - 1);
+	dig_t *pro, *acc, *nxt, *tab, *swp, *t = RLC_ALLOCA(dig_t, (tn + 4) * sm);
 	int j, l, v, s, started = 0;
 
-	nb = sb * RLC_DIG;
-	while (nb > 0 && ((b[(nb - 1) / RLC_DIG] >> ((nb - 1) % RLC_DIG)) & 1) == 0) {
+	while (nb > 0 && ((b[(nb - 1)/RLC_DIG] >> ((nb - 1) % RLC_DIG)) & 1) == 0) {
 		nb--;
 	}
 	if (nb == 0) {
@@ -61,9 +56,6 @@ void bn_mxpn_low(dig_t *c, const dig_t *a, size_t sa, const dig_t *b, size_t sb,
 		c[0] = 1;
 		return;
 	}
-
-	w = MXP_WIN(nb);
-	tn = (size_t)1 << (w - 1);
 
 	pro = t;						/* 2 * sm, the double width product */
 	acc = pro + 2 * sm;				/* sm, the accumulator */
@@ -81,7 +73,7 @@ void bn_mxpn_low(dig_t *c, const dig_t *a, size_t sa, const dig_t *b, size_t sb,
 	/* Compute the constant R2. */
 	dv_zero(nxt, sm);
 	nxt[0] = 1;
-	for (i = 0; i < 2 * sm * RLC_DIG; i++) {
+	for (size_t i = 0; i < 2 * sm * RLC_DIG; i++) {
 		dig_t carry = bn_lsh1_low(nxt, nxt, sm);
 		if (carry || bn_cmpn_low(nxt, sm, m, sm) != RLC_LT) {
 			bn_subn_low(nxt, nxt, m, sm);
@@ -94,9 +86,9 @@ void bn_mxpn_low(dig_t *c, const dig_t *a, size_t sa, const dig_t *b, size_t sb,
 	if (tn > 1) {
 		bn_sqrn_low(pro, tab, sm);
 		bn_modn_low(nxt, pro, 2 * sm, m, sm, u);
-		for (k = 1; k < tn; k++) {
-			bn_muln_low(pro, tab + (k - 1) * sm, nxt, sm);
-			bn_modn_low(tab + k * sm, pro, 2 * sm, m, sm, u);
+		for (size_t i = 1; i < tn; i++) {
+			bn_muln_low(pro, tab + (i - 1) * sm, nxt, sm);
+			bn_modn_low(tab + i * sm, pro, 2 * sm, m, sm, u);
 		}
 	}
 
@@ -123,7 +115,7 @@ void bn_mxpn_low(dig_t *c, const dig_t *a, size_t sa, const dig_t *b, size_t sb,
 			v = (v << 1) | (int)((b[s / RLC_DIG] >> (s % RLC_DIG)) & 1);
 		}
 		if (started) {
-			for (i = 0; i <= (size_t)(j - l); i++) {
+			for (size_t i = 0; i <= (size_t)(j - l); i++) {
 				bn_sqrn_low(pro, acc, sm);
 				bn_modn_low(nxt, pro, 2 * sm, m, sm, u);
 				swp = acc; acc = nxt; nxt = swp;
