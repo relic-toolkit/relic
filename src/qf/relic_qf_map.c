@@ -29,9 +29,9 @@
  * @ingroup qf
  */
 
+#include "relic_core.h"
 #include "relic_bn.h"
 #include "relic_qf.h"
-#include "relic_err.h"
 
 /*============================================================================*/
 /* Public definitions                                                         */
