@@ -1303,6 +1303,7 @@ void ep_norm_sim(ep_t *r, const ep_t *t, int n);
 /**
  * Maps a byte array to a point in a prime elliptic curve using the hash and
  * increment approach.
+ *
  * @param[out] p			- the result.
  * @param[in] msg			- the byte array to map.
  * @param[in] len			- the array length in bytes.

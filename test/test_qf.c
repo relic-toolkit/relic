@@ -698,16 +698,16 @@ static int hashing(void) {
 
 		TEST_CASE("the hashing to class groups is deterministic") {
 			rand_bytes(msg, sizeof(msg));
-			qf_hash(a, msg, sizeof(msg), &(core_get()->qf_dk),
+			qf_map(a, msg, sizeof(msg), &(core_get()->qf_dk),
 					TEST_QF_PRIME / 2);
-			qf_hash(b, msg, sizeof(msg), &(core_get()->qf_dk),
+			qf_map(b, msg, sizeof(msg), &(core_get()->qf_dk),
 					TEST_QF_PRIME / 2);
 			TEST_ASSERT(qf_cmp(a, b) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_CASE("the hashing lands in the class group") {
 			rand_bytes(msg, sizeof(msg));
-			qf_hash(a, msg, sizeof(msg), &(core_get()->qf_dk),
+			qf_map(a, msg, sizeof(msg), &(core_get()->qf_dk),
 					TEST_QF_PRIME / 2);
 			TEST_ASSERT(qf_has_dsc(a, &(core_get()->qf_dk)), end);
 			/* the result is reduced, so it is the canonical representative */
@@ -717,10 +717,10 @@ static int hashing(void) {
 
 		TEST_CASE("distinct messages give distinct prime hashes") {
 			rand_bytes(msg, sizeof(msg));
-			qf_hash(a, msg, sizeof(msg), &(core_get()->qf_dk),
+			qf_map(a, msg, sizeof(msg), &(core_get()->qf_dk),
 					TEST_QF_PRIME / 2);
 			msg[0] ^= 1;
-			qf_hash(b, msg, sizeof(msg), &(core_get()->qf_dk),
+			qf_map(b, msg, sizeof(msg), &(core_get()->qf_dk),
 					TEST_QF_PRIME / 2);
 			TEST_ASSERT(qf_cmp(a, b) != RLC_EQ, end);
 		} TEST_END;

@@ -37,7 +37,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void qf_hash(qf_t r, const uint8_t *msg, size_t len, const bn_t dsc,
+void qf_map(qf_t r, const uint8_t *msg, size_t len, const bn_t dsc,
 		size_t bits) {
 	bn_t p, b, t;
 	uint32_t k = 0;

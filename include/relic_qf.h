@@ -517,7 +517,7 @@ void qf_exp_fix(qf_t r, const qf_t f, const bn_t n, size_t d, size_t e,
  * @param[in] dsc			- the intended discriminant.
  * @param[in] bits			- the bit length of the hash output.
  */
-void qf_hash(qf_t r, const uint8_t *msg, size_t len, const bn_t dsc,
+void qf_map(qf_t r, const uint8_t *msg, size_t len, const bn_t dsc,
 		size_t bits);
 
 #endif /* !RLC_QF_H */

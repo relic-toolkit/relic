@@ -29,6 +29,7 @@ message("      Modular exponentiation:")
 message("      BN_METHD=BASIC    Binary modular exponentiation.")
 message("      BN_METHD=MONTY    Montgomery powering ladder.")
 message("      BN_METHD=SLIDE    Sliding window modular exponentiation.\n")
+message("      BN_METHD=LOWER    Pass exponentiation to the lower level.\n")
 
 message("      Greatest Common Divisor:")
 message("      BN_METHD=BASIC    Euclid's standard GCD algorithm.")
