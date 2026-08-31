@@ -1400,7 +1400,7 @@ static int square_root(void) {
 			}
 		}
 		TEST_END;
-	}
+
 		TEST_CASE("modular square root extraction is correct") {
 			/*
 			 * A residue is a square by construction, so a root must be found
@@ -1482,7 +1482,7 @@ static int square_root(void) {
 			TEST_ASSERT(bn_cmp(b, a) != RLC_GT, end);
 		} TEST_END;
 
-		TEST_ONCE("modular square root of small values is correct") {
+		TEST_CASE("modular square root of small values is correct") {
 			bn_gen_prime(p, RLC_BN_BITS / 4);
 			bn_zero(a);
 			TEST_ASSERT(bn_srt_mod(b, a, p) == 1, end);
@@ -1494,7 +1494,7 @@ static int square_root(void) {
 			TEST_ASSERT(bn_srt_mod(b, a, p) == 1, end);
 			TEST_ASSERT(bn_cmp_dig(b, 2) == RLC_EQ, end);
 		} TEST_END;
-
+	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);
 	}
