@@ -1360,17 +1360,20 @@ static int exponentiation(void) {
 
 static int square_root(void) {
 	size_t bits;
-	bn_t a, b, c;
+	bn_t a, b, c, p;
+	dig_t d;
 	int code = RLC_ERR;
 
 	bn_null(a);
 	bn_null(b);
 	bn_null(c);
+	bn_null(p);
 
 	RLC_TRY {
 		bn_new(a);
 		bn_new(b);
 		bn_new(c);
+		bn_new(p);
 
 		TEST_ONCE("square root extraction is correct") {
 			for (bits = 0; bits < RLC_BN_BITS / 2; bits++) {
@@ -1398,6 +1401,100 @@ static int square_root(void) {
 		}
 		TEST_END;
 	}
+		TEST_CASE("modular square root extraction is correct") {
+			/*
+			 * A residue is a square by construction, so a root must be found
+			 * and squaring it must return the value.
+			 */
+			bn_gen_prime(p, RLC_BN_BITS / 4);
+			bn_rand_mod(a, p);
+			bn_sqr(c, a);
+			bn_mod(c, c, p);
+			TEST_ASSERT(bn_srt_mod(b, c, p) == 1, end);
+			bn_sqr(b, b);
+			bn_mod(b, b, p);
+			TEST_ASSERT(bn_cmp(b, c) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("modular square root agrees with the legendre symbol") {
+			/*
+			 * The two must never disagree: a root exists exactly when the
+			 * symbol says the value is a residue.
+			 */
+			bn_gen_prime(p, RLC_BN_BITS / 4);
+			bn_rand_mod(a, p);
+			if (bn_is_zero(a)) {
+				bn_set_dig(a, 1);
+			}
+			if (bn_smb_leg(a, p) == 1) {
+				TEST_ASSERT(bn_srt_mod(b, a, p) == 1, end);
+				bn_sqr(b, b);
+				bn_mod(b, b, p);
+				TEST_ASSERT(bn_cmp(b, a) == RLC_EQ, end);
+			} else {
+				TEST_ASSERT(bn_srt_mod(b, a, p) == 0, end);
+			}
+		} TEST_END;
+
+		TEST_CASE("modular square root is correct for a prime three mod four") {
+			/*
+			 * That case is a single exponentiation rather than the general
+			 * search, so it is worth reaching on its own.
+			 */
+			do {
+				bn_gen_prime(p, RLC_BN_BITS / 4);
+				bn_mod_dig(&d, p, 4);
+			} while (d != 3);
+			bn_rand_mod(a, p);
+			bn_sqr(c, a);
+			bn_mod(c, c, p);
+			TEST_ASSERT(bn_srt_mod(b, c, p) == 1, end);
+			bn_sqr(b, b);
+			bn_mod(b, b, p);
+			TEST_ASSERT(bn_cmp(b, c) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("modular square root is correct for a prime one mod four") {
+			do {
+				bn_gen_prime(p, RLC_BN_BITS / 4);
+				bn_mod_dig(&d, p, 4);
+			} while (d != 1);
+			bn_rand_mod(a, p);
+			bn_sqr(c, a);
+			bn_mod(c, c, p);
+			TEST_ASSERT(bn_srt_mod(b, c, p) == 1, end);
+			bn_sqr(b, b);
+			bn_mod(b, b, p);
+			TEST_ASSERT(bn_cmp(b, c) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("modular square root returns the smaller root") {
+			/*
+			 * Both roots are valid, so one is chosen, and which one must not
+			 * depend on where the search happened to land.
+			 */
+			bn_gen_prime(p, RLC_BN_BITS / 4);
+			bn_rand_mod(a, p);
+			bn_sqr(c, a);
+			bn_mod(c, c, p);
+			TEST_ASSERT(bn_srt_mod(b, c, p) == 1, end);
+			bn_sub(a, p, b);
+			TEST_ASSERT(bn_cmp(b, a) != RLC_GT, end);
+		} TEST_END;
+
+		TEST_ONCE("modular square root of small values is correct") {
+			bn_gen_prime(p, RLC_BN_BITS / 4);
+			bn_zero(a);
+			TEST_ASSERT(bn_srt_mod(b, a, p) == 1, end);
+			TEST_ASSERT(bn_is_zero(b), end);
+			bn_set_dig(a, 1);
+			TEST_ASSERT(bn_srt_mod(b, a, p) == 1, end);
+			TEST_ASSERT(bn_cmp_dig(b, 1) == RLC_EQ, end);
+			bn_set_dig(a, 4);
+			TEST_ASSERT(bn_srt_mod(b, a, p) == 1, end);
+			TEST_ASSERT(bn_cmp_dig(b, 2) == RLC_EQ, end);
+		} TEST_END;
+
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);
 	}
@@ -1406,6 +1503,7 @@ static int square_root(void) {
 	bn_free(a);
 	bn_free(b);
 	bn_free(c);
+	bn_free(p);
 	return code;
 }
 
@@ -2087,7 +2185,7 @@ static int prime(void) {
 
 		TEST_ONCE("hashing to prime is consistent") {
 			rand_bytes(msg, sizeof(msg));
-			bn_map_prime(p, msg, sizeof(msg), RLC_BN_BITS);
+			bn_map_prime(p, NULL, msg, sizeof(msg), RLC_BN_BITS, 0);
 			TEST_ASSERT(bn_is_prime(p) == 1, end);
 		} TEST_END;
 

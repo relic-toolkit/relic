@@ -68,6 +68,7 @@ void qf_exp(qf_t r, const qf_t f, const bn_t n, const bn_t dsc,
 	RLC_TRY {
 		qf_new(ff);
 		for (size_t i = 0; i < u; i++) {
+			qf_null(tab[i]);
 			qf_new(tab[i]);
 		}
 

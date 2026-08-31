@@ -248,6 +248,14 @@ static void orders(void) {
 		BENCH_ADD(qf_kern(m, b));
 	} BENCH_END;
 
+	BENCH_RUN("qf_hash") {
+		uint8_t msg[32];
+		rand_bytes(msg, sizeof(msg));
+		BENCH_ADD(qf_hash(a, msg, sizeof(msg), &(core_get()->qf_dk),
+				bn_bits(&(core_get()->qf_dk)) / 2));
+	}
+	BENCH_END;
+
 	qf_free(a);
 	qf_free(b);
 	bn_free(m);

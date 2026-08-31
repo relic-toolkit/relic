@@ -508,4 +508,16 @@ void qf_exp_fix(qf_t r, const qf_t f, const bn_t n, size_t d, size_t e,
 		const qf_t fe, const qf_t fd, const qf_t fde, const bn_t dsc,
 		const bn_t bnd);
 
+/**
+ * Maps a bit string to a class group element.
+ *
+ * @param[out] r			- the result.
+ * @param[in] msg			- the message to hash.
+ * @param[in] len			- the length of the message in bytes.
+ * @param[in] dsc			- the intended discriminant.
+ * @param[in] bits			- the bit length of the hash output.
+ */
+void qf_hash(qf_t r, const uint8_t *msg, size_t len, const bn_t dsc,
+		size_t bits);
+
 #endif /* !RLC_QF_H */
