@@ -56,6 +56,9 @@
 /** Largest number of stored powers the witness assembly will allocate. */
 #define CLVDF_MAX_CHK	(1 << 16)
 
+/** Largest window it will use, beyond which the descent outgrows the saving. */
+#define CLVDF_MAX_WIN	24
+
 /** Size in bits of the challenge primes, twice the security level. */
 #define CLVDF_CHAL_BITS	256
 
@@ -196,7 +199,7 @@ void cp_clvdf_evl(qf_t u, qf_t z, qf_t y, const qf_t f, size_t t,
 	qf_t *tab = NULL, *acc = NULL;
 	bn_t l, e, m;
 	uint32_t *dig = NULL;
-	size_t i, w, sc, nc, nd = 0;
+	size_t best = 0, w, wi, sc, nc, nd = 0;
 
 	qf_null(g);
 	qf_null(pi);
@@ -222,121 +225,143 @@ void cp_clvdf_evl(qf_t u, qf_t z, qf_t y, const qf_t f, size_t t,
 		 * of the base is kept as it goes past, so that the witness can be
 		 * assembled from those afterwards instead of by replaying the chain,
 		 * which would double the sequential work for no extra delay.
+		 *
+		 * The window is chosen to minimise the memory cost, which costs one
+		 * composition per stored power and two per window value, so about
+		 * t/w + 2^(w + 1). Both constraints pull against each other:
+		 * a wider window stores fewer powers but makes the descent over
+		 * the window values longer, and it is the storage that binds first,
+		 * since it is t over w forms of a few kilobytes each.
+		 *
+		 * When no window keeps the storage inside the budget, the witness is
+		 * replayed instead. That costs a second pass over the chain, so twice
+		 * the sequential work, but it needs no storage at all. For a delay
+		 * large enough to matter that is the only option: holding t over w
+		 * forms with w capped is hundreds of gigabytes, and raising w past the
+		 * cap makes the descent longer than the chain it replaces.
 		 */
-		w = 1;
-		while ((size_t)1 << (2 * w) < t) {
-			w++;
-		}
-		sc = (t + w - 1) / w + 1;
-		/*
-		 * One stored power per w squarings, so the storage grows with the
-		 * delay. That is the wrong end of the trade for a large one: a fixed
-		 * budget of checkpoints spaced further apart, with a multi
-		 * exponentiation per block, would bound it. Until that is written the
-		 * bound is checked rather than left to fail in the allocator.
-		 */
-		if (sc > CLVDF_MAX_CHK) {
-			RLC_THROW(ERR_NO_VALID);
-		}
+		w = 0;
+		for (wi = 2; wi <= CLVDF_MAX_WIN; wi++) {
+			size_t chk = (t + wi - 1) / wi + 1;
+			size_t cost;
 
-		/*
-		 * Taken from the heap, not the stack: a form is a few kilobytes and
-		 * there are thousands of them, which alloca cannot carry.
-		 */
-		tab = (qf_t *)calloc(sc, sizeof(qf_t));
-		if (tab == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
-		for (i = 0; i < sc; i++) {
-			qf_null(tab[i]);
-			qf_new(tab[i]);
-		}
-
-		qf_copy(y, g);
-		qf_copy(tab[0], g);
-		nc = 1;
-		for (i = 0; i < t; i++) {
-			qf_dup(y, y, &(core_get()->qf_bk));
-			if (((i + 1) % w) == 0 && nc < sc) {
-				qf_copy(tab[nc++], y);
+			if (chk > CLVDF_MAX_CHK) {
+				continue;
+			}
+			cost = chk + ((size_t)2 << wi);
+			if (w == 0 || cost < best) {
+				w = wi;
+				best = cost;
 			}
 		}
-		qf_com(u, g, y, 0, &(core_get()->qf_bk));
 
-		clvdf_map_p(l, t, u, y);
-
-		/*
-		 * The witness is g raised to floor(2^t / l). Writing that quotient in
-		 * base two to the w, the witness is the product of the stored powers
-		 * each raised to its own digit, since the stored powers are exactly the
-		 * base raised to those places. Grouping the digits by value turns the
-		 * product into one composition per stored power plus a short pass over
-		 * the possible digits, so the whole thing costs about t over w plus two
-		 * to the w rather than t.
-		 */
-		/*
-		 * The quotient has t bits, so it is never formed. Its digits come from
-		 * the long division of two to the t by l, which needs nothing wider
-		 * than l: the remainder is doubled once per bit and the divisor
-		 * subtracted when it fits, and the bit that records whether it fitted
-		 * is a bit of the quotient. Forming the quotient instead would need a
-		 * t bit integer, which at any realistic delay does not fit and at
-		 * sixteen thousand already exceeds the configured precision.
-		 */
-		dig = (uint32_t *)calloc(nc, sizeof(uint32_t));
-		if (dig == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
-		bn_zero(e);
-		for (i = t + 1; i-- > 0; ) {
-			bn_dbl(e, e);
-			if (i == t) {
-				bn_add_dig(e, e, 1);	/* the only set bit of two to the t */
+		if (w == 0) {
+			/* no window fits the budget, so the chain is replayed */
+			/* cost of 2t duplications and ~t/2 compositions*/
+			qf_copy(y, g);
+			for (size_t i = 0; i < t; i++) {
+				qf_dup(y, y, &(core_get()->qf_bk));
 			}
-			if (bn_cmp(e, l) != RLC_LT) {
-				bn_sub(e, e, l);
-				if (i / w < nc) {
-					dig[i / w] |= (uint32_t)1 << (i % w);
+			qf_com(u, g, y, 0, &(core_get()->qf_bk));
+
+			clvdf_map_p(l, t, u, y);
+
+			qf_set_one(pi, &(core_get()->qf_dk));
+			bn_set_dig(e, 1);
+			for (size_t i = 0; i < t; i++) {
+				bn_dbl(e, e);
+				if (bn_cmp(e, l) != RLC_LT) {
+					bn_sub(e, e, l);
+					qf_dup(pi, pi, &(core_get()->qf_bk));
+					qf_com(pi, pi, g, 0, &(core_get()->qf_bk));
+				} else {
+					qf_dup(pi, pi, &(core_get()->qf_bk));
 				}
 			}
-		}
+		} else {
+			sc = (t + w - 1) / w + 1;
 
-		nd = (size_t)1 << w;
-		acc = (qf_t *)calloc(nd, sizeof(qf_t));
-		if (acc == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		}
-		for (i = 0; i < nd; i++) {
-			qf_null(acc[i]);
-			qf_new(acc[i]);
-			qf_set_one(acc[i], &(core_get()->qf_dk));
-		}
-
-		/* gather the stored powers by the digit that multiplies them */
-		for (i = 0; i < nc; i++) {
-			size_t v = (size_t)dig[i];
-
-			if (v > 0) {
-				qf_com(acc[v], acc[v], tab[i], 0, &(core_get()->qf_bk));
+			/* Allocate from the heap, otherwise no space. */
+			tab = (qf_t *)calloc(sc, sizeof(qf_t));
+			if (tab == NULL) {
+				RLC_THROW(ERR_NO_MEMORY);
 			}
-		}
+			for (size_t i = 0; i < sc; i++) {
+				qf_null(tab[i]);
+				qf_new(tab[i]);
+			}
 
-		/*
-		 * With the groups formed, the witness follows from a descent over the
-		 * digit values: each step squares what is held and folds in the group
-		 * for the next value down.
-		 */
-		qf_set_one(pi, &(core_get()->qf_dk));
-		qf_set_one(run, &(core_get()->qf_dk));
-		for (i = nd; i-- > 1; ) {
+			qf_copy(y, g);
+			qf_copy(tab[0], g);
+			nc = 1;
+			for (size_t i = 0; i < t; i++) {
+				qf_dup(y, y, &(core_get()->qf_bk));
+				if (((i + 1) % w) == 0 && nc < sc) {
+					qf_copy(tab[nc++], y);
+				}
+			}
+			qf_com(u, g, y, 0, &(core_get()->qf_bk));
+
+			clvdf_map_p(l, t, u, y);
+
 			/*
-			 * Descending over the digit values, the running product picks up
-			 * one more group at each step and the result picks up the running
-			 * product, so a group formed for the digit v ends up raised to v
-			 * exactly. Two compositions per digit value and no squarings.
-			 */
-			qf_com(run, run, acc[i], 0, &(core_get()->qf_bk));
-			qf_com(pi, pi, run, 0, &(core_get()->qf_bk));
+			* The witness is g raised to floor(2^t / l). Writing that quotient in
+			* base two to the w, the witness is the product of the stored powers
+			* each raised to its own digit, since the stored powers are exactly the
+			* base raised to those places. Grouping the digits by value turns the
+			* product into one composition per stored power plus a short pass over
+			* the possible digits, so the whole thing costs about t over w plus two
+			* to the w rather than t.
+			*/
+			dig = (uint32_t *)calloc(nc, sizeof(uint32_t));
+			if (dig == NULL) {
+				RLC_THROW(ERR_NO_MEMORY);
+			}
+			bn_zero(e);
+			for (size_t i = t + 1; i-- > 0; ) {
+				bn_dbl(e, e);
+				if (i == t) {
+					bn_add_dig(e, e, 1);	/* the only set bit of two to the t */
+				}
+				if (bn_cmp(e, l) != RLC_LT) {
+					bn_sub(e, e, l);
+					if (i / w < nc) {
+						dig[i / w] |= (uint32_t)1 << (i % w);
+					}
+				}
+			}
+
+			nd = (size_t)1 << w;
+			acc = (qf_t *)calloc(nd, sizeof(qf_t));
+			if (acc == NULL) {
+				RLC_THROW(ERR_NO_MEMORY);
+			}
+			for (size_t i = 0; i < nd; i++) {
+				qf_null(acc[i]);
+				qf_new(acc[i]);
+				qf_set_one(acc[i], &(core_get()->qf_dk));
+			}
+
+			/* gather the stored powers by the digit that multiplies them */
+			for (size_t i = 0; i < nc; i++) {
+				size_t v = (size_t)dig[i];
+
+				if (v > 0) {
+					qf_com(acc[v], acc[v], tab[i], 0, &(core_get()->qf_bk));
+				}
+			}
+
+			/*
+			* With the groups formed, the witness follows from a descent over
+			* digit values: each step squares what is held and folds in the
+			* group for the next value down.
+			*/
+			qf_set_one(pi, &(core_get()->qf_dk));
+			qf_set_one(run, &(core_get()->qf_dk));
+			for (size_t i = nd; i-- > 1; ) {
+				qf_com(run, run, acc[i], 0, &(core_get()->qf_bk));
+				qf_com(pi, pi, run, 0, &(core_get()->qf_bk));
+			}
 		}
 
 		/* z = psi_q(pi) * F^(l^-1 x mod q) */
@@ -355,13 +380,13 @@ void cp_clvdf_evl(qf_t u, qf_t z, qf_t y, const qf_t f, size_t t,
 	}
 	RLC_FINALLY {
 		if (tab != NULL) {
-			for (i = 0; i < sc; i++) {
+			for (size_t i = 0; i < sc; i++) {
 				qf_free(tab[i]);
 			}
 			free(tab);
 		}
 		if (acc != NULL) {
-			for (i = 0; i < nd; i++) {
+			for (size_t i = 0; i < nd; i++) {
 				qf_free(acc[i]);
 			}
 			free(acc);
