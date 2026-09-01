@@ -450,20 +450,27 @@ static void clvdf(void) {
 		bn_gen_prime(q, BENCH_VDF_SPACE);
 	} while (cp_clvdf_set(f, q, BENCH_VDF_DISC) != RLC_OK);
 
-	util_print("\n-- Encoded space %zu bits, discriminants %zu and %zu bits.\n\n",
-			bn_bits(&(core_get()->qf_q)), bn_bits(&(core_get()->qf_dk)),
-			bn_bits(&(core_get()->qf_d)));
-
 	/*
 	 * Setting up samples a discriminant, so each repetition pays for prime
 	 * generation rather than for group arithmetic.
 	 */
 	BENCH_ONE("cp_clvdf_set", cp_clvdf_set(f, q, BENCH_VDF_DISC), 1);
 
-	BENCH_RUN("cp_clvdf_evl") {
+	BENCH_RUN("cp_clvdf_evl (1024)") {
 		bn_rand_mod(x, &(core_get()->qf_q));
 		BENCH_ADD(cp_clvdf_evl(u1, z1, y1, f, BENCH_VDF_DELAY, x));
 	} BENCH_END;
+
+	BENCH_RUN("cp_clvdf_evl (2048)") {
+		bn_rand_mod(x, &(core_get()->qf_q));
+		BENCH_ADD(cp_clvdf_evl(u1, z1, y1, f, 2 * BENCH_VDF_DELAY, x));
+	} BENCH_END;
+
+	BENCH_RUN("cp_clvdf_evl (4096)") {
+		bn_rand_mod(x, &(core_get()->qf_q));
+		BENCH_ADD(cp_clvdf_evl(u1, z1, y1, f, 4 * BENCH_VDF_DELAY, x));
+	} BENCH_END;
+
 
 	BENCH_RUN("cp_clvdf_dec") {
 		bn_rand_mod(x, &(core_get()->qf_q));
