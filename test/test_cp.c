@@ -434,7 +434,7 @@ static int clhe(int compact) {
 		qf_class(bound, &(core_get()->qf_dk));
 		bn_lsh(bound, bound, 40);
 
-		TEST_CASE("CL encryption and decryption are inverse") {
+		TEST_CASE("cl encryption and decryption are inverse") {
 			bn_zero(m);
 			bn_rand_mod(r, bound);
 			cp_clhe_enc(c1, c2, c, pk, m, r);
@@ -458,7 +458,7 @@ static int clhe(int compact) {
 			TEST_ASSERT(bn_cmp(m, n) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_CASE("CL ciphertext components lie in the right orders") {
+		TEST_CASE("cl ciphertext components lie in the right orders") {
 			bn_rand_mod(m, &(core_get()->qf_q));
 			bn_rand_mod(r, bound);
 			cp_clhe_enc(c1, c2, c, pk, m, r);
@@ -471,7 +471,7 @@ static int clhe(int compact) {
 			TEST_ASSERT(bn_cmp(t, &(core_get()->qf_d)) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_CASE("CL encryption is probabilistic") {
+		TEST_CASE("cl encryption is probabilistic") {
 			bn_rand_mod(m, &(core_get()->qf_q));
 			bn_rand_mod(r, bound);
 			cp_clhe_enc(c1, c2, c, pk, m, r);
@@ -485,7 +485,7 @@ static int clhe(int compact) {
 			TEST_ASSERT(bn_cmp(s, m) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_CASE("CL encryption is additively homomorphic") {
+		TEST_CASE("cl encryption is additively homomorphic") {
 			bn_rand_mod(m, &(core_get()->qf_q));
 			bn_rand_mod(n, &(core_get()->qf_q));
 			bn_rand_mod(r, bound);
@@ -526,7 +526,7 @@ static int clhe(int compact) {
 			TEST_ASSERT(bn_cmp(s, u) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_CASE("CL encryption is linearly homomorphic") {
+		TEST_CASE("cl encryption is linearly homomorphic") {
 			bn_rand_mod(m, &(core_get()->qf_q));
 			bn_rand_mod(s, &(core_get()->qf_q));
 			bn_rand_mod(r, bound);
@@ -569,7 +569,7 @@ static int clhe(int compact) {
 			TEST_ASSERT(bn_cmp(n, t) == RLC_EQ, end);
 		} TEST_END;
 
-		TEST_CASE("CL does not decrypt under a wrong key/ciphertext") {
+		TEST_CASE("cl does not decrypt under a wrong key/ciphertext") {
 			bn_rand_mod(m, &(core_get()->qf_q));
 			bn_rand_mod(r, bound);
 			cp_clhe_enc(c1, c2, c, pk, m, r);
@@ -612,6 +612,143 @@ static int clhe(int compact) {
 	qf_free(d2);
 	qf_free(e1);
 	qf_free(e2);
+	return code;
+}
+
+/** Size in bits of the prime defining the encoded value space. */
+#define TEST_VDF_SPACE		64
+/** Size in bits of the fundamental discriminant. */
+#define TEST_VDF_DISC		512
+/** Delay used by the tests, as a number of squarings. */
+#define TEST_VDF_DELAY		64
+
+static int clvdf(void) {
+	int code = RLC_ERR;
+	qf_t f;
+	bn_t q, x, y, t;
+	qf_t u1, z1, y1, u2, z2, y2;
+
+	qf_null(f);
+	bn_null(q);
+	bn_null(x);
+	bn_null(y);
+	bn_null(t);
+	qf_null(u1);
+	qf_null(z1);
+	qf_null(y1);
+	qf_null(u2);
+	qf_null(z2);
+	qf_null(y2);
+
+	RLC_TRY {
+		qf_new(f);
+		bn_new(q);
+		bn_new(x);
+		bn_new(y);
+		bn_new(t);
+		qf_new(u1);
+		qf_new(z1);
+		qf_new(y1);
+		qf_new(u2);
+		qf_new(z2);
+		qf_new(y2);
+
+		/* setting up samples a discriminant, so it is done once */
+		/* not every prime admits a discriminant, so retry until one does */
+		do {
+			bn_gen_prime(q, TEST_VDF_SPACE);
+		} while (cp_clvdf_set(f, q, TEST_VDF_DISC) != RLC_OK);
+
+		TEST_CASE("vdf evaluation and decoding are inverse") {
+			bn_rand_mod(x, &(core_get()->qf_q));
+			cp_clvdf_evl(u1, z1, y1, f, TEST_VDF_DELAY, x);
+			TEST_ASSERT(cp_clvdf_dec(y, TEST_VDF_DELAY, u1, z1, y1) == 1, end);
+			TEST_ASSERT(bn_cmp(x, y) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("vdf verification accepts the evaluation") {
+			bn_rand_mod(x, &(core_get()->qf_q));
+			cp_clvdf_evl(u1, z1, y1, f, TEST_VDF_DELAY, x);
+			TEST_ASSERT(cp_clvdf_ver(TEST_VDF_DELAY, x, u1, z1, y1) == 1, end);
+			bn_zero(x);
+			cp_clvdf_evl(u1, z1, y1, f, TEST_VDF_DELAY, x);
+			TEST_ASSERT(cp_clvdf_ver(TEST_VDF_DELAY, x, u1, z1, y1) == 1, end);
+			bn_set_dig(x, 1);
+			cp_clvdf_evl(u1, z1, y1, f, TEST_VDF_DELAY, x);
+			TEST_ASSERT(cp_clvdf_ver(TEST_VDF_DELAY, x, u1, z1, y1) == 1, end);
+			bn_sub_dig(x, &(core_get()->qf_q), 1);
+			cp_clvdf_evl(u1, z1, y1, f, TEST_VDF_DELAY, x);
+			TEST_ASSERT(cp_clvdf_ver(TEST_VDF_DELAY, x, u1, z1, y1) == 1, end);
+		} TEST_END;
+
+		TEST_CASE("vdf evaluation is deterministic") {
+			bn_rand_mod(x, &(core_get()->qf_q));
+			cp_clvdf_evl(u1, z1, y1, f, TEST_VDF_DELAY, x);
+			cp_clvdf_evl(u2, z2, y2, f, TEST_VDF_DELAY, x);
+			TEST_ASSERT(qf_cmp(u1, u2) == RLC_EQ, end);
+			TEST_ASSERT(qf_cmp(z1, z2) == RLC_EQ, end);
+			TEST_ASSERT(qf_cmp(y1, y2) == RLC_EQ, end);
+			bn_rand_mod(x, &(core_get()->qf_q));
+			bn_add_dig(y, x, 1);
+			bn_mod(y, y, &(core_get()->qf_q));
+			cp_clvdf_evl(u1, z1, y1, f, TEST_VDF_DELAY, x);
+			cp_clvdf_evl(u2, z2, y2, f, TEST_VDF_DELAY, y);
+			TEST_ASSERT(qf_cmp(u1, u2) != RLC_EQ, end);
+			TEST_ASSERT(qf_cmp(y1, y2) != RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("vdf components lie in the orders they should") {
+			bn_rand_mod(x, &(core_get()->qf_q));
+			cp_clvdf_evl(u1, z1, y1, f, TEST_VDF_DELAY, x);
+			/* the first and third are in the maximal order, the second in the
+			 * order of conductor q, where the kernel lives */
+			TEST_ASSERT(qf_has_dsc(u1, &(core_get()->qf_dk)), end);
+			TEST_ASSERT(qf_has_dsc(y1, &(core_get()->qf_dk)), end);
+			TEST_ASSERT(qf_has_dsc(z1, &(core_get()->qf_d)), end);
+		} TEST_END;
+
+		TEST_CASE("vdf verification rejects tampered inputs") {
+			bn_rand_mod(x, &(core_get()->qf_q));
+			cp_clvdf_evl(u1, z1, y1, f, TEST_VDF_DELAY, x);
+			qf_dup(z2, z1, &(core_get()->qf_b));
+			TEST_ASSERT(cp_clvdf_ver(TEST_VDF_DELAY, x, u1, z2, y1) == 0, end);
+			qf_dup(u2, u1, &(core_get()->qf_bk));
+			TEST_ASSERT(cp_clvdf_ver(TEST_VDF_DELAY, x, u2, z1, y1) == 0, end);
+			qf_dup(y2, y1, &(core_get()->qf_bk));
+			TEST_ASSERT(cp_clvdf_ver(TEST_VDF_DELAY, x, u1, z1, y2) == 0, end);
+			bn_rand_mod(x, &(core_get()->qf_q));
+			cp_clvdf_evl(u1, z1, y1, f, TEST_VDF_DELAY, x);
+			bn_add_dig(y, x, 1);
+			bn_mod(y, y, &(core_get()->qf_q));
+			TEST_ASSERT(cp_clvdf_ver(TEST_VDF_DELAY, y, u1, z1, y1) == 0, end);
+			bn_rand_mod(x, &(core_get()->qf_q));
+			cp_clvdf_evl(u1, z1, y1, f, TEST_VDF_DELAY, x);
+			cp_clvdf_evl(u2, z2, y2, f, TEST_VDF_DELAY / 2, x);
+			TEST_ASSERT(qf_cmp(y1, y2) != RLC_EQ, end);
+			TEST_ASSERT(cp_clvdf_ver(TEST_VDF_DELAY, x, u2, z2, y2) == 0, end);
+			bn_rand_mod(x, &(core_get()->qf_q));
+			cp_clvdf_evl(u1, z1, y1, f, TEST_VDF_DELAY, x);
+			/* the second component belongs to the other order */
+			qf_copy(z2, u1);
+			TEST_ASSERT(cp_clvdf_dec(y, TEST_VDF_DELAY, u1, z2, y1) == 0, end);
+		} TEST_END;
+	}
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
+	}
+	code = RLC_OK;
+  end:
+	qf_free(f);
+	bn_free(q);
+	bn_free(x);
+	bn_free(y);
+	bn_free(t);
+	qf_free(u1);
+	qf_free(z1);
+	qf_free(y1);
+	qf_free(u2);
+	qf_free(z2);
+	qf_free(y2);
 	return code;
 }
 
@@ -2984,6 +3121,11 @@ int main(void) {
 	}
 
 	if (clhe(1) != RLC_OK) {
+		core_clean();
+		return 1;
+	}
+
+	if (clvdf() != RLC_OK) {
 		core_clean();
 		return 1;
 	}

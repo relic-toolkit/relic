@@ -471,10 +471,10 @@ static void clvdf(void) {
 		BENCH_ADD(cp_clvdf_dec(y, BENCH_VDF_DELAY, u1, z1, y1));
 	} BENCH_END;
 
-	BENCH_RUN("cp_clvdf_dec2") {
+	BENCH_RUN("cp_clvdf_dec_opt") {
 		bn_rand_mod(x, &(core_get()->qf_q));
 		cp_clvdf_evl(u1, z1, y1, f, BENCH_VDF_DELAY, x);
-		BENCH_ADD(cp_clvdf_dec2(y, BENCH_VDF_DELAY, u1, z1, y1));
+		BENCH_ADD(cp_clvdf_dec_opt(y, BENCH_VDF_DELAY, u1, z1, y1));
 	} BENCH_END;
 
 	BENCH_RUN("cp_clvdf_ver") {

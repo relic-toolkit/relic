@@ -1212,6 +1212,64 @@ void cp_clhe_add(qf_t r1, qf_t r2, const clhe_t c, const clhe_pk_t pk,
 void cp_clhe_mul(qf_t r1, qf_t r2, const clhe_t c, const clhe_pk_t pk,
 		const qf_t c1, const qf_t c2, const bn_t s, const bn_t r);
 
+/* Add near the other protocol prototypes. No new type is needed: the kernel
+ * generator is a plain qf_t, and decoding does not use it at all. */
+
+/**
+ * Generates the public parameters of the decodable verifiable delay function.
+ *
+ * @param[out] f			- the resulting generator of the kernel.
+ * @param[in] q				- the prime defining the encoded value space.
+ * @param[in] disc_bits		- the size in bits of the fundamental discriminant.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
+ */
+int cp_clvdf_set(qf_t f, const bn_t q, size_t disc_bits);
+
+/**
+ * Evaluates the delay function, producing the canonical encoding of the input.
+ *
+ * Evaluation performs t sequential squarings and cannot be shortened by
+ * parallelism. No component of the result can be predicted before the delay
+ * elapses.
+ *
+ * @param[out] u			- the first component of the encoding.
+ * @param[out] z			- the second component of the encoding.
+ * @param[out] y			- the third component of the encoding.
+ * @param[in] f				- the generator of the kernel, from clvdf_setup.
+ * @param[in] t				- the delay, as a number of squarings.
+ * @param[in] x				- the input, reduced modulo the prime.
+ */
+void cp_clvdf_evl(qf_t u, qf_t z, qf_t y, const qf_t f, size_t t,
+		const bn_t x);
+
+/**
+ * Recovers the input encoded by a triple, in time polynomial in the logarithm
+ * of the delay.
+ *
+ * @param[out] x			- the recovered input.
+ * @param[in] t				- the delay used for the evaluation.
+ * @param[in] u				- the first component of the encoding.
+ * @param[in] z				- the second component of the encoding.
+ * @param[in] y				- the third component of the encoding.
+ * @return a boolean value indicating whether the triple decoded.
+ */
+int cp_clvdf_dec(bn_t x, size_t t, const qf_t u, const qf_t z, const qf_t y);
+int cp_clvdf_dec_opt(bn_t x, size_t t, const qf_t u, const qf_t z, const qf_t y);
+
+/**
+ * Verifies that a triple is the evaluation of a given input. Verification is
+ * decoding, so the function has no separate proof to check.
+ *
+ * @param[in] t				- the delay used for the evaluation.
+ * @param[in] x				- the claimed input.
+ * @param[in] u				- the first component of the encoding.
+ * @param[in] z				- the second component of the encoding.
+ * @param[in] y				- the third component of the encoding.
+ * @return a boolean value indicating whether the triple encodes the input.
+ */
+int cp_clvdf_ver(size_t t, const bn_t x, const qf_t u, const qf_t z,
+		const qf_t y);
+
 /**
  * Generates an ECDH key pair.
  *
