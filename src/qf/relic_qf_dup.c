@@ -38,7 +38,7 @@
 /*
  * NUDUPL, following van der Poorten's formulation as implemented in BICYCL.
  */
-void qf_dup(qf_t r, const qf_t f, const bn_t d) {
+void qf_dup(qf_t r, const qf_t f, const bn_t bnd) {
 	bn_t Ax, Ay, Bx, By, Dx, Dy;
 	bn_t q, t0, t1;
 	bn_t m00, m01, m10, m11;
@@ -113,7 +113,7 @@ void qf_dup(qf_t r, const qf_t f, const bn_t d) {
 		 * [ Bx ]   [ m00 m01 ] [ ... ]
 		 * [ By ] = [ m10 m11 ] [ ... ]
 		 */
-		bn_gcd_ext_par(Bx, By, m00, m01, m10, m11, Bx, By, d);
+		bn_gcd_ext_par(Bx, By, m00, m01, m10, m11, Bx, By, bnd);
 
 		/*
 		 * Apply the inverse matrix to (Ax, 0):

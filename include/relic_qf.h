@@ -332,9 +332,9 @@ void qf_print(const qf_t f);
  * @param[in] f				- the first quadratic form to compose.
  * @param[in] g				- the second quadratic form to compose.
  * @param[in] neg			- the flag to negate the second operand.
- * @param[in] d				- the discriminant bound.
+ * @param[in] bnd				- the reduction bound.
  */
-void qf_com(qf_t r, const qf_t f, const qf_t g, int neg, const bn_t d);
+void qf_com(qf_t r, const qf_t f, const qf_t g, int neg, const bn_t bnd);
 
 /**
  * Duplicates a binary quadratic form.
@@ -343,9 +343,9 @@ void qf_com(qf_t r, const qf_t f, const qf_t g, int neg, const bn_t d);
  *
  * @param[out] r			- the resulting quadratic form.
  * @param[in] f				- the quadratic form to duplicate.
- * @param[in] d				- the discriminant bound.
+ * @param[in] bnd			- the reduction bound.
  */
-void qf_dup(qf_t r, const qf_t f, const bn_t d);
+void qf_dup(qf_t r, const qf_t f, const bn_t bnd);
 
 /**
  * Normalizes a quadratic form.
