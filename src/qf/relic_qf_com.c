@@ -38,7 +38,7 @@
 /*
  * NUCOMP, following van der Poorten's formulation as implemented in BICYCL.
  */
-void qf_com(qf_t r, const qf_t f, const qf_t g, int neg, const bn_t d) {
+void qf_com(qf_t r, const qf_t f, const qf_t g, int neg, const bn_t bnd) {
 	bn_t Ax, Ay, Bx, By, by, Cx, Cy, Dx, Dy;
 	bn_t F, H, m;
 	bn_t m00, m01, m10, m11;
@@ -213,7 +213,7 @@ void qf_com(qf_t r, const qf_t f, const qf_t g, int neg, const bn_t d) {
 		 *   [ Bx ]   [ m00 m01 ] [ ... ]
 		 *   [ By ] = [ m10 m11 ] [ ... ]
 		 */
-		bn_gcd_ext_par(Bx, by, m00, m01, m10, m11, Bx, By, d);
+		bn_gcd_ext_par(Bx, by, m00, m01, m10, m11, Bx, By, bnd);
 
 		/*
 		 * Ay = -m10 * Ax

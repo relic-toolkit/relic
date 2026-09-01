@@ -135,12 +135,12 @@ static void arith(void) {
 	BENCH_RUN("qf_com") {
 		qf_rand(a, &(core_get()->qf_d));
 		qf_rand(b, &(core_get()->qf_d));
-		BENCH_ADD(qf_com(c, a, b, 0, &(core_get()->qf_d)));
+		BENCH_ADD(qf_com(c, a, b, 0, &(core_get()->qf_b)));
 	} BENCH_END;
 
 	BENCH_RUN("qf_dup") {
 		qf_rand(a, &(core_get()->qf_d));
-		BENCH_ADD(qf_dup(b, a, &(core_get()->qf_d)));
+		BENCH_ADD(qf_dup(b, a, &(core_get()->qf_b)));
 	} BENCH_END;
 
 	BENCH_RUN("qf_exp") {
@@ -169,15 +169,15 @@ static void arith(void) {
 	qf_rand(a, &(core_get()->qf_d));
 	qf_copy(fe, a);
 	for (j = 0; j < se; j++) {
-		qf_dup(fe, fe, &(core_get()->qf_d));
+		qf_dup(fe, fe, &(core_get()->qf_b));
 	}
 	qf_copy(fd, a);
 	for (j = 0; j < sd; j++) {
-		qf_dup(fd, fd, &(core_get()->qf_d));
+		qf_dup(fd, fd, &(core_get()->qf_b));
 	}
 	qf_copy(fde, fd);
 	for (j = 0; j < se; j++) {
-		qf_dup(fde, fde, &(core_get()->qf_d));
+		qf_dup(fde, fde, &(core_get()->qf_b));
 	}
 
 	BENCH_RUN("qf_exp_fix") {
