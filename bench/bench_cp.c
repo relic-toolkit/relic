@@ -471,7 +471,6 @@ static void clvdf(void) {
 		BENCH_ADD(cp_clvdf_evl(u1, z1, y1, f, 4 * BENCH_VDF_DELAY, x));
 	} BENCH_END;
 
-
 	BENCH_RUN("cp_clvdf_dec") {
 		bn_rand_mod(x, &(core_get()->qf_q));
 		cp_clvdf_evl(u1, z1, y1, f, BENCH_VDF_DELAY, x);
