@@ -683,7 +683,6 @@ static int qpower(void) {
 static int hashing(void) {
 	int code = RLC_ERR;
 	uint8_t msg[32];
-	size_t i, d = 2 * TEST_QF_PRIME;
 	qf_t a, b;
 	bn_t t;
 
