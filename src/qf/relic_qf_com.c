@@ -66,6 +66,28 @@ void qf_com(qf_t r, const qf_t f, const qf_t g, int neg, const bn_t bnd) {
 	bn_null(u);
 	bn_null(v);
 
+	/*
+	 * Composing with the principal form (1, b, c) is a copy: the general path
+	 * below spends a full NUCOMP and reduction on it. Reduced forms with
+	 * a = 1 have b in {0, 1}, so this test is exact for reduced inputs.
+	 */
+	if (bn_cmp_dig(f->a, 1) == RLC_EQ && f->b->sign == RLC_POS &&
+			bn_cmp_dig(f->b, 1) != RLC_GT) {
+		if (neg) {
+			qf_neg(r, g);
+		} else {
+			qf_copy(r, g);
+		}
+		qf_rdc(r, r);
+		return;
+	}
+	if (bn_cmp_dig(g->a, 1) == RLC_EQ && g->b->sign == RLC_POS &&
+			bn_cmp_dig(g->b, 1) != RLC_GT) {
+		qf_copy(r, f);
+		qf_rdc(r, r);
+		return;
+	}
+
 	RLC_TRY {
 		bn_new(Ax);
 		bn_new(Ay);
