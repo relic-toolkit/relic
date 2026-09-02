@@ -2485,6 +2485,7 @@ int main(void) {
 	util_banner("Protocols based on class groups:\n", 0);
 	clhe(0);
 	clhe(1);
+	clvdf();
 #endif
 
 #if defined(WITH_EC)
