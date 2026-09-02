@@ -59,6 +59,9 @@
 /** Largest window it will use, beyond which the descent outgrows the saving. */
 #define CLVDF_MAX_WIN	24
 
+/** Marks a negative digit in a stored power index, whose form is inverted. */
+#define CLVDF_NEG		((uint32_t)1 << 31)
+
 /** Size in bits of the challenge primes, twice the security level. */
 #define CLVDF_CHAL_BITS	256
 
@@ -68,9 +71,10 @@
  */
 static void clvdf_absorb(uint8_t *h, uint8_t tag, size_t t, const uint8_t *in,
 		size_t len) {
+	uint8_t *buf;
 	size_t n = 0, dl = bn_size_bin(&(core_get()->qf_dk));
-	uint8_t *buf = RLC_ALLOCA(uint8_t, 1 + sizeof(size_t) + dl + len);
 
+	buf = RLC_ALLOCA(uint8_t, 1 + sizeof(size_t) + dl + len);
 	if (buf == NULL) {
 		RLC_THROW(ERR_NO_MEMORY);
 		return;
@@ -89,33 +93,66 @@ static void clvdf_absorb(uint8_t *h, uint8_t tag, size_t t, const uint8_t *in,
 }
 
 /**
- * Maps an input to a (squared) element of the source group.
+ * Rewrites digits in base 2^w as balanced digits in [-2^(w-1), 2^(w-1)].
+ *
+ * @param[out] sd			- the balanced digits.
+ * @param[in] dig			- the digits of the quotient.
+ * @param[in] n			- the number of digits.
+ * @param[in] w				- the window in bits.
+ * @return whether the carry escaped the array.
+ */
+static int clvdf_balance(int32_t *sd, const uint32_t *dig, size_t n, size_t w) {
+	int32_t cy = 0;
+
+	for (size_t i = 0; i < n; i++) {
+		int32_t v = (int32_t)dig[i] + cy;
+
+		if (v >= (int32_t)1 << (w - 1)) {
+			v -= (int32_t)1 << w;
+			cy = 1;
+		} else {
+			cy = 0;
+		}
+		sd[i] = v;
+	}
+
+	return cy != 0;
+}
+
+/**
+ * Maps an input to an element of the source group.
  *
  * The result is squared, which places it in the subgroup of squares where the
  * sequentiality assumption is stated.
  */
 static void clvdf_map_g(qf_t g, size_t t, const bn_t x) {
-	ctx_t *ctx = core_get();
+	uint8_t *in;
 	size_t n = 0, dl = bn_size_bin(&(core_get()->qf_dk));
 	size_t xl = bn_size_bin(x);
-	uint8_t *in = RLC_ALLOCA(uint8_t, 1 + sizeof(size_t) + dl + xl);
 
+	in = RLC_ALLOCA(uint8_t, 1 + sizeof(size_t) + dl + xl);
 	if (in == NULL) {
 		RLC_THROW(ERR_NO_MEMORY);
 		return;
 	}
 
 	RLC_TRY {
+		/*
+		 * The label, the delay and the discriminant are bound in alongside the
+		 * input, so that the two oracles differ and neither carries across
+		 * instances.
+		 */
 		in[n++] = CLVDF_TAG_G;
 		memcpy(in + n, &t, sizeof(size_t));
 		n += sizeof(size_t);
-		bn_write_bin(in + n, dl, &(ctx->qf_dk));
+		bn_write_bin(in + n, dl, &(core_get()->qf_dk));
 		n += dl;
 		bn_write_bin(in + n, xl, x);
 		n += xl;
 
-		qf_map(g, in, n, &(ctx->qf_dk), bn_bits(&(ctx->qf_dk)) / 2);
-		qf_dup(g, g, &(ctx->qf_bk));
+		qf_map(g, in, n, &(core_get()->qf_dk),
+				bn_bits(&(core_get()->qf_dk)) / 2);
+		qf_dup(g, g, &(core_get()->qf_bk));
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -130,12 +167,15 @@ static void clvdf_map_g(qf_t g, size_t t, const bn_t x) {
  * challenge stays invertible modulo the plaintext prime.
  */
 static void clvdf_map_p(bn_t l, size_t t, const qf_t u, const qf_t y) {
-	uint8_t h[RLC_MD_LEN];
-	size_t n = 0;
-	size_t la = bn_size_bin(u->a), lb = bn_size_bin(u->b);
-	size_t lc = bn_size_bin(y->a), ld = bn_size_bin(y->b);
-	uint8_t *bin = RLC_ALLOCA(uint8_t, la + lb + lc + ld);
+	uint8_t h[RLC_MD_LEN], *bin;
+	size_t n = 0, la, lb, lc, ld;
 
+	la = bn_size_bin(u->a);
+	lb = bn_size_bin(u->b);
+	lc = bn_size_bin(y->a);
+	ld = bn_size_bin(y->b);
+
+	bin = RLC_ALLOCA(uint8_t, la + lb + lc + ld);
 	if (bin == NULL) {
 		RLC_THROW(ERR_NO_MEMORY);
 		return;
@@ -145,15 +185,14 @@ static void clvdf_map_p(bn_t l, size_t t, const qf_t u, const qf_t y) {
 	bn_write_bin(bin + n, lc, y->a); n += lc;
 	bn_write_bin(bin + n, ld, y->b); n += ld;
 	clvdf_absorb(h, CLVDF_TAG_P, t, bin, n);
+	RLC_FREE(bin);
 
 	bn_read_bin(l, h, RLC_MIN(sizeof(h), CLVDF_CHAL_BITS / 8));
 	bn_set_bit(l, 0, 1);
 	bn_set_bit(l, CLVDF_CHAL_BITS - 1, 1);
 	while (!bn_is_prime(l) || bn_cmp(l, &(core_get()->qf_q)) == RLC_EQ) {
-		bn_next_prime(l, l);
+		bn_add_dig(l, l, 2);
 	}
-	
-	RLC_FREE(bin);
 }
 
 /*============================================================================*/
@@ -162,7 +201,7 @@ static void clvdf_map_p(bn_t l, size_t t, const qf_t u, const qf_t y) {
 
 int cp_clvdf_set(qf_t f, const bn_t q, size_t disc_bits) {
 	bn_t t;
-	int result = RLC_OK;
+	int result = RLC_ERR;
 
 	bn_null(t);
 
@@ -170,17 +209,17 @@ int cp_clvdf_set(qf_t f, const bn_t q, size_t disc_bits) {
 		bn_new(t);
 
 		/*
-		 * Sampling a discriminant can fail, so return error instead of raising
-		 * an exception.
+		 * Sampling a discriminant can fail for a given prime, which is an
+		 * ordinary outcome rather than an error: the caller retries or picks
+		 * another prime, so it is reported through the return value and not
+		 * thrown.
 		 */
-		if (qf_group_set_cond(q, disc_bits) != RLC_OK) {
-			result = RLC_ERR;
-		} else {
+		if (qf_group_set_cond(q, disc_bits) == RLC_OK) {
 			/* F generates the kernel of the projection and has order q */
 			bn_sqr(t, &(core_get()->qf_q));
 			qf_set_dsc(f, t, &(core_get()->qf_q), &(core_get()->qf_d));
-			if (!qf_has_dsc(f, &(core_get()->qf_d))) {
-				result = RLC_ERR;
+			if (qf_has_dsc(f, &(core_get()->qf_d))) {
+				result = RLC_OK;
 			}
 		}
 	}
@@ -196,10 +235,11 @@ int cp_clvdf_set(qf_t f, const bn_t q, size_t disc_bits) {
 void cp_clvdf_evl(qf_t u, qf_t z, qf_t y, const qf_t f, size_t t,
 		const bn_t x) {
 	qf_t g, pi, wf, run;
-	qf_t *tab = NULL, *acc = NULL;
+	qf_t *tab = NULL;
 	bn_t l, e, m;
-	uint32_t *dig = NULL;
-	size_t best = 0, w, wi, sc, nc, nd = 0;
+	uint32_t *dig = NULL, *cnt = NULL, *pos = NULL, *lst = NULL;
+	int32_t *sd = NULL;
+	size_t best, w, gi, gm, chk, cost, sc, nc, nd = 0, nb;
 
 	qf_null(g);
 	qf_null(pi);
@@ -220,146 +260,138 @@ void cp_clvdf_evl(qf_t u, qf_t z, qf_t y, const qf_t f, size_t t,
 
 		clvdf_map_g(g, t, x);
 
-		/*
-		 * The delay is the t squarings below and nothing else. Every w-th power
-		 * of the base is kept as it goes past, so that the witness can be
-		 * assembled from those afterwards instead of by replaying the chain,
-		 * which would double the sequential work for no extra delay.
-		 *
-		 * The window is chosen to minimise the memory cost, which costs one
-		 * composition per stored power and two per window value, so about
-		 * t/w + 2^(w + 1). Both constraints pull against each other:
-		 * a wider window stores fewer powers but makes the descent over
-		 * the window values longer, and it is the storage that binds first,
-		 * since it is t over w forms of a few kilobytes each.
-		 *
-		 * When no window keeps the storage inside the budget, the witness is
-		 * replayed instead. That costs a second pass over the chain, so twice
-		 * the sequential work, but it needs no storage at all. For a delay
-		 * large enough to matter that is the only option: holding t over w
-		 * forms with w capped is hundreds of gigabytes, and raising w past the
-		 * cap makes the descent longer than the chain it replaces.
-		 */
-		w = 0;
-		for (wi = 2; wi <= CLVDF_MAX_WIN; wi++) {
-			size_t chk = (t + wi - 1) / wi + 1;
-			size_t cost;
-
-			if (chk > CLVDF_MAX_CHK) {
-				continue;
+		/* Compute optimal window size. */
+		w = best = 0;
+		gm = 1;
+		for (size_t wi = 2; wi <= CLVDF_MAX_WIN; wi++) {
+			for (size_t lg = 0; lg <= CLVDF_MAX_WIN; lg++) {
+				gi = (size_t)1 << lg;
+				if (gi > t) {
+					break;
+				}
+				chk = t / (wi * gi) + 2;
+				if (chk > CLVDF_MAX_CHK) {
+					continue;
+				}
+				cost = t / wi + gi * (((size_t)1 << (wi - 1)) + wi);
+				if (w == 0 || cost < best) {
+					w = wi;
+					gm = gi;
+					best = cost;
+				}
 			}
-			cost = chk + ((size_t)2 << wi);
-			if (w == 0 || cost < best) {
-				w = wi;
-				best = cost;
+		}
+		if (w == 0) {
+			RLC_THROW(ERR_NO_VALID);
+		}
+
+		/* one stored power per w*gm squarings, plus the base itself */
+		sc = t / (w * gm) + 2;
+
+		/* Allocate from the heap rather than stack. */
+		tab = (qf_t *)calloc(sc, sizeof(qf_t));
+		if (tab == NULL) {
+			RLC_THROW(ERR_NO_MEMORY);
+		}
+		for (size_t i = 0; i < sc; i++) {
+			qf_null(tab[i]);
+			qf_new(tab[i]);
+		}
+
+		/*
+		 * The delay is the t squarings below and nothing else. The witness is
+		 * assembled afterwards from powers of the base kept along the way,
+		 */
+		qf_copy(y, g);
+		qf_copy(tab[0], g);
+		nc = 1;
+		for (size_t i = 0; i < t; i++) {
+			qf_dup(y, y, &(core_get()->qf_bk));
+			if (((i + 1) % (w * gm)) == 0 && nc < sc) {
+				qf_copy(tab[nc++], y);
+			}
+		}
+		qf_com(u, g, y, 0, &(core_get()->qf_bk));
+
+		clvdf_map_p(l, t, u, y);
+
+		/*
+		 * The witness is g raised to floor(2^t / l). Writing that quotient in
+		 * base two to the w, the witness is the product of the stored powers
+		 * each raised to its own digit, since the stored powers are exactly the
+		 * base raised to those places. Grouping the digits by value turns the
+		 * product into one composition per stored power plus a short pass over
+		 * the possible digits, so the whole thing costs about t/w + 2^w.
+		 */
+		nb = t / w + 2;
+		dig = (uint32_t *)calloc(nb, sizeof(uint32_t));
+		if (dig == NULL) {
+			RLC_THROW(ERR_NO_MEMORY);
+		}
+		bn_zero(e);
+		for (size_t i = t + 1; i-- > 0; ) {
+			bn_dbl(e, e);
+			if (i == t) {
+				bn_add_dig(e, e, 1);	/* the only set bit of two to the t */
+			}
+			if (bn_cmp(e, l) != RLC_LT) {
+				bn_sub(e, e, l);
+				if (i / w < nb) {
+					dig[i / w] |= (uint32_t)1 << (i % w);
+				}
 			}
 		}
 
-		if (w == 0) {
-			/* no window fits the budget, so the chain is replayed */
-			/* cost of 2t duplications and ~t/2 compositions*/
-			qf_copy(y, g);
-			for (size_t i = 0; i < t; i++) {
-				qf_dup(y, y, &(core_get()->qf_bk));
-			}
-			qf_com(u, g, y, 0, &(core_get()->qf_bk));
+		/* Implement Alg. 4 in "VDF proof feasibility study" by Swarbrick:
+		 * https://vdfresearch.org/assets/P0137-R-004b%20(VDF%20proof%20feasibility%20study).pdf
+		 */
+		nd = ((size_t)1 << (w - 1)) + 1;
+		cnt = (uint32_t *)calloc(nd + 1, sizeof(uint32_t));
+		pos = (uint32_t *)calloc(nd + 1, sizeof(uint32_t));
+		lst = (uint32_t *)calloc(nc + 2, sizeof(uint32_t));
+		sd = (int32_t *)calloc(nb + 2, sizeof(int32_t));
+		if (cnt == NULL || pos == NULL || lst == NULL || sd == NULL) {
+			RLC_THROW(ERR_NO_MEMORY);
+		}
+		if (clvdf_balance(sd, dig, nb, w)) {
+			RLC_THROW(ERR_NO_VALID);
+		}
 
-			clvdf_map_p(l, t, u, y);
+		qf_set_one(pi, &(core_get()->qf_dk));
+		for (size_t j = gm; j-- > 0; ) {
+			size_t n, o;
 
-			qf_set_one(pi, &(core_get()->qf_dk));
-			bn_set_dig(e, 1);
-			for (size_t i = 0; i < t; i++) {
-				bn_dbl(e, e);
-				if (bn_cmp(e, l) != RLC_LT) {
-					bn_sub(e, e, l);
-					qf_dup(pi, pi, &(core_get()->qf_bk));
-					qf_com(pi, pi, g, 0, &(core_get()->qf_bk));
-				} else {
-					qf_dup(pi, pi, &(core_get()->qf_bk));
-				}
-			}
-		} else {
-			sc = (t + w - 1) / w + 1;
-
-			/* Allocate from the heap, otherwise no space. */
-			tab = (qf_t *)calloc(sc, sizeof(qf_t));
-			if (tab == NULL) {
-				RLC_THROW(ERR_NO_MEMORY);
-			}
-			for (size_t i = 0; i < sc; i++) {
-				qf_null(tab[i]);
-				qf_new(tab[i]);
+			for (size_t b = 0; b < w; b++) {
+				qf_dup(pi, pi, &(core_get()->qf_bk));
 			}
 
-			qf_copy(y, g);
-			qf_copy(tab[0], g);
-			nc = 1;
-			for (size_t i = 0; i < t; i++) {
-				qf_dup(y, y, &(core_get()->qf_bk));
-				if (((i + 1) % w) == 0 && nc < sc) {
-					qf_copy(tab[nc++], y);
-				}
+			memset(cnt, 0, nd * sizeof(uint32_t));
+			for (size_t i = j; i < nb && i / gm < nc; i += gm) {
+				cnt[sd[i] < 0 ? -sd[i] : sd[i]]++;
 			}
-			qf_com(u, g, y, 0, &(core_get()->qf_bk));
-
-			clvdf_map_p(l, t, u, y);
-
-			/*
-			* The witness is g raised to floor(2^t / l). Writing that quotient in
-			* base two to the w, the witness is the product of the stored powers
-			* each raised to its own digit, since the stored powers are exactly the
-			* base raised to those places. Grouping the digits by value turns the
-			* product into one composition per stored power plus a short pass over
-			* the possible digits, so the whole thing costs about t over w plus two
-			* to the w rather than t.
-			*/
-			dig = (uint32_t *)calloc(nc, sizeof(uint32_t));
-			if (dig == NULL) {
-				RLC_THROW(ERR_NO_MEMORY);
+			o = 0;
+			for (size_t b = 0; b < nd; b++) {
+				pos[b] = (uint32_t)o;
+				o += cnt[b];
 			}
-			bn_zero(e);
-			for (size_t i = t + 1; i-- > 0; ) {
-				bn_dbl(e, e);
-				if (i == t) {
-					bn_add_dig(e, e, 1);	/* the only set bit of two to the t */
-				}
-				if (bn_cmp(e, l) != RLC_LT) {
-					bn_sub(e, e, l);
-					if (i / w < nc) {
-						dig[i / w] |= (uint32_t)1 << (i % w);
-					}
-				}
-			}
+			pos[nd] = (uint32_t)o;
+			memcpy(cnt, pos, nd * sizeof(uint32_t));
+			for (size_t i = j; i < nb && i / gm < nc; i += gm) {
+				size_t v = sd[i] < 0 ? (size_t)-sd[i] : (size_t)sd[i];
 
-			nd = (size_t)1 << w;
-			acc = (qf_t *)calloc(nd, sizeof(qf_t));
-			if (acc == NULL) {
-				RLC_THROW(ERR_NO_MEMORY);
-			}
-			for (size_t i = 0; i < nd; i++) {
-				qf_null(acc[i]);
-				qf_new(acc[i]);
-				qf_set_one(acc[i], &(core_get()->qf_dk));
-			}
-
-			/* gather the stored powers by the digit that multiplies them */
-			for (size_t i = 0; i < nc; i++) {
-				size_t v = (size_t)dig[i];
-
-				if (v > 0) {
-					qf_com(acc[v], acc[v], tab[i], 0, &(core_get()->qf_bk));
-				}
+				lst[cnt[v]++] = (i / gm) | (sd[i] < 0 ? CLVDF_NEG : 0);
 			}
 
 			/*
-			* With the groups formed, the witness follows from a descent over
-			* digit values: each step squares what is held and folds in the
-			* group for the next value down.
-			*/
-			qf_set_one(pi, &(core_get()->qf_dk));
+			 * The descent over the digit values. Zero is skipped, where the
+			 * bucket fill it replaces still had to touch an accumulator.
+			 */
 			qf_set_one(run, &(core_get()->qf_dk));
-			for (size_t i = nd; i-- > 1; ) {
-				qf_com(run, run, acc[i], 0, &(core_get()->qf_bk));
+			for (size_t b = nd; b-- > 1; ) {
+				for (n = pos[b]; n < pos[b + 1]; n++) {
+					qf_com(run, run, tab[lst[n] & ~CLVDF_NEG],
+							(lst[n] & CLVDF_NEG) != 0, &(core_get()->qf_bk));
+				}
 				qf_com(pi, pi, run, 0, &(core_get()->qf_bk));
 			}
 		}
@@ -385,13 +417,11 @@ void cp_clvdf_evl(qf_t u, qf_t z, qf_t y, const qf_t f, size_t t,
 			}
 			free(tab);
 		}
-		if (acc != NULL) {
-			for (size_t i = 0; i < nd; i++) {
-				qf_free(acc[i]);
-			}
-			free(acc);
-		}
 		free(dig);
+		free(cnt);
+		free(pos);
+		free(lst);
+		free(sd);
 		qf_free(g);
 		qf_free(pi);
 		qf_free(wf);
@@ -431,13 +461,13 @@ int cp_clvdf_dec(bn_t x, size_t t, const qf_t u, const qf_t z, const qf_t y) {
 				qf_has_dsc(z, &(core_get()->qf_d))) {
 			clvdf_map_p(l, t, u, y);
 
-			/* r = 2^t mod l, by exponentiation on delay rather than on 2^t */
+			/* r = 2^t mod l, by exponentiation on the delay rather than on 2^t */
 			bn_set_dig(two, 2);
 			bn_set_dig(r, t);
 			bn_mxp(r, two, r, l);
 
 			/*
-			* W = z^l * psi_q(u)^r * psi_q(y)^-(r+1).
+			* Compute W = z^l * psi_q(u)^r * psi_q(y)^-(r+1).
 			*/
 			qf_exp(w, z, l, &(core_get()->qf_d), &(core_get()->qf_b));
 			qf_psi(s, u, &(core_get()->qf_d), &(core_get()->qf_b));
@@ -523,24 +553,20 @@ int cp_clvdf_dec_opt(bn_t x, size_t t, const qf_t u, const qf_t z, const qf_t y)
 			bn_mxp(r, two, r, l);
 
 			/*
-				* W = z^l * L(u)^(q*r) * L(y)^-(q*(r+1)), with L the bare lift.
-				*
-				* psi_q is the lift followed by a q-th power, and that power can be
-				* folded into the exponents applied here instead, since
-				*
-				*   z^l L(u)^(qr) L(y)^-(q(r+1))
-				*     = [L(pi)^l L(u)^r L(y)^-(r+1)]^q F^(m*l)
-				*
-				* because the bracket lies in the kernel, which the q-th power kills,
-				* while the kernel component sits outside it and survives. Folding on
-				* its own trades two short exponentiations for two longer exponents and
-				* is close to a wash; the gain is that the two lifted terms then share
-				* one simultaneous exponentiation.
-				*
-				* The lift is taken directly rather than through qf_psi, so the
-				* identity above is what keeps this correct. An edit that moves either
-				* lifted term out of the shared power would break it silently.
-				*/
+			* W = z^l * L(u)^(q*r) * L(y)^-(q*(r+1)), with L the bare lift.
+			*
+			* psi_q is the lift followed by a q-th power, and that power can be
+			* folded into the exponents applied here instead, since
+			*
+			*   z^l L(u)^(qr) L(y)^-(q(r+1))
+			*     = [L(pi)^l L(u)^r L(y)^-(r+1)]^q F^(m*l)
+			*
+			* because the bracket lies in the kernel, which the q-th power kills,
+			* while the kernel component sits outside it and survives. Folding on
+			* its own trades two short exponentiations for two longer exponents and
+			* is close to a wash; the gain is that the two lifted terms then share
+			* one simultaneous exponentiation.
+			*/
 			qf_exp(w, z, l, &(core_get()->qf_d), &(core_get()->qf_b));
 			qf_copa(s, u);
 			qf_lift(s, s);
@@ -559,10 +585,10 @@ int cp_clvdf_dec_opt(bn_t x, size_t t, const qf_t u, const qf_t z, const qf_t y)
 				qf_kern(x, w);
 
 				/*
-					* g = u*y^-1 has to be the oracle image. That check binds the triple to
-					* the input, and it also settles the sign: the kernel logarithm comes
-					* back only up to the sign of the class.
-					*/
+				* g = u*y^-1 has to be the oracle image. That check binds the triple to
+				* the input, and it also settles the sign: the kernel logarithm comes
+				* back only up to the sign of the class.
+				*/
 				qf_neg(h, y);
 				qf_com(g, u, h, 0, &(core_get()->qf_bk));
 				clvdf_map_g(h, t, x);
@@ -601,10 +627,6 @@ int cp_clvdf_ver(size_t t, const bn_t x, const qf_t u, const qf_t z, const qf_t 
 
 	RLC_TRY {
 		bn_new(d);
-		/*
-		 * Either decoder settles this, and the optimised one is at worst equal,
-		 * so verification takes that.
-		 */
 		result = cp_clvdf_dec_opt(d, t, u, z, y) && (bn_cmp(d, x) == RLC_EQ);
 	}
 	RLC_CATCH_ANY {
