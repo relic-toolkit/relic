@@ -71,14 +71,14 @@
  */
 static void clvdf_absorb(uint8_t *h, uint8_t tag, size_t t, const uint8_t *in,
 		size_t len) {
-	uint8_t *buf;
 	size_t n = 0, dl = bn_size_bin(&(core_get()->qf_dk));
+	uint8_t *buf = RLC_ALLOCA(uint8_t, 1 + sizeof(size_t) + dl + len);
 
-	buf = RLC_ALLOCA(uint8_t, 1 + sizeof(size_t) + dl + len);
 	if (buf == NULL) {
 		RLC_THROW(ERR_NO_MEMORY);
 		return;
 	}
+
 	buf[n++] = tag;
 	memcpy(buf + n, &t, sizeof(size_t));
 	n += sizeof(size_t);
@@ -89,6 +89,7 @@ static void clvdf_absorb(uint8_t *h, uint8_t tag, size_t t, const uint8_t *in,
 		n += len;
 	}
 	md_map(h, buf, n);
+
 	RLC_FREE(buf);
 }
 
@@ -224,39 +225,27 @@ static void clvdf_witness(qf_t r, const qf_t *tab, size_t nc, const int32_t *sd,
  * sequentiality assumption is stated.
  */
 static void clvdf_map_g(qf_t g, size_t t, const bn_t x) {
-	uint8_t *in;
 	size_t n = 0, dl = bn_size_bin(&(core_get()->qf_dk));
 	size_t xl = bn_size_bin(x);
+	uint8_t *in = RLC_ALLOCA(uint8_t, 1 + sizeof(size_t) + dl + xl);
 
-	in = RLC_ALLOCA(uint8_t, 1 + sizeof(size_t) + dl + xl);
 	if (in == NULL) {
 		RLC_THROW(ERR_NO_MEMORY);
 		return;
 	}
 
-	RLC_TRY {
-		/*
-		 * The label, the delay and the discriminant are bound in alongside the
-		 * input, so that the two oracles differ and neither carries across
-		 * instances.
-		 */
-		in[n++] = CLVDF_TAG_G;
-		memcpy(in + n, &t, sizeof(size_t));
-		n += sizeof(size_t);
-		bn_write_bin(in + n, dl, &(core_get()->qf_dk));
-		n += dl;
-		bn_write_bin(in + n, xl, x);
-		n += xl;
+	in[n++] = CLVDF_TAG_G;
+	memcpy(in + n, &t, sizeof(size_t));
+	n += sizeof(size_t);
+	bn_write_bin(in + n, dl, &(core_get()->qf_dk));
+	n += dl;
+	bn_write_bin(in + n, xl, x);
+	n += xl;
 
-		qf_map(g, in, n, &(core_get()->qf_dk));
-		qf_dup(g, g, &(core_get()->qf_bk));
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		RLC_FREE(in);
-	}
+	qf_map(g, in, n, &(core_get()->qf_dk));
+	qf_dup(g, g, &(core_get()->qf_bk));
+
+	RLC_FREE(in);
 }
 
 /**
@@ -282,7 +271,6 @@ static void clvdf_map_p(bn_t l, size_t t, const qf_t u, const qf_t y) {
 	bn_write_bin(bin + n, lc, y->a); n += lc;
 	bn_write_bin(bin + n, ld, y->b); n += ld;
 	clvdf_absorb(h, CLVDF_TAG_P, t, bin, n);
-	RLC_FREE(bin);
 
 	bn_read_bin(l, h, RLC_MIN(sizeof(h), CLVDF_CHAL_BITS / 8));
 	bn_set_bit(l, 0, 1);
@@ -290,6 +278,8 @@ static void clvdf_map_p(bn_t l, size_t t, const qf_t u, const qf_t y) {
 	while (!bn_is_prime(l) || bn_cmp(l, &(core_get()->qf_q)) == RLC_EQ) {
 		bn_add_dig(l, l, 2);
 	}
+
+	RLC_FREE(bin);
 }
 
 /*============================================================================*/
