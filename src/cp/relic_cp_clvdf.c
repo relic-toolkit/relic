@@ -120,6 +120,104 @@ static int clvdf_balance(int32_t *sd, const uint32_t *dig, size_t n, size_t w) {
 }
 
 /**
+ * Chooses the window and the stride the witness will be assembled with.
+ *
+ * The assembly costs one composition per stored power and, per stride step, one
+ * per digit value plus the squarings that carry the Horner recurrence; it stores
+ * one power per w*gm squarings. Widening the window stores fewer powers but
+ * lengthens the pass over the digit values, and the stride buys that length back
+ * at the cost of repeating the pass, so the two are searched together.
+ *
+ * @param[out] w			- the window.
+ * @param[out] gm			- the stride.
+ * @param[in] t				- the delay.
+ * @return RLC_OK, or RLC_ERR when no pair fits the storage budget.
+ */
+static int clvdf_params(size_t *w, size_t *gm, size_t t) {
+	size_t best = 0, gi, chk, cost;
+
+	*w = 0;
+	*gm = 1;
+	for (size_t wi = 2; wi <= CLVDF_MAX_WIN; wi++) {
+		for (size_t lg = 0; lg <= CLVDF_MAX_WIN; lg++) {
+			gi = (size_t)1 << lg;
+			if (gi > t) {
+				break;
+			}
+			chk = t / (wi * gi) + 2;
+			if (chk > CLVDF_MAX_CHK) {
+				continue;
+			}
+			cost = t / wi + gi * (((size_t)1 << (wi - 1)) + wi);
+			if (*w == 0 || cost < best) {
+				*w = wi;
+				*gm = gi;
+				best = cost;
+			}
+		}
+	}
+	return (*w == 0 ? RLC_ERR : RLC_OK);
+}
+
+/**
+ * Assembles the base raised to the quotient, from the powers kept during the
+ * delay and the signed digits of the quotient.
+ *
+ * @param[out] r			- the resulting witness.
+ * @param[in] tab			- the powers kept, one per w*gm squarings.
+ * @param[in] nc			- how many were kept.
+ * @param[in] sd			- the signed digits of the quotient.
+ * @param[in] nb			- how many digits it has.
+ * @param[in] w				- the window.
+ * @param[in] gm			- the stride.
+ * @param[in] nd			- how many digit values there are.
+ * @param[in] cnt,pos,lst	- scratch for laying the digits out by value.
+ * @param[in] run			- scratch for the running product.
+ */
+static void clvdf_witness(qf_t r, const qf_t *tab, size_t nc, const int32_t *sd,
+		size_t nb, size_t w, size_t gm, size_t nd, uint32_t *cnt, uint32_t *pos,
+		uint32_t *lst, qf_t run) {
+	qf_set_one(r, &(core_get()->qf_dk));
+	for (size_t j = gm; j-- > 0; ) {
+		size_t n, o;
+
+		for (size_t b = 0; b < w; b++) {
+			qf_dup(r, r, &(core_get()->qf_bk));
+		}
+
+		memset(cnt, 0, nd * sizeof(uint32_t));
+		for (size_t i = j; i < nb && i / gm < nc; i += gm) {
+			cnt[sd[i] < 0 ? -sd[i] : sd[i]]++;
+		}
+		o = 0;
+		for (size_t b = 0; b < nd; b++) {
+			pos[b] = (uint32_t)o;
+			o += cnt[b];
+		}
+		pos[nd] = (uint32_t)o;
+		memcpy(cnt, pos, nd * sizeof(uint32_t));
+		for (size_t i = j; i < nb && i / gm < nc; i += gm) {
+			size_t v = sd[i] < 0 ? (size_t)-sd[i] : (size_t)sd[i];
+
+			lst[cnt[v]++] = (i / gm) | (sd[i] < 0 ? CLVDF_NEG : 0);
+		}
+
+		/*
+		 * The descent over the digit values. Zero is skipped, where the
+		 * bucket fill it replaces still had to touch an accumulator.
+		 */
+		qf_set_one(run, &(core_get()->qf_dk));
+		for (size_t b = nd; b-- > 1; ) {
+			for (n = pos[b]; n < pos[b + 1]; n++) {
+				qf_com(run, run, tab[lst[n] & ~CLVDF_NEG],
+						(lst[n] & CLVDF_NEG) != 0, &(core_get()->qf_bk));
+			}
+			qf_com(r, r, run, 0, &(core_get()->qf_bk));
+		}
+	}
+}
+
+/**
  * Maps an input to an element of the source group.
  *
  * The result is squared, which places it in the subgroup of squares where the
@@ -150,8 +248,7 @@ static void clvdf_map_g(qf_t g, size_t t, const bn_t x) {
 		bn_write_bin(in + n, xl, x);
 		n += xl;
 
-		qf_map(g, in, n, &(core_get()->qf_dk),
-				bn_bits(&(core_get()->qf_dk)) / 2);
+		qf_map(g, in, n, &(core_get()->qf_dk));
 		qf_dup(g, g, &(core_get()->qf_bk));
 	}
 	RLC_CATCH_ANY {
@@ -239,7 +336,7 @@ void cp_clvdf_evl(qf_t u, qf_t z, qf_t y, const qf_t f, size_t t,
 	bn_t l, e, m;
 	uint32_t *dig = NULL, *cnt = NULL, *pos = NULL, *lst = NULL;
 	int32_t *sd = NULL;
-	size_t best, w, gi, gm, chk, cost, sc, nc, nd = 0, nb;
+	size_t w, gm, sc, nc, nd = 0, nb;
 
 	qf_null(g);
 	qf_null(pi);
@@ -260,28 +357,7 @@ void cp_clvdf_evl(qf_t u, qf_t z, qf_t y, const qf_t f, size_t t,
 
 		clvdf_map_g(g, t, x);
 
-		/* Compute optimal window size. */
-		w = best = 0;
-		gm = 1;
-		for (size_t wi = 2; wi <= CLVDF_MAX_WIN; wi++) {
-			for (size_t lg = 0; lg <= CLVDF_MAX_WIN; lg++) {
-				gi = (size_t)1 << lg;
-				if (gi > t) {
-					break;
-				}
-				chk = t / (wi * gi) + 2;
-				if (chk > CLVDF_MAX_CHK) {
-					continue;
-				}
-				cost = t / wi + gi * (((size_t)1 << (wi - 1)) + wi);
-				if (w == 0 || cost < best) {
-					w = wi;
-					gm = gi;
-					best = cost;
-				}
-			}
-		}
-		if (w == 0) {
+		if (clvdf_params(&w, &gm, t) != RLC_OK) {
 			RLC_THROW(ERR_NO_VALID);
 		}
 
@@ -357,44 +433,8 @@ void cp_clvdf_evl(qf_t u, qf_t z, qf_t y, const qf_t f, size_t t,
 			RLC_THROW(ERR_NO_VALID);
 		}
 
-		qf_set_one(pi, &(core_get()->qf_dk));
-		for (size_t j = gm; j-- > 0; ) {
-			size_t n, o;
-
-			for (size_t b = 0; b < w; b++) {
-				qf_dup(pi, pi, &(core_get()->qf_bk));
-			}
-
-			memset(cnt, 0, nd * sizeof(uint32_t));
-			for (size_t i = j; i < nb && i / gm < nc; i += gm) {
-				cnt[sd[i] < 0 ? -sd[i] : sd[i]]++;
-			}
-			o = 0;
-			for (size_t b = 0; b < nd; b++) {
-				pos[b] = (uint32_t)o;
-				o += cnt[b];
-			}
-			pos[nd] = (uint32_t)o;
-			memcpy(cnt, pos, nd * sizeof(uint32_t));
-			for (size_t i = j; i < nb && i / gm < nc; i += gm) {
-				size_t v = sd[i] < 0 ? (size_t)-sd[i] : (size_t)sd[i];
-
-				lst[cnt[v]++] = (i / gm) | (sd[i] < 0 ? CLVDF_NEG : 0);
-			}
-
-			/*
-			 * The descent over the digit values. Zero is skipped, where the
-			 * bucket fill it replaces still had to touch an accumulator.
-			 */
-			qf_set_one(run, &(core_get()->qf_dk));
-			for (size_t b = nd; b-- > 1; ) {
-				for (n = pos[b]; n < pos[b + 1]; n++) {
-					qf_com(run, run, tab[lst[n] & ~CLVDF_NEG],
-							(lst[n] & CLVDF_NEG) != 0, &(core_get()->qf_bk));
-				}
-				qf_com(pi, pi, run, 0, &(core_get()->qf_bk));
-			}
-		}
+		clvdf_witness(pi, (const qf_t *)tab, nc, sd, nb, w, gm, nd, cnt, pos,
+				lst, run);
 
 		/* z = psi_q(pi) * F^(l^-1 x mod q) */
 		qf_psi(z, pi, &(core_get()->qf_d), &(core_get()->qf_b));
