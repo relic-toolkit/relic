@@ -84,10 +84,25 @@ static void util(void) {
 	qf_free(b);
 }
 
+/**
+ * How many operands each timed loop rotates through.
+ *
+ * BENCH_ADD repeats its argument on whatever operands are in scope, so a single
+ * pair would be composed the same way every time and every data dependent
+ * branch inside would take the same path. The reduction's step count, the
+ * partial gcd's iteration count and whether the half gcd declines all follow
+ * the operands, so a predictor given one pair learns them exactly and the
+ * timing comes out below what varied input costs. Rotating over a table
+ * restores that variation. A power of two keeps the index arithmetic to a mask,
+ * which adds nothing the predictor can trip over.
+ */
+#define BENCH_TAB	16
+
 static void arith(void) {
 	qf_t a, b, c, fd, fe, fde;
-	bn_t m, n, class;
-	size_t j, sd, se;
+	qf_t ta[BENCH_TAB], tb[BENCH_TAB];
+	bn_t m, n, class, tn[BENCH_TAB];
+	size_t j, sd, se, k = 0;
 
 	qf_null(a);
 	qf_null(b);
@@ -108,14 +123,27 @@ static void arith(void) {
 	bn_new(m);
 	bn_new(n);
 	bn_new(class);
+	for (j = 0; j < BENCH_TAB; j++) {
+		qf_null(ta[j]);
+		qf_null(tb[j]);
+		bn_null(tn[j]);
+		qf_new(ta[j]);
+		qf_new(tb[j]);
+		bn_new(tn[j]);
+	}
 
 	/* the class number is about the square root of the discriminant */
 	bn_abs(class, &(core_get()->qf_d));
 	bn_rsh(class, class, bn_bits(class) / 2);
 
+	for (j = 0; j < BENCH_TAB; j++) {
+		qf_rand(ta[j], &(core_get()->qf_d));
+		qf_rand(tb[j], &(core_get()->qf_d));
+		bn_rand_mod(tn[j], class);
+	}
+
 	BENCH_RUN("qf_norm") {
-		qf_rand(a, &(core_get()->qf_d));
-		BENCH_ADD(qf_norm(b, a));
+		BENCH_ADD((k = (k + 1) & (BENCH_TAB - 1), qf_norm(b, ta[k])));
 	} BENCH_END;
 
 	BENCH_RUN("qf_rdc") {
@@ -133,14 +161,13 @@ static void arith(void) {
 	} BENCH_END;
 
 	BENCH_RUN("qf_com") {
-		qf_rand(a, &(core_get()->qf_d));
-		qf_rand(b, &(core_get()->qf_d));
-		BENCH_ADD(qf_com(c, a, b, 0, &(core_get()->qf_b)));
+		BENCH_ADD((k = (k + 1) & (BENCH_TAB - 1),
+				qf_com(c, ta[k], tb[k], 0, &(core_get()->qf_d))));
 	} BENCH_END;
 
 	BENCH_RUN("qf_dup") {
-		qf_rand(a, &(core_get()->qf_d));
-		BENCH_ADD(qf_dup(b, a, &(core_get()->qf_b)));
+		BENCH_ADD((k = (k + 1) & (BENCH_TAB - 1),
+				qf_dup(b, ta[k], &(core_get()->qf_d))));
 	} BENCH_END;
 
 	BENCH_RUN("qf_exp") {
@@ -154,7 +181,8 @@ static void arith(void) {
 		qf_rand(b, &(core_get()->qf_d));
 		bn_rand_mod(m, class);
 		bn_rand_mod(n, class);
-		BENCH_ADD(qf_exp_sim(c, a, m, b, n, &(core_get()->qf_d), &(core_get()->qf_b)));
+		BENCH_ADD(qf_exp_sim(c, a, m, b, n, &(core_get()->qf_d),
+				&(core_get()->qf_b)));
 	} BENCH_END;
 
 	/*
@@ -169,20 +197,21 @@ static void arith(void) {
 	qf_rand(a, &(core_get()->qf_d));
 	qf_copy(fe, a);
 	for (j = 0; j < se; j++) {
-		qf_dup(fe, fe, &(core_get()->qf_b));
+		qf_dup(fe, fe, &(core_get()->qf_d));
 	}
 	qf_copy(fd, a);
 	for (j = 0; j < sd; j++) {
-		qf_dup(fd, fd, &(core_get()->qf_b));
+		qf_dup(fd, fd, &(core_get()->qf_d));
 	}
 	qf_copy(fde, fd);
 	for (j = 0; j < se; j++) {
-		qf_dup(fde, fde, &(core_get()->qf_b));
+		qf_dup(fde, fde, &(core_get()->qf_d));
 	}
 
 	BENCH_RUN("qf_exp_fix") {
 		bn_rand_mod(n, class);
-		BENCH_ADD(qf_exp_fix(b, a, n, sd, se, fe, fd, fde, &(core_get()->qf_d), &(core_get()->qf_b)));
+		BENCH_ADD(qf_exp_fix(b, a, n, sd, se, fe, fd, fde, &(core_get()->qf_d),
+				&(core_get()->qf_b)));
 	} BENCH_END;
 
 	qf_free(a);
@@ -194,6 +223,11 @@ static void arith(void) {
 	bn_free(m);
 	bn_free(n);
 	bn_free(class);
+	for (j = 0; j < BENCH_TAB; j++) {
+		qf_free(ta[j]);
+		qf_free(tb[j]);
+		bn_free(tn[j]);
+	}
 }
 
 static void orders(void) {
@@ -229,6 +263,20 @@ static void orders(void) {
 		BENCH_ADD(qf_lift(b, a));
 	} BENCH_END;
 
+	BENCH_RUN("qf_map") {
+		uint8_t msg[32];
+		rand_bytes(msg, sizeof(msg));
+		BENCH_ADD(qf_map(a, msg, sizeof(msg), &(core_get()->qf_dk)));
+	}
+	BENCH_END;
+
+	BENCH_RUN("qf_map_bqf") {
+		uint8_t msg[32];
+		rand_bytes(msg, sizeof(msg));
+		BENCH_ADD(qf_map_bqf(a, msg, sizeof(msg), &(core_get()->qf_dk)));
+	}
+	BENCH_END;
+
 	BENCH_RUN("qf_psi") {
 		qf_rand(a, &(core_get()->qf_d));
 		BENCH_ADD(qf_psi(b, a, &(core_get()->qf_dk), &(core_get()->qf_bk)));
@@ -247,14 +295,6 @@ static void orders(void) {
 		qf_exp(b, a, n, &(core_get()->qf_d), &(core_get()->qf_b));
 		BENCH_ADD(qf_kern(m, b));
 	} BENCH_END;
-
-	BENCH_RUN("qf_map") {
-		uint8_t msg[32];
-		rand_bytes(msg, sizeof(msg));
-		BENCH_ADD(qf_map(a, msg, sizeof(msg), &(core_get()->qf_dk),
-				bn_bits(&(core_get()->qf_dk)) / 2));
-	}
-	BENCH_END;
 
 	qf_free(a);
 	qf_free(b);
