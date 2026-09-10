@@ -1143,8 +1143,9 @@ int cp_ghpe_dec(bn_t m, const bn_t c, const bn_t pub, const bn_t prv, size_t s);
  * @param[in] q				- the prime defining the plaintext space.
  * @param[in] disc_bits		- the size in bits of the fundamental discriminant.
  * @param[in] compact		- nonzero to use the compact variant.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-void cp_clhe_set(clhe_t c, const bn_t q, size_t disc_bits, int compact);
+int cp_clhe_set(clhe_t c, const bn_t q, size_t disc_bits, int compact);
 
 /**
  * Generates a key pair for the CL encryption system.
@@ -1152,8 +1153,9 @@ void cp_clhe_set(clhe_t c, const bn_t q, size_t disc_bits, int compact);
  * @param[out] pk			- the resulting public key.
  * @param[out] sk			- the resulting private key.
  * @param[in] c				- the public parameters.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-void cp_clhe_gen(clhe_pk_t pk, bn_t sk, const clhe_t c);
+int cp_clhe_gen(clhe_pk_t pk, bn_t sk, const clhe_t c);
 
 /**
  * Encrypts a message under the CL encryption system.
@@ -1164,8 +1166,9 @@ void cp_clhe_gen(clhe_pk_t pk, bn_t sk, const clhe_t c);
  * @param[in] pk			- the public key.
  * @param[in] m				- the message, reduced modulo the plaintext prime.
  * @param[in] r				- the randomness.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-void cp_clhe_enc(qf_t c1, qf_t c2, const clhe_t c, const clhe_pk_t pk,
+int cp_clhe_enc(qf_t c1, qf_t c2, const clhe_t c, const clhe_pk_t pk,
 		const bn_t m, const bn_t r);
 
 /**
@@ -1176,8 +1179,9 @@ void cp_clhe_enc(qf_t c1, qf_t c2, const clhe_t c, const clhe_pk_t pk,
  * @param[in] sk			- the private key.
  * @param[in] c1			- the first ciphertext component.
  * @param[in] c2			- the second ciphertext component.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-void cp_clhe_dec(bn_t m, const clhe_t c, const bn_t sk, const qf_t c1,
+int cp_clhe_dec(bn_t m, const clhe_t c, const bn_t sk, const qf_t c1,
 		const qf_t c2);
 
 /**
@@ -1192,8 +1196,9 @@ void cp_clhe_dec(bn_t m, const clhe_t c, const bn_t sk, const qf_t c1,
  * @param[in] d1			- the first component of the second ciphertext.
  * @param[in] d2			- the second component of the second ciphertext.
  * @param[in] r				- the randomness.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-void cp_clhe_add(qf_t r1, qf_t r2, const clhe_t c, const clhe_pk_t pk,
+int cp_clhe_add(qf_t r1, qf_t r2, const clhe_t c, const clhe_pk_t pk,
 		const qf_t c1, const qf_t c2, const qf_t d1, const qf_t d2,
 		const bn_t r);
 
@@ -1208,8 +1213,9 @@ void cp_clhe_add(qf_t r1, qf_t r2, const clhe_t c, const clhe_pk_t pk,
  * @param[in] c2			- the second ciphertext component.
  * @param[in] s				- the scalar.
  * @param[in] r				- the randomness.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-void cp_clhe_mul(qf_t r1, qf_t r2, const clhe_t c, const clhe_pk_t pk,
+int cp_clhe_mul(qf_t r1, qf_t r2, const clhe_t c, const clhe_pk_t pk,
 		const qf_t c1, const qf_t c2, const bn_t s, const bn_t r);
 
 /* Add near the other protocol prototypes. No new type is needed: the kernel
@@ -1238,8 +1244,9 @@ int cp_clvdf_set(qf_t f, const bn_t q, size_t disc_bits);
  * @param[in] f				- the generator of the kernel, from clvdf_setup.
  * @param[in] t				- the delay, as a number of squarings.
  * @param[in] x				- the input, reduced modulo the prime.
+ * @return RLC_OK if no errors occurred, RLC_ERR otherwise.
  */
-void cp_clvdf_evl(qf_t u, qf_t z, qf_t y, const qf_t f, size_t t,
+int cp_clvdf_evl(qf_t u, qf_t z, qf_t y, const qf_t f, size_t t,
 		const bn_t x);
 
 /**
@@ -1254,6 +1261,18 @@ void cp_clvdf_evl(qf_t u, qf_t z, qf_t y, const qf_t f, size_t t,
  * @return a boolean value indicating whether the triple decoded.
  */
 int cp_clvdf_dec(bn_t x, size_t t, const qf_t u, const qf_t z, const qf_t y);
+
+/**
+ * Recovers the input encoded by a triple, in time polynomial in the logarithm
+ * of the delay, optimized variant exploiting the group structure.
+ *
+ * @param[out] x			- the recovered input.
+ * @param[in] t				- the delay used for the evaluation.
+ * @param[in] u				- the first component of the encoding.
+ * @param[in] z				- the second component of the encoding.
+ * @param[in] y				- the third component of the encoding.
+ * @return a boolean value indicating whether the triple decoded.
+ */
 int cp_clvdf_dec_opt(bn_t x, size_t t, const qf_t u, const qf_t z, const qf_t y);
 
 /**
@@ -1269,6 +1288,166 @@ int cp_clvdf_dec_opt(bn_t x, size_t t, const qf_t u, const qf_t z, const qf_t y)
  */
 int cp_clvdf_ver(size_t t, const bn_t x, const qf_t u, const qf_t z,
 		const qf_t y);
+
+/**
+ * Computes the CL exponent bound, the class number bound of Delta_K with
+ * statistical slack. Also the range that encryption randomness is drawn from.
+ *
+ * @param[out] bound		- the resulting exponent bound.
+ */
+void cp_clhe_bnd(bn_t bound);
+
+/**
+ * Computes f^m, the encoding of a plaintext in the kernel subgroup F.
+ *
+ * @param[out] r			- the resulting quadratic form.
+ * @param[in] c				- the CL public parameters.
+ * @param[in] m				- the plaintext.
+ */
+void cp_clhe_powf(qf_t r, const clhe_t c, const bn_t m);
+
+/**
+ * Generates a timed CL public key, the delayed element h^(2^t).
+ *
+ * Replaces cp_clhe_gen for the timed variant. There is no corresponding secret
+ * key: the only route to a plaintext is to perform the prescribed sequential
+ * squarings. Encryption is cp_clhe_enc unchanged.
+ *
+ * @param[out] pk			- the resulting timed public key.
+ * @param[in] c				- the CL public parameters.
+ * @param[in] t				- the delay parameter.
+ * @return RLC_OK if successful, RLC_ERR otherwise.
+ */
+int cp_clthe_gen(clhe_pk_t pk, const clhe_t c, size_t t);
+
+/**
+ * Decrypts a timed CL ciphertext by performing the prescribed sequential work.
+ *
+ * @param[out] m			- the resulting plaintext.
+ * @param[in] c				- the CL public parameters.
+ * @param[in] c1			- the first ciphertext component.
+ * @param[in] c2			- the second ciphertext component.
+ * @param[in] t				- the delay parameter.
+ * @return RLC_OK if successful, RLC_ERR if the ciphertext is malformed.
+ */
+int cp_clthe_dec(bn_t m, const clhe_t c, const qf_t c1, const qf_t c2,
+		size_t t);
+
+/**
+ * Security level in bits used to size the CL-RSA masking interval.
+ */
+#define RLC_CLRSA_SEC			128
+
+/**
+ * Challenge size in bits for the CL-RSA argument. The challenge space must
+ * have negligible inverse and be smaller than the smallest factor of the
+ * conductor, so that every challenge difference is invertible modulo it.
+ */
+#define RLC_CLRSA_CHL			128
+
+/** Number of CL-RSA commitments for e = 3: E_1, A_G, A, D_1, M_1, D_2, M_2. */
+#define RLC_CLRSA_CMT			7
+
+/** Number of CL-RSA responses: z_1, s_1, t_1, z_2, s_2, t_2, rho^, a^. */
+#define RLC_CLRSA_RSP			8
+
+/** Number of auxiliary prover values retained between the two phases. */
+#define RLC_CLRSA_AUX			10
+
+/**
+ * Materializes the public key in the order of conductor q, for CL-RSA.
+ *
+ * The compact variant keeps the key in the maximal order and lifts on the fly
+ * during encryption, which is right for a single ciphertext but not for the
+ * argument, whose verification equations exponentiate the key repeatedly.
+ *
+ * @param[out] hh			- the resulting lifted public key.
+ * @param[in] c				- the CL public parameters.
+ * @param[in] pk			- the CL public key.
+ * @return RLC_OK if successful, RLC_ERR otherwise.
+ */
+int cp_clrsa_set(qf_t hh, const clhe_t c, const clhe_pk_t pk);
+
+/**
+ * Computes the first message of the CL-RSA argument, retaining the masks so
+ * that responses can be computed once the challenge is fixed.
+ *
+ * @param[out] cmt			- the resulting commitments.
+ * @param[out] aux			- the resulting auxiliary prover values.
+ * @param[in] c				- the CL public parameters.
+ * @param[in] y				- the witness, an e-th root modulo the conductor.
+ * @param[in] c2			- the second ciphertext component.
+ * @param[in] hh			- the lifted public key.
+ * @return RLC_OK if successful, RLC_ERR otherwise.
+ */
+int cp_clrsa_cmt(qf_t *cmt, bn_t *aux, const clhe_t c, const bn_t y,
+		const qf_t c2, const qf_t hh);
+
+/**
+ * Computes the responses of the CL-RSA argument for the given challenge.
+ *
+ * @param[out] rsp			- the resulting responses.
+ * @param[in] aux			- the auxiliary values from the commit phase.
+ * @param[in] eta			- the common challenge.
+ * @param[in] xi			- the auxiliary batch challenge.
+ * @param[in] y				- the witness.
+ * @param[in] rho			- the encryption randomness.
+ * @return RLC_OK if successful, RLC_ERR otherwise.
+ */
+int cp_clrsa_rsp(bn_t *rsp, const bn_t *aux, const bn_t eta, const bn_t xi,
+		const bn_t y, const bn_t rho);
+
+/**
+ * Verifies the CL-RSA argument against an explicit challenge.
+ *
+ * @param[in] cmt			- the commitments.
+ * @param[in] rsp			- the responses.
+ * @param[in] eta			- the common challenge.
+ * @param[in] xi			- the auxiliary batch challenge.
+ * @param[in] c				- the CL public parameters.
+ * @param[in] x				- the public value whose root is encrypted.
+ * @param[in] c1			- the first ciphertext component.
+ * @param[in] c2			- the second ciphertext component.
+ * @param[in] hh			- the lifted public key.
+ * @return 1 if the argument is accepted, 0 otherwise.
+ */
+int cp_clrsa_chk(const qf_t *cmt, const bn_t *rsp, const bn_t eta,
+		const bn_t xi, const clhe_t c, const bn_t x, const qf_t c1,
+		const qf_t c2, const qf_t hh);
+
+/**
+ * Produces a non-interactive CL-RSA argument, deriving both challenge
+ * coordinates from the statement and the first message.
+ *
+ * @param[out] cmt			- the resulting commitments.
+ * @param[out] rsp			- the resulting responses.
+ * @param[in] c				- the CL public parameters.
+ * @param[in] y				- the witness.
+ * @param[in] rho			- the encryption randomness.
+ * @param[in] c1			- the first ciphertext component.
+ * @param[in] c2			- the second ciphertext component.
+ * @param[in] x				- the public value whose root is encrypted.
+ * @param[in] hh			- the lifted public key.
+ * @return RLC_OK if successful, RLC_ERR otherwise.
+ */
+int cp_clrsa_sig(qf_t *cmt, bn_t *rsp, const clhe_t c, const bn_t y,
+		const bn_t rho, const qf_t c1, const qf_t c2, const bn_t x,
+		const qf_t hh);
+
+/**
+ * Verifies a non-interactive CL-RSA argument.
+ *
+ * @param[in] cmt			- the commitments.
+ * @param[in] rsp			- the responses.
+ * @param[in] c				- the CL public parameters.
+ * @param[in] x				- the public value whose root is encrypted.
+ * @param[in] c1			- the first ciphertext component.
+ * @param[in] c2			- the second ciphertext component.
+ * @param[in] hh			- the lifted public key.
+ * @return 1 if the argument is accepted, 0 otherwise.
+ */
+int cp_clrsa_ver(const qf_t *cmt, const bn_t *rsp, const clhe_t c,
+		const bn_t x, const qf_t c1, const qf_t c2, const qf_t hh);
 
 /**
  * Generates an ECDH key pair.

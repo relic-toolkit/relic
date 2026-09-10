@@ -319,7 +319,7 @@ int cp_clvdf_set(qf_t f, const bn_t q, size_t disc_bits) {
 	return result;
 }
 
-void cp_clvdf_evl(qf_t u, qf_t z, qf_t y, const qf_t f, size_t t,
+int cp_clvdf_evl(qf_t u, qf_t z, qf_t y, const qf_t f, size_t t,
 		const bn_t x) {
 	qf_t g, pi, wf, run;
 	qf_t *tab = NULL;
@@ -327,6 +327,7 @@ void cp_clvdf_evl(qf_t u, qf_t z, qf_t y, const qf_t f, size_t t,
 	uint32_t *dig = NULL, *cnt = NULL, *pos = NULL, *lst = NULL;
 	int32_t *sd = NULL;
 	size_t w, gm, sc, nc, nd = 0, nb;
+	int result = RLC_OK;
 
 	qf_null(g);
 	qf_null(pi);
@@ -438,7 +439,7 @@ void cp_clvdf_evl(qf_t u, qf_t z, qf_t y, const qf_t f, size_t t,
 		}
 	}
 	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
+		result = RLC_ERR;
 	}
 	RLC_FINALLY {
 		if (tab != NULL) {
@@ -460,6 +461,7 @@ void cp_clvdf_evl(qf_t u, qf_t z, qf_t y, const qf_t f, size_t t,
 		bn_free(e);
 		bn_free(m);
 	}
+	return result;
 }
 
 int cp_clvdf_dec(bn_t x, size_t t, const qf_t u, const qf_t z, const qf_t y) {

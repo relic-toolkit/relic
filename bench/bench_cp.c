@@ -414,6 +414,333 @@ static void clhe(int compact) {
 	qf_free(e2);
 }
 
+/**
+ * Samples a modulus admitting the class group setting: three modulo four, so
+ * that its negation is a fundamental discriminant, and each factor inert in
+ * the other.
+ */
+static void clhe_modulus(rsa_t pub, rsa_t prv, size_t bits) {
+	dig_t r;
+
+	do {
+		cp_rsa_gen(pub, prv, bits);
+		bn_mod_dig(&r, pub->crt->n, 4);
+	} while (r != 3 || bn_smb_leg(prv->crt->p, prv->crt->q) != -1);
+}
+
+/** Size in bits of the composite conductor used by the timed CL benchmarks. */
+#define BENCH_TCLHE_MOD		512
+/** Delay used by the timed CL benchmarks, as a number of squarings. */
+#define BENCH_TCLHE_DELAY	64
+
+/**
+ * Benchmarks the timed variant over a composite conductor. Key generation is
+ * measured on its own, since it walks the delay once and builds the
+ * precomputation tables, and decryption is measured at several delays so that
+ * the fixed cost separates from the marginal cost of a squaring.
+ */
+static void clthe(int compact) {
+	clhe_t c;
+	clhe_pk_t pk;
+	rsa_t pub, prv;
+	bn_t m, n, r, bound;
+	qf_t c1, c2;
+
+	clhe_null(c);
+	clhe_pk_null(pk);
+	rsa_null(pub);
+	rsa_null(prv);
+	bn_null(m);
+	bn_null(n);
+	bn_null(r);
+	bn_null(bound);
+	qf_null(c1);
+	qf_null(c2);
+
+	clhe_new(c);
+	clhe_pk_new(pk);
+	rsa_new(pub);
+	rsa_new(prv);
+	bn_new(m);
+	bn_new(n);
+	bn_new(r);
+	bn_new(bound);
+	qf_new(c1);
+	qf_new(c2);
+
+	clhe_modulus(pub, prv, BENCH_TCLHE_MOD);
+	cp_clhe_set(c, pub->crt->n, 0, compact);
+	cp_clhe_bnd(bound);
+
+	if (compact) {
+		BENCH_ONE("cp_clthe_gen (compact)",
+				cp_clthe_gen(pk, c, BENCH_TCLHE_DELAY), 1);
+	} else {
+		BENCH_ONE("cp_clthe_gen (plain)",
+				cp_clthe_gen(pk, c, BENCH_TCLHE_DELAY), 1);
+	}
+	BENCH_ONE("cp_clthe_gen (4x delay)",
+			cp_clthe_gen(pk, c, 4 * BENCH_TCLHE_DELAY), 1);
+
+	cp_clthe_gen(pk, c, BENCH_TCLHE_DELAY);
+
+	BENCH_RUN("cp_clhe_enc (timed key)") {
+		bn_rand_mod(m, &(core_get()->qf_q));
+		bn_rand_mod(r, bound);
+		BENCH_ADD(cp_clhe_enc(c1, c2, c, pk, m, r));
+	} BENCH_END;
+
+	BENCH_RUN("cp_clthe_dec") {
+		bn_rand_mod(m, &(core_get()->qf_q));
+		bn_rand_mod(r, bound);
+		cp_clhe_enc(c1, c2, c, pk, m, r);
+		BENCH_ADD(cp_clthe_dec(n, c, c1, c2, BENCH_TCLHE_DELAY));
+	} BENCH_END;
+
+	BENCH_RUN("cp_clthe_dec (zero message)") {
+		bn_zero(m);
+		bn_rand_mod(r, bound);
+		cp_clhe_enc(c1, c2, c, pk, m, r);
+		BENCH_ADD(cp_clthe_dec(n, c, c1, c2, BENCH_TCLHE_DELAY));
+	} BENCH_END;
+
+	/* a ciphertext made for one delay cannot be opened at another, so the
+	* key is regenerated to isolate the marginal cost of the delay */
+	cp_clthe_gen(pk, c, 2 * BENCH_TCLHE_DELAY);
+	BENCH_RUN("cp_clthe_dec (2x delay)") {
+		bn_rand_mod(m, &(core_get()->qf_q));
+		bn_rand_mod(r, bound);
+		cp_clhe_enc(c1, c2, c, pk, m, r);
+		BENCH_ADD(cp_clthe_dec(n, c, c1, c2, 2 * BENCH_TCLHE_DELAY));
+	} BENCH_END;
+
+	cp_clthe_gen(pk, c, 4 * BENCH_TCLHE_DELAY);
+	BENCH_RUN("cp_clthe_dec (4x delay)") {
+		bn_rand_mod(m, &(core_get()->qf_q));
+		bn_rand_mod(r, bound);
+		cp_clhe_enc(c1, c2, c, pk, m, r);
+		BENCH_ADD(cp_clthe_dec(n, c, c1, c2, 4 * BENCH_TCLHE_DELAY));
+	} BENCH_END;
+
+	/* a delay spanning the crossover between the two variants: the compact
+	* one saves on every squaring but pays a lift once, so it only comes out
+	* ahead once the delay is long enough to amortise it */
+	cp_clthe_gen(pk, c, 64 * BENCH_TCLHE_DELAY);
+	BENCH_RUN("cp_clthe_dec (64x delay)") {
+		bn_rand_mod(m, &(core_get()->qf_q));
+		bn_rand_mod(r, bound);
+		cp_clhe_enc(c1, c2, c, pk, m, r);
+		BENCH_ADD(cp_clthe_dec(n, c, c1, c2, 64 * BENCH_TCLHE_DELAY));
+	} BENCH_END;
+
+	cp_clthe_gen(pk, c, BENCH_TCLHE_DELAY);
+	BENCH_RUN("cp_clthe_dec (rejecting)") {
+		bn_rand_mod(m, &(core_get()->qf_q));
+		bn_rand_mod(r, bound);
+		cp_clhe_enc(c1, c2, c, pk, m, r);
+		/* squaring the second component moves it out of the coset, so the
+		* kernel check refuses it after the delay is already paid */
+		qf_dup(c2, c2, &(core_get()->qf_d));
+		BENCH_ADD(cp_clthe_dec(n, c, c1, c2, BENCH_TCLHE_DELAY));
+	} BENCH_END;
+
+	clhe_free(c);
+	clhe_pk_free(pk);
+	rsa_free(pub);
+	rsa_free(prv);
+	bn_free(m);
+	bn_free(n);
+	bn_free(r);
+	bn_free(bound);
+	qf_free(c1);
+	qf_free(c2);
+}
+
+/** Size in bits of the composite conductor used by the CL-RSA benchmarks. */
+#define BENCH_CLRSA_MOD		512
+/** Delay used by the CL-RSA benchmarks, as a number of squarings. */
+#define BENCH_CLRSA_DELAY	64
+/** Public exponent the CL-RSA benchmarks prove a root for. */
+#define BENCH_CLRSA_EXP		3
+
+/**
+ * Benchmarks the CL-RSA argument. The two phases of the prover are measured
+ * apart, since only the commit phase samples masks and only it can be run
+ * before the statement is known.
+ */
+static void clrsa(void) {
+	clhe_t c;
+	clhe_pk_t pk;
+	rsa_t pub, prv;
+	bn_t d, e, phi, x, y, rho, t, eta, xi, bound, chl;
+	bn_t rsp[RLC_CLRSA_RSP], aux[RLC_CLRSA_AUX];
+	qf_t hh, c1, c2;
+	qf_t cmt[RLC_CLRSA_CMT];
+	size_t len;
+
+	clhe_null(c);
+	clhe_pk_null(pk);
+	rsa_null(pub);
+	rsa_null(prv);
+	bn_null(d);
+	bn_null(e);
+	bn_null(phi);
+	bn_null(x);
+	bn_null(y);
+	bn_null(rho);
+	bn_null(t);
+	bn_null(eta);
+	bn_null(xi);
+	bn_null(bound);
+	bn_null(chl);
+	qf_null(hh);
+	qf_null(c1);
+	qf_null(c2);
+	for (int j = 0; j < RLC_CLRSA_RSP; j++) {
+		bn_null(rsp[j]);
+	}
+	for (int j = 0; j < RLC_CLRSA_AUX; j++) {
+		bn_null(aux[j]);
+	}
+	for (int j = 0; j < RLC_CLRSA_CMT; j++) {
+		qf_null(cmt[j]);
+	}
+
+	clhe_new(c);
+	clhe_pk_new(pk);
+	rsa_new(pub);
+	rsa_new(prv);
+	bn_new(d);
+	bn_new(e);
+	bn_new(phi);
+	bn_new(x);
+	bn_new(y);
+	bn_new(rho);
+	bn_new(t);
+	bn_new(eta);
+	bn_new(xi);
+	bn_new(bound);
+	bn_new(chl);
+	qf_new(hh);
+	qf_new(c1);
+	qf_new(c2);
+	/* bn_new and qf_new are multi-statement macros without a do-while
+	* wrapper, so they need braces as a loop body */
+	for (int j = 0; j < RLC_CLRSA_RSP; j++) {
+		bn_new(rsp[j]);
+	}
+	for (int j = 0; j < RLC_CLRSA_AUX; j++) {
+		bn_new(aux[j]);
+	}
+	for (int j = 0; j < RLC_CLRSA_CMT; j++) {
+		qf_new(cmt[j]);
+	}
+
+	bn_set_dig(e, BENCH_CLRSA_EXP);
+	do {
+		clhe_modulus(pub, prv, BENCH_CLRSA_MOD);
+		bn_sub_dig(phi, prv->crt->p, 1);
+		bn_sub_dig(t, prv->crt->q, 1);
+		bn_mul(phi, phi, t);
+		bn_gcd(t, e, phi);
+	} while (bn_cmp_dig(t, 1) != RLC_EQ);
+	bn_mod_inv(d, e, phi);
+
+	cp_clhe_set(c, pub->crt->n, 0, 1);
+	cp_clhe_bnd(bound);
+	cp_clthe_gen(pk, c, BENCH_CLRSA_DELAY);
+	bn_set_dig(chl, 1);
+	bn_lsh(chl, chl, RLC_CLRSA_CHL);
+
+	BENCH_ONE("cp_clrsa_set", cp_clrsa_set(hh, c, pk), 1);
+	cp_clrsa_set(hh, c, pk);
+
+	do {
+		bn_rand_mod(x, pub->crt->n);
+		bn_gcd(t, x, pub->crt->n);
+	} while (bn_cmp_dig(t, 1) != RLC_EQ || bn_is_zero(x));
+	bn_mxp(y, x, d, pub->crt->n);
+	bn_rand_mod(rho, bound);
+	cp_clhe_enc(c1, c2, c, pk, y, rho);
+
+	BENCH_RUN("cp_clrsa_cmt") {
+		BENCH_ADD(cp_clrsa_cmt(cmt, aux, c, y, c2, hh));
+	} BENCH_END;
+
+	cp_clrsa_cmt(cmt, aux, c, y, c2, hh);
+
+	BENCH_RUN("cp_clrsa_rsp") {
+		bn_rand_mod(eta, chl);
+		bn_rand_mod(xi, chl);
+		BENCH_ADD(cp_clrsa_rsp(rsp, aux, eta, xi, y, rho));
+	} BENCH_END;
+
+	bn_rand_mod(eta, chl);
+	bn_rand_mod(xi, chl);
+	cp_clrsa_rsp(rsp, aux, eta, xi, y, rho);
+
+	BENCH_RUN("cp_clrsa_chk") {
+		BENCH_ADD(cp_clrsa_chk(cmt, rsp, eta, xi, c, x, c1, c2, hh));
+	} BENCH_END;
+
+	BENCH_RUN("cp_clrsa_sig") {
+		BENCH_ADD(cp_clrsa_sig(cmt, rsp, c, y, rho, c1, c2, x, hh));
+	} BENCH_END;
+
+	cp_clrsa_sig(cmt, rsp, c, y, rho, c1, c2, x, hh);
+
+	BENCH_RUN("cp_clrsa_ver") {
+		BENCH_ADD(cp_clrsa_ver(cmt, rsp, c, x, c1, c2, hh));
+	} BENCH_END;
+
+	BENCH_RUN("cp_clrsa_ver (rejecting)") {
+		bn_add_dig(rsp[0], rsp[0], 1);
+		BENCH_ADD(cp_clrsa_ver(cmt, rsp, c, x, c1, c2, hh));
+		bn_sub_dig(rsp[0], rsp[0], 1);
+	} BENCH_END;
+
+	/* the proof is seven forms and eight integers, so its size is worth
+	* reporting alongside the timings */
+	cp_clrsa_sig(cmt, rsp, c, y, rho, c1, c2, x, hh);
+	len = 0;
+	for (int j = 0; j < RLC_CLRSA_CMT; j++) {
+		len += bn_size_bin(cmt[j]->a) + bn_size_bin(cmt[j]->b);
+	}
+	for (int j = 0; j < RLC_CLRSA_RSP; j++) {
+		len += bn_size_bin(rsp[j]);
+	}
+	util_print("BENCH: cp_clrsa proof size%*c = %zu bytes\n",
+			(int)(32 - strlen("cp_clrsa proof size")), ' ', len);
+
+	clhe_free(c);
+	clhe_pk_free(pk);
+	rsa_free(pub);
+	rsa_free(prv);
+	bn_free(d);
+	bn_free(e);
+	bn_free(phi);
+	bn_free(x);
+	bn_free(y);
+	bn_free(rho);
+	bn_free(t);
+	bn_free(eta);
+	bn_free(xi);
+	bn_free(bound);
+	bn_free(chl);
+	qf_free(hh);
+	qf_free(c1);
+	qf_free(c2);
+	for (int j = 0; j < RLC_CLRSA_RSP; j++) {
+		bn_free(rsp[j]);
+	}
+	for (int j = 0; j < RLC_CLRSA_AUX; j++) {
+		bn_free(aux[j]);
+	}
+	for (int j = 0; j < RLC_CLRSA_CMT; j++) {
+		qf_free(cmt[j]);
+	}
+}
+
 /** Size in bits of the prime defining the encoded value space. */
 #define BENCH_VDF_SPACE		64
 /** Size in bits of the fundamental discriminant. */
@@ -2485,6 +2812,9 @@ int main(void) {
 	util_banner("Protocols based on class groups:\n", 0);
 	clhe(0);
 	clhe(1);
+	clthe(0);
+	clthe(1);
+	clrsa();
 	clvdf();
 #endif
 
