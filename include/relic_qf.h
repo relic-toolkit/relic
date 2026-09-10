@@ -198,6 +198,14 @@ int qf_group_set_cond(const bn_t q, size_t bits);
 int qf_group_set_both(const bn_t q, const bn_t p);
 
 /**
+ * Sets up the two orders from a conductor which need not be prime.
+ *
+ * @param[in] n				- the composite conductor.
+ * @return RLC_OK on success, RLC_ERR otherwise.
+ */
+int qf_group_set_comp(const bn_t n);
+
+/**
  * Copies a quadratic form.
  *
  * @param[out] c			- the result.

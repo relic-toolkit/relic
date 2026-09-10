@@ -52,6 +52,75 @@ static int qf_find_gen(qf_t f, const bn_t d) {
 	return 0;
 }
 
+static int qf_group_set(const bn_t q, const bn_t p, int prime) {
+	ctx_t *ctx = core_get();
+	int code = RLC_ERR;
+	bn_t t;
+	qf_t g;
+	dig_t r;
+ 
+	if (prime && !bn_is_prime(q)) {
+		return RLC_ERR;
+	}
+	if (bn_cmp_dig(p, 1) != RLC_EQ && !bn_is_prime(p)) {
+		return RLC_ERR;
+	}
+ 
+	bn_null(t);
+	qf_null(g);
+ 
+	RLC_TRY {
+		bn_new(t);
+		qf_new(g);
+ 
+		bn_mul(t, p, q);
+		bn_mod_dig(&r, t, 4);
+		if (r == 3) {
+			/* -p*q must be 1 mod 4 */
+			bn_copy(&(ctx->qf_q), q);
+			/* Delta_K = -p*q and Delta = q^2 * Delta_K = -p*q^3 */
+			bn_mul(&(ctx->qf_dk), &(ctx->qf_q), p);
+			bn_neg(&(ctx->qf_dk), &(ctx->qf_dk));
+			bn_mul(&(ctx->qf_d), &(ctx->qf_dk), &(ctx->qf_q));
+			bn_mul(&(ctx->qf_d), &(ctx->qf_d), &(ctx->qf_q));
+ 
+			/* Compute partial reduction bounds. */
+			bn_abs(t, &(ctx->qf_d));
+			bn_srt(t, t);
+			bn_srt(&(ctx->qf_b), t);
+ 
+			if (!qf_find_gen(g, &(ctx->qf_d))) {
+				RLC_THROW(ERR_NO_VALID);
+			}
+			bn_copy(&(ctx->qf_ga), g->a);
+			bn_copy(&(ctx->qf_gb), g->b);
+			bn_copy(&(ctx->qf_gc), g->c);
+ 
+			/* Compute partial reduction bounds. */
+			bn_abs(t, &(ctx->qf_dk));
+			bn_srt(t, t);
+			bn_srt(&(ctx->qf_bk), t);
+ 
+			if (!qf_find_gen(g, &(ctx->qf_dk))) {
+				RLC_THROW(ERR_NO_VALID);
+			}
+			bn_copy(&(ctx->qf_gka), g->a);
+			bn_copy(&(ctx->qf_gkb), g->b);
+			bn_copy(&(ctx->qf_gkc), g->c);
+ 
+			code = RLC_OK;
+		}
+	}
+	RLC_CATCH_ANY {
+		code = RLC_ERR;
+	}
+	RLC_FINALLY {
+		bn_free(t);
+		qf_free(g);
+	}
+	return code;
+}
+
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
@@ -126,75 +195,6 @@ int qf_group_gen(size_t cond, size_t bits) {
 	return code;
 }
 
-int qf_group_set_both(const bn_t q, const bn_t p) {
-	ctx_t *ctx = core_get();
-	int code = RLC_ERR;
-	bn_t t;
-	qf_t g;
-	dig_t r;
-
-	if (!bn_is_prime(q)) {
-		return RLC_ERR;
-	}
-	if (bn_cmp_dig(p, 1) != RLC_EQ && !bn_is_prime(p)) {
-		return RLC_ERR;
-	}
-
-	bn_null(t);
-	qf_null(g);
-
-	RLC_TRY {
-		bn_new(t);
-		qf_new(g);
-
-		bn_mul(t, p, q);
-		bn_mod_dig(&r, t, 4);
-		if (r == 3) {
-			/* -p*q must be 1 mod 4 */
-			bn_copy(&(ctx->qf_q), q);
-			/* Delta_K = -p*q and Delta = q^2 * Delta_K = -p*q^3 */
-			bn_mul(&(ctx->qf_dk), &(ctx->qf_q), p);
-			bn_neg(&(ctx->qf_dk), &(ctx->qf_dk));
-			bn_mul(&(ctx->qf_d), &(ctx->qf_dk), &(ctx->qf_q));
-			bn_mul(&(ctx->qf_d), &(ctx->qf_d), &(ctx->qf_q));
-
-			/* Compute partial reduction bounds. */
-			bn_abs(t, &(ctx->qf_d));
-			bn_srt(t, t);
-			bn_srt(&(ctx->qf_b), t);
-
-			if (!qf_find_gen(g, &(ctx->qf_d))) {
-				RLC_THROW(ERR_NO_VALID);
-			}
-			bn_copy(&(ctx->qf_ga), g->a);
-			bn_copy(&(ctx->qf_gb), g->b);
-			bn_copy(&(ctx->qf_gc), g->c);
-
-			/* Compute partial reduction bounds. */
-			bn_abs(t, &(ctx->qf_dk));
-			bn_srt(t, t);
-			bn_srt(&(ctx->qf_bk), t);
-
-			if (!qf_find_gen(g, &(ctx->qf_dk))) {
-				RLC_THROW(ERR_NO_VALID);
-			}
-			bn_copy(&(ctx->qf_gka), g->a);
-			bn_copy(&(ctx->qf_gkb), g->b);
-			bn_copy(&(ctx->qf_gkc), g->c);
-
-			code = RLC_OK;
-		}
-	}
-	RLC_CATCH_ANY {
-		code = RLC_ERR;
-	}
-	RLC_FINALLY {
-		bn_free(t);
-		qf_free(g);
-	}
-	return code;
-}
-
 int qf_group_set_cond(const bn_t q, size_t bits) {
 	int code = RLC_ERR;
 	bn_t p;
@@ -226,13 +226,37 @@ int qf_group_set_cond(const bn_t q, size_t bits) {
 			}
 		}
 
-		code = qf_group_set_both(q, p);
+		code = qf_group_set(q, p, 1);
 	}
 	RLC_CATCH_ANY {
 		code = RLC_ERR;
 	}
 	RLC_FINALLY {
 		bn_free(p);
+	}
+	return code;
+}
+
+int qf_group_set_both(const bn_t q, const bn_t p) {
+	return qf_group_set(q, p, 1);
+}
+
+int qf_group_set_comp(const bn_t n) {
+	bn_t one;
+	int code = RLC_ERR;
+ 
+	bn_null(one);
+ 
+	RLC_TRY {
+		bn_new(one);
+		bn_set_dig(one, 1);
+		code = qf_group_set(n, one, 0);
+	}
+	RLC_CATCH_ANY {
+		code = RLC_ERR;
+	}
+	RLC_FINALLY {
+		bn_free(one);
 	}
 	return code;
 }

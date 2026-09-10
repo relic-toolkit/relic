@@ -402,19 +402,21 @@ void qf_phi(qf_t r, const qf_t f, int rdc) {
 
 void qf_kern(bn_t r, const qf_t f) {
 	ctx_t *ctx = core_get();
-	bn_t t, x, y;
+	bn_t t, x, y, q2;
 	qf_t ft;
 	int cmp;
 
 	bn_null(x);
 	bn_null(y);
 	bn_null(t);
+	bn_null(q2);
 	qf_null(ft);
 
 	RLC_TRY {
 		bn_new(x);
 		bn_new(y);
 		bn_new(t);
+		bn_new(q2);
 		qf_new(ft);
 
 		qf_phi(ft, f, 0);
@@ -427,12 +429,15 @@ void qf_kern(bn_t r, const qf_t f) {
 		bn_set_dig(x, 1);	/* g0 */
 		bn_zero(y);		/* g1 */
 		qf_norm(ft, ft);
+		bn_sqr(q2, &(ctx->qf_q));
 		while ((cmp = bn_cmp_abs(ft->a, ft->c)) == RLC_GT) {
 			bn_mul(t, y, &(ctx->qf_dk));
 			bn_mul(y, y, ft->b);
 			bn_add(y, y, x);
 			bn_mul(x, x, ft->b);
 			bn_add(x, x, t);
+			bn_mod(x, x, q2);
+			bn_mod(y, y, q2);
 			bn_copy(t, ft->a);
 			bn_copy(ft->a, ft->c);
 			bn_copy(ft->c, t);
@@ -442,17 +447,17 @@ void qf_kern(bn_t r, const qf_t f) {
 
 		if (bn_cmp_dig(ft->a, 1) != RLC_EQ || bn_cmp_dig(ft->b, 1) != RLC_EQ) {
 			RLC_THROW(ERR_NO_VALID);
+		} else {
+			bn_gcd_lower(t, x, y);
+			bn_div(x, x, t);
+			bn_div(y, y, t);
+
+			bn_mod(x, x, &(ctx->qf_q));
+			bn_mod_inv(t, x, &(ctx->qf_q));
+			bn_neg(y, y);
+			bn_mul(t, t, y);
+			bn_mod(r, t, &(ctx->qf_q));
 		}
-
-		bn_gcd_lower(t, x, y);
-		bn_div(x, x, t);
-		bn_div(y, y, t);
-
-		bn_mod(x, x, &(ctx->qf_q));
-		bn_mod_inv(t, x, &(ctx->qf_q));
-		bn_neg(y, y);
-		bn_mul(t, t, y);
-		bn_mod(r, t, &(ctx->qf_q));
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -461,6 +466,7 @@ void qf_kern(bn_t r, const qf_t f) {
 		bn_free(x);
 		bn_free(y);
 		bn_free(t);
+		bn_free(q2);
 		qf_free(ft);
 	}
 }
