@@ -400,6 +400,70 @@ void qf_phi(qf_t r, const qf_t f, int rdc) {
 	}
 }
 
+int qf_kern_quick(bn_t r, const qf_t f) {
+	ctx_t *ctx = core_get();
+	int large, code = RLC_ERR;
+	bn_t t, u, v;
+	qf_t g;
+
+	bn_null(t);
+	bn_null(u);
+	bn_null(v);
+	qf_null(g);
+
+	RLC_TRY {
+		bn_new(t);
+		bn_new(u);
+		bn_new(v);
+		qf_new(g);
+
+		/*
+		 * When 4c^2 exceeds |Delta_K| the kernel representatives are not
+		 * reduced and the shortcut below does not apply.
+		 */
+		bn_sqr(t, &(ctx->qf_q));
+		bn_lsh(t, t, 2);
+		bn_add(t, t, &(ctx->qf_dk));
+		large = (bn_sign(t) == RLC_POS && !bn_is_zero(t));
+
+		if (large) {
+			/* The general route, with the membership check it requires. */
+			qf_phi(g, f, 1);
+			if (qf_is_one(g)) {
+				qf_kern(r, f);
+				code = RLC_OK;
+			}
+		} else {
+			/* Composition leaves its result only partly reduced. */
+			qf_copy(g, f);
+			qf_rdc(g, g);
+			bn_sqr(t, &(ctx->qf_q));
+
+			if (qf_is_one(g)) {
+				bn_zero(r);
+				code = RLC_OK;
+			} else if (bn_cmp(g->a, t) == RLC_EQ) {
+				bn_div_rem(u, v, g->b, &(ctx->qf_q));
+				bn_mod(u, u, &(ctx->qf_q));
+				if (bn_is_zero(v) && !bn_is_zero(u)) {
+					bn_mod_inv(r, u, &(ctx->qf_q));
+					code = RLC_OK;
+				}
+			}
+		}
+	}
+	RLC_CATCH_ANY {
+		code = RLC_ERR;
+	}
+	RLC_FINALLY {
+		bn_free(t);
+		bn_free(u);
+		bn_free(v);
+		qf_free(g);
+	}
+	return code;
+}
+
 void qf_kern(bn_t r, const qf_t f) {
 	ctx_t *ctx = core_get();
 	bn_t t, x, y, q2;

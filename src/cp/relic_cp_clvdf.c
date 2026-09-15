@@ -525,9 +525,7 @@ int cp_clvdf_dec(bn_t x, size_t t, const qf_t u, const qf_t z, const qf_t y) {
 			qf_com(w, w, s, 1, &(core_get()->qf_b));
 
 			/* the result must lie in the kernel, where the logarithm is easy */
-			qf_phi(s, w, 1);
-			if (qf_is_one(s)) {
-				qf_kern(x, w);
+			if (qf_kern_quick(x, w) == RLC_OK) {
 
 				/*
 				* g = u*y^-1 has to be the oracle image. That check binds the
@@ -626,9 +624,7 @@ int cp_clvdf_dec_opt(bn_t x, size_t t, const qf_t u, const qf_t z, const qf_t y)
 			qf_com(w, w, h, 0, &(core_get()->qf_b));
 
 			/* the result must lie in the kernel, where the logarithm is easy */
-			qf_phi(s, w, 1);
-			if (qf_is_one(s)) {
-				qf_kern(x, w);
+			if (qf_kern_quick(x, w) == RLC_OK) {
 
 				/*
 				* g = u*y^-1 has to be the oracle image. That check binds the triple to

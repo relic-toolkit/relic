@@ -439,6 +439,23 @@ void qf_psi(qf_t r, const qf_t f, const bn_t d, const bn_t b);
 void qf_kern(bn_t r, const qf_t f);
 
 /**
+ * Computes the discrete logarithm of a form in the kernel, deciding membership
+ * as it goes, and taking the coefficient shortcut where it applies.
+ *
+ * Equivalent to testing that the projection of the form is the identity and
+ * then calling qf_kern, but when 4c^2 is below |Delta_K| it forms no
+ * projection at all: a reduced form of the right discriminant lies in the
+ * kernel exactly when a = c^2 and b/c is invertible modulo c, and the exponent
+ * is then the inverse of b/c. Outside that regime it falls back to the
+ * projection and qf_kern, so the contract is the same either way.
+ *
+ * @param[out] r			- the resulting exponent.
+ * @param[in] f				- the quadratic form.
+ * @return RLC_OK if the form lies in the kernel, RLC_ERR otherwise.
+ */
+int qf_kern_quick(bn_t r, const qf_t f);
+
+/**
  * Reduces a binary quadratic form.
  *
  * Computes the canonical reduced representative equivalent to a.
