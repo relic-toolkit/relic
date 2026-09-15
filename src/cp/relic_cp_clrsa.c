@@ -98,6 +98,96 @@ static void clrsa_exp(qf_t r, const qf_t f, const bn_t n, const bn_t dsc,
 }
 
 /**
+ * Largest number of exponents grouped onto one squaring chain.
+ */
+#define CLRSA_SHR		5
+
+/**
+ * Raises one base to several exponents, sharing a single squaring chain.
+ *
+ * Proceeding from the least significant digit squares the base rather than the
+ * accumulators, so one chain of the length of the longest exponent serves every
+ * accumulator and only the compositions remain proportional to the number of
+ * exponents. The exponents are recoded in non-adjacent form, which lowers the
+ * density of non-zero digits from one half to one third; the signed digits cost
+ * nothing here, the inverse of (a, b, c) being (a, -b, c). What is verified is
+ * unchanged, each equation still being tested on its own and the arithmetic
+ * being exact.
+ *
+ * @param[out] r			- the resulting quadratic forms.
+ * @param[in] f				- the common base.
+ * @param[in] n				- the possibly negative exponents.
+ * @param[in] k				- the number of exponents, at most CLRSA_SHR.
+ * @param[in] dsc			- the discriminant.
+ * @param[in] bnd			- the partial reduction bound.
+ */
+static void clrsa_exp_shr(qf_t *r, const qf_t f, bn_t *n, int k,
+		const bn_t dsc, const bn_t bnd) {
+	int8_t *naf[CLRSA_SHR];
+	bn_t a[CLRSA_SHR];
+	size_t len[CLRSA_SHR], i, m = 0;
+	int j;
+	qf_t w;
+
+	qf_null(w);
+	for (j = 0; j < k; j++) {
+		bn_null(a[j]);
+		naf[j] = NULL;
+	}
+
+	RLC_TRY {
+		qf_new(w);
+		for (j = 0; j < k; j++) {
+			/* The recoding takes the magnitude; the sign is applied after. */
+			bn_new(a[j]);
+			bn_abs(a[j], n[j]);
+			len[j] = bn_bits(a[j]) + 1;
+			naf[j] = RLC_ALLOCA(int8_t, len[j] + 1);
+			if (naf[j] == NULL) {
+				RLC_THROW(ERR_NO_MEMORY);
+			}
+			bn_rec_naf(naf[j], &len[j], a[j], 2);
+			if (len[j] > m) {
+				m = len[j];
+			}
+			qf_set_one(r[j], dsc);
+		}
+
+		qf_copy(w, f);
+		for (i = 0; i < m; i++) {
+			for (j = 0; j < k; j++) {
+				if (i < len[j] && naf[j][i] != 0) {
+					qf_com(r[j], r[j], w, naf[j][i] < 0, bnd);
+				}
+			}
+			if (i + 1 < m) {
+				qf_dup(w, w, bnd);
+			}
+		}
+
+		for (j = 0; j < k; j++) {
+			qf_rdc(r[j], r[j]);
+			if (bn_sign(n[j]) == RLC_NEG) {
+				qf_neg(r[j], r[j]);
+				qf_rdc(r[j], r[j]);
+			}
+		}
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		qf_free(w);
+		for (j = 0; j < k; j++) {
+			bn_free(a[j]);
+			if (naf[j] != NULL) {
+				RLC_FREE(naf[j]);
+			}
+		}
+	}
+}
+
+/**
  * Samples uniformly from the symmetric interval [-r, r].
  *
  * @param[out] c			- the resulting value.
@@ -262,76 +352,130 @@ static void clrsa_chal(bn_t eta, bn_t xi, const qf_t *cmt, const bn_t x,
 int cp_clrsa_chk(const qf_t *cmt, const bn_t *rsp, const bn_t eta,
 		const bn_t xi, const clhe_t c, const bn_t x, const qf_t c1,
 		const qf_t c2, const qf_t hh) {
-	int result = 0;
-	bn_t t;
-	qf_t l, r, p;
+	int i, result = 0;
+	bn_t e[CLRSA_SHR], t;
+	qf_t hp[5], cp[3], ep[2], g0, l, r, p;
 
 	bn_null(t);
+	for (i = 0; i < CLRSA_SHR; i++) {
+		bn_null(e[i]);
+	}
+	for (i = 0; i < 5; i++) {
+		qf_null(hp[i]);
+	}
+	for (i = 0; i < 3; i++) {
+		qf_null(cp[i]);
+	}
+	for (i = 0; i < 2; i++) {
+		qf_null(ep[i]);
+	}
+	qf_null(g0);
 	qf_null(l);
 	qf_null(r);
 	qf_null(p);
 
 	RLC_TRY {
 		bn_new(t);
+		for (i = 0; i < CLRSA_SHR; i++) {
+			bn_new(e[i]);
+		}
+		for (i = 0; i < 5; i++) {
+			qf_new(hp[i]);
+		}
+		for (i = 0; i < 3; i++) {
+			qf_new(cp[i]);
+		}
+		for (i = 0; i < 2; i++) {
+			qf_new(ep[i]);
+		}
+		qf_new(g0);
 		qf_new(l);
 		qf_new(r);
 		qf_new(p);
 
+		/*
+		 * Three bases recur between the equations, so the exponentiations are
+		 * grouped by base and each group evaluated on one squaring chain. The
+		 * five exponents applied to the lifted key are those of the masking
+		 * interval and dominate the cost. Note also that the challenge power
+		 * of E_1 is required by two equations, and here is computed once.
+		 */
+		bn_copy(e[0], rsp[1]);
+		bn_copy(e[1], rsp[4]);
+		bn_copy(e[2], rsp[2]);
+		bn_copy(e[3], rsp[5]);
+		bn_copy(e[4], rsp[6]);
+		clrsa_exp_shr(hp, hh, e, 5, &(core_get()->qf_d),
+				&(core_get()->qf_b));
+
+		bn_copy(e[0], rsp[0]);
+		bn_copy(e[1], rsp[3]);
+		bn_copy(e[2], eta);
+		clrsa_exp_shr(cp, c2, e, 3, &(core_get()->qf_d),
+				&(core_get()->qf_b));
+
+		bn_copy(e[0], eta);
+		bn_copy(e[1], xi);
+		clrsa_exp_shr(ep, cmt[0], e, 2, &(core_get()->qf_d),
+				&(core_get()->qf_b));
+
 		result = 1;
 
 		/* (1) h^{s_1} = A_G * c1^eta, in the order c1 lives in. */
-		clrsa_exp(l, c->h, rsp[1], clrsa_dsc(c), clrsa_bnd(c));
+		clrsa_exp(g0, c->h, rsp[1], clrsa_dsc(c), clrsa_bnd(c));
 		qf_exp(r, c1, eta, clrsa_dsc(c), clrsa_bnd(c));
 		qf_com(r, r, cmt[1], 0, clrsa_bnd(c));
-		result &= (qf_cmp(l, r) == RLC_EQ);
+		result &= (qf_cmp(g0, r) == RLC_EQ);
 
 		/* (2) i = 1, j_1 = 0: D_1 * c2^eta = hh^{s_1} * f^{z_1}. */
-		qf_exp(l, c2, eta, &(core_get()->qf_d), &(core_get()->qf_b));
-		qf_com(l, l, cmt[3], 0, &(core_get()->qf_b));
-		clrsa_exp(r, hh, rsp[1], &(core_get()->qf_d), &(core_get()->qf_b));
+		qf_com(l, cp[2], cmt[3], 0, &(core_get()->qf_b));
 		cp_clhe_powf(p, c, rsp[0]);
-		qf_com(r, r, p, 0, &(core_get()->qf_b));
+		qf_com(r, hp[0], p, 0, &(core_get()->qf_b));
 		result &= (qf_cmp(l, r) == RLC_EQ);
 
 		/* (2) i = 2, j_2 = 1: D_2 * E_1^eta = hh^{s_2} * f^{z_2}. */
-		qf_exp(l, cmt[0], eta, &(core_get()->qf_d), &(core_get()->qf_b));
-		qf_com(l, l, cmt[5], 0, &(core_get()->qf_b));
-		clrsa_exp(r, hh, rsp[4], &(core_get()->qf_d), &(core_get()->qf_b));
+		qf_com(l, ep[0], cmt[5], 0, &(core_get()->qf_b));
 		cp_clhe_powf(p, c, rsp[3]);
-		qf_com(r, r, p, 0, &(core_get()->qf_b));
+		qf_com(r, hp[1], p, 0, &(core_get()->qf_b));
 		result &= (qf_cmp(l, r) == RLC_EQ);
 
 		/* (3) A * E_1^{xi} = hh^{rho^} * f^{a^}. */
-		qf_exp(l, cmt[0], xi, &(core_get()->qf_d), &(core_get()->qf_b));
-		qf_com(l, l, cmt[2], 0, &(core_get()->qf_b));
-		clrsa_exp(r, hh, rsp[6], &(core_get()->qf_d), &(core_get()->qf_b));
+		qf_com(l, ep[1], cmt[2], 0, &(core_get()->qf_b));
 		cp_clhe_powf(p, c, rsp[7]);
-		qf_com(r, r, p, 0, &(core_get()->qf_b));
+		qf_com(r, hp[4], p, 0, &(core_get()->qf_b));
 		result &= (qf_cmp(l, r) == RLC_EQ);
 
 		/* (4) i = 1, k_1 = 0: c2^{z_1} = M_1 * E_1^eta * hh^{t_1}. */
-		qf_exp(l, c2, rsp[0], &(core_get()->qf_d), &(core_get()->qf_b));
-		qf_exp(r, cmt[0], eta, &(core_get()->qf_d), &(core_get()->qf_b));
-		qf_com(r, r, cmt[4], 0, &(core_get()->qf_b));
-		clrsa_exp(p, hh, rsp[2], &(core_get()->qf_d), &(core_get()->qf_b));
-		qf_com(r, r, p, 0, &(core_get()->qf_b));
-		result &= (qf_cmp(l, r) == RLC_EQ);
+		qf_com(r, ep[0], cmt[4], 0, &(core_get()->qf_b));
+		qf_com(r, r, hp[2], 0, &(core_get()->qf_b));
+		result &= (qf_cmp(cp[0], r) == RLC_EQ);
 
 		/* (5) k_L = 0: c2^{z_2} = M_2 * f^{eta * X} * hh^{t_2}. */
-		qf_exp(l, c2, rsp[3], &(core_get()->qf_d), &(core_get()->qf_b));
 		bn_mul(t, eta, x);
 		bn_mod(t, t, &(core_get()->qf_q));
-		cp_clhe_powf(r, c, t);
-		qf_com(r, r, cmt[6], 0, &(core_get()->qf_b));
-		clrsa_exp(p, hh, rsp[5], &(core_get()->qf_d), &(core_get()->qf_b));
-		qf_com(r, r, p, 0, &(core_get()->qf_b));
-		result &= (qf_cmp(l, r) == RLC_EQ);
+		cp_clhe_powf(p, c, t);
+		qf_com(r, p, cmt[6], 0, &(core_get()->qf_b));
+		qf_com(r, r, hp[3], 0, &(core_get()->qf_b));
+		result &= (qf_cmp(cp[1], r) == RLC_EQ);
 	}
 	RLC_CATCH_ANY {
 		result = 0;
 	}
 	RLC_FINALLY {
 		bn_free(t);
+		for (i = 0; i < CLRSA_SHR; i++) {
+			bn_free(e[i]);
+		}
+		for (i = 0; i < 5; i++) {
+			qf_free(hp[i]);
+		}
+		for (i = 0; i < 3; i++) {
+			qf_free(cp[i]);
+		}
+		for (i = 0; i < 2; i++) {
+			qf_free(ep[i]);
+		}
+		qf_free(g0);
 		qf_free(l);
 		qf_free(r);
 		qf_free(p);
