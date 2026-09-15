@@ -69,10 +69,11 @@
  * Hashes a tag, the delay, the discriminant and a payload into a digest, so
  * that both oracles are separated and every value is bound to the instance.
  */
-static void clvdf_absorb(uint8_t *h, uint8_t tag, size_t t, const uint8_t *in,
-		size_t len) {
+static void clvdf_absorb(uint8_t *h, uint8_t tag, uint32_t ctr, size_t t,
+		const uint8_t *in, size_t len) {
 	size_t n = 0, dl = bn_size_bin(&(core_get()->qf_dk));
-	uint8_t *buf = RLC_ALLOCA(uint8_t, 1 + sizeof(size_t) + dl + len);
+	uint8_t *buf = RLC_ALLOCA(uint8_t, 1 + sizeof(uint32_t) + sizeof(size_t) +
+			dl + len);
 
 	if (buf == NULL) {
 		RLC_THROW(ERR_NO_MEMORY);
@@ -80,6 +81,12 @@ static void clvdf_absorb(uint8_t *h, uint8_t tag, size_t t, const uint8_t *in,
 	}
 
 	buf[n++] = tag;
+	/* The counter is absorbed in fixed byte order, so that the oracle does
+	 * not depend on the endianness of the host. */
+	buf[n++] = (uint8_t)(ctr >> 24);
+	buf[n++] = (uint8_t)(ctr >> 16);
+	buf[n++] = (uint8_t)(ctr >> 8);
+	buf[n++] = (uint8_t)ctr;
 	memcpy(buf + n, &t, sizeof(size_t));
 	n += sizeof(size_t);
 	bn_write_bin(buf + n, dl, &(core_get()->qf_dk));
@@ -249,8 +256,9 @@ static void clvdf_map_g(qf_t g, size_t t, const bn_t x) {
 }
 
 /**
- * Maps a transcript to a prime challenge. The conductor is excluded so that the
- * challenge stays invertible modulo the plaintext prime.
+ * Maps a transcript to a prime challenge, uniformly over the primes of the
+ * challenge range. The conductor is excluded so that the challenge stays
+ * invertible modulo the plaintext prime.
  */
 static void clvdf_map_p(bn_t l, size_t t, const qf_t u, const qf_t y) {
 	uint8_t h[RLC_MD_LEN], *bin;
@@ -270,13 +278,19 @@ static void clvdf_map_p(bn_t l, size_t t, const qf_t u, const qf_t y) {
 	bn_write_bin(bin + n, lb, u->b); n += lb;
 	bn_write_bin(bin + n, lc, y->a); n += lc;
 	bn_write_bin(bin + n, ld, y->b); n += ld;
-	clvdf_absorb(h, CLVDF_TAG_P, t, bin, n);
 
-	bn_read_bin(l, h, RLC_MIN(sizeof(h), CLVDF_CHAL_BITS / 8));
-	bn_set_bit(l, 0, 1);
-	bn_set_bit(l, CLVDF_CHAL_BITS - 1, 1);
-	while (!bn_is_prime(l) || bn_cmp(l, &(core_get()->qf_q)) == RLC_EQ) {
-		bn_add_dig(l, l, 2);
+	/*
+	 * The challenge is drawn by rejection rather than by searching upward
+	 * from a single digest.
+	 */
+	for (uint32_t ctr = 0; ; ctr++) {
+		clvdf_absorb(h, CLVDF_TAG_P, ctr, t, bin, n);
+		bn_read_bin(l, h, RLC_MIN(sizeof(h), CLVDF_CHAL_BITS / 8));
+		bn_set_bit(l, 0, 1);
+		bn_set_bit(l, CLVDF_CHAL_BITS - 1, 1);
+		if (bn_cmp(l, &(core_get()->qf_q)) != RLC_EQ && bn_is_prime(l)) {
+			break;
+		}
 	}
 
 	RLC_FREE(bin);
