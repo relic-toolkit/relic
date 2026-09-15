@@ -372,7 +372,7 @@ static int subgroup_paillier() {
 /** Size in bits of the plaintext prime used by the CL tests. */
 #define TEST_CLHE_PLAIN		64
 /** Size in bits of the fundamental discriminant used by the CL tests. */
-#define TEST_CLHE_DISC		512
+#define TEST_CLHE_DISC		256
 
 /**
  * Samples a modulus admitting the class group setting, on the same conditions
