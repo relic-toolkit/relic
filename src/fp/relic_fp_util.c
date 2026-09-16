@@ -49,18 +49,16 @@ void fp_zero(fp_t a) {
 }
 
 int fp_is_zero(const fp_t a) {
-	int i;
+	const dig_t *p = fp_prime_get();
 	dig_t t = 0, u = 0;
 
-	for (i = 0; i < RLC_FP_DIGS; i++) {
+	for (size_t i = 0; i < RLC_FP_DIGS; i++) {
 		t |= a[i];
+		u |= a[i] ^ p[i];
 	}
 
-	for (i = 0; i < RLC_FP_DIGS; i++) {
-		u |= a[i] ^ fp_prime_get()[i];
-	}
-
-	return !t || !u;
+	/* Both tests are evaluated, so that neither zero is told apart by time. */
+	return (!t) | (!u);
 }
 
 int fp_is_even(const fp_t a) {

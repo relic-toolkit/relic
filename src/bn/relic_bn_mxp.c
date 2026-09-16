@@ -37,7 +37,7 @@
 /*============================================================================*/
 
 void bn_mxp_basic(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
-	int i, l;
+	int i, l, even;
 	bn_t t, u, r;
 
 	if (bn_cmp_dig(m, 1) == RLC_EQ) {
@@ -54,17 +54,29 @@ void bn_mxp_basic(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 	bn_null(t);
 	bn_null(u);
 
+	/*
+	 * The precomputed reductions all need an odd modulus, so an even one is
+	 * reduced by division instead. The binary method itself does not care.
+	 */
+	even = bn_is_even(m);
+
 	RLC_TRY {
 		bn_new(r);
 		bn_new(t);
 		bn_new(u);
 
-		bn_mod_pre(u, m);
+		if (!even) {
+			bn_mod_pre(u, m);
+		}
 
 		l = bn_bits(b);
 
 #if BN_MOD == MONTY
-		bn_mod_monty_conv(t, a, m);
+		if (even) {
+			bn_mod_basic(t, a, m);
+		} else {
+			bn_mod_monty_conv(t, a, m);
+		}
 #else
 		bn_copy(t, a);
 #endif
@@ -72,15 +84,29 @@ void bn_mxp_basic(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 		bn_copy(r, t);
 		for (i = l - 2; i >= 0; i--) {
 			bn_sqr(r, r);
-			bn_mod(r, r, m, u);
+			if (even) {
+				bn_mod_basic(r, r, m);
+			} else {
+				bn_mod(r, r, m, u);
+			}
 			if (bn_get_bit(b, i)) {
 				bn_mul(r, r, t);
-				bn_mod(r, r, m, u);
+				if (even) {
+					bn_mod_basic(r, r, m);
+				} else {
+					bn_mod(r, r, m, u);
+				}
 			}
 		}
 
 #if BN_MOD == MONTY
-		bn_mod_monty_back(c, r, m);
+		if (even) {
+			bn_copy(c, r);
+		} else {
+			bn_mod_monty_back(c, r, m);
+		}
+#else
+		bn_copy(c, r);
 #endif
 		if (bn_sign(b) == RLC_NEG) {
 			bn_mod_inv(c, c, m);
@@ -117,6 +143,13 @@ void bn_mxp_slide(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 	if (bn_is_zero(b)) {
 		RLC_FREE(win);
 		bn_set_dig(c, 1);
+		return;
+	}
+
+	if (bn_is_even(m)) {
+		/* The binary method is the one that takes an even modulus. */
+		RLC_FREE(win);
+		bn_mxp_basic(c, a, b, m);
 		return;
 	}
 
@@ -219,9 +252,11 @@ void bn_mxp_slide(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 #if BN_MXP == MONTY || !defined(STRIP)
 
 void bn_mxp_monty(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
-	bn_t tab[2], u;
-	dig_t mask;
-	int i, j, t;
+	bn_t tab[2], t, u;
+	int i, j;
+#if BN_MOD == MONTY
+	size_t sm = m->used;
+#endif
 
 	if (bn_cmp_dig(m, 1) == RLC_EQ) {
 		bn_zero(c);
@@ -233,8 +268,16 @@ void bn_mxp_monty(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 		return;
 	}
 
+	if (bn_is_even(m)) {
+		/* The ladder cannot run on an even modulus, and the binary method is
+		 * not constant time, so the guarantee is lost along with the fallback. */
+		bn_mxp_basic(c, a, b, m);
+		return;
+	}
+
 	bn_null(tab[0]);
 	bn_null(tab[1]);
+	bn_null(t);
 	bn_null(u);
 
 	RLC_TRY {
@@ -243,45 +286,50 @@ void bn_mxp_monty(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 
 		bn_new(tab[0]);
 		bn_new(tab[1]);
+		bn_new(t);
 
 #if BN_MOD == MONTY
+		bn_grow(t, 2 * sm);
+
 		bn_set_dig(tab[0], 1);
 		bn_mod_monty_conv(tab[0], tab[0], m);
 		bn_mod_monty_conv(tab[1], a, m);
+
+		bn_grow(tab[0], 2 * sm);
+		bn_grow(tab[1], 2 * sm);
+		dv_zero(tab[0]->dp + tab[0]->used, sm - tab[0]->used);
+		dv_zero(tab[1]->dp + tab[1]->used, sm - tab[1]->used);
+
+		for (i = bn_bits(b) - 1; i >= 0; i--) {
+			j = bn_get_bit(b, i);
+			dv_swap_sec(tab[0]->dp, tab[1]->dp, sm, j ^ 1);
+			bn_muln_low(t->dp, tab[0]->dp, tab[1]->dp, sm);
+			bn_modn_low(tab[0]->dp, t->dp, 2 * sm, m->dp, sm, u->dp[0]);
+			bn_sqrn_low(t->dp, tab[1]->dp, sm);
+			bn_modn_low(tab[1]->dp, t->dp, 2 * sm, m->dp, sm, u->dp[0]);
+			dv_swap_sec(tab[0]->dp, tab[1]->dp, sm, j ^ 1);
+		}
+
+		tab[0]->used = sm;
+		tab[0]->sign = RLC_POS;
+		bn_trim(tab[0]);
+		bn_mod_monty_back(u, tab[0], m);
 #else
 		bn_set_dig(tab[0], 1);
 		bn_mod(tab[1], a, m);
-#endif
 
 		bn_grow(tab[0], m->alloc);
 		bn_grow(tab[1], m->alloc);
 		for (i = bn_bits(b) - 1; i >= 0; i--) {
 			j = bn_get_bit(b, i);
-			dv_swap_sec(tab[0]->dp, tab[1]->dp, m->alloc, j ^ 1);
-			mask = -(j ^ 1);
-			t = (tab[0]->used ^ tab[1]->used) & mask;
-			tab[0]->used ^= t;
-			tab[1]->used ^= t;
-			t = (tab[0]->sign ^ tab[1]->sign) & mask;
-			tab[0]->sign ^= t;
-			tab[1]->sign ^= t;
-			bn_mul(tab[0], tab[0], tab[1]);
-			bn_mod(tab[0], tab[0], m, u);
-			bn_sqr(tab[1], tab[1]);
-			bn_mod(tab[1], tab[1], m, u);
-			dv_swap_sec(tab[0]->dp, tab[1]->dp, m->alloc, j ^ 1);
-			mask = -(j ^ 1);
-			t = (tab[0]->used ^ tab[1]->used) & mask;
-			tab[0]->used ^= t;
-			tab[1]->used ^= t;
-			t = (tab[0]->sign ^ tab[1]->sign) & mask;
-			tab[0]->sign ^= t;
-			tab[1]->sign ^= t;
+			bn_swap_sec(tab[0], tab[1], j ^ 1);
+			bn_mul(t, tab[0], tab[1]);
+			bn_mod(tab[0], t, m, u);
+			bn_sqr(t, tab[1]);
+			bn_mod(tab[1], t, m, u);
+			bn_swap_sec(tab[0], tab[1], j ^ 1);
 		}
 
-#if BN_MOD == MONTY
-		bn_mod_monty_back(u, tab[0], m);
-#else
 		bn_copy(u, tab[0]);
 #endif
 
@@ -295,6 +343,7 @@ void bn_mxp_monty(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
+		bn_free(t);
 		bn_free(tab[1]);
 		bn_free(tab[0]);
 		bn_free(u);
