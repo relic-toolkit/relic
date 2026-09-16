@@ -72,8 +72,7 @@
 static void clvdf_absorb(uint8_t *h, uint8_t tag, uint32_t ctr, size_t t,
 		const uint8_t *in, size_t len) {
 	size_t n = 0, dl = bn_size_bin(&(core_get()->qf_dk));
-	uint8_t *buf = RLC_ALLOCA(uint8_t, 1 + sizeof(uint32_t) + sizeof(size_t) +
-			dl + len);
+	uint8_t *buf = RLC_ALLOCA(uint8_t, 1 + 3 * sizeof(uint32_t) + dl + len);
 
 	if (buf == NULL) {
 		RLC_THROW(ERR_NO_MEMORY);
@@ -81,14 +80,12 @@ static void clvdf_absorb(uint8_t *h, uint8_t tag, uint32_t ctr, size_t t,
 	}
 
 	buf[n++] = tag;
-	/* The counter is absorbed in fixed byte order, so that the oracle does
-	 * not depend on the endianness of the host. */
-	buf[n++] = (uint8_t)(ctr >> 24);
-	buf[n++] = (uint8_t)(ctr >> 16);
-	buf[n++] = (uint8_t)(ctr >> 8);
-	buf[n++] = (uint8_t)ctr;
-	memcpy(buf + n, &t, sizeof(size_t));
-	n += sizeof(size_t);
+	/* The counter and the delay are absorbed in fixed byte order, so that the
+	 * oracle does not depend on the endianness of the host. */
+	util_write_uint32(buf + n, ctr);
+	n += sizeof(uint32_t);
+	util_write_size(buf + n, t);
+	n += 2 * sizeof(uint32_t);
 	bn_write_bin(buf + n, dl, &(core_get()->qf_dk));
 	n += dl;
 	if (len > 0) {
@@ -234,7 +231,7 @@ static void clvdf_witness(qf_t r, const qf_t *tab, size_t nc, const int32_t *sd,
 static void clvdf_map_g(qf_t g, size_t t, const bn_t x) {
 	size_t n = 0, dl = bn_size_bin(&(core_get()->qf_dk));
 	size_t xl = bn_size_bin(x);
-	uint8_t *in = RLC_ALLOCA(uint8_t, 1 + sizeof(size_t) + dl + xl);
+	uint8_t *in = RLC_ALLOCA(uint8_t, 1 + 2 * sizeof(uint32_t) + dl + xl);
 
 	if (in == NULL) {
 		RLC_THROW(ERR_NO_MEMORY);
@@ -242,8 +239,10 @@ static void clvdf_map_g(qf_t g, size_t t, const bn_t x) {
 	}
 
 	in[n++] = CLVDF_TAG_G;
-	memcpy(in + n, &t, sizeof(size_t));
-	n += sizeof(size_t);
+	/* The delay is absorbed in fixed byte order, so that the map does not
+	 * depend on the width or the endianness of size_t. */
+	util_write_size(in + n, t);
+	n += 2 * sizeof(uint32_t);
 	bn_write_bin(in + n, dl, &(core_get()->qf_dk));
 	n += dl;
 	bn_write_bin(in + n, xl, x);
@@ -481,7 +480,7 @@ int cp_clvdf_evl(qf_t u, qf_t z, qf_t y, const qf_t f, size_t t,
 int cp_clvdf_dec(bn_t x, size_t t, const qf_t u, const qf_t z, const qf_t y) {
 	qf_t w, s, g, h;
 	bn_t l, r, e, two;
-	int result = 0;
+	int result = RLC_ERR;
 
 	qf_null(w);
 	qf_null(s);
@@ -539,15 +538,15 @@ int cp_clvdf_dec(bn_t x, size_t t, const qf_t u, const qf_t z, const qf_t y) {
 					bn_sub(x, &(core_get()->qf_q), x);
 					bn_mod(x, x, &(core_get()->qf_q));
 					clvdf_map_g(h, t, x);
-					result = (qf_cmp(g, h) == RLC_EQ);
+					result = (qf_cmp(g, h) == RLC_EQ ? RLC_OK : RLC_ERR);
 				} else {
-					result = 1;
+					result = RLC_OK;
 				}
 			}
 		}
 	}
 	RLC_CATCH_ANY {
-		result = 0;
+		result = RLC_ERR;
 	}
 	RLC_FINALLY {
 		qf_free(w);
@@ -565,7 +564,7 @@ int cp_clvdf_dec(bn_t x, size_t t, const qf_t u, const qf_t z, const qf_t y) {
 int cp_clvdf_dec_opt(bn_t x, size_t t, const qf_t u, const qf_t z, const qf_t y) {
 	qf_t w, s, g, h;
 	bn_t l, r, e, two;
-	int result = 0;
+	int result = RLC_ERR;
 
 	qf_null(w);
 	qf_null(s);
@@ -638,15 +637,15 @@ int cp_clvdf_dec_opt(bn_t x, size_t t, const qf_t u, const qf_t z, const qf_t y)
 					bn_sub(x, &(core_get()->qf_q), x);
 					bn_mod(x, x, &(core_get()->qf_q));
 					clvdf_map_g(h, t, x);
-					result = (qf_cmp(g, h) == RLC_EQ);
+					result = (qf_cmp(g, h) == RLC_EQ ? RLC_OK : RLC_ERR);
 				} else {
-					result = 1;
+					result = RLC_OK;
 				}
 			}
 		}
 	}
 	RLC_CATCH_ANY {
-		result = 0;
+		result = RLC_ERR;
 	}
 	RLC_FINALLY {
 		qf_free(w);
@@ -669,7 +668,8 @@ int cp_clvdf_ver(size_t t, const bn_t x, const qf_t u, const qf_t z, const qf_t 
 
 	RLC_TRY {
 		bn_new(d);
-		result = cp_clvdf_dec_opt(d, t, u, z, y) && (bn_cmp(d, x) == RLC_EQ);
+		result = (cp_clvdf_dec_opt(d, t, u, z, y) == RLC_OK) &&
+				(bn_cmp(d, x) == RLC_EQ);
 	}
 	RLC_CATCH_ANY {
 		result = 0;

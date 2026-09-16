@@ -1452,7 +1452,7 @@ int cp_clvdf_evl(qf_t u, qf_t z, qf_t y, const qf_t f, size_t t,
  * @param[in] u				- the first component of the encoding.
  * @param[in] z				- the second component of the encoding.
  * @param[in] y				- the third component of the encoding.
- * @return a boolean value indicating whether the triple decoded.
+ * @return RLC_OK if the triple decoded, RLC_ERR otherwise.
  */
 int cp_clvdf_dec(bn_t x, size_t t, const qf_t u, const qf_t z, const qf_t y);
 
@@ -1465,7 +1465,7 @@ int cp_clvdf_dec(bn_t x, size_t t, const qf_t u, const qf_t z, const qf_t y);
  * @param[in] u				- the first component of the encoding.
  * @param[in] z				- the second component of the encoding.
  * @param[in] y				- the third component of the encoding.
- * @return a boolean value indicating whether the triple decoded.
+ * @return RLC_OK if the triple decoded, RLC_ERR otherwise.
  */
 int cp_clvdf_dec_opt(bn_t x, size_t t, const qf_t u, const qf_t z, const qf_t y);
 

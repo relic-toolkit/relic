@@ -39,12 +39,12 @@
 /**
  * Domain separation tag of the hash-to-group function.
  */
-#define TDS_DST_GROUP		"RELIC-TDS-V01-HASH-TO-GROUP"
+#define TDS_DST_GRP		"RELIC-TDS-V01-HASH-TO-GROUP"
 
 /**
  * Domain separation tag of the challenge oracle of the proof of exponentiation.
  */
-#define TDS_DST_PRIME		"RELIC-TDS-V01-HASH-TO-PRIME"
+#define TDS_DST_PRM		"RELIC-TDS-V01-HASH-TO-PRIME"
 
 /**
  * Bit length of a challenge prime, twice the security level.
@@ -233,9 +233,19 @@ static int tds_is_valid(const bn_t a, const bn_t n, const bn_t h) {
 static int tds_map_group(bn_t c, const uint8_t *msg, size_t len, size_t stamp,
 		const bn_t z, const uint8_t *salt, const tds_t key, const bn_t h) {
 	int result = RLC_ERR;
-	size_t il, ol, pl, nl = bn_size_bin(key->n);
-	uint8_t *in = NULL, *out = NULL, seed[RLC_MD_LEN + 1];
+	size_t pl, nl = bn_size_bin(key->n);
+	size_t ol = nl + RLC_MD_LEN;
+	size_t il = 2 * nl + 16 + 8 + nl + RLC_TDS_SALT + 8 + RLC_MD_LEN;
+	uint8_t *in = RLC_ALLOCA(uint8_t, il), *out = RLC_ALLOCA(uint8_t, ol);
+	uint8_t seed[RLC_MD_LEN + 1];
 	bn_t t, u;
+
+	if (in == NULL || out == NULL) {
+		RLC_FREE(in);
+		RLC_FREE(out);
+		RLC_THROW(ERR_NO_MEMORY);
+		return RLC_ERR;
+	}
 
 	bn_null(t);
 	bn_null(u);
@@ -244,39 +254,30 @@ static int tds_map_group(bn_t c, const uint8_t *msg, size_t len, size_t stamp,
 		bn_new(t);
 		bn_new(u);
 
-		ol = nl + RLC_MD_LEN;
-		il = 2 * nl + 16 + 8 + nl + RLC_TDS_SALT + 8 + RLC_MD_LEN;
-		in = RLC_ALLOCA(uint8_t, il);
-		out = RLC_ALLOCA(uint8_t, ol);
-		if (in == NULL || out == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		} else {
-			pl = tds_write_key(in, key);
-			util_write_size(in + pl, stamp);
-			bn_write_bin(in + pl + 8, nl, z);
-			memcpy(in + pl + 8 + nl, salt, RLC_TDS_SALT);
-			util_write_size(in + pl + 8 + nl + RLC_TDS_SALT, len);
-			md_map(in + pl + 16 + nl + RLC_TDS_SALT, msg, len);
+		pl = tds_write_key(in, key);
+		util_write_size(in + pl, stamp);
+		bn_write_bin(in + pl + 8, nl, z);
+		memcpy(in + pl + 8 + nl, salt, RLC_TDS_SALT);
+		util_write_size(in + pl + 8 + nl + RLC_TDS_SALT, len);
+		md_map(in + pl + 16 + nl + RLC_TDS_SALT, msg, len);
 
-			/* Compress the statement once, so that the expansion below runs on a
-			 * short input regardless of the size of the modulus. */
-			md_map(seed, in, il);
+		/* Compress the statement once, so that the expansion below runs on a
+		 * short input regardless of the size of the modulus. */
+		md_map(seed, in, il);
 
-			for (size_t i = 0; i < 256; i++) {
-				seed[RLC_MD_LEN] = (uint8_t)i;
-				md_xmd(out, ol, seed, RLC_MD_LEN + 1,
-						(const uint8_t *)TDS_DST_GROUP,
-						strlen(TDS_DST_GROUP));
-				bn_read_bin(t, out, ol);
-				bn_mod_basic(t, t, key->n);
-				bn_gcd(u, t, key->n);
-				if (bn_cmp_dig(u, 1) == RLC_EQ) {
-					/* Square into the subgroup of squares. */
-					tds_sqr(c, t, key->n, h, u);
-					if (!bn_is_zero(c) && bn_cmp_dig(c, 1) != RLC_EQ) {
-						result = RLC_OK;
-						break;
-					}
+		for (size_t i = 0; i < 256; i++) {
+			seed[RLC_MD_LEN] = (uint8_t)i;
+			md_xmd(out, ol, seed, RLC_MD_LEN + 1, (const uint8_t *)TDS_DST_GRP,
+					strlen(TDS_DST_GRP));
+			bn_read_bin(t, out, ol);
+			bn_mod_basic(t, t, key->n);
+			bn_gcd(u, t, key->n);
+			if (bn_cmp_dig(u, 1) == RLC_EQ) {
+				/* Square into the subgroup of squares. */
+				tds_sqr(c, t, key->n, h, u);
+				if (!bn_is_zero(c) && bn_cmp_dig(c, 1) != RLC_EQ) {
+					result = RLC_OK;
+					break;
 				}
 			}
 		}
@@ -308,23 +309,23 @@ static int tds_map_group(bn_t c, const uint8_t *msg, size_t len, size_t stamp,
 static int tds_map_prime(bn_t l, const bn_t g, const bn_t y, size_t k,
 		const tds_t key) {
 	int result = RLC_ERR;
-	size_t il, pl, nl = bn_size_bin(key->n);
-	uint8_t *in = NULL;
+	size_t pl, nl = bn_size_bin(key->n);
+	size_t il = 2 * nl + 16 + 8 + 2 * nl;
+	uint8_t *in = RLC_ALLOCA(uint8_t, il);
+
+	if (in == NULL) {
+		RLC_THROW(ERR_NO_MEMORY);
+		return RLC_ERR;
+	}
 
 	RLC_TRY {
-		il = 2 * nl + 16 + 8 + 2 * nl;
-		in = RLC_ALLOCA(uint8_t, il);
-		if (in == NULL) {
-			RLC_THROW(ERR_NO_MEMORY);
-		} else {
-			pl = tds_write_key(in, key);
-			util_write_size(in + pl, k);
-			bn_write_bin(in + pl + 8, nl, g);
-			bn_write_bin(in + pl + 8 + nl, nl, y);
+		pl = tds_write_key(in, key);
+		util_write_size(in + pl, k);
+		bn_write_bin(in + pl + 8, nl, g);
+		bn_write_bin(in + pl + 8 + nl, nl, y);
 
-			result = bn_map_prime(l, NULL, in, il, TDS_PRM_BITS, 0,
-					(const uint8_t *)TDS_DST_PRIME, strlen(TDS_DST_PRIME));
-		}
+		result = bn_map_prime(l, NULL, in, il, TDS_PRM_BITS, 0,
+				(const uint8_t *)TDS_DST_PRM, strlen(TDS_DST_PRM));
 	}
 	RLC_CATCH_ANY {
 		result = RLC_ERR;
