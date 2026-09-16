@@ -286,6 +286,19 @@ void bn_divn_low(dig_t *c, dig_t *d, const dig_t *a, size_t sa, const dig_t *b,
 		size_t sb);
 
 /**
+ * Divides a digit vector by another, assuming the division is exact. Computes
+ * c = a / b where b divides a.
+ *
+ * @param[out] c			- the quotient of sa-sb+1 digits, no overlap with b.
+ * @param[in] a				- the dividend.
+ * @param[in] sa			- the size of the dividend in digits.
+ * @param[in] b				- the divisor, which must divide the dividend.
+ * @param[in] sb			- the size of the divisor in digits.
+ */
+void bn_dive_low(dig_t *c, const dig_t *a, size_t sa, const dig_t *b,
+		size_t sb);
+
+/**
  * Divides a digit vector by a digit. Computes c = floor(a / digit) and
  * d = a mod digit.
  *

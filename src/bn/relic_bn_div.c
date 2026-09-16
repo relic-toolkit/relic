@@ -152,6 +152,52 @@ static void bn_div_imp(bn_t c, bn_t d, const bn_t a, const bn_t b, int ceil) {
 /* Public definitions                                                         */
 /*============================================================================*/
 
+void bn_div_exc(bn_t c, const bn_t a, const bn_t b) {
+	int sign;
+	bn_t t;
+
+	bn_null(t);
+
+	if (bn_is_zero(b)) {
+		RLC_THROW(ERR_NO_VALID);
+		return;
+	}
+	if (bn_is_zero(a)) {
+		bn_zero(c);
+		return;
+	}
+
+	if (a->used < b->used) {
+		/* a is nonzero and b divides it, so this cannot be an exact quotient */
+		bn_div(c, a, b);
+		return;
+	}
+	sign = (a->sign == b->sign ? RLC_POS : RLC_NEG);
+
+	RLC_TRY {
+		bn_new(t);
+		bn_grow(c, a->used - b->used + 2);
+
+		if (c == b) {
+			/* The quotient cannot overlap the divisor, so copy it away. */
+			bn_copy(t, b);
+			bn_dive_low(c->dp, a->dp, a->used, t->dp, t->used);
+			c->used = a->used - t->used + 1;
+		} else {
+			bn_dive_low(c->dp, a->dp, a->used, b->dp, b->used);
+			c->used = a->used - b->used + 1;
+		}
+		c->sign = sign;
+		bn_trim(c);
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		bn_free(t);
+	}
+}
+
 void bn_div(bn_t c, const bn_t a, const bn_t b) {
 	if (bn_is_zero(b)) {
 		RLC_THROW(ERR_NO_VALID);

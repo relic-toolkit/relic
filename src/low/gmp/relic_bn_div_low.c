@@ -46,3 +46,15 @@ void bn_divn_low(dig_t *c, dig_t *d, const dig_t *a, size_t sa, const dig_t *b,
 void bn_div1_low(dig_t *c, dig_t *d, const dig_t *a, dig_t b, size_t size) {
 	*d = mpn_divrem_1(c, 0, a, size, b);
 }
+
+/*
+ * mpn_divexact is gmp-impl.h material: exported from libgmp and stable across
+ * the 6.x series, but not a supported interface.
+ */
+__GMP_DECLSPEC void __gmpn_divexact(mp_ptr, mp_srcptr, mp_size_t, mp_srcptr,
+		mp_size_t);
+
+void bn_dive_low(dig_t *c, const dig_t *a, size_t sa, const dig_t *b,
+		size_t sb) {
+	__gmpn_divexact((mp_ptr)c, (mp_srcptr)a, sa, (mp_srcptr)b, sb);
+}

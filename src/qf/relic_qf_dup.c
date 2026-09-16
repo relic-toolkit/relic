@@ -78,8 +78,8 @@ void qf_dup(qf_t r, const qf_t f, const bn_t bnd) {
 		bn_gcd_ext(Ax, m11, m01, f->a, f->b);
 
 		if (bn_cmp_dig(Ax, 1) != RLC_EQ) {
-			bn_div(By, f->a, Ax);
-			bn_div(Dy, f->b, Ax);
+			bn_div_exc(By, f->a, Ax);
+			bn_div_exc(Dy, f->b, Ax);
 		} else {
 			bn_copy(By, f->a);
 			bn_copy(Dy, f->b);

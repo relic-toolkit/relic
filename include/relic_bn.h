@@ -937,6 +937,18 @@ void bn_rsh(bn_t c, const bn_t a, uint_t bits);
 void bn_div(bn_t c, const bn_t a, const bn_t b);
 
 /**
+ * Divides a multiple precision integer by another, assuming the division is
+ * exact. Computes c = a / b where b divides a. Cheaper than bn_div. The
+ * quotient may alias either operand.
+ *
+ * @param[out] c			- the quotient.
+ * @param[in] a				- the dividend.
+ * @param[in] b				- the divisor, which must divide the dividend.
+ * @throw ERR_NO_VALID		- if the divisor is zero.
+ */
+void bn_div_exc(bn_t c, const bn_t a, const bn_t b);
+
+/**
  * Divides a multiple precision integer by another multiple precision integer
  * and produces a truncated quotient. Computes c = floor(a / b) and d = a - cb.
  *

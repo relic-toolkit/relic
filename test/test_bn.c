@@ -1024,6 +1024,29 @@ static int division(void) {
 			bn_div_rem_rup(c, d, a, b);
 			TEST_ASSERT(bn_is_zero(c) && bn_is_zero(d), end);
 		} TEST_END;
+
+		TEST_CASE("exact division is correct") {
+			bn_rand(b, RLC_POS, RLC_BN_BITS / 2);
+			while (bn_is_zero(b)) {
+				bn_rand(b, RLC_POS, RLC_BN_BITS / 2);
+			}
+			bn_rand(c, RLC_POS, RLC_BN_BITS / 2);
+			for (int j = 0; j < 4; j++) {
+				/* Exercise the four combinations of signs. */
+				bn_neg(b, b);
+				if (j % 2 == 0) {
+					bn_neg(c, c);
+				}
+				bn_mul(a, b, c);
+				bn_div_exc(d, a, b);
+				TEST_ASSERT(bn_cmp(d, c) == RLC_EQ, end);
+				bn_div(e, a, b);
+				TEST_ASSERT(bn_cmp(d, e) == RLC_EQ, end);
+			}
+			bn_zero(a);
+			bn_div_exc(d, a, b);
+			TEST_ASSERT(bn_is_zero(d), end);
+		} TEST_END;
 	} RLC_CATCH_ANY {
 		RLC_ERROR(end);
 	}

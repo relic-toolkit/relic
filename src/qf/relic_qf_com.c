@@ -154,7 +154,7 @@ void qf_com(qf_t r, const qf_t f, const qf_t g, int neg, const bn_t bnd) {
 			if (bn_is_zero(t0)) {
 				bn_copy(Ax, F);
 				bn_mul(Bx, m, v);
-				bn_div(By, f->a, Ax);
+				bn_div_exc(By, f->a, Ax);
 			} else {
 				/*
 				 * Ax = gcd(F, s)
@@ -170,7 +170,7 @@ void qf_com(qf_t r, const qf_t f, const qf_t g, int neg, const bn_t bnd) {
 				/*
 				 * H = F / Ax
 				 */
-				bn_div(H, F, Ax);
+				bn_div_exc(H, F, Ax);
 
 				/*
 				 * Compute
@@ -201,7 +201,7 @@ void qf_com(qf_t r, const qf_t f, const qf_t g, int neg, const bn_t bnd) {
 				/*
 				 * By = f->a / Ax
 				 */
-				bn_div(By, f->a, Ax);
+				bn_div_exc(By, f->a, Ax);
 
 				/*
 				 * Bx = (v*m + l*By) / H
@@ -211,7 +211,7 @@ void qf_com(qf_t r, const qf_t f, const qf_t g, int neg, const bn_t bnd) {
 				bn_mul(t0, v, m);
 				bn_mul(t1, F, By);
 				bn_add(t0, t0, t1);
-				bn_div(Bx, t0, H);
+				bn_div_exc(Bx, t0, H);
 			}
 		}
 
@@ -219,8 +219,8 @@ void qf_com(qf_t r, const qf_t f, const qf_t g, int neg, const bn_t bnd) {
 		 * Cy = g->a / Ax
 		 * Dy = s / Ax
 		 */
-		bn_div(Cy, g->a, Ax);
-		bn_div(Dy, s, Ax);
+		bn_div_exc(Cy, g->a, Ax);
+		bn_div_exc(Dy, s, Ax);
 
 		/*
 		 * Bx <- Bx mod By
@@ -249,7 +249,7 @@ void qf_com(qf_t r, const qf_t f, const qf_t g, int neg, const bn_t bnd) {
 		bn_mul(Cx, Bx, Cy);
 		bn_mul(t0, m, m11);
 		bn_sub(Cx, Cx, t0);
-		bn_div(Cx, Cx, By);
+		bn_div_exc(Cx, Cx, By);
 
 		/*
 		 * Cy
@@ -258,11 +258,11 @@ void qf_com(qf_t r, const qf_t f, const qf_t g, int neg, const bn_t bnd) {
 			bn_mul(Cy, g->a, by);
 			bn_mul(t0, Ay, m);
 			bn_sub(Cy, Cy, t0);
-			bn_div(Cy, Cy, f->a);
+			bn_div_exc(Cy, Cy, f->a);
 		} else {
 			bn_mul(Cy, Cx, by);
 			bn_add(Cy, Cy, m);
-			bn_div(Cy, Cy, Bx);
+			bn_div_exc(Cy, Cy, Bx);
 		}
 
 		/*
@@ -271,14 +271,14 @@ void qf_com(qf_t r, const qf_t f, const qf_t g, int neg, const bn_t bnd) {
 		bn_mul(Dx, Bx, Dy);
 		bn_mul(t0, g->c, m11);
 		bn_sub(Dx, Dx, t0);
-		bn_div(Dx, Dx, By);
+		bn_div_exc(Dx, Dx, By);
 
 		/*
 		 * Dy = (Dy - Dx*m10) / m11
 		 */
 		bn_mul(t0, Dx, m10);
 		bn_sub(Dy, Dy, t0);
-		bn_div(Dy, Dy, m11);
+		bn_div_exc(Dy, Dy, m11);
 
 		/*
 		 * Ax <- m11 * Ax

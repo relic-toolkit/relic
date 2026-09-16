@@ -145,3 +145,20 @@ void bn_div1_low(dig_t *c, dig_t *d, const dig_t *a, dig_t b, size_t size) {
 	}
 	*d = (dig_t)w;
 }
+
+void bn_dive_low(dig_t *c, const dig_t *a, size_t sa, const dig_t *b,
+		size_t sb) {
+	/* No exact-division primitive here, so the general one is used. It
+	 * normalizes both operands in place, with a digit of headroom, and expects
+	 * a zeroed quotient, so everything is staged in scratch space. */
+	dig_t *t = RLC_ALLOCA(dig_t, 4 * (sa + 1));
+	dig_t *q = t, *r = q + sa + 1, *x = r + sa + 1, *y = x + sa + 1;
+
+	dv_zero(t, 4 * (sa + 1));
+	dv_copy(x, a, sa);
+	dv_copy(y, b, sb);
+
+	bn_divn_low(q, r, x, sa, y, sb);
+	dv_copy(c, q, sa - sb + 1);
+	RLC_FREE(t);
+}

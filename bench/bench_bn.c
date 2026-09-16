@@ -476,6 +476,14 @@ static void arith(void) {
 	}
 	BENCH_END;
 
+	BENCH_RUN("bn_div_exc") {
+		bn_rand(b, RLC_POS, RLC_BN_BITS);
+		bn_rand(c, RLC_POS, RLC_BN_BITS - RLC_DIG / 2);
+		bn_mul(a, b, c);
+		BENCH_ADD(bn_div_exc(c, a, b));
+	}
+	BENCH_END;
+
 	BENCH_RUN("bn_div_dig") {
 		bn_rand(a, RLC_POS, 2 * RLC_BN_BITS - RLC_DIG / 2);
 		do {
