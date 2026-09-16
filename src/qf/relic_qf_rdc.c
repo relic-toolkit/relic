@@ -61,10 +61,7 @@ static inline void qf_norm_imp(qf_t f, const qf_t g, bn_t t, bn_t q, bn_t r) {
 	bn_hlv(q, q);						/* b = (2a)*q + r */
 	bn_add(t, r, g->b);					/* w = b_new + b_old, even */
 	bn_hlv(t, t);
-	if (f != g) {
-		bn_copy(f->c, g->c);
-	}
-	bn_mul_sub(f->c, q, t);
+	bn_mul_sub(f->c, g->c, q, t);
 #if ALLOC == DYNAMIC
 	bn_swap(f->b, r);
 #else

@@ -877,29 +877,34 @@ void bn_mul_karat(bn_t c, const bn_t a, const bn_t b);
 
 /**
  * Multiplies two multiple precision integers and adds the product to a third.
- * Computes c = c + a * b.
+ * Computes d = c + a * b. The result may be the integer added to, and the
+ * accumulation is then in place, but it must not be either multiplicand.
  *
  * Faster when the second operand is short, ideally a single digit, as the
  * operands are swapped when the first one is the shorter.
  *
- * @param[in,out] c			- the integer to add to, and the result.
+ * @param[out] d			- the result.
+ * @param[in] c				- the integer to add to.
  * @param[in] a				- the first integer to multiply.
  * @param[in] b				- the second integer to multiply.
  */
-void bn_mul_add(bn_t c, const bn_t a, const bn_t b);
+void bn_mul_add(bn_t d, const bn_t c, const bn_t a, const bn_t b);
 
 /**
  * Multiplies two multiple precision integers and subtracts the product from a
- * third. Computes c = c - a * b.
+ * third. Computes d = c - a * b. The result may be the integer subtracted
+ * from, and the accumulation is then in place, but it must not be either
+ * multiplicand.
  *
  * Faster when the second operand is short, ideally a single digit, as the
  * operands are swapped when the first one is the shorter.
  *
- * @param[in,out] c			- the integer to subtract from, and the result.
+ * @param[out] d			- the result.
+ * @param[in] c				- the integer to subtract from.
  * @param[in] a				- the first integer to multiply.
  * @param[in] b				- the second integer to multiply.
  */
-void bn_mul_sub(bn_t c, const bn_t a, const bn_t b);
+void bn_mul_sub(bn_t d, const bn_t c, const bn_t a, const bn_t b);
 
 /**
  * Computes the square of a multiple precision integer using Schoolbook

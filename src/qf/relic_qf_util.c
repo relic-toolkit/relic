@@ -385,7 +385,7 @@ void qf_phi(qf_t r, const qf_t f, int rdc) {
 		/* 1 = g0*l + g1*a, then b <- b*g0 + a*g1 (disc_k and l are odd) */
 		bn_gcd_ext(t, x, y, &(ctx->qf_q), r->a);
 		bn_mul(r->b, r->b, x);
-		bn_mul_add(r->b, r->a, y);
+		bn_mul_add(r->b, r->b, r->a, y);
 		qf_set_dsc(r, r->a, r->b, &(ctx->qf_dk));
 		if (rdc) {
 			qf_rdc(r, r);

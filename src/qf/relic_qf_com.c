@@ -247,7 +247,7 @@ void qf_com(qf_t r, const qf_t f, const qf_t g, int neg, const bn_t bnd) {
 		 * Cx = (Bx*Cy - m*m11) / By
 		 */
 		bn_mul(Cx, Bx, Cy);
-		bn_mul_sub(Cx, m, m11);
+		bn_mul_sub(Cx, Cx, m, m11);
 		bn_div_exc(Cx, Cx, By);
 
 		/*
@@ -255,7 +255,7 @@ void qf_com(qf_t r, const qf_t f, const qf_t g, int neg, const bn_t bnd) {
 		 */
 		if (bn_is_zero(Bx)) {
 			bn_mul(Cy, g->a, by);
-			bn_mul_sub(Cy, Ay, m);
+			bn_mul_sub(Cy, Cy, Ay, m);
 			bn_div_exc(Cy, Cy, f->a);
 		} else {
 			bn_mul(Cy, Cx, by);
@@ -267,13 +267,13 @@ void qf_com(qf_t r, const qf_t f, const qf_t g, int neg, const bn_t bnd) {
 		 * Dx = (Bx*Dy - g->c*m11) / By
 		 */
 		bn_mul(Dx, Bx, Dy);
-		bn_mul_sub(Dx, g->c, m11);
+		bn_mul_sub(Dx, Dx, g->c, m11);
 		bn_div_exc(Dx, Dx, By);
 
 		/*
 		 * Dy = (Dy - Dx*m10) / m11
 		 */
-		bn_mul_sub(Dy, Dx, m10);
+		bn_mul_sub(Dy, Dy, Dx, m10);
 		bn_div_exc(Dy, Dy, m11);
 
 		/*
@@ -290,19 +290,19 @@ void qf_com(qf_t r, const qf_t f, const qf_t g, int neg, const bn_t bnd) {
 
 		/* a = by*Cy - Ay*Dy */
 		bn_mul(r->a, by, Cy);
-		bn_mul_sub(r->a, Ay, Dy);
+		bn_mul_sub(r->a, r->a, Ay, Dy);
 
 		/* c = Bx*Cx - Ax*Dx */
 		bn_mul(r->c, Bx, Cx);
-		bn_mul_sub(r->c, Ax, Dx);
+		bn_mul_sub(r->c, r->c, Ax, Dx);
 
 		/*
 		 * b = Ax*Dy + Ay*Dx - Bx*Cy - by*Cx
 		 */
 		bn_mul(r->b, Ax, Dy);
-		bn_mul_add(r->b, Ay, Dx);
-		bn_mul_sub(r->b, Bx, Cy);
-		bn_mul_sub(r->b, by, Cx);
+		bn_mul_add(r->b, r->b, Ay, Dx);
+		bn_mul_sub(r->b, r->b, Bx, Cy);
+		bn_mul_sub(r->b, r->b, by, Cx);
 
 		qf_rdc(r, r);
 	}

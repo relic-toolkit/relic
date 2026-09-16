@@ -164,18 +164,25 @@ static void bn_mul_karat_imp(bn_t c, const bn_t a, const bn_t b, uint_t level) {
  * borrow past the top digit, meaning the product was the larger in magnitude,
  * so the result is complemented and its sign flipped.
  */
-static void bn_muladd_imp(bn_t c, const bn_t a, const bn_t b, int sub) {
+static void bn_muladd_imp(bn_t d, const bn_t c, const bn_t a, const bn_t b,
+		int sub) {
 	int s;
 	size_t n;
 	dig_t carry;
 
+	/* The accumulation below is in place, so a separate result starts as a
+	 * copy. The value is needed even when the product turns out to be zero. */
+	if (d != c) {
+		bn_copy(d, c);
+	}
+
 	if (bn_is_zero(a) || bn_is_zero(b)) {
 		return;
 	}
-	if (bn_is_zero(c)) {
-		bn_mul(c, a, b);
+	if (bn_is_zero(d)) {
+		bn_mul(d, a, b);
 		if (sub) {
-			bn_neg(c, c);
+			bn_neg(d, d);
 		}
 		return;
 	}
@@ -191,9 +198,9 @@ static void bn_muladd_imp(bn_t c, const bn_t a, const bn_t b, int sub) {
 			bn_new(t);
 			bn_mul(t, a, b);
 			if (sub) {
-				bn_sub(c, c, t);
+				bn_sub(d, d, t);
 			} else {
-				bn_add(c, c, t);
+				bn_add(d, d, t);
 			}
 		} RLC_CATCH_ANY {
 			RLC_THROW(ERR_CAUGHT);
@@ -204,37 +211,37 @@ static void bn_muladd_imp(bn_t c, const bn_t a, const bn_t b, int sub) {
 	}
 
 	RLC_TRY {
-		n = RLC_MAX(c->used, a->used + 1);
-		bn_grow(c, n + 1);
-		while (c->used < n) {
-			c->dp[c->used++] = 0;
+		n = RLC_MAX(d->used, a->used + 1);
+		bn_grow(d, n + 1);
+		while (d->used < n) {
+			d->dp[d->used++] = 0;
 		}
 
-		if (s == c->sign) {
+		if (s == d->sign) {
 			/* magnitudes add, sign of c is unchanged */
-			carry = bn_mula_low(c->dp, a->dp, b->dp[0], a->used);
-			if (a->used < c->used) {
-				carry = bn_add1_low(c->dp + a->used, c->dp + a->used, carry,
-						c->used - a->used);
+			carry = bn_mula_low(d->dp, a->dp, b->dp[0], a->used);
+			if (a->used < d->used) {
+				carry = bn_add1_low(d->dp + a->used, d->dp + a->used, carry,
+						d->used - a->used);
 			}
-			c->dp[c->used] = carry;
-			c->used += (carry != 0);
+			d->dp[d->used] = carry;
+			d->used += (carry != 0);
 		} else {
 			/* magnitudes subtract */
-			carry = bn_muls_low(c->dp, a->dp, b->dp[0], a->used);
-			if (a->used < c->used) {
-				carry = bn_sub1_low(c->dp + a->used, c->dp + a->used, carry,
-						c->used - a->used);
+			carry = bn_muls_low(d->dp, a->dp, b->dp[0], a->used);
+			if (a->used < d->used) {
+				carry = bn_sub1_low(d->dp + a->used, d->dp + a->used, carry,
+						d->used - a->used);
 			}
 			if (carry) {
 				/* the product exceeded |c|: complement it and flip the sign */
 				/* bn_sneg_low negates when its sign argument is 1, and
 				 * already folds in the +1 of the two's complement. */
-				bn_sneg_low(c->dp, c->dp, 1, c->used);
-				c->sign = (c->sign == RLC_POS ? RLC_NEG : RLC_POS);
+				bn_sneg_low(d->dp, d->dp, 1, d->used);
+				d->sign = (d->sign == RLC_POS ? RLC_NEG : RLC_POS);
 			}
 		}
-		bn_trim(c);
+		bn_trim(d);
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	}
@@ -256,19 +263,19 @@ void bn_mul_dig(bn_t c, const bn_t a, dig_t b) {
 	}
 }
 
-void bn_mul_add(bn_t c, const bn_t a, const bn_t b) {
+void bn_mul_add(bn_t d, const bn_t c, const bn_t a, const bn_t b) {
 	if (a->used < b->used) {
-		bn_muladd_imp(c, b, a, 0);
+		bn_muladd_imp(d, c, b, a, 0);
 	} else {
-		bn_muladd_imp(c, a, b, 0);
+		bn_muladd_imp(d, c, a, b, 0);
 	}
 }
 
-void bn_mul_sub(bn_t c, const bn_t a, const bn_t b) {
+void bn_mul_sub(bn_t d, const bn_t c, const bn_t a, const bn_t b) {
 	if (a->used < b->used) {
-		bn_muladd_imp(c, b, a, 1);
+		bn_muladd_imp(d, c, b, a, 1);
 	} else {
-		bn_muladd_imp(c, a, b, 1);
+		bn_muladd_imp(d, c, a, b, 1);
 	}
 }
 

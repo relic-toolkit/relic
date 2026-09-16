@@ -447,7 +447,7 @@ void qf_map_bqf(qf_t r, const uint8_t *msg, size_t len, const bn_t dsc) {
 				bn_mod_inv(mi, m, t);
 				bn_mul(u, u, mi);
 				bn_mod(u, u, t);
-				bn_mul_add(b, u, m);
+				bn_mul_add(b, b, u, m);
 				bn_mul(m, m, t);
 				bn_mod(b, b, m);
 			}

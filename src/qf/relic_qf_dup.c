@@ -104,7 +104,7 @@ void qf_dup(qf_t r, const qf_t f, const bn_t bnd) {
 		bn_div_rem(q, t0, Bx, By);
 		bn_copy(Bx, t0);
 
-		bn_mul_sub(Dx, q, Dy);
+		bn_mul_sub(Dx, Dx, q, Dy);
 
 		/*
 		 * Partial extended gcd:
@@ -133,10 +133,10 @@ void qf_dup(qf_t r, const qf_t f, const bn_t bnd) {
 		 * t0 and t1 hold the new values until both have been computed.
 		 */
 		bn_mul(t0, Dx, m11);
-		bn_mul_sub(t0, Dy, m01);
+		bn_mul_sub(t0, t0, Dy, m01);
 
 		bn_mul(t1, Dy, m00);
-		bn_mul_sub(t1, Dx, m10);
+		bn_mul_sub(t1, t1, Dx, m10);
 
 		bn_copy(Dx, t0);
 		bn_copy(Dy, t1);
@@ -157,15 +157,15 @@ void qf_dup(qf_t r, const qf_t f, const bn_t bnd) {
 
 		/* a = By^2 - Ay*Dy */
 		bn_sqr(r->a, By);
-		bn_mul_sub(r->a, Ay, Dy);
+		bn_mul_sub(r->a, r->a, Ay, Dy);
 
 		/* c = Bx^2 - Ax*Dx */
 		bn_sqr(r->c, Bx);
-		bn_mul_sub(r->c, Ax, Dx);
+		bn_mul_sub(r->c, r->c, Ax, Dx);
 
 		/* b = Ax*Dy + Ay*Dx - 2*By*Bx */
 		bn_mul(r->b, Ax, Dy);
-		bn_mul_add(r->b, Ay, Dx);
+		bn_mul_add(r->b, r->b, Ay, Dx);
 		bn_sub(r->b, r->b, t1);
 
 		qf_rdc(r, r);

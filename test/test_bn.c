@@ -577,18 +577,18 @@ static int multiplication(void) {
 				bn_mul(d, a, b);
 				bn_add(e, c, d);
 				bn_copy(f, c);
-				bn_mul_add(f, a, b);
+				bn_mul_add(f, f, a, b);
 				TEST_ASSERT(bn_cmp(f, e) == RLC_EQ, end);
 				bn_sub(e, c, d);
 				bn_copy(f, c);
-				bn_mul_sub(f, a, b);
+				bn_mul_sub(f, f, a, b);
 				TEST_ASSERT(bn_cmp(f, e) == RLC_EQ, end);
 				/* an accumulator of zero is a separate branch */
 				bn_zero(f);
-				bn_mul_add(f, a, b);
+				bn_mul_add(f, f, a, b);
 				TEST_ASSERT(bn_cmp(f, d) == RLC_EQ, end);
 				bn_zero(f);
-				bn_mul_sub(f, a, b);
+				bn_mul_sub(f, f, a, b);
 				bn_neg(e, d);
 				TEST_ASSERT(bn_cmp(f, e) == RLC_EQ, end);
 			}
