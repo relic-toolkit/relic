@@ -434,16 +434,17 @@
 #undef bn_addn_low
 #undef bn_sub1_low
 #undef bn_subn_low
-#undef bn_negs_low
+#undef bn_sneg_low
 #undef bn_cmpn_low
 #undef bn_lsh1_low
 #undef bn_lshb_low
 #undef bn_rsh1_low
 #undef bn_rshb_low
-#undef bn_rshs_low
+#undef bn_srsh_low
 #undef bn_mula_low
-#undef bn_mul1_low
 #undef bn_muls_low
+#undef bn_mul1_low
+#undef bn_smul_low
 #undef bn_muln_low
 #undef bn_muld_low
 #undef bn_sqra_low
@@ -459,16 +460,17 @@
 #define bn_addn_low 	RLC_PREFIX(bn_addn_low)
 #define bn_sub1_low 	RLC_PREFIX(bn_sub1_low)
 #define bn_subn_low 	RLC_PREFIX(bn_subn_low)
-#define bn_negs_low 	RLC_PREFIX(bn_negs_low)
+#define bn_sneg_low 	RLC_PREFIX(bn_sneg_low)
 #define bn_cmpn_low 	RLC_PREFIX(bn_cmpn_low)
 #define bn_lsh1_low 	RLC_PREFIX(bn_lsh1_low)
 #define bn_lshb_low 	RLC_PREFIX(bn_lshb_low)
 #define bn_rsh1_low 	RLC_PREFIX(bn_rsh1_low)
 #define bn_rshb_low 	RLC_PREFIX(bn_rshb_low)
-#define bn_rshs_low 	RLC_PREFIX(bn_rshs_low)
+#define bn_srsh_low 	RLC_PREFIX(bn_srsh_low)
 #define bn_mula_low 	RLC_PREFIX(bn_mula_low)
-#define bn_mul1_low 	RLC_PREFIX(bn_mul1_low)
 #define bn_muls_low 	RLC_PREFIX(bn_muls_low)
+#define bn_mul1_low 	RLC_PREFIX(bn_mul1_low)
+#define bn_smul_low 	RLC_PREFIX(bn_smul_low)
 #define bn_muln_low 	RLC_PREFIX(bn_muln_low)
 #define bn_muld_low 	RLC_PREFIX(bn_muld_low)
 #define bn_sqra_low 	RLC_PREFIX(bn_sqra_low)

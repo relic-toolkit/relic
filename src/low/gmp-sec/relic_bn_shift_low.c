@@ -69,7 +69,7 @@ dig_t bn_rshb_low(dig_t *c, const dig_t *a, size_t size, uint_t bits) {
 	return RLC_SEL(0, carry, bits > 0);
 }
 
-dig_t bn_rshs_low(dig_t *c, const dig_t *a, size_t size, uint_t bits) {
+dig_t bn_srsh_low(dig_t *c, const dig_t *a, size_t size, uint_t bits) {
 	dig_t r, carry, shift, mask;
 
 	/* Prepare the bit mask. */

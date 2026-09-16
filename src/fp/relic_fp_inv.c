@@ -639,17 +639,17 @@ void fp_inv_jmpds(fp_t c, const fp_t a) {
 		f[RLC_FP_DIGS] = g[RLC_FP_DIGS] = 0;
 		d = jumpdivstep(m, d, f[0] & RLC_MASK(s), g[0] & RLC_MASK(s), s);
 
-		t0[RLC_FP_DIGS] = bn_muls_low(t0, f, RLC_POS, m[0], RLC_FP_DIGS);
-		t1[RLC_FP_DIGS] = bn_muls_low(t1, g, RLC_POS, m[1], RLC_FP_DIGS);
+		t0[RLC_FP_DIGS] = bn_smul_low(t0, f, RLC_POS, m[0], RLC_FP_DIGS);
+		t1[RLC_FP_DIGS] = bn_smul_low(t1, g, RLC_POS, m[1], RLC_FP_DIGS);
 		bn_addn_low(t0, t0, t1, RLC_FP_DIGS + 1);
 
-		f[RLC_FP_DIGS] = bn_muls_low(f, f, RLC_POS, m[2], RLC_FP_DIGS);
-		t1[RLC_FP_DIGS] = bn_muls_low(t1, g, RLC_POS, m[3], RLC_FP_DIGS);
+		f[RLC_FP_DIGS] = bn_smul_low(f, f, RLC_POS, m[2], RLC_FP_DIGS);
+		t1[RLC_FP_DIGS] = bn_smul_low(t1, g, RLC_POS, m[3], RLC_FP_DIGS);
 		bn_addn_low(t1, t1, f, RLC_FP_DIGS + 1);
 
 		/* Update f and g. */
-		bn_rshs_low(f, t0, RLC_FP_DIGS + 1, s);
-		bn_rshs_low(g, t1, RLC_FP_DIGS + 1, s);
+		bn_srsh_low(f, t0, RLC_FP_DIGS + 1, s);
+		bn_srsh_low(g, t1, RLC_FP_DIGS + 1, s);
 
 		/* Update column vector below. */
 		v1[0] = RLC_SEL(m[1], -m[1], RLC_SIGN(m[1]));
@@ -670,18 +670,18 @@ void fp_inv_jmpds(fp_t c, const fp_t a) {
 
 			sf = RLC_SIGN(f[RLC_FP_DIGS]);
 			sg = RLC_SIGN(g[RLC_FP_DIGS]);
-			bn_negs_low(u0, f, sf, RLC_FP_DIGS);
-			bn_negs_low(u1, g, sg, RLC_FP_DIGS);
+			bn_sneg_low(u0, f, sf, RLC_FP_DIGS);
+			bn_sneg_low(u1, g, sg, RLC_FP_DIGS);
 
-			t0[RLC_FP_DIGS] = bn_muls_low(t0, u0, sf, m[0], RLC_FP_DIGS);
-			t1[RLC_FP_DIGS] = bn_muls_low(t1, u1, sg, m[1], RLC_FP_DIGS);
+			t0[RLC_FP_DIGS] = bn_smul_low(t0, u0, sf, m[0], RLC_FP_DIGS);
+			t1[RLC_FP_DIGS] = bn_smul_low(t1, u1, sg, m[1], RLC_FP_DIGS);
 			bn_addn_low(t0, t0, t1, RLC_FP_DIGS + 1);
-			bn_rshs_low(f, t0, RLC_FP_DIGS + 1, s);
+			bn_srsh_low(f, t0, RLC_FP_DIGS + 1, s);
 
-			t0[RLC_FP_DIGS] = bn_muls_low(t0, u0, sf, m[2], RLC_FP_DIGS);
-			t1[RLC_FP_DIGS] = bn_muls_low(t1, u1, sg, m[3], RLC_FP_DIGS);
+			t0[RLC_FP_DIGS] = bn_smul_low(t0, u0, sf, m[2], RLC_FP_DIGS);
+			t1[RLC_FP_DIGS] = bn_smul_low(t1, u1, sg, m[3], RLC_FP_DIGS);
 			bn_addn_low(t1, t1, t0, RLC_FP_DIGS + 1);
-			bn_rshs_low(g, t1, RLC_FP_DIGS + 1, s);
+			bn_srsh_low(g, t1, RLC_FP_DIGS + 1, s);
 
 #ifdef RLC_FP_ROOM
 			p[j] = 0;
@@ -748,18 +748,18 @@ void fp_inv_jmpds(fp_t c, const fp_t a) {
 
 		sf = RLC_SIGN(f[RLC_FP_DIGS]);
 		sg = RLC_SIGN(g[RLC_FP_DIGS]);
-		bn_negs_low(u0, f, sf, RLC_FP_DIGS);
-		bn_negs_low(u1, g, sg, RLC_FP_DIGS);
+		bn_sneg_low(u0, f, sf, RLC_FP_DIGS);
+		bn_sneg_low(u1, g, sg, RLC_FP_DIGS);
 
-		t0[RLC_FP_DIGS] = bn_muls_low(t0, u0, sf, m[0], RLC_FP_DIGS);
-		t1[RLC_FP_DIGS] = bn_muls_low(t1, u1, sg, m[1], RLC_FP_DIGS);
+		t0[RLC_FP_DIGS] = bn_smul_low(t0, u0, sf, m[0], RLC_FP_DIGS);
+		t1[RLC_FP_DIGS] = bn_smul_low(t1, u1, sg, m[1], RLC_FP_DIGS);
 		bn_addn_low(t0, t0, t1, RLC_FP_DIGS + 1);
-		bn_rshs_low(f, t0, RLC_FP_DIGS + 1, s);
+		bn_srsh_low(f, t0, RLC_FP_DIGS + 1, s);
 
-		t0[RLC_FP_DIGS] = bn_muls_low(t0, u0, sf, m[2], RLC_FP_DIGS);
-		t1[RLC_FP_DIGS] = bn_muls_low(t1, u1, sg, m[3], RLC_FP_DIGS);
+		t0[RLC_FP_DIGS] = bn_smul_low(t0, u0, sf, m[2], RLC_FP_DIGS);
+		t1[RLC_FP_DIGS] = bn_smul_low(t1, u1, sg, m[3], RLC_FP_DIGS);
 		bn_addn_low(t1, t1, t0, RLC_FP_DIGS + 1);
-		bn_rshs_low(g, t1, RLC_FP_DIGS + 1, s);
+		bn_srsh_low(g, t1, RLC_FP_DIGS + 1, s);
 
 #ifdef RLC_FP_ROOM
 		p[j] = 0;

@@ -33,12 +33,12 @@
 #include "relic_bn_low.h"
 
 .text
-.global bn_muls_low
+.global bn_smul_low
 
 /**
  * c = rdi, a = rsi, sa = rdx, digit = rcx, size = RLC_FP_DIGS
  */
-bn_muls_low:
+bn_smul_low:
     pushq   %r12
     pushq   %r13
     pushq   %r14

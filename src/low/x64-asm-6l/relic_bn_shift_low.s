@@ -30,9 +30,9 @@
  */
 
 .text
-.global bn_rshs_low
+.global bn_srsh_low
 
-bn_rshs_low:
+bn_srsh_low:
 	movq	0(%rsi), %r8
 	movq	8(%rsi), %r9
 	movq	16(%rsi), %r10

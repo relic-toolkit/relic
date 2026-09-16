@@ -51,6 +51,18 @@ void bn_divn_low(dig_t *c, dig_t *d, const dig_t *a, size_t sa, const dig_t *b,
 	RLC_FREE(t);
 }
 
+void bn_dive_low(dig_t *c, const dig_t *a, size_t sa, const dig_t *b,
+		size_t sb) {
+	dig_t u[sa], *t = RLC_ALLOCA(dig_t, mpn_sec_div_qr_itch(sa, sb));
+
+	/* There is no constant-time exact division, so the general one is used and
+	 * the remainder, zero by assumption, is discarded. */
+	mpn_copyd((mp_ptr)u, (mp_srcptr)a, sa);
+	c[sa - sb] =
+		mpn_sec_div_qr((mp_ptr)c, (mp_ptr)u, sa, (mp_srcptr)b, sb, (mp_ptr)t);
+	RLC_FREE(t);
+}
+
 void bn_div1_low(dig_t *c, dig_t *d, const dig_t *a, dig_t b, size_t size) {
 	dig_t u[size], *t = RLC_ALLOCA(dig_t, mpn_sec_div_qr_itch(size, 1));
 
