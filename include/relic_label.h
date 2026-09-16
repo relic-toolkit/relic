@@ -134,6 +134,7 @@
 #undef util_conv_endian
 #undef util_conv_big
 #undef util_write_uint32
+#undef util_write_size
 #undef util_conv_little
 #undef util_conv_char
 #undef util_bits_dig
@@ -145,6 +146,7 @@
 #define util_conv_endian 	RLC_PREFIX(util_conv_endian)
 #define util_conv_big 	RLC_PREFIX(util_conv_big)
 #define util_write_uint32 	RLC_PREFIX(util_write_uint32)
+#define util_write_size 	RLC_PREFIX(util_write_size)
 #define util_conv_little 	RLC_PREFIX(util_conv_little)
 #define util_conv_char 	RLC_PREFIX(util_conv_char)
 #define util_bits_dig 	RLC_PREFIX(util_bits_dig)

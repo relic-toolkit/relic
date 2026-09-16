@@ -116,6 +116,12 @@ void util_write_uint32(uint8_t *bin, uint32_t a) {
 	bin[3] = (uint8_t)a;
 }
 
+void util_write_size(uint8_t *bin, size_t a) {
+	/* The cast keeps the shift defined where size_t is only 32 bits wide. */
+	util_write_uint32(bin, (uint32_t)((uint64_t)a >> 32));
+	util_write_uint32(bin + sizeof(uint32_t), (uint32_t)a);
+}
+
 char util_conv_char(dig_t i) {
 #if WSIZE == 8 || WSIZE == 16
 	/* Avoid tables to save up some memory. This is not performance-critical. */

@@ -983,7 +983,7 @@ static void arith(void) {
 	BENCH_ONE("bn_is_prime_lucas", bn_is_prime_lucas(a), 1);
 
 	rand_bytes(m, sizeof(m));
-	BENCH_ONE("bn_map_prime", bn_map_prime(a, NULL, m, sizeof(m), RLC_BN_BITS, 0), 1);
+	BENCH_ONE("bn_map_prime", bn_map_prime(a, NULL, m, sizeof(m), RLC_BN_BITS, 0, NULL, 0), 1);
 
 	/* It should be the case that a is prime here. */
 	BENCH_RUN("bn_mod_inv") {

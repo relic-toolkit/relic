@@ -289,7 +289,7 @@ void qf_map(qf_t r, const uint8_t *msg, size_t len, const bn_t dsc) {
 		bn_new(t);
  
 		while (1) {
-			if (bn_map_prime(p, &k, msg, len, bits, k) != RLC_OK) {
+			if (bn_map_prime(p, &k, msg, len, bits, k, NULL, 0) != RLC_OK) {
 				RLC_THROW(ERR_NO_VALID);
 			}
 			k++;
