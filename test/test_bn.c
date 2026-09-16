@@ -572,7 +572,7 @@ static int multiplication(void) {
 				 * case the fused routines have a dedicated path for. */
 				bn_rand(a, (j & 1) ? RLC_NEG : RLC_POS, RLC_BN_BITS / 2);
 				bn_rand(b, (j & 2) ? RLC_NEG : RLC_POS,
-						(j & 4) ? RLC_DIG - 1 : RLC_BN_BITS / 2);
+						(j & 4) ? RLC_DIG : RLC_BN_BITS / 2);
 				bn_rand(c, (j & 2) ? RLC_NEG : RLC_POS, RLC_BN_BITS / 2);
 				bn_mul(d, a, b);
 				bn_add(e, c, d);
