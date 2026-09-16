@@ -52,7 +52,7 @@
 
 #else /* _MSC_VER */
 
-#if OPSYS == FREEBSD || OPSYS == NETBSD
+#if ALLOC == DYNAMIC
 #include <stdlib.h>
 #else
 #include <alloca.h>
