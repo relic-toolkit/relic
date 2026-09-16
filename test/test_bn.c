@@ -2285,6 +2285,10 @@ static int prime(void) {
 			TEST_ASSERT(bn_is_prime_solov(p) == 1, end);
 		} TEST_END;
 
+		TEST_ONCE("lucas prime testing is correct") {
+			TEST_ASSERT(bn_is_prime_lucas(p) == 1, end);
+		} TEST_END;
+
 		bn_gen_prime_factor(q, p, RLC_BN_BITS>>1, RLC_BN_BITS);
 		TEST_ONCE("prime with large (p-1) prime factor testing is correct") {
 			TEST_ASSERT(bn_is_prime(p) == 1, end);
@@ -2309,7 +2313,7 @@ static int prime(void) {
 static int small_primes(void) {
 	int code = RLC_ERR;
 
-	int i;
+	int i, j;
 	const int nr_tests = 50;
 
 	dig_t primes[] = {2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43,
@@ -2354,6 +2358,48 @@ static int small_primes(void) {
 			for(i = 0; i < nr_tests; i++) {
 				bn_set_dig(p, non_primes[i]);
 				TEST_ASSERT(bn_is_prime_rabin(p) == 0, end);
+			}
+		} TEST_END;
+
+		TEST_ONCE("lucas testing of small primes is correct") {
+			for(i = 0; i < nr_tests; i++) {
+				bn_set_dig(p, primes[i]);
+				TEST_ASSERT(bn_is_prime_lucas(p) == 1, end);
+			}
+		} TEST_END;
+
+		TEST_ONCE("lucas testing of small non-primes is correct") {
+			for(i = 0; i < nr_tests; i++) {
+				bn_set_dig(p, non_primes[i]);
+				TEST_ASSERT(bn_is_prime_lucas(p) == 0, end);
+			}
+		} TEST_END;
+
+		TEST_ONCE("lucas testing rejects miller-rabin pseudoprimes") {
+			/* Composites passing a base two strong probable prime test, which
+			 * the Lucas test must reject for the combination to be useful.
+			 * They are read from strings, as they do not fit a digit on the
+			 * smaller word sizes. */
+			const char *spsp[] = { "2047", "3277", "4033", "4681", "8321",
+					"15841", "29341", "42799", "49141", "52633", "65281",
+					"74665", "80581", "85489", "88357" };
+			for (j = 0; j < (int)(sizeof(spsp) / sizeof(char *)); j++) {
+				bn_read_str(p, spsp[j], strlen(spsp[j]), 10);
+				TEST_ASSERT(bn_is_prime_lucas(p) == 0, end);
+				TEST_ASSERT(bn_is_prime(p) == 0, end);
+			}
+		} TEST_END;
+
+		TEST_ONCE("prime testing rejects lucas pseudoprimes") {
+			/* Composites passing the strong Lucas test, which the Miller-Rabin
+			 * half of bn_is_prime must reject. */
+			const char *slpsp[] = { "5459", "5777", "10877", "16109", "18971",
+					"22499", "24569", "25199", "40309", "58519", "75077",
+					"97439" };
+			for (j = 0; j < (int)(sizeof(slpsp) / sizeof(char *)); j++) {
+				bn_read_str(p, slpsp[j], strlen(slpsp[j]), 10);
+				TEST_ASSERT(bn_is_prime_lucas(p) == 1, end);
+				TEST_ASSERT(bn_is_prime(p) == 0, end);
 			}
 		} TEST_END;
 	}

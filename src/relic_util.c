@@ -109,6 +109,13 @@ uint32_t util_conv_little(uint32_t i) {
 #endif
 }
 
+void util_write_uint32(uint8_t *bin, uint32_t a) {
+	bin[0] = (uint8_t)(a >> 24);
+	bin[1] = (uint8_t)(a >> 16);
+	bin[2] = (uint8_t)(a >> 8);
+	bin[3] = (uint8_t)a;
+}
+
 char util_conv_char(dig_t i) {
 #if WSIZE == 8 || WSIZE == 16
 	/* Avoid tables to save up some memory. This is not performance-critical. */

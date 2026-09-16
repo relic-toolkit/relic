@@ -285,6 +285,15 @@ uint32_t util_conv_little(uint32_t i);
 char util_conv_char(dig_t i);
 
 /**
+ * Writes an unsigned integer as four bytes in big-endian order, so that what
+ * is written does not depend on the endianness of the platform.
+ *
+ * @param[out] bin			- the resulting byte vector, of four bytes.
+ * @param[in] a				- the integer to write.
+ */
+void util_write_uint32(uint8_t *bin, uint32_t a);
+
+/**
  * Returns the highest bit set on a digit.
  *
  * @param[in] a				- the digit.

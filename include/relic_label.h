@@ -133,6 +133,7 @@
 
 #undef util_conv_endian
 #undef util_conv_big
+#undef util_write_uint32
 #undef util_conv_little
 #undef util_conv_char
 #undef util_bits_dig
@@ -143,6 +144,7 @@
 
 #define util_conv_endian 	RLC_PREFIX(util_conv_endian)
 #define util_conv_big 	RLC_PREFIX(util_conv_big)
+#define util_write_uint32 	RLC_PREFIX(util_write_uint32)
 #define util_conv_little 	RLC_PREFIX(util_conv_little)
 #define util_conv_char 	RLC_PREFIX(util_conv_char)
 #define util_bits_dig 	RLC_PREFIX(util_bits_dig)
@@ -289,6 +291,7 @@
 #undef bn_is_prime_basic
 #undef bn_is_prime_rabin
 #undef bn_is_prime_solov
+#undef bn_is_prime_lucas
 #undef bn_gen_prime_basic
 #undef bn_gen_prime_safep
 #undef bn_gen_prime_stron
@@ -408,6 +411,7 @@
 #define bn_is_prime_basic 	RLC_PREFIX(bn_is_prime_basic)
 #define bn_is_prime_rabin 	RLC_PREFIX(bn_is_prime_rabin)
 #define bn_is_prime_solov 	RLC_PREFIX(bn_is_prime_solov)
+#define bn_is_prime_lucas 	RLC_PREFIX(bn_is_prime_lucas)
 #define bn_gen_prime_basic 	RLC_PREFIX(bn_gen_prime_basic)
 #define bn_gen_prime_safep 	RLC_PREFIX(bn_gen_prime_safep)
 #define bn_gen_prime_stron 	RLC_PREFIX(bn_gen_prime_stron)

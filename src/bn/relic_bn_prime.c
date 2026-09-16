@@ -183,13 +183,6 @@ static void bn_exp(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 /* Public definitions                                                         */
 /*============================================================================*/
 
-dig_t bn_get_prime(size_t i) {
-	if (i >= (size_t)BASIC_TESTS) {
-		return 0;
-	}
-	return primes[i];
-}
-
 int bn_is_prime(const bn_t a) {
 	int result;
 
@@ -199,6 +192,15 @@ int bn_is_prime(const bn_t a) {
 	}
 
 	if (!bn_is_prime_rabin(a)) {
+		goto end;
+	}
+
+	/*
+	 * Miller-Rabin runs over fixed bases, so a composite crafted against them
+	 * passes it. The Lucas test fails on a different family, and no composite
+	 * is known to pass both, which is the Baillie-PSW combination.
+	 */
+	if (!bn_is_prime_lucas(a)) {
 		goto end;
 	}
 
@@ -419,6 +421,164 @@ int bn_is_prime_solov(const bn_t a) {
 	return result;
 }
 
+int bn_is_prime_lucas(const bn_t a) {
+	bn_t d, n1, q, qk, u, v, t0, t1;
+	dis_t p = 1, s;
+	dig_t m;
+	int i, j, r, done = 0, result = 1;
+
+	if (bn_cmp_dig(a, 2) == RLC_LT) {
+		return 0;
+	}
+	if (bn_is_even(a)) {
+		return (bn_cmp_dig(a, 2) == RLC_EQ);
+	}
+	if (bn_cmp_dig(a, 3) == RLC_EQ) {
+		return 1;
+	}
+
+	bn_null(d);
+	bn_null(n1);
+	bn_null(q);
+	bn_null(qk);
+	bn_null(u);
+	bn_null(v);
+	bn_null(t0);
+	bn_null(t1);
+
+	RLC_TRY {
+		bn_new(d);
+		bn_new(n1);
+		bn_new(q);
+		bn_new(qk);
+		bn_new(u);
+		bn_new(v);
+		bn_new(t0);
+		bn_new(t1);
+
+		/*
+		 * A perfect square is composite and has no D with Jacobi symbol -1, so
+		 * the search below would not terminate on one.
+		 */
+		bn_copy(t0, a);
+		bn_srt(t1, t0);
+		bn_sqr(t0, t1);
+		if (bn_cmp(t0, a) == RLC_EQ) {
+			result = 0;
+			done = 1;
+		}
+
+		/* Selfridge method A: the first D in 5, -7, 9, -11, ... with (D|a) = -1. */
+		s = 5;
+		while (result == 1) {
+			m = (dig_t)(s < 0 ? -s : s);
+			bn_set_dig(d, m);
+			if (s < 0) {
+				bn_neg(d, d);
+			}
+			bn_mod(t0, d, a);
+			j = bn_smb_jac(t0, a);
+			if (j == -1) {
+				break;
+			}
+			if (j == 0) {
+				/* Then gcd(D, a) is a factor of a, unless a divides D, and
+				 * either way the verdict is already settled. */
+				result = (bn_cmp_dig(a, m) == RLC_EQ);
+				done = 1;
+				break;
+			}
+			s = (s > 0 ? -(s + 2) : -(s - 2));
+		}
+
+		if (result == 1 && !done) {
+			/* P = 1 and Q = (1 - D)/4, both reduced modulo a. */
+			bn_set_dig(q, (dig_t)((m + (s < 0 ? 1 : -1)) / 4));
+			if (s > 0) {
+				bn_neg(q, q);
+			}
+			bn_mod(q, q, a);
+
+			/* Write a + 1 = n1 * 2^r with n1 odd. */
+			bn_add_dig(n1, a, 1);
+			r = 0;
+			while (bn_is_even(n1)) {
+				bn_hlv(n1, n1);
+				r++;
+			}
+
+			/* U_1 = 1, V_1 = P, tracking Q^k along the chain. */
+			bn_set_dig(u, 1);
+			bn_set_dig(v, (dig_t)p);
+			bn_copy(qk, q);
+
+			for (i = (int)bn_bits(n1) - 1; i > 0; i--) {
+				/* U_{2k} = U_k * V_k, V_{2k} = V_k^2 - 2 Q^k, Q^{2k}. */
+				bn_mul(t0, u, v);
+				bn_mod(u, t0, a);
+				bn_sqr(t0, v);
+				bn_mod(t0, t0, a);
+				bn_dbl(t1, qk);
+				bn_sub(t0, t0, t1);
+				bn_mod(v, t0, a);
+				bn_sqr(t0, qk);
+				bn_mod(qk, t0, a);
+
+				if (bn_get_bit(n1, i - 1)) {
+					/* With P = 1, U <- (U + V)/2 and V <- (D U + V)/2. */
+					bn_add(t0, u, v);
+					if (!bn_is_even(t0)) {
+						bn_add(t0, t0, a);
+					}
+					bn_hlv(t0, t0);
+					bn_mul(t1, d, u);
+					bn_add(t1, t1, v);
+					bn_mod(t1, t1, a);
+					if (!bn_is_even(t1)) {
+						bn_add(t1, t1, a);
+					}
+					bn_hlv(t1, t1);
+					bn_mod(u, t0, a);
+					bn_mod(v, t1, a);
+					bn_mul(t0, qk, q);
+					bn_mod(qk, t0, a);
+				}
+			}
+
+			/* Strong test: U_{n1} = 0, or V_{n1 * 2^i} = 0 for some i < r. */
+			result = bn_is_zero(u);
+			for (i = 0; i < r && result == 0; i++) {
+				if (bn_is_zero(v)) {
+					result = 1;
+					break;
+				}
+				bn_sqr(t0, v);
+				bn_mod(t0, t0, a);
+				bn_dbl(t1, qk);
+				bn_sub(t0, t0, t1);
+				bn_mod(v, t0, a);
+				bn_sqr(t0, qk);
+				bn_mod(qk, t0, a);
+			}
+		}
+	}
+	RLC_CATCH_ANY {
+		result = 0;
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		bn_free(d);
+		bn_free(n1);
+		bn_free(q);
+		bn_free(qk);
+		bn_free(u);
+		bn_free(v);
+		bn_free(t0);
+		bn_free(t1);
+	}
+	return result;
+}
+
 #if BN_GEN == BASIC || !defined(STRIP)
 
 void bn_gen_prime_basic(bn_t a, size_t bits) {
@@ -588,7 +748,7 @@ void bn_next_prime(bn_t q, const bn_t p) {
 
 int bn_map_prime(bn_t p, uint32_t *ctr, const uint8_t *msg, size_t len,
 		size_t bits, uint32_t from) {
-	uint8_t *in, *out;
+	uint8_t seed[RLC_MD_LEN + sizeof(uint32_t)], *out;
 	uint32_t k = 0;
 	size_t i, nb = (bits + 7) / 8;
 	int result = RLC_OK;
@@ -598,21 +758,20 @@ int bn_map_prime(bn_t p, uint32_t *ctr, const uint8_t *msg, size_t len,
 		return RLC_ERR;
 	}
 
-	in = RLC_ALLOCA(uint8_t, len + sizeof(uint32_t));
 	out = RLC_ALLOCA(uint8_t, nb);
-	if (in == NULL || out == NULL) {
-		RLC_FREE(in);
-		RLC_FREE(out);
+	if (out == NULL) {
 		RLC_THROW(ERR_NO_MEMORY);
 		return RLC_ERR;
 	}
 
 	RLC_TRY {
-		if (len > 0) {
-			memcpy(in, msg, len);
-		}
+		/*
+		 * The message is compressed once, so that each attempt expands a short
+		 * seed instead of the whole input. Most attempts are rejected, and a
+		 * long input would otherwise be hashed again on every one of them.
+		 */
+		md_map(seed, msg, len);
 
-		/* Upper bund the number of tries. */
 		/*
 		 * The search starts where the caller asks and reports where it stopped, so
 		 * that a caller needing a prime which satisfies some further condition can
@@ -620,9 +779,11 @@ int bn_map_prime(bn_t p, uint32_t *ctr, const uint8_t *msg, size_t len,
 		 * whole search on every rejection.
 		 */
 		for (k = from; k < from + BN_MAP_TRIES; k++) {
-			/* Expand message to the whole prime so the output looks uniform. */
-			memcpy(in + len, &k, sizeof(uint32_t));
-			md_xmd(out, nb, in, len + sizeof(uint32_t),
+			/* The counter is written in a fixed byte order, so that the
+			 * prime does not depend on the endianness of the platform. */
+			util_write_uint32(seed + RLC_MD_LEN, k);
+			/* Expand the seed to the whole prime so the output looks uniform. */
+			md_xmd(out, nb, seed, sizeof(seed),
 					(const uint8_t *)RLC_DSTAG, sizeof(RLC_DSTAG) - 1);
 
 			bn_read_bin(p, out, nb);
@@ -648,7 +809,6 @@ int bn_map_prime(bn_t p, uint32_t *ctr, const uint8_t *msg, size_t len,
 		result = RLC_ERR;
 	}
 	RLC_FINALLY {
-		RLC_FREE(in);
 		RLC_FREE(out);
 	}
 	return result;
