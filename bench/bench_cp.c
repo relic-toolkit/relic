@@ -268,6 +268,96 @@ static void paillier(void) {
     shpe_free(sprv);
 }
 
+/**
+ * Upper bound on the timestamp space used in the benchmarks.
+ */
+#define BENCH_TDS_BOUND	1024
+
+/**
+ * Timestamp used in the benchmarks, in the middle of the timestamp space.
+ */
+#define BENCH_TDS_STAMP	512
+
+/**
+ * Benchmarks key generation, signing, verification and serialization. These
+ * are independent of the delay parameter.
+ */
+static void tds_short(size_t bits) {
+	tds_t pub, prv;
+	tds_sig_t sig;
+	uint8_t m[10], bin[4 * (RLC_BN_BITS / 8) + RLC_TDS_SALT];
+	size_t len;
+
+	tds_null(pub);
+	tds_null(prv);
+	tds_sig_null(sig);
+
+	tds_new(pub);
+	tds_new(prv);
+	tds_sig_new(sig);
+
+	rand_bytes(m, sizeof(m));
+
+	BENCH_ONE("cp_tds_gen", cp_tds_gen(pub, prv, bits, 1 << 10,
+			BENCH_TDS_BOUND), 1);
+
+	BENCH_RUN("cp_tds_sign") {
+		BENCH_ADD(cp_tds_sign(sig, NULL, m, sizeof(m), BENCH_TDS_STAMP, prv));
+	} BENCH_END;
+
+	BENCH_RUN("cp_tds_ver") {
+		cp_tds_sign(sig, NULL, m, sizeof(m), BENCH_TDS_STAMP, prv);
+		BENCH_ADD(cp_tds_ver(sig, m, sizeof(m), BENCH_TDS_STAMP, pub));
+	} BENCH_END;
+
+	BENCH_RUN("cp_tds_write_sig") {
+		len = sizeof(bin);
+		BENCH_ADD(cp_tds_write_sig(bin, &len, sig, pub));
+	} BENCH_END;
+
+	len = sizeof(bin);
+	cp_tds_write_sig(bin, &len, sig, pub);
+	util_print("BENCH: signature size%*c = %d bytes\n", 32 - 14, ' ',
+			(int)len);
+
+	tds_free(pub);
+	tds_free(prv);
+	tds_sig_free(sig);
+}
+
+/**
+ * Benchmarks the public sequential evaluation for a given delay parameter.
+ */
+static void tds_delay(size_t bits, size_t delay) {
+	tds_t pub, prv;
+	tds_sig_t sig, alt;
+	uint8_t m[10], n[10];
+
+	tds_null(pub);
+	tds_null(prv);
+	tds_sig_null(sig);
+	tds_sig_null(alt);
+
+	tds_new(pub);
+	tds_new(prv);
+	tds_sig_new(sig);
+	tds_sig_new(alt);
+
+	rand_bytes(m, sizeof(m));
+	rand_bytes(n, sizeof(n));
+
+	cp_tds_gen(pub, prv, bits, delay, BENCH_TDS_BOUND);
+	cp_tds_sign(sig, NULL, m, sizeof(m), BENCH_TDS_STAMP, prv);
+
+	BENCH_ONE("cp_tds_alt", cp_tds_alt(alt, NULL, n, sizeof(n),
+			BENCH_TDS_STAMP - 1, sig, m, sizeof(m), BENCH_TDS_STAMP, pub), 1);
+
+	tds_free(pub);
+	tds_free(prv);
+	tds_sig_free(sig);
+	tds_sig_free(alt);
+}
+
 #endif
 
 #if defined(WITH_QF)
@@ -2806,6 +2896,10 @@ int main(void) {
 	rabin();
 	paillier();
 	benaloh();
+	tds_short(RLC_BN_BITS);
+	tds_delay(RLC_BN_BITS, 1 << 10);
+	tds_delay(RLC_BN_BITS, 1 << 14);
+	tds_delay(RLC_BN_BITS, 1 << 18);
 #endif
 
 #if defined(WITH_QF)

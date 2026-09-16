@@ -289,7 +289,6 @@ static int paillier(void) {
 	return code;
 }
 
-
 static int subgroup_paillier() {
 	int code = RLC_ERR;
 	bn_t a, b, c, d;
@@ -364,6 +363,189 @@ static int subgroup_paillier() {
 	bn_free(d);
 	shpe_free(pub);
 	shpe_free(prv);
+	return code;
+}
+
+/**
+ * Bit length of the modulus used in the tests.
+ */
+#define TEST_TDS_BITS	1024
+
+/**
+ * Delay parameter used in the tests, large enough to exercise the windowed
+ * witness assembly.
+ */
+#define TEST_TDS_DELAY	(1 << 10)
+
+/**
+ * Upper bound on the timestamp space used in the tests.
+ */
+#define TEST_TDS_BOUND	16
+
+static int tds(void) {
+	int code = RLC_ERR;
+	tds_t pub, prv, sml_pub, sml_prv;
+	tds_sig_t sig, alt, cmp;
+	uint8_t m[10], n[10], salt[RLC_TDS_SALT];
+	uint8_t bin[4 * (TEST_TDS_BITS / 8) + RLC_TDS_SALT];
+	size_t len, t;
+	int result;
+
+	tds_null(pub);
+	tds_null(prv);
+	tds_null(sml_pub);
+	tds_null(sml_prv);
+	tds_sig_null(sig);
+	tds_sig_null(alt);
+	tds_sig_null(cmp);
+
+	RLC_TRY {
+		tds_new(pub);
+		tds_new(prv);
+		tds_new(sml_pub);
+		tds_new(sml_prv);
+		tds_sig_new(sig);
+		tds_sig_new(alt);
+		tds_sig_new(cmp);
+
+		rand_bytes(m, sizeof(m));
+		rand_bytes(n, sizeof(n));
+		rand_bytes(salt, sizeof(salt));
+
+		result = cp_tds_gen(pub, prv, TEST_TDS_BITS, TEST_TDS_DELAY,
+				TEST_TDS_BOUND);
+
+		TEST_CASE("time-deniable signature is correct") {
+			TEST_ASSERT(result == RLC_OK, end);
+			for (t = 1; t <= TEST_TDS_BOUND; t += TEST_TDS_BOUND / 2) {
+				TEST_ASSERT(cp_tds_sign(sig, NULL, m, sizeof(m), t,
+						prv) == RLC_OK, end);
+				TEST_ASSERT(cp_tds_ver(sig, m, sizeof(m), t, pub) == 1, end);
+			}
+		} TEST_END;
+
+		TEST_CASE("time-deniable signature is rejected when rebound") {
+			TEST_ASSERT(cp_tds_sign(sig, NULL, m, sizeof(m), 2,
+					prv) == RLC_OK, end);
+			TEST_ASSERT(cp_tds_ver(sig, n, sizeof(n), 2, pub) == 0, end);
+			TEST_ASSERT(cp_tds_ver(sig, m, sizeof(m), 3, pub) == 0, end);
+			TEST_ASSERT(cp_tds_ver(sig, m, sizeof(m), 0, pub) == 0, end);
+			TEST_ASSERT(cp_tds_ver(sig, m, sizeof(m), TEST_TDS_BOUND + 1,
+					pub) == 0, end);
+		} TEST_END;
+
+		TEST_CASE("time-deniable signature is rejected when tampered") {
+			TEST_ASSERT(cp_tds_sign(sig, NULL, m, sizeof(m), 2,
+					prv) == RLC_OK, end);
+			bn_copy(cmp->y, sig->y);
+			bn_add_dig(sig->y, sig->y, 1);
+			TEST_ASSERT(cp_tds_ver(sig, m, sizeof(m), 2, pub) == 0, end);
+			bn_copy(sig->y, cmp->y);
+			bn_copy(cmp->del, sig->del);
+			bn_set_dig(sig->del, 1);
+			TEST_ASSERT(cp_tds_ver(sig, m, sizeof(m), 2, pub) == 0, end);
+			bn_copy(sig->del, cmp->del);
+			sig->s[0] ^= 1;
+			TEST_ASSERT(cp_tds_ver(sig, m, sizeof(m), 2, pub) == 0, end);
+			sig->s[0] ^= 1;
+			TEST_ASSERT(cp_tds_ver(sig, m, sizeof(m), 2, pub) == 1, end);
+		} TEST_END;
+
+		TEST_CASE("time-deniable signature serialization is correct") {
+			TEST_ASSERT(cp_tds_sign(sig, NULL, m, sizeof(m), 2,
+					prv) == RLC_OK, end);
+			len = sizeof(bin);
+			TEST_ASSERT(cp_tds_write_sig(bin, &len, sig, pub) == RLC_OK, end);
+			TEST_ASSERT(len == 4 * (TEST_TDS_BITS / 8) + RLC_TDS_SALT, end);
+			TEST_ASSERT(cp_tds_read_sig(cmp, bin, len, pub) == RLC_OK, end);
+			TEST_ASSERT(cp_tds_ver(cmp, m, sizeof(m), 2, pub) == 1, end);
+		} TEST_END;
+
+		TEST_CASE("alternative signature is correct") {
+			TEST_ASSERT(cp_tds_sign(sig, NULL, m, sizeof(m), 4,
+					prv) == RLC_OK, end);
+			for (t = 4; t >= 1; t--) {
+				TEST_ASSERT(cp_tds_alt(alt, NULL, n, sizeof(n), t, sig, m,
+						sizeof(m), 4, pub) == RLC_OK, end);
+				TEST_ASSERT(cp_tds_ver(alt, n, sizeof(n), t, pub) == 1, end);
+			}
+		} TEST_END;
+
+		TEST_CASE("alternative signature can be chained") {
+			TEST_ASSERT(cp_tds_sign(sig, NULL, m, sizeof(m), 3,
+					prv) == RLC_OK, end);
+			TEST_ASSERT(cp_tds_alt(alt, NULL, n, sizeof(n), 2, sig, m,
+					sizeof(m), 3, pub) == RLC_OK, end);
+			TEST_ASSERT(cp_tds_alt(cmp, NULL, m, sizeof(m), 1, alt, n,
+					sizeof(n), 2, pub) == RLC_OK, end);
+			TEST_ASSERT(cp_tds_ver(cmp, m, sizeof(m), 1, pub) == 1, end);
+		} TEST_END;
+
+		TEST_CASE("alternative signature rejects a future timestamp") {
+			TEST_ASSERT(cp_tds_sign(sig, NULL, m, sizeof(m), 2,
+					prv) == RLC_OK, end);
+			TEST_ASSERT(cp_tds_alt(alt, NULL, n, sizeof(n), 3, sig, m,
+					sizeof(m), 2, pub) == RLC_ERR, end);
+			TEST_ASSERT(cp_tds_alt(alt, NULL, n, sizeof(n), 2, sig, m,
+					sizeof(m), TEST_TDS_BOUND + 1, pub) == RLC_ERR, end);
+		} TEST_END;
+
+		TEST_CASE("alternative signature rejects an invalid source") {
+			TEST_ASSERT(cp_tds_sign(sig, NULL, m, sizeof(m), 2,
+					prv) == RLC_OK, end);
+			bn_add_dig(sig->y, sig->y, 1);
+			TEST_ASSERT(cp_tds_alt(alt, NULL, n, sizeof(n), 1, sig, m,
+					sizeof(m), 2, pub) == RLC_ERR, end);
+			bn_sub_dig(sig->y, sig->y, 1);
+			TEST_ASSERT(cp_tds_alt(alt, NULL, n, sizeof(n), 1, sig, m,
+					sizeof(m), 2, pub) == RLC_OK, end);
+		} TEST_END;
+
+		TEST_CASE("alternative signature is perfectly deniable") {
+			TEST_ASSERT(cp_tds_sign(sig, NULL, m, sizeof(m), 3,
+					prv) == RLC_OK, end);
+			TEST_ASSERT(cp_tds_alt(alt, salt, n, sizeof(n), 2, sig, m,
+					sizeof(m), 3, pub) == RLC_OK, end);
+			TEST_ASSERT(cp_tds_sign(cmp, salt, n, sizeof(n), 2,
+					prv) == RLC_OK, end);
+			TEST_ASSERT(bn_cmp(alt->z, cmp->z) == RLC_EQ, end);
+			TEST_ASSERT(bn_cmp(alt->y, cmp->y) == RLC_EQ, end);
+			TEST_ASSERT(bn_cmp(alt->ts, cmp->ts) == RLC_EQ, end);
+			TEST_ASSERT(bn_cmp(alt->del, cmp->del) == RLC_EQ, end);
+			TEST_ASSERT(memcmp(alt->s, cmp->s, RLC_TDS_SALT) == 0, end);
+		} TEST_END;
+
+		TEST_CASE("witness assembly agrees over a short delay") {
+			/* A delay this short is assembled in constant memory instead of
+			 * from retained powers, which is the other path inside cp_tds_alt
+			 * and is reached by the key below rather than by an argument. */
+			TEST_ASSERT(cp_tds_gen(sml_pub, sml_prv, TEST_TDS_BITS, 32,
+					TEST_TDS_BOUND) == RLC_OK, end);
+			TEST_ASSERT(cp_tds_sign(sig, NULL, m, sizeof(m), 2,
+					sml_prv) == RLC_OK, end);
+			TEST_ASSERT(cp_tds_alt(alt, salt, n, sizeof(n), 1, sig, m,
+					sizeof(m), 2, sml_pub) == RLC_OK, end);
+			TEST_ASSERT(cp_tds_ver(alt, n, sizeof(n), 1, sml_pub) == 1, end);
+			/* the same input twice gives the same signature */
+			TEST_ASSERT(cp_tds_alt(cmp, salt, n, sizeof(n), 1, sig, m,
+					sizeof(m), 2, sml_pub) == RLC_OK, end);
+			TEST_ASSERT(bn_cmp(alt->y, cmp->y) == RLC_EQ, end);
+			TEST_ASSERT(bn_cmp(alt->del, cmp->del) == RLC_EQ, end);
+			TEST_ASSERT(bn_cmp(alt->ts, cmp->ts) == RLC_EQ, end);
+		} TEST_END;
+	} RLC_CATCH_ANY {
+		RLC_ERROR(end);
+	}
+	code = RLC_OK;
+
+  end:
+	tds_free(pub);
+	tds_free(prv);
+	tds_free(sml_pub);
+	tds_free(sml_prv);
+	tds_sig_free(sig);
+	tds_sig_free(alt);
+	tds_sig_free(cmp);
 	return code;
 }
 
@@ -1235,7 +1417,7 @@ static int clvdf(void) {
 		TEST_CASE("vdf evaluation and decoding are inverse") {
 			bn_rand_mod(x, &(core_get()->qf_q));
 			cp_clvdf_evl(u1, z1, y1, f, TEST_VDF_DELAY, x);
-			TEST_ASSERT(cp_clvdf_dec(y, TEST_VDF_DELAY, u1, z1, y1) == 1, end);
+			TEST_ASSERT(cp_clvdf_dec(y, TEST_VDF_DELAY, u1, z1, y1) == RLC_OK, end);
 			TEST_ASSERT(bn_cmp(x, y) == RLC_EQ, end);
 		} TEST_END;
 
@@ -1303,7 +1485,7 @@ static int clvdf(void) {
 			cp_clvdf_evl(u1, z1, y1, f, TEST_VDF_DELAY, x);
 			/* the second component belongs to the other order */
 			qf_copy(z2, u1);
-			TEST_ASSERT(cp_clvdf_dec(y, TEST_VDF_DELAY, u1, z2, y1) == 0, end);
+			TEST_ASSERT(cp_clvdf_dec(y, TEST_VDF_DELAY, u1, z2, y1) == RLC_ERR, end);
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {
@@ -3681,6 +3863,11 @@ int main(void) {
 	}
 
 	if (subgroup_paillier() != RLC_OK) {
+		core_clean();
+		return 1;
+	}
+
+	if (tds() != RLC_OK) {
 		core_clean();
 		return 1;
 	}
