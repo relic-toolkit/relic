@@ -273,7 +273,7 @@ void bn_sqrn_low(dig_t *c, const dig_t *a, size_t size);
 
 /**
  * Divides a digit vector by another digit vector. Computes c = floor(a / b) and
- * d = a mod b. The dividend and divisor may be destroyed inside the function.
+ * d = a mod b.
  *
  * @param[out] c			- the quotient.
  * @param[out] d			- the remainder.
@@ -282,7 +282,8 @@ void bn_sqrn_low(dig_t *c, const dig_t *a, size_t size);
  * @param[in,out] b			- the divisor.
  * @param[in] sb			- the size of the divisor.
  */
-void bn_divn_low(dig_t *c, dig_t *d, dig_t *a, size_t sa, dig_t *b, size_t sb);
+void bn_divn_low(dig_t *c, dig_t *d, const dig_t *a, size_t sa, const dig_t *b,
+		size_t sb);
 
 /**
  * Divides a digit vector by a digit. Computes c = floor(a / digit) and

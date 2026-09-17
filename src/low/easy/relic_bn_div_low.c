@@ -38,24 +38,31 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void bn_divn_low(dig_t *c, dig_t *d, dig_t *a, size_t sa, dig_t *b, size_t sb) {
+void bn_divn_low(dig_t *c, dig_t *d, const dig_t *a, size_t sa, const dig_t *b,
+		size_t sb) {
 	int norm, i, n, t, sd;
 	dig_t carry, t1[3], t2[3];
+	/* Make backup copies of operands and adjust pointers. */
+	dig_t *x = RLC_ALLOCA(dig_t, sa + 1), *y = RLC_ALLOCA(dig_t, sa + 1);
+
+	dv_copy(x, a, sa);
+	dv_copy(y, b, sb);
+	x[sa] = y[sb] = 0;
 
 	dv_zero(c, sa + 1);
 	/* Normalize x and y so that the leading digit of y is bigger than
 	 * 2^(RLC_DIG-1). */
-	norm = util_bits_dig(b[sb - 1]) % RLC_DIG;
+	norm = util_bits_dig(y[sb - 1]) % RLC_DIG;
 
 	if (norm < (int)(RLC_DIG - 1)) {
 		norm = (RLC_DIG - 1) - norm;
-		carry = bn_lshb_low(a, a, sa, norm);
+		carry = bn_lshb_low(x, x, sa, norm);
 		if (carry) {
-			a[sa++] = carry;
+			x[sa++] = carry;
 		}
-		carry = bn_lshb_low(b, b, sb, norm);
+		carry = bn_lshb_low(y, y, sb, norm);
 		if (carry) {
-			b[sb++] = carry;
+			y[sb++] = carry;
 		}
 	} else {
 		norm = 0;
@@ -66,16 +73,16 @@ void bn_divn_low(dig_t *c, dig_t *d, dig_t *a, size_t sa, dig_t *b, size_t sb) {
 
 	/* Shift y so that the most significant digit of y is aligned with the
 	 * most significant digit of x. */
-	dv_lshd(b, b, sb + (n - t), (n - t));
+	dv_lshd(y, y, sb + (n - t), (n - t));
 
 	/* Find the most significant digit of the quotient. */
-	while (dv_cmp(a, b, sa) != RLC_LT) {
+	while (dv_cmp(x, y, sa) != RLC_LT) {
 		c[n - t]++;
-		bn_subn_low(a, a, b, sa);
+		bn_subn_low(x, x, y, sa);
 	}
 
 	/* Shift y back. */
-	dv_rshd(b, b, sb + (n - t), (n - t));
+	dv_rshd(y, y, sb + (n - t), (n - t));
 
 	/* Find the remaining digits. */
 	for (i = n; i >= (t + 1); i--) {
@@ -83,47 +90,49 @@ void bn_divn_low(dig_t *c, dig_t *d, dig_t *a, size_t sa, dig_t *b, size_t sb) {
 			continue;
 		}
 
-		if (a[i] == b[t]) {
+		if (x[i] == y[t]) {
 			c[i - t - 1] = RLC_MASK(RLC_DIG);
 		} else {
-			RLC_DIV_DIG(c[i - t - 1], carry, a[i], a[i - 1], b[t]);
+			RLC_DIV_DIG(c[i - t - 1], carry, x[i], x[i - 1], y[t]);
 		}
 
 		c[i - t - 1]++;
 		do {
 			c[i - t - 1]--;
-			t1[0] = (t - 1 < 0) ? 0 : b[t - 1];
-			t1[1] = b[t];
+			t1[0] = (t - 1 < 0) ? 0 : y[t - 1];
+			t1[1] = y[t];
 
 			carry = bn_mul1_low(t1, t1, c[i - t - 1], 2);
 			t1[2] = carry;
 
-			t2[0] = (i - 2 < 0) ? 0 : a[i - 2];
-			t2[1] = (i - 1 < 0) ? 0 : a[i - 1];
-			t2[2] = a[i];
+			t2[0] = (i - 2 < 0) ? 0 : x[i - 2];
+			t2[1] = (i - 1 < 0) ? 0 : x[i - 1];
+			t2[2] = x[i];
 		} while (dv_cmp(t1, t2, 3) == RLC_GT);
 
-		carry = bn_mul1_low(d, b, c[i - t - 1], sb);
+		carry = bn_mul1_low(d, y, c[i - t - 1], sb);
 		sd = sb;
 		if (carry) {
 			d[sd++] = carry;
 		}
 
-		carry = bn_subn_low(a + (i - t - 1), a + (i - t - 1), d, sd);
+		carry = bn_subn_low(x + (i - t - 1), x + (i - t - 1), d, sd);
 		sd += (i - t - 1);
 		if (sa > sd) {
-			carry = bn_sub1_low(a + sd, a + sd, carry, sa - sd);
+			carry = bn_sub1_low(x + sd, x + sd, carry, sa - sd);
 		}
 
 		if (carry) {
 			sd = sb + (i - t - 1);
-			carry = bn_addn_low(a + (i - t - 1), a + (i - t - 1), b, sb);
-			carry = bn_add1_low(a + sd, a + sd, carry, sa - sd);
+			carry = bn_addn_low(x + (i - t - 1), x + (i - t - 1), y, sb);
+			carry = bn_add1_low(x + sd, x + sd, carry, sa - sd);
 			c[i - t - 1]--;
 		}
 	}
 	/* Remainder should be not be longer than the divisor. */
-	bn_rshb_low(d, a, sb, norm);
+	bn_rshb_low(d, x, sb, norm);
+	RLC_FREE(x);
+	RLC_FREE(y);
 }
 
 void bn_div1_low(dig_t *c, dig_t *d, const dig_t *a, dig_t b, size_t size) {
