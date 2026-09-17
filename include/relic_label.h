@@ -285,7 +285,6 @@
 #undef bn_lcm
 #undef bn_smb_leg
 #undef bn_smb_jac
-#undef bn_smb_kro_dig
 #undef bn_is_prime
 #undef bn_is_prime_basic
 #undef bn_is_prime_rabin
@@ -405,7 +404,6 @@
 #define bn_lcm 	RLC_PREFIX(bn_lcm)
 #define bn_smb_leg 	RLC_PREFIX(bn_smb_leg)
 #define bn_smb_jac 	RLC_PREFIX(bn_smb_jac)
-#define bn_smb_kro_dig 	RLC_PREFIX(bn_smb_kro_dig)
 #define bn_is_prime 	RLC_PREFIX(bn_is_prime)
 #define bn_is_prime_basic 	RLC_PREFIX(bn_is_prime_basic)
 #define bn_is_prime_rabin 	RLC_PREFIX(bn_is_prime_rabin)
