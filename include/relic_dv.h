@@ -152,6 +152,15 @@ void dv_print(const dig_t *a, size_t digits);
 void dv_zero(dig_t *a, size_t digits);
 
 /**
+ * Returns whether a digit vector is zero.
+ *
+ * @param[in] a				- the digit vector to test.
+ * @param[in] digits		- the number of words to test.
+ * @return 1 if every word is zero, 0 otherwise.
+ */
+int dv_is_zero(const dig_t *a, size_t digits);
+
+/**
  * Copies some digits from a digit vector to another digit vector.
  *
  * @param[out] c			- the destination.

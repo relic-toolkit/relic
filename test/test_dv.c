@@ -115,6 +115,49 @@ static int copy(void) {
 	return code;
 }
 
+static int zero(void) {
+	dv_t a;
+	int code = RLC_ERR;
+
+	dv_null(a);
+
+	RLC_TRY {
+		dv_new(a);
+
+		TEST_CASE("zero test is consistent") {
+			dv_zero(a, RLC_DV_DIGS);
+			TEST_ASSERT(dv_is_zero(a, RLC_DV_DIGS) == 1, end);
+			rand_bytes((uint8_t *)a, RLC_DV_DIGS * sizeof(dig_t));
+			a[0] |= 1;
+			TEST_ASSERT(dv_is_zero(a, RLC_DV_DIGS) == 0, end);
+		}
+		TEST_END;
+
+		TEST_CASE("zero test finds a digit set anywhere") {
+			for (size_t i = 0; i < RLC_DV_DIGS; i++) {
+				dv_zero(a, RLC_DV_DIGS);
+				a[i] = 1;
+				TEST_ASSERT(dv_is_zero(a, RLC_DV_DIGS) == 0, end);
+				/* and the same digit is invisible to a shorter test */
+				TEST_ASSERT(dv_is_zero(a, i) == 1, end);
+			}
+		}
+		TEST_END;
+
+		TEST_CASE("zero test of no digits is trivially true") {
+			rand_bytes((uint8_t *)a, RLC_DV_DIGS * sizeof(dig_t));
+			TEST_ASSERT(dv_is_zero(a, 0) == 1, end);
+		}
+		TEST_END;
+	} RLC_CATCH_ANY {
+		RLC_ERROR(end);
+	}
+	code = RLC_OK;
+  end:
+	dv_free(a);
+	return code;
+}
+
 static int swap(void) {
 	dv_t a, b, c, d;
 	int code = RLC_ERR;
@@ -233,6 +276,11 @@ int main(void) {
 	}
 
 	if (copy() != RLC_OK) {
+		core_clean();
+		return 1;
+	}
+
+	if (zero() != RLC_OK) {
 		core_clean();
 		return 1;
 	}

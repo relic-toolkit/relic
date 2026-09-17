@@ -57,6 +57,15 @@ void dv_zero(dig_t *a, size_t digits) {
 	memset(a, 0, digits * sizeof(dig_t));
 }
 
+int dv_is_zero(const dig_t *a, size_t digits) {
+	for (size_t i = 0; i < digits; i++) {
+		if (a[i] != 0) {
+			return 0;
+		}
+	}
+	return 1;
+}
+
 void dv_copy(dig_t *c, const dig_t *a, size_t digits) {
 	memcpy(c, a, digits * sizeof(dig_t));
 }
