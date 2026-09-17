@@ -929,7 +929,7 @@ static int division(void) {
 			TEST_ASSERT(bn_sign(a) != bn_sign(c), end);
 			TEST_ASSERT(bn_sign(d) == bn_sign(b), end);
 		} TEST_END;
-	}
+
 		TEST_CASE("rounded up division is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_rand(b, RLC_POS, RLC_BN_BITS / 2);
@@ -1024,7 +1024,7 @@ static int division(void) {
 			bn_div_rem_rup(c, d, a, b);
 			TEST_ASSERT(bn_is_zero(c) && bn_is_zero(d), end);
 		} TEST_END;
-	RLC_CATCH_ANY {
+	} RLC_CATCH_ANY {
 		RLC_ERROR(end);
 	}
 	code = RLC_OK;
