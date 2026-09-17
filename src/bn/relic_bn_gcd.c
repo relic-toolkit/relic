@@ -113,7 +113,6 @@ static int lehmer_step(dis_t *m, const bn_t x, const bn_t y, bn_t u, bn_t v) {
  * One half-GCD step wrapping the low-level abstraction.
  */
 static int hgcd_step(bn_t u00, bn_t u01, bn_t u10, bn_t u11, bn_t a, bn_t b) {
-	bn_t t0, t1;
 	size_t n = RLC_MAX(a->used, b->used), sm = 0, nn, s = (n + 1) / 2 + 1;
 	dig_t *_a = a->dp, *_b = b->dp;
 	int result = 1;
@@ -122,53 +121,37 @@ static int hgcd_step(bn_t u00, bn_t u01, bn_t u10, bn_t u11, bn_t a, bn_t b) {
 		return 0;
 	}
 
-	bn_null(t0);
-	bn_null(t1);
-
-	RLC_TRY {
-		bn_new(t0);
-		bn_new(t1);
-
-		bn_grow(a, n + 1);
-		bn_grow(b, n + 1);
-		for (size_t i = a->used; i < n; i++) {
-			a->dp[i] = 0;
-		}
-		for (size_t i = b->used; i < n; i++) {
-			b->dp[i] = 0;
-		}
-		if ((a->dp[n - 1] | b->dp[n - 1]) == 0) {
-			return 0;
-		}
-		bn_grow(u00, s);
-		bn_grow(u01, s);
-		bn_grow(u10, s);
-		bn_grow(u11, s);
-		bn_grow(t1, 2 * (n + 1));
-		dv_copy(t1->dp, a->dp, n);
-		dv_copy(t1->dp + n, b->dp, n);
-
-		nn = bn_gcdh_low(u00->dp, u01->dp, u10->dp, u11->dp, &sm, _a, _b, n);
-		if (nn == 0) {
-			dv_copy(a->dp, t1->dp, n);
-			dv_copy(b->dp, t1->dp + n, n);
-			a->used = b->used = n;
-			bn_trim(a);
-			bn_trim(b);
-			result = 0;
-		} else {
-			a->used = b->used = nn;
-			a->sign = b->sign = RLC_POS;
-			bn_trim(a);
-			bn_trim(b);
-		}
-		u00->used = u01->used = u10->used = u11->used = sm;
-		u00->sign = u01->sign = u10->sign = u11->sign = RLC_POS;
-		bn_trim(u00);
-		bn_trim(u01);
-		bn_trim(u10);
-		bn_trim(u11);
+	bn_grow(a, n + 1);
+	bn_grow(b, n + 1);
+	for (size_t i = a->used; i < n; i++) {
+		a->dp[i] = 0;
 	}
+	for (size_t i = b->used; i < n; i++) {
+		b->dp[i] = 0;
+	}
+	if ((a->dp[n - 1] | b->dp[n - 1]) == 0) {
+		return 0;
+	}
+	
+	bn_grow(u00, s);
+	bn_grow(u01, s);
+	bn_grow(u10, s);
+	bn_grow(u11, s);
+	nn = bn_gcdh_low(u00->dp, u01->dp, u10->dp, u11->dp, &sm, _a, _b, n);
+	if (nn == 0) {
+		result = 0;
+	} else {
+		a->used = b->used = nn;
+		a->sign = b->sign = RLC_POS;
+		bn_trim(a);
+		bn_trim(b);
+	}
+	u00->used = u01->used = u10->used = u11->used = sm;
+	u00->sign = u01->sign = u10->sign = u11->sign = RLC_POS;
+	bn_trim(u00);
+	bn_trim(u01);
+	bn_trim(u10);
+	bn_trim(u11);
 
 	return result;
 }
