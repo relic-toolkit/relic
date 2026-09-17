@@ -143,15 +143,13 @@ void bn_grow(bn_t a, size_t digits) {
 }
 
 void bn_trim(bn_t a) {
-	if (a->used <= a->alloc) {
-		while (a->used > 0 && a->dp[a->used - 1] == 0) {
-			--(a->used);
-		}
-		/* Zero can't be negative. */
-		if (a->used == 0) {
-			a->used = 1;
-			a->dp[0] = 0;
-			a->sign = RLC_POS;
-		}
+	while (a->used > 0 && a->dp[a->used - 1] == 0) {
+		--(a->used);
+	}
+	/* Zero can't be negative. */
+	if (a->used == 0) {
+		a->used = 1;
+		a->dp[0] = 0;
+		a->sign = RLC_POS;
 	}
 }

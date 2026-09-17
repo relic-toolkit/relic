@@ -83,7 +83,6 @@ void bn_hlv(bn_t c, const bn_t a) {
 	c->sign = a->sign;
 	bn_rsh1_low(c->dp, a->dp, a->used);
 	bn_sub_dig(c, c, down);
-	bn_trim(c);
 #endif
 }
 
