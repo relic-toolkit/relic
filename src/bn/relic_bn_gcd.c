@@ -109,6 +109,8 @@ static int lehmer_step(dis_t *m, const bn_t x, const bn_t y, bn_t u, bn_t v) {
 	return even;
 }
 
+#if WSIZE > 16
+
 /**
  * One half-GCD step wrapping the low-level abstraction.
  */
@@ -155,6 +157,8 @@ static int hgcd_step(bn_t u00, bn_t u01, bn_t u10, bn_t u11, bn_t a, bn_t b) {
 
 	return result;
 }
+
+#endif
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -1401,11 +1405,13 @@ void bn_gcd_ext_par(bn_t c, bn_t d, bn_t u00, bn_t u01, bn_t u10, bn_t u11,
 			bn_abs(d, a);
 		}
 
+#if WSIZE > 16
 		if (hgcd_step(u00, u01, u10, u11, c, d)) {
 			if (bn_cmp_abs(bn_cmp_abs(c, d) == RLC_GT ? c : d, l) != RLC_GT) {
 				flag = 1;
 			}
 		}
+#endif
 
 		while (!flag) {
 			c_big = (bn_cmp_abs(c, d) == RLC_GT);
