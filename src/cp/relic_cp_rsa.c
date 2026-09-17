@@ -876,12 +876,10 @@ int cp_rsa_ver(uint8_t *sig, size_t sig_len, const uint8_t *msg, size_t msg_len,
 		int hash, const rsa_t pub) {
 	bn_t m, eb;
 	size_t size, pad_len;
-	int result;
+	/* We suppose that the signature is invalid. */
+	int result = 0;
 	uint8_t *h1 = RLC_ALLOCA(uint8_t, RLC_MAX(msg_len, RLC_MD_LEN) + 8);
 	uint8_t *h2 = RLC_ALLOCA(uint8_t, RLC_MAX(msg_len, RLC_MD_LEN));
-
-	/* We suppose that the signature is invalid. */
-	result = 0;
 
 	if (h1 == NULL || h2 == NULL) {
 		RLC_FREE(h1);
