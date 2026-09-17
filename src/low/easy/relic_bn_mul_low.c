@@ -54,6 +54,19 @@ dig_t bn_mula_low(dig_t *c, const dig_t *a, dig_t digit, size_t size) {
 	return carry;
 }
 
+dig_t bn_muls_low(dig_t *c, const dig_t *a, dig_t digit, size_t size) {
+	dig_t _c, r0, r1, borrow = 0;
+	for (int i = 0; i < size; i++, a++, c++) {
+		/* Same column-by-column product as bn_mula_low, subtracted instead. */
+		RLC_MUL_DIG(r1, r0, *a, digit);
+		_c = r0 + borrow;
+		borrow = r1 + (_c < borrow);
+		borrow += (*c < _c);
+		*c = *c - _c;
+	}
+	return borrow;
+}
+
 dig_t bn_mul1_low(dig_t *c, const dig_t *a, dig_t digit, size_t size) {
 	dig_t r0, r1, carry = 0;
 	for (int i = 0; i < size; i++, a++, c++) {
@@ -64,7 +77,7 @@ dig_t bn_mul1_low(dig_t *c, const dig_t *a, dig_t digit, size_t size) {
 	return carry;
 }
 
-dig_t bn_muls_low(dig_t *c, const dig_t *a, dig_t sa, dis_t digit,
+dig_t bn_smul_low(dig_t *c, const dig_t *a, dig_t sa, dis_t digit,
 		size_t size) {
 	dig_t r, _c, c0, c1, sign, sd = digit >> (RLC_DIG - 1);
 

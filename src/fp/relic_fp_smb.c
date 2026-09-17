@@ -325,18 +325,18 @@ int fp_smb_binar(const fp_t a) {
 
 			k = porninstep(m, f_, g_, k, s);
 
-			t0[RLC_FP_DIGS] = bn_muls_low(t0, g, RLC_POS, m[0], RLC_FP_DIGS);
-			t1[RLC_FP_DIGS] = bn_muls_low(t1, f, RLC_POS, m[1], RLC_FP_DIGS);
+			t0[RLC_FP_DIGS] = bn_smul_low(t0, g, RLC_POS, m[0], RLC_FP_DIGS);
+			t1[RLC_FP_DIGS] = bn_smul_low(t1, f, RLC_POS, m[1], RLC_FP_DIGS);
 			bn_addn_low(t0, t0, t1, RLC_FP_DIGS + 1);
 			neg = RLC_SIGN(t0[RLC_FP_DIGS]);
 			bn_rshb_low(t, t0, RLC_FP_DIGS + 1, (RLC_DIG - 2));
-			bn_negs_low(t, t, neg, RLC_FP_DIGS);
+			bn_sneg_low(t, t, neg, RLC_FP_DIGS);
 
-			t0[RLC_FP_DIGS] = bn_muls_low(t0, g, RLC_POS, m[2], RLC_FP_DIGS);
-			t1[RLC_FP_DIGS] = bn_muls_low(t1, f, RLC_POS, m[3], RLC_FP_DIGS);
+			t0[RLC_FP_DIGS] = bn_smul_low(t0, g, RLC_POS, m[2], RLC_FP_DIGS);
+			t1[RLC_FP_DIGS] = bn_smul_low(t1, f, RLC_POS, m[3], RLC_FP_DIGS);
 			bn_addn_low(t1, t1, t0, RLC_FP_DIGS + 1);
 			bn_rshb_low(f, t1, RLC_FP_DIGS + 1, (RLC_DIG - 2));
-			bn_negs_low(f, f, RLC_SIGN(t1[RLC_FP_DIGS]), RLC_FP_DIGS);
+			bn_sneg_low(f, f, RLC_SIGN(t1[RLC_FP_DIGS]), RLC_FP_DIGS);
 
 			fp_copy(g, t);
 			k += (f[0] >> 1) & neg;
@@ -445,10 +445,10 @@ int fp_smb_divst(const fp_t a) {
 		k = (2*k) % 4;
 		fp_zero(t);
 		t[0] = 1;
-		bn_negs_low(f, f, fs, RLC_FP_DIGS);
+		bn_sneg_low(f, f, fs, RLC_FP_DIGS);
 		
 		r = RLC_SEL(r, 1 - k, dv_equ_sec(f, t, RLC_FP_DIGS) == RLC_EQ);
-		bn_negs_low(t, t, 1, RLC_FP_DIGS);
+		bn_sneg_low(t, t, 1, RLC_FP_DIGS);
 		r = RLC_SEL(r, 1 - k, dv_equ_sec(f, t, RLC_FP_DIGS) == RLC_EQ);
 		r = RLC_SEL(r, 1 - k, fp_is_zero(f));
 		r = RLC_SEL(r, 0, fp_is_zero(a));
@@ -511,18 +511,18 @@ int fp_smb_jmpds(const fp_t a) {
 
 			sf = RLC_SIGN(f[precision]);
 			sg = RLC_SIGN(g[precision]);
-			bn_negs_low(u0, f, sf, precision);
-			bn_negs_low(u1, g, sg, precision);
+			bn_sneg_low(u0, f, sf, precision);
+			bn_sneg_low(u1, g, sg, precision);
 			
-			t0[precision] = bn_muls_low(t0, u0, sf, m[3], precision);
-			t1[precision] = bn_muls_low(t1, u1, sg, m[2], precision);
+			t0[precision] = bn_smul_low(t0, u0, sf, m[3], precision);
+			t1[precision] = bn_smul_low(t1, u1, sg, m[2], precision);
 			bn_addn_low(t0, t0, t1, precision + 1);
-			bn_rshs_low(f, t0, precision + 1, s);
+			bn_srsh_low(f, t0, precision + 1, s);
 
-			t0[precision] = bn_muls_low(t0, u0, sf, m[1], precision);
-			t1[precision] = bn_muls_low(t1, u1, sg, m[0], precision);
+			t0[precision] = bn_smul_low(t0, u0, sf, m[1], precision);
+			t1[precision] = bn_smul_low(t1, u1, sg, m[0], precision);
 			bn_addn_low(t1, t1, t0, precision + 1);
-			bn_rshs_low(g, t1, precision + 1, s);
+			bn_srsh_low(g, t1, precision + 1, s);
 
 			j = (j + k) % 4;
 			j = (j + ((j & 1) ^ (RLC_SIGN(f[precision])))) % 4;
@@ -533,13 +533,13 @@ int fp_smb_jmpds(const fp_t a) {
 
 		sf = RLC_SIGN(f[precision]);
 		sg = RLC_SIGN(g[precision]);
-		bn_negs_low(u0, f, sf, precision);
-		bn_negs_low(u1, g, sg, precision);
+		bn_sneg_low(u0, f, sf, precision);
+		bn_sneg_low(u1, g, sg, precision);
 
-		t0[precision] = bn_muls_low(t0, u0, sf, m[3], precision);
-		t1[precision] = bn_muls_low(t1, u1, sg, m[2], precision);
+		t0[precision] = bn_smul_low(t0, u0, sf, m[3], precision);
+		t1[precision] = bn_smul_low(t1, u1, sg, m[2], precision);
 		bn_addn_low(t0, t0, t1, precision + 1);
-		bn_rshs_low(f, t0, precision + 1, s);
+		bn_srsh_low(f, t0, precision + 1, s);
 
 		j = (j + k) % 4;
 		j = (j + ((j & 1) ^ (RLC_SIGN(f[precision])))) % 4;
@@ -549,7 +549,7 @@ int fp_smb_jmpds(const fp_t a) {
 		r = RLC_SEL(r, 1 - j, dv_cmp_sec(f, t0, RLC_FP_DIGS) == RLC_EQ);
 		t0[0] = 1;
 		r = RLC_SEL(r, 1 - j, dv_cmp_sec(f, t0, RLC_FP_DIGS) == RLC_EQ);
-		bn_negs_low(t0, t0, 1, RLC_FP_DIGS);
+		bn_sneg_low(t0, t0, 1, RLC_FP_DIGS);
 		r = RLC_SEL(r, 1 - j, dv_cmp_sec(f, t0, RLC_FP_DIGS) == RLC_EQ);
 	}
 	RLC_CATCH_ANY {

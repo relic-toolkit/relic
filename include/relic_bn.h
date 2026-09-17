@@ -865,6 +865,32 @@ void bn_mul_comba(bn_t c, const bn_t a, const bn_t b);
 void bn_mul_karat(bn_t c, const bn_t a, const bn_t b);
 
 /**
+ * Multiplies two multiple precision integers and adds the product to a third.
+ * Computes c = c + a * b.
+ *
+ * Faster when the second operand is short, ideally a single digit, as the
+ * operands are swapped when the first one is the shorter.
+ *
+ * @param[in,out] c			- the integer to add to, and the result.
+ * @param[in] a				- the first integer to multiply.
+ * @param[in] b				- the second integer to multiply.
+ */
+void bn_mul_add(bn_t c, const bn_t a, const bn_t b);
+
+/**
+ * Multiplies two multiple precision integers and subtracts the product from a
+ * third. Computes c = c - a * b.
+ *
+ * Faster when the second operand is short, ideally a single digit, as the
+ * operands are swapped when the first one is the shorter.
+ *
+ * @param[in,out] c			- the integer to subtract from, and the result.
+ * @param[in] a				- the first integer to multiply.
+ * @param[in] b				- the second integer to multiply.
+ */
+void bn_mul_sub(bn_t c, const bn_t a, const bn_t b);
+
+/**
  * Computes the square of a multiple precision integer using Schoolbook
  * squaring.
  *

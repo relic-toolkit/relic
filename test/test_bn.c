@@ -566,6 +566,35 @@ static int multiplication(void) {
 		}
 		TEST_END;
 
+		TEST_CASE("fused multiplication and addition are correct") {
+			for (int j = 0; j < 8; j++) {
+				/* The last bit picks a single-digit multiplier, which is the
+				 * case the fused routines have a dedicated path for. */
+				bn_rand(a, (j & 1) ? RLC_NEG : RLC_POS, RLC_BN_BITS / 2);
+				bn_rand(b, (j & 2) ? RLC_NEG : RLC_POS,
+						(j & 4) ? RLC_DIG - 1 : RLC_BN_BITS / 2);
+				bn_rand(c, (j & 2) ? RLC_NEG : RLC_POS, RLC_BN_BITS / 2);
+				bn_mul(d, a, b);
+				bn_add(e, c, d);
+				bn_copy(f, c);
+				bn_mul_add(f, a, b);
+				TEST_ASSERT(bn_cmp(f, e) == RLC_EQ, end);
+				bn_sub(e, c, d);
+				bn_copy(f, c);
+				bn_mul_sub(f, a, b);
+				TEST_ASSERT(bn_cmp(f, e) == RLC_EQ, end);
+				/* an accumulator of zero is a separate branch */
+				bn_zero(f);
+				bn_mul_add(f, a, b);
+				TEST_ASSERT(bn_cmp(f, d) == RLC_EQ, end);
+				bn_zero(f);
+				bn_mul_sub(f, a, b);
+				bn_neg(e, d);
+				TEST_ASSERT(bn_cmp(f, e) == RLC_EQ, end);
+			}
+		}
+		TEST_END;
+
 #if BN_MUL == BASIC || !defined(STRIP)
 		TEST_CASE("basic multiplication is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS / 2);

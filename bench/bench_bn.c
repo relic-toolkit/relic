@@ -366,6 +366,22 @@ static void arith(void) {
 	}
 	BENCH_END;
 
+	BENCH_RUN("bn_mul_add") {
+		bn_rand(a, RLC_POS, RLC_BN_BITS / 2);
+		bn_rand(b, RLC_POS, RLC_DIG - 1);
+		bn_rand(c, RLC_POS, RLC_BN_BITS / 2);
+		BENCH_ADD(bn_mul_add(c, a, b));
+	}
+	BENCH_END;
+
+	BENCH_RUN("bn_mul_sub") {
+		bn_rand(a, RLC_POS, RLC_BN_BITS / 2);
+		bn_rand(b, RLC_POS, RLC_DIG - 1);
+		bn_rand(c, RLC_POS, RLC_BN_BITS / 2);
+		BENCH_ADD(bn_mul_sub(c, a, b));
+	}
+	BENCH_END;
+
 	BENCH_RUN("bn_mul_dis") {
 		bn_rand(a, RLC_POS, RLC_BN_BITS);
 		bn_rand(b, RLC_POS, RLC_BN_BITS);
