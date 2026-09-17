@@ -747,11 +747,18 @@ void bn_next_prime(bn_t q, const bn_t p) {
 }
 
 int bn_map_prime(bn_t p, uint32_t *ctr, const uint8_t *msg, size_t len,
-		size_t bits, uint32_t from) {
+		size_t bits, uint32_t from, const uint8_t *dst, size_t dst_len) {
 	uint8_t seed[RLC_MD_LEN + sizeof(uint32_t)], *out;
+	const uint8_t *tag = dst;
+	size_t i, tl = dst_len, nb = (bits + 7) / 8;
 	uint32_t k = 0;
-	size_t i, nb = (bits + 7) / 8;
 	int result = RLC_OK;
+
+	/* Callers with no tag of their own get the one of the library. */
+	if (tag == NULL) {
+		tag = (const uint8_t *)RLC_DSTAG;
+		tl = sizeof(RLC_DSTAG) - 1;
+	}
 
 	if (bits < 2 || nb == 0) {
 		RLC_THROW(ERR_NO_VALID);
@@ -783,8 +790,7 @@ int bn_map_prime(bn_t p, uint32_t *ctr, const uint8_t *msg, size_t len,
 			 * prime does not depend on the endianness of the platform. */
 			util_write_uint32(seed + RLC_MD_LEN, k);
 			/* Expand the seed to the whole prime so the output looks uniform. */
-			md_xmd(out, nb, seed, sizeof(seed),
-					(const uint8_t *)RLC_DSTAG, sizeof(RLC_DSTAG) - 1);
+			md_xmd(out, nb, seed, sizeof(seed), tag, tl);
 
 			bn_read_bin(p, out, nb);
 			/* trim to the requested width, then fix the top and bottom bits */

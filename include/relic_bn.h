@@ -1516,10 +1516,12 @@ int bn_is_prime_lucas(const bn_t a);
  * @param[in] len			- the length of the string in bytes.
  * @param[in] bits			- the size in bits of the prime.
  * @param[in] from			- the counter to start from, usually zero.
+ * @param[in] dst			- the domain separation tag, or NULL for a default.
+ * @param[in] dst_len		- the length of the tag in bytes.
  * @return RLC_OK if a prime was found, RLC_ERR otherwise.
  */
 int bn_map_prime(bn_t p, uint32_t *ctr, const uint8_t *msg, size_t len,
-		size_t bits, uint32_t from);
+		size_t bits, uint32_t from, const uint8_t *dst, size_t dst_len);
 
 /**
  * Generates a probable prime number.

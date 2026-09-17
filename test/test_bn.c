@@ -2237,7 +2237,7 @@ static int prime(void) {
 
 		TEST_ONCE("hashing to prime is consistent") {
 			rand_bytes(msg, sizeof(msg));
-			bn_map_prime(p, NULL, msg, sizeof(msg), RLC_BN_BITS, 0);
+			bn_map_prime(p, NULL, msg, sizeof(msg), RLC_BN_BITS, 0, NULL, 0);
 			TEST_ASSERT(bn_is_prime(p) == 1, end);
 		} TEST_END;
 

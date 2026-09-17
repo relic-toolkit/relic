@@ -196,7 +196,7 @@ int dv_cmp(const dig_t *a, const dig_t *b, size_t size);
  * @param[in] a				- the first digit vector.
  * @param[in] b				- the second digit vector.
  * @param[in] size			- the length in digits of the vectors.
- * @return RLC_EQ if they are equal and RLC_NE otherwise.
+ * @return RLC_LT if a < b, RLC_EQ if a == b and RLC_GT if a > b.
  */
 int dv_cmp_sec(const dig_t *a, const dig_t *b, size_t size);
 

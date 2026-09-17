@@ -294,6 +294,16 @@ char util_conv_char(dig_t i);
 void util_write_uint32(uint8_t *bin, uint32_t a);
 
 /**
+ * Writes an unsigned integer as eight bytes in big-endian order. The width is
+ * fixed, so that what is written depends neither on the endianness nor on the
+ * size of size_t on the platform.
+ *
+ * @param[out] bin			- the resulting byte vector, of eight bytes.
+ * @param[in] a				- the integer to write.
+ */
+void util_write_size(uint8_t *bin, size_t a);
+
+/**
  * Returns the highest bit set on a digit.
  *
  * @param[in] a				- the digit.
