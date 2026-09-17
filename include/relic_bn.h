@@ -1432,6 +1432,17 @@ int bn_is_prime_rabin(const bn_t a);
 int bn_is_prime_solov(const bn_t a);
 
 /**
+ * Hashes a string to a prime number of a given size.
+ *
+ * @param[out] p			- the resulting prime.
+ * @param[in] msg			- the string to hash.
+ * @param[in] len			- the length of the string in bytes.
+ * @param[in] bits			- the size in bits of the prime.
+ * @return RLC_OK if a prime was found, RLC_ERR otherwise.
+ */
+int bn_map_prime(bn_t p, const uint8_t *msg, size_t len, size_t bits);
+
+/**
  * Generates a probable prime number.
  *
  * @param[out] a			- the result.

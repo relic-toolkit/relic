@@ -299,6 +299,7 @@ static void arith(void) {
 	crt_t crt;
 	dig_t f;
 	size_t len;
+	uint8_t m[16];
 
 	bn_null(a);
 	bn_null(b);
@@ -926,6 +927,9 @@ static void arith(void) {
 	BENCH_ONE("bn_is_prime_rabin", bn_is_prime_rabin(a), 1);
 
 	BENCH_ONE("bn_is_prime_solov", bn_is_prime_solov(a), 1);
+
+	rand_bytes(m, sizeof(m));
+	BENCH_ONE("bn_map_prime", bn_map_prime(a, m, sizeof(m), RLC_BN_BITS), 1);
 
 	/* It should be the case that a is prime here. */
 	BENCH_RUN("bn_mod_inv") {
