@@ -590,7 +590,7 @@ int bn_map_prime(bn_t p, const uint8_t *msg, size_t len, size_t bits) {
 		return RLC_ERR;
 	}
 
-	in = RLC_ALLOCA(uint8_t, len + sizeof(size_t));
+	in = RLC_ALLOCA(uint8_t, len + sizeof(uint32_t));
 	out = RLC_ALLOCA(uint8_t, nb);
 	if (in == NULL || out == NULL) {
 		RLC_FREE(in);
@@ -608,7 +608,7 @@ int bn_map_prime(bn_t p, const uint8_t *msg, size_t len, size_t bits) {
 		for (uint32_t k = 0; k < BN_MAP_TRIES; k++) {
 			/* Expand message to the whole prime so the output looks uniform. */
 			memcpy(in + len, &k, sizeof(uint32_t));
-			md_xmd(out, nb, in, len + sizeof(size_t),
+			md_xmd(out, nb, in, len + sizeof(uint32_t),
 					(const uint8_t *)RLC_DSTAG, sizeof(RLC_DSTAG) - 1);
 
 			bn_read_bin(p, out, nb);
