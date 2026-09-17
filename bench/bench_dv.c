@@ -79,6 +79,11 @@ static void copy(void) {
 		BENCH_ADD(dv_swap_sec(a, b, RLC_DV_DIGS, 1));
 	} BENCH_END;
 
+	BENCH_RUN("dv_is_zero") {
+		dv_zero(a, RLC_DV_DIGS);
+		BENCH_ADD(dv_is_zero(a, RLC_DV_DIGS));
+	} BENCH_END;
+
 	BENCH_RUN("dv_cmp") {
 		rand_bytes((uint8_t *)a, RLC_DV_DIGS * sizeof(dig_t));
 		rand_bytes((uint8_t *)b, RLC_DV_DIGS * sizeof(dig_t));
