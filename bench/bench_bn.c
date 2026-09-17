@@ -370,7 +370,7 @@ static void arith(void) {
 		bn_rand(a, RLC_POS, RLC_BN_BITS);
 		bn_rand(b, RLC_POS, RLC_DIG);
 		bn_rand(c, RLC_POS, RLC_BN_BITS);
-		BENCH_ADD(bn_mul_add(c, a, b));
+		BENCH_ADD(bn_mul_add(c, c, a, b));
 	}
 	BENCH_END;
 
@@ -378,7 +378,7 @@ static void arith(void) {
 		bn_rand(a, RLC_POS, RLC_BN_BITS);
 		bn_rand(b, RLC_POS, RLC_DIG);
 		bn_rand(c, RLC_POS, RLC_BN_BITS);
-		BENCH_ADD(bn_mul_sub(c, a, b));
+		BENCH_ADD(bn_mul_sub(c, c, a, b));
 	}
 	BENCH_END;
 
