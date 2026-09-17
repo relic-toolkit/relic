@@ -44,7 +44,7 @@ message("      BN_METHD=STRON    Strong prime generation.\n")
 
 # Choose the arithmetic precision.
 if (NOT BN_PRECI)
-	set(BN_PRECI 1024)
+	set(BN_PRECI 2048)
 endif(NOT BN_PRECI)
 set(BN_PRECI ${BN_PRECI} CACHE STRING "Arithmetic precision in bits")
 
