@@ -1252,7 +1252,7 @@ static int square_root(void) {
 
 static int gcd(void) {
 	int code = RLC_ERR;
-	bn_t a, b, c, d, e, f, g, h;
+	bn_t a, b, c, d, e, f, g, h, l;
 
 	bn_null(a);
 	bn_null(b);
@@ -1262,6 +1262,7 @@ static int gcd(void) {
 	bn_null(f);
 	bn_null(g);
 	bn_null(h);
+	bn_null(l);
 
 	RLC_TRY {
 		bn_new(a);
@@ -1272,6 +1273,7 @@ static int gcd(void) {
 		bn_new(f);
 		bn_new(g);
 		bn_new(h);
+		bn_new(l);
 
 		TEST_CASE("greatest common divisor is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
@@ -1496,6 +1498,17 @@ static int gcd(void) {
 			bn_add(c, c, e);
 			TEST_ASSERT(bn_cmp(b, c) == RLC_EQ || bn_cmp(a, c) == RLC_EQ, end);
 		} TEST_END;
+
+		TEST_CASE("partial extended greatest common divisor is correct") {
+			bn_rand(a, RLC_POS, RLC_BN_BITS);
+			bn_rand(b, RLC_POS, RLC_BN_BITS);
+			bn_set_2b(l, RLC_BN_BITS / 2);
+			bn_gcd_ext_par(c, d, e, f, g, h, a, b, l);
+			TEST_ASSERT(bn_cmp(c, l) == RLC_LT || bn_cmp(d, l) == RLC_LT, end);
+			bn_gcd(e, a, b);
+			bn_gcd(f, c, d);
+			TEST_ASSERT(bn_cmp(e, f) == RLC_EQ, end);
+		} TEST_END;
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);
@@ -1510,6 +1523,7 @@ static int gcd(void) {
 	bn_free(f);
 	bn_free(g);
 	bn_free(h);
+	bn_free(l);
 	return code;
 }
 
@@ -1794,7 +1808,9 @@ static int digit(void) {
 			bn_get_dig(&g, b);
 			bn_mul(c, a, b);
 			bn_mul_dig(d, a, g);
-			TEST_ASSERT(bn_cmp(c, d) == RLC_EQ, end);
+			bn_mul_dis(e, a, -g);
+			bn_neg(e, e);
+			TEST_ASSERT(bn_cmp(c, d) == RLC_EQ && bn_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_CASE("division by a single digit is consistent") {

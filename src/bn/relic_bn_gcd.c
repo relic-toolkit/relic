@@ -33,6 +33,92 @@
 #include "relic_bn_low.h"
 
 /*============================================================================*/
+/* Private definitions                                                         */
+/*============================================================================*/
+
+/**
+ * Lehmer step: runs the Euclidean algorithm on the leading RLC_DIG bits of
+ * x >= y > 0 and returns the batched transformation
+ *
+ *     (x', y')^T = [[m[0], m[1]], [m[2], m[3]]] * (x, y)^T.
+ *
+ * RELIC's Lehmer loop advances with the swapping recurrence
+ * (x, y) <- (y, x mod y), whose matrix has determinant -1.  NUCOMP needs a
+ * transform of determinant +1, since a GL2(Z) change of basis with determinant
+ * -1 negates every minor of the 2x4 matrix and would compose the wrong form.
+ * Steps are therefore committed in pairs: two swapping steps compose to
+ * [[1, -q1], [-q2, 1 + q1*q2]], which is determinant +1, leaves x as the larger
+ * of the two, and is exactly the pair of non-swapping elementary steps
+ * "x -= q1*y" then "y -= q2*x".
+ *
+ * Returns the number of committed steps, always even, and zero when the leading
+ * digits yield no trustworthy step, in which case the caller falls back to one
+ * full-precision division.
+ */
+int lehmer_step(dis_t *m, const bn_t x, const bn_t y, bn_t u, bn_t v) {
+	dig_t X, Y, q, r, q2, r2;
+	dis_t a0 = 1, a1 = 0, b0 = 0, b1 = 1;
+	dis_t s0 = 1, s1 = 0, s2 = 0, s3 = 1, t;
+	size_t bits = bn_bits(x);
+	int steps = 0, even = 0;
+
+	if (bits > RLC_DIG) {
+		bn_rsh(u, x, bits - RLC_DIG);
+		bn_rsh(v, y, bits - RLC_DIG);
+	} else {
+		bn_copy(u, x);
+		bn_copy(v, y);
+	}
+	if (bn_is_zero(v) || bn_is_zero(u)) {
+		return 0;
+	}
+	bn_get_dig(&X, u);
+	bn_get_dig(&Y, v);
+	if (Y == 0) {
+		return 0;
+	}
+
+	q = X / Y;
+	r = X % Y;
+	// Threshold in which a single-precision quotient can no longer be trusted.
+	while (r >= ((dig_t)1 << (RLC_DIG / 2))) {
+		q2 = Y / r;
+		r2 = Y % r;
+		if (r2 < ((dig_t)1 << (RLC_DIG / 2))) {
+			break;			/* the next step would not be trustworthy */
+		}
+		/* commit the step with quotient q */
+		X = Y;
+		Y = r;
+		t = a0 - (dis_t)q * b0;
+		a0 = b0;
+		b0 = t;
+		t = a1 - (dis_t)q * b1;
+		a1 = b1;
+		b1 = t;
+		steps++;
+		if ((steps & 1) == 0) {
+			s0 = a0;
+			s1 = a1;
+			s2 = b0;
+			s3 = b1;
+			even = steps;
+		}
+		q = q2;
+		r = r2;
+	}
+
+	if (even == 0) {
+		return 0;
+	}
+	m[0] = s0;
+	m[1] = s1;
+	m[2] = s2;
+	m[3] = s3;
+	return even;
+}
+
+/*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
@@ -1237,6 +1323,138 @@ void bn_gcd_ext_mid(bn_t c, bn_t d, bn_t e, bn_t f, const bn_t a, const bn_t b) 
 		bn_free(w);
 		bn_free(y);
 		bn_free(z);
+	}
+}
+
+void bn_gcd_ext_par(bn_t c, bn_t d, bn_t u00, bn_t u01, bn_t u10, bn_t u11,
+		const bn_t a, const bn_t b, const bn_t L) {
+	bn_t q, t0, t1, t2, t3, t4, t5;
+	dis_t m[4], n[4];
+	int c_big, steps;
+
+	bn_null(q);
+	bn_null(t0);
+	bn_null(t1);
+	bn_null(t2);
+	bn_null(t3);
+	bn_null(t4);
+	bn_null(t5);
+
+	RLC_TRY {
+		bn_new(q);
+		bn_new(t0);
+		bn_new(t1);
+		bn_new(t2);
+		bn_new(t3);
+		bn_new(t4);
+		bn_new(t5);
+
+		bn_set_dig(u00, 1);
+		bn_zero(u01);
+		bn_zero(u10);
+		bn_set_dig(u11, 1);
+
+		if (bn_cmp_abs(a, b) == RLC_LT) {
+			bn_abs(c, a);
+			bn_abs(d, b);
+		} else {
+			bn_abs(c, b);
+			bn_abs(d, a);
+		}
+
+		while (1) {
+			c_big = (bn_cmp_abs(c, d) == RLC_GT);
+			if (bn_cmp_abs(c_big ? c : d, L) != RLC_GT) {
+				break;
+			}
+			if (bn_is_zero(c) || bn_is_zero(d)) {
+				break;
+			}
+
+			steps = c_big ? lehmer_step(m, c, d, t0, t1)
+					: lehmer_step(m, d, c, t0, t1);
+
+			if (steps > 0) {
+				/*
+				* m acts on (larger, smaller); re-express it on (a, b).  Swapping
+				* both the rows and the columns preserves the determinant.
+				*/
+				if (c_big) {
+					n[0] = m[0]; n[1] = m[1]; n[2] = m[2]; n[3] = m[3];
+				} else {
+					n[0] = m[3]; n[1] = m[2]; n[2] = m[1]; n[3] = m[0];
+				}
+
+				/* candidate (a', b') = n * (a, b) */
+				bn_mul_dis(t0, c, n[0]);
+				bn_mul_dis(t1, d, n[1]);
+				bn_add(t0, t0, t1);
+				bn_mul_dis(t2, c, n[2]);
+				bn_mul_dis(t3, d, n[3]);
+				bn_add(t2, t2, t3);
+
+				/*
+				* Verify rather than trust.  A single-precision quotient that came
+				* out too large yields a negative remainder, and the batch is then
+				* not a Euclidean step sequence at all.  Checking the outcome makes
+				* correctness independent of how sharp the leading-digit condition
+				* is, and guarantees termination: every iteration of the outer loop
+				* either commits a batch that strictly reduces the larger operand,
+				* or falls back to a division that does.
+				*/
+				steps = (bn_sign(t0) == RLC_POS && bn_sign(t2) == RLC_POS);
+				if (steps) {
+					bn_copy(t4, bn_cmp_abs(t0, t2) == RLC_GT ? t0 : t2);
+					steps = (bn_cmp_abs(t4, c_big ? c : d) == RLC_LT);
+				}
+			}
+
+			if (steps > 0) {
+				/* U <- U * n^-1, with n^-1 = [[n3, -n1], [-n2, n0]] */
+				bn_mul_dis(t1, u00, n[3]);
+				bn_mul_dis(t3, u01, n[2]);
+				bn_mul_dis(t4, u00, n[1]);
+				bn_mul_dis(t5, u01, n[0]);
+				bn_sub(u00, t1, t3);
+				bn_sub(u01, t5, t4);
+
+				bn_mul_dis(t1, u10, n[3]);
+				bn_mul_dis(t3, u11, n[2]);
+				bn_mul_dis(t4, u10, n[1]);
+				bn_mul_dis(t5, u11, n[0]);
+				bn_sub(u10, t1, t3);
+				bn_sub(u11, t5, t4);
+
+				bn_copy(c, t0);
+				bn_copy(d, t2);
+			} else if (c_big) {
+				/* a <- a mod b; U <- U * [[1, q], [0, 1]] */
+				bn_div_rem(q, c, c, d);
+				bn_mul(t5, q, u00);
+				bn_add(u01, u01, t5);
+				bn_mul(t5, q, u10);
+				bn_add(u11, u11, t5);
+			} else {
+				/* b <- b mod a; U <- U * [[1, 0], [q, 1]] */
+				bn_div_rem(q, d, d, c);
+				bn_mul(t5, q, u01);
+				bn_add(u00, u00, t5);
+				bn_mul(t5, q, u11);
+				bn_add(u10, u10, t5);
+			}
+		}
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		bn_free(q);
+		bn_free(t0);
+		bn_free(t1);
+		bn_free(t2);
+		bn_free(t3);
+		bn_free(t4);
+		bn_free(t5);
 	}
 }
 

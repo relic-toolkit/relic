@@ -358,6 +358,14 @@ static void arith(void) {
 	}
 	BENCH_END;
 
+	BENCH_RUN("bn_mul_dis") {
+		bn_rand(a, RLC_POS, RLC_BN_BITS);
+		bn_rand(b, RLC_POS, RLC_BN_BITS);
+		bn_get_dig(&f, b);
+		BENCH_ADD(bn_mul_dis(c, a, -f));
+	}
+	BENCH_END;
+
 #if BN_MUL == BASIC || !defined(STRIP)
 	BENCH_RUN("bn_mul_basic") {
 		bn_rand(a, RLC_POS, RLC_BN_BITS);
@@ -838,6 +846,14 @@ static void arith(void) {
 		bn_rand(a, RLC_POS, RLC_BN_BITS);
 		bn_rand(b, RLC_POS, RLC_BN_BITS);
 		BENCH_ADD(bn_gcd_ext_mid(c, c, d[0], d[1], a, b));
+	}
+	BENCH_END;
+
+	BENCH_RUN("bn_gcd_ext_par") {
+		bn_rand(a, RLC_POS, RLC_BN_BITS);
+		bn_rand(b, RLC_POS, RLC_BN_BITS);
+		bn_set_2b(c, RLC_BN_BITS / 2);
+		BENCH_ADD(bn_gcd_ext_par(a, b, d[0], d[1], e[0], e[1], a, b, c));
 	}
 	BENCH_END;
 
