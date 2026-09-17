@@ -57,6 +57,32 @@ void bn_copy(bn_t c, const bn_t a) {
 	bn_trim(c);
 }
 
+void bn_swap(bn_t a, bn_t b) {
+	if (a == b) {
+		return;
+	}
+#if ALLOC == DYNAMIC
+	/*
+	 * The digits live behind a pointer, so exchanging the headers exchanges the
+	 * values: dp travels with the alloc that describes it.
+	 */
+	RLC_SWAP(*a, *b);
+#else
+	size_t n = RLC_MAX(a->used, b->used);
+	bn_grow(a, n);
+	bn_grow(b, n);
+
+	for (size_t i = 0; i < n; i++) {
+		RLC_SWAP(a->dp[i], b->dp[i]);
+	}
+	RLC_SWAP(a->used, b->used);
+	RLC_SWAP(a->sign, b->sign);
+	bn_trim(a);
+	bn_trim(b);
+#endif
+}
+ 
+
 void bn_abs(bn_t c, const bn_t a) {
 	if (c->dp != a->dp) {
 		bn_copy(c, a);

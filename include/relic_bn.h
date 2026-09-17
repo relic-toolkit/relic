@@ -498,6 +498,14 @@ void bn_trim(bn_t a);
 void bn_copy(bn_t c, const bn_t a);
 
 /**
+ * Exchanges the contents of two multiple precision integers.
+ *
+ * @param[in,out] a			- the first integer.
+ * @param[in,out] b			- the second integer.
+ */
+void bn_swap(bn_t a, bn_t b);
+
+/**
  * Returns the absolute value of a multiple precision integer.
  *
  * @param[out] c			- the result.

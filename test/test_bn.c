@@ -92,6 +92,25 @@ static int util(void) {
 		}
 		TEST_END;
 
+		TEST_CASE("comparison and swap are consistent") {
+			bn_rand(a, RLC_POS, RLC_BN_BITS);
+			bn_rand(b, RLC_POS, RLC_BN_BITS);
+			if (bn_cmp(a, b) != RLC_EQ) {
+				if (bn_cmp(a, b) == RLC_GT) {
+					TEST_ASSERT(bn_cmp(b, a) == RLC_LT, end);
+				} else {
+					TEST_ASSERT(bn_cmp(b, a) == RLC_GT, end);
+				}
+				bn_swap(a, b);
+				if (bn_cmp(a, b) == RLC_GT) {
+					TEST_ASSERT(bn_cmp(b, a) == RLC_LT, end);
+				} else {
+					TEST_ASSERT(bn_cmp(b, a) == RLC_GT, end);
+				}
+			}
+		}
+		TEST_END;
+
 		TEST_CASE("copy and comparison are consistent") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_rand(b, RLC_POS, RLC_BN_BITS);
@@ -101,6 +120,24 @@ static int util(void) {
 				TEST_ASSERT(bn_cmp(c, a) == RLC_EQ, end);
 			}
 			if (bn_cmp(b, c) != RLC_EQ) {
+				bn_copy(c, b);
+				TEST_ASSERT(bn_cmp(b, c) == RLC_EQ, end);
+			}
+		} TEST_END;
+
+		TEST_CASE("copy and swap are consistent") {
+			bn_rand(a, RLC_POS, RLC_BN_BITS);
+			bn_rand(b, RLC_POS, RLC_BN_BITS);
+			bn_rand(c, RLC_POS, RLC_BN_BITS);
+			if (bn_cmp(a, c) != RLC_EQ) {
+				bn_swap(a, c);
+				TEST_ASSERT(bn_cmp(c, a) != RLC_EQ, end);
+				bn_copy(c, a);
+				TEST_ASSERT(bn_cmp(c, a) == RLC_EQ, end);
+			}
+			if (bn_cmp(b, c) != RLC_EQ) {
+				bn_swap(b, c);
+				TEST_ASSERT(bn_cmp(b, c) != RLC_EQ, end);
 				bn_copy(c, b);
 				TEST_ASSERT(bn_cmp(b, c) == RLC_EQ, end);
 			}

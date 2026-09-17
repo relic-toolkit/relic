@@ -53,9 +53,7 @@ int cp_shipsi_gen(bn_t g, crt_t crt, size_t bits) {
 
 	/* Swap p and q so that p is smaller. */
 	if (bn_cmp(crt->p, crt->q) != RLC_LT) {
-		bn_copy(g, crt->p);
-		bn_copy(crt->p, crt->q);
-		bn_copy(crt->q, g);
+		bn_swap(crt->p, crt->q);
 	}
 
 	/* n = pq. */
