@@ -33,6 +33,16 @@
 #include "relic_bn_low.h"
 
 /*============================================================================*/
+/* Private definitions                                                        */
+/*============================================================================*/
+
+/**
+ * Bit length below which the window is not worth the table it precomputes,
+ * and the binary method is faster. Measured at moduli of 1024 and 2048 bits.
+ */
+#define BN_MXP_BITS	17
+
+/*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
@@ -146,8 +156,9 @@ void bn_mxp_slide(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 		return;
 	}
 
-	if (bn_is_even(m)) {
-		/* The binary method is the one that takes an even modulus. */
+	if (bn_is_even(m) || bn_bits(b) < BN_MXP_BITS) {
+		/* The binary method takes an even modulus, and is the faster of the
+		 * two while the exponent is too short to pay for the table below. */
 		RLC_FREE(win);
 		bn_mxp_basic(c, a, b, m);
 		return;
