@@ -28,7 +28,7 @@
 #include "relic_bn_low.h"
 #include "relic_util.h"
 #include "relic_dv.h"
-#include "relic_err.h"
+#include "relic_core.h"
 
 /*============================================================================*/
 /* Private definitions                                                        */
