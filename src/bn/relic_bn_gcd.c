@@ -1394,10 +1394,9 @@ void bn_gcd_ext_par(bn_t c, bn_t d, bn_t u00, bn_t u01, bn_t u10, bn_t u11,
 		bn_abs(c, a);
 		bn_abs(d, b);
 
-		while (hgcd_step(u00, u01, u10, u11, c, d)) {
+		if (hgcd_step(u00, u01, u10, u11, c, d)) {
 			if (bn_cmp_abs(bn_cmp_abs(c, d) == RLC_GT ? c : d, l) != RLC_GT) {
 				flag = 1;
-				break;
 			}
 		}
 
