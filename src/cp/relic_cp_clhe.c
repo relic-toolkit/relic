@@ -99,6 +99,7 @@ static int clhe_in_f(const qf_t fm) {
 
 /** Discrete log in F for k = 1. */
 static int clhe_dlog_in_f(bn_t m, const clhe_t c, const qf_t fm) {
+	ctx_t *ctx = core_get();
 	int result = RLC_OK;
 	bn_t t0, t1, t2;
 
@@ -126,14 +127,14 @@ static int clhe_dlog_in_f(bn_t m, const clhe_t c, const qf_t fm) {
 			bn_copy(t2, fm->b);
 			if (!bn_is_zero(fm->b)) {
 				while (1) {
-					bn_div_rem(t0, t1, t2, &(core_get()->qf_q));
+					bn_div_rem(t0, t1, t2, &(ctx->qf_q));
 					if (!bn_is_zero(t1)) {
 						break;
 					}
 					bn_copy(t2, t0);
 				}
 			}
-			bn_mod_inv(m, t2, &(core_get()->qf_q));
+			bn_mod_inv(m, t2, &(ctx->qf_q));
 		}
 	}
 	RLC_CATCH_ANY {

@@ -182,12 +182,13 @@ static int clvdf_params(size_t *w, size_t *gm, size_t t) {
 static void clvdf_witness(qf_t r, const qf_t *tab, size_t nc, const int32_t *sd,
 		size_t nb, size_t w, size_t gm, size_t nd, uint32_t *cnt, uint32_t *pos,
 		uint32_t *lst, qf_t run) {
-	qf_set_one(r, &(core_get()->qf_dk));
+	ctx_t *ctx = core_get();
+	qf_set_one(r, &(ctx->qf_dk));
 	for (size_t j = gm; j-- > 0; ) {
 		size_t n, o;
 
 		for (size_t b = 0; b < w; b++) {
-			qf_dup(r, r, &(core_get()->qf_bk));
+			qf_dup(r, r, &(ctx->qf_bk));
 		}
 
 		memset(cnt, 0, nd * sizeof(uint32_t));
@@ -211,13 +212,13 @@ static void clvdf_witness(qf_t r, const qf_t *tab, size_t nc, const int32_t *sd,
 		 * The descent over the digit values. Zero is skipped, where the
 		 * bucket fill it replaces still had to touch an accumulator.
 		 */
-		qf_set_one(run, &(core_get()->qf_dk));
+		qf_set_one(run, &(ctx->qf_dk));
 		for (size_t b = nd; b-- > 1; ) {
 			for (n = pos[b]; n < pos[b + 1]; n++) {
 				qf_com(run, run, tab[lst[n] & ~CLVDF_NEG],
-						(lst[n] & CLVDF_NEG) != 0, &(core_get()->qf_bk));
+						(lst[n] & CLVDF_NEG) != 0, &(ctx->qf_bk));
 			}
-			qf_com(r, r, run, 0, &(core_get()->qf_bk));
+			qf_com(r, r, run, 0, &(ctx->qf_bk));
 		}
 	}
 }
@@ -260,6 +261,7 @@ static void clvdf_map_g(qf_t g, size_t t, const bn_t x) {
  * invertible modulo the plaintext prime.
  */
 static void clvdf_map_p(bn_t l, size_t t, const qf_t u, const qf_t y) {
+	ctx_t *ctx = core_get();
 	uint8_t h[RLC_MD_LEN], *bin;
 	size_t n = 0, la, lb, lc, ld;
 
@@ -287,7 +289,7 @@ static void clvdf_map_p(bn_t l, size_t t, const qf_t u, const qf_t y) {
 		bn_read_bin(l, h, RLC_MIN(sizeof(h), CLVDF_CHAL_BITS / 8));
 		bn_set_bit(l, 0, 1);
 		bn_set_bit(l, CLVDF_CHAL_BITS - 1, 1);
-		if (bn_cmp(l, &(core_get()->qf_q)) != RLC_EQ && bn_is_prime(l)) {
+		if (bn_cmp(l, &(ctx->qf_q)) != RLC_EQ && bn_is_prime(l)) {
 			break;
 		}
 	}
@@ -334,6 +336,7 @@ int cp_clvdf_set(qf_t f, const bn_t q, size_t disc_bits) {
 
 int cp_clvdf_evl(qf_t u, qf_t z, qf_t y, const qf_t f, size_t t,
 		const bn_t x) {
+	ctx_t *ctx = core_get();
 	qf_t g, pi, wf, run;
 	qf_t *tab = NULL;
 	bn_t l, e, m;
@@ -386,12 +389,12 @@ int cp_clvdf_evl(qf_t u, qf_t z, qf_t y, const qf_t f, size_t t,
 		qf_copy(tab[0], g);
 		nc = 1;
 		for (size_t i = 0; i < t; i++) {
-			qf_dup(y, y, &(core_get()->qf_bk));
+			qf_dup(y, y, &(ctx->qf_bk));
 			if (((i + 1) % (w * gm)) == 0 && nc < sc) {
 				qf_copy(tab[nc++], y);
 			}
 		}
-		qf_com(u, g, y, 0, &(core_get()->qf_bk));
+		qf_com(u, g, y, 0, &(ctx->qf_bk));
 
 		clvdf_map_p(l, t, u, y);
 
@@ -441,14 +444,14 @@ int cp_clvdf_evl(qf_t u, qf_t z, qf_t y, const qf_t f, size_t t,
 				lst, run);
 
 		/* z = psi_q(pi) * F^(l^-1 x mod q) */
-		qf_psi(z, pi, &(core_get()->qf_d), &(core_get()->qf_b));
-		bn_mod(m, x, &(core_get()->qf_q));
-		bn_mod_inv(e, l, &(core_get()->qf_q));
+		qf_psi(z, pi, &(ctx->qf_d), &(ctx->qf_b));
+		bn_mod(m, x, &(ctx->qf_q));
+		bn_mod_inv(e, l, &(ctx->qf_q));
 		bn_mul(m, m, e);
-		bn_mod(m, m, &(core_get()->qf_q));
+		bn_mod(m, m, &(ctx->qf_q));
 		if (!bn_is_zero(m)) {
-			qf_exp(wf, f, m, &(core_get()->qf_d), &(core_get()->qf_b));
-			qf_com(z, z, wf, 0, &(core_get()->qf_b));
+			qf_exp(wf, f, m, &(ctx->qf_d), &(ctx->qf_b));
+			qf_com(z, z, wf, 0, &(ctx->qf_b));
 		}
 	}
 	RLC_CATCH_ANY {

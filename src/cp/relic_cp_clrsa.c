@@ -352,6 +352,7 @@ static void clrsa_chal(bn_t eta, bn_t xi, const qf_t *cmt, const bn_t x,
 int cp_clrsa_chk(const qf_t *cmt, const bn_t *rsp, const bn_t eta,
 		const bn_t xi, const clhe_t c, const bn_t x, const qf_t c1,
 		const qf_t c2, const qf_t hh) {
+	ctx_t *ctx = core_get();
 	int i, result = 0;
 	bn_t e[CLRSA_SHR], t;
 	qf_t hp[5], cp[3], ep[2], g0, l, r, p;
@@ -405,19 +406,19 @@ int cp_clrsa_chk(const qf_t *cmt, const bn_t *rsp, const bn_t eta,
 		bn_copy(e[2], rsp[2]);
 		bn_copy(e[3], rsp[5]);
 		bn_copy(e[4], rsp[6]);
-		clrsa_exp_shr(hp, hh, e, 5, &(core_get()->qf_d),
-				&(core_get()->qf_b));
+		clrsa_exp_shr(hp, hh, e, 5, &(ctx->qf_d),
+				&(ctx->qf_b));
 
 		bn_copy(e[0], rsp[0]);
 		bn_copy(e[1], rsp[3]);
 		bn_copy(e[2], eta);
-		clrsa_exp_shr(cp, c2, e, 3, &(core_get()->qf_d),
-				&(core_get()->qf_b));
+		clrsa_exp_shr(cp, c2, e, 3, &(ctx->qf_d),
+				&(ctx->qf_b));
 
 		bn_copy(e[0], eta);
 		bn_copy(e[1], xi);
-		clrsa_exp_shr(ep, cmt[0], e, 2, &(core_get()->qf_d),
-				&(core_get()->qf_b));
+		clrsa_exp_shr(ep, cmt[0], e, 2, &(ctx->qf_d),
+				&(ctx->qf_b));
 
 		result = 1;
 
@@ -428,34 +429,34 @@ int cp_clrsa_chk(const qf_t *cmt, const bn_t *rsp, const bn_t eta,
 		result &= (qf_cmp(g0, r) == RLC_EQ);
 
 		/* (2) i = 1, j_1 = 0: D_1 * c2^eta = hh^{s_1} * f^{z_1}. */
-		qf_com(l, cp[2], cmt[3], 0, &(core_get()->qf_b));
+		qf_com(l, cp[2], cmt[3], 0, &(ctx->qf_b));
 		cp_clhe_powf(p, c, rsp[0]);
-		qf_com(r, hp[0], p, 0, &(core_get()->qf_b));
+		qf_com(r, hp[0], p, 0, &(ctx->qf_b));
 		result &= (qf_cmp(l, r) == RLC_EQ);
 
 		/* (2) i = 2, j_2 = 1: D_2 * E_1^eta = hh^{s_2} * f^{z_2}. */
-		qf_com(l, ep[0], cmt[5], 0, &(core_get()->qf_b));
+		qf_com(l, ep[0], cmt[5], 0, &(ctx->qf_b));
 		cp_clhe_powf(p, c, rsp[3]);
-		qf_com(r, hp[1], p, 0, &(core_get()->qf_b));
+		qf_com(r, hp[1], p, 0, &(ctx->qf_b));
 		result &= (qf_cmp(l, r) == RLC_EQ);
 
 		/* (3) A * E_1^{xi} = hh^{rho^} * f^{a^}. */
-		qf_com(l, ep[1], cmt[2], 0, &(core_get()->qf_b));
+		qf_com(l, ep[1], cmt[2], 0, &(ctx->qf_b));
 		cp_clhe_powf(p, c, rsp[7]);
-		qf_com(r, hp[4], p, 0, &(core_get()->qf_b));
+		qf_com(r, hp[4], p, 0, &(ctx->qf_b));
 		result &= (qf_cmp(l, r) == RLC_EQ);
 
 		/* (4) i = 1, k_1 = 0: c2^{z_1} = M_1 * E_1^eta * hh^{t_1}. */
-		qf_com(r, ep[0], cmt[4], 0, &(core_get()->qf_b));
-		qf_com(r, r, hp[2], 0, &(core_get()->qf_b));
+		qf_com(r, ep[0], cmt[4], 0, &(ctx->qf_b));
+		qf_com(r, r, hp[2], 0, &(ctx->qf_b));
 		result &= (qf_cmp(cp[0], r) == RLC_EQ);
 
 		/* (5) k_L = 0: c2^{z_2} = M_2 * f^{eta * X} * hh^{t_2}. */
 		bn_mul(t, eta, x);
-		bn_mod(t, t, &(core_get()->qf_q));
+		bn_mod(t, t, &(ctx->qf_q));
 		cp_clhe_powf(p, c, t);
-		qf_com(r, p, cmt[6], 0, &(core_get()->qf_b));
-		qf_com(r, r, hp[3], 0, &(core_get()->qf_b));
+		qf_com(r, p, cmt[6], 0, &(ctx->qf_b));
+		qf_com(r, r, hp[3], 0, &(ctx->qf_b));
 		result &= (qf_cmp(cp[1], r) == RLC_EQ);
 	}
 	RLC_CATCH_ANY {
