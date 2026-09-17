@@ -113,6 +113,13 @@ static void util(void) {
 	}
 	BENCH_END;
 
+	BENCH_RUN("bn_swap") {
+		bn_rand(a, RLC_POS, RLC_BN_BITS);
+		bn_rand(b, RLC_POS, RLC_BN_BITS);
+		BENCH_ADD(bn_swap(a, b));
+	}
+	BENCH_END;
+
 	BENCH_RUN("bn_abs") {
 		bn_rand(a, RLC_POS, RLC_BN_BITS);
 		BENCH_ADD(bn_abs(b, a));

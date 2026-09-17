@@ -58,8 +58,10 @@ void bn_dbl(bn_t c, const bn_t a) {
 }
 
 void bn_hlv(bn_t c, const bn_t a) {
+	dig_t down = a->dp[0] & (bn_sign(a) == RLC_NEG);
 	bn_copy(c, a);
 	bn_rsh1_low(c->dp, c->dp, c->used);
+	bn_sub_dig(c, c, down);
 	bn_trim(c);
 }
 
