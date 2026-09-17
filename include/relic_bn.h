@@ -1462,16 +1462,6 @@ int bn_smb_leg(const bn_t a, const bn_t b);
 int bn_smb_jac(const bn_t a, const bn_t b);
 
 /**
- * Returns the small prime at a position of the table of small primes used for
- * trial division. The table is sorted in increasing order, and its first
- * entries are also useful as fixed bases in a primality test.
- *
- * @param[in] i				- the position in the table.
- * @return the prime at that position, or 0 if the position is out of bounds.
- */
-dig_t bn_get_prime(size_t i);
-
-/**
  * Tests if a number is a probable prime.
  *
  * @param[in] a				- the multiple precision integer to test.
@@ -1504,6 +1494,18 @@ int bn_is_prime_rabin(const bn_t a);
  * @return 1 if a is a probable prime, 0 otherwise.
  */
 int bn_is_prime_solov(const bn_t a);
+
+/**
+ * Tests if a number a > 2 is a strong Lucas probable prime, with the
+ * parameters chosen by Selfridge's method A.
+ *
+ * Composites passing both this testand a base two Miller-Rabin test are not
+ * known, which is what the combination in bn_is_prime relies on.
+ *
+ * @param[in] a				- the number to test.
+ * @return 1 if a is a probable prime, 0 otherwise.
+ */
+int bn_is_prime_lucas(const bn_t a);
 
 /**
  * Hashes a string to a prime number of a given size.
