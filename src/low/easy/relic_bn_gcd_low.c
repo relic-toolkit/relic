@@ -63,9 +63,7 @@ static size_t bn_size_low(const dig_t *a, size_t size) {
  * @return the number of trailing zero bits.
  */
 static size_t bn_ctz_low(const dig_t *a, size_t size) {
-	size_t i;
-
-	for (i = 0; i < size; i++) {
+	for (size_t i = 0; i < size; i++) {
 		if (a[i] != 0) {
 			/* Isolating the lowest set bit turns the count into a length. */
 			return i * RLC_DIG + util_bits_dig(a[i] & (~a[i] + (dig_t)1)) - 1;
@@ -83,24 +81,10 @@ static size_t bn_ctz_low(const dig_t *a, size_t size) {
  * @return the new number of significant digits.
  */
 static size_t bn_rsh_low(dig_t *a, size_t size, size_t bits) {
-	size_t digits = bits / RLC_DIG;
-	uint_t rem = (uint_t)(bits % RLC_DIG);
-	size_t i;
-
-	if (digits >= size) {
-		dv_zero(a, size);
-		return 0;
-	}
-	if (digits > 0) {
-		for (i = 0; i < size - digits; i++) {
-			a[i] = a[i + digits];
-		}
-		dv_zero(a + size - digits, digits);
-		size -= digits;
-	}
-	if (rem > 0) {
-		bn_rshb_low(a, a, size, rem);
-	}
+	size_t digits;
+	RLC_RIP(bits, digits, bits);
+	dv_rshd(a, a, size, digits);
+	bn_rshb_low(a, a, size, bits);
 	return bn_size_low(a, size);
 }
 
@@ -156,8 +140,32 @@ static void bn_addsig_low(dig_t *x, int *sgx, const dig_t *y, int sgy,
 		}
 	}
 }
-  
-/*============================================================================*/
+
+/**
+ * c <- c + a * b, for non-negative operands, as the matrix update requires.
+ * The entries only ever grow, because every step matrix is [[1, q], [0, 1]] or
+ * [[1, 0], [q, 1]] and so has non-negative entries.
+ */
+static size_t bn_mulacc_low(dig_t *c, const dig_t *a, size_t sa, const dig_t *b,
+		size_t sb, dig_t *t, size_t size) {
+	dig_t carry;
+
+	if (sa == 0 || sb == 0) {
+		return bn_size_low(c, size);
+	}
+	/* bn_muld_low writes the product rather than accumulating into it */
+	if (sa >= sb) {
+		bn_muld_low(t, a, sa, b, sb, 0, sa + sb);
+	} else {
+		bn_muld_low(t, b, sb, a, sa, 0, sa + sb);
+	}
+	carry = bn_addn_low(c, c, t, sa + sb);
+	if (carry) {
+		bn_add1_low(c + sa + sb, c + sa + sb, carry, size - sa - sb);
+	}
+	return bn_size_low(c, size);
+}
+ /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
@@ -215,20 +223,16 @@ size_t bn_gcde_low(dig_t *c, dig_t *d, int *sd, dig_t *a, size_t sa,
 	int sgA, sgB, sgC, sgD;
 	size_t cap, shift, sx, sy, sg, sb0, sm, sc;
 	uint_t rem;
- 
 	sa = bn_size_low(a, sa);
 	sb = bn_size_low(b, sb);
- 
 	/* gcd(a, 0) = a with cofactor 1, gcd(0, b) = b with cofactor 0. */
 	if (sa == 0 || sb == 0) {
 		size_t sr = (sa == 0 ? sb : sa);
- 
 		dv_copy(c, (sa == 0 ? b : a), sr);
 		d[0] = (sa == 0 || sr == 0 ? 0 : 1);
 		*sd = d[0];
 		return sr;
 	}
- 
 	/*
 	 * The extended form of the binary GCD above, following Algorithm 14.61 of
 	 * the Handbook of Applied Cryptography.
@@ -257,17 +261,14 @@ size_t bn_gcde_low(dig_t *c, dig_t *d, int *sd, dig_t *a, size_t sa,
 	 * carried here, because the halving rule branches on their parity.
 	 */
 	cap = RLC_MAX(sa, sb) + 1;
- 
 	shift = RLC_MIN(bn_ctz_low(a, sa), bn_ctz_low(b, sb));
 	sx = bn_rsh_low(a, sa, shift);
 	sy = bn_rsh_low(b, sb, shift);
- 
 	dv_zero(a0, cap);
 	dv_zero(b0, cap);
 	dv_copy(a0, a, sx);
 	dv_copy(b0, b, sy);
 	sb0 = sy;
- 
 	dv_zero(A, cap);
 	dv_zero(B, cap);
 	dv_zero(C, cap);
@@ -275,7 +276,6 @@ size_t bn_gcde_low(dig_t *c, dig_t *d, int *sd, dig_t *a, size_t sa,
 	A[0] = 1;					/* A = 1, B = 0, so x = A*a0 + B*b0 */
 	D[0] = 1;					/* C = 0, D = 1, so y = C*a0 + D*b0 */
 	sgA = sgB = sgC = sgD = RLC_POS;
- 
 	while (sx != 0) {
 		while ((a[0] & 1) == 0) {
 			sx = bn_rsh_low(a, sx, 1);
@@ -305,7 +305,6 @@ size_t bn_gcde_low(dig_t *c, dig_t *d, int *sd, dig_t *a, size_t sa,
 			bn_addsig_low(D, &sgD, B, BN_SGN_NEG(sgB), cap);
 		}
 	}
- 
 	/*
 	 * Reduce the cofactor into the range mpn_gcdext produces, which is what
 	 * makes the two agree rather than merely both be correct: the cofactor is
@@ -342,7 +341,6 @@ size_t bn_gcde_low(dig_t *c, dig_t *d, int *sd, dig_t *a, size_t sa,
 	 * bn_div_rem sets q->used and r->used the same way.
 	 */
 	sm = bn_size_low(D, sb0 - sy + 1);
- 
 	/* C mod m, into [0, m) */
 	sc = bn_size_low(C, cap);
 	if (bn_cmpn_low(C, sc, D, sm) != RLC_LT) {
@@ -362,7 +360,6 @@ size_t bn_gcde_low(dig_t *c, dig_t *d, int *sd, dig_t *a, size_t sa,
 		sc = bn_size_low(C, sm);
 		sgC = RLC_POS;
 	}
- 
 	/*
 	 * Centre it: take the negative representative when 2C exceeds m. The
 	 * comparison is strict, which leaves C = m/2 positive and matches the
@@ -377,7 +374,6 @@ size_t bn_gcde_low(dig_t *c, dig_t *d, int *sd, dig_t *a, size_t sa,
 		sc = bn_size_low(C, sm);
 		sgC = RLC_NEG;
 	}
- 
 	/* The gcd is y << shift; the cofactors are unaffected by that factor. */
 	rem = (uint_t)(shift % RLC_DIG);
 	shift /= RLC_DIG;
@@ -389,8 +385,119 @@ size_t bn_gcde_low(dig_t *c, dig_t *d, int *sd, dig_t *a, size_t sa,
 		dv_copy(c + shift, b, sy);
 	}
 	sg = sy + shift;
- 
 	dv_copy(d, C, sc);
 	*sd = (sgC == RLC_NEG ? -sc : sc);
 	return sg;
 }
+
+/*============================================================================*/
+/* Public definitions                                                         */
+/*============================================================================*/
+
+size_t bn_gcdh_low(dig_t *m00, dig_t *m01, dig_t *m10, dig_t *m11, size_t *sm,
+		dig_t *a, dig_t *b, size_t size) {
+	dig_t *t = RLC_ALLOCA(dig_t, 5 * (size + 2));
+	dig_t *num = t, *den = t + size + 2, *quo = t + 2 * (size + 2);
+	dig_t *rem = t + 3 * (size + 2), *scr = t + 4 * (size + 2);
+	size_t s = size / 2 + 1, sa, sb, sq, mw = (size + 1) / 2 + 1;
+	size_t s00 = 1, s01 = 0, s10 = 0, s11 = 1;
+	int steps = 0;
+
+	dv_zero(m00, mw);
+	dv_zero(m01, mw);
+	dv_zero(m10, mw);
+	dv_zero(m11, mw);
+	m00[0] = 1;
+	m11[0] = 1;
+
+	if (size <= s) {
+		return 0;
+	}
+	if ((a[size - 1] | b[size - 1]) == 0) {
+		return 0;					/* not normalized, nothing to do */
+	}
+
+	sa = bn_size_low(a, size);
+	sb = bn_size_low(b, size);
+
+	/*
+	 * The matrix starts at the identity and is multiplied on the right by
+	 * [[1, q], [0, 1]] when a is reduced modulo b, and by [[1, 0], [q, 1]] when
+	 * b is reduced modulo a. Each factor has determinant one and non-negative
+	 * entries, and the two slots are never exchanged, so the product keeps both
+	 * properties with no bookkeeping.
+	 *
+	 * This reduces both operands to s digits, which is more than the contract
+	 * requires: it only asks that the difference fit s digits. Reducing further
+	 * is permitted and costs the caller fewer repetitions.
+	 */
+	while (RLC_MAX(sa, sb) > s) {
+		dig_t *big;
+		const dig_t *sml;
+		size_t sbig, ssml;
+		if (sa == 0 || sb == 0) {
+			break;
+		}
+		if (bn_cmpn_low(a, sa, b, sb) != RLC_LT) {
+			big = a; sbig = sa; sml = b; ssml = sb;
+		} else {
+			big = b; sbig = sb; sml = a; ssml = sa;
+		}
+
+		/*
+		 * bn_divn_low destroys both operands and may extend either by a digit
+		 * while normalizing, so it is given copies with a spare digit each.
+		 */
+		dv_copy(num, big, sbig);
+		num[sbig] = 0;
+		dv_copy(den, sml, ssml);
+		den[ssml] = 0;
+		bn_divn_low(quo, rem, num, sbig, den, ssml);
+
+		/*
+		 * The quotient occupies exactly sbig - ssml + 1 digits and the remainder
+		 * exactly ssml, with the areas above those extents left unspecified, so
+		 * the sizes are bounded rather than scanned.
+		 */
+		sq = bn_size_low(quo, sbig - ssml + 1);
+		if (sq == 0) {
+			break;					/* no progress, do not loop forever */
+		}
+
+		/*
+		 * A quotient wide enough to push the matrix past its documented width
+		 * cannot be folded in, which happens as soon as the operands are far
+		 * apart in size: reducing a full-length value by a single-digit one
+		 * takes one enormous quotient. The step is abandoned before either
+		 * operand is touched, so the caller sees no reduction and falls back to
+		 * an elementary division, which is what mpn_gcd does with
+		 * mpn_gcd_subdiv_step for the same reason.
+		 */
+		if ((big == a ? RLC_MAX(s00, s10) : RLC_MAX(s01, s11)) + sq + 1 > mw) {
+			break;
+		}
+
+		dv_copy(big, rem, ssml);
+		sbig = bn_size_low(big, ssml);
+		if (big == a) {
+			sa = sbig;
+			s01 = bn_mulacc_low(m01, m00, s00, quo, sq, scr, mw);
+			s11 = bn_mulacc_low(m11, m10, s10, quo, sq, scr, mw);
+		} else {
+			sb = sbig;
+			s00 = bn_mulacc_low(m00, m01, s01, quo, sq, scr, mw);
+			s10 = bn_mulacc_low(m10, m11, s11, quo, sq, scr, mw);
+		}
+		steps++;
+	}
+	if (steps == 0) {
+		return 0;
+	}
+	/* clear whatever the reduction left above the significant digits */
+	dv_zero(a + sa, size - sa);
+	dv_zero(b + sb, size - sb);
+	*sm = RLC_MAX(RLC_MAX(s00, s01), RLC_MAX(s10, s11));
+	RLC_FREE(t);
+	return RLC_MAX(sa, sb);
+}
+ 

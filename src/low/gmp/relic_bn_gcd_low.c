@@ -60,4 +60,54 @@ size_t bn_gcde_low(dig_t *c, dig_t *d, int *sd, dig_t *a, size_t sa,
 	*sd = sn;
 	return r;
 }
+
+/*
+ * mpn_hgcd and its matrix helpers live in GMP's gmp-impl.h rather than gmp.h,
+ * so the struct layout and the prototypes are reproduced here. The symbols are
+ * exported by the library and the layout has been stable across the 6.x series,
+ * but this is not a supported interface: if a future GMP changes it, this file
+ * is where it breaks.
+ */
+struct hgcd_matrix {
+	mp_size_t alloc;
+	mp_size_t n;
+	mp_ptr p[2][2];
+};
+
+__GMP_DECLSPEC mp_size_t __gmpn_hgcd_itch(mp_size_t);
+__GMP_DECLSPEC mp_size_t __gmpn_hgcd(mp_ptr, mp_ptr, mp_size_t,
+		struct hgcd_matrix *, mp_ptr);
+
+size_t bn_gcdh_low(dig_t *m00, dig_t *m01, dig_t *m10, dig_t *m11, size_t *sm,
+		dig_t *a, dig_t *b, size_t size) {
+	struct hgcd_matrix M;
+	dig_t *t = RLC_ALLOCA(dig_t, __gmpn_hgcd_itch(size));
+	size_t s = ((size + 1) / 2 + 1);
+	mp_size_t nn;
+
+	/*
+	 * The matrix is built here rather than through mpn_hgcd_matrix_init, so
+	 * that its four entries point straight at the caller's areas: mpn_hgcd then
+	 * writes the result where the caller wants it and nothing is copied
+	 * afterwards. What init would have done is set the identity, which is done
+	 * below.
+	 */
+	M.alloc = (mp_size_t)s;
+	M.n = 1;
+	M.p[0][0] = (mp_ptr)m00;
+	M.p[0][1] = (mp_ptr)m01;
+	M.p[1][0] = (mp_ptr)m10;
+	M.p[1][1] = (mp_ptr)m11;
+	dv_zero(m00, s);
+	dv_zero(m01, s);
+	dv_zero(m10, s);
+	dv_zero(m11, s);
+	m00[0] = 1;
+	m11[0] = 1;
+
+	nn = __gmpn_hgcd((mp_ptr)a, (mp_ptr)b, (mp_size_t)size, &M, (mp_ptr)t);
+
+	*sm = (size_t)M.n;
+	return (size_t)nn;
+}
  

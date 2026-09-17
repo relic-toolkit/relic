@@ -1325,8 +1325,6 @@ void bn_gcd_ext_mid(bn_t c, bn_t d, bn_t e, bn_t f, const bn_t a, const bn_t b);
  * most a certain bound, with matrix U such that (a, b)^T = U*(c, d)^T and
  * det U = +1.
  *
- * @param[out] c			- the final value of the first argument.
- * @param[out] d			- the final value of the second argument.
  * @param[out] u00			- the first component of the matrix.
  * @param[out] u01			- the second component of the matrix.
  * @param[out] u10			- the third component of the matrix.
