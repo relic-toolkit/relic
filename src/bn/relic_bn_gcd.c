@@ -1211,9 +1211,9 @@ void bn_gcd_ext_lower(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 			 */
 			bn_abs(u, pu);
 			bn_abs(v, pv);
-			bn_mul(t, u, s);
-			bn_sub(t, g, t);
-			bn_div(t, t, v);
+			bn_copy(t, g);
+			bn_mul_sub(t, u, s);
+			bn_div_exc(t, t, v);
 		}
  
 		/*
