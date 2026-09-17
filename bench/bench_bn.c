@@ -185,6 +185,12 @@ static void util(void) {
 	}
 	BENCH_END;
 
+	BENCH_RUN("bn_set_int") {
+		bn_rand(a, RLC_POS, RLC_BN_BITS);
+		BENCH_ADD(bn_set_int(a, -(1 << RLC_DIG/4)));
+	}
+	BENCH_END;
+
 	BENCH_RUN("bn_set_2b") {
 		bn_rand(a, RLC_POS, RLC_BN_BITS);
 		BENCH_ADD(bn_set_2b(a, RLC_BN_BITS / 2));

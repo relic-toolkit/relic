@@ -29,8 +29,6 @@
  * @ingroup bn
  */
 
-#include <inttypes.h>
-
 #include "relic_core.h"
 
 /*============================================================================*/
@@ -171,6 +169,23 @@ void bn_set_dig(bn_t a, dig_t digit) {
 	a->dp[0] = digit;
 	a->used = 1;
 	a->sign = RLC_POS;
+}
+
+void bn_set_int(bn_t a, int value) {
+	int sign = RLC_POS;
+
+	if (value < 0) {
+		sign = RLC_NEG;
+		value = -value;
+	}
+
+	bn_zero(a);
+	while (value != 0) {
+		bn_lsh(a, a, RLC_DIG);
+		bn_add_dig(a, a, (value & RLC_MASK(RLC_DIG)));
+		value = value >> RLC_DIG;
+	}
+	a->sign = sign;
 }
 
 void bn_set_2b(bn_t a, size_t b) {

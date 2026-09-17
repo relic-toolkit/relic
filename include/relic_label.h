@@ -205,6 +205,7 @@
 #undef bn_ham
 #undef bn_get_dig
 #undef bn_set_dig
+#undef bn_set_int
 #undef bn_set_2b
 #undef bn_rand
 #undef bn_rand_mod
@@ -319,6 +320,7 @@
 #define bn_ham 	RLC_PREFIX(bn_ham)
 #define bn_get_dig 	RLC_PREFIX(bn_get_dig)
 #define bn_set_dig 	RLC_PREFIX(bn_set_dig)
+#define bn_set_int 	RLC_PREFIX(bn_set_int)
 #define bn_set_2b 	RLC_PREFIX(bn_set_2b)
 #define bn_rand 	RLC_PREFIX(bn_rand)
 #define bn_rand_mod 	RLC_PREFIX(bn_rand_mod)
@@ -3079,7 +3081,7 @@
 #undef pp_add_k54_basic
 #undef pp_add_k54_projc
 #undef pp_dbl_k1_basic
-#undef pp_dbl_k1_projc
+ #undef pp_dbl_k1_projc
 #undef pp_dbl_k2_basic
 #undef pp_dbl_k2_projc_basic
 #undef pp_dbl_k2_projc_lazyr
@@ -3184,7 +3186,7 @@
 #define pp_add_k54_basic 	RLC_PREFIX(pp_add_k54_basic)
 #define pp_add_k54_projc 	RLC_PREFIX(pp_add_k54_projc)
 #define pp_dbl_k1_basic 	RLC_PREFIX(pp_dbl_k1_basic)
-#define pp_dbl_k1_projc 	RLC_PREFIX(pp_dbl_k1_projc)
+ #define pp_dbl_k1_projc 	RLC_PREFIX(pp_dbl_k1_projc)
 #define pp_dbl_k2_basic 	RLC_PREFIX(pp_dbl_k2_basic)
 #define pp_dbl_k2_projc_basic 	RLC_PREFIX(pp_dbl_k2_projc_basic)
 #define pp_dbl_k2_projc_lazyr 	RLC_PREFIX(pp_dbl_k2_projc_lazyr)
