@@ -47,6 +47,7 @@
  */
 static void bn_div_imp(bn_t c, bn_t d, const bn_t a, const bn_t b, int ceil) {
 	bn_t q, r;
+	bn_st *pq, *pr;
 	int sign;
 
 	bn_null(q);
@@ -94,21 +95,39 @@ static void bn_div_imp(bn_t c, bn_t d, const bn_t a, const bn_t b, int ceil) {
 	}
 
 	RLC_TRY {
-		bn_new_size(q, a->used + 1);
-		bn_new_size(r, a->used + 1);
+		/*
+		 * Both results are written while the operands are still being read,
+		 * so a destination that is one of them, or that the other result also
+		 * wants, has to be built elsewhere. Anything else is written in place.
+		 */
+		if (c != NULL && c->dp != a->dp && c->dp != b->dp &&
+				(d == NULL || c->dp != d->dp)) {
+			bn_grow(c, a->used + 1);
+			pq = c;
+		} else {
+			bn_new_size(q, a->used + 1);
+			pq = q;
+		}
+		if (d != NULL && d->dp != a->dp && d->dp != b->dp && d->dp != pq->dp) {
+			bn_grow(d, a->used + 1);
+			pr = d;
+		} else {
+			bn_new_size(r, a->used + 1);
+			pr = r;
+		}
 
 		/* Find the sign. */
 		sign = (a->sign == b->sign ? RLC_POS : RLC_NEG);
 
-		bn_divn_low(q->dp, r->dp, a->dp, a->used, b->dp, b->used);
+		bn_divn_low(pq->dp, pr->dp, a->dp, a->used, b->dp, b->used);
 
-		q->used = a->used - b->used + 1;
-		q->sign = sign;
-		bn_trim(q);
+		pq->used = a->used - b->used + 1;
+		pq->sign = sign;
+		bn_trim(pq);
 
-		r->used = b->used;
-		r->sign = a->sign;			/* truncating remainder */
-		bn_trim(r);
+		pr->used = b->used;
+		pr->sign = a->sign;			/* truncating remainder */
+		bn_trim(pr);
 
 		/*
 		 * We have the truncated quotient in q and remainder in r. Flooring
@@ -116,26 +135,26 @@ static void bn_div_imp(bn_t c, bn_t d, const bn_t a, const bn_t b, int ceil) {
 		 * two modes share one branch and neither costs the caller a second
 		 * pass over the operands.
 		 */
-		if ((bn_is_zero(r)) || ((bn_sign(a) == bn_sign(b)) != (ceil != 0))) {
-			if (c != NULL) {
-				bn_copy(c, q);
+		if ((bn_is_zero(pr)) || ((bn_sign(a) == bn_sign(b)) != (ceil != 0))) {
+			if (c != NULL && pq != (bn_st *)c) {
+				bn_copy(c, pq);
 			}
-			if (d != NULL) {
-				bn_copy(d, r);
+			if (d != NULL && pr != (bn_st *)d) {
+				bn_copy(d, pr);
 			}
 		} else if (ceil) {
 			if (c != NULL) {
-				bn_add_dig(c, q, 1);
+				bn_add_dig(c, pq, 1);
 			}
 			if (d != NULL) {
-				bn_sub(d, r, b);
+				bn_sub(d, pr, b);
 			}
 		} else {
 			if (c != NULL) {
-				bn_sub_dig(c, q, 1);
+				bn_sub_dig(c, pq, 1);
 			}
 			if (d != NULL) {
-				bn_add(d, r, b);
+				bn_add(d, pr, b);
 			}
 		}
 	}

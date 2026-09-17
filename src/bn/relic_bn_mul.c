@@ -327,27 +327,40 @@ void bn_mul_basic(bn_t c, const bn_t a, const bn_t b) {
 
 void bn_mul_comba(bn_t c, const bn_t a, const bn_t b) {
 	bn_t t;
+	bn_st *r;
 
 	bn_null(t);
 
 	RLC_TRY {
-		/* We need a temporary variable so that c can be a or b. */
-		bn_new_size(t, a->used + b->used);
-		t->used = a->used + b->used;
+		/*
+		 * The columns are written as they are computed, so a destination that
+		 * is also an operand would be overwritten while still being read. Only
+		 * that case needs somewhere else to build the product.
+		 */
+		if (c->dp == a->dp || c->dp == b->dp) {
+			bn_new_size(t, a->used + b->used);
+			r = t;
+		} else {
+			bn_grow(c, a->used + b->used);
+			r = c;
+		}
+		r->used = a->used + b->used;
 
 		if (a->used == b->used) {
-			bn_muln_low(t->dp, a->dp, b->dp, a->used);
+			bn_muln_low(r->dp, a->dp, b->dp, a->used);
 		} else {
 			if (a->used > b->used) {
-				bn_muld_low(t->dp, a->dp, a->used, b->dp, b->used, 0, t->used);
+				bn_muld_low(r->dp, a->dp, a->used, b->dp, b->used, 0, r->used);
 			} else {
-				bn_muld_low(t->dp, b->dp, b->used, a->dp, a->used, 0, t->used);
+				bn_muld_low(r->dp, b->dp, b->used, a->dp, a->used, 0, r->used);
 			}
 		}
 
-		t->sign = a->sign ^ b->sign;
-		bn_trim(t);
-		bn_copy(c, t);
+		r->sign = a->sign ^ b->sign;
+		bn_trim(r);
+		if (r != (bn_st *)c) {
+			bn_copy(c, t);
+		}
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
