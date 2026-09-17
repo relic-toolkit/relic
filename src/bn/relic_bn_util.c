@@ -54,7 +54,12 @@ void bn_copy(bn_t c, const bn_t a) {
 
 	c->used = a->used;
 	c->sign = a->sign;
-	bn_trim(c);
+	/* Trimming only does something when the topmost digit is zero, which for
+	 * an already normalized source means the value itself is zero. Testing
+	 * for that here keeps the call off the common path. */
+	if (c->used == 0 || c->dp[c->used - 1] == 0) {
+		bn_trim(c);
+	}
 }
 
 void bn_swap(bn_t a, bn_t b) {

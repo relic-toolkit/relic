@@ -366,24 +366,23 @@ size_t bn_gcde_low(dig_t *c, dig_t *d, int *sd, dig_t *a, size_t sa,
 		dig_t *b, size_t sb);
 
 /**
- * Performs one half-GCD step on a pair of digit vectors: reduces them until
- * both fit size/2 + 1 digits and returns the transformation that does it. The
- * full GCD is obtained by repeating this until the operands are small enough
- * to finish directly, each call halving their length. Both source operands are
- * destroyed.
+ * Reduces both operands until they fit target digits, accumulating the
+ * transformation. Both source operands are destroyed, and a, b and the four
+ * matrix entries each need room for size + 1 digits.
  *
- * @param[out] m00			- the first entry of the matrix.
- * @param[out] m01			- the second entry of the matrix.
- * @param[out] m10			- the third entry of the matrix.
- * @param[out] m11			- the fourth entry of the matrix.
+ * @param[out] u00			- the first entry of the matrix.
+ * @param[out] u01			- the second entry of the matrix.
+ * @param[out] u10			- the third entry of the matrix.
+ * @param[out] u11			- the fourth entry of the matrix.
  * @param[out] sm			- the size of each matrix entry in digits.
  * @param[in,out] a			- the first operand, and the first reduced value.
  * @param[in,out] b			- the second operand, and the second reduced value.
  * @param[in] size			- the size of both operands in digits.
- * @return the new size of the operands, zero if no reduction was possible.
+ * @param[in] target		- the digit count to reduce the operands to.
+ * @return the new size of the operands.
  */
-size_t bn_gcdh_low(dig_t *m00, dig_t *m01, dig_t *m10, dig_t *m11, size_t *sm,
-		dig_t *a, dig_t *b, size_t size);
+size_t bn_gcdh_low(dig_t *u00, dig_t *u01, dig_t *u10, dig_t *u11, size_t *sm,
+		dig_t *a, dig_t *b, size_t size, size_t target);
 
 /**
  * Computes a modular exponentiation. The modulus must be odd and the base

@@ -27,6 +27,8 @@
  * Implementation of the low-level multiple precision integer greatest common
  * divisor functions.
  *
+ * TODO: cleanup this file.
+ *
  * @ingroup bn
  */
 
@@ -391,53 +393,43 @@ size_t bn_gcde_low(dig_t *c, dig_t *d, int *sd, dig_t *a, size_t sa,
 	return sg;
 }
 
-/*============================================================================*/
-/* Public definitions                                                         */
-/*============================================================================*/
-
-size_t bn_gcdh_low(dig_t *m00, dig_t *m01, dig_t *m10, dig_t *m11, size_t *sm,
-		dig_t *a, dig_t *b, size_t size) {
+/*
+ * Partial GCD by repeated division, the portable counterpart of the version
+ * driven by mpn_hgcd2. Every step divides the larger operand by the smaller
+ * and folds the quotient into the transformation, which is the same reduction
+ * the other backend falls back on when its two-limb window declines a pair.
+ *
+ * The matrix starts at the identity and is multiplied on the right by
+ * [[1, q], [0, 1]] when a is reduced modulo b, and by [[1, 0], [q, 1]] when b
+ * is reduced modulo a. Each factor has determinant one and non-negative
+ * entries, and the two slots are never exchanged, so the product keeps both
+ * properties with no bookkeeping.
+ */
+size_t bn_gcdh_low(dig_t *u00, dig_t *u01, dig_t *u10, dig_t *u11, size_t *sm,
+		dig_t *a, dig_t *b, size_t size, size_t target) {
 	dig_t *t = RLC_ALLOCA(dig_t, 5 * (size + 2));
 	dig_t *num = t, *den = t + size + 2, *quo = t + 2 * (size + 2);
 	dig_t *rem = t + 3 * (size + 2), *scr = t + 4 * (size + 2);
-	size_t s = size / 2 + 1, sa, sb, sq, mw = (size + 1) / 2 + 1;
+	size_t sa, sb, sq, mw = size + 1;
 	size_t s00 = 1, s01 = 0, s10 = 0, s11 = 1;
-	int steps = 0;
 
-	dv_zero(m00, mw);
-	dv_zero(m01, mw);
-	dv_zero(m10, mw);
-	dv_zero(m11, mw);
-	m00[0] = 1;
-	m11[0] = 1;
-
-	if (size <= s) {
-		return 0;
-	}
-	if ((a[size - 1] | b[size - 1]) == 0) {
-		return 0;					/* not normalized, nothing to do */
-	}
+	dv_zero(u00, mw);
+	dv_zero(u01, mw);
+	dv_zero(u10, mw);
+	dv_zero(u11, mw);
+	u00[0] = 1;
+	u11[0] = 1;
 
 	sa = bn_size_low(a, size);
 	sb = bn_size_low(b, size);
 
-	/*
-	 * The matrix starts at the identity and is multiplied on the right by
-	 * [[1, q], [0, 1]] when a is reduced modulo b, and by [[1, 0], [q, 1]] when
-	 * b is reduced modulo a. Each factor has determinant one and non-negative
-	 * entries, and the two slots are never exchanged, so the product keeps both
-	 * properties with no bookkeeping.
-	 *
-	 * This reduces both operands to s digits, which is more than the contract
-	 * requires: it only asks that the difference fit s digits. Reducing further
-	 * is permitted and costs the caller fewer repetitions.
-	 */
-	while (RLC_MAX(sa, sb) > s) {
+	while (RLC_MAX(sa, sb) > target) {
 		dig_t *big;
 		const dig_t *sml;
 		size_t sbig, ssml;
+
 		if (sa == 0 || sb == 0) {
-			break;
+			break;					/* one operand is the gcd already */
 		}
 		if (bn_cmpn_low(a, sa, b, sb) != RLC_LT) {
 			big = a; sbig = sa; sml = b; ssml = sb;
@@ -458,9 +450,9 @@ size_t bn_gcdh_low(dig_t *m00, dig_t *m01, dig_t *m10, dig_t *m11, size_t *sm,
 		bn_divn_low(quo, rem, num, sbig, den, ssml);
 
 		/*
-		 * The quotient occupies exactly sbig - ssml + 1 digits and the remainder
-		 * exactly ssml, with the areas above those extents left unspecified, so
-		 * the sizes are bounded rather than scanned.
+		 * The quotient occupies exactly sbig - ssml + 1 digits and the
+		 * remainder exactly ssml, with the areas above those extents left
+		 * unspecified, so the sizes are bounded rather than scanned.
 		 */
 		sq = bn_size_low(quo, sbig - ssml + 1);
 		if (sq == 0) {
@@ -468,13 +460,12 @@ size_t bn_gcdh_low(dig_t *m00, dig_t *m01, dig_t *m10, dig_t *m11, size_t *sm,
 		}
 
 		/*
-		 * A quotient wide enough to push the matrix past its documented width
-		 * cannot be folded in, which happens as soon as the operands are far
-		 * apart in size: reducing a full-length value by a single-digit one
-		 * takes one enormous quotient. The step is abandoned before either
-		 * operand is touched, so the caller sees no reduction and falls back to
-		 * an elementary division, which is what mpn_gcd does with
-		 * mpn_gcd_subdiv_step for the same reason.
+		 * A quotient wide enough to push the matrix past the room the caller
+		 * gave it cannot be folded in, which happens as soon as the operands
+		 * are far apart in size: reducing a full-length value by a
+		 * single-digit one takes one enormous quotient. The step is abandoned
+		 * before either operand is touched, so the caller sees the reduction
+		 * that got this far and finishes the rest itself.
 		 */
 		if ((big == a ? RLC_MAX(s00, s10) : RLC_MAX(s01, s11)) + sq + 1 > mw) {
 			break;
@@ -484,18 +475,15 @@ size_t bn_gcdh_low(dig_t *m00, dig_t *m01, dig_t *m10, dig_t *m11, size_t *sm,
 		sbig = bn_size_low(big, ssml);
 		if (big == a) {
 			sa = sbig;
-			s01 = bn_mulacc_low(m01, m00, s00, quo, sq, scr, mw);
-			s11 = bn_mulacc_low(m11, m10, s10, quo, sq, scr, mw);
+			s01 = bn_mulacc_low(u01, u00, s00, quo, sq, scr, mw);
+			s11 = bn_mulacc_low(u11, u10, s10, quo, sq, scr, mw);
 		} else {
 			sb = sbig;
-			s00 = bn_mulacc_low(m00, m01, s01, quo, sq, scr, mw);
-			s10 = bn_mulacc_low(m10, m11, s11, quo, sq, scr, mw);
+			s00 = bn_mulacc_low(u00, u01, s01, quo, sq, scr, mw);
+			s10 = bn_mulacc_low(u10, u11, s11, quo, sq, scr, mw);
 		}
-		steps++;
 	}
-	if (steps == 0) {
-		return 0;
-	}
+
 	/* clear whatever the reduction left above the significant digits */
 	dv_zero(a + sa, size - sa);
 	dv_zero(b + sb, size - sb);
@@ -503,4 +491,3 @@ size_t bn_gcdh_low(dig_t *m00, dig_t *m01, dig_t *m10, dig_t *m11, size_t *sm,
 	RLC_FREE(t);
 	return RLC_MAX(sa, sb);
 }
- 
