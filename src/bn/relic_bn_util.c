@@ -66,7 +66,10 @@ void bn_swap(bn_t a, bn_t b) {
 	 * The digits live behind a pointer, so exchanging the headers exchanges the
 	 * values: dp travels with the alloc that describes it.
 	 */
-	RLC_SWAP(*a, *b);
+	bn_st t;
+	t = *a;
+	*a = *b;
+	*b = t;
 #else
 	size_t n = RLC_MAX(a->used, b->used);
 	bn_grow(a, n);
