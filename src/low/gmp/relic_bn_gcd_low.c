@@ -183,7 +183,7 @@ size_t bn_gcdh_low(dig_t *u00, dig_t *u01, dig_t *u10, dig_t *u11, size_t *sm,
 			GP_COPY(v00, t0, vn);
 			un = __gmpn_hgcd_mul_matrix1_vector(&M, t0, v10, v11, un);
 			GP_COPY(v10, t0, un);
-		} else if (bp[n - 1] < 2) {
+		} else if (bp[n - 1] < 2 && mpn_cmp(ap, bp, n) > 0) {
 			mp_size_t bn = n, qn;
 			GP_NORM(bp, bn);
 			if (bn == 0) {
@@ -199,7 +199,7 @@ size_t bn_gcdh_low(dig_t *u00, dig_t *u01, dig_t *u10, dig_t *u11, size_t *sm,
 				vn = gcdh_addmul(v01, t1, qn, v00, vn, t0);
 				un = gcdh_addmul(v11, t1, qn, v10, un, t0);
 			}
-		} else if (ap[n - 1] < 2) {
+		} else if (ap[n - 1] < 2 && mpn_cmp(bp, ap, n) > 0) {
 			mp_size_t an = n, qn;
 			GP_NORM(ap, an);
 			if (an == 0) {
