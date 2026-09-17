@@ -40,7 +40,7 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-mp_size_t __gmpn_binvert_itch (mp_size_t);
+mp_size_t __gmpn_binvert_itch(mp_size_t);
 
 /*
  * The routine mpz_powm reduces with is not part of the public interface and is
