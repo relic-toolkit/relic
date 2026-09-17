@@ -48,20 +48,13 @@ void dv_print(const dig_t *a, size_t digits) {
 }
 
 void dv_zero(dig_t *a, size_t digits) {
-	int i;
-
 #if ALLOC != DYNAMIC
 	if (digits > RLC_DV_DIGS) {
 		RLC_THROW(ERR_NO_PRECI);
 		return;
 	}
 #endif
-
-	for (i = 0; i < digits; i++, a++) {
-		(*a) = 0;
-	}
-
-	return;
+	memset(a, 0, digits * sizeof(dig_t));
 }
 
 void dv_copy(dig_t *c, const dig_t *a, size_t digits) {
@@ -101,13 +94,6 @@ void dv_swap_sec(dig_t *c, dig_t *a, size_t digits, dig_t bit) {
 int dv_cmp_sec(const dig_t *a, const dig_t *b, size_t size) {
 	dig_t borrow = 0, diff = 0;
 
-	/*
-	 * Ordering comparison in constant time, for the hardened backends: the
-	 * borrow out of a - b decides a < b, and the accumulated difference
-	 * separates equality from a > b.  dv_cmp_sec only reports equality, so it
-	 * cannot serve the "is c >= p" test that the conditional subtraction in
-	 * fp_add and fp_rdc performs.
-	 */
 	for (size_t i = 0; i < size; i++) {
 		borrow = (dig_t)(a[i] < b[i]) | ((dig_t)(a[i] == b[i]) & borrow);
 		diff |= a[i] ^ b[i];
