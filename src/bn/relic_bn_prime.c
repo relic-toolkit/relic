@@ -579,7 +579,8 @@ void bn_next_prime(bn_t q, const bn_t p) {
 	}
 }
 
-int bn_map_prime(bn_t p, const uint8_t *msg, size_t len, size_t bits) {
+int bn_map_prime(bn_t p, uint32_t *ctr, const uint8_t *msg, size_t len,
+		size_t bits, uint32_t from) {
 	uint8_t *in, *out;
 	uint32_t k = 0;
 	size_t i, nb = (bits + 7) / 8;
@@ -605,7 +606,13 @@ int bn_map_prime(bn_t p, const uint8_t *msg, size_t len, size_t bits) {
 		}
 
 		/* Upper bund the number of tries. */
-		for (k = 0; k < BN_MAP_TRIES; k++) {
+		/*
+		 * The search starts where the caller asks and reports where it stopped, so
+		 * that a caller needing a prime which satisfies some further condition can
+		 * carry on from the next counter. Starting over instead would rerun the
+		 * whole search on every rejection.
+		 */
+		for (k = from; k < from + BN_MAP_TRIES; k++) {
 			/* Expand message to the whole prime so the output looks uniform. */
 			memcpy(in + len, &k, sizeof(uint32_t));
 			md_xmd(out, nb, in, len + sizeof(uint32_t),
@@ -620,10 +627,13 @@ int bn_map_prime(bn_t p, const uint8_t *msg, size_t len, size_t bits) {
 			bn_set_bit(p, 0, 1);
 
 			if (bn_is_prime(p)) {
+				if (ctr != NULL) {
+					*ctr = k;
+				}
 				break;
 			}
 		}
-		if (k >= BN_MAP_TRIES) {
+		if (k >= from + BN_MAP_TRIES) {
 			result = RLC_ERR;
 		}
 	}

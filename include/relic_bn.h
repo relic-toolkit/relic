@@ -1240,6 +1240,19 @@ void bn_mxp_sim_lot(bn_t c, const bn_t *a, const bn_t *b, const bn_t m,
 void bn_srt(bn_t c, bn_t a);
 
 /**
+ * Computes a square root of an integer modulo an odd prime, by the algorithm of
+ * Tonelli and Shanks. Computes c such that c^2 = a mod b, returning the smaller
+ * of the two roots.
+ *
+ * @param[out] c			- the resulting square root.
+ * @param[in] a				- the integer to extract the root of.
+ * @param[in] b				- the odd prime modulus.
+ * @return a boolean value indicating whether a square root exists.
+ * @throw ERR_NO_VALID		- if the modulus is even, negative or below three.
+ */
+int bn_srt_mod(bn_t c, const bn_t a, const bn_t b);
+
+/**
  * Computes the greatest common divisor of two multiple precision integers
  * using the standard Euclidean algorithm.
  *
@@ -1448,12 +1461,15 @@ int bn_is_prime_solov(const bn_t a);
  * Hashes a string to a prime number of a given size.
  *
  * @param[out] p			- the resulting prime.
+ * @param[out] ctr			- the counter that produced it, or NULL.
  * @param[in] msg			- the string to hash.
  * @param[in] len			- the length of the string in bytes.
  * @param[in] bits			- the size in bits of the prime.
+ * @param[in] from			- the counter to start from, usually zero.
  * @return RLC_OK if a prime was found, RLC_ERR otherwise.
  */
-int bn_map_prime(bn_t p, const uint8_t *msg, size_t len, size_t bits);
+int bn_map_prime(bn_t p, uint32_t *ctr, const uint8_t *msg, size_t len,
+		size_t bits, uint32_t from);
 
 /**
  * Generates a probable prime number.

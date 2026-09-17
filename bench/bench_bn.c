@@ -781,6 +781,25 @@ static void arith(void) {
 	}
 	BENCH_END;
 
+	BENCH_RUN("bn_srt_mod") {
+		bn_gen_prime(c, RLC_BN_BITS / 4);
+		bn_rand_mod(a, c);
+		bn_sqr(a, a);
+		bn_mod(a, a, c);
+		BENCH_ADD(bn_srt_mod(b, a, c));
+	}
+	BENCH_END;
+
+	BENCH_RUN("bn_srt_mod (non-residue)") {
+		/* the other outcome, which the symbol settles without a search */
+		bn_gen_prime(c, RLC_BN_BITS / 4);
+		do {
+			bn_rand_mod(a, c);
+		} while (bn_smb_leg(a, c) != -1);
+		BENCH_ADD(bn_srt_mod(b, a, c));
+	}
+	BENCH_END;
+
 	BENCH_RUN("bn_gcd") {
 		bn_rand(a, RLC_POS, RLC_BN_BITS);
 		bn_rand(b, RLC_POS, RLC_BN_BITS);
@@ -938,7 +957,7 @@ static void arith(void) {
 	BENCH_ONE("bn_is_prime_solov", bn_is_prime_solov(a), 1);
 
 	rand_bytes(m, sizeof(m));
-	BENCH_ONE("bn_map_prime", bn_map_prime(a, m, sizeof(m), RLC_BN_BITS), 1);
+	BENCH_ONE("bn_map_prime", bn_map_prime(a, NULL, m, sizeof(m), RLC_BN_BITS, 0), 1);
 
 	/* It should be the case that a is prime here. */
 	BENCH_RUN("bn_mod_inv") {
