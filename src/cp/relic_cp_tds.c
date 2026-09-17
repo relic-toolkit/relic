@@ -57,6 +57,12 @@
 #define TDS_MAX_BUCKS	1024
 
 /**
+ * Largest exponent, in bits, raised to by a binary ladder rather than by the
+ * general modular exponentiation.
+ */
+#define TDS_EXP_SMALL	16
+
+/**
  * Upper bound on the number of powers retained by the witness assembly.
  */
 #define TDS_MAX_POWS	4096
@@ -134,6 +140,50 @@ static void tds_sqr(bn_t c, const bn_t a, const bn_t n, const bn_t h, bn_t t) {
  */
 static void tds_exp(bn_t c, const bn_t a, const bn_t b, const bn_t n,
 		const bn_t h) {
+	size_t bits = bn_bits(b);
+
+	/*
+	 * The chain advances by raising to the public exponent, which is a very
+	 * small number, and a general modular exponentiation spends more on its
+	 * own arrangements than on the squaring and multiplication it amounts to.
+	 * Here that is not merely waste: the delay is calibrated to the cost of
+	 * this step, so an adversary who computes the chain by the ladder below
+	 * walks it faster than the reference does, and the delay parameter would
+	 * have to absorb the difference. A ladder over the bits of the exponent
+	 * closes the gap for the small exponents the chain uses; larger ones keep
+	 * the general routine, which wins once the setup is amortised.
+	 *
+	 * The accumulator is separate from the result so that the usual call,
+	 * which passes the same element as input and output, is safe.
+	 */
+	if (bits > 1 && bits <= TDS_EXP_SMALL) {
+		bn_t t, u;
+
+		bn_null(t);
+		bn_null(u);
+
+		RLC_TRY {
+			bn_new(t);
+			bn_new(u);
+			bn_copy(u, a);
+			for (size_t i = bits - 1; i-- > 0; ) {
+				tds_sqr(u, u, n, h, t);
+				if (bn_get_bit(b, i)) {
+					tds_mul(u, u, a, n, h, t);
+				}
+			}
+			bn_copy(c, u);
+		}
+		RLC_CATCH_ANY {
+			RLC_THROW(ERR_CAUGHT);
+		}
+		RLC_FINALLY {
+			bn_free(t);
+			bn_free(u);
+		}
+		return;
+	}
+
 	bn_mxp(c, a, b, n);
 	if (bn_cmp(c, h) == RLC_GT) {
 		bn_sub(c, n, c);

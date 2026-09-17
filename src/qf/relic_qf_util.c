@@ -32,6 +32,96 @@
 #include "relic_core.h"
 
 /*============================================================================*/
+/* Private definitions                                                        */
+/*============================================================================*/
+
+/**
+ * Computes the discrete logarithm of a form in the kernel, reporting failure
+ * through the return value rather than by throwing.
+ *
+ * The reduction below decides membership on its own: a form lies in the kernel
+ * exactly when its projection reduces to the principal form. Exposing that as
+ * a status is what lets qf_kern_quick fall back without projecting a second
+ * time for a separate membership test, and it does not rely on RLC_THROW
+ * unwinding, which it does not do when the library is built without error
+ * checking.
+ *
+ * @param[out] r			- the resulting exponent.
+ * @param[in] f				- the quadratic form.
+ * @return RLC_OK if the form lies in the kernel, RLC_ERR otherwise.
+ */
+static int qf_kern_imp(bn_t r, const qf_t f) {
+	ctx_t *ctx = core_get();
+	int cmp, code = RLC_ERR;
+	bn_t t, x, y, q2;
+	qf_t ft;
+
+	bn_null(x);
+	bn_null(y);
+	bn_null(t);
+	bn_null(q2);
+	qf_null(ft);
+
+	RLC_TRY {
+		bn_new(x);
+		bn_new(y);
+		bn_new(t);
+		bn_new(q2);
+		qf_new(ft);
+
+		qf_phi(ft, f, 0);
+
+		/*
+		 * Reduce ft while accumulating gamma = g0 + g1*sqrt(disc_k): each rho
+		 * multiplies gamma by (b + sqrt(disc_k))/(2a).  The 2a is dropped, the
+		 * common factor of g0 and g1 is removed at the end instead.
+		 */
+		bn_set_dig(x, 1);	/* g0 */
+		bn_zero(y);		/* g1 */
+		qf_norm(ft, ft);
+		bn_sqr(q2, &(ctx->qf_q));
+		while ((cmp = bn_cmp_abs(ft->a, ft->c)) == RLC_GT) {
+			bn_mul(t, y, &(ctx->qf_dk));
+			bn_mul(y, y, ft->b);
+			bn_add(y, y, x);
+			bn_mul(x, x, ft->b);
+			bn_add(x, x, t);
+			bn_mod(x, x, q2);
+			bn_mod(y, y, q2);
+			bn_copy(t, ft->a);
+			bn_copy(ft->a, ft->c);
+			bn_copy(ft->c, t);
+			bn_neg(ft->b, ft->b);
+			qf_norm(ft, ft);
+		}
+
+		if (bn_cmp_dig(ft->a, 1) == RLC_EQ && bn_cmp_dig(ft->b, 1) == RLC_EQ) {
+			bn_gcd_lower(t, x, y);
+			bn_div(x, x, t);
+			bn_div(y, y, t);
+
+			bn_mod(x, x, &(ctx->qf_q));
+			bn_mod_inv(t, x, &(ctx->qf_q));
+			bn_neg(y, y);
+			bn_mul(t, t, y);
+			bn_mod(r, t, &(ctx->qf_q));
+			code = RLC_OK;
+		}
+	}
+	RLC_CATCH_ANY {
+		code = RLC_ERR;
+	}
+	RLC_FINALLY {
+		bn_free(x);
+		bn_free(y);
+		bn_free(t);
+		bn_free(q2);
+		qf_free(ft);
+	}
+	return code;
+}
+
+/*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
@@ -435,12 +525,13 @@ int qf_kern_quick(bn_t r, const qf_t f) {
 		large = (bn_sign(t) == RLC_POS && !bn_is_zero(t));
 
 		if (large) {
-			/* The general route, with the membership check it requires. */
-			qf_phi(g, f, 1);
-			if (qf_is_one(g)) {
-				qf_kern(r, f);
-				code = RLC_OK;
-			}
+			/*
+			 * The general route. Its reduction already decides membership, a
+			 * form lying in the kernel exactly when its projection reduces to
+			 * the principal form, so no separate test is needed and the
+			 * projection is formed once rather than twice.
+			 */
+			code = qf_kern_imp(r, f);
 		} else {
 			/* Composition leaves its result only partly reduced. */
 			qf_copy(g, f);
@@ -473,73 +564,8 @@ int qf_kern_quick(bn_t r, const qf_t f) {
 }
 
 void qf_kern(bn_t r, const qf_t f) {
-	ctx_t *ctx = core_get();
-	bn_t t, x, y, q2;
-	qf_t ft;
-	int cmp;
-
-	bn_null(x);
-	bn_null(y);
-	bn_null(t);
-	bn_null(q2);
-	qf_null(ft);
-
-	RLC_TRY {
-		bn_new(x);
-		bn_new(y);
-		bn_new(t);
-		bn_new(q2);
-		qf_new(ft);
-
-		qf_phi(ft, f, 0);
-
-		/*
-		 * Reduce ft while accumulating gamma = g0 + g1*sqrt(disc_k): each rho
-		 * multiplies gamma by (b + sqrt(disc_k))/(2a).  The 2a is dropped, the
-		 * common factor of g0 and g1 is removed at the end instead.
-		 */
-		bn_set_dig(x, 1);	/* g0 */
-		bn_zero(y);		/* g1 */
-		qf_norm(ft, ft);
-		bn_sqr(q2, &(ctx->qf_q));
-		while ((cmp = bn_cmp_abs(ft->a, ft->c)) == RLC_GT) {
-			bn_mul(t, y, &(ctx->qf_dk));
-			bn_mul(y, y, ft->b);
-			bn_add(y, y, x);
-			bn_mul(x, x, ft->b);
-			bn_add(x, x, t);
-			bn_mod(x, x, q2);
-			bn_mod(y, y, q2);
-			bn_copy(t, ft->a);
-			bn_copy(ft->a, ft->c);
-			bn_copy(ft->c, t);
-			bn_neg(ft->b, ft->b);
-			qf_norm(ft, ft);
-		}
-
-		if (bn_cmp_dig(ft->a, 1) != RLC_EQ || bn_cmp_dig(ft->b, 1) != RLC_EQ) {
-			RLC_THROW(ERR_NO_VALID);
-		} else {
-			bn_gcd_lower(t, x, y);
-			bn_div(x, x, t);
-			bn_div(y, y, t);
-
-			bn_mod(x, x, &(ctx->qf_q));
-			bn_mod_inv(t, x, &(ctx->qf_q));
-			bn_neg(y, y);
-			bn_mul(t, t, y);
-			bn_mod(r, t, &(ctx->qf_q));
-		}
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		bn_free(x);
-		bn_free(y);
-		bn_free(t);
-		bn_free(q2);
-		qf_free(ft);
+	if (qf_kern_imp(r, f) != RLC_OK) {
+		RLC_THROW(ERR_NO_VALID);
 	}
 }
 
