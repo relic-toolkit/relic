@@ -45,7 +45,7 @@
  * @param[in] a			- the dividend.
  * @param[in] b			- the the divisor.
  */
-static void bn_div_imp(bn_t c, bn_t d, const bn_t a, const bn_t b) {
+static void bn_div_imp(bn_t c, bn_t d, const bn_t a, const bn_t b, int ceil) {
 	bn_t q, r;
 	int sign;
 
@@ -54,20 +54,40 @@ static void bn_div_imp(bn_t c, bn_t d, const bn_t a, const bn_t b) {
 
 	/* If |a| < |b|, we're done. */
 	if (bn_cmp_abs(a, b) == RLC_LT) {
-		if (bn_sign(a) == bn_sign(b)) {
+		if (bn_is_zero(a)) {
+			if (c != NULL) {
+				bn_zero(c);
+			}
+			if (d != NULL) {
+				bn_zero(d);
+			}
+			return;
+		}
+		/*
+		 * The quotient is one of zero, one or minus one here, according to the
+		 * signs and the rounding: rounding away from the truncated value costs
+		 * a unit in the quotient and a divisor in the remainder.
+		 */
+		if ((bn_sign(a) == bn_sign(b)) == (ceil != 0)) {
+			if (c != NULL) {
+				bn_set_dig(c, 1);
+				if (!ceil) {
+					bn_neg(c, c);
+				}
+			}
+			if (d != NULL) {
+				if (ceil) {
+					bn_sub(d, a, b);
+				} else {
+					bn_add(d, a, b);
+				}
+			}
+		} else {
 			if (c != NULL) {
 				bn_zero(c);
 			}
 			if (d != NULL) {
 				bn_copy(d, a);
-			}
-		} else {
-			if (c != NULL) {
-				bn_set_dig(c, 1);
-				bn_neg(c, c);
-			}
-			if (d != NULL) {
-				bn_add(d, a, b);
 			}
 		}
 		return;
@@ -87,23 +107,35 @@ static void bn_div_imp(bn_t c, bn_t d, const bn_t a, const bn_t b) {
 		bn_trim(q);
 
 		r->used = b->used;
-		r->sign = b->sign;
+		r->sign = a->sign;			/* truncating remainder */
 		bn_trim(r);
 
-		/* We have the quotient in q and the remainder in r. */
-		if (c != NULL) {
-			if ((bn_is_zero(r)) || (bn_sign(a) == bn_sign(b))) {
+		/*
+		 * We have the truncated quotient in q and remainder in r. Flooring
+		 * corrects when the signs differ, rounding up when they agree, so the
+		 * two modes share one branch and neither costs the caller a second
+		 * pass over the operands.
+		 */
+		if ((bn_is_zero(r)) || ((bn_sign(a) == bn_sign(b)) != (ceil != 0))) {
+			if (c != NULL) {
 				bn_copy(c, q);
-			} else {
+			}
+			if (d != NULL) {
+				bn_copy(d, r);
+			}
+		} else if (ceil) {
+			if (c != NULL) {
+				bn_add_dig(c, q, 1);
+			}
+			if (d != NULL) {
+				bn_sub(d, r, b);
+			}
+		} else {
+			if (c != NULL) {
 				bn_sub_dig(c, q, 1);
 			}
-		}
-
-		if (d != NULL) {
-			if ((bn_is_zero(r)) || (bn_sign(a) == bn_sign(b))) {
-				bn_copy(d, r);
-			} else {
-				bn_sub(d, b, r);
+			if (d != NULL) {
+				bn_add(d, r, b);
 			}
 		}
 	}
@@ -125,7 +157,7 @@ void bn_div(bn_t c, const bn_t a, const bn_t b) {
 		RLC_THROW(ERR_NO_VALID);
 		return;
 	}
-	bn_div_imp(c, NULL, a, b);
+	bn_div_imp(c, NULL, a, b, 0);
 }
 
 void bn_div_rem(bn_t c, bn_t d, const bn_t a, const bn_t b) {
@@ -133,7 +165,15 @@ void bn_div_rem(bn_t c, bn_t d, const bn_t a, const bn_t b) {
 		RLC_THROW(ERR_NO_VALID);
 		return;
 	}
-	bn_div_imp(c, d, a, b);
+	bn_div_imp(c, d, a, b, 0);
+}
+
+void bn_div_rem_rup(bn_t c, bn_t d, const bn_t a, const bn_t b) {
+	if (bn_is_zero(b)) {
+		RLC_THROW(ERR_NO_VALID);
+		return;
+	}
+	bn_div_imp(c, d, a, b, 1);
 }
 
 void bn_div_dig(bn_t c, const bn_t a, dig_t b) {

@@ -930,6 +930,100 @@ static int division(void) {
 			TEST_ASSERT(bn_sign(d) == bn_sign(b), end);
 		} TEST_END;
 	}
+		TEST_CASE("rounded up division is correct") {
+			bn_rand(a, RLC_POS, RLC_BN_BITS);
+			bn_rand(b, RLC_POS, RLC_BN_BITS / 2);
+			bn_div_rem_rup(c, d, a, b);
+			/* a = c*b + d must hold whatever the rounding */
+			bn_mul(e, c, b);
+			bn_add(e, e, d);
+			TEST_ASSERT(bn_cmp(a, e) == RLC_EQ, end);
+			/* rounding up leaves the remainder in (-b, 0] */
+			TEST_ASSERT(bn_sign(d) == RLC_NEG || bn_is_zero(d), end);
+			TEST_ASSERT(bn_cmp_abs(d, b) == RLC_LT, end);
+		} TEST_END;
+
+		TEST_CASE("rounded up division of a negative is correct") {
+			bn_rand(a, RLC_NEG, RLC_BN_BITS);
+			bn_rand(b, RLC_POS, RLC_BN_BITS / 2);
+			bn_div_rem_rup(c, d, a, b);
+			bn_mul(e, c, b);
+			bn_add(e, e, d);
+			TEST_ASSERT(bn_cmp(a, e) == RLC_EQ, end);
+			TEST_ASSERT(bn_sign(d) == RLC_NEG || bn_is_zero(d), end);
+			TEST_ASSERT(bn_cmp_abs(d, b) == RLC_LT, end);
+		} TEST_END;
+
+		TEST_CASE("rounded up division by a negative is correct") {
+			bn_rand(a, RLC_POS, RLC_BN_BITS);
+			bn_rand(b, RLC_NEG, RLC_BN_BITS / 2);
+			bn_div_rem_rup(c, d, a, b);
+			bn_mul(e, c, b);
+			bn_add(e, e, d);
+			TEST_ASSERT(bn_cmp(a, e) == RLC_EQ, end);
+			/* with a negative divisor the remainder lies in [0, -b) */
+			TEST_ASSERT(bn_sign(d) == RLC_POS || bn_is_zero(d), end);
+			TEST_ASSERT(bn_cmp_abs(d, b) == RLC_LT, end);
+		} TEST_END;
+
+		TEST_CASE("rounded up division differs from truncation by at most one") {
+			/*
+			 * Rounding up and rounding down agree when the division is exact
+			 * and are one apart otherwise, which pins the quotient without
+			 * needing a second implementation to compare against.
+			 */
+			bn_rand(a, (bn_bits(a) & 1) ? RLC_POS : RLC_NEG, RLC_BN_BITS);
+			bn_rand(b, RLC_POS, RLC_BN_BITS / 2);
+			bn_div_rem(c, d, a, b);
+			bn_div_rem_rup(e, a, a, b);
+			bn_sub(e, e, c);
+			if (bn_is_zero(d)) {
+				TEST_ASSERT(bn_is_zero(e), end);
+			} else {
+				TEST_ASSERT(bn_cmp_dig(e, 1) == RLC_EQ, end);
+				TEST_ASSERT(bn_sign(e) == RLC_POS, end);
+			}
+		} TEST_END;
+
+		TEST_CASE("rounded up division is exact when it divides") {
+			bn_rand(b, RLC_POS, RLC_BN_BITS / 2);
+			bn_rand(c, RLC_POS, RLC_BN_BITS / 2);
+			bn_mul(a, b, c);
+			bn_div_rem_rup(d, e, a, b);
+			TEST_ASSERT(bn_is_zero(e), end);
+			TEST_ASSERT(bn_cmp(d, c) == RLC_EQ, end);
+			/* and the same with the dividend negated */
+			bn_neg(a, a);
+			bn_div_rem_rup(d, e, a, b);
+			TEST_ASSERT(bn_is_zero(e), end);
+			bn_neg(d, d);
+			TEST_ASSERT(bn_cmp(d, c) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("rounded up division handles small quotients") {
+			/*
+			 * When the dividend is smaller than the divisor the quotient is one
+			 * of zero, one or minus one, which is a separate branch from the
+			 * general case and so worth exercising on its own.
+			 */
+			bn_rand(b, RLC_POS, RLC_BN_BITS / 2);
+			while (bn_cmp_dig(b, 2) == RLC_LT) {
+				bn_rand(b, RLC_POS, RLC_BN_BITS / 2);
+			}
+			bn_sub_dig(a, b, 1);		/* 0 < a < b, so the quotient is one */
+			bn_div_rem_rup(c, d, a, b);
+			TEST_ASSERT(bn_cmp_dig(c, 1) == RLC_EQ, end);
+			bn_mul(e, c, b);
+			bn_add(e, e, d);
+			TEST_ASSERT(bn_cmp(a, e) == RLC_EQ, end);
+			bn_neg(a, a);
+			bn_div_rem_rup(c, d, a, b);
+			TEST_ASSERT(bn_is_zero(c), end);
+			TEST_ASSERT(bn_cmp(d, a) == RLC_EQ, end);
+			bn_zero(a);
+			bn_div_rem_rup(c, d, a, b);
+			TEST_ASSERT(bn_is_zero(c) && bn_is_zero(d), end);
+		} TEST_END;
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);
 	}

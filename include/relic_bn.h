@@ -936,7 +936,7 @@ void bn_div(bn_t c, const bn_t a, const bn_t b);
 
 /**
  * Divides a multiple precision integer by another multiple precision integer
- * and produces a positive remainder. Computes c = floor(a / b) and d = a mod b.
+ * and produces a truncated quotient. Computes c = floor(a / b) and d = a - cb.
  *
  * @param[out] c			- the resulting quotient.
  * @param[out] d			- the positive remainder.
@@ -945,6 +945,17 @@ void bn_div(bn_t c, const bn_t a, const bn_t b);
  * @throw ERR_NO_VALID		- if the divisor is zero.
  */
 void bn_div_rem(bn_t c, bn_t d, const bn_t a, const bn_t b);
+
+/**
+ * Divides a multiple precision integer by another multiple precision integer
+ * and produces a rounded-up quotient. Computes c = ceil(a / b) and c = a - cb.
+ * @param[out] c			- the resulting quotient.
+ * @param[out] d			- the positive remainder.
+ * @param[in] a				- the dividend.
+ * @param[in] b				- the divisor.
+ * @throw ERR_NO_VALID		- if the divisor is zero.
+ */
+void bn_div_rem_rup(bn_t c, bn_t d, const bn_t a, const bn_t b);
 
 /**
  * Divides a multiple precision integers by a digit without computing the
