@@ -82,8 +82,6 @@ static void bn_div_imp(bn_t c, bn_t d, const bn_t a, const bn_t b) {
 		bn_new_size(q, a->used + 1);
 		bn_new_size(y, a->used + 1);
 		bn_new_size(r, a->used + 1);
-		bn_zero(q);
-		bn_zero(r);
 		bn_abs(x, a);
 		bn_abs(y, b);
 
