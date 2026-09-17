@@ -135,8 +135,13 @@ void qf_com(qf_t r, const qf_t f, const qf_t g, int neg, const bn_t bnd) {
 		 *
 		 * F remains useful only until the nontrivial gcd branch
 		 * has computed H. It is subsequently reused as scratch.
+		 *
+		 * Only v is needed unless the gcd exceeds one: u appears solely in the
+		 * branch below that computes l. The second cofactor costs a
+		 * multiplication and an exact division inside bn_gcd_ext -- so it is
+		 * asked for only when that branch is taken, where u = (F - v*a2)/a1.
 		 */
-		bn_gcd_ext(F, u, v, f->a, g->a);
+		bn_gcd_ext(F, v, NULL, g->a, f->a);
 
 		if (bn_cmp_dig(F, 1) == RLC_EQ) {
 			bn_set_dig(Ax, 1);
@@ -181,6 +186,11 @@ void qf_com(qf_t r, const qf_t f, const qf_t g, int neg, const bn_t bnd) {
 				 * F is also dead after this point, so F can hold
 				 * the intermediate value and eventually l.
 				 */
+
+				/* u is needed here: u = (F - v*a2) / a1 */
+				bn_mul(t0, v, g->a);
+				bn_sub(t0, F, t0);
+				bn_div_exc(u, t0, f->a);
 
 				/* t0 = v * (f->c mod H) */
 				bn_mod(t0, f->c, H);

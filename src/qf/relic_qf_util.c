@@ -386,6 +386,15 @@ void qf_phi(qf_t r, const qf_t f, int rdc) {
 		bn_gcd_ext(t, x, y, &(ctx->qf_q), r->a);
 		bn_mul(r->b, r->b, x);
 		bn_mul_add(r->b, r->b, r->a, y);
+
+		/*
+		 * Bring b into (-a, a] before c is computed from it.
+		 */
+		bn_lsh(t, r->a, 1);
+		bn_mod(r->b, r->b, t);
+		if (bn_cmp_abs(r->b, r->a) == RLC_GT) {
+			bn_sub(r->b, r->b, t);
+		}
 		qf_set_dsc(r, r->a, r->b, &(ctx->qf_dk));
 		if (rdc) {
 			qf_rdc(r, r);

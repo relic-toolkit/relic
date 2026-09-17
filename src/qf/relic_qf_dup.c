@@ -73,9 +73,21 @@ void qf_dup(qf_t r, const qf_t f, const bn_t bnd) {
 		bn_new(m11);
 
 		/*
-		 * Ax = gcd(a, b) = m11*a + m01*b
+		 * Ax = gcd(a, b) = m01*b + m11*a, but only m01 is asked for.
+		 *
+		 * The second cofactor costs a multiplication and an exact division
+		 * inside bn_gcd_ext and it is only needed for Dx. When the gcd is one,
+		 * m11 = (1 - m01*b)/a, so
+		 *
+		 *     Dx = -c*m11 = (c*m01*b - c)/a = (Bx*b - c)/a,
+		 *
+		 * and that relation survives the reduction of Bx modulo By below,
+		 * since subtracting q*By from Bx subtracts q*Dy from Dx. So Dx is
+		 * recovered after the reduction from the smaller Bx, which is cheaper
+		 * than carrying m11 here. A gcd above one still needs m11, and the
+		 * branch below computes it then.
 		 */
-		bn_gcd_ext(Ax, m11, m01, f->a, f->b);
+		bn_gcd_ext(Ax, m01, NULL, f->b, f->a);
 
 		if (bn_cmp_dig(Ax, 1) != RLC_EQ) {
 			bn_div_exc(By, f->a, Ax);
@@ -86,11 +98,8 @@ void qf_dup(qf_t r, const qf_t f, const bn_t bnd) {
 		}
 
 		/*
-		 * Dx = -c*m11
-		 * Bx =  c*m01
+		 * Bx = c*m01
 		 */
-		bn_mul(Dx, f->c, m11);
-		bn_neg(Dx, Dx);
 		bn_mul(Bx, f->c, m01);
 
 		/*
@@ -104,7 +113,20 @@ void qf_dup(qf_t r, const qf_t f, const bn_t bnd) {
 		bn_div_rem(q, t0, Bx, By);
 		bn_copy(Bx, t0);
 
-		bn_mul_sub(Dx, Dx, q, Dy);
+		/* Dx = (Bx*b - c)/a, exact, with Bx already reduced modulo By */
+		if (bn_cmp_dig(Ax, 1) == RLC_EQ) {
+			bn_mul(Dx, Bx, f->b);
+			bn_sub(Dx, Dx, f->c);
+			bn_div_exc(Dx, Dx, f->a);
+		} else {
+			/* the gcd is above one, so m11 is needed after all */
+			bn_mul(t0, m01, f->b);
+			bn_sub(t0, Ax, t0);
+			bn_div_exc(m11, t0, f->a);
+			bn_mul(Dx, f->c, m11);
+			bn_neg(Dx, Dx);
+			bn_mul_sub(Dx, Dx, q, Dy);
+		}
 
 		/*
 		 * Partial extended gcd:
