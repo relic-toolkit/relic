@@ -69,13 +69,12 @@ static void bn_div_imp(bn_t c, bn_t d, const bn_t a, const bn_t b, int ceil) {
 		 * signs and the rounding: rounding away from the truncated value costs
 		 * a unit in the quotient and a divisor in the remainder.
 		 */
+		/*
+		 * The remainder is taken first because it is the only one of the two
+		 * that reads the operands, and the quotient may be written over one
+		 * of them.
+		 */
 		if ((bn_sign(a) == bn_sign(b)) == (ceil != 0)) {
-			if (c != NULL) {
-				bn_set_dig(c, 1);
-				if (!ceil) {
-					bn_neg(c, c);
-				}
-			}
 			if (d != NULL) {
 				if (ceil) {
 					bn_sub(d, a, b);
@@ -83,12 +82,18 @@ static void bn_div_imp(bn_t c, bn_t d, const bn_t a, const bn_t b, int ceil) {
 					bn_add(d, a, b);
 				}
 			}
-		} else {
 			if (c != NULL) {
-				bn_zero(c);
+				bn_set_dig(c, 1);
+				if (!ceil) {
+					bn_neg(c, c);
+				}
 			}
+		} else {
 			if (d != NULL) {
 				bn_copy(d, a);
+			}
+			if (c != NULL) {
+				bn_zero(c);
 			}
 		}
 		return;
