@@ -84,6 +84,27 @@ void bn_swap(bn_t a, bn_t b) {
 	bn_trim(b);
 #endif
 }
+
+void bn_swap_sec(bn_t a, bn_t b, dig_t bit) {
+	size_t n = RLC_MAX(a->used, b->used), ut, um = -(size_t)bit;
+	int st, sm = -(int)bit;
+
+	bn_grow(a, n);
+	bn_grow(b, n);
+
+	/* The digits above each value are not part of it, and the swap below is
+	 * over a common width, so they are cleared before they travel. */
+	dv_zero(a->dp + a->used, n - a->used);
+	dv_zero(b->dp + b->used, n - b->used);
+
+	dv_swap_sec(a->dp, b->dp, n, bit);
+	ut = (a->used ^ b->used) & um;
+	a->used ^= ut;
+	b->used ^= ut;
+	st = (a->sign ^ b->sign) & sm;
+	a->sign ^= st;
+	b->sign ^= st;
+}
  
 
 void bn_abs(bn_t c, const bn_t a) {

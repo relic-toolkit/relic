@@ -201,6 +201,8 @@
 #undef bn_grow
 #undef bn_trim
 #undef bn_copy
+#undef bn_swap
+#undef bn_swap_sec
 #undef bn_abs
 #undef bn_neg
 #undef bn_sign
@@ -321,6 +323,8 @@
 #define bn_grow 	RLC_PREFIX(bn_grow)
 #define bn_trim 	RLC_PREFIX(bn_trim)
 #define bn_copy 	RLC_PREFIX(bn_copy)
+#define bn_swap 	RLC_PREFIX(bn_swap)
+#define bn_swap_sec 	RLC_PREFIX(bn_swap_sec)
 #define bn_abs 	RLC_PREFIX(bn_abs)
 #define bn_neg 	RLC_PREFIX(bn_neg)
 #define bn_sign 	RLC_PREFIX(bn_sign)

@@ -508,6 +508,17 @@ void bn_copy(bn_t c, const bn_t a);
 void bn_swap(bn_t a, bn_t b);
 
 /**
+ * Exchanges the contents of two multiple precision integers if a bit is set,
+ * and leaves them as they are otherwise. Which of the two happens is not
+ * revealed by the time the call takes, nor by the memory it touches.
+ *
+ * @param[in,out] a			- the first integer.
+ * @param[in,out] b			- the second integer.
+ * @param[in] bit			- the condition bit, either zero or one.
+ */
+void bn_swap_sec(bn_t a, bn_t b, dig_t bit);
+
+/**
  * Returns the absolute value of a multiple precision integer.
  *
  * @param[out] c			- the result.
@@ -1163,7 +1174,8 @@ void bn_mod_pmers(bn_t c, const bn_t a, const bn_t m, const bn_t u);
 
 /**
  * Exponentiates a multiple precision integer modulo a positive integer using
- * the binary method.
+ * the binary method. The modulus may be even, which the other methods do not
+ * accept, as they reduce by an algorithm that needs an odd one.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the basis.
@@ -1174,7 +1186,8 @@ void bn_mxp_basic(bn_t c, const bn_t a, const bn_t b, const bn_t m);
 
 /**
  * Exponentiates a multiple precision integer modulo a positive integer using
- * the sliding window method.
+ * the sliding window method. An even modulus is handed to bn_mxp_basic, as the
+ * window needs a reduction that takes an odd one.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the basis.
@@ -1185,7 +1198,9 @@ void bn_mxp_slide(bn_t c, const bn_t a, const bn_t b, const bn_t m);
 
 /**
  * Exponentiates a multiple precision integer modulo a positive integer using
- * the constant-time Montgomery powering ladder method.
+ * the constant-time Montgomery powering ladder method. An even modulus is
+ * handed to bn_mxp_basic, which is not constant time, as the ladder needs a
+ * reduction that takes an odd one.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the basis.
