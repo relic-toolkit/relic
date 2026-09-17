@@ -222,24 +222,27 @@ void bn_set_dig(bn_t a, dig_t digit) {
 }
 
 void bn_set_int(bn_t a, int value) {
-	int sign = RLC_POS;
-
-	if (value < 0) {
-		sign = RLC_NEG;
-		value = -value;
-	}
+	/* The magnitude is taken in unsigned arithmetic, as the most negative
+	 * value has no positive counterpart. */
+	unsigned int v = (value < 0 ? 0U - (unsigned int)value : (unsigned int)value);
+	size_t i = 0;
 
 	bn_zero(a);
-	while (value > 0) {
-		bn_lsh(a, a, RLC_DIG);
-		bn_add_dig(a, a, (value & RLC_MASK(RLC_DIG)));
-		if (sizeof(dig_t) < sizeof(int)) {
-			value = value >> RLC_DIG;
+	/* The digits come out least significant first, so each one is written at
+	 * its own position instead of being shifted into place. */
+	while (v > 0) {
+		bn_grow(a, i + 1);
+		a->dp[i++] = (dig_t)(v & RLC_MASK(RLC_DIG));
+		if (RLC_DIG < sizeof(v) * 8) {
+			/* The count is reduced modulo the width so that it stays inside
+			 * the type in the branch that a wide digit never takes. */
+			v >>= RLC_DIG % (sizeof(v) * 8);
 		} else {
-			value = 0;
+			v = 0;
 		}
 	}
-	a->sign = sign;
+	a->used = RLC_MAX(i, 1);
+	a->sign = (value < 0 ? RLC_NEG : RLC_POS);
 }
 
 void bn_set_2b(bn_t a, size_t b) {

@@ -1111,9 +1111,8 @@ void bn_gcd_lower(bn_t c, const bn_t a, const bn_t b) {
 void bn_gcd_ext_lower(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 	bn_t u, v, g, s, t;
 	bn_st *ps, *pt;
-	const bn_st *pu, *pv;
 	size_t un, vn;
-	int su, sv, sn, sgn_a, sgn_b;
+	int su, sv, sn, sgn_a, sgn_b, swap;
   
 	/* mpn_gcdext rejects a zero operand, so dispose of those first. */
 	/*
@@ -1170,26 +1169,21 @@ void bn_gcd_ext_lower(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 		 * Whichever operand takes the role of U gets the cofactor S that
 		 * mpn_gcdext returns; the other one gets T.
 		 */
-		if (a->used >= b->used) {
-			pu = a;
-			pv = b;
+		swap = (a->used < b->used);
+		if (!swap) {
 			ps = d;
 			pt = e;
 			su = sgn_a;
 			sv = sgn_b;
-			bn_abs(u, a);
-			bn_abs(v, b);
 		} else {
 			/* swap the buffers so that u holds U and v holds V */
-			pu = b;
-			pv = a;
 			ps = e;
 			pt = d;
 			su = sgn_b;
 			sv = sgn_a;
-			bn_abs(u, b);
-			bn_abs(v, a);
 		}
+		bn_abs(u, swap ? b : a);
+		bn_abs(v, swap ? a : b);
 		un = u->used;
 		vn = v->used;
  
@@ -1209,8 +1203,8 @@ void bn_gcd_ext_lower(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 			 * T = (G - U*S)/V.  Both operands were destroyed by mpn_gcdext, so
 			 * rebuild the magnitudes from the untouched inputs.
 			 */
-			bn_abs(u, pu);
-			bn_abs(v, pv);
+			bn_abs(u, swap ? b : a);
+			bn_abs(v, swap ? a : b);
 			bn_mul_sub(t, g, u, s);
 			bn_div_exc(t, t, v);
 		}

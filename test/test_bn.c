@@ -275,6 +275,14 @@ static int util(void) {
 			bn_add_dig(a, a, 1);
 			bn_set_int(b, -(1 << (bits % (8 * sizeof(int) - 1))) + 1);
 			TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
+			/* the loop above stays inside a digit, so a value wider than
+			 * that is read from a string and compared apart */
+			bn_read_str(a, "123456", 6, 16);
+			bn_set_int(b, 0x123456);
+			TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
+			bn_neg(a, a);
+			bn_set_int(b, -0x123456);
+			TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
 			bits++;
 			bits %= (RLC_DIG);
 		} TEST_END;
