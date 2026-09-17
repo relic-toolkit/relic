@@ -829,7 +829,7 @@ void bn_mul_dig(bn_t c, const bn_t a, dig_t b);
 
 /**
  * Multiplies a multiple precision integer by a signed digit.
- Computes c = a * b.
+ * Computes c = a * b.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the multiple precision integer to multiply.
@@ -1460,6 +1460,16 @@ int bn_smb_leg(const bn_t a, const bn_t b);
  * @return the result.
  */
 int bn_smb_jac(const bn_t a, const bn_t b);
+
+/**
+ * Returns the small prime at a position of the table of small primes used for
+ * trial division. The table is sorted in increasing order, and its first
+ * entries are also useful as fixed bases in a primality test.
+ *
+ * @param[in] i				- the position in the table.
+ * @return the prime at that position, or 0 if the position is out of bounds.
+ */
+dig_t bn_get_prime(size_t i);
 
 /**
  * Tests if a number is a probable prime.
