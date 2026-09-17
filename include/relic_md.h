@@ -39,6 +39,7 @@
 #include "relic_conf.h"
 #include "relic_types.h"
 #include "relic_label.h"
+#include "relic_bn.h"
 
 /*============================================================================*/
 /* Constant definitions                                                       */
@@ -270,5 +271,70 @@ void md_xmd_sh384(uint8_t *buf, size_t buf_len, const uint8_t *in,
  */
 void md_xmd_sh512(uint8_t *buf, size_t buf_len, const uint8_t *in,
 		size_t in_len, const uint8_t *dst, size_t dst_len);
+
+/** Size in bytes of a block produced by the BLAKE2s-based XOF. */
+#define RLC_XOF_LEN			32
+
+/**
+ * A BLAKE2s-based extensible-output function context. A message is absorbed
+ * once at initialization, and pseudorandom bytes can then be squeezed out
+ * incrementally, with no bound on the total output length fixed in advance,
+ * unlike md_xmd.
+ */
+typedef struct {
+	/** the root hash the message was absorbed into. */
+	uint8_t root[RLC_XOF_LEN];
+	/** the most recently derived output block. */
+	uint8_t block[RLC_XOF_LEN];
+	/** number of unread bytes left in the current block. */
+	size_t pos;
+	/** index of the next block to derive from the root. */
+	uint32_t ctr;
+} xof_t;
+
+/**
+ * Initializes an XOF by absorbing a message, so that an unbounded number of
+ * pseudorandom bytes can subsequently be read from it.
+ *
+ * @param[out] ctx				- the XOF context.
+ * @param[in] in				- the message to absorb.
+ * @param[in] in_len			- the message length in bytes.
+ */
+void md_xof_init(xof_t *ctx, const uint8_t *in, size_t in_len);
+
+/**
+ * Reads the next pseudorandom bytes out of an XOF context.
+ *
+ * @param[out] out				- the output buffer.
+ * @param[in] out_len			- the number of bytes to read.
+ * @param[in, out] ctx			- the XOF context.
+ */
+void md_xof_bytes(uint8_t *out, size_t out_len, xof_t *ctx);
+
+/**
+ * Reads a value in [0, 1) out of an XOF context.
+ *
+ * @param[in, out] ctx				- the XOF context.
+ * @return a pseudorandom double in [0, 1).
+ */
+double md_xof_double(xof_t *ctx);
+
+/**
+ * Reads an integer in [0, n) out of an XOF context.
+ *
+ * @param[in, out] ctx				- the XOF context.
+ * @param[in] n						- the exclusive upper bound.
+ * @return a pseudorandom integer in [0, n).
+ */
+size_t md_xof_int(xof_t *ctx, size_t n);
+
+/**
+ * Reads a value in [0, 2^bits) out of an XOF context.
+ *
+ * @param[out] r					- the resulting integer.
+ * @param[in] bits					- the number of bits.
+ * @param[in, out] ctx				- the XOF context.
+ */
+void md_xof_bits(bn_t r, size_t bits, xof_t *ctx);
 
 #endif /* !RLC_MD_H */
