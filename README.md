@@ -42,6 +42,14 @@ For the pairing delegation protocols, look for the corresponding entries in the 
 You can probably get some help over the official mailing list at `relic-discuss@googlegroups.com`
 
 If you like the library, please consider supporting development through [Paypal](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=R7D6ZE3BLMTF2&lc=BR&item_name=RELIC%20Development&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted).
+If you use our work in your research, please cite as
+```
+@misc{relic-toolkit,
+    author = {D. F. Aranha and C. P. L. Gouvêa and T. Markmann and R. S. Wahby and K. Liao},
+    title = {{RELIC is an Efficient LIbrary for Cryptography}},
+    howpublished = {\url{https://github.com/relic-toolkit/relic}},
+}
+```
 
 ### Licensing
 
