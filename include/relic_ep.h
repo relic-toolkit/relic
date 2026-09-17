@@ -719,6 +719,8 @@ void ep_param_set(int param);
 
 /**
  * Configures some set of curve parameters for the current security level.
+ *
+ * @return RLC_OK if there is a curve at this security level, RLC_ERR otherwise.
  */
 int ep_param_set_any(void);
 
