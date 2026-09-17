@@ -164,6 +164,8 @@
 #undef dv_swap_sec
 #undef dv_cmp
 #undef dv_cmp_sec
+#undef dv_equ
+#undef dv_equ_sec
 #undef dv_new_dynam
 #undef dv_free_dynam
 #undef dv_lshd
@@ -176,6 +178,8 @@
 #define dv_swap_sec 	RLC_PREFIX(dv_swap_sec)
 #define dv_cmp 	RLC_PREFIX(dv_cmp)
 #define dv_cmp_sec 	RLC_PREFIX(dv_cmp_sec)
+#define dv_equ 	RLC_PREFIX(dv_equ)
+#define dv_equ_sec 	RLC_PREFIX(dv_equ_sec)
 #define dv_new_dynam 	RLC_PREFIX(dv_new_dynam)
 #define dv_free_dynam 	RLC_PREFIX(dv_free_dynam)
 #define dv_lshd 	RLC_PREFIX(dv_lshd)
@@ -228,6 +232,7 @@
 #undef bn_sub
 #undef bn_sub_dig
 #undef bn_mul_dig
+#undef bn_mul_dis
 #undef bn_mul_basic
 #undef bn_mul_comba
 #undef bn_mul_karat
@@ -268,15 +273,19 @@
 #undef bn_gcd_basic
 #undef bn_gcd_lehme
 #undef bn_gcd_binar
+#undef bn_gcd_lower
 #undef bn_gcd_dig
 #undef bn_gcd_ext_basic
 #undef bn_gcd_ext_lehme
+#undef bn_gcd_ext_lower
 #undef bn_gcd_ext_binar
 #undef bn_gcd_ext_mid
+#undef bn_gcd_ext_par
 #undef bn_gcd_ext_dig
 #undef bn_lcm
 #undef bn_smb_leg
 #undef bn_smb_jac
+#undef bn_smb_kro_dig
 #undef bn_is_prime
 #undef bn_is_prime_basic
 #undef bn_is_prime_rabin
@@ -343,6 +352,7 @@
 #define bn_sub 	RLC_PREFIX(bn_sub)
 #define bn_sub_dig 	RLC_PREFIX(bn_sub_dig)
 #define bn_mul_dig 	RLC_PREFIX(bn_mul_dig)
+#define bn_mul_dis 	RLC_PREFIX(bn_mul_dis)
 #define bn_mul_basic 	RLC_PREFIX(bn_mul_basic)
 #define bn_mul_comba 	RLC_PREFIX(bn_mul_comba)
 #define bn_mul_karat 	RLC_PREFIX(bn_mul_karat)
@@ -383,15 +393,19 @@
 #define bn_gcd_basic 	RLC_PREFIX(bn_gcd_basic)
 #define bn_gcd_lehme 	RLC_PREFIX(bn_gcd_lehme)
 #define bn_gcd_binar 	RLC_PREFIX(bn_gcd_binar)
+#define bn_gcd_lower 	RLC_PREFIX(bn_gcd_lower)
 #define bn_gcd_dig 	RLC_PREFIX(bn_gcd_dig)
 #define bn_gcd_ext_basic 	RLC_PREFIX(bn_gcd_ext_basic)
 #define bn_gcd_ext_lehme 	RLC_PREFIX(bn_gcd_ext_lehme)
+#define bn_gcd_ext_lower 	RLC_PREFIX(bn_gcd_ext_lower)
 #define bn_gcd_ext_binar 	RLC_PREFIX(bn_gcd_ext_binar)
 #define bn_gcd_ext_mid 	RLC_PREFIX(bn_gcd_ext_mid)
+#define bn_gcd_ext_par 	RLC_PREFIX(bn_gcd_ext_par)
 #define bn_gcd_ext_dig 	RLC_PREFIX(bn_gcd_ext_dig)
 #define bn_lcm 	RLC_PREFIX(bn_lcm)
 #define bn_smb_leg 	RLC_PREFIX(bn_smb_leg)
 #define bn_smb_jac 	RLC_PREFIX(bn_smb_jac)
+#define bn_smb_kro_dig 	RLC_PREFIX(bn_smb_kro_dig)
 #define bn_is_prime 	RLC_PREFIX(bn_is_prime)
 #define bn_is_prime_basic 	RLC_PREFIX(bn_is_prime_basic)
 #define bn_is_prime_rabin 	RLC_PREFIX(bn_is_prime_rabin)
@@ -423,7 +437,6 @@
 #undef bn_sub1_low
 #undef bn_subn_low
 #undef bn_negs_low
-#undef bn_cmp1_low
 #undef bn_cmpn_low
 #undef bn_lsh1_low
 #undef bn_lshb_low
@@ -440,13 +453,15 @@
 #undef bn_divn_low
 #undef bn_div1_low
 #undef bn_modn_low
+#undef bn_gcdn_low
+#undef bn_gcde_low
+#undef bn_gcdh_low
 
 #define bn_add1_low 	RLC_PREFIX(bn_add1_low)
 #define bn_addn_low 	RLC_PREFIX(bn_addn_low)
 #define bn_sub1_low 	RLC_PREFIX(bn_sub1_low)
 #define bn_subn_low 	RLC_PREFIX(bn_subn_low)
 #define bn_negs_low 	RLC_PREFIX(bn_negs_low)
-#define bn_cmp1_low 	RLC_PREFIX(bn_cmp1_low)
 #define bn_cmpn_low 	RLC_PREFIX(bn_cmpn_low)
 #define bn_lsh1_low 	RLC_PREFIX(bn_lsh1_low)
 #define bn_lshb_low 	RLC_PREFIX(bn_lshb_low)
@@ -463,6 +478,9 @@
 #define bn_divn_low 	RLC_PREFIX(bn_divn_low)
 #define bn_div1_low 	RLC_PREFIX(bn_div1_low)
 #define bn_modn_low 	RLC_PREFIX(bn_modn_low)
+#define bn_gcdn_low 	RLC_PREFIX(bn_gcdn_low)
+#define bn_gcde_low 	RLC_PREFIX(bn_gcde_low)
+#define bn_gcdh_low 	RLC_PREFIX(bn_gcdh_low)
 
 #undef fp_st
 #undef fp_t
@@ -3081,7 +3099,7 @@
 #undef pp_add_k54_basic
 #undef pp_add_k54_projc
 #undef pp_dbl_k1_basic
- #undef pp_dbl_k1_projc
+#undef pp_dbl_k1_projc
 #undef pp_dbl_k2_basic
 #undef pp_dbl_k2_projc_basic
 #undef pp_dbl_k2_projc_lazyr
@@ -3186,7 +3204,7 @@
 #define pp_add_k54_basic 	RLC_PREFIX(pp_add_k54_basic)
 #define pp_add_k54_projc 	RLC_PREFIX(pp_add_k54_projc)
 #define pp_dbl_k1_basic 	RLC_PREFIX(pp_dbl_k1_basic)
- #define pp_dbl_k1_projc 	RLC_PREFIX(pp_dbl_k1_projc)
+#define pp_dbl_k1_projc 	RLC_PREFIX(pp_dbl_k1_projc)
 #define pp_dbl_k2_basic 	RLC_PREFIX(pp_dbl_k2_basic)
 #define pp_dbl_k2_projc_basic 	RLC_PREFIX(pp_dbl_k2_projc_basic)
 #define pp_dbl_k2_projc_lazyr 	RLC_PREFIX(pp_dbl_k2_projc_lazyr)
