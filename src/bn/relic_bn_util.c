@@ -180,7 +180,6 @@ void bn_set_int(bn_t a, int value) {
 	}
 
 	bn_zero(a);
-	printf("%d\n", value);
 	while (value > 0) {
 		bn_lsh(a, a, RLC_DIG);
 		bn_add_dig(a, a, (value & RLC_MASK(RLC_DIG)));
