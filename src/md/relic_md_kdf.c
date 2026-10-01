@@ -46,9 +46,13 @@ static void nist_kdf(uint8_t *key, size_t key_len, const uint8_t *in,
 	uint8_t *buffer = NULL, hash[RLC_MD_LEN];
 	size_t out_len = 0;
 
-	if (((key_len >> 32) > RLC_MD_LEN) ||
+	if ((key_len / RLC_MD_LEN >= UINT32_MAX - value) ||
 		(in_len + sizeof(uint32_t) < in_len)) {
 		RLC_THROW(ERR_NO_VALID);
+		return;
+	}
+
+	if (key_len == 0) {
 		return;
 	}
 
