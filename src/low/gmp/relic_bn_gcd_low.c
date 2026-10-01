@@ -141,7 +141,7 @@ size_t bn_gcdh_low(dig_t *u00, dig_t *u01, dig_t *u10, dig_t *u11, size_t *sm,
 	mp_ptr ap = (mp_ptr)a, bp = (mp_ptr)b;
 	mp_ptr v00 = (mp_ptr)u00, v01 = (mp_ptr)u01;
 	mp_ptr v10 = (mp_ptr)u10, v11 = (mp_ptr)u11;
-	mp_ptr t0 = RLC_ALLOCA(dig_t, 4 * (size + 2));
+	mp_ptr t0 = RLC_ALLOCA(mp_limb_t, 4 * (size + 2));
 	mp_ptr t1 = t0 + 2 * (size + 2), t2 = t1 + size + 2;
 
 	dv_zero((dig_t *)v00, size + 1);
