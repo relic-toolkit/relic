@@ -423,7 +423,8 @@ void bn_read_str(bn_t a, const char *str, size_t len, uint_t radix) {
 	}
 
 	RLC_TRY {
-		bn_grow(a, RLC_CEIL(len * util_bits_dig(radix), RLC_DIG));
+		bn_grow(a, RLC_MIN(RLC_CEIL(len * util_bits_dig(radix - 1), RLC_DIG),
+				RLC_BN_SIZE));
 
 		while (j < len) {
 			if (str[j] == 0) {
