@@ -41,14 +41,10 @@
 void fp2_sqr_basic(fp2_t c, const fp2_t a) {
 	fp_t t0, t1, t2;
 
-	fp_null(t0);
-	fp_null(t1);
-	fp_null(t2);
+	fp_null_all(t0, t1, t2);
 
 	RLC_TRY {
-		fp_new(t0);
-		fp_new(t1);
-		fp_new(t2);
+		fp_new_all(t0, t1, t2);
 
 		/* t0 = (a_0 + a_1). */
 		fp_add(t0, a[0], a[1]);
@@ -92,9 +88,7 @@ void fp2_sqr_basic(fp2_t c, const fp2_t a) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		fp_free(t0);
-		fp_free(t1);
-		fp_free(t2);
+		fp_free_all(t0, t1, t2);
 	}
 }
 

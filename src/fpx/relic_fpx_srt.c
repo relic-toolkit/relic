@@ -67,8 +67,7 @@ int fp2_srt(fp2_t c, const fp2_t a) {
 	fp2_t t, u;
 
 	bn_null(e);
-	fp2_null(t);
-	fp2_null(u);
+	fp2_null_all(t, u);
 
 	if (fp2_is_zero(a)) {
 		fp2_zero(c);
@@ -77,8 +76,7 @@ int fp2_srt(fp2_t c, const fp2_t a) {
 
 	RLC_TRY {
 		bn_new(e);
-		fp2_new(t);
-		fp2_new(u);
+		fp2_new_all(t, u);
 
 		if (fp_prime_get_mod8() % 4 == 3) {
 			/* "From Optimized One-Dimensional SQIsign Verification on Intel and
@@ -176,8 +174,7 @@ int fp2_srt(fp2_t c, const fp2_t a) {
 	}
 	RLC_FINALLY {
 		bn_free(e);
-		fp2_free(t);
-		fp2_free(u);
+		fp2_free_all(t, u);
 	}
 	return r;
 }
@@ -186,12 +183,10 @@ int fp3_is_sqr(const fp3_t a) {
 	fp3_t t, u;
 	int r;
 
-	fp3_null(t);
-	fp3_null(u);
+	fp3_null_all(t, u);
 
 	RLC_TRY {
-		fp3_new(t);
-		fp3_new(u);
+		fp3_new_all(t, u);
 
 		fp3_frb(u, a, 1);
 		fp3_mul(t, u, a);
@@ -201,8 +196,7 @@ int fp3_is_sqr(const fp3_t a) {
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		fp3_free(t);
-		fp3_free(u);
+		fp3_free_all(t, u);
 	}
 
 	return r;
@@ -215,12 +209,8 @@ int fp3_srt(fp3_t c, const fp3_t a) {
 	bn_t d, e;
 
 	fp_null(root);
-	fp3_null(t0);
-	fp3_null(t1);
-	fp3_null(t2);
-	fp3_null(t3);
-	bn_null(d);
-	bn_null(e);
+	fp3_null_all(t0, t1, t2, t3);
+	bn_null_all(d, e);
 
 	if (fp3_is_zero(a)) {
 		fp3_zero(c);
@@ -229,12 +219,8 @@ int fp3_srt(fp3_t c, const fp3_t a) {
 
 	RLC_TRY {
 		fp_new(root);
-		fp3_new(t0);
-		fp3_new(t1);
-		fp3_new(t2);
-		fp3_new(t3);
-		bn_new(d);
-		bn_new(e);
+		fp3_new_all(t0, t1, t2, t3);
+		bn_new_all(d, e);
 
 		e->used = RLC_FP_DIGS;
 		dv_copy(e->dp, fp_prime_get(), RLC_FP_DIGS);
@@ -337,12 +323,8 @@ int fp3_srt(fp3_t c, const fp3_t a) {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		fp_free(root);
-		fp3_free(t0);
-		fp3_free(t1);
-		fp3_free(t2);
-		fp3_free(t3);
-		bn_free(d);
-		bn_free(e);
+		fp3_free_all(t0, t1, t2, t3);
+		bn_free_all(d, e);
 	}
 
 	return r;
@@ -352,12 +334,10 @@ int fp4_is_sqr(const fp4_t a) {
 	fp4_t t, u;
 	int r;
 
-	fp4_null(t);
-	fp4_null(u);
+	fp4_null_all(t, u);
 
 	RLC_TRY {
-		fp4_new(t);
-		fp4_new(u);
+		fp4_new_all(t, u);
 
 		fp4_frb(u, a, 1);
 		fp4_mul(t, u, a);
@@ -369,8 +349,7 @@ int fp4_is_sqr(const fp4_t a) {
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		fp4_free(t);
-		fp4_free(u);
+		fp4_free_all(t, u);
 	}
 
 	return r;
@@ -380,9 +359,7 @@ int fp4_srt(fp4_t c, const fp4_t a) {
 	int c0, r = 0;
 	fp2_t t0, t1, t2;
 
-	fp2_null(t0);
-	fp2_null(t1);
-	fp2_null(t2);
+	fp2_null_all(t0, t1, t2);
 
 	if (fp4_is_zero(a)) {
 		fp4_zero(c);
@@ -390,9 +367,7 @@ int fp4_srt(fp4_t c, const fp4_t a) {
 	}
 
 	RLC_TRY {
-		fp2_new(t0);
-		fp2_new(t1);
-		fp2_new(t2);
+		fp2_new_all(t0, t1, t2);
 
 		if (fp2_is_zero(a[1])) {
 			/* special case: either a[0] is square and sqrt is purely 'real'
@@ -447,9 +422,7 @@ int fp4_srt(fp4_t c, const fp4_t a) {
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		fp2_free(t0);
-		fp2_free(t1);
-		fp2_free(t2);
+		fp2_free_all(t0, t1, t2);
 	}
 	return r;
 }
@@ -458,12 +431,10 @@ int fp8_is_sqr(const fp8_t a) {
 	fp8_t t, u;
 	int r;
 
-	fp8_null(t);
-	fp8_null(u);
+	fp8_null_all(t, u);
 
 	RLC_TRY {
-		fp8_new(t);
-		fp8_new(u);
+		fp8_new_all(t, u);
 
 		fp8_frb(u, a, 1);
 		fp8_mul(t, u, a);
@@ -475,8 +446,7 @@ int fp8_is_sqr(const fp8_t a) {
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		fp8_free(t);
-		fp8_free(u);
+		fp8_free_all(t, u);
 	}
 
 	return r;
@@ -486,9 +456,7 @@ int fp8_srt(fp8_t c, const fp8_t a) {
 	int c0, r = 0;
 	fp4_t t0, t1, t2;
 
-	fp4_null(t0);
-	fp4_null(t1);
-	fp4_null(t2);
+	fp4_null_all(t0, t1, t2);
 
 	if (fp8_is_zero(a)) {
 		fp8_zero(c);
@@ -496,9 +464,7 @@ int fp8_srt(fp8_t c, const fp8_t a) {
 	}
 
 	RLC_TRY {
-		fp4_new(t0);
-		fp4_new(t1);
-		fp4_new(t2);
+		fp4_new_all(t0, t1, t2);
 
 		if (fp4_is_zero(a[1])) {
 			/* special case: either a[0] is square and sqrt is purely 'real'
@@ -557,9 +523,7 @@ int fp8_srt(fp8_t c, const fp8_t a) {
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		fp4_free(t0);
-		fp4_free(t1);
-		fp4_free(t2);
+		fp4_free_all(t0, t1, t2);
 	}
 	return r;
 }
@@ -568,12 +532,10 @@ int fp16_is_sqr(const fp16_t a) {
 	fp16_t t, u;
 	int r;
 
-	fp16_null(t);
-	fp16_null(u);
+	fp16_null_all(t, u);
 
 	RLC_TRY {
-		fp16_new(t);
-		fp16_new(u);
+		fp16_new_all(t, u);
 
 		fp16_frb(u, a, 1);
 		fp16_mul(t, u, a);
@@ -585,8 +547,7 @@ int fp16_is_sqr(const fp16_t a) {
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		fp16_free(t);
-		fp16_free(u);
+		fp16_free_all(t, u);
 	}
 
 	return r;
@@ -596,9 +557,7 @@ int fp16_srt(fp16_t c, const fp16_t a) {
 	int c0, r = 0;
 	fp8_t t0, t1, t2;
 
-	fp8_null(t0);
-	fp8_null(t1);
-	fp8_null(t2);
+	fp8_null_all(t0, t1, t2);
 
 	if (fp16_is_zero(a)) {
 		fp16_zero(c);
@@ -606,9 +565,7 @@ int fp16_srt(fp16_t c, const fp16_t a) {
 	}
 
 	RLC_TRY {
-		fp8_new(t0);
-		fp8_new(t1);
-		fp8_new(t2);
+		fp8_new_all(t0, t1, t2);
 
 		if (fp8_is_zero(a[1])) {
 			/* special case: either a[0] is square and sqrt is purely 'real'
@@ -674,9 +631,7 @@ int fp16_srt(fp16_t c, const fp16_t a) {
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		fp8_free(t0);
-		fp8_free(t1);
-		fp8_free(t2);
+		fp8_free_all(t0, t1, t2);
 	}
 	return r;
 }

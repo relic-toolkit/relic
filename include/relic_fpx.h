@@ -284,6 +284,21 @@ typedef fp18_t fp54_t[3];
 		fp_free(A[0]); fp_free(A[1]); 										\
 
 /**
+ * Initializes, allocates or frees up to sixteen elements of this extension
+ * field at once, in order. The dv2_ variants act on double-precision ones.
+ *
+ * @param[in,out] ...		- the extension field elements.
+ */
+/** @{ */
+#define dv2_null_all(...)	RLC_EACH(dv2_null, __VA_ARGS__)
+#define dv2_new_all(...)		RLC_EACH(dv2_new, __VA_ARGS__)
+#define dv2_free_all(...)	RLC_EACH(dv2_free, __VA_ARGS__)
+#define fp2_null_all(...)	RLC_EACH(fp2_null, __VA_ARGS__)
+#define fp2_new_all(...)		RLC_EACH(fp2_new, __VA_ARGS__)
+#define fp2_free_all(...)	RLC_EACH(fp2_free, __VA_ARGS__)
+/** @} */
+
+/**
  * Adds two quadratic extension field elements. Computes C = A + B.
  *
  * @param[out] C			- the result.
@@ -411,6 +426,21 @@ typedef fp18_t fp54_t[3];
 		fp_free(A[0]); fp_free(A[1]); fp_free(A[2]);						\
 
 /**
+ * Initializes, allocates or frees up to sixteen elements of this extension
+ * field at once, in order. The dv3_ variants act on double-precision ones.
+ *
+ * @param[in,out] ...		- the extension field elements.
+ */
+/** @{ */
+#define dv3_null_all(...)	RLC_EACH(dv3_null, __VA_ARGS__)
+#define dv3_new_all(...)		RLC_EACH(dv3_new, __VA_ARGS__)
+#define dv3_free_all(...)	RLC_EACH(dv3_free, __VA_ARGS__)
+#define fp3_null_all(...)	RLC_EACH(fp3_null, __VA_ARGS__)
+#define fp3_new_all(...)		RLC_EACH(fp3_new, __VA_ARGS__)
+#define fp3_free_all(...)	RLC_EACH(fp3_free, __VA_ARGS__)
+/** @} */
+
+/**
  * Adds two cubic extension field elements. Computes C = A + B.
  *
  * @param[out] C			- the result.
@@ -523,6 +553,21 @@ typedef fp18_t fp54_t[3];
 		fp2_free(A[0]); fp2_free(A[1]);										\
 
 /**
+ * Initializes, allocates or frees up to sixteen elements of this extension
+ * field at once, in order. The dv4_ variants act on double-precision ones.
+ *
+ * @param[in,out] ...		- the extension field elements.
+ */
+/** @{ */
+#define dv4_null_all(...)	RLC_EACH(dv4_null, __VA_ARGS__)
+#define dv4_new_all(...)		RLC_EACH(dv4_new, __VA_ARGS__)
+#define dv4_free_all(...)	RLC_EACH(dv4_free, __VA_ARGS__)
+#define fp4_null_all(...)	RLC_EACH(fp4_null, __VA_ARGS__)
+#define fp4_new_all(...)		RLC_EACH(fp4_new, __VA_ARGS__)
+#define fp4_free_all(...)	RLC_EACH(fp4_free, __VA_ARGS__)
+/** @} */
+
+/**
  * Multiplies two quartic extension field elements. Computes C = A * B.
  *
  * @param[out] C			- the result.
@@ -594,6 +639,21 @@ typedef fp18_t fp54_t[3];
  */
 #define fp6_free(A)															\
 		fp2_free(A[0]); fp2_free(A[1]); fp2_free(A[2]); 					\
+
+/**
+ * Initializes, allocates or frees up to sixteen elements of this extension
+ * field at once, in order. The dv6_ variants act on double-precision ones.
+ *
+ * @param[in,out] ...		- the extension field elements.
+ */
+/** @{ */
+#define dv6_null_all(...)	RLC_EACH(dv6_null, __VA_ARGS__)
+#define dv6_new_all(...)		RLC_EACH(dv6_new, __VA_ARGS__)
+#define dv6_free_all(...)	RLC_EACH(dv6_free, __VA_ARGS__)
+#define fp6_null_all(...)	RLC_EACH(fp6_null, __VA_ARGS__)
+#define fp6_new_all(...)		RLC_EACH(fp6_new, __VA_ARGS__)
+#define fp6_free_all(...)	RLC_EACH(fp6_free, __VA_ARGS__)
+/** @} */
 
 /**
  * Multiplies two sextic extension field elements. Computes C = A * B.
@@ -669,6 +729,21 @@ typedef fp18_t fp54_t[3];
 		fp4_free(A[0]); fp4_free(A[1]);										\
 
 /**
+ * Initializes, allocates or frees up to sixteen elements of this extension
+ * field at once, in order. The dv8_ variants act on double-precision ones.
+ *
+ * @param[in,out] ...		- the extension field elements.
+ */
+/** @{ */
+#define dv8_null_all(...)	RLC_EACH(dv8_null, __VA_ARGS__)
+#define dv8_new_all(...)		RLC_EACH(dv8_new, __VA_ARGS__)
+#define dv8_free_all(...)	RLC_EACH(dv8_free, __VA_ARGS__)
+#define fp8_null_all(...)	RLC_EACH(fp8_null, __VA_ARGS__)
+#define fp8_new_all(...)		RLC_EACH(fp8_new, __VA_ARGS__)
+#define fp8_free_all(...)	RLC_EACH(fp8_free, __VA_ARGS__)
+/** @} */
+
+/**
  * Multiplies two octic extension field elements. Computes C = A * B.
  *
  * @param[out] C			- the result.
@@ -742,6 +817,21 @@ typedef fp18_t fp54_t[3];
 		fp3_free(A[0]); fp3_free(A[1]); fp3_free(A[2]);						\
 
 /**
+ * Initializes, allocates or frees up to sixteen elements of this extension
+ * field at once, in order. The dv9_ variants act on double-precision ones.
+ *
+ * @param[in,out] ...		- the extension field elements.
+ */
+/** @{ */
+#define dv9_null_all(...)	RLC_EACH(dv9_null, __VA_ARGS__)
+#define dv9_new_all(...)		RLC_EACH(dv9_new, __VA_ARGS__)
+#define dv9_free_all(...)	RLC_EACH(dv9_free, __VA_ARGS__)
+#define fp9_null_all(...)	RLC_EACH(fp9_null, __VA_ARGS__)
+#define fp9_new_all(...)		RLC_EACH(fp9_new, __VA_ARGS__)
+#define fp9_free_all(...)	RLC_EACH(fp9_free, __VA_ARGS__)
+/** @} */
+
+/**
  * Multiplies two nonic extension field elements. Computes C = A * B.
  *
  * @param[out] C			- the result.
@@ -813,6 +903,21 @@ typedef fp18_t fp54_t[3];
  */
 #define fp12_free(A)														\
 		fp6_free(A[0]); fp6_free(A[1]); 									\
+
+/**
+ * Initializes, allocates or frees up to sixteen elements of this extension
+ * field at once, in order. The dv12_ variants act on double-precision ones.
+ *
+ * @param[in,out] ...		- the extension field elements.
+ */
+/** @{ */
+#define dv12_null_all(...)	RLC_EACH(dv12_null, __VA_ARGS__)
+#define dv12_new_all(...)		RLC_EACH(dv12_new, __VA_ARGS__)
+#define dv12_free_all(...)	RLC_EACH(dv12_free, __VA_ARGS__)
+#define fp12_null_all(...)	RLC_EACH(fp12_null, __VA_ARGS__)
+#define fp12_new_all(...)		RLC_EACH(fp12_new, __VA_ARGS__)
+#define fp12_free_all(...)	RLC_EACH(fp12_free, __VA_ARGS__)
+/** @} */
 
 /**
  * Multiplies two dodecic extension field elements. Computes C = A * B.
@@ -928,6 +1033,21 @@ typedef fp18_t fp54_t[3];
 		fp8_free(A[0]); fp8_free(A[1]);										\
 
 /**
+ * Initializes, allocates or frees up to sixteen elements of this extension
+ * field at once, in order. The dv16_ variants act on double-precision ones.
+ *
+ * @param[in,out] ...		- the extension field elements.
+ */
+/** @{ */
+#define dv16_null_all(...)	RLC_EACH(dv16_null, __VA_ARGS__)
+#define dv16_new_all(...)		RLC_EACH(dv16_new, __VA_ARGS__)
+#define dv16_free_all(...)	RLC_EACH(dv16_free, __VA_ARGS__)
+#define fp16_null_all(...)	RLC_EACH(fp16_null, __VA_ARGS__)
+#define fp16_new_all(...)		RLC_EACH(fp16_new, __VA_ARGS__)
+#define fp16_free_all(...)	RLC_EACH(fp16_free, __VA_ARGS__)
+/** @} */
+
+/**
  * Multiplies two sextadecic extension field elements. Computes C = A * B.
  *
  * @param[out] C			- the result.
@@ -1013,6 +1133,21 @@ typedef fp18_t fp54_t[3];
  */
 #define fp18_free(A)														\
 		fp9_free(A[0]); fp9_free(A[1]);										\
+
+/**
+ * Initializes, allocates or frees up to sixteen elements of this extension
+ * field at once, in order. The dv18_ variants act on double-precision ones.
+ *
+ * @param[in,out] ...		- the extension field elements.
+ */
+/** @{ */
+#define dv18_null_all(...)	RLC_EACH(dv18_null, __VA_ARGS__)
+#define dv18_new_all(...)		RLC_EACH(dv18_new, __VA_ARGS__)
+#define dv18_free_all(...)	RLC_EACH(dv18_free, __VA_ARGS__)
+#define fp18_null_all(...)	RLC_EACH(fp18_null, __VA_ARGS__)
+#define fp18_new_all(...)		RLC_EACH(fp18_new, __VA_ARGS__)
+#define fp18_free_all(...)	RLC_EACH(fp18_free, __VA_ARGS__)
+/** @} */
 
 /**
  * Multiplies two octdecic extension field elements. Computes C = A * B.
@@ -1128,6 +1263,21 @@ typedef fp18_t fp54_t[3];
 		fp8_free(A[0]); fp8_free(A[1]); fp8_free(A[2]); 					\
 
 /**
+ * Initializes, allocates or frees up to sixteen elements of this extension
+ * field at once, in order. The dv24_ variants act on double-precision ones.
+ *
+ * @param[in,out] ...		- the extension field elements.
+ */
+/** @{ */
+#define dv24_null_all(...)	RLC_EACH(dv24_null, __VA_ARGS__)
+#define dv24_new_all(...)		RLC_EACH(dv24_new, __VA_ARGS__)
+#define dv24_free_all(...)	RLC_EACH(dv24_free, __VA_ARGS__)
+#define fp24_null_all(...)	RLC_EACH(fp24_null, __VA_ARGS__)
+#define fp24_new_all(...)		RLC_EACH(fp24_new, __VA_ARGS__)
+#define fp24_free_all(...)	RLC_EACH(fp24_free, __VA_ARGS__)
+/** @} */
+
+/**
  * Multiplies two 24-degree extension field elements. Computes C = A * B.
  *
  * @param[out] C			- the result.
@@ -1227,6 +1377,21 @@ typedef fp18_t fp54_t[3];
 		fp24_free(A[0]); fp24_free(A[1]); 									\
 
 /**
+ * Initializes, allocates or frees up to sixteen elements of this extension
+ * field at once, in order. The dv48_ variants act on double-precision ones.
+ *
+ * @param[in,out] ...		- the extension field elements.
+ */
+/** @{ */
+#define dv48_null_all(...)	RLC_EACH(dv48_null, __VA_ARGS__)
+#define dv48_new_all(...)		RLC_EACH(dv48_new, __VA_ARGS__)
+#define dv48_free_all(...)	RLC_EACH(dv48_free, __VA_ARGS__)
+#define fp48_null_all(...)	RLC_EACH(fp48_null, __VA_ARGS__)
+#define fp48_new_all(...)		RLC_EACH(fp48_new, __VA_ARGS__)
+#define fp48_free_all(...)	RLC_EACH(fp48_free, __VA_ARGS__)
+/** @} */
+
+/**
  * Multiplies two 48-degree extension field elements. Computes C = A * B.
  *
  * @param[out] C			- the result.
@@ -1324,6 +1489,21 @@ typedef fp18_t fp54_t[3];
  */
 #define fp54_free(A)														\
 		fp18_free(A[0]); fp18_free(A[1]); fp18_free(A[2]);					\
+
+/**
+ * Initializes, allocates or frees up to sixteen elements of this extension
+ * field at once, in order. The dv54_ variants act on double-precision ones.
+ *
+ * @param[in,out] ...		- the extension field elements.
+ */
+/** @{ */
+#define dv54_null_all(...)	RLC_EACH(dv54_null, __VA_ARGS__)
+#define dv54_new_all(...)		RLC_EACH(dv54_new, __VA_ARGS__)
+#define dv54_free_all(...)	RLC_EACH(dv54_free, __VA_ARGS__)
+#define fp54_null_all(...)	RLC_EACH(fp54_null, __VA_ARGS__)
+#define fp54_new_all(...)		RLC_EACH(fp54_new, __VA_ARGS__)
+#define fp54_free_all(...)	RLC_EACH(fp54_free, __VA_ARGS__)
+/** @} */
 
 /**
  * Multiplies two 54-degree extension field elements. Computes C = A * B.

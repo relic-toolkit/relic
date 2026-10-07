@@ -42,14 +42,10 @@
 void fp16_mul_basic(fp16_t c, const fp16_t a, const fp16_t b) {
 	fp8_t t0, t1, t4;
 
-	fp8_null(t0);
-	fp8_null(t1);
-	fp8_null(t4);
+	fp8_null_all(t0, t1, t4);
 
 	RLC_TRY {
-		fp8_new(t0);
-		fp8_new(t1);
-		fp8_new(t4);
+		fp8_new_all(t0, t1, t4);
 
 		/* Karatsuba algorithm. */
 
@@ -74,23 +70,17 @@ void fp16_mul_basic(fp16_t c, const fp16_t a, const fp16_t b) {
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		fp8_free(t0);
-		fp8_free(t1);
-		fp8_free(t4);
+		fp8_free_all(t0, t1, t4);
 	}
 }
 
 void fp16_mul_dxs_basic(fp16_t c, const fp16_t a, const fp16_t b) {
 	fp8_t t0, t1, t4;
 
-	fp8_null(t0);
-	fp8_null(t1);
-	fp8_null(t4);
+	fp8_null_all(t0, t1, t4);
 
 	RLC_TRY {
-		fp8_new(t0);
-		fp8_new(t1);
-		fp8_new(t4);
+		fp8_new_all(t0, t1, t4);
 
 		/* Karatsuba algorithm. */
 
@@ -140,9 +130,7 @@ void fp16_mul_dxs_basic(fp16_t c, const fp16_t a, const fp16_t b) {
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		fp8_free(t0);
-		fp8_free(t1);
-		fp8_free(t4);
+		fp8_free_all(t0, t1, t4);
 	}
 }
 
@@ -154,20 +142,12 @@ void fp16_mul_unr(dv16_t c, const fp16_t a, const fp16_t b) {
 	fp8_t t0, t1;
 	dv8_t u0, u1, u2, u3;
 
-	fp8_null(t0);
-	fp8_null(t1);
-	dv8_null(u0);
-	dv8_null(u1);
-	dv8_null(u2);
-	dv8_null(u3);
+	fp8_null_all(t0, t1);
+	dv8_null_all(u0, u1, u2, u3);
 
 	RLC_TRY {
-		fp8_new(t0);
-		fp8_new(t1);
-		dv8_new(u0);
-		dv8_new(u1);
-		dv8_new(u2);
-		dv8_new(u3);
+		fp8_new_all(t0, t1);
+		dv8_new_all(u0, u1, u2, u3);
 
 		/* Karatsuba algorithm. */
 
@@ -204,12 +184,8 @@ void fp16_mul_unr(dv16_t c, const fp16_t a, const fp16_t b) {
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		fp8_free(t0);
-		fp8_free(t1);
-		dv8_free(u0);
-		dv8_free(u1);
-		dv8_free(u2);
-		dv8_free(u3);
+		fp8_free_all(t0, t1);
+		dv8_free_all(u0, u1, u2, u3);
 	}
 }
 
@@ -240,21 +216,13 @@ void fp16_mul_dxs_lazyr(fp16_t c, const fp16_t a, const fp16_t b) {
 	dv8_t u0, u1, u2, u3;
 	dv16_t t;
 
-	fp8_null(t0);
-	fp8_null(t1);
-	dv8_null(u0);
-	dv8_null(u1);
-	dv8_null(u2);
-	dv8_null(u3);
+	fp8_null_all(t0, t1);
+	dv8_null_all(u0, u1, u2, u3);
 	dv16_null(t);
 
 	RLC_TRY {
-		fp8_new(t0);
-		fp8_new(t1);
-		dv8_new(u0);
-		dv8_new(u1);
-		dv8_new(u2);
-		dv8_new(u3);
+		fp8_new_all(t0, t1);
+		dv8_new_all(u0, u1, u2, u3);
 		dv16_new(t);
 
 		/* Karatsuba algorithm. */
@@ -328,12 +296,8 @@ void fp16_mul_dxs_lazyr(fp16_t c, const fp16_t a, const fp16_t b) {
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		fp8_free(t0);
-		fp8_free(t1);
-		dv8_free(u0);
-		dv8_free(u1);
-		dv8_free(u2);
-		dv8_free(u3);
+		fp8_free_all(t0, t1);
+		dv8_free_all(u0, u1, u2, u3);
 		dv16_free(t);
 	}
 }

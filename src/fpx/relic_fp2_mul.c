@@ -42,18 +42,10 @@
 void fp2_mul_basic(fp2_t c, const fp2_t a, const fp2_t b) {
 	dv_t t0, t1, t2, t3, t4;
 
-	dv_null(t0);
-	dv_null(t1);
-	dv_null(t2);
-	dv_null(t3);
-	dv_null(t4);
+	dv_null_all(t0, t1, t2, t3, t4);
 
 	RLC_TRY {
-		dv_new(t0);
-		dv_new(t1);
-		dv_new(t2);
-		dv_new(t3);
-		dv_new(t4);
+		dv_new_all(t0, t1, t2, t3, t4);
 
 		/* Karatsuba algorithm. */
 
@@ -93,11 +85,7 @@ void fp2_mul_basic(fp2_t c, const fp2_t a, const fp2_t b) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		dv_free(t0);
-		dv_free(t1);
-		dv_free(t2);
-		dv_free(t3);
-		dv_free(t4);
+		dv_free_all(t0, t1, t2, t3, t4);
 	}
 }
 

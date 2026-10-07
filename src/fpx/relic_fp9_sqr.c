@@ -42,18 +42,10 @@
 void fp9_sqr_basic(fp9_t c, const fp9_t a) {
 	fp3_t t0, t1, t2, t3, t4;
 
-	fp3_null(t0);
-	fp3_null(t1);
-	fp3_null(t2);
-	fp3_null(t3);
-	fp3_null(t4);
+	fp3_null_all(t0, t1, t2, t3, t4);
 
 	RLC_TRY {
-		fp3_new(t0);
-		fp3_new(t1);
-		fp3_new(t2);
-		fp3_new(t3);
-		fp3_new(t4);
+		fp3_new_all(t0, t1, t2, t3, t4);
 
 		/* t0 = a_0^2 */
 		fp3_sqr(t0, a[0]);
@@ -100,11 +92,7 @@ void fp9_sqr_basic(fp9_t c, const fp9_t a) {
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		fp3_free(t0);
-		fp3_free(t1);
-		fp3_free(t2);
-		fp3_free(t3);
-		fp3_free(t4);
+		fp3_free_all(t0, t1, t2, t3, t4);
 	}
 }
 
@@ -116,28 +104,12 @@ void fp9_sqr_unr(dv9_t c, const fp9_t a) {
 	dv3_t u0, u1, u2, u3, u4, u5;
 	fp3_t t0, t1, t2, t3;
 
-	dv3_null(u0);
-	dv3_null(u1);
-	dv3_null(u2);
-	dv3_null(u3);
-	dv3_null(u4);
-	dv3_null(u5);
-	fp3_null(t0);
-	fp3_null(t1);
-	fp3_null(t2);
-	fp3_null(t3);
+	dv3_null_all(u0, u1, u2, u3, u4, u5);
+	fp3_null_all(t0, t1, t2, t3);
 
 	RLC_TRY {
-		dv3_new(u0);
-		dv3_new(u1);
-		dv3_new(u2);
-		dv3_new(u3);
-		dv3_new(u4);
-		dv3_new(u5);
-		fp3_new(t0);
-		fp3_new(t1);
-		fp3_new(t2);
-		fp3_new(t3);
+		dv3_new_all(u0, u1, u2, u3, u4, u5);
+		fp3_new_all(t0, t1, t2, t3);
 
 		/* u0 = a_0^2 */
 		fp3_sqrn_low(u0, a[0]);
@@ -188,16 +160,8 @@ void fp9_sqr_unr(dv9_t c, const fp9_t a) {
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		dv3_free(u0);
-		dv3_free(u1);
-		dv3_free(u2);
-		dv3_free(u3);
-		dv3_free(u4);
-		dv3_free(u5);
-		fp3_free(t0);
-		fp3_free(t1);
-		fp3_free(t2);
-		fp3_free(t3);
+		dv3_free_all(u0, u1, u2, u3, u4, u5);
+		fp3_free_all(t0, t1, t2, t3);
 	}
 }
 

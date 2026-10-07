@@ -68,13 +68,11 @@ void fp2_field_init(void) {
 	ctx_t *ctx = core_get();
 
 	bn_null(e);
-	fp2_null(t0);
-	fp2_null(t1);
+	fp2_null_all(t0, t1);
 
 	RLC_TRY {
 		bn_new(e);
-		fp2_new(t0);
-		fp2_new(t1);
+		fp2_new_all(t0, t1);
 
 		/* Start by finding a quadratic/cubic non-residue. */
 #ifdef FP_QNRES
@@ -165,8 +163,7 @@ void fp2_field_init(void) {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		bn_free(e);
-		fp2_free(t0);
-		fp2_free(t1);
+		fp2_free_all(t0, t1);
 	}
 }
 
@@ -176,13 +173,11 @@ void fp3_field_init(void) {
 	ctx_t *ctx = core_get();
 
 	bn_null(e);
-	fp3_null(t0);
-	fp3_null(t1);
+	fp3_null_all(t0, t1);
 
 	RLC_TRY {
 		bn_new(e);
-		fp3_new(t0);
-		fp3_new(t1);
+		fp3_new_all(t0, t1);
 
 		/* Start by trying a trivial quadratic non-residue. */
 		ctx->cnr3 = 0;
@@ -295,8 +290,7 @@ void fp3_field_init(void) {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		bn_free(e);
-		fp3_free(t0);
-		fp3_free(t1);
+		fp3_free_all(t0, t1);
 	}
 }
 

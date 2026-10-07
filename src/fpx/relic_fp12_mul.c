@@ -43,20 +43,12 @@ inline static void fp6_mul_dxs_unr_lazyr(dv6_t c, const fp6_t a, const fp6_t b) 
 	dv2_t u0, u1, u2, u3;
 	fp2_t t0, t1;
 
-	dv2_null(u0);
-	dv2_null(u1);
-	dv2_null(u2);
-	dv2_null(u3);
-	fp2_null(t0);
-	fp2_null(t1);
+	dv2_null_all(u0, u1, u2, u3);
+	fp2_null_all(t0, t1);
 
 	RLC_TRY {
-		dv2_new(u0);
-		dv2_new(u1);
-		dv2_new(u2);
-		dv2_new(u3);
-		fp2_new(t0);
-		fp2_new(t1);
+		dv2_new_all(u0, u1, u2, u3);
+		fp2_new_all(t0, t1);
 
 		fp2_muln_low(u0, a[0], b[0]);
 		fp2_muln_low(u1, a[1], b[1]);
@@ -79,12 +71,8 @@ inline static void fp6_mul_dxs_unr_lazyr(dv6_t c, const fp6_t a, const fp6_t b) 
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		dv2_free(u0);
-		dv2_free(u1);
-		dv2_free(u2);
-		dv2_free(u3);
-		fp2_free(t0);
-		fp2_free(t1);
+		dv2_free_all(u0, u1, u2, u3);
+		fp2_free_all(t0, t1);
 	}
 }
 
@@ -99,14 +87,10 @@ inline static void fp6_mul_dxs_unr_lazyr(dv6_t c, const fp6_t a, const fp6_t b) 
 void fp12_mul_basic(fp12_t c, const fp12_t a, const fp12_t b) {
 	fp6_t t0, t1, t2;
 
-	fp6_null(t0);
-	fp6_null(t1);
-	fp6_null(t2);
+	fp6_null_all(t0, t1, t2);
 
 	RLC_TRY {
-		fp6_new(t0);
-		fp6_new(t1);
-		fp6_new(t2);
+		fp6_new_all(t0, t1, t2);
 
 		/* Karatsuba algorithm. */
 
@@ -131,23 +115,17 @@ void fp12_mul_basic(fp12_t c, const fp12_t a, const fp12_t b) {
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		fp6_free(t0);
-		fp6_free(t1);
-		fp6_free(t2);
+		fp6_free_all(t0, t1, t2);
 	}
 }
 
 void fp12_mul_dxs_basic(fp12_t c, const fp12_t a, const fp12_t b) {
 	fp6_t t0, t1, t2;
 
-	fp6_null(t0);
-	fp6_null(t1);
-	fp6_null(t2);
+	fp6_null_all(t0, t1, t2);
 
 	RLC_TRY {
-		fp6_new(t0);
-		fp6_new(t1);
-		fp6_new(t2);
+		fp6_new_all(t0, t1, t2);
 
 		if (ep2_curve_is_twist() == RLC_EP_DTYPE) {
 #if EP_ADD == BASIC
@@ -214,9 +192,7 @@ void fp12_mul_dxs_basic(fp12_t c, const fp12_t a, const fp12_t b) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		fp6_free(t0);
-		fp6_free(t1);
-		fp6_free(t2);
+		fp6_free_all(t0, t1, t2);
 	}
 }
 
@@ -228,20 +204,12 @@ void fp12_mul_unr(dv12_t c, const fp12_t a, const fp12_t b) {
 	fp6_t t0, t1;
 	dv6_t u0, u1, u2, u3;
 
-	dv6_null(u0);
-	dv6_null(u1);
-	dv6_null(u2);
-	dv6_null(u3);
-	fp6_null(t0);
-	fp6_null(t1);
+	dv6_null_all(u0, u1, u2, u3);
+	fp6_null_all(t0, t1);
 
 	RLC_TRY {
-		dv6_new(u0);
-		dv6_new(u1);
-		dv6_new(u2);
-		dv6_new(u3);
-		fp6_new(t0);
-		fp6_new(t1);
+		dv6_new_all(u0, u1, u2, u3);
+		fp6_new_all(t0, t1);
 
 		/* Karatsuba algorithm. */
 
@@ -268,12 +236,8 @@ void fp12_mul_unr(dv12_t c, const fp12_t a, const fp12_t b) {
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		dv6_free(u0);
-		dv6_free(u1);
-		dv6_free(u2);
-		dv6_free(u3);
-		fp6_free(t0);
-		fp6_free(t1);
+		dv6_free_all(u0, u1, u2, u3);
+		fp6_free_all(t0, t1);
 	}
 }
 
@@ -301,15 +265,11 @@ void fp12_mul_dxs_lazyr(fp12_t c, const fp12_t a, const fp12_t b) {
 	dv6_t u0, u1, u2;
 
 	fp6_null(t0);
-	dv6_null(u0);
-	dv6_null(u1);
-	dv6_null(u2);
+	dv6_null_all(u0, u1, u2);
 
 	RLC_TRY {
 		fp6_new(t0);
-		dv6_new(u0);
-		dv6_new(u1);
-		dv6_new(u2);
+		dv6_new_all(u0, u1, u2);
 
 		if (ep2_curve_is_twist() == RLC_EP_DTYPE) {
 #if EP_ADD == BASIC
@@ -387,9 +347,7 @@ void fp12_mul_dxs_lazyr(fp12_t c, const fp12_t a, const fp12_t b) {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		fp6_free(t0);
-		dv6_free(u0);
-		dv6_free(u1);
-		dv6_free(u2);
+		dv6_free_all(u0, u1, u2);
 	}
 }
 

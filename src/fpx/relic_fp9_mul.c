@@ -41,20 +41,10 @@
 void fp9_mul_basic(fp9_t c, const fp9_t a, const fp9_t b) {
 	fp3_t v0, v1, v2, t0, t1, t2;
 
-	fp3_null(v0);
-	fp3_null(v1);
-	fp3_null(v2);
-	fp3_null(t0);
-	fp3_null(t1);
-	fp3_null(t2);
+	fp3_null_all(v0, v1, v2, t0, t1, t2);
 
 	RLC_TRY {
-		fp3_new(v0);
-		fp3_new(v1);
-		fp3_new(v2);
-		fp3_new(t0);
-		fp3_new(t1);
-		fp3_new(t2);
+		fp3_new_all(v0, v1, v2, t0, t1, t2);
 
 		/* v0 = a_0b_0 */
 		fp3_mul(v0, a[0], b[0]);
@@ -96,12 +86,7 @@ void fp9_mul_basic(fp9_t c, const fp9_t a, const fp9_t b) {
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		fp3_free(t2);
-		fp3_free(t1);
-		fp3_free(t0);
-		fp3_free(v2);
-		fp3_free(v1);
-		fp3_free(v0);
+		fp3_free_all(t2, t1, t0, v2, v1, v0);
 	}
 }
 
@@ -113,20 +98,12 @@ void fp9_mul_unr(dv9_t c, const fp9_t a, const fp9_t b) {
 	dv3_t u0, u1, u2, u3;
 	fp3_t t0, t1;
 
-	dv3_null(u0);
-	dv3_null(u1);
-	dv3_null(u2);
-	dv3_null(u3);
-	fp3_null(t0);
-	fp3_null(t1);
+	dv3_null_all(u0, u1, u2, u3);
+	fp3_null_all(t0, t1);
 
 	RLC_TRY {
-		dv3_new(u0);
-		dv3_new(u1);
-		dv3_new(u2);
-		dv3_new(u3);
-		fp3_new(t0);
-		fp3_new(t1);
+		dv3_new_all(u0, u1, u2, u3);
+		fp3_new_all(t0, t1);
 
 		/* v0 = a_0b_0, v1 = a_1b_1, v2 = a_2b_2,
 		 * t0 = a_1 + a_2, t1 = b_1 + b_2,
@@ -173,12 +150,8 @@ void fp9_mul_unr(dv9_t c, const fp9_t a, const fp9_t b) {
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		dv3_free(u0);
-		dv3_free(u1);
-		dv3_free(u2);
-		dv3_free(u3);
-		fp3_free(t0);
-		fp3_free(t1);
+		dv3_free_all(u0, u1, u2, u3);
+		fp3_free_all(t0, t1);
 	}
 }
 
@@ -205,18 +178,10 @@ void fp9_mul_lazyr(fp9_t c, const fp9_t a, const fp9_t b) {
 void fp9_mul_dxs(fp9_t c, const fp9_t a, const fp9_t b) {
 	fp3_t v0, v1, t0, t1, t2;
 
-	fp3_null(v0);
-	fp3_null(v1);
-	fp3_null(t0);
-	fp3_null(t1);
-	fp3_null(t2);
+	fp3_null_all(v0, v1, t0, t1, t2);
 
 	RLC_TRY {
-		fp3_new(v0);
-		fp3_new(v1);
-		fp3_new(t0);
-		fp3_new(t1);
-		fp3_new(t2);
+		fp3_new_all(v0, v1, t0, t1, t2);
 
 		/* v0 = a_0b_0 */
 		fp3_mul(v0, a[0], b[0]);
@@ -251,11 +216,7 @@ void fp9_mul_dxs(fp9_t c, const fp9_t a, const fp9_t b) {
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		fp3_free(v0);
-		fp3_free(v1);
-		fp3_free(t0);
-		fp3_free(t1);
-		fp3_free(t2);
+		fp3_free_all(v0, v1, t0, t1, t2);
 	}
 }
 

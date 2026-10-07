@@ -42,14 +42,10 @@
 void fp4_mul_basic(fp4_t c, const fp4_t a, const fp4_t b) {
 	fp2_t t0, t1, t2;
 
-	fp2_null(t0);
-	fp2_null(t1);
-	fp2_null(t2);
+	fp2_null_all(t0, t1, t2);
 
 	RLC_TRY {
-		fp2_new(t0);
-		fp2_new(t1);
-		fp2_new(t2);
+		fp2_new_all(t0, t1, t2);
 
 		/* Karatsuba algorithm. */
 
@@ -74,9 +70,7 @@ void fp4_mul_basic(fp4_t c, const fp4_t a, const fp4_t b) {
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		fp2_free(t0);
-		fp2_free(t1);
-		fp2_free(t2);
+		fp2_free_all(t0, t1, t2);
 	}
 }
 
@@ -88,16 +82,12 @@ void fp4_mul_unr(dv4_t c, const fp4_t a, const fp4_t b) {
 	fp2_t t0, t1;
 	dv2_t u0, u1;
 
-	fp2_null(t0);
-	fp2_null(t1);
-	dv2_null(u0);
-	dv2_null(u1);
+	fp2_null_all(t0, t1);
+	dv2_null_all(u0, u1);
 
 	RLC_TRY {
-		fp2_new(t0);
-		fp2_new(t1);
-		dv2_new(u0);
-		dv2_new(u1);
+		fp2_new_all(t0, t1);
+		dv2_new_all(u0, u1);
 
 		fp2_muln_low(u0, a[0], b[0]);
 		fp2_muln_low(u1, a[1], b[1]);
@@ -114,9 +104,7 @@ void fp4_mul_unr(dv4_t c, const fp4_t a, const fp4_t b) {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		fp2_free(t0);
-		dv2_free(t1);
-		dv2_free(u0);
-		dv2_free(u1);
+		dv2_free_all(t1, u0, u1);
 	}
 }
 

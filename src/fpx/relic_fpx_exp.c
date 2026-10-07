@@ -261,13 +261,11 @@ void fp8_exp_dig(fp8_t c, const fp8_t a, dig_t b) {
 	}
 
 	bn_null(_b);
-	fp8_null(t);
-	fp8_null(v);
+	fp8_null_all(t, v);
 
 	RLC_TRY {
 		bn_new(_b);
-		fp8_new(t);
-		fp8_new(v);
+		fp8_new_all(t, v);
 
 		fp8_copy(t, a);
 
@@ -304,8 +302,7 @@ void fp8_exp_dig(fp8_t c, const fp8_t a, dig_t b) {
 	}
 	RLC_FINALLY {
 		bn_free(_b);
-		fp8_free(t);
-		fp8_free(v);
+		fp8_free_all(t, v);
 	}
 }
 
@@ -397,13 +394,11 @@ void fp12_exp_dig(fp12_t c, const fp12_t a, dig_t b) {
 	}
 
 	bn_null(_b);
-	fp12_null(t);
-	fp12_null(v);
+	fp12_null_all(t, v);
 
 	RLC_TRY {
 		bn_new(_b);
-		fp12_new(t);
-		fp12_new(v);
+		fp12_new_all(t, v);
 
 		fp12_copy(t, a);
 
@@ -440,8 +435,7 @@ void fp12_exp_dig(fp12_t c, const fp12_t a, dig_t b) {
 	}
 	RLC_FINALLY {
 		bn_free(_b);
-		fp12_free(t);
-		fp12_free(v);
+		fp12_free_all(t, v);
 	}
 }
 
@@ -497,13 +491,11 @@ void fp16_exp_dig(fp16_t c, const fp16_t a, dig_t b) {
 	}
 
 	bn_null(_b);
-	fp16_null(t);
-	fp16_null(v);
+	fp16_null_all(t, v);
 
 	RLC_TRY {
 		bn_new(_b);
-		fp16_new(t);
-		fp16_new(v);
+		fp16_new_all(t, v);
 
 		fp16_copy(t, a);
 
@@ -540,8 +532,7 @@ void fp16_exp_dig(fp16_t c, const fp16_t a, dig_t b) {
 	}
 	RLC_FINALLY {
 		bn_free(_b);
-		fp16_free(t);
-		fp16_free(v);
+		fp16_free_all(t, v);
 	}
 }
 
@@ -593,13 +584,11 @@ void fp18_exp_dig(fp18_t c, const fp18_t a, dig_t b) {
 	}
 
 	bn_null(_b);
-	fp18_null(t);
-	fp18_null(v);
+	fp18_null_all(t, v);
 
 	RLC_TRY {
 		bn_new(_b);
-		fp18_new(t);
-		fp18_new(v);
+		fp18_new_all(t, v);
 
 		fp18_copy(t, a);
 
@@ -636,8 +625,7 @@ void fp18_exp_dig(fp18_t c, const fp18_t a, dig_t b) {
 	}
 	RLC_FINALLY {
 		bn_free(_b);
-		fp18_free(t);
-		fp18_free(v);
+		fp18_free_all(t, v);
 	}
 }
 
@@ -689,13 +677,11 @@ void fp24_exp_dig(fp24_t c, const fp24_t a, dig_t b) {
 	}
 
 	bn_null(_b);
-	fp24_null(t);
-	fp24_null(v);
+	fp24_null_all(t, v);
 
 	RLC_TRY {
 		bn_new(_b);
-		fp24_new(t);
-		fp24_new(v);
+		fp24_new_all(t, v);
 
 		fp24_copy(t, a);
 
@@ -732,8 +718,7 @@ void fp24_exp_dig(fp24_t c, const fp24_t a, dig_t b) {
 	}
 	RLC_FINALLY {
 		bn_free(_b);
-		fp24_free(t);
-		fp24_free(v);
+		fp24_free_all(t, v);
 	}
 }
 
@@ -789,13 +774,11 @@ void fp48_exp_dig(fp48_t c, const fp48_t a, dig_t b) {
 	}
 
 	bn_null(_b);
-	fp48_null(t);
-	fp48_null(v);
+	fp48_null_all(t, v);
 
 	RLC_TRY {
 		bn_new(_b);
-		fp48_new(t);
-		fp48_new(v);
+		fp48_new_all(t, v);
 
 		fp48_copy(t, a);
 
@@ -832,8 +815,7 @@ void fp48_exp_dig(fp48_t c, const fp48_t a, dig_t b) {
 	}
 	RLC_FINALLY {
 		bn_free(_b);
-		fp48_free(t);
-		fp48_free(v);
+		fp48_free_all(t, v);
 	}
 }
 
@@ -885,13 +867,11 @@ void fp54_exp_dig(fp54_t c, const fp54_t a, dig_t b) {
 	}
 
 	bn_null(_b);
-	fp54_null(t);
-	fp54_null(v);
+	fp54_null_all(t, v);
 
 	RLC_TRY {
 		bn_new(_b);
-		fp54_new(t);
-		fp54_new(v);
+		fp54_new_all(t, v);
 
 		fp54_copy(t, a);
 
@@ -928,7 +908,6 @@ void fp54_exp_dig(fp54_t c, const fp54_t a, dig_t b) {
 	}
 	RLC_FINALLY {
 		bn_free(_b);
-		fp54_free(t);
-		fp54_free(v);
+		fp54_free_all(t, v);
 	}
 }

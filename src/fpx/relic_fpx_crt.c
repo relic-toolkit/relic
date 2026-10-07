@@ -39,14 +39,11 @@
 void fp_luc(fp_t c, const fp_t a, const bn_t e) {
     fp_t v0, v1, v2;
 
-	fp_null(v0);
-	fp_null(v1);
-	fp_null(v2);
+	fp_null_all(v0, v1, v2);
 
 	RLC_TRY {
     	fp_new(v0);
-		fp_new(v1);
-		fp_new(v2);
+		fp_new_all(v1, v2);
 		
     	// v_0 = 2
     	fp_set_dig(v0, 2);
@@ -71,9 +68,7 @@ void fp_luc(fp_t c, const fp_t a, const bn_t e) {
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		fp_free(v0);
-		fp_free(v1);
-		fp_free(v2);
+		fp_free_all(v0, v1, v2);
 	}
 }
 
@@ -115,10 +110,8 @@ int fp2_crt(fp2_t c, const fp2_t a) {
 	/* Algorithm from "Fast cube roots in Fp2 via the algebraic torus" by
 	 * Youssef El Housni: https://eprint.iacr.org/2026/392.pdf */
 
-	bn_null(d);
-	bn_null(e);
-	fp2_null(t);
-	fp2_null(u);
+	bn_null_all(d, e);
+	fp2_null_all(t, u);
 
 	if (fp2_is_zero(a)) {
 		fp2_zero(c);
@@ -126,10 +119,8 @@ int fp2_crt(fp2_t c, const fp2_t a) {
 	}
 
 	RLC_TRY {
-		bn_new(d);
-		bn_new(e);
-		fp2_new(t);
-		fp2_new(u);
+		bn_new_all(d, e);
+		fp2_new_all(t, u);
 
 		if (fp_prime_get_mod18() % 3 == 1) {
 			if (fp_is_zero(a[1])) {
@@ -223,10 +214,8 @@ int fp2_crt(fp2_t c, const fp2_t a) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(d);
-		bn_free(e);
-		fp2_free(t);
-		fp2_free(u);
+		bn_free_all(d, e);
+		fp2_free_all(t, u);
 	}
 	return r;
 }

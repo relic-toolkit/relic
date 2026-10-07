@@ -42,14 +42,10 @@
 void fp48_mul_basic(fp48_t c, const fp48_t a, const fp48_t b) {
 	fp24_t t0, t1, t2;
 
-	fp24_null(t0);
-	fp24_null(t1);
-	fp24_null(t2);
+	fp24_null_all(t0, t1, t2);
 
 	RLC_TRY {
-		fp24_new(t0);
-		fp24_new(t1);
-		fp24_new(t2);
+		fp24_new_all(t0, t1, t2);
 
 		/* Karatsuba algorithm. */
 
@@ -74,9 +70,7 @@ void fp48_mul_basic(fp48_t c, const fp48_t a, const fp48_t b) {
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		fp24_free(t0);
-		fp24_free(t1);
-		fp24_free(t2);
+		fp24_free_all(t0, t1, t2);
 	}
 }
 
@@ -88,14 +82,10 @@ void fp48_mul_lazyr(fp48_t c, const fp48_t a, const fp48_t b) {
 	/* TODO: implement lazy reduction. */
 	fp24_t t0, t1, t2;
 
-	fp24_null(t0);
-	fp24_null(t1);
-	fp24_null(t2);
+	fp24_null_all(t0, t1, t2);
 
 	RLC_TRY {
-		fp24_new(t0);
-		fp24_new(t1);
-		fp24_new(t2);
+		fp24_new_all(t0, t1, t2);
 
 		/* Karatsuba algorithm. */
 
@@ -120,9 +110,7 @@ void fp48_mul_lazyr(fp48_t c, const fp48_t a, const fp48_t b) {
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		fp24_free(t0);
-		fp24_free(t1);
-		fp24_free(t2);
+		fp24_free_all(t0, t1, t2);
 	}
 }
 
@@ -131,14 +119,10 @@ void fp48_mul_lazyr(fp48_t c, const fp48_t a, const fp48_t b) {
 void fp48_mul_dxs(fp48_t c, const fp48_t a, const fp48_t b) {
 	fp24_t t0, t1, t2;
 
-	fp24_null(t0);
-	fp24_null(t1);
-	fp24_null(t2);
+	fp24_null_all(t0, t1, t2);
 
 	RLC_TRY {
-		fp24_new(t0);
-		fp24_new(t1);
-		fp24_new(t2);
+		fp24_new_all(t0, t1, t2);
 
 		/* Karatsuba algorithm. */
 
@@ -185,9 +169,7 @@ void fp48_mul_dxs(fp48_t c, const fp48_t a, const fp48_t b) {
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		fp24_free(t0);
-		fp24_free(t1);
-		fp24_free(t2);
+		fp24_free_all(t0, t1, t2);
 	}
 }
 

@@ -42,18 +42,10 @@
 void fp3_sqr_basic(fp3_t c, const fp3_t a) {
 	dv_t t0, t1, t2, t3, t4;
 
-	dv_null(t0);
-	dv_null(t1);
-	dv_null(t2);
-	dv_null(t3);
-	dv_null(t4);
+	dv_null_all(t0, t1, t2, t3, t4);
 
 	RLC_TRY {
-		dv_new(t0);
-		dv_new(t1);
-		dv_new(t2);
-		dv_new(t3);
-		dv_new(t4);
+		dv_new_all(t0, t1, t2, t3, t4);
 
 		/* t0 = a_0^2. */
 		fp_sqrn_low(t0, a[0]);
@@ -111,11 +103,7 @@ void fp3_sqr_basic(fp3_t c, const fp3_t a) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		dv_free(t0);
-		dv_free(t1);
-		dv_free(t2);
-		dv_free(t3);
-		dv_free(t4);
+		dv_free_all(t0, t1, t2, t3, t4);
 	}
 }
 

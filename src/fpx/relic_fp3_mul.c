@@ -42,24 +42,10 @@
 void fp3_mul_basic(fp3_t c, const fp3_t a, const fp3_t b) {
 	dv_t t, t0, t1, t2, t3, t4, t5, t6;
 
-	dv_null(t);
-	dv_null(t0);
-	dv_null(t1);
-	dv_null(t2);
-	dv_null(t3);
-	dv_null(t4);
-	dv_null(t5);
-	dv_null(t6);
+	dv_null_all(t, t0, t1, t2, t3, t4, t5, t6);
 
 	RLC_TRY {
-		dv_new(t);
-		dv_new(t0);
-		dv_new(t1);
-		dv_new(t2);
-		dv_new(t3);
-		dv_new(t4);
-		dv_new(t5);
-		dv_new(t6);
+		dv_new_all(t, t0, t1, t2, t3, t4, t5, t6);
 
 		/* Karatsuba algorithm. */
 
@@ -128,14 +114,7 @@ void fp3_mul_basic(fp3_t c, const fp3_t a, const fp3_t b) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		dv_free(t);
-		dv_free(t0);
-		dv_free(t1);
-		dv_free(t2);
-		dv_free(t3);
-		dv_free(t4);
-		dv_free(t5);
-		dv_free(t6);
+		dv_free_all(t, t0, t1, t2, t3, t4, t5, t6);
 	}
 }
 
@@ -180,12 +159,10 @@ void fp3_mul_art(fp3_t c, const fp3_t a) {
 void fp3_mul_nor(fp3_t c, const fp3_t a) {
 	fp3_t t, u;
 
-	fp3_null(t);
-	fp3_null(u);
+	fp3_null_all(t, u);
 
 	RLC_TRY {
-		fp3_new(t);
-		fp3_new(u);
+		fp3_new_all(t, u);
 
 		fp3_mul_art(t, a);
 
@@ -218,8 +195,7 @@ void fp3_mul_nor(fp3_t c, const fp3_t a) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		fp3_free(t);
-		fp3_free(u);
+		fp3_free_all(t, u);
 	}
 }
 

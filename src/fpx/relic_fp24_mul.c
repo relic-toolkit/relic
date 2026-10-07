@@ -42,20 +42,10 @@
 void fp24_mul_basic(fp24_t c, const fp24_t a, const fp24_t b) {
 	fp8_t t0, t1, t2, t3, t4, t5;
 
-	fp8_null(t0);
-	fp8_null(t1);
-	fp8_null(t2);
-	fp8_null(t3);
-	fp8_null(t4);
-	fp8_null(t5);
+	fp8_null_all(t0, t1, t2, t3, t4, t5);
 
 	RLC_TRY {
-		fp8_new(t0);
-		fp8_new(t1);
-		fp8_new(t2);
-		fp8_new(t3);
-		fp8_new(t4);
-		fp8_new(t5);
+		fp8_new_all(t0, t1, t2, t3, t4, t5);
 
 		/* Karatsuba algorithm. */
 
@@ -93,12 +83,7 @@ void fp24_mul_basic(fp24_t c, const fp24_t a, const fp24_t b) {
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		fp8_free(t0);
-		fp8_free(t1);
-		fp8_free(t2);
-		fp8_free(t3);
-		fp8_free(t4);
-		fp8_free(t5);
+		fp8_free_all(t0, t1, t2, t3, t4, t5);
 	}
 }
 
@@ -110,22 +95,12 @@ void fp24_mul_unr(dv24_t c, const fp24_t a, const fp24_t b) {
 	dv8_t u0, u1, u2, u3, u4;
 	fp8_t t0, t1;
 
-	dv8_null(u0);
-	dv8_null(u1);
-	dv8_null(u2);
-	dv8_null(u3);
-	dv8_null(u4);
-	fp8_null(t0);
-	fp8_null(t1);
+	dv8_null_all(u0, u1, u2, u3, u4);
+	fp8_null_all(t0, t1);
 
 	RLC_TRY {
-		dv8_new(u0);
-		dv8_new(u1);
-		dv8_new(u2);
-		dv8_new(u3);
-		dv8_new(u4);
-		fp8_new(t0);
-		fp8_new(t1);
+		dv8_new_all(u0, u1, u2, u3, u4);
+		fp8_new_all(t0, t1);
 
 		/* Karatsuba algorithm. */
 
@@ -184,13 +159,8 @@ void fp24_mul_unr(dv24_t c, const fp24_t a, const fp24_t b) {
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		dv8_free(u0);
-		dv8_free(u1);
-		dv8_free(u2);
-		dv8_free(u3);
-		dv8_free(u4);
-		fp8_free(t0);
-		fp8_free(t1);
+		dv8_free_all(u0, u1, u2, u3, u4);
+		fp8_free_all(t0, t1);
 	}
 }
 
@@ -240,18 +210,10 @@ void fp24_mul_art(fp24_t c, const fp24_t a) {
 void fp24_mul_dxs(fp24_t c, const fp24_t a, const fp24_t b) {
 	fp8_t t0, t1, t2, t3, t4;
 
-	fp8_null(t0);
-	fp8_null(t1);
-	fp8_null(t2);
-	fp8_null(t3);
-	fp8_null(t4);
+	fp8_null_all(t0, t1, t2, t3, t4);
 
 	RLC_TRY {
-		fp8_new(t0);
-		fp8_new(t1);
-		fp8_new(t2);
-		fp8_new(t3);
-		fp8_new(t4);
+		fp8_new_all(t0, t1, t2, t3, t4);
 
 		/* Karatsuba algorithm. */
 
@@ -305,10 +267,6 @@ void fp24_mul_dxs(fp24_t c, const fp24_t a, const fp24_t b) {
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		fp8_free(t0);
-		fp8_free(t1);
-		fp8_free(t2);
-		fp8_free(t3);
-		fp8_free(t4);
+		fp8_free_all(t0, t1, t2, t3, t4);
 	}
 }

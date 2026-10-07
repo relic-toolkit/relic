@@ -43,20 +43,12 @@ inline static void fp9_mul_dxs_unr_lazyr(dv9_t c, const fp9_t a, const fp9_t b) 
 	dv3_t u0, u1, u2, u3;
 	fp3_t t0, t1;
 
-	dv3_null(u0);
-	dv3_null(u1);
-	dv3_null(u2);
-	dv3_null(u3);
-	fp3_null(t0);
-	fp3_null(t1);
+	dv3_null_all(u0, u1, u2, u3);
+	fp3_null_all(t0, t1);
 
 	RLC_TRY {
-		dv3_new(u0);
-		dv3_new(u1);
-		dv3_new(u2);
-		dv3_new(u3);
-		fp3_new(t0);
-		fp3_new(t1);
+		dv3_new_all(u0, u1, u2, u3);
+		fp3_new_all(t0, t1);
 
 		fp3_muln_low(u0, a[0], b[0]);
 		fp3_muln_low(u1, a[1], b[1]);
@@ -79,12 +71,8 @@ inline static void fp9_mul_dxs_unr_lazyr(dv9_t c, const fp9_t a, const fp9_t b) 
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		dv3_free(u0);
-		dv3_free(u1);
-		dv3_free(u2);
-		dv3_free(u3);
-		fp3_free(t0);
-		fp3_free(t1);
+		dv3_free_all(u0, u1, u2, u3);
+		fp3_free_all(t0, t1);
 	}
 }
 
@@ -99,14 +87,10 @@ inline static void fp9_mul_dxs_unr_lazyr(dv9_t c, const fp9_t a, const fp9_t b) 
 void fp18_mul_basic(fp18_t c, const fp18_t a, const fp18_t b) {
 	fp9_t t0, t1, t2;
 
-	fp9_null(t0);
-	fp9_null(t1);
-	fp9_null(t2);
+	fp9_null_all(t0, t1, t2);
 
 	RLC_TRY {
-		fp9_new(t0);
-		fp9_new(t1);
-		fp9_new(t2);
+		fp9_new_all(t0, t1, t2);
 
 		/* Karatsuba algorithm. */
 
@@ -131,23 +115,17 @@ void fp18_mul_basic(fp18_t c, const fp18_t a, const fp18_t b) {
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		fp9_free(t0);
-		fp9_free(t1);
-		fp9_free(t2);
+		fp9_free_all(t0, t1, t2);
 	}
 }
 
 void fp18_mul_dxs_basic(fp18_t c, const fp18_t a, const fp18_t b) {
 	fp9_t t0, t1, t2;
 
-	fp9_null(t0);
-	fp9_null(t1);
-	fp9_null(t2);
+	fp9_null_all(t0, t1, t2);
 
 	RLC_TRY {
-		fp9_new(t0);
-		fp9_new(t1);
-		fp9_new(t2);
+		fp9_new_all(t0, t1, t2);
 
 		/* Karatsuba algorithm. */
 
@@ -190,9 +168,7 @@ void fp18_mul_dxs_basic(fp18_t c, const fp18_t a, const fp18_t b) {
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		fp9_free(t0);
-		fp9_free(t1);
-		fp9_free(t2);
+		fp9_free_all(t0, t1, t2);
 	}
 }
 
@@ -204,20 +180,12 @@ void fp18_mul_unr(dv18_t c, const fp18_t a, const fp18_t b) {
 	fp9_t t0, t1;
 	dv9_t u0, u1, u2, u3;
 
-	dv9_null(u0);
-	dv9_null(u1);
-	dv9_null(u2);
-	dv9_null(u3);
-	fp9_null(t0);
-	fp9_null(t1);
+	dv9_null_all(u0, u1, u2, u3);
+	fp9_null_all(t0, t1);
 
 	RLC_TRY {
-		dv9_new(u0);
-		dv9_new(u1);
-		dv9_new(u2);
-		dv9_new(u3);
-		fp9_new(t0);
-		fp9_new(t1);
+		dv9_new_all(u0, u1, u2, u3);
+		fp9_new_all(t0, t1);
 
 		/* Karatsuba algorithm. */
 
@@ -244,12 +212,8 @@ void fp18_mul_unr(dv18_t c, const fp18_t a, const fp18_t b) {
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		dv9_free(u0);
-		dv9_free(u1);
-		dv9_free(u2);
-		dv9_free(u3);
-		fp9_free(t0);
-		fp9_free(t1);
+		dv9_free_all(u0, u1, u2, u3);
+		fp9_free_all(t0, t1);
 	}
 }
 
@@ -278,15 +242,11 @@ void fp18_mul_dxs_lazyr(fp18_t c, const fp18_t a, const fp18_t b) {
 	dv9_t u0, u1, u2;
 
 	fp9_null(t0);
-	dv9_null(u0);
-	dv9_null(u1);
-	dv9_null(u2);
+	dv9_null_all(u0, u1, u2);
 
 	RLC_TRY {
 		fp9_new(t0);
-		dv9_new(u0);
-		dv9_new(u1);
-		dv9_new(u2);
+		dv9_new_all(u0, u1, u2);
 
 		if (ep3_curve_is_twist() == RLC_EP_DTYPE) {
 #if EP_ADD == BASIC
@@ -368,9 +328,7 @@ void fp18_mul_dxs_lazyr(fp18_t c, const fp18_t a, const fp18_t b) {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		fp9_free(t0);
-		dv9_free(u0);
-		dv9_free(u1);
-		dv9_free(u2);
+		dv9_free_all(u0, u1, u2);
 	}
 }
 

@@ -42,12 +42,10 @@
 void fp48_sqr_basic(fp48_t c, const fp48_t a) {
 	fp24_t t0, t1;
 
-	fp24_null(t0);
-	fp24_null(t1);
+	fp24_null_all(t0, t1);
 
 	RLC_TRY {
-		fp24_new(t0);
-		fp24_new(t1);
+		fp24_new_all(t0, t1);
 
 		fp24_add(t0, a[0], a[1]);
 		fp24_mul_art(t1, a[1]);
@@ -61,30 +59,17 @@ void fp48_sqr_basic(fp48_t c, const fp48_t a) {
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		fp24_free(t0);
-		fp24_free(t1);
+		fp24_free_all(t0, t1);
 	}
 }
 
 void fp48_sqr_cyc_basic(fp48_t c, const fp48_t a) {
 	fp8_t t0, t1, t2, t3, t4, t5, t6;
 
-	fp8_null(t0);
-	fp8_null(t1);
-	fp8_null(t2);
-	fp8_null(t3);
-	fp8_null(t4);
-	fp8_null(t5);
-	fp8_null(t6);
+	fp8_null_all(t0, t1, t2, t3, t4, t5, t6);
 
 	RLC_TRY {
-		fp8_new(t0);
-		fp8_new(t1);
-		fp8_new(t2);
-		fp8_new(t3);
-		fp8_new(t4);
-		fp8_new(t5);
-		fp8_new(t6);
+		fp8_new_all(t0, t1, t2, t3, t4, t5, t6);
 
 		fp8_sqr(t2, a[0][0]);
 		fp8_sqr(t3, a[1][1]);
@@ -145,35 +130,17 @@ void fp48_sqr_cyc_basic(fp48_t c, const fp48_t a) {
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		fp8_free(t0);
-		fp8_free(t1);
-		fp8_free(t2);
-		fp8_free(t3);
-		fp8_free(t4);
-		fp8_free(t5);
-		fp8_free(t6);
+		fp8_free_all(t0, t1, t2, t3, t4, t5, t6);
 	}
 }
 
 void fp48_sqr_pck_basic(fp48_t c, const fp48_t a) {
 	fp8_t t0, t1, t2, t3, t4, t5, t6;
 
-	fp8_null(t0);
-	fp8_null(t1);
-	fp8_null(t2);
-	fp8_null(t3);
-	fp8_null(t4);
-	fp8_null(t5);
-	fp8_null(t6);
+	fp8_null_all(t0, t1, t2, t3, t4, t5, t6);
 
 	RLC_TRY {
-		fp8_new(t0);
-		fp8_new(t1);
-		fp8_new(t2);
-		fp8_new(t3);
-		fp8_new(t4);
-		fp8_new(t5);
-		fp8_new(t6);
+		fp8_new_all(t0, t1, t2, t3, t4, t5, t6);
 
 		fp8_sqr(t0, a[0][1]);
 		fp8_sqr(t1, a[1][2]);
@@ -215,13 +182,7 @@ void fp48_sqr_pck_basic(fp48_t c, const fp48_t a) {
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		fp8_free(t0);
-		fp8_free(t1);
-		fp8_free(t2);
-		fp8_free(t3);
-		fp8_free(t4);
-		fp8_free(t5);
-		fp8_free(t6);
+		fp8_free_all(t0, t1, t2, t3, t4, t5, t6);
 	}
 }
 
@@ -233,12 +194,10 @@ void fp48_sqr_lazyr(fp48_t c, const fp48_t a) {
 	/* TODO: implement lazy reduction. */
 	fp24_t t0, t1;
 
-	fp24_null(t0);
-	fp24_null(t1);
+	fp24_null_all(t0, t1);
 
 	RLC_TRY {
-		fp24_new(t0);
-		fp24_new(t1);
+		fp24_new_all(t0, t1);
 
 		fp24_add(t0, a[0], a[1]);
 		fp24_mul_art(t1, a[1]);
@@ -252,30 +211,17 @@ void fp48_sqr_lazyr(fp48_t c, const fp48_t a) {
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		fp24_free(t0);
-		fp24_free(t1);
+		fp24_free_all(t0, t1);
 	}
 }
 
 void fp48_sqr_cyc_lazyr(fp48_t c, const fp48_t a) {
 	fp8_t t0, t1, t2, t3, t4, t5, t6;
 
-	fp8_null(t0);
-	fp8_null(t1);
-	fp8_null(t2);
-	fp8_null(t3);
-	fp8_null(t4);
-	fp8_null(t5);
-	fp8_null(t6);
+	fp8_null_all(t0, t1, t2, t3, t4, t5, t6);
 
 	RLC_TRY {
-		fp8_new(t0);
-		fp8_new(t1);
-		fp8_new(t2);
-		fp8_new(t3);
-		fp8_new(t4);
-		fp8_new(t5);
-		fp8_new(t6);
+		fp8_new_all(t0, t1, t2, t3, t4, t5, t6);
 
 		fp8_sqr(t2, a[0][0]);
 		fp8_sqr(t3, a[1][1]);
@@ -336,13 +282,7 @@ void fp48_sqr_cyc_lazyr(fp48_t c, const fp48_t a) {
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		fp8_free(t0);
-		fp8_free(t1);
-		fp8_free(t2);
-		fp8_free(t3);
-		fp8_free(t4);
-		fp8_free(t5);
-		fp8_free(t6);
+		fp8_free_all(t0, t1, t2, t3, t4, t5, t6);
 	}
 }
 
@@ -350,22 +290,12 @@ void fp48_sqr_pck_lazyr(fp48_t c, const fp48_t a) {
 	fp8_t t0, t1, t2;
 	dv8_t u0, u1, u2, u3;
 
-	fp8_null(t0);
-	fp8_null(t1);
-	fp8_null(t2);
-	dv8_null(u0);
-	dv8_null(u1);
-	dv8_null(u2);
-	dv8_null(u3);
+	fp8_null_all(t0, t1, t2);
+	dv8_null_all(u0, u1, u2, u3);
 
 	RLC_TRY {
-		fp8_new(t0);
-		fp8_new(t1);
-		fp8_new(t2);
-		dv8_new(u0);
-		dv8_new(u1);
-		dv8_new(u2);
-		dv8_new(u3);
+		fp8_new_all(t0, t1, t2);
+		dv8_new_all(u0, u1, u2, u3);
 
 		fp8_sqr_unr(u0, a[0][1]);
 		fp8_sqr_unr(u1, a[1][2]);
@@ -431,13 +361,8 @@ void fp48_sqr_pck_lazyr(fp48_t c, const fp48_t a) {
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		fp8_free(t0);
-		fp8_free(t1);
-		fp8_free(t2);
-		dv8_free(u0);
-		dv8_free(u1);
-		dv8_free(u2);
-		dv8_free(u3);
+		fp8_free_all(t0, t1, t2);
+		dv8_free_all(u0, u1, u2, u3);
 	}
 }
 

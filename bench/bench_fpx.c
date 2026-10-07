@@ -54,11 +54,9 @@ static void util2(void) {
 	uint8_t bin[2 * RLC_FP_BYTES];
 	fp2_t a, b;
 
-	fp2_null(a);
-	fp2_null(b);
+	fp2_null_all(a, b);
 
-	fp2_new(a);
-	fp2_new(b);
+	fp2_new_all(a, b);
 
 	BENCH_RUN("fp2_copy") {
 		fp2_rand(a);
@@ -167,17 +165,14 @@ static void util2(void) {
 	}
 	BENCH_END;
 
-	fp2_free(a);
-	fp2_free(b);
+	fp2_free_all(a, b);
 }
 
 static void arith2(void) {
 	fp2_t a, b, c, d[2];
 	bn_t e;
 
-	fp2_new(a);
-	fp2_new(b);
-	fp2_new(c);
+	fp2_new_all(a, b, c);
 	fp2_new(d[0]);
 	fp2_new(d[1]);
 	bn_new(e);
@@ -438,9 +433,7 @@ static void arith2(void) {
 	}
 	BENCH_END;
 
-	fp2_free(a);
-	fp2_free(b);
-	fp2_free(c);
+	fp2_free_all(a, b, c);
 	fp2_free(d[0]);
 	fp2_free(d[1]);
 	bn_free(e);
@@ -468,11 +461,9 @@ static void util3(void) {
 	uint8_t bin[3 * RLC_FP_BYTES];
 	fp3_t a, b;
 
-	fp3_null(a);
-	fp3_null(b);
+	fp3_null_all(a, b);
 
-	fp3_new(a);
-	fp3_new(b);
+	fp3_new_all(a, b);
 
 	BENCH_RUN("fp3_copy") {
 		fp3_rand(a);
@@ -559,17 +550,14 @@ static void util3(void) {
 	}
 	BENCH_END;
 
-	fp3_free(a);
-	fp3_free(b);
+	fp3_free_all(a, b);
 }
 
 static void arith3(void) {
 	fp3_t a, b, c, d[2];
 	bn_t e;
 
-	fp3_new(a);
-	fp3_new(b);
-	fp3_new(c);
+	fp3_new_all(a, b, c);
 	fp3_new(d[0]);
 	fp3_new(d[1]);
 	bn_new(e);
@@ -750,9 +738,7 @@ static void arith3(void) {
 	}
 	BENCH_END;
 
-	fp3_free(a);
-	fp3_free(b);
-	fp3_free(c);
+	fp3_free_all(a, b, c);
 	fp3_free(d[0]);
 	fp3_free(d[1]);
 	bn_free(e);
@@ -780,11 +766,9 @@ static void util4(void) {
 	uint8_t bin[4 * RLC_FP_BYTES];
 	fp4_t a, b;
 
-	fp4_null(a);
-	fp4_null(b);
+	fp4_null_all(a, b);
 
-	fp4_new(a);
-	fp4_new(b);
+	fp4_new_all(a, b);
 
 	BENCH_RUN("fp4_copy") {
 		fp4_rand(a);
@@ -871,17 +855,14 @@ static void util4(void) {
 	}
 	BENCH_END;
 
-	fp4_free(a);
-	fp4_free(b);
+	fp4_free_all(a, b);
 }
 
 static void arith4(void) {
 	fp4_t a, b, c;
 	bn_t d;
 
-	fp4_new(a);
-	fp4_new(b);
-	fp4_new(c);
+	fp4_new_all(a, b, c);
 	bn_new(d);
 
 	BENCH_RUN("fp4_add") {
@@ -990,9 +971,7 @@ static void arith4(void) {
 	}
 	BENCH_END;
 
-	fp4_free(a);
-	fp4_free(b);
-	fp4_free(c);
+	fp4_free_all(a, b, c);
 	bn_free(d);
 }
 
@@ -1018,11 +997,9 @@ static void util6(void) {
 	uint8_t bin[6 * RLC_FP_BYTES];
 	fp6_t a, b;
 
-	fp6_null(a);
-	fp6_null(b);
+	fp6_null_all(a, b);
 
-	fp6_new(a);
-	fp6_new(b);
+	fp6_new_all(a, b);
 
 	BENCH_RUN("fp6_copy") {
 		fp6_rand(a);
@@ -1109,17 +1086,14 @@ static void util6(void) {
 	}
 	BENCH_END;
 
-	fp6_free(a);
-	fp6_free(b);
+	fp6_free_all(a, b);
 }
 
 static void arith6(void) {
 	fp6_t a, b, c;
 	bn_t d;
 
-	fp6_new(a);
-	fp6_new(b);
-	fp6_new(c);
+	fp6_new_all(a, b, c);
 	bn_new(d);
 
 	BENCH_RUN("fp6_add") {
@@ -1215,9 +1189,7 @@ static void arith6(void) {
 	}
 	BENCH_END;
 
-	fp6_free(a);
-	fp6_free(b);
-	fp6_free(c);
+	fp6_free_all(a, b, c);
 }
 
 static void memory8(void) {
@@ -1242,11 +1214,9 @@ static void util8(void) {
 	fp8_t a, b;
 	uint8_t bin[8 * RLC_FP_BYTES];
 
-	fp8_null(a);
-	fp8_null(b);
+	fp8_null_all(a, b);
 
-	fp8_new(a);
-	fp8_new(b);
+	fp8_new_all(a, b);
 
 	BENCH_RUN("fp8_copy") {
 		fp8_rand(a);
@@ -1340,17 +1310,14 @@ static void util8(void) {
 	}
 	BENCH_END;
 
-	fp8_free(a);
-	fp8_free(b);
+	fp8_free_all(a, b);
 }
 
 static void arith8(void) {
 	fp8_t a, b, c, d[2];
 	bn_t e;
 
-	fp8_new(a);
-	fp8_new(b);
-	fp8_new(c);
+	fp8_new_all(a, b, c);
 	fp8_new(d[0]);
 	fp8_new(d[1]);
 	bn_new(e);
@@ -1516,9 +1483,7 @@ static void arith8(void) {
 	}
 	BENCH_END;
 
-	fp8_free(a);
-	fp8_free(b);
-	fp8_free(c);
+	fp8_free_all(a, b, c);
 	fp8_free(d[0]);
 	fp8_free(d[1]);
 	bn_free(e);
@@ -1546,11 +1511,9 @@ static void util9(void) {
 	uint8_t bin[9 * RLC_FP_BYTES];
 	fp9_t a, b;
 
-	fp9_null(a);
-	fp9_null(b);
+	fp9_null_all(a, b);
 
-	fp9_new(a);
-	fp9_new(b);
+	fp9_new_all(a, b);
 
 	BENCH_RUN("fp9_copy") {
 		fp9_rand(a);
@@ -1637,17 +1600,14 @@ static void util9(void) {
 	}
 	BENCH_END;
 
-	fp9_free(a);
-	fp9_free(b);
+	fp9_free_all(a, b);
 }
 
 static void arith9(void) {
 	fp9_t a, b, c;
 	bn_t d;
 
-	fp9_new(a);
-	fp9_new(b);
-	fp9_new(c);
+	fp9_new_all(a, b, c);
 	bn_new(d);
 
 	BENCH_RUN("fp9_add") {
@@ -1743,9 +1703,7 @@ static void arith9(void) {
 	}
 	BENCH_END;
 
-	fp9_free(a);
-	fp9_free(b);
-	fp9_free(c);
+	fp9_free_all(a, b, c);
 }
 
 static void memory12(void) {
@@ -1770,11 +1728,9 @@ static void util12(void) {
 	fp12_t a, b;
 	uint8_t bin[12 * RLC_FP_BYTES];
 
-	fp12_null(a);
-	fp12_null(b);
+	fp12_null_all(a, b);
 
-	fp12_new(a);
-	fp12_new(b);
+	fp12_new_all(a, b);
 
 	BENCH_RUN("fp12_copy") {
 		fp12_rand(a);
@@ -1883,17 +1839,14 @@ static void util12(void) {
 	}
 	BENCH_END;
 
-	fp12_free(a);
-	fp12_free(b);
+	fp12_free_all(a, b);
 }
 
 static void arith12(void) {
 	fp12_t a, b, c, d[2];
 	bn_t e;
 
-	fp12_new(a);
-	fp12_new(b);
-	fp12_new(c);
+	fp12_new_all(a, b, c);
 	fp12_new(d[0]);
 	fp12_new(d[1]);
 	bn_new(e);
@@ -2157,9 +2110,7 @@ static void arith12(void) {
 	}
 	BENCH_END;
 
-	fp12_free(a);
-	fp12_free(b);
-	fp12_free(c);
+	fp12_free_all(a, b, c);
 	fp12_free(d[0]);
 	fp12_free(d[1]);
 	bn_free(e);
@@ -2186,11 +2137,9 @@ static void memory16(void) {
 static void util16(void) {
 	fp16_t a, b;
 
-	fp16_null(a);
-	fp16_null(b);
+	fp16_null_all(a, b);
 
-	fp16_new(a);
-	fp16_new(b);
+	fp16_new_all(a, b);
 
 	BENCH_RUN("fp16_copy") {
 		fp16_rand(a);
@@ -2258,17 +2207,14 @@ static void util16(void) {
 	}
 	BENCH_END;
 
-	fp16_free(a);
-	fp16_free(b);
+	fp16_free_all(a, b);
 }
 
 static void arith16(void) {
 	fp16_t a, b, c;
 	bn_t e;
 
-	fp16_new(a);
-	fp16_new(b);
-	fp16_new(c);
+	fp16_new_all(a, b, c);
 	bn_new(e);
 
 	BENCH_RUN("fp16_add") {
@@ -2395,9 +2341,7 @@ static void arith16(void) {
 	}
 	BENCH_END;
 
-	fp16_free(a);
-	fp16_free(b);
-	fp16_free(c);
+	fp16_free_all(a, b, c);
 	bn_free(e);
 }
 
@@ -2423,11 +2367,9 @@ static void util18(void) {
 	fp18_t a, b;
 	uint8_t bin[18 * RLC_FP_BYTES];
 
-	fp18_null(a);
-	fp18_null(b);
+	fp18_null_all(a, b);
 
-	fp18_new(a);
-	fp18_new(b);
+	fp18_new_all(a, b);
 
 	BENCH_RUN("fp18_copy") {
 		fp18_rand(a);
@@ -2536,17 +2478,14 @@ static void util18(void) {
 	}
 	BENCH_END;
 
-	fp18_free(a);
-	fp18_free(b);
+	fp18_free_all(a, b);
 }
 
 static void arith18(void) {
 	fp18_t a, b, c, d[2];
 	bn_t e;
 
-	fp18_new(a);
-	fp18_new(b);
-	fp18_new(c);
+	fp18_new_all(a, b, c);
 	fp18_new(d[0]);
 	fp18_new(d[1]);
 	bn_new(e);
@@ -2779,9 +2718,7 @@ static void arith18(void) {
 	}
 	BENCH_END;
 
-	fp18_free(a);
-	fp18_free(b);
-	fp18_free(c);
+	fp18_free_all(a, b, c);
 	fp18_free(d[0]);
 	fp18_free(d[1]);
 	bn_free(e);
@@ -2809,11 +2746,9 @@ static void util24(void) {
 	fp24_t a, b;
 	uint8_t bin[24 * RLC_FP_BYTES];
 
-	fp24_null(a);
-	fp24_null(b);
+	fp24_null_all(a, b);
 
-	fp24_new(a);
-	fp24_new(b);
+	fp24_new_all(a, b);
 
 	BENCH_RUN("fp24_copy") {
 		fp24_rand(a);
@@ -2922,17 +2857,14 @@ static void util24(void) {
 	}
 	BENCH_END;
 
-	fp24_free(a);
-	fp24_free(b);
+	fp24_free_all(a, b);
 }
 
 static void arith24(void) {
 	fp24_t a, b, c, d[2];
 	bn_t e;
 
-	fp24_new(a);
-	fp24_new(b);
-	fp24_new(c);
+	fp24_new_all(a, b, c);
 	fp24_new(d[0]);
 	fp24_new(d[1]);
 	bn_new(e);
@@ -3102,9 +3034,7 @@ static void arith24(void) {
 	}
 	BENCH_END;
 
-	fp24_free(a);
-	fp24_free(b);
-	fp24_free(c);
+	fp24_free_all(a, b, c);
 	fp24_free(d[0]);
 	fp24_free(d[1]);
 	bn_free(e);
@@ -3132,11 +3062,9 @@ static void util48(void) {
 	fp48_t a, b;
 	uint8_t bin[48 * RLC_FP_BYTES];
 
-	fp48_null(a);
-	fp48_null(b);
+	fp48_null_all(a, b);
 
-	fp48_new(a);
-	fp48_new(b);
+	fp48_new_all(a, b);
 
 	BENCH_RUN("fp48_copy") {
 		fp48_rand(a);
@@ -3245,17 +3173,14 @@ static void util48(void) {
 	}
 	BENCH_END;
 
-	fp48_free(a);
-	fp48_free(b);
+	fp48_free_all(a, b);
 }
 
 static void arith48(void) {
 	fp48_t a, b, c, d[2];
 	bn_t e;
 
-	fp48_new(a);
-	fp48_new(b);
-	fp48_new(c);
+	fp48_new_all(a, b, c);
 	fp48_new(d[0]);
 	fp48_new(d[1]);
 	bn_new(e);
@@ -3470,9 +3395,7 @@ static void arith48(void) {
 	}
 	BENCH_END;
 
-	fp48_free(a);
-	fp48_free(b);
-	fp48_free(c);
+	fp48_free_all(a, b, c);
 	fp48_free(d[0]);
 	fp48_free(d[1]);
 	bn_free(e);
@@ -3500,11 +3423,9 @@ static void util54(void) {
 	fp54_t a, b;
 	uint8_t bin[54 * RLC_FP_BYTES];
 
-	fp54_null(a);
-	fp54_null(b);
+	fp54_null_all(a, b);
 
-	fp54_new(a);
-	fp54_new(b);
+	fp54_new_all(a, b);
 
 	BENCH_RUN("fp54_copy") {
 		fp54_rand(a);
@@ -3613,17 +3534,14 @@ static void util54(void) {
 	}
 	BENCH_END;
 
-	fp54_free(a);
-	fp54_free(b);
+	fp54_free_all(a, b);
 }
 
 static void arith54(void) {
 	fp54_t a, b, c, d[2];
 	bn_t e;
 
-	fp54_new(a);
-	fp54_new(b);
-	fp54_new(c);
+	fp54_new_all(a, b, c);
 	fp54_new(d[0]);
 	fp54_new(d[1]);
 	bn_new(e);
@@ -3838,9 +3756,7 @@ static void arith54(void) {
 	}
 	BENCH_END;
 
-	fp54_free(a);
-	fp54_free(b);
-	fp54_free(c);
+	fp54_free_all(a, b, c);
 	fp54_free(d[0]);
 	fp54_free(d[1]);
 	bn_free(e);

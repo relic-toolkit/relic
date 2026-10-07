@@ -42,20 +42,10 @@
 void fp54_mul_basic(fp54_t c, const fp54_t a, const fp54_t b) {
 	fp18_t t0, t1, t2, t3, t4, t5;
 
-	fp18_null(t0);
-	fp18_null(t1);
-	fp18_null(t2);
-	fp18_null(t3);
-	fp18_null(t4);
-	fp18_null(t5);
+	fp18_null_all(t0, t1, t2, t3, t4, t5);
 
 	RLC_TRY {
-		fp18_new(t0);
-		fp18_new(t1);
-		fp18_new(t2);
-		fp18_new(t3);
-		fp18_new(t4);
-		fp18_new(t5);
+		fp18_new_all(t0, t1, t2, t3, t4, t5);
 
 		/* Karatsuba algorithm. */
 
@@ -93,12 +83,7 @@ void fp54_mul_basic(fp54_t c, const fp54_t a, const fp54_t b) {
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		fp18_free(t0);
-		fp18_free(t1);
-		fp18_free(t2);
-		fp18_free(t3);
-		fp18_free(t4);
-		fp18_free(t5);
+		fp18_free_all(t0, t1, t2, t3, t4, t5);
 	}
 }
 
@@ -110,20 +95,10 @@ void fp54_mul_lazyr(fp54_t c, const fp54_t a, const fp54_t b) {
 	/* TODO: implement lazy reduction. */
 	fp18_t t0, t1, t2, t3, t4, t5;
 
-	fp18_null(t0);
-	fp18_null(t1);
-	fp18_null(t2);
-	fp18_null(t3);
-	fp18_null(t4);
-	fp18_null(t5);
+	fp18_null_all(t0, t1, t2, t3, t4, t5);
 
 	RLC_TRY {
-		fp18_new(t0);
-		fp18_new(t1);
-		fp18_new(t2);
-		fp18_new(t3);
-		fp18_new(t4);
-		fp18_new(t5);
+		fp18_new_all(t0, t1, t2, t3, t4, t5);
 
 		/* Karatsuba algorithm. */
 
@@ -161,12 +136,7 @@ void fp54_mul_lazyr(fp54_t c, const fp54_t a, const fp54_t b) {
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		fp18_free(t0);
-		fp18_free(t1);
-		fp18_free(t2);
-		fp18_free(t3);
-		fp18_free(t4);
-		fp18_free(t5);
+		fp18_free_all(t0, t1, t2, t3, t4, t5);
 	}
 }
 
@@ -175,18 +145,10 @@ void fp54_mul_lazyr(fp54_t c, const fp54_t a, const fp54_t b) {
 void fp54_mul_dxs(fp54_t c, const fp54_t a, const fp54_t b) {
 	fp18_t t0, t1, t2, t3, t4;
 
-	fp18_null(t0);
-	fp18_null(t1);
-	fp18_null(t2);
-	fp18_null(t3);
-	fp18_null(t4);
+	fp18_null_all(t0, t1, t2, t3, t4);
 
 	RLC_TRY {
-		fp18_new(t0);
-		fp18_new(t1);
-		fp18_new(t2);
-		fp18_new(t3);
-		fp18_new(t4);
+		fp18_new_all(t0, t1, t2, t3, t4);
 
 		/* Karatsuba algorithm. */
 
@@ -232,11 +194,7 @@ void fp54_mul_dxs(fp54_t c, const fp54_t a, const fp54_t b) {
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		fp18_free(t0);
-		fp18_free(t1);
-		fp18_free(t2);
-		fp18_free(t3);
-		fp18_free(t4);
+		fp18_free_all(t0, t1, t2, t3, t4);
 	}
 }
 
