@@ -66,7 +66,7 @@ void fp_rdc_basic(fp_t c, dv_t a) {
 #if FP_MUL == BASIC || !defined(STRIP)
 
 void fp_rdc_monty_basic(fp_t c, dv_t a) {
-	int i;
+	size_t i;
 	dig_t r, u0;
 
 	u0 = *(fp_prime_get_rdc());

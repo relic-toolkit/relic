@@ -258,6 +258,7 @@ int fp_smb_basic(const fp_t a) {
 		r = RLC_SEL(r, -(fp_cmp_dig(t->dp, 1) == RLC_EQ), !r);
 	}
 	RLC_CATCH_ANY {
+		r = 0;
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
@@ -401,7 +402,7 @@ int fp_smb_divst(const fp_t a) {
 			s = (fs ^ gs) & mask;
 			fs ^= s;
 			gs ^= s ^ d0;
-			for (int j = 0; j < RLC_FP_DIGS; j++) {
+			for (size_t j = 0; j < RLC_FP_DIGS; j++) {
 				s = (f[j] ^ g[j]) & mask;
 				f[j] ^= s;
 				g[j] ^= s ^ (-d0);
@@ -414,7 +415,7 @@ int fp_smb_divst(const fp_t a) {
 
 			delta++;
 			g0 = g[0] & 1;
-			for (int j = 0; j < RLC_FP_DIGS; j++) {
+			for (size_t j = 0; j < RLC_FP_DIGS; j++) {
 				t[j] = f[j] & (-g0);
 			}
 
@@ -437,6 +438,7 @@ int fp_smb_divst(const fp_t a) {
 		r = RLC_SEL(r, 1 - k, fp_is_zero(f));
 		r = RLC_SEL(r, 0, fp_is_zero(a));
 	} RLC_CATCH_ANY {
+		r = 0;
 		RLC_THROW(ERR_CAUGHT)
 	} RLC_FINALLY {
 		bn_free(_t);
@@ -525,6 +527,7 @@ int fp_smb_jmpds(const fp_t a) {
 		r = RLC_SEL(r, 1 - j, dv_cmp_sec(f, t0, RLC_FP_DIGS) == RLC_EQ);
 	}
 	RLC_CATCH_ANY {
+		r = 0;
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {

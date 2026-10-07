@@ -629,7 +629,7 @@ void fp_prime_set_pairf(const bn_t x, int pairf) {
 			s[0] = 1;
 			s[1] = -1;
 		}
-		for (int i = 0; i < len && ctx->par_len < RLC_TERMS; i++) {
+		for (int i = 0; i < (int)len && ctx->par_len < RLC_TERMS; i++) {
 			if (s[i] > 0) {
 				ctx->par_sps[ctx->par_len++] = i;
 			}
@@ -674,7 +674,7 @@ void fp_prime_set_pmers(const int *f, size_t len) {
 
 #if FP_RDC == QUICK || !defined(STRIP)
 		ctx_t *ctx = core_get();
-		for (int i = 0; i < len; i++) {
+		for (size_t i = 0; i < len; i++) {
 			ctx->sps[i] = f[i];
 		}
 		ctx->sps[len] = 0;

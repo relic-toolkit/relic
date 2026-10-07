@@ -59,6 +59,7 @@ int fp_is_cub(const fp_t a) {
 		r = (fp_cmp_dig(t->dp, 1) == RLC_EQ);
 	}
 	RLC_CATCH_ANY {
+		r = 0;
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
@@ -192,6 +193,7 @@ int fp_crt(fp_t c, const fp_t a) {
 		}
 	}
 	RLC_CATCH_ANY {
+		r = 0;
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {

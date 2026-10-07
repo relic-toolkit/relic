@@ -238,7 +238,8 @@ void fp_inv_monty(fp_t c, const fp_t a) {
 	bn_t _a, _p, u, v, x1, x2;
 	const dig_t *p = NULL;
 	dig_t carry;
-	int i, k;
+	size_t i;
+	int k;
 #if ALLOC == AUTO
 	const dig_t *conv = (const dig_t *)fp_prime_get_conv();
 #else
@@ -318,7 +319,7 @@ void fp_inv_monty(fp_t c, const fp_t a) {
 		}
 
 		/* If k < Wt then x1 = x1 * R^2 * R^{-1} mod p. */
-		if (k <= RLC_FP_DIGS * RLC_DIG) {
+		if (k <= (int)(RLC_FP_DIGS * RLC_DIG)) {
 			k = k + RLC_FP_DIGS * RLC_DIG;
 #if FP_RDC == MONTY
 			fp_mul(x1->dp, x1->dp, conv);
@@ -462,7 +463,7 @@ void fp_inv_divst(fp_t c, const fp_t a) {
 			fp_negm_low(t, r);
 			dv_swap_sec(f, g, RLC_FP_DIGS, d0);
 			dv_copy_sec(r, t, RLC_FP_DIGS, d0);
-			for (int j = 0; j < RLC_FP_DIGS; j++) {
+			for (size_t j = 0; j < RLC_FP_DIGS; j++) {
 				g[j] = RLC_SEL(g[j], ~g[j], d0);
 			}
 			fp_add1_low(g, g, d0);
@@ -472,7 +473,7 @@ void fp_inv_divst(fp_t c, const fp_t a) {
 
 			delta++;
 			g0 = g[0] & 1;
-			for (int j = 0; j < RLC_FP_DIGS; j++) {
+			for (size_t j = 0; j < RLC_FP_DIGS; j++) {
 				t[j] = v[j] & (-g0);
 				u[j] = f[j] & (-g0);
 			}

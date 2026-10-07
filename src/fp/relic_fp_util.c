@@ -73,6 +73,7 @@ int fp_is_even(const fp_t a) {
 		fp_prime_back(t, a);
 		r = bn_is_even(t);
 	} RLC_CATCH_ANY {
+		r = 0;
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
@@ -164,7 +165,7 @@ void fp_print(const fp_t a) {
 #endif
 
 		for (i = RLC_FP_DIGS - 1; i > 0; i--) {
-			if (i >= t->used) {
+			if ((size_t)i >= t->used) {
 				util_print_dig(0, 1);
 			} else {
 				util_print_dig(t->dp[i], 1);
@@ -195,6 +196,7 @@ size_t fp_size_str(const fp_t a, uint_t radix) {
 
 		digits = bn_size_str(t, radix);
 	} RLC_CATCH_ANY {
+		digits = 0;
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {

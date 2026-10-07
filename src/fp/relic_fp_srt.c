@@ -121,6 +121,7 @@ int fp_srt(fp_t c, const fp_t a) {
 		}
 	}
 	RLC_CATCH_ANY {
+		r = 0;
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {

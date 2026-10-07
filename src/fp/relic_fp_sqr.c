@@ -134,7 +134,7 @@ static void fp_sqr_karat_imp(dv_t c, const fp_t a, size_t size, uint_t level) {
 		c += h;
 		carry = bn_addn_low(c, c, t1, 2 * (h1 + 1));
 		c += 2 * (h1 + 1);
-		if (2 * size > h + 2 * (h1 + 1)) {
+		if (2 * size > (size_t)(h + 2 * (h1 + 1))) {
 			carry = bn_add1_low(c, c, carry, 2 * size - h - 2 * (h1 + 1));
 		}
 	}
@@ -154,7 +154,7 @@ static void fp_sqr_karat_imp(dv_t c, const fp_t a, size_t size, uint_t level) {
 #if FP_SQR == BASIC || !defined(STRIP)
 
 void fp_sqr_basic(fp_t c, const fp_t a) {
-	int i;
+	size_t i;
 	dv_t t;
 
 	dv_null(t);

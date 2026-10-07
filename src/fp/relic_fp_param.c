@@ -754,6 +754,7 @@ int fp_param_set_any_dense(void) {
 		}
 	}
 	RLC_CATCH_ANY {
+		result = RLC_ERR;
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
