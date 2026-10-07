@@ -276,7 +276,7 @@ void fp8_exp_dig(fp8_t c, const fp8_t a, dig_t b) {
 			l = RLC_DIG + 1;
 			bn_rec_naf(naf, &l, _b, 2);
 
-			for (int i = bn_bits(_b) - 2; i >= 0; i--) {
+			for (int i = l - 2; i >= 0; i--) {
 				fp8_sqr_cyc(t, t);
 
 				u = naf[i];
@@ -409,7 +409,7 @@ void fp12_exp_dig(fp12_t c, const fp12_t a, dig_t b) {
 			l = RLC_DIG + 1;
 			bn_rec_naf(naf, &l, _b, 2);
 
-			for (int i = bn_bits(_b) - 2; i >= 0; i--) {
+			for (int i = l - 2; i >= 0; i--) {
 				fp12_sqr_cyc(t, t);
 
 				u = naf[i];
@@ -506,7 +506,7 @@ void fp16_exp_dig(fp16_t c, const fp16_t a, dig_t b) {
 			l = RLC_DIG + 1;
 			bn_rec_naf(naf, &l, _b, 2);
 
-			for (int i = bn_bits(_b) - 2; i >= 0; i--) {
+			for (int i = l - 2; i >= 0; i--) {
 				fp16_sqr_cyc(t, t);
 
 				u = naf[i];
@@ -599,7 +599,7 @@ void fp18_exp_dig(fp18_t c, const fp18_t a, dig_t b) {
 			l = RLC_DIG + 1;
 			bn_rec_naf(naf, &l, _b, 2);
 
-			for (int i = bn_bits(_b) - 2; i >= 0; i--) {
+			for (int i = l - 2; i >= 0; i--) {
 				fp18_sqr_cyc(t, t);
 
 				u = naf[i];
@@ -692,7 +692,7 @@ void fp24_exp_dig(fp24_t c, const fp24_t a, dig_t b) {
 			l = RLC_DIG + 1;
 			bn_rec_naf(naf, &l, _b, 2);
 
-			for (int i = bn_bits(_b) - 2; i >= 0; i--) {
+			for (int i = l - 2; i >= 0; i--) {
 				fp24_sqr_cyc(t, t);
 
 				u = naf[i];
@@ -789,7 +789,7 @@ void fp48_exp_dig(fp48_t c, const fp48_t a, dig_t b) {
 			l = RLC_DIG + 1;
 			bn_rec_naf(naf, &l, _b, 2);
 
-			for (int i = bn_bits(_b) - 2; i >= 0; i--) {
+			for (int i = l - 2; i >= 0; i--) {
 				fp48_sqr_cyc(t, t);
 
 				u = naf[i];
@@ -882,7 +882,7 @@ void fp54_exp_dig(fp54_t c, const fp54_t a, dig_t b) {
 			l = RLC_DIG + 1;
 			bn_rec_naf(naf, &l, _b, 2);
 
-			for (int i = bn_bits(_b) - 2; i >= 0; i--) {
+			for (int i = l - 2; i >= 0; i--) {
 				fp54_sqr_cyc(t, t);
 
 				u = naf[i];

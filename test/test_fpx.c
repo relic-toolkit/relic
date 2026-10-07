@@ -3234,6 +3234,10 @@ static int exponentiation8(void) {
 			fp8_exp(b, a, d);
 			fp8_exp_dig(c, a, d->dp[0]);
 			TEST_ASSERT(fp8_cmp(b, c) == RLC_EQ, end);
+			fp8_conv_cyc(a, a);
+			fp8_exp(b, a, d);
+			fp8_exp_dig(c, a, d->dp[0]);
+			TEST_ASSERT(fp8_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {
@@ -4470,6 +4474,10 @@ static int exponentiation12(void) {
 			fp12_exp_dig(b, a, d->dp[0]);
 			fp12_exp(c, a, d);
 			TEST_ASSERT(fp12_cmp(b, c) == RLC_EQ, end);
+			fp12_conv_cyc(a, a);
+			fp12_exp_dig(b, a, d->dp[0]);
+			fp12_exp(c, a, d);
+			TEST_ASSERT(fp12_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_CASE("frobenius and exponentiation are consistent") {
@@ -5025,6 +5033,10 @@ static int cyclotomic16(void) {
 		TEST_CASE("exponentiation by a digit is correct") {
 			fp16_rand(a);
 			bn_rand(f, RLC_POS, RLC_DIG);
+			fp16_exp(b, a, f);
+			fp16_exp_dig(c, a, f->dp[0]);
+			TEST_ASSERT(fp16_cmp(b, c) == RLC_EQ, end);
+			fp16_conv_cyc(a, a);
 			fp16_exp(b, a, f);
 			fp16_exp_dig(c, a, f->dp[0]);
 			TEST_ASSERT(fp16_cmp(b, c) == RLC_EQ, end);
@@ -5867,6 +5879,10 @@ static int exponentiation18(void) {
 			fp18_exp(b, a, d);
 			fp18_exp_dig(c, a, d->dp[0]);
 			TEST_ASSERT(fp18_cmp(b, c) == RLC_EQ, end);
+			fp18_conv_cyc(a, a);
+			fp18_exp(b, a, d);
+			fp18_exp_dig(c, a, d->dp[0]);
+			TEST_ASSERT(fp18_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {
@@ -6546,6 +6562,10 @@ static int exponentiation24(void) {
 			fp24_inv(c, c);
 			TEST_ASSERT(fp24_cmp(b, c) == RLC_EQ, end);
 			bn_rand(d, RLC_POS, RLC_DIG);
+			fp24_exp_dig(b, a, d->dp[0]);
+			fp24_exp(c, a, d);
+			TEST_ASSERT(fp24_cmp(b, c) == RLC_EQ, end);
+			fp24_conv_cyc(a, a);
 			fp24_exp_dig(b, a, d->dp[0]);
 			fp24_exp(c, a, d);
 			TEST_ASSERT(fp24_cmp(b, c) == RLC_EQ, end);
@@ -7292,6 +7312,10 @@ static int exponentiation48(void) {
 			fp48_exp_dig(b, a, d->dp[0]);
 			fp48_exp(c, a, d);
 			TEST_ASSERT(fp48_cmp(b, c) == RLC_EQ, end);
+			fp48_conv_cyc(a, a);
+			fp48_exp_dig(b, a, d->dp[0]);
+			fp48_exp(c, a, d);
+			TEST_ASSERT(fp48_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_CASE("frobenius and exponentiation are consistent") {
@@ -7971,6 +7995,10 @@ static int exponentiation54(void) {
 			fp54_inv(c, c);
 			TEST_ASSERT(fp54_cmp(b, c) == RLC_EQ, end);
 			bn_rand(d, RLC_POS, RLC_DIG);
+			fp54_exp_dig(b, a, d->dp[0]);
+			fp54_exp(c, a, d);
+			TEST_ASSERT(fp54_cmp(b, c) == RLC_EQ, end);
+			fp54_conv_cyc(a, a);
 			fp54_exp_dig(b, a, d->dp[0]);
 			fp54_exp(c, a, d);
 			TEST_ASSERT(fp54_cmp(b, c) == RLC_EQ, end);
