@@ -361,7 +361,7 @@ void bn_rec_tnaf_mod(bn_t r0, bn_t r1, const bn_t k, int u, size_t m) {
 		bn_abs(r0, k);
 		bn_zero(r1);
 
-		for (int i = 0; i < m; i++) {
+		for (size_t i = 0; i < m; i++) {
 			if (!bn_is_even(r0)) {
 				/* r0 = r0 - 1. */
 				bn_sub_dig(r0, r0, 1);
@@ -569,7 +569,7 @@ void bn_rec_rtnaf(int8_t *tnaf, size_t *len, const bn_t k, int8_t u, size_t m,
 				/* r1 = r1 - s * gama_u. */
 				bn_sub_dis(r1, r1, s);
 			}
-			for (int j = 0; j < (w - 1); j++) {
+			for (size_t j = 0; j < (w - 1); j++) {
 				tnaf_hlv(r0, r1, tmp, u);
 			}
 		}
@@ -866,7 +866,8 @@ void bn_rec_sac(int8_t *b, size_t *len, const bn_t *k, const bn_t u, size_t c,
 
 void bn_rec_frb(bn_t *ki, int sub, const bn_t k, const bn_t x, const bn_t n,
 		int cof) {
-	int i, l, sk, sx;
+	int i, sk, sx;
+	size_t l;
 	bn_t u[4], v[4];
 
 	RLC_TRY {

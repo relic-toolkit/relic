@@ -192,6 +192,7 @@ int bn_smb_jac(const bn_t a, const bn_t b) {
 		}
 	}
 	RLC_CATCH_ANY {
+		r = 0;
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {

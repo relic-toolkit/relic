@@ -37,7 +37,7 @@
 /*============================================================================*/
 
 void bn_lag(bn_t *c, const bn_t *a, const bn_t b, size_t n) {
-    int i, j;
+    size_t i, j;
 	bn_t *t = RLC_ALLOCA(bn_t, n + 1);
 
     if (n == 0) {

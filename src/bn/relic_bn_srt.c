@@ -168,6 +168,7 @@ int bn_srt_mod(bn_t c, const bn_t a, const bn_t b) {
 		}
 	}
 	RLC_CATCH_ANY {
+		result = 0;
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {

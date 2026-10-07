@@ -105,7 +105,7 @@ void bn_mxp_sim_few(bn_t c, const bn_t *a, const bn_t *b, const bn_t m,
 	}
 
     RLC_TRY {
-		for (size_t i = 0; i < (1 << n); i++) {
+		for (size_t i = 0; i < ((size_t)1 << n); i++) {
 			bn_null(t[i]);
 			bn_new(t[i]);
 		}
@@ -160,7 +160,7 @@ void bn_mxp_sim_few(bn_t c, const bn_t *a, const bn_t *b, const bn_t m,
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		for (size_t i = 0; i < (1 << n); i++) {
+		for (size_t i = 0; i < ((size_t)1 << n); i++) {
 			bn_free(t[i]);
 		}
 		RLC_FREE(t);
@@ -189,7 +189,7 @@ void bn_mxp_sim_lot(bn_t c, const bn_t *a, const bn_t *b, const bn_t m, size_t n
         }
 
         // Largest multiple of XP_WIDTH lower than n
-        const int endblockingloop = ((n / XP_WIDTH) * XP_WIDTH);
+        const size_t endblockingloop = ((n / XP_WIDTH) * XP_WIDTH);
         bn_set_dig(c, 1);
         // Exponentiate by blocks of size RLC_WIDTH
 		for(i = 0; i < endblockingloop;) {

@@ -136,7 +136,7 @@ static void bn_sqr_karat_imp(bn_t c, const bn_t a, uint_t level) {
 #if BN_SQR == BASIC || !defined(STRIP)
 
 void bn_sqr_basic(bn_t c, const bn_t a) {
-	int i;
+	size_t i;
 	bn_t t;
 
 	bn_null(t);

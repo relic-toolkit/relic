@@ -180,7 +180,7 @@ int bn_get_bit(const bn_t a, uint_t bit) {
 
 	RLC_RIP(bit, d, bit);
 
-	if (d >= a->used) {
+	if ((size_t)d >= a->used) {
 		return 0;
 	} else {
 		return (a->dp[d] >> bit) & (dig_t)1;
@@ -196,7 +196,7 @@ void bn_set_bit(bn_t a, uint_t bit, int value) {
 
 	if (value == 1) {
 		a->dp[d] |= ((dig_t)1 << bit);
-		if ((d + 1) > a->used) {
+		if ((size_t)d + 1 > a->used) {
 			a->used = d + 1;
 		}
 	} else {
@@ -208,7 +208,7 @@ void bn_set_bit(bn_t a, uint_t bit, int value) {
 uint_t bn_ham(const bn_t a) {
 	int c = 0;
 
-	for (int i = 0; i < bn_bits(a); i++) {
+	for (size_t i = 0; i < bn_bits(a); i++) {
 		c += bn_get_bit(a, i);
 	}
 
@@ -393,6 +393,7 @@ size_t bn_size_str(const bn_t a, uint_t radix) {
 			digits++;
 		}
 	} RLC_CATCH_ANY {
+		digits = 0;
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		bn_free(t);
@@ -402,7 +403,8 @@ size_t bn_size_str(const bn_t a, uint_t radix) {
 }
 
 void bn_read_str(bn_t a, const char *str, size_t len, uint_t radix) {
-	int sign, i, j;
+	int sign;
+	size_t i, j;
 	char c;
 
 	bn_zero(a);
@@ -453,7 +455,7 @@ void bn_read_str(bn_t a, const char *str, size_t len, uint_t radix) {
 void bn_write_str(char *str, size_t len, const bn_t a, uint_t radix) {
 	bn_t t;
 	dig_t d;
-	int l, i, j;
+	size_t l, i, j;
 	char c;
 
 	bn_null(t);
@@ -551,7 +553,7 @@ void bn_read_bin(bn_t a, const uint8_t *bin, size_t len) {
 	}
 	d = 0;
 	for (j = (RLC_DIG / 8) - 1; j >= 0; j--) {
-		if ((int)(i * (RLC_DIG / 8) + j) < len) {
+		if ((size_t)(i * (RLC_DIG / 8) + j) < len) {
 			d = d << 8;
 			d |= bin[len - 1 - (i * (RLC_DIG / 8) + j)];
 		}
@@ -574,7 +576,7 @@ void bn_write_bin(uint8_t *bin, size_t len, const bn_t a) {
 	}
 
 	k = 0;
-	for (int i = 0; i < a->used - 1; i++) {
+	for (size_t i = 0; i < a->used - 1; i++) {
 		d = a->dp[i];
 		for (int j = 0; j < (int)(RLC_DIG / 8); j++) {
 			bin[len - 1 - k++] = d & 0xFF;
@@ -610,7 +612,7 @@ void bn_read_raw(bn_t a, const dig_t *raw, size_t len) {
 }
 
 void bn_write_raw(dig_t *raw, size_t len, const bn_t a) {
-	int i, size;
+	size_t i, size;
 
 	size = a->used;
 

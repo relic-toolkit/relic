@@ -42,9 +42,6 @@
 /*============================================================================*/
 
 void bn_make(bn_t a, size_t digits) {
-	if (digits < 0) {
-		RLC_THROW(ERR_NO_VALID);
-	}
 	/* Allocate at least one digit. */
 	digits = RLC_MAX(digits, 1);
 

@@ -277,7 +277,7 @@ void bn_mul_dis(bn_t t, const bn_t x, dis_t b) {
 #if BN_MUL == BASIC || !defined(STRIP)
 
 void bn_mul_basic(bn_t c, const bn_t a, const bn_t b) {
-	int i;
+	size_t i;
 	bn_t t;
 	dig_t carry;
 

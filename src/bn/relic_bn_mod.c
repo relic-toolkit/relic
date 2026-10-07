@@ -38,7 +38,8 @@
 /*============================================================================*/
 
 void bn_mod_2b(bn_t c, const bn_t a, int b) {
-	int i, first, d;
+	int first, d;
+	size_t i;
 
 	if (b <= 0) {
 		bn_zero(c);
@@ -228,7 +229,7 @@ void bn_mod_monty_back(bn_t c, const bn_t a, const bn_t m) {
 #if BN_MUL == BASIC || !defined(STRIP)
 
 void bn_mod_monty_basic(bn_t c, const bn_t a, const bn_t m, const bn_t u) {
-	int digits, i;
+	size_t digits, i;
 	dig_t r, u0, *tmp;
 	bn_t t;
 
