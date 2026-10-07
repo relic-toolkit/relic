@@ -4652,7 +4652,7 @@ void fp18_exp_cyc_sim(fp18_t e, const fp18_t a, const bn_t b, const fp18_t c,
  * @param[in] l				- the length of the exponent in sparse form.
  * @param[in] s				- the sign of the exponent.
  */
-void fp18_exp_cyc_sps(fp18_t c, const fp18_t a, const int *b, int l, int s);
+void fp18_exp_cyc_sps(fp18_t c, const fp18_t a, const int *b, size_t l, int s);
 
 /**
  * Compresses a octdecic extension field element.
