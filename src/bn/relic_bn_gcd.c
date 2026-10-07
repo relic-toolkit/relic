@@ -24,7 +24,7 @@
 /**
  * @file
  *
- * Implementation of the multiple precision addition and subtraction functions.
+ * Implementation of the multiple precision greatest common divisor functions.
  *
  * @ingroup bn
  */
@@ -37,14 +37,11 @@
 /*============================================================================*/
 
 /**
- * Lehmer step: runs the Euclidean algorithm on the leading RLC_DIG bits of
- * x >= y > 0 and returns the batched transformation
- *
- *     (x', y')^T = [[m[0], m[1]], [m[2], m[3]]] * (x, y)^T.
- *
- * Returns the number of committed steps, always even, and zero when the leading
- * digits yield no trustworthy step, in which case the caller falls back to one
- * full-precision division.
+ * Runs the Euclidean algorithm on the leading RLC_DIG bits of x >= y > 0,
+ * returning the batched transformation (x', y')^T = [[m[0], m[1]], [m[2],
+ * m[3]]] * (x, y)^T as the always-even number of committed steps, or zero
+ * when the leading digits yield no trustworthy step and the caller must
+ * fall back to one full-precision division.
  */
 static int lehmer_step(dis_t *m, const bn_t x, const bn_t y, bn_t u, bn_t v) {
 	dig_t X, Y, q, r, q2, r2;
@@ -71,14 +68,13 @@ static int lehmer_step(dis_t *m, const bn_t x, const bn_t y, bn_t u, bn_t v) {
 
 	q = X / Y;
 	r = X % Y;
-	// Threshold in which a single-precision quotient can no longer be trusted.
+	/* Below this, the remainder can no longer be trusted to full precision. */
 	while (r >= ((dig_t)1 << (RLC_DIG / 2))) {
 		q2 = Y / r;
 		r2 = Y % r;
 		if (r2 < ((dig_t)1 << (RLC_DIG / 2))) {
-			break;			/* the next step would not be trustworthy */
+			break;
 		}
-		/* commit the step with quotient q */
 		X = Y;
 		Y = r;
 		t = a0 - (dis_t)q * b0;
@@ -110,12 +106,10 @@ static int lehmer_step(dis_t *m, const bn_t x, const bn_t y, bn_t u, bn_t v) {
 }
 
 /*
- * Single-precision continued fraction step on leading digits x, y: extends
- * whatever transformation (a, b; c, d) already holds by committing every
- * further step while it stays trustworthy, i.e. the remainder never drops
- * below half the digit's bits. Callers reset the matrix to the identity for
- * a first pass, or carry a prior pass's result forward to keep refining it
- * with more precision.
+ * Extends whatever transformation (a, b; c, d) already holds with further
+ * single-precision continued fraction steps on x, y, for as long as they
+ * stay trustworthy. Callers reset the matrix to the identity for a first
+ * pass, or carry a prior pass's result forward to refine it further.
  */
 static void lehme_step_dig(dis_t *a, dis_t *b, dis_t *c, dis_t *d,
 		dig_t x, dig_t y) {
@@ -144,6 +138,48 @@ static void lehme_step_dig(dis_t *a, dis_t *b, dis_t *c, dis_t *d,
 			q = q2;
 		}
 	}
+}
+
+/*
+ * Disposes of the two cases every bn_gcd_ext_* variant must handle before
+ * running its algorithm proper: either operand zero. Returns nonzero when it
+ * already produced (c, d, e), leaving the caller nothing further to do.
+ *
+ * Signs are captured before writing anything because the outputs may alias
+ * the inputs, and e.g. bn_abs(c, b) with c aliasing b makes b positive, so a
+ * later bn_sign(b) would read the wrong sign. The same applies to a d that
+ * aliases b.
+ */
+static int gcd_ext_zero(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
+	int sgn_a = bn_sign(a), sgn_b = bn_sign(b);
+
+	if (bn_is_zero(a)) {
+		bn_abs(c, b);
+		if (d != NULL) {
+			bn_zero(d);
+		}
+		if (e != NULL) {
+			bn_set_dig(e, 1);
+			if (sgn_b == RLC_NEG) {
+				bn_neg(e, e);
+			}
+		}
+		return 1;
+	}
+	if (bn_is_zero(b)) {
+		bn_abs(c, a);
+		if (d != NULL) {
+			bn_set_dig(d, 1);
+			if (sgn_a == RLC_NEG) {
+				bn_neg(d, d);
+			}
+		}
+		if (e != NULL) {
+			bn_zero(e);
+		}
+		return 1;
+	}
+	return 0;
 }
 
 /*============================================================================*/
@@ -191,41 +227,8 @@ void bn_gcd_basic(bn_t c, const bn_t a, const bn_t b) {
 
 void bn_gcd_ext_basic(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 	bn_t t, u, v, x_1, y_1, q, r;
-	int sgn_a, sgn_b;
 
-	/*
-	 * Capture both signs before writing anything: the outputs may alias the
-	 * inputs, and bn_abs(c, b) with c aliasing b makes b positive, so a later
-	 * bn_sign(b) would read the wrong sign. The same applies to a d that
-	 * aliases b.
-	 */
-	sgn_a = bn_sign(a);
-	sgn_b = bn_sign(b);
-
-	if (bn_is_zero(a)) {
-		bn_abs(c, b);
-		if (d != NULL) {
-			bn_zero(d);
-		}
-		if (e != NULL) {
-			bn_set_dig(e, 1);
-			if (sgn_b == RLC_NEG) {
-				bn_neg(e, e);
-			}
-		}
-		return;
-	}
-	if (bn_is_zero(b)) {
-		bn_abs(c, a);
-		if (d != NULL) {
-			bn_set_dig(d, 1);
-			if (sgn_a == RLC_NEG) {
-				bn_neg(d, d);
-			}
-		}
-		if (e != NULL) {
-			bn_zero(e);
-		}
+	if (gcd_ext_zero(c, d, e, a, b)) {
 		return;
 	}
 
@@ -411,45 +414,12 @@ void bn_gcd_lehme(bn_t c, const bn_t a, const bn_t b) {
 }
 
 void bn_gcd_ext_lehme(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
-	int sgn_a, sgn_b;
 	bn_t x, y, u, v, t0, t1, t2, t3, t4;
 	dig_t _x, _y;
 	dis_t _a, _b, _c, _d;
 	int swap;
 
-	/*
-	 * Capture both signs before writing anything: the outputs may alias the
-	 * inputs, and bn_abs(c, b) with c aliasing b makes b positive, so a later
-	 * bn_sign(b) would read the wrong sign. The same applies to a d that
-	 * aliases b.
-	 */
-	sgn_a = bn_sign(a);
-	sgn_b = bn_sign(b);
-
-	if (bn_is_zero(a)) {
-		bn_abs(c, b);
-		if (d != NULL) {
-			bn_zero(d);
-		}
-		if (e != NULL) {
-			bn_set_dig(e, 1);
-			if (sgn_b == RLC_NEG) {
-				bn_neg(e, e);
-			}
-		}
-		return;
-	}
-	if (bn_is_zero(b)) {
-		bn_abs(c, a);
-		if (d != NULL) {
-			bn_set_dig(d, 1);
-			if (sgn_a == RLC_NEG) {
-				bn_neg(d, d);
-			}
-		}
-		if (e != NULL) {
-			bn_zero(e);
-		}
+	if (gcd_ext_zero(c, d, e, a, b)) {
 		return;
 	}
 
@@ -672,46 +642,13 @@ void bn_gcd_binar(bn_t c, const bn_t a, const bn_t b) {
 }
 
 void bn_gcd_ext_binar(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
-	int sgn_a, sgn_b;
 	bn_t x, y, t, u, v, _a, _b, _e;
 	int shift;
 
-	/*
-	 * Capture both signs before writing anything: the outputs may alias the
-	 * inputs, and bn_abs(c, b) with c aliasing b makes b positive, so a later
-	 * bn_sign(b) would read the wrong sign. The same applies to a d that
-	 * aliases b.
-	 */
-	sgn_a = bn_sign(a);
-	sgn_b = bn_sign(b);
+	if (gcd_ext_zero(c, d, e, a, b)) {
+		return;
+	}
 
-	if (bn_is_zero(a)) {
-		bn_abs(c, b);
-		if (d != NULL) {
-			bn_zero(d);
-		}
-		if (e != NULL) {
-			bn_set_dig(e, 1);
-			if (sgn_b == RLC_NEG) {
-				bn_neg(e, e);
-			}
-		}
-		return;
-	}
-	if (bn_is_zero(b)) {
-		bn_abs(c, a);
-		if (d != NULL) {
-			bn_set_dig(d, 1);
-			if (sgn_a == RLC_NEG) {
-				bn_neg(d, d);
-			}
-		}
-		if (e != NULL) {
-			bn_zero(e);
-		}
-		return;
-	}
-	
 	bn_null(x);
 	bn_null(y);
 	bn_null(t);
@@ -734,9 +671,8 @@ void bn_gcd_ext_binar(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 		bn_abs(x, a);
 		bn_abs(y, b);
 
-		/* g = 1. */
+		/* Strip the common factors of two; shift restores them at the end. */
 		shift = 0;
-		/* While x and y are both even, x = x/2 and y = y/2, g = 2g. */
 		while (bn_is_even(x) && bn_is_even(y)) {
 			bn_hlv(x, x);
 			bn_hlv(y, y);
@@ -746,21 +682,22 @@ void bn_gcd_ext_binar(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 		bn_copy(u, x);
 		bn_copy(v, y);
 
-		/* u = x, y = v, A = 1, B = 0, C = 0, D = 1. */
+		/*
+		 * Binary extended GCD (HAC Algorithm 14.61): _a, _b, d, _e are the
+		 * textbook cofactors A, B, C, D, tracking u = A*x + B*y and
+		 * v = C*x + D*y as u and v are reduced to their GCD below.
+		 */
 		bn_set_dig(_a, 1);
 		bn_zero(_b);
 		bn_zero(d);
 		bn_set_dig(_e, 1);
 
-		/* While u is even, u = u/2. */
 		while (bn_is_even(u)) {
 			bn_hlv(u, u);
-			/* If A = B = 0 (mod 2) then A = A/2, B = B/2. */
 			if ((_a->dp[0] & 0x01) == 0 && (_b->dp[0] & 0x01) == 0) {
 				bn_hlv(_a, _a);
 				bn_hlv(_b, _b);
 			} else {
-				/* Otherwise A = (A + y)/2, B = (B - x)/2. */
 				bn_add(_a, _a, y);
 				bn_hlv(_a, _a);
 				bn_sub(_b, _b, x);
@@ -768,15 +705,12 @@ void bn_gcd_ext_binar(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 			}
 		}
 		while (bn_cmp(u, v) != RLC_EQ) {
-			/* If v is even, v = v/2. */
 			if (bn_is_even(v)) {
 				bn_hlv(v, v);
-				/* If C = D = 0 (mod 2) then C = C/2, D = D/2. */
 				if ((d->dp[0] & 0x01) == 0 && (_e->dp[0] & 0x01) == 0) {
 					bn_hlv(d, d);
 					bn_hlv(_e, _e);
 				} else {
-					/* Otherwise C = (C + y)/2, D = (D - x)/2. */
 					bn_add(d, d, y);
 					bn_hlv(d, d);
 					bn_sub(_e, _e, x);
@@ -800,9 +734,9 @@ void bn_gcd_ext_binar(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 				}
 			}
 		}
-		/* If u = 0 then d = C, e = D and return (d, e, g * v). */
+		/* The loop above ends with u = v = gcd(x, y); restore the shift. */
 		bn_lsh(c, u, shift);
-		/* Now fix reciprocals. */
+		/* Reduce the oversized cofactors using the coprime pair (x/g, y/g). */
 		bn_div(x, x, u);
 		bn_div(y, y, u);
 		bn_hlv(_a, x);
@@ -882,7 +816,7 @@ void bn_gcd_lower(bn_t c, const bn_t a, const bn_t b) {
 			bn_abs(v, a);
 		}
 
-		/* gp needs vn limbs, sp needs vn + 1 */
+		/* mpn_gcd writes at most vn limbs to its result. */
 		bn_grow(g, v->used);
 
 		while (bn_is_even(u) && bn_is_even(v)) {
@@ -913,44 +847,14 @@ void bn_gcd_ext_lower(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 	bn_st *ps, *pt;
 	size_t un, vn;
 	int su, sv, sn, sgn_a, sgn_b, swap;
-  
+
 	/* mpn_gcdext rejects a zero operand, so dispose of those first. */
-	/*
-	 * Capture both signs before writing anything: the outputs may alias the
-	 * inputs, and bn_abs(c, b) with c aliasing b makes b positive, so a later
-	 * bn_sign(b) would read the wrong sign. The same applies to a d that
-	 * aliases b.
-	 */
+	if (gcd_ext_zero(c, d, e, a, b)) {
+		return;
+	}
 	sgn_a = bn_sign(a);
 	sgn_b = bn_sign(b);
 
-	if (bn_is_zero(a)) {
-		bn_abs(c, b);
-		if (d != NULL) {
-			bn_zero(d);
-		}
-		if (e != NULL) {
-			bn_set_dig(e, 1);
-			if (sgn_b == RLC_NEG) {
-				bn_neg(e, e);
-			}
-		}
-		return;
-	}
-	if (bn_is_zero(b)) {
-		bn_abs(c, a);
-		if (d != NULL) {
-			bn_set_dig(d, 1);
-			if (sgn_a == RLC_NEG) {
-				bn_neg(d, d);
-			}
-		}
-		if (e != NULL) {
-			bn_zero(e);
-		}
-		return;
-	}
- 
 	bn_null(u);
 	bn_null(v);
 	bn_null(g);
