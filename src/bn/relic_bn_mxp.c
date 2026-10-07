@@ -277,17 +277,13 @@ void bn_mxp_monty(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 		return;
 	}
 
-	bn_null(tab[0]);
-	bn_null(tab[1]);
-	bn_null_all(t, u);
+	bn_null_all(tab[0], tab[1], t, u);
 
 	RLC_TRY {
 		bn_new(u);
 		bn_mod_pre(u, m);
 
-		bn_new(tab[0]);
-		bn_new(tab[1]);
-		bn_new(t);
+		bn_new_all(tab[0], tab[1], t);
 
 #if BN_MOD == MONTY
 		bn_grow(t, 2 * sm);
@@ -344,10 +340,7 @@ void bn_mxp_monty(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(t);
-		bn_free(tab[1]);
-		bn_free(tab[0]);
-		bn_free(u);
+		bn_free_all(t, tab[1], tab[0], u);
 	}
 }
 

@@ -188,14 +188,12 @@ static void arith(void) {
 	fp_null_all(a, b, c);
 	dv_null(d);
 	bn_null(e);
-	fp_null(f[0]);
-	fp_null(f[1]);
+	fp_null_all(f[0], f[1]);
 
 	fp_new_all(a, b, c);
 	dv_new(d);
 	bn_new(e);
-	fp_new(f[0]);
-	fp_new(f[1]);
+	fp_new_all(f[0], f[1]);
 
 	dv_zero(d, RLC_DV_DIGS);
 
@@ -715,8 +713,7 @@ static void arith(void) {
 	fp_free_all(a, b, c);
 	dv_free(d);
 	bn_free(e);
-	fp_free(f[0]);
-	fp_free(f[1]);
+	fp_free_all(f[0], f[1]);
 }
 
 int main(void) {

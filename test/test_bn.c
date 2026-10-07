@@ -2379,14 +2379,10 @@ static int inversion(void) {
 	int code = RLC_ERR;
 	bn_t a, b, c, d[2];
 
-	bn_null_all(a, b, c);
-	bn_null(d[0]);
-	bn_null(d[1]);
+	bn_null_all(a, b, c, d[0], d[1]);
 
 	RLC_TRY {
-		bn_new_all(a, b, c);
-		bn_new(d[0]);
-		bn_new(d[1]);
+		bn_new_all(a, b, c, d[0], d[1]);
 
 		bn_gen_prime(a, RLC_BN_BITS);
 
@@ -2415,9 +2411,7 @@ static int inversion(void) {
 	}
 	code = RLC_OK;
   end:
-	bn_free_all(a, b, c);
-	bn_free(d[0]);
-	bn_free(d[1]);
+	bn_free_all(a, b, c, d[0], d[1]);
 	return code;
 }
 
@@ -2516,15 +2510,13 @@ static int recoding(void) {
 
 	bn_null_all(a, b, c);
 	for (k = 0; k < 3; k++) {
-		bn_null(v1[k]);
-		bn_null(v2[k]);
+		bn_null_all(v1[k], v2[k]);
 	}
 
 	RLC_TRY {
 		bn_new_all(a, b, c);
 		for (k = 0; k < 3; k++) {
-			bn_new(v1[k]);
-			bn_new(v2[k]);
+			bn_new_all(v1[k], v2[k]);
 		}
 
 		TEST_CASE("window recoding is correct") {
@@ -2842,8 +2834,7 @@ static int recoding(void) {
   end:
 	bn_free_all(a, b, c);
 	for (k = 0; k < 3; k++) {
-		bn_free(v1[k]);
-		bn_free(v2[k]);
+		bn_free_all(v1[k], v2[k]);
 	}
 	return code;
 }

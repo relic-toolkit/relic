@@ -536,9 +536,7 @@ static int inversion2(void) {
 	fp2_t a, b, c, d[2];
 
 	RLC_TRY {
-		fp2_new_all(a, b, c);
-		fp2_new(d[0]);
-		fp2_new(d[1]);
+		fp2_new_all(a, b, c, d[0], d[1]);
 
 		TEST_CASE("inversion is correct") {
 			do {
@@ -579,9 +577,7 @@ static int inversion2(void) {
 	}
 	code = RLC_OK;
   end:
-	fp2_free_all(a, b, c);
-	fp2_free(d[0]);
-	fp2_free(d[1]);
+	fp2_free_all(a, b, c, d[0], d[1]);
 	return code;
 }
 
@@ -1389,14 +1385,10 @@ static int inversion3(void) {
 	int code = RLC_ERR;
 	fp3_t a, b, c, d[2];
 
-	fp3_null_all(a, b, c);
-	fp3_null(d[0]);
-	fp3_null(d[1]);
+	fp3_null_all(a, b, c, d[0], d[1]);
 
 	RLC_TRY {
-		fp3_new_all(a, b, c);
-		fp3_new(d[0]);
-		fp3_new(d[1]);
+		fp3_new_all(a, b, c, d[0], d[1]);
 
 		TEST_CASE("inversion is correct") {
 			do {
@@ -1427,9 +1419,7 @@ static int inversion3(void) {
 	}
 	code = RLC_OK;
   end:
-	fp3_free_all(a, b, c);
-	fp3_free(d[0]);
-	fp3_free(d[1]);
+	fp3_free_all(a, b, c, d[0], d[1]);
 	return code;
 }
 
@@ -1982,9 +1972,7 @@ static int inversion4(void) {
 	fp4_t a, b, c, d[2];
 
 	RLC_TRY {
-		fp4_new_all(a, b, c);
-		fp4_new(d[0]);
-		fp4_new(d[1]);
+		fp4_new_all(a, b, c, d[0], d[1]);
 
 		TEST_CASE("inversion is correct") {
 			do {
@@ -2015,9 +2003,7 @@ static int inversion4(void) {
 	}
 	code = RLC_OK;
   end:
-	fp4_free_all(a, b, c);
-	fp4_free(d[0]);
-	fp4_free(d[1]);
+	fp4_free_all(a, b, c, d[0], d[1]);
 	return code;
 }
 
@@ -3150,14 +3136,10 @@ static int inversion8(void) {
 	int code = RLC_ERR;
 	fp8_t a, b, c, d[2];
 
-	fp8_null_all(a, b, c);
-	fp8_null(d[0]);
-	fp8_null(d[1]);
+	fp8_null_all(a, b, c, d[0], d[1]);
 
 	RLC_TRY {
-		fp8_new_all(a, b, c);
-		fp8_new(d[0]);
-		fp8_new(d[1]);
+		fp8_new_all(a, b, c, d[0], d[1]);
 
 		TEST_CASE("inversion is correct") {
 			do {
@@ -3198,9 +3180,7 @@ static int inversion8(void) {
 	}
 	code = RLC_OK;
   end:
-	fp8_free_all(a, b, c);
-	fp8_free(d[0]);
-	fp8_free(d[1]);
+	fp8_free_all(a, b, c, d[0], d[1]);
 	return code;
 }
 
@@ -3726,14 +3706,10 @@ static int inversion9(void) {
 	int code = RLC_ERR;
 	fp9_t a, b, c, d[2];
 
-	fp9_null_all(a, b, c);
-	fp9_null(d[0]);
-	fp9_null(d[1]);
+	fp9_null_all(a, b, c, d[0], d[1]);
 
 	RLC_TRY {
-		fp9_new_all(a, b, c);
-		fp9_new(d[0]);
-		fp9_new(d[1]);
+		fp9_new_all(a, b, c, d[0], d[1]);
 
 		TEST_CASE("inversion is correct") {
 			do {
@@ -3764,9 +3740,7 @@ static int inversion9(void) {
 	}
 	code = RLC_OK;
   end:
-	fp9_free_all(a, b, c);
-	fp9_free(d[0]);
-	fp9_free(d[1]);
+	fp9_free_all(a, b, c, d[0], d[1]);
 	return code;
 }
 
@@ -4241,19 +4215,11 @@ static int cyclotomic12(void) {
 	fp12_t a, b, c, d[2], e[2];
 	bn_t f, g;
 
-	fp12_null_all(a, b, c);
-	fp12_null(d[0]);
-	fp12_null(d[1]);
-	fp12_null(e[0]);
-	fp12_null(e[1]);
+	fp12_null_all(a, b, c, d[0], d[1], e[0], e[1]);
 	bn_null_all(f, g);
 
 	RLC_TRY {
-		fp12_new_all(a, b, c);
-		fp12_new(d[0]);
-		fp12_new(d[1]);
-		fp12_new(e[0]);
-		fp12_new(e[1]);
+		fp12_new_all(a, b, c, d[0], d[1], e[0], e[1]);
 		bn_new_all(f, g);
 
 		TEST_CASE("cyclotomic test is correct") {
@@ -4432,11 +4398,7 @@ static int cyclotomic12(void) {
 	}
 	code = RLC_OK;
   end:
-	fp12_free_all(a, b, c);
-	fp12_free(d[0]);
-	fp12_free(d[1]);
-	fp12_free(e[0]);
-	fp12_free(e[1]);
+	fp12_free_all(a, b, c, d[0], d[1], e[0], e[1]);
 	bn_free_all(f, g);
 	return code;
 }
@@ -5096,14 +5058,10 @@ static int inversioAFG16(void) {
 	int code = RLC_ERR;
 	fp16_t a, b, c, d[2];
 
-	fp16_null_all(a, b, c);
-	fp16_null(d[0]);
-	fp16_null(d[1]);
+	fp16_null_all(a, b, c, d[0], d[1]);
 
 	RLC_TRY {
-		fp16_new_all(a, b, c);
-		fp16_new(d[0]);
-		fp16_new(d[1]);
+		fp16_new_all(a, b, c, d[0], d[1]);
 
 		TEST_CASE("inversion is correct") {
 			do {
@@ -5144,9 +5102,7 @@ static int inversioAFG16(void) {
 	}
 	code = RLC_OK;
   end:
-	fp16_free_all(a, b, c);
-	fp16_free(d[0]);
-	fp16_free(d[1]);
+	fp16_free_all(a, b, c, d[0], d[1]);
 	return code;
 }
 
@@ -5643,19 +5599,11 @@ static int cyclotomic18(void) {
 	fp18_t a, b, c, d[2], e[2];
 	bn_t f;
 
-	fp18_null_all(a, b, c);
-	fp18_null(d[0]);
-	fp18_null(d[1]);
-	fp18_null(e[0]);
-	fp18_null(e[1]);
+	fp18_null_all(a, b, c, d[0], d[1], e[0], e[1]);
 	bn_null(f);
 
 	RLC_TRY {
-		fp18_new_all(a, b, c);
-		fp18_new(d[0]);
-		fp18_new(d[1]);
-		fp18_new(e[0]);
-		fp18_new(e[1]);
+		fp18_new_all(a, b, c, d[0], d[1], e[0], e[1]);
 		bn_new(f);
 
 		TEST_CASE("cyclotomic test is correct") {
@@ -5827,11 +5775,7 @@ static int cyclotomic18(void) {
 	}
 	code = RLC_OK;
   end:
-	fp18_free_all(a, b, c);
-	fp18_free(d[0]);
-	fp18_free(d[1]);
-	fp18_free(e[0]);
-	fp18_free(e[1]);
+	fp18_free_all(a, b, c, d[0], d[1], e[0], e[1]);
 	bn_free(f);
 	return code;
 }
@@ -6361,19 +6305,11 @@ static int cyclotomic24(void) {
 	fp24_t a, b, c, d[2], e[2];
 	bn_t f;
 
-	fp24_null_all(a, b, c);
-	fp24_null(d[0]);
-	fp24_null(d[1])
-	fp24_null(e[0]);
-	fp24_null(e[1]);
+	fp24_null_all(a, b, c, d[0], d[1], e[0], e[1]);
 	bn_null(f);
 
 	RLC_TRY {
-		fp24_new_all(a, b, c);
-		fp24_new(d[0]);
-		fp24_new(d[1]);
-		fp24_new(e[0]);
-		fp24_new(e[1]);
+		fp24_new_all(a, b, c, d[0], d[1], e[0], e[1]);
 		bn_new(f);
 
 		TEST_CASE("cyclotomic test is correct") {
@@ -6545,11 +6481,7 @@ static int cyclotomic24(void) {
 	}
 	code = RLC_OK;
   end:
-	fp24_free_all(a, b, c);
-	fp24_free(d[0]);
-	fp24_free(d[1]);
-	fp24_free(e[0]);
-	fp24_free(e[1]);
+	fp24_free_all(a, b, c, d[0], d[1], e[0], e[1]);
 	bn_free(f);
 	return code;
 }
@@ -7104,19 +7036,11 @@ static int cyclotomic48(void) {
 	fp48_t a, b, c, d[2], e[2];
 	bn_t f;
 
-	fp48_null_all(a, b, c);
-	fp48_null(d[0]);
-	fp48_null(d[1])
-	fp48_null(e[0]);
-	fp48_null(e[1]);
+	fp48_null_all(a, b, c, d[0], d[1], e[0], e[1]);
 	bn_null(f);
 
 	RLC_TRY {
-		fp48_new_all(a, b, c);
-		fp48_new(d[0]);
-		fp48_new(d[1]);
-		fp48_new(e[0]);
-		fp48_new(e[1]);
+		fp48_new_all(a, b, c, d[0], d[1], e[0], e[1]);
 		bn_new(f);
 
 		TEST_CASE("cyclotomic test is correct") {
@@ -7288,11 +7212,7 @@ static int cyclotomic48(void) {
 	}
 	code = RLC_OK;
   end:
-	fp48_free_all(a, b, c);
-	fp48_free(d[0]);
-	fp48_free(d[1]);
-	fp48_free(e[0]);
-	fp48_free(e[1]);
+	fp48_free_all(a, b, c, d[0], d[1], e[0], e[1]);
 	bn_free(f);
 	return code;
 }
@@ -7808,19 +7728,11 @@ static int cyclotomic54(void) {
 	fp54_t a, b, c, d[2], e[2];
 	bn_t f;
 
-	fp54_null_all(a, b, c);
-	fp54_null(d[0]);
-	fp54_null(d[1])
-	fp54_null(e[0]);
-	fp54_null(e[1]);
+	fp54_null_all(a, b, c, d[0], d[1], e[0], e[1]);
 	bn_null(f);
 
 	RLC_TRY {
-		fp54_new_all(a, b, c);
-		fp54_new(d[0]);
-		fp54_new(d[1]);
-		fp54_new(e[0]);
-		fp54_new(e[1]);
+		fp54_new_all(a, b, c, d[0], d[1], e[0], e[1]);
 		bn_new(f);
 
 		TEST_CASE("cyclotomic test is correct") {
@@ -7980,11 +7892,7 @@ static int cyclotomic54(void) {
 	}
 	code = RLC_OK;
   end:
-	fp54_free_all(a, b, c);
-	fp54_free(d[0]);
-	fp54_free(d[1]);
-	fp54_free(e[0]);
-	fp54_free(e[1]);
+	fp54_free_all(a, b, c, d[0], d[1], e[0], e[1]);
 	bn_free(f);
 	return code;
 }

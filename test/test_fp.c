@@ -819,14 +819,10 @@ static int inversion(void) {
 	int code = RLC_ERR;
 	fp_t a, b, c, d[2];
 
-	fp_null_all(a, b, c);
-	fp_null(d[0]);
-	fp_null(d[1]);
+	fp_null_all(a, b, c, d[0], d[1]);
 
 	RLC_TRY {
-		fp_new_all(a, b, c);
-		fp_new(d[0]);
-		fp_new(d[1]);
+		fp_new_all(a, b, c, d[0], d[1]);
 
 		TEST_CASE("inversion is correct") {
 			do {
@@ -936,9 +932,7 @@ static int inversion(void) {
 	}
 	code = RLC_OK;
   end:
-	fp_free_all(a, b, c);
-	fp_free(d[0]);
-	fp_free(d[1]);
+	fp_free_all(a, b, c, d[0], d[1]);
 	return code;
 }
 

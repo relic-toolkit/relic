@@ -151,8 +151,7 @@ void fp_exp_slide(fp_t c, const fp_t a, const bn_t b) {
 void fp_exp_monty(fp_t c, const fp_t a, const bn_t b) {
 	fp_t t[2];
 
-	fp_null(t[0]);
-	fp_null(t[1]);
+	fp_null_all(t[0], t[1]);
 
 	if (bn_is_zero(b)) {
 		fp_set_dig(c, 1);
@@ -160,8 +159,7 @@ void fp_exp_monty(fp_t c, const fp_t a, const bn_t b) {
 	}
 
 	RLC_TRY {
-		fp_new(t[0]);
-		fp_new(t[1]);
+		fp_new_all(t[0], t[1]);
 
 		fp_set_dig(t[0], 1);
 		fp_copy(t[1], a);
@@ -183,8 +181,7 @@ void fp_exp_monty(fp_t c, const fp_t a, const bn_t b) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		fp_free(t[1]);
-		fp_free(t[0]);
+		fp_free_all(t[1], t[0]);
 	}
 }
 
