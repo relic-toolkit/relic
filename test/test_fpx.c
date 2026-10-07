@@ -149,6 +149,16 @@ static int util2(void) {
 			TEST_ASSERT(fp2_size_bin(a, 0) == 2 * RLC_FP_BYTES, end);
 		}
 		TEST_END;
+
+		TEST_CASE("constant-time copy is correct") {
+			fp2_rand(a);
+			fp2_rand(b);
+			fp2_copy(c, b);
+			fp2_copy_sec(b, a, 0);
+			TEST_ASSERT(fp2_cmp(b, c) == RLC_EQ, end);
+			fp2_copy_sec(b, a, 1);
+			TEST_ASSERT(fp2_cmp(b, a) == RLC_EQ, end);
+		} TEST_END;
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);
@@ -627,6 +637,26 @@ static int exponentiation2(void) {
 			fp2_exp_cyc(c, a, d);
 			TEST_ASSERT(fp2_cmp(b, c) == RLC_EQ, end);
         } TEST_END;
+
+		TEST_CASE("simultaneous cyclotomic exponentiation is correct") {
+			fp2_rand(a);
+			fp2_conv_cyc(a, a);
+			fp2_rand(b);
+			fp2_conv_cyc(b, b);
+			bn_rand(d, RLC_POS, RLC_FP_BITS);
+			fp2_exp_cyc_sim(c, a, d, b, d);
+			fp2_mul(a, a, b);
+			fp2_exp_cyc(b, a, d);
+			TEST_ASSERT(fp2_cmp(b, c) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("cyclotomic test is correct") {
+			fp2_rand(a);
+			fp2_conv_cyc(a, a);
+			TEST_ASSERT(fp2_test_cyc(a) == 1, end);
+			fp2_rand(a);
+			TEST_ASSERT(fp2_test_cyc(a) == 0, end);
+		} TEST_END;
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -1001,6 +1031,16 @@ static int util3(void) {
 			TEST_ASSERT(fp3_size_bin(a) == 3 * RLC_FP_BYTES, end);
 		}
 		TEST_END;
+
+		TEST_CASE("constant-time copy is correct") {
+			fp3_rand(a);
+			fp3_rand(b);
+			fp3_copy(c, b);
+			fp3_copy_sec(b, a, 0);
+			TEST_ASSERT(fp3_cmp(b, c) == RLC_EQ, end);
+			fp3_copy_sec(b, a, 1);
+			TEST_ASSERT(fp3_cmp(b, a) == RLC_EQ, end);
+		} TEST_END;
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);
@@ -1660,6 +1700,16 @@ static int util4(void) {
 			TEST_ASSERT(fp4_size_bin(a) == 4 * RLC_FP_BYTES, end);
 		}
 		TEST_END;
+
+		TEST_CASE("constant-time copy is correct") {
+			fp4_rand(a);
+			fp4_rand(b);
+			fp4_copy(c, b);
+			fp4_copy_sec(b, a, 0);
+			TEST_ASSERT(fp4_cmp(b, c) == RLC_EQ, end);
+			fp4_copy_sec(b, a, 1);
+			TEST_ASSERT(fp4_cmp(b, a) == RLC_EQ, end);
+		} TEST_END;
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);
@@ -2010,6 +2060,17 @@ static int exponentiation4(void) {
 			fp4_exp(c, a, d);
 			TEST_ASSERT(fp4_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
+
+		TEST_CASE("inversion of norm-one element is correct") {
+			/* a^(p^2 - 1) has norm one; the Frobenius gives the conjugate. */
+			fp4_rand(a);
+			fp4_frb(b, a, 2);
+			fp4_inv(c, a);
+			fp4_mul(a, b, c);
+			fp4_inv(b, a);
+			fp4_inv_cyc(c, a);
+			TEST_ASSERT(fp4_cmp(b, c) == RLC_EQ, end);
+		} TEST_END;
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -2253,6 +2314,16 @@ static int util6(void) {
 			TEST_ASSERT(fp6_size_bin(a) == 6 * RLC_FP_BYTES, end);
 		}
 		TEST_END;
+
+		TEST_CASE("constant-time copy is correct") {
+			fp6_rand(a);
+			fp6_rand(b);
+			fp6_copy(c, b);
+			fp6_copy_sec(b, a, 0);
+			TEST_ASSERT(fp6_cmp(b, c) == RLC_EQ, end);
+			fp6_copy_sec(b, a, 1);
+			TEST_ASSERT(fp6_cmp(b, a) == RLC_EQ, end);
+		} TEST_END;
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);
@@ -2718,6 +2789,16 @@ static int util8(void) {
 			TEST_ASSERT(fp8_size_bin(a, 1) == 4 * RLC_FP_BYTES, end);
 		}
 		TEST_END;
+
+		TEST_CASE("constant-time copy is correct") {
+			fp8_rand(a);
+			fp8_rand(b);
+			fp8_copy(c, b);
+			fp8_copy_sec(b, a, 0);
+			TEST_ASSERT(fp8_cmp(b, c) == RLC_EQ, end);
+			fp8_copy_sec(b, a, 1);
+			TEST_ASSERT(fp8_cmp(b, a) == RLC_EQ, end);
+		} TEST_END;
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);
@@ -2930,6 +3011,16 @@ static int multiplication8(void) {
 			TEST_ASSERT(fp8_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
 #endif
+
+		TEST_CASE("multiplication by a digit is correct") {
+			dig_t g;
+			fp8_rand(a);
+			rand_bytes((uint8_t *)&g, sizeof(dig_t));
+			fp8_set_dig(b, g);
+			fp8_mul(c, a, b);
+			fp8_mul_dig(d, a, g);
+			TEST_ASSERT(fp8_cmp(c, d) == RLC_EQ, end);
+		} TEST_END;
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -3031,6 +3122,18 @@ static int cyclotomic8(void) {
 			fp8_inv_cyc(c, c);
 			TEST_ASSERT(fp8_cmp(b, c) == RLC_EQ, end);
         } TEST_END;
+
+		TEST_CASE("simultaneous cyclotomic exponentiation is correct") {
+			fp8_rand(a);
+			fp8_conv_cyc(a, a);
+			fp8_rand(b);
+			fp8_conv_cyc(b, b);
+			bn_rand(f, RLC_POS, RLC_FP_BITS);
+			fp8_exp_cyc_sim(c, a, f, b, f);
+			fp8_mul(a, a, b);
+			fp8_exp_cyc(b, a, f);
+			TEST_ASSERT(fp8_cmp(b, c) == RLC_EQ, end);
+		} TEST_END;
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -3138,6 +3241,14 @@ static int exponentiation8(void) {
 			d->used = RLC_FP_DIGS;
 			dv_copy(d->dp, fp_prime_get(), RLC_FP_DIGS);
 			fp8_exp(c, a, d);
+			TEST_ASSERT(fp8_cmp(b, c) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("exponentiation by a digit is correct") {
+			fp8_rand(a);
+			bn_rand(d, RLC_POS, RLC_DIG);
+			fp8_exp(b, a, d);
+			fp8_exp_dig(c, a, d->dp[0]);
 			TEST_ASSERT(fp8_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 	}
@@ -3334,6 +3445,16 @@ static int util9(void) {
 			TEST_ASSERT(fp9_size_bin(a) == 9 * RLC_FP_BYTES, end);
 		}
 		TEST_END;
+
+		TEST_CASE("constant-time copy is correct") {
+			fp9_rand(a);
+			fp9_rand(b);
+			fp9_copy(c, b);
+			fp9_copy_sec(b, a, 0);
+			TEST_ASSERT(fp9_cmp(b, c) == RLC_EQ, end);
+			fp9_copy_sec(b, a, 1);
+			TEST_ASSERT(fp9_cmp(b, a) == RLC_EQ, end);
+		} TEST_END;
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);
@@ -3817,6 +3938,16 @@ static int util12(void) {
 			TEST_ASSERT(fp12_size_bin(a, 0) == 12 * RLC_FP_BYTES, end);
 		}
 		TEST_END;
+
+		TEST_CASE("constant-time copy is correct") {
+			fp12_rand(a);
+			fp12_rand(b);
+			fp12_copy(c, b);
+			fp12_copy_sec(b, a, 0);
+			TEST_ASSERT(fp12_cmp(b, c) == RLC_EQ, end);
+			fp12_copy_sec(b, a, 1);
+			TEST_ASSERT(fp12_cmp(b, a) == RLC_EQ, end);
+		} TEST_END;
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);
@@ -3867,6 +3998,13 @@ static int addition12(void) {
 			fp12_neg(d, a);
 			fp12_add(e, a, d);
 			TEST_ASSERT(fp12_is_zero(e), end);
+		} TEST_END;
+
+		TEST_CASE("doubling is correct") {
+			fp12_rand(a);
+			fp12_dbl(b, a);
+			fp12_add(c, a, a);
+			TEST_ASSERT(fp12_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {
@@ -4101,13 +4239,14 @@ static int squaring12(void) {
 static int cyclotomic12(void) {
 	int code = RLC_ERR;
 	fp12_t a, b, c, d[2], e[2];
-	bn_t f;
+	bn_t f, g;
 
 	fp12_null_all(a, b, c);
 	fp12_null(d[0]);
 	fp12_null(d[1]);
 	fp12_null(e[0]);
-	bn_null(f);
+	fp12_null(e[1]);
+	bn_null_all(f, g);
 
 	RLC_TRY {
 		fp12_new_all(a, b, c);
@@ -4115,7 +4254,7 @@ static int cyclotomic12(void) {
 		fp12_new(d[1]);
 		fp12_new(e[0]);
 		fp12_new(e[1]);
-		bn_new(f);
+		bn_new_all(f, g);
 
 		TEST_CASE("cyclotomic test is correct") {
 			fp12_rand(a);
@@ -4267,6 +4406,25 @@ static int cyclotomic12(void) {
 			fp12_sqr_cyc(c, a);
 			TEST_ASSERT(fp12_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
+
+		TEST_CASE("simultaneous cyclotomic exponentiation is correct") {
+			fp12_rand(a);
+			fp12_conv_cyc(a, a);
+			fp12_rand(b);
+			fp12_conv_cyc(b, b);
+			if (ep_curve_is_pairf() && ep_curve_embed() == 12) {
+				/* Exponents are decomposed with the Frobenius modulo r. */
+				pp_exp_k12(a, a);
+				pp_exp_k12(b, b);
+			}
+			bn_rand(f, RLC_POS, RLC_FP_BITS);
+			bn_rand(g, RLC_NEG, RLC_FP_BITS);
+			fp12_exp_cyc_sim(c, a, f, b, g);
+			fp12_exp_cyc(a, a, f);
+			fp12_exp_cyc(b, b, g);
+			fp12_mul(b, a, b);
+			TEST_ASSERT(fp12_cmp(b, c) == RLC_EQ, end);
+		} TEST_END;
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -4279,7 +4437,7 @@ static int cyclotomic12(void) {
 	fp12_free(d[1]);
 	fp12_free(e[0]);
 	fp12_free(e[1]);
-	bn_free(f);
+	bn_free_all(f, g);
 	return code;
 }
 
@@ -4545,6 +4703,16 @@ static int util16(void) {
 			TEST_ASSERT(fp16_size_bin(a, 0) == 16 * RLC_FP_BYTES, end);
 		}
 		TEST_END;
+
+		TEST_CASE("constant-time copy is correct") {
+			fp16_rand(a);
+			fp16_rand(b);
+			fp16_copy(c, b);
+			fp16_copy_sec(b, a, 0);
+			TEST_ASSERT(fp16_cmp(b, c) == RLC_EQ, end);
+			fp16_copy_sec(b, a, 1);
+			TEST_ASSERT(fp16_cmp(b, a) == RLC_EQ, end);
+		} TEST_END;
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);
@@ -4892,6 +5060,26 @@ static int cyclotomic16(void) {
 				TEST_ASSERT(fp16_cmp(b, c) == RLC_EQ, end);
 			} TEST_END;
 		}
+
+		TEST_CASE("exponentiation by a digit is correct") {
+			fp16_rand(a);
+			bn_rand(f, RLC_POS, RLC_DIG);
+			fp16_exp(b, a, f);
+			fp16_exp_dig(c, a, f->dp[0]);
+			TEST_ASSERT(fp16_cmp(b, c) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("simultaneous cyclotomic exponentiation is correct") {
+			fp16_rand(a);
+			fp16_conv_cyc(a, a);
+			fp16_rand(b);
+			fp16_conv_cyc(b, b);
+			bn_rand(f, RLC_POS, RLC_FP_BITS);
+			fp16_exp_cyc_sim(c, a, f, b, f);
+			fp16_mul(a, a, b);
+			fp16_exp_cyc(b, a, f);
+			TEST_ASSERT(fp16_cmp(b, c) == RLC_EQ, end);
+		} TEST_END;
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -5206,6 +5394,16 @@ static int util18(void) {
 			TEST_ASSERT(fp18_size_bin(a, 0) == 18 * RLC_FP_BYTES, end);
 		}
 		TEST_END;
+
+		TEST_CASE("constant-time copy is correct") {
+			fp18_rand(a);
+			fp18_rand(b);
+			fp18_copy(c, b);
+			fp18_copy_sec(b, a, 0);
+			TEST_ASSERT(fp18_cmp(b, c) == RLC_EQ, end);
+			fp18_copy_sec(b, a, 1);
+			TEST_ASSERT(fp18_cmp(b, a) == RLC_EQ, end);
+		} TEST_END;
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);
@@ -5256,6 +5454,13 @@ static int addition18(void) {
 			fp18_neg(d, a);
 			fp18_add(e, a, d);
 			TEST_ASSERT(fp18_is_zero(e), end);
+		} TEST_END;
+
+		TEST_CASE("doubling is correct") {
+			fp18_rand(a);
+			fp18_dbl(b, a);
+			fp18_add(c, a, a);
+			TEST_ASSERT(fp18_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {
@@ -5442,6 +5647,7 @@ static int cyclotomic18(void) {
 	fp18_null(d[0]);
 	fp18_null(d[1]);
 	fp18_null(e[0]);
+	fp18_null(e[1]);
 	bn_null(f);
 
 	RLC_TRY {
@@ -5602,6 +5808,18 @@ static int cyclotomic18(void) {
 			fp18_sqr_cyc(c, a);
 			TEST_ASSERT(fp18_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
+
+		TEST_CASE("simultaneous cyclotomic exponentiation is correct") {
+			fp18_rand(a);
+			fp18_conv_cyc(a, a);
+			fp18_rand(b);
+			fp18_conv_cyc(b, b);
+			bn_rand(f, RLC_POS, RLC_FP_BITS);
+			fp18_exp_cyc_sim(c, a, f, b, f);
+			fp18_mul(a, a, b);
+			fp18_exp_cyc(b, a, f);
+			TEST_ASSERT(fp18_cmp(b, c) == RLC_EQ, end);
+		} TEST_END;
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -5693,6 +5911,14 @@ static int exponentiation18(void) {
 			d->used = RLC_FP_DIGS;
 			dv_copy(d->dp, fp_prime_get(), RLC_FP_DIGS);
 			fp18_exp(c, a, d);
+			TEST_ASSERT(fp18_cmp(b, c) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("exponentiation by a digit is correct") {
+			fp18_rand(a);
+			bn_rand(d, RLC_POS, RLC_DIG);
+			fp18_exp(b, a, d);
+			fp18_exp_dig(c, a, d->dp[0]);
 			TEST_ASSERT(fp18_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 	}
@@ -5873,6 +6099,16 @@ static int util24(void) {
 			TEST_ASSERT(fp24_size_bin(a, 0) == 24 * RLC_FP_BYTES, end);
 		}
 		TEST_END;
+
+		TEST_CASE("constant-time copy is correct") {
+			fp24_rand(a);
+			fp24_rand(b);
+			fp24_copy(c, b);
+			fp24_copy_sec(b, a, 0);
+			TEST_ASSERT(fp24_cmp(b, c) == RLC_EQ, end);
+			fp24_copy_sec(b, a, 1);
+			TEST_ASSERT(fp24_cmp(b, a) == RLC_EQ, end);
+		} TEST_END;
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);
@@ -5923,6 +6159,13 @@ static int addition24(void) {
 			fp24_neg(d, a);
 			fp24_add(e, a, d);
 			TEST_ASSERT(fp24_is_zero(e), end);
+		} TEST_END;
+
+		TEST_CASE("doubling is correct") {
+			fp24_rand(a);
+			fp24_dbl(b, a);
+			fp24_add(c, a, a);
+			TEST_ASSERT(fp24_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {
@@ -6283,6 +6526,18 @@ static int cyclotomic24(void) {
 			fp24_sqr_cyc(c, a);
 			TEST_ASSERT(fp24_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
+
+		TEST_CASE("simultaneous cyclotomic exponentiation is correct") {
+			fp24_rand(a);
+			fp24_conv_cyc(a, a);
+			fp24_rand(b);
+			fp24_conv_cyc(b, b);
+			bn_rand(f, RLC_POS, RLC_FP_BITS);
+			fp24_exp_cyc_sim(c, a, f, b, f);
+			fp24_mul(a, a, b);
+			fp24_exp_cyc(b, a, f);
+			TEST_ASSERT(fp24_cmp(b, c) == RLC_EQ, end);
+		} TEST_END;
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -6547,6 +6802,16 @@ static int util48(void) {
 			TEST_ASSERT(fp48_size_bin(a, 0) == 48 * RLC_FP_BYTES, end);
 		}
 		TEST_END;
+
+		TEST_CASE("constant-time copy is correct") {
+			fp48_rand(a);
+			fp48_rand(b);
+			fp48_copy(c, b);
+			fp48_copy_sec(b, a, 0);
+			TEST_ASSERT(fp48_cmp(b, c) == RLC_EQ, end);
+			fp48_copy_sec(b, a, 1);
+			TEST_ASSERT(fp48_cmp(b, a) == RLC_EQ, end);
+		} TEST_END;
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);
@@ -6597,6 +6862,13 @@ static int addition48(void) {
 			fp48_neg(d, a);
 			fp48_add(e, a, d);
 			TEST_ASSERT(fp48_is_zero(e), end);
+		} TEST_END;
+
+		TEST_CASE("doubling is correct") {
+			fp48_rand(a);
+			fp48_dbl(b, a);
+			fp48_add(c, a, a);
+			TEST_ASSERT(fp48_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {
@@ -6997,6 +7269,18 @@ static int cyclotomic48(void) {
 			fp48_sqr_cyc(c, a);
 			TEST_ASSERT(fp48_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
+
+		TEST_CASE("simultaneous cyclotomic exponentiation is correct") {
+			fp48_rand(a);
+			fp48_conv_cyc(a, a);
+			fp48_rand(b);
+			fp48_conv_cyc(b, b);
+			bn_rand(f, RLC_POS, RLC_FP_BITS);
+			fp48_exp_cyc_sim(c, a, f, b, f);
+			fp48_mul(a, a, b);
+			fp48_exp_cyc(b, a, f);
+			TEST_ASSERT(fp48_cmp(b, c) == RLC_EQ, end);
+		} TEST_END;
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -7222,6 +7506,16 @@ static int util54(void) {
 			TEST_ASSERT(fp54_size_bin(a, 0) == 54 * RLC_FP_BYTES, end);
 		}
 		TEST_END;
+
+		TEST_CASE("constant-time copy is correct") {
+			fp54_rand(a);
+			fp54_rand(b);
+			fp54_copy(c, b);
+			fp54_copy_sec(b, a, 0);
+			TEST_ASSERT(fp54_cmp(b, c) == RLC_EQ, end);
+			fp54_copy_sec(b, a, 1);
+			TEST_ASSERT(fp54_cmp(b, a) == RLC_EQ, end);
+		} TEST_END;
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);
@@ -7272,6 +7566,13 @@ static int addition54(void) {
 			fp54_neg(d, a);
 			fp54_add(e, a, d);
 			TEST_ASSERT(fp54_is_zero(e), end);
+		} TEST_END;
+
+		TEST_CASE("doubling is correct") {
+			fp54_rand(a);
+			fp54_dbl(b, a);
+			fp54_add(c, a, a);
+			TEST_ASSERT(fp54_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {
