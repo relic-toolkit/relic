@@ -4378,11 +4378,6 @@ static int cyclotomic12(void) {
 			fp12_conv_cyc(a, a);
 			fp12_rand(b);
 			fp12_conv_cyc(b, b);
-			if (ep_curve_is_pairf() && ep_curve_embed() == 12) {
-				/* Exponents are decomposed with the Frobenius modulo r. */
-				pp_exp_k12(a, a);
-				pp_exp_k12(b, b);
-			}
 			bn_rand(f, RLC_POS, RLC_FP_BITS);
 			bn_rand(g, RLC_NEG, RLC_FP_BITS);
 			fp12_exp_cyc_sim(c, a, f, b, g);
