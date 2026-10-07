@@ -204,7 +204,12 @@ void fp48_frb(fp48_t c, const fp48_t a, int i) {
 }
 
 void fp54_frb(fp54_t c, const fp54_t a, int i) {
-	/* Cost of 20 multiplication in Fp^2 per Frobenius. */
+	/* Since w^18 = u, w^(p - 1) = u^((p - p mod 18)/18) * t^((p mod 18 - 1)/6)
+	 * and w^(2(p - 1)) = u^((p - p mod 9)/9) * t^((p mod 9 - 1)/3). */
+	int k1 = (fp_prime_get_mod18() - 1) / 6;
+	int k2 = (fp_prime_get_mod18() % 9 - 1) / 3;
+
+	/* Cost of 12 sparse multiplications in Fp^3 per Frobenius. */
 	fp54_copy(c, a);
 	for (; i % 54 > 0; i--) {
 		fp18_frb(c[0], c[0], 1);
@@ -212,21 +217,15 @@ void fp54_frb(fp54_t c, const fp54_t a, int i) {
 		fp18_frb(c[2], c[2], 1);
 		for (int j = 0; j < 2; j++) {
 			for (int l = 0; l < 3; l++) {
-				fp3_mul_frb(c[1][j][l], c[1][j][l], 2, 3);
+				fp3_mul_frb(c[1][j][l], c[1][j][l], 2, 2);
 				fp3_mul_frb(c[2][j][l], c[2][j][l], 2, 1);
 			}
-			/* This is not general enough, so hard code parameters needing the
-			tweak. */
-#if FP_PRIME == 256
-			fp9_mul_art(c[1][j], c[1][j]);
-			fp9_mul_art(c[1][j], c[1][j]);
-			fp9_mul_art(c[2][j], c[2][j]);
-#endif
-#if FP_PRIME == 446
-			fp9_mul_art(c[1][j], c[1][j]);
-			fp9_mul_art(c[2][j], c[2][j]);
-			fp9_mul_art(c[2][j], c[2][j]);
-#endif
+			for (int l = 0; l < k1; l++) {
+				fp9_mul_art(c[1][j], c[1][j]);
+			}
+			for (int l = 0; l < k2; l++) {
+				fp9_mul_art(c[2][j], c[2][j]);
+			}
 		}
 	}
 }
