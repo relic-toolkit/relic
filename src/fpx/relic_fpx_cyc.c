@@ -831,7 +831,7 @@ void fp12_exp_cyc_sim(fp12_t e, const fp12_t a, const bn_t b, const fp12_t c,
 		bn_rec_frb(_b, 4, _b[0], x, n, ep_curve_is_pairf() == EP_BN);
 		bn_abs(_d[0], d);
 		bn_mod(_d[0], _d[0], n);
-		if (bn_sign(b) == RLC_NEG) {
+		if (bn_sign(d) == RLC_NEG) {
 			bn_neg(_d[0], _d[0]);
 		}
 		bn_rec_frb(_d, 4, _d[0], x, n, ep_curve_is_pairf() == EP_BN);
