@@ -248,6 +248,27 @@ static int util(void) {
 		}
 		TEST_END;
 
+		TEST_CASE("generating a random integer in a basis is consistent") {
+			/*
+			 * With n = x^4 nothing is reduced, so the digits of the result in
+			 * base x are the four random ones, each below 2^(bits / 4).
+			 */
+			bn_rand(b, RLC_POS, RLC_DIG);
+			bn_set_bit(b, RLC_DIG - 1, 1);
+			bn_sqr(c, b);
+			bn_sqr(c, c);
+			bits = 4 * (bn_bits(b) - 1);
+			bn_rand_frb(a, b, c, bits);
+			TEST_ASSERT(bn_sign(a) == RLC_POS && bn_cmp(a, c) == RLC_LT, end);
+			for (int k = 0; k < 4; k++) {
+				bn_mod(d, a, b);
+				TEST_ASSERT(bn_bits(d) <= bits / 4, end);
+				bn_div(a, a, b);
+			}
+			TEST_ASSERT(bn_is_zero(a), end);
+		}
+		TEST_END;
+
 		TEST_CASE("reading and writing the first digit are consistent") {
 			bn_rand(a, RLC_POS, RLC_DIG);
 			bn_rand(b, RLC_POS, RLC_DIG);
@@ -1085,6 +1106,34 @@ static int reduction(void) {
 				bn_sub(e, b, e);
 				TEST_ASSERT(bn_cmp(e, d) == RLC_EQ, end);
 			}
+		}
+		TEST_END;
+#endif
+
+		TEST_CASE("reduction modulo a power of 2 is correct") {
+			int exps[] = { 0, 1, RLC_DIG, RLC_DIG + 1, 2 * RLC_DIG,
+				RLC_BN_BITS / 2, RLC_BN_BITS - 1, RLC_BN_BITS + RLC_DIG };
+			bn_rand(a, RLC_POS, RLC_BN_BITS);
+			for (int k = 0; k < (int)(sizeof(exps) / sizeof(exps[0])); k++) {
+				bn_mod_2b(c, a, exps[k]);
+				bn_set_2b(d, exps[k]);
+				bn_mod(d, a, d);
+				TEST_ASSERT(bn_cmp(c, d) == RLC_EQ, end);
+			}
+		}
+		TEST_END;
+
+#if BN_MOD == MONTY || (defined(WITH_FP) && FP_RDC == MONTY) || !defined(STRIP)
+		TEST_CASE("conversion from montgomery form is correct") {
+			bn_rand(a, RLC_POS, RLC_BN_BITS - RLC_DIG / 2);
+			bn_rand(b, RLC_POS, RLC_BN_BITS / 2);
+			if (bn_is_even(b)) {
+				bn_add_dig(b, b, 1);
+			}
+			bn_mod(a, a, b);
+			bn_mod_monty_conv(c, a, b);
+			bn_mod_monty_back(d, c, b);
+			TEST_ASSERT(bn_cmp(a, d) == RLC_EQ, end);
 		}
 		TEST_END;
 #endif
@@ -2702,6 +2751,20 @@ static int recoding(void) {
 				}
 			}
 			TEST_ASSERT(bn_cmp(a, b) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("frobenius recoding is correct") {
+			/* Without a cofactor, the subscalars are signed digits in base x. */
+			for (w = 0; w < 4; w++) {
+				bn_rand(b, (w & 1) ? RLC_NEG : RLC_POS, RLC_BN_BITS / 4);
+				bn_rand(a, (w & 2) ? RLC_NEG : RLC_POS, 3 * (bn_bits(b) - 1));
+				bn_rec_frb(v1, 3, a, b, b, 0);
+				bn_mul(c, v1[2], b);
+				bn_add(c, c, v1[1]);
+				bn_mul(c, c, b);
+				bn_add(c, c, v1[0]);
+				TEST_ASSERT(bn_cmp(c, a) == RLC_EQ, end);
+			}
 		} TEST_END;
 
 #if defined(WITH_EP) && defined(EP_ENDOM) && (EP_MUL == LWNAF || EP_FIX == COMBS || EP_FIX == LWNAF || EP_SIM == INTER || !defined(STRIP))
