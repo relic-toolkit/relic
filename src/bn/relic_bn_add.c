@@ -174,6 +174,14 @@ void bn_add_dig(bn_t c, const bn_t a, dig_t b) {
 	}
 }
 
+void bn_add_dis(bn_t c, const bn_t a, dis_t b) {
+	if (b < 0) {
+		bn_sub_dig(c, a, (dig_t)(-b));
+	} else {
+		bn_add_dig(c, a, (dig_t)b);
+	}
+}
+
 void bn_sub(bn_t c, const bn_t a, const bn_t b) {
 	int sa, sb;
 
@@ -233,5 +241,13 @@ void bn_sub_dig(bn_t c, const bn_t a, dig_t b) {
 		bn_trim(c);
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
+	}
+}
+
+void bn_sub_dis(bn_t c, const bn_t a, dis_t b) {
+	if (b < 0) {
+		bn_add_dig(c, a, (dig_t)(-b));
+	} else {
+		bn_sub_dig(c, a, (dig_t)b);
 	}
 }

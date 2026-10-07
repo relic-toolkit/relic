@@ -678,11 +678,7 @@ void fp_prime_set_pmers(const int *f, size_t len) {
 				bn_sub(p, p, t);
 			}
 		}
-		if (f[0] > 0) {
-			bn_add_dig(p, p, f[0]);
-		} else {
-			bn_sub_dig(p, p, -f[0]);
-		}
+		bn_add_dis(p, p, f[0]);
 
 #if FP_RDC == QUICK || !defined(STRIP)
 		ctx_t *ctx = core_get();

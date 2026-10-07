@@ -823,6 +823,15 @@ void bn_add(bn_t c, const bn_t a, const bn_t b);
 void bn_add_dig(bn_t c, const bn_t a, dig_t b);
 
 /**
+ * Adds a signed digit to a multiple precision integer. Computes c = a + b.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the multiple precision integer.
+ * @param[in] b				- the signed digit to add.
+ */
+void bn_add_dis(bn_t c, const bn_t a, dis_t b);
+
+/**
  * Subtracts a multiple precision integer from another, that is, computes
  * c = a - b.
  *
@@ -840,6 +849,16 @@ void bn_sub(bn_t c, const bn_t a, const bn_t b);
  * @param[in] b				- the digit to subtract.
  */
 void bn_sub_dig(bn_t c, const bn_t a, const dig_t b);
+
+/**
+ * Subtracts a signed digit from a multiple precision integer.
+ * Computes c = a - b.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the multiple precision integer.
+ * @param[in] b				- the signed digit to subtract.
+ */
+void bn_sub_dis(bn_t c, const bn_t a, dis_t b);
 
 /**
  * Multiplies a multiple precision integer by a digit. Computes c = a * b.
@@ -1307,7 +1326,7 @@ void bn_mxp_sim_lot(bn_t c, const bn_t *a, const bn_t *b, const bn_t m,
  *
  * @throw ERR_NO_VALID		- if the argument is negative.
  */
-void bn_srt(bn_t c, bn_t a);
+void bn_srt(bn_t c, const bn_t a);
 
 /**
  * Computes a square root of an integer modulo an odd prime, by the algorithm of

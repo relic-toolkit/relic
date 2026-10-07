@@ -2014,6 +2014,30 @@ static int digit(void) {
 			TEST_ASSERT(bn_cmp(c, d) == RLC_EQ, end);
 		} TEST_END;
 
+		TEST_CASE("addition of a signed digit is consistent") {
+			bn_rand(a, RLC_POS, RLC_BN_BITS);
+			bn_rand(b, RLC_POS, RLC_DIG - 1);
+			bn_get_dig(&g, b);
+			bn_add(c, a, b);
+			bn_add_dis(d, a, (dis_t)g);
+			TEST_ASSERT(bn_cmp(c, d) == RLC_EQ, end);
+			bn_sub(c, a, b);
+			bn_add_dis(d, a, -(dis_t)g);
+			TEST_ASSERT(bn_cmp(c, d) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("subtraction of a signed digit is consistent") {
+			bn_rand(a, RLC_POS, RLC_BN_BITS);
+			bn_rand(b, RLC_POS, RLC_DIG - 1);
+			bn_get_dig(&g, b);
+			bn_sub(c, a, b);
+			bn_sub_dis(d, a, (dis_t)g);
+			TEST_ASSERT(bn_cmp(c, d) == RLC_EQ, end);
+			bn_add(c, a, b);
+			bn_sub_dis(d, a, -(dis_t)g);
+			TEST_ASSERT(bn_cmp(c, d) == RLC_EQ, end);
+		} TEST_END;
+
 		TEST_CASE("multiplication by a single digit is consistent") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
 			bn_rand(b, RLC_POS, RLC_DIG - 1);

@@ -435,8 +435,7 @@ int bn_is_prime_lucas(const bn_t a) {
 		 * A perfect square is composite and has no D with Jacobi symbol -1, so
 		 * the search below would not terminate on one.
 		 */
-		bn_copy(t0, a);
-		bn_srt(t1, t0);
+		bn_srt(t1, a);
 		bn_sqr(t0, t1);
 		if (bn_cmp(t0, a) == RLC_EQ) {
 			result = 0;

@@ -184,45 +184,21 @@ void bn_rec_naf(int8_t *naf, size_t *len, const bn_t k, size_t w) {
 		memset(naf, 0, *len);
 
 		i = 0;
-		if (w == 2) {
-			while (!bn_is_zero(t)) {
-				if (!bn_is_even(t)) {
-					bn_get_dig(&t0, t);
-					u_i = 2 - (t0 & mask);
-					if (u_i < 0) {
-						bn_add_dig(t, t, -u_i);
-					} else {
-						bn_sub_dig(t, t, u_i);
-					}
-					*naf = u_i;
-				} else {
-					*naf = 0;
+		while (!bn_is_zero(t)) {
+			if (!bn_is_even(t)) {
+				bn_get_dig(&t0, t);
+				u_i = t0 & mask;
+				if (u_i > l / 2) {
+					u_i = (int8_t)(u_i - l);
 				}
-				bn_hlv(t, t);
-				i++;
-				naf++;
+				bn_sub_dis(t, t, u_i);
+				*naf = u_i;
+			} else {
+				*naf = 0;
 			}
-		} else {
-			while (!bn_is_zero(t)) {
-				if (!bn_is_even(t)) {
-					bn_get_dig(&t0, t);
-					u_i = t0 & mask;
-					if (u_i > l / 2) {
-						u_i = (int8_t)(u_i - l);
-					}
-					if (u_i < 0) {
-						bn_add_dig(t, t, -u_i);
-					} else {
-						bn_sub_dig(t, t, u_i);
-					}
-					*naf = u_i;
-				} else {
-					*naf = 0;
-				}
-				bn_hlv(t, t);
-				i++;
-				naf++;
-			}
+			bn_hlv(t, t);
+			i++;
+			naf++;
 		}
 		*len = i;
 	}
@@ -474,11 +450,7 @@ void bn_rec_tnaf(int8_t *tnaf, size_t *len, const bn_t k, int8_t u, size_t m,
 				}
 				u_i = 2 - ((t0 - 2 * t1) & mask);
 				tnaf[i++] = u_i;
-				if (u_i < 0) {
-					bn_add_dig(r0, r0, -u_i);
-				} else {
-					bn_sub_dig(r0, r0, u_i);
-				}
+				bn_sub_dis(r0, r0, u_i);
 			} else {
 				/* t0 = r0 mod_s 2^w. */
 				t0 = r0->dp[0];
@@ -508,17 +480,9 @@ void bn_rec_tnaf(int8_t *tnaf, size_t *len, const bn_t k, int8_t u, size_t m,
 					s = gama[u_i];
 				}
 				/* r0 = r0 - s * beta_u. */
-				if (t > 0) {
-					bn_sub_dig(r0, r0, t);
-				} else {
-					bn_add_dig(r0, r0, -t);
-				}
+				bn_sub_dis(r0, r0, t);
 				/* r1 = r1 - s * gama_u. */
-				if (s > 0) {
-					bn_sub_dig(r1, r1, s);
-				} else {
-					bn_add_dig(r1, r1, -s);
-				}
+				bn_sub_dis(r1, r1, s);
 			}
 			tnaf_hlv(r0, r1, tmp, u);
 		}
@@ -573,11 +537,7 @@ void bn_rec_rtnaf(int8_t *tnaf, size_t *len, const bn_t k, int8_t u, size_t m,
 				}
 				u_i = ((t0 - 2 * t1) & mask) - 2;
 				tnaf[i++] = u_i;
-				if (u_i < 0) {
-					bn_add_dig(r0, r0, -u_i);
-				} else {
-					bn_sub_dig(r0, r0, u_i);
-				}
+				bn_sub_dis(r0, r0, u_i);
 			} else {
 				/* t0 = r0 mod_s 2^w. */
 				t0 = r0->dp[0];
@@ -605,17 +565,9 @@ void bn_rec_rtnaf(int8_t *tnaf, size_t *len, const bn_t k, int8_t u, size_t m,
 					s = gama[u_i];
 				}
 				/* r0 = r0 - s * beta_u. */
-				if (t > 0) {
-					bn_sub_dig(r0, r0, t);
-				} else {
-					bn_add_dig(r0, r0, -t);
-				}
+				bn_sub_dis(r0, r0, t);
 				/* r1 = r1 - s * gama_u. */
-				if (s > 0) {
-					bn_sub_dig(r1, r1, s);
-				} else {
-					bn_add_dig(r1, r1, -s);
-				}
+				bn_sub_dis(r1, r1, s);
 			}
 			for (int j = 0; j < (w - 1); j++) {
 				tnaf_hlv(r0, r1, tmp, u);

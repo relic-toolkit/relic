@@ -36,7 +36,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void bn_srt(bn_t c, bn_t a) {
+void bn_srt(bn_t c, const bn_t a) {
 	bn_t h, l, m, t;
 	size_t bits;
 	int cmp;

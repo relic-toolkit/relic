@@ -237,8 +237,10 @@
 #undef bn_cmp
 #undef bn_add
 #undef bn_add_dig
+#undef bn_add_dis
 #undef bn_sub
 #undef bn_sub_dig
+#undef bn_sub_dis
 #undef bn_mul_dig
 #undef bn_mul_dis
 #undef bn_mul_basic
@@ -359,8 +361,10 @@
 #define bn_cmp 	RLC_PREFIX(bn_cmp)
 #define bn_add 	RLC_PREFIX(bn_add)
 #define bn_add_dig 	RLC_PREFIX(bn_add_dig)
+#define bn_add_dis 	RLC_PREFIX(bn_add_dis)
 #define bn_sub 	RLC_PREFIX(bn_sub)
 #define bn_sub_dig 	RLC_PREFIX(bn_sub_dig)
+#define bn_sub_dis 	RLC_PREFIX(bn_sub_dis)
 #define bn_mul_dig 	RLC_PREFIX(bn_mul_dig)
 #define bn_mul_dis 	RLC_PREFIX(bn_mul_dis)
 #define bn_mul_basic 	RLC_PREFIX(bn_mul_basic)
