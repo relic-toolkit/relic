@@ -87,7 +87,7 @@ void bn_mod_pre_barrt(bn_t u, const bn_t m) {
 
 void bn_mod_barrt(bn_t c, const bn_t a, const bn_t m, const bn_t u) {
 	bn_t q, t;
-	int mu, neg;
+	int neg;
 
 	bn_null_all(q, t);
 
@@ -120,12 +120,10 @@ void bn_mod_barrt(bn_t c, const bn_t a, const bn_t m, const bn_t u) {
 		} else {
 			bn_grow(t, q->used + u->used);
 			t->used = q->used + u->used;
-			mu = u->used - q->used;
 			if (q->used > u->used) {
-				bn_muld_low(t->dp, q->dp, q->used, u->dp, u->used, mu, t->used);
+				bn_muld_low(t->dp, q->dp, q->used, u->dp, u->used, 0, t->used);
 			} else {
-				mu = (mu > u->used - q->used ? mu - (u->used - q->used) : 0);
-				bn_muld_low(t->dp, u->dp, u->used, q->dp, q->used, mu, t->used);
+				bn_muld_low(t->dp, u->dp, u->used, q->dp, q->used, 0, t->used);
 			}
 			bn_trim(t);
 		}
