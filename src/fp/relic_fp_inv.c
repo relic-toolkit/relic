@@ -132,11 +132,7 @@ void fp_inv_basic(fp_t c, const fp_t a) {
 void fp_inv_binar(fp_t c, const fp_t a) {
 	bn_t u, v, g1, g2, p;
 
-	bn_null(u);
-	bn_null(v);
-	bn_null(g1);
-	bn_null(g2);
-	bn_null(p);
+	bn_null_all(u, v, g1, g2, p);
 
 	if (fp_is_zero(a)) {
 		RLC_THROW(ERR_NO_VALID);
@@ -144,11 +140,7 @@ void fp_inv_binar(fp_t c, const fp_t a) {
 	}
 
 	RLC_TRY {
-		bn_new(u);
-		bn_new(v);
-		bn_new(g1);
-		bn_new(g2);
-		bn_new(p);
+		bn_new_all(u, v, g1, g2, p);
 
 		/* u = a, v = p, g1 = 1, g2 = 0. */
 		fp_prime_back(u, a);
@@ -234,11 +226,7 @@ void fp_inv_binar(fp_t c, const fp_t a) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(u);
-		bn_free(v);
-		bn_free(g1);
-		bn_free(g2);
-		bn_free(p);
+		bn_free_all(u, v, g1, g2, p);
 	}
 }
 
@@ -257,12 +245,7 @@ void fp_inv_monty(fp_t c, const fp_t a) {
 	const fp_t conv = (fp_t)fp_prime_get_conv();
 #endif
 
-	bn_null(_a);
-	bn_null(_p);
-	bn_null(u);
-	bn_null(v);
-	bn_null(x1);
-	bn_null(x2);
+	bn_null_all(_a, _p, u, v, x1, x2);
 
 	if (fp_is_zero(a)) {
 		RLC_THROW(ERR_NO_VALID);
@@ -270,12 +253,7 @@ void fp_inv_monty(fp_t c, const fp_t a) {
 	}
 
 	RLC_TRY {
-		bn_new(_a);
-		bn_new(_p);
-		bn_new(u);
-		bn_new(v);
-		bn_new(x1);
-		bn_new(x2);
+		bn_new_all(_a, _p, u, v, x1, x2);
 
 		p = fp_prime_get();
 
@@ -372,12 +350,7 @@ void fp_inv_monty(fp_t c, const fp_t a) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(_a);
-		bn_free(_p);
-		bn_free(u);
-		bn_free(v);
-		bn_free(x1);
-		bn_free(x2);
+		bn_free_all(_a, _p, u, v, x1, x2);
 	}
 }
 
@@ -388,13 +361,7 @@ void fp_inv_monty(fp_t c, const fp_t a) {
 void fp_inv_exgcd(fp_t c, const fp_t a) {
 	bn_t u, v, g1, g2, p, q, r;
 
-	bn_null(u);
-	bn_null(v);
-	bn_null(g1);
-	bn_null(g2);
-	bn_null(p);
-	bn_null(q);
-	bn_null(r);
+	bn_null_all(u, v, g1, g2, p, q, r);
 
 	if (fp_is_zero(a)) {
 		RLC_THROW(ERR_NO_VALID);
@@ -402,13 +369,7 @@ void fp_inv_exgcd(fp_t c, const fp_t a) {
 	}
 
 	RLC_TRY {
-		bn_new(u);
-		bn_new(v);
-		bn_new(g1);
-		bn_new(g2);
-		bn_new(p);
-		bn_new(q);
-		bn_new(r);
+		bn_new_all(u, v, g1, g2, p, q, r);
 
 		/* u = a, v = p, g1 = 1, g2 = 0. */
 		fp_prime_back(u, a);
@@ -442,13 +403,7 @@ void fp_inv_exgcd(fp_t c, const fp_t a) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(u);
-		bn_free(v);
-		bn_free(g1);
-		bn_free(g2);
-		bn_free(p);
-		bn_free(q);
-		bn_free(r);
+		bn_free_all(u, v, g1, g2, p, q, r);
 	}
 }
 
@@ -471,11 +426,7 @@ void fp_inv_divst(fp_t c, const fp_t a) {
 
 	bn_null(_t);
 	dv_null(t);
-	fp_null(f);
-	fp_null(g);
-	fp_null(u);
-	fp_null(v);
-	fp_null(r);
+	fp_null_all(f, g, u, v, r);
 
 	if (fp_is_zero(a)) {
 		RLC_THROW(ERR_NO_VALID);
@@ -485,11 +436,7 @@ void fp_inv_divst(fp_t c, const fp_t a) {
 	RLC_TRY {
 		bn_new(_t);
 		dv_new(t);
-		fp_new(f);
-		fp_new(g);
-		fp_new(u);
-		fp_new(v);
-		fp_new(r);
+		fp_new_all(f, g, u, v, r);
 
 		fp_zero(v);
 		fp_set_dig(r, 1);
@@ -560,11 +507,7 @@ void fp_inv_divst(fp_t c, const fp_t a) {
 	} RLC_FINALLY {
 		bn_free(_t);
 		dv_free(t);
-		fp_free(f);
-		fp_free(g);
-		fp_free(u);
-		fp_free(v);
-		fp_free(r);
+		fp_free_all(f, g, u, v, r);
 	}
 }
 
@@ -592,33 +535,11 @@ void fp_inv_jmpds(fp_t c, const fp_t a) {
 		return;
 	}
 
-	dv_null(f);
-	dv_null(g);
-	dv_null(t);
-	dv_null(p);
-	dv_null(t0);
-	dv_null(t1);
-	dv_null(u0);
-	dv_null(u1);
-	dv_null(v0);
-	dv_null(v1);
-	dv_null(p01);
-	dv_null(p11);
+	dv_null_all(f, g, t, p, t0, t1, u0, u1, v0, v1, p01, p11);
 	fp_null(pre);
 
 	RLC_TRY {
-		dv_new(t0);
-		dv_new(f);
-		dv_new(t);
-		dv_new(p);
-		dv_new(g);
-		dv_new(t1);
-		dv_new(u0);
-		dv_new(u1);
-		dv_new(v0);
-		dv_new(v1);
-		dv_new(p01);
-		dv_new(p11);
+		dv_new_all(t0, f, t, p, g, t1, u0, u1, v0, v1, p01, p11);
 		fp_new(pre);
 
 		fp_copy(pre, core_get()->inv);
@@ -802,18 +723,7 @@ void fp_inv_jmpds(fp_t c, const fp_t a) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		dv_free(t0);
-		dv_free(f);
-		dv_free(t);
-		dv_free(p);
-		dv_free(g);
-		dv_free(t1);
-		dv_free(u0);
-		dv_free(u1);
-		dv_free(v0);
-		dv_free(v1);
-		dv_free(p01);
-		dv_free(p11);
+		dv_free_all(t0, f, t, p, g, t1, u0, u1, v0, v1, p01, p11);
 		fp_free(pre);
 	}
 }

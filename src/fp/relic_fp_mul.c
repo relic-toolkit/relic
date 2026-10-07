@@ -56,18 +56,11 @@ static void fp_mul_karat_imp(dv_t c, const fp_t a, const fp_t b, size_t size,
 	dv_t a1, b1, a0b0, a1b1, t;
 	dig_t carry;
 
-	dv_null(a1);
-	dv_null(b1);
-	dv_null(a0b0);
-	dv_null(a1b1);
+	dv_null_all(a1, b1, a0b0, a1b1);
 
 	RLC_TRY {
 		/* Allocate the temp variables. */
-		dv_new(a1);
-		dv_new(b1);
-		dv_new(a0b0);
-		dv_new(a1b1);
-		dv_new(t);
+		dv_new_all(a1, b1, a0b0, a1b1, t);
 		dv_zero(a1, h1 + 1);
 		dv_zero(b1, h1 + 1);
 
@@ -145,11 +138,7 @@ static void fp_mul_karat_imp(dv_t c, const fp_t a, const fp_t b, size_t size,
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		dv_free(a1);
-		dv_free(b1);
-		dv_free(a0b0);
-		dv_free(a1b1);
-		dv_free(t);
+		dv_free_all(a1, b1, a0b0, a1b1, t);
 	}
 }
 

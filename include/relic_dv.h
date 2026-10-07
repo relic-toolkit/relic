@@ -131,6 +131,18 @@ typedef dig_t *dv_t;
 #define dv_free(A)			(void)A
 #endif
 
+/**
+ * Initializes, allocates or frees up to sixteen digit vectors at once, in
+ * order.
+ *
+ * @param[in,out] ...		- the digit vectors.
+ */
+/** @{ */
+#define dv_null_all(...)	RLC_EACH(dv_null, __VA_ARGS__)
+#define dv_new_all(...)		RLC_EACH(dv_new, __VA_ARGS__)
+#define dv_free_all(...)	RLC_EACH(dv_free, __VA_ARGS__)
+/** @} */
+
 /*============================================================================*/
 /* Function prototypes                                                        */
 /*============================================================================*/

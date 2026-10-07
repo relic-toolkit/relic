@@ -54,10 +54,7 @@ int fp_srt(fp_t c, const fp_t a) {
 #endif
 
 	bn_null(e);
-	fp_null(t0);
-	fp_null(t1);
-	fp_null(t2);
-	fp_null(t3);
+	fp_null_all(t0, t1, t2, t3);
 
 	if (fp_is_zero(a)) {
 		fp_zero(c);
@@ -66,10 +63,7 @@ int fp_srt(fp_t c, const fp_t a) {
 
 	RLC_TRY {
 		bn_new(e);
-		fp_new(t0);
-		fp_new(t1);
-		fp_new(t2);
-		fp_new(t3);
+		fp_new_all(t0, t1, t2, t3);
 
 		/* Make e = p. */
 		e->used = RLC_FP_DIGS;
@@ -131,10 +125,7 @@ int fp_srt(fp_t c, const fp_t a) {
 	}
 	RLC_FINALLY {
 		bn_free(e);
-		fp_free(t0);
-		fp_free(t1);
-		fp_free(t2);
-		fp_free(t3);
+		fp_free_all(t0, t1, t2, t3);
 	}
 	return r;
 }

@@ -71,15 +71,12 @@ static int util(void) {
 	bn_t c, e;
 	dig_t d;
 
-	fp_null(a);
-	fp_null(b);
+	fp_null_all(a, b);
 	bn_null(c);
 
 	RLC_TRY {
-		fp_new(a);
-		fp_new(b);
-		bn_new(c);
-		bn_new(e);
+		fp_new_all(a, b);
+		bn_new_all(c, e);
 
 		TEST_CASE("copy and comparison are consistent") {
 			fp_rand(a);
@@ -200,10 +197,8 @@ static int util(void) {
 	}
 	code = RLC_OK;
   end:
-	fp_free(a);
-	fp_free(b);
-	bn_free(c);
-	bn_free(e);
+	fp_free_all(a, b);
+	bn_free_all(c, e);
 	return code;
 }
 
@@ -211,18 +206,10 @@ static int addition(void) {
 	int code = RLC_ERR;
 	fp_t a, b, c, d, e;
 
-	fp_null(a);
-	fp_null(b);
-	fp_null(c);
-	fp_null(d);
-	fp_null(e);
+	fp_null_all(a, b, c, d, e);
 
 	RLC_TRY {
-		fp_new(a);
-		fp_new(b);
-		fp_new(c);
-		fp_new(d);
-		fp_new(e);
+		fp_new_all(a, b, c, d, e);
 
 		TEST_CASE("addition is commutative") {
 			fp_rand(a);
@@ -282,11 +269,7 @@ static int addition(void) {
 	}
 	code = RLC_OK;
   end:
-	fp_free(a);
-	fp_free(b);
-	fp_free(c);
-	fp_free(d);
-	fp_free(e);
+	fp_free_all(a, b, c, d, e);
 	return code;
 }
 
@@ -294,16 +277,10 @@ static int subtraction(void) {
 	int code = RLC_ERR;
 	fp_t a, b, c, d;
 
-	fp_null(a);
-	fp_null(b);
-	fp_null(c);
-	fp_null(d);
+	fp_null_all(a, b, c, d);
 
 	RLC_TRY {
-		fp_new(a);
-		fp_new(b);
-		fp_new(c);
-		fp_new(d);
+		fp_new_all(a, b, c, d);
 
 		TEST_CASE("subtraction is anti-commutative") {
 			fp_rand(a);
@@ -373,10 +350,7 @@ static int subtraction(void) {
 	}
 	code = RLC_OK;
   end:
-	fp_free(a);
-	fp_free(b);
-	fp_free(c);
-	fp_free(d);
+	fp_free_all(a, b, c, d);
 	return code;
 }
 
@@ -384,20 +358,10 @@ static int multiplication(void) {
 	int code = RLC_ERR;
 	fp_t a, b, c, d, e, f;
 
-	fp_null(a);
-	fp_null(b);
-	fp_null(c);
-	fp_null(d);
-	fp_null(e);
-	fp_null(f);
+	fp_null_all(a, b, c, d, e, f);
 
 	RLC_TRY {
-		fp_new(a);
-		fp_new(b);
-		fp_new(c);
-		fp_new(d);
-		fp_new(e);
-		fp_new(f);
+		fp_new_all(a, b, c, d, e, f);
 
 		TEST_CASE("multiplication is commutative") {
 			fp_rand(a);
@@ -493,12 +457,7 @@ static int multiplication(void) {
 	}
 	code = RLC_OK;
   end:
-	fp_free(a);
-	fp_free(b);
-	fp_free(c);
-	fp_free(d);
-	fp_free(e);
-	fp_free(f);
+	fp_free_all(a, b, c, d, e, f);
 	return code;
 }
 
@@ -506,14 +465,10 @@ static int squaring(void) {
 	int code = RLC_ERR;
 	fp_t a, b, c;
 
-	fp_null(a);
-	fp_null(b);
-	fp_null(c);
+	fp_null_all(a, b, c);
 
 	RLC_TRY {
-		fp_new(a);
-		fp_new(b);
-		fp_new(c);
+		fp_new_all(a, b, c);
 
 		TEST_CASE("squaring is correct") {
 			fp_rand(a);
@@ -563,9 +518,7 @@ static int squaring(void) {
 	}
 	code = RLC_OK;
   end:
-	fp_free(a);
-	fp_free(b);
-	fp_free(c);
+	fp_free_all(a, b, c);
 	return code;
 }
 
@@ -573,14 +526,10 @@ static int doubling_halving_trisecting(void) {
 	int code = RLC_ERR;
 	fp_t a, b, c;
 
-	fp_null(a);
-	fp_null(b);
-	fp_null(c);
+	fp_null_all(a, b, c);
 
 	RLC_TRY {
-		fp_new(a);
-		fp_new(b);
-		fp_new(c);
+		fp_new_all(a, b, c);
 
 		TEST_CASE("doubling is consistent") {
 			fp_rand(a);
@@ -649,9 +598,7 @@ static int doubling_halving_trisecting(void) {
 	}
 	code = RLC_OK;
   end:
-	fp_free(a);
-	fp_free(b);
-	fp_free(c);
+	fp_free_all(a, b, c);
 	return code;
 }
 
@@ -659,14 +606,10 @@ static int shifting(void) {
 	int code = RLC_ERR;
 	fp_t a, b, c;
 
-	fp_null(a);
-	fp_null(b);
-	fp_null(c);
+	fp_null_all(a, b, c);
 
 	RLC_TRY {
-		fp_new(a);
-		fp_new(b);
-		fp_new(c);
+		fp_new_all(a, b, c);
 
 		TEST_CASE("shifting by 1 bit is consistent") {
 			fp_rand(a);
@@ -723,9 +666,7 @@ static int shifting(void) {
 	}
 	code = RLC_OK;
   end:
-	fp_free(a);
-	fp_free(b);
-	fp_free(c);
+	fp_free_all(a, b, c);
 	return code;
 }
 
@@ -734,13 +675,11 @@ static int reduction(void) {
 	fp_t a, b;
 	dv_t t;
 
-	fp_null(a);
-	fp_null(b);
+	fp_null_all(a, b);
 	dv_null(t);
 
 	RLC_TRY {
-		fp_new(a);
-		fp_new(b);
+		fp_new_all(a, b);
 		dv_new(t);
 		dv_zero(t, 2 * RLC_FP_DIGS);
 
@@ -798,16 +737,12 @@ static int inversion(void) {
 	int code = RLC_ERR;
 	fp_t a, b, c, d[2];
 
-	fp_null(a);
-	fp_null(b);
-	fp_null(c);
+	fp_null_all(a, b, c);
 	fp_null(d[0]);
 	fp_null(d[1]);
 
 	RLC_TRY {
-		fp_new(a);
-		fp_new(b);
-		fp_new(c);
+		fp_new_all(a, b, c);
 		fp_new(d[0]);
 		fp_new(d[1]);
 
@@ -919,9 +854,7 @@ static int inversion(void) {
 	}
 	code = RLC_OK;
   end:
-	fp_free(a);
-	fp_free(b);
-	fp_free(c);
+	fp_free_all(a, b, c);
 	fp_free(d[0]);
 	fp_free(d[1]);
 	return code;
@@ -931,12 +864,10 @@ static int symbol(void) {
 	int code = RLC_ERR;
 	fp_t a, b;
 
-	fp_null(a);
-	fp_null(b);
+	fp_null_all(a, b);
 
 	RLC_TRY {
-		fp_new(a);
-		fp_new(b);
+		fp_new_all(a, b);
 
 		TEST_CASE("symbol computation is correct") {
 			fp_zero(a);
@@ -989,8 +920,7 @@ static int symbol(void) {
 	}
 	code = RLC_OK;
   end:
-	fp_free(a);
-	fp_free(b);
+	fp_free_all(a, b);
 	return code;
 }
 
@@ -999,15 +929,11 @@ static int exponentiation(void) {
 	fp_t a, b, c;
 	bn_t d;
 
-	fp_null(a);
-	fp_null(b);
-	fp_null(c);
+	fp_null_all(a, b, c);
 	bn_null(d);
 
 	RLC_TRY {
-		fp_new(a);
-		fp_new(b);
-		fp_new(c);
+		fp_new_all(a, b, c);
 		bn_new(d);
 
 		TEST_CASE("exponentiation is correct") {
@@ -1070,9 +996,7 @@ static int exponentiation(void) {
 	}
 	code = RLC_OK;
   end:
-	fp_free(a);
-	fp_free(b);
-	fp_free(c);
+	fp_free_all(a, b, c);
 	bn_free(d);
 	return code;
 }
@@ -1081,14 +1005,10 @@ static int square_root(void) {
 	int code = RLC_ERR;
 	fp_t a, b, c;
 
-	fp_null(a);
-	fp_null(b);
-	fp_null(c);
+	fp_null_all(a, b, c);
 
 	RLC_TRY {
-		fp_new(a);
-		fp_new(b);
-		fp_new(c);
+		fp_new_all(a, b, c);
 
 		TEST_CASE("quadratic residuosity test is correct") {
 			fp_zero(a);
@@ -1126,9 +1046,7 @@ static int square_root(void) {
 	}
 	code = RLC_OK;
   end:
-	fp_free(a);
-	fp_free(b);
-	fp_free(c);
+	fp_free_all(a, b, c);
 	return code;
 }
 
@@ -1136,16 +1054,10 @@ static int cube_root(void) {
 	int code = RLC_ERR;
 	fp_t a, b, c, d;
 
-	fp_null(a);
-	fp_null(b);
-	fp_null(c);
-	fp_null(d);
+	fp_null_all(a, b, c, d);
 
 	RLC_TRY {
-		fp_new(a);
-		fp_new(b);
-		fp_new(c);
-		fp_new(d);
+		fp_new_all(a, b, c, d);
 
 		TEST_CASE("cubic residuosity test is correct") {
 			fp_zero(a);
@@ -1202,10 +1114,7 @@ static int cube_root(void) {
 	}
 	code = RLC_OK;
   end:
-	fp_free(a);
-	fp_free(b);
-	fp_free(c);
-	fp_free(d);
+	fp_free_all(a, b, c, d);
 	return code;
 }
 
@@ -1215,17 +1124,11 @@ static int digit(void) {
 	dig_t g;
 	bn_t e;
 
-	fp_null(a);
-	fp_null(b);
-	fp_null(c);
-	fp_null(d);
+	fp_null_all(a, b, c, d);
 	bn_null(e);
 
 	RLC_TRY {
-		fp_new(a);
-		fp_new(b);
-		fp_new(c);
-		fp_new(d);
+		fp_new_all(a, b, c, d);
 		bn_new(e);
 
 		TEST_CASE("addition of a single digit is consistent") {
@@ -1272,10 +1175,7 @@ static int digit(void) {
 	}
 	code = RLC_OK;
   end:
-	fp_free(a);
-	fp_free(b);
-	fp_free(c);
-	fp_free(d);
+	fp_free_all(a, b, c, d);
 	bn_free(e);
 	return code;
 }

@@ -353,14 +353,10 @@ void fp_prime_set_pairf(const bn_t x, int pairf) {
 	size_t len = bn_bits(x) + 1;
 	int8_t s[RLC_FP_BITS + 1];
 
-	bn_null(p);
-	bn_null(t0);
-	bn_null(t1);
+	bn_null_all(p, t0, t1);
 
 	RLC_TRY {
-		bn_new(p);
-		bn_new(t0);
-		bn_new(t1);
+		bn_new_all(p, t0, t1);
 
 		bn_copy(&(ctx->par), x);
 		bn_copy(t0, x);
@@ -647,21 +643,17 @@ void fp_prime_set_pairf(const bn_t x, int pairf) {
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		bn_free(p);
-		bn_free(t0);
-		bn_free(t1);
+		bn_free_all(p, t0, t1);
 	}
 }
 
 void fp_prime_set_pmers(const int *f, size_t len) {
 	bn_t p, t;
 
-	bn_null(p);
-	bn_null(t);
+	bn_null_all(p, t);
 
 	RLC_TRY {
-		bn_new(p);
-		bn_new(t);
+		bn_new_all(p, t);
 
 		if (len >= RLC_TERMS) {
 			RLC_THROW(ERR_NO_VALID);
@@ -695,8 +687,7 @@ void fp_prime_set_pmers(const int *f, size_t len) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(p);
-		bn_free(t);
+		bn_free_all(p, t);
 	}
 }
 

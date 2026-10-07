@@ -57,11 +57,9 @@ static void util(void) {
 	uint8_t bin[RLC_FP_BYTES];
 	fp_t a, b;
 
-	fp_null(a);
-	fp_null(b);
+	fp_null_all(a, b);
 
-	fp_new(a);
-	fp_new(b);
+	fp_new_all(a, b);
 
 	BENCH_RUN("fp_copy") {
 		fp_rand(a);
@@ -179,8 +177,7 @@ static void util(void) {
 	}
 	BENCH_END;
 
-	fp_free(a);
-	fp_free(b);
+	fp_free_all(a, b);
 }
 
 static void arith(void) {
@@ -188,17 +185,13 @@ static void arith(void) {
 	dv_t d;
 	bn_t e;
 
-	fp_null(a);
-	fp_null(b);
-	fp_null(c);
+	fp_null_all(a, b, c);
 	dv_null(d);
 	bn_null(e);
 	fp_null(f[0]);
 	fp_null(f[1]);
 
-	fp_new(a);
-	fp_new(b);
-	fp_new(c);
+	fp_new_all(a, b, c);
 	dv_new(d);
 	bn_new(e);
 	fp_new(f[0]);
@@ -719,9 +712,7 @@ static void arith(void) {
 	}
 	BENCH_END;
 
-	fp_free(a);
-	fp_free(b);
-	fp_free(c);
+	fp_free_all(a, b, c);
 	dv_free(d);
 	bn_free(e);
 	fp_free(f[0]);

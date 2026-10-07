@@ -258,6 +258,18 @@ typedef rlc_align dig_t fp_st[RLC_FP_DIGS + RLC_PAD(RLC_FP_BYTES)/(RLC_DIG / 8)]
 #endif
 
 /**
+ * Initializes, allocates or frees up to sixteen prime field elements at once,
+ * in order.
+ *
+ * @param[in,out] ...		- the prime field elements.
+ */
+/** @{ */
+#define fp_null_all(...)	RLC_EACH(fp_null, __VA_ARGS__)
+#define fp_new_all(...)		RLC_EACH(fp_new, __VA_ARGS__)
+#define fp_free_all(...)	RLC_EACH(fp_free, __VA_ARGS__)
+/** @} */
+
+/**
  * Adds two prime field elements. Computes c = a + b.
  *
  * @param[out] C			- the result.

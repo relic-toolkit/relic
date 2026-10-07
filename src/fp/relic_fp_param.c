@@ -104,19 +104,13 @@ void fp_param_set(int param) {
 	bn_t t0, t1, t2, p;
 	int f[10] = { 0 };
 
-	bn_null(t0);
-	bn_null(t1);
-	bn_null(t2);
-	bn_null(p);
+	bn_null_all(t0, t1, t2, p);
 
 	/* Suppress possible unused parameter warning. */
 	(void) f;
 
 	RLC_TRY {
-		bn_new(t0);
-		bn_new(t1);
-		bn_new(t2);
-		bn_new(p);
+		bn_new_all(t0, t1, t2, p);
 
 		core_get()->fp_id = param;
 
@@ -717,10 +711,7 @@ void fp_param_set(int param) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(t0);
-		bn_free(t1);
-		bn_free(t2);
-		bn_free(p);
+		bn_free_all(t0, t1, t2, p);
 	}
 }
 

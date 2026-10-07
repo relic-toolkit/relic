@@ -284,18 +284,10 @@ int fp_smb_binar(const fp_t a) {
 		return 0;
 	}
 
-	dv_null(f);
-	dv_null(g);
-	dv_null(t);
-	dv_null(t0);
-	dv_null(t1);
+	dv_null_all(f, g, t, t0, t1);
 
 	RLC_TRY {
-		dv_new(f);
-		dv_new(g);
-		dv_new(t);
-		dv_new(t0);
-		dv_new(t1);
+		dv_new_all(f, g, t, t0, t1);
 
 		dv_zero(t, 2 * RLC_FP_DIGS);
 		dv_copy(f, fp_prime_get(), RLC_FP_DIGS);
@@ -347,11 +339,7 @@ int fp_smb_binar(const fp_t a) {
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT)
 	} RLC_FINALLY {
-		dv_free(f);
-		dv_free(g);
-		dv_free(t);
-		dv_free(t0);
-		dv_free(t1);
+		dv_free_all(f, g, t, t0, t1);
 	}
 
 	return (k & 1 ? -1 : 1);
@@ -374,15 +362,11 @@ int fp_smb_divst(const fp_t a) {
 	int r = 0;
 
 	bn_null(_t);
-	dv_null(f);
-	dv_null(g);
-	dv_null(t);
+	dv_null_all(f, g, t);
 
 	RLC_TRY {
 		bn_new(_t);
-		dv_new(f);
-		dv_new(g);
-		dv_new(t);
+		dv_new_all(f, g, t);
 
 #if WSIZE == 8
 		bn_set_dig(_t, d >> 8);
@@ -456,9 +440,7 @@ int fp_smb_divst(const fp_t a) {
 		RLC_THROW(ERR_CAUGHT)
 	} RLC_FINALLY {
 		bn_free(_t);
-		dv_free(f);
-		dv_free(g);
-		dv_free(t);
+		dv_free_all(f, g, t);
 	}
 	return r;
 }
@@ -475,20 +457,10 @@ int fp_smb_jmpds(const fp_t a) {
 	dv_t f, g, t0, t1, u0, u1;
 	dig_t sf, sg, j, k;
 
-	dv_null(f);
-	dv_null(g);
-	dv_null(t0);
-	dv_null(t1);
-	dv_null(u0);
-	dv_null(u1);
+	dv_null_all(f, g, t0, t1, u0, u1);
 
 	RLC_TRY {
-		dv_new(f);
-		dv_new(g);
-		dv_new(t0);
-		dv_new(t1);
-		dv_new(u0);
-		dv_new(u1);
+		dv_new_all(f, g, t0, t1, u0, u1);
 
 		dv_copy(f, fp_prime_get(), RLC_FP_DIGS);
 		f[RLC_FP_DIGS] = 0;
@@ -556,12 +528,7 @@ int fp_smb_jmpds(const fp_t a) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		dv_free(f);
-		dv_free(g);
-		dv_free(t0);
-		dv_free(t1);
-		dv_free(u0);
-		dv_free(u1);
+		dv_free_all(f, g, t0, t1, u0, u1);
 	}
 
 	return r;

@@ -58,17 +58,11 @@ static void fp_sqr_karat_imp(dv_t c, const fp_t a, size_t size, uint_t level) {
 	h = size >> 1;
 	h1 = size - h;
 
-	dv_null(t0);
-	dv_null(t1);
-	dv_null(a0a0);
-	dv_null(a1a1);
+	dv_null_all(t0, t1, a0a0, a1a1);
 
 	RLC_TRY {
 		/* Allocate the temp variables. */
-		dv_new(t0);
-		dv_new(t1);
-		dv_new(a0a0);
-		dv_new(a1a1);
+		dv_new_all(t0, t1, a0a0, a1a1);
 		dv_zero(t0, 2 * h1);
 		dv_zero(t1, 2 * (h1 + 1));
 		dv_zero(a0a0, 2 * h);
@@ -148,10 +142,7 @@ static void fp_sqr_karat_imp(dv_t c, const fp_t a, size_t size, uint_t level) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		dv_free(t0);
-		dv_free(t1);
-		dv_free(a0a0);
-		dv_free(a1a1);
+		dv_free_all(t0, t1, a0a0, a1a1);
 	}
 }
 #endif

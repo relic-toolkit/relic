@@ -175,7 +175,7 @@
 /** @} */
 
 /**
- * Applies a macro to each of up to sixteen arguments, in order.
+ * Applies a statement macro to each of up to sixteen arguments, in order.
  */
 /** @{ */
 #define RLC_EACH(M, ...)													\
@@ -185,22 +185,22 @@
 		6, 5, 4, 3, 2, 1))
 #define __RLC_NARGS(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13,	\
 		_14, _15, _16, N, ...)		N
-#define _RLC_EACH1(M, A)		M(A)
-#define _RLC_EACH2(M, A, ...)	M(A) RLC_ECHO(_RLC_EACH1(M, __VA_ARGS__))
-#define _RLC_EACH3(M, A, ...)	M(A) RLC_ECHO(_RLC_EACH2(M, __VA_ARGS__))
-#define _RLC_EACH4(M, A, ...)	M(A) RLC_ECHO(_RLC_EACH3(M, __VA_ARGS__))
-#define _RLC_EACH5(M, A, ...)	M(A) RLC_ECHO(_RLC_EACH4(M, __VA_ARGS__))
-#define _RLC_EACH6(M, A, ...)	M(A) RLC_ECHO(_RLC_EACH5(M, __VA_ARGS__))
-#define _RLC_EACH7(M, A, ...)	M(A) RLC_ECHO(_RLC_EACH6(M, __VA_ARGS__))
-#define _RLC_EACH8(M, A, ...)	M(A) RLC_ECHO(_RLC_EACH7(M, __VA_ARGS__))
-#define _RLC_EACH9(M, A, ...)	M(A) RLC_ECHO(_RLC_EACH8(M, __VA_ARGS__))
-#define _RLC_EACH10(M, A, ...)	M(A) RLC_ECHO(_RLC_EACH9(M, __VA_ARGS__))
-#define _RLC_EACH11(M, A, ...)	M(A) RLC_ECHO(_RLC_EACH10(M, __VA_ARGS__))
-#define _RLC_EACH12(M, A, ...)	M(A) RLC_ECHO(_RLC_EACH11(M, __VA_ARGS__))
-#define _RLC_EACH13(M, A, ...)	M(A) RLC_ECHO(_RLC_EACH12(M, __VA_ARGS__))
-#define _RLC_EACH14(M, A, ...)	M(A) RLC_ECHO(_RLC_EACH13(M, __VA_ARGS__))
-#define _RLC_EACH15(M, A, ...)	M(A) RLC_ECHO(_RLC_EACH14(M, __VA_ARGS__))
-#define _RLC_EACH16(M, A, ...)	M(A) RLC_ECHO(_RLC_EACH15(M, __VA_ARGS__))
+#define _RLC_EACH1(M, A)		M(A);
+#define _RLC_EACH2(M, A, ...)	M(A); RLC_ECHO(_RLC_EACH1(M, __VA_ARGS__))
+#define _RLC_EACH3(M, A, ...)	M(A); RLC_ECHO(_RLC_EACH2(M, __VA_ARGS__))
+#define _RLC_EACH4(M, A, ...)	M(A); RLC_ECHO(_RLC_EACH3(M, __VA_ARGS__))
+#define _RLC_EACH5(M, A, ...)	M(A); RLC_ECHO(_RLC_EACH4(M, __VA_ARGS__))
+#define _RLC_EACH6(M, A, ...)	M(A); RLC_ECHO(_RLC_EACH5(M, __VA_ARGS__))
+#define _RLC_EACH7(M, A, ...)	M(A); RLC_ECHO(_RLC_EACH6(M, __VA_ARGS__))
+#define _RLC_EACH8(M, A, ...)	M(A); RLC_ECHO(_RLC_EACH7(M, __VA_ARGS__))
+#define _RLC_EACH9(M, A, ...)	M(A); RLC_ECHO(_RLC_EACH8(M, __VA_ARGS__))
+#define _RLC_EACH10(M, A, ...)	M(A); RLC_ECHO(_RLC_EACH9(M, __VA_ARGS__))
+#define _RLC_EACH11(M, A, ...)	M(A); RLC_ECHO(_RLC_EACH10(M, __VA_ARGS__))
+#define _RLC_EACH12(M, A, ...)	M(A); RLC_ECHO(_RLC_EACH11(M, __VA_ARGS__))
+#define _RLC_EACH13(M, A, ...)	M(A); RLC_ECHO(_RLC_EACH12(M, __VA_ARGS__))
+#define _RLC_EACH14(M, A, ...)	M(A); RLC_ECHO(_RLC_EACH13(M, __VA_ARGS__))
+#define _RLC_EACH15(M, A, ...)	M(A); RLC_ECHO(_RLC_EACH14(M, __VA_ARGS__))
+#define _RLC_EACH16(M, A, ...)	M(A); RLC_ECHO(_RLC_EACH15(M, __VA_ARGS__))
 /** @} */
 
 /**
