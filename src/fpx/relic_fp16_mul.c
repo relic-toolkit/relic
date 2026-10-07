@@ -32,6 +32,7 @@
 #include "relic_core.h"
 #include "relic_fp_low.h"
 #include "relic_fpx_low.h"
+#include "relic_fpx_mul_tmpl.h"
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -39,40 +40,7 @@
 
 #if FPX_RDC == BASIC || !defined(STRIP)
 
-void fp16_mul_basic(fp16_t c, const fp16_t a, const fp16_t b) {
-	fp8_t t0, t1, t4;
-
-	fp8_null_all(t0, t1, t4);
-
-	RLC_TRY {
-		fp8_new_all(t0, t1, t4);
-
-		/* Karatsuba algorithm. */
-
-		/* t0 = a_0 * b_0. */
-		fp8_mul(t0, a[0], b[0]);
-		/* t1 = a_1 * b_1. */
-		fp8_mul(t1, a[1], b[1]);
-		/* t4 = b_0 + b_1. */
-		fp8_add(t4, b[0], b[1]);
-
-		/* c_1 = a_0 + a_1. */
-		fp8_add(c[1], a[0], a[1]);
-
-		/* c_1 = (a_0 + a_1) * (b_0 + b_1) */
-		fp8_mul(c[1], c[1], t4);
-		fp8_sub(c[1], c[1], t0);
-		fp8_sub(c[1], c[1], t1);
-
-		/* c_0 = a_0b_0 + v * a_1b_1. */
-		fp8_mul_art(t4, t1);
-		fp8_add(c[0], t0, t4);
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		fp8_free_all(t0, t1, t4);
-	}
-}
+TMPL_FPX_MUL_QUAD(fp16, fp8, fp8_mul_art);
 
 void fp16_mul_dxs_basic(fp16_t c, const fp16_t a, const fp16_t b) {
 	fp8_t t0, t1, t4;
@@ -304,21 +272,4 @@ void fp16_mul_dxs_lazyr(fp16_t c, const fp16_t a, const fp16_t b) {
 
 #endif
 
-void fp16_mul_art(fp16_t c, const fp16_t a) {
-	fp8_t t0;
-
-	fp8_null(t0);
-
-	RLC_TRY {
-		fp8_new(t0);
-
-		/* (a_0 + a_1 * v) * v = a_0 * v + a_1 * v^4 */
-		fp8_copy(t0, a[0]);
-		fp8_mul_art(c[0], a[1]);
-		fp8_copy(c[1], t0);
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		fp8_free(t0);
-	}
-}
+TMPL_FPX_MUL_ART_QUAD(fp16, fp8, fp8_mul_art);

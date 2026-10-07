@@ -32,6 +32,7 @@
 #include "relic_core.h"
 #include "relic_fp_low.h"
 #include "relic_fpx_low.h"
+#include "relic_fpx_mul_tmpl.h"
 #include "relic_fpx_sqr_tmpl.h"
 
 /*============================================================================*/
@@ -40,29 +41,7 @@
 
 #if FPX_RDC == BASIC || !defined(STRIP)
 
-void fp18_sqr_basic(fp18_t c, const fp18_t a) {
-	fp9_t t0, t1;
-
-	fp9_null_all(t0, t1);
-
-	RLC_TRY {
-		fp9_new_all(t0, t1);
-
-		fp9_add(t0, a[0], a[1]);
-		fp9_mul_art(t1, a[1]);
-		fp9_add(t1, a[0], t1);
-		fp9_mul(t0, t0, t1);
-		fp9_mul(c[1], a[0], a[1]);
-		fp9_sub(c[0], t0, c[1]);
-		fp9_mul_art(t1, c[1]);
-		fp9_sub(c[0], c[0], t1);
-		fp9_dbl(c[1], c[1]);
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		fp9_free_all(t0, t1);
-	}
-}
+TMPL_FPX_SQR_QUAD(fp18, fp9, fp9_mul_art);
 
 TMPL_SQR_CYC_QC(fp18, fp3, fp3_mul_nor);
 

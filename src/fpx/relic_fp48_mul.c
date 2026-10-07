@@ -32,6 +32,7 @@
 #include "relic_core.h"
 #include "relic_fp_low.h"
 #include "relic_fpx_low.h"
+#include "relic_fpx_mul_tmpl.h"
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -39,40 +40,7 @@
 
 #if FPX_RDC == BASIC || !defined(STRIP)
 
-void fp48_mul_basic(fp48_t c, const fp48_t a, const fp48_t b) {
-	fp24_t t0, t1, t2;
-
-	fp24_null_all(t0, t1, t2);
-
-	RLC_TRY {
-		fp24_new_all(t0, t1, t2);
-
-		/* Karatsuba algorithm. */
-
-		/* t0 = a_0 * b_0. */
-		fp24_mul(t0, a[0], b[0]);
-		/* t1 = a_1 * b_1. */
-		fp24_mul(t1, a[1], b[1]);
-		/* t2 = b_0 + b_1. */
-		fp24_add(t2, b[0], b[1]);
-
-		/* c_1 = a_0 + a_1. */
-		fp24_add(c[1], a[0], a[1]);
-
-		/* c_1 = (a_0 + a_1) * (b_0 + b_1) */
-		fp24_mul(c[1], c[1], t2);
-		fp24_sub(c[1], c[1], t0);
-		fp24_sub(c[1], c[1], t1);
-
-		/* c_0 = a_0b_0 + v * a_1b_1. */
-		fp24_mul_art(t1, t1);
-		fp24_add(c[0], t0, t1);
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		fp24_free_all(t0, t1, t2);
-	}
-}
+TMPL_FPX_MUL_QUAD(fp48, fp24, fp24_mul_art);
 
 #endif
 
@@ -173,21 +141,4 @@ void fp48_mul_dxs(fp48_t c, const fp48_t a, const fp48_t b) {
 	}
 }
 
-void fp48_mul_art(fp48_t c, const fp48_t a) {
-	fp24_t t0;
-
-	fp24_null(t0);
-
-	RLC_TRY {
-		fp24_new(t0);
-
-		/* (a_0 + a_1 * v) * v = a_0 * v + a_1 * v^2 */
-		fp24_copy(t0, a[0]);
-		fp24_mul_art(c[0], a[1]);
-		fp24_copy(c[1], t0);
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		fp24_free(t0);
-	}
-}
+TMPL_FPX_MUL_ART_QUAD(fp48, fp24, fp24_mul_art);

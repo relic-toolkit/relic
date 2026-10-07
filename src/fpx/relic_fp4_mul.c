@@ -32,6 +32,7 @@
 #include "relic_core.h"
 #include "relic_fp_low.h"
 #include "relic_fpx_low.h"
+#include "relic_fpx_mul_tmpl.h"
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -39,40 +40,7 @@
 
 #if FPX_RDC == BASIC || !defined(STRIP)
 
-void fp4_mul_basic(fp4_t c, const fp4_t a, const fp4_t b) {
-	fp2_t t0, t1, t2;
-
-	fp2_null_all(t0, t1, t2);
-
-	RLC_TRY {
-		fp2_new_all(t0, t1, t2);
-
-		/* Karatsuba algorithm. */
-
-		/* t0 = a_0 * b_0. */
-		fp2_mul(t0, a[0], b[0]);
-		/* t1 = a_1 * b_1. */
-		fp2_mul(t1, a[1], b[1]);
-		/* t2 = b_0 + b_1. */
-		fp2_add(t2, b[0], b[1]);
-
-		/* c_1 = a_0 + a_1. */
-		fp2_add(c[1], a[0], a[1]);
-
-		/* c_1 = (a_0 + a_1) * (b_0 + b_1) */
-		fp2_mul(c[1], c[1], t2);
-		fp2_sub(c[1], c[1], t0);
-		fp2_sub(c[1], c[1], t1);
-
-		/* c_0 = a_0b_0 + v * a_1b_1. */
-		fp2_mul_nor(t2, t1);
-		fp2_add(c[0], t0, t2);
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		fp2_free_all(t0, t1, t2);
-	}
-}
+TMPL_FPX_MUL_QUAD(fp4, fp2, fp2_mul_nor);
 
 #endif
 
@@ -127,24 +95,7 @@ void fp4_mul_lazyr(fp4_t c, const fp4_t a, const fp4_t b) {
 
 #endif
 
-void fp4_mul_art(fp4_t c, const fp4_t a) {
-	fp2_t t0;
-
-	fp2_null(t0);
-
-	RLC_TRY {
-		fp2_new(t0);
-
-		/* (a_0 + a_1 * v) * v = a_0 * v + a_1 * v^2 */
-		fp2_copy(t0, a[0]);
-		fp2_mul_nor(c[0], a[1]);
-		fp2_copy(c[1], t0);
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		fp2_free(t0);
-	}
-}
+TMPL_FPX_MUL_ART_QUAD(fp4, fp2, fp2_mul_nor);
 
 void fp4_mul_frb(fp4_t c, const fp4_t a, int i, int j) {
 	fp2_t t;

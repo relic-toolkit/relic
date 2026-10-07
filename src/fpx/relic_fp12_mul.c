@@ -32,6 +32,7 @@
 #include "relic_core.h"
 #include "relic_fp_low.h"
 #include "relic_fpx_low.h"
+#include "relic_fpx_mul_tmpl.h"
 
 /*============================================================================*/
 /* Private definitions                                                        */
@@ -84,40 +85,7 @@ inline static void fp6_mul_dxs_unr_lazyr(dv6_t c, const fp6_t a, const fp6_t b) 
 
 #if FPX_RDC == BASIC || !defined(STRIP)
 
-void fp12_mul_basic(fp12_t c, const fp12_t a, const fp12_t b) {
-	fp6_t t0, t1, t2;
-
-	fp6_null_all(t0, t1, t2);
-
-	RLC_TRY {
-		fp6_new_all(t0, t1, t2);
-
-		/* Karatsuba algorithm. */
-
-		/* t0 = a_0 * b_0. */
-		fp6_mul(t0, a[0], b[0]);
-		/* t1 = a_1 * b_1. */
-		fp6_mul(t1, a[1], b[1]);
-		/* t2 = b_0 + b_1. */
-		fp6_add(t2, b[0], b[1]);
-
-		/* c_1 = a_0 + a_1. */
-		fp6_add(c[1], a[0], a[1]);
-
-		/* c_1 = (a_0 + a_1) * (b_0 + b_1) */
-		fp6_mul(c[1], c[1], t2);
-		fp6_sub(c[1], c[1], t0);
-		fp6_sub(c[1], c[1], t1);
-
-		/* c_0 = a_0b_0 + v * a_1b_1. */
-		fp6_mul_art(t1, t1);
-		fp6_add(c[0], t0, t1);
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		fp6_free_all(t0, t1, t2);
-	}
-}
+TMPL_FPX_MUL_QUAD(fp12, fp6, fp6_mul_art);
 
 void fp12_mul_dxs_basic(fp12_t c, const fp12_t a, const fp12_t b) {
 	fp6_t t0, t1, t2;
@@ -353,21 +321,4 @@ void fp12_mul_dxs_lazyr(fp12_t c, const fp12_t a, const fp12_t b) {
 
 #endif
 
-void fp12_mul_art(fp12_t c, const fp12_t a) {
-	fp6_t t0;
-
-	fp6_null(t0);
-
-	RLC_TRY {
-		fp6_new(t0);
-
-		/* (a_0 + a_1 * v) * v = a_0 * v + a_1 * v^2 */
-		fp6_copy(t0, a[0]);
-		fp6_mul_art(c[0], a[1]);
-		fp6_copy(c[1], t0);
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		fp6_free(t0);
-	}
-}
+TMPL_FPX_MUL_ART_QUAD(fp12, fp6, fp6_mul_art);
