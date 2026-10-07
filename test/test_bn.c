@@ -68,15 +68,19 @@ static int util(void) {
 	char str[RLC_BN_BITS + 2];
 	dig_t digit, raw[RLC_BN_DIGS];
 	uint8_t bin[RLC_CEIL(RLC_BN_BITS, 8)];
-	bn_t a, b, c;
+	bn_t a, b, c, d, e;
 
 	bn_null(a);
 	bn_null(b);
 	bn_null(c);
+	bn_null(d);
+	bn_null(e);
 
 	RLC_TRY {
 		bn_new(a);
 		bn_new(b);
+		bn_new(d);
+		bn_new(e);
 		bn_new(c);
 
 		TEST_CASE("comparison is consistent") {
@@ -141,6 +145,24 @@ static int util(void) {
 				bn_copy(c, b);
 				TEST_ASSERT(bn_cmp(b, c) == RLC_EQ, end);
 			}
+		} TEST_END;
+
+		TEST_CASE("constant-time swap is correct") {
+			bn_rand(a, RLC_POS, RLC_BN_BITS);
+			bn_rand(b, RLC_NEG, RLC_BN_BITS / 2);
+			bn_copy(d, a);
+			bn_copy(e, b);
+			/* A clear bit leaves both operands in place. */
+			bn_swap_sec(a, b, 0);
+			TEST_ASSERT(bn_cmp(a, d) == RLC_EQ, end);
+			TEST_ASSERT(bn_cmp(b, e) == RLC_EQ, end);
+			/* A set bit exchanges them, and is its own inverse. */
+			bn_swap_sec(a, b, 1);
+			TEST_ASSERT(bn_cmp(a, e) == RLC_EQ, end);
+			TEST_ASSERT(bn_cmp(b, d) == RLC_EQ, end);
+			bn_swap_sec(a, b, 1);
+			TEST_ASSERT(bn_cmp(a, d) == RLC_EQ, end);
+			TEST_ASSERT(bn_cmp(b, e) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_CASE("absolute, negation and comparison are consistent") {
@@ -353,6 +375,8 @@ static int util(void) {
 	bn_free(a);
 	bn_free(b);
 	bn_free(c);
+	bn_free(d);
+	bn_free(e);
 	return code;
 }
 
@@ -2507,6 +2531,68 @@ static int factor(void) {
 	return code;
 }
 
+static int interpolation(void) {
+	const size_t n = 4;
+	int code = RLC_ERR;
+	int k;
+	bn_t a[4], c[5], b, x, y;
+
+	for (k = 0; k < 4; k++) {
+		bn_null(a[k]);
+	}
+	for (k = 0; k < 5; k++) {
+		bn_null(c[k]);
+	}
+	bn_null(b);
+	bn_null(x);
+	bn_null(y);
+
+	RLC_TRY {
+		for (k = 0; k < 4; k++) {
+			bn_new(a[k]);
+		}
+		for (k = 0; k < 5; k++) {
+			bn_new(c[k]);
+		}
+		bn_new(b);
+		bn_new(x);
+		bn_new(y);
+
+		bn_rand(b, RLC_POS, RLC_BN_BITS);
+
+		TEST_CASE("building a polynomial from its roots and evaluating it are consistent") {
+			for (k = 0; k < (int)n; k++) {
+				bn_rand_mod(a[k], b);
+			}
+			bn_lag(c, a, b, n);
+			/* The built polynomial must vanish at every root it was built from. */
+			for (k = 0; k < (int)n; k++) {
+				bn_evl(y, c, a[k], b, n + 1);
+				TEST_ASSERT(bn_is_zero(y), end);
+			}
+			/* A random point is not a root with overwhelming probability. */
+			bn_rand_mod(x, b);
+			bn_evl(y, c, x, b, n + 1);
+			TEST_ASSERT(!bn_is_zero(y), end);
+		} TEST_END;
+	}
+	RLC_CATCH_ANY {
+		RLC_ERROR(end);
+	}
+	code = RLC_OK;
+  end:
+	for (k = 0; k < 4; k++) {
+		bn_free(a[k]);
+	}
+	for (k = 0; k < 5; k++) {
+		bn_free(c[k]);
+	}
+	bn_free(b);
+	bn_free(x);
+	bn_free(y);
+	return code;
+}
+
 static int recoding(void) {
 	int code = RLC_ERR;
 	bn_t a, b, c, v1[3], v2[3];
@@ -2956,7 +3042,12 @@ int main(void) {
 		core_clean();
 		return 1;
 	}
-	
+
+	if (interpolation() != RLC_OK) {
+		core_clean();
+		return 1;
+	}
+
 	util_banner("All tests have passed.\n", 0);
 
 	core_clean();

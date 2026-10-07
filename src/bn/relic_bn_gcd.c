@@ -109,6 +109,43 @@ static int lehmer_step(dis_t *m, const bn_t x, const bn_t y, bn_t u, bn_t v) {
 	return even;
 }
 
+/*
+ * Single-precision continued fraction step on leading digits x, y: extends
+ * whatever transformation (a, b; c, d) already holds by committing every
+ * further step while it stays trustworthy, i.e. the remainder never drops
+ * below half the digit's bits. Callers reset the matrix to the identity for
+ * a first pass, or carry a prior pass's result forward to keep refining it
+ * with more precision.
+ */
+static void lehme_step_dig(dis_t *a, dis_t *b, dis_t *c, dis_t *d,
+		dig_t x, dig_t y) {
+	dig_t q = 0, r = 0, q2, r2, t;
+
+	if (y != 0) {
+		q = x / y;
+		r = x % y;
+	}
+	if (r >= ((dig_t)1 << (RLC_DIG / 2))) {
+		while (1) {
+			q2 = y / r;
+			r2 = y % r;
+			if (r2 < ((dig_t)1 << (RLC_DIG / 2))) {
+				break;
+			}
+			x = y;
+			y = r;
+			t = *a - q * (*c);
+			*a = *c;
+			*c = t;
+			t = *b - q * (*d);
+			*b = *d;
+			*d = t;
+			r = r2;
+			q = q2;
+		}
+	}
+}
+
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
@@ -265,7 +302,7 @@ void bn_gcd_ext_basic(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 
 void bn_gcd_lehme(bn_t c, const bn_t a, const bn_t b) {
 	bn_t x, y, u, v, t0, t1, t2, t3;
-	dig_t _x, _y, q, _q, t, _t;
+	dig_t _x, _y;
 	dis_t _a, _b, _c, _d;
 
 	if (bn_is_zero(a)) {
@@ -319,30 +356,7 @@ void bn_gcd_lehme(bn_t c, const bn_t a, const bn_t b) {
 			_y = v->dp[0];
 			_a = _d = 1;
 			_b = _c = 0;
-			t = 0;
-			if (_y != 0) {
-				q = _x / _y;
-				t = _x % _y;
-			}
-			if (t >= ((dig_t)1 << (RLC_DIG / 2))) {
-				while (1) {
-					_q = _y / t;
-					_t = _y % t;
-					if (_t < ((dig_t)1 << (RLC_DIG / 2))) {
-						break;
-					}
-					_x = _y;
-					_y = t;
-					t = _a - q * _c;
-					_a = _c;
-					_c = t;
-					t = _b - q * _d;
-					_b = _d;
-					_d = t;
-					t = _t;
-					q = _q;
-				}
-			}
+			lehme_step_dig(&_a, &_b, &_c, &_d, _x, _y);
 			if (_b == 0) {
 				bn_mod(t0, x, y);
 				bn_copy(x, y);
@@ -355,30 +369,10 @@ void bn_gcd_lehme(bn_t c, const bn_t a, const bn_t b) {
 					bn_copy(u, x);
 					bn_copy(v, y);
 				}
-				if (_a < 0) {
-					bn_mul_dig(t0, u, -_a);
-					bn_neg(t0, t0);
-				} else {
-					bn_mul_dig(t0, u, _a);
-				}
-				if (_b < 0) {
-					bn_mul_dig(t1, v, -_b);
-					bn_neg(t1, t1);
-				} else {
-					bn_mul_dig(t1, v, _b);
-				}
-				if (_c < 0) {
-					bn_mul_dig(t2, u, -_c);
-					bn_neg(t2, t2);
-				} else {
-					bn_mul_dig(t2, u, _c);
-				}
-				if (_d < 0) {
-					bn_mul_dig(t3, v, -_d);
-					bn_neg(t3, t3);
-				} else {
-					bn_mul_dig(t3, v, _d);
-				}
+				bn_mul_dis(t0, u, _a);
+				bn_mul_dis(t1, v, _b);
+				bn_mul_dis(t2, u, _c);
+				bn_mul_dis(t3, v, _d);
 				bn_add(u, t0, t1);
 				bn_add(v, t2, t3);
 				if (bn_bits(u) > RLC_DIG) {
@@ -390,54 +384,11 @@ void bn_gcd_lehme(bn_t c, const bn_t a, const bn_t b) {
 				}
 				_x = t0->dp[0];
 				_y = t1->dp[0];
-				t = 0;
-				if (_y != 0) {
-					q = _x / _y;
-					t = _x % _y;
-				}
-				if (t >= ((dig_t)1 << RLC_DIG / 2)) {
-					while (1) {
-						_q = _y / t;
-						_t = _y % t;
-						if (_t < ((dig_t)1 << RLC_DIG / 2)) {
-							break;
-						}
-						_x = _y;
-						_y = t;
-						t = _a - q * _c;
-						_a = _c;
-						_c = t;
-						t = _b - q * _d;
-						_b = _d;
-						_d = t;
-						t = _t;
-						q = _q;
-					}
-				}
-				if (_a < 0) {
-					bn_mul_dig(t0, x, -_a);
-					bn_neg(t0, t0);
-				} else {
-					bn_mul_dig(t0, x, _a);
-				}
-				if (_b < 0) {
-					bn_mul_dig(t1, y, -_b);
-					bn_neg(t1, t1);
-				} else {
-					bn_mul_dig(t1, y, _b);
-				}
-				if (_c < 0) {
-					bn_mul_dig(t2, x, -_c);
-					bn_neg(t2, t2);
-				} else {
-					bn_mul_dig(t2, x, _c);
-				}
-				if (_d < 0) {
-					bn_mul_dig(t3, y, -_d);
-					bn_neg(t3, t3);
-				} else {
-					bn_mul_dig(t3, y, _d);
-				}
+				lehme_step_dig(&_a, &_b, &_c, &_d, _x, _y);
+				bn_mul_dis(t0, x, _a);
+				bn_mul_dis(t1, y, _b);
+				bn_mul_dis(t2, x, _c);
+				bn_mul_dis(t3, y, _d);
 				bn_add(x, t0, t1);
 				bn_add(y, t2, t3);
 			}
@@ -462,7 +413,7 @@ void bn_gcd_lehme(bn_t c, const bn_t a, const bn_t b) {
 void bn_gcd_ext_lehme(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 	int sgn_a, sgn_b;
 	bn_t x, y, u, v, t0, t1, t2, t3, t4;
-	dig_t _x, _y, q, _q, t, _t;
+	dig_t _x, _y;
 	dis_t _a, _b, _c, _d;
 	int swap;
 
@@ -551,30 +502,7 @@ void bn_gcd_ext_lehme(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 			_y = v->dp[0];
 			_a = _d = 1;
 			_b = _c = 0;
-			t = 0;
-			if (_y != 0) {
-				q = _x / _y;
-				t = _x % _y;
-			}
-			if (t >= ((dig_t)1 << (RLC_DIG / 2))) {
-				while (1) {
-					_q = _y / t;
-					_t = _y % t;
-					if (_t < ((dig_t)1 << (RLC_DIG / 2))) {
-						break;
-					}
-					_x = _y;
-					_y = t;
-					t = _a - q * _c;
-					_a = _c;
-					_c = t;
-					t = _b - q * _d;
-					_b = _d;
-					_d = t;
-					t = _t;
-					q = _q;
-				}
-			}
+			lehme_step_dig(&_a, &_b, &_c, &_d, _x, _y);
 			if (_b == 0) {
 				bn_div_rem(t1, t0, x, y);
 				bn_copy(x, y);
@@ -591,30 +519,10 @@ void bn_gcd_ext_lehme(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 					bn_copy(u, x);
 					bn_copy(v, y);
 				}
-				if (_a < 0) {
-					bn_mul_dig(t0, u, -_a);
-					bn_neg(t0, t0);
-				} else {
-					bn_mul_dig(t0, u, _a);
-				}
-				if (_b < 0) {
-					bn_mul_dig(t1, v, -_b);
-					bn_neg(t1, t1);
-				} else {
-					bn_mul_dig(t1, v, _b);
-				}
-				if (_c < 0) {
-					bn_mul_dig(t2, u, -_c);
-					bn_neg(t2, t2);
-				} else {
-					bn_mul_dig(t2, u, _c);
-				}
-				if (_d < 0) {
-					bn_mul_dig(t3, v, -_d);
-					bn_neg(t3, t3);
-				} else {
-					bn_mul_dig(t3, v, _d);
-				}
+				bn_mul_dis(t0, u, _a);
+				bn_mul_dis(t1, v, _b);
+				bn_mul_dis(t2, u, _c);
+				bn_mul_dis(t3, v, _d);
 				bn_add(u, t0, t1);
 				bn_add(v, t2, t3);
 				if (bn_bits(u) > RLC_DIG) {
@@ -626,81 +534,18 @@ void bn_gcd_ext_lehme(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 				}
 				_x = t0->dp[0];
 				_y = t1->dp[0];
-				t = 0;
-				if (_y != 0) {
-					q = _x / _y;
-					t = _x % _y;
-				}
-				if (t >= ((dig_t)1 << RLC_DIG / 2)) {
-					while (1) {
-						_q = _y / t;
-						_t = _y % t;
-						if (_t < ((dig_t)1 << RLC_DIG / 2)) {
-							break;
-						}
-						_x = _y;
-						_y = t;
-						t = _a - q * _c;
-						_a = _c;
-						_c = t;
-						t = _b - q * _d;
-						_b = _d;
-						_d = t;
-						t = _t;
-						q = _q;
-					}
-				}
-				if (_a < 0) {
-					bn_mul_dig(t0, x, -_a);
-					bn_neg(t0, t0);
-				} else {
-					bn_mul_dig(t0, x, _a);
-				}
-				if (_b < 0) {
-					bn_mul_dig(t1, y, -_b);
-					bn_neg(t1, t1);
-				} else {
-					bn_mul_dig(t1, y, _b);
-				}
-				if (_c < 0) {
-					bn_mul_dig(t2, x, -_c);
-					bn_neg(t2, t2);
-				} else {
-					bn_mul_dig(t2, x, _c);
-				}
-				if (_d < 0) {
-					bn_mul_dig(t3, y, -_d);
-					bn_neg(t3, t3);
-				} else {
-					bn_mul_dig(t3, y, _d);
-				}
+				lehme_step_dig(&_a, &_b, &_c, &_d, _x, _y);
+				bn_mul_dis(t0, x, _a);
+				bn_mul_dis(t1, y, _b);
+				bn_mul_dis(t2, x, _c);
+				bn_mul_dis(t3, y, _d);
 				bn_add(x, t0, t1);
 				bn_add(y, t2, t3);
 
-				if (_a < 0) {
-					bn_mul_dig(t0, t4, -_a);
-					bn_neg(t0, t0);
-				} else {
-					bn_mul_dig(t0, t4, _a);
-				}
-				if (_b < 0) {
-					bn_mul_dig(t1, d, -_b);
-					bn_neg(t1, t1);
-				} else {
-					bn_mul_dig(t1, d, _b);
-				}
-				if (_c < 0) {
-					bn_mul_dig(t2, t4, -_c);
-					bn_neg(t2, t2);
-				} else {
-					bn_mul_dig(t2, t4, _c);
-				}
-				if (_d < 0) {
-					bn_mul_dig(t3, d, -_d);
-					bn_neg(t3, t3);
-				} else {
-					bn_mul_dig(t3, d, _d);
-				}
+				bn_mul_dis(t0, t4, _a);
+				bn_mul_dis(t1, d, _b);
+				bn_mul_dis(t2, t4, _c);
+				bn_mul_dis(t3, d, _d);
 				bn_add(t4, t0, t1);
 				bn_add(d, t2, t3);
 			}
