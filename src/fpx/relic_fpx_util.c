@@ -168,6 +168,7 @@ void fp3_print(const fp3_t a) {
 }
 
 int fp3_size_bin(const fp3_t a) {
+	(void)a;
 	return 3 * RLC_FP_BYTES;
 }
 
@@ -227,6 +228,7 @@ void fp4_print(const fp4_t a) {
 }
 
 int fp4_size_bin(const fp4_t a) {
+	(void)a;
 	return 4 * RLC_FP_BYTES;
 }
 
@@ -288,6 +290,7 @@ void fp6_print(const fp6_t a) {
 }
 
 int fp6_size_bin(const fp6_t a) {
+	(void)a;
 	return 6 * RLC_FP_BYTES;
 }
 
@@ -368,6 +371,7 @@ void fp8_read_bin(fp8_t a, const uint8_t *bin, size_t len) {
 }
 
 void fp8_write_bin(uint8_t *bin, size_t len, const fp8_t a, int pack) {
+	(void)pack;
 	if (len != 8 * RLC_FP_BYTES) {
 		RLC_THROW(ERR_NO_BUFFER);
 		return;
@@ -416,6 +420,7 @@ void fp9_print(const fp9_t a) {
 }
 
 int fp9_size_bin(const fp9_t a) {
+	(void)a;
 	return 9 * RLC_FP_BYTES;
 }
 
@@ -593,6 +598,7 @@ void fp16_read_bin(fp16_t a, const uint8_t *bin, size_t len) {
 }
 
 void fp16_write_bin(uint8_t *bin, size_t len, const fp16_t a, int pack) {
+	(void)pack;
 	if (len != 16 * RLC_FP_BYTES) {
 		RLC_THROW(ERR_NO_BUFFER);
 		return;

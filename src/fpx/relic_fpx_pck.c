@@ -73,6 +73,7 @@ int fp2_upk(fp2_t c, const fp2_t a) {
 				fp_copy(c[1], t);
 			}
 		} RLC_CATCH_ANY {
+			result = 0;
 			RLC_THROW(ERR_CAUGHT);
 		} RLC_FINALLY {
 			fp_free(t);

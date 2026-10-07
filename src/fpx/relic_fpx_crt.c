@@ -89,6 +89,7 @@ int fp2_is_cub(const fp2_t a) {
 		fp2_mul(t, t, a);
 		r = fp_is_cub(t[0]);
 	} RLC_CATCH_ANY {
+		r = 0;
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		fp2_free(t);
@@ -211,6 +212,7 @@ int fp2_crt(fp2_t c, const fp2_t a) {
 		}
 	}
 	RLC_CATCH_ANY {
+		r = 0;
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {

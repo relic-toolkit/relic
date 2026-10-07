@@ -53,6 +53,7 @@ int fp2_is_sqr(const fp2_t a) {
 		fp2_mul(t, t, a);
 		r = fp_is_sqr(t[0]);
 	} RLC_CATCH_ANY {
+		r = 0;
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		fp2_free(t);
@@ -170,6 +171,7 @@ int fp2_srt(fp2_t c, const fp2_t a) {
 		}
 	}
 	RLC_CATCH_ANY {
+		r = 0;
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
@@ -194,6 +196,7 @@ int fp3_is_sqr(const fp3_t a) {
 		fp3_mul(t, t, u);
 		r = fp_is_sqr(t[0]);
 	} RLC_CATCH_ANY {
+		r = 0;
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		fp3_free_all(t, u);
@@ -320,6 +323,7 @@ int fp3_srt(fp3_t c, const fp3_t a) {
 		fp3_zero(c);
 		fp3_copy_sec(c, t3, r);
 	} RLC_CATCH_ANY {
+		r = 0;
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		fp_free(root);
@@ -347,6 +351,7 @@ int fp4_is_sqr(const fp4_t a) {
 		}
 		r = fp_is_sqr(t[0][0]);
 	} RLC_CATCH_ANY {
+		r = 0;
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		fp4_free_all(t, u);
@@ -420,6 +425,7 @@ int fp4_srt(fp4_t c, const fp4_t a) {
 			}
 		}
 	} RLC_CATCH_ANY {
+		r = 0;
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		fp2_free_all(t0, t1, t2);
@@ -444,6 +450,7 @@ int fp8_is_sqr(const fp8_t a) {
 		}
 		r = fp_is_sqr(t[0][0][0]);
 	} RLC_CATCH_ANY {
+		r = 0;
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		fp8_free_all(t, u);
@@ -521,6 +528,7 @@ int fp8_srt(fp8_t c, const fp8_t a) {
 			}
 		}
 	} RLC_CATCH_ANY {
+		r = 0;
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		fp4_free_all(t0, t1, t2);
@@ -545,6 +553,7 @@ int fp16_is_sqr(const fp16_t a) {
 		}
 		r = fp_is_sqr(t[0][0][0][0]);
 	} RLC_CATCH_ANY {
+		r = 0;
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		fp16_free_all(t, u);
@@ -629,6 +638,7 @@ int fp16_srt(fp16_t c, const fp16_t a) {
 			}
 		}
 	} RLC_CATCH_ANY {
+		r = 0;
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
 		fp8_free_all(t0, t1, t2);

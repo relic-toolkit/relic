@@ -122,7 +122,7 @@ void fp2_mul_nor_basic(fp2_t c, const fp2_t a) {
 					fp_add(c[0], t[0], a[0]);
 					break;
 				}
-				/* Otherwise, fall back to next one. */
+				/* Fall through - otherwise, try the next one. */
 			case 7:
 				/* If p = 7 mod 8, we choose (2^k + i) as a QNR/CNR. */
 				fp2_mul_art(t, a);

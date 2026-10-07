@@ -72,6 +72,7 @@ int fp2_test_cyc(const fp2_t a) {
 		result = ((fp2_cmp_dig(t, 1) == RLC_EQ) ? 1 : 0);
 	}
 	RLC_CATCH_ANY {
+		result = 0;
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
@@ -285,6 +286,7 @@ int fp8_test_cyc(const fp8_t a) {
 		result = ((fp8_cmp_dig(t, 1) == RLC_EQ) ? 1 : 0);
 	}
 	RLC_CATCH_ANY {
+		result = 0;
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
@@ -506,6 +508,7 @@ int fp12_test_cyc(const fp12_t a) {
 		result = ((fp12_cmp(t0, t1) == RLC_EQ) ? 1 : 0);
 	}
 	RLC_CATCH_ANY {
+		result = 0;
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
@@ -740,7 +743,7 @@ void fp12_exp_cyc(fp12_t c, const fp12_t a, const bn_t b) {
 			if (u == NULL) {
 				RLC_THROW(ERR_NO_MEMORY);
 			}
-			for (int i = 0; i < w; i++) {
+			for (size_t i = 0; i < w; i++) {
 				fp12_null(u[i]);
 				fp12_new(u[i]);
 			}
@@ -1018,6 +1021,7 @@ int fp16_test_cyc(const fp16_t a) {
 		result = ((fp16_cmp_dig(t, 1) == RLC_EQ) ? 1 : 0);
 	}
 	RLC_CATCH_ANY {
+		result = 0;
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
@@ -1052,7 +1056,7 @@ void fp16_exp_cyc(fp16_t c, const fp16_t a, const bn_t b) {
 #if RLC_WIDTH > 2
 		fp16_sqr_cyc(t[0], a);
 		fp16_mul(t[1], t[0], a);
-		for (size_t i = 2; i < (1 << (w - 2)); i++) {
+		for (int i = 2; i < (1 << (w - 2)); i++) {
 			fp16_mul(t[i], t[i - 1], t[0]);
 		}
 #endif
@@ -1238,6 +1242,7 @@ int fp18_test_cyc(const fp18_t a) {
 		result = ((fp18_cmp(t0, t1) == RLC_EQ) ? 1 : 0);
 	}
 	RLC_CATCH_ANY {
+		result = 0;
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
@@ -1428,7 +1433,7 @@ void fp18_exp_cyc(fp18_t c, const fp18_t a, const bn_t b) {
 #if RLC_WIDTH > 2
 			fp18_sqr_cyc(t[0], a);
 			fp18_mul(t[1], t[0], a);
-			for (size_t i = 2; i < (1 << (w - 2)); i++) {
+			for (int i = 2; i < (1 << (w - 2)); i++) {
 				fp18_mul(t[i], t[i - 1], t[0]);
 			}
 #endif
@@ -1475,7 +1480,7 @@ void fp18_exp_cyc(fp18_t c, const fp18_t a, const bn_t b) {
 			if (u == NULL) {
 				RLC_THROW(ERR_NO_MEMORY);
 			}
-			for (int i = 0; i < w; i++) {
+			for (size_t i = 0; i < w; i++) {
 				fp18_null(u[i]);
 				fp18_new(u[i]);
 			}
@@ -1576,12 +1581,12 @@ void fp18_exp_cyc_sim(fp18_t e, const fp18_t a, const bn_t b, const fp18_t c,
 
 		l = RLC_MAX(l0, l1);
 		if (bn_sign(b) == RLC_NEG) {
-			for (i = 0; i < l0; i++) {
+			for (i = 0; i < (int)l0; i++) {
 				naf0[i] = -naf0[i];
 			}
 		}
 		if (bn_sign(d) == RLC_NEG) {
-			for (i = 0; i < l1; i++) {
+			for (i = 0; i < (int)l1; i++) {
 				naf1[i] = -naf1[i];
 			}
 		}
@@ -1754,6 +1759,7 @@ int fp24_test_cyc(const fp24_t a) {
 		result = ((fp24_cmp(t0, t1) == RLC_EQ) ? 1 : 0);
 	}
 	RLC_CATCH_ANY {
+		result = 0;
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
@@ -1990,7 +1996,7 @@ void fp24_exp_cyc(fp24_t c, const fp24_t a, const bn_t b) {
 			if (u == NULL) {
 				RLC_THROW(ERR_NO_MEMORY);
 			}
-			for (int i = 0; i < w; i++) {
+			for (size_t i = 0; i < w; i++) {
 				fp24_null(u[i]);
 				fp24_new(u[i]);
 			}
@@ -2269,6 +2275,7 @@ int fp48_test_cyc(const fp48_t a) {
 		result = ((fp48_cmp(t0, t1) == RLC_EQ) ? 1 : 0);
 	}
 	RLC_CATCH_ANY {
+		result = 0;
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
@@ -2506,7 +2513,7 @@ void fp48_exp_cyc(fp48_t c, const fp48_t a, const bn_t b) {
 			if (u == NULL) {
 				RLC_THROW(ERR_NO_MEMORY);
 			}
-			for (int i = 0; i < w; i++) {
+			for (size_t i = 0; i < w; i++) {
 				fp48_null(u[i]);
 				fp48_new(u[i]);
 			}
@@ -2784,6 +2791,7 @@ int fp54_test_cyc(const fp54_t a) {
 		result = ((fp54_cmp(t0, t1) == RLC_EQ) ? 1 : 0);
 	}
 	RLC_CATCH_ANY {
+		result = 0;
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
@@ -2954,10 +2962,10 @@ void fp54_exp_cyc(fp54_t c, const fp54_t a, const bn_t b) {
 		return fp54_set_dig(c, 1);
 	}
 
-	if ((bn_bits(b) > RLC_DIG) && ((w << 3) > bn_bits(b))) {
+	if ((bn_bits(b) > RLC_DIG) && ((w << 3) > (int)bn_bits(b))) {
 		fp54_t t;
 
-		fp54_null(t)
+		fp54_null(t);
 
 		RLC_TRY {
 			fp54_new(t);
@@ -2999,7 +3007,7 @@ void fp54_exp_cyc(fp54_t c, const fp54_t a, const bn_t b) {
 
 			j = 0;
 			fp54_copy(t, a);
-			for (i = 1; i < bn_bits(b); i++) {
+			for (i = 1; i < (int)bn_bits(b); i++) {
 				fp54_sqr_pck(t, t);
 				if (bn_get_bit(b, i)) {
 					fp54_copy(u[j++], t);
