@@ -41,10 +41,18 @@
 
 #ifdef RLC_FP_ROOM
 
-static void bn_mul2_low(dig_t *c, const dig_t *a, dis_t digit, size_t size) {
-	int sd = digit >> (RLC_DIG - 1);
-	digit = (digit ^ sd) - sd;
+/*
+ * Sets c = m * a for an entry of the column vector, kept nonnegative by
+ * subtracting it from the shifted modulus p when m is negative.
+ */
+static inline void jmpds_mul_dis(dig_t *c, const dig_t *a, dis_t m, dig_t *t,
+		const dig_t *p, size_t size) {
+	int sd = m >> (RLC_DIG - 1);
+	dis_t digit = (m ^ sd) - sd;
+
 	c[size] = bn_mul1_low(c, a, digit, size);
+	fp_subd_low(t, p, c);
+	dv_copy_sec(c, t, size + 1, RLC_SIGN(m));
 }
 
 #endif /* RLC_FP_ROOM */
@@ -88,6 +96,27 @@ static dis_t jumpdivstep(dis_t m[4], dis_t delta, dig_t f, dig_t g, int s) {
 	m[2] = q;
 	m[3] = r;
 	return delta;
+}
+
+/*
+ * Applies the transition matrix m to (f, g) and divides both by 2^s.
+ */
+static inline void jmpds_fg(dig_t *f, dig_t *g, const dis_t m[4], dig_t *t0,
+		dig_t *t1, dig_t *u0, dig_t *u1, int s) {
+	dig_t sf = RLC_SIGN(f[RLC_FP_DIGS]), sg = RLC_SIGN(g[RLC_FP_DIGS]);
+
+	bn_sneg_low(u0, f, sf, RLC_FP_DIGS);
+	bn_sneg_low(u1, g, sg, RLC_FP_DIGS);
+
+	t0[RLC_FP_DIGS] = bn_smul_low(t0, u0, sf, m[0], RLC_FP_DIGS);
+	t1[RLC_FP_DIGS] = bn_smul_low(t1, u1, sg, m[1], RLC_FP_DIGS);
+	bn_addn_low(t0, t0, t1, RLC_FP_DIGS + 1);
+	bn_srsh_low(f, t0, RLC_FP_DIGS + 1, s);
+
+	t0[RLC_FP_DIGS] = bn_smul_low(t0, u0, sf, m[2], RLC_FP_DIGS);
+	t1[RLC_FP_DIGS] = bn_smul_low(t1, u1, sg, m[3], RLC_FP_DIGS);
+	bn_addn_low(t1, t1, t0, RLC_FP_DIGS + 1);
+	bn_srsh_low(g, t1, RLC_FP_DIGS + 1, s);
 }
 
 #endif
@@ -523,7 +552,6 @@ void fp_inv_jmpds(fp_t c, const fp_t a) {
 	const int iterations = (45907 * FP_PRIME + 26313) / 19929;
 	int loops, i, j = 0, s = RLC_DIG - 2;
 	dv_t f, g, t, p, t0, t1, u0, u1, v0, v1, p01, p11;
-	dig_t sf, sg;
 	fp_t pre;
 #if WSIZE == 8
 	int d = -1;
@@ -590,41 +618,17 @@ void fp_inv_jmpds(fp_t c, const fp_t a) {
 		for (i = 1; i < loops; i++) {
 			d = jumpdivstep(m, d, f[0] & RLC_MASK(s), g[0] & RLC_MASK(s), s);
 
-			sf = RLC_SIGN(f[RLC_FP_DIGS]);
-			sg = RLC_SIGN(g[RLC_FP_DIGS]);
-			bn_sneg_low(u0, f, sf, RLC_FP_DIGS);
-			bn_sneg_low(u1, g, sg, RLC_FP_DIGS);
-
-			t0[RLC_FP_DIGS] = bn_smul_low(t0, u0, sf, m[0], RLC_FP_DIGS);
-			t1[RLC_FP_DIGS] = bn_smul_low(t1, u1, sg, m[1], RLC_FP_DIGS);
-			bn_addn_low(t0, t0, t1, RLC_FP_DIGS + 1);
-			bn_srsh_low(f, t0, RLC_FP_DIGS + 1, s);
-
-			t0[RLC_FP_DIGS] = bn_smul_low(t0, u0, sf, m[2], RLC_FP_DIGS);
-			t1[RLC_FP_DIGS] = bn_smul_low(t1, u1, sg, m[3], RLC_FP_DIGS);
-			bn_addn_low(t1, t1, t0, RLC_FP_DIGS + 1);
-			bn_srsh_low(g, t1, RLC_FP_DIGS + 1, s);
+			jmpds_fg(f, g, m, t0, t1, u0, u1, s);
 
 #ifdef RLC_FP_ROOM
 			p[j] = 0;
 			dv_copy(p + j + 1, fp_prime_get(), RLC_FP_DIGS);
 
 			/* Update column vector below. */
-			bn_mul2_low(v0, p01, m[0], RLC_FP_DIGS + j);
-			fp_subd_low(t, p, v0);
-			dv_copy_sec(v0, t, RLC_FP_DIGS + j + 1, RLC_SIGN(m[0]));
-
-			bn_mul2_low(v1, p11, m[1], RLC_FP_DIGS + j);
-			fp_subd_low(t, p, v1);
-			dv_copy_sec(v1, t, RLC_FP_DIGS + j + 1, RLC_SIGN(m[1]));
-
-			bn_mul2_low(u0, p01, m[2], RLC_FP_DIGS + j);
-			fp_subd_low(t, p, u0);
-			dv_copy_sec(u0, t, RLC_FP_DIGS + j + 1, RLC_SIGN(m[2]));
-
-			bn_mul2_low(u1, p11, m[3], RLC_FP_DIGS + j);
-			fp_subd_low(t, p, u1);
-			dv_copy_sec(u1, t, RLC_FP_DIGS + j + 1, RLC_SIGN(m[3]));
+			jmpds_mul_dis(v0, p01, m[0], t, p, RLC_FP_DIGS + j);
+			jmpds_mul_dis(v1, p11, m[1], t, p, RLC_FP_DIGS + j);
+			jmpds_mul_dis(u0, p01, m[2], t, p, RLC_FP_DIGS + j);
+			jmpds_mul_dis(u1, p11, m[3], t, p, RLC_FP_DIGS + j);
 
 			j = i % RLC_FP_DIGS;
 			if (j == 0) {
@@ -668,33 +672,15 @@ void fp_inv_jmpds(fp_t c, const fp_t a) {
 		s = iterations - loops * s;
 		d = jumpdivstep(m, d, f[0] & RLC_MASK(s), g[0] & RLC_MASK(s), s);
 
-		sf = RLC_SIGN(f[RLC_FP_DIGS]);
-		sg = RLC_SIGN(g[RLC_FP_DIGS]);
-		bn_sneg_low(u0, f, sf, RLC_FP_DIGS);
-		bn_sneg_low(u1, g, sg, RLC_FP_DIGS);
-
-		t0[RLC_FP_DIGS] = bn_smul_low(t0, u0, sf, m[0], RLC_FP_DIGS);
-		t1[RLC_FP_DIGS] = bn_smul_low(t1, u1, sg, m[1], RLC_FP_DIGS);
-		bn_addn_low(t0, t0, t1, RLC_FP_DIGS + 1);
-		bn_srsh_low(f, t0, RLC_FP_DIGS + 1, s);
-
-		t0[RLC_FP_DIGS] = bn_smul_low(t0, u0, sf, m[2], RLC_FP_DIGS);
-		t1[RLC_FP_DIGS] = bn_smul_low(t1, u1, sg, m[3], RLC_FP_DIGS);
-		bn_addn_low(t1, t1, t0, RLC_FP_DIGS + 1);
-		bn_srsh_low(g, t1, RLC_FP_DIGS + 1, s);
+		jmpds_fg(f, g, m, t0, t1, u0, u1, s);
 
 #ifdef RLC_FP_ROOM
 		p[j] = 0;
 		dv_copy(p + j + 1, fp_prime_get(), RLC_FP_DIGS);
 
 		/* Update column vector below. */
-		bn_mul2_low(v0, p01, m[0], RLC_FP_DIGS + j);
-		fp_subd_low(t, p, v0);
-		dv_copy_sec(v0, t, RLC_FP_DIGS + j + 1, RLC_SIGN(m[0]));
-
-		bn_mul2_low(v1, p11, m[1], RLC_FP_DIGS + j);
-		fp_subd_low(t, p, v1);
-		dv_copy_sec(v1, t, RLC_FP_DIGS + j + 1, RLC_SIGN(m[1]));
+		jmpds_mul_dis(v0, p01, m[0], t, p, RLC_FP_DIGS + j);
+		jmpds_mul_dis(v1, p11, m[1], t, p, RLC_FP_DIGS + j);
 
 		fp_addd_low(t, v0, v1);
 		fp_rdc(p01, t);
