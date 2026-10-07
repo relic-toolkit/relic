@@ -87,6 +87,9 @@
 #elif FP_PRIME == 544
 #define RLC_GT_LOWER			fp8_
 #define RLC_GT_EMBED      		8
+#elif FP_PRIME == 569
+#define RLC_GT_LOWER			fp54_
+#define RLC_GT_EMBED      		54
 #else
 #define RLC_GT_LOWER			fp12_
 #define RLC_GT_EMBED      		12
@@ -960,7 +963,13 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
  * @param[in] P				- the first element.
  * @param[in] Q				- the second element.
  */
+#if RLC_GT_EMBED == 54
+/* There is no G_2 implementation for k = 54, so pairings are unavailable. */
+#define pc_map(R, P, Q)														\
+	do { (void)(R); (void)(P); (void)(Q); RLC_THROW(ERR_NO_CONFIG); } while (0)
+#else
 #define pc_map(R, P, Q)	  RLC_CAT(pp_map_k, RLC_GT_EMBED)(R, P, Q)
+#endif
 
 /**
  * Computes the multi-pairing of G_1 elements and G_2 elements. Computes
@@ -971,7 +980,13 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
  * @param[in] Q				- the second pairing arguments.
  * @param[in] M 			- the number of pairing arguments.
  */
+#if RLC_GT_EMBED == 54
+#define pc_map_sim(R, P, Q, M)												\
+	do { (void)(R); (void)(P); (void)(Q); (void)(M); 						\
+		RLC_THROW(ERR_NO_CONFIG); } while (0)
+#else
 #define pc_map_sim(R, P, Q, M)  RLC_CAT(pp_map_sim_k, RLC_GT_EMBED)(R, P, Q, M)
+#endif
 
 /**
  * Computes the final exponentiation of the pairing.

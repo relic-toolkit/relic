@@ -49,27 +49,7 @@
 
 void gt_rand(gt_t a) {
 	gt_rand_imp(a);
-#if FP_PRIME < 1536
-#if FP_PRIME == 575
-	pp_exp_k48(a, a);
-#elif FP_PRIME == 315 || FP_PRIME == 317 || FP_PRIME == 509
-	pp_exp_k24(a, a);
-#elif FP_PRIME == 330 || FP_PRIME == 510 || FP_PRIME == 765 || FP_PRIME == 766
-	pp_exp_k16(a, a);
-#elif FP_PRIME == 354 || FP_PRIME == 508 || FP_PRIME == 768 || FP_PRIME == 638 && !defined(FP_QNRES)
-	pp_exp_k18(a, a);
-#elif FP_PRIME == 544
-	pp_exp_k8(a, a);
-#else
-	pp_exp_k12(a, a);
-#endif
-#else
-#if FP_PRIME == 1536
-	pp_exp_k2(a, a);
-#else
-	pp_exp_k1(a, a);
-#endif
-#endif
+	pc_exp(a, a);
 }
 
 void gt_get_gen(gt_t g) {

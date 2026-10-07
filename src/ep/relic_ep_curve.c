@@ -594,6 +594,11 @@ int ep_curve_frdim(void) {
 		case 48:
 			return 16;
 			break;
+		case 54:
+			/* The base 3*u^2 is twice as long, so about half the dimension
+			 * suffices, plus one for the carry since r > (3*u^2)^9. */
+			return 10;
+			break;
 	}
 	return 0;
 }

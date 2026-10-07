@@ -80,6 +80,10 @@ static void gt_psi(gt_t c, const gt_t a) {
 				gt_mul(c, c, b);
 				gt_frb(c, c, 1);
 				break;
+			case EP_SG54:
+				/* 3*u^2 = p^11 mod r. */
+				gt_frb(c, a, 11);
+				break;
 			case EP_FM18:
 				/* For FM18, we have that u = (p^4-p) mod r. */
 				gt_frb(b, a, 3);
@@ -113,6 +117,11 @@ static void gt_get_base(bn_t u) {
 			/* Compute base -3*u for the recoding below. */
 			bn_mul_dig(u, u, 3);
 			bn_neg(u, u);
+			break;
+		case EP_SG54:
+			/* Compute base 3*u^2 = p^11 mod r for the recoding below. */
+			bn_sqr(u, u);
+			bn_mul_dig(u, u, 3);
 			break;
 	}
 }
@@ -823,6 +832,10 @@ void gt_exp_sec(gt_t c, const gt_t a, const bn_t b) {
 #if FP_PRIME < 1536
 	size_t d = ep_curve_frdim();
 	d = (d > 4 ? d / 4 : 1);
+	/* The subscalars are split evenly into d groups. */
+	while (ep_curve_frdim() % d != 0) {
+		d++;
+	}
 	gt_exp_reg_sac(c, a, b, d, ep_curve_frdim());
 #elif FP_PRIME == 1536
 	gt_exp_reg_gls(c, a, b, 1);

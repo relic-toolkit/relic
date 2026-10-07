@@ -55,10 +55,19 @@ void pc_core_calc(void) {
 		g2_new(g2);
 		gt_new(gt);
 
+#if RLC_GT_EMBED == 54
+		/* There is no G_2 implementation, so map 1 + w to G_T instead. */
+		(void)g1;
+		(void)g2;
+		gt_set_unity(gt);
+		fp_set_dig(gt[1][0][0][0], 1);
+		pc_exp(gt, gt);
+#else
 		g1_get_gen(g1);
 		g2_get_gen(g2);
 
 		pc_map(gt, g1, g2);
+#endif
 		gt_copy(core_get()->gt_g, gt);
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
