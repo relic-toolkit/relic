@@ -138,8 +138,9 @@ void fp18_sqr_lazyr(fp18_t c, const fp18_t a) {
 	}
 }
 
-TMPL_SQR_CYC_LAZYR(fp18, fp3, dv3, fp3_mul_nor);
+TMPL_SQR_PCK_LAZYR_QC(fp18, fp3, dv3, fp3, dv3, 1, 1, fp3_sqrn_low,
+		fp3_mul_nor);
 
-TMPL_SQR_PCK_LAZYR(fp18, fp3, dv3, fp3_mul_nor);
+TMPL_SQR_CYC_LAZYR_QC(fp18, fp3, dv3, fp3, dv3, 1, 1, fp3_sqrn_low);
 
 #endif
