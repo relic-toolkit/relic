@@ -83,74 +83,7 @@ int fp2_test_cyc(const fp2_t a) {
 	return result;
 }
 
-void fp2_exp_cyc(fp2_t c, const fp2_t a, const bn_t b) {
-	fp2_t r, s, t[1 << (RLC_WIDTH - 2)];
-	int8_t naf[RLC_FP_BITS + 1], *k;
-	size_t l;
-
-	if (bn_is_zero(b)) {
-		return fp2_set_dig(c, 1);
-	}
-
-	if (bn_bits(b) <= RLC_DIG) {
-		fp2_exp_dig(c, a, b->dp[0]);
-		if (bn_sign(b) == RLC_NEG) {
-			fp2_inv_cyc(c, c);
-		}
-		return;
-	}
-
-	fp2_null_all(r, s);
-
-	RLC_TRY {
-		fp2_new_all(r, s);
-		for (int i = 0; i < (1 << (RLC_WIDTH - 2)); i ++) {
-			fp2_null(t[i]);
-			fp2_new(t[i]);
-		}
-
-#if RLC_WIDTH > 2
-		fp2_sqr(t[0], a);
-		fp2_mul(t[1], t[0], a);
-		for (int i = 2; i < (1 << (RLC_WIDTH - 2)); i++) {
-			fp2_mul(t[i], t[i - 1], t[0]);
-		}
-#endif
-		fp2_copy(t[0], a);
-
-		l = RLC_FP_BITS + 1;
-		fp2_set_dig(r, 1);
-		bn_rec_naf(naf, &l, b, RLC_WIDTH);
-
-		k = naf + l - 1;
-		for (int i = l - 1; i >= 0; i--, k--) {
-			fp2_sqr(r, r);
-
-			if (*k > 0) {
-				fp2_mul(r, r, t[*k / 2]);
-			}
-			if (*k < 0) {
-				fp2_inv_cyc(s, t[-*k / 2]);
-				fp2_mul(r, r, s);
-			}
-		}
-
-		if (bn_sign(b) == RLC_NEG) {
-			fp2_inv_cyc(c, r);
-		} else {
-			fp2_copy(c, r);
-		}
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		fp2_free_all(r, s);
-		for (int i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
-			fp2_free(t[i]);
-		}
-	}
-}
+TMPL_EXP_CYC_NAF(fp2, fp2_sqr);
 
 TMPL_EXP_CYC_SIM(fp2, fp2_sqr);
 
@@ -200,70 +133,7 @@ int fp8_test_cyc(const fp8_t a) {
 	return result;
 }
 
-void fp8_exp_cyc(fp8_t c, const fp8_t a, const bn_t b) {
-	fp8_t r, s, t[1 << (RLC_WIDTH - 2)];
-	int8_t naf[RLC_FP_BITS + 1], *k, w = RLC_WIDTH;
-	size_t l;
-
-	if (bn_is_zero(b)) {
-		return fp8_set_dig(c, 1);
-	}
-
-	if (bn_bits(b) <= RLC_DIG) {
-		w = 2;
-	}
-
-	fp8_null_all(r, s);
-
-	RLC_TRY {
-		fp8_new_all(r, s);
-		for (int i = 0; i < (1 << (RLC_WIDTH - 2)); i ++) {
-			fp8_null(t[i]);
-			fp8_new(t[i]);
-		}
-
-#if RLC_WIDTH > 2
-		fp8_sqr_cyc(t[0], a);
-		fp8_mul(t[1], t[0], a);
-		for (int i = 2; i < (1 << (w - 2)); i++) {
-			fp8_mul(t[i], t[i - 1], t[0]);
-		}
-#endif
-		fp8_copy(t[0], a);
-
-		l = RLC_FP_BITS + 1;
-		fp8_set_dig(r, 1);
-		bn_rec_naf(naf, &l, b, w);
-
-		k = naf + l - 1;
-		for (int i = l - 1; i >= 0; i--, k--) {
-			fp8_sqr_cyc(r, r);
-
-			if (*k > 0) {
-				fp8_mul(r, r, t[*k / 2]);
-			}
-			if (*k < 0) {
-				fp8_inv_cyc(s, t[-*k / 2]);
-				fp8_mul(r, r, s);
-			}
-		}
-
-		if (bn_sign(b) == RLC_NEG) {
-			fp8_inv_cyc(c, r);
-		} else {
-			fp8_copy(c, r);
-		}
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		fp8_free_all(r, s);
-		for (int i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
-			fp8_free(t[i]);
-		}
-	}
-}
+TMPL_EXP_CYC_NAF(fp8, fp8_sqr_cyc);
 
 TMPL_EXP_CYC_SIM(fp8, fp8_sqr_cyc);
 
@@ -529,69 +399,7 @@ int fp16_test_cyc(const fp16_t a) {
 	return result;
 }
 
-void fp16_exp_cyc(fp16_t c, const fp16_t a, const bn_t b) {
-	size_t l, w = RLC_WIDTH;
-	fp16_t r, s, t[1 << (RLC_WIDTH - 2)];
-	int8_t naf[RLC_FP_BITS + 1], *k;
-
-	if (bn_is_zero(b)) {
-		return fp16_set_dig(c, 1);
-	}
-
-	if (bn_bits(b) <= RLC_DIG) {
-		w = 2;
-	}
-
-	fp16_null_all(r, s);
-
-	RLC_TRY {
-		fp16_new_all(r, s);
-		for (size_t i = 0; i < (1 << (RLC_WIDTH - 2)); i ++) {
-			fp16_null(t[i]);
-			fp16_new(t[i]);
-		}
-
-#if RLC_WIDTH > 2
-		fp16_sqr_cyc(t[0], a);
-		fp16_mul(t[1], t[0], a);
-		for (int i = 2; i < (1 << (w - 2)); i++) {
-			fp16_mul(t[i], t[i - 1], t[0]);
-		}
-#endif
-		fp16_copy(t[0], a);
-
-		l = RLC_FP_BITS + 1;
-		fp16_set_dig(r, 1);
-		bn_rec_naf(naf, &l, b, w);
-
-		k = naf + l - 1;
-		for (int i = l - 1; i >= 0; i--, k--) {
-			fp16_sqr_cyc(r, r);
-
-			if (*k > 0) {
-				fp16_mul(r, r, t[*k / 2]);
-			}
-			if (*k < 0) {
-				fp16_inv_cyc(s, t[-*k / 2]);
-				fp16_mul(r, r, s);
-			}
-		}
-
-		if (bn_sign(b) == RLC_NEG) {
-			fp16_inv_cyc(c, r);
-		} else {
-			fp16_copy(c, r);
-		}
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		fp16_free_all(r, s);
-		for (size_t i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
-			fp16_free(t[i]);
-		}
-	}
-}
+TMPL_EXP_CYC_NAF(fp16, fp16_sqr_cyc);
 
 TMPL_EXP_CYC_SIM(fp16, fp16_sqr_cyc);
 

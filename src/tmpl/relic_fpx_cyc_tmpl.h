@@ -36,6 +36,75 @@
 /*============================================================================*/
 
 /**
+ * Defines a template for exponentiation in the cyclotomic subgroup using w-NAF,
+ * for extension fields without compressed squarings.
+ *
+ * @param[in] F			- the extension field prefix.
+ * @param[in] SQR		- the squaring function for cyclotomic elements.
+ */
+#define TMPL_EXP_CYC_NAF(F, SQR)											\
+	void F##_exp_cyc(F##_t c, const F##_t a, const bn_t b) {				\
+		size_t l, w = RLC_WIDTH;											\
+		F##_t r, s, t[1 << (RLC_WIDTH - 2)];								\
+		int8_t naf[RLC_FP_BITS + 1], *k;									\
+																			\
+		if (bn_is_zero(b)) {												\
+			return F##_set_dig(c, 1);										\
+		}																	\
+																			\
+		if (bn_bits(b) <= RLC_DIG) {										\
+			w = 2;															\
+		}																	\
+																			\
+		F##_null_all(r, s);													\
+																			\
+		RLC_TRY {															\
+			F##_new_all(r, s);												\
+			for (int i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {				\
+				F##_null(t[i]);												\
+				F##_new(t[i]);												\
+			}																\
+																			\
+			/* Precompute odd powers of a. */								\
+			F##_copy(t[0], a);												\
+			SQR(r, a);														\
+			for (int i = 1; i < (1 << (w - 2)); i++) {						\
+				F##_mul(t[i], t[i - 1], r);									\
+			}																\
+																			\
+			l = RLC_FP_BITS + 1;											\
+			F##_set_dig(r, 1);												\
+			bn_rec_naf(naf, &l, b, w);										\
+																			\
+			k = naf + l - 1;												\
+			for (int i = l - 1; i >= 0; i--, k--) {							\
+				SQR(r, r);													\
+																			\
+				if (*k > 0) {												\
+					F##_mul(r, r, t[*k / 2]);								\
+				}															\
+				if (*k < 0) {												\
+					F##_inv_cyc(s, t[-*k / 2]);								\
+					F##_mul(r, r, s);										\
+				}															\
+			}																\
+																			\
+			if (bn_sign(b) == RLC_NEG) {									\
+				F##_inv_cyc(c, r);											\
+			} else {														\
+				F##_copy(c, r);												\
+			}																\
+		} RLC_CATCH_ANY {													\
+			RLC_THROW(ERR_CAUGHT);											\
+		} RLC_FINALLY {														\
+			F##_free_all(r, s);												\
+			for (int i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {				\
+				F##_free(t[i]);												\
+			}																\
+		}																	\
+	}
+
+/**
  * Defines a template for exponentiation in the cyclotomic subgroup, using w-NAF
  * for dense exponents and compressed squarings for sparse ones.
  *
@@ -103,64 +172,21 @@
 				}															\
 			}																\
 		} else {															\
-			size_t j, k;													\
-			F##_t t, *u = RLC_ALLOCA(F##_t, w);								\
+			/* Collect the positions of the nonzero bits of the exponent. */\
+			int *e = RLC_ALLOCA(int, w);									\
+			size_t j = 0;													\
 																			\
-			F##_null(t);													\
-																			\
-			RLC_TRY {														\
-				if (u == NULL) {											\
-					RLC_THROW(ERR_NO_MEMORY);								\
-				}															\
-				for (size_t i = 0; i < w; i++) {							\
-					F##_null(u[i]);											\
-					F##_new(u[i]);											\
-				}															\
-				F##_new(t);													\
-																			\
-				j = 0;														\
-				F##_copy(t, a);												\
-				for (size_t i = 1; i < bn_bits(b); i++) {					\
-					F##_sqr_pck(t, t);										\
-					if (bn_get_bit(b, i)) {									\
-						F##_copy(u[j++], t);								\
-					}														\
-				}															\
-																			\
-				if (!bn_is_even(b)) {										\
-					j = 0;													\
-					k = w - 1;												\
-				} else {													\
-					j = 1;													\
-					k = w;													\
-				}															\
-																			\
-				F##_back_cyc_sim(u, u, k);									\
-																			\
-				if (!bn_is_even(b)) {										\
-					F##_copy(c, a);											\
-				} else {													\
-					F##_copy(c, u[0]);										\
-				}															\
-																			\
-				for (size_t i = j; i < k; i++) {							\
-					F##_mul(c, c, u[i]);									\
-				}															\
-																			\
-				if (bn_sign(b) == RLC_NEG) {								\
-					F##_inv_cyc(c, c);										\
+			if (e == NULL) {												\
+				RLC_THROW(ERR_NO_MEMORY);									\
+				return;														\
+			}																\
+			for (size_t i = 0; i < bn_bits(b); i++) {						\
+				if (bn_get_bit(b, i)) {										\
+					e[j++] = i;												\
 				}															\
 			}																\
-			RLC_CATCH_ANY {													\
-				RLC_THROW(ERR_CAUGHT);										\
-			}																\
-			RLC_FINALLY {													\
-				for (size_t i = 0; i < w; i++) {							\
-					F##_free(u[i]);											\
-				}															\
-				F##_free(t);												\
-				RLC_FREE(u);												\
-			}																\
+			F##_exp_cyc_sps(c, a, e, w, bn_sign(b));						\
+			RLC_FREE(e);													\
 		}																	\
 	}
 
