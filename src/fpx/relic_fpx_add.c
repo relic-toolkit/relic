@@ -31,6 +31,7 @@
 
 #include "relic_core.h"
 #include "relic_fpx_low.h"
+#include "relic_fpx_util_tmpl.h"
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -144,21 +145,7 @@ void fp3_dbl_integ(fp3_t c, const fp3_t a) {
 
 #endif
 
-void fp4_add(fp4_t c, const fp4_t a, const fp4_t b) {
-	fp2_add(c[0], a[0], b[0]);
-	fp2_add(c[1], a[1], b[1]);
-}
-
-void fp4_sub(fp4_t c, const fp4_t a, const fp4_t b) {
-	fp2_sub(c[0], a[0], b[0]);
-	fp2_sub(c[1], a[1], b[1]);
-}
-
-void fp4_dbl(fp4_t c, const fp4_t a) {
-	/* 2 * (a_0 + a_1 * v + a_2 * v^2) = 2 * a_0 + 2 * a_1 * v + 2 * a_2 * v^2. */
-	fp2_dbl(c[0], a[0]);
-	fp2_dbl(c[1], a[1]);
-}
+TMPL_FPX_ADD(fp4, fp2, 2);
 
 void fp4_add_dig(fp4_t c, const fp4_t a, dig_t dig) {
 	fp2_add_dig(c[0], a[0], dig);
@@ -170,203 +157,21 @@ void fp4_sub_dig(fp4_t c, const fp4_t a, dig_t dig) {
 	fp2_copy(c[1], a[1]);
 }
 
-void fp4_neg(fp4_t c, const fp4_t a) {
-	fp2_neg(c[0], a[0]);
-	fp2_neg(c[1], a[1]);
-}
+TMPL_FPX_ADD(fp6, fp2, 3);
 
-void fp6_add(fp6_t c, const fp6_t a, const fp6_t b) {
-	fp2_add(c[0], a[0], b[0]);
-	fp2_add(c[1], a[1], b[1]);
-	fp2_add(c[2], a[2], b[2]);
-}
+TMPL_FPX_ADD(fp8, fp4, 2);
 
-void fp6_sub(fp6_t c, const fp6_t a, const fp6_t b) {
-	fp2_sub(c[0], a[0], b[0]);
-	fp2_sub(c[1], a[1], b[1]);
-	fp2_sub(c[2], a[2], b[2]);
-}
+TMPL_FPX_ADD(fp9, fp3, 3);
 
-void fp6_dbl(fp6_t c, const fp6_t a) {
-	fp2_dbl(c[0], a[0]);
-	fp2_dbl(c[1], a[1]);
-	fp2_dbl(c[2], a[2]);
-}
+TMPL_FPX_ADD(fp12, fp6, 2);
 
-void fp6_neg(fp6_t c, const fp6_t a) {
-	fp2_neg(c[0], a[0]);
-	fp2_neg(c[1], a[1]);
-	fp2_neg(c[2], a[2]);
-}
+TMPL_FPX_ADD(fp16, fp8, 2);
 
-void fp8_add(fp8_t c, const fp8_t a, const fp8_t b) {
-	fp4_add(c[0], a[0], b[0]);
-	fp4_add(c[1], a[1], b[1]);
-}
+TMPL_FPX_ADD(fp18, fp9, 2);
 
-void fp8_sub(fp8_t c, const fp8_t a, const fp8_t b) {
-	fp4_sub(c[0], a[0], b[0]);
-	fp4_sub(c[1], a[1], b[1]);
-}
+TMPL_FPX_ADD(fp24, fp8, 3);
 
-void fp8_dbl(fp8_t c, const fp8_t a) {
-	fp4_dbl(c[0], a[0]);
-	fp4_dbl(c[1], a[1]);
-}
+TMPL_FPX_ADD(fp48, fp24, 2);
 
-void fp8_neg(fp8_t c, const fp8_t a) {
-	fp4_neg(c[0], a[0]);
-	fp4_neg(c[1], a[1]);
-}
+TMPL_FPX_ADD(fp54, fp18, 3);
 
-void fp9_add(fp9_t c, const fp9_t a, const fp9_t b) {
-	fp3_add(c[0], a[0], b[0]);
-	fp3_add(c[1], a[1], b[1]);
-	fp3_add(c[2], a[2], b[2]);
-}
-
-void fp9_sub(fp9_t c, const fp9_t a, const fp9_t b) {
-	fp3_sub(c[0], a[0], b[0]);
-	fp3_sub(c[1], a[1], b[1]);
-	fp3_sub(c[2], a[2], b[2]);
-}
-
-void fp9_dbl(fp9_t c, const fp9_t a) {
-	fp3_dbl(c[0], a[0]);
-	fp3_dbl(c[1], a[1]);
-	fp3_dbl(c[2], a[2]);
-}
-
-void fp9_neg(fp9_t c, const fp9_t a) {
-	fp3_neg(c[0], a[0]);
-	fp3_neg(c[1], a[1]);
-	fp3_neg(c[2], a[2]);
-}
-
-void fp12_add(fp12_t c, const fp12_t a, const fp12_t b) {
-	fp6_add(c[0], a[0], b[0]);
-	fp6_add(c[1], a[1], b[1]);
-}
-
-void fp12_sub(fp12_t c, const fp12_t a, const fp12_t b) {
-	fp6_sub(c[0], a[0], b[0]);
-	fp6_sub(c[1], a[1], b[1]);
-}
-
-void fp12_neg(fp12_t c, const fp12_t a) {
-	fp6_neg(c[0], a[0]);
-	fp6_neg(c[1], a[1]);
-}
-
-void fp12_dbl(fp12_t c, const fp12_t a) {
-	fp6_dbl(c[0], a[0]);
-	fp6_dbl(c[1], a[1]);
-}
-
-void fp16_add(fp16_t c, const fp16_t a, const fp16_t b) {
-	fp8_add(c[0], a[0], b[0]);
-	fp8_add(c[1], a[1], b[1]);
-}
-
-void fp16_sub(fp16_t c, const fp16_t a, const fp16_t b) {
-	fp8_sub(c[0], a[0], b[0]);
-	fp8_sub(c[1], a[1], b[1]);
-}
-
-void fp16_dbl(fp16_t c, const fp16_t a) {
-	fp8_dbl(c[0], a[0]);
-	fp8_dbl(c[1], a[1]);
-}
-
-void fp16_neg(fp16_t c, const fp16_t a) {
-	fp8_neg(c[0], a[0]);
-	fp8_neg(c[1], a[1]);
-}
-
-void fp18_add(fp18_t c, const fp18_t a, const fp18_t b) {
-	fp9_add(c[0], a[0], b[0]);
-	fp9_add(c[1], a[1], b[1]);
-}
-
-void fp18_sub(fp18_t c, const fp18_t a, const fp18_t b) {
-	fp9_sub(c[0], a[0], b[0]);
-	fp9_sub(c[1], a[1], b[1]);
-}
-
-void fp18_dbl(fp18_t c, const fp18_t a) {
-	fp9_dbl(c[0], a[0]);
-	fp9_dbl(c[1], a[1]);
-}
-
-void fp18_neg(fp18_t c, const fp18_t a) {
-	fp9_neg(c[0], a[0]);
-	fp9_neg(c[1], a[1]);
-}
-
-void fp24_add(fp24_t c, const fp24_t a, const fp24_t b) {
-	fp8_add(c[0], a[0], b[0]);
-	fp8_add(c[1], a[1], b[1]);
-    fp8_add(c[2], a[2], b[2]);
-}
-
-void fp24_sub(fp24_t c, const fp24_t a, const fp24_t b) {
-	fp8_sub(c[0], a[0], b[0]);
-	fp8_sub(c[1], a[1], b[1]);
-    fp8_sub(c[2], a[2], b[2]);
-}
-
-void fp24_neg(fp24_t c, const fp24_t a) {
-	fp8_neg(c[0], a[0]);
-	fp8_neg(c[1], a[1]);
-    fp8_neg(c[2], a[2]);
-}
-
-void fp24_dbl(fp24_t c, const fp24_t a) {
-	fp8_dbl(c[0], a[0]);
-	fp8_dbl(c[1], a[1]);
-    fp8_dbl(c[2], a[2]);
-}
-
-void fp48_add(fp48_t c, const fp48_t a, const fp48_t b) {
-	fp24_add(c[0], a[0], b[0]);
-	fp24_add(c[1], a[1], b[1]);
-}
-
-void fp48_sub(fp48_t c, const fp48_t a, const fp48_t b) {
-	fp24_sub(c[0], a[0], b[0]);
-	fp24_sub(c[1], a[1], b[1]);
-}
-
-void fp48_neg(fp48_t c, const fp48_t a) {
-	fp24_neg(c[0], a[0]);
-	fp24_neg(c[1], a[1]);
-}
-
-void fp48_dbl(fp48_t c, const fp48_t a) {
-	fp24_dbl(c[0], a[0]);
-	fp24_dbl(c[1], a[1]);
-}
-
-void fp54_add(fp54_t c, const fp54_t a, const fp54_t b) {
-	fp18_add(c[0], a[0], b[0]);
-	fp18_add(c[1], a[1], b[1]);
-    fp18_add(c[2], a[2], b[2]);
-}
-
-void fp54_sub(fp54_t c, const fp54_t a, const fp54_t b) {
-	fp18_sub(c[0], a[0], b[0]);
-	fp18_sub(c[1], a[1], b[1]);
-    fp18_sub(c[2], a[2], b[2]);
-}
-
-void fp54_neg(fp54_t c, const fp54_t a) {
-	fp18_neg(c[0], a[0]);
-	fp18_neg(c[1], a[1]);
-    fp18_neg(c[2], a[2]);
-}
-
-void fp54_dbl(fp54_t c, const fp54_t a) {
-	fp18_dbl(c[0], a[0]);
-	fp18_dbl(c[1], a[1]);
-    fp18_dbl(c[2], a[2]);
-}

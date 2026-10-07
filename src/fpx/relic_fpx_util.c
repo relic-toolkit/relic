@@ -31,6 +31,7 @@
 
 #include "relic_core.h"
 #include "relic_fpx_low.h"
+#include "relic_fpx_util_tmpl.h"
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -198,34 +199,7 @@ void fp3_set_dig(fp3_t a, const dig_t b) {
 	fp_zero(a[2]);
 }
 
-void fp4_copy(fp4_t c, const fp4_t a) {
-	fp2_copy(c[0], a[0]);
-	fp2_copy(c[1], a[1]);
-}
-
-void fp4_copy_sec(fp4_t c, const fp4_t a, dig_t bit) {
-	fp2_copy_sec(c[0], a[0], bit);
-	fp2_copy_sec(c[1], a[1], bit);
-}
-
-void fp4_zero(fp4_t a) {
-	fp2_zero(a[0]);
-	fp2_zero(a[1]);
-}
-
-int fp4_is_zero(const fp4_t a) {
-	return fp2_is_zero(a[0]) && fp2_is_zero(a[1]);
-}
-
-void fp4_rand(fp4_t a) {
-	fp2_rand(a[0]);
-	fp2_rand(a[1]);
-}
-
-void fp4_print(const fp4_t a) {
-	fp2_print(a[0]);
-	fp2_print(a[1]);
-}
+TMPL_FPX_UTIL(fp4, fp2, 2);
 
 int fp4_size_bin(const fp4_t a) {
 	(void)a;
@@ -250,44 +224,7 @@ void fp4_write_bin(uint8_t *bin, size_t len, const fp4_t a) {
 	fp2_write_bin(bin + 2 * RLC_FP_BYTES, 2 * RLC_FP_BYTES, a[1], 0);
 }
 
-void fp4_set_dig(fp4_t a, const dig_t b) {
-	fp2_set_dig(a[0], b);
-	fp2_zero(a[1]);
-}
-
-void fp6_copy(fp6_t c, const fp6_t a) {
-	fp2_copy(c[0], a[0]);
-	fp2_copy(c[1], a[1]);
-	fp2_copy(c[2], a[2]);
-}
-
-void fp6_copy_sec(fp6_t c, const fp6_t a, dig_t bit) {
-	fp2_copy_sec(c[0], a[0], bit);
-	fp2_copy_sec(c[1], a[1], bit);
-	fp2_copy_sec(c[2], a[2], bit);
-}
-
-void fp6_zero(fp6_t a) {
-	fp2_zero(a[0]);
-	fp2_zero(a[1]);
-	fp2_zero(a[2]);
-}
-
-int fp6_is_zero(const fp6_t a) {
-	return fp2_is_zero(a[0]) && fp2_is_zero(a[1]) && fp2_is_zero(a[2]);
-}
-
-void fp6_rand(fp6_t a) {
-	fp2_rand(a[0]);
-	fp2_rand(a[1]);
-	fp2_rand(a[2]);
-}
-
-void fp6_print(const fp6_t a) {
-	fp2_print(a[0]);
-	fp2_print(a[1]);
-	fp2_print(a[2]);
-}
+TMPL_FPX_UTIL(fp6, fp2, 3);
 
 int fp6_size_bin(const fp6_t a) {
 	(void)a;
@@ -314,40 +251,7 @@ void fp6_write_bin(uint8_t *bin, size_t len, const fp6_t a) {
 	fp2_write_bin(bin + 4 * RLC_FP_BYTES, 2 * RLC_FP_BYTES, a[2], 0);
 }
 
-void fp6_set_dig(fp6_t a, const dig_t b) {
-	fp2_set_dig(a[0], b);
-	fp2_zero(a[1]);
-	fp2_zero(a[2]);
-}
-
-void fp8_copy(fp8_t c, const fp8_t a) {
-	fp4_copy(c[0], a[0]);
-	fp4_copy(c[1], a[1]);
-}
-
-void fp8_copy_sec(fp8_t c, const fp8_t a, dig_t bit) {
-	fp4_copy_sec(c[0], a[0], bit);
-	fp4_copy_sec(c[1], a[1], bit);
-}
-
-void fp8_zero(fp8_t a) {
-	fp4_zero(a[0]);
-	fp4_zero(a[1]);
-}
-
-int fp8_is_zero(const fp8_t a) {
-	return fp4_is_zero(a[0]) && fp4_is_zero(a[1]);
-}
-
-void fp8_rand(fp8_t a) {
-	fp4_rand(a[0]);
-	fp4_rand(a[1]);
-}
-
-void fp8_print(const fp8_t a) {
-	fp4_print(a[0]);
-	fp4_print(a[1]);
-}
+TMPL_FPX_UTIL(fp8, fp4, 2);
 
 int fp8_size_bin(const fp8_t a, int pack) {
 	if (pack) {
@@ -380,44 +284,7 @@ void fp8_write_bin(uint8_t *bin, size_t len, const fp8_t a, int pack) {
 	fp4_write_bin(bin + 4 * RLC_FP_BYTES, 4 * RLC_FP_BYTES, a[1]);
 }
 
-void fp8_set_dig(fp8_t a, const dig_t b) {
-	fp4_set_dig(a[0], b);
-	fp4_zero(a[1]);
-}
-
-void fp9_copy(fp9_t c, const fp9_t a) {
-	fp3_copy(c[0], a[0]);
-	fp3_copy(c[1], a[1]);
-	fp3_copy(c[2], a[2]);
-}
-
-void fp9_copy_sec(fp9_t c, const fp9_t a, dig_t bit) {
-	fp3_copy_sec(c[0], a[0], bit);
-	fp3_copy_sec(c[1], a[1], bit);
-	fp3_copy_sec(c[2], a[2], bit);
-}
-
-void fp9_zero(fp9_t a) {
-	fp3_zero(a[0]);
-	fp3_zero(a[1]);
-	fp3_zero(a[2]);
-}
-
-int fp9_is_zero(const fp9_t a) {
-	return fp3_is_zero(a[0]) && fp3_is_zero(a[1]) && fp3_is_zero(a[2]);
-}
-
-void fp9_rand(fp9_t a) {
-	fp3_rand(a[0]);
-	fp3_rand(a[1]);
-	fp3_rand(a[2]);
-}
-
-void fp9_print(const fp9_t a) {
-	fp3_print(a[0]);
-	fp3_print(a[1]);
-	fp3_print(a[2]);
-}
+TMPL_FPX_UTIL(fp9, fp3, 3);
 
 int fp9_size_bin(const fp9_t a) {
 	(void)a;
@@ -444,40 +311,7 @@ void fp9_write_bin(uint8_t *bin, size_t len, const fp9_t a) {
 	fp3_write_bin(bin + 6 * RLC_FP_BYTES, 3 * RLC_FP_BYTES, a[2]);
 }
 
-void fp9_set_dig(fp9_t a, const dig_t b) {
-	fp3_set_dig(a[0], b);
-	fp3_zero(a[1]);
-	fp3_zero(a[2]);
-}
-
-void fp12_copy(fp12_t c, const fp12_t a) {
-	fp6_copy(c[0], a[0]);
-	fp6_copy(c[1], a[1]);
-}
-
-void fp12_copy_sec(fp12_t c, const fp12_t a, dig_t bit) {
-	fp6_copy_sec(c[0], a[0], bit);
-	fp6_copy_sec(c[1], a[1], bit);
-}
-
-void fp12_zero(fp12_t a) {
-	fp6_zero(a[0]);
-	fp6_zero(a[1]);
-}
-
-int fp12_is_zero(const fp12_t a) {
-	return (fp6_is_zero(a[0]) && fp6_is_zero(a[1]));
-}
-
-void fp12_rand(fp12_t a) {
-	fp6_rand(a[0]);
-	fp6_rand(a[1]);
-}
-
-void fp12_print(const fp12_t a) {
-	fp6_print(a[0]);
-	fp6_print(a[1]);
-}
+TMPL_FPX_UTIL(fp12, fp6, 2);
 
 int fp12_size_bin(const fp12_t a, int pack) {
 	if (pack) {
@@ -542,39 +376,7 @@ void fp12_write_bin(uint8_t *bin, size_t len, const fp12_t a, int pack) {
 	}
 }
 
-void fp12_set_dig(fp12_t a, const dig_t b) {
-	fp6_set_dig(a[0], b);
-	fp6_zero(a[1]);
-}
-
-void fp16_copy(fp16_t c, const fp16_t a) {
-	fp8_copy(c[0], a[0]);
-	fp8_copy(c[1], a[1]);
-}
-
-void fp16_copy_sec(fp16_t c, const fp16_t a, dig_t bit) {
-	fp8_copy_sec(c[0], a[0], bit);
-	fp8_copy_sec(c[1], a[1], bit);
-}
-
-void fp16_zero(fp16_t a) {
-	fp8_zero(a[0]);
-	fp8_zero(a[1]);
-}
-
-int fp16_is_zero(const fp16_t a) {
-	return fp8_is_zero(a[0]) && fp8_is_zero(a[1]);
-}
-
-void fp16_rand(fp16_t a) {
-	fp8_rand(a[0]);
-	fp8_rand(a[1]);
-}
-
-void fp16_print(const fp16_t a) {
-	fp8_print(a[0]);
-	fp8_print(a[1]);
-}
+TMPL_FPX_UTIL(fp16, fp8, 2);
 
 int fp16_size_bin(const fp16_t a, int pack) {
 	if (pack) {
@@ -607,39 +409,7 @@ void fp16_write_bin(uint8_t *bin, size_t len, const fp16_t a, int pack) {
 	fp8_write_bin(bin + 8 * RLC_FP_BYTES, 8 * RLC_FP_BYTES, a[1], 0);
 }
 
-void fp16_set_dig(fp16_t a, const dig_t b) {
-	fp8_set_dig(a[0], b);
-	fp8_zero(a[1]);
-}
-
-void fp18_copy(fp18_t c, const fp18_t a) {
-	fp9_copy(c[0], a[0]);
-	fp9_copy(c[1], a[1]);
-}
-
-void fp18_copy_sec(fp18_t c, const fp18_t a, dig_t bit) {
-	fp9_copy_sec(c[0], a[0], bit);
-	fp9_copy_sec(c[1], a[1], bit);
-}
-
-void fp18_zero(fp18_t a) {
-	fp9_zero(a[0]);
-	fp9_zero(a[1]);
-}
-
-int fp18_is_zero(const fp18_t a) {
-	return (fp9_is_zero(a[0]) && fp9_is_zero(a[1]));
-}
-
-void fp18_rand(fp18_t a) {
-	fp9_rand(a[0]);
-	fp9_rand(a[1]);
-}
-
-void fp18_print(const fp18_t a) {
-	fp9_print(a[0]);
-	fp9_print(a[1]);
-}
+TMPL_FPX_UTIL(fp18, fp9, 2);
 
 int fp18_size_bin(const fp18_t a, int pack) {
 	if (pack) {
@@ -704,44 +474,7 @@ void fp18_write_bin(uint8_t *bin, size_t len, const fp18_t a, int pack) {
 	}
 }
 
-void fp18_set_dig(fp18_t a, const dig_t b) {
-	fp9_set_dig(a[0], b);
-	fp9_zero(a[1]);
-}
-
-void fp24_copy(fp24_t c, const fp24_t a) {
-	fp8_copy(c[0], a[0]);
-	fp8_copy(c[1], a[1]);
-	fp8_copy(c[2], a[2]);
-}
-
-void fp24_copy_sec(fp24_t c, const fp24_t a, dig_t bit) {
-	fp8_copy_sec(c[0], a[0], bit);
-	fp8_copy_sec(c[1], a[1], bit);
-	fp8_copy_sec(c[2], a[2], bit);
-}
-
-void fp24_zero(fp24_t a) {
-	fp8_zero(a[0]);
-	fp8_zero(a[1]);
-	fp8_zero(a[2]);
-}
-
-int fp24_is_zero(const fp24_t a) {
-	return fp8_is_zero(a[0]) && fp8_is_zero(a[1]) && fp8_is_zero(a[2]);
-}
-
-void fp24_rand(fp24_t a) {
-	fp8_rand(a[0]);
-	fp8_rand(a[1]);
-	fp8_rand(a[2]);
-}
-
-void fp24_print(const fp24_t a) {
-	fp8_print(a[0]);
-	fp8_print(a[1]);
-	fp8_print(a[2]);
-}
+TMPL_FPX_UTIL(fp24, fp8, 3);
 
 int fp24_size_bin(const fp24_t a, int pack) {
 	if (pack) {
@@ -808,40 +541,7 @@ void fp24_write_bin(uint8_t *bin, size_t len, const fp24_t a, int pack) {
 	}
 }
 
-void fp24_set_dig(fp24_t a, const dig_t b) {
-	fp8_set_dig(a[0], b);
-	fp8_zero(a[1]);
-	fp8_zero(a[2]);
-}
-
-void fp48_copy(fp48_t c, const fp48_t a) {
-	fp24_copy(c[0], a[0]);
-	fp24_copy(c[1], a[1]);
-}
-
-void fp48_copy_sec(fp48_t c, const fp48_t a, dig_t bit) {
-	fp24_copy_sec(c[0], a[0], bit);
-	fp24_copy_sec(c[1], a[1], bit);
-}
-
-void fp48_zero(fp48_t a) {
-	fp24_zero(a[0]);
-	fp24_zero(a[1]);
-}
-
-int fp48_is_zero(const fp48_t a) {
-	return (fp24_is_zero(a[0]) && fp24_is_zero(a[1]));
-}
-
-void fp48_rand(fp48_t a) {
-	fp24_rand(a[0]);
-	fp24_rand(a[1]);
-}
-
-void fp48_print(const fp48_t a) {
-	fp24_print(a[0]);
-	fp24_print(a[1]);
-}
+TMPL_FPX_UTIL(fp48, fp24, 2);
 
 int fp48_size_bin(const fp48_t a, int pack) {
 	if (pack) {
@@ -906,44 +606,7 @@ void fp48_write_bin(uint8_t *bin, size_t len, const fp48_t a, int pack) {
 	}
 }
 
-void fp48_set_dig(fp48_t a, const dig_t b) {
-	fp24_set_dig(a[0], b);
-	fp24_zero(a[1]);
-}
-
-void fp54_copy(fp54_t c, const fp54_t a) {
-	fp18_copy(c[0], a[0]);
-	fp18_copy(c[1], a[1]);
-	fp18_copy(c[2], a[2]);
-}
-
-void fp54_copy_sec(fp54_t c, const fp54_t a, dig_t bit) {
-	fp18_copy_sec(c[0], a[0], bit);
-	fp18_copy_sec(c[1], a[1], bit);
-	fp18_copy_sec(c[2], a[2], bit);
-}
-
-void fp54_zero(fp54_t a) {
-	fp18_zero(a[0]);
-	fp18_zero(a[1]);
-	fp18_zero(a[2]);
-}
-
-int fp54_is_zero(const fp54_t a) {
-	return (fp18_is_zero(a[0]) && fp18_is_zero(a[1]) && fp18_is_zero(a[2]));
-}
-
-void fp54_rand(fp54_t a) {
-	fp18_rand(a[0]);
-	fp18_rand(a[1]);
-	fp18_rand(a[2]);
-}
-
-void fp54_print(const fp54_t a) {
-	fp18_print(a[0]);
-	fp18_print(a[1]);
-	fp18_print(a[2]);
-}
+TMPL_FPX_UTIL(fp54, fp18, 3);
 
 int fp54_size_bin(const fp54_t a, int pack) {
 	if (pack) {
@@ -1010,8 +673,3 @@ void fp54_write_bin(uint8_t *bin, size_t len, const fp54_t a, int pack) {
 	}
 }
 
-void fp54_set_dig(fp54_t a, dig_t b) {
-	fp18_set_dig(a[0], b);
-	fp18_zero(a[1]);
-	fp18_zero(a[2]);
-}
