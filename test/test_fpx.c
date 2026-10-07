@@ -584,14 +584,14 @@ static int inversion2(void) {
 static int exponentiation2(void) {
 	int code = RLC_ERR;
 	fp2_t a, b, c;
-	bn_t d;
+	bn_t d, h;
 
 	fp2_null_all(a, b, c);
-	bn_null(d);
+	bn_null_all(d, h);
 
 	RLC_TRY {
 		fp2_new_all(a, b, c);
-		bn_new(d);
+		bn_new_all(d, h);
 
 		TEST_CASE("exponentiation is correct") {
 			fp2_rand(a);
@@ -640,9 +640,11 @@ static int exponentiation2(void) {
 			fp2_rand(b);
 			fp2_conv_cyc(b, b);
 			bn_rand(d, RLC_POS, RLC_FP_BITS);
-			fp2_exp_cyc_sim(c, a, d, b, d);
-			fp2_mul(a, a, b);
-			fp2_exp_cyc(b, a, d);
+			bn_rand(h, RLC_NEG, RLC_FP_BITS);
+			fp2_exp_cyc_sim(c, a, d, b, h);
+			fp2_exp_cyc(a, a, d);
+			fp2_exp_cyc(b, b, h);
+			fp2_mul(b, a, b);
 			TEST_ASSERT(fp2_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 
@@ -661,7 +663,7 @@ static int exponentiation2(void) {
 	code = RLC_OK;
   end:
 	fp2_free_all(a, b, c);
-	bn_free(d);
+	bn_free_all(d, h);
 	return code;
 }
 
@@ -3065,14 +3067,14 @@ static int squaring8(void) {
 static int cyclotomic8(void) {
 	int code = RLC_ERR;
 	fp8_t a, b, c;
-	bn_t f;
+	bn_t f, h;
 
 	fp8_null_all(a, b, c);
-	bn_null(f);
+	bn_null_all(f, h);
 
 	RLC_TRY {
 		fp8_new_all(a, b, c);
-		bn_new(f);
+		bn_new_all(f, h);
 
 		TEST_CASE("cyclotomic test is correct") {
 			fp8_rand(a);
@@ -3115,9 +3117,11 @@ static int cyclotomic8(void) {
 			fp8_rand(b);
 			fp8_conv_cyc(b, b);
 			bn_rand(f, RLC_POS, RLC_FP_BITS);
-			fp8_exp_cyc_sim(c, a, f, b, f);
-			fp8_mul(a, a, b);
-			fp8_exp_cyc(b, a, f);
+			bn_rand(h, RLC_NEG, RLC_FP_BITS);
+			fp8_exp_cyc_sim(c, a, f, b, h);
+			fp8_exp_cyc(a, a, f);
+			fp8_exp_cyc(b, b, h);
+			fp8_mul(b, a, b);
 			TEST_ASSERT(fp8_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 	}
@@ -3128,7 +3132,7 @@ static int cyclotomic8(void) {
 	code = RLC_OK;
   end:
 	fp8_free_all(a, b, c);
-	bn_free(f);
+	bn_free_all(f, h);
 	return code;
 }
 
@@ -4940,14 +4944,14 @@ static int squaring16(void) {
 static int cyclotomic16(void) {
 	int code = RLC_ERR;
 	fp16_t a, b, c;
-	bn_t f;
+	bn_t f, h;
 
 	fp16_null_all(a, b, c);
-	bn_null(f);
+	bn_null_all(f, h);
 
 	RLC_TRY {
 		fp16_new_all(a, b, c);
-		bn_new(f);
+		bn_new_all(f, h);
 
 		TEST_CASE("cyclotomic test is correct") {
 			fp16_rand(a);
@@ -5032,9 +5036,11 @@ static int cyclotomic16(void) {
 			fp16_rand(b);
 			fp16_conv_cyc(b, b);
 			bn_rand(f, RLC_POS, RLC_FP_BITS);
-			fp16_exp_cyc_sim(c, a, f, b, f);
-			fp16_mul(a, a, b);
-			fp16_exp_cyc(b, a, f);
+			bn_rand(h, RLC_NEG, RLC_FP_BITS);
+			fp16_exp_cyc_sim(c, a, f, b, h);
+			fp16_exp_cyc(a, a, f);
+			fp16_exp_cyc(b, b, h);
+			fp16_mul(b, a, b);
 			TEST_ASSERT(fp16_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 	}
@@ -5045,7 +5051,7 @@ static int cyclotomic16(void) {
 	code = RLC_OK;
   end:
 	fp16_free_all(a, b, c);
-	bn_free(f);
+	bn_free_all(f, h);
 	return code;
 }
 
@@ -5592,14 +5598,14 @@ static int squaring18(void) {
 static int cyclotomic18(void) {
 	int code = RLC_ERR;
 	fp18_t a, b, c, d[2], e[2];
-	bn_t f;
+	bn_t f, h;
 
 	fp18_null_all(a, b, c, d[0], d[1], e[0], e[1]);
-	bn_null(f);
+	bn_null_all(f, h);
 
 	RLC_TRY {
 		fp18_new_all(a, b, c, d[0], d[1], e[0], e[1]);
-		bn_new(f);
+		bn_new_all(f, h);
 
 		TEST_CASE("cyclotomic test is correct") {
 			fp18_rand(a);
@@ -5758,9 +5764,11 @@ static int cyclotomic18(void) {
 			fp18_rand(b);
 			fp18_conv_cyc(b, b);
 			bn_rand(f, RLC_POS, RLC_FP_BITS);
-			fp18_exp_cyc_sim(c, a, f, b, f);
-			fp18_mul(a, a, b);
-			fp18_exp_cyc(b, a, f);
+			bn_rand(h, RLC_NEG, RLC_FP_BITS);
+			fp18_exp_cyc_sim(c, a, f, b, h);
+			fp18_exp_cyc(a, a, f);
+			fp18_exp_cyc(b, b, h);
+			fp18_mul(b, a, b);
 			TEST_ASSERT(fp18_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 	}
@@ -5771,7 +5779,7 @@ static int cyclotomic18(void) {
 	code = RLC_OK;
   end:
 	fp18_free_all(a, b, c, d[0], d[1], e[0], e[1]);
-	bn_free(f);
+	bn_free_all(f, h);
 	return code;
 }
 
@@ -6298,14 +6306,14 @@ static int squaring24(void) {
 static int cyclotomic24(void) {
 	int code = RLC_ERR;
 	fp24_t a, b, c, d[2], e[2];
-	bn_t f;
+	bn_t f, h;
 
 	fp24_null_all(a, b, c, d[0], d[1], e[0], e[1]);
-	bn_null(f);
+	bn_null_all(f, h);
 
 	RLC_TRY {
 		fp24_new_all(a, b, c, d[0], d[1], e[0], e[1]);
-		bn_new(f);
+		bn_new_all(f, h);
 
 		TEST_CASE("cyclotomic test is correct") {
 			fp24_rand(a);
@@ -6464,9 +6472,11 @@ static int cyclotomic24(void) {
 			fp24_rand(b);
 			fp24_conv_cyc(b, b);
 			bn_rand(f, RLC_POS, RLC_FP_BITS);
-			fp24_exp_cyc_sim(c, a, f, b, f);
-			fp24_mul(a, a, b);
-			fp24_exp_cyc(b, a, f);
+			bn_rand(h, RLC_NEG, RLC_FP_BITS);
+			fp24_exp_cyc_sim(c, a, f, b, h);
+			fp24_exp_cyc(a, a, f);
+			fp24_exp_cyc(b, b, h);
+			fp24_mul(b, a, b);
 			TEST_ASSERT(fp24_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 	}
@@ -6477,7 +6487,7 @@ static int cyclotomic24(void) {
 	code = RLC_OK;
   end:
 	fp24_free_all(a, b, c, d[0], d[1], e[0], e[1]);
-	bn_free(f);
+	bn_free_all(f, h);
 	return code;
 }
 
@@ -7029,14 +7039,14 @@ static int compression48(void) {
 static int cyclotomic48(void) {
 	int code = RLC_ERR;
 	fp48_t a, b, c, d[2], e[2];
-	bn_t f;
+	bn_t f, h;
 
 	fp48_null_all(a, b, c, d[0], d[1], e[0], e[1]);
-	bn_null(f);
+	bn_null_all(f, h);
 
 	RLC_TRY {
 		fp48_new_all(a, b, c, d[0], d[1], e[0], e[1]);
-		bn_new(f);
+		bn_new_all(f, h);
 
 		TEST_CASE("cyclotomic test is correct") {
 			fp48_rand(a);
@@ -7195,9 +7205,11 @@ static int cyclotomic48(void) {
 			fp48_rand(b);
 			fp48_conv_cyc(b, b);
 			bn_rand(f, RLC_POS, RLC_FP_BITS);
-			fp48_exp_cyc_sim(c, a, f, b, f);
-			fp48_mul(a, a, b);
-			fp48_exp_cyc(b, a, f);
+			bn_rand(h, RLC_NEG, RLC_FP_BITS);
+			fp48_exp_cyc_sim(c, a, f, b, h);
+			fp48_exp_cyc(a, a, f);
+			fp48_exp_cyc(b, b, h);
+			fp48_mul(b, a, b);
 			TEST_ASSERT(fp48_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
 	}
@@ -7208,7 +7220,7 @@ static int cyclotomic48(void) {
 	code = RLC_OK;
   end:
 	fp48_free_all(a, b, c, d[0], d[1], e[0], e[1]);
-	bn_free(f);
+	bn_free_all(f, h);
 	return code;
 }
 

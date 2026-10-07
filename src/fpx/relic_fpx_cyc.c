@@ -152,7 +152,7 @@ void fp2_exp_cyc(fp2_t c, const fp2_t a, const bn_t b) {
 	}
 }
 
-TMPL_EXP_CYC_SIM(fp2);
+TMPL_EXP_CYC_SIM(fp2, fp2_sqr);
 
 void fp8_conv_cyc(fp8_t c, const fp8_t a) {
 	fp8_t t;
@@ -265,7 +265,7 @@ void fp8_exp_cyc(fp8_t c, const fp8_t a, const bn_t b) {
 	}
 }
 
-TMPL_EXP_CYC_SIM(fp8);
+TMPL_EXP_CYC_SIM(fp8, fp8_sqr_cyc);
 
 void fp12_conv_cyc(fp12_t c, const fp12_t a) {
 	fp12_t t;
@@ -479,7 +479,7 @@ void fp12_back_cyc_sim(fp12_t c[], const fp12_t a[], int n) {
 
 TMPL_EXP_CYC(fp12);
 
-TMPL_EXP_CYC_SIM(fp12);
+TMPL_EXP_CYC_SIM(fp12, fp12_sqr_cyc);
 
 TMPL_EXP_CYC_SPS(fp12);
 
@@ -593,7 +593,7 @@ void fp16_exp_cyc(fp16_t c, const fp16_t a, const bn_t b) {
 	}
 }
 
-TMPL_EXP_CYC_SIM(fp16);
+TMPL_EXP_CYC_SIM(fp16, fp16_sqr_cyc);
 
 void fp18_conv_cyc(fp18_t c, const fp18_t a) {
 	fp18_t t;
@@ -807,7 +807,7 @@ void fp18_back_cyc_sim(fp18_t c[], const fp18_t a[], int n) {
 
 TMPL_EXP_CYC(fp18);
 
-TMPL_EXP_CYC_SIM(fp18);
+TMPL_EXP_CYC_SIM(fp18, fp18_sqr_cyc);
 
 TMPL_EXP_CYC_SPS(fp18);
 
@@ -1022,7 +1022,7 @@ void fp24_back_cyc_sim(fp24_t c[], const fp24_t a[], int n) {
 
 TMPL_EXP_CYC(fp24);
 
-TMPL_EXP_CYC_SIM(fp24);
+TMPL_EXP_CYC_SIM(fp24, fp24_sqr_cyc);
 
 TMPL_EXP_CYC_SPS(fp24);
 
@@ -1238,7 +1238,7 @@ void fp48_back_cyc_sim(fp48_t c[], const fp48_t a[], int n) {
 
 TMPL_EXP_CYC(fp48);
 
-TMPL_EXP_CYC_SIM(fp48);
+TMPL_EXP_CYC_SIM(fp48, fp48_sqr_cyc);
 
 TMPL_EXP_CYC_SPS(fp48);
 

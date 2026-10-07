@@ -256,8 +256,9 @@
  * subgroup, using interleaved w-NAF recodings of the exponents.
  *
  * @param[in] F			- the extension field prefix.
+ * @param[in] SQR		- the squaring function for cyclotomic elements.
  */
-#define TMPL_EXP_CYC_SIM(F)													\
+#define TMPL_EXP_CYC_SIM(F, SQR)											\
 	void F##_exp_cyc_sim(F##_t e, const F##_t a, const bn_t b,				\
 			const F##_t c, const bn_t d) {									\
 		int n0, n1;															\
@@ -287,12 +288,12 @@
 																			\
 			/* Precompute odd powers of a and c. */							\
 			F##_copy(t0[0], a);												\
-			F##_sqr(r, a);													\
+			SQR(r, a);														\
 			for (int i = 1; i < (1 << (RLC_WIDTH - 2)); i++) {				\
 				F##_mul(t0[i], t0[i - 1], r);								\
 			}																\
 			F##_copy(t1[0], c);												\
-			F##_sqr(r, c);													\
+			SQR(r, c);														\
 			for (int i = 1; i < (1 << (RLC_WIDTH - 2)); i++) {				\
 				F##_mul(t1[i], t1[i - 1], r);								\
 			}																\
@@ -318,7 +319,7 @@
 																			\
 			F##_set_dig(r, 1);												\
 			for (int i = l - 1; i >= 0; i--, _k--, _m--) {					\
-				F##_sqr(r, r);												\
+				SQR(r, r);													\
 																			\
 				n0 = *_k;													\
 				n1 = *_m;													\
