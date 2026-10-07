@@ -32,6 +32,7 @@
 #include "relic_core.h"
 #include "relic_fp_low.h"
 #include "relic_fpx_low.h"
+#include "relic_fpx_sqr_tmpl.h"
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -99,128 +100,9 @@ void fp54_sqr_basic(fp54_t c, const fp54_t a) {
 	}
 }
 
-void fp54_sqr_cyc_basic(fp54_t c, const fp54_t a) {
-	fp9_t t0, t1, t2, t3, t4, t5, t6;
+TMPL_SQR_CYC_CQ(fp54, fp9, fp9_mul_art);
 
-	fp9_null_all(t0, t1, t2, t3, t4, t5, t6);
-
-	RLC_TRY {
-		fp9_new_all(t0, t1, t2, t3, t4, t5, t6);
-
-		fp9_sqr(t2, a[0][0]);
-		fp9_sqr(t3, a[0][1]);
-		fp9_add(t1, a[0][0], a[0][1]);
-
-		fp9_mul_art(t0, t3);
-		fp9_add(t0, t0, t2);
-
-		fp9_sqr(t1, t1);
-		fp9_sub(t1, t1, t2);
-		fp9_sub(t1, t1, t3);
-
-		fp9_sub(c[0][0], t0, a[0][0]);
-		fp9_add(c[0][0], c[0][0], c[0][0]);
-		fp9_add(c[0][0], t0, c[0][0]);
-
-		fp9_add(c[0][1], t1, a[0][1]);
-		fp9_add(c[0][1], c[0][1], c[0][1]);
-		fp9_add(c[0][1], t1, c[0][1]);
-
-		fp9_sqr(t0, a[2][0]);
-		fp9_sqr(t1, a[2][1]);
-		fp9_add(t5, a[2][0], a[2][1]);
-		fp9_sqr(t2, t5);
-
-		fp9_add(t3, t0, t1);
-		fp9_sub(t5, t2, t3);
-
-		fp9_add(t6, a[1][0], a[1][1]);
-		fp9_sqr(t3, t6);
-		fp9_sqr(t2, a[1][0]);
-
-		fp9_mul_art(t6, t5);
-		fp9_add(t5, t6, a[1][0]);
-		fp9_dbl(t5, t5);
-		fp9_add(c[1][0], t5, t6);
-
-		fp9_mul_art(t4, t1);
-		fp9_add(t5, t0, t4);
-		fp9_sub(t6, t5, a[1][1]);
-
-		fp9_sqr(t1, a[1][1]);
-
-		fp9_dbl(t6, t6);
-		fp9_add(c[1][1], t6, t5);
-
-		fp9_mul_art(t4, t1);
-		fp9_add(t5, t2, t4);
-		fp9_sub(t6, t5, a[2][0]);
-		fp9_dbl(t6, t6);
-		fp9_add(c[2][0], t6, t5);
-
-		fp9_add(t0, t2, t1);
-		fp9_sub(t5, t3, t0);
-		fp9_add(t6, t5, a[2][1]);
-		fp9_dbl(t6, t6);
-		fp9_add(c[2][1], t5, t6);
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		fp9_free_all(t0, t1, t2, t3, t4, t5, t6);
-	}
-}
-
-void fp54_sqr_pck_basic(fp54_t c, const fp54_t a) {
-	fp9_t t0, t1, t2, t3, t4, t5, t6;
-
-	fp9_null_all(t0, t1, t2, t3, t4, t5, t6);
-
-	RLC_TRY {
-		fp9_new_all(t0, t1, t2, t3, t4, t5, t6);
-
-		fp9_sqr(t0, a[2][0]);
-		fp9_sqr(t1, a[2][1]);
-		fp9_add(t5, a[2][0], a[2][1]);
-		fp9_sqr(t2, t5);
-
-		fp9_add(t3, t0, t1);
-		fp9_sub(t5, t2, t3);
-
-		fp9_add(t6, a[1][0], a[1][1]);
-		fp9_sqr(t3, t6);
-		fp9_sqr(t2, a[1][0]);
-
-		fp9_mul_art(t6, t5);
-		fp9_add(t5, t6, a[1][0]);
-		fp9_dbl(t5, t5);
-		fp9_add(c[1][0], t5, t6);
-
-		fp9_mul_art(t4, t1);
-		fp9_add(t5, t0, t4);
-		fp9_sub(t6, t5, a[1][1]);
-
-		fp9_sqr(t1, a[1][1]);
-
-		fp9_dbl(t6, t6);
-		fp9_add(c[1][1], t6, t5);
-
-		fp9_mul_art(t4, t1);
-		fp9_add(t5, t2, t4);
-		fp9_sub(t6, t5, a[2][0]);
-		fp9_dbl(t6, t6);
-		fp9_add(c[2][0], t6, t5);
-
-		fp9_add(t0, t2, t1);
-		fp9_sub(t5, t3, t0);
-		fp9_add(t6, t5, a[2][1]);
-		fp9_dbl(t6, t6);
-		fp9_add(c[2][1], t5, t6);
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		fp9_free_all(t0, t1, t2, t3, t4, t5, t6);
-	}
-}
+TMPL_SQR_PCK_CQ(fp54, fp9, fp9_mul_art);
 
 #endif
 

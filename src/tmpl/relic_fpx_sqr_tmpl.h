@@ -1,0 +1,483 @@
+/*
+ * RELIC is an Efficient LIbrary for Cryptography
+ * Copyright (c) 2026 RELIC Authors
+ *
+ * This file is part of RELIC. RELIC is legal property of its developers,
+ * whose names are not listed here. Please refer to the COPYRIGHT file
+ * for contact information.
+ *
+ * RELIC is free software; you can redistribute it and/or modify it under the
+ * terms of the version 2.1 (or later) of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; or version 2.0 of the Apache
+ * License as published by the Apache Software Foundation. See the LICENSE files
+ * for more details.
+ *
+ * RELIC is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the LICENSE files for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public or the
+ * Apache License along with RELIC. If not, see <https://www.gnu.org/licenses/>
+ * or <https://www.apache.org/licenses/>.
+ */
+
+/**
+ * @file
+ *
+ * Templates for squaring in cyclotomic subgroups of extension fields.
+ *
+ * @ingroup tmpl
+ */
+
+#include "relic_core.h"
+#include "relic_fpx_low.h"
+
+/*============================================================================*/
+/* Private definitions                                                        */
+/*============================================================================*/
+
+/**
+ * Defines a template for cyclotomic squaring in an extension field built as
+ * quadratic over cubic.
+ *
+ * @param[in] X			- the extension field prefix.
+ * @param[in] Z			- the prefix of the subfield holding the coefficients.
+ * @param[in] NOR		- the multiplication by the non-residue in the subfield.
+ */
+#define TMPL_SQR_CYC_QC(X, Z, NOR)											\
+	void X##_sqr_cyc_basic(X##_t c, const X##_t a) {						\
+		Z##_t t0, t1, t2, t3, t4, t5, t6;									\
+																			\
+		Z##_null_all(t0, t1, t2, t3, t4, t5, t6);							\
+																			\
+		RLC_TRY {															\
+			Z##_new_all(t0, t1, t2, t3, t4, t5, t6);						\
+																			\
+			/* Define z = sqrt(E) */										\
+																			\
+			/* Now a is seen as (t0,t1) + (t2,t3) * w + (t4,t5) * w^2 */	\
+																			\
+			/* (t0, t1) = (a00 + a11*z)^2. */								\
+			Z##_sqr(t2, a[0][0]);											\
+			Z##_sqr(t3, a[1][1]);											\
+			Z##_add(t1, a[0][0], a[1][1]);									\
+																			\
+			NOR(t0, t3);													\
+			Z##_add(t0, t0, t2);											\
+																			\
+			Z##_sqr(t1, t1);												\
+			Z##_sub(t1, t1, t2);											\
+			Z##_sub(t1, t1, t3);											\
+																			\
+			Z##_sub(c[0][0], t0, a[0][0]);									\
+			Z##_add(c[0][0], c[0][0], c[0][0]);								\
+			Z##_add(c[0][0], t0, c[0][0]);									\
+																			\
+			Z##_add(c[1][1], t1, a[1][1]);									\
+			Z##_add(c[1][1], c[1][1], c[1][1]);								\
+			Z##_add(c[1][1], t1, c[1][1]);									\
+																			\
+			Z##_sqr(t0, a[0][1]);											\
+			Z##_sqr(t1, a[1][2]);											\
+			Z##_add(t5, a[0][1], a[1][2]);									\
+			Z##_sqr(t2, t5);												\
+																			\
+			Z##_add(t3, t0, t1);											\
+			Z##_sub(t5, t2, t3);											\
+																			\
+			Z##_add(t6, a[1][0], a[0][2]);									\
+			Z##_sqr(t3, t6);												\
+			Z##_sqr(t2, a[1][0]);											\
+																			\
+			NOR(t6, t5);													\
+			Z##_add(t5, t6, a[1][0]);										\
+			Z##_dbl(t5, t5);												\
+			Z##_add(c[1][0], t5, t6);										\
+																			\
+			NOR(t4, t1);													\
+			Z##_add(t5, t0, t4);											\
+			Z##_sub(t6, t5, a[0][2]);										\
+																			\
+			Z##_sqr(t1, a[0][2]);											\
+																			\
+			Z##_dbl(t6, t6);												\
+			Z##_add(c[0][2], t6, t5);										\
+																			\
+			NOR(t4, t1);													\
+			Z##_add(t5, t2, t4);											\
+			Z##_sub(t6, t5, a[0][1]);										\
+			Z##_dbl(t6, t6);												\
+			Z##_add(c[0][1], t6, t5);										\
+																			\
+			Z##_add(t0, t2, t1);											\
+			Z##_sub(t5, t3, t0);											\
+			Z##_add(t6, t5, a[1][2]);										\
+			Z##_dbl(t6, t6);												\
+			Z##_add(c[1][2], t5, t6);										\
+		} RLC_CATCH_ANY {													\
+			RLC_THROW(ERR_CAUGHT);											\
+		} RLC_FINALLY {														\
+			Z##_free_all(t0, t1, t2, t3, t4, t5, t6);						\
+		}																	\
+	}
+
+/**
+ * Defines a template for compressed squaring in an extension field built as
+ * quadratic over cubic.
+ *
+ * @param[in] X			- the extension field prefix.
+ * @param[in] Z			- the prefix of the subfield holding the coefficients.
+ * @param[in] NOR		- the multiplication by the non-residue in the subfield.
+ */
+#define TMPL_SQR_PCK_QC(X, Z, NOR)											\
+	void X##_sqr_pck_basic(X##_t c, const X##_t a) {						\
+		Z##_t t0, t1, t2, t3, t4, t5, t6;									\
+																			\
+		Z##_null_all(t0, t1, t2, t3, t4, t5, t6);							\
+																			\
+		RLC_TRY {															\
+			Z##_new_all(t0, t1, t2, t3, t4, t5, t6);						\
+																			\
+			Z##_sqr(t0, a[0][1]);											\
+			Z##_sqr(t1, a[1][2]);											\
+			Z##_add(t5, a[0][1], a[1][2]);									\
+			Z##_sqr(t2, t5);												\
+																			\
+			Z##_add(t3, t0, t1);											\
+			Z##_sub(t5, t2, t3);											\
+																			\
+			Z##_add(t6, a[1][0], a[0][2]);									\
+			Z##_sqr(t3, t6);												\
+			Z##_sqr(t2, a[1][0]);											\
+																			\
+			NOR(t6, t5);													\
+			Z##_add(t5, t6, a[1][0]);										\
+			Z##_dbl(t5, t5);												\
+			Z##_add(c[1][0], t5, t6);										\
+																			\
+			NOR(t4, t1);													\
+			Z##_add(t5, t0, t4);											\
+			Z##_sub(t6, t5, a[0][2]);										\
+																			\
+			Z##_sqr(t1, a[0][2]);											\
+																			\
+			Z##_dbl(t6, t6);												\
+			Z##_add(c[0][2], t6, t5);										\
+																			\
+			NOR(t4, t1);													\
+			Z##_add(t5, t2, t4);											\
+			Z##_sub(t6, t5, a[0][1]);										\
+			Z##_dbl(t6, t6);												\
+			Z##_add(c[0][1], t6, t5);										\
+																			\
+			Z##_add(t0, t2, t1);											\
+			Z##_sub(t5, t3, t0);											\
+			Z##_add(t6, t5, a[1][2]);										\
+			Z##_dbl(t6, t6);												\
+			Z##_add(c[1][2], t5, t6);										\
+		} RLC_CATCH_ANY {													\
+			RLC_THROW(ERR_CAUGHT);											\
+		} RLC_FINALLY {														\
+			Z##_free_all(t0, t1, t2, t3, t4, t5, t6);						\
+		}																	\
+	}
+
+/**
+ * Defines a template for cyclotomic squaring in an extension field built as
+ * cubic over quadratic.
+ *
+ * @param[in] X			- the extension field prefix.
+ * @param[in] Z			- the prefix of the subfield holding the coefficients.
+ * @param[in] NOR		- the multiplication by the non-residue in the subfield.
+ */
+#define TMPL_SQR_CYC_CQ(X, Z, NOR)											\
+	void X##_sqr_cyc_basic(X##_t c, const X##_t a) {						\
+		Z##_t t0, t1, t2, t3, t4, t5, t6;									\
+																			\
+		Z##_null_all(t0, t1, t2, t3, t4, t5, t6);							\
+																			\
+		RLC_TRY {															\
+			Z##_new_all(t0, t1, t2, t3, t4, t5, t6);						\
+																			\
+			Z##_sqr(t2, a[0][0]);											\
+			Z##_sqr(t3, a[0][1]);											\
+			Z##_add(t1, a[0][0], a[0][1]);									\
+																			\
+			NOR(t0, t3);													\
+			Z##_add(t0, t0, t2);											\
+																			\
+			Z##_sqr(t1, t1);												\
+			Z##_sub(t1, t1, t2);											\
+			Z##_sub(t1, t1, t3);											\
+																			\
+			Z##_sub(c[0][0], t0, a[0][0]);									\
+			Z##_add(c[0][0], c[0][0], c[0][0]);								\
+			Z##_add(c[0][0], t0, c[0][0]);									\
+																			\
+			Z##_add(c[0][1], t1, a[0][1]);									\
+			Z##_add(c[0][1], c[0][1], c[0][1]);								\
+			Z##_add(c[0][1], t1, c[0][1]);									\
+																			\
+			Z##_sqr(t0, a[2][0]);											\
+			Z##_sqr(t1, a[2][1]);											\
+			Z##_add(t5, a[2][0], a[2][1]);									\
+			Z##_sqr(t2, t5);												\
+																			\
+			Z##_add(t3, t0, t1);											\
+			Z##_sub(t5, t2, t3);											\
+																			\
+			Z##_add(t6, a[1][0], a[1][1]);									\
+			Z##_sqr(t3, t6);												\
+			Z##_sqr(t2, a[1][0]);											\
+																			\
+			NOR(t6, t5);													\
+			Z##_add(t5, t6, a[1][0]);										\
+			Z##_dbl(t5, t5);												\
+			Z##_add(c[1][0], t5, t6);										\
+																			\
+			NOR(t4, t1);													\
+			Z##_add(t5, t0, t4);											\
+			Z##_sub(t6, t5, a[1][1]);										\
+																			\
+			Z##_sqr(t1, a[1][1]);											\
+																			\
+			Z##_dbl(t6, t6);												\
+			Z##_add(c[1][1], t6, t5);										\
+																			\
+			NOR(t4, t1);													\
+			Z##_add(t5, t2, t4);											\
+			Z##_sub(t6, t5, a[2][0]);										\
+			Z##_dbl(t6, t6);												\
+			Z##_add(c[2][0], t6, t5);										\
+																			\
+			Z##_add(t0, t2, t1);											\
+			Z##_sub(t5, t3, t0);											\
+			Z##_add(t6, t5, a[2][1]);										\
+			Z##_dbl(t6, t6);												\
+			Z##_add(c[2][1], t5, t6);										\
+		} RLC_CATCH_ANY {													\
+			RLC_THROW(ERR_CAUGHT);											\
+		} RLC_FINALLY {														\
+			Z##_free_all(t0, t1, t2, t3, t4, t5, t6);						\
+		}																	\
+	}
+
+/**
+ * Defines a template for compressed squaring in an extension field built as
+ * cubic over quadratic.
+ *
+ * @param[in] X			- the extension field prefix.
+ * @param[in] Z			- the prefix of the subfield holding the coefficients.
+ * @param[in] NOR		- the multiplication by the non-residue in the subfield.
+ */
+#define TMPL_SQR_PCK_CQ(X, Z, NOR)											\
+	void X##_sqr_pck_basic(X##_t c, const X##_t a) {						\
+		Z##_t t0, t1, t2, t3, t4, t5, t6;									\
+																			\
+		Z##_null_all(t0, t1, t2, t3, t4, t5, t6);							\
+																			\
+		RLC_TRY {															\
+			Z##_new_all(t0, t1, t2, t3, t4, t5, t6);						\
+																			\
+			Z##_sqr(t0, a[2][0]);											\
+			Z##_sqr(t1, a[2][1]);											\
+			Z##_add(t5, a[2][0], a[2][1]);									\
+			Z##_sqr(t2, t5);												\
+																			\
+			Z##_add(t3, t0, t1);											\
+			Z##_sub(t5, t2, t3);											\
+																			\
+			Z##_add(t6, a[1][0], a[1][1]);									\
+			Z##_sqr(t3, t6);												\
+			Z##_sqr(t2, a[1][0]);											\
+																			\
+			NOR(t6, t5);													\
+			Z##_add(t5, t6, a[1][0]);										\
+			Z##_dbl(t5, t5);												\
+			Z##_add(c[1][0], t5, t6);										\
+																			\
+			NOR(t4, t1);													\
+			Z##_add(t5, t0, t4);											\
+			Z##_sub(t6, t5, a[1][1]);										\
+																			\
+			Z##_sqr(t1, a[1][1]);											\
+																			\
+			Z##_dbl(t6, t6);												\
+			Z##_add(c[1][1], t6, t5);										\
+																			\
+			NOR(t4, t1);													\
+			Z##_add(t5, t2, t4);											\
+			Z##_sub(t6, t5, a[2][0]);										\
+			Z##_dbl(t6, t6);												\
+			Z##_add(c[2][0], t6, t5);										\
+																			\
+			Z##_add(t0, t2, t1);											\
+			Z##_sub(t5, t3, t0);											\
+			Z##_add(t6, t5, a[2][1]);										\
+			Z##_dbl(t6, t6);												\
+			Z##_add(c[2][1], t5, t6);										\
+		} RLC_CATCH_ANY {													\
+			RLC_THROW(ERR_CAUGHT);											\
+		} RLC_FINALLY {														\
+			Z##_free_all(t0, t1, t2, t3, t4, t5, t6);						\
+		}																	\
+	}
+
+/**
+ * Defines a template for cyclotomic squaring with lazy reduction in an
+ * extension field built as quadratic over cubic.
+ *
+ * @param[in] X			- the extension field prefix.
+ * @param[in] Z			- the prefix of the subfield holding the coefficients.
+ * @param[in] D			- the prefix of the double-precision subfield type.
+ * @param[in] NOR		- the multiplication by the non-residue in the subfield.
+ */
+#define TMPL_SQR_CYC_LAZYR(X, Z, D, NOR)									\
+	void X##_sqr_cyc_lazyr(X##_t c, const X##_t a) {						\
+		Z##_t t0, t1, t2;													\
+		D##_t u0, u1, u2, u3;												\
+																			\
+		Z##_null_all(t0, t1, t2);											\
+		D##_null_all(u0, u1, u2, u3);										\
+																			\
+		RLC_TRY {															\
+			Z##_new_all(t0, t1, t2);										\
+			D##_new_all(u0, u1, u2, u3);									\
+																			\
+			Z##_sqrn_low(u2, a[0][0]);										\
+			Z##_sqrn_low(u3, a[1][1]);										\
+			Z##_addm_low(t1, a[0][0], a[1][1]);								\
+																			\
+			Z##_nord_low(u0, u3);											\
+			Z##_addc_low(u0, u0, u2);										\
+			Z##_rdcn_low(t0, u0);											\
+																			\
+			Z##_sqrn_low(u1, t1);											\
+			Z##_addc_low(u2, u2, u3);										\
+			Z##_subc_low(u1, u1, u2);										\
+			Z##_rdcn_low(t1, u1);											\
+																			\
+			Z##_subm_low(c[0][0], t0, a[0][0]);								\
+			Z##_addm_low(c[0][0], c[0][0], c[0][0]);						\
+			Z##_addm_low(c[0][0], t0, c[0][0]);								\
+																			\
+			Z##_addm_low(c[1][1], t1, a[1][1]);								\
+			Z##_addm_low(c[1][1], c[1][1], c[1][1]);						\
+			Z##_addm_low(c[1][1], t1, c[1][1]);								\
+																			\
+			Z##_sqrn_low(u0, a[0][1]);										\
+			Z##_sqrn_low(u1, a[1][2]);										\
+			Z##_addm_low(t0, a[0][1], a[1][2]);								\
+			Z##_sqrn_low(u2, t0);											\
+																			\
+			Z##_addc_low(u3, u0, u1);										\
+			Z##_subc_low(u3, u2, u3);										\
+			Z##_rdcn_low(t0, u3);											\
+																			\
+			Z##_addm_low(t1, a[1][0], a[0][2]);								\
+			Z##_sqrm_low(t2, t1);											\
+			Z##_sqrn_low(u2, a[1][0]);										\
+																			\
+			NOR(t1, t0);													\
+			Z##_addm_low(t0, t1, a[1][0]);									\
+			Z##_addm_low(t0, t0, t0);										\
+			Z##_addm_low(c[1][0], t0, t1);									\
+																			\
+			Z##_nord_low(u3, u1);											\
+			Z##_addc_low(u3, u0, u3);										\
+			Z##_rdcn_low(t0, u3);											\
+			Z##_subm_low(t1, t0, a[0][2]);									\
+																			\
+			Z##_sqrn_low(u1, a[0][2]);										\
+																			\
+			Z##_addm_low(t1, t1, t1);										\
+			Z##_addm_low(c[0][2], t1, t0);									\
+																			\
+			Z##_nord_low(u3, u1);											\
+			Z##_addc_low(u3, u2, u3);										\
+			Z##_rdcn_low(t0, u3);											\
+			Z##_subm_low(t1, t0, a[0][1]);									\
+			Z##_addm_low(t1, t1, t1);										\
+			Z##_addm_low(c[0][1], t1, t0);									\
+																			\
+			Z##_addc_low(u0, u2, u1);										\
+			Z##_rdcn_low(t0, u0);											\
+			Z##_subm_low(t0, t2, t0);										\
+			Z##_addm_low(t1, t0, a[1][2]);									\
+			Z##_dblm_low(t1, t1);											\
+			Z##_addm_low(c[1][2], t0, t1);									\
+		} RLC_CATCH_ANY {													\
+			RLC_THROW(ERR_CAUGHT);											\
+		} RLC_FINALLY {														\
+			Z##_free_all(t0, t1, t2);										\
+			D##_free_all(u0, u1, u2, u3);									\
+		}																	\
+	}
+
+/**
+ * Defines a template for compressed squaring with lazy reduction in an
+ * extension field built as quadratic over cubic.
+ *
+ * @param[in] X			- the extension field prefix.
+ * @param[in] Z			- the prefix of the subfield holding the coefficients.
+ * @param[in] D			- the prefix of the double-precision subfield type.
+ * @param[in] NOR		- the multiplication by the non-residue in the subfield.
+ */
+#define TMPL_SQR_PCK_LAZYR(X, Z, D, NOR)									\
+	void X##_sqr_pck_lazyr(X##_t c, const X##_t a) {						\
+		Z##_t t0, t1, t2;													\
+		D##_t u0, u1, u2, u3;												\
+																			\
+		Z##_null_all(t0, t1, t2);											\
+		D##_null_all(u0, u1, u2, u3);										\
+																			\
+		RLC_TRY {															\
+			Z##_new_all(t0, t1, t2);										\
+			D##_new_all(u0, u1, u2, u3);									\
+																			\
+			Z##_sqrn_low(u0, a[0][1]);										\
+			Z##_sqrn_low(u1, a[1][2]);										\
+			Z##_addm_low(t0, a[0][1], a[1][2]);								\
+			Z##_sqrn_low(u2, t0);											\
+																			\
+			Z##_addc_low(u3, u0, u1);										\
+			Z##_subc_low(u3, u2, u3);										\
+			Z##_rdcn_low(t0, u3);											\
+																			\
+			Z##_addm_low(t1, a[1][0], a[0][2]);								\
+			Z##_sqrm_low(t2, t1);											\
+			Z##_sqrn_low(u2, a[1][0]);										\
+																			\
+			NOR(t1, t0);													\
+			Z##_addm_low(t0, t1, a[1][0]);									\
+			Z##_dblm_low(t0, t0);											\
+			Z##_addm_low(c[1][0], t0, t1);									\
+																			\
+			Z##_nord_low(u3, u1);											\
+			Z##_sqrn_low(u1, a[0][2]);										\
+			Z##_addc_low(u3, u0, u3);										\
+			Z##_rdcn_low(t0, u3);											\
+			Z##_subm_low(t1, t0, a[0][2]);									\
+			Z##_dblm_low(t1, t1);											\
+			Z##_addm_low(c[0][2], t1, t0);									\
+																			\
+			Z##_addc_low(u0, u2, u1);										\
+			Z##_rdcn_low(t0, u0);											\
+			Z##_subm_low(t0, t2, t0);										\
+			Z##_addm_low(t1, t0, a[1][2]);									\
+			Z##_dblm_low(t1, t1);											\
+			Z##_addm_low(c[1][2], t0, t1);									\
+																			\
+			Z##_nord_low(u3, u1);											\
+			Z##_addc_low(u3, u2, u3);										\
+			Z##_rdcn_low(t0, u3);											\
+			Z##_subm_low(t1, t0, a[0][1]);									\
+			Z##_dblm_low(t1, t1);											\
+			Z##_addm_low(c[0][1], t1, t0);									\
+		} RLC_CATCH_ANY {													\
+			RLC_THROW(ERR_CAUGHT);											\
+		} RLC_FINALLY {														\
+			Z##_free_all(t0, t1, t2);										\
+			D##_free_all(u0, u1, u2, u3);									\
+		}																	\
+	}
