@@ -141,6 +141,35 @@ static void lehme_step_dig(dis_t *a, dis_t *b, dis_t *c, dis_t *d,
 }
 
 /*
+ * Sets (u, v) to (x, y) shifted right together until x has at most k bits.
+ */
+static void lehme_lead(bn_t u, bn_t v, const bn_t x, const bn_t y, size_t k) {
+	size_t bits = bn_bits(x);
+
+	if (bits > k) {
+		bn_rsh(u, x, bits - k);
+		bn_rsh(v, y, bits - k);
+	} else {
+		bn_copy(u, x);
+		bn_copy(v, y);
+	}
+}
+
+/*
+ * Sets (p, q) = (a * p + b * q, c * p + d * q), using t0 and t1 as scratch.
+ */
+static void lehme_mat(bn_t p, bn_t q, dis_t a, dis_t b, dis_t c, dis_t d,
+		bn_t t0, bn_t t1) {
+	bn_mul_dis(t0, p, a);
+	bn_mul_dis(t1, q, b);
+	bn_add(t0, t0, t1);
+	bn_mul_dis(t1, p, c);
+	bn_mul_dis(q, q, d);
+	bn_add(q, q, t1);
+	bn_copy(p, t0);
+}
+
+/*
  * Disposes of the two cases every bn_gcd_ext_* variant must handle before
  * running its algorithm proper: either operand zero. Returns nonzero when it
  * already produced (c, d, e), leaving the caller nothing further to do.
@@ -283,7 +312,7 @@ void bn_gcd_ext_basic(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 #if BN_GCD == LEHME || !defined(STRIP)
 
 void bn_gcd_lehme(bn_t c, const bn_t a, const bn_t b) {
-	bn_t x, y, u, v, t0, t1, t2, t3;
+	bn_t x, y, u, v, t0, t1;
 	dig_t _x, _y;
 	dis_t _a, _b, _c, _d;
 
@@ -297,13 +326,13 @@ void bn_gcd_lehme(bn_t c, const bn_t a, const bn_t b) {
 		return;
 	}
 
-	bn_null_all(x, y, u, v, t0, t1, t2, t3);
+	bn_null_all(x, y, u, v, t0, t1);
 
 	/*
 	 * Taken from Handbook of Hyperelliptic and Elliptic Cryptography.
 	 */
 	RLC_TRY {
-		bn_new_all(x, y, u, v, t0, t1, t2, t3);
+		bn_new_all(x, y, u, v, t0, t1);
 
 		if (bn_cmp_abs(a, b) == RLC_GT) {
 			bn_abs(x, a);
@@ -313,13 +342,7 @@ void bn_gcd_lehme(bn_t c, const bn_t a, const bn_t b) {
 			bn_abs(y, a);
 		}
 		while (y->used > 1) {
-			if (bn_bits(x) > RLC_DIG) {
-				bn_rsh(u, x, bn_bits(x) - RLC_DIG);
-				bn_rsh(v, y, bn_bits(x) - RLC_DIG);
-			} else {
-				bn_copy(u, x);
-				bn_copy(v, y);
-			}
+			lehme_lead(u, v, x, y, RLC_DIG);
 			_x = u->dp[0];
 			_y = v->dp[0];
 			_a = _d = 1;
@@ -330,35 +353,13 @@ void bn_gcd_lehme(bn_t c, const bn_t a, const bn_t b) {
 				bn_copy(x, y);
 				bn_copy(y, t0);
 			} else {
-				if (bn_bits(x) > 2 * RLC_DIG) {
-					bn_rsh(u, x, bn_bits(x) - 2 * RLC_DIG);
-					bn_rsh(v, y, bn_bits(x) - 2 * RLC_DIG);
-				} else {
-					bn_copy(u, x);
-					bn_copy(v, y);
-				}
-				bn_mul_dis(t0, u, _a);
-				bn_mul_dis(t1, v, _b);
-				bn_mul_dis(t2, u, _c);
-				bn_mul_dis(t3, v, _d);
-				bn_add(u, t0, t1);
-				bn_add(v, t2, t3);
-				if (bn_bits(u) > RLC_DIG) {
-					bn_rsh(t0, u, bn_bits(u) - RLC_DIG);
-					bn_rsh(t1, v, bn_bits(u) - RLC_DIG);
-				} else {
-					bn_copy(t0, u);
-					bn_copy(t1, v);
-				}
+				lehme_lead(u, v, x, y, 2 * RLC_DIG);
+				lehme_mat(u, v, _a, _b, _c, _d, t0, t1);
+				lehme_lead(t0, t1, u, v, RLC_DIG);
 				_x = t0->dp[0];
 				_y = t1->dp[0];
 				lehme_step_dig(&_a, &_b, &_c, &_d, _x, _y);
-				bn_mul_dis(t0, x, _a);
-				bn_mul_dis(t1, y, _b);
-				bn_mul_dis(t2, x, _c);
-				bn_mul_dis(t3, y, _d);
-				bn_add(x, t0, t1);
-				bn_add(y, t2, t3);
+				lehme_mat(x, y, _a, _b, _c, _d, t0, t1);
 			}
 		}
 		bn_gcd_ext_dig(c, u, v, x, y->dp[0]);
@@ -367,12 +368,12 @@ void bn_gcd_lehme(bn_t c, const bn_t a, const bn_t b) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free_all(x, y, u, v, t0, t1, t2, t3);
+		bn_free_all(x, y, u, v, t0, t1);
 	}
 }
 
 void bn_gcd_ext_lehme(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
-	bn_t x, y, u, v, t0, t1, t2, t3, t4;
+	bn_t x, y, u, v, t0, t1, t4;
 	dig_t _x, _y;
 	dis_t _a, _b, _c, _d;
 	int swap;
@@ -381,13 +382,13 @@ void bn_gcd_ext_lehme(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 		return;
 	}
 
-	bn_null_all(x, y, u, v, t0, t1, t2, t3, t4);
+	bn_null_all(x, y, u, v, t0, t1, t4);
 
 	/*
 	 * Taken from Handbook of Hyperelliptic and Elliptic Cryptography.
 	 */
 	RLC_TRY {
-		bn_new_all(x, y, u, v, t0, t1, t2, t3, t4);
+		bn_new_all(x, y, u, v, t0, t1, t4);
 
 		if (bn_cmp_abs(a, b) != RLC_LT) {
 			bn_abs(x, a);
@@ -403,13 +404,7 @@ void bn_gcd_ext_lehme(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 		bn_set_dig(d, 1);
 
 		while (y->used > 1) {
-			if (bn_bits(x) > RLC_DIG) {
-				bn_rsh(u, x, bn_bits(x) - RLC_DIG);
-				bn_rsh(v, y, bn_bits(x) - RLC_DIG);
-			} else {
-				bn_copy(u, x);
-				bn_copy(v, y);
-			}
+			lehme_lead(u, v, x, y, RLC_DIG);
 			_x = u->dp[0];
 			_y = v->dp[0];
 			_a = _d = 1;
@@ -424,42 +419,15 @@ void bn_gcd_ext_lehme(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 				bn_copy(t4, d);
 				bn_copy(d, t1);
 			} else {
-				if (bn_bits(x) > 2 * RLC_DIG) {
-					bn_rsh(u, x, bn_bits(x) - 2 * RLC_DIG);
-					bn_rsh(v, y, bn_bits(x) - 2 * RLC_DIG);
-				} else {
-					bn_copy(u, x);
-					bn_copy(v, y);
-				}
-				bn_mul_dis(t0, u, _a);
-				bn_mul_dis(t1, v, _b);
-				bn_mul_dis(t2, u, _c);
-				bn_mul_dis(t3, v, _d);
-				bn_add(u, t0, t1);
-				bn_add(v, t2, t3);
-				if (bn_bits(u) > RLC_DIG) {
-					bn_rsh(t0, u, bn_bits(u) - RLC_DIG);
-					bn_rsh(t1, v, bn_bits(u) - RLC_DIG);
-				} else {
-					bn_copy(t0, u);
-					bn_copy(t1, v);
-				}
+				lehme_lead(u, v, x, y, 2 * RLC_DIG);
+				lehme_mat(u, v, _a, _b, _c, _d, t0, t1);
+				lehme_lead(t0, t1, u, v, RLC_DIG);
 				_x = t0->dp[0];
 				_y = t1->dp[0];
 				lehme_step_dig(&_a, &_b, &_c, &_d, _x, _y);
-				bn_mul_dis(t0, x, _a);
-				bn_mul_dis(t1, y, _b);
-				bn_mul_dis(t2, x, _c);
-				bn_mul_dis(t3, y, _d);
-				bn_add(x, t0, t1);
-				bn_add(y, t2, t3);
+				lehme_mat(x, y, _a, _b, _c, _d, t0, t1);
 
-				bn_mul_dis(t0, t4, _a);
-				bn_mul_dis(t1, d, _b);
-				bn_mul_dis(t2, t4, _c);
-				bn_mul_dis(t3, d, _d);
-				bn_add(t4, t0, t1);
-				bn_add(d, t2, t3);
+				lehme_mat(t4, d, _a, _b, _c, _d, t0, t1);
 			}
 		}
 		bn_gcd_ext_dig(c, u, v, x, y->dp[0]);
@@ -507,7 +475,7 @@ void bn_gcd_ext_lehme(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free_all(x, y, u, v, t0, t1, t2, t3, t4);
+		bn_free_all(x, y, u, v, t0, t1, t4);
 	}
 }
 
