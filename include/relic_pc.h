@@ -979,7 +979,7 @@ typedef RLC_CAT(RLC_GT_LOWER, t) gt_t;
  * @param[out] C			- the result.
  * @param[in] A				- the field element to exponentiate.
  */
-#define pc_exp(C, A);			RLC_CAT(pp_exp_k, RLC_GT_EMBED)(C, A)
+#define pc_exp(C, A)			RLC_CAT(pp_exp_k, RLC_GT_EMBED)(C, A)
 
 /*============================================================================*/
 /* Function prototypes                                                        */

@@ -381,7 +381,7 @@ static void gt_exp_gls_sac(gt_t c, const gt_t a, const bn_t b, size_t d,
 		}
 		for (size_t i = 0; i < d; i++) {
 			for (int j = 0; j < s; j++) {
-				gt_free(t[i * d + j]);
+				gt_free(t[i * s + j]);
 			}
 		}
 		RLC_FREE(e);
@@ -506,7 +506,7 @@ static void gt_exp_reg_sac(gt_t c, const gt_t a, const bn_t b, size_t d,
 		}
 		for (size_t i = 0; i < d; i++) {
 			for (int j = 0; j < s; j++) {
-				gt_free(t[i * d + j]);
+				gt_free(t[i * s + j]);
 			}
 		}
 		RLC_FREE(e);
