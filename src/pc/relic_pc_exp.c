@@ -102,6 +102,22 @@ static void gt_psi(gt_t c, const gt_t a) {
 }
 
 /**
+ * Computes the base for decomposing exponents with the endomorphism gt_psi().
+ *
+ * @param[out] u			- the base.
+ */
+static void gt_get_base(bn_t u) {
+	fp_prime_get_par(u);
+	switch (ep_curve_is_pairf()) {
+		case EP_SG18:
+			/* Compute base -3*u for the recoding below. */
+			bn_mul_dig(u, u, 3);
+			bn_neg(u, u);
+			break;
+	}
+}
+
+/**
  * Size of a precomputation table using the double-table comb method.
  */
 #define RLC_GT_TABLE		(1 << (RLC_WIDTH - 2))
@@ -152,13 +168,7 @@ void gt_exp_gls_naf(gt_t c, const gt_t a, const bn_t b, size_t f) {
 			}
 		}
 
-		fp_prime_get_par(u);
-		if (ep_curve_is_pairf() == EP_SG18) {
-			/* Compute base -3*u for the recoding below. */
-			bn_dbl(n, u);
-			bn_add(u, u, n);
-			bn_neg(u, u);
-		}
+		gt_get_base(u);
 		gt_get_ord(n);
 		bn_abs(_b[0], b);
 		bn_mod(_b[0], _b[0], n);
@@ -304,13 +314,7 @@ static void gt_exp_gls_sac(gt_t c, const gt_t a, const bn_t b, size_t d,
 			}
 		}
 
-		fp_prime_get_par(u);
-		if (ep_curve_is_pairf() == EP_SG18) {
-			/* Compute base -3*u for the recoding below. */
-			bn_dbl(n, u);
-			bn_add(u, u, n);
-			bn_neg(u, u);
-		}
+		gt_get_base(u);
 		gt_get_ord(n);
 		bn_mod(_b[0], b, n);
 		bn_rec_frb(_b, f, _b[0], u, n, ep_curve_is_pairf() == EP_BN);
@@ -432,13 +436,7 @@ static void gt_exp_reg_sac(gt_t c, const gt_t a, const bn_t b, size_t d,
 			}
 		}
 
-		fp_prime_get_par(u);
-		if (ep_curve_is_pairf() == EP_SG18) {
-			/* Compute base -3*u for the recoding below. */
-			bn_dbl(n, u);
-			bn_add(u, u, n);
-			bn_neg(u, u);
-		}
+		gt_get_base(u);
 		gt_get_ord(n);
 		bn_mod(_b[0], b, n);
 		bn_rec_frb(_b, f, _b[0], u, n, ep_curve_is_pairf() == EP_BN);
@@ -566,13 +564,7 @@ void gt_exp_reg_gls(gt_t c, const gt_t a, const bn_t b, size_t f) {
 			}
 		}
 
-		fp_prime_get_par(u);
-		if (ep_curve_is_pairf() == EP_SG18) {
-			/* Compute base -3*u for the recoding below. */
-			bn_dbl(n, u);
-			bn_add(u, u, n);
-			bn_neg(u, u);
-		}
+		gt_get_base(u);
 		gt_get_ord(n);
 		bn_abs(_b[0], b);
 		bn_mod(_b[0], _b[0], n);
