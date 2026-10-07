@@ -72,7 +72,7 @@ static int util(void) {
 	dig_t d;
 
 	fp_null_all(a, b);
-	bn_null(c);
+	bn_null_all(c, e);
 
 	RLC_TRY {
 		fp_new_all(a, b);
@@ -189,6 +189,59 @@ static int util(void) {
 			fp_prime_conv_dig(a, c->dp[0]);
 			fp_prime_back(e, a);
 			TEST_ASSERT(bn_cmp_dig(e, c->dp[0]) == RLC_EQ, end);
+		}
+		TEST_END;
+
+		TEST_CASE("parity test is correct") {
+			fp_rand(a);
+			fp_prime_back(c, a);
+			TEST_ASSERT(fp_is_even(a) == bn_is_even(c), end);
+			fp_set_dig(a, 2);
+			TEST_ASSERT(fp_is_even(a) == 1, end);
+			fp_set_dig(a, 3);
+			TEST_ASSERT(fp_is_even(a) == 0, end);
+		}
+		TEST_END;
+
+		TEST_CASE("normalization is correct") {
+			fp_rand(a);
+			fp_norm(b, a);
+			TEST_ASSERT(fp_cmp(a, b) == RLC_EQ, end);
+			/* A representative above p, when it fits, normalizes back. */
+			if (fp_addn_low(b, a, fp_prime_get()) == 0) {
+				fp_norm(b, b);
+				TEST_ASSERT(fp_cmp(a, b) == RLC_EQ, end);
+			}
+		}
+		TEST_END;
+
+		TEST_CASE("prime field constants are correct") {
+			bn_read_raw(c, fp_prime_get(), RLC_FP_DIGS);
+			bn_mod_dig(&d, c, 8);
+			TEST_ASSERT(d == fp_prime_get_mod8(), end);
+			/* p - 1 = 2^f * q with q odd. */
+			bn_sub_dig(e, c, 1);
+			bn_rsh(e, e, fp_prime_get_2ad());
+			TEST_ASSERT(bn_is_even(e) == 0, end);
+			bn_lsh(e, e, fp_prime_get_2ad());
+			bn_add_dig(e, e, 1);
+			TEST_ASSERT(bn_cmp(e, c) == RLC_EQ, end);
+			fp_set_dig(a, -fp_prime_get_qnr());
+			fp_neg(a, a);
+			TEST_ASSERT(fp_is_sqr(a) == 0, end);
+			/* A 2^f-root of unity, primitive when p = 1 mod 4. */
+			dv_copy(a, fp_prime_get_srt(), RLC_FP_DIGS);
+			for (int k = 1; k < fp_prime_get_2ad(); k++) {
+				fp_sqr(a, a);
+			}
+			fp_set_dig(b, 1);
+			if (fp_prime_get_mod8() % 4 == 1) {
+				fp_neg(b, b);
+				TEST_ASSERT(fp_cmp(a, b) == RLC_EQ, end);
+				fp_neg(b, b);
+			}
+			fp_sqr(a, a);
+			TEST_ASSERT(fp_cmp(a, b) == RLC_EQ, end);
 		}
 		TEST_END;
 	}
@@ -673,14 +726,14 @@ static int shifting(void) {
 static int reduction(void) {
 	int code = RLC_ERR;
 	fp_t a, b;
-	dv_t t;
+	dv_t t, u;
 
 	fp_null_all(a, b);
-	dv_null(t);
+	dv_null_all(t, u);
 
 	RLC_TRY {
 		fp_new_all(a, b);
-		dv_new(t);
+		dv_new_all(t, u);
 		dv_zero(t, 2 * RLC_FP_DIGS);
 
 		TEST_CASE("modular reduction is correct") {
@@ -708,6 +761,36 @@ static int reduction(void) {
 			fp_rdc_monty(b, t);
 			TEST_ASSERT(fp_is_zero(b), end);
 		} TEST_END;
+
+#if FP_MUL == BASIC || !defined(STRIP)
+		TEST_CASE("basic montgomery modular reduction is correct") {
+			fp_rand(a);
+			fp_muln_low(t, a, fp_prime_get());
+			fp_rdc_monty_basic(b, t);
+			TEST_ASSERT(fp_is_zero(b), end);
+		} TEST_END;
+#endif
+
+#if FP_MUL == COMBA || FP_MUL == INTEG || !defined(STRIP)
+		TEST_CASE("comba montgomery modular reduction is correct") {
+			fp_rand(a);
+			fp_muln_low(t, a, fp_prime_get());
+			fp_rdc_monty_comba(b, t);
+			TEST_ASSERT(fp_is_zero(b), end);
+		} TEST_END;
+#endif
+
+#if !defined(STRIP)
+		TEST_CASE("montgomery modular reductions are consistent") {
+			fp_rand(a);
+			fp_rand(b);
+			fp_muln_low(t, a, b);
+			dv_copy(u, t, 2 * RLC_FP_DIGS);
+			fp_rdc_monty_basic(a, t);
+			fp_rdc_monty_comba(b, u);
+			TEST_ASSERT(fp_cmp(a, b) == RLC_EQ, end);
+		} TEST_END;
+#endif
 #endif
 
 #if FP_RDC == QUICK || !defined(STRIP)
@@ -727,9 +810,8 @@ static int reduction(void) {
 	}
 	code = RLC_OK;
   end:
-	fb_free(a);
-	fb_free(b);
-	dv_free(t);
+	fp_free_all(a, b);
+	dv_free_all(t, u);
 	return code;
 }
 
