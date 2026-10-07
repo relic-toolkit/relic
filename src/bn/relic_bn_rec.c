@@ -74,6 +74,21 @@ static char get_bits(const bn_t a, size_t from, size_t to) {
 }
 
 /**
+ * Tau-adic halving step shared by the TNAF recoders: (r0, r1) <- (r1 + u *
+ * r0/2, -r0/2), using tmp as scratch for r0/2.
+ */
+static void tnaf_hlv(bn_t r0, bn_t r1, bn_t tmp, int8_t u) {
+	bn_hlv(tmp, r0);
+	if (u == -1) {
+		bn_sub(r0, r1, tmp);
+	} else {
+		bn_add(r0, r1, tmp);
+	}
+	bn_copy(r1, tmp);
+	r1->sign = tmp->sign ^ 1;
+}
+
+/**
  * Constant C for the partial reduction modulo (t^m - 1)/(t - 1).
  */
 #define MOD_C		8
@@ -355,18 +370,10 @@ void bn_rec_tnaf_get(uint8_t *t, int8_t *beta, int8_t *gama, int8_t u,
 void bn_rec_tnaf_mod(bn_t r0, bn_t r1, const bn_t k, int u, size_t m) {
 	bn_t t, t0, t1, t2, t3;
 
-	bn_null(t);
-	bn_null(t0);
-	bn_null(t1);
-	bn_null(t2);
-	bn_null(t3);
+	bn_null_all(t, t0, t1, t2, t3);
 
 	RLC_TRY {
-		bn_new(t);
-		bn_new(t0);
-		bn_new(t1);
-		bn_new(t2);
-		bn_new(t3);
+		bn_new_all(t, t0, t1, t2, t3);
 
 		/* (a0, a1) = (1, 0). */
 		bn_set_dig(t0, 1);
@@ -416,11 +423,7 @@ void bn_rec_tnaf_mod(bn_t r0, bn_t r1, const bn_t k, int u, size_t m) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(t);
-		bn_free(t0);
-		bn_free(t1);
-		bn_free(t2);
-		bn_free(t3);
+		bn_free_all(t, t0, t1, t2, t3);
 	}
 }
 
@@ -433,9 +436,7 @@ void bn_rec_tnaf(int8_t *tnaf, size_t *len, const bn_t k, int8_t u, size_t m,
 	dig_t t0, t1, mask;
 	int s, t, u_i;
 
-	bn_null(r0);
-	bn_null(r1);
-	bn_null(tmp);
+	bn_null_all(r0, r1, tmp);
 
 	if (*len < (bn_bits(k) + 1)) {
 		*len = 0;
@@ -444,9 +445,7 @@ void bn_rec_tnaf(int8_t *tnaf, size_t *len, const bn_t k, int8_t u, size_t m,
 	}
 
 	RLC_TRY {
-		bn_new(r0);
-		bn_new(r1);
-		bn_new(tmp);
+		bn_new_all(r0, r1, tmp);
 
 		memset(tnaf, 0, *len);
 
@@ -461,17 +460,7 @@ void bn_rec_tnaf(int8_t *tnaf, size_t *len, const bn_t k, int8_t u, size_t m,
 		while (!bn_is_zero(r0) || !bn_is_zero(r1)) {
 			while ((r0->dp[0] & 1) == 0) {
 				tnaf[i++] = 0;
-				/* tmp = r0. */
-				bn_hlv(tmp, r0);
-				/* r0 = r1 + mu * r0 / 2. */
-				if (u == -1) {
-					bn_sub(r0, r1, tmp);
-				} else {
-					bn_add(r0, r1, tmp);
-				}
-				/* r1 = - r0 / 2. */
-				bn_copy(r1, tmp);
-				r1->sign = tmp->sign ^ 1;
+				tnaf_hlv(r0, r1, tmp, u);
 			}
 			/* If r0 is odd. */
 			if (w == 2) {
@@ -531,17 +520,7 @@ void bn_rec_tnaf(int8_t *tnaf, size_t *len, const bn_t k, int8_t u, size_t m,
 					bn_add_dig(r1, r1, -s);
 				}
 			}
-			/* tmp = r0. */
-			bn_hlv(tmp, r0);
-			/* r0 = r1 + mu * r0 / 2. */
-			if (u == -1) {
-				bn_sub(r0, r1, tmp);
-			} else {
-				bn_add(r0, r1, tmp);
-			}
-			/* r1 = - r0 / 2. */
-			bn_copy(r1, tmp);
-			r1->sign = tmp->sign ^ 1;
+			tnaf_hlv(r0, r1, tmp, u);
 		}
 		*len = i;
 	}
@@ -549,9 +528,7 @@ void bn_rec_tnaf(int8_t *tnaf, size_t *len, const bn_t k, int8_t u, size_t m,
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(r0);
-		bn_free(r1);
-		bn_free(tmp);
+		bn_free_all(r0, r1, tmp);
 	}
 }
 
@@ -564,9 +541,7 @@ void bn_rec_rtnaf(int8_t *tnaf, size_t *len, const bn_t k, int8_t u, size_t m,
 	dig_t t0, t1, mask;
 	int s, t, u_i;
 
-	bn_null(r0);
-	bn_null(r1);
-	bn_null(tmp);
+	bn_null_all(r0, r1, tmp);
 
 	if (*len < (bn_bits(k) + 1)) {
 		RLC_THROW(ERR_NO_BUFFER);
@@ -574,9 +549,7 @@ void bn_rec_rtnaf(int8_t *tnaf, size_t *len, const bn_t k, int8_t u, size_t m,
 	}
 
 	RLC_TRY {
-		bn_new(r0);
-		bn_new(r1);
-		bn_new(tmp);
+		bn_new_all(r0, r1, tmp);
 
 		memset(tnaf, 0, *len);
 
@@ -645,17 +618,7 @@ void bn_rec_rtnaf(int8_t *tnaf, size_t *len, const bn_t k, int8_t u, size_t m,
 				}
 			}
 			for (int j = 0; j < (w - 1); j++) {
-				/* tmp = r0. */
-				bn_hlv(tmp, r0);
-				/* r0 = r1 + mu * r0 / 2. */
-				if (u == -1) {
-					bn_sub(r0, r1, tmp);
-				} else {
-					bn_add(r0, r1, tmp);
-				}
-				/* r1 = - r0 / 2. */
-				bn_copy(r1, tmp);
-				r1->sign = tmp->sign ^ 1;
+				tnaf_hlv(r0, r1, tmp, u);
 			}
 		}
 		s = r0->dp[0];
@@ -692,9 +655,7 @@ void bn_rec_rtnaf(int8_t *tnaf, size_t *len, const bn_t k, int8_t u, size_t m,
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(r0);
-		bn_free(r1);
-		bn_free(tmp);
+		bn_free_all(r0, r1, tmp);
 	}
 }
 
@@ -754,12 +715,10 @@ void bn_rec_jsf(int8_t *jsf, size_t *len, const bn_t k, const bn_t l) {
 		return;
 	}
 
-	bn_null(n0);
-	bn_null(n1);
+	bn_null_all(n0, n1);
 
 	RLC_TRY {
-		bn_new(n0);
-		bn_new(n1);
+		bn_new_all(n0, n1);
 
 		bn_abs(n0, k);
 		bn_abs(n1, l);
@@ -815,8 +774,7 @@ void bn_rec_jsf(int8_t *jsf, size_t *len, const bn_t k, const bn_t l) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(n0);
-		bn_free(n1);
+		bn_free_all(n0, n1);
 	}
 }
 

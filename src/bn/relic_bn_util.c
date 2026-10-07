@@ -311,12 +311,10 @@ void bn_rand_frb(bn_t a, const bn_t x, const bn_t order, size_t bits) {
 	size_t i, dim = RLC_CEIL(bn_bits(order), bn_bits(x));
 	bn_t t, u;
 
-	bn_null(t);
-	bn_null(u);
+	bn_null_all(t, u);
 
 	RLC_TRY {
-		bn_new(t);
-		bn_new(u);
+		bn_new_all(t, u);
 
 		bits = RLC_CEIL(bits, dim);
 
@@ -331,8 +329,7 @@ void bn_rand_frb(bn_t a, const bn_t x, const bn_t order, size_t bits) {
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		bn_free(t);
-		bn_free(u);
+		bn_free_all(t, u);
 	}
 }
 

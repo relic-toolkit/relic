@@ -39,12 +39,10 @@
 void bn_mod_inv(bn_t c, const bn_t a, const bn_t b) {
 	bn_t t, u;
 
-	bn_null(t);
-	bn_null(u);
+	bn_null_all(t, u);
 
 	RLC_TRY {
-		bn_new(t);
-		bn_new(u);
+		bn_new_all(t, u);
 
 		bn_mod(t, a, b);
 		bn_copy(u, b);
@@ -59,8 +57,7 @@ void bn_mod_inv(bn_t c, const bn_t a, const bn_t b) {
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		bn_free(t);
-		bn_free(u);
+		bn_free_all(t, u);
 	}
 }
 

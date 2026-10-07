@@ -60,9 +60,7 @@ void bn_mxp_basic(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 		return;
 	}
 
-	bn_null(r);
-	bn_null(t);
-	bn_null(u);
+	bn_null_all(r, t, u);
 
 	/*
 	 * The precomputed reductions all need an odd modulus, so an even one is
@@ -71,9 +69,7 @@ void bn_mxp_basic(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 	even = bn_is_even(m);
 
 	RLC_TRY {
-		bn_new(r);
-		bn_new(t);
-		bn_new(u);
+		bn_new_all(r, t, u);
 
 		if (!even) {
 			bn_mod_pre(u, m);
@@ -126,9 +122,7 @@ void bn_mxp_basic(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(r);
-		bn_free(t);
-		bn_free(u);
+		bn_free_all(r, t, u);
 	}
 }
 
@@ -164,8 +158,7 @@ void bn_mxp_slide(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 		return;
 	}
 
-	bn_null(t);
-	bn_null(u);
+	bn_null_all(t, u);
 
 	/* Find window size. */
 	l = bn_bits(b);
@@ -195,8 +188,7 @@ void bn_mxp_slide(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 			bn_new(tab[i]);
 		}
 
-		bn_new(t);
-		bn_new(u);
+		bn_new_all(t, u);
 		bn_mod_pre(u, m);
 
 #if BN_MOD == MONTY
@@ -251,8 +243,7 @@ void bn_mxp_slide(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 		for (size_t i = 0; i < (1 << (w - 1)); i++) {
 			bn_free(tab[i]);
 		}
-		bn_free(u);
-		bn_free(t);
+		bn_free_all(u, t);
 		RLC_FREE(win);
 		RLC_FREE(tab);
 	}
@@ -288,8 +279,7 @@ void bn_mxp_monty(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 
 	bn_null(tab[0]);
 	bn_null(tab[1]);
-	bn_null(t);
-	bn_null(u);
+	bn_null_all(t, u);
 
 	RLC_TRY {
 		bn_new(u);
@@ -389,12 +379,10 @@ void bn_mxp_lower(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 		return;
 	}
 
-	bn_null(t);
-	bn_null(u);
+	bn_null_all(t, u);
 
 	RLC_TRY {
-		bn_new(t);
-		bn_new(u);
+		bn_new_all(t, u);
 
 		sm = m->used;
 		bn_grow(u, sm);
@@ -419,8 +407,7 @@ void bn_mxp_lower(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(t);
-		bn_free(u);
+		bn_free_all(t, u);
 	}
 }
 
@@ -430,12 +417,10 @@ void bn_mxp_crt(bn_t d, const bn_t a, const bn_t b, const bn_t c,
 		const crt_t crt, int sqr) {
 	bn_t t, u;
 
-	bn_null(t);
-	bn_null(u);
+	bn_null_all(t, u);
 
 	RLC_TRY {
-		bn_new(t);
-		bn_new(u);
+		bn_new_all(t, u);
 
 		if (!sqr) {
 #if MULTI == OPENMP
@@ -510,8 +495,7 @@ void bn_mxp_crt(bn_t d, const bn_t a, const bn_t b, const bn_t c,
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		bn_free(t);
-		bn_free(u);
+		bn_free_all(t, u);
 	}
 }
 
@@ -529,12 +513,10 @@ void bn_mxp_dig(bn_t c, const bn_t a, dig_t b, const bn_t m) {
 		return;
 	}
 
-	bn_null(t);
-	bn_null(u);
+	bn_null_all(t, u);
 
 	RLC_TRY {
-		bn_new(t);
-		bn_new(u);
+		bn_new_all(t, u);
 
 		bn_mod_pre(u, m);
 
@@ -564,7 +546,6 @@ void bn_mxp_dig(bn_t c, const bn_t a, dig_t b, const bn_t m) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(t);
-		bn_free(u);
+		bn_free_all(t, u);
 	}
 }

@@ -50,8 +50,7 @@ static void bn_div_imp(bn_t c, bn_t d, const bn_t a, const bn_t b, int ceil) {
 	bn_st *pq, *pr;
 	int sign;
 
-	bn_null(q);
-	bn_null(r);
+	bn_null_all(q, r);
 
 	/* If |a| < |b|, we're done. */
 	if (bn_cmp_abs(a, b) == RLC_LT) {
@@ -167,8 +166,7 @@ static void bn_div_imp(bn_t c, bn_t d, const bn_t a, const bn_t b, int ceil) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(q);
-		bn_free(r);
+		bn_free_all(q, r);
 	}
 }
 

@@ -51,19 +51,13 @@ static void bn_sqr_karat_imp(bn_t c, const bn_t a, uint_t level) {
 	bn_t a0, a1, a0a0, a1a1, t;
 	int h = a->used >> 1;
 
-	bn_null(a0);
-	bn_null(a1);
-	bn_null(a0a0);
-	bn_null(a1a1);
-	bn_null(t);
+	bn_null_all(a0, a1, a0a0, a1a1, t);
 
 	RLC_TRY {
 		/* Allocate the temp variables. */
 		bn_new_size(a0, h);
 		bn_new_size(a1, a->used - h);
-		bn_new(a0a0);
-		bn_new(a1a1);
-		bn_new(t);
+		bn_new_all(a0a0, a1a1, t);
 
 		/* a = a1 || a0 */
 		a0->used = h;
@@ -129,11 +123,7 @@ static void bn_sqr_karat_imp(bn_t c, const bn_t a, uint_t level) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(a0);
-		bn_free(a1);
-		bn_free(a0a0);
-		bn_free(a1a1);
-		bn_free(t);
+		bn_free_all(a0, a1, a0a0, a1a1, t);
 	}
 }
 

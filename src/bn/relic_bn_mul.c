@@ -53,13 +53,7 @@ static void bn_mul_karat_imp(bn_t c, const bn_t a, const bn_t b, uint_t level) {
 	/* Compute half the digits of a or b. */
 	int h = RLC_MIN(a->used, b->used) >> 1;
 
-	bn_null(a0);
-	bn_null(a1);
-	bn_null(b0);
-	bn_null(b1);
-	bn_null(a0b0);
-	bn_null(a1b1);
-	bn_null(t);
+	bn_null_all(a0, a1, b0, b1, a0b0, a1b1, t);
 
 	RLC_TRY {
 		/* Allocate the temp variables. */
@@ -67,9 +61,7 @@ static void bn_mul_karat_imp(bn_t c, const bn_t a, const bn_t b, uint_t level) {
 		bn_new_size(b0, h);
 		bn_new_size(a1, a->used - h);
 		bn_new_size(b1, b->used - h);
-		bn_new(a0b0);
-		bn_new(a1b1);
-		bn_new(t);
+		bn_new_all(a0b0, a1b1, t);
 
 		/* a = a1 || a0, b = b1 || b0 */
 		a0->used = b0->used = h;
@@ -139,13 +131,7 @@ static void bn_mul_karat_imp(bn_t c, const bn_t a, const bn_t b, uint_t level) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(a0);
-		bn_free(a1);
-		bn_free(b0);
-		bn_free(b1);
-		bn_free(a0b0);
-		bn_free(a1b1);
-		bn_free(t);
+		bn_free_all(a0, a1, b0, b1, a0b0, a1b1, t);
 	}
 }
 

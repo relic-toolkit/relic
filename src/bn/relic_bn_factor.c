@@ -40,8 +40,7 @@ int bn_factor(bn_t c, const bn_t a) {
 	int result;
 	uint_t i, tests;
 
-	bn_null(t0);
-	bn_null(t1);
+	bn_null_all(t0, t1);
 
 	result = 1;
 
@@ -51,8 +50,7 @@ int bn_factor(bn_t c, const bn_t a) {
 	}
 
 	RLC_TRY {
-		bn_new(t0);
-		bn_new(t1);
+		bn_new_all(t0, t1);
 
 		bn_set_dig(t0, 2);
 
@@ -76,8 +74,7 @@ int bn_factor(bn_t c, const bn_t a) {
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		bn_free(t0);
-		bn_free(t1);
+		bn_free_all(t0, t1);
 	}
 	return result;
 }

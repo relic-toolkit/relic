@@ -88,8 +88,7 @@ void bn_mod_barrt(bn_t c, const bn_t a, const bn_t m, const bn_t u) {
 	bn_t q, t;
 	int mu, neg;
 
-	bn_null(q);
-	bn_null(t);
+	bn_null_all(q, t);
 
 	if (bn_is_zero(m) || bn_sign(m) != RLC_POS) {
 		RLC_THROW(ERR_NO_VALID);
@@ -107,8 +106,7 @@ void bn_mod_barrt(bn_t c, const bn_t a, const bn_t m, const bn_t u) {
 	}
 
 	RLC_TRY {
-		bn_new(q);
-		bn_new(t);
+		bn_new_all(q, t);
 		bn_zero(t);
 
 		neg = (bn_sign(a) == RLC_NEG);
@@ -164,8 +162,7 @@ void bn_mod_barrt(bn_t c, const bn_t a, const bn_t m, const bn_t u) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(q);
-		bn_free(t);
+		bn_free_all(q, t);
 	}
 }
 
@@ -340,14 +337,12 @@ void bn_mod_pmers(bn_t c, const bn_t a, const bn_t m, const bn_t u) {
 		return;
 	}
 
-	bn_null(q);
-	bn_null(t);
+	bn_null_all(q, t);
 
 	RLC_TRY {
 		/* Implement algorithm 10.25 from HEHC. */
 
-		bn_new(q);
-		bn_new(t);
+		bn_new_all(q, t);
 
 		bn_copy(c, a);
 		if (bn_sign(c) == RLC_NEG) {
@@ -381,8 +376,7 @@ void bn_mod_pmers(bn_t c, const bn_t a, const bn_t m, const bn_t u) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(t);
-		bn_free(q);
+		bn_free_all(t, q);
 	}
 }
 

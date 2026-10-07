@@ -179,6 +179,18 @@ static void bn_exp(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
 
 #endif
 
+/**
+ * Computes c = a^b mod m, falling back to the pseudo-Mersenne exponentiation
+ * above when the active reduction does not support general exponentiation.
+ */
+static void bn_prime_exp(bn_t c, const bn_t a, const bn_t b, const bn_t m) {
+#if BN_MOD != PMERS
+	bn_mxp(c, a, b, m);
+#else
+	bn_exp(c, a, b, m);
+#endif
+}
+
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
@@ -237,10 +249,7 @@ int bn_is_prime_rabin(const bn_t a) {
 	tests = 0;
 	result = 1;
 
-	bn_null(t);
-	bn_null(n1);
-	bn_null(y);
-	bn_null(r);
+	bn_null_all(t, n1, y, r);
 
 	cmp2 = bn_cmp_dig(a, 2);
 	if (cmp2 == RLC_LT) {
@@ -289,10 +298,7 @@ int bn_is_prime_rabin(const bn_t a) {
 			tests = 27;
 		}
 
-		bn_new(t);
-		bn_new(n1);
-		bn_new(y);
-		bn_new(r);
+		bn_new_all(t, n1, y, r);
 
 		/* r = (n - 1)/2^s. */
 		bn_sub_dig(n1, a, 1);
@@ -314,11 +320,7 @@ int bn_is_prime_rabin(const bn_t a) {
 			}
 
 			/* y = b^r mod a. */
-#if BN_MOD != PMERS
-			bn_mxp(y, t, r, a);
-#else
-			bn_exp(y, t, r, a);
-#endif
+			bn_prime_exp(y, t, r, a);
 
 			if (bn_cmp_dig(y, 1) != RLC_EQ && bn_cmp(y, n1) != RLC_EQ) {
 				j = 1;
@@ -347,10 +349,7 @@ int bn_is_prime_rabin(const bn_t a) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(r);
-		bn_free(y);
-		bn_free(n1);
-		bn_free(t);
+		bn_free_all(r, y, n1, t);
 	}
 	return result;
 }
@@ -359,16 +358,12 @@ int bn_is_prime_solov(const bn_t a) {
 	bn_t t0, t1, t2;
 	int i, result;
 
-	bn_null(t0);
-	bn_null(t1);
-	bn_null(t2);
+	bn_null_all(t0, t1, t2);
 
 	result = 1;
 
 	RLC_TRY {
-		bn_new(t0);
-		bn_new(t1);
-		bn_new(t2);
+		bn_new_all(t0, t1, t2);
 
 		for (i = 0; i < 100; i++) {
 			/* Generate t0, 2 <= t0, <= a - 2. */
@@ -382,11 +377,7 @@ int bn_is_prime_solov(const bn_t a) {
 			/* t1 = (a - 1)/2. */
 			bn_rsh(t1, t2, 1);
 			/* t1 = t0^(a - 1)/2 mod a. */
-#if BN_MOD != PMERS
-			bn_mxp(t1, t0, t1, a);
-#else
-			bn_exp(t1, t0, t1, a);
-#endif
+			bn_prime_exp(t1, t0, t1, a);
 			/* If t1 != 1 and t1 != n - 1 return 0 */
 			if (bn_cmp_dig(t1, 1) != RLC_EQ && bn_cmp(t1, t2) != RLC_EQ) {
 				result = 0;
@@ -414,9 +405,7 @@ int bn_is_prime_solov(const bn_t a) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(t0);
-		bn_free(t1);
-		bn_free(t2);
+		bn_free_all(t0, t1, t2);
 	}
 	return result;
 }
@@ -437,24 +426,10 @@ int bn_is_prime_lucas(const bn_t a) {
 		return 1;
 	}
 
-	bn_null(d);
-	bn_null(n1);
-	bn_null(q);
-	bn_null(qk);
-	bn_null(u);
-	bn_null(v);
-	bn_null(t0);
-	bn_null(t1);
+	bn_null_all(d, n1, q, qk, u, v, t0, t1);
 
 	RLC_TRY {
-		bn_new(d);
-		bn_new(n1);
-		bn_new(q);
-		bn_new(qk);
-		bn_new(u);
-		bn_new(v);
-		bn_new(t0);
-		bn_new(t1);
+		bn_new_all(d, n1, q, qk, u, v, t0, t1);
 
 		/*
 		 * A perfect square is composite and has no D with Jacobi symbol -1, so
@@ -567,14 +542,7 @@ int bn_is_prime_lucas(const bn_t a) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(d);
-		bn_free(n1);
-		bn_free(q);
-		bn_free(qk);
-		bn_free(u);
-		bn_free(v);
-		bn_free(t0);
-		bn_free(t1);
+		bn_free_all(d, n1, q, qk, u, v, t0, t1);
 	}
 	return result;
 }
@@ -625,14 +593,10 @@ void bn_gen_prime_stron(bn_t a, size_t bits) {
 	int found, k;
 	bn_t r, s, t;
 
-	bn_null(r);
-	bn_null(s);
-	bn_null(t);
+	bn_null_all(r, s, t);
 
 	RLC_TRY {
-		bn_new(r);
-		bn_new(s);
-		bn_new(t);
+		bn_new_all(r, s, t);
 
 		do {
 			do {
@@ -659,11 +623,7 @@ void bn_gen_prime_stron(bn_t a, size_t bits) {
 			}
 			/* Compute t = 2 * (s^(r-2) mod r) * s - 1. */
 			bn_sub_dig(t, r, 2);
-#if BN_MOD != PMERS
-			bn_mxp(t, s, t, r);
-#else
-			bn_exp(t, s, t, r);
-#endif
+			bn_prime_exp(t, s, t, r);
 
 			bn_mul(t, t, s);
 			bn_dbl(t, t);
@@ -691,9 +651,7 @@ void bn_gen_prime_stron(bn_t a, size_t bits) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(r);
-		bn_free(s);
-		bn_free(t);
+		bn_free_all(r, s, t);
 	}
 }
 
@@ -707,12 +665,10 @@ int bn_gen_prime_factor(bn_t a, bn_t b, size_t abits, size_t bbits) {
 		return RLC_ERR;
 	}
 
-	bn_null(t);
-	bn_null(u);
+	bn_null_all(t, u);
 
 	RLC_TRY {
-		bn_new(t);
-		bn_new(u);
+		bn_new_all(t, u);
 
 		bn_gen_prime(a, abits);
 		bn_set_dig(t, 1);
@@ -728,8 +684,7 @@ int bn_gen_prime_factor(bn_t a, bn_t b, size_t abits, size_t bbits) {
 		result = RLC_ERR;
 	}
 	RLC_FINALLY {
-		bn_free(t);
-		bn_free(u);
+		bn_free_all(t, u);
 	}
 
 	return result;

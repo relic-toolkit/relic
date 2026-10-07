@@ -99,11 +99,9 @@ static void util(void) {
 	dig_t raw[RLC_BN_DIGS];
 	bn_t a, b;
 
-	bn_null(a);
-	bn_null(b);
+	bn_null_all(a, b);
 
-	bn_new(a);
-	bn_new(b);
+	bn_new_all(a, b);
 
 	bn_rand(b, RLC_POS, RLC_BN_BITS);
 
@@ -289,8 +287,7 @@ static void util(void) {
 	}
 	BENCH_END;
 
-	bn_free(a);
-	bn_free(b);
+	bn_free_all(a, b);
 }
 
 static void arith(void) {
@@ -301,14 +298,10 @@ static void arith(void) {
 	size_t len;
 	uint8_t m[16];
 
-	bn_null(a);
-	bn_null(b);
-	bn_null(c);
+	bn_null_all(a, b, c);
 	crt_null(crt);
 
-	bn_new(a);
-	bn_new(b);
-	bn_new(c);
+	bn_new_all(a, b, c);
 	for (int j = 0; j < 3; j++) {
 		bn_null(d[j]);
 		bn_null(e[j]);
@@ -1105,9 +1098,7 @@ static void arith(void) {
 	}
 #endif /* WITH_EP && EP_KBLTZ */
 
-	bn_free(a);
-	bn_free(b);
-	bn_free(c);
+	bn_free_all(a, b, c);
 	for (int j = 0; j < 3; j++) {
 		bn_free(d[j]);
 		bn_free(e[j]);

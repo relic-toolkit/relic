@@ -70,18 +70,10 @@ static int util(void) {
 	uint8_t bin[RLC_CEIL(RLC_BN_BITS, 8)];
 	bn_t a, b, c, d, e;
 
-	bn_null(a);
-	bn_null(b);
-	bn_null(c);
-	bn_null(d);
-	bn_null(e);
+	bn_null_all(a, b, c, d, e);
 
 	RLC_TRY {
-		bn_new(a);
-		bn_new(b);
-		bn_new(d);
-		bn_new(e);
-		bn_new(c);
+		bn_new_all(a, b, d, e, c);
 
 		TEST_CASE("comparison is consistent") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
@@ -372,11 +364,7 @@ static int util(void) {
 	}
 	code = RLC_OK;
   end:
-	bn_free(a);
-	bn_free(b);
-	bn_free(c);
-	bn_free(d);
-	bn_free(e);
+	bn_free_all(a, b, c, d, e);
 	return code;
 }
 
@@ -384,18 +372,10 @@ static int addition(void) {
 	int code = RLC_ERR;
 	bn_t a, b, c, d, e;
 
-	bn_null(a);
-	bn_null(b);
-	bn_null(c);
-	bn_null(d);
-	bn_null(e);
+	bn_null_all(a, b, c, d, e);
 
 	RLC_TRY {
-		bn_new(a);
-		bn_new(b);
-		bn_new(c);
-		bn_new(d);
-		bn_new(e);
+		bn_new_all(a, b, c, d, e);
 
 		TEST_CASE("addition is commutative") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
@@ -437,11 +417,7 @@ static int addition(void) {
 	}
 	code = RLC_OK;
   end:
-	bn_free(a);
-	bn_free(b);
-	bn_free(c);
-	bn_free(d);
-	bn_free(e);
+	bn_free_all(a, b, c, d, e);
 	return code;
 }
 
@@ -450,16 +426,10 @@ static int subtraction(void) {
 	int s;
 	bn_t a, b, c, d;
 
-	bn_null(a);
-	bn_null(b);
-	bn_null(c);
-	bn_null(d);
+	bn_null_all(a, b, c, d);
 
 	RLC_TRY {
-		bn_new(a);
-		bn_new(b);
-		bn_new(c);
-		bn_new(d);
+		bn_new_all(a, b, c, d);
 
 		TEST_CASE("subtraction is anti-commutative") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
@@ -494,10 +464,7 @@ static int subtraction(void) {
 	}
 	code = RLC_OK;
   end:
-	bn_free(a);
-	bn_free(b);
-	bn_free(c);
-	bn_free(d);
+	bn_free_all(a, b, c, d);
 	return code;
 }
 
@@ -505,20 +472,10 @@ static int multiplication(void) {
 	int code = RLC_ERR;
 	bn_t a, b, c, d, e, f;
 
-	bn_null(a);
-	bn_null(b);
-	bn_null(c);
-	bn_null(d);
-	bn_null(e);
-	bn_null(f);
+	bn_null_all(a, b, c, d, e, f);
 
 	RLC_TRY {
-		bn_new(a);
-		bn_new(b);
-		bn_new(c);
-		bn_new(d);
-		bn_new(e);
-		bn_new(f);
+		bn_new_all(a, b, c, d, e, f);
 
 		TEST_CASE("multiplication is commutative") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS / 2);
@@ -666,12 +623,7 @@ static int multiplication(void) {
 	}
 	code = RLC_OK;
   end:
-	bn_free(a);
-	bn_free(b);
-	bn_free(c);
-	bn_free(d);
-	bn_free(e);
-	bn_free(f);
+	bn_free_all(a, b, c, d, e, f);
 	return code;
 }
 
@@ -679,14 +631,10 @@ static int squaring(void) {
 	int code = RLC_ERR;
 	bn_t a, b, c;
 
-	bn_null(a);
-	bn_null(b);
-	bn_null(c);
+	bn_null_all(a, b, c);
 
 	RLC_TRY {
-		bn_new(a);
-		bn_new(b);
-		bn_new(c);
+		bn_new_all(a, b, c);
 
 		TEST_CASE("squaring is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS / 2);
@@ -728,9 +676,7 @@ static int squaring(void) {
 	}
 	code = RLC_OK;
   end:
-	bn_free(a);
-	bn_free(b);
-	bn_free(c);
+	bn_free_all(a, b, c);
 	return code;
 }
 
@@ -738,14 +684,10 @@ static int doubling_halving(void) {
 	int code = RLC_ERR;
 	bn_t a, b, c;
 
-	bn_null(a);
-	bn_null(b);
-	bn_null(c);
+	bn_null_all(a, b, c);
 
 	RLC_TRY {
-		bn_new(a);
-		bn_new(b);
-		bn_new(c);
+		bn_new_all(a, b, c);
 
 		TEST_CASE("doubling is consistent") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS - 1);
@@ -774,9 +716,7 @@ static int doubling_halving(void) {
 	}
 	code = RLC_OK;
   end:
-	bn_free(a);
-	bn_free(b);
-	bn_free(c);
+	bn_free_all(a, b, c);
 	return code;
 }
 
@@ -784,14 +724,10 @@ static int shifting(void) {
 	int code = RLC_ERR;
 	bn_t a, b, c;
 
-	bn_null(a);
-	bn_null(b);
-	bn_null(c);
+	bn_null_all(a, b, c);
 
 	RLC_TRY {
-		bn_new(a);
-		bn_new(b);
-		bn_new(c);
+		bn_new_all(a, b, c);
 
 		TEST_CASE("shifting by 1 bit is consistent") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS - 1);
@@ -864,9 +800,7 @@ static int shifting(void) {
 	}
 	code = RLC_OK;
   end:
-	bn_free(a);
-	bn_free(b);
-	bn_free(c);
+	bn_free_all(a, b, c);
 	return code;
 }
 
@@ -874,18 +808,10 @@ static int division(void) {
 	int code = RLC_ERR;
 	bn_t a, b, c, d, e;
 
-	bn_null(a);
-	bn_null(b);
-	bn_null(c);
-	bn_null(d);
-	bn_null(e);
+	bn_null_all(a, b, c, d, e);
 
 	RLC_TRY {
-		bn_new(a);
-		bn_new(b);
-		bn_new(c);
-		bn_new(d);
-		bn_new(e);
+		bn_new_all(a, b, c, d, e);
 
 		TEST_CASE("trivial division is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS / 2);
@@ -1113,11 +1039,7 @@ static int division(void) {
 	}
 	code = RLC_OK;
   end:
-	bn_free(a);
-	bn_free(b);
-	bn_free(c);
-	bn_free(d);
-	bn_free(e);
+	bn_free_all(a, b, c, d, e);
 	return code;
 }
 
@@ -1125,18 +1047,10 @@ static int reduction(void) {
 	int code = RLC_ERR;
 	bn_t a, b, c, d, e;
 
-	bn_null(a);
-	bn_null(b);
-	bn_null(c);
-	bn_null(d);
-	bn_null(e);
+	bn_null_all(a, b, c, d, e);
 
 	RLC_TRY {
-		bn_new(a);
-		bn_new(b);
-		bn_new(c);
-		bn_new(d);
-		bn_new(e);
+		bn_new_all(a, b, c, d, e);
 
 #if BN_MOD == BASIC || !defined(STRIP)
 		TEST_CASE("basic reduction is correct") {
@@ -1245,11 +1159,7 @@ static int reduction(void) {
 	}
 	code = RLC_OK;
   end:
-	bn_free(a);
-	bn_free(b);
-	bn_free(c);
-	bn_free(d);
-	bn_free(e);
+	bn_free_all(a, b, c, d, e);
 	return code;
 }
 
@@ -1259,10 +1169,7 @@ static int exponentiation(void) {
     bn_t t[16], u[16];
 	crt_t crt;
 
-	bn_null(a);
-	bn_null(b);
-	bn_null(c);
-	bn_null(p);
+	bn_null_all(a, b, c, p);
 	crt_null(crt);
 
     for(int i = 0; i < 16; i++) {
@@ -1271,10 +1178,7 @@ static int exponentiation(void) {
     }
 
 	RLC_TRY {
-		bn_new(a);
-		bn_new(b);
-		bn_new(c);
-		bn_new(p);
+		bn_new_all(a, b, c, p);
         for(int i = 0; i < 16; i++) {
             bn_new(t[i]);
 			bn_new(u[i]);
@@ -1430,10 +1334,7 @@ static int exponentiation(void) {
 	}
 	code = RLC_OK;
   end:
-	bn_free(a);
-	bn_free(b);
-	bn_free(c);
-	bn_free(p);
+	bn_free_all(a, b, c, p);
     for(size_t i = 0; i < 16; i++) {
         bn_free(t[i]);
 		bn_free(u[i]);
@@ -1448,16 +1349,10 @@ static int square_root(void) {
 	dig_t d;
 	int code = RLC_ERR;
 
-	bn_null(a);
-	bn_null(b);
-	bn_null(c);
-	bn_null(p);
+	bn_null_all(a, b, c, p);
 
 	RLC_TRY {
-		bn_new(a);
-		bn_new(b);
-		bn_new(c);
-		bn_new(p);
+		bn_new_all(a, b, c, p);
 
 		TEST_ONCE("square root extraction is correct") {
 			for (bits = 0; bits < RLC_BN_BITS / 2; bits++) {
@@ -1584,10 +1479,7 @@ static int square_root(void) {
 	}
 	code = RLC_OK;
   end:
-	bn_free(a);
-	bn_free(b);
-	bn_free(c);
-	bn_free(p);
+	bn_free_all(a, b, c, p);
 	return code;
 }
 
@@ -1595,26 +1487,10 @@ static int gcd(void) {
 	int code = RLC_ERR;
 	bn_t a, b, c, d, e, f, g, h, l;
 
-	bn_null(a);
-	bn_null(b);
-	bn_null(c);
-	bn_null(d);
-	bn_null(e);
-	bn_null(f);
-	bn_null(g);
-	bn_null(h);
-	bn_null(l);
+	bn_null_all(a, b, c, d, e, f, g, h, l);
 
 	RLC_TRY {
-		bn_new(a);
-		bn_new(b);
-		bn_new(c);
-		bn_new(d);
-		bn_new(e);
-		bn_new(f);
-		bn_new(g);
-		bn_new(h);
-		bn_new(l);
+		bn_new_all(a, b, c, d, e, f, g, h, l);
 
 		TEST_CASE("greatest common divisor is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
@@ -1829,15 +1705,41 @@ static int gcd(void) {
 #endif
 
 		TEST_CASE("midway extended greatest common divisor is correct") {
-			bn_rand(a, RLC_POS, RLC_BN_BITS);
-			bn_rand(b, RLC_POS, RLC_BN_BITS);
-			bn_gcd_ext_mid(c, d, e, f, a, b);
-			bn_abs(d, d);
-			bn_abs(f, f);
-			bn_mul(c, c, f);
-			bn_mul(e, e, d);
-			bn_add(c, c, e);
-			TEST_ASSERT(bn_cmp(b, c) == RLC_EQ || bn_cmp(a, c) == RLC_EQ, end);
+			for (int k = 0; k < 3; k++) {
+				bn_rand(a, RLC_POS, RLC_BN_BITS);
+				/* Later passes take b below the square root of a, then zero. */
+				bn_rand(b, RLC_POS, k == 0 ? RLC_BN_BITS : RLC_BN_BITS / 4);
+				if (k == 2) {
+					bn_zero(b);
+				}
+				bn_gcd_ext_mid(c, d, e, f, a, b);
+				if (bn_cmp(a, b) == RLC_LT) {
+					bn_copy(g, b);
+					bn_copy(h, a);
+				} else {
+					bn_copy(g, a);
+					bn_copy(h, b);
+				}
+				/* Both vectors (x, y) satisfy x + y * h = 0 mod g. */
+				bn_mul(l, d, h);
+				bn_add(l, l, c);
+				bn_mod(l, l, g);
+				TEST_ASSERT(bn_is_zero(l), end);
+				bn_mul(l, f, h);
+				bn_add(l, l, e);
+				bn_mod(l, l, g);
+				TEST_ASSERT(bn_is_zero(l), end);
+				/* They are a basis of that lattice, of determinant g. */
+				bn_mul(l, c, f);
+				bn_mul(h, d, e);
+				bn_sub(l, l, h);
+				TEST_ASSERT(bn_cmp_abs(l, g) == RLC_EQ, end);
+				/* The first one has coordinates at most 2 * sqrt(g). */
+				bn_srt(l, g);
+				bn_dbl(l, l);
+				TEST_ASSERT(bn_cmp_abs(c, l) != RLC_GT, end);
+				TEST_ASSERT(bn_cmp_abs(d, l) != RLC_GT, end);
+			}
 		} TEST_END;
 
 		TEST_CASE("partial extended greatest common divisor is correct") {
@@ -1856,15 +1758,7 @@ static int gcd(void) {
 	}
 	code = RLC_OK;
   end:
-	bn_free(a);
-	bn_free(b);
-	bn_free(c);
-	bn_free(d);
-	bn_free(e);
-	bn_free(f);
-	bn_free(g);
-	bn_free(h);
-	bn_free(l);
+	bn_free_all(a, b, c, d, e, f, g, h, l);
 	return code;
 }
 
@@ -1872,14 +1766,10 @@ static int lcm(void) {
 	int code = RLC_ERR;
 	bn_t a, b, c;
 
-	bn_null(a);
-	bn_null(b);
-	bn_null(c);
+	bn_null_all(a, b, c);
 
 	RLC_TRY {
-		bn_new(a);
-		bn_new(b);
-		bn_new(c);
+		bn_new_all(a, b, c);
 
 		TEST_CASE("least common multiple is correct") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
@@ -1895,9 +1785,7 @@ static int lcm(void) {
 	}
 	code = RLC_OK;
   end:
-	bn_free(a);
-	bn_free(b);
-	bn_free(c);
+	bn_free_all(a, b, c);
 	return code;
 }
 
@@ -1905,18 +1793,10 @@ static int symbol(void) {
 	int r, code = RLC_ERR;
 	bn_t a, b, c, p, q;
 
-	bn_null(a);
-	bn_null(b);
-	bn_null(c);
-	bn_null(p);
-	bn_null(q);
+	bn_null_all(a, b, c, p, q);
 
 	RLC_TRY {
-		bn_new(a);
-		bn_new(b);
-		bn_new(c);
-		bn_new(p);
-		bn_new(q);
+		bn_new_all(a, b, c, p, q);
 
 		do {
 			bn_gen_prime(p, RLC_BN_BITS);
@@ -2102,11 +1982,7 @@ static int symbol(void) {
 	}
 	code = RLC_OK;
   end:
-	bn_free(a);
-	bn_free(b);
-	bn_free(c);
-	bn_free(p);
-	bn_free(q);
+	bn_free_all(a, b, c, p, q);
 	return code;
 }
 
@@ -2115,20 +1991,10 @@ static int digit(void) {
 	bn_t a, b, c, d, e, f;
 	dig_t g;
 
-	bn_null(a);
-	bn_null(b);
-	bn_null(c);
-	bn_null(d);
-	bn_null(e);
-	bn_null(f);
+	bn_null_all(a, b, c, d, e, f);
 
 	RLC_TRY {
-		bn_new(a);
-		bn_new(b);
-		bn_new(c);
-		bn_new(d);
-		bn_new(e);
-		bn_new(f);
+		bn_new_all(a, b, c, d, e, f);
 
 		TEST_CASE("addition of a single digit is consistent") {
 			bn_rand(a, RLC_POS, RLC_BN_BITS);
@@ -2246,12 +2112,7 @@ static int digit(void) {
 	}
 	code = RLC_OK;
   end:
-	bn_free(a);
-	bn_free(b);
-	bn_free(c);
-	bn_free(d);
-	bn_free(e);
-	bn_free(f);
+	bn_free_all(a, b, c, d, e, f);
 	return code;
 }
 
@@ -2260,12 +2121,10 @@ static int prime(void) {
 	bn_t p, q;
 	uint8_t msg[16];
 
-	bn_null(p);
-	bn_null(q);
+	bn_null_all(p, q);
 
 	RLC_TRY {
-		bn_new(p);
-		bn_new(q);
+		bn_new_all(p, q);
 
 		TEST_ONCE("hashing to prime is consistent") {
 			rand_bytes(msg, sizeof(msg));
@@ -2337,8 +2196,7 @@ static int prime(void) {
 	}
 	code = RLC_OK;
   end:
-	bn_free(p);
-	bn_free(q);
+	bn_free_all(p, q);
 	return code;
 }
 
@@ -2448,16 +2306,12 @@ static int inversion(void) {
 	int code = RLC_ERR;
 	bn_t a, b, c, d[2];
 
-	bn_null(a);
-	bn_null(b);
-	bn_null(c);
+	bn_null_all(a, b, c);
 	bn_null(d[0]);
 	bn_null(d[1]);
 
 	RLC_TRY {
-		bn_new(a);
-		bn_new(b);
-		bn_new(c);
+		bn_new_all(a, b, c);
 		bn_new(d[0]);
 		bn_new(d[1]);
 
@@ -2488,9 +2342,7 @@ static int inversion(void) {
 	}
 	code = RLC_OK;
   end:
-	bn_free(a);
-	bn_free(b);
-	bn_free(c);
+	bn_free_all(a, b, c);
 	bn_free(d[0]);
 	bn_free(d[1]);
 	return code;
@@ -2500,14 +2352,10 @@ static int factor(void) {
 	int code = RLC_ERR;
 	bn_t p, q, n;
 
-	bn_null(p);
-	bn_null(q);
-	bn_null(n);
+	bn_null_all(p, q, n);
 
 	RLC_TRY {
-		bn_new(p);
-		bn_new(q);
-		bn_new(n);
+		bn_new_all(p, q, n);
 
 		TEST_ONCE("integer factorization is consistent") {
 			bn_gen_prime(p, 16);
@@ -2525,9 +2373,7 @@ static int factor(void) {
 	}
 	code = RLC_OK;
   end:
-	bn_free(p);
-	bn_free(q);
-	bn_free(n);
+	bn_free_all(p, q, n);
 	return code;
 }
 
@@ -2543,9 +2389,7 @@ static int interpolation(void) {
 	for (k = 0; k < 5; k++) {
 		bn_null(c[k]);
 	}
-	bn_null(b);
-	bn_null(x);
-	bn_null(y);
+	bn_null_all(b, x, y);
 
 	RLC_TRY {
 		for (k = 0; k < 4; k++) {
@@ -2554,9 +2398,7 @@ static int interpolation(void) {
 		for (k = 0; k < 5; k++) {
 			bn_new(c[k]);
 		}
-		bn_new(b);
-		bn_new(x);
-		bn_new(y);
+		bn_new_all(b, x, y);
 
 		bn_rand(b, RLC_POS, RLC_BN_BITS);
 
@@ -2587,9 +2429,7 @@ static int interpolation(void) {
 	for (k = 0; k < 5; k++) {
 		bn_free(c[k]);
 	}
-	bn_free(b);
-	bn_free(x);
-	bn_free(y);
+	bn_free_all(b, x, y);
 	return code;
 }
 
@@ -2601,18 +2441,14 @@ static int recoding(void) {
 	int8_t e[2 * (RLC_BN_BITS + 1)];
 	size_t l;
 
-	bn_null(a);
-	bn_null(b);
-	bn_null(c);
+	bn_null_all(a, b, c);
 	for (k = 0; k < 3; k++) {
 		bn_null(v1[k]);
 		bn_null(v2[k]);
 	}
 
 	RLC_TRY {
-		bn_new(a);
-		bn_new(b);
-		bn_new(c);
+		bn_new_all(a, b, c);
 		for (k = 0; k < 3; k++) {
 			bn_new(v1[k]);
 			bn_new(v2[k]);
@@ -2917,9 +2753,7 @@ static int recoding(void) {
 	}
 	code = RLC_OK;
   end:
-	bn_free(a);
-	bn_free(b);
-	bn_free(c);
+	bn_free_all(a, b, c);
 	for (k = 0; k < 3; k++) {
 		bn_free(v1[k]);
 		bn_free(v2[k]);

@@ -201,12 +201,10 @@ void bn_gcd_basic(bn_t c, const bn_t a, const bn_t b) {
 		return;
 	}
 
-	bn_null(u);
-	bn_null(v);
+	bn_null_all(u, v);
 
 	RLC_TRY {
-		bn_new(u);
-		bn_new(v);
+		bn_new_all(u, v);
 
 		bn_abs(u, a);
 		bn_abs(v, b);
@@ -220,8 +218,7 @@ void bn_gcd_basic(bn_t c, const bn_t a, const bn_t b) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(u);
-		bn_free(v);
+		bn_free_all(u, v);
 	}
 }
 
@@ -232,22 +229,10 @@ void bn_gcd_ext_basic(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 		return;
 	}
 
-	bn_null(t);
-	bn_null(u);
-	bn_null(v);
-	bn_null(x_1);
-	bn_null(y_1);
-	bn_null(q);
-	bn_null(r);
+	bn_null_all(t, u, v, x_1, y_1, q, r);
 
 	RLC_TRY {
-		bn_new(t);
-		bn_new(u);
-		bn_new(v);
-		bn_new(x_1);
-		bn_new(y_1);
-		bn_new(q);
-		bn_new(r);
+		bn_new_all(t, u, v, x_1, y_1, q, r);
 
 		bn_abs(u, a);
 		bn_abs(v, b);
@@ -289,13 +274,7 @@ void bn_gcd_ext_basic(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(t);
-		bn_free(u);
-		bn_free(v);
-		bn_free(x_1);
-		bn_free(y_1);
-		bn_free(q);
-		bn_free(r);
+		bn_free_all(t, u, v, x_1, y_1, q, r);
 	}
 }
 
@@ -318,27 +297,13 @@ void bn_gcd_lehme(bn_t c, const bn_t a, const bn_t b) {
 		return;
 	}
 
-	bn_null(x);
-	bn_null(y);
-	bn_null(u);
-	bn_null(v);
-	bn_null(t0);
-	bn_null(t1);
-	bn_null(t2);
-	bn_null(t3);
+	bn_null_all(x, y, u, v, t0, t1, t2, t3);
 
 	/*
 	 * Taken from Handbook of Hyperelliptic and Elliptic Cryptography.
 	 */
 	RLC_TRY {
-		bn_new(x);
-		bn_new(y);
-		bn_new(u);
-		bn_new(v);
-		bn_new(t0);
-		bn_new(t1);
-		bn_new(t2);
-		bn_new(t3);
+		bn_new_all(x, y, u, v, t0, t1, t2, t3);
 
 		if (bn_cmp_abs(a, b) == RLC_GT) {
 			bn_abs(x, a);
@@ -402,14 +367,7 @@ void bn_gcd_lehme(bn_t c, const bn_t a, const bn_t b) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(x);
-		bn_free(y);
-		bn_free(u);
-		bn_free(v);
-		bn_free(t0);
-		bn_free(t1);
-		bn_free(t2);
-		bn_free(t3);
+		bn_free_all(x, y, u, v, t0, t1, t2, t3);
 	}
 }
 
@@ -423,29 +381,13 @@ void bn_gcd_ext_lehme(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 		return;
 	}
 
-	bn_null(x);
-	bn_null(y);
-	bn_null(u);
-	bn_null(v);
-	bn_null(t0);
-	bn_null(t1);
-	bn_null(t2);
-	bn_null(t3);
-	bn_null(t4);
+	bn_null_all(x, y, u, v, t0, t1, t2, t3, t4);
 
 	/*
 	 * Taken from Handbook of Hyperelliptic and Elliptic Cryptography.
 	 */
 	RLC_TRY {
-		bn_new(x);
-		bn_new(y);
-		bn_new(u);
-		bn_new(v);
-		bn_new(t0);
-		bn_new(t1);
-		bn_new(t2);
-		bn_new(t3);
-		bn_new(t4);
+		bn_new_all(x, y, u, v, t0, t1, t2, t3, t4);
 
 		if (bn_cmp_abs(a, b) != RLC_LT) {
 			bn_abs(x, a);
@@ -565,15 +507,7 @@ void bn_gcd_ext_lehme(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(x);
-		bn_free(y);
-		bn_free(u);
-		bn_free(v);
-		bn_free(t0);
-		bn_free(t1);
-		bn_free(t2);
-		bn_free(t3);
-		bn_free(t4);
+		bn_free_all(x, y, u, v, t0, t1, t2, t3, t4);
 	}
 }
 
@@ -595,14 +529,10 @@ void bn_gcd_binar(bn_t c, const bn_t a, const bn_t b) {
 		return;
 	}
 
-	bn_null(u);
-	bn_null(v);
-	bn_null(t);
+	bn_null_all(u, v, t);
 
 	RLC_TRY {
-		bn_new(u);
-		bn_new(v);
-		bn_new(t);
+		bn_new_all(u, v, t);
 
 		bn_abs(u, a);
 		bn_abs(v, b);
@@ -635,9 +565,7 @@ void bn_gcd_binar(bn_t c, const bn_t a, const bn_t b) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(u);
-		bn_free(v);
-		bn_free(t);
+		bn_free_all(u, v, t);
 	}
 }
 
@@ -649,24 +577,10 @@ void bn_gcd_ext_binar(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 		return;
 	}
 
-	bn_null(x);
-	bn_null(y);
-	bn_null(t);
-	bn_null(u);
-	bn_null(v);
-	bn_null(_a);
-	bn_null(_b);
-	bn_null(_e);
+	bn_null_all(x, y, t, u, v, _a, _b, _e);
 
 	RLC_TRY {
-		bn_new(x);
-		bn_new(y);
-		bn_new(t);
-		bn_new(u);
-		bn_new(v);
-		bn_new(_a);
-		bn_new(_b);
-		bn_new(_e);
+		bn_new_all(x, y, t, u, v, _a, _b, _e);
 
 		bn_abs(x, a);
 		bn_abs(y, b);
@@ -770,14 +684,7 @@ void bn_gcd_ext_binar(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(x);
-		bn_free(y);
-		bn_free(t);
-		bn_free(u);
-		bn_free(v);
-		bn_free(_a);
-		bn_free(_b);
-		bn_free(_e);
+		bn_free_all(x, y, t, u, v, _a, _b, _e);
 	}
 }
 
@@ -798,14 +705,10 @@ void bn_gcd_lower(bn_t c, const bn_t a, const bn_t b) {
 		return;
 	}
 
-	bn_null(u);
-	bn_null(v);
-	bn_null(g);
+	bn_null_all(u, v, g);
 
 	RLC_TRY {
-		bn_new(u);
-		bn_new(v);
-		bn_new(g);
+		bn_new_all(u, v, g);
 
 		if (a->used >= b->used) {
 			bn_abs(u, a);
@@ -836,9 +739,7 @@ void bn_gcd_lower(bn_t c, const bn_t a, const bn_t b) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(u);
-		bn_free(v);
-		bn_free(g);
+		bn_free_all(u, v, g);
 	}
 }
 
@@ -855,18 +756,10 @@ void bn_gcd_ext_lower(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 	sgn_a = bn_sign(a);
 	sgn_b = bn_sign(b);
 
-	bn_null(u);
-	bn_null(v);
-	bn_null(g);
-	bn_null(s);
-	bn_null(t);
+	bn_null_all(u, v, g, s, t);
  
 	RLC_TRY {
-		bn_new(u);
-		bn_new(v);
-		bn_new(g);
-		bn_new(s);
-		bn_new(t);
+		bn_new_all(u, v, g, s, t);
  
 		/*
 		 * un >= vn is a requirement on the limb counts, not on the values.
@@ -935,129 +828,11 @@ void bn_gcd_ext_lower(bn_t c, bn_t d, bn_t e, const bn_t a, const bn_t b) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(u);
-		bn_free(v);
-		bn_free(g);
-		bn_free(s);
-		bn_free(t);
+		bn_free_all(u, v, g, s, t);
 	}
 }
 
 #endif
-
-void bn_gcd_ext_mid(bn_t c, bn_t d, bn_t e, bn_t f, const bn_t a, const bn_t b) {
-	bn_t p, q, r, s, t, u, v, x, w, y, z;
-
-	if (bn_is_zero(a)) {
-		bn_abs(c, b);
-		bn_zero(d);
-		bn_zero(e);
-		return;
-	}
-
-	if (bn_is_zero(b)) {
-		bn_abs(c, a);
-		bn_set_dig(d, 1);
-		bn_set_dig(e, 1);
-		return;
-	}
-
-	bn_null(p);
-	bn_null(q);
-	bn_null(r);
-	bn_null(s);
-	bn_null(t);
-	bn_null(u);
-	bn_null(v);
-	bn_null(x);
-	bn_null(w);
-	bn_null(y);
-	bn_null(z);
-
-	RLC_TRY {
-		bn_new(p);
-		bn_new(q);
-		bn_new(r);
-		bn_new(s);
-		bn_new(t);
-		bn_new(u);
-		bn_new(v);
-		bn_new(x);
-		bn_new(w);
-		bn_new(y);
-		bn_new(z);
-
-		if (bn_cmp_abs(a, b) == RLC_GT) {
-			bn_abs(u, a);
-			bn_abs(v, b);
-		} else {
-			bn_abs(u, b);
-			bn_abs(v, a);
-		}
-
-		bn_srt(p, u);
-
-		bn_set_dig(x, 1);
-		bn_zero(t);
-
-		int wait = 0;
-		while (!bn_is_zero(v)) {
-			bn_div_rem(q, r, u, v);
-
-			bn_copy(u, v);
-			bn_copy(v, r);
-
-			bn_mul(s, q, x);
-			bn_sub(s, t, s);
-			bn_copy(t, x);
-			bn_copy(x, s);
-
-			if (wait) {
-				bn_copy(e, r);
-				bn_neg(f, x);
-				wait = 0;
-			}
-			if (bn_cmp(u, p) != RLC_LT) {
-				bn_copy(c, r);
-				bn_neg(d, x);
-				bn_copy(w, u);
-				bn_neg(y, t);
-				wait = 1;
-			}
-		}
-		/* Compute r as the norm of vector (w, y). */
-		bn_sqr(s, w);
-		bn_sqr(t, y);
-		bn_add(t, t, s);
-
-		/* Compute q as the norm of vector (e, f). */
-		bn_sqr(r, e);
-		bn_sqr(q, f);
-		bn_add(q, q, r);
-
-		/* Output (e, f) as the vector of smaller norm. */
-		if (bn_cmp(t, q) == RLC_LT) {
-			bn_copy(e, w);
-			bn_copy(f, y);
-		}
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		bn_free(p);
-		bn_free(q);
-		bn_free(r);
-		bn_free(s);
-		bn_free(t);
-		bn_free(u);
-		bn_free(v);
-		bn_free(x);
-		bn_free(w);
-		bn_free(y);
-		bn_free(z);
-	}
-}
 
 void bn_gcd_ext_par(bn_t c, bn_t d, bn_t u00, bn_t u01, bn_t u10, bn_t u11,
 		const bn_t a, const bn_t b, const bn_t l) {
@@ -1066,22 +841,10 @@ void bn_gcd_ext_par(bn_t c, bn_t d, bn_t u00, bn_t u01, bn_t u10, bn_t u11,
 	int c_big, steps;
 	int flag = 0;
 
-	bn_null(q);
-	bn_null(t0);
-	bn_null(t1);
-	bn_null(t2);
-	bn_null(t3);
-	bn_null(t4);
-	bn_null(t5);
+	bn_null_all(q, t0, t1, t2, t3, t4, t5);
 
 	RLC_TRY {
-		bn_new(q);
-		bn_new(t0);
-		bn_new(t1);
-		bn_new(t2);
-		bn_new(t3);
-		bn_new(t4);
-		bn_new(t5);
+		bn_new_all(q, t0, t1, t2, t3, t4, t5);
 
 		bn_set_dig(u00, 1);
 		bn_zero(u01);
@@ -1226,13 +989,89 @@ void bn_gcd_ext_par(bn_t c, bn_t d, bn_t u00, bn_t u01, bn_t u10, bn_t u11,
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(q);
-		bn_free(t0);
-		bn_free(t1);
-		bn_free(t2);
-		bn_free(t3);
-		bn_free(t4);
-		bn_free(t5);
+		bn_free_all(q, t0, t1, t2, t3, t4, t5);
+	}
+}
+
+void bn_gcd_ext_mid(bn_t c, bn_t d, bn_t e, bn_t f, const bn_t a, const bn_t b) {
+	bn_t n, l, p, s, r0, r1, t0, t1, u00, u01, u10, u11;
+
+	if (bn_is_zero(a) || bn_is_zero(b)) {
+		/* The lattice is then x = 0 mod |a| + |b|, which (0, -1) and
+		 * (|a| + |b|, 0) span. The input is read first in case e aliases it. */
+		bn_abs(e, bn_is_zero(a) ? b : a);
+		bn_zero(c);
+		bn_set_dig(d, 1);
+		bn_neg(d, d);
+		bn_zero(f);
+		return;
+	}
+
+	bn_null_all(n, l, p, s, r0, r1, t0, t1, u00, u01, u10, u11);
+
+	RLC_TRY {
+		bn_new_all(n, l, p, s, r0, r1, t0, t1, u00, u01, u10, u11);
+
+		if (bn_cmp_abs(a, b) == RLC_GT) {
+			bn_abs(n, a);
+			bn_abs(l, b);
+		} else {
+			bn_abs(n, b);
+			bn_abs(l, a);
+		}
+
+		/*
+		 * Along the remainders r_i = t_i * l mod n, with r_m the last one at
+		 * least sqrt(n), the vectors are (r_{m+1}, -t_{m+1}) and the shorter of
+		 * (r_m, -t_m) and (r_{m+2}, -t_{m+2}). Bounding the partial GCD a digit
+		 * above sqrt(n) stops it short of them, except after a quotient of more
+		 * than a digit, which overshoots by one step and is rare enough to
+		 * handle by starting over from (n, l).
+		 */
+		bn_srt(p, n);
+		bn_lsh(s, p, RLC_DIG);
+		bn_gcd_ext_par(r0, r1, u00, u01, u10, u11, n, l, s);
+		/* Here r0 = u11 * n - u01 * l and r1 = u00 * l - u10 * n. */
+		bn_neg(t0, u01);
+		bn_copy(t1, u00);
+		if (bn_cmp(r0, r1) == RLC_LT) {
+			bn_swap(r0, r1);
+			bn_swap(t0, t1);
+		}
+		if (bn_cmp(r0, p) == RLC_LT) {
+			bn_copy(r0, n);
+			bn_zero(t0);
+			bn_copy(r1, l);
+			bn_set_dig(t1, 1);
+		}
+		/* Step until r0 = r_{m+1}, keeping (r_m, -t_m) in (e, f). */
+		while (bn_cmp(r0, p) != RLC_LT && !bn_is_zero(r1)) {
+			bn_copy(e, r0);
+			bn_neg(f, t0);
+			bn_div_rem(s, r0, r0, r1);
+			bn_swap(r0, r1);
+			bn_mul(u00, s, t1);
+			bn_sub(t0, t0, u00);
+			bn_swap(t0, t1);
+		}
+		bn_copy(c, r0);
+		bn_neg(d, t0);
+		bn_sqr(u00, e);
+		bn_sqr(u01, f);
+		bn_add(u00, u00, u01);
+		bn_sqr(u10, r1);
+		bn_sqr(u11, t1);
+		bn_add(u10, u10, u11);
+		if (bn_cmp(u00, u10) != RLC_LT) {
+			bn_copy(e, r1);
+			bn_neg(f, t1);
+		}
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		bn_free_all(n, l, p, s, r0, r1, t0, t1, u00, u01, u10, u11);
 	}
 }
 
@@ -1287,20 +1126,10 @@ void bn_gcd_ext_dig(bn_t c, bn_t d, bn_t e, const bn_t a, const dig_t b) {
 		return;
 	}
 
-	bn_null(u);
-	bn_null(v);
-	bn_null(x1);
-	bn_null(y1);
-	bn_null(q);
-	bn_null(r);
+	bn_null_all(u, v, x1, y1, q, r);
 
 	RLC_TRY {
-		bn_new(u);
-		bn_new(v);
-		bn_new(x1);
-		bn_new(y1);
-		bn_new(q);
-		bn_new(r);
+		bn_new_all(u, v, x1, y1, q, r);
 
 		bn_abs(u, a);
 		bn_set_dig(v, b);
@@ -1357,11 +1186,6 @@ void bn_gcd_ext_dig(bn_t c, bn_t d, bn_t e, const bn_t a, const dig_t b) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(u);
-		bn_free(v);
-		bn_free(x1);
-		bn_free(y1);
-		bn_free(q);
-		bn_free(r);
+		bn_free_all(u, v, x1, y1, q, r);
 	}
 }

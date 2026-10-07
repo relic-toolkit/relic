@@ -38,12 +38,10 @@
 void bn_lcm(bn_t c, const bn_t a, const bn_t b) {
 	bn_t u, v;
 
-	bn_null(u);
-	bn_null(v);
+	bn_null_all(u, v);
 
 	RLC_TRY {
-		bn_new(u);
-		bn_new(v);
+		bn_new_all(u, v);
 
 		bn_gcd(u, a, b);
 
@@ -60,7 +58,6 @@ void bn_lcm(bn_t c, const bn_t a, const bn_t b) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(u);
-		bn_free(v);
+		bn_free_all(u, v);
 	}
 }

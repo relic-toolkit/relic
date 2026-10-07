@@ -223,6 +223,18 @@ typedef crt_st *crt_t;
 #endif
 
 /**
+ * Initializes, allocates or frees up to sixteen multiple precision integers
+ * at once, in order.
+ *
+ * @param[in,out] ...		- the multiple precision integers.
+ */
+/** @{ */
+#define bn_null_all(...)	RLC_EACH(bn_null, __VA_ARGS__)
+#define bn_new_all(...)		RLC_EACH(bn_new, __VA_ARGS__)
+#define bn_free_all(...)	RLC_EACH(bn_free, __VA_ARGS__)
+/** @} */
+
+/**
  * Initializes a Chinese Remainder Theorem (CRT) moduli set with a null value.
  *
  * @param[out] A			- the moduli to initialize.

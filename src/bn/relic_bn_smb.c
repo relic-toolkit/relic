@@ -83,10 +83,7 @@ int bn_smb_jac(const bn_t a, const bn_t b) {
 	uint_t z, i, s = (RLC_DIG >> 1) - 2;
 	int r;
 
-	bn_null(t0);
-	bn_null(t1);
-	bn_null(t2);
-	bn_null(t3);
+	bn_null_all(t0, t1, t2, t3);
 
 	/* Optimized Pornin's Algorithm by Aleksei Vambol from
 	 * https://github.com/privacy-scaling-explorations/halo2curves/pull/95 */
@@ -98,10 +95,7 @@ int bn_smb_jac(const bn_t a, const bn_t b) {
 	}
 
 	RLC_TRY {
-		bn_new(t0);
-		bn_new(t1);
-		bn_new(t2);
-		bn_new(t3);
+		bn_new_all(t0, t1, t2, t3);
 
 		bn_mod(t0, a, b);
 		bn_copy(t1, b);
@@ -173,32 +167,12 @@ int bn_smb_jac(const bn_t a, const bn_t b) {
 				}
 			}
 
-			if (ai < 0) {
-				bn_mul_dig(t2, t0, -ai);
-				bn_neg(t2, t2);
-			} else {
-				bn_mul_dig(t2, t0, ai);
-			}
-			if (bi < 0) {
-				bn_mul_dig(t3, t1, -bi);
-				bn_neg(t3, t3);
-			} else {
-				bn_mul_dig(t3, t1, bi);
-			}
+			bn_mul_dis(t2, t0, ai);
+			bn_mul_dis(t3, t1, bi);
 			bn_add(t3, t3, t2);
 
-			if (ci < 0) {
-				bn_mul_dig(t2, t0, -ci);
-				bn_neg(t2, t2);
-			} else {
-				bn_mul_dig(t2, t0, ci);
-			}
-			if (di < 0) {
-				bn_mul_dig(t1, t1, -di);
-				bn_neg(t1, t1);
-			} else {
-				bn_mul_dig(t1, t1, di);
-			}
+			bn_mul_dis(t2, t0, ci);
+			bn_mul_dis(t1, t1, di);
 			bn_add(t1, t1, t2);
 			bn_rsh(t1, t1, s);
 			bn_rsh(t0, t3, s);
@@ -221,10 +195,7 @@ int bn_smb_jac(const bn_t a, const bn_t b) {
 		RLC_THROW(ERR_CAUGHT);
 	}
 	RLC_FINALLY {
-		bn_free(t0);
-		bn_free(t1);
-		bn_free(t2);
-		bn_free(t3);
+		bn_free_all(t0, t1, t2, t3);
 	}
 
 	return r;
