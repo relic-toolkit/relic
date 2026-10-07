@@ -37,34 +37,7 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void fp2_copy(fp2_t c, const fp2_t a) {
-	fp_copy(c[0], a[0]);
-	fp_copy(c[1], a[1]);
-}
-
-void fp2_copy_sec(fp2_t c, const fp2_t a, dig_t bit) {
-	fp_copy_sec(c[0], a[0], bit);
-	fp_copy_sec(c[1], a[1], bit);
-}
-
-void fp2_zero(fp2_t a) {
-	fp_zero(a[0]);
-	fp_zero(a[1]);
-}
-
-int fp2_is_zero(const fp2_t a) {
-	return fp_is_zero(a[0]) && fp_is_zero(a[1]);
-}
-
-void fp2_rand(fp2_t a) {
-	fp_rand(a[0]);
-	fp_rand(a[1]);
-}
-
-void fp2_print(const fp2_t a) {
-	fp_print(a[0]);
-	fp_print(a[1]);
-}
+TMPL_FPX_UTIL(fp2, fp, 2);
 
 int fp2_size_bin(const fp2_t a, int pack) {
 	if (pack) {
@@ -129,44 +102,7 @@ void fp2_write_bin(uint8_t *bin, size_t len, const fp2_t a, int pack) {
 	}
 }
 
-void fp2_set_dig(fp2_t a, const dig_t b) {
-	fp_set_dig(a[0], b);
-	fp_zero(a[1]);
-}
-
-void fp3_copy(fp3_t c, const fp3_t a) {
-	fp_copy(c[0], a[0]);
-	fp_copy(c[1], a[1]);
-	fp_copy(c[2], a[2]);
-}
-
-void fp3_copy_sec(fp3_t c, const fp3_t a, dig_t bit) {
-	fp_copy_sec(c[0], a[0], bit);
-	fp_copy_sec(c[1], a[1], bit);
-	fp_copy_sec(c[2], a[2], bit);
-}
-
-void fp3_zero(fp3_t a) {
-	fp_zero(a[0]);
-	fp_zero(a[1]);
-	fp_zero(a[2]);
-}
-
-int fp3_is_zero(const fp3_t a) {
-	return fp_is_zero(a[0]) && fp_is_zero(a[1]) && fp_is_zero(a[2]);
-}
-
-void fp3_rand(fp3_t a) {
-	fp_rand(a[0]);
-	fp_rand(a[1]);
-	fp_rand(a[2]);
-}
-
-void fp3_print(const fp3_t a) {
-	fp_print(a[0]);
-	fp_print(a[1]);
-	fp_print(a[2]);
-}
+TMPL_FPX_UTIL(fp3, fp, 3);
 
 int fp3_size_bin(const fp3_t a) {
 	(void)a;
@@ -191,12 +127,6 @@ void fp3_write_bin(uint8_t *bin, size_t len, const fp3_t a) {
 	fp_write_bin(bin, RLC_FP_BYTES, a[0]);
 	fp_write_bin(bin + RLC_FP_BYTES, RLC_FP_BYTES, a[1]);
 	fp_write_bin(bin + 2 * RLC_FP_BYTES, RLC_FP_BYTES, a[2]);
-}
-
-void fp3_set_dig(fp3_t a, const dig_t b) {
-	fp_set_dig(a[0], b);
-	fp_zero(a[1]);
-	fp_zero(a[2]);
 }
 
 TMPL_FPX_UTIL(fp4, fp2, 2);

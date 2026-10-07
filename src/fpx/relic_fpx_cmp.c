@@ -37,25 +37,9 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-int fp2_cmp(const fp2_t a, const fp2_t b) {
-	return (fp_cmp(a[0], b[0]) == RLC_EQ) && (fp_cmp(a[1], b[1]) == RLC_EQ) ?
-			RLC_EQ : RLC_NE;
-}
+TMPL_FPX_CMP(fp2, fp, 2);
 
-int fp2_cmp_dig(const fp2_t a, const dig_t b) {
-	return (fp_cmp_dig(a[0], b) == RLC_EQ) && fp_is_zero(a[1]) ?
-			RLC_EQ : RLC_NE;
-}
-
-int fp3_cmp(const fp3_t a, const fp3_t b) {
-	return (fp_cmp(a[0], b[0]) == RLC_EQ) && (fp_cmp(a[1], b[1]) == RLC_EQ) &&
-			(fp_cmp(a[2], b[2]) == RLC_EQ) ? RLC_EQ : RLC_NE;
-}
-
-int fp3_cmp_dig(const fp3_t a, const dig_t b) {
-	return (fp_cmp_dig(a[0], b) == RLC_EQ) && fp_is_zero(a[1]) &&
-			fp_is_zero(a[2]) ? RLC_EQ : RLC_NE;
-}
+TMPL_FPX_CMP(fp3, fp, 3);
 
 TMPL_FPX_CMP(fp4, fp2, 2);
 
