@@ -652,6 +652,91 @@
 	}
 
 /**
+ * Defines a template for computing square roots in a quadratic extension field,
+ * using the norm to reduce to square roots in the subfield.
+ *
+ * @param[in] X			- the extension field prefix.
+ * @param[in] S			- the subfield prefix.
+ * @param[in] NOR		- the multiplication by the non-residue in the subfield.
+ * @param[in] H			- the number of prime field coefficients in the subfield.
+ */
+#define TMPL_FPX_SRT_QUAD(X, S, NOR, H)										\
+	int X##_srt(X##_t c, const X##_t a) {									\
+		int c0, r = 0;														\
+		S##_t t0, t1, t2;													\
+																			\
+		S##_null_all(t0, t1, t2);											\
+																			\
+		if (X##_is_zero(a)) {												\
+			X##_zero(c);													\
+			return 1;														\
+		}																	\
+																			\
+		RLC_TRY {															\
+			S##_new_all(t0, t1, t2);										\
+																			\
+			if (S##_is_zero(a[1])) {										\
+				/* Either a[0] is a square and the root is purely 'real',	\
+				 * or it is not and the root is purely 'imaginary'. */		\
+				r = 1;														\
+				if (S##_is_sqr(a[0])) {										\
+					S##_srt(c[0], a[0]);									\
+					S##_zero(c[1]);											\
+				} else {													\
+					/* Compute a[0]/s^2. */									\
+					S##_set_dig(t0, 1);										\
+					NOR(t0, t0);											\
+					S##_inv(t0, t0);										\
+					S##_mul(t0, a[0], t0);									\
+					S##_zero(c[0]);											\
+					if (!S##_srt(c[1], t0)) {								\
+						/* should never happen! */							\
+						RLC_THROW(ERR_NO_VALID);							\
+					}														\
+				}															\
+			} else {														\
+				/* t0 = a[0]^2 - s^2 * a[1]^2 */							\
+				S##_sqr(t0, a[0]);											\
+				S##_sqr(t1, a[1]);											\
+				NOR(t2, t1);												\
+				S##_sub(t0, t0, t2);										\
+																			\
+				if (S##_is_sqr(t0)) {										\
+					S##_srt(t1, t0);										\
+					/* t0 = (a_0 + sqrt(t0)) / 2 */							\
+					S##_add(t0, a[0], t1);									\
+					for (int i = 0; i < (H); i++) {							\
+						fp_hlv(((fp_t *)t0)[i], ((fp_t *)t0)[i]);			\
+					}														\
+					c0 = S##_is_sqr(t0);									\
+					/* t0 = (a_0 - sqrt(t0)) / 2 */							\
+					S##_sub(t1, a[0], t1);									\
+					for (int i = 0; i < (H); i++) {							\
+						fp_hlv(((fp_t *)t1)[i], ((fp_t *)t1)[i]);			\
+					}														\
+					S##_copy_sec(t0, t1, !c0);								\
+					/* Should always be a quadratic residue. */				\
+					S##_srt(t2, t0);										\
+					/* c_0 = sqrt(t0) */									\
+					S##_copy(c[0], t2);										\
+																			\
+					/* c_1 = a_1 / (2 * sqrt(t0)) */						\
+					S##_dbl(t2, t2);										\
+					S##_inv(t2, t2);										\
+					S##_mul(c[1], a[1], t2);								\
+					r = 1;													\
+				}															\
+			}																\
+		} RLC_CATCH_ANY {													\
+			r = 0;															\
+			RLC_THROW(ERR_CAUGHT);											\
+		} RLC_FINALLY {														\
+			S##_free_all(t0, t1, t2);										\
+		}																	\
+		return r;															\
+	}
+
+/**
  * Defines a template for multiplication with lazy reduction, computing the
  * result without reduction and reducing each base field component once.
  *
