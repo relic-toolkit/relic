@@ -431,23 +431,6 @@ void fp2_sqr_integ(fp2_t c, const fp2_t a) {
 
 #endif
 
-#if PP_QDR == BASIC || !defined(STRIP)
-
-void fp2_rdc_basic(fp2_t c, dv2_t a) {
-	fp_rdc(c[0], a[0]);
-	fp_rdc(c[1], a[1]);
-}
-
-#endif
-
-#if PP_QDR == INTEG || !defined(STRIP)
-
-void fp2_rdc_integ(fp2_t c, dv2_t a) {
-	fp2_rdcn_low(c, a);
-}
-
-#endif
-
 void fp2_inv(fp2_t c, const fp2_t a) {
 	fp_t t0, t1;
 

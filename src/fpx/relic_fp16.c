@@ -114,7 +114,7 @@ void fp16_mul_dxs_basic(fp16_t c, const fp16_t a, const fp16_t b) {
 
 #endif
 
-#if PP_EXT == LAZYR || !defined(STRIP)
+#if FPX_RDC == LAZYR || !defined(STRIP)
 
 TMPL_FPX_MUL_UNR_QUAD(fp16, fp8, dv16, dv8, fp2, dv2, 4, 2,
 		fp8_mul_unr);
@@ -222,7 +222,7 @@ TMPL_FPX_SQR_QUAD(fp16, fp8, fp8_mul_art);
 
 #endif
 
-#if PP_EXT == LAZYR || !defined(STRIP)
+#if FPX_RDC == LAZYR || !defined(STRIP)
 
 TMPL_FPX_SQR_UNR_QUAD(fp16, fp8, dv16, dv8, fp2, dv2, 4, 2,
 		fp8_sqr_unr);

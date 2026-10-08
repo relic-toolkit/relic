@@ -53,7 +53,7 @@ TMPL_FPX_MUL_CUBIC(fp6, fp2, fp2_mul_nor);
 
 #endif
 
-#if PP_EXT == LAZYR || !defined(STRIP)
+#if FPX_RDC == LAZYR || !defined(STRIP)
 
 /* MSVC needs this to be exported, so remove inline */
 TMPL_FPX_MUL_UNR_CUBIC(fp6, fp2, dv6, dv2, fp2, dv2, 1, 1, fp2_muln_low);
@@ -115,7 +115,7 @@ TMPL_FPX_SQR_CUBIC(fp6, fp2, fp2_mul_nor, 2);
 
 #endif
 
-#if PP_EXT == LAZYR || !defined(STRIP)
+#if FPX_RDC == LAZYR || !defined(STRIP)
 
 TMPL_FPX_SQR_UNR_CUBIC(fp6, fp2, dv6, dv2, fp2, dv2, 1, 1,
 		fp2_sqrn_low, fp2_muln_low, 2);
