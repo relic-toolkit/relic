@@ -217,3 +217,38 @@ void fp_exp_dig(fp_t c, const fp_t a, dig_t b) {
 		fp_free(t);
 	}
 }
+
+void fp_luc(fp_t c, const fp_t a, const bn_t b) {
+	fp_t v0, v1, v2;
+
+	fp_null_all(v0, v1, v2);
+
+	RLC_TRY {
+		fp_new_all(v0, v1, v2);
+
+		/* v_0 = 2. */
+		fp_set_dig(v0, 2);
+		/* v_1 = a. */
+		fp_copy(v1, a);
+
+		/* Keep (v_0, v_1) = (V_k, V_{k + 1}) for the prefix k of b. */
+		for (int i = bn_bits(b) - 1; i >= 0; i--) {
+			fp_mul(v2, v0, v1);
+			fp_sub(v2, v2, a);
+			if (bn_get_bit(b, i)) {
+				fp_sqr(v1, v1);
+				fp_sub_dig(v1, v1, 2);
+				fp_copy(v0, v2);
+			} else {
+				fp_sqr(v0, v0);
+				fp_sub_dig(v0, v0, 2);
+				fp_copy(v1, v2);
+			}
+		}
+		fp_copy(c, v0);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		fp_free_all(v0, v1, v2);
+	}
+}

@@ -665,6 +665,13 @@ static void arith(void) {
 	}
 	BENCH_END;
 
+	BENCH_RUN("fp_luc") {
+		fp_rand(a);
+		bn_rand(e, RLC_POS, RLC_FP_BITS);
+		BENCH_ADD(fp_luc(c, a, e));
+	}
+	BENCH_END;
+
 	BENCH_RUN("fp_is_sqr") {
 		fp_rand(a);
 		BENCH_ADD(fp_is_sqr(a));

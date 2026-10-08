@@ -195,6 +195,23 @@
 	}
 
 /**
+ * Computes the parity of the first nonzero prime field coefficient of an
+ * extension field element, which distinguishes it from its negation.
+ *
+ * @param[out] R			- the parity, or zero if the element is zero.
+ * @param[in] A				- the extension field element.
+ * @param[in] N				- the number of prime field coefficients.
+ */
+#define TMPL_FPX_SIGN(R, A, N)												\
+	R = 0;																	\
+	for (int _i = 0; _i < (N); _i++) {										\
+		if (!fp_is_zero(((fp_t *)(A))[_i])) {								\
+			R = fp_get_bit(((fp_t *)(A))[_i], 0);							\
+			break;															\
+		}																	\
+	}
+
+/**
  * Defines a template for serialization in a quadratic extension field,
  * compressing unitary elements to one coefficient and the sign of the other.
  *
@@ -213,6 +230,7 @@
 	void X##_read_bin(X##_t a, const uint8_t *bin, size_t len) {			\
 		const size_t h = ((K) / 2) * RLC_FP_BYTES;							\
 		S##_t t;															\
+		int s;																\
 																			\
 		if (len != h + 1 && len != 2 * h) {									\
 			RLC_THROW(ERR_NO_BUFFER);										\
@@ -242,7 +260,8 @@
 			if (!S##_srt(a[0], t)) {										\
 				RLC_THROW(ERR_NO_VALID);									\
 			}																\
-			if (util_sign((const fp_t *)a[0], (K) / 2) != bin[h]) {			\
+			TMPL_FPX_SIGN(s, a[0], (K) / 2);								\
+		if (s != bin[h]) {													\
 				S##_neg(a[0], a[0]);										\
 			}																\
 		} RLC_CATCH_ANY {													\
@@ -254,6 +273,7 @@
 																			\
 	void X##_write_bin(uint8_t *bin, size_t len, const X##_t a, int pack) {	\
 		const size_t h = ((K) / 2) * RLC_FP_BYTES;							\
+		int s;																\
 																			\
 		if (pack && X##_test_cyc(a)) {										\
 			if (len != h + 1) {												\
@@ -262,7 +282,8 @@
 			}																\
 			/* Keep a_1 and the sign of a_0. */								\
 			S##_write_bin(bin, h, a[1], 0);									\
-			bin[h] = util_sign((const fp_t *)a[0], (K) / 2);				\
+			TMPL_FPX_SIGN(s, a[0], (K) / 2);								\
+		bin[h] = s;															\
 			return;															\
 		}																	\
 		if (len != 2 * h) {													\

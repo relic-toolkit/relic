@@ -33,46 +33,6 @@
 #include "relic_fpx_low.h"
 
 /*============================================================================*/
-/* Private definitions                                                        */
-/*============================================================================*/
-
-void fp_luc(fp_t c, const fp_t a, const bn_t e) {
-    fp_t v0, v1, v2;
-
-	fp_null_all(v0, v1, v2);
-
-	RLC_TRY {
-    	fp_new(v0);
-		fp_new_all(v1, v2);
-		
-    	// v_0 = 2
-    	fp_set_dig(v0, 2);
-
-    	// v_1 = tau
-    	fp_copy(v1, a);
-
-		for (int i = bn_bits(e) - 1; i >= 0; i--) {
-			fp_mul(v2, v0, v1);
-			fp_sub(v2, v2, a);
-			if (bn_get_bit(e, i)) {
-				fp_sqr(v1, v1);
-				fp_sub_dig(v1, v1, 2);
-				fp_copy(v0, v2);
-			} else {
-				fp_sqr(v0, v0);
-				fp_sub_dig(v0, v0, 2);
-				fp_copy(v1, v2);
-			}
-		}
-	    fp_copy(c, v0);
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		fp_free_all(v0, v1, v2);
-	}
-}
-
-/*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 

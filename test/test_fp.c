@@ -1066,6 +1066,23 @@ static int exponentiation(void) {
 		}
 		TEST_END;
 #endif
+		TEST_CASE("lucas sequence is correct") {
+			do {
+				fp_rand(a);
+			} while (fp_is_zero(a));
+			/* For a = x + 1/x, V_d(a) = x^d + x^(-d). */
+			fp_inv(b, a);
+			fp_add(c, a, b);
+			bn_rand(d, RLC_POS, RLC_FP_BITS);
+			fp_luc(c, c, d);
+			fp_exp(a, a, d);
+			fp_inv(b, a);
+			fp_add(a, a, b);
+			TEST_ASSERT(fp_cmp(a, c) == RLC_EQ, end);
+			bn_zero(d);
+			fp_luc(c, a, d);
+			TEST_ASSERT(fp_cmp_dig(c, 2) == RLC_EQ, end);
+		} TEST_END;
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);

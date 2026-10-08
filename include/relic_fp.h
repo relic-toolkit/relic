@@ -1257,6 +1257,17 @@ void fp_exp_monty(fp_t c, const fp_t a, const bn_t b);
 void fp_exp_dig(fp_t c, const fp_t a, dig_t b);
 
 /**
+ * Computes the term of index b of the Lucas sequence V with parameters (a, 1),
+ * defined by V_0 = 2, V_1 = a and V_{k + 1} = a * V_k - V_{k - 1}. For
+ * a = x + 1/x, this computes x^b + x^(-b).
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the parameter of the sequence.
+ * @param[in] b				- the index of the term.
+ */
+void fp_luc(fp_t c, const fp_t a, const bn_t b);
+
+/**
  * Tests if a prime field element is a quadratic residue.
  *
  * @param[in] a				- the prime field element to test.

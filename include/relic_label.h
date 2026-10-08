@@ -598,6 +598,7 @@
 #undef fp_exp_slide
 #undef fp_exp_monty
 #undef fp_exp_dig
+#undef fp_luc
 #undef fp_is_sqr
 #undef fp_srt
 #undef fp_is_cub
@@ -698,6 +699,7 @@
 #define fp_exp_slide 	RLC_PREFIX(fp_exp_slide)
 #define fp_exp_monty 	RLC_PREFIX(fp_exp_monty)
 #define fp_exp_dig 	RLC_PREFIX(fp_exp_dig)
+#define fp_luc 	RLC_PREFIX(fp_luc)
 #define fp_is_sqr 	RLC_PREFIX(fp_is_sqr)
 #define fp_srt 	RLC_PREFIX(fp_srt)
 #define fp_is_cub 	RLC_PREFIX(fp_is_cub)

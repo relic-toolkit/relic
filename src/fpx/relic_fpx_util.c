@@ -34,27 +34,6 @@
 #include "relic_fpx_util_tmpl.h"
 
 /*============================================================================*/
-/* Private definitions                                                        */
-/*============================================================================*/
-
-/**
- * Returns the parity of the first nonzero prime field coefficient of an
- * extension field element, which distinguishes it from its negation.
- *
- * @param[in] a				- the coefficients of the element.
- * @param[in] n				- the number of coefficients.
- * @return the parity, or zero if the element is zero.
- */
-static int util_sign(const fp_t *a, int n) {
-	for (int i = 0; i < n; i++) {
-		if (!fp_is_zero(a[i])) {
-			return fp_get_bit(a[i], 0);
-		}
-	}
-	return 0;
-}
-
-/*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
