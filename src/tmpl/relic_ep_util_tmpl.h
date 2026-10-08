@@ -91,7 +91,8 @@
 
 /**
  * Defines a template for basic utilities: testing for and setting the
- * point at infinity, copying, blinding, validating and printing points.
+ * point at infinity, copying, sampling, blinding, validating and printing
+ * points.
  *
  * @param[in] C			- the curve.
  * @param[in] F			- the field prefix.
@@ -113,6 +114,30 @@
 		F##_copy(r->y, p->y);												\
 		F##_copy(r->z, p->z);												\
 		r->coord = p->coord;												\
+	}																		\
+																			\
+	void C##_rand(C##_t p) {												\
+		bn_t n, k;															\
+																			\
+		bn_null(k);															\
+		bn_null(n);															\
+																			\
+		RLC_TRY {															\
+			bn_new(k);														\
+			bn_new(n);														\
+																			\
+			C##_curve_get_ord(n);											\
+			bn_rand_mod(k, n);												\
+																			\
+			C##_mul_gen(p, k);												\
+		}																	\
+		RLC_CATCH_ANY {														\
+			RLC_THROW(ERR_CAUGHT);											\
+		}																	\
+		RLC_FINALLY {														\
+			bn_free(k);														\
+			bn_free(n);														\
+		}																	\
 	}																		\
 																			\
 	void C##_blind(C##_t r, const C##_t p) {								\

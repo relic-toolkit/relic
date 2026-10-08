@@ -31,6 +31,7 @@
  */
 
 #include "relic_core.h"
+#include "relic_ep_mul_tmpl.h"
 
 /*============================================================================*/
 /* Private definitions                                                        */
@@ -139,198 +140,19 @@ void ep8_mul_pre_basic(ep8_t *t, const ep8_t p) {
 	}
 }
 
-void ep8_mul_fix_basic(ep8_t r, const ep8_t *t, const bn_t k) {
-	bn_t n, _k;
-
-	if (bn_is_zero(k)) {
-		ep8_set_infty(r);
-		return;
-	}
-
-	bn_null(n);
-	bn_null(_k);
-
-	RLC_TRY {
-		bn_new(n);
-		bn_new(_k);
-
-		ep8_curve_get_ord(n);
-		bn_mod(_k, k, n);
-
-		ep8_set_infty(r);
-		for (int i = 0; i < bn_bits(_k); i++) {
-			if (bn_get_bit(_k, i)) {
-				ep8_add(r, r, t[i]);
-			}
-		}
-		ep8_norm(r, r);
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		bn_free(n);
-		bn_free(_k);
-	}
-}
+TMPL_EP_MUL_FIX_BASIC(ep8);
 
 #endif
 
 #if EP_FIX == COMBS || !defined(STRIP)
 
-void ep8_mul_pre_combs(ep8_t *t, const ep8_t p) {
-	int i, j, l;
-	bn_t n;
-
-	bn_null(n);
-
-	RLC_TRY {
-		bn_new(n);
-
-		ep8_curve_get_ord(n);
-		l = bn_bits(n);
-		l = ((l % RLC_DEPTH) == 0 ? (l / RLC_DEPTH) : (l / RLC_DEPTH) + 1);
-
-		ep8_set_infty(t[0]);
-
-		ep8_copy(t[1], p);
-		for (j = 1; j < RLC_DEPTH; j++) {
-			ep8_dbl(t[1 << j], t[1 << (j - 1)]);
-			for (i = 1; i < l; i++) {
-				ep8_dbl(t[1 << j], t[1 << j]);
-			}
-#if defined(EP_MIXED)
-			ep8_norm(t[1 << j], t[1 << j]);
-#endif
-			for (i = 1; i < (1 << j); i++) {
-				ep8_add(t[(1 << j) + i], t[i], t[1 << j]);
-			}
-		}
-#if defined(EP_MIXED)
-		for (i = 1; i < RLC_EP_TABLE_COMBS; i++) {
-			ep8_norm(t[i], t[i]);
-		}
-#endif
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		bn_free(n);
-	}
-}
-
-void ep8_mul_fix_combs(ep8_t r, const ep8_t *t, const bn_t k) {
-	int i, j, l, w, n0, p0, p1;
-	bn_t n, _k;
-
-	if (bn_is_zero(k)) {
-		ep8_set_infty(r);
-		return;
-	}
-
-	bn_null(n);
-	bn_null(_k);
-
-	RLC_TRY {
-		bn_new(n);
-		bn_new(_k);
-
-		ep8_curve_get_ord(n);
-		l = bn_bits(n);
-		l = ((l % RLC_DEPTH) == 0 ? (l / RLC_DEPTH) : (l / RLC_DEPTH) + 1);
-
-		bn_mod(_k, k, n);
-		n0 = bn_bits(_k);
-
-		p0 = (RLC_DEPTH) * l - 1;
-
-		w = 0;
-		p1 = p0--;
-		for (j = RLC_DEPTH - 1; j >= 0; j--, p1 -= l) {
-			w = w << 1;
-			if (p1 < n0 && bn_get_bit(_k, p1)) {
-				w = w | 1;
-			}
-		}
-		ep8_copy(r, t[w]);
-
-		for (i = l - 2; i >= 0; i--) {
-			ep8_dbl(r, r);
-
-			w = 0;
-			p1 = p0--;
-			for (j = RLC_DEPTH - 1; j >= 0; j--, p1 -= l) {
-				w = w << 1;
-				if (p1 < n0 && bn_get_bit(_k, p1)) {
-					w = w | 1;
-				}
-			}
-			if (w > 0) {
-				ep8_add(r, r, t[w]);
-			}
-		}
-		ep8_norm(r, r);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		bn_free(n);
-		bn_free(_k);
-	}
-}
+TMPL_EP_MUL_COMBS(ep8);
 
 #endif
 
 #if EP_FIX == COMBD || !defined(STRIP)
 
-void ep8_mul_pre_combd(ep8_t *t, const ep8_t p) {
-	int i, j, d, e;
-	bn_t n;
-
-	bn_null(n);
-
-	RLC_TRY {
-		bn_new(n);
-
-		ep8_curve_get_ord(n);
-		d = bn_bits(n);
-		d = ((d % RLC_DEPTH) == 0 ? (d / RLC_DEPTH) : (d / RLC_DEPTH) + 1);
-		e = (d % 2 == 0 ? (d / 2) : (d / 2) + 1);
-
-		ep8_set_infty(t[0]);
-		ep8_copy(t[1], p);
-		for (j = 1; j < RLC_DEPTH; j++) {
-			ep8_dbl(t[1 << j], t[1 << (j - 1)]);
-			for (i = 1; i < d; i++) {
-				ep8_dbl(t[1 << j], t[1 << j]);
-			}
-#if defined(EP_MIXED)
-			ep8_norm(t[1 << j], t[1 << j]);
-#endif
-			for (i = 1; i < (1 << j); i++) {
-				ep8_add(t[(1 << j) + i], t[i], t[1 << j]);
-			}
-		}
-		ep8_set_infty(t[1 << RLC_DEPTH]);
-		for (j = 1; j < (1 << RLC_DEPTH); j++) {
-			ep8_dbl(t[(1 << RLC_DEPTH) + j], t[j]);
-			for (i = 1; i < e; i++) {
-				ep8_dbl(t[(1 << RLC_DEPTH) + j], t[(1 << RLC_DEPTH) + j]);
-			}
-		}
-#if defined(EP_MIXED)
-		for (i = 1; i < RLC_EP_TABLE_COMBD; i++) {
-			ep8_norm(t[i], t[i]);
-		}
-#endif
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		bn_free(n);
-	}
-}
+TMPL_EP_MUL_PRE_COMBD(ep8);
 
 void ep8_mul_fix_combd(ep8_t r, const ep8_t *t, const bn_t k) {
 	int i, j, d, e, w0, w1, n0, p0, p1;

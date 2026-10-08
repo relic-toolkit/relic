@@ -30,6 +30,7 @@
  */
 
 #include "relic_core.h"
+#include "relic_ep_mul_tmpl.h"
 
 /*============================================================================*/
 /* Private definitions                                                        */
@@ -280,38 +281,7 @@ void ep_mul_pre_basic(ep_t *t, const ep_t p) {
 	}
 }
 
-void ep_mul_fix_basic(ep_t r, const ep_t *t, const bn_t k) {
-	bn_t n, m;
-
-	if (bn_is_zero(k)) {
-		ep_set_infty(r);
-		return;
-	}
-
-	bn_null(n);
-	bn_null(m);
-
-	RLC_TRY {
-		bn_new(n);
-		bn_new(m);
-
-		ep_curve_get_ord(n);
-		bn_mod(m, k, n);
-
-		ep_set_infty(r);
-		for (int i = 0; i < bn_bits(m); i++) {
-			if (bn_get_bit(m, i)) {
-				ep_add(r, r, t[i]);
-			}
-		}
-		ep_norm(r, r);
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		bn_free(n);
-		bn_free(m);
-	}
-}
+TMPL_EP_MUL_FIX_BASIC(ep);
 
 #endif
 
@@ -382,52 +352,7 @@ void ep_mul_fix_combs(ep_t r, const ep_t *t, const bn_t k) {
 
 #if EP_FIX == COMBD || !defined(STRIP)
 
-void ep_mul_pre_combd(ep_t *t, const ep_t p) {
-	int i, j, d, e;
-	bn_t n;
-
-	bn_null(n);
-
-	RLC_TRY {
-		bn_new(n);
-
-		ep_curve_get_ord(n);
-		d = RLC_CEIL(bn_bits(n), RLC_DEPTH);
-		e = (d % 2 == 0 ? (d / 2) : (d / 2) + 1);
-
-		ep_set_infty(t[0]);
-		ep_copy(t[1], p);
-		for (j = 1; j < RLC_DEPTH; j++) {
-			ep_dbl(t[1 << j], t[1 << (j - 1)]);
-			for (i = 1; i < d; i++) {
-				ep_dbl(t[1 << j], t[1 << j]);
-			}
-#if defined(EP_MIXED)
-			ep_norm(t[1 << j], t[1 << j]);
-#endif
-			for (i = 1; i < (1 << j); i++) {
-				ep_add(t[(1 << j) + i], t[i], t[1 << j]);
-			}
-		}
-		ep_set_infty(t[1 << RLC_DEPTH]);
-		for (j = 1; j < (1 << RLC_DEPTH); j++) {
-			ep_dbl(t[(1 << RLC_DEPTH) + j], t[j]);
-			for (i = 1; i < e; i++) {
-				ep_dbl(t[(1 << RLC_DEPTH) + j], t[(1 << RLC_DEPTH) + j]);
-			}
-		}
-
-		ep_norm_sim(t + 2, (const ep_t *)t + 2, (1 << RLC_DEPTH) - 2);
-		ep_norm_sim(t + (1 << RLC_DEPTH) + 1,
-				(const ep_t *)t + (1 << RLC_DEPTH) + 1, (1 << RLC_DEPTH) - 1);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		bn_free(n);
-	}
-}
+TMPL_EP_MUL_PRE_COMBD(ep);
 
 void ep_mul_fix_combd(ep_t r, const ep_t *t, const bn_t k) {
 	int i, j, d, e, w0, w1, n0, p0, p1;

@@ -39,30 +39,6 @@
 
 TMPL_EP_UTIL(ep4, fp4);
 
-void ep4_rand(ep4_t p) {
-	bn_t n, k;
-
-	bn_null(k);
-	bn_null(n);
-
-	RLC_TRY {
-		bn_new(k);
-		bn_new(n);
-
-		ep4_curve_get_ord(n);
-		bn_rand_mod(k, n);
-
-		ep4_mul_gen(p, k);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		bn_free(k);
-		bn_free(n);
-	}
-}
-
 void ep4_rhs(fp4_t rhs, const fp4_t x) {
 	fp4_t t0;
 

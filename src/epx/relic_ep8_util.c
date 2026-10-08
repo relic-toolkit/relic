@@ -39,30 +39,6 @@
 
 TMPL_EP_UTIL(ep8, fp8);
 
-void ep8_rand(ep8_t p) {
-	bn_t n, k;
-
-	bn_null(k);
-	bn_null(n);
-
-	RLC_TRY {
-		bn_new(k);
-		bn_new(n);
-
-		ep8_curve_get_ord(n);
-		bn_rand_mod(k, n);
-
-		ep8_mul_gen(p, k);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		bn_free(k);
-		bn_free(n);
-	}
-}
-
 void ep8_rhs(fp8_t rhs, const fp8_t x) {
 	fp8_t t0;
 

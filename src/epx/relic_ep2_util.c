@@ -39,30 +39,6 @@
 
 TMPL_EP_UTIL(ep2, fp2);
 
-void ep2_rand(ep2_t p) {
-	bn_t n, k;
-
-	bn_null(k);
-	bn_null(n);
-
-	RLC_TRY {
-		bn_new(k);
-		bn_new(n);
-
-		ep2_curve_get_ord(n);
-		bn_rand_mod(k, n);
-
-		ep2_mul_gen(p, k);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		bn_free(k);
-		bn_free(n);
-	}
-}
-
 void ep2_rhs(fp2_t rhs, const fp2_t x) {
 	fp2_t t0;
 

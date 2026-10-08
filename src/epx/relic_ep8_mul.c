@@ -329,87 +329,7 @@ static void ep8_mul_naf_imp(ep8_t r, const ep8_t p, const bn_t k) {
 
 #if EP_MUL == LWREG || !defined(STRIP)
 
-static void ep8_mul_reg_imp(ep8_t r, const ep8_t p, const bn_t k) {
-	bn_t _k;
-	int8_t s, reg[1 + RLC_CEIL(RLC_FP_BITS + 1, RLC_WIDTH - 1)];
-	ep8_t t[1 << (RLC_WIDTH - 2)], u, v;
-	size_t l, n;
-
-	bn_null(_k);
-
-	RLC_TRY {
-		bn_new(_k);
-		ep8_new(u);
-		ep8_new(v);
-		/* Prepare the precomputation table. */
-		for (size_t i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
-			ep8_null(t[i]);
-			ep8_new(t[i]);
-		}
-		/* Compute the precomputation table. */
-		ep8_tab(t, p, RLC_WIDTH);
-
-		ep8_curve_get_ord(_k);
-		n = bn_bits(_k);
-
-		/* Make a copy of the scalar for processing. */
-		bn_abs(_k, k);
-		_k->dp[0] |= 1;
-
-		/* Compute the regular w-NAF representation of k. */
-		l = RLC_CEIL(n, RLC_WIDTH - 1) + 1;
-		bn_rec_reg(reg, &l, _k, n, RLC_WIDTH);
-
-#if defined(EP_MIXED)
-		fp8_set_dig(u->z, 1);
-		u->coord = BASIC;
-#else
-		u->coord = EP_ADD;
-#endif
-		ep8_set_infty(r);
-		for (int i = l - 1; i >= 0; i--) {
-			for (size_t j = 0; j < RLC_WIDTH - 1; j++) {
-				ep8_dbl(r, r);
-			}
-
-			n = reg[i];
-			s = (n >> 7);
-			n = ((n ^ s) - s) >> 1;
-
-			for (size_t j = 0; j < (1 << (RLC_WIDTH - 2)); j++) {
-				fp8_copy_sec(u->x, t[j]->x, j == n);
-				fp8_copy_sec(u->y, t[j]->y, j == n);
-#if !defined(EP_MIXED)
-				fp8_copy_sec(u->z, t[j]->z, j == n);
-#endif
-			}
-			ep8_neg(v, u);
-			fp8_copy_sec(u->y, v->y, s != 0);
-			ep8_add(r, r, u);
-		}
-		/* t[0] has an unmodified copy of p. */
-		ep8_sub(u, r, t[0]);
-		fp8_copy_sec(r->x, u->x, bn_is_even(k));
-		fp8_copy_sec(r->y, u->y, bn_is_even(k));
-		fp8_copy_sec(r->z, u->z, bn_is_even(k));
-		/* Convert r to affine coordinates. */
-		ep8_norm(r, r);
-		ep8_neg(u, r);
-		fp8_copy_sec(r->y, u->y, bn_sign(k) == RLC_NEG);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		/* Free the precomputation table. */
-		for (size_t i = 0; i < (1 << (RLC_WIDTH - 2)); i++) {
-			ep8_free(t[i]);
-		}
-		bn_free(_k);
-		ep8_free(u);
-		ep8_free(v);
-	}
-}
+TMPL_EP_MUL_REG_IMP(ep8, fp8);
 
 #endif /* EP_MUL == LWREG */
 #endif /* EP_PLAIN || EP_SUPER */
@@ -418,61 +338,7 @@ static void ep8_mul_reg_imp(ep8_t r, const ep8_t p, const bn_t k) {
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void ep8_mul_basic(ep8_t r, const ep8_t p, const bn_t k) {
-	ep8_t t;
-	int8_t u, *naf = RLC_ALLOCA(int8_t, bn_bits(k) + 1);
-	size_t l;
-
-	ep8_null(t);
-
-	if (bn_is_zero(k) || ep8_is_infty(p)) {
-		RLC_FREE(naf);
-		ep8_set_infty(r);
-		return;
-	}
-
-	if (bn_bits(k) <= RLC_DIG) {
-		ep8_mul_dig(r, p, k->dp[0]);
-		if (bn_sign(k) == RLC_NEG) {
-			ep8_neg(r, r);
-		}
-		RLC_FREE(naf);
-		return;
-	}
-
-	RLC_TRY {
-		ep8_new(t);
-		if (naf == NULL) {
-			RLC_THROW(ERR_NO_BUFFER);
-		}
-
-		l = bn_bits(k) + 1;
-		bn_rec_naf(naf, &l, k, 2);
-		ep8_copy(t, p);
-		for (int i = l - 2; i >= 0; i--) {
-			ep8_dbl(t, t);
-
-			u = naf[i];
-			if (u > 0) {
-				ep8_add(t, t, p);
-			} else if (u < 0) {
-				ep8_sub(t, t, p);
-			}
-		}
-
-		ep8_norm(r, t);
-		if (bn_sign(k) == RLC_NEG) {
-			ep8_neg(r, r);
-		}
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		ep8_free(t);
-		RLC_FREE(naf);
-	}
-}
+TMPL_EP_MUL_BASIC(ep8);
 
 #if EP_MUL == SLIDE || !defined(STRIP)
 
@@ -672,48 +538,4 @@ void ep8_mul_lwreg(ep8_t r, const ep8_t p, const bn_t k) {
 
 TMPL_EP_MUL_GEN(ep8);
 
-void ep8_mul_dig(ep8_t r, const ep8_t p, const dig_t k) {
-	ep8_t t;
-	bn_t _k;
-	int8_t u, naf[RLC_DIG + 1];
-	size_t l;
-
-	ep8_null(t);
-	bn_null(_k);
-
-	if (k == 0 || ep8_is_infty(p)) {
-		ep8_set_infty(r);
-		return;
-	}
-
-	RLC_TRY {
-		ep8_new(t);
-		bn_new(_k);
-
-		bn_set_dig(_k, k);
-
-		l = RLC_DIG + 1;
-		bn_rec_naf(naf, &l, _k, 2);
-
-		ep8_copy(t, p);
-		for (int i = l - 2; i >= 0; i--) {
-			ep8_dbl(t, t);
-
-			u = naf[i];
-			if (u > 0) {
-				ep8_add(t, t, p);
-			} else if (u < 0) {
-				ep8_sub(t, t, p);
-			}
-		}
-
-		ep8_norm(r, t);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		ep8_free(t);
-		bn_free(_k);
-	}
-}
+TMPL_EP_MUL_DIG(ep8);
