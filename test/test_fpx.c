@@ -667,7 +667,6 @@ static int exponentiation2(void) {
 	return code;
 }
 
-#ifdef FP_QNRES
 
 static int compression2(void) {
 	int code = RLC_ERR;
@@ -718,7 +717,6 @@ static int compression2(void) {
 	return code;
 }
 
-#endif
 
 static int square_root2(void) {
 	int code = RLC_ERR;
@@ -8172,13 +8170,10 @@ int main(void) {
 			return 1;
 		}
 
-#ifdef FP_QNRES
-		/* Restrict compression to p = 3 mod 4 for the moment. */
 		if (compression2() != RLC_OK) {
 			core_clean();
 			return 1;
 		}
-#endif
 
 		if (square_root2() != RLC_OK) {
 			core_clean();

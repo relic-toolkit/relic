@@ -588,19 +588,27 @@ void fp2_pck(fp2_t c, const fp2_t a) {
 int fp2_upk(fp2_t c, const fp2_t a) {
 	if (fp_bits(a[1]) <= 1) {
 		int result, b = fp_get_bit(a[1], 0);
-		fp_t t;
+		fp_t t, u;
 
-		fp_null(t);
+		fp_null_all(t, u);
 
 		RLC_TRY {
-			fp_new(t);
+			fp_new_all(t, u);
 
-			/* a_0^2 + a_1^2 = 1, thus a_1^2 = 1 - a_0^2. */
+			/* For i^2 = qnr, a_0^2 - qnr * a_1^2 = 1, thus
+			 * a_1^2 = (a_0^2 - 1) / qnr. */
 			fp_sqr(t, a[0]);
 			fp_sub_dig(t, t, 1);
-			fp_neg(t, t);
+			if (fp_prime_get_qnr() < 0) {
+				fp_set_dig(u, -fp_prime_get_qnr());
+				fp_neg(u, u);
+			} else {
+				fp_set_dig(u, fp_prime_get_qnr());
+			}
+			fp_inv(u, u);
+			fp_mul(t, t, u);
 
-			/* a1 = sqrt(a_0^2). */
+			/* a_1 = sqrt((a_0^2 - 1) / qnr). */
 			result = fp_srt(t, t);
 
 			if (result) {
@@ -616,7 +624,7 @@ int fp2_upk(fp2_t c, const fp2_t a) {
 			result = 0;
 			RLC_THROW(ERR_CAUGHT);
 		} RLC_FINALLY {
-			fp_free(t);
+			fp_free_all(t, u);
 		}
 		return result;
 	} else {
