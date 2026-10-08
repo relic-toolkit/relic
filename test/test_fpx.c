@@ -4537,6 +4537,10 @@ static int compression12(void) {
 			TEST_ASSERT(fp2_is_zero(b[0][0]) && fp2_is_zero(b[1][1]), end);
 			TEST_ASSERT(fp12_upk(c, b) == 1, end);
 			TEST_ASSERT(fp12_cmp(a, c) == RLC_EQ, end);
+			fp12_set_dig(a, 1);
+			fp12_pck(b, a);
+			TEST_ASSERT(fp12_upk(c, b) == 1, end);
+			TEST_ASSERT(fp12_cmp(a, c) == RLC_EQ, end);
 			fp12_pck_max(b, a);
 			TEST_ASSERT(fp12_upk_max(c, b) == 1, end);
 			TEST_ASSERT(fp12_cmp(a, c) == RLC_EQ, end);
@@ -4545,6 +4549,10 @@ static int compression12(void) {
 		TEST_CASE("compression is consistent with reading and writing") {
 			fp12_rand(a);
 			fp12_conv_cyc(a, a);
+			fp12_write_bin(bin, 8 * RLC_FP_BYTES, a, 1);
+			fp12_read_bin(b, bin, 8 * RLC_FP_BYTES);
+			TEST_ASSERT(fp12_cmp(a, b) == RLC_EQ, end);
+			fp12_set_dig(a, 1);
 			fp12_write_bin(bin, 8 * RLC_FP_BYTES, a, 1);
 			fp12_read_bin(b, bin, 8 * RLC_FP_BYTES);
 			TEST_ASSERT(fp12_cmp(a, b) == RLC_EQ, end);
@@ -5946,11 +5954,19 @@ static int compression18(void) {
 			TEST_ASSERT(fp3_is_zero(b[0][0]) && fp3_is_zero(b[1][1]), end);
 			TEST_ASSERT(fp18_upk(c, b) == 1, end);
 			TEST_ASSERT(fp18_cmp(a, c) == RLC_EQ, end);
+			fp18_set_dig(a, 1);
+			fp18_pck(b, a);
+			TEST_ASSERT(fp18_upk(c, b) == 1, end);
+			TEST_ASSERT(fp18_cmp(a, c) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_CASE("compression is consistent with reading and writing") {
 			fp18_rand(a);
 			fp18_conv_cyc(a, a);
+			fp18_write_bin(bin, 12 * RLC_FP_BYTES, a, 1);
+			fp18_read_bin(b, bin, 12 * RLC_FP_BYTES);
+			TEST_ASSERT(fp18_cmp(a, b) == RLC_EQ, end);
+			fp18_set_dig(a, 1);
 			fp18_write_bin(bin, 12 * RLC_FP_BYTES, a, 1);
 			fp18_read_bin(b, bin, 12 * RLC_FP_BYTES);
 			TEST_ASSERT(fp18_cmp(a, b) == RLC_EQ, end);
@@ -6645,11 +6661,19 @@ static int compression24(void) {
 			TEST_ASSERT(fp4_is_zero(b[0][0]) && fp4_is_zero(b[0][1]), end);
 			TEST_ASSERT(fp24_upk(c, b) == 1, end);
 			TEST_ASSERT(fp24_cmp(a, c) == RLC_EQ, end);
+			fp24_set_dig(a, 1);
+			fp24_pck(b, a);
+			TEST_ASSERT(fp24_upk(c, b) == 1, end);
+			TEST_ASSERT(fp24_cmp(a, c) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_CASE("compression is consistent with reading and writing") {
 			fp24_rand(a);
 			fp24_conv_cyc(a, a);
+			fp24_write_bin(bin, 16 * RLC_FP_BYTES, a, 1);
+			fp24_read_bin(b, bin, 16 * RLC_FP_BYTES);
+			TEST_ASSERT(fp24_cmp(a, b) == RLC_EQ, end);
+			fp24_set_dig(a, 1);
 			fp24_write_bin(bin, 16 * RLC_FP_BYTES, a, 1);
 			fp24_read_bin(b, bin, 16 * RLC_FP_BYTES);
 			TEST_ASSERT(fp24_cmp(a, b) == RLC_EQ, end);
@@ -7059,11 +7083,19 @@ static int compression48(void) {
 			TEST_ASSERT(fp8_is_zero(b[0][0]) && fp8_is_zero(b[1][1]), end);
 			TEST_ASSERT(fp48_upk(c, b) == 1, end);
 			TEST_ASSERT(fp48_cmp(a, c) == RLC_EQ, end);
+			fp48_set_dig(a, 1);
+			fp48_pck(b, a);
+			TEST_ASSERT(fp48_upk(c, b) == 1, end);
+			TEST_ASSERT(fp48_cmp(a, c) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_CASE("compression is consistent with reading and writing") {
 			fp48_rand(a);
 			fp48_conv_cyc(a, a);
+			fp48_write_bin(bin, 32 * RLC_FP_BYTES, a, 1);
+			fp48_read_bin(b, bin, 32 * RLC_FP_BYTES);
+			TEST_ASSERT(fp48_cmp(a, b) == RLC_EQ, end);
+			fp48_set_dig(a, 1);
 			fp48_write_bin(bin, 32 * RLC_FP_BYTES, a, 1);
 			fp48_read_bin(b, bin, 32 * RLC_FP_BYTES);
 			TEST_ASSERT(fp48_cmp(a, b) == RLC_EQ, end);
@@ -7758,11 +7790,19 @@ static int compression54(void) {
 			TEST_ASSERT(fp9_is_zero(b[0][0]) && fp9_is_zero(b[0][1]), end);
 			TEST_ASSERT(fp54_upk(c, b) == 1, end);
 			TEST_ASSERT(fp54_cmp(a, c) == RLC_EQ, end);
+			fp54_set_dig(a, 1);
+			fp54_pck(b, a);
+			TEST_ASSERT(fp54_upk(c, b) == 1, end);
+			TEST_ASSERT(fp54_cmp(a, c) == RLC_EQ, end);
 		} TEST_END;
 
 		TEST_CASE("compression is consistent with reading and writing") {
 			fp54_rand(a);
 			fp54_conv_cyc(a, a);
+			fp54_write_bin(bin, 36 * RLC_FP_BYTES, a, 1);
+			fp54_read_bin(b, bin, 36 * RLC_FP_BYTES);
+			TEST_ASSERT(fp54_cmp(a, b) == RLC_EQ, end);
+			fp54_set_dig(a, 1);
 			fp54_write_bin(bin, 36 * RLC_FP_BYTES, a, 1);
 			fp54_read_bin(b, bin, 36 * RLC_FP_BYTES);
 			TEST_ASSERT(fp54_cmp(a, b) == RLC_EQ, end);

@@ -85,8 +85,9 @@ void fp12_back_cyc(fp12_t c, const fp12_t a) {
 		fp2_dbl(t1, a[1][0]);
 		fp2_dbl(t1, t1);
 		fp2_copy_sec(t1, a[0][2], f);
-		/* If unity, decompress to unity as well. */
-		f = fp12_cmp_dig(a, 1) == RLC_EQ;
+		/* If all kept coefficients are zero, decompress to unity. */
+		f = fp2_is_zero(a[0][1]) && fp2_is_zero(a[0][2]) &&
+				fp2_is_zero(a[1][0]) && fp2_is_zero(a[1][2]);
 		fp2_set_dig(t2, 1);
 		fp2_copy_sec(t1, t2, f);
 
@@ -165,8 +166,9 @@ void fp12_back_cyc_sim(fp12_t c[], const fp12_t a[], int n) {
 			fp2_dbl(t1[i], a[i][1][0]);
 			fp2_dbl(t1[i], t1[i]);
 			fp2_copy_sec(t1[i], a[i][0][2], f);
-			/* If unity, decompress to unity as well. */
-			f = (fp12_cmp_dig(a[i], 1) == RLC_EQ);
+			/* If all kept coefficients are zero, decompress to unity. */
+			f = fp2_is_zero(a[i][0][1]) && fp2_is_zero(a[i][0][2]) &&
+					fp2_is_zero(a[i][1][0]) && fp2_is_zero(a[i][1][2]);
 			fp2_set_dig(t2[i], 1);
 			fp2_copy_sec(t1[i], t2[i], f);
 		}
@@ -255,8 +257,9 @@ void fp18_back_cyc(fp18_t c, const fp18_t a) {
 		fp3_dbl(t1, a[1][0]);
 		fp3_dbl(t1, t1);
 		fp3_copy_sec(t1, a[0][2], f);
-		/* If unity, decompress to unity as well. */
-		f = fp18_cmp_dig(a, 1) == RLC_EQ;
+		/* If all kept coefficients are zero, decompress to unity. */
+		f = fp3_is_zero(a[0][1]) && fp3_is_zero(a[0][2]) &&
+				fp3_is_zero(a[1][0]) && fp3_is_zero(a[1][2]);
 		fp3_set_dig(t2, 1);
 		fp3_copy_sec(t1, t2, f);
 
@@ -335,8 +338,9 @@ void fp18_back_cyc_sim(fp18_t c[], const fp18_t a[], int n) {
 			fp3_dbl(t1[i], a[i][1][0]);
 			fp3_dbl(t1[i], t1[i]);
 			fp3_copy_sec(t1[i], a[i][0][2], f);
-			/* If unity, decompress to unity as well. */
-			f = (fp18_cmp_dig(a[i], 1) == RLC_EQ);
+			/* If all kept coefficients are zero, decompress to unity. */
+			f = fp3_is_zero(a[i][0][1]) && fp3_is_zero(a[i][0][2]) &&
+					fp3_is_zero(a[i][1][0]) && fp3_is_zero(a[i][1][2]);
 			fp3_set_dig(t2[i], 1);
 			fp3_copy_sec(t1[i], t2[i], f);
 		}
@@ -417,8 +421,9 @@ void fp24_back_cyc(fp24_t c, const fp24_t a) {
 		fp4_dbl(t1, a[1][0]);
 		fp4_dbl(t1, t1);
 		fp4_copy_sec(t1, a[1][1], f);
-		/* If unity, decompress to unity as well. */
-		f = fp24_cmp_dig(a, 1) == RLC_EQ;
+		/* If all kept coefficients are zero, decompress to unity. */
+		f = fp4_is_zero(a[1][0]) && fp4_is_zero(a[1][1]) &&
+				fp4_is_zero(a[2][0]) && fp4_is_zero(a[2][1]);
 		fp4_set_dig(t2, 1);
 		fp4_copy_sec(t1, t2, f);
 
@@ -496,8 +501,9 @@ void fp24_back_cyc_sim(fp24_t c[], const fp24_t a[], int n) {
 			fp4_dbl(t1[i], a[i][1][0]);
 			fp4_dbl(t1[i], t1[i]);
 			fp4_copy_sec(t1[i], a[i][1][1], f);
-			/* If unity, decompress to unity as well. */
-			f = fp24_cmp_dig(a[i], 1) == RLC_EQ;
+			/* If all kept coefficients are zero, decompress to unity. */
+			f = fp4_is_zero(a[i][1][0]) && fp4_is_zero(a[i][1][1]) &&
+					fp4_is_zero(a[i][2][0]) && fp4_is_zero(a[i][2][1]);
 			fp4_set_dig(t2[i], 1);
 			fp4_copy_sec(t1[i], t2[i], f);
 		}
@@ -578,8 +584,9 @@ void fp48_back_cyc(fp48_t c, const fp48_t a) {
 		fp8_dbl(t1, a[1][0]);
 		fp8_dbl(t1, t1);
 		fp8_copy_sec(t1, a[0][2], f);
-		/* If unity, decompress to unity as well. */
-		f = fp48_cmp_dig(a, 1) == RLC_EQ;
+		/* If all kept coefficients are zero, decompress to unity. */
+		f = fp8_is_zero(a[0][1]) && fp8_is_zero(a[0][2]) &&
+				fp8_is_zero(a[1][0]) && fp8_is_zero(a[1][2]);
 		fp8_set_dig(t2, 1);
 		fp8_copy_sec(t1, t2, f);
 
@@ -658,8 +665,9 @@ void fp48_back_cyc_sim(fp48_t c[], const fp48_t a[], int n) {
 			fp8_dbl(t1[i], a[i][1][0]);
 			fp8_dbl(t1[i], t1[i]);
 			fp8_copy_sec(t1[i], a[i][0][2], f);
-			/* If unity, decompress to unity as well. */
-			f = fp48_cmp_dig(a[i], 1) == RLC_EQ;
+			/* If all kept coefficients are zero, decompress to unity. */
+			f = fp8_is_zero(a[i][0][1]) && fp8_is_zero(a[i][0][2]) &&
+					fp8_is_zero(a[i][1][0]) && fp8_is_zero(a[i][1][2]);
 			fp8_set_dig(t2[i], 1);
 			fp8_copy_sec(t1[i], t2[i], f);
 		}
@@ -740,14 +748,12 @@ void fp54_back_cyc(fp54_t c, const fp54_t a) {
 		fp9_dbl(t1, a[1][0]);
 		fp9_dbl(t1, t1);
 		fp9_copy_sec(t1, a[1][1], f);
-		/* If unity, decompress to unity as well. */
-		f = fp54_cmp_dig(a, 1) == RLC_EQ;
+		/* If all kept coefficients are zero, decompress to unity. */
+		f = fp9_is_zero(a[1][0]) && fp9_is_zero(a[1][1]) &&
+				fp9_is_zero(a[2][0]) && fp9_is_zero(a[2][1]);
 		fp9_set_dig(t2, 1);
 		fp9_copy_sec(t1, t2, f);
 
-		/* t1 = 1/(4 * g2). */
-		fp9_dbl(t1, a[1][0]);
-		fp9_dbl(t1, t1);
 		fp9_inv(t1, t1);
 		/* c_1 = g1. */
 		fp9_mul(c[0][1], t0, t1);
@@ -822,8 +828,9 @@ void fp54_back_cyc_sim(fp54_t c[], const fp54_t a[], int n) {
 			fp9_dbl(t1[i], a[i][1][0]);
 			fp9_dbl(t1[i], t1[i]);
 			fp9_copy_sec(t1[i], a[i][1][1], f);
-			/* If unity, decompress to unity as well. */
-			f = fp54_cmp_dig(a[i], 1) == RLC_EQ;
+			/* If all kept coefficients are zero, decompress to unity. */
+			f = fp9_is_zero(a[i][1][0]) && fp9_is_zero(a[i][1][1]) &&
+					fp9_is_zero(a[i][2][0]) && fp9_is_zero(a[i][2][1]);
 			fp9_set_dig(t2[i], 1);
 			fp9_copy_sec(t1[i], t2[i], f);
 		}

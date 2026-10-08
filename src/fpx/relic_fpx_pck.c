@@ -91,8 +91,12 @@ TMPL_FPX_PCK_QC(fp12, fp2);
 TMPL_FPX_UPK_QC(fp12, fp2);
 
 void fp12_pck_max(fp12_t c, const fp12_t a) {
-	 fp12_copy(c, a);
-	if (fp12_test_cyc(c)) {
+	fp12_copy(c, a);
+	if (fp12_cmp_dig(a, 1) == RLC_EQ) {
+		/* The torus has no representative for unity, so use zero since it
+		 * otherwise decompresses to -1, which is not in the subgroup. */
+		fp12_zero(c);
+	} else if (fp12_test_cyc(c)) {
 		/* Use torus-based compression from Section 4.1 in
 		 * "On Compressible Pairings and Their Computation" by Naehrig et al.
 		 */
@@ -104,6 +108,10 @@ void fp12_pck_max(fp12_t c, const fp12_t a) {
 }
 
 int fp12_upk_max(fp12_t c, const fp12_t a) {
+	if (fp12_is_zero(a)) {
+		fp12_set_dig(c, 1);
+		return 1;
+	}
 	if (fp6_is_zero(a[1])) {
 		fp12_t t;
 
