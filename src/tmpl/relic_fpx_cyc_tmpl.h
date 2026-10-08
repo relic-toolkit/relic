@@ -589,3 +589,348 @@
 			return 1;														\
 		}																	\
 	}
+
+/**
+ * Defines a template for decompressing elements of the cyclotomic
+ * subgroup in an extension field built as quadratic over cubic.
+ *
+ * @param[in] X			- the extension field prefix.
+ * @param[in] Z			- the prefix of the subfield holding the coefficients.
+ * @param[in] NOR		- the multiplication by the non-residue in the subfield.
+ */
+#define TMPL_FPX_BACK_CYC_QC(X, Z, NOR)										\
+	void X##_back_cyc(X##_t c, const X##_t a) {								\
+		Z##_t t0, t1, t2;													\
+																			\
+		Z##_null_all(t0, t1, t2);											\
+																			\
+		RLC_TRY {															\
+			Z##_new_all(t0, t1, t2);										\
+																			\
+			int f = Z##_is_zero(a[1][0]);									\
+			/* If f, t0 = 2 * g4 * g5, t1 = g3. */							\
+			Z##_copy(t2, a[0][1]);											\
+			Z##_copy_sec(t2, a[1][2], f);									\
+			/* t0 = g4^2. */												\
+			Z##_mul(t0, a[0][1], t2);										\
+			Z##_dbl(t2, t0);												\
+			Z##_copy_sec(t0, t2, f);										\
+			/* t1 = 3 * g4^2 - 2 * g3. */									\
+			Z##_sub(t1, t0, a[0][2]);										\
+			Z##_dbl(t1, t1);												\
+			Z##_add(t1, t1, t0);											\
+			/* t0 = E * g5^2 + t1. */										\
+			Z##_sqr(t2, a[1][2]);											\
+			NOR(t0, t2);													\
+			Z##_add(t0, t0, t1);											\
+			/* t1 = (4 * g2). */											\
+			Z##_dbl(t1, a[1][0]);											\
+			Z##_dbl(t1, t1);												\
+			Z##_copy_sec(t1, a[0][2], f);									\
+			/* All kept coefficients zero: decompress to unity. */			\
+			f = Z##_is_zero(a[0][1]) && Z##_is_zero(a[0][2]) &&				\
+					Z##_is_zero(a[1][0]) && Z##_is_zero(a[1][2]);			\
+			Z##_set_dig(t2, 1);												\
+			Z##_copy_sec(t1, t2, f);										\
+																			\
+			/* t1 = 1/g3 or 1/(4*g2), depending on the above. */			\
+			Z##_inv(t1, t1);												\
+			/* c_1 = g1. */													\
+			Z##_mul(c[1][1], t0, t1);										\
+																			\
+			/* t1 = g3 * g4. */												\
+			Z##_mul(t1, a[0][2], a[0][1]);									\
+			/* t2 = 2 * g1^2 - 3 * g3 * g4. */								\
+			Z##_sqr(t2, c[1][1]);											\
+			Z##_sub(t2, t2, t1);											\
+			Z##_dbl(t2, t2);												\
+			Z##_sub(t2, t2, t1);											\
+			/* t1 = g2 * g5. */												\
+			Z##_mul(t1, a[1][0], a[1][2]);									\
+			/* c_0 = E * (2 * g1^2 + g2 * g5 - 3 * g3 * g4) + 1. */			\
+			Z##_add(t2, t2, t1);											\
+			NOR(c[0][0], t2);												\
+			fp_add_dig(((fp_t *)c[0][0])[0], ((fp_t *)c[0][0])[0], 1);		\
+																			\
+			Z##_copy(c[0][1], a[0][1]);										\
+			Z##_copy(c[0][2], a[0][2]);										\
+			Z##_copy(c[1][0], a[1][0]);										\
+			Z##_copy(c[1][2], a[1][2]);										\
+		}																	\
+		RLC_CATCH_ANY {														\
+			RLC_THROW(ERR_CAUGHT);											\
+		}																	\
+		RLC_FINALLY {														\
+			Z##_free_all(t0, t1, t2);										\
+		}																	\
+	}
+
+/**
+ * Defines a template for simultaneously decompressing elements of the
+ * cyclotomic subgroup in an extension field built as quadratic over cubic.
+ *
+ * @param[in] X			- the extension field prefix.
+ * @param[in] Z			- the prefix of the subfield holding the coefficients.
+ * @param[in] NOR		- the multiplication by the non-residue in the subfield.
+ */
+#define TMPL_FPX_BACK_CYC_SIM_QC(X, Z, NOR)									\
+	void X##_back_cyc_sim(X##_t c[], const X##_t a[], int n) {				\
+	    Z##_t *t = RLC_ALLOCA(Z##_t, n * 3);								\
+	    Z##_t *t0 = t + 0 * n, *t1 = t + 1 * n, *t2 = t + 2 * n;			\
+																			\
+		if (n == 0) {														\
+			RLC_FREE(t);													\
+			return;															\
+		}																	\
+																			\
+		RLC_TRY {															\
+			if (t == NULL) {												\
+				RLC_THROW(ERR_NO_MEMORY);									\
+			}																\
+			for (int i = 0; i < n; i++) {									\
+				Z##_null(t0[i]);											\
+				Z##_null(t1[i]);											\
+				Z##_null(t2[i]);											\
+				Z##_new(t0[i]);												\
+				Z##_new(t1[i]);												\
+				Z##_new(t2[i]);												\
+			}																\
+																			\
+			for (int i = 0; i < n; i++) {									\
+				int f = Z##_is_zero(a[i][1][0]);							\
+				/* If f, t0 = 2 * g4 * g5, t1 = g3. */						\
+				Z##_copy(t2[i], a[i][0][1]);								\
+				Z##_copy_sec(t2[i], a[i][1][2], f);							\
+				/* t0 = g4^2. */											\
+				Z##_mul(t0[i], a[i][0][1], t2[i]);							\
+				Z##_dbl(t2[i], t0[i]);										\
+				Z##_copy_sec(t0[i], t2[i], f);								\
+				/* t1 = 3 * g4^2 - 2 * g3. */								\
+				Z##_sub(t1[i], t0[i], a[i][0][2]);							\
+				Z##_dbl(t1[i], t1[i]);										\
+				Z##_add(t1[i], t1[i], t0[i]);								\
+				/* t0 = E * g5^2 + t1. */									\
+				Z##_sqr(t2[i], a[i][1][2]);									\
+				NOR(t0[i], t2[i]);											\
+				Z##_add(t0[i], t0[i], t1[i]);								\
+				/* t1 = (4 * g2). */										\
+				Z##_dbl(t1[i], a[i][1][0]);									\
+				Z##_dbl(t1[i], t1[i]);										\
+				Z##_copy_sec(t1[i], a[i][0][2], f);							\
+				/* All kept coefficients zero: decompress to unity. */		\
+				f = Z##_is_zero(a[i][0][1]) && Z##_is_zero(a[i][0][2]) &&	\
+						Z##_is_zero(a[i][1][0]) && Z##_is_zero(a[i][1][2]);	\
+				Z##_set_dig(t2[i], 1);										\
+				Z##_copy_sec(t1[i], t2[i], f);								\
+			}																\
+																			\
+			/* t1 = 1 / t1. */												\
+			Z##_inv_sim(t1, t1, n);											\
+																			\
+			for (int i = 0; i < n; i++) {									\
+				/* t0 = g1. */												\
+				Z##_mul(c[i][1][1], t0[i], t1[i]);							\
+																			\
+				/* t1 = g3 * g4. */											\
+				Z##_mul(t1[i], a[i][0][2], a[i][0][1]);						\
+				/* t2 = 2 * g1^2 - 3 * g3 * g4. */							\
+				Z##_sqr(t2[i], c[i][1][1]);									\
+				Z##_sub(t2[i], t2[i], t1[i]);								\
+				Z##_dbl(t2[i], t2[i]);										\
+				Z##_sub(t2[i], t2[i], t1[i]);								\
+				/* t1 = g2 * g5. */											\
+				Z##_mul(t1[i], a[i][1][0], a[i][1][2]);						\
+				/* t2 = E * (2 * g1^2 + g2 * g5 - 3 * g3 * g4) + 1. */		\
+				Z##_add(t2[i], t2[i], t1[i]);								\
+				NOR(c[i][0][0], t2[i]);										\
+				fp_add_dig(((fp_t *)c[i][0][0])[0], ((fp_t *)c[i][0][0])[0],\
+						1);													\
+																			\
+				Z##_copy(c[i][0][1], a[i][0][1]);							\
+				Z##_copy(c[i][0][2], a[i][0][2]);							\
+				Z##_copy(c[i][1][0], a[i][1][0]);							\
+				Z##_copy(c[i][1][2], a[i][1][2]);							\
+			}																\
+		} RLC_CATCH_ANY {													\
+			RLC_THROW(ERR_CAUGHT);											\
+		} RLC_FINALLY {														\
+			for (int i = 0; i < n; i++) {									\
+				Z##_free(t0[i]);											\
+				Z##_free(t1[i]);											\
+				Z##_free(t2[i]);											\
+			}																\
+			RLC_FREE(t);													\
+		}																	\
+	}
+
+/**
+ * Defines a template for decompressing elements of the cyclotomic
+ * subgroup in an extension field built as cubic over quadratic.
+ *
+ * @param[in] X			- the extension field prefix.
+ * @param[in] Z			- the prefix of the subfield holding the coefficients.
+ * @param[in] NOR		- the multiplication by the non-residue in the subfield.
+ */
+#define TMPL_FPX_BACK_CYC_CQ(X, Z, NOR)										\
+	void X##_back_cyc(X##_t c, const X##_t a) {								\
+		Z##_t t0, t1, t2;													\
+																			\
+		Z##_null_all(t0, t1, t2);											\
+																			\
+		RLC_TRY {															\
+			Z##_new_all(t0, t1, t2);										\
+																			\
+			int f = Z##_is_zero(a[1][0]);									\
+			/* If f, t0 = 2 * g4 * g5, t1 = g3. */							\
+			Z##_copy(t2, a[2][0]);											\
+			Z##_copy_sec(t2, a[2][1], f);									\
+			/* t0 = g4^2. */												\
+			Z##_mul(t0, a[2][0], t2);										\
+			Z##_dbl(t2, t0);												\
+			Z##_copy_sec(t0, t2, f);										\
+			/* t1 = 3 * g4^2 - 2 * g3. */									\
+			Z##_sub(t1, t0, a[1][1]);										\
+			Z##_dbl(t1, t1);												\
+			Z##_add(t1, t1, t0);											\
+			/* t0 = E * g5^2 + t1. */										\
+			Z##_sqr(t2, a[2][1]);											\
+			NOR(t0, t2);													\
+			Z##_add(t0, t0, t1);											\
+			/* t1 = (4 * g2). */											\
+			Z##_dbl(t1, a[1][0]);											\
+			Z##_dbl(t1, t1);												\
+			Z##_copy_sec(t1, a[1][1], f);									\
+			/* All kept coefficients zero: decompress to unity. */			\
+			f = Z##_is_zero(a[1][0]) && Z##_is_zero(a[1][1]) &&				\
+					Z##_is_zero(a[2][0]) && Z##_is_zero(a[2][1]);			\
+			Z##_set_dig(t2, 1);												\
+			Z##_copy_sec(t1, t2, f);										\
+																			\
+			Z##_inv(t1, t1);												\
+			/* c_1 = g1. */													\
+			Z##_mul(c[0][1], t0, t1);										\
+																			\
+			/* t1 = g3 * g4. */												\
+			Z##_mul(t1, a[1][1], a[2][0]);									\
+			/* t2 = 2 * g1^2 - 3 * g3 * g4. */								\
+			Z##_sqr(t2, c[0][1]);											\
+			Z##_sub(t2, t2, t1);											\
+			Z##_dbl(t2, t2);												\
+			Z##_sub(t2, t2, t1);											\
+			/* t1 = g2 * g5. */												\
+			Z##_mul(t1, a[1][0], a[2][1]);									\
+			/* c_0 = E * (2 * g1^2 + g2 * g5 - 3 * g3 * g4) + 1. */			\
+			Z##_add(t2, t2, t1);											\
+			NOR(c[0][0], t2);												\
+			fp_add_dig(((fp_t *)c[0][0])[0], ((fp_t *)c[0][0])[0], 1);		\
+																			\
+			Z##_copy(c[1][0], a[1][0]);										\
+			Z##_copy(c[1][1], a[1][1]);										\
+			Z##_copy(c[2][0], a[2][0]);										\
+			Z##_copy(c[2][1], a[2][1]);										\
+		}																	\
+		RLC_CATCH_ANY {														\
+			RLC_THROW(ERR_CAUGHT);											\
+		}																	\
+		RLC_FINALLY {														\
+			Z##_free_all(t0, t1, t2);										\
+		}																	\
+	}
+
+/**
+ * Defines a template for simultaneously decompressing elements of the
+ * cyclotomic subgroup in an extension field built as cubic over quadratic.
+ *
+ * @param[in] X			- the extension field prefix.
+ * @param[in] Z			- the prefix of the subfield holding the coefficients.
+ * @param[in] NOR		- the multiplication by the non-residue in the subfield.
+ */
+#define TMPL_FPX_BACK_CYC_SIM_CQ(X, Z, NOR)									\
+	void X##_back_cyc_sim(X##_t c[], const X##_t a[], int n) {				\
+	    Z##_t *t = RLC_ALLOCA(Z##_t, n * 3);								\
+	    Z##_t *t0 = t + 0 * n, *t1 = t + 1 * n, *t2 = t + 2 * n;			\
+																			\
+		if (n == 0) {														\
+			RLC_FREE(t);													\
+			return;															\
+		}																	\
+																			\
+		RLC_TRY {															\
+			if (t == NULL) {												\
+				RLC_THROW(ERR_NO_MEMORY);									\
+			}																\
+			for (int i = 0; i < n; i++) {									\
+				Z##_null(t0[i]);											\
+				Z##_null(t1[i]);											\
+				Z##_null(t2[i]);											\
+				Z##_new(t0[i]);												\
+				Z##_new(t1[i]);												\
+				Z##_new(t2[i]);												\
+			}																\
+																			\
+			for (int i = 0; i < n; i++) {									\
+				int f = Z##_is_zero(a[i][1][0]);							\
+				/* If f, t0 = 2 * g4 * g5, t1 = g3. */						\
+				Z##_copy(t2[i], a[i][2][0]);								\
+				Z##_copy_sec(t2[i], a[i][2][1], f);							\
+				/* t0 = g4^2. */											\
+				Z##_mul(t0[i], a[i][2][0], t2[i]);							\
+				Z##_dbl(t2[i], t0[i]);										\
+				Z##_copy_sec(t0[i], t2[i], f);								\
+				/* t1 = 3 * g4^2 - 2 * g3. */								\
+				Z##_sub(t1[i], t0[i], a[i][1][1]);							\
+				Z##_dbl(t1[i], t1[i]);										\
+				Z##_add(t1[i], t1[i], t0[i]);								\
+				/* t0 = E * g5^2 + t1. */									\
+				Z##_sqr(t2[i], a[i][2][1]);									\
+				NOR(t0[i], t2[i]);											\
+				Z##_add(t0[i], t0[i], t1[i]);								\
+				/* t1 = (4 * g2). */										\
+				Z##_dbl(t1[i], a[i][1][0]);									\
+				Z##_dbl(t1[i], t1[i]);										\
+				Z##_copy_sec(t1[i], a[i][1][1], f);							\
+				/* All kept coefficients zero: decompress to unity. */		\
+				f = Z##_is_zero(a[i][1][0]) && Z##_is_zero(a[i][1][1]) &&	\
+						Z##_is_zero(a[i][2][0]) && Z##_is_zero(a[i][2][1]);	\
+				Z##_set_dig(t2[i], 1);										\
+				Z##_copy_sec(t1[i], t2[i], f);								\
+			}																\
+																			\
+			/* t1 = 1 / t1. */												\
+			Z##_inv_sim(t1, t1, n);											\
+																			\
+			for (int i = 0; i < n; i++) {									\
+				/* t0 = g1. */												\
+				Z##_mul(c[i][0][1], t0[i], t1[i]);							\
+																			\
+				/* t1 = g3 * g4. */											\
+				Z##_mul(t1[i], a[i][1][1], a[i][2][0]);						\
+				/* t2 = 2 * g1^2 - 3 * g3 * g4. */							\
+				Z##_sqr(t2[i], c[i][0][1]);									\
+				Z##_sub(t2[i], t2[i], t1[i]);								\
+				Z##_dbl(t2[i], t2[i]);										\
+				Z##_sub(t2[i], t2[i], t1[i]);								\
+				/* t1 = g2 * g5. */											\
+				Z##_mul(t1[i], a[i][1][0], a[i][2][1]);						\
+				/* t2 = E * (2 * g1^2 + g2 * g5 - 3 * g3 * g4) + 1. */		\
+				Z##_add(t2[i], t2[i], t1[i]);								\
+				NOR(c[i][0][0], t2[i]);										\
+				fp_add_dig(((fp_t *)c[i][0][0])[0], ((fp_t *)c[i][0][0])[0],\
+						1);													\
+																			\
+				Z##_copy(c[i][1][0], a[i][1][0]);							\
+				Z##_copy(c[i][1][1], a[i][1][1]);							\
+				Z##_copy(c[i][2][0], a[i][2][0]);							\
+				Z##_copy(c[i][2][1], a[i][2][1]);							\
+			}																\
+		} RLC_CATCH_ANY {													\
+			RLC_THROW(ERR_CAUGHT);											\
+		} RLC_FINALLY {														\
+			for (int i = 0; i < n; i++) {									\
+				Z##_free(t0[i]);											\
+				Z##_free(t1[i]);											\
+				Z##_free(t2[i]);											\
+			}																\
+			RLC_FREE(t);													\
+		}																	\
+	}
