@@ -30,6 +30,7 @@
  */
 
 #include "relic_core.h"
+#include "relic_ep_mul_tmpl.h"
 
 /*============================================================================*/
 /* Private definitions                                                        */
@@ -657,32 +658,7 @@ void ep_mul_lwreg(ep_t r, const ep_t p, const bn_t k) {
 #endif
 }
 
-void ep_mul_gen(ep_t r, const bn_t k) {
-	if (bn_is_zero(k)) {
-		ep_set_infty(r);
-		return;
-	}
-
-#ifdef EP_PRECO
-	ep_mul_fix(r, ep_curve_get_tab(), k);
-#else
-	ep_t g;
-
-	ep_null(g);
-
-	RLC_TRY {
-		ep_new(g);
-		ep_curve_get_gen(g);
-		ep_mul(r, g, k);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		ep_free(g);
-	}
-#endif
-}
+TMPL_EP_MUL_GEN(ep);
 
 void ep_mul_dig(ep_t r, const ep_t p, dig_t k) {
 	ep_t t;

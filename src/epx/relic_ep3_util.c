@@ -31,28 +31,13 @@
  */
 
 #include "relic_core.h"
+#include "relic_ep_util_tmpl.h"
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
-int ep3_is_infty(const ep3_t p) {
-	return (fp3_is_zero(p->z) == 1);
-}
-
-void ep3_set_infty(ep3_t p) {
-	fp3_zero(p->x);
-	fp3_zero(p->y);
-	fp3_zero(p->z);
-	p->coord = BASIC;
-}
-
-void ep3_copy(ep3_t r, const ep3_t p) {
-	fp3_copy(r->x, p->x);
-	fp3_copy(r->y, p->y);
-	fp3_copy(r->z, p->z);
-	r->coord = p->coord;
-}
+TMPL_EP_UTIL(ep3, fp3);
 
 void ep3_rand(ep3_t p) {
 	bn_t n, k;
@@ -75,37 +60,6 @@ void ep3_rand(ep3_t p) {
 	RLC_FINALLY {
 		bn_free(k);
 		bn_free(n);
-	}
-}
-
-void ep3_blind(ep3_t r, const ep3_t p) {
-	fp3_t rand;
-
-	fp3_null(rand);
-
-	RLC_TRY {
-		fp3_new(rand);
-		fp3_rand(rand);
-#if EP_ADD == BASIC
-		(void)rand;
-		ep3_copy(r, p);
-#elif EP_ADD == PROJC
-		fp3_mul(r->x, p->x, rand);
-		fp3_mul(r->y, p->y, rand);
-		fp3_mul(r->z, p->z, rand);
-		r->coord = PROJC;
-#elif EP_ADD == JACOB
-		fp3_mul(r->z, p->z, rand);
-		fp3_mul(r->y, p->y, rand);
-		fp3_sqr(rand, rand);
-		fp3_mul(r->x, r->x, rand);
-		fp3_mul(r->y, r->y, rand);
-		r->coord = JACOB;
-#endif
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		fp3_free(rand);
 	}
 }
 
@@ -173,29 +127,6 @@ void ep3_rhs(fp3_t rhs, const fp3_t x) {
 	}
 }
 
-int ep3_on_curve(const ep3_t p) {
-	ep3_t t;
-	int r = 0;
-
-	ep3_null(t);
-
-	RLC_TRY {
-		ep3_new(t);
-
-		ep3_norm(t, p);
-
-		ep3_rhs(t->x, t->x);
-		fp3_sqr(t->y, t->y);
-
-		r = (fp3_cmp(t->x, t->y) == RLC_EQ) || ep3_is_infty(p);
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		ep3_free(t);
-	}
-	return r;
-}
-
 void ep3_tab(ep3_t *t, const ep3_t p, int w) {
 	if (w > 2) {
 		ep3_dbl(t[0], p);
@@ -215,12 +146,6 @@ void ep3_tab(ep3_t *t, const ep3_t p, int w) {
 #else
 	ep3_copy(t[0], p);
 #endif
-}
-
-void ep3_print(const ep3_t p) {
-	fp3_print(p->x);
-	fp3_print(p->y);
-	fp3_print(p->z);
 }
 
 size_t ep3_size_bin(const ep3_t a, int pack) {

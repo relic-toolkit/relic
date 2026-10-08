@@ -31,28 +31,13 @@
  */
 
 #include "relic_core.h"
+#include "relic_ep_util_tmpl.h"
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
-int ep8_is_infty(const ep8_t p) {
-	return (fp8_is_zero(p->z) == 1);
-}
-
-void ep8_set_infty(ep8_t p) {
-	fp8_zero(p->x);
-	fp8_zero(p->y);
-	fp8_zero(p->z);
-	p->coord = BASIC;
-}
-
-void ep8_copy(ep8_t r, const ep8_t p) {
-	fp8_copy(r->x, p->x);
-	fp8_copy(r->y, p->y);
-	fp8_copy(r->z, p->z);
-	r->coord = p->coord;
-}
+TMPL_EP_UTIL(ep8, fp8);
 
 void ep8_rand(ep8_t p) {
 	bn_t n, k;
@@ -75,37 +60,6 @@ void ep8_rand(ep8_t p) {
 	RLC_FINALLY {
 		bn_free(k);
 		bn_free(n);
-	}
-}
-
-void ep8_blind(ep8_t r, const ep8_t p) {
-	fp8_t rand;
-
-	fp8_null(rand);
-
-	RLC_TRY {
-		fp8_new(rand);
-		fp8_rand(rand);
-#if EP_ADD == BASIC
-		(void)rand;
-		ep8_copy(r, p);
-#elif EP_ADD == PROJC
-		fp8_mul(r->x, p->x, rand);
-		fp8_mul(r->y, p->y, rand);
-		fp8_mul(r->z, p->z, rand);
-		r->coord = PROJC;
-#elif EP_ADD == JACOB
-		fp8_mul(r->z, p->z, rand);
-		fp8_mul(r->y, p->y, rand);
-		fp8_sqr(rand, rand);
-		fp8_mul(r->x, r->x, rand);
-		fp8_mul(r->y, r->y, rand);
-		r->coord = JACOB;
-#endif
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		fp8_free(rand);
 	}
 }
 
@@ -175,29 +129,6 @@ void ep8_rhs(fp8_t rhs, const fp8_t x) {
 	}
 }
 
-int ep8_on_curve(const ep8_t p) {
-	ep8_t t;
-	int r = 0;
-
-	ep8_null(t);
-
-	RLC_TRY {
-		ep8_new(t);
-
-		ep8_norm(t, p);
-
-		ep8_rhs(t->x, t->x);
-		fp8_sqr(t->y, t->y);
-
-		r = (fp8_cmp(t->x, t->y) == RLC_EQ) || ep8_is_infty(p);
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		ep8_free(t);
-	}
-	return r;
-}
-
 void ep8_tab(ep8_t *t, const ep8_t p, int w) {
 	if (w > 2) {
 		ep8_dbl(t[0], p);
@@ -217,12 +148,6 @@ void ep8_tab(ep8_t *t, const ep8_t p, int w) {
 #else
 	ep8_copy(t[0], p);
 #endif
-}
-
-void ep8_print(const ep8_t p) {
-	fp8_print(p->x);
-	fp8_print(p->y);
-	fp8_print(p->z);
 }
 
 size_t ep8_size_bin(const ep8_t a, int pack) {

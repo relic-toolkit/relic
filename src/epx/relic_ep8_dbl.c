@@ -83,47 +83,18 @@ TMPL_DBL_JACOB_IMP(ep8, fp8);
 
 #if EP_ADD == BASIC || !defined(STRIP)
 
-void ep8_dbl_basic(ep8_t r, const ep8_t p) {
-	if (ep8_is_infty(p)) {
-		ep8_set_infty(r);
-		return;
-	}
-	ep8_dbl_basic_imp(r, NULL, p);
-}
-
-void ep8_dbl_slp_basic(ep8_t r, fp8_t s, const ep8_t p) {
-	if (ep8_is_infty(p)) {
-		ep8_set_infty(r);
-		return;
-	}
-
-	ep8_dbl_basic_imp(r, s, p);
-}
+TMPL_DBL_BASIC(ep8, fp8);
 
 #endif
 
 #if EP_ADD == PROJC || !defined(STRIP)
 
-void ep8_dbl_projc(ep8_t r, const ep8_t p) {
-	if (ep8_is_infty(p)) {
-		ep8_set_infty(r);
-		return;
-	}
-
-	ep8_dbl_projc_imp(r, p);
-}
+TMPL_DBL(ep8, projc);
 
 #endif
 
 #if EP_ADD == JACOB || !defined(STRIP)
 
-void ep8_dbl_jacob(ep8_t r, const ep8_t p) {
-	if (ep8_is_infty(p)) {
-		ep8_set_infty(r);
-		return;
-	}
-
-	ep8_dbl_jacob_imp(r, p);
-}
+TMPL_DBL(ep8, jacob);
 
 #endif

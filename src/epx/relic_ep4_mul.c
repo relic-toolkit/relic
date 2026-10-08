@@ -30,6 +30,7 @@
  * @ingroup epx
  */
 #include "relic_core.h"
+#include "relic_ep_mul_tmpl.h"
 
 /*============================================================================*/
 /* Private definitions                                                        */
@@ -728,32 +729,7 @@ void ep4_mul_lwreg(ep4_t r, const ep4_t p, const bn_t k) {
 
 #endif
 
-void ep4_mul_gen(ep4_t r, const bn_t k) {
-	if (bn_is_zero(k)) {
-		ep4_set_infty(r);
-		return;
-	}
-
-#ifdef EP_PRECO
-	ep4_mul_fix(r, ep4_curve_get_tab(), k);
-#else
-	ep4_t g;
-
-	ep4_null(g);
-
-	RLC_TRY {
-		ep4_new(g);
-		ep4_curve_get_gen(g);
-		ep4_mul(r, g, k);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		ep4_free(g);
-	}
-#endif
-}
+TMPL_EP_MUL_GEN(ep4);
 
 void ep4_mul_dig(ep4_t r, const ep4_t p, const dig_t k) {
 	ep4_t t;

@@ -62,17 +62,23 @@ static int memory2(void) {
 
 static int util2(void) {
 	int l, code = RLC_ERR;
-	ep2_t a, b, c;
+	ep2_t a, b, c, t[3];
 	uint8_t bin[4 * RLC_FP_BYTES + 1];
 
 	ep2_null(a);
 	ep2_null(b);
 	ep2_null(c);
+	for (int j = 0; j < 3; j++) {
+		ep2_null(t[j]);
+	}
 
 	RLC_TRY {
 		ep2_new(a);
 		ep2_new(b);
 		ep2_new(c);
+		for (int j = 0; j < 3; j++) {
+			ep2_new(t[j]);
+		}
 
 		TEST_CASE("copy and comparison are consistent") {
 			ep2_rand(a);
@@ -140,8 +146,28 @@ static int util2(void) {
 
 		TEST_CASE("blinding is consistent") {
 			ep2_rand(a);
+			ep2_rand(b);
+			ep2_blind(b, a);
+			TEST_ASSERT(ep2_on_curve(b), end);
+			TEST_ASSERT(ep2_cmp(a, b) == RLC_EQ, end);
 			ep2_blind(a, a);
 			TEST_ASSERT(ep2_on_curve(a), end);
+			TEST_ASSERT(ep2_cmp(a, b) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("simultaneous normalization is correct") {
+			ep2_rand(a);
+			ep2_dbl(t[0], a);
+			ep2_set_infty(t[1]);
+			ep2_rand(b);
+			ep2_dbl(t[2], b);
+			ep2_dbl(a, a);
+			ep2_dbl(b, b);
+			ep2_norm_sim(t, (const ep2_t *)t, 3);
+			TEST_ASSERT(ep2_cmp(t[0], a) == RLC_EQ, end);
+			TEST_ASSERT(ep2_is_infty(t[1]), end);
+			TEST_ASSERT(ep2_cmp(t[2], b) == RLC_EQ, end);
+			TEST_ASSERT(t[0]->coord == BASIC && t[2]->coord == BASIC, end);
 		} TEST_END;
 
 		TEST_CASE("reading and writing a point are consistent") {
@@ -176,6 +202,9 @@ static int util2(void) {
 	ep2_free(a);
 	ep2_free(b);
 	ep2_free(c);
+	for (int j = 0; j < 3; j++) {
+		ep2_free(t[j]);
+	}
 	return code;
 }
 
@@ -1323,17 +1352,23 @@ static int memory3(void) {
 
 static int util3(void) {
 	int l, code = RLC_ERR;
-	ep3_t a, b, c;
+	ep3_t a, b, c, t[3];
 	uint8_t bin[8 * RLC_FP_BYTES + 1];
 
 	ep3_null(a);
 	ep3_null(b);
 	ep3_null(c);
+	for (int j = 0; j < 3; j++) {
+		ep3_null(t[j]);
+	}
 
 	RLC_TRY {
 		ep3_new(a);
 		ep3_new(b);
 		ep3_new(c);
+		for (int j = 0; j < 3; j++) {
+			ep3_new(t[j]);
+		}
 
 		TEST_CASE("copy and comparison are consistent") {
 			ep3_rand(a);
@@ -1401,8 +1436,28 @@ static int util3(void) {
 
 		TEST_CASE("blinding is consistent") {
 			ep3_rand(a);
+			ep3_rand(b);
+			ep3_blind(b, a);
+			TEST_ASSERT(ep3_on_curve(b), end);
+			TEST_ASSERT(ep3_cmp(a, b) == RLC_EQ, end);
 			ep3_blind(a, a);
 			TEST_ASSERT(ep3_on_curve(a), end);
+			TEST_ASSERT(ep3_cmp(a, b) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("simultaneous normalization is correct") {
+			ep3_rand(a);
+			ep3_dbl(t[0], a);
+			ep3_set_infty(t[1]);
+			ep3_rand(b);
+			ep3_dbl(t[2], b);
+			ep3_dbl(a, a);
+			ep3_dbl(b, b);
+			ep3_norm_sim(t, (const ep3_t *)t, 3);
+			TEST_ASSERT(ep3_cmp(t[0], a) == RLC_EQ, end);
+			TEST_ASSERT(ep3_is_infty(t[1]), end);
+			TEST_ASSERT(ep3_cmp(t[2], b) == RLC_EQ, end);
+			TEST_ASSERT(t[0]->coord == BASIC && t[2]->coord == BASIC, end);
 		} TEST_END;
 
 		TEST_CASE("reading and writing a point are consistent") {
@@ -1435,6 +1490,9 @@ static int util3(void) {
 	ep3_free(a);
 	ep3_free(b);
 	ep3_free(c);
+	for (int j = 0; j < 3; j++) {
+		ep3_free(t[j]);
+	}
 	return code;
 }
 
@@ -2438,17 +2496,23 @@ static int memory4(void) {
 
 static int util4(void) {
 	int l, code = RLC_ERR;
-	ep4_t a, b, c;
+	ep4_t a, b, c, t[3];
 	uint8_t bin[8 * RLC_FP_BYTES + 1];
 
 	ep4_null(a);
 	ep4_null(b);
 	ep4_null(c);
+	for (int j = 0; j < 3; j++) {
+		ep4_null(t[j]);
+	}
 
 	RLC_TRY {
 		ep4_new(a);
 		ep4_new(b);
 		ep4_new(c);
+		for (int j = 0; j < 3; j++) {
+			ep4_new(t[j]);
+		}
 
 		TEST_CASE("copy and comparison are consistent") {
 			ep4_rand(a);
@@ -2516,8 +2580,28 @@ static int util4(void) {
 
 		TEST_CASE("blinding is consistent") {
 			ep4_rand(a);
+			ep4_rand(b);
+			ep4_blind(b, a);
+			TEST_ASSERT(ep4_on_curve(b), end);
+			TEST_ASSERT(ep4_cmp(a, b) == RLC_EQ, end);
 			ep4_blind(a, a);
 			TEST_ASSERT(ep4_on_curve(a), end);
+			TEST_ASSERT(ep4_cmp(a, b) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("simultaneous normalization is correct") {
+			ep4_rand(a);
+			ep4_dbl(t[0], a);
+			ep4_set_infty(t[1]);
+			ep4_rand(b);
+			ep4_dbl(t[2], b);
+			ep4_dbl(a, a);
+			ep4_dbl(b, b);
+			ep4_norm_sim(t, (const ep4_t *)t, 3);
+			TEST_ASSERT(ep4_cmp(t[0], a) == RLC_EQ, end);
+			TEST_ASSERT(ep4_is_infty(t[1]), end);
+			TEST_ASSERT(ep4_cmp(t[2], b) == RLC_EQ, end);
+			TEST_ASSERT(t[0]->coord == BASIC && t[2]->coord == BASIC, end);
 		} TEST_END;
 
 		TEST_CASE("reading and writing a point are consistent") {
@@ -2552,6 +2636,9 @@ static int util4(void) {
 	ep4_free(a);
 	ep4_free(b);
 	ep4_free(c);
+	for (int j = 0; j < 3; j++) {
+		ep4_free(t[j]);
+	}
 	return code;
 }
 
@@ -3555,17 +3642,23 @@ static int memory8(void) {
 
 static int util8(void) {
 	int l, code = RLC_ERR;
-	ep8_t a, b, c;
+	ep8_t a, b, c, t[3];
 	uint8_t bin[16 * RLC_FP_BYTES + 1];
 
 	ep8_null(a);
 	ep8_null(b);
 	ep8_null(c);
+	for (int j = 0; j < 3; j++) {
+		ep8_null(t[j]);
+	}
 
 	RLC_TRY {
 		ep8_new(a);
 		ep8_new(b);
 		ep8_new(c);
+		for (int j = 0; j < 3; j++) {
+			ep8_new(t[j]);
+		}
 
 		TEST_CASE("copy and comparison are consistent") {
 			ep8_rand(a);
@@ -3633,8 +3726,28 @@ static int util8(void) {
 
 		TEST_CASE("blinding is consistent") {
 			ep8_rand(a);
+			ep8_rand(b);
+			ep8_blind(b, a);
+			TEST_ASSERT(ep8_on_curve(b), end);
+			TEST_ASSERT(ep8_cmp(a, b) == RLC_EQ, end);
 			ep8_blind(a, a);
 			TEST_ASSERT(ep8_on_curve(a), end);
+			TEST_ASSERT(ep8_cmp(a, b) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("simultaneous normalization is correct") {
+			ep8_rand(a);
+			ep8_dbl(t[0], a);
+			ep8_set_infty(t[1]);
+			ep8_rand(b);
+			ep8_dbl(t[2], b);
+			ep8_dbl(a, a);
+			ep8_dbl(b, b);
+			ep8_norm_sim(t, (const ep8_t *)t, 3);
+			TEST_ASSERT(ep8_cmp(t[0], a) == RLC_EQ, end);
+			TEST_ASSERT(ep8_is_infty(t[1]), end);
+			TEST_ASSERT(ep8_cmp(t[2], b) == RLC_EQ, end);
+			TEST_ASSERT(t[0]->coord == BASIC && t[2]->coord == BASIC, end);
 		} TEST_END;
 
 		TEST_CASE("reading and writing a point are consistent") {
@@ -3669,6 +3782,9 @@ static int util8(void) {
 	ep8_free(a);
 	ep8_free(b);
 	ep8_free(c);
+	for (int j = 0; j < 3; j++) {
+		ep8_free(t[j]);
+	}
 	return code;
 }
 

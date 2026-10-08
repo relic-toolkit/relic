@@ -31,28 +31,13 @@
  */
 
 #include "relic_core.h"
+#include "relic_ep_util_tmpl.h"
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
-int ep_is_infty(const ep_t p) {
-	return (fp_is_zero(p->z) == 1);
-}
-
-void ep_set_infty(ep_t p) {
-	fp_zero(p->x);
-	fp_zero(p->y);
-	fp_zero(p->z);
-	p->coord = BASIC;
-}
-
-void ep_copy(ep_t r, const ep_t p) {
-	fp_copy(r->x, p->x);
-	fp_copy(r->y, p->y);
-	fp_copy(r->z, p->z);
-	r->coord = p->coord;
-}
+TMPL_EP_UTIL(ep, fp);
 
 void ep_rand(ep_t p) {
 	bn_t n, k;
@@ -73,37 +58,6 @@ void ep_rand(ep_t p) {
 	} RLC_FINALLY {
 		bn_free(k);
 		bn_free(n);
-	}
-}
-
-void ep_blind(ep_t r, const ep_t p) {
-	fp_t rand;
-
-	fp_null(rand);
-
-	RLC_TRY {
-		fp_new(rand);
-		fp_rand(rand);
-#if EP_ADD == BASIC
-		(void)rand;
-		ep_copy(r, p);
-#elif EP_ADD == PROJC
-		fp_mul(r->x, p->x, rand);
-		fp_mul(r->y, p->y, rand);
-		fp_mul(r->z, p->z, rand);
-		r->coord = PROJC;
-#elif EP_ADD == JACOB
-		fp_mul(r->z, p->z, rand);
-		fp_mul(r->y, p->y, rand);
-		fp_sqr(rand, rand);
-		fp_mul(r->x, r->x, rand);
-		fp_mul(r->y, r->y, rand);
-		r->coord = JACOB;
-#endif
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		fp_free(rand);
 	}
 }
 
@@ -175,27 +129,6 @@ void ep_rhs(fp_t rhs, const fp_t x) {
 	}
 }
 
-int ep_on_curve(const ep_t p) {
-	ep_t t;
-	int r = 0;
-
-	ep_null(t);
-
-	RLC_TRY {
-		ep_new(t);
-
-		ep_norm(t, p);
-		ep_rhs(t->x, t->x);
-		fp_sqr(t->y, t->y);
-		r = (fp_cmp(t->x, t->y) == RLC_EQ) || ep_is_infty(p);
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		ep_free(t);
-	}
-	return r;
-}
-
 void ep_tab(ep_t *t, const ep_t p, int w) {
 	if (w > 2) {
 		ep_dbl(t[0], p);
@@ -215,12 +148,6 @@ void ep_tab(ep_t *t, const ep_t p, int w) {
 #else
 	ep_copy(t[0], p);
 #endif
-}
-
-void ep_print(const ep_t p) {
-	fp_print(p->x);
-	fp_print(p->y);
-	fp_print(p->z);
 }
 
 size_t ep_size_bin(const ep_t a, int pack) {

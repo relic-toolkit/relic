@@ -105,91 +105,20 @@ TMPL_ADD_JACOB_IMP(ep, fp);
 
 #if EP_ADD == BASIC || !defined(STRIP)
 
-void ep_add_basic(ep_t r, const ep_t p, const ep_t q) {
-	if (ep_is_infty(p)) {
-		ep_copy(r, q);
-		return;
-	}
-
-	if (ep_is_infty(q)) {
-		ep_copy(r, p);
-		return;
-	}
-
-	ep_add_basic_imp(r, NULL, p, q);
-}
-
-void ep_add_slp_basic(ep_t r, fp_t s, const ep_t p, const ep_t q) {
-	if (ep_is_infty(p)) {
-		ep_copy(r, q);
-		return;
-	}
-
-	if (ep_is_infty(q)) {
-		ep_copy(r, p);
-		return;
-	}
-
-	ep_add_basic_imp(r, s, p, q);
-}
+TMPL_ADD_BASIC(ep, fp);
 
 #endif
 
 #if EP_ADD == PROJC || !defined(STRIP)
 
-void ep_add_projc(ep_t r, const ep_t p, const ep_t q) {
-	if (ep_is_infty(p)) {
-		ep_copy(r, q);
-		return;
-	}
-
-	if (ep_is_infty(q)) {
-		ep_copy(r, p);
-		return;
-	}
-
-	ep_add_projc_imp(r, p, q);
-}
+TMPL_ADD(ep, projc);
 
 #endif
 
 #if EP_ADD == JACOB || !defined(STRIP)
 
-void ep_add_jacob(ep_t r, const ep_t p, const ep_t q) {
-	if (ep_is_infty(p)) {
-		ep_copy(r, q);
-		return;
-	}
-
-	if (ep_is_infty(q)) {
-		ep_copy(r, p);
-		return;
-	}
-
-	ep_add_jacob_imp(r, p, q);
-}
+TMPL_ADD(ep, jacob);
 
 #endif
 
-void ep_sub(ep_t r, const ep_t p, const ep_t q) {
-	ep_t t;
-
-	ep_null(t);
-
-	if (p == q) {
-		ep_set_infty(r);
-		return;
-	}
-
-	RLC_TRY {
-		ep_new(t);
-		ep_neg(t, q);
-		ep_add(r, p, t);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		ep_free(t);
-	}
-}
+TMPL_SUB(ep);

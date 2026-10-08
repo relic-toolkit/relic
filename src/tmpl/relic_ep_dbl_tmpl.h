@@ -428,3 +428,45 @@
 		}																	\
 	}																		\
 
+/**
+ * Defines a template for point doubling in affine coordinates, with and
+ * without returning the slope.
+ *
+ * @param[in] C			- the curve.
+ * @param[in] F			- the field prefix.
+ */
+#define TMPL_DBL_BASIC(C, F)												\
+	void C##_dbl_basic(C##_t r, const C##_t p) {							\
+		if (C##_is_infty(p)) {												\
+			C##_set_infty(r);												\
+			return;															\
+		}																	\
+																			\
+		C##_dbl_basic_imp(r, NULL, p);										\
+	}																		\
+																			\
+	void C##_dbl_slp_basic(C##_t r, F##_t s, const C##_t p) {				\
+		if (C##_is_infty(p)) {												\
+			C##_set_infty(r);												\
+			return;															\
+		}																	\
+																			\
+		C##_dbl_basic_imp(r, s, p);											\
+	}
+
+/**
+ * Defines a template for point doubling in projective or Jacobian
+ * coordinates.
+ *
+ * @param[in] C			- the curve.
+ * @param[in] M			- the coordinate system (projc or jacob).
+ */
+#define TMPL_DBL(C, M)														\
+	void C##_dbl_##M(C##_t r, const C##_t p) {								\
+		if (C##_is_infty(p)) {												\
+			C##_set_infty(r);												\
+			return;															\
+		}																	\
+																			\
+		C##_dbl_##M##_imp(r, p);											\
+	}

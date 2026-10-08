@@ -31,28 +31,13 @@
  */
 
 #include "relic_core.h"
+#include "relic_ep_util_tmpl.h"
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
-int ep2_is_infty(const ep2_t p) {
-	return (fp2_is_zero(p->z) == 1);
-}
-
-void ep2_set_infty(ep2_t p) {
-	fp2_zero(p->x);
-	fp2_zero(p->y);
-	fp2_zero(p->z);
-	p->coord = BASIC;
-}
-
-void ep2_copy(ep2_t r, const ep2_t p) {
-	fp2_copy(r->x, p->x);
-	fp2_copy(r->y, p->y);
-	fp2_copy(r->z, p->z);
-	r->coord = p->coord;
-}
+TMPL_EP_UTIL(ep2, fp2);
 
 void ep2_rand(ep2_t p) {
 	bn_t n, k;
@@ -75,37 +60,6 @@ void ep2_rand(ep2_t p) {
 	RLC_FINALLY {
 		bn_free(k);
 		bn_free(n);
-	}
-}
-
-void ep2_blind(ep2_t r, const ep2_t p) {
-	fp2_t rand;
-
-	fp2_null(rand);
-
-	RLC_TRY {
-		fp2_new(rand);
-		fp2_rand(rand);
-#if EP_ADD == BASIC
-		(void)rand;
-		ep2_copy(r, p);
-#elif EP_ADD == PROJC
-		fp2_mul(r->x, p->x, rand);
-		fp2_mul(r->y, p->y, rand);
-		fp2_mul(r->z, p->z, rand);
-		r->coord = PROJC;
-#elif EP_ADD == JACOB
-		fp2_mul(r->z, p->z, rand);
-		fp2_mul(r->y, p->y, rand);
-		fp2_sqr(rand, rand);
-		fp2_mul(r->x, r->x, rand);
-		fp2_mul(r->y, r->y, rand);
-		r->coord = JACOB;
-#endif
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		fp2_free(rand);
 	}
 }
 
@@ -173,30 +127,6 @@ void ep2_rhs(fp2_t rhs, const fp2_t x) {
 	}
 }
 
-
-int ep2_on_curve(const ep2_t p) {
-	ep2_t t;
-	int r = 0;
-
-	ep2_null(t);
-
-	RLC_TRY {
-		ep2_new(t);
-
-		ep2_norm(t, p);
-
-		ep2_rhs(t->x, t->x);
-		fp2_sqr(t->y, t->y);
-
-		r = (fp2_cmp(t->x, t->y) == RLC_EQ) || ep2_is_infty(p);
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		ep2_free(t);
-	}
-	return r;
-}
-
 void ep2_tab(ep2_t *t, const ep2_t p, int w) {
 	if (w > 2) {
 		ep2_dbl(t[0], p);
@@ -216,12 +146,6 @@ void ep2_tab(ep2_t *t, const ep2_t p, int w) {
 #else
 	ep2_copy(t[0], p);
 #endif
-}
-
-void ep2_print(const ep2_t p) {
-	fp2_print(p->x);
-	fp2_print(p->y);
-	fp2_print(p->z);
 }
 
 size_t ep2_size_bin(const ep2_t a, int pack) {

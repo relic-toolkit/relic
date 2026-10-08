@@ -106,91 +106,20 @@ TMPL_ADD_JACOB_IMP(ep3, fp3);
 
 #if EP_ADD == BASIC || !defined(STRIP)
 
-void ep3_add_basic(ep3_t r, const ep3_t p, const ep3_t q) {
-	if (ep3_is_infty(p)) {
-		ep3_copy(r, q);
-		return;
-	}
-
-	if (ep3_is_infty(q)) {
-		ep3_copy(r, p);
-		return;
-	}
-
-	ep3_add_basic_imp(r, NULL, p, q);
-}
-
-void ep3_add_slp_basic(ep3_t r, fp3_t s, const ep3_t p, const ep3_t q) {
-	if (ep3_is_infty(p)) {
-		ep3_copy(r, q);
-		return;
-	}
-
-	if (ep3_is_infty(q)) {
-		ep3_copy(r, p);
-		return;
-	}
-
-	ep3_add_basic_imp(r, s, p, q);
-}
+TMPL_ADD_BASIC(ep3, fp3);
 
 #endif
 
 #if EP_ADD == PROJC || !defined(STRIP)
 
-void ep3_add_projc(ep3_t r, const ep3_t p, const ep3_t q) {
-	if (ep3_is_infty(p)) {
-		ep3_copy(r, q);
-		return;
-	}
-
-	if (ep3_is_infty(q)) {
-		ep3_copy(r, p);
-		return;
-	}
-
-	ep3_add_projc_imp(r, p, q);
-}
+TMPL_ADD(ep3, projc);
 
 #endif
 
 #if EP_ADD == JACOB || !defined(STRIP)
 
-void ep3_add_jacob(ep3_t r, const ep3_t p, const ep3_t q) {
-	if (ep3_is_infty(p)) {
-		ep3_copy(r, q);
-		return;
-	}
-
-	if (ep3_is_infty(q)) {
-		ep3_copy(r, p);
-		return;
-	}
-
-	ep3_add_jacob_imp(r, p, q);
-}
+TMPL_ADD(ep3, jacob);
 
 #endif
 
-void ep3_sub(ep3_t r, const ep3_t p, const ep3_t q) {
-	ep3_t t;
-
-	ep3_null(t);
-
-	if (p == q) {
-		ep3_set_infty(r);
-		return;
-	}
-
-	RLC_TRY {
-		ep3_new(t);
-		ep3_neg(t, q);
-		ep3_add(r, p, t);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		ep3_free(t);
-	}
-}
+TMPL_SUB(ep3);

@@ -30,23 +30,10 @@
  */
 
 #include "relic_core.h"
+#include "relic_ep_util_tmpl.h"
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void ep_neg(ep_t r, const ep_t p) {
-	if (ep_is_infty(p)) {
-		ep_set_infty(r);
-		return;
-	}
-
-	if (r != p) {
-		fp_copy(r->x, p->x);
-		fp_copy(r->z, p->z);
-	}
-
-	fp_neg(r->y, p->y);
-
-	r->coord = p->coord;
-}
+TMPL_EP_NEG(ep, fp);

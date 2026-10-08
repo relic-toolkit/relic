@@ -62,17 +62,23 @@ static int memory(void) {
 
 static int util(void) {
 	int l, code = RLC_ERR;
-	ep_t a, b, c;
+	ep_t a, b, c, t[3];
 	uint8_t bin[2 * RLC_FP_BYTES + 1];
 
 	ep_null(a);
 	ep_null(b);
 	ep_null(c);
+	for (int j = 0; j < 3; j++) {
+		ep_null(t[j]);
+	}
 
 	RLC_TRY {
 		ep_new(a);
 		ep_new(b);
 		ep_new(c);
+		for (int j = 0; j < 3; j++) {
+			ep_new(t[j]);
+		}
 
 		TEST_CASE("copy and comparison are consistent") {
 			ep_rand(a);
@@ -141,8 +147,28 @@ static int util(void) {
 
 		TEST_CASE("blinding is consistent") {
 			ep_rand(a);
+			ep_rand(b);
+			ep_blind(b, a);
+			TEST_ASSERT(ep_on_curve(b), end);
+			TEST_ASSERT(ep_cmp(a, b) == RLC_EQ, end);
 			ep_blind(a, a);
 			TEST_ASSERT(ep_on_curve(a), end);
+			TEST_ASSERT(ep_cmp(a, b) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("simultaneous normalization is correct") {
+			ep_rand(a);
+			ep_dbl(t[0], a);
+			ep_set_infty(t[1]);
+			ep_rand(b);
+			ep_dbl(t[2], b);
+			ep_dbl(a, a);
+			ep_dbl(b, b);
+			ep_norm_sim(t, (const ep_t *)t, 3);
+			TEST_ASSERT(ep_cmp(t[0], a) == RLC_EQ, end);
+			TEST_ASSERT(ep_is_infty(t[1]), end);
+			TEST_ASSERT(ep_cmp(t[2], b) == RLC_EQ, end);
+			TEST_ASSERT(t[0]->coord == BASIC && t[2]->coord == BASIC, end);
 		} TEST_END;
 
 		TEST_CASE("reading and writing a point are consistent") {
@@ -177,6 +203,9 @@ static int util(void) {
 	ep_free(a);
 	ep_free(b);
 	ep_free(c);
+	for (int j = 0; j < 3; j++) {
+		ep_free(t[j]);
+	}
 	return code;
 }
 

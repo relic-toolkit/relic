@@ -31,28 +31,13 @@
  */
 
 #include "relic_core.h"
+#include "relic_ep_util_tmpl.h"
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
-int ep4_is_infty(const ep4_t p) {
-	return (fp4_is_zero(p->z) == 1);
-}
-
-void ep4_set_infty(ep4_t p) {
-	fp4_zero(p->x);
-	fp4_zero(p->y);
-	fp4_zero(p->z);
-	p->coord = BASIC;
-}
-
-void ep4_copy(ep4_t r, const ep4_t p) {
-	fp4_copy(r->x, p->x);
-	fp4_copy(r->y, p->y);
-	fp4_copy(r->z, p->z);
-	r->coord = p->coord;
-}
+TMPL_EP_UTIL(ep4, fp4);
 
 void ep4_rand(ep4_t p) {
 	bn_t n, k;
@@ -75,37 +60,6 @@ void ep4_rand(ep4_t p) {
 	RLC_FINALLY {
 		bn_free(k);
 		bn_free(n);
-	}
-}
-
-void ep4_blind(ep4_t r, const ep4_t p) {
-	fp4_t rand;
-
-	fp4_null(rand);
-
-	RLC_TRY {
-		fp4_new(rand);
-		fp4_rand(rand);
-#if EP_ADD == BASIC
-		(void)rand;
-		ep4_copy(r, p);
-#elif EP_ADD == PROJC
-		fp4_mul(r->x, p->x, rand);
-		fp4_mul(r->y, p->y, rand);
-		fp4_mul(r->z, p->z, rand);
-		r->coord = PROJC;
-#elif EP_ADD == JACOB
-		fp4_mul(r->z, p->z, rand);
-		fp4_mul(r->y, p->y, rand);
-		fp4_sqr(rand, rand);
-		fp4_mul(r->x, r->x, rand);
-		fp4_mul(r->y, r->y, rand);
-		r->coord = JACOB;
-#endif
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		fp4_free(rand);
 	}
 }
 
@@ -173,29 +127,6 @@ void ep4_rhs(fp4_t rhs, const fp4_t x) {
 	}
 }
 
-int ep4_on_curve(const ep4_t p) {
-	ep4_t t;
-	int r = 0;
-
-	ep4_null(t);
-
-	RLC_TRY {
-		ep4_new(t);
-
-		ep4_norm(t, p);
-
-		ep4_rhs(t->x, t->x);
-		fp4_sqr(t->y, t->y);
-
-		r = (fp4_cmp(t->x, t->y) == RLC_EQ) || ep4_is_infty(p);
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		ep4_free(t);
-	}
-	return r;
-}
-
 void ep4_tab(ep4_t *t, const ep4_t p, int w) {
 	if (w > 2) {
 		ep4_dbl(t[0], p);
@@ -215,12 +146,6 @@ void ep4_tab(ep4_t *t, const ep4_t p, int w) {
 #else
 	ep4_copy(t[0], p);
 #endif
-}
-
-void ep4_print(const ep4_t p) {
-	fp4_print(p->x);
-	fp4_print(p->y);
-	fp4_print(p->z);
 }
 
 size_t ep4_size_bin(const ep4_t a, int pack) {

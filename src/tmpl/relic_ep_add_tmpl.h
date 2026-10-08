@@ -699,3 +699,91 @@
 	}																		\
 
 #endif
+
+/**
+ * Defines a template for point addition in affine coordinates, with and
+ * without returning the slope.
+ *
+ * @param[in] C			- the curve.
+ * @param[in] F			- the field prefix.
+ */
+#define TMPL_ADD_BASIC(C, F)												\
+	void C##_add_basic(C##_t r, const C##_t p, const C##_t q) {				\
+		if (C##_is_infty(p)) {												\
+			C##_copy(r, q);													\
+			return;															\
+		}																	\
+																			\
+		if (C##_is_infty(q)) {												\
+			C##_copy(r, p);													\
+			return;															\
+		}																	\
+																			\
+		C##_add_basic_imp(r, NULL, p, q);									\
+	}																		\
+																			\
+	void C##_add_slp_basic(C##_t r, F##_t s, const C##_t p,					\
+			const C##_t q) {												\
+		if (C##_is_infty(p)) {												\
+			C##_copy(r, q);													\
+			return;															\
+		}																	\
+																			\
+		if (C##_is_infty(q)) {												\
+			C##_copy(r, p);													\
+			return;															\
+		}																	\
+																			\
+		C##_add_basic_imp(r, s, p, q);										\
+	}
+
+/**
+ * Defines a template for point addition in projective or Jacobian
+ * coordinates.
+ *
+ * @param[in] C			- the curve.
+ * @param[in] M			- the coordinate system (projc or jacob).
+ */
+#define TMPL_ADD(C, M)														\
+	void C##_add_##M(C##_t r, const C##_t p, const C##_t q) {				\
+		if (C##_is_infty(p)) {												\
+			C##_copy(r, q);													\
+			return;															\
+		}																	\
+																			\
+		if (C##_is_infty(q)) {												\
+			C##_copy(r, p);													\
+			return;															\
+		}																	\
+																			\
+		C##_add_##M##_imp(r, p, q);											\
+	}
+
+/**
+ * Defines a template for point subtraction.
+ *
+ * @param[in] C			- the curve.
+ */
+#define TMPL_SUB(C)															\
+	void C##_sub(C##_t r, const C##_t p, const C##_t q) {					\
+		C##_t t;															\
+																			\
+		C##_null(t);														\
+																			\
+		if (p == q) {														\
+			C##_set_infty(r);												\
+			return;															\
+		}																	\
+																			\
+		RLC_TRY {															\
+			C##_new(t);														\
+			C##_neg(t, q);													\
+			C##_add(r, p, t);												\
+		}																	\
+		RLC_CATCH_ANY {														\
+			RLC_THROW(ERR_CAUGHT);											\
+		}																	\
+		RLC_FINALLY {														\
+			C##_free(t);													\
+		}																	\
+	}

@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (c) 2022 RELIC Authors
+ * Copyright (c) 2026 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -24,28 +24,58 @@
 /**
  * @file
  *
- * Implementation of point normalization on prime elliptic curves over a cubic
- * extension field.
+ * Templates for point multiplication on prime elliptic curves.
  *
- * @ingroup epx
+ * @ingroup tmpl
  */
 
 #include "relic_core.h"
-#include "relic_ep_util_tmpl.h"
 
 /*============================================================================*/
 /* Private definitions                                                        */
 /*============================================================================*/
 
-#if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
+/**
+ * Defines a template for multiplying the generator by an integer.
+ *
+ * @param[in] C			- the curve.
+ */
+#ifdef EP_PRECO
 
-TMPL_EP_NORM_IMP(ep3, fp3);
+#define TMPL_EP_MUL_GEN(C)													\
+	void C##_mul_gen(C##_t r, const bn_t k) {								\
+		if (bn_is_zero(k)) {												\
+			C##_set_infty(r);												\
+			return;															\
+		}																	\
+																			\
+		C##_mul_fix(r, C##_curve_get_tab(), k);								\
+	}
 
-#endif /* EP_ADD == PROJC */
+#else
 
-/*============================================================================*/
-/* Public definitions                                                         */
-/*============================================================================*/
+#define TMPL_EP_MUL_GEN(C)													\
+	void C##_mul_gen(C##_t r, const bn_t k) {								\
+		if (bn_is_zero(k)) {												\
+			C##_set_infty(r);												\
+			return;															\
+		}																	\
+																			\
+		C##_t g;															\
+																			\
+		C##_null(g);														\
+																			\
+		RLC_TRY {															\
+			C##_new(g);														\
+			C##_curve_get_gen(g);											\
+			C##_mul(r, g, k);												\
+		}																	\
+		RLC_CATCH_ANY {														\
+			RLC_THROW(ERR_CAUGHT);											\
+		}																	\
+		RLC_FINALLY {														\
+			C##_free(g);													\
+		}																	\
+	}
 
-TMPL_EP_NORM(ep3, fp3);
-
+#endif
