@@ -427,7 +427,7 @@ static void ep3_mul_reg_imp(ep3_t r, const ep3_t p, const bn_t k) {
 				fp3_copy_sec(u->x, t[j]->x, j == n);
 				fp3_copy_sec(u->y, t[j]->y, j == n);
 #if !defined(EP_MIXED)
-				fp_copy_sec(u->z, t[j]->z, j == n);
+				fp3_copy_sec(u->z, t[j]->z, j == n);
 #endif
 			}
 			ep3_neg(v, u);

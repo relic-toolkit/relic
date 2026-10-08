@@ -362,7 +362,7 @@ static void ep2_mul_reg_imp(ep2_t r, const ep2_t p, const bn_t k) {
 				fp2_copy_sec(u->x, t[j]->x, j == n);
 				fp2_copy_sec(u->y, t[j]->y, j == n);
 #if !defined(EP_MIXED)
-				fp_copy_sec(u->z, t[j]->z, j == n);
+				fp2_copy_sec(u->z, t[j]->z, j == n);
 #endif
 			}
 			ep2_neg(v, u);

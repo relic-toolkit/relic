@@ -244,7 +244,8 @@ static void ep4_mul_reg_gls(ep4_t r, const ep4_t p, const bn_t k) {
 
 #if defined(EP_MIXED)
 		for (size_t i = 0; i < c; i++) {
-			ep4_norm_sim(t[i] + 1, t[i] + 1, (1 << 3) - 1);
+			/* The endomorphism may return points in projective coordinates. */
+			ep4_norm_sim(t[i], (const ep4_t *)t[i], 1 << 3);
 		}
 		fp4_set_dig(r->z, 1);
 		fp4_set_dig(q[1]->z, 1);
@@ -303,7 +304,7 @@ static void ep4_mul_reg_gls(ep4_t r, const ep4_t p, const bn_t k) {
 		}
 
 		/* Convert r to affine coordinates. */
-		//ep4_norm(r, r);
+		ep4_norm(r, r);
 	}
 	RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -433,7 +434,7 @@ static void ep4_mul_reg_imp(ep4_t r, const ep4_t p, const bn_t k) {
 				fp4_copy_sec(u->x, t[j]->x, j == n);
 				fp4_copy_sec(u->y, t[j]->y, j == n);
 #if !defined(EP_MIXED)
-				fp_copy_sec(u->z, t[j]->z, j == n);
+				fp4_copy_sec(u->z, t[j]->z, j == n);
 #endif
 			}
 			ep4_neg(v, u);
