@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (c) 2019 RELIC Authors
+ * Copyright (c) 2012 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -24,7 +24,7 @@
 /**
  * @file
  *
- * Implementation of multiplication in a 48-degree extension of a prime field.
+ * Implementation of arithmetic in the extension of degree 48 of a prime field.
  *
  * @ingroup fpx
  */
@@ -32,11 +32,22 @@
 #include "relic_core.h"
 #include "relic_fp_low.h"
 #include "relic_fpx_low.h"
+#include "relic_fpx_cyc_tmpl.h"
 #include "relic_fpx_mul_tmpl.h"
+#include "relic_fpx_sqr_tmpl.h"
+#include "relic_fpx_util_tmpl.h"
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
+
+TMPL_FPX_UTIL(fp48, fp24, 2);
+
+TMPL_FPX_BIN_QC(fp48, fp24, fp8, 48);
+
+TMPL_FPX_CMP(fp48, fp24, 2);
+
+TMPL_FPX_ADD(fp48, fp24, 2);
 
 #if FPX_RDC == BASIC || !defined(STRIP)
 
@@ -140,3 +151,101 @@ void fp48_mul_dxs(fp48_t c, const fp48_t a, const fp48_t b) {
 }
 
 TMPL_FPX_MUL_ART_QUAD(fp48, fp24, fp24_mul_art);
+
+#if FPX_RDC == BASIC || !defined(STRIP)
+
+TMPL_FPX_SQR_QUAD(fp48, fp24, fp24_mul_art);
+
+TMPL_SQR_CYC_QC(fp48, fp8, fp8_mul_art);
+
+TMPL_SQR_PCK_QC(fp48, fp8, fp8_mul_art);
+
+#endif
+
+#if FPX_RDC == LAZYR || !defined(STRIP)
+
+void fp48_sqr_unr(dv48_t c, const fp48_t a) {
+	fp24_t t;
+	dv24_t u0, u1;
+
+	fp24_null(t);
+	dv24_null_all(u0, u1);
+
+	RLC_TRY {
+		fp24_new(t);
+		dv24_new_all(u0, u1);
+
+		fp24_sqr_unr(u0, a[0]);
+		fp24_sqr_unr(u1, a[1]);
+		fp24_add(t, a[0], a[1]);
+		/* c_0 = u0 + w * u1, where w^3 = v generates Fp^8 over Fp^4. */
+		TMPL_DV_NADD(fp2, dv2, 4, 2, c[0][0], u0[0], u1[2]);
+		TMPL_DV_ADDC(fp2, dv2, 4, c[0][1], u0[1], u1[0]);
+		TMPL_DV_ADDC(fp2, dv2, 4, c[0][2], u0[2], u1[1]);
+		/* c_1 = (a_0 + a_1)^2 - a_0^2 - a_1^2. */
+		TMPL_DV_ADDC(fp2, dv2, 12, u1, u1, u0);
+		fp24_sqr_unr(u0, t);
+		TMPL_DV_SUBC(fp2, dv2, 12, c[1], u0, u1);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		fp24_free(t);
+		dv24_free_all(u0, u1);
+	}
+}
+
+TMPL_FPX_SQR_LAZYR(fp48, dv48, fp2, dv2, 24);
+
+TMPL_SQR_PCK_LAZYR_QC(fp48, fp8, dv8, fp2, dv2, 4, 2, fp8_sqr_unr, fp8_mul_art);
+
+TMPL_SQR_CYC_LAZYR_QC(fp48, fp8, dv8, fp2, dv2, 4, 2, fp8_sqr_unr);
+
+#endif
+
+TMPL_FPX_INV_QUAD(fp48, fp24, fp24_mul_art);
+
+TMPL_FPX_INV_CYC_QUAD(fp48, fp24);
+
+TMPL_FPX_EXP_CYC(fp48);
+
+TMPL_FPX_EXP_DIG(fp48);
+
+void fp48_frb(fp48_t c, const fp48_t a, int i) {
+	/* Cost of 52 multiplication in Fp^2 per Frobenius. */
+	fp48_copy(c, a);
+	for (; i % 48 > 0; i--) {
+		fp24_frb(c[0], c[0], 1);
+		fp24_frb(c[1], c[1], 1);
+		for (int j = 0; j < 3; j++) {
+			for (int k = 0; k < 2; k++) {
+				for (int l = 0; l < 2; l++) {
+					fp2_mul_frb(c[1][j][k][l], c[1][j][k][l], 2, 4);
+				}
+				if (fp_prime_get_mod8() == 3) {
+					fp4_mul_art(c[1][j][k], c[1][j][k]);
+				}
+			}
+			if ((fp_prime_get_mod8() % 4) == 3) {
+				fp8_mul_art(c[1][j], c[1][j]);
+			}
+		}
+	}
+}
+
+TMPL_FPX_CONV_CYC(fp48, 8);
+
+TMPL_FPX_TEST_CYC(fp48, 8);
+
+TMPL_FPX_BACK_CYC_QC(fp48, fp8, fp8_mul_art);
+
+TMPL_FPX_BACK_CYC_SIM_QC(fp48, fp8, fp8_mul_art);
+
+TMPL_EXP_CYC(fp48);
+
+TMPL_EXP_CYC_SIM(fp48, fp48_sqr_cyc);
+
+TMPL_EXP_CYC_SPS(fp48);
+
+TMPL_FPX_PCK_QC(fp48, fp8);
+
+TMPL_FPX_UPK_QC(fp48, fp8);

@@ -24,7 +24,7 @@
 /**
  * @file
  *
- * Implementation of multiplication in a dodecic extension of a prime field.
+ * Implementation of arithmetic in the dodecic extension of a prime field.
  *
  * @ingroup fpx
  */
@@ -32,7 +32,10 @@
 #include "relic_core.h"
 #include "relic_fp_low.h"
 #include "relic_fpx_low.h"
+#include "relic_fpx_cyc_tmpl.h"
 #include "relic_fpx_mul_tmpl.h"
+#include "relic_fpx_sqr_tmpl.h"
+#include "relic_fpx_util_tmpl.h"
 
 /*============================================================================*/
 /* Private definitions                                                        */
@@ -82,6 +85,14 @@ inline static void fp6_mul_dxs_unr_lazyr(dv6_t c, const fp6_t a, const fp6_t b) 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
+
+TMPL_FPX_UTIL(fp12, fp6, 2);
+
+TMPL_FPX_BIN_QC(fp12, fp6, fp2, 12);
+
+TMPL_FPX_CMP(fp12, fp6, 2);
+
+TMPL_FPX_ADD(fp12, fp6, 2);
 
 #if FPX_RDC == BASIC || !defined(STRIP)
 
@@ -267,3 +278,209 @@ void fp12_mul_dxs_lazyr(fp12_t c, const fp12_t a, const fp12_t b) {
 #endif
 
 TMPL_FPX_MUL_ART_QUAD(fp12, fp6, fp6_mul_art);
+
+#if FPX_RDC == BASIC || !defined(STRIP)
+
+TMPL_FPX_SQR_QUAD(fp12, fp6, fp6_mul_art);
+
+TMPL_SQR_CYC_QC(fp12, fp2, fp2_mul_nor);
+
+TMPL_SQR_PCK_QC(fp12, fp2, fp2_mul_nor);
+
+#endif
+
+#if FPX_RDC == LAZYR || !defined(STRIP)
+
+void fp12_sqr_unr(dv12_t c, const fp12_t a) {
+	fp4_t t0, t1;
+	dv4_t u0, u1, u2, u3, u4;
+
+	fp4_null_all(t0, t1);
+	dv4_null_all(u0, u1, u2, u3, u4);
+
+	RLC_TRY {
+		fp4_new_all(t0, t1);
+		dv4_new_all(u0, u1, u2, u3, u4);
+
+		/* a0 = (a00, a11). */
+		/* a1 = (a10, a02). */
+		/* a2 = (a01, a12). */
+
+		/* (t0,t1) = a0^2 */
+		fp2_copy(t0[0], a[0][0]);
+		fp2_copy(t0[1], a[1][1]);
+		fp4_sqr_unr(u0, t0);
+
+		/* (t2,t3) = 2 * a1 * a2 */
+		fp2_copy(t0[0], a[1][0]);
+		fp2_copy(t0[1], a[0][2]);
+		fp2_copy(t1[0], a[0][1]);
+		fp2_copy(t1[1], a[1][2]);
+		fp4_mul_unr(u1, t0, t1);
+		fp2_addc_low(u1[0], u1[0], u1[0]);
+		fp2_addc_low(u1[1], u1[1], u1[1]);
+
+		/* (t4,t5) = a2^2. */
+		fp4_sqr_unr(u2, t1);
+
+		/* c2 = a0 + a2. */
+		fp2_addm_low(t1[0], a[0][0], a[0][1]);
+		fp2_addm_low(t1[1], a[1][1], a[1][2]);
+
+		/* (t6,t7) = (a0 + a2 + a1)^2. */
+		fp2_addm_low(t0[0], t1[0], a[1][0]);
+		fp2_addm_low(t0[1], t1[1], a[0][2]);
+		fp4_sqr_unr(u3, t0);
+
+		/* c2 = (a0 + a2 - a1)^2. */
+		fp2_subm_low(t0[0], t1[0], a[1][0]);
+		fp2_subm_low(t0[1], t1[1], a[0][2]);
+		fp4_sqr_unr(u4, t0);
+
+		/* c2 = (c2 + (t6,t7))/2. */
+#ifdef RLC_FP_ROOM
+		fp2_addd_low(u4[0], u4[0], u3[0]);
+		fp2_addd_low(u4[1], u4[1], u3[1]);
+#else
+		fp2_addc_low(u4[0], u4[0], u3[0]);
+		fp2_addc_low(u4[1], u4[1], u3[1]);
+#endif
+		fp_hlvd_low(u4[0][0], u4[0][0]);
+		fp_hlvd_low(u4[0][1], u4[0][1]);
+		fp_hlvd_low(u4[1][0], u4[1][0]);
+		fp_hlvd_low(u4[1][1], u4[1][1]);
+
+		/* (t6,t7) = (t6,t7) - c2 - (t2,t3). */
+		fp2_subc_low(u3[0], u3[0], u4[0]);
+		fp2_subc_low(u3[1], u3[1], u4[1]);
+		fp2_subc_low(u3[0], u3[0], u1[0]);
+		fp2_subc_low(u3[1], u3[1], u1[1]);
+
+		/* c2 = c2 - (t0,t1) - (t4,t5). */
+		fp2_subc_low(u4[0], u4[0], u0[0]);
+		fp2_subc_low(u4[1], u4[1], u0[1]);
+		fp2_subc_low(c[0][1], u4[0], u2[0]);
+		fp2_subc_low(c[1][2], u4[1], u2[1]);
+
+		/* c1 = (t6,t7) + (t4,t5) * E. */
+		fp2_nord_low(u4[1], u2[1]);
+		fp2_addc_low(c[1][0], u3[0], u4[1]);
+		fp2_addc_low(c[0][2], u3[1], u2[0]);
+
+		/* c0 = (t0,t1) + (t2,t3) * E. */
+		fp2_nord_low(u4[1], u1[1]);
+		fp2_addc_low(c[0][0], u0[0], u4[1]);
+		fp2_addc_low(c[1][1], u0[1], u1[0]);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		fp4_free_all(t0, t1);
+		dv4_free_all(u0, u1, u2, u3, u4);
+	}
+}
+
+TMPL_FPX_SQR_LAZYR(fp12, dv12, fp2, dv2, 6);
+
+TMPL_SQR_PCK_LAZYR_QC(fp12, fp2, dv2, fp2, dv2, 1, 1, fp2_sqrn_low,
+		fp2_norm_low);
+
+TMPL_SQR_CYC_LAZYR_QC(fp12, fp2, dv2, fp2, dv2, 1, 1, fp2_sqrn_low);
+
+#endif
+
+TMPL_FPX_INV_QUAD(fp12, fp6, fp6_mul_art);
+
+TMPL_FPX_INV_CYC_QUAD(fp12, fp6);
+
+TMPL_FPX_EXP_CYC(fp12);
+
+TMPL_FPX_EXP_DIG(fp12);
+
+void fp12_frb(fp12_t c, const fp12_t a, int i) {
+	/* Cost of five multiplication in Fp^2 per Frobenius. */
+	fp12_copy(c, a);
+	for (; i % 12 > 0; i--) {
+		fp6_frb(c[0], c[0], 1);
+		fp2_frb(c[1][0], c[1][0], 1);
+		fp2_frb(c[1][1], c[1][1], 1);
+		fp2_frb(c[1][2], c[1][2], 1);
+		fp2_mul_frb(c[1][0], c[1][0], 1, 1);
+		fp2_mul_frb(c[1][1], c[1][1], 1, 3);
+		fp2_mul_frb(c[1][2], c[1][2], 1, 5);
+	}
+}
+
+TMPL_FPX_CONV_CYC(fp12, 2);
+
+TMPL_FPX_TEST_CYC(fp12, 2);
+
+TMPL_FPX_BACK_CYC_QC(fp12, fp2, fp2_mul_nor);
+
+TMPL_FPX_BACK_CYC_SIM_QC(fp12, fp2, fp2_mul_nor);
+
+TMPL_EXP_CYC(fp12);
+
+TMPL_EXP_CYC_SIM(fp12, fp12_sqr_cyc);
+
+TMPL_EXP_CYC_SPS(fp12);
+
+TMPL_FPX_PCK_QC(fp12, fp2);
+
+TMPL_FPX_UPK_QC(fp12, fp2);
+
+void fp12_pck_max(fp12_t c, const fp12_t a) {
+	fp12_copy(c, a);
+	if (fp12_cmp_dig(a, 1) == RLC_EQ) {
+		/* The torus has no representative for unity, so use zero since it
+		 * otherwise decompresses to -1, which is not in the subgroup. */
+		fp12_zero(c);
+	} else if (fp12_test_cyc(c)) {
+		/* Use torus-based compression from Section 4.1 in
+		 * "On Compressible Pairings and Their Computation" by Naehrig et al.
+		 */
+		fp2_add_dig(c[0][0], a[0][0], 1);
+		fp6_inv(c[1], a[1]);
+		fp6_mul(c[0], c[0], c[1]);
+		fp6_zero(c[1]);
+	}
+}
+
+int fp12_upk_max(fp12_t c, const fp12_t a) {
+	if (fp12_is_zero(a)) {
+		fp12_set_dig(c, 1);
+		return 1;
+	}
+	if (fp6_is_zero(a[1])) {
+		fp12_t t;
+
+		fp12_null(t);
+
+		RLC_TRY {
+			fp12_new(t);
+			/* Formula for decompression for the odd q case from Section 2 in
+			 * "Compression in finite fields and torus-based cryptography" by
+			 * Rubin-Silverberg.
+			 */
+			fp6_copy(t[0], a[0]);
+			fp6_zero(t[1]);
+			fp_set_dig(t[1][0][0], 1);
+			fp_neg(t[1][0][0], t[1][0][0]);
+			fp12_inv(t, t);
+			fp6_copy(c[0], a[0]);
+			fp6_set_dig(c[1], 1);
+			fp12_mul(c, c, t);
+		} RLC_CATCH_ANY {
+			RLC_THROW(ERR_CAUGHT);
+		} RLC_FINALLY {
+			fp12_free(t);
+		}
+		if (fp12_test_cyc(c)) {
+			return 1;
+		} else {
+			return 0;
+		}
+	} else {
+		fp12_copy(c, a);
+		return 1;
+	}
+}

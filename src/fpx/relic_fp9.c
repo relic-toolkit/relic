@@ -1,6 +1,6 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (c) 2019 RELIC Authors
+ * Copyright (c) 2012 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
@@ -24,18 +24,28 @@
 /**
  * @file
  *
- * Implementation of multiplication in a nonic extension of a prime field.
+ * Implementation of arithmetic in the nonic extension of a prime field.
  *
  * @ingroup fpx
  */
 
 #include "relic_core.h"
+#include "relic_fp_low.h"
 #include "relic_fpx_low.h"
 #include "relic_fpx_mul_tmpl.h"
+#include "relic_fpx_util_tmpl.h"
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
+
+TMPL_FPX_UTIL(fp9, fp3, 3);
+
+TMPL_FPX_BIN(fp9, fp3, 3, 9);
+
+TMPL_FPX_CMP(fp9, fp3, 3);
+
+TMPL_FPX_ADD(fp9, fp3, 3);
 
 #if FPX_RDC == BASIC || !defined(STRIP)
 
@@ -97,3 +107,36 @@ void fp9_mul_dxs(fp9_t c, const fp9_t a, const fp9_t b) {
 }
 
 TMPL_FPX_MUL_ART_CUBIC(fp9, fp3, fp3_mul_nor);
+
+#if FPX_RDC == BASIC || !defined(STRIP)
+
+TMPL_FPX_SQR_CUBIC(fp9, fp3, fp3_mul_nor, 3);
+
+#endif
+
+#if PP_EXT == LAZYR || !defined(STRIP)
+
+TMPL_FPX_SQR_UNR_CUBIC(fp9, fp3, dv9, dv3, fp3, dv3, 1, 1,
+		fp3_sqrn_low, fp3_muln_low, 3);
+
+TMPL_FPX_SQR_LAZYR(fp9, dv9, fp3, dv3, 3);
+
+#endif
+
+TMPL_FPX_INV_CUBIC(fp9, fp3, fp3_mul_nor);
+
+TMPL_FPX_INV_SIM(fp9);
+
+TMPL_FPX_EXP(fp9);
+
+void fp9_frb(fp9_t c, const fp9_t a, int i) {
+	/* Cost of two multiplication in Fp^3 per Frobenius. */
+	fp9_copy(c, a);
+	for (; i % 9 > 0; i--) {
+		fp3_frb(c[0], c[0], 1);
+		fp3_frb(c[1], c[1], 1);
+		fp3_frb(c[2], c[2], 1);
+		fp3_mul_frb(c[1], c[1], 1, 2);
+		fp3_mul_frb(c[2], c[2], 1, 4);
+	}
+}

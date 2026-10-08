@@ -24,7 +24,7 @@
 /**
  * @file
  *
- * Implementation of multiplication in a octodecic extension of a prime field.
+ * Implementation of arithmetic in the octdecic extension of a prime field.
  *
  * @ingroup fpx
  */
@@ -32,7 +32,10 @@
 #include "relic_core.h"
 #include "relic_fp_low.h"
 #include "relic_fpx_low.h"
+#include "relic_fpx_cyc_tmpl.h"
 #include "relic_fpx_mul_tmpl.h"
+#include "relic_fpx_sqr_tmpl.h"
+#include "relic_fpx_util_tmpl.h"
 
 /*============================================================================*/
 /* Private definitions                                                        */
@@ -82,6 +85,14 @@ inline static void fp9_mul_dxs_unr_lazyr(dv9_t c, const fp9_t a, const fp9_t b) 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
+
+TMPL_FPX_UTIL(fp18, fp9, 2);
+
+TMPL_FPX_BIN_QC(fp18, fp9, fp3, 18);
+
+TMPL_FPX_CMP(fp18, fp9, 2);
+
+TMPL_FPX_ADD(fp18, fp9, 2);
 
 #if FPX_RDC == BASIC || !defined(STRIP)
 
@@ -244,7 +255,70 @@ void fp18_mul_dxs_lazyr(fp18_t c, const fp18_t a, const fp18_t b) {
 	}
 }
 
-
 #endif
 
 TMPL_FPX_MUL_ART_QUAD(fp18, fp9, fp9_mul_art);
+
+#if FPX_RDC == BASIC || !defined(STRIP)
+
+TMPL_FPX_SQR_QUAD(fp18, fp9, fp9_mul_art);
+
+TMPL_SQR_CYC_QC(fp18, fp3, fp3_mul_nor);
+
+TMPL_SQR_PCK_QC(fp18, fp3, fp3_mul_nor);
+
+#endif
+
+#if FPX_RDC == LAZYR || !defined(STRIP)
+
+TMPL_FPX_SQR_UNR_QUAD(fp18, fp9, dv18, dv9, fp3, dv3, 3, 1,
+		fp9_sqr_unr);
+
+TMPL_FPX_SQR_LAZYR(fp18, dv18, fp3, dv3, 6);
+
+TMPL_SQR_PCK_LAZYR_QC(fp18, fp3, dv3, fp3, dv3, 1, 1, fp3_sqrn_low,
+		fp3_mul_nor);
+
+TMPL_SQR_CYC_LAZYR_QC(fp18, fp3, dv3, fp3, dv3, 1, 1, fp3_sqrn_low);
+
+#endif
+
+TMPL_FPX_INV_QUAD(fp18, fp9, fp9_mul_art);
+
+TMPL_FPX_INV_CYC_QUAD(fp18, fp9);
+
+TMPL_FPX_EXP_CYC(fp18);
+
+TMPL_FPX_EXP_DIG(fp18);
+
+void fp18_frb(fp18_t c, const fp18_t a, int i) {
+	/* Cost of five multiplication in Fp^3 per Frobenius. */
+	fp18_copy(c, a);
+	for (; i % 18 > 0; i--) {
+		fp9_frb(c[0], c[0], 1);
+		fp3_frb(c[1][0], c[1][0], 1);
+		fp3_frb(c[1][1], c[1][1], 1);
+		fp3_frb(c[1][2], c[1][2], 1);
+		fp3_mul_frb(c[1][0], c[1][0], 1, 1);
+		fp3_mul_frb(c[1][1], c[1][1], 1, 3);
+		fp3_mul_frb(c[1][2], c[1][2], 1, 5);
+	}
+}
+
+TMPL_FPX_CONV_CYC(fp18, 3);
+
+TMPL_FPX_TEST_CYC(fp18, 3);
+
+TMPL_FPX_BACK_CYC_QC(fp18, fp3, fp3_mul_nor);
+
+TMPL_FPX_BACK_CYC_SIM_QC(fp18, fp3, fp3_mul_nor);
+
+TMPL_EXP_CYC(fp18);
+
+TMPL_EXP_CYC_SIM(fp18, fp18_sqr_cyc);
+
+TMPL_EXP_CYC_SPS(fp18);
+
+TMPL_FPX_PCK_QC(fp18, fp3);
+
+TMPL_FPX_UPK_QC(fp18, fp3);

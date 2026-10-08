@@ -1,14 +1,14 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (c) 4007-4019 RELIC Authors
+ * Copyright (c) 2012 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
  * for contact information.
  *
  * RELIC is free software; you can redistribute it and/or modify it under the
- * terms of the version 4.1 (or later) of the GNU Lesser General Public License
- * as published by the Free Software Foundation; or version 4.0 of the Apache
+ * terms of the version 2.1 (or later) of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; or version 2.0 of the Apache
  * License as published by the Apache Software Foundation. See the LICENSE files
  * for more details.
  *
@@ -24,7 +24,7 @@
 /**
  * @file
  *
- * Implementation of multiplication in a 54-degree extension of a prime field.
+ * Implementation of arithmetic in the extension of degree 54 of a prime field.
  *
  * @ingroup fpx
  */
@@ -32,11 +32,22 @@
 #include "relic_core.h"
 #include "relic_fp_low.h"
 #include "relic_fpx_low.h"
+#include "relic_fpx_cyc_tmpl.h"
 #include "relic_fpx_mul_tmpl.h"
+#include "relic_fpx_sqr_tmpl.h"
+#include "relic_fpx_util_tmpl.h"
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
+
+TMPL_FPX_UTIL(fp54, fp18, 3);
+
+TMPL_FPX_BIN_CQ(fp54, fp18, fp9, 54);
+
+TMPL_FPX_CMP(fp54, fp18, 3);
+
+TMPL_FPX_ADD(fp54, fp18, 3);
 
 #if FPX_RDC == BASIC || !defined(STRIP)
 
@@ -110,3 +121,77 @@ void fp54_mul_dxs(fp54_t c, const fp54_t a, const fp54_t b) {
 }
 
 TMPL_FPX_MUL_ART_CUBIC(fp54, fp18, fp18_mul_art);
+
+#if FPX_RDC == BASIC || !defined(STRIP)
+
+TMPL_FPX_SQR_CUBIC(fp54, fp18, fp18_mul_art, 18);
+
+TMPL_SQR_CYC_CQ(fp54, fp9, fp9_mul_art);
+
+TMPL_SQR_PCK_CQ(fp54, fp9, fp9_mul_art);
+
+#endif
+
+#if FPX_RDC == LAZYR || !defined(STRIP)
+
+TMPL_FPX_SQR_UNR_CUBIC(fp54, fp18, dv54, dv18, fp3, dv3, 6, 2,
+		fp18_sqr_unr, fp18_mul_unr, 18);
+
+TMPL_FPX_SQR_LAZYR(fp54, dv54, fp3, dv3, 18);
+
+TMPL_SQR_PCK_LAZYR_CQ(fp54, fp9, dv9, fp3, dv3, 3, 1, fp9_sqr_unr, fp9_mul_art);
+
+TMPL_SQR_CYC_LAZYR_CQ(fp54, fp9, dv9, fp3, dv3, 3, 1, fp9_sqr_unr);
+
+#endif
+
+TMPL_FPX_INV_CUBIC(fp54, fp18, fp18_mul_art);
+
+TMPL_FPX_INV_CYC_CUBIC(fp54, fp18);
+
+TMPL_FPX_EXP_CYC(fp54);
+
+TMPL_FPX_EXP_DIG(fp54);
+
+void fp54_frb(fp54_t c, const fp54_t a, int i) {
+	/* Since w^18 = u, w^(p - 1) = u^((p - p mod 18)/18) * t^((p mod 18 - 1)/6)
+	 * and w^(2(p - 1)) = u^((p - p mod 9)/9) * t^((p mod 9 - 1)/3). */
+	int k1 = (fp_prime_get_mod18() - 1) / 6;
+	int k2 = (fp_prime_get_mod18() % 9 - 1) / 3;
+
+	/* Cost of 12 sparse multiplications in Fp^3 per Frobenius. */
+	fp54_copy(c, a);
+	for (; i % 54 > 0; i--) {
+		fp18_frb(c[0], c[0], 1);
+		fp18_frb(c[1], c[1], 1);
+		fp18_frb(c[2], c[2], 1);
+		for (int j = 0; j < 2; j++) {
+			for (int l = 0; l < 3; l++) {
+				fp3_mul_frb(c[1][j][l], c[1][j][l], 2, 2);
+				fp3_mul_frb(c[2][j][l], c[2][j][l], 2, 1);
+			}
+			for (int l = 0; l < k1; l++) {
+				fp9_mul_art(c[1][j], c[1][j]);
+			}
+			for (int l = 0; l < k2; l++) {
+				fp9_mul_art(c[2][j], c[2][j]);
+			}
+		}
+	}
+}
+
+TMPL_FPX_CONV_CYC(fp54, 9);
+
+TMPL_FPX_TEST_CYC(fp54, 9);
+
+TMPL_FPX_BACK_CYC_CQ(fp54, fp9, fp9_mul_art);
+
+TMPL_FPX_BACK_CYC_SIM_CQ(fp54, fp9, fp9_mul_art);
+
+TMPL_EXP_CYC(fp54);
+
+TMPL_EXP_CYC_SPS(fp54);
+
+TMPL_FPX_PCK_CQ(fp54, fp9);
+
+TMPL_FPX_UPK_CQ(fp54, fp9);

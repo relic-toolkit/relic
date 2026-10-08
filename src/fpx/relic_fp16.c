@@ -1,14 +1,14 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (c) 2023 RELIC Authors
+ * Copyright (c) 2012 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
  * for contact information.
  *
  * RELIC is free software; you can redistribute it and/or modify it under the
- * terms of the version 4.1 (or later) of the GNU Lesser General Public License
- * as published by the Free Software Foundation; or version 4.0 of the Apache
+ * terms of the version 2.1 (or later) of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; or version 2.0 of the Apache
  * License as published by the Apache Software Foundation. See the LICENSE files
  * for more details.
  *
@@ -24,7 +24,7 @@
 /**
  * @file
  *
- * Implementation of multiplication in an sextadecic extension of a prime field.
+ * Implementation of arithmetic in the sextadecic extension of a prime field.
  *
  * @ingroup fpx
  */
@@ -32,11 +32,21 @@
 #include "relic_core.h"
 #include "relic_fp_low.h"
 #include "relic_fpx_low.h"
+#include "relic_fpx_cyc_tmpl.h"
 #include "relic_fpx_mul_tmpl.h"
+#include "relic_fpx_util_tmpl.h"
 
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
+
+TMPL_FPX_UTIL(fp16, fp8, 2);
+
+TMPL_FPX_BIN_T2(fp16, fp8, 16);
+
+TMPL_FPX_CMP(fp16, fp8, 2);
+
+TMPL_FPX_ADD(fp16, fp8, 2);
 
 #if FPX_RDC == BASIC || !defined(STRIP)
 
@@ -205,3 +215,166 @@ void fp16_mul_dxs_lazyr(fp16_t c, const fp16_t a, const fp16_t b) {
 #endif
 
 TMPL_FPX_MUL_ART_QUAD(fp16, fp8, fp8_mul_art);
+
+#if FPX_RDC == BASIC || !defined(STRIP)
+
+TMPL_FPX_SQR_QUAD(fp16, fp8, fp8_mul_art);
+
+#endif
+
+#if PP_EXT == LAZYR || !defined(STRIP)
+
+TMPL_FPX_SQR_UNR_QUAD(fp16, fp8, dv16, dv8, fp2, dv2, 4, 2,
+		fp8_sqr_unr);
+
+TMPL_FPX_SQR_LAZYR(fp16, dv16, fp2, dv2, 8);
+
+#endif
+
+void fp16_sqr_cyc(fp16_t c, const fp16_t a) {
+	fp8_t t0, t1, t2;
+
+	fp8_null_all(t0, t1, t2);
+
+	RLC_TRY {
+		fp8_new_all(t0, t1, t2);
+
+		fp8_sqr(t0, a[1]);
+		fp8_add(t1, a[0], a[1]);
+		fp8_sqr(t2, t1);
+		fp8_sub(t2, t2, t0);
+		fp8_mul_art(c[0], t0);
+		fp8_sub(c[1], t2, c[0]);
+		fp8_dbl(c[0], c[0]);
+		fp_add_dig(c[0][0][0][0], c[0][0][0][0], 1);
+		fp_sub_dig(c[1][0][0][0], c[1][0][0][0], 1);
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		fp8_free_all(t0, t1, t2);
+	}
+}
+
+TMPL_FPX_INV_CYC_QUAD(fp16, fp8);
+
+TMPL_FPX_INV_QUAD(fp16, fp8, fp8_mul_art);
+
+TMPL_FPX_INV_SIM(fp16);
+
+TMPL_FPX_EXP_CYC(fp16);
+
+TMPL_FPX_EXP_DIG(fp16);
+
+void fp16_frb(fp16_t c, const fp16_t a, int i) {
+	/* Cost of four multiplication in Fp^2 per Frobenius. */
+	fp16_copy(c, a);
+	for (; i % 8 > 0; i--) {
+		fp8_frb(c[0], c[0], 1);
+		fp8_frb(c[1], c[1], 1);
+		fp2_mul_frb(c[1][0][0], c[1][0][0], 2, 2);
+		fp2_mul_frb(c[1][0][1], c[1][0][1], 2, 2);
+		fp2_mul_frb(c[1][1][0], c[1][1][0], 2, 2);
+		fp2_mul_frb(c[1][1][1], c[1][1][1], 2, 2);
+		if (fp_prime_get_mod8() % 4 != 1) {
+			fp8_mul_art(c[1], c[1]);
+		}
+		if (fp_prime_get_mod8() == 5) {
+			fp4_mul_art(c[1][0], c[1][0]);
+			fp4_mul_art(c[1][1], c[1][1]);
+		}
+	}
+}
+
+TMPL_FPX_CONV_CYC_QUAD(fp16);
+
+TMPL_FPX_TEST_CYC_QUAD(fp16);
+
+TMPL_EXP_CYC_NAF(fp16, fp16_sqr_cyc);
+
+TMPL_EXP_CYC_SIM(fp16, fp16_sqr_cyc);
+
+TMPL_FPX_IS_SQR(fp16, 16);
+
+int fp16_srt(fp16_t c, const fp16_t a) {
+	int c0, r = 0;
+	fp8_t t0, t1, t2;
+
+	fp8_null_all(t0, t1, t2);
+
+	if (fp16_is_zero(a)) {
+		fp16_zero(c);
+		return 1;
+	}
+
+	RLC_TRY {
+		fp8_new_all(t0, t1, t2);
+
+		if (fp8_is_zero(a[1])) {
+			/* special case: either a[0] is square and sqrt is purely 'real'
+			 * or a[0] is non-square and sqrt is purely 'imaginary' */
+			r = 1;
+			if (fp8_is_sqr(a[0])) {
+				fp8_srt(c[0], a[0]);
+				fp8_zero(c[1]);
+			} else {
+				/* Compute a[0]/s^2. */
+				fp8_set_dig(t0, 1);
+				fp8_mul_art(t0, t0);
+				fp8_inv(t0, t0);
+				fp8_mul(t0, a[0], t0);
+				fp8_zero(c[0]);
+				if (!fp8_srt(c[1], t0)) {
+					/* should never happen! */
+					RLC_THROW(ERR_NO_VALID);
+				}
+			}
+		} else {
+			/* t0 = a[0]^2 - s^2 * a[1]^2 */
+			fp8_sqr(t0, a[0]);
+			fp8_sqr(t1, a[1]);
+			fp8_mul_art(t2, t1);
+			fp8_sub(t0, t0, t2);
+
+			if (fp8_is_sqr(t0)) {
+				fp8_srt(t1, t0);
+				/* t0 = (a_0 + sqrt(t0)) / 2 */
+				fp8_add(t0, a[0], t1);
+				fp_hlv(t0[0][0][0], t0[0][0][0]);
+				fp_hlv(t0[0][0][1], t0[0][0][1]);
+				fp_hlv(t0[0][1][0], t0[0][1][0]);
+				fp_hlv(t0[0][1][1], t0[0][1][1]);
+				fp_hlv(t0[1][0][0], t0[1][0][0]);
+				fp_hlv(t0[1][0][1], t0[1][0][1]);
+				fp_hlv(t0[1][1][0], t0[1][1][0]);
+				fp_hlv(t0[1][1][1], t0[1][1][1]);
+				c0 = fp8_is_sqr(t0);
+				/* t0 = (a_0 - sqrt(t0)) / 2 */
+				fp8_sub(t1, a[0], t1);
+				for (int i = 0; i < 2; i++) {
+					for (int j = 0; j < 2; j++) {
+						for (int k = 0; k < 2; k++) {
+							fp_hlv(t1[i][j][k], t1[i][j][k]);
+							fp_copy_sec(t0[i][j][k], t1[i][j][k], !c0);
+						}
+					}
+				}
+				/* Should always be a quadratic residue. */
+				fp8_srt(t2, t0);
+				/* c_0 = sqrt(t0) */
+				fp8_copy(c[0], t2);
+
+				/* c_1 = a_1 / (2 * sqrt(t0)) */
+				fp8_dbl(t2, t2);
+				fp8_inv(t2, t2);
+				fp8_mul(c[1], a[1], t2);
+				r = 1;
+			}
+		}
+	} RLC_CATCH_ANY {
+		r = 0;
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		fp8_free_all(t0, t1, t2);
+	}
+	return r;
+}
