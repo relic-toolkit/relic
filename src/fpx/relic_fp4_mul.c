@@ -46,35 +46,8 @@ TMPL_FPX_MUL_QUAD(fp4, fp2, fp2_mul_nor);
 
 #if PP_EXT == LAZYR || !defined(STRIP)
 
-void fp4_mul_unr(dv4_t c, const fp4_t a, const fp4_t b) {
-	fp2_t t0, t1;
-	dv2_t u0, u1;
-
-	fp2_null_all(t0, t1);
-	dv2_null_all(u0, u1);
-
-	RLC_TRY {
-		fp2_new_all(t0, t1);
-		dv2_new_all(u0, u1);
-
-		fp2_muln_low(u0, a[0], b[0]);
-		fp2_muln_low(u1, a[1], b[1]);
-		fp2_addm_low(t0, b[0], b[1]);
-		fp2_addm_low(t1, a[0], a[1]);
-
-		fp2_muln_low(c[1], t1, t0);
-		fp2_subc_low(c[1], c[1], u0);
-		fp2_subc_low(c[1], c[1], u1);
-
-		fp2_nord_low(c[0], u1);
-		fp2_addc_low(c[0], c[0], u0);
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		fp2_free(t0);
-		dv2_free_all(t1, u0, u1);
-	}
-}
+TMPL_FPX_MUL_UNR_QUAD(fp4, fp2, dv4, dv2, fp2, dv2, 1, 1,
+		fp2_muln_low);
 
 TMPL_FPX_MUL_LAZYR(fp4, dv4, fp2, dv2, 2);
 

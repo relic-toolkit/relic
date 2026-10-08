@@ -46,55 +46,8 @@ TMPL_FPX_SQR_QUAD(fp16, fp8, fp8_mul_art);
 
 #if PP_EXT == LAZYR || !defined(STRIP)
 
-void fp16_sqr_unr(dv16_t c, const fp16_t a) {
-	fp8_t t;
-	dv8_t u0, u1, u2;
-
-	fp8_null(t);
-	dv8_null_all(u0, u1, u2);
-
-	RLC_TRY {
-		fp8_new(t);
-		dv8_new_all(u0, u1, u2);
-
-		/* t0 = a^2. */
-		fp8_sqr_unr(u0, a[0]);
-		/* t1 = b^2. */
-		fp8_sqr_unr(u1, a[1]);
-
-		fp8_add(t, a[0], a[1]);
-
-		/* c = a^2 + b^2 * E. */
-		dv_copy(u2[1][0][0], u1[0][0][0], 2 * RLC_FP_DIGS);
-		dv_copy(u2[1][0][1], u1[0][0][1], 2 * RLC_FP_DIGS);
-		dv_copy(u2[1][1][0], u1[0][1][0], 2 * RLC_FP_DIGS);
-		dv_copy(u2[1][1][1], u1[0][1][1], 2 * RLC_FP_DIGS);
-		fp2_nord_low(u2[0][0], u1[1][1]);
-		dv_copy(u2[0][1][0], u1[1][0][0], 2 * RLC_FP_DIGS);
-		dv_copy(u2[0][1][1], u1[1][0][1], 2 * RLC_FP_DIGS);
-		fp2_addc_low(c[0][0][0], u2[0][0], u0[0][0]);
-		fp2_addc_low(c[0][0][1], u2[0][1], u0[0][1]);
-		fp2_addc_low(c[0][1][0], u2[1][0], u0[1][0]);
-		fp2_addc_low(c[0][1][1], u2[1][1], u0[1][1]);
-
-		/* d = (a + b)^2 - a^2 - b^2 = 2 * a * b. */
-		fp2_addc_low(u1[0][0], u1[0][0], u0[0][0]);
-		fp2_addc_low(u1[0][1], u1[0][1], u0[0][1]);
-		fp2_addc_low(u1[1][0], u1[1][0], u0[1][0]);
-		fp2_addc_low(u1[1][1], u1[1][1], u0[1][1]);
-
-		fp8_sqr_unr(u0, t);
-		fp2_subc_low(c[1][0][0], u0[0][0], u1[0][0]);
-		fp2_subc_low(c[1][0][1], u0[0][1], u1[0][1]);
-		fp2_subc_low(c[1][1][0], u0[1][0], u1[1][0]);
-		fp2_subc_low(c[1][1][1], u0[1][1], u1[1][1]);
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		fp8_free(t);
-		dv8_free_all(u0, u1, u2);
-	}
-}
+TMPL_FPX_SQR_UNR_QUAD(fp16, fp8, dv16, dv8, fp2, dv2, 4, 2,
+		fp8_sqr_unr);
 
 TMPL_FPX_SQR_LAZYR(fp16, dv16, fp2, dv2, 8);
 

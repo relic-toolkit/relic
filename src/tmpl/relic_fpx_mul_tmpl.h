@@ -31,6 +31,7 @@
  */
 
 #include "relic_core.h"
+#include "relic_fpx_dv_tmpl.h"
 
 /*============================================================================*/
 /* Private definitions                                                        */
@@ -705,5 +706,153 @@
 			RLC_THROW(ERR_CAUGHT);											\
 		} RLC_FINALLY {														\
 			D##_free(t);													\
+		}																	\
+	}
+
+/**
+ * Defines a template for Karatsuba multiplication in a quadratic extension
+ * without reduction.
+ *
+ * @param[in] X			- the extension field prefix.
+ * @param[in] S			- the subfield prefix.
+ * @param[in] D			- the double-precision extension field prefix.
+ * @param[in] DS			- the double-precision subfield prefix.
+ * @param[in] B			- the base field prefix with low-level arithmetic.
+ * @param[in] BD			- the double-precision base field prefix.
+ * @param[in] N			- the number of base field components in the subfield.
+ * @param[in] Q			- the number of outer components in the subfield.
+ * @param[in] MULU		- the multiplication in the subfield without reduction.
+ */
+#define TMPL_FPX_MUL_UNR_QUAD(X, S, D, DS, B, BD, N, Q, MULU)				\
+	void X##_mul_unr(D##_t c, const X##_t a, const X##_t b) {				\
+		S##_t t0, t1;														\
+		DS##_t u0, u1, u2;													\
+																			\
+		S##_null_all(t0, t1);												\
+		DS##_null_all(u0, u1, u2);											\
+																			\
+		RLC_TRY {															\
+			S##_new_all(t0, t1);											\
+			DS##_new_all(u0, u1, u2);										\
+																			\
+			/* Karatsuba algorithm. */										\
+			MULU(u0, a[0], b[0]);											\
+			MULU(u1, a[1], b[1]);											\
+			S##_add(t0, a[0], a[1]);										\
+			S##_add(t1, b[0], b[1]);										\
+			MULU(u2, t0, t1);												\
+			/* c_1 = (a_0 + a_1)(b_0 + b_1) - a_0b_0 - a_1b_1. */			\
+			TMPL_DV_SUBC(B, BD, N, c[1], u2, u0);							\
+			TMPL_DV_SUBC(B, BD, N, c[1], c[1], u1);							\
+			/* c_0 = a_0b_0 + v * a_1b_1. */								\
+			TMPL_DV_NADD(B, BD, N, Q, c[0], u0, u1);						\
+		} RLC_CATCH_ANY {													\
+			RLC_THROW(ERR_CAUGHT);											\
+		} RLC_FINALLY {														\
+			S##_free_all(t0, t1);											\
+			DS##_free_all(u0, u1, u2);										\
+		}																	\
+	}
+
+/**
+ * Defines a template for squaring in a quadratic extension without reduction.
+ *
+ * @param[in] X			- the extension field prefix.
+ * @param[in] S			- the subfield prefix.
+ * @param[in] D			- the double-precision extension field prefix.
+ * @param[in] DS			- the double-precision subfield prefix.
+ * @param[in] B			- the base field prefix with low-level arithmetic.
+ * @param[in] BD			- the double-precision base field prefix.
+ * @param[in] N			- the number of base field components in the subfield.
+ * @param[in] Q			- the number of outer components in the subfield.
+ * @param[in] SQRU		- the squaring in the subfield without reduction.
+ */
+#define TMPL_FPX_SQR_UNR_QUAD(X, S, D, DS, B, BD, N, Q, SQRU)				\
+	void X##_sqr_unr(D##_t c, const X##_t a) {								\
+		S##_t t;															\
+		DS##_t u0, u1;														\
+																			\
+		S##_null_all(t);													\
+		DS##_null_all(u0, u1);												\
+																			\
+		RLC_TRY {															\
+			S##_new_all(t);													\
+			DS##_new_all(u0, u1);											\
+																			\
+			SQRU(u0, a[0]);													\
+			SQRU(u1, a[1]);													\
+			S##_add(t, a[0], a[1]);											\
+			/* c_0 = a_0^2 + v * a_1^2. */									\
+			TMPL_DV_NADD(B, BD, N, Q, c[0], u0, u1);						\
+			/* c_1 = (a_0 + a_1)^2 - a_0^2 - a_1^2. */						\
+			TMPL_DV_ADDC(B, BD, N, u1, u1, u0);								\
+			SQRU(u0, t);													\
+			TMPL_DV_SUBC(B, BD, N, c[1], u0, u1);							\
+		} RLC_CATCH_ANY {													\
+			RLC_THROW(ERR_CAUGHT);											\
+		} RLC_FINALLY {														\
+			S##_free_all(t);												\
+			DS##_free_all(u0, u1);											\
+		}																	\
+	}
+
+/**
+ * Defines a template for Chung-Hasan squaring in a cubic extension without
+ * reduction.
+ *
+ * @param[in] X			- the extension field prefix.
+ * @param[in] S			- the subfield prefix.
+ * @param[in] D			- the double-precision extension field prefix.
+ * @param[in] DS			- the double-precision subfield prefix.
+ * @param[in] B			- the base field prefix with low-level arithmetic.
+ * @param[in] BD			- the double-precision base field prefix.
+ * @param[in] N			- the number of base field components in the subfield.
+ * @param[in] Q			- the number of outer components in the subfield.
+ * @param[in] SQRU		- the squaring in the subfield without reduction.
+ * @param[in] MULU		- the multiplication in the subfield without reduction.
+ * @param[in] H			- the number of prime field coefficients in the subfield.
+ */
+#define TMPL_FPX_SQR_UNR_CUBIC(X, S, D, DS, B, BD, N, Q, SQRU, MULU, H)		\
+	void X##_sqr_unr(D##_t c, const X##_t a) {								\
+		S##_t t0, t1, t2;													\
+		DS##_t u0, u1, u2, u3, u4, u5;										\
+																			\
+		S##_null_all(t0, t1, t2);											\
+		DS##_null_all(u0, u1, u2, u3, u4, u5);								\
+																			\
+		RLC_TRY {															\
+			S##_new_all(t0, t1, t2);										\
+			DS##_new_all(u0, u1, u2, u3, u4, u5);							\
+																			\
+			/* u0 = a_0^2, u1 = 2 * a_1 * a_2, u2 = a_2^2. */				\
+			SQRU(u0, a[0]);													\
+			S##_dbl(t0, a[1]);												\
+			MULU(u1, t0, a[2]);												\
+			SQRU(u2, a[2]);													\
+			/* u3 = (a_0 + a_2 + a_1)^2, u4 = (a_0 + a_2 - a_1)^2. */		\
+			S##_add(t2, a[0], a[2]);										\
+			S##_add(t1, t2, a[1]);											\
+			SQRU(u3, t1);													\
+			S##_sub(t1, t2, a[1]);											\
+			SQRU(u4, t1);													\
+			/* u4 = (u4 + u3)/2. */											\
+			TMPL_DV_ADDC(B, BD, N, u4, u4, u3);								\
+			for (int i = 0; i < (H); i++) {									\
+				fp_hlvd_low(((dv_t *)u4)[i], ((dv_t *)u4)[i]);				\
+			}																\
+			/* u3 = u3 - u4 - u1. */										\
+			TMPL_DV_ADDC(B, BD, N, u5, u1, u4);								\
+			TMPL_DV_SUBC(B, BD, N, u3, u3, u5);								\
+			/* c_2 = u4 - u0 - u2. */										\
+			TMPL_DV_ADDC(B, BD, N, u5, u0, u2);								\
+			TMPL_DV_SUBC(B, BD, N, c[2], u4, u5);							\
+			/* c_0 = u0 + v * u1, c_1 = u3 + v * u2. */						\
+			TMPL_DV_NADD(B, BD, N, Q, c[0], u0, u1);						\
+			TMPL_DV_NADD(B, BD, N, Q, c[1], u3, u2);						\
+		} RLC_CATCH_ANY {													\
+			RLC_THROW(ERR_CAUGHT);											\
+		} RLC_FINALLY {														\
+			S##_free_all(t0, t1, t2);										\
+			DS##_free_all(u0, u1, u2, u3, u4, u5);							\
 		}																	\
 	}

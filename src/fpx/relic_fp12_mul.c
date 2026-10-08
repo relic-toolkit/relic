@@ -168,46 +168,8 @@ void fp12_mul_dxs_basic(fp12_t c, const fp12_t a, const fp12_t b) {
 
 #if FPX_RDC == LAZYR || !defined(STRIP)
 
-void fp12_mul_unr(dv12_t c, const fp12_t a, const fp12_t b) {
-	fp6_t t0, t1;
-	dv6_t u0, u1, u2, u3;
-
-	dv6_null_all(u0, u1, u2, u3);
-	fp6_null_all(t0, t1);
-
-	RLC_TRY {
-		dv6_new_all(u0, u1, u2, u3);
-		fp6_new_all(t0, t1);
-
-		/* Karatsuba algorithm. */
-
-		/* u0 = a_0 * b_0. */
-		fp6_mul_unr(u0, a[0], b[0]);
-		/* u1 = a_1 * b_1. */
-		fp6_mul_unr(u1, a[1], b[1]);
-		/* t1 = a_0 + a_1. */
-		fp6_add(t0, a[0], a[1]);
-		/* t0 = b_0 + b_1. */
-		fp6_add(t1, b[0], b[1]);
-		/* u2 = (a_0 + a_1) * (b_0 + b_1) */
-		fp6_mul_unr(u2, t0, t1);
-		/* c_1 = u2 - a_0b_0 - a_1b_1. */
-		for (int i = 0; i < 3; i++) {
-			fp2_addc_low(u3[i], u0[i], u1[i]);
-			fp2_subc_low(c[1][i], u2[i], u3[i]);
-		}
-		/* c_0 = a_0b_0 + v * a_1b_1. */
-		fp2_nord_low(u2[0], u1[2]);
-		fp2_addc_low(c[0][0], u0[0], u2[0]);
-		fp2_addc_low(c[0][1], u0[1], u1[0]);
-		fp2_addc_low(c[0][2], u0[2], u1[1]);
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		dv6_free_all(u0, u1, u2, u3);
-		fp6_free_all(t0, t1);
-	}
-}
+TMPL_FPX_MUL_UNR_QUAD(fp12, fp6, dv12, dv6, fp2, dv2, 3, 1,
+		fp6_mul_unr);
 
 TMPL_FPX_MUL_LAZYR(fp12, dv12, fp2, dv2, 6);
 

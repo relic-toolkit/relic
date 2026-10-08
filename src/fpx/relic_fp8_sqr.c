@@ -46,45 +46,8 @@ TMPL_FPX_SQR_QUAD(fp8, fp4, fp4_mul_art);
 
 #if PP_EXT == LAZYR || !defined(STRIP)
 
-void fp8_sqr_unr(dv8_t c, const fp8_t a) {
-	fp4_t t;
-	dv4_t u0, u1, u2;
-
-	fp4_null(t);
-	dv4_null_all(u0, u1, u2);
-
-	RLC_TRY {
-		fp4_new(t);
-		dv4_new_all(u0, u1, u2);
-
-		/* t0 = a^2. */
-		fp4_sqr_unr(u0, a[0]);
-		/* t1 = b^2. */
-		fp4_sqr_unr(u1, a[1]);
-
-		fp4_add(t, a[0], a[1]);
-
-		/* c = a^2 + b^2 * E. */
-		dv_copy(u2[1][0], u1[0][0], 2 * RLC_FP_DIGS);
-		dv_copy(u2[1][1], u1[0][1], 2 * RLC_FP_DIGS);
-		fp2_nord_low(u2[0], u1[1]);
-		fp2_addc_low(c[0][0], u2[0], u0[0]);
-		fp2_addc_low(c[0][1], u2[1], u0[1]);
-
-		/* d = (a + b)^2 - a^2 - b^2 = 2 * a * b. */
-		fp2_addc_low(u1[0], u1[0], u0[0]);
-		fp2_addc_low(u1[1], u1[1], u0[1]);
-
-		fp4_sqr_unr(u0, t);
-		fp2_subc_low(c[1][0], u0[0], u1[0]);
-		fp2_subc_low(c[1][1], u0[1], u1[1]);
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		fp4_free(t);
-		dv4_free_all(u0, u1, u2);
-	}
-}
+TMPL_FPX_SQR_UNR_QUAD(fp8, fp4, dv8, dv4, fp2, dv2, 2, 1,
+		fp4_sqr_unr);
 
 TMPL_FPX_SQR_LAZYR(fp8, dv8, fp2, dv2, 4);
 
