@@ -34,6 +34,27 @@
 #include "relic_fpx_util_tmpl.h"
 
 /*============================================================================*/
+/* Private definitions                                                        */
+/*============================================================================*/
+
+/**
+ * Returns the parity of the first nonzero prime field coefficient of an
+ * extension field element, which distinguishes it from its negation.
+ *
+ * @param[in] a				- the coefficients of the element.
+ * @param[in] n				- the number of coefficients.
+ * @return the parity, or zero if the element is zero.
+ */
+static int util_sign(const fp_t *a, int n) {
+	for (int i = 0; i < n; i++) {
+		if (!fp_is_zero(a[i])) {
+			return fp_get_bit(a[i], 0);
+		}
+	}
+	return 0;
+}
+
+/*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
@@ -190,28 +211,64 @@ void fp6_write_bin(uint8_t *bin, size_t len, const fp6_t a, int pack) {
 TMPL_FPX_UTIL(fp8, fp4, 2);
 
 int fp8_size_bin(const fp8_t a, int pack) {
-	if (pack) {
-		if (fp8_test_cyc(a)) {
-			return 4 * RLC_FP_BYTES;
-		} else {
-			return 8 * RLC_FP_BYTES;
-		}
-	} else {
-		return 8 * RLC_FP_BYTES;
+	if (pack && fp8_test_cyc(a)) {
+		return 4 * RLC_FP_BYTES + 1;
 	}
+	return 8 * RLC_FP_BYTES;
 }
 
 void fp8_read_bin(fp8_t a, const uint8_t *bin, size_t len) {
-	if (len != 8 * RLC_FP_BYTES) {
+	fp4_t t;
+
+	if (len != 4 * RLC_FP_BYTES + 1 && len != 8 * RLC_FP_BYTES) {
 		RLC_THROW(ERR_NO_BUFFER);
 		return;
 	}
-	fp4_read_bin(a[0], bin, 4 * RLC_FP_BYTES);
-	fp4_read_bin(a[1], bin + 4 * RLC_FP_BYTES, 4 * RLC_FP_BYTES);
+	if (len == 8 * RLC_FP_BYTES) {
+		fp4_read_bin(a[0], bin, 4 * RLC_FP_BYTES);
+		fp4_read_bin(a[1], bin + 4 * RLC_FP_BYTES, 4 * RLC_FP_BYTES);
+		return;
+	}
+	if (bin[4 * RLC_FP_BYTES] > 1) {
+		RLC_THROW(ERR_NO_VALID);
+		return;
+	}
+
+	fp4_null(t);
+
+	RLC_TRY {
+		fp4_new(t);
+
+		/* Unitary elements have a_0^2 - a_1^2 * v^2 = 1, thus recover
+		 * a_0 = sqrt(1 + a_1^2 * v^2) and fix its sign. */
+		fp4_read_bin(a[1], bin, 4 * RLC_FP_BYTES);
+		fp4_sqr(t, a[1]);
+		fp4_mul_art(t, t);
+		fp_add_dig(t[0][0], t[0][0], 1);
+		if (!fp4_srt(a[0], t)) {
+			RLC_THROW(ERR_NO_VALID);
+		}
+		if (util_sign((const fp_t *)a[0], 4) != bin[4 * RLC_FP_BYTES]) {
+			fp4_neg(a[0], a[0]);
+		}
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		fp4_free(t);
+	}
 }
 
 void fp8_write_bin(uint8_t *bin, size_t len, const fp8_t a, int pack) {
-	(void)pack;
+	if (pack && fp8_test_cyc(a)) {
+		if (len != 4 * RLC_FP_BYTES + 1) {
+			RLC_THROW(ERR_NO_BUFFER);
+			return;
+		}
+		/* Unitary elements are determined by a_1 and the sign of a_0. */
+		fp4_write_bin(bin, 4 * RLC_FP_BYTES, a[1], 0);
+		bin[4 * RLC_FP_BYTES] = util_sign((const fp_t *)a[0], 4);
+		return;
+	}
 	if (len != 8 * RLC_FP_BYTES) {
 		RLC_THROW(ERR_NO_BUFFER);
 		return;
@@ -316,28 +373,64 @@ void fp12_write_bin(uint8_t *bin, size_t len, const fp12_t a, int pack) {
 TMPL_FPX_UTIL(fp16, fp8, 2);
 
 int fp16_size_bin(const fp16_t a, int pack) {
-	if (pack) {
-		if (fp16_test_cyc(a)) {
-			return 8 * RLC_FP_BYTES;
-		} else {
-			return 16 * RLC_FP_BYTES;
-		}
-	} else {
-		return 16 * RLC_FP_BYTES;
+	if (pack && fp16_test_cyc(a)) {
+		return 8 * RLC_FP_BYTES + 1;
 	}
+	return 16 * RLC_FP_BYTES;
 }
 
 void fp16_read_bin(fp16_t a, const uint8_t *bin, size_t len) {
-	if (len != 16 * RLC_FP_BYTES) {
+	fp8_t t;
+
+	if (len != 8 * RLC_FP_BYTES + 1 && len != 16 * RLC_FP_BYTES) {
 		RLC_THROW(ERR_NO_BUFFER);
 		return;
 	}
-	fp8_read_bin(a[0], bin, 8 * RLC_FP_BYTES);
-	fp8_read_bin(a[1], bin + 8 * RLC_FP_BYTES, 8 * RLC_FP_BYTES);
+	if (len == 16 * RLC_FP_BYTES) {
+		fp8_read_bin(a[0], bin, 8 * RLC_FP_BYTES);
+		fp8_read_bin(a[1], bin + 8 * RLC_FP_BYTES, 8 * RLC_FP_BYTES);
+		return;
+	}
+	if (bin[8 * RLC_FP_BYTES] > 1) {
+		RLC_THROW(ERR_NO_VALID);
+		return;
+	}
+
+	fp8_null(t);
+
+	RLC_TRY {
+		fp8_new(t);
+
+		/* Unitary elements have a_0^2 - a_1^2 * v^2 = 1, thus recover
+		 * a_0 = sqrt(1 + a_1^2 * v^2) and fix its sign. */
+		fp8_read_bin(a[1], bin, 8 * RLC_FP_BYTES);
+		fp8_sqr(t, a[1]);
+		fp8_mul_art(t, t);
+		fp_add_dig(t[0][0][0], t[0][0][0], 1);
+		if (!fp8_srt(a[0], t)) {
+			RLC_THROW(ERR_NO_VALID);
+		}
+		if (util_sign((const fp_t *)a[0], 8) != bin[8 * RLC_FP_BYTES]) {
+			fp8_neg(a[0], a[0]);
+		}
+	} RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	} RLC_FINALLY {
+		fp8_free(t);
+	}
 }
 
 void fp16_write_bin(uint8_t *bin, size_t len, const fp16_t a, int pack) {
-	(void)pack;
+	if (pack && fp16_test_cyc(a)) {
+		if (len != 8 * RLC_FP_BYTES + 1) {
+			RLC_THROW(ERR_NO_BUFFER);
+			return;
+		}
+		/* Unitary elements are determined by a_1 and the sign of a_0. */
+		fp8_write_bin(bin, 8 * RLC_FP_BYTES, a[1], 0);
+		bin[8 * RLC_FP_BYTES] = util_sign((const fp_t *)a[0], 8);
+		return;
+	}
 	if (len != 16 * RLC_FP_BYTES) {
 		RLC_THROW(ERR_NO_BUFFER);
 		return;

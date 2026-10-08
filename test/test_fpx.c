@@ -2774,7 +2774,20 @@ static int util8(void) {
 			fp8_rand(a);
 			TEST_ASSERT(fp8_size_bin(a, 0) == 8 * RLC_FP_BYTES, end);
 			fp8_conv_cyc(a, a);
-			TEST_ASSERT(fp8_size_bin(a, 1) == 4 * RLC_FP_BYTES, end);
+			TEST_ASSERT(fp8_size_bin(a, 1) == 4 * RLC_FP_BYTES + 1, end);
+		}
+		TEST_END;
+
+		TEST_CASE("compression is consistent with reading and writing") {
+			fp8_rand(a);
+			fp8_conv_cyc(a, a);
+			fp8_write_bin(bin, 4 * RLC_FP_BYTES + 1, a, 1);
+			fp8_read_bin(b, bin, 4 * RLC_FP_BYTES + 1);
+			TEST_ASSERT(fp8_cmp(a, b) == RLC_EQ, end);
+			fp8_inv_cyc(a, a);
+			fp8_write_bin(bin, 4 * RLC_FP_BYTES + 1, a, 1);
+			fp8_read_bin(b, bin, 4 * RLC_FP_BYTES + 1);
+			TEST_ASSERT(fp8_cmp(a, b) == RLC_EQ, end);
 		}
 		TEST_END;
 
@@ -4670,6 +4683,21 @@ static int util16(void) {
 		TEST_CASE("getting the size of a finite field element is correct") {
 			fp16_rand(a);
 			TEST_ASSERT(fp16_size_bin(a, 0) == 16 * RLC_FP_BYTES, end);
+			fp16_conv_cyc(a, a);
+			TEST_ASSERT(fp16_size_bin(a, 1) == 8 * RLC_FP_BYTES + 1, end);
+		}
+		TEST_END;
+
+		TEST_CASE("compression is consistent with reading and writing") {
+			fp16_rand(a);
+			fp16_conv_cyc(a, a);
+			fp16_write_bin(bin, 8 * RLC_FP_BYTES + 1, a, 1);
+			fp16_read_bin(b, bin, 8 * RLC_FP_BYTES + 1);
+			TEST_ASSERT(fp16_cmp(a, b) == RLC_EQ, end);
+			fp16_inv_cyc(a, a);
+			fp16_write_bin(bin, 8 * RLC_FP_BYTES + 1, a, 1);
+			fp16_read_bin(b, bin, 8 * RLC_FP_BYTES + 1);
+			TEST_ASSERT(fp16_cmp(a, b) == RLC_EQ, end);
 		}
 		TEST_END;
 
