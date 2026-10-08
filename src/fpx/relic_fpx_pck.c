@@ -159,13 +159,13 @@ int fp12_upk_max(fp12_t c, const fp12_t a) {
 void fp18_pck(fp18_t c, const fp18_t a) {
 	fp18_copy(c, a);
 	if (fp18_test_cyc(c)) {
-		fp2_zero(c[0][0]);
-		fp2_zero(c[1][1]);
+		fp3_zero(c[0][0]);
+		fp3_zero(c[1][1]);
 	}
 }
 
 int fp18_upk(fp18_t c, const fp18_t a) {
-	if (fp2_is_zero(a[0][0]) && fp2_is_zero(a[1][1])) {
+	if (fp3_is_zero(a[0][0]) && fp3_is_zero(a[1][1])) {
 		fp18_back_cyc(c, a);
 		if (fp18_test_cyc(c)) {
 			return 1;

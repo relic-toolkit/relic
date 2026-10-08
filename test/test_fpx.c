@@ -4534,6 +4534,7 @@ static int compression12(void) {
 			fp12_rand(a);
 			fp12_conv_cyc(a, a);
 			fp12_pck(b, a);
+			TEST_ASSERT(fp2_is_zero(b[0][0]) && fp2_is_zero(b[1][1]), end);
 			TEST_ASSERT(fp12_upk(c, b) == 1, end);
 			TEST_ASSERT(fp12_cmp(a, c) == RLC_EQ, end);
 			fp12_pck_max(b, a);
@@ -5942,6 +5943,7 @@ static int compression18(void) {
 			fp18_rand(a);
 			fp18_conv_cyc(a, a);
 			fp18_pck(b, a);
+			TEST_ASSERT(fp3_is_zero(b[0][0]) && fp3_is_zero(b[1][1]), end);
 			TEST_ASSERT(fp18_upk(c, b) == 1, end);
 			TEST_ASSERT(fp18_cmp(a, c) == RLC_EQ, end);
 		} TEST_END;
@@ -6640,6 +6642,7 @@ static int compression24(void) {
 			fp24_rand(a);
 			fp24_conv_cyc(a, a);
 			fp24_pck(b, a);
+			TEST_ASSERT(fp4_is_zero(b[0][0]) && fp4_is_zero(b[0][1]), end);
 			TEST_ASSERT(fp24_upk(c, b) == 1, end);
 			TEST_ASSERT(fp24_cmp(a, c) == RLC_EQ, end);
 		} TEST_END;
@@ -7053,6 +7056,7 @@ static int compression48(void) {
 			fp48_rand(a);
 			fp48_conv_cyc(a, a);
 			fp48_pck(b, a);
+			TEST_ASSERT(fp8_is_zero(b[0][0]) && fp8_is_zero(b[1][1]), end);
 			TEST_ASSERT(fp48_upk(c, b) == 1, end);
 			TEST_ASSERT(fp48_cmp(a, c) == RLC_EQ, end);
 		} TEST_END;
@@ -7751,6 +7755,7 @@ static int compression54(void) {
 			fp54_rand(a);
 			fp54_conv_cyc(a, a);
 			fp54_pck(b, a);
+			TEST_ASSERT(fp9_is_zero(b[0][0]) && fp9_is_zero(b[0][1]), end);
 			TEST_ASSERT(fp54_upk(c, b) == 1, end);
 			TEST_ASSERT(fp54_cmp(a, c) == RLC_EQ, end);
 		} TEST_END;
