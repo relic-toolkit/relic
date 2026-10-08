@@ -45,66 +45,7 @@ TMPL_FPX_MUL_CUBIC(fp9, fp3, fp3_mul_nor);
 
 #if PP_EXT == LAZYR || !defined(STRIP)
 
-void fp9_mul_unr(dv9_t c, const fp9_t a, const fp9_t b) {
-	dv3_t u0, u1, u2, u3;
-	fp3_t t0, t1;
-
-	dv3_null_all(u0, u1, u2, u3);
-	fp3_null_all(t0, t1);
-
-	RLC_TRY {
-		dv3_new_all(u0, u1, u2, u3);
-		fp3_new_all(t0, t1);
-
-		/* v0 = a_0b_0, v1 = a_1b_1, v2 = a_2b_2,
-		 * t0 = a_1 + a_2, t1 = b_1 + b_2,
-		 * u4 = u1 + u2, u5 = u0 + u1, u6 = u0 + u2 */
-#ifdef RLC_FP_ROOM
-		fp3_muln_low(u0, a[0], b[0]);
-		fp3_muln_low(u1, a[1], b[1]);
-		fp3_muln_low(u2, a[2], b[2]);
-		fp3_addm_low(t0, a[1], a[2]);
-		fp3_addm_low(t1, b[1], b[2]);
-		fp3_addc_low(c[0], u1, u2);
-#else
-		fp3_muln_low(u0, a[0], b[0]);
-		fp3_muln_low(u1, a[1], b[1]);
-		fp3_muln_low(u2, a[2], b[2]);
-		fp3_addm_low(t0, a[1], a[2]);
-		fp3_addm_low(t1, b[1], b[2]);
-		fp3_addc_low(c[0], u1, u2);
-#endif
-		/* t2 (c_0) = v0 + E((a_1 + a_2)(b_1 + b_2) - v1 - v2) */
-		fp3_muln_low(u3, t0, t1);
-		fp3_subc_low(u3, u3, c[0]);
-		fp3_nord_low(c[0], u3);
-		fp3_addc_low(c[0], c[0], u0);
-
-		/* c_1 = (a_0 + a_1)(b_0 + b_1) - v0 - v1 + Ev2 */
-		fp3_addm_low(t0, a[0], a[1]);
-		fp3_addm_low(t1, b[0], b[1]);
-		fp3_addc_low(c[1], u0, u1);
-
-		fp3_muln_low(u3, t0, t1);
-		fp3_subc_low(u3, u3, c[1]);
-		fp3_nord_low(c[2], u2);
-		fp3_addc_low(c[1], u3, c[2]);
-
-		/* c_2 = (a_0 + a_2)(b_0 + b_2) - v0 + v1 - v2 */
-		fp3_addm_low(t0, a[0], a[2]);
-		fp3_addm_low(t1, b[0], b[2]);
-		fp3_addc_low(c[2], u0, u2);
-
-		fp3_muln_low(u3, t0, t1);
-		fp3_subc_low(u3, u3, c[2]);
-		fp3_addc_low(c[2], u3, u1);
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		dv3_free_all(u0, u1, u2, u3);
-		fp3_free_all(t0, t1);
-	}
-}
+TMPL_FPX_MUL_UNR_CUBIC(fp9, fp3, dv9, dv3, fp3, dv3, 1, 1, fp3_muln_low);
 
 TMPL_FPX_MUL_LAZYR(fp9, dv9, fp3, dv3, 3);
 
