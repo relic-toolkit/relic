@@ -604,16 +604,17 @@ int gt_is_valid(const gt_t a) {
 				r &= fp18_test_cyc((void *)a);
 				break;
 			case EP_SG18:
-				/* Check that 3u*P + 2\psi^2(P) == \psi^5P] and [3]P \eq O. */
+				/* Check that a^(3u) * \psi^2(a)^2 == \psi^5(a). */
 				fp_prime_get_par(n);
 				bn_mul_dig(n, n, 3);
-				gt_exp(u, a, n);
-				r = gt_is_unity(a) == 0;
+				fp18_exp_cyc((void *)u, (void *)a, n);
 				gt_frb(v, a, 2);
 				gt_mul(u, u, v);
 				gt_mul(u, u, v);
 				gt_frb(v, a, 5);
+				r = (gt_cmp(u, v) == RLC_EQ);
 				r &= fp18_test_cyc((void *)a);
+				break;
 			default:
 				/* Common case. */
 				pc_get_ord(n);
