@@ -2924,10 +2924,12 @@
 #undef fp48_sub
 #undef fp48_neg
 #undef fp48_dbl
+#undef fp48_mul_unr
 #undef fp48_mul_basic
 #undef fp48_mul_lazyr
 #undef fp48_mul_art
 #undef fp48_mul_dxs
+#undef fp48_sqr_unr
 #undef fp48_sqr_basic
 #undef fp48_sqr_lazyr
 #undef fp48_sqr_cyc_basic
@@ -2966,10 +2968,12 @@
 #define fp48_sub 	RLC_PREFIX(fp48_sub)
 #define fp48_neg 	RLC_PREFIX(fp48_neg)
 #define fp48_dbl 	RLC_PREFIX(fp48_dbl)
+#define fp48_mul_unr 	RLC_PREFIX(fp48_mul_unr)
 #define fp48_mul_basic 	RLC_PREFIX(fp48_mul_basic)
 #define fp48_mul_lazyr 	RLC_PREFIX(fp48_mul_lazyr)
 #define fp48_mul_art 	RLC_PREFIX(fp48_mul_art)
 #define fp48_mul_dxs 	RLC_PREFIX(fp48_mul_dxs)
+#define fp48_sqr_unr 	RLC_PREFIX(fp48_sqr_unr)
 #define fp48_sqr_basic 	RLC_PREFIX(fp48_sqr_basic)
 #define fp48_sqr_lazyr 	RLC_PREFIX(fp48_sqr_lazyr)
 #define fp48_sqr_cyc_basic 	RLC_PREFIX(fp48_sqr_cyc_basic)

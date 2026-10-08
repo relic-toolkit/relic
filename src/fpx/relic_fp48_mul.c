@@ -46,41 +46,39 @@ TMPL_FPX_MUL_QUAD(fp48, fp24, fp24_mul_art);
 
 #if FPX_RDC == LAZYR || !defined(STRIP)
 
-void fp48_mul_lazyr(fp48_t c, const fp48_t a, const fp48_t b) {
-	/* TODO: implement lazy reduction. */
-	fp24_t t0, t1, t2;
+void fp48_mul_unr(dv48_t c, const fp48_t a, const fp48_t b) {
+	fp24_t t0, t1;
+	dv24_t u0, u1, u2;
 
-	fp24_null_all(t0, t1, t2);
+	fp24_null_all(t0, t1);
+	dv24_null_all(u0, u1, u2);
 
 	RLC_TRY {
-		fp24_new_all(t0, t1, t2);
+		fp24_new_all(t0, t1);
+		dv24_new_all(u0, u1, u2);
 
 		/* Karatsuba algorithm. */
-
-		/* t0 = a_0 * b_0. */
-		fp24_mul(t0, a[0], b[0]);
-		/* t1 = a_1 * b_1. */
-		fp24_mul(t1, a[1], b[1]);
-		/* t2 = b_0 + b_1. */
-		fp24_add(t2, b[0], b[1]);
-
-		/* c_1 = a_0 + a_1. */
-		fp24_add(c[1], a[0], a[1]);
-
-		/* c_1 = (a_0 + a_1) * (b_0 + b_1) */
-		fp24_mul(c[1], c[1], t2);
-		fp24_sub(c[1], c[1], t0);
-		fp24_sub(c[1], c[1], t1);
-
-		/* c_0 = a_0b_0 + v * a_1b_1. */
-		fp24_mul_art(t1, t1);
-		fp24_add(c[0], t0, t1);
+		fp24_mul_unr(u0, a[0], b[0]);
+		fp24_mul_unr(u1, a[1], b[1]);
+		fp24_add(t0, a[0], a[1]);
+		fp24_add(t1, b[0], b[1]);
+		fp24_mul_unr(u2, t0, t1);
+		/* c_1 = (a_0 + a_1)(b_0 + b_1) - a_0b_0 - a_1b_1. */
+		TMPL_DV_SUBC(fp2, dv2, 12, c[1], u2, u0);
+		TMPL_DV_SUBC(fp2, dv2, 12, c[1], c[1], u1);
+		/* c_0 = u0 + w * u1, where w^3 = v generates Fp^8 over Fp^4. */
+		TMPL_DV_NADD(fp2, dv2, 4, 2, c[0][0], u0[0], u1[2]);
+		TMPL_DV_ADDC(fp2, dv2, 4, c[0][1], u0[1], u1[0]);
+		TMPL_DV_ADDC(fp2, dv2, 4, c[0][2], u0[2], u1[1]);
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		fp24_free_all(t0, t1, t2);
+		fp24_free_all(t0, t1);
+		dv24_free_all(u0, u1, u2);
 	}
 }
+
+TMPL_FPX_MUL_LAZYR(fp48, dv48, fp2, dv2, 24);
 
 #endif
 

@@ -223,6 +223,11 @@ typedef dv8_t dv24_t[3];
 typedef fp24_t fp48_t[2];
 
 /**
+ * Represents a double-precision 48-degree extension field element.
+ */
+typedef dv24_t dv48_t[2];
+
+/**
  * Represents a 54-degree extension field element.
  *
  * This extension is constructed with the basis {1, u, u^2}, where u^3 = t is an
@@ -5236,6 +5241,16 @@ void fp48_neg(fp48_t c, const fp48_t a);
 void fp48_dbl(fp48_t c, const fp48_t a);
 
 /**
+ * Multiples two 48-degree extension field elements without performing modular
+ * reduction.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the 48-degree extension field element.
+ * @param[in] b				- the 48-degree extension field element.
+ */
+void fp48_mul_unr(dv48_t c, const fp48_t a, const fp48_t b);
+
+/**
  * Multiples two 48-extension field elements using basic arithmetic.
  *
  * @param[out] c			- the result.
@@ -5270,6 +5285,15 @@ void fp48_mul_art(fp48_t c, const fp48_t a);
  * @param[in] b				- the sparse 48-extension field element.
  */
 void fp48_mul_dxs(fp48_t c, const fp48_t a, const fp48_t b);
+
+/**
+ * Computes the square of a 48-degree extension field element without performing
+ * modular reduction.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the 48-degree extension field element to square.
+ */
+void fp48_sqr_unr(dv48_t c, const fp48_t a);
 
 /**
  * Computes the square of a 48-extension field element using basic

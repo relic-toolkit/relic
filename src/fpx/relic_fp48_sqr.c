@@ -51,30 +51,37 @@ TMPL_SQR_PCK_QC(fp48, fp8, fp8_mul_art);
 
 #if FPX_RDC == LAZYR || !defined(STRIP)
 
-void fp48_sqr_lazyr(fp48_t c, const fp48_t a) {
-	/* TODO: implement lazy reduction. */
-	fp24_t t0, t1;
+void fp48_sqr_unr(dv48_t c, const fp48_t a) {
+	fp24_t t;
+	dv24_t u0, u1;
 
-	fp24_null_all(t0, t1);
+	fp24_null(t);
+	dv24_null_all(u0, u1);
 
 	RLC_TRY {
-		fp24_new_all(t0, t1);
+		fp24_new(t);
+		dv24_new_all(u0, u1);
 
-		fp24_add(t0, a[0], a[1]);
-		fp24_mul_art(t1, a[1]);
-		fp24_add(t1, a[0], t1);
-		fp24_mul(t0, t0, t1);
-		fp24_mul(c[1], a[0], a[1]);
-		fp24_sub(c[0], t0, c[1]);
-		fp24_mul_art(t1, c[1]);
-		fp24_sub(c[0], c[0], t1);
-		fp24_dbl(c[1], c[1]);
+		fp24_sqr_unr(u0, a[0]);
+		fp24_sqr_unr(u1, a[1]);
+		fp24_add(t, a[0], a[1]);
+		/* c_0 = u0 + w * u1, where w^3 = v generates Fp^8 over Fp^4. */
+		TMPL_DV_NADD(fp2, dv2, 4, 2, c[0][0], u0[0], u1[2]);
+		TMPL_DV_ADDC(fp2, dv2, 4, c[0][1], u0[1], u1[0]);
+		TMPL_DV_ADDC(fp2, dv2, 4, c[0][2], u0[2], u1[1]);
+		/* c_1 = (a_0 + a_1)^2 - a_0^2 - a_1^2. */
+		TMPL_DV_ADDC(fp2, dv2, 12, u1, u1, u0);
+		fp24_sqr_unr(u0, t);
+		TMPL_DV_SUBC(fp2, dv2, 12, c[1], u0, u1);
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
 	} RLC_FINALLY {
-		fp24_free_all(t0, t1);
+		fp24_free(t);
+		dv24_free_all(u0, u1);
 	}
 }
+
+TMPL_FPX_SQR_LAZYR(fp48, dv48, fp2, dv2, 24);
 
 TMPL_SQR_PCK_LAZYR_QC(fp48, fp8, dv8, fp2, dv2, 4, 2, fp8_sqr_unr, fp8_mul_art);
 
