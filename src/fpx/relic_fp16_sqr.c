@@ -96,27 +96,7 @@ void fp16_sqr_unr(dv16_t c, const fp16_t a) {
 	}
 }
 
-void fp16_sqr_lazyr(fp16_t c, const fp16_t a) {
-	dv16_t t;
-
-	dv16_null(t);
-
-	RLC_TRY {
-		dv16_new(t);
-		fp16_sqr_unr(t, a);
-		for (int i = 0; i < 2; i++) {
-			for (int j = 0; j < 2; j++) {
-				for (int k = 0; k < 2; k++) {
-					fp2_rdcn_low(c[i][j][k], t[i][j][k]);
-				}
-			}
-		}
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		dv16_free(t);
-	}
-}
+TMPL_FPX_SQR_LAZYR(fp16, dv16, fp2, dv2, 8);
 
 #endif
 

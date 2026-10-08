@@ -649,3 +649,61 @@
 																			\
 		return r;															\
 	}
+
+/**
+ * Defines a template for multiplication with lazy reduction, computing the
+ * result without reduction and reducing each base field component once.
+ *
+ * @param[in] X			- the extension field prefix.
+ * @param[in] D			- the double-precision extension field prefix.
+ * @param[in] B			- the base field prefix with low-level arithmetic.
+ * @param[in] BD		- the double-precision base field prefix.
+ * @param[in] N			- the number of base field components.
+ */
+#define TMPL_FPX_MUL_LAZYR(X, D, B, BD, N)									\
+	void X##_mul_lazyr(X##_t c, const X##_t a, const X##_t b) {				\
+		D##_t t;															\
+																			\
+		D##_null(t);														\
+																			\
+		RLC_TRY {															\
+			D##_new(t);														\
+			X##_mul_unr(t, a, b);											\
+			for (int i = 0; i < (N); i++) {									\
+				B##_rdcn_low(((B##_t *)c)[i], ((BD##_t *)t)[i]);			\
+			}																\
+		} RLC_CATCH_ANY {													\
+			RLC_THROW(ERR_CAUGHT);											\
+		} RLC_FINALLY {														\
+			D##_free(t);													\
+		}																	\
+	}
+
+/**
+ * Defines a template for squaring with lazy reduction, computing the
+ * result without reduction and reducing each base field component once.
+ *
+ * @param[in] X			- the extension field prefix.
+ * @param[in] D			- the double-precision extension field prefix.
+ * @param[in] B			- the base field prefix with low-level arithmetic.
+ * @param[in] BD		- the double-precision base field prefix.
+ * @param[in] N			- the number of base field components.
+ */
+#define TMPL_FPX_SQR_LAZYR(X, D, B, BD, N)									\
+	void X##_sqr_lazyr(X##_t c, const X##_t a) {							\
+		D##_t t;															\
+																			\
+		D##_null(t);														\
+																			\
+		RLC_TRY {															\
+			D##_new(t);														\
+			X##_sqr_unr(t, a);												\
+			for (int i = 0; i < (N); i++) {									\
+				B##_rdcn_low(((B##_t *)c)[i], ((BD##_t *)t)[i]);			\
+			}																\
+		} RLC_CATCH_ANY {													\
+			RLC_THROW(ERR_CAUGHT);											\
+		} RLC_FINALLY {														\
+			D##_free(t);													\
+		}																	\
+	}

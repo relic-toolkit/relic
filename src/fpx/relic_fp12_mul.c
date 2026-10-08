@@ -209,24 +209,7 @@ void fp12_mul_unr(dv12_t c, const fp12_t a, const fp12_t b) {
 	}
 }
 
-void fp12_mul_lazyr(fp12_t c, const fp12_t a, const fp12_t b) {
-	dv12_t t;
-
-	dv12_null(t);
-
-	RLC_TRY {
-		dv12_new(t);
-		fp12_mul_unr(t, a, b);
-		for (int i = 0; i < 3; i++) {
-			fp2_rdcn_low(c[0][i], t[0][i]);
-			fp2_rdcn_low(c[1][i], t[1][i]);
-		}
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		dv12_free(t);
-	}
-}
+TMPL_FPX_MUL_LAZYR(fp12, dv12, fp2, dv2, 6);
 
 void fp12_mul_dxs_lazyr(fp12_t c, const fp12_t a, const fp12_t b) {
 	fp6_t t0;

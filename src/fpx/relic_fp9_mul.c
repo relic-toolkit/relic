@@ -106,23 +106,7 @@ void fp9_mul_unr(dv9_t c, const fp9_t a, const fp9_t b) {
 	}
 }
 
-void fp9_mul_lazyr(fp9_t c, const fp9_t a, const fp9_t b) {
-	dv9_t t;
-
-	dv9_null(t);
-
-	RLC_TRY {
-		dv9_new(t);
-		fp9_mul_unr(t, a, b);
-		fp3_rdcn_low(c[0], t[0]);
-		fp3_rdcn_low(c[1], t[1]);
-		fp3_rdcn_low(c[2], t[2]);
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		dv9_free(t);
-	}
-}
+TMPL_FPX_MUL_LAZYR(fp9, dv9, fp3, dv3, 3);
 
 #endif
 

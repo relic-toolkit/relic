@@ -80,21 +80,6 @@ void fp4_sqr_unr(dv4_t c, const fp4_t a) {
 	}
 }
 
-void fp4_sqr_lazyr(fp4_t c, const fp4_t a) {
-	dv4_t t;
-
-	dv4_null(t);
-
-	RLC_TRY {
-		dv4_new(t);
-		fp4_sqr_unr(t, a);
-		fp2_rdcn_low(c[0], t[0]);
-		fp2_rdcn_low(c[1], t[1]);
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		dv4_free(t);
-	}
-}
+TMPL_FPX_SQR_LAZYR(fp4, dv4, fp2, dv2, 2);
 
 #endif

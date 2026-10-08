@@ -161,24 +161,7 @@ void fp8_mul_unr(dv8_t c, const fp8_t a, const fp8_t b) {
 	}
 }
 
-void fp8_mul_lazyr(fp8_t c, const fp8_t a, const fp8_t b) {
-	dv8_t t;
-
-	dv8_null(t);
-
-	RLC_TRY {
-		dv8_new(t);
-		fp8_mul_unr(t, a, b);
-		fp2_rdcn_low(c[0][0], t[0][0]);
-		fp2_rdcn_low(c[0][1], t[0][1]);
-		fp2_rdcn_low(c[1][0], t[1][0]);
-		fp2_rdcn_low(c[1][1], t[1][1]);
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		dv8_free(t);
-	}
-}
+TMPL_FPX_MUL_LAZYR(fp8, dv8, fp2, dv2, 4);
 
 #endif
 

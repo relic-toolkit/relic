@@ -137,26 +137,7 @@ void fp24_sqr_unr(dv24_t c, const fp24_t a) {
 	}
 }
 
-void fp24_sqr_lazyr(fp24_t c, const fp24_t a) {
-	dv24_t t;
-
-	dv24_null(t);
-
-	RLC_TRY {
-		dv24_new(t);
-		fp24_sqr_unr(t, a);
-		for (int i = 0; i < 3; i++) {
-			for (int j = 0; j < 2; j++) {
-				fp2_rdcn_low(c[i][j][0], t[i][j][0]);
-				fp2_rdcn_low(c[i][j][1], t[i][j][1]);
-			}
-		}
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		dv24_free(t);
-	}
-}
+TMPL_FPX_SQR_LAZYR(fp24, dv24, fp2, dv2, 12);
 
 TMPL_SQR_PCK_LAZYR_CQ(fp24, fp4, dv4, fp2, dv2, 2, 1, fp4_sqr_unr, fp4_mul_art);
 

@@ -185,25 +185,7 @@ void fp18_mul_unr(dv18_t c, const fp18_t a, const fp18_t b) {
 	}
 }
 
-void fp18_mul_lazyr(fp18_t c, const fp18_t a, const fp18_t b) {
-	dv18_t t;
-
-	dv18_null(t);
-
-	RLC_TRY {
-		dv18_new(t);
-		fp18_mul_unr(t, a, b);
-		for (int i = 0; i < 2; i++) {
-			for (int j = 0; j < 3; j++) {
-				fp3_rdcn_low(c[i][j], t[i][j]);
-			}
-		}
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		dv18_free(t);
-	}
-}
+TMPL_FPX_MUL_LAZYR(fp18, dv18, fp3, dv3, 6);
 
 void fp18_mul_dxs_lazyr(fp18_t c, const fp18_t a, const fp18_t b) {
 	fp9_t t0;
