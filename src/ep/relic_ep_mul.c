@@ -266,7 +266,7 @@ static void ep_mul_reg_glv(ep_t r, const ep_t p, const bn_t k) {
 				fp_copy_sec(w->x, t[j]->x, j == n1);
 				fp_copy_sec(u->y, t[j]->y, j == n0);
 				fp_copy_sec(w->y, t[j]->y, j == n1);
-#if !defined(EP_fpXED)
+#if !defined(EP_MIXED)
 				fp_copy_sec(u->z, t[j]->z, j == n0);
 				fp_copy_sec(w->z, t[j]->z, j == n1);
 #endif
