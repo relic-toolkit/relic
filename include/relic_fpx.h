@@ -2051,10 +2051,11 @@ void fp3_print(const fp3_t a);
  * Returns the number of bytes necessary to store a cubic extension field
  * element.
  *
- * @param[out] size			- the result.
  * @param[in] a				- the extension field element.
+ * @param[in] pack			- the flag to indicate compression.
+ * @return the number of bytes.
  */
-int fp3_size_bin(const fp3_t a);
+int fp3_size_bin(const fp3_t a, int pack);
 
 /**
  * Reads a cubic extension field element from a byte vector in big-endian
@@ -2074,9 +2075,10 @@ void fp3_read_bin(fp3_t a, const uint8_t *bin, size_t len);
  * @param[out] bin			- the byte vector.
  * @param[in] len			- the buffer capacity.
  * @param[in] a				- the extension field element to write.
+ * @param[in] pack			- the flag to indicate compression.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is not correct.
  */
-void fp3_write_bin(uint8_t *bin, size_t len, const fp3_t a);
+void fp3_write_bin(uint8_t *bin, size_t len, const fp3_t a, int pack);
 
 /**
  * Returns the result of a comparison between two cubic extension field
@@ -2372,10 +2374,11 @@ void fp4_print(const fp4_t a);
  * Returns the number of bytes necessary to store a quartic extension field
  * element.
  *
- * @param[out] size			- the result.
  * @param[in] a				- the extension field element.
+ * @param[in] pack			- the flag to indicate compression.
+ * @return the number of bytes.
  */
-int fp4_size_bin(const fp4_t a);
+int fp4_size_bin(const fp4_t a, int pack);
 
 /**
  * Reads a quartic extension field element from a byte vector in big-endian
@@ -2395,9 +2398,10 @@ void fp4_read_bin(fp4_t a, const uint8_t *bin, size_t len);
  * @param[out] bin			- the byte vector.
  * @param[in] len			- the buffer capacity.
  * @param[in] a				- the extension field element to write.
+ * @param[in] pack			- the flag to indicate compression.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is not correct.
  */
-void fp4_write_bin(uint8_t *bin, size_t len, const fp4_t a);
+void fp4_write_bin(uint8_t *bin, size_t len, const fp4_t a, int pack);
 
 /**
  * Returns the result of a comparison between two quartic extension field
@@ -2689,10 +2693,11 @@ void fp6_print(const fp6_t a);
  * Returns the number of bytes necessary to store a quadratic extension field
  * element.
  *
- * @param[out] size			- the result.
  * @param[in] a				- the extension field element.
+ * @param[in] pack			- the flag to indicate compression.
+ * @return the number of bytes.
  */
-int fp6_size_bin(const fp6_t a);
+int fp6_size_bin(const fp6_t a, int pack);
 
 /**
  * Reads a quadratic extension field element from a byte vector in big-endian
@@ -2712,9 +2717,10 @@ void fp6_read_bin(fp6_t a, const uint8_t *bin, size_t len);
  * @param[out] bin			- the byte vector.
  * @param[in] len			- the buffer capacity.
  * @param[in] a				- the extension field element to write.
+ * @param[in] pack			- the flag to indicate compression.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is not correct.
  */
-void fp6_write_bin(uint8_t *bin, size_t len, const fp6_t a);
+void fp6_write_bin(uint8_t *bin, size_t len, const fp6_t a, int pack);
 
 /**
  * Returns the result of a comparison between two sextic extension field
@@ -3287,10 +3293,11 @@ void fp9_print(const fp9_t a);
  * Returns the number of bytes necessary to store a quadratic extension field
  * element.
  *
- * @param[out] size			- the result.
  * @param[in] a				- the extension field element.
+ * @param[in] pack			- the flag to indicate compression.
+ * @return the number of bytes.
  */
-int fp9_size_bin(const fp9_t a);
+int fp9_size_bin(const fp9_t a, int pack);
 
 /**
  * Reads a quadratic extension field element from a byte vector in big-endian
@@ -3310,9 +3317,10 @@ void fp9_read_bin(fp9_t a, const uint8_t *bin, size_t len);
  * @param[out] bin			- the byte vector.
  * @param[in] len			- the buffer capacity.
  * @param[in] a				- the extension field element to write.
+ * @param[in] pack			- the flag to indicate compression.
  * @throw ERR_NO_BUFFER		- if the buffer capacity is not correct.
  */
-void fp9_write_bin(uint8_t *bin, size_t len, const fp9_t a);
+void fp9_write_bin(uint8_t *bin, size_t len, const fp9_t a, int pack);
 
 /**
  * Returns the result of a comparison between two nonic extension field

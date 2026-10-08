@@ -516,19 +516,19 @@ static void util3(void) {
 
 	BENCH_RUN("fp3_size_bin") {
 		fp3_rand(a);
-		BENCH_ADD(fp3_size_bin(a));
+		BENCH_ADD(fp3_size_bin(a, 0));
 	}
 	BENCH_END;
 
 	BENCH_RUN("fp3_write_bin") {
 		fp3_rand(a);
-		BENCH_ADD(fp3_write_bin(bin, sizeof(bin), a));
+		BENCH_ADD(fp3_write_bin(bin, sizeof(bin), a, 0));
 	}
 	BENCH_END;
 
 	BENCH_RUN("fp3_read_bin") {
 		fp3_rand(a);
-		fp3_write_bin(bin, sizeof(bin), a);
+		fp3_write_bin(bin, sizeof(bin), a, 0);
 		BENCH_ADD(fp3_read_bin(a, bin, sizeof(bin)));
 	}
 	BENCH_END;
@@ -817,19 +817,19 @@ static void util4(void) {
 
 	BENCH_RUN("fp4_size_bin") {
 		fp4_rand(a);
-		BENCH_ADD(fp4_size_bin(a));
+		BENCH_ADD(fp4_size_bin(a, 0));
 	}
 	BENCH_END;
 
 	BENCH_RUN("fp4_write_bin") {
 		fp4_rand(a);
-		BENCH_ADD(fp4_write_bin(bin, sizeof(bin), a));
+		BENCH_ADD(fp4_write_bin(bin, sizeof(bin), a, 0));
 	}
 	BENCH_END;
 
 	BENCH_RUN("fp4_read_bin") {
 		fp4_rand(a);
-		fp4_write_bin(bin, sizeof(bin), a);
+		fp4_write_bin(bin, sizeof(bin), a, 0);
 		BENCH_ADD(fp4_read_bin(a, bin, sizeof(bin)));
 	}
 	BENCH_END;
@@ -1048,19 +1048,19 @@ static void util6(void) {
 
 	BENCH_RUN("fp6_size_bin") {
 		fp6_rand(a);
-		BENCH_ADD(fp6_size_bin(a));
+		BENCH_ADD(fp6_size_bin(a, 0));
 	}
 	BENCH_END;
 
 	BENCH_RUN("fp6_write_bin") {
 		fp6_rand(a);
-		BENCH_ADD(fp6_write_bin(bin, sizeof(bin), a));
+		BENCH_ADD(fp6_write_bin(bin, sizeof(bin), a, 0));
 	}
 	BENCH_END;
 
 	BENCH_RUN("fp6_read_bin") {
 		fp6_rand(a);
-		fp6_write_bin(bin, sizeof(bin), a);
+		fp6_write_bin(bin, sizeof(bin), a, 0);
 		BENCH_ADD(fp6_read_bin(a, bin, sizeof(bin)));
 	}
 	BENCH_END;
@@ -1558,19 +1558,19 @@ static void util9(void) {
 
 	BENCH_RUN("fp9_size_bin") {
 		fp9_rand(a);
-		BENCH_ADD(fp9_size_bin(a));
+		BENCH_ADD(fp9_size_bin(a, 0));
 	}
 	BENCH_END;
 
 	BENCH_RUN("fp9_write_bin") {
 		fp9_rand(a);
-		BENCH_ADD(fp9_write_bin(bin, sizeof(bin), a));
+		BENCH_ADD(fp9_write_bin(bin, sizeof(bin), a, 0));
 	}
 	BENCH_END;
 
 	BENCH_RUN("fp9_read_bin") {
 		fp9_rand(a);
-		fp9_write_bin(bin, sizeof(bin), a);
+		fp9_write_bin(bin, sizeof(bin), a, 0);
 		BENCH_ADD(fp9_read_bin(a, bin, sizeof(bin)));
 	}
 	BENCH_END;

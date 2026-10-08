@@ -1018,7 +1018,7 @@ static int util3(void) {
 
 		TEST_CASE("reading and writing a finite field element are consistent") {
 			fp3_rand(a);
-			fp3_write_bin(bin, sizeof(bin), a);
+			fp3_write_bin(bin, sizeof(bin), a, 0);
 			fp3_read_bin(b, bin, sizeof(bin));
 			TEST_ASSERT(fp3_cmp(a, b) == RLC_EQ, end);
 		}
@@ -1026,7 +1026,7 @@ static int util3(void) {
 
 		TEST_CASE("getting the size of a prime field element is correct") {
 			fp3_rand(a);
-			TEST_ASSERT(fp3_size_bin(a) == 3 * RLC_FP_BYTES, end);
+			TEST_ASSERT(fp3_size_bin(a, 0) == 3 * RLC_FP_BYTES, end);
 		}
 		TEST_END;
 
@@ -1681,7 +1681,7 @@ static int util4(void) {
 
 		TEST_CASE("reading and writing a finite field element are consistent") {
 			fp4_rand(a);
-			fp4_write_bin(bin, sizeof(bin), a);
+			fp4_write_bin(bin, sizeof(bin), a, 0);
 			fp4_read_bin(b, bin, sizeof(bin));
 			TEST_ASSERT(fp4_cmp(a, b) == RLC_EQ, end);
 		}
@@ -1689,7 +1689,7 @@ static int util4(void) {
 
 		TEST_CASE("getting the size of a prime field element is correct") {
 			fp4_rand(a);
-			TEST_ASSERT(fp4_size_bin(a) == 4 * RLC_FP_BYTES, end);
+			TEST_ASSERT(fp4_size_bin(a, 0) == 4 * RLC_FP_BYTES, end);
 		}
 		TEST_END;
 
@@ -2291,7 +2291,7 @@ static int util6(void) {
 
 		TEST_CASE("reading and writing a finite field element are consistent") {
 			fp6_rand(a);
-			fp6_write_bin(bin, sizeof(bin), a);
+			fp6_write_bin(bin, sizeof(bin), a, 0);
 			fp6_read_bin(b, bin, sizeof(bin));
 			TEST_ASSERT(fp6_cmp(a, b) == RLC_EQ, end);
 		}
@@ -2299,7 +2299,7 @@ static int util6(void) {
 
 		TEST_CASE("getting the size of a prime field element is correct") {
 			fp6_rand(a);
-			TEST_ASSERT(fp6_size_bin(a) == 6 * RLC_FP_BYTES, end);
+			TEST_ASSERT(fp6_size_bin(a, 0) == 6 * RLC_FP_BYTES, end);
 		}
 		TEST_END;
 
@@ -3422,7 +3422,7 @@ static int util9(void) {
 
 		TEST_CASE("reading and writing a finite field element are consistent") {
 			fp9_rand(a);
-			fp9_write_bin(bin, sizeof(bin), a);
+			fp9_write_bin(bin, sizeof(bin), a, 0);
 			fp9_read_bin(b, bin, sizeof(bin));
 			TEST_ASSERT(fp9_cmp(a, b) == RLC_EQ, end);
 		}
@@ -3430,7 +3430,7 @@ static int util9(void) {
 
 		TEST_CASE("getting the size of a prime field element is correct") {
 			fp9_rand(a);
-			TEST_ASSERT(fp9_size_bin(a) == 9 * RLC_FP_BYTES, end);
+			TEST_ASSERT(fp9_size_bin(a, 0) == 9 * RLC_FP_BYTES, end);
 		}
 		TEST_END;
 

@@ -308,8 +308,8 @@ void ep3_write_bin(uint8_t *bin, size_t len, const ep3_t a, int pack) {
 			RLC_THROW(ERR_NO_BUFFER);
 		} else {
 			bin[0] = 4;
-			fp3_write_bin(bin + 1, 3 * RLC_FP_BYTES, t->x);
-			fp3_write_bin(bin + 3 * RLC_FP_BYTES + 1, 3 * RLC_FP_BYTES, t->y);
+			fp3_write_bin(bin + 1, 3 * RLC_FP_BYTES, t->x, 0);
+			fp3_write_bin(bin + 3 * RLC_FP_BYTES + 1, 3 * RLC_FP_BYTES, t->y, 0);
 		}
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);

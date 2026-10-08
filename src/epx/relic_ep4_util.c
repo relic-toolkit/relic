@@ -308,8 +308,8 @@ void ep4_write_bin(uint8_t *bin, size_t len, const ep4_t a, int pack) {
 			RLC_THROW(ERR_NO_BUFFER);
 		} else {
 			bin[0] = 4;
-			fp4_write_bin(bin + 1, 4 * RLC_FP_BYTES, t->x);
-			fp4_write_bin(bin + 4 * RLC_FP_BYTES + 1, 4 * RLC_FP_BYTES, t->y);
+			fp4_write_bin(bin + 1, 4 * RLC_FP_BYTES, t->x, 0);
+			fp4_write_bin(bin + 4 * RLC_FP_BYTES + 1, 4 * RLC_FP_BYTES, t->y, 0);
 		}
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);

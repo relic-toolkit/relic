@@ -104,8 +104,9 @@ void fp2_write_bin(uint8_t *bin, size_t len, const fp2_t a, int pack) {
 
 TMPL_FPX_UTIL(fp3, fp, 3);
 
-int fp3_size_bin(const fp3_t a) {
+int fp3_size_bin(const fp3_t a, int pack) {
 	(void)a;
+	(void)pack;
 	return 3 * RLC_FP_BYTES;
 }
 
@@ -119,7 +120,8 @@ void fp3_read_bin(fp3_t a, const uint8_t *bin, size_t len) {
 	fp_read_bin(a[2], bin + 2 * RLC_FP_BYTES, RLC_FP_BYTES);
 }
 
-void fp3_write_bin(uint8_t *bin, size_t len, const fp3_t a) {
+void fp3_write_bin(uint8_t *bin, size_t len, const fp3_t a, int pack) {
+	(void)pack;
 	if (len != 3 * RLC_FP_BYTES) {
 		RLC_THROW(ERR_NO_BUFFER);
 		return;
@@ -131,8 +133,9 @@ void fp3_write_bin(uint8_t *bin, size_t len, const fp3_t a) {
 
 TMPL_FPX_UTIL(fp4, fp2, 2);
 
-int fp4_size_bin(const fp4_t a) {
+int fp4_size_bin(const fp4_t a, int pack) {
 	(void)a;
+	(void)pack;
 	return 4 * RLC_FP_BYTES;
 }
 
@@ -145,7 +148,8 @@ void fp4_read_bin(fp4_t a, const uint8_t *bin, size_t len) {
 	fp2_read_bin(a[1], bin + 2 * RLC_FP_BYTES, 2 * RLC_FP_BYTES);
 }
 
-void fp4_write_bin(uint8_t *bin, size_t len, const fp4_t a) {
+void fp4_write_bin(uint8_t *bin, size_t len, const fp4_t a, int pack) {
+	(void)pack;
 	if (len != 4 * RLC_FP_BYTES) {
 		RLC_THROW(ERR_NO_BUFFER);
 		return;
@@ -156,8 +160,9 @@ void fp4_write_bin(uint8_t *bin, size_t len, const fp4_t a) {
 
 TMPL_FPX_UTIL(fp6, fp2, 3);
 
-int fp6_size_bin(const fp6_t a) {
+int fp6_size_bin(const fp6_t a, int pack) {
 	(void)a;
+	(void)pack;
 	return 6 * RLC_FP_BYTES;
 }
 
@@ -171,7 +176,8 @@ void fp6_read_bin(fp6_t a, const uint8_t *bin, size_t len) {
 	fp2_read_bin(a[2], bin + 4 * RLC_FP_BYTES, 2 * RLC_FP_BYTES);
 }
 
-void fp6_write_bin(uint8_t *bin, size_t len, const fp6_t a) {
+void fp6_write_bin(uint8_t *bin, size_t len, const fp6_t a, int pack) {
+	(void)pack;
 	if (len != 6 * RLC_FP_BYTES) {
 		RLC_THROW(ERR_NO_BUFFER);
 		return;
@@ -210,14 +216,15 @@ void fp8_write_bin(uint8_t *bin, size_t len, const fp8_t a, int pack) {
 		RLC_THROW(ERR_NO_BUFFER);
 		return;
 	}
-	fp4_write_bin(bin, 4 * RLC_FP_BYTES, a[0]);
-	fp4_write_bin(bin + 4 * RLC_FP_BYTES, 4 * RLC_FP_BYTES, a[1]);
+	fp4_write_bin(bin, 4 * RLC_FP_BYTES, a[0], 0);
+	fp4_write_bin(bin + 4 * RLC_FP_BYTES, 4 * RLC_FP_BYTES, a[1], 0);
 }
 
 TMPL_FPX_UTIL(fp9, fp3, 3);
 
-int fp9_size_bin(const fp9_t a) {
+int fp9_size_bin(const fp9_t a, int pack) {
 	(void)a;
+	(void)pack;
 	return 9 * RLC_FP_BYTES;
 }
 
@@ -231,14 +238,15 @@ void fp9_read_bin(fp9_t a, const uint8_t *bin, size_t len) {
 	fp3_read_bin(a[2], bin + 6 * RLC_FP_BYTES, 3 * RLC_FP_BYTES);
 }
 
-void fp9_write_bin(uint8_t *bin, size_t len, const fp9_t a) {
+void fp9_write_bin(uint8_t *bin, size_t len, const fp9_t a, int pack) {
+	(void)pack;
 	if (len != 9 * RLC_FP_BYTES) {
 		RLC_THROW(ERR_NO_BUFFER);
 		return;
 	}
-	fp3_write_bin(bin, 3 * RLC_FP_BYTES, a[0]);
-	fp3_write_bin(bin + 3 * RLC_FP_BYTES, 3 * RLC_FP_BYTES, a[1]);
-	fp3_write_bin(bin + 6 * RLC_FP_BYTES, 3 * RLC_FP_BYTES, a[2]);
+	fp3_write_bin(bin, 3 * RLC_FP_BYTES, a[0], 0);
+	fp3_write_bin(bin + 3 * RLC_FP_BYTES, 3 * RLC_FP_BYTES, a[1], 0);
+	fp3_write_bin(bin + 6 * RLC_FP_BYTES, 3 * RLC_FP_BYTES, a[2], 0);
 }
 
 TMPL_FPX_UTIL(fp12, fp6, 2);
@@ -295,8 +303,8 @@ void fp12_write_bin(uint8_t *bin, size_t len, const fp12_t a, int pack) {
 			fp2_write_bin(bin + 4 * RLC_FP_BYTES, 2 * RLC_FP_BYTES, a[1][0], 0);
 			fp2_write_bin(bin + 6 * RLC_FP_BYTES, 2 * RLC_FP_BYTES, a[1][2], 0);
 		} else {
-			fp6_write_bin(bin, 6 * RLC_FP_BYTES, a[0]);
-			fp6_write_bin(bin + 6 * RLC_FP_BYTES, 6 * RLC_FP_BYTES, a[1]);
+			fp6_write_bin(bin, 6 * RLC_FP_BYTES, a[0], 0);
+			fp6_write_bin(bin + 6 * RLC_FP_BYTES, 6 * RLC_FP_BYTES, a[1], 0);
 		}
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -387,13 +395,13 @@ void fp18_write_bin(uint8_t *bin, size_t len, const fp18_t a, int pack) {
 
 		if (pack) {
 			fp18_pck(t, a);
-			fp3_write_bin(bin, 3 * RLC_FP_BYTES, a[0][1]);
-			fp3_write_bin(bin + 3 * RLC_FP_BYTES, 3 * RLC_FP_BYTES, a[0][2]);
-			fp3_write_bin(bin + 6 * RLC_FP_BYTES, 3 * RLC_FP_BYTES, a[1][0]);
-			fp3_write_bin(bin + 9 * RLC_FP_BYTES, 3 * RLC_FP_BYTES, a[1][2]);
+			fp3_write_bin(bin, 3 * RLC_FP_BYTES, a[0][1], 0);
+			fp3_write_bin(bin + 3 * RLC_FP_BYTES, 3 * RLC_FP_BYTES, a[0][2], 0);
+			fp3_write_bin(bin + 6 * RLC_FP_BYTES, 3 * RLC_FP_BYTES, a[1][0], 0);
+			fp3_write_bin(bin + 9 * RLC_FP_BYTES, 3 * RLC_FP_BYTES, a[1][2], 0);
 		} else {
-			fp9_write_bin(bin, 9 * RLC_FP_BYTES, a[0]);
-			fp9_write_bin(bin + 9 * RLC_FP_BYTES, 9 * RLC_FP_BYTES, a[1]);
+			fp9_write_bin(bin, 9 * RLC_FP_BYTES, a[0], 0);
+			fp9_write_bin(bin + 9 * RLC_FP_BYTES, 9 * RLC_FP_BYTES, a[1], 0);
 		}
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -452,10 +460,10 @@ void fp24_write_bin(uint8_t *bin, size_t len, const fp24_t a, int pack) {
 
 		if (pack) {
 			fp24_pck(t, a);
-			fp4_write_bin(bin, 4 * RLC_FP_BYTES, a[1][0]);
-			fp4_write_bin(bin + 4 * RLC_FP_BYTES, 4 * RLC_FP_BYTES, a[1][1]);
-			fp4_write_bin(bin + 8 * RLC_FP_BYTES, 4 * RLC_FP_BYTES, a[2][0]);
-			fp4_write_bin(bin + 12 * RLC_FP_BYTES, 4 * RLC_FP_BYTES, a[2][1]);
+			fp4_write_bin(bin, 4 * RLC_FP_BYTES, a[1][0], 0);
+			fp4_write_bin(bin + 4 * RLC_FP_BYTES, 4 * RLC_FP_BYTES, a[1][1], 0);
+			fp4_write_bin(bin + 8 * RLC_FP_BYTES, 4 * RLC_FP_BYTES, a[2][0], 0);
+			fp4_write_bin(bin + 12 * RLC_FP_BYTES, 4 * RLC_FP_BYTES, a[2][1], 0);
 		} else {
 			fp8_write_bin(bin, 8 * RLC_FP_BYTES, a[0], 0);
 			fp8_write_bin(bin + 8 * RLC_FP_BYTES, 8 * RLC_FP_BYTES, a[1], 0);
@@ -582,10 +590,10 @@ void fp54_write_bin(uint8_t *bin, size_t len, const fp54_t a, int pack) {
 
 		if (pack) {
 			fp54_pck(t, a);
-			fp9_write_bin(bin, 9 * RLC_FP_BYTES, a[1][0]);
-			fp9_write_bin(bin + 9 * RLC_FP_BYTES, 9 * RLC_FP_BYTES, a[1][1]);
-			fp9_write_bin(bin + 18 * RLC_FP_BYTES, 9 * RLC_FP_BYTES, a[2][0]);
-			fp9_write_bin(bin + 27 * RLC_FP_BYTES, 9 * RLC_FP_BYTES, a[2][1]);
+			fp9_write_bin(bin, 9 * RLC_FP_BYTES, a[1][0], 0);
+			fp9_write_bin(bin + 9 * RLC_FP_BYTES, 9 * RLC_FP_BYTES, a[1][1], 0);
+			fp9_write_bin(bin + 18 * RLC_FP_BYTES, 9 * RLC_FP_BYTES, a[2][0], 0);
+			fp9_write_bin(bin + 27 * RLC_FP_BYTES, 9 * RLC_FP_BYTES, a[2][1], 0);
 		} else {
 			fp18_write_bin(bin, 18 * RLC_FP_BYTES, a[0], 0);
 			fp18_write_bin(bin + 18 * RLC_FP_BYTES, 18 * RLC_FP_BYTES, a[1], 0);
