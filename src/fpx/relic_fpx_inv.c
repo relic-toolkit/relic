@@ -92,48 +92,7 @@ void fp2_inv_cyc(fp2_t c, const fp2_t a) {
 	fp_neg(c[1], a[1]);
 }
 
-void fp2_inv_sim(fp2_t *c, const fp2_t *a, int n) {
-	int i;
-	fp2_t u, *t = RLC_ALLOCA(fp2_t, n);
-
-	for (i = 0; i < n; i++) {
-		fp2_null(t[i]);
-	}
-	fp2_null(u);
-
-	RLC_TRY {
-		for (i = 0; i < n; i++) {
-			fp2_new(t[i]);
-		}
-		fp2_new(u);
-
-		fp2_copy(c[0], a[0]);
-		fp2_copy(t[0], a[0]);
-
-		for (i = 1; i < n; i++) {
-			fp2_copy(t[i], a[i]);
-			fp2_mul(c[i], c[i - 1], t[i]);
-		}
-
-		fp2_inv(u, c[n - 1]);
-
-		for (i = n - 1; i > 0; i--) {
-			fp2_mul(c[i], c[i - 1], u);
-			fp2_mul(u, u, t[i]);
-		}
-		fp2_copy(c[0], u);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		for (i = 0; i < n; i++) {
-			fp2_free(t[i]);
-		}
-		fp2_free(u);
-		RLC_FREE(t);
-	}
-}
+TMPL_FPX_INV_SIM(fp2);
 
 void fp3_inv(fp3_t c, const fp3_t a) {
 	fp_t v0;
@@ -209,95 +168,13 @@ void fp3_inv(fp3_t c, const fp3_t a) {
 	}
 }
 
-void fp3_inv_sim(fp3_t * c, const fp3_t * a, int n) {
-	int i;
-	fp3_t u, *t = RLC_ALLOCA(fp3_t, n);
-
-	for (i = 0; i < n; i++) {
-		fp3_null(t[i]);
-	}
-	fp3_null(u);
-
-	RLC_TRY {
-		for (i = 0; i < n; i++) {
-			fp3_new(t[i]);
-		}
-		fp3_new(u);
-
-		fp3_copy(c[0], a[0]);
-		fp3_copy(t[0], a[0]);
-
-		for (i = 1; i < n; i++) {
-			fp3_copy(t[i], a[i]);
-			fp3_mul(c[i], c[i - 1], t[i]);
-		}
-
-		fp3_inv(u, c[n - 1]);
-
-		for (i = n - 1; i > 0; i--) {
-			fp3_mul(c[i], c[i - 1], u);
-			fp3_mul(u, u, t[i]);
-		}
-		fp3_copy(c[0], u);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		for (i = 0; i < n; i++) {
-			fp3_free(t[i]);
-		}
-		fp3_free(u);
-		RLC_FREE(t);
-	}
-}
+TMPL_FPX_INV_SIM(fp3);
 
 TMPL_FPX_INV_CYC_QUAD(fp4, fp2);
 
 TMPL_FPX_INV_QUAD(fp4, fp2, fp2_mul_nor);
 
-void fp4_inv_sim(fp4_t * c, const fp4_t * a, int n) {
-	int i;
-	fp4_t u, *t = RLC_ALLOCA(fp4_t, n);
-
-	for (i = 0; i < n; i++) {
-		fp4_null(t[i]);
-	}
-	fp4_null(u);
-
-	RLC_TRY {
-		for (i = 0; i < n; i++) {
-			fp4_new(t[i]);
-		}
-		fp4_new(u);
-
-		fp4_copy(c[0], a[0]);
-		fp4_copy(t[0], a[0]);
-
-		for (i = 1; i < n; i++) {
-			fp4_copy(t[i], a[i]);
-			fp4_mul(c[i], c[i - 1], t[i]);
-		}
-
-		fp4_inv(u, c[n - 1]);
-
-		for (i = n - 1; i > 0; i--) {
-			fp4_mul(c[i], c[i - 1], u);
-			fp4_mul(u, u, t[i]);
-		}
-		fp4_copy(c[0], u);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		for (i = 0; i < n; i++) {
-			fp4_free(t[i]);
-		}
-		fp4_free(u);
-		RLC_FREE(t);
-	}
-}
+TMPL_FPX_INV_SIM(fp4);
 
 TMPL_FPX_INV_CUBIC(fp6, fp2, fp2_mul_nor);
 
@@ -305,93 +182,11 @@ TMPL_FPX_INV_CYC_QUAD(fp8, fp4);
 
 TMPL_FPX_INV_QUAD(fp8, fp4, fp4_mul_art);
 
-void fp8_inv_sim(fp8_t *c, const fp8_t *a, int n) {
-	int i;
-	fp8_t u, *t = RLC_ALLOCA(fp8_t, n);
-
-	for (i = 0; i < n; i++) {
-		fp8_null(t[i]);
-	}
-	fp8_null(u);
-
-	RLC_TRY {
-		for (i = 0; i < n; i++) {
-			fp8_new(t[i]);
-		}
-		fp8_new(u);
-
-		fp8_copy(c[0], a[0]);
-		fp8_copy(t[0], a[0]);
-
-		for (i = 1; i < n; i++) {
-			fp8_copy(t[i], a[i]);
-			fp8_mul(c[i], c[i - 1], t[i]);
-		}
-
-		fp8_inv(u, c[n - 1]);
-
-		for (i = n - 1; i > 0; i--) {
-			fp8_mul(c[i], c[i - 1], u);
-			fp8_mul(u, u, t[i]);
-		}
-		fp8_copy(c[0], u);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		for (i = 0; i < n; i++) {
-			fp8_free(t[i]);
-		}
-		fp8_free(u);
-		RLC_FREE(t);
-	}
-}
+TMPL_FPX_INV_SIM(fp8);
 
 TMPL_FPX_INV_CUBIC(fp9, fp3, fp3_mul_nor);
 
-void fp9_inv_sim(fp9_t * c, const fp9_t * a, int n) {
-	int i;
-	fp9_t u, *t = RLC_ALLOCA(fp9_t, n);
-
-	for (i = 0; i < n; i++) {
-		fp9_null(t[i]);
-	}
-	fp9_null(u);
-
-	RLC_TRY {
-		for (i = 0; i < n; i++) {
-			fp9_new(t[i]);
-		}
-		fp9_new(u);
-
-		fp9_copy(c[0], a[0]);
-		fp9_copy(t[0], a[0]);
-
-		for (i = 1; i < n; i++) {
-			fp9_copy(t[i], a[i]);
-			fp9_mul(c[i], c[i - 1], t[i]);
-		}
-
-		fp9_inv(u, c[n - 1]);
-
-		for (i = n - 1; i > 0; i--) {
-			fp9_mul(c[i], c[i - 1], u);
-			fp9_mul(u, u, t[i]);
-		}
-		fp9_copy(c[0], u);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		for (i = 0; i < n; i++) {
-			fp9_free(t[i]);
-		}
-		fp9_free(u);
-		RLC_FREE(t);
-	}
-}
+TMPL_FPX_INV_SIM(fp9);
 
 TMPL_FPX_INV_QUAD(fp12, fp6, fp6_mul_art);
 
@@ -401,48 +196,7 @@ TMPL_FPX_INV_CYC_QUAD(fp16, fp8);
 
 TMPL_FPX_INV_QUAD(fp16, fp8, fp8_mul_art);
 
-void fp16_inv_sim(fp16_t *c, const fp16_t *a, int n) {
-	int i;
-	fp16_t u, *t = RLC_ALLOCA(fp16_t, n);
-
-	for (i = 0; i < n; i++) {
-		fp16_null(t[i]);
-	}
-	fp16_null(u);
-
-	RLC_TRY {
-		for (i = 0; i < n; i++) {
-			fp16_new(t[i]);
-		}
-		fp16_new(u);
-
-		fp16_copy(c[0], a[0]);
-		fp16_copy(t[0], a[0]);
-
-		for (i = 1; i < n; i++) {
-			fp16_copy(t[i], a[i]);
-			fp16_mul(c[i], c[i - 1], t[i]);
-		}
-
-		fp16_inv(u, c[n - 1]);
-
-		for (i = n - 1; i > 0; i--) {
-			fp16_mul(c[i], c[i - 1], u);
-			fp16_mul(u, u, t[i]);
-		}
-		fp16_copy(c[0], u);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		for (i = 0; i < n; i++) {
-			fp16_free(t[i]);
-		}
-		fp16_free(u);
-		RLC_FREE(t);
-	}
-}
+TMPL_FPX_INV_SIM(fp16);
 
 TMPL_FPX_INV_QUAD(fp18, fp9, fp9_mul_art);
 

@@ -30,6 +30,7 @@
  */
 
 #include "relic_core.h"
+#include "relic_fpx_cyc_tmpl.h"
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -85,27 +86,9 @@ int fp2_upk(fp2_t c, const fp2_t a) {
 	}
 }
 
-void fp12_pck(fp12_t c, const fp12_t a) {
-	fp12_copy(c, a);
-	if (fp12_test_cyc(c)) {
-		fp2_zero(c[0][0]);
-		fp2_zero(c[1][1]);
-	}
-}
+TMPL_FPX_PCK_QC(fp12, fp2);
 
-int fp12_upk(fp12_t c, const fp12_t a) {
-	if (fp2_is_zero(a[0][0]) && fp2_is_zero(a[1][1])) {
-		fp12_back_cyc(c, a);
-		if (fp12_test_cyc(c)) {
-			return 1;
-		} else {
-			return 0;
-		}
-	} else {
-		fp12_copy(c, a);
-		return 1;
-	}
-}
+TMPL_FPX_UPK_QC(fp12, fp2);
 
 void fp12_pck_max(fp12_t c, const fp12_t a) {
 	 fp12_copy(c, a);
@@ -156,90 +139,18 @@ int fp12_upk_max(fp12_t c, const fp12_t a) {
 	}
 }
 
-void fp18_pck(fp18_t c, const fp18_t a) {
-	fp18_copy(c, a);
-	if (fp18_test_cyc(c)) {
-		fp3_zero(c[0][0]);
-		fp3_zero(c[1][1]);
-	}
-}
+TMPL_FPX_PCK_QC(fp18, fp3);
 
-int fp18_upk(fp18_t c, const fp18_t a) {
-	if (fp3_is_zero(a[0][0]) && fp3_is_zero(a[1][1])) {
-		fp18_back_cyc(c, a);
-		if (fp18_test_cyc(c)) {
-			return 1;
-		} else {
-			return 0;
-		}
-	} else {
-		fp18_copy(c, a);
-		return 1;
-	}
-}
+TMPL_FPX_UPK_QC(fp18, fp3);
 
-void fp24_pck(fp24_t c, const fp24_t a) {
-	fp24_copy(c, a);
-	if (fp24_test_cyc(c)) {
-		fp4_zero(c[0][0]);
-		fp4_zero(c[0][1]);
-	}
-}
+TMPL_FPX_PCK_CQ(fp24, fp4);
 
-int fp24_upk(fp24_t c, const fp24_t a) {
-	if (fp4_is_zero(a[0][0]) && fp4_is_zero(a[0][1])) {
-		fp24_back_cyc(c, a);
-		if (fp24_test_cyc(c)) {
-			return 1;
-		} else {
-			return 0;
-		}
-	} else {
-		fp24_copy(c, a);
-		return 1;
-	}
-}
+TMPL_FPX_UPK_CQ(fp24, fp4);
 
-void fp48_pck(fp48_t c, const fp48_t a) {
-	fp48_copy(c, a);
-	if (fp48_test_cyc(c)) {
-		fp8_zero(c[0][0]);
-		fp8_zero(c[1][1]);
-	}
-}
+TMPL_FPX_PCK_QC(fp48, fp8);
 
-int fp48_upk(fp48_t c, const fp48_t a) {
-	if (fp8_is_zero(a[0][0]) && fp8_is_zero(a[1][1])) {
-		fp48_back_cyc(c, a);
-		if (fp48_test_cyc(c)) {
-			return 1;
-		} else {
-			return 0;
-		}
-	} else {
-		fp48_copy(c, a);
-		return 1;
-	}
-}
+TMPL_FPX_UPK_QC(fp48, fp8);
 
-void fp54_pck(fp54_t c, const fp54_t a) {
-	fp54_copy(c, a);
-	if (fp54_test_cyc(c)) {
-		fp9_zero(c[0][0]);
-		fp9_zero(c[0][1]);
-	}
-}
+TMPL_FPX_PCK_CQ(fp54, fp9);
 
-int fp54_upk(fp54_t c, const fp54_t a) {
-	if (fp9_is_zero(a[0][0]) && fp9_is_zero(a[0][1])) {
-		fp54_back_cyc(c, a);
-		if (fp54_test_cyc(c)) {
-			return 1;
-		} else {
-			return 0;
-		}
-	} else {
-		fp54_copy(c, a);
-		return 1;
-	}
-}
+TMPL_FPX_UPK_CQ(fp54, fp9);

@@ -379,3 +379,213 @@
 			}																\
 		}																	\
 	}
+
+/**
+ * Defines a template for testing if an element of a quadratic extension
+ * field is unitary, that is, has norm one.
+ *
+ * @param[in] X			- the extension field prefix.
+ */
+#define TMPL_FPX_TEST_CYC_QUAD(X)											\
+	int X##_test_cyc(const X##_t a) {										\
+		X##_t t;															\
+		int result = 0;														\
+																			\
+		X##_null(t);														\
+																			\
+		RLC_TRY {															\
+			X##_new(t);														\
+			X##_inv_cyc(t, a);												\
+			X##_mul(t, t, a);												\
+			result = ((X##_cmp_dig(t, 1) == RLC_EQ) ? 1 : 0);				\
+		}																	\
+		RLC_CATCH_ANY {														\
+			result = 0;														\
+			RLC_THROW(ERR_CAUGHT);											\
+		}																	\
+		RLC_FINALLY {														\
+			X##_free(t);													\
+		}																	\
+																			\
+		return result;														\
+	}
+
+/**
+ * Defines a template for mapping an element of a quadratic extension field
+ * to the subgroup of unitary elements.
+ *
+ * @param[in] X			- the extension field prefix.
+ */
+#define TMPL_FPX_CONV_CYC_QUAD(X)											\
+	void X##_conv_cyc(X##_t c, const X##_t a) {								\
+		X##_t t;															\
+																			\
+		X##_null(t);														\
+																			\
+		RLC_TRY {															\
+			X##_new(t);														\
+																			\
+			/* t = a^{-1}. */												\
+			X##_inv(t, a);													\
+			/* c = a^(p^4). */												\
+			X##_inv_cyc(c, a);												\
+			/* c = a^(p^4 - 1). */											\
+			X##_mul(c, c, t);												\
+		}																	\
+		RLC_CATCH_ANY {														\
+			RLC_THROW(ERR_CAUGHT);											\
+		}																	\
+		RLC_FINALLY {														\
+			X##_free(t);													\
+		}																	\
+	}
+
+/**
+ * Defines a template for testing if an extension field element is in
+ * the cyclotomic subgroup, where F is a sixth of the embedding degree.
+ *
+ * @param[in] X			- the extension field prefix.
+ * @param[in] F			- the Frobenius power for the test.
+ */
+#define TMPL_FPX_TEST_CYC(X, F)												\
+	int X##_test_cyc(const X##_t a) {										\
+		X##_t t0, t1;														\
+		int result = 0;														\
+																			\
+		X##_null_all(t0, t1);												\
+																			\
+		RLC_TRY {															\
+			X##_new_all(t0, t1);											\
+																			\
+			/* Check if a^(p^(2F) - p^F + 1) == 1. */						\
+			X##_frb(t0, a, 2 * (F));										\
+			X##_mul(t0, t0, a);												\
+			X##_frb(t1, a, (F));											\
+																			\
+			result = ((X##_cmp(t0, t1) == RLC_EQ) ? 1 : 0);					\
+		}																	\
+		RLC_CATCH_ANY {														\
+			result = 0;														\
+			RLC_THROW(ERR_CAUGHT);											\
+		}																	\
+		RLC_FINALLY {														\
+			X##_free_all(t0, t1);											\
+		}																	\
+																			\
+		return result;														\
+	}
+
+/**
+ * Defines a template for mapping an extension field element to the
+ * cyclotomic subgroup, where F is a sixth of the embedding degree.
+ *
+ * @param[in] X			- the extension field prefix.
+ * @param[in] F			- the Frobenius power for the map.
+ */
+#define TMPL_FPX_CONV_CYC(X, F)												\
+	void X##_conv_cyc(X##_t c, const X##_t a) {								\
+		X##_t t;															\
+																			\
+		X##_null(t);														\
+																			\
+		RLC_TRY {															\
+			X##_new(t);														\
+																			\
+			/* First, compute c = a^(p^(3F) - 1). */						\
+			/* t = a^{-1}. */												\
+			X##_inv(t, a);													\
+			/* c = a^(p^(3F)). */											\
+			X##_inv_cyc(c, a);												\
+			/* c = a^(p^(3F) - 1). */										\
+			X##_mul(c, c, t);												\
+																			\
+			/* Second, compute c^(p^F + 1). */								\
+			/* t = c^(p^F). */												\
+			X##_frb(t, c, (F));												\
+																			\
+			/* c = c^(p^F + 1). */											\
+			X##_mul(c, c, t);												\
+		}																	\
+		RLC_CATCH_ANY {														\
+			RLC_THROW(ERR_CAUGHT);											\
+		}																	\
+		RLC_FINALLY {														\
+			X##_free(t);													\
+		}																	\
+	}
+
+/**
+ * Defines a template for compressing elements of the cyclotomic subgroup in an
+ * extension field built as quadratic over cubic.
+ *
+ * @param[in] X			- the extension field prefix.
+ * @param[in] Z			- the prefix of the subfield holding the coefficients.
+ */
+#define TMPL_FPX_PCK_QC(X, Z)												\
+	void X##_pck(X##_t c, const X##_t a) {									\
+		X##_copy(c, a);														\
+		if (X##_test_cyc(c)) {												\
+			Z##_zero(c[0][0]);												\
+			Z##_zero(c[1][1]);												\
+		}																	\
+	}
+
+/**
+ * Defines a template for decompressing elements of the cyclotomic subgroup
+ * in an extension field built as quadratic over cubic.
+ *
+ * @param[in] X			- the extension field prefix.
+ * @param[in] Z			- the prefix of the subfield holding the coefficients.
+ */
+#define TMPL_FPX_UPK_QC(X, Z)												\
+	int X##_upk(X##_t c, const X##_t a) {									\
+		if (Z##_is_zero(a[0][0]) && Z##_is_zero(a[1][1])) {					\
+			X##_back_cyc(c, a);												\
+			if (X##_test_cyc(c)) {											\
+				return 1;													\
+			} else {														\
+				return 0;													\
+			}																\
+		} else {															\
+			X##_copy(c, a);													\
+			return 1;														\
+		}																	\
+	}
+
+/**
+ * Defines a template for compressing elements of the cyclotomic subgroup in an
+ * extension field built as cubic over quadratic.
+ *
+ * @param[in] X			- the extension field prefix.
+ * @param[in] Z			- the prefix of the subfield holding the coefficients.
+ */
+#define TMPL_FPX_PCK_CQ(X, Z)												\
+	void X##_pck(X##_t c, const X##_t a) {									\
+		X##_copy(c, a);														\
+		if (X##_test_cyc(c)) {												\
+			Z##_zero(c[0][0]);												\
+			Z##_zero(c[0][1]);												\
+		}																	\
+	}
+
+/**
+ * Defines a template for decompressing elements of the cyclotomic subgroup
+ * in an extension field built as cubic over quadratic.
+ *
+ * @param[in] X			- the extension field prefix.
+ * @param[in] Z			- the prefix of the subfield holding the coefficients.
+ */
+#define TMPL_FPX_UPK_CQ(X, Z)												\
+	int X##_upk(X##_t c, const X##_t a) {									\
+		if (Z##_is_zero(a[0][0]) && Z##_is_zero(a[0][1])) {					\
+			X##_back_cyc(c, a);												\
+			if (X##_test_cyc(c)) {											\
+				return 1;													\
+			} else {														\
+				return 0;													\
+			}																\
+		} else {															\
+			X##_copy(c, a);													\
+			return 1;														\
+		}																	\
+	}

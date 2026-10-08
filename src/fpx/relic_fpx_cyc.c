@@ -37,163 +37,25 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-void fp2_conv_cyc(fp2_t c, const fp2_t a) {
-	fp2_t t;
+TMPL_FPX_CONV_CYC_QUAD(fp2);
 
-	fp2_null(t);
-
-	RLC_TRY {
-		fp2_new(t);
-
-		/* t = a^{-1}. */
-		fp2_inv(t, a);
-		/* c = a^p. */
-		fp2_inv_cyc(c, a);
-		/* c = a^(p - 1). */
-		fp2_mul(c, c, t);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		fp2_free(t);
-	}
-}
-
-int fp2_test_cyc(const fp2_t a) {
-	fp2_t t;
-	int result = 0;
-
-	fp2_null(t);
-
-	RLC_TRY {
-		fp2_new(t);
-		fp2_inv_cyc(t, a);
-		fp2_mul(t, t, a);
-		result = ((fp2_cmp_dig(t, 1) == RLC_EQ) ? 1 : 0);
-	}
-	RLC_CATCH_ANY {
-		result = 0;
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		fp2_free(t);
-	}
-
-	return result;
-}
+TMPL_FPX_TEST_CYC_QUAD(fp2);
 
 TMPL_EXP_CYC_NAF(fp2, fp2_sqr);
 
 TMPL_EXP_CYC_SIM(fp2, fp2_sqr);
 
-void fp8_conv_cyc(fp8_t c, const fp8_t a) {
-	fp8_t t;
+TMPL_FPX_CONV_CYC_QUAD(fp8);
 
-	fp8_null(t);
-
-	RLC_TRY {
-		fp8_new(t);
-
-		/* t = a^{-1}. */
-		fp8_inv(t, a);
-		/* c = a^(p^4). */
-		fp8_inv_cyc(c, a);
-		/* c = a^(p^4 - 1). */
-		fp8_mul(c, c, t);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		fp8_free(t);
-	}
-}
-
-int fp8_test_cyc(const fp8_t a) {
-	fp8_t t;
-	int result = 0;
-
-	fp8_null(t);
-
-	RLC_TRY {
-		fp8_new(t);
-		fp8_inv_cyc(t, a);
-		fp8_mul(t, t, a);
-		result = ((fp8_cmp_dig(t, 1) == RLC_EQ) ? 1 : 0);
-	}
-	RLC_CATCH_ANY {
-		result = 0;
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		fp8_free(t);
-	}
-
-	return result;
-}
+TMPL_FPX_TEST_CYC_QUAD(fp8);
 
 TMPL_EXP_CYC_NAF(fp8, fp8_sqr_cyc);
 
 TMPL_EXP_CYC_SIM(fp8, fp8_sqr_cyc);
 
-void fp12_conv_cyc(fp12_t c, const fp12_t a) {
-	fp12_t t;
+TMPL_FPX_CONV_CYC(fp12, 2);
 
-	fp12_null(t);
-
-	RLC_TRY {
-		fp12_new(t);
-
-		/* First, compute c = a^(p^6 - 1). */
-		/* t = a^{-1}. */
-		fp12_inv(t, a);
-		/* c = a^(p^6). */
-		fp12_inv_cyc(c, a);
-		/* c = a^(p^6 - 1). */
-		fp12_mul(c, c, t);
-
-		/* Second, compute c^(p^2 + 1). */
-		/* t = c^(p^2). */
-		fp12_frb(t, c, 2);
-
-		/* c = c^(p^2 + 1). */
-		fp12_mul(c, c, t);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		fp12_free(t);
-	}
-}
-
-int fp12_test_cyc(const fp12_t a) {
-	fp12_t t0, t1;
-	int result = 0;
-
-	fp12_null_all(t0, t1);
-
-	RLC_TRY {
-		fp12_new_all(t0, t1);
-
-		/* Check if a^(p^4 - p^2 + 1) == 1. */
-		fp12_frb(t0, a, 4);
-		fp12_mul(t0, t0, a);
-		fp12_frb(t1, a, 2);
-
-		result = ((fp12_cmp(t0, t1) == RLC_EQ) ? 1 : 0);
-	}
-	RLC_CATCH_ANY {
-		result = 0;
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		fp12_free_all(t0, t1);
-	}
-
-	return result;
-}
+TMPL_FPX_TEST_CYC(fp12, 2);
 
 void fp12_back_cyc(fp12_t c, const fp12_t a) {
 	fp2_t t0, t1, t2;
@@ -353,113 +215,17 @@ TMPL_EXP_CYC_SIM(fp12, fp12_sqr_cyc);
 
 TMPL_EXP_CYC_SPS(fp12);
 
-void fp16_conv_cyc(fp16_t c, const fp16_t a) {
-	fp16_t t;
+TMPL_FPX_CONV_CYC_QUAD(fp16);
 
-	fp16_null(t);
-
-	RLC_TRY {
-		fp16_new(t);
-
-		/* t = a^{-1}. */
-		fp16_inv(t, a);
-		/* c = a^(p^8). */
-		fp16_inv_cyc(c, a);
-		/* c = a^(p^8 - 1). */
-		fp16_mul(c, c, t);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		fp16_free(t);
-	}
-}
-
-int fp16_test_cyc(const fp16_t a) {
-	fp16_t t;
-	int result = 0;
-
-	fp16_null(t);
-
-	RLC_TRY {
-		fp16_new(t);
-		fp16_inv_cyc(t, a);
-		fp16_mul(t, t, a);
-		result = ((fp16_cmp_dig(t, 1) == RLC_EQ) ? 1 : 0);
-	}
-	RLC_CATCH_ANY {
-		result = 0;
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		fp16_free(t);
-	}
-
-	return result;
-}
+TMPL_FPX_TEST_CYC_QUAD(fp16);
 
 TMPL_EXP_CYC_NAF(fp16, fp16_sqr_cyc);
 
 TMPL_EXP_CYC_SIM(fp16, fp16_sqr_cyc);
 
-void fp18_conv_cyc(fp18_t c, const fp18_t a) {
-	fp18_t t;
+TMPL_FPX_CONV_CYC(fp18, 3);
 
-	fp18_null(t);
-
-	RLC_TRY {
-		fp18_new(t);
-
-		/* First, compute c = a^(p^9 - 1). */
-		/* t = a^{-1}. */
-		fp18_inv(t, a);
-		/* c = a^(p^9). */
-		fp18_inv_cyc(c, a);
-		/* c = a^(p^9 - 1). */
-		fp18_mul(c, c, t);
-
-		/* Second, compute c^(p^3 + 1). */
-		/* t = c^(p^3). */
-		fp18_frb(t, c, 3);
-
-		/* c = c^(p^3 + 1). */
-		fp18_mul(c, c, t);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		fp18_free(t);
-	}
-}
-
-int fp18_test_cyc(const fp18_t a) {
-	fp18_t t0, t1;
-	int result = 0;
-
-	fp18_null_all(t0, t1);
-
-	RLC_TRY {
-		fp18_new_all(t0, t1);
-
-		/* Check if a^(p^6 - p^3 + 1) == 1. */
-		fp18_frb(t0, a, 6);
-		fp18_mul(t0, t0, a);
-		fp18_frb(t1, a, 3);
-
-		result = ((fp18_cmp(t0, t1) == RLC_EQ) ? 1 : 0);
-	}
-	RLC_CATCH_ANY {
-		result = 0;
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		fp18_free_all(t0, t1);
-	}
-
-	return result;
-}
+TMPL_FPX_TEST_CYC(fp18, 3);
 
 void fp18_back_cyc(fp18_t c, const fp18_t a) {
 	fp3_t t0, t1, t2;
@@ -619,63 +385,9 @@ TMPL_EXP_CYC_SIM(fp18, fp18_sqr_cyc);
 
 TMPL_EXP_CYC_SPS(fp18);
 
-void fp24_conv_cyc(fp24_t c, const fp24_t a) {
-	fp24_t t;
+TMPL_FPX_CONV_CYC(fp24, 4);
 
-	fp24_null(t);
-
-	RLC_TRY {
-		fp24_new(t);
-
-		/* First, compute c = a^(p^18 - 1). */
-		/* t = a^{-1}. */
-		fp24_inv(t, a);
-		/* c = a^(p^12). */
-		fp24_inv_cyc(c, a);
-		/* c = a^(p^12 - 1). */
-		fp24_mul(c, c, t);
-
-		/* Second, compute c^(p^4 + 1). */
-		/* t = c^(p^4). */
-		fp24_frb(t, c, 4);
-
-		/* c = c^(p^4 + 1). */
-		fp24_mul(c, c, t);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		fp24_free(t);
-	}
-}
-
-int fp24_test_cyc(const fp24_t a) {
-	fp24_t t0, t1;
-	int result = 0;
-
-	fp24_null_all(t0, t1);
-
-	RLC_TRY {
-		fp24_new_all(t0, t1);
-
-		/* Check if a^(p^8 - p^4 + 1) == 1. */
-		fp24_frb(t0, a, 8);
-		fp24_mul(t0, t0, a);
-		fp24_frb(t1, a, 4);
-
-		result = ((fp24_cmp(t0, t1) == RLC_EQ) ? 1 : 0);
-	}
-	RLC_CATCH_ANY {
-		result = 0;
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		fp24_free_all(t0, t1);
-	}
-
-	return result;
-}
+TMPL_FPX_TEST_CYC(fp24, 4);
 
 void fp24_back_cyc(fp24_t c, const fp24_t a) {
 	fp4_t t0, t1, t2;
@@ -834,63 +546,9 @@ TMPL_EXP_CYC_SIM(fp24, fp24_sqr_cyc);
 
 TMPL_EXP_CYC_SPS(fp24);
 
-void fp48_conv_cyc(fp48_t c, const fp48_t a) {
-	fp48_t t;
+TMPL_FPX_CONV_CYC(fp48, 8);
 
-	fp48_null(t);
-
-	RLC_TRY {
-		fp48_new(t);
-
-		/* First, compute c = a^(p^24 - 1). */
-		/* t = a^{-1}. */
-		fp48_inv(t, a);
-		/* c = a^(p^24). */
-		fp48_inv_cyc(c, a);
-		/* c = a^(p^24 - 1). */
-		fp48_mul(c, c, t);
-
-		/* Second, compute c^(p^8 + 1). */
-		/* t = c^(p^8). */
-		fp48_frb(t, c, 8);
-
-		/* c = c^(p^8 + 1). */
-		fp48_mul(c, c, t);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		fp48_free(t);
-	}
-}
-
-int fp48_test_cyc(const fp48_t a) {
-	fp48_t t0, t1;
-	int result = 0;
-
-	fp48_null_all(t0, t1);
-
-	RLC_TRY {
-		fp48_new_all(t0, t1);
-
-		/* Check if a^(p^16 - p^8 + 1) == 1. */
-		fp48_frb(t0, a, 16);
-		fp48_mul(t0, t0, a);
-		fp48_frb(t1, a, 8);
-
-		result = ((fp48_cmp(t0, t1) == RLC_EQ) ? 1 : 0);
-	}
-	RLC_CATCH_ANY {
-		result = 0;
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		fp48_free_all(t0, t1);
-	}
-
-	return result;
-}
+TMPL_FPX_TEST_CYC(fp48, 8);
 
 void fp48_back_cyc(fp48_t c, const fp48_t a) {
 	fp8_t t0, t1, t2;
@@ -1050,62 +708,9 @@ TMPL_EXP_CYC_SIM(fp48, fp48_sqr_cyc);
 
 TMPL_EXP_CYC_SPS(fp48);
 
-void fp54_conv_cyc(fp54_t c, const fp54_t a) {
-	fp54_t t;
+TMPL_FPX_CONV_CYC(fp54, 9);
 
-	fp54_null(t);
-
-	RLC_TRY {
-		fp54_new(t);
-
-		/* First, compute c = a^(p^27 - 1). */
-		/* t = a^{-1}. */
-		fp54_inv(t, a);
-		/* c = a^(p^27). */
-		fp54_inv_cyc(c, a);
-		/* c = a^(p^27 - 1). */
-		fp54_mul(c, c, t);
-
-		/* Second, compute c^(p^9 + 1). */
-		/* t = c^(p^9). */
-		fp54_frb(t, c, 9);
-
-		/* c = c^(p^9 + 1). */
-		fp54_mul(c, c, t);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		fp54_free(t);
-	}
-}
-
-int fp54_test_cyc(const fp54_t a) {
-	fp54_t t0, t1;
-	int result = 0;
-
-	fp54_null_all(t0, t1);
-
-	RLC_TRY {
-		fp54_new_all(t0, t1);
-
-		/* Check if a^(p^18 - p^9 + 1) == 1. */
-		fp54_frb(t0, a, 18);
-		fp54_mul(t0, t0, a);
-		fp54_frb(t1, a, 9);
-		result = ((fp54_cmp(t0, t1) == RLC_EQ) ? 1 : 0);
-	}
-	RLC_CATCH_ANY {
-		result = 0;
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		fp54_free_all(t0, t1);
-	}
-
-	return result;
-}
+TMPL_FPX_TEST_CYC(fp54, 9);
 
 void fp54_back_cyc(fp54_t c, const fp54_t a) {
 	fp9_t t0, t1, t2;

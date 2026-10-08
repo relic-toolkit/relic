@@ -566,3 +566,86 @@
 			X##_free_all(t, v);												\
 		}																	\
 	}
+
+/**
+ * Defines a template for simultaneous inversion in an extension field.
+ *
+ * @param[in] X			- the extension field prefix.
+ */
+#define TMPL_FPX_INV_SIM(X)													\
+	void X##_inv_sim(X##_t *c, const X##_t *a, int n) {						\
+		int i;																\
+		X##_t u, *t = RLC_ALLOCA(X##_t, n);									\
+																			\
+		for (i = 0; i < n; i++) {											\
+			X##_null(t[i]);													\
+		}																	\
+		X##_null(u);														\
+																			\
+		RLC_TRY {															\
+			for (i = 0; i < n; i++) {										\
+				X##_new(t[i]);												\
+			}																\
+			X##_new(u);														\
+																			\
+			X##_copy(c[0], a[0]);											\
+			X##_copy(t[0], a[0]);											\
+																			\
+			for (i = 1; i < n; i++) {										\
+				X##_copy(t[i], a[i]);										\
+				X##_mul(c[i], c[i - 1], t[i]);								\
+			}																\
+																			\
+			X##_inv(u, c[n - 1]);											\
+																			\
+			for (i = n - 1; i > 0; i--) {									\
+				X##_mul(c[i], c[i - 1], u);									\
+				X##_mul(u, u, t[i]);										\
+			}																\
+			X##_copy(c[0], u);												\
+		}																	\
+		RLC_CATCH_ANY {														\
+			RLC_THROW(ERR_CAUGHT);											\
+		}																	\
+		RLC_FINALLY {														\
+			for (i = 0; i < n; i++) {										\
+				X##_free(t[i]);												\
+			}																\
+			X##_free(u);													\
+			RLC_FREE(t);													\
+		}																	\
+	}
+
+/**
+ * Defines a template for testing quadratic residuosity in an extension field
+ * of degree K, by testing the norm in the prime field.
+ *
+ * @param[in] X			- the extension field prefix.
+ * @param[in] K			- the degree of the extension.
+ */
+#define TMPL_FPX_IS_SQR(X, K)												\
+	int X##_is_sqr(const X##_t a) {											\
+		X##_t t, u;															\
+		int r;																\
+																			\
+		X##_null_all(t, u);													\
+																			\
+		RLC_TRY {															\
+			X##_new_all(t, u);												\
+																			\
+			X##_frb(u, a, 1);												\
+			X##_mul(t, u, a);												\
+			for (int i = 2; i < (K); i++) {									\
+				X##_frb(u, u, 1);											\
+				X##_mul(t, t, u);											\
+			}																\
+			r = fp_is_sqr(((fp_t *)t)[0]);									\
+		} RLC_CATCH_ANY {													\
+			r = 0;															\
+			RLC_THROW(ERR_CAUGHT);											\
+		} RLC_FINALLY {														\
+			X##_free_all(t, u);												\
+		}																	\
+																			\
+		return r;															\
+	}

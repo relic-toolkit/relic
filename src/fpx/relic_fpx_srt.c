@@ -31,6 +31,7 @@
 
 #include "relic_core.h"
 #include "relic_fpx_low.h"
+#include "relic_fpx_mul_tmpl.h"
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -334,31 +335,7 @@ int fp3_srt(fp3_t c, const fp3_t a) {
 	return r;
 }
 
-int fp4_is_sqr(const fp4_t a) {
-	fp4_t t, u;
-	int r;
-
-	fp4_null_all(t, u);
-
-	RLC_TRY {
-		fp4_new_all(t, u);
-
-		fp4_frb(u, a, 1);
-		fp4_mul(t, u, a);
-		for (int i = 2; i < 4; i++) {
-			fp4_frb(u, u, 1);
-			fp4_mul(t, t, u);
-		}
-		r = fp_is_sqr(t[0][0]);
-	} RLC_CATCH_ANY {
-		r = 0;
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		fp4_free_all(t, u);
-	}
-
-	return r;
-}
+TMPL_FPX_IS_SQR(fp4, 4);
 
 int fp4_srt(fp4_t c, const fp4_t a) {
 	int c0, r = 0;
@@ -433,31 +410,7 @@ int fp4_srt(fp4_t c, const fp4_t a) {
 	return r;
 }
 
-int fp8_is_sqr(const fp8_t a) {
-	fp8_t t, u;
-	int r;
-
-	fp8_null_all(t, u);
-
-	RLC_TRY {
-		fp8_new_all(t, u);
-
-		fp8_frb(u, a, 1);
-		fp8_mul(t, u, a);
-		for (int i = 2; i < 8; i++) {
-			fp8_frb(u, u, 1);
-			fp8_mul(t, t, u);
-		}
-		r = fp_is_sqr(t[0][0][0]);
-	} RLC_CATCH_ANY {
-		r = 0;
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		fp8_free_all(t, u);
-	}
-
-	return r;
-}
+TMPL_FPX_IS_SQR(fp8, 8);
 
 int fp8_srt(fp8_t c, const fp8_t a) {
 	int c0, r = 0;
@@ -536,31 +489,7 @@ int fp8_srt(fp8_t c, const fp8_t a) {
 	return r;
 }
 
-int fp16_is_sqr(const fp16_t a) {
-	fp16_t t, u;
-	int r;
-
-	fp16_null_all(t, u);
-
-	RLC_TRY {
-		fp16_new_all(t, u);
-
-		fp16_frb(u, a, 1);
-		fp16_mul(t, u, a);
-		for (int i = 2; i < 16; i++) {
-			fp16_frb(u, u, 1);
-			fp16_mul(t, t, u);
-		}
-		r = fp_is_sqr(t[0][0][0][0]);
-	} RLC_CATCH_ANY {
-		r = 0;
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		fp16_free_all(t, u);
-	}
-
-	return r;
-}
+TMPL_FPX_IS_SQR(fp16, 16);
 
 int fp16_srt(fp16_t c, const fp16_t a) {
 	int c0, r = 0;
