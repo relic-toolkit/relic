@@ -3008,10 +3008,12 @@
 #undef fp54_sub
 #undef fp54_neg
 #undef fp54_dbl
+#undef fp54_mul_unr
 #undef fp54_mul_basic
 #undef fp54_mul_lazyr
 #undef fp54_mul_art
 #undef fp54_mul_dxs
+#undef fp54_sqr_unr
 #undef fp54_sqr_basic
 #undef fp54_sqr_lazyr
 #undef fp54_sqr_cyc_basic
@@ -3048,10 +3050,12 @@
 #define fp54_sub 	RLC_PREFIX(fp54_sub)
 #define fp54_neg 	RLC_PREFIX(fp54_neg)
 #define fp54_dbl 	RLC_PREFIX(fp54_dbl)
+#define fp54_mul_unr 	RLC_PREFIX(fp54_mul_unr)
 #define fp54_mul_basic 	RLC_PREFIX(fp54_mul_basic)
 #define fp54_mul_lazyr 	RLC_PREFIX(fp54_mul_lazyr)
 #define fp54_mul_art 	RLC_PREFIX(fp54_mul_art)
 #define fp54_mul_dxs 	RLC_PREFIX(fp54_mul_dxs)
+#define fp54_sqr_unr 	RLC_PREFIX(fp54_sqr_unr)
 #define fp54_sqr_basic 	RLC_PREFIX(fp54_sqr_basic)
 #define fp54_sqr_lazyr 	RLC_PREFIX(fp54_sqr_lazyr)
 #define fp54_sqr_cyc_basic 	RLC_PREFIX(fp54_sqr_cyc_basic)

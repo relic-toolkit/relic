@@ -46,78 +46,8 @@ TMPL_FPX_MUL_CUBIC(fp24, fp8, fp8_mul_art);
 
 #if FPX_RDC == LAZYR || !defined(STRIP)
 
-void fp24_mul_unr(dv24_t c, const fp24_t a, const fp24_t b) {
-	dv8_t u0, u1, u2, u3, u4;
-	fp8_t t0, t1;
-
-	dv8_null_all(u0, u1, u2, u3, u4);
-	fp8_null_all(t0, t1);
-
-	RLC_TRY {
-		dv8_new_all(u0, u1, u2, u3, u4);
-		fp8_new_all(t0, t1);
-
-		/* Karatsuba algorithm. */
-
-		/* u0 = a_0 * b_0. */
-		fp8_mul_unr(u0, a[0], b[0]);
-		/* u1 = a_1 * b_1. */
-		fp8_mul_unr(u1, a[1], b[1]);
-		/* u2 = a_2 * b_2. */
-		fp8_mul_unr(u2, a[2], b[2]);
-
-		fp8_add(t0, a[1], a[2]);
-		fp8_add(t1, b[1], b[2]);
-		fp8_mul_unr(u3, t0, t1);
-		for (int i = 0; i < 2; i++) {
-			for (int j = 0; j < 2; j++) {
-				fp2_subc_low(u3[i][j], u3[i][j], u1[i][j]);
-				fp2_subc_low(u3[i][j], u3[i][j], u2[i][j]);
-			}
-		}
-
-		fp2_nord_low(u4[0][0], u3[1][1]);
-		dv_copy(u4[0][1][0], u3[1][0][0], 2 * RLC_FP_DIGS);
-		dv_copy(u4[0][1][1], u3[1][0][1], 2 * RLC_FP_DIGS);
-		for (int j = 0; j < 2; j++) {
-			fp2_addc_low(c[0][0][j], u4[0][j], u0[0][j]);
-			fp2_addc_low(c[0][1][j], u3[0][j], u0[1][j]);
-		}
-
-		fp8_add(t0, a[0], a[1]);
-		fp8_add(t1, b[0], b[1]);
-		fp8_mul_unr(u4, t0, t1);
-		for (int i = 0; i < 2; i++) {
-			for (int j = 0; j < 2; j++) {
-				fp2_subc_low(u4[i][j], u4[i][j], u0[i][j]);
-				fp2_subc_low(u4[i][j], u4[i][j], u1[i][j]);
-			}
-		}
-		fp2_nord_low(u3[0][0], u2[1][1]);
-		dv_copy(u3[0][1][0], u2[1][0][0], 2 * RLC_FP_DIGS);
-		dv_copy(u3[0][1][1], u2[1][0][1], 2 * RLC_FP_DIGS);
-		for (int j = 0; j < 2; j++) {
-			fp2_addc_low(c[1][0][j], u4[0][j], u3[0][j]);
-			fp2_addc_low(c[1][1][j], u4[1][j], u2[0][j]);
-		}
-
-		fp8_add(t0, a[0], a[2]);
-		fp8_add(t1, b[0], b[2]);
-		fp8_mul_unr(u4, t0, t1);
-		for (int i = 0; i < 2; i++) {
-			for (int j = 0; j < 2; j++) {
-				fp2_subc_low(u4[i][j], u4[i][j], u0[i][j]);
-				fp2_addc_low(u4[i][j], u4[i][j], u1[i][j]);
-				fp2_subc_low(c[2][i][j], u4[i][j], u2[i][j]);
-			}
-		}
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		dv8_free_all(u0, u1, u2, u3, u4);
-		fp8_free_all(t0, t1);
-	}
-}
+TMPL_FPX_MUL_UNR_CUBIC(fp24, fp8, dv24, dv8, fp2, dv2, 4, 2,
+		fp8_mul_unr);
 
 TMPL_FPX_MUL_LAZYR(fp24, dv24, fp2, dv2, 12);
 

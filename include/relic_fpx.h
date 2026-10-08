@@ -230,6 +230,11 @@ typedef fp24_t fp48_t[2];
  */
 typedef fp18_t fp54_t[3];
 
+/**
+ * Represents a double-precision 54-degree extension field element.
+ */
+typedef dv18_t dv54_t[3];
+
 /*============================================================================*/
 /* Macro definitions                                                          */
 /*============================================================================*/
@@ -5607,6 +5612,16 @@ void fp54_neg(fp54_t c, const fp54_t a);
 void fp54_dbl(fp54_t c, const fp54_t a);
 
 /**
+ * Multiples two 54-degree extension field elements without performing modular
+ * reduction.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the 54-degree extension field element.
+ * @param[in] b				- the 54-degree extension field element.
+ */
+void fp54_mul_unr(dv54_t c, const fp54_t a, const fp54_t b);
+
+/**
  * Multiples two 54-extension field elements using basic arithmetic.
  *
  * @param[out] c			- the result.
@@ -5641,6 +5656,15 @@ void fp54_mul_art(fp54_t c, const fp54_t a);
  * @param[in] b				- the sparse 54-extension field element.
  */
 void fp54_mul_dxs(fp54_t c, const fp54_t a, const fp54_t b);
+
+/**
+ * Computes the square of a 54-degree extension field element without performing
+ * modular reduction.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the 54-degree extension field element to square.
+ */
+void fp54_sqr_unr(dv54_t c, const fp54_t a);
 
 /**
  * Computes the square of a 54-extension field element using basic

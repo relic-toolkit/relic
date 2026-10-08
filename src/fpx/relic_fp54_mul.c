@@ -46,54 +46,10 @@ TMPL_FPX_MUL_CUBIC(fp54, fp18, fp18_mul_art);
 
 #if FPX_RDC == LAZYR || !defined(STRIP)
 
-void fp54_mul_lazyr(fp54_t c, const fp54_t a, const fp54_t b) {
-	/* TODO: implement lazy reduction. */
-	fp18_t t0, t1, t2, t3, t4, t5;
+TMPL_FPX_MUL_UNR_CUBIC(fp54, fp18, dv54, dv18, fp3, dv3, 6, 2,
+		fp18_mul_unr);
 
-	fp18_null_all(t0, t1, t2, t3, t4, t5);
-
-	RLC_TRY {
-		fp18_new_all(t0, t1, t2, t3, t4, t5);
-
-		/* Karatsuba algorithm. */
-
-		/* t0 = a_0 * b_0. */
-		fp18_mul(t0, a[0], b[0]);
-		/* t1 = a_1 * b_1. */
-		fp18_mul(t1, a[1], b[1]);
-		/* t2 = a_2 * b_2. */
-		fp18_mul(t2, a[2], b[2]);
-
-		fp18_add(t3, a[1], a[2]);
-		fp18_add(t4, b[1], b[2]);
-		fp18_mul(t3, t3, t4);
-		fp18_sub(t3, t3, t1);
-		fp18_sub(t3, t3, t2);
-		fp18_mul_art(t3, t3);
-		fp18_add(t3, t3, t0);
-
-		fp18_add(t4, a[0], a[1]);
-		fp18_add(t5, b[0], b[1]);
-		fp18_mul(t4, t4, t5);
-		fp18_sub(t4, t4, t0);
-		fp18_sub(t4, t4, t1);
-		fp18_mul_art(t5, t2);
-		fp18_add(c[1], t4, t5);
-
-		fp18_add(t4, a[0], a[2]);
-		fp18_add(t5, b[0], b[2]);
-		fp18_mul(c[2], t4, t5);
-		fp18_sub(c[2], c[2], t0);
-		fp18_add(c[2], c[2], t1);
-		fp18_sub(c[2], c[2], t2);
-
-		fp18_copy(c[0], t3);
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		fp18_free_all(t0, t1, t2, t3, t4, t5);
-	}
-}
+TMPL_FPX_MUL_LAZYR(fp54, dv54, fp3, dv3, 18);
 
 #endif
 
