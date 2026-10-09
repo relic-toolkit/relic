@@ -327,7 +327,8 @@ void ep_mul_sim_lot_endom(ep_t r, const ep_t p[], const bn_t k[], int n) {
 		}
 	} else {
 		const int w = RLC_MAX(2, util_bits_dig(n) - 2), c = (1 << (w - 2));
-		ep_t s, t, u, v, *_p = RLC_ALLOCA(ep_t, 2 * c);
+		ep_t s, t, u, v, *_p = RLC_ALLOCA(ep_t, c);
+		ep_t *_q = RLC_ALLOCA(ep_t, 2 * n);
 
 		ep_null(s);
 		ep_null(t);
@@ -335,7 +336,7 @@ void ep_mul_sim_lot_endom(ep_t r, const ep_t p[], const bn_t k[], int n) {
 		ep_null(v);
 
 		RLC_TRY {
-			if (naf == NULL || _p == NULL) {
+			if (naf == NULL || _p == NULL || _q == NULL) {
 				RLC_THROW(ERR_NO_MEMORY);
 			}
 			bn_new(q);
@@ -346,16 +347,22 @@ void ep_mul_sim_lot_endom(ep_t r, const ep_t p[], const bn_t k[], int n) {
 			for (i = 0; i < 2; i++) {
 				bn_null(_k[i]);
 				bn_new(_k[i]);
-				for (j = 0; j < c; j++) {
-					ep_null(_p[i*c + j]);
-					ep_new(_p[i*c + j]);
-					ep_set_infty(_p[i*c + j]);
-				}
+			}
+			for (j = 0; j < c; j++) {
+				ep_null(_p[j]);
+				ep_new(_p[j]);
+				ep_set_infty(_p[j]);
+			}
+			for (i = 0; i < 2 * n; i++) {
+				ep_null(_q[i]);
+				ep_new(_q[i]);
 			}
 
 			l = 0;
 			ep_curve_get_ord(q);
 			for (i = 0; i < n; i++) {
+				ep_norm(_q[2*i], p[i]);
+				ep_psi(_q[2*i + 1], _q[2*i]);
 				bn_mod(_k[0], k[i], q);
 				sk = bn_sign(_k[0]);
 				bn_rec_glv(_k[0], _k[1], _k[0], q,
@@ -382,34 +389,29 @@ void ep_mul_sim_lot_endom(ep_t r, const ep_t p[], const bn_t k[], int n) {
 					for (m = 0; m < 2; m++) {
 						ptr = naf[(2*j + m)*len + i];
 						if (ptr != 0) {
-							ep_copy(t, p[j]);
+							ep_copy(t, _q[2*j + m]);
 							if (ptr < 0) {
 								ptr = -ptr;
 								ep_neg(t, t);
 							}
 							ptr >>= 1;
-							ep_add(_p[m*c + ptr], _p[m*c + ptr], t);
+							ep_add(_p[ptr], _p[ptr], t);
 						}
 					}
 				}
 
-				ep_set_infty(t);
-				for (m = 1; m >= 0; m--) {
-					ep_psi(t, t);
-					ep_set_infty(u);
-					ep_set_infty(v);
-					for (j = c - 1; j >= 0; j--) {
-						ep_add(u, u, _p[m*c + j]);
-						if (j == 0) {
-							ep_dbl(v, v);
-						}
-						ep_add(v, v, u);
-						ep_set_infty(_p[m*c + j]);
+				ep_set_infty(u);
+				ep_set_infty(v);
+				for (j = c - 1; j >= 0; j--) {
+					ep_add(u, u, _p[j]);
+					if (j == 0) {
+						ep_dbl(v, v);
 					}
-					ep_add(t, t, v);
+					ep_add(v, v, u);
+					ep_set_infty(_p[j]);
 				}
 				ep_dbl(s, s);
-				ep_add(s, s, t);
+				ep_add(s, s, v);
 			}
 
 			/* Convert r to affine coordinates. */
@@ -424,11 +426,15 @@ void ep_mul_sim_lot_endom(ep_t r, const ep_t p[], const bn_t k[], int n) {
 			ep_free(v);
 			for (i = 0; i < 2; i++) {
 				bn_free(_k[i]);
-				for (j = 0; j < c; j++) {
-					ep_free(_p[i*c + j]);
-				}
+			}
+			for (j = 0; j < c; j++) {
+				ep_free(_p[j]);
+			}
+			for (i = 0; i < 2 * n; i++) {
+				ep_free(_q[i]);
 			}
 			RLC_FREE(_p);
+			RLC_FREE(_q);
 			RLC_FREE(naf);
 		}
 	}
