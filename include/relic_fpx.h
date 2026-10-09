@@ -5868,6 +5868,18 @@ void fp54_exp_cyc(fp54_t c, const fp54_t a, const bn_t b);
 void fp54_exp_cyc_sps(fp54_t c, const fp54_t a, const int *b, size_t l, int s);
 
 /**
+ * Computes a power of two cyclotomic 54-extension field elements.
+ *
+ * @param[out] e			- the result.
+ * @param[in] a				- the first element to exponentiate.
+ * @param[in] b				- the first exponent.
+ * @param[in] c				- the second element to exponentiate.
+ * @param[in] d				- the second exponent.
+ */
+void fp54_exp_cyc_sim(fp54_t e, const fp54_t a, const bn_t b, const fp54_t c,
+		const bn_t d);
+
+/**
  * Compresses a 54-extension field element.
  *
  * @param[out] c			- the result.

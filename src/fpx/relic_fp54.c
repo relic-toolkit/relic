@@ -146,11 +146,7 @@ TMPL_SQR_CYC_LAZYR_CQ(fp54, fp9, dv9, fp3, dv3, 3, 1, fp9_sqr_unr);
 
 TMPL_FPX_INV_CUBIC(fp54, fp18, fp18_mul_art);
 
-TMPL_FPX_INV_CYC_CUBIC(fp54, fp18);
-
-TMPL_FPX_EXP_CYC(fp54);
-
-TMPL_FPX_EXP_DIG(fp54);
+TMPL_FPX_CYC(fp54, fp18, fp9, fp9_mul_art, CQ);
 
 void fp54_frb(fp54_t c, const fp54_t a, int i) {
 	/* Since w^18 = u, w^(p - 1) = u^((p - p mod 18)/18) * t^((p mod 18 - 1)/6)
@@ -179,18 +175,3 @@ void fp54_frb(fp54_t c, const fp54_t a, int i) {
 	}
 }
 
-TMPL_FPX_CONV_CYC(fp54, 9);
-
-TMPL_FPX_TEST_CYC(fp54, 9);
-
-TMPL_FPX_BACK_CYC_CQ(fp54, fp9, fp9_mul_art);
-
-TMPL_FPX_BACK_CYC_SIM_CQ(fp54, fp9, fp9_mul_art);
-
-TMPL_EXP_CYC(fp54);
-
-TMPL_EXP_CYC_SPS(fp54);
-
-TMPL_FPX_PCK_CQ(fp54, fp9);
-
-TMPL_FPX_UPK_CQ(fp54, fp9);

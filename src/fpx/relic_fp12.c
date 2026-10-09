@@ -389,11 +389,7 @@ TMPL_SQR_CYC_LAZYR_QC(fp12, fp2, dv2, fp2, dv2, 1, 1, fp2_sqrn_low);
 
 TMPL_FPX_INV_QUAD(fp12, fp6, fp6_mul_art);
 
-TMPL_FPX_INV_CYC_QUAD(fp12, fp6);
-
-TMPL_FPX_EXP_CYC(fp12);
-
-TMPL_FPX_EXP_DIG(fp12);
+TMPL_FPX_CYC(fp12, fp6, fp2, fp2_mul_nor, QC);
 
 void fp12_frb(fp12_t c, const fp12_t a, int i) {
 	/* Cost of five multiplication in Fp^2 per Frobenius. */
@@ -408,24 +404,6 @@ void fp12_frb(fp12_t c, const fp12_t a, int i) {
 		fp2_mul_frb(c[1][2], c[1][2], 1, 5);
 	}
 }
-
-TMPL_FPX_CONV_CYC(fp12, 2);
-
-TMPL_FPX_TEST_CYC(fp12, 2);
-
-TMPL_FPX_BACK_CYC_QC(fp12, fp2, fp2_mul_nor);
-
-TMPL_FPX_BACK_CYC_SIM_QC(fp12, fp2, fp2_mul_nor);
-
-TMPL_EXP_CYC(fp12);
-
-TMPL_EXP_CYC_SIM(fp12, fp12_sqr_cyc);
-
-TMPL_EXP_CYC_SPS(fp12);
-
-TMPL_FPX_PCK_QC(fp12, fp2);
-
-TMPL_FPX_UPK_QC(fp12, fp2);
 
 void fp12_pck_max(fp12_t c, const fp12_t a) {
 	fp12_copy(c, a);

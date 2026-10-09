@@ -154,11 +154,7 @@ TMPL_SQR_CYC_LAZYR_CQ(fp24, fp4, dv4, fp2, dv2, 2, 1, fp4_sqr_unr);
 
 TMPL_FPX_INV_CUBIC(fp24, fp8, fp8_mul_art);
 
-TMPL_FPX_INV_CYC_CUBIC(fp24, fp8);
-
-TMPL_FPX_EXP_CYC(fp24);
-
-TMPL_FPX_EXP_DIG(fp24);
+TMPL_FPX_CYC(fp24, fp8, fp4, fp4_mul_art, CQ);
 
 void fp24_frb(fp24_t c, const fp24_t a, int i) {
 	/* Cost of 20 multiplication in Fp^2 per Frobenius. */
@@ -179,20 +175,3 @@ void fp24_frb(fp24_t c, const fp24_t a, int i) {
 	}
 }
 
-TMPL_FPX_CONV_CYC(fp24, 4);
-
-TMPL_FPX_TEST_CYC(fp24, 4);
-
-TMPL_FPX_BACK_CYC_CQ(fp24, fp4, fp4_mul_art);
-
-TMPL_FPX_BACK_CYC_SIM_CQ(fp24, fp4, fp4_mul_art);
-
-TMPL_EXP_CYC(fp24);
-
-TMPL_EXP_CYC_SIM(fp24, fp24_sqr_cyc);
-
-TMPL_EXP_CYC_SPS(fp24);
-
-TMPL_FPX_PCK_CQ(fp24, fp4);
-
-TMPL_FPX_UPK_CQ(fp24, fp4);

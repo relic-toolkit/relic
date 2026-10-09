@@ -934,3 +934,54 @@
 			RLC_FREE(t);													\
 		}																	\
 	}
+
+/**
+ * Selects the inversion template for elements in the cyclotomic subgroup of a
+ * quadratic-over-cubic (QC) or cubic-over-quadratic (CQ) tower.
+ */
+#define TMPL_FPX_INV_CYC_QC			TMPL_FPX_INV_CYC_QUAD
+#define TMPL_FPX_INV_CYC_CQ			TMPL_FPX_INV_CYC_CUBIC
+
+/**
+ * Defines a template for all the arithmetic in the cyclotomic subgroup of an
+ * extension field with compressed squarings: inversion, exponentiation,
+ * conversion, membership testing, decompression, sparse and simultaneous
+ * exponentiation, and compression.
+ *
+ * @param[in] X			- the extension field prefix.
+ * @param[in] H			- the subfield of half the degree, for inversion.
+ * @param[in] S			- the subfield used in compression, of degree k/6.
+ * @param[in] M			- the multiplication by the non-residue in S.
+ * @param[in] T			- the shape of the tower (QC or CQ).
+ */
+#define TMPL_FPX_CYC(X, H, S, M, T)											\
+	TMPL_FPX_INV_CYC_##T(X, H)												\
+	TMPL_FPX_EXP_CYC(X)														\
+	TMPL_FPX_EXP_DIG(X)														\
+	TMPL_FPX_CONV_CYC(X, (int)(sizeof(S##_t) / sizeof(fp_t)))				\
+	TMPL_FPX_TEST_CYC(X, (int)(sizeof(S##_t) / sizeof(fp_t)))				\
+	TMPL_FPX_BACK_CYC_##T(X, S, M)											\
+	TMPL_FPX_BACK_CYC_SIM_##T(X, S, M)										\
+	TMPL_EXP_CYC(X)															\
+	TMPL_EXP_CYC_SIM(X, X##_sqr_cyc)										\
+	TMPL_EXP_CYC_SPS(X)														\
+	TMPL_FPX_PCK_##T(X, S)													\
+	TMPL_FPX_UPK_##T(X, S)
+
+/**
+ * Defines a template for all the arithmetic in the cyclotomic subgroup of an
+ * extension field built as a tower of quadratic extensions: inversion,
+ * exponentiation, conversion, membership testing, and w-NAF and simultaneous
+ * exponentiation.
+ *
+ * @param[in] X			- the extension field prefix.
+ * @param[in] H			- the subfield of half the degree, for inversion.
+ */
+#define TMPL_FPX_CYC_T2(X, H)												\
+	TMPL_FPX_INV_CYC_QUAD(X, H)												\
+	TMPL_FPX_EXP_CYC(X)														\
+	TMPL_FPX_EXP_DIG(X)														\
+	TMPL_FPX_CONV_CYC_QUAD(X)												\
+	TMPL_FPX_TEST_CYC_QUAD(X)												\
+	TMPL_EXP_CYC_NAF(X, X##_sqr_cyc)										\
+	TMPL_EXP_CYC_SIM(X, X##_sqr_cyc)

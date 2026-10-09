@@ -7848,14 +7848,16 @@ static int compression54(void) {
 static int cyclotomic54(void) {
 	int code = RLC_ERR;
 	fp54_t a, b, c, d[2], e[2];
-	bn_t f;
+	bn_t f, h;
 
 	fp54_null_all(a, b, c, d[0], d[1], e[0], e[1]);
 	bn_null(f);
+	bn_null(h);
 
 	RLC_TRY {
 		fp54_new_all(a, b, c, d[0], d[1], e[0], e[1]);
 		bn_new(f);
+		bn_new(h);
 
 		TEST_CASE("cyclotomic test is correct") {
 			fp54_rand(a);
@@ -8007,6 +8009,20 @@ static int cyclotomic54(void) {
 			fp54_sqr_cyc(c, a);
 			TEST_ASSERT(fp54_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
+
+		TEST_CASE("simultaneous cyclotomic exponentiation is correct") {
+			fp54_rand(a);
+			fp54_conv_cyc(a, a);
+			fp54_rand(b);
+			fp54_conv_cyc(b, b);
+			bn_rand(f, RLC_POS, RLC_FP_BITS);
+			bn_rand(h, RLC_NEG, RLC_FP_BITS);
+			fp54_exp_cyc_sim(c, a, f, b, h);
+			fp54_exp_cyc(a, a, f);
+			fp54_exp_cyc(b, b, h);
+			fp54_mul(b, a, b);
+			TEST_ASSERT(fp54_cmp(b, c) == RLC_EQ, end);
+		} TEST_END;
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -8016,6 +8032,7 @@ static int cyclotomic54(void) {
   end:
 	fp54_free_all(a, b, c, d[0], d[1], e[0], e[1]);
 	bn_free(f);
+	bn_free(h);
 	return code;
 }
 

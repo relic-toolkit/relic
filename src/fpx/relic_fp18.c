@@ -283,11 +283,7 @@ TMPL_SQR_CYC_LAZYR_QC(fp18, fp3, dv3, fp3, dv3, 1, 1, fp3_sqrn_low);
 
 TMPL_FPX_INV_QUAD(fp18, fp9, fp9_mul_art);
 
-TMPL_FPX_INV_CYC_QUAD(fp18, fp9);
-
-TMPL_FPX_EXP_CYC(fp18);
-
-TMPL_FPX_EXP_DIG(fp18);
+TMPL_FPX_CYC(fp18, fp9, fp3, fp3_mul_nor, QC);
 
 void fp18_frb(fp18_t c, const fp18_t a, int i) {
 	/* Cost of five multiplication in Fp^3 per Frobenius. */
@@ -303,20 +299,3 @@ void fp18_frb(fp18_t c, const fp18_t a, int i) {
 	}
 }
 
-TMPL_FPX_CONV_CYC(fp18, 3);
-
-TMPL_FPX_TEST_CYC(fp18, 3);
-
-TMPL_FPX_BACK_CYC_QC(fp18, fp3, fp3_mul_nor);
-
-TMPL_FPX_BACK_CYC_SIM_QC(fp18, fp3, fp3_mul_nor);
-
-TMPL_EXP_CYC(fp18);
-
-TMPL_EXP_CYC_SIM(fp18, fp18_sqr_cyc);
-
-TMPL_EXP_CYC_SPS(fp18);
-
-TMPL_FPX_PCK_QC(fp18, fp3);
-
-TMPL_FPX_UPK_QC(fp18, fp3);

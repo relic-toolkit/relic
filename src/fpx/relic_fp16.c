@@ -253,15 +253,11 @@ void fp16_sqr_cyc(fp16_t c, const fp16_t a) {
 	}
 }
 
-TMPL_FPX_INV_CYC_QUAD(fp16, fp8);
+TMPL_FPX_CYC_T2(fp16, fp8);
 
 TMPL_FPX_INV_QUAD(fp16, fp8, fp8_mul_art);
 
 TMPL_FPX_INV_SIM(fp16);
-
-TMPL_FPX_EXP_CYC(fp16);
-
-TMPL_FPX_EXP_DIG(fp16);
 
 void fp16_frb(fp16_t c, const fp16_t a, int i) {
 	/* Cost of four multiplication in Fp^2 per Frobenius. */
@@ -282,14 +278,6 @@ void fp16_frb(fp16_t c, const fp16_t a, int i) {
 		}
 	}
 }
-
-TMPL_FPX_CONV_CYC_QUAD(fp16);
-
-TMPL_FPX_TEST_CYC_QUAD(fp16);
-
-TMPL_EXP_CYC_NAF(fp16, fp16_sqr_cyc);
-
-TMPL_EXP_CYC_SIM(fp16, fp16_sqr_cyc);
 
 TMPL_FPX_IS_SQR(fp16, 16);
 

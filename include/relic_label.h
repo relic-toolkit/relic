@@ -3049,6 +3049,7 @@
 #undef fp54_exp_dig
 #undef fp54_exp_cyc
 #undef fp54_exp_cyc_sps
+#undef fp54_exp_cyc_sim
 #undef fp54_pck
 #undef fp54_upk
 
@@ -3091,6 +3092,7 @@
 #define fp54_exp_dig 	RLC_PREFIX(fp54_exp_dig)
 #define fp54_exp_cyc 	RLC_PREFIX(fp54_exp_cyc)
 #define fp54_exp_cyc_sps 	RLC_PREFIX(fp54_exp_cyc_sps)
+#define fp54_exp_cyc_sim 	RLC_PREFIX(fp54_exp_cyc_sim)
 #define fp54_pck 	RLC_PREFIX(fp54_pck)
 #define fp54_upk 	RLC_PREFIX(fp54_upk)
 
