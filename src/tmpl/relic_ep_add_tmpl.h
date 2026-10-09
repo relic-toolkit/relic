@@ -291,15 +291,6 @@
  * @param[in] C			- the curve.
  * @param[in] F			- the field prefix.
  */
-#if defined(EP_MIXED) && defined(STRIP)
-
-#define TMPL_ADD_PROJC_IMP(C, F)											\
-	static void C##_add_projc_imp(C##_t r, const C##_t p, const C##_t q) {	\
-		/* If code size is a problem, leave only the mixed version. */		\
-		C##_add_projc_mix(r, p, q);											\
-	}																		\
-
-#else
 
 #define TMPL_ADD_PROJC_IMP(C, F)											\
 	static void C##_add_projc_imp(C##_t r, const C##_t p, const C##_t q) {	\
@@ -453,8 +444,6 @@
 		}																	\
 	}																		\
 
-#endif
-
 /**
  * Defines a template for mixed point addition in Jacobian coordinates.
  *
@@ -579,15 +568,6 @@
  * @param[in] C			- the curve.
  * @param[in] F			- the field prefix.
  */
-#if defined(EP_MIXED) && defined(STRIP)
-
-#define TMPL_ADD_JACOB_IMP(C, F)											\
-	static void C##_add_jacob_imp(C##_t r, const C##_t p, const C##_t q) {	\
-		/* If code size is a problem, leave only the mixed version. */		\
-		C##_add_jacob_mix(r, p, q);											\
-	}																		\
-
-#else
 
 #define TMPL_ADD_JACOB_IMP(C, F)											\
 	static void C##_add_jacob_imp(C##_t r, const C##_t p, const C##_t q) {	\
@@ -697,8 +677,6 @@
 			F##_free(t6);													\
 		}																	\
 	}																		\
-
-#endif
 
 /**
  * Defines a template for point addition in affine coordinates, with and

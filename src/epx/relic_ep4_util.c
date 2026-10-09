@@ -106,22 +106,14 @@ void ep4_rhs(fp4_t rhs, const fp4_t x) {
 void ep4_tab(ep4_t *t, const ep4_t p, int w) {
 	if (w > 2) {
 		ep4_dbl(t[0], p);
-#if defined(EP_MIXED)
 		ep4_norm(t[0], t[0]);
-#endif
 		ep4_add(t[1], t[0], p);
 		for (int i = 2; i < (1 << (w - 2)); i++) {
 			ep4_add(t[i], t[i - 1], t[0]);
 		}
-#if defined(EP_MIXED)
 		ep4_norm_sim(t + 1, t + 1, (1 << (w - 2)) - 1);
-#endif
 	}
-#if defined(EP_MIXED)
 	ep4_norm(t[0], p);
-#else
-	ep4_copy(t[0], p);
-#endif
 }
 
 size_t ep4_size_bin(const ep4_t a, int pack) {

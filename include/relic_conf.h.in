@@ -416,8 +416,6 @@
 #cmakedefine EP_SUPER
 /** Support for prime curves with efficient endormorphisms. */
 #cmakedefine EP_ENDOM
-/** Use mixed coordinates. */
-#cmakedefine EP_MIXED
 /** Build precomputation table for generator. */
 #cmakedefine EP_PRECO
 /** Enable isogeny map for SSWU map-to-curve. */

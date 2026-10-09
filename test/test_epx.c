@@ -271,7 +271,6 @@ static int addition2(void) {
 #endif
 
 #if EP_ADD == PROJC || !defined(STRIP)
-#if !defined(EP_MIXED) || !defined(STRIP)
 		TEST_CASE("point addition in projective coordinates is correct") {
 			ep2_rand(a);
 			ep2_rand(b);
@@ -286,7 +285,6 @@ static int addition2(void) {
 			ep2_add(e, a, b);
 			TEST_ASSERT(ep2_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
 		TEST_CASE("point addition in mixed coordinates (z2 = 1) is correct") {
 			ep2_rand(a);
@@ -311,7 +309,6 @@ static int addition2(void) {
 #endif
 
 #if EP_ADD == JACOB || !defined(STRIP)
-#if !defined(EP_MIXED) || !defined(STRIP)
 		TEST_CASE("point addition in jacobian coordinates is correct") {
 			ep2_rand(a);
 			ep2_rand(b);
@@ -325,7 +322,6 @@ static int addition2(void) {
 			ep2_add(e, a, b);
 			TEST_ASSERT(ep2_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
 		TEST_CASE("point addition in mixed coordinates (z2 = 1) is correct") {
 			ep2_rand(a);
@@ -1614,7 +1610,6 @@ static int addition3(void) {
 #endif
 
 #if EP_ADD == PROJC || !defined(STRIP)
-#if !defined(EP_MIXED) || !defined(STRIP)
 		TEST_CASE("point addition in projective coordinates is correct") {
 			ep3_rand(a);
 			ep3_rand(b);
@@ -1629,7 +1624,6 @@ static int addition3(void) {
 			ep3_add(e, a, b);
 			TEST_ASSERT(ep3_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
 		TEST_CASE("point addition in mixed coordinates (z2 = 1) is correct") {
 			ep3_rand(a);
@@ -1654,7 +1648,6 @@ static int addition3(void) {
 #endif
 
 #if EP_ADD == JACOB || !defined(STRIP)
-#if !defined(EP_MIXED) || !defined(STRIP)
 		TEST_CASE("point addition in jacobian coordinates is correct") {
 			ep3_rand(a);
 			ep3_rand(b);
@@ -1668,7 +1661,6 @@ static int addition3(void) {
 			ep3_add(e, a, b);
 			TEST_ASSERT(ep3_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
 		TEST_CASE("point addition in mixed coordinates (z2 = 1) is correct") {
 			ep3_rand(a);
@@ -2861,7 +2853,6 @@ static int addition4(void) {
 #endif
 
 #if EP_ADD == PROJC || !defined(STRIP)
-#if !defined(EP_MIXED) || !defined(STRIP)
 		TEST_CASE("point addition in projective coordinates is correct") {
 			ep4_rand(a);
 			ep4_rand(b);
@@ -2876,7 +2867,6 @@ static int addition4(void) {
 			ep4_add(e, a, b);
 			TEST_ASSERT(ep4_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
 		TEST_CASE("point addition in mixed coordinates (z2 = 1) is correct") {
 			ep4_rand(a);
@@ -2901,7 +2891,6 @@ static int addition4(void) {
 #endif
 
 #if EP_ADD == JACOB || !defined(STRIP)
-#if !defined(EP_MIXED) || !defined(STRIP)
 		TEST_CASE("point addition in jacobian coordinates is correct") {
 			ep4_rand(a);
 			ep4_rand(b);
@@ -2915,7 +2904,6 @@ static int addition4(void) {
 			ep4_add(e, a, b);
 			TEST_ASSERT(ep4_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
 		TEST_CASE("point addition in mixed coordinates (z2 = 1) is correct") {
 			ep4_rand(a);
@@ -4104,7 +4092,6 @@ static int addition8(void) {
 #endif
 
 #if EP_ADD == PROJC || !defined(STRIP)
-#if !defined(EP_MIXED) || !defined(STRIP)
 		TEST_CASE("point addition in projective coordinates is correct") {
 			ep8_rand(a);
 			ep8_rand(b);
@@ -4119,7 +4106,6 @@ static int addition8(void) {
 			ep8_add(e, a, b);
 			TEST_ASSERT(ep8_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
 		TEST_CASE("point addition in mixed coordinates (z2 = 1) is correct") {
 			ep8_rand(a);
@@ -4144,7 +4130,6 @@ static int addition8(void) {
 #endif
 
 #if EP_ADD == JACOB || !defined(STRIP)
-#if !defined(EP_MIXED) || !defined(STRIP)
 		TEST_CASE("point addition in jacobian coordinates is correct") {
 			ep8_rand(a);
 			ep8_rand(b);
@@ -4158,7 +4143,6 @@ static int addition8(void) {
 			ep8_add(e, a, b);
 			TEST_ASSERT(ep8_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
 		TEST_CASE("point addition in mixed coordinates (z2 = 1) is correct") {
 			ep8_rand(a);

@@ -106,22 +106,14 @@ void ep2_rhs(fp2_t rhs, const fp2_t x) {
 void ep2_tab(ep2_t *t, const ep2_t p, int w) {
 	if (w > 2) {
 		ep2_dbl(t[0], p);
-#if defined(EP_MIXED)
 		ep2_norm(t[0], t[0]);
-#endif
 		ep2_add(t[1], t[0], p);
 		for (int i = 2; i < (1 << (w - 2)); i++) {
 			ep2_add(t[i], t[i - 1], t[0]);
 		}
-#if defined(EP_MIXED)
 		ep2_norm_sim(t + 1, t + 1, (1 << (w - 2)) - 1);
-#endif
 	}
-#if defined(EP_MIXED)
 	ep2_norm(t[0], p);
-#else
-	ep2_copy(t[0], p);
-#endif
 }
 
 size_t ep2_size_bin(const ep2_t a, int pack) {

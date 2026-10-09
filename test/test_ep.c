@@ -272,7 +272,6 @@ static int addition(void) {
 #endif
 
 #if EP_ADD == PROJC || !defined(STRIP)
-#if !defined(EP_MIXED) || !defined(STRIP)
 		TEST_CASE("point addition in projective coordinates is correct") {
 			ep_rand(a);
 			ep_rand(b);
@@ -287,7 +286,6 @@ static int addition(void) {
 			ep_add(e, a, b);
 			TEST_ASSERT(ep_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
 		TEST_CASE("point addition in mixed coordinates (z2 = 1) is correct") {
 			ep_rand(a);
@@ -312,7 +310,6 @@ static int addition(void) {
 #endif
 
 #if EP_ADD == JACOB || !defined(STRIP)
-#if !defined(EP_MIXED) || !defined(STRIP)
 		TEST_CASE("point addition in jacobian coordinates is correct") {
 			ep_rand(a);
 			ep_rand(b);
@@ -326,7 +323,6 @@ static int addition(void) {
 			ep_add(e, a, b);
 			TEST_ASSERT(ep_cmp(d, e) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
 		TEST_CASE("point addition in mixed coordinates (z2 = 1) is correct") {
 			ep_rand(a);
@@ -531,7 +527,6 @@ static int tripling(void) {
 #endif
 
 #if EP_ADD == PROJC || !defined(STRIP)
-#if !defined(EP_MIXED) || !defined(STRIP)
 		TEST_CASE("point tripling in projective coordinates is correct") {
 			ep_rand(a);
 			/* a in projective coordinates. */
@@ -541,7 +536,6 @@ static int tripling(void) {
 			ep_tpl(c, a);
 			TEST_ASSERT(ep_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
 		TEST_CASE("point tripling in mixed coordinates (z1 = 1) is correct") {
 			ep_rand(a);
@@ -553,7 +547,6 @@ static int tripling(void) {
 #endif
 
 #if EP_ADD == JACOB || !defined(STRIP)
-#if !defined(EP_MIXED) || !defined(STRIP)
 		TEST_CASE("point tripling in jacobian coordinates is correct") {
 			ep_rand(a);
 			/* a in projective coordinates. */
@@ -563,7 +556,6 @@ static int tripling(void) {
 			ep_tpl(c, a);
 			TEST_ASSERT(ep_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
-#endif
 
 		TEST_CASE("point tripling in mixed coordinates (z1 = 1) is correct") {
 			ep_rand(a);

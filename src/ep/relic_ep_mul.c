@@ -242,13 +242,9 @@ static void ep_mul_reg_glv(ep_t r, const ep_t p, const bn_t k) {
 		l = RLC_FP_BITS + 1;
 		bn_rec_reg(reg[1], &l, m[1], bn_bits(n) >> 1, RLC_WIDTH);
 
-#if defined(EP_MIXED)
 		fp_set_dig(u->z, 1);
 		fp_set_dig(w->z, 1);
 		u->coord = w->coord = BASIC;
-#else
-		u->coord = w->coord = EP_ADD;
-#endif
 		ep_set_infty(r);
 		for (int i = l - 1; i >= 0; i--) {
 			for (size_t j = 0; j < RLC_WIDTH - 1; j++) {
@@ -267,10 +263,6 @@ static void ep_mul_reg_glv(ep_t r, const ep_t p, const bn_t k) {
 				fp_copy_sec(w->x, t[j]->x, j == n1);
 				fp_copy_sec(u->y, t[j]->y, j == n0);
 				fp_copy_sec(w->y, t[j]->y, j == n1);
-#if !defined(EP_MIXED)
-				fp_copy_sec(u->z, t[j]->z, j == n0);
-				fp_copy_sec(w->z, t[j]->z, j == n1);
-#endif
 			}
 			ep_neg(q, u);
 			fp_copy_sec(q->y, u->y, c0 == 0);

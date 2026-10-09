@@ -274,18 +274,14 @@ void ed_mul_slide(ed_t r, const ed_t p, const bn_t k) {
 		ed_copy(t[0], p);
 		ed_dbl(q, p);
 
-#if defined(EP_MIXED)
 		ed_norm(q, q);
-#endif
 
 		/* Create table. */
 		for (size_t i = 1; i < (1 << (RLC_WIDTH - 1)); i++) {
 			ed_add(t[i], t[i - 1], q);
 		}
 
-#if defined(EP_MIXED)
 		ed_norm_sim(t + 1, (const ed_t *)t + 1, (1 << (RLC_WIDTH - 1)) - 1);
-#endif
 
 		ed_set_infty(q);
 		l = RLC_FP_BITS + 1;

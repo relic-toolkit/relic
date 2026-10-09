@@ -5,7 +5,6 @@ message("   ** Options for the prime elliptic curve module (default = all on):\n
 message("      EP_PLAIN=[off|on] Support for ordinary curves without endomorphisms.")
 message("      EP_SUPER=[off|on] Support for supersingular curves.")
 message("      EP_ENDOM=[off|on] Support for ordinary curves with endomorphisms.")
-message("      EP_MIXED=[off|on] Use mixed coordinates.")
 message("      EP_CTMAP=[off|on] Use contant-time SSWU and isogeny map for hashing.\n")
 
 message("      EP_PRECO=[off|on] Build precomputation table for generator.")
@@ -44,7 +43,6 @@ message("      EP_METHD=SWIFT    SwiftEC hashing method.\n")
 
 option(EP_PLAIN "Support for ordinary curves without endomorphisms" on)
 option(EP_SUPER "Support for supersingular curves" on)
-option(EP_MIXED "Use mixed coordinates" on)
 option(EP_ENDOM "Support for ordinary curves with endomorphisms" on)
 option(EP_PRECO "Build precomputation table for generator" on)
 option(EP_CTMAP "Use contant-time SSWU and isogeny map for hashing" on)

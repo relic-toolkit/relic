@@ -36,55 +36,6 @@
 /*============================================================================*/
 
 /**
- * Normalizes a point, or several points simultaneously, if mixed coordinates
- * are enabled.
- *
- * @param[in] C			- the curve.
- * @param[in,out] P		- the point to normalize.
- * @param[in,out] T		- the points to normalize.
- * @param[in] N			- the number of points.
- */
-#if defined(EP_MIXED)
-
-#define TMPL_EP_MIXED_NORM(C, P)		C##_norm(P, P)
-
-#define TMPL_EP_MIXED_NORM_SIM(C, T, N)	C##_norm_sim(T, (const C##_t *)(T), N)
-
-#else
-
-#define TMPL_EP_MIXED_NORM(C, P)		/* Nothing to do. */
-
-#define TMPL_EP_MIXED_NORM_SIM(C, T, N)	/* Nothing to do. */
-
-#endif
-
-/**
- * Prepares a point to receive coordinates selected in constant time from a
- * precomputation table, and selects the z-coordinate if needed. With mixed
- * coordinates, table points are normalized and z is not selected.
- *
- * @param[in] F			- the field prefix.
- * @param[out] P		- the point receiving the coordinates.
- * @param[in] T			- the table entry.
- * @param[in] B			- the flag to indicate if the entry is selected.
- */
-#if defined(EP_MIXED)
-
-#define TMPL_EP_SEL_INIT(F, P)												\
-	F##_set_dig(P->z, 1);													\
-	P->coord = BASIC
-
-#define TMPL_EP_SEL_Z(F, P, T, B)		/* The z-coordinate is one. */
-
-#else
-
-#define TMPL_EP_SEL_INIT(F, P)			P->coord = EP_ADD
-
-#define TMPL_EP_SEL_Z(F, P, T, B)		F##_copy_sec(P->z, T->z, B)
-
-#endif
-
-/**
  * Defines a template for point multiplication using the binary method.
  *
  * @param[in] C			- the curve.
@@ -331,7 +282,8 @@
 						bn_bits(n), flag);									\
 			}																\
 																			\
-			TMPL_EP_SEL_INIT(F, q[1]);										\
+			F##_set_dig(q[1]->z, 1);										\
+			q[1]->coord = BASIC;											\
 			C##_set_infty(r);												\
 			for (int j = l - 1; j >= 0; j--) {								\
 				C##_dbl(r, r);												\
@@ -344,7 +296,6 @@
 					for (int m = 0; m < (1 << (S / T - 1)); m++) {			\
 						F##_copy_sec(q[1]->x, t[i][m]->x, m == col);		\
 						F##_copy_sec(q[1]->y, t[i][m]->y, m == col);		\
-						TMPL_EP_SEL_Z(F, q[1], t[i][m], m == col);			\
 					}														\
 					C##_neg(q[2], q[1]);									\
 					F##_copy_sec(q[1]->y, q[2]->y, sac[i][j]);				\
@@ -413,7 +364,7 @@
 			C##_copy(t[0], p);												\
 			C##_dbl(q, p);													\
 																			\
-			TMPL_EP_MIXED_NORM(C, q);										\
+			C##_norm(q, q);													\
 																			\
 			C##_curve_get_ord(n);											\
 			bn_mod(m, k, n);												\
@@ -423,7 +374,8 @@
 				C##_add(t[i], t[i - 1], q);									\
 			}																\
 																			\
-			TMPL_EP_MIXED_NORM_SIM(C, t + 1, (1 << (RLC_WIDTH - 1)) - 1);	\
+			C##_norm_sim(t + 1, (const C##_t *)t + 1,						\
+					(1 << (RLC_WIDTH - 1)) - 1);							\
 																			\
 			C##_set_infty(q);												\
 			l = RLC_FP_BITS + 1;											\
@@ -501,7 +453,8 @@
 			l = RLC_CEIL(n, RLC_WIDTH - 1) + 1;								\
 			bn_rec_reg(reg, &l, m, n, RLC_WIDTH);							\
 																			\
-			TMPL_EP_SEL_INIT(F, u);											\
+			F##_set_dig(u->z, 1);											\
+			u->coord = BASIC;												\
 			C##_set_infty(r);												\
 			for (i = l - 1; i >= 0; i--) {									\
 				for (j = 0; j < RLC_WIDTH - 1; j++) {						\
@@ -515,7 +468,6 @@
 				for (j = 0; j < (1 << (RLC_WIDTH - 2)); j++) {				\
 					F##_copy_sec(u->x, t[j]->x, j == n);					\
 					F##_copy_sec(u->y, t[j]->y, j == n);					\
-					TMPL_EP_SEL_Z(F, u, t[j], j == n);						\
 				}															\
 				C##_neg(v, u);												\
 				F##_copy_sec(u->y, v->y, s != 0);							\
@@ -690,7 +642,7 @@
 				for (i = 1; i < l; i++) {									\
 					C##_dbl(t[1 << j], t[1 << j]);							\
 				}															\
-				TMPL_EP_MIXED_NORM(C, t[1 << j]);							\
+				C##_norm(t[1 << j], t[1 << j]);								\
 				for (i = 1; i < (1 << j); i++) {							\
 					C##_add(t[(1 << j) + i], t[i], t[1 << j]);				\
 				}															\
@@ -794,7 +746,7 @@
 				for (i = 1; i < d; i++) {									\
 					C##_dbl(t[1 << j], t[1 << j]);							\
 				}															\
-				TMPL_EP_MIXED_NORM(C, t[1 << j]);							\
+				C##_norm(t[1 << j], t[1 << j]);								\
 				for (i = 1; i < (1 << j); i++) {							\
 					C##_add(t[(1 << j) + i], t[i], t[1 << j]);				\
 				}															\
@@ -880,7 +832,6 @@
 			bn_free(_k);													\
 		}																	\
 	}
-
 
 /**
  * Defines a template for simultaneous point multiplication using two

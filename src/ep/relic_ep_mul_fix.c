@@ -288,9 +288,7 @@ void ep_mul_pre_combs(ep_t *t, const ep_t p) {
 			for (i = 1; i < l; i++) {
 				ep_dbl(t[1 << j], t[1 << j]);
 			}
-#if defined(EP_MIXED)
 			ep_norm(t[1 << j], t[1 << j]);
-#endif
 			for (i = 1; i < (1 << j); i++) {
 				ep_add(t[(1 << j) + i], t[i], t[1 << j]);
 			}

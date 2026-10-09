@@ -108,22 +108,14 @@ void ep8_rhs(fp8_t rhs, const fp8_t x) {
 void ep8_tab(ep8_t *t, const ep8_t p, int w) {
 	if (w > 2) {
 		ep8_dbl(t[0], p);
-#if defined(EP_MIXED)
 		ep8_norm(t[0], t[0]);
-#endif
 		ep8_add(t[1], t[0], p);
 		for (int i = 2; i < (1 << (w - 2)); i++) {
 			ep8_add(t[i], t[i - 1], t[0]);
 		}
-#if defined(EP_MIXED)
 		ep8_norm_sim(t + 1, t + 1, (1 << (w - 2)) - 1);
-#endif
 	}
-#if defined(EP_MIXED)
 	ep8_norm(t[0], p);
-#else
-	ep8_copy(t[0], p);
-#endif
 }
 
 size_t ep8_size_bin(const ep8_t a, int pack) {

@@ -213,9 +213,7 @@ void ep8_mul_sim_trick(ep8_t r, const ep8_t p, const bn_t k, const ep8_t q,
 			}
 		}
 
-#if defined(EP_MIXED)
 		ep8_norm_sim(t + 2, (const ep8_t *)(t + 2), (1 << (w + w)) - 2);
-#endif
 
 		l0 = l1 = RLC_CEIL(2 * RLC_FP_BITS, w);
 		bn_rec_win(w0, &l0, k, w);
@@ -298,9 +296,7 @@ void ep8_mul_sim_joint(ep8_t r, const ep8_t p, const bn_t k, const ep8_t q,
 		}
 		ep8_add(t[3], t[2], t[1]);
 		ep8_sub(t[4], t[2], t[1]);
-#if defined(EP_MIXED)
 		ep8_norm_sim(t + 3, t + 3, 2);
-#endif
 
 		l = 4 * (RLC_FP_BITS + 1);
 		bn_rec_jsf(jsf, &l, k, m);

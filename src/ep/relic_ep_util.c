@@ -110,22 +110,14 @@ void ep_rhs(fp_t rhs, const fp_t x) {
 void ep_tab(ep_t *t, const ep_t p, int w) {
 	if (w > 2) {
 		ep_dbl(t[0], p);
-#if defined(EP_MIXED)
 		ep_norm(t[0], t[0]);
-#endif
 		ep_add(t[1], p, t[0]);
 		for (int i = 2; i < (1 << (w - 2)); i++) {
 			ep_add(t[i], t[i - 1], t[0]);
 		}
-#if defined(EP_MIXED)
 		ep_norm_sim(t + 1, (const ep_t *)t + 1, (1 << (w - 2)) - 1);
-#endif
 	}
-#if defined(EP_MIXED)
 	ep_norm(t[0], p);
-#else
-	ep_copy(t[0], p);
-#endif
 }
 
 size_t ep_size_bin(const ep_t a, int pack) {
