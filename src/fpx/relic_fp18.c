@@ -86,13 +86,9 @@ inline static void fp9_mul_dxs_unr_lazyr(dv9_t c, const fp9_t a, const fp9_t b) 
 /* Public definitions                                                         */
 /*============================================================================*/
 
-TMPL_FPX_UTIL(fp18, fp9, 2);
+TMPL_FPX_BASE(fp18, fp9, 2);
 
 TMPL_FPX_BIN_QC(fp18, fp9, fp3, 18);
-
-TMPL_FPX_CMP(fp18, fp9, 2);
-
-TMPL_FPX_ADD(fp18, fp9, 2);
 
 #if FPX_RDC == BASIC || !defined(STRIP)
 
@@ -280,8 +276,6 @@ TMPL_SQR_PCK_LAZYR_QC(fp18, fp3, dv3, fp3, dv3, 1, 1, fp3_sqrn_low,
 TMPL_SQR_CYC_LAZYR_QC(fp18, fp3, dv3, fp3, dv3, 1, 1, fp3_sqrn_low);
 
 #endif
-
-TMPL_FPX_INV_QUAD(fp18, fp9, fp9_mul_art);
 
 TMPL_FPX_CYC(fp18, fp9, fp3, fp3_mul_nor, QC);
 

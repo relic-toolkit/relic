@@ -39,13 +39,9 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-TMPL_FPX_UTIL(fp4, fp2, 2);
+TMPL_FPX_BASE(fp4, fp2, 2);
 
 TMPL_FPX_BIN(fp4, fp2, 2, 4);
-
-TMPL_FPX_CMP(fp4, fp2, 2);
-
-TMPL_FPX_ADD(fp4, fp2, 2);
 
 TMPL_FPX_ASM_DIG(fp4, fp2, 2);
 
@@ -172,6 +168,5 @@ void fp4_frb(fp4_t c, const fp4_t a, int i) {
 	}
 }
 
-TMPL_FPX_IS_SQR(fp4, 4);
+TMPL_FPX_SRT(fp4, fp2, fp2_mul_nor);
 
-TMPL_FPX_SRT_QUAD(fp4, fp2, fp2_mul_nor, 2);

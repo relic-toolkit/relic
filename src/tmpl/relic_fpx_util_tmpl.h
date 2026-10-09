@@ -454,3 +454,16 @@
 			S##_write_bin(bin + i * s, s, a[i], 0);							\
 		}																	\
 	}
+
+/**
+ * Defines a template for the utilities, comparison and additive arithmetic in
+ * an extension field of degree N over a subfield.
+ *
+ * @param[in] X			- the extension field prefix.
+ * @param[in] S			- the subfield prefix.
+ * @param[in] N			- the degree of the extension over the subfield.
+ */
+#define TMPL_FPX_BASE(X, S, N)												\
+	TMPL_FPX_UTIL(X, S, N)													\
+	TMPL_FPX_CMP(X, S, N)													\
+	TMPL_FPX_ADD(X, S, N)

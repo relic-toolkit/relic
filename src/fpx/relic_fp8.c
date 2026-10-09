@@ -70,13 +70,9 @@ static void fp4_mul_dxs_unr(dv4_t c, const fp4_t a, const fp4_t b) {
 /* Public definitions                                                         */
 /*============================================================================*/
 
-TMPL_FPX_UTIL(fp8, fp4, 2);
+TMPL_FPX_BASE(fp8, fp4, 2);
 
 TMPL_FPX_BIN_T2(fp8, fp4, 8);
-
-TMPL_FPX_CMP(fp8, fp4, 2);
-
-TMPL_FPX_ADD(fp8, fp4, 2);
 
 TMPL_FPX_ASM_DIG(fp8, fp4, 2);
 
@@ -215,10 +211,6 @@ void fp8_sqr_cyc(fp8_t c, const fp8_t a) {
 
 TMPL_FPX_CYC_T2(fp8, fp4);
 
-TMPL_FPX_INV_QUAD(fp8, fp4, fp4_mul_art);
-
-TMPL_FPX_INV_SIM(fp8);
-
 void fp8_frb(fp8_t c, const fp8_t a, int i) {
 	/* Cost of four multiplication in Fp^2 per Frobenius. */
 	fp8_copy(c, a);
@@ -233,6 +225,5 @@ void fp8_frb(fp8_t c, const fp8_t a, int i) {
 	}
 }
 
-TMPL_FPX_IS_SQR(fp8, 8);
+TMPL_FPX_SRT(fp8, fp4, fp4_mul_art);
 
-TMPL_FPX_SRT_QUAD(fp8, fp4, fp4_mul_art, 4);

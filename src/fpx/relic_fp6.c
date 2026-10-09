@@ -39,13 +39,9 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-TMPL_FPX_UTIL(fp6, fp2, 3);
+TMPL_FPX_BASE(fp6, fp2, 3);
 
 TMPL_FPX_BIN(fp6, fp2, 3, 6);
-
-TMPL_FPX_CMP(fp6, fp2, 3);
-
-TMPL_FPX_ADD(fp6, fp2, 3);
 
 #if FPX_RDC == BASIC || !defined(STRIP)
 

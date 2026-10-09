@@ -86,13 +86,9 @@ inline static void fp6_mul_dxs_unr_lazyr(dv6_t c, const fp6_t a, const fp6_t b) 
 /* Public definitions                                                         */
 /*============================================================================*/
 
-TMPL_FPX_UTIL(fp12, fp6, 2);
+TMPL_FPX_BASE(fp12, fp6, 2);
 
 TMPL_FPX_BIN_QC(fp12, fp6, fp2, 12);
-
-TMPL_FPX_CMP(fp12, fp6, 2);
-
-TMPL_FPX_ADD(fp12, fp6, 2);
 
 #if FPX_RDC == BASIC || !defined(STRIP)
 
@@ -386,8 +382,6 @@ TMPL_SQR_PCK_LAZYR_QC(fp12, fp2, dv2, fp2, dv2, 1, 1, fp2_sqrn_low,
 TMPL_SQR_CYC_LAZYR_QC(fp12, fp2, dv2, fp2, dv2, 1, 1, fp2_sqrn_low);
 
 #endif
-
-TMPL_FPX_INV_QUAD(fp12, fp6, fp6_mul_art);
 
 TMPL_FPX_CYC(fp12, fp6, fp2, fp2_mul_nor, QC);
 

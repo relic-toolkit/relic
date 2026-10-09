@@ -936,25 +936,29 @@
 	}
 
 /**
- * Selects the inversion template for elements in the cyclotomic subgroup of a
- * quadratic-over-cubic (QC) or cubic-over-quadratic (CQ) tower.
+ * Selects the inversion templates, for general elements and for elements in
+ * the cyclotomic subgroup, of a quadratic-over-cubic (QC) or a
+ * cubic-over-quadratic (CQ) tower.
  */
 #define TMPL_FPX_INV_CYC_QC			TMPL_FPX_INV_CYC_QUAD
 #define TMPL_FPX_INV_CYC_CQ			TMPL_FPX_INV_CYC_CUBIC
+#define TMPL_FPX_INV_QC				TMPL_FPX_INV_QUAD
+#define TMPL_FPX_INV_CQ				TMPL_FPX_INV_CUBIC
 
 /**
- * Defines a template for all the arithmetic in the cyclotomic subgroup of an
- * extension field with compressed squarings: inversion, exponentiation,
- * conversion, membership testing, decompression, sparse and simultaneous
- * exponentiation, and compression.
+ * Defines a template for inversion and the arithmetic in the cyclotomic
+ * subgroup of an extension field with compressed squarings: cyclotomic
+ * inversion and exponentiation, conversion, membership testing,
+ * decompression, sparse and simultaneous exponentiation, and compression.
  *
  * @param[in] X			- the extension field prefix.
- * @param[in] H			- the subfield of half the degree, for inversion.
+ * @param[in] H			- the subfield of half the degree, for inversions.
  * @param[in] S			- the subfield used in compression, of degree k/6.
  * @param[in] M			- the multiplication by the non-residue in S.
  * @param[in] T			- the shape of the tower (QC or CQ).
  */
 #define TMPL_FPX_CYC(X, H, S, M, T)											\
+	TMPL_FPX_INV_##T(X, H, H##_mul_art)										\
 	TMPL_FPX_INV_CYC_##T(X, H)												\
 	TMPL_FPX_EXP_CYC(X)														\
 	TMPL_FPX_EXP_DIG(X)														\
@@ -969,15 +973,17 @@
 	TMPL_FPX_UPK_##T(X, S)
 
 /**
- * Defines a template for all the arithmetic in the cyclotomic subgroup of an
- * extension field built as a tower of quadratic extensions: inversion,
- * exponentiation, conversion, membership testing, and w-NAF and simultaneous
- * exponentiation.
+ * Defines a template for inversion, simultaneous inversion and the arithmetic
+ * in the cyclotomic subgroup of an extension field built as a tower of
+ * quadratic extensions: cyclotomic inversion and exponentiation, conversion,
+ * membership testing, and w-NAF and simultaneous exponentiation.
  *
  * @param[in] X			- the extension field prefix.
- * @param[in] H			- the subfield of half the degree, for inversion.
+ * @param[in] H			- the subfield of half the degree, for inversions.
  */
 #define TMPL_FPX_CYC_T2(X, H)												\
+	TMPL_FPX_INV_QUAD(X, H, H##_mul_art)									\
+	TMPL_FPX_INV_SIM(X)														\
 	TMPL_FPX_INV_CYC_QUAD(X, H)												\
 	TMPL_FPX_EXP_CYC(X)														\
 	TMPL_FPX_EXP_DIG(X)														\

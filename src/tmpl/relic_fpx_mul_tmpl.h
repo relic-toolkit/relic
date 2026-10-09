@@ -1000,3 +1000,15 @@
 			DS##_free_all(u0, u1, u2, u3, u4);								\
 		}																	\
 	}
+
+/**
+ * Defines a template for testing quadratic residuosity and extracting square
+ * roots in a quadratic extension of a subfield.
+ *
+ * @param[in] X			- the extension field prefix.
+ * @param[in] S			- the subfield prefix.
+ * @param[in] NOR		- the multiplication by the non-residue in the subfield.
+ */
+#define TMPL_FPX_SRT(X, S, NOR)												\
+	TMPL_FPX_IS_SQR(X, (int)(sizeof(X##_t) / sizeof(fp_t)))					\
+	TMPL_FPX_SRT_QUAD(X, S, NOR, (int)(sizeof(S##_t) / sizeof(fp_t)))

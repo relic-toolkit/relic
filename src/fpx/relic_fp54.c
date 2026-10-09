@@ -41,13 +41,9 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-TMPL_FPX_UTIL(fp54, fp18, 3);
+TMPL_FPX_BASE(fp54, fp18, 3);
 
 TMPL_FPX_BIN_CQ(fp54, fp18, fp9, 54);
-
-TMPL_FPX_CMP(fp54, fp18, 3);
-
-TMPL_FPX_ADD(fp54, fp18, 3);
 
 #if FPX_RDC == BASIC || !defined(STRIP)
 
@@ -143,8 +139,6 @@ TMPL_SQR_PCK_LAZYR_CQ(fp54, fp9, dv9, fp3, dv3, 3, 1, fp9_sqr_unr, fp9_mul_art);
 TMPL_SQR_CYC_LAZYR_CQ(fp54, fp9, dv9, fp3, dv3, 3, 1, fp9_sqr_unr);
 
 #endif
-
-TMPL_FPX_INV_CUBIC(fp54, fp18, fp18_mul_art);
 
 TMPL_FPX_CYC(fp54, fp18, fp9, fp9_mul_art, CQ);
 
