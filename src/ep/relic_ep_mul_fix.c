@@ -352,67 +352,7 @@ void ep_mul_fix_combs(ep_t r, const ep_t *t, const bn_t k) {
 
 #if EP_FIX == COMBD || !defined(STRIP)
 
-TMPL_EP_MUL_PRE_COMBD(ep);
-
-void ep_mul_fix_combd(ep_t r, const ep_t *t, const bn_t k) {
-	int i, j, d, e, w0, w1, n0, p0, p1;
-	bn_t n, m;
-
-	if (bn_is_zero(k)) {
-		ep_set_infty(r);
-		return;
-	}
-
-	bn_null(n);
-	bn_null(m);
-
-	RLC_TRY {
-		bn_new(n);
-		bn_new(m);
-
-		ep_curve_get_ord(n);
-		d = RLC_CEIL(bn_bits(n), RLC_DEPTH);
-		e = (d % 2 == 0 ? (d / 2) : (d / 2) + 1);
-
-		bn_mod(m, k, n);
-		ep_set_infty(r);
-		n0 = bn_bits(m);
-
-		p1 = (e - 1) + (RLC_DEPTH - 1) * d;
-		for (i = e - 1; i >= 0; i--) {
-			ep_dbl(r, r);
-
-			w0 = 0;
-			p0 = p1;
-			for (j = RLC_DEPTH - 1; j >= 0; j--, p0 -= d) {
-				w0 = w0 << 1;
-				if (p0 < n0 && bn_get_bit(m, p0)) {
-					w0 = w0 | 1;
-				}
-			}
-
-			w1 = 0;
-			p0 = p1-- + e;
-			for (j = RLC_DEPTH - 1; j >= 0; j--, p0 -= d) {
-				w1 = w1 << 1;
-				if (i + e < d && p0 < n0 && bn_get_bit(m, p0)) {
-					w1 = w1 | 1;
-				}
-			}
-
-			ep_add(r, r, t[w0]);
-			ep_add(r, r, t[(1 << RLC_DEPTH) + w1]);
-		}
-		ep_norm(r, r);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		bn_free(n);
-		bn_free(m);
-	}
-}
+TMPL_EP_MUL_COMBD(ep);
 
 #endif
 

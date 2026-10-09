@@ -963,7 +963,10 @@ static int fixed(void) {
 			TEST_ASSERT(ep_cmp(q, r) == RLC_EQ, end);
 			bn_rand_mod(k, n);
 			ep_mul_fix(q, (const ep_t *)t, k);
+			/* Add a multiple of n beyond the bit length of the table. */
+			bn_lsh(n, n, RLC_DIG);
 			bn_add(k, k, n);
+			bn_rsh(n, n, RLC_DIG);
 			ep_mul_fix(r, (const ep_t *)t, k);
 			TEST_ASSERT(ep_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
@@ -994,7 +997,10 @@ static int fixed(void) {
 			TEST_ASSERT(ep_cmp(q, r) == RLC_EQ, end);
 			bn_rand_mod(k, n);
 			ep_mul_fix_basic(q, (const ep_t *)t, k);
+			/* Add a multiple of n beyond the bit length of the table. */
+			bn_lsh(n, n, RLC_DIG);
 			bn_add(k, k, n);
+			bn_rsh(n, n, RLC_DIG);
 			ep_mul_fix_basic(r, (const ep_t *)t, k);
 			TEST_ASSERT(ep_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
@@ -1026,7 +1032,10 @@ static int fixed(void) {
 			TEST_ASSERT(ep_cmp(q, r) == RLC_EQ, end);
 			bn_rand_mod(k, n);
 			ep_mul_fix_combs(q, (const ep_t *)t, k);
+			/* Add a multiple of n beyond the bit length of the table. */
+			bn_lsh(n, n, RLC_DIG);
 			bn_add(k, k, n);
+			bn_rsh(n, n, RLC_DIG);
 			ep_mul_fix_combs(r, (const ep_t *)t, k);
 			TEST_ASSERT(ep_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
@@ -1058,7 +1067,10 @@ static int fixed(void) {
 			TEST_ASSERT(ep_cmp(q, r) == RLC_EQ, end);
 			bn_rand_mod(k, n);
 			ep_mul_fix_combd(q, (const ep_t *)t, k);
+			/* Add a multiple of n beyond the bit length of the table. */
+			bn_lsh(n, n, RLC_DIG);
 			bn_add(k, k, n);
+			bn_rsh(n, n, RLC_DIG);
 			ep_mul_fix_combd(r, (const ep_t *)t, k);
 			TEST_ASSERT(ep_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
@@ -1090,7 +1102,10 @@ static int fixed(void) {
 			TEST_ASSERT(ep_cmp(q, r) == RLC_EQ, end);
 			bn_rand_mod(k, n);
 			ep_mul_fix_lwnaf(q, (const ep_t *)t, k);
+			/* Add a multiple of n beyond the bit length of the table. */
+			bn_lsh(n, n, RLC_DIG);
 			bn_add(k, k, n);
+			bn_rsh(n, n, RLC_DIG);
 			ep_mul_fix_lwnaf(r, (const ep_t *)t, k);
 			TEST_ASSERT(ep_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;

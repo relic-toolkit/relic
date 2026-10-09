@@ -758,7 +758,10 @@ static int fixed2(void) {
 			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
 			bn_rand_mod(k, n);
 			ep2_mul_fix(q, t, k);
+			/* Add a multiple of n beyond the bit length of the table. */
+			bn_lsh(n, n, RLC_DIG);
 			bn_add(k, k, n);
+			bn_rsh(n, n, RLC_DIG);
 			ep2_mul_fix(r, t, k);
 			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
@@ -789,7 +792,10 @@ static int fixed2(void) {
 			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
 			bn_rand_mod(k, n);
 			ep2_mul_fix_basic(q, t, k);
+			/* Add a multiple of n beyond the bit length of the table. */
+			bn_lsh(n, n, RLC_DIG);
 			bn_add(k, k, n);
+			bn_rsh(n, n, RLC_DIG);
 			ep2_mul_fix_basic(r, t, k);
 			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
@@ -821,7 +827,10 @@ static int fixed2(void) {
 			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
 			bn_rand_mod(k, n);
 			ep2_mul_fix_combs(q, t, k);
+			/* Add a multiple of n beyond the bit length of the table. */
+			bn_lsh(n, n, RLC_DIG);
 			bn_add(k, k, n);
+			bn_rsh(n, n, RLC_DIG);
 			ep2_mul_fix_combs(r, t, k);
 			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
@@ -853,7 +862,10 @@ static int fixed2(void) {
 			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
 			bn_rand_mod(k, n);
 			ep2_mul_fix_combd(q, t, k);
+			/* Add a multiple of n beyond the bit length of the table. */
+			bn_lsh(n, n, RLC_DIG);
 			bn_add(k, k, n);
+			bn_rsh(n, n, RLC_DIG);
 			ep2_mul_fix_combd(r, t, k);
 			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
@@ -885,7 +897,10 @@ static int fixed2(void) {
 			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
 			bn_rand_mod(k, n);
 			ep2_mul_fix_lwnaf(q, t, k);
+			/* Add a multiple of n beyond the bit length of the table. */
+			bn_lsh(n, n, RLC_DIG);
 			bn_add(k, k, n);
+			bn_rsh(n, n, RLC_DIG);
 			ep2_mul_fix_lwnaf(r, t, k);
 			TEST_ASSERT(ep2_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
@@ -2024,6 +2039,14 @@ static int fixed3(void) {
 			ep3_mul_fix(r, t, k);
 			ep3_neg(r, r);
 			TEST_ASSERT(ep3_cmp(q, r) == RLC_EQ, end);
+			bn_rand_mod(k, n);
+			ep3_mul_fix(q, t, k);
+			/* Add a multiple of n beyond the bit length of the table. */
+			bn_lsh(n, n, RLC_DIG);
+			bn_add(k, k, n);
+			bn_rsh(n, n, RLC_DIG);
+			ep3_mul_fix(r, t, k);
+			TEST_ASSERT(ep3_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 		for (int i = 0; i < RLC_EP_TABLE; i++) {
 			ep3_free(t[i]);
@@ -2049,6 +2072,14 @@ static int fixed3(void) {
 			bn_neg(k, k);
 			ep3_mul_fix_basic(r, t, k);
 			ep3_neg(r, r);
+			TEST_ASSERT(ep3_cmp(q, r) == RLC_EQ, end);
+			bn_rand_mod(k, n);
+			ep3_mul_fix_basic(q, t, k);
+			/* Add a multiple of n beyond the bit length of the table. */
+			bn_lsh(n, n, RLC_DIG);
+			bn_add(k, k, n);
+			bn_rsh(n, n, RLC_DIG);
+			ep3_mul_fix_basic(r, t, k);
 			TEST_ASSERT(ep3_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 		for (int i = 0; i < RLC_EP_TABLE_BASIC; i++) {
@@ -2077,6 +2108,14 @@ static int fixed3(void) {
 			ep3_mul_fix_combs(r, t, k);
 			ep3_neg(r, r);
 			TEST_ASSERT(ep3_cmp(q, r) == RLC_EQ, end);
+			bn_rand_mod(k, n);
+			ep3_mul_fix_combs(q, t, k);
+			/* Add a multiple of n beyond the bit length of the table. */
+			bn_lsh(n, n, RLC_DIG);
+			bn_add(k, k, n);
+			bn_rsh(n, n, RLC_DIG);
+			ep3_mul_fix_combs(r, t, k);
+			TEST_ASSERT(ep3_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 		for (int i = 0; i < RLC_EP_TABLE_COMBS; i++) {
 			ep3_free(t[i]);
@@ -2104,6 +2143,14 @@ static int fixed3(void) {
 			ep3_mul_fix_combd(r, t, k);
 			ep3_neg(r, r);
 			TEST_ASSERT(ep3_cmp(q, r) == RLC_EQ, end);
+			bn_rand_mod(k, n);
+			ep3_mul_fix_combd(q, t, k);
+			/* Add a multiple of n beyond the bit length of the table. */
+			bn_lsh(n, n, RLC_DIG);
+			bn_add(k, k, n);
+			bn_rsh(n, n, RLC_DIG);
+			ep3_mul_fix_combd(r, t, k);
+			TEST_ASSERT(ep3_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 		for (int i = 0; i < RLC_EP_TABLE_COMBD; i++) {
 			ep3_free(t[i]);
@@ -2130,6 +2177,14 @@ static int fixed3(void) {
 			bn_neg(k, k);
 			ep3_mul_fix_lwnaf(r, t, k);
 			ep3_neg(r, r);
+			TEST_ASSERT(ep3_cmp(q, r) == RLC_EQ, end);
+			bn_rand_mod(k, n);
+			ep3_mul_fix_lwnaf(q, t, k);
+			/* Add a multiple of n beyond the bit length of the table. */
+			bn_lsh(n, n, RLC_DIG);
+			bn_add(k, k, n);
+			bn_rsh(n, n, RLC_DIG);
+			ep3_mul_fix_lwnaf(r, t, k);
 			TEST_ASSERT(ep3_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 		for (int i = 0; i < RLC_EP_TABLE_LWNAF; i++) {
@@ -3170,6 +3225,14 @@ static int fixed4(void) {
 			ep4_mul_fix(r, t, k);
 			ep4_neg(r, r);
 			TEST_ASSERT(ep4_cmp(q, r) == RLC_EQ, end);
+			bn_rand_mod(k, n);
+			ep4_mul_fix(q, t, k);
+			/* Add a multiple of n beyond the bit length of the table. */
+			bn_lsh(n, n, RLC_DIG);
+			bn_add(k, k, n);
+			bn_rsh(n, n, RLC_DIG);
+			ep4_mul_fix(r, t, k);
+			TEST_ASSERT(ep4_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 		for (int i = 0; i < RLC_EP_TABLE; i++) {
 			ep4_free(t[i]);
@@ -3195,6 +3258,14 @@ static int fixed4(void) {
 			bn_neg(k, k);
 			ep4_mul_fix_basic(r, t, k);
 			ep4_neg(r, r);
+			TEST_ASSERT(ep4_cmp(q, r) == RLC_EQ, end);
+			bn_rand_mod(k, n);
+			ep4_mul_fix_basic(q, t, k);
+			/* Add a multiple of n beyond the bit length of the table. */
+			bn_lsh(n, n, RLC_DIG);
+			bn_add(k, k, n);
+			bn_rsh(n, n, RLC_DIG);
+			ep4_mul_fix_basic(r, t, k);
 			TEST_ASSERT(ep4_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 		for (int i = 0; i < RLC_EP_TABLE_BASIC; i++) {
@@ -3223,6 +3294,14 @@ static int fixed4(void) {
 			ep4_mul_fix_combs(r, t, k);
 			ep4_neg(r, r);
 			TEST_ASSERT(ep4_cmp(q, r) == RLC_EQ, end);
+			bn_rand_mod(k, n);
+			ep4_mul_fix_combs(q, t, k);
+			/* Add a multiple of n beyond the bit length of the table. */
+			bn_lsh(n, n, RLC_DIG);
+			bn_add(k, k, n);
+			bn_rsh(n, n, RLC_DIG);
+			ep4_mul_fix_combs(r, t, k);
+			TEST_ASSERT(ep4_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 		for (int i = 0; i < RLC_EP_TABLE_COMBS; i++) {
 			ep4_free(t[i]);
@@ -3250,6 +3329,14 @@ static int fixed4(void) {
 			ep4_mul_fix_combd(r, t, k);
 			ep4_neg(r, r);
 			TEST_ASSERT(ep4_cmp(q, r) == RLC_EQ, end);
+			bn_rand_mod(k, n);
+			ep4_mul_fix_combd(q, t, k);
+			/* Add a multiple of n beyond the bit length of the table. */
+			bn_lsh(n, n, RLC_DIG);
+			bn_add(k, k, n);
+			bn_rsh(n, n, RLC_DIG);
+			ep4_mul_fix_combd(r, t, k);
+			TEST_ASSERT(ep4_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 		for (int i = 0; i < RLC_EP_TABLE_COMBD; i++) {
 			ep4_free(t[i]);
@@ -3276,6 +3363,14 @@ static int fixed4(void) {
 			bn_neg(k, k);
 			ep4_mul_fix_lwnaf(r, t, k);
 			ep4_neg(r, r);
+			TEST_ASSERT(ep4_cmp(q, r) == RLC_EQ, end);
+			bn_rand_mod(k, n);
+			ep4_mul_fix_lwnaf(q, t, k);
+			/* Add a multiple of n beyond the bit length of the table. */
+			bn_lsh(n, n, RLC_DIG);
+			bn_add(k, k, n);
+			bn_rsh(n, n, RLC_DIG);
+			ep4_mul_fix_lwnaf(r, t, k);
 			TEST_ASSERT(ep4_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 		for (int i = 0; i < RLC_EP_TABLE_LWNAF; i++) {
@@ -4316,6 +4411,14 @@ static int fixed8(void) {
 			ep8_mul_fix(r, t, k);
 			ep8_neg(r, r);
 			TEST_ASSERT(ep8_cmp(q, r) == RLC_EQ, end);
+			bn_rand_mod(k, n);
+			ep8_mul_fix(q, t, k);
+			/* Add a multiple of n beyond the bit length of the table. */
+			bn_lsh(n, n, RLC_DIG);
+			bn_add(k, k, n);
+			bn_rsh(n, n, RLC_DIG);
+			ep8_mul_fix(r, t, k);
+			TEST_ASSERT(ep8_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 		for (int i = 0; i < RLC_EP_TABLE; i++) {
 			ep8_free(t[i]);
@@ -4341,6 +4444,14 @@ static int fixed8(void) {
 			bn_neg(k, k);
 			ep8_mul_fix_basic(r, t, k);
 			ep8_neg(r, r);
+			TEST_ASSERT(ep8_cmp(q, r) == RLC_EQ, end);
+			bn_rand_mod(k, n);
+			ep8_mul_fix_basic(q, t, k);
+			/* Add a multiple of n beyond the bit length of the table. */
+			bn_lsh(n, n, RLC_DIG);
+			bn_add(k, k, n);
+			bn_rsh(n, n, RLC_DIG);
+			ep8_mul_fix_basic(r, t, k);
 			TEST_ASSERT(ep8_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 		for (int i = 0; i < RLC_EP_TABLE_BASIC; i++) {
@@ -4369,6 +4480,14 @@ static int fixed8(void) {
 			ep8_mul_fix_combs(r, t, k);
 			ep8_neg(r, r);
 			TEST_ASSERT(ep8_cmp(q, r) == RLC_EQ, end);
+			bn_rand_mod(k, n);
+			ep8_mul_fix_combs(q, t, k);
+			/* Add a multiple of n beyond the bit length of the table. */
+			bn_lsh(n, n, RLC_DIG);
+			bn_add(k, k, n);
+			bn_rsh(n, n, RLC_DIG);
+			ep8_mul_fix_combs(r, t, k);
+			TEST_ASSERT(ep8_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 		for (int i = 0; i < RLC_EP_TABLE_COMBS; i++) {
 			ep8_free(t[i]);
@@ -4396,6 +4515,14 @@ static int fixed8(void) {
 			ep8_mul_fix_combd(r, t, k);
 			ep8_neg(r, r);
 			TEST_ASSERT(ep8_cmp(q, r) == RLC_EQ, end);
+			bn_rand_mod(k, n);
+			ep8_mul_fix_combd(q, t, k);
+			/* Add a multiple of n beyond the bit length of the table. */
+			bn_lsh(n, n, RLC_DIG);
+			bn_add(k, k, n);
+			bn_rsh(n, n, RLC_DIG);
+			ep8_mul_fix_combd(r, t, k);
+			TEST_ASSERT(ep8_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 		for (int i = 0; i < RLC_EP_TABLE_COMBD; i++) {
 			ep8_free(t[i]);
@@ -4422,6 +4549,14 @@ static int fixed8(void) {
 			bn_neg(k, k);
 			ep8_mul_fix_lwnaf(r, t, k);
 			ep8_neg(r, r);
+			TEST_ASSERT(ep8_cmp(q, r) == RLC_EQ, end);
+			bn_rand_mod(k, n);
+			ep8_mul_fix_lwnaf(q, t, k);
+			/* Add a multiple of n beyond the bit length of the table. */
+			bn_lsh(n, n, RLC_DIG);
+			bn_add(k, k, n);
+			bn_rsh(n, n, RLC_DIG);
+			ep8_mul_fix_lwnaf(r, t, k);
 			TEST_ASSERT(ep8_cmp(q, r) == RLC_EQ, end);
 		} TEST_END;
 		for (int i = 0; i < RLC_EP_TABLE_LWNAF; i++) {

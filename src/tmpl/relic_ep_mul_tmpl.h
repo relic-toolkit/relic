@@ -421,11 +421,12 @@
 	}
 
 /**
- * Defines a template for the precomputation of the double-table comb method.
+ * Defines a template for fixed-point multiplication using the double-table
+ * comb method, including the precomputation.
  *
  * @param[in] C			- the curve.
  */
-#define TMPL_EP_MUL_PRE_COMBD(C)											\
+#define TMPL_EP_MUL_COMBD(C)												\
 	void C##_mul_pre_combd(C##_t *t, const C##_t p) {						\
 		int i, j, d, e;														\
 		bn_t n;																\
@@ -471,7 +472,68 @@
 		RLC_FINALLY {														\
 			bn_free(n);														\
 		}																	\
+	}																		\
+																			\
+	void C##_mul_fix_combd(C##_t r, const C##_t *t, const bn_t k) {			\
+		int i, j, d, e, w0, w1, n0, p0, p1;									\
+		bn_t n, _k;															\
+																			\
+		if (bn_is_zero(k)) {												\
+			C##_set_infty(r);												\
+			return;															\
+		}																	\
+																			\
+		bn_null(n);															\
+		bn_null(_k);														\
+																			\
+		RLC_TRY {															\
+			bn_new(n);														\
+			bn_new(_k);														\
+																			\
+			C##_curve_get_ord(n);											\
+			d = RLC_CEIL(bn_bits(n), RLC_DEPTH);							\
+			e = (d % 2 == 0 ? (d / 2) : (d / 2) + 1);						\
+																			\
+			C##_set_infty(r);												\
+			bn_mod(_k, k, n);												\
+			n0 = bn_bits(_k);												\
+																			\
+			p1 = (e - 1) + (RLC_DEPTH - 1) * d;								\
+			for (i = e - 1; i >= 0; i--) {									\
+				C##_dbl(r, r);												\
+																			\
+				w0 = 0;														\
+				p0 = p1;													\
+				for (j = RLC_DEPTH - 1; j >= 0; j--, p0 -= d) {				\
+					w0 = w0 << 1;											\
+					if (p0 < n0 && bn_get_bit(_k, p0)) {					\
+						w0 = w0 | 1;										\
+					}														\
+				}															\
+																			\
+				w1 = 0;														\
+				p0 = p1-- + e;												\
+				for (j = RLC_DEPTH - 1; j >= 0; j--, p0 -= d) {				\
+					w1 = w1 << 1;											\
+					if (i + e < d && p0 < n0 && bn_get_bit(_k, p0)) {		\
+						w1 = w1 | 1;										\
+					}														\
+				}															\
+																			\
+				C##_add(r, r, t[w0]);										\
+				C##_add(r, r, t[(1 << RLC_DEPTH) + w1]);					\
+			}																\
+			C##_norm(r, r);													\
+		}																	\
+		RLC_CATCH_ANY {														\
+			RLC_THROW(ERR_CAUGHT);											\
+		}																	\
+		RLC_FINALLY {														\
+			bn_free(n);														\
+			bn_free(_k);													\
+		}																	\
 	}
+
 
 /**
  * Defines a template for multiplying the generator by an integer.
