@@ -865,6 +865,230 @@
 	}
 
 /**
+ * Defines a template for simultaneous multiplication of several points using
+ * the GLS endomorphism. Each scalar is decomposed in S subscalars. Few points
+ * are processed by interleaving, many points by the bucket method over all the
+ * endomorphism images.
+ *
+ * @param[in] C			- the curve.
+ * @param[in] S			- the number of subscalars.
+ */
+#define TMPL_EP_MUL_SIM_LOT(C, S)											\
+	void C##_mul_sim_lot(C##_t r, const C##_t p[], const bn_t k[],			\
+			size_t n) {														\
+		const int flag = (ep_curve_is_pairf() == EP_BN);					\
+		const size_t len = RLC_FP_BITS + 1;									\
+		int i, j, m;														\
+		bn_t _k[S], q, x;													\
+		int8_t ptr, *naf = RLC_ALLOCA(int8_t, S * n * len);					\
+		size_t l, _l[S];													\
+																			\
+		if (n == 0) {														\
+			C##_set_infty(r);												\
+			return;															\
+		}																	\
+																			\
+		bn_null(q);															\
+		bn_null(x);															\
+																			\
+		if (n <= 10) {														\
+			C##_t *_p = RLC_ALLOCA(C##_t, S * n);							\
+																			\
+			RLC_TRY {														\
+				if (naf == NULL || _p == NULL) {							\
+					RLC_THROW(ERR_NO_MEMORY);								\
+				}															\
+				bn_new(q);													\
+				bn_new(x);													\
+				for (j = 0; j < S; j++) {									\
+					bn_null(_k[j]);											\
+					bn_new(_k[j]);											\
+					for (i = 0; i < n; i++) {								\
+						C##_null(_p[S*i + j]);								\
+						C##_new(_p[S*i + j]);								\
+					}														\
+				}															\
+																			\
+				l = 0;														\
+				C##_curve_get_ord(q);										\
+				fp_prime_get_par(x);										\
+				if (ep_curve_is_pairf() == EP_SG18) {						\
+					/* The endomorphism acts as multiplication by -3u. */	\
+					bn_mul_dig(x, x, 3);									\
+					bn_neg(x, x);											\
+				}															\
+				for (i = 0; i < n; i++) {									\
+					C##_norm(_p[S*i], p[i]);								\
+					for (j = 1; j < S; j++) {								\
+						C##_psi(_p[S*i + j], _p[S*i + j - 1]);				\
+					}														\
+																			\
+					bn_mod(_k[0], k[i], q);									\
+					bn_rec_frb(_k, S, _k[0], x, q, flag);					\
+					for (j = 0; j < S; j++) {								\
+						_l[j] = len;										\
+						bn_rec_naf(&naf[(S*i + j)*len], &_l[j], _k[j], 2);	\
+						if (bn_sign(_k[j]) == RLC_NEG) {					\
+							C##_neg(_p[S*i + j], _p[S*i + j]);				\
+						}													\
+						l = RLC_MAX(l, _l[j]);								\
+					}														\
+				}															\
+																			\
+				C##_set_infty(r);											\
+				for (i = l - 1; i >= 0; i--) {								\
+					C##_dbl(r, r);											\
+					for (j = 0; j < n; j++) {								\
+						for (m = 0; m < S; m++) {							\
+							if (naf[(S*j + m)*len + i] > 0) {				\
+								C##_add(r, r, _p[S*j + m]);					\
+							}												\
+							if (naf[(S*j + m)*len + i] < 0) {				\
+								C##_sub(r, r, _p[S*j + m]);					\
+							}												\
+						}													\
+					}														\
+				}															\
+																			\
+				/* Convert r to affine coordinates. */						\
+				C##_norm(r, r);												\
+			} RLC_CATCH_ANY {												\
+				RLC_THROW(ERR_CAUGHT);										\
+			} RLC_FINALLY {													\
+				bn_free(q);													\
+				bn_free(x);													\
+				for (j = 0; j < S; j++) {									\
+					bn_free(_k[j]);											\
+					for (i = 0; i < n; i++) {								\
+						C##_free(_p[S*i + j]);								\
+					}														\
+				}															\
+				RLC_FREE(_p);												\
+				RLC_FREE(naf);												\
+			}																\
+		} else {															\
+			const int w = RLC_MAX(2, util_bits_dig(n) - 2);					\
+			const int c = (1 << (w - 2));									\
+			C##_t s, t, u, v, *_p = RLC_ALLOCA(C##_t, c);					\
+			C##_t *_q = RLC_ALLOCA(C##_t, S * n);							\
+																			\
+			C##_null(s);													\
+			C##_null(t);													\
+			C##_null(u);													\
+			C##_null(v);													\
+																			\
+			RLC_TRY {														\
+				if (naf == NULL || _p == NULL || _q == NULL) {				\
+					RLC_THROW(ERR_NO_MEMORY);								\
+				}															\
+				bn_new(q);													\
+				bn_new(x);													\
+				C##_new(s);													\
+				C##_new(t);													\
+				C##_new(u);													\
+				C##_new(v);													\
+				for (i = 0; i < S; i++) {									\
+					bn_null(_k[i]);											\
+					bn_new(_k[i]);											\
+				}															\
+				for (j = 0; j < c; j++) {									\
+					C##_null(_p[j]);										\
+					C##_new(_p[j]);											\
+					C##_set_infty(_p[j]);									\
+				}															\
+				for (i = 0; i < S * n; i++) {								\
+					C##_null(_q[i]);										\
+					C##_new(_q[i]);											\
+				}															\
+																			\
+				l = 0;														\
+				C##_curve_get_ord(q);										\
+				fp_prime_get_par(x);										\
+				if (ep_curve_is_pairf() == EP_SG18) {						\
+					/* The endomorphism acts as multiplication by -3u. */	\
+					bn_mul_dig(x, x, 3);									\
+					bn_neg(x, x);											\
+				}															\
+				for (i = 0; i < n; i++) {									\
+					C##_norm(_q[S*i], p[i]);								\
+					for (j = 1; j < S; j++) {								\
+						C##_psi(_q[S*i + j], _q[S*i + j - 1]);				\
+					}														\
+					bn_mod(_k[0], k[i], q);									\
+					bn_rec_frb(_k, S, _k[0], x, q, flag);					\
+					for (j = 0; j < S; j++) {								\
+						_l[j] = len;										\
+						bn_rec_naf(&naf[(S*i + j)*len], &_l[j], _k[j], w);	\
+						if (bn_sign(_k[j]) == RLC_NEG) {					\
+							for (m = 0; m < _l[j]; m++) {					\
+								naf[(S*i + j)*len + m] =					\
+										-naf[(S*i + j)*len + m];			\
+							}												\
+						}													\
+						l = RLC_MAX(l, _l[j]);								\
+					}														\
+				}															\
+				/* The endomorphism may return projective points. */		\
+				C##_norm_sim(_q, (const C##_t *)_q, S * n);					\
+																			\
+				C##_set_infty(s);											\
+				for (i = l - 1; i >= 0; i--) {								\
+					for (j = 0; j < n; j++) {								\
+						for (m = 0; m < S; m++) {							\
+							ptr = naf[(S*j + m)*len + i];					\
+							if (ptr != 0) {									\
+								C##_copy(t, _q[S*j + m]);					\
+								if (ptr < 0) {								\
+									ptr = -ptr;								\
+									C##_neg(t, t);							\
+								}											\
+								C##_add(_p[ptr/2], _p[ptr/2], t);			\
+							}												\
+						}													\
+					}														\
+																			\
+					C##_set_infty(u);										\
+					C##_set_infty(v);										\
+					for (j = c - 1; j >= 0; j--) {							\
+						C##_add(u, u, _p[j]);								\
+						if (j == 0) {										\
+							C##_dbl(v, v);									\
+						}													\
+						C##_add(v, v, u);									\
+						C##_set_infty(_p[j]);								\
+					}														\
+					C##_dbl(s, s);											\
+					C##_add(s, s, v);										\
+				}															\
+																			\
+				/* Convert r to affine coordinates. */						\
+				C##_norm(r, s);												\
+			} RLC_CATCH_ANY {												\
+				RLC_THROW(ERR_CAUGHT);										\
+			} RLC_FINALLY {													\
+				bn_free(q);													\
+				bn_free(x);													\
+				C##_free(s);												\
+				C##_free(t);												\
+				C##_free(u);												\
+				C##_free(v);												\
+				for (i = 0; i < S; i++) {									\
+					bn_free(_k[i]);											\
+				}															\
+				for (j = 0; j < c; j++) {									\
+					C##_free(_p[j]);										\
+				}															\
+				for (i = 0; i < S * n; i++) {								\
+					C##_free(_q[i]);										\
+				}															\
+				RLC_FREE(_p);												\
+				RLC_FREE(_q);												\
+				RLC_FREE(naf);												\
+			}																\
+		}																	\
+	}
+
+/**
  * Defines a template for multiplying the generator by an integer.
  *
  * @param[in] C			- the curve.
