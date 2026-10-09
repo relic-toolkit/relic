@@ -57,8 +57,7 @@ TMPL_FPX_MUL_CUBIC(fp54, fp18, fp18_mul_art);
 
 #if FPX_RDC == LAZYR || !defined(STRIP)
 
-TMPL_FPX_MUL_UNR_CUBIC(fp54, fp18, dv54, dv18, fp3, dv3, 6, 2,
-		fp18_mul_unr);
+TMPL_FPX_MUL_UNR_CUBIC(fp54, fp18, dv54, dv18, fp3, dv3, 6, 2, fp18_mul_unr);
 
 TMPL_FPX_MUL_LAZYR(fp54, dv54, fp3, dv3, 18);
 

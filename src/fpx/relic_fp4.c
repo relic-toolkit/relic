@@ -57,8 +57,7 @@ TMPL_FPX_MUL_QUAD(fp4, fp2, fp2_mul_nor);
 
 #if FPX_RDC == LAZYR || !defined(STRIP)
 
-TMPL_FPX_MUL_UNR_QUAD(fp4, fp2, dv4, dv2, fp2, dv2, 1, 1,
-		fp2_muln_low);
+TMPL_FPX_MUL_UNR_QUAD(fp4, fp2, dv4, dv2, fp2, dv2, 1, 1, fp2_muln_low);
 
 TMPL_FPX_MUL_LAZYR(fp4, dv4, fp2, dv2, 2);
 

@@ -179,8 +179,7 @@ void fp12_mul_dxs_basic(fp12_t c, const fp12_t a, const fp12_t b) {
 
 #if FPX_RDC == LAZYR || !defined(STRIP)
 
-TMPL_FPX_MUL_UNR_QUAD(fp12, fp6, dv12, dv6, fp2, dv2, 3, 1,
-		fp6_mul_unr);
+TMPL_FPX_MUL_UNR_QUAD(fp12, fp6, dv12, dv6, fp2, dv2, 3, 1, fp6_mul_unr);
 
 TMPL_FPX_MUL_LAZYR(fp12, dv12, fp2, dv2, 6);
 

@@ -88,8 +88,7 @@ TMPL_FPX_MUL_QUAD(fp8, fp4, fp4_mul_art);
 
 #if FPX_RDC == LAZYR || !defined(STRIP)
 
-TMPL_FPX_MUL_UNR_QUAD(fp8, fp4, dv8, dv4, fp2, dv2, 2, 1,
-		fp4_mul_unr);
+TMPL_FPX_MUL_UNR_QUAD(fp8, fp4, dv8, dv4, fp2, dv2, 2, 1, fp4_mul_unr);
 
 TMPL_FPX_MUL_LAZYR(fp8, dv8, fp2, dv2, 4);
 
@@ -184,8 +183,7 @@ TMPL_FPX_SQR_QUAD(fp8, fp4, fp4_mul_art);
 
 #if FPX_RDC == LAZYR || !defined(STRIP)
 
-TMPL_FPX_SQR_UNR_QUAD(fp8, fp4, dv8, dv4, fp2, dv2, 2, 1,
-		fp4_sqr_unr);
+TMPL_FPX_SQR_UNR_QUAD(fp8, fp4, dv8, dv4, fp2, dv2, 2, 1, fp4_sqr_unr);
 
 TMPL_FPX_SQR_LAZYR(fp8, dv8, fp2, dv2, 4);
 

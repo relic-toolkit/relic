@@ -155,8 +155,7 @@ void fp18_mul_dxs_basic(fp18_t c, const fp18_t a, const fp18_t b) {
 
 #if FPX_RDC == LAZYR || !defined(STRIP)
 
-TMPL_FPX_MUL_UNR_QUAD(fp18, fp9, dv18, dv9, fp3, dv3, 3, 1,
-		fp9_mul_unr);
+TMPL_FPX_MUL_UNR_QUAD(fp18, fp9, dv18, dv9, fp3, dv3, 3, 1, fp9_mul_unr);
 
 TMPL_FPX_MUL_LAZYR(fp18, dv18, fp3, dv3, 6);
 
@@ -271,8 +270,7 @@ TMPL_SQR_PCK_QC(fp18, fp3, fp3_mul_nor);
 
 #if FPX_RDC == LAZYR || !defined(STRIP)
 
-TMPL_FPX_SQR_UNR_QUAD(fp18, fp9, dv18, dv9, fp3, dv3, 3, 1,
-		fp9_sqr_unr);
+TMPL_FPX_SQR_UNR_QUAD(fp18, fp9, dv18, dv9, fp3, dv3, 3, 1, fp9_sqr_unr);
 
 TMPL_FPX_SQR_LAZYR(fp18, dv18, fp3, dv3, 6);
 

@@ -116,8 +116,8 @@ TMPL_FPX_SQR_CUBIC(fp9, fp3, fp3_mul_nor, 3);
 
 #if FPX_RDC == LAZYR || !defined(STRIP)
 
-TMPL_FPX_SQR_UNR_CUBIC(fp9, fp3, dv9, dv3, fp3, dv3, 1, 1,
-		fp3_sqrn_low, fp3_muln_low, 3);
+TMPL_FPX_SQR_UNR_CUBIC(fp9, fp3, dv9, dv3, fp3, dv3, 1, 1, fp3_sqrn_low,
+		fp3_muln_low, 3);
 
 TMPL_FPX_SQR_LAZYR(fp9, dv9, fp3, dv3, 3);
 
