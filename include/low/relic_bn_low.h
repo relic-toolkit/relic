@@ -50,13 +50,7 @@
 #define RLC_BN_DIGS		(BN_PRECI/WSIZE)
 #endif
 
-#if BN_MAGNI == DOUBLE
 #define RLC_BN_SIZE		(2 * RLC_BN_DIGS + 2)
-#elif BN_MAGNI == CARRY
-#define RLC_BN_SIZE		((RLC_BN_DIGS + 1)
-#elif BN_MAGNI == SINGLE
-#define RLC_BN_SIZE		(RLC_BN_DIGS)
-#endif
 
 #else
 

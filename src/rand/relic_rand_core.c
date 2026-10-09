@@ -51,7 +51,6 @@
 /* Avoid redefinition warning. */
 #undef ERROR
 #undef WSIZE
-#undef DOUBLE
 
 #include <windows.h>
 #include <wincrypt.h>

@@ -136,14 +136,6 @@
 
 /** Required precision in bits. */
 #define BN_PRECI @BN_PRECI@
-/** A multiple precision integer can store w words. */
-#define SINGLE	 0
-/** A multiple precision integer can store the result of an addition. */
-#define CARRY	 1
-/** A multiple precision integer can store the result of a multiplication. */
-#define DOUBLE	 2
-/** Effective size of a multiple precision integer. */
-#define BN_MAGNI @BN_MAGNI@
 /** Number of Karatsuba steps. */
 #define BN_KARAT @BN_KARAT@
 

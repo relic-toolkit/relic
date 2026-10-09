@@ -61,15 +61,10 @@
 #define RLC_BN_DIGS		((size_t)RLC_CEIL(BN_PRECI, RLC_DIG))
 
 /**
- * Size in digits of a block sufficient to store a multiple precision integer.
+ * Size in digits of a block sufficient to store a multiple precision integer,
+ * including the result of a multiplication.
  */
-#if BN_MAGNI == DOUBLE
 #define RLC_BN_SIZE		((size_t)(2 * RLC_BN_DIGS + 2))
-#elif BN_MAGNI == CARRY
-#define RLC_BN_SIZE		((size_t)(RLC_BN_DIGS + 1))
-#elif BN_MAGNI == SINGLE
-#define RLC_BN_SIZE		((size_t)RLC_BN_DIGS)
-#endif
 
 /**
  * Positive sign of a multiple precision integer.

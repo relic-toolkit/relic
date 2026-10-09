@@ -34,7 +34,6 @@
 #include "relic_core.h"
 
 #ifdef _MSC_VER
-#undef DOUBLE
 #include <Windows.h>
 /**
  * Stores the default color used in the console.

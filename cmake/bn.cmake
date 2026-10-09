@@ -1,11 +1,8 @@
 message(STATUS "Multiple precision arithmetic configuration (BN module):\n")
 
-message("   ** Options for the multiple precision module (default = 1024,DOUBLE,0):\n")
+message("   ** Options for the multiple precision module (default = 1024,0):\n")
 
 message("      BN_PRECI=n        The base precision in bits. Let w be n in words.")
-message("      BN_MAGNI=DOUBLE   A multiple precision integer can store 2w words.")
-message("      BN_MAGNI=CARRY    A multiple precision integer can store w+1 words.")
-message("      BN_MAGNI=SINGLE   A multiple precision integer can store w words.")
 message("      BN_KARAT=n        The number of Karatsuba steps.\n")
 
 message("   ** Available multiple precision arithmetic methods (default = COMBA;COMBA;MONTY;SLIDE;BASIC;BASIC):\n")
@@ -53,11 +50,6 @@ if (NOT BN_KARAT)
 	set(BN_KARAT 0)
 endif(NOT BN_KARAT)
 set(BN_KARAT ${BN_KARAT} CACHE STRING "Number of Karatsuba levels.")
-
-if (NOT BN_MAGNI)
-	set(BN_MAGNI "DOUBLE")
-endif(NOT BN_MAGNI)
-set(BN_MAGNI ${BN_MAGNI} CACHE STRING "Effective size in words")
 
 # Choose the arithmetic methods.
 if (NOT BN_METHD)
