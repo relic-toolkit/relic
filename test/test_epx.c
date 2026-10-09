@@ -1332,6 +1332,20 @@ static int frobenius2(void) {
 			ep2_mul_basic(c, a, d);
 			TEST_ASSERT(ep2_cmp(c, b) == RLC_EQ, end);
 		} TEST_END;
+
+#if defined(EP_ENDOM)
+		TEST_CASE("endomorphism and point multiplication are consistent") {
+			ep2_rand(a);
+			ep2_psi(b, a);
+			fp_prime_get_par(d);
+			if (ep_curve_is_pairf() == EP_BN) {
+				bn_read_raw(d, fp_prime_get(), RLC_FP_DIGS);
+			}
+			bn_mod(d, d, n);
+			ep2_mul_basic(c, a, d);
+			TEST_ASSERT(ep2_cmp(c, b) == RLC_EQ, end);
+		} TEST_END;
+#endif
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -2524,6 +2538,21 @@ static int frobenius3(void) {
 			ep3_mul_basic(c, a, d);
 			TEST_ASSERT(ep3_cmp(c, b) == RLC_EQ, end);
 		} TEST_END;
+
+#if defined(EP_ENDOM)
+		TEST_CASE("endomorphism and point multiplication are consistent") {
+			ep3_rand(a);
+			ep3_psi(b, a);
+			fp_prime_get_par(d);
+			if (ep_curve_is_pairf() == EP_SG18) {
+				bn_mul_dig(d, d, 3);
+				bn_neg(d, d);
+			}
+			bn_mod(d, d, n);
+			ep3_mul_basic(c, a, d);
+			TEST_ASSERT(ep3_cmp(c, b) == RLC_EQ, end);
+		} TEST_END;
+#endif
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -3718,6 +3747,17 @@ static int frobenius4(void) {
 			ep4_mul_basic(c, a, d);
 			TEST_ASSERT(ep4_cmp(c, b) == RLC_EQ, end);
 		} TEST_END;
+
+#if defined(EP_ENDOM)
+		TEST_CASE("endomorphism and point multiplication are consistent") {
+			ep4_rand(a);
+			ep4_psi(b, a);
+			fp_prime_get_par(d);
+			bn_mod(d, d, n);
+			ep4_mul_basic(c, a, d);
+			TEST_ASSERT(ep4_cmp(c, b) == RLC_EQ, end);
+		} TEST_END;
+#endif
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -4912,6 +4952,17 @@ static int frobenius8(void) {
 			ep8_mul_basic(c, a, d);
 			TEST_ASSERT(ep8_cmp(c, b) == RLC_EQ, end);
 		} TEST_END;
+
+#if defined(EP_ENDOM)
+		TEST_CASE("endomorphism and point multiplication are consistent") {
+			ep8_rand(a);
+			ep8_psi(b, a);
+			fp_prime_get_par(d);
+			bn_mod(d, d, n);
+			ep8_mul_basic(c, a, d);
+			TEST_ASSERT(ep8_cmp(c, b) == RLC_EQ, end);
+		} TEST_END;
+#endif
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");

@@ -1531,6 +1531,7 @@
 #undef ep2_map_sswum
 #undef ep2_map_swift
 #undef ep2_frb
+#undef ep2_psi
 #undef ep2_pck
 #undef ep2_upk
 
@@ -1607,6 +1608,7 @@
 #define ep2_map_sswum 	RLC_PREFIX(ep2_map_sswum)
 #define ep2_map_swift 	RLC_PREFIX(ep2_map_swift)
 #define ep2_frb 	RLC_PREFIX(ep2_frb)
+#define ep2_psi 	RLC_PREFIX(ep2_psi)
 #define ep2_pck 	RLC_PREFIX(ep2_pck)
 #define ep2_upk 	RLC_PREFIX(ep2_upk)
 
@@ -1684,6 +1686,7 @@
 #undef ep3_norm_sim
 #undef ep3_map
 #undef ep3_frb
+#undef ep3_psi
 #undef ep3_pck
 #undef ep3_upk
 
@@ -1756,6 +1759,7 @@
 #define ep3_norm_sim 	RLC_PREFIX(ep3_norm_sim)
 #define ep3_map 	RLC_PREFIX(ep3_map)
 #define ep3_frb 	RLC_PREFIX(ep3_frb)
+#define ep3_psi 	RLC_PREFIX(ep3_psi)
 #define ep3_pck 	RLC_PREFIX(ep3_pck)
 #define ep3_upk 	RLC_PREFIX(ep3_upk)
 
@@ -1833,6 +1837,7 @@
 #undef ep4_norm_sim
 #undef ep4_map
 #undef ep4_frb
+#undef ep4_psi
 #undef ep4_pck
 #undef ep4_upk
 
@@ -1905,6 +1910,7 @@
 #define ep4_norm_sim 	RLC_PREFIX(ep4_norm_sim)
 #define ep4_map 	RLC_PREFIX(ep4_map)
 #define ep4_frb 	RLC_PREFIX(ep4_frb)
+#define ep4_psi 	RLC_PREFIX(ep4_psi)
 #define ep4_pck 	RLC_PREFIX(ep4_pck)
 #define ep4_upk 	RLC_PREFIX(ep4_upk)
 
@@ -1982,6 +1988,7 @@
 #undef ep8_norm_sim
 #undef ep8_map
 #undef ep8_frb
+#undef ep8_psi
 #undef ep8_pck
 #undef ep8_upk
 
@@ -2054,6 +2061,7 @@
 #define ep8_norm_sim 	RLC_PREFIX(ep8_norm_sim)
 #define ep8_map 	RLC_PREFIX(ep8_map)
 #define ep8_frb 	RLC_PREFIX(ep8_frb)
+#define ep8_psi 	RLC_PREFIX(ep8_psi)
 #define ep8_pck 	RLC_PREFIX(ep8_pck)
 #define ep8_upk 	RLC_PREFIX(ep8_upk)
 

@@ -38,49 +38,6 @@
 
 #if defined(EP_ENDOM)
 
-static void ep4_psi(ep4_t r, const ep4_t p) {
-	ep4_t q;
-
-	ep4_null(q);
-
-	if (ep4_is_infty(p)) {
-		ep4_set_infty(r);
-		return;
-	}
-
-	RLC_TRY {
-		ep4_new(q);
-
-		ep4_copy(r, p);
-
-		switch (ep_curve_is_pairf()) {
-			case EP_K16:
-				/* u = (2*p^5 - p) mod r */
-				ep4_frb(q, p, 1);
-				ep4_frb(r, q, 4);
-				ep4_dbl(r, r);
-				ep4_sub(r, r, q);
-				break;
-			case EP_AFG16:
-				/* u = -p^5 mod r */
-				ep4_frb(r, p, 5);
-				ep4_neg(r, r);
-				break;
-			case EP_FM16:
-				/* u = p mod r */
-			default:
-				ep4_frb(r, p, 1);
-				break;
-		}
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		ep4_free(q);
-	}
-}
-
 #if EP_MUL == LWNAF || !defined(STRIP)
 
 static void ep4_mul_gls_imp(ep4_t r, const ep4_t p, const bn_t k) {

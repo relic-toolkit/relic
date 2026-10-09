@@ -48,3 +48,52 @@ void ep3_frb(ep3_t r, const ep3_t p, int i) {
 		fp3_mul(r->y, r->y, ctx->ep3_frb[1]);
 	}
 }
+
+#if defined(EP_ENDOM)
+
+void ep3_psi(ep3_t r, const ep3_t p) {
+	ep3_t q;
+
+	ep3_null(q);
+
+	if (ep3_is_infty(p)) {
+		ep3_set_infty(r);
+		return;
+	}
+
+	RLC_TRY {
+		ep3_new(q);
+
+		switch (ep_curve_is_pairf()) {
+			case EP_SG18:
+				/* -3*u = (2*p^2 - p^5) mod r */
+				ep3_frb(q, p, 5);
+				ep3_frb(r, p, 2);
+				ep3_dbl(r, r);
+				ep3_sub(r, r, q);
+				break;
+			case EP_K18:
+				/* For KSS18, we have that u = (p^4 - 3*p) mod r. */
+				ep3_dbl(q, p);
+				ep3_add(q, q, p);
+				ep3_frb(r, p, 3);
+				ep3_sub(r, r, q);
+				ep3_frb(r, r, 1);
+				break;
+			case EP_FM18:
+				/* For FM18, we have that u = (p^4-p) mod r. */
+				ep3_frb(q, p, 3);
+				ep3_sub(r, q, p);
+				ep3_frb(r, r, 1);
+				break;
+		}
+	}
+	RLC_CATCH_ANY {
+		RLC_THROW(ERR_CAUGHT);
+	}
+	RLC_FINALLY {
+		ep3_free(q);
+	}
+}
+
+#endif

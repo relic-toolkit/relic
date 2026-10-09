@@ -1587,6 +1587,16 @@ void ep2_map_swift(ep2_t p, const uint8_t *msg, size_t len);
 void ep2_frb(ep2_t r, const ep2_t p, int i);
 
 /**
+ * Computes the endomorphism used for GLS scalar multiplication of a point in
+ * an elliptic curve over a quadratic extension. The endomorphism acts as
+ * multiplication by p on BN curves and u otherwise, where u is the curve parameter.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to map.
+ */
+void ep2_psi(ep2_t r, const ep2_t p);
+
+/**
  * Compresses a point in an elliptic curve over a quadratic extension.
  *
  * @param[out] r			- the result.
@@ -2229,6 +2239,16 @@ void ep3_map(ep3_t p, const uint8_t *msg, size_t len);
  * @param[in] i				- the power of the Frobenius map.
  */
 void ep3_frb(ep3_t r, const ep3_t p, int i);
+
+/**
+ * Computes the endomorphism used for GLS scalar multiplication of a point in
+ * an elliptic curve over a cubic extension. The endomorphism acts as
+ * multiplication by -3u on SG18 curves and u otherwise, where u is the curve parameter.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to map.
+ */
+void ep3_psi(ep3_t r, const ep3_t p);
 
 /**
  * Compresses a point in an elliptic curve over a cubic extension.
@@ -2876,6 +2896,16 @@ void ep4_map(ep4_t p, const uint8_t *msg, size_t len);
 void ep4_frb(ep4_t r, const ep4_t p, int i);
 
 /**
+ * Computes the endomorphism used for GLS scalar multiplication of a point in
+ * an elliptic curve over a quartic extension. The endomorphism acts as
+ * multiplication by u, where u is the curve parameter.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to map.
+ */
+void ep4_psi(ep4_t r, const ep4_t p);
+
+/**
  * Compresses a point in an elliptic curve over a quartic extension.
  *
  * @param[out] r			- the result.
@@ -3519,6 +3549,16 @@ void ep8_map(ep8_t p, const uint8_t *msg, size_t len);
  * @param[in] i				- the power of the Frobenius map.
  */
 void ep8_frb(ep8_t r, const ep8_t p, int i);
+
+/**
+ * Computes the endomorphism used for GLS scalar multiplication of a point in
+ * an elliptic curve over a octic extension. The endomorphism acts as
+ * multiplication by u, where u is the curve parameter.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the point to map.
+ */
+void ep8_psi(ep8_t r, const ep8_t p);
 
 /**
  * Compresses a point in an elliptic curve over an octic extension.

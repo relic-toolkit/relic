@@ -46,3 +46,11 @@ void ep8_frb(ep8_t r, const ep8_t p, int i) {
 		fp8_mul_frb(r->y, r->y, 1, 3);
 	}
 }
+
+#if defined(EP_ENDOM)
+
+void ep8_psi(ep8_t r, const ep8_t p) {
+	ep8_frb(r, p, 1);
+}
+
+#endif
