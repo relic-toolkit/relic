@@ -936,23 +936,95 @@
 	}
 
 /**
+ * Defines a template for torus-based compression at the maximum rate in a
+ * quadratic extension X = H[w]/(w^2 - v) of a subfield, for elements in the
+ * cyclotomic subgroup.
+ *
+ * @param[in] X			- the extension field prefix.
+ * @param[in] H			- the subfield of half the degree.
+ */
+#define TMPL_FPX_PCK_MAX(X, H)												\
+	void X##_pck_max(X##_t c, const X##_t a) {								\
+		X##_copy(c, a);														\
+		if (X##_cmp_dig(a, 1) == RLC_EQ) {									\
+			/* The torus has no representative for unity, so use zero,		\
+			 * since it otherwise decompresses to -1, which is not in the	\
+			 * subgroup. */													\
+			X##_zero(c);													\
+		} else if (X##_test_cyc(c)) {										\
+			/* Use torus-based compression from Section 4.1 in "On			\
+			 * Compressible Pairings and Their Computation" by Naehrig et	\
+			 * al. */														\
+			fp_add_dig(((fp_t *)c[0])[0], ((fp_t *)c[0])[0], 1);			\
+			H##_inv(c[1], a[1]);											\
+			H##_mul(c[0], c[0], c[1]);										\
+			H##_zero(c[1]);													\
+		}																	\
+	}																		\
+																			\
+	int X##_upk_max(X##_t c, const X##_t a) {								\
+		H##_t t0, t1;														\
+																			\
+		if (X##_is_zero(a)) {												\
+			X##_set_dig(c, 1);												\
+			return 1;														\
+		}																	\
+		if (!H##_is_zero(a[1])) {											\
+			X##_copy(c, a);													\
+			return 1;														\
+		}																	\
+																			\
+		H##_null(t0);														\
+		H##_null(t1);														\
+																			\
+		RLC_TRY {															\
+			H##_new(t0);													\
+			H##_new(t1);													\
+																			\
+			/* Decompress g = (a0 + w)/(a0 - w) from Section 2 in			\
+			 * "Compression in finite fields and torus-based cryptography"	\
+			 * by Rubin-Silverberg, computed with w^2 = v as				\
+			 * ((a0^2 + v) + 2 * a0 * w)/(a0^2 - v). */						\
+			H##_set_dig(t1, 1);												\
+			H##_mul_art(t1, t1);											\
+			H##_sqr(t0, a[0]);												\
+			H##_dbl(c[1], a[0]);											\
+			H##_add(c[0], t0, t1);											\
+			H##_sub(t0, t0, t1);											\
+			H##_inv(t0, t0);												\
+			H##_mul(c[0], c[0], t0);										\
+			H##_mul(c[1], c[1], t0);										\
+		} RLC_CATCH_ANY {													\
+			RLC_THROW(ERR_CAUGHT);											\
+		} RLC_FINALLY {														\
+			H##_free(t0);													\
+			H##_free(t1);													\
+		}																	\
+																			\
+		return X##_test_cyc(c);												\
+	}
+
+/**
  * Selects the inversion templates, for general elements and for elements in
- * the cyclotomic subgroup, of a quadratic-over-cubic (QC) or a
- * cubic-over-quadratic (CQ) tower.
+ * the cyclotomic subgroup, and the compression at the maximum rate of a
+ * quadratic-over-cubic (QC) or a cubic-over-quadratic (CQ) tower.
  */
 #define TMPL_FPX_INV_CYC_QC			TMPL_FPX_INV_CYC_QUAD
 #define TMPL_FPX_INV_CYC_CQ			TMPL_FPX_INV_CYC_CUBIC
 #define TMPL_FPX_INV_QC				TMPL_FPX_INV_QUAD
 #define TMPL_FPX_INV_CQ				TMPL_FPX_INV_CUBIC
+#define TMPL_FPX_PCK_MAX_QC			TMPL_FPX_PCK_MAX
+#define TMPL_FPX_PCK_MAX_CQ(X, H)	/* No quadratic torus in this tower. */
 
 /**
  * Defines a template for inversion and the arithmetic in the cyclotomic
  * subgroup of an extension field with compressed squarings: cyclotomic
  * inversion and exponentiation, conversion, membership testing,
- * decompression, sparse and simultaneous exponentiation, and compression.
+ * decompression, sparse and simultaneous exponentiation, and compression,
+ * including at the maximum rate in quadratic-over-cubic towers.
  *
  * @param[in] X			- the extension field prefix.
- * @param[in] H			- the subfield of half the degree, for inversions.
+ * @param[in] H			- the subfield of half the degree.
  * @param[in] S			- the subfield used in compression, of degree k/6.
  * @param[in] M			- the multiplication by the non-residue in S.
  * @param[in] T			- the shape of the tower (QC or CQ).
@@ -970,16 +1042,18 @@
 	TMPL_EXP_CYC_SIM(X, X##_sqr_cyc)										\
 	TMPL_EXP_CYC_SPS(X)														\
 	TMPL_FPX_PCK_##T(X, S)													\
-	TMPL_FPX_UPK_##T(X, S)
+	TMPL_FPX_UPK_##T(X, S)													\
+	TMPL_FPX_PCK_MAX_##T(X, H)
 
 /**
  * Defines a template for inversion, simultaneous inversion and the arithmetic
  * in the cyclotomic subgroup of an extension field built as a tower of
  * quadratic extensions: cyclotomic inversion and exponentiation, conversion,
- * membership testing, and w-NAF and simultaneous exponentiation.
+ * membership testing, w-NAF and simultaneous exponentiation, and compression
+ * at the maximum rate.
  *
  * @param[in] X			- the extension field prefix.
- * @param[in] H			- the subfield of half the degree, for inversions.
+ * @param[in] H			- the subfield of half the degree.
  */
 #define TMPL_FPX_CYC_T2(X, H)												\
 	TMPL_FPX_INV_QUAD(X, H, H##_mul_art)									\
@@ -990,4 +1064,5 @@
 	TMPL_FPX_CONV_CYC_QUAD(X)												\
 	TMPL_FPX_TEST_CYC_QUAD(X)												\
 	TMPL_EXP_CYC_NAF(X, X##_sqr_cyc)										\
-	TMPL_EXP_CYC_SIM(X, X##_sqr_cyc)
+	TMPL_EXP_CYC_SIM(X, X##_sqr_cyc)										\
+	TMPL_FPX_PCK_MAX(X, H)

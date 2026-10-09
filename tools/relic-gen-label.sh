@@ -249,6 +249,7 @@ REDEF2 fpx fp6
 REDEF2 fpx fp8
 REDEF2 fpx fp9
 REDEF2 fpx fp12
+REDEF2 fpx fp16
 REDEF2 fpx fp18
 REDEF2 fpx fp24
 REDEF2 fpx fp48

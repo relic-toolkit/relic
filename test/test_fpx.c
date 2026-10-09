@@ -3155,6 +3155,23 @@ static int cyclotomic8(void) {
 			fp8_mul(b, a, b);
 			TEST_ASSERT(fp8_cmp(b, c) == RLC_EQ, end);
 		} TEST_END;
+
+		TEST_CASE("compression at the maximum rate is consistent") {
+			fp8_rand(a);
+			fp8_conv_cyc(a, a);
+			fp8_pck_max(b, a);
+			TEST_ASSERT(fp4_is_zero(b[1]), end);
+			TEST_ASSERT(fp8_upk_max(c, b) == 1, end);
+			TEST_ASSERT(fp8_cmp(a, c) == RLC_EQ, end);
+			fp8_set_dig(a, 1);
+			fp8_pck_max(b, a);
+			TEST_ASSERT(fp8_upk_max(c, b) == 1, end);
+			TEST_ASSERT(fp8_cmp(a, c) == RLC_EQ, end);
+			fp8_rand(a);
+			fp8_pck_max(b, a);
+			TEST_ASSERT(fp8_upk_max(c, b) == 1, end);
+			TEST_ASSERT(fp8_cmp(a, c) == RLC_EQ, end);
+		} TEST_END;
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -4559,6 +4576,20 @@ static int compression12(void) {
 			fp12_pck(b, a);
 			TEST_ASSERT(fp12_upk(c, b) == 1, end);
 			TEST_ASSERT(fp12_cmp(a, c) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("compression at the maximum rate is consistent") {
+			fp12_rand(a);
+			fp12_conv_cyc(a, a);
+			fp12_pck_max(b, a);
+			TEST_ASSERT(fp6_is_zero(b[1]), end);
+			TEST_ASSERT(fp12_upk_max(c, b) == 1, end);
+			TEST_ASSERT(fp12_cmp(a, c) == RLC_EQ, end);
+			fp12_set_dig(a, 1);
+			fp12_pck_max(b, a);
+			TEST_ASSERT(fp12_upk_max(c, b) == 1, end);
+			TEST_ASSERT(fp12_cmp(a, c) == RLC_EQ, end);
+			fp12_rand(a);
 			fp12_pck_max(b, a);
 			TEST_ASSERT(fp12_upk_max(c, b) == 1, end);
 			TEST_ASSERT(fp12_cmp(a, c) == RLC_EQ, end);
@@ -5109,6 +5140,23 @@ static int cyclotomic16(void) {
 			fp16_exp_cyc(b, b, h);
 			fp16_mul(b, a, b);
 			TEST_ASSERT(fp16_cmp(b, c) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("compression at the maximum rate is consistent") {
+			fp16_rand(a);
+			fp16_conv_cyc(a, a);
+			fp16_pck_max(b, a);
+			TEST_ASSERT(fp8_is_zero(b[1]), end);
+			TEST_ASSERT(fp16_upk_max(c, b) == 1, end);
+			TEST_ASSERT(fp16_cmp(a, c) == RLC_EQ, end);
+			fp16_set_dig(a, 1);
+			fp16_pck_max(b, a);
+			TEST_ASSERT(fp16_upk_max(c, b) == 1, end);
+			TEST_ASSERT(fp16_cmp(a, c) == RLC_EQ, end);
+			fp16_rand(a);
+			fp16_pck_max(b, a);
+			TEST_ASSERT(fp16_upk_max(c, b) == 1, end);
+			TEST_ASSERT(fp16_cmp(a, c) == RLC_EQ, end);
 		} TEST_END;
 	}
 	RLC_CATCH_ANY {
@@ -5975,6 +6023,23 @@ static int compression18(void) {
 			fp18_set_dig(a, 1);
 			fp18_pck(b, a);
 			TEST_ASSERT(fp18_upk(c, b) == 1, end);
+			TEST_ASSERT(fp18_cmp(a, c) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("compression at the maximum rate is consistent") {
+			fp18_rand(a);
+			fp18_conv_cyc(a, a);
+			fp18_pck_max(b, a);
+			TEST_ASSERT(fp9_is_zero(b[1]), end);
+			TEST_ASSERT(fp18_upk_max(c, b) == 1, end);
+			TEST_ASSERT(fp18_cmp(a, c) == RLC_EQ, end);
+			fp18_set_dig(a, 1);
+			fp18_pck_max(b, a);
+			TEST_ASSERT(fp18_upk_max(c, b) == 1, end);
+			TEST_ASSERT(fp18_cmp(a, c) == RLC_EQ, end);
+			fp18_rand(a);
+			fp18_pck_max(b, a);
+			TEST_ASSERT(fp18_upk_max(c, b) == 1, end);
 			TEST_ASSERT(fp18_cmp(a, c) == RLC_EQ, end);
 		} TEST_END;
 
@@ -7104,6 +7169,23 @@ static int compression48(void) {
 			fp48_set_dig(a, 1);
 			fp48_pck(b, a);
 			TEST_ASSERT(fp48_upk(c, b) == 1, end);
+			TEST_ASSERT(fp48_cmp(a, c) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("compression at the maximum rate is consistent") {
+			fp48_rand(a);
+			fp48_conv_cyc(a, a);
+			fp48_pck_max(b, a);
+			TEST_ASSERT(fp24_is_zero(b[1]), end);
+			TEST_ASSERT(fp48_upk_max(c, b) == 1, end);
+			TEST_ASSERT(fp48_cmp(a, c) == RLC_EQ, end);
+			fp48_set_dig(a, 1);
+			fp48_pck_max(b, a);
+			TEST_ASSERT(fp48_upk_max(c, b) == 1, end);
+			TEST_ASSERT(fp48_cmp(a, c) == RLC_EQ, end);
+			fp48_rand(a);
+			fp48_pck_max(b, a);
+			TEST_ASSERT(fp48_upk_max(c, b) == 1, end);
 			TEST_ASSERT(fp48_cmp(a, c) == RLC_EQ, end);
 		} TEST_END;
 

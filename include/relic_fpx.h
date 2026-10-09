@@ -1071,12 +1071,12 @@ typedef dv18_t dv54_t[3];
 #endif
 
 /**
- * Multiplies a dense and a sparse sextic extension field elements. Computes
+ * Multiplies a dense and a sparse sextadecic extension field elements. Computes
  * C = A * B.
  *
  * @param[out] C			- the result.
- * @param[in] A				- the dense dodecic extension field element.
- * @param[in] B				- the sparse dodecic extension field element.
+ * @param[in] A				- the dense sextadecic extension field element.
+ * @param[in] B				- the sparse sextadecic extension field element.
  */
 #if FPX_RDC == BASIC
 #define fp16_mul_dxs(C, A, B)	fp16_mul_dxs_basic(C, A, B)
@@ -3243,6 +3243,23 @@ void fp8_exp_cyc_sim(fp8_t e, const fp8_t a, const bn_t b, const fp8_t c,
 		const bn_t d);
 
 /**
+ * Compresses an octic extension field element at the maximum rate.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the element to compress.
+ */
+void fp8_pck_max(fp8_t c, const fp8_t a);
+
+/**
+ * Decompresses an octic extension field element compressed at the maximum rate.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the element to decompress.
+ * @return if the decompression was successful
+ */
+int fp8_upk_max(fp8_t c, const fp8_t a);
+
+/**
  * Computes a power of the Frobenius endomorphism of an octic extension field
  * element. Computes c = a^p^i.
  *
@@ -3910,16 +3927,16 @@ void fp12_exp_cyc_sps(fp12_t c, const fp12_t a, const int *b, size_t l, int s);
 /**
  * Compresses a dodecic extension field element.
  *
- * @param[out] r			- the result.
- * @param[in] p				- the dodecic extension field element to compress.
+ * @param[out] c			- the result.
+ * @param[in] a				- the dodecic extension field element to compress.
  */
 void fp12_pck(fp12_t c, const fp12_t a);
 
 /**
  * Decompresses a dodecic extension field element.
  *
- * @param[out] r			- the result.
- * @param[in] p				- the dodecic extension field element to decompress.
+ * @param[out] c			- the result.
+ * @param[in] a				- the dodecic extension field element to decompress.
  * @return if the decompression was successful
  */
 int fp12_upk(fp12_t c, const fp12_t a);
@@ -3927,16 +3944,16 @@ int fp12_upk(fp12_t c, const fp12_t a);
 /**
  * Compresses a dodecic extension field element at the maximum rate.
  *
- * @param[out] r			- the result.
- * @param[in] p				- the dodecic extension field element to compress.
+ * @param[out] c			- the result.
+ * @param[in] a				- the dodecic extension field element to compress.
  */
 void fp12_pck_max(fp12_t c, const fp12_t a);
 
 /**
  * Decompresses a dodecic extension field element at the maximum rate.
  *
- * @param[out] r			- the result.
- * @param[in] p				- the dodecic extension field element to decompress.
+ * @param[out] c			- the result.
+ * @param[in] a				- the dodecic extension field element to decompress.
  * @return if the decompression was successful
  */
 int fp12_upk_max(fp12_t c, const fp12_t a);
@@ -4136,13 +4153,24 @@ void fp16_mul_art(fp16_t c, const fp16_t a);
 void fp16_mul_frb(fp16_t c, const fp16_t a, int i, int j);
 
 /**
- * Multiples a dense sextadecic extension field element by a sparse element.
+ * Multiples a dense sextadecic extension field element by a sparse element
+ * using basic arithmetic.
  *
  * @param[out] c			- the result.
- * @param[in] a				- an sextadecic extension field element.
- * @param[in] b				- a sparse sextadecic extension field element.
+ * @param[in] a				- the dense sextadecic extension field element.
+ * @param[in] b				- the sparse sextadecic extension field element.
  */
-void fp16_mul_dxs(fp16_t c, const fp16_t a, const fp16_t b);
+void fp16_mul_dxs_basic(fp16_t c, const fp16_t a, const fp16_t b);
+
+/**
+ * Multiples a dense sextadecic extension field element by a sparse element
+ * using lazy reduction.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the dense sextadecic extension field element.
+ * @param[in] b				- the sparse sextadecic extension field element.
+ */
+void fp16_mul_dxs_lazyr(fp16_t c, const fp16_t a, const fp16_t b);
 
 /**
  * Computes the square of an sextadecic extension field element without
@@ -4273,6 +4301,24 @@ void fp16_exp_cyc_gls(fp16_t c, const fp16_t a, const bn_t b);
  */
 void fp16_exp_cyc_sim(fp16_t e, const fp16_t a, const bn_t b, const fp16_t c,
 		const bn_t d);
+
+/**
+ * Compresses a sextadecic extension field element at the maximum rate.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the element to compress.
+ */
+void fp16_pck_max(fp16_t c, const fp16_t a);
+
+/**
+ * Decompresses a sextadecic extension field element compressed at the maximum
+ * rate.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the element to decompress.
+ * @return if the decompression was successful
+ */
+int fp16_upk_max(fp16_t c, const fp16_t a);
 
 /**
  * Computes a power of the Frobenius endomorphism of an sextadecic extension
@@ -4693,16 +4739,16 @@ void fp18_exp_cyc_sps(fp18_t c, const fp18_t a, const int *b, size_t l, int s);
 /**
  * Compresses a octdecic extension field element.
  *
- * @param[out] r			- the result.
- * @param[in] p				- the octdecic extension field element to compress.
+ * @param[out] c			- the result.
+ * @param[in] a				- the octdecic extension field element to compress.
  */
 void fp18_pck(fp18_t c, const fp18_t a);
 
 /**
  * Decompresses a octdecic extension field element.
  *
- * @param[out] r			- the result.
- * @param[in] p				- the octdecic extension field element to decompress.
+ * @param[out] c			- the result.
+ * @param[in] a				- the octdecic extension field element to decompress.
  * @return if the decompression was successful
  */
 int fp18_upk(fp18_t c, const fp18_t a);
@@ -4710,16 +4756,16 @@ int fp18_upk(fp18_t c, const fp18_t a);
 /**
  * Compresses a octdecic extension field element at the maximum rate.
  *
- * @param[out] r			- the result.
- * @param[in] p				- the octdecic extension field element to compress.
+ * @param[out] c			- the result.
+ * @param[in] a				- the octdecic extension field element to compress.
  */
 void fp18_pck_max(fp18_t c, const fp18_t a);
 
 /**
  * Decompresses a octdecic extension field element at the maximum rate.
  *
- * @param[out] r			- the result.
- * @param[in] p				- the octdecic extension field element to decompress.
+ * @param[out] c			- the result.
+ * @param[in] a				- the octdecic extension field element to decompress.
  * @return if the decompression was successful
  */
 int fp18_upk_max(fp18_t c, const fp18_t a);
@@ -5510,6 +5556,23 @@ void fp48_pck(fp48_t c, const fp48_t a);
  * @return if the decompression was successful
  */
 int fp48_upk(fp48_t c, const fp48_t a);
+
+/**
+ * Compresses a 48-extension field element at the maximum rate.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the element to compress.
+ */
+void fp48_pck_max(fp48_t c, const fp48_t a);
+
+/**
+ * Decompresses a 48-extension field element compressed at the maximum rate.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the element to decompress.
+ * @return if the decompression was successful
+ */
+int fp48_upk_max(fp48_t c, const fp48_t a);
 
 /**
  * Copies the second argument to the first argument.

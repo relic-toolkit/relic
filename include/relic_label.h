@@ -133,10 +133,10 @@
 
 #undef util_conv_endian
 #undef util_conv_big
-#undef util_write_uint32
-#undef util_write_size
 #undef util_conv_little
 #undef util_conv_char
+#undef util_write_uint32
+#undef util_write_size
 #undef util_bits_dig
 #undef util_cmp_sec
 #undef util_perm
@@ -145,10 +145,10 @@
 
 #define util_conv_endian 	RLC_PREFIX(util_conv_endian)
 #define util_conv_big 	RLC_PREFIX(util_conv_big)
-#define util_write_uint32 	RLC_PREFIX(util_write_uint32)
-#define util_write_size 	RLC_PREFIX(util_write_size)
 #define util_conv_little 	RLC_PREFIX(util_conv_little)
 #define util_conv_char 	RLC_PREFIX(util_conv_char)
+#define util_write_uint32 	RLC_PREFIX(util_write_uint32)
+#define util_write_size 	RLC_PREFIX(util_write_size)
 #define util_bits_dig 	RLC_PREFIX(util_bits_dig)
 #define util_cmp_sec 	RLC_PREFIX(util_cmp_sec)
 #define util_perm 	RLC_PREFIX(util_perm)
@@ -246,6 +246,8 @@
 #undef bn_mul_basic
 #undef bn_mul_comba
 #undef bn_mul_karat
+#undef bn_mul_add
+#undef bn_mul_sub
 #undef bn_sqr_basic
 #undef bn_sqr_comba
 #undef bn_sqr_karat
@@ -254,7 +256,9 @@
 #undef bn_lsh
 #undef bn_rsh
 #undef bn_div
+#undef bn_div_exc
 #undef bn_div_rem
+#undef bn_div_rem_rup
 #undef bn_div_dig
 #undef bn_div_rem_dig
 #undef bn_mod_inv
@@ -274,12 +278,14 @@
 #undef bn_mxp_basic
 #undef bn_mxp_slide
 #undef bn_mxp_monty
+#undef bn_mxp_lower
 #undef bn_mxp_dig
 #undef bn_mxp_crt
 #undef bn_mxp_sim
 #undef bn_mxp_sim_few
 #undef bn_mxp_sim_lot
 #undef bn_srt
+#undef bn_srt_mod
 #undef bn_gcd_basic
 #undef bn_gcd_lehme
 #undef bn_gcd_binar
@@ -300,6 +306,7 @@
 #undef bn_is_prime_rabin
 #undef bn_is_prime_solov
 #undef bn_is_prime_lucas
+#undef bn_map_prime
 #undef bn_gen_prime_basic
 #undef bn_gen_prime_safep
 #undef bn_gen_prime_stron
@@ -370,6 +377,8 @@
 #define bn_mul_basic 	RLC_PREFIX(bn_mul_basic)
 #define bn_mul_comba 	RLC_PREFIX(bn_mul_comba)
 #define bn_mul_karat 	RLC_PREFIX(bn_mul_karat)
+#define bn_mul_add 	RLC_PREFIX(bn_mul_add)
+#define bn_mul_sub 	RLC_PREFIX(bn_mul_sub)
 #define bn_sqr_basic 	RLC_PREFIX(bn_sqr_basic)
 #define bn_sqr_comba 	RLC_PREFIX(bn_sqr_comba)
 #define bn_sqr_karat 	RLC_PREFIX(bn_sqr_karat)
@@ -378,7 +387,9 @@
 #define bn_lsh 	RLC_PREFIX(bn_lsh)
 #define bn_rsh 	RLC_PREFIX(bn_rsh)
 #define bn_div 	RLC_PREFIX(bn_div)
+#define bn_div_exc 	RLC_PREFIX(bn_div_exc)
 #define bn_div_rem 	RLC_PREFIX(bn_div_rem)
+#define bn_div_rem_rup 	RLC_PREFIX(bn_div_rem_rup)
 #define bn_div_dig 	RLC_PREFIX(bn_div_dig)
 #define bn_div_rem_dig 	RLC_PREFIX(bn_div_rem_dig)
 #define bn_mod_inv 	RLC_PREFIX(bn_mod_inv)
@@ -398,12 +409,14 @@
 #define bn_mxp_basic 	RLC_PREFIX(bn_mxp_basic)
 #define bn_mxp_slide 	RLC_PREFIX(bn_mxp_slide)
 #define bn_mxp_monty 	RLC_PREFIX(bn_mxp_monty)
+#define bn_mxp_lower 	RLC_PREFIX(bn_mxp_lower)
 #define bn_mxp_dig 	RLC_PREFIX(bn_mxp_dig)
 #define bn_mxp_crt 	RLC_PREFIX(bn_mxp_crt)
 #define bn_mxp_sim 	RLC_PREFIX(bn_mxp_sim)
 #define bn_mxp_sim_few 	RLC_PREFIX(bn_mxp_sim_few)
 #define bn_mxp_sim_lot 	RLC_PREFIX(bn_mxp_sim_lot)
 #define bn_srt 	RLC_PREFIX(bn_srt)
+#define bn_srt_mod 	RLC_PREFIX(bn_srt_mod)
 #define bn_gcd_basic 	RLC_PREFIX(bn_gcd_basic)
 #define bn_gcd_lehme 	RLC_PREFIX(bn_gcd_lehme)
 #define bn_gcd_binar 	RLC_PREFIX(bn_gcd_binar)
@@ -424,6 +437,7 @@
 #define bn_is_prime_rabin 	RLC_PREFIX(bn_is_prime_rabin)
 #define bn_is_prime_solov 	RLC_PREFIX(bn_is_prime_solov)
 #define bn_is_prime_lucas 	RLC_PREFIX(bn_is_prime_lucas)
+#define bn_map_prime 	RLC_PREFIX(bn_map_prime)
 #define bn_gen_prime_basic 	RLC_PREFIX(bn_gen_prime_basic)
 #define bn_gen_prime_safep 	RLC_PREFIX(bn_gen_prime_safep)
 #define bn_gen_prime_stron 	RLC_PREFIX(bn_gen_prime_stron)
@@ -466,11 +480,13 @@
 #undef bn_sqra_low
 #undef bn_sqrn_low
 #undef bn_divn_low
+#undef bn_dive_low
 #undef bn_div1_low
 #undef bn_modn_low
 #undef bn_gcdn_low
 #undef bn_gcde_low
 #undef bn_gcdh_low
+#undef bn_mxpn_low
 
 #define bn_add1_low 	RLC_PREFIX(bn_add1_low)
 #define bn_addn_low 	RLC_PREFIX(bn_addn_low)
@@ -492,11 +508,13 @@
 #define bn_sqra_low 	RLC_PREFIX(bn_sqra_low)
 #define bn_sqrn_low 	RLC_PREFIX(bn_sqrn_low)
 #define bn_divn_low 	RLC_PREFIX(bn_divn_low)
+#define bn_dive_low 	RLC_PREFIX(bn_dive_low)
 #define bn_div1_low 	RLC_PREFIX(bn_div1_low)
 #define bn_modn_low 	RLC_PREFIX(bn_modn_low)
 #define bn_gcdn_low 	RLC_PREFIX(bn_gcdn_low)
 #define bn_gcde_low 	RLC_PREFIX(bn_gcde_low)
 #define bn_gcdh_low 	RLC_PREFIX(bn_gcdh_low)
+#define bn_mxpn_low 	RLC_PREFIX(bn_mxpn_low)
 
 #undef fp_st
 #undef fp_t
@@ -2541,6 +2559,8 @@
 #undef fp8_exp_dig
 #undef fp8_exp_cyc
 #undef fp8_exp_cyc_sim
+#undef fp8_pck_max
+#undef fp8_upk_max
 #undef fp8_frb
 #undef fp8_is_sqr
 #undef fp8_srt
@@ -2584,6 +2604,8 @@
 #define fp8_exp_dig 	RLC_PREFIX(fp8_exp_dig)
 #define fp8_exp_cyc 	RLC_PREFIX(fp8_exp_cyc)
 #define fp8_exp_cyc_sim 	RLC_PREFIX(fp8_exp_cyc_sim)
+#define fp8_pck_max 	RLC_PREFIX(fp8_pck_max)
+#define fp8_upk_max 	RLC_PREFIX(fp8_upk_max)
 #define fp8_frb 	RLC_PREFIX(fp8_frb)
 #define fp8_is_sqr 	RLC_PREFIX(fp8_is_sqr)
 #define fp8_srt 	RLC_PREFIX(fp8_srt)
@@ -2739,6 +2761,94 @@
 #define fp12_upk 	RLC_PREFIX(fp12_upk)
 #define fp12_pck_max 	RLC_PREFIX(fp12_pck_max)
 #define fp12_upk_max 	RLC_PREFIX(fp12_upk_max)
+
+#undef fp16_field_init
+#undef fp16_copy
+#undef fp16_copy_sec
+#undef fp16_zero
+#undef fp16_is_zero
+#undef fp16_rand
+#undef fp16_print
+#undef fp16_size_bin
+#undef fp16_read_bin
+#undef fp16_write_bin
+#undef fp16_cmp
+#undef fp16_cmp_dig
+#undef fp16_set_dig
+#undef fp16_add
+#undef fp16_sub
+#undef fp16_neg
+#undef fp16_dbl
+#undef fp16_mul_unr
+#undef fp16_mul_basic
+#undef fp16_mul_lazyr
+#undef fp16_mul_art
+#undef fp16_mul_frb
+#undef fp16_mul_dxs_basic
+#undef fp16_mul_dxs_lazyr
+#undef fp16_sqr_unr
+#undef fp16_sqr_basic
+#undef fp16_sqr_lazyr
+#undef fp16_sqr_cyc
+#undef fp16_inv
+#undef fp16_inv_cyc
+#undef fp16_inv_sim
+#undef fp16_test_cyc
+#undef fp16_conv_cyc
+#undef fp16_exp
+#undef fp16_exp_dig
+#undef fp16_exp_cyc
+#undef fp16_exp_cyc_gls
+#undef fp16_exp_cyc_sim
+#undef fp16_pck_max
+#undef fp16_upk_max
+#undef fp16_frb
+#undef fp16_is_sqr
+#undef fp16_srt
+
+#define fp16_field_init 	RLC_PREFIX(fp16_field_init)
+#define fp16_copy 	RLC_PREFIX(fp16_copy)
+#define fp16_copy_sec 	RLC_PREFIX(fp16_copy_sec)
+#define fp16_zero 	RLC_PREFIX(fp16_zero)
+#define fp16_is_zero 	RLC_PREFIX(fp16_is_zero)
+#define fp16_rand 	RLC_PREFIX(fp16_rand)
+#define fp16_print 	RLC_PREFIX(fp16_print)
+#define fp16_size_bin 	RLC_PREFIX(fp16_size_bin)
+#define fp16_read_bin 	RLC_PREFIX(fp16_read_bin)
+#define fp16_write_bin 	RLC_PREFIX(fp16_write_bin)
+#define fp16_cmp 	RLC_PREFIX(fp16_cmp)
+#define fp16_cmp_dig 	RLC_PREFIX(fp16_cmp_dig)
+#define fp16_set_dig 	RLC_PREFIX(fp16_set_dig)
+#define fp16_add 	RLC_PREFIX(fp16_add)
+#define fp16_sub 	RLC_PREFIX(fp16_sub)
+#define fp16_neg 	RLC_PREFIX(fp16_neg)
+#define fp16_dbl 	RLC_PREFIX(fp16_dbl)
+#define fp16_mul_unr 	RLC_PREFIX(fp16_mul_unr)
+#define fp16_mul_basic 	RLC_PREFIX(fp16_mul_basic)
+#define fp16_mul_lazyr 	RLC_PREFIX(fp16_mul_lazyr)
+#define fp16_mul_art 	RLC_PREFIX(fp16_mul_art)
+#define fp16_mul_frb 	RLC_PREFIX(fp16_mul_frb)
+#define fp16_mul_dxs_basic 	RLC_PREFIX(fp16_mul_dxs_basic)
+#define fp16_mul_dxs_lazyr 	RLC_PREFIX(fp16_mul_dxs_lazyr)
+#define fp16_sqr_unr 	RLC_PREFIX(fp16_sqr_unr)
+#define fp16_sqr_basic 	RLC_PREFIX(fp16_sqr_basic)
+#define fp16_sqr_lazyr 	RLC_PREFIX(fp16_sqr_lazyr)
+#define fp16_sqr_cyc 	RLC_PREFIX(fp16_sqr_cyc)
+#define fp16_inv 	RLC_PREFIX(fp16_inv)
+#define fp16_inv_cyc 	RLC_PREFIX(fp16_inv_cyc)
+#define fp16_inv_sim 	RLC_PREFIX(fp16_inv_sim)
+#define fp16_test_cyc 	RLC_PREFIX(fp16_test_cyc)
+#define fp16_conv_cyc 	RLC_PREFIX(fp16_conv_cyc)
+#define fp16_exp 	RLC_PREFIX(fp16_exp)
+#define fp16_exp_dig 	RLC_PREFIX(fp16_exp_dig)
+#define fp16_exp_cyc 	RLC_PREFIX(fp16_exp_cyc)
+#define fp16_exp_cyc_gls 	RLC_PREFIX(fp16_exp_cyc_gls)
+#define fp16_exp_cyc_sim 	RLC_PREFIX(fp16_exp_cyc_sim)
+#define fp16_pck_max 	RLC_PREFIX(fp16_pck_max)
+#define fp16_upk_max 	RLC_PREFIX(fp16_upk_max)
+#define fp16_frb 	RLC_PREFIX(fp16_frb)
+#define fp16_is_sqr 	RLC_PREFIX(fp16_is_sqr)
+#define fp16_srt 	RLC_PREFIX(fp16_srt)
 
 #undef fp18_copy
 #undef fp18_copy_sec
@@ -2965,6 +3075,8 @@
 #undef fp48_exp_cyc_sim
 #undef fp48_pck
 #undef fp48_upk
+#undef fp48_pck_max
+#undef fp48_upk_max
 
 #define fp48_copy 	RLC_PREFIX(fp48_copy)
 #define fp48_copy_sec 	RLC_PREFIX(fp48_copy_sec)
@@ -3009,6 +3121,8 @@
 #define fp48_exp_cyc_sim 	RLC_PREFIX(fp48_exp_cyc_sim)
 #define fp48_pck 	RLC_PREFIX(fp48_pck)
 #define fp48_upk 	RLC_PREFIX(fp48_upk)
+#define fp48_pck_max 	RLC_PREFIX(fp48_pck_max)
+#define fp48_upk_max 	RLC_PREFIX(fp48_upk_max)
 
 #undef fp54_copy
 #undef fp54_copy_sec
@@ -3710,6 +3824,11 @@
 #undef md_xmd_sh256
 #undef md_xmd_sh384
 #undef md_xmd_sh512
+#undef md_xof_init
+#undef md_xof_bytes
+#undef md_xof_double
+#undef md_xof_int
+#undef md_xof_bits
 
 #define md_map_sh224 	RLC_PREFIX(md_map_sh224)
 #define md_map_sh256 	RLC_PREFIX(md_map_sh256)
@@ -3724,6 +3843,11 @@
 #define md_xmd_sh256 	RLC_PREFIX(md_xmd_sh256)
 #define md_xmd_sh384 	RLC_PREFIX(md_xmd_sh384)
 #define md_xmd_sh512 	RLC_PREFIX(md_xmd_sh512)
+#define md_xof_init 	RLC_PREFIX(md_xof_init)
+#define md_xof_bytes 	RLC_PREFIX(md_xof_bytes)
+#define md_xof_double 	RLC_PREFIX(md_xof_double)
+#define md_xof_int 	RLC_PREFIX(md_xof_int)
+#define md_xof_bits 	RLC_PREFIX(md_xof_bits)
 
 #endif /* LABEL */
 
