@@ -76,6 +76,8 @@ TMPL_MAP_SSWU(ep, fp, dig_t);
  */
 TMPL_MAP_SVDW(ep, fp, dig_t);
 
+#if EP_MAP == BASIC || !defined(STRIP)
+
 static void ep_map_basic_impl(ep_t p, const uint8_t *bytes, size_t len) {
 	bn_t x;
 	fp_t t0;
@@ -114,6 +116,8 @@ static void ep_map_basic_impl(ep_t p, const uint8_t *bytes, size_t len) {
 	}
 }
 
+#endif
+
 /**
  * Maps an array of uniformly random bytes to a point in a prime elliptic
  * curve.
@@ -125,6 +129,8 @@ static void ep_map_basic_impl(ep_t p, const uint8_t *bytes, size_t len) {
  * @param[in] len			- the array length in bytes.
  * @param[in] map_fn		- the mapping function.
  */
+#if EP_MAP == SSWUM || !defined(STRIP)
+
 static void ep_map_sswum_impl(ep_t p, const uint8_t *bytes, size_t len,
 		void (*const map_fn)(ep_t, const fp_t)) {
 	bn_t k;
@@ -191,6 +197,10 @@ static void ep_map_sswum_impl(ep_t p, const uint8_t *bytes, size_t len,
 		ep_free(q);
 	}
 }
+
+#endif
+
+#if EP_MAP == SWIFT || !defined(STRIP)
 
 static void ep_map_swift_impl(ep_t p, const uint8_t *random, size_t len) {
 	fp_t h[8], t1, t2, v, w, y, x1, x2, x3, d[3];
@@ -434,6 +444,8 @@ static void ep_map_swift_impl(ep_t p, const uint8_t *random, size_t len) {
 		}
 	}
 }
+
+#endif
 
 /*============================================================================*/
 /* Public definitions                                                         */
