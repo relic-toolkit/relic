@@ -69,6 +69,35 @@
 	}
 
 /**
+ * Defines a template for addition, subtraction and multiplication by a digit in
+ * an extension field of degree N over a subfield.
+ *
+ * @param[in] X			- the extension field prefix.
+ * @param[in] S			- the subfield prefix.
+ * @param[in] N			- the degree of the extension over the subfield.
+ */
+#define TMPL_FPX_ASM_DIG(X, S, N)											\
+	void X##_add_dig(X##_t c, const X##_t a, dig_t dig) {					\
+		S##_add_dig(c[0], a[0], dig);										\
+		for (int i = 1; i < (N); i++) {										\
+			S##_copy(c[i], a[i]);											\
+		}																	\
+	}																		\
+																			\
+	void X##_sub_dig(X##_t c, const X##_t a, dig_t dig) {					\
+		S##_sub_dig(c[0], a[0], dig);										\
+		for (int i = 1; i < (N); i++) {										\
+			S##_copy(c[i], a[i]);											\
+		}																	\
+	}																		\
+																			\
+	void X##_mul_dig(X##_t c, const X##_t a, dig_t dig) {					\
+		for (int i = 0; i < (N); i++) {										\
+			S##_mul_dig(c[i], a[i], dig);									\
+		}																	\
+	}
+
+/**
  * Defines a template for comparison in an extension field of degree N over a
  * subfield.
  *

@@ -78,6 +78,8 @@ TMPL_FPX_CMP(fp8, fp4, 2);
 
 TMPL_FPX_ADD(fp8, fp4, 2);
 
+TMPL_FPX_ASM_DIG(fp8, fp4, 2);
+
 #if FPX_RDC == BASIC || !defined(STRIP)
 
 TMPL_FPX_MUL_QUAD(fp8, fp4, fp4_mul_art);
@@ -172,11 +174,6 @@ void fp8_mul_frb(fp8_t c, const fp8_t a, int i, int j) {
 	} RLC_FINALLY {
 		fp4_free(t);
 	}
-}
-
-void fp8_mul_dig(fp8_t c, const fp8_t a, dig_t b) {
-	fp4_mul_dig(c[0], a[0], b);
-	fp4_mul_dig(c[1], a[1], b);
 }
 
 #if FPX_RDC == BASIC || !defined(STRIP)

@@ -758,6 +758,8 @@ static int fixed2(void) {
 			bn_zero(k);
 			ep2_mul_fix(r, t, k);
 			TEST_ASSERT(ep2_is_infty(r), end);
+			ep2_mul_fix(r, t, n);
+			TEST_ASSERT(ep2_is_infty(r), end);
 			bn_set_dig(k, 1);
 			ep2_mul_fix(r, t, k);
 			TEST_ASSERT(ep2_cmp(p, r) == RLC_EQ, end);
@@ -792,6 +794,8 @@ static int fixed2(void) {
 			ep2_mul_pre_basic(t, p);
 			bn_zero(k);
 			ep2_mul_fix_basic(r, t, k);
+			TEST_ASSERT(ep2_is_infty(r), end);
+			ep2_mul_fix_basic(r, t, n);
 			TEST_ASSERT(ep2_is_infty(r), end);
 			bn_set_dig(k, 1);
 			ep2_mul_fix_basic(r, t, k);
@@ -828,6 +832,8 @@ static int fixed2(void) {
 			bn_zero(k);
 			ep2_mul_fix_combs(r, t, k);
 			TEST_ASSERT(ep2_is_infty(r), end);
+			ep2_mul_fix_combs(r, t, n);
+			TEST_ASSERT(ep2_is_infty(r), end);
 			bn_set_dig(k, 1);
 			ep2_mul_fix_combs(r, t, k);
 			TEST_ASSERT(ep2_cmp(p, r) == RLC_EQ, end);
@@ -863,6 +869,8 @@ static int fixed2(void) {
 			bn_zero(k);
 			ep2_mul_fix_combd(r, t, k);
 			TEST_ASSERT(ep2_is_infty(r), end);
+			ep2_mul_fix_combd(r, t, n);
+			TEST_ASSERT(ep2_is_infty(r), end);
 			bn_set_dig(k, 1);
 			ep2_mul_fix_combd(r, t, k);
 			TEST_ASSERT(ep2_cmp(p, r) == RLC_EQ, end);
@@ -897,6 +905,8 @@ static int fixed2(void) {
 			ep2_mul_pre_lwnaf(t, p);
 			bn_zero(k);
 			ep2_mul_fix_lwnaf(r, t, k);
+			TEST_ASSERT(ep2_is_infty(r), end);
+			ep2_mul_fix_lwnaf(r, t, n);
 			TEST_ASSERT(ep2_is_infty(r), end);
 			bn_set_dig(k, 1);
 			ep2_mul_fix_lwnaf(r, t, k);
@@ -2095,6 +2105,8 @@ static int fixed3(void) {
 			bn_zero(k);
 			ep3_mul_fix(r, t, k);
 			TEST_ASSERT(ep3_is_infty(r), end);
+			ep3_mul_fix(r, t, n);
+			TEST_ASSERT(ep3_is_infty(r), end);
 			bn_set_dig(k, 1);
 			ep3_mul_fix(r, t, k);
 			TEST_ASSERT(ep3_cmp(p, r) == RLC_EQ, end);
@@ -2129,6 +2141,8 @@ static int fixed3(void) {
 			ep3_mul_pre_basic(t, p);
 			bn_zero(k);
 			ep3_mul_fix_basic(r, t, k);
+			TEST_ASSERT(ep3_is_infty(r), end);
+			ep3_mul_fix_basic(r, t, n);
 			TEST_ASSERT(ep3_is_infty(r), end);
 			bn_set_dig(k, 1);
 			ep3_mul_fix_basic(r, t, k);
@@ -2165,6 +2179,8 @@ static int fixed3(void) {
 			bn_zero(k);
 			ep3_mul_fix_combs(r, t, k);
 			TEST_ASSERT(ep3_is_infty(r), end);
+			ep3_mul_fix_combs(r, t, n);
+			TEST_ASSERT(ep3_is_infty(r), end);
 			bn_set_dig(k, 1);
 			ep3_mul_fix_combs(r, t, k);
 			TEST_ASSERT(ep3_cmp(p, r) == RLC_EQ, end);
@@ -2200,6 +2216,8 @@ static int fixed3(void) {
 			bn_zero(k);
 			ep3_mul_fix_combd(r, t, k);
 			TEST_ASSERT(ep3_is_infty(r), end);
+			ep3_mul_fix_combd(r, t, n);
+			TEST_ASSERT(ep3_is_infty(r), end);
 			bn_set_dig(k, 1);
 			ep3_mul_fix_combd(r, t, k);
 			TEST_ASSERT(ep3_cmp(p, r) == RLC_EQ, end);
@@ -2234,6 +2252,8 @@ static int fixed3(void) {
 			ep3_mul_pre_lwnaf(t, p);
 			bn_zero(k);
 			ep3_mul_fix_lwnaf(r, t, k);
+			TEST_ASSERT(ep3_is_infty(r), end);
+			ep3_mul_fix_lwnaf(r, t, n);
 			TEST_ASSERT(ep3_is_infty(r), end);
 			bn_set_dig(k, 1);
 			ep3_mul_fix_lwnaf(r, t, k);
@@ -3336,6 +3356,8 @@ static int fixed4(void) {
 			bn_zero(k);
 			ep4_mul_fix(r, t, k);
 			TEST_ASSERT(ep4_is_infty(r), end);
+			ep4_mul_fix(r, t, n);
+			TEST_ASSERT(ep4_is_infty(r), end);
 			bn_set_dig(k, 1);
 			ep4_mul_fix(r, t, k);
 			TEST_ASSERT(ep4_cmp(p, r) == RLC_EQ, end);
@@ -3370,6 +3392,8 @@ static int fixed4(void) {
 			ep4_mul_pre_basic(t, p);
 			bn_zero(k);
 			ep4_mul_fix_basic(r, t, k);
+			TEST_ASSERT(ep4_is_infty(r), end);
+			ep4_mul_fix_basic(r, t, n);
 			TEST_ASSERT(ep4_is_infty(r), end);
 			bn_set_dig(k, 1);
 			ep4_mul_fix_basic(r, t, k);
@@ -3406,6 +3430,8 @@ static int fixed4(void) {
 			bn_zero(k);
 			ep4_mul_fix_combs(r, t, k);
 			TEST_ASSERT(ep4_is_infty(r), end);
+			ep4_mul_fix_combs(r, t, n);
+			TEST_ASSERT(ep4_is_infty(r), end);
 			bn_set_dig(k, 1);
 			ep4_mul_fix_combs(r, t, k);
 			TEST_ASSERT(ep4_cmp(p, r) == RLC_EQ, end);
@@ -3441,6 +3467,8 @@ static int fixed4(void) {
 			bn_zero(k);
 			ep4_mul_fix_combd(r, t, k);
 			TEST_ASSERT(ep4_is_infty(r), end);
+			ep4_mul_fix_combd(r, t, n);
+			TEST_ASSERT(ep4_is_infty(r), end);
 			bn_set_dig(k, 1);
 			ep4_mul_fix_combd(r, t, k);
 			TEST_ASSERT(ep4_cmp(p, r) == RLC_EQ, end);
@@ -3475,6 +3503,8 @@ static int fixed4(void) {
 			ep4_mul_pre_lwnaf(t, p);
 			bn_zero(k);
 			ep4_mul_fix_lwnaf(r, t, k);
+			TEST_ASSERT(ep4_is_infty(r), end);
+			ep4_mul_fix_lwnaf(r, t, n);
 			TEST_ASSERT(ep4_is_infty(r), end);
 			bn_set_dig(k, 1);
 			ep4_mul_fix_lwnaf(r, t, k);
@@ -4573,6 +4603,8 @@ static int fixed8(void) {
 			bn_zero(k);
 			ep8_mul_fix(r, t, k);
 			TEST_ASSERT(ep8_is_infty(r), end);
+			ep8_mul_fix(r, t, n);
+			TEST_ASSERT(ep8_is_infty(r), end);
 			bn_set_dig(k, 1);
 			ep8_mul_fix(r, t, k);
 			TEST_ASSERT(ep8_cmp(p, r) == RLC_EQ, end);
@@ -4607,6 +4639,8 @@ static int fixed8(void) {
 			ep8_mul_pre_basic(t, p);
 			bn_zero(k);
 			ep8_mul_fix_basic(r, t, k);
+			TEST_ASSERT(ep8_is_infty(r), end);
+			ep8_mul_fix_basic(r, t, n);
 			TEST_ASSERT(ep8_is_infty(r), end);
 			bn_set_dig(k, 1);
 			ep8_mul_fix_basic(r, t, k);
@@ -4643,6 +4677,8 @@ static int fixed8(void) {
 			bn_zero(k);
 			ep8_mul_fix_combs(r, t, k);
 			TEST_ASSERT(ep8_is_infty(r), end);
+			ep8_mul_fix_combs(r, t, n);
+			TEST_ASSERT(ep8_is_infty(r), end);
 			bn_set_dig(k, 1);
 			ep8_mul_fix_combs(r, t, k);
 			TEST_ASSERT(ep8_cmp(p, r) == RLC_EQ, end);
@@ -4678,6 +4714,8 @@ static int fixed8(void) {
 			bn_zero(k);
 			ep8_mul_fix_combd(r, t, k);
 			TEST_ASSERT(ep8_is_infty(r), end);
+			ep8_mul_fix_combd(r, t, n);
+			TEST_ASSERT(ep8_is_infty(r), end);
 			bn_set_dig(k, 1);
 			ep8_mul_fix_combd(r, t, k);
 			TEST_ASSERT(ep8_cmp(p, r) == RLC_EQ, end);
@@ -4712,6 +4750,8 @@ static int fixed8(void) {
 			ep8_mul_pre_lwnaf(t, p);
 			bn_zero(k);
 			ep8_mul_fix_lwnaf(r, t, k);
+			TEST_ASSERT(ep8_is_infty(r), end);
+			ep8_mul_fix_lwnaf(r, t, n);
 			TEST_ASSERT(ep8_is_infty(r), end);
 			bn_set_dig(k, 1);
 			ep8_mul_fix_lwnaf(r, t, k);

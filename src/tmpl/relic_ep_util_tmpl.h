@@ -413,3 +413,162 @@
 																			\
 		return result;														\
 	}
+
+/**
+ * Adds a curve coefficient to a field element according to the optimization
+ * identifier of the coefficient. Small coefficients are only exploited without
+ * Montgomery reduction, since their stored representation is not small then.
+ *
+ * @param[in] C			- the curve.
+ * @param[in] F			- the field prefix.
+ * @param[in,out] T		- the field element.
+ * @param[in] V			- the coefficient (a or b).
+ */
+#if FP_RDC != MONTY
+
+#define TMPL_EP_RHS_ADD(C, F, T, V)											\
+	switch (C##_curve_opt_##V()) {											\
+		case RLC_ZERO:														\
+			break;															\
+		case RLC_MIN3:														\
+			F##_sub_dig(T, T, 3);											\
+			break;															\
+		case RLC_ONE:														\
+			F##_add_dig(T, T, 1);											\
+			break;															\
+		case RLC_TWO:														\
+			F##_add_dig(T, T, 2);											\
+			break;															\
+		case RLC_TINY:														\
+			F##_add_dig(T, T, ((fp_t *)C##_curve_get_##V())[0][0]);			\
+			break;															\
+		default:															\
+			F##_add(T, T, C##_curve_get_##V());								\
+			break;															\
+	}
+
+#else
+
+#define TMPL_EP_RHS_ADD(C, F, T, V)											\
+	if (C##_curve_opt_##V() != RLC_ZERO) {									\
+		F##_add(T, T, C##_curve_get_##V());									\
+	}
+
+#endif
+
+/**
+ * Defines a template for computing the right-hand side of the curve equation
+ * for a point in a twisted curve over an extension field.
+ *
+ * @param[in] C			- the curve.
+ * @param[in] F			- the field prefix.
+ */
+#define TMPL_EP_RHS(C, F)													\
+	void C##_rhs(F##_t rhs, const F##_t x) {								\
+		F##_t t0;															\
+																			\
+		F##_null(t0);														\
+																			\
+		RLC_TRY {															\
+			F##_new(t0);													\
+																			\
+			/* Compute x^3 + a * x + b as (x^2 + a) * x + b. */				\
+			F##_sqr(t0, x);													\
+			TMPL_EP_RHS_ADD(C, F, t0, a);									\
+			F##_mul(t0, t0, x);												\
+			TMPL_EP_RHS_ADD(C, F, t0, b);									\
+			F##_copy(rhs, t0);												\
+		} RLC_CATCH_ANY {													\
+			RLC_THROW(ERR_CAUGHT);											\
+		} RLC_FINALLY {														\
+			F##_free(t0);													\
+		}																	\
+	}
+
+/**
+ * Defines a template for serialization of points in a twisted curve over an
+ * extension field, without point compression.
+ *
+ * @param[in] C			- the curve.
+ * @param[in] F			- the field prefix.
+ */
+#define TMPL_EP_BIN(C, F)													\
+	size_t C##_size_bin(const C##_t a, int pack) {							\
+		/* Point compression is not supported in this extension. */			\
+		(void)pack;															\
+																			\
+		if (C##_is_infty(a)) {												\
+			return 1;														\
+		}																	\
+		return 1 + 2 * (sizeof(F##_t) / sizeof(fp_t)) * RLC_FP_BYTES;		\
+	}																		\
+																			\
+	void C##_read_bin(C##_t a, const uint8_t *bin, size_t len) {			\
+		const size_t l = (sizeof(F##_t) / sizeof(fp_t)) * RLC_FP_BYTES;		\
+																			\
+		if (len == 1) {														\
+			if (bin[0] == 0) {												\
+				C##_set_infty(a);											\
+				return;														\
+			} else {														\
+				RLC_THROW(ERR_NO_BUFFER);									\
+				return;														\
+			}																\
+		}																	\
+																			\
+		if (len != 2 * l + 1) {												\
+			RLC_THROW(ERR_NO_BUFFER);										\
+			return;															\
+		}																	\
+																			\
+		if (bin[0] != 4) {													\
+			RLC_THROW(ERR_NO_VALID);										\
+			return;															\
+		}																	\
+																			\
+		a->coord = BASIC;													\
+		F##_set_dig(a->z, 1);												\
+		F##_read_bin(a->x, bin + 1, l);										\
+		F##_read_bin(a->y, bin + l + 1, l);									\
+																			\
+		if (!C##_on_curve(a)) {												\
+			RLC_THROW(ERR_NO_VALID);										\
+		}																	\
+	}																		\
+																			\
+	void C##_write_bin(uint8_t *bin, size_t len, const C##_t a, int pack) {	\
+		const size_t l = (sizeof(F##_t) / sizeof(fp_t)) * RLC_FP_BYTES;		\
+		C##_t t;															\
+																			\
+		/* Point compression is not supported in this extension. */			\
+		(void)pack;															\
+																			\
+		C##_null(t);														\
+																			\
+		memset(bin, 0, len);												\
+																			\
+		if (C##_is_infty(a)) {												\
+			if (len < 1) {													\
+				RLC_THROW(ERR_NO_BUFFER);									\
+			}																\
+			return;															\
+		}																	\
+																			\
+		RLC_TRY {															\
+			C##_new(t);														\
+																			\
+			C##_norm(t, a);													\
+																			\
+			if (len < 2 * l + 1) {											\
+				RLC_THROW(ERR_NO_BUFFER);									\
+			} else {														\
+				bin[0] = 4;													\
+				F##_write_bin(bin + 1, l, t->x, 0);							\
+				F##_write_bin(bin + l + 1, l, t->y, 0);						\
+			}																\
+		} RLC_CATCH_ANY {													\
+			RLC_THROW(ERR_CAUGHT);											\
+		} RLC_FINALLY {														\
+			C##_free(t);													\
+		}																	\
+	}

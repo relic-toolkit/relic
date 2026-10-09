@@ -47,15 +47,7 @@ TMPL_FPX_CMP(fp4, fp2, 2);
 
 TMPL_FPX_ADD(fp4, fp2, 2);
 
-void fp4_add_dig(fp4_t c, const fp4_t a, dig_t dig) {
-	fp2_add_dig(c[0], a[0], dig);
-	fp2_copy(c[1], a[1]);
-}
-
-void fp4_sub_dig(fp4_t c, const fp4_t a, dig_t dig) {
-	fp2_sub_dig(c[0], a[0], dig);
-	fp2_copy(c[1], a[1]);
-}
+TMPL_FPX_ASM_DIG(fp4, fp2, 2);
 
 #if FPX_RDC == BASIC || !defined(STRIP)
 
@@ -110,11 +102,6 @@ void fp4_mul_frb(fp4_t c, const fp4_t a, int i, int j) {
 	} RLC_FINALLY {
 		fp2_free(t);
 	}
-}
-
-void fp4_mul_dig(fp4_t c, const fp4_t a, dig_t b) {
-	fp2_mul_dig(c[0], a[0], b);
-	fp2_mul_dig(c[1], a[1], b);
 }
 
 #if FPX_RDC == BASIC || !defined(STRIP)

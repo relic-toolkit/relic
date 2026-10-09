@@ -34,80 +34,6 @@
 #include "relic_ep_mul_tmpl.h"
 
 /*============================================================================*/
-/* Private definitions                                                        */
-/*============================================================================*/
-
-#if EP_FIX == LWNAF || !defined(STRIP)
-
-/**
- * Precomputes a table for a point multiplication on an ordinary curve.
- *
- * @param[out] t				- the destination table.
- * @param[in] p					- the point to multiply.
- */
-static void ep4_mul_pre_ordin(ep4_t *t, const ep4_t p) {
-	ep4_dbl(t[0], p);
-	ep4_norm(t[0], t[0]);
-
-#if RLC_DEPTH > 2
-	ep4_add(t[1], t[0], p);
-	for (int i = 2; i < (1 << (RLC_DEPTH - 2)); i++) {
-		ep4_add(t[i], t[i - 1], t[0]);
-	}
-
-	for (int i = 1; i < (1 << (RLC_DEPTH - 2)); i++) {
-		ep4_norm(t[i], t[i]);
-	}
-
-#endif
-	ep4_copy(t[0], p);
-}
-
-/**
- * Multiplies a binary elliptic curve point by an integer using the w-NAF
- * method.
- *
- * @param[out] r 				- the result.
- * @param[in] p					- the point to multiply.
- * @param[in] k					- the integer.
- */
-static void ep4_mul_fix_ordin(ep4_t r, const ep4_t *table, const bn_t k) {
-	int8_t naf[2 * RLC_FP_BITS + 1], *t;
-	size_t len;
-	int n;
-
-	if (bn_is_zero(k)) {
-		ep4_set_infty(r);
-		return;
-	}
-
-	/* Compute the w-TNAF representation of k. */
-	len = 2 * RLC_FP_BITS + 1;
-	bn_rec_naf(naf, &len, k, RLC_DEPTH);
-
-	t = naf + len - 1;
-	ep4_set_infty(r);
-	for (int i = len - 1; i >= 0; i--, t--) {
-		ep4_dbl(r, r);
-
-		n = *t;
-		if (n > 0) {
-			ep4_add(r, r, table[n / 2]);
-		}
-		if (n < 0) {
-			ep4_sub(r, r, table[-n / 2]);
-		}
-	}
-	/* Convert r to affine coordinates. */
-	ep4_norm(r, r);
-	if (bn_sign(k) == RLC_NEG) {
-		ep4_neg(r, r);
-	}
-}
-
-#endif /* EP_FIX == LWNAF */
-
-/*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
@@ -131,12 +57,6 @@ TMPL_EP_MUL_COMBD(ep4);
 
 #if EP_FIX == LWNAF || !defined(STRIP)
 
-void ep4_mul_pre_lwnaf(ep4_t *t, const ep4_t p) {
-	ep4_mul_pre_ordin(t, p);
-}
-
-void ep4_mul_fix_lwnaf(ep4_t r, const ep4_t *t, const bn_t k) {
-	ep4_mul_fix_ordin(r, t, k);
-}
+TMPL_EP_MUL_FIX_LWNAF(ep4);
 
 #endif

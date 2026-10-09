@@ -2516,7 +2516,9 @@
 #undef fp8_cmp_dig
 #undef fp8_set_dig
 #undef fp8_add
+#undef fp8_add_dig
 #undef fp8_sub
+#undef fp8_sub_dig
 #undef fp8_neg
 #undef fp8_dbl
 #undef fp8_mul_unr
@@ -2557,7 +2559,9 @@
 #define fp8_cmp_dig 	RLC_PREFIX(fp8_cmp_dig)
 #define fp8_set_dig 	RLC_PREFIX(fp8_set_dig)
 #define fp8_add 	RLC_PREFIX(fp8_add)
+#define fp8_add_dig 	RLC_PREFIX(fp8_add_dig)
 #define fp8_sub 	RLC_PREFIX(fp8_sub)
+#define fp8_sub_dig 	RLC_PREFIX(fp8_sub_dig)
 #define fp8_neg 	RLC_PREFIX(fp8_neg)
 #define fp8_dbl 	RLC_PREFIX(fp8_dbl)
 #define fp8_mul_unr 	RLC_PREFIX(fp8_mul_unr)

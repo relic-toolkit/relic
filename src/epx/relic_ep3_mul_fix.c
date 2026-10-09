@@ -34,56 +34,6 @@
 #include "relic_ep_mul_tmpl.h"
 
 /*============================================================================*/
-/* Private definitions                                                        */
-/*============================================================================*/
-
-#if EP_FIX == LWNAF || !defined(STRIP)
-
-/**
- * Multiplies a binary elliptic curve point by an integer using the w-NAF
- * method.
- *
- * @param[out] r 				- the result.
- * @param[in] p					- the point to multiply.
- * @param[in] k					- the integer.
- */
-static void ep3_mul_fix_plain(ep3_t r, const ep3_t *table, const bn_t k) {
-	int i, n;
-	size_t len;
-	int8_t naf[2 * RLC_FP_BITS + 1], *t;
-
-	if (bn_is_zero(k)) {
-		ep3_set_infty(r);
-		return;
-	}
-
-	/* Compute the w-TNAF representation of k. */
-	len = 2 * RLC_FP_BITS + 1;
-	bn_rec_naf(naf, &len, k, RLC_DEPTH);
-
-	t = naf + len - 1;
-	ep3_set_infty(r);
-	for (i = len - 1; i >= 0; i--, t--) {
-		ep3_dbl(r, r);
-
-		n = *t;
-		if (n > 0) {
-			ep3_add(r, r, table[n / 2]);
-		}
-		if (n < 0) {
-			ep3_sub(r, r, table[-n / 2]);
-		}
-	}
-	/* Convert r to affine coordinates. */
-	ep3_norm(r, r);
-	if (bn_sign(k) == RLC_NEG) {
-		ep3_neg(r, r);
-	}
-}
-
-#endif /* EP_FIX == LWNAF */
-
-/*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
 
@@ -107,34 +57,6 @@ TMPL_EP_MUL_COMBD(ep3);
 
 #if EP_FIX == LWNAF || !defined(STRIP)
 
-void ep3_mul_pre_lwnaf(ep3_t *t, const ep3_t p) {
-	ep3_tab(t, p, RLC_DEPTH);
-}
-
-void ep3_mul_fix_lwnaf(ep3_t r, const ep3_t *t, const bn_t k) {
-	bn_t n, _k;
-
-	if (bn_is_zero(k)) {
-		ep3_set_infty(r);
-		return;
-	}
-
-	bn_null(n);
-	bn_null(_k);
-
-	RLC_TRY {
-		bn_new(n);
-		bn_new(_k);
-
-		ep3_curve_get_ord(n);
-		bn_mod(_k, k, n);
-		ep3_mul_fix_plain(r, t, _k);
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		bn_free(n);
-		bn_free(_k);
-	}
-}
+TMPL_EP_MUL_FIX_LWNAF(ep3);
 
 #endif

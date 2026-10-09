@@ -93,17 +93,7 @@ void fp3_dbl_basic(fp3_t c, const fp3_t a) {
 
 #endif
 
-void fp3_add_dig(fp3_t c, const fp3_t a, dig_t dig) {
-	fp_add_dig(c[0], a[0], dig);
-	fp_copy(c[1], a[1]);
-	fp_copy(c[2], a[2]);
-}
-
-void fp3_sub_dig(fp3_t c, const fp3_t a, dig_t dig) {
-	fp_sub_dig(c[0], a[0], dig);
-	fp_copy(c[1], a[1]);
-	fp_copy(c[2], a[2]);
-}
+TMPL_FPX_ASM_DIG(fp3, fp, 3);
 
 void fp3_neg(fp3_t c, const fp3_t a) {
 	fp_neg(c[0], a[0]);
@@ -364,12 +354,6 @@ void fp3_mul_frb(fp3_t c, const fp3_t a, int i, int j) {
 		}
 #endif
 	}
-}
-
-void fp3_mul_dig(fp3_t c, const fp3_t a, dig_t b) {
-	fp_mul_dig(c[0], a[0], b);
-	fp_mul_dig(c[1], a[1], b);
-	fp_mul_dig(c[2], a[2], b);
 }
 
 #if FPX_CBC == BASIC || !defined(STRIP)

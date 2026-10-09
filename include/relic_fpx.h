@@ -3015,6 +3015,15 @@ void fp8_set_dig(fp8_t a, const dig_t b);
 void fp8_add(fp8_t c, const fp8_t a, const fp8_t b);
 
 /**
+ * Adds an octic extension field element and a digit. Computes c = a + b.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the octic extension field element.
+ * @param[in] b				- the digit to add.
+ */
+void fp8_add_dig(fp8_t c, const fp8_t a, dig_t b);
+
+/**
  * Subtracts an octic extension field element from another. Computes
  * c = a - b.
  *
@@ -3023,6 +3032,15 @@ void fp8_add(fp8_t c, const fp8_t a, const fp8_t b);
  * @param[in] b				- the octic extension field element.
  */
 void fp8_sub(fp8_t c, const fp8_t a, const fp8_t b);
+
+/**
+ * Subtracts an octic extension field element and a digit. Computes c = a - b.
+ *
+ * @param[out] c			- the result.
+ * @param[in] a				- the octic extension field element.
+ * @param[in] b				- the digit to subtract.
+ */
+void fp8_sub_dig(fp8_t c, const fp8_t a, dig_t b);
 
 /**
  * Negates an octic extension field element. Computes c = -a.

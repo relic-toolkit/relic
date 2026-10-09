@@ -3011,6 +3011,26 @@ static int multiplication8(void) {
 		} TEST_END;
 #endif
 
+		TEST_CASE("addition of a single digit is consistent") {
+			dig_t g;
+			fp8_rand(a);
+			rand_bytes((uint8_t *)&g, sizeof(dig_t));
+			fp8_set_dig(b, g);
+			fp8_add(c, a, b);
+			fp8_add_dig(d, a, g);
+			TEST_ASSERT(fp8_cmp(c, d) == RLC_EQ, end);
+		} TEST_END;
+
+		TEST_CASE("subtraction of a single digit is consistent") {
+			dig_t g;
+			fp8_rand(a);
+			rand_bytes((uint8_t *)&g, sizeof(dig_t));
+			fp8_set_dig(b, g);
+			fp8_sub(c, a, b);
+			fp8_sub_dig(d, a, g);
+			TEST_ASSERT(fp8_cmp(c, d) == RLC_EQ, end);
+		} TEST_END;
+
 		TEST_CASE("multiplication by a digit is correct") {
 			dig_t g;
 			fp8_rand(a);

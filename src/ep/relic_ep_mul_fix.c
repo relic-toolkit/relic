@@ -36,54 +36,7 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-#if EP_FIX == LWNAF || !defined(STRIP)
-
-/**
- * Multiplies a binary elliptic curve point by an integer using the w-NAF
- * method.
- *
- * @param[out] r 				- the result.
- * @param[in] t					- the precomputed table.
- * @param[in] k					- the integer.
- */
-static void ep_mul_fix_plain(ep_t r, const ep_t *t, const bn_t k) {
-	int i, n;
-	int8_t naf[RLC_FP_BITS + 1];
-	size_t l;
-
-	/* Compute the w-TNAF representation of k. */
-	l = RLC_FP_BITS + 1;
-	bn_rec_naf(naf, &l, k, RLC_DEPTH);
-
-	n = naf[l - 1];
-	if (n > 0) {
-		ep_copy(r, t[n / 2]);
-	} else {
-		ep_neg(r, t[-n / 2]);
-	}
-
-	for (i = l - 2; i >= 0; i--) {
-		ep_dbl(r, r);
-
-		n = naf[i];
-		if (n > 0) {
-			ep_add(r, r, t[n / 2]);
-		}
-		if (n < 0) {
-			ep_sub(r, r, t[-n / 2]);
-		}
-	}
-	/* Convert r to affine coordinates. */
-	ep_norm(r, r);
-	if (bn_sign(k) == RLC_NEG) {
-		ep_neg(r, r);
-	}
-}
-
-#endif /* EP_FIX == LWNAF */
-
 #if EP_FIX == COMBS || !defined(STRIP)
-
 
 /**
  * Multiplies a prime elliptic curve point by an integer using the COMBS
@@ -180,7 +133,6 @@ static void ep_mul_combs_endom(ep_t r, const ep_t *t, const bn_t k) {
 	}
 }
 
-
 /**
  * Multiplies a prime elliptic curve point by an integer using the COMBS
  * method.
@@ -243,8 +195,7 @@ static void ep_mul_combs_plain(ep_t r, const ep_t *t, const bn_t k) {
 	}
 }
 
-
-#endif /* EP_FIX == LWNAF */
+#endif /* EP_FIX == COMBS */
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -321,34 +272,6 @@ TMPL_EP_MUL_COMBD(ep);
 
 #if EP_FIX == LWNAF || !defined(STRIP)
 
-void ep_mul_pre_lwnaf(ep_t *t, const ep_t p) {
-	ep_tab(t, p, RLC_DEPTH);
-}
-
-void ep_mul_fix_lwnaf(ep_t r, const ep_t *t, const bn_t k) {
-	bn_t n, m;
-
-	if (bn_is_zero(k)) {
-		ep_set_infty(r);
-		return;
-	}
-
-	bn_null(n);
-	bn_null(m);
-
-	RLC_TRY {
-		bn_new(n);
-		bn_new(m);
-
-		ep_curve_get_ord(n);
-		bn_mod(m, k, n);
-		ep_mul_fix_plain(r, t, m);
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	} RLC_FINALLY {
-		bn_free(n);
-		bn_free(m);
-	}
-}
+TMPL_EP_MUL_FIX_LWNAF(ep);
 
 #endif

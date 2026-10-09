@@ -961,6 +961,8 @@ static int fixed(void) {
 			bn_zero(k);
 			ep_mul_fix(r, (const ep_t *)t, k);
 			TEST_ASSERT(ep_is_infty(r), end);
+			ep_mul_fix(r, (const ep_t *)t, n);
+			TEST_ASSERT(ep_is_infty(r), end);
 			bn_set_dig(k, 1);
 			ep_mul_fix(r, (const ep_t *)t, k);
 			TEST_ASSERT(ep_cmp(p, r) == RLC_EQ, end);
@@ -995,6 +997,8 @@ static int fixed(void) {
 			ep_mul_pre_basic(t, p);
 			bn_zero(k);
 			ep_mul_fix_basic(r, (const ep_t *)t, k);
+			TEST_ASSERT(ep_is_infty(r), end);
+			ep_mul_fix_basic(r, (const ep_t *)t, n);
 			TEST_ASSERT(ep_is_infty(r), end);
 			bn_set_dig(k, 1);
 			ep_mul_fix_basic(r, (const ep_t *)t, k);
@@ -1031,6 +1035,8 @@ static int fixed(void) {
 			bn_zero(k);
 			ep_mul_fix_combs(r, (const ep_t *)t, k);
 			TEST_ASSERT(ep_is_infty(r), end);
+			ep_mul_fix_combs(r, (const ep_t *)t, n);
+			TEST_ASSERT(ep_is_infty(r), end);
 			bn_set_dig(k, 1);
 			ep_mul_fix_combs(r, (const ep_t *)t, k);
 			TEST_ASSERT(ep_cmp(p, r) == RLC_EQ, end);
@@ -1066,6 +1072,8 @@ static int fixed(void) {
 			bn_zero(k);
 			ep_mul_fix_combd(r, (const ep_t *)t, k);
 			TEST_ASSERT(ep_is_infty(r), end);
+			ep_mul_fix_combd(r, (const ep_t *)t, n);
+			TEST_ASSERT(ep_is_infty(r), end);
 			bn_set_dig(k, 1);
 			ep_mul_fix_combd(r, (const ep_t *)t, k);
 			TEST_ASSERT(ep_cmp(p, r) == RLC_EQ, end);
@@ -1100,6 +1108,8 @@ static int fixed(void) {
 			ep_mul_pre_lwnaf(t, p);
 			bn_zero(k);
 			ep_mul_fix_lwnaf(r, (const ep_t *)t, k);
+			TEST_ASSERT(ep_is_infty(r), end);
+			ep_mul_fix_lwnaf(r, (const ep_t *)t, n);
 			TEST_ASSERT(ep_is_infty(r), end);
 			bn_set_dig(k, 1);
 			ep_mul_fix_lwnaf(r, (const ep_t *)t, k);

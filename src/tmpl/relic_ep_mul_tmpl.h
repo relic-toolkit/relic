@@ -764,6 +764,82 @@
 	}
 
 /**
+ * Defines a template for fixed-point multiplication using the left-to-right
+ * w-NAF method, including the precomputation.
+ *
+ * @param[in] C			- the curve.
+ */
+#define TMPL_EP_MUL_FIX_LWNAF(C)											\
+	static void C##_mul_fix_plain(C##_t r, const C##_t *t, const bn_t k) {	\
+		int i, n;															\
+		int8_t naf[RLC_FP_BITS + 1];										\
+		size_t l;															\
+																			\
+		if (bn_is_zero(k)) {												\
+			C##_set_infty(r);												\
+			return;															\
+		}																	\
+																			\
+		/* Compute the w-NAF representation of k. */						\
+		l = RLC_FP_BITS + 1;												\
+		bn_rec_naf(naf, &l, k, RLC_DEPTH);									\
+																			\
+		n = naf[l - 1];														\
+		if (n > 0) {														\
+			C##_copy(r, t[n / 2]);											\
+		} else {															\
+			C##_neg(r, t[-n / 2]);											\
+		}																	\
+																			\
+		for (i = l - 2; i >= 0; i--) {										\
+			C##_dbl(r, r);													\
+																			\
+			n = naf[i];														\
+			if (n > 0) {													\
+				C##_add(r, r, t[n / 2]);									\
+			}																\
+			if (n < 0) {													\
+				C##_sub(r, r, t[-n / 2]);									\
+			}																\
+		}																	\
+		/* Convert r to affine coordinates. */								\
+		C##_norm(r, r);														\
+		if (bn_sign(k) == RLC_NEG) {										\
+			C##_neg(r, r);													\
+		}																	\
+	}																		\
+																			\
+	void C##_mul_pre_lwnaf(C##_t *t, const C##_t p) {						\
+		C##_tab(t, p, RLC_DEPTH);											\
+	}																		\
+																			\
+	void C##_mul_fix_lwnaf(C##_t r, const C##_t *t, const bn_t k) {			\
+		bn_t n, _k;															\
+																			\
+		if (bn_is_zero(k)) {												\
+			C##_set_infty(r);												\
+			return;															\
+		}																	\
+																			\
+		bn_null(n);															\
+		bn_null(_k);														\
+																			\
+		RLC_TRY {															\
+			bn_new(n);														\
+			bn_new(_k);														\
+																			\
+			C##_curve_get_ord(n);											\
+			bn_mod(_k, k, n);												\
+			C##_mul_fix_plain(r, t, _k);									\
+		} RLC_CATCH_ANY {													\
+			RLC_THROW(ERR_CAUGHT);											\
+		} RLC_FINALLY {														\
+			bn_free(n);														\
+			bn_free(_k);													\
+		}																	\
+	}
+
+/**
  * Defines a template for fixed-point multiplication using the single-table
  * comb method, including the precomputation.
  *
