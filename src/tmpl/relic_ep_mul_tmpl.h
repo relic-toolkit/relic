@@ -140,6 +140,133 @@
 	}
 
 /**
+ * Defines a template for regular point multiplication using the GLS
+ * endomorphism. The scalar is decomposed in S subscalars, which are split in T
+ * groups recoded with the sign-aligned column method, each with its own
+ * precomputation table of 2^(S/T - 1) points.
+ *
+ * @param[in] C			- the curve.
+ * @param[in] F			- the field prefix.
+ * @param[in] S			- the number of subscalars.
+ * @param[in] T			- the number of precomputation tables.
+ */
+#define TMPL_EP_MUL_REG_GLS(C, F, S, T)										\
+	static void C##_mul_reg_gls(C##_t r, const C##_t p, const bn_t k) {		\
+		const int flag = (ep_curve_is_pairf() == EP_BN);					\
+		size_t l;															\
+		bn_t n, _k[S], u;													\
+		int8_t even[T], col, sac[T][(S / T) * (RLC_FP_BITS + 1)];			\
+		C##_t q[S], t[T][1 << (S / T - 1)];									\
+																			\
+		bn_null(n);															\
+		bn_null(u);															\
+																			\
+		RLC_TRY {															\
+			bn_new(n);														\
+			bn_new(u);														\
+			for (int i = 0; i < S; i++) {									\
+				bn_null(_k[i]);												\
+				C##_null(q[i]);												\
+				bn_new(_k[i]);												\
+				C##_new(q[i]);												\
+			}																\
+			for (int i = 0; i < T; i++) {									\
+				for (int j = 0; j < (1 << (S / T - 1)); j++) {				\
+					C##_null(t[i][j]);										\
+					C##_new(t[i][j]);										\
+				}															\
+			}																\
+																			\
+			C##_curve_get_ord(n);											\
+			fp_prime_get_par(u);											\
+			if (ep_curve_is_pairf() == EP_SG18) {							\
+				/* The endomorphism acts as multiplication by -3u. */		\
+				bn_mul_dig(u, u, 3);										\
+				bn_neg(u, u);												\
+			}																\
+			bn_mod(_k[0], k, n);											\
+			bn_rec_frb(_k, S, _k[0], u, n, flag);							\
+																			\
+			C##_norm(q[0], p);												\
+			for (int i = 1; i < S; i++) {									\
+				C##_psi(q[i], q[i - 1]);									\
+			}																\
+			for (int i = 0; i < S; i++) {									\
+				C##_neg(r, q[i]);											\
+				F##_copy_sec(q[i]->y, r->y, bn_sign(_k[i]) == RLC_NEG);		\
+				bn_abs(_k[i], _k[i]);										\
+			}																\
+			for (int i = 0; i < T; i++) {									\
+				even[i] = bn_is_even(_k[i * (S / T)]);						\
+				bn_add_dig(_k[i * (S / T)], _k[i * (S / T)], even[i]);		\
+			}																\
+																			\
+			for (int i = 0; i < T; i++) {									\
+				C##_copy(t[i][0], q[i * (S / T)]);							\
+				for (int j = 1; j < (1 << (S / T - 1)); j++) {				\
+					l = util_bits_dig(j);									\
+					C##_add(t[i][j], t[i][j ^ (1 << (l - 1))],				\
+							q[l + i * (S / T)]);							\
+				}															\
+				/* The endomorphism may return projective points. */		\
+				l = (t[i][0]->coord == BASIC);								\
+				C##_norm_sim(t[i] + l, (const C##_t *)t[i] + l,				\
+						(1 << (S / T - 1)) - l);							\
+				l = RLC_FP_BITS + 1;										\
+				bn_rec_sac(sac[i], &l, _k + i * (S / T), u, T, S / T,		\
+						bn_bits(n), flag);									\
+			}																\
+																			\
+			TMPL_EP_SEL_INIT(F, q[1]);										\
+			C##_set_infty(r);												\
+			for (int j = l - 1; j >= 0; j--) {								\
+				C##_dbl(r, r);												\
+				for (int i = 0; i < T; i++) {								\
+					col = 0;												\
+					for (int m = S / T - 1; m > 0; m--) {					\
+						col <<= 1;											\
+						col += sac[i][m * l + j];							\
+					}														\
+					for (int m = 0; m < (1 << (S / T - 1)); m++) {			\
+						F##_copy_sec(q[1]->x, t[i][m]->x, m == col);		\
+						F##_copy_sec(q[1]->y, t[i][m]->y, m == col);		\
+						TMPL_EP_SEL_Z(F, q[1], t[i][m], m == col);			\
+					}														\
+					C##_neg(q[2], q[1]);									\
+					F##_copy_sec(q[1]->y, q[2]->y, sac[i][j]);				\
+					C##_add(r, r, q[1]);									\
+				}															\
+			}																\
+																			\
+			for (int i = 0; i < T; i++) {									\
+				C##_sub(q[1], r, q[i * (S / T)]);							\
+				F##_copy_sec(r->x, q[1]->x, even[i]);						\
+				F##_copy_sec(r->y, q[1]->y, even[i]);						\
+				F##_copy_sec(r->z, q[1]->z, even[i]);						\
+			}																\
+																			\
+			/* Convert r to affine coordinates. */							\
+			C##_norm(r, r);													\
+		}																	\
+		RLC_CATCH_ANY {														\
+			RLC_THROW(ERR_CAUGHT);											\
+		}																	\
+		RLC_FINALLY {														\
+			bn_free(n);														\
+			bn_free(u);														\
+			for (int i = 0; i < S; i++) {									\
+				bn_free(_k[i]);												\
+				C##_free(q[i]);												\
+			}																\
+			for (int i = 0; i < T; i++) {									\
+				for (int j = 0; j < (1 << (S / T - 1)); j++) {				\
+					C##_free(t[i][j]);										\
+				}															\
+			}																\
+		}																	\
+	}
+
+/**
  * Defines a template for regular point multiplication using a regular
  * w-NAF recoding of the scalar.
  *
