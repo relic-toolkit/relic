@@ -256,31 +256,6 @@ static void ep_mul_combs_plain(ep_t r, const ep_t *t, const bn_t k) {
 
 #if EP_FIX == BASIC || !defined(STRIP)
 
-void ep_mul_pre_basic(ep_t *t, const ep_t p) {
-	bn_t n;
-
-	bn_null(n);
-
-	RLC_TRY {
-		bn_new(n);
-
-		ep_curve_get_ord(n);
-
-		ep_copy(t[0], p);
-		for (int i = 1; i < bn_bits(n); i++) {
-			ep_dbl(t[i], t[i - 1]);
-		}
-
-		ep_norm_sim(t + 1, (const ep_t *)t + 1, bn_bits(n) - 1);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		bn_free(n);
-	}
-}
-
 TMPL_EP_MUL_FIX_BASIC(ep);
 
 #endif

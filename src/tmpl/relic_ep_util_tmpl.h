@@ -325,3 +325,78 @@
 			RLC_FREE(a);													\
 		}																	\
 	}
+
+/**
+ * Defines a template for point comparison.
+ *
+ * @param[in] C			- the curve.
+ * @param[in] F			- the field prefix.
+ */
+#define TMPL_EP_CMP(C, F)													\
+	int C##_cmp(const C##_t p, const C##_t q) {								\
+		C##_t r, s;															\
+		int result = RLC_NE;												\
+																			\
+		if (C##_is_infty(p) && C##_is_infty(q)) {							\
+			return RLC_EQ;													\
+		}																	\
+																			\
+		C##_null(r);														\
+		C##_null(s);														\
+																			\
+		RLC_TRY {															\
+			C##_new(r);														\
+			C##_new(s);														\
+																			\
+			switch (q->coord) {												\
+				case PROJC:													\
+					/* If q is in homogeneous projective coordinates,		\
+					 * compute x1 * z2 and y1 * z2. */						\
+					F##_mul(r->x, p->x, q->z);								\
+					F##_mul(r->y, p->y, q->z);								\
+					break;													\
+				case JACOB:													\
+					/* If q is in Jacobian projective coordinates,			\
+					 * compute x1 * z2^2 and y1 * z2^3. */					\
+					F##_sqr(r->z, q->z);									\
+					F##_mul(r->x, p->x, r->z);								\
+					F##_mul(r->z, r->z, q->z);								\
+					F##_mul(r->y, p->y, r->z);								\
+					break;													\
+				default:													\
+					C##_copy(r, p);											\
+					break;													\
+			}																\
+																			\
+			switch (p->coord) {												\
+				/* Now do the same for the other point. */					\
+				case PROJC:													\
+					F##_mul(s->x, q->x, p->z);								\
+					F##_mul(s->y, q->y, p->z);								\
+					break;													\
+				case JACOB:													\
+					F##_sqr(s->z, p->z);									\
+					F##_mul(s->x, q->x, s->z);								\
+					F##_mul(s->z, s->z, p->z);								\
+					F##_mul(s->y, q->y, s->z);								\
+					break;													\
+				default:													\
+					C##_copy(s, q);											\
+					break;													\
+			}																\
+																			\
+			if ((F##_cmp(r->x, s->x) == RLC_EQ) &&							\
+					(F##_cmp(r->y, s->y) == RLC_EQ)) {						\
+				result = RLC_EQ;											\
+			}																\
+		}																	\
+		RLC_CATCH_ANY {														\
+			RLC_THROW(ERR_CAUGHT);											\
+		}																	\
+		RLC_FINALLY {														\
+			C##_free(r);													\
+			C##_free(s);													\
+		}																	\
+																			\
+		return result;														\
+	}

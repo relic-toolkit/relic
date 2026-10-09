@@ -31,6 +31,7 @@
  */
 
 #include "relic_core.h"
+#include "relic_ep_mul_tmpl.h"
 
 /*============================================================================*/
 /* Private definitions                                                        */
@@ -146,26 +147,7 @@ static void ep8_mul_sim_plain(ep8_t r, const ep8_t p, const bn_t k,
 
 #if EP_SIM == BASIC || !defined(STRIP)
 
-void ep8_mul_sim_basic(ep8_t r, const ep8_t p, const bn_t k, const ep8_t q,
-		const bn_t l) {
-	ep8_t t;
-
-	ep8_null(t);
-
-	RLC_TRY {
-		ep8_new(t);
-		ep8_mul(t, q, l);
-		ep8_mul(r, p, k);
-		ep8_add(t, t, r);
-		ep8_norm(r, t);
-
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		ep8_free(t);
-	}
-}
+TMPL_EP_MUL_SIM_BASIC(ep8);
 
 #endif
 
@@ -390,39 +372,7 @@ void ep8_mul_sim_gen(ep8_t r, const bn_t k, const ep8_t q, const bn_t m) {
 	}
 }
 
-void ep8_mul_sim_dig(ep8_t r, const ep8_t p[], const dig_t k[], size_t len) {
-	ep8_t t;
-	int max;
-
-	ep8_null(t);
-
-	max = util_bits_dig(k[0]);
-	for (int i = 1; i < len; i++) {
-		max = RLC_MAX(max, util_bits_dig(k[i]));
-	}
-
-	RLC_TRY {
-		ep8_new(t);
-
-		ep8_set_infty(t);
-		for (int i = max - 1; i >= 0; i--) {
-			ep8_dbl(t, t);
-			for (int j = 0; j < len; j++) {
-				if (k[j] & ((dig_t)1 << i)) {
-					ep8_add(t, t, p[j]);
-				}
-			}
-		}
-
-		ep8_norm(r, t);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		ep8_free(t);
-	}
-}
+TMPL_EP_MUL_SIM_DIG(ep8);
 
 void ep8_mul_sim_lot(ep8_t r, const ep8_t p[], const bn_t k[], size_t n) {
 	const size_t len = RLC_FP_BITS + 1;

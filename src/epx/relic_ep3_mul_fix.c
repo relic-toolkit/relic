@@ -89,29 +89,6 @@ static void ep3_mul_fix_plain(ep3_t r, const ep3_t *table, const bn_t k) {
 
 #if EP_FIX == BASIC || !defined(STRIP)
 
-void ep3_mul_pre_basic(ep3_t *t, const ep3_t p) {
-	bn_t n;
-
-	bn_null(n);
-
-	RLC_TRY {
-		bn_new(n);
-
-		ep3_curve_get_ord(n);
-
-		ep3_copy(t[0], p);
-		for (int i = 1; i < bn_bits(n); i++) {
-			ep3_dbl(t[i], t[i - 1]);
-		}
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		bn_free(n);
-	}
-}
-
 TMPL_EP_MUL_FIX_BASIC(ep3);
 
 #endif

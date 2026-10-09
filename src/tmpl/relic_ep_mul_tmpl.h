@@ -278,11 +278,37 @@
 	}
 
 /**
- * Defines a template for fixed-point multiplication using the binary method.
+ * Defines a template for fixed-point multiplication using the binary method,
+ * including the precomputation.
  *
  * @param[in] C			- the curve.
  */
 #define TMPL_EP_MUL_FIX_BASIC(C)											\
+	void C##_mul_pre_basic(C##_t *t, const C##_t p) {						\
+		bn_t n;																\
+																			\
+		bn_null(n);															\
+																			\
+		RLC_TRY {															\
+			bn_new(n);														\
+																			\
+			C##_curve_get_ord(n);											\
+																			\
+			C##_copy(t[0], p);												\
+			for (size_t i = 1; i < bn_bits(n); i++) {						\
+				C##_dbl(t[i], t[i - 1]);									\
+			}																\
+																			\
+			C##_norm_sim(t + 1, (const C##_t *)t + 1, bn_bits(n) - 1);		\
+		}																	\
+		RLC_CATCH_ANY {														\
+			RLC_THROW(ERR_CAUGHT);											\
+		}																	\
+		RLC_FINALLY {														\
+			bn_free(n);														\
+		}																	\
+	}																		\
+																			\
 	void C##_mul_fix_basic(C##_t r, const C##_t *t, const bn_t k) {			\
 		bn_t n, _k;															\
 																			\
@@ -534,6 +560,75 @@
 		}																	\
 	}
 
+
+/**
+ * Defines a template for simultaneous point multiplication using two
+ * independent multiplications.
+ *
+ * @param[in] C			- the curve.
+ */
+#define TMPL_EP_MUL_SIM_BASIC(C)											\
+	void C##_mul_sim_basic(C##_t r, const C##_t p, const bn_t k,			\
+			const C##_t q, const bn_t m) {									\
+		C##_t t;															\
+																			\
+		C##_null(t);														\
+																			\
+		RLC_TRY {															\
+			C##_new(t);														\
+			C##_mul(t, q, m);												\
+			C##_mul(r, p, k);												\
+			C##_add(t, t, r);												\
+			C##_norm(r, t);													\
+		} RLC_CATCH_ANY {													\
+			RLC_THROW(ERR_CAUGHT);											\
+		}																	\
+		RLC_FINALLY {														\
+			C##_free(t);													\
+		}																	\
+	}
+
+/**
+ * Defines a template for simultaneous multiplication of several points by
+ * small integers.
+ *
+ * @param[in] C			- the curve.
+ */
+#define TMPL_EP_MUL_SIM_DIG(C)												\
+	void C##_mul_sim_dig(C##_t r, const C##_t p[], const dig_t k[],			\
+			size_t len) {													\
+		C##_t t;															\
+		int max;															\
+																			\
+		C##_null(t);														\
+																			\
+		max = util_bits_dig(k[0]);											\
+		for (size_t i = 1; i < len; i++) {									\
+			max = RLC_MAX(max, util_bits_dig(k[i]));						\
+		}																	\
+																			\
+		RLC_TRY {															\
+			C##_new(t);														\
+																			\
+			C##_set_infty(t);												\
+			for (int i = max - 1; i >= 0; i--) {							\
+				C##_dbl(t, t);												\
+				for (size_t j = 0; j < len; j++) {							\
+					if (k[j] & ((dig_t)1 << i)) {							\
+						C##_add(t, t, p[j]);								\
+					}														\
+				}															\
+			}																\
+																			\
+			C##_norm(r, t);													\
+		}																	\
+		RLC_CATCH_ANY {														\
+			RLC_THROW(ERR_CAUGHT);											\
+		}																	\
+		RLC_FINALLY {														\
+			C##_free(t);													\
+		}																	\
+	}
 
 /**
  * Defines a template for multiplying the generator by an integer.

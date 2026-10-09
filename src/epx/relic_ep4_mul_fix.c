@@ -117,29 +117,6 @@ static void ep4_mul_fix_ordin(ep4_t r, const ep4_t *table, const bn_t k) {
 
 #if EP_FIX == BASIC || !defined(STRIP)
 
-void ep4_mul_pre_basic(ep4_t *t, const ep4_t p) {
-	bn_t n;
-
-	bn_null(n);
-
-	RLC_TRY {
-		bn_new(n);
-
-		ep4_curve_get_ord(n);
-
-		ep4_copy(t[0], p);
-		for (int i = 1; i < bn_bits(n); i++) {
-			ep4_dbl(t[i], t[i - 1]);
-		}
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		bn_free(n);
-	}
-}
-
 TMPL_EP_MUL_FIX_BASIC(ep4);
 
 #endif

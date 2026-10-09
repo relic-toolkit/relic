@@ -31,6 +31,7 @@
  */
 
 #include "relic_core.h"
+#include "relic_ep_mul_tmpl.h"
 
 /*============================================================================*/
 /* Private definitions                                                        */
@@ -614,26 +615,7 @@ void ep_mul_sim_lot_plain(ep_t r, const ep_t p[], const bn_t k[], int n) {
 
 #if EP_SIM == BASIC || !defined(STRIP)
 
-void ep_mul_sim_basic(ep_t r, const ep_t p, const bn_t k, const ep_t q,
-		const bn_t m) {
-	ep_t t;
-
-	ep_null(t);
-
-	RLC_TRY {
-		ep_new(t);
-		ep_mul(t, q, m);
-		ep_mul(r, p, k);
-		ep_add(t, t, r);
-		ep_norm(r, t);
-
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		ep_free(t);
-	}
-}
+TMPL_EP_MUL_SIM_BASIC(ep);
 
 #endif
 

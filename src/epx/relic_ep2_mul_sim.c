@@ -31,6 +31,7 @@
  */
 
 #include "relic_core.h"
+#include "relic_ep_mul_tmpl.h"
 
 /*============================================================================*/
 /* Private definitions                                                        */
@@ -253,26 +254,7 @@ static void ep2_mul_sim_plain(ep2_t r, const ep2_t p, const bn_t k,
 
 #if EP_SIM == BASIC || !defined(STRIP)
 
-void ep2_mul_sim_basic(ep2_t r, const ep2_t p, const bn_t k, const ep2_t q,
-		const bn_t l) {
-	ep2_t t;
-
-	ep2_null(t);
-
-	RLC_TRY {
-		ep2_new(t);
-		ep2_mul(t, q, l);
-		ep2_mul(r, p, k);
-		ep2_add(t, t, r);
-		ep2_norm(r, t);
-
-	} RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		ep2_free(t);
-	}
-}
+TMPL_EP_MUL_SIM_BASIC(ep2);
 
 #endif
 
@@ -554,39 +536,7 @@ void ep2_mul_sim_gen(ep2_t r, const bn_t k, const ep2_t q, const bn_t m) {
 	}
 }
 
-void ep2_mul_sim_dig(ep2_t r, const ep2_t p[], const dig_t k[], size_t len) {
-	ep2_t t;
-	int max;
-
-	ep2_null(t);
-
-	max = util_bits_dig(k[0]);
-	for (int i = 1; i < len; i++) {
-		max = RLC_MAX(max, util_bits_dig(k[i]));
-	}
-
-	RLC_TRY {
-		ep2_new(t);
-
-		ep2_set_infty(t);
-		for (int i = max - 1; i >= 0; i--) {
-			ep2_dbl(t, t);
-			for (int j = 0; j < len; j++) {
-				if (k[j] & ((dig_t)1 << i)) {
-					ep2_add(t, t, p[j]);
-				}
-			}
-		}
-
-		ep2_norm(r, t);
-	}
-	RLC_CATCH_ANY {
-		RLC_THROW(ERR_CAUGHT);
-	}
-	RLC_FINALLY {
-		ep2_free(t);
-	}
-}
+TMPL_EP_MUL_SIM_DIG(ep2);
 
 void ep2_mul_sim_lot(ep2_t r, const ep2_t p[], const bn_t k[], size_t n) {
 	const size_t len = RLC_FP_BITS + 1;
