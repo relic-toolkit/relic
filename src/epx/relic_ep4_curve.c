@@ -38,7 +38,7 @@
 
 /* See ep/relic_ep_param.c for discussion of MAP_U parameters. */
 
-#if defined(EP_ENDOM) && FP_PRIME == 315
+#if FP_PRIME == 315
 /** @{ */
 #define B24_P315_A0		"0"
 #define B24_P315_A1		"0"
@@ -61,7 +61,7 @@
 /** @} */
 #endif
 
-#if defined(EP_ENDOM) && FP_PRIME == 317
+#if FP_PRIME == 317
 /** @{ */
 #define B24_P317_A0		"0"
 #define B24_P317_A1		"0"
@@ -84,7 +84,7 @@
 /** @} */
 #endif
 
-#if defined(EP_ENDOM) && FP_PRIME == 330
+#if FP_PRIME == 330
 /** @{ */
 #define K16_P330_A0		"0"
 #define K16_P330_A1		"0"
@@ -107,7 +107,7 @@
 /** @} */
 #endif
 
-#if defined(EP_ENDOM) && FP_PRIME == 509
+#if FP_PRIME == 509
 /** @{ */
 #define B24_P509_A0		"0"
 #define B24_P509_A1		"0"
@@ -130,7 +130,7 @@
 /** @} */
 #endif
 
-#if defined(EP_ENDOM) && FP_PRIME == 510
+#if FP_PRIME == 510
 /** @{ */
 #define AFG16_P510_A0		"0"
 #define AFG16_P510_A1		"0"
@@ -153,7 +153,7 @@
 /** @} */
 #endif
 
-#if defined(EP_ENDOM) && FP_PRIME == 765
+#if FP_PRIME == 765
 /** @{ */
 #define FM16_P765_A0	"0"
 #define FM16_P765_A1	"0"
@@ -176,7 +176,7 @@
 /** @} */
 #endif
 
-#if defined(EP_ENDOM) && FP_PRIME == 766
+#if FP_PRIME == 766
 /** @{ */
 #define K16_P766_A0		"0"
 #define K16_P766_A1		"0"
@@ -199,7 +199,7 @@
 /** @} */
 #endif
 
-#if defined(EP_ENDOM) && FP_PRIME == 766
+#if FP_PRIME == 766
 /** @{ */
 #define AFG16_P766_A0		"0"
 #define AFG16_P766_A1		"0"

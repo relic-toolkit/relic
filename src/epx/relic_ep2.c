@@ -422,13 +422,11 @@ void ep2_frb(ep2_t r, const ep2_t p, int i) {
 	}
 }
 
-#if defined(EP_ENDOM)
 
 void ep2_psi(ep2_t r, const ep2_t p) {
 	ep2_frb(r, p, 1);
 }
 
-#endif
 
 void ep2_pck(ep2_t r, const ep2_t p) {
 	bn_t halfQ, yValue;

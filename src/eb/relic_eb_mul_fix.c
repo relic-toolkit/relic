@@ -37,7 +37,6 @@
 
 #if EB_FIX == LWNAF || !defined(STRIP)
 
-#if defined(EB_KBLTZ)
 
 /**
  * Multiplies a binary elliptic curve point by an integer using the w-TNAF
@@ -94,9 +93,7 @@ static void eb_mul_fix_kbltz(eb_t r, const eb_t *t, const bn_t k) {
 	}
 }
 
-#endif /* EB_KBLTZ */
 
-#if defined(EB_PLAIN)
 
 /**
  * Multiplies a binary elliptic curve point by an integer using the w-NAF
@@ -143,7 +140,6 @@ static void eb_mul_fix_plain(eb_t r, const eb_t *t, const bn_t k) {
 	}
 }
 
-#endif /* EB_PLAIN */
 
 #endif /* EB_FIX == LWNAF */
 
@@ -411,15 +407,11 @@ void eb_mul_pre_lwnaf(eb_t *t, const eb_t p) {
 }
 
 void eb_mul_fix_lwnaf(eb_t r, const eb_t *t, const bn_t k) {
-#if defined(EB_KBLTZ)
 	if (eb_curve_is_kbltz()) {
 		eb_mul_fix_kbltz(r, t, k);
 		return;
 	}
-#endif
 
-#if defined(EB_PLAIN)
 	eb_mul_fix_plain(r, t, k);
-#endif
 }
 #endif

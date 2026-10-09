@@ -2,8 +2,6 @@ message(STATUS "Binary elliptic curve arithmetic configuration (EB module):\n")
 
 message("   ** Options for the binary elliptic curve module (default = on, w = 4):\n")
 
-message("      EB_PLAIN=[off|on] Support for ordinary curves without endomorphisms.")
-message("      EB_KBLTZ=[off|on] Support for Koblitz anomalous binary curves.")
 message("      EB_PRECO=[off|on] Build precomputation table for generator.")
 
 message("   ** Available binary elliptic curve methods (default = PROJC;LWNAF;COMBS;INTER):\n")
@@ -31,8 +29,6 @@ message("      EB_METHD=TRICK    Shamir's trick for simultaneous multiplication.
 message("      EB_METHD=INTER    Interleaving of window (T)NAFs.")
 message("      EB_METHD=JOINT    Joint sparse form.\n")
 
-option(EB_PLAIN "Support for ordinary curves without endomorphisms" on)
-option(EB_KBLTZ "Support for Koblitz anomalous binary curves" on)
 option(EB_PRECO "Build precomputation table for generator" on)
 
 # Choose the arithmetic methods.

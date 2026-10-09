@@ -380,7 +380,6 @@ void ep3_frb(ep3_t r, const ep3_t p, int i) {
 	}
 }
 
-#if defined(EP_ENDOM)
 
 void ep3_psi(ep3_t r, const ep3_t p) {
 	ep3_t q;
@@ -427,4 +426,3 @@ void ep3_psi(ep3_t r, const ep3_t p) {
 	}
 }
 
-#endif

@@ -41,7 +41,7 @@
 /**
  * Parameters for a pairing-friendly prime curve over a quadratic extension.
  */
-#if defined(EP_ENDOM) && FP_PRIME == 158
+#if FP_PRIME == 158
 /** @{ */
 #define BN_P158_A0		"0"
 #define BN_P158_A1		"0"
@@ -58,7 +58,7 @@
 /** @} */
 #endif
 
-#if defined(EP_ENDOM) && FP_PRIME == 254
+#if FP_PRIME == 254
 /** @{ */
 #define BN_P254_A0		"0"
 #define BN_P254_A1		"0"
@@ -75,7 +75,7 @@
 /** @} */
 #endif
 
-#if defined(EP_ENDOM) && FP_PRIME == 256
+#if FP_PRIME == 256
 /** @{ */
 #define BN_P256_A0		"0"
 #define BN_P256_A1		"0"
@@ -92,7 +92,7 @@
 /** @} */
 #endif
 
-#if defined(EP_ENDOM) && FP_PRIME == 256
+#if FP_PRIME == 256
 /** @{ */
 #define SM9_P256_A0		"0"
 #define SM9_P256_A1		"0"
@@ -109,7 +109,7 @@
 /** @} */
 #endif
 
-#if defined(EP_ENDOM) && FP_PRIME == 377
+#if FP_PRIME == 377
 /** @{ */
 #define B12_P377_A0		"0"
 #define B12_P377_A1		"0"
@@ -126,7 +126,7 @@
 /** @} */
 #endif
 
-#if defined(EP_ENDOM) && FP_PRIME == 381
+#if FP_PRIME == 381
 /** @{ */
 #define B12_P381_A0		"0"
 #define B12_P381_A1		"0"
@@ -138,7 +138,6 @@
 #define B12_P381_Y1		"0606C4A02EA734CC32ACD2B02BC28B99CB3E287E85A763AF267492AB572E99AB3F370D275CEC1DA1AAA9075FF05F79BE"
 #define B12_P381_R		"73EDA753299D7D483339D80809A1D80553BDA402FFFE5BFEFFFFFFFF00000001"
 #define B12_P381_H		"5D543A95414E7F1091D50792876A202CD91DE4547085ABAA68A205B2E5A7DDFA628F1CB4D9E82EF21537E293A6691AE1616EC6E786F0C70CF1C38E31C7238E5"
-#if defined(EP_CTMAP)
 #define B12_P381_ISO_A0 "0"
 #define B12_P381_ISO_A1 "F0"
 #define B12_P381_ISO_B0 "3F4"
@@ -149,14 +148,10 @@
 #define B12_P381_ISO_YD "1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffa8fb,1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffa8fb;0,1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffa9d3;12,1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaa99;1,0"
 #define B12_P381_MAPU0	"-2"
 #define B12_P381_MAPU1	"-1"
-#else /* !defined(EP_CTMAP) */
-#define B12_P381_MAPU0	"0"
-#define B12_P381_MAPU1	"1"
-#endif
 /** @} */
 #endif
 
-#if defined(EP_ENDOM) && FP_PRIME == 382
+#if FP_PRIME == 382
 /** @{ */
 #define BN_P382_A0		"0"
 #define BN_P382_A1		"0"
@@ -173,7 +168,7 @@
 /** @} */
 #endif
 
-#if defined(EP_ENDOM) && FP_PRIME == 383
+#if FP_PRIME == 383
 /** @{ */
 #define B12_P383_A0		"0"
 #define B12_P383_A1		"0"
@@ -190,7 +185,7 @@
 /** @} */
 #endif
 
-#if defined(EP_ENDOM) && FP_PRIME == 446
+#if FP_PRIME == 446
 /** @{ */
 #define BN_P446_A0		"0"
 #define BN_P446_A1		"0"
@@ -207,7 +202,7 @@
 /** @} */
 #endif
 
-#if defined(EP_ENDOM) && FP_PRIME == 446
+#if FP_PRIME == 446
 /** @{ */
 #define B12_P446_A0		"0"
 #define B12_P446_A1		"0"
@@ -224,7 +219,7 @@
 /** @} */
 #endif
 
-#if defined(EP_ENDOM) && FP_PRIME == 455
+#if FP_PRIME == 455
 /** @{ */
 #define B12_P455_A0		"0"
 #define B12_P455_A1		"0"
@@ -241,7 +236,7 @@
 /** @} */
 #endif
 
-#if defined(EP_ENDOM) && FP_PRIME == 544
+#if FP_PRIME == 544
 /** @{ */
 #define GMT8_P544_A0	"0"
 #define GMT8_P544_A1	"2"
@@ -258,7 +253,7 @@
 /** @} */
 #endif
 
-#if defined(EP_ENDOM) && FP_PRIME == 638
+#if FP_PRIME == 638
 /** @{ */
 #define BN_P638_A0		"0"
 #define BN_P638_A1		"0"
@@ -275,7 +270,7 @@
 /** @} */
 #endif
 
-#if defined(EP_ENDOM) && FP_PRIME == 638
+#if FP_PRIME == 638
 /** @{ */
 #define B12_P638_A0		"0"
 #define B12_P638_A1		"0"
@@ -292,7 +287,7 @@
 /** @} */
 #endif
 
-#if defined(EP_ENDOM) && FP_PRIME == 1150
+#if FP_PRIME == 1150
 /** @{ */
 #define B12_P1150_A0	"0"
 #define B12_P1150_A1	"0"
@@ -340,7 +335,6 @@
 	RLC_GET(str, CURVE##_MAPU1, sizeof(CURVE##_MAPU1));						\
 	fp_read_str(u[1], str, strlen(str), 16);
 
-#if defined(EP_CTMAP)
 
 /**
  * Assigns the isogeny map parameters for hashing with SSWU map.
@@ -352,9 +346,7 @@
                         CURVE##_ISO_B1, CURVE##_ISO_XN, CURVE##_ISO_XD,		\
 						CURVE##_ISO_YN, CURVE##_ISO_YD)
 
-#endif /* EP_CTMAP */
 
-#if defined(EP_CTMAP)
 /**
  * Reads a sequence of polynomial coefficients from semicolon separated string.
  *
@@ -430,7 +422,6 @@ static inline void ep2_curve_set_ctmap(const char *a0_str, const char *a1_str,
 	iso->deg_yn = ep2_curve_get_coeffs(iso->yn, yn_str);
 	iso->deg_yd = ep2_curve_get_coeffs(iso->yd, yd_str);
 }
-#endif /* EP_CTMAP */
 
 /**
  * Precomputes constants used by the ep2_map function.
@@ -453,17 +444,13 @@ static void ep2_curve_set_map(void) {
 		if (ep2_curve_is_ctmap() || abNeq0) {
 			/* SSWU map constants */
 			/* constants 3 and 4 are a and b for the curve or isogeny */
-#ifdef EP_CTMAP
 			if (ep2_curve_is_ctmap()) {
 				fp2_copy(c3, ctx->ep2_iso.a);
 				fp2_copy(c4, ctx->ep2_iso.b);
 			} else {
-#endif
 				fp2_copy(c3, ctx->ep2_a);
 				fp2_copy(c4, ctx->ep2_b);
-#ifdef EP_CTMAP
 			}
-#endif
 			/* constant 1: -b / a */
 			fp2_neg(c1, c3);     /* c1 = -a */
 			fp2_inv(c1, c1);     /* c1 = -1 / a */
@@ -592,7 +579,6 @@ void ep2_curve_init(void) {
 	bn_make(&(ctx->ep2_r), RLC_FP_DIGS);
 	bn_make(&(ctx->ep2_h), RLC_FP_DIGS);
 
-#ifdef EP_CTMAP
 	iso2_t iso = ep2_curve_get_iso();
 #if ALLOC == DYNAMIC
 	fp2_new(iso->a);
@@ -608,7 +594,6 @@ void ep2_curve_init(void) {
 #else
 	(void)iso; /* suppress unused warning when ALLOC == AUTO */
 #endif /* ALLOC */
-#endif /* EP_CTMAP */
 #undef EP_CURVE_INIT_FP2
 }
 
@@ -625,7 +610,6 @@ void ep2_curve_clean(void) {
 		bn_clean(&(ctx->ep2_r));
 		bn_clean(&(ctx->ep2_h));
 
-#ifdef EP_CTMAP
 		iso2_t iso = ep2_curve_get_iso();
 		(void)iso; /* suppress unused warning when ALLOC == AUTO */
 		fp2_free(iso->a);
@@ -636,7 +620,6 @@ void ep2_curve_clean(void) {
 			fp2_free(iso->yn[i]);
 			fp2_free(iso->yd[i]);
 		}
-#endif
 		ep2_free(ctx->ep2_g);
 		fp2_free(ctx->ep2_a);
 		fp2_free(ctx->ep2_b);
@@ -748,11 +731,7 @@ void ep2_curve_get_cof(bn_t h) {
 }
 
 iso2_t ep2_curve_get_iso() {
-#ifdef EP_CTMAP
 	return &core_get()->ep2_iso;
-#else
-	return NULL;
-#endif /* EP_CTMAP */
 }
 
 #if defined(EP_PRECO)
@@ -798,7 +777,6 @@ void ep2_curve_set_twist(int type) {
 		bn_new(h);
 		
 		switch (ep_param_get()) {
-#if defined(EP_ENDOM)
 #if FP_PRIME == 158
 			case BN_P158:
 				ASSIGN(BN_P158);
@@ -821,10 +799,8 @@ void ep2_curve_set_twist(int type) {
 #elif FP_PRIME == 381
 			case B12_P381:
 				ASSIGN(B12_P381);
-#if defined(EP_CTMAP)
 				ctmap = 1;
 				ASSIGNM(B12_P381);
-#endif /* EP_CTMAP */
 				break;
 #elif FP_PRIME == 382
 			case BN_P382:
@@ -861,7 +837,6 @@ void ep2_curve_set_twist(int type) {
 				ASSIGN(B12_P1150);
 				break;
 #endif
-#endif /* EP_ENDOM */
 			default:
 				(void)str;
 				RLC_THROW(ERR_NO_VALID);

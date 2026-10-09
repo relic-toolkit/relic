@@ -695,31 +695,25 @@ int main(void) {
 	conf_print();
 	util_banner("Benchmarks for the EP module:", 0);
 
-#if defined(EP_PLAIN)
 	r0 = ep_param_set_any_plain();
 	if (r0 == RLC_OK) {
 		bench();
 	}
-#endif
 
-#if defined(EP_ENDOM)
 	r1 = ep_param_set_any_endom();
 	if (r1 == RLC_OK) {
 		bench();
 	}
-#endif
 
 	r2 = ep_param_set_any_pairf();
 	if (r2 == RLC_OK) {
 		bench();
 	}
 
-#if defined(EP_SUPER)
 	r3 = ep_param_set_any_super();
 	if (r3 == RLC_OK) {
 		bench();
 	}
-#endif
 
 	if (r0 == RLC_ERR && r1 == RLC_ERR && r2 == RLC_ERR && r3 == RLC_ERR) {
 		if (ep_param_set_any() == RLC_ERR) {

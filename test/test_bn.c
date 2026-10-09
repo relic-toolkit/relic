@@ -2569,7 +2569,7 @@ static int recoding(void) {
 			}
 		} TEST_END;
 
-#if defined(WITH_EB) && defined(EB_KBLTZ) && (EB_MUL == LWNAF || EB_MUL == RWNAF || EB_FIX == LWNAF || EB_SIM == INTER || !defined(STRIP))
+#if defined(WITH_EB) && (EB_MUL == LWNAF || EB_MUL == RWNAF || EB_FIX == LWNAF || EB_SIM == INTER || !defined(STRIP))
 		if (eb_param_set_any_kbltz() == RLC_OK) {
 			eb_curve_get_ord(v1[2]);
 			TEST_CASE("tnaf recoding is correct") {
@@ -2759,7 +2759,7 @@ static int recoding(void) {
 			}
 		} TEST_END;
 
-#if defined(WITH_EP) && defined(EP_ENDOM) && (EP_MUL == LWNAF || EP_FIX == COMBS || EP_FIX == LWNAF || EP_SIM == INTER || !defined(STRIP))
+#if defined(WITH_EP) && (EP_MUL == LWNAF || EP_FIX == COMBS || EP_FIX == LWNAF || EP_SIM == INTER || !defined(STRIP))
 		TEST_CASE("glv recoding is correct") {
 			if (ep_param_set_any_endom() == RLC_OK) {
 				for (size_t i = 0; i < 3; i++) {
@@ -2825,7 +2825,7 @@ static int recoding(void) {
 				}
 			}
 		} TEST_END;
-#endif /* WITH_EP && EP_ENDOM */
+#endif /* WITH_EP */
 	}
 	RLC_CATCH_ANY {
 		RLC_ERROR(end);

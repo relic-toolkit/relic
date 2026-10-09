@@ -511,7 +511,6 @@ static int frobenius(void) {
 		eb_new(b);
 		eb_new(c);
 
-#if defined(EB_KBLTZ)
 		if (eb_curve_is_kbltz()) {
 			TEST_CASE("frobenius map is correct") {
 				/* Test if (t^2 + 2)P = utP. */
@@ -560,7 +559,6 @@ static int frobenius(void) {
 			TEST_END;
 #endif
 		}
-#endif
 	(void)a;
 	(void)b;
 	(void)c;
@@ -1313,7 +1311,6 @@ int main(void) {
 		}
 	}
 
-#if defined(EB_KBLTZ)
 	r1 = eb_param_set_any_kbltz();
 	if (r1 == RLC_OK) {
 		if (test() != RLC_OK) {
@@ -1321,7 +1318,6 @@ int main(void) {
 			return 1;
 		}
 	}
-#endif
 
 	if (r0 == RLC_ERR && r1 == RLC_ERR) {
 		if (eb_param_set_any() == RLC_ERR) {

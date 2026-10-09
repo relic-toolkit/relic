@@ -380,10 +380,8 @@ void ep8_frb(ep8_t r, const ep8_t p, int i) {
 	}
 }
 
-#if defined(EP_ENDOM)
 
 void ep8_psi(ep8_t r, const ep8_t p) {
 	ep8_frb(r, p, 1);
 }
 
-#endif

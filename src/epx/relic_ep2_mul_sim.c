@@ -39,7 +39,6 @@
 
 #if EP_SIM == INTER || !defined(STRIP)
 
-#if defined(EP_ENDOM)
 
 /**
  * Multiplies and adds two prime elliptic curve points simultaneously,
@@ -144,9 +143,7 @@ static void ep2_mul_sim_endom(ep2_t r, const ep2_t p, const bn_t k,
 	}
 }
 
-#endif /* EP_ENDOM */
 
-#if defined(EP_PLAIN) || defined(EP_SUPER)
 
 /**
  * Multiplies and adds two prime elliptic curve points simultaneously,
@@ -245,7 +242,6 @@ static void ep2_mul_sim_plain(ep2_t r, const ep2_t p, const bn_t k,
 	}
 }
 
-#endif /* EP_PLAIN || EP_SUPER */
 #endif /* EP_SIM == INTER */
 
 /*============================================================================*/
@@ -363,16 +359,12 @@ void ep2_mul_sim_inter(ep2_t r, const ep2_t p, const bn_t k, const ep2_t q,
 		return;
 	}
 
-#if defined(EP_ENDOM)
 	if (ep_curve_is_endom()) {
 		ep2_mul_sim_endom(r, p, k, q, m);
 		return;
 	}
-#endif
 
-#if defined(EP_PLAIN) || defined(EP_SUPER)
 	ep2_mul_sim_plain(r, p, k, q, m, NULL);
-#endif
 }
 
 #endif
@@ -497,7 +489,6 @@ void ep2_mul_sim_gen(ep2_t r, const bn_t k, const ep2_t q, const bn_t m) {
 		bn_mod(_k, k, n);
 		bn_mod(_m, m, n);
 
-#if defined(EP_ENDOM)
 #if EP_SIM == INTER && EP_FIX == LWNAF && defined(EP_PRECO)
 		if (ep_curve_is_endom()) {
 			ep2_mul_sim_endom(r, g, _k, q, _m, ep2_curve_get_tab());
@@ -507,9 +498,7 @@ void ep2_mul_sim_gen(ep2_t r, const bn_t k, const ep2_t q, const bn_t m) {
 			ep2_mul_sim(r, g, _k, q, _m);
 		}
 #endif
-#endif
 
-#if defined(EP_PLAIN) || defined(EP_SUPER)
 #if EP_SIM == INTER && EP_FIX == LWNAF && defined(EP_PRECO)
 		if (!ep_curve_is_endom()) {
 			ep2_mul_sim_plain(r, g, _k, q, _m, ep2_curve_get_tab());
@@ -518,7 +507,6 @@ void ep2_mul_sim_gen(ep2_t r, const bn_t k, const ep2_t q, const bn_t m) {
 		if (!ep_curve_is_endom()) {
 			ep2_mul_sim(r, g, _k, q, _m);
 		}
-#endif
 #endif
 	}
 	RLC_CATCH_ANY {

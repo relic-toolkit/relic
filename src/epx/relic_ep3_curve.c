@@ -36,7 +36,7 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-#if defined(EP_ENDOM) && FP_PRIME == 354
+#if FP_PRIME == 354
 /**
  * Parameters for a pairing-friendly prime curve over a quadratic extension.
  */
@@ -58,7 +58,7 @@
 /** @} */
 #endif
 
-#if defined(EP_ENDOM) && FP_PRIME == 508
+#if FP_PRIME == 508
 /**
  * Parameters for a pairing-friendly prime curve over a cubic extension.
  */
@@ -80,7 +80,7 @@
 /** @} */
 #endif
 
-#if defined(EP_ENDOM) && FP_PRIME == 638
+#if FP_PRIME == 638
 /** @{ */
 #define K18_P638_A0		"0"
 #define K18_P638_A1		"0"
@@ -116,7 +116,7 @@
 /** @} */
 #endif
 
-#if defined(EP_ENDOM) && FP_PRIME == 768
+#if FP_PRIME == 768
 /** @{ */
 #define FM18_P768_A0		"0"
 #define FM18_P768_A1		"0"

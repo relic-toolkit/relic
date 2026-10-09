@@ -37,7 +37,6 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-#if defined(EP_ENDOM)
 
 #if EP_MUL == LWNAF || !defined(STRIP)
 
@@ -148,9 +147,7 @@ static void ep3_mul_gls_imp(ep3_t r, const ep3_t p, const bn_t k) {
 TMPL_EP_MUL_REG_GLS(ep3, fp3, 6, 1);
 
 #endif /* EP_MUL == LWREG */
-#endif /* EP_ENDOM */
 
-#if defined(EP_PLAIN) || defined(EP_SUPER)
 
 #if EP_MUL == LWNAF || !defined(STRIP)
 
@@ -209,7 +206,6 @@ static void ep3_mul_naf_imp(ep3_t r, const ep3_t p, const bn_t k) {
 TMPL_EP_MUL_REG_IMP(ep3, fp3);
 
 #endif /* EP_MUL == LWREG */
-#endif /* EP_PLAIN || EP_SUPER */
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -313,16 +309,12 @@ void ep3_mul_lwnaf(ep3_t r, const ep3_t p, const bn_t k) {
 		return;
 	}
 
-#if defined(EP_ENDOM)
 	if (ep_curve_is_endom()) {
 		ep3_mul_gls_imp(r, p, k);
 		return;
 	}
-#endif
 
-#if defined(EP_PLAIN) || defined(EP_SUPER)
 	ep3_mul_naf_imp(r, p, k);
-#endif
 }
 
 #endif
@@ -335,16 +327,12 @@ void ep3_mul_lwreg(ep3_t r, const ep3_t p, const bn_t k) {
 		return;
 	}
 
-#if defined(EP_ENDOM)
 	if (ep_curve_is_endom()) {
 		ep3_mul_reg_gls(r, p, k);
 		return;
 	}
-#endif
 
-#if defined(EP_PLAIN) || defined(EP_SUPER)
 	ep3_mul_reg_imp(r, p, k);
-#endif
 }
 
 #endif

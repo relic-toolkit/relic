@@ -378,7 +378,6 @@ void ep4_frb(ep4_t r, const ep4_t p, int i) {
 	}
 }
 
-#if defined(EP_ENDOM)
 
 void ep4_psi(ep4_t r, const ep4_t p) {
 	ep4_t q;
@@ -423,4 +422,3 @@ void ep4_psi(ep4_t r, const ep4_t p) {
 	}
 }
 
-#endif

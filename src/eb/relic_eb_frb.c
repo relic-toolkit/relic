@@ -36,7 +36,6 @@
 /* Public definitions                                                         */
 /*============================================================================*/
 
-#if defined(EB_KBLTZ)
 
 void eb_frb(eb_t r, const eb_t p) {
 	if (eb_is_infty(p)) {
@@ -55,4 +54,3 @@ void eb_frb(eb_t r, const eb_t p) {
 	r->coord = p->coord;
 }
 
-#endif

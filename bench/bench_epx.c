@@ -595,12 +595,10 @@ static void arith2(void) {
 		BENCH_ADD(ep2_frb(r, q, 1));
 	} BENCH_END;
 
-#if defined(EP_ENDOM)
 	BENCH_RUN("ep2_psi") {
 		ep2_rand(q);
 		BENCH_ADD(ep2_psi(r, q));
 	} BENCH_END;
-#endif
 
 	BENCH_RUN("ep2_map") {
 		uint8_t msg[5];
@@ -1139,12 +1137,10 @@ static void arith3(void) {
 		BENCH_ADD(ep3_frb(r, q, 1));
 	} BENCH_END;
 
-#if defined(EP_ENDOM)
 	BENCH_RUN("ep3_psi") {
 		ep3_rand(q);
 		BENCH_ADD(ep3_psi(r, q));
 	} BENCH_END;
-#endif
 
 	BENCH_RUN("ep3_map") {
 		uint8_t msg[5];
@@ -1648,12 +1644,10 @@ static void arith4(void) {
 		BENCH_ADD(ep4_frb(r, q, 1));
 	} BENCH_END;
 
-#if defined(EP_ENDOM)
 	BENCH_RUN("ep4_psi") {
 		ep4_rand(q);
 		BENCH_ADD(ep4_psi(r, q));
 	} BENCH_END;
-#endif
 
 	BENCH_RUN("ep4_map") {
 		uint8_t msg[5];
@@ -2157,12 +2151,10 @@ static void arith8(void) {
 		BENCH_ADD(ep8_frb(r, q, 1));
 	} BENCH_END;
 
-#if defined(EP_ENDOM)
 	BENCH_RUN("ep8_psi") {
 		ep8_rand(q);
 		BENCH_ADD(ep8_psi(r, q));
 	} BENCH_END;
-#endif
 
 	BENCH_RUN("ep8_map") {
 		uint8_t msg[5];

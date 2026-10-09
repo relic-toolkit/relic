@@ -281,7 +281,6 @@ typedef struct _ctx_t {
 	fp_st ep_map_u;
 	/** Precomputed constants for hashing. */
 	fp_st ep_map_c[7];
-#ifdef EP_ENDOM
 	fp_st beta;
 #if EP_MUL == LWNAF || EP_FIX == COMBS || EP_FIX == LWNAF || EP_SIM == INTER || !defined(STRIP)
 	/** Parameters required by the GLV method. @{ */
@@ -289,7 +288,6 @@ typedef struct _ctx_t {
 	bn_st ep_v2[3];
 	/** @} */
 #endif /* EP_MUL */
-#endif /* EP_ENDOM */
 	/** Optimization identifier for the a-coefficient. */
 	int ep_opt_a;
 	/** Optimization identifier for the b-coefficient. */
@@ -308,10 +306,8 @@ typedef struct _ctx_t {
 	/** Array of pointers to the precomputation table. */
 	ep_st *ep_ptr[RLC_EP_TABLE];
 #endif /* EP_PRECO */
-#ifdef EP_CTMAP
 	/** The isogeny map coefficients for the SSWU mapping. */
 	iso_st ep_iso;
-#endif /* EP_CTMAP */
 #endif /* WITH_EP */
 
 #ifdef WITH_EPX
@@ -345,10 +341,8 @@ typedef struct _ctx_t {
 	/** Array of pointers to the precomputation table. */
 	ep2_st *ep2_ptr[RLC_EP_TABLE];
 #endif /* EP_PRECO */
-#ifdef EP_CTMAP
 	/** The isogeny map coefficients for the SSWU mapping. */
 	iso2_st ep2_iso;
-#endif /* EP_CTMAP */
 	/** The generator of the elliptic curve. */
 	ep3_t ep3_g;
 	/** The 'a' coefficient of the curve. */

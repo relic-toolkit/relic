@@ -38,7 +38,6 @@
 /* Private definitions                                                        */
 /*============================================================================*/
 
-#ifdef EP_CTMAP
 /**
  * Evaluate a polynomial represented by its coefficients using Horner's rule.
  *
@@ -53,7 +52,6 @@ TMPL_MAP_HORNER(fp2, fp2_t)
  * Generic isogeny map evaluation for use with SSWU map.
  */
 TMPL_MAP_ISOGENY_MAP(ep2, fp2, iso2)
-#endif /* EP_CTMAP */
 
 /**
  * Simplified SWU mapping.

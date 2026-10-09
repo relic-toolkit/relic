@@ -38,7 +38,6 @@
 
 #if EP_MUL == LWNAF || !defined(STRIP)
 
-#if defined(EP_ENDOM)
 
 static void ep_mul_glv_imp(ep_t r, const ep_t p, const bn_t k) {
 	int i, n0, n1, s0, s1;
@@ -131,9 +130,7 @@ static void ep_mul_glv_imp(ep_t r, const ep_t p, const bn_t k) {
 	}
 }
 
-#endif /* EP_ENDOM */
 
-#if defined(EP_PLAIN) || defined(EP_SUPER)
 
 static void ep_mul_naf_imp(ep_t r, const ep_t p, const bn_t k) {
 	/* Some of the supported prime curves have order > field. */
@@ -191,10 +188,8 @@ static void ep_mul_naf_imp(ep_t r, const ep_t p, const bn_t k) {
 	}
 }
 
-#endif /* EP_PLAIN || EP_SUPER */
 #endif /* EP_MUL == LWNAF */
 
-#if defined(EP_ENDOM)
 
 static void ep_mul_reg_glv(ep_t r, const ep_t p, const bn_t k) {
 	int8_t reg[2][RLC_FP_BITS + 1], s[2], b[2], c0, c1, n0, n1;
@@ -308,13 +303,10 @@ static void ep_mul_reg_glv(ep_t r, const ep_t p, const bn_t k) {
 	}
 }
 
-#endif /* EP_ENDOM */
 
-#if defined(EP_PLAIN) || defined(EP_SUPER)
 
 TMPL_EP_MUL_REG_IMP(ep, fp);
 
-#endif /* EP_PLAIN || EP_SUPER */
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -465,16 +457,12 @@ void ep_mul_lwnaf(ep_t r, const ep_t p, const bn_t k) {
 		return;
 	}
 
-#if defined(EP_ENDOM)
 	if (ep_curve_is_endom()) {
 		ep_mul_glv_imp(r, p, k);
 		return;
 	}
-#endif
 
-#if defined(EP_PLAIN) || defined(EP_SUPER)
 	ep_mul_naf_imp(r, p, k);
-#endif
 }
 
 #endif
@@ -487,16 +475,12 @@ void ep_mul_lwreg(ep_t r, const ep_t p, const bn_t k) {
 		return;
 	}
 
-#if defined(EP_ENDOM)
 	if (ep_curve_is_endom()) {
 		ep_mul_reg_glv(r, p, k);
 		return;
 	}
-#endif
 
-#if defined(EP_PLAIN) || defined(EP_SUPER)
 	ep_mul_reg_imp(r, p, k);
-#endif
 }
 
 TMPL_EP_MUL_GEN(ep);

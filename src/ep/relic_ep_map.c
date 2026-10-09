@@ -44,7 +44,6 @@
 #define RLC_DSTAG		RLC_STRING
 #endif
 
-#ifdef EP_CTMAP
 
 /**
  * Evaluate a polynomial represented by its coefficients over a using Horner's
@@ -62,7 +61,6 @@ TMPL_MAP_HORNER(fp, fp_st);
  */
 TMPL_MAP_ISOGENY_MAP(ep, fp, iso);
 
-#endif /* EP_CTMAP */
 
 /**
  * Simplified SWU mapping from Section 4 of

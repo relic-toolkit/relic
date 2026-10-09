@@ -605,7 +605,6 @@ static int endomorphism(void) {
 			bn_new(v2[k]);
 		}
 
-#if defined(EP_ENDOM)
 		if (ep_curve_is_endom()) {
 			/* Recover lambda parameter. */
 			for (size_t i = 0; i < 3; i++) {
@@ -674,7 +673,6 @@ static int endomorphism(void) {
 			TEST_END;
 #endif
 		}
-#endif /* EP_ENDOM */
 	(void)a;
 	(void)b;
 	(void)c;
@@ -1637,7 +1635,6 @@ int main(void) {
 
 	util_banner("Tests for the EP module:", 0);
 
-#if defined(EP_PLAIN)
 	r0 = ep_param_set_any_plain();
 	if (r0 == RLC_OK) {
 		c0 = ep_param_get();
@@ -1646,9 +1643,7 @@ int main(void) {
 			return 1;
 		}
 	}
-#endif
 
-#if defined(EP_ENDOM)
 	r1 = ep_param_set_any_endom();
 	if (r1 == RLC_OK) {
 		c1 = ep_param_get();
@@ -1659,7 +1654,6 @@ int main(void) {
 			}
 		}
 	}
-#endif
 
 	r2 = ep_param_set_any_pairf();
 	if (r2 == RLC_OK) {
@@ -1672,7 +1666,6 @@ int main(void) {
 		}
 	}
 
-#if defined(EP_SUPER)
 	r3 = ep_param_set_any_super();
 	if (r3 == RLC_OK) {
 		c3 = ep_param_get();
@@ -1683,7 +1676,6 @@ int main(void) {
 			}
 		}
 	}
-#endif
 
 	if (r0 == RLC_ERR && r1 == RLC_ERR && r2 == RLC_ERR && r3 == RLC_ERR) {
 		if (ep_param_set_any() == RLC_ERR) {

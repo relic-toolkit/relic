@@ -1347,7 +1347,6 @@ static int frobenius2(void) {
 			TEST_ASSERT(ep2_cmp(c, b) == RLC_EQ, end);
 		} TEST_END;
 
-#if defined(EP_ENDOM)
 		TEST_CASE("endomorphism and point multiplication are consistent") {
 			ep2_rand(a);
 			ep2_psi(b, a);
@@ -1359,7 +1358,6 @@ static int frobenius2(void) {
 			ep2_mul_basic(c, a, d);
 			TEST_ASSERT(ep2_cmp(c, b) == RLC_EQ, end);
 		} TEST_END;
-#endif
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -2587,7 +2585,6 @@ static int frobenius3(void) {
 			TEST_ASSERT(ep3_cmp(c, b) == RLC_EQ, end);
 		} TEST_END;
 
-#if defined(EP_ENDOM)
 		TEST_CASE("endomorphism and point multiplication are consistent") {
 			ep3_rand(a);
 			ep3_psi(b, a);
@@ -2600,7 +2597,6 @@ static int frobenius3(void) {
 			ep3_mul_basic(c, a, d);
 			TEST_ASSERT(ep3_cmp(c, b) == RLC_EQ, end);
 		} TEST_END;
-#endif
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -3830,7 +3826,6 @@ static int frobenius4(void) {
 			TEST_ASSERT(ep4_cmp(c, b) == RLC_EQ, end);
 		} TEST_END;
 
-#if defined(EP_ENDOM)
 		TEST_CASE("endomorphism and point multiplication are consistent") {
 			ep4_rand(a);
 			ep4_psi(b, a);
@@ -3839,7 +3834,6 @@ static int frobenius4(void) {
 			ep4_mul_basic(c, a, d);
 			TEST_ASSERT(ep4_cmp(c, b) == RLC_EQ, end);
 		} TEST_END;
-#endif
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");
@@ -5069,7 +5063,6 @@ static int frobenius8(void) {
 			TEST_ASSERT(ep8_cmp(c, b) == RLC_EQ, end);
 		} TEST_END;
 
-#if defined(EP_ENDOM)
 		TEST_CASE("endomorphism and point multiplication are consistent") {
 			ep8_rand(a);
 			ep8_psi(b, a);
@@ -5078,7 +5071,6 @@ static int frobenius8(void) {
 			ep8_mul_basic(c, a, d);
 			TEST_ASSERT(ep8_cmp(c, b) == RLC_EQ, end);
 		} TEST_END;
-#endif
 	}
 	RLC_CATCH_ANY {
 		util_print("FATAL ERROR!\n");

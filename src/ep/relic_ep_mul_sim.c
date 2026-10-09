@@ -39,7 +39,6 @@
 
 #if EP_SIM == INTER || !defined(STRIP)
 
-#if defined(EP_ENDOM)
 
 /**
  * Multiplies and adds two prime elliptic curve points simultaneously,
@@ -440,9 +439,7 @@ void ep_mul_sim_lot_endom(ep_t r, const ep_t p[], const bn_t k[], int n) {
 	}
 }
 
-#endif /* EP_ENDOM */
 
-#if defined(EP_PLAIN) || defined(EP_SUPER)
 
 /**
  * Multiplies and adds two prime elliptic curve points simultaneously,
@@ -611,7 +608,6 @@ void ep_mul_sim_lot_plain(ep_t r, const ep_t p[], const bn_t k[], int n) {
 	}
 }
 
-#endif /* EP_PLAIN || EP_SUPER */
 
 #endif /* EP_SIM == INTER */
 
@@ -749,18 +745,14 @@ void ep_mul_sim_inter(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 		bn_mod(_k, k, n);
 		bn_mod(_m, m, n);
 
-#if defined(EP_ENDOM)
 		if (ep_curve_is_endom()) {
 			ep_mul_sim_endom(r, p, _k, q, _m, NULL);
 			flag = 1;
 		}
-#endif
 
-#if defined(EP_PLAIN) || defined(EP_SUPER)
 		if (!flag) {
 			ep_mul_sim_plain(r, p, _k, q, _m, NULL);
 		}
-#endif
 		(void)flag;
 	} RLC_CATCH_ANY {
 		RLC_THROW(ERR_CAUGHT);
@@ -894,7 +886,6 @@ void ep_mul_sim_gen(ep_t r, const bn_t k, const ep_t q, const bn_t m) {
 		bn_mod(_k, k, n);
 		bn_mod(_m, m, n);
 
-#if defined(EP_ENDOM)
 #if EP_SIM == INTER && EP_FIX == LWNAF && defined(EP_PRECO)
 		if (ep_curve_is_endom()) {
 			ep_mul_sim_endom(r, g, _k, q, _m, ep_curve_get_tab());
@@ -904,9 +895,7 @@ void ep_mul_sim_gen(ep_t r, const bn_t k, const ep_t q, const bn_t m) {
 			ep_mul_sim(r, g, _k, q, _m);
 		}
 #endif
-#endif
 
-#if defined(EP_PLAIN) || defined(EP_SUPER)
 #if EP_SIM == INTER && EP_FIX == LWNAF && defined(EP_PRECO)
 		if (!ep_curve_is_endom()) {
 			ep_mul_sim_plain(r, g, _k, q, _m, ep_curve_get_tab());
@@ -915,7 +904,6 @@ void ep_mul_sim_gen(ep_t r, const bn_t k, const ep_t q, const bn_t m) {
 		if (!ep_curve_is_endom()) {
 			ep_mul_sim(r, g, _k, q, _m);
 		}
-#endif
 #endif
 	}
 	RLC_CATCH_ANY {
@@ -971,17 +959,13 @@ void ep_mul_sim_lot(ep_t r, const ep_t p[], const bn_t k[], int n) {
 		return;
 	}
 
-#if defined(EP_ENDOM)
 	if (ep_curve_is_endom()) {
 		ep_mul_sim_lot_endom(r, p, k, n);
 		flag = 1;
 	}
-#endif
 
-#if defined(EP_PLAIN) || defined(EP_SUPER)
 	if (!flag) {
 		ep_mul_sim_lot_plain(r, p, k, n);
 	}
-#endif
 	(void)flag;
 }

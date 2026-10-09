@@ -38,7 +38,6 @@
 
 #if EB_MUL == LWNAF || !defined(STRIP)
 
-#if defined(EB_KBLTZ)
 
 /**
  * Multiplies a binary elliptic curve point by an integer using the w-TNAF
@@ -108,9 +107,7 @@ static void eb_mul_ltnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 	}
 }
 
-#endif
 
-#if defined(EB_PLAIN)
 
 /**
  * Multiplies a binary elliptic curve point by an integer using the
@@ -176,12 +173,10 @@ static void eb_mul_lnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 	}
 }
 
-#endif /* EB_PLAIN */
 #endif /* EB_MUL == LWNAF */
 
 #if EB_MUL == RWNAF || !defined(STRIP)
 
-#if defined(EB_KBLTZ)
 
 /**
  * Multiplies a binary elliptic curve point by an integer using the w-TNAF
@@ -473,9 +468,7 @@ static void eb_mul_rtnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 	}
 }
 
-#endif /* EB_KBLTZ */
 
-#if defined(EB_PLAIN)
 
 /**
  * Multiplies a binary elliptic curve point by an integer using the
@@ -600,7 +593,6 @@ static void eb_mul_rnaf_imp(eb_t r, const eb_t p, const bn_t k) {
 	}
 }
 
-#endif /* EB_PLAIN */
 #endif /* EB_MUL == RWNAF */
 
 /*============================================================================*/
@@ -854,16 +846,12 @@ void eb_mul_lwnaf(eb_t r, const eb_t p, const bn_t k) {
 		return;
 	}
 
-#if defined(EB_KBLTZ)
 	if (eb_curve_is_kbltz()) {
 		eb_mul_ltnaf_imp(r, p, k);
 		return;
 	}
-#endif
 
-#if defined(EB_PLAIN)
 	eb_mul_lnaf_imp(r, p, k);
-#endif
 }
 
 #endif
@@ -876,16 +864,12 @@ void eb_mul_rwnaf(eb_t r, const eb_t p, const bn_t k) {
 		return;
 	}
 
-#if defined(EB_KBLTZ)
 	if (eb_curve_is_kbltz()) {
 		eb_mul_rtnaf_imp(r, p, k);
 		return;
 	}
-#endif
 
-#if defined(EB_PLAIN)
 	eb_mul_rnaf_imp(r, p, k);
-#endif
 }
 
 #endif

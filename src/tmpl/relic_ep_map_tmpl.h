@@ -146,20 +146,13 @@
 		}																	\
 	}																		\
 
-/* Conditionally call isogeny mapping function depending on whether EP_CTMAP is defined */
-#ifdef EP_CTMAP
+/* Call the isogeny map if the curve has one. */
 #define TMPL_MAP_CALL_ISOMAP(CUR, PT)										\
 	do {																	\
 		if (CUR##_curve_is_ctmap()) {										\
 			CUR##_iso(PT, PT);												\
 		}																	\
 	} while (0)																\
-
-#else
-
-#define TMPL_MAP_CALL_ISOMAP(CUR, PT) /* No isogeny map call in this case. */
-
-#endif
 
 /**
  * Simplified SWU mapping from Section 4 of

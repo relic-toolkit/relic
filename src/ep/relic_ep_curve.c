@@ -98,12 +98,10 @@ static void ep_curve_set_map(void) {
 		if (ep_curve_is_ctmap() || abNeq0) {
 			/* SSWU map constants */
 			/* constants 3 and 4: a and b for either the curve or the isogeny */
-#ifdef EP_CTMAP
 			if (ep_curve_is_ctmap()) {
 				fp_copy(c2, ctx->ep_iso.a);
 				fp_copy(c3, ctx->ep_iso.b);
 			} else {
-#endif
 				fp_copy(c2, ctx->ep_a);
 				fp_copy(c3, ctx->ep_b);
 				/* Generate a non-square u to define the map. */
@@ -119,9 +117,7 @@ static void ep_curve_set_map(void) {
 					fp_mul(c0, c0, ctx->ep_map_u);
 					fp_add(c0, c0, ctx->ep_b);
 				} while (fp_is_sqr(ctx->ep_map_u) || !fp_is_sqr(c0));
-#ifdef EP_CTMAP
 			}
-#endif
 			/* constant 1: -b / a */
 			fp_neg(c0, c2);     /* c0 = -a */
 			fp_inv(c0, c0);     /* c0 = -1 / a */
@@ -236,7 +232,7 @@ void ep_curve_init(void) {
 	ep_set_infty(&ctx->ep_g);
 	bn_make(&ctx->ep_r, RLC_FP_DIGS);
 	bn_make(&ctx->ep_h, RLC_FP_DIGS);
-#if defined(EP_ENDOM) && (EP_MUL == LWNAF || EP_FIX == COMBS || EP_FIX == LWNAF || !defined(STRIP))
+#if (EP_MUL == LWNAF || EP_FIX == COMBS || EP_FIX == LWNAF || !defined(STRIP))
 	for (int i = 0; i < 3; i++) {
 		bn_make(&(ctx->ep_v1[i]), RLC_FP_DIGS);
 		bn_make(&(ctx->ep_v2[i]), RLC_FP_DIGS);
@@ -249,7 +245,7 @@ void ep_curve_clean(void) {
 	if (ctx != NULL) {
 		bn_clean(&ctx->ep_r);
 		bn_clean(&ctx->ep_h);
-#if defined(EP_ENDOM) && (EP_MUL == LWNAF || EP_FIX == LWNAF || !defined(STRIP))
+#if (EP_MUL == LWNAF || EP_FIX == LWNAF || !defined(STRIP))
 		for (int i = 0; i < 3; i++) {
 			bn_clean(&(ctx->ep_v1[i]));
 			bn_clean(&(ctx->ep_v2[i]));
@@ -266,7 +262,7 @@ dig_t *ep_curve_get_b(void) {
 	return core_get()->ep_b;
 }
 
-#if defined(EP_ENDOM) && (EP_MUL == LWNAF || EP_FIX == COMBS || EP_FIX == LWNAF || EP_SIM == INTER || !defined(STRIP))
+#if (EP_MUL == LWNAF || EP_FIX == COMBS || EP_FIX == LWNAF || EP_SIM == INTER || !defined(STRIP))
 
 dig_t *ep_curve_get_beta(void) {
 	return core_get()->beta;
@@ -379,14 +375,9 @@ const ep_t *ep_curve_get_tab(void) {
 
 
 iso_t ep_curve_get_iso() {
-#ifdef EP_CTMAP
 	return &core_get()->ep_iso;
-#else
-	return NULL;
-#endif /* EP_CTMAP */
 }
 
-#if defined(EP_PLAIN)
 
 void ep_curve_set_plain(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
 		const bn_t h, int ctmap) {
@@ -394,7 +385,6 @@ void ep_curve_set_plain(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
 	ctx->ep_is_endom = 0;
 	ctx->ep_is_super = 0;
 
-#ifdef EP_ENDOM
 	/* We do not use beta due to lack of endomorphisms so compute and cache
 	 * square root of -1 for evaluating the distortion map in pairing-friendly
 	 * curves with embedding degree 1. */
@@ -403,14 +393,11 @@ void ep_curve_set_plain(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
 		fp_neg(ctx->beta, ctx->beta);
 		fp_srt(ctx->beta, ctx->beta);
 	}
-#endif
 
 	ep_curve_set(a, b, g, r, h, ctmap);
 }
 
-#endif
 
-#if defined(EP_SUPER)
 
 void ep_curve_set_super(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
 		const bn_t h, int ctmap) {
@@ -421,9 +408,7 @@ void ep_curve_set_super(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
 	ep_curve_set(a, b, g, r, h, ctmap);
 }
 
-#endif
 
-#if defined(EP_ENDOM)
 
 void ep_curve_set_endom(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
 		const bn_t h, const fp_t beta, const bn_t l, int ctmap) {
@@ -543,7 +528,6 @@ void ep_curve_set_endom(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
 #endif
 }
 
-#endif
 
 int ep_curve_embed(void) {
 	switch (core_get()->ep_is_pairf) {

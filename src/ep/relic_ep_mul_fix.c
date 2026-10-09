@@ -84,7 +84,6 @@ static void ep_mul_fix_plain(ep_t r, const ep_t *t, const bn_t k) {
 
 #if EP_FIX == COMBS || !defined(STRIP)
 
-#if defined(EP_ENDOM)
 
 /**
  * Multiplies a prime elliptic curve point by an integer using the COMBS
@@ -181,9 +180,7 @@ static void ep_mul_combs_endom(ep_t r, const ep_t *t, const bn_t k) {
 	}
 }
 
-#endif /* EP_ENDOM */
 
-#if defined(EP_PLAIN) || defined(EP_SUPER)
 /**
  * Multiplies a prime elliptic curve point by an integer using the COMBS
  * method.
@@ -246,7 +243,6 @@ static void ep_mul_combs_plain(ep_t r, const ep_t *t, const bn_t k) {
 	}
 }
 
-#endif /* EP_PLAIN || EP_SUPER */
 
 #endif /* EP_FIX == LWNAF */
 
@@ -274,11 +270,9 @@ void ep_mul_pre_combs(ep_t *t, const ep_t p) {
 		ep_curve_get_ord(n);
 		l = RLC_CEIL(bn_bits(n), RLC_DEPTH);
 
-#if defined(EP_ENDOM)
 		if (ep_curve_is_endom()) {
 			l = RLC_CEIL(bn_bits(n), 2 * RLC_DEPTH);
 		}
-#endif
 
 		ep_set_infty(t[0]);
 
@@ -310,16 +304,12 @@ void ep_mul_fix_combs(ep_t r, const ep_t *t, const bn_t k) {
 		return;
 	}
 
-#if defined(EP_ENDOM)
 	if (ep_curve_is_endom()) {
 		ep_mul_combs_endom(r, t, k);
 		return;
 	}
-#endif
 
-#if defined(EP_PLAIN) || defined(EP_SUPER)
 	ep_mul_combs_plain(r, t, k);
-#endif
 }
 #endif
 

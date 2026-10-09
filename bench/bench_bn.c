@@ -1042,7 +1042,7 @@ static void arith(void) {
 	}
 	BENCH_END;
 
-#if defined(WITH_EB) && defined(EB_KBLTZ) && (EB_MUL == LWNAF || EB_MUL == RWNAF || EB_FIX == LWNAF || EB_SIM == INTER || !defined(STRIP))
+#if defined(WITH_EB) && (EB_MUL == LWNAF || EB_MUL == RWNAF || EB_FIX == LWNAF || EB_SIM == INTER || !defined(STRIP))
 	if (eb_param_set_any_kbltz() == RLC_OK) {
 		BENCH_RUN("bn_rec_tnaf") {
 			int8_t tnaf[RLC_FB_BITS + 8];
@@ -1087,7 +1087,7 @@ static void arith(void) {
 	}
 	BENCH_END;
 
-#if defined(WITH_EP) && defined(EP_ENDOM) && (EP_MUL == LWNAF || EP_FIX == COMBS || EP_FIX == LWNAF || EP_SIM == INTER || !defined(STRIP))
+#if defined(WITH_EP) && (EP_MUL == LWNAF || EP_FIX == COMBS || EP_FIX == LWNAF || EP_SIM == INTER || !defined(STRIP))
 	if (ep_param_set_any_endom() == RLC_OK) {
 		BENCH_RUN("bn_rec_glv") {
 			ep_curve_get_ord(c);
@@ -1096,7 +1096,7 @@ static void arith(void) {
 		}
 		BENCH_END;
 	}
-#endif /* WITH_EP && EP_KBLTZ */
+#endif /* WITH_EP */
 
 	bn_free_all(a, b, c);
 	for (int j = 0; j < 3; j++) {

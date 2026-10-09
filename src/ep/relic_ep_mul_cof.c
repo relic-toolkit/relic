@@ -55,7 +55,7 @@ void ep_mul_cof(ep_t r, const ep_t p) {
 		fp_prime_get_par(k);
 
 		switch (ep_curve_is_pairf()) {
-#if defined(EP_ENDOM) && !defined(STRIP)
+#if !defined(STRIP)
 			case EP_BN:
 				/* h = 1 */
 				break;

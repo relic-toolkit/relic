@@ -38,7 +38,6 @@
 
 #if EB_SIM == INTER || !defined(STRIP)
 
-#if defined(EB_KBLTZ)
 
 /**
  * Multiplies and adds two binary elliptic curve points simultaneously,
@@ -160,9 +159,7 @@ static void eb_mul_sim_kbltz(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 	}
 }
 
-#endif /* EB_KBLTZ */
 
-#if defined(EB_PLAIN)
 
 /**
  * Multiplies and adds two binary elliptic curve points simultaneously,
@@ -268,7 +265,6 @@ static void eb_mul_sim_plain(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 	}
 }
 
-#endif /* EB_PLAIN */
 
 #endif /* EB_SIM == INTER */
 
@@ -406,16 +402,12 @@ void eb_mul_sim_inter(eb_t r, const eb_t p, const bn_t k, const eb_t q,
 		return;
 	}
 
-#if defined(EB_KBLTZ)
 	if (eb_curve_is_kbltz()) {
 		eb_mul_sim_kbltz(r, p, k, q, m, NULL);
 		return;
 	}
-#endif
 
-#if defined(EB_PLAIN)
 	eb_mul_sim_plain(r, p, k, q, m, NULL);
-#endif
 }
 
 #endif
@@ -513,7 +505,6 @@ void eb_mul_sim_gen(eb_t r, const bn_t k, const eb_t q, const bn_t m) {
 
 		eb_curve_get_gen(g);
 
-#if defined(EB_KBLTZ)
 #if EB_SIM == INTER && EB_FIX == LWNAF && defined(EB_PRECO)
 		if (eb_curve_is_kbltz()) {
 			eb_mul_sim_kbltz(r, g, k, q, m, eb_curve_get_tab());
@@ -523,9 +514,7 @@ void eb_mul_sim_gen(eb_t r, const bn_t k, const eb_t q, const bn_t m) {
 			eb_mul_sim(r, g, k, q, m);
 		}
 #endif
-#endif
 
-#if defined(EB_PLAIN)
 #if EB_SIM == INTER && EB_FIX == LWNAF && defined(EB_PRECO)
 		if (!eb_curve_is_kbltz()) {
 			eb_mul_sim_plain(r, g, k, q, m, eb_curve_get_tab());
@@ -534,7 +523,6 @@ void eb_mul_sim_gen(eb_t r, const bn_t k, const eb_t q, const bn_t m) {
 		if (!eb_curve_is_kbltz()) {
 			eb_mul_sim(r, g, k, q, m);
 		}
-#endif
 #endif
 	}
 	RLC_CATCH_ANY {

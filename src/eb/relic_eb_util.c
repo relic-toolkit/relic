@@ -189,7 +189,6 @@ int eb_on_curve(const eb_t p) {
 void eb_tab(eb_t *t, const eb_t p, int w) {
 	int u;
 
-#if defined(EB_PLAIN)
 	if (!eb_curve_is_kbltz()) {
 		if (w > 2) {
 			eb_dbl(t[0], p);
@@ -202,9 +201,7 @@ void eb_tab(eb_t *t, const eb_t p, int w) {
 		}
 		eb_norm(t[0], p);
 	}
-#endif /* EB_PLAIN */
 
-#if defined(EB_KBLTZ)
 	if (eb_curve_is_kbltz()) {
 		u = (eb_curve_opt_a() == RLC_ZERO ? -1 : 1);
 
@@ -470,7 +467,6 @@ void eb_tab(eb_t *t, const eb_t p, int w) {
 			eb_norm_sim(t + 1, (const eb_t *)t + 1, (1 << (w - 2)) - 1);
 		}
 	}
-#endif /* EB_KBLTZ */
 }
 
 void eb_print(const eb_t p) {

@@ -461,7 +461,6 @@ void ep_tpl_jacob(ep_t r, const ep_t p) {
 
 TMPL_EP_NORM(ep, fp);
 
-#if defined(EP_ENDOM)
 
 void ep_psi(ep_t r, const ep_t p) {
 	if (ep_is_infty(p)) {
@@ -480,7 +479,6 @@ void ep_psi(ep_t r, const ep_t p) {
  	}
 }
 
-#endif
 
 void ep_pck(ep_t r, const ep_t p) {
 	int b;

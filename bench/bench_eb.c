@@ -322,7 +322,6 @@ static void arith(void) {
 		BENCH_ADD(eb_hlv(r, p));
 	}
 	BENCH_END;
-#if defined(EB_KBLTZ)
 	if (eb_curve_is_kbltz()) {
 		BENCH_RUN("eb_frb") {
 			eb_rand(p);
@@ -343,7 +342,6 @@ static void arith(void) {
 	}
 #endif
 
-#endif /* EB_KBLTZ */
 
 	BENCH_RUN("eb_neg") {
 		eb_rand(p);
@@ -635,19 +633,15 @@ int main(void) {
 	conf_print();
 	util_banner("Benchmarks for the EB module:", 0);
 
-#if defined(EB_PLAIN)
 	r0 = eb_param_set_any_plain();
 	if (r0 == RLC_OK) {
 		bench();
 	}
-#endif
 
-#if defined(EB_KBLTZ)
 	r1 = eb_param_set_any_kbltz();
 	if (r1 == RLC_OK) {
 		bench();
 	}
-#endif
 
 	if (r0 == RLC_ERR && r1 == RLC_ERR) {
 		if (eb_param_set_any() == RLC_ERR) {

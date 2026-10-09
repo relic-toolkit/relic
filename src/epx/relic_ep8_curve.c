@@ -38,7 +38,7 @@
 
 /* See ep/relic_ep_param.c for discussion of MAP_U parameters. */
 
-#if defined(EP_ENDOM) && FP_PRIME == 575
+#if FP_PRIME == 575
 /** @{ */
 #define B48_P575_B0		"0"
 #define B48_P575_B1		"0"
