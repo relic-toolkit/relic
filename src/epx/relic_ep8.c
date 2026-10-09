@@ -24,14 +24,153 @@
 /**
  * @file
  *
- * Implementation of comparison for points on prime elliptic curves over an
- * octic extensions.
+ * Implementation of point arithmetic and utilities on prime elliptic curves
+ * over an octic extension field.
  *
  * @ingroup epx
  */
 
 #include "relic_core.h"
 #include "relic_ep_util_tmpl.h"
+#include "relic_ep_add_tmpl.h"
+#include "relic_ep_dbl_tmpl.h"
+
+/*============================================================================*/
+/* Private definitions                                                        */
+/*============================================================================*/
+
+#if EP_ADD == BASIC || !defined(STRIP)
+
+/**
+ * Adds two points represented in affine coordinates on an ordinary prime
+ * elliptic curve.
+ *
+ * @param[out] r			- the result.
+ * @param[out] s			- the slope.
+ * @param[in] p				- the first point to add.
+ * @param[in] q				- the second point to add.
+ */
+TMPL_ADD_BASIC_IMP(ep8, fp8);
+
+#endif /* EP_ADD == BASIC */
+
+#if EP_ADD == PROJC || !defined(STRIP)
+
+/**
+ * Adds a point represented in homogeneous coordinates to a point represented in
+ * affine coordinates on an ordinary prime elliptic curve.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the projective point.
+ * @param[in] q				- the affine point.
+ */
+TMPL_ADD_PROJC_MIX(ep8, fp8);
+
+/**
+ * Adds two points represented in homogeneous coordinates on an ordinary prime
+ * elliptic curve.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the first point to add.
+ * @param[in] q				- the second point to add.
+ */
+TMPL_ADD_PROJC_IMP(ep8, fp8);
+
+#endif /* EP_ADD == PROJC */
+
+#if EP_ADD == JACOB || !defined(STRIP)
+
+/**
+ * Adds a point represented in Jacobian coordinates to a point represented in
+ * affine coordinates on an ordinary prime elliptic curve.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the projective point.
+ * @param[in] q				- the affine point.
+ */
+TMPL_ADD_JACOB_MIX(ep8, fp8);
+
+/**
+ * Adds two points represented in Jacobian coordinates on an ordinary prime
+ * elliptic curve.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the first point to add.
+ * @param[in] q				- the second point to add.
+ */
+TMPL_ADD_JACOB_IMP(ep8, fp8);
+
+#endif /* EP_ADD == JACOB */
+
+/*============================================================================*/
+	/* Public definitions                                                         */
+/*============================================================================*/
+
+#if EP_ADD == BASIC || !defined(STRIP)
+
+TMPL_ADD_BASIC(ep8, fp8);
+
+#endif
+
+#if EP_ADD == PROJC || !defined(STRIP)
+
+TMPL_ADD(ep8, projc);
+
+#endif
+
+#if EP_ADD == JACOB || !defined(STRIP)
+
+TMPL_ADD(ep8, jacob);
+
+#endif
+
+TMPL_SUB(ep8);
+
+#if EP_ADD == BASIC || !defined(STRIP)
+
+/**
+ * Doubles a point represented in affine coordinates on an ordinary prime
+ * elliptic curve.
+ *
+ * @param[out] r			- the result.
+ * @param[out] s			- the slope.
+ * @param[in] p				- the point to double.
+ */
+TMPL_DBL_BASIC_IMP(ep8, fp8);
+
+#endif /* EP_ADD == BASIC */
+
+#if EP_ADD == PROJC || !defined(STRIP)
+
+/**
+ * Doubles a point represented in projective coordinates on an ordinary prime
+ * elliptic curve.
+ *
+ * @param r					- the result.
+ * @param p					- the point to double.
+ */
+TMPL_DBL_PROJC_IMP(ep8, fp8);
+
+#endif /* EP_ADD == PROJC */
+
+#if EP_ADD == JACOB || !defined(STRIP)
+
+/**
+ * Doubles a point represented in Jacobian coordinates on an ordinary prime
+ * elliptic curve.
+ *
+ * @param r					- the result.
+ * @param p					- the point to double.
+ */
+TMPL_DBL_JACOB_IMP(ep8, fp8);
+
+#endif /* EP_ADD == JACOB */
+
+#if EP_ADD == PROJC || EP_ADD == JACOB || !defined(STRIP)
+
+TMPL_EP_NORM_IMP(ep8, fp8);
+
+#endif /* EP_ADD == PROJC */
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -205,3 +344,46 @@ void ep8_write_bin(uint8_t *bin, size_t len, const ep8_t a, int pack) {
 		ep8_free(t);
 	}
 }
+
+TMPL_EP_CMP(ep8, fp8);
+
+TMPL_EP_NEG(ep8, fp8);
+
+#if EP_ADD == BASIC || !defined(STRIP)
+
+TMPL_DBL_BASIC(ep8, fp8);
+
+#endif
+
+#if EP_ADD == PROJC || !defined(STRIP)
+
+TMPL_DBL(ep8, projc);
+
+#endif
+
+#if EP_ADD == JACOB || !defined(STRIP)
+
+TMPL_DBL(ep8, jacob);
+
+#endif
+
+TMPL_EP_NORM(ep8, fp8);
+
+void ep8_frb(ep8_t r, const ep8_t p, int i) {
+	ep8_copy(r, p);
+	for (; i > 0; i--) {
+		fp8_frb(r->x, r->x, 1);
+		fp8_frb(r->y, r->y, 1);
+		fp8_frb(r->z, r->z, 1);
+		fp8_mul_frb(r->x, r->x, 1, 2);
+		fp8_mul_frb(r->y, r->y, 1, 3);
+	}
+}
+
+#if defined(EP_ENDOM)
+
+void ep8_psi(ep8_t r, const ep8_t p) {
+	ep8_frb(r, p, 1);
+}
+
+#endif
